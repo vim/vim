@@ -399,8 +399,19 @@ func Test_edit_13()
     call feedkeys("A {\<cr>more\<cr>}\<esc>", 'tnix')
     call assert_equal(["\tabc {", "\t\tmore", "\t}"], getline(1, '$'))
     set smartindent& autoindent&
-    bw!
+    bwipe!
   endif
+
+  " Test autoindent removing indent of blank line.
+  new
+  call setline(1, '    foo bar baz')
+  set autoindent
+  exe "normal 0eea\<CR>\<CR>\<Esc>"
+  call assert_equal("    foo bar", getline(1))
+  call assert_equal("", getline(2))
+  call assert_equal("    baz", getline(3))
+  set autoindent&
+  bwipe!
 endfunc
 
 func Test_edit_CR()
@@ -1348,9 +1359,26 @@ func Test_edit_complete_very_long_name()
     return
   endtry
 
-  " Try to get the Vim window position before setting 'columns'.
+  " Try to get the Vim window position before setting 'columns', so that we can
+  " move the window back to where it was.
   let winposx = getwinposx()
   let winposy = getwinposy()
+
+  if winposx >= 0 && winposy >= 0 && !has('gui_running')
+    " We did get the window position, but xterm may report the wrong numbers.
+    " Move the window to the reported position and compute any offset.
+    exe 'winpos ' . winposx . ' ' . winposy
+    sleep 100m
+    let x = getwinposx()
+    if x >= 0
+      let winposx += winposx - x
+    endif
+    let y = getwinposy()
+    if y >= 0
+      let winposy += winposy - y
+    endif
+  endif
+
   let save_columns = &columns
   " Need at least about 1100 columns to reproduce the problem.
   set columns=2000
@@ -1435,4 +1463,20 @@ func Test_leave_insert_autocmd()
   bwipe!
   au! InsertLeave
   iunmap x
+endfunc
+
+" Test for inserting characters using CTRL-V followed by a number.
+func Test_edit_special_chars()
+  new
+
+  if has("ebcdic")
+    let t = "o\<C-V>193\<C-V>xc2\<C-V>o303 \<C-V>90a\<C-V>xfg\<C-V>o578\<Esc>"
+  else
+    let t = "o\<C-V>65\<C-V>x42\<C-V>o103 \<C-V>33a\<C-V>xfg\<C-V>o78\<Esc>"
+  endif
+
+  exe "normal " . t
+  call assert_equal("ABC !a\<C-O>g\<C-G>8", getline(2))
+
+  close!
 endfunc

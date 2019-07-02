@@ -13,11 +13,6 @@
  * Common code for if_python.c and if_python3.c.
  */
 
-#ifdef __BORLANDC__
-/* Disable Warning W8060: Possibly incorrect assignment in function ... */
-# pragma warn -8060
-#endif
-
 static char_u e_py_systemexit[]	= "E880: Can't handle SystemExit of %s exception in vim";
 
 #if PY_VERSION_HEX < 0x02050000
@@ -417,6 +412,8 @@ write_output(OutputObject *self, PyObject *string)
 
     Py_BEGIN_ALLOW_THREADS
     Python_Lock_Vim();
+    if (error)
+	emsg_severe = TRUE;
     writer((writefn)(error ? emsg : msg), (char_u *)str, len);
     Python_Release_Vim();
     Py_END_ALLOW_THREADS
@@ -1032,7 +1029,7 @@ _VimChdir(PyObject *_chdir, PyObject *args, PyObject *kwargs)
     Py_DECREF(newwd);
     Py_XDECREF(todecref);
 
-    post_chdir(FALSE);
+    post_chdir(CDSCOPE_GLOBAL);
 
     if (VimTryEnd())
     {
@@ -1210,7 +1207,7 @@ FinderFindSpec(PyObject *self, PyObject *args)
     if (!(paths = Vim_GetPaths(self)))
 	return NULL;
 
-    spec = PyObject_CallFunction(py_find_spec, "sNN", fullname, paths, target);
+    spec = PyObject_CallFunction(py_find_spec, "sOO", fullname, paths, target);
 
     Py_DECREF(paths);
 
@@ -1224,6 +1221,14 @@ FinderFindSpec(PyObject *self, PyObject *args)
     }
 
     return spec;
+}
+
+    static PyObject *
+FinderFindModule(PyObject* self UNUSED, PyObject* args UNUSED)
+{
+    // Apparently returning None works.
+    Py_INCREF(Py_None);
+    return Py_None;
 }
 #else
     static PyObject *
@@ -1403,9 +1408,8 @@ static struct PyMethodDef VimMethods[] = {
     {"foreach_rtp", VimForeachRTP,		METH_O,				"Call given callable for each path in &rtp"},
 #if PY_VERSION_HEX >= 0x030700f0
     {"find_spec",   FinderFindSpec,		METH_VARARGS,			"Internal use only, returns spec object for any input it receives"},
-#else
-    {"find_module", FinderFindModule,		METH_VARARGS,			"Internal use only, returns loader object for any input it receives"},
 #endif
+    {"find_module", FinderFindModule,		METH_VARARGS,			"Internal use only, returns loader object for any input it receives"},
     {"path_hook",   VimPathHook,		METH_VARARGS,			"Hook function to install in sys.path_hooks"},
     {"_get_paths",  (PyCFunction)Vim_GetPaths,	METH_NOARGS,			"Get &rtp-based additions to sys.path"},
     { NULL,	    NULL,			0,				NULL}
@@ -2949,7 +2953,7 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
 	    char_u *np;
 	    size_t len = STRLEN(p) + 1;
 
-	    if ((np = alloc((int)len + 2)) == NULL)
+	    if ((np = alloc(len + 2)) == NULL)
 	    {
 		vim_free(p);
 		return NULL;
@@ -3134,8 +3138,7 @@ set_partial(FunctionObject *self, partial_T *pt, int exported)
 	pt->pt_argc = self->argc;
 	if (exported)
 	{
-	    pt->pt_argv = (typval_T *)alloc_clear(
-		    sizeof(typval_T) * self->argc);
+	    pt->pt_argv = ALLOC_CLEAR_MULT(typval_T, self->argc);
 	    for (i = 0; i < pt->pt_argc; ++i)
 		copy_tv(&self->argv[i], &pt->pt_argv[i]);
 	}
@@ -4258,7 +4261,7 @@ StringToLine(PyObject *obj)
     /* Create a copy of the string, with internal nulls replaced by
      * newline characters, as is the vim convention.
      */
-    save = (char *)alloc((unsigned)(len+1));
+    save = alloc(len+1);
     if (save == NULL)
     {
 	PyErr_NoMemory();
@@ -4392,7 +4395,10 @@ SetBufferLine(buf_T *buf, PyInt n, PyObject *line, PyInt *len_change)
 	    RAISE_DELETE_LINE_FAIL;
 	else
 	{
-	    if (buf == curbuf)
+	    if (buf == curbuf && (save_curwin != NULL
+					   || save_curbuf.br_buf == NULL))
+		// Using an existing window for the buffer, adjust the cursor
+		// position.
 		py_fix_cursor((linenr_T)n, (linenr_T)n + 1, (linenr_T)-1);
 	    if (save_curbuf.br_buf == NULL)
 		/* Only adjust marks if we managed to switch to a window that
@@ -4642,7 +4648,10 @@ SetBufferLineList(
 						  (long)MAXLNUM, (long)extra);
 	changed_lines((linenr_T)lo, 0, (linenr_T)hi, (long)extra);
 
-	if (buf == curbuf)
+	if (buf == curbuf && (save_curwin != NULL
+					   || save_curbuf.br_buf == NULL))
+	    // Using an existing window for the buffer, adjust the cursor
+	    // position.
 	    py_fix_cursor((linenr_T)lo, (linenr_T)hi, (linenr_T)extra);
 
 	/* END of region without "return". */
@@ -5823,23 +5832,16 @@ run_eval(const char *cmd, typval_T *rettv
 set_ref_in_py(const int copyID)
 {
     pylinkedlist_T	*cur;
-    dict_T	*dd;
-    list_T	*ll;
-    int		i;
-    int		abort = FALSE;
+    list_T		*ll;
+    int			i;
+    int			abort = FALSE;
     FunctionObject	*func;
 
     if (lastdict != NULL)
     {
 	for (cur = lastdict ; !abort && cur != NULL ; cur = cur->pll_prev)
-	{
-	    dd = ((DictionaryObject *) (cur->pll_obj))->dict;
-	    if (dd->dv_copyID != copyID)
-	    {
-		dd->dv_copyID = copyID;
-		abort = abort || set_ref_in_ht(&dd->dv_hashtab, copyID, NULL);
-	    }
-	}
+	    abort = set_ref_in_dict(((DictionaryObject *)(cur->pll_obj))->dict,
+								       copyID);
     }
 
     if (lastlist != NULL)
@@ -5847,11 +5849,7 @@ set_ref_in_py(const int copyID)
 	for (cur = lastlist ; !abort && cur != NULL ; cur = cur->pll_prev)
 	{
 	    ll = ((ListObject *) (cur->pll_obj))->list;
-	    if (ll->lv_copyID != copyID)
-	    {
-		ll->lv_copyID = copyID;
-		abort = abort || set_ref_in_list(ll, copyID, NULL);
-	    }
+	    abort = set_ref_in_list(ll, copyID);
 	}
     }
 
@@ -5860,12 +5858,7 @@ set_ref_in_py(const int copyID)
 	for (cur = lastfunc ; !abort && cur != NULL ; cur = cur->pll_prev)
 	{
 	    func = (FunctionObject *) cur->pll_obj;
-	    if (func->self != NULL && func->self->dv_copyID != copyID)
-	    {
-		func->self->dv_copyID = copyID;
-		abort = abort || set_ref_in_ht(
-			&func->self->dv_hashtab, copyID, NULL);
-	    }
+	    abort = set_ref_in_dict(func->self, copyID);
 	    if (func->argc)
 		for (i = 0; !abort && i < func->argc; ++i)
 		    abort = abort
@@ -6233,7 +6226,8 @@ _ConvertFromPyObject(PyObject *obj, typval_T *tv, PyObject *lookup_dict)
 	FunctionObject *func = (FunctionObject *) obj;
 	if (func->self != NULL || func->argv != NULL)
 	{
-	    partial_T *pt = (partial_T *)alloc_clear(sizeof(partial_T));
+	    partial_T *pt = ALLOC_CLEAR_ONE(partial_T);
+
 	    set_partial(func, pt, TRUE);
 	    tv->vval.v_partial = pt;
 	    tv->v_type = VAR_PARTIAL;

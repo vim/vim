@@ -1,8 +1,7 @@
 " Test for syntax and syntax iskeyword option
 
-if !has("syntax")
-  finish
-endif
+source check.vim
+CheckFeature syntax
 
 source view_util.vim
 source screendump.vim
@@ -34,7 +33,7 @@ func Test_syn_iskeyword()
 	\ 'CREATE TABLE FOOBAR(',
 	\ '    DLTD_BY VARCHAR2(100)',
 	\ ');',
-  	\ ''])
+	\ ''])
 
   syntax on
   set ft=sql
@@ -519,7 +518,7 @@ func Test_synstack_synIDtrans()
 
   norm f/
   call assert_equal(['cComment', 'cCommentStart'], map(synstack(line("."), col(".")), 'synIDattr(v:val, "name")'))
-  call assert_equal(['Comment', 'Comment'],        map(synstack(line("."), col(".")), 'synIDattr(synIDtrans(v:val), "name")'))
+  call assert_equal(['Comment', 'Comment'],	   map(synstack(line("."), col(".")), 'synIDattr(synIDtrans(v:val), "name")'))
 
   norm fA
   call assert_equal(['cComment'], map(synstack(line("."), col(".")), 'synIDattr(v:val, "name")'))
@@ -536,7 +535,7 @@ endfunc
 " Check highlighting for a small piece of C code with a screen dump.
 func Test_syntax_c()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ '/* comment line at the top */',

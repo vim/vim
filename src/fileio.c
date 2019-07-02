@@ -89,7 +89,7 @@ struct bw_info
     int		bw_restlen;	/* nr of bytes in bw_rest[] */
     int		bw_first;	/* first write call */
     char_u	*bw_conv_buf;	/* buffer for writing converted chars */
-    int		bw_conv_buflen; /* size of bw_conv_buf */
+    size_t	bw_conv_buflen; /* size of bw_conv_buf */
     int		bw_conv_error;	/* set for conversion error */
     linenr_T	bw_conv_error_lnum;  /* first line with error or zero */
     linenr_T	bw_start_lnum;  /* line number at start of buffer */
@@ -684,15 +684,13 @@ readfile(
 #endif
     }
 
-#if defined(HAS_SWAP_EXISTS_ACTION)
-    /* If "Quit" selected at ATTENTION dialog, don't load the file */
+    // If "Quit" selected at ATTENTION dialog, don't load the file
     if (swap_exists_action == SEA_QUIT)
     {
 	if (!read_buffer && !read_stdin)
 	    close(fd);
 	return FAIL;
     }
-#endif
 
     ++no_wait_return;	    /* don't wait for return yet */
 
@@ -792,7 +790,10 @@ readfile(
 	    if (!is_not_a_term())
 	    {
 #ifndef ALWAYS_USE_GUI
-		mch_msg(_("Vim: Reading from stdin...\n"));
+# ifdef VIMDLL
+		if (!gui.in_use)
+# endif
+		    mch_msg(_("Vim: Reading from stdin...\n"));
 #endif
 #ifdef FEAT_GUI
 		/* Also write a message in the GUI window, if there is one. */
@@ -1188,7 +1189,7 @@ retry:
 	    {
 		for ( ; size >= 10; size = (long)((long_u)size >> 1))
 		{
-		    if ((new_buffer = lalloc((long_u)(size + linerest + 1),
+		    if ((new_buffer = lalloc(size + linerest + 1,
 							      FALSE)) != NULL)
 			break;
 		}
@@ -2322,10 +2323,7 @@ failed:
 	vim_free(fenc);
 #ifdef USE_ICONV
     if (iconv_fd != (iconv_t)-1)
-    {
 	iconv_close(iconv_fd);
-	iconv_fd = (iconv_t)-1;
-    }
 #endif
 
     if (!read_buffer && !read_stdin)
@@ -3162,7 +3160,7 @@ buf_write(
 	    && whole
 	    && buf == curbuf
 #ifdef FEAT_QUICKFIX
-	    && !bt_nofile(buf)
+	    && !bt_nofilename(buf)
 #endif
 	    && !filtering
 	    && (!append || vim_strchr(p_cpo, CPO_FNAMEAPP) != NULL)
@@ -3239,7 +3237,7 @@ buf_write(
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
 #ifdef FEAT_QUICKFIX
-		if (overwriting && bt_nofile(curbuf))
+		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
 #endif
@@ -3272,7 +3270,7 @@ buf_write(
 	    else
 	    {
 #ifdef FEAT_QUICKFIX
-		if (overwriting && bt_nofile(curbuf))
+		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
 #endif
@@ -3286,7 +3284,7 @@ buf_write(
 					 sfname, sfname, FALSE, curbuf, eap)))
 	    {
 #ifdef FEAT_QUICKFIX
-		if (overwriting && bt_nofile(curbuf))
+		if (overwriting && bt_nofilename(curbuf))
 		    nofile_err = TRUE;
 		else
 #endif
@@ -4170,8 +4168,7 @@ buf_write(
 		write_info.bw_conv_buflen = bufsize * 2;
 	    else /* FIO_UCS4 */
 		write_info.bw_conv_buflen = bufsize * 4;
-	    write_info.bw_conv_buf
-			   = lalloc((long_u)write_info.bw_conv_buflen, TRUE);
+	    write_info.bw_conv_buf = alloc(write_info.bw_conv_buflen);
 	    if (write_info.bw_conv_buf == NULL)
 		end = 0;
 	}
@@ -4182,8 +4179,7 @@ buf_write(
     {
 	/* Convert UTF-8 -> UCS-2 and UCS-2 -> DBCS.  Worst-case * 4: */
 	write_info.bw_conv_buflen = bufsize * 4;
-	write_info.bw_conv_buf
-			    = lalloc((long_u)write_info.bw_conv_buflen, TRUE);
+	write_info.bw_conv_buf = alloc(write_info.bw_conv_buflen);
 	if (write_info.bw_conv_buf == NULL)
 	    end = 0;
     }
@@ -4193,8 +4189,7 @@ buf_write(
     if (converted && wb_flags == 0 && (wb_flags = get_mac_fio_flags(fenc)) != 0)
     {
 	write_info.bw_conv_buflen = bufsize * 3;
-	write_info.bw_conv_buf
-			    = lalloc((long_u)write_info.bw_conv_buflen, TRUE);
+	write_info.bw_conv_buf = alloc(write_info.bw_conv_buflen);
 	if (write_info.bw_conv_buf == NULL)
 	    end = 0;
     }
@@ -4214,8 +4209,7 @@ buf_write(
 	{
 	    /* We're going to use iconv(), allocate a buffer to convert in. */
 	    write_info.bw_conv_buflen = bufsize * ICONV_MULT;
-	    write_info.bw_conv_buf
-			   = lalloc((long_u)write_info.bw_conv_buflen, TRUE);
+	    write_info.bw_conv_buf = alloc(write_info.bw_conv_buflen);
 	    if (write_info.bw_conv_buf == NULL)
 		end = 0;
 	    write_info.bw_first = TRUE;
@@ -4914,8 +4908,8 @@ restore_backup:
 	    && !write_info.bw_conv_error
 	    && (overwriting || vim_strchr(p_cpo, CPO_PLUS) != NULL))
     {
-	unchanged(buf, TRUE);
-	/* b:changedtick is always incremented in unchanged() but that
+	unchanged(buf, TRUE, FALSE);
+	/* b:changedtick is may be incremented in unchanged() but that
 	 * should not trigger a TextChanged event. */
 	if (buf->b_last_changedtick + 1 == CHANGEDTICK(buf))
 	    buf->b_last_changedtick = CHANGEDTICK(buf);
@@ -4987,10 +4981,10 @@ restore_backup:
 	}
     }
 
-    /*
-     * Remove the backup unless 'backup' option is set
-     */
-    if (!p_bk && backup != NULL && mch_remove(backup) != 0)
+    // Remove the backup unless 'backup' option is set or there was a
+    // conversion error.
+    if (!p_bk && backup != NULL && !write_info.bw_conv_error
+	    && mch_remove(backup) != 0)
 	emsg(_("E207: Can't delete backup file"));
 
     goto nofail;
@@ -5135,7 +5129,7 @@ vim_fsync(int fd)
 
 # ifdef MACOS_X
     r = fcntl(fd, F_FULLFSYNC);
-    if (r != 0 && errno == ENOTTY)
+    if (r != 0)  // F_FULLFSYNC not working or not supported
 # endif
 	r = fsync(fd);
     return r;
@@ -6089,7 +6083,7 @@ shorten_buf_fname(buf_T *buf, char_u *dirname, int force)
 
     if (buf->b_fname != NULL
 #ifdef FEAT_QUICKFIX
-	    && !bt_nofile(buf)
+	    && !bt_nofilename(buf)
 #endif
 	    && !path_with_url(buf->b_fname)
 	    && (force
@@ -6205,7 +6199,7 @@ buf_modname(
      */
     if (fname == NULL || *fname == NUL)
     {
-	retval = alloc((unsigned)(MAXPATHL + extlen + 3));
+	retval = alloc(MAXPATHL + extlen + 3);
 	if (retval == NULL)
 	    return NULL;
 	if (mch_dirname(retval, MAXPATHL) == FAIL ||
@@ -6224,7 +6218,7 @@ buf_modname(
     else
     {
 	fnamelen = (int)STRLEN(fname);
-	retval = alloc((unsigned)(fnamelen + extlen + 3));
+	retval = alloc(fnamelen + extlen + 3);
 	if (retval == NULL)
 	    return NULL;
 	STRCPY(retval, fname);
@@ -6539,7 +6533,7 @@ vim_rename(char_u *from, char_u *to)
 	return -1;
     }
 
-    buffer = (char *)alloc(BUFSIZE);
+    buffer = alloc(BUFSIZE);
     if (buffer == NULL)
     {
 	close(fd_out);
@@ -6776,9 +6770,8 @@ buf_check_timestamp(
 	// FileChangedShell autocmd)
 	if (stat_res < 0)
 	{
-	    // When 'autoread' is set we'll check the file again to see if it
-	    // re-appears.
-	    buf->b_mtime = buf->b_p_ar;
+	    // Check the file again later to see if it re-appears.
+	    buf->b_mtime = -1;
 	    buf->b_orig_size = 0;
 	    buf->b_orig_mode = 0;
 	}
@@ -6897,8 +6890,7 @@ buf_check_timestamp(
 	{
 	    if (!helpmesg)
 		mesg2 = "";
-	    tbuf = (char *)alloc((unsigned)(STRLEN(path) + STRLEN(mesg)
-							+ STRLEN(mesg2) + 2));
+	    tbuf = alloc(STRLEN(path) + STRLEN(mesg) + STRLEN(mesg2) + 2);
 	    sprintf(tbuf, mesg, path);
 #ifdef FEAT_EVAL
 	    /* Set warningmsg here, before the unimportant and output-specific
@@ -7089,7 +7081,7 @@ buf_reload(buf_T *buf, int orig_mode)
 	    else if (buf == curbuf)  /* "buf" still valid */
 	    {
 		/* Mark the buffer as unmodified and free undo info. */
-		unchanged(buf, TRUE);
+		unchanged(buf, TRUE, TRUE);
 		if ((flags & READ_KEEP_UNDO) == 0)
 		{
 		    u_blockfree(buf);
@@ -7174,20 +7166,164 @@ write_lnum_adjust(linenr_T offset)
 
 #if defined(TEMPDIRNAMES) || defined(FEAT_EVAL) || defined(PROTO)
 /*
+ * Core part of "readdir()" function.
+ * Retrieve the list of files/directories of "path" into "gap".
+ * Return OK for success, FAIL for failure.
+ */
+    int
+readdir_core(
+    garray_T	*gap,
+    char_u	*path,
+    void	*context,
+    int		(*checkitem)(void *context, char_u *name))
+{
+    int			failed = FALSE;
+#ifdef MSWIN
+    char_u		*buf, *p;
+    int			ok;
+    HANDLE		hFind = INVALID_HANDLE_VALUE;
+    WIN32_FIND_DATAW    wfb;
+    WCHAR		*wn = NULL;	// UTF-16 name, NULL when not used.
+#endif
+
+    ga_init2(gap, (int)sizeof(char *), 20);
+
+#ifdef MSWIN
+    buf = alloc(MAXPATHL);
+    if (buf == NULL)
+	return FAIL;
+    STRNCPY(buf, path, MAXPATHL-5);
+    p = buf + STRLEN(buf);
+    MB_PTR_BACK(buf, p);
+    if (*p == '\\' || *p == '/')
+	*p = NUL;
+    STRCAT(buf, "\\*");
+
+    wn = enc_to_utf16(buf, NULL);
+    if (wn != NULL)
+	hFind = FindFirstFileW(wn, &wfb);
+    ok = (hFind != INVALID_HANDLE_VALUE);
+    if (!ok)
+    {
+	failed = TRUE;
+	smsg(_(e_notopen), path);
+    }
+    else
+    {
+	while (ok)
+	{
+	    int	ignore;
+
+	    p = utf16_to_enc(wfb.cFileName, NULL);   // p is allocated here
+	    if (p == NULL)
+		break;  // out of memory
+
+	    ignore = p[0] == '.' && (p[1] == NUL
+					      || (p[1] == '.' && p[2] == NUL));
+	    if (!ignore && checkitem != NULL)
+	    {
+		int r = checkitem(context, p);
+
+		if (r < 0)
+		{
+		    vim_free(p);
+		    break;
+		}
+		if (r == 0)
+		    ignore = TRUE;
+	    }
+
+	    if (!ignore)
+	    {
+		if (ga_grow(gap, 1) == OK)
+		    ((char_u**)gap->ga_data)[gap->ga_len++] = vim_strsave(p);
+		else
+		{
+		    failed = TRUE;
+		    vim_free(p);
+		    break;
+		}
+	    }
+
+	    vim_free(p);
+	    ok = FindNextFileW(hFind, &wfb);
+	}
+	FindClose(hFind);
+    }
+
+    vim_free(buf);
+    vim_free(wn);
+#else
+    DIR		*dirp;
+    struct dirent *dp;
+    char_u	*p;
+
+    dirp = opendir((char *)path);
+    if (dirp == NULL)
+    {
+	failed = TRUE;
+	smsg(_(e_notopen), path);
+    }
+    else
+    {
+	for (;;)
+	{
+	    int	ignore;
+
+	    dp = readdir(dirp);
+	    if (dp == NULL)
+		break;
+	    p = (char_u *)dp->d_name;
+
+	    ignore = p[0] == '.' &&
+		    (p[1] == NUL ||
+		     (p[1] == '.' && p[2] == NUL));
+	    if (!ignore && checkitem != NULL)
+	    {
+		int r = checkitem(context, p);
+
+		if (r < 0)
+		    break;
+		if (r == 0)
+		    ignore = TRUE;
+	    }
+
+	    if (!ignore)
+	    {
+		if (ga_grow(gap, 1) == OK)
+		    ((char_u**)gap->ga_data)[gap->ga_len++] = vim_strsave(p);
+		else
+		{
+		    failed = TRUE;
+		    break;
+		}
+	    }
+	}
+
+	closedir(dirp);
+    }
+#endif
+
+    if (!failed && gap->ga_len > 0)
+	sort_strings((char_u **)gap->ga_data, gap->ga_len);
+
+    return failed ? FAIL : OK;
+}
+
+/*
  * Delete "name" and everything in it, recursively.
- * return 0 for succes, -1 if some file was not deleted.
+ * return 0 for success, -1 if some file was not deleted.
  */
     int
 delete_recursive(char_u *name)
 {
     int result = 0;
-    char_u	**files;
-    int		file_count;
     int		i;
     char_u	*exp;
+    garray_T	ga;
 
-    /* A symbolic link to a directory itself is deleted, not the directory it
-     * points to. */
+    // A symbolic link to a directory itself is deleted, not the directory it
+    // points to.
     if (
 # if defined(UNIX) || defined(MSWIN)
 	 mch_isrealdir(name)
@@ -7196,22 +7332,24 @@ delete_recursive(char_u *name)
 # endif
 	    )
     {
-	vim_snprintf((char *)NameBuff, MAXPATHL, "%s/*", name);
-	exp = vim_strsave(NameBuff);
+	exp = vim_strsave(name);
 	if (exp == NULL)
 	    return -1;
-	if (gen_expand_wildcards(1, &exp, &file_count, &files,
-	      EW_DIR|EW_FILE|EW_SILENT|EW_ALLLINKS|EW_DODOT|EW_EMPTYOK) == OK)
+	if (readdir_core(&ga, exp, NULL, NULL) == OK)
 	{
-	    for (i = 0; i < file_count; ++i)
-		if (delete_recursive(files[i]) != 0)
+	    for (i = 0; i < ga.ga_len; ++i)
+	    {
+		vim_snprintf((char *)NameBuff, MAXPATHL, "%s/%s", exp,
+					    ((char_u **)ga.ga_data)[i]);
+		if (delete_recursive(NameBuff) != 0)
 		    result = -1;
-	    FreeWild(file_count, files);
+	    }
+	    ga_clear_strings(&ga);
 	}
 	else
 	    result = -1;
+	(void)mch_rmdir(exp);
 	vim_free(exp);
-	(void)mch_rmdir(name);
     }
     else
 	result = mch_remove(name) == 0 ? 0 : -1;
@@ -7248,7 +7386,7 @@ vim_settempdir(char_u *tempdir)
 {
     char_u	*buf;
 
-    buf = alloc((unsigned)MAXPATHL + 2);
+    buf = alloc(MAXPATHL + 2);
     if (buf != NULL)
     {
 	if (vim_FullName(tempdir, buf, MAXPATHL, FALSE) == FAIL)

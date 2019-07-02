@@ -11,6 +11,62 @@ func Test_abbreviation()
   set nomodified
 endfunc
 
+func Test_abclear()
+   abbrev foo foobar
+   iabbrev fooi foobari
+   cabbrev fooc foobarc
+   call assert_equal("\n\n"
+         \        .. "c  fooc          foobarc\n"
+         \        .. "i  fooi          foobari\n"
+         \        .. "!  foo           foobar", execute('abbrev'))
+
+   iabclear
+   call assert_equal("\n\n"
+         \        .. "c  fooc          foobarc\n"
+         \        .. "c  foo           foobar", execute('abbrev'))
+   abbrev foo foobar
+   iabbrev fooi foobari
+
+   cabclear
+   call assert_equal("\n\n"
+         \        .. "i  fooi          foobari\n"
+         \        .. "i  foo           foobar", execute('abbrev'))
+   abbrev foo foobar
+   cabbrev fooc foobarc
+
+   abclear
+   call assert_equal("\n\nNo abbreviation found", execute('abbrev'))
+endfunc
+
+func Test_abclear_buffer()
+  abbrev foo foobar
+  new X1
+  abbrev <buffer> foo1 foobar1
+  new X2
+  abbrev <buffer> foo2 foobar2
+
+  call assert_equal("\n\n"
+        \        .. "!  foo2         @foobar2\n"
+        \        .. "!  foo           foobar", execute('abbrev'))
+
+  abclear <buffer>
+  call assert_equal("\n\n"
+        \        .. "!  foo           foobar", execute('abbrev'))
+
+  b X1
+  call assert_equal("\n\n"
+        \        .. "!  foo1         @foobar1\n"
+        \        .. "!  foo           foobar", execute('abbrev'))
+  abclear <buffer>
+  call assert_equal("\n\n"
+        \        .. "!  foo           foobar", execute('abbrev'))
+
+  abclear
+   call assert_equal("\n\nNo abbreviation found", execute('abbrev'))
+
+  %bwipe
+endfunc
+
 func Test_map_ctrl_c_insert()
   " mapping of ctrl-c in Insert mode
   set cpo-=< cpo-=k
@@ -140,9 +196,32 @@ func Test_map_cursor()
   imapclear
 endfunc
 
+func Test_map_cursor_ctrl_gU()
+  " <c-g>U<cursor> works only within a single line
+  nnoremap c<* *Ncgn<C-r>"<C-G>U<S-Left>
+  call setline(1, ['foo', 'foobar', '', 'foo'])
+  call cursor(1,2)
+  call feedkeys("c<*PREFIX\<esc>.", 'xt')
+  call assert_equal(['PREFIXfoo', 'foobar', '', 'PREFIXfoo'], getline(1,'$'))
+  " break undo manually
+  set ul=1000
+  exe ":norm! uu"
+  call assert_equal(['foo', 'foobar', '', 'foo'], getline(1,'$'))
+
+  " Test that it does not work if the cursor moves to the previous line
+  " 2 times <S-Left> move to the previous line
+  nnoremap c<* *Ncgn<C-r>"<C-G>U<S-Left><C-G>U<S-Left>
+  call setline(1, ['', ' foo', 'foobar', '', 'foo'])
+  call cursor(2,3)
+  call feedkeys("c<*PREFIX\<esc>.", 'xt')
+  call assert_equal(['PREFIXPREFIX', ' foo', 'foobar', '', 'foo'], getline(1,'$'))
+  nmapclear
+endfunc
+
+
 " This isn't actually testing a mapping, but similar use of CTRL-G U as above.
 func Test_break_undo()
-  :set whichwrap=<,>,[,]
+  set whichwrap=<,>,[,]
   call feedkeys("G4o2k", "xt")
   exe ":norm! iTest3: text with a (parenthesis here\<C-G>U\<Right>new line here\<esc>\<up>\<up>."
   call assert_equal('new line here', getline(line('$') - 3))
@@ -317,4 +396,40 @@ func Test_motionforce_omap()
   bwipe!
   delfunc Select
   delfunc GetCommand
+endfunc
+
+func Test_error_in_map_expr()
+  if !has('terminal') || (has('win32') && has('gui_running'))
+    throw 'Skipped: cannot run Vim in a terminal window'
+  endif
+
+  let lines =<< trim [CODE]
+  func Func()
+    " fail to create list
+    let x = [
+  endfunc
+  nmap <expr> ! Func()
+  set updatetime=50
+  [CODE]
+  call writefile(lines, 'Xtest.vim')
+
+  let buf = term_start(GetVimCommandClean() .. ' -S Xtest.vim', {'term_rows': 8})
+  let job = term_getjob(buf)
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 8))})
+
+  " GC must not run during map-expr processing, which can make Vim crash.
+  call term_sendkeys(buf, '!')
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, "\<CR>")
+  call term_wait(buf, 100)
+  call assert_equal('run', job_status(job))
+
+  call term_sendkeys(buf, ":qall!\<CR>")
+  call WaitFor({-> job_status(job) ==# 'dead'})
+  if has('unix')
+    call assert_equal('', job_info(job).termsig)
+  endif
+
+  call delete('Xtest.vim')
+  exe buf .. 'bwipe!'
 endfunc

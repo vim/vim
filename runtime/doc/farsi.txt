@@ -1,4 +1,4 @@
-*farsi.txt*     For Vim version 8.1.  Last change: 2019 Feb 16
+*farsi.txt*     For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Mortaza Ghassab Shiran
@@ -6,7 +6,6 @@
 
 Right to Left and Farsi Mapping for Vim		*farsi* *Farsi*
 
-{Vi does not have any of these commands}
 
 						*E27*
 Farsi support has been removed in patch 8.1.0932.  At that time it was

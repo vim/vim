@@ -252,7 +252,7 @@ cause_errthrow(
 	    while (*plist != NULL)
 		plist = &(*plist)->next;
 
-	    elem = (struct msglist *)alloc((unsigned)sizeof(struct msglist));
+	    elem = ALLOC_ONE(struct msglist);
 	    if (elem == NULL)
 	    {
 		suppress_errthrow = TRUE;
@@ -520,7 +520,7 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
 	}
     }
 
-    excp = (except_T *)alloc((unsigned)sizeof(except_T));
+    excp = ALLOC_ONE(except_T);
     if (excp == NULL)
 	goto nomem;
 
@@ -1442,7 +1442,7 @@ ex_try(exarg_T *eap)
 	    {
 		eslist_T	*elem;
 
-		elem = (eslist_T *)alloc((unsigned)sizeof(struct eslist_elem));
+		elem = ALLOC_ONE(struct eslist_elem);
 		if (elem == NULL)
 		    emsg(_(e_outofmem));
 		else

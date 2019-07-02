@@ -65,10 +65,13 @@ static int disable_flush = 0;	/* If > 0, gui_mch_flush() is disabled. */
  * recursive call.
  */
     void
-gui_start(void)
+gui_start(char_u *arg UNUSED)
 {
     char_u	*old_term;
     static int	recursive = 0;
+#if defined(GUI_MAY_SPAWN) && defined(EXPERIMENTAL_GUI_CMD)
+    char	*msg = NULL;
+#endif
 
     old_term = vim_strsave(T_NAME);
 
@@ -98,6 +101,25 @@ gui_start(void)
     }
     else
 #endif
+#ifdef GUI_MAY_SPAWN
+    if (gui.dospawn
+# ifdef EXPERIMENTAL_GUI_CMD
+	    && gui.dofork
+# endif
+	    && !vim_strchr(p_go, GO_FORG)
+	    && !anyBufIsChanged()
+# ifdef FEAT_JOB_CHANNEL
+	    && !job_any_running()
+# endif
+	    )
+    {
+# ifdef EXPERIMENTAL_GUI_CMD
+	msg =
+# endif
+	    gui_mch_do_spawn(arg);
+    }
+    else
+#endif
     {
 #ifdef FEAT_GUI_GTK
 	/* If there is 'f' in 'guioptions' and specify -g argument,
@@ -124,6 +146,10 @@ gui_start(void)
 	settmode(TMODE_RAW);		/* restart RAW mode */
 #ifdef FEAT_TITLE
 	set_title_defaults();		/* set 'title' and 'icon' again */
+#endif
+#if defined(GUI_MAY_SPAWN) && defined(EXPERIMENTAL_GUI_CMD)
+	if (msg)
+	    emsg(msg);
 #endif
     }
 
@@ -431,7 +457,7 @@ gui_init_check(void)
     gui.scrollbar_width = gui.scrollbar_height = SB_DEFAULT_WIDTH;
     gui.prev_wrap = -1;
 
-#ifdef ALWAYS_USE_GUI
+#if defined(ALWAYS_USE_GUI) || defined(VIMDLL)
     result = OK;
 #else
 # ifdef FEAT_GUI_GTK
@@ -577,22 +603,22 @@ gui_init(void)
 #endif
 
 		if (       fullpathcmp((char_u *)USR_GVIMRC_FILE,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #ifdef SYS_GVIMRC_FILE
 			&& fullpathcmp((char_u *)SYS_GVIMRC_FILE,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 #ifdef USR_GVIMRC_FILE2
 			&& fullpathcmp((char_u *)USR_GVIMRC_FILE2,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 #ifdef USR_GVIMRC_FILE3
 			&& fullpathcmp((char_u *)USR_GVIMRC_FILE3,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 #ifdef USR_GVIMRC_FILE4
 			&& fullpathcmp((char_u *)USR_GVIMRC_FILE4,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 			)
 		    do_source((char_u *)GVIMRC_FILE, TRUE, DOSO_GVIMRC);
@@ -678,11 +704,20 @@ gui_init(void)
     /* All components of the GUI have been created now */
     gui.shell_created = TRUE;
 
-#ifndef FEAT_GUI_GTK
+#ifdef FEAT_GUI_MSWIN
     // Set the shell size, adjusted for the screen size.  For GTK this only
     // works after the shell has been opened, thus it is further down.
-    // For MS-Windows pass FALSE for "mustset" to make --windowid work.
+    // If the window is already maximized (e.g. when --windowid is passed in),
+    // we want to use the system-provided dimensions by passing FALSE to
+    // mustset. Otherwise, we want to initialize with the default rows/columns.
+    if (gui_mch_maximized())
+	gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+    else
+	gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
+#else
+# ifndef FEAT_GUI_GTK
     gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+# endif
 #endif
 #if defined(FEAT_GUI_MOTIF) && defined(FEAT_MENU)
     /* Need to set the size of the menubar after all the menus have been
@@ -721,7 +756,10 @@ gui_init(void)
 # endif
 
 	/* Now make sure the shell fits on the screen. */
-	gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
+	if (gui_mch_maximized())
+	    gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
+	else
+	    gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
 #endif
 	/* When 'lines' was set while starting up the topframe may have to be
 	 * resized. */
@@ -906,7 +944,7 @@ gui_init_font(char_u *font_list, int fontset UNUSED)
 # endif
 	    gui_mch_set_font(gui.norm_font);
 #endif
-	gui_set_shellsize(TRUE, TRUE, RESIZE_BOTH);
+	gui_set_shellsize(FALSE, TRUE, RESIZE_BOTH);
     }
 
     return ret;
@@ -2124,7 +2162,7 @@ gui_screenstr(
 
     if (enc_utf8)
     {
-	buf = alloc((unsigned)(len * MB_MAXBYTES + 1));
+	buf = alloc(len * MB_MAXBYTES + 1);
 	if (buf == NULL)
 	    return OK; /* not much we could do here... */
 
@@ -2147,7 +2185,7 @@ gui_screenstr(
     }
     else if (enc_dbcs == DBCS_JPNU)
     {
-	buf = alloc((unsigned)(len * 2 + 1));
+	buf = alloc(len * 2 + 1);
 	if (buf == NULL)
 	    return OK; /* not much we could do here... */
 
@@ -2215,6 +2253,8 @@ gui_outstr_nowrap(
     int		col = gui.col;
 #ifdef FEAT_SIGN_ICONS
     int		draw_sign = FALSE;
+    int		signcol = 0;
+    char_u	extra[18];
 # ifdef FEAT_NETBEANS_INTG
     int		multi_sign = FALSE;
 # endif
@@ -2237,10 +2277,19 @@ gui_outstr_nowrap(
 	    multi_sign = TRUE;
 # endif
 	/* draw spaces instead */
-	s = (char_u *)"  ";
+	if (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) == 'u' &&
+		(curwin->w_p_nu || curwin->w_p_rnu))
+	{
+	    sprintf((char *)extra, "%*c ", number_width(curwin), ' ');
+	    s = extra;
+	}
+	else
+	    s = (char_u *)"  ";
 	if (len == 1 && col > 0)
 	    --col;
-	len = 2;
+	len = (int)STRLEN(s);
+	if (len > 2)
+	    signcol = len - 3;	// Right align sign icon in the number column
 	draw_sign = TRUE;
 	highlight_mask = 0;
     }
@@ -2566,7 +2615,7 @@ gui_outstr_nowrap(
 #ifdef FEAT_SIGN_ICONS
     if (draw_sign)
 	/* Draw the sign on top of the spaces. */
-	gui_mch_drawsign(gui.row, col, gui.highlight_mask);
+	gui_mch_drawsign(gui.row, signcol, gui.highlight_mask);
 # if defined(FEAT_NETBEANS_INTG) && (defined(FEAT_GUI_X11) \
 	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN))
     if (multi_sign)
@@ -3508,9 +3557,7 @@ gui_init_which_components(char_u *oldval UNUSED)
 		else
 		{
 		    FOR_ALL_WINDOWS(wp)
-		    {
 			gui_do_scrollbar(wp, i, gui.which_scrollbars[i]);
-		    }
 		}
 		if (gui.which_scrollbars[i] != prev_which_scrollbars[i])
 		{
@@ -3830,9 +3877,7 @@ gui_remove_scrollbars(void)
 	else
 	{
 	    FOR_ALL_WINDOWS(wp)
-	    {
 		gui_do_scrollbar(wp, i, FALSE);
-	    }
 	}
 	curtab->tp_prev_which_scrollbars[i] = -1;
     }
@@ -4892,7 +4937,7 @@ xy2win(int x, int y)
     col = X_2_COL(x);
     if (row < 0 || col < 0)		/* before first window */
 	return NULL;
-    wp = mouse_find_win(&row, &col);
+    wp = mouse_find_win(&row, &col, FALSE);
     if (wp == NULL)
 	return NULL;
 #ifdef FEAT_MOUSESHAPE
@@ -4940,12 +4985,22 @@ ex_gui(exarg_T *eap)
     }
     if (!gui.in_use)
     {
+#if defined(VIMDLL) && !defined(EXPERIMENTAL_GUI_CMD)
+	emsg(_(e_nogvim));
+	return;
+#else
 	/* Clear the command.  Needed for when forking+exiting, to avoid part
 	 * of the argument ending up after the shell prompt. */
 	msg_clr_eos_force();
-	gui_start();
-#ifdef FEAT_JOB_CHANNEL
+# ifdef GUI_MAY_SPAWN
+	if (!ends_excmd(*eap->arg))
+	    gui_start(eap->arg);
+	else
+# endif
+	    gui_start(NULL);
+# ifdef FEAT_JOB_CHANNEL
 	channel_gui_register_all();
+# endif
 #endif
     }
     if (!ends_excmd(*eap->arg))
@@ -5073,6 +5128,9 @@ gui_update_screen(void)
 
     /* Trigger CursorMoved if the cursor moved. */
     if (!finish_op && (has_cursormoved()
+# ifdef FEAT_TEXT_PROP
+		|| popup_visible
+# endif
 # ifdef FEAT_CONCEAL
 		|| curwin->w_p_cole > 0
 # endif
@@ -5080,6 +5138,10 @@ gui_update_screen(void)
     {
 	if (has_cursormoved())
 	    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
+#ifdef FEAT_TEXT_PROP
+	if (popup_visible)
+	    popup_check_cursor_pos();
+#endif
 # ifdef FEAT_CONCEAL
 	if (curwin->w_p_cole > 0)
 	{
@@ -5331,7 +5393,7 @@ gui_wingoto_xy(int x, int y)
 
     if (row >= 0 && col >= 0)
     {
-	wp = mouse_find_win(&row, &col);
+	wp = mouse_find_win(&row, &col, FAIL_POPUP);
 	if (wp != NULL && wp != curwin)
 	    win_goto(wp);
     }

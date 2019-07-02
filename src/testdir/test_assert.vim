@@ -190,6 +190,22 @@ func Test_assert_inrange()
   call remove(v:errors, 0)
 
   call assert_fails('call assert_inrange(1, 1)', 'E119:')
+
+  if has('float')
+    call assert_equal(0, assert_inrange(7.0, 7, 7))
+    call assert_equal(0, assert_inrange(7, 7.0, 7))
+    call assert_equal(0, assert_inrange(7, 7, 7.0))
+    call assert_equal(0, assert_inrange(5, 7, 5.0))
+    call assert_equal(0, assert_inrange(5, 7, 6.0))
+    call assert_equal(0, assert_inrange(5, 7, 7.0))
+
+    call assert_equal(1, assert_inrange(5, 7, 4.0))
+    call assert_match("Expected range 5.0 - 7.0, but got 4.0", v:errors[0])
+    call remove(v:errors, 0)
+    call assert_equal(1, assert_inrange(5, 7, 8.0))
+    call assert_match("Expected range 5.0 - 7.0, but got 8.0", v:errors[0])
+    call remove(v:errors, 0)
+  endif
 endfunc
 
 func Test_assert_with_msg()
@@ -204,6 +220,25 @@ func Test_override()
   call test_override('ALL', 0)
   call assert_fails("call test_override('xxx', 1)", 'E475')
   call assert_fails("call test_override('redraw', 'yes')", 'E474')
+endfunc
+
+func Test_mouse_position()
+  let save_mouse = &mouse
+  set mouse=a
+  new
+  call setline(1, ['line one', 'line two'])
+  call assert_equal([0, 1, 1, 0], getpos('.'))
+  call test_setmouse(1, 5)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 1, 5, 0], getpos('.'))
+  call test_setmouse(2, 20)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 2, 8, 0], getpos('.'))
+  call test_setmouse(5, 1)
+  call feedkeys("\<LeftMouse>", "xt")
+  call assert_equal([0, 2, 1, 0], getpos('.'))
+  bwipe!
+  let &mouse = save_mouse
 endfunc
 
 func Test_user_is_happy()

@@ -114,6 +114,9 @@
 #define KS_SGR_MOUSE		237
 #define KS_SGR_MOUSE_RELEASE	236
 
+/* Used for the GPM mouse. */
+#define KS_GPM_MOUSE		235
+
 /*
  * Filler used after KS_SPECIAL and others
  */

@@ -52,6 +52,7 @@ func Test_empty()
   endif
 
   call assert_equal(0, empty(function('Test_empty')))
+  call assert_equal(0, empty(function('Test_empty', [0])))
 endfunc
 
 func Test_len()
@@ -186,6 +187,33 @@ func Test_strftime()
 
   call assert_fails('call strftime([])', 'E730:')
   call assert_fails('call strftime("%Y", [])', 'E745:')
+
+  " Check that the time changes after we change the timezone
+  " Save previous timezone value, if any
+  if exists('$TZ')
+    let tz = $TZ
+  endif
+
+  " Force EST and then UTC, save the current hour (24-hour clock) for each
+  let $TZ = 'EST' | let est = strftime('%H')
+  let $TZ = 'UTC' | let utc = strftime('%H')
+
+  " Those hours should be two bytes long, and should not be the same; if they
+  " are, a tzset(3) call may have failed somewhere
+  call assert_equal(strlen(est), 2)
+  call assert_equal(strlen(utc), 2)
+  " TODO: this fails on MS-Windows
+  if has('unix')
+    call assert_notequal(est, utc)
+  endif
+
+  " If we cached a timezone value, put it back, otherwise clear it
+  if exists('tz')
+    let $TZ = tz
+  else
+    unlet $TZ
+  endif
+
 endfunc
 
 func Test_resolve_unix()
@@ -237,7 +265,7 @@ endfunc
 func s:normalize_fname(fname)
   let ret = substitute(a:fname, '\', '/', 'g')
   let ret = substitute(ret, '//', '/', 'g')
-  let ret = tolower(ret)
+  return tolower(ret)
 endfunc
 
 func Test_resolve_win32()
@@ -249,13 +277,14 @@ func Test_resolve_win32()
   if executable('cscript')
     new Xfile
     wq
-    call writefile([
-    \ 'Set fs = CreateObject("Scripting.FileSystemObject")',
-    \ 'Set ws = WScript.CreateObject("WScript.Shell")',
-    \ 'Set shortcut = ws.CreateShortcut("Xlink.lnk")',
-    \ 'shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "Xfile")', 
-    \ 'shortcut.Save'
-    \], 'link.vbs')
+    let lines =<< trim END
+	Set fs = CreateObject("Scripting.FileSystemObject")
+	Set ws = WScript.CreateObject("WScript.Shell")
+	Set shortcut = ws.CreateShortcut("Xlink.lnk")
+	shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "Xfile")
+	shortcut.Save
+    END
+    call writefile(lines, 'link.vbs')
     silent !cscript link.vbs
     call delete('link.vbs')
     call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink.lnk')))
@@ -275,6 +304,7 @@ func Test_resolve_win32()
   " test for symbolic link to a file
   new Xfile
   wq
+  call assert_equal('Xfile', resolve('Xfile'))
   silent !mklink Xlink Xfile
   if !v:shell_error
     call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink')))
@@ -329,6 +359,22 @@ func Test_resolve_win32()
     echomsg 'skipped test for buffer name'
   endif
   call delete('Xfile')
+
+  " test for reparse point
+  call mkdir('Xdir')
+  call assert_equal('Xdir', resolve('Xdir'))
+  silent !mklink /D Xdirlink Xdir
+  if !v:shell_error
+    w Xdir/text.txt
+    call assert_equal('Xdir/text.txt', resolve('Xdir/text.txt'))
+    call assert_equal(s:normalize_fname(getcwd() . '\Xdir\text.txt'), s:normalize_fname(resolve('Xdirlink\text.txt')))
+    call assert_equal(s:normalize_fname(getcwd() . '\Xdir'), s:normalize_fname(resolve('Xdirlink')))
+    call delete('Xdirlink')
+  else
+    echomsg 'skipped test for reparse point'
+  endif
+
+  call delete('Xdir', 'rf')
 endfunc
 
 func Test_simplify()
@@ -869,6 +915,7 @@ func Test_count()
   call assert_equal(1, count(l, 'a', 0, 1))
   call assert_equal(2, count(l, 'a', 1, 1))
   call assert_fails('call count(l, "a", 0, 10)', 'E684:')
+  call assert_fails('call count(l, "a", [])', 'E745:')
 
   let d = {1: 'a', 2: 'a', 3: 'A', 4: 'b'}
   call assert_equal(2, count(d, 'a'))
@@ -896,6 +943,8 @@ func Test_count()
   call assert_equal(2, count("foo", "O", 1))
   call assert_equal(2, count("fooooo", "oo"))
   call assert_equal(0, count("foo", ""))
+
+  call assert_fails('call count(0, 0)', 'E712:')
 endfunc
 
 func Test_changenr()
@@ -942,6 +991,17 @@ func Test_Executable()
     call assert_equal(1, executable('cat'))
     call assert_equal(0, executable('nodogshere'))
   endif
+endfunc
+
+func Test_executable_longname()
+  if !has('win32')
+    return
+  endif
+
+  let fname = 'X' . repeat('あ', 200) . '.bat'
+  call writefile([], fname)
+  call assert_equal(1, executable(fname))
+  call delete(fname)
 endfunc
 
 func Test_hostname()
@@ -1136,6 +1196,52 @@ func Test_reg_executing_and_recording()
   call assert_equal('b:a', s:reg_stat)
   call feedkeys("q\"\"=s:save_reg_stat()\<CR>pq", 'xt')
   call assert_equal('":', s:reg_stat)
+
+  " :normal command saves and restores reg_executing
+  let s:reg_stat = ''
+  let @q = ":call TestFunc()\<CR>:call s:save_reg_stat()\<CR>"
+  func TestFunc() abort
+    normal! ia
+  endfunc
+  call feedkeys("@q", 'xt')
+  call assert_equal(':q', s:reg_stat)
+  delfunc TestFunc
+
+  " getchar() command saves and restores reg_executing
+  map W :call TestFunc()<CR>
+  let @q = "W"
+  let g:typed = ''
+  let g:regs = []
+  func TestFunc() abort
+    let g:regs += [reg_executing()]
+    let g:typed = getchar(0)
+    let g:regs += [reg_executing()]
+  endfunc
+  call feedkeys("@qy", 'xt')
+  call assert_equal(char2nr("y"), g:typed)
+  call assert_equal(['q', 'q'], g:regs)
+  delfunc TestFunc
+  unmap W
+  unlet g:typed
+  unlet g:regs
+
+  " input() command saves and restores reg_executing
+  map W :call TestFunc()<CR>
+  let @q = "W"
+  let g:typed = ''
+  let g:regs = []
+  func TestFunc() abort
+    let g:regs += [reg_executing()]
+    let g:typed = input('?')
+    let g:regs += [reg_executing()]
+  endfunc
+  call feedkeys("@qy\<CR>", 'xt')
+  call assert_equal("y", g:typed)
+  call assert_equal(['q', 'q'], g:regs)
+  delfunc TestFunc
+  unmap W
+  unlet g:typed
+  unlet g:regs
 
   bwipe!
   delfunc s:save_reg_stat
@@ -1343,4 +1449,111 @@ func Test_platform_name()
     call assert_equal(uname =~? 'SunOS', has('sun'))
     call assert_equal(uname =~? 'CYGWIN\|MSYS', has('win32unix'))
   endif
+endfunc
+
+func Test_readdir()
+  call mkdir('Xdir')
+  call writefile([], 'Xdir/foo.txt')
+  call writefile([], 'Xdir/bar.txt')
+  call mkdir('Xdir/dir')
+
+  " All results
+  let files = readdir('Xdir')
+  call assert_equal(['bar.txt', 'dir', 'foo.txt'], sort(files))
+
+  " Only results containing "f"
+  let files = readdir('Xdir', { x -> stridx(x, 'f') !=- 1 })
+  call assert_equal(['foo.txt'], sort(files))
+
+  " Only .txt files
+  let files = readdir('Xdir', { x -> x =~ '.txt$' })
+  call assert_equal(['bar.txt', 'foo.txt'], sort(files))
+
+  " Only .txt files with string
+  let files = readdir('Xdir', 'v:val =~ ".txt$"')
+  call assert_equal(['bar.txt', 'foo.txt'], sort(files))
+
+  " Limit to 1 result.
+  let l = []
+  let files = readdir('Xdir', {x -> len(add(l, x)) == 2 ? -1 : 1})
+  call assert_equal(1, len(files))
+
+  call delete('Xdir', 'rf')
+endfunc
+
+func Test_delete_rf()
+  call mkdir('Xdir')
+  call writefile([], 'Xdir/foo.txt')
+  call writefile([], 'Xdir/bar.txt')
+  call mkdir('Xdir/[a-1]')  " issue #696
+  call writefile([], 'Xdir/[a-1]/foo.txt')
+  call writefile([], 'Xdir/[a-1]/bar.txt')
+  call assert_true(filereadable('Xdir/foo.txt'))
+  call assert_true(filereadable('Xdir/[a-1]/foo.txt'))
+
+  call assert_equal(0, delete('Xdir', 'rf'))
+  call assert_false(filereadable('Xdir/foo.txt'))
+  call assert_false(filereadable('Xdir/[a-1]/foo.txt'))
+endfunc
+
+func Test_call()
+  call assert_equal(3, call('len', [123]))
+  call assert_fails("call call('len', 123)", 'E714:')
+  call assert_equal(0, call('', []))
+
+  function Mylen() dict
+     return len(self.data)
+  endfunction
+  let mydict = {'data': [0, 1, 2, 3], 'len': function("Mylen")}
+  call assert_fails("call call('Mylen', [], 0)", 'E715:')
+endfunc
+
+func Test_char2nr()
+  call assert_equal(12354, char2nr('あ', 1))
+endfunc
+
+func Test_eventhandler()
+  call assert_equal(0, eventhandler())
+endfunc
+
+func Test_bufadd_bufload()
+  call assert_equal(0, bufexists('someName'))
+  let buf = bufadd('someName')
+  call assert_notequal(0, buf)
+  call assert_equal(1, bufexists('someName'))
+  call assert_equal(0, getbufvar(buf, '&buflisted'))
+  call assert_equal(0, bufloaded(buf))
+  call bufload(buf)
+  call assert_equal(1, bufloaded(buf))
+  call assert_equal([''], getbufline(buf, 1, '$'))
+
+  let curbuf = bufnr('')
+  call writefile(['some', 'text'], 'otherName')
+  let buf = bufadd('otherName')
+  call assert_notequal(0, buf)
+  call assert_equal(1, bufexists('otherName'))
+  call assert_equal(0, getbufvar(buf, '&buflisted'))
+  call assert_equal(0, bufloaded(buf))
+  call bufload(buf)
+  call assert_equal(1, bufloaded(buf))
+  call assert_equal(['some', 'text'], getbufline(buf, 1, '$'))
+  call assert_equal(curbuf, bufnr(''))
+
+  let buf1 = bufadd('')
+  let buf2 = bufadd('')
+  call assert_notequal(0, buf1)
+  call assert_notequal(0, buf2)
+  call assert_notequal(buf1, buf2)
+  call assert_equal(1, bufexists(buf1))
+  call assert_equal(1, bufexists(buf2))
+  call assert_equal(0, bufloaded(buf1))
+  exe 'bwipe ' .. buf1
+  call assert_equal(0, bufexists(buf1))
+  call assert_equal(1, bufexists(buf2))
+  exe 'bwipe ' .. buf2
+  call assert_equal(0, bufexists(buf2))
+
+  bwipe someName
+  bwipe otherName
+  call assert_equal(0, bufexists('someName'))
 endfunc

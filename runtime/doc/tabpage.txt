@@ -1,4 +1,4 @@
-*tabpage.txt*   For Vim version 8.1.  Last change: 2018 Mar 29
+*tabpage.txt*   For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -16,7 +16,6 @@ when used in combination with more than one tab page.
 4. Setting 'tabline'		|setting-tabline|
 5. Setting 'guitablabel'	|setting-guitablabel|
 
-{Vi does not have any of these commands}
 {not able to use multiple tab pages when the |+windows| feature was disabled
 at compile time}
 
@@ -289,7 +288,6 @@ LOOPING OVER TAB PAGES:
 		current tab page.
 		{cmd} can contain '|' to concatenate several commands.
 		{cmd} must not open or close tab pages or reorder them.
-		{not in Vi}
 		Also see |:windo|, |:argdo|, |:bufdo|, |:cdo|, |:ldo|, |:cfdo|
 		and |:lfdo|
 

@@ -8,18 +8,14 @@
  */
 
 /*
- * Text properties implementation.
- *
- * Text properties are attached to the text.  They move with the text when
- * text is inserted/deleted.
- *
- * Text properties have a user specified ID number, which can be unique.
- * Text properties have a type, which can be used to specify highlighting.
+ * Text properties implementation.  See ":help text-properties".
  *
  * TODO:
  * - Adjust text property column and length when text is inserted/deleted.
+ *   -> :substitute with multiple matches, issue #4427
  *   -> a :substitute with a multi-line match
  *   -> search for changed_bytes() from misc1.c
+ *   -> search for mark_col_adjust()
  * - Perhaps we only need TP_FLAG_CONT_NEXT and can drop TP_FLAG_CONT_PREV?
  * - Add an arrray for global_proptypes, to quickly lookup a prop type by ID
  * - Add an arrray for b_proptypes, to quickly lookup a prop type by ID
@@ -27,7 +23,8 @@
  *   the index, like DB_MARKED?
  * - Also test line2byte() with many lines, so that ml_updatechunk() is taken
  *   into account.
- * - add mechanism to keep track of changed lines.
+ * - Perhaps have a window-local option to disable highlighting from text
+ *   properties?
  */
 
 #include "vim.h"
@@ -132,7 +129,7 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
     di = dict_find(arg->vval.v_dict, (char_u *)"bufnr", -1);
     if (di != NULL)
     {
-	*buf = tv_get_buf(&di->di_tv, FALSE);
+	*buf = get_buf_arg(&di->di_tv);
 	if (*buf == NULL)
 	    return FAIL;
     }
@@ -145,23 +142,8 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
     void
 f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    linenr_T	lnum;
     linenr_T	start_lnum;
-    linenr_T	end_lnum;
     colnr_T	start_col;
-    colnr_T	end_col;
-    dict_T	*dict;
-    char_u	*type_name;
-    proptype_T	*type;
-    buf_T	*buf = curbuf;
-    int		id = 0;
-    char_u	*newtext;
-    int		proplen;
-    size_t	textlen;
-    char_u	*props;
-    char_u	*newprops;
-    textprop_T	tmp_prop;
-    int		i;
 
     start_lnum = tv_get_number(&argvars[0]);
     start_col = tv_get_number(&argvars[1]);
@@ -175,7 +157,38 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	emsg(_(e_dictreq));
 	return;
     }
-    dict = argvars[2].vval.v_dict;
+
+    prop_add_common(start_lnum, start_col, argvars[2].vval.v_dict,
+							  curbuf, &argvars[2]);
+}
+
+/*
+ * Shared between prop_add() and popup_create().
+ * "dict_arg" is the function argument of a dict containing "bufnr".
+ * it is NULL for popup_create().
+ */
+    void
+prop_add_common(
+	linenr_T    start_lnum,
+	colnr_T	    start_col,
+	dict_T	    *dict,
+	buf_T	    *default_buf,
+	typval_T    *dict_arg)
+{
+    linenr_T	lnum;
+    linenr_T	end_lnum;
+    colnr_T	end_col;
+    char_u	*type_name;
+    proptype_T	*type;
+    buf_T	*buf = default_buf;
+    int		id = 0;
+    char_u	*newtext;
+    int		proplen;
+    size_t	textlen;
+    char_u	*props = NULL;
+    char_u	*newprops;
+    textprop_T	tmp_prop;
+    int		i;
 
     if (dict == NULL || dict_find(dict, (char_u *)"type", -1) == NULL)
     {
@@ -224,7 +237,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     if (dict_find(dict, (char_u *)"id", -1) != NULL)
 	id = dict_get_number(dict, (char_u *)"id");
 
-    if (get_bufnr_from_arg(&argvars[2], &buf) == FAIL)
+    if (dict_arg != NULL && get_bufnr_from_arg(dict_arg, &buf) == FAIL)
 	return;
 
     type = lookup_prop_type(type_name, buf);
@@ -241,6 +254,9 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	semsg(_(e_invalid_lnum), (long)end_lnum);
 	return;
     }
+
+    if (buf->b_ml.ml_mfp == NULL)
+	ml_open(buf);
 
     for (lnum = start_lnum; lnum <= end_lnum; ++lnum)
     {
@@ -278,12 +294,12 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	mch_memmove(newtext, buf->b_ml.ml_line_ptr, textlen);
 
 	// Find the index where to insert the new property.
-	// Since the text properties are not aligned properly when stored with the
-	// text, we need to copy them as bytes before using it as a struct.
+	// Since the text properties are not aligned properly when stored with
+	// the text, we need to copy them as bytes before using it as a struct.
 	for (i = 0; i < proplen; ++i)
 	{
 	    mch_memmove(&tmp_prop, props + i * sizeof(textprop_T),
-							       sizeof(textprop_T));
+							   sizeof(textprop_T));
 	    if (tmp_prop.tp_col >= col)
 		break;
 	}
@@ -298,7 +314,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	tmp_prop.tp_flags = (lnum > start_lnum ? TP_FLAG_CONT_PREV : 0)
 			  | (lnum < end_lnum ? TP_FLAG_CONT_NEXT : 0);
 	mch_memmove(newprops + i * sizeof(textprop_T), &tmp_prop,
-							       sizeof(textprop_T));
+							   sizeof(textprop_T));
 
 	if (i < proplen)
 	    mch_memmove(newprops + (i + 1) * sizeof(textprop_T),
@@ -331,7 +347,7 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
 
     // Be quick when no text property types have been defined or the buffer,
     // unless we are adding one.
-    if (!buf->b_has_textprop && !will_change)
+    if ((!buf->b_has_textprop && !will_change) || buf->b_ml.ml_mfp == NULL)
 	return 0;
 
     // Fetch the line to get the ml_line_len field updated.
@@ -560,13 +576,10 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     }
 
     dict = argvars[0].vval.v_dict;
-    di = dict_find(dict, (char_u *)"bufnr", -1);
-    if (di != NULL)
-    {
-	buf = tv_get_buf(&di->di_tv, FALSE);
-	if (buf == NULL)
-	    return;
-    }
+    if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
+	return;
+    if (buf->b_ml.ml_mfp == NULL)
+	return;
 
     di = dict_find(dict, (char_u*)"all", -1);
     if (di != NULL)
@@ -625,7 +638,10 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 			mch_memmove(newptr, buf->b_ml.ml_line_ptr,
 							buf->b_ml.ml_line_len);
 			buf->b_ml.ml_line_ptr = newptr;
-			curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
+			buf->b_ml.ml_flags |= ML_LINE_DIRTY;
+
+			cur_prop = buf->b_ml.ml_line_ptr + len
+						    + idx * sizeof(textprop_T);
 		    }
 
 		    taillen = buf->b_ml.ml_line_len - len
@@ -679,7 +695,7 @@ prop_type_set(typval_T *argvars, int add)
 	    semsg(_("E969: Property type %s already defined"), name);
 	    return;
 	}
-	prop = (proptype_T *)alloc_clear((int)(sizeof(proptype_T) + STRLEN(name)));
+	prop = alloc_clear(sizeof(proptype_T) + STRLEN(name));
 	if (prop == NULL)
 	    return;
 	STRCPY(prop->pt_name, name);
@@ -687,7 +703,7 @@ prop_type_set(typval_T *argvars, int add)
 	htp = buf == NULL ? &global_proptypes : &buf->b_proptypes;
 	if (*htp == NULL)
 	{
-	    *htp = (hashtab_T *)alloc(sizeof(hashtab_T));
+	    *htp = ALLOC_ONE(hashtab_T);
 	    if (*htp == NULL)
 	    {
 		vim_free(prop);
@@ -724,6 +740,15 @@ prop_type_set(typval_T *argvars, int add)
 		return;
 	    }
 	    prop->pt_hl_id = hl_id;
+	}
+
+	di = dict_find(dict, (char_u *)"combine", -1);
+	if (di != NULL)
+	{
+	    if (tv_get_number(&di->di_tv))
+		prop->pt_flags |= PT_FLAG_COMBINE;
+	    else
+		prop->pt_flags &= ~PT_FLAG_COMBINE;
 	}
 
 	di = dict_find(dict, (char_u *)"priority", -1);
@@ -838,6 +863,8 @@ f_prop_type_get(typval_T *argvars, typval_T *rettv UNUSED)
 	    if (prop->pt_hl_id > 0)
 		dict_add_string(d, "highlight", syn_id2name(prop->pt_hl_id));
 	    dict_add_number(d, "priority", prop->pt_priority);
+	    dict_add_number(d, "combine",
+				   (prop->pt_flags & PT_FLAG_COMBINE) ? 1 : 0);
 	    dict_add_number(d, "start_incl",
 			    (prop->pt_flags & PT_FLAG_INS_START_INCL) ? 1 : 0);
 	    dict_add_number(d, "end_incl",
@@ -947,13 +974,18 @@ clear_buf_prop_types(buf_T *buf)
  * shift by "bytes_added" (can be negative).
  * Note that "col" is zero-based, while tp_col is one-based.
  * Only for the current buffer.
- * Called is expected to check b_has_textprop and "bytes_added" being non-zero.
+ * "flags" can have:
+ * APC_SAVE_FOR_UNDO:	Call u_savesub() before making changes to the line.
+ * APC_SUBSTITUTE:	Text is replaced, not inserted.
+ * Caller is expected to check b_has_textprop and "bytes_added" being non-zero.
+ * Returns TRUE when props were changed.
  */
-    void
+    int
 adjust_prop_columns(
 	linenr_T    lnum,
 	colnr_T	    col,
-	int	    bytes_added)
+	int	    bytes_added,
+	int	    flags)
 {
     int		proplen;
     char_u	*props;
@@ -964,35 +996,69 @@ adjust_prop_columns(
     size_t	textlen;
 
     if (text_prop_frozen > 0)
-	return;
+	return FALSE;
 
     proplen = get_text_props(curbuf, lnum, &props, TRUE);
     if (proplen == 0)
-	return;
+	return FALSE;
     textlen = curbuf->b_ml.ml_line_len - proplen * sizeof(textprop_T);
 
     wi = 0; // write index
     for (ri = 0; ri < proplen; ++ri)
     {
+	int start_incl;
+
 	mch_memmove(&tmp_prop, props + ri * sizeof(textprop_T),
 							   sizeof(textprop_T));
 	pt = text_prop_type_by_id(curbuf, tmp_prop.tp_type);
+	start_incl = (flags & APC_SUBSTITUTE) ||
+		       (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL));
 
 	if (bytes_added > 0
-		? (tmp_prop.tp_col >= col
-		       + (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL)
-								      ? 2 : 1))
-		: (tmp_prop.tp_col > col + 1))
+		&& (tmp_prop.tp_col >= col + (start_incl ? 2 : 1)))
 	{
-	    tmp_prop.tp_col += bytes_added;
+	    if (tmp_prop.tp_col < col + (start_incl ? 2 : 1))
+	    {
+		tmp_prop.tp_len += (tmp_prop.tp_col - 1 - col) + bytes_added;
+		tmp_prop.tp_col = col + 1;
+	    }
+	    else
+		tmp_prop.tp_col += bytes_added;
+	    // Save for undo if requested and not done yet.
+	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
+		u_savesub(lnum);
 	    dirty = TRUE;
+	}
+	else if (bytes_added <= 0 && (tmp_prop.tp_col > col + 1))
+	{
+	    if (tmp_prop.tp_col + bytes_added < col + 1)
+	    {
+		tmp_prop.tp_len += (tmp_prop.tp_col - 1 - col) + bytes_added;
+		tmp_prop.tp_col = col + 1;
+	    }
+	    else
+		tmp_prop.tp_col += bytes_added;
+	    // Save for undo if requested and not done yet.
+	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
+		u_savesub(lnum);
+	    dirty = TRUE;
+	    if (tmp_prop.tp_len <= 0)
+		continue;  // drop this text property
 	}
 	else if (tmp_prop.tp_len > 0
 		&& tmp_prop.tp_col + tmp_prop.tp_len > col
 		       + ((pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL))
 								      ? 0 : 1))
 	{
-	    tmp_prop.tp_len += bytes_added;
+	    int after = col - bytes_added
+				     - (tmp_prop.tp_col - 1 + tmp_prop.tp_len);
+	    if (after > 0)
+		tmp_prop.tp_len += bytes_added + after;
+	    else
+		tmp_prop.tp_len += bytes_added;
+	    // Save for undo if requested and not done yet.
+	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
+		u_savesub(lnum);
 	    dirty = TRUE;
 	    if (tmp_prop.tp_len <= 0)
 		continue;  // drop this text property
@@ -1011,16 +1077,22 @@ adjust_prop_columns(
 	curbuf->b_ml.ml_flags |= ML_LINE_DIRTY;
 	curbuf->b_ml.ml_line_len = newlen;
     }
+    return dirty;
 }
 
 /*
  * Adjust text properties for a line that was split in two.
- * "lnum" is the newly inserted line.  The text properties are now on the line
- * below it.  "kept" is the number of bytes kept in the first line, while
+ * "lnum_props" is the line that has the properties from before the split.
+ * "lnum_top" is the top line.
+ * "kept" is the number of bytes kept in the first line, while
  * "deleted" is the number of bytes deleted.
  */
     void
-adjust_props_for_split(linenr_T lnum, int kept, int deleted)
+adjust_props_for_split(
+	linenr_T lnum_props,
+	linenr_T lnum_top,
+	int kept,
+	int deleted)
 {
     char_u	*props;
     int		count;
@@ -1031,11 +1103,12 @@ adjust_props_for_split(linenr_T lnum, int kept, int deleted)
 
     if (!curbuf->b_has_textprop)
 	return;
-    count = get_text_props(curbuf, lnum + 1, &props, FALSE);
+
+    // Get the text properties from "lnum_props".
+    count = get_text_props(curbuf, lnum_props, &props, FALSE);
     ga_init2(&prevprop, sizeof(textprop_T), 10);
     ga_init2(&nextprop, sizeof(textprop_T), 10);
 
-    // Get the text properties, which are at "lnum + 1".
     // Keep the relevant ones in the first line, reducing the length if needed.
     // Copy the ones that include the split to the second line.
     // Move the ones after the split to the second line.
@@ -1056,7 +1129,9 @@ adjust_props_for_split(linenr_T lnum, int kept, int deleted)
 	    ++prevprop.ga_len;
 	}
 
-	if (prop.tp_col + prop.tp_len >= skipped && ga_grow(&nextprop, 1) == OK)
+	// Only add the property to the next line if the length is bigger than
+	// zero.
+	if (prop.tp_col + prop.tp_len > skipped && ga_grow(&nextprop, 1) == OK)
 	{
 	    p = ((textprop_T *)nextprop.ga_data) + nextprop.ga_len;
 	    *p = prop;
@@ -1071,11 +1146,120 @@ adjust_props_for_split(linenr_T lnum, int kept, int deleted)
 	}
     }
 
-    set_text_props(lnum, prevprop.ga_data, prevprop.ga_len * sizeof(textprop_T));
+    set_text_props(lnum_top, prevprop.ga_data,
+					 prevprop.ga_len * sizeof(textprop_T));
     ga_clear(&prevprop);
-
-    set_text_props(lnum + 1, nextprop.ga_data, nextprop.ga_len * sizeof(textprop_T));
+    set_text_props(lnum_top + 1, nextprop.ga_data,
+					 nextprop.ga_len * sizeof(textprop_T));
     ga_clear(&nextprop);
+}
+
+/*
+ * Line "lnum" has been joined and will end up at column "col" in the new line.
+ * "removed" bytes have been removed from the start of the line, properties
+ * there are to be discarded.
+ * Move the adjusted text properties to an allocated string, store it in
+ * "prop_line" and adjust the columns.
+ */
+    void
+adjust_props_for_join(
+	linenr_T    lnum,
+	textprop_T  **prop_line,
+	int	    *prop_length,
+	long	    col,
+	int	    removed)
+{
+    int		proplen;
+    char_u	*props;
+    int		ri;
+    int		wi = 0;
+
+    proplen = get_text_props(curbuf, lnum, &props, FALSE);
+    if (proplen > 0)
+    {
+	*prop_line = ALLOC_MULT(textprop_T, proplen);
+	if (*prop_line != NULL)
+	{
+	    for (ri = 0; ri < proplen; ++ri)
+	    {
+		textprop_T *cp = *prop_line + wi;
+
+		mch_memmove(cp, props + ri * sizeof(textprop_T),
+							   sizeof(textprop_T));
+		if (cp->tp_col + cp->tp_len > removed)
+		{
+		    if (cp->tp_col > removed)
+			cp->tp_col += col;
+		    else
+		    {
+			// property was partly deleted, make it shorter
+			cp->tp_len -= removed - cp->tp_col;
+			cp->tp_col = col;
+		    }
+		    ++wi;
+		}
+	    }
+	}
+	*prop_length = wi;
+    }
+}
+
+/*
+ * After joining lines: concatenate the text and the properties of all joined
+ * lines into one line and replace the line.
+ */
+    void
+join_prop_lines(
+	linenr_T    lnum,
+	char_u	    *newp,
+	textprop_T  **prop_lines,
+	int	    *prop_lengths,
+	int	    count)
+{
+    size_t	proplen = 0;
+    size_t	oldproplen;
+    char_u	*props;
+    int		i;
+    size_t	len;
+    char_u	*line;
+    size_t	l;
+
+    for (i = 0; i < count - 1; ++i)
+	proplen += prop_lengths[i];
+    if (proplen == 0)
+    {
+	ml_replace(lnum, newp, FALSE);
+	return;
+    }
+
+    // get existing properties of the joined line
+    oldproplen = get_text_props(curbuf, lnum, &props, FALSE);
+
+    len = STRLEN(newp) + 1;
+    line = alloc(len + (oldproplen + proplen) * sizeof(textprop_T));
+    if (line == NULL)
+	return;
+    mch_memmove(line, newp, len);
+    if (oldproplen > 0)
+    {
+	l = oldproplen * sizeof(textprop_T);
+	mch_memmove(line + len, props, l);
+	len += l;
+    }
+
+    for (i = 0; i < count - 1; ++i)
+	if (prop_lines[i] != NULL)
+	{
+	    l = prop_lengths[i] * sizeof(textprop_T);
+	    mch_memmove(line + len, prop_lines[i], l);
+	    len += l;
+	    vim_free(prop_lines[i]);
+	}
+
+    ml_replace_len(lnum, line, (colnr_T)len, TRUE, FALSE);
+    vim_free(newp);
+    vim_free(prop_lines);
+    vim_free(prop_lengths);
 }
 
 #endif // FEAT_TEXT_PROP

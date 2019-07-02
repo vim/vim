@@ -25,8 +25,6 @@ int latin_ptr2char(char_u *p);
 int utf_ptr2char(char_u *p);
 int mb_ptr2char_adv(char_u **pp);
 int mb_cptr2char_adv(char_u **pp);
-int arabic_combine(int one, int two);
-int arabic_maycombine(int two);
 int utf_composinglike(char_u *p1, char_u *p2);
 int utfc_ptr2char(char_u *p, int *pcc);
 int utfc_ptr2char_len(char_u *p, int *pcc, int maxlen);

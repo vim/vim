@@ -610,3 +610,109 @@ func Test_sub_cmd_8()
   enew!
   set titlestring&
 endfunc
+
+func Test_sub_cmd_9()
+  new
+  let input = ['1 aaa', '2 aaa', '3 aaa']
+  call setline(1, input)
+  func Foo()
+    return submatch(0)
+  endfunc
+  %s/aaa/\=Foo()/gn
+  call assert_equal(input, getline(1, '$'))
+  call assert_equal(1, &modifiable)
+
+  delfunc Foo
+  bw!
+endfunc
+
+func Test_nocatch_sub_failure_handling()
+  " normal error results in all replacements 
+  func Foo()
+    foobar
+  endfunc
+  new
+  call setline(1, ['1 aaa', '2 aaa', '3 aaa'])
+  %s/aaa/\=Foo()/g
+  call assert_equal(['1 0', '2 0', '3 0'], getline(1, 3))
+
+  " Trow without try-catch causes abort after the first line.
+  " We cannot test this, since it would stop executing the test script.
+
+  " try/catch does not result in any changes
+  func! Foo()
+    throw 'error'
+  endfunc
+  call setline(1, ['1 aaa', '2 aaa', '3 aaa'])
+  let error_caught = 0
+  try
+    %s/aaa/\=Foo()/g
+  catch
+    let error_caught = 1
+  endtry
+  call assert_equal(1, error_caught)
+  call assert_equal(['1 aaa', '2 aaa', '3 aaa'], getline(1, 3))
+
+  " Same, but using "n" flag so that "sandbox" gets set
+  call setline(1, ['1 aaa', '2 aaa', '3 aaa'])
+  let error_caught = 0
+  try
+    %s/aaa/\=Foo()/gn
+  catch
+    let error_caught = 1
+  endtry
+  call assert_equal(1, error_caught)
+  call assert_equal(['1 aaa', '2 aaa', '3 aaa'], getline(1, 3))
+
+  delfunc Foo
+  bwipe!
+endfunc
+
+" Test ":s/pat/sub/" with different ~s in sub.
+func Test_replace_with_tilde()
+  new
+  " Set the last replace string to empty
+  s/^$//
+  call append(0, ['- Bug in "vPPPP" on this text:'])
+  normal gg
+  s/u/~u~/
+  call assert_equal('- Bug in "vPPPP" on this text:', getline(1))
+  s/i/~u~/
+  call assert_equal('- Bug uuun "vPPPP" on this text:', getline(1))
+  s/o/~~~/
+  call assert_equal('- Bug uuun "vPPPP" uuuuuuuuun this text:', getline(1))
+  close!
+endfunc
+
+func Test_replace_keeppatterns()
+  new
+  a
+foobar
+
+substitute foo asdf
+
+one two
+.
+
+  normal gg
+  /^substitute
+  s/foo/bar/
+  call assert_equal('foo', @/)
+  call assert_equal('substitute bar asdf', getline('.'))
+
+  /^substitute
+  keeppatterns s/asdf/xyz/
+  call assert_equal('^substitute', @/)
+  call assert_equal('substitute bar xyz', getline('.'))
+
+  exe "normal /bar /e\<CR>"
+  call assert_equal(15, col('.'))
+  normal -
+  keeppatterns /xyz
+  call assert_equal('bar ', @/)
+  call assert_equal('substitute bar xyz', getline('.'))
+  exe "normal 0dn"
+  call assert_equal('xyz', getline('.'))
+
+  close!
+endfunc

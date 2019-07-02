@@ -105,3 +105,8 @@ func Test_symlink_recursive_delete()
   bwipe Xdir3/subdir/Xfile
   bwipe Xdir4/Xfile
 endfunc
+
+func Test_delete_errors()
+  call assert_fails('call delete('''')', 'E474:')
+  call assert_fails('call delete(''foo'', 0)', 'E15:')
+endfunc

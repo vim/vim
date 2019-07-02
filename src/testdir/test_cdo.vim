@@ -1,7 +1,7 @@
 " Tests for the :cdo, :cfdo, :ldo and :lfdo commands
 
 if !has('quickfix')
-  finish
+  throw 'Skipped: quickfix feature missing'
 endif
 
 " Create the files used by the tests

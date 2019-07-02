@@ -1,6 +1,21 @@
 " Test :suspend
 
 source shared.vim
+source term_util.vim
+
+func CheckSuspended(buf, fileExists)
+  call WaitForAssert({-> assert_match('[$#] $', term_getline(a:buf, '.'))})
+
+  if a:fileExists
+    call assert_equal(['foo'], readfile('Xfoo'))
+  else
+    " Without 'autowrite', buffer should not be written.
+    call assert_equal(0, filereadable('Xfoo'))
+  endif
+
+  call term_sendkeys(a:buf, "fg\<CR>\<C-L>")
+  call WaitForAssert({-> assert_equal('  1 foo', term_getline(a:buf, '.'))})
+endfunc
 
 func Test_suspend()
   if !has('terminal') || !executable('/bin/sh')
@@ -26,13 +41,7 @@ func Test_suspend()
         \             "\<C-Z>"]
     " Suspend and wait for shell prompt.
     call term_sendkeys(buf, suspend_cmd)
-    call WaitForAssert({-> assert_match('[$#] $', term_getline(buf, '.'))})
-
-    " Without 'autowrite', buffer should not be written.
-    call assert_equal(0, filereadable('Xfoo'))
-
-    call term_sendkeys(buf, "fg\<CR>")
-    call WaitForAssert({-> assert_equal('  1 foo', term_getline(buf, '.'))})
+    call CheckSuspended(buf, 0)
   endfor
 
   " Test that :suspend! with 'autowrite' writes content of buffers if modified.
@@ -40,15 +49,12 @@ func Test_suspend()
   call assert_equal(0, filereadable('Xfoo'))
   call term_sendkeys(buf, ":suspend\<CR>")
   " Wait for shell prompt.
-  call WaitForAssert({-> assert_match('[$#] $', term_getline(buf, '.'))})
-  call assert_equal(['foo'], readfile('Xfoo'))
-  call term_sendkeys(buf, "fg\<CR>")
-  call WaitForAssert({-> assert_equal('  1 foo', term_getline(buf, '.'))})
+  call CheckSuspended(buf, 1)
 
   " Quit gracefully to dump coverage information.
   call term_sendkeys(buf, ":qall!\<CR>")
   call term_wait(buf)
-  call Stop_shell_in_terminal(buf)
+  call StopShellInTerminal(buf)
 
   exe buf . 'bwipe!'
   call delete('Xfoo')

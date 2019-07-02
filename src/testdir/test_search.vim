@@ -799,7 +799,7 @@ endfunc
 
 func Test_incsearch_scrolling()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call assert_equal(0, &scrolloff)
   call writefile([
@@ -832,7 +832,7 @@ func Test_incsearch_search_dump()
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -887,7 +887,7 @@ func Test_incsearch_substitute_dump()
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -981,13 +981,37 @@ func Test_incsearch_substitute_dump()
   call delete('Xis_subst_script')
 endfunc
 
+func Test_incsearch_with_change()
+  if !has('timers') || !exists('+incsearch') || !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps and/or timers feature and/or incsearch option missing'
+  endif
+
+  call writefile([
+	\ 'set incsearch hlsearch scrolloff=0',
+	\ 'call setline(1, ["one", "two ------ X", "three"])',
+	\ 'call timer_start(200, { _ -> setline(2, "x")})',
+	\ ], 'Xis_change_script')
+  let buf = RunVimInTerminal('-S Xis_change_script', {'rows': 9, 'cols': 70})
+  " Give Vim a chance to redraw to get rid of the spaces in line 2 caused by
+  " the 'ambiwidth' check.
+  sleep 300m
+
+  " Highlight X, it will be deleted by the timer callback.
+  call term_sendkeys(buf, ':%s/X')
+  call VerifyScreenDump(buf, 'Test_incsearch_change_01', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+  call delete('Xis_change_script')
+endfunc
+
 " Similar to Test_incsearch_substitute_dump() for :sort
 func Test_incsearch_sort_dump()
   if !exists('+incsearch')
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -1013,7 +1037,7 @@ func Test_incsearch_vimgrep_dump()
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -1186,4 +1210,104 @@ func Test_search_Ctrl_L_combining()
   call assert_equal(5, line('.'))
   call assert_equal(bufcontent[1], @/)
   call Incsearch_cleanup()
+endfunc
+
+func Test_large_hex_chars1()
+  " This used to cause a crash, the character becomes an NFA state.
+  try
+    /\%Ufffffc23
+  catch
+    call assert_match('E678:', v:exception)
+  endtry
+  try
+    set re=1
+    /\%Ufffffc23
+  catch
+    call assert_match('E678:', v:exception)
+  endtry
+  set re&
+endfunc
+
+func Test_large_hex_chars2()
+  " This used to cause a crash, the character becomes an NFA state.
+  try
+    /[\Ufffffc1f]
+  catch
+    call assert_match('E486:', v:exception)
+  endtry
+  try
+    set re=1
+    /[\Ufffffc1f]
+  catch
+    call assert_match('E486:', v:exception)
+  endtry
+  set re&
+endfunc
+
+func Test_one_error_msg()
+  " This  was also giving an internal error
+  call assert_fails('call search(" \\((\\v[[=P=]]){185}+             ")', 'E871:')
+endfunc
+
+func Test_incsearch_add_char_under_cursor()
+  if !exists('+incsearch')
+    return
+  endif
+  set incsearch
+  new
+  call setline(1, ['find match', 'anything'])
+  1
+  call test_override('char_avail', 1)
+  call feedkeys("fc/m\<C-L>\<C-L>\<C-L>\<C-L>\<C-L>\<CR>", 'tx')
+  call assert_equal('match', @/)
+  call test_override('char_avail', 0)
+
+  set incsearch&
+  bwipe!
+endfunc
+
+" Test for the search() function with match at the cursor position
+func Test_search_match_at_curpos()
+  new
+  call append(0, ['foobar', '', 'one two', ''])
+
+  normal gg
+
+  call search('foobar', 'c')
+  call assert_equal([1, 1], [line('.'), col('.')])
+
+  normal j
+  call search('^$', 'c')
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  call search('^$', 'bc')
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  exe "normal /two\<CR>"
+  call search('.', 'c')
+  call assert_equal([3, 5], [line('.'), col('.')])
+
+  close!
+endfunc
+
+func Test_search_display_pattern()
+  new
+  call setline(1, ['foo', 'bar', 'foobar'])
+
+  call cursor(1, 1)
+  let @/ = 'foo'
+  let pat = escape(@/, '()*?'. '\s\+')
+  let g:a = execute(':unsilent :norm! n')
+  call assert_match(pat, g:a)
+
+  " right-left
+  if exists("+rightleft")
+    set rl
+    call cursor(1, 1)
+    let @/ = 'foo'
+    let pat = 'oof/\s\+'
+    let g:a = execute(':unsilent :norm! n')
+    call assert_match(pat, g:a)
+    set norl
+  endif
 endfunc

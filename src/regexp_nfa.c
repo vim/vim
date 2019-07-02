@@ -300,7 +300,7 @@ nfa_regcomp_start(
     /* Size for postfix representation of expr. */
     postfix_size = sizeof(int) * nstate_max;
 
-    post_start = (int *)lalloc(postfix_size, TRUE);
+    post_start = alloc(postfix_size);
     if (post_start == NULL)
 	return FAIL;
     post_ptr = post_start;
@@ -509,11 +509,14 @@ nfa_get_match_text(nfa_state_T *start)
 realloc_post_list(void)
 {
     int   nstate_max = (int)(post_end - post_start);
-    int   new_max = nstate_max + 1000;
+    int   new_max;
     int   *new_start;
     int	  *old_start;
 
-    new_start = (int *)lalloc(new_max * sizeof(int), TRUE);
+    // For weird patterns the number of states can be very high. Increasing by
+    // 50% seems a reasonable compromise between memory use and speed.
+    new_max = nstate_max * 3 / 2;
+    new_start = ALLOC_MULT(int, new_max);
     if (new_start == NULL)
 	return FAIL;
     mch_memmove(new_start, post_start, nstate_max * sizeof(int));
@@ -1472,7 +1475,7 @@ nfa_regatom(void)
 			    default:  nr = -1; break;
 			}
 
-			if (nr < 0)
+			if (nr < 0 || nr > INT_MAX)
 			    EMSG2_RET_FAIL(
 			       _("E678: Invalid character after %s%%[dxouU]"),
 				    reg_magic == MAGIC_ALL);
@@ -1787,8 +1790,7 @@ collection:
 			if (*regparse == 'n')
 			    startc = (reg_string || emit_range
 					|| regparse[1] == '-') ? NL : NFA_NEWL;
-			else
-			    if  (*regparse == 'd'
+			else if (*regparse == 'd'
 				    || *regparse == 'o'
 				    || *regparse == 'x'
 				    || *regparse == 'u'
@@ -2916,14 +2918,10 @@ st_error(int *postfix UNUSED, int *end UNUSED, int *p UNUSED)
 	}
 # else
 	for (p2 = postfix; p2 < end; p2++)
-	{
 	    fprintf(df, "%d, ", *p2);
-	}
 	fprintf(df, "\nCurrent position is: ");
 	for (p2 = postfix; p2 <= p; p2 ++)
-	{
 	    fprintf(df, "%d, ", *p2);
-	}
 # endif
 	fprintf(df, "\n--------------------------\n");
 	fclose(df);
@@ -3216,7 +3214,7 @@ post2nfa(int *postfix, int *end, int nfa_calc_size)
     if (nfa_calc_size == FALSE)
     {
 	// Allocate space for the stack. Max states on the stack: "nstate'.
-	stack = (Frag_T *)lalloc((nstate + 1) * sizeof(Frag_T), TRUE);
+	stack = ALLOC_MULT(Frag_T, nstate + 1);
 	if (stack == NULL)
 	    return NULL;
 	stackp = stack;
@@ -4801,7 +4799,7 @@ addstate_here(
 		emsg(_(e_maxmempat));
 		return NULL;
 	    }
-	    newl = (nfa_thread_T *)alloc((int)newsize);
+	    newl = alloc(newsize);
 	    if (newl == NULL)
 		return NULL;
 	    l->len = newlen;
@@ -5186,7 +5184,7 @@ recursive_regmatch(
 	if (*listids == NULL || *listids_len < prog->nstate)
 	{
 	    vim_free(*listids);
-	    *listids = (int *)lalloc(sizeof(int) * prog->nstate, TRUE);
+	    *listids = ALLOC_MULT(int, prog->nstate);
 	    if (*listids == NULL)
 	    {
 		emsg(_("E878: (NFA) Could not allocate memory for branch traversal!"));
@@ -5512,8 +5510,10 @@ nfa_did_time_out()
  *
  * When "nfa_endp" is not NULL it is a required end-of-match position.
  *
- * Return TRUE if there is a match, FALSE otherwise.
+ * Return TRUE if there is a match, FALSE if there is no match,
+ * NFA_TOO_EXPENSIVE if we end up with too many states.
  * When there is a match "submatch" contains the positions.
+ *
  * Note: Caller must ensure that: start != NULL.
  */
     static int
@@ -5523,7 +5523,7 @@ nfa_regmatch(
     regsubs_T		*submatch,
     regsubs_T		*m)
 {
-    int		result;
+    int		result = FALSE;
     size_t	size = 0;
     int		flag = 0;
     int		go_to_nextline = FALSE;
@@ -5567,9 +5567,9 @@ nfa_regmatch(
     /* Allocate memory for the lists of nodes. */
     size = (prog->nstate + 1) * sizeof(nfa_thread_T);
 
-    list[0].t = (nfa_thread_T *)lalloc(size, TRUE);
+    list[0].t = alloc(size);
     list[0].len = prog->nstate + 1;
-    list[1].t = (nfa_thread_T *)lalloc(size, TRUE);
+    list[1].t = alloc(size);
     list[1].len = prog->nstate + 1;
     if (list[0].t == NULL || list[1].t == NULL)
 	goto theend;
@@ -7249,12 +7249,7 @@ nfa_regcomp(char_u *expr, int re_flags)
      * (and count its size). */
     postfix = re2post();
     if (postfix == NULL)
-    {
-	/* TODO: only give this error for debugging? */
-	if (post_ptr >= post_end)
-	    siemsg("Internal error: estimated max number of states insufficient: %ld", post_end - post_start);
 	goto fail;	    /* Cascaded (syntax?) error */
-    }
 
     /*
      * In order to build the NFA, we parse the input regexp twice:
@@ -7281,7 +7276,7 @@ nfa_regcomp(char_u *expr, int re_flags)
 
     /* allocate the regprog with space for the compiled regexp */
     prog_size = sizeof(nfa_regprog_T) + sizeof(nfa_state_T) * (nstate - 1);
-    prog = (nfa_regprog_T *)lalloc(prog_size, TRUE);
+    prog = alloc(prog_size);
     if (prog == NULL)
 	goto fail;
     state_ptr = prog->state;

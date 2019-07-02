@@ -1,4 +1,4 @@
-*rileft.txt*    For Vim version 8.1.  Last change: 2006 Apr 24
+*rileft.txt*    For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Avner Lottem
@@ -11,8 +11,6 @@ Right to Left display mode for Vim				*rileft*
 These functions were originally created by Avner Lottem:
    E-mail: alottem@iil.intel.com
    Phone:  +972-4-8307322
-
-{Vi does not have any of these commands}
 
 								*E26*
 {only available when compiled with the |+rightleft| feature}

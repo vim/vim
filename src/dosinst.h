@@ -47,11 +47,7 @@ char *searchpath(char *name);
 #if defined(UNIX_LINT)
 # define vim_mkdir(x, y) mkdir((char *)(x), y)
 #else
-# ifndef __BORLANDC__
-#  define vim_mkdir(x, y) _mkdir((char *)(x))
-# else
-#  define vim_mkdir(x, y) mkdir((char *)(x))
-# endif
+# define vim_mkdir(x, y) _mkdir((char *)(x))
 #endif
 
 #define sleep(n) Sleep((n) * 1000)
@@ -59,7 +55,7 @@ char *searchpath(char *name);
 /* ---------------------------------------- */
 
 
-#define BUFSIZE 512		/* long enough to hold a file name path */
+#define BUFSIZE (MAX_PATH*2)		/* long enough to hold a file name path */
 #define NUL 0
 
 #define FAIL 0
@@ -93,15 +89,15 @@ int	interactive;		/* non-zero when running interactively */
     static void *
 alloc(int len)
 {
-    char *s;
+    void *p;
 
-    s = malloc(len);
-    if (s == NULL)
+    p = malloc(len);
+    if (p == NULL)
     {
 	printf("ERROR: out of memory\n");
 	exit(1);
     }
-    return (void *)s;
+    return p;
 }
 
 /*
@@ -150,10 +146,6 @@ is_64bit_os(void)
 #endif
 }
 
-#ifdef __BORLANDC__
-/* Borland defines its own searchpath() in dir.h */
-# include <dir.h>
-#else
     static char *
 searchpath(char *name)
 {
@@ -173,7 +165,6 @@ searchpath(char *name)
     }
     return NULL;
 }
-#endif
 
 /*
  * Call searchpath() and save the result in allocated memory, or return NULL.
@@ -388,7 +379,7 @@ char *(icon_link_names[ICON_COUNT]) =
 run_command(char *cmd)
 {
     char	*cmd_path;
-    char	cmd_buf[BUFSIZE];
+    char	cmd_buf[BUFSIZE * 2 + 35];
     char	*p;
 
     /* On WinNT, 'start' is a shell built-in for cmd.exe rather than an
@@ -463,12 +454,6 @@ mch_chdir(char *path)
 /*
  * Expand the executable name into a full path name.
  */
-#if defined(__BORLANDC__)
-
-/* Only Borland C++ has this. */
-# define my_fullpath(b, n, l) _fullpath(b, n, l)
-
-#else
     static char *
 my_fullpath(char *buf, char *fname, int len)
 {
@@ -478,7 +463,6 @@ my_fullpath(char *buf, char *fname, int len)
 
     return (len_read > 0 && len_read < (DWORD)len) ? buf : NULL;
 }
-#endif
 
 /*
  * Remove the tail from a file or directory name.
@@ -498,7 +482,7 @@ remove_tail(char *path)
 }
 
 
-char	installdir[BUFSIZE];	/* top of the installation dir, where the
+char	installdir[MAX_PATH-9];	/* top of the installation dir, where the
 				   install.exe is located, E.g.:
 				   "c:\vim\vim60" */
 int	runtimeidx;		/* index in installdir[] where "vim60" starts */
@@ -512,7 +496,7 @@ char	*sysdrive;		/* system drive or "c:\" */
 do_inits(char **argv)
 {
     /* Find out the full path of our executable. */
-    if (my_fullpath(installdir, argv[0], BUFSIZE) == NULL)
+    if (my_fullpath(installdir, argv[0], sizeof(installdir)) == NULL)
     {
 	printf("ERROR: Cannot get name of executable\n");
 	myexit(1);

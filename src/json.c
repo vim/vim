@@ -51,6 +51,7 @@ json_encode(typval_T *val, int options)
     /* Store bytes in the growarray. */
     ga_init2(&ga, 1, 4000);
     json_encode_gap(&ga, val, options);
+    ga_append(&ga, NUL);
     return ga.ga_data;
 }
 
@@ -82,6 +83,7 @@ json_encode_nr_expr(int nr, typval_T *val, int options)
     if (json_encode_gap(&ga, &listtv, options) == OK && (options & JSON_NL))
 	ga_append(&ga, '\n');
     list_unref(listtv.vval.v_list);
+    ga_append(&ga, NUL);
     return ga.ga_data;
 }
 #endif
@@ -450,7 +452,13 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 		    nr = 0;
 		    len = 0;
 		    vim_str2nr(p + 2, NULL, &len,
-				     STR2NR_HEX + STR2NR_FORCE, &nr, NULL, 4);
+			     STR2NR_HEX + STR2NR_FORCE, &nr, NULL, 4, TRUE);
+		    if (len == 0)
+		    {
+			if (res != NULL)
+			    ga_clear(&ga);
+			return FAIL;
+		    }
 		    p += len + 2;
 		    if (0xd800 <= nr && nr <= 0xdfff
 			    && (int)(reader->js_end - p) >= 6
@@ -461,7 +469,13 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 			/* decode surrogate pair: \ud812\u3456 */
 			len = 0;
 			vim_str2nr(p + 2, NULL, &len,
-				     STR2NR_HEX + STR2NR_FORCE, &nr2, NULL, 4);
+			     STR2NR_HEX + STR2NR_FORCE, &nr2, NULL, 4, TRUE);
+			if (len == 0)
+			{
+			    if (res != NULL)
+				ga_clear(&ga);
+			    return FAIL;
+			}
 			if (0xdc00 <= nr2 && nr2 <= 0xdfff)
 			{
 			    p += len + 2;
@@ -472,6 +486,7 @@ json_decode_string(js_read_T *reader, typval_T *res, int quote)
 		    if (res != NULL)
 		    {
 			char_u	buf[NUMBUFLEN];
+
 			buf[utf_char2bytes((int)nr, buf)] = NUL;
 			ga_concat(&ga, buf);
 		    }
@@ -781,7 +796,13 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 
 			    vim_str2nr(reader->js_buf + reader->js_used,
 				    NULL, &len, 0, /* what */
-				    &nr, NULL, 0);
+				    &nr, NULL, 0, TRUE);
+			    if (len == 0)
+			    {
+				emsg(_(e_invarg));
+				retval = FAIL;
+				goto theend;
+			    }
 			    if (cur_item != NULL)
 			    {
 				cur_item->v_type = VAR_NUMBER;

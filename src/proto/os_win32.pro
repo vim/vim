@@ -1,5 +1,6 @@
 /* os_win32.c */
 HINSTANCE vimLoadLib(char *name);
+int mch_is_gui_executable(void);
 HINSTANCE find_imported_module_by_funcname(HINSTANCE hInst, const char *funcname);
 void *get_dll_import_func(HINSTANCE hInst, const char *funcname);
 int dyn_libintl_init(void);
@@ -18,6 +19,7 @@ void fname_case(char_u *name, int len);
 int mch_get_user_name(char_u *s, int len);
 void mch_get_host_name(char_u *s, int len);
 long mch_get_pid(void);
+int mch_process_running(long pid);
 int mch_dirname(char_u *buf, int len);
 long mch_getperm(char_u *name);
 int mch_setperm(char_u *name, long perm);

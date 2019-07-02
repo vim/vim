@@ -537,7 +537,7 @@ diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp)
 {
     diff_T	*dnew;
 
-    dnew = (diff_T *)alloc((unsigned)sizeof(diff_T));
+    dnew = ALLOC_ONE(diff_T);
     if (dnew != NULL)
     {
 	dnew->df_next = dp;
@@ -710,7 +710,7 @@ diff_write_buffer(buf_T *buf, diffin_T *din)
     // xdiff requires one big block of memory with all the text.
     for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
 	len += (long)STRLEN(ml_get_buf(buf, lnum, FALSE)) + 1;
-    ptr = lalloc(len, TRUE);
+    ptr = alloc(len);
     if (ptr == NULL)
     {
 	// Allocating memory failed.  This can happen, because we try to read
@@ -866,7 +866,11 @@ theend:
     int
 diff_internal(void)
 {
-    return (diff_flags & DIFF_INTERNAL) != 0 && *p_dex == NUL;
+    return (diff_flags & DIFF_INTERNAL) != 0
+#ifdef FEAT_EVAL
+	&& *p_dex == NUL
+#endif
+	;
 }
 
 /*
@@ -1119,7 +1123,7 @@ diff_file(diffio_T *dio)
     {
 	len = STRLEN(tmp_orig) + STRLEN(tmp_new)
 				      + STRLEN(tmp_diff) + STRLEN(p_srr) + 27;
-	cmd = alloc((unsigned)len);
+	cmd = alloc(len);
 	if (cmd == NULL)
 	    return FAIL;
 
@@ -1214,7 +1218,7 @@ ex_diffpatch(exarg_T *eap)
     if (esc_name == NULL)
 	goto theend;
     buflen = STRLEN(tmp_orig) + STRLEN(esc_name) + STRLEN(tmp_new) + 16;
-    buf = alloc((unsigned)buflen);
+    buf = alloc(buflen);
     if (buf == NULL)
 	goto theend;
 
@@ -1443,18 +1447,14 @@ diff_win_options(
 	wp->w_p_wrap_save = wp->w_p_wrap;
     wp->w_p_wrap = FALSE;
 # ifdef FEAT_FOLDING
-    curwin = wp;
-    curbuf = curwin->w_buffer;
     if (!wp->w_p_diff)
     {
 	if (wp->w_p_diff_saved)
 	    free_string_option(wp->w_p_fdm_save);
 	wp->w_p_fdm_save = vim_strsave(wp->w_p_fdm);
     }
-    set_string_option_direct((char_u *)"fdm", -1, (char_u *)"diff",
+    set_string_option_direct_in_win(wp, (char_u *)"fdm", -1, (char_u *)"diff",
 						       OPT_LOCAL|OPT_FREE, 0);
-    curwin = old_curwin;
-    curbuf = curwin->w_buffer;
     if (!wp->w_p_diff)
     {
 	wp->w_p_fdc_save = wp->w_p_fdc;
@@ -2277,7 +2277,7 @@ diffopt_changed(void)
 	    tp->tp_diff_invalid = TRUE;
 
     diff_flags = diff_flags_new;
-    diff_context = diff_context_new;
+    diff_context = diff_context_new == 0 ? 1 : diff_context_new;
     diff_foldcolumn = diff_foldcolumn_new;
     diff_algorithm = diff_algorithm_new;
 

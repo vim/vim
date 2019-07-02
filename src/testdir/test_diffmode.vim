@@ -748,7 +748,7 @@ endfunc
 
 func Test_diff_screen()
   if !CanRunVimInTerminal() || !has('menu')
-    return
+    throw 'Skipped: cannot make screendumps and/or menu feature missing'
   endif
   " clean up already existing swap files, just in case
   call delete('.Xfile1.swp')
@@ -757,7 +757,7 @@ func Test_diff_screen()
   " Test 1: Add a line in beginning of file 2
   call WriteDiffFiles(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
   let buf = RunVimInTerminal('-d Xfile1 Xfile2', {})
-  " Set autoread mode, ,so that Vim won't complain once we re-write the test
+  " Set autoread mode, so that Vim won't complain once we re-write the test
   " files
   call term_sendkeys(buf, ":set autoread\<CR>\<c-w>w:set autoread\<CR>\<c-w>w")
 
@@ -782,6 +782,17 @@ func Test_diff_screen()
   " Test 6: Add a line in the middle of file 1, remove on at the end of file 2
   call WriteDiffFiles(buf, [1, 2, 3, 4, 4, 5, 6, 7, 8, 9, 10], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
   call VerifyBoth(buf, 'Test_diff_06', '')
+
+  " Variants on test 6 with different context settings
+  call term_sendkeys(buf, ":set diffopt+=context:2\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_06.2', {})
+  call term_sendkeys(buf, ":set diffopt-=context:2\<cr>")
+  call term_sendkeys(buf, ":set diffopt+=context:1\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_06.1', {})
+  call term_sendkeys(buf, ":set diffopt-=context:1\<cr>")
+  call term_sendkeys(buf, ":set diffopt+=context:0\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_06.0', {})
+  call term_sendkeys(buf, ":set diffopt-=context:0\<cr>")
 
   " Test 7 - 9: Test normal/patience/histogram diff algorithm
   call WriteDiffFiles(buf, ['#include <stdio.h>', '', '// Frobs foo heartily', 'int frobnitz(int foo)', '{',
@@ -869,7 +880,7 @@ endfunc
 
 func Test_diff_with_cursorline()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot run Vim in a terminal window'
   endif
 
   call writefile([
@@ -896,7 +907,7 @@ endfunc
 
 func Test_diff_of_diff()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot run Vim in a terminal window'
   endif
 
   call writefile([
@@ -904,10 +915,15 @@ func Test_diff_of_diff()
 	\ 'vnew',
 	\ 'call setline(1, ["aa","bb","cc"])',
 	\ 'windo diffthis',
+	\ '1wincmd w',
+	\ 'setlocal number',
 	\ ], 'Xtest_diff_diff')
   let buf = RunVimInTerminal('-S Xtest_diff_diff', {})
 
   call VerifyScreenDump(buf, 'Test_diff_of_diff_01', {})
+
+  call term_sendkeys(buf, ":set rightleft\<cr>")
+  call VerifyScreenDump(buf, 'Test_diff_of_diff_02', {})
 
   " clean up
   call StopVimInTerminal(buf)

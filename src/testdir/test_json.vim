@@ -176,6 +176,10 @@ func Test_json_decode()
 
   call assert_fails('call json_decode("{{}:42}")', "E474:")
   call assert_fails('call json_decode("{[]:42}")', "E474:")
+
+  call assert_fails('call json_decode("\"\\u111Z\"")', 'E474:')
+  call assert_equal('[😂]', json_decode('"[\uD83D\uDE02]"'))
+  call assert_equal('a😂b', json_decode('"a\uD83D\uDE02b"'))
 endfunc
 
 let s:jsl5 = '[7,,,]'
@@ -288,4 +292,11 @@ func Test_js_decode()
   call assert_fails('call js_decode("[1 2]")', "E474:")
 
   call assert_equal(s:varl5, js_decode(s:jsl5))
+endfunc
+
+func Test_json_encode_long()
+  " The growarray uses a grow size of 4000, check that a result that is exactly
+  " 4000 bytes long is not missing the final NUL.
+  let json = json_encode([repeat('a', 3996)])
+  call assert_equal(4000, len(json))
 endfunc

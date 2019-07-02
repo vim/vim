@@ -27,11 +27,7 @@ static int	restart_VIsual_select = 0;
 #ifdef FEAT_EVAL
 static void	set_vcount_ca(cmdarg_T *cap, int *set_prevcount);
 #endif
-static int
-#ifdef __BORLANDC__
-    _RTLENTRYF
-#endif
-		nv_compare(const void *s1, const void *s2);
+static int	nv_compare(const void *s1, const void *s2);
 static void	op_colon(oparg_T *oap);
 static void	op_function(oparg_T *oap);
 #if defined(FEAT_MOUSE)
@@ -147,6 +143,7 @@ static void	nv_at(cmdarg_T *cap);
 static void	nv_halfpage(cmdarg_T *cap);
 static void	nv_join(cmdarg_T *cap);
 static void	nv_put(cmdarg_T *cap);
+static void	nv_put_opt(cmdarg_T *cap, int fix_indent);
 static void	nv_open(cmdarg_T *cap);
 #ifdef FEAT_NETBEANS_INTG
 static void	nv_nbcmd(cmdarg_T *cap);
@@ -214,7 +211,7 @@ static const struct nv_cmd
     {NL,	nv_down,	0,			FALSE},
     {Ctrl_K,	nv_error,	0,			0},
     {Ctrl_L,	nv_clear,	0,			0},
-    {Ctrl_M,	nv_down,	0,			TRUE},
+    {CAR,	nv_down,	0,			TRUE},
     {Ctrl_N,	nv_down,	NV_STS,			FALSE},
     {Ctrl_O,	nv_ctrlo,	0,			0},
     {Ctrl_P,	nv_up,		NV_STS,			FALSE},
@@ -422,9 +419,6 @@ static int nv_max_linear;
  * through the index in nv_cmd_idx[].
  */
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 nv_compare(const void *s1, const void *s2)
 {
     int		c1, c2;
@@ -811,9 +805,7 @@ getcount:
 	    }
 	    else if ((nv_cmds[idx].cmd_flags & NV_SSS)
 					       && (mod_mask & MOD_MASK_SHIFT))
-	    {
 		mod_mask &= ~MOD_MASK_SHIFT;
-	    }
 	}
     }
 
@@ -2328,10 +2320,10 @@ do_mouse(
 
     if (c == K_MOUSEMOVE)
     {
-	/* Mouse moved without a button pressed. */
+	// Mouse moved without a button pressed.
 #ifdef FEAT_BEVAL_TERM
 	ui_may_remove_balloon();
-	if (p_bevalterm && !VIsual_active)
+	if (p_bevalterm)
 	{
 	    profile_setlimit(p_bdlay, &bevalexpr_due);
 	    bevalexpr_due_set = TRUE;
@@ -3469,13 +3461,14 @@ find_ident_at_pos(
     if (ptr[col] == NUL || (i == 0
 		&& (has_mbyte ? this_class != 2 : !vim_iswordc(ptr[col]))))
     {
-	/*
-	 * didn't find an identifier or string
-	 */
-	if (find_type & FIND_STRING)
-	    emsg(_("E348: No string under cursor"));
-	else
-	    emsg(_(e_noident));
+	// didn't find an identifier or string
+	if ((find_type & FIND_NOERROR) == 0)
+	{
+	    if (find_type & FIND_STRING)
+		emsg(_("E348: No string under cursor"));
+	    else
+		emsg(_(e_noident));
+	}
 	return 0;
     }
     ptr += col;
@@ -3507,9 +3500,7 @@ find_ident_at_pos(
 			&& col <= (int)startcol
 			&& find_is_eval_item(ptr + col, &col, &bn, FORWARD))
 		)
-	{
 	    ++col;
-	}
 
     return col;
 }
@@ -4263,7 +4254,6 @@ find_decl(
     CLEAR_POS(&found_pos);
     for (;;)
     {
-	valid = FALSE;
 	t = searchit(curwin, curbuf, &curwin->w_cursor, NULL, FORWARD,
 		       pat, 1L, searchflags, RE_LAST, (linenr_T)0, NULL, NULL);
 	if (curwin->w_cursor.lnum >= old_pos.lnum)
@@ -4330,9 +4320,7 @@ find_decl(
 	 * inside a comment, continue searching.  For K&R style function
 	 * declarations this skips the function header without types. */
 	if (!valid)
-	{
 	    CLEAR_POS(&found_pos);
-	}
 	else
 	    found_pos = curwin->w_cursor;
 	/* Remove SEARCH_START from flags to avoid getting stuck at one
@@ -4533,9 +4521,13 @@ nv_mousescroll(cmdarg_T *cap)
 	col = mouse_col;
 
 	/* find the window at the pointer coordinates */
-	wp = mouse_find_win(&row, &col);
+	wp = mouse_find_win(&row, &col, FIND_POPUP);
 	if (wp == NULL)
 	    return;
+#ifdef FEAT_TEXT_PROP
+	if (WIN_IS_POPUP(wp) && !wp->w_has_scrollbar)
+	    return;
+#endif
 	curwin = wp;
 	curbuf = curwin->w_buffer;
     }
@@ -4555,10 +4547,22 @@ nv_mousescroll(cmdarg_T *cap)
 	}
 	else
 	{
-	    cap->count1 = 3;
-	    cap->count0 = 3;
+	    // Don't scroll more than half the window height.
+	    if (curwin->w_height < 6)
+	    {
+		cap->count1 = curwin->w_height / 2;
+		if (cap->count1 == 0)
+		    cap->count1 = 1;
+	    }
+	    else
+		cap->count1 = 3;
+	    cap->count0 = cap->count1;
 	    nv_scroll_line(cap);
 	}
+#ifdef FEAT_TEXT_PROP
+	if (WIN_IS_POPUP(curwin))
+	    popup_set_firstline(curwin);
+#endif
     }
 # ifdef FEAT_GUI
     else
@@ -5401,8 +5405,11 @@ nv_clear(cmdarg_T *cap)
 # endif
 #endif
 	redraw_later(CLEAR);
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
-	resize_console_buf();
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
+	if (!gui.in_use)
+# endif
+	    resize_console_buf();
 #endif
     }
 }
@@ -5665,7 +5672,7 @@ nv_ident(cmdarg_T *cap)
 	    vim_free(buf);
 	    return;
 	}
-	newbuf = (char_u *)vim_realloc(buf, STRLEN(buf) + STRLEN(p) + 1);
+	newbuf = vim_realloc(buf, STRLEN(buf) + STRLEN(p) + 1);
 	if (newbuf == NULL)
 	{
 	    vim_free(buf);
@@ -5731,7 +5738,11 @@ nv_ident(cmdarg_T *cap)
 	(void)normal_search(cap, cmdchar == '*' ? '/' : '?', buf, 0);
     }
     else
+    {
+	g_tag_at_cursor = TRUE;
 	do_cmdline_cmd(buf);
+	g_tag_at_cursor = FALSE;
+    }
 
     vim_free(buf);
 }
@@ -6242,7 +6253,7 @@ nv_search(cmdarg_T *cap)
 
     /* When using 'incsearch' the cursor may be moved to set a different search
      * start position. */
-    cap->searchbuf = getcmdline(cap->cmdchar, cap->count1, 0);
+    cap->searchbuf = getcmdline(cap->cmdchar, cap->count1, 0, TRUE);
 
     if (cap->searchbuf == NULL)
     {
@@ -6590,57 +6601,7 @@ nv_brackets(cmdarg_T *cap)
      */
     else if (cap->nchar == 'p' || cap->nchar == 'P')
     {
-	if (!checkclearop(cap->oap))
-	{
-	    int	    dir = (cap->cmdchar == ']' && cap->nchar == 'p')
-							 ? FORWARD : BACKWARD;
-	    int	    regname = cap->oap->regname;
-	    int	    was_visual = VIsual_active;
-	    int	    line_count = curbuf->b_ml.ml_line_count;
-	    pos_T   start, end;
-
-	    if (VIsual_active)
-	    {
-		start = LTOREQ_POS(VIsual, curwin->w_cursor)
-						  ? VIsual : curwin->w_cursor;
-		end =  EQUAL_POS(start,VIsual) ? curwin->w_cursor : VIsual;
-		curwin->w_cursor = (dir == BACKWARD ? start : end);
-	    }
-# ifdef FEAT_CLIPBOARD
-	    adjust_clip_reg(&regname);
-# endif
-	    prep_redo_cmd(cap);
-
-	    do_put(regname, dir, cap->count1, PUT_FIXINDENT);
-	    if (was_visual)
-	    {
-		VIsual = start;
-		curwin->w_cursor = end;
-		if (dir == BACKWARD)
-		{
-		    /* adjust lines */
-		    VIsual.lnum += curbuf->b_ml.ml_line_count - line_count;
-		    curwin->w_cursor.lnum +=
-				      curbuf->b_ml.ml_line_count - line_count;
-		}
-
-		VIsual_active = TRUE;
-		if (VIsual_mode == 'V')
-		{
-		    /* delete visually selected lines */
-		    cap->cmdchar = 'd';
-		    cap->nchar = NUL;
-		    cap->oap->regname = regname;
-		    nv_operator(cap);
-		    do_pending_operator(cap, 0, FALSE);
-		}
-		if (VIsual_active)
-		{
-		    end_visual_mode();
-		    redraw_later(SOME_VALID);
-		}
-	    }
-	}
+	nv_put_opt(cap, TRUE);
     }
 
     /*
@@ -8887,7 +8848,12 @@ nv_esc(cmdarg_T *cap)
 #endif
 		&& !VIsual_active
 		&& no_reason)
-	    msg(_("Type  :qa!  and press <Enter> to abandon all changes and exit Vim"));
+	{
+	    if (anyBufIsChanged())
+		msg(_("Type  :qa!  and press <Enter> to abandon all changes and exit Vim"));
+	    else
+		msg(_("Type  :qa  and press <Enter> to exit Vim"));
+	}
 
 	/* Don't reset "restart_edit" when 'insertmode' is set, it won't be
 	 * set again below when halfway a mapping. */
@@ -9292,6 +9258,16 @@ nv_join(cmdarg_T *cap)
     static void
 nv_put(cmdarg_T *cap)
 {
+    nv_put_opt(cap, FALSE);
+}
+
+/*
+ * "P", "gP", "p" and "gp" commands.
+ * "fix_indent" is TRUE for "[p", "[P", "]p" and "]P".
+ */
+    static void
+nv_put_opt(cmdarg_T *cap, int fix_indent)
+{
     int		regname = 0;
     void	*reg1 = NULL, *reg2 = NULL;
     int		empty = FALSE;
@@ -9320,8 +9296,15 @@ nv_put(cmdarg_T *cap)
 #endif
     else
     {
-	dir = (cap->cmdchar == 'P'
-		|| (cap->cmdchar == 'g' && cap->nchar == 'P'))
+	if (fix_indent)
+	{
+	    dir = (cap->cmdchar == ']' && cap->nchar == 'p')
+							 ? FORWARD : BACKWARD;
+	    flags |= PUT_FIXINDENT;
+	}
+	else
+	    dir = (cap->cmdchar == 'P'
+				 || (cap->cmdchar == 'g' && cap->nchar == 'P'))
 							 ? BACKWARD : FORWARD;
 	prep_redo_cmd(cap);
 	if (cap->cmdchar == 'g')
@@ -9445,9 +9428,7 @@ nv_open(cmdarg_T *cap)
 	v_swap_corners(cap->cmdchar);
 #ifdef FEAT_JOB_CHANNEL
     else if (bt_prompt(curbuf))
-    {
 	clearopbeep(cap->oap);
-    }
 #endif
     else
 	n_opencmd(cap);

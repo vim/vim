@@ -744,11 +744,12 @@ show_one_mark(
     int		c,
     char_u	*arg,
     pos_T	*p,
-    char_u	*name,
+    char_u	*name_arg,
     int		current)	/* in current file */
 {
     static int	did_title = FALSE;
     int		mustfree = FALSE;
+    char_u	*name = name_arg;
 
     if (c == -1)			    /* finish up */
     {
@@ -762,35 +763,38 @@ show_one_mark(
 		semsg(_("E283: No marks matching \"%s\""), arg);
 	}
     }
-    /* don't output anything if 'q' typed at --more-- prompt */
+    // don't output anything if 'q' typed at --more-- prompt
     else if (!got_int
 	    && (arg == NULL || vim_strchr(arg, c) != NULL)
 	    && p->lnum != 0)
     {
-	if (!did_title)
+	if (name == NULL && current)
 	{
-	    /* Highlight title */
-	    msg_puts_title(_("\nmark line  col file/text"));
-	    did_title = TRUE;
+	    name = mark_line(p, 15);
+	    mustfree = TRUE;
 	}
-	msg_putchar('\n');
-	if (!got_int)
+	if (!message_filtered(name))
 	{
-	    sprintf((char *)IObuff, " %c %6ld %4d ", c, p->lnum, p->col);
-	    msg_outtrans(IObuff);
-	    if (name == NULL && current)
+	    if (!did_title)
 	    {
-		name = mark_line(p, 15);
-		mustfree = TRUE;
+		// Highlight title
+		msg_puts_title(_("\nmark line  col file/text"));
+		did_title = TRUE;
 	    }
-	    if (name != NULL)
+	    msg_putchar('\n');
+	    if (!got_int)
 	    {
-		msg_outtrans_attr(name, current ? HL_ATTR(HLF_D) : 0);
-		if (mustfree)
-		    vim_free(name);
+		sprintf((char *)IObuff, " %c %6ld %4d ", c, p->lnum, p->col);
+		msg_outtrans(IObuff);
+		if (name != NULL)
+		{
+		    msg_outtrans_attr(name, current ? HL_ATTR(HLF_D) : 0);
+		}
 	    }
+	    out_flush();		    // show one line at a time
 	}
-	out_flush();		    /* show one line at a time */
+	if (mustfree)
+	    vim_free(name);
     }
 }
 
@@ -1474,11 +1478,9 @@ static int vi_jumplist_len = 0;
     void
 prepare_viminfo_marks(void)
 {
-    vi_namedfm = (xfmark_T *)alloc_clear((NMARKS + EXTRA_MARKS)
-						     * (int)sizeof(xfmark_T));
+    vi_namedfm = ALLOC_CLEAR_MULT(xfmark_T, NMARKS + EXTRA_MARKS);
 #ifdef FEAT_JUMPLIST
-    vi_jumplist = (xfmark_T *)alloc_clear(JUMPLISTSIZE
-						     * (int)sizeof(xfmark_T));
+    vi_jumplist = ALLOC_CLEAR_MULT(xfmark_T, JUMPLISTSIZE);
     vi_jumplist_len = 0;
 #endif
 }
@@ -1946,9 +1948,6 @@ write_viminfo_marks(FILE *fp_out, garray_T *buflist)
  * Compare functions for qsort() below, that compares b_last_used.
  */
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 buf_compare(const void *s1, const void *s2)
 {
     buf_T *buf1 = *(buf_T **)s1;

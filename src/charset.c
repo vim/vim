@@ -355,10 +355,10 @@ transstr(char_u *s)
 		    len += 4;	/* illegal byte sequence */
 	    }
 	}
-	res = alloc((unsigned)(len + 1));
+	res = alloc(len + 1);
     }
     else
-	res = alloc((unsigned)(vim_strsize(s) + 1));
+	res = alloc(vim_strsize(s) + 1);
     if (res != NULL)
     {
 	*res = NUL;
@@ -1055,7 +1055,6 @@ win_lbr_chartabsize(
 	    if (col2 >= colmax)		/* doesn't fit */
 	    {
 		size = colmax - col + col_adj;
-		tab_corr = FALSE;
 		break;
 	    }
 	}
@@ -1106,14 +1105,16 @@ win_lbr_chartabsize(
 	    {
 		if (size + sbrlen + numberwidth > (colnr_T)wp->w_width)
 		{
-		    /* calculate effective window width */
+		    // calculate effective window width
 		    int width = (colnr_T)wp->w_width - sbrlen - numberwidth;
-		    int prev_width = col ? ((colnr_T)wp->w_width - (sbrlen + col)) : 0;
-		    if (width == 0)
-			width = (colnr_T)wp->w_width;
+		    int prev_width = col
+				 ? ((colnr_T)wp->w_width - (sbrlen + col)) : 0;
+
+		    if (width <= 0)
+			width = (colnr_T)1;
 		    added += ((size - prev_width) / width) * vim_strsize(p_sbr);
 		    if ((size - prev_width) % width)
-			/* wrapped, add another length of 'sbr' */
+			// wrapped, add another length of 'sbr'
 			added += vim_strsize(p_sbr);
 		}
 		else
@@ -1776,24 +1777,29 @@ vim_isblankline(char_u *lbuf)
  * If "what" contains STR2NR_HEX recognize hex numbers
  * If "what" contains STR2NR_FORCE always assume bin/oct/hex.
  * If maxlen > 0, check at a maximum maxlen chars.
+ * If strict is TRUE, check the number strictly. return *len = 0 if fail.
  */
     void
 vim_str2nr(
     char_u		*start,
-    int			*prep,	    /* return: type of number 0 = decimal, 'x'
-				       or 'X' is hex, '0' = octal, 'b' or 'B'
-				       is bin */
-    int			*len,	    /* return: detected length of number */
-    int			what,	    /* what numbers to recognize */
-    varnumber_T		*nptr,	    /* return: signed result */
-    uvarnumber_T	*unptr,	    /* return: unsigned result */
-    int			maxlen)     /* max length of string to check */
+    int			*prep,	    // return: type of number 0 = decimal, 'x'
+				    // or 'X' is hex, '0' = octal, 'b' or 'B'
+				    // is bin
+    int			*len,	    // return: detected length of number
+    int			what,	    // what numbers to recognize
+    varnumber_T		*nptr,	    // return: signed result
+    uvarnumber_T	*unptr,	    // return: unsigned result
+    int			maxlen,     // max length of string to check
+    int			strict)     // check strictly
 {
     char_u	    *ptr = start;
-    int		    pre = 0;		/* default is decimal */
+    int		    pre = 0;		// default is decimal
     int		    negative = FALSE;
     uvarnumber_T    un = 0;
     int		    n;
+
+    if (len != NULL)
+	*len = 0;
 
     if (ptr[0] == '-')
     {
@@ -1836,9 +1842,7 @@ vim_str2nr(
 	}
     }
 
-    /*
-    * Do the string-to-numeric conversion "manually" to avoid sscanf quirks.
-    */
+    // Do the conversion manually to avoid sscanf() quirks.
     n = 1;
     if (pre == 'B' || pre == 'b' || what == STR2NR_BIN + STR2NR_FORCE)
     {
@@ -1907,6 +1911,10 @@ vim_str2nr(
 		break;
 	}
     }
+    // Check for an alpha-numeric character immediately following, that is
+    // most likely a typo.
+    if (strict && n - 1 != maxlen && ASCII_ISALNUM(*ptr))
+	return;
 
     if (prep != NULL)
 	*prep = pre;
@@ -1963,7 +1971,7 @@ hexhex2nr(char_u *p)
 
 /*
  * Return TRUE if "str" starts with a backslash that should be removed.
- * For MS-DOS, WIN32 and OS/2 this is only done when the character after the
+ * For MS-DOS, MSWIN and OS/2 this is only done when the character after the
  * backslash is not a normal file name character.
  * '$' is a valid file name character, we don't remove the backslash before
  * it.  This means it is not possible to use an environment variable after a

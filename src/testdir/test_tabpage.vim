@@ -1,5 +1,6 @@
 " Tests for tabpage
 
+source screendump.vim
 
 function Test_tabpage()
   bw!
@@ -140,9 +141,6 @@ endfunc
 
 " Test autocommands
 function Test_tabpage_with_autocmd()
-  if !has('autocmd')
-    return
-  endif
   command -nargs=1 -bar C :call add(s:li, '=== ' . <q-args> . ' ===')|<args>
   augroup TestTabpageGroup
     au!
@@ -553,6 +551,29 @@ func Test_tabs()
 
   1tabonly!
   bw!
+endfunc
+
+func Test_tabpage_cmdheight()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+  call writefile([
+        \ 'set laststatus=2',
+        \ 'set cmdheight=2',
+        \ 'tabnew',
+        \ 'set cmdheight=3',
+        \ 'tabnext',
+        \ 'redraw!',
+        \ 'echo "hello\nthere"',
+        \ 'tabnext',
+        \ 'redraw',
+	\ ], 'XTest_tabpage_cmdheight')
+  " Check that cursor line is concealed
+  let buf = RunVimInTerminal('-S XTest_tabpage_cmdheight', {'statusoff': 3})
+  call VerifyScreenDump(buf, 'Test_tabpage_cmdheight', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XTest_tabpage_cmdheight')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

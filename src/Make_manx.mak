@@ -40,9 +40,11 @@ SRC =	arabic.c \
 	autocmd.c \
 	blowfish.c \
 	buffer.c \
+	change.c \
 	charset.c \
 	crypt.c \
 	crypt_zip.c \
+	debugger.c \
 	dict.c \
 	diff.c \
 	digraph.c \
@@ -61,6 +63,7 @@ SRC =	arabic.c \
 	hardcopy.c \
 	hashtab.c \
 	indent.c \
+	insexpand.c \
 	json.c \
 	list.c \
 	main.c \
@@ -91,6 +94,7 @@ SRC =	arabic.c \
 	term.c \
 	ui.c \
 	undo.c \
+	usercmd.c \
 	userfunc.c \
 	window.c \
 	version.c
@@ -101,9 +105,11 @@ OBJ =	obj/arabic.o \
 	obj/autocmd.o \
 	obj/blowfish.o \
 	obj/buffer.o \
+	obj/change.o \
 	obj/charset.o \
 	obj/crypt.o \
 	obj/crypt_zip.o \
+	obj/debugger.o \
 	obj/dict.o \
 	obj/diff.o \
 	obj/digraph.o \
@@ -122,6 +128,7 @@ OBJ =	obj/arabic.o \
 	obj/hardcopy.o \
 	obj/hashtab.o \
 	obj/indent.o \
+	obj/insexpand.o \
 	obj/json.o \
 	obj/list.o \
 	obj/main.o \
@@ -152,6 +159,7 @@ OBJ =	obj/arabic.o \
 	obj/term.o \
 	obj/ui.o \
 	obj/undo.o \
+	obj/usercmd.o \
 	obj/userfunc.o \
 	obj/window.o \
 	$(TERMLIB)
@@ -160,9 +168,11 @@ PRO =	proto/arabic.pro \
 	proto/autocmd.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
+	proto/change.pro \
 	proto/charset.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
+	proto/debugger.pro \
 	proto/dict.pro \
 	proto/diff.pro \
 	proto/digraph.pro \
@@ -181,6 +191,7 @@ PRO =	proto/arabic.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
 	proto/indent.pro \
+	proto/insexpand.pro \
 	proto/json.pro \
 	proto/list.pro \
 	proto/main.pro \
@@ -212,6 +223,7 @@ PRO =	proto/arabic.pro \
 	proto/termlib.pro \
 	proto/ui.pro \
 	proto/undo.pro \
+	proto/usercmd.pro \
 	proto/userfunc.pro \
 	proto/window.pro
 
@@ -271,6 +283,9 @@ obj/blowfish.o:	blowfish.c
 obj/buffer.o:	buffer.c
 	$(CCSYM) $@ buffer.c
 
+obj/change.o:	change.c
+	$(CCSYM) $@ change.c
+
 obj/charset.o:	charset.c
 	$(CCSYM) $@ charset.c
 
@@ -279,6 +294,9 @@ obj/crypt.o:	crypt.c
 
 obj/crypt_zip.o: crypt_zip.c
 	$(CCSYM) $@ crypt_zip.c
+
+obj/debugger.o:	debugger.c
+	$(CCSYM) $@ debugger.c
 
 obj/dict.o:	dict.c
 	$(CCSYM) $@ dict.c
@@ -334,6 +352,9 @@ obj/hashtab.o:	hashtab.c
 
 obj/indent.o:	indent.c
 	$(CCSYM) $@ indent.c
+
+obj/insexpand.o:	insexpand.c
+	$(CCSYM) $@ insexpand.c
 
 obj/json.o:	json.c
 	$(CCSYM) $@ json.c
@@ -430,6 +451,9 @@ obj/ui.o:	ui.c
 
 obj/undo.o:	undo.c
 	$(CCSYM) $@ undo.c
+
+obj/usercmd.o:	usercmd.c
+	$(CCSYM) $@ usercmd.c
 
 obj/userfunc.o:	userfunc.c
 	$(CCSYM) $@ userfunc.c

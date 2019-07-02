@@ -102,7 +102,7 @@ let s:filename_checks = {
     \ 'coco': ['file.atg'],
     \ 'conaryrecipe': ['file.recipe'],
     \ 'conf': ['auto.master'],
-    \ 'config': ['configure.in', 'configure.ac'],
+    \ 'config': ['configure.in', 'configure.ac', 'Pipfile'],
     \ 'context': ['tex/context/any/file.tex', 'file.mkii', 'file.mkiv', 'file.mkvi'],
     \ 'cpp': ['file.cxx', 'file.c++', 'file.hh', 'file.hxx', 'file.hpp', 'file.ipp', 'file.moc', 'file.tcc', 'file.inl', 'file.tlh'],
     \ 'crm': ['file.crm'],
@@ -200,7 +200,7 @@ let s:filename_checks = {
     \ 'hog': ['file.hog', 'snort.conf', 'vision.conf'],
     \ 'hostconf': ['/etc/host.conf'],
     \ 'hostsaccess': ['/etc/hosts.allow', '/etc/hosts.deny'],
-    \ 'htmlcheetah': ['file.tmpl'],
+    \ 'template': ['file.tmpl'],
     \ 'htmlm4': ['file.html.m4'],
     \ 'httest': ['file.htt', 'file.htb'],
     \ 'ibasic': ['file.iba', 'file.ibi'],
@@ -223,7 +223,7 @@ let s:filename_checks = {
     \ 'jgraph': ['file.jgr'],
     \ 'jovial': ['file.jov', 'file.j73', 'file.jovial'],
     \ 'jproperties': ['file.properties', 'file.properties_xx', 'file.properties_xx_xx'],
-    \ 'json': ['file.json', 'file.jsonp', 'file.webmanifest'],
+    \ 'json': ['file.json', 'file.jsonp', 'file.webmanifest', 'Pipfile.lock'],
     \ 'jsp': ['file.jsp'],
     \ 'kconfig': ['Kconfig', 'Kconfig.debug'],
     \ 'kivy': ['file.kv'],
@@ -451,6 +451,7 @@ let s:filename_checks = {
     \ 'tssgm': ['file.tssgm'],
     \ 'tssop': ['file.tssop'],
     \ 'twig': ['file.twig'],
+    \ 'typescript': ['file.ts'],
     \ 'uc': ['file.uc'],
     \ 'udevconf': ['/etc/udev/udev.conf'],
     \ 'udevperm': ['/etc/udev/permissions.d/file.permissions'],
@@ -485,7 +486,7 @@ let s:filename_checks = {
     \ 'xhtml': ['file.xhtml', 'file.xht'],
     \ 'xinetd': ['/etc/xinetd.conf'],
     \ 'xmath': ['file.msc', 'file.msf'],
-    \ 'xml': ['/etc/blkid.tab', '/etc/blkid.tab.old', 'file.xmi', 'file.csproj', 'file.csproj.user', 'file.ts', 'file.ui', 'file.tpm', '/etc/xdg/menus/file.menu', 'fglrxrc', 'file.xlf', 'file.xliff', 'file.xul', 'file.wsdl'],
+    \ 'xml': ['/etc/blkid.tab', '/etc/blkid.tab.old', 'file.xmi', 'file.csproj', 'file.csproj.user', 'file.ui', 'file.tpm', '/etc/xdg/menus/file.menu', 'fglrxrc', 'file.xlf', 'file.xliff', 'file.xul', 'file.wsdl'],
     \ 'xmodmap': ['anyXmodmap'],
     \ 'xf86conf': ['xorg.conf', 'xorg.conf-4'],
     \ 'xpm2': ['file.xpm2'],
@@ -519,7 +520,11 @@ func CheckItems(checks)
       catch
 	call assert_report('cannot edit "' . names[i] . '": ' . v:errmsg)
       endtry
-      call assert_equal(ft, &filetype, 'with file name: ' . names[i])
+      if &filetype == '' && &readonly
+	" File exists but not able to edit it (permission denied)
+      else
+	call assert_equal(ft, &filetype, 'with file name: ' . names[i])
+      endif
       bwipe!
     endfor
   endfor
@@ -581,6 +586,8 @@ let s:script_checks = {
       \ 'cfengine': [['#!/path/cfengine']],
       \ 'erlang': [['#!/path/escript']],
       \ 'haskell': [['#!/path/haskell']],
+      \ 'cpp': [['// Standard iostream objects -*- C++ -*-'],
+      \         ['// -*- C++ -*-']],
       \ }
 
 func Test_script_detection()

@@ -94,3 +94,99 @@ func Test_let_errmsg()
   call assert_fails('let v:errmsg = []', 'E730:')
   let v:errmsg = ''
 endfunc
+
+func Test_string_concatenation()
+  call assert_equal('ab', 'a'.'b')
+  call assert_equal('ab', 'a' .'b')
+  call assert_equal('ab', 'a'. 'b')
+  call assert_equal('ab', 'a' . 'b')
+
+  call assert_equal('ab', 'a'..'b')
+  call assert_equal('ab', 'a' ..'b')
+  call assert_equal('ab', 'a'.. 'b')
+  call assert_equal('ab', 'a' .. 'b')
+
+  let a = 'a'
+  let b = 'b'
+  let a .= b
+  call assert_equal('ab', a)
+
+  let a = 'a'
+  let a.=b
+  call assert_equal('ab', a)
+
+  let a = 'a'
+  let a ..= b
+  call assert_equal('ab', a)
+
+  let a = 'a'
+  let a..=b
+  call assert_equal('ab', a)
+endfunc
+
+scriptversion 2
+func Test_string_concat_scriptversion2()
+  call assert_true(has('vimscript-2'))
+  let a = 'a'
+  let b = 'b'
+
+  call assert_fails('echo a . b', 'E15:')
+  call assert_fails('let a .= b', 'E985:')
+  call assert_fails('let vers = 1.2.3', 'E15:')
+
+  if has('float')
+    let f = .5
+    call assert_equal(0.5, f)
+  endif
+endfunc
+
+scriptversion 1
+func Test_string_concat_scriptversion1()
+  call assert_true(has('vimscript-1'))
+  let a = 'a'
+  let b = 'b'
+
+  echo a . b
+  let a .= b
+  let vers = 1.2.3
+  call assert_equal('123', vers)
+
+  if has('float')
+    call assert_fails('let f = .5', 'E15:')
+  endif
+endfunc
+
+scriptversion 3
+func Test_vvar_scriptversion3()
+  call assert_true(has('vimscript-3'))
+  call assert_fails('echo version', 'E121:')
+  call assert_false(exists('version'))
+  let version = 1
+  call assert_equal(1, version)
+endfunc
+
+scriptversion 2
+func Test_vvar_scriptversion2()
+  call assert_true(exists('version'))
+  echo version
+  call assert_fails('let version = 1', 'E46:')
+  call assert_equal(v:version, version)
+
+  call assert_equal(v:version, v:versionlong / 10000)
+  call assert_true(v:versionlong > 8011525)
+endfunc
+
+func Test_scriptversion()
+  call writefile(['scriptversion 9'], 'Xversionscript')
+  call assert_fails('source Xversionscript', 'E999:')
+  call delete('Xversionscript')
+endfunc
+
+" Test fix for issue #4507
+func Test_skip_after_throw()
+  try
+    throw 'something'
+    let x = wincol() || &ts
+  catch /something/
+  endtry
+endfunc

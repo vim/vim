@@ -445,9 +445,8 @@ spell_check(
     if (spell_iswordp(mi.mi_fend, wp))
     {
 	do
-	{
 	    MB_PTR_ADV(mi.mi_fend);
-	} while (*mi.mi_fend != NUL && spell_iswordp(mi.mi_fend, wp));
+	while (*mi.mi_fend != NUL && spell_iswordp(mi.mi_fend, wp));
 
 	if (capcol != NULL && *capcol == 0 && wp->w_s->b_cap_prog != NULL)
 	{
@@ -1463,9 +1462,8 @@ fold_more(matchinf_T *mip)
 
     p = mip->mi_fend;
     do
-    {
 	MB_PTR_ADV(mip->mi_fend);
-    } while (*mip->mi_fend != NUL && spell_iswordp(mip->mi_fend, mip->mi_win));
+    while (*mip->mi_fend != NUL && spell_iswordp(mip->mi_fend, mip->mi_win));
 
     /* Include the non-word character so that we can check for the word end. */
     if (*mip->mi_fend != NUL)
@@ -1901,7 +1899,7 @@ slang_alloc(char_u *lang)
 {
     slang_T *lp;
 
-    lp = (slang_T *)alloc_clear(sizeof(slang_T));
+    lp = ALLOC_CLEAR_ONE(slang_T);
     if (lp != NULL)
     {
 	if (lang != NULL)
@@ -2085,7 +2083,7 @@ count_common_word(
     hi = hash_lookup(&lp->sl_wordcount, p, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	wc = (wordcount_T *)alloc((unsigned)(sizeof(wordcount_T) + STRLEN(p)));
+	wc = alloc(sizeof(wordcount_T) + STRLEN(p));
 	if (wc == NULL)
 	    return;
 	STRCPY(wc->wc_word, p);
@@ -2310,10 +2308,13 @@ did_set_spelllang(win_T *wp)
     /* Loop over comma separated language names. */
     for (splp = spl_copy; *splp != NUL; )
     {
-	/* Get one language name. */
+	// Get one language name.
 	copy_option_part(&splp, lang, MAXWLEN, ",");
 	region = NULL;
 	len = (int)STRLEN(lang);
+
+	if (!valid_spellang(lang))
+	    continue;
 
 	if (STRCMP(lang, "cjk") == 0)
 	{
@@ -2342,7 +2343,7 @@ did_set_spelllang(win_T *wp)
 
 	    /* Check if we loaded this language before. */
 	    for (slang = first_lang; slang != NULL; slang = slang->sl_next)
-		if (fullpathcmp(lang, slang->sl_fname, FALSE) == FPC_SAME)
+		if (fullpathcmp(lang, slang->sl_fname, FALSE, TRUE) == FPC_SAME)
 		    break;
 	}
 	else
@@ -2394,7 +2395,8 @@ did_set_spelllang(win_T *wp)
 	 * Loop over the languages, there can be several files for "lang".
 	 */
 	for (slang = first_lang; slang != NULL; slang = slang->sl_next)
-	    if (filename ? fullpathcmp(lang, slang->sl_fname, FALSE) == FPC_SAME
+	    if (filename ? fullpathcmp(lang, slang->sl_fname, FALSE, TRUE)
+								    == FPC_SAME
 			 : STRICMP(lang, slang->sl_name) == 0)
 	    {
 		region_mask = REGION_ALL;
@@ -2462,7 +2464,8 @@ did_set_spelllang(win_T *wp)
 	    for (c = 0; c < ga.ga_len; ++c)
 	    {
 		p = LANGP_ENTRY(ga, c)->lp_slang->sl_fname;
-		if (p != NULL && fullpathcmp(spf_name, p, FALSE) == FPC_SAME)
+		if (p != NULL && fullpathcmp(spf_name, p, FALSE, TRUE)
+								== FPC_SAME)
 		    break;
 	    }
 	    if (c < ga.ga_len)
@@ -2471,7 +2474,8 @@ did_set_spelllang(win_T *wp)
 
 	/* Check if it was loaded already. */
 	for (slang = first_lang; slang != NULL; slang = slang->sl_next)
-	    if (fullpathcmp(spf_name, slang->sl_fname, FALSE) == FPC_SAME)
+	    if (fullpathcmp(spf_name, slang->sl_fname, FALSE, TRUE)
+								== FPC_SAME)
 		break;
 	if (slang == NULL)
 	{
@@ -2879,7 +2883,7 @@ open_spellbuf(void)
 {
     buf_T	*buf;
 
-    buf = (buf_T *)alloc_clear(sizeof(buf_T));
+    buf = ALLOC_CLEAR_ONE(buf_T);
     if (buf != NULL)
     {
 	buf->b_spell = TRUE;
@@ -3428,8 +3432,7 @@ spell_suggest(int count)
 	}
 
 	/* Replace the word. */
-	p = alloc((unsigned)STRLEN(line) - stp->st_orglen
-						       + stp->st_wordlen + 1);
+	p = alloc(STRLEN(line) - stp->st_orglen + stp->st_wordlen + 1);
 	if (p != NULL)
 	{
 	    c = (int)(sug.su_badptr - line);
@@ -3548,7 +3551,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
     }
     addlen = (int)(STRLEN(repl_to) - STRLEN(repl_from));
 
-    frompat = alloc((unsigned)STRLEN(repl_from) + 7);
+    frompat = alloc(STRLEN(repl_from) + 7);
     if (frompat == NULL)
 	return;
     sprintf((char *)frompat, "\\V\\<%s\\>", repl_from);
@@ -3569,7 +3572,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	if (addlen <= 0 || STRNCMP(line + curwin->w_cursor.col,
 					       repl_to, STRLEN(repl_to)) != 0)
 	{
-	    p = alloc((unsigned)STRLEN(line) + addlen + 1);
+	    p = alloc(STRLEN(line) + addlen + 1);
 	    if (p == NULL)
 		break;
 	    mch_memmove(p, line, curwin->w_cursor.col);
@@ -6220,8 +6223,7 @@ add_sound_suggest(
     hi = hash_lookup(&slang->sl_sounddone, goodword, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	sft = (sftword_T *)alloc((unsigned)(sizeof(sftword_T)
-							 + STRLEN(goodword)));
+	sft = alloc(sizeof(sftword_T) + STRLEN(goodword));
 	if (sft != NULL)
 	{
 	    sft->sft_score = score;
@@ -6759,20 +6761,13 @@ rescore_one(suginfo_T *su, suggest_T *stp)
     }
 }
 
-static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
-sug_compare(const void *s1, const void *s2);
+static int sug_compare(const void *s1, const void *s2);
 
 /*
  * Function given to qsort() to sort the suggestions on st_score.
  * First on "st_score", then "st_altscore" then alphabetically.
  */
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 sug_compare(const void *s1, const void *s2)
 {
     suggest_T	*p1 = (suggest_T *)s1;
@@ -7825,8 +7820,7 @@ spell_edit_score(
 
     /* We use "cnt" as an array: CNT(badword_idx, goodword_idx). */
 #define CNT(a, b)   cnt[(a) + (b) * (badlen + 1)]
-    cnt = (int *)lalloc((long_u)(sizeof(int) * (badlen + 1) * (goodlen + 1)),
-									TRUE);
+    cnt = ALLOC_MULT(int, (badlen + 1) * (goodlen + 1));
     if (cnt == NULL)
 	return 0;	/* out of memory */
 
@@ -8473,7 +8467,7 @@ spell_dump_compl(
 	    arridx[0] = 0;
 	    curi[0] = 1;
 	    while (depth >= 0 && !got_int
-				       && (pat == NULL || !compl_interrupted))
+				  && (pat == NULL || !ins_compl_interrupted()))
 	    {
 		if (curi[depth] > byts[arridx[depth]])
 		{
@@ -8629,7 +8623,7 @@ dump_word(
 		    ? MB_STRNICMP(p, pat, STRLEN(pat)) == 0
 		    : STRNCMP(p, pat, STRLEN(pat)) == 0)
 		&& ins_compl_add_infercase(p, (int)STRLEN(p),
-					  p_ic, NULL, *dir, 0) == OK)
+					  p_ic, NULL, *dir, FALSE) == OK)
 	/* if dir was BACKWARD then honor it just once */
 	*dir = FORWARD;
 }

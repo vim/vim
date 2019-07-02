@@ -28,7 +28,7 @@ cin_is_cinword(char_u *line)
     int		len;
 
     cinw_len = (int)STRLEN(curbuf->b_p_cinw) + 1;
-    cinw_buf = alloc((unsigned)cinw_len);
+    cinw_buf = alloc(cinw_len);
     if (cinw_buf != NULL)
     {
 	line = skipwhite(line);
@@ -3870,9 +3870,7 @@ find_match(int lookfor, linenr_T ourscope)
 	    // this must be the if that we want!
 	    // match the indent level of that if.
 	    if (elselevel <= 0 && whilelevel <= 0)
-	    {
 		return OK;
-	    }
 	}
     }
     return FAIL;

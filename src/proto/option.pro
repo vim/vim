@@ -2,6 +2,7 @@
 void set_init_1(int clean_arg);
 void set_string_default(char *name, char_u *val);
 void set_number_default(char *name, long val);
+void set_local_options_default(win_T *wp);
 void free_all_options(void);
 void set_init_2(void);
 void set_init_3(void);
@@ -21,6 +22,9 @@ int get_term_opt_idx(char_u **p);
 int set_term_option_alloced(char_u **p);
 int was_set_insecurely(char_u *opt, int opt_flags);
 void set_string_option_direct(char_u *name, int opt_idx, char_u *val, int opt_flags, int set_sid);
+void set_string_option_direct_in_win(win_T *wp, char_u *name, int opt_idx, char_u *val, int opt_flags, int set_sid);
+void set_string_option_direct_in_buf(buf_T *buf, char_u *name, int opt_idx, char_u *val, int opt_flags, int set_sid);
+int valid_spellang(char_u *val);
 char *check_colorcolumn(win_T *wp);
 char *check_stl_option(char_u *s);
 void set_term_option_sctx_idx(char *name, int opt_idx);

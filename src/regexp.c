@@ -38,11 +38,11 @@
  * Named character class support added by Walter Briscoe (1998 Jul 01)
  */
 
-/* Uncomment the first if you do not want to see debugging logs or files
- * related to regular expressions, even when compiling with -DDEBUG.
- * Uncomment the second to get the regexp debugging. */
-/* #undef DEBUG */
-/* #define DEBUG */
+// By default: do not create debugging logs or files related to regular
+// expressions, even when compiling with -DDEBUG.
+// Uncomment the second line to get the regexp debugging.
+#undef DEBUG
+// #define DEBUG
 
 #include "vim.h"
 
@@ -1319,7 +1319,7 @@ bt_regcomp(char_u *expr, int re_flags)
 	return NULL;
 
     /* Allocate space. */
-    r = (bt_regprog_T *)lalloc(sizeof(bt_regprog_T) + regsize, TRUE);
+    r = alloc(sizeof(bt_regprog_T) + regsize);
     if (r == NULL)
 	return NULL;
     r->re_in_use = FALSE;
@@ -2228,7 +2228,7 @@ regatom(int *flagp)
 				  default:  i = -1; break;
 			      }
 
-			      if (i < 0)
+			      if (i < 0 || i > INT_MAX)
 				  EMSG2_RET_NULL(
 					_("E678: Invalid character after %s%%[dxouU]"),
 					reg_magic == MAGIC_ALL);
@@ -2785,7 +2785,7 @@ reginsert_nr(int op, long val, char_u *opnd)
     *place++ = op;
     *place++ = NUL;
     *place++ = NUL;
-    place = re_put_long(place, (long_u)val);
+    re_put_long(place, (long_u)val);
 }
 
 /*
@@ -3293,7 +3293,7 @@ coll_get_char(void)
 	case 'u': nr = gethexchrs(4); break;
 	case 'U': nr = gethexchrs(8); break;
     }
-    if (nr < 0)
+    if (nr < 0 || nr > INT_MAX)
     {
 	/* If getting the number fails be backwards compatible: the character
 	 * is a backslash. */
@@ -3932,7 +3932,7 @@ make_extmatch(void)
 {
     reg_extmatch_T	*em;
 
-    em = (reg_extmatch_T *)alloc_clear((unsigned)sizeof(reg_extmatch_T));
+    em = ALLOC_CLEAR_ONE(reg_extmatch_T);
     if (em != NULL)
 	em->refcnt = 1;
     return em;
@@ -6457,7 +6457,7 @@ regdump(char_u *pattern, bt_regprog_T *r)
 	}
 	else if (op == RE_LNUM || op == RE_COL || op == RE_VCOL)
 	{
-	    /* one int plus comperator */
+	    /* one int plus comparator */
 	    fprintf(f, " count %ld", OPERAND_MIN(s));
 	    s += 5;
 	}
@@ -7145,7 +7145,7 @@ regtilde(char_u *source, int magic)
 	    {
 		/* length = len(newsub) - 1 + len(prev_sub) + 1 */
 		prevlen = (int)STRLEN(reg_prev_sub);
-		tmpsub = alloc((unsigned)(STRLEN(newsub) + prevlen));
+		tmpsub = alloc(STRLEN(newsub) + prevlen);
 		if (tmpsub != NULL)
 		{
 		    /* copy prefix */
@@ -7423,7 +7423,7 @@ vim_regsub_both(
 		if (expr->v_type == VAR_FUNC)
 		{
 		    s = expr->vval.v_string;
-		    call_func(s, (int)STRLEN(s), &rettv,
+		    call_func(s, -1, &rettv,
 				    1, argv, fill_submatch_list,
 					 0L, 0L, &dummy, TRUE, NULL, NULL);
 		}
@@ -7432,7 +7432,7 @@ vim_regsub_both(
 		    partial_T   *partial = expr->vval.v_partial;
 
 		    s = partial_name(partial);
-		    call_func(s, (int)STRLEN(s), &rettv,
+		    call_func(s, -1, &rettv,
 				    1, argv, fill_submatch_list,
 				      0L, 0L, &dummy, TRUE, partial, NULL);
 		}
@@ -7784,9 +7784,10 @@ reg_submatch(int no)
 	    if (lnum < 0 || rsm.sm_mmatch->endpos[no].lnum < 0)
 		return NULL;
 
-	    s = reg_getline_submatch(lnum) + rsm.sm_mmatch->startpos[no].col;
-	    if (s == NULL)  /* anti-crash check, cannot happen? */
+	    s = reg_getline_submatch(lnum);
+	    if (s == NULL)  // anti-crash check, cannot happen?
 		break;
+	    s += rsm.sm_mmatch->startpos[no].col;
 	    if (rsm.sm_mmatch->endpos[no].lnum == lnum)
 	    {
 		/* Within one line: take form start to end col. */
@@ -7829,7 +7830,7 @@ reg_submatch(int no)
 
 	    if (retval == NULL)
 	    {
-		retval = lalloc((long_u)len, TRUE);
+		retval = alloc(len);
 		if (retval == NULL)
 		    return NULL;
 	    }
@@ -7969,6 +7970,7 @@ vim_regcomp(char_u *expr_arg, int re_flags)
 {
     regprog_T   *prog = NULL;
     char_u	*expr = expr_arg;
+    int		save_called_emsg;
 
     regexp_engine = p_re;
 
@@ -8004,6 +8006,8 @@ vim_regcomp(char_u *expr_arg, int re_flags)
     /*
      * First try the NFA engine, unless backtracking was requested.
      */
+    save_called_emsg = called_emsg;
+    called_emsg = FALSE;
     if (regexp_engine != BACKTRACKING_ENGINE)
 	prog = nfa_regengine.regcomp(expr,
 		re_flags + (regexp_engine == AUTOMATIC_ENGINE ? RE_AUTO : 0));
@@ -8032,13 +8036,15 @@ vim_regcomp(char_u *expr_arg, int re_flags)
 	 * If the NFA engine failed, try the backtracking engine.
 	 * The NFA engine also fails for patterns that it can't handle well
 	 * but are still valid patterns, thus a retry should work.
+	 * But don't try if an error message was given.
 	 */
-	if (regexp_engine == AUTOMATIC_ENGINE)
+	if (regexp_engine == AUTOMATIC_ENGINE && !called_emsg)
 	{
 	    regexp_engine = BACKTRACKING_ENGINE;
 	    prog = bt_regengine.regcomp(expr, re_flags);
 	}
     }
+    called_emsg |= save_called_emsg;
 
     if (prog != NULL)
     {

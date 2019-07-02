@@ -74,7 +74,7 @@ char_u *replace_termcodes(char_u *from, char_u **bufp, int from_part, int do_lt,
 int find_term_bykeys(char_u *src);
 void show_termcodes(void);
 int show_one_termcode(char_u *name, char_u *code, int printit);
-char_u *translate_mapping(char_u *str, int expmap);
+char_u *translate_mapping(char_u *str);
 void update_tcap(int attr);
 void swap_tcap(void);
 guicolor_T gui_get_color_cmn(char_u *name);

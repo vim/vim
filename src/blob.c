@@ -22,7 +22,7 @@
     blob_T *
 blob_alloc(void)
 {
-    blob_T *blob = (blob_T *)alloc_clear(sizeof(blob_T));
+    blob_T *blob = ALLOC_CLEAR_ONE(blob_T);
 
     if (blob != NULL)
 	ga_init2(&blob->bv_ga, 1, 100);
@@ -232,6 +232,8 @@ string2blob(char_u *str)
     blob_T  *blob = blob_alloc();
     char_u  *s = str;
 
+    if (blob == NULL)
+	return NULL;
     if (s[0] != '0' || (s[1] != 'z' && s[1] != 'Z'))
 	goto failed;
     s += 2;

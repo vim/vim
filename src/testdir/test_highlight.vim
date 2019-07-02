@@ -533,7 +533,7 @@ endfunc
 
 func Test_cursorline_after_yank()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
 
   call writefile([
@@ -552,3 +552,66 @@ func Test_cursorline_after_yank()
   call StopVimInTerminal(buf)
   call delete('Xtest_cursorline_yank')
 endfunc
+
+func Test_cursorline_with_visualmode()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  call writefile([
+	\ 'set cul',
+	\ 'call setline(1, repeat(["abc"], 50))',
+	\ ], 'Xtest_cursorline_with_visualmode')
+  let buf = RunVimInTerminal('-S Xtest_cursorline_with_visualmode', {'rows': 12})
+  call term_wait(buf)
+  call term_sendkeys(buf, "V\<C-f>kkkjk")
+
+  call VerifyScreenDump(buf, 'Test_cursorline_with_visualmode_01', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_cursorline_with_visualmode')
+endfunc
+
+func Test_wincolor()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  let lines =<< trim END
+	set cursorline cursorcolumn rnu
+	call setline(1, ["","1111111111","22222222222","3 here 3",""])
+	set wincolor=Pmenu
+	/here
+  END
+  call writefile(lines, 'Xtest_wincolor')
+  let buf = RunVimInTerminal('-S Xtest_wincolor', {'rows': 8})
+  call term_wait(buf)
+  call term_sendkeys(buf, "2G5lvj")
+  call term_wait(buf)
+
+  call VerifyScreenDump(buf, 'Test_wincolor_01', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+  call delete('Xtest_wincolor')
+endfunc
+
+" This test must come before the Test_cursorline test, as it appears this
+" defines the Normal highlighting group anyway.
+func Test_1_highlight_Normalgroup_exists()
+  " MS-Windows GUI sets the font
+  if !has('win32') || !has('gui_running')
+    let hlNormal = HighlightArgs('Normal')
+    call assert_match('hi Normal\s*clear', hlNormal)
+  endif
+endfunc
+
+function Test_no_space_before_xxx()
+  let l:org_columns = &columns
+  set columns=17
+  let l:hi_StatusLineTermNC = join(split(execute('hi StatusLineTermNC')))
+  call assert_match('StatusLineTermNC xxx', l:hi_StatusLineTermNC)
+  let &columns = l:org_columns
+endfunction

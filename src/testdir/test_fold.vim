@@ -513,17 +513,18 @@ func Test_fold_create_marker_in_C()
   set fdm=marker fdl=9
   set filetype=c
 
-  let content = [
-	\ '/*',
-	\ ' * comment',
-	\ ' * ',
-	\ ' *',
-	\ ' */',
-	\ 'int f(int* p) {',
-	\ '    *p = 3;',
-	\ '    return 0;',
-	\ '}'
-	\]
+  let content =<< trim [CODE]
+    /*
+     * comment
+     * 
+     *
+     */
+    int f(int* p) {
+        *p = 3;
+        return 0;
+    }
+  [CODE]
+
   for c in range(len(content) - 1)
     bw!
     call append(0, content)
@@ -707,7 +708,7 @@ endfunc
 
 func Test_folds_with_rnu()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
 
   call writefile([

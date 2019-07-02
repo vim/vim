@@ -14,14 +14,48 @@ func Test_complete_list()
 endfunc
 
 func Test_complete_wildmenu()
-  call writefile(['testfile1'], 'Xtestfile1')
-  call writefile(['testfile2'], 'Xtestfile2')
+  call mkdir('Xdir1/Xdir2', 'p')
+  call writefile(['testfile1'], 'Xdir1/Xtestfile1')
+  call writefile(['testfile2'], 'Xdir1/Xtestfile2')
+  call writefile(['testfile3'], 'Xdir1/Xdir2/Xtestfile3')
+  call writefile(['testfile3'], 'Xdir1/Xdir2/Xtestfile4')
   set wildmenu
-  call feedkeys(":e Xtest\t\t\r", "tx")
+
+  " Pressing <Tab> completes, and moves to next files when pressing again.
+  call feedkeys(":e Xdir1/\<Tab>\<Tab>\<CR>", 'tx')
+  call assert_equal('testfile1', getline(1))
+  call feedkeys(":e Xdir1/\<Tab>\<Tab>\<Tab>\<CR>", 'tx')
   call assert_equal('testfile2', getline(1))
 
-  call delete('Xtestfile1')
-  call delete('Xtestfile2')
+  " <S-Tab> is like <Tab> but begin with the last match and then go to
+  " previous.
+  call feedkeys(":e Xdir1/Xtest\<S-Tab>\<CR>", 'tx')
+  call assert_equal('testfile2', getline(1))
+  call feedkeys(":e Xdir1/Xtest\<S-Tab>\<S-Tab>\<CR>", 'tx')
+  call assert_equal('testfile1', getline(1))
+
+  " <Left>/<Right> to move to previous/next file.
+  call feedkeys(":e Xdir1/\<Tab>\<Right>\<CR>", 'tx')
+  call assert_equal('testfile1', getline(1))
+  call feedkeys(":e Xdir1/\<Tab>\<Right>\<Right>\<CR>", 'tx')
+  call assert_equal('testfile2', getline(1))
+  call feedkeys(":e Xdir1/\<Tab>\<Right>\<Right>\<Left>\<CR>", 'tx')
+  call assert_equal('testfile1', getline(1))
+
+  " <Up>/<Down> to go up/down directories.
+  call feedkeys(":e Xdir1/\<Tab>\<Down>\<CR>", 'tx')
+  call assert_equal('testfile3', getline(1))
+  call feedkeys(":e Xdir1/\<Tab>\<Down>\<Up>\<Right>\<CR>", 'tx')
+  call assert_equal('testfile1', getline(1))
+
+  " cleanup
+  %bwipe
+  call delete('Xdir1/Xdir2/Xtestfile4')
+  call delete('Xdir1/Xdir2/Xtestfile3')
+  call delete('Xdir1/Xtestfile2')
+  call delete('Xdir1/Xtestfile1')
+  call delete('Xdir1/Xdir2', 'd')
+  call delete('Xdir1', 'd')
   set nowildmenu
 endfunc
 
@@ -43,6 +77,64 @@ func Test_map_completion()
   call assert_equal('"map <special> <nowait>', getreg(':'))
   call feedkeys(":map <silent> <sp\<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"map <silent> <special>', getreg(':'))
+
+  map <Middle>x middle
+
+  map ,f commaf
+  map ,g commaf
+  map <Left> left
+  map <A-Left>x shiftleft
+  call feedkeys(":map ,\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"map ,f', getreg(':'))
+  call feedkeys(":map ,\<Tab>\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"map ,g', getreg(':'))
+  call feedkeys(":map <L\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"map <Left>', getreg(':'))
+  call feedkeys(":map <A-Left>\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal("\"map <A-Left>\<Tab>", getreg(':'))
+  unmap ,f
+  unmap ,g
+  unmap <Left>
+  unmap <A-Left>x
+
+  set cpo-=< cpo-=B cpo-=k
+  map <Left> left
+  call feedkeys(":map <L\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"map <Left>', getreg(':'))
+  call feedkeys(":map <M\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal("\"map <M\<Tab>", getreg(':'))
+  unmap <Left>
+
+  set cpo+=<
+  map <Left> left
+  exe "set t_k6=\<Esc>[17~"
+  call feedkeys(":map \<Esc>[17~x f6x\<CR>", 'xt')
+  call feedkeys(":map <L\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"map <Left>', getreg(':'))
+  if !has('gui_running')
+    call feedkeys(":map \<Esc>[17~\<Tab>\<Home>\"\<CR>", 'xt')
+    call assert_equal("\"map <F6>x", getreg(':'))
+  endif
+  unmap <Left>
+  call feedkeys(":unmap \<Esc>[17~x\<CR>", 'xt')
+  set cpo-=<
+
+  set cpo+=B
+  map <Left> left
+  call feedkeys(":map <L\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"map <Left>', getreg(':'))
+  unmap <Left>
+  set cpo-=B
+
+  set cpo+=k
+  map <Left> left
+  call feedkeys(":map <L\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"map <Left>', getreg(':'))
+  unmap <Left>
+  set cpo-=k
+
+  unmap <Middle>x
+  set cpo&vim
 endfunc
 
 func Test_match_completion()
@@ -286,6 +378,7 @@ func Test_getcompletion()
   endfor
 
   call delete('Xtags')
+  set tags&
 
   call assert_fails('call getcompletion("", "burp")', 'E475:')
 endfunc

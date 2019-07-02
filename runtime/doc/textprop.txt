@@ -1,10 +1,10 @@
-*textprop.txt*  For Vim version 8.1.  Last change: 2019 Jan 08
+*textprop.txt*  For Vim version 8.1.  Last change: 2019 Jun 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
-Displaying text with properties attached.		*text-properties*
+Displaying text with properties attached.	*textprop* *text-properties*
 
 THIS IS UNDER DEVELOPMENT - ANYTHING MAY STILL CHANGE  *E967*
 
@@ -12,7 +12,6 @@ What is not working yet:
 - Adjusting column/length when inserting text
 - Text properties spanning more than one line
 - prop_find()
-- callbacks when text properties are outdated
 
 
 1. Introduction			|text-prop-intro|
@@ -20,7 +19,6 @@ What is not working yet:
 3. When text changes		|text-prop-changes|
 
 
-{Vi does not have text properties}
 {not able to use text properties when the |+textprop| feature was
 disabled at compile time}
 
@@ -57,6 +55,10 @@ Property Types ~
 A text property normally has the name of a property type, which defines 
 how to highlight the text.  The property type can have these entries:
 	"highlight"	name of the highlight group to use
+	"combine"	when TRUE the text property highlighting is combined
+			with any syntax highlighting, when omitted or FALSE the
+			text property highlighting replaces the syntax
+			highlighting
 	"priority"	when properties overlap, the one with the highest
 			priority will be used.
 	"start_incl"	when TRUE inserts at the start position will be
@@ -128,11 +130,17 @@ unless the whole line is deleted.
 When using replace mode, the text properties stay on the same character
 positions, even though the characters themselves change.
 
+To update text properties after the text was changed, install a callback with
+`listener_add()`.  E.g, if your plugin does spell checking, you can have the
+callback update spelling mistakes in the changed text.  Vim will move the
+properties below the changed text, so that they still highlight the same text,
+thus you don't need to update these.
 
-When text property columns are not updated ~
+
+Text property columns are not updated: ~
 
 - When setting the line with |setline()| or through an interface, such as Lua,
-  Tcl or Python.
+  Tcl or Python.  Vim does not know what text got inserted or deleted.
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

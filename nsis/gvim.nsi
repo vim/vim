@@ -47,6 +47,11 @@ Unicode true
 
 !include gvim_version.nsh	# for version number
 
+# Definition of Patch for Vim
+!ifndef PATCHLEVEL
+  !define PATCHLEVEL 0
+!endif
+
 # ----------- No configurable settings below this line -----------
 
 !include "Library.nsh"		# For DLL install
@@ -173,6 +178,16 @@ Page custom SetCustom ValidateCustom
     !include "lang\tradchinese.nsi"
 !endif
 
+##########################################################
+# Version resources
+
+VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "Vim"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "Vim Developers"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalTrademarks" "Vim"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright (C) 1996"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "Vi Improved - A Text Editor"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "${VER_MAJOR}.${VER_MINOR}.${PATCHLEVEL}.0"
+VIProductVersion "${VER_MAJOR}.${VER_MINOR}.${PATCHLEVEL}.0"
 
 # Global variables
 Var vim_dialog
@@ -322,6 +337,9 @@ Section "$(str_section_exe)" id_section_exe
 
 	SetOutPath $0
 	File /oname=gvim.exe ${VIMSRC}\gvim_ole.exe
+!if /FileExists "${VIMSRC}\vim${BIT}.dll"
+	File ${VIMSRC}\vim${BIT}.dll
+!endif
 	File /oname=install.exe ${VIMSRC}\installw32.exe
 	File /oname=uninstal.exe ${VIMSRC}\uninstalw32.exe
 	File ${VIMSRC}\vimrun.exe
@@ -354,40 +372,10 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMRT}\indent\*.*
 
 	SetOutPath $0\macros
-	File ${VIMRT}\macros\*.*
-	SetOutPath $0\macros\hanoi
-	File ${VIMRT}\macros\hanoi\*.*
-	SetOutPath $0\macros\life
-	File ${VIMRT}\macros\life\*.*
-	SetOutPath $0\macros\maze
-	File ${VIMRT}\macros\maze\*.*
-	SetOutPath $0\macros\urm
-	File ${VIMRT}\macros\urm\*.*
+	File /r ${VIMRT}\macros\*.*
 
-	SetOutPath $0\pack\dist\opt\dvorak\dvorak
-	File ${VIMRT}\pack\dist\opt\dvorak\dvorak\*.*
-	SetOutPath $0\pack\dist\opt\dvorak\plugin
-	File ${VIMRT}\pack\dist\opt\dvorak\plugin\*.*
-
-	SetOutPath $0\pack\dist\opt\editexisting\plugin
-	File ${VIMRT}\pack\dist\opt\editexisting\plugin\*.*
-
-	SetOutPath $0\pack\dist\opt\justify\plugin
-	File ${VIMRT}\pack\dist\opt\justify\plugin\*.*
-
-	SetOutPath $0\pack\dist\opt\matchit\doc
-	File ${VIMRT}\pack\dist\opt\matchit\doc\*.*
-	SetOutPath $0\pack\dist\opt\matchit\plugin
-	File ${VIMRT}\pack\dist\opt\matchit\plugin\*.*
-
-	SetOutPath $0\pack\dist\opt\shellmenu\plugin
-	File ${VIMRT}\pack\dist\opt\shellmenu\plugin\*.*
-
-	SetOutPath $0\pack\dist\opt\swapmouse\plugin
-	File ${VIMRT}\pack\dist\opt\swapmouse\plugin\*.*
-
-	SetOutPath $0\pack\dist\opt\termdebug\plugin
-	File ${VIMRT}\pack\dist\opt\termdebug\plugin\*.*
+	SetOutPath $0\pack
+	File /r ${VIMRT}\pack\*.*
 
 	SetOutPath $0\plugin
 	File ${VIMRT}\plugin\*.*
@@ -1126,7 +1114,9 @@ Section "un.$(str_unsection_rootdir)" id_unsection_rootdir
 	Call un.GetParent
 	Pop $0
 
-	Delete $0\_vimrc
+	${IfNot} ${Silent}
+	  Delete $0\_vimrc
+	${Endif}
 	RMDir $0
 SectionEnd
 

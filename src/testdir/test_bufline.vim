@@ -8,7 +8,7 @@ func Test_setbufline_getbufline()
   hide
   call assert_equal(0, setbufline(b, 1, ['foo', 'bar']))
   call assert_equal(['foo'], getbufline(b, 1))
-  call assert_equal(['bar'], getbufline(b, 2))
+  call assert_equal(['bar'], getbufline(b, '$'))
   call assert_equal(['foo', 'bar'], getbufline(b, 1, 2))
   exe "bd!" b
   call assert_equal([], getbufline(b, 1, 2))
@@ -18,7 +18,7 @@ func Test_setbufline_getbufline()
   let b = bufnr('%')
   wincmd w
   call assert_equal(1, setbufline(b, 5, ['x']))
-  call assert_equal(1, setbufline(1234, 1, ['x']))
+  call assert_equal(1, setbufline(bufnr('$') + 1, 1, ['x']))
   call assert_equal(0, setbufline(b, 4, ['d', 'e']))
   call assert_equal(['c'], getbufline(b, 3))
   call assert_equal(['d'], getbufline(b, 4))
@@ -81,6 +81,7 @@ func Test_appendbufline()
   call setline(1, ['a', 'b', 'c'])
   let b = bufnr('%')
   wincmd w
+  call assert_equal(1, appendbufline(b, -1, ['x']))
   call assert_equal(1, appendbufline(b, 4, ['x']))
   call assert_equal(1, appendbufline(1234, 1, ['x']))
   call assert_equal(0, appendbufline(b, 3, ['d', 'e']))
@@ -92,23 +93,24 @@ func Test_appendbufline()
 endfunc
 
 func Test_appendbufline_no_E315()
-  let after = [
-    \ 'set stl=%f ls=2',
-    \ 'new',
-    \ 'let buf = bufnr("%")',
-    \ 'quit',
-    \ 'vsp',
-    \ 'exec "buffer" buf',
-    \ 'wincmd w',
-    \ 'call appendbufline(buf, 0, "abc")',
-    \ 'redraw',
-    \ 'while getbufline(buf, 1)[0] =~ "^\\s*$"',
-    \ '  sleep 10m',
-    \ 'endwhile',
-    \ 'au VimLeavePre * call writefile([v:errmsg], "Xerror")',
-    \ 'au VimLeavePre * call writefile(["done"], "Xdone")',
-    \ 'qall!',
-    \ ]
+  let after =<< trim [CODE]
+    set stl=%f ls=2
+    new
+    let buf = bufnr("%")
+    quit
+    vsp
+    exec "buffer" buf
+    wincmd w
+    call appendbufline(buf, 0, "abc")
+    redraw
+    while getbufline(buf, 1)[0] =~ "^\\s*$"
+      sleep 10m
+    endwhile
+    au VimLeavePre * call writefile([v:errmsg], "Xerror")
+    au VimLeavePre * call writefile(["done"], "Xdone")
+    qall!
+  [CODE]
+
   if !RunVim([], after, '--clean')
     return
   endif
@@ -130,8 +132,11 @@ func Test_deletebufline()
   exe "bd!" b
   call assert_equal(1, deletebufline(b, 1))
 
+  call assert_equal(1, deletebufline(-1, 1))
+
   split Xtest
   call setline(1, ['a', 'b', 'c'])
+  call cursor(line('$'), 1)
   let b = bufnr('%')
   wincmd w
   call assert_equal(1, deletebufline(b, 4))

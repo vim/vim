@@ -1,8 +1,7 @@
 " Tests for the Tcl interface.
 
-if !has('tcl')
-  finish
-end
+source check.vim
+CheckFeature tcl
 
 " Helper function as there is no builtin tcleval() function similar
 " to perleval, luaevel(), pyeval(), etc.

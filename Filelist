@@ -3,16 +3,16 @@
 
 # source files for all source archives
 SRC_ALL =	\
+		.gitignore \
 		.hgignore \
 		.lgtm.yml \
 		.travis.yml \
 		appveyor.yml \
 		ci/appveyor.bat \
 		src/Make_all.mak \
-		src/README.txt \
+		src/README.md \
 		src/alloc.h \
 		src/arabic.c \
-		src/arabic.h \
 		src/ascii.h \
 		src/autocmd.c \
 		src/beval.c \
@@ -20,10 +20,12 @@ SRC_ALL =	\
 		src/blob.c \
 		src/blowfish.c \
 		src/buffer.c \
+		src/change.c \
 		src/channel.c \
 		src/charset.c \
 		src/crypt.c \
 		src/crypt_zip.c \
+		src/debugger.c \
 		src/dict.c \
 		src/diff.c \
 		src/digraph.c \
@@ -49,6 +51,7 @@ SRC_ALL =	\
 		src/hardcopy.c \
 		src/hashtab.c \
 		src/indent.c \
+		src/insexpand.c \
 		src/json.c \
 		src/json_test.c \
 		src/kword_test.c \
@@ -76,6 +79,7 @@ SRC_ALL =	\
 		src/option.c \
 		src/option.h \
 		src/popupmnu.c \
+		src/popupwin.c \
 		src/quickfix.c \
 		src/regexp.c \
 		src/regexp_nfa.c \
@@ -84,6 +88,7 @@ SRC_ALL =	\
 		src/search.c \
 		src/sha256.c \
 		src/sign.c \
+		src/sound.c \
 		src/spell.c \
 		src/spell.h \
 		src/spellfile.c \
@@ -97,6 +102,7 @@ SRC_ALL =	\
 		src/textprop.c \
 		src/ui.c \
 		src/undo.c \
+		src/usercmd.c \
 		src/userfunc.c \
 		src/version.c \
 		src/version.h \
@@ -113,9 +119,12 @@ SRC_ALL =	\
 		src/testdir/lsan-suppress.txt \
 		src/testdir/sautest/autoload/*.vim \
 		src/testdir/runtest.vim \
+		src/testdir/summarize.vim \
+		src/testdir/check.vim \
 		src/testdir/shared.vim \
 		src/testdir/screendump.vim \
 		src/testdir/view_util.vim \
+		src/testdir/term_util.vim \
 		src/testdir/setup.vim \
 		src/testdir/gui_init.vim \
 		src/testdir/setup_gui.vim \
@@ -144,6 +153,8 @@ SRC_ALL =	\
 		src/testdir/samples/test000 \
 		src/testdir/if_ver*.vim \
 		src/testdir/color_ramp.vim \
+		src/testdir/silent.wav \
+		src/testdir/popupbounce.vim \
 		src/proto.h \
 		src/protodef.h \
 		src/proto/arabic.pro \
@@ -152,10 +163,12 @@ SRC_ALL =	\
 		src/proto/blob.pro \
 		src/proto/blowfish.pro \
 		src/proto/buffer.pro \
+		src/proto/change.pro \
 		src/proto/channel.pro \
 		src/proto/charset.pro \
 		src/proto/crypt.pro \
 		src/proto/crypt_zip.pro \
+		src/proto/debugger.pro \
 		src/proto/dict.pro \
 		src/proto/diff.pro \
 		src/proto/digraph.pro \
@@ -176,6 +189,7 @@ SRC_ALL =	\
 		src/proto/hardcopy.pro \
 		src/proto/hashtab.pro \
 		src/proto/indent.pro \
+		src/proto/insexpand.pro \
 		src/proto/json.pro \
 		src/proto/list.pro \
 		src/proto/main.pro \
@@ -193,12 +207,14 @@ SRC_ALL =	\
 		src/proto/ops.pro \
 		src/proto/option.pro \
 		src/proto/popupmnu.pro \
+		src/proto/popupwin.pro \
 		src/proto/quickfix.pro \
 		src/proto/regexp.pro \
 		src/proto/screen.pro \
 		src/proto/search.pro \
 		src/proto/sha256.pro \
 		src/proto/sign.pro \
+		src/proto/sound.pro \
 		src/proto/spell.pro \
 		src/proto/spellfile.pro \
 		src/proto/syntax.pro \
@@ -209,6 +225,7 @@ SRC_ALL =	\
 		src/proto/textprop.pro \
 		src/proto/ui.pro \
 		src/proto/undo.pro \
+		src/proto/usercmd.pro \
 		src/proto/userfunc.pro \
 		src/proto/version.pro \
 		src/proto/winclip.pro \
@@ -415,11 +432,8 @@ SRC_DOS =	\
 		src/GvimExt/uninst.bat \
 		README_srcdos.txt \
 		src/INSTALLpc.txt \
-		src/Make_bc5.mak \
 		src/Make_cyg.mak \
 		src/Make_cyg_ming.mak \
-		src/Make_ivc.mak \
-		src/Make_dvc.mak \
 		src/Make_ming.mak \
 		src/Make_mvc.mak \
 		tools/rename.bat \
@@ -470,7 +484,6 @@ SRC_DOS =	\
 		src/xpm_w32.c \
 		src/xpm_w32.h \
 		src/tee/Make_mvc.mak \
-		src/xxd/Make_bc5.mak \
 		src/xxd/Make_ming.mak \
 		src/xxd/Make_mvc.mak \
 		nsis/gvim.nsi \
@@ -508,13 +521,14 @@ SRC_DOS_BIN =	\
 		src/vim.tlb \
 		src/xpm/COPYRIGHT \
 		src/xpm/README.txt \
+		src/xpm/arm64/lib-vc14/libXpm.lib \
 		src/xpm/include/*.h \
+		src/xpm/x64/lib-vc14/libXpm.lib \
 		src/xpm/x64/lib/libXpm.a \
 		src/xpm/x64/lib/libXpm.lib \
-		src/xpm/x64/lib-vc14/libXpm.lib \
+		src/xpm/x86/lib-vc14/libXpm.lib \
 		src/xpm/x86/lib/libXpm.a \
 		src/xpm/x86/lib/libXpm.lib \
-		src/xpm/x86/lib-vc14/libXpm.lib \
 		nsis/icons.zip \
 
 # source files for Amiga, DOS, etc. (also in the extra archive)
@@ -936,6 +950,8 @@ LANG_SRC = \
 		src/po/Make_cyg.mak \
 		src/po/Make_ming.mak \
 		src/po/Make_mvc.mak \
+		src/po/vim.desktop.in \
+		src/po/gvim.desktop.in \
 		src/po/sjiscorr.c \
 		src/po/*.po \
 

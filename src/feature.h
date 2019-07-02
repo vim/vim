@@ -305,18 +305,9 @@
 #endif
 
 /*
- * +tag_old_static	Old style static tags: "file:tag  file  ..".  Slows
- *			down tag searching a bit.
+ * +tag_old_static	Old style static tags: "file:tag  file  ..".
+ *			Support was removed in 8.1.1093.
  */
-#ifdef FEAT_NORMAL
-# define FEAT_TAG_OLDSTATIC
-#endif
-
-/*
- * +tag_any_white	Allow any white space to separate the fields in a tags
- *			file.  When not defined, only a TAB is allowed.
- */
-/* #define FEAT_TAG_ANYWHITE */
 
 /*
  * +cscope		Unix only: Cscope support.
@@ -388,10 +379,8 @@
 
 /*
  * +user_commands	Allow the user to define his own commands.
+ *			Now always enabled.
  */
-#ifdef FEAT_NORMAL
-# define FEAT_USR_CMDS
-#endif
 
 /*
  * +printer		":hardcopy" command
@@ -488,7 +477,7 @@
 #endif
 
 /*
- * +textprop		Text properties
+ * +textprop		Text properties and popup windows
  */
 #if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
 # define FEAT_TEXT_PROP
@@ -671,6 +660,13 @@
 # define FEAT_TERM_POPUP_MENU
 #endif
 
+/*
+ * sound - currently only with libcanberra
+ */
+#if !defined(FEAT_SOUND) && defined(HAVE_CANBERRA)
+# define FEAT_SOUND
+#endif
+
 /* There are two ways to use XPM. */
 #if (defined(HAVE_XM_XPMP_H) && defined(FEAT_GUI_MOTIF)) \
 		|| defined(HAVE_X11_XPM_H)
@@ -723,7 +719,8 @@
  * there is no terminal version, and on Windows we can't figure out how to
  * fork one off with :gui.
  */
-#if defined(FEAT_GUI_MSWIN) || (defined(FEAT_GUI_MAC) && !defined(MACOS_X_DARWIN))
+#if (defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)) \
+	    || (defined(FEAT_GUI_MAC) && !defined(MACOS_X_DARWIN))
 # define ALWAYS_USE_GUI
 #endif
 
@@ -1026,9 +1023,6 @@
 # ifdef FEAT_BIG
 #  define FEAT_MOUSE_URXVT
 # endif
-# ifdef FEAT_BIG
-#  define FEAT_MOUSE_SGR
-# endif
 # if defined(FEAT_NORMAL) && defined(MSWIN)
 #  define DOS_MOUSE
 # endif
@@ -1057,11 +1051,6 @@
 # define FEAT_MOUSE_XTERM
 #endif
 
-/* sgr is a small variation of mouse_xterm, and shares its code */
-#if defined(FEAT_MOUSE_SGR) && !defined(FEAT_MOUSE_XTERM)
-# define FEAT_MOUSE_XTERM
-#endif
-
 /* Define FEAT_MOUSE when any of the above is defined or FEAT_GUI. */
 #if !defined(FEAT_MOUSE_TTY) \
 	&& (defined(FEAT_MOUSE_XTERM) \
@@ -1072,8 +1061,7 @@
 	    || defined(FEAT_MOUSE_JSB) \
 	    || defined(FEAT_MOUSE_PTERM) \
 	    || defined(FEAT_SYSMOUSE) \
-	    || defined(FEAT_MOUSE_URXVT) \
-	    || defined(FEAT_MOUSE_SGR))
+	    || defined(FEAT_MOUSE_URXVT))
 # define FEAT_MOUSE_TTY		/* include non-GUI mouse support */
 #endif
 #if !defined(FEAT_MOUSE) && (defined(FEAT_MOUSE_TTY) || defined(FEAT_GUI))
@@ -1158,8 +1146,8 @@
  * mouse shape		Adjust the shape of the mouse pointer to the mode.
  */
 #ifdef FEAT_NORMAL
-/* MS-DOS console and Win32 console can change cursor shape */
-# if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+// Win32 console can change cursor shape
+# if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 #  define MCH_CURSOR_SHAPE
 # endif
 # if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
@@ -1283,7 +1271,8 @@
  * +balloon_eval_term	Allow balloon expression evaluation in the terminal.
  */
 #if defined(FEAT_HUGE) && defined(FEAT_TIMERS) && \
-	(defined(UNIX) || defined(VMS) || (defined(MSWIN) && !defined(FEAT_GUI_MSWIN)))
+	(defined(UNIX) || defined(VMS) || \
+	 (defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))))
 # define FEAT_BEVAL_TERM
 #endif
 
@@ -1337,6 +1326,6 @@
 /*
  * +vtp: Win32 virtual console.
  */
-#if !defined(FEAT_GUI) && defined(MSWIN)
+#if (!defined(FEAT_GUI) || defined(VIMDLL)) && defined(MSWIN)
 # define FEAT_VTP
 #endif

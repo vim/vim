@@ -360,9 +360,7 @@ C2Pascal_save_and_remove_backslash(char_u *Cstring)
 	for (c = Cstring, p = PascalString+1, len = 0; (*c != 0) && (len < 255); c++)
 	{
 	    if ((*c == '\\') && (c[1] != 0))
-	    {
 		c++;
-	    }
 	    *p = *c;
 	    p++;
 	    len++;
@@ -538,7 +536,7 @@ new_fnames_from_AEDesc(AEDesc *theList, long *numFiles, OSErr *error)
 	return fnames;
 
     /* Allocate the pointer list */
-    fnames = (char_u **) alloc(*numFiles * sizeof(char_u *));
+    fnames = ALLOC_MULT(char_u *, *numFiles);
 
     /* Empty out the list */
     for (fileCount = 0; fileCount < *numFiles; fileCount++)
@@ -1259,25 +1257,19 @@ InstallAEHandlers(void)
     error = AEInstallEventHandler(kCoreEventClass, kAEOpenApplication,
 		    NewAEEventHandlerUPP(Handle_aevt_oapp_AE), 0, false);
     if (error)
-    {
 	return error;
-    }
 
     /* install quit application handler */
     error = AEInstallEventHandler(kCoreEventClass, kAEQuitApplication,
 		    NewAEEventHandlerUPP(Handle_aevt_quit_AE), 0, false);
     if (error)
-    {
 	return error;
-    }
 
     /* install open document handler */
     error = AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments,
 		    NewAEEventHandlerUPP(HandleODocAE), 0, false);
     if (error)
-    {
 	return error;
-    }
 
     /* install print document handler */
     error = AEInstallEventHandler(kCoreEventClass, kAEPrintDocuments,
@@ -1331,21 +1323,13 @@ InstallAEHandlers(void)
     error = AEInstallEventHandler('KAHL', 'GTTX',
 		    NewAEEventHandlerUPP(Handle_KAHL_GTTX_AE), 0, false);
     if (error)
-    {
 	return error;
-    }
     error = AEInstallEventHandler('KAHL', 'SRCH',
 		    NewAEEventHandlerUPP(Handle_KAHL_SRCH_AE), 0, false);
     if (error)
-    {
 	return error;
-    }
     error = AEInstallEventHandler('KAHL', 'MOD ',
 		    NewAEEventHandlerUPP(Handle_KAHL_MOD_AE), 0, false);
-    if (error)
-    {
-	return error;
-    }
 #endif
 
     return error;
@@ -2121,7 +2105,7 @@ gui_mac_unicode_key_event(
 		typeUnicodeText, NULL, 0, &actualSize, NULL))
 	return eventNotHandledErr;
 
-    text = (UniChar *)alloc(actualSize);
+    text = alloc(actualSize);
     if (!text)
 	return eventNotHandledErr;
 
@@ -2991,7 +2975,7 @@ receiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag)
 	count = countItem;
     }
 
-    fnames = (char_u **)alloc(count * sizeof(char_u *));
+    fnames = ALLOC_MULT(char_u *, count);
     if (fnames == NULL)
 	return dragNotAcceptedErr;
 
@@ -3861,9 +3845,7 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
     /*  SelectFont(hdc, gui.currFont); */
 
 	if (flags & DRAW_TRANSP)
-	{
 	    TextMode(srcOr);
-	}
 
 	MoveTo(TEXT_X(col), TEXT_Y(row));
 	DrawText((char *)s, 0, len);
@@ -3943,9 +3925,7 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 
 	/*  SelectFont(hdc, gui.currFont); */
 	if (flags & DRAW_TRANSP)
-	{
 	    TextMode(srcOr);
-	}
 
 	MoveTo(TEXT_X(col), TEXT_Y(row));
 
@@ -4454,7 +4434,7 @@ gui_mch_insert_lines(int row, int num_lines)
      */
 
     void
-clip_mch_request_selection(VimClipboard *cbd)
+clip_mch_request_selection(Clipboard_T *cbd)
 {
 
     Handle	textOfClip;
@@ -4496,7 +4476,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     /* In CARBON we don't need a Handle, a pointer is good */
     textOfClip = NewHandle(scrapSize);
 
-    /* tempclip = lalloc(scrapSize+1, TRUE); */
+    /* tempclip = alloc(scrapSize+1); */
     HLock(textOfClip);
     error = GetScrapFlavorData(scrap,
 	    flavor ? VIMSCRAPFLAVOR : SCRAPTEXTFLAVOR,
@@ -4508,7 +4488,7 @@ clip_mch_request_selection(VimClipboard *cbd)
     else
 	type = MAUTO;
 
-    tempclip = lalloc(scrapSize + 1, TRUE);
+    tempclip = alloc(scrapSize + 1);
     mch_memmove(tempclip, *textOfClip + flavor, scrapSize);
     tempclip[scrapSize] = 0;
 
@@ -4544,7 +4524,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 }
 
     void
-clip_mch_lose_selection(VimClipboard *cbd)
+clip_mch_lose_selection(Clipboard_T *cbd)
 {
     /*
      * TODO: Really nothing to do?
@@ -4552,7 +4532,7 @@ clip_mch_lose_selection(VimClipboard *cbd)
 }
 
     int
-clip_mch_own_selection(VimClipboard *cbd)
+clip_mch_own_selection(Clipboard_T *cbd)
 {
     return OK;
 }
@@ -4561,7 +4541,7 @@ clip_mch_own_selection(VimClipboard *cbd)
  * Send the current selection to the clipboard.
  */
     void
-clip_mch_set_selection(VimClipboard *cbd)
+clip_mch_set_selection(Clipboard_T *cbd)
 {
     Handle	textOfClip;
     long	scrapSize;
@@ -4624,13 +4604,9 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
     GetWindowBounds(gui.VimWindow, kWindowGlobalPortRgn, &VimBound);
 
     if (gui.which_scrollbars[SBAR_LEFT])
-    {
 	VimBound.left = -gui.scrollbar_width + 1;
-    }
     else
-    {
 	VimBound.left = 0;
-    }
 
     SetWindowBounds(gui.VimWindow, kWindowGlobalPortRgn, &VimBound);
 
@@ -5679,9 +5655,8 @@ gui_mch_dialog(
 
     /* Hang until one of the button is hit */
     do
-    {
 	ModalDialog(dialogUPP, &itemHit);
-    } while ((itemHit < 1) || (itemHit > lastButton));
+    while ((itemHit < 1) || (itemHit > lastButton));
 
 #ifdef USE_CARBONKEYHANDLER
     dialog_busy = FALSE;

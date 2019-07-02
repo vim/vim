@@ -186,12 +186,15 @@ endfunc
 
 func Test_CompleteDoneNone()
   au CompleteDone * :call <SID>CompleteDone_CheckCompletedItemNone()
+  let oldline = join(map(range(&columns), 'nr2char(screenchar(&lines-1, v:val+1))'), '')
 
   set completefunc=<SID>CompleteDone_CompleteFuncNone
   execute "normal a\<C-X>\<C-U>\<C-Y>"
   set completefunc&
+  let newline = join(map(range(&columns), 'nr2char(screenchar(&lines-1, v:val+1))'), '')
 
   call assert_true(s:called_completedone)
+  call assert_equal(oldline, newline)
 
   let s:called_completedone = 0
   au! CompleteDone

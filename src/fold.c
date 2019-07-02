@@ -1770,7 +1770,7 @@ foldAddMarker(linenr_T lnum, char_u *marker, int markerlen)
 	/* Check if the line ends with an unclosed comment */
 	(void)skip_comment(line, FALSE, FALSE, &line_is_comment);
 #endif
-	newline = alloc((unsigned)(line_len + markerlen + STRLEN(cms) + 1));
+	newline = alloc(line_len + markerlen + STRLEN(cms) + 1);
 	if (newline == NULL)
 	    return;
 	STRCPY(newline, line);
@@ -1849,7 +1849,7 @@ foldDelMarker(linenr_T lnum, char_u *marker, int markerlen)
 	    if (u_save(lnum - 1, lnum + 1) == OK)
 	    {
 		/* Make new line: text-before-marker + text-after-marker */
-		newline = alloc((unsigned)(STRLEN(line) - len + 1));
+		newline = alloc(STRLEN(line) - len + 1);
 		if (newline != NULL)
 		{
 		    STRNCPY(newline, line, p - line);

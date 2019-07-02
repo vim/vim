@@ -1,10 +1,10 @@
 " Test for variable tabstops
 
-if !has("vartabs")
-  finish
-endif
+source check.vim
+CheckFeature vartabs
 
 source view_util.vim
+
 func s:compare_lines(expect, actual)
   call assert_equal(join(a:expect, "\n"), join(a:actual, "\n"))
 endfunc
@@ -371,4 +371,10 @@ func Test_vartabs_failures()
   call assert_fails('set vsts=8,,8,')
   call assert_fails('set vts=,8')
   call assert_fails('set vsts=,8')
+endfunc
+
+func Test_vartabs_reset()
+  set vts=8
+  set all&
+  call assert_equal('', &vts)
 endfunc

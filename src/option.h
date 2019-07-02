@@ -183,27 +183,29 @@
 #define COCU_ALL	"nvic"		/* flags for 'concealcursor' */
 
 /* characters for p_shm option: */
-#define SHM_RO		'r'		/* readonly */
-#define SHM_MOD		'm'		/* modified */
-#define SHM_FILE	'f'		/* (file 1 of 2) */
-#define SHM_LAST	'i'		/* last line incomplete */
-#define SHM_TEXT	'x'		/* tx instead of textmode */
-#define SHM_LINES	'l'		/* "L" instead of "lines" */
-#define SHM_NEW		'n'		/* "[New]" instead of "[New file]" */
-#define SHM_WRI		'w'		/* "[w]" instead of "written" */
-#define SHM_A		"rmfixlnw"	/* represented by 'a' flag */
-#define SHM_WRITE	'W'		/* don't use "written" at all */
-#define SHM_TRUNC	't'		/* trunctate file messages */
-#define SHM_TRUNCALL	'T'		/* trunctate all messages */
-#define SHM_OVER	'o'		/* overwrite file messages */
-#define SHM_OVERALL	'O'		/* overwrite more messages */
-#define SHM_SEARCH	's'		/* no search hit bottom messages */
-#define SHM_ATTENTION	'A'		/* no ATTENTION messages */
-#define SHM_INTRO	'I'		/* intro messages */
-#define SHM_COMPLETIONMENU  'c'		/* completion menu messages */
-#define SHM_RECORDING	'q'		/* short recording message */
-#define SHM_FILEINFO	'F'		/* no file info messages */
-#define SHM_ALL		"rmfixlnwaWtToOsAIcqF" /* all possible flags for 'shm' */
+#define SHM_RO		'r'		// readonly
+#define SHM_MOD		'm'		// modified
+#define SHM_FILE	'f'		// (file 1 of 2)
+#define SHM_LAST	'i'		// last line incomplete
+#define SHM_TEXT	'x'		// tx instead of textmode
+#define SHM_LINES	'l'		// "L" instead of "lines"
+#define SHM_NEW		'n'		// "[New]" instead of "[New file]"
+#define SHM_WRI		'w'		// "[w]" instead of "written"
+#define SHM_A		"rmfixlnw"	// represented by 'a' flag
+#define SHM_WRITE	'W'		// don't use "written" at all
+#define SHM_TRUNC	't'		// truncate file messages
+#define SHM_TRUNCALL	'T'		// truncate all messages
+#define SHM_OVER	'o'		// overwrite file messages
+#define SHM_OVERALL	'O'		// overwrite more messages
+#define SHM_SEARCH	's'		// no search hit bottom messages
+#define SHM_ATTENTION	'A'		// no ATTENTION messages
+#define SHM_INTRO	'I'		// intro messages
+#define SHM_COMPLETIONMENU  'c'		// completion menu messages
+#define SHM_RECORDING	'q'		// short recording message
+#define SHM_FILEINFO	'F'		// no file info messages
+#define SHM_SEARCHCOUNT  'S'	        // search stats: '[1/10]'
+#define SHM_POSIX       "AS"            // POSIX value
+#define SHM_ALL		"rmfixlnwaWtToOsAIcqFS" // all possible flags for 'shm'
 
 /* characters for p_go: */
 #define GO_TERMINAL	'!'		/* use terminal for system commands */
@@ -629,6 +631,7 @@ EXTERN long	p_mis;		/* 'menuitems' */
 #ifdef FEAT_SPELL
 EXTERN char_u	*p_msm;		/* 'mkspellmem' */
 #endif
+EXTERN long	p_mle;		/* 'modelineexpr' */
 EXTERN long	p_mls;		/* 'modelines' */
 EXTERN char_u	*p_mouse;	/* 'mouse' */
 #ifdef FEAT_GUI
@@ -1068,6 +1071,9 @@ enum
 #endif
     , BV_SW
     , BV_SWF
+#ifdef FEAT_EVAL
+    , BV_TFU
+#endif
     , BV_TAGS
     , BV_TC
     , BV_TS
@@ -1110,6 +1116,7 @@ enum
     , WV_BRI
     , WV_BRIOPT
 #endif
+    , WV_WCR
 #ifdef FEAT_DIFF
     , WV_DIFF
 #endif

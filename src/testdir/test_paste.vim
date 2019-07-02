@@ -1,8 +1,11 @@
 " Tests for bracketed paste and other forms of pasting.
 
-" Bracketed paste only works with "xterm".  Not in GUI.
+" Bracketed paste only works with "xterm".  Not in GUI or Windows console.
+if has('win32')
+  throw 'Skipped: does not work on MS-Windows'
+endif
 if has('gui_running')
-  finish
+  throw 'Skipped: does not work in the GUI'
 endif
 set term=xterm
 
@@ -107,6 +110,30 @@ func Test_paste_visual_mode()
   call feedkeys("0fwvj0fd\<Esc>[200~letters\<Esc>[201~", 'xt')
   call assert_equal('some letters more', getline(1))
   call assert_equal("words\nand", getreg('1'))
+
+  bwipe!
+endfunc
+
+func CheckCopyPaste()
+  call setline(1, ['copy this', ''])
+  normal 1G0"*y$
+  normal j"*p
+  call assert_equal('copy this', getline(2))
+endfunc
+
+func Test_xrestore()
+  if !has('xterm_clipboard')
+    return
+  endif
+  let display = $DISPLAY
+  new
+  call CheckCopyPaste()
+
+  xrestore
+  call CheckCopyPaste()
+
+  exe "xrestore " .. display
+  call CheckCopyPaste()
 
   bwipe!
 endfunc

@@ -240,7 +240,7 @@ msgstr " Sleutelwoord voltooiing (^N^P)"
 msgid " ^X mode (^E^Y^L^]^F^I^K^D^V^N^P)"
 msgstr " ^X modus (^E^Y^L^]^F^I^K^D^V^N^P)"
 
-#. Scroll has it's own msgs, in it's place there is the msg for local
+#. Scroll has its own msgs, in its place there is the msg for local
 #. * ctrl_x_mode = 0 (eg continue_status & CONT_LOCAL)  -- Acevedo
 msgid " Keyword Local completion (^N^P)"
 msgstr " Sleutelwoord Lokale voltooiing (^N^P)"

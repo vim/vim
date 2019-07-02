@@ -117,7 +117,8 @@ gui_mch_create_beval_area(
 	beval->appContext = XtWidgetToApplicationContext((Widget)target);
 #endif
 	beval->showState = ShS_NEUTRAL;
-	beval->msg = mesg;
+	vim_free(beval->msg);
+	beval->msg = mesg == NULL ? NULL : vim_strsave(mesg);
 	beval->msgCB = mesgCB;
 	beval->clientData = clientData;
 
@@ -208,8 +209,9 @@ gui_mch_currently_showing_beval(void)
     void
 gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
 {
-    beval->msg = mesg;
-    if (mesg != NULL)
+    vim_free(beval->msg);
+    beval->msg = mesg == NULL ? NULL : vim_strsave(mesg);
+    if (beval->msg != NULL)
 	drawBalloon(beval);
     else
 	undrawBalloon(beval);
@@ -225,6 +227,7 @@ gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
     void
 gui_mch_unpost_balloon(BalloonEval *beval)
 {
+    VIM_CLEAR(beval->msg);
     undrawBalloon(beval);
 }
 #endif
@@ -975,6 +978,7 @@ drawBalloon(BalloonEval *beval)
 	gtk_widget_show(beval->balloonShell);
 
 	beval->showState = ShS_SHOWING;
+	gui_mch_update();
     }
 }
 

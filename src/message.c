@@ -101,8 +101,6 @@ msg(char *s)
     return msg_attr_keep(s, 0, FALSE);
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_X11) || defined(USE_XSMP) \
-    || defined(FEAT_GUI_GTK) || defined(PROTO)
 /*
  * Like msg() but keep it silent when 'verbosefile' is set.
  */
@@ -117,7 +115,6 @@ verb_msg(char *s)
 
     return n;
 }
-#endif
 
     int
 msg_attr(char *s, int attr)
@@ -360,9 +357,6 @@ trunc_string(
 int vim_snprintf(char *str, size_t str_m, const char *fmt, ...);
 
     int
-# ifdef __BORLANDC__
-_RTLENTRYF
-# endif
 smsg(const char *s, ...)
 {
     va_list arglist;
@@ -374,9 +368,6 @@ smsg(const char *s, ...)
 }
 
     int
-# ifdef __BORLANDC__
-_RTLENTRYF
-# endif
 smsg_attr(int attr, const char *s, ...)
 {
     va_list arglist;
@@ -388,9 +379,6 @@ smsg_attr(int attr, const char *s, ...)
 }
 
     int
-# ifdef __BORLANDC__
-_RTLENTRYF
-# endif
 smsg_attr_keep(int attr, const char *s, ...)
 {
     va_list arglist;
@@ -449,7 +437,7 @@ get_emsg_source(void)
     if (sourcing_name != NULL && other_sourcing_name())
     {
 	p = (char_u *)_("Error detected while processing %s:");
-	Buf = alloc((unsigned)(STRLEN(sourcing_name) + STRLEN(p)));
+	Buf = alloc(STRLEN(sourcing_name) + STRLEN(p));
 	if (Buf != NULL)
 	    sprintf((char *)Buf, (char *)p, sourcing_name);
 	return Buf;
@@ -474,7 +462,7 @@ get_emsg_lnum(void)
 	    && sourcing_lnum != 0)
     {
 	p = (char_u *)_("line %4ld:");
-	Buf = alloc((unsigned)(STRLEN(p) + 20));
+	Buf = alloc(STRLEN(p) + 20);
 	if (Buf != NULL)
 	    sprintf((char *)Buf, (char *)p, (long)sourcing_lnum);
 	return Buf;
@@ -730,6 +718,7 @@ emsg(char *s)
     return TRUE;		/* no error messages at the moment */
 }
 
+#ifndef PROTO  // manual proto with __attribute__
 /*
  * Print an error message with format string and variable arguments.
  * Note: caller must not pass 'IObuff' as 1st argument.
@@ -749,6 +738,7 @@ semsg(const char *s, ...)
     }
     return TRUE;		/* no error messages at the moment */
 }
+#endif
 
 /*
  * Same as emsg(...), but abort on error when ABORT_ON_INTERNAL_ERROR is
@@ -765,6 +755,7 @@ iemsg(char *s)
 #endif
 }
 
+#ifndef PROTO  // manual proto with __attribute__
 /*
  * Same as semsg(...) but abort on error when ABORT_ON_INTERNAL_ERROR is
  * defined. It is used for internal errors only, so that they can be
@@ -783,10 +774,11 @@ siemsg(const char *s, ...)
 	va_end(ap);
 	emsg_core(IObuff);
     }
-#ifdef ABORT_ON_INTERNAL_ERROR
+# ifdef ABORT_ON_INTERNAL_ERROR
     abort();
-#endif
+# endif
 }
+#endif
 
 /*
  * Give an "Internal error" message.
@@ -883,7 +875,7 @@ add_msg_hist(
 	(void)delete_first_msg();
 
     /* allocate an entry and add the message at the end of the history */
-    p = (struct msg_hist *)alloc((int)sizeof(struct msg_hist));
+    p = ALLOC_ONE(struct msg_hist);
     if (p != NULL)
     {
 	if (len < 0)
@@ -1590,7 +1582,8 @@ msg_make(char_u *arg)
     int
 msg_outtrans_special(
     char_u	*strstart,
-    int		from)	/* TRUE for lhs of a mapping */
+    int		from,	// TRUE for lhs of a mapping
+    int		maxlen) // screen columns, 0 for unlimeted
 {
     char_u	*str = strstart;
     int		retval = 0;
@@ -1610,6 +1603,8 @@ msg_outtrans_special(
 	else
 	    text = (char *)str2special(&str, from);
 	len = vim_strsize((char_u *)text);
+	if (maxlen > 0 && retval + len >= maxlen)
+	    break;
 	/* Highlight special keys */
 	msg_puts_attr(text, len > 1
 		&& (*mb_ptr2len)((char_u *)text) <= 1 ? attr : 0);
@@ -2365,7 +2360,7 @@ store_sb_text(
 
     if (s > *sb_str)
     {
-	mp = (msgchunk_T *)alloc((int)(sizeof(msgchunk_T) + (s - *sb_str)));
+	mp = alloc(sizeof(msgchunk_T) + (s - *sb_str));
 	if (mp != NULL)
 	{
 	    mp->sb_eol = finish;
@@ -2556,8 +2551,12 @@ t_puts(
 msg_use_printf(void)
 {
     return (!msg_check_screen()
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
+	    || (!gui.in_use && !termcap_active)
+# else
 	    || !termcap_active
+# endif
 #endif
 	    || (swapping_screen() && !termcap_active)
 	       );
@@ -2623,12 +2622,19 @@ msg_puts_printf(char_u *str, int maxlen)
 
     if (*p != NUL && !(silent_mode && p_verbose == 0))
     {
+	int c = -1;
+
 	if (maxlen > 0 && STRLEN(p) > (size_t)maxlen)
+	{
+	    c = p[maxlen];
 	    p[maxlen] = 0;
+	}
 	if (info_message)
 	    mch_msg((char *)p);
 	else
 	    mch_errmsg((char *)p);
+	if (c != -1)
+	    p[maxlen] = c;
     }
 
     msg_didout = TRUE;	    // assume that line is not empty
@@ -2926,15 +2932,10 @@ do_more_prompt(int typed_char)
 # undef mch_msg
 #endif
 
-/*
- * Give an error message.  To be used when the screen hasn't been initialized
- * yet.  When stderr can't be used, collect error messages until the GUI has
- * started and they can be displayed in a message box.
- */
-    void
-mch_errmsg(char *str)
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+    static void
+mch_errmsg_c(char *str)
 {
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
     int	    len = (int)STRLEN(str);
     DWORD   nwrite = 0;
     DWORD   mode = 0;
@@ -2952,34 +2953,57 @@ mch_errmsg(char *str)
     {
 	fprintf(stderr, "%s", str);
     }
-#else
-    int		len;
+}
+#endif
 
-# if (defined(UNIX) || defined(FEAT_GUI)) && !defined(ALWAYS_USE_GUI)
+/*
+ * Give an error message.  To be used when the screen hasn't been initialized
+ * yet.  When stderr can't be used, collect error messages until the GUI has
+ * started and they can be displayed in a message box.
+ */
+    void
+mch_errmsg(char *str)
+{
+#if !defined(MSWIN) || defined(FEAT_GUI_MSWIN)
+    int		len;
+#endif
+
+#if (defined(UNIX) || defined(FEAT_GUI)) && !defined(ALWAYS_USE_GUI) && !defined(VIMDLL)
     /* On Unix use stderr if it's a tty.
      * When not going to start the GUI also use stderr.
      * On Mac, when started from Finder, stderr is the console. */
     if (
-#  ifdef UNIX
-#   ifdef MACOS_X
+# ifdef UNIX
+#  ifdef MACOS_X
 	    (isatty(2) && strcmp("/dev/console", ttyname(2)) != 0)
-#   else
+#  else
 	    isatty(2)
-#   endif
-#   ifdef FEAT_GUI
-	    ||
-#   endif
 #  endif
 #  ifdef FEAT_GUI
-	    !(gui.in_use || gui.starting)
+	    ||
 #  endif
+# endif
+# ifdef FEAT_GUI
+	    !(gui.in_use || gui.starting)
+# endif
 	    )
     {
 	fprintf(stderr, "%s", str);
 	return;
     }
-# endif
+#endif
 
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
+    if (!(gui.in_use || gui.starting))
+# endif
+    {
+	mch_errmsg_c(str);
+	return;
+    }
+#endif
+
+#if !defined(MSWIN) || defined(FEAT_GUI_MSWIN)
     /* avoid a delay for a message that isn't there */
     emsg_on_display = FALSE;
 
@@ -3014,15 +3038,10 @@ mch_errmsg(char *str)
 #endif
 }
 
-/*
- * Give a message.  To be used when the screen hasn't been initialized yet.
- * When there is no tty, collect messages until the GUI has started and they
- * can be displayed in a message box.
- */
-    void
-mch_msg(char *str)
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+    static void
+mch_msg_c(char *str)
 {
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
     int	    len = (int)STRLEN(str);
     DWORD   nwrite = 0;
     DWORD   mode;
@@ -3041,32 +3060,53 @@ mch_msg(char *str)
     {
 	printf("%s", str);
     }
-#else
-# if (defined(UNIX) || defined(FEAT_GUI)) && !defined(ALWAYS_USE_GUI)
+}
+#endif
+
+/*
+ * Give a message.  To be used when the screen hasn't been initialized yet.
+ * When there is no tty, collect messages until the GUI has started and they
+ * can be displayed in a message box.
+ */
+    void
+mch_msg(char *str)
+{
+#if (defined(UNIX) || defined(FEAT_GUI)) && !defined(ALWAYS_USE_GUI) && !defined(VIMDLL)
     /* On Unix use stdout if we have a tty.  This allows "vim -h | more" and
      * uses mch_errmsg() when started from the desktop.
      * When not going to start the GUI also use stdout.
      * On Mac, when started from Finder, stderr is the console. */
     if (
-#  ifdef UNIX
-#   ifdef MACOS_X
+# ifdef UNIX
+#  ifdef MACOS_X
 	    (isatty(2) && strcmp("/dev/console", ttyname(2)) != 0)
-#   else
+#  else
 	    isatty(2)
-#    endif
-#   ifdef FEAT_GUI
-	    ||
-#   endif
 #  endif
 #  ifdef FEAT_GUI
-	    !(gui.in_use || gui.starting)
+	    ||
 #  endif
+# endif
+# ifdef FEAT_GUI
+	    !(gui.in_use || gui.starting)
+# endif
 	    )
     {
 	printf("%s", str);
 	return;
     }
+#endif
+
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
+    if (!(gui.in_use || gui.starting))
 # endif
+    {
+	mch_msg_c(str);
+	return;
+    }
+#endif
+#if !defined(MSWIN) || defined(FEAT_GUI_MSWIN)
     mch_errmsg(str);
 #endif
 }
@@ -4480,7 +4520,6 @@ vim_vsnprintf_typval(
 	    case 'c':
 	    case 's':
 	    case 'S':
-		length_modifier = '\0';
 		str_arg_l = 1;
 		switch (fmt_spec)
 		{
@@ -4861,7 +4900,6 @@ vim_vsnprintf_typval(
 				 * zero value is formatted with an
 				 * explicit precision of zero */
 				precision = num_of_digits + 1;
-				precision_specified = 1;
 			    }
 			}
 			/* zero padding to specified precision? */

@@ -1,5 +1,7 @@
 " Test for various Normal mode commands
 
+source shared.vim
+
 func Setup_NewWindow()
   10new
   call setline(1, range(1,100))
@@ -1356,11 +1358,21 @@ func Test_normal23_K()
     bw!
     return
   endif
-  set keywordprg=man\ --pager=cat
+
+  if has('mac')
+    " In MacOS, the option for specifying a pager is different
+    set keywordprg=man\ -P\ cat
+  else
+    set keywordprg=man\ --pager=cat
+  endif
   " Test for using man
   2
   let a = execute('unsilent norm! K')
-  call assert_match("man --pager=cat 'man'", a)
+  if has('mac')
+    call assert_match("man -P cat 'man'", a)
+  else
+    call assert_match("man --pager=cat 'man'", a)
+  endif
 
   " clean up
   let &keywordprg = k
@@ -1543,73 +1555,158 @@ endfunc
 
 fun! Test_normal29_brace()
   " basic test for { and } movements
-  let text= ['A paragraph begins after each empty line, and also at each of a set of',
-  \ 'paragraph macros, specified by the pairs of characters in the ''paragraphs''',
-  \ 'option.  The default is "IPLPPPQPP TPHPLIPpLpItpplpipbp", which corresponds to',
-  \ 'the macros ".IP", ".LP", etc.  (These are nroff macros, so the dot must be in',
-  \ 'the first column).  A section boundary is also a paragraph boundary.',
-  \ 'Note that a blank line (only containing white space) is NOT a paragraph',
-  \ 'boundary.',
-  \ '',
-  \ '',
-  \ 'Also note that this does not include a ''{'' or ''}'' in the first column.  When',
-  \ 'the ''{'' flag is in ''cpoptions'' then ''{'' in the first column is used as a',
-  \ 'paragraph boundary |posix|.',
-  \ '{',
-  \ 'This is no paragraph',
-  \ 'unless the ''{'' is set',
-  \ 'in ''cpoptions''',
-  \ '}',
-  \ '.IP',
-  \ 'The nroff macros IP separates a paragraph',
-  \ 'That means, it must be a ''.''',
-  \ 'followed by IP',
-  \ '.LPIt does not matter, if afterwards some',
-  \ 'more characters follow.',
-  \ '.SHAlso section boundaries from the nroff',
-  \ 'macros terminate a paragraph. That means',
-  \ 'a character like this:',
-  \ '.NH',
-  \ 'End of text here']
+  let text =<< trim [DATA]
+    A paragraph begins after each empty line, and also at each of a set of
+    paragraph macros, specified by the pairs of characters in the 'paragraphs'
+    option.  The default is "IPLPPPQPP TPHPLIPpLpItpplpipbp", which corresponds to
+    the macros ".IP", ".LP", etc.  (These are nroff macros, so the dot must be in
+    the first column).  A section boundary is also a paragraph boundary.
+    Note that a blank line (only containing white space) is NOT a paragraph
+    boundary.
+
+
+    Also note that this does not include a '{' or '}' in the first column.  When
+    the '{' flag is in 'cpoptions' then '{' in the first column is used as a
+    paragraph boundary |posix|.
+    {
+    This is no paragraph
+    unless the '{' is set
+    in 'cpoptions'
+    }
+    .IP
+    The nroff macros IP separates a paragraph
+    That means, it must be a '.'
+    followed by IP
+    .LPIt does not matter, if afterwards some
+    more characters follow.
+    .SHAlso section boundaries from the nroff
+    macros terminate a paragraph. That means
+    a character like this:
+    .NH
+    End of text here
+  [DATA]
+
   new
   call append(0, text)
   1
   norm! 0d2}
-  call assert_equal(['.IP',
-    \  'The nroff macros IP separates a paragraph', 'That means, it must be a ''.''', 'followed by IP',
-    \ '.LPIt does not matter, if afterwards some', 'more characters follow.', '.SHAlso section boundaries from the nroff',
-    \  'macros terminate a paragraph. That means', 'a character like this:', '.NH', 'End of text here', ''], getline(1,'$'))
+
+  let expected =<< trim [DATA]
+    .IP
+    The nroff macros IP separates a paragraph
+    That means, it must be a '.'
+    followed by IP
+    .LPIt does not matter, if afterwards some
+    more characters follow.
+    .SHAlso section boundaries from the nroff
+    macros terminate a paragraph. That means
+    a character like this:
+    .NH
+    End of text here
+
+  [DATA]
+  call assert_equal(expected, getline(1, '$'))
+
   norm! 0d}
-  call assert_equal(['.LPIt does not matter, if afterwards some', 'more characters follow.',
-    \ '.SHAlso section boundaries from the nroff', 'macros terminate a paragraph. That means',
-    \ 'a character like this:', '.NH', 'End of text here', ''], getline(1, '$'))
+
+  let expected =<< trim [DATA]
+    .LPIt does not matter, if afterwards some
+    more characters follow.
+    .SHAlso section boundaries from the nroff
+    macros terminate a paragraph. That means
+    a character like this:
+    .NH
+    End of text here
+  
+  [DATA]
+  call assert_equal(expected, getline(1, '$'))
+
   $
   norm! d{
-  call assert_equal(['.LPIt does not matter, if afterwards some', 'more characters follow.',
-	\ '.SHAlso section boundaries from the nroff', 'macros terminate a paragraph. That means', 'a character like this:', ''], getline(1, '$'))
+
+  let expected =<< trim [DATA]
+    .LPIt does not matter, if afterwards some
+    more characters follow.
+    .SHAlso section boundaries from the nroff
+    macros terminate a paragraph. That means
+    a character like this:
+
+  [DATA]
+  call assert_equal(expected, getline(1, '$'))
+
   norm! d{
-  call assert_equal(['.LPIt does not matter, if afterwards some', 'more characters follow.', ''], getline(1,'$'))
+
+  let expected =<< trim [DATA]
+    .LPIt does not matter, if afterwards some
+    more characters follow.
+
+  [DATA]
+  call assert_equal(expected, getline(1, '$'))
+
   " Test with { in cpooptions
   %d
   call append(0, text)
   set cpo+={
   1
   norm! 0d2}
-  call assert_equal(['{', 'This is no paragraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}',
-    \ '.IP', 'The nroff macros IP separates a paragraph', 'That means, it must be a ''.''',
-    \ 'followed by IP', '.LPIt does not matter, if afterwards some', 'more characters follow.',
-    \ '.SHAlso section boundaries from the nroff', 'macros terminate a paragraph. That means',
-    \ 'a character like this:', '.NH', 'End of text here', ''], getline(1,'$'))
+
+  let expected =<< trim [DATA]
+    {
+    This is no paragraph
+    unless the '{' is set
+    in 'cpoptions'
+    }
+    .IP
+    The nroff macros IP separates a paragraph
+    That means, it must be a '.'
+    followed by IP
+    .LPIt does not matter, if afterwards some
+    more characters follow.
+    .SHAlso section boundaries from the nroff
+    macros terminate a paragraph. That means
+    a character like this:
+    .NH
+    End of text here
+
+  [DATA]
+  call assert_equal(expected, getline(1, '$'))
+
   $
   norm! d}
-  call assert_equal(['{', 'This is no paragraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}',
-    \ '.IP', 'The nroff macros IP separates a paragraph', 'That means, it must be a ''.''',
-    \ 'followed by IP', '.LPIt does not matter, if afterwards some', 'more characters follow.',
-    \ '.SHAlso section boundaries from the nroff', 'macros terminate a paragraph. That means',
-    \ 'a character like this:', '.NH', 'End of text here', ''], getline(1,'$'))
+
+  let expected =<< trim [DATA]
+    {
+    This is no paragraph
+    unless the '{' is set
+    in 'cpoptions'
+    }
+    .IP
+    The nroff macros IP separates a paragraph
+    That means, it must be a '.'
+    followed by IP
+    .LPIt does not matter, if afterwards some
+    more characters follow.
+    .SHAlso section boundaries from the nroff
+    macros terminate a paragraph. That means
+    a character like this:
+    .NH
+    End of text here
+
+  [DATA]
+  call assert_equal(expected, getline(1, '$'))
+
   norm! gg}
   norm! d5}
-  call assert_equal(['{', 'This is no paragraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}', ''], getline(1,'$'))
+
+  let expected =<< trim [DATA]
+    {
+    This is no paragraph
+    unless the '{' is set
+    in 'cpoptions'
+    }
+
+  [DATA]
+  call assert_equal(expected, getline(1, '$'))
 
   " clean up
   set cpo-={
@@ -2541,4 +2638,97 @@ func Test_nv_hat_count()
   call assert_equal('Xbar', fnamemodify(bufname('%'), ':t'))
 
   %bwipeout!
+endfunc
+
+func Test_message_when_using_ctrl_c()
+  " Make sure no buffers are changed.
+  %bwipe!
+
+  exe "normal \<C-C>"
+  call assert_match("Type  :qa  and press <Enter> to exit Vim", Screenline(&lines))
+
+  new
+  cal setline(1, 'hi!')
+  exe "normal \<C-C>"
+  call assert_match("Type  :qa!  and press <Enter> to abandon all changes and exit Vim", Screenline(&lines))
+
+  bwipe!
+endfunc
+
+" Test for '[m', ']m', '[M' and ']M'
+" Jumping to beginning and end of methods in Java-like languages
+func Test_java_motion()
+  new
+  a
+Piece of Java
+{
+	tt m1 {
+		t1;
+	} e1
+
+	tt m2 {
+		t2;
+	} e2
+
+	tt m3 {
+		if (x)
+		{
+			t3;
+		}
+	} e3
+}
+.
+
+  normal gg
+
+  normal 2]maA
+  call assert_equal("\ttt m1 {A", getline('.'))
+  call assert_equal([3, 9, 16], [line('.'), col('.'), virtcol('.')])
+
+  normal j]maB
+  call assert_equal("\ttt m2 {B", getline('.'))
+  call assert_equal([7, 9, 16], [line('.'), col('.'), virtcol('.')])
+
+  normal ]maC
+  call assert_equal("\ttt m3 {C", getline('.'))
+  call assert_equal([11, 9, 16], [line('.'), col('.'), virtcol('.')])
+
+  normal [maD
+  call assert_equal("\ttt m3 {DC", getline('.'))
+  call assert_equal([11, 9, 16], [line('.'), col('.'), virtcol('.')])
+
+  normal k2[maE
+  call assert_equal("\ttt m1 {EA", getline('.'))
+  call assert_equal([3, 9, 16], [line('.'), col('.'), virtcol('.')])
+
+  normal 3[maF
+  call assert_equal("{F", getline('.'))
+  call assert_equal([2, 2, 2], [line('.'), col('.'), virtcol('.')])
+
+  normal ]MaG
+  call assert_equal("\t}G e1", getline('.'))
+  call assert_equal([5, 3, 10], [line('.'), col('.'), virtcol('.')])
+
+  normal j2]MaH
+  call assert_equal("\t}H e3", getline('.'))
+  call assert_equal([16, 3, 10], [line('.'), col('.'), virtcol('.')])
+
+  normal ]M]M
+  normal aI
+  call assert_equal("}I", getline('.'))
+  call assert_equal([17, 2, 2], [line('.'), col('.'), virtcol('.')])
+
+  normal 2[MaJ
+  call assert_equal("\t}JH e3", getline('.'))
+  call assert_equal([16, 3, 10], [line('.'), col('.'), virtcol('.')])
+
+  normal k[MaK
+  call assert_equal("\t}K e2", getline('.'))
+  call assert_equal([9, 3, 10], [line('.'), col('.'), virtcol('.')])
+
+  normal 3[MaL
+  call assert_equal("{LF", getline('.'))
+  call assert_equal([2, 2, 2], [line('.'), col('.'), virtcol('.')])
+
+  close!
 endfunc
