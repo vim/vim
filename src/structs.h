@@ -2916,6 +2916,9 @@ struct window_S
     int		w_popup_border[4];  // popup border top/right/bot/left
     char_u	*w_border_highlight[4];  // popup border highlight
     int		w_border_char[8];   // popup border characters
+
+    int		w_popup_leftoff;    // columns left of the screen
+    int		w_popup_rightoff;   // columns right of the screen
     varnumber_T	w_popup_last_changedtick; // b:changedtick when position was
 					  // computed
     callback_T	w_close_cb;	    // popup close callback
@@ -2927,8 +2930,8 @@ struct window_S
     colnr_T	w_popup_maxcol;	    // close popup if cursor after this col
     int		w_popup_drag;	    // allow moving the popup with the mouse
     popclose_T	w_popup_close;	    // allow closing the popup with the mouse
-    list_T	*w_popup_mask;	    // list of lists for "mask"
 
+    list_T	*w_popup_mask;	    // list of lists for "mask"
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window
 # endif
