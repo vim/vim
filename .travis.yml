@@ -220,5 +220,6 @@ matrix:
       env:
         - *linux-huge
         - TEST="-C src testgui"
+      after_success: *coverage
 
 # vim:set sts=2 sw=2 tw=0 et:
