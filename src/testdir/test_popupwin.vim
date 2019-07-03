@@ -1697,3 +1697,16 @@ func Test_popupwin_with_buffer()
   redraw
   call popup_close(winid)
 endfunc
+
+func Test_popupwin_width()
+  let winid = popup_create(repeat(['short', 'long long long line', 'medium width'], 50), {
+	\ 'maxwidth': 40,
+	\ 'maxheight': 10,
+	\ })
+  for top in range(1, 20)
+    call popup_setoptions(winid, {'firstline': top})
+    redraw
+    call assert_equal(19, popup_getpos(winid).width)
+  endfor
+  call popup_clear()
+endfunc

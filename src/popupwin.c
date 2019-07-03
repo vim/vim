@@ -855,8 +855,8 @@ popup_adjust_position(win_T *wp)
 	if (wp->w_width < len)
 	    wp->w_width = len;
 	// do not use the width of lines we're not going to show
-	if (wp->w_maxheight > 0 && wp->w_buffer->b_ml.ml_line_count
-			       - wp->w_topline + 1 + wrapped > wp->w_maxheight)
+	if (wp->w_maxheight > 0
+		       && lnum - wp->w_topline + 1 + wrapped > wp->w_maxheight)
 	    break;
     }
 
