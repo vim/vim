@@ -214,5 +214,12 @@ matrix:
         - *linux-huge
         - *asan
       after_failure: *asan_symbolize
+    - <<: *linux
+      name: huge-testgui+coverage/gcc
+      compiler: gcc
+      env:
+        - *linux-huge
+        - TEST="-C src testgui"
+      after_success: *coverage
 
 # vim:set sts=2 sw=2 tw=0 et:
