@@ -2534,6 +2534,24 @@ nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF8 value {expr}
 or({expr}, {expr})		Number	bitwise OR
 pathshorten({expr})		String	shorten directory names in a path
 perleval({expr})		any	evaluate |Perl| expression
+popup_atcursor({what}, {options}) Number create popup window near the cursor
+popup_clear()			none	close all popup windows
+popup_close({id} [, {result}])	none	close popup window {id}
+popup_create({what}, {options}) Number	create a popup window
+popup_dialog({what}, {options}) Number	create a popup window used as a dialog
+popup_filter_menu({id}, {key})  Number	filter for a menu popup window
+popup_filter_yesno({id}, {key}) Number	filter for a dialog popup window
+popup_getoptions({id})		Dict	get options of popup window {id}
+popup_getpos({id})		Dict	get position of popup window {id}
+popup_hide({id})		none	hide popup menu {id}
+popup_menu({what}, {options})	Number	create a popup window used as a menu
+popup_move({id}, {options})	none	set position of popup window {id}
+popup_notification({what}, {options})
+				Number	create a notification popup window
+popup_show({id})		none	unhide popup window {id}
+popup_setoptions({id}, {options})
+				none	set options for popup window {id}
+popup_settext({id}, {text})	none	set the text of popup window {id}
 pow({x}, {y})			Float	{x} to the power of {y}
 prevnonblank({lnum})		Number	line nr of non-blank line <= {lnum}
 printf({fmt}, {expr1}...)	String	format text
@@ -7034,6 +7052,10 @@ perleval({expr})					*perleval()*
 			:echo perleval('[1 .. 4]')
 <			[1, 2, 3, 4]
 		{only available when compiled with the |+perl| feature}
+
+
+popup_ functions are documented here: |popup-functions|.
+
 
 pow({x}, {y})						*pow()*
 		Return the power of {x} to the exponent {y} as a |Float|.

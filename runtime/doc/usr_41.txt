@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Jun 09
+*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Jul 04
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -748,6 +748,12 @@ Working with text in the current buffer:		*text-functions*
 	getcharsearch()		return character search information
 	setcharsearch()		set character search information
 
+Working with text in another buffer:
+	getbufline()		get a list of lines from the specified buffer
+	setbufline()		replace a line in the specified buffer
+	appendbufline()		append a list of lines in the specified buffer
+	deletebufline()		delete lines from a specified buffer
+
 					*system-functions* *file-functions*
 System functions and manipulation of files:
 	glob()			expand wildcards
@@ -799,8 +805,10 @@ Buffers, windows and the argument list:
 	argidx()		current position in the argument list
 	arglistid()		get id of the argument list
 	argv()			get one entry from the argument list
+	bufadd()		add a file to the list of buffers
 	bufexists()		check if a buffer exists
 	buflisted()		check if a buffer exists and is listed
+	bufload()		ensure a buffer is loaded
 	bufloaded()		check if a buffer exists and is loaded
 	bufname()		get the name of a specific buffer
 	bufnr()			get the buffer number of a specific buffer
@@ -811,10 +819,6 @@ Buffers, windows and the argument list:
 	bufwinid()		get the window ID of a specific buffer
 	bufwinnr()		get the window number of a specific buffer
 	winbufnr()		get the buffer number of a specific window
-	getbufline()		get a list of lines from the specified buffer
-	setbufline()		replace a line in the specified buffer
-	appendbufline()		append a list of lines in the specified buffer
-	deletebufline()		delete lines from a specified buffer
 	listener_add()		add a callback to listen to changes
 	listener_flush()	invoke listener callbacks
 	listener_remove()	remove a listener callback
@@ -1037,6 +1041,25 @@ Terminal window:				*terminal-functions*
 	term_setkill()		set signal to stop job in a terminal
 	term_setrestore()	set command to restore a terminal
 	term_setsize()		set the size of a terminal
+
+Popup window:					*popup-window-functions*
+	popup_create()		create popup centered in the screen
+	popup_atcursor()	create popup just above the cursor position,
+				closes when the cursor moves away
+	popup_notification()	show a notification for three seconds
+	popup_dialog()		create popup centered with padding and border
+	popup_menu()		prompt for selecting an item from a list
+	popup_hide()		hide a popup temporarily
+	popup_show()		show a previously hidden popup
+	popup_move()		change the position and size of a popup
+	popup_setoptions()	override options of a popup
+	popup_settext()		replace the popup buffer contents
+	popup_close()		close one popup
+	popup_clear()		close all popups
+	popup_filter_menu()	select from a list of items
+	popup_filter_yesno()	blocks until 'y' or 'n' is pressed
+	popup_getoptions()	get current options for a popup
+	popup_getpos()		get actual position and size of a popup
 
 Timers:						*timer-functions*
 	timer_start()		create a timer
