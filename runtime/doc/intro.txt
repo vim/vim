@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.1.  Last change: 2019 Jun 12
+*intro.txt*     For Vim version 8.1.  Last change: 2019 Jun 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -69,10 +69,17 @@ Frequently Asked Questions.  Read this if you have problems.
 	Downloading:	  https://www.vim.org/download.php
 
 
+Asking questions, finding answers: https://vi.stackexchange.com/
+"Vi and Vim Stack Exchange is a question and answer site for people using the
+vi and Vim families of text editors"
+
+
 Usenet News group where Vim is discussed:		*news* *usenet*
 	comp.editors
 This group is also for other editors.  If you write about Vim, don't forget to
 mention that.
+You can access it here:
+https://groups.google.com/forum/#!topic/comp.editors
 
 						*mail-list* *maillist*
 There are several mailing lists for Vim:

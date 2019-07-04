@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Jun 19
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Jul 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -47,13 +47,40 @@ Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
 Also put :argadd commands at the start for all buffers, so that their order
 remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 
-Patch to add v:searchstat. (Takuya Fujiwara, #4446)  Should be independent of
-'shortmess', filled on demand and cached until search changes.
-
 Listener causes extra } to be inserted. (Paul Jolly, #4455)
 
 Refactor: Move common things out of evalfunc.c, it's too big.
-E.g. vim_localtime().
+
+Template string: review #4491
+
+Terminal test fails when vim is configured with some features. (Dominique,
+#4597)
+
+Popup windows:
+- Implement flip option
+- Have a way to scroll to the bottom? (#4577)
+- Why does 'nrformats' leak from the popup window buffer???
+- Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
+  Use ERROR_IF_POPUP_WINDOW for more commands.
+- Add 'balloonpopup': instead of showing text, let the callback open a popup
+  window and return the window ID.   The popup will then be closed when the
+  mouse moves, except when it moves inside the popup.
+- For the "moved" property also include mouse movement?
+- Can the buffer be re-used if it was the last one, to avoid using up lots of
+  buffer numbers?
+- Have an option to attach the popup to a text position, like text properties
+  do. (#4560)
+- Make redrawing more efficient and avoid flicker:
+    - put popup menu also put in popup_mask?
+- Invoke filter with character before mapping?
+- Figure out the size and position better.
+    if wrapping splits a double-wide character
+    if wrapping inserts indent
+- When drawing on top half a double-wide character, display ">" or "<" in the
+  incomplete cell.
+- Use a popup window for the "info" item of completion instead of using a
+  preview window.  Ideas in issue #4544.
+  How to add highlighting?
 
 'incsearch' with :s: (#3321)
 - Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
@@ -136,8 +163,13 @@ terminal.c and then CTRL-N twice.
 Should do current file first and not split it up when more results are found.
 (Also #1890)
 
+Patch to use timers in matchparen. (Daniel Hahler, #1338)
+Ready to include now?
+
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
+
+Patch to the code to get sign information. (Yegappan Lakshmanan, #4586)
 
 ":bnext" in a help buffer is supposed to go to the next help buffer, but it
 goes to any buffer, and then :bnext skips help buffers, since they are
@@ -171,16 +203,18 @@ Include part of #3242?
 When a terminal exit_cb closes the window, a following typed key is lost, if
 it's in a mapping. (2018 Oct 6, #2302, #3522)
 
+Patch for Inno Setup: #2739
+
 Internal diff doesn't handle binary file like external diff does. (Mike
 Williams, 2018 Oct 30)
 
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
 
-Patch to use timers in matchparen. (Daniel Hahler, #1338)
-Ready to include now?
-
 The quoting of the [command] argument of :terminal is not clearly documented.
 Give a few examples. (#4288)
+
+Opening a file with --remote-tab-silent that matches 'wildignore' does not
+work, results in (E479: No match". (#4610)
 
 Bug: script written with "-W scriptout" contains Key codes, while the script
 read with "-s scriptin" expects escape codes.  Probably "scriptout" needs to
