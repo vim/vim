@@ -1193,9 +1193,7 @@ free_all_mem(void)
 	    buf = firstbuf;
     }
 
-# ifdef FEAT_ARABIC
     free_cmdline_buf();
-# endif
 
     /* Clear registers. */
     clear_registers();

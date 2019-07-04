@@ -1187,11 +1187,10 @@ func Test_terminal_dumpdiff_options()
   quit
 
   call assert_equal(1, winnr('$'))
-  let width = winwidth(0)
   call term_dumpdiff('dumps/Test_popup_command_01.dump', 'dumps/Test_popup_command_02.dump', {'vertical': 0, 'term_rows': 13, 'term_name': 'something else'})
   call assert_equal(2, winnr('$'))
-  call assert_equal(width, winwidth(winnr()))
-  call assert_equal(13, winheight(winnr()))
+  call assert_equal(&columns, winwidth(0))
+  call assert_equal(13, winheight(0))
   call assert_equal('something else', bufname('%'))
   quit
 

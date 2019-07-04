@@ -652,7 +652,7 @@ emsg_core(char_u *s)
 		redir_write(s, -1);
 	    }
 #ifdef FEAT_JOB_CHANNEL
-	    ch_log(NULL, "ERROR: %s", (char *)s);
+	    ch_log(NULL, "ERROR silent: %s", (char *)s);
 #endif
 	    return TRUE;
 	}

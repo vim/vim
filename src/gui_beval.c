@@ -107,7 +107,7 @@ gui_mch_create_beval_area(
 	return NULL;
     }
 
-    beval = (BalloonEval *)alloc_clear(sizeof(BalloonEval));
+    beval = ALLOC_CLEAR_ONE(BalloonEval);
     if (beval != NULL)
     {
 #ifdef FEAT_GUI_GTK

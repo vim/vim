@@ -130,7 +130,7 @@ rettv_list_alloc_id(typval_T *rettv, alloc_id_T id UNUSED)
 
 
 /*
- * Set a list as the return value
+ * Set a list as the return value.  Increments the reference count.
  */
     void
 rettv_list_set(typval_T *rettv, list_T *l)
