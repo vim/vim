@@ -1008,6 +1008,20 @@ sign_list_by_name(char_u *name)
 	semsg(_("E155: Unknown sign: %s"), name);
 }
 
+    static void
+may_force_numberwidth_recompute(buf_T *buf, int unplace)
+{
+    tabpage_T	*tp;
+    win_T		*wp;
+
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+	if (wp->w_buffer == buf
+		&& (wp->w_p_nu || wp->w_p_rnu)
+		&& (unplace || wp->w_nrwidth_width < 2)
+		&& (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u'))
+	    wp->w_nrwidth_line_count = 0;
+}
+
 /*
  * Place a sign at the specified file location or update a sign.
  */
@@ -1045,7 +1059,13 @@ sign_place(
 	// ":sign place {id} file={fname}": change sign type
 	lnum = buf_change_sign_type(buf, *sign_id, sign_group, sp->sn_typenr);
     if (lnum > 0)
+    {
 	redraw_buf_line_later(buf, lnum);
+
+	// When displaying signs in the 'number' column, if the width of the
+	// number column is less than 2, then force recomputing the width.
+	may_force_numberwidth_recompute(buf, FALSE);
+    }
     else
     {
 	semsg(_("E885: Not possible to change sign %s"), sign_name);
@@ -1079,6 +1099,12 @@ sign_unplace(int sign_id, char_u *sign_group, buf_T *buf, linenr_T atlnum)
 	if (lnum == 0)
 	    return FAIL;
     }
+
+    // When all the signs in a buffer are removed, force recomputing the
+    // number column width (if enabled) in all the windows displaying the
+    // buffer if 'signcolumn' is set to 'number' in that window.
+    if (buf->b_signlist == NULL)
+	may_force_numberwidth_recompute(buf, TRUE);
 
     return OK;
 }

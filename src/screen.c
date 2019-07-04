@@ -11333,6 +11333,14 @@ number_width(win_T *wp)
     if (n < wp->w_p_nuw - 1)
 	n = wp->w_p_nuw - 1;
 
+# ifdef FEAT_SIGNS
+    // If 'signcolumn' is set to 'number' and there is a sign to display, then
+    // the minimal width for the number column is 2.
+    if (n < 2 && (wp->w_buffer->b_signlist != NULL)
+	    && (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u'))
+	n = 2;
+# endif
+
     wp->w_nrwidth_width = n;
     wp->w_nuw_cached = wp->w_p_nuw;
     return n;
