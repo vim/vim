@@ -1060,7 +1060,7 @@ free_all_mem(void)
     spell_free_all();
 # endif
 
-#if defined(FEAT_INS_EXPAND) && defined(FEAT_BEVAL_TERM)
+# if defined(FEAT_INS_EXPAND) && defined(FEAT_BEVAL_TERM)
     ui_remove_balloon();
 # endif
 
@@ -1092,7 +1092,7 @@ free_all_mem(void)
 # endif
 # if defined(FEAT_KEYMAP)
 	do_cmdline_cmd((char_u *)"set keymap=");
-#endif
+# endif
     }
 
 # ifdef FEAT_TITLE
@@ -1149,11 +1149,11 @@ free_all_mem(void)
 # ifdef FEAT_CMDHIST
     init_history();
 # endif
-#ifdef FEAT_TEXT_PROP
+# ifdef FEAT_TEXT_PROP
     clear_global_prop_types();
-#endif
+# endif
 
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
     {
 	win_T	    *win;
 	tabpage_T   *tab;
@@ -1163,7 +1163,7 @@ free_all_mem(void)
 	FOR_ALL_TAB_WINDOWS(tab, win)
 	    qf_free_all(win);
     }
-#endif
+# endif
 
     // Close all script inputs.
     close_all_scripts();
@@ -1177,9 +1177,9 @@ free_all_mem(void)
 
     /* Free all buffers.  Reset 'autochdir' to avoid accessing things that
      * were freed already. */
-#ifdef FEAT_AUTOCHDIR
+# ifdef FEAT_AUTOCHDIR
     p_acd = FALSE;
-#endif
+# endif
     for (buf = firstbuf; buf != NULL; )
     {
 	bufref_T    bufref;
@@ -1193,7 +1193,9 @@ free_all_mem(void)
 	    buf = firstbuf;
     }
 
-    free_cmdline_buf();
+# ifdef FEAT_ARABIC
+    free_arshape_buf();
+# endif
 
     /* Clear registers. */
     clear_registers();
