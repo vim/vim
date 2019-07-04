@@ -59,10 +59,8 @@ func RunVimInTerminal(arguments, options)
   let cols = get(a:options, 'cols', 75)
   let statusoff = get(a:options, 'statusoff', 1)
 
-  let cmd = GetVimCommandClean()
+  let cmd = GetVimCommandCleanTerm() .. a:arguments
 
-  " Add -v to have gvim run in the terminal (if possible)
-  let cmd .= ' -v ' . a:arguments
   let buf = term_start(cmd, {
 	\ 'curwin': 1,
 	\ 'term_rows': rows,
