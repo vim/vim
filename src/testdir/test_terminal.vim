@@ -1434,6 +1434,9 @@ func Test_terminal_api_call_fail_delete()
 endfunc
 
 func Test_terminal_ansicolors_default()
+  if !exists('*term_getansicolors')
+    throw 'Skipped: term_getansicolors() not supported'
+  endif
   let colors = [
 	\ '#000000', '#e00000',
 	\ '#00e000', '#e0e000',
@@ -1465,6 +1468,9 @@ let s:test_colors = [
 	\]
 
 func Test_terminal_ansicolors_global()
+  if !exists('*term_getansicolors')
+    throw 'Skipped: term_getansicolors() not supported'
+  endif
   let g:terminal_ansi_colors = reverse(copy(s:test_colors))
   let buf = Run_shell_in_terminal({})
   call assert_equal(g:terminal_ansi_colors, term_getansicolors(buf))
@@ -1476,6 +1482,9 @@ func Test_terminal_ansicolors_global()
 endfunc
 
 func Test_terminal_ansicolors_func()
+  if !exists('*term_getansicolors')
+    throw 'Skipped: term_getansicolors() not supported'
+  endif
   let g:terminal_ansi_colors = reverse(copy(s:test_colors))
   let buf = Run_shell_in_terminal({'ansi_colors': s:test_colors})
   call assert_equal(s:test_colors, term_getansicolors(buf))

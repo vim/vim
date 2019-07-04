@@ -909,6 +909,9 @@ func Test_diff_of_diff()
   if !CanRunVimInTerminal()
     throw 'Skipped: cannot run Vim in a terminal window'
   endif
+  if !has("rightleft")
+    throw 'Skipped: rightleft not supported'
+  endif
 
   call writefile([
 	\ 'call setline(1, ["aa","bb","cc","@@ -3,2 +5,7 @@","dd","ee","ff"])',
