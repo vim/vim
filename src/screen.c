@@ -3265,10 +3265,12 @@ win_line(
 #endif
 #if defined(FEAT_SIGNS) || defined(FEAT_QUICKFIX) \
 	|| defined(FEAT_SYN_HL) || defined(FEAT_DIFF)
-    int		sign_present = FALSE;
-    sign_attrs_T sattr;
 # define LINE_ATTR
     int		line_attr = 0;		/* attribute for the whole line */
+#endif
+#ifdef FEAT_SIGNS
+    int		sign_present = FALSE;
+    sign_attrs_T sattr;
 #endif
 #ifdef FEAT_SEARCH_EXTRA
     matchitem_T *cur;			/* points to the match list */
