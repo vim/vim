@@ -759,6 +759,17 @@ struct signlist
     signlist_T  *prev;		// previous entry -- for easy reordering
 };
 
+/*
+ * Sign attributes. Used by the screen refresh routines.
+ */
+typedef struct sign_attrs_S {
+    int		typenr;
+    void	*icon;
+    char_u	*text;
+    int		texthl;
+    int		linehl;
+} sign_attrs_T;
+
 #if defined(FEAT_SIGNS) || defined(PROTO)
 // Macros to get the sign group structure from the group name
 #define SGN_KEY_OFF	offsetof(signgroup_T, sg_name)
@@ -767,11 +778,6 @@ struct signlist
 // Default sign priority for highlighting
 #define SIGN_DEF_PRIO	10
 
-/* type argument for buf_getsigntype() */
-#define SIGN_ANY	0
-#define SIGN_LINEHL	1
-#define SIGN_ICON	2
-#define SIGN_TEXT	3
 #endif
 
 /*
