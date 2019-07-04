@@ -4509,10 +4509,10 @@ get_buffer_info(buf_T *buf)
     dict_add_number(dict, "hidden",
 			    buf->b_ml.ml_mfp != NULL && buf->b_nwindows == 0);
 
-    /* Get a reference to buffer variables */
+    // Get a reference to buffer variables
     dict_add_dict(dict, "variables", buf->b_vars);
 
-    /* List of windows displaying this buffer */
+    // List of windows displaying this buffer
     windows = list_alloc();
     if (windows != NULL)
     {
@@ -4521,6 +4521,23 @@ get_buffer_info(buf_T *buf)
 		list_append_number(windows, (varnumber_T)wp->w_id);
 	dict_add_list(dict, "windows", windows);
     }
+
+#ifdef FEAT_TEXT_PROP
+    // List of popup windows displaying this buffer
+    windows = list_alloc();
+    if (windows != NULL)
+    {
+	for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	    if (wp->w_buffer == buf)
+		list_append_number(windows, (varnumber_T)wp->w_id);
+	FOR_ALL_TABPAGES(tp)
+	    for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+		if (wp->w_buffer == buf)
+		    list_append_number(windows, (varnumber_T)wp->w_id);
+
+	dict_add_list(dict, "popups", windows);
+    }
+#endif
 
 #ifdef FEAT_SIGNS
     if (buf->b_signlist != NULL)
@@ -5685,7 +5702,7 @@ get_tabpage_info(tabpage_T *tp, int tp_idx)
     if (l != NULL)
     {
 	for (wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
-		wp; wp = wp->w_next)
+						   wp != NULL; wp = wp->w_next)
 	    list_append_number(l, (varnumber_T)wp->w_id);
 	dict_add_list(dict, "windows", l);
     }

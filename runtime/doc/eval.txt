@@ -3140,7 +3140,11 @@ bufadd({name})						*bufadd()*
 		number.  Otherwise return the buffer number of the newly
 		created buffer.  When {name} is an empty string then a new
 		buffer is always created.
-		The buffer will not have' 'buflisted' set.
+		The buffer will not have' 'buflisted' set and not be loaded
+		yet.  To add some text to the buffer use this: >
+			let bufnr = bufadd('someName')
+			call bufload(bufnr)
+			call setbufline(bufnr, 1, ['some', 'text'])
 
 bufexists({expr})					*bufexists()*
 		The result is a Number, which is |TRUE| if a buffer called
@@ -4744,6 +4748,8 @@ getbufinfo([{dict}])
 					buffer-local variables.
 			windows		list of |window-ID|s that display this
 					buffer
+			popups		list of popup |window-ID|s that
+					display this buffer
 
 		Examples: >
 			for buf in getbufinfo()

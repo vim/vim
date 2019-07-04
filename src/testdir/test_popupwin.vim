@@ -1710,3 +1710,30 @@ func Test_popupwin_width()
   endfor
   call popup_clear()
 endfunc
+
+func Test_popupwin_buf_close()
+  let buf = bufadd('Xtestbuf')
+  call bufload(buf)
+  call setbufline(buf, 1, ['just', 'some', 'lines'])
+  let winid = popup_create(buf, {})
+  redraw
+  call assert_equal(3, popup_getpos(winid).height)
+  let bufinfo = getbufinfo(buf)[0]
+  call assert_equal(1, bufinfo.changed)
+  call assert_equal(0, bufinfo.hidden)
+  call assert_equal(0, bufinfo.listed)
+  call assert_equal(1, bufinfo.loaded)
+  call assert_equal([], bufinfo.windows)
+  call assert_equal([winid], bufinfo.popups)
+
+  call popup_close(winid)
+  call assert_equal({}, popup_getpos(winid))
+  let bufinfo = getbufinfo(buf)[0]
+  call assert_equal(1, bufinfo.changed)
+  call assert_equal(1, bufinfo.hidden)
+  call assert_equal(0, bufinfo.listed)
+  call assert_equal(1, bufinfo.loaded)
+  call assert_equal([], bufinfo.windows)
+  call assert_equal([], bufinfo.popups)
+  exe 'bwipe! ' .. buf
+endfunc
