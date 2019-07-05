@@ -1565,6 +1565,18 @@ func Test_popup_scrollbar()
   call delete('XtestPopupScroll')
 endfunc
 
+func Test_popup_fitting_scrollbar()
+  " this was causing a crash, divide by zero
+  let winid = popup_create([
+	\ 'one', 'two', 'longer line that wraps', 'four', 'five'], {
+	\ 'scrollbar': 1,
+	\ 'maxwidth': 10,
+	\ 'maxheight': 5,
+	\ 'firstline': 2})
+  redraw
+  call popup_clear()
+endfunc
+
 func Test_popup_settext()
   if !CanRunVimInTerminal()
     throw 'Skipped: cannot make screendumps'

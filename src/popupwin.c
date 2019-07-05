@@ -2463,7 +2463,12 @@ update_popups(void (*win_update)(win_T *wp))
 								   / linecount;
 	    if (sb_thumb_height == 0)
 		sb_thumb_height = 1;
-	    sb_thumb_top = (wp->w_topline - 1 + (linecount / wp->w_height) / 2)
+	    if (linecount <= wp->w_height)
+		// it just fits, avoid divide by zero
+		sb_thumb_top = 0;
+	    else
+		sb_thumb_top = (wp->w_topline - 1
+				+ (linecount / wp->w_height) / 2)
 				* (wp->w_height - sb_thumb_height)
 						  / (linecount - wp->w_height);
 	    if (wp->w_scrollbar_highlight != NULL)
