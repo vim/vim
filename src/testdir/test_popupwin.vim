@@ -1708,6 +1708,7 @@ func Test_popupwin_with_buffer()
   let winid = popup_create(bufnr(''), {})
   redraw
   call popup_close(winid)
+  call delete('XsomeFile')
 endfunc
 
 func Test_popupwin_width()
