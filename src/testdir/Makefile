@@ -55,6 +55,7 @@ report:
 		else echo No failures reported > test_result.log; \
 		fi"
 	$(RUN_VIMTEST) $(NO_INITS) -S summarize.vim messages $(REDIR_TEST_TO_NULL)
+	@rm -rf X*
 	@echo
 	@echo 'Test results:'
 	@cat test_result.log

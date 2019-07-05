@@ -1556,4 +1556,5 @@ func Test_bufadd_bufload()
   bwipe someName
   bwipe otherName
   call assert_equal(0, bufexists('someName'))
+  call delete('otherName')
 endfunc
