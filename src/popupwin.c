@@ -1437,6 +1437,7 @@ check_mouse_moved(win_T *wp, win_T *mouse_wp)
 
 	res.v_type = VAR_NUMBER;
 	res.vval.v_number = -2;
+	// Careful: this makes "wp" invalid.
 	popup_close_and_callback(wp, &res);
     }
 }
@@ -1447,7 +1448,7 @@ check_mouse_moved(win_T *wp, win_T *mouse_wp)
     void
 popup_handle_mouse_moved(void)
 {
-    win_T   *wp;
+    win_T   *wp, *nextwp;
     win_T   *mouse_wp;
     int	    row = mouse_row;
     int	    col = mouse_col;
@@ -1455,10 +1456,16 @@ popup_handle_mouse_moved(void)
     // find the window where the mouse is in
     mouse_wp = mouse_find_win(&row, &col, FIND_POPUP);
 
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    for (wp = first_popupwin; wp != NULL; wp = nextwp)
+    {
+	nextwp = wp->w_next;
 	check_mouse_moved(wp, mouse_wp);
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+    }
+    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = nextwp)
+    {
+	nextwp = wp->w_next;
 	check_mouse_moved(wp, mouse_wp);
+    }
 }
 
 /*
