@@ -607,6 +607,7 @@ update_screen(int type_arg)
 	    curwin->w_lines_valid = 0;	/* don't use w_lines[].wl_size now */
 	return FAIL;
     }
+    updating_screen = TRUE;
 
 #ifdef FEAT_TEXT_PROP
     // Update popup_mask if needed.  This may set w_redraw_top and w_redraw_bot
@@ -614,7 +615,6 @@ update_screen(int type_arg)
     may_update_popup_mask(type);
 #endif
 
-    updating_screen = TRUE;
 #ifdef FEAT_SYN_HL
     ++display_tick;	    /* let syntax code know we're in a next round of
 			     * display updating */
@@ -3189,9 +3189,10 @@ win_line(
 
     int		n_skip = 0;		/* nr of chars to skip for 'nowrap' */
 
-    int		fromcol, tocol;		/* start/end of inverting */
-    int		fromcol_prev = -2;	/* start of inverting after cursor */
-    int		noinvcur = FALSE;	/* don't invert the cursor */
+    int		fromcol = -10;		// start of inverting
+    int		tocol = MAXCOL;		// end of inverting
+    int		fromcol_prev = -2;	// start of inverting after cursor
+    int		noinvcur = FALSE;	// don't invert the cursor
     pos_T	*top, *bot;
     int		lnum_in_visual_area = FALSE;
     pos_T	pos;
@@ -3451,39 +3452,40 @@ win_line(
 #endif
 
 	/*
-	 * handle visual active in this window
+	 * handle Visual active in this window
 	 */
-	fromcol = -10;
-	tocol = MAXCOL;
 	if (VIsual_active && wp->w_buffer == curwin->w_buffer)
 	{
-					    /* Visual is after curwin->w_cursor */
 	    if (LTOREQ_POS(curwin->w_cursor, VIsual))
 	    {
+		// Visual is after curwin->w_cursor
 		top = &curwin->w_cursor;
 		bot = &VIsual;
 	    }
-	    else				/* Visual is before curwin->w_cursor */
+	    else
 	    {
+		// Visual is before curwin->w_cursor
 		top = &VIsual;
 		bot = &curwin->w_cursor;
 	    }
 	    lnum_in_visual_area = (lnum >= top->lnum && lnum <= bot->lnum);
-	    if (VIsual_mode == Ctrl_V)	/* block mode */
+	    if (VIsual_mode == Ctrl_V)
 	    {
+		// block mode
 		if (lnum_in_visual_area)
 		{
 		    fromcol = wp->w_old_cursor_fcol;
 		    tocol = wp->w_old_cursor_lcol;
 		}
 	    }
-	    else				/* non-block mode */
+	    else
 	    {
+		// non-block mode
 		if (lnum > top->lnum && lnum <= bot->lnum)
 		    fromcol = 0;
 		else if (lnum == top->lnum)
 		{
-		    if (VIsual_mode == 'V')	/* linewise */
+		    if (VIsual_mode == 'V')	// linewise
 			fromcol = 0;
 		    else
 		    {
