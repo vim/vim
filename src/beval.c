@@ -14,7 +14,7 @@
 
 /*
  * Get the text and position to be evaluated for "beval".
- * If "getword" is true the returned text is not the whole line but the
+ * If "getword" is TRUE the returned text is not the whole line but the
  * relevant word in allocated memory.
  * Returns OK or FAIL.
  */
@@ -27,12 +27,8 @@ get_beval_info(
     char_u	**textp,
     int		*colp)
 {
-    win_T	*wp;
     int		row, col;
-    char_u	*lbuf;
-    linenr_T	lnum;
 
-    *textp = NULL;
 # ifdef FEAT_BEVAL_TERM
 #  ifdef FEAT_GUI
     if (!gui.in_use)
@@ -49,22 +45,68 @@ get_beval_info(
 	col = X_2_COL(beval->x);
     }
 #endif
+    if (find_word_under_cursor(row, col, getword,
+		FIND_IDENT + FIND_STRING + FIND_EVAL,
+		winp, lnump, textp, colp) == OK)
+    {
+#ifdef FEAT_VARTABS
+	vim_free(beval->vts);
+	beval->vts = tabstop_copy((*winp)->w_buffer->b_p_vts_array);
+	if ((*winp)->w_buffer->b_p_vts_array != NULL && beval->vts == NULL)
+	{
+	    if (getword)
+		vim_free(*textp);
+	    return FAIL;
+	}
+#endif
+	beval->ts = (*winp)->w_buffer->b_p_ts;
+	return OK;
+    }
+
+    return FAIL;
+}
+
+/*
+ * Find text under the mouse position "row" / "col".
+ * If "getword" is TRUE the returned text in "*textp" is not the whole line but
+ * the relevant word in allocated memory.
+ * Return OK if found.
+ * Return FAIL if not found, no text at the mouse position.
+ */
+    int
+find_word_under_cursor(
+	int	    mouserow,
+	int	    mousecol,
+	int	    getword,
+	int	    flags,	// flags for find_ident_at_pos()
+	win_T	    **winp,	// can be NULL
+	linenr_T    *lnump,	// can be NULL
+	char_u	    **textp,
+	int	    *colp)
+{
+    int		row = mouserow;
+    int		col = mousecol;
+    win_T	*wp;
+    char_u	*lbuf;
+    linenr_T	lnum;
+
+    *textp = NULL;
     wp = mouse_find_win(&row, &col, FAIL_POPUP);
     if (wp != NULL && row >= 0 && row < wp->w_height && col < wp->w_width)
     {
-	/* Found a window and the cursor is in the text.  Now find the line
-	 * number. */
+	// Found a window and the cursor is in the text.  Now find the line
+	// number.
 	if (!mouse_comp_pos(wp, &row, &col, &lnum))
 	{
-	    /* Not past end of the file. */
+	    // Not past end of the file.
 	    lbuf = ml_get_buf(wp->w_buffer, lnum, FALSE);
 	    if (col <= win_linetabsize(wp, lbuf, (colnr_T)MAXCOL))
 	    {
-		/* Not past end of line. */
+		// Not past end of line.
 		if (getword)
 		{
-		    /* For Netbeans we get the relevant part of the line
-		     * instead of the whole line. */
+		    // For Netbeans we get the relevant part of the line
+		    // instead of the whole line.
 		    int		len;
 		    pos_T	*spos = NULL, *epos = NULL;
 
@@ -93,9 +135,9 @@ get_beval_info(
 				? col <= (int)epos->col
 				: lnum < epos->lnum))
 		    {
-			/* Visual mode and pointing to the line with the
-			 * Visual selection: return selected text, with a
-			 * maximum of one line. */
+			// Visual mode and pointing to the line with the
+			// Visual selection: return selected text, with a
+			// maximum of one line.
 			if (spos->lnum != epos->lnum || spos->col == epos->col)
 			    return FAIL;
 
@@ -109,10 +151,10 @@ get_beval_info(
 		    }
 		    else
 		    {
-			/* Find the word under the cursor. */
+			// Find the word under the cursor.
 			++emsg_off;
 			len = find_ident_at_pos(wp, lnum, (colnr_T)col, &lbuf,
-					FIND_IDENT + FIND_STRING + FIND_EVAL);
+									flags);
 			--emsg_off;
 			if (len == 0)
 			    return FAIL;
@@ -120,22 +162,16 @@ get_beval_info(
 		    }
 		}
 
-		*winp = wp;
-		*lnump = lnum;
+		if (winp != NULL)
+		    *winp = wp;
+		if (lnump != NULL)
+		    *lnump = lnum;
 		*textp = lbuf;
 		*colp = col;
-#ifdef FEAT_VARTABS
-		vim_free(beval->vts);
-		beval->vts = tabstop_copy(wp->w_buffer->b_p_vts_array);
-		if (wp->w_buffer->b_p_vts_array != NULL && beval->vts == NULL)
-		    return FAIL;
-#endif
-		beval->ts = wp->w_buffer->b_p_ts;
 		return OK;
 	    }
 	}
     }
-
     return FAIL;
 }
 

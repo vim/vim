@@ -2329,6 +2329,9 @@ do_mouse(
 	    bevalexpr_due_set = TRUE;
 	}
 #endif
+#ifdef FEAT_TEXT_PROP
+	popup_handle_mouse_moved();
+#endif
 	return FALSE;
     }
 

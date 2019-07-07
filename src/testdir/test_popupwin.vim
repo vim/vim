@@ -1005,6 +1005,53 @@ func Test_popup_atcursor()
   bwipe!
 endfunc
 
+func Test_popup_beval()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  let lines =<< trim END
+	call setline(1, range(1, 20))
+	call setline(5, 'here is some text to hover over')
+	set balloonevalterm
+	set balloonexpr=BalloonExpr()
+	set balloondelay=100
+	func BalloonExpr()
+	  let s:winid = popup_beval([v:beval_text], {})
+	  return ''
+	endfunc
+	func Hover()
+	  call test_setmouse(5, 15)
+	  call feedkeys("\<MouseMove>\<Ignore>", "xt")
+	  sleep 100m
+	endfunc
+	func MoveOntoPopup()
+	  call test_setmouse(4, 17)
+	  call feedkeys("\<F4>\<MouseMove>\<Ignore>", "xt")
+	endfunc
+	func MoveAway()
+	  call test_setmouse(5, 13)
+	  call feedkeys("\<F5>\<MouseMove>\<Ignore>", "xt")
+	endfunc
+  END
+  call writefile(lines, 'XtestPopupBeval')
+  let buf = RunVimInTerminal('-S XtestPopupBeval', {'rows': 10})
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, 'j')
+  call term_sendkeys(buf, ":call Hover()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_beval_1', {})
+
+  call term_sendkeys(buf, ":call MoveOntoPopup()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_beval_2', {})
+
+  call term_sendkeys(buf, ":call MoveAway()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_beval_3', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupBeval')
+endfunc
+
 func Test_popup_filter()
   new
   call setline(1, 'some text')
@@ -1413,7 +1460,7 @@ func Test_popup_moved()
   let winid = popup_atcursor('text', {'moved': 'any'})
   redraw
   call assert_equal(1, popup_getpos(winid).visible)
-  call assert_equal([4, 4], popup_getoptions(winid).moved)
+  call assert_equal([1, 4, 4], popup_getoptions(winid).moved)
   " trigger the check for last_cursormoved by going into insert mode
   call feedkeys("li\<Esc>", 'xt')
   call assert_equal({}, popup_getpos(winid))
@@ -1423,7 +1470,7 @@ func Test_popup_moved()
   let winid = popup_atcursor('text', {'moved': 'word'})
   redraw
   call assert_equal(1, popup_getpos(winid).visible)
-  call assert_equal([4, 7], popup_getoptions(winid).moved)
+  call assert_equal([1, 4, 7], popup_getoptions(winid).moved)
   call feedkeys("hi\<Esc>", 'xt')
   call assert_equal({}, popup_getpos(winid))
   call popup_clear()
@@ -1432,7 +1479,7 @@ func Test_popup_moved()
   let winid = popup_atcursor('text', {'moved': 'word'})
   redraw
   call assert_equal(1, popup_getpos(winid).visible)
-  call assert_equal([4, 7], popup_getoptions(winid).moved)
+  call assert_equal([1, 4, 7], popup_getoptions(winid).moved)
   call feedkeys("li\<Esc>", 'xt')
   call assert_equal(1, popup_getpos(winid).visible)
   call feedkeys("ei\<Esc>", 'xt')
@@ -1446,7 +1493,7 @@ func Test_popup_moved()
   let winid = popup_atcursor('text', {})
   redraw
   call assert_equal(1, popup_getpos(winid).visible)
-  call assert_equal([2, 15], popup_getoptions(winid).moved)
+  call assert_equal([2, 2, 15], popup_getoptions(winid).moved)
   call feedkeys("eli\<Esc>", 'xt')
   call assert_equal(1, popup_getpos(winid).visible)
   call feedkeys("wi\<Esc>", 'xt')

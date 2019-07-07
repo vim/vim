@@ -771,6 +771,7 @@ static struct fst
 #endif
 #ifdef FEAT_TEXT_PROP
     {"popup_atcursor",	2, 2, f_popup_atcursor},
+    {"popup_beval",	2, 2, f_popup_beval},
     {"popup_clear",	0, 0, f_popup_clear},
     {"popup_close",	1, 2, f_popup_close},
     {"popup_create",	2, 2, f_popup_create},
@@ -849,6 +850,7 @@ static struct fst
     {"screenchar",	2, 2, f_screenchar},
     {"screenchars",	2, 2, f_screenchars},
     {"screencol",	0, 0, f_screencol},
+    {"screenpos",	3, 3, f_screenpos},
     {"screenrow",	0, 0, f_screenrow},
     {"screenstring",	2, 2, f_screenstring},
     {"search",		1, 4, f_search},

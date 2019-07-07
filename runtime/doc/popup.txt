@@ -146,6 +146,8 @@ Creating a popup window:
 	|popup_create()|	centered in the screen
 	|popup_atcursor()|	just above the cursor position, closes when
 				the cursor moves away
+	|popup_beval()|		at the position indicated by v:beval_
+				variables, closes when the mouse moves away
 	|popup_notification()|	show a notification for three seconds
 	|popup_dialog()|	centered with padding and border
 	|popup_menu()|		prompt for selecting an item from a list
@@ -182,6 +184,20 @@ popup_atcursor({what}, {options})			*popup_atcursor()*
 				\ 'moved': 'WORD',
 				\ })
 <		Use {options} to change the properties.
+
+
+popup_beval({what}, {options})			*popup_beval()*
+		Show the {what} above the position from 'ballooneval' and
+		close it when the mouse moves.  This works like: >
+		  let pos = screenpos(v:beval_winnr, v:beval_lnum, v:beval_col)
+		  call popup_create({what}, {
+			\ 'pos': 'botleft',
+			\ 'line': pos.lnum - 1,
+			\ 'col': pos.col,
+			\ 'mousemoved': 'WORD',
+			\ })
+<		Use {options} to change the properties.
+		See |popup_beval_example| for an example use.
 
 
 							*popup_clear()*
@@ -276,8 +292,11 @@ popup_getoptions({id})					*popup_getoptions()*
 		A zero value means the option was not set.  For "zindex" the
 		default value is returned, not zero.
 
-		The "moved" entry is a list with minimum and maximum column,
-		[0, 0] when not set.
+		The "moved" entry is a list with line number, minimum and
+		maximum column, [0, 0, 0] when not set.
+
+		The "mousemoved" entry is a list with screen row, minimum and
+		maximum screen column, [0, 0, 0] when not set.
 
 		"border" and "padding" are not included when all values are
 		zero.  When all values are one then an empty list is included.
@@ -566,6 +585,7 @@ The second argument of |popup_create()| is a dictionary with options:
 			- "any": if the cursor moved at all
 			- "word": if the cursor moved outside |<cword>|
 			- "WORD": if the cursor moved outside |<cWORD>|
+			- "expr": if the cursor moved outside |<cexpr>|
 			- [{start}, {end}]: if the cursor moved before column
 			  {start} or after {end}
 			The popup also closes if the cursor moves to another
@@ -734,6 +754,46 @@ Extend popup_filter_menu() with shortcut keys: >
 
 	  " No shortcut, pass to generic filter
 	  return popup_filter_menu(a:id, a:key)
+	endfunc
+<
+					*popup_beval_example*
+Example for using a popup window for 'ballooneval': >
+
+	set ballooneval balloonevalterm
+	set balloonexpr=BalloonExpr()
+	let s:winid = 0
+
+	func BalloonExpr()
+	  if s:winid
+	    call popup_close(s:winid)
+	    let s:winid = 0
+	  endif
+	  let s:winid = popup_beval([bufname(v:beval_bufnr), v:beval_text], {})
+	  return ''
+	endfunc
+<
+If the text has to be obtained asynchronously return an empty string from the
+expression function and call popup_beval() once the text is available.  In
+this example similated with a timer callback: >
+
+	set ballooneval balloonevalterm
+	set balloonexpr=BalloonExpr()
+	let s:winid = 0
+
+	func BalloonExpr()
+	  if s:winid
+	    call popup_close(s:winid)
+	    let s:winid = 0
+	  endif
+	  " simulate an asynchronous loopup for the text to display
+	  let s:balloonFile = bufname(v:beval_bufnr)
+	  let s:balloonWord = v:beval_text
+	  call timer_start(100, 'ShowPopup')
+	  return ''
+	endfunc
+
+	func ShowPopup(id)
+	  let s:winid = popup_beval([s:balloonFile, s:balloonWord], {})
 	endfunc
 <
 
