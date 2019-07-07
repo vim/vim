@@ -4444,11 +4444,18 @@ parse_queued_messages(void)
 {
     win_T   *old_curwin = curwin;
     int	    i;
+    int	    save_may_garbage_collect = may_garbage_collect;
 
     // Do not handle messages while redrawing, because it may cause buffers to
     // change or be wiped while they are being redrawn.
     if (updating_screen)
 	return;
+
+    // may_garbage_collect is set in main_loop() to do garbage collection when
+    // blocking to wait on a character.  We don't want that while parsing
+    // messages, a callback may invoke vgetc() while lists and dicts are in use
+    // in the call stack.
+    may_garbage_collect = FALSE;
 
     // Loop when a job ended, but don't keep looping forever.
     for (i = 0; i < MAX_REPEAT_PARSE; ++i)
@@ -4484,6 +4491,8 @@ parse_queued_messages(void)
 # endif
 	break;
     }
+
+    may_garbage_collect = save_may_garbage_collect;
 
     // If the current window changed we need to bail out of the waiting loop.
     // E.g. when a job exit callback closes the terminal window.
