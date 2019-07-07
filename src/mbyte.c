@@ -5848,6 +5848,11 @@ xim_queue_key_press_event(GdkEventKey *event, int down)
     int
 im_get_status(void)
 {
+#  ifdef FEAT_HANGULIN
+    if (hangul_input_state_get())
+	return TRUE;
+#  endif
+
 #  ifdef FEAT_EVAL
     if (USE_IMSTATUSFUNC)
 	return call_imstatusfunc();
