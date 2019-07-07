@@ -2941,6 +2941,9 @@ struct window_S
     linenr_T	w_popup_lnum;	    // close popup if cursor not on this line
     colnr_T	w_popup_mincol;	    // close popup if cursor before this col
     colnr_T	w_popup_maxcol;	    // close popup if cursor after this col
+    int		w_popup_mouse_row;  // close popup if mouse moves away
+    int		w_popup_mouse_mincol;  // close popup if mouse moves away
+    int		w_popup_mouse_maxcol;  // close popup if mouse moves away
     int		w_popup_drag;	    // allow moving the popup with the mouse
     popclose_T	w_popup_close;	    // allow closing the popup with the mouse
 
