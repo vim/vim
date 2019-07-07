@@ -3992,9 +3992,10 @@ channel_send(
 		    /* append to the last entry */
 		    if (ga_grow(&last->wq_ga, len) == OK)
 		    {
-			mch_memmove((char *)last->wq_ga.ga_data
+			if (len > 0)
+			   mch_memmove((char *)last->wq_ga.ga_data
 							  + last->wq_ga.ga_len,
-				    buf, len);
+					buf, len);
 			last->wq_ga.ga_len += len;
 		    }
 		}
@@ -4014,7 +4015,8 @@ channel_send(
 			ga_init2(&last->wq_ga, 1, 1000);
 			if (ga_grow(&last->wq_ga, len) == OK)
 			{
-			    mch_memmove(last->wq_ga.ga_data, buf, len);
+			    if (len > 0)
+				mch_memmove(last->wq_ga.ga_data, buf, len);
 			    last->wq_ga.ga_len = len;
 			}
 		    }
