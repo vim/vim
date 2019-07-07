@@ -54,6 +54,7 @@ func Test_suspend()
   " Quit gracefully to dump coverage information.
   call term_sendkeys(buf, ":qall!\<CR>")
   call term_wait(buf)
+  call WaitForAssert({-> assert_match('[$#] $', term_getline(buf, '.'))})
   call StopShellInTerminal(buf)
 
   exe buf . 'bwipe!'
