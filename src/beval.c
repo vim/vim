@@ -10,62 +10,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_BEVAL) || defined(PROTO)
-
-/*
- * Get the text and position to be evaluated for "beval".
- * If "getword" is TRUE the returned text is not the whole line but the
- * relevant word in allocated memory.
- * Returns OK or FAIL.
- */
-    int
-get_beval_info(
-    BalloonEval	*beval,
-    int		getword,
-    win_T	**winp,
-    linenr_T	*lnump,
-    char_u	**textp,
-    int		*colp)
-{
-    int		row, col;
-
-# ifdef FEAT_BEVAL_TERM
-#  ifdef FEAT_GUI
-    if (!gui.in_use)
-#  endif
-    {
-	row = mouse_row;
-	col = mouse_col;
-    }
-# endif
-# ifdef FEAT_GUI
-    if (gui.in_use)
-    {
-	row = Y_2_ROW(beval->y);
-	col = X_2_COL(beval->x);
-    }
-#endif
-    if (find_word_under_cursor(row, col, getword,
-		FIND_IDENT + FIND_STRING + FIND_EVAL,
-		winp, lnump, textp, colp) == OK)
-    {
-#ifdef FEAT_VARTABS
-	vim_free(beval->vts);
-	beval->vts = tabstop_copy((*winp)->w_buffer->b_p_vts_array);
-	if ((*winp)->w_buffer->b_p_vts_array != NULL && beval->vts == NULL)
-	{
-	    if (getword)
-		vim_free(*textp);
-	    return FAIL;
-	}
-#endif
-	beval->ts = (*winp)->w_buffer->b_p_ts;
-	return OK;
-    }
-
-    return FAIL;
-}
-
+#if defined(FEAT_BEVAL) || defined(FEAT_TEXT_PROP) || defined(PROT)
 /*
  * Find text under the mouse position "row" / "col".
  * If "getword" is TRUE the returned text in "*textp" is not the whole line but
@@ -172,6 +117,63 @@ find_word_under_cursor(
 	    }
 	}
     }
+    return FAIL;
+}
+#endif
+
+#if defined(FEAT_BEVAL) || defined(PROTO)
+
+/*
+ * Get the text and position to be evaluated for "beval".
+ * If "getword" is TRUE the returned text is not the whole line but the
+ * relevant word in allocated memory.
+ * Returns OK or FAIL.
+ */
+    int
+get_beval_info(
+    BalloonEval	*beval,
+    int		getword,
+    win_T	**winp,
+    linenr_T	*lnump,
+    char_u	**textp,
+    int		*colp)
+{
+    int		row, col;
+
+# ifdef FEAT_BEVAL_TERM
+#  ifdef FEAT_GUI
+    if (!gui.in_use)
+#  endif
+    {
+	row = mouse_row;
+	col = mouse_col;
+    }
+# endif
+# ifdef FEAT_GUI
+    if (gui.in_use)
+    {
+	row = Y_2_ROW(beval->y);
+	col = X_2_COL(beval->x);
+    }
+#endif
+    if (find_word_under_cursor(row, col, getword,
+		FIND_IDENT + FIND_STRING + FIND_EVAL,
+		winp, lnump, textp, colp) == OK)
+    {
+#ifdef FEAT_VARTABS
+	vim_free(beval->vts);
+	beval->vts = tabstop_copy((*winp)->w_buffer->b_p_vts_array);
+	if ((*winp)->w_buffer->b_p_vts_array != NULL && beval->vts == NULL)
+	{
+	    if (getword)
+		vim_free(*textp);
+	    return FAIL;
+	}
+#endif
+	beval->ts = (*winp)->w_buffer->b_p_ts;
+	return OK;
+    }
+
     return FAIL;
 }
 
