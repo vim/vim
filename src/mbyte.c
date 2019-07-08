@@ -4266,14 +4266,18 @@ mb_lefthalve(int row, int col)
     int
 mb_fix_col(int col, int row)
 {
+    int off;
+
     col = check_col(col);
     row = check_row(row);
+    off = LineOffset[row] + col;
     if (has_mbyte && ScreenLines != NULL && col > 0
 	    && ((enc_dbcs
-		    && ScreenLines[LineOffset[row] + col] != NUL
+		    && ScreenLines[off] != NUL
 		    && dbcs_screen_head_off(ScreenLines + LineOffset[row],
-					 ScreenLines + LineOffset[row] + col))
-		|| (enc_utf8 && ScreenLines[LineOffset[row] + col] == 0)))
+					 ScreenLines + off))
+		|| (enc_utf8 && ScreenLines[off] == 0
+						  && ScreenLinesUC[off] == 0)))
 	return col - 1;
     return col;
 }

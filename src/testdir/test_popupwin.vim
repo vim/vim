@@ -113,6 +113,9 @@ func Test_popup_with_border_and_padding()
 	call popup_create(['hello border', 'with corners'], {'line': 2, 'col': 60, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': ['x', '#']})
 	let winid = popup_create(['hello border', 'with numbers'], {'line': 6, 'col': 3, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': ['0', '1', '2', '3', '4', '5', '6', '7']})
 	call popup_create(['hello border', 'just blanks'], {'line': 7, 'col': 23, 'border': [], 'borderhighlight': ['BlueColor'], 'borderchars': [' ']})
+	func MultiByte()
+	  call popup_create(['hello'], {'line': 8, 'col': 43, 'border': [], 'borderchars': ['─', '│', '─', '│', '┌', '┐', '┘', '└']})
+	endfunc
   END
   call writefile(lines, 'XtestPopupBorder')
   let buf = RunVimInTerminal('-S XtestPopupBorder', {'rows': 12})
@@ -121,6 +124,12 @@ func Test_popup_with_border_and_padding()
   " check that changing borderchars triggers a redraw
   call term_sendkeys(buf, ":call popup_setoptions(winid, {'borderchars': ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']})\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_23', {})
+
+  " check multi-byte border only with 'ambiwidth' single
+  if &ambiwidth == 'single'
+    call term_sendkeys(buf, ":call MultiByte()\<CR>")
+    call VerifyScreenDump(buf, 'Test_popupwin_24', {})
+  endif
 
   call StopVimInTerminal(buf)
   call delete('XtestPopupBorder')
