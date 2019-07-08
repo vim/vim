@@ -888,8 +888,10 @@ static struct fst
     {"sign_getplaced",	0, 2, f_sign_getplaced},
     {"sign_jump",	3, 3, f_sign_jump},
     {"sign_place",	4, 5, f_sign_place},
+    {"sign_placelist",	1, 1, f_sign_placelist},
     {"sign_undefine",	0, 1, f_sign_undefine},
     {"sign_unplace",	1, 2, f_sign_unplace},
+    {"sign_unplacelist",	1, 2, f_sign_unplacelist},
 #endif
     {"simplify",	1, 1, f_simplify},
 #ifdef FEAT_FLOAT
