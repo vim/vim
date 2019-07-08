@@ -131,24 +131,16 @@ find_word_under_cursor(
  */
     int
 get_beval_info(
-    BalloonEval	*beval,
-    int		getword,
-    win_T	**winp,
-    linenr_T	*lnump,
-    char_u	**textp,
-    int		*colp)
+	BalloonEval	*beval,
+	int		getword,
+	win_T		**winp,
+	linenr_T	*lnump,
+	char_u		**textp,
+	int		*colp)
 {
-    int		row, col;
+    int		row = mouse_row;
+    int		col = mouse_col;
 
-# ifdef FEAT_BEVAL_TERM
-#  ifdef FEAT_GUI
-    if (!gui.in_use)
-#  endif
-    {
-	row = mouse_row;
-	col = mouse_col;
-    }
-# endif
 # ifdef FEAT_GUI
     if (gui.in_use)
     {
