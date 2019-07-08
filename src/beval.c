@@ -294,11 +294,17 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 
 	    set_vim_var_string(VV_BEVAL_TEXT, NULL, -1);
 	    if (result != NULL && result[0] != NUL)
-	    {
 		post_balloon(beval, result, NULL);
-		recursive = FALSE;
-		return;
-	    }
+
+# ifdef FEAT_GUI
+	    // The 'balloonexpr' evaluation may show something on the screen
+	    // that requires a screen update.
+	    if (gui.in_use && must_redraw)
+		redraw_after_callback(FALSE);
+# endif
+
+	    recursive = FALSE;
+	    return;
 	}
     }
 #endif
