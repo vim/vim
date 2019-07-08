@@ -708,7 +708,7 @@ au BufNewFile,BufRead *.t.html			setf tilde
 au BufNewFile,BufRead *.html,*.htm,*.shtml,*.stm  call dist#ft#FThtml()
 
 " Vue.js Single File Component
-au BufNewFile,BufRead *.vue			setf html
+au BufNewFile,BufRead *.vue			setf vuejs
 
 " HTML with Ruby - eRuby
 au BufNewFile,BufRead *.erb,*.rhtml		setf eruby
