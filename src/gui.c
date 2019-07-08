@@ -4823,17 +4823,14 @@ gui_focus_change(int in_focus)
 }
 
 /*
- * Called when the mouse moved (but not when dragging).
+ * When mouse moved: apply 'mousefocus'.
+ * Also updates the mouse pointer shape.
  */
-    void
-gui_mouse_moved(int x, int y)
+    static void
+gui_mouse_focus(int x, int y)
 {
     win_T	*wp;
     char_u	st[8];
-
-    /* Ignore this while still starting up. */
-    if (!gui.in_use || gui.starting)
-	return;
 
 #ifdef FEAT_MOUSESHAPE
     /* Get window pointer, and update mouse shape as well. */
@@ -4891,6 +4888,27 @@ gui_mouse_moved(int x, int y)
 	    gtk_main_quit();
 #endif
     }
+}
+
+/*
+ * Called when the mouse moved (but not when dragging).
+ */
+    void
+gui_mouse_moved(int x, int y)
+{
+    // Ignore this while still starting up.
+    if (!gui.in_use || gui.starting)
+	return;
+
+    // apply 'mousefocus' and pointer shape
+    gui_mouse_focus(x, y);
+
+#ifdef FEAT_TEXT_PROP
+    if (popup_visible)
+	// Generate a mouse-moved event, so that the popup can perhaps be
+	// closed, just like in the terminal.
+	gui_send_mouse_event(MOUSE_DRAG, x, y, FALSE, 0);
+#endif
 }
 
 /*
