@@ -880,7 +880,9 @@ popup_adjust_position(win_T *wp)
     wp->w_width = 1;
     for (lnum = wp->w_topline; lnum <= wp->w_buffer->b_ml.ml_line_count; ++lnum)
     {
-	int len = vim_strsize(ml_get_buf(wp->w_buffer, lnum, FALSE));
+	// count Tabs for what they are worth
+	int len = win_linetabsize(wp, ml_get_buf(wp->w_buffer, lnum, FALSE),
+							      (colnr_T)MAXCOL);
 
 	if (wp->w_p_wrap)
 	{

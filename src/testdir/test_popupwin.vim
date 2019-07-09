@@ -225,7 +225,7 @@ func Test_popup_with_syntax_setbufvar()
 	    \ '#include <stdio.h>',
 	    \ 'int main(void)',
 	    \ '{',
-	    \ '    printf(567);',
+	    \ "\tprintf(567);",
 	    \ '}',
 	    \], {'line': 3, 'col': 21, 'highlight': 'PopupColor'})
 	call setbufvar(winbufnr(winid), '&syntax', 'cpp')
