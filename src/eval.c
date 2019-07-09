@@ -9916,6 +9916,7 @@ assert_fails(typval_T *argvars)
     called_emsg = FALSE;
     suppress_errthrow = TRUE;
     emsg_silent = TRUE;
+
     do_cmdline_cmd(cmd);
     if (!called_emsg)
     {
@@ -9941,7 +9942,7 @@ assert_fails(typval_T *argvars)
 	    assert_append_cmd_or_arg(&ga, argvars, cmd);
 	    assert_error(&ga);
 	    ga_clear(&ga);
-	ret = 1;
+	    ret = 1;
 	}
     }
 
