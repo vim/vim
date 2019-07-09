@@ -188,7 +188,7 @@ set_mousemoved_columns(win_T *wp, int flags)
     int		col;
 
     if (find_word_under_cursor(mouse_row, mouse_col, TRUE, flags,
-						NULL, NULL, &text, &col) == OK)
+					 NULL, NULL, &text, NULL, &col) == OK)
     {
 	wp->w_popup_mouse_mincol = col;
 	wp->w_popup_mouse_maxcol = col + STRLEN(text) - 1;
@@ -1437,6 +1437,7 @@ check_mouse_moved(win_T *wp, win_T *mouse_wp)
     {
 	typval_T res;
 
+ch_log(NULL, "closing popup %d", wp->w_id);
 	res.v_type = VAR_NUMBER;
 	res.vval.v_number = -2;
 	// Careful: this makes "wp" invalid.
