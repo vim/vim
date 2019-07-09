@@ -9910,7 +9910,9 @@ assert_fails(typval_T *argvars)
     char_u	*cmd = tv_get_string_chk(&argvars[0]);
     garray_T	ga;
     int		ret = 0;
+    int		save_trylevel = trylevel;
 
+    trylevel = 0;
     called_emsg = FALSE;
     suppress_errthrow = TRUE;
     emsg_silent = TRUE;
@@ -9943,6 +9945,7 @@ assert_fails(typval_T *argvars)
 	}
     }
 
+    trylevel = save_trylevel;
     called_emsg = FALSE;
     suppress_errthrow = FALSE;
     emsg_silent = FALSE;
