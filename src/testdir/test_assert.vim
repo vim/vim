@@ -166,6 +166,12 @@ func Test_assert_fail_fails()
   call remove(v:errors, 0)
 endfunc
 
+func Test_assert_fails_in_try_block()
+  try
+    call assert_equal(0, assert_fails('throw "error"'))
+  endtry
+endfunc
+
 func Test_assert_beeps()
   new
   call assert_equal(0, assert_beeps('normal h'))
