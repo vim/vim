@@ -9910,10 +9910,14 @@ assert_fails(typval_T *argvars)
     char_u	*cmd = tv_get_string_chk(&argvars[0]);
     garray_T	ga;
     int		ret = 0;
+    int		save_trylevel = trylevel;
 
+    // trylevel must be zero for a ":throw" command to be considered failed
+    trylevel = 0;
     called_emsg = FALSE;
     suppress_errthrow = TRUE;
     emsg_silent = TRUE;
+
     do_cmdline_cmd(cmd);
     if (!called_emsg)
     {
@@ -9939,10 +9943,11 @@ assert_fails(typval_T *argvars)
 	    assert_append_cmd_or_arg(&ga, argvars, cmd);
 	    assert_error(&ga);
 	    ga_clear(&ga);
-	ret = 1;
+	    ret = 1;
 	}
     }
 
+    trylevel = save_trylevel;
     called_emsg = FALSE;
     suppress_errthrow = FALSE;
     emsg_silent = FALSE;
