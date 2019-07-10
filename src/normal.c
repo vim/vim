@@ -2325,7 +2325,6 @@ do_mouse(
 	ui_may_remove_balloon();
 	if (p_bevalterm)
 	{
-ch_log(NULL, "setting balloon timer");
 	    profile_setlimit(p_bdlay, &bevalexpr_due);
 	    bevalexpr_due_set = TRUE;
 	}

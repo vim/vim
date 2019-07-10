@@ -1437,7 +1437,6 @@ check_mouse_moved(win_T *wp, win_T *mouse_wp)
     {
 	typval_T res;
 
-ch_log(NULL, "closing popup %d", wp->w_id);
 	res.v_type = VAR_NUMBER;
 	res.vval.v_number = -2;
 	// Careful: this makes "wp" invalid.
