@@ -7,7 +7,8 @@
  * Do ":help credits" in Vim to see a list of people who contributed.
  */
 
-#if !defined(BEVAL__H) && (defined(FEAT_BEVAL) || defined(PROTO))
+#if !defined(BEVAL__H) && \
+    (defined(FEAT_BEVAL) || defined(FEAT_TEXT_PROP) || defined(PROTO))
 #define BEVAL__H
 
 #ifdef FEAT_GUI_GTK
