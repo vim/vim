@@ -230,12 +230,13 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 #  include "if_ruby.pro"
 # endif
 
-/* Ugly solution for "BalloonEval" not being defined while it's used in some
- * .pro files. */
-# ifdef FEAT_BEVAL
-#  include "beval.pro"
-# else
+// Ugly solution for "BalloonEval" not being defined while it's used in some
+// .pro files.
+# ifndef FEAT_BEVAL
 #  define BalloonEval int
+# endif
+# if defined(FEAT_BEVAL) || defined(FEAT_TEXT_PROP)
+#  include "beval.pro"
 # endif
 
 # ifdef FEAT_NETBEANS_INTG
