@@ -2325,9 +2325,13 @@ do_mouse(
 	ui_may_remove_balloon();
 	if (p_bevalterm)
 	{
+ch_log(NULL, "setting balloon timer");
 	    profile_setlimit(p_bdlay, &bevalexpr_due);
 	    bevalexpr_due_set = TRUE;
 	}
+#endif
+#ifdef FEAT_TEXT_PROP
+	popup_handle_mouse_moved();
 #endif
 	return FALSE;
     }
@@ -3324,28 +3328,28 @@ find_is_eval_item(
  * Find the identifier under or to the right of the cursor.
  * "find_type" can have one of three values:
  * FIND_IDENT:   find an identifier (keyword)
- * FIND_STRING:  find any non-white string
- * FIND_IDENT + FIND_STRING: find any non-white string, identifier preferred.
+ * FIND_STRING:  find any non-white text
+ * FIND_IDENT + FIND_STRING: find any non-white text, identifier preferred.
  * FIND_EVAL:	 find text useful for C program debugging
  *
  * There are three steps:
- * 1. Search forward for the start of an identifier/string.  Doesn't move if
+ * 1. Search forward for the start of an identifier/text.  Doesn't move if
  *    already on one.
- * 2. Search backward for the start of this identifier/string.
+ * 2. Search backward for the start of this identifier/text.
  *    This doesn't match the real Vi but I like it a little better and it
  *    shouldn't bother anyone.
- * 3. Search forward to the end of this identifier/string.
+ * 3. Search forward to the end of this identifier/text.
  *    When FIND_IDENT isn't defined, we backup until a blank.
  *
- * Returns the length of the string, or zero if no string is found.
- * If a string is found, a pointer to the string is put in "*string".  This
- * string is not always NUL terminated.
+ * Returns the length of the text, or zero if no text is found.
+ * If text is found, a pointer to the text is put in "*text".  This
+ * points into the current buffer line and is not always NUL terminated.
  */
     int
-find_ident_under_cursor(char_u **string, int find_type)
+find_ident_under_cursor(char_u **text, int find_type)
 {
     return find_ident_at_pos(curwin, curwin->w_cursor.lnum,
-				     curwin->w_cursor.col, string, find_type);
+				curwin->w_cursor.col, text, NULL, find_type);
 }
 
 /*
@@ -3357,33 +3361,34 @@ find_ident_at_pos(
     win_T	*wp,
     linenr_T	lnum,
     colnr_T	startcol,
-    char_u	**string,
+    char_u	**text,
+    int		*textcol,	// column where "text" starts, can be NULL
     int		find_type)
 {
     char_u	*ptr;
-    int		col = 0;	    /* init to shut up GCC */
+    int		col = 0;	// init to shut up GCC
     int		i;
     int		this_class = 0;
     int		prev_class;
     int		prevcol;
-    int		bn = 0;	    /* bracket nesting */
+    int		bn = 0;		// bracket nesting
 
     /*
      * if i == 0: try to find an identifier
-     * if i == 1: try to find any non-white string
+     * if i == 1: try to find any non-white text
      */
     ptr = ml_get_buf(wp->w_buffer, lnum, FALSE);
     for (i = (find_type & FIND_IDENT) ? 0 : 1;	i < 2; ++i)
     {
 	/*
-	 * 1. skip to start of identifier/string
+	 * 1. skip to start of identifier/text
 	 */
 	col = startcol;
 	if (has_mbyte)
 	{
 	    while (ptr[col] != NUL)
 	    {
-		/* Stop at a ']' to evaluate "a[x]". */
+		// Stop at a ']' to evaluate "a[x]".
 		if ((find_type & FIND_EVAL) && ptr[col] == ']')
 		    break;
 		this_class = mb_get_class(ptr + col);
@@ -3399,11 +3404,11 @@ find_ident_at_pos(
 		    )
 		++col;
 
-	/* When starting on a ']' count it, so that we include the '['. */
+	// When starting on a ']' count it, so that we include the '['.
 	bn = ptr[col] == ']';
 
 	/*
-	 * 2. Back up to start of identifier/string.
+	 * 2. Back up to start of identifier/text.
 	 */
 	if (has_mbyte)
 	{
@@ -3429,8 +3434,8 @@ find_ident_at_pos(
 		col = prevcol;
 	    }
 
-	    /* If we don't want just any old string, or we've found an
-	     * identifier, stop searching. */
+	    // If we don't want just any old text, or we've found an
+	    // identifier, stop searching.
 	    if (this_class > 2)
 		this_class = 2;
 	    if (!(find_type & FIND_STRING) || this_class == 2)
@@ -3451,8 +3456,8 @@ find_ident_at_pos(
 			))
 		--col;
 
-	    /* If we don't want just any old string, or we've found an
-	     * identifier, stop searching. */
+	    // If we don't want just any old text, or we've found an
+	    // identifier, stop searching.
 	    if (!(find_type & FIND_STRING) || vim_iswordc(ptr[col]))
 		break;
 	}
@@ -3461,7 +3466,7 @@ find_ident_at_pos(
     if (ptr[col] == NUL || (i == 0
 		&& (has_mbyte ? this_class != 2 : !vim_iswordc(ptr[col]))))
     {
-	// didn't find an identifier or string
+	// didn't find an identifier or text
 	if ((find_type & FIND_NOERROR) == 0)
 	{
 	    if (find_type & FIND_STRING)
@@ -3472,17 +3477,19 @@ find_ident_at_pos(
 	return 0;
     }
     ptr += col;
-    *string = ptr;
+    *text = ptr;
+    if (textcol != NULL)
+	*textcol = col;
 
     /*
-     * 3. Find the end if the identifier/string.
+     * 3. Find the end if the identifier/text.
      */
     bn = 0;
     startcol -= col;
     col = 0;
     if (has_mbyte)
     {
-	/* Search for point of changing multibyte character class. */
+	// Search for point of changing multibyte character class.
 	this_class = mb_get_class(ptr);
 	while (ptr[col] != NUL
 		&& ((i == 0 ? mb_get_class(ptr + col) == this_class

@@ -12,7 +12,7 @@ char_u *getexmodeline(int promptc, void *cookie, int indent, int do_concat);
 int cmdline_overstrike(void);
 int cmdline_at_end(void);
 colnr_T cmdline_getvcol_cursor(void);
-void free_cmdline_buf(void);
+void free_arshape_buf(void);
 void putcmdline(int c, int shift);
 void unputcmdline(void);
 int put_on_cmdline(char_u *str, int len, int redraw);

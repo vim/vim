@@ -404,11 +404,13 @@ hangul_input_state_set(int state)
     hangul_input_clear();
 }
 
+#if (!defined(FEAT_XIM) && !defined(FEAT_GUI_GTK)) || defined(PROTO)
     int
 im_get_status(void)
 {
     return hangul_input_state_get();
 }
+#endif
 
     void
 hangul_input_state_toggle(void)

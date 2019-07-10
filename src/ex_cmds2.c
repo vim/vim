@@ -3269,20 +3269,21 @@ cmd_source(char_u *fname, exarg_T *eap)
  */
 struct source_cookie
 {
-    FILE	*fp;		/* opened file for sourcing */
-    char_u      *nextline;      /* if not NULL: line that was read ahead */
-    int		finished;	/* ":finish" used */
+    FILE	*fp;		// opened file for sourcing
+    char_u	*nextline;	// if not NULL: line that was read ahead
+    linenr_T	sourcing_lnum;	// line number of the source file
+    int		finished;	// ":finish" used
 #ifdef USE_CRNL
-    int		fileformat;	/* EOL_UNKNOWN, EOL_UNIX or EOL_DOS */
-    int		error;		/* TRUE if LF found after CR-LF */
+    int		fileformat;	// EOL_UNKNOWN, EOL_UNIX or EOL_DOS
+    int		error;		// TRUE if LF found after CR-LF
 #endif
 #ifdef FEAT_EVAL
-    linenr_T	breakpoint;	/* next line with breakpoint or zero */
-    char_u	*fname;		/* name of sourced file */
-    int		dbg_tick;	/* debug_tick when breakpoint was set */
-    int		level;		/* top nesting level of sourced file */
+    linenr_T	breakpoint;	// next line with breakpoint or zero
+    char_u	*fname;		// name of sourced file
+    int		dbg_tick;	// debug_tick when breakpoint was set
+    int		level;		// top nesting level of sourced file
 #endif
-    vimconv_T	conv;		/* type of conversion */
+    vimconv_T	conv;		// type of conversion
 };
 
 #ifdef FEAT_EVAL
@@ -3345,7 +3346,6 @@ fopen_noinh_readbin(char *filename)
     return fdopen(fd_tmp, READBIN);
 }
 #endif
-
 
 /*
  * do_source: Read the file "fname" and execute its lines as EX commands.
@@ -3495,6 +3495,7 @@ do_source(
 #endif
 
     cookie.nextline = NULL;
+    cookie.sourcing_lnum = 0;
     cookie.finished = FALSE;
 
 #ifdef FEAT_EVAL
@@ -3790,6 +3791,14 @@ free_scriptnames(void)
 
 #endif
 
+    linenr_T
+get_sourced_lnum(char_u *(*fgetline)(int, void *, int, int), void *cookie)
+{
+    return fgetline == getsourceline
+			? ((struct source_cookie *)cookie)->sourcing_lnum
+			: sourcing_lnum;
+}
+
 /*
  * Get one full line from a sourced file.
  * Called by do_cmdline() when it's called from do_source().
@@ -3816,6 +3825,10 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 	script_line_end();
 # endif
 #endif
+
+    // Set the current sourcing line number.
+    sourcing_lnum = sp->sourcing_lnum + 1;
+
     /*
      * Get current line.  If there is a read-ahead line, use it, otherwise get
      * one now.
@@ -3828,7 +3841,7 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
     {
 	line = sp->nextline;
 	sp->nextline = NULL;
-	++sourcing_lnum;
+	++sp->sourcing_lnum;
     }
 #ifdef FEAT_PROFILE
     if (line != NULL && do_profiling == PROF_YES)
@@ -3840,7 +3853,7 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
     if (line != NULL && do_concat && vim_strchr(p_cpo, CPO_CONCAT) == NULL)
     {
 	/* compensate for the one line read-ahead */
-	--sourcing_lnum;
+	--sp->sourcing_lnum;
 
 	// Get the next line and concatenate it when it starts with a
 	// backslash. We always need to read the next line, keep it in
@@ -3931,7 +3944,7 @@ get_one_sourceline(struct source_cookie *sp)
     /*
      * Loop until there is a finished line (or end-of-file).
      */
-    sourcing_lnum++;
+    ++sp->sourcing_lnum;
     for (;;)
     {
 	/* make room to read at least 120 (more) characters */
@@ -4001,7 +4014,7 @@ get_one_sourceline(struct source_cookie *sp)
 		;
 	    if ((len & 1) != (c & 1))	/* escaped NL, read more */
 	    {
-		sourcing_lnum++;
+		++sp->sourcing_lnum;
 		continue;
 	    }
 

@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 May 29
+*terminal.txt*	For Vim version 8.1.  Last change: 2019 Jul 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -12,35 +12,36 @@ The terminal feature is optional, use this to check if your Vim has it: >
 If the result is "1" you have it.
 
 
-1. Basic use			|terminal-use|
-      Typing				|terminal-typing|
-      Size and color			|terminal-size-color|
-      Syntax				|:terminal|
-      Resizing				|terminal-resizing|
-      Terminal Modes			|Terminal-mode|
-      Cursor style			|terminal-cursor-style|
-      Session				|terminal-session|
-      Special keys			|terminal-special-keys|
-      Unix				|terminal-unix|
-      MS-Windows			|terminal-ms-windows|
-2. Terminal communication	|terminal-communication|
-      Vim to job: term_sendkeys()	|terminal-to-job|
-      Job to Vim: JSON API		|terminal-api|
-      Using the client-server feature	|terminal-client-server|
-3. Remote testing		|terminal-testing|
-4. Diffing screen dumps		|terminal-diff|
-      Writing a screen dump test for Vim  |terminal-dumptest|
-      Creating a screen dump		  |terminal-screendump|
-      Comparing screen dumps		  |terminal-diffscreendump|
-5. Debugging			|terminal-debug|
-      Starting				|termdebug-starting|
-      Example session			|termdebug-example|
-      Stepping through code		|termdebug-stepping|
-      Inspecting variables		|termdebug-variables|
-      Other commands			|termdebug-commands|
-      Prompt mode			|termdebug-prompt|
-      Communication			|termdebug-communication|
-      Customizing			|termdebug-customizing|
+1. Basic use				|terminal-use|
+      Typing					|terminal-typing|
+      Size and color				|terminal-size-color|
+      Command syntax				|:terminal|
+      Resizing					|terminal-resizing|
+      Terminal Modes				|Terminal-mode|
+      Cursor style				|terminal-cursor-style|
+      Session					|terminal-session|
+      Special keys				|terminal-special-keys|
+      Unix					|terminal-unix|
+      MS-Windows				|terminal-ms-windows|
+2. Terminal functions			|terminal-function-details|
+3. Terminal communication		|terminal-communication|
+      Vim to job: term_sendkeys()		|terminal-to-job|
+      Job to Vim: JSON API			|terminal-api|
+      Using the client-server feature		|terminal-client-server|
+4. Remote testing			|terminal-testing|
+5. Diffing screen dumps			|terminal-diff|
+      Writing a screen dump test for Vim  	|terminal-dumptest|
+      Creating a screen dump		  	|terminal-screendump|
+      Comparing screen dumps		  	|terminal-diffscreendump|
+6. Debugging				|terminal-debug|
+      Starting					|termdebug-starting|
+      Example session				|termdebug-example|
+      Stepping through code			|termdebug-stepping|
+      Inspecting variables			|termdebug-variables|
+      Other commands				|termdebug-commands|
+      Prompt mode				|termdebug-prompt|
+      Communication				|termdebug-communication|
+      Customizing				|termdebug-customizing|
 
 {only available when compiled with the |+terminal| feature}
 The terminal feature requires the |+job| and |+channel| features.
@@ -159,7 +160,7 @@ The |term_setansicolors()| function can be used to change the colors, and
 |term_getansicolors()| to get the currently used colors.
 
 
-Syntax ~
+Command syntax ~
 
 :[range]ter[minal] [options] [command]			*:ter* *:terminal*
 			Open a new terminal window.
@@ -426,8 +427,371 @@ ConPTY problems have been fixed "winpty" will be preferred.
 Environment variables are used to pass information to the running job:
     VIM_SERVERNAME	v:servername
 
+
 ==============================================================================
-2. Terminal communication			 *terminal-communication*
+2. Terminal functions				 *terminal-function-details*
+
+							*term_dumpdiff()*
+term_dumpdiff({filename}, {filename} [, {options}])
+		Open a new window displaying the difference between the two
+		files.  The files must have been created with
+		|term_dumpwrite()|.
+		Returns the buffer number or zero when the diff fails.
+		Also see |terminal-diff|.
+		NOTE: this does not work with double-width characters yet.
+
+		The top part of the buffer contains the contents of the first
+		file, the bottom part of the buffer contains the contents of
+		the second file.  The middle part shows the differences.
+		The parts are separated by a line of equals.
+
+		If the {options} argument is present, it must be a Dict with
+		these possible members:
+		   "term_name"	     name to use for the buffer name, instead
+				     of the first file name.
+		   "term_rows"	     vertical size to use for the terminal,
+				     instead of using 'termwinsize'
+		   "term_cols"	     horizontal size to use for the terminal,
+				     instead of using 'termwinsize'
+		   "vertical"	     split the window vertically
+		   "curwin"	     use the current window, do not split the
+				     window; fails if the current buffer
+				     cannot be |abandon|ed
+		   "bufnr"	     do not create a new buffer, use the
+				     existing buffer "bufnr".  This buffer
+				     must have been previously created with
+				     term_dumpdiff() or term_dumpload() and
+				     visible in a window.
+		   "norestore"	     do not add the terminal window to a
+				     session file
+
+		Each character in the middle part indicates a difference. If
+		there are multiple differences only the first in this list is
+		used:
+			X	different character
+			w	different width
+			f	different foreground color
+			b	different background color
+			a	different attribute
+			+	missing position in first file
+			-	missing position in second file
+
+		Using the "s" key the top and bottom parts are swapped.  This
+		makes it easy to spot a difference.
+
+							*term_dumpload()*
+term_dumpload({filename} [, {options}])
+		Open a new window displaying the contents of {filename}
+		The file must have been created with |term_dumpwrite()|.
+		Returns the buffer number or zero when it fails.
+		Also see |terminal-diff|.
+
+		For {options} see |term_dumpdiff()|.
+
+							*term_dumpwrite()*
+term_dumpwrite({buf}, {filename} [, {options}])
+		Dump the contents of the terminal screen of {buf} in the file
+		{filename}.  This uses a format that can be used with
+		|term_dumpload()| and |term_dumpdiff()|.
+		If the job in the terminal already finished an error is given:
+		*E958*
+		If {filename} already exists an error is given:	*E953*
+		Also see |terminal-diff|.
+
+		{options} is a dictionary with these optional entries:
+			"rows"		maximum number of rows to dump
+			"columns"	maximum number of columns to dump
+
+term_getaltscreen({buf})				*term_getaltscreen()*
+		Returns 1 if the terminal of {buf} is using the alternate
+		screen.
+		{buf} is used as with |term_getsize()|.
+		{only available when compiled with the |+terminal| feature}
+
+term_getansicolors({buf})				*term_getansicolors()*
+		Get the ANSI color palette in use by terminal {buf}.
+		Returns a List of length 16 where each element is a String
+		representing a color in hexadecimal "#rrggbb" format.
+		Also see |term_setansicolors()| and |g:terminal_ansi_colors|.
+		If neither was used returns the default colors.
+
+		{buf} is used as with |term_getsize()|.  If the buffer does not
+		exist or is not a terminal window, an empty list is returned.
+		{only available when compiled with the |+terminal| feature and
+		with GUI enabled and/or the |+termguicolors| feature}
+
+term_getattr({attr}, {what})				*term_getattr()*
+		Given {attr}, a value returned by term_scrape() in the "attr"
+		item, return whether {what} is on.  {what} can be one of:
+			bold
+			italic
+			underline
+			strike
+			reverse
+		{only available when compiled with the |+terminal| feature}
+
+term_getcursor({buf})					*term_getcursor()*
+		Get the cursor position of terminal {buf}. Returns a list with
+		two numbers and a dictionary: [row, col, dict].
+
+		"row" and "col" are one based, the first screen cell is row
+		1, column 1.  This is the cursor position of the terminal
+		itself, not of the Vim window.
+
+		"dict" can have these members:
+		   "visible"	one when the cursor is visible, zero when it
+				is hidden.
+		   "blink"	one when the cursor is blinking, zero when it
+				is not blinking.
+		   "shape"	1 for a block cursor, 2 for underline and 3
+				for a vertical bar.
+		   "color"	color of the cursor, e.g. "green"
+
+		{buf} must be the buffer number of a terminal window. If the
+		buffer does not exist or is not a terminal window, an empty
+		list is returned.
+		{only available when compiled with the |+terminal| feature}
+
+term_getjob({buf})					*term_getjob()*
+		Get the Job associated with terminal window {buf}.
+		{buf} is used as with |term_getsize()|.
+		Returns |v:null| when there is no job.
+		{only available when compiled with the |+terminal| feature}
+
+term_getline({buf}, {row})				*term_getline()*
+		Get a line of text from the terminal window of {buf}.
+		{buf} is used as with |term_getsize()|.
+
+		The first line has {row} one.  When {row} is "." the cursor
+		line is used.  When {row} is invalid an empty string is
+		returned.
+
+		To get attributes of each character use |term_scrape()|.
+		{only available when compiled with the |+terminal| feature}
+
+term_getscrolled({buf})					*term_getscrolled()*
+		Return the number of lines that scrolled to above the top of
+		terminal {buf}.  This is the offset between the row number
+		used for |term_getline()| and |getline()|, so that: >
+			term_getline(buf, N)
+<		is equal to: >
+			getline(N + term_getscrolled(buf))
+<		(if that line exists).
+
+		{buf} is used as with |term_getsize()|.
+		{only available when compiled with the |+terminal| feature}
+
+term_getsize({buf})					*term_getsize()*
+		Get the size of terminal {buf}. Returns a list with two
+		numbers: [rows, cols].  This is the size of the terminal, not
+		the window containing the terminal.
+
+		{buf} must be the buffer number of a terminal window.  Use an
+		empty string for the current buffer.  If the buffer does not
+		exist or is not a terminal window, an empty list is returned.
+		{only available when compiled with the |+terminal| feature}
+
+term_getstatus({buf})					*term_getstatus()*
+		Get the status of terminal {buf}. This returns a comma
+		separated list of these items:
+			running		job is running
+			finished	job has finished
+			normal		in Terminal-Normal mode
+		One of "running" or "finished" is always present.
+
+		{buf} must be the buffer number of a terminal window. If the
+		buffer does not exist or is not a terminal window, an empty
+		string is returned.
+		{only available when compiled with the |+terminal| feature}
+
+term_gettitle({buf})					*term_gettitle()*
+		Get the title of terminal {buf}. This is the title that the
+		job in the terminal has set.
+
+		{buf} must be the buffer number of a terminal window. If the
+		buffer does not exist or is not a terminal window, an empty
+		string is returned.
+		{only available when compiled with the |+terminal| feature}
+
+term_gettty({buf} [, {input}])				*term_gettty()*
+		Get the name of the controlling terminal associated with
+		terminal window {buf}.  {buf} is used as with |term_getsize()|.
+
+		When {input} is omitted or 0, return the name for writing
+		(stdout). When {input} is 1 return the name for reading
+		(stdin). On UNIX, both return same name.
+		{only available when compiled with the |+terminal| feature}
+
+term_list()						*term_list()*
+		Return a list with the buffer numbers of all buffers for
+		terminal windows.
+		{only available when compiled with the |+terminal| feature}
+
+term_scrape({buf}, {row})				*term_scrape()*
+		Get the contents of {row} of terminal screen of {buf}.
+		For {buf} see |term_getsize()|.
+
+		The first line has {row} one.  When {row} is "." the cursor
+		line is used.  When {row} is invalid an empty string is
+		returned.
+
+		Return a List containing a Dict for each screen cell:
+		    "chars"	character(s) at the cell
+		    "fg"	foreground color as #rrggbb
+		    "bg"	background color as #rrggbb
+		    "attr"	attributes of the cell, use |term_getattr()|
+				to get the individual flags
+		    "width"	cell width: 1 or 2
+		{only available when compiled with the |+terminal| feature}
+
+term_sendkeys({buf}, {keys})				*term_sendkeys()*
+		Send keystrokes {keys} to terminal {buf}.
+		{buf} is used as with |term_getsize()|.
+
+		{keys} are translated as key sequences. For example, "\<c-x>"
+		means the character CTRL-X.
+		{only available when compiled with the |+terminal| feature}
+
+term_setansicolors({buf}, {colors})			*term_setansicolors()*
+		Set the ANSI color palette used by terminal {buf}.
+		{colors} must be a List of 16 valid color names or hexadecimal
+		color codes, like those accepted by |highlight-guifg|.
+		Also see |term_getansicolors()| and |g:terminal_ansi_colors|.
+
+		The colors normally are:
+			0    black
+			1    dark red
+			2    dark green
+			3    brown
+			4    dark blue
+			5    dark magenta
+			6    dark cyan
+			7    light grey
+			8    dark grey
+			9    red
+			10   green
+			11   yellow
+			12   blue
+			13   magenta
+			14   cyan
+			15   white
+
+		These colors are used in the GUI and in the terminal when
+		'termguicolors' is set.  When not using GUI colors (GUI mode
+		or 'termguicolors'), the terminal window always uses the 16
+		ANSI colors of the underlying terminal.
+		{only available when compiled with the |+terminal| feature and
+		with GUI enabled and/or the |+termguicolors| feature}
+
+term_setkill({buf}, {how})				*term_setkill()*
+		When exiting Vim or trying to close the terminal window in
+		another way, {how} defines whether the job in the terminal can
+		be stopped.
+		When {how} is empty (the default), the job will not be
+		stopped, trying to exit will result in |E947|.
+		Otherwise, {how} specifies what signal to send to the job.
+		See |job_stop()| for the values.
+
+		After sending the signal Vim will wait for up to a second to
+		check that the job actually stopped.
+
+term_setrestore({buf}, {command})			*term_setrestore()*
+		Set the command to write in a session file to restore the job
+		in this terminal.  The line written in the session file is: >
+			terminal ++curwin ++cols=%d ++rows=%d {command}
+<		Make sure to escape the command properly.
+
+		Use an empty {command} to run 'shell'.
+		Use "NONE" to not restore this window.
+		{only available when compiled with the |+terminal| feature}
+
+term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
+		Set the size of terminal {buf}. The size of the window
+		containing the terminal will also be adjusted, if possible.
+		If {rows} or {cols} is zero or negative, that dimension is not
+		changed.
+
+		{buf} must be the buffer number of a terminal window.  Use an
+		empty string for the current buffer.  If the buffer does not
+		exist or is not a terminal window, an error is given.
+		{only available when compiled with the |+terminal| feature}
+
+term_start({cmd} [, {options}])			*term_start()*
+		Open a terminal window and run {cmd} in it.
+
+		{cmd} can be a string or a List, like with |job_start()|. The
+		string "NONE" can be used to open a terminal window without
+		starting a job, the pty of the terminal can be used by a
+		command like gdb.
+
+		Returns the buffer number of the terminal window.  If {cmd}
+		cannot be executed the window does open and shows an error
+		message.
+		If opening the window fails zero is returned.
+
+		{options} are similar to what is used for |job_start()|, see
+		|job-options|.  However, not all options can be used.  These
+		are supported:
+		   all timeout options
+		   "stoponexit", "cwd", "env"
+		   "callback", "out_cb", "err_cb", "exit_cb", "close_cb"
+		   "in_io", "in_top", "in_bot", "in_name", "in_buf"
+		   "out_io", "out_name", "out_buf", "out_modifiable", "out_msg"
+		   "err_io", "err_name", "err_buf", "err_modifiable", "err_msg"
+		However, at least one of stdin, stdout or stderr must be
+		connected to the terminal.  When I/O is connected to the
+		terminal then the callback function for that part is not used.
+
+		There are extra options:
+		   "term_name"	     name to use for the buffer name, instead
+				     of the command name.
+		   "term_rows"	     vertical size to use for the terminal,
+				     instead of using 'termwinsize'
+		   "term_cols"	     horizontal size to use for the terminal,
+				     instead of using 'termwinsize'
+		   "vertical"	     split the window vertically; note that
+				     other window position can be defined with
+				     command modifiers, such as |:belowright|.
+		   "curwin"	     use the current window, do not split the
+				     window; fails if the current buffer
+				     cannot be |abandon|ed
+		   "hidden"	     do not open a window
+		   "norestore"	     do not add the terminal window to a
+				     session file
+		   "term_kill"	     what to do when trying to close the
+				     terminal window, see |term_setkill()|
+		   "term_finish"     What to do when the job is finished:
+					"close": close any windows
+					"open": open window if needed
+				     Note that "open" can be interruptive.
+				     See |term++close| and |term++open|.
+		   "term_opencmd"    command to use for opening the window when
+				     "open" is used for "term_finish"; must
+				     have "%d" where the buffer number goes,
+				     e.g. "10split|buffer %d"; when not
+				     specified "botright sbuf %d" is used
+		   "eof_chars"	     Text to send after all buffer lines were
+				     written to the terminal.  When not set
+				     CTRL-D is used on MS-Windows. For Python
+				     use CTRL-Z or "exit()". For a shell use
+				     "exit".  A CR is always added.
+		   "ansi_colors"     A list of 16 color names or hex codes
+				     defining the ANSI palette used in GUI
+				     color modes.  See |g:terminal_ansi_colors|.
+		   "tty_type"	     (MS-Windows only): Specify which pty to
+				     use.  See 'termwintype' for the values.
+
+		{only available when compiled with the |+terminal| feature}
+
+term_wait({buf} [, {time}])					*term_wait()*
+		Wait for pending updates of {buf} to be handled.
+		{buf} is used as with |term_getsize()|.
+		{time} is how long to wait for updates to arrive in msec.  If
+		not set then 10 msec will be used.
+		{only available when compiled with the |+terminal| feature}
+
+==============================================================================
+3. Terminal communication			 *terminal-communication*
 
 There are several ways to communicate with the job running in a terminal:
 - Use |term_sendkeys()| to send text and escape sequences from Vim to the job.
@@ -534,7 +898,7 @@ In the job you can then do something like: >
 This will open the file "some_file.c" and put the cursor on line 123.
 
 ==============================================================================
-3. Remote testing					*terminal-testing*
+4. Remote testing					*terminal-testing*
 
 Most Vim tests execute a script inside Vim.  For some tests this does not
 work, running the test interferes with the code being tested.  To avoid this
@@ -549,7 +913,7 @@ Functions ~
 
 
 ==============================================================================
-4. Diffing screen dumps					*terminal-diff*
+5. Diffing screen dumps					*terminal-diff*
 
 In some cases it can be bothersome to test that Vim displays the right
 characters on the screen.  E.g. with syntax highlighting.  To make this
@@ -650,7 +1014,7 @@ Alternatively, press "s" to swap the first and second dump. Do this several
 times so that you can spot the difference in the context of the text.
 
 ==============================================================================
-5. Debugging				*terminal-debug* *terminal-debugger*
+6. Debugging				*terminal-debug* *terminal-debugger*
 
 The Terminal debugging plugin can be used to debug a program with gdb and view
 the source code in a Vim window.  Since this is completely contained inside

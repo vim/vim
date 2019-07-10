@@ -25,15 +25,27 @@ let s:common_script =<< trim [CODE]
 func Test_balloon_eval_term()
   " Use <Ignore> after <MouseMove> to return from vgetc() without removing
   " the balloon.
-  call writefile(s:common_script + [
-	\ 'call test_setmouse(2, 6)',
-	\ 'call feedkeys("\<MouseMove>\<Ignore>", "xt")',
-	\ ], 'XTest_beval')
+  let xtra_lines =<< trim [CODE]
+    set updatetime=300
+    au CursorHold * echo 'hold fired'
+    func Trigger()
+      call test_setmouse(2, 6)
+      call feedkeys("\<MouseMove>\<Ignore>", "xt")
+    endfunc
+  [CODE]
+  call writefile(s:common_script + xtra_lines, 'XTest_beval')
 
   " Check that the balloon shows up after a mouse move
   let buf = RunVimInTerminal('-S XTest_beval', {'rows': 10, 'cols': 50})
   call term_wait(buf, 100)
+  call term_sendkeys(buf, 'll')
+  call term_sendkeys(buf, ":call Trigger()\<CR>")
   call VerifyScreenDump(buf, 'Test_balloon_eval_term_01', {})
+
+  " Make sure the balloon still shows after 'updatetime' passed and CursorHold
+  " was triggered.
+  call term_wait(buf, 300)
+  call VerifyScreenDump(buf, 'Test_balloon_eval_term_01a', {})
 
   " clean up
   call StopVimInTerminal(buf)

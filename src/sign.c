@@ -274,6 +274,20 @@ insert_sign_by_lnum_prio(
 }
 
 /*
+ * Lookup a sign by typenr. Returns NULL if sign is not found.
+ */
+    static sign_T *
+find_sign_by_typenr(int typenr)
+{
+    sign_T	*sp;
+
+    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
+	if (sp->sn_typenr == typenr)
+	    return sp;
+    return NULL;
+}
+
+/*
  * Get the name of a sign by its typenr.
  */
     static char_u *
@@ -445,31 +459,44 @@ buf_change_sign_type(
 }
 
 /*
- * Return the type number of the sign at line number 'lnum' in buffer 'buf'
- * which has the attribute specified by 'type'. Returns 0 if a sign is not
- * found at the line number or it doesn't have the specified attribute.
+ * Return the attributes of the first sign placed on line 'lnum' in buffer
+ * 'buf'. Used when refreshing the screen. Returns TRUE if a sign is found on
+ * 'lnum', FALSE otherwise.
  */
     int
-buf_getsigntype(
-    buf_T	*buf,
-    linenr_T	lnum,
-    int		type)	// SIGN_ICON, SIGN_TEXT, SIGN_ANY, SIGN_LINEHL
+buf_get_signattrs(buf_T *buf, linenr_T lnum, sign_attrs_T *sattr)
 {
-    signlist_T	*sign;		// a sign in a b_signlist
+    signlist_T	*sign;
+    sign_T	*sp;
+
+    vim_memset(sattr, 0, sizeof(sign_attrs_T));
 
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
-	if (sign->lnum == lnum
-		&& (type == SIGN_ANY
+    {
+	if (sign->lnum > lnum)
+	    // Signs are sorted by line number in the buffer. No need to check
+	    // for signs after the specified line number 'lnum'.
+	    break;
+
+	if (sign->lnum == lnum)
+	{
+	    sattr->typenr = sign->typenr;
+	    sp = find_sign_by_typenr(sign->typenr);
+	    if (sp == NULL)
+		return FALSE;
+
 # ifdef FEAT_SIGN_ICONS
-		    || (type == SIGN_ICON
-			&& sign_get_image(sign->typenr) != NULL)
+	    sattr->icon = sp->sn_image;
 # endif
-		    || (type == SIGN_TEXT
-			&& sign_get_text(sign->typenr) != NULL)
-		    || (type == SIGN_LINEHL
-			&& sign_get_attr(sign->typenr, TRUE) != 0)))
-	    return sign->typenr;
-    return 0;
+	    sattr->text = sp->sn_text;
+	    if (sattr->text != NULL && sp->sn_text_hl > 0)
+		sattr->texthl = syn_id2attr(sp->sn_text_hl);
+	    if (sp->sn_line_hl > 0)
+		sattr->linehl = syn_id2attr(sp->sn_line_hl);
+	    return TRUE;
+	}
+    }
+    return FALSE;
 }
 
 /*
@@ -571,8 +598,15 @@ buf_getsign_at_line(
     signlist_T	*sign;		// a sign in the signlist
 
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
+    {
+	if (sign->lnum > lnum)
+	    // Signs are sorted by line number in the buffer. No need to check
+	    // for signs after the specified line number 'lnum'.
+	    break;
+
 	if (sign->lnum == lnum && sign_in_group(sign, groupname))
 	    return sign;
+    }
 
     return NULL;
 }
@@ -608,8 +642,15 @@ buf_findsigntype_id(
     signlist_T	*sign;		// a sign in the signlist
 
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
+    {
+	if (sign->lnum > lnum)
+	    // Signs are sorted by line number in the buffer. No need to check
+	    // for signs after the specified line number 'lnum'.
+	    break;
+
 	if (sign->lnum == lnum && sign->typenr == typenr)
 	    return sign->id;
+    }
 
     return 0;
 }
@@ -626,9 +667,16 @@ buf_signcount(buf_T *buf, linenr_T lnum)
     int		count = 0;
 
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
+    {
+	if (sign->lnum > lnum)
+	    // Signs are sorted by line number in the buffer. No need to check
+	    // for signs after the specified line number 'lnum'.
+	    break;
+
 	if (sign->lnum == lnum)
 	    if (sign_get_image(sign->typenr) != NULL)
 		count++;
+    }
 
     return count;
 }
@@ -1008,6 +1056,20 @@ sign_list_by_name(char_u *name)
 	semsg(_("E155: Unknown sign: %s"), name);
 }
 
+    static void
+may_force_numberwidth_recompute(buf_T *buf, int unplace)
+{
+    tabpage_T	*tp;
+    win_T		*wp;
+
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+	if (wp->w_buffer == buf
+		&& (wp->w_p_nu || wp->w_p_rnu)
+		&& (unplace || wp->w_nrwidth_width < 2)
+		&& (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u'))
+	    wp->w_nrwidth_line_count = 0;
+}
+
 /*
  * Place a sign at the specified file location or update a sign.
  */
@@ -1045,7 +1107,13 @@ sign_place(
 	// ":sign place {id} file={fname}": change sign type
 	lnum = buf_change_sign_type(buf, *sign_id, sign_group, sp->sn_typenr);
     if (lnum > 0)
+    {
 	redraw_buf_line_later(buf, lnum);
+
+	// When displaying signs in the 'number' column, if the width of the
+	// number column is less than 2, then force recomputing the width.
+	may_force_numberwidth_recompute(buf, FALSE);
+    }
     else
     {
 	semsg(_("E885: Not possible to change sign %s"), sign_name);
@@ -1079,6 +1147,12 @@ sign_unplace(int sign_id, char_u *sign_group, buf_T *buf, linenr_T atlnum)
 	if (lnum == 0)
 	    return FAIL;
     }
+
+    // When all the signs in a buffer are removed, force recomputing the
+    // number column width (if enabled) in all the windows displaying the
+    // buffer if 'signcolumn' is set to 'number' in that window.
+    if (buf->b_signlist == NULL)
+	may_force_numberwidth_recompute(buf, TRUE);
 
     return OK;
 }
@@ -1764,48 +1838,6 @@ sign_undefine(sign_T *sp, sign_T *sp_prev)
     else
 	sp_prev->sn_next = sp->sn_next;
     vim_free(sp);
-}
-
-/*
- * Get highlighting attribute for sign "typenr".
- * If "line" is TRUE: line highl, if FALSE: text highl.
- */
-    int
-sign_get_attr(int typenr, int line)
-{
-    sign_T	*sp;
-
-    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
-	if (sp->sn_typenr == typenr)
-	{
-	    if (line)
-	    {
-		if (sp->sn_line_hl > 0)
-		    return syn_id2attr(sp->sn_line_hl);
-	    }
-	    else
-	    {
-		if (sp->sn_text_hl > 0)
-		    return syn_id2attr(sp->sn_text_hl);
-	    }
-	    break;
-	}
-    return 0;
-}
-
-/*
- * Get text mark for sign "typenr".
- * Returns NULL if there isn't one.
- */
-    char_u *
-sign_get_text(int typenr)
-{
-    sign_T	*sp;
-
-    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
-	if (sp->sn_typenr == typenr)
-	    return sp->sn_text;
-    return NULL;
 }
 
 # if defined(FEAT_SIGN_ICONS) || defined(PROTO)

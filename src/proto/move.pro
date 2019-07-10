@@ -27,6 +27,7 @@ int curwin_col_off(void);
 int win_col_off2(win_T *wp);
 int curwin_col_off2(void);
 void curs_columns(int may_scroll);
+void f_screenpos(typval_T *argvars, typval_T *rettv);
 void scrolldown(long line_count, int byfold);
 void scrollup(long line_count, int byfold);
 void check_topfill(win_T *wp, int down);

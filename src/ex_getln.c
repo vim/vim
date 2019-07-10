@@ -3174,7 +3174,7 @@ static char_u	*arshape_buf = NULL;
 
 # if defined(EXITFREE) || defined(PROTO)
     void
-free_cmdline_buf(void)
+free_arshape_buf(void)
 {
     vim_free(arshape_buf);
 }

@@ -1,6 +1,6 @@
 /* sign.c */
 void init_signs(void);
-int buf_getsigntype(buf_T *buf, linenr_T lnum, int type);
+int buf_get_signattrs(buf_T *buf, linenr_T lnum, sign_attrs_T *sattr);
 linenr_T buf_delsign(buf_T *buf, linenr_T atlnum, int id, char_u *group);
 int buf_findsign(buf_T *buf, int id, char_u *group);
 int buf_findsign_id(buf_T *buf, linenr_T lnum, char_u *groupname);
@@ -13,8 +13,6 @@ int sign_undefine_by_name(char_u *name);
 void ex_sign(exarg_T *eap);
 void get_buffer_signs(buf_T *buf, list_T *l);
 void sign_gui_started(void);
-int sign_get_attr(int typenr, int line);
-char_u *sign_get_text(int typenr);
 void *sign_get_image(int typenr);
 void free_signs(void);
 char_u *get_sign_name(expand_T *xp, int idx);

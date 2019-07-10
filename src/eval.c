@@ -9219,23 +9219,24 @@ find_option_end(char_u **arg, int *opt_flags)
 /*
  * Return the autoload script name for a function or variable name.
  * Returns NULL when out of memory.
+ * Caller must make sure that "name" contains AUTOLOAD_CHAR.
  */
     char_u *
 autoload_name(char_u *name)
 {
-    char_u	*p;
+    char_u	*p, *q = NULL;
     char_u	*scriptname;
 
-    /* Get the script file name: replace '#' with '/', append ".vim". */
+    // Get the script file name: replace '#' with '/', append ".vim".
     scriptname = alloc(STRLEN(name) + 14);
     if (scriptname == NULL)
 	return FALSE;
     STRCPY(scriptname, "autoload/");
     STRCAT(scriptname, name);
-    *vim_strrchr(scriptname, AUTOLOAD_CHAR) = NUL;
-    STRCAT(scriptname, ".vim");
-    while ((p = vim_strchr(scriptname, AUTOLOAD_CHAR)) != NULL)
+    for (p = scriptname + 9; (p = vim_strchr(p, AUTOLOAD_CHAR)) != NULL;
+								    q = p, ++p)
 	*p = '/';
+    STRCPY(q, ".vim");
     return scriptname;
 }
 
