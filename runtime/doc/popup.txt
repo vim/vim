@@ -192,7 +192,7 @@ popup_beval({what}, {options})			*popup_beval()*
 		  let pos = screenpos(v:beval_winnr, v:beval_lnum, v:beval_col)
 		  call popup_create({what}, {
 			\ 'pos': 'botleft',
-			\ 'line': pos.lnum - 1,
+			\ 'line': pos.row - 1,
 			\ 'col': pos.col,
 			\ 'mousemoved': 'WORD',
 			\ })
@@ -762,38 +762,49 @@ Example for using a popup window for 'ballooneval': >
 	set ballooneval balloonevalterm
 	set balloonexpr=BalloonExpr()
 	let s:winid = 0
+	let s:last_text = ''
 
 	func BalloonExpr()
-	  if s:winid
+	  if s:winid && popup_getpos(s:winid) != {}
+	    " previous popup window still shows
+	    if v:beval_text == s:last_text
+	      " Still the same text, keep the existing popup
+	      return ''
+	    endif
 	    call popup_close(s:winid)
-	    let s:winid = 0
 	  endif
-	  let s:winid = popup_beval([bufname(v:beval_bufnr), v:beval_text], {})
+	  let s:winid = popup_beval(v:beval_text, {'mousemoved': 'word'})
+	  let s:last_text = v:beval_text
 	  return ''
 	endfunc
 <
 If the text has to be obtained asynchronously return an empty string from the
 expression function and call popup_beval() once the text is available.  In
-this example similated with a timer callback: >
+this example simulated with a timer callback: >
 
 	set ballooneval balloonevalterm
 	set balloonexpr=BalloonExpr()
 	let s:winid = 0
+	let s:balloonText = ''
 
 	func BalloonExpr()
-	  if s:winid
+	  if s:winid && popup_getpos(s:winid) != {}
+	    " previous popup window still shows
+	    if  v:beval_text == s:balloonText
+	      " Still the same text, keep the existing popup
+	      return ''
+	    endif
 	    call popup_close(s:winid)
 	    let s:winid = 0
 	  endif
 	  " simulate an asynchronous loopup for the text to display
-	  let s:balloonFile = bufname(v:beval_bufnr)
-	  let s:balloonWord = v:beval_text
+	  let s:balloonText = v:beval_text
 	  call timer_start(100, 'ShowPopup')
 	  return ''
 	endfunc
 
 	func ShowPopup(id)
-	  let s:winid = popup_beval([s:balloonFile, s:balloonWord], {})
+	  let s:winid = popup_beval(s:balloonText, {'mousemoved': 'word'})
 	endfunc
 <
 

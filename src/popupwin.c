@@ -184,14 +184,24 @@ set_mousemoved_values(win_T *wp)
     static void
 set_mousemoved_columns(win_T *wp, int flags)
 {
+    win_T	*textwp;
     char_u	*text;
     int		col;
+    pos_T	pos;
+    colnr_T	mcol;
 
     if (find_word_under_cursor(mouse_row, mouse_col, TRUE, flags,
-					 NULL, NULL, &text, NULL, &col) == OK)
+				  &textwp, &pos.lnum, &text, NULL, &col) == OK)
     {
-	wp->w_popup_mouse_mincol = col;
-	wp->w_popup_mouse_maxcol = col + STRLEN(text) - 1;
+	// convert text column to mouse column
+	pos.col = col;
+	pos.coladd = 0;
+	getvcol(textwp, &pos, &mcol, NULL, NULL);
+	wp->w_popup_mouse_mincol = mcol;
+
+	pos.col = col + STRLEN(text) - 1;
+	getvcol(textwp, &pos, NULL, NULL, &mcol);
+	wp->w_popup_mouse_maxcol = mcol;
 	vim_free(text);
     }
 }
