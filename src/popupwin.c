@@ -2538,7 +2538,8 @@ update_popups(void (*win_update)(win_T *wp))
 	if (wp->w_winrow < screen_Rows && wp->w_wincol < screen_Columns)
 	{
 	    int	saved = wp->w_width;
-	    wp->w_width = total_width - extra;
+	    if (total_width - extra < wp->w_width)
+		wp->w_width = total_width - extra;
 	    win_update(wp);
 	    wp->w_width = saved;
 	}
