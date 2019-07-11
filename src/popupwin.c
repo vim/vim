@@ -1545,6 +1545,10 @@ f_popup_filter_menu(typval_T *argvars, typval_T *rettv)
 	++wp->w_cursor.lnum;
     if (old_lnum != wp->w_cursor.lnum)
     {
+	while (wp->w_topline + wp->w_height - 1 < wp->w_cursor.lnum)
+	    wp->w_topline++;
+	while (wp->w_cursor.lnum < wp->w_topline)
+	    wp->w_topline--;
 	popup_highlight_curline(wp);
 	return;
     }
