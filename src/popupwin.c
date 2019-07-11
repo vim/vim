@@ -799,11 +799,13 @@ popup_height(win_T *wp)
     int
 popup_width(win_T *wp)
 {
-    return wp->w_width + wp->w_leftcol
-	+ wp->w_popup_padding[3] + wp->w_popup_border[3]
+    int	extra = wp->w_popup_padding[3] + wp->w_popup_border[3]
 	+ wp->w_popup_padding[1] + wp->w_popup_border[1]
-	+ wp->w_has_scrollbar
-	+ wp->w_popup_rightoff;
+	+ wp->w_has_scrollbar;
+    int	width = wp->w_width + wp->w_leftcol + wp->w_popup_rightoff;
+    if (0 < wp->w_maxwidth - extra && wp->w_maxwidth - extra < width)
+	width = wp->w_maxwidth - extra;
+    return width + extra;
 }
 
 /*
@@ -2507,6 +2509,10 @@ update_popups(void (*win_update)(win_T *wp))
     popup_reset_handled();
     while ((wp = find_next_popup(TRUE)) != NULL)
     {
+	int	extra = wp->w_popup_padding[3] + wp->w_popup_border[3]
+	    + wp->w_popup_padding[1] + wp->w_popup_border[1]
+	    + wp->w_has_scrollbar;
+
 	// This drawing uses the zindex of the popup window, so that it's on
 	// top of the text but doesn't draw when another popup with higher
 	// zindex is on top of the character.
@@ -2525,15 +2531,21 @@ update_popups(void (*win_update)(win_T *wp))
 	wp->w_winrow += top_off;
 	wp->w_wincol += left_extra;
 
+	total_width = popup_width(wp);
+	total_height = popup_height(wp);
+
 	// Draw the popup text, unless it's off screen.
 	if (wp->w_winrow < screen_Rows && wp->w_wincol < screen_Columns)
+	{
+	    int	saved = wp->w_width;
+	    wp->w_width = total_width - extra;
 	    win_update(wp);
+	    wp->w_width = saved;
+	}
 
 	wp->w_winrow -= top_off;
 	wp->w_wincol -= left_extra;
 
-	total_width = popup_width(wp);
-	total_height = popup_height(wp);
 	popup_attr = get_wcr_attr(wp);
 
 	// We can only use these line drawing characters when 'encoding' is
@@ -2693,7 +2705,7 @@ update_popups(void (*win_update)(win_T *wp))
 	    if (do_padding && wp->w_popup_padding[1] > 0)
 		screen_puts(get_spaces(wp->w_popup_padding[1]), row,
 			wincol + wp->w_popup_border[3]
-			+ wp->w_popup_padding[3] + wp->w_width + wp->w_leftcol,
+			+ wp->w_popup_padding[3] + total_width - extra + wp->w_leftcol,
 			popup_attr);
 	}
 
