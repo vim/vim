@@ -63,6 +63,7 @@ blob_copy(typval_T *from, typval_T *to)
     int	    ret = OK;
 
     to->v_type = VAR_BLOB;
+    to->v_lock = 0;
     if (from->vval.v_blob == NULL)
 	to->vval.v_blob = NULL;
     else if (rettv_blob_alloc(to) == FAIL)
