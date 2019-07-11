@@ -1006,7 +1006,7 @@ install.exe: dosinst.c
 	$(CC) $(CFLAGS) -o install.exe dosinst.c $(LIB) -lole32 -luuid
 
 uninstal.exe: uninstal.c
-	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIB)
+	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIB) -lole32
 
 ifeq ($(VIMDLL),yes)
 $(TARGET): $(OUTDIR) $(OBJ)
