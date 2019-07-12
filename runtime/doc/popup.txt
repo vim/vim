@@ -170,6 +170,7 @@ Filter functions:
 Other:
 	|popup_getoptions()|	get current options for a popup
 	|popup_getpos()|	get actual position and size of a popup
+	|popup_locate()|	find popup window at a screen position
 
 
 DETAILS						*popup-function-details*
@@ -341,6 +342,13 @@ popup_hide({id})						*popup_hide()*
 		hidden.
 		If window {id} does not exist nothing happens.  If window {id}
 		exists but is not a popup window an error is given. *E993*
+
+
+popup_locate({row}, {col})				 *popup_locate()*
+		Return the |window-ID| of the popup at screen positoin {row}
+		and {col}.  If there are multiple popups the one with the
+		highest zindex is returned.  If there are no popups at this
+		position then zero is returned.
 
 
 popup_menu({what}, {options})				 *popup_menu()*

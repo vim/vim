@@ -713,7 +713,7 @@ func Test_popup_time()
   topleft vnew
   call setline(1, 'hello')
 
-  call popup_create('world', {
+  let winid = popup_create('world', {
 	\ 'line': 1,
 	\ 'col': 1,
 	\ 'minwidth': 20,
@@ -722,6 +722,11 @@ func Test_popup_time()
   redraw
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('world', line)
+
+  call assert_equal(winid, popup_locate(1, 1))
+  call assert_equal(winid, popup_locate(1, 20))
+  call assert_equal(0, popup_locate(1, 21))
+  call assert_equal(0, popup_locate(2, 1))
 
   sleep 700m
   redraw
