@@ -1580,6 +1580,7 @@ func Test_popup_scrollbar()
       call feedkeys("\<F4>\<LeftMouse>", "xt")
     endfunc
     func ClickBot()
+      call popup_setoptions(g:winid, {'border': [], 'close': 'button'})
       call feedkeys("\<F5>\<LeftMouse>", "xt")
     endfunc
     map <silent> <F3> :call test_setmouse(5, 36)<CR>

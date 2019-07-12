@@ -317,7 +317,7 @@ popup_handle_scrollbar_click(win_T *wp, int row, int col)
 	return;
     if (row >= wp->w_popup_border[0]
 	    && row < height - wp->w_popup_border[2]
-	    && col == popup_width(wp) - 1)
+	    && col == popup_width(wp) - wp->w_popup_border[1] - 1)
     {
 	if (row >= height / 2)
 	{
