@@ -521,6 +521,8 @@ func Test_popup_select()
 
   call term_sendkeys(buf, ":call popup_close(winid)\<CR>")
   call term_sendkeys(buf, "\"*p")
+  " cleanup it becuase sometimes keystroke remains in commandline.
+  call term_sendkeys(buf, ":\<esc>")
   call VerifyScreenDump(buf, 'Test_popupwin_select_02', {})
 
   " clean up
