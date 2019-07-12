@@ -2323,8 +2323,10 @@ update_popup_transparent(win_T *wp, int val)
 	    --lines;
 	    if (lines < 0)
 		lines = 0;
-	    for (line = lines; line < linee && line < screen_Rows; ++line)
-		for (col = cols; col < cole && col < screen_Columns; ++col)
+	    for (line = lines; line < linee
+				  && line + wp->w_winrow < screen_Rows; ++line)
+		for (col = cols; col < cole
+				&& col + wp->w_wincol < screen_Columns; ++col)
 		    popup_transparent[(line + wp->w_winrow) * screen_Columns
 						   + col + wp->w_wincol] = val;
 	}
