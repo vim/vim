@@ -2704,9 +2704,8 @@ update_popups(void (*win_update)(win_T *wp))
 	    }
 	    // right padding
 	    if (do_padding && wp->w_popup_padding[1] > 0)
-		screen_puts(get_spaces(wp->w_popup_padding[1]), row,
-			wincol + wp->w_popup_border[3]
-			+ wp->w_popup_padding[3] + total_width - extra + wp->w_leftcol,
+		screen_puts(get_spaces(wp->w_popup_padding[1]), row, wincol + total_width
+			- wp->w_has_scrollbar - wp->w_popup_padding[1] - wp->w_popup_border[1],
 			popup_attr);
 	}
 
