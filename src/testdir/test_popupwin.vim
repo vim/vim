@@ -525,6 +525,9 @@ func Test_popup_select()
 
   call term_sendkeys(buf, ":call popup_close(winid)\<CR>")
   call term_sendkeys(buf, "\"*p")
+  " clean the command line, sometimes it still shows a command
+  call term_sendkeys(buf, ":\<esc>")
+
   call VerifyScreenDump(buf, 'Test_popupwin_select_02', {})
 
   " clean up
