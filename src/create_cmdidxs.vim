@@ -37,8 +37,8 @@ while idx < len(lines)
       endif
     endif
 
-    if flags =~ '\<DFLALL\>' && (addr_type =~ 'ADDR_OTHER' || addr_type =~ 'ADDR_NONE')
-      echoerr 'ex_cmds.h:' .. (idx - 1) .. ': Missing misplaced DFLALL: ' .. line
+    if flags =~ '\<EX_DFLALL\>' && (addr_type =~ 'ADDR_OTHER' || addr_type =~ 'ADDR_NONE')
+      echoerr 'ex_cmds.h:' .. (idx - 1) .. ': Missing misplaced EX_DFLALL: ' .. line
     endif
   endif
   let idx += 1
