@@ -14,8 +14,8 @@ let lines = readfile('ex_cmds.h')
 let idx = 0
 while idx < len(lines)
   let line = lines[idx]
-  if line =~ '^EX(CMD_'
-    let m = matchlist(line, '^EX(CMD_\S*,\s*"\([a-z][^"]*\)"')
+  if line =~ '^EXCMD(CMD_'
+    let m = matchlist(line, '^EXCMD(CMD_\S*,\s*"\([a-z][^"]*\)"')
     if len(m) >= 2
       let cmds += [ m[1] ]
     else
@@ -27,18 +27,18 @@ while idx < len(lines)
     let idx += 1
     let addr_type = lines[idx]
 
-    if flags =~ '\<RANGE\>'
+    if flags =~ '\<EX_RANGE\>'
       if addr_type =~ 'ADDR_NONE'
-	echoerr 'ex_cmds.h:' .. (idx - 1) .. ': Using RANGE with ADDR_NONE: ' .. line
+        echoerr 'ex_cmds.h:' .. (idx - 1) .. ': Using EX_RANGE with ADDR_NONE: ' .. line
       endif
     else
       if addr_type !~ 'ADDR_NONE'
-	echoerr 'ex_cmds.h:' .. (idx - 1) .. ': Missing ADDR_NONE: ' .. line
+        echoerr 'ex_cmds.h:' .. (idx - 1) .. ': Missing ADDR_NONE: ' .. line
       endif
     endif
 
-    if flags =~ '\<DFLALL\>' && (addr_type =~ 'ADDR_OTHER' || addr_type =~ 'ADDR_NONE')
-      echoerr 'ex_cmds.h:' .. (idx - 1) .. ': Missing misplaced DFLALL: ' .. line
+    if flags =~ '\<EX_DFLALL\>' && (addr_type =~ 'ADDR_OTHER' || addr_type =~ 'ADDR_NONE')
+      echoerr 'ex_cmds.h:' .. (idx - 1) .. ': Missing misplaced EX_DFLALL: ' .. line
     endif
   endif
   let idx += 1
