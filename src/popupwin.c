@@ -199,7 +199,7 @@ set_mousemoved_columns(win_T *wp, int flags)
 	getvcol(textwp, &pos, &mcol, NULL, NULL);
 	wp->w_popup_mouse_mincol = mcol;
 
-	pos.col = col + STRLEN(text) - 1;
+	pos.col = col + (colnr_T)STRLEN(text) - 1;
 	getvcol(textwp, &pos, NULL, NULL, &mcol);
 	wp->w_popup_mouse_maxcol = mcol;
 	vim_free(text);
