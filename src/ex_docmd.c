@@ -1844,7 +1844,7 @@ do_one_cmd(
 	if (*ea.cmd == '|' || (exmode_active && ea.line1 != ea.line2))
 	{
 	    ea.cmdidx = CMD_print;
-	    ea.argt = RANGE+COUNT+TRLBAR;
+	    ea.argt = EX_RANGE+EX_COUNT+EX_TRLBAR;
 	    if ((errormsg = invalid_range(&ea)) == NULL)
 	    {
 		correct_range(&ea);
@@ -1976,26 +1976,26 @@ do_one_cmd(
     if (!ea.skip)
     {
 #ifdef HAVE_SANDBOX
-	if (sandbox != 0 && !(ea.argt & SBOXOK))
+	if (sandbox != 0 && !(ea.argt & EX_SBOXOK))
 	{
 	    // Command not allowed in sandbox.
 	    errormsg = _(e_sandbox);
 	    goto doend;
 	}
 #endif
-	if (restricted != 0 && (ea.argt & RESTRICT))
+	if (restricted != 0 && (ea.argt & EX_RESTRICT))
 	{
 	    errormsg = _("E981: Command not allowed in rvim");
 	    goto doend;
 	}
-	if (!curbuf->b_p_ma && (ea.argt & MODIFY))
+	if (!curbuf->b_p_ma && (ea.argt & EX_MODIFY))
 	{
 	    /* Command not allowed in non-'modifiable' buffer */
 	    errormsg = _(e_modifiable);
 	    goto doend;
 	}
 
-	if (text_locked() && !(ea.argt & CMDWIN)
+	if (text_locked() && !(ea.argt & EX_CMDWIN)
 		&& !IS_USER_CMDIDX(ea.cmdidx))
 	{
 	    /* Command not allowed when editing the command line. */
@@ -2007,7 +2007,7 @@ do_one_cmd(
 	 * Do allow ":checktime" (it is postponed).
 	 * Do allow ":edit" (check for an argument later).
 	 * Do allow ":file" with no arguments (check for an argument later). */
-	if (!(ea.argt & CMDWIN)
+	if (!(ea.argt & EX_CMDWIN)
 		&& ea.cmdidx != CMD_checktime
 		&& ea.cmdidx != CMD_edit
 		&& ea.cmdidx != CMD_file
@@ -2015,7 +2015,7 @@ do_one_cmd(
 		&& curbuf_locked())
 	    goto doend;
 
-	if (!ni && !(ea.argt & RANGE) && ea.addr_count > 0)
+	if (!ni && !(ea.argt & EX_RANGE) && ea.addr_count > 0)
 	{
 	    /* no range allowed */
 	    errormsg = _(e_norange);
@@ -2023,7 +2023,7 @@ do_one_cmd(
 	}
     }
 
-    if (!ni && !(ea.argt & BANG) && ea.forceit)	/* no <!> allowed */
+    if (!ni && !(ea.argt & EX_BANG) && ea.forceit)	// no <!> allowed
     {
 	errormsg = _(e_nobang);
 	goto doend;
@@ -2033,7 +2033,7 @@ do_one_cmd(
      * Don't complain about the range if it is not used
      * (could happen if line_count is accidentally set to 0).
      */
-    if (!ea.skip && !ni && (ea.argt & RANGE))
+    if (!ea.skip && !ni && (ea.argt & EX_RANGE))
     {
 	/*
 	 * If the range is backwards, ask for confirmation and, if given, swap
@@ -2068,7 +2068,7 @@ do_one_cmd(
     correct_range(&ea);
 
 #ifdef FEAT_FOLDING
-    if (((ea.argt & WHOLEFOLD) || ea.addr_count >= 2) && !global_busy
+    if (((ea.argt & EX_WHOLEFOLD) || ea.addr_count >= 2) && !global_busy
 	    && ea.addr_type == ADDR_LINES)
     {
 	/* Put the first line at the start of a closed fold, put the last line
@@ -2105,7 +2105,7 @@ do_one_cmd(
      * Check for "++opt=val" argument.
      * Must be first, allow ":w ++enc=utf8 !cmd"
      */
-    if (ea.argt & ARGOPT)
+    if (ea.argt & EX_ARGOPT)
 	while (ea.arg[0] == '+' && ea.arg[1] == '+')
 	    if (getargopt(&ea) == FAIL && !ni)
 	    {
@@ -2161,14 +2161,14 @@ do_one_cmd(
      * Check for "+command" argument, before checking for next command.
      * Don't do this for ":read !cmd" and ":write !cmd".
      */
-    if ((ea.argt & EDITCMD) && !ea.usefilter)
+    if ((ea.argt & EX_CMDARG) && !ea.usefilter)
 	ea.do_ecmd_cmd = getargcmd(&ea.arg);
 
     /*
      * Check for '|' to separate commands and '"' to start comments.
      * Don't do this for ":read !cmd" and ":write !cmd".
      */
-    if ((ea.argt & TRLBAR) && !ea.usefilter)
+    if ((ea.argt & EX_TRLBAR) && !ea.usefilter)
 	separate_nextcmd(&ea);
 
     /*
@@ -2201,7 +2201,7 @@ do_one_cmd(
 	}
     }
 
-    if ((ea.argt & DFLALL) && ea.addr_count == 0)
+    if ((ea.argt & EX_DFLALL) && ea.addr_count == 0)
     {
 	buf_T	    *buf;
 
@@ -2251,17 +2251,17 @@ do_one_cmd(
 	    case ADDR_NONE:
 	    case ADDR_UNSIGNED:
 	    case ADDR_QUICKFIX:
-		iemsg(_("INTERNAL: Cannot use DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX"));
+		iemsg(_("INTERNAL: Cannot use EX_DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX"));
 		break;
 	}
     }
 
     /* accept numbered register only when no count allowed (:put) */
-    if (       (ea.argt & REGSTR)
+    if (       (ea.argt & EX_REGSTR)
 	    && *ea.arg != NUL
 	       /* Do not allow register = for user commands */
 	    && (!IS_USER_CMDIDX(ea.cmdidx) || *ea.arg != '=')
-	    && !((ea.argt & COUNT) && VIM_ISDIGIT(*ea.arg)))
+	    && !((ea.argt & EX_COUNT) && VIM_ISDIGIT(*ea.arg)))
     {
 #ifndef FEAT_CLIPBOARD
 	/* check these explicitly for a more specific error message */
@@ -2288,16 +2288,16 @@ do_one_cmd(
     }
 
     /*
-     * Check for a count.  When accepting a BUFNAME, don't use "123foo" as a
+     * Check for a count.  When accepting a EX_BUFNAME, don't use "123foo" as a
      * count, it's a buffer name.
      */
-    if ((ea.argt & COUNT) && VIM_ISDIGIT(*ea.arg)
-	    && (!(ea.argt & BUFNAME) || *(p = skipdigits(ea.arg)) == NUL
+    if ((ea.argt & EX_COUNT) && VIM_ISDIGIT(*ea.arg)
+	    && (!(ea.argt & EX_BUFNAME) || *(p = skipdigits(ea.arg)) == NUL
 							  || VIM_ISWHITE(*p)))
     {
 	n = getdigits(&ea.arg);
 	ea.arg = skipwhite(ea.arg);
-	if (n <= 0 && !ni && (ea.argt & ZEROR) == 0)
+	if (n <= 0 && !ni && (ea.argt & EX_ZEROR) == 0)
 	{
 	    errormsg = _(e_zerocount);
 	    goto doend;
@@ -2324,17 +2324,17 @@ do_one_cmd(
     /*
      * Check for flags: 'l', 'p' and '#'.
      */
-    if (ea.argt & EXFLAGS)
+    if (ea.argt & EX_FLAGS)
 	get_flags(&ea);
-						/* no arguments allowed */
-    if (!ni && !(ea.argt & EXTRA) && *ea.arg != NUL
-	    && *ea.arg != '"' && (*ea.arg != '|' || (ea.argt & TRLBAR) == 0))
+    if (!ni && !(ea.argt & EX_EXTRA) && *ea.arg != NUL
+	    && *ea.arg != '"' && (*ea.arg != '|' || (ea.argt & EX_TRLBAR) == 0))
     {
+	// no arguments allowed but there is something
 	errormsg = _(e_trailing);
 	goto doend;
     }
 
-    if (!ni && (ea.argt & NEEDARG) && *ea.arg == NUL)
+    if (!ni && (ea.argt & EX_NEEDARG) && *ea.arg == NUL)
     {
 	errormsg = _(e_argreq);
 	goto doend;
@@ -2368,7 +2368,7 @@ do_one_cmd(
 				break;
 
 	    /* Commands that handle '|' themselves.  Check: A command should
-	     * either have the TRLBAR flag, appear in this list or appear in
+	     * either have the EX_TRLBAR flag, appear in this list or appear in
 	     * the list at ":help :bar". */
 	    case CMD_aboveleft:
 	    case CMD_and:
@@ -2435,7 +2435,7 @@ do_one_cmd(
     }
 #endif
 
-    if (ea.argt & XFILE)
+    if (ea.argt & EX_XFILE)
     {
 	if (expand_filename(&ea, cmdlinep, &errormsg) == FAIL)
 	    goto doend;
@@ -2445,7 +2445,7 @@ do_one_cmd(
      * Accept buffer name.  Cannot be used at the same time with a buffer
      * number.  Don't do this for a user command.
      */
-    if ((ea.argt & BUFNAME) && *ea.arg != NUL && ea.addr_count == 0
+    if ((ea.argt & EX_BUFNAME) && *ea.arg != NUL && ea.addr_count == 0
 	    && !IS_USER_CMDIDX(ea.cmdidx))
     {
 	/*
@@ -2462,7 +2462,7 @@ do_one_cmd(
 	    while (p > ea.arg && VIM_ISWHITE(p[-1]))
 		--p;
 	}
-	ea.line2 = buflist_findpat(ea.arg, p, (ea.argt & BUFUNL) != 0,
+	ea.line2 = buflist_findpat(ea.arg, p, (ea.argt & EX_BUFUNL) != 0,
 								FALSE, FALSE);
 	if (ea.line2 < 0)	    /* failed */
 	    goto doend;
@@ -3528,7 +3528,7 @@ set_one_cmd_context(
     }
 
     /* Does command allow "+command"? */
-    if ((ea.argt & EDITCMD) && !usefilter && *arg == '+')
+    if ((ea.argt & EX_CMDARG) && !usefilter && *arg == '+')
     {
 	/* Check if we're in the +command */
 	p = arg + 1;
@@ -3546,7 +3546,7 @@ set_one_cmd_context(
      * Check for '|' to separate commands and '"' to start comments.
      * Don't do this for ":read !cmd" and ":write !cmd".
      */
-    if ((ea.argt & TRLBAR) && !usefilter)
+    if ((ea.argt & EX_TRLBAR) && !usefilter)
     {
 	p = arg;
 	/* ":redir @" is not the start of a comment */
@@ -3559,7 +3559,7 @@ set_one_cmd_context(
 		if (p[1] != NUL)
 		    ++p;
 	    }
-	    else if ( (*p == '"' && !(ea.argt & NOTRLCOM))
+	    else if ( (*p == '"' && !(ea.argt & EX_NOTRLCOM))
 		    || *p == '|' || *p == '\n')
 	    {
 		if (*(p - 1) != '\\')
@@ -3573,9 +3573,9 @@ set_one_cmd_context(
 	}
     }
 
-						/* no arguments allowed */
-    if (!(ea.argt & EXTRA) && *arg != NUL &&
-				    vim_strchr((char_u *)"|\"", *arg) == NULL)
+    if (!(ea.argt & EX_EXTRA) && *arg != NUL
+				  && vim_strchr((char_u *)"|\"", *arg) == NULL)
+	// no arguments allowed but there is something
 	return NULL;
 
     /* Find start of last argument (argument just before cursor): */
@@ -3597,7 +3597,7 @@ set_one_cmd_context(
 	}
     }
 
-    if (ea.argt & XFILE)
+    if (ea.argt & EX_XFILE)
     {
 	int	c;
 	int	in_quote = FALSE;
@@ -3630,7 +3630,7 @@ set_one_cmd_context(
 	     * characters that end the command and white space. */
 	    else if (c == '|' || c == '\n' || c == '"' || (VIM_ISWHITE(c)
 #ifdef SPACE_IN_FILENAME
-					 && (!(ea.argt & NOSPC) || usefilter)
+					&& (!(ea.argt & EX_NOSPC) || usefilter)
 #endif
 		    ))
 	    {
@@ -4001,8 +4001,8 @@ set_one_cmd_context(
 	case CMD_USER_BUF:
 	    if (compl != EXPAND_NOTHING)
 	    {
-		// XFILE: file names are handled above
-		if (!(ea.argt & XFILE))
+		// EX_XFILE: file names are handled above
+		if (!(ea.argt & EX_XFILE))
 		{
 #ifdef FEAT_MENU
 		    if (compl == EXPAND_MENUS)
@@ -4652,7 +4652,7 @@ invalid_range(exarg_T *eap)
 	    || eap->line1 > eap->line2)
 	return _(e_invrange);
 
-    if (eap->argt & RANGE)
+    if (eap->argt & EX_RANGE)
     {
 	switch (eap->addr_type)
 	{
@@ -4738,7 +4738,7 @@ invalid_range(exarg_T *eap)
     static void
 correct_range(exarg_T *eap)
 {
-    if (!(eap->argt & ZEROR))	    /* zero in range not allowed */
+    if (!(eap->argt & EX_ZEROR))	    // zero in range not allowed
     {
 	if (eap->line1 == 0)
 	    eap->line1 = 1;
@@ -4947,7 +4947,7 @@ expand_filename(
 		&& eap->cmdidx != CMD_make
 		&& eap->cmdidx != CMD_terminal
 #ifndef UNIX
-		&& !(eap->argt & NOSPC)
+		&& !(eap->argt & EX_NOSPC)
 #endif
 		)
 	{
@@ -4999,7 +4999,7 @@ expand_filename(
      * One file argument: Expand wildcards.
      * Don't do this with ":r !command" or ":w !command".
      */
-    if ((eap->argt & NOSPC) && !eap->usefilter)
+    if ((eap->argt & EX_NOSPC) && !eap->usefilter)
     {
 	/*
 	 * May do this twice:
@@ -5150,7 +5150,7 @@ separate_nextcmd(exarg_T *eap)
     {
 	if (*p == Ctrl_V)
 	{
-	    if (eap->argt & (USECTRLV | XFILE))
+	    if (eap->argt & (EX_CTRLV | EX_XFILE))
 		++p;		/* skip CTRL-V and next char */
 	    else
 				/* remove CTRL-V and skip next char */
@@ -5161,7 +5161,7 @@ separate_nextcmd(exarg_T *eap)
 
 #ifdef FEAT_EVAL
 	/* Skip over `=expr` when wildcards are expanded. */
-	else if (p[0] == '`' && p[1] == '=' && (eap->argt & XFILE))
+	else if (p[0] == '`' && p[1] == '=' && (eap->argt & EX_XFILE))
 	{
 	    p += 2;
 	    (void)skip_expr(&p);
@@ -5171,7 +5171,7 @@ separate_nextcmd(exarg_T *eap)
 	/* Check for '"': start of comment or '|': next command */
 	/* :@" and :*" do not start a comment!
 	 * :redir @" doesn't either. */
-	else if ((*p == '"' && !(eap->argt & NOTRLCOM)
+	else if ((*p == '"' && !(eap->argt & EX_NOTRLCOM)
 		    && ((eap->cmdidx != CMD_at && eap->cmdidx != CMD_star)
 			|| p != eap->arg)
 		    && (eap->cmdidx != CMD_redir
@@ -5179,11 +5179,11 @@ separate_nextcmd(exarg_T *eap)
 		|| *p == '|' || *p == '\n')
 	{
 	    /*
-	     * We remove the '\' before the '|', unless USECTRLV is used
+	     * We remove the '\' before the '|', unless EX_CTRLV is used
 	     * AND 'b' is present in 'cpoptions'.
 	     */
 	    if ((vim_strchr(p_cpo, CPO_BAR) == NULL
-			      || !(eap->argt & USECTRLV)) && *(p - 1) == '\\')
+			      || !(eap->argt & EX_CTRLV)) && *(p - 1) == '\\')
 	    {
 		STRMOVE(p - 1, p);	/* remove the '\' */
 		--p;
@@ -5197,7 +5197,7 @@ separate_nextcmd(exarg_T *eap)
 	}
     }
 
-    if (!(eap->argt & NOTRLCOM))	/* remove trailing spaces */
+    if (!(eap->argt & EX_NOTRLCOM))	/* remove trailing spaces */
 	del_trailing_spaces(eap->arg);
 }
 
@@ -9276,6 +9276,7 @@ find_cmdline_var(char_u *src, int *usedlen)
  *	  '#'	    to curwin->w_altfile
  *	  '<cword>' to word under the cursor
  *	  '<cWORD>' to WORD under the cursor
+ *	  '<cexpr>' to C-expression under the cursor
  *	  '<cfile>' to path name under the cursor
  *	  '<sfile>' to sourced file name
  *	  '<slnum>' to sourced file line number

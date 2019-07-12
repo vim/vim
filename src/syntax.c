@@ -4809,7 +4809,7 @@ syn_cmd_include(exarg_T *eap, int syncing UNUSED)
      * Everything that's left, up to the next command, should be the
      * filename to include.
      */
-    eap->argt |= (XFILE | NOSPC);
+    eap->argt |= (EX_XFILE | EX_NOSPC);
     separate_nextcmd(eap);
     if (*eap->arg == '<' || *eap->arg == '$' || mch_isFullName(eap->arg))
     {

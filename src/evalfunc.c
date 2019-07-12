@@ -3547,7 +3547,7 @@ f_expandcmd(typval_T *argvars, typval_T *rettv)
     memset(&eap, 0, sizeof(eap));
     eap.cmd = cmdstr;
     eap.arg = cmdstr;
-    eap.argt |= NOSPC;
+    eap.argt |= EX_NOSPC;
     eap.usefilter = FALSE;
     eap.nextcmd = NULL;
     eap.cmdidx = CMD_USER;

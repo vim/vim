@@ -4834,7 +4834,7 @@ addstar(
  *  EXPAND_COMMANDS	    Cursor is still touching the command, so complete
  *			    it.
  *  EXPAND_BUFFERS	    Complete file names for :buf and :sbuf commands.
- *  EXPAND_FILES	    After command with XFILE set, or after setting
+ *  EXPAND_FILES	    After command with EX_XFILE set, or after setting
  *			    with P_EXPAND set.	eg :e ^I, :w>>^I
  *  EXPAND_DIRECTORIES	    In some cases this is used instead of the latter
  *			    when we know only directories are of interest.  eg
