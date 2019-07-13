@@ -1518,6 +1518,11 @@ struct funccal_entry {
     funccal_entry_T *next;
 };
 
+/* From user function to hashitem and back. */
+#define UF2HIKEY(fp) ((fp)->uf_name)
+#define HIKEY2UF(p)  ((ufunc_T *)((p) - offsetof(ufunc_T, uf_name)))
+#define HI2UF(hi)     HIKEY2UF((hi)->hi_key)
+
 /* Growarray to store info about already sourced scripts.
  * For Unix also store the dev/ino, so that we don't have to stat() each
  * script when going through the list. */
