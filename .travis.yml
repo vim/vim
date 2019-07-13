@@ -142,8 +142,11 @@ script:
       "${SRCDIR}"/vim --not-a-term -u NONE -S "${SRCDIR}"/testdir/if_ver-2.vim -c quit > /dev/null
       cat if_ver.txt
     fi
-  - do_test make ${SHADOWOPT} ${TEST}
-  - echo -en "travis_fold:end:test\\r\\033[0K"
+  - |
+    if do_test make ${SHADOWOPT} ${TEST}; then
+      echo -en "travis_fold:end:test\\r\\033[0K"
+    fi
+
 
 # instead of a 2*2*8 matrix (2*os + 2*compiler + 8*env),
 # exclude some builds on mac os x and linux

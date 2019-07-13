@@ -419,12 +419,12 @@ uc_list(char_u *name, size_t name_len)
 
 	    // Special cases
 	    len = 4;
-	    if (a & BANG)
+	    if (a & EX_BANG)
 	    {
 		msg_putchar('!');
 		--len;
 	    }
-	    if (a & REGSTR)
+	    if (a & EX_REGSTR)
 	    {
 		msg_putchar('"');
 		--len;
@@ -434,7 +434,7 @@ uc_list(char_u *name, size_t name_len)
 		msg_putchar('b');
 		--len;
 	    }
-	    if (a & TRLBAR)
+	    if (a & EX_TRLBAR)
 	    {
 		msg_putchar('|');
 		--len;
@@ -456,13 +456,13 @@ uc_list(char_u *name, size_t name_len)
 	    len = 0;
 
 	    // Arguments
-	    switch ((int)(a & (EXTRA|NOSPC|NEEDARG)))
+	    switch ((int)(a & (EX_EXTRA|EX_NOSPC|EX_NEEDARG)))
 	    {
-		case 0:			    IObuff[len++] = '0'; break;
-		case (EXTRA):		    IObuff[len++] = '*'; break;
-		case (EXTRA|NOSPC):	    IObuff[len++] = '?'; break;
-		case (EXTRA|NEEDARG):	    IObuff[len++] = '+'; break;
-		case (EXTRA|NOSPC|NEEDARG): IObuff[len++] = '1'; break;
+		case 0:				IObuff[len++] = '0'; break;
+		case (EX_EXTRA):		IObuff[len++] = '*'; break;
+		case (EX_EXTRA|EX_NOSPC):	IObuff[len++] = '?'; break;
+		case (EX_EXTRA|EX_NEEDARG):	IObuff[len++] = '+'; break;
+		case (EX_EXTRA|EX_NOSPC|EX_NEEDARG): IObuff[len++] = '1'; break;
 	    }
 
 	    do {
@@ -470,15 +470,15 @@ uc_list(char_u *name, size_t name_len)
 	    } while (len < 5 - over);
 
 	    // Address / Range
-	    if (a & (RANGE|COUNT))
+	    if (a & (EX_RANGE|EX_COUNT))
 	    {
-		if (a & COUNT)
+		if (a & EX_COUNT)
 		{
 		    // -count=N
 		    sprintf((char *)IObuff + len, "%ldc", cmd->uc_def);
 		    len += (int)STRLEN(IObuff + len);
 		}
-		else if (a & DFLALL)
+		else if (a & EX_DFLALL)
 		    IObuff[len++] = '%';
 		else if (cmd->uc_def >= 0)
 		{
@@ -638,10 +638,10 @@ parse_compl_arg(
 	{
 	    *complp = command_complete[i].expand;
 	    if (command_complete[i].expand == EXPAND_BUFFERS)
-		*argt |= BUFNAME;
+		*argt |= EX_BUFNAME;
 	    else if (command_complete[i].expand == EXPAND_DIRECTORIES
 		    || command_complete[i].expand == EXPAND_FILES)
-		*argt |= XFILE;
+		*argt |= EX_XFILE;
 	    break;
 	}
     }
@@ -702,13 +702,13 @@ uc_scan_attr(
 
     // First, try the simple attributes (no arguments)
     if (STRNICMP(attr, "bang", len) == 0)
-	*argt |= BANG;
+	*argt |= EX_BANG;
     else if (STRNICMP(attr, "buffer", len) == 0)
 	*flags |= UC_BUFFER;
     else if (STRNICMP(attr, "register", len) == 0)
-	*argt |= REGSTR;
+	*argt |= EX_REGSTR;
     else if (STRNICMP(attr, "bar", len) == 0)
-	*argt |= TRLBAR;
+	*argt |= EX_TRLBAR;
     else
     {
 	int	i;
@@ -736,13 +736,13 @@ uc_scan_attr(
 		    // Do nothing - this is the default
 		    ;
 		else if (*val == '1')
-		    *argt |= (EXTRA | NOSPC | NEEDARG);
+		    *argt |= (EX_EXTRA | EX_NOSPC | EX_NEEDARG);
 		else if (*val == '*')
-		    *argt |= EXTRA;
+		    *argt |= EX_EXTRA;
 		else if (*val == '?')
-		    *argt |= (EXTRA | NOSPC);
+		    *argt |= (EX_EXTRA | EX_NOSPC);
 		else if (*val == '+')
-		    *argt |= (EXTRA | NEEDARG);
+		    *argt |= (EX_EXTRA | EX_NEEDARG);
 		else
 		    goto wrong_nargs;
 	    }
@@ -755,9 +755,9 @@ wrong_nargs:
 	}
 	else if (STRNICMP(attr, "range", attrlen) == 0)
 	{
-	    *argt |= RANGE;
+	    *argt |= EX_RANGE;
 	    if (vallen == 1 && *val == '%')
-		*argt |= DFLALL;
+		*argt |= EX_DFLALL;
 	    else if (val != NULL)
 	    {
 		p = val;
@@ -769,7 +769,7 @@ two_count:
 		}
 
 		*def = getdigits(&p);
-		*argt |= ZEROR;
+		*argt |= EX_ZEROR;
 
 		if (p != val + vallen || vallen == 0)
 		{
@@ -784,7 +784,7 @@ invalid_count:
 	}
 	else if (STRNICMP(attr, "count", attrlen) == 0)
 	{
-	    *argt |= (COUNT | ZEROR | RANGE);
+	    *argt |= (EX_COUNT | EX_ZEROR | EX_RANGE);
 	    // default for -count is using any number
 	    if (*addr_type_arg == ADDR_NONE)
 		*addr_type_arg = ADDR_OTHER;
@@ -818,7 +818,7 @@ invalid_count:
 	}
 	else if (STRNICMP(attr, "addr", attrlen) == 0)
 	{
-	    *argt |= RANGE;
+	    *argt |= EX_RANGE;
 	    if (val == NULL)
 	    {
 		emsg(_("E179: argument required for -addr"));
@@ -827,7 +827,7 @@ invalid_count:
 	    if (parse_addr_type_arg(val, (int)vallen, addr_type_arg) == FAIL)
 		return FAIL;
 	    if (*addr_type_arg != ADDR_LINES)
-		*argt |= ZEROR;
+		*argt |= EX_ZEROR;
 	}
 	else
 	{
@@ -1315,7 +1315,7 @@ uc_check_code(
 
 	// When specified there is a single argument don't split it.
 	// Works for ":Cmd %" when % is "a b c".
-	if ((eap->argt & NOSPC) && quote == 2)
+	if ((eap->argt & EX_NOSPC) && quote == 2)
 	    quote = 1;
 
 	switch (quote)

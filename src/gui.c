@@ -2253,7 +2253,7 @@ gui_outstr_nowrap(
     int		col = gui.col;
 #ifdef FEAT_SIGN_ICONS
     int		draw_sign = FALSE;
-    int		signcol = col;
+    int		signcol;
     char_u	extra[18];
 # ifdef FEAT_NETBEANS_INTG
     int		multi_sign = FALSE;
@@ -2270,7 +2270,7 @@ gui_outstr_nowrap(
 # ifdef FEAT_NETBEANS_INTG
 	  || *s == MULTISIGN_BYTE
 # endif
-    )
+       )
     {
 # ifdef FEAT_NETBEANS_INTG
 	if (*s == MULTISIGN_BYTE)
@@ -2289,7 +2289,10 @@ gui_outstr_nowrap(
 	    --col;
 	len = (int)STRLEN(s);
 	if (len > 2)
-	    signcol = col + len - 3;	// Right align sign icon in the number column
+	    // right align sign icon in the number column
+	    signcol = col + len - 3;
+	else
+	    signcol = col;
 	draw_sign = TRUE;
 	highlight_mask = 0;
     }

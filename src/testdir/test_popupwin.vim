@@ -486,6 +486,10 @@ func Test_popup_with_mask()
   call term_sendkeys(buf, ":call popup_move(winidb, {'pos': 'topright', 'col': 12})\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_mask_4', {})
 
+  call term_sendkeys(buf, ":call popup_move(winid, {'pos': 'topright', 'col': 12, 'line': 11})\<CR>")
+  call term_sendkeys(buf, ":call popup_move(winidb, {'pos': 'topleft', 'col': 42, 'line': 11})\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_mask_5', {})
+
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPopupMask')
@@ -521,6 +525,9 @@ func Test_popup_select()
 
   call term_sendkeys(buf, ":call popup_close(winid)\<CR>")
   call term_sendkeys(buf, "\"*p")
+  " clean the command line, sometimes it still shows a command
+  call term_sendkeys(buf, ":\<esc>")
+
   call VerifyScreenDump(buf, 'Test_popupwin_select_02', {})
 
   " clean up
@@ -706,7 +713,7 @@ func Test_popup_time()
   topleft vnew
   call setline(1, 'hello')
 
-  call popup_create('world', {
+  let winid = popup_create('world', {
 	\ 'line': 1,
 	\ 'col': 1,
 	\ 'minwidth': 20,
@@ -715,6 +722,11 @@ func Test_popup_time()
   redraw
   let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
   call assert_equal('world', line)
+
+  call assert_equal(winid, popup_locate(1, 1))
+  call assert_equal(winid, popup_locate(1, 20))
+  call assert_equal(0, popup_locate(1, 21))
+  call assert_equal(0, popup_locate(2, 1))
 
   sleep 700m
   redraw
@@ -1576,6 +1588,7 @@ func Test_popup_scrollbar()
       call feedkeys("\<F4>\<LeftMouse>", "xt")
     endfunc
     func ClickBot()
+      call popup_setoptions(g:winid, {'border': [], 'close': 'button'})
       call feedkeys("\<F5>\<LeftMouse>", "xt")
     endfunc
     map <silent> <F3> :call test_setmouse(5, 36)<CR>
@@ -1807,6 +1820,42 @@ func Test_popupwin_buf_close()
   exe 'bwipe! ' .. buf
 endfunc
 
+func Test_popup_menu_with_maxwidth()
+	call setline(1, range(1, 10))
+	hi ScrollThumb ctermbg=blue
+	hi ScrollBar ctermbg=red
+	func PopupMenu(lines, line, col, scrollbar = 0)
+		return popup_menu(a:lines, {
+			\ 'maxwidth': 10,
+			\ 'maxheight': 3,
+			\ 'pos' : 'topleft',
+			\ 'col' : a:col,
+			\ 'line' : a:line,
+			\ 'scrollbar' : a:scrollbar,
+			\ })
+	endfunc
+	call PopupMenu(['x'], 1, 1)
+	call PopupMenu(['123456789|'], 1, 16)
+	call PopupMenu(['123456789|' .. ' '], 7, 1)
+	call PopupMenu([repeat('123456789|', 100)], 7, 16)
+	call PopupMenu(repeat(['123456789|' .. ' '], 5), 1, 33, 1)
+  END
+  call writefile(lines, 'XtestPopupMenuMaxWidth')
+  let buf = RunVimInTerminal('-S XtestPopupMenuMaxWidth', {'rows': 13})
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_maxwidth_1', {})
+
+  " close the menu popupwin.
+  call term_sendkeys(buf, " ")
+  call term_sendkeys(buf, " ")
+  call term_sendkeys(buf, " ")
+  call term_sendkeys(buf, " ")
+  call term_sendkeys(buf, " ")
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupMenuMaxWidth')
+endfunc
+
 func Test_popup_menu_with_scrollbar()
   if !CanRunVimInTerminal()
     throw 'Skipped: cannot make screendumps'
@@ -1816,7 +1865,7 @@ func Test_popup_menu_with_scrollbar()
     call setline(1, range(1, 20))
     hi ScrollThumb ctermbg=blue
     hi ScrollBar ctermbg=red
-    let winid = popup_menu(['one', 'two', 'three', 'four', 'five',
+    call popup_menu(['one', 'two', 'three', 'four', 'five',
 	  \ 'six', 'seven', 'eight', 'nine'], {
 	  \ 'minwidth': 8,
 	  \ 'maxheight': 3,
@@ -1849,3 +1898,5 @@ func Test_popup_menu_with_scrollbar()
   call StopVimInTerminal(buf)
   call delete('XtestPopupMenuScroll')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
