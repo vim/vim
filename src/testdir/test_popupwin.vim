@@ -1816,24 +1816,28 @@ func Test_popup_menu_with_maxwidth()
 	call setline(1, range(1, 10))
 	hi ScrollThumb ctermbg=blue
 	hi ScrollBar ctermbg=red
-	func F(line, col)
-		return {
+	func PopupMenu(lines, line, col, scrollbar = 0)
+		return popup_menu(a:lines, {
 			\ 'maxwidth': 10,
+			\ 'maxheight': 3,
 			\ 'pos' : 'topleft',
 			\ 'col' : a:col,
 			\ 'line' : a:line,
-			\ }
+			\ 'scrollbar' : a:scrollbar,
+			\ })
 	endfunc
-	let winid_1 = popup_menu(['x'], F(1, 1))
-	let winid_2 = popup_menu([repeat('x', 10)], F(1, 12))
-	let winid_3 = popup_menu([repeat('x', 11)], F(6, 1))
-	let winid_4 = popup_menu([repeat('x', 1000)], F(6, 12))
+	let winid_1 = PopupMenu(['x'], 1, 1)
+	let winid_2 = PopupMenu(['123456789|'], 1, 16)
+	let winid_3 = PopupMenu(['123456789|' .. ' '], 6, 1)
+	let winid_4 = PopupMenu([repeat('123456789|', 100)], 6, 16)
+	let winid_5 = PopupMenu(repeat(['123456789|' .. ' '], 5), 1, 31, 1)
   END
   call writefile(lines, 'XtestPopupMenuMaxWidth')
   let buf = RunVimInTerminal('-S XtestPopupMenuMaxWidth', {'rows': 10})
   call VerifyScreenDump(buf, 'Test_popupwin_menu_maxwidth_1', {})
 
   " close the menu popupwin.
+  call term_sendkeys(buf, " ")
   call term_sendkeys(buf, " ")
   call term_sendkeys(buf, " ")
   call term_sendkeys(buf, " ")

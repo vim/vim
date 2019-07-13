@@ -803,8 +803,8 @@ popup_width(win_T *wp)
 	+ wp->w_popup_padding[1] + wp->w_popup_border[1]
 	+ wp->w_has_scrollbar;
     int	width = wp->w_width + wp->w_leftcol + wp->w_popup_rightoff;
-    if (0 < wp->w_maxwidth - extra && wp->w_maxwidth - extra < width)
-	width = wp->w_maxwidth - extra;
+    if (0 < wp->w_maxwidth && wp->w_maxwidth < width)
+	width = wp->w_maxwidth;
     return width + extra;
 }
 
