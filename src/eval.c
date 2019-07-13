@@ -4391,7 +4391,8 @@ eval6(
  *  $VAR		environment variable
  *  (expression)	nested expression
  *  [expr, expr]	List
- *  {key: val, key: val}  Dictionary
+ *  {key: val, key: val}   Dictionary
+ *  *{key: val, key: val}  Dictionary with literal keys
  *
  *  Also handle:
  *  ! in front		logical NOT
@@ -4576,12 +4577,24 @@ eval7(
 		break;
 
     /*
+     * Dictionary: *{key: val, key: val}
+     */
+    case '*':	if ((*arg)[1] == '{')
+		{
+		    ++*arg;
+		    ret = dict_get_tv(arg, rettv, evaluate, TRUE);
+		}
+		else
+		    ret = NOTDONE;
+		break;
+
+    /*
      * Lambda: {arg, arg -> expr}
-     * Dictionary: {key: val, key: val}
+     * Dictionary: {'key': val, 'key': val}
      */
     case '{':	ret = get_lambda_tv(arg, rettv, evaluate);
 		if (ret == NOTDONE)
-		    ret = dict_get_tv(arg, rettv, evaluate);
+		    ret = dict_get_tv(arg, rettv, evaluate, FALSE);
 		break;
 
     /*
