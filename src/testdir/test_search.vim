@@ -240,6 +240,10 @@ func Test_search_cmdline2()
   " go to previous match (on line 2)
   call feedkeys("/the\<C-G>\<C-G>\<C-G>\<C-T>\<C-T>\<C-T>\<cr>", 'tx')
   call assert_equal('  2 these', getline('.'))
+  1
+  " go to previous match (on line 2)
+  call feedkeys("/the\<C-G>\<C-R>\<C-W>\<cr>", 'tx')
+  call assert_equal('theother', @/)
 
   " Test 2: keep the view,
   " after deleting a character from the search cmd
@@ -251,7 +255,7 @@ func Test_search_cmdline2()
   call assert_equal({'lnum': 10, 'leftcol': 0, 'col': 4, 'topfill': 0, 'topline': 6, 'coladd': 0, 'skipcol': 0, 'curswant': 4}, winsaveview())
 
   " remove all history entries
-  for i in range(10)
+  for i in range(11)
       call histdel('/')
   endfor
 
