@@ -799,6 +799,8 @@ popup_height(win_T *wp)
     int
 popup_width(win_T *wp)
 {
+    // w_leftcol is how many columns of the core are left of the screen
+    // w_popup_rightoff is how many columns of the core are right of the screen
     return wp->w_width + wp->w_leftcol
 	+ wp->w_popup_padding[3] + wp->w_popup_border[3]
 	+ wp->w_popup_padding[1] + wp->w_popup_border[1]
@@ -924,7 +926,11 @@ popup_adjust_position(win_T *wp)
 	    wp->w_width = maxwidth;
 	}
 	if (wp->w_width < len)
+	{
 	    wp->w_width = len;
+	    if (wp->w_maxwidth > 0 && wp->w_width > wp->w_maxwidth)
+		wp->w_width = wp->w_maxwidth;
+	}
 	// do not use the width of lines we're not going to show
 	if (wp->w_maxheight > 0
 		       && lnum - wp->w_topline + 1 + wrapped > wp->w_maxheight)

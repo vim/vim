@@ -1819,3 +1819,46 @@ func Test_popupwin_buf_close()
   call assert_equal([], bufinfo.popups)
   exe 'bwipe! ' .. buf
 endfunc
+
+func Test_popup_menu_with_maxwidth()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  let lines =<< trim END
+	call setline(1, range(1, 10))
+	hi ScrollThumb ctermbg=blue
+	hi ScrollBar ctermbg=red
+	func PopupMenu(lines, line, col, scrollbar = 0)
+		return popup_menu(a:lines, {
+			\ 'maxwidth': 10,
+			\ 'maxheight': 3,
+			\ 'pos' : 'topleft',
+			\ 'col' : a:col,
+			\ 'line' : a:line,
+			\ 'scrollbar' : a:scrollbar,
+			\ })
+	endfunc
+	call PopupMenu(['x'], 1, 1)
+	call PopupMenu(['123456789|'], 1, 16)
+	call PopupMenu(['123456789|' .. ' '], 7, 1)
+	call PopupMenu([repeat('123456789|', 100)], 7, 16)
+	call PopupMenu(repeat(['123456789|' .. ' '], 5), 1, 33, 1)
+  END
+  call writefile(lines, 'XtestPopupMenuMaxWidth')
+  let buf = RunVimInTerminal('-S XtestPopupMenuMaxWidth', {'rows': 13})
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_maxwidth_1', {})
+
+  " close the menu popupwin.
+  call term_sendkeys(buf, " ")
+  call term_sendkeys(buf, " ")
+  call term_sendkeys(buf, " ")
+  call term_sendkeys(buf, " ")
+  call term_sendkeys(buf, " ")
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupMenuMaxWidth')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
