@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jul 04
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jul 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -178,11 +178,11 @@ DETAILS						*popup-function-details*
 popup_atcursor({what}, {options})			*popup_atcursor()*
 		Show the {what} above the cursor, and close it when the cursor
 		moves.  This works like: >
-			call popup_create({what}, {
-				\ 'pos': 'botleft',
-				\ 'line': 'cursor-1',
-				\ 'col': 'cursor',
-				\ 'moved': 'WORD',
+			call popup_create({what}, *{
+				\ pos: 'botleft',
+				\ line: 'cursor-1',
+				\ col: 'cursor',
+				\ moved: 'WORD',
 				\ })
 <		Use {options} to change the properties.
 
@@ -191,11 +191,11 @@ popup_beval({what}, {options})			*popup_beval()*
 		Show the {what} above the position from 'ballooneval' and
 		close it when the mouse moves.  This works like: >
 		  let pos = screenpos(v:beval_winnr, v:beval_lnum, v:beval_col)
-		  call popup_create({what}, {
-			\ 'pos': 'botleft',
-			\ 'line': pos.row - 1,
-			\ 'col': pos.col,
-			\ 'mousemoved': 'WORD',
+		  call popup_create({what}, *{
+			\ pos: 'botleft',
+			\ line: pos.row - 1,
+			\ col: pos.col,
+			\ mousemoved: 'WORD',
 			\ })
 <		Use {options} to change the properties.
 		See |popup_beval_example| for an example use.
@@ -240,18 +240,18 @@ popup_create({what}, {options})				*popup_create()*
 
 popup_dialog({what}, {options})				*popup_dialog()*
 		Just like |popup_create()| but with these default options: >
-			call popup_create({what}, {
-				\ 'pos': 'center',
-				\ 'zindex': 200,
-				\ 'drag': 1,
-				\ 'border': [],
-				\ 'padding': [],
+			call popup_create({what}, *{
+				\ pos: 'center',
+				\ zindex: 200,
+				\ drag: 1,
+				\ border: [],
+				\ padding: [],
 				\})
 <		Use {options} to change the properties. E.g. add a 'filter'
 		option with value 'popup_filter_yesno'.  Example: >
-			call popup_create('do you want to quit (Yes/no)?', {
-				\ 'filter': 'popup_filter_yesno',
-				\ 'callback': 'QuitCallback',
+			call popup_create('do you want to quit (Yes/no)?', *{
+				\ filter: 'popup_filter_yesno',
+				\ callback: 'QuitCallback',
 				\ })
 
 <		By default the dialog can be dragged, so that text below it
@@ -356,14 +356,14 @@ popup_menu({what}, {options})				 *popup_menu()*
 		items with cursorkeys, and close it an item is selected with
 		Space or Enter. {what} should have multiple lines to make this
 		useful.  This works like: >
-			call popup_create({what}, {
-				\ 'pos': 'center',
-				\ 'zindex': 200,
-				\ 'drag': 1,
-				\ 'wrap': 0,
-				\ 'border': [],
-				\ 'padding': [],
-				\ 'filter': 'popup_filter_menu',
+			call popup_create({what}, *{
+				\ pos: 'center',
+				\ zindex: 200,
+				\ drag: 1,
+				\ wrap: 0,
+				\ border: [],
+				\ padding: [],
+				\ filter: 'popup_filter_menu',
 				\ })
 <		The current line is highlighted with a match using
 		"PopupSelected", or "PmenuSel" if that is not defined.
@@ -391,18 +391,18 @@ popup_move({id}, {options})					*popup_move()*
 popup_notification({what}, {options})			 *popup_notification()*
 		Show the {what} for 3 seconds at the top of the Vim window.
 		This works like: >
-			call popup_create({what}, {
-				\ 'line': 1,
-				\ 'col': 10,
-				\ 'minwidth': 20,
-				\ 'time': 3000,
-				\ 'tabpage': -1,
-				\ 'zindex': 300,
-				\ 'drag': 1,
-				\ 'highlight': 'WarningMsg',
-				\ 'border': [],
-				\ 'close': 'click',
-				\ 'padding': [0,1,0,1],
+			call popup_create({what}, *{
+				\ line: 1,
+				\ col: 10,
+				\ minwidth: 20,
+				\ time: 3000,
+				\ tabpage: -1,
+				\ zindex: 300,
+				\ drag: 1,
+				\ highlight: 'WarningMsg',
+				\ border: [],
+				\ close: 'click',
+				\ padding: [0,1,0,1],
 				\ })
 <		The PopupNotification highlight group is used instead of
 		WarningMsg if it is defined.
@@ -732,17 +732,17 @@ Prompt the user to press y/Y or n/N: >
 	   endif
 	endfunc
 
-	call popup_dialog('Continue? y/n', {
-		\ 'filter': 'popup_filter_yesno',
-		\ 'callback': 'MyDialogHandler',
+	call popup_dialog('Continue? y/n', *{
+		\ filter: 'popup_filter_yesno',
+		\ callback: 'MyDialogHandler',
 		\ })
 <
 					*popup_menu-shortcut-example*
 Extend popup_filter_menu() with shortcut keys: >
 
-	call popup_menu(['Save', 'Cancel', 'Discard'], {
-		\ 'filter': 'MyMenuFilter',
-		\ 'callback': 'MyMenuHandler',
+	call popup_menu(['Save', 'Cancel', 'Discard'], *{
+		\ filter: 'MyMenuFilter',
+		\ callback: 'MyMenuHandler',
 		\ })
 
 	func MyMenuFilter(id, key)
@@ -781,7 +781,7 @@ Example for using a popup window for 'ballooneval': >
 	    endif
 	    call popup_close(s:winid)
 	  endif
-	  let s:winid = popup_beval(v:beval_text, {'mousemoved': 'word'})
+	  let s:winid = popup_beval(v:beval_text, *{mousemoved: 'word'})
 	  let s:last_text = v:beval_text
 	  return ''
 	endfunc
@@ -812,7 +812,7 @@ this example simulated with a timer callback: >
 	endfunc
 
 	func ShowPopup(id)
-	  let s:winid = popup_beval(s:balloonText, {'mousemoved': 'word'})
+	  let s:winid = popup_beval(s:balloonText, *{mousemoved: 'word'})
 	endfunc
 <
 

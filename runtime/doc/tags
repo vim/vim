@@ -7468,6 +7468,7 @@ listener_add()	eval.txt	/*listener_add()*
 listener_flush()	eval.txt	/*listener_flush()*
 listener_remove()	eval.txt	/*listener_remove()*
 lite.vim	syntax.txt	/*lite.vim*
+literal-Dict	eval.txt	/*literal-Dict*
 literal-string	eval.txt	/*literal-string*
 lnum-variable	eval.txt	/*lnum-variable*
 load-plugins	starting.txt	/*load-plugins*
@@ -8241,6 +8242,8 @@ popup-window	popup.txt	/*popup-window*
 popup-window-functions	usr_41.txt	/*popup-window-functions*
 popup.txt	popup.txt	/*popup.txt*
 popup_atcursor()	popup.txt	/*popup_atcursor()*
+popup_beval()	popup.txt	/*popup_beval()*
+popup_beval_example	popup.txt	/*popup_beval_example*
 popup_clear()	popup.txt	/*popup_clear()*
 popup_close()	popup.txt	/*popup_close()*
 popup_create()	popup.txt	/*popup_create()*
@@ -8252,6 +8255,7 @@ popup_filter_yesno()	popup.txt	/*popup_filter_yesno()*
 popup_getoptions()	popup.txt	/*popup_getoptions()*
 popup_getpos()	popup.txt	/*popup_getpos()*
 popup_hide()	popup.txt	/*popup_hide()*
+popup_locate()	popup.txt	/*popup_locate()*
 popup_menu()	popup.txt	/*popup_menu()*
 popup_menu-shortcut-example	popup.txt	/*popup_menu-shortcut-example*
 popup_move()	popup.txt	/*popup_move()*
@@ -8590,6 +8594,7 @@ screenattr()	eval.txt	/*screenattr()*
 screenchar()	eval.txt	/*screenchar()*
 screenchars()	eval.txt	/*screenchars()*
 screencol()	eval.txt	/*screencol()*
+screenpos()	eval.txt	/*screenpos()*
 screenrow()	eval.txt	/*screenrow()*
 screenstring()	eval.txt	/*screenstring()*
 script	usr_41.txt	/*script*
@@ -8693,8 +8698,10 @@ sign_getdefined()	eval.txt	/*sign_getdefined()*
 sign_getplaced()	eval.txt	/*sign_getplaced()*
 sign_jump()	eval.txt	/*sign_jump()*
 sign_place()	eval.txt	/*sign_place()*
+sign_placelist()	eval.txt	/*sign_placelist()*
 sign_undefine()	eval.txt	/*sign_undefine()*
 sign_unplace()	eval.txt	/*sign_unplace()*
+sign_unplacelist()	eval.txt	/*sign_unplacelist()*
 signs	sign.txt	/*signs*
 simple-change	change.txt	/*simple-change*
 simplify()	eval.txt	/*simplify()*

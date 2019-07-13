@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Jun 27
+*options.txt*	For Vim version 8.1.  Last change: 2019 Jul 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1142,8 +1142,10 @@ A jump table for the options with a short description can be found at |Q_op|.
     set bexpr=MyBalloonExpr()
     set ballooneval
 <
-	Also see |balloon_show()|, can be used if the content of the balloon
-	is to be fetched asynchronously.
+	Also see |balloon_show()|, it can be used if the content of the balloon
+	is to be fetched asynchronously.  In that case evaluating
+	'balloonexpr' should result in an empty string.  If you get a balloon
+	with only "0" you probably didn't return anything from your function.
 
 	NOTE: The balloon is displayed only if the cursor is on a text
 	character.  If the result of evaluating 'balloonexpr' is not empty,
@@ -1155,7 +1157,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	It is not allowed to change text or jump to another window while
-	evaluating 'balloonexpr' |textlock|.
+	evaluating 'balloonexpr', see |textlock|.
 
 	To check whether line breaks in the balloon text work use this check: >
 		if has("balloon_multiline")
