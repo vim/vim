@@ -1512,6 +1512,12 @@ popup_highlight_curline(win_T *wp)
 
     match_delete(wp, 1, FALSE);
 
+    // Scroll to show the line with the cursor.  This assumes lines don't wrap.
+    while (wp->w_topline + wp->w_height - 1 < wp->w_cursor.lnum)
+	wp->w_topline++;
+    while (wp->w_cursor.lnum < wp->w_topline)
+	wp->w_topline--;
+
     id = syn_name2id((char_u *)"PopupSelected");
     vim_snprintf(buf, sizeof(buf), "\\%%%dl.*", (int)wp->w_cursor.lnum);
     match_add(wp, (char_u *)(id == 0 ? "PmenuSel" : "PopupSelected"),

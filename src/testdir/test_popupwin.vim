@@ -1861,4 +1861,50 @@ func Test_popup_menu_with_maxwidth()
   call delete('XtestPopupMenuMaxWidth')
 endfunc
 
+func Test_popup_menu_with_scrollbar()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  let lines =<< trim END
+    call setline(1, range(1, 20))
+    hi ScrollThumb ctermbg=blue
+    hi ScrollBar ctermbg=red
+    call popup_menu(['one', 'two', 'three', 'four', 'five',
+	  \ 'six', 'seven', 'eight', 'nine'], {
+	  \ 'minwidth': 8,
+	  \ 'maxheight': 3,
+	  \ })
+  END
+  call writefile(lines, 'XtestPopupMenuScroll')
+  let buf = RunVimInTerminal('-S XtestPopupMenuScroll', {'rows': 10})
+
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_1', {})
+
+  call term_sendkeys(buf, "jjj")
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_2', {})
+
+  " if the cursor is the bottom line, it stays at the bottom line.
+  call term_sendkeys(buf, repeat("j", 20))
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_3', {})
+
+  call term_sendkeys(buf, "kk")
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_4', {})
+
+  call term_sendkeys(buf, "k")
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_5', {})
+
+  " if the cursor is in the top line, it stays in the top line.
+  call term_sendkeys(buf, repeat("k", 20))
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_6', {})
+
+  " close the menu popupwin.
+  call term_sendkeys(buf, " ")
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupMenuScroll')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
