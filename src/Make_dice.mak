@@ -71,6 +71,7 @@ SRC = \
 	option.c \
 	os_amiga.c \
 	popupmnu.c \
+	profiler.c \
 	quickfix.c \
 	regexp.c \
 	screen.c \
@@ -134,6 +135,7 @@ OBJ =	o/arabic.o \
 	o/option.o \
 	o/os_amiga.o \
 	o/popupmnu.o \
+	o/profiler.o \
 	o/quickfix.o \
 	o/regexp.o \
 	o/screen.o \
@@ -265,6 +267,8 @@ o/option.o:	option.c  $(SYMS)
 o/os_amiga.o:	os_amiga.c  $(SYMS) os_amiga.h
 
 o/popupmnu.o:	popupmnu.c  $(SYMS)
+
+o/profiler.o:	profiler.c  $(SYMS)
 
 o/quickfix.o:	quickfix.c  $(SYMS)
 

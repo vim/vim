@@ -6,6 +6,7 @@ int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, linenr_T f
 ufunc_T *find_func(char_u *name);
 void save_funccal(funccal_entry_T *entry);
 void restore_funccal(void);
+funccall_T * get_current_funccal(void);
 void free_all_functions(void);
 int func_call(char_u *name, typval_T *args, partial_T *partial, dict_T *selfdict, typval_T *rettv);
 int call_callback(callback_T *callback, int len, typval_T *rettv, int argcount, typval_T *argvars, int (*argv_func)(int, typval_T *, int), linenr_T firstline, linenr_T lastline, int *doesrange, int evaluate, dict_T *selfdict);
@@ -17,8 +18,6 @@ int translated_function_exists(char_u *name);
 int function_exists(char_u *name, int no_deref);
 char_u *get_expanded_name(char_u *name, int check);
 void func_dump_profile(FILE *fd);
-void prof_child_enter(proftime_T *tm);
-void prof_child_exit(proftime_T *tm);
 char_u *get_user_func_name(expand_T *xp, int idx);
 void ex_delfunction(exarg_T *eap);
 void func_unref(char_u *name);

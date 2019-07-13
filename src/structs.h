@@ -1518,6 +1518,49 @@ struct funccal_entry {
     funccal_entry_T *next;
 };
 
+/* Growarray to store info about already sourced scripts.
+ * For Unix also store the dev/ino, so that we don't have to stat() each
+ * script when going through the list. */
+typedef struct scriptitem_S
+{
+    char_u	*sn_name;
+# ifdef UNIX
+    int		sn_dev_valid;
+    dev_t	sn_dev;
+    ino_t	sn_ino;
+# endif
+# ifdef FEAT_PROFILE
+    int		sn_prof_on;	/* TRUE when script is/was profiled */
+    int		sn_pr_force;	/* forceit: profile functions in this script */
+    proftime_T	sn_pr_child;	/* time set when going into first child */
+    int		sn_pr_nest;	/* nesting for sn_pr_child */
+    /* profiling the script as a whole */
+    int		sn_pr_count;	/* nr of times sourced */
+    proftime_T	sn_pr_total;	/* time spent in script + children */
+    proftime_T	sn_pr_self;	/* time spent in script itself */
+    proftime_T	sn_pr_start;	/* time at script start */
+    proftime_T	sn_pr_children; /* time in children after script start */
+    /* profiling the script per line */
+    garray_T	sn_prl_ga;	/* things stored for every line */
+    proftime_T	sn_prl_start;	/* start time for current line */
+    proftime_T	sn_prl_children; /* time spent in children for this line */
+    proftime_T	sn_prl_wait;	/* wait start time for current line */
+    int		sn_prl_idx;	/* index of line being timed; -1 if none */
+    int		sn_prl_execed;	/* line being timed was executed */
+# endif
+} scriptitem_T;
+
+# ifdef FEAT_PROFILE
+/* Struct used in sn_prl_ga for every line of a script. */
+typedef struct sn_prl_S
+{
+    int		snp_count;	/* nr of times line was executed */
+    proftime_T	sn_prl_total;	/* time spent in a line + children */
+    proftime_T	sn_prl_self;	/* time spent in a line itself */
+} sn_prl_T;
+
+#  define PRL_ITEM(si, idx)	(((sn_prl_T *)(si)->sn_prl_ga.ga_data)[(idx)])
+# endif
 #else
 // dummy typedefs for use in function prototypes
 typedef struct
@@ -1527,11 +1570,19 @@ typedef struct
 typedef struct
 {
     int	    dummy;
+} funccall_T;
+typedef struct
+{
+    int	    dummy;
 } funcdict_T;
 typedef struct
 {
     int	    dummy;
 } funccal_entry_T;
+typedef struct
+{
+    int	    dummy;
+} scriptitem_T;
 #endif
 
 struct partial_S
