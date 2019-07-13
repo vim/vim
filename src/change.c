@@ -325,15 +325,17 @@ f_listener_flush(typval_T *argvars, typval_T *rettv UNUSED)
  * listener_remove() function
  */
     void
-f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
+f_listener_remove(typval_T *argvars, typval_T *rettv)
 {
     listener_T	*lnr;
     listener_T	*next;
-    listener_T	*prev = NULL;
+    listener_T	*prev;
     int		id = tv_get_number(argvars);
     buf_T	*buf;
 
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    {
+	prev = NULL;
 	for (lnr = buf->b_listener; lnr != NULL; lnr = next)
 	{
 	    next = lnr->lr_next;
@@ -345,9 +347,12 @@ f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
 		    buf->b_listener = lnr->lr_next;
 		free_callback(&lnr->lr_callback);
 		vim_free(lnr);
+		rettv->vval.v_number = 1;
+		return;
 	    }
 	    prev = lnr;
 	}
+    }
 }
 
 /*
