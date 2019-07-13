@@ -1806,3 +1806,41 @@ func Test_popupwin_buf_close()
   call assert_equal([], bufinfo.popups)
   exe 'bwipe! ' .. buf
 endfunc
+
+func Test_popup_menu_with_maxwidth()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  let lines =<< trim END
+	call setline(1, range(1, 10))
+	hi ScrollThumb ctermbg=blue
+	hi ScrollBar ctermbg=red
+	func F(line, col)
+		return {
+			\ 'maxwidth': 10,
+			\ 'pos' : 'topleft',
+			\ 'col' : a:col,
+			\ 'line' : a:line,
+			\ }
+	endfunc
+	let winid_1 = popup_menu(['x'], F(1, 1))
+	let winid_2 = popup_menu([repeat('x', 10)], F(1, 12))
+	let winid_3 = popup_menu([repeat('x', 11)], F(6, 1))
+	let winid_4 = popup_menu([repeat('x', 1000)], F(6, 12))
+  END
+  call writefile(lines, 'XtestPopupMenuMaxWidth')
+  let buf = RunVimInTerminal('-S XtestPopupMenuMaxWidth', {'rows': 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_maxwidth_1', {})
+
+  " close the menu popupwin.
+  call term_sendkeys(buf, " ")
+  call term_sendkeys(buf, " ")
+  call term_sendkeys(buf, " ")
+  call term_sendkeys(buf, " ")
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupMenuMaxWidth')
+endfunc
+

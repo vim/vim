@@ -2588,7 +2588,7 @@ update_popups(void (*win_update)(win_T *wp))
 		    wp->w_popup_border[3] != 0 && wp->w_popup_leftoff == 0
 					     ? border_char[4] : border_char[0],
 		    border_char[0], border_attr[0]);
-	    if (wp->w_popup_border[1] > 0 && wp->w_popup_rightoff == 0)
+	    if (wp->w_popup_border[1] > 0)
 	    {
 		buf[mb_char2bytes(border_char[5], buf)] = NUL;
 		screen_puts(buf, wp->w_winrow,
