@@ -752,6 +752,7 @@ OBJ = \
 	$(OUTDIR)/pathdef.o \
 	$(OUTDIR)/popupmnu.o \
 	$(OUTDIR)/popupwin.o \
+	$(OUTDIR)/profiler.o \
 	$(OUTDIR)/quickfix.o \
 	$(OUTDIR)/regexp.o \
 	$(OUTDIR)/screen.o \

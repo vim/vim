@@ -81,6 +81,7 @@ SRC =	arabic.c \
 	option.c \
 	os_amiga.c \
 	popupmnu.c \
+	profiler.c \
 	quickfix.c \
 	regexp.c \
 	screen.c \
@@ -146,6 +147,7 @@ OBJ =	obj/arabic.o \
 	obj/option.o \
 	obj/os_amiga.o \
 	obj/popupmnu.o \
+	obj/profiler.o \
 	obj/quickfix.o \
 	obj/regexp.o \
 	obj/screen.o \
@@ -209,6 +211,7 @@ PRO =	proto/arabic.pro \
 	proto/option.pro \
 	proto/os_amiga.pro \
 	proto/popupmnu.pro \
+	proto/profiler.pro \
 	proto/quickfix.pro \
 	proto/regexp.pro \
 	proto/screen.pro \
@@ -409,6 +412,9 @@ obj/os_amiga.o:	os_amiga.c
 
 obj/popupmnu.o:	popupmnu.c
 	$(CCSYM) $@ popupmnu.c
+
+obj/profiler.o:	profiler.c
+	$(CCSYM) $@ profiler.c
 
 obj/quickfix.o:	quickfix.c
 	$(CCSYM) $@ quickfix.c

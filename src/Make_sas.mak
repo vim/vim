@@ -134,6 +134,7 @@ SRC = \
 	option.c \
 	os_amiga.c \
 	popupmnu.c \
+	profiler.c \
 	quickfix.c \
 	regexp.c \
 	screen.c \
@@ -198,6 +199,7 @@ OBJ = \
 	option.o \
 	os_amiga.o \
 	popupmnu.o \
+	profiler.o \
 	quickfix.o \
 	regexp.o \
 	screen.o \
@@ -262,6 +264,7 @@ PRO = \
 	proto/option.pro \
 	proto/os_amiga.pro \
 	proto/popupmnu.pro \
+	proto/profiler.pro \
 	proto/quickfix.pro \
 	proto/regexp.pro \
 	proto/screen.pro \
@@ -425,6 +428,8 @@ os_amiga.o:		os_amiga.c
 proto/os_amiga.pro:	os_amiga.c
 popupmnu.o:		popupmnu.c
 proto/popupmnu.pro:	popupmnu.c
+profiler.o:		profiler.c
+proto/profiler.pro:	profiler.c
 quickfix.o:		quickfix.c
 proto/quickfix.pro:	quickfix.c
 regexp.o:		regexp.c

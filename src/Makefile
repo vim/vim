@@ -1626,6 +1626,7 @@ BASIC_SRC = \
 	auto/pathdef.c \
 	popupmnu.c \
 	popupwin.c \
+	profiler.c \
 	pty.c \
 	quickfix.c \
 	regexp.c \
@@ -1742,6 +1743,7 @@ OBJ_COMMON = \
 	objects/pathdef.o \
 	objects/popupmnu.o \
 	objects/popupwin.o \
+	objects/profiler.o \
 	objects/pty.o \
 	objects/quickfix.o \
 	objects/regexp.o \
@@ -1883,6 +1885,7 @@ PRO_AUTO = \
 	os_unix.pro \
 	popupmnu.pro \
 	popupwin.pro \
+	profiler.pro \
 	pty.pro \
 	quickfix.pro \
 	regexp.pro \
@@ -3222,6 +3225,9 @@ objects/popupmnu.o: popupmnu.c
 objects/popupwin.o: popupwin.c
 	$(CCC) -o $@ popupwin.c
 
+objects/profiler.o: profiler.c
+	$(CCC) -o $@ profiler.c
+
 objects/pty.o: pty.c
 	$(CCC) -o $@ pty.c
 
@@ -3630,6 +3636,10 @@ objects/popupmnu.o: popupmnu.c vim.h protodef.h auto/config.h feature.h os_unix.
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/popupwin.o: popupwin.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/profiler.o: profiler.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h

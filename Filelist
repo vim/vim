@@ -80,6 +80,7 @@ SRC_ALL =	\
 		src/option.h \
 		src/popupmnu.c \
 		src/popupwin.c \
+		src/profiler.c \
 		src/quickfix.c \
 		src/regexp.c \
 		src/regexp_nfa.c \
