@@ -1806,3 +1806,46 @@ func Test_popupwin_buf_close()
   call assert_equal([], bufinfo.popups)
   exe 'bwipe! ' .. buf
 endfunc
+
+func Test_popup_menu_with_scrollbar()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  let lines =<< trim END
+    call setline(1, range(1, 20))
+    hi ScrollThumb ctermbg=blue
+    hi ScrollBar ctermbg=red
+    let winid = popup_menu(['one', 'two', 'three', 'four', 'five',
+	  \ 'six', 'seven', 'eight', 'nine'], {
+	  \ 'minwidth': 8,
+	  \ 'maxheight': 3,
+	  \ })
+  END
+  call writefile(lines, 'XtestPopupMenuScroll')
+  let buf = RunVimInTerminal('-S XtestPopupMenuScroll', {'rows': 10})
+
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_1', {})
+
+  call term_sendkeys(buf, "jjj")
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_2', {})
+
+  " if the cursor is bottom line, keep at bottom line.
+  call term_sendkeys(buf, repeat("j", 100))
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_3', {})
+
+  call term_sendkeys(buf, "kkk")
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_4', {})
+
+  " if the cursor is top line, keep at top line.
+  call term_sendkeys(buf, repeat("k", 100))
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_5', {})
+
+  " close the menu popupwin.
+  call term_sendkeys(buf, " ")
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupMenuScroll')
+endfunc
