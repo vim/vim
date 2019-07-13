@@ -1821,6 +1821,11 @@ func Test_popupwin_buf_close()
 endfunc
 
 func Test_popup_menu_with_maxwidth()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  let lines =<< trim END
 	call setline(1, range(1, 10))
 	hi ScrollThumb ctermbg=blue
 	hi ScrollBar ctermbg=red
