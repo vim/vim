@@ -202,6 +202,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 #  include "popupwin.pro"
 #  include "textprop.pro"
 # endif
+# include "testing.pro"
 # include "ui.pro"
 # include "undo.pro"
 # include "usercmd.pro"

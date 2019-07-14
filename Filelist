@@ -100,6 +100,7 @@ SRC_ALL =	\
 		src/terminal.c \
 		src/term.h \
 		src/termlib.c \
+		src/testing.c \
 		src/textprop.c \
 		src/ui.c \
 		src/undo.c \
@@ -224,6 +225,7 @@ SRC_ALL =	\
 		src/proto/term.pro \
 		src/proto/terminal.pro \
 		src/proto/termlib.pro \
+		src/proto/testing.pro \
 		src/proto/textprop.pro \
 		src/proto/ui.pro \
 		src/proto/undo.pro \
@@ -542,10 +544,7 @@ SRC_AMI =	\
 		README_amisrc.txt.info \
 		src.info \
 		src/INSTALLami.txt \
-		src/Make_dice.mak \
-		src/Make_manx.mak \
 		src/Make_morph.mak \
-		src/Make_sas.mak \
 		src/os_amiga.c \
 		src/os_amiga.h \
 		src/proto/os_amiga.pro \

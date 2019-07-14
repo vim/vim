@@ -1337,7 +1337,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	for (i = 0; i < 4; ++i)
 	{
 	    wp->w_popup_border[i] = 1;
-	    wp->w_popup_padding[i] = 1;
+	    wp->w_popup_padding[i] = (i & 1) ? 1 : 0;
 	}
     }
 
