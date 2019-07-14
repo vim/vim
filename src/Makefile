@@ -1604,6 +1604,7 @@ BASIC_SRC = \
 	getchar.c \
 	hardcopy.c \
 	hashtab.c \
+	highlight.c \
 	if_cscope.c \
 	if_xcmdsrv.c \
 	indent.c \
@@ -1725,6 +1726,7 @@ OBJ_COMMON = \
 	objects/getchar.o \
 	objects/hardcopy.o \
 	objects/hashtab.o \
+	objects/highlight.o \
 	$(HANGULIN_OBJ) \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
@@ -1860,6 +1862,7 @@ PRO_AUTO = \
 	hardcopy.pro \
 	hashtab.pro \
 	hangulin.pro \
+	highlight.pro \
 	if_cscope.pro \
 	if_lua.pro \
 	if_mzsch.pro \
@@ -3103,6 +3106,9 @@ objects/gui_mac.o: gui_mac.c
 objects/hangulin.o: hangulin.c
 	$(CCC) -o $@ hangulin.c
 
+objects/highlight.o: highlight.c
+	$(CCC) -o $@ highlight.c
+
 objects/if_cscope.o: if_cscope.c
 	$(CCC) -o $@ if_cscope.c
 
@@ -3551,6 +3557,10 @@ objects/hardcopy.o: hardcopy.c vim.h protodef.h auto/config.h feature.h os_unix.
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h version.h
 objects/hashtab.o: hashtab.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/highlight.o: highlight.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
