@@ -89,6 +89,7 @@ extern int _stricoll(char *a, char *b);
 # endif
 # include "hardcopy.pro"
 # include "hashtab.pro"
+# include "highlight.pro"
 # include "indent.pro"
 # ifdef FEAT_INS_EXPAND
 # include "insexpand.pro"

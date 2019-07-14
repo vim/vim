@@ -730,6 +730,7 @@ OBJ = \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/hardcopy.o \
 	$(OUTDIR)/hashtab.o \
+	$(OUTDIR)/highlight.o \
 	$(OUTDIR)/indent.o \
 	$(OUTDIR)/insexpand.o \
 	$(OUTDIR)/json.o \
