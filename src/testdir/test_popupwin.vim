@@ -1907,4 +1907,60 @@ func Test_popup_menu_with_scrollbar()
   call delete('XtestPopupMenuScroll')
 endfunc
 
+func Test_popup_menu_filter()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  let lines =<< trim END
+	function! MyFilter(winid, key) abort
+	  if a:key == "0"
+		call win_execute(a:winid, "call setpos('.', [0, 1, 1, 0])")
+		return 1
+	  endif
+	  if a:key == "G"
+		call win_execute(a:winid, "call setpos('.', [0, line('$'), 1, 0])")
+		return 1
+	  endif
+	  if a:key == "j"
+		call win_execute(a:winid, "call setpos('.', [0, line('.') + 1, 1, 0])")
+		return 1
+	  endif
+	  if a:key == "k"
+		call win_execute(a:winid, "call setpos('.', [0, line('.') - 1, 1, 0])")
+		return 1
+	  endif
+	  if a:key == 'x'
+		call popup_close(a:winid)
+		return 1
+	  endif
+	  return 0
+	endfunction
+	call popup_menu(['123', '222', '333', '444', '555', '666', '777', '888', '999'], {
+	  \ 'maxheight' : 3,
+	  \ 'filter' : 'MyFilter'
+	  \ })
+  END
+  call writefile(lines, 'XtestPopupMenuFilter')
+  let buf = RunVimInTerminal('-S XtestPopupMenuFilter', *{rows: 10})
+
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_1', {})
+
+  call term_sendkeys(buf, "k")
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_2', {})
+
+  call term_sendkeys(buf, "G")
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_3', {})
+
+  call term_sendkeys(buf, "0")
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_4', {})
+
+  call term_sendkeys(buf, "x")
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupMenuFilter')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
