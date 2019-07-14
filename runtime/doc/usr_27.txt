@@ -474,19 +474,19 @@ the line break happens, because all items mentioned so far don't match a line
 break.
    To check for a line break in a specific place, use the "\n" item: >
 
-	/the\nword
+	/end\nstart
 
-This will match at a line that ends in "the" and the next line starts with
-"word".  To match "the word" as well, you need to match a space or a line
+This will match at a line that ends in "end" and the next line starts with
+"start".  To match "end start" as well, you need to match a space or a line
 break.  The item to use for it is "\_s": >
 
-	/the\_sword
+	/end\_sstart
 
 To allow any amount of white space: >
 
-	/the\_s\+word
+	/end\_s\+start
 
-This also matches when "the  " is at the end of a line and "   word" at the
+This also matches when "end  " is at the end of a line and "   start" at the
 start of the next one.
 
 "\s" matches white space, "\_s" matches white space or a line break.
