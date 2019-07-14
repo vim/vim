@@ -544,10 +544,7 @@ SRC_AMI =	\
 		README_amisrc.txt.info \
 		src.info \
 		src/INSTALLami.txt \
-		src/Make_dice.mak \
-		src/Make_manx.mak \
 		src/Make_morph.mak \
-		src/Make_sas.mak \
 		src/os_amiga.c \
 		src/os_amiga.h \
 		src/proto/os_amiga.pro \
