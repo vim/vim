@@ -4857,7 +4857,10 @@ win_free(
     free_callback(&wp->w_filter_cb);
     for (i = 0; i < 4; ++i)
 	VIM_CLEAR(wp->w_border_highlight[i]);
+    vim_free(wp->w_scrollbar_highlight);
+    vim_free(wp->w_thumb_highlight);
     vim_free(wp->w_popup_title);
+    list_unref(wp->w_popup_mask);
 #endif
 
 #ifdef FEAT_SYN_HL
@@ -4884,7 +4887,7 @@ win_free(
     int
 win_unlisted(win_T *wp)
 {
-    return wp == aucmd_win || bt_popup(wp->w_buffer);
+    return wp == aucmd_win || WIN_IS_POPUP(wp);
 }
 
 #if defined(FEAT_TEXT_PROP) || defined(PROTO)
@@ -4895,7 +4898,10 @@ win_unlisted(win_T *wp)
     void
 win_free_popup(win_T *win)
 {
-    win_close_buffer(win, DOBUF_WIPE, FALSE);
+    if (bt_popup(win->w_buffer))
+	win_close_buffer(win, DOBUF_WIPE, FALSE);
+    else
+	close_buffer(win, win->w_buffer, 0, FALSE);
 # if defined(FEAT_TIMERS)
     if (win->w_popup_timer != NULL)
 	stop_timer(win->w_popup_timer);
@@ -6602,7 +6608,7 @@ restore_win_noblock(
 	curbuf = curwin->w_buffer;
     }
 #ifdef FEAT_TEXT_PROP
-    else if (bt_popup(curwin->w_buffer))
+    else if (WIN_IS_POPUP(curwin))
 	// original window was closed and now we're in a popup window: Go
 	// to the first valid window.
 	win_goto(firstwin);

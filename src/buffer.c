@@ -122,6 +122,23 @@ read_buffer(
 }
 
 /*
+ * Ensure buffer "buf" is loaded.  Does not trigger the swap-exists action.
+ */
+    void
+buffer_ensure_loaded(buf_T *buf)
+{
+    if (buf->b_ml.ml_mfp == NULL)
+    {
+	aco_save_T	aco;
+
+	aucmd_prepbuf(&aco, buf);
+	swap_exists_action = SEA_NONE;
+	open_buffer(FALSE, NULL, 0);
+	aucmd_restbuf(&aco);
+    }
+}
+
+/*
  * Open current buffer, that is: open the memfile and read the file into
  * memory.
  * Return FAIL for failure, OK otherwise.
@@ -5962,3 +5979,48 @@ wipe_buffer(
     if (!aucmd)
 	unblock_autocmds();
 }
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Mark references in functions of buffers.
+ */
+    int
+set_ref_in_buffers(int copyID)
+{
+    int		abort = FALSE;
+    buf_T	*bp;
+
+    FOR_ALL_BUFFERS(bp)
+    {
+	listener_T *lnr;
+	typval_T tv;
+
+	for (lnr = bp->b_listener; !abort && lnr != NULL; lnr = lnr->lr_next)
+	{
+	    if (lnr->lr_callback.cb_partial != NULL)
+	    {
+		tv.v_type = VAR_PARTIAL;
+		tv.vval.v_partial = lnr->lr_callback.cb_partial;
+		abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
+	    }
+	}
+# ifdef FEAT_JOB_CHANNEL
+	if (!abort && bp->b_prompt_callback.cb_partial != NULL)
+	{
+	    tv.v_type = VAR_PARTIAL;
+	    tv.vval.v_partial = bp->b_prompt_callback.cb_partial;
+	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
+	}
+	if (!abort && bp->b_prompt_interrupt.cb_partial != NULL)
+	{
+	    tv.v_type = VAR_PARTIAL;
+	    tv.vval.v_partial = bp->b_prompt_interrupt.cb_partial;
+	    abort = abort || set_ref_in_item(&tv, copyID, NULL, NULL);
+	}
+# endif
+	if (abort)
+	    break;
+    }
+    return abort;
+}
+#endif

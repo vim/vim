@@ -1,13 +1,19 @@
 /* popupwin.c */
 int popup_on_border(win_T *wp, int row, int col);
+int popup_on_X_button(win_T *wp, int row, int col);
 void popup_start_drag(win_T *wp);
 void popup_drag(win_T *wp);
+void popup_set_firstline(win_T *wp);
+void popup_handle_scrollbar_click(win_T *wp, int row, int col);
 int popup_height(win_T *wp);
 int popup_width(win_T *wp);
 void popup_adjust_position(win_T *wp);
 void f_popup_clear(typval_T *argvars, typval_T *rettv);
 void f_popup_create(typval_T *argvars, typval_T *rettv);
 void f_popup_atcursor(typval_T *argvars, typval_T *rettv);
+void f_popup_beval(typval_T *argvars, typval_T *rettv);
+void popup_close_for_mouse_click(win_T *wp);
+void popup_handle_mouse_moved(void);
 void f_popup_filter_menu(typval_T *argvars, typval_T *rettv);
 void f_popup_filter_yesno(typval_T *argvars, typval_T *rettv);
 void f_popup_dialog(typval_T *argvars, typval_T *rettv);
@@ -23,6 +29,7 @@ void close_all_popups(void);
 void f_popup_move(typval_T *argvars, typval_T *rettv);
 void f_popup_setoptions(typval_T *argvars, typval_T *rettv);
 void f_popup_getpos(typval_T *argvars, typval_T *rettv);
+void f_popup_locate(typval_T *argvars, typval_T *rettv);
 void f_popup_getoptions(typval_T *argvars, typval_T *rettv);
 int error_if_popup_window(void);
 void popup_reset_handled(void);
@@ -31,4 +38,5 @@ int popup_do_filter(int c);
 void popup_check_cursor_pos(void);
 void may_update_popup_mask(int type);
 void update_popups(void (*win_update)(win_T *wp));
+int set_ref_in_popups(int copyID);
 /* vim: set ft=c : */

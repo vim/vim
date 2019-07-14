@@ -1,4 +1,5 @@
 /* buffer.c */
+void buffer_ensure_loaded(buf_T *buf);
 int open_buffer(int read_stdin, exarg_T *eap, int flags);
 void set_bufref(bufref_T *bufref, buf_T *buf);
 int bufref_valid(bufref_T *bufref);
@@ -74,4 +75,5 @@ int find_win_for_buf(buf_T *buf, win_T **wp, tabpage_T **tp);
 void set_buflisted(int on);
 int buf_contents_changed(buf_T *buf);
 void wipe_buffer(buf_T *buf, int aucmd);
+int set_ref_in_buffers(int copyID);
 /* vim: set ft=c : */

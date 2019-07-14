@@ -2378,7 +2378,7 @@ ex_loadkeymap(exarg_T *eap)
      */
     for (;;)
     {
-	line = eap->getline(0, eap->cookie, 0);
+	line = eap->getline(0, eap->cookie, 0, TRUE);
 	if (line == NULL)
 	    break;
 

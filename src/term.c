@@ -3425,10 +3425,14 @@ set_shellsize(int width, int height, int mustset)
 
     if (State == HITRETURN || State == SETWSIZE)
     {
-	/* postpone the resizing */
+	// postpone the resizing
 	State = SETWSIZE;
 	return;
     }
+
+    if (updating_screen)
+	// resizing while in update_screen() may cause a crash
+	return;
 
     /* curwin->w_buffer can be NULL when we are closing a window and the
      * buffer has already been closed and removing a scrollbar causes a resize

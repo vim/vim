@@ -1985,7 +1985,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_nf, PV_NF,
 			    {(char_u *)"bin,octal,hex", (char_u *)0L}
 			    SCTX_INIT},
-    {"number",	    "nu",   P_BOOL|P_VI_DEF|P_RWIN,
+    {"number",	    "nu",   P_BOOL|P_VI_DEF|P_RCLR,
 			    (char_u *)VAR_WIN, PV_NU,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"numberwidth", "nuw",  P_NUM|P_RWIN|P_VIM,
@@ -2252,7 +2252,7 @@ static struct vimoption options[] =
     {"regexpengine", "re",  P_NUM|P_VI_DEF,
 			    (char_u *)&p_re, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
-    {"relativenumber", "rnu", P_BOOL|P_VI_DEF|P_RWIN,
+    {"relativenumber", "rnu", P_BOOL|P_VI_DEF|P_RCLR,
 			    (char_u *)VAR_WIN, PV_RNU,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"remap",	    NULL,   P_BOOL|P_VI_DEF,
@@ -2497,7 +2497,7 @@ static struct vimoption options[] =
     {"sidescrolloff", "siso", P_NUM|P_VI_DEF|P_VIM|P_RBUF,
 			    (char_u *)&p_siso, PV_SISO,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
-    {"signcolumn",   "scl",  P_STRING|P_ALLOCED|P_VI_DEF|P_RWIN,
+    {"signcolumn",   "scl",  P_STRING|P_ALLOCED|P_VI_DEF|P_RCLR,
 #ifdef FEAT_SIGNS
 			    (char_u *)VAR_WIN, PV_SCL,
 			    {(char_u *)"auto", (char_u *)0L}
@@ -3231,7 +3231,7 @@ static char *(p_fcl_values[]) = {"all", NULL};
 static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "noinsert", "noselect", NULL};
 #endif
 #ifdef FEAT_SIGNS
-static char *(p_scl_values[]) = {"yes", "no", "auto", NULL};
+static char *(p_scl_values[]) = {"yes", "no", "auto", "number", NULL};
 #endif
 #if defined(MSWIN) && defined(FEAT_TERMINAL)
 static char *(p_twt_values[]) = {"winpty", "conpty", "", NULL};
@@ -7454,11 +7454,17 @@ did_set_string_option(
 #endif /* FEAT_INS_EXPAND */
 
 #ifdef FEAT_SIGNS
-    /* 'signcolumn' */
+    // 'signcolumn'
     else if (varp == &curwin->w_p_scl)
     {
 	if (check_opt_strings(*varp, p_scl_values, FALSE) != OK)
 	    errmsg = e_invarg;
+	// When changing the 'signcolumn' to or from 'number', recompute the
+	// width of the number column if 'number' or 'relativenumber' is set.
+	if (((*oldval == 'n' && *(oldval + 1) == 'u')
+		|| (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) =='u'))
+		&& (curwin->w_p_nu || curwin->w_p_rnu))
+	    curwin->w_nrwidth_line_count = 0;
     }
 #endif
 
@@ -9493,10 +9499,10 @@ set_num_option(
 	    errmsg = e_positive;
 	    curwin->w_p_nuw = 1;
 	}
-	if (curwin->w_p_nuw > 10)
+	if (curwin->w_p_nuw > 20)
 	{
 	    errmsg = e_invarg;
-	    curwin->w_p_nuw = 10;
+	    curwin->w_p_nuw = 20;
 	}
 	curwin->w_nrwidth_line_count = 0; /* trigger a redraw */
     }
@@ -13556,6 +13562,12 @@ get_bkc_value(buf_T *buf)
      int
 signcolumn_on(win_T *wp)
 {
+    // If 'signcolumn' is set to 'number', signs are displayed in the 'number'
+    // column (if present). Otherwise signs are to be displayed in the sign
+    // column.
+    if (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u')
+	return wp->w_buffer->b_signlist != NULL && !wp->w_p_nu && !wp->w_p_rnu;
+
     if (*wp->w_p_scl == 'n')
 	return FALSE;
     if (*wp->w_p_scl == 'y')

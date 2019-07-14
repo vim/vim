@@ -358,6 +358,16 @@ setup_job_options(jobopt_T *opt, int rows, int cols)
 }
 
 /*
+ * Flush messages on channels.
+ */
+    static void
+term_flush_messages()
+{
+    mch_check_messages();
+    parse_queued_messages();
+}
+
+/*
  * Close a terminal buffer (and its window).  Used when creating the terminal
  * fails.
  */
@@ -1455,8 +1465,7 @@ term_try_stop_job(buf_T *buf)
 	    return OK;
 
 	ui_delay(10L, FALSE);
-	mch_check_messages();
-	parse_queued_messages();
+	term_flush_messages();
     }
     return FAIL;
 }
@@ -3019,6 +3028,8 @@ term_after_channel_closed(term_T *term)
 	    ch_log(NULL, "terminal job finished, closing window");
 	    aucmd_prepbuf(&aco, term->tl_buffer);
 	    // Avoid closing the window if we temporarily use it.
+	    if (curwin == aucmd_win)
+		do_set_w_closing = TRUE;
 	    if (do_set_w_closing)
 		curwin->w_closing = TRUE;
 	    do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
@@ -3062,7 +3073,7 @@ term_channel_closed(channel_T *ch)
     for (term = first_term; term != NULL; term = next_term)
     {
 	next_term = term->tl_next;
-	if (term->tl_job == ch->ch_job)
+	if (term->tl_job == ch->ch_job && !term->tl_channel_closed)
 	{
 	    term->tl_channel_closed = TRUE;
 	    did_one = TRUE;
@@ -4049,7 +4060,7 @@ set_ref_in_term(int copyID)
     term_T	*term;
     typval_T	tv;
 
-    for (term = first_term; term != NULL; term = term->tl_next)
+    for (term = first_term; !abort && term != NULL; term = term->tl_next)
 	if (term->tl_job != NULL)
 	{
 	    tv.v_type = VAR_JOB;
@@ -5626,33 +5637,31 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 	ch_log(NULL, "term_wait(): waiting for channel to close");
 	while (buf->b_term != NULL && !buf->b_term->tl_channel_closed)
 	{
-	    mch_check_messages();
-	    parse_queued_messages();
+	    term_flush_messages();
+
 	    ui_delay(10L, FALSE);
 	    if (!buf_valid(buf))
 		/* If the terminal is closed when the channel is closed the
 		 * buffer disappears. */
 		break;
 	}
-	mch_check_messages();
-	parse_queued_messages();
+
+	term_flush_messages();
     }
     else
     {
 	long wait = 10L;
 
-	mch_check_messages();
-	parse_queued_messages();
+	term_flush_messages();
 
 	/* Wait for some time for any channel I/O. */
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	    wait = tv_get_number(&argvars[1]);
 	ui_delay(wait, TRUE);
-	mch_check_messages();
 
 	/* Flushing messages on channels is hopefully sufficient.
 	 * TODO: is there a better way? */
-	parse_queued_messages();
+	term_flush_messages();
     }
 }
 

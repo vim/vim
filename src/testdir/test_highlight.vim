@@ -578,12 +578,13 @@ func Test_wincolor()
     throw 'Skipped: cannot make screendumps'
   endif
 
-  call writefile([
-	\ 'set cursorline cursorcolumn rnu',
-	\ 'call setline(1, ["","1111111111","22222222222","3 here 3",""])',
-	\ 'set wincolor=Pmenu',
-	\ '/here',
-	\ ], 'Xtest_wincolor')
+  let lines =<< trim END
+	set cursorline cursorcolumn rnu
+	call setline(1, ["","1111111111","22222222222","3 here 3",""])
+	set wincolor=Pmenu
+	/here
+  END
+  call writefile(lines, 'Xtest_wincolor')
   let buf = RunVimInTerminal('-S Xtest_wincolor', {'rows': 8})
   call term_wait(buf)
   call term_sendkeys(buf, "2G5lvj")
@@ -600,9 +601,25 @@ endfunc
 " This test must come before the Test_cursorline test, as it appears this
 " defines the Normal highlighting group anyway.
 func Test_1_highlight_Normalgroup_exists()
-  " MS-Windows GUI sets the font
-  if !has('win32') || !has('gui_running')
-    let hlNormal = HighlightArgs('Normal')
+  let hlNormal = HighlightArgs('Normal')
+  if !has('gui_running')
     call assert_match('hi Normal\s*clear', hlNormal)
+  elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+    " expect is DEFAULT_FONT of gui_gtk_x11.c
+    call assert_match('hi Normal\s*font=Monospace 10', hlNormal)
+  elseif has('gui_motif') || has('gui_athena')
+    " expect is DEFAULT_FONT of gui_x11.c
+    call assert_match('hi Normal\s*font=7x13', hlNormal)
+  elseif has('win32')
+    " expect any font
+    call assert_match('hi Normal\s*font=.*', hlNormal)
   endif
 endfunc
+
+function Test_no_space_before_xxx()
+  let l:org_columns = &columns
+  set columns=17
+  let l:hi_StatusLineTermNC = join(split(execute('hi StatusLineTermNC')))
+  call assert_match('StatusLineTermNC xxx', l:hi_StatusLineTermNC)
+  let &columns = l:org_columns
+endfunction

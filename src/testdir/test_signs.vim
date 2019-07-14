@@ -412,7 +412,7 @@ func Test_sign_funcs()
   " Tests for invalid arguments to sign_define()
   call assert_fails('call sign_define("sign4", {"text" : "===>"})', 'E239:')
   call assert_fails('call sign_define("sign5", {"text" : ""})', 'E239:')
-  call assert_fails('call sign_define([])', 'E730:')
+  call assert_fails('call sign_define({})', 'E731:')
   call assert_fails('call sign_define("sign6", [])', 'E715:')
 
   " Tests for sign_getdefined()
@@ -441,7 +441,7 @@ func Test_sign_funcs()
   call assert_fails('call sign_place([], "", "mySign", 1)', 'E745:')
   call assert_fails('call sign_place(5, "", "mySign", -1)', 'E158:')
   call assert_fails('call sign_place(-1, "", "sign1", "Xsign", [])',
-	      \ 'E474:')
+	      \ 'E715:')
   call assert_fails('call sign_place(-1, "", "sign1", "Xsign",
 	      \ {"lnum" : 30})', 'E474:')
   call assert_fails('call sign_place(10, "", "xsign1x", "Xsign",
@@ -501,11 +501,21 @@ func Test_sign_funcs()
 	      \ {'id' : 20, 'buffer' : 200})", 'E158:')
   call assert_fails("call sign_unplace('g1', 'mySign')", 'E715:')
 
+  call sign_unplace('*')
+
+  " Test for modifying a placed sign
+  call assert_equal(15, sign_place(15, '', 'sign1', 'Xsign', {'lnum' : 20}))
+  call assert_equal(15, sign_place(15, '', 'sign2', 'Xsign'))
+  call assert_equal([{'bufnr' : bufnr(''), 'signs' :
+	      \ [{'id' : 15, 'group' : '', 'lnum' : 20, 'name' : 'sign2',
+	      \ 'priority' : 10}]}],
+	      \ sign_getplaced())
+
   " Tests for sign_undefine()
   call assert_equal(0, sign_undefine("sign1"))
   call assert_equal([], sign_getdefined("sign1"))
   call assert_fails('call sign_undefine("none")', 'E155:')
-  call assert_fails('call sign_undefine([])', 'E730:')
+  call assert_fails('call sign_undefine({})', 'E731:')
 
   call delete("Xsign")
   call sign_unplace('*')
@@ -631,7 +641,7 @@ func Test_sign_group()
   call assert_equal([], sign_getplaced(bnum, {'group' : '*'})[0].signs)
 
   " Error case
-  call assert_fails("call sign_unplace([])", 'E474:')
+  call assert_fails("call sign_unplace({})", 'E474:')
 
   " Place a sign in the global group and try to delete it using a group
   call assert_equal(5, sign_place(5, '', 'sign1', bnum, {'lnum' : 10}))
@@ -1117,8 +1127,8 @@ func Test_sign_unplace()
   call delete("Xsign2")
 endfunc
 
-" Tests for auto-generating the sign identifier
-func Test_sign_id_autogen()
+" Tests for auto-generating the sign identifier.
+func Test_aaa_sign_id_autogen()
   enew | only
   call sign_unplace('*')
   call sign_undefine()
@@ -1735,4 +1745,221 @@ func Test_sign_cursor_position()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestSigncolumn')
+endfunc
+
+" Return the 'len' characters in screen starting from (row,col)
+func s:ScreenLine(row, col, len)
+  let s = ''
+  for i in range(a:len)
+    let s .= nr2char(screenchar(a:row, a:col + i))
+  endfor
+  return s
+endfunc
+
+" Test for 'signcolumn' set to 'number'.
+func Test_sign_numcol()
+  new
+  call append(0, "01234")
+  " With 'signcolumn' set to 'number', make sure sign is displayed in the
+  " number column and line number is not displayed.
+  set numberwidth=2
+  set number
+  set signcolumn=number
+  sign define sign1 text==>
+  sign place 10 line=1 name=sign1
+  redraw!
+  call assert_equal("=> 01234", s:ScreenLine(1, 1, 8))
+
+  " With 'signcolumn' set to 'number', when there is no sign, make sure line
+  " number is displayed in the number column
+  sign unplace 10
+  redraw!
+  call assert_equal("1 01234", s:ScreenLine(1, 1, 7))
+
+  " Disable number column. Check whether sign is displayed in the sign column
+  set numberwidth=4
+  set nonumber
+  sign place 10 line=1 name=sign1
+  redraw!
+  call assert_equal("=>01234", s:ScreenLine(1, 1, 7))
+
+  " Enable number column. Check whether sign is displayed in the number column
+  set number
+  redraw!
+  call assert_equal(" => 01234", s:ScreenLine(1, 1, 9))
+
+  " Disable sign column. Make sure line number is displayed
+  set signcolumn=no
+  redraw!
+  call assert_equal("  1 01234", s:ScreenLine(1, 1, 9))
+
+  " Enable auto sign column. Make sure both sign and line number are displayed
+  set signcolumn=auto
+  redraw!
+  call assert_equal("=>  1 01234", s:ScreenLine(1, 1, 11))
+
+  " Test displaying signs in the number column with width 1
+  call sign_unplace('*')
+  call append(1, "abcde")
+  call append(2, "01234")
+  " Enable number column with width 1
+  set number numberwidth=1 signcolumn=auto
+  redraw!
+  call assert_equal("3 01234", s:ScreenLine(3, 1, 7))
+  " Place a sign and make sure number column width remains the same
+  sign place 20 line=2 name=sign1
+  redraw!
+  call assert_equal("=>2 abcde", s:ScreenLine(2, 1, 9))
+  call assert_equal("  3 01234", s:ScreenLine(3, 1, 9))
+  " Set 'signcolumn' to 'number', make sure the number column width increases
+  set signcolumn=number
+  redraw!
+  call assert_equal("=> abcde", s:ScreenLine(2, 1, 8))
+  call assert_equal(" 3 01234", s:ScreenLine(3, 1, 8))
+  " Set 'signcolumn' to 'auto', make sure the number column width is 1.
+  set signcolumn=auto
+  redraw!
+  call assert_equal("=>2 abcde", s:ScreenLine(2, 1, 9))
+  call assert_equal("  3 01234", s:ScreenLine(3, 1, 9))
+  " Set 'signcolumn' to 'number', make sure the number column width is 2.
+  set signcolumn=number
+  redraw!
+  call assert_equal("=> abcde", s:ScreenLine(2, 1, 8))
+  call assert_equal(" 3 01234", s:ScreenLine(3, 1, 8))
+  " Disable 'number' column
+  set nonumber
+  redraw!
+  call assert_equal("=>abcde", s:ScreenLine(2, 1, 7))
+  call assert_equal("  01234", s:ScreenLine(3, 1, 7))
+  " Enable 'number' column
+  set number
+  redraw!
+  call assert_equal("=> abcde", s:ScreenLine(2, 1, 8))
+  call assert_equal(" 3 01234", s:ScreenLine(3, 1, 8))
+  " Remove the sign and make sure the width of the number column is 1.
+  call sign_unplace('', {'id' : 20})
+  redraw!
+  call assert_equal("3 01234", s:ScreenLine(3, 1, 7))
+  " When the first sign is placed with 'signcolumn' set to number, verify that
+  " the number column width increases
+  sign place 30 line=1 name=sign1
+  redraw!
+  call assert_equal("=> 01234", s:ScreenLine(1, 1, 8))
+  call assert_equal(" 2 abcde", s:ScreenLine(2, 1, 8))
+
+  sign unplace * group=*
+  sign undefine sign1
+  set signcolumn&
+  set number&
+  enew!  | close
+endfunc
+
+" Test for managing multiple signs using the sign functions
+func Test_sign_funcs_multi()
+  call writefile(repeat(["Sun is shining"], 30), "Xsign")
+  edit Xsign
+  let bnum = bufnr('')
+
+  " Define multiple signs at once
+  call assert_equal([0, 0, 0, 0], sign_define([
+	      \ {'name' : 'sign1', 'text' : '=>', 'linehl' : 'Search',
+	      \ 'texthl' : 'Search'},
+	      \ {'name' : 'sign2', 'text' : '=>', 'linehl' : 'Search',
+	      \ 'texthl' : 'Search'},
+	      \ {'name' : 'sign3', 'text' : '=>', 'linehl' : 'Search',
+	      \ 'texthl' : 'Search'},
+	      \ {'name' : 'sign4', 'text' : '=>', 'linehl' : 'Search',
+	      \ 'texthl' : 'Search'}]))
+
+  " Negative cases for sign_define()
+  call assert_equal([], sign_define([]))
+  call assert_equal([-1], sign_define([{}]))
+  call assert_fails('call sign_define([6])', 'E715:')
+  call assert_fails('call sign_define(["abc"])', 'E715:')
+  call assert_fails('call sign_define([[]])', 'E715:')
+
+  " Place multiple signs at once with specific sign identifier
+  let l = sign_placelist([{'id' : 1, 'group' : 'g1', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11, 'priority' : 50},
+	      \ {'id' : 2, 'group' : 'g2', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11, 'priority' : 100},
+	      \ {'id' : 3, 'group' : '', 'name' : 'sign3',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11}])
+  call assert_equal([1, 2, 3], l)
+  let s = sign_getplaced('Xsign', {'group' : '*'})
+  call assert_equal([
+	      \ {'id' : 2, 'name' : 'sign2', 'lnum' : 11,
+	      \ 'group' : 'g2', 'priority' : 100},
+	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 11,
+	      \ 'group' : 'g1', 'priority' : 50},
+	      \ {'id' : 3, 'name' : 'sign3', 'lnum' : 11,
+	      \ 'group' : '', 'priority' : 10}], s[0].signs)
+
+  call sign_unplace('*')
+
+  " Place multiple signs at once with auto-generated sign identifier
+  call assert_equal([1, 1, 5], sign_placelist([
+	      \ {'group' : 'g1', 'name' : 'sign1',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11},
+	      \ {'group' : 'g2', 'name' : 'sign2',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11},
+	      \ {'group' : '', 'name' : 'sign3',
+	      \ 'buffer' : 'Xsign', 'lnum' : 11}]))
+  let s = sign_getplaced('Xsign', {'group' : '*'})
+  call assert_equal([
+	      \ {'id' : 5, 'name' : 'sign3', 'lnum' : 11,
+	      \ 'group' : '', 'priority' : 10},
+	      \ {'id' : 1, 'name' : 'sign2', 'lnum' : 11,
+	      \ 'group' : 'g2', 'priority' : 10},
+	      \ {'id' : 1, 'name' : 'sign1', 'lnum' : 11,
+	      \ 'group' : 'g1', 'priority' : 10}], s[0].signs)
+
+  " Change an existing sign without specifying the group
+  call assert_equal([5], sign_placelist([
+	      \ {'id' : 5, 'name' : 'sign1', 'buffer' : 'Xsign'}]))
+  let s = sign_getplaced('Xsign', {'id' : 5, 'group' : ''})
+  call assert_equal([{'id' : 5, 'name' : 'sign1', 'lnum' : 11,
+	      \ 'group' : '', 'priority' : 10}], s[0].signs)
+
+  " Place sign without a sign name
+  call assert_equal([-1], sign_placelist([{'id' : 10, 'buffer' : 'Xsign',
+	      \ 'lnum' : 12, 'group' : ''}]))
+
+  " Place sign without a buffer
+  call assert_equal([-1], sign_placelist([{'id' : 10, 'name' : 'sign1',
+	      \ 'lnum' : 12, 'group' : ''}]))
+
+  " Invalid arguments
+  call assert_equal([], sign_placelist([]))
+  call assert_fails('call sign_placelist({})', "E714:")
+  call assert_fails('call sign_placelist([[]])', "E715:")
+  call assert_fails('call sign_placelist(["abc"])', "E715:")
+  call assert_fails('call sign_placelist([100])', "E715:")
+
+  " Unplace multiple signs
+  call assert_equal([0, 0, 0], sign_unplacelist([{'id' : 5},
+	      \ {'id' : 1, 'group' : 'g1'}, {'id' : 1, 'group' : 'g2'}]))
+
+  " Invalid arguments
+  call assert_equal([], sign_unplacelist([]))
+  call assert_fails('call sign_unplacelist({})', "E714:")
+  call assert_fails('call sign_unplacelist([[]])', "E715:")
+  call assert_fails('call sign_unplacelist(["abc"])', "E715:")
+  call assert_fails('call sign_unplacelist([100])', "E715:")
+  call assert_fails("call sign_unplacelist([{'id' : -1}])", 'E474')
+
+  call assert_equal([0, 0, 0, 0],
+	      \ sign_undefine(['sign1', 'sign2', 'sign3', 'sign4']))
+  call assert_equal([], sign_getdefined())
+
+  " Invalid arguments
+  call assert_equal([], sign_undefine([]))
+  call assert_fails('call sign_undefine([[]])', 'E730:')
+  call assert_fails('call sign_undefine([{}])', 'E731:')
+  call assert_fails('call sign_undefine(["1abc2"])', 'E155:')
+
+  call sign_unplace('*')
+  call sign_undefine()
+  enew!
+  call delete("Xsign")
 endfunc

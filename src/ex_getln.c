@@ -450,6 +450,7 @@ may_do_incsearch_highlighting(
 #endif
     int		next_char;
     int		use_last_pat;
+    int		did_do_incsearch = is_state->did_incsearch;
 
     // Parsing range may already set the last search pattern.
     // NOTE: must call restore_last_search_pattern() before returning!
@@ -459,6 +460,9 @@ may_do_incsearch_highlighting(
     {
 	restore_last_search_pattern();
 	finish_incsearch_highlighting(FALSE, is_state, TRUE);
+	if (did_do_incsearch && vpeekc() == NUL)
+	    // may have skipped a redraw, do it now
+	    redrawcmd();
 	return;
     }
 
@@ -776,6 +780,35 @@ may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
 }
 #endif
 
+#ifdef FEAT_ARABIC
+/*
+ * Return TRUE if the command line has an Arabic character at or after "start"
+ * for "len" bytes.
+ */
+    static int
+cmdline_has_arabic(int start, int len)
+{
+    int	    j;
+    int	    mb_l;
+    int	    u8c;
+    char_u  *p;
+    int	    u8cc[MAX_MCO];
+
+    if (!enc_utf8)
+	return FALSE;
+
+    for (j = start; j < start + len; j += mb_l)
+    {
+	p = ccline.cmdbuff + j;
+	u8c = utfc_ptr2char_len(p, u8cc, start + len - j);
+	mb_l = utfc_ptr2len_len(p, start + len - j);
+	if (ARABIC_CHAR(u8c))
+	    return TRUE;
+    }
+    return FALSE;
+}
+#endif
+
     void
 cmdline_init(void)
 {
@@ -805,7 +838,8 @@ cmdline_init(void)
 getcmdline(
     int		firstc,
     long	count,		// only used for incremental search
-    int		indent)		// indent for inside conditionals
+    int		indent,		// indent for inside conditionals
+    int		do_concat UNUSED)
 {
     return getcmdline_int(firstc, count, indent, TRUE);
 }
@@ -2366,7 +2400,8 @@ cmdline_changed:
 #ifdef FEAT_RIGHTLEFT
 	if (cmdmsg_rl
 # ifdef FEAT_ARABIC
-		|| (p_arshape && !p_tbidi && enc_utf8)
+		|| (p_arshape && !p_tbidi
+				       && cmdline_has_arabic(0, ccline.cmdlen))
 # endif
 		)
 	    /* Always redraw the whole command line to fix shaping and
@@ -2653,12 +2688,13 @@ correct_cmdspos(int idx, int cells)
 getexline(
     int		c,		/* normally ':', NUL for ":append" */
     void	*cookie UNUSED,
-    int		indent)		/* indent for inside conditionals */
+    int		indent,		/* indent for inside conditionals */
+    int		do_concat)
 {
     /* When executing a register, remove ':' that's in front of each line. */
     if (exec_from_reg && vpeekc() == ':')
 	(void)vgetc();
-    return getcmdline(c, 1L, indent);
+    return getcmdline(c, 1L, indent, do_concat);
 }
 
 /*
@@ -2672,7 +2708,8 @@ getexmodeline(
     int		promptc,	/* normally ':', NUL for ":append" and '?' for
 				   :s prompt */
     void	*cookie UNUSED,
-    int		indent)		/* indent for inside conditionals */
+    int		indent,		/* indent for inside conditionals */
+    int		do_concat UNUSED)
 {
     garray_T	line_ga;
     char_u	*pend;
@@ -3137,7 +3174,7 @@ static char_u	*arshape_buf = NULL;
 
 # if defined(EXITFREE) || defined(PROTO)
     void
-free_cmdline_buf(void)
+free_arshape_buf(void)
 {
     vim_free(arshape_buf);
 }
@@ -3164,7 +3201,7 @@ draw_cmdline(int start, int len)
     else
 #endif
 #ifdef FEAT_ARABIC
-	if (p_arshape && !p_tbidi && enc_utf8 && len > 0)
+	if (p_arshape && !p_tbidi && cmdline_has_arabic(start, len))
     {
 	static int	buflen = 0;
 	char_u		*p;
@@ -4797,7 +4834,7 @@ addstar(
  *  EXPAND_COMMANDS	    Cursor is still touching the command, so complete
  *			    it.
  *  EXPAND_BUFFERS	    Complete file names for :buf and :sbuf commands.
- *  EXPAND_FILES	    After command with XFILE set, or after setting
+ *  EXPAND_FILES	    After command with EX_XFILE set, or after setting
  *			    with P_EXPAND set.	eg :e ^I, :w>>^I
  *  EXPAND_DIRECTORIES	    In some cases this is used instead of the latter
  *			    when we know only directories are of interest.  eg
@@ -7375,7 +7412,7 @@ script_get(exarg_T *eap, char_u *cmd)
 #ifdef FEAT_EVAL
 	    eap->cstack->cs_looplevel > 0 ? -1 :
 #endif
-	    NUL, eap->cookie, 0);
+	    NUL, eap->cookie, 0, TRUE);
 
 	if (theline == NULL || STRCMP(end_pattern, theline) == 0)
 	{

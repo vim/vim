@@ -74,6 +74,8 @@ EXTERN short	*TabPageIdxs INIT(= NULL);
 // Array with size Rows x Columns containing zindex of popups.
 EXTERN short	*popup_mask INIT(= NULL);
 EXTERN short	*popup_mask_next INIT(= NULL);
+// Array with flags for tansparent cells of current popup.
+EXTERN char	*popup_transparent INIT(= NULL);
 
 // Flag set to TRUE when popup_mask needs to be updated.
 EXTERN int	popup_mask_refresh INIT(= TRUE);
@@ -250,6 +252,9 @@ EXTERN int	debug_backtrace_level INIT(= 0); /* breakpoint backtrace level */
 # ifdef FEAT_PROFILE
 EXTERN int	do_profiling INIT(= PROF_NONE);	/* PROF_ values */
 # endif
+EXTERN garray_T script_items INIT(= {0 COMMA 0 COMMA sizeof(scriptitem_T) COMMA 4 COMMA NULL});
+#define SCRIPT_ITEM(id) (((scriptitem_T *)script_items.ga_data)[(id) - 1])
+#define FUNCLINE(fp, j)	((char_u **)(fp->uf_lines.ga_data))[j]
 
 /*
  * The exception currently being thrown.  Used to pass an exception to
@@ -601,6 +606,11 @@ EXTERN int	aucmd_win_used INIT(= FALSE);	/* aucmd_win is being used */
 #ifdef FEAT_TEXT_PROP
 EXTERN win_T    *first_popupwin;		// first global popup window
 EXTERN win_T	*popup_dragwin INIT(= NULL);	// popup window being dragged
+
+// Set to TRUE if there is any visible popup.
+EXTERN int	popup_visible INIT(= FALSE);
+
+EXTERN int	text_prop_frozen INIT(= 0);
 #endif
 
 /*
@@ -1677,9 +1687,4 @@ typedef int HINSTANCE;
 # endif
 EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 EXTERN HINSTANCE g_hinst INIT(= NULL);
-#endif
-
-#ifdef FEAT_TEXT_PROP
-EXTERN int text_prop_frozen INIT(= 0);
-EXTERN int popup_visible INIT(= FALSE);
 #endif

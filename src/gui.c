@@ -2253,6 +2253,8 @@ gui_outstr_nowrap(
     int		col = gui.col;
 #ifdef FEAT_SIGN_ICONS
     int		draw_sign = FALSE;
+    int		signcol;
+    char_u	extra[18];
 # ifdef FEAT_NETBEANS_INTG
     int		multi_sign = FALSE;
 # endif
@@ -2268,17 +2270,29 @@ gui_outstr_nowrap(
 # ifdef FEAT_NETBEANS_INTG
 	  || *s == MULTISIGN_BYTE
 # endif
-    )
+       )
     {
 # ifdef FEAT_NETBEANS_INTG
 	if (*s == MULTISIGN_BYTE)
 	    multi_sign = TRUE;
 # endif
 	/* draw spaces instead */
-	s = (char_u *)"  ";
+	if (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) == 'u' &&
+		(curwin->w_p_nu || curwin->w_p_rnu))
+	{
+	    sprintf((char *)extra, "%*c ", number_width(curwin), ' ');
+	    s = extra;
+	}
+	else
+	    s = (char_u *)"  ";
 	if (len == 1 && col > 0)
 	    --col;
-	len = 2;
+	len = (int)STRLEN(s);
+	if (len > 2)
+	    // right align sign icon in the number column
+	    signcol = col + len - 3;
+	else
+	    signcol = col;
 	draw_sign = TRUE;
 	highlight_mask = 0;
     }
@@ -2604,7 +2618,7 @@ gui_outstr_nowrap(
 #ifdef FEAT_SIGN_ICONS
     if (draw_sign)
 	/* Draw the sign on top of the spaces. */
-	gui_mch_drawsign(gui.row, col, gui.highlight_mask);
+	gui_mch_drawsign(gui.row, signcol, gui.highlight_mask);
 # if defined(FEAT_NETBEANS_INTG) && (defined(FEAT_GUI_X11) \
 	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN))
     if (multi_sign)
@@ -4812,17 +4826,14 @@ gui_focus_change(int in_focus)
 }
 
 /*
- * Called when the mouse moved (but not when dragging).
+ * When mouse moved: apply 'mousefocus'.
+ * Also updates the mouse pointer shape.
  */
-    void
-gui_mouse_moved(int x, int y)
+    static void
+gui_mouse_focus(int x, int y)
 {
     win_T	*wp;
     char_u	st[8];
-
-    /* Ignore this while still starting up. */
-    if (!gui.in_use || gui.starting)
-	return;
 
 #ifdef FEAT_MOUSESHAPE
     /* Get window pointer, and update mouse shape as well. */
@@ -4880,6 +4891,27 @@ gui_mouse_moved(int x, int y)
 	    gtk_main_quit();
 #endif
     }
+}
+
+/*
+ * Called when the mouse moved (but not when dragging).
+ */
+    void
+gui_mouse_moved(int x, int y)
+{
+    // Ignore this while still starting up.
+    if (!gui.in_use || gui.starting)
+	return;
+
+    // apply 'mousefocus' and pointer shape
+    gui_mouse_focus(x, y);
+
+#ifdef FEAT_TEXT_PROP
+    if (popup_visible)
+	// Generate a mouse-moved event, so that the popup can perhaps be
+	// closed, just like in the terminal.
+	gui_send_mouse_event(MOUSE_DRAG, x, y, FALSE, 0);
+#endif
 }
 
 /*

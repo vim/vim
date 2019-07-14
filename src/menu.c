@@ -583,7 +583,7 @@ add_menu_path(
 	    }
 
 	    /* Not already there, so lets add it */
-	    menu = (vimmenu_T *)alloc_clear(sizeof(vimmenu_T));
+	    menu = ALLOC_CLEAR_ONE(vimmenu_T);
 	    if (menu == NULL)
 		goto erret;
 

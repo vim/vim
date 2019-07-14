@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.1.  Last change: 2019 May 12
+*textprop.txt*  For Vim version 8.1.  Last change: 2019 Jun 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -56,7 +56,7 @@ A text property normally has the name of a property type, which defines
 how to highlight the text.  The property type can have these entries:
 	"highlight"	name of the highlight group to use
 	"combine"	when TRUE the text property highlighting is combined
-			with any syntax highligting, when omitted or FALSE the
+			with any syntax highlighting, when omitted or FALSE the
 			text property highlighting replaces the syntax
 			highlighting
 	"priority"	when properties overlap, the one with the highest

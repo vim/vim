@@ -44,13 +44,14 @@ menu.c		| menus
 message.c	| (error) messages
 ops.c		| handling operators ("d", "y", "p")
 option.c	| options
+profiler.c	| vim script profiler
 quickfix.c	| quickfix commands (":make", ":cn")
 regexp.c	| pattern matching
 screen.c	| updating the windows
 search.c	| pattern searching
 sign.c		| signs
 spell.c		| spell checking
-syntax.c	|  syntax and other highlighting
+syntax.c	| syntax and other highlighting
 tag.c		| tags
 term.c		| terminal handling, termcap codes
 undo.c		| undo and redo

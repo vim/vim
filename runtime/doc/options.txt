@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 May 25
+*options.txt*	For Vim version 8.1.  Last change: 2019 Jul 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1142,8 +1142,10 @@ A jump table for the options with a short description can be found at |Q_op|.
     set bexpr=MyBalloonExpr()
     set ballooneval
 <
-	Also see |balloon_show()|, can be used if the content of the balloon
-	is to be fetched asynchronously.
+	Also see |balloon_show()|, it can be used if the content of the balloon
+	is to be fetched asynchronously.  In that case evaluating
+	'balloonexpr' should result in an empty string.  If you get a balloon
+	with only "0" you probably didn't return anything from your function.
 
 	NOTE: The balloon is displayed only if the cursor is on a text
 	character.  If the result of evaluating 'balloonexpr' is not empty,
@@ -1155,7 +1157,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	It is not allowed to change text or jump to another window while
-	evaluating 'balloonexpr' |textlock|.
+	evaluating 'balloonexpr', see |textlock|.
 
 	To check whether line breaks in the balloon text work use this check: >
 		if has("balloon_multiline")
@@ -5385,7 +5387,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	rows in the window, depending on whether 'number' or 'relativenumber'
 	is set. Thus with the Vim default of 4 there is room for a line number
 	up to 999. When the buffer has 1000 lines five columns will be used.
-	The minimum value is 1, the maximum value is 10.
+	The minimum value is 1, the maximum value is 20.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
@@ -6803,6 +6805,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   "auto"   	only when there is a sign to display
 	   "no"	    	never
 	   "yes"    	always
+	   "number"	display signs in the 'number' column. If the number
+			column is not present, then behaves like "auto".
 
 
 			*'smartcase'* *'scs'* *'nosmartcase'* *'noscs'*
@@ -8068,7 +8072,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	already.
 	Additionally, if vim is compiled with the |+termresponse| feature and
 	|t_RV| is set to the escape sequence to request the xterm version
-	number, more intelligent detection process runs.
+	number, more intelligent detection is done.
 	The "xterm2" value will be set if the xterm version is reported to be
 	from 95 to 276.  The "sgr" value will be set if Vim detects Mac
 	Terminal.app, iTerm2 or mintty, and when the xterm version is 277 or

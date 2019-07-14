@@ -30,7 +30,7 @@ int has_completechanged(void);
 void block_autocmds(void);
 void unblock_autocmds(void);
 int is_autocmd_blocked(void);
-char_u *getnextac(int c, void *cookie, int indent);
+char_u *getnextac(int c, void *cookie, int indent, int do_concat);
 int has_autocmd(event_T event, char_u *sfname, buf_T *buf);
 char_u *get_augroup_name(expand_T *xp, int idx);
 char_u *set_context_in_autocmd(expand_T *xp, char_u *arg, int doautocmd);

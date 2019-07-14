@@ -992,8 +992,6 @@ pum_position_at_mouse(int min_width)
 # if defined(FEAT_BEVAL_TERM) || defined(PROTO)
 static pumitem_T *balloon_array = NULL;
 static int balloon_arraysize;
-static int balloon_mouse_row = 0;
-static int balloon_mouse_col = 0;
 
 #define BALLOON_MIN_WIDTH 50
 #define BALLOON_MIN_HEIGHT 10
@@ -1209,8 +1207,9 @@ ui_post_balloon(char_u *mesg, list_T *list)
     void
 ui_may_remove_balloon(void)
 {
-    if (mouse_row != balloon_mouse_row || mouse_col != balloon_mouse_col)
-	ui_remove_balloon();
+    // For now: remove the balloon whenever the mouse moves to another screen
+    // cell.
+    ui_remove_balloon();
 }
 # endif
 

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jun 10
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jul 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -58,7 +58,9 @@ List		An ordered sequence of items, see |List| for details.
 
 Dictionary	An associative, unordered array: Each entry has a key and a
 		value. |Dictionary|
-		Example: {'blue': "#0000ff", 'red': "#ff0000"}
+		Examples:
+			{'blue': "#0000ff", 'red': "#ff0000"}
+			*{blue: "#0000ff", red: "#ff0000"}
 
 Funcref		A reference to a function |Funcref|.
 		Example: function("strlen")
@@ -477,8 +479,14 @@ only appear once.  Examples: >
 A key is always a String.  You can use a Number, it will be converted to a
 String automatically.  Thus the String '4' and the number 4 will find the same
 entry.  Note that the String '04' and the Number 04 are different, since the
-Number will be converted to the String '4'.  The empty string can be used as a
-key.
+Number will be converted to the String '4'.  The empty string can also be used
+as a key.
+						*literal-Dict*
+To avoid having to put quotes around every key the *{} form can be used.  This
+does require the key to consist only of ASCII letters, digits, '-' and '_'.
+Example: >
+	let mydict = *{zero: 0, one_key: 1, two-key: 2, 333: 3}
+Note that 333 here is the string "333".  Empty keys are not possible here.
 
 A value can be any expression.  Using a Dictionary for a value creates a
 nested Dictionary: >
@@ -2183,7 +2191,7 @@ v:val		Value of the current item of a |List| or |Dictionary|.  Only
 
 					*v:version* *version-variable*
 v:version	Version number of Vim: Major version number times 100 plus
-		minor version number.  Version 5.0 is 500.  Version 5.1 (5.01)
+		minor version number.  Version 5.0 is 500.  Version 5.1
 		is 501.  Read-only.  "version" also works, for backwards
 		compatibility, unless |scriptversion| is 3 or higher.
 		Use |has()| to check if a certain patch was included, e.g.: >
@@ -2193,10 +2201,10 @@ v:version	Version number of Vim: Major version number times 100 plus
 		completely different.
 
 					*v:versionlong* *versionlong-variable*
-v:versionlong	Like v:version, but also including the patchlevel.  Version
-		8.1 with patch 1234 has value 8011234.  This can be used like
-		this: >
-			if v:versionlong >= 8011234
+v:versionlong	Like v:version, but also including the patchlevel in the last
+		four digits.  Version 8.1 with patch 123 has value 8010123.
+		This can be used like this: >
+			if v:versionlong >= 8010123
 <		However, if there are gaps in the list of patches included
 		this will not work well.  This can happen if a recent patch
 		was included into an older version, e.g. for a security fix.
@@ -2272,8 +2280,10 @@ balloon_split({msg})		List	split {msg} as used for a balloon
 browse({save}, {title}, {initdir}, {default})
 				String	put up a file requester
 browsedir({title}, {initdir})	String	put up a directory requester
+bufadd({name})			Number	add a buffer to the buffer list
 bufexists({expr})		Number	|TRUE| if buffer {expr} exists
 buflisted({expr})		Number	|TRUE| if buffer {expr} is listed
+bufload({expr})			Number	load buffer {expr} if not loaded yet
 bufloaded({expr})		Number	|TRUE| if buffer {expr} is loaded
 bufname({expr})			String	Name of the buffer {expr}
 bufnr({expr} [, {create}])	Number	Number of the buffer {expr}
@@ -2532,6 +2542,25 @@ nr2char({expr} [, {utf8}])	String	single char with ASCII/UTF8 value {expr}
 or({expr}, {expr})		Number	bitwise OR
 pathshorten({expr})		String	shorten directory names in a path
 perleval({expr})		any	evaluate |Perl| expression
+popup_atcursor({what}, {options}) Number create popup window near the cursor
+popup_beval({what}, {options}) 	Number 	create popup window for 'ballooneval'
+popup_clear()			none	close all popup windows
+popup_close({id} [, {result}])	none	close popup window {id}
+popup_create({what}, {options}) Number	create a popup window
+popup_dialog({what}, {options}) Number	create a popup window used as a dialog
+popup_filter_menu({id}, {key})  Number	filter for a menu popup window
+popup_filter_yesno({id}, {key}) Number	filter for a dialog popup window
+popup_getoptions({id})		Dict	get options of popup window {id}
+popup_getpos({id})		Dict	get position of popup window {id}
+popup_hide({id})		none	hide popup menu {id}
+popup_menu({what}, {options})	Number	create a popup window used as a menu
+popup_move({id}, {options})	none	set position of popup window {id}
+popup_notification({what}, {options})
+				Number	create a notification popup window
+popup_show({id})		none	unhide popup window {id}
+popup_setoptions({id}, {options})
+				none	set options for popup window {id}
+popup_settext({id}, {text})	none	set the text of popup window {id}
 pow({x}, {y})			Float	{x} to the power of {y}
 prevnonblank({lnum})		Number	line nr of non-blank line <= {lnum}
 printf({fmt}, {expr1}...)	String	format text
@@ -2593,6 +2622,7 @@ screenattr({row}, {col})	Number	attribute at screen position
 screenchar({row}, {col})	Number	character at screen position
 screenchars({row}, {col})	List	List of characters at screen position
 screencol()			Number	current cursor column
+screenpos({winid}, {lnum}, {col}) Dict	screen row and col of a text character
 screenrow()			Number	current cursor row
 screenstring({row}, {col})	String	characters at screen position
 search({pattern} [, {flags} [, {stopline} [, {timeout}]]])
@@ -2638,6 +2668,7 @@ shellescape({string} [, {special}])
 					command argument
 shiftwidth([{col}])		Number	effective value of 'shiftwidth'
 sign_define({name} [, {dict}])	Number	define or update a sign
+sign_define({list})		List	define or update a list of signs
 sign_getdefined([{name}])	List	get a list of defined signs
 sign_getplaced([{expr} [, {dict}]])
 				List	get a list of placed signs
@@ -2645,9 +2676,12 @@ sign_jump({id}, {group}, {expr})
 				Number	jump to a sign
 sign_place({id}, {group}, {name}, {expr} [, {dict}])
 				Number	place a sign
+sign_placelist({list})		List	place a list of signs
 sign_undefine([{name}])		Number	undefine a sign
+sign_undefine({list})		List	undefine a list of signs
 sign_unplace({group} [, {dict}])
 				Number	unplace a sign
+sign_unplacelist({list})	List	unplace a list of signs
 simplify({filename})		String	simplify filename as much as possible
 sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
@@ -2741,6 +2775,7 @@ test_alloc_fail({id}, {countdown}, {repeat})
 test_autochdir()		none	enable 'autochdir' during startup
 test_feedinput({string})	none	add key sequence to input buffer
 test_garbagecollect_now()	none	free memory right now for testing
+test_garbagecollect_soon()	none	free memory soon for testing
 test_getvalue({string})		any	get value of an internal variable
 test_ignore_error({expr})	none	ignore a specific error
 test_null_blob()		Blob	null value for testing
@@ -3131,6 +3166,18 @@ browsedir({title}, {initdir})
 		When the "Cancel" button is hit, something went wrong, or
 		browsing is not possible, an empty string is returned.
 
+bufadd({name})						*bufadd()*
+		Add a buffer to the buffer list with {name}.
+		If a buffer for file {name} already exists, return that buffer
+		number.  Otherwise return the buffer number of the newly
+		created buffer.  When {name} is an empty string then a new
+		buffer is always created.
+		The buffer will not have' 'buflisted' set and not be loaded
+		yet.  To add some text to the buffer use this: >
+			let bufnr = bufadd('someName')
+			call bufload(bufnr)
+			call setbufline(bufnr, 1, ['some', 'text'])
+
 bufexists({expr})					*bufexists()*
 		The result is a Number, which is |TRUE| if a buffer called
 		{expr} exists.
@@ -3158,6 +3205,15 @@ bufexists({expr})					*bufexists()*
 buflisted({expr})					*buflisted()*
 		The result is a Number, which is |TRUE| if a buffer called
 		{expr} exists and is listed (has the 'buflisted' option set).
+		The {expr} argument is used like with |bufexists()|.
+
+bufload({expr})						*bufload()*
+		Ensure the buffer {expr} is loaded.  When the buffer name
+		refers to an existing file then the file is read.  Otherwise
+		the buffer will be empty.  If the buffer was already loaded
+		then there is no change.
+		If there is an existing swap file for the file of the buffer,
+		there will be no dialog, the buffer will be loaded anyway.
 		The {expr} argument is used like with |bufexists()|.
 
 bufloaded({expr})					*bufloaded()*
@@ -4724,6 +4780,8 @@ getbufinfo([{dict}])
 					buffer-local variables.
 			windows		list of |window-ID|s that display this
 					buffer
+			popups		list of popup |window-ID|s that
+					display this buffer
 
 		Examples: >
 			for buf in getbufinfo()
@@ -6448,6 +6506,8 @@ listener_flush([{buf}])					*listener_flush()*
 
 listener_remove({id})					*listener_remove()*
 		Remove a listener previously added with listener_add().
+		Returns zero when {id} could not be found, one when {id} was
+		removed.
 
 localtime()						*localtime()*
 		Return the current time, measured as seconds since 1st Jan
@@ -7008,6 +7068,10 @@ perleval({expr})					*perleval()*
 			:echo perleval('[1 .. 4]')
 <			[1, 2, 3, 4]
 		{only available when compiled with the |+perl| feature}
+
+
+popup_ functions are documented here: |popup-functions|.
+
 
 pow({x}, {y})						*pow()*
 		Return the power of {x} to the exponent {y} as a |Float|.
@@ -7859,6 +7923,23 @@ screencol()							*screencol()*
 			nnoremap <expr> GG ":echom ".screencol()."\n"
 			nnoremap <silent> GG :echom screencol()<CR>
 <
+screenpos({winid}, {lnum}, {col})				*screenpos()*
+		The result is a Dict with the screen position of the text
+		character in window {winid} at buffer line {lnum} and column
+		{col}.  {col} is a one-based byte index.
+		The Dict has these members:
+			row	screen row
+			col	first screen column
+			endcol	last screen column
+			curscol	cursor screen column
+		If the specified position is not visible, all values are zero.
+		The "endcol" value differs from "col" when the character
+		occupies more than one screen cell.  E.g. for a Tab "col" can
+		be 1 and "endcol" can be 8.
+		The "curscol" value is where the cursor would be placed.  For
+		a Tab it would be the same as "endcol", while for a double
+		width character it would be the same as "col".
+
 screenrow()							*screenrow()*
 		The result is a Number, which is the current screen row of the
 		cursor.  The top line has number one.
@@ -8123,10 +8204,10 @@ setbufline({expr}, {lnum}, {text})			*setbufline()*
 
 		{lnum} is used like with |setline()|.
 		This works like |setline()| for the specified buffer.
-		On success 0 is returned, on failure 1 is returned.
 
-		If {expr} is not a valid buffer or {lnum} is not valid, an
-		error message is given.
+		When {expr} is not a valid buffer, the buffer is not loaded or
+		{lnum} is not valid then 1 is returned.  On success 0 is
+		returned.
 
 setbufvar({expr}, {varname}, {val})			*setbufvar()*
 		Set option or local variable {varname} in buffer {expr} to
@@ -8557,6 +8638,7 @@ shiftwidth([{col}])						*shiftwidth()*
 		no {col} argument is given, column 1 will be assumed.
 
 sign_define({name} [, {dict}])				*sign_define()*
+sign_define({list})
 		Define a new sign named {name} or modify the attributes of an
 		existing sign.  This is similar to the |:sign-define| command.
 
@@ -8576,11 +8658,25 @@ sign_define({name} [, {dict}])				*sign_define()*
 		If the sign named {name} already exists, then the attributes
 		of the sign are updated.
 
-		Returns 0 on success and -1 on failure.
+		The one argument {list} can be used to define a list of signs.
+		Each list item is a dictionary with the above items in {dict}
+		and a 'name' item for the sign name.
+
+		Returns 0 on success and -1 on failure.  When the one argument
+		{list} is used, then returns a List of values one for each
+		defined sign.
 
 		Examples: >
-			call sign_define("mySign", {"text" : "=>", "texthl" :
-					\ "Error", "linehl" : "Search"})
+			call sign_define("mySign", {
+				\ "text" : "=>",
+				\ "texthl" : "Error",
+				\ "linehl" : "Search"})
+			call sign_define([
+				\ {'name' : 'sign1',
+				\  'text' : '=>'},
+				\ {'name' : 'sign2',
+				\  'text' : '!!'}
+				\ ])
 <
 sign_getdefined([{name}])				*sign_getdefined()*
 		Get a list of defined signs and their attributes.
@@ -8687,9 +8783,9 @@ sign_jump({id}, {group}, {expr})
 <
 							*sign_place()*
 sign_place({id}, {group}, {name}, {expr} [, {dict}])
-		Place the sign defined as {name} at line {lnum} in file {expr}
-		and assign {id} and {group} to sign.  This is similar to the
-		|:sign-place| command.
+		Place the sign defined as {name} at line {lnum} in file or
+		buffer {expr} and assign {id} and {group} to sign.  This is
+		similar to the |:sign-place| command.
 
 		If the sign identifier {id} is zero, then a new identifier is
 		allocated.  Otherwise the specified number is used. {group} is
@@ -8703,9 +8799,9 @@ sign_place({id}, {group}, {name}, {expr} [, {dict}])
 		values, see |bufname()|.
 
 		The optional {dict} argument supports the following entries:
-			lnum		line number in the buffer {expr} where
-					the sign is to be placed. For the
-					accepted values, see |line()|.
+			lnum		line number in the file or buffer
+					{expr} where the sign is to be placed.
+					For the accepted values, see |line()|.
 			priority	priority of the sign. See
 					|sign-priority| for more information.
 
@@ -8734,16 +8830,84 @@ sign_place({id}, {group}, {name}, {expr} [, {dict}])
 			call sign_place(10, 'g3', 'sign4', 'json.c',
 					\ {'lnum' : 40, 'priority' : 90})
 <
+							*sign_placelist()*
+sign_placelist({list})
+		Place one or more signs.  This is similar to the
+		|sign_place()| function.  The {list} argument specifies the
+		List of signs to place. Each list item is a dict with the
+		following sign attributes:
+		    buffer	buffer name or number. For the accepted
+				values, see |bufname()|.
+		    group	sign group. {group} functions as a namespace
+				for {id}, thus two groups can use the same
+				IDs. If not specified or set to an empty
+				string, then the global group is used.   See
+				|sign-group| for more information.
+		    id		sign identifier. If not specified or zero,
+				then a new unique identifier is allocated.
+				Otherwise the specified number is used. See
+				|sign-identifier| for more information.
+		    lnum	line number in the buffer {expr} where the
+				sign is to be placed. For the accepted values,
+				see |line()|.
+		    name	name of the sign to place. See |sign_define()|
+		    		for more information.
+		    priority	priority of the sign. When multiple signs are
+				placed on a line, the sign with the highest
+				priority is used. If not specified, the
+				default value of 10 is used. See
+				|sign-priority| for more information.
+
+		If {id} refers to an existing sign, then the existing sign is
+		modified to use the specified {name} and/or {priority}.
+
+		Returns a List of sign identifiers. If failed to place a
+		sign, the corresponding list item is set to -1.
+
+		Examples: >
+			" Place sign s1 with id 5 at line 20 and id 10 at line
+			" 30 in buffer a.c
+			let [n1, n2] = sign_place([
+				\ {'id' : 5,
+				\  'name' : 's1',
+				\  'buffer' : 'a.c',
+				\  'lnum' : 20},
+				\ {'id' : 10,
+				\  'name' : 's1',
+				\  'buffer' : 'a.c',
+				\  'lnum' : 30}
+				\ ])
+
+			" Place sign s1 in buffer a.c at line 40 and 50
+			" with auto-generated identifiers
+			let [n1, n2] = sign_place([
+				\ {'name' : 's1',
+				\  'buffer' : 'a.c',
+				\  'lnum' : 40},
+				\ {'name' : 's1',
+				\  'buffer' : 'a.c',
+				\  'lnum' : 50}
+				\ ])
+<
 sign_undefine([{name}])					*sign_undefine()*
+sign_undefine({list})
 		Deletes a previously defined sign {name}. This is similar to
 		the |:sign-undefine| command. If {name} is not supplied, then
 		deletes all the defined signs.
 
-		Returns 0 on success and -1 on failure.
+		The one argument {list} can be used to undefine a list of
+		signs. Each list item is the name of a sign.
+
+		Returns 0 on success and -1 on failure.  For the one argument
+		{list} call, returns a list of values one for each undefined
+		sign.
 
 		Examples: >
 			" Delete a sign named mySign
 			call sign_undefine("mySign")
+
+			" Delete signs 'sign1' and 'sign2'
+			call sign_undefine(["sign1", "sign2"])
 
 			" Delete all the signs
 			call sign_undefine()
@@ -8789,6 +8953,32 @@ sign_unplace({group} [, {dict}])			*sign_unplace()*
 
 			" Remove all the placed signs from all the buffers
 			call sign_unplace('*')
+<
+sign_unplacelist({list})				*sign_unplacelist()*
+		Remove previously placed signs from one or more buffers.  This
+		is similar to the |sign_unplace()| function.
+
+		The {list} argument specifies the List of signs to remove.
+		Each list item is a dict with the following sign attributes:
+		    buffer	buffer name or number. For the accepted
+				values, see |bufname()|. If not specified,
+				then the specified sign is removed from all
+				the buffers.
+		    group	sign group name. If not specified or set to an
+				empty string, then the global sign group is
+				used. If set to '*', then all the groups
+				including the global group are used.
+		    id		sign identifier. If not specified, then all
+				the signs in the specified group are removed.
+
+		Returns a List where an entry is set to 0 if the corresponding
+		sign was successfully removed or -1 on failure.
+
+		Example: >
+			" Remove sign with id 10 from buffer a.vim and sign
+			" with id 20 from buffer b.vim
+			call sign_unplace([{'id' : 10, 'buffer' : "a.vim"},
+					\ {'id' : 20, 'buffer' : 'b.vim'}])
 <
 simplify({filename})					*simplify()*
 		Simplify the file name as much as possible without changing
@@ -8884,7 +9074,7 @@ sort({list} [, {func} [, {dict}]])			*sort()* *E702*
 <
 sound_clear()						*sound_clear()*
 		Stop playing all sounds.
-		{only available when compiled with the +sound feature}
+		{only available when compiled with the |+sound| feature}
 
 							*sound_playevent()*
 sound_playevent({name} [, {callback}])
@@ -8893,20 +9083,25 @@ sound_playevent({name} [, {callback}])
 		are used.  On Ubuntu they may be found in
 		/usr/share/sounds/freedesktop/stereo.  Example: >
 			call sound_playevent('bell')
+<		On MS-Windows, {name} can be SystemAsterisk, SystemDefault,
+		SystemExclamation, SystemExit, SystemHand, SystemQuestion,
+		SystemStart, SystemWelcome, etc.
 
-<		When {callback} is specified it is invoked when the sound is
+		When {callback} is specified it is invoked when the sound is
 		finished.  The first argument is the sound ID, the second
 		argument is the status:
 			0	sound was played to the end
 			1	sound was interrupted
-			2	error occured after sound started
+			2	error occurred after sound started
 		Example: >
 		   func Callback(id, status)
 		     echomsg "sound " .. a:id .. " finished with " .. a:status
 		   endfunc
 		   call sound_playevent('bell', 'Callback')
 
-<		Returns the sound ID, which can be passed to `sound_stop()`.
+<		MS-Windows: {callback} doesn't work for this function.
+
+		Returns the sound ID, which can be passed to `sound_stop()`.
 		Returns zero if the sound could not be played.
 		{only available when compiled with the |+sound| feature}
 
@@ -8922,6 +9117,10 @@ sound_playfile({path} [, {callback}])
 sound_stop({id})					*sound_stop()*
 		Stop playing sound {id}.  {id} must be previously returned by
 		`sound_playevent()` or `sound_playfile()`.
+
+		On MS-Windows, this does not work for event sound started by
+		`sound_playevent()`. To stop event sounds, use `sound_clear()`.
+
 		{only available when compiled with the |+sound| feature}
 
 							*soundfold()*
@@ -9621,364 +9820,7 @@ tempname()					*tempname()* *temp-file-name*
 		For MS-Windows forward slashes are used when the 'shellslash'
 		option is set or when 'shellcmdflag' starts with '-'.
 
-							*term_dumpdiff()*
-term_dumpdiff({filename}, {filename} [, {options}])
-		Open a new window displaying the difference between the two
-		files.  The files must have been created with
-		|term_dumpwrite()|.
-		Returns the buffer number or zero when the diff fails.
-		Also see |terminal-diff|.
-		NOTE: this does not work with double-width characters yet.
-
-		The top part of the buffer contains the contents of the first
-		file, the bottom part of the buffer contains the contents of
-		the second file.  The middle part shows the differences.
-		The parts are separated by a line of equals.
-
-		If the {options} argument is present, it must be a Dict with
-		these possible members:
-		   "term_name"	     name to use for the buffer name, instead
-				     of the first file name.
-		   "term_rows"	     vertical size to use for the terminal,
-				     instead of using 'termwinsize'
-		   "term_cols"	     horizontal size to use for the terminal,
-				     instead of using 'termwinsize'
-		   "vertical"	     split the window vertically
-		   "curwin"	     use the current window, do not split the
-				     window; fails if the current buffer
-				     cannot be |abandon|ed
-		   "bufnr"	     do not create a new buffer, use the
-				     existing buffer "bufnr".  This buffer
-				     must have been previously created with
-				     term_dumpdiff() or term_dumpload() and
-				     visible in a window.
-		   "norestore"	     do not add the terminal window to a
-				     session file
-
-		Each character in the middle part indicates a difference. If
-		there are multiple differences only the first in this list is
-		used:
-			X	different character
-			w	different width
-			f	different foreground color
-			b	different background color
-			a	different attribute
-			+	missing position in first file
-			-	missing position in second file
-
-		Using the "s" key the top and bottom parts are swapped.  This
-		makes it easy to spot a difference.
-
-							*term_dumpload()*
-term_dumpload({filename} [, {options}])
-		Open a new window displaying the contents of {filename}
-		The file must have been created with |term_dumpwrite()|.
-		Returns the buffer number or zero when it fails.
-		Also see |terminal-diff|.
-
-		For {options} see |term_dumpdiff()|.
-
-							*term_dumpwrite()*
-term_dumpwrite({buf}, {filename} [, {options}])
-		Dump the contents of the terminal screen of {buf} in the file
-		{filename}.  This uses a format that can be used with
-		|term_dumpload()| and |term_dumpdiff()|.
-		If the job in the terminal already finished an error is given:
-		*E958*
-		If {filename} already exists an error is given:	*E953*
-		Also see |terminal-diff|.
-
-		{options} is a dictionary with these optional entries:
-			"rows"		maximum number of rows to dump
-			"columns"	maximum number of columns to dump
-
-term_getaltscreen({buf})				*term_getaltscreen()*
-		Returns 1 if the terminal of {buf} is using the alternate
-		screen.
-		{buf} is used as with |term_getsize()|.
-		{only available when compiled with the |+terminal| feature}
-
-term_getansicolors({buf})				*term_getansicolors()*
-		Get the ANSI color palette in use by terminal {buf}.
-		Returns a List of length 16 where each element is a String
-		representing a color in hexadecimal "#rrggbb" format.
-		Also see |term_setansicolors()| and |g:terminal_ansi_colors|.
-		If neither was used returns the default colors.
-
-		{buf} is used as with |term_getsize()|.  If the buffer does not
-		exist or is not a terminal window, an empty list is returned.
-		{only available when compiled with the |+terminal| feature and
-		with GUI enabled and/or the |+termguicolors| feature}
-
-term_getattr({attr}, {what})				*term_getattr()*
-		Given {attr}, a value returned by term_scrape() in the "attr"
-		item, return whether {what} is on.  {what} can be one of:
-			bold
-			italic
-			underline
-			strike
-			reverse
-		{only available when compiled with the |+terminal| feature}
-
-term_getcursor({buf})					*term_getcursor()*
-		Get the cursor position of terminal {buf}. Returns a list with
-		two numbers and a dictionary: [row, col, dict].
-
-		"row" and "col" are one based, the first screen cell is row
-		1, column 1.  This is the cursor position of the terminal
-		itself, not of the Vim window.
-
-		"dict" can have these members:
-		   "visible"	one when the cursor is visible, zero when it
-				is hidden.
-		   "blink"	one when the cursor is blinking, zero when it
-				is not blinking.
-		   "shape"	1 for a block cursor, 2 for underline and 3
-				for a vertical bar.
-		   "color"	color of the cursor, e.g. "green"
-
-		{buf} must be the buffer number of a terminal window. If the
-		buffer does not exist or is not a terminal window, an empty
-		list is returned.
-		{only available when compiled with the |+terminal| feature}
-
-term_getjob({buf})					*term_getjob()*
-		Get the Job associated with terminal window {buf}.
-		{buf} is used as with |term_getsize()|.
-		Returns |v:null| when there is no job.
-		{only available when compiled with the |+terminal| feature}
-
-term_getline({buf}, {row})				*term_getline()*
-		Get a line of text from the terminal window of {buf}.
-		{buf} is used as with |term_getsize()|.
-
-		The first line has {row} one.  When {row} is "." the cursor
-		line is used.  When {row} is invalid an empty string is
-		returned.
-
-		To get attributes of each character use |term_scrape()|.
-		{only available when compiled with the |+terminal| feature}
-
-term_getscrolled({buf})					*term_getscrolled()*
-		Return the number of lines that scrolled to above the top of
-		terminal {buf}.  This is the offset between the row number
-		used for |term_getline()| and |getline()|, so that: >
-			term_getline(buf, N)
-<		is equal to: >
-			getline(N + term_getscrolled(buf))
-<		(if that line exists).
-
-		{buf} is used as with |term_getsize()|.
-		{only available when compiled with the |+terminal| feature}
-
-term_getsize({buf})					*term_getsize()*
-		Get the size of terminal {buf}. Returns a list with two
-		numbers: [rows, cols].  This is the size of the terminal, not
-		the window containing the terminal.
-
-		{buf} must be the buffer number of a terminal window.  Use an
-		empty string for the current buffer.  If the buffer does not
-		exist or is not a terminal window, an empty list is returned.
-		{only available when compiled with the |+terminal| feature}
-
-term_getstatus({buf})					*term_getstatus()*
-		Get the status of terminal {buf}. This returns a comma
-		separated list of these items:
-			running		job is running
-			finished	job has finished
-			normal		in Terminal-Normal mode
-		One of "running" or "finished" is always present.
-
-		{buf} must be the buffer number of a terminal window. If the
-		buffer does not exist or is not a terminal window, an empty
-		string is returned.
-		{only available when compiled with the |+terminal| feature}
-
-term_gettitle({buf})					*term_gettitle()*
-		Get the title of terminal {buf}. This is the title that the
-		job in the terminal has set.
-
-		{buf} must be the buffer number of a terminal window. If the
-		buffer does not exist or is not a terminal window, an empty
-		string is returned.
-		{only available when compiled with the |+terminal| feature}
-
-term_gettty({buf} [, {input}])				*term_gettty()*
-		Get the name of the controlling terminal associated with
-		terminal window {buf}.  {buf} is used as with |term_getsize()|.
-
-		When {input} is omitted or 0, return the name for writing
-		(stdout). When {input} is 1 return the name for reading
-		(stdin). On UNIX, both return same name.
-		{only available when compiled with the |+terminal| feature}
-
-term_list()						*term_list()*
-		Return a list with the buffer numbers of all buffers for
-		terminal windows.
-		{only available when compiled with the |+terminal| feature}
-
-term_scrape({buf}, {row})				*term_scrape()*
-		Get the contents of {row} of terminal screen of {buf}.
-		For {buf} see |term_getsize()|.
-
-		The first line has {row} one.  When {row} is "." the cursor
-		line is used.  When {row} is invalid an empty string is
-		returned.
-
-		Return a List containing a Dict for each screen cell:
-		    "chars"	character(s) at the cell
-		    "fg"	foreground color as #rrggbb
-		    "bg"	background color as #rrggbb
-		    "attr"	attributes of the cell, use |term_getattr()|
-				to get the individual flags
-		    "width"	cell width: 1 or 2
-		{only available when compiled with the |+terminal| feature}
-
-term_sendkeys({buf}, {keys})				*term_sendkeys()*
-		Send keystrokes {keys} to terminal {buf}.
-		{buf} is used as with |term_getsize()|.
-
-		{keys} are translated as key sequences. For example, "\<c-x>"
-		means the character CTRL-X.
-		{only available when compiled with the |+terminal| feature}
-
-term_setansicolors({buf}, {colors})			*term_setansicolors()*
-		Set the ANSI color palette used by terminal {buf}.
-		{colors} must be a List of 16 valid color names or hexadecimal
-		color codes, like those accepted by |highlight-guifg|.
-		Also see |term_getansicolors()| and |g:terminal_ansi_colors|.
-
-		The colors normally are:
-			0    black
-			1    dark red
-			2    dark green
-			3    brown
-			4    dark blue
-			5    dark magenta
-			6    dark cyan
-			7    light grey
-			8    dark grey
-			9    red
-			10   green
-			11   yellow
-			12   blue
-			13   magenta
-			14   cyan
-			15   white
-
-		These colors are used in the GUI and in the terminal when
-		'termguicolors' is set.  When not using GUI colors (GUI mode
-		or 'termguicolors'), the terminal window always uses the 16
-		ANSI colors of the underlying terminal.
-		{only available when compiled with the |+terminal| feature and
-		with GUI enabled and/or the |+termguicolors| feature}
-
-term_setkill({buf}, {how})				*term_setkill()*
-		When exiting Vim or trying to close the terminal window in
-		another way, {how} defines whether the job in the terminal can
-		be stopped.
-		When {how} is empty (the default), the job will not be
-		stopped, trying to exit will result in |E947|.
-		Otherwise, {how} specifies what signal to send to the job.
-		See |job_stop()| for the values.
-
-		After sending the signal Vim will wait for up to a second to
-		check that the job actually stopped.
-
-term_setrestore({buf}, {command})			*term_setrestore()*
-		Set the command to write in a session file to restore the job
-		in this terminal.  The line written in the session file is: >
-			terminal ++curwin ++cols=%d ++rows=%d {command}
-<		Make sure to escape the command properly.
-
-		Use an empty {command} to run 'shell'.
-		Use "NONE" to not restore this window.
-		{only available when compiled with the |+terminal| feature}
-
-term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
-		Set the size of terminal {buf}. The size of the window
-		containing the terminal will also be adjusted, if possible.
-		If {rows} or {cols} is zero or negative, that dimension is not
-		changed.
-
-		{buf} must be the buffer number of a terminal window.  Use an
-		empty string for the current buffer.  If the buffer does not
-		exist or is not a terminal window, an error is given.
-		{only available when compiled with the |+terminal| feature}
-
-term_start({cmd} [, {options}])			*term_start()*
-		Open a terminal window and run {cmd} in it.
-
-		{cmd} can be a string or a List, like with |job_start()|. The
-		string "NONE" can be used to open a terminal window without
-		starting a job, the pty of the terminal can be used by a
-		command like gdb.
-
-		Returns the buffer number of the terminal window.  If {cmd}
-		cannot be executed the window does open and shows an error
-		message.
-		If opening the window fails zero is returned.
-
-		{options} are similar to what is used for |job_start()|, see
-		|job-options|.  However, not all options can be used.  These
-		are supported:
-		   all timeout options
-		   "stoponexit", "cwd", "env"
-		   "callback", "out_cb", "err_cb", "exit_cb", "close_cb"
-		   "in_io", "in_top", "in_bot", "in_name", "in_buf"
-		   "out_io", "out_name", "out_buf", "out_modifiable", "out_msg"
-		   "err_io", "err_name", "err_buf", "err_modifiable", "err_msg"
-		However, at least one of stdin, stdout or stderr must be
-		connected to the terminal.  When I/O is connected to the
-		terminal then the callback function for that part is not used.
-
-		There are extra options:
-		   "term_name"	     name to use for the buffer name, instead
-				     of the command name.
-		   "term_rows"	     vertical size to use for the terminal,
-				     instead of using 'termwinsize'
-		   "term_cols"	     horizontal size to use for the terminal,
-				     instead of using 'termwinsize'
-		   "vertical"	     split the window vertically; note that
-				     other window position can be defined with
-				     command modifiers, such as |:belowright|.
-		   "curwin"	     use the current window, do not split the
-				     window; fails if the current buffer
-				     cannot be |abandon|ed
-		   "hidden"	     do not open a window
-		   "norestore"	     do not add the terminal window to a
-				     session file
-		   "term_kill"	     what to do when trying to close the
-				     terminal window, see |term_setkill()|
-		   "term_finish"     What to do when the job is finished:
-					"close": close any windows
-					"open": open window if needed
-				     Note that "open" can be interruptive.
-				     See |term++close| and |term++open|.
-		   "term_opencmd"    command to use for opening the window when
-				     "open" is used for "term_finish"; must
-				     have "%d" where the buffer number goes,
-				     e.g. "10split|buffer %d"; when not
-				     specified "botright sbuf %d" is used
-		   "eof_chars"	     Text to send after all buffer lines were
-				     written to the terminal.  When not set
-				     CTRL-D is used on MS-Windows. For Python
-				     use CTRL-Z or "exit()". For a shell use
-				     "exit".  A CR is always added.
-		   "ansi_colors"     A list of 16 color names or hex codes
-				     defining the ANSI palette used in GUI
-				     color modes.  See |g:terminal_ansi_colors|.
-		   "tty_type"	     (MS-Windows only): Specify which pty to
-				     use.  See 'termwintype' for the values.
-
-		{only available when compiled with the |+terminal| feature}
-
-term_wait({buf} [, {time}])					*term_wait()*
-		Wait for pending updates of {buf} to be handled.
-		{buf} is used as with |term_getsize()|.
-		{time} is how long to wait for updates to arrive in msec.  If
-		not set then 10 msec will be used.
-		{only available when compiled with the |+terminal| feature}
+term_ functions are documented here: |terminal-function-details|
 
 test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
 		This is for testing: If the memory allocation with {id} is
@@ -10000,6 +9842,10 @@ test_garbagecollect_now()			 *test_garbagecollect_now()*
 		only be called directly to avoid any structure to exist
 		internally, and |v:testing| must have been set before calling
 		any function.
+
+test_garbagecollect_soon()			 *test_garbagecollect_soon()*
+		Set the flag to call the garbagecollector as if in the main
+		loop.  Only to be used in tests.
 
 test_getvalue({name})					*test_getvalue()*
 		Get the value of an internal variable.  These values for
@@ -10064,6 +9910,8 @@ test_override({name}, {val})				*test_override()*
 			     fallback to the old engine
 		no_query_mouse  do not query the mouse position for "dec"
 				terminals
+		no_wait_return	set the "no_wait_return" flag.  Not restored
+				with "ALL".
 		ALL	     clear all overrides ({val} is not used)
 
 		"starting" is to be used when a test should behave like
@@ -10192,8 +10040,8 @@ timer_stop({timer})					*timer_stop()*
 
 timer_stopall()						*timer_stopall()*
 		Stop all timers.  The timer callbacks will no longer be
-		invoked.  Useful if some timers is misbehaving.  If there are
-		no timers there is no error.
+		invoked.  Useful if a timer is misbehaving.  If there are no
+		timers there is no error.
 
 		{only available when compiled with the |+timers| feature}
 
@@ -11550,13 +11398,24 @@ text...
 			If {marker} is not supplied, then "." is used as the
 			default marker.
 
-			Any white space characters in the lines of text are
-			preserved.  If "trim" is specified before {marker},
-			then all the leading indentation exactly matching the
-			leading indentation before `let` is stripped from the
-			input lines and the line containing {marker}.  Note
-			that the difference between space and tab matters
-			here.
+			Without "trim" any white space characters in the lines
+			of text are preserved.  If "trim" is specified before
+			{marker}, then indentation is stripped so you can do: >
+				let text =<< trim END
+				   if ok
+				     echo 'done'
+				   endif
+				END
+<			Results in: ["if ok", "  echo 'done'", "endif"]
+			The marker must line up with "let" and the indentation
+			of the first line is removed from all the text lines.
+			Specifically: all the leading indentation exactly
+			matching the leading indentation of the first
+			non-empty text line is stripped from the input lines.
+			All leading indentation exactly matching the leading
+			indentation before `let` is stripped from the line
+			containing {marker}.  Note that the difference between
+			space and tab matters here.
 
 			If {var-name} didn't exist yet, it is created.
 			Cannot be followed by another command, but can be
@@ -11591,7 +11450,6 @@ text...
 			    <nothing>	String
 				#	Number
 				*	Funcref
-
 
 :unl[et][!] {name} ...				*:unlet* *:unl* *E108* *E795*
 			Remove the internal variable {name}.  Several variable
@@ -11637,7 +11495,7 @@ text...
 <			This is useful if you want to make sure the variable
 			is not modified.
 							*E995*
-			|:const| does not allow to for changing a variable. >
+			|:const| does not allow to for changing a variable: >
 				:let x = 1
 				:const x = 2  " Error!
 <							*E996*

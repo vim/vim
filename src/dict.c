@@ -28,7 +28,7 @@ dict_alloc(void)
 {
     dict_T *d;
 
-    d = ALLOC_ONE(dict_T);
+    d = ALLOC_CLEAR_ONE(dict_T);
     if (d != NULL)
     {
 	/* Add the dict to the list of dicts for garbage collection. */
@@ -709,11 +709,33 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 }
 
 /*
+ * Get the key for *{key: val} into "tv" and advance "arg".
+ * Return FAIL when there is no valid key.
+ */
+    static int
+get_literal_key(char_u **arg, typval_T *tv)
+{
+    char_u *p;
+
+    if (!ASCII_ISALNUM(**arg) && **arg != '_' && **arg != '-')
+	return FAIL;
+
+    for (p = *arg; ASCII_ISALNUM(*p) || *p == '_' || *p == '-'; ++p)
+	;
+    tv->v_type = VAR_STRING;
+    tv->vval.v_string = vim_strnsave(*arg, (int)(p - *arg));
+
+    *arg = skipwhite(p);
+    return OK;
+}
+
+/*
  * Allocate a variable for a Dictionary and fill it from "*arg".
+ * "literal" is TRUE for *{key: val}
  * Return OK or FAIL.  Returns NOTDONE for {expr}.
  */
     int
-dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
+dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
 {
     dict_T	*d = NULL;
     typval_T	tvkey;
@@ -750,8 +772,11 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
     *arg = skipwhite(*arg + 1);
     while (**arg != '}' && **arg != NUL)
     {
-	if (eval1(arg, &tvkey, evaluate) == FAIL)	/* recursive! */
+	if ((literal
+		? get_literal_key(arg, &tvkey)
+		: eval1(arg, &tvkey, evaluate)) == FAIL)	// recursive!
 	    goto failret;
+
 	if (**arg != ':')
 	{
 	    semsg(_("E720: Missing colon in Dictionary: %s"), *arg);
@@ -811,7 +836,7 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
     {
 	semsg(_("E723: Missing end of Dictionary '}': %s"), *arg);
 failret:
-	if (evaluate)
+	if (d != NULL)
 	    dict_free(d);
 	return FAIL;
     }

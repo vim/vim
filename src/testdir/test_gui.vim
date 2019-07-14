@@ -792,10 +792,11 @@ endfunc
 func Test_gui_dash_g()
   let cmd = GetVimCommand('Xscriptgui')
   call writefile([""], "Xtestgui")
-  call writefile([
-	\ 'au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")',
-	\ 'au GUIEnter * qall',
-	\ ], 'Xscriptgui')
+  let lines =<< trim END
+	au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")
+	au GUIEnter * qall
+  END
+  call writefile(lines, 'Xscriptgui')
   call system(cmd . ' -g')
   call WaitForAssert({-> assert_equal(['insertmode: 0'], readfile('Xtestgui'))})
 
@@ -807,10 +808,11 @@ endfunc
 func Test_gui_dash_y()
   let cmd = GetVimCommand('Xscriptgui')
   call writefile([""], "Xtestgui")
-  call writefile([
-	\ 'au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")',
-	\ 'au GUIEnter * qall',
-	\ ], 'Xscriptgui')
+  let lines =<< trim END
+	au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")
+	au GUIEnter * qall
+  END
+  call writefile(lines, 'Xscriptgui')
   call system(cmd . ' -y')
   call WaitForAssert({-> assert_equal(['insertmode: 1'], readfile('Xtestgui'))})
 

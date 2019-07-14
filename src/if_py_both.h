@@ -5832,23 +5832,16 @@ run_eval(const char *cmd, typval_T *rettv
 set_ref_in_py(const int copyID)
 {
     pylinkedlist_T	*cur;
-    dict_T	*dd;
-    list_T	*ll;
-    int		i;
-    int		abort = FALSE;
+    list_T		*ll;
+    int			i;
+    int			abort = FALSE;
     FunctionObject	*func;
 
     if (lastdict != NULL)
     {
 	for (cur = lastdict ; !abort && cur != NULL ; cur = cur->pll_prev)
-	{
-	    dd = ((DictionaryObject *) (cur->pll_obj))->dict;
-	    if (dd->dv_copyID != copyID)
-	    {
-		dd->dv_copyID = copyID;
-		abort = abort || set_ref_in_ht(&dd->dv_hashtab, copyID, NULL);
-	    }
-	}
+	    abort = set_ref_in_dict(((DictionaryObject *)(cur->pll_obj))->dict,
+								       copyID);
     }
 
     if (lastlist != NULL)
@@ -5856,11 +5849,7 @@ set_ref_in_py(const int copyID)
 	for (cur = lastlist ; !abort && cur != NULL ; cur = cur->pll_prev)
 	{
 	    ll = ((ListObject *) (cur->pll_obj))->list;
-	    if (ll->lv_copyID != copyID)
-	    {
-		ll->lv_copyID = copyID;
-		abort = abort || set_ref_in_list(ll, copyID, NULL);
-	    }
+	    abort = set_ref_in_list(ll, copyID);
 	}
     }
 
@@ -5869,12 +5858,7 @@ set_ref_in_py(const int copyID)
 	for (cur = lastfunc ; !abort && cur != NULL ; cur = cur->pll_prev)
 	{
 	    func = (FunctionObject *) cur->pll_obj;
-	    if (func->self != NULL && func->self->dv_copyID != copyID)
-	    {
-		func->self->dv_copyID = copyID;
-		abort = abort || set_ref_in_ht(
-			&func->self->dv_hashtab, copyID, NULL);
-	    }
+	    abort = set_ref_in_dict(func->self, copyID);
 	    if (func->argc)
 		for (i = 0; !abort && i < func->argc; ++i)
 		    abort = abort

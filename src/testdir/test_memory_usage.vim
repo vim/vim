@@ -85,14 +85,15 @@ func Test_memory_func_capture_vargs()
   " Case: if a local variable captures a:000, funccall object will be free
   " just after it finishes.
   let testfile = 'Xtest.vim'
-  call writefile([
-        \ 'func s:f(...)',
-        \ '  let x = a:000',
-        \ 'endfunc',
-        \ 'for _ in range(10000)',
-        \ '  call s:f(0)',
-        \ 'endfor',
-        \ ], testfile)
+  let lines =<< trim END
+        func s:f(...)
+          let x = a:000
+        endfunc
+        for _ in range(10000)
+          call s:f(0)
+        endfor
+  END
+  call writefile(lines, testfile)
 
   let vim = s:vim_new()
   call vim.start('--clean', '-c', 'set noswapfile', testfile)
@@ -122,14 +123,15 @@ func Test_memory_func_capture_lvars()
   " free until garbage collector runs, but after that memory usage doesn't
   " increase so much even when rerun Xtest.vim since system memory caches.
   let testfile = 'Xtest.vim'
-  call writefile([
-        \ 'func s:f()',
-        \ '  let x = l:',
-        \ 'endfunc',
-        \ 'for _ in range(10000)',
-        \ '  call s:f()',
-        \ 'endfor',
-        \ ], testfile)
+  let lines =<< trim END
+        func s:f()
+          let x = l:
+        endfunc
+        for _ in range(10000)
+          call s:f()
+        endfor
+  END
+  call writefile(lines, testfile)
 
   let vim = s:vim_new()
   call vim.start('--clean', '-c', 'set noswapfile', testfile)

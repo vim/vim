@@ -187,6 +187,33 @@ func Test_strftime()
 
   call assert_fails('call strftime([])', 'E730:')
   call assert_fails('call strftime("%Y", [])', 'E745:')
+
+  " Check that the time changes after we change the timezone
+  " Save previous timezone value, if any
+  if exists('$TZ')
+    let tz = $TZ
+  endif
+
+  " Force EST and then UTC, save the current hour (24-hour clock) for each
+  let $TZ = 'EST' | let est = strftime('%H')
+  let $TZ = 'UTC' | let utc = strftime('%H')
+
+  " Those hours should be two bytes long, and should not be the same; if they
+  " are, a tzset(3) call may have failed somewhere
+  call assert_equal(strlen(est), 2)
+  call assert_equal(strlen(utc), 2)
+  " TODO: this fails on MS-Windows
+  if has('unix')
+    call assert_notequal(est, utc)
+  endif
+
+  " If we cached a timezone value, put it back, otherwise clear it
+  if exists('tz')
+    let $TZ = tz
+  else
+    unlet $TZ
+  endif
+
 endfunc
 
 func Test_resolve_unix()
@@ -250,13 +277,14 @@ func Test_resolve_win32()
   if executable('cscript')
     new Xfile
     wq
-    call writefile([
-    \ 'Set fs = CreateObject("Scripting.FileSystemObject")',
-    \ 'Set ws = WScript.CreateObject("WScript.Shell")',
-    \ 'Set shortcut = ws.CreateShortcut("Xlink.lnk")',
-    \ 'shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "Xfile")', 
-    \ 'shortcut.Save'
-    \], 'link.vbs')
+    let lines =<< trim END
+	Set fs = CreateObject("Scripting.FileSystemObject")
+	Set ws = WScript.CreateObject("WScript.Shell")
+	Set shortcut = ws.CreateShortcut("Xlink.lnk")
+	shortcut.TargetPath = fs.BuildPath(ws.CurrentDirectory, "Xfile")
+	shortcut.Save
+    END
+    call writefile(lines, 'link.vbs')
     silent !cscript link.vbs
     call delete('link.vbs')
     call assert_equal(s:normalize_fname(getcwd() . '\Xfile'), s:normalize_fname(resolve('./Xlink.lnk')))
@@ -1486,4 +1514,47 @@ endfunc
 
 func Test_eventhandler()
   call assert_equal(0, eventhandler())
+endfunc
+
+func Test_bufadd_bufload()
+  call assert_equal(0, bufexists('someName'))
+  let buf = bufadd('someName')
+  call assert_notequal(0, buf)
+  call assert_equal(1, bufexists('someName'))
+  call assert_equal(0, getbufvar(buf, '&buflisted'))
+  call assert_equal(0, bufloaded(buf))
+  call bufload(buf)
+  call assert_equal(1, bufloaded(buf))
+  call assert_equal([''], getbufline(buf, 1, '$'))
+
+  let curbuf = bufnr('')
+  call writefile(['some', 'text'], 'XotherName')
+  let buf = bufadd('XotherName')
+  call assert_notequal(0, buf)
+  call assert_equal(1, bufexists('XotherName'))
+  call assert_equal(0, getbufvar(buf, '&buflisted'))
+  call assert_equal(0, bufloaded(buf))
+  call bufload(buf)
+  call assert_equal(1, bufloaded(buf))
+  call assert_equal(['some', 'text'], getbufline(buf, 1, '$'))
+  call assert_equal(curbuf, bufnr(''))
+
+  let buf1 = bufadd('')
+  let buf2 = bufadd('')
+  call assert_notequal(0, buf1)
+  call assert_notequal(0, buf2)
+  call assert_notequal(buf1, buf2)
+  call assert_equal(1, bufexists(buf1))
+  call assert_equal(1, bufexists(buf2))
+  call assert_equal(0, bufloaded(buf1))
+  exe 'bwipe ' .. buf1
+  call assert_equal(0, bufexists(buf1))
+  call assert_equal(1, bufexists(buf2))
+  exe 'bwipe ' .. buf2
+  call assert_equal(0, bufexists(buf2))
+
+  bwipe someName
+  bwipe XotherName
+  call assert_equal(0, bufexists('someName'))
+  call delete('XotherName')
 endfunc

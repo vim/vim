@@ -16,215 +16,7 @@
 
 static void	cmd_source(char_u *fname, exarg_T *eap);
 
-#ifdef FEAT_EVAL
-/* Growarray to store info about already sourced scripts.
- * For Unix also store the dev/ino, so that we don't have to stat() each
- * script when going through the list. */
-typedef struct scriptitem_S
-{
-    char_u	*sn_name;
-# ifdef UNIX
-    int		sn_dev_valid;
-    dev_t	sn_dev;
-    ino_t	sn_ino;
-# endif
-# ifdef FEAT_PROFILE
-    int		sn_prof_on;	/* TRUE when script is/was profiled */
-    int		sn_pr_force;	/* forceit: profile functions in this script */
-    proftime_T	sn_pr_child;	/* time set when going into first child */
-    int		sn_pr_nest;	/* nesting for sn_pr_child */
-    /* profiling the script as a whole */
-    int		sn_pr_count;	/* nr of times sourced */
-    proftime_T	sn_pr_total;	/* time spent in script + children */
-    proftime_T	sn_pr_self;	/* time spent in script itself */
-    proftime_T	sn_pr_start;	/* time at script start */
-    proftime_T	sn_pr_children; /* time in children after script start */
-    /* profiling the script per line */
-    garray_T	sn_prl_ga;	/* things stored for every line */
-    proftime_T	sn_prl_start;	/* start time for current line */
-    proftime_T	sn_prl_children; /* time spent in children for this line */
-    proftime_T	sn_prl_wait;	/* wait start time for current line */
-    int		sn_prl_idx;	/* index of line being timed; -1 if none */
-    int		sn_prl_execed;	/* line being timed was executed */
-# endif
-} scriptitem_T;
-
-static garray_T script_items = {0, 0, sizeof(scriptitem_T), 4, NULL};
-#define SCRIPT_ITEM(id) (((scriptitem_T *)script_items.ga_data)[(id) - 1])
-
-# ifdef FEAT_PROFILE
-/* Struct used in sn_prl_ga for every line of a script. */
-typedef struct sn_prl_S
-{
-    int		snp_count;	/* nr of times line was executed */
-    proftime_T	sn_prl_total;	/* time spent in a line + children */
-    proftime_T	sn_prl_self;	/* time spent in a line itself */
-} sn_prl_T;
-
-#  define PRL_ITEM(si, idx)	(((sn_prl_T *)(si)->sn_prl_ga.ga_data)[(idx)])
-# endif
-#endif
-
 #if defined(FEAT_EVAL) || defined(PROTO)
-# if defined(FEAT_PROFILE) || defined(FEAT_RELTIME) || defined(PROTO)
-/*
- * Store the current time in "tm".
- */
-    void
-profile_start(proftime_T *tm)
-{
-# ifdef MSWIN
-    QueryPerformanceCounter(tm);
-# else
-    gettimeofday(tm, NULL);
-# endif
-}
-
-/*
- * Compute the elapsed time from "tm" till now and store in "tm".
- */
-    void
-profile_end(proftime_T *tm)
-{
-    proftime_T now;
-
-# ifdef MSWIN
-    QueryPerformanceCounter(&now);
-    tm->QuadPart = now.QuadPart - tm->QuadPart;
-# else
-    gettimeofday(&now, NULL);
-    tm->tv_usec = now.tv_usec - tm->tv_usec;
-    tm->tv_sec = now.tv_sec - tm->tv_sec;
-    if (tm->tv_usec < 0)
-    {
-	tm->tv_usec += 1000000;
-	--tm->tv_sec;
-    }
-# endif
-}
-
-/*
- * Subtract the time "tm2" from "tm".
- */
-    void
-profile_sub(proftime_T *tm, proftime_T *tm2)
-{
-# ifdef MSWIN
-    tm->QuadPart -= tm2->QuadPart;
-# else
-    tm->tv_usec -= tm2->tv_usec;
-    tm->tv_sec -= tm2->tv_sec;
-    if (tm->tv_usec < 0)
-    {
-	tm->tv_usec += 1000000;
-	--tm->tv_sec;
-    }
-# endif
-}
-
-/*
- * Return a string that represents the time in "tm".
- * Uses a static buffer!
- */
-    char *
-profile_msg(proftime_T *tm)
-{
-    static char buf[50];
-
-# ifdef MSWIN
-    LARGE_INTEGER   fr;
-
-    QueryPerformanceFrequency(&fr);
-    sprintf(buf, "%10.6lf", (double)tm->QuadPart / (double)fr.QuadPart);
-# else
-    sprintf(buf, "%3ld.%06ld", (long)tm->tv_sec, (long)tm->tv_usec);
-# endif
-    return buf;
-}
-
-# if defined(FEAT_FLOAT) || defined(PROTO)
-/*
- * Return a float that represents the time in "tm".
- */
-    float_T
-profile_float(proftime_T *tm)
-{
-#  ifdef MSWIN
-    LARGE_INTEGER   fr;
-
-    QueryPerformanceFrequency(&fr);
-    return (float_T)tm->QuadPart / (float_T)fr.QuadPart;
-#  else
-    return (float_T)tm->tv_sec + (float_T)tm->tv_usec / 1000000.0;
-#  endif
-}
-# endif
-
-/*
- * Put the time "msec" past now in "tm".
- */
-    void
-profile_setlimit(long msec, proftime_T *tm)
-{
-    if (msec <= 0)   /* no limit */
-	profile_zero(tm);
-    else
-    {
-# ifdef MSWIN
-	LARGE_INTEGER   fr;
-
-	QueryPerformanceCounter(tm);
-	QueryPerformanceFrequency(&fr);
-	tm->QuadPart += (LONGLONG)((double)msec / 1000.0 * (double)fr.QuadPart);
-# else
-	long	    usec;
-
-	gettimeofday(tm, NULL);
-	usec = (long)tm->tv_usec + (long)msec * 1000;
-	tm->tv_usec = usec % 1000000L;
-	tm->tv_sec += usec / 1000000L;
-# endif
-    }
-}
-
-/*
- * Return TRUE if the current time is past "tm".
- */
-    int
-profile_passed_limit(proftime_T *tm)
-{
-    proftime_T	now;
-
-# ifdef MSWIN
-    if (tm->QuadPart == 0)  /* timer was not set */
-	return FALSE;
-    QueryPerformanceCounter(&now);
-    return (now.QuadPart > tm->QuadPart);
-# else
-    if (tm->tv_sec == 0)    /* timer was not set */
-	return FALSE;
-    gettimeofday(&now, NULL);
-    return (now.tv_sec > tm->tv_sec
-	    || (now.tv_sec == tm->tv_sec && now.tv_usec > tm->tv_usec));
-# endif
-}
-
-/*
- * Set the time in "tm" to zero.
- */
-    void
-profile_zero(proftime_T *tm)
-{
-# ifdef MSWIN
-    tm->QuadPart = 0;
-# else
-    tm->tv_usec = 0;
-    tm->tv_sec = 0;
-# endif
-}
-
-# endif  /* FEAT_PROFILE || FEAT_RELTIME */
-
 # if defined(FEAT_TIMERS) || defined(PROTO)
 static timer_T	*first_timer = NULL;
 static long	last_timer_id = 0;
@@ -367,10 +159,11 @@ check_due_timer(void)
 	    int save_vgetc_busy = vgetc_busy;
 	    int save_did_emsg = did_emsg;
 	    int save_called_emsg = called_emsg;
-	    int	save_must_redraw = must_redraw;
-	    int	save_trylevel = trylevel;
+	    int save_must_redraw = must_redraw;
+	    int save_trylevel = trylevel;
 	    int save_did_throw = did_throw;
 	    int save_ex_pressedreturn = get_pressedreturn();
+	    int save_may_garbage_collect = may_garbage_collect;
 	    except_T *save_current_exception = current_exception;
 	    vimvars_save_T vvsave;
 
@@ -385,7 +178,9 @@ check_due_timer(void)
 	    trylevel = 0;
 	    did_throw = FALSE;
 	    current_exception = NULL;
+	    may_garbage_collect = FALSE;
 	    save_vimvars(&vvsave);
+
 	    timer->tr_firing = TRUE;
 	    timer_callback(timer);
 	    timer->tr_firing = FALSE;
@@ -407,6 +202,7 @@ check_due_timer(void)
 	    must_redraw = must_redraw > save_must_redraw
 					      ? must_redraw : save_must_redraw;
 	    set_pressedreturn(save_ex_pressedreturn);
+	    may_garbage_collect = save_may_garbage_collect;
 
 	    /* Only fire the timer again if it repeats and stop_timer() wasn't
 	     * called while inside the callback (tr_id == -1). */
@@ -566,7 +362,7 @@ set_ref_in_timer(int copyID)
     timer_T	*timer;
     typval_T	tv;
 
-    for (timer = first_timer; timer != NULL; timer = timer->tr_next)
+    for (timer = first_timer; !abort && timer != NULL; timer = timer->tr_next)
     {
 	if (timer->tr_callback.cb_partial != NULL)
 	{
@@ -599,270 +395,11 @@ timer_free_all()
 #  endif
 # endif
 
-#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME) && defined(FEAT_FLOAT) && defined(FEAT_PROFILE)
-# if defined(HAVE_MATH_H)
-#  include <math.h>
-# endif
-
-/*
- * Divide the time "tm" by "count" and store in "tm2".
- */
-    void
-profile_divide(proftime_T *tm, int count, proftime_T *tm2)
-{
-    if (count == 0)
-	profile_zero(tm2);
-    else
-    {
-# ifdef MSWIN
-	tm2->QuadPart = tm->QuadPart / count;
-# else
-	double usec = (tm->tv_sec * 1000000.0 + tm->tv_usec) / count;
-
-	tm2->tv_sec = floor(usec / 1000000.0);
-	tm2->tv_usec = vim_round(usec - (tm2->tv_sec * 1000000.0));
-# endif
-    }
-}
-#endif
-
 # if defined(FEAT_PROFILE) || defined(PROTO)
-/*
- * Functions for profiling.
- */
-static void script_dump_profile(FILE *fd);
-static proftime_T prof_wait_time;
-
-/*
- * Add the time "tm2" to "tm".
- */
-    void
-profile_add(proftime_T *tm, proftime_T *tm2)
-{
-# ifdef MSWIN
-    tm->QuadPart += tm2->QuadPart;
-# else
-    tm->tv_usec += tm2->tv_usec;
-    tm->tv_sec += tm2->tv_sec;
-    if (tm->tv_usec >= 1000000)
-    {
-	tm->tv_usec -= 1000000;
-	++tm->tv_sec;
-    }
-# endif
-}
-
-/*
- * Add the "self" time from the total time and the children's time.
- */
-    void
-profile_self(proftime_T *self, proftime_T *total, proftime_T *children)
-{
-    /* Check that the result won't be negative.  Can happen with recursive
-     * calls. */
-#ifdef MSWIN
-    if (total->QuadPart <= children->QuadPart)
-	return;
-#else
-    if (total->tv_sec < children->tv_sec
-	    || (total->tv_sec == children->tv_sec
-		&& total->tv_usec <= children->tv_usec))
-	return;
-#endif
-    profile_add(self, total);
-    profile_sub(self, children);
-}
-
-/*
- * Get the current waittime.
- */
-    void
-profile_get_wait(proftime_T *tm)
-{
-    *tm = prof_wait_time;
-}
-
-/*
- * Subtract the passed waittime since "tm" from "tma".
- */
-    void
-profile_sub_wait(proftime_T *tm, proftime_T *tma)
-{
-    proftime_T tm3 = prof_wait_time;
-
-    profile_sub(&tm3, tm);
-    profile_sub(tma, &tm3);
-}
-
-/*
- * Return TRUE if "tm1" and "tm2" are equal.
- */
-    int
-profile_equal(proftime_T *tm1, proftime_T *tm2)
-{
-# ifdef MSWIN
-    return (tm1->QuadPart == tm2->QuadPart);
-# else
-    return (tm1->tv_usec == tm2->tv_usec && tm1->tv_sec == tm2->tv_sec);
-# endif
-}
-
-/*
- * Return <0, 0 or >0 if "tm1" < "tm2", "tm1" == "tm2" or "tm1" > "tm2"
- */
-    int
-profile_cmp(const proftime_T *tm1, const proftime_T *tm2)
-{
-# ifdef MSWIN
-    return (int)(tm2->QuadPart - tm1->QuadPart);
-# else
-    if (tm1->tv_sec == tm2->tv_sec)
-	return tm2->tv_usec - tm1->tv_usec;
-    return tm2->tv_sec - tm1->tv_sec;
-# endif
-}
-
-static char_u	*profile_fname = NULL;
-static proftime_T pause_time;
-
-/*
- * ":profile cmd args"
- */
-    void
-ex_profile(exarg_T *eap)
-{
-    char_u	*e;
-    int		len;
-
-    e = skiptowhite(eap->arg);
-    len = (int)(e - eap->arg);
-    e = skipwhite(e);
-
-    if (len == 5 && STRNCMP(eap->arg, "start", 5) == 0 && *e != NUL)
-    {
-	vim_free(profile_fname);
-	profile_fname = expand_env_save_opt(e, TRUE);
-	do_profiling = PROF_YES;
-	profile_zero(&prof_wait_time);
-	set_vim_var_nr(VV_PROFILING, 1L);
-    }
-    else if (do_profiling == PROF_NONE)
-	emsg(_("E750: First use \":profile start {fname}\""));
-    else if (STRCMP(eap->arg, "pause") == 0)
-    {
-	if (do_profiling == PROF_YES)
-	    profile_start(&pause_time);
-	do_profiling = PROF_PAUSED;
-    }
-    else if (STRCMP(eap->arg, "continue") == 0)
-    {
-	if (do_profiling == PROF_PAUSED)
-	{
-	    profile_end(&pause_time);
-	    profile_add(&prof_wait_time, &pause_time);
-	}
-	do_profiling = PROF_YES;
-    }
-    else
-    {
-	/* The rest is similar to ":breakadd". */
-	ex_breakadd(eap);
-    }
-}
-
-/* Command line expansion for :profile. */
-static enum
-{
-    PEXP_SUBCMD,	/* expand :profile sub-commands */
-    PEXP_FUNC		/* expand :profile func {funcname} */
-} pexpand_what;
-
-static char *pexpand_cmds[] = {
-			"start",
-#define PROFCMD_START	0
-			"pause",
-#define PROFCMD_PAUSE	1
-			"continue",
-#define PROFCMD_CONTINUE 2
-			"func",
-#define PROFCMD_FUNC	3
-			"file",
-#define PROFCMD_FILE	4
-			NULL
-#define PROFCMD_LAST	5
-};
-
-/*
- * Function given to ExpandGeneric() to obtain the profile command
- * specific expansion.
- */
-    char_u *
-get_profile_name(expand_T *xp UNUSED, int idx)
-{
-    switch (pexpand_what)
-    {
-    case PEXP_SUBCMD:
-	return (char_u *)pexpand_cmds[idx];
-    /* case PEXP_FUNC: TODO */
-    default:
-	return NULL;
-    }
-}
-
-/*
- * Handle command line completion for :profile command.
- */
-    void
-set_context_in_profile_cmd(expand_T *xp, char_u *arg)
-{
-    char_u	*end_subcmd;
-
-    /* Default: expand subcommands. */
-    xp->xp_context = EXPAND_PROFILE;
-    pexpand_what = PEXP_SUBCMD;
-    xp->xp_pattern = arg;
-
-    end_subcmd = skiptowhite(arg);
-    if (*end_subcmd == NUL)
-	return;
-
-    if (end_subcmd - arg == 5 && STRNCMP(arg, "start", 5) == 0)
-    {
-	xp->xp_context = EXPAND_FILES;
-	xp->xp_pattern = skipwhite(end_subcmd);
-	return;
-    }
-
-    /* TODO: expand function names after "func" */
-    xp->xp_context = EXPAND_NOTHING;
-}
-
-/*
- * Dump the profiling info.
- */
-    void
-profile_dump(void)
-{
-    FILE	*fd;
-
-    if (profile_fname != NULL)
-    {
-	fd = mch_fopen((char *)profile_fname, "w");
-	if (fd == NULL)
-	    semsg(_(e_notopen), profile_fname);
-	else
-	{
-	    script_dump_profile(fd);
-	    func_dump_profile(fd);
-	    fclose(fd);
-	}
-    }
-}
-
 /*
  * Start profiling script "fp".
  */
-    static void
+    void
 script_do_profile(scriptitem_T *si)
 {
     si->sn_pr_count = 0;
@@ -914,31 +451,10 @@ script_prof_restore(proftime_T *tm)
     }
 }
 
-static proftime_T inchar_time;
-
-/*
- * Called when starting to wait for the user to type a character.
- */
-    void
-prof_inchar_enter(void)
-{
-    profile_start(&inchar_time);
-}
-
-/*
- * Called when finished waiting for the user to type a character.
- */
-    void
-prof_inchar_exit(void)
-{
-    profile_end(&inchar_time);
-    profile_add(&prof_wait_time, &inchar_time);
-}
-
 /*
  * Dump the profiling results for all scripts in file "fd".
  */
-    static void
+    void
 script_dump_profile(FILE *fd)
 {
     int		    id;
@@ -1012,19 +528,6 @@ script_dump_profile(FILE *fd)
 	}
     }
 }
-
-/*
- * Return TRUE when a function defined in the current script should be
- * profiled.
- */
-    int
-prof_def_func(void)
-{
-    if (current_sctx.sc_sid > 0)
-	return SCRIPT_ITEM(current_sctx.sc_sid).sn_pr_force;
-    return FALSE;
-}
-
 # endif
 #endif
 
@@ -3265,20 +2768,21 @@ cmd_source(char_u *fname, exarg_T *eap)
  */
 struct source_cookie
 {
-    FILE	*fp;		/* opened file for sourcing */
-    char_u      *nextline;      /* if not NULL: line that was read ahead */
-    int		finished;	/* ":finish" used */
+    FILE	*fp;		// opened file for sourcing
+    char_u	*nextline;	// if not NULL: line that was read ahead
+    linenr_T	sourcing_lnum;	// line number of the source file
+    int		finished;	// ":finish" used
 #ifdef USE_CRNL
-    int		fileformat;	/* EOL_UNKNOWN, EOL_UNIX or EOL_DOS */
-    int		error;		/* TRUE if LF found after CR-LF */
+    int		fileformat;	// EOL_UNKNOWN, EOL_UNIX or EOL_DOS
+    int		error;		// TRUE if LF found after CR-LF
 #endif
 #ifdef FEAT_EVAL
-    linenr_T	breakpoint;	/* next line with breakpoint or zero */
-    char_u	*fname;		/* name of sourced file */
-    int		dbg_tick;	/* debug_tick when breakpoint was set */
-    int		level;		/* top nesting level of sourced file */
+    linenr_T	breakpoint;	// next line with breakpoint or zero
+    char_u	*fname;		// name of sourced file
+    int		dbg_tick;	// debug_tick when breakpoint was set
+    int		level;		// top nesting level of sourced file
 #endif
-    vimconv_T	conv;		/* type of conversion */
+    vimconv_T	conv;		// type of conversion
 };
 
 #ifdef FEAT_EVAL
@@ -3341,7 +2845,6 @@ fopen_noinh_readbin(char *filename)
     return fdopen(fd_tmp, READBIN);
 }
 #endif
-
 
 /*
  * do_source: Read the file "fname" and execute its lines as EX commands.
@@ -3491,6 +2994,7 @@ do_source(
 #endif
 
     cookie.nextline = NULL;
+    cookie.sourcing_lnum = 0;
     cookie.finished = FALSE;
 
 #ifdef FEAT_EVAL
@@ -3611,7 +3115,7 @@ do_source(
     cookie.conv.vc_type = CONV_NONE;		/* no conversion */
 
     /* Read the first line so we can check for a UTF-8 BOM. */
-    firstline = getsourceline(0, (void *)&cookie, 0);
+    firstline = getsourceline(0, (void *)&cookie, 0, TRUE);
     if (firstline != NULL && STRLEN(firstline) >= 3 && firstline[0] == 0xef
 			      && firstline[1] == 0xbb && firstline[2] == 0xbf)
     {
@@ -3786,6 +3290,14 @@ free_scriptnames(void)
 
 #endif
 
+    linenr_T
+get_sourced_lnum(char_u *(*fgetline)(int, void *, int, int), void *cookie)
+{
+    return fgetline == getsourceline
+			? ((struct source_cookie *)cookie)->sourcing_lnum
+			: sourcing_lnum;
+}
+
 /*
  * Get one full line from a sourced file.
  * Called by do_cmdline() when it's called from do_source().
@@ -3794,7 +3306,7 @@ free_scriptnames(void)
  * Return NULL for end-of-file or some error.
  */
     char_u *
-getsourceline(int c UNUSED, void *cookie, int indent UNUSED)
+getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 {
     struct source_cookie *sp = (struct source_cookie *)cookie;
     char_u		*line;
@@ -3812,6 +3324,10 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED)
 	script_line_end();
 # endif
 #endif
+
+    // Set the current sourcing line number.
+    sourcing_lnum = sp->sourcing_lnum + 1;
+
     /*
      * Get current line.  If there is a read-ahead line, use it, otherwise get
      * one now.
@@ -3824,7 +3340,7 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED)
     {
 	line = sp->nextline;
 	sp->nextline = NULL;
-	++sourcing_lnum;
+	++sp->sourcing_lnum;
     }
 #ifdef FEAT_PROFILE
     if (line != NULL && do_profiling == PROF_YES)
@@ -3833,10 +3349,10 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED)
 
     /* Only concatenate lines starting with a \ when 'cpoptions' doesn't
      * contain the 'C' flag. */
-    if (line != NULL && (vim_strchr(p_cpo, CPO_CONCAT) == NULL))
+    if (line != NULL && do_concat && vim_strchr(p_cpo, CPO_CONCAT) == NULL)
     {
 	/* compensate for the one line read-ahead */
-	--sourcing_lnum;
+	--sp->sourcing_lnum;
 
 	// Get the next line and concatenate it when it starts with a
 	// backslash. We always need to read the next line, keep it in
@@ -3927,7 +3443,7 @@ get_one_sourceline(struct source_cookie *sp)
     /*
      * Loop until there is a finished line (or end-of-file).
      */
-    sourcing_lnum++;
+    ++sp->sourcing_lnum;
     for (;;)
     {
 	/* make room to read at least 120 (more) characters */
@@ -3997,7 +3513,7 @@ get_one_sourceline(struct source_cookie *sp)
 		;
 	    if ((len & 1) != (c & 1))	/* escaped NL, read more */
 	    {
-		sourcing_lnum++;
+		++sp->sourcing_lnum;
 		continue;
 	    }
 
@@ -4212,7 +3728,7 @@ do_finish(exarg_T *eap, int reanimate)
  */
     int
 source_finished(
-    char_u	*(*fgetline)(int, void *, int),
+    char_u	*(*fgetline)(int, void *, int, int),
     void	*cookie)
 {
     return (getline_equal(fgetline, cookie, getsourceline)

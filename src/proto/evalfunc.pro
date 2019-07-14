@@ -3,6 +3,7 @@ char_u *get_function_name(expand_T *xp, int idx);
 char_u *get_expr_name(expand_T *xp, int idx);
 int find_internal_func(char_u *name);
 int call_internal_func(char_u *name, int argcount, typval_T *argvars, typval_T *rettv);
+linenr_T tv_get_lnum(typval_T *argvars);
 buf_T *buflist_find_by_name(char_u *name, int curtab_only);
 buf_T *tv_get_buf(typval_T *tv, int curtab_only);
 buf_T *get_buf_arg(typval_T *arg);

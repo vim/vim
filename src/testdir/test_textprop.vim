@@ -759,6 +759,30 @@ func Test_textprop_screenshot_visual()
   call RunTestVisualBlock(4, '02')
 endfunc
 
+func Test_textprop_after_tab()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  let lines =<< trim END
+       call setline(1, [
+             \ "\txxx",
+             \ "x\txxx",
+             \ ])
+       hi SearchProp ctermbg=yellow
+       call prop_type_add('search', {'highlight': 'SearchProp'})
+       call prop_add(1, 2, {'length': 3, 'type': 'search'})
+       call prop_add(2, 3, {'length': 3, 'type': 'search'})
+  END
+  call writefile(lines, 'XtestPropTab')
+  let buf = RunVimInTerminal('-S XtestPropTab', {'rows': 6})
+  call VerifyScreenDump(buf, 'Test_textprop_tab', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPropTab')
+endfunc
+
 " Adding a text property to a new buffer should not fail
 func Test_textprop_empty_buffer()
   call prop_type_add('comment', {'highlight': 'Search'})
@@ -766,6 +790,17 @@ func Test_textprop_empty_buffer()
   call prop_add(1, 1, {'type': 'comment'})
   close
   call prop_type_delete('comment')
+endfunc
+
+" Adding a text property with invalid highlight should be ignored.
+func Test_textprop_invalid_highlight()
+  call assert_fails("call prop_type_add('dni', {'highlight': 'DoesNotExist'})", 'E970:')
+  new
+  call setline(1, ['asdf','asdf'])
+  call prop_add(1, 1, {'length': 4, 'type': 'dni'})
+  redraw
+  bwipe!
+  call prop_type_delete('dni')
 endfunc
 
 " Adding a text property to an empty buffer and then editing another

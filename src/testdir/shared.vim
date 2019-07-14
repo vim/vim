@@ -1,9 +1,11 @@
 " Functions shared by several tests.
 
 " Only load this script once.
-if exists('*WaitFor')
+if exists('*PythonProg')
   finish
 endif
+
+source view_util.vim
 
 " Get the name of the Python executable.
 " Also keeps it in s:python.
@@ -282,6 +284,13 @@ func GetVimCommandClean()
   return cmd
 endfunc
 
+" Get the command to run Vim, with --clean, and force to run in terminal so it
+" won't start a new GUI.
+func GetVimCommandCleanTerm()
+  " Add -v to have gvim run in the terminal (if possible)
+  return GetVimCommandClean() .. ' -v '
+endfunc
+
 " Run Vim, using the "vimcmd" file and "-u NORC".
 " "before" is a list of Vim commands to be executed before loading plugins.
 " "after" is a list of Vim commands to be executed after loading plugins.
@@ -326,32 +335,4 @@ func WorkingClipboard()
     return $DISPLAY != ""
   endif
   return 1
-endfunc
-
-" Get line "lnum" as displayed on the screen.
-" Trailing white space is trimmed.
-func Screenline(lnum)
-  let chars = []
-  for c in range(1, winwidth(0))
-    call add(chars, nr2char(screenchar(a:lnum, c)))
-  endfor
-  let line = join(chars, '')
-  return matchstr(line, '^.\{-}\ze\s*$')
-endfunc
-
-" Stops the shell running in terminal "buf".
-func Stop_shell_in_terminal(buf)
-  call term_sendkeys(a:buf, "exit\r")
-  let job = term_getjob(a:buf)
-  call WaitFor({-> job_status(job) == "dead"})
-endfunc
-
-" Gets the text of a terminal line, using term_scrape()
-func Get_terminal_text(bufnr, row)
-  let list = term_scrape(a:bufnr, a:row)
-  let text = ''
-  for item in list
-    let text .= item.chars
-  endfor
-  return text
 endfunc
