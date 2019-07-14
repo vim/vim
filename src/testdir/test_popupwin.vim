@@ -1888,24 +1888,24 @@ func Test_popup_menu_with_scrollbar()
   let buf = RunVimInTerminal('-S XtestPopupMenuScroll', ~{rows: 10})
 
   call term_sendkeys(buf, "j")
-  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_1', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_1', {})
 
   call term_sendkeys(buf, "jjj")
-  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_2', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_2', {})
 
   " if the cursor is the bottom line, it stays at the bottom line.
   call term_sendkeys(buf, repeat("j", 20))
-  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_3', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_3', {})
 
   call term_sendkeys(buf, "kk")
-  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_4', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_4', {})
 
   call term_sendkeys(buf, "k")
-  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_5', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_5', {})
 
   " if the cursor is in the top line, it stays in the top line.
   call term_sendkeys(buf, repeat("k", 20))
-  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_6', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_scroll_6', {})
 
   " close the menu popupwin.
   call term_sendkeys(buf, " ")
@@ -1953,16 +1953,16 @@ func Test_popup_menu_filter()
   let buf = RunVimInTerminal('-S XtestPopupMenuFilter', ~{rows: 10})
 
   call term_sendkeys(buf, "j")
-  call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_1', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_1', {})
 
   call term_sendkeys(buf, "k")
-  call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_2', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_2', {})
 
   call term_sendkeys(buf, "G")
-  call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_3', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_3', {})
 
   call term_sendkeys(buf, "0")
-  call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_4', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_4', {})
 
   call term_sendkeys(buf, "x")
 
@@ -1976,7 +1976,7 @@ func Test_popup_cursorline()
     throw 'Skipped: cannot make screendumps'
   endif
 
-  let winid = popup_create('some text', ~{})
+  let winid = popup_create('some text', {})
   call assert_equal(0, popup_getoptions(winid).cursorline)
   call popup_close(winid)
 
@@ -1988,7 +1988,7 @@ func Test_popup_cursorline()
   call assert_equal(0, popup_getoptions(winid).cursorline)
   call popup_close(winid)
 
-  let winid = popup_menu('some text', ~{})
+  let winid = popup_menu('some text', {})
   call assert_equal(1, popup_getoptions(winid).cursorline)
   call popup_close(winid)
 
@@ -2008,7 +2008,7 @@ func Test_popup_cursorline()
   END
   call writefile(lines, 'XtestPopupCursorLine')
   let buf = RunVimInTerminal('-S XtestPopupCursorLine', ~{rows: 10})
-  call VerifyScreenDump(buf, 'Test_popupwin_cursorline_1', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_cursorline_1', {})
   call term_sendkeys(buf, ":call popup_clear()\<cr>")
   call StopVimInTerminal(buf)
 
@@ -2020,7 +2020,7 @@ func Test_popup_cursorline()
   END
   call writefile(lines, 'XtestPopupCursorLine')
   let buf = RunVimInTerminal('-S XtestPopupCursorLine', ~{rows: 10})
-  call VerifyScreenDump(buf, 'Test_popupwin_cursorline_2', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_cursorline_2', {})
   call term_sendkeys(buf, ":call popup_clear()\<cr>")
   call StopVimInTerminal(buf)
 
@@ -2047,10 +2047,10 @@ func Test_popup_cursorline()
   END
   call writefile(lines, 'XtestPopupCursorLine')
   let buf = RunVimInTerminal('-S XtestPopupCursorLine', ~{rows: 10})
-  call VerifyScreenDump(buf, 'Test_popupwin_cursorline_3', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_cursorline_3', {})
   call term_sendkeys(buf, "j")
   call term_sendkeys(buf, "j")
-  call VerifyScreenDump(buf, 'Test_popupwin_cursorline_4', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_cursorline_4', {})
   call term_sendkeys(buf, "x")
   call StopVimInTerminal(buf)
 
@@ -2077,10 +2077,10 @@ func Test_popup_cursorline()
   END
   call writefile(lines, 'XtestPopupCursorLine')
   let buf = RunVimInTerminal('-S XtestPopupCursorLine', ~{rows: 10})
-  call VerifyScreenDump(buf, 'Test_popupwin_cursorline_5', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_cursorline_5', {})
   call term_sendkeys(buf, "j")
   call term_sendkeys(buf, "j")
-  call VerifyScreenDump(buf, 'Test_popupwin_cursorline_6', ~{})
+  call VerifyScreenDump(buf, 'Test_popupwin_cursorline_6', {})
   call term_sendkeys(buf, "x")
   call StopVimInTerminal(buf)
 
