@@ -441,6 +441,29 @@ check_highlight(dict_T *dict, char *name, char_u **pval)
     }
 }
 
+    static void
+popup_highlight_curline(win_T *wp)
+{
+    int	    id;
+    char    buf[100];
+
+    match_delete(wp, 1, FALSE);
+
+    // Scroll to show the line with the cursor.  This assumes lines don't wrap.
+    while (wp->w_topline + wp->w_height - 1 < wp->w_cursor.lnum)
+	wp->w_topline++;
+    while (wp->w_cursor.lnum < wp->w_topline)
+	wp->w_topline--;
+
+    if ((wp->w_popup_flags & POPF_CURSORLINE) != 0)
+    {
+	id = syn_name2id((char_u *)"PopupSelected");
+	vim_snprintf(buf, sizeof(buf), "\\%%%dl.*", (int)wp->w_cursor.lnum);
+	match_add(wp, (char_u *)(id == 0 ? "PmenuSel" : "PopupSelected"),
+						 (char_u *)buf, 10, 1, NULL, NULL);
+    }
+}
+
 /*
  * Shared between popup_create() and f_popup_setoptions().
  */
@@ -635,6 +658,21 @@ apply_general_options(win_T *wp, dict_T *dict)
     {
 	set_mousemoved_values(wp);
 	handle_moved_argument(wp, di, TRUE);
+    }
+
+    di = dict_find(dict, (char_u *)"cursorline", -1);
+    if (di != NULL)
+    {
+	if (di->di_tv.v_type == VAR_NUMBER)
+	{
+	    if (di->di_tv.vval.v_number != 0)
+		wp->w_popup_flags |= POPF_CURSORLINE;
+	    else
+		wp->w_popup_flags &= ~POPF_CURSORLINE;
+	    popup_highlight_curline(wp);
+	}
+	else
+	    semsg(_(e_invargval), "cursorline");
     }
 
     di = dict_find(dict, (char_u *)"filter", -1);
@@ -1315,6 +1353,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	    set_callback(&wp->w_filter_cb, &callback);
 
 	wp->w_p_wrap = 0;
+	wp->w_popup_flags |= POPF_CURSORLINE;
     }
 
     for (i = 0; i < 4; ++i)
@@ -1502,26 +1541,6 @@ filter_handle_drag(win_T *wp, int c, typval_T *rettv)
 			  || wp == mouse_find_win(&row, &col, FIND_POPUP)))
 	// do not consume the key, allow for dragging the popup
 	rettv->vval.v_number = 0;
-}
-
-    static void
-popup_highlight_curline(win_T *wp)
-{
-    int	    id;
-    char    buf[100];
-
-    match_delete(wp, 1, FALSE);
-
-    // Scroll to show the line with the cursor.  This assumes lines don't wrap.
-    while (wp->w_topline + wp->w_height - 1 < wp->w_cursor.lnum)
-	wp->w_topline++;
-    while (wp->w_cursor.lnum < wp->w_topline)
-	wp->w_topline--;
-
-    id = syn_name2id((char_u *)"PopupSelected");
-    vim_snprintf(buf, sizeof(buf), "\\%%%dl.*", (int)wp->w_cursor.lnum);
-    match_add(wp, (char_u *)(id == 0 ? "PmenuSel" : "PopupSelected"),
-					     (char_u *)buf, 10, 1, NULL, NULL);
 }
 
 /*
@@ -2049,6 +2068,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_string(dict, "title", wp->w_popup_title);
 	dict_add_number(dict, "wrap", wp->w_p_wrap);
 	dict_add_number(dict, "drag", wp->w_popup_drag);
+	dict_add_number(dict, "cursorline", (wp->w_popup_flags & POPF_CURSORLINE) != 0);
 	dict_add_string(dict, "highlight", wp->w_p_wcr);
 	if (wp->w_scrollbar_highlight != NULL)
 	    dict_add_string(dict, "scrollbarhighlight",
