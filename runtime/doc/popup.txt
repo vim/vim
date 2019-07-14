@@ -363,6 +363,7 @@ popup_menu({what}, {options})				 *popup_menu()*
 				\ wrap: 0,
 				\ border: [],
 				\ padding: [],
+				\ cursorline: 1,
 				\ filter: 'popup_filter_menu',
 				\ })
 <		The current line is highlighted with a match using
@@ -429,6 +430,7 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 			callback
 			close
 			drag
+			cursorline
 			filter
 			firstline
 			flip
@@ -598,6 +600,9 @@ The second argument of |popup_create()| is a dictionary with options:
 			  {start} or after {end}
 			The popup also closes if the cursor moves to another
 			line or to another window.
+	cursorline	non-zero: highlight at the cursorline.
+			zero: do not highlight at the cursorline.
+			Default is zero. When |popup_menu()|, set non-zero.
 	filter		A callback that can filter typed characters, see
 			|popup-filter|.
 	callback	A callback that is called when the popup closes, e.g.
