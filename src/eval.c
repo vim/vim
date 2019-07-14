@@ -4266,7 +4266,7 @@ eval6(
     for (;;)
     {
 	op = **arg;
-	if (op != '*' && op != '/' && op != '%')
+	if ((op != '*' || (*arg)[1] == '{') && op != '/' && op != '%')
 	    break;
 
 	if (evaluate)
