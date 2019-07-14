@@ -773,6 +773,7 @@ OBJ = \
 	$(OUTDIR)\syntax.obj \
 	$(OUTDIR)\tag.obj \
 	$(OUTDIR)\term.obj \
+	$(OUTDIR)\testing.obj \
 	$(OUTDIR)\textprop.obj \
 	$(OUTDIR)\ui.obj \
 	$(OUTDIR)\undo.obj \
@@ -1620,6 +1621,8 @@ $(OUTDIR)/tag.obj:	$(OUTDIR) tag.c  $(INCL)
 
 $(OUTDIR)/term.obj:	$(OUTDIR) term.c  $(INCL)
 
+$(OUTDIR)/term.obj:	$(OUTDIR) testing.c  $(INCL)
+
 $(OUTDIR)/textprop.obj:	$(OUTDIR) textprop.c  $(INCL)
 
 $(OUTDIR)/ui.obj:	$(OUTDIR) ui.c  $(INCL)
@@ -1778,6 +1781,7 @@ proto.h: \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \
+	proto/testing.pro \
 	proto/textprop.pro \
 	proto/ui.pro \
 	proto/undo.pro \

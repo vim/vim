@@ -81,6 +81,8 @@ SRC =	arabic.c						\
 	syntax.c						\
 	tag.c							\
 	term.c							\
+	testing.c						\
+	textprop.c						\
 	ui.c							\
 	undo.c							\
 	usercmd.c						\
