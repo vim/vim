@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jul 13
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jul 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -362,7 +362,7 @@ popup_menu({what}, {options})				 *popup_menu()*
 				\ drag: 1,
 				\ wrap: 0,
 				\ border: [],
-				\ padding: [],
+				\ padding: [0,1,0,1],
 				\ filter: 'popup_filter_menu',
 				\ })
 <		The current line is highlighted with a match using
