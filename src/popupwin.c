@@ -2183,7 +2183,8 @@ invoke_popup_filter(win_T *wp, int c)
     int		dummy;
     typval_T	argv[3];
     char_u	buf[NUMBUFLEN];
-
+    linenr_T	old_lnum;
+	    
     // Emergency exit: CTRL-C closes the popup.
     if (c == Ctrl_C)
     {
@@ -2204,9 +2205,13 @@ invoke_popup_filter(win_T *wp, int c)
 
     argv[2].v_type = VAR_UNKNOWN;
 
+    old_lnum = wp->w_cursor.lnum;
     // NOTE: The callback might close the popup, thus make "wp" invalid.
     call_callback(&wp->w_filter_cb, -1,
 			    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+    if (old_lnum != wp->w_cursor.lnum)
+	popup_highlight_curline(wp);
+
     res = tv_get_number(&rettv);
     vim_free(argv[1].vval.v_string);
     clear_tv(&rettv);
