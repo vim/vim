@@ -739,6 +739,7 @@ OBJ = \
 	$(OUTDIR)\getchar.obj \
 	$(OUTDIR)\hardcopy.obj \
 	$(OUTDIR)\hashtab.obj \
+	$(OUTDIR)\highlight.obj \
 	$(OUTDIR)\indent.obj \
 	$(OUTDIR)\insexpand.obj \
 	$(OUTDIR)\json.obj \
@@ -761,6 +762,7 @@ OBJ = \
 	$(OUTDIR)\pathdef.obj \
 	$(OUTDIR)\popupmnu.obj \
 	$(OUTDIR)\popupwin.obj \
+	$(OUTDIR)\profiler.obj \
 	$(OUTDIR)\quickfix.obj \
 	$(OUTDIR)\regexp.obj \
 	$(OUTDIR)\screen.obj \
@@ -772,6 +774,7 @@ OBJ = \
 	$(OUTDIR)\syntax.obj \
 	$(OUTDIR)\tag.obj \
 	$(OUTDIR)\term.obj \
+	$(OUTDIR)\testing.obj \
 	$(OUTDIR)\textprop.obj \
 	$(OUTDIR)\ui.obj \
 	$(OUTDIR)\undo.obj \
@@ -1485,6 +1488,8 @@ $(OUTDIR)/hardcopy.obj:	$(OUTDIR) hardcopy.c  $(INCL)
 
 $(OUTDIR)/hashtab.obj:	$(OUTDIR) hashtab.c  $(INCL)
 
+$(OUTDIR)/highlight.obj:	$(OUTDIR) highlight.c  $(INCL)
+
 $(OUTDIR)/indent.obj:	$(OUTDIR) indent.c  $(INCL)
 
 $(OUTDIR)/insexpand.obj:	$(OUTDIR) insexpand.c  $(INCL)
@@ -1595,6 +1600,8 @@ $(OUTDIR)/popupmnu.obj:	$(OUTDIR) popupmnu.c  $(INCL)
 
 $(OUTDIR)/popupwin.obj:	$(OUTDIR) popupwin.c  $(INCL)
 
+$(OUTDIR)/profiler.obj:	$(OUTDIR) profiler.c  $(INCL)
+
 $(OUTDIR)/quickfix.obj:	$(OUTDIR) quickfix.c  $(INCL)
 
 $(OUTDIR)/regexp.obj:	$(OUTDIR) regexp.c regexp_nfa.c  $(INCL)
@@ -1616,6 +1623,8 @@ $(OUTDIR)/syntax.obj:	$(OUTDIR) syntax.c  $(INCL)
 $(OUTDIR)/tag.obj:	$(OUTDIR) tag.c  $(INCL)
 
 $(OUTDIR)/term.obj:	$(OUTDIR) term.c  $(INCL)
+
+$(OUTDIR)/term.obj:	$(OUTDIR) testing.c  $(INCL)
 
 $(OUTDIR)/textprop.obj:	$(OUTDIR) textprop.c  $(INCL)
 
@@ -1741,6 +1750,7 @@ proto.h: \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
+	proto/highlight.pro \
 	proto/indent.pro \
 	proto/insexpand.pro \
 	proto/json.pro \
@@ -1763,6 +1773,7 @@ proto.h: \
 	proto/os_win32.pro \
 	proto/popupmnu.pro \
 	proto/popupwin.pro \
+	proto/profiler.pro \
 	proto/quickfix.pro \
 	proto/regexp.pro \
 	proto/screen.pro \
@@ -1774,6 +1785,7 @@ proto.h: \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \
+	proto/testing.pro \
 	proto/textprop.pro \
 	proto/ui.pro \
 	proto/undo.pro \

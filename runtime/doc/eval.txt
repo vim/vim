@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jul 04
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jul 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -58,7 +58,9 @@ List		An ordered sequence of items, see |List| for details.
 
 Dictionary	An associative, unordered array: Each entry has a key and a
 		value. |Dictionary|
-		Example: {'blue': "#0000ff", 'red': "#ff0000"}
+		Examples:
+			{'blue': "#0000ff", 'red': "#ff0000"}
+			~{blue: "#0000ff", red: "#ff0000"}
 
 Funcref		A reference to a function |Funcref|.
 		Example: function("strlen")
@@ -477,8 +479,14 @@ only appear once.  Examples: >
 A key is always a String.  You can use a Number, it will be converted to a
 String automatically.  Thus the String '4' and the number 4 will find the same
 entry.  Note that the String '04' and the Number 04 are different, since the
-Number will be converted to the String '4'.  The empty string can be used as a
-key.
+Number will be converted to the String '4'.  The empty string can also be used
+as a key.
+						*literal-Dict*
+To avoid having to put quotes around every key the ~{} form can be used.  This
+does require the key to consist only of ASCII letters, digits, '-' and '_'.
+Example: >
+	let mydict = ~{zero: 0, one_key: 1, two-key: 2, 333: 3}
+Note that 333 here is the string "333".  Empty keys are not possible here.
 
 A value can be any expression.  Using a Dictionary for a value creates a
 nested Dictionary: >
@@ -2660,6 +2668,7 @@ shellescape({string} [, {special}])
 					command argument
 shiftwidth([{col}])		Number	effective value of 'shiftwidth'
 sign_define({name} [, {dict}])	Number	define or update a sign
+sign_define({list})		List	define or update a list of signs
 sign_getdefined([{name}])	List	get a list of defined signs
 sign_getplaced([{expr} [, {dict}]])
 				List	get a list of placed signs
@@ -2667,9 +2676,12 @@ sign_jump({id}, {group}, {expr})
 				Number	jump to a sign
 sign_place({id}, {group}, {name}, {expr} [, {dict}])
 				Number	place a sign
+sign_placelist({list})		List	place a list of signs
 sign_undefine([{name}])		Number	undefine a sign
+sign_undefine({list})		List	undefine a list of signs
 sign_unplace({group} [, {dict}])
 				Number	unplace a sign
+sign_unplacelist({list})	List	unplace a list of signs
 simplify({filename})		String	simplify filename as much as possible
 sin({expr})			Float	sine of {expr}
 sinh({expr})			Float	hyperbolic sine of {expr}
@@ -6494,6 +6506,8 @@ listener_flush([{buf}])					*listener_flush()*
 
 listener_remove({id})					*listener_remove()*
 		Remove a listener previously added with listener_add().
+		Returns zero when {id} could not be found, one when {id} was
+		removed.
 
 localtime()						*localtime()*
 		Return the current time, measured as seconds since 1st Jan
@@ -8624,6 +8638,7 @@ shiftwidth([{col}])						*shiftwidth()*
 		no {col} argument is given, column 1 will be assumed.
 
 sign_define({name} [, {dict}])				*sign_define()*
+sign_define({list})
 		Define a new sign named {name} or modify the attributes of an
 		existing sign.  This is similar to the |:sign-define| command.
 
@@ -8643,11 +8658,25 @@ sign_define({name} [, {dict}])				*sign_define()*
 		If the sign named {name} already exists, then the attributes
 		of the sign are updated.
 
-		Returns 0 on success and -1 on failure.
+		The one argument {list} can be used to define a list of signs.
+		Each list item is a dictionary with the above items in {dict}
+		and a 'name' item for the sign name.
+
+		Returns 0 on success and -1 on failure.  When the one argument
+		{list} is used, then returns a List of values one for each
+		defined sign.
 
 		Examples: >
-			call sign_define("mySign", {"text" : "=>", "texthl" :
-					\ "Error", "linehl" : "Search"})
+			call sign_define("mySign", {
+				\ "text" : "=>",
+				\ "texthl" : "Error",
+				\ "linehl" : "Search"})
+			call sign_define([
+				\ {'name' : 'sign1',
+				\  'text' : '=>'},
+				\ {'name' : 'sign2',
+				\  'text' : '!!'}
+				\ ])
 <
 sign_getdefined([{name}])				*sign_getdefined()*
 		Get a list of defined signs and their attributes.
@@ -8801,16 +8830,84 @@ sign_place({id}, {group}, {name}, {expr} [, {dict}])
 			call sign_place(10, 'g3', 'sign4', 'json.c',
 					\ {'lnum' : 40, 'priority' : 90})
 <
+							*sign_placelist()*
+sign_placelist({list})
+		Place one or more signs.  This is similar to the
+		|sign_place()| function.  The {list} argument specifies the
+		List of signs to place. Each list item is a dict with the
+		following sign attributes:
+		    buffer	buffer name or number. For the accepted
+				values, see |bufname()|.
+		    group	sign group. {group} functions as a namespace
+				for {id}, thus two groups can use the same
+				IDs. If not specified or set to an empty
+				string, then the global group is used.   See
+				|sign-group| for more information.
+		    id		sign identifier. If not specified or zero,
+				then a new unique identifier is allocated.
+				Otherwise the specified number is used. See
+				|sign-identifier| for more information.
+		    lnum	line number in the buffer {expr} where the
+				sign is to be placed. For the accepted values,
+				see |line()|.
+		    name	name of the sign to place. See |sign_define()|
+		    		for more information.
+		    priority	priority of the sign. When multiple signs are
+				placed on a line, the sign with the highest
+				priority is used. If not specified, the
+				default value of 10 is used. See
+				|sign-priority| for more information.
+
+		If {id} refers to an existing sign, then the existing sign is
+		modified to use the specified {name} and/or {priority}.
+
+		Returns a List of sign identifiers. If failed to place a
+		sign, the corresponding list item is set to -1.
+
+		Examples: >
+			" Place sign s1 with id 5 at line 20 and id 10 at line
+			" 30 in buffer a.c
+			let [n1, n2] = sign_place([
+				\ {'id' : 5,
+				\  'name' : 's1',
+				\  'buffer' : 'a.c',
+				\  'lnum' : 20},
+				\ {'id' : 10,
+				\  'name' : 's1',
+				\  'buffer' : 'a.c',
+				\  'lnum' : 30}
+				\ ])
+
+			" Place sign s1 in buffer a.c at line 40 and 50
+			" with auto-generated identifiers
+			let [n1, n2] = sign_place([
+				\ {'name' : 's1',
+				\  'buffer' : 'a.c',
+				\  'lnum' : 40},
+				\ {'name' : 's1',
+				\  'buffer' : 'a.c',
+				\  'lnum' : 50}
+				\ ])
+<
 sign_undefine([{name}])					*sign_undefine()*
+sign_undefine({list})
 		Deletes a previously defined sign {name}. This is similar to
 		the |:sign-undefine| command. If {name} is not supplied, then
 		deletes all the defined signs.
 
-		Returns 0 on success and -1 on failure.
+		The one argument {list} can be used to undefine a list of
+		signs. Each list item is the name of a sign.
+
+		Returns 0 on success and -1 on failure.  For the one argument
+		{list} call, returns a list of values one for each undefined
+		sign.
 
 		Examples: >
 			" Delete a sign named mySign
 			call sign_undefine("mySign")
+
+			" Delete signs 'sign1' and 'sign2'
+			call sign_undefine(["sign1", "sign2"])
 
 			" Delete all the signs
 			call sign_undefine()
@@ -8856,6 +8953,32 @@ sign_unplace({group} [, {dict}])			*sign_unplace()*
 
 			" Remove all the placed signs from all the buffers
 			call sign_unplace('*')
+<
+sign_unplacelist({list})				*sign_unplacelist()*
+		Remove previously placed signs from one or more buffers.  This
+		is similar to the |sign_unplace()| function.
+
+		The {list} argument specifies the List of signs to remove.
+		Each list item is a dict with the following sign attributes:
+		    buffer	buffer name or number. For the accepted
+				values, see |bufname()|. If not specified,
+				then the specified sign is removed from all
+				the buffers.
+		    group	sign group name. If not specified or set to an
+				empty string, then the global sign group is
+				used. If set to '*', then all the groups
+				including the global group are used.
+		    id		sign identifier. If not specified, then all
+				the signs in the specified group are removed.
+
+		Returns a List where an entry is set to 0 if the corresponding
+		sign was successfully removed or -1 on failure.
+
+		Example: >
+			" Remove sign with id 10 from buffer a.vim and sign
+			" with id 20 from buffer b.vim
+			call sign_unplace([{'id' : 10, 'buffer' : "a.vim"},
+					\ {'id' : 20, 'buffer' : 'b.vim'}])
 <
 simplify({filename})					*simplify()*
 		Simplify the file name as much as possible without changing
@@ -9917,8 +10040,8 @@ timer_stop({timer})					*timer_stop()*
 
 timer_stopall()						*timer_stopall()*
 		Stop all timers.  The timer callbacks will no longer be
-		invoked.  Useful if some timers is misbehaving.  If there are
-		no timers there is no error.
+		invoked.  Useful if a timer is misbehaving.  If there are no
+		timers there is no error.
 
 		{only available when compiled with the |+timers| feature}
 

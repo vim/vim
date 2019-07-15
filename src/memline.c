@@ -2836,8 +2836,10 @@ ml_append_int(
 
 #ifdef FEAT_EVAL
     // When inserting above recorded changes: flush the changes before changing
-    // the text.
+    // the text.  Then flush the cached line, it may become invalid.
     may_invoke_listeners(buf, lnum + 1, lnum + 1, 1);
+    if (curbuf->b_ml.ml_line_lnum != 0)
+	ml_flush_line(curbuf);
 #endif
 
 #ifdef FEAT_TEXT_PROP

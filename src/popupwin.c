@@ -1299,7 +1299,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	for (i = 0; i < 4; ++i)
 	{
 	    wp->w_popup_border[i] = 1;
-	    wp->w_popup_padding[i] = 1;
+	    wp->w_popup_padding[i] = (i & 1) ? 1 : 0;
 	}
     }
 
@@ -1511,6 +1511,12 @@ popup_highlight_curline(win_T *wp)
     char    buf[100];
 
     match_delete(wp, 1, FALSE);
+
+    // Scroll to show the line with the cursor.  This assumes lines don't wrap.
+    while (wp->w_topline + wp->w_height - 1 < wp->w_cursor.lnum)
+	wp->w_topline++;
+    while (wp->w_cursor.lnum < wp->w_topline)
+	wp->w_topline--;
 
     id = syn_name2id((char_u *)"PopupSelected");
     vim_snprintf(buf, sizeof(buf), "\\%%%dl.*", (int)wp->w_cursor.lnum);

@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Jul 04
+*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Jul 06
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -1015,8 +1015,10 @@ Signs:						*sign-functions*
 	sign_getplaced()	get a list of placed signs
 	sign_jump()		jump to a sign
 	sign_place()		place a sign
+	sign_placelist()	place a list of signs
 	sign_undefine()		undefine a sign
 	sign_unplace()		unplace a sign
+	sign_unplacelist()	unplace a list of signs
 
 Terminal window:				*terminal-functions*
 	term_start()		open a terminal window and run a job

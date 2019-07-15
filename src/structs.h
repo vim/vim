@@ -1000,6 +1000,58 @@ struct syn_state
 #endif // FEAT_SYN_HL
 
 /*
+ * Structure that stores information about a highlight group.
+ * The ID of a highlight group is also called group ID.  It is the index in
+ * the highlight_ga array PLUS ONE.
+ */
+typedef struct
+{
+    char_u	*sg_name;	// highlight group name
+    char_u	*sg_name_u;	// uppercase of sg_name
+    int		sg_cleared;	// "hi clear" was used
+// for normal terminals
+    int		sg_term;	// "term=" highlighting attributes
+    char_u	*sg_start;	// terminal string for start highl
+    char_u	*sg_stop;	// terminal string for stop highl
+    int		sg_term_attr;	// Screen attr for term mode
+// for color terminals
+    int		sg_cterm;	// "cterm=" highlighting attr
+    int		sg_cterm_bold;	// bold attr was set for light color
+    int		sg_cterm_fg;	// terminal fg color number + 1
+    int		sg_cterm_bg;	// terminal bg color number + 1
+    int		sg_cterm_attr;	// Screen attr for color term mode
+// for when using the GUI
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    guicolor_T	sg_gui_fg;	// GUI foreground color handle
+    guicolor_T	sg_gui_bg;	// GUI background color handle
+#endif
+#ifdef FEAT_GUI
+    guicolor_T	sg_gui_sp;	// GUI special color handle
+    GuiFont	sg_font;	// GUI font handle
+#ifdef FEAT_XFONTSET
+    GuiFontset	sg_fontset;	// GUI fontset handle
+#endif
+    char_u	*sg_font_name;  // GUI font or fontset name
+    int		sg_gui_attr;    // Screen attr for GUI mode
+#endif
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
+// Store the sp color name for the GUI or synIDattr()
+    int		sg_gui;		// "gui=" highlighting attributes
+    char_u	*sg_gui_fg_name;// GUI foreground color name
+    char_u	*sg_gui_bg_name;// GUI background color name
+    char_u	*sg_gui_sp_name;// GUI special color name
+#endif
+    int		sg_link;	// link to this highlight group ID
+    int		sg_set;		// combination of SG_* flags
+#ifdef FEAT_EVAL
+    sctx_T	sg_script_ctx;	// script in which the group was last set
+#endif
+} hl_group_T;
+
+#define HL_TABLE()	((hl_group_T *)((highlight_ga.ga_data)))
+#define MAX_HL_ID       20000	// maximum value for a highlight ID.
+
+/*
  * Structure shared between syntax.c, screen.c and gui_x11.c.
  */
 typedef struct attr_entry
@@ -1518,6 +1570,54 @@ struct funccal_entry {
     funccal_entry_T *next;
 };
 
+/* From user function to hashitem and back. */
+#define UF2HIKEY(fp) ((fp)->uf_name)
+#define HIKEY2UF(p)  ((ufunc_T *)((p) - offsetof(ufunc_T, uf_name)))
+#define HI2UF(hi)     HIKEY2UF((hi)->hi_key)
+
+/* Growarray to store info about already sourced scripts.
+ * For Unix also store the dev/ino, so that we don't have to stat() each
+ * script when going through the list. */
+typedef struct scriptitem_S
+{
+    char_u	*sn_name;
+# ifdef UNIX
+    int		sn_dev_valid;
+    dev_t	sn_dev;
+    ino_t	sn_ino;
+# endif
+# ifdef FEAT_PROFILE
+    int		sn_prof_on;	/* TRUE when script is/was profiled */
+    int		sn_pr_force;	/* forceit: profile functions in this script */
+    proftime_T	sn_pr_child;	/* time set when going into first child */
+    int		sn_pr_nest;	/* nesting for sn_pr_child */
+    /* profiling the script as a whole */
+    int		sn_pr_count;	/* nr of times sourced */
+    proftime_T	sn_pr_total;	/* time spent in script + children */
+    proftime_T	sn_pr_self;	/* time spent in script itself */
+    proftime_T	sn_pr_start;	/* time at script start */
+    proftime_T	sn_pr_children; /* time in children after script start */
+    /* profiling the script per line */
+    garray_T	sn_prl_ga;	/* things stored for every line */
+    proftime_T	sn_prl_start;	/* start time for current line */
+    proftime_T	sn_prl_children; /* time spent in children for this line */
+    proftime_T	sn_prl_wait;	/* wait start time for current line */
+    int		sn_prl_idx;	/* index of line being timed; -1 if none */
+    int		sn_prl_execed;	/* line being timed was executed */
+# endif
+} scriptitem_T;
+
+# ifdef FEAT_PROFILE
+/* Struct used in sn_prl_ga for every line of a script. */
+typedef struct sn_prl_S
+{
+    int		snp_count;	/* nr of times line was executed */
+    proftime_T	sn_prl_total;	/* time spent in a line + children */
+    proftime_T	sn_prl_self;	/* time spent in a line itself */
+} sn_prl_T;
+
+#  define PRL_ITEM(si, idx)	(((sn_prl_T *)(si)->sn_prl_ga.ga_data)[(idx)])
+# endif
 #else
 // dummy typedefs for use in function prototypes
 typedef struct
@@ -1527,11 +1627,19 @@ typedef struct
 typedef struct
 {
     int	    dummy;
+} funccall_T;
+typedef struct
+{
+    int	    dummy;
 } funcdict_T;
 typedef struct
 {
     int	    dummy;
 } funccal_entry_T;
+typedef struct
+{
+    int	    dummy;
+} scriptitem_T;
 #endif
 
 struct partial_S

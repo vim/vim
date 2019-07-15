@@ -22,6 +22,8 @@ void f_sign_getdefined(typval_T *argvars, typval_T *rettv);
 void f_sign_getplaced(typval_T *argvars, typval_T *rettv);
 void f_sign_jump(typval_T *argvars, typval_T *rettv);
 void f_sign_place(typval_T *argvars, typval_T *rettv);
+void f_sign_placelist(typval_T *argvars, typval_T *rettv);
 void f_sign_undefine(typval_T *argvars, typval_T *rettv);
 void f_sign_unplace(typval_T *argvars, typval_T *rettv);
+void f_sign_unplacelist(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

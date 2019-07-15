@@ -89,6 +89,7 @@ extern int _stricoll(char *a, char *b);
 # endif
 # include "hardcopy.pro"
 # include "hashtab.pro"
+# include "highlight.pro"
 # include "indent.pro"
 # ifdef FEAT_INS_EXPAND
 # include "insexpand.pro"
@@ -171,6 +172,9 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # include "ops.pro"
 # include "option.pro"
 # include "popupmnu.pro"
+# if defined(FEAT_PROFILE) || defined(FEAT_RELTIME)
+# include "profiler.pro"
+# endif
 # ifdef FEAT_QUICKFIX
 #  include "quickfix.pro"
 # endif
@@ -199,6 +203,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 #  include "popupwin.pro"
 #  include "textprop.pro"
 # endif
+# include "testing.pro"
 # include "ui.pro"
 # include "undo.pro"
 # include "usercmd.pro"

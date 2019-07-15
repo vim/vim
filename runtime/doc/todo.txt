@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Jul 04
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Jul 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,33 +38,26 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Ongoing work on text properties, see src/textprop.c
-
-Popup windows are being implemented, see |popup-window|.
-
 Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
 20)
 Also put :argadd commands at the start for all buffers, so that their order
 remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 
-Listener causes extra } to be inserted. (Paul Jolly, #4455)
+Shorten the command used in test Makefile. (Daniel Hahler, #4643)
 
 Refactor: Move common things out of evalfunc.c, it's too big.
-
-Template string: review #4491
-
-Terminal test fails when vim is configured with some features. (Dominique,
-#4597)
+Move function specs out of eval.txt, it's too big.
 
 Popup windows:
+- Default popup_menu padding: only left&right.
+- Add 'previewpopup': open preview in a popupwindow.
+  Values: dict options as a string?  "line:20,maxwidth:60,maxheight:20"
 - Implement flip option
-- Have a way to scroll to the bottom? (#4577)
+- Have a way to scroll to the bottom, e.g. set 'firstline' to -1? (#4577)
 - Why does 'nrformats' leak from the popup window buffer???
+  Happens in Test_simple_popup() at the second screendump.
 - Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
   Use ERROR_IF_POPUP_WINDOW for more commands.
-- Add 'balloonpopup': instead of showing text, let the callback open a popup
-  window and return the window ID.   The popup will then be closed when the
-  mouse moves, except when it moves inside the popup.
 - For the "moved" property also include mouse movement?
 - Can the buffer be re-used if it was the last one, to avoid using up lots of
   buffer numbers?
@@ -150,12 +143,19 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
+Error numbers available: E172, E221, E242, E249, E260, E274, E275, E276,
+E278, E279, E281, E290, E291, E292, E361, E362, E366, E396, E450, E451, E452,
+E453, E454, E460, E489, E491, E56, E57, E565, E569, E578, E610, E611, E653,
+E654, E693, E706, E856, E857, E860, E861, E863, E889, E900, E959
+
 Sound: support on Mac?  Or does libcanberra work there?
 
 Patch to use forward slash for completion even when 'shellslash' is set.
 Adds 'completepathslash'.  (Yasuhiro Matsumoto, 2018 Nov 15, #3612)
 
 Patch to add win_splitmove() function. (Andy Massimino, #4561)
+
+Resolve() works incorrectly under windows. (#4661)
 
 Completion mixes results from the current buffer with tags and other files.
 Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
@@ -169,7 +169,7 @@ Ready to include now?
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
 
-Patch to the code to get sign information. (Yegappan Lakshmanan, #4586)
+Patch for Template string: #4491  Not ready yet.  New pull: #4634
 
 ":bnext" in a help buffer is supposed to go to the next help buffer, but it
 goes to any buffer, and then :bnext skips help buffers, since they are
@@ -226,6 +226,25 @@ Patch for ambiguous width characters in libvterm on MS-Windows 10.
 (Nobuhiro Takasaki, #4411)
 
 Problem with colors in terminal window. (Jason Franklin, 2019 May 12)
+
+Lifepillar: Updated/cleaned up color schemes:
+https://github.com/lifepillar/vim8-colorschemes.
+
+Include a few color schemes, based on popularity:
+http://www.vim.org/scripts/script_search_results.php?keywords=&script_type=color+scheme&order_by=rating&direction=descending&search=search
+http://vimawesome.com/?q=tag:color-scheme
+Use names that indicate their appearance (Christian Brabandt, 2017 Aug 3)
+- monokai - Xia Crusoe (2017 Aug 4) 
+- seoul256 - Christian Brabandt (2017 Aug 3)
+- gruvbox -  Christian Brabandt (2017 Aug 3) (simplified version from
+      Lifepillar, 2018 Jan 22, #2573)
+- janah - Marco Hinz (2017 Aug 4)
+- apprentice - Romain Lafourcade (2017 Aug 6)  remarks about help file #1964
+Suggested by Hiroki Kokubun:
+- [Iceberg](https://github.com/cocopon/iceberg.vim) (my one)
+- [hybrid](https://github.com/w0ng/vim-hybrid)
+Include solarized color scheme?, it does not support termguicolors.
+- Sanitized version of pablo (Lifepillar, 2017 Nov 21)
 
 Bug: "vipgw" does not put cursor back where it belongs. (Jason Franklin, 2019
 Mar 5)
@@ -308,6 +327,10 @@ nvo-mode mapping works on Windows, not on Linux. (#3678)
 
 Missing tests for:
 - add_termcap_entry()
+
+Redo only remembers the last change.  Could use "{count}g." to redo an older
+change.  How does the user know which change?  At least have a way to list
+them: ":repeats".  Add to history, like search history and command line history.
 
 When using exclusive selection and vi" that fails, cursor moves to the left.
 Cursor should not move. (#4024)
@@ -790,22 +813,6 @@ Also: Get an error message from free() in the process that owns the selection.
 Seems to happen when the selection is requested the second time, but before
 clip_x11_convert_selection_cb() is invoked, thus in X library code.
 Kazunobu Kuriyama is working on a proper fix. (2017 Jul 25)
-
-Include a few color schemes, based on popularity:
-http://www.vim.org/scripts/script_search_results.php?keywords=&script_type=color+scheme&order_by=rating&direction=descending&search=search
-http://vimawesome.com/?q=tag:color-scheme
-Use names that indicate their appearance (Christian Brabandt, 2017 Aug 3)
-- monokai - Xia Crusoe (2017 Aug 4) 
-- seoul256 - Christian Brabandt (2017 Aug 3)
-- gruvbox -  Christian Brabandt (2017 Aug 3) (simplified version from
-      Lifepillar, 2018 Jan 22, #2573)
-- janah - Marco Hinz (2017 Aug 4)
-- apprentice - Romain Lafourcade (2017 Aug 6)  remarks about help file #1964
-Suggested by Hiroki Kokubun:
-- [Iceberg](https://github.com/cocopon/iceberg.vim) (my one)
-- [hybrid](https://github.com/w0ng/vim-hybrid)
-Include solarized color scheme?, it does not support termguicolors.
-- Sanitized version of pablo (Lifepillar, 2017 Nov 21)
 
 Problem with three-piece comment. (Michael Lee, 2017 May 11, #1696)
 
@@ -1520,10 +1527,6 @@ Patch for building a 32bit Vim with 64bit MingW compiler.
 
 Patch: On MS-Windows shellescape() may have to triple double quotes.
 (Ingo Karkat, 2015 Jan 16)
-
-Redo only remembers the last change.  Could use "{count}g." to redo an older
-change.  How does the user know which change?  At least have a way to list
-them: ":repeats".
 
 Patch for glob(), adding slash to normal files. (Ingo Karkat, 2014 Dec 22)
 

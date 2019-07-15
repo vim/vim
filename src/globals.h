@@ -252,6 +252,9 @@ EXTERN int	debug_backtrace_level INIT(= 0); /* breakpoint backtrace level */
 # ifdef FEAT_PROFILE
 EXTERN int	do_profiling INIT(= PROF_NONE);	/* PROF_ values */
 # endif
+EXTERN garray_T script_items INIT(= {0 COMMA 0 COMMA sizeof(scriptitem_T) COMMA 4 COMMA NULL});
+#define SCRIPT_ITEM(id) (((scriptitem_T *)script_items.ga_data)[(id) - 1])
+#define FUNCLINE(fp, j)	((char_u **)(fp->uf_lines.ga_data))[j]
 
 /*
  * The exception currently being thrown.  Used to pass an exception to
@@ -351,6 +354,16 @@ EXTERN char_u	hash_removed;
 
 EXTERN int	scroll_region INIT(= FALSE); /* term supports scroll region */
 EXTERN int	t_colors INIT(= 0);	    /* int value of T_CCO */
+
+// highlight groups for 'highlight' option
+EXTERN garray_T highlight_ga INIT(= {0 COMMA 0 COMMA sizeof(hl_group_T) COMMA 10 COMMA NULL});
+
+#ifdef FEAT_CMDL_COMPL
+// Flags to indicate an additional string for highlight name completion.
+EXTERN int include_none INIT(= 0);	// when 1 include "None"
+EXTERN int include_default INIT(= 0);	// when 1 include "default"
+EXTERN int include_link INIT(= 0);	// when 2 include "link" and "clear"
+#endif
 
 /*
  * When highlight_match is TRUE, highlight a match, starting at the cursor
