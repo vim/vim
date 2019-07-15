@@ -10,7 +10,7 @@ endif
 " Don't load another plugin for this buffer
 let b:did_ftplugin = 1
 
-if get(g:, 'qf_default_statusline')
+if !get(g:, 'qf_disable_statusline')
   let b:undo_ftplugin = "set stl<"
 
   " Display the command that produced the list in the quickfix window:
