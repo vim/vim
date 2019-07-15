@@ -6716,7 +6716,7 @@ msgid "E255: Couldn't read in sign data!"
 msgstr "E255: Подаци за знак нису могли да се прочитају!"
 
 msgid "E72: Close error on swap file"
-msgstr "E72: Грешка код затвањара swap фајла"
+msgstr "E72: Грешка код затварања swap фајла"
 
 msgid "E73: tag stack empty"
 msgstr "E73: стек ознака је празан"
