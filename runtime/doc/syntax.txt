@@ -2624,6 +2624,14 @@ Note: only existence of these options matter, not their value. You can replace
       1 above with anything.
 
 
+QF						    *qf.vim* *ft-qf-syntax*
+
+The quickfix syntax includes configuration for displaying the command that
+produced the quickfix list in the |statusline|. To disable this setting,
+configure as follows: >
+	:let g:qf_disable_statusline = 1
+
+
 QUAKE						*quake.vim* *ft-quake-syntax*
 
 The Quake syntax definition should work for most any FPS (First Person
