@@ -3737,7 +3737,7 @@ ResizeConBufAndWindow(
 {
     CONSOLE_SCREEN_BUFFER_INFO csbi;	/* hold current console buffer info */
     SMALL_RECT	    srWindowRect;	/* hold the new console size */
-    COORD	    coordScreen;
+    COORD	    coordScreen, cursor;
     static int	    resized = FALSE;
 
 #ifdef MCH_WRITE_DUMP
@@ -3792,6 +3792,9 @@ ResizeConBufAndWindow(
     }
     else
     {
+	cursor.X = srWindowRect.Left;
+	cursor.Y = srWindowRect.Top;
+	SetConsoleCursorPosition(hConsole, cursor);
 	ResizeConBuf(hConsole, coordScreen);
 	ResizeWindow(hConsole, srWindowRect);
 	resized = TRUE;
