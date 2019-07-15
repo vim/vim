@@ -3847,7 +3847,7 @@ syn_cmd_list(
 	/*
 	 * No argument: List all group IDs and all syntax clusters.
 	 */
-	for (id = 1; id <= highlight_ga.ga_len && !got_int; ++id)
+	for (id = 1; id <= highlight_num_groups() && !got_int; ++id)
 	    syn_list_one(id, syncing, FALSE);
 	for (id = 0; id < curwin->w_s->b_syn_clusters.ga_len && !got_int; ++id)
 	    syn_list_cluster(id);
@@ -3995,7 +3995,7 @@ syn_list_one(
 	    if (SYN_ITEMS(curwin->w_s)[idx].sp_type == SPTYPE_SKIP)
 		put_pattern("skip", '=', &SYN_ITEMS(curwin->w_s)[idx++], attr);
 	    while (idx < curwin->w_s->b_syn_patterns.ga_len
-			      && SYN_ITEMS(curwin->w_s)[idx].sp_type == SPTYPE_END)
+			  && SYN_ITEMS(curwin->w_s)[idx].sp_type == SPTYPE_END)
 		put_pattern("end", '=', &SYN_ITEMS(curwin->w_s)[idx++], attr);
 	    --idx;
 	    msg_putchar(' ');
@@ -4022,8 +4022,8 @@ syn_list_one(
 		msg_puts_attr("groupthere", attr);
 	    msg_putchar(' ');
 	    if (spp->sp_sync_idx >= 0)
-		msg_outtrans(HL_TABLE()[SYN_ITEMS(curwin->w_s)
-				   [spp->sp_sync_idx].sp_syn.id - 1].sg_name);
+		msg_outtrans(highlight_group_name(SYN_ITEMS(curwin->w_s)
+				   [spp->sp_sync_idx].sp_syn.id - 1));
 	    else
 		msg_puts("NONE");
 	    msg_putchar(' ');
@@ -4031,12 +4031,12 @@ syn_list_one(
     }
 
     /* list the link, if there is one */
-    if (HL_TABLE()[id - 1].sg_link && (did_header || link_only) && !got_int)
+    if (highlight_link_id(id - 1) && (did_header || link_only) && !got_int)
     {
 	(void)syn_list_header(did_header, 999, id);
 	msg_puts_attr("links to", attr);
 	msg_putchar(' ');
-	msg_outtrans(HL_TABLE()[HL_TABLE()[id - 1].sg_link - 1].sg_name);
+	msg_outtrans(highlight_group_name(highlight_link_id(id - 1) - 1));
     }
 }
 
@@ -4115,7 +4115,7 @@ put_id_list(char_u *name, short *list, int attr)
 	    msg_outtrans(SYN_CLSTR(curwin->w_s)[scl_id].scl_name);
 	}
 	else
-	    msg_outtrans(HL_TABLE()[*p - 1].sg_name);
+	    msg_outtrans(highlight_group_name(*p - 1));
 	if (p[1])
 	    msg_putchar(',');
     }
@@ -4144,7 +4144,7 @@ put_pattern(
 	if (last_matchgroup == 0)
 	    msg_outtrans((char_u *)"NONE");
 	else
-	    msg_outtrans(HL_TABLE()[last_matchgroup - 1].sg_name);
+	    msg_outtrans(highlight_group_name(last_matchgroup - 1));
 	msg_putchar(' ');
     }
 
@@ -5967,9 +5967,9 @@ get_id_list(
 
 		    regmatch.rm_ic = TRUE;
 		    id = 0;
-		    for (i = highlight_ga.ga_len; --i >= 0; )
+		    for (i = highlight_num_groups(); --i >= 0; )
 		    {
-			if (vim_regexec(&regmatch, HL_TABLE()[i].sg_name,
+			if (vim_regexec(&regmatch, highlight_group_name(i),
 								  (colnr_T)0))
 			{
 			    if (round == 2)
@@ -6685,7 +6685,7 @@ syntime_report(void)
 	msg_puts(" ");
 # endif
 	msg_advance(50);
-	msg_outtrans(HL_TABLE()[p->id - 1].sg_name);
+	msg_outtrans(highlight_group_name(p->id - 1));
 	msg_puts(" ");
 
 	msg_advance(69);
