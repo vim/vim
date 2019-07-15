@@ -318,11 +318,6 @@ static int	did_lcd;	/* whether ":lcd" was produced for a session */
 #ifndef FEAT_EVAL
 # define ex_compiler		ex_ni
 #endif
-#ifdef FEAT_VIMINFO
-static void	ex_viminfo(exarg_T *eap);
-#else
-# define ex_viminfo		ex_ni
-#endif
 static void	ex_behave(exarg_T *eap);
 static void	ex_filetype(exarg_T *eap);
 static void	ex_setfiletype(exarg_T *eap);
@@ -10712,31 +10707,6 @@ put_line(FILE *fd, char *s)
 	return FAIL;
     return OK;
 }
-
-#ifdef FEAT_VIMINFO
-/*
- * ":rviminfo" and ":wviminfo".
- */
-    static void
-ex_viminfo(
-    exarg_T	*eap)
-{
-    char_u	*save_viminfo;
-
-    save_viminfo = p_viminfo;
-    if (*p_viminfo == NUL)
-	p_viminfo = (char_u *)"'100";
-    if (eap->cmdidx == CMD_rviminfo)
-    {
-	if (read_viminfo(eap->arg, VIF_WANT_INFO | VIF_WANT_MARKS
-				  | (eap->forceit ? VIF_FORCEIT : 0)) == FAIL)
-	    emsg(_("E195: Cannot open viminfo file for reading"));
-    }
-    else
-	write_viminfo(eap->arg, eap->forceit);
-    p_viminfo = save_viminfo;
-}
-#endif
 
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG) || defined(PROTO)
 /*

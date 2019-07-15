@@ -190,6 +190,7 @@ EXTERN int	emsg_severe INIT(= FALSE);   /* use message of next of several
 EXTERN int	did_endif INIT(= FALSE);    /* just had ":endif" */
 EXTERN dict_T	vimvardict;		    /* Dictionary with v: variables */
 EXTERN dict_T	globvardict;		    /* Dictionary with g: variables */
+#define globvarht globvardict.dv_hashtab
 #endif
 EXTERN int	did_emsg;		    /* set by emsg() when the message
 					       is displayed or thrown */
