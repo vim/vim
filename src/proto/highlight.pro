@@ -1,4 +1,7 @@
 /* highlight.c */
+int highlight_num_groups(void);
+char_u *highlight_group_name(int id);
+int highlight_link_id(int id);
 void init_highlight(int both, int reset);
 int load_colors(char_u *name);
 int lookup_color(int idx, int foreground, int *boldp);
@@ -23,7 +26,7 @@ attrentry_T *syn_cterm_attr2entry(int attr);
 char_u *highlight_has_attr(int id, int flag, int modec);
 char_u *highlight_color(int id, char_u *what, int modec);
 long_u highlight_gui_color_rgb(int id, int fg);
-int syn_list_header(int did_header, int	outlen, int id);
+int syn_list_header(int did_header, int outlen, int id);
 int syn_name2id(char_u *name);
 int syn_name2attr(char_u *name);
 int highlight_exists(char_u *name);

@@ -29,6 +29,64 @@ static int hl_attr_table[] =
     {HL_BOLD, HL_STANDOUT, HL_UNDERLINE, HL_UNDERCURL, HL_ITALIC, HL_INVERSE, HL_INVERSE, HL_NOCOMBINE, HL_STRIKETHROUGH, 0};
 #define ATTR_COMBINE(attr_a, attr_b) ((((attr_b) & HL_NOCOMBINE) ? attr_b : (attr_a)) | (attr_b))
 
+/*
+ * Structure that stores information about a highlight group.
+ * The ID of a highlight group is also called group ID.  It is the index in
+ * the highlight_ga array PLUS ONE.
+ */
+typedef struct
+{
+    char_u	*sg_name;	// highlight group name
+    char_u	*sg_name_u;	// uppercase of sg_name
+    int		sg_cleared;	// "hi clear" was used
+// for normal terminals
+    int		sg_term;	// "term=" highlighting attributes
+    char_u	*sg_start;	// terminal string for start highl
+    char_u	*sg_stop;	// terminal string for stop highl
+    int		sg_term_attr;	// Screen attr for term mode
+// for color terminals
+    int		sg_cterm;	// "cterm=" highlighting attr
+    int		sg_cterm_bold;	// bold attr was set for light color
+    int		sg_cterm_fg;	// terminal fg color number + 1
+    int		sg_cterm_bg;	// terminal bg color number + 1
+    int		sg_cterm_attr;	// Screen attr for color term mode
+// for when using the GUI
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    guicolor_T	sg_gui_fg;	// GUI foreground color handle
+    guicolor_T	sg_gui_bg;	// GUI background color handle
+#endif
+#ifdef FEAT_GUI
+    guicolor_T	sg_gui_sp;	// GUI special color handle
+    GuiFont	sg_font;	// GUI font handle
+#ifdef FEAT_XFONTSET
+    GuiFontset	sg_fontset;	// GUI fontset handle
+#endif
+    char_u	*sg_font_name;  // GUI font or fontset name
+    int		sg_gui_attr;    // Screen attr for GUI mode
+#endif
+#if defined(FEAT_GUI) || defined(FEAT_EVAL)
+// Store the sp color name for the GUI or synIDattr()
+    int		sg_gui;		// "gui=" highlighting attributes
+    char_u	*sg_gui_fg_name;// GUI foreground color name
+    char_u	*sg_gui_bg_name;// GUI background color name
+    char_u	*sg_gui_sp_name;// GUI special color name
+#endif
+    int		sg_link;	// link to this highlight group ID
+    int		sg_set;		// combination of SG_* flags
+#ifdef FEAT_EVAL
+    sctx_T	sg_script_ctx;	// script in which the group was last set
+#endif
+} hl_group_T;
+
+// highlight groups for 'highlight' option
+static garray_T highlight_ga;
+#define HL_TABLE()	((hl_group_T *)((highlight_ga.ga_data)))
+
+/*
+ * An attribute number is the index in attr_table plus ATTR_OFF.
+ */
+#define ATTR_OFF (HL_ALL + 1)
+
 static void syn_unadd_group(void);
 static void set_hl_attr(int idx);
 static void highlight_list_one(int id);
@@ -44,11 +102,6 @@ static void gui_do_one_color(int idx, int do_menu, int do_tooltip);
 static int  set_group_colors(char_u *name, guicolor_T *fgp, guicolor_T *bgp, int do_menu, int use_norm, int do_tooltip);
 static void hl_do_font(int idx, char_u *arg, int do_normal, int do_menu, int do_tooltip, int free_font);
 #endif
-
-/*
- * An attribute number is the index in attr_table plus ATTR_OFF.
- */
-#define ATTR_OFF (HL_ALL + 1)
 
 /*
  * The default highlight groups.  These are compiled-in for fast startup and
@@ -288,6 +341,33 @@ static char *(highlight_init_dark[]) = {
 #endif
     NULL
 };
+
+/*
+ * Returns the number of highlight groups.
+ */
+    int
+highlight_num_groups(void)
+{
+    return highlight_ga.ga_len;
+}
+
+/*
+ * Returns the name of a highlight group.
+ */
+    char_u *
+highlight_group_name(int id)
+{
+    return HL_TABLE()[id].sg_name;
+}
+
+/*
+ * Returns the ID of the link to a highlight group.
+ */
+    int
+highlight_link_id(int id)
+{
+    return HL_TABLE()[id].sg_link;
+}
 
     void
 init_highlight(

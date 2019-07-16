@@ -355,9 +355,6 @@ EXTERN char_u	hash_removed;
 EXTERN int	scroll_region INIT(= FALSE); /* term supports scroll region */
 EXTERN int	t_colors INIT(= 0);	    /* int value of T_CCO */
 
-// highlight groups for 'highlight' option
-EXTERN garray_T highlight_ga INIT(= {0 COMMA 0 COMMA sizeof(hl_group_T) COMMA 10 COMMA NULL});
-
 #ifdef FEAT_CMDL_COMPL
 // Flags to indicate an additional string for highlight name completion.
 EXTERN int include_none INIT(= 0);	// when 1 include "None"
