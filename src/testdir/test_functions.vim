@@ -1558,3 +1558,66 @@ func Test_bufadd_bufload()
   call assert_equal(0, bufexists('someName'))
   call delete('XotherName')
 endfunc
+
+func Test_inputsecret()
+  if !has('terminal') || has('gui_running')
+    throw 'Skipped: cannot run Vim in a terminal window'
+  endif
+
+  let buf = term_start(GetVimCommandCleanTerm(), {'term_rows': 3})
+  let job = term_getjob(buf)
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 3))})
+  call term_sendkeys(buf, ":set noruler\<CR>")
+  call term_wait(buf, 100)
+
+  call term_sendkeys(buf, ":echo inputsecret('!')\<CR>")
+  call term_sendkeys(buf, "hello,world")
+  call term_wait(buf)
+  call assert_equal('!***********', term_getline(buf, 3))
+  call term_sendkeys(buf, "\<CR>")
+  call term_wait(buf)
+  call assert_equal('!***********hello,world', term_getline(buf, 3))
+
+  call term_sendkeys(buf, ":echo histget('@')\<CR>")
+  call term_wait(buf)
+  call assert_equal('', term_getline(buf, 3))
+
+  call term_sendkeys(buf, ":set iscopt=showlast\<CR>")
+  call term_sendkeys(buf, ":echo inputsecret('!')\<CR>")
+  call term_sendkeys(buf, "h")
+  call term_wait(buf)
+  call assert_equal('!h', term_getline(buf, 3))
+  call term_sendkeys(buf, "e")
+  call term_wait(buf)
+  call assert_equal('!*e', term_getline(buf, 3))
+  call term_sendkeys(buf, "llo,world\<CR>")
+  call term_wait(buf)
+  call assert_equal('!***********hello,world', term_getline(buf, 3))
+
+  call term_sendkeys(buf, ":echo histget('@')\<CR>")
+  call term_wait(buf)
+  call assert_equal('', term_getline(buf, 3))
+
+  call term_sendkeys(buf, ":set iscopt=reveal\<CR>")
+  call term_sendkeys(buf, ":echo inputsecret('!')\<CR>")
+  call term_sendkeys(buf, "hello,")
+  call term_wait(buf)
+  call assert_equal('!******', term_getline(buf, 3))
+  call term_sendkeys(buf, "\<C-X>")
+  call term_wait(buf)
+  call assert_equal('!hello,', term_getline(buf, 3))
+  call term_sendkeys(buf, "\<C-X>world")
+  call term_wait(buf)
+  call assert_equal('!***********', term_getline(buf, 3))
+  call term_sendkeys(buf, "\<CR>")
+  call term_wait(buf)
+  call assert_equal('!***********hello,world', term_getline(buf, 3))
+
+  call term_sendkeys(buf, ":echo histget('@')\<CR>")
+  call term_wait(buf)
+  call assert_equal('', term_getline(buf, 3))
+
+  call term_sendkeys(buf, ":qall!\<CR>")
+  call WaitFor({-> job_status(job) ==# 'dead'})
+  exe buf .. 'bwipe!'
+endfunc
