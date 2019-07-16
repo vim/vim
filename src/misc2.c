@@ -4497,7 +4497,7 @@ parse_queued_messages(void)
 
     // If the current window or buffer changed we need to bail out of the
     // waiting loop.  E.g. when a job exit callback closes the terminal window.
-    if (curwin != old_curwin || curbuf != old_curbuf)
+    if (curwin->w_id != old_curwin->w_id || curbuf != old_curbuf)
 	ins_char_typebuf(K_IGNORE);
 }
 #endif
