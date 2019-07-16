@@ -2494,7 +2494,10 @@ returncmd:
 	    }
 	}
 #endif
-
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+	if (inputsecret_show_last || inputsecret_reveal)
+	    redrawcmd();
+#endif
 	if (gotesc)
 	    abandon_cmdline();
     }
