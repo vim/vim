@@ -14,18 +14,12 @@
 #include "vim.h"
 #include "version.h"
 
-#ifdef FEAT_VIMINFO
+#if defined(FEAT_VIMINFO) || defined(PROTO)
 static char_u *viminfo_filename(char_u	*);
 static void do_viminfo(FILE *fp_in, FILE *fp_out, int flags);
 static int viminfo_encoding(vir_T *virp);
 static int read_viminfo_up_to_marks(vir_T *virp, int forceit, int writing);
-#endif
 
-#ifndef FEAT_VIMINFO
-# define ex_viminfo		ex_ni
-#endif
-
-#if defined(FEAT_VIMINFO) || defined(PROTO)
     int
 read_viminfo_bufferlist(
     vir_T	*virp,

@@ -318,6 +318,9 @@ static int	did_lcd;	/* whether ":lcd" was produced for a session */
 #ifndef FEAT_EVAL
 # define ex_compiler		ex_ni
 #endif
+#ifndef FEAT_VIMINFO
+# define ex_viminfo		ex_ni
+#endif
 static void	ex_behave(exarg_T *eap);
 static void	ex_filetype(exarg_T *eap);
 static void	ex_setfiletype(exarg_T *eap);
