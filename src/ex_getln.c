@@ -2442,20 +2442,25 @@ cmdline_changed:
 	may_do_incsearch_highlighting(firstc, count, &is_state);
 #endif
 
+	// Always redraw the whole command line to fix shaping and right-left
+	// typing or to draw the last character when 'inputsecretopt' is set.
+	// Not efficient, but it works.
+	// Do it only when there are no characters left to read to avoid
+	// useless intermediate redraws.
+	if (0
 #ifdef FEAT_RIGHTLEFT
-	if (cmdmsg_rl
+		|| ((cmdmsg_rl
 # ifdef FEAT_ARABIC
-		|| (p_arshape && !p_tbidi
-				       && cmdline_has_arabic(0, ccline.cmdlen))
+			|| (p_arshape && !p_tbidi
+				     && cmdline_has_arabic(0, ccline.cmdlen)))
+		    && vpeekc() == NUL)
 # endif
-		)
-	    /* Always redraw the whole command line to fix shaping and
-	     * right-left typing.  Not efficient, but it works.
-	     * Do it only when there are no characters left to read
-	     * to avoid useless intermediate redraws. */
-	    if (vpeekc() == NUL)
-		redrawcmd();
 #endif
+#if defined(FEAT_CRYPT) || defined(FEAT_EVAL)
+		|| (inputsecret_show_last || inputsecret_reveal)
+#endif
+		)
+	    redrawcmd();
     }
 
 returncmd:
