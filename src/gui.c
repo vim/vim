@@ -2253,7 +2253,7 @@ gui_outstr_nowrap(
     int		col = gui.col;
 #ifdef FEAT_SIGN_ICONS
     int		draw_sign = FALSE;
-    int		signcol;
+    int		signcol = 0;
     char_u	extra[18];
 # ifdef FEAT_NETBEANS_INTG
     int		multi_sign = FALSE;
