@@ -481,7 +481,7 @@ func Test_search_cmdline5()
   " Do not call test_override("char_avail", 1) so that <C-g> and <C-t> work
   " regardless char_avail.
   new
-  call setline(1, ['  1 the first', '  2 the second', '  3 the third'])
+  call setline(1, ['  1 the first', '  2 the second', '  3 the third', ''])
   set incsearch
   1
   call feedkeys("/the\<c-g>\<c-g>\<cr>", 'tx')
