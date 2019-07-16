@@ -488,7 +488,7 @@ func Test_search_cmdline5()
   call assert_equal('  3 the third', getline('.'))
   $
   call feedkeys("?the\<c-t>\<c-t>\<c-t>\<cr>", 'tx')
-  call assert_equal('  2 the second', getline('.'))
+  call assert_equal('  1 the first', getline('.'))
   " clean up
   set noincsearch
   bw!
