@@ -2143,7 +2143,8 @@ get_ctime(time_t thetime, int add_newline)
 	vim_strncpy((char_u *)buf, (char_u *)_("(Invalid)"), sizeof(buf) - 1);
     else
     {
-	(void)strftime(buf, sizeof(buf) - 1, "%a %b %d %H:%M:%S %Y", curtime);
+	(void)strftime(buf, sizeof(buf) - 1, _("%a %b %d %H:%M:%S %Y"),
+								    curtime);
 # ifdef MSWIN
 	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
 	{
