@@ -5974,6 +5974,8 @@ inputsecret({prompt} [, {text}])			*inputsecret()*
 		|history| stack.
 		The result is a String, which is whatever the user actually
 		typed on the command-line in response to the issued prompt.
+		'inputsecretopt' changes the display state of the input
+		characters.
 		NOTE: Command-line completion is not supported.
 
 insert({object}, {item} [, {idx}])			*insert()*

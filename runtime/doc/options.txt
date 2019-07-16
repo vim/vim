@@ -2302,6 +2302,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'cryptmethod'* *'cm'*
 'cryptmethod' 'cm'	string	(default "blowfish2")
 			global or local to buffer |global-local|
+			{only available when compiled with the |+cryptv|
+			feature}
 	Method used for encryption when the buffer is written to a file:
 							*pkzip*
 	   zip		PkZip compatible method.  A weak kind of encryption.
@@ -4345,6 +4347,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	has a lowercase letter where the typed text has an uppercase letter,
 	and there is a letter before it, the completed part is made uppercase.
 	With 'noinfercase' the match is used as-is.
+
+						*'inputsecretopt'* *'iscopt'*
+'inputsecretopt' 'iscopt' string (default empty)
+			global
+			{only available when compiled with the |+cryptv|
+			feature}
+	A comma separated list of options for |inputsecret()|.
+	  showlast	Show the last input character.
+	  reveal	Toggle show/mask the input characters by CTRL-X.
 
 			*'insertmode'* *'im'* *'noinsertmode'* *'noim'*
 'insertmode' 'im'	boolean	(default off)
