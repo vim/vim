@@ -587,14 +587,13 @@ apply_general_options(win_T *wp, dict_T *dict)
     di = dict_find(dict, (char_u *)"mask", -1);
     if (di != NULL)
     {
-	int ok = TRUE;
+	int ok = FALSE;
 
-	if (di->di_tv.v_type != VAR_LIST)
-	    ok = FALSE;
-	else if (di->di_tv.vval.v_list != NULL)
+	if (di->di_tv.v_type == VAR_LIST && di->di_tv.vval.v_list != NULL)
 	{
 	    listitem_T *li;
 
+	    ok = TRUE;
 	    for (li = di->di_tv.vval.v_list->lv_first; li != NULL;
 							      li = li->li_next)
 	    {

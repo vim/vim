@@ -643,6 +643,10 @@ func Test_popup_invalid_arguments()
   call popup_clear()
   call assert_fails('call popup_create([#{text: "text", props: ["none"]}], {})', 'E715:')
   call popup_clear()
+  call assert_fails('call popup_create("text", #{mask: ["asdf"]})', 'E475:')
+  call popup_clear()
+  call assert_fails('call popup_create("text", #{mask: test_null_list()})', 'E475:')
+  call popup_clear()
 endfunc
 
 func Test_win_execute_closing_curwin()
