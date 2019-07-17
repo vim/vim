@@ -10,7 +10,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_BEVAL) || defined(FEAT_TEXT_PROP) || defined(PROT)
+#if defined(FEAT_BEVAL) || defined(FEAT_TEXT_PROP) || defined(PROTO)
 /*
  * Find text under the mouse position "row" / "col".
  * If "getword" is TRUE the returned text in "*textp" is not the whole line but
