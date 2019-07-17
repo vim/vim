@@ -155,19 +155,16 @@ changed_internal(void)
 static long next_listener_id = 0;
 
 /*
- * Check if the change at "lnum" / "col" is above or overlaps with an existing
- * changed. If above then flush changes and invoke listeners.
- * If "merge" is TRUE do the merge.
+ * Check if the change at "lnum" is above or overlaps with an existing
+ * change. If above then flush changes and invoke listeners.
  * Returns TRUE if the change was merged.
  */
     static int
 check_recorded_changes(
 	buf_T		*buf,
 	linenr_T	lnum,
-	colnr_T		col,
 	linenr_T	lnume,
-	long		xtra,
-	int		merge)
+	long		xtra)
 {
     if (buf->b_recorded_changes != NULL && xtra != 0)
     {
@@ -182,42 +179,12 @@ check_recorded_changes(
 				      li->li_tv.vval.v_dict, (char_u *)"lnum");
 	    prev_lnume = (linenr_T)dict_get_number(
 				       li->li_tv.vval.v_dict, (char_u *)"end");
-	    if (prev_lnum >= lnum || prev_lnum > lnume
-		    || (prev_lnume >= lnum && xtra != 0))
+	    if (prev_lnum >= lnum || prev_lnum > lnume || prev_lnume >= lnum)
 	    {
-		if (li->li_next == NULL && lnum == prev_lnum
-			&& xtra == 0
-			&& col + 1 == (colnr_T)dict_get_number(
-				      li->li_tv.vval.v_dict, (char_u *)"col"))
-		{
-		    if (merge)
-		    {
-			dictitem_T	*di;
-
-			// Same start point and nothing is following, entries
-			// can be merged.
-			di = dict_find(li->li_tv.vval.v_dict,
-							  (char_u *)"end", -1);
-			if (di != NULL)
-			{
-			    prev_lnum = tv_get_number(&di->di_tv);
-			    if (lnume > prev_lnum)
-				di->di_tv.vval.v_number = lnume;
-			}
-			di = dict_find(li->li_tv.vval.v_dict,
-							(char_u *)"added", -1);
-			if (di != NULL)
-			    di->di_tv.vval.v_number += xtra;
-			return TRUE;
-		    }
-		}
-		else
-		{
-		    // the current change is going to make the line number in
-		    // the older change invalid, flush now
-		    invoke_listeners(curbuf);
-		    break;
-		}
+		// the current change is going to make the line number in
+		// the older change invalid, flush now
+		invoke_listeners(curbuf);
+		break;
 	    }
 	}
     }
@@ -242,7 +209,7 @@ may_record_change(
 
     // If the new change is going to change the line numbers in already listed
     // changes, then flush.
-    if (check_recorded_changes(curbuf, lnum, col, lnume, xtra, TRUE))
+    if (check_recorded_changes(curbuf, lnum, lnume, xtra))
 	return;
 
     if (curbuf->b_recorded_changes == NULL)
@@ -362,7 +329,7 @@ f_listener_remove(typval_T *argvars, typval_T *rettv)
     void
 may_invoke_listeners(buf_T *buf, linenr_T lnum, linenr_T lnume, int added)
 {
-    check_recorded_changes(buf, lnum, 0, lnume, added, FALSE);
+    check_recorded_changes(buf, lnum, lnume, added);
 }
 
 /*
