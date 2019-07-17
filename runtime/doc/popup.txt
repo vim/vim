@@ -303,7 +303,7 @@ popup_getoptions({id})					*popup_getoptions()*
 		zero.  When all values are one then an empty list is included.
 
 		"borderhighlight" is not included when all values are empty.
-		"scrollbarhighlight" and "thumbhighlight" are onlu included
+		"scrollbarhighlight" and "thumbhighlight" are only included
 		when set.
 
 		"tabpage" will be -1 for a global popup, zero for a popup on
@@ -345,7 +345,7 @@ popup_hide({id})						*popup_hide()*
 
 
 popup_locate({row}, {col})				 *popup_locate()*
-		Return the |window-ID| of the popup at screen positoin {row}
+		Return the |window-ID| of the popup at screen position {row}
 		and {col}.  If there are multiple popups the one with the
 		highest zindex is returned.  If there are no popups at this
 		position then zero is returned.
@@ -695,8 +695,8 @@ If the text does not fit in the popup a scrollbar is displayed on the right of
 the window.  This can be disabled by setting the "scrollbar" option to zero.
 When the scrollbar is displayed mouse scroll events, while the mouse pointer
 is on the popup, will cause the text to scroll up or down as you would expect.
-A click in the upper halve of the scrollbar will scroll the text one line
-down.  A click in the lower halve wil scroll the text one line up.  However,
+A click in the upper half of the scrollbar will scroll the text one line
+down.  A click in the lower half will scroll the text one line up.  However,
 this is limited so that the popup does not get smaller.
 
 
@@ -709,7 +709,7 @@ list has four numbers:
 		leftmost, negative for counting from the right, -1 for
 		rightmost
     endcol	last column, like "col"
-    line	start line, positive for conting from the top, 1 for top,
+    line	start line, positive for counting from the top, 1 for top,
 		negative for counting from the bottom, -1 for bottom
     endline	end line, like "line"
 
