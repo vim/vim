@@ -3566,6 +3566,15 @@ adjust_text_props_for_delete(
 ml_delete(linenr_T lnum, int message)
 {
     ml_flush_line(curbuf);
+    if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
+	return FAIL;
+
+#ifdef FEAT_EVAL
+    // When inserting above recorded changes: flush the changes before changing
+    // the text.
+    may_invoke_listeners(curbuf, lnum, lnum + 1, -1);
+#endif
+
     return ml_delete_int(curbuf, lnum, message);
 }
 
@@ -3590,14 +3599,6 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
     int		textprop_save_len;
 #endif
 
-    if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
-	return FAIL;
-
-#ifdef FEAT_EVAL
-    // When inserting above recorded changes: flush the changes before changing
-    // the text.
-    may_invoke_listeners(buf, lnum, lnum + 1, -1);
-#endif
     if (lowest_marked && lowest_marked > lnum)
 	lowest_marked--;
 
