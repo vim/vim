@@ -516,7 +516,7 @@ apply_general_options(win_T *wp, dict_T *dict)
     di = dict_find(dict, (char_u *)"borderhighlight", -1);
     if (di != NULL)
     {
-	if (di->di_tv.v_type != VAR_LIST)
+	if (di->di_tv.v_type != VAR_LIST || di->di_tv.vval.v_list == NULL)
 	    emsg(_(e_listreq));
 	else
 	{
@@ -524,17 +524,16 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    listitem_T	*li;
 	    int		i;
 
-	    if (list != NULL)
-		for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
-							 ++i, li = li->li_next)
-		{
-		    str = tv_get_string(&li->li_tv);
-		    if (*str != NUL)
-			wp->w_border_highlight[i] = vim_strsave(str);
-		}
+	    for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
+						     ++i, li = li->li_next)
+	    {
+		str = tv_get_string(&li->li_tv);
+		if (*str != NUL)
+		    wp->w_border_highlight[i] = vim_strsave(str);
+	    }
 	    if (list->lv_len == 1 && wp->w_border_highlight[0] != NULL)
 		for (i = 1; i < 4; ++i)
-			wp->w_border_highlight[i] =
+		    wp->w_border_highlight[i] =
 					vim_strsave(wp->w_border_highlight[0]);
 	}
     }

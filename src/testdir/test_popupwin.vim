@@ -634,6 +634,8 @@ func Test_popup_invalid_arguments()
   call popup_clear()
   call assert_fails('call popup_create("text", #{borderhighlight: "none"})', 'E714:')
   call popup_clear()
+  call assert_fails('call popup_create("text", #{borderhighlight: test_null_list()})', 'E714:')
+  call popup_clear()
   call assert_fails('call popup_create("text", #{borderchars: "none"})', 'E714:')
   call popup_clear()
 
