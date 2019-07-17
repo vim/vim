@@ -4392,7 +4392,7 @@ eval6(
  *  (expression)	nested expression
  *  [expr, expr]	List
  *  {key: val, key: val}   Dictionary
- *  ~{key: val, key: val}  Dictionary with literal keys
+ *  #{key: val, key: val}  Dictionary with literal keys
  *
  *  Also handle:
  *  ! in front		logical NOT
@@ -4577,9 +4577,9 @@ eval7(
 		break;
 
     /*
-     * Dictionary: ~{key: val, key: val}
+     * Dictionary: #{key: val, key: val}
      */
-    case '~':	if ((*arg)[1] == '{')
+    case '#':	if ((*arg)[1] == '{')
 		{
 		    ++*arg;
 		    ret = dict_get_tv(arg, rettv, evaluate, TRUE);
@@ -7963,8 +7963,7 @@ find_var_ht(char_u *name, char_u **varname)
     *varname = name + 2;
     if (*name == 'g')				/* global variable */
 	return &globvarht;
-    /* There must be no ':' or '#' in the rest of the name, unless g: is used
-     */
+    // There must be no ':' or '#' in the rest of the name, unless g: is used
     if (vim_strchr(name + 2, ':') != NULL
 			       || vim_strchr(name + 2, AUTOLOAD_CHAR) != NULL)
 	return NULL;

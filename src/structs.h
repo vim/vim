@@ -999,6 +999,8 @@ struct syn_state
 };
 #endif // FEAT_SYN_HL
 
+#define MAX_HL_ID       20000	// maximum value for a highlight ID.
+
 /*
  * Structure shared between syntax.c, screen.c and gui_x11.c.
  */

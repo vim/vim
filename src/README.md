@@ -34,6 +34,7 @@ fileio.c	| reading and writing files
 findfile.c	| search for files in 'path'
 fold.c		| folding
 getchar.c	| getting characters and key mapping
+highlight.c	| syntax highlighting
 indent.c	| C and Lisp indentation
 insexpand.c	| Insert mode completion
 mark.c		| marks

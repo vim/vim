@@ -4442,7 +4442,8 @@ has_non_ascii(char_u *s)
     void
 parse_queued_messages(void)
 {
-    win_T   *old_curwin = curwin;
+    int	    old_curwin_id = curwin->w_id;
+    int	    old_curbuf_fnum = curbuf->b_fnum;
     int	    i;
     int	    save_may_garbage_collect = may_garbage_collect;
 
@@ -4494,9 +4495,9 @@ parse_queued_messages(void)
 
     may_garbage_collect = save_may_garbage_collect;
 
-    // If the current window changed we need to bail out of the waiting loop.
-    // E.g. when a job exit callback closes the terminal window.
-    if (curwin != old_curwin)
+    // If the current window or buffer changed we need to bail out of the
+    // waiting loop.  E.g. when a job exit callback closes the terminal window.
+    if (curwin->w_id != old_curwin_id || curbuf->b_fnum != old_curbuf_fnum)
 	ins_char_typebuf(K_IGNORE);
 }
 #endif

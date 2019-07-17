@@ -713,6 +713,7 @@ may_adjust_incsearch_highlighting(
 	save_viewstate(&is_state->old_viewstate);
 	update_screen(NOT_VALID);
 	redrawcmdline();
+	curwin->w_cursor = is_state->match_end;
     }
     else
 	vim_beep(BO_ERROR);
