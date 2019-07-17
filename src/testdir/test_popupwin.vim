@@ -1944,13 +1944,13 @@ func Test_popup_menu_filter()
 	  endif
 	  return 0
 	endfunction
-	call popup_menu(['111', '222', '333', '444', '555', '666', '777', '888', '999'], ~{
+	call popup_menu(['111', '222', '333', '444', '555', '666', '777', '888', '999'], #{
 	  \ maxheight : 3,
 	  \ filter : 'MyFilter'
 	  \ })
   END
   call writefile(lines, 'XtestPopupMenuFilter')
-  let buf = RunVimInTerminal('-S XtestPopupMenuFilter', ~{rows: 10})
+  let buf = RunVimInTerminal('-S XtestPopupMenuFilter', #{rows: 10})
 
   call term_sendkeys(buf, "j")
   call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_1', {})
@@ -1980,11 +1980,11 @@ func Test_popup_cursorline()
   call assert_equal(0, popup_getoptions(winid).cursorline)
   call popup_close(winid)
 
-  let winid = popup_create('some text', ~{ cursorline: 1, })
+  let winid = popup_create('some text', #{ cursorline: 1, })
   call assert_equal(1, popup_getoptions(winid).cursorline)
   call popup_close(winid)
 
-  let winid = popup_create('some text', ~{ cursorline: 0, })
+  let winid = popup_create('some text', #{ cursorline: 0, })
   call assert_equal(0, popup_getoptions(winid).cursorline)
   call popup_close(winid)
 
@@ -1992,11 +1992,11 @@ func Test_popup_cursorline()
   call assert_equal(1, popup_getoptions(winid).cursorline)
   call popup_close(winid)
 
-  let winid = popup_menu('some text', ~{ cursorline: 1, })
+  let winid = popup_menu('some text', #{ cursorline: 1, })
   call assert_equal(1, popup_getoptions(winid).cursorline)
   call popup_close(winid)
 
-  let winid = popup_menu('some text', ~{ cursorline: 0, })
+  let winid = popup_menu('some text', #{ cursorline: 0, })
   call assert_equal(0, popup_getoptions(winid).cursorline)
   call popup_close(winid)
 
@@ -2004,10 +2004,10 @@ func Test_popup_cursorline()
   " Pattern 1
   " ---------
   let lines =<< trim END
-	call popup_create(['111', '222', '333'], ~{ cursorline : 0 })
+	call popup_create(['111', '222', '333'], #{ cursorline : 0 })
   END
   call writefile(lines, 'XtestPopupCursorLine')
-  let buf = RunVimInTerminal('-S XtestPopupCursorLine', ~{rows: 10})
+  let buf = RunVimInTerminal('-S XtestPopupCursorLine', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_popupwin_cursorline_1', {})
   call term_sendkeys(buf, ":call popup_clear()\<cr>")
   call StopVimInTerminal(buf)
@@ -2016,10 +2016,10 @@ func Test_popup_cursorline()
   " Pattern 2
   " ---------
   let lines =<< trim END
-	call popup_create(['111', '222', '333'], ~{ cursorline : 1 })
+	call popup_create(['111', '222', '333'], #{ cursorline : 1 })
   END
   call writefile(lines, 'XtestPopupCursorLine')
-  let buf = RunVimInTerminal('-S XtestPopupCursorLine', ~{rows: 10})
+  let buf = RunVimInTerminal('-S XtestPopupCursorLine', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_popupwin_cursorline_2', {})
   call term_sendkeys(buf, ":call popup_clear()\<cr>")
   call StopVimInTerminal(buf)
@@ -2039,14 +2039,14 @@ func Test_popup_cursorline()
 	  endif
 	  return 0
 	endfunction
-	call popup_menu(['111', '222', '333'], ~{
+	call popup_menu(['111', '222', '333'], #{
 	  \ cursorline : 0,
 	  \ maxheight : 2,
 	  \ filter : 'MyFilter',
 	  \ })
   END
   call writefile(lines, 'XtestPopupCursorLine')
-  let buf = RunVimInTerminal('-S XtestPopupCursorLine', ~{rows: 10})
+  let buf = RunVimInTerminal('-S XtestPopupCursorLine', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_popupwin_cursorline_3', {})
   call term_sendkeys(buf, "j")
   call term_sendkeys(buf, "j")
@@ -2069,14 +2069,14 @@ func Test_popup_cursorline()
 	  endif
 	  return 0
 	endfunction
-	call popup_menu(['111', '222', '333'], ~{
+	call popup_menu(['111', '222', '333'], #{
 	  \ cursorline : 1,
 	  \ maxheight : 2,
 	  \ filter : 'MyFilter',
 	  \ })
   END
   call writefile(lines, 'XtestPopupCursorLine')
-  let buf = RunVimInTerminal('-S XtestPopupCursorLine', ~{rows: 10})
+  let buf = RunVimInTerminal('-S XtestPopupCursorLine', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_popupwin_cursorline_5', {})
   call term_sendkeys(buf, "j")
   call term_sendkeys(buf, "j")
