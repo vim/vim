@@ -72,6 +72,7 @@ find_word_under_cursor(
 		    }
 
 		    col = vcol2col(wp, lnum, col);
+		    scol = col;
 
 		    if (VIsual_active
 			    && wp->w_buffer == curwin->w_buffer
@@ -95,6 +96,7 @@ find_word_under_cursor(
 			lbuf = vim_strnsave(lbuf + spos->col, len);
 			lnum = spos->lnum;
 			col = spos->col;
+			scol = col;
 		    }
 		    else
 		    {
