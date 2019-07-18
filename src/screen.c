@@ -3120,8 +3120,13 @@ get_sign_display_info(
 		{
 		    if (nrcol)
 		    {
-			sprintf((char *)extra, "%*s ", number_width(wp),
-								*pp_extra);
+			int n, width = number_width(wp) - 2;
+
+			for (n = 0; n < width; n++)
+			    extra[n] = ' ';
+			extra[n] = 0;
+			STRCAT(extra, *pp_extra);
+			STRCAT(extra, " ");
 			*pp_extra = extra;
 		    }
 		    *c_extrap = NUL;
