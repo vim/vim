@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#ifdef FEAT_TEXT_PROP
+#if defined(FEAT_TEXT_PROP) || defined(PROTO)
 
 typedef struct {
     char	*pp_name;
@@ -442,6 +442,18 @@ check_highlight(dict_T *dict, char *name, char_u **pval)
 }
 
 /*
+ * Scroll to show the line with the cursor.  This assumes lines don't wrap.
+ */
+    static void
+popup_show_curline(win_T *wp)
+{
+    if (wp->w_cursor.lnum < wp->w_topline)
+	wp->w_topline = wp->w_cursor.lnum;
+    else if (wp->w_cursor.lnum >= wp->w_botline)
+	wp->w_topline = wp->w_cursor.lnum - wp->w_height + 1;
+}
+
+/*
  * Highlight the line with the cursor.
  * Also scrolls the text to put the cursor line in view.
  */
@@ -455,12 +467,7 @@ popup_highlight_curline(win_T *wp)
 
     if ((wp->w_popup_flags & POPF_CURSORLINE) != 0)
     {
-	// Scroll to show the line with the cursor.  This assumes lines don't
-	// wrap.
-	while (wp->w_topline + wp->w_height - 1 < wp->w_cursor.lnum)
-	    wp->w_topline++;
-	while (wp->w_cursor.lnum < wp->w_topline)
-	    wp->w_topline--;
+	popup_show_curline(wp);
 
 	id = syn_name2id((char_u *)"PopupSelected");
 	vim_snprintf(buf, sizeof(buf), "\\%%%dl.*", (int)wp->w_cursor.lnum);
@@ -923,7 +930,8 @@ popup_adjust_position(win_T *wp)
     }
 
     // start at the desired first line
-    wp->w_topline = wp->w_firstline;
+    if (wp->w_firstline != 0)
+	wp->w_topline = wp->w_firstline;
     if (wp->w_topline > wp->w_buffer->b_ml.ml_line_count)
 	wp->w_topline = wp->w_buffer->b_ml.ml_line_count;
 
@@ -1078,7 +1086,8 @@ typedef enum
     TYPE_BEVAL,
     TYPE_NOTIFICATION,
     TYPE_DIALOG,
-    TYPE_MENU
+    TYPE_MENU,
+    TYPE_PREVIEW
 } create_type_T;
 
 /*
@@ -1124,59 +1133,134 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
 }
 
 /*
+ * Parse the 'previewpopup' option and apply the values to window "wp" if it
+ * not NULL.
+ * Return FAIL if the parsing fails.
+ */
+    int
+parse_previewpopup(win_T *wp)
+{
+    char_u *p;
+
+    for (p = p_pvp; *p != NUL; p += (*p == ',' ? 1 : 0))
+    {
+	char_u	*e, *dig;
+	char_u	*s = p;
+	int	x;
+
+	e = vim_strchr(p, ':');
+	if (e == NULL || e[1] == NUL)
+	    return FAIL;
+
+	p = vim_strchr(e, ',');
+	if (p == NULL)
+	    p = e + STRLEN(e);
+	dig = e + 1;
+	x = getdigits(&dig);
+	if (dig != p)
+	    return FAIL;
+
+	if (STRNCMP(s, "height:", 7) == 0)
+	{
+	    if (wp != NULL)
+	    {
+		wp->w_minheight = x;
+		wp->w_maxheight = x;
+	    }
+	}
+	else if (STRNCMP(s, "width:", 6) == 0)
+	{
+	    if (wp != NULL)
+	    {
+		wp->w_minwidth = x;
+		wp->w_maxwidth = x;
+	    }
+	}
+	else
+	    return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Set w_wantline and w_wantcol for the cursor position in the current window.
+ */
+    void
+popup_set_wantpos(win_T *wp)
+{
+    setcursor_mayforce(TRUE);
+    wp->w_wantline = curwin->w_winrow + curwin->w_wrow;
+    if (wp->w_wantline == 0)  // cursor in first line
+    {
+	wp->w_wantline = 2;
+	wp->w_popup_pos = POPPOS_TOPLEFT;
+    }
+    wp->w_wantcol = curwin->w_wincol + curwin->w_wcol + 1;
+    popup_adjust_position(wp);
+}
+
+/*
  * popup_create({text}, {options})
  * popup_atcursor({text}, {options})
+ * etc.
+ * When creating a preview window popup "argvars" and "rettv" are NULL.
  */
     static win_T *
 popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 {
     win_T	*wp;
     tabpage_T	*tp = NULL;
-    int		tabnr;
+    int		tabnr = 0;
     int		new_buffer;
     buf_T	*buf = NULL;
-    dict_T	*d;
+    dict_T	*d = NULL;
     int		nr;
     int		i;
 
-    // Check arguments look OK.
-    if (argvars[0].v_type == VAR_NUMBER)
+    if (argvars != NULL)
     {
-	buf = buflist_findnr( argvars[0].vval.v_number);
-	if (buf == NULL)
+	// Check arguments look OK.
+	if (argvars[0].v_type == VAR_NUMBER)
 	{
-	    semsg(_(e_nobufnr), argvars[0].vval.v_number);
+	    buf = buflist_findnr( argvars[0].vval.v_number);
+	    if (buf == NULL)
+	    {
+		semsg(_(e_nobufnr), argvars[0].vval.v_number);
+		return NULL;
+	    }
+	}
+	else if (!(argvars[0].v_type == VAR_STRING
+			&& argvars[0].vval.v_string != NULL)
+		    && !(argvars[0].v_type == VAR_LIST
+			&& argvars[0].vval.v_list != NULL))
+	{
+	    emsg(_(e_listreq));
 	    return NULL;
 	}
-    }
-    else if (!(argvars[0].v_type == VAR_STRING
-		    && argvars[0].vval.v_string != NULL)
-		&& !(argvars[0].v_type == VAR_LIST
-		    && argvars[0].vval.v_list != NULL))
-    {
-	emsg(_(e_listreq));
-	return NULL;
-    }
-    if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
-    {
-	emsg(_(e_dictreq));
-	return NULL;
-    }
-    d = argvars[1].vval.v_dict;
-
-    if (dict_find(d, (char_u *)"tabpage", -1) != NULL)
-	tabnr = (int)dict_get_number(d, (char_u *)"tabpage");
-    else if (type == TYPE_NOTIFICATION)
-	tabnr = -1;  // notifications are global by default
-    else
-	tabnr = 0;
-    if (tabnr > 0)
-    {
-	tp = find_tabpage(tabnr);
-	if (tp == NULL)
+	if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
 	{
-	    semsg(_("E997: Tabpage not found: %d"), tabnr);
+	    emsg(_(e_dictreq));
 	    return NULL;
+	}
+	d = argvars[1].vval.v_dict;
+    }
+
+    if (d != NULL)
+    {
+	if (dict_find(d, (char_u *)"tabpage", -1) != NULL)
+	    tabnr = (int)dict_get_number(d, (char_u *)"tabpage");
+	else if (type == TYPE_NOTIFICATION)
+	    tabnr = -1;  // notifications are global by default
+	else
+	    tabnr = 0;
+	if (tabnr > 0)
+	{
+	    tp = find_tabpage(tabnr);
+	    if (tp == NULL)
+	    {
+		semsg(_("E997: Tabpage not found: %d"), tabnr);
+		return NULL;
+	    }
 	}
     }
 
@@ -1184,7 +1268,8 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     wp = win_alloc_popup_win();
     if (wp == NULL)
 	return NULL;
-    rettv->vval.v_number = wp->w_id;
+    if (rettv != NULL)
+	rettv->vval.v_number = wp->w_id;
     wp->w_popup_pos = POPPOS_TOPLEFT;
     wp->w_popup_flags = POPF_IS_POPUP;
 
@@ -1211,7 +1296,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	set_string_option_direct_in_buf(buf, (char_u *)"buftype", -1,
 				     (char_u *)"popup", OPT_FREE|OPT_LOCAL, 0);
 	set_string_option_direct_in_buf(buf, (char_u *)"bufhidden", -1,
-				      (char_u *)"hide", OPT_FREE|OPT_LOCAL, 0);
+				      (char_u *)"wipe", OPT_FREE|OPT_LOCAL, 0);
 	buf->b_p_ul = -1;	// no undo
 	buf->b_p_swf = FALSE;   // no swap file
 	buf->b_p_bl = FALSE;    // unlisted buffer
@@ -1250,20 +1335,16 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	}
     }
 
-    if (new_buffer)
+    if (new_buffer && argvars != NULL)
 	popup_set_buffer_text(buf, argvars[0]);
 
-    if (type == TYPE_ATCURSOR)
+    if (type == TYPE_ATCURSOR || type == TYPE_PREVIEW)
     {
 	wp->w_popup_pos = POPPOS_BOTLEFT;
-	setcursor_mayforce(TRUE);
-	wp->w_wantline = curwin->w_winrow + curwin->w_wrow;
-	if (wp->w_wantline == 0)  // cursor in first line
-	{
-	    wp->w_wantline = 2;
-	    wp->w_popup_pos = POPPOS_TOPLEFT;
-	}
-	wp->w_wantcol = curwin->w_wincol + curwin->w_wcol + 1;
+	popup_set_wantpos(wp);
+    }
+    if (type == TYPE_ATCURSOR)
+    {
 	set_moved_values(wp);
 	set_moved_columns(wp, FIND_STRING);
     }
@@ -1360,6 +1441,15 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	wp->w_popup_flags |= POPF_CURSORLINE;
     }
 
+    if (type == TYPE_PREVIEW)
+    {
+	wp->w_popup_drag = 1;
+	wp->w_popup_close = POPCLOSE_BUTTON;
+	for (i = 0; i < 4; ++i)
+	    wp->w_popup_border[i] = 1;
+	parse_previewpopup(wp);
+    }
+
     for (i = 0; i < 4; ++i)
 	VIM_CLEAR(wp->w_border_highlight[i]);
     for (i = 0; i < 8; ++i)
@@ -1367,8 +1457,9 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     wp->w_want_scrollbar = 1;
     wp->w_popup_fixed = 0;
 
-    // Deal with options.
-    apply_options(wp, argvars[1].vval.v_dict);
+    if (d != NULL)
+	// Deal with options.
+	apply_options(wp, d);
 
 #ifdef FEAT_TIMERS
     if (type == TYPE_NOTIFICATION && wp->w_popup_timer == NULL)
@@ -2839,4 +2930,72 @@ set_ref_in_popups(int copyID)
     }
     return abort;
 }
+
+/*
+ * Find an existing popup used as the preview window, in the current tab page.
+ * Return NULL if not found.
+ */
+    win_T *
+popup_find_preview_window(void)
+{
+    win_T *wp;
+
+    // Preview window popup is always local to tab page.
+    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	if (wp->w_p_pvw)
+	    return wp;
+    return wp;
+}
+
+    int
+popup_is_popup(win_T *wp)
+{
+    return wp->w_popup_flags != 0;
+}
+
+/*
+ * Create a popup to be used as the preview window.
+ * NOTE: this makes the popup the current window, so that the file can be
+ * edited.  However, it must not remain to be the current window, the caller
+ * must make sure of that.
+ */
+    int
+popup_create_preview_window(void)
+{
+    win_T *wp = popup_create(NULL, NULL, TYPE_PREVIEW);
+
+    if (wp == NULL)
+	return FAIL;
+    wp->w_p_pvw = TRUE;
+
+    // Set the width to a reasonable value, so that w_topline can be computed.
+    if (wp->w_minwidth > 0)
+	wp->w_width = wp->w_minwidth;
+    else if (wp->w_maxwidth > 0)
+	wp->w_width = wp->w_maxwidth;
+    else
+	wp->w_width = curwin->w_width;
+
+    // Will switch to another buffer soon, dummy one can be wiped.
+    wp->w_buffer->b_locked = FALSE;
+
+    win_enter(wp, FALSE);
+    return OK;
+}
+
+    void
+popup_close_preview()
+{
+    win_T *wp = popup_find_preview_window();
+
+    if (wp != NULL)
+    {
+	typval_T res;
+
+	res.v_type = VAR_NUMBER;
+	res.vval.v_number = -1;
+	popup_close_and_callback(wp, &res);
+    }
+}
+
 #endif // FEAT_TEXT_PROP

@@ -5627,7 +5627,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+windows| or
 			|+quickfix| features}
 	Default height for a preview window.  Used for |:ptag| and associated
-	commands.  Used for |CTRL-W_}| when no count is given.
+	commands.  Used for |CTRL-W_}| when no count is given.  Not used when
+	'previewpopup' is set.
+
+					*'previewpopup'* *'pvp'*
+'previewpopup' 'pvp'	string (default empty)
+			global
+			{not available when compiled without the |+windows|,
+			|+textprop| or |+quickfix| feature}
+	When not empty a popup window is used for commands that would open a
+	preview window.  See |preview-popup|.
 
 					*'previewwindow'* *'nopreviewwindow'*
 					*'pvw'* *'nopvw'* *E590*

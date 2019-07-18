@@ -8,6 +8,8 @@ void popup_handle_scrollbar_click(win_T *wp, int row, int col);
 int popup_height(win_T *wp);
 int popup_width(win_T *wp);
 void popup_adjust_position(win_T *wp);
+int parse_previewpopup(win_T *wp);
+void popup_set_wantpos(win_T *wp);
 void f_popup_clear(typval_T *argvars, typval_T *rettv);
 void f_popup_create(typval_T *argvars, typval_T *rettv);
 void f_popup_atcursor(typval_T *argvars, typval_T *rettv);
@@ -39,4 +41,8 @@ void popup_check_cursor_pos(void);
 void may_update_popup_mask(int type);
 void update_popups(void (*win_update)(win_T *wp));
 int set_ref_in_popups(int copyID);
+win_T *popup_find_preview_window(void);
+int popup_is_popup(win_T *wp);
+int popup_create_preview_window(void);
+void popup_close_preview(void);
 /* vim: set ft=c : */
