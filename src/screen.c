@@ -3120,8 +3120,7 @@ get_sign_display_info(
 		{
 		    if (nrcol)
 		    {
-			int n, width = number_width(wp)
-				    - (*mb_string2cells)(*pp_extra, -1);
+			int n, width = number_width(wp) - 2;
 			for (n = 0; n < width; n++)
 			    extra[n] = ' ';
 			extra[n] = 0;
