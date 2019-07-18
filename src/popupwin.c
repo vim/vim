@@ -442,6 +442,34 @@ check_highlight(dict_T *dict, char *name, char_u **pval)
 }
 
 /*
+ * Highlight the line with the cursor.
+ * Also scrolls the text to put the cursor line in view.
+ */
+    static void
+popup_highlight_curline(win_T *wp)
+{
+    int	    id;
+    char    buf[100];
+
+    match_delete(wp, 1, FALSE);
+
+    if ((wp->w_popup_flags & POPF_CURSORLINE) != 0)
+    {
+	// Scroll to show the line with the cursor.  This assumes lines don't
+	// wrap.
+	while (wp->w_topline + wp->w_height - 1 < wp->w_cursor.lnum)
+	    wp->w_topline++;
+	while (wp->w_cursor.lnum < wp->w_topline)
+	    wp->w_topline--;
+
+	id = syn_name2id((char_u *)"PopupSelected");
+	vim_snprintf(buf, sizeof(buf), "\\%%%dl.*", (int)wp->w_cursor.lnum);
+	match_add(wp, (char_u *)(id == 0 ? "PmenuSel" : "PopupSelected"),
+					     (char_u *)buf, 10, 1, NULL, NULL);
+    }
+}
+
+/*
  * Shared between popup_create() and f_popup_setoptions().
  */
     static void
@@ -635,6 +663,20 @@ apply_general_options(win_T *wp, dict_T *dict)
 	handle_moved_argument(wp, di, TRUE);
     }
 
+    di = dict_find(dict, (char_u *)"cursorline", -1);
+    if (di != NULL)
+    {
+	if (di->di_tv.v_type == VAR_NUMBER)
+	{
+	    if (di->di_tv.vval.v_number != 0)
+		wp->w_popup_flags |= POPF_CURSORLINE;
+	    else
+		wp->w_popup_flags &= ~POPF_CURSORLINE;
+	}
+	else
+	    semsg(_(e_invargval), "cursorline");
+    }
+
     di = dict_find(dict, (char_u *)"filter", -1);
     if (di != NULL)
     {
@@ -662,6 +704,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 
 /*
  * Go through the options in "dict" and apply them to popup window "wp".
+ * Only used when creating a new popup window.
  */
     static void
 apply_options(win_T *wp, dict_T *dict)
@@ -679,6 +722,7 @@ apply_options(win_T *wp, dict_T *dict)
     }
 
     popup_mask_refresh = TRUE;
+    popup_highlight_curline(wp);
 }
 
 /*
@@ -1313,6 +1357,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	    set_callback(&wp->w_filter_cb, &callback);
 
 	wp->w_p_wrap = 0;
+	wp->w_popup_flags |= POPF_CURSORLINE;
     }
 
     for (i = 0; i < 4; ++i)
@@ -1502,26 +1547,6 @@ filter_handle_drag(win_T *wp, int c, typval_T *rettv)
 	rettv->vval.v_number = 0;
 }
 
-    static void
-popup_highlight_curline(win_T *wp)
-{
-    int	    id;
-    char    buf[100];
-
-    match_delete(wp, 1, FALSE);
-
-    // Scroll to show the line with the cursor.  This assumes lines don't wrap.
-    while (wp->w_topline + wp->w_height - 1 < wp->w_cursor.lnum)
-	wp->w_topline++;
-    while (wp->w_cursor.lnum < wp->w_topline)
-	wp->w_topline--;
-
-    id = syn_name2id((char_u *)"PopupSelected");
-    vim_snprintf(buf, sizeof(buf), "\\%%%dl.*", (int)wp->w_cursor.lnum);
-    match_add(wp, (char_u *)(id == 0 ? "PmenuSel" : "PopupSelected"),
-					     (char_u *)buf, 10, 1, NULL, NULL);
-}
-
 /*
  * popup_filter_menu({text}, {options})
  */
@@ -1630,10 +1655,7 @@ f_popup_dialog(typval_T *argvars, typval_T *rettv)
     void
 f_popup_menu(typval_T *argvars, typval_T *rettv)
 {
-    win_T *wp = popup_create(argvars, rettv, TYPE_MENU);
-
-    if (wp != NULL)
-	popup_highlight_curline(wp);
+    popup_create(argvars, rettv, TYPE_MENU);
 }
 
 /*
@@ -1858,6 +1880,7 @@ f_popup_setoptions(typval_T *argvars, typval_T *rettv UNUSED)
     if (old_firstline != wp->w_firstline)
 	redraw_win_later(wp, NOT_VALID);
     popup_mask_refresh = TRUE;
+    popup_highlight_curline(wp);
     popup_adjust_position(wp);
 }
 
@@ -2047,6 +2070,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_string(dict, "title", wp->w_popup_title);
 	dict_add_number(dict, "wrap", wp->w_p_wrap);
 	dict_add_number(dict, "drag", wp->w_popup_drag);
+	dict_add_number(dict, "cursorline", (wp->w_popup_flags & POPF_CURSORLINE) != 0);
 	dict_add_string(dict, "highlight", wp->w_p_wcr);
 	if (wp->w_scrollbar_highlight != NULL)
 	    dict_add_string(dict, "scrollbarhighlight",
@@ -2181,6 +2205,7 @@ invoke_popup_filter(win_T *wp, int c)
     int		dummy;
     typval_T	argv[3];
     char_u	buf[NUMBUFLEN];
+    linenr_T	old_lnum = wp->w_cursor.lnum;
 
     // Emergency exit: CTRL-C closes the popup.
     if (c == Ctrl_C)
@@ -2205,6 +2230,9 @@ invoke_popup_filter(win_T *wp, int c)
     // NOTE: The callback might close the popup, thus make "wp" invalid.
     call_callback(&wp->w_filter_cb, -1,
 			    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+    if (old_lnum != wp->w_cursor.lnum)
+	popup_highlight_curline(wp);
+
     res = tv_get_number(&rettv);
     vim_free(argv[1].vval.v_string);
     clear_tv(&rettv);

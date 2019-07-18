@@ -303,7 +303,7 @@ popup_getoptions({id})					*popup_getoptions()*
 		zero.  When all values are one then an empty list is included.
 
 		"borderhighlight" is not included when all values are empty.
-		"scrollbarhighlight" and "thumbhighlight" are onlu included
+		"scrollbarhighlight" and "thumbhighlight" are only included
 		when set.
 
 		"tabpage" will be -1 for a global popup, zero for a popup on
@@ -345,7 +345,7 @@ popup_hide({id})						*popup_hide()*
 
 
 popup_locate({row}, {col})				 *popup_locate()*
-		Return the |window-ID| of the popup at screen positoin {row}
+		Return the |window-ID| of the popup at screen position {row}
 		and {col}.  If there are multiple popups the one with the
 		highest zindex is returned.  If there are no popups at this
 		position then zero is returned.
@@ -362,6 +362,7 @@ popup_menu({what}, {options})				 *popup_menu()*
 				\ drag: 1,
 				\ wrap: 0,
 				\ border: [],
+				\ cursorline: 1,
 				\ padding: [0,1,0,1],
 				\ filter: 'popup_filter_menu',
 				\ })
@@ -429,6 +430,7 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 			callback
 			close
 			drag
+			cursorline
 			filter
 			firstline
 			flip
@@ -598,6 +600,11 @@ The second argument of |popup_create()| is a dictionary with options:
 			  {start} or after {end}
 			The popup also closes if the cursor moves to another
 			line or to another window.
+	cursorline	non-zero: Highlight the cursor line. Also scrolls the
+				  text to show this line (only works properly
+				  when 'wrap' is off).
+			zero: 	  Do not highlight the cursor line.
+			Default is zero, except for |popup_menu()|.
 	filter		A callback that can filter typed characters, see
 			|popup-filter|.
 	callback	A callback that is called when the popup closes, e.g.
@@ -695,8 +702,8 @@ If the text does not fit in the popup a scrollbar is displayed on the right of
 the window.  This can be disabled by setting the "scrollbar" option to zero.
 When the scrollbar is displayed mouse scroll events, while the mouse pointer
 is on the popup, will cause the text to scroll up or down as you would expect.
-A click in the upper halve of the scrollbar will scroll the text one line
-down.  A click in the lower halve wil scroll the text one line up.  However,
+A click in the upper half of the scrollbar will scroll the text one line
+down.  A click in the lower half wil scroll the text one line up.  However,
 this is limited so that the popup does not get smaller.
 
 
@@ -709,7 +716,7 @@ list has four numbers:
 		leftmost, negative for counting from the right, -1 for
 		rightmost
     endcol	last column, like "col"
-    line	start line, positive for conting from the top, 1 for top,
+    line	start line, positive for counting from the top, 1 for top,
 		negative for counting from the bottom, -1 for bottom
     endline	end line, like "line"
 
