@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jul 13
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jul 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -8867,7 +8867,7 @@ sign_placelist({list})
 		Examples: >
 			" Place sign s1 with id 5 at line 20 and id 10 at line
 			" 30 in buffer a.c
-			let [n1, n2] = sign_place([
+			let [n1, n2] = sign_placelist([
 				\ {'id' : 5,
 				\  'name' : 's1',
 				\  'buffer' : 'a.c',
@@ -8880,7 +8880,7 @@ sign_placelist({list})
 
 			" Place sign s1 in buffer a.c at line 40 and 50
 			" with auto-generated identifiers
-			let [n1, n2] = sign_place([
+			let [n1, n2] = sign_placelist([
 				\ {'name' : 's1',
 				\  'buffer' : 'a.c',
 				\  'lnum' : 40},
@@ -8977,8 +8977,10 @@ sign_unplacelist({list})				*sign_unplacelist()*
 		Example: >
 			" Remove sign with id 10 from buffer a.vim and sign
 			" with id 20 from buffer b.vim
-			call sign_unplace([{'id' : 10, 'buffer' : "a.vim"},
-					\ {'id' : 20, 'buffer' : 'b.vim'}])
+			call sign_unplacelist([
+				\ {'id' : 10, 'buffer' : "a.vim"},
+				\ {'id' : 20, 'buffer' : 'b.vim'},
+				\ ])
 <
 simplify({filename})					*simplify()*
 		Simplify the file name as much as possible without changing
@@ -11502,6 +11504,11 @@ text...
 			Note that environment variables, option values and
 			register values cannot be used here, since they cannot
 			be locked.
+
+:cons[t]
+:cons[t] {var-name}
+			If no argument is given or only {var-name} is given,
+			the behavior is the same as |:let|.
 
 :lockv[ar][!] [depth] {name} ...			*:lockvar* *:lockv*
 			Lock the internal variable {name}.  Locking means that

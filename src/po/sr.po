@@ -121,7 +121,7 @@ msgstr "E37: Није било уписа од последње промене"
 
 msgid "W14: Warning: List of file names overflow"
 msgstr ""
-"W14: Упозорење: Прекорачена је максимална величина листе имена датотека"
+"W14: Упозорење: Прекорачена је максимална величина листе имена фајлова"
 
 #, c-format
 msgid "E92: Buffer %ld not found"
@@ -149,7 +149,7 @@ msgid "[Not edited]"
 msgstr "[Није уређивано]"
 
 msgid "[New file]"
-msgstr "[Нова датотека]"
+msgstr "[Нов фајл]"
 
 msgid "[Read errors]"
 msgstr "[Грешке при читању]"
@@ -263,7 +263,7 @@ msgid "E906: not an open channel"
 msgstr "E906: није отворен канал"
 
 msgid "E920: _io file requires _name to be set"
-msgstr "E920: _io датотека захтева да _name буде постављено"
+msgstr "E920: _io фајл захтева да _name буде постављено"
 
 msgid "E915: in_io buffer requires in_buf or in_name to be set"
 msgstr "E915: in_io бафер захтева да in_buf или in_name буде постављено"
@@ -273,7 +273,7 @@ msgid "E918: buffer must be loaded: %s"
 msgstr "E918: бафер мора бити учитан: %s"
 
 msgid "E821: File is encrypted with unknown method"
-msgstr "E821: Датотека је шифрована непознатом методом"
+msgstr "E821: Фајл је шифрован непознатом методом"
 
 msgid "Warning: Using a weak encryption method; see :help 'cm'"
 msgstr "Упозорење: Користи се слаба метода шифрирања; погледајте :help 'cm'"
@@ -318,13 +318,13 @@ msgid "E96: Cannot diff more than %ld buffers"
 msgstr "E96: Не може да се упоређује више од %ld бафера"
 
 msgid "E810: Cannot read or write temp files"
-msgstr "E810: Није могуће читање или упис у привремене датотеке"
+msgstr "E810: Није могуће читање или упис у привремене фајлове"
 
 msgid "E97: Cannot create diffs"
 msgstr "E97: Није могуће креирање diff-ова"
 
 msgid "Patch file"
-msgstr "Patch датотека"
+msgstr "Patch фајл"
 
 msgid "E816: Cannot read patch output"
 msgstr "E816: Није могуће читање patch излаза"
@@ -359,10 +359,10 @@ msgid "E104: Escape not allowed in digraph"
 msgstr "E104: Escape није дозвољен у digraph"
 
 msgid "E544: Keymap file not found"
-msgstr "E544: Keymap датотека није пронађена"
+msgstr "E544: Keymap фајл није пронађен"
 
 msgid "E105: Using :loadkeymap not in a sourced file"
-msgstr "E105: Коришћење :loadkeymap ван датотеке која се учитава као скрипта"
+msgstr "E105: Коришћење :loadkeymap ван фајла који се учитава као скрипта"
 
 msgid "E791: Empty keymap entry"
 msgstr "E791: Празна keymap ставка"
@@ -377,7 +377,7 @@ msgid " Whole line completion (^L^N^P)"
 msgstr " Довршавање целе линије (^L^N^P)"
 
 msgid " File name completion (^F^N^P)"
-msgstr " Довршавање имена датотеке (^F^N^P)"
+msgstr " Довршавање имена фајла (^F^N^P)"
 
 msgid " Tag completion (^]^N^P)"
 msgstr " Довршавање ознаке (^]^N^P)"
@@ -410,7 +410,7 @@ msgid " Keyword Local completion (^N^P)"
 msgstr " Довршавање локалне кључне речи (^N^P)"
 
 msgid "Hit end of paragraph"
-msgstr "Достигнут крај пасуса"
+msgstr "Достигнут је крај пасуса"
 
 msgid "E839: Completion function changed window"
 msgstr "E839: Функција довршавања је променила прозор"
@@ -442,7 +442,7 @@ msgid "Scanning tags."
 msgstr "Скенирање ознака."
 
 msgid "match in file"
-msgstr "подударање у датотеци"
+msgstr "подударање у фајлу"
 
 msgid " Adding"
 msgstr " Додавање"
@@ -805,7 +805,7 @@ msgid "E935: invalid submatch number: %d"
 msgstr "E935: неисправан број подпоклапања: %d"
 
 msgid "E677: Error writing temp file"
-msgstr "E677: Грешка при упису temp датотеке"
+msgstr "E677: Грешка при упису temp фајла"
 
 msgid "E921: Invalid callback argument"
 msgstr "E921: Неисправан callback аргумент"
@@ -859,11 +859,11 @@ msgid "%sviminfo: %s in line: "
 msgstr "%sviminfo: %s у линији: "
 
 msgid "E136: viminfo: Too many errors, skipping rest of file"
-msgstr "E136: viminfo: Превише грешака, остатак датотеке се прескаче"
+msgstr "E136: viminfo: Превише грешака, остатак фајла се прескаче"
 
 #, c-format
 msgid "Reading viminfo file \"%s\"%s%s%s"
-msgstr "Читање viminfo датотеке \"%s\"%s%s%s"
+msgstr "Читање viminfo фајла \"%s\"%s%s%s"
 
 msgid " info"
 msgstr " инфо"
@@ -872,44 +872,44 @@ msgid " marks"
 msgstr " маркера"
 
 msgid " oldfiles"
-msgstr " старихдатотека"
+msgstr " старихфајлова"
 
 msgid " FAILED"
 msgstr " НЕУСПЕЛО"
 
 #, c-format
 msgid "E137: Viminfo file is not writable: %s"
-msgstr "E137: Viminfo датотека није уписива: %s"
+msgstr "E137: Viminfo фајл није уписив: %s"
 
 #, c-format
 msgid "E929: Too many viminfo temp files, like %s!"
-msgstr "E929: Превише viminfo temp датотека, као %s!"
+msgstr "E929: Превише viminfo temp фајлова, као %s!"
 
 #, c-format
 msgid "E138: Can't write viminfo file %s!"
-msgstr "E138: Viminfo датотека %s не може да се упише!"
+msgstr "E138: Viminfo фајл %s не може да се упише!"
 
 #, c-format
 msgid "Writing viminfo file \"%s\""
-msgstr "Уписивање viminfo датотеке \"%s\""
+msgstr "Уписивање viminfo фајла \"%s\""
 
 #, c-format
 msgid "E886: Can't rename viminfo file to %s!"
-msgstr "E886: Viminfo датотека не може да се преименује у %s!"
+msgstr "E886: Viminfo фајл не може да се преименује у %s!"
 
 #, c-format
 msgid "# This viminfo file was generated by Vim %s.\n"
-msgstr "# Ову viminfo датотеку је генерисао Vim %s.\n"
+msgstr "# Овај viminfo фајл је генерисао Vim %s.\n"
 
 msgid ""
 "# You may edit it if you're careful!\n"
 "\n"
 msgstr ""
-"# Можете да је уређујете ако сте опрезни!\n"
+"# Можете да га уређујете ако сте опрезни!\n"
 "\n"
 
 msgid "# Value of 'encoding' when this file was written\n"
-msgstr "# Вредност опције 'encoding' када је ова датотека написана\n"
+msgstr "# Вредност опције 'encoding' када је овај фајл записан\n"
 
 msgid "Illegal starting char"
 msgstr "Неисправан почетни карактер"
@@ -925,29 +925,29 @@ msgid "Save As"
 msgstr "Сачувај као"
 
 msgid "Write partial file?"
-msgstr "Да упишем парцијалну датотеку?"
+msgstr "Да упишем парцијални фајл?"
 
 msgid "E140: Use ! to write partial buffer"
 msgstr "E140: Користите ! да бисте уписали парцијални бафер"
 
 #, c-format
 msgid "Overwrite existing file \"%s\"?"
-msgstr "Да препишем постојећи датотеку \"%s\"?"
+msgstr "Да препишем постојећи фајл \"%s\"?"
 
 #, c-format
 msgid "Swap file \"%s\" exists, overwrite anyway?"
-msgstr "Swap датотека \"%s\" постоји, да је препишем у сваком случају?"
+msgstr "Swap фајл \"%s\" постоји, да га препишем у сваком случају?"
 
 #, c-format
 msgid "E768: Swap file exists: %s (:silent! overrides)"
-msgstr "E768: Swap датотека постоји: %s (:silent! премошћава)"
+msgstr "E768: Swap фајл постоји: %s (:silent! премошћава)"
 
 #, c-format
 msgid "E141: No file name for buffer %ld"
-msgstr "E141: Нема имена датотеке за бафер %ld"
+msgstr "E141: Нема имена фајла за бафер %ld"
 
 msgid "E142: File not written: Writing is disabled by 'write' option"
-msgstr "E142: Датотека није уписана: Уписивање је онемогућено опцијом 'write'"
+msgstr "E142: Фајл није уписан: Уписивање је онемогућено опцијом 'write'"
 
 #, c-format
 msgid ""
@@ -963,7 +963,7 @@ msgid ""
 "It may still be possible to write it.\n"
 "Do you wish to try?"
 msgstr ""
-"Дозволе датотеке \"%s\" омогућавају само читање.\n"
+"Дозволе за фајл \"%s\" омогућавају само читање.\n"
 "Можда је ипак могуће да се упише.\n"
 "Да ли желите да покушате?"
 
@@ -972,7 +972,7 @@ msgid "E505: \"%s\" is read-only (add ! to override)"
 msgstr "E505: \"%s\" је само за читање (додајте ! за премошћавање)"
 
 msgid "Edit File"
-msgstr "Уреди датотеку"
+msgstr "Уреди фајл"
 
 #, c-format
 msgid "E143: Autocommands unexpectedly deleted new buffer %s"
@@ -1023,7 +1023,7 @@ msgstr "E148: У global недостаје регуларни израз"
 
 #, c-format
 msgid "Pattern found in every line: %s"
-msgstr "Шаблон је пронаћен у свакој линији: %s"
+msgstr "Шаблон је пронађен у свакој линији: %s"
 
 #, c-format
 msgid "Pattern not found: %s"
@@ -1051,7 +1051,7 @@ msgstr "E149: Жао нам је, нема помоћи за %s"
 
 #, c-format
 msgid "Sorry, help file \"%s\" not found"
-msgstr "Жао нам је, датотека помоћи \"%s\" није пронађена"
+msgstr "Жао нам је, фајл помоћи \"%s\" није пронађен"
 
 #, c-format
 msgid "E151: No match: %s"
@@ -1071,7 +1071,7 @@ msgstr "E670: Помешано је више кодирања фајлова п�
 
 #, c-format
 msgid "E154: Duplicate tag \"%s\" in file %s/%s"
-msgstr "E154: Дуплирана ознака \"%s\" у датотеци %s/%s"
+msgstr "E154: Дуплирана ознака \"%s\" у фајлу %s/%s"
 
 #, c-format
 msgid "E150: Not a directory: %s"
@@ -1103,7 +1103,7 @@ msgid "E158: Invalid buffer name: %s"
 msgstr "E158: Неисправно име бафера: %s"
 
 msgid "E934: Cannot jump to a buffer that does not have a name"
-msgstr "E934: Не може да се скочи на бафер који нема име`"
+msgstr "E934: Не може да се скочи на бафер који нема име"
 
 #, c-format
 msgid "E157: Invalid sign ID: %ld"
@@ -1123,7 +1123,7 @@ msgid "[Deleted]"
 msgstr "[Обрисано]"
 
 msgid "No old files"
-msgstr "Нема старих датотека"
+msgstr "Нема старих фајлова"
 
 msgid "Entering Debug mode.  Type \"cont\" to continue."
 msgstr "Улазак у Debug режим.  Откуцајте \"cont\" за наставак."
@@ -1134,7 +1134,7 @@ msgstr "Старавред = \"%s\""
 
 #, c-format
 msgid "Newval = \"%s\""
-msgstr "Новаавред = \"%s\""
+msgstr "Новавред = \"%s\""
 
 #, c-format
 msgid "line %ld: %s"
@@ -1189,13 +1189,13 @@ msgid "Warning: Entered other buffer unexpectedly (check autocommands)"
 msgstr "Упозорење: Неочекивано се прешло у други бафер (проверите аутокоманде)"
 
 msgid "E163: There is only one file to edit"
-msgstr "E163: Постоји само једна датотека за уређивање"
+msgstr "E163: Постоји само један фајл за уређивање"
 
 msgid "E164: Cannot go before first file"
-msgstr "E164: Не може да се иде испред прве датотеке"
+msgstr "E164: Не може да се иде испред првог фајла"
 
 msgid "E165: Cannot go beyond last file"
-msgstr "E165: Не може да се иде испред прве датотеке"
+msgstr "E165: Не може да се иде иза последњег фајла"
 
 #, c-format
 msgid "E666: compiler not supported: %s"
@@ -1216,12 +1216,12 @@ msgstr "није пронађено у '%s': \"%s\""
 #, c-format
 msgid "W20: Required python version 2.x not supported, ignoring file: %s"
 msgstr ""
-"W20: Захтевани python version 2.x није подржан, датотека: %s се игнорише"
+"W20: Захтевани python верзије 2.x није подржан, фајл: %s се игнорише"
 
 #, c-format
 msgid "W21: Required python version 3.x not supported, ignoring file: %s"
 msgstr ""
-"W21: Захтевани python version 3.x није подржан, датотека: %s се игнорише"
+"W21: Захтевани python верзије 3.x није подржан, фајл: %s се игнорише"
 
 msgid "Source Vim script"
 msgstr "Изворна Vim скрипта"
@@ -1232,11 +1232,11 @@ msgstr "Директоријум не може да буде извор: \"%s\""
 
 #, c-format
 msgid "could not source \"%s\""
-msgstr "не може бити извор \"%s\""
+msgstr "не може да се прибави \"%s\""
 
 #, c-format
 msgid "line %ld: could not source \"%s\""
-msgstr "линија %ld: не може бити извор \"%s\""
+msgstr "линија %ld: не може да се прибави \"%s\""
 
 #, c-format
 msgid "sourcing \"%s\""
@@ -1273,10 +1273,10 @@ msgid "W15: Warning: Wrong line separator, ^M may be missing"
 msgstr "W15: Упозорење: Погрешан сепаратор линије, можда недостаје ^M"
 
 msgid "E167: :scriptencoding used outside of a sourced file"
-msgstr "E167: :scriptencoding се користи ван изворишне датотеке"
+msgstr "E167: :scriptencoding се користи ван изворишног фајла"
 
 msgid "E168: :finish used outside of a sourced file"
-msgstr "E168: :finish се користи ван изворишне датотеке"
+msgstr "E168: :finish се користи ван изворишног фајла"
 
 #, c-format
 msgid "Current %slanguage: \"%s\""
@@ -1291,7 +1291,7 @@ msgstr ""
 "Улазак у Ex режим.  Откуцајте \"visual\" да бисте прешли у Нормални режим."
 
 msgid "E501: At end-of-file"
-msgstr "E501: На крају-датотеке"
+msgstr "E501: На крају-фајла"
 
 msgid "E169: Command too recursive"
 msgstr "E169: Команда је сувише рекурзивна"
@@ -1301,7 +1301,7 @@ msgid "E605: Exception not caught: %s"
 msgstr "E605: Изузетак није ухваћен: %s"
 
 msgid "End of sourced file"
-msgstr "Крај изворишне датотеке"
+msgstr "Крај изворишног фајла"
 
 msgid "End of function"
 msgstr "Крај функције"
@@ -1328,18 +1328,18 @@ msgid "E319: Sorry, the command is not available in this version"
 msgstr "E319: Жао нам је, та команда није доступна у овој верзији"
 
 msgid "1 more file to edit.  Quit anyway?"
-msgstr "Још 1 датотека за уређивање. Ипак желите да напустите програм?"
+msgstr "Још 1 фајл за уређивање. Ипак желите да напустите програм?"
 
 #, c-format
 msgid "%d more files to edit.  Quit anyway?"
-msgstr "Још %d датотека за уређивање. Ипак желите да напустите програм?"
+msgstr "Још %d фајлова за уређивање. Ипак желите да напустите програм?"
 
 msgid "E173: 1 more file to edit"
-msgstr "E173: Још 1 датотека за уређивање"
+msgstr "E173: Још 1 фајл за уређивање"
 
 #, c-format
 msgid "E173: %ld more files to edit"
-msgstr "E173: Још %ld датотека за уређивање"
+msgstr "E173: Још %ld фајлова за уређивање"
 
 msgid "E174: Command already exists: add ! to replace it"
 msgstr "E174: Команда већ постоји: додајте ! да је замените"
@@ -1421,17 +1421,17 @@ msgid "Already only one tab page"
 msgstr "Већ сте на само једној картици"
 
 msgid "Edit File in new window"
-msgstr "Уређивање Датотеке у новом прозору"
+msgstr "Уређивање Фајла у новом прозору"
 
 #, c-format
 msgid "Tab page %d"
 msgstr "Картица %d"
 
 msgid "No swap file"
-msgstr "Нема swap датотеке"
+msgstr "Нема swap фајла"
 
 msgid "Append File"
-msgstr "Додавање на крај Датотеке"
+msgstr "Додавање на крај Фајла"
 
 msgid "E747: Cannot change directory, buffer is modified (add ! to override)"
 msgstr ""
@@ -1497,7 +1497,7 @@ msgid "E194: No alternate file name to substitute for '#'"
 msgstr "E194: Нема алтернативног имена које би заменило '#'"
 
 msgid "E495: no autocommand file name to substitute for \"<afile>\""
-msgstr "E495: нема имена датотеке за аутокоманде које би заменило \"<afile>\""
+msgstr "E495: нема имена фајла за аутокоманде које би заменило \"<afile>\""
 
 msgid "E496: no autocommand buffer number to substitute for \"<abuf>\""
 msgstr "E496: нема броја бафера за аутокоманду који би заменио \"<abuf>\""
@@ -1506,20 +1506,20 @@ msgid "E497: no autocommand match name to substitute for \"<amatch>\""
 msgstr "E497: нема имена подударања аутокоманде које би заменило \"<amatch>\""
 
 msgid "E498: no :source file name to substitute for \"<sfile>\""
-msgstr "E498: нема имена :source датотеке које би заменило \"<sfile>\""
+msgstr "E498: нема имена :source фајла које би заменило \"<sfile>\""
 
 msgid "E842: no line number to use for \"<slnum>\""
 msgstr "E842: нема броја линије који би се користио за \"<slnum>\""
 
 #, no-c-format
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
-msgstr "E499: Празно име датотеке за'%' or '#', функционише само са \":p:h\""
+msgstr "E499: Празно име фајла за'%' или '#', функционише само са \":p:h\""
 
 msgid "E500: Evaluates to an empty string"
 msgstr "E500: Резултат израчунавања је празан стринг"
 
 msgid "E195: Cannot open viminfo file for reading"
-msgstr "E195: viminfo датотека не може да се отвори за читање"
+msgstr "E195: viminfo фајл не може да се отвори за читање"
 
 msgid "Untitled"
 msgstr "Без наслова"
@@ -1638,7 +1638,7 @@ msgid "tagname"
 msgstr "ознака"
 
 msgid " kind file\n"
-msgstr " врста датотеке\n"
+msgstr " врста фајла\n"
 
 msgid "'history' option is zero"
 msgstr "опција 'history' је нула"
@@ -1676,31 +1676,31 @@ msgid "E812: Autocommands changed buffer or buffer name"
 msgstr "E812: Аутокоманде су промениле багер или име бафера"
 
 msgid "Illegal file name"
-msgstr "Недозвољено име датотеке"
+msgstr "Недозвољено име фајла"
 
 msgid "is a directory"
 msgstr "је директоријум"
 
 msgid "is not a file"
-msgstr "није датотека"
+msgstr "није фајл"
 
 msgid "is a device (disabled with 'opendevice' option)"
 msgstr "је уређај (онемогућен опцијом 'opendevice')"
 
 msgid "[New File]"
-msgstr "[Нова датотека]"
+msgstr "[Нов фајл]"
 
 msgid "[New DIRECTORY]"
 msgstr "[Нов ДИРЕКТОРИЈУМ]"
 
 msgid "[File too big]"
-msgstr "[Датотека је сувише велика]"
+msgstr "[Фајл је сувише велики]"
 
 msgid "[Permission Denied]"
 msgstr "[Дозвола одбијена]"
 
 msgid "E200: *ReadPre autocommands made the file unreadable"
-msgstr "E200: *ReadPre аутокоманде су учиниле датотеку нечитљивом"
+msgstr "E200: *ReadPre аутокоманде су учиниле фајл нечитљивим"
 
 msgid "E201: *ReadPre autocommands must not change current buffer"
 msgstr "E201: *ReadPre аутокоманде не смеју да измене текући бафер"
@@ -1712,7 +1712,7 @@ msgid "Reading from stdin..."
 msgstr "Читање са stdin..."
 
 msgid "E202: Conversion made file unreadable!"
-msgstr "E202: Конверзија је учинила датотеку нечитљивом!"
+msgstr "E202: Конверзија је учинила фајл нечитљивим!"
 
 msgid "[fifo/socket]"
 msgstr "[fifo/утичница]"
@@ -1750,7 +1750,7 @@ msgid "[READ ERRORS]"
 msgstr "[ГРЕШКЕ ПРИ ЧИТАЊУ]"
 
 msgid "Can't find temp file for conversion"
-msgstr "Привремена датотека за конверзију не може да се пронађе"
+msgstr "Привремени фајл за конверзију не може да се пронађе"
 
 msgid "Conversion with 'charconvert' failed"
 msgstr "Конверзија са 'charconvert' није успела"
@@ -1776,7 +1776,7 @@ msgid "Partial writes disallowed for NetBeans buffers"
 msgstr "Парцијални уписи нису дозвољени за NetBeans бафере"
 
 msgid "is not a file or writable device"
-msgstr "није датотека или уређај на који може да се уписује"
+msgstr "није фајл или уређај на који може да се уписује"
 
 msgid "writing to device disabled with 'opendevice' option"
 msgstr "упис на уређај је онемогућен опцијом 'opendevice'"
@@ -1786,38 +1786,38 @@ msgstr "је само за читање (додајте ! за премошћа�
 
 msgid "E506: Can't write to backup file (add ! to override)"
 msgstr ""
-"E506: Не може да се упише у резервну датотеку (додајте ! за премошћавање)"
+"E506: Не може да се упише у резервни фајл (додајте ! за премошћавање)"
 
 msgid "E507: Close error for backup file (add ! to override)"
 msgstr ""
-"E507: Грешка код затварања за резервну датотеку (додајте ! за премошћавање)"
+"E507: Грешка код затварања за резервни фајл (додајте ! за премошћавање)"
 
 msgid "E508: Can't read file for backup (add ! to override)"
 msgstr ""
-"E508: Резервна датотека не може да се прочита (додајте ! за премошћавање)"
+"E508: Резервни фајл не може да се прочита (додајте ! за премошћавање)"
 
 msgid "E509: Cannot create backup file (add ! to override)"
 msgstr ""
-"E509: Резервна датотека не може да се креира (додајте ! за премошћавање)"
+"E509: Резервни фајл не може да се креира (додајте ! за премошћавање)"
 
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr ""
-"E510: Резервна датотека не може да се направи (додајте ! за премошћавање)"
+"E510: Резервни фајл не може да се направи (додајте ! за премошћавање)"
 
 msgid "E214: Can't find temp file for writing"
-msgstr "E214: Привремена датотека за упис не може да се пронађе"
+msgstr "E214: Привремени фајл за упис не може да се пронађе"
 
 msgid "E213: Cannot convert (add ! to write without conversion)"
 msgstr "E213: Конверзија није могућа (додајте ! за упис без конверзије)"
 
 msgid "E166: Can't open linked file for writing"
-msgstr "E166: Повезана датотека не може да се отвори за упис"
+msgstr "E166: Повезани фајл не може да се отвори за упис"
 
 msgid "E212: Can't open file for writing"
-msgstr "E212: Датотека не може да се отвори за упис"
+msgstr "E212: фајл не може да се отвори за упис"
 
 msgid "E949: File changed while writing"
-msgstr "E949: Датотека је промењена током уписа"
+msgstr "E949: фајл је промењен током уписа"
 
 msgid "E512: Close failed"
 msgstr "E512: Затварање није успело"
@@ -1836,7 +1836,7 @@ msgstr ""
 "празно да премостите)"
 
 msgid "E514: write error (file system full?)"
-msgstr "E514: грешка при упису (систем датотека је пун?)"
+msgstr "E514: грешка при упису (систем фајллова је пун?)"
 
 msgid " CONVERSION ERROR"
 msgstr " ГРЕШКА КОНВЕРЗИЈЕ"
@@ -1864,23 +1864,23 @@ msgid " written"
 msgstr " уписано"
 
 msgid "E205: Patchmode: can't save original file"
-msgstr "E205: Patch режим: оригинална датотека не може да се сачува"
+msgstr "E205: Patch режим: оригинални фајл не може да се сачува"
 
 msgid "E206: patchmode: can't touch empty original file"
-msgstr "E206: Patch режим: не може да се креира празна оригинална датотека"
+msgstr "E206: Patch режим: не може да се креира празан оригинални фајл"
 
 msgid "E207: Can't delete backup file"
-msgstr "E207: Резервна датотека не може да се обрише"
+msgstr "E207: Резервни фајл не може да се обрише"
 
 msgid ""
 "\n"
 "WARNING: Original file may be lost or damaged\n"
 msgstr ""
 "\n"
-"УПОЗОРЕЊЕ: Оригинална датотека је можда изгубљена или оштећена\n"
+"УПОЗОРЕЊЕ: Оригинални фајл је можда изгубљен или оштећен\n"
 
 msgid "don't quit the editor until the file is successfully written!"
-msgstr "не напуштајте едитор док се датотека успешно не упише!"
+msgstr "не напуштајте едитор док се фајл успешно не упише!"
 
 msgid "[dos]"
 msgstr "[dos]"
@@ -1921,10 +1921,10 @@ msgid "[Incomplete last line]"
 msgstr "[Последња линија није комплетна]"
 
 msgid "WARNING: The file has been changed since reading it!!!"
-msgstr "УПОЗОРЕЊЕ: Ова датотека је промењена од кад је прочитана!!!"
+msgstr "УПОЗОРЕЊЕ: Овај фајл је промењен од кад је прочитан!!!"
 
 msgid "Do you really want to write to it"
-msgstr "Да ли заиста желите да пишете у њу"
+msgstr "Да ли заиста желите да пишете у њега"
 
 #, c-format
 msgid "E208: Error writing to \"%s\""
@@ -1943,14 +1943,14 @@ msgstr "E246: FileChangedShell аутокоманда је обрисала ба
 
 #, c-format
 msgid "E211: File \"%s\" no longer available"
-msgstr "E211: Датотека \"%s\" више није доступна"
+msgstr "E211: Фајл \"%s\" више није доступан"
 
 #, c-format
 msgid ""
 "W12: Warning: File \"%s\" has changed and the buffer was changed in Vim as "
 "well"
 msgstr ""
-"W12: Упозорење: Датотека \"%s\" је измењена и бафер у програму Vim је такође "
+"W12: Упозорење: Фајл \"%s\" је измењен и бафер у програму Vim је такође "
 "измењен"
 
 msgid "See \":help W12\" for more info."
@@ -1959,7 +1959,7 @@ msgstr "Погледајте \":help W12\" за више информација.
 #, c-format
 msgid "W11: Warning: File \"%s\" has changed since editing started"
 msgstr ""
-"W11: Упозорење: Датотека \"%s\" је измењена откад је започето уређивање"
+"W11: Упозорење: Фајл \"%s\" је измењен откад је започето уређивање"
 
 msgid "See \":help W11\" for more info."
 msgstr "Погледајте \":help W11\" за више информација."
@@ -1967,14 +1967,14 @@ msgstr "Погледајте \":help W11\" за више информација.
 #, c-format
 msgid "W16: Warning: Mode of file \"%s\" has changed since editing started"
 msgstr ""
-"W16: Упозорење: Режим датотеке \"%s\" је измењен откад је започето уређивање"
+"W16: Упозорење: Режим фајла \"%s\" је измењен откад је започето уређивање"
 
 msgid "See \":help W16\" for more info."
 msgstr "Погледајте \":help W16\" за више информација."
 
 #, c-format
 msgid "W13: Warning: File \"%s\" has been created after editing started"
-msgstr "W13: Упозорење: Датотека \"%s\" је креирана након почетка уређивања"
+msgstr "W13: Упозорење: Фајл \"%s\" је креиран након почетка уређивања"
 
 msgid "Warning"
 msgstr "Упозорење"
@@ -1984,7 +1984,7 @@ msgid ""
 "&Load File"
 msgstr ""
 "&OK\n"
-"&Учитај датотеку"
+"&Учитај фајл"
 
 #, c-format
 msgid "E462: Could not prepare for reloading \"%s\""
@@ -2108,20 +2108,20 @@ msgid "E228: makemap: Illegal mode"
 msgstr "E228: makemap: Недозвољен режим"
 
 msgid "E851: Failed to create a new process for the GUI"
-msgstr "E851: Креирање новог процеса за GUI није успело"
+msgstr "E851: Креирање новог процеса за ГКИ није успело"
 
 msgid "E852: The child process failed to start the GUI"
-msgstr "E852: Процес потомак није успео да покрене GUI"
+msgstr "E852: Процес потомак није успео да покрене ГКИ"
 
 msgid "E229: Cannot start the GUI"
-msgstr "E229: GUI не може да се покрене"
+msgstr "E229: ГКИ не може да се покрене"
 
 #, c-format
 msgid "E230: Cannot read from \"%s\""
 msgstr "E230: Из \"%s\" не може да се чита"
 
 msgid "E665: Cannot start GUI, no valid font found"
-msgstr "E665: GUI не може да се покрене, није пронађен валидан фонт"
+msgstr "E665: ГКИ не може да се покрене, није пронађен валидан фонт"
 
 msgid "E231: 'guifontwide' invalid"
 msgstr "E231: 'guifontwide' неисправан"
@@ -2199,7 +2199,7 @@ msgid "Input _Methods"
 msgstr "_Методе уноса"
 
 msgid "VIM - Search and Replace..."
-msgstr "VIM - Претрага and Замена..."
+msgstr "VIM - Претрага и Замена..."
 
 msgid "VIM - Search..."
 msgstr "VIM - Претрага..."
@@ -2268,7 +2268,7 @@ msgid "&Help"
 msgstr "&Помоћ"
 
 msgid "Files"
-msgstr "Датотеке"
+msgstr "Фајлови"
 
 msgid "&OK"
 msgstr "&ОК"
@@ -2419,27 +2419,27 @@ msgid "Printing aborted"
 msgstr "Штампање прекинуто"
 
 msgid "E455: Error writing to PostScript output file"
-msgstr "E455: Грешка приликом уписа у PostScript излазну датотеку"
+msgstr "E455: Грешка приликом уписа у PostScript излазни фајл"
 
 #, c-format
 msgid "E624: Can't open file \"%s\""
-msgstr "E624: Датотека \"%s\" не може да се отвори"
+msgstr "E624: Фајл \"%s\" не може да се отвори"
 
 #, c-format
 msgid "E457: Can't read PostScript resource file \"%s\""
-msgstr "E457: PostScript resource датотека \"%s\" не може да се чита"
+msgstr "E457: PostScript resource фајл \"%s\" не може да се чита"
 
 #, c-format
 msgid "E618: file \"%s\" is not a PostScript resource file"
-msgstr "E618: датотека \"%s\" није PostScript resource датотека"
+msgstr "E618: фајл \"%s\" није PostScript resource фајл"
 
 #, c-format
 msgid "E619: file \"%s\" is not a supported PostScript resource file"
-msgstr "E619: датотека \"%s\" није подржана PostScript resource датотека"
+msgstr "E619: фајл \"%s\" није подржан PostScript resource фајл"
 
 #, c-format
 msgid "E621: \"%s\" resource file has wrong version"
-msgstr "E621: \"%s\" resource датотека је погрешне верзије"
+msgstr "E621: \"%s\" resource фајл је погрешне верзије"
 
 msgid "E673: Incompatible multi-byte encoding and character set."
 msgstr "E673: Вишебајтно кодирање и скуп карактера нису компатибилни."
@@ -2451,22 +2451,22 @@ msgid "E675: No default font specified for multi-byte printing."
 msgstr "E675: Није наведен подразумевани фонт за вишебајтно штампање."
 
 msgid "E324: Can't open PostScript output file"
-msgstr "E324: PostScript излазна датотека не може да се отвори"
+msgstr "E324: PostScript излазни фајл не може да се отвори"
 
 #, c-format
 msgid "E456: Can't open file \"%s\""
-msgstr "E456: Датотека \"%s\" не може да се отвори"
+msgstr "E456: Фајл \"%s\" не може да се отвори"
 
 msgid "E456: Can't find PostScript resource file \"prolog.ps\""
-msgstr "E456: PostScript resource датотека \"prolog.ps\" не може да се пронађе"
+msgstr "E456: PostScript resource фајл \"prolog.ps\" не може да се пронађе"
 
 msgid "E456: Can't find PostScript resource file \"cidfont.ps\""
 msgstr ""
-"E456: PostScript resource датотека \"cidfont.ps\" не може да се пронађе"
+"E456: PostScript resource фајл \"cidfont.ps\" не може да се пронађе"
 
 #, c-format
 msgid "E456: Can't find PostScript resource file \"%s.ps\""
-msgstr "E456: PostScript resource датотека \"%s.ps\" не може да се пронађе"
+msgstr "E456: PostScript resource фајл \"%s.ps\" не може да се пронађе"
 
 #, c-format
 msgid "E620: Unable to convert to print encoding \"%s\""
@@ -2476,7 +2476,7 @@ msgid "Sending to printer..."
 msgstr "Слање штампачу..."
 
 msgid "E365: Failed to print PostScript file"
-msgstr "E365: PostScript датотека није успела да се одштампа"
+msgstr "E365: PostScript фајл није успео да се одштампа"
 
 msgid "Print job sent."
 msgstr "Задатак штампе је послат"
@@ -2590,9 +2590,9 @@ msgstr ""
 "       c: Пронађи функције које позивају ову функцију\n"
 "       d: Пронађи функције које зове ова функција\n"
 "       e: Пронађи овај egrep шаблон\n"
-"       f: Пронађи ову датотеку\n"
+"       f: Пронађи овај фајл\n"
 "       g: Пронађи ову дефиницију\n"
-"       i: Пронађи датотеке које #includе ову датотеку\n"
+"       i: Пронађи фајлове који #includе овај фајл\n"
 "       s: Пронађи овај C симбол\n"
 "       t: Пронађи овај текст стринг\n"
 
@@ -2629,7 +2629,7 @@ msgstr ""
 "   #   линија"
 
 msgid "filename / context / line\n"
-msgstr "датотека / контекст / линија\n"
+msgstr "фајл / контекст / линија\n"
 
 #, c-format
 msgid "E609: Cscope error: %s"
@@ -2897,10 +2897,10 @@ msgstr "Неисправан аргумент for"
 
 #, c-format
 msgid "%d files to edit\n"
-msgstr "%d датотека за уређивање\n"
+msgstr "%d фајлова за уређивање\n"
 
 msgid "netbeans is not supported with this GUI\n"
-msgstr "NetBeans није подржан са овим GUI\n"
+msgstr "NetBeans није подржан са овим ГКИ\n"
 
 msgid "'-nb' cannot be used: not enabled at compile time\n"
 msgstr "'-nb' не може да се користи: није омогућено у време компилације\n"
@@ -2909,7 +2909,7 @@ msgid "This Vim was not compiled with the diff feature."
 msgstr "Овај Vim није компајлиран са diff могућношћу."
 
 msgid "Attempt to open script file again: \""
-msgstr "Покушај да се поново отвори скрипт датотека: \""
+msgstr "Покушај да се поново отвори скрипт фајл: \""
 
 msgid "Cannot open for reading: \""
 msgstr "Не може да се отвори за читање: \""
@@ -2945,16 +2945,16 @@ msgstr ""
 "Више инфо са: \"vim -h\"\n"
 
 msgid "[file ..]       edit specified file(s)"
-msgstr "[датотека ..]       уређуј наведену(е) датотеку(е)"
+msgstr "[фајл ..]       уређуј наведени(е) фајл(ове)"
 
 msgid "-               read text from stdin"
 msgstr "-                   читај текст са stdin"
 
 msgid "-t tag          edit file where tag is defined"
-msgstr "-t tag              уређуј датотеку где је дефинисана ознака"
+msgstr "-t tag              уређуј фајл где је дефинисана ознака"
 
 msgid "-q [errorfile]  edit file with first error"
-msgstr "-q [дат.грешке]     уређуј датотеку са првом грешком"
+msgstr "-q [фајлгрешке]     уређуј фајл са првом грешком"
 
 msgid ""
 "\n"
@@ -2993,7 +2993,7 @@ msgstr ""
 "Аргументи:\n"
 
 msgid "--\t\t\tOnly file names after this"
-msgstr "--\t\t\tСамо имена датотека након овога"
+msgstr "--\t\t\tСамо имена фајлова након овога"
 
 msgid "--literal\t\tDon't expand wildcards"
 msgstr "--literal\t\tНе развијај џокере"
@@ -3005,10 +3005,10 @@ msgid "-unregister\t\tUnregister gvim for OLE"
 msgstr "-unregister\t\tУклони регистрацију gvim за OLE"
 
 msgid "-g\t\t\tRun using GUI (like \"gvim\")"
-msgstr "-g\t\t\tПокрени користећи GUI (као \"gvim\")"
+msgstr "-g\t\t\tПокрени користећи ГКИ (као \"gvim\")"
 
 msgid "-f  or  --nofork\tForeground: Don't fork when starting GUI"
-msgstr "-f  или  --nofork\tУ предњем плану: немој да рачваш кад се покреће GUI"
+msgstr "-f  или  --nofork\tУ предњем плану: немој да рачваш кад се покреће ГКИ"
 
 msgid "-v\t\t\tVi mode (like \"vi\")"
 msgstr "-v\t\t\tVi режим (као \"vi\")"
@@ -3035,7 +3035,7 @@ msgid "-Z\t\t\tRestricted mode (like \"rvim\")"
 msgstr "-Z\t\t\tRestricted режим (као \"rvim\")"
 
 msgid "-m\t\t\tModifications (writing files) not allowed"
-msgstr "-m\t\t\tИзмене (уписивање датотека) нису дозвољене"
+msgstr "-m\t\t\tИзмене (уписивање фајлова) нису дозвољене"
 
 msgid "-M\t\t\tModifications in text not allowed"
 msgstr "-M\t\t\tИзмене у тексту нису дозвољене"
@@ -3059,13 +3059,13 @@ msgid "-D\t\t\tDebugging mode"
 msgstr "-D\t\t\tDebugging режим"
 
 msgid "-n\t\t\tNo swap file, use memory only"
-msgstr "-n\t\t\tБез swap датотеке, користи само меморију"
+msgstr "-n\t\t\tБез swap фајла, користи само меморију"
 
 msgid "-r\t\t\tList swap files and exit"
-msgstr "-r\t\t\tИзлистај swap датотеке и изађи"
+msgstr "-r\t\t\tИзлистај swap фајлове и изађи"
 
 msgid "-r (with file name)\tRecover crashed session"
-msgstr "-r (са именом датотеке)\tОбнови срушену сесију"
+msgstr "-r (са именом фајла)\tОбнови срушену сесију"
 
 msgid "-L\t\t\tSame as -r"
 msgstr "-L\t\t\tИсто као -r"
@@ -3104,46 +3104,44 @@ msgid "--noplugin\t\tDon't load plugin scripts"
 msgstr "--noplugin\t\tНе учитавај скрипте додатака"
 
 msgid "-p[N]\t\tOpen N tab pages (default: one for each file)"
-msgstr "-p[N]\t\tОтвори N картица (подразумевано: по једну за сваку датотеку)"
+msgstr "-p[N]\t\tОтвори N картица (подразумевано: по једну за сваки фајл)"
 
 msgid "-o[N]\t\tOpen N windows (default: one for each file)"
-msgstr "-o[N]\t\tОтвори N прозора (подразумевано: по један за сваку датотеку)"
+msgstr "-o[N]\t\tОтвори N прозора (подразумевано: по један за сваки фајл)"
 
 msgid "-O[N]\t\tLike -o but split vertically"
 msgstr "-O[N]\t\tКао -o али подели по вертикали"
 
 msgid "+\t\t\tStart at end of file"
-msgstr "+\t\t\tПочни на крају датотеке"
+msgstr "+\t\t\tПочни на крају фајла"
 
 msgid "+<lnum>\t\tStart at line <lnum>"
 msgstr "+<бројл>\t\tПочни на линији <бројл>"
 
 msgid "--cmd <command>\tExecute <command> before loading any vimrc file"
 msgstr ""
-"--cmd <команда>\tИзврши <команда> пре учитавања било које vimrc датотеке"
+"--cmd <команда>\tИзврши <команда> пре учитавања било ког vimrc фајла"
 
 msgid "-c <command>\t\tExecute <command> after loading the first file"
-msgstr "-c <команда>\t\tИзврши <команда> након учитавања прве датотеке"
+msgstr "-c <команда>\t\tИзврши <команда> након учитавања првог фајла"
 
 msgid "-S <session>\t\tSource file <session> after loading the first file"
-msgstr ""
-"-S <сесија>\t\tИзворна датотека <сесија> након учитавања прве "
-"датотеке"
+msgstr "-S <сесија>\t\tИзврши фајл <сесија> након учитавања првог фајла"
 
 msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
 msgstr ""
-"-s <скриптулаз>\tЧитај команде Нормалног режима из датотеке <скриптулаз>"
+"-s <скриптулаз>\tЧитај команде Нормалног режима из фајла <скриптулаз>"
 
 msgid "-w <scriptout>\tAppend all typed commands to file <scriptout>"
 msgstr ""
-"-w <скриптизлаз>\tНадовежи све откуцане команде на крај датотеке "
+"-w <скриптизлаз>\tНадовежи све откуцане команде на крај фајла "
 "<скриптизлаз>"
 
 msgid "-W <scriptout>\tWrite all typed commands to file <scriptout>"
-msgstr "-W <скриптизлаз>\tУписуј све откуцане команде у датотеку <скриптизлаз>"
+msgstr "-W <скриптизлаз>\tУписуј све откуцане команде у фајл <скриптизлаз>"
 
 msgid "-x\t\t\tEdit encrypted files"
-msgstr "-x\t\t\tУређуј шифроване датотеке"
+msgstr "-x\t\t\tУређуј шифроване фајлове"
 
 msgid "-display <display>\tConnect vim to this particular X-server"
 msgstr "-display <дисплеј>\tПовежи vim на овај X-сервер"
@@ -3152,25 +3150,25 @@ msgid "-X\t\t\tDo not connect to X server"
 msgstr "-X\t\t\tНе повезуј се на X сервер"
 
 msgid "--remote <files>\tEdit <files> in a Vim server if possible"
-msgstr "--remote <датотеке>\tУређуј <датотеке> у Vim серверу ако је могуће"
+msgstr "--remote <фајлови>\tУређуј <фајлови> у Vim серверу ако је могуће"
 
 msgid "--remote-silent <files>  Same, don't complain if there is no server"
-msgstr "--remote-silent <датотеке>  Исто, не буни се ако нема сервера"
+msgstr "--remote-silent <фајлови>  Исто, не буни се ако нема сервера"
 
 msgid ""
 "--remote-wait <files>  As --remote but wait for files to have been edited"
 msgstr ""
-"--remote-wait <датотеке>  Као --remote али чекај да датотеке буду уређене"
+"--remote-wait <фајлови>  Као --remote али чекај да фајлови буду уређени"
 
 msgid ""
 "--remote-wait-silent <files>  Same, don't complain if there is no server"
-msgstr "--remote-wait-silent <датотеке>  Исто, не буни се ако нема сервера"
+msgstr "--remote-wait-silent <фајлови>  Исто, не буни се ако нема сервера"
 
 msgid ""
 "--remote-tab[-wait][-silent] <files>  As --remote but use tab page per file"
 msgstr ""
-"--remote-tab[-wait][-silent] <датотеке>  Као --remote али користи једну "
-"картицу по датотеци"
+"--remote-tab[-wait][-silent] <фајлови>  Као --remote али користи једну "
+"картицу по фајлу"
 
 msgid "--remote-send <keys>\tSend <keys> to a Vim server and exit"
 msgstr "--remote-send <тастери>\tПошаљи <тастери> Vim серверу и изађи"
@@ -3186,7 +3184,7 @@ msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr "--servername <име>\tПошаљи/постани Vim сервер <име>"
 
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
-msgstr "--startuptime <датотека>\tУпиши поруке о дужини покретања у <датотеку>"
+msgstr "--startuptime <фајл>\tУпиши поруке о дужини покретања у <фајл>"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
 msgstr "-i <viminfo>\t\tКористи <viminfo> уместо .viminfo"
@@ -3326,14 +3324,14 @@ msgid ""
 "mark line  col file/text"
 msgstr ""
 "\n"
-"линија маркера  кол датотека/текст"
+"линија маркера  кол фајл/текст"
 
 msgid ""
 "\n"
 " jump line  col file/text"
 msgstr ""
 "\n"
-"  линија скока  кол датотека/текст"
+"  линија скока  кол фајл/текст"
 
 msgid ""
 "\n"
@@ -3347,7 +3345,7 @@ msgid ""
 "# File marks:\n"
 msgstr ""
 "\n"
-"# Маркери датотеке:\n"
+"# Маркери фајла:\n"
 
 msgid ""
 "\n"
@@ -3361,7 +3359,7 @@ msgid ""
 "# History of marks within files (newest to oldest):\n"
 msgstr ""
 "\n"
-"# Историја маркера унутар датотека (ок најновијег до најстаријег):\n"
+"# Историја маркера унутар фајлова (од најновијег до најстаријег):\n"
 
 msgid "Missing '>'"
 msgstr "Недостаје '>'"
@@ -3392,19 +3390,19 @@ msgid "E293: block was not locked"
 msgstr "E293: блок није закључан"
 
 msgid "E294: Seek error in swap file read"
-msgstr "E294: Грешка код постављања показивача за читање swap датотеке"
+msgstr "E294: Грешка код постављања показивача за читање swap фајла"
 
 msgid "E295: Read error in swap file"
-msgstr "E295: Грешка при читању swap датотеке"
+msgstr "E295: Грешка при читању swap фајла"
 
 msgid "E296: Seek error in swap file write"
-msgstr "E296: Грешка код постављања показивача за упис swap датотеке"
+msgstr "E296: Грешка код постављања показивача за упис swap фајла"
 
 msgid "E297: Write error in swap file"
-msgstr "E297: Грешка при упису swap датотеке"
+msgstr "E297: Грешка при упису swap фајла"
 
 msgid "E300: Swap file already exists (symlink attack?)"
-msgstr "E300: Swap датотека већ постоји (symlink напад?)"
+msgstr "E300: Swap фајл већ постоји (symlink напад?)"
 
 msgid "E298: Didn't get block nr 0?"
 msgstr "E298: Блок бр 0 није добављен?"
@@ -3416,28 +3414,28 @@ msgid "E298: Didn't get block nr 2?"
 msgstr "E298: Блок бр 2 није добављен?"
 
 msgid "E843: Error while updating swap file crypt"
-msgstr "E843: Грешка приликом осважавања криптовања swap датотеке"
+msgstr "E843: Грешка приликом освежавања криптовања swap фајла"
 
 msgid "E301: Oops, lost the swap file!!!"
-msgstr "E301: Уупс, swap датотека је изгубљена!!!"
+msgstr "E301: Уупс, swap фајл је изгубљен!!!"
 
 msgid "E302: Could not rename swap file"
-msgstr "E302: Промена имена swap датотеке није успела"
+msgstr "E302: Промена имена swap фајла није успела"
 
 #, c-format
 msgid "E303: Unable to open swap file for \"%s\", recovery impossible"
 msgstr ""
-"E303: Отварање swap датотеке за \"%s\" није успело, опоравак је немогућ"
+"E303: Отварање swap фајла за \"%s\" није успело, опоравак је немогућ"
 
 msgid "E304: ml_upd_block0(): Didn't get block 0??"
 msgstr "E304: ml_upd_block0(): Блок бр 0 није добављен??"
 
 #, c-format
 msgid "E305: No swap file found for %s"
-msgstr "E305: За %s није пронађена swap датотека"
+msgstr "E305: За %s није пронађен swap фајл"
 
 msgid "Enter number of swap file to use (0 to quit): "
-msgstr "Унесите број swap датотеке која ће да се користи (0 за отказивање): "
+msgstr "Унесите број swap фајла који ће да се користи (0 за отказивање): "
 
 #, c-format
 msgid "E306: Cannot open %s"
@@ -3451,7 +3449,7 @@ msgid ""
 "Maybe no changes were made or Vim did not update the swap file."
 msgstr ""
 "\n"
-"Можда нису направљене никакве измене или Vim није освежио swap датотеку."
+"Можда нису направљене никакве измене или Vim није освежио swap фајл."
 
 msgid " cannot be used with this version of Vim.\n"
 msgstr " не може да се користи са овом верзијом Vim-а.\n"
@@ -3461,20 +3459,20 @@ msgstr "Користите Vim верзијe 3.0.\n"
 
 #, c-format
 msgid "E307: %s does not look like a Vim swap file"
-msgstr "E307: %s не изгледа као Vim swap датотека"
+msgstr "E307: %s не изгледа као Vim swap фајл"
 
 msgid " cannot be used on this computer.\n"
 msgstr " не може да се користи на овом компјутеру.\n"
 
 msgid "The file was created on "
-msgstr "Ова датотека је креирана са "
+msgstr "Овај фајл је креиран са "
 
 msgid ""
 ",\n"
 "or the file has been damaged."
 msgstr ""
 ",\n"
-"или је датотека оштећена."
+"или је фајл оштећен."
 
 #, c-format
 msgid ""
@@ -3486,25 +3484,25 @@ msgstr " је оштећена (величина странице је маља 
 
 #, c-format
 msgid "Using swap file \"%s\""
-msgstr "Користи се swap датотека \"%s\""
+msgstr "Користи се swap фајл \"%s\""
 
 #, c-format
 msgid "Original file \"%s\""
-msgstr "Оригинална датотека \"%s\""
+msgstr "Оригинални фајл \"%s\""
 
 msgid "E308: Warning: Original file may have been changed"
-msgstr "E308: Упозорење: Можда је промењена оригинална датотека"
+msgstr "E308: Упозорење: Можда је промењен оригинални фајл"
 
 #, c-format
 msgid "Swap file is encrypted: \"%s\""
-msgstr "Swap датотека је шифрована: \"%s\""
+msgstr "Swap фајл је шифрован: \"%s\""
 
 msgid ""
 "\n"
 "If you entered a new crypt key but did not write the text file,"
 msgstr ""
 "\n"
-"Ако сте унели нов кључ за шифрирање али нисте уписали текст датотеку,"
+"Ако сте унели нов кључ за шифрирање али нисте уписали текст фајл,"
 
 msgid ""
 "\n"
@@ -3518,7 +3516,7 @@ msgid ""
 "If you wrote the text file after changing the crypt key press enter"
 msgstr ""
 "\n"
-"Ако сте уписали текст датотеку на диск након промене кључа за шифрирање "
+"Ако сте уписали текст фајл на диск након промене кључа за шифрирање "
 "притисните ентер"
 
 msgid ""
@@ -3526,7 +3524,7 @@ msgid ""
 "to use the same key for text file and swap file"
 msgstr ""
 "\n"
-"да бисте користили исти кључ за текст датотеку и swap датотеку"
+"да бисте користили исти кључ за текст фајл и swap фајл"
 
 #, c-format
 msgid "E309: Unable to read block 1 from %s"
@@ -3546,7 +3544,7 @@ msgstr "???НЕДОСТАЈУ ЛИНИЈЕ"
 
 #, c-format
 msgid "E310: Block 1 ID wrong (%s not a .swp file?)"
-msgstr "E310: ID блока 1 је погрешан (%s није .swp датотека?)"
+msgstr "E310: ID блока 1 је погрешан (%s није .swp фајл?)"
 
 msgid "???BLOCK MISSING"
 msgstr "???НЕДОСТАЈЕ БЛОК"
@@ -3580,13 +3578,13 @@ msgid ""
 "(You might want to write out this file under another name\n"
 msgstr ""
 "\n"
-"(Можда бисте хтели да запишете ову датотеку под другим именом\n"
+"(Можда бисте хтели да запишете овај фајл под другим именом\n"
 
 msgid "and run diff with the original file to check for changes)"
-msgstr "и покренете diff са оригиналном датотеком да провелите има ли измена)"
+msgstr "и покренете diff са оригиналним фајлом да проверите има ли измена)"
 
 msgid "Recovery completed. Buffer contents equals file contents."
-msgstr "Опоравак је завршен. Садржај бафера је истоветан садржају датотеке."
+msgstr "Опоравак је завршен. Садржај бафера је истоветан садржају фајла."
 
 msgid ""
 "\n"
@@ -3594,14 +3592,14 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"Сада можда желите да обришете .swp датотеку.\n"
+"Сада можда желите да обришете .swp фајл.\n"
 "\n"
 
 msgid "Using crypt key from swap file for the text file.\n"
-msgstr "За текст датотеку се користи кључ за шифрирање из swap датотеке.\n"
+msgstr "За текст фајл се користи кључ за шифрирање из swap фајла.\n"
 
 msgid "Swap files found:"
-msgstr "Пронађене су swap датотеке:"
+msgstr "Пронађени су swap фајлови:"
 
 msgid "   In current directory:\n"
 msgstr "   У текућем директоријуму:\n"
@@ -3613,32 +3611,32 @@ msgid "   In directory "
 msgstr "   У директоријуму "
 
 msgid "      -- none --\n"
-msgstr "      -- ниједна --\n"
+msgstr "      -- ниједан --\n"
 
 msgid "          owned by: "
-msgstr "          које поседује: "
+msgstr "          који поседује: "
 
 msgid "   dated: "
-msgstr "   датиране: "
+msgstr "   датиран: "
 
 msgid "             dated: "
-msgstr "             датиране: "
+msgstr "             датиран: "
 
 msgid "         [from Vim version 3.0]"
 msgstr "         [од Vim верзије 3.0]"
 
 msgid "         [does not look like a Vim swap file]"
-msgstr "         [не изгледа као Vim swap датотека]"
+msgstr "         [не изгледа као Vim swap фајл]"
 
 msgid "         file name: "
-msgstr "         име датотеке: "
+msgstr "         име фајла: "
 
 msgid ""
 "\n"
 "          modified: "
 msgstr ""
 "\n"
-"          измењено: "
+"          измењен: "
 
 msgid "YES"
 msgstr "ДА"
@@ -3678,14 +3676,14 @@ msgid ""
 "         [not usable with this version of Vim]"
 msgstr ""
 "\n"
-"         [није употребљива са овом верзијом Vim-а]"
+"         [није употребљив са овом верзијом Vim-а]"
 
 msgid ""
 "\n"
 "         [not usable on this computer]"
 msgstr ""
 "\n"
-"         [није употребљива на овом компјутеру]"
+"         [није употребљив на овом компјутеру]"
 
 msgid "         [cannot be read]"
 msgstr "         [не може да се прочита]"
@@ -3694,10 +3692,10 @@ msgid "         [cannot be opened]"
 msgstr "         [не може да се отвори]"
 
 msgid "E313: Cannot preserve, there is no swap file"
-msgstr "E313: Не може да се презервира, нема swap датотеке"
+msgstr "E313: Не може да се презервира, нема swap фајла"
 
 msgid "File preserved"
-msgstr "Датотека је презервирана"
+msgstr "Фајл је презервиран"
 
 msgid "E314: Preserve failed"
 msgstr "E314: Презервација није успела"
@@ -3761,13 +3759,13 @@ msgid ""
 "Found a swap file by the name \""
 msgstr ""
 "\n"
-"Пронађена је swap датотека под именом \""
+"Пронађен је swap фајл под именом \""
 
 msgid "While opening file \""
-msgstr "Док се отварала датотекa \""
+msgstr "Док се отварао фајл \""
 
 msgid "      NEWER than swap file!\n"
-msgstr "      НОВИЈА од swap датотеке!\n"
+msgstr "      НОВИЈИ од swap фајла!\n"
 
 msgid ""
 "\n"
@@ -3776,12 +3774,12 @@ msgid ""
 "    file when making changes.  Quit, or continue with caution.\n"
 msgstr ""
 "\n"
-"(1) Можда други програм уређује исту датотеку. Ако је ово случај,\n"
+"(1) Можда други програм уређује исти фајл. Ако је ово случај,\n"
 "    кад правите измене, пазите да не завршите са две различите\n"
-"    инстанце исте датотеке.  Изађите, или опрезно наставите.\n"
+"    инстанце истог фајла. Изађите, или опрезно наставите.\n"
 
 msgid "(2) An edit session for this file crashed.\n"
-msgstr "(2) Сесија уређивања ове датотеке се срушила.\n"
+msgstr "(2) Сесија уређивања овог фајла се срушила.\n"
 
 msgid "    If this is the case, use \":recover\" or \"vim -r "
 msgstr "    Ако је ово случај, користите \":recover\" или \"vim -r "
@@ -3794,7 +3792,7 @@ msgstr ""
 "    да опоравите измене (погледајте \":help recovery\").\n"
 
 msgid "    If you did this already, delete the swap file \""
-msgstr "    Ако сте ово већ учинили, обришите swap датотеку \""
+msgstr "    Ако сте ово већ учинили, обришите swap фајл \""
 
 msgid ""
 "\"\n"
@@ -3804,7 +3802,7 @@ msgstr ""
 "    како би избегли ову поруку.\n"
 
 msgid "Swap file \""
-msgstr "Swap датотека \""
+msgstr "Swap фајл \""
 
 msgid "\" already exists!"
 msgstr "\" већ постоји!"
@@ -3813,7 +3811,7 @@ msgid "VIM - ATTENTION"
 msgstr "VIM - ПАЖЊА"
 
 msgid "Swap file already exists!"
-msgstr "Swap датотека већ постоји!"
+msgstr "Swap фајл већ постоји!"
 
 msgid ""
 "&Open Read-Only\n"
@@ -3839,11 +3837,12 @@ msgstr ""
 "Отвори &Само за читање\n"
 "Ипак &Уређуј\n"
 "&Опорави\n"
+"Обриши &Га\n"
 "&Изађи\n"
 "&Прекини"
 
 msgid "E326: Too many swap files found"
-msgstr "E326: Пронађено је превише swap датотека"
+msgstr "E326: Пронађено је превише swap фајлова"
 
 msgid "E327: Part of menu-item path is not sub-menu"
 msgstr "E327: Део путање ставке менија није подмени"
@@ -3952,13 +3951,13 @@ msgid "Select Directory dialog"
 msgstr "Дијалог избора директоријума"
 
 msgid "Save File dialog"
-msgstr "Дијалог чувања датотеке"
+msgstr "Дијалог чувања фајла"
 
 msgid "Open File dialog"
-msgstr "Дијалог отварања датотеке"
+msgstr "Дијалог отварања фајла"
 
 msgid "E338: Sorry, no file browser in console mode"
-msgstr "E338: Жао нам је, нема претраживача датотека у конзолном режиму"
+msgstr "E338: Жао нам је, нема претраживача фајлова у конзолном режиму"
 
 msgid "E766: Insufficient arguments for printf()"
 msgstr "E766: Недовољно аргумената за printf()"
@@ -3970,13 +3969,13 @@ msgid "E767: Too many arguments to printf()"
 msgstr "E767: Сувише аргумената за printf()"
 
 msgid "W10: Warning: Changing a readonly file"
-msgstr "W10: Упозорење: Мења се датотека која може само да се чита"
+msgstr "W10: Упозорење: Мења се фајл која може само да се чита"
 
 msgid "Type number and <Enter> or click with mouse (empty cancels): "
-msgstr "Унесите број и <Enter> или кликните мишем (ништа за отказ): "
+msgstr "Унесите број и <Ентер> или кликните мишем (ништа за отказ): "
 
 msgid "Type number and <Enter> (empty cancels): "
-msgstr "Унесите број и <Enter> (ништа за отказ): "
+msgstr "Унесите број и <Ентер> (ништа за отказ): "
 
 msgid "1 more line"
 msgstr "1 линија више"
@@ -4064,7 +4063,7 @@ msgstr "E344: Директоријум \"%s\" не може да се прона
 
 #, c-format
 msgid "E345: Can't find file \"%s\" in path"
-msgstr "E345: Датотека \"%s\" не може да се пронађе у path"
+msgstr "E345: Фајл \"%s\" не може да се пронађе у path"
 
 #, c-format
 msgid "E346: No more directory \"%s\" found in cdpath"
@@ -4072,18 +4071,18 @@ msgstr "E346: Директоријум \"%s\" више не може да се �
 
 #, c-format
 msgid "E347: No more file \"%s\" found in path"
-msgstr "E347: Датотека \"%s\" више не може да се пронађе у path"
+msgstr "E347: Фајл \"%s\" више не може да се пронађе у path"
 
 #, c-format
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
-msgstr "E668: Погрешан режим приступа за инфо датотеку NetBeans везе: \"%s\""
+msgstr "E668: Погрешан режим приступа за инфо фајл NetBeans везе: \"%s\""
 
 #, c-format
 msgid "E658: NetBeans connection lost for buffer %ld"
 msgstr "E658: NetBeans веза је изгубљена за бафер %ld"
 
 msgid "E838: netbeans is not supported with this GUI"
-msgstr "E838: netbeans није подржан са овим GUI"
+msgstr "E838: netbeans није подржан са овим ГКИ"
 
 msgid "E511: netbeans already connected"
 msgstr "E511: netbeans је већ повезан"
@@ -4284,10 +4283,10 @@ msgid "E529: Cannot set 'term' to empty string"
 msgstr "E529: 'term' не може да се постави на празан стринг"
 
 msgid "E530: Cannot change term in GUI"
-msgstr "E530: term не може да се промени из GUI"
+msgstr "E530: term не може да се промени из ГКИ"
 
 msgid "E531: Use \":gui\" to start the GUI"
-msgstr "E531: Користите \":gui\" да покренете GUI"
+msgstr "E531: Користите \":gui\" да покренете ГКИ"
 
 msgid "E589: 'backupext' and 'patchmode' are equal"
 msgstr "E589: 'backupext' и 'patchmode' су истоветни"
@@ -4299,7 +4298,7 @@ msgid "E835: Conflicts with value of 'fillchars'"
 msgstr "E835: У конфликту са вредношћу 'fillchars'"
 
 msgid "E617: Cannot be changed in the GTK+ 2 GUI"
-msgstr "E617: Не може да се промени у GTK+ 2 GUI"
+msgstr "E617: Не може да се промени у GTK+ 2 ГКИ"
 
 #, c-format
 msgid "E950: Cannot convert between %s and %s"
@@ -4721,14 +4720,14 @@ msgid "No entries"
 msgstr "Нема уноса"
 
 msgid "Error file"
-msgstr "Датотека грешака"
+msgstr "Фајл грешака"
 
 msgid "E683: File name missing or invalid pattern"
-msgstr "E683: Недостаје име датотеке или неважећи шаблон"
+msgstr "E683: Недостаје име фајла или неважећи шаблон"
 
 #, c-format
 msgid "Cannot open file \"%s\""
-msgstr "Датотека \"%s\" не може да се отвори"
+msgstr "Фајл \"%s\" не може да се отвори"
 
 msgid "E681: Buffer is not loaded"
 msgstr "E681: Бафер није учитан"
@@ -4911,7 +4910,7 @@ msgstr "E878: (NFA) Није могла да се алоцира мемориј�
 msgid ""
 "Could not open temporary log file for writing, displaying on stderr... "
 msgstr ""
-"Привремена лог датотека није могла да се отвори за упис, приказује се на "
+"Привремени лог фајл није могао да се отвори за упис, приказује се на "
 "stderr... "
 
 #, c-format
@@ -4919,7 +4918,7 @@ msgid "(NFA) COULD NOT OPEN %s !"
 msgstr "(NFA) %s НЕ МОЖЕ ДА СЕ ОТВОРИ !"
 
 msgid "Could not open temporary log file for writing "
-msgstr "Привремена лог датотека није могла да се отвори за упис "
+msgstr "Привремени лог фајл није могао да се отвори за упис "
 
 msgid " VREPLACE"
 msgstr "ВЗАМЕНА"
@@ -4991,10 +4990,10 @@ msgid " (includes previously listed match)"
 msgstr " (укључује претходно наведена подударања)"
 
 msgid "--- Included files "
-msgstr "--- Прикључене датотеке "
+msgstr "--- Прикључени фајлови "
 
 msgid "not found "
-msgstr "нису пронађене "
+msgstr "нису пронађени "
 
 msgid "in path ---\n"
 msgstr "у путањи ---\n"
@@ -5007,20 +5006,20 @@ msgstr "  НИЈЕ ПРОНАЂЕНО"
 
 #, c-format
 msgid "Scanning included file: %s"
-msgstr "Прегледање уметнуте датотеке: %s"
+msgstr "Прегледање прикљученог фајла: %s"
 
 #, c-format
 msgid "Searching included file %s"
-msgstr "Претраживање уметнуте датотеке %s"
+msgstr "Претраживање прикљученог фајла %s"
 
 msgid "E387: Match is on current line"
 msgstr "E387: Подударање је у текућој линији"
 
 msgid "All included files were found"
-msgstr "Све уметнуте датотеке су пронађене"
+msgstr "Пронађени су сви прикључени фајлови"
 
 msgid "No included files"
-msgstr "Нема уметнутих датотека"
+msgstr "Нема прикључених фајлова"
 
 msgid "E388: Couldn't find definition"
 msgstr "E388: Дефиниција не може да се пронађе"
@@ -5086,18 +5085,18 @@ msgid "E753: Not found: %s"
 msgstr "E753: Није пронађено: %s"
 
 msgid "E758: Truncated spell file"
-msgstr "E758: Правописна датотека је прекраћена"
+msgstr "E758: Правописни фајл је прекраћен"
 
 #, c-format
 msgid "Trailing text in %s line %d: %s"
-msgstr "Текст вишак у %s линија %d: %s"
+msgstr "Вишак текста у %s линија %d: %s"
 
 #, c-format
 msgid "Affix name too long in %s line %d: %s"
 msgstr "Име наставка је предугачко у %s линија %d: %s"
 
 msgid "E761: Format error in affix file FOL, LOW or UPP"
-msgstr "E761: Грешка формата у датотеци наставака FOL, LOW или UPP"
+msgstr "E761: Грешка формата у фајлу наставака FOL, LOW или UPP"
 
 msgid "E762: Character in FOL, LOW or UPP is out of range"
 msgstr "E762: Карактер у FOL, LOW или UPP је ван опсега"
@@ -5107,43 +5106,43 @@ msgstr "Стабло речи се компресује..."
 
 #, c-format
 msgid "Reading spell file \"%s\""
-msgstr "Читање правописне датотеке \"%s\""
+msgstr "Читање правописног фајла \"%s\""
 
 msgid "E757: This does not look like a spell file"
-msgstr "E757: Ово не изгледа као правописна датотека"
+msgstr "E757: Ово не изгледа као правописни фајл"
 
 msgid "E771: Old spell file, needs to be updated"
-msgstr "E771: Стара правописна датотека, потребно је да се освежи"
+msgstr "E771: Стари правописни фајл, потребно је да се освежи"
 
 msgid "E772: Spell file is for newer version of Vim"
-msgstr "E772: Правописна датотека је за новију верзију Vim-а"
+msgstr "E772: Правописни фајл је за новију верзију Vim-а"
 
 msgid "E770: Unsupported section in spell file"
-msgstr "E770: Неподржана секција у правописној датотеци"
+msgstr "E770: Неподржана секција у правописном фајлу"
 
 #, c-format
 msgid "E778: This does not look like a .sug file: %s"
-msgstr "E778: Ово не изгледа као .sug датотека: %s"
+msgstr "E778: Ово не изгледа као .sug фајл: %s"
 
 #, c-format
 msgid "E779: Old .sug file, needs to be updated: %s"
-msgstr "E779: Стара .sug датотека, потребно је да се освежи: %s"
+msgstr "E779: Стари .sug фајл, потребно је да се освежи: %s"
 
 #, c-format
 msgid "E780: .sug file is for newer version of Vim: %s"
-msgstr "E780: .sug датотека је за новију верзију Vim-а: %s"
+msgstr "E780: .sug фајл је за новију верзију Vim-а: %s"
 
 #, c-format
 msgid "E781: .sug file doesn't match .spl file: %s"
-msgstr "E781: .sug датотека не одговара .spl датотеци: %s"
+msgstr "E781: .sug фајл не одговара .spl фајлу: %s"
 
 #, c-format
 msgid "E782: error while reading .sug file: %s"
-msgstr "E782: грешка приликом читања .sug датотеке: %s"
+msgstr "E782: грешка приликом читања .sug фајла: %s"
 
 #, c-format
 msgid "Reading affix file %s..."
-msgstr "Читање датотеке наставака %s..."
+msgstr "Читање фајла наставака %s..."
 
 #, c-format
 msgid "Conversion failure for word in %s line %d: %s"
@@ -5278,11 +5277,11 @@ msgstr "Неважећи индикатор у %s линија %d: %s"
 #, c-format
 msgid "%s value differs from what is used in another .aff file"
 msgstr ""
-"%s вредност се разликује од онога што је коришћено у другој .aff датотеци"
+"%s вредност се разликује од онога што је коришћено у другом .aff фајлу"
 
 #, c-format
 msgid "Reading dictionary file %s..."
-msgstr "Читање датотеке речника %s..."
+msgstr "Читање фајла речника %s..."
 
 #, c-format
 msgid "E760: No word count in %s"
@@ -5310,7 +5309,7 @@ msgstr "Игнорисана/о %d реч(и) са не-ASCII карактери
 
 #, c-format
 msgid "Reading word file %s..."
-msgstr "Читање датотеке речи %s..."
+msgstr "Читање фајла речи %s..."
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %d: %s"
@@ -5352,7 +5351,7 @@ msgid "Compressed %d of %d nodes; %d (%d%%) remaining"
 msgstr "Компресовано је %d од %d чворова; преостало је још %d (%d%%)"
 
 msgid "Reading back spell file..."
-msgstr "Читање правописне датотеке..."
+msgstr "Читање правописног фајла..."
 
 msgid "Performing soundfolding..."
 msgstr "Извођење склапања по звучности..."
@@ -5367,14 +5366,14 @@ msgstr "Укупан број речи: %d"
 
 #, c-format
 msgid "Writing suggestion file %s..."
-msgstr "Уписивање датотеке предлога %s..."
+msgstr "Уписивање фајла предлога %s..."
 
 #, c-format
 msgid "Estimated runtime memory use: %d bytes"
 msgstr "Процењена потребна величина меморије у време извршавања: %d бајтова"
 
 msgid "E751: Output file name must not have region name"
-msgstr "E751: Име излазне датотеке не сме да има име региона"
+msgstr "E751: Име излазног фајла не сме да има име региона"
 
 #, c-format
 msgid "E754: Only up to %ld regions supported"
@@ -5389,7 +5388,7 @@ msgstr "Упозорење: наведени су и слагање и NOBREAK"
 
 #, c-format
 msgid "Writing spell file %s..."
-msgstr "Уписивање правописне датотеке %s..."
+msgstr "Уписивање правописног фајла %s..."
 
 msgid "Done!"
 msgstr "Завршено!"
@@ -5407,13 +5406,13 @@ msgid "Word '%.*s' added to %s"
 msgstr "Реч '%.*s' је додата у %s"
 
 msgid "E763: Word characters differ between spell files"
-msgstr "E763: Карактери у речи се разликују између правописних датотека"
+msgstr "E763: Карактери у речи се разликују између правописних фајлова"
 
 msgid "E783: duplicate char in MAP entry"
 msgstr "E783: карактер дупликат у MAP ставци"
 
 msgid "No Syntax items defined for this buffer"
-msgstr "За оба јбафер нису дефинисане синтаксне ставке"
+msgstr "Синтаксне ставке нису дефинисане за овај бафер"
 
 msgid "syntax conceal on"
 msgstr "скривање синтаксе укључено"
@@ -5510,7 +5509,7 @@ msgid "E394: Didn't find region item for %s"
 msgstr "E394: Ставка региона није пронађена за %s"
 
 msgid "E397: Filename required"
-msgstr "E397: Потребно име датотеке"
+msgstr "E397: Потребно је име фајла"
 
 msgid "E847: Too many syntax includes"
 msgstr "E847: Превише синтаксних уметања"
@@ -5659,10 +5658,10 @@ msgid "E426: tag not found: %s"
 msgstr "E426: ознака није пронађена: %s"
 
 msgid "  # pri kind tag"
-msgstr "  # ознака pri врсте"
+msgstr "  # pri ознака врста"
 
 msgid "file\n"
-msgstr "датотека\n"
+msgstr "фајл\n"
 
 msgid "E427: There is only one matching tag"
 msgstr "E427: Постоји само једна подударајућа ознака"
@@ -5672,7 +5671,7 @@ msgstr "E428: Не може да се иде иза последње подуд�
 
 #, c-format
 msgid "File \"%s\" does not exist"
-msgstr "Датотека \"%s\" не постоји"
+msgstr "Фајл \"%s\" не постоји"
 
 #, c-format
 msgid "tag %d of %d%s"
@@ -5686,29 +5685,29 @@ msgstr "  Користи се ознака за другом врстом сло
 
 #, c-format
 msgid "E429: File \"%s\" does not exist"
-msgstr "E429: Датотека \"%s\" не постоји"
+msgstr "E429: Фајл \"%s\" не постоји"
 
 msgid ""
 "\n"
 "  # TO tag         FROM line  in file/text"
 msgstr ""
 "\n"
-"  # НА ознака      ОД линије  у датот/текст"
+"  # НА ознаку      ИЗ линије  у фајлу/тексту"
 
 #, c-format
 msgid "Searching tags file %s"
-msgstr "Претраживање датотеке ознака %s"
+msgstr "Претраживање фајла ознака %s"
 
 #, c-format
 msgid "E430: Tag file path truncated for %s\n"
-msgstr "E430: Путања датотеке ознака је прекинута за %s\n"
+msgstr "E430: Путања фајла ознака је прекинута за %s\n"
 
 msgid "Ignoring long line in tags file"
-msgstr "Дугачка линија у датотеци ознака се игнорише"
+msgstr "Дугачка линија у фајлу ознака се игнорише"
 
 #, c-format
 msgid "E431: Format error in tags file \"%s\""
-msgstr "E431: Грешка формата у датотеци ознака \"%s\""
+msgstr "E431: Грешка формата у фајлу ознака \"%s\""
 
 #, c-format
 msgid "Before byte %ld"
@@ -5716,10 +5715,10 @@ msgstr "Пре бајта %ld"
 
 #, c-format
 msgid "E432: Tags file not sorted: %s"
-msgstr "E432: Датотека ознака није сортирана: %s"
+msgstr "E432: Фајл ознака није сортиран: %s"
 
 msgid "E433: No tags file"
-msgstr "E433: Нема датотеке ознака"
+msgstr "E433: Нема фајла ознака"
 
 msgid "E434: Can't find tag pattern"
 msgstr "E434: Не може да се пронађе шаблон ознаке"
@@ -5738,7 +5737,7 @@ msgid "defaulting to '"
 msgstr "подразумева се '"
 
 msgid "E557: Cannot open termcap file"
-msgstr "E557: termcap датотека не може да се отвори"
+msgstr "E557: termcap фајл не може да се отвори"
 
 msgid "E558: Terminal entry not found in terminfo"
 msgstr "E558: У terminfo није пронађена ставка за терминал"
@@ -5784,7 +5783,7 @@ msgstr "завршен"
 
 #, c-format
 msgid "E953: File exists: %s"
-msgstr "E953: Датотека већ постоји: %s"
+msgstr "E953: Фајл већ постоји: %s"
 
 msgid "E955: Not a terminal buffer"
 msgstr "E955: Није терминалски бафер"
@@ -5806,76 +5805,76 @@ msgstr "Није могућ опозив; ипак настави"
 
 #, c-format
 msgid "E828: Cannot open undo file for writing: %s"
-msgstr "E828: Датотека опозива не може да се отвори за упис: %s"
+msgstr "E828: Фајл опозива не може да се отвори за упис: %s"
 
 #, c-format
 msgid "E825: Corrupted undo file (%s): %s"
-msgstr "E825: Искварена датотека за опозив (%s): %s"
+msgstr "E825: Искварен фајл за опозив (%s): %s"
 
 msgid "Cannot write undo file in any directory in 'undodir'"
 msgstr ""
-"Датотека за опозив не може да се упише ни у један директоријум из 'undodir'"
+"Фајл за опозив не може да се упише ни у један директоријум из 'undodir'"
 
 #, c-format
 msgid "Will not overwrite with undo file, cannot read: %s"
 msgstr ""
-"Неће се вршити преписивање са датотеком опозива, читање није могуће: %s"
+"Неће се вршити преписивање са фајлом опозива, читање није могуће: %s"
 
 #, c-format
 msgid "Will not overwrite, this is not an undo file: %s"
-msgstr "Неће се цршити преписивање, ово није датотека за опозив: %s"
+msgstr "Неће се вршити преписивање, ово није фајл за опозив: %s"
 
 msgid "Skipping undo file write, nothing to undo"
-msgstr "Прескакање уписа у датотеку за опозив, нема шта да се опозове"
+msgstr "Прескакање уписа у фајл за опозив, нема шта да се опозове"
 
 #, c-format
 msgid "Writing undo file: %s"
-msgstr "Упис датотеке за опозив: %s"
+msgstr "Упис фајла за опозив: %s"
 
 #, c-format
 msgid "E829: write error in undo file: %s"
-msgstr "E829: грешка код уписа у датотеку за опозив: %s"
+msgstr "E829: грешка код уписа у фајл за опозив: %s"
 
 #, c-format
 msgid "Not reading undo file, owner differs: %s"
-msgstr "Датотека за опозив се не чита, власник се разликује: %s"
+msgstr "Фајл за опозив се не чита, власник се разликује: %s"
 
 #, c-format
 msgid "Reading undo file: %s"
-msgstr "Читање датотеке за опозив: %s"
+msgstr "Читање фајла за опозив: %s"
 
 #, c-format
 msgid "E822: Cannot open undo file for reading: %s"
-msgstr "E822: Датотека за опозив не може да се отвори за читање: %s"
+msgstr "E822: Фајл за опозив не може да се отвори за читање: %s"
 
 #, c-format
 msgid "E823: Not an undo file: %s"
-msgstr "E823: Није датотека за опозив: %s"
+msgstr "E823: Није фајл за опозив: %s"
 
 #, c-format
 msgid "E832: Non-encrypted file has encrypted undo file: %s"
 msgstr ""
-"E832: Датотека која није шифрована има шифровану датотеку за опозив: %s"
+"E832: Фајл који није шифрован има шифрован фајл за опозив: %s"
 
 #, c-format
 msgid "E826: Undo file decryption failed: %s"
-msgstr "E826: Дешифровање датотеке за опозив није успело: %s"
+msgstr "E826: Дешифровање фајла за опозив није успело: %s"
 
 #, c-format
 msgid "E827: Undo file is encrypted: %s"
-msgstr "E827: Датотека за опозив је шифрована: %s"
+msgstr "E827: Фајл за опозив је шифрован: %s"
 
 #, c-format
 msgid "E824: Incompatible undo file: %s"
-msgstr "E824: Некомпатибилна датотека за опозив: %s"
+msgstr "E824: Некомпатибилан фајл за опозив: %s"
 
 msgid "File contents changed, cannot use undo info"
 msgstr ""
-"Садржај датотеке је промењен, информације за опозив не могу да се користе"
+"Садржај фајла је промењен, информације за опозив не могу да се користе"
 
 #, c-format
 msgid "Finished reading undo file %s"
-msgstr "Тавршено је читање датотеке за опозив %s"
+msgstr "Завршено је читање фајла за опозив %s"
 
 msgid "Already at oldest change"
 msgstr "Већ сте на најстаријој измени"
@@ -6052,7 +6051,7 @@ msgstr "E127: Функција %s не може да се редефинише: 
 
 #, c-format
 msgid "E746: Function name does not match script file name: %s"
-msgstr "E746: Име функције се не поклапа са именом скрипт датотеке: %s"
+msgstr "E746: Име функције се не поклапа са именом скрипт фајла: %s"
 
 #, c-format
 msgid "E131: Cannot delete function %s: It is in use"
@@ -6070,14 +6069,14 @@ msgid ""
 "MS-Windows 64-bit GUI version"
 msgstr ""
 "\n"
-"MS-Windows 64-битна GUI верзија"
+"MS-Windows 64-битна ГКИ верзија"
 
 msgid ""
 "\n"
 "MS-Windows 32-bit GUI version"
 msgstr ""
 "\n"
-"MS-Windows 32-битна GUI верзија"
+"MS-Windows 32-битна ГКИ верзија"
 
 msgid " with OLE support"
 msgstr " са OLE подршком"
@@ -6180,76 +6179,76 @@ msgstr ""
 "Сићушна верзија "
 
 msgid "without GUI."
-msgstr "без GUI."
+msgstr "без ГКИ."
 
 msgid "with GTK3 GUI."
-msgstr "са GTK3 GUI."
+msgstr "са GTK3 ГКИ."
 
 msgid "with GTK2-GNOME GUI."
-msgstr "са GTK2-GNOME GUI."
+msgstr "са GTK2-GNOME ГКИ."
 
 msgid "with GTK2 GUI."
-msgstr "са GTK2 GUI."
+msgstr "са GTK2 ГКИ."
 
 msgid "with X11-Motif GUI."
-msgstr "са X11-Motif GUI."
+msgstr "са X11-Motif ГКИ."
 
 msgid "with X11-neXtaw GUI."
-msgstr "са X11-neXtaw GUI."
+msgstr "са X11-neXtaw ГКИ."
 
 msgid "with X11-Athena GUI."
-msgstr "са X11-Athena GUI."
+msgstr "са X11-Athena ГКИ."
 
 msgid "with Photon GUI."
-msgstr "са Photon GUI."
+msgstr "са Photon ГКИ."
 
 msgid "with GUI."
-msgstr "са GUI."
+msgstr "са ГКИ."
 
 msgid "with Carbon GUI."
-msgstr "са Carbon GUI."
+msgstr "са Carbon ГКИ."
 
 msgid "with Cocoa GUI."
-msgstr "са Cocoa GUI."
+msgstr "са Cocoa ГКИ."
 
 msgid "  Features included (+) or not (-):\n"
 msgstr "  Могућности укључене (+) или не (-):\n"
 
 msgid "   system vimrc file: \""
-msgstr "      системскa vimrc датотека: \""
+msgstr "      системски vimrc фајл: \""
 
 msgid "     user vimrc file: \""
-msgstr "     корисничка vimrc датотека: \""
+msgstr "     кориснички vimrc фајл: \""
 
 msgid " 2nd user vimrc file: \""
-msgstr " 2га корисничка vimrc датотека: \""
+msgstr " 2ги кориснички vimrc фајл: \""
 
 msgid " 3rd user vimrc file: \""
-msgstr " 3ћа корисничка vimrc датотека: \""
+msgstr " 3ћи кориснички vimrc фајл: \""
 
 msgid "      user exrc file: \""
-msgstr "      корисничка exrc датотека: \""
+msgstr "      кориснички exrc фајл: \""
 
 msgid "  2nd user exrc file: \""
-msgstr "  2га корисничка exrc датотека: \""
+msgstr "  2ги кориснички exrc фајл: \""
 
 msgid "  system gvimrc file: \""
-msgstr "     системска gvimrc датотека: \""
+msgstr "     системски gvimrc фајл: \""
 
 msgid "    user gvimrc file: \""
-msgstr "    корисничка gvimrc датотека: \""
+msgstr "    кориснички gvimrc фајл: \""
 
 msgid "2nd user gvimrc file: \""
-msgstr "2га корисничка gvimrc датотека: \""
+msgstr "2ги кориснички gvimrc фајл: \""
 
 msgid "3rd user gvimrc file: \""
-msgstr "3ћа корисничка gvimrc датотека: \""
+msgstr "3ћи кориснички gvimrc фајл: \""
 
 msgid "       defaults file: \""
-msgstr "  датотека са подраз. опцијама: \""
+msgstr "  фајл са подраз. опцијама: \""
 
 msgid "    system menu file: \""
-msgstr "     системска датотека менија: \""
+msgstr "     системски фајл менија: \""
 
 msgid "  fall-back for $VIM: \""
 msgstr "     резервна вредност за $VIM: \""
@@ -6285,25 +6284,25 @@ msgid "Help poor children in Uganda!"
 msgstr "Помозите сиромашној деци у Уганди!"
 
 msgid "type  :help iccf<Enter>       for information "
-msgstr "откуцајте  :help iccf<Enter>       за информације   "
+msgstr "откуцајте  :help iccf<Ентер>       за информације   "
 
 msgid "type  :q<Enter>               to exit         "
-msgstr "откуцајте  :q<Enter>               за излаз         "
+msgstr "откуцајте  :q<Ентер>               за излаз         "
 
 msgid "type  :help<Enter>  or  <F1>  for on-line help"
-msgstr "откуцајте  :help<Enter>  или  <F1> за on-line помоћ "
+msgstr "откуцајте  :help<Ентер>  или  <F1> за on-line помоћ "
 
 msgid "type  :help version8<Enter>   for version info"
-msgstr "откуцајте  :help version8<Enter>   за инфо о верзији"
+msgstr "откуцајте  :help version8<Ентер>   за инфо о верзији"
 
 msgid "Running in Vi compatible mode"
 msgstr "Рад у Vi компатибилном режиму"
 
 msgid "type  :set nocp<Enter>        for Vim defaults"
-msgstr "откуцајте  :set nocp<Enter>        за Vim подразумевано"
+msgstr "откуцајте  :set nocp<Ентер>        за Vim подразумевано"
 
 msgid "type  :help cp-default<Enter> for info on this"
-msgstr "откуцајте  :help cp-default<Enter> за инфо о овоме"
+msgstr "откуцајте  :help cp-default<Ентер> за инфо о овоме"
 
 msgid "menu  Help->Orphans           for information    "
 msgstr "мени  Помоћ->Сирочићи           за информације    "
@@ -6330,10 +6329,10 @@ msgid "Become a registered Vim user!"
 msgstr "Постаните регистровани Vim корисник!"
 
 msgid "type  :help sponsor<Enter>    for information "
-msgstr "откуцајте  :help sponsor<Enter>    за информације   "
+msgstr "откуцајте  :help sponsor<Ентер>    за информације   "
 
 msgid "type  :help register<Enter>   for information "
-msgstr "откуцајте  :help register<Enter>   за информације   "
+msgstr "откуцајте  :help register<Ентер>   за информације   "
 
 msgid "menu  Help->Sponsor/Register  for information    "
 msgstr "мени  Помоћ->Спонзор/Региструј се  за информације    "
@@ -6363,11 +6362,11 @@ msgid "E445: Other window contains changes"
 msgstr "E445: Други прозори садрже измене"
 
 msgid "E446: No file name under cursor"
-msgstr "E446: Под курсором се не налази име датотеке"
+msgstr "E446: Под курсором се не налази име фајла"
 
 #, c-format
 msgid "E447: Can't find file \"%s\" in path"
-msgstr "E447: Датотека \"%s\" не може да се пронађе у путањи"
+msgstr "E447: Фајл \"%s\" не може да се пронађе у путањи"
 
 #, c-format
 msgid "E799: Invalid ID: %ld (must be greater than or equal to 1)"
@@ -6404,7 +6403,7 @@ msgid "Edit with existing Vim - "
 msgstr "Уређуј са постојећим Vim - "
 
 msgid "Edits the selected file(s) with Vim"
-msgstr "Уређује селектовауе датотеку(е) са Vim-ом"
+msgstr "Уређује селектовани фајл(е) са Vim-ом"
 
 msgid "Error creating process: Check if gvim is in your path!"
 msgstr ""
@@ -6456,7 +6455,7 @@ msgid "E588: :endfor without :for"
 msgstr "E588: :endfor без :for"
 
 msgid "E13: File exists (add ! to override)"
-msgstr "E13: Датотека постоји (додајте ! за премошћавање)"
+msgstr "E13: Фајл постоји (додајте ! за премошћавање)"
 
 msgid "E472: Command failed"
 msgstr "E472: Команда није успела"
@@ -6539,7 +6538,7 @@ msgid "E22: Scripts nested too deep"
 msgstr "E22: Скрипте су предубоко угњеждене"
 
 msgid "E23: No alternate file"
-msgstr "E23: Нема алтернативне датотеке"
+msgstr "E23: Нема алтернативног фајла"
 
 msgid "E24: No such abbreviation"
 msgstr "E24: Таква скраћеница не постоји"
@@ -6548,7 +6547,7 @@ msgid "E477: No ! allowed"
 msgstr "E477: ! није дозвољен"
 
 msgid "E25: GUI cannot be used: Not enabled at compile time"
-msgstr "E25: GUI не може да се користи: Није омогућен у време компилације"
+msgstr "E25: ГКИ не може да се користи: Није омогућен у време компилације"
 
 msgid "E26: Hebrew cannot be used: Not enabled at compile time\n"
 msgstr ""
@@ -6582,7 +6581,7 @@ msgid "E480: No match: %s"
 msgstr "E480: Нема подударања: %s"
 
 msgid "E32: No file name"
-msgstr "E32: Нема имена датотеке"
+msgstr "E32: Нема имена фајла"
 
 msgid "E33: No previous substitute regular expression"
 msgstr "E33: Нема претходног регуларног израза за замену"
@@ -6605,18 +6604,18 @@ msgstr "E247: нема регистованог сервера под имено
 
 #, c-format
 msgid "E482: Can't create file %s"
-msgstr "E482: Датотека %s не може да се креира"
+msgstr "E482: Фајл %s не може да се креира"
 
 msgid "E483: Can't get temp file name"
-msgstr "E483: Име привремене датотке не може да се добије"
+msgstr "E483: Име привременог фајла не може да се добије"
 
 #, c-format
 msgid "E484: Can't open file %s"
-msgstr "E484: Датотека %s не може да се отвори"
+msgstr "E484: Фајл %s не може да се отвори"
 
 #, c-format
 msgid "E485: Can't read file %s"
-msgstr "E485: Датотека %s не може да се прочита"
+msgstr "E485: Фајл %s не може да се прочита"
 
 msgid "E38: Null argument"
 msgstr "E38: Празан аргумент"
@@ -6626,10 +6625,10 @@ msgstr "E39: Очекује се број"
 
 #, c-format
 msgid "E40: Can't open errorfile %s"
-msgstr "E40: Датотека грешке %s не може да се отвори"
+msgstr "E40: Фајл грешке %s не може да се отвори"
 
 msgid "E233: cannot open display"
-msgstr "E233: проказ не може да се отвори"
+msgstr "E233: приказ не може да се отвори"
 
 msgid "E41: Out of memory!"
 msgstr "E41: Нема више меморије!"
@@ -6696,7 +6695,7 @@ msgid "E712: Argument of %s must be a List or Dictionary"
 msgstr "E712: Аргумент за %s мора бити Листа или Речник"
 
 msgid "E47: Error while reading errorfile"
-msgstr "E47: Грешка приликом читаља датотеке грешке"
+msgstr "E47: Грешка приликом читања фајла грешке"
 
 msgid "E48: Not allowed in sandbox"
 msgstr "E48: Није дозвољено у sandbox-у"
@@ -6717,7 +6716,7 @@ msgid "E255: Couldn't read in sign data!"
 msgstr "E255: Подаци за знак нису могли да се прочитају!"
 
 msgid "E72: Close error on swap file"
-msgstr "E72: Грешка код затвањара swap датотеке"
+msgstr "E72: Грешка код затвањара swap фајла"
 
 msgid "E73: tag stack empty"
 msgstr "E73: стек ознака је празан"
@@ -6732,7 +6731,7 @@ msgid "E76: Too many ["
 msgstr "E76: Превише ["
 
 msgid "E77: Too many file names"
-msgstr "E77: Превише имена датотека"
+msgstr "E77: Превише имена фајлова"
 
 msgid "E488: Trailing characters"
 msgstr "E488: Карактери вишка на крају"
@@ -6766,7 +6765,7 @@ msgstr "E463: Регион је чуван, измена није могућа"
 
 msgid "E744: NetBeans does not allow changes in read-only files"
 msgstr ""
-"E744: NetBeans не дозвољава измене датотека које смеју само да се читају"
+"E744: NetBeans не дозвољава измене на фајловима који смеју само да се читају"
 
 msgid "E363: pattern uses more memory than 'maxmempattern'"
 msgstr "E363: шаблон користи више меморије од 'maxmempattern'"
@@ -6782,7 +6781,7 @@ msgid "E682: Invalid search pattern or delimiter"
 msgstr "E682: Неважећи шаблон претраге или раздвојни карактер"
 
 msgid "E139: File is loaded in another buffer"
-msgstr "E139: Датотека је учитана у други бафер"
+msgstr "E139: Фајл је учитан у други бафер"
 
 #, c-format
 msgid "E764: Option '%s' is not set"
@@ -7074,11 +7073,11 @@ msgid ""
 "Vim macro files (*.vim)\t*.vim\n"
 "All Files (*.*)\t*.*\n"
 msgstr ""
-"Vim макро датотеке (*.vim)\t*.vim\n"
-"Све датотеке (*.*)\t*.*\n"
+"Vim макро фајлови (*.vim)\t*.vim\n"
+"Сви фајлови (*.*)\t*.*\n"
 
 msgid "All Files (*.*)\t*.*\n"
-msgstr "Све датотеке (*.*)\t*.*\n"
+msgstr "Сви фајлови (*.*)\t*.*\n"
 
 msgid ""
 "All Files (*.*)\t*.*\n"
@@ -7087,21 +7086,21 @@ msgid ""
 "VB code (*.bas, *.frm)\t*.bas;*.frm\n"
 "Vim files (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 msgstr ""
-"Све датотеке (*.*)\t*.*\n"
+"Сви фајлови (*.*)\t*.*\n"
 "C изворни код (*.c, *.h)\t*.c;*.h\n"
 "C++ изворни код (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
 "VB код (*.bas, *.frm)\t*.bas;*.frm\n"
-"Vim датотеке (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
+"Vim фајлови (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 
 msgid ""
 "Vim macro files (*.vim)\t*.vim\n"
 "All Files (*)\t*\n"
 msgstr ""
-"Vim макро датотеке (*.vim)\t*.vim\n"
-"Све датотеке (*)\t*\n"
+"Vim макро фајлови (*.vim)\t*.vim\n"
+"Сви фајлови (*)\t*\n"
 
 msgid "All Files (*)\t*\n"
-msgstr "Све датотеке (*)\t*\n"
+msgstr "Сви фајлови (*)\t*\n"
 
 msgid ""
 "All Files (*)\t*\n"
@@ -7109,7 +7108,7 @@ msgid ""
 "C++ source (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
 "Vim files (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 msgstr ""
-"Све датотеке (*)\t*\n"
+"Сви фајлови (*)\t*\n"
 "C изворни код (*.c, *.h)\t*.c;*.h\n"
 "C++ изворни код (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
-"Vim датотеке (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
+"Vim фајлови (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"

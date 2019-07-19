@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jul 14
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jul 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -702,9 +702,9 @@ If the text does not fit in the popup a scrollbar is displayed on the right of
 the window.  This can be disabled by setting the "scrollbar" option to zero.
 When the scrollbar is displayed mouse scroll events, while the mouse pointer
 is on the popup, will cause the text to scroll up or down as you would expect.
-A click in the upper half of the scrollbar will scroll the text one line
-down.  A click in the lower half wil scroll the text one line up.  However,
-this is limited so that the popup does not get smaller.
+A click in the upper half of the scrollbar will scroll the text down one line.
+A click in the lower half will scroll the text up one line.  However, this is
+limited so that the popup does not get smaller.
 
 
 POPUP MASK						*popup-mask*
