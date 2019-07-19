@@ -1489,7 +1489,7 @@ ex_let_const(exarg_T *eap, int is_const)
  * Handles both "var" with any type and "[var, var; var]" with a list type.
  * When "op" is not NULL it points to a string with characters that
  * must appear after the variable(s).  Use "+", "-", "." or "?" for add,
- * subtract or concatenate or conditionally assign.
+ * subtract, concatenate or conditionally assign.
  * Returns OK or FAIL;
  */
     static int
