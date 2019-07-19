@@ -11245,6 +11245,16 @@ This does NOT work: >
 			from the {expr}.  If {var-name} didn't exist yet, it
 			is created.
 
+:let {var-name} ?= {expr1}				*:let?=*
+			Set internal variable {var-name} to the result of the
+			expression {expr1} only if {var-name} doesn't exist.
+			This statement: >
+			  let foo ?= "bar"
+<			is equivalent to this: >
+			  if !exists("foo")
+			    let foo = "bar"
+			  endif
+<
 :let {var-name}[{idx}] = {expr1}			*E689*
 			Set a list item to the result of the expression
 			{expr1}.  {var-name} must refer to a list and {idx}
@@ -11286,6 +11296,10 @@ This does NOT work: >
 :let ${env-name} = {expr1}			*:let-environment* *:let-$*
 			Set environment variable {env-name} to the result of
 			the expression {expr1}.  The type is always String.
+:let ${env-name} ?= {expr}
+			Set environment variable {env-name} to the result of
+			the expression {expr1} if {env-name} doesn't exist.
+			The type is always String.
 :let ${env-name} .= {expr1}
 			Append {expr1} to the environment variable {env-name}.
 			If the environment variable didn't exist yet this

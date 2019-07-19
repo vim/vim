@@ -1364,6 +1364,7 @@ heredoc_get(exarg_T *eap, char_u *cmd)
  * ":let var .= expr"		assignment command.
  * ":let var ..= expr"		assignment command.
  * ":let [var1, var2] = expr"	unpack list.
+ * ":let var ?= expr"		conditional assignment command.
  */
     void
 ex_let(exarg_T *eap)
@@ -1406,7 +1407,7 @@ ex_let_const(exarg_T *eap, int is_const)
     concat = expr[0] == '.'
 	&& ((expr[1] == '=' && current_sctx.sc_version < 2)
 		|| (expr[1] == '.' && expr[2] == '='));
-    if (*expr != '=' && !((vim_strchr((char_u *)"+-*/%", *expr) != NULL
+    if (*expr != '=' && !((vim_strchr((char_u *)"+-*/%?", *expr) != NULL
 						 && expr[1] == '=') || concat))
     {
 	/*
@@ -1454,7 +1455,7 @@ ex_let_const(exarg_T *eap, int is_const)
 	op[1] = NUL;
 	if (*expr != '=')
 	{
-	    if (vim_strchr((char_u *)"+-*/%.", *expr) != NULL)
+	    if (vim_strchr((char_u *)"+-*/%.?", *expr) != NULL)
 	    {
 		op[0] = *expr;   // +=, -=, *=, /=, %= or .=
 		if (expr[0] == '.' && expr[1] == '.') // ..=
@@ -1487,8 +1488,8 @@ ex_let_const(exarg_T *eap, int is_const)
  * Assign the typevalue "tv" to the variable or variables at "arg_start".
  * Handles both "var" with any type and "[var, var; var]" with a list type.
  * When "op" is not NULL it points to a string with characters that
- * must appear after the variable(s).  Use "+", "-" or "." for add, subtract
- * or concatenate.
+ * must appear after the variable(s).  Use "+", "-", "." or "?" for add,
+ * subtract or concatenate or conditionally assign.
  * Returns OK or FAIL;
  */
     static int
@@ -1860,7 +1861,7 @@ ex_let_one(
     int		copy,		// copy value from "tv"
     int		is_const,	// lock variable for const
     char_u	*endchars,	// valid chars after variable name  or NULL
-    char_u	*op)		// "+", "-", "."  or NULL
+    char_u	*op)		// "+", "-", ".", "?"  or NULL
 {
     int		c1;
     char_u	*name;
@@ -1898,14 +1899,17 @@ ex_let_one(
 		c1 = name[len];
 		name[len] = NUL;
 		p = tv_get_string_chk(tv);
-		if (p != NULL && op != NULL && *op == '.')
+		if (p != NULL && op != NULL && (*op == '.' || *op == '?'))
 		{
 		    int	    mustfree = FALSE;
 		    char_u  *s = vim_getenv(name, &mustfree);
 
 		    if (s != NULL)
 		    {
-			p = tofree = concat_str(s, p);
+			if (*op == '?')
+			    p = NULL;
+			else
+			    p = tofree = concat_str(s, p);
 			if (mustfree)
 			    vim_free(s);
 		    }
@@ -2488,7 +2492,7 @@ clear_lval(lval_T *lp)
  * Set a variable that was parsed by get_lval() to "rettv".
  * "endp" points to just after the parsed name.
  * "op" is NULL, "+" for "+=", "-" for "-=", "*" for "*=", "/" for "/=",
- * "%" for "%=", "." for ".=" or "=" for "=".
+ * "%" for "%=", "." for ".=" or "=" for "=", or for "?=".
  */
     static void
 set_var_lval(
@@ -2569,9 +2573,15 @@ set_var_lval(
 		return;
 	    }
 
-	    // handle +=, -=, *=, /=, %= and .=
+	    // handle +=, -=, *=, /=, %=, .= and ?=
 	    di = NULL;
-	    if (get_var_tv(lp->ll_name, (int)STRLEN(lp->ll_name),
+	    if (*op == '?')
+	    {
+		if (get_var_tv(lp->ll_name, (int)STRLEN(lp->ll_name), NULL,
+						NULL, FALSE, TRUE) == FAIL)
+		    set_var(lp->ll_name, rettv, copy);
+	    }
+	    else if (get_var_tv(lp->ll_name, (int)STRLEN(lp->ll_name),
 					     &tv, &di, TRUE, FALSE) == OK)
 	    {
 		if ((di == NULL
@@ -2661,7 +2671,7 @@ set_var_lval(
 	}
 	if (lp->ll_newkey != NULL)
 	{
-	    if (op != NULL && *op != '=')
+	    if (op != NULL && *op != '=' && *op != '?' && op[1] != '=')
 	    {
 		semsg(_(e_letwrong), op);
 		return;
@@ -2680,7 +2690,8 @@ set_var_lval(
 	}
 	else if (op != NULL && *op != '=')
 	{
-	    tv_op(lp->ll_tv, rettv, op);
+	    if (*op != '?')
+		tv_op(lp->ll_tv, rettv, op);
 	    return;
 	}
 	else

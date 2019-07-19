@@ -152,6 +152,32 @@ func Test_let_utf8_environment()
   call assert_equal('ĀĒĪŌŪあいうえお', $a)
 endfunc
 
+" Test for conditional assignment
+func Test_let_cond()
+  let var1 ?= 10
+  call assert_equal(10, var1)
+  let var1 ?= 20
+  call assert_equal(10, var1)
+
+  let [var1, var2] ?= [30, 40]
+  call assert_equal([10, 40], [var1, var2])
+
+  let var3 ?= [1, 2]
+  call assert_equal([1, 2], var3)
+
+  let var4 = {}
+  let var4.a ?= 'vim'
+  call assert_equal({'a' : 'vim'}, var4)
+  let var4.a ?= 'edit'
+  call assert_equal({'a' : 'vim'}, var4)
+
+  let $TESTVAR ?= 'linux'
+  call assert_equal('linux', $TESTVAR)
+  let $TESTVAR ?= 'window'
+  call assert_equal('linux', $TESTVAR)
+  unlet $TESTVAR
+endfunc
+
 func Test_let_heredoc_fails()
   call assert_fails('let v =<< marker', 'E991:')
 
