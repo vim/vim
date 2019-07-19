@@ -140,6 +140,7 @@ static void f_funcref(typval_T *argvars, typval_T *rettv);
 static void f_function(typval_T *argvars, typval_T *rettv);
 static void f_garbagecollect(typval_T *argvars, typval_T *rettv);
 static void f_get(typval_T *argvars, typval_T *rettv);
+static void f_get_lazy(typval_T *argvars, typval_T *rettv);
 static void f_getbufinfo(typval_T *argvars, typval_T *rettv);
 static void f_getbufline(typval_T *argvars, typval_T *rettv);
 static void f_getbufvar(typval_T *argvars, typval_T *rettv);
@@ -592,6 +593,7 @@ static struct fst
     {"function",	1, 3, f_function},
     {"garbagecollect",	0, 1, f_garbagecollect},
     {"get",		2, 3, f_get},
+    {"get_lazy",	2, 3, f_get_lazy},
     {"getbufinfo",	0, 1, f_getbufinfo},
     {"getbufline",	2, 3, f_getbufline},
     {"getbufvar",	2, 3, f_getbufvar},
@@ -4227,11 +4229,8 @@ f_garbagecollect(typval_T *argvars, typval_T *rettv UNUSED)
 	garbage_collect_at_exit = TRUE;
 }
 
-/*
- * "get()" function
- */
     static void
-f_get(typval_T *argvars, typval_T *rettv)
+common_get(typval_T *argvars, typval_T *rettv, int is_lazy)
 {
     listitem_T	*li;
     list_T	*l;
@@ -4329,15 +4328,35 @@ f_get(typval_T *argvars, typval_T *rettv)
 	}
     }
     else
-	semsg(_(e_listdictblobarg), "get()");
+	semsg(_(e_listdictblobarg), is_lazy ? "get_lazy()" : "get()");
 
     if (tv == NULL)
     {
-	if (argvars[2].v_type != VAR_UNKNOWN)
+	if (is_lazy)
+	    eval_expr_typval(&argvars[2], NULL, 0, rettv);
+	else if (argvars[2].v_type != VAR_UNKNOWN)
 	    copy_tv(&argvars[2], rettv);
     }
     else
 	copy_tv(tv, rettv);
+}
+
+/*
+ * "get()" function
+ */
+    static void
+f_get(typval_T *argvars, typval_T *rettv)
+{
+    common_get(argvars, rettv, FALSE);
+}
+
+/*
+ * "get_lazy()" function
+ */
+    static void
+f_get_lazy(typval_T *argvars, typval_T *rettv)
+{
+    common_get(argvars, rettv, TRUE);
 }
 
 /*
