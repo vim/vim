@@ -2392,6 +2392,9 @@ funcref({name} [, {arglist}] [, {dict}])
 function({name} [, {arglist}] [, {dict}])
 				Funcref	named reference to function {name}
 garbagecollect([{atexit}])	none	free memory, breaking cyclic references
+get_lazy({list}, {idx} [, {deffunc}])	any	get item {idx} from {list} or result of {deffunc}
+get_lazy({dict}, {key} [, {deffunc}])	any	get item {key} from {dict} or result of {deffunc}
+get_lazy({func}, {what})		any	same as get({func}, {what})
 get({list}, {idx} [, {def}])	any	get item {idx} from {list} or {def}
 get({dict}, {key} [, {def}])	any	get item {key} from {dict} or {def}
 get({func}, {what})		any	get property of funcref/partial {func}
@@ -4719,6 +4722,13 @@ garbagecollect([{atexit}])				*garbagecollect()*
 		it's safe to perform.  This is when waiting for the user to
 		type a character.  To force garbage collection immediately use
 		|test_garbagecollect_now()|.
+
+							*get_lazy()*
+get_lazy({list}, {idx} [, {defaultfunc}])
+get_lazy({blob}, {idx} [, {defaultfunc}])
+get_lazy({dict}, {key} [, {defaultfunc}])
+		Same as |get()| but if {defaultfunc} was given and the item is not
+		available, call {defaultfunc} and return the result.
 
 get({list}, {idx} [, {default}])			*get()*
 		Get item {idx} from |List| {list}.  When this item is not
