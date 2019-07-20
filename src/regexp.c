@@ -2175,7 +2175,11 @@ regatom(int *flagp)
 				  if (ret == NULL)
 				      ret = br;
 				  else
+				  {
 				      regtail(lastnode, br);
+				      if (reg_toolong)
+					  return NULL;
+				  }
 
 				  ungetchr();
 				  one_exactly = TRUE;
@@ -2200,6 +2204,8 @@ regatom(int *flagp)
 				      if (OP(br) == BRANCH)
 				      {
 					  regtail(br, lastbranch);
+					  if (reg_toolong)
+					      return NULL;
 					  br = OPERAND(br);
 				      }
 				      else
