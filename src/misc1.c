@@ -3183,9 +3183,9 @@ vim_fexists(char_u *fname)
 
 #ifndef BREAKCHECK_SKIP
 # ifdef FEAT_GUI		    /* assume the GUI only runs on fast computers */
-#  define BREAKCHECK_SKIP 200
+#  define BREAKCHECK_SKIP 2000
 # else
-#  define BREAKCHECK_SKIP 32
+#  define BREAKCHECK_SKIP 320
 # endif
 #endif
 

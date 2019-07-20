@@ -6487,6 +6487,11 @@ syn_get_stack_item(int i)
 #endif
 
 #if defined(FEAT_FOLDING) || defined(PROTO)
+
+# if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)
+#  define SYN_TIME_LIMIT 1
+# endif
+
 /*
  * Function called to get folding level for line "lnum" in window "wp".
  */
