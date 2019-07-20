@@ -2079,6 +2079,15 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)12L, (char_u *)0L} SCTX_INIT},
+    {"previewpopup", "pvp", P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
+#ifdef FEAT_TEXT_PROP
+			    (char_u *)&p_pvp, PV_NONE,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"previewwindow", "pvw", P_BOOL|P_VI_DEF|P_RSTAT|P_NOGLOB,
 #if defined(FEAT_QUICKFIX)
 			    (char_u *)VAR_WIN, PV_PVW,
@@ -7828,6 +7837,15 @@ did_set_string_option(
 		    errmsg = e_invarg;
 	    }
 	}
+    }
+#endif
+
+#ifdef FEAT_TEXT_PROP
+    // 'previewpopup'
+    else if (varp == &p_pvp)
+    {
+	if (parse_previewpopup(NULL) == FAIL)
+	    errmsg = e_invarg;
     }
 #endif
 

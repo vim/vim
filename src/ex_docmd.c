@@ -5893,12 +5893,17 @@ ex_pclose(exarg_T *eap)
 {
     win_T	*win;
 
+    // First close any normal window.
     FOR_ALL_WINDOWS(win)
 	if (win->w_p_pvw)
 	{
 	    ex_win_close(eap->forceit, win, NULL);
-	    break;
+	    return;
 	}
+# ifdef FEAT_TEXT_PROP
+    // Also when 'previewpopup' is empty, it might have been cleared.
+    popup_close_preview();
+# endif
 }
 #endif
 

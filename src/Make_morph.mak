@@ -50,6 +50,7 @@ SRC =	arabic.c						\
 	getchar.c						\
 	hardcopy.c						\
 	hashtab.c						\
+	highlight.c						\
 	indent.c						\
 	insexpand.c						\
 	json.c							\
@@ -81,6 +82,8 @@ SRC =	arabic.c						\
 	syntax.c						\
 	tag.c							\
 	term.c							\
+	testing.c						\
+	textprop.c						\
 	ui.c							\
 	undo.c							\
 	usercmd.c						\

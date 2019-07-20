@@ -999,6 +999,8 @@ struct syn_state
 };
 #endif // FEAT_SYN_HL
 
+#define MAX_HL_ID       20000	// maximum value for a highlight ID.
+
 /*
  * Structure shared between syntax.c, screen.c and gui_x11.c.
  */
@@ -1517,6 +1519,11 @@ struct funccal_entry {
     void	    *top_funccal;
     funccal_entry_T *next;
 };
+
+/* From user function to hashitem and back. */
+#define UF2HIKEY(fp) ((fp)->uf_name)
+#define HIKEY2UF(p)  ((ufunc_T *)((p) - offsetof(ufunc_T, uf_name)))
+#define HI2UF(hi)     HIKEY2UF((hi)->hi_key)
 
 /* Growarray to store info about already sourced scripts.
  * For Unix also store the dev/ino, so that we don't have to stat() each

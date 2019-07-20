@@ -116,6 +116,7 @@ let test_values = {
       \ 'mousemodel': [['', 'popup'], ['xxx']],
       \ 'mouseshape': [['', 'n:arrow'], ['xxx']],
       \ 'nrformats': [['', 'alpha', 'alpha,hex,bin'], ['xxx']],
+      \ 'previewpopup': [['', 'height:13', 'width:10,height:234'], ['height:yes', 'xxx', 'xxx:99']],
       \ 'printmbfont': [['', 'r:some', 'b:Bold,c:yes'], ['xxx']],
       \ 'printoptions': [['', 'header:0', 'left:10pc,top:5pc'], ['xxx']],
       \ 'scrollopt': [['', 'ver', 'ver,hor'], ['xxx']],
