@@ -971,9 +971,16 @@ popup_adjust_position(win_T *wp)
     wp->w_width = 1;
     for (lnum = wp->w_topline; lnum <= wp->w_buffer->b_ml.ml_line_count; ++lnum)
     {
-	// count Tabs for what they are worth
-	int len = win_linetabsize(wp, ml_get_buf(wp->w_buffer, lnum, FALSE),
+	int len;
+	int w_width = wp->w_width;
+
+	// Count Tabs for what they are worth and compute the length based on
+	// the maximum width (matters when 'showbreak' is set).
+	if (wp->w_width < maxwidth)
+	    wp->w_width = maxwidth;
+	len = win_linetabsize(wp, ml_get_buf(wp->w_buffer, lnum, FALSE),
 							      (colnr_T)MAXCOL);
+	wp->w_width = w_width;
 
 	if (wp->w_p_wrap)
 	{

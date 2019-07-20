@@ -717,6 +717,27 @@ func Test_popup_without_wrap()
   call delete('XtestPopup')
 endfunc
 
+func Test_popup_with_showbreak()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+  let lines =<< trim END
+	 set showbreak=>>\ 
+	 call setline(1, range(1, 20))
+	 let winid = popup_dialog(
+	   \ 'a long line here',
+	   \ #{filter: 'popup_filter_yesno'})
+  END
+  call writefile(lines, 'XtestPopupShowbreak')
+  let buf = RunVimInTerminal('-S XtestPopupShowbreak', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_showbreak', {})
+
+  " clean up
+  call term_sendkeys(buf, "y")
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupShowbreak')
+endfunc
+
 func Test_popup_time()
   if !has('timers')
     throw 'Skipped: timer feature not supported'
@@ -2162,4 +2183,4 @@ func Test_previewpopup()
   call delete('XtestPreviewPopup')
 endfunc
 
-" vim: shiftwidth=2 sts=2 expandtab
+" vim: shiftwidth=2 sts=2
