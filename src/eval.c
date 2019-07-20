@@ -1486,7 +1486,7 @@ ex_let_const(exarg_T *eap, int is_const)
 /*
  * Assign the typevalue "tv" to the variable or variables at "arg_start".
  * Handles both "var" with any type and "[var, var; var]" with a list type.
- * When "nextchars" is not NULL it points to a string with characters that
+ * When "op" is not NULL it points to a string with characters that
  * must appear after the variable(s).  Use "+", "-" or "." for add, subtract
  * or concatenate.
  * Returns OK or FAIL;
@@ -1499,7 +1499,7 @@ ex_let_vars(
     int		semicolon,	// from skip_var_list()
     int		var_count,	// from skip_var_list()
     int		is_const,	// lock variables for const
-    char_u	*nextchars)
+    char_u	*op)
 {
     char_u	*arg = arg_start;
     list_T	*l;
@@ -1512,7 +1512,7 @@ ex_let_vars(
 	/*
 	 * ":let var = expr" or ":for var in list"
 	 */
-	if (ex_let_one(arg, tv, copy, is_const, nextchars, nextchars) == NULL)
+	if (ex_let_one(arg, tv, copy, is_const, op, op) == NULL)
 	    return FAIL;
 	return OK;
     }
@@ -1543,7 +1543,7 @@ ex_let_vars(
     {
 	arg = skipwhite(arg + 1);
 	arg = ex_let_one(arg, &item->li_tv, TRUE, is_const,
-						   (char_u *)",;]", nextchars);
+							  (char_u *)",;]", op);
 	item = item->li_next;
 	if (arg == NULL)
 	    return FAIL;
@@ -1568,7 +1568,7 @@ ex_let_vars(
 	    l->lv_refcount = 1;
 
 	    arg = ex_let_one(skipwhite(arg + 1), &ltv, FALSE, is_const,
-						     (char_u *)"]", nextchars);
+							    (char_u *)"]", op);
 	    clear_tv(&ltv);
 	    if (arg == NULL)
 		return FAIL;
@@ -7355,9 +7355,14 @@ handle_subscript(
     int		len;
     typval_T	functv;
 
+    // "." is ".name" lookup when we found a dict or when evaluating and
+    // scriptversion is at least 2, where string concatenation is "..".
     while (ret == OK
 	    && (**arg == '['
-		|| (**arg == '.' && rettv->v_type == VAR_DICT)
+		|| (**arg == '.' && (rettv->v_type == VAR_DICT
+			|| (!evaluate
+			    && (*arg)[1] != '.'
+			    && current_sctx.sc_version >= 2)))
 		|| (**arg == '(' && (!evaluate || rettv->v_type == VAR_FUNC
 					    || rettv->v_type == VAR_PARTIAL)))
 	    && !VIM_ISWHITE(*(*arg - 1)))
