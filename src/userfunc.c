@@ -23,11 +23,6 @@
 #define FC_REMOVED  0x20	// function redefined while uf_refcount > 0
 #define FC_SANDBOX  0x40	// function defined in the sandbox
 
-/* From user function to hashitem and back. */
-#define UF2HIKEY(fp) ((fp)->uf_name)
-#define HIKEY2UF(p)  ((ufunc_T *)((p) - offsetof(ufunc_T, uf_name)))
-#define HI2UF(hi)     HIKEY2UF((hi)->hi_key)
-
 #define FUNCARG(fp, j)	((char_u **)(fp->uf_args.ga_data))[j]
 
 /*
@@ -56,6 +51,15 @@ static void funccal_unref(funccall_T *fc, ufunc_T *fp, int force);
 func_init()
 {
     hash_init(&func_hashtab);
+}
+
+/*
+ * Return the function hash table
+ */
+    hashtab_T *
+func_tbl_get(void)
+{
+    return &func_hashtab;
 }
 
 /*
@@ -2758,88 +2762,6 @@ get_expanded_name(char_u *name, int check)
     return NULL;
 }
 #endif
-
-#if defined(FEAT_PROFILE) || defined(PROTO)
-
-/*
- * Dump the profiling results for all functions in file "fd".
- */
-    void
-func_dump_profile(FILE *fd)
-{
-    hashitem_T	*hi;
-    int		todo;
-    ufunc_T	*fp;
-    int		i;
-    ufunc_T	**sorttab;
-    int		st_len = 0;
-    char_u	*p;
-
-    todo = (int)func_hashtab.ht_used;
-    if (todo == 0)
-	return;     /* nothing to dump */
-
-    sorttab = ALLOC_MULT(ufunc_T *, todo);
-
-    for (hi = func_hashtab.ht_array; todo > 0; ++hi)
-    {
-	if (!HASHITEM_EMPTY(hi))
-	{
-	    --todo;
-	    fp = HI2UF(hi);
-	    if (fp->uf_prof_initialized)
-	    {
-		if (sorttab != NULL)
-		    sorttab[st_len++] = fp;
-
-		if (fp->uf_name[0] == K_SPECIAL)
-		    fprintf(fd, "FUNCTION  <SNR>%s()\n", fp->uf_name + 3);
-		else
-		    fprintf(fd, "FUNCTION  %s()\n", fp->uf_name);
-		p = home_replace_save(NULL,
-				     get_scriptname(fp->uf_script_ctx.sc_sid));
-		if (p != NULL)
-		{
-		    fprintf(fd, "    Defined: %s line %ld\n",
-					   p, (long)fp->uf_script_ctx.sc_lnum);
-		    vim_free(p);
-		}
-		if (fp->uf_tm_count == 1)
-		    fprintf(fd, "Called 1 time\n");
-		else
-		    fprintf(fd, "Called %d times\n", fp->uf_tm_count);
-		fprintf(fd, "Total time: %s\n", profile_msg(&fp->uf_tm_total));
-		fprintf(fd, " Self time: %s\n", profile_msg(&fp->uf_tm_self));
-		fprintf(fd, "\n");
-		fprintf(fd, "count  total (s)   self (s)\n");
-
-		for (i = 0; i < fp->uf_lines.ga_len; ++i)
-		{
-		    if (FUNCLINE(fp, i) == NULL)
-			continue;
-		    prof_func_line(fd, fp->uf_tml_count[i],
-			     &fp->uf_tml_total[i], &fp->uf_tml_self[i], TRUE);
-		    fprintf(fd, "%s\n", FUNCLINE(fp, i));
-		}
-		fprintf(fd, "\n");
-	    }
-	}
-    }
-
-    if (sorttab != NULL && st_len > 0)
-    {
-	qsort((void *)sorttab, (size_t)st_len, sizeof(ufunc_T *),
-							      prof_total_cmp);
-	prof_sort_list(fd, sorttab, st_len, "TOTAL", FALSE);
-	qsort((void *)sorttab, (size_t)st_len, sizeof(ufunc_T *),
-							      prof_self_cmp);
-	prof_sort_list(fd, sorttab, st_len, "SELF", TRUE);
-    }
-
-    vim_free(sorttab);
-}
-
-#endif /* FEAT_PROFILE */
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 

@@ -10,7 +10,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_BEVAL) || defined(FEAT_TEXT_PROP) || defined(PROT)
+#if defined(FEAT_BEVAL) || defined(FEAT_TEXT_PROP) || defined(PROTO)
 /*
  * Find text under the mouse position "row" / "col".
  * If "getword" is TRUE the returned text in "*textp" is not the whole line but
@@ -72,6 +72,7 @@ find_word_under_cursor(
 		    }
 
 		    col = vcol2col(wp, lnum, col);
+		    scol = col;
 
 		    if (VIsual_active
 			    && wp->w_buffer == curwin->w_buffer
@@ -95,6 +96,7 @@ find_word_under_cursor(
 			lbuf = vim_strnsave(lbuf + spos->col, len);
 			lnum = spos->lnum;
 			col = spos->col;
+			scol = col;
 		    }
 		    else
 		    {

@@ -6270,9 +6270,20 @@ prepare_tagpreview(
      */
     if (!curwin->w_p_pvw)
     {
-	FOR_ALL_WINDOWS(wp)
-	    if (wp->w_p_pvw)
-		break;
+# ifdef FEAT_TEXT_PROP
+	if (*p_pvp != NUL)
+	{
+	    wp = popup_find_preview_window();
+	    if (wp != NULL)
+		popup_set_wantpos(wp);
+	}
+	else
+# endif
+	{
+	    FOR_ALL_WINDOWS(wp)
+		if (wp->w_p_pvw)
+		    break;
+	}
 	if (wp != NULL)
 	    win_enter(wp, undo_sync);
 	else
@@ -6280,18 +6291,21 @@ prepare_tagpreview(
 	    /*
 	     * There is no preview window open yet.  Create one.
 	     */
-	    if (win_split(g_do_tagpreview > 0 ? g_do_tagpreview : 0, 0)
-								      == FAIL)
+# ifdef FEAT_TEXT_PROP
+	    if (*p_pvp != NUL)
+		return popup_create_preview_window();
+# endif
+	    if (win_split(g_do_tagpreview > 0 ? g_do_tagpreview : 0, 0) == FAIL)
 		return FALSE;
 	    curwin->w_p_pvw = TRUE;
 	    curwin->w_p_wfh = TRUE;
-	    RESET_BINDING(curwin);	    /* don't take over 'scrollbind'
-					       and 'cursorbind' */
+	    RESET_BINDING(curwin);	    // don't take over 'scrollbind'
+	    // and 'cursorbind'
 # ifdef FEAT_DIFF
-	    curwin->w_p_diff = FALSE;	    /* no 'diff' */
+	    curwin->w_p_diff = FALSE;	    // no 'diff'
 # endif
 # ifdef FEAT_FOLDING
-	    curwin->w_p_fdc = 0;	    /* no 'foldcolumn' */
+	    curwin->w_p_fdc = 0;	    // no 'foldcolumn'
 # endif
 	    return TRUE;
 	}

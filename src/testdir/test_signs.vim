@@ -1766,6 +1766,7 @@ func Test_sign_numcol()
   set number
   set signcolumn=number
   sign define sign1 text==>
+  sign define sign2 text=Ｖ
   sign place 10 line=1 name=sign1
   redraw!
   call assert_equal("=> 01234", s:ScreenLine(1, 1, 8))
@@ -1846,6 +1847,12 @@ func Test_sign_numcol()
   redraw!
   call assert_equal("=> 01234", s:ScreenLine(1, 1, 8))
   call assert_equal(" 2 abcde", s:ScreenLine(2, 1, 8))
+  " Add sign with multi-byte text
+  set numberwidth=4
+  sign place 40 line=2 name=sign2
+  redraw!
+  call assert_equal(" => 01234", s:ScreenLine(1, 1, 9))
+  call assert_equal(" Ｖ abcde", s:ScreenLine(2, 1, 9))
 
   sign unplace * group=*
   sign undefine sign1

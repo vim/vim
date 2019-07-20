@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Jul 13
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Jul 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -43,15 +43,20 @@ Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
 Also put :argadd commands at the start for all buffers, so that their order
 remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 
-Shorten the command used in test Makefile. (Daniel Hahler, #4643)
-
 Refactor: Move common things out of evalfunc.c, it's too big.
 Move function specs out of eval.txt, it's too big.
 
+Convert comments in option.h
+
+Patch to convert encoding of strftime(). (Ken Takata, #4685, fixes #4681)
+
+Patch to Move viminfo related functions to a separate file: #4686
+
 Popup windows:
-- Default popup_menu padding: only left&right.
-- Add 'previewpopup': open preview in a popupwindow.
-  Values: dict options as a string?  "line:20,maxwidth:60,maxheight:20"
+- avoid preview popup going outside of the screen
+- add popup_getpreview() - get ID of preview window
+- bug: double click in scrollbar starts selection
+- Allow resizing from the bottom-right corner
 - Implement flip option
 - Have a way to scroll to the bottom, e.g. set 'firstline' to -1? (#4577)
 - Why does 'nrformats' leak from the popup window buffer???
@@ -148,6 +153,9 @@ E278, E279, E281, E290, E291, E292, E361, E362, E366, E396, E450, E451, E452,
 E453, E454, E460, E489, E491, E56, E57, E565, E569, E578, E610, E611, E653,
 E654, E693, E706, E856, E857, E860, E861, E863, E889, E900, E959
 
+Problem with German spell file.  Hint for solution by Klaus-Peter Schreiner in
+#4314, solves the Rasenmäher problem.
+
 Sound: support on Mac?  Or does libcanberra work there?
 
 Patch to use forward slash for completion even when 'shellslash' is set.
@@ -169,17 +177,23 @@ Ready to include now?
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
 
+Patch to support 'cursorlineopt' - only highlight the line number of the
+cursor line: #4693
+
 Patch for Template string: #4491  Not ready yet.  New pull: #4634
 
 ":bnext" in a help buffer is supposed to go to the next help buffer, but it
 goes to any buffer, and then :bnext skips help buffers, since they are
 unlisted. (#4478)
 
-Problem with German spell file.  Hint for solution by Klaus-Peter Schreiner in
-#4314, solves the Rasenmäher problem.
-
 Problem showing a line if the number column width changes when using "o".
 (Mateusz Morusiewicz, #4245)
+
+When using :packadd for a replacement language plugin, it is loaded after the
+default one.  #4698
+
+When using :packadd files under "later" are not used, which is inconsistent
+with packages under "start". (xtal8, #1994)
 
 Visual highlight not removed when 'dipslay' is "lastline" and line doesn't
 fit. (Kevin Lawler, #4457)
@@ -248,6 +262,14 @@ Include solarized color scheme?, it does not support termguicolors.
 
 Bug: "vipgw" does not put cursor back where it belongs. (Jason Franklin, 2019
 Mar 5)
+
+Many users don't like 'thesaurus' to match so many words. (#4667, #1611)
+- when the match with the first word is partial, don't add other words on that
+  line.
+- support other file formats, such as comma separated.  Indicate by a prefix
+  to the file in the 'thesaurus' option.
+- 'threglookexp' option: only match with first word in thesaurus file.
+  (Jakson A. Aquino, 2006 Jun 14)
 
 Some composing characters actually add a cell width to the character they are
 on top off, making the whole thing two characters wide. (#4526)
@@ -601,9 +623,6 @@ Patch in #3377 (Thomas Dziedzic)
 With 'foldmethod' "indent" and appending an empty line, what follows isn't
 included in the existing fold.  Deleting the empty line and undo fixes it.
 (Oleg Koshovetc, 2018 Jul 15, #3214)
-
-When using :packadd files under "later" are not used, which is inconsistent
-with packages under "start". (xtal8, #1994)
 
 Patch to support "xxd -ps". (Erik Auerswald, 2018 May 1)
 Lacks a test.
@@ -3016,8 +3035,6 @@ More patches:
 -   Add 'cscopeignorecase' option. (Liang Wenzhi, 2006 Sept 3)
 -   Extra argument to strtrans() to translate special keys to their name (Eric
     Arnold, 2006 May 22)
--   'threglookexp' option: only match with first word in thesaurus file.
-    (Jakson A. Aquino, 2006 Jun 14)
 -   Mac: indicate whether a buffer was modified. (Nicolas Weber, 2006 Jun 30)
 -   Allow negative 'nrwidth' for left aligning. (Nathan Laredo, 2006 Aug 16)
 -   ml_append_string(): efficiently append to an existing line. (Brad

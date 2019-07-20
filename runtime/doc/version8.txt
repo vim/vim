@@ -7625,8 +7625,8 @@ Problem:    Still using __ARGS.
 Solution:   Remove __ARGS in several files. (script by Hirohito Higashi)
 Files:      src/ex_eval.c, src/ex_getln.c, src/farsi.c, src/fileio.c,
             src/fold.c, src/getchar.c, src/gui.c, src/gui_at_fs.c,
-            gui_at_sb.c, src/gui_athena.c, src/gui_beval.c, src/gui_motif.c,
-            src/gui_w32.c, src/gui_w48.c
+            src/gui_at_sb.c, src/gui_athena.c, src/gui_beval.c,
+            src/gui_motif.c, src/gui_w32.c, src/gui_w48.c
 
 Patch 7.4.1198
 Problem:    Still using __ARGS.
@@ -8045,7 +8045,7 @@ Patch 7.4.1264
 Problem:    Crash when receiving an empty array.
 Solution:   Check for array with wrong number of arguments. (Damien)
 Files:      src/channel.c, src/eval.c, src/testdir/test_channel.py,
-            src/testdir.test_channel.vim
+            src/testdir/test_channel.vim
 
 Patch 7.4.1265
 Problem:    Not all channel commands are tested.
@@ -8454,8 +8454,8 @@ Files:      src/os_win32.c
 Patch 7.4.1336
 Problem:    Channel NL mode is not supported yet.
 Solution:   Add NL mode support to channels.
-Files:      src/channel.c, src/netbeans.c, src/structs.h, src/os_unix.d,
-            src/os_win32.c, src/proto/channel.pro, src/proto/os_unix.pro,
+Files:      src/channel.c, src/netbeans.c, src/structs.h, src/os_win32.c,
+            src/proto/channel.pro, src/proto/os_unix.pro,
             src/proto/os_win32.pro, src/testdir/test_channel.vim,
             src/testdir/test_channel_pipe.py
 
@@ -13904,7 +13904,7 @@ Problem:    Using 'hlsearch' highlighting instead of matchpos if there is no
             search match.
 Solution:   Pass NULL as last item to next_search_hl() when searching for
             'hlsearch' match. (Shane Harper, closes #1013)
-Files:      src/screen.c, src/testdir/test_match.vim.
+Files:      src/screen.c, src/testdir/test_match.vim
 
 Patch 7.4.2270
 Problem:    Insufficient testing for NUL bytes on a raw channel.
@@ -18306,13 +18306,13 @@ Patch 8.0.0610
 Problem:    The screen is redrawn when t_BG is set and used to detect the
             value for 'background'.
 Solution:   Don't redraw when the value of 'background' didn't change.
-Files:      src/term.c.
+Files:      src/term.c
 
 Patch 8.0.0611
 Problem:    When t_u7 is sent a few characters in the second screen line are
             overwritten and not redrawn later. (Rastislav Barlik)
 Solution:   Move redrawing the screen to after overwriting the characters.
-Files:      src/main.c, src/term.c.
+Files:      src/main.c, src/term.c
 
 Patch 8.0.0612
 Problem:    Package directories are added to 'runtimepath' only after loading
@@ -27638,7 +27638,7 @@ Files:	    src/terminal.c, src/testdir/dumps/Test_syntax_c_01.dump
 Patch 8.1.0327
 Problem:    The "g CTRL-G" command isn't tested much.
 Solution:   Add more tests. (Dominique Pelle, closes #3369)
-Files:	    src/testdir/test_normal.c
+Files:	    src/testdir/test_normal.vim
 
 Patch 8.1.0328
 Problem:    inputlist() doesn't work with a timer. (Dominique Pelle)
@@ -29424,7 +29424,7 @@ Patch 8.1.0629
 Problem:    "gn" selects the wrong text with a multi-line match.
 Solution:   Get the end position from searchit() directly. (closes #3695)
 Files:	    src/testdir/test_gn.vim, src/search.c, src/proto/search.pro,
-            src/edit.c, src/evalfunc.c, src/ex_docmd.c, ex_getln.c,
+            src/edit.c, src/evalfunc.c, src/ex_docmd.c, src/ex_getln.c,
             src/normal.c
 
 Patch 8.1.0630
@@ -30859,7 +30859,7 @@ Patch 8.1.0849
 Problem:    Cursorline highlight is not always updated.
 Solution:   Set w_last_cursorline when redrawing.  Fix resetting cursor flags
             when using the popup menu.
-Files:	    src/screen.c, src/popupmenu.c, src/testdir/test_highlight.vim,
+Files:	    src/screen.c, src/popupmnu.c, src/testdir/test_highlight.vim,
             src/testdir/dumps/Test_cursorline_yank_01.dump
 
 Patch 8.1.0850
@@ -33447,7 +33447,7 @@ Patch 8.1.1276
 Problem:    Cannot combine text properties with syntax highlighting.
 Solution:   Add the "combine" field to prop_type_add(). (closes #4343)
 Files:	    runtime/doc/eval.txt, runtime/doc/textprop.txt, src/screen.c,
-            src/testprop.c, src/structs.h, src/testdir/test_textprop.vim
+            src/structs.h, src/testdir/test_textprop.vim
 
 Patch 8.1.1277 (after 8.1.1276)
 Problem:    Missing screenshot update.

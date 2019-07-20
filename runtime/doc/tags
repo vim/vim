@@ -775,6 +775,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'pp'	options.txt	/*'pp'*
 'preserveindent'	options.txt	/*'preserveindent'*
 'previewheight'	options.txt	/*'previewheight'*
+'previewpopup'	options.txt	/*'previewpopup'*
 'previewwindow'	options.txt	/*'previewwindow'*
 'printdevice'	options.txt	/*'printdevice'*
 'printencoding'	options.txt	/*'printencoding'*
@@ -789,6 +790,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'pumheight'	options.txt	/*'pumheight'*
 'pumwidth'	options.txt	/*'pumwidth'*
 'pvh'	options.txt	/*'pvh'*
+'pvp'	options.txt	/*'pvp'*
 'pvw'	options.txt	/*'pvw'*
 'pw'	options.txt	/*'pw'*
 'pythondll'	options.txt	/*'pythondll'*
@@ -6440,6 +6442,7 @@ ft-ptcap-syntax	syntax.txt	/*ft-ptcap-syntax*
 ft-python-indent	indent.txt	/*ft-python-indent*
 ft-python-plugin	filetype.txt	/*ft-python-plugin*
 ft-python-syntax	syntax.txt	/*ft-python-syntax*
+ft-qf-plugin	filetype.txt	/*ft-qf-plugin*
 ft-quake-syntax	syntax.txt	/*ft-quake-syntax*
 ft-r-indent	indent.txt	/*ft-r-indent*
 ft-r-syntax	syntax.txt	/*ft-r-syntax*
@@ -8282,6 +8285,7 @@ ppwiz.vim	syntax.txt	/*ppwiz.vim*
 press-enter	message.txt	/*press-enter*
 press-return	message.txt	/*press-return*
 prevcount-variable	eval.txt	/*prevcount-variable*
+preview-popup	windows.txt	/*preview-popup*
 preview-window	windows.txt	/*preview-window*
 prevnonblank()	eval.txt	/*prevnonblank()*
 print-intro	print.txt	/*print-intro*
@@ -8387,6 +8391,7 @@ q	repeat.txt	/*q*
 q/	cmdline.txt	/*q\/*
 q:	cmdline.txt	/*q:*
 q?	cmdline.txt	/*q?*
+qf.vim	filetype.txt	/*qf.vim*
 qnx	os_qnx.txt	/*qnx*
 qnx-compiling	os_qnx.txt	/*qnx-compiling*
 qnx-general	os_qnx.txt	/*qnx-general*

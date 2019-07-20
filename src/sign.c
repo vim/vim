@@ -1025,10 +1025,19 @@ sign_define_by_name(
 }
 
 /*
+ * Return TRUE if sign "name" exists.
+ */
+    int
+sign_exists_by_name(char_u *name)
+{
+    return sign_find(name, NULL) != NULL;
+}
+
+/*
  * Free the sign specified by 'name'.
  */
     int
-sign_undefine_by_name(char_u *name)
+sign_undefine_by_name(char_u *name, int give_error)
 {
     sign_T	*sp_prev;
     sign_T	*sp;
@@ -1036,7 +1045,8 @@ sign_undefine_by_name(char_u *name)
     sp = sign_find(name, &sp_prev);
     if (sp == NULL)
     {
-	semsg(_("E155: Unknown sign: %s"), name);
+	if (give_error)
+	    semsg(_("E155: Unknown sign: %s"), name);
 	return FAIL;
     }
     sign_undefine(sp, sp_prev);
@@ -1076,7 +1086,7 @@ may_force_numberwidth_recompute(buf_T *buf, int unplace)
 /*
  * Place a sign at the specified file location or update a sign.
  */
-    static int
+    int
 sign_place(
 	int		*sign_id,
 	char_u		*sign_group,
@@ -1591,7 +1601,7 @@ ex_sign(exarg_T *eap)
 		sign_list_by_name(name);
 	    else
 		// ":sign undefine {name}"
-		sign_undefine_by_name(name);
+		sign_undefine_by_name(name, TRUE);
 
 	    vim_free(name);
 	    return;
@@ -2512,7 +2522,7 @@ sign_undefine_multiple(list_T *l, list_T *retlist)
     {
 	retval = -1;
 	name = tv_get_string_chk(&li->li_tv);
-	if (name != NULL && (sign_undefine_by_name(name) == OK))
+	if (name != NULL && (sign_undefine_by_name(name, TRUE) == OK))
 	    retval = 0;
 	list_append_number(retlist, retval);
     }
@@ -2551,7 +2561,7 @@ f_sign_undefine(typval_T *argvars, typval_T *rettv)
 	if (name == NULL)
 	    return;
 
-	if (sign_undefine_by_name(name) == OK)
+	if (sign_undefine_by_name(name, TRUE) == OK)
 	    rettv->vval.v_number = 0;
     }
 }
