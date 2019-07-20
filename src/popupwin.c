@@ -451,6 +451,22 @@ popup_show_curline(win_T *wp)
 	wp->w_topline = wp->w_cursor.lnum;
     else if (wp->w_cursor.lnum >= wp->w_botline)
 	wp->w_topline = wp->w_cursor.lnum - wp->w_height + 1;
+
+    // Don't use "firstline" now.
+    wp->w_firstline = 0;
+}
+
+/*
+ * Get the sign group name for window "wp".
+ * Returns a pointer to a static buffer, overwritten on the next call.
+ */
+    static char_u *
+popup_get_sign_name(win_T *wp)
+{
+    static char    buf[30];
+
+    vim_snprintf(buf, sizeof(buf), "popup-%d", wp->w_id);
+    return (char_u *)buf;
 }
 
 /*
@@ -460,20 +476,31 @@ popup_show_curline(win_T *wp)
     static void
 popup_highlight_curline(win_T *wp)
 {
-    int	    id;
-    char    buf[100];
+    int	    sign_id = 0;
+    char_u  *sign_name = popup_get_sign_name(wp);
 
-    match_delete(wp, 1, FALSE);
+    buf_delete_signs(wp->w_buffer, (char_u *)"popupmenu");
 
     if ((wp->w_popup_flags & POPF_CURSORLINE) != 0)
     {
 	popup_show_curline(wp);
 
-	id = syn_name2id((char_u *)"PopupSelected");
-	vim_snprintf(buf, sizeof(buf), "\\%%%dl.*", (int)wp->w_cursor.lnum);
-	match_add(wp, (char_u *)(id == 0 ? "PmenuSel" : "PopupSelected"),
-					     (char_u *)buf, 10, 1, NULL, NULL);
+	if (!sign_exists_by_name(sign_name))
+	{
+	    char *linehl = "PopupSelected";
+
+	    if (syn_name2id((char_u *)linehl) == 0)
+		linehl = "PmenuSel";
+	    sign_define_by_name(sign_name, NULL,
+						 (char_u *)linehl, NULL, NULL);
+	}
+
+	sign_place(&sign_id, (char_u *)"popupmenu", sign_name,
+			       wp->w_buffer, wp->w_cursor.lnum, SIGN_DEF_PRIO);
+	redraw_win_later(wp, NOT_VALID);
     }
+    else
+	sign_undefine_by_name(sign_name, FALSE);
 }
 
 /*
@@ -545,6 +572,8 @@ apply_general_options(win_T *wp, dict_T *dict)
 	set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
 						   str, OPT_FREE|OPT_LOCAL, 0);
 
+    set_string_option_direct_in_win(wp, (char_u *)"signcolumn", -1,
+					(char_u *)"no", OPT_FREE|OPT_LOCAL, 0);
     set_padding_border(dict, wp->w_popup_padding, "padding", 999);
     set_padding_border(dict, wp->w_popup_border, "border", 1);
 
@@ -1219,7 +1248,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 
     if (argvars != NULL)
     {
-	// Check arguments look OK.
+	// Check that arguments look OK.
 	if (argvars[0].v_type == VAR_NUMBER)
 	{
 	    buf = buflist_findnr( argvars[0].vval.v_number);
@@ -1671,7 +1700,7 @@ f_popup_filter_menu(typval_T *argvars, typval_T *rettv)
 	++wp->w_cursor.lnum;
     if (old_lnum != wp->w_cursor.lnum)
     {
-	popup_highlight_curline(wp);
+	// caller will call popup_highlight_curline()
 	return;
     }
 
@@ -1849,10 +1878,12 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
     static void
 popup_free(win_T *wp)
 {
+    sign_undefine_by_name(popup_get_sign_name(wp), FALSE);
     wp->w_buffer->b_locked = FALSE;
     if (wp->w_winrow + wp->w_height >= cmdline_row)
 	clear_cmdline = TRUE;
     win_free_popup(wp);
+
     redraw_all_later(NOT_VALID);
     popup_mask_refresh = TRUE;
 }
@@ -2161,7 +2192,8 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_string(dict, "title", wp->w_popup_title);
 	dict_add_number(dict, "wrap", wp->w_p_wrap);
 	dict_add_number(dict, "drag", wp->w_popup_drag);
-	dict_add_number(dict, "cursorline", (wp->w_popup_flags & POPF_CURSORLINE) != 0);
+	dict_add_number(dict, "cursorline",
+				   (wp->w_popup_flags & POPF_CURSORLINE) != 0);
 	dict_add_string(dict, "highlight", wp->w_p_wcr);
 	if (wp->w_scrollbar_highlight != NULL)
 	    dict_add_string(dict, "scrollbarhighlight",
@@ -2321,7 +2353,7 @@ invoke_popup_filter(win_T *wp, int c)
     // NOTE: The callback might close the popup, thus make "wp" invalid.
     call_callback(&wp->w_filter_cb, -1,
 			    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
-    if (old_lnum != wp->w_cursor.lnum)
+    if (win_valid_popup(wp) && old_lnum != wp->w_cursor.lnum)
 	popup_highlight_curline(wp);
 
     res = tv_get_number(&rettv);

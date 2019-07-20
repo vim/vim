@@ -5366,6 +5366,8 @@ win_line(
 			if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
 			    char_attr = hl_combine_attr(char_attr,
 							    HL_ATTR(HLF_CUL));
+			else if (line_attr)
+			    char_attr = hl_combine_attr(char_attr, line_attr);
 		    }
 # endif
 		}
