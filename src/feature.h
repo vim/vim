@@ -1236,7 +1236,7 @@
  * +signs		Allow signs to be displayed to the left of text lines.
  *			Adds the ":sign" command.
  */
-#if defined(FEAT_BIG) || defined(FEAT_NETBEANS_INTG)
+#if defined(FEAT_BIG) || defined(FEAT_NETBEANS_INTG) || defined(FEAT_TEXT_PROP)
 # define FEAT_SIGNS
 # if ((defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) \
 		&& defined(HAVE_X11_XPM_H)) \
