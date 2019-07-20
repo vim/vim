@@ -11387,7 +11387,7 @@ This does NOT work: >
 			|List| item.
 
 					*:let=<<* *:let-heredoc* *E990* *E991*
-:let {var-name} =<< [trim] {marker}
+:let {var-name} =<< [trim] [{marker}]
 text...
 text...
 {marker}
