@@ -4059,7 +4059,7 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
 	// "." is only string concatenation when scriptversion is 1
 	op = **arg;
 	concat = op == '.'
-			&& (*(*arg + 1) == '.' || current_sctx.sc_version < 2);
+			&& (*(*arg + 1) == '.' || current_sctx.sc_version < 2 || !evaluate);
 	if (op != '+' && op != '-' && !concat)
 	    break;
 
