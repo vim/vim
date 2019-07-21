@@ -3725,6 +3725,14 @@ typedef enum {
     CDSCOPE_WINDOW	// :lcd
 } cdscope_T;
 
+// Variable flavor
+typedef enum
+{
+    VAR_FLAVOUR_DEFAULT,	/* doesn't start with uppercase */
+    VAR_FLAVOUR_SESSION,	/* starts with uppercase, some lower */
+    VAR_FLAVOUR_VIMINFO		/* all uppercase */
+} var_flavour_T;
+
 // argument for mouse_find_win()
 typedef enum {
     IGNORE_POPUP,	// only check non-popup windows
