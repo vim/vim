@@ -313,3 +313,18 @@ func Test_compl_feedkeys()
   bwipe!
   set completeopt&
 endfunc
+
+func Test_compl_in_cmdwin()
+  com! -buffer TestCommand echo 'TestCommand'
+  func CheckCompletion()
+    " Check if truely this test is carrying out in cmdwin or not.
+    call assert_equal('[Command Line]', bufname('%'))
+    call assert_equal(['TestCommand'], getcompletion('T', 'command'))
+    return ''
+  endfunc
+  nnoremap <expr> @ CheckCompletion()
+  exec "normal q:@\<C-c>\<C-c>"
+  nunmap @
+  delcom TestCommand
+  delfunc CheckCompletion
+endfunc
