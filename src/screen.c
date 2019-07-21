@@ -167,11 +167,6 @@ static void win_redr_ruler(win_T *wp, int always, int ignore_pum);
 /* Ugly global: overrule attribute used by screen_char() */
 static int screen_char_attr = 0;
 
-#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)
-/* Can limit syntax highlight time to 'redrawtime'. */
-# define SYN_TIME_LIMIT 1
-#endif
-
 #ifdef FEAT_RIGHTLEFT
 # define HAS_RIGHTLEFT(x) x
 #else
