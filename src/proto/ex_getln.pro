@@ -34,7 +34,10 @@ void set_cmd_context(expand_T *xp, char_u *str, int len, int col, int use_ccline
 int expand_cmdline(expand_T *xp, char_u *str, int col, int *matchcount, char_u ***matches);
 int ExpandGeneric(expand_T *xp, regmatch_T *regmatch, int *num_file, char_u ***file, char_u *((*func)(expand_T *, int)), int escaped);
 void globpath(char_u *path, char_u *file, garray_T *ga, int expand_options);
+int hist_char2type(int c);
 void init_history(void);
+void clear_hist_entry(histentry_T *hisptr);
+int in_history(int type, char_u *str, int move_to_front, int sep, int writing);
 int get_histtype(char_u *name);
 void add_to_history(int histype, char_u *new_entry, int in_map, int sep);
 int get_history_idx(int histype);
@@ -49,10 +52,10 @@ int set_cmdline_pos(int pos);
 int get_cmdline_type(void);
 int get_list_range(char_u **str, int *num1, int *num2);
 void ex_history(exarg_T *eap);
-void prepare_viminfo_history(int asklen, int writing);
-int read_viminfo_history(vir_T *virp, int writing);
-void handle_viminfo_history(garray_T *values, int writing);
-void finish_viminfo_history(vir_T *virp);
-void write_viminfo_history(FILE *fp, int merge);
+int get_hislen(void);
+histentry_T *get_histentry(int hist_type);
+void set_histentry(int hist_type, histentry_T *entry);
+int *get_hisidx(int hist_type);
+int *get_hisnum(int hist_type);
 char_u *script_get(exarg_T *eap, char_u *cmd);
 /* vim: set ft=c : */

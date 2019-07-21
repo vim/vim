@@ -1115,6 +1115,17 @@ typedef struct
     garray_T	vir_barlines;	// lines starting with |
 } vir_T;
 
+/*
+ * Structure used for the command line history.
+ */
+typedef struct hist_entry
+{
+    int		hisnum;		/* identifying number */
+    int		viminfo;	/* when TRUE hisstr comes from viminfo */
+    char_u	*hisstr;	/* actual entry, separator char after the NUL */
+    time_t	time_set;	/* when it was typed, zero if unknown */
+} histentry_T;
+
 #define CONV_NONE		0
 #define CONV_TO_UTF8		1
 #define CONV_9_TO_UTF8		2
