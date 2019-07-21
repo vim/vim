@@ -2012,6 +2012,7 @@ ex_function(exarg_T *eap)
     int		do_concat = TRUE;
     linenr_T	sourcing_lnum_off;
     linenr_T	sourcing_lnum_top;
+    int		is_heredoc = FALSE;
 
     /*
      * ":function" without argument: list functions.
@@ -2331,17 +2332,25 @@ ex_function(exarg_T *eap)
 
 	if (skip_until != NULL)
 	{
-	    // Between ":append" and "." and between ":python <<EOF" and "EOF"
-	    // don't check for ":endfunc".
-	    if (trimmed == NULL
+	    // Don't check for ":endfunc" between
+	    // * ":append" and "."
+	    // * ":python <<EOF" and "EOF"
+	    // * ":let {var-name} =<< [trim] {marker}" and "{marker}"
+	    if (trimmed == NULL || (is_heredoc && skipwhite(theline) == theline)
 			    || STRNCMP(theline, trimmed, STRLEN(trimmed)) == 0)
 	    {
-		p = trimmed == NULL ? theline : theline + STRLEN(trimmed);
+		if (trimmed == NULL)
+		    p = theline;
+		else if (is_heredoc)
+		    p = skipwhite(theline) == theline ? theline : theline + STRLEN(trimmed);
+		else
+		    p = theline + STRLEN(trimmed);
 		if (STRCMP(p, skip_until) == 0)
 		{
 		    VIM_CLEAR(skip_until);
 		    VIM_CLEAR(trimmed);
 		    do_concat = TRUE;
+		    is_heredoc = FALSE;
 		}
 	    }
 	}
@@ -2453,7 +2462,6 @@ ex_function(exarg_T *eap)
 			    && (!ASCII_ISALNUM(p[2])
 				|| (p[2] == 't' && !ASCII_ISALNUM(p[3]))))))
 	    {
-		// ":let v =<<" continues until a dot
 		p = skipwhite(arg + 3);
 		if (STRNCMP(p, "trim", 4) == 0)
 		{
@@ -2462,11 +2470,9 @@ ex_function(exarg_T *eap)
 		    trimmed = vim_strnsave(theline,
 					  (int)(skipwhite(theline) - theline));
 		}
-		if (*p == NUL)
-		    skip_until = vim_strsave((char_u *)".");
-		else
-		    skip_until = vim_strnsave(p, (int)(skiptowhite(p) - p));
+		skip_until = vim_strnsave(p, (int)(skiptowhite(p) - p));
 		do_concat = FALSE;
+		is_heredoc = TRUE;
 	    }
 	}
 
