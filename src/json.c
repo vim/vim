@@ -1126,7 +1126,6 @@ json_find_end(js_read_T *reader, int options)
     reader->js_used = used_save;
     return ret;
 }
-#endif
 
 /*
  * "js_decode()" function
@@ -1176,3 +1175,4 @@ f_json_encode(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = json_encode(&argvars[0], 0);
 }
+#endif

@@ -3948,7 +3948,10 @@ get_match(win_T *wp, int id)
 	cur = cur->next;
     return cur;
 }
+#endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+# ifdef FEAT_SEARCH_EXTRA
     static int
 matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
 {
@@ -3984,7 +3987,7 @@ matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
     void
 f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_SEARCH_EXTRA
+# ifdef FEAT_SEARCH_EXTRA
     dict_T	*dict;
     matchitem_T	*cur;
     int		i;
@@ -4031,7 +4034,7 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	dict_add_string(dict, "group", syn_id2name(cur->hlg_id));
 	dict_add_number(dict, "priority", (long)cur->priority);
 	dict_add_number(dict, "id", (long)cur->id);
-# if defined(FEAT_CONCEAL)
+#  if defined(FEAT_CONCEAL)
 	if (cur->conceal_char)
 	{
 	    char_u buf[MB_MAXBYTES + 1];
@@ -4039,11 +4042,11 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    buf[(*mb_char2bytes)((int)cur->conceal_char, buf)] = NUL;
 	    dict_add_string(dict, "conceal", (char_u *)&buf);
 	}
-# endif
+#  endif
 	list_append_dict(rettv->vval.v_list, dict);
 	cur = cur->next;
     }
-#endif
+# endif
 }
 
 /*
@@ -4052,7 +4055,7 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     void
 f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_SEARCH_EXTRA
+# ifdef FEAT_SEARCH_EXTRA
     char_u	buf[NUMBUFLEN];
     char_u	*grp = tv_get_string_buf_chk(&argvars[0], buf);	/* group */
     char_u	*pat = tv_get_string_buf_chk(&argvars[1], buf);	/* pattern */
@@ -4087,7 +4090,7 @@ f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     rettv->vval.v_number = match_add(win, grp, pat, prio, id, NULL,
 								conceal_char);
-#endif
+# endif
 }
 
 /*
@@ -4096,7 +4099,7 @@ f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     void
 f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_SEARCH_EXTRA
+# ifdef FEAT_SEARCH_EXTRA
     char_u	buf[NUMBUFLEN];
     char_u	*group;
     int		prio = 10;
@@ -4145,7 +4148,7 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     rettv->vval.v_number = match_add(win, group, NULL, prio, id, l,
 								conceal_char);
-#endif
+# endif
 }
 
 /*
@@ -4156,7 +4159,7 @@ f_matcharg(typval_T *argvars UNUSED, typval_T *rettv)
 {
     if (rettv_list_alloc(rettv) == OK)
     {
-#ifdef FEAT_SEARCH_EXTRA
+# ifdef FEAT_SEARCH_EXTRA
 	int	    id = (int)tv_get_number(&argvars[0]);
 	matchitem_T *m;
 
@@ -4174,7 +4177,7 @@ f_matcharg(typval_T *argvars UNUSED, typval_T *rettv)
 		list_append_string(rettv->vval.v_list, NULL, -1);
 	    }
 	}
-#endif
+# endif
     }
 }
 
@@ -4184,7 +4187,7 @@ f_matcharg(typval_T *argvars UNUSED, typval_T *rettv)
     void
 f_matchdelete(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_SEARCH_EXTRA
+# ifdef FEAT_SEARCH_EXTRA
     win_T   *win = get_optional_window(argvars, 1);
 
     if (win == NULL)
@@ -4192,5 +4195,6 @@ f_matchdelete(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     else
 	rettv->vval.v_number = match_delete(win,
 				       (int)tv_get_number(&argvars[0]), TRUE);
-#endif
+# endif
 }
+#endif
