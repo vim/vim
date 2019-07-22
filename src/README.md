@@ -62,6 +62,7 @@ textprop.c	| text properties
 undo.c		| undo and redo
 usercmd.c	| user defined commands
 userfunc.c	| user defined functions
+viminfo.c	| viminfo handling
 window.c	| handling split windows
 
 
