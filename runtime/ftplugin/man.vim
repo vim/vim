@@ -1,7 +1,8 @@
 " Vim filetype plugin file
 " Language:	man
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change: 	2019 Jan 22
+" Last Change: 	2019 Jul 22
+"		(fix by Jason Franklin)
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -143,6 +144,8 @@ func <SID>GetPage(cmdmods, ...)
   exec "let s:man_tag_col_".s:man_tag_depth." = ".col(".")
   let s:man_tag_depth = s:man_tag_depth + 1
 
+  let open_cmd = 'edit'
+
   " Use an existing "man" window if it exists, otherwise open a new one.
   if &filetype != "man"
     let thiswin = winnr()
@@ -161,24 +164,22 @@ func <SID>GetPage(cmdmods, ...)
     endif
     if &filetype != "man"
       if exists("g:ft_man_open_mode")
-        if g:ft_man_open_mode == "vert"
-          vnew
-        elseif g:ft_man_open_mode == "tab"
-          tabnew
+        if g:ft_man_open_mode == 'vert'
+	  let open_cmd = 'vsplit'
+        elseif g:ft_man_open_mode == 'tab'
+	  let open_cmd = 'tabedit'
         else
-          new
+	  let open_cmd = 'split'
         endif
       else
-	if a:cmdmods != ''
-	  exe a:cmdmods . ' new'
-	else
-	  new
-	endif
+	let open_cmd = a:cmdmods . ' split'
       endif
       setl nonu fdc=0
     endif
   endif
-  silent exec "edit $HOME/".page.".".sect."~"
+
+  silent execute open_cmd . " $HOME/" . page . '.' . sect . '~'
+
   " Avoid warning for editing the dummy file twice
   setl buftype=nofile noswapfile
 

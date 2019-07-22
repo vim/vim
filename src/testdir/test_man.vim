@@ -46,6 +46,8 @@ function Test_g_ft_man_open_mode()
   call assert_equal(2, tabpagenr('$'))
   call assert_equal(2, tabpagenr())
   q
+
+  unlet g:ft_man_open_mode
 endfunction
 
 function Test_nomodifiable()
@@ -57,4 +59,30 @@ function Test_nomodifiable()
   endif
   call assert_false(&l:modifiable)
   q
+endfunction
+
+function Test_buffer_count_hidden()
+  %bw!
+  set hidden
+
+  call assert_equal(1, len(getbufinfo()))
+
+  let wincnt = winnr('$')
+  Man vim
+  if wincnt == winnr('$')
+    " Vim manual page cannot be found.
+    return
+  endif
+
+  call assert_equal(1, len(getbufinfo({'buflisted':1})))
+  call assert_equal(2, len(getbufinfo()))
+  q
+
+  Man vim
+
+  call assert_equal(1, len(getbufinfo({'buflisted':1})))
+  call assert_equal(2, len(getbufinfo()))
+  q
+
+  set hidden&
 endfunction
