@@ -8,7 +8,8 @@
  */
 
 /*
- * Highlighting stuff
+ * Highlighting stuff.
+ * Includes highlighting matches.
  */
 
 #include "vim.h"
@@ -3653,3 +3654,543 @@ free_highlight_fonts(void)
 # endif
 }
 #endif
+
+
+#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
+/*
+ * Add match to the match list of window 'wp'.  The pattern 'pat' will be
+ * highlighted with the group 'grp' with priority 'prio'.
+ * Optionally, a desired ID 'id' can be specified (greater than or equal to 1).
+ * If no particular ID is desired, -1 must be specified for 'id'.
+ * Return ID of added match, -1 on failure.
+ */
+    int
+match_add(
+    win_T	*wp,
+    char_u	*grp,
+    char_u	*pat,
+    int		prio,
+    int		id,
+    list_T	*pos_list,
+    char_u      *conceal_char UNUSED) /* pointer to conceal replacement char */
+{
+    matchitem_T	*cur;
+    matchitem_T	*prev;
+    matchitem_T	*m;
+    int		hlg_id;
+    regprog_T	*regprog = NULL;
+    int		rtype = SOME_VALID;
+
+    if (*grp == NUL || (pat != NULL && *pat == NUL))
+	return -1;
+    if (id < -1 || id == 0)
+    {
+	semsg(_("E799: Invalid ID: %d (must be greater than or equal to 1)"), id);
+	return -1;
+    }
+    if (id != -1)
+    {
+	cur = wp->w_match_head;
+	while (cur != NULL)
+	{
+	    if (cur->id == id)
+	    {
+		semsg(_("E801: ID already taken: %d"), id);
+		return -1;
+	    }
+	    cur = cur->next;
+	}
+    }
+    if ((hlg_id = syn_namen2id(grp, (int)STRLEN(grp))) == 0)
+    {
+	semsg(_(e_nogroup), grp);
+	return -1;
+    }
+    if (pat != NULL && (regprog = vim_regcomp(pat, RE_MAGIC)) == NULL)
+    {
+	semsg(_(e_invarg2), pat);
+	return -1;
+    }
+
+    /* Find available match ID. */
+    while (id == -1)
+    {
+	cur = wp->w_match_head;
+	while (cur != NULL && cur->id != wp->w_next_match_id)
+	    cur = cur->next;
+	if (cur == NULL)
+	    id = wp->w_next_match_id;
+	wp->w_next_match_id++;
+    }
+
+    /* Build new match. */
+    m = ALLOC_CLEAR_ONE(matchitem_T);
+    m->id = id;
+    m->priority = prio;
+    m->pattern = pat == NULL ? NULL : vim_strsave(pat);
+    m->hlg_id = hlg_id;
+    m->match.regprog = regprog;
+    m->match.rmm_ic = FALSE;
+    m->match.rmm_maxcol = 0;
+# if defined(FEAT_CONCEAL)
+    m->conceal_char = 0;
+    if (conceal_char != NULL)
+	m->conceal_char = (*mb_ptr2char)(conceal_char);
+# endif
+
+    /* Set up position matches */
+    if (pos_list != NULL)
+    {
+	linenr_T	toplnum = 0;
+	linenr_T	botlnum = 0;
+	listitem_T	*li;
+	int		i;
+
+	for (i = 0, li = pos_list->lv_first; li != NULL && i < MAXPOSMATCH;
+							i++, li = li->li_next)
+	{
+	    linenr_T	lnum = 0;
+	    colnr_T	col = 0;
+	    int		len = 1;
+	    list_T	*subl;
+	    listitem_T	*subli;
+	    int		error = FALSE;
+
+	    if (li->li_tv.v_type == VAR_LIST)
+	    {
+		subl = li->li_tv.vval.v_list;
+		if (subl == NULL)
+		    goto fail;
+		subli = subl->lv_first;
+		if (subli == NULL)
+		    goto fail;
+		lnum = tv_get_number_chk(&subli->li_tv, &error);
+		if (error == TRUE)
+		    goto fail;
+		if (lnum == 0)
+		{
+		    --i;
+		    continue;
+		}
+		m->pos.pos[i].lnum = lnum;
+		subli = subli->li_next;
+		if (subli != NULL)
+		{
+		    col = tv_get_number_chk(&subli->li_tv, &error);
+		    if (error == TRUE)
+			goto fail;
+		    subli = subli->li_next;
+		    if (subli != NULL)
+		    {
+			len = tv_get_number_chk(&subli->li_tv, &error);
+			if (error == TRUE)
+			    goto fail;
+		    }
+		}
+		m->pos.pos[i].col = col;
+		m->pos.pos[i].len = len;
+	    }
+	    else if (li->li_tv.v_type == VAR_NUMBER)
+	    {
+		if (li->li_tv.vval.v_number == 0)
+		{
+		    --i;
+		    continue;
+		}
+		m->pos.pos[i].lnum = li->li_tv.vval.v_number;
+		m->pos.pos[i].col = 0;
+		m->pos.pos[i].len = 0;
+	    }
+	    else
+	    {
+		emsg(_("List or number required"));
+		goto fail;
+	    }
+	    if (toplnum == 0 || lnum < toplnum)
+		toplnum = lnum;
+	    if (botlnum == 0 || lnum >= botlnum)
+		botlnum = lnum + 1;
+	}
+
+	/* Calculate top and bottom lines for redrawing area */
+	if (toplnum != 0)
+	{
+	    if (wp->w_buffer->b_mod_set)
+	    {
+		if (wp->w_buffer->b_mod_top > toplnum)
+		    wp->w_buffer->b_mod_top = toplnum;
+		if (wp->w_buffer->b_mod_bot < botlnum)
+		    wp->w_buffer->b_mod_bot = botlnum;
+	    }
+	    else
+	    {
+		wp->w_buffer->b_mod_set = TRUE;
+		wp->w_buffer->b_mod_top = toplnum;
+		wp->w_buffer->b_mod_bot = botlnum;
+		wp->w_buffer->b_mod_xlines = 0;
+	    }
+	    m->pos.toplnum = toplnum;
+	    m->pos.botlnum = botlnum;
+	    rtype = VALID;
+	}
+    }
+
+    /* Insert new match.  The match list is in ascending order with regard to
+     * the match priorities. */
+    cur = wp->w_match_head;
+    prev = cur;
+    while (cur != NULL && prio >= cur->priority)
+    {
+	prev = cur;
+	cur = cur->next;
+    }
+    if (cur == prev)
+	wp->w_match_head = m;
+    else
+	prev->next = m;
+    m->next = cur;
+
+    redraw_later(rtype);
+    return id;
+
+fail:
+    vim_free(m);
+    return -1;
+}
+
+/*
+ * Delete match with ID 'id' in the match list of window 'wp'.
+ * Print error messages if 'perr' is TRUE.
+ */
+    int
+match_delete(win_T *wp, int id, int perr)
+{
+    matchitem_T	*cur = wp->w_match_head;
+    matchitem_T	*prev = cur;
+    int		rtype = SOME_VALID;
+
+    if (id < 1)
+    {
+	if (perr == TRUE)
+	    semsg(_("E802: Invalid ID: %d (must be greater than or equal to 1)"),
+									  id);
+	return -1;
+    }
+    while (cur != NULL && cur->id != id)
+    {
+	prev = cur;
+	cur = cur->next;
+    }
+    if (cur == NULL)
+    {
+	if (perr == TRUE)
+	    semsg(_("E803: ID not found: %d"), id);
+	return -1;
+    }
+    if (cur == prev)
+	wp->w_match_head = cur->next;
+    else
+	prev->next = cur->next;
+    vim_regfree(cur->match.regprog);
+    vim_free(cur->pattern);
+    if (cur->pos.toplnum != 0)
+    {
+	if (wp->w_buffer->b_mod_set)
+	{
+	    if (wp->w_buffer->b_mod_top > cur->pos.toplnum)
+		wp->w_buffer->b_mod_top = cur->pos.toplnum;
+	    if (wp->w_buffer->b_mod_bot < cur->pos.botlnum)
+		wp->w_buffer->b_mod_bot = cur->pos.botlnum;
+	}
+	else
+	{
+	    wp->w_buffer->b_mod_set = TRUE;
+	    wp->w_buffer->b_mod_top = cur->pos.toplnum;
+	    wp->w_buffer->b_mod_bot = cur->pos.botlnum;
+	    wp->w_buffer->b_mod_xlines = 0;
+	}
+	rtype = VALID;
+    }
+    vim_free(cur);
+    redraw_later(rtype);
+    return 0;
+}
+
+/*
+ * Delete all matches in the match list of window 'wp'.
+ */
+    void
+clear_matches(win_T *wp)
+{
+    matchitem_T *m;
+
+    while (wp->w_match_head != NULL)
+    {
+	m = wp->w_match_head->next;
+	vim_regfree(wp->w_match_head->match.regprog);
+	vim_free(wp->w_match_head->pattern);
+	vim_free(wp->w_match_head);
+	wp->w_match_head = m;
+    }
+    redraw_later(SOME_VALID);
+}
+
+/*
+ * Get match from ID 'id' in window 'wp'.
+ * Return NULL if match not found.
+ */
+    matchitem_T *
+get_match(win_T *wp, int id)
+{
+    matchitem_T *cur = wp->w_match_head;
+
+    while (cur != NULL && cur->id != id)
+	cur = cur->next;
+    return cur;
+}
+
+    static int
+matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
+{
+    dictitem_T *di;
+
+    if (tv->v_type != VAR_DICT)
+    {
+	emsg(_(e_dictreq));
+	return FAIL;
+    }
+
+    if (dict_find(tv->vval.v_dict, (char_u *)"conceal", -1) != NULL)
+	*conceal_char = dict_get_string(tv->vval.v_dict,
+						   (char_u *)"conceal", FALSE);
+
+    if ((di = dict_find(tv->vval.v_dict, (char_u *)"window", -1)) != NULL)
+    {
+	*win = find_win_by_nr_or_id(&di->di_tv);
+	if (*win == NULL)
+	{
+	    emsg(_(e_invalwindow));
+	    return FAIL;
+	}
+    }
+
+    return OK;
+}
+#endif
+
+/*
+ * "getmatches()" function
+ */
+    void
+f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#ifdef FEAT_SEARCH_EXTRA
+    dict_T	*dict;
+    matchitem_T	*cur;
+    int		i;
+    win_T	*win = get_optional_window(argvars, 0);
+
+    if (rettv_list_alloc(rettv) == FAIL || win == NULL)
+	return;
+
+    cur = win->w_match_head;
+    while (cur != NULL)
+    {
+	dict = dict_alloc();
+	if (dict == NULL)
+	    return;
+	if (cur->match.regprog == NULL)
+	{
+	    /* match added with matchaddpos() */
+	    for (i = 0; i < MAXPOSMATCH; ++i)
+	    {
+		llpos_T	*llpos;
+		char	buf[30];  // use 30 to avoid compiler warning
+		list_T	*l;
+
+		llpos = &cur->pos.pos[i];
+		if (llpos->lnum == 0)
+		    break;
+		l = list_alloc();
+		if (l == NULL)
+		    break;
+		list_append_number(l, (varnumber_T)llpos->lnum);
+		if (llpos->col > 0)
+		{
+		    list_append_number(l, (varnumber_T)llpos->col);
+		    list_append_number(l, (varnumber_T)llpos->len);
+		}
+		sprintf(buf, "pos%d", i + 1);
+		dict_add_list(dict, buf, l);
+	    }
+	}
+	else
+	{
+	    dict_add_string(dict, "pattern", cur->pattern);
+	}
+	dict_add_string(dict, "group", syn_id2name(cur->hlg_id));
+	dict_add_number(dict, "priority", (long)cur->priority);
+	dict_add_number(dict, "id", (long)cur->id);
+# if defined(FEAT_CONCEAL)
+	if (cur->conceal_char)
+	{
+	    char_u buf[MB_MAXBYTES + 1];
+
+	    buf[(*mb_char2bytes)((int)cur->conceal_char, buf)] = NUL;
+	    dict_add_string(dict, "conceal", (char_u *)&buf);
+	}
+# endif
+	list_append_dict(rettv->vval.v_list, dict);
+	cur = cur->next;
+    }
+#endif
+}
+
+/*
+ * "matchadd()" function
+ */
+    void
+f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#ifdef FEAT_SEARCH_EXTRA
+    char_u	buf[NUMBUFLEN];
+    char_u	*grp = tv_get_string_buf_chk(&argvars[0], buf);	/* group */
+    char_u	*pat = tv_get_string_buf_chk(&argvars[1], buf);	/* pattern */
+    int		prio = 10;	/* default priority */
+    int		id = -1;
+    int		error = FALSE;
+    char_u	*conceal_char = NULL;
+    win_T	*win = curwin;
+
+    rettv->vval.v_number = -1;
+
+    if (grp == NULL || pat == NULL)
+	return;
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	prio = (int)tv_get_number_chk(&argvars[2], &error);
+	if (argvars[3].v_type != VAR_UNKNOWN)
+	{
+	    id = (int)tv_get_number_chk(&argvars[3], &error);
+	    if (argvars[4].v_type != VAR_UNKNOWN
+		&& matchadd_dict_arg(&argvars[4], &conceal_char, &win) == FAIL)
+		return;
+	}
+    }
+    if (error == TRUE)
+	return;
+    if (id >= 1 && id <= 3)
+    {
+	semsg(_("E798: ID is reserved for \":match\": %d"), id);
+	return;
+    }
+
+    rettv->vval.v_number = match_add(win, grp, pat, prio, id, NULL,
+								conceal_char);
+#endif
+}
+
+/*
+ * "matchaddpos()" function
+ */
+    void
+f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#ifdef FEAT_SEARCH_EXTRA
+    char_u	buf[NUMBUFLEN];
+    char_u	*group;
+    int		prio = 10;
+    int		id = -1;
+    int		error = FALSE;
+    list_T	*l;
+    char_u	*conceal_char = NULL;
+    win_T	*win = curwin;
+
+    rettv->vval.v_number = -1;
+
+    group = tv_get_string_buf_chk(&argvars[0], buf);
+    if (group == NULL)
+	return;
+
+    if (argvars[1].v_type != VAR_LIST)
+    {
+	semsg(_(e_listarg), "matchaddpos()");
+	return;
+    }
+    l = argvars[1].vval.v_list;
+    if (l == NULL)
+	return;
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+	prio = (int)tv_get_number_chk(&argvars[2], &error);
+	if (argvars[3].v_type != VAR_UNKNOWN)
+	{
+	    id = (int)tv_get_number_chk(&argvars[3], &error);
+
+	    if (argvars[4].v_type != VAR_UNKNOWN
+		&& matchadd_dict_arg(&argvars[4], &conceal_char, &win) == FAIL)
+		return;
+	}
+    }
+    if (error == TRUE)
+	return;
+
+    /* id == 3 is ok because matchaddpos() is supposed to substitute :3match */
+    if (id == 1 || id == 2)
+    {
+	semsg(_("E798: ID is reserved for \":match\": %d"), id);
+	return;
+    }
+
+    rettv->vval.v_number = match_add(win, group, NULL, prio, id, l,
+								conceal_char);
+#endif
+}
+
+/*
+ * "matcharg()" function
+ */
+    void
+f_matcharg(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    if (rettv_list_alloc(rettv) == OK)
+    {
+#ifdef FEAT_SEARCH_EXTRA
+	int	    id = (int)tv_get_number(&argvars[0]);
+	matchitem_T *m;
+
+	if (id >= 1 && id <= 3)
+	{
+	    if ((m = (matchitem_T *)get_match(curwin, id)) != NULL)
+	    {
+		list_append_string(rettv->vval.v_list,
+						syn_id2name(m->hlg_id), -1);
+		list_append_string(rettv->vval.v_list, m->pattern, -1);
+	    }
+	    else
+	    {
+		list_append_string(rettv->vval.v_list, NULL, -1);
+		list_append_string(rettv->vval.v_list, NULL, -1);
+	    }
+	}
+#endif
+    }
+}
+
+/*
+ * "matchdelete()" function
+ */
+    void
+f_matchdelete(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#ifdef FEAT_SEARCH_EXTRA
+    win_T   *win = get_optional_window(argvars, 1);
+
+    if (win == NULL)
+	rettv->vval.v_number = -1;
+    else
+	rettv->vval.v_number = match_delete(win,
+				       (int)tv_get_number(&argvars[0]), TRUE);
+#endif
+}

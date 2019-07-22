@@ -1615,8 +1615,10 @@ EXTERN char e_invalidreg[]    INIT(= N_("E850: Invalid register name"));
 EXTERN char e_dirnotf[]	INIT(= N_("E919: Directory not found in '%s': \"%s\""));
 EXTERN char e_au_recursive[]	INIT(= N_("E952: Autocommand caused recursive behavior"));
 #ifdef FEAT_MENU
-EXTERN char e_menuothermode[] INIT(= N_("E328: Menu only exists in another mode"));
+EXTERN char e_menuothermode[]	INIT(= N_("E328: Menu only exists in another mode"));
 #endif
+EXTERN char e_invalwindow[]	INIT(= N_("E957: Invalid window number"));
+EXTERN char e_listarg[]		INIT(= N_("E686: Argument of %s must be a List"));
 
 #ifdef FEAT_GUI_MAC
 EXTERN short disallow_gui	INIT(= FALSE);

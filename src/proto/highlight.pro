@@ -43,4 +43,13 @@ void set_context_in_highlight_cmd(expand_T *xp, char_u *arg);
 char_u *get_highlight_name(expand_T *xp, int idx);
 char_u *get_highlight_name_ext(expand_T *xp, int idx, int skip_cleared);
 void free_highlight_fonts(void);
+int match_add(win_T *wp, char_u *grp, char_u *pat, int prio, int id, list_T *pos_list, char_u *conceal_char);
+int match_delete(win_T *wp, int id, int perr);
+void clear_matches(win_T *wp);
+matchitem_T *get_match(win_T *wp, int id);
+void f_getmatches(typval_T *argvars, typval_T *rettv);
+void f_matchadd(typval_T *argvars, typval_T *rettv);
+void f_matchaddpos(typval_T *argvars, typval_T *rettv);
+void f_matcharg(typval_T *argvars, typval_T *rettv);
+void f_matchdelete(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */
