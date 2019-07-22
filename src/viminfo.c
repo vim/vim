@@ -212,9 +212,10 @@ prepare_viminfo_history(int asklen, int writing)
     int	    num;
     int	    type;
     int	    len;
-    int	    hislen = get_hislen();
+    int	    hislen;
 
     init_history();
+    hislen = get_hislen();
     viminfo_add_at_front = (asklen != 0 && !writing);
     if (asklen > hislen)
 	asklen = hislen;
@@ -460,7 +461,7 @@ merge_history(int type)
     // Make one long list with all entries.
     max_len = hislen + viminfo_hisidx[type];
     tot_hist = ALLOC_MULT(histentry_T *, max_len);
-    new_hist = ALLOC_MULT(histentry_T, hislen );
+    new_hist = ALLOC_MULT(histentry_T, hislen);
     if (tot_hist == NULL || new_hist == NULL)
     {
 	vim_free(tot_hist);

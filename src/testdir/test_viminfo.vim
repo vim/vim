@@ -1,6 +1,12 @@
 " Test for reading and writing .viminfo
 
 function Test_viminfo_read_and_write()
+  " First clear 'history', so that "hislen" is zero.  Then set it again,
+  " simulating Vim starting up.
+  set history=0
+  wviminfo Xviminfo
+  set history=1000
+
   call histdel(':')
   let lines = [
 	\ '# comment line',
