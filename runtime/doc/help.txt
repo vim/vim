@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 8.1.  Last change: 2019 May 12
+*help.txt*	For Vim version 8.1.  Last change: 2019 Jul 21
 
 			VIM - main help file
 									 k
@@ -139,6 +139,7 @@ Advanced editing ~
 |fold.txt|	hide (fold) ranges of lines
 
 Special issues ~
+|testing.txt|	testing Vim and Vim scripts
 |print.txt|	printing
 |remote.txt|	using Vim as a server or client
 |term.txt|	using different terminals and mice

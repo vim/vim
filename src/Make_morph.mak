@@ -89,6 +89,7 @@ SRC =	arabic.c						\
 	usercmd.c						\
 	userfunc.c						\
 	version.c						\
+	viminfo.c						\
 	window.c						\
 
 OBJ =	$(SRC:.c=.o)

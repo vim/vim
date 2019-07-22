@@ -1,0 +1,317 @@
+*testing.txt*	For Vim version 8.1.  Last change: 2019 Jul 21
+
+
+		  VIM REFERENCE MANUAL	  by Bram Moolenaar
+
+
+Testing Vim and Vim script			*testing-support*
+
+Expression evaluation is explained in |eval.txt|.  This file goes into details
+about writing tests in Vim script.  This can be used for testing Vim itself
+and for testing plugins.
+
+1. Testing Vim				|testing|
+2. Test functions			|test-functions|
+3. Assert funtions			|assert-functions|
+
+==============================================================================
+1. Testing Vim						*testing*
+
+Vim can be tested after building it, usually with "make test".
+The tests are located in the directory "src/testdir".
+
+There are several types of tests added over time:
+	test33.in		oldest, don't add any of these
+	test_something.in	old style tests
+	test_something.vim	new style tests
+
+						*new-style-testing*
+New tests should be added as new style tests.  These use functions such as
+|assert_equal()| to keep the test commands and the expected result in one
+place.
+						*old-style-testing*
+In some cases an old style test needs to be used.  E.g. when testing Vim
+without the |+eval| feature.
+
+Find more information in the file src/testdir/README.txt.
+
+==============================================================================
+2. Test functions				*test-functions*
+
+test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
+		This is for testing: If the memory allocation with {id} is
+		called, then decrement {countdown}, and when it reaches zero
+		let memory allocation fail {repeat} times.  When {repeat} is
+		smaller than one it fails one time.
+
+
+test_autochdir()					*test_autochdir()*
+		Set a flag to enable the effect of 'autochdir' before Vim
+		startup has finished.
+
+
+test_feedinput({string})				*test_feedinput()*
+		Characters in {string} are queued for processing as if they
+		were typed by the user. This uses a low level input buffer.
+		This function works only when with |+unix| or GUI is running.
+
+
+test_garbagecollect_now()			 *test_garbagecollect_now()*
+		Like garbagecollect(), but executed right away.  This must
+		only be called directly to avoid any structure to exist
+		internally, and |v:testing| must have been set before calling
+		any function.
+
+
+test_garbagecollect_soon()			 *test_garbagecollect_soon()*
+		Set the flag to call the garbagecollector as if in the main
+		loop.  Only to be used in tests.
+
+
+test_getvalue({name})					*test_getvalue()*
+		Get the value of an internal variable.  These values for
+		{name} are supported:
+			need_fileinfo
+
+
+test_ignore_error({expr})			 *test_ignore_error()*
+		Ignore any error containing {expr}.  A normal message is given
+		instead.
+		This is only meant to be used in tests, where catching the
+		error with try/catch cannot be used (because it skips over
+		following code).
+		{expr} is used literally, not as a pattern.
+		When the {expr} is the string "RESET" then the list of ignored
+		errors is made empty.
+
+
+test_null_blob()					*test_null_blob()*
+		Return a |Blob| that is null. Only useful for testing.
+
+
+test_null_channel()					*test_null_channel()*
+		Return a |Channel| that is null. Only useful for testing.
+		{only available when compiled with the +channel feature}
+
+
+test_null_dict()					*test_null_dict()*
+		Return a |Dict| that is null. Only useful for testing.
+
+
+test_null_job()						*test_null_job()*
+		Return a |Job| that is null. Only useful for testing.
+		{only available when compiled with the +job feature}
+
+
+test_null_list()					*test_null_list()*
+		Return a |List| that is null. Only useful for testing.
+
+
+test_null_partial()					*test_null_partial()*
+		Return a |Partial| that is null. Only useful for testing.
+
+
+test_null_string()					*test_null_string()*
+		Return a |String| that is null. Only useful for testing.
+
+
+test_option_not_set({name})				*test_option_not_set()*
+		Reset the flag that indicates option {name} was set.  Thus it
+		looks like it still has the default value. Use like this: >
+			set ambiwidth=double
+			call test_option_not_set('ambiwidth')
+<		Now the 'ambiwidth' option behaves like it was never changed,
+		even though the value is "double".
+		Only to be used for testing!
+
+
+test_override({name}, {val})				*test_override()*
+		Overrides certain parts of Vim's internal processing to be able
+		to run tests. Only to be used for testing Vim!
+		The override is enabled when {val} is non-zero and removed
+		when {val} is zero.
+		Current supported values for name are:
+
+		name	     effect when {val} is non-zero ~
+		redraw       disable the redrawing() function
+		redraw_flag  ignore the RedrawingDisabled flag
+		char_avail   disable the char_avail() function
+		starting     reset the "starting" variable, see below
+		nfa_fail     makes the NFA regexp engine fail to force a
+			     fallback to the old engine
+		no_query_mouse  do not query the mouse position for "dec"
+				terminals
+		no_wait_return	set the "no_wait_return" flag.  Not restored
+				with "ALL".
+		ALL	     clear all overrides ({val} is not used)
+
+		"starting" is to be used when a test should behave like
+		startup was done.  Since the tests are run by sourcing a
+		script the "starting" variable is non-zero. This is usually a
+		good thing (tests run faster), but sometimes changes behavior
+		in a way that the test doesn't work properly.
+		When using: >
+			call test_override('starting', 1)
+<		The value of "starting" is saved.  It is restored by: >
+			call test_override('starting', 0)
+
+
+test_refcount({expr})					*test_refcount()*
+		Return the reference count of {expr}.  When {expr} is of a
+		type that does not have a reference count, returns -1.  Only
+		to be used for testing.
+
+
+test_scrollbar({which}, {value}, {dragging})		*test_scrollbar()*
+		Pretend using scrollbar {which} to move it to position
+		{value}.  {which} can be:
+			left	Left scrollbar of the current window
+			right	Right scrollbar of the current window
+			hor	Horizontal scrollbar
+
+		For the vertical scrollbars {value} can be 1 to the
+		line-count of the buffer.  For the horizontal scrollbar the
+		{value} can be between 1 and the maximum line length, assuming
+		'wrap' is not set.
+
+		When {dragging} is non-zero it's like dragging the scrollbar,
+		otherwise it's like clicking in the scrollbar.
+		Only works when the {which} scrollbar actually exists,
+		obviously only when using the GUI.
+
+
+test_setmouse({row}, {col})				*test_setmouse()*
+		Set the mouse position to be used for the next mouse action.
+		{row} and {col} are one based.
+		For example: >
+			call test_setmouse(4, 20)
+			call feedkeys("\<LeftMouse>", "xt")
+
+
+test_settime({expr})					*test_settime()*
+		Set the time Vim uses internally.  Currently only used for
+		timestamps in the history, as they are used in viminfo, and
+		for undo.
+		Using a value of 1 makes Vim not sleep after a warning or
+		error message.
+		{expr} must evaluate to a number.  When the value is zero the
+		normal behavior is restored.
+
+==============================================================================
+3. Assert functions				*assert-functions*
+
+
+assert_beeps({cmd})					*assert_beeps()*
+		Run {cmd} and add an error message to |v:errors| if it does
+		NOT produce a beep or visual bell.
+		Also see |assert_fails()| and |assert-return|.
+
+							*assert_equal()*
+assert_equal({expected}, {actual} [, {msg}])
+		When {expected} and {actual} are not equal an error message is
+		added to |v:errors| and 1 is returned.  Otherwise zero is
+		returned |assert-return|.
+		There is no automatic conversion, the String "4" is different
+		from the Number 4.  And the number 4 is different from the
+		Float 4.0.  The value of 'ignorecase' is not used here, case
+		always matters.
+		When {msg} is omitted an error in the form "Expected
+		{expected} but got {actual}" is produced.
+		Example: >
+	assert_equal('foo', 'bar')
+<		Will result in a string to be added to |v:errors|:
+	test.vim line 12: Expected 'foo' but got 'bar' ~
+
+							*assert_equalfile()*
+assert_equalfile({fname-one}, {fname-two})
+		When the files {fname-one} and {fname-two} do not contain
+		exactly the same text an error message is added to |v:errors|.
+		Also see |assert-return|.
+		When {fname-one} or {fname-two} does not exist the error will
+		mention that.
+		Mainly useful with |terminal-diff|.
+
+assert_exception({error} [, {msg}])			*assert_exception()*
+		When v:exception does not contain the string {error} an error
+		message is added to |v:errors|.  Also see |assert-return|.
+		This can be used to assert that a command throws an exception.
+		Using the error number, followed by a colon, avoids problems
+		with translations: >
+			try
+			  commandthatfails
+			  call assert_false(1, 'command should have failed')
+			catch
+			  call assert_exception('E492:')
+			endtry
+
+assert_fails({cmd} [, {error} [, {msg}]])			*assert_fails()*
+		Run {cmd} and add an error message to |v:errors| if it does
+		NOT produce an error.  Also see |assert-return|.
+		When {error} is given it must match in |v:errmsg|.
+		Note that beeping is not considered an error, and some failing
+		commands only beep.  Use |assert_beeps()| for those.
+
+assert_false({actual} [, {msg}])				*assert_false()*
+		When {actual} is not false an error message is added to
+		|v:errors|, like with |assert_equal()|.
+		Also see |assert-return|.
+		A value is false when it is zero. When {actual} is not a
+		number the assert fails.
+		When {msg} is omitted an error in the form
+		"Expected False but got {actual}" is produced.
+
+assert_inrange({lower}, {upper}, {actual} [, {msg}])	 *assert_inrange()*
+		This asserts number and |Float| values.  When {actual}  is lower
+		than {lower} or higher than {upper} an error message is added
+		to |v:errors|.  Also see |assert-return|.
+		When {msg} is omitted an error in the form
+		"Expected range {lower} - {upper}, but got {actual}" is
+		produced.
+
+								*assert_match()*
+assert_match({pattern}, {actual} [, {msg}])
+		When {pattern} does not match {actual} an error message is
+		added to |v:errors|.  Also see |assert-return|.
+
+		{pattern} is used as with |=~|: The matching is always done
+		like 'magic' was set and 'cpoptions' is empty, no matter what
+		the actual value of 'magic' or 'cpoptions' is.
+
+		{actual} is used as a string, automatic conversion applies.
+		Use "^" and "$" to match with the start and end of the text.
+		Use both to match the whole text.
+
+		When {msg} is omitted an error in the form
+		"Pattern {pattern} does not match {actual}" is produced.
+		Example: >
+	assert_match('^f.*o$', 'foobar')
+<		Will result in a string to be added to |v:errors|:
+	test.vim line 12: Pattern '^f.*o$' does not match 'foobar' ~
+
+							*assert_notequal()*
+assert_notequal({expected}, {actual} [, {msg}])
+		The opposite of `assert_equal()`: add an error message to
+		|v:errors| when {expected} and {actual} are equal.
+		Also see |assert-return|.
+
+							*assert_notmatch()*
+assert_notmatch({pattern}, {actual} [, {msg}])
+		The opposite of `assert_match()`: add an error message to
+		|v:errors| when {pattern} matches {actual}.
+		Also see |assert-return|.
+
+assert_report({msg})					*assert_report()*
+		Report a test failure directly, using {msg}.
+		Always returns one.
+
+assert_true({actual} [, {msg}])				*assert_true()*
+		When {actual} is not true an error message is added to
+		|v:errors|, like with |assert_equal()|.
+		Also see |assert-return|.
+		A value is TRUE when it is a non-zero number.  When {actual}
+		is not a number the assert fails.
+		When {msg} is omitted an error in the form "Expected True but
+		got {actual}" is produced.
+
+
+ vim:tw=78:ts=8:noet:ft=help:norl:

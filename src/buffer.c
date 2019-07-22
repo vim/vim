@@ -29,7 +29,6 @@
 
 static char_u	*buflist_match(regmatch_T *rmp, buf_T *buf, int ignore_case);
 static char_u	*fname_match(regmatch_T *rmp, char_u *name, int ignore_case);
-static void	buflist_setfpos(buf_T *buf, win_T *win, linenr_T lnum, colnr_T col, int copy_options);
 #ifdef UNIX
 static buf_T	*buflist_findname_stat(char_u *ffname, stat_T *st);
 static int	otherfile_buf(buf_T *buf, char_u *ffname, stat_T *stp);
@@ -449,7 +448,8 @@ can_unload_buffer(buf_T *buf)
 	    }
     }
     if (!can_unload)
-	emsg(_("E937: Attempt to delete a buffer that is in use"));
+	semsg(_("E937: Attempt to delete a buffer that is in use: %s"),
+								 buf->b_fname);
     return can_unload;
 }
 
@@ -2774,7 +2774,7 @@ buflist_nr2name(
  * When "copy_options" is TRUE save the local window option values.
  * When "lnum" is 0 only do the options.
  */
-    static void
+    void
 buflist_setfpos(
     buf_T	*buf,
     win_T	*win,
@@ -5544,112 +5544,6 @@ chk_modeline(
     }
     return retval;
 }
-
-#if defined(FEAT_VIMINFO) || defined(PROTO)
-    int
-read_viminfo_bufferlist(
-    vir_T	*virp,
-    int		writing)
-{
-    char_u	*tab;
-    linenr_T	lnum;
-    colnr_T	col;
-    buf_T	*buf;
-    char_u	*sfname;
-    char_u	*xline;
-
-    /* Handle long line and escaped characters. */
-    xline = viminfo_readstring(virp, 1, FALSE);
-
-    /* don't read in if there are files on the command-line or if writing: */
-    if (xline != NULL && !writing && ARGCOUNT == 0
-				       && find_viminfo_parameter('%') != NULL)
-    {
-	/* Format is: <fname> Tab <lnum> Tab <col>.
-	 * Watch out for a Tab in the file name, work from the end. */
-	lnum = 0;
-	col = 0;
-	tab = vim_strrchr(xline, '\t');
-	if (tab != NULL)
-	{
-	    *tab++ = '\0';
-	    col = (colnr_T)atoi((char *)tab);
-	    tab = vim_strrchr(xline, '\t');
-	    if (tab != NULL)
-	    {
-		*tab++ = '\0';
-		lnum = atol((char *)tab);
-	    }
-	}
-
-	/* Expand "~/" in the file name at "line + 1" to a full path.
-	 * Then try shortening it by comparing with the current directory */
-	expand_env(xline, NameBuff, MAXPATHL);
-	sfname = shorten_fname1(NameBuff);
-
-	buf = buflist_new(NameBuff, sfname, (linenr_T)0, BLN_LISTED);
-	if (buf != NULL)	/* just in case... */
-	{
-	    buf->b_last_cursor.lnum = lnum;
-	    buf->b_last_cursor.col = col;
-	    buflist_setfpos(buf, curwin, lnum, col, FALSE);
-	}
-    }
-    vim_free(xline);
-
-    return viminfo_readline(virp);
-}
-
-    void
-write_viminfo_bufferlist(FILE *fp)
-{
-    buf_T	*buf;
-    win_T	*win;
-    tabpage_T	*tp;
-    char_u	*line;
-    int		max_buffers;
-
-    if (find_viminfo_parameter('%') == NULL)
-	return;
-
-    /* Without a number -1 is returned: do all buffers. */
-    max_buffers = get_viminfo_parameter('%');
-
-    /* Allocate room for the file name, lnum and col. */
-#define LINE_BUF_LEN (MAXPATHL + 40)
-    line = alloc(LINE_BUF_LEN);
-    if (line == NULL)
-	return;
-
-    FOR_ALL_TAB_WINDOWS(tp, win)
-	set_last_cursor(win);
-
-    fputs(_("\n# Buffer list:\n"), fp);
-    FOR_ALL_BUFFERS(buf)
-    {
-	if (buf->b_fname == NULL
-		|| !buf->b_p_bl
-#ifdef FEAT_QUICKFIX
-		|| bt_quickfix(buf)
-#endif
-#ifdef FEAT_TERMINAL
-		|| bt_terminal(buf)
-#endif
-		|| removable(buf->b_ffname))
-	    continue;
-
-	if (max_buffers-- == 0)
-	    break;
-	putc('%', fp);
-	home_replace(NULL, buf->b_ffname, line, MAXPATHL, TRUE);
-	vim_snprintf_add((char *)line, LINE_BUF_LEN, "\t%ld\t%d",
-			(long)buf->b_last_cursor.lnum,
-			buf->b_last_cursor.col);
-	viminfo_writestring(fp, line);
-    }
-    vim_free(line);
-}
-#endif
 
 /*
  * Return TRUE if "buf" is a normal buffer, 'buftype' is empty.

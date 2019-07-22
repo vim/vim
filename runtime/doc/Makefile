@@ -103,6 +103,7 @@ DOCS = \
 	tagsrch.txt \
 	term.txt \
 	terminal.txt \
+	testing.txt \
 	textprop.txt \
 	tips.txt \
 	todo.txt \
@@ -241,6 +242,7 @@ HTMLS = \
 	tagsrch.html \
 	term.html \
 	terminal.html \
+	testing.html \
 	textprop.html \
 	tips.html \
 	todo.html \

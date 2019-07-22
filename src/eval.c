@@ -36,7 +36,6 @@ static char *e_float_as_string = N_("E806: using Float as a String");
 #define NAMESPACE_CHAR	(char_u *)"abglstvw"
 
 static dictitem_T	globvars_var;		/* variable used for g: */
-#define globvarht globvardict.dv_hashtab
 
 /*
  * Old Vim variables such as "v:version" are also available without the "v:".
@@ -1283,7 +1282,7 @@ heredoc_get(exarg_T *eap, char_u *cmd)
 	text_indent_len = -1;
     }
 
-    // The marker is the next word.  Default marker is "."
+    // The marker is the next word.
     if (*cmd != NUL && *cmd != '"')
     {
 	marker = skipwhite(cmd);
@@ -1294,9 +1293,17 @@ heredoc_get(exarg_T *eap, char_u *cmd)
 	    return NULL;
 	}
 	*p = NUL;
+	if (vim_islower(*marker))
+	{
+	    emsg(_("E221: Marker cannot start with lower case letter"));
+	    return NULL;
+	}
     }
     else
-	marker = (char_u *)".";
+    {
+	emsg(_("E172: Missing marker"));
+	return NULL;
+    }
 
     l = list_alloc();
     if (l == NULL)
@@ -9313,14 +9320,7 @@ script_autoload(
 }
 
 #if defined(FEAT_VIMINFO) || defined(FEAT_SESSION)
-typedef enum
-{
-    VAR_FLAVOUR_DEFAULT,	/* doesn't start with uppercase */
-    VAR_FLAVOUR_SESSION,	/* starts with uppercase, some lower */
-    VAR_FLAVOUR_VIMINFO		/* all uppercase */
-} var_flavour_T;
-
-    static var_flavour_T
+    var_flavour_T
 var_flavour(char_u *varname)
 {
     char_u *p = varname;
@@ -9334,161 +9334,6 @@ var_flavour(char_u *varname)
     }
     else
 	return VAR_FLAVOUR_DEFAULT;
-}
-#endif
-
-#if defined(FEAT_VIMINFO) || defined(PROTO)
-/*
- * Restore global vars that start with a capital from the viminfo file
- */
-    int
-read_viminfo_varlist(vir_T *virp, int writing)
-{
-    char_u	*tab;
-    int		type = VAR_NUMBER;
-    typval_T	tv;
-    funccal_entry_T funccal_entry;
-
-    if (!writing && (find_viminfo_parameter('!') != NULL))
-    {
-	tab = vim_strchr(virp->vir_line + 1, '\t');
-	if (tab != NULL)
-	{
-	    *tab++ = '\0';	/* isolate the variable name */
-	    switch (*tab)
-	    {
-		case 'S': type = VAR_STRING; break;
-#ifdef FEAT_FLOAT
-		case 'F': type = VAR_FLOAT; break;
-#endif
-		case 'D': type = VAR_DICT; break;
-		case 'L': type = VAR_LIST; break;
-		case 'B': type = VAR_BLOB; break;
-		case 'X': type = VAR_SPECIAL; break;
-	    }
-
-	    tab = vim_strchr(tab, '\t');
-	    if (tab != NULL)
-	    {
-		tv.v_type = type;
-		if (type == VAR_STRING || type == VAR_DICT
-			|| type == VAR_LIST || type == VAR_BLOB)
-		    tv.vval.v_string = viminfo_readstring(virp,
-				       (int)(tab - virp->vir_line + 1), TRUE);
-#ifdef FEAT_FLOAT
-		else if (type == VAR_FLOAT)
-		    (void)string2float(tab + 1, &tv.vval.v_float);
-#endif
-		else
-		    tv.vval.v_number = atol((char *)tab + 1);
-		if (type == VAR_DICT || type == VAR_LIST)
-		{
-		    typval_T *etv = eval_expr(tv.vval.v_string, NULL);
-
-		    if (etv == NULL)
-			/* Failed to parse back the dict or list, use it as a
-			 * string. */
-			tv.v_type = VAR_STRING;
-		    else
-		    {
-			vim_free(tv.vval.v_string);
-			tv = *etv;
-			vim_free(etv);
-		    }
-		}
-		else if (type == VAR_BLOB)
-		{
-		    blob_T *blob = string2blob(tv.vval.v_string);
-
-		    if (blob == NULL)
-			// Failed to parse back the blob, use it as a string.
-			tv.v_type = VAR_STRING;
-		    else
-		    {
-			vim_free(tv.vval.v_string);
-			tv.v_type = VAR_BLOB;
-			tv.vval.v_blob = blob;
-		    }
-		}
-
-		/* when in a function use global variables */
-		save_funccal(&funccal_entry);
-		set_var(virp->vir_line + 1, &tv, FALSE);
-		restore_funccal();
-
-		if (tv.v_type == VAR_STRING)
-		    vim_free(tv.vval.v_string);
-		else if (tv.v_type == VAR_DICT || tv.v_type == VAR_LIST ||
-			tv.v_type == VAR_BLOB)
-		    clear_tv(&tv);
-	    }
-	}
-    }
-
-    return viminfo_readline(virp);
-}
-
-/*
- * Write global vars that start with a capital to the viminfo file
- */
-    void
-write_viminfo_varlist(FILE *fp)
-{
-    hashitem_T	*hi;
-    dictitem_T	*this_var;
-    int		todo;
-    char	*s = "";
-    char_u	*p;
-    char_u	*tofree;
-    char_u	numbuf[NUMBUFLEN];
-
-    if (find_viminfo_parameter('!') == NULL)
-	return;
-
-    fputs(_("\n# global variables:\n"), fp);
-
-    todo = (int)globvarht.ht_used;
-    for (hi = globvarht.ht_array; todo > 0; ++hi)
-    {
-	if (!HASHITEM_EMPTY(hi))
-	{
-	    --todo;
-	    this_var = HI2DI(hi);
-	    if (var_flavour(this_var->di_key) == VAR_FLAVOUR_VIMINFO)
-	    {
-		switch (this_var->di_tv.v_type)
-		{
-		    case VAR_STRING: s = "STR"; break;
-		    case VAR_NUMBER: s = "NUM"; break;
-		    case VAR_FLOAT:  s = "FLO"; break;
-		    case VAR_DICT:   s = "DIC"; break;
-		    case VAR_LIST:   s = "LIS"; break;
-		    case VAR_BLOB:   s = "BLO"; break;
-		    case VAR_SPECIAL: s = "XPL"; break;
-
-		    case VAR_UNKNOWN:
-		    case VAR_FUNC:
-		    case VAR_PARTIAL:
-		    case VAR_JOB:
-		    case VAR_CHANNEL:
-				     continue;
-		}
-		fprintf(fp, "!%s\t%s\t", this_var->di_key, s);
-		if (this_var->di_tv.v_type == VAR_SPECIAL)
-		{
-		    sprintf((char *)numbuf, "%ld",
-					  (long)this_var->di_tv.vval.v_number);
-		    p = numbuf;
-		    tofree = NULL;
-		}
-		else
-		    p = echo_string(&this_var->di_tv, &tofree, numbuf, 0);
-		if (p != NULL)
-		    viminfo_writestring(fp, p);
-		vim_free(tofree);
-	    }
-	}
-    }
 }
 #endif
 

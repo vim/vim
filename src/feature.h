@@ -483,6 +483,11 @@
 # define FEAT_TEXT_PROP
 #endif
 
+#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)
+// Can limit syntax highlight time to 'redrawtime'.
+# define SYN_TIME_LIMIT 1
+#endif
+
 /*
  * +spell		spell checking
  *

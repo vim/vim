@@ -772,6 +772,7 @@ OBJ = \
 	$(OUTDIR)/usercmd.o \
 	$(OUTDIR)/userfunc.o \
 	$(OUTDIR)/version.o \
+	$(OUTDIR)/viminfo.o \
 	$(OUTDIR)/winclip.o \
 	$(OUTDIR)/window.o
 

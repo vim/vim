@@ -1115,6 +1115,17 @@ typedef struct
     garray_T	vir_barlines;	// lines starting with |
 } vir_T;
 
+/*
+ * Structure used for the command line history.
+ */
+typedef struct hist_entry
+{
+    int		hisnum;		/* identifying number */
+    int		viminfo;	/* when TRUE hisstr comes from viminfo */
+    char_u	*hisstr;	/* actual entry, separator char after the NUL */
+    time_t	time_set;	/* when it was typed, zero if unknown */
+} histentry_T;
+
 #define CONV_NONE		0
 #define CONV_TO_UTF8		1
 #define CONV_9_TO_UTF8		2
@@ -3724,6 +3735,14 @@ typedef enum {
     CDSCOPE_TABPAGE,	// :tcd
     CDSCOPE_WINDOW	// :lcd
 } cdscope_T;
+
+// Variable flavor
+typedef enum
+{
+    VAR_FLAVOUR_DEFAULT,	/* doesn't start with uppercase */
+    VAR_FLAVOUR_SESSION,	/* starts with uppercase, some lower */
+    VAR_FLAVOUR_VIMINFO		/* all uppercase */
+} var_flavour_T;
 
 // argument for mouse_find_win()
 typedef enum {
