@@ -4337,6 +4337,7 @@ list_in_columns(char_u **items, int size, int current)
     int		i;
     int		ncol;
     int		nrow;
+    int		crow = 1;
     int		item_count = 0;
     int		width = 0;
 #ifdef FEAT_SYN_HL
@@ -4393,19 +4394,15 @@ list_in_columns(char_u **items, int size, int current)
 		msg_putchar(']');
 	    if (last_col)
 	    {
-		if (msg_col > 0)
+		if (msg_col > 0 && crow < nrow)
 		    msg_putchar('\n');
+		++crow;
 	    }
 	    else
 	    {
 		while (msg_col % width)
 		    msg_putchar(' ');
 	    }
-	}
-	else
-	{
-	    if (msg_col > 0)
-		msg_putchar('\n');
 	}
     }
 }
