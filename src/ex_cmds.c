@@ -5085,24 +5085,23 @@ global_exe(char_u *cmd)
 }
 
 #ifdef FEAT_VIMINFO
-    int
-read_viminfo_sub_string(vir_T *virp, int force)
+/*
+ * Get the previous substitute pattern.
+ */
+    char_u *
+get_old_sub(void)
 {
-    if (force)
-	vim_free(old_sub);
-    if (force || old_sub == NULL)
-	old_sub = viminfo_readstring(virp, 1, TRUE);
-    return viminfo_readline(virp);
+    return old_sub;
 }
 
+/*
+ * Set the previous substitute pattern.  "val" must be allocated.
+ */
     void
-write_viminfo_sub_string(FILE *fp)
+set_old_sub(char_u *val)
 {
-    if (get_viminfo_parameter('/') != 0 && old_sub != NULL)
-    {
-	fputs(_("\n# Last Substitute String:\n$"), fp);
-	viminfo_writestring(fp, old_sub);
-    }
+    vim_free(old_sub);
+    old_sub = val;
 }
 #endif // FEAT_VIMINFO
 

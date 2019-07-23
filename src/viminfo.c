@@ -19,6 +19,47 @@
 static int  viminfo_errcnt;
 
 /*
+ * Find the parameter represented by the given character (eg ''', ':', '"', or
+ * '/') in the 'viminfo' option and return a pointer to the string after it.
+ * Return NULL if the parameter is not specified in the string.
+ */
+    static char_u *
+find_viminfo_parameter(int type)
+{
+    char_u  *p;
+
+    for (p = p_viminfo; *p; ++p)
+    {
+	if (*p == type)
+	    return p + 1;
+	if (*p == 'n')		    // 'n' is always the last one
+	    break;
+	p = vim_strchr(p, ',');	    // skip until next ','
+	if (p == NULL)		    // hit the end without finding parameter
+	    break;
+    }
+    return NULL;
+}
+
+/*
+ * Find the parameter represented by the given character (eg ', :, ", or /),
+ * and return its associated value in the 'viminfo' string.
+ * Only works for number parameters, not for 'r' or 'n'.
+ * If the parameter is not specified in the string or there is no following
+ * number, return -1.
+ */
+    int
+get_viminfo_parameter(int type)
+{
+    char_u  *p;
+
+    p = find_viminfo_parameter(type);
+    if (p != NULL && VIM_ISDIGIT(*p))
+	return atoi((char *)p);
+    return -1;
+}
+
+/*
  * Get the viminfo file name to use.
  * If "file" is given and not empty, use it (has already been expanded by
  * cmdline functions).
@@ -63,6 +104,191 @@ viminfo_filename(char_u *file)
 	file = NameBuff;
     }
     return vim_strsave(file);
+}
+
+/*
+ * write string to viminfo file
+ * - replace CTRL-V with CTRL-V CTRL-V
+ * - replace '\n'   with CTRL-V 'n'
+ * - add a '\n' at the end
+ *
+ * For a long line:
+ * - write " CTRL-V <length> \n " in first line
+ * - write " < <string> \n "	  in second line
+ */
+    static void
+viminfo_writestring(FILE *fd, char_u *p)
+{
+    int		c;
+    char_u	*s;
+    int		len = 0;
+
+    for (s = p; *s != NUL; ++s)
+    {
+	if (*s == Ctrl_V || *s == '\n')
+	    ++len;
+	++len;
+    }
+
+    // If the string will be too long, write its length and put it in the next
+    // line.  Take into account that some room is needed for what comes before
+    // the string (e.g., variable name).  Add something to the length for the
+    // '<', NL and trailing NUL.
+    if (len > LSIZE / 2)
+	fprintf(fd, IF_EB("\026%d\n<", CTRL_V_STR "%d\n<"), len + 3);
+
+    while ((c = *p++) != NUL)
+    {
+	if (c == Ctrl_V || c == '\n')
+	{
+	    putc(Ctrl_V, fd);
+	    if (c == '\n')
+		c = 'n';
+	}
+	putc(c, fd);
+    }
+    putc('\n', fd);
+}
+
+/*
+ * Write a string in quotes that barline_parse() can read back.
+ * Breaks the line in less than LSIZE pieces when needed.
+ * Returns remaining characters in the line.
+ */
+    static int
+barline_writestring(FILE *fd, char_u *s, int remaining_start)
+{
+    char_u *p;
+    int	    remaining = remaining_start;
+    int	    len = 2;
+
+    // Count the number of characters produced, including quotes.
+    for (p = s; *p != NUL; ++p)
+    {
+	if (*p == NL)
+	    len += 2;
+	else if (*p == '"' || *p == '\\')
+	    len += 2;
+	else
+	    ++len;
+    }
+    if (len > remaining - 2)
+    {
+	fprintf(fd, ">%d\n|<", len);
+	remaining = LSIZE - 20;
+    }
+
+    putc('"', fd);
+    for (p = s; *p != NUL; ++p)
+    {
+	if (*p == NL)
+	{
+	    putc('\\', fd);
+	    putc('n', fd);
+	    --remaining;
+	}
+	else if (*p == '"' || *p == '\\')
+	{
+	    putc('\\', fd);
+	    putc(*p, fd);
+	    --remaining;
+	}
+	else
+	    putc(*p, fd);
+	--remaining;
+
+	if (remaining < 3)
+	{
+	    putc('\n', fd);
+	    putc('|', fd);
+	    putc('<', fd);
+	    // Leave enough space for another continuation.
+	    remaining = LSIZE - 20;
+	}
+    }
+    putc('"', fd);
+    return remaining - 2;
+}
+
+/*
+ * Check string read from viminfo file.
+ * Remove '\n' at the end of the line.
+ * - replace CTRL-V CTRL-V with CTRL-V
+ * - replace CTRL-V 'n'    with '\n'
+ *
+ * Check for a long line as written by viminfo_writestring().
+ *
+ * Return the string in allocated memory (NULL when out of memory).
+ */
+    static char_u *
+viminfo_readstring(
+    vir_T	*virp,
+    int		off,		    // offset for virp->vir_line
+    int		convert UNUSED)	    // convert the string
+{
+    char_u	*retval;
+    char_u	*s, *d;
+    long	len;
+
+    if (virp->vir_line[off] == Ctrl_V && vim_isdigit(virp->vir_line[off + 1]))
+    {
+	len = atol((char *)virp->vir_line + off + 1);
+	retval = lalloc(len, TRUE);
+	if (retval == NULL)
+	{
+	    // Line too long?  File messed up?  Skip next line.
+	    (void)vim_fgets(virp->vir_line, 10, virp->vir_fd);
+	    return NULL;
+	}
+	(void)vim_fgets(retval, (int)len, virp->vir_fd);
+	s = retval + 1;	    // Skip the leading '<'
+    }
+    else
+    {
+	retval = vim_strsave(virp->vir_line + off);
+	if (retval == NULL)
+	    return NULL;
+	s = retval;
+    }
+
+    // Change CTRL-V CTRL-V to CTRL-V and CTRL-V n to \n in-place.
+    d = retval;
+    while (*s != NUL && *s != '\n')
+    {
+	if (s[0] == Ctrl_V && s[1] != NUL)
+	{
+	    if (s[1] == 'n')
+		*d++ = '\n';
+	    else
+		*d++ = Ctrl_V;
+	    s += 2;
+	}
+	else
+	    *d++ = *s++;
+    }
+    *d = NUL;
+
+    if (convert && virp->vir_conv.vc_type != CONV_NONE && *retval != NUL)
+    {
+	d = string_convert(&virp->vir_conv, retval, NULL);
+	if (d != NULL)
+	{
+	    vim_free(retval);
+	    retval = d;
+	}
+    }
+
+    return retval;
+}
+
+/*
+ * Read a line from the viminfo file.
+ * Returns TRUE for end-of-file;
+ */
+    static int
+viminfo_readline(vir_T *virp)
+{
+    return vim_fgets(virp->vir_line, LSIZE, virp->vir_fd);
 }
 
     static int
@@ -117,6 +343,38 @@ read_viminfo_bufferlist(
     vim_free(xline);
 
     return viminfo_readline(virp);
+}
+
+/*
+ * Return TRUE if "name" is on removable media (depending on 'viminfo').
+ */
+    static int
+removable(char_u *name)
+{
+    char_u  *p;
+    char_u  part[51];
+    int	    retval = FALSE;
+    size_t  n;
+
+    name = home_replace_save(NULL, name);
+    if (name != NULL)
+    {
+	for (p = p_viminfo; *p; )
+	{
+	    copy_option_part(&p, part, 51, ", ");
+	    if (part[0] == 'r')
+	    {
+		n = STRLEN(part + 1);
+		if (MB_STRNICMP(part + 1, name, n) == 0)
+		{
+		    retval = TRUE;
+		    break;
+		}
+	    }
+	}
+	vim_free(name);
+    }
+    return retval;
 }
 
     static void
@@ -655,7 +913,7 @@ write_viminfo_history(FILE *fp, int merge)
 	viminfo_hisidx[type] = 0;
     }
 }
-#endif // FEAT_VIMINFO
+#endif // FEAT_CMDHIST
 
     static void
 write_viminfo_barlines(vir_T *virp, FILE *fp_out)
@@ -861,85 +1119,6 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
     return TRUE;
 }
 
-    static int
-read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing)
-{
-    char_u	*p = virp->vir_line + 1;
-    int		bartype;
-    garray_T	values;
-    bval_T	*vp;
-    int		i;
-    int		read_next = TRUE;
-
-    /*
-     * The format is: |{bartype},{value},...
-     * For a very long string:
-     *     |{bartype},>{length of "{text}{text2}"}
-     *     |<{text1}
-     *     |<{text2},{value}
-     * For a long line not using a string
-     *     |{bartype},{lots of values},>
-     *     |<{value},{value}
-     */
-    if (*p == '<')
-    {
-	// Continuation line of an unrecognized item.
-	if (writing)
-	    ga_add_string(&virp->vir_barlines, virp->vir_line);
-    }
-    else
-    {
-	ga_init2(&values, sizeof(bval_T), 20);
-	bartype = getdigits(&p);
-	switch (bartype)
-	{
-	    case BARTYPE_VERSION:
-		// Only use the version when it comes before the encoding.
-		// If it comes later it was copied by a Vim version that
-		// doesn't understand the version.
-		if (!got_encoding)
-		{
-		    read_next = barline_parse(virp, p, &values);
-		    vp = (bval_T *)values.ga_data;
-		    if (values.ga_len > 0 && vp->bv_type == BVAL_NR)
-			virp->vir_version = vp->bv_nr;
-		}
-		break;
-
-	    case BARTYPE_HISTORY:
-		read_next = barline_parse(virp, p, &values);
-		handle_viminfo_history(&values, writing);
-		break;
-
-	    case BARTYPE_REGISTER:
-		read_next = barline_parse(virp, p, &values);
-		handle_viminfo_register(&values, force);
-		break;
-
-	    case BARTYPE_MARK:
-		read_next = barline_parse(virp, p, &values);
-		handle_viminfo_mark(&values, force);
-		break;
-
-	    default:
-		// copy unrecognized line (for future use)
-		if (writing)
-		    ga_add_string(&virp->vir_barlines, virp->vir_line);
-	}
-	for (i = 0; i < values.ga_len; ++i)
-	{
-	    vp = (bval_T *)values.ga_data + i;
-	    if (vp->bv_type == BVAL_STRING && vp->bv_allocated)
-		vim_free(vp->bv_string);
-	}
-	ga_clear(&values);
-    }
-
-    if (read_next)
-	return viminfo_readline(virp);
-    return FALSE;
-}
-
     static void
 write_viminfo_version(FILE *fp_out)
 {
@@ -958,7 +1137,7 @@ no_viminfo(void)
  * Report an error for reading a viminfo file.
  * Count the number of errors.	When there are more than 10, return TRUE.
  */
-    int
+    static int
 viminfo_error(char *errnum, char *message, char_u *line)
 {
     vim_snprintf((char *)IObuff, IOSIZE, _("%sviminfo: %s in line: "),
@@ -1157,6 +1336,1410 @@ write_viminfo_varlist(FILE *fp)
     }
 }
 #endif // FEAT_EVAL
+
+    static int
+read_viminfo_sub_string(vir_T *virp, int force)
+{
+    if (force || get_old_sub() == NULL)
+	set_old_sub(viminfo_readstring(virp, 1, TRUE));
+    return viminfo_readline(virp);
+}
+
+    static void
+write_viminfo_sub_string(FILE *fp)
+{
+    char_u *old_sub = get_old_sub();
+
+    if (get_viminfo_parameter('/') != 0 && old_sub != NULL)
+    {
+	fputs(_("\n# Last Substitute String:\n$"), fp);
+	viminfo_writestring(fp, old_sub);
+    }
+}
+
+/*
+ * Functions relating to reading/writing the search pattern from viminfo
+ */
+
+    static int
+read_viminfo_search_pattern(vir_T *virp, int force)
+{
+    char_u	*lp;
+    int		idx = -1;
+    int		magic = FALSE;
+    int		no_scs = FALSE;
+    int		off_line = FALSE;
+    int		off_end = 0;
+    long	off = 0;
+    int		setlast = FALSE;
+#ifdef FEAT_SEARCH_EXTRA
+    static int	hlsearch_on = FALSE;
+#endif
+    char_u	*val;
+    spat_T	*spat;
+
+    // Old line types:
+    // "/pat", "&pat": search/subst. pat
+    // "~/pat", "~&pat": last used search/subst. pat
+    // New line types:
+    // "~h", "~H": hlsearch highlighting off/on
+    // "~<magic><smartcase><line><end><off><last><which>pat"
+    // <magic>: 'm' off, 'M' on
+    // <smartcase>: 's' off, 'S' on
+    // <line>: 'L' line offset, 'l' char offset
+    // <end>: 'E' from end, 'e' from start
+    // <off>: decimal, offset
+    // <last>: '~' last used pattern
+    // <which>: '/' search pat, '&' subst. pat
+    lp = virp->vir_line;
+    if (lp[0] == '~' && (lp[1] == 'm' || lp[1] == 'M'))	// new line type
+    {
+	if (lp[1] == 'M')		// magic on
+	    magic = TRUE;
+	if (lp[2] == 's')
+	    no_scs = TRUE;
+	if (lp[3] == 'L')
+	    off_line = TRUE;
+	if (lp[4] == 'E')
+	    off_end = SEARCH_END;
+	lp += 5;
+	off = getdigits(&lp);
+    }
+    if (lp[0] == '~')		// use this pattern for last-used pattern
+    {
+	setlast = TRUE;
+	lp++;
+    }
+    if (lp[0] == '/')
+	idx = RE_SEARCH;
+    else if (lp[0] == '&')
+	idx = RE_SUBST;
+#ifdef FEAT_SEARCH_EXTRA
+    else if (lp[0] == 'h')	// ~h: 'hlsearch' highlighting off
+	hlsearch_on = FALSE;
+    else if (lp[0] == 'H')	// ~H: 'hlsearch' highlighting on
+	hlsearch_on = TRUE;
+#endif
+    spat = get_spat(idx);
+    if (idx >= 0)
+    {
+	if (force || spat->pat == NULL)
+	{
+	    val = viminfo_readstring(virp, (int)(lp - virp->vir_line + 1),
+									TRUE);
+	    if (val != NULL)
+	    {
+		set_last_search_pat(val, idx, magic, setlast);
+		vim_free(val);
+		spat->no_scs = no_scs;
+		spat->off.line = off_line;
+		spat->off.end = off_end;
+		spat->off.off = off;
+#ifdef FEAT_SEARCH_EXTRA
+		if (setlast)
+		    set_no_hlsearch(!hlsearch_on);
+#endif
+	    }
+	}
+    }
+    return viminfo_readline(virp);
+}
+
+    static void
+wvsp_one(
+    FILE	*fp,	// file to write to
+    int		idx,	// spats[] index
+    char	*s,	// search pat
+    int		sc)	// dir char
+{
+    spat_T	*spat = get_spat(idx);
+    if (spat->pat != NULL)
+    {
+	fprintf(fp, _("\n# Last %sSearch Pattern:\n~"), s);
+	// off.dir is not stored, it's reset to forward
+	fprintf(fp, "%c%c%c%c%ld%s%c",
+		spat->magic    ? 'M' : 'm',	// magic
+		spat->no_scs   ? 's' : 'S',	// smartcase
+		spat->off.line ? 'L' : 'l',	// line offset
+		spat->off.end  ? 'E' : 'e',	// offset from end
+		spat->off.off,			// offset
+		get_spat_last_idx() == idx ? "~" : "",	// last used pat
+		sc);
+	viminfo_writestring(fp, spat->pat);
+    }
+}
+
+    static void
+write_viminfo_search_pattern(FILE *fp)
+{
+    if (get_viminfo_parameter('/') != 0)
+    {
+#ifdef FEAT_SEARCH_EXTRA
+	fprintf(fp, "\n# hlsearch on (H) or off (h):\n~%c",
+	    (no_hlsearch || find_viminfo_parameter('h') != NULL) ? 'h' : 'H');
+#endif
+	wvsp_one(fp, RE_SEARCH, "", '/');
+	wvsp_one(fp, RE_SUBST, _("Substitute "), '&');
+    }
+}
+
+/*
+ * Functions relating to reading/writing registers from viminfo
+ */
+
+static yankreg_T *y_read_regs = NULL;
+
+#define REG_PREVIOUS 1
+#define REG_EXEC 2
+
+/*
+ * Prepare for reading viminfo registers when writing viminfo later.
+ */
+    static void
+prepare_viminfo_registers(void)
+{
+     y_read_regs = ALLOC_CLEAR_MULT(yankreg_T, NUM_REGISTERS);
+}
+
+    static void
+finish_viminfo_registers(void)
+{
+    int		i;
+    int		j;
+
+    if (y_read_regs != NULL)
+    {
+	for (i = 0; i < NUM_REGISTERS; ++i)
+	    if (y_read_regs[i].y_array != NULL)
+	    {
+		for (j = 0; j < y_read_regs[i].y_size; j++)
+		    vim_free(y_read_regs[i].y_array[j]);
+		vim_free(y_read_regs[i].y_array);
+	    }
+	VIM_CLEAR(y_read_regs);
+    }
+}
+
+    static int
+read_viminfo_register(vir_T *virp, int force)
+{
+    int		eof;
+    int		do_it = TRUE;
+    int		size;
+    int		limit;
+    int		i;
+    int		set_prev = FALSE;
+    char_u	*str;
+    char_u	**array = NULL;
+    int		new_type = MCHAR; // init to shut up compiler
+    colnr_T	new_width = 0; // init to shut up compiler
+    yankreg_T	*y_current_p;
+
+    // We only get here (hopefully) if line[0] == '"'
+    str = virp->vir_line + 1;
+
+    // If the line starts with "" this is the y_previous register.
+    if (*str == '"')
+    {
+	set_prev = TRUE;
+	str++;
+    }
+
+    if (!ASCII_ISALNUM(*str) && *str != '-')
+    {
+	if (viminfo_error("E577: ", _("Illegal register name"), virp->vir_line))
+	    return TRUE;	// too many errors, pretend end-of-file
+	do_it = FALSE;
+    }
+    get_yank_register(*str++, FALSE);
+    y_current_p = get_y_current();
+    if (!force && y_current_p->y_array != NULL)
+	do_it = FALSE;
+
+    if (*str == '@')
+    {
+	// "x@: register x used for @@
+	if (force || get_execreg_lastc() == NUL)
+	    set_execreg_lastc(str[-1]);
+    }
+
+    size = 0;
+    limit = 100;	// Optimized for registers containing <= 100 lines
+    if (do_it)
+    {
+	// Build the new register in array[].
+	// y_array is kept as-is until done.
+	// The "do_it" flag is reset when something is wrong, in which case
+	// array[] needs to be freed.
+	if (set_prev)
+	    set_y_previous(y_current_p);
+	array = ALLOC_MULT(char_u *, limit);
+	str = skipwhite(skiptowhite(str));
+	if (STRNCMP(str, "CHAR", 4) == 0)
+	    new_type = MCHAR;
+	else if (STRNCMP(str, "BLOCK", 5) == 0)
+	    new_type = MBLOCK;
+	else
+	    new_type = MLINE;
+	// get the block width; if it's missing we get a zero, which is OK
+	str = skipwhite(skiptowhite(str));
+	new_width = getdigits(&str);
+    }
+
+    while (!(eof = viminfo_readline(virp))
+		    && (virp->vir_line[0] == TAB || virp->vir_line[0] == '<'))
+    {
+	if (do_it)
+	{
+	    if (size == limit)
+	    {
+		char_u **new_array = (char_u **)
+					   alloc(limit * 2 * sizeof(char_u *));
+
+		if (new_array == NULL)
+		{
+		    do_it = FALSE;
+		    break;
+		}
+		for (i = 0; i < limit; i++)
+		    new_array[i] = array[i];
+		vim_free(array);
+		array = new_array;
+		limit *= 2;
+	    }
+	    str = viminfo_readstring(virp, 1, TRUE);
+	    if (str != NULL)
+		array[size++] = str;
+	    else
+		// error, don't store the result
+		do_it = FALSE;
+	}
+    }
+
+    if (do_it)
+    {
+	// free y_array[]
+	for (i = 0; i < y_current_p->y_size; i++)
+	    vim_free(y_current_p->y_array[i]);
+	vim_free(y_current_p->y_array);
+
+	y_current_p->y_type = new_type;
+	y_current_p->y_width = new_width;
+	y_current_p->y_size = size;
+	y_current_p->y_time_set = 0;
+	if (size == 0)
+	{
+	    y_current_p->y_array = NULL;
+	}
+	else
+	{
+	    // Move the lines from array[] to y_array[].
+	    y_current_p->y_array = ALLOC_MULT(char_u *, size);
+	    for (i = 0; i < size; i++)
+	    {
+		if (y_current_p->y_array == NULL)
+		    vim_free(array[i]);
+		else
+		    y_current_p->y_array[i] = array[i];
+	    }
+	}
+    }
+    else
+    {
+	// Free array[] if it was filled.
+	for (i = 0; i < size; i++)
+	    vim_free(array[i]);
+    }
+    vim_free(array);
+
+    return eof;
+}
+
+/*
+ * Accept a new style register line from the viminfo, store it when it's new.
+ */
+    static void
+handle_viminfo_register(garray_T *values, int force)
+{
+    bval_T	*vp = (bval_T *)values->ga_data;
+    int		flags;
+    int		name;
+    int		type;
+    int		linecount;
+    int		width;
+    time_t	timestamp;
+    yankreg_T	*y_ptr;
+    yankreg_T	*y_regs_p = get_y_regs();
+    int		i;
+
+    // Check the format:
+    // |{bartype},{flags},{name},{type},
+    //      {linecount},{width},{timestamp},"line1","line2"
+    if (values->ga_len < 6
+	    || vp[0].bv_type != BVAL_NR
+	    || vp[1].bv_type != BVAL_NR
+	    || vp[2].bv_type != BVAL_NR
+	    || vp[3].bv_type != BVAL_NR
+	    || vp[4].bv_type != BVAL_NR
+	    || vp[5].bv_type != BVAL_NR)
+	return;
+    flags = vp[0].bv_nr;
+    name = vp[1].bv_nr;
+    if (name < 0 || name >= NUM_REGISTERS)
+	return;
+    type = vp[2].bv_nr;
+    if (type != MCHAR && type != MLINE && type != MBLOCK)
+	return;
+    linecount = vp[3].bv_nr;
+    if (values->ga_len < 6 + linecount)
+	return;
+    width = vp[4].bv_nr;
+    if (width < 0)
+	return;
+
+    if (y_read_regs != NULL)
+	// Reading viminfo for merging and writing.  Store the register
+	// content, don't update the current registers.
+	y_ptr = &y_read_regs[name];
+    else
+	y_ptr = &y_regs_p[name];
+
+    // Do not overwrite unless forced or the timestamp is newer.
+    timestamp = (time_t)vp[5].bv_nr;
+    if (y_ptr->y_array != NULL && !force
+			 && (timestamp == 0 || y_ptr->y_time_set > timestamp))
+	return;
+
+    if (y_ptr->y_array != NULL)
+	for (i = 0; i < y_ptr->y_size; i++)
+	    vim_free(y_ptr->y_array[i]);
+    vim_free(y_ptr->y_array);
+
+    if (y_read_regs == NULL)
+    {
+	if (flags & REG_PREVIOUS)
+	    set_y_previous(y_ptr);
+	if ((flags & REG_EXEC) && (force || get_execreg_lastc() == NUL))
+	    set_execreg_lastc(get_register_name(name));
+    }
+    y_ptr->y_type = type;
+    y_ptr->y_width = width;
+    y_ptr->y_size = linecount;
+    y_ptr->y_time_set = timestamp;
+    if (linecount == 0)
+    {
+	y_ptr->y_array = NULL;
+	return;
+    }
+    y_ptr->y_array = ALLOC_MULT(char_u *, linecount);
+    if (y_ptr->y_array == NULL)
+    {
+	y_ptr->y_size = 0; // ensure object state is consistent
+	return;
+    }
+    for (i = 0; i < linecount; i++)
+    {
+	if (vp[i + 6].bv_allocated)
+	{
+	    y_ptr->y_array[i] = vp[i + 6].bv_string;
+	    vp[i + 6].bv_string = NULL;
+	}
+	else
+	    y_ptr->y_array[i] = vim_strsave(vp[i + 6].bv_string);
+    }
+}
+
+    static void
+write_viminfo_registers(FILE *fp)
+{
+    int		i, j;
+    char_u	*type;
+    char_u	c;
+    int		num_lines;
+    int		max_num_lines;
+    int		max_kbyte;
+    long	len;
+    yankreg_T	*y_ptr;
+    yankreg_T	*y_regs_p = get_y_regs();;
+
+    fputs(_("\n# Registers:\n"), fp);
+
+    // Get '<' value, use old '"' value if '<' is not found.
+    max_num_lines = get_viminfo_parameter('<');
+    if (max_num_lines < 0)
+	max_num_lines = get_viminfo_parameter('"');
+    if (max_num_lines == 0)
+	return;
+    max_kbyte = get_viminfo_parameter('s');
+    if (max_kbyte == 0)
+	return;
+
+    for (i = 0; i < NUM_REGISTERS; i++)
+    {
+#ifdef FEAT_CLIPBOARD
+	// Skip '*'/'+' register, we don't want them back next time
+	if (i == STAR_REGISTER || i == PLUS_REGISTER)
+	    continue;
+#endif
+#ifdef FEAT_DND
+	// Neither do we want the '~' register
+	if (i == TILDE_REGISTER)
+	    continue;
+#endif
+	// When reading viminfo for merging and writing: Use the register from
+	// viminfo if it's newer.
+	if (y_read_regs != NULL
+		&& y_read_regs[i].y_array != NULL
+		&& (y_regs_p[i].y_array == NULL ||
+			    y_read_regs[i].y_time_set > y_regs_p[i].y_time_set))
+	    y_ptr = &y_read_regs[i];
+	else if (y_regs_p[i].y_array == NULL)
+	    continue;
+	else
+	    y_ptr = &y_regs_p[i];
+
+	// Skip empty registers.
+	num_lines = y_ptr->y_size;
+	if (num_lines == 0
+		|| (num_lines == 1 && y_ptr->y_type == MCHAR
+					&& *y_ptr->y_array[0] == NUL))
+	    continue;
+
+	if (max_kbyte > 0)
+	{
+	    // Skip register if there is more text than the maximum size.
+	    len = 0;
+	    for (j = 0; j < num_lines; j++)
+		len += (long)STRLEN(y_ptr->y_array[j]) + 1L;
+	    if (len > (long)max_kbyte * 1024L)
+		continue;
+	}
+
+	switch (y_ptr->y_type)
+	{
+	    case MLINE:
+		type = (char_u *)"LINE";
+		break;
+	    case MCHAR:
+		type = (char_u *)"CHAR";
+		break;
+	    case MBLOCK:
+		type = (char_u *)"BLOCK";
+		break;
+	    default:
+		semsg(_("E574: Unknown register type %d"), y_ptr->y_type);
+		type = (char_u *)"LINE";
+		break;
+	}
+	if (get_y_previous() == &y_regs_p[i])
+	    fprintf(fp, "\"");
+	c = get_register_name(i);
+	fprintf(fp, "\"%c", c);
+	if (c == get_execreg_lastc())
+	    fprintf(fp, "@");
+	fprintf(fp, "\t%s\t%d\n", type, (int)y_ptr->y_width);
+
+	// If max_num_lines < 0, then we save ALL the lines in the register
+	if (max_num_lines > 0 && num_lines > max_num_lines)
+	    num_lines = max_num_lines;
+	for (j = 0; j < num_lines; j++)
+	{
+	    putc('\t', fp);
+	    viminfo_writestring(fp, y_ptr->y_array[j]);
+	}
+
+	{
+	    int	    flags = 0;
+	    int	    remaining;
+
+	    // New style with a bar line. Format:
+	    // |{bartype},{flags},{name},{type},
+	    //      {linecount},{width},{timestamp},"line1","line2"
+	    // flags: REG_PREVIOUS - register is y_previous
+	    //	      REG_EXEC - used for @@
+	    if (get_y_previous() == &y_regs_p[i])
+		flags |= REG_PREVIOUS;
+	    if (c == get_execreg_lastc())
+		flags |= REG_EXEC;
+	    fprintf(fp, "|%d,%d,%d,%d,%d,%d,%ld", BARTYPE_REGISTER, flags,
+		    i, y_ptr->y_type, num_lines, (int)y_ptr->y_width,
+		    (long)y_ptr->y_time_set);
+	    // 11 chars for type/flags/name/type, 3 * 20 for numbers
+	    remaining = LSIZE - 71;
+	    for (j = 0; j < num_lines; j++)
+	    {
+		putc(',', fp);
+		--remaining;
+		remaining = barline_writestring(fp, y_ptr->y_array[j],
+								   remaining);
+	    }
+	    putc('\n', fp);
+	}
+    }
+}
+
+/*
+ * Functions relating to reading/writing marks from viminfo
+ */
+
+static xfmark_T *vi_namedfm = NULL;
+#ifdef FEAT_JUMPLIST
+static xfmark_T *vi_jumplist = NULL;
+static int vi_jumplist_len = 0;
+#endif
+
+    static void
+write_one_mark(FILE *fp_out, int c, pos_T *pos)
+{
+    if (pos->lnum != 0)
+	fprintf(fp_out, "\t%c\t%ld\t%d\n", c, (long)pos->lnum, (int)pos->col);
+}
+
+    static void
+write_buffer_marks(buf_T *buf, FILE *fp_out)
+{
+    int		i;
+    pos_T	pos;
+
+    home_replace(NULL, buf->b_ffname, IObuff, IOSIZE, TRUE);
+    fprintf(fp_out, "\n> ");
+    viminfo_writestring(fp_out, IObuff);
+
+    // Write the last used timestamp as the lnum of the non-existing mark '*'.
+    // Older Vims will ignore it and/or copy it.
+    pos.lnum = (linenr_T)buf->b_last_used;
+    pos.col = 0;
+    write_one_mark(fp_out, '*', &pos);
+
+    write_one_mark(fp_out, '"', &buf->b_last_cursor);
+    write_one_mark(fp_out, '^', &buf->b_last_insert);
+    write_one_mark(fp_out, '.', &buf->b_last_change);
+#ifdef FEAT_JUMPLIST
+    // changelist positions are stored oldest first
+    for (i = 0; i < buf->b_changelistlen; ++i)
+    {
+	// skip duplicates
+	if (i == 0 || !EQUAL_POS(buf->b_changelist[i - 1],
+							 buf->b_changelist[i]))
+	    write_one_mark(fp_out, '+', &buf->b_changelist[i]);
+    }
+#endif
+    for (i = 0; i < NMARKS; i++)
+	write_one_mark(fp_out, 'a' + i, &buf->b_namedm[i]);
+}
+
+/*
+ * Return TRUE if marks for "buf" should not be written.
+ */
+    static int
+skip_for_viminfo(buf_T *buf)
+{
+    return
+#ifdef FEAT_TERMINAL
+	    bt_terminal(buf) ||
+#endif
+	    removable(buf->b_ffname);
+}
+
+/*
+ * Write all the named marks for all buffers.
+ * When "buflist" is not NULL fill it with the buffers for which marks are to
+ * be written.
+ */
+    static void
+write_viminfo_marks(FILE *fp_out, garray_T *buflist)
+{
+    buf_T	*buf;
+    int		is_mark_set;
+    int		i;
+    win_T	*win;
+    tabpage_T	*tp;
+
+    // Set b_last_cursor for the all buffers that have a window.
+    FOR_ALL_TAB_WINDOWS(tp, win)
+	set_last_cursor(win);
+
+    fputs(_("\n# History of marks within files (newest to oldest):\n"), fp_out);
+    FOR_ALL_BUFFERS(buf)
+    {
+	// Only write something if buffer has been loaded and at least one
+	// mark is set.
+	if (buf->b_marks_read)
+	{
+	    if (buf->b_last_cursor.lnum != 0)
+		is_mark_set = TRUE;
+	    else
+	    {
+		is_mark_set = FALSE;
+		for (i = 0; i < NMARKS; i++)
+		    if (buf->b_namedm[i].lnum != 0)
+		    {
+			is_mark_set = TRUE;
+			break;
+		    }
+	    }
+	    if (is_mark_set && buf->b_ffname != NULL
+		      && buf->b_ffname[0] != NUL
+		      && !skip_for_viminfo(buf))
+	    {
+		if (buflist == NULL)
+		    write_buffer_marks(buf, fp_out);
+		else if (ga_grow(buflist, 1) == OK)
+		    ((buf_T **)buflist->ga_data)[buflist->ga_len++] = buf;
+	    }
+	}
+    }
+}
+
+    static void
+write_one_filemark(
+    FILE	*fp,
+    xfmark_T	*fm,
+    int		c1,
+    int		c2)
+{
+    char_u	*name;
+
+    if (fm->fmark.mark.lnum == 0)	// not set
+	return;
+
+    if (fm->fmark.fnum != 0)		// there is a buffer
+	name = buflist_nr2name(fm->fmark.fnum, TRUE, FALSE);
+    else
+	name = fm->fname;		// use name from .viminfo
+    if (name != NULL && *name != NUL)
+    {
+	fprintf(fp, "%c%c  %ld  %ld  ", c1, c2, (long)fm->fmark.mark.lnum,
+						    (long)fm->fmark.mark.col);
+	viminfo_writestring(fp, name);
+
+	// Barline: |{bartype},{name},{lnum},{col},{timestamp},{filename}
+	// size up to filename: 8 + 3 * 20
+	fprintf(fp, "|%d,%d,%ld,%ld,%ld,", BARTYPE_MARK, c2,
+		(long)fm->fmark.mark.lnum, (long)fm->fmark.mark.col,
+		(long)fm->time_set);
+	barline_writestring(fp, name, LSIZE - 70);
+	putc('\n', fp);
+    }
+
+    if (fm->fmark.fnum != 0)
+	vim_free(name);
+}
+
+    static void
+write_viminfo_filemarks(FILE *fp)
+{
+    int		i;
+    char_u	*name;
+    buf_T	*buf;
+    xfmark_T	*namedfm_p = get_namedfm();
+    xfmark_T	*fm;
+    int		vi_idx;
+    int		idx;
+
+    if (get_viminfo_parameter('f') == 0)
+	return;
+
+    fputs(_("\n# File marks:\n"), fp);
+
+    // Write the filemarks 'A - 'Z
+    for (i = 0; i < NMARKS; i++)
+    {
+	if (vi_namedfm != NULL
+			&& (vi_namedfm[i].time_set > namedfm_p[i].time_set
+			    || namedfm_p[i].fmark.mark.lnum == 0))
+	    fm = &vi_namedfm[i];
+	else
+	    fm = &namedfm_p[i];
+	write_one_filemark(fp, fm, '\'', i + 'A');
+    }
+
+    // Find a mark that is the same file and position as the cursor.
+    // That one, or else the last one is deleted.
+    // Move '0 to '1, '1 to '2, etc. until the matching one or '9
+    // Set the '0 mark to current cursor position.
+    if (curbuf->b_ffname != NULL && !skip_for_viminfo(curbuf))
+    {
+	name = buflist_nr2name(curbuf->b_fnum, TRUE, FALSE);
+	for (i = NMARKS; i < NMARKS + EXTRA_MARKS - 1; ++i)
+	    if (namedfm_p[i].fmark.mark.lnum == curwin->w_cursor.lnum
+		    && (namedfm_p[i].fname == NULL
+			    ? namedfm_p[i].fmark.fnum == curbuf->b_fnum
+			    : (name != NULL
+				    && STRCMP(name, namedfm_p[i].fname) == 0)))
+		break;
+	vim_free(name);
+
+	vim_free(namedfm_p[i].fname);
+	for ( ; i > NMARKS; --i)
+	    namedfm_p[i] = namedfm_p[i - 1];
+	namedfm_p[NMARKS].fmark.mark = curwin->w_cursor;
+	namedfm_p[NMARKS].fmark.fnum = curbuf->b_fnum;
+	namedfm_p[NMARKS].fname = NULL;
+	namedfm_p[NMARKS].time_set = vim_time();
+    }
+
+    // Write the filemarks '0 - '9.  Newest (highest timestamp) first.
+    vi_idx = NMARKS;
+    idx = NMARKS;
+    for (i = NMARKS; i < NMARKS + EXTRA_MARKS; i++)
+    {
+	xfmark_T *vi_fm = vi_namedfm != NULL ? &vi_namedfm[vi_idx] : NULL;
+
+	if (vi_fm != NULL
+		&& vi_fm->fmark.mark.lnum != 0
+		&& (vi_fm->time_set > namedfm_p[idx].time_set
+		    || namedfm_p[idx].fmark.mark.lnum == 0))
+	{
+	    fm = vi_fm;
+	    ++vi_idx;
+	}
+	else
+	{
+	    fm = &namedfm_p[idx++];
+	    if (vi_fm != NULL
+		  && vi_fm->fmark.mark.lnum == fm->fmark.mark.lnum
+		  && vi_fm->time_set == fm->time_set
+		  && ((vi_fm->fmark.fnum != 0
+			  && vi_fm->fmark.fnum == fm->fmark.fnum)
+		      || (vi_fm->fname != NULL
+			  && fm->fname != NULL
+			  && STRCMP(vi_fm->fname, fm->fname) == 0)))
+		++vi_idx;  // skip duplicate
+	}
+	write_one_filemark(fp, fm, '\'', i - NMARKS + '0');
+    }
+
+#ifdef FEAT_JUMPLIST
+    // Write the jumplist with -'
+    fputs(_("\n# Jumplist (newest first):\n"), fp);
+    setpcmark();	// add current cursor position
+    cleanup_jumplist(curwin, FALSE);
+    vi_idx = 0;
+    idx = curwin->w_jumplistlen - 1;
+    for (i = 0; i < JUMPLISTSIZE; ++i)
+    {
+	xfmark_T	*vi_fm;
+
+	fm = idx >= 0 ? &curwin->w_jumplist[idx] : NULL;
+	vi_fm = vi_idx < vi_jumplist_len ? &vi_jumplist[vi_idx] : NULL;
+	if (fm == NULL && vi_fm == NULL)
+	    break;
+	if (fm == NULL || (vi_fm != NULL && fm->time_set < vi_fm->time_set))
+	{
+	    fm = vi_fm;
+	    ++vi_idx;
+	}
+	else
+	    --idx;
+	if (fm->fmark.fnum == 0
+		|| ((buf = buflist_findnr(fm->fmark.fnum)) != NULL
+		    && !skip_for_viminfo(buf)))
+	    write_one_filemark(fp, fm, '-', '\'');
+    }
+#endif
+}
+
+/*
+ * Compare functions for qsort() below, that compares b_last_used.
+ */
+    static int
+buf_compare(const void *s1, const void *s2)
+{
+    buf_T *buf1 = *(buf_T **)s1;
+    buf_T *buf2 = *(buf_T **)s2;
+
+    if (buf1->b_last_used == buf2->b_last_used)
+	return 0;
+    return buf1->b_last_used > buf2->b_last_used ? -1 : 1;
+}
+
+/*
+ * Handle marks in the viminfo file:
+ * fp_out != NULL: copy marks, in time order with buffers in "buflist".
+ * fp_out == NULL && (flags & VIF_WANT_MARKS): read marks for curbuf only
+ * fp_out == NULL && (flags & VIF_GET_OLDFILES | VIF_FORCEIT): fill v:oldfiles
+ */
+    static void
+copy_viminfo_marks(
+    vir_T	*virp,
+    FILE	*fp_out,
+    garray_T	*buflist,
+    int		eof,
+    int		flags)
+{
+    char_u	*line = virp->vir_line;
+    buf_T	*buf;
+    int		num_marked_files;
+    int		load_marks;
+    int		copy_marks_out;
+    char_u	*str;
+    int		i;
+    char_u	*p;
+    char_u	*name_buf;
+    pos_T	pos;
+#ifdef FEAT_EVAL
+    list_T	*list = NULL;
+#endif
+    int		count = 0;
+    int		buflist_used = 0;
+    buf_T	*buflist_buf = NULL;
+
+    if ((name_buf = alloc(LSIZE)) == NULL)
+	return;
+    *name_buf = NUL;
+
+    if (fp_out != NULL && buflist->ga_len > 0)
+    {
+	// Sort the list of buffers on b_last_used.
+	qsort(buflist->ga_data, (size_t)buflist->ga_len,
+						sizeof(buf_T *), buf_compare);
+	buflist_buf = ((buf_T **)buflist->ga_data)[0];
+    }
+
+#ifdef FEAT_EVAL
+    if (fp_out == NULL && (flags & (VIF_GET_OLDFILES | VIF_FORCEIT)))
+    {
+	list = list_alloc();
+	if (list != NULL)
+	    set_vim_var_list(VV_OLDFILES, list);
+    }
+#endif
+
+    num_marked_files = get_viminfo_parameter('\'');
+    while (!eof && (count < num_marked_files || fp_out == NULL))
+    {
+	if (line[0] != '>')
+	{
+	    if (line[0] != '\n' && line[0] != '\r' && line[0] != '#')
+	    {
+		if (viminfo_error("E576: ", _("Missing '>'"), line))
+		    break;	// too many errors, return now
+	    }
+	    eof = vim_fgets(line, LSIZE, virp->vir_fd);
+	    continue;		// Skip this dud line
+	}
+
+	// Handle long line and translate escaped characters.
+	// Find file name, set str to start.
+	// Ignore leading and trailing white space.
+	str = skipwhite(line + 1);
+	str = viminfo_readstring(virp, (int)(str - virp->vir_line), FALSE);
+	if (str == NULL)
+	    continue;
+	p = str + STRLEN(str);
+	while (p != str && (*p == NUL || vim_isspace(*p)))
+	    p--;
+	if (*p)
+	    p++;
+	*p = NUL;
+
+#ifdef FEAT_EVAL
+	if (list != NULL)
+	    list_append_string(list, str, -1);
+#endif
+
+	// If fp_out == NULL, load marks for current buffer.
+	// If fp_out != NULL, copy marks for buffers not in buflist.
+	load_marks = copy_marks_out = FALSE;
+	if (fp_out == NULL)
+	{
+	    if ((flags & VIF_WANT_MARKS) && curbuf->b_ffname != NULL)
+	    {
+		if (*name_buf == NUL)	    // only need to do this once
+		    home_replace(NULL, curbuf->b_ffname, name_buf, LSIZE, TRUE);
+		if (fnamecmp(str, name_buf) == 0)
+		    load_marks = TRUE;
+	    }
+	}
+	else // fp_out != NULL
+	{
+	    // This is slow if there are many buffers!!
+	    FOR_ALL_BUFFERS(buf)
+		if (buf->b_ffname != NULL)
+		{
+		    home_replace(NULL, buf->b_ffname, name_buf, LSIZE, TRUE);
+		    if (fnamecmp(str, name_buf) == 0)
+			break;
+		}
+
+	    // Copy marks if the buffer has not been loaded.
+	    if (buf == NULL || !buf->b_marks_read)
+	    {
+		int	did_read_line = FALSE;
+
+		if (buflist_buf != NULL)
+		{
+		    // Read the next line.  If it has the "*" mark compare the
+		    // time stamps.  Write entries from "buflist" that are
+		    // newer.
+		    if (!(eof = viminfo_readline(virp)) && line[0] == TAB)
+		    {
+			did_read_line = TRUE;
+			if (line[1] == '*')
+			{
+			    long	ltime;
+
+			    sscanf((char *)line + 2, "%ld ", &ltime);
+			    while ((time_T)ltime < buflist_buf->b_last_used)
+			    {
+				write_buffer_marks(buflist_buf, fp_out);
+				if (++count >= num_marked_files)
+				    break;
+				if (++buflist_used == buflist->ga_len)
+				{
+				    buflist_buf = NULL;
+				    break;
+				}
+				buflist_buf =
+				   ((buf_T **)buflist->ga_data)[buflist_used];
+			    }
+			}
+			else
+			{
+			    // No timestamp, must be written by an older Vim.
+			    // Assume all remaining buffers are older then
+			    // ours.
+			    while (count < num_marked_files
+					    && buflist_used < buflist->ga_len)
+			    {
+				buflist_buf = ((buf_T **)buflist->ga_data)
+							     [buflist_used++];
+				write_buffer_marks(buflist_buf, fp_out);
+				++count;
+			    }
+			    buflist_buf = NULL;
+			}
+
+			if (count >= num_marked_files)
+			{
+			    vim_free(str);
+			    break;
+			}
+		    }
+		}
+
+		fputs("\n> ", fp_out);
+		viminfo_writestring(fp_out, str);
+		if (did_read_line)
+		    fputs((char *)line, fp_out);
+
+		count++;
+		copy_marks_out = TRUE;
+	    }
+	}
+	vim_free(str);
+
+	pos.coladd = 0;
+	while (!(eof = viminfo_readline(virp)) && line[0] == TAB)
+	{
+	    if (load_marks)
+	    {
+		if (line[1] != NUL)
+		{
+		    unsigned u;
+
+		    sscanf((char *)line + 2, "%ld %u", &pos.lnum, &u);
+		    pos.col = u;
+		    switch (line[1])
+		    {
+			case '"': curbuf->b_last_cursor = pos; break;
+			case '^': curbuf->b_last_insert = pos; break;
+			case '.': curbuf->b_last_change = pos; break;
+			case '+':
+#ifdef FEAT_JUMPLIST
+				  // changelist positions are stored oldest
+				  // first
+				  if (curbuf->b_changelistlen == JUMPLISTSIZE)
+				      // list is full, remove oldest entry
+				      mch_memmove(curbuf->b_changelist,
+					    curbuf->b_changelist + 1,
+					    sizeof(pos_T) * (JUMPLISTSIZE - 1));
+				  else
+				      ++curbuf->b_changelistlen;
+				  curbuf->b_changelist[
+					   curbuf->b_changelistlen - 1] = pos;
+#endif
+				  break;
+
+				  // Using the line number for the last-used
+				  // timestamp.
+			case '*': curbuf->b_last_used = pos.lnum; break;
+
+			default:  if ((i = line[1] - 'a') >= 0 && i < NMARKS)
+				      curbuf->b_namedm[i] = pos;
+		    }
+		}
+	    }
+	    else if (copy_marks_out)
+		fputs((char *)line, fp_out);
+	}
+
+	if (load_marks)
+	{
+#ifdef FEAT_JUMPLIST
+	    win_T	*wp;
+
+	    FOR_ALL_WINDOWS(wp)
+	    {
+		if (wp->w_buffer == curbuf)
+		    wp->w_changelistidx = curbuf->b_changelistlen;
+	    }
+#endif
+	    break;
+	}
+    }
+
+    if (fp_out != NULL)
+	// Write any remaining entries from buflist.
+	while (count < num_marked_files && buflist_used < buflist->ga_len)
+	{
+	    buflist_buf = ((buf_T **)buflist->ga_data)[buflist_used++];
+	    write_buffer_marks(buflist_buf, fp_out);
+	    ++count;
+	}
+
+    vim_free(name_buf);
+}
+
+/*
+ * Read marks for the current buffer from the viminfo file, when we support
+ * buffer marks and the buffer has a name.
+ */
+    void
+check_marks_read(void)
+{
+    if (!curbuf->b_marks_read && get_viminfo_parameter('\'') > 0
+						  && curbuf->b_ffname != NULL)
+	read_viminfo(NULL, VIF_WANT_MARKS);
+
+    // Always set b_marks_read; needed when 'viminfo' is changed to include
+    // the ' parameter after opening a buffer.
+    curbuf->b_marks_read = TRUE;
+}
+
+    static int
+read_viminfo_filemark(vir_T *virp, int force)
+{
+    char_u	*str;
+    xfmark_T	*namedfm_p = get_namedfm();
+    xfmark_T	*fm;
+    int		i;
+
+    // We only get here if line[0] == '\'' or '-'.
+    // Illegal mark names are ignored (for future expansion).
+    str = virp->vir_line + 1;
+    if (
+#ifndef EBCDIC
+	    *str <= 127 &&
+#endif
+	    ((*virp->vir_line == '\'' && (VIM_ISDIGIT(*str) || isupper(*str)))
+	     || (*virp->vir_line == '-' && *str == '\'')))
+    {
+	if (*str == '\'')
+	{
+#ifdef FEAT_JUMPLIST
+	    // If the jumplist isn't full insert fmark as oldest entry
+	    if (curwin->w_jumplistlen == JUMPLISTSIZE)
+		fm = NULL;
+	    else
+	    {
+		for (i = curwin->w_jumplistlen; i > 0; --i)
+		    curwin->w_jumplist[i] = curwin->w_jumplist[i - 1];
+		++curwin->w_jumplistidx;
+		++curwin->w_jumplistlen;
+		fm = &curwin->w_jumplist[0];
+		fm->fmark.mark.lnum = 0;
+		fm->fname = NULL;
+	    }
+#else
+	    fm = NULL;
+#endif
+	}
+	else if (VIM_ISDIGIT(*str))
+	    fm = &namedfm_p[*str - '0' + NMARKS];
+	else
+	    fm = &namedfm_p[*str - 'A'];
+	if (fm != NULL && (fm->fmark.mark.lnum == 0 || force))
+	{
+	    str = skipwhite(str + 1);
+	    fm->fmark.mark.lnum = getdigits(&str);
+	    str = skipwhite(str);
+	    fm->fmark.mark.col = getdigits(&str);
+	    fm->fmark.mark.coladd = 0;
+	    fm->fmark.fnum = 0;
+	    str = skipwhite(str);
+	    vim_free(fm->fname);
+	    fm->fname = viminfo_readstring(virp, (int)(str - virp->vir_line),
+								       FALSE);
+	    fm->time_set = 0;
+	}
+    }
+    return vim_fgets(virp->vir_line, LSIZE, virp->vir_fd);
+}
+
+/*
+ * Prepare for reading viminfo marks when writing viminfo later.
+ */
+    static void
+prepare_viminfo_marks(void)
+{
+    vi_namedfm = ALLOC_CLEAR_MULT(xfmark_T, NMARKS + EXTRA_MARKS);
+#ifdef FEAT_JUMPLIST
+    vi_jumplist = ALLOC_CLEAR_MULT(xfmark_T, JUMPLISTSIZE);
+    vi_jumplist_len = 0;
+#endif
+}
+
+    static void
+finish_viminfo_marks(void)
+{
+    int		i;
+
+    if (vi_namedfm != NULL)
+    {
+	for (i = 0; i < NMARKS + EXTRA_MARKS; ++i)
+	    vim_free(vi_namedfm[i].fname);
+	VIM_CLEAR(vi_namedfm);
+    }
+#ifdef FEAT_JUMPLIST
+    if (vi_jumplist != NULL)
+    {
+	for (i = 0; i < vi_jumplist_len; ++i)
+	    vim_free(vi_jumplist[i].fname);
+	VIM_CLEAR(vi_jumplist);
+    }
+#endif
+}
+
+/*
+ * Accept a new style mark line from the viminfo, store it when it's new.
+ */
+    static void
+handle_viminfo_mark(garray_T *values, int force)
+{
+    bval_T	*vp = (bval_T *)values->ga_data;
+    int		name;
+    linenr_T	lnum;
+    colnr_T	col;
+    time_t	timestamp;
+    xfmark_T	*fm = NULL;
+
+    // Check the format:
+    // |{bartype},{name},{lnum},{col},{timestamp},{filename}
+    if (values->ga_len < 5
+	    || vp[0].bv_type != BVAL_NR
+	    || vp[1].bv_type != BVAL_NR
+	    || vp[2].bv_type != BVAL_NR
+	    || vp[3].bv_type != BVAL_NR
+	    || vp[4].bv_type != BVAL_STRING)
+	return;
+
+    name = vp[0].bv_nr;
+    if (name != '\'' && !VIM_ISDIGIT(name) && !ASCII_ISUPPER(name))
+	return;
+    lnum = vp[1].bv_nr;
+    col = vp[2].bv_nr;
+    if (lnum <= 0 || col < 0)
+	return;
+    timestamp = (time_t)vp[3].bv_nr;
+
+    if (name == '\'')
+    {
+#ifdef FEAT_JUMPLIST
+	if (vi_jumplist != NULL)
+	{
+	    if (vi_jumplist_len < JUMPLISTSIZE)
+		fm = &vi_jumplist[vi_jumplist_len++];
+	}
+	else
+	{
+	    int idx;
+	    int i;
+
+	    // If we have a timestamp insert it in the right place.
+	    if (timestamp != 0)
+	    {
+		for (idx = curwin->w_jumplistlen - 1; idx >= 0; --idx)
+		    if (curwin->w_jumplist[idx].time_set < timestamp)
+		    {
+			++idx;
+			break;
+		    }
+		// idx cannot be zero now
+		if (idx < 0 && curwin->w_jumplistlen < JUMPLISTSIZE)
+		    // insert as the oldest entry
+		    idx = 0;
+	    }
+	    else if (curwin->w_jumplistlen < JUMPLISTSIZE)
+		// insert as oldest entry
+		idx = 0;
+	    else
+		idx = -1;
+
+	    if (idx >= 0)
+	    {
+		if (curwin->w_jumplistlen == JUMPLISTSIZE)
+		{
+		    // Drop the oldest entry.
+		    --idx;
+		    vim_free(curwin->w_jumplist[0].fname);
+		    for (i = 0; i < idx; ++i)
+			curwin->w_jumplist[i] = curwin->w_jumplist[i + 1];
+		}
+		else
+		{
+		    // Move newer entries forward.
+		    for (i = curwin->w_jumplistlen; i > idx; --i)
+			curwin->w_jumplist[i] = curwin->w_jumplist[i - 1];
+		    ++curwin->w_jumplistidx;
+		    ++curwin->w_jumplistlen;
+		}
+		fm = &curwin->w_jumplist[idx];
+		fm->fmark.mark.lnum = 0;
+		fm->fname = NULL;
+		fm->time_set = 0;
+	    }
+	}
+#endif
+    }
+    else
+    {
+	int		idx;
+	xfmark_T	*namedfm_p = get_namedfm();
+
+	if (VIM_ISDIGIT(name))
+	{
+	    if (vi_namedfm != NULL)
+		idx = name - '0' + NMARKS;
+	    else
+	    {
+		int i;
+
+		// Do not use the name from the viminfo file, insert in time
+		// order.
+		for (idx = NMARKS; idx < NMARKS + EXTRA_MARKS; ++idx)
+		    if (namedfm_p[idx].time_set < timestamp)
+			break;
+		if (idx == NMARKS + EXTRA_MARKS)
+		    // All existing entries are newer.
+		    return;
+		i = NMARKS + EXTRA_MARKS - 1;
+
+		vim_free(namedfm_p[i].fname);
+		for ( ; i > idx; --i)
+		    namedfm_p[i] = namedfm_p[i - 1];
+		namedfm_p[idx].fname = NULL;
+	    }
+	}
+	else
+	    idx = name - 'A';
+	if (vi_namedfm != NULL)
+	    fm = &vi_namedfm[idx];
+	else
+	    fm = &namedfm_p[idx];
+    }
+
+    if (fm != NULL)
+    {
+	if (vi_namedfm != NULL || fm->fmark.mark.lnum == 0
+					  || fm->time_set < timestamp || force)
+	{
+	    fm->fmark.mark.lnum = lnum;
+	    fm->fmark.mark.col = col;
+	    fm->fmark.mark.coladd = 0;
+	    fm->fmark.fnum = 0;
+	    vim_free(fm->fname);
+	    if (vp[4].bv_allocated)
+	    {
+		fm->fname = vp[4].bv_string;
+		vp[4].bv_string = NULL;
+	    }
+	    else
+		fm->fname = vim_strsave(vp[4].bv_string);
+	    fm->time_set = timestamp;
+	}
+    }
+}
+
+    static int
+read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing)
+{
+    char_u	*p = virp->vir_line + 1;
+    int		bartype;
+    garray_T	values;
+    bval_T	*vp;
+    int		i;
+    int		read_next = TRUE;
+
+    /*
+     * The format is: |{bartype},{value},...
+     * For a very long string:
+     *     |{bartype},>{length of "{text}{text2}"}
+     *     |<{text1}
+     *     |<{text2},{value}
+     * For a long line not using a string
+     *     |{bartype},{lots of values},>
+     *     |<{value},{value}
+     */
+    if (*p == '<')
+    {
+	// Continuation line of an unrecognized item.
+	if (writing)
+	    ga_add_string(&virp->vir_barlines, virp->vir_line);
+    }
+    else
+    {
+	ga_init2(&values, sizeof(bval_T), 20);
+	bartype = getdigits(&p);
+	switch (bartype)
+	{
+	    case BARTYPE_VERSION:
+		// Only use the version when it comes before the encoding.
+		// If it comes later it was copied by a Vim version that
+		// doesn't understand the version.
+		if (!got_encoding)
+		{
+		    read_next = barline_parse(virp, p, &values);
+		    vp = (bval_T *)values.ga_data;
+		    if (values.ga_len > 0 && vp->bv_type == BVAL_NR)
+			virp->vir_version = vp->bv_nr;
+		}
+		break;
+
+	    case BARTYPE_HISTORY:
+		read_next = barline_parse(virp, p, &values);
+		handle_viminfo_history(&values, writing);
+		break;
+
+	    case BARTYPE_REGISTER:
+		read_next = barline_parse(virp, p, &values);
+		handle_viminfo_register(&values, force);
+		break;
+
+	    case BARTYPE_MARK:
+		read_next = barline_parse(virp, p, &values);
+		handle_viminfo_mark(&values, force);
+		break;
+
+	    default:
+		// copy unrecognized line (for future use)
+		if (writing)
+		    ga_add_string(&virp->vir_barlines, virp->vir_line);
+	}
+	for (i = 0; i < values.ga_len; ++i)
+	{
+	    vp = (bval_T *)values.ga_data + i;
+	    if (vp->bv_type == BVAL_STRING && vp->bv_allocated)
+		vim_free(vp->bv_string);
+	}
+	ga_clear(&values);
+    }
+
+    if (read_next)
+	return viminfo_readline(virp);
+    return FALSE;
+}
 
 /*
  * read_viminfo_up_to_marks() -- Only called from do_viminfo().  Reads in the
@@ -1702,191 +3285,6 @@ end:
 }
 
 /*
- * Read a line from the viminfo file.
- * Returns TRUE for end-of-file;
- */
-    int
-viminfo_readline(vir_T *virp)
-{
-    return vim_fgets(virp->vir_line, LSIZE, virp->vir_fd);
-}
-
-/*
- * Check string read from viminfo file.
- * Remove '\n' at the end of the line.
- * - replace CTRL-V CTRL-V with CTRL-V
- * - replace CTRL-V 'n'    with '\n'
- *
- * Check for a long line as written by viminfo_writestring().
- *
- * Return the string in allocated memory (NULL when out of memory).
- */
-    char_u *
-viminfo_readstring(
-    vir_T	*virp,
-    int		off,		    // offset for virp->vir_line
-    int		convert UNUSED)	    // convert the string
-{
-    char_u	*retval;
-    char_u	*s, *d;
-    long	len;
-
-    if (virp->vir_line[off] == Ctrl_V && vim_isdigit(virp->vir_line[off + 1]))
-    {
-	len = atol((char *)virp->vir_line + off + 1);
-	retval = lalloc(len, TRUE);
-	if (retval == NULL)
-	{
-	    // Line too long?  File messed up?  Skip next line.
-	    (void)vim_fgets(virp->vir_line, 10, virp->vir_fd);
-	    return NULL;
-	}
-	(void)vim_fgets(retval, (int)len, virp->vir_fd);
-	s = retval + 1;	    // Skip the leading '<'
-    }
-    else
-    {
-	retval = vim_strsave(virp->vir_line + off);
-	if (retval == NULL)
-	    return NULL;
-	s = retval;
-    }
-
-    // Change CTRL-V CTRL-V to CTRL-V and CTRL-V n to \n in-place.
-    d = retval;
-    while (*s != NUL && *s != '\n')
-    {
-	if (s[0] == Ctrl_V && s[1] != NUL)
-	{
-	    if (s[1] == 'n')
-		*d++ = '\n';
-	    else
-		*d++ = Ctrl_V;
-	    s += 2;
-	}
-	else
-	    *d++ = *s++;
-    }
-    *d = NUL;
-
-    if (convert && virp->vir_conv.vc_type != CONV_NONE && *retval != NUL)
-    {
-	d = string_convert(&virp->vir_conv, retval, NULL);
-	if (d != NULL)
-	{
-	    vim_free(retval);
-	    retval = d;
-	}
-    }
-
-    return retval;
-}
-
-/*
- * write string to viminfo file
- * - replace CTRL-V with CTRL-V CTRL-V
- * - replace '\n'   with CTRL-V 'n'
- * - add a '\n' at the end
- *
- * For a long line:
- * - write " CTRL-V <length> \n " in first line
- * - write " < <string> \n "	  in second line
- */
-    void
-viminfo_writestring(FILE *fd, char_u *p)
-{
-    int		c;
-    char_u	*s;
-    int		len = 0;
-
-    for (s = p; *s != NUL; ++s)
-    {
-	if (*s == Ctrl_V || *s == '\n')
-	    ++len;
-	++len;
-    }
-
-    // If the string will be too long, write its length and put it in the next
-    // line.  Take into account that some room is needed for what comes before
-    // the string (e.g., variable name).  Add something to the length for the
-    // '<', NL and trailing NUL.
-    if (len > LSIZE / 2)
-	fprintf(fd, IF_EB("\026%d\n<", CTRL_V_STR "%d\n<"), len + 3);
-
-    while ((c = *p++) != NUL)
-    {
-	if (c == Ctrl_V || c == '\n')
-	{
-	    putc(Ctrl_V, fd);
-	    if (c == '\n')
-		c = 'n';
-	}
-	putc(c, fd);
-    }
-    putc('\n', fd);
-}
-
-/*
- * Write a string in quotes that barline_parse() can read back.
- * Breaks the line in less than LSIZE pieces when needed.
- * Returns remaining characters in the line.
- */
-    int
-barline_writestring(FILE *fd, char_u *s, int remaining_start)
-{
-    char_u *p;
-    int	    remaining = remaining_start;
-    int	    len = 2;
-
-    // Count the number of characters produced, including quotes.
-    for (p = s; *p != NUL; ++p)
-    {
-	if (*p == NL)
-	    len += 2;
-	else if (*p == '"' || *p == '\\')
-	    len += 2;
-	else
-	    ++len;
-    }
-    if (len > remaining - 2)
-    {
-	fprintf(fd, ">%d\n|<", len);
-	remaining = LSIZE - 20;
-    }
-
-    putc('"', fd);
-    for (p = s; *p != NUL; ++p)
-    {
-	if (*p == NL)
-	{
-	    putc('\\', fd);
-	    putc('n', fd);
-	    --remaining;
-	}
-	else if (*p == '"' || *p == '\\')
-	{
-	    putc('\\', fd);
-	    putc(*p, fd);
-	    --remaining;
-	}
-	else
-	    putc(*p, fd);
-	--remaining;
-
-	if (remaining < 3)
-	{
-	    putc('\n', fd);
-	    putc('|', fd);
-	    putc('<', fd);
-	    // Leave enough space for another continuation.
-	    remaining = LSIZE - 20;
-	}
-    }
-    putc('"', fd);
-    return remaining - 2;
-}
-
-/*
  * ":rviminfo" and ":wviminfo".
  */
     void
@@ -1909,800 +3307,4 @@ ex_viminfo(
     p_viminfo = save_viminfo;
 }
 
-    int
-read_viminfo_filemark(vir_T *virp, int force)
-{
-    char_u	*str;
-    xfmark_T	*namedfm_p = get_namedfm();
-    xfmark_T	*fm;
-    int		i;
-
-    // We only get here if line[0] == '\'' or '-'.
-    // Illegal mark names are ignored (for future expansion).
-    str = virp->vir_line + 1;
-    if (
-#ifndef EBCDIC
-	    *str <= 127 &&
-#endif
-	    ((*virp->vir_line == '\'' && (VIM_ISDIGIT(*str) || isupper(*str)))
-	     || (*virp->vir_line == '-' && *str == '\'')))
-    {
-	if (*str == '\'')
-	{
-#ifdef FEAT_JUMPLIST
-	    // If the jumplist isn't full insert fmark as oldest entry
-	    if (curwin->w_jumplistlen == JUMPLISTSIZE)
-		fm = NULL;
-	    else
-	    {
-		for (i = curwin->w_jumplistlen; i > 0; --i)
-		    curwin->w_jumplist[i] = curwin->w_jumplist[i - 1];
-		++curwin->w_jumplistidx;
-		++curwin->w_jumplistlen;
-		fm = &curwin->w_jumplist[0];
-		fm->fmark.mark.lnum = 0;
-		fm->fname = NULL;
-	    }
-#else
-	    fm = NULL;
-#endif
-	}
-	else if (VIM_ISDIGIT(*str))
-	    fm = &namedfm_p[*str - '0' + NMARKS];
-	else
-	    fm = &namedfm_p[*str - 'A'];
-	if (fm != NULL && (fm->fmark.mark.lnum == 0 || force))
-	{
-	    str = skipwhite(str + 1);
-	    fm->fmark.mark.lnum = getdigits(&str);
-	    str = skipwhite(str);
-	    fm->fmark.mark.col = getdigits(&str);
-	    fm->fmark.mark.coladd = 0;
-	    fm->fmark.fnum = 0;
-	    str = skipwhite(str);
-	    vim_free(fm->fname);
-	    fm->fname = viminfo_readstring(virp, (int)(str - virp->vir_line),
-								       FALSE);
-	    fm->time_set = 0;
-	}
-    }
-    return vim_fgets(virp->vir_line, LSIZE, virp->vir_fd);
-}
-
-static xfmark_T *vi_namedfm = NULL;
-#ifdef FEAT_JUMPLIST
-static xfmark_T *vi_jumplist = NULL;
-static int vi_jumplist_len = 0;
-#endif
-
-/*
- * Prepare for reading viminfo marks when writing viminfo later.
- */
-    void
-prepare_viminfo_marks(void)
-{
-    vi_namedfm = ALLOC_CLEAR_MULT(xfmark_T, NMARKS + EXTRA_MARKS);
-#ifdef FEAT_JUMPLIST
-    vi_jumplist = ALLOC_CLEAR_MULT(xfmark_T, JUMPLISTSIZE);
-    vi_jumplist_len = 0;
-#endif
-}
-
-    void
-finish_viminfo_marks(void)
-{
-    int		i;
-
-    if (vi_namedfm != NULL)
-    {
-	for (i = 0; i < NMARKS + EXTRA_MARKS; ++i)
-	    vim_free(vi_namedfm[i].fname);
-	VIM_CLEAR(vi_namedfm);
-    }
-#ifdef FEAT_JUMPLIST
-    if (vi_jumplist != NULL)
-    {
-	for (i = 0; i < vi_jumplist_len; ++i)
-	    vim_free(vi_jumplist[i].fname);
-	VIM_CLEAR(vi_jumplist);
-    }
-#endif
-}
-
-/*
- * Accept a new style mark line from the viminfo, store it when it's new.
- */
-    void
-handle_viminfo_mark(garray_T *values, int force)
-{
-    bval_T	*vp = (bval_T *)values->ga_data;
-    int		name;
-    linenr_T	lnum;
-    colnr_T	col;
-    time_t	timestamp;
-    xfmark_T	*fm = NULL;
-
-    // Check the format:
-    // |{bartype},{name},{lnum},{col},{timestamp},{filename}
-    if (values->ga_len < 5
-	    || vp[0].bv_type != BVAL_NR
-	    || vp[1].bv_type != BVAL_NR
-	    || vp[2].bv_type != BVAL_NR
-	    || vp[3].bv_type != BVAL_NR
-	    || vp[4].bv_type != BVAL_STRING)
-	return;
-
-    name = vp[0].bv_nr;
-    if (name != '\'' && !VIM_ISDIGIT(name) && !ASCII_ISUPPER(name))
-	return;
-    lnum = vp[1].bv_nr;
-    col = vp[2].bv_nr;
-    if (lnum <= 0 || col < 0)
-	return;
-    timestamp = (time_t)vp[3].bv_nr;
-
-    if (name == '\'')
-    {
-#ifdef FEAT_JUMPLIST
-	if (vi_jumplist != NULL)
-	{
-	    if (vi_jumplist_len < JUMPLISTSIZE)
-		fm = &vi_jumplist[vi_jumplist_len++];
-	}
-	else
-	{
-	    int idx;
-	    int i;
-
-	    // If we have a timestamp insert it in the right place.
-	    if (timestamp != 0)
-	    {
-		for (idx = curwin->w_jumplistlen - 1; idx >= 0; --idx)
-		    if (curwin->w_jumplist[idx].time_set < timestamp)
-		    {
-			++idx;
-			break;
-		    }
-		// idx cannot be zero now
-		if (idx < 0 && curwin->w_jumplistlen < JUMPLISTSIZE)
-		    // insert as the oldest entry
-		    idx = 0;
-	    }
-	    else if (curwin->w_jumplistlen < JUMPLISTSIZE)
-		// insert as oldest entry
-		idx = 0;
-	    else
-		idx = -1;
-
-	    if (idx >= 0)
-	    {
-		if (curwin->w_jumplistlen == JUMPLISTSIZE)
-		{
-		    // Drop the oldest entry.
-		    --idx;
-		    vim_free(curwin->w_jumplist[0].fname);
-		    for (i = 0; i < idx; ++i)
-			curwin->w_jumplist[i] = curwin->w_jumplist[i + 1];
-		}
-		else
-		{
-		    // Move newer entries forward.
-		    for (i = curwin->w_jumplistlen; i > idx; --i)
-			curwin->w_jumplist[i] = curwin->w_jumplist[i - 1];
-		    ++curwin->w_jumplistidx;
-		    ++curwin->w_jumplistlen;
-		}
-		fm = &curwin->w_jumplist[idx];
-		fm->fmark.mark.lnum = 0;
-		fm->fname = NULL;
-		fm->time_set = 0;
-	    }
-	}
-#endif
-    }
-    else
-    {
-	int		idx;
-	xfmark_T	*namedfm_p = get_namedfm();
-
-	if (VIM_ISDIGIT(name))
-	{
-	    if (vi_namedfm != NULL)
-		idx = name - '0' + NMARKS;
-	    else
-	    {
-		int i;
-
-		// Do not use the name from the viminfo file, insert in time
-		// order.
-		for (idx = NMARKS; idx < NMARKS + EXTRA_MARKS; ++idx)
-		    if (namedfm_p[idx].time_set < timestamp)
-			break;
-		if (idx == NMARKS + EXTRA_MARKS)
-		    // All existing entries are newer.
-		    return;
-		i = NMARKS + EXTRA_MARKS - 1;
-
-		vim_free(namedfm_p[i].fname);
-		for ( ; i > idx; --i)
-		    namedfm_p[i] = namedfm_p[i - 1];
-		namedfm_p[idx].fname = NULL;
-	    }
-	}
-	else
-	    idx = name - 'A';
-	if (vi_namedfm != NULL)
-	    fm = &vi_namedfm[idx];
-	else
-	    fm = &namedfm_p[idx];
-    }
-
-    if (fm != NULL)
-    {
-	if (vi_namedfm != NULL || fm->fmark.mark.lnum == 0
-					  || fm->time_set < timestamp || force)
-	{
-	    fm->fmark.mark.lnum = lnum;
-	    fm->fmark.mark.col = col;
-	    fm->fmark.mark.coladd = 0;
-	    fm->fmark.fnum = 0;
-	    vim_free(fm->fname);
-	    if (vp[4].bv_allocated)
-	    {
-		fm->fname = vp[4].bv_string;
-		vp[4].bv_string = NULL;
-	    }
-	    else
-		fm->fname = vim_strsave(vp[4].bv_string);
-	    fm->time_set = timestamp;
-	}
-    }
-}
-
-/*
- * Return TRUE if marks for "buf" should not be written.
- */
-    static int
-skip_for_viminfo(buf_T *buf)
-{
-    return
-#ifdef FEAT_TERMINAL
-	    bt_terminal(buf) ||
-#endif
-	    removable(buf->b_ffname);
-}
-
-    static void
-write_one_filemark(
-    FILE	*fp,
-    xfmark_T	*fm,
-    int		c1,
-    int		c2)
-{
-    char_u	*name;
-
-    if (fm->fmark.mark.lnum == 0)	// not set
-	return;
-
-    if (fm->fmark.fnum != 0)		// there is a buffer
-	name = buflist_nr2name(fm->fmark.fnum, TRUE, FALSE);
-    else
-	name = fm->fname;		// use name from .viminfo
-    if (name != NULL && *name != NUL)
-    {
-	fprintf(fp, "%c%c  %ld  %ld  ", c1, c2, (long)fm->fmark.mark.lnum,
-						    (long)fm->fmark.mark.col);
-	viminfo_writestring(fp, name);
-
-	// Barline: |{bartype},{name},{lnum},{col},{timestamp},{filename}
-	// size up to filename: 8 + 3 * 20
-	fprintf(fp, "|%d,%d,%ld,%ld,%ld,", BARTYPE_MARK, c2,
-		(long)fm->fmark.mark.lnum, (long)fm->fmark.mark.col,
-		(long)fm->time_set);
-	barline_writestring(fp, name, LSIZE - 70);
-	putc('\n', fp);
-    }
-
-    if (fm->fmark.fnum != 0)
-	vim_free(name);
-}
-
-    void
-write_viminfo_filemarks(FILE *fp)
-{
-    int		i;
-    char_u	*name;
-    buf_T	*buf;
-    xfmark_T	*namedfm_p = get_namedfm();
-    xfmark_T	*fm;
-    int		vi_idx;
-    int		idx;
-
-    if (get_viminfo_parameter('f') == 0)
-	return;
-
-    fputs(_("\n# File marks:\n"), fp);
-
-    // Write the filemarks 'A - 'Z
-    for (i = 0; i < NMARKS; i++)
-    {
-	if (vi_namedfm != NULL
-			&& (vi_namedfm[i].time_set > namedfm_p[i].time_set
-			    || namedfm_p[i].fmark.mark.lnum == 0))
-	    fm = &vi_namedfm[i];
-	else
-	    fm = &namedfm_p[i];
-	write_one_filemark(fp, fm, '\'', i + 'A');
-    }
-
-    // Find a mark that is the same file and position as the cursor.
-    // That one, or else the last one is deleted.
-    // Move '0 to '1, '1 to '2, etc. until the matching one or '9
-    // Set the '0 mark to current cursor position.
-    if (curbuf->b_ffname != NULL && !skip_for_viminfo(curbuf))
-    {
-	name = buflist_nr2name(curbuf->b_fnum, TRUE, FALSE);
-	for (i = NMARKS; i < NMARKS + EXTRA_MARKS - 1; ++i)
-	    if (namedfm_p[i].fmark.mark.lnum == curwin->w_cursor.lnum
-		    && (namedfm_p[i].fname == NULL
-			    ? namedfm_p[i].fmark.fnum == curbuf->b_fnum
-			    : (name != NULL
-				    && STRCMP(name, namedfm_p[i].fname) == 0)))
-		break;
-	vim_free(name);
-
-	vim_free(namedfm_p[i].fname);
-	for ( ; i > NMARKS; --i)
-	    namedfm_p[i] = namedfm_p[i - 1];
-	namedfm_p[NMARKS].fmark.mark = curwin->w_cursor;
-	namedfm_p[NMARKS].fmark.fnum = curbuf->b_fnum;
-	namedfm_p[NMARKS].fname = NULL;
-	namedfm_p[NMARKS].time_set = vim_time();
-    }
-
-    // Write the filemarks '0 - '9.  Newest (highest timestamp) first.
-    vi_idx = NMARKS;
-    idx = NMARKS;
-    for (i = NMARKS; i < NMARKS + EXTRA_MARKS; i++)
-    {
-	xfmark_T *vi_fm = vi_namedfm != NULL ? &vi_namedfm[vi_idx] : NULL;
-
-	if (vi_fm != NULL
-		&& vi_fm->fmark.mark.lnum != 0
-		&& (vi_fm->time_set > namedfm_p[idx].time_set
-		    || namedfm_p[idx].fmark.mark.lnum == 0))
-	{
-	    fm = vi_fm;
-	    ++vi_idx;
-	}
-	else
-	{
-	    fm = &namedfm_p[idx++];
-	    if (vi_fm != NULL
-		  && vi_fm->fmark.mark.lnum == fm->fmark.mark.lnum
-		  && vi_fm->time_set == fm->time_set
-		  && ((vi_fm->fmark.fnum != 0
-			  && vi_fm->fmark.fnum == fm->fmark.fnum)
-		      || (vi_fm->fname != NULL
-			  && fm->fname != NULL
-			  && STRCMP(vi_fm->fname, fm->fname) == 0)))
-		++vi_idx;  // skip duplicate
-	}
-	write_one_filemark(fp, fm, '\'', i - NMARKS + '0');
-    }
-
-#ifdef FEAT_JUMPLIST
-    // Write the jumplist with -'
-    fputs(_("\n# Jumplist (newest first):\n"), fp);
-    setpcmark();	// add current cursor position
-    cleanup_jumplist(curwin, FALSE);
-    vi_idx = 0;
-    idx = curwin->w_jumplistlen - 1;
-    for (i = 0; i < JUMPLISTSIZE; ++i)
-    {
-	xfmark_T	*vi_fm;
-
-	fm = idx >= 0 ? &curwin->w_jumplist[idx] : NULL;
-	vi_fm = vi_idx < vi_jumplist_len ? &vi_jumplist[vi_idx] : NULL;
-	if (fm == NULL && vi_fm == NULL)
-	    break;
-	if (fm == NULL || (vi_fm != NULL && fm->time_set < vi_fm->time_set))
-	{
-	    fm = vi_fm;
-	    ++vi_idx;
-	}
-	else
-	    --idx;
-	if (fm->fmark.fnum == 0
-		|| ((buf = buflist_findnr(fm->fmark.fnum)) != NULL
-		    && !skip_for_viminfo(buf)))
-	    write_one_filemark(fp, fm, '-', '\'');
-    }
-#endif
-}
-
-/*
- * Return TRUE if "name" is on removable media (depending on 'viminfo').
- */
-    int
-removable(char_u *name)
-{
-    char_u  *p;
-    char_u  part[51];
-    int	    retval = FALSE;
-    size_t  n;
-
-    name = home_replace_save(NULL, name);
-    if (name != NULL)
-    {
-	for (p = p_viminfo; *p; )
-	{
-	    copy_option_part(&p, part, 51, ", ");
-	    if (part[0] == 'r')
-	    {
-		n = STRLEN(part + 1);
-		if (MB_STRNICMP(part + 1, name, n) == 0)
-		{
-		    retval = TRUE;
-		    break;
-		}
-	    }
-	}
-	vim_free(name);
-    }
-    return retval;
-}
-
-    static void
-write_one_mark(FILE *fp_out, int c, pos_T *pos)
-{
-    if (pos->lnum != 0)
-	fprintf(fp_out, "\t%c\t%ld\t%d\n", c, (long)pos->lnum, (int)pos->col);
-}
-
-
-    static void
-write_buffer_marks(buf_T *buf, FILE *fp_out)
-{
-    int		i;
-    pos_T	pos;
-
-    home_replace(NULL, buf->b_ffname, IObuff, IOSIZE, TRUE);
-    fprintf(fp_out, "\n> ");
-    viminfo_writestring(fp_out, IObuff);
-
-    // Write the last used timestamp as the lnum of the non-existing mark '*'.
-    // Older Vims will ignore it and/or copy it.
-    pos.lnum = (linenr_T)buf->b_last_used;
-    pos.col = 0;
-    write_one_mark(fp_out, '*', &pos);
-
-    write_one_mark(fp_out, '"', &buf->b_last_cursor);
-    write_one_mark(fp_out, '^', &buf->b_last_insert);
-    write_one_mark(fp_out, '.', &buf->b_last_change);
-#ifdef FEAT_JUMPLIST
-    // changelist positions are stored oldest first
-    for (i = 0; i < buf->b_changelistlen; ++i)
-    {
-	// skip duplicates
-	if (i == 0 || !EQUAL_POS(buf->b_changelist[i - 1],
-							 buf->b_changelist[i]))
-	    write_one_mark(fp_out, '+', &buf->b_changelist[i]);
-    }
-#endif
-    for (i = 0; i < NMARKS; i++)
-	write_one_mark(fp_out, 'a' + i, &buf->b_namedm[i]);
-}
-
-/*
- * Write all the named marks for all buffers.
- * When "buflist" is not NULL fill it with the buffers for which marks are to
- * be written.
- */
-    void
-write_viminfo_marks(FILE *fp_out, garray_T *buflist)
-{
-    buf_T	*buf;
-    int		is_mark_set;
-    int		i;
-    win_T	*win;
-    tabpage_T	*tp;
-
-    // Set b_last_cursor for the all buffers that have a window.
-    FOR_ALL_TAB_WINDOWS(tp, win)
-	set_last_cursor(win);
-
-    fputs(_("\n# History of marks within files (newest to oldest):\n"), fp_out);
-    FOR_ALL_BUFFERS(buf)
-    {
-	// Only write something if buffer has been loaded and at least one
-	// mark is set.
-	if (buf->b_marks_read)
-	{
-	    if (buf->b_last_cursor.lnum != 0)
-		is_mark_set = TRUE;
-	    else
-	    {
-		is_mark_set = FALSE;
-		for (i = 0; i < NMARKS; i++)
-		    if (buf->b_namedm[i].lnum != 0)
-		    {
-			is_mark_set = TRUE;
-			break;
-		    }
-	    }
-	    if (is_mark_set && buf->b_ffname != NULL
-		      && buf->b_ffname[0] != NUL
-		      && !skip_for_viminfo(buf))
-	    {
-		if (buflist == NULL)
-		    write_buffer_marks(buf, fp_out);
-		else if (ga_grow(buflist, 1) == OK)
-		    ((buf_T **)buflist->ga_data)[buflist->ga_len++] = buf;
-	    }
-	}
-    }
-}
-
-/*
- * Compare functions for qsort() below, that compares b_last_used.
- */
-    static int
-buf_compare(const void *s1, const void *s2)
-{
-    buf_T *buf1 = *(buf_T **)s1;
-    buf_T *buf2 = *(buf_T **)s2;
-
-    if (buf1->b_last_used == buf2->b_last_used)
-	return 0;
-    return buf1->b_last_used > buf2->b_last_used ? -1 : 1;
-}
-
-/*
- * Handle marks in the viminfo file:
- * fp_out != NULL: copy marks, in time order with buffers in "buflist".
- * fp_out == NULL && (flags & VIF_WANT_MARKS): read marks for curbuf only
- * fp_out == NULL && (flags & VIF_GET_OLDFILES | VIF_FORCEIT): fill v:oldfiles
- */
-    void
-copy_viminfo_marks(
-    vir_T	*virp,
-    FILE	*fp_out,
-    garray_T	*buflist,
-    int		eof,
-    int		flags)
-{
-    char_u	*line = virp->vir_line;
-    buf_T	*buf;
-    int		num_marked_files;
-    int		load_marks;
-    int		copy_marks_out;
-    char_u	*str;
-    int		i;
-    char_u	*p;
-    char_u	*name_buf;
-    pos_T	pos;
-#ifdef FEAT_EVAL
-    list_T	*list = NULL;
-#endif
-    int		count = 0;
-    int		buflist_used = 0;
-    buf_T	*buflist_buf = NULL;
-
-    if ((name_buf = alloc(LSIZE)) == NULL)
-	return;
-    *name_buf = NUL;
-
-    if (fp_out != NULL && buflist->ga_len > 0)
-    {
-	// Sort the list of buffers on b_last_used.
-	qsort(buflist->ga_data, (size_t)buflist->ga_len,
-						sizeof(buf_T *), buf_compare);
-	buflist_buf = ((buf_T **)buflist->ga_data)[0];
-    }
-
-#ifdef FEAT_EVAL
-    if (fp_out == NULL && (flags & (VIF_GET_OLDFILES | VIF_FORCEIT)))
-    {
-	list = list_alloc();
-	if (list != NULL)
-	    set_vim_var_list(VV_OLDFILES, list);
-    }
-#endif
-
-    num_marked_files = get_viminfo_parameter('\'');
-    while (!eof && (count < num_marked_files || fp_out == NULL))
-    {
-	if (line[0] != '>')
-	{
-	    if (line[0] != '\n' && line[0] != '\r' && line[0] != '#')
-	    {
-		if (viminfo_error("E576: ", _("Missing '>'"), line))
-		    break;	// too many errors, return now
-	    }
-	    eof = vim_fgets(line, LSIZE, virp->vir_fd);
-	    continue;		// Skip this dud line
-	}
-
-	// Handle long line and translate escaped characters.
-	// Find file name, set str to start.
-	// Ignore leading and trailing white space.
-	str = skipwhite(line + 1);
-	str = viminfo_readstring(virp, (int)(str - virp->vir_line), FALSE);
-	if (str == NULL)
-	    continue;
-	p = str + STRLEN(str);
-	while (p != str && (*p == NUL || vim_isspace(*p)))
-	    p--;
-	if (*p)
-	    p++;
-	*p = NUL;
-
-#ifdef FEAT_EVAL
-	if (list != NULL)
-	    list_append_string(list, str, -1);
-#endif
-
-	// If fp_out == NULL, load marks for current buffer.
-	// If fp_out != NULL, copy marks for buffers not in buflist.
-	load_marks = copy_marks_out = FALSE;
-	if (fp_out == NULL)
-	{
-	    if ((flags & VIF_WANT_MARKS) && curbuf->b_ffname != NULL)
-	    {
-		if (*name_buf == NUL)	    // only need to do this once
-		    home_replace(NULL, curbuf->b_ffname, name_buf, LSIZE, TRUE);
-		if (fnamecmp(str, name_buf) == 0)
-		    load_marks = TRUE;
-	    }
-	}
-	else // fp_out != NULL
-	{
-	    // This is slow if there are many buffers!!
-	    FOR_ALL_BUFFERS(buf)
-		if (buf->b_ffname != NULL)
-		{
-		    home_replace(NULL, buf->b_ffname, name_buf, LSIZE, TRUE);
-		    if (fnamecmp(str, name_buf) == 0)
-			break;
-		}
-
-	    // Copy marks if the buffer has not been loaded.
-	    if (buf == NULL || !buf->b_marks_read)
-	    {
-		int	did_read_line = FALSE;
-
-		if (buflist_buf != NULL)
-		{
-		    // Read the next line.  If it has the "*" mark compare the
-		    // time stamps.  Write entries from "buflist" that are
-		    // newer.
-		    if (!(eof = viminfo_readline(virp)) && line[0] == TAB)
-		    {
-			did_read_line = TRUE;
-			if (line[1] == '*')
-			{
-			    long	ltime;
-
-			    sscanf((char *)line + 2, "%ld ", &ltime);
-			    while ((time_T)ltime < buflist_buf->b_last_used)
-			    {
-				write_buffer_marks(buflist_buf, fp_out);
-				if (++count >= num_marked_files)
-				    break;
-				if (++buflist_used == buflist->ga_len)
-				{
-				    buflist_buf = NULL;
-				    break;
-				}
-				buflist_buf =
-				   ((buf_T **)buflist->ga_data)[buflist_used];
-			    }
-			}
-			else
-			{
-			    // No timestamp, must be written by an older Vim.
-			    // Assume all remaining buffers are older then
-			    // ours.
-			    while (count < num_marked_files
-					    && buflist_used < buflist->ga_len)
-			    {
-				buflist_buf = ((buf_T **)buflist->ga_data)
-							     [buflist_used++];
-				write_buffer_marks(buflist_buf, fp_out);
-				++count;
-			    }
-			    buflist_buf = NULL;
-			}
-
-			if (count >= num_marked_files)
-			{
-			    vim_free(str);
-			    break;
-			}
-		    }
-		}
-
-		fputs("\n> ", fp_out);
-		viminfo_writestring(fp_out, str);
-		if (did_read_line)
-		    fputs((char *)line, fp_out);
-
-		count++;
-		copy_marks_out = TRUE;
-	    }
-	}
-	vim_free(str);
-
-	pos.coladd = 0;
-	while (!(eof = viminfo_readline(virp)) && line[0] == TAB)
-	{
-	    if (load_marks)
-	    {
-		if (line[1] != NUL)
-		{
-		    unsigned u;
-
-		    sscanf((char *)line + 2, "%ld %u", &pos.lnum, &u);
-		    pos.col = u;
-		    switch (line[1])
-		    {
-			case '"': curbuf->b_last_cursor = pos; break;
-			case '^': curbuf->b_last_insert = pos; break;
-			case '.': curbuf->b_last_change = pos; break;
-			case '+':
-#ifdef FEAT_JUMPLIST
-				  // changelist positions are stored oldest
-				  // first
-				  if (curbuf->b_changelistlen == JUMPLISTSIZE)
-				      // list is full, remove oldest entry
-				      mch_memmove(curbuf->b_changelist,
-					    curbuf->b_changelist + 1,
-					    sizeof(pos_T) * (JUMPLISTSIZE - 1));
-				  else
-				      ++curbuf->b_changelistlen;
-				  curbuf->b_changelist[
-					   curbuf->b_changelistlen - 1] = pos;
-#endif
-				  break;
-
-				  // Using the line number for the last-used
-				  // timestamp.
-			case '*': curbuf->b_last_used = pos.lnum; break;
-
-			default:  if ((i = line[1] - 'a') >= 0 && i < NMARKS)
-				      curbuf->b_namedm[i] = pos;
-		    }
-		}
-	    }
-	    else if (copy_marks_out)
-		fputs((char *)line, fp_out);
-	}
-
-	if (load_marks)
-	{
-#ifdef FEAT_JUMPLIST
-	    win_T	*wp;
-
-	    FOR_ALL_WINDOWS(wp)
-	    {
-		if (wp->w_buffer == curbuf)
-		    wp->w_changelistidx = curbuf->b_changelistlen;
-	    }
-#endif
-	    break;
-	}
-    }
-
-    if (fp_out != NULL)
-	// Write any remaining entries from buflist.
-	while (count < num_marked_files && buflist_used < buflist->ga_len)
-	{
-	    buflist_buf = ((buf_T **)buflist->ga_data)[buflist_used++];
-	    write_buffer_marks(buflist_buf, fp_out);
-	    ++count;
-	}
-
-    vim_free(name_buf);
-}
 #endif // FEAT_VIMINFO

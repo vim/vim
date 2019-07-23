@@ -5573,49 +5573,6 @@ set_options_bin(
     }
 }
 
-#ifdef FEAT_VIMINFO
-/*
- * Find the parameter represented by the given character (eg ', :, ", or /),
- * and return its associated value in the 'viminfo' string.
- * Only works for number parameters, not for 'r' or 'n'.
- * If the parameter is not specified in the string or there is no following
- * number, return -1.
- */
-    int
-get_viminfo_parameter(int type)
-{
-    char_u  *p;
-
-    p = find_viminfo_parameter(type);
-    if (p != NULL && VIM_ISDIGIT(*p))
-	return atoi((char *)p);
-    return -1;
-}
-
-/*
- * Find the parameter represented by the given character (eg ''', ':', '"', or
- * '/') in the 'viminfo' option and return a pointer to the string after it.
- * Return NULL if the parameter is not specified in the string.
- */
-    char_u *
-find_viminfo_parameter(int type)
-{
-    char_u  *p;
-
-    for (p = p_viminfo; *p; ++p)
-    {
-	if (*p == type)
-	    return p + 1;
-	if (*p == 'n')		    /* 'n' is always the last one */
-	    break;
-	p = vim_strchr(p, ',');	    /* skip until next ',' */
-	if (p == NULL)		    /* hit the end without finding parameter */
-	    break;
-    }
-    return NULL;
-}
-#endif
-
 /*
  * Expand environment variables for some string options.
  * These string options cannot be indirect!
