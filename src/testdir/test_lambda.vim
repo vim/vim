@@ -36,8 +36,8 @@ func Test_lambda_with_timer()
 
   let m = s:n
   " Wait for next timer callback.
-  for i in range(0, 5)
-    sleep 50m
+  for i in range(0, 10)
+    sleep 10m
     if s:n > m
       break
     endif
