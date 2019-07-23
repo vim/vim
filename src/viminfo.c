@@ -16,6 +16,8 @@
 
 #if defined(FEAT_VIMINFO) || defined(PROTO)
 
+static void wvsp_one(FILE *fp, int idx, char *s, int sc);
+
 static int  viminfo_errcnt;
 
 /*
@@ -655,7 +657,7 @@ write_viminfo_history(FILE *fp, int merge)
 	viminfo_hisidx[type] = 0;
     }
 }
-#endif // FEAT_VIMINFO
+#endif // FEAT_CMDHIST
 
     static void
 write_viminfo_barlines(vir_T *virp, FILE *fp_out)
@@ -1909,6 +1911,10 @@ ex_viminfo(
     p_viminfo = save_viminfo;
 }
 
+/*
+ * Functions relating to reading/writing marks from viminfo
+ */
+
     int
 read_viminfo_filemark(vir_T *virp, int force)
 {
@@ -2704,5 +2710,583 @@ copy_viminfo_marks(
 	}
 
     vim_free(name_buf);
+}
+
+/*
+ * Read marks for the current buffer from the viminfo file, when we support
+ * buffer marks and the buffer has a name.
+ */
+    void
+check_marks_read(void)
+{
+    if (!curbuf->b_marks_read && get_viminfo_parameter('\'') > 0
+						  && curbuf->b_ffname != NULL)
+	read_viminfo(NULL, VIF_WANT_MARKS);
+
+    // Always set b_marks_read; needed when 'viminfo' is changed to include
+    // the ' parameter after opening a buffer.
+    curbuf->b_marks_read = TRUE;
+}
+
+/*
+ * Functions relating to reading/writing registers from viminfo
+ */
+
+static yankreg_T *y_read_regs = NULL;
+
+#define REG_PREVIOUS 1
+#define REG_EXEC 2
+
+/*
+ * Prepare for reading viminfo registers when writing viminfo later.
+ */
+    void
+prepare_viminfo_registers(void)
+{
+     y_read_regs = ALLOC_CLEAR_MULT(yankreg_T, NUM_REGISTERS);
+}
+
+    void
+finish_viminfo_registers(void)
+{
+    int		i;
+    int		j;
+
+    if (y_read_regs != NULL)
+    {
+	for (i = 0; i < NUM_REGISTERS; ++i)
+	    if (y_read_regs[i].y_array != NULL)
+	    {
+		for (j = 0; j < y_read_regs[i].y_size; j++)
+		    vim_free(y_read_regs[i].y_array[j]);
+		vim_free(y_read_regs[i].y_array);
+	    }
+	VIM_CLEAR(y_read_regs);
+    }
+}
+
+    int
+read_viminfo_register(vir_T *virp, int force)
+{
+    int		eof;
+    int		do_it = TRUE;
+    int		size;
+    int		limit;
+    int		i;
+    int		set_prev = FALSE;
+    char_u	*str;
+    char_u	**array = NULL;
+    int		new_type = MCHAR; // init to shut up compiler
+    colnr_T	new_width = 0; // init to shut up compiler
+    yankreg_T	*y_current_p;
+
+    // We only get here (hopefully) if line[0] == '"'
+    str = virp->vir_line + 1;
+
+    // If the line starts with "" this is the y_previous register.
+    if (*str == '"')
+    {
+	set_prev = TRUE;
+	str++;
+    }
+
+    if (!ASCII_ISALNUM(*str) && *str != '-')
+    {
+	if (viminfo_error("E577: ", _("Illegal register name"), virp->vir_line))
+	    return TRUE;	// too many errors, pretend end-of-file
+	do_it = FALSE;
+    }
+    get_yank_register(*str++, FALSE);
+    y_current_p = get_y_current();
+    if (!force && y_current_p->y_array != NULL)
+	do_it = FALSE;
+
+    if (*str == '@')
+    {
+	// "x@: register x used for @@
+	if (force || get_execreg_lastc() == NUL)
+	    set_execreg_lastc(str[-1]);
+    }
+
+    size = 0;
+    limit = 100;	// Optimized for registers containing <= 100 lines
+    if (do_it)
+    {
+	// Build the new register in array[].
+	// y_array is kept as-is until done.
+	// The "do_it" flag is reset when something is wrong, in which case
+	// array[] needs to be freed.
+	if (set_prev)
+	    set_y_previous(y_current_p);
+	array = ALLOC_MULT(char_u *, limit);
+	str = skipwhite(skiptowhite(str));
+	if (STRNCMP(str, "CHAR", 4) == 0)
+	    new_type = MCHAR;
+	else if (STRNCMP(str, "BLOCK", 5) == 0)
+	    new_type = MBLOCK;
+	else
+	    new_type = MLINE;
+	// get the block width; if it's missing we get a zero, which is OK
+	str = skipwhite(skiptowhite(str));
+	new_width = getdigits(&str);
+    }
+
+    while (!(eof = viminfo_readline(virp))
+		    && (virp->vir_line[0] == TAB || virp->vir_line[0] == '<'))
+    {
+	if (do_it)
+	{
+	    if (size == limit)
+	    {
+		char_u **new_array = (char_u **)
+					   alloc(limit * 2 * sizeof(char_u *));
+
+		if (new_array == NULL)
+		{
+		    do_it = FALSE;
+		    break;
+		}
+		for (i = 0; i < limit; i++)
+		    new_array[i] = array[i];
+		vim_free(array);
+		array = new_array;
+		limit *= 2;
+	    }
+	    str = viminfo_readstring(virp, 1, TRUE);
+	    if (str != NULL)
+		array[size++] = str;
+	    else
+		// error, don't store the result
+		do_it = FALSE;
+	}
+    }
+
+    if (do_it)
+    {
+	// free y_array[]
+	for (i = 0; i < y_current_p->y_size; i++)
+	    vim_free(y_current_p->y_array[i]);
+	vim_free(y_current_p->y_array);
+
+	y_current_p->y_type = new_type;
+	y_current_p->y_width = new_width;
+	y_current_p->y_size = size;
+	y_current_p->y_time_set = 0;
+	if (size == 0)
+	{
+	    y_current_p->y_array = NULL;
+	}
+	else
+	{
+	    // Move the lines from array[] to y_array[].
+	    y_current_p->y_array = ALLOC_MULT(char_u *, size);
+	    for (i = 0; i < size; i++)
+	    {
+		if (y_current_p->y_array == NULL)
+		    vim_free(array[i]);
+		else
+		    y_current_p->y_array[i] = array[i];
+	    }
+	}
+    }
+    else
+    {
+	// Free array[] if it was filled.
+	for (i = 0; i < size; i++)
+	    vim_free(array[i]);
+    }
+    vim_free(array);
+
+    return eof;
+}
+
+/*
+ * Accept a new style register line from the viminfo, store it when it's new.
+ */
+    void
+handle_viminfo_register(garray_T *values, int force)
+{
+    bval_T	*vp = (bval_T *)values->ga_data;
+    int		flags;
+    int		name;
+    int		type;
+    int		linecount;
+    int		width;
+    time_t	timestamp;
+    yankreg_T	*y_ptr;
+    yankreg_T	*y_regs_p = get_y_regs();
+    int		i;
+
+    // Check the format:
+    // |{bartype},{flags},{name},{type},
+    //      {linecount},{width},{timestamp},"line1","line2"
+    if (values->ga_len < 6
+	    || vp[0].bv_type != BVAL_NR
+	    || vp[1].bv_type != BVAL_NR
+	    || vp[2].bv_type != BVAL_NR
+	    || vp[3].bv_type != BVAL_NR
+	    || vp[4].bv_type != BVAL_NR
+	    || vp[5].bv_type != BVAL_NR)
+	return;
+    flags = vp[0].bv_nr;
+    name = vp[1].bv_nr;
+    if (name < 0 || name >= NUM_REGISTERS)
+	return;
+    type = vp[2].bv_nr;
+    if (type != MCHAR && type != MLINE && type != MBLOCK)
+	return;
+    linecount = vp[3].bv_nr;
+    if (values->ga_len < 6 + linecount)
+	return;
+    width = vp[4].bv_nr;
+    if (width < 0)
+	return;
+
+    if (y_read_regs != NULL)
+	// Reading viminfo for merging and writing.  Store the register
+	// content, don't update the current registers.
+	y_ptr = &y_read_regs[name];
+    else
+	y_ptr = &y_regs_p[name];
+
+    // Do not overwrite unless forced or the timestamp is newer.
+    timestamp = (time_t)vp[5].bv_nr;
+    if (y_ptr->y_array != NULL && !force
+			 && (timestamp == 0 || y_ptr->y_time_set > timestamp))
+	return;
+
+    if (y_ptr->y_array != NULL)
+	for (i = 0; i < y_ptr->y_size; i++)
+	    vim_free(y_ptr->y_array[i]);
+    vim_free(y_ptr->y_array);
+
+    if (y_read_regs == NULL)
+    {
+	if (flags & REG_PREVIOUS)
+	    set_y_previous(y_ptr);
+	if ((flags & REG_EXEC) && (force || get_execreg_lastc() == NUL))
+	    set_execreg_lastc(get_register_name(name));
+    }
+    y_ptr->y_type = type;
+    y_ptr->y_width = width;
+    y_ptr->y_size = linecount;
+    y_ptr->y_time_set = timestamp;
+    if (linecount == 0)
+    {
+	y_ptr->y_array = NULL;
+	return;
+    }
+    y_ptr->y_array = ALLOC_MULT(char_u *, linecount);
+    if (y_ptr->y_array == NULL)
+    {
+	y_ptr->y_size = 0; // ensure object state is consistent
+	return;
+    }
+    for (i = 0; i < linecount; i++)
+    {
+	if (vp[i + 6].bv_allocated)
+	{
+	    y_ptr->y_array[i] = vp[i + 6].bv_string;
+	    vp[i + 6].bv_string = NULL;
+	}
+	else
+	    y_ptr->y_array[i] = vim_strsave(vp[i + 6].bv_string);
+    }
+}
+
+    void
+write_viminfo_registers(FILE *fp)
+{
+    int		i, j;
+    char_u	*type;
+    char_u	c;
+    int		num_lines;
+    int		max_num_lines;
+    int		max_kbyte;
+    long	len;
+    yankreg_T	*y_ptr;
+    yankreg_T	*y_regs_p = get_y_regs();;
+
+    fputs(_("\n# Registers:\n"), fp);
+
+    // Get '<' value, use old '"' value if '<' is not found.
+    max_num_lines = get_viminfo_parameter('<');
+    if (max_num_lines < 0)
+	max_num_lines = get_viminfo_parameter('"');
+    if (max_num_lines == 0)
+	return;
+    max_kbyte = get_viminfo_parameter('s');
+    if (max_kbyte == 0)
+	return;
+
+    for (i = 0; i < NUM_REGISTERS; i++)
+    {
+#ifdef FEAT_CLIPBOARD
+	// Skip '*'/'+' register, we don't want them back next time
+	if (i == STAR_REGISTER || i == PLUS_REGISTER)
+	    continue;
+#endif
+#ifdef FEAT_DND
+	// Neither do we want the '~' register
+	if (i == TILDE_REGISTER)
+	    continue;
+#endif
+	// When reading viminfo for merging and writing: Use the register from
+	// viminfo if it's newer.
+	if (y_read_regs != NULL
+		&& y_read_regs[i].y_array != NULL
+		&& (y_regs_p[i].y_array == NULL ||
+			    y_read_regs[i].y_time_set > y_regs_p[i].y_time_set))
+	    y_ptr = &y_read_regs[i];
+	else if (y_regs_p[i].y_array == NULL)
+	    continue;
+	else
+	    y_ptr = &y_regs_p[i];
+
+	// Skip empty registers.
+	num_lines = y_ptr->y_size;
+	if (num_lines == 0
+		|| (num_lines == 1 && y_ptr->y_type == MCHAR
+					&& *y_ptr->y_array[0] == NUL))
+	    continue;
+
+	if (max_kbyte > 0)
+	{
+	    // Skip register if there is more text than the maximum size.
+	    len = 0;
+	    for (j = 0; j < num_lines; j++)
+		len += (long)STRLEN(y_ptr->y_array[j]) + 1L;
+	    if (len > (long)max_kbyte * 1024L)
+		continue;
+	}
+
+	switch (y_ptr->y_type)
+	{
+	    case MLINE:
+		type = (char_u *)"LINE";
+		break;
+	    case MCHAR:
+		type = (char_u *)"CHAR";
+		break;
+	    case MBLOCK:
+		type = (char_u *)"BLOCK";
+		break;
+	    default:
+		semsg(_("E574: Unknown register type %d"), y_ptr->y_type);
+		type = (char_u *)"LINE";
+		break;
+	}
+	if (get_y_previous() == &y_regs_p[i])
+	    fprintf(fp, "\"");
+	c = get_register_name(i);
+	fprintf(fp, "\"%c", c);
+	if (c == get_execreg_lastc())
+	    fprintf(fp, "@");
+	fprintf(fp, "\t%s\t%d\n", type, (int)y_ptr->y_width);
+
+	// If max_num_lines < 0, then we save ALL the lines in the register
+	if (max_num_lines > 0 && num_lines > max_num_lines)
+	    num_lines = max_num_lines;
+	for (j = 0; j < num_lines; j++)
+	{
+	    putc('\t', fp);
+	    viminfo_writestring(fp, y_ptr->y_array[j]);
+	}
+
+	{
+	    int	    flags = 0;
+	    int	    remaining;
+
+	    // New style with a bar line. Format:
+	    // |{bartype},{flags},{name},{type},
+	    //      {linecount},{width},{timestamp},"line1","line2"
+	    // flags: REG_PREVIOUS - register is y_previous
+	    //	      REG_EXEC - used for @@
+	    if (get_y_previous() == &y_regs_p[i])
+		flags |= REG_PREVIOUS;
+	    if (c == get_execreg_lastc())
+		flags |= REG_EXEC;
+	    fprintf(fp, "|%d,%d,%d,%d,%d,%d,%ld", BARTYPE_REGISTER, flags,
+		    i, y_ptr->y_type, num_lines, (int)y_ptr->y_width,
+		    (long)y_ptr->y_time_set);
+	    // 11 chars for type/flags/name/type, 3 * 20 for numbers
+	    remaining = LSIZE - 71;
+	    for (j = 0; j < num_lines; j++)
+	    {
+		putc(',', fp);
+		--remaining;
+		remaining = barline_writestring(fp, y_ptr->y_array[j],
+								   remaining);
+	    }
+	    putc('\n', fp);
+	}
+    }
+}
+
+/*
+ * Find the parameter represented by the given character (eg ', :, ", or /),
+ * and return its associated value in the 'viminfo' string.
+ * Only works for number parameters, not for 'r' or 'n'.
+ * If the parameter is not specified in the string or there is no following
+ * number, return -1.
+ */
+    int
+get_viminfo_parameter(int type)
+{
+    char_u  *p;
+
+    p = find_viminfo_parameter(type);
+    if (p != NULL && VIM_ISDIGIT(*p))
+	return atoi((char *)p);
+    return -1;
+}
+
+/*
+ * Find the parameter represented by the given character (eg ''', ':', '"', or
+ * '/') in the 'viminfo' option and return a pointer to the string after it.
+ * Return NULL if the parameter is not specified in the string.
+ */
+    char_u *
+find_viminfo_parameter(int type)
+{
+    char_u  *p;
+
+    for (p = p_viminfo; *p; ++p)
+    {
+	if (*p == type)
+	    return p + 1;
+	if (*p == 'n')		    // 'n' is always the last one
+	    break;
+	p = vim_strchr(p, ',');	    // skip until next ','
+	if (p == NULL)		    // hit the end without finding parameter
+	    break;
+    }
+    return NULL;
+}
+
+/*
+ * Functions relating to reading/writing the search pattern from viminfo
+ */
+
+    int
+read_viminfo_search_pattern(vir_T *virp, int force)
+{
+    char_u	*lp;
+    int		idx = -1;
+    int		magic = FALSE;
+    int		no_scs = FALSE;
+    int		off_line = FALSE;
+    int		off_end = 0;
+    long	off = 0;
+    int		setlast = FALSE;
+#ifdef FEAT_SEARCH_EXTRA
+    static int	hlsearch_on = FALSE;
+#endif
+    char_u	*val;
+    spat_T	*spat;
+
+    // Old line types:
+    // "/pat", "&pat": search/subst. pat
+    // "~/pat", "~&pat": last used search/subst. pat
+    // New line types:
+    // "~h", "~H": hlsearch highlighting off/on
+    // "~<magic><smartcase><line><end><off><last><which>pat"
+    // <magic>: 'm' off, 'M' on
+    // <smartcase>: 's' off, 'S' on
+    // <line>: 'L' line offset, 'l' char offset
+    // <end>: 'E' from end, 'e' from start
+    // <off>: decimal, offset
+    // <last>: '~' last used pattern
+    // <which>: '/' search pat, '&' subst. pat
+    lp = virp->vir_line;
+    if (lp[0] == '~' && (lp[1] == 'm' || lp[1] == 'M'))	// new line type
+    {
+	if (lp[1] == 'M')		// magic on
+	    magic = TRUE;
+	if (lp[2] == 's')
+	    no_scs = TRUE;
+	if (lp[3] == 'L')
+	    off_line = TRUE;
+	if (lp[4] == 'E')
+	    off_end = SEARCH_END;
+	lp += 5;
+	off = getdigits(&lp);
+    }
+    if (lp[0] == '~')		// use this pattern for last-used pattern
+    {
+	setlast = TRUE;
+	lp++;
+    }
+    if (lp[0] == '/')
+	idx = RE_SEARCH;
+    else if (lp[0] == '&')
+	idx = RE_SUBST;
+#ifdef FEAT_SEARCH_EXTRA
+    else if (lp[0] == 'h')	// ~h: 'hlsearch' highlighting off
+	hlsearch_on = FALSE;
+    else if (lp[0] == 'H')	// ~H: 'hlsearch' highlighting on
+	hlsearch_on = TRUE;
+#endif
+    spat = get_spat(idx);
+    if (idx >= 0)
+    {
+	if (force || spat->pat == NULL)
+	{
+	    val = viminfo_readstring(virp, (int)(lp - virp->vir_line + 1),
+									TRUE);
+	    if (val != NULL)
+	    {
+		set_last_search_pat(val, idx, magic, setlast);
+		vim_free(val);
+		spat->no_scs = no_scs;
+		spat->off.line = off_line;
+		spat->off.end = off_end;
+		spat->off.off = off;
+#ifdef FEAT_SEARCH_EXTRA
+		if (setlast)
+		    set_no_hlsearch(!hlsearch_on);
+#endif
+	    }
+	}
+    }
+    return viminfo_readline(virp);
+}
+
+    void
+write_viminfo_search_pattern(FILE *fp)
+{
+    if (get_viminfo_parameter('/') != 0)
+    {
+#ifdef FEAT_SEARCH_EXTRA
+	fprintf(fp, "\n# hlsearch on (H) or off (h):\n~%c",
+	    (no_hlsearch || find_viminfo_parameter('h') != NULL) ? 'h' : 'H');
+#endif
+	wvsp_one(fp, RE_SEARCH, "", '/');
+	wvsp_one(fp, RE_SUBST, _("Substitute "), '&');
+    }
+}
+
+    static void
+wvsp_one(
+    FILE	*fp,	// file to write to
+    int		idx,	// spats[] index
+    char	*s,	// search pat
+    int		sc)	// dir char
+{
+    spat_T	*spat = get_spat(idx);
+    if (spat->pat != NULL)
+    {
+	fprintf(fp, _("\n# Last %sSearch Pattern:\n~"), s);
+	// off.dir is not stored, it's reset to forward
+	fprintf(fp, "%c%c%c%c%ld%s%c",
+		spat->magic    ? 'M' : 'm',	// magic
+		spat->no_scs   ? 's' : 'S',	// smartcase
+		spat->off.line ? 'L' : 'l',	// line offset
+		spat->off.end  ? 'E' : 'e',	// offset from end
+		spat->off.off,			// offset
+		get_spat_last_idx() == idx ? "~" : "",	// last used pat
+		sc);
+	viminfo_writestring(fp, spat->pat);
+    }
 }
 #endif // FEAT_VIMINFO

@@ -15,4 +15,14 @@ void write_viminfo_filemarks(FILE *fp);
 int removable(char_u *name);
 void write_viminfo_marks(FILE *fp_out, garray_T *buflist);
 void copy_viminfo_marks(vir_T *virp, FILE *fp_out, garray_T *buflist, int eof, int flags);
+void check_marks_read(void);
+void prepare_viminfo_registers(void);
+void finish_viminfo_registers(void);
+int read_viminfo_register(vir_T *virp, int force);
+void handle_viminfo_register(garray_T *values, int force);
+void write_viminfo_registers(FILE *fp);
+int get_viminfo_parameter(int type);
+char_u *find_viminfo_parameter(int type);
+int read_viminfo_search_pattern(vir_T *virp, int force);
+void write_viminfo_search_pattern(FILE *fp);
 /* vim: set ft=c : */
