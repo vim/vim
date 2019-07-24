@@ -4727,6 +4727,7 @@ garbagecollect([{atexit}])				*garbagecollect()*
 get_lazy({list}, {idx} [, {defaultfunc}])
 get_lazy({blob}, {idx} [, {defaultfunc}])
 get_lazy({dict}, {key} [, {defaultfunc}])
+get_lazy({func}, {what})
 		Same as |get()| but if {defaultfunc} was given and the item is not
 		available, call {defaultfunc} and return the result.
 >
