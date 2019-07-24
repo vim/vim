@@ -3315,17 +3315,17 @@ win_line(
 #endif
     int		screen_line_flags = 0;
 
+    int		match_conc	= 0;	// cchar for match functions
 #ifdef FEAT_CONCEAL
     int		syntax_flags	= 0;
     int		syntax_seqnr	= 0;
     int		prev_syntax_id	= 0;
     int		conceal_attr	= HL_ATTR(HLF_CONCEAL);
     int		is_concealing	= FALSE;
-    int		boguscols	= 0;	/* nonexistent columns added to force
-					   wrapping */
-    int		vcol_off	= 0;	/* offset for concealed characters */
+    int		boguscols	= 0;	// nonexistent columns added to force
+					// wrapping
+    int		vcol_off	= 0;	// offset for concealed characters
     int		did_wcol	= FALSE;
-    int		match_conc	= 0;	/* cchar for match functions */
     int		old_boguscols   = 0;
 # define VCOL_HLC (vcol - vcol_off)
 # define FIX_FOR_BOGUSCOLS \
@@ -3859,8 +3859,8 @@ win_line(
      */
     for (;;)
     {
-#ifdef FEAT_CONCEAL
 	int has_match_conc  = 0;	// match wants to conceal
+#ifdef FEAT_CONCEAL
 	int did_decrement_ptr = FALSE;
 #endif
 	/* Skip this quickly when working on the text. */
