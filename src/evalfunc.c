@@ -74,7 +74,6 @@ static void f_changenr(typval_T *argvars, typval_T *rettv);
 static void f_char2nr(typval_T *argvars, typval_T *rettv);
 static void f_chdir(typval_T *argvars, typval_T *rettv);
 static void f_cindent(typval_T *argvars, typval_T *rettv);
-static void f_clearmatches(typval_T *argvars, typval_T *rettv);
 static void f_col(typval_T *argvars, typval_T *rettv);
 #if defined(FEAT_INS_EXPAND)
 static void f_complete(typval_T *argvars, typval_T *rettv);
@@ -314,7 +313,6 @@ static void f_setenv(typval_T *argvars, typval_T *rettv);
 static void f_setfperm(typval_T *argvars, typval_T *rettv);
 static void f_setline(typval_T *argvars, typval_T *rettv);
 static void f_setloclist(typval_T *argvars, typval_T *rettv);
-static void f_setmatches(typval_T *argvars, typval_T *rettv);
 static void f_setpos(typval_T *argvars, typval_T *rettv);
 static void f_setqflist(typval_T *argvars, typval_T *rettv);
 static void f_setreg(typval_T *argvars, typval_T *rettv);
@@ -2206,20 +2204,6 @@ get_optional_window(typval_T *argvars, int idx)
 	}
     }
     return win;
-}
-
-/*
- * "clearmatches()" function
- */
-    static void
-f_clearmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_SEARCH_EXTRA
-    win_T   *win = get_optional_window(argvars, 0);
-
-    if (win != NULL)
-	clear_matches(win);
-#endif
 }
 
 /*
@@ -10738,120 +10722,6 @@ f_setloclist(typval_T *argvars, typval_T *rettv)
     win = find_win_by_nr_or_id(&argvars[0]);
     if (win != NULL)
 	set_qf_ll_list(win, &argvars[1], &argvars[2], &argvars[3], rettv);
-}
-
-/*
- * "setmatches()" function
- */
-    static void
-f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_SEARCH_EXTRA
-    list_T	*l;
-    listitem_T	*li;
-    dict_T	*d;
-    list_T	*s = NULL;
-    win_T	*win = get_optional_window(argvars, 1);
-
-    rettv->vval.v_number = -1;
-    if (argvars[0].v_type != VAR_LIST)
-    {
-	emsg(_(e_listreq));
-	return;
-    }
-    if (win == NULL)
-	return;
-
-    if ((l = argvars[0].vval.v_list) != NULL)
-    {
-	/* To some extent make sure that we are dealing with a list from
-	 * "getmatches()". */
-	li = l->lv_first;
-	while (li != NULL)
-	{
-	    if (li->li_tv.v_type != VAR_DICT
-		    || (d = li->li_tv.vval.v_dict) == NULL)
-	    {
-		emsg(_(e_invarg));
-		return;
-	    }
-	    if (!(dict_find(d, (char_u *)"group", -1) != NULL
-			&& (dict_find(d, (char_u *)"pattern", -1) != NULL
-			    || dict_find(d, (char_u *)"pos1", -1) != NULL)
-			&& dict_find(d, (char_u *)"priority", -1) != NULL
-			&& dict_find(d, (char_u *)"id", -1) != NULL))
-	    {
-		emsg(_(e_invarg));
-		return;
-	    }
-	    li = li->li_next;
-	}
-
-	clear_matches(win);
-	li = l->lv_first;
-	while (li != NULL)
-	{
-	    int		i = 0;
-	    char	buf[30];  // use 30 to avoid compiler warning
-	    dictitem_T  *di;
-	    char_u	*group;
-	    int		priority;
-	    int		id;
-	    char_u	*conceal;
-
-	    d = li->li_tv.vval.v_dict;
-	    if (dict_find(d, (char_u *)"pattern", -1) == NULL)
-	    {
-		if (s == NULL)
-		{
-		    s = list_alloc();
-		    if (s == NULL)
-			return;
-		}
-
-		/* match from matchaddpos() */
-		for (i = 1; i < 9; i++)
-		{
-		    sprintf((char *)buf, (char *)"pos%d", i);
-		    if ((di = dict_find(d, (char_u *)buf, -1)) != NULL)
-		    {
-			if (di->di_tv.v_type != VAR_LIST)
-			    return;
-
-			list_append_tv(s, &di->di_tv);
-			s->lv_refcount++;
-		    }
-		    else
-			break;
-		}
-	    }
-
-	    group = dict_get_string(d, (char_u *)"group", TRUE);
-	    priority = (int)dict_get_number(d, (char_u *)"priority");
-	    id = (int)dict_get_number(d, (char_u *)"id");
-	    conceal = dict_find(d, (char_u *)"conceal", -1) != NULL
-			      ? dict_get_string(d, (char_u *)"conceal", TRUE)
-			      : NULL;
-	    if (i == 0)
-	    {
-		match_add(win, group,
-		    dict_get_string(d, (char_u *)"pattern", FALSE),
-		    priority, id, NULL, conceal);
-	    }
-	    else
-	    {
-		match_add(win, group, NULL, priority, id, s, conceal);
-		list_unref(s);
-		s = NULL;
-	    }
-	    vim_free(group);
-	    vim_free(conceal);
-
-	    li = li->li_next;
-	}
-	rettv->vval.v_number = 0;
-    }
-#endif
 }
 
 /*
