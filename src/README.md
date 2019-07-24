@@ -52,6 +52,7 @@ quickfix.c	| quickfix commands (":make", ":cn")
 regexp.c	| pattern matching
 screen.c	| updating the windows
 search.c	| pattern searching
+session.c	| sessions and views
 sign.c		| signs
 spell.c		| spell checking
 syntax.c	| syntax and other highlighting

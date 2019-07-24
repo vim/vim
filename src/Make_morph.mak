@@ -75,6 +75,7 @@ SRC =	arabic.c						\
 	regexp.c						\
 	screen.c						\
 	search.c						\
+	session.c						\
 	sha256.c						\
 	sign.c							\
 	spell.c							\

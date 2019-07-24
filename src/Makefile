@@ -1634,6 +1634,7 @@ BASIC_SRC = \
 	regexp.c \
 	screen.c \
 	search.c \
+	session.c \
 	sha256.c \
 	sign.c \
 	sound.c \
@@ -1754,6 +1755,7 @@ OBJ_COMMON = \
 	objects/regexp.o \
 	objects/screen.o \
 	objects/search.o \
+	objects/session.o \
 	objects/sha256.o \
 	objects/sign.o \
 	objects/sound.o \
@@ -1899,6 +1901,7 @@ PRO_AUTO = \
 	regexp.pro \
 	screen.pro \
 	search.pro \
+	session.pro \
 	sha256.pro \
 	sign.pro \
 	sound.pro \
@@ -3256,6 +3259,9 @@ objects/screen.o: screen.c
 objects/search.o: search.c
 	$(CCC) -o $@ search.c
 
+objects/session.o: session.c
+	$(CCC) -o $@ session.c
+
 objects/sha256.o: sha256.c
 	$(CCC) -o $@ sha256.c
 
@@ -3684,6 +3690,10 @@ objects/screen.o: screen.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto.h globals.h
 objects/search.o: search.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/session.o: session.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/sha256.o: sha256.c vim.h protodef.h auto/config.h feature.h os_unix.h \

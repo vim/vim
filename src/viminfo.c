@@ -1376,7 +1376,6 @@ read_viminfo_search_pattern(vir_T *virp, int force)
     static int	hlsearch_on = FALSE;
 #endif
     char_u	*val;
-    spat_T	*spat;
 
     // Old line types:
     // "/pat", "&pat": search/subst. pat
