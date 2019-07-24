@@ -3850,7 +3850,7 @@ match_add(
 	prev->next = m;
     m->next = cur;
 
-    redraw_later(rtype);
+    redraw_win_later(wp, rtype);
     return id;
 
 fail:
@@ -3932,7 +3932,7 @@ clear_matches(win_T *wp)
 	vim_free(wp->w_match_head);
 	wp->w_match_head = m;
     }
-    redraw_later(SOME_VALID);
+    redraw_win_later(wp, SOME_VALID);
 }
 
 /*
