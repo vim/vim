@@ -4729,7 +4729,31 @@ get_lazy({blob}, {idx} [, {defaultfunc}])
 get_lazy({dict}, {key} [, {defaultfunc}])
 		Same as |get()| but if {defaultfunc} was given and the item is not
 		available, call {defaultfunc} and return the result.
+>
+	function! s:do_heavy_computation(key)
+	    " assume doing some heavy computations here...
+	    return len(a:key) * 2
+	endfunction
 
+	function! s:init_missing(dict, key)
+	    let val = s:do_heavy_computation(a:key)
+	    let a:dict[a:key] = val
+	    return val
+	endfunction
+
+	function! s:main()
+	    " result == 14 == len(a:key) * 2
+	    let dict = {}
+	    let result = get_lazy(dict, 'missing', {-> s:init_missing(dict, 'missing')})
+	    echo result
+
+	    " s:init_missing() is not called here, because dict['missing'] exists
+	    let result = get_lazy(dict, 'missing', {-> s:init_missing(dict, 'missing')})
+	    echo result
+	endfunction
+
+	call s:main()
+<
 get({list}, {idx} [, {default}])			*get()*
 		Get item {idx} from |List| {list}.  When this item is not
 		available return {default}.  Return zero when {default} is
