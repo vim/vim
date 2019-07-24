@@ -3912,7 +3912,7 @@ match_delete(win_T *wp, int id, int perr)
 	rtype = VALID;
     }
     vim_free(cur);
-    redraw_later(rtype);
+    redraw_win_later(wp, rtype);
     return 0;
 }
 
