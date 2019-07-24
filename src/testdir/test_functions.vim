@@ -990,6 +990,12 @@ func Test_Executable()
   elseif has('unix')
     call assert_equal(1, executable('cat'))
     call assert_equal(0, executable('nodogshere'))
+
+    new
+    exe 'lcd /'
+    call assert_equal(1, executable('usr/bin/cat'))
+    call assert_equal('/usr/bin/cat', exepath('usr/bin/cat'))
+    bwipe
   endif
 endfunc
 
