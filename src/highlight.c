@@ -157,7 +157,7 @@ static char *(highlight_init_both[]) = {
     NULL
 };
 
-/* Default colors only used with a light background. */
+// Default colors only used with a light background.
 static char *(highlight_init_light[]) = {
     CENT("Directory term=bold ctermfg=DarkBlue",
 	 "Directory term=bold ctermfg=DarkBlue guifg=Blue"),
@@ -250,7 +250,7 @@ static char *(highlight_init_light[]) = {
     NULL
 };
 
-/* Default colors only used with a dark background. */
+// Default colors only used with a dark background.
 static char *(highlight_init_dark[]) = {
     CENT("Directory term=bold ctermfg=LightCyan",
 	 "Directory term=bold ctermfg=LightCyan guifg=Cyan"),
@@ -3675,7 +3675,7 @@ match_add(
     int		prio,
     int		id,
     list_T	*pos_list,
-    char_u      *conceal_char UNUSED) /* pointer to conceal replacement char */
+    char_u      *conceal_char UNUSED) // pointer to conceal replacement char
 {
     matchitem_T	*cur;
     matchitem_T	*prev;
@@ -3715,7 +3715,7 @@ match_add(
 	return -1;
     }
 
-    /* Find available match ID. */
+    // Find available match ID.
     while (id == -1)
     {
 	cur = wp->w_match_head;
@@ -3726,7 +3726,7 @@ match_add(
 	wp->w_next_match_id++;
     }
 
-    /* Build new match. */
+    // Build new match.
     m = ALLOC_CLEAR_ONE(matchitem_T);
     m->id = id;
     m->priority = prio;
@@ -3741,7 +3741,7 @@ match_add(
 	m->conceal_char = (*mb_ptr2char)(conceal_char);
 # endif
 
-    /* Set up position matches */
+    // Set up position matches
     if (pos_list != NULL)
     {
 	linenr_T	toplnum = 0;
@@ -3815,7 +3815,7 @@ match_add(
 		botlnum = lnum + 1;
 	}
 
-	/* Calculate top and bottom lines for redrawing area */
+	// Calculate top and bottom lines for redrawing area
 	if (toplnum != 0)
 	{
 	    if (wp->w_buffer->b_mod_set)
@@ -3838,8 +3838,8 @@ match_add(
 	}
     }
 
-    /* Insert new match.  The match list is in ascending order with regard to
-     * the match priorities. */
+    // Insert new match.  The match list is in ascending order with regard to
+    // the match priorities.
     cur = wp->w_match_head;
     prev = cur;
     while (cur != NULL && prio >= cur->priority)
@@ -3960,8 +3960,8 @@ init_search_hl(win_T *wp, match_T *search_hl)
 {
     matchitem_T *cur;
 
-    /* Setup for match and 'hlsearch' highlighting.  Disable any previous
-     * match */
+    // Setup for match and 'hlsearch' highlighting.  Disable any previous
+    // match
     cur = wp->w_match_head;
     while (cur != NULL)
     {
@@ -3974,7 +3974,7 @@ init_search_hl(win_T *wp, match_T *search_hl)
 	cur->hl.lnum = 0;
 	cur->hl.first_lnum = 0;
 # ifdef FEAT_RELTIME
-	/* Set the time limit to 'redrawtime'. */
+	// Set the time limit to 'redrawtime'.
 	profile_setlimit(p_rdt, &(cur->hl.tm));
 # endif
 	cur = cur->next;
@@ -3982,7 +3982,7 @@ init_search_hl(win_T *wp, match_T *search_hl)
     search_hl->buf = wp->w_buffer;
     search_hl->lnum = 0;
     search_hl->first_lnum = 0;
-    /* time limit is set at the toplevel, for all windows */
+    // time limit is set at the toplevel, for all windows
 }
 
 /*
@@ -3991,10 +3991,10 @@ init_search_hl(win_T *wp, match_T *search_hl)
  */
     static int
 next_search_hl_pos(
-    match_T	    *shl,	/* points to a match */
+    match_T	    *shl,	// points to a match
     linenr_T	    lnum,
-    posmatch_T	    *posmatch,	/* match positions */
-    colnr_T	    mincol)	/* minimal column for a match */
+    posmatch_T	    *posmatch,	// match positions
+    colnr_T	    mincol)	// minimal column for a match
 {
     int	    i;
     int	    found = -1;
@@ -4011,8 +4011,8 @@ next_search_hl_pos(
 	{
 	    if (found >= 0)
 	    {
-		/* if this match comes before the one at "found" then swap
-		 * them */
+		// if this match comes before the one at "found" then swap
+		// them
 		if (pos->col < posmatch->pos[found].col)
 		{
 		    llpos_T	tmp = *pos;
@@ -4076,11 +4076,10 @@ next_search_hl(
 
     if (shl->lnum != 0)
     {
-	/* Check for three situations:
-	 * 1. If the "lnum" is below a previous match, start a new search.
-	 * 2. If the previous match includes "mincol", use it.
-	 * 3. Continue after the previous match.
-	 */
+	// Check for three situations:
+	// 1. If the "lnum" is below a previous match, start a new search.
+	// 2. If the previous match includes "mincol", use it.
+	// 3. Continue after the previous match.
 	l = shl->lnum + shl->rm.endpos[0].lnum - shl->rm.startpos[0].lnum;
 	if (lnum > l)
 	    shl->lnum = 0;
@@ -4096,19 +4095,18 @@ next_search_hl(
     for (;;)
     {
 # ifdef FEAT_RELTIME
-	/* Stop searching after passing the time limit. */
+	// Stop searching after passing the time limit.
 	if (profile_passed_limit(&(shl->tm)))
 	{
-	    shl->lnum = 0;		/* no match found in time */
+	    shl->lnum = 0;		// no match found in time
 	    break;
 	}
 # endif
-	/* Three situations:
-	 * 1. No useful previous match: search from start of line.
-	 * 2. Not Vi compatible or empty match: continue at next character.
-	 *    Break the loop if this is beyond the end of the line.
-	 * 3. Vi compatible searching: continue at end of previous match.
-	 */
+	// Three situations:
+	// 1. No useful previous match: search from start of line.
+	// 2. Not Vi compatible or empty match: continue at next character.
+	//    Break the loop if this is beyond the end of the line.
+	// 3. Vi compatible searching: continue at end of previous match.
 	if (shl->lnum == 0)
 	    matchcol = 0;
 	else if (vim_strchr(p_cpo, CPO_SEARCH) == NULL
@@ -4136,8 +4134,8 @@ next_search_hl(
 	shl->lnum = lnum;
 	if (shl->rm.regprog != NULL)
 	{
-	    /* Remember whether shl->rm is using a copy of the regprog in
-	     * cur->match. */
+	    // Remember whether shl->rm is using a copy of the regprog in
+	    // cur->match.
 	    int regprog_is_copy = (shl != search_hl && cur != NULL
 				&& shl == &cur->hl
 				&& cur->match.regprog == cur->hl.rm.regprog);
@@ -4151,23 +4149,22 @@ next_search_hl(
 		    NULL, NULL
 #endif
 		    );
-	    /* Copy the regprog, in case it got freed and recompiled. */
+	    // Copy the regprog, in case it got freed and recompiled.
 	    if (regprog_is_copy)
 		cur->match.regprog = cur->hl.rm.regprog;
 
 	    if (called_emsg || got_int || timed_out)
 	    {
-		/* Error while handling regexp: stop using this regexp. */
+		// Error while handling regexp: stop using this regexp.
 		if (shl == search_hl)
 		{
-		    /* don't free regprog in the match list, it's a copy */
+		    // don't free regprog in the match list, it's a copy
 		    vim_regfree(shl->rm.regprog);
 		    set_no_hlsearch(TRUE);
 		}
 		shl->rm.regprog = NULL;
 		shl->lnum = 0;
-		got_int = FALSE;  /* avoid the "Type :quit to exit Vim"
-				     message */
+		got_int = FALSE;  // avoid the "Type :quit to exit Vim" message
 		break;
 	    }
 	}
@@ -4177,7 +4174,7 @@ next_search_hl(
 	    nmatched = 0;
 	if (nmatched == 0)
 	{
-	    shl->lnum = 0;		/* no match found */
+	    shl->lnum = 0;		// no match found
 	    break;
 	}
 	if (shl->rm.startpos[0].lnum > 0
@@ -4186,7 +4183,7 @@ next_search_hl(
 		|| shl->rm.endpos[0].col > mincol)
 	{
 	    shl->lnum += shl->rm.startpos[0].lnum;
-	    break;			/* useful match found */
+	    break;			// useful match found
 	}
     }
 
@@ -4200,19 +4197,17 @@ next_search_hl(
     void
 prepare_search_hl(win_T *wp, match_T *search_hl, linenr_T lnum)
 {
-    matchitem_T *cur;		/* points to the match list */
-    match_T	*shl;		/* points to search_hl or a match */
-    int		shl_flag;	/* flag to indicate whether search_hl
-				   has been processed or not */
-    int		pos_inprogress;	/* marks that position match search is
-				   in progress */
+    matchitem_T *cur;		// points to the match list
+    match_T	*shl;		// points to search_hl or a match
+    int		shl_flag;	// flag to indicate whether search_hl
+				// has been processed or not
+    int		pos_inprogress;	// marks that position match search is
+				// in progress
     int		n;
 
-    /*
-     * When using a multi-line pattern, start searching at the top
-     * of the window or just after a closed fold.
-     * Do this both for search_hl and the match list.
-     */
+    // When using a multi-line pattern, start searching at the top
+    // of the window or just after a closed fold.
+    // Do this both for search_hl and the match list.
     cur = wp->w_match_head;
     shl_flag = WIN_IS_POPUP(wp);  // skip search_hl in a popup window
     while (cur != NULL || shl_flag == FALSE)
@@ -4338,7 +4333,7 @@ prepare_search_hl_line(
 		else
 		    ++shl->endcol;
 	    }
-	    if ((long)shl->startcol < mincol)  /* match at leftcol */
+	    if ((long)shl->startcol < mincol)  // match at leftcol
 	    {
 		shl->attr_cur = shl->attr;
 		*search_attr = shl->attr;
@@ -4366,8 +4361,8 @@ update_search_hl(
 	colnr_T	    col,
 	char_u	    **line,
 	match_T	    *search_hl,
-	int	    *has_match_conc,
-	int	    *match_conc,
+	int	    *has_match_conc UNUSED,
+	int	    *match_conc UNUSED,
 	int	    did_line_attr,
 	int	    lcs_eol_one)
 {
@@ -4444,16 +4439,16 @@ update_search_hl(
 
 		    if (shl->startcol == shl->endcol)
 		    {
-			/* highlight empty match, try again after
-			 * it */
+			// highlight empty match, try again after
+			// it
 			if (has_mbyte)
 			    shl->endcol += (*mb_ptr2len)(*line + shl->endcol);
 			else
 			    ++shl->endcol;
 		    }
 
-		    /* Loop to check if the match starts at the
-		     * current position */
+		    // Loop to check if the match starts at the
+		    // current position
 		    continue;
 		}
 	    }
@@ -4484,7 +4479,7 @@ update_search_hl(
 	if (shl != search_hl && cur != NULL)
 	    cur = cur->next;
     }
-    /* Only highlight one character after the last column. */
+    // Only highlight one character after the last column.
     if (*(*line + col) == NUL && (did_line_attr >= 1
 				       || (wp->w_p_list && lcs_eol_one == -1)))
 	search_attr = 0;
@@ -4624,7 +4619,7 @@ f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 	    return;
 	if (cur->match.regprog == NULL)
 	{
-	    /* match added with matchaddpos() */
+	    // match added with matchaddpos()
 	    for (i = 0; i < MAXPOSMATCH; ++i)
 	    {
 		llpos_T	*llpos;
@@ -4693,8 +4688,8 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     if ((l = argvars[0].vval.v_list) != NULL)
     {
-	/* To some extent make sure that we are dealing with a list from
-	 * "getmatches()". */
+	// To some extent make sure that we are dealing with a list from
+	// "getmatches()".
 	li = l->lv_first;
 	while (li != NULL)
 	{
@@ -4738,7 +4733,7 @@ f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 			return;
 		}
 
-		/* match from matchaddpos() */
+		// match from matchaddpos()
 		for (i = 1; i < 9; i++)
 		{
 		    sprintf((char *)buf, (char *)"pos%d", i);
@@ -4791,9 +4786,9 @@ f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
 # ifdef FEAT_SEARCH_EXTRA
     char_u	buf[NUMBUFLEN];
-    char_u	*grp = tv_get_string_buf_chk(&argvars[0], buf);	/* group */
-    char_u	*pat = tv_get_string_buf_chk(&argvars[1], buf);	/* pattern */
-    int		prio = 10;	/* default priority */
+    char_u	*grp = tv_get_string_buf_chk(&argvars[0], buf);	// group
+    char_u	*pat = tv_get_string_buf_chk(&argvars[1], buf);	// pattern
+    int		prio = 10;	// default priority
     int		id = -1;
     int		error = FALSE;
     char_u	*conceal_char = NULL;
@@ -4873,7 +4868,7 @@ f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     if (error == TRUE)
 	return;
 
-    /* id == 3 is ok because matchaddpos() is supposed to substitute :3match */
+    // id == 3 is ok because matchaddpos() is supposed to substitute :3match
     if (id == 1 || id == 2)
     {
 	semsg(_("E798: ID is reserved for \":match\": %d"), id);
@@ -4956,7 +4951,7 @@ ex_match(exarg_T *eap)
 	return;
     }
 
-    /* First clear any old pattern. */
+    // First clear any old pattern.
     if (!eap->skip)
 	match_delete(curwin, id, FALSE);
 
@@ -4973,7 +4968,7 @@ ex_match(exarg_T *eap)
 	p = skipwhite(p);
 	if (*p == NUL)
 	{
-	    /* There must be two arguments. */
+	    // There must be two arguments.
 	    vim_free(g);
 	    semsg(_(e_invarg2), eap->arg);
 	    return;
