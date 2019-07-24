@@ -4332,10 +4332,13 @@ common_get(typval_T *argvars, typval_T *rettv, int is_lazy)
 
     if (tv == NULL)
     {
-	if (is_lazy)
-	    eval_expr_typval(&argvars[2], NULL, 0, rettv);
-	else if (argvars[2].v_type != VAR_UNKNOWN)
-	    copy_tv(&argvars[2], rettv);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    if (is_lazy)
+		eval_expr_typval(&argvars[2], NULL, 0, rettv);
+	    else
+		copy_tv(&argvars[2], rettv);
+	}
     }
     else
 	copy_tv(tv, rettv);
