@@ -1307,6 +1307,7 @@ set_buffer_lines(
     buf_T	*curbuf_save = NULL;
     win_T	*curwin_save = NULL;
     int		is_curbuf = buf == curbuf;
+    int		RedrawingDisabled_save = RedrawingDisabled;
 
     /* When using the current buffer ml_mfp will be set if needed.  Useful when
      * setline() is used on startup.  For other buffers the buffer must be
@@ -1411,6 +1412,13 @@ set_buffer_lines(
 
     if (!is_curbuf)
     {
+	if (RedrawingDisabled_save)
+	    RedrawingDisabled--;
+
+	// force a redraw
+	update_curbuf(SOME_VALID);
+	if (RedrawingDisabled_save)
+	    RedrawingDisabled++;
 	curbuf = curbuf_save;
 	curwin = curwin_save;
     }
