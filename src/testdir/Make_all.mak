@@ -133,6 +133,7 @@ NEW_TESTS = \
 	test_fold \
 	test_functions \
 	test_ga \
+	test_get_lazy \
 	test_getcwd \
 	test_getvar \
 	test_gf \
