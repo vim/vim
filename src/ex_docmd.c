@@ -3191,7 +3191,7 @@ find_command(exarg_T *eap, int *full UNUSED)
 	if (ASCII_ISLOWER(eap->cmd[0]))
 	{
 	    int c1 = eap->cmd[0];
-	    int c2 = eap->cmd[1];
+	    int c2 = len == 1 ? NUL : eap->cmd[1];
 
 	    if (command_count != (int)CMD_SIZE)
 	    {
