@@ -1420,9 +1420,9 @@ read_viminfo_search_pattern(vir_T *virp, int force)
     else if (lp[0] == 'H')	// ~H: 'hlsearch' highlighting on
 	hlsearch_on = TRUE;
 #endif
-    spat = get_spat(idx);
     if (idx >= 0)
     {
+	spat = get_spat(idx);
 	if (force || spat->pat == NULL)
 	{
 	    val = viminfo_readstring(virp, (int)(lp - virp->vir_line + 1),
