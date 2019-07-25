@@ -778,6 +778,8 @@ static char *(features[]) =
 static int included_patches[] =
 {   /* Add new patch number below this line */
 /**/
+    1748,
+/**/
     1747,
 /**/
     1746,
@@ -4439,6 +4441,13 @@ list_in_columns(char_u **items, int size, int current)
 		while (msg_col % width)
 		    msg_putchar(' ');
 	    }
+	}
+	else
+	{
+	    // this row is out of items, thus at the end of the row
+	    if (msg_col > 0 && cur_row < nrow)
+		msg_putchar('\n');
+	    ++cur_row;
 	}
     }
 }
