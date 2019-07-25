@@ -4210,6 +4210,7 @@ f_get(typval_T *argvars, typval_T *rettv)
     dictitem_T	*di;
     dict_T	*d;
     typval_T	*tv = NULL;
+    int		what_dict = FALSE;
 
     if (argvars[0].v_type == VAR_BLOB)
     {
@@ -4283,7 +4284,11 @@ f_get(typval_T *argvars, typval_T *rettv)
 		}
 	    }
 	    else if (STRCMP(what, "dict") == 0)
-		rettv_dict_set(rettv, pt->pt_dict);
+	    {
+		what_dict = TRUE;
+		if (pt->pt_dict != NULL)
+		    rettv_dict_set(rettv, pt->pt_dict);
+	    }
 	    else if (STRCMP(what, "args") == 0)
 	    {
 		rettv->v_type = VAR_LIST;
@@ -4297,7 +4302,11 @@ f_get(typval_T *argvars, typval_T *rettv)
 	    }
 	    else
 		semsg(_(e_invarg2), what);
-	    return;
+
+	    // When {what} == "dict", evaluate the third argument
+	    // if pt->pt_dict == NULL
+	    if (!what_dict)
+		return;
 	}
     }
     else
