@@ -1091,8 +1091,7 @@ win_update(win_T *wp)
     int		scrolled_down = FALSE;	/* TRUE when scrolled down when
 					   w_topline got smaller a bit */
 #ifdef FEAT_SEARCH_EXTRA
-    matchitem_T *cur;		/* points to the match list */
-    int		top_to_mod = FALSE;    /* redraw above mod_top */
+    int		top_to_mod = FALSE;    // redraw above mod_top
 #endif
 
     int		row;		/* current window row to display */
@@ -1222,18 +1221,18 @@ win_update(win_T *wp)
 		mod_bot = buf->b_mod_bot;
 
 #ifdef FEAT_SEARCH_EXTRA
-	    /* When 'hlsearch' is on and using a multi-line search pattern, a
-	     * change in one line may make the Search highlighting in a
-	     * previous line invalid.  Simple solution: redraw all visible
-	     * lines above the change.
-	     * Same for a match pattern.
-	     */
+	    // When 'hlsearch' is on and using a multi-line search pattern, a
+	    // change in one line may make the Search highlighting in a
+	    // previous line invalid.  Simple solution: redraw all visible
+	    // lines above the change.
+	    // Same for a match pattern.
 	    if (search_hl.rm.regprog != NULL
 					&& re_multiline(search_hl.rm.regprog))
 		top_to_mod = TRUE;
 	    else
 	    {
-		cur = wp->w_match_head;
+		matchitem_T *cur = wp->w_match_head;
+
 		while (cur != NULL)
 		{
 		    if (cur->match.regprog != NULL
@@ -3315,7 +3314,9 @@ win_line(
 #endif
     int		screen_line_flags = 0;
 
+#if defined(FEAT_CONCEAL) || defined(FEAT_SEARCH_EXTRA)
     int		match_conc	= 0;	// cchar for match functions
+#endif
 #ifdef FEAT_CONCEAL
     int		syntax_flags	= 0;
     int		syntax_seqnr	= 0;
@@ -3859,7 +3860,9 @@ win_line(
      */
     for (;;)
     {
+#if defined(FEAT_CONCEAL) || defined(FEAT_SEARCH_EXTRA)
 	int has_match_conc  = 0;	// match wants to conceal
+#endif
 #ifdef FEAT_CONCEAL
 	int did_decrement_ptr = FALSE;
 #endif
