@@ -7,6 +7,8 @@ func Test_get_lazy_dict()
   call assert_equal(42, result, 'result == 42')
   let result = get_lazy(d, 'bar', {-> 999})
   call assert_equal(999, result, 'result == 999')
+  let result = get_lazy(d, 'bar', {... -> a:000})
+  call assert_equal([], result, 'result == []')
 endfunc
 
 " get_lazy({list}, {idx} [, {defaultfunc}])
@@ -18,6 +20,8 @@ func Test_get_lazy_list()
   call assert_equal(3, result, 'result == 3')
   let result = get_lazy(l, 3, {-> 999})
   call assert_equal(999, result, 'result == 999')
+  let result = get_lazy(l, 3, {... -> a:000})
+  call assert_equal([], result, 'result == []')
 endfunc
 
 " get_lazy({blob}, {idx} [, {defaultfunc}])
@@ -29,6 +33,8 @@ func Test_get_lazy_blob()
   call assert_equal(0xEF, result, 'result == 0xEF')
   let result = get_lazy(b, 4, {-> 999})
   call assert_equal(999, result, 'result == 999')
+  let result = get_lazy(b, 4, {... -> a:000})
+  call assert_equal([], result, 'result == []')
 endfunc
 
 " get_lazy({lambda}, {what})
@@ -40,7 +46,12 @@ func Test_get_lazy_lambda()
   call assert_equal(l:L, l:Result, "l:Result == l:L")
   " FIXME: weird dict value was returned...
   " let l:Result = get_lazy(l:L, 'dict', {-> {'lambda has': 'no dict'}})
-  " call assert_equal({}, l:Result, "l:Result == {'lambda has': 'no dict'}")
+  " call assert_equal({'lambda has': 'no dict'}, l:Result,
+  "\                 "l:Result == {'lambda has': 'no dict'}")
+  " let l:Result = get_lazy(l:L, 'dict', {... -> a:000})
+  " call assert_equal([], l:Result, "l:Result == []")
+  " let l:Result = get_lazy(l:L, 'dict')
+  " call assert_equal(0, l:Result, 'l:Result == 0')
   let l:Result = get_lazy(l:L, 'args')
   call assert_equal([], l:Result, "l:Result == []")
 endfunc
@@ -54,7 +65,12 @@ func Test_get_lazy_func()
   call assert_equal(l:F, l:Result, "l:Result == l:F")
   " FIXME: weird dict value was returned...
   " let l:Result = get_lazy(l:F, 'dict', {-> {'func has': 'no dict'}})
-  " call assert_equal({}, l:Result, "l:Result == {'func has': 'no dict'}")
+  " call assert_equal({'func has': 'no dict'}, l:Result,
+  "\                 "l:Result == {'func has': 'no dict'}")
+  " let l:Result = get_lazy(l:F, 'dict', {-> a:000})
+  " call assert_equal([], l:Result, "l:Result == []")
+  " let l:Result = get_lazy(l:F, 'dict')
+  " call assert_equal(0, l:Result, 'l:Result == 0')
   let l:Result = get_lazy(l:F, 'args')
   call assert_equal([], l:Result, "l:Result == []")
 endfunc
@@ -68,7 +84,12 @@ func Test_get_lazy_partial()
   call assert_equal(function('substitute'), l:Result, "l:Result == function('substitute')")
   " FIXME: weird dict value was returned...
   " let l:Result = get_lazy(l:P, 'dict', {-> {'partial has': 'no dict'}})
-  " call assert_equal({}, l:Result, "l:Result == {'partial has': 'no dict'}")
+  " call assert_equal({'partial has': 'no dict'}, l:Result,
+  "\                 "l:Result == {'partial has': 'no dict'}")
+  " let l:Result = get_lazy(l:P, 'dict', {-> []})
+  " call assert_equal([], l:Result, "l:Result == []")
+  " let l:Result = get_lazy(l:P, 'dict')
+  " call assert_equal(0, l:Result, 'l:Result == 0')
   let l:Result = get_lazy(l:P, 'args')
   call assert_equal(['hello there', 'there'], l:Result, "l:Result == ['hello there', 'there']")
 endfunc
@@ -87,4 +108,10 @@ func Test_get_lazy_heavy_computation()
   let result = get_lazy(d, key, {-> s:init_missing(d, key)})
   call assert_true(called_init, 's:init_missing() was called')
   call assert_equal({'missing': len('missing') * 2}, d, "d == {'missing': len('missing') * 2}")
+  let prev_dict = deepcopy(d)
+
+  let called_init = 0
+  let result = get_lazy(d, key, {-> s:init_missing(d, key)})
+  call assert_false(called_init, 's:init_missing() was NOT called')
+  call assert_equal(prev_dict, d, "d == prev_dict")
 endfunc
