@@ -4738,7 +4738,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 		win = mouse_find_win(&row, &col, FIND_POPUP);
 		if (win == NULL)
 		    return;
-		(void)mouse_comp_pos(win, &row, &col, &lnum);
+		(void)mouse_comp_pos(win, &row, &col, &lnum, NULL);
 # ifdef FEAT_TEXT_PROP
 		if (WIN_IS_POPUP(win))
 		    winnr = 0;

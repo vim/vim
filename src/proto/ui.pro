@@ -64,7 +64,7 @@ void clip_x11_set_selection(Clipboard_T *cbd);
 int clip_x11_owner_exists(Clipboard_T *cbd);
 void yank_cut_buffer0(Display *dpy, Clipboard_T *cbd);
 int jump_to_mouse(int flags, int *inclusive, int which_button);
-int mouse_comp_pos(win_T *win, int *rowp, int *colp, linenr_T *lnump);
+int mouse_comp_pos(win_T *win, int *rowp, int *colp, linenr_T *lnump, int *plines_cache);
 win_T *mouse_find_win(int *rowp, int *colp, mouse_find_T popup);
 int get_fpos_of_mouse(pos_T *mpos);
 int vcol2col(win_T *wp, linenr_T lnum, int vcol);

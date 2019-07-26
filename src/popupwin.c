@@ -2593,6 +2593,10 @@ may_update_popup_mask(int type)
     // Only check which lines are to be updated if not already
     // updating all lines.
     if (mask == popup_mask_next)
+    {
+	int	    *plines_cache = ALLOC_CLEAR_MULT(int, Rows);
+	win_T	    *prev_wp = NULL;
+
 	for (line = 0; line < screen_Rows; ++line)
 	{
 	    int	    col_done = 0;
@@ -2625,13 +2629,19 @@ may_update_popup_mask(int type)
 			wp = mouse_find_win(&line_cp, &col_cp, IGNORE_POPUP);
 			if (wp != NULL)
 			{
+			    if (wp != prev_wp)
+			    {
+				vim_memset(plines_cache, 0, sizeof(int) * Rows);
+				prev_wp = wp;
+			    }
+
 			    if (line_cp >= wp->w_height)
 				// In (or below) status line
 				wp->w_redr_status = TRUE;
 			    // compute the position in the buffer line from the
 			    // position on the screen
 			    else if (mouse_comp_pos(wp, &line_cp, &col_cp,
-									&lnum))
+							  &lnum, plines_cache))
 				// past bottom
 				wp->w_redr_status = TRUE;
 			    else
@@ -2645,6 +2655,9 @@ may_update_popup_mask(int type)
 		}
 	    }
 	}
+
+	vim_free(plines_cache);
+    }
 }
 
 /*

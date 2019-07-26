@@ -43,7 +43,7 @@ find_word_under_cursor(
     {
 	// Found a window and the cursor is in the text.  Now find the line
 	// number.
-	if (!mouse_comp_pos(wp, &row, &col, &lnum))
+	if (!mouse_comp_pos(wp, &row, &col, &lnum, NULL))
 	{
 	    // Not past end of the file.
 	    lbuf = ml_get_buf(wp->w_buffer, lnum, FALSE);
