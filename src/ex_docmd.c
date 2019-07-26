@@ -29,11 +29,6 @@ static void	free_cmdmod(void);
 static void	append_command(char_u *cmd);
 static char_u	*find_command(exarg_T *eap, int *full);
 
-static void	ex_abbreviate(exarg_T *eap);
-static void	ex_map(exarg_T *eap);
-static void	ex_unmap(exarg_T *eap);
-static void	ex_mapclear(exarg_T *eap);
-static void	ex_abclear(exarg_T *eap);
 #ifndef FEAT_MENU
 # define ex_emenu		ex_ni
 # define ex_menu		ex_ni
@@ -231,7 +226,6 @@ static void	ex_read(exarg_T *eap);
 static void	ex_pwd(exarg_T *eap);
 static void	ex_equal(exarg_T *eap);
 static void	ex_sleep(exarg_T *eap);
-static void	do_exmap(exarg_T *eap, int isabbrev);
 static void	ex_winsize(exarg_T *eap);
 static void	ex_wincmd(exarg_T *eap);
 #if defined(FEAT_GUI) || defined(UNIX) || defined(VMS) || defined(MSWIN)
@@ -5347,61 +5341,6 @@ getargopt(exarg_T *eap)
     return OK;
 }
 
-/*
- * ":abbreviate" and friends.
- */
-    static void
-ex_abbreviate(exarg_T *eap)
-{
-    do_exmap(eap, TRUE);	/* almost the same as mapping */
-}
-
-/*
- * ":map" and friends.
- */
-    static void
-ex_map(exarg_T *eap)
-{
-    /*
-     * If we are sourcing .exrc or .vimrc in current directory we
-     * print the mappings for security reasons.
-     */
-    if (secure)
-    {
-	secure = 2;
-	msg_outtrans(eap->cmd);
-	msg_putchar('\n');
-    }
-    do_exmap(eap, FALSE);
-}
-
-/*
- * ":unmap" and friends.
- */
-    static void
-ex_unmap(exarg_T *eap)
-{
-    do_exmap(eap, FALSE);
-}
-
-/*
- * ":mapclear" and friends.
- */
-    static void
-ex_mapclear(exarg_T *eap)
-{
-    map_clear(eap->cmd, eap->arg, eap->forceit, FALSE);
-}
-
-/*
- * ":abclear" and friends.
- */
-    static void
-ex_abclear(exarg_T *eap)
-{
-    map_clear(eap->cmd, eap->arg, TRUE, TRUE);
-}
-
     static void
 ex_autocmd(exarg_T *eap)
 {
@@ -7780,25 +7719,6 @@ do_sleep(long msec)
     // input buffer, otherwise a following call to input() fails.
     if (got_int)
 	(void)vpeekc();
-}
-
-    static void
-do_exmap(exarg_T *eap, int isabbrev)
-{
-    int	    mode;
-    char_u  *cmdp;
-
-    cmdp = eap->cmd;
-    mode = get_map_mode(&cmdp, eap->forceit || isabbrev);
-
-    switch (do_map((*cmdp == 'n') ? 2 : (*cmdp == 'u'),
-						    eap->arg, mode, isabbrev))
-    {
-	case 1: emsg(_(e_invarg));
-		break;
-	case 2: emsg((isabbrev ? _(e_noabbr) : _(e_nomap)));
-		break;
-    }
 }
 
 /*

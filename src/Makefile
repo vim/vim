@@ -1612,6 +1612,7 @@ BASIC_SRC = \
 	json.c \
 	list.c \
 	main.c \
+	map.c \
 	mark.c \
 	memfile.c \
 	memline.c \
@@ -1735,6 +1736,7 @@ OBJ_COMMON = \
 	objects/indent.o \
 	objects/insexpand.o \
 	objects/list.o \
+	objects/map.o \
 	objects/mark.o \
 	objects/memline.o \
 	objects/menu.o \
@@ -1879,6 +1881,7 @@ PRO_AUTO = \
 	json.pro \
 	list.pro \
 	main.pro \
+	map.pro \
 	mark.pro \
 	mbyte.pro \
 	memfile.pro \
@@ -3169,6 +3172,9 @@ objects/list.o: list.c
 objects/main.o: main.c
 	$(CCC) -o $@ main.c
 
+objects/map.o: map.c
+	$(CCC) -o $@ map.c
+
 objects/mark.o: mark.c
 	$(CCC) -o $@ mark.c
 
@@ -3601,6 +3607,10 @@ objects/list.o: list.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/main.o: main.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/map.o: map.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h

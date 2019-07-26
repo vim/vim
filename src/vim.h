@@ -2613,4 +2613,13 @@ long elapsed(DWORD start_tick);
 
 #define CLIP_ZINDEX 32000
 
+/*
+ * Make a hash value for a mapping.
+ * "mode" is the lower 4 bits of the State for the mapping.
+ * "c1" is the first character of the "lhs".
+ * Returns a value between 0 and 255, index in maphash.
+ * Put Normal/Visual mode mappings mostly separately from Insert/Cmdline mode.
+ */
+#define MAP_HASH(mode, c1) (((mode) & (NORMAL + VISUAL + SELECTMODE + OP_PENDING + TERMINAL)) ? (c1) : ((c1) ^ 0x80))
+
 #endif /* VIM__H */

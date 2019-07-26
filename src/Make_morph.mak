@@ -56,6 +56,7 @@ SRC =	arabic.c						\
 	json.c							\
 	list.c							\
 	main.c							\
+	map.c							\
 	mark.c							\
 	mbyte.c							\
 	memfile.c						\
