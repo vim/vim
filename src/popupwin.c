@@ -2032,7 +2032,9 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
 	top_extra = popup_top_extra(wp);
 	left_extra = wp->w_popup_border[3] + wp->w_popup_padding[3];
 
+	// we know how much space we need, avoid resizing halfway
 	dict = rettv->vval.v_dict;
+	hash_lock_size(&dict->dv_hashtab, 11);
 
 	dict_add_number(dict, "line", wp->w_winrow + 1);
 	dict_add_number(dict, "col", wp->w_wincol + 1);
@@ -2050,6 +2052,8 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "firstline", wp->w_topline);
 	dict_add_number(dict, "visible",
 		      win_valid(wp) && (wp->w_popup_flags & POPF_HIDDEN) == 0);
+
+	hash_unlock(&dict->dv_hashtab);
     }
 }
 /*
