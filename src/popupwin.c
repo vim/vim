@@ -673,6 +673,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	{
 	    wp->w_popup_mask = di->di_tv.vval.v_list;
 	    ++wp->w_popup_mask->lv_refcount;
+	    VIM_CLEAR(wp->w_popup_mask_cells);
 	}
 	else
 	    semsg(_(e_invargval), "mask");
@@ -2417,21 +2418,27 @@ popup_check_cursor_pos()
 }
 
 /*
- * Return TRUE if "col" / "line" matches with an entry in w_popup_mask.
- * "col" and "line" are screen coordinates.
+ * Update "w_popup_mask_cells".
  */
-    static int
-popup_masked(win_T *wp, int screencol, int screenline)
+    static void
+popup_update_mask(win_T *wp, int width, int height)
 {
-    int		col = screencol - wp->w_wincol + 1 + wp->w_popup_leftoff;
-    int		line = screenline - wp->w_winrow + 1;
     listitem_T	*lio, *li;
-    int		width, height;
+    char_u	*cells;
+    int		row, col;
 
     if (wp->w_popup_mask == NULL)
-	return FALSE;
-    width = popup_width(wp);
-    height = popup_height(wp);
+	return;
+    if (wp->w_popup_mask_cells != NULL
+	    && wp->w_popup_mask_height == height
+	    && wp->w_popup_mask_width == width)
+	return;  // cache is still valid
+
+    vim_free(wp->w_popup_mask_cells);
+    wp->w_popup_mask_cells = alloc_clear(width * height);
+    if (wp->w_popup_mask_cells == NULL)
+	return;
+    cells = wp->w_popup_mask_cells;
 
     for (lio = wp->w_popup_mask->lv_first; lio != NULL; lio = lio->li_next)
     {
@@ -2442,29 +2449,38 @@ popup_masked(win_T *wp, int screencol, int screenline)
 	cols = tv_get_number(&li->li_tv);
 	if (cols < 0)
 	    cols = width + cols + 1;
-	if (col < cols)
-	    continue;
 	li = li->li_next;
 	cole = tv_get_number(&li->li_tv);
 	if (cole < 0)
 	    cole = width + cole + 1;
-	if (col > cole)
-	    continue;
 	li = li->li_next;
 	lines = tv_get_number(&li->li_tv);
 	if (lines < 0)
 	    lines = height + lines + 1;
-	if (line < lines)
-	    continue;
 	li = li->li_next;
 	linee = tv_get_number(&li->li_tv);
 	if (linee < 0)
 	    linee = height + linee + 1;
-	if (line > linee)
-	    continue;
-	return TRUE;
+
+	for (row = lines - 1; row < linee && row < height; ++row)
+	    for (col = cols - 1; col < cole && col < width; ++col)
+		cells[row * width + col] = 1;
     }
-    return FALSE;
+}
+
+/*
+ * Return TRUE if "col" / "line" matches with an entry in w_popup_mask.
+ * "col" and "line" are screen coordinates.
+ */
+    static int
+popup_masked(win_T *wp, int width, int height, int screencol, int screenline)
+{
+    int col = screencol - wp->w_wincol + wp->w_popup_leftoff;
+    int line = screenline - wp->w_winrow;
+
+    return col >= 0 && col < width
+	    && line >= 0 && line < height
+	    && wp->w_popup_mask_cells[line * width + col];
 }
 
 /*
@@ -2574,8 +2590,8 @@ may_update_popup_mask(int type)
     popup_reset_handled();
     while ((wp = find_next_popup(TRUE)) != NULL)
     {
-	int height;
 	int width;
+	int height;
 
 	popup_visible = TRUE;
 
@@ -2584,13 +2600,16 @@ may_update_popup_mask(int type)
 		|| wp->w_popup_last_changedtick != CHANGEDTICK(wp->w_buffer))
 	    popup_adjust_position(wp);
 
+	width = popup_width(wp);
 	height = popup_height(wp);
-	width = popup_width(wp) - wp->w_popup_leftoff;
+	popup_update_mask(wp, width, height);
 	for (line = wp->w_winrow;
 		line < wp->w_winrow + height && line < screen_Rows; ++line)
 	    for (col = wp->w_wincol;
-		 col < wp->w_wincol + width && col < screen_Columns; ++col)
-		if (!popup_masked(wp, col, line))
+		 col < wp->w_wincol + width - wp->w_popup_leftoff
+						&& col < screen_Columns; ++col)
+		if (wp->w_popup_mask_cells == NULL
+				|| !popup_masked(wp, width, height, col, line))
 		    mask[line * screen_Columns + col] = wp->w_zindex;
     }
 
