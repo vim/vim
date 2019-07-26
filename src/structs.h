@@ -3017,7 +3017,10 @@ struct window_S
     int		w_popup_drag;	    // allow moving the popup with the mouse
     popclose_T	w_popup_close;	    // allow closing the popup with the mouse
 
-    list_T	*w_popup_mask;	    // list of lists for "mask"
+    list_T	*w_popup_mask;	     // list of lists for "mask"
+    char_u	*w_popup_mask_cells; // cached mask cells
+    int		w_popup_mask_height; // height of w_popup_mask_cells
+    int		w_popup_mask_width;  // width of w_popup_mask_cells
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window
 # endif
