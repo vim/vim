@@ -4459,9 +4459,11 @@ list_in_columns(char_u **items, int size, int current)
 	else
 	{
 	    // this row is out of items, thus at the end of the row
-	    if (msg_col > 0 && cur_row < nrow)
-		msg_putchar('\n');
-	    ++cur_row;
+	    if (msg_col > 0) {
+		if (cur_row < nrow)
+		    msg_putchar('\n');
+		++cur_row;
+	    }
 	}
     }
 }
