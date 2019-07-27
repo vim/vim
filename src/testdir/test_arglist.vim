@@ -183,9 +183,9 @@ func Test_argument()
         \ execute('args'))
 
   " No trailing newline with one item per row.
-  exe 'args '.repeat('X', 81)
-  call assert_equal("\n[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
-        \ execute('args'))
+  let long_arg = repeat('X', 81)
+  exe 'args '.long_arg
+  call assert_equal("\n[".long_arg.']', execute('args'))
   let &columns = save_columns
 
   " Setting argument list should fail when the current buffer has unsaved
