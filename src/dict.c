@@ -709,7 +709,7 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 }
 
 /*
- * Get the key for *{key: val} into "tv" and advance "arg".
+ * Get the key for #{key: val} into "tv" and advance "arg".
  * Return FAIL when there is no valid key.
  */
     static int
@@ -731,7 +731,7 @@ get_literal_key(char_u **arg, typval_T *tv)
 
 /*
  * Allocate a variable for a Dictionary and fill it from "*arg".
- * "literal" is TRUE for *{key: val}
+ * "literal" is TRUE for #{key: val}
  * Return OK or FAIL.  Returns NOTDONE for {expr}.
  */
     int
@@ -1034,6 +1034,33 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 }
 
 /*
+ * "items(dict)" function
+ */
+    void
+f_items(typval_T *argvars, typval_T *rettv)
+{
+    dict_list(argvars, rettv, 2);
+}
+
+/*
+ * "keys()" function
+ */
+    void
+f_keys(typval_T *argvars, typval_T *rettv)
+{
+    dict_list(argvars, rettv, 0);
+}
+
+/*
+ * "values(dict)" function
+ */
+    void
+f_values(typval_T *argvars, typval_T *rettv)
+{
+    dict_list(argvars, rettv, 1);
+}
+
+/*
  * Make each item in the dict readonly (not the value of the item).
  */
     void
@@ -1049,6 +1076,56 @@ dict_set_items_ro(dict_T *di)
 	    continue;
 	--todo;
 	HI2DI(hi)->di_flags |= DI_FLAGS_RO | DI_FLAGS_FIX;
+    }
+}
+
+/*
+ * "has_key()" function
+ */
+    void
+f_has_key(typval_T *argvars, typval_T *rettv)
+{
+    if (argvars[0].v_type != VAR_DICT)
+    {
+	emsg(_(e_dictreq));
+	return;
+    }
+    if (argvars[0].vval.v_dict == NULL)
+	return;
+
+    rettv->vval.v_number = dict_find(argvars[0].vval.v_dict,
+				      tv_get_string(&argvars[1]), -1) != NULL;
+}
+
+/*
+ * "remove({dict})" function
+ */
+    void
+dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
+{
+    dict_T	*d;
+    char_u	*key;
+    dictitem_T	*di;
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+	semsg(_(e_toomanyarg), "remove()");
+    else if ((d = argvars[0].vval.v_dict) != NULL
+	    && !var_check_lock(d->dv_lock, arg_errmsg, TRUE))
+    {
+	key = tv_get_string_chk(&argvars[1]);
+	if (key != NULL)
+	{
+	    di = dict_find(d, key, -1);
+	    if (di == NULL)
+		semsg(_(e_dictkey), key);
+	    else if (!var_check_fixed(di->di_flags, arg_errmsg, TRUE)
+			&& !var_check_ro(di->di_flags, arg_errmsg, TRUE))
+	    {
+		*rettv = di->di_tv;
+		init_tv(&di->di_tv);
+		dictitem_remove(d, di);
+	    }
+	}
     }
 }
 

@@ -13,4 +13,5 @@ int read_blob(FILE *fd, blob_T *blob);
 int write_blob(FILE *fd, blob_T *blob);
 char_u *blob2string(blob_T *blob, char_u **tofree, char_u *numbuf);
 blob_T *string2blob(char_u *str);
+void blob_remove(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

@@ -33,5 +33,10 @@ void dict_extend(dict_T *d1, dict_T *d2, char_u *action);
 dictitem_T *dict_lookup(hashitem_T *hi);
 int dict_equal(dict_T *d1, dict_T *d2, int ic, int recursive);
 void dict_list(typval_T *argvars, typval_T *rettv, int what);
+void f_items(typval_T *argvars, typval_T *rettv);
+void f_keys(typval_T *argvars, typval_T *rettv);
+void f_values(typval_T *argvars, typval_T *rettv);
 void dict_set_items_ro(dict_T *di);
+void f_has_key(typval_T *argvars, typval_T *rettv);
+void dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg);
 /* vim: set ft=c : */
