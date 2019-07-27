@@ -4426,7 +4426,7 @@ list_in_columns(char_u **items, int size, int current)
     ncol = (int) (Columns + 1) / width;
     nrow = item_count / ncol + (item_count % ncol ? 1 : 0);
 
-    // "i" counts columns then rows.  idx counts rows then columns.
+    // "i" counts columns then rows.  "idx" counts rows then columns.
     for (i = 0; !got_int && i < nrow * ncol; ++i)
     {
 	int idx = (i / ncol) + (i % ncol) * nrow;
