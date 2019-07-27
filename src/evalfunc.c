@@ -1401,12 +1401,7 @@ set_buffer_lines(
 	    if (wp->w_buffer == buf && wp->w_cursor.lnum > append_lnum)
 		wp->w_cursor.lnum += added;
 	check_cursor_col();
-
-#ifdef FEAT_JOB_CHANNEL
-	if (bt_prompt(curbuf) && (State & INSERT))
-	    // show the line with the prompt
-	    update_topline();
-#endif
+	update_topline();
     }
 
     if (!is_curbuf)
