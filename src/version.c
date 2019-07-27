@@ -4414,8 +4414,9 @@ list_in_columns(char_u **items, int size, int current)
 	for (i = 0; i < item_count; ++i)
 	{
 	    version_msg_wrap(items[i], i == current);
-	    if (msg_col > 0)
+	    if (msg_col > 0 && i < item_count - 1) {
 		msg_putchar('\n');
+	    }
 	}
 	return;
     }

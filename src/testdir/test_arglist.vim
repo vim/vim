@@ -169,6 +169,7 @@ func Test_argument()
 
   let &hidden = save_hidden
 
+  let save_columns = &columns
   let &columns = 79
   exe 'args '.join(range(1, 81))
   call assert_equal(join([
@@ -180,6 +181,12 @@ func Test_argument()
         \ '5   10  15  20  25  30  35  40  45  50  55  60  65  70  75  80  ',
         \ ], "\n"),
         \ execute('args'))
+
+  " No trailing newline with one item per row.
+  exe 'args '.repeat('X', 81)
+  call assert_equal("\n[XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX]",
+        \ execute('args'))
+  let &columns = save_columns
 
   " Setting argument list should fail when the current buffer has unsaved
   " changes
