@@ -5101,6 +5101,13 @@ do_arg_all(
 			    new_curwin = wpnext;
 			    new_curtab = curtab;
 			}
+			else if (wpnext->w_frame->fr_parent
+						 != curwin->w_frame->fr_parent)
+			{
+			    emsg(_("E249: window layout changed unexpectedly"));
+			    i = count;
+			    break;
+			}
 			else
 			    win_move_after(wpnext, curwin);
 			break;

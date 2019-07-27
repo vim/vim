@@ -66,6 +66,38 @@ static win_T *win_alloc(win_T *after, int hidden);
 
 static char *m_onlyone = N_("Already only one window");
 
+// When non-zero splitting a window is forbidden.  Used to avoid that nasty
+// autocommands mess up the window structure.
+static int split_disallowed = 0;
+
+// #define WIN_DEBUG
+#ifdef WIN_DEBUG
+/*
+ * Call this method to log the current window layout.
+ */
+    static void
+log_frame_layout(frame_T *frame)
+{
+    ch_log(NULL, "layout %s, wi: %d, he: %d, wwi: %d, whe: %d, id: %d",
+	    frame->fr_layout == FR_LEAF ? "LEAF"
+				  : frame->fr_layout == FR_ROW ? "ROW" : "COL",
+	    frame->fr_width,
+	    frame->fr_height,
+	    frame->fr_win == NULL ? -1 : frame->fr_win->w_width,
+	    frame->fr_win == NULL ? -1 : frame->fr_win->w_height,
+	    frame->fr_win == NULL ? -1 : frame->fr_win->w_id);
+    if (frame->fr_child != NULL)
+    {
+	ch_log(NULL, "children");
+	log_frame_layout(frame->fr_child);
+	if (frame->fr_next != NULL)
+	    ch_log(NULL, "END of children");
+    }
+    if (frame->fr_next != NULL)
+	log_frame_layout(frame->fr_next);
+}
+#endif
+
 /*
  * All CTRL-W window commands are handled here, called from normal_cmd().
  */
@@ -718,6 +750,21 @@ cmd_with_count(
 }
 
 /*
+ * If "split_disallowed" is set given an error and return FAIL.
+ * Otherwise return OK.
+ */
+    static int
+check_split_disallowed()
+{
+    if (split_disallowed > 0)
+    {
+	emsg(_("E242: Can't split a window while closing another"));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * split the current window, implements CTRL-W s and :split
  *
  * "size" is the height or width for the new window, 0 to use half of current
@@ -749,6 +796,8 @@ win_split(int size, int flags)
 	emsg(_("E442: Can't split topleft and botright at the same time"));
 	return FAIL;
     }
+    if (check_split_disallowed() == FAIL)
+	return FAIL;
 
     /* When creating the help window make a snapshot of the window layout.
      * Otherwise clear the snapshot, it's now invalid. */
@@ -882,7 +931,7 @@ win_split_ins(
 	/* Only make all windows the same width if one of them (except oldwin)
 	 * is wider than one of the split windows. */
 	if (!do_equal && p_ea && size == 0 && *p_ead != 'v'
-	   && oldwin->w_frame->fr_parent != NULL)
+					 && oldwin->w_frame->fr_parent != NULL)
 	{
 	    frp = oldwin->w_frame->fr_parent->fr_child;
 	    while (frp != NULL)
@@ -1711,6 +1760,8 @@ win_totop(int size, int flags)
 	beep_flush();
 	return;
     }
+    if (check_split_disallowed() == FAIL)
+	return;
 
     /* Remove the window and frame from the tree of frames. */
     (void)winframe_remove(curwin, &dir, NULL);
@@ -1750,6 +1801,12 @@ win_move_after(win_T *win1, win_T *win2)
     /* check if there is something to do */
     if (win2->w_next != win1)
     {
+	if (win1->w_frame->fr_parent != win2->w_frame->fr_parent)
+	{
+	    iemsg("INTERNAL: trying to move a window into another frame");
+	    return;
+	}
+
 	/* may need move the status line/vertical separator of the last window
 	 * */
 	if (win1 == lastwin)
@@ -2490,6 +2547,10 @@ win_close(win_T *win, int free_buf)
 	    || close_last_window_tabpage(win, free_buf, prev_curtab))
 	return FAIL;
 
+    // Now we are really going to close the window.  Disallow any autocommand
+    // to split a window to avoid trouble.
+    ++split_disallowed;
+
     /* Free the memory used for the window and get the window that received
      * the screen space. */
     wp = win_free_mem(win, &dir, NULL);
@@ -2543,6 +2604,8 @@ win_close(win_T *win, int free_buf)
 	    /* careful: after this wp and win may be invalid! */
 	    apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
     }
+
+    --split_disallowed;
 
     /*
      * If last window has a status line now and we don't want one,
