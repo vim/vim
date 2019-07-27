@@ -537,4 +537,10 @@ func Test_viminfo_oldfiles()
   call assert_equal(['1: /tmp/file_one.txt', '2: /tmp/file_two.txt', '3: /tmp/another.txt'], filter(split(execute('oldfiles'), "\n"), {i, v -> v =~ '/tmp/'}))
   call assert_equal(['1: /tmp/file_one.txt', '2: /tmp/file_two.txt'], filter(split(execute('filter file_ oldfiles'), "\n"), {i, v -> v =~ '/tmp/'}))
   call assert_equal(['3: /tmp/another.txt'], filter(split(execute('filter /another/ oldfiles'), "\n"), {i, v -> v =~ '/tmp/'}))
+
+  new
+  call feedkeys("3\<CR>", 't')
+  browse oldfiles
+  call assert_equal("/tmp/another.txt", expand("%"))
+  bwipe
 endfunc
