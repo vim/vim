@@ -1026,6 +1026,8 @@ popup_adjust_position(win_T *wp)
 
     wp->w_has_scrollbar = wp->w_want_scrollbar
 	   && (wp->w_topline > 1 || lnum <= wp->w_buffer->b_ml.ml_line_count);
+    if (wp->w_has_scrollbar)
+	++right_extra;
 
     minwidth = wp->w_minwidth;
     if (wp->w_popup_title != NULL && *wp->w_popup_title != NUL)
@@ -1040,7 +1042,7 @@ popup_adjust_position(win_T *wp)
 	wp->w_width = minwidth;
     if (wp->w_width > maxwidth)
     {
-	if (wp->w_width > maxspace)
+	if (wp->w_width > maxspace && !wp->w_p_wrap)
 	    // some columns cut off on the right
 	    wp->w_popup_rightoff = wp->w_width - maxspace;
 	wp->w_width = maxwidth;
@@ -1071,6 +1073,26 @@ popup_adjust_position(win_T *wp)
 	    wp->w_popup_leftoff = -leftoff;
 	    if (wp->w_width < 0)
 		wp->w_width = 0;
+	}
+    }
+
+    if (wp->w_p_wrap)
+    {
+	int want_col = 0;
+
+	if (wp->w_popup_close == POPCLOSE_BUTTON)
+	    // try to show the close button
+	    want_col = left_extra + wp->w_width + right_extra;
+	else if (wp->w_has_scrollbar)
+	    // try to show the scrollbar
+	    want_col = left_extra + wp->w_width
+					 + right_extra - wp->w_popup_border[1];
+	if (want_col > 0 && wp->w_wincol > 0
+					 && wp->w_wincol + want_col >= Columns)
+	{
+	    wp->w_wincol = Columns - want_col;
+	    if (wp->w_wincol < 0)
+		wp->w_wincol = 0;
 	}
     }
 
@@ -1112,6 +1134,9 @@ popup_adjust_position(win_T *wp)
 	    || org_height != wp->w_height)
     {
 	redraw_all_later(VALID);
+	redraw_win_later(wp, NOT_VALID);
+	if (wp->w_popup_flags & POPF_ON_CMDLINE)
+	    clear_cmdline = TRUE;
 	popup_mask_refresh = TRUE;
     }
 }
@@ -1221,9 +1246,10 @@ parse_previewpopup(win_T *wp)
 
 /*
  * Set w_wantline and w_wantcol for the cursor position in the current window.
+ * Keep at least "width" columns from the right of the screen.
  */
     void
-popup_set_wantpos(win_T *wp)
+popup_set_wantpos(win_T *wp, int width)
 {
     setcursor_mayforce(TRUE);
     wp->w_wantline = curwin->w_winrow + curwin->w_wrow;
@@ -1232,7 +1258,14 @@ popup_set_wantpos(win_T *wp)
 	wp->w_wantline = 2;
 	wp->w_popup_pos = POPPOS_TOPLEFT;
     }
+
     wp->w_wantcol = curwin->w_wincol + curwin->w_wcol + 1;
+    if (wp->w_wantcol > Columns - width)
+    {
+	wp->w_wantcol = Columns - width;
+	if (wp->w_wantcol < 1)
+	    wp->w_wantcol = 1;
+    }
     popup_adjust_position(wp);
 }
 
@@ -1378,10 +1411,10 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     if (type == TYPE_ATCURSOR || type == TYPE_PREVIEW)
     {
 	wp->w_popup_pos = POPPOS_BOTLEFT;
-	popup_set_wantpos(wp);
     }
     if (type == TYPE_ATCURSOR)
     {
+	popup_set_wantpos(wp, 0);
 	set_moved_values(wp);
 	set_moved_columns(wp, FIND_STRING);
     }
@@ -1485,6 +1518,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	for (i = 0; i < 4; ++i)
 	    wp->w_popup_border[i] = 1;
 	parse_previewpopup(wp);
+	popup_set_wantpos(wp, wp->w_minwidth);
     }
 
     for (i = 0; i < 4; ++i)
@@ -1878,6 +1912,7 @@ f_popup_settext(typval_T *argvars, typval_T *rettv UNUSED)
 	else
 	{
 	    popup_set_buffer_text(wp->w_buffer, argvars[1]);
+	    redraw_win_later(wp, NOT_VALID);
 	    popup_adjust_position(wp);
 	}
     }
@@ -1888,7 +1923,7 @@ popup_free(win_T *wp)
 {
     sign_undefine_by_name(popup_get_sign_name(wp), FALSE);
     wp->w_buffer->b_locked = FALSE;
-    if (wp->w_winrow + wp->w_height >= cmdline_row)
+    if (wp->w_winrow + popup_height(wp) >= cmdline_row)
 	clear_cmdline = TRUE;
     win_free_popup(wp);
 
@@ -2755,6 +2790,12 @@ update_popups(void (*win_update)(win_T *wp))
 	total_width = popup_width(wp);
 	total_height = popup_height(wp);
 	popup_attr = get_wcr_attr(wp);
+
+	if (wp->w_winrow + total_height > cmdline_row)
+	    wp->w_popup_flags |= POPF_ON_CMDLINE;
+	else
+	    wp->w_popup_flags &= ~POPF_ON_CMDLINE;
+
 
 	// We can only use these line drawing characters when 'encoding' is
 	// "utf-8" and 'ambiwidth' is "single".

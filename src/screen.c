@@ -795,6 +795,11 @@ update_screen(int type_arg)
     FOR_ALL_WINDOWS(wp)
 	wp->w_buffer->b_mod_set = FALSE;
 
+#ifdef FEAT_TEXT_PROP
+    // Display popup windows on top of the windows and command line.
+    update_popups(win_update);
+#endif
+
     after_updating_screen(TRUE);
 
     /* Clear or redraw the command line.  Done last, because scrolling may
@@ -809,11 +814,6 @@ update_screen(int type_arg)
     if (!did_intro)
 	maybe_intro_message();
     did_intro = TRUE;
-
-#ifdef FEAT_TEXT_PROP
-    // Display popup windows on top of the windows.
-    update_popups(win_update);
-#endif
 
 #ifdef FEAT_GUI
     /* Redraw the cursor and update the scrollbars when all screen updating is

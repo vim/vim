@@ -5138,7 +5138,7 @@ prepare_tagpreview(
 	{
 	    wp = popup_find_preview_window();
 	    if (wp != NULL)
-		popup_set_wantpos(wp);
+		popup_set_wantpos(wp, wp->w_minwidth);
 	}
 	else
 # endif

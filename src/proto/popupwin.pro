@@ -9,7 +9,7 @@ int popup_height(win_T *wp);
 int popup_width(win_T *wp);
 void popup_adjust_position(win_T *wp);
 int parse_previewpopup(win_T *wp);
-void popup_set_wantpos(win_T *wp);
+void popup_set_wantpos(win_T *wp, int width);
 void f_popup_clear(typval_T *argvars, typval_T *rettv);
 void f_popup_create(typval_T *argvars, typval_T *rettv);
 void f_popup_atcursor(typval_T *argvars, typval_T *rettv);
