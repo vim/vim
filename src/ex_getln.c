@@ -5095,6 +5095,26 @@ ExpandFromContext(
 	ret = expand_wildcards_eval(&pat, num_file, file, flags);
 	if (free_pat)
 	    vim_free(pat);
+#ifdef BACKSLASH_IN_FILENAME
+	if (p_csl[0] != NUL)
+	{
+	    int	    i;
+
+	    for (i = 0; i < *num_file; ++i)
+	    {
+		char_u	*ptr = (*file)[i];
+
+		while (*ptr != NUL)
+		{
+		    if (p_csl[0] == 's' && *ptr == '\\')
+			*ptr = '/';
+		    else if (p_csl[0] == 'b' && *ptr == '/')
+			*ptr = '\\';
+		    ptr += (*mb_ptr2len)(ptr);
+		}
+	    }
+	}
+#endif
 	return ret;
     }
 
