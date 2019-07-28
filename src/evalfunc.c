@@ -231,9 +231,7 @@ static void f_matchstr(typval_T *argvars, typval_T *rettv);
 static void f_matchstrpos(typval_T *argvars, typval_T *rettv);
 static void f_max(typval_T *argvars, typval_T *rettv);
 static void f_min(typval_T *argvars, typval_T *rettv);
-#ifdef vim_mkdir
 static void f_mkdir(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_mode(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_MZSCHEME
 static void f_mzeval(typval_T *argvars, typval_T *rettv);
@@ -694,9 +692,7 @@ static struct fst
     {"matchstrpos",	2, 4, f_matchstrpos},
     {"max",		1, 1, f_max},
     {"min",		1, 1, f_min},
-#ifdef vim_mkdir
     {"mkdir",		1, 3, f_mkdir},
-#endif
     {"mode",		0, 1, f_mode},
 #ifdef FEAT_MZSCHEME
     {"mzeval",		1, 1, f_mzeval},
@@ -7945,7 +7941,6 @@ mkdir_recurse(char_u *dir, int prot)
     return r;
 }
 
-#ifdef vim_mkdir
 /*
  * "mkdir()" function
  */
@@ -7989,7 +7984,6 @@ f_mkdir(typval_T *argvars, typval_T *rettv)
     }
     rettv->vval.v_number = vim_mkdir_emsg(dir, prot);
 }
-#endif
 
 /*
  * "mode()" function

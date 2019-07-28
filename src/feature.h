@@ -559,9 +559,9 @@
 
 /*
  * +mksession		":mksession" command.
- *			Requires +windows and +vertsplit.
+ *			fully depends on +eval
  */
-#if defined(FEAT_NORMAL)
+#if defined(FEAT_EVAL)
 # define FEAT_SESSION
 #endif
 

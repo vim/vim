@@ -307,7 +307,6 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 static char_u	*arg_all(void);
 #ifndef FEAT_SESSION
 # define ex_loadview		ex_ni
-# define ex_mkrc		ex_ni
 #endif
 #ifndef FEAT_EVAL
 # define ex_compiler		ex_ni
@@ -8433,8 +8432,7 @@ close_redir(void)
 #endif
 }
 
-#if ((defined(FEAT_SESSION) || defined(FEAT_EVAL)) && defined(vim_mkdir)) \
-	|| defined(PROTO)
+#if (defined(FEAT_SESSION) || defined(FEAT_EVAL)) || defined(PROTO)
     int
 vim_mkdir_emsg(char_u *name, int prot)
 {

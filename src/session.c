@@ -1063,7 +1063,6 @@ write_session_file(char_u *filename)
 static int mksession_nl = FALSE;    // use NL only in put_eol()
 #endif
 
-#if defined(FEAT_SESSION) || defined(PROTO)
 /*
  * ":mkexrc", ":mkvimrc", ":mkview" and ":mksession".
  */
@@ -1244,10 +1243,10 @@ ex_mkrc(exarg_T	*eap)
 	    if (put_line(fd, "let &so = s:so_save | let &siso = s:siso_save")
 								      == FAIL)
 		failed = TRUE;
-# ifdef FEAT_SEARCH_EXTRA
+#ifdef FEAT_SEARCH_EXTRA
 	    if (no_hlsearch && put_line(fd, "nohlsearch") == FAIL)
 		failed = TRUE;
-# endif
+#endif
 	    if (put_line(fd, "doautoall SessionLoadPost") == FAIL)
 		failed = TRUE;
 	    if (eap->cmdidx == CMD_mksession)
@@ -1264,7 +1263,7 @@ ex_mkrc(exarg_T	*eap)
 
 	if (failed)
 	    emsg(_(e_write));
-#if defined(FEAT_EVAL) && defined(FEAT_SESSION)
+#if defined(FEAT_SESSION)
 	else if (eap->cmdidx == CMD_mksession)
 	{
 	    // successful session write - set this_session var
@@ -1293,9 +1292,7 @@ theend:
 #endif
 }
 
-#endif // FEAT_SESSION
-
-#if defined(FEAT_VIMINFO) || defined(FEAT_SESSION)
+#if (defined(FEAT_VIMINFO) || defined(FEAT_SESSION)) || defined(PROTO)
     var_flavour_T
 var_flavour(char_u *varname)
 {
