@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jul 18
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Jul 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -334,6 +334,10 @@ popup_getpos({id})					*popup_getpos()*
 		The "core_" values exclude the padding and border.
 
 		If popup window {id} is not found an empty Dict is returned.
+
+popup_getpreview()					*popup_getpreview()*
+		Get the |window-ID| for the popup preview window.
+		Return zero if there is none.
 
 
 popup_hide({id})						*popup_hide()*

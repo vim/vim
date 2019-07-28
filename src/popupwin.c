@@ -3019,7 +3019,15 @@ popup_find_preview_window(void)
     for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
 	if (wp->w_p_pvw)
 	    return wp;
-    return wp;
+    return NULL;
+}
+
+    void
+f_popup_getpreview(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    win_T   *wp = popup_find_preview_window();
+
+    rettv->vval.v_number = wp == NULL ? 0 : wp->w_id;
 }
 
     int

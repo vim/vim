@@ -42,6 +42,7 @@ void may_update_popup_mask(int type);
 void update_popups(void (*win_update)(win_T *wp));
 int set_ref_in_popups(int copyID);
 win_T *popup_find_preview_window(void);
+void f_popup_getpreview(typval_T *argvars, typval_T *rettv);
 int popup_is_popup(win_T *wp);
 int popup_create_preview_window(void);
 void popup_close_preview(void);

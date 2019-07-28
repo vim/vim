@@ -715,6 +715,7 @@ static struct fst
     {"popup_filter_yesno", 2, 2, f_popup_filter_yesno},
     {"popup_getoptions", 1, 1, f_popup_getoptions},
     {"popup_getpos",	1, 1, f_popup_getpos},
+    {"popup_getpreview", 0, 0, f_popup_getpreview},
     {"popup_hide",	1, 1, f_popup_hide},
     {"popup_locate",	2, 2, f_popup_locate},
     {"popup_menu",	2, 2, f_popup_menu},
