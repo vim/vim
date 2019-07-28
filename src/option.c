@@ -7433,9 +7433,10 @@ did_set_string_option(
 
 # ifdef BACKSLASH_IN_FILENAME
     // 'completeslash'
-    else if (varp == &curbuf->b_p_csl)
+    else if (gvarp == &p_csl)
     {
-	if (check_opt_strings(p_csl, p_csl_values, FALSE) != OK)
+	if (check_opt_strings(p_csl, p_csl_values, FALSE) != OK
+		|| check_opt_strings(curbuf->b_p_csl, p_csl_values, FALSE) != OK)
 	    errmsg = e_invarg;
     }
 # endif
