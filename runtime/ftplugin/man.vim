@@ -174,7 +174,6 @@ func <SID>GetPage(cmdmods, ...)
       else
 	let open_cmd = a:cmdmods . ' split'
       endif
-      setl nonu fdc=0
     endif
   endif
 
@@ -183,7 +182,7 @@ func <SID>GetPage(cmdmods, ...)
   " Avoid warning for editing the dummy file twice
   setl buftype=nofile noswapfile
 
-  setl ma nonu nornu nofen
+  setl fdc=0 ma nofen nonu nornu
   silent exec "norm! 1GdG"
   let unsetwidth = 0
   if empty($MANWIDTH)

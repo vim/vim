@@ -1,6 +1,6 @@
 runtime ftplugin/man.vim
 
-function Test_g_ft_man_open_mode()
+func Test_g_ft_man_open_mode()
   vnew
   let l:h = winheight(1)
   q
@@ -48,9 +48,9 @@ function Test_g_ft_man_open_mode()
   q
 
   unlet g:ft_man_open_mode
-endfunction
+endfunc
 
-function Test_nomodifiable()
+func Test_nomodifiable()
   let wincnt = winnr('$')
   Man vim
   if wincnt == winnr('$')
@@ -59,9 +59,9 @@ function Test_nomodifiable()
   endif
   call assert_false(&l:modifiable)
   q
-endfunction
+endfunc
 
-function Test_buffer_count_hidden()
+func Test_buffer_count_hidden()
   %bw!
   set hidden
 
@@ -85,4 +85,29 @@ function Test_buffer_count_hidden()
   q
 
   set hidden&
-endfunction
+endfunc
+
+" Check that we do not alter the settings in the initial window.
+func Test_local_options()
+  %bw!
+  set foldcolumn=1 number
+
+  let wincnt = winnr('$')
+  Man vim
+  if wincnt == winnr('$')
+    " Vim manual page cannot be found.
+    return
+  endif
+
+  " man page
+  call assert_false(&nu)
+  call assert_equal(0, &fdc)
+
+  " initial window
+  wincmd p
+  call assert_true(&nu)
+  call assert_equal(1, &fdc)
+
+  %bw!
+  set foldcolumn& number&
+endfunc
