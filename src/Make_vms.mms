@@ -314,10 +314,10 @@ SRC =	arabic.c autocmd.c beval.c blob.c blowfish.c buffer.c change.c charset.c \
 	hardcopy.c hashtab.c highlight.c indent.c insexpand.c json.c list.c \
 	main.c mark.c menu.c mbyte.c memfile.c memline.c message.c misc1.c \
 	misc2.c move.c normal.c ops.c option.c popupmnu.c popupwin.c \
-	profiler.c quickfix.c regexp.c search.c sha256.c sign.c spell.c \
-	spellfile.c syntax.c tag.c term.c termlib.c testing.c textprop.c ui.c \
-	undo.c usercmd.c userfunc.c version.c viminfo.c screen.c window.c \
-	os_unix.c os_vms.c pathdef.c \
+	profiler.c quickfix.c regexp.c search.c session.c sha256.c sign.c \
+	spell.c spellfile.c syntax.c tag.c term.c termlib.c testing.c \
+	textprop.c ui.c undo.c usercmd.c userfunc.c version.c viminfo.c \
+	screen.c window.c os_unix.c os_vms.c pathdef.c \
 	$(GUI_SRC) $(PERL_SRC) $(PYTHON_SRC) $(TCL_SRC) \
  	$(RUBY_SRC) $(HANGULIN_SRC) $(MZSCH_SRC) $(XDIFF_SRC)
 
@@ -330,10 +330,10 @@ OBJ = 	arabic.obj autocmd.obj beval.obj blob.obj blowfish.obj buffer.obj change.
 	mark.obj menu.obj memfile.obj memline.obj message.obj misc1.obj \
 	misc2.obj move.obj mbyte.obj normal.obj ops.obj option.obj \
 	popupmnu.obj popupwin.obj profiler.obj quickfix.obj regexp.obj \
-	search.obj sha256.obj sign.obj spell.obj spellfile.obj syntax.obj \
-	tag.obj term.obj termlib.obj testing.obj textprop.obj ui.obj undo.obj \
-	usercmd.obj userfunc.obj screen.obj version.obj viminfo.obj window.obj \
-	os_unix.obj os_vms.obj pathdef.obj if_mzsch.obj \
+	search.obj session.obj sha256.obj sign.obj spell.obj spellfile.obj \
+	syntax.obj tag.obj term.obj termlib.obj testing.obj textprop.obj \
+	ui.obj undo.obj usercmd.obj userfunc.obj screen.obj version.obj \
+	viminfo.obj window.obj os_unix.obj os_vms.obj pathdef.obj if_mzsch.obj \
 	$(GUI_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(TCL_OBJ) \
  	$(RUBY_OBJ) $(HANGULIN_OBJ) $(MZSCH_OBJ) $(XDIFF_OBJ)
 
@@ -715,6 +715,10 @@ screen.obj : screen.c vim.h [.auto]config.h feature.h os_unix.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h
 search.obj : search.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h
+session.obj : session.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h

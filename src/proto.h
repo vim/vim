@@ -183,6 +183,9 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # endif
 # include "regexp.pro"
 # include "screen.pro"
+# ifdef FEAT_SESSION
+#  include "session.pro"
+# endif
 # if defined(FEAT_CRYPT) || defined(FEAT_PERSISTENT_UNDO)
 #  include "sha256.pro"
 # endif

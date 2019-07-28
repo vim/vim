@@ -126,8 +126,6 @@ void getwinvar(typval_T *argvars, typval_T *rettv, int off);
 void setwinvar(typval_T *argvars, typval_T *rettv, int off);
 char_u *autoload_name(char_u *name);
 int script_autoload(char_u *name, int reload);
-var_flavour_T var_flavour(char_u *varname);
-int store_session_globals(FILE *fd);
 void last_set_msg(sctx_T script_ctx);
 void reset_v_option_vars(void);
 void assert_error(garray_T *gap);
