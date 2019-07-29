@@ -1,10 +1,10 @@
 " Test for channel functions.
 
-if !has('channel')
-  throw 'Skipped: channel feature missing'
-endif
+source check.vim
+CheckFeature channel
 
 source shared.vim
+source screendump.vim
 
 let s:python = PythonProg()
 if s:python == ''
@@ -1125,6 +1125,35 @@ func Test_pipe_io_one_buffer()
   endtry
 endfunc
 
+func Test_write_to_buffer_and_scroll()
+  CheckFeature job
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+  let lines =<< trim END
+      new Xscrollbuffer
+      call setline(1, range(1, 200))
+      $
+      redraw
+      wincmd w
+      call deletebufline('Xscrollbuffer', 1, '$')
+      if has('win32')
+	let cmd = ['cmd', '/c', 'echo sometext']
+      else
+	let cmd = [&shell, &shellcmdflag, 'echo sometext']
+      endif
+      call job_start(cmd, #{out_io: 'buffer', out_name: 'Xscrollbuffer'})
+  END
+  call writefile(lines, 'XtestBufferScroll')
+  let buf = RunVimInTerminal('-S XtestBufferScroll', #{rows: 10})
+  sleep 500m
+  call VerifyScreenDump(buf, 'Test_job_buffer_scroll_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestBufferScroll')
+endfunc
+
 func Test_pipe_null()
   if !has('job')
     return
@@ -1804,9 +1833,8 @@ func Test_read_from_terminated_job()
 endfunc
 
 func Test_job_start_windows()
-  if !has('job') || !has('win32')
-    return
-  endif
+  CheckFeature job
+  CheckMSWindows
 
   " Check that backslash in $COMSPEC is handled properly.
   let g:echostr = ''
@@ -1820,9 +1848,7 @@ func Test_job_start_windows()
 endfunc
 
 func Test_env()
-  if !has('job')
-    return
-  endif
+  CheckFeature job
 
   let g:envstr = ''
   if has('win32')
@@ -1837,9 +1863,7 @@ func Test_env()
 endfunc
 
 func Test_cwd()
-  if !has('job')
-    return
-  endif
+  CheckFeature job
 
   let g:envstr = ''
   if has('win32')
@@ -1901,9 +1925,7 @@ func s:test_list_args(cmd, out, remove_lf)
 endfunc
 
 func Test_list_args()
-  if !has('job')
-    return
-  endif
+  CheckFeature job
 
   call s:test_list_args('import sys;sys.stdout.write("hello world")', "hello world", 0)
   call s:test_list_args('import sys;sys.stdout.write("hello\nworld")', "hello\nworld", 0)
@@ -1956,9 +1978,8 @@ func Test_keep_pty_open()
 endfunc
 
 func Test_job_start_in_timer()
-  if !has('job') || !has('timers')
-    return
-  endif
+  CheckFeature job
+  CheckFeature timers
 
   func OutCb(chan, msg)
     let g:val += 1
@@ -2017,9 +2038,8 @@ func Test_raw_large_data()
 endfunc
 
 func Test_no_hang_windows()
-  if !has('job') || !has('win32')
-    return
-  endif
+  CheckFeature job
+  CheckMSWindows
 
   try
     let job = job_start(s:python . " test_channel_pipe.py busy",
@@ -2055,9 +2075,8 @@ func Test_job_exitval_and_termsig()
 endfunc
 
 func Test_job_tty_in_out()
-  if !has('job') || !has('unix')
-    return
-  endif
+  CheckFeature job
+  CheckUnix
 
   call writefile(['test'], 'Xtestin')
   let in_opts = [{},

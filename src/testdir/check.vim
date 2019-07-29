@@ -21,3 +21,19 @@ func CheckFunction(name)
     throw 'Skipped: ' .. a:name .. ' function missing'
   endif
 endfunc
+
+" Command to check for running on MS-Windows
+command CheckMSWindows call CheckMSWindows()
+func CheckMSWindows()
+  if !has('win32')
+    throw 'Skipped: only works on MS-Windows'
+  endif
+endfunc
+
+" Command to check for running on Unix
+command CheckUnix call CheckUnix()
+func CheckUnix()
+  if !has('unix')
+    throw 'Skipped: only works on Unix'
+  endif
+endfunc

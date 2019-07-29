@@ -2537,19 +2537,26 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 
 	FOR_ALL_WINDOWS(wp)
 	{
-	    if (wp->w_buffer == buffer
-		    && (save_write_to
-			? wp->w_cursor.lnum == lnum + 1
-			: (wp->w_cursor.lnum == lnum
-			    && wp->w_cursor.col == 0)))
+	    if (wp->w_buffer == buffer)
 	    {
-		++wp->w_cursor.lnum;
-		save_curwin = curwin;
-		curwin = wp;
-		curbuf = curwin->w_buffer;
-		scroll_cursor_bot(0, FALSE);
-		curwin = save_curwin;
-		curbuf = curwin->w_buffer;
+		int move_cursor = save_write_to
+			    ? wp->w_cursor.lnum == lnum + 1
+			    : (wp->w_cursor.lnum == lnum
+				&& wp->w_cursor.col == 0);
+
+		// If the cursor is at or above the new line, move it one line
+		// down.  If the topline is outdated update it now.
+		if (move_cursor || wp->w_topline > buffer->b_ml.ml_line_count)
+		{
+		    if (move_cursor)
+			++wp->w_cursor.lnum;
+		    save_curwin = curwin;
+		    curwin = wp;
+		    curbuf = curwin->w_buffer;
+		    scroll_cursor_bot(0, FALSE);
+		    curwin = save_curwin;
+		    curbuf = curwin->w_buffer;
+		}
 	    }
 	}
 	redraw_buf_and_status_later(buffer, VALID);
