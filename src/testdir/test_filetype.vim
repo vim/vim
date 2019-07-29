@@ -521,7 +521,7 @@ func CheckItems(checks)
       try
         exe 'edit ' . fnameescape(names[i])
       catch
-	call assert_report('cannot edit "' . names[i] . '": ' . v:errmsg)
+	call assert_report('cannot edit "' . names[i] . '": ' . v:exception)
       endtry
       if &filetype == '' && &readonly
 	" File exists but not able to edit it (permission denied)
