@@ -65,6 +65,9 @@ extern int _stricoll(char *a, char *b);
 # include "buffer.pro"
 # include "change.pro"
 # include "charset.pro"
+# ifdef FEAT_CMDHIST
+# include "cmdhist.pro"
+# endif
 # ifdef FEAT_CSCOPE
 #  include "if_cscope.pro"
 # endif

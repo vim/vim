@@ -308,7 +308,7 @@ ALL_LIBS = $(LIBS) $(GUI_LIB_DIR) $(GUI_LIB) \
 	   $(PERL_LIB) $(PYTHON_LIB) $(TCL_LIB) $(RUBY_LIB)
 
 SRC =	arabic.c autocmd.c beval.c blob.c blowfish.c buffer.c change.c charset.c \
-	crypt.c crypt_zip.c debugger.c dict.c diff.c digraph.c edit.c eval.c \
+	cmdhist.c crypt.c crypt_zip.c debugger.c dict.c diff.c digraph.c edit.c eval.c \
 	evalfunc.c ex_cmds.c ex_cmds2.c ex_docmd.c ex_eval.c ex_getln.c \
 	if_cscope.c if_xcmdsrv.c fileio.c findfile.c fold.c getchar.c \
 	hardcopy.c hashtab.c highlight.c indent.c insexpand.c json.c list.c \
@@ -322,7 +322,7 @@ SRC =	arabic.c autocmd.c beval.c blob.c blowfish.c buffer.c change.c charset.c \
  	$(RUBY_SRC) $(HANGULIN_SRC) $(MZSCH_SRC) $(XDIFF_SRC)
 
 OBJ = 	arabic.obj autocmd.obj beval.obj blob.obj blowfish.obj buffer.obj change.obj \
-	charset.obj crypt.obj crypt_zip.obj debugger.obj dict.obj diff.obj \
+	charset.obj cmdhist.obj crypt.obj crypt_zip.obj debugger.obj dict.obj diff.obj \
 	digraph.obj edit.obj eval.obj evalfunc.obj ex_cmds.obj ex_cmds2.obj \
 	ex_docmd.obj ex_eval.obj ex_getln.obj if_cscope.obj if_xcmdsrv.obj \
 	fileio.obj findfile.obj fold.obj getchar.obj hardcopy.obj hashtab.obj \
@@ -517,6 +517,10 @@ change.obj : change.c vim.h [.auto]config.h feature.h os_unix.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h version.h
 charset.obj : charset.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h
+cmdhist.obj : cmdhist.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h
