@@ -1,5 +1,14 @@
 " Tests for the swap feature
 
+func SetUp()
+  let s:save_swapfile = &swapfile
+  set swapfile
+endfunc
+
+func TearDown()
+  let &swapfile = s:save_swapfile
+endfunc
+
 func s:swapname()
   return trim(execute('swapname'))
 endfunc

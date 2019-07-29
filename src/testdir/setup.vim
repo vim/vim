@@ -30,4 +30,7 @@ if 1
   if !isdirectory($HOME)
     call mkdir($HOME)
   endif
+
+  " Do not create swapfiles by default.
+  set noswapfile
 endif

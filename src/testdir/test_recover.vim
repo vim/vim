@@ -1,5 +1,14 @@
 " Test :recover
 
+func SetUp()
+  let s:save_swapfile = &swapfile
+  set swapfile
+endfunc
+
+func TearDown()
+  let &swapfile = s:save_swapfile
+endfunc
+
 func Test_recover_root_dir()
   " This used to access invalid memory.
   split Xtest
