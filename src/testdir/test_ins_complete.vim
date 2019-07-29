@@ -335,7 +335,7 @@ endfunc
 " Test for insert path completion with completeslash option
 func Test_ins_completeslash()
   if !has('win32')
-    return
+    throw 'Skipped: only works on MS-Windows'
   endif
   
   call mkdir('Xdir')
