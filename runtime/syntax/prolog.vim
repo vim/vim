@@ -63,7 +63,8 @@ if !exists("prolog_highlighting_clean")
   syn match   prologOperator "=\\=\|=:=\|\\==\|=<\|==\|>=\|\\=\|\\+\|<\|>\|="
   syn match   prologAsIs     "===\|\\===\|<=\|=>"
 
-  syn match   prologNumber            "\<[0123456789]*\>'\@!"
+  syn match   prologNumber            "\<\d*\>'\@!"
+  syn match   prologNumber            "\<0[x|X]\x*\>'\@!"
   syn match   prologCommentError      "\*/"
   syn match   prologSpecialCharacter  ";"
   syn match   prologSpecialCharacter  "!"
