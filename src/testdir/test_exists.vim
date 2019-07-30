@@ -70,6 +70,9 @@ func Test_exists()
   call assert_equal(1, exists('$EDITOR_NAME'))
   " Non-existing environment variable
   call assert_equal(0, exists('$NON_ENV_VAR'))
+  " Empty environment variable
+  let $EDITOR_NAME = ''
+  call assert_equal(1, exists('$EDITOR_NAME'))
 
   " Valid internal function
   call assert_equal(1, exists('*bufnr'))
