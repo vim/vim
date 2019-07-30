@@ -9,6 +9,16 @@ func Test_environ()
   call assert_equal('こんにちわ', environ()['TESTENV'])
 endfunc
 
+func Test_environ_empty()
+  let $TESTENV = ''
+  if has('win32')
+    " Setting an environment to an empty value unsets it on Windows.
+    call assert_false(has_key(environ(), 'TESTENV'))
+  else
+    call assert_equal('', environ()['TESTENV'])
+  endif
+endfunc
+
 func Test_getenv()
   unlet! $TESTENV
   call assert_equal(v:null, getenv('TESTENV'))

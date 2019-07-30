@@ -70,6 +70,14 @@ func Test_exists()
   call assert_equal(1, exists('$EDITOR_NAME'))
   " Non-existing environment variable
   call assert_equal(0, exists('$NON_ENV_VAR'))
+  " Empty environment variable
+  let $EDITOR_NAME = ''
+  if has('win32')
+    " Setting an environment to an empty value unsets it on Windows.
+    call assert_equal(0, exists('$EDITOR_NAME'))
+  else
+    call assert_equal(1, exists('$EDITOR_NAME'))
+  endif
 
   " Valid internal function
   call assert_equal(1, exists('*bufnr'))
