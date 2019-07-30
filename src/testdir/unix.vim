@@ -10,4 +10,10 @@ if 1
   let g:tester_HOME = $HOME
 endif
 
+if has('win32')
+  set shellcmdflag=-c shellxquote= shellxescape= shellquote=
+  let &shellredir = '>%s 2>&1'
+  set shellslash
+endif
+
 source setup.vim
