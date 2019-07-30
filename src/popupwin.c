@@ -1076,7 +1076,9 @@ popup_adjust_position(win_T *wp)
 	}
     }
 
-    if (wp->w_p_wrap)
+    if (wp->w_p_wrap || (!wp->w_popup_fixed
+			    && (wp->w_popup_pos == POPPOS_TOPLEFT
+				|| wp->w_popup_pos == POPPOS_BOTLEFT)))
     {
 	int want_col = 0;
 
