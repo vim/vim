@@ -7,6 +7,8 @@ func Test_environ()
   call assert_equal(1, has_key(environ(), 'TESTENV'))
   let $TESTENV = 'こんにちわ'
   call assert_equal('こんにちわ', environ()['TESTENV'])
+  let $TESTENV = ''
+  call assert_equal('', environ()['TESTENV'])
 endfunc
 
 func Test_getenv()
