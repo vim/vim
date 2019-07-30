@@ -42,6 +42,8 @@ function Test_window_cmd_wincmd_gf()
   function s:swap_exists()
     let v:swapchoice = s:swap_choice
   endfunc
+  " Remove the catch-all that runtest.vim adds
+  au! SwapExists
   augroup test_window_cmd_wincmd_gf
     autocmd!
     exec "autocmd SwapExists " . fname . " call s:swap_exists()"
@@ -529,14 +531,15 @@ func Test_window_colon_command()
 endfunc
 
 func Test_access_freed_mem()
+  call assert_equal(&columns, winwidth(0))
   " This was accessing freed memory
   au * 0 vs xxx
   arg 0
   argadd
-  all
-  all
+  call assert_fails("all", "E249:")
   au!
   bwipe xxx
+  call assert_equal(&columns, winwidth(0))
 endfunc
 
 func Test_visual_cleared_after_window_split()

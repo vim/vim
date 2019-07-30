@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.1.  Last change: 2019 Jun 13
+*syntax.txt*	For Vim version 8.1.  Last change: 2019 Jul 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2622,7 +2622,6 @@ preceding last option and unsetting all other ones): >
 
 Note: only existence of these options matter, not their value. You can replace
       1 above with anything.
-
 
 QUAKE						*quake.vim* *ft-quake-syntax*
 

@@ -21,8 +21,8 @@ To jump to a file, move the cursor on its name and use the `gf` command.
 
 Most code can be found in a file with an obvious name (incomplete list):
 
-File name | Description
---------- | -----------
+File name       | Description
+--------------- | -----------
 autocmd.c	| autocommands
 buffer.c	| manipulating buffers (loaded files)
 change.c	| handling changes to text
@@ -34,6 +34,7 @@ fileio.c	| reading and writing files
 findfile.c	| search for files in 'path'
 fold.c		| folding
 getchar.c	| getting characters and key mapping
+highlight.c	| syntax highlighting
 indent.c	| C and Lisp indentation
 insexpand.c	| Insert mode completion
 mark.c		| marks
@@ -44,18 +45,25 @@ menu.c		| menus
 message.c	| (error) messages
 ops.c		| handling operators ("d", "y", "p")
 option.c	| options
+popupmnu.c	| popup menu
+popupwin.c	| popup window
+profiler.c	| vim script profiler
 quickfix.c	| quickfix commands (":make", ":cn")
 regexp.c	| pattern matching
 screen.c	| updating the windows
 search.c	| pattern searching
+session.c	| sessions and views
 sign.c		| signs
 spell.c		| spell checking
-syntax.c	|  syntax and other highlighting
+syntax.c	| syntax and other highlighting
 tag.c		| tags
 term.c		| terminal handling, termcap codes
+testing.c	| testing: assert and test functions
+textprop.c	| text properties
 undo.c		| undo and redo
 usercmd.c	| user defined commands
 userfunc.c	| user defined functions
+viminfo.c	| viminfo handling
 window.c	| handling split windows
 
 

@@ -23,13 +23,7 @@
 #define FC_REMOVED  0x20	// function redefined while uf_refcount > 0
 #define FC_SANDBOX  0x40	// function defined in the sandbox
 
-/* From user function to hashitem and back. */
-#define UF2HIKEY(fp) ((fp)->uf_name)
-#define HIKEY2UF(p)  ((ufunc_T *)((p) - offsetof(ufunc_T, uf_name)))
-#define HI2UF(hi)     HIKEY2UF((hi)->hi_key)
-
 #define FUNCARG(fp, j)	((char_u **)(fp->uf_args.ga_data))[j]
-#define FUNCLINE(fp, j)	((char_u **)(fp->uf_lines.ga_data))[j]
 
 /*
  * All user-defined functions are found in this hashtable.
@@ -51,19 +45,21 @@ static char *e_funcdict = N_("E717: Dictionary entry already exists");
 static char *e_funcref = N_("E718: Funcref required");
 static char *e_nofunc = N_("E130: Unknown function: %s");
 
-#ifdef FEAT_PROFILE
-static void func_do_profile(ufunc_T *fp);
-static void prof_sort_list(FILE *fd, ufunc_T **sorttab, int st_len, char *title, int prefer_self);
-static void prof_func_line(FILE *fd, int count, proftime_T *total, proftime_T *self, int prefer_self);
-static int prof_total_cmp(const void *s1, const void *s2);
-static int prof_self_cmp(const void *s1, const void *s2);
-#endif
 static void funccal_unref(funccall_T *fc, ufunc_T *fp, int force);
 
     void
 func_init()
 {
     hash_init(&func_hashtab);
+}
+
+/*
+ * Return the function hash table
+ */
+    hashtab_T *
+func_tbl_get(void)
+{
+    return &func_hashtab;
 }
 
 /*
@@ -1312,6 +1308,12 @@ restore_funccal(void)
     }
 }
 
+    funccall_T *
+get_current_funccal(void)
+{
+    return current_funccal;
+}
+
 #if defined(EXITFREE) || defined(PROTO)
     void
 free_all_functions(void)
@@ -1998,8 +2000,6 @@ ex_function(exarg_T *eap)
     int		overwrite = FALSE;
     int		indent;
     int		nesting;
-    char_u	*skip_until = NULL;
-    char_u	*trimmed = NULL;
     dictitem_T	*v;
     funcdict_T	fudi;
     static int	func_nr = 0;	    /* number for nameless function */
@@ -2010,6 +2010,9 @@ ex_function(exarg_T *eap)
     int		do_concat = TRUE;
     linenr_T	sourcing_lnum_off;
     linenr_T	sourcing_lnum_top;
+    int		is_heredoc = FALSE;
+    char_u	*skip_until = NULL;
+    char_u	*heredoc_trimmed = NULL;
 
     /*
      * ":function" without argument: list functions.
@@ -2329,17 +2332,28 @@ ex_function(exarg_T *eap)
 
 	if (skip_until != NULL)
 	{
-	    // Between ":append" and "." and between ":python <<EOF" and "EOF"
-	    // don't check for ":endfunc".
-	    if (trimmed == NULL
-			    || STRNCMP(theline, trimmed, STRLEN(trimmed)) == 0)
+	    // Don't check for ":endfunc" between
+	    // * ":append" and "."
+	    // * ":python <<EOF" and "EOF"
+	    // * ":let {var-name} =<< [trim] {marker}" and "{marker}"
+	    if (heredoc_trimmed == NULL
+		    || (is_heredoc && skipwhite(theline) == theline)
+		    || STRNCMP(theline, heredoc_trimmed,
+						 STRLEN(heredoc_trimmed)) == 0)
 	    {
-		p = trimmed == NULL ? theline : theline + STRLEN(trimmed);
+		if (heredoc_trimmed == NULL)
+		    p = theline;
+		else if (is_heredoc)
+		    p = skipwhite(theline) == theline
+				 ? theline : theline + STRLEN(heredoc_trimmed);
+		else
+		    p = theline + STRLEN(heredoc_trimmed);
 		if (STRCMP(p, skip_until) == 0)
 		{
 		    VIM_CLEAR(skip_until);
-		    VIM_CLEAR(trimmed);
+		    VIM_CLEAR(heredoc_trimmed);
 		    do_concat = TRUE;
+		    is_heredoc = FALSE;
 		}
 	    }
 	}
@@ -2451,20 +2465,17 @@ ex_function(exarg_T *eap)
 			    && (!ASCII_ISALNUM(p[2])
 				|| (p[2] == 't' && !ASCII_ISALNUM(p[3]))))))
 	    {
-		// ":let v =<<" continues until a dot
 		p = skipwhite(arg + 3);
 		if (STRNCMP(p, "trim", 4) == 0)
 		{
 		    // Ignore leading white space.
 		    p = skipwhite(p + 4);
-		    trimmed = vim_strnsave(theline,
+		    heredoc_trimmed = vim_strnsave(theline,
 					  (int)(skipwhite(theline) - theline));
 		}
-		if (*p == NUL)
-		    skip_until = vim_strsave((char_u *)".");
-		else
-		    skip_until = vim_strnsave(p, (int)(skiptowhite(p) - p));
+		skip_until = vim_strnsave(p, (int)(skiptowhite(p) - p));
 		do_concat = FALSE;
+		is_heredoc = TRUE;
 	    }
 	}
 
@@ -2760,233 +2771,6 @@ get_expanded_name(char_u *name, int check)
     return NULL;
 }
 #endif
-
-#if defined(FEAT_PROFILE) || defined(PROTO)
-/*
- * Start profiling function "fp".
- */
-    static void
-func_do_profile(ufunc_T *fp)
-{
-    int		len = fp->uf_lines.ga_len;
-
-    if (!fp->uf_prof_initialized)
-    {
-	if (len == 0)
-	    len = 1;  /* avoid getting error for allocating zero bytes */
-	fp->uf_tm_count = 0;
-	profile_zero(&fp->uf_tm_self);
-	profile_zero(&fp->uf_tm_total);
-	if (fp->uf_tml_count == NULL)
-	    fp->uf_tml_count = ALLOC_CLEAR_MULT(int, len);
-	if (fp->uf_tml_total == NULL)
-	    fp->uf_tml_total = ALLOC_CLEAR_MULT(proftime_T, len);
-	if (fp->uf_tml_self == NULL)
-	    fp->uf_tml_self = ALLOC_CLEAR_MULT(proftime_T, len);
-	fp->uf_tml_idx = -1;
-	if (fp->uf_tml_count == NULL || fp->uf_tml_total == NULL
-						    || fp->uf_tml_self == NULL)
-	    return;	    /* out of memory */
-	fp->uf_prof_initialized = TRUE;
-    }
-
-    fp->uf_profiling = TRUE;
-}
-
-/*
- * Dump the profiling results for all functions in file "fd".
- */
-    void
-func_dump_profile(FILE *fd)
-{
-    hashitem_T	*hi;
-    int		todo;
-    ufunc_T	*fp;
-    int		i;
-    ufunc_T	**sorttab;
-    int		st_len = 0;
-    char_u	*p;
-
-    todo = (int)func_hashtab.ht_used;
-    if (todo == 0)
-	return;     /* nothing to dump */
-
-    sorttab = ALLOC_MULT(ufunc_T *, todo);
-
-    for (hi = func_hashtab.ht_array; todo > 0; ++hi)
-    {
-	if (!HASHITEM_EMPTY(hi))
-	{
-	    --todo;
-	    fp = HI2UF(hi);
-	    if (fp->uf_prof_initialized)
-	    {
-		if (sorttab != NULL)
-		    sorttab[st_len++] = fp;
-
-		if (fp->uf_name[0] == K_SPECIAL)
-		    fprintf(fd, "FUNCTION  <SNR>%s()\n", fp->uf_name + 3);
-		else
-		    fprintf(fd, "FUNCTION  %s()\n", fp->uf_name);
-		p = home_replace_save(NULL,
-				     get_scriptname(fp->uf_script_ctx.sc_sid));
-		if (p != NULL)
-		{
-		    fprintf(fd, "    Defined: %s line %ld\n",
-					   p, (long)fp->uf_script_ctx.sc_lnum);
-		    vim_free(p);
-		}
-		if (fp->uf_tm_count == 1)
-		    fprintf(fd, "Called 1 time\n");
-		else
-		    fprintf(fd, "Called %d times\n", fp->uf_tm_count);
-		fprintf(fd, "Total time: %s\n", profile_msg(&fp->uf_tm_total));
-		fprintf(fd, " Self time: %s\n", profile_msg(&fp->uf_tm_self));
-		fprintf(fd, "\n");
-		fprintf(fd, "count  total (s)   self (s)\n");
-
-		for (i = 0; i < fp->uf_lines.ga_len; ++i)
-		{
-		    if (FUNCLINE(fp, i) == NULL)
-			continue;
-		    prof_func_line(fd, fp->uf_tml_count[i],
-			     &fp->uf_tml_total[i], &fp->uf_tml_self[i], TRUE);
-		    fprintf(fd, "%s\n", FUNCLINE(fp, i));
-		}
-		fprintf(fd, "\n");
-	    }
-	}
-    }
-
-    if (sorttab != NULL && st_len > 0)
-    {
-	qsort((void *)sorttab, (size_t)st_len, sizeof(ufunc_T *),
-							      prof_total_cmp);
-	prof_sort_list(fd, sorttab, st_len, "TOTAL", FALSE);
-	qsort((void *)sorttab, (size_t)st_len, sizeof(ufunc_T *),
-							      prof_self_cmp);
-	prof_sort_list(fd, sorttab, st_len, "SELF", TRUE);
-    }
-
-    vim_free(sorttab);
-}
-
-    static void
-prof_sort_list(
-    FILE	*fd,
-    ufunc_T	**sorttab,
-    int		st_len,
-    char	*title,
-    int		prefer_self)	/* when equal print only self time */
-{
-    int		i;
-    ufunc_T	*fp;
-
-    fprintf(fd, "FUNCTIONS SORTED ON %s TIME\n", title);
-    fprintf(fd, "count  total (s)   self (s)  function\n");
-    for (i = 0; i < 20 && i < st_len; ++i)
-    {
-	fp = sorttab[i];
-	prof_func_line(fd, fp->uf_tm_count, &fp->uf_tm_total, &fp->uf_tm_self,
-								 prefer_self);
-	if (fp->uf_name[0] == K_SPECIAL)
-	    fprintf(fd, " <SNR>%s()\n", fp->uf_name + 3);
-	else
-	    fprintf(fd, " %s()\n", fp->uf_name);
-    }
-    fprintf(fd, "\n");
-}
-
-/*
- * Print the count and times for one function or function line.
- */
-    static void
-prof_func_line(
-    FILE	*fd,
-    int		count,
-    proftime_T	*total,
-    proftime_T	*self,
-    int		prefer_self)	/* when equal print only self time */
-{
-    if (count > 0)
-    {
-	fprintf(fd, "%5d ", count);
-	if (prefer_self && profile_equal(total, self))
-	    fprintf(fd, "           ");
-	else
-	    fprintf(fd, "%s ", profile_msg(total));
-	if (!prefer_self && profile_equal(total, self))
-	    fprintf(fd, "           ");
-	else
-	    fprintf(fd, "%s ", profile_msg(self));
-    }
-    else
-	fprintf(fd, "                            ");
-}
-
-/*
- * Compare function for total time sorting.
- */
-    static int
-prof_total_cmp(const void *s1, const void *s2)
-{
-    ufunc_T	*p1, *p2;
-
-    p1 = *(ufunc_T **)s1;
-    p2 = *(ufunc_T **)s2;
-    return profile_cmp(&p1->uf_tm_total, &p2->uf_tm_total);
-}
-
-/*
- * Compare function for self time sorting.
- */
-    static int
-prof_self_cmp(const void *s1, const void *s2)
-{
-    ufunc_T	*p1, *p2;
-
-    p1 = *(ufunc_T **)s1;
-    p2 = *(ufunc_T **)s2;
-    return profile_cmp(&p1->uf_tm_self, &p2->uf_tm_self);
-}
-
-/*
- * Prepare profiling for entering a child or something else that is not
- * counted for the script/function itself.
- * Should always be called in pair with prof_child_exit().
- */
-    void
-prof_child_enter(
-    proftime_T *tm)	/* place to store waittime */
-{
-    funccall_T *fc = current_funccal;
-
-    if (fc != NULL && fc->func->uf_profiling)
-	profile_start(&fc->prof_child);
-    script_prof_save(tm);
-}
-
-/*
- * Take care of time spent in a child.
- * Should always be called after prof_child_enter().
- */
-    void
-prof_child_exit(
-    proftime_T *tm)	/* where waittime was stored */
-{
-    funccall_T *fc = current_funccal;
-
-    if (fc != NULL && fc->func->uf_profiling)
-    {
-	profile_end(&fc->prof_child);
-	profile_sub_wait(tm, &fc->prof_child); /* don't count waiting time */
-	profile_add(&fc->func->uf_tm_children, &fc->prof_child);
-	profile_add(&fc->func->uf_tml_children, &fc->prof_child);
-    }
-    script_prof_restore(tm);
-}
-
-#endif /* FEAT_PROFILE */
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 
@@ -3573,71 +3357,6 @@ get_func_line(
 
     return retval;
 }
-
-#if defined(FEAT_PROFILE) || defined(PROTO)
-/*
- * Called when starting to read a function line.
- * "sourcing_lnum" must be correct!
- * When skipping lines it may not actually be executed, but we won't find out
- * until later and we need to store the time now.
- */
-    void
-func_line_start(void *cookie)
-{
-    funccall_T	*fcp = (funccall_T *)cookie;
-    ufunc_T	*fp = fcp->func;
-
-    if (fp->uf_profiling && sourcing_lnum >= 1
-				      && sourcing_lnum <= fp->uf_lines.ga_len)
-    {
-	fp->uf_tml_idx = sourcing_lnum - 1;
-	/* Skip continuation lines. */
-	while (fp->uf_tml_idx > 0 && FUNCLINE(fp, fp->uf_tml_idx) == NULL)
-	    --fp->uf_tml_idx;
-	fp->uf_tml_execed = FALSE;
-	profile_start(&fp->uf_tml_start);
-	profile_zero(&fp->uf_tml_children);
-	profile_get_wait(&fp->uf_tml_wait);
-    }
-}
-
-/*
- * Called when actually executing a function line.
- */
-    void
-func_line_exec(void *cookie)
-{
-    funccall_T	*fcp = (funccall_T *)cookie;
-    ufunc_T	*fp = fcp->func;
-
-    if (fp->uf_profiling && fp->uf_tml_idx >= 0)
-	fp->uf_tml_execed = TRUE;
-}
-
-/*
- * Called when done with a function line.
- */
-    void
-func_line_end(void *cookie)
-{
-    funccall_T	*fcp = (funccall_T *)cookie;
-    ufunc_T	*fp = fcp->func;
-
-    if (fp->uf_profiling && fp->uf_tml_idx >= 0)
-    {
-	if (fp->uf_tml_execed)
-	{
-	    ++fp->uf_tml_count[fp->uf_tml_idx];
-	    profile_end(&fp->uf_tml_start);
-	    profile_sub_wait(&fp->uf_tml_wait, &fp->uf_tml_start);
-	    profile_add(&fp->uf_tml_total[fp->uf_tml_idx], &fp->uf_tml_start);
-	    profile_self(&fp->uf_tml_self[fp->uf_tml_idx], &fp->uf_tml_start,
-							&fp->uf_tml_children);
-	}
-	fp->uf_tml_idx = -1;
-    }
-}
-#endif
 
 /*
  * Return TRUE if the currently active function should be ended, because a

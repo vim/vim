@@ -2325,7 +2325,6 @@ do_mouse(
 	ui_may_remove_balloon();
 	if (p_bevalterm)
 	{
-ch_log(NULL, "setting balloon timer");
 	    profile_setlimit(p_bdlay, &bevalexpr_due);
 	    bevalexpr_due_set = TRUE;
 	}
@@ -8063,10 +8062,14 @@ nv_g_cmd(cmdarg_T *cap)
 	    }
 	    else
 	    {
+		if (cap->count1 > 1)
+		    // if it fails, let the cursor still move to the last char
+		    cursor_down(cap->count1 - 1, FALSE);
+
 		i = curwin->w_leftcol + curwin->w_width - col_off - 1;
 		coladvance((colnr_T)i);
 
-		/* Make sure we stick in this column. */
+		// Make sure we stick in this column.
 		validate_virtcol();
 		curwin->w_curswant = curwin->w_virtcol;
 		curwin->w_set_curswant = FALSE;

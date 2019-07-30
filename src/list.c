@@ -875,6 +875,40 @@ list_join(
 }
 
 /*
+ * "join()" function
+ */
+    void
+f_join(typval_T *argvars, typval_T *rettv)
+{
+    garray_T	ga;
+    char_u	*sep;
+
+    if (argvars[0].v_type != VAR_LIST)
+    {
+	emsg(_(e_listreq));
+	return;
+    }
+    if (argvars[0].vval.v_list == NULL)
+	return;
+    if (argvars[1].v_type == VAR_UNKNOWN)
+	sep = (char_u *)" ";
+    else
+	sep = tv_get_string_chk(&argvars[1]);
+
+    rettv->v_type = VAR_STRING;
+
+    if (sep != NULL)
+    {
+	ga_init2(&ga, (int)sizeof(char), 80);
+	list_join(&ga, argvars[0].vval.v_list, sep, TRUE, FALSE, 0);
+	ga_append(&ga, NUL);
+	rettv->vval.v_string = (char_u *)ga.ga_data;
+    }
+    else
+	rettv->vval.v_string = NULL;
+}
+
+/*
  * Allocate a variable for a List and fill it from "*arg".
  * Return OK or FAIL.
  */
@@ -1005,6 +1039,509 @@ init_static_list(staticList10_T *sl)
 	else
 	    li->li_next = li + 1;
     }
+}
+
+/*
+ * "list2str()" function
+ */
+    void
+f_list2str(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l;
+    listitem_T	*li;
+    garray_T	ga;
+    int		utf8 = FALSE;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+    if (argvars[0].v_type != VAR_LIST)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+
+    l = argvars[0].vval.v_list;
+    if (l == NULL)
+	return;  // empty list results in empty string
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	utf8 = (int)tv_get_number_chk(&argvars[1], NULL);
+
+    ga_init2(&ga, 1, 80);
+    if (has_mbyte || utf8)
+    {
+	char_u	buf[MB_MAXBYTES + 1];
+	int	(*char2bytes)(int, char_u *);
+
+	if (utf8 || enc_utf8)
+	    char2bytes = utf_char2bytes;
+	else
+	    char2bytes = mb_char2bytes;
+
+	for (li = l->lv_first; li != NULL; li = li->li_next)
+	{
+	    buf[(*char2bytes)(tv_get_number(&li->li_tv), buf)] = NUL;
+	    ga_concat(&ga, buf);
+	}
+	ga_append(&ga, NUL);
+    }
+    else if (ga_grow(&ga, list_len(l) + 1) == OK)
+    {
+	for (li = l->lv_first; li != NULL; li = li->li_next)
+	    ga_append(&ga, tv_get_number(&li->li_tv));
+	ga_append(&ga, NUL);
+    }
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = ga.ga_data;
+}
+
+    void
+list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
+{
+    list_T	*l;
+    listitem_T	*item, *item2;
+    listitem_T	*li;
+    int		error = FALSE;
+    int		idx;
+
+    if ((l = argvars[0].vval.v_list) == NULL
+			      || var_check_lock(l->lv_lock, arg_errmsg, TRUE))
+	return;
+
+    idx = (long)tv_get_number_chk(&argvars[1], &error);
+    if (error)
+	;		// type error: do nothing, errmsg already given
+    else if ((item = list_find(l, idx)) == NULL)
+	semsg(_(e_listidx), idx);
+    else
+    {
+	if (argvars[2].v_type == VAR_UNKNOWN)
+	{
+	    /* Remove one item, return its value. */
+	    vimlist_remove(l, item, item);
+	    *rettv = item->li_tv;
+	    vim_free(item);
+	}
+	else
+	{
+	    // Remove range of items, return list with values.
+	    int end = (long)tv_get_number_chk(&argvars[2], &error);
+
+	    if (error)
+		;		// type error: do nothing
+	    else if ((item2 = list_find(l, end)) == NULL)
+		semsg(_(e_listidx), end);
+	    else
+	    {
+		int	    cnt = 0;
+
+		for (li = item; li != NULL; li = li->li_next)
+		{
+		    ++cnt;
+		    if (li == item2)
+			break;
+		}
+		if (li == NULL)  /* didn't find "item2" after "item" */
+		    emsg(_(e_invrange));
+		else
+		{
+		    vimlist_remove(l, item, item2);
+		    if (rettv_list_alloc(rettv) == OK)
+		    {
+			l = rettv->vval.v_list;
+			l->lv_first = item;
+			l->lv_last = item2;
+			item->li_prev = NULL;
+			item2->li_next = NULL;
+			l->lv_len = cnt;
+		    }
+		}
+	    }
+	}
+    }
+}
+
+static int item_compare(const void *s1, const void *s2);
+static int item_compare2(const void *s1, const void *s2);
+
+/* struct used in the array that's given to qsort() */
+typedef struct
+{
+    listitem_T	*item;
+    int		idx;
+} sortItem_T;
+
+/* struct storing information about current sort */
+typedef struct
+{
+    int		item_compare_ic;
+    int		item_compare_numeric;
+    int		item_compare_numbers;
+#ifdef FEAT_FLOAT
+    int		item_compare_float;
+#endif
+    char_u	*item_compare_func;
+    partial_T	*item_compare_partial;
+    dict_T	*item_compare_selfdict;
+    int		item_compare_func_err;
+    int		item_compare_keep_zero;
+} sortinfo_T;
+static sortinfo_T	*sortinfo = NULL;
+#define ITEM_COMPARE_FAIL 999
+
+/*
+ * Compare functions for f_sort() and f_uniq() below.
+ */
+    static int
+item_compare(const void *s1, const void *s2)
+{
+    sortItem_T  *si1, *si2;
+    typval_T	*tv1, *tv2;
+    char_u	*p1, *p2;
+    char_u	*tofree1 = NULL, *tofree2 = NULL;
+    int		res;
+    char_u	numbuf1[NUMBUFLEN];
+    char_u	numbuf2[NUMBUFLEN];
+
+    si1 = (sortItem_T *)s1;
+    si2 = (sortItem_T *)s2;
+    tv1 = &si1->item->li_tv;
+    tv2 = &si2->item->li_tv;
+
+    if (sortinfo->item_compare_numbers)
+    {
+	varnumber_T	v1 = tv_get_number(tv1);
+	varnumber_T	v2 = tv_get_number(tv2);
+
+	return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
+    }
+
+#ifdef FEAT_FLOAT
+    if (sortinfo->item_compare_float)
+    {
+	float_T	v1 = tv_get_float(tv1);
+	float_T	v2 = tv_get_float(tv2);
+
+	return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
+    }
+#endif
+
+    /* tv2string() puts quotes around a string and allocates memory.  Don't do
+     * that for string variables. Use a single quote when comparing with a
+     * non-string to do what the docs promise. */
+    if (tv1->v_type == VAR_STRING)
+    {
+	if (tv2->v_type != VAR_STRING || sortinfo->item_compare_numeric)
+	    p1 = (char_u *)"'";
+	else
+	    p1 = tv1->vval.v_string;
+    }
+    else
+	p1 = tv2string(tv1, &tofree1, numbuf1, 0);
+    if (tv2->v_type == VAR_STRING)
+    {
+	if (tv1->v_type != VAR_STRING || sortinfo->item_compare_numeric)
+	    p2 = (char_u *)"'";
+	else
+	    p2 = tv2->vval.v_string;
+    }
+    else
+	p2 = tv2string(tv2, &tofree2, numbuf2, 0);
+    if (p1 == NULL)
+	p1 = (char_u *)"";
+    if (p2 == NULL)
+	p2 = (char_u *)"";
+    if (!sortinfo->item_compare_numeric)
+    {
+	if (sortinfo->item_compare_ic)
+	    res = STRICMP(p1, p2);
+	else
+	    res = STRCMP(p1, p2);
+    }
+    else
+    {
+	double n1, n2;
+	n1 = strtod((char *)p1, (char **)&p1);
+	n2 = strtod((char *)p2, (char **)&p2);
+	res = n1 == n2 ? 0 : n1 > n2 ? 1 : -1;
+    }
+
+    /* When the result would be zero, compare the item indexes.  Makes the
+     * sort stable. */
+    if (res == 0 && !sortinfo->item_compare_keep_zero)
+	res = si1->idx > si2->idx ? 1 : -1;
+
+    vim_free(tofree1);
+    vim_free(tofree2);
+    return res;
+}
+
+    static int
+item_compare2(const void *s1, const void *s2)
+{
+    sortItem_T  *si1, *si2;
+    int		res;
+    typval_T	rettv;
+    typval_T	argv[3];
+    int		dummy;
+    char_u	*func_name;
+    partial_T	*partial = sortinfo->item_compare_partial;
+
+    /* shortcut after failure in previous call; compare all items equal */
+    if (sortinfo->item_compare_func_err)
+	return 0;
+
+    si1 = (sortItem_T *)s1;
+    si2 = (sortItem_T *)s2;
+
+    if (partial == NULL)
+	func_name = sortinfo->item_compare_func;
+    else
+	func_name = partial_name(partial);
+
+    /* Copy the values.  This is needed to be able to set v_lock to VAR_FIXED
+     * in the copy without changing the original list items. */
+    copy_tv(&si1->item->li_tv, &argv[0]);
+    copy_tv(&si2->item->li_tv, &argv[1]);
+
+    rettv.v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
+    res = call_func(func_name, -1, &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE,
+				 partial, sortinfo->item_compare_selfdict);
+    clear_tv(&argv[0]);
+    clear_tv(&argv[1]);
+
+    if (res == FAIL)
+	res = ITEM_COMPARE_FAIL;
+    else
+	res = (int)tv_get_number_chk(&rettv, &sortinfo->item_compare_func_err);
+    if (sortinfo->item_compare_func_err)
+	res = ITEM_COMPARE_FAIL;  /* return value has wrong type */
+    clear_tv(&rettv);
+
+    /* When the result would be zero, compare the pointers themselves.  Makes
+     * the sort stable. */
+    if (res == 0 && !sortinfo->item_compare_keep_zero)
+	res = si1->idx > si2->idx ? 1 : -1;
+
+    return res;
+}
+
+/*
+ * "sort()" or "uniq()" function
+ */
+    static void
+do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
+{
+    list_T	*l;
+    listitem_T	*li;
+    sortItem_T	*ptrs;
+    sortinfo_T	*old_sortinfo;
+    sortinfo_T	info;
+    long	len;
+    long	i;
+
+    /* Pointer to current info struct used in compare function. Save and
+     * restore the current one for nested calls. */
+    old_sortinfo = sortinfo;
+    sortinfo = &info;
+
+    if (argvars[0].v_type != VAR_LIST)
+	semsg(_(e_listarg), sort ? "sort()" : "uniq()");
+    else
+    {
+	l = argvars[0].vval.v_list;
+	if (l == NULL || var_check_lock(l->lv_lock,
+	     (char_u *)(sort ? N_("sort() argument") : N_("uniq() argument")),
+									TRUE))
+	    goto theend;
+	rettv_list_set(rettv, l);
+
+	len = list_len(l);
+	if (len <= 1)
+	    goto theend;	/* short list sorts pretty quickly */
+
+	info.item_compare_ic = FALSE;
+	info.item_compare_numeric = FALSE;
+	info.item_compare_numbers = FALSE;
+#ifdef FEAT_FLOAT
+	info.item_compare_float = FALSE;
+#endif
+	info.item_compare_func = NULL;
+	info.item_compare_partial = NULL;
+	info.item_compare_selfdict = NULL;
+	if (argvars[1].v_type != VAR_UNKNOWN)
+	{
+	    /* optional second argument: {func} */
+	    if (argvars[1].v_type == VAR_FUNC)
+		info.item_compare_func = argvars[1].vval.v_string;
+	    else if (argvars[1].v_type == VAR_PARTIAL)
+		info.item_compare_partial = argvars[1].vval.v_partial;
+	    else
+	    {
+		int	    error = FALSE;
+
+		i = (long)tv_get_number_chk(&argvars[1], &error);
+		if (error)
+		    goto theend;	/* type error; errmsg already given */
+		if (i == 1)
+		    info.item_compare_ic = TRUE;
+		else if (argvars[1].v_type != VAR_NUMBER)
+		    info.item_compare_func = tv_get_string(&argvars[1]);
+		else if (i != 0)
+		{
+		    emsg(_(e_invarg));
+		    goto theend;
+		}
+		if (info.item_compare_func != NULL)
+		{
+		    if (*info.item_compare_func == NUL)
+		    {
+			/* empty string means default sort */
+			info.item_compare_func = NULL;
+		    }
+		    else if (STRCMP(info.item_compare_func, "n") == 0)
+		    {
+			info.item_compare_func = NULL;
+			info.item_compare_numeric = TRUE;
+		    }
+		    else if (STRCMP(info.item_compare_func, "N") == 0)
+		    {
+			info.item_compare_func = NULL;
+			info.item_compare_numbers = TRUE;
+		    }
+#ifdef FEAT_FLOAT
+		    else if (STRCMP(info.item_compare_func, "f") == 0)
+		    {
+			info.item_compare_func = NULL;
+			info.item_compare_float = TRUE;
+		    }
+#endif
+		    else if (STRCMP(info.item_compare_func, "i") == 0)
+		    {
+			info.item_compare_func = NULL;
+			info.item_compare_ic = TRUE;
+		    }
+		}
+	    }
+
+	    if (argvars[2].v_type != VAR_UNKNOWN)
+	    {
+		/* optional third argument: {dict} */
+		if (argvars[2].v_type != VAR_DICT)
+		{
+		    emsg(_(e_dictreq));
+		    goto theend;
+		}
+		info.item_compare_selfdict = argvars[2].vval.v_dict;
+	    }
+	}
+
+	/* Make an array with each entry pointing to an item in the List. */
+	ptrs = ALLOC_MULT(sortItem_T, len);
+	if (ptrs == NULL)
+	    goto theend;
+
+	i = 0;
+	if (sort)
+	{
+	    /* sort(): ptrs will be the list to sort */
+	    for (li = l->lv_first; li != NULL; li = li->li_next)
+	    {
+		ptrs[i].item = li;
+		ptrs[i].idx = i;
+		++i;
+	    }
+
+	    info.item_compare_func_err = FALSE;
+	    info.item_compare_keep_zero = FALSE;
+	    /* test the compare function */
+	    if ((info.item_compare_func != NULL
+					 || info.item_compare_partial != NULL)
+		    && item_compare2((void *)&ptrs[0], (void *)&ptrs[1])
+							 == ITEM_COMPARE_FAIL)
+		emsg(_("E702: Sort compare function failed"));
+	    else
+	    {
+		/* Sort the array with item pointers. */
+		qsort((void *)ptrs, (size_t)len, sizeof(sortItem_T),
+		    info.item_compare_func == NULL
+					  && info.item_compare_partial == NULL
+					       ? item_compare : item_compare2);
+
+		if (!info.item_compare_func_err)
+		{
+		    /* Clear the List and append the items in sorted order. */
+		    l->lv_first = l->lv_last = l->lv_idx_item = NULL;
+		    l->lv_len = 0;
+		    for (i = 0; i < len; ++i)
+			list_append(l, ptrs[i].item);
+		}
+	    }
+	}
+	else
+	{
+	    int	(*item_compare_func_ptr)(const void *, const void *);
+
+	    /* f_uniq(): ptrs will be a stack of items to remove */
+	    info.item_compare_func_err = FALSE;
+	    info.item_compare_keep_zero = TRUE;
+	    item_compare_func_ptr = info.item_compare_func != NULL
+					  || info.item_compare_partial != NULL
+					       ? item_compare2 : item_compare;
+
+	    for (li = l->lv_first; li != NULL && li->li_next != NULL;
+							     li = li->li_next)
+	    {
+		if (item_compare_func_ptr((void *)&li, (void *)&li->li_next)
+									 == 0)
+		    ptrs[i++].item = li;
+		if (info.item_compare_func_err)
+		{
+		    emsg(_("E882: Uniq compare function failed"));
+		    break;
+		}
+	    }
+
+	    if (!info.item_compare_func_err)
+	    {
+		while (--i >= 0)
+		{
+		    li = ptrs[i].item->li_next;
+		    ptrs[i].item->li_next = li->li_next;
+		    if (li->li_next != NULL)
+			li->li_next->li_prev = ptrs[i].item;
+		    else
+			l->lv_last = ptrs[i].item;
+		    list_fix_watch(l, li);
+		    listitem_free(li);
+		    l->lv_len--;
+		}
+	    }
+	}
+
+	vim_free(ptrs);
+    }
+theend:
+    sortinfo = old_sortinfo;
+}
+
+/*
+ * "sort({list})" function
+ */
+    void
+f_sort(typval_T *argvars, typval_T *rettv)
+{
+    do_sort_uniq(argvars, rettv, TRUE);
+}
+
+/*
+ * "uniq({list})" function
+ */
+    void
+f_uniq(typval_T *argvars, typval_T *rettv)
+{
+    do_sort_uniq(argvars, rettv, FALSE);
 }
 
 #endif /* defined(FEAT_EVAL) */

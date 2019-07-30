@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Jun 27
+*options.txt*	For Vim version 8.1.  Last change: 2019 Jul 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1142,8 +1142,10 @@ A jump table for the options with a short description can be found at |Q_op|.
     set bexpr=MyBalloonExpr()
     set ballooneval
 <
-	Also see |balloon_show()|, can be used if the content of the balloon
-	is to be fetched asynchronously.
+	Also see |balloon_show()|, it can be used if the content of the balloon
+	is to be fetched asynchronously.  In that case evaluating
+	'balloonexpr' should result in an empty string.  If you get a balloon
+	with only "0" you probably didn't return anything from your function.
 
 	NOTE: The balloon is displayed only if the cursor is on a text
 	character.  If the result of evaluating 'balloonexpr' is not empty,
@@ -1155,7 +1157,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	It is not allowed to change text or jump to another window while
-	evaluating 'balloonexpr' |textlock|.
+	evaluating 'balloonexpr', see |textlock|.
 
 	To check whether line breaks in the balloon text work use this check: >
 		if has("balloon_multiline")
@@ -1871,6 +1873,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 	invoked and what it should return.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
+
+						*'completeslash'* *'csl'*
+'completeslash' 'csl'	string	(default: "")
+			local to buffer
+			{not in Vi}  {only for MS-Windows}
+	When this option is set it overrules 'shellslash' for completion:
+	- When this option is set to "slash", a forward slash is used for path
+	  completion in insert mode. This is useful when editing HTML tag, or
+	  Makefile with 'noshellslash' on Windows.
+	- When this option is set to "backslash", backslash is used. This is
+	  useful when editing a batch file with 'shellslash' set on Windows.
+	- When this option is empty, same character is used as for
+	  'shellslash'.
+	For Insert mode completion the buffer-local value is used.  For
+	command line completion the global value is used.
 
 						*'completeopt'* *'cot'*
 'completeopt' 'cot'	string	(default: "menu,preview")
@@ -5625,7 +5642,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 			{not available when compiled without the |+windows| or
 			|+quickfix| features}
 	Default height for a preview window.  Used for |:ptag| and associated
-	commands.  Used for |CTRL-W_}| when no count is given.
+	commands.  Used for |CTRL-W_}| when no count is given.  Not used when
+	'previewpopup' is set.
+
+					*'previewpopup'* *'pvp'*
+'previewpopup' 'pvp'	string (default empty)
+			global
+			{not available when compiled without the |+windows|,
+			|+textprop| or |+quickfix| feature}
+	When not empty a popup window is used for commands that would open a
+	preview window.  See |preview-popup|.
 
 					*'previewwindow'* *'nopreviewwindow'*
 					*'pvw'* *'nopvw'* *E590*
@@ -6510,7 +6536,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'shellslash' only works when a backslash can be used as a path
 	separator.  To test if this is so use: >
 		if exists('+shellslash')
-<
+<	Also see 'completeslash'.
+
 			*'shelltemp'* *'stmp'* *'noshelltemp'* *'nostmp'*
 'shelltemp' 'stmp'	boolean	(Vi default off, Vim default on)
 			global

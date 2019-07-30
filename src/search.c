@@ -23,9 +23,6 @@ static int skip_chars(int, int);
 static void show_pat_in_path(char_u *, int,
 					 int, int, FILE *, linenr_T *, long);
 #endif
-#ifdef FEAT_VIMINFO
-static void wvsp_one(FILE *fp, int idx, char *s, int sc);
-#endif
 static void search_stat(int dirc, pos_T *pos, int show_top_bot_msg, char_u *msgbuf, int recompute);
 
 /*
@@ -51,31 +48,12 @@ static void search_stat(int dirc, pos_T *pos, int show_top_bot_msg, char_u *msgb
  * Henry Spencer's regular expression library.  See regexp.c.
  */
 
-/* The offset for a search command is store in a soff struct */
-/* Note: only spats[0].off is really used */
-struct soffset
-{
-    int		dir;		/* search direction, '/' or '?' */
-    int		line;		/* search has line offset */
-    int		end;		/* search set cursor at end */
-    long	off;		/* line or char offset */
-};
-
-/* A search pattern and its attributes are stored in a spat struct */
-struct spat
-{
-    char_u	    *pat;	/* the pattern (in allocated memory) or NULL */
-    int		    magic;	/* magicness of the pattern */
-    int		    no_scs;	/* no smartcase for this pattern */
-    struct soffset  off;
-};
-
 /*
  * Two search patterns are remembered: One for the :substitute command and
  * one for other searches.  last_idx points to the one that was used the last
  * time.
  */
-static struct spat spats[2] =
+static spat_T spats[2] =
 {
     {NULL, TRUE, FALSE, {'/', 0, 0, 0L}},	/* last used search pat */
     {NULL, TRUE, FALSE, {'/', 0, 0, 0L}}	/* last used substitute pat */
@@ -90,7 +68,7 @@ static char_u	lastc_bytes[MB_MAXBYTES + 1];
 static int	lastc_bytelen = 1;	/* >1 for multi-byte char */
 
 /* copy of spats[], for keeping the search patterns while executing autocmds */
-static struct spat  saved_spats[2];
+static spat_T	    saved_spats[2];
 # ifdef FEAT_SEARCH_EXTRA
 static int	    saved_spats_last_idx = 0;
 static int	    saved_spats_no_hlsearch = 0;
@@ -349,7 +327,7 @@ free_search_patterns(void)
 #ifdef FEAT_SEARCH_EXTRA
 // copy of spats[RE_SEARCH], for keeping the search patterns while incremental
 // searching
-static struct spat  saved_last_search_spat;
+static spat_T	    saved_last_search_spat;
 static int	    did_save_last_search_spat = 0;
 static int	    saved_last_idx = 0;
 static int	    saved_no_hlsearch = 0;
@@ -1210,7 +1188,7 @@ do_search(
 {
     pos_T	    pos;	/* position of the last match */
     char_u	    *searchstr;
-    struct soffset  old_off;
+    soffset_T	    old_off;
     int		    retval;	/* Return value */
     char_u	    *p;
     long	    c;
@@ -5831,124 +5809,15 @@ show_pat_in_path(
 #endif
 
 #ifdef FEAT_VIMINFO
+    spat_T *
+get_spat(int idx)
+{
+    return &spats[idx];
+}
+
     int
-read_viminfo_search_pattern(vir_T *virp, int force)
+get_spat_last_idx(void)
 {
-    char_u	*lp;
-    int		idx = -1;
-    int		magic = FALSE;
-    int		no_scs = FALSE;
-    int		off_line = FALSE;
-    int		off_end = 0;
-    long	off = 0;
-    int		setlast = FALSE;
-#ifdef FEAT_SEARCH_EXTRA
-    static int	hlsearch_on = FALSE;
-#endif
-    char_u	*val;
-
-    /*
-     * Old line types:
-     * "/pat", "&pat": search/subst. pat
-     * "~/pat", "~&pat": last used search/subst. pat
-     * New line types:
-     * "~h", "~H": hlsearch highlighting off/on
-     * "~<magic><smartcase><line><end><off><last><which>pat"
-     * <magic>: 'm' off, 'M' on
-     * <smartcase>: 's' off, 'S' on
-     * <line>: 'L' line offset, 'l' char offset
-     * <end>: 'E' from end, 'e' from start
-     * <off>: decimal, offset
-     * <last>: '~' last used pattern
-     * <which>: '/' search pat, '&' subst. pat
-     */
-    lp = virp->vir_line;
-    if (lp[0] == '~' && (lp[1] == 'm' || lp[1] == 'M'))	/* new line type */
-    {
-	if (lp[1] == 'M')		/* magic on */
-	    magic = TRUE;
-	if (lp[2] == 's')
-	    no_scs = TRUE;
-	if (lp[3] == 'L')
-	    off_line = TRUE;
-	if (lp[4] == 'E')
-	    off_end = SEARCH_END;
-	lp += 5;
-	off = getdigits(&lp);
-    }
-    if (lp[0] == '~')		/* use this pattern for last-used pattern */
-    {
-	setlast = TRUE;
-	lp++;
-    }
-    if (lp[0] == '/')
-	idx = RE_SEARCH;
-    else if (lp[0] == '&')
-	idx = RE_SUBST;
-#ifdef FEAT_SEARCH_EXTRA
-    else if (lp[0] == 'h')	/* ~h: 'hlsearch' highlighting off */
-	hlsearch_on = FALSE;
-    else if (lp[0] == 'H')	/* ~H: 'hlsearch' highlighting on */
-	hlsearch_on = TRUE;
-#endif
-    if (idx >= 0)
-    {
-	if (force || spats[idx].pat == NULL)
-	{
-	    val = viminfo_readstring(virp, (int)(lp - virp->vir_line + 1),
-									TRUE);
-	    if (val != NULL)
-	    {
-		set_last_search_pat(val, idx, magic, setlast);
-		vim_free(val);
-		spats[idx].no_scs = no_scs;
-		spats[idx].off.line = off_line;
-		spats[idx].off.end = off_end;
-		spats[idx].off.off = off;
-#ifdef FEAT_SEARCH_EXTRA
-		if (setlast)
-		    set_no_hlsearch(!hlsearch_on);
-#endif
-	    }
-	}
-    }
-    return viminfo_readline(virp);
+    return last_idx;
 }
-
-    void
-write_viminfo_search_pattern(FILE *fp)
-{
-    if (get_viminfo_parameter('/') != 0)
-    {
-#ifdef FEAT_SEARCH_EXTRA
-	fprintf(fp, "\n# hlsearch on (H) or off (h):\n~%c",
-	    (no_hlsearch || find_viminfo_parameter('h') != NULL) ? 'h' : 'H');
 #endif
-	wvsp_one(fp, RE_SEARCH, "", '/');
-	wvsp_one(fp, RE_SUBST, _("Substitute "), '&');
-    }
-}
-
-    static void
-wvsp_one(
-    FILE	*fp,	/* file to write to */
-    int		idx,	/* spats[] index */
-    char	*s,	/* search pat */
-    int		sc)	/* dir char */
-{
-    if (spats[idx].pat != NULL)
-    {
-	fprintf(fp, _("\n# Last %sSearch Pattern:\n~"), s);
-	/* off.dir is not stored, it's reset to forward */
-	fprintf(fp, "%c%c%c%c%ld%s%c",
-		spats[idx].magic    ? 'M' : 'm',	/* magic */
-		spats[idx].no_scs   ? 's' : 'S',	/* smartcase */
-		spats[idx].off.line ? 'L' : 'l',	/* line offset */
-		spats[idx].off.end  ? 'E' : 'e',	/* offset from end */
-		spats[idx].off.off,			/* offset */
-		last_idx == idx	    ? "~" : "",		/* last used pat */
-		sc);
-	viminfo_writestring(fp, spats[idx].pat);
-    }
-}
-#endif /* FEAT_VIMINFO */

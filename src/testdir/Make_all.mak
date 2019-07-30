@@ -106,6 +106,7 @@ NEW_TESTS = \
 	test_ex_equal \
 	test_ex_undo \
 	test_ex_z \
+	test_excmd \
 	test_exec_while_if \
 	test_execute_func \
 	test_exists \
@@ -328,6 +329,7 @@ NEW_TESTS_RES = \
 	test_erasebackword.res \
 	test_escaped_glob.res \
 	test_eval_stuff.res \
+	test_excmd.res \
 	test_exec_while_if.res \
 	test_exists.res \
 	test_exists_autocmd.res \

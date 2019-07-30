@@ -242,3 +242,29 @@ func Test_listener_garbage_collect()
   delfunc MyListener
   bwipe!
 endfunc
+
+" This verifies the fix for issue #4455
+func Test_listener_caches_buffer_line()
+  new
+  inoremap <silent> <CR> <CR><Esc>O
+
+  function EchoChanges(bufnr, start, end, added, changes)
+    for l:change in a:changes
+      let text = getbufline(a:bufnr, l:change.lnum, l:change.end-1+l:change.added)
+    endfor
+  endfunction
+  let lid = listener_add("EchoChanges")
+  set autoindent
+  set cindent
+
+  call setline(1, ["{", "\tif true {}", "}"])
+  exe "normal /{}\nl"
+  call feedkeys("i\r\e", 'xt')
+  call assert_equal(["{", "\tif true {", "", "\t}", "}"], getline(1, 5))
+
+  bwipe!
+  delfunc EchoChanges
+  call listener_remove(lid)
+  iunmap <CR>
+  set nocindent
+endfunc

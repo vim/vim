@@ -50,6 +50,7 @@ SRC =	arabic.c						\
 	getchar.c						\
 	hardcopy.c						\
 	hashtab.c						\
+	highlight.c						\
 	indent.c						\
 	insexpand.c						\
 	json.c							\
@@ -69,10 +70,12 @@ SRC =	arabic.c						\
 	option.c						\
 	os_amiga.c						\
 	popupmnu.c						\
+	profiler.c						\
 	quickfix.c						\
 	regexp.c						\
 	screen.c						\
 	search.c						\
+	session.c						\
 	sha256.c						\
 	sign.c							\
 	spell.c							\
@@ -80,11 +83,14 @@ SRC =	arabic.c						\
 	syntax.c						\
 	tag.c							\
 	term.c							\
+	testing.c						\
+	textprop.c						\
 	ui.c							\
 	undo.c							\
 	usercmd.c						\
 	userfunc.c						\
 	version.c						\
+	viminfo.c						\
 	window.c						\
 
 OBJ =	$(SRC:.c=.o)

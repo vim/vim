@@ -243,7 +243,6 @@ static void set_b0_dir_flag(ZERO_BL *b0p, buf_T *buf);
 static void add_b0_fenc(ZERO_BL *b0p, buf_T *buf);
 static time_t swapfile_info(char_u *);
 static int recov_file_names(char_u **, char_u *, int prepend_dot);
-static int ml_append_int(buf_T *, linenr_T, char_u *, colnr_T, int, int);
 static int ml_delete_int(buf_T *, linenr_T, int);
 static char_u *findswapname(buf_T *, char_u **, char_u *);
 static void ml_flush_line(buf_T *);
@@ -2143,7 +2142,24 @@ get_ctime(time_t thetime, int add_newline)
     if (curtime == NULL)
 	vim_strncpy((char_u *)buf, (char_u *)_("(Invalid)"), sizeof(buf) - 1);
     else
-	(void)strftime(buf, sizeof(buf) - 1, "%a %b %d %H:%M:%S %Y", curtime);
+    {
+	(void)strftime(buf, sizeof(buf) - 1, _("%a %b %d %H:%M:%S %Y"),
+								    curtime);
+# ifdef MSWIN
+	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	{
+	    char_u	*to_free = NULL;
+	    int		len;
+
+	    acp_to_enc((char_u *)buf, (int)strlen(buf), &to_free, &len);
+	    if (to_free != NULL)
+	    {
+		STRCPY(buf, to_free);
+		vim_free(to_free);
+	    }
+	}
+# endif
+    }
 #else
     STRCPY(buf, "(unknown)");
 #endif
@@ -2746,56 +2762,6 @@ add_text_props_for_append(
 }
 #endif
 
-/*
- * Append a line after lnum (may be 0 to insert a line in front of the file).
- * "line" does not need to be allocated, but can't be another line in a
- * buffer, unlocking may make it invalid.
- *
- *   newfile: TRUE when starting to edit a new file, meaning that pe_old_lnum
- *		will be set for recovery
- * Check: The caller of this function should probably also call
- * appended_lines().
- *
- * return FAIL for failure, OK otherwise
- */
-    int
-ml_append(
-    linenr_T	lnum,		/* append after this line (can be 0) */
-    char_u	*line,		/* text of the new line */
-    colnr_T	len,		/* length of new line, including NUL, or 0 */
-    int		newfile)	/* flag, see above */
-{
-    /* When starting up, we might still need to create the memfile */
-    if (curbuf->b_ml.ml_mfp == NULL && open_buffer(FALSE, NULL, 0) == FAIL)
-	return FAIL;
-
-    if (curbuf->b_ml.ml_line_lnum != 0)
-	ml_flush_line(curbuf);
-    return ml_append_int(curbuf, lnum, line, len, newfile, FALSE);
-}
-
-#if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(PROTO)
-/*
- * Like ml_append() but for an arbitrary buffer.  The buffer must already have
- * a memline.
- */
-    int
-ml_append_buf(
-    buf_T	*buf,
-    linenr_T	lnum,		/* append after this line (can be 0) */
-    char_u	*line,		/* text of the new line */
-    colnr_T	len,		/* length of new line, including NUL, or 0 */
-    int		newfile)	/* flag, see above */
-{
-    if (buf->b_ml.ml_mfp == NULL)
-	return FAIL;
-
-    if (buf->b_ml.ml_line_lnum != 0)
-	ml_flush_line(buf);
-    return ml_append_int(buf, lnum, line, len, newfile, FALSE);
-}
-#endif
-
     static int
 ml_append_int(
     buf_T	*buf,
@@ -2833,12 +2799,6 @@ ml_append_int(
 
     if (len == 0)
 	len = (colnr_T)STRLEN(line) + 1;	// space needed for the text
-
-#ifdef FEAT_EVAL
-    // When inserting above recorded changes: flush the changes before changing
-    // the text.
-    may_invoke_listeners(buf, lnum + 1, lnum + 1, 1);
-#endif
 
 #ifdef FEAT_TEXT_PROP
     if (curbuf->b_has_textprop && lnum > 0)
@@ -3324,6 +3284,79 @@ theend:
 }
 
 /*
+ * Flush any pending change and call ml_append_int()
+ */
+    static int
+ml_append_flush(
+    buf_T	*buf,
+    linenr_T	lnum,		// append after this line (can be 0)
+    char_u	*line,		// text of the new line
+    colnr_T	len,		// length of line, including NUL, or 0
+    int		newfile)	// flag, see above
+{
+    if (lnum > buf->b_ml.ml_line_count)
+	return FAIL;  // lnum out of range
+
+    if (buf->b_ml.ml_line_lnum != 0)
+	// This may also invoke ml_append_int().
+	ml_flush_line(buf);
+
+#ifdef FEAT_EVAL
+    // When inserting above recorded changes: flush the changes before changing
+    // the text.  Then flush the cached line, it may become invalid.
+    may_invoke_listeners(buf, lnum + 1, lnum + 1, 1);
+    if (buf->b_ml.ml_line_lnum != 0)
+	ml_flush_line(buf);
+#endif
+
+    return ml_append_int(buf, lnum, line, len, newfile, FALSE);
+}
+
+/*
+ * Append a line after lnum (may be 0 to insert a line in front of the file).
+ * "line" does not need to be allocated, but can't be another line in a
+ * buffer, unlocking may make it invalid.
+ *
+ *   newfile: TRUE when starting to edit a new file, meaning that pe_old_lnum
+ *		will be set for recovery
+ * Check: The caller of this function should probably also call
+ * appended_lines().
+ *
+ * return FAIL for failure, OK otherwise
+ */
+    int
+ml_append(
+    linenr_T	lnum,		/* append after this line (can be 0) */
+    char_u	*line,		/* text of the new line */
+    colnr_T	len,		/* length of new line, including NUL, or 0 */
+    int		newfile)	/* flag, see above */
+{
+    /* When starting up, we might still need to create the memfile */
+    if (curbuf->b_ml.ml_mfp == NULL && open_buffer(FALSE, NULL, 0) == FAIL)
+	return FAIL;
+    return ml_append_flush(curbuf, lnum, line, len, newfile);
+}
+
+#if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(PROTO)
+/*
+ * Like ml_append() but for an arbitrary buffer.  The buffer must already have
+ * a memline.
+ */
+    int
+ml_append_buf(
+    buf_T	*buf,
+    linenr_T	lnum,		/* append after this line (can be 0) */
+    char_u	*line,		/* text of the new line */
+    colnr_T	len,		/* length of new line, including NUL, or 0 */
+    int		newfile)	/* flag, see above */
+{
+    if (buf->b_ml.ml_mfp == NULL)
+	return FAIL;
+    return ml_append_flush(buf, lnum, line, len, newfile);
+}
+#endif
+
+/*
  * Replace line lnum, with buffering, in current buffer.
  *
  * If "copy" is TRUE, make a copy of the line, otherwise the line has been
@@ -3550,6 +3583,15 @@ adjust_text_props_for_delete(
 ml_delete(linenr_T lnum, int message)
 {
     ml_flush_line(curbuf);
+    if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
+	return FAIL;
+
+#ifdef FEAT_EVAL
+    // When inserting above recorded changes: flush the changes before changing
+    // the text.
+    may_invoke_listeners(curbuf, lnum, lnum + 1, -1);
+#endif
+
     return ml_delete_int(curbuf, lnum, message);
 }
 
@@ -3574,14 +3616,6 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
     int		textprop_save_len;
 #endif
 
-    if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
-	return FAIL;
-
-#ifdef FEAT_EVAL
-    // When inserting above recorded changes: flush the changes before changing
-    // the text.
-    may_invoke_listeners(buf, lnum, lnum + 1, -1);
-#endif
     if (lowest_marked && lowest_marked > lnum)
 	lowest_marked--;
 

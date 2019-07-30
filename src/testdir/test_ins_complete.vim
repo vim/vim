@@ -313,3 +313,68 @@ func Test_compl_feedkeys()
   bwipe!
   set completeopt&
 endfunc
+
+func Test_compl_in_cmdwin()
+  set wildmenu wildchar=<Tab>
+  com! -nargs=1 -complete=command GetInput let input = <q-args>
+  com! -buffer TestCommand echo 'TestCommand'
+
+  let input = ''
+  call feedkeys("q:iGetInput T\<C-x>\<C-v>\<CR>", 'tx!')
+  call assert_equal('TestCommand', input)
+
+  let input = ''
+  call feedkeys("q::GetInput T\<Tab>\<CR>:q\<CR>", 'tx!')
+  call assert_equal('T', input)
+
+  delcom TestCommand
+  delcom GetInput
+  set wildmenu& wildchar&
+endfunc
+
+" Test for insert path completion with completeslash option
+func Test_ins_completeslash()
+  if !has('win32')
+    throw 'Skipped: only works on MS-Windows'
+  endif
+  
+  call mkdir('Xdir')
+
+  let orig_shellslash = &shellslash
+  set cpt&
+
+  new
+  
+  set noshellslash
+
+  set completeslash=
+  exe "normal oXd\<C-X>\<C-F>"
+  call assert_equal('Xdir\', getline('.'))
+
+  set completeslash=backslash
+  exe "normal oXd\<C-X>\<C-F>"
+  call assert_equal('Xdir\', getline('.'))
+
+  set completeslash=slash
+  exe "normal oXd\<C-X>\<C-F>"
+  call assert_equal('Xdir/', getline('.'))
+
+  set shellslash
+
+  set completeslash=
+  exe "normal oXd\<C-X>\<C-F>"
+  call assert_equal('Xdir/', getline('.'))
+
+  set completeslash=backslash
+  exe "normal oXd\<C-X>\<C-F>"
+  call assert_equal('Xdir\', getline('.'))
+
+  set completeslash=slash
+  exe "normal oXd\<C-X>\<C-F>"
+  call assert_equal('Xdir/', getline('.'))
+  %bw!
+  call delete('Xdir', 'rf')
+
+  let &shellslash = orig_shellslash
+endfunc
+

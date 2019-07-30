@@ -123,6 +123,7 @@ typedef struct {
 // alphabet coding.  To minimize changes to the code, I decided to just
 // increase the number of possible marks.
 #define NMARKS		('z' - 'a' + 1)	// max. # of named marks
+#define EXTRA_MARKS	10		// marks 0-9
 #define JUMPLISTSIZE	100		// max. # of marks in jump list
 #define TAGSTACKSIZE	20		// max. # of tags in tag stack
 
@@ -999,6 +1000,8 @@ struct syn_state
 };
 #endif // FEAT_SYN_HL
 
+#define MAX_HL_ID       20000	// maximum value for a highlight ID.
+
 /*
  * Structure shared between syntax.c, screen.c and gui_x11.c.
  */
@@ -1113,6 +1116,17 @@ typedef struct
     garray_T	vir_barlines;	// lines starting with |
 } vir_T;
 
+/*
+ * Structure used for the command line history.
+ */
+typedef struct hist_entry
+{
+    int		hisnum;		/* identifying number */
+    int		viminfo;	/* when TRUE hisstr comes from viminfo */
+    char_u	*hisstr;	/* actual entry, separator char after the NUL */
+    time_t	time_set;	/* when it was typed, zero if unknown */
+} histentry_T;
+
 #define CONV_NONE		0
 #define CONV_TO_UTF8		1
 #define CONV_9_TO_UTF8		2
@@ -1184,6 +1198,7 @@ typedef struct hashitem_S
 
 // Initial size for a hashtable.  Our items are relatively small and growing
 // is expensive, thus use 16 as a start.  Must be a power of 2.
+// This allows for storing 10 items (2/3 of 16) before a resize is needed.
 #define HT_INIT_SIZE 16
 
 typedef struct hashtable_S
@@ -1518,6 +1533,54 @@ struct funccal_entry {
     funccal_entry_T *next;
 };
 
+/* From user function to hashitem and back. */
+#define UF2HIKEY(fp) ((fp)->uf_name)
+#define HIKEY2UF(p)  ((ufunc_T *)((p) - offsetof(ufunc_T, uf_name)))
+#define HI2UF(hi)     HIKEY2UF((hi)->hi_key)
+
+/* Growarray to store info about already sourced scripts.
+ * For Unix also store the dev/ino, so that we don't have to stat() each
+ * script when going through the list. */
+typedef struct scriptitem_S
+{
+    char_u	*sn_name;
+# ifdef UNIX
+    int		sn_dev_valid;
+    dev_t	sn_dev;
+    ino_t	sn_ino;
+# endif
+# ifdef FEAT_PROFILE
+    int		sn_prof_on;	/* TRUE when script is/was profiled */
+    int		sn_pr_force;	/* forceit: profile functions in this script */
+    proftime_T	sn_pr_child;	/* time set when going into first child */
+    int		sn_pr_nest;	/* nesting for sn_pr_child */
+    /* profiling the script as a whole */
+    int		sn_pr_count;	/* nr of times sourced */
+    proftime_T	sn_pr_total;	/* time spent in script + children */
+    proftime_T	sn_pr_self;	/* time spent in script itself */
+    proftime_T	sn_pr_start;	/* time at script start */
+    proftime_T	sn_pr_children; /* time in children after script start */
+    /* profiling the script per line */
+    garray_T	sn_prl_ga;	/* things stored for every line */
+    proftime_T	sn_prl_start;	/* start time for current line */
+    proftime_T	sn_prl_children; /* time spent in children for this line */
+    proftime_T	sn_prl_wait;	/* wait start time for current line */
+    int		sn_prl_idx;	/* index of line being timed; -1 if none */
+    int		sn_prl_execed;	/* line being timed was executed */
+# endif
+} scriptitem_T;
+
+# ifdef FEAT_PROFILE
+/* Struct used in sn_prl_ga for every line of a script. */
+typedef struct sn_prl_S
+{
+    int		snp_count;	/* nr of times line was executed */
+    proftime_T	sn_prl_total;	/* time spent in a line + children */
+    proftime_T	sn_prl_self;	/* time spent in a line itself */
+} sn_prl_T;
+
+#  define PRL_ITEM(si, idx)	(((sn_prl_T *)(si)->sn_prl_ga.ga_data)[(idx)])
+# endif
 #else
 // dummy typedefs for use in function prototypes
 typedef struct
@@ -1527,11 +1590,19 @@ typedef struct
 typedef struct
 {
     int	    dummy;
+} funccall_T;
+typedef struct
+{
+    int	    dummy;
 } funcdict_T;
 typedef struct
 {
     int	    dummy;
 } funccal_entry_T;
+typedef struct
+{
+    int	    dummy;
+} scriptitem_T;
 #endif
 
 struct partial_S
@@ -2325,6 +2396,9 @@ struct file_buffer
 #ifdef FEAT_INS_EXPAND
     char_u	*b_p_cpt;	// 'complete'
 #endif
+#ifdef BACKSLASH_IN_FILENAME
+    char_u	*b_p_csl;	// 'completeslash'
+#endif
 #ifdef FEAT_COMPL_FUNC
     char_u	*b_p_cfu;	// 'completefunc'
     char_u	*b_p_ofu;	// 'omnifunc'
@@ -2947,7 +3021,10 @@ struct window_S
     int		w_popup_drag;	    // allow moving the popup with the mouse
     popclose_T	w_popup_close;	    // allow closing the popup with the mouse
 
-    list_T	*w_popup_mask;	    // list of lists for "mask"
+    list_T	*w_popup_mask;	     // list of lists for "mask"
+    char_u	*w_popup_mask_cells; // cached mask cells
+    int		w_popup_mask_height; // height of w_popup_mask_cells
+    int		w_popup_mask_width;  // width of w_popup_mask_cells
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window
 # endif
@@ -3667,9 +3744,72 @@ typedef enum {
     CDSCOPE_WINDOW	// :lcd
 } cdscope_T;
 
+// Variable flavor
+typedef enum
+{
+    VAR_FLAVOUR_DEFAULT,	/* doesn't start with uppercase */
+    VAR_FLAVOUR_SESSION,	/* starts with uppercase, some lower */
+    VAR_FLAVOUR_VIMINFO		/* all uppercase */
+} var_flavour_T;
+
 // argument for mouse_find_win()
 typedef enum {
     IGNORE_POPUP,	// only check non-popup windows
     FIND_POPUP,		// also find popup windows
     FAIL_POPUP		// return NULL if mouse on popup window
 } mouse_find_T;
+
+// Symbolic names for some registers.
+#define DELETION_REGISTER	36
+#ifdef FEAT_CLIPBOARD
+# define STAR_REGISTER		37
+#  ifdef FEAT_X11
+#   define PLUS_REGISTER	38
+#  else
+#   define PLUS_REGISTER	STAR_REGISTER	    // there is only one
+#  endif
+#endif
+#ifdef FEAT_DND
+# define TILDE_REGISTER		(PLUS_REGISTER + 1)
+#endif
+
+#ifdef FEAT_CLIPBOARD
+# ifdef FEAT_DND
+#  define NUM_REGISTERS		(TILDE_REGISTER + 1)
+# else
+#  define NUM_REGISTERS		(PLUS_REGISTER + 1)
+# endif
+#else
+# define NUM_REGISTERS		37
+#endif
+
+// Each yank register has an array of pointers to lines.
+typedef struct
+{
+    char_u	**y_array;	// pointer to array of line pointers
+    linenr_T	y_size;		// number of lines in y_array
+    char_u	y_type;		// MLINE, MCHAR or MBLOCK
+    colnr_T	y_width;	// only set if y_type == MBLOCK
+#ifdef FEAT_VIMINFO
+    time_t	y_time_set;
+#endif
+} yankreg_T;
+
+// The offset for a search command is store in a soff struct
+// Note: only spats[0].off is really used
+typedef struct soffset
+{
+    int		dir;		// search direction, '/' or '?'
+    int		line;		// search has line offset
+    int		end;		// search set cursor at end
+    long	off;		// line or char offset
+} soffset_T;
+
+// A search pattern and its attributes are stored in a spat struct
+typedef struct spat
+{
+    char_u	    *pat;	// the pattern (in allocated memory) or NULL
+    int		    magic;	// magicness of the pattern
+    int		    no_scs;	// no smartcase for this pattern
+    soffset_T	    off;
+} spat_T;

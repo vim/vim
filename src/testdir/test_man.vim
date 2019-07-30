@@ -1,6 +1,6 @@
 runtime ftplugin/man.vim
 
-function Test_g_ft_man_open_mode()
+func Test_g_ft_man_open_mode()
   vnew
   let l:h = winheight(1)
   q
@@ -46,9 +46,11 @@ function Test_g_ft_man_open_mode()
   call assert_equal(2, tabpagenr('$'))
   call assert_equal(2, tabpagenr())
   q
-endfunction
 
-function Test_nomodifiable()
+  unlet g:ft_man_open_mode
+endfunc
+
+func Test_nomodifiable()
   let wincnt = winnr('$')
   Man vim
   if wincnt == winnr('$')
@@ -57,4 +59,55 @@ function Test_nomodifiable()
   endif
   call assert_false(&l:modifiable)
   q
-endfunction
+endfunc
+
+func Test_buffer_count_hidden()
+  %bw!
+  set hidden
+
+  call assert_equal(1, len(getbufinfo()))
+
+  let wincnt = winnr('$')
+  Man vim
+  if wincnt == winnr('$')
+    " Vim manual page cannot be found.
+    return
+  endif
+
+  call assert_equal(1, len(getbufinfo({'buflisted':1})))
+  call assert_equal(2, len(getbufinfo()))
+  q
+
+  Man vim
+
+  call assert_equal(1, len(getbufinfo({'buflisted':1})))
+  call assert_equal(2, len(getbufinfo()))
+  q
+
+  set hidden&
+endfunc
+
+" Check that we do not alter the settings in the initial window.
+func Test_local_options()
+  %bw!
+  set foldcolumn=1 number
+
+  let wincnt = winnr('$')
+  Man vim
+  if wincnt == winnr('$')
+    " Vim manual page cannot be found.
+    return
+  endif
+
+  " man page
+  call assert_false(&nu)
+  call assert_equal(0, &fdc)
+
+  " initial window
+  wincmd p
+  call assert_true(&nu)
+  call assert_equal(1, &fdc)
+
+  %bw!
+  set foldcolumn& number&
+endfunc

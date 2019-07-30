@@ -88,6 +88,7 @@
 # define PV_DICT	OPT_BOTH(OPT_BUF(BV_DICT))
 # define PV_TSR		OPT_BOTH(OPT_BUF(BV_TSR))
 #endif
+#define PV_CSL		OPT_BUF(BV_CSL)
 #ifdef FEAT_COMPL_FUNC
 # define PV_CFU		OPT_BUF(BV_CFU)
 #endif
@@ -887,6 +888,15 @@ static struct vimoption options[] =
 #ifdef FEAT_INS_EXPAND
 			    (char_u *)&p_cot, PV_NONE,
 			    {(char_u *)"menu,preview", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCTX_INIT},
+    {"completeslash",   "csl",  P_STRING|P_VI_DEF|P_VIM,
+#if defined(FEAT_INS_EXPAND) && defined(BACKSLASH_IN_FILENAME)
+			    (char_u *)&p_csl, PV_CSL,
+			    {(char_u *)"", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L}
@@ -2079,6 +2089,15 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)12L, (char_u *)0L} SCTX_INIT},
+    {"previewpopup", "pvp", P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
+#ifdef FEAT_TEXT_PROP
+			    (char_u *)&p_pvp, PV_NONE,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"previewwindow", "pvw", P_BOOL|P_VI_DEF|P_RSTAT|P_NOGLOB,
 #if defined(FEAT_QUICKFIX)
 			    (char_u *)VAR_WIN, PV_PVW,
@@ -3229,6 +3248,9 @@ static char *(p_fcl_values[]) = {"all", NULL};
 #endif
 #ifdef FEAT_INS_EXPAND
 static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "noinsert", "noselect", NULL};
+# ifdef BACKSLASH_IN_FILENAME
+static char *(p_csl_values[]) = {"slash", "backslash", NULL};
+# endif
 #endif
 #ifdef FEAT_SIGNS
 static char *(p_scl_values[]) = {"yes", "no", "auto", "number", NULL};
@@ -5564,49 +5586,6 @@ set_options_bin(
     }
 }
 
-#ifdef FEAT_VIMINFO
-/*
- * Find the parameter represented by the given character (eg ', :, ", or /),
- * and return its associated value in the 'viminfo' string.
- * Only works for number parameters, not for 'r' or 'n'.
- * If the parameter is not specified in the string or there is no following
- * number, return -1.
- */
-    int
-get_viminfo_parameter(int type)
-{
-    char_u  *p;
-
-    p = find_viminfo_parameter(type);
-    if (p != NULL && VIM_ISDIGIT(*p))
-	return atoi((char *)p);
-    return -1;
-}
-
-/*
- * Find the parameter represented by the given character (eg ''', ':', '"', or
- * '/') in the 'viminfo' option and return a pointer to the string after it.
- * Return NULL if the parameter is not specified in the string.
- */
-    char_u *
-find_viminfo_parameter(int type)
-{
-    char_u  *p;
-
-    for (p = p_viminfo; *p; ++p)
-    {
-	if (*p == type)
-	    return p + 1;
-	if (*p == 'n')		    /* 'n' is always the last one */
-	    break;
-	p = vim_strchr(p, ',');	    /* skip until next ',' */
-	if (p == NULL)		    /* hit the end without finding parameter */
-	    break;
-    }
-    return NULL;
-}
-#endif
-
 /*
  * Expand environment variables for some string options.
  * These string options cannot be indirect!
@@ -7443,7 +7422,7 @@ did_set_string_option(
 	}
     }
 
-    /* 'completeopt' */
+    // 'completeopt'
     else if (varp == &p_cot)
     {
 	if (check_opt_strings(p_cot, p_cot_values, TRUE) != OK)
@@ -7451,7 +7430,17 @@ did_set_string_option(
 	else
 	    completeopt_was_set();
     }
-#endif /* FEAT_INS_EXPAND */
+
+# ifdef BACKSLASH_IN_FILENAME
+    // 'completeslash'
+    else if (gvarp == &p_csl)
+    {
+	if (check_opt_strings(p_csl, p_csl_values, FALSE) != OK
+		|| check_opt_strings(curbuf->b_p_csl, p_csl_values, FALSE) != OK)
+	    errmsg = e_invarg;
+    }
+# endif
+#endif // FEAT_INS_EXPAND
 
 #ifdef FEAT_SIGNS
     // 'signcolumn'
@@ -7828,6 +7817,15 @@ did_set_string_option(
 		    errmsg = e_invarg;
 	    }
 	}
+    }
+#endif
+
+#ifdef FEAT_TEXT_PROP
+    // 'previewpopup'
+    else if (varp == &p_pvp)
+    {
+	if (parse_previewpopup(NULL) == FAIL)
+	    errmsg = e_invarg;
     }
 #endif
 
@@ -11135,7 +11133,6 @@ get_varp(struct vimoption *p)
 #endif
 	case PV_MENC:	return *curbuf->b_p_menc != NUL
 				    ? (char_u *)&(curbuf->b_p_menc) : p->var;
-
 #ifdef FEAT_ARABIC
 	case PV_ARAB:	return (char_u *)&(curwin->w_p_arab);
 #endif
@@ -11222,6 +11219,9 @@ get_varp(struct vimoption *p)
 #endif
 #ifdef FEAT_INS_EXPAND
 	case PV_CPT:	return (char_u *)&(curbuf->b_p_cpt);
+# ifdef BACKSLASH_IN_FILENAME
+	case PV_CSL:	return (char_u *)&(curbuf->b_p_csl);
+# endif
 #endif
 #ifdef FEAT_COMPL_FUNC
 	case PV_CFU:	return (char_u *)&(curbuf->b_p_cfu);
@@ -11616,6 +11616,9 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_swf = cmdmod.noswapfile ? FALSE : p_swf;
 #ifdef FEAT_INS_EXPAND
 	    buf->b_p_cpt = vim_strsave(p_cpt);
+# ifdef BACKSLASH_IN_FILENAME
+	    buf->b_p_csl = vim_strsave(p_csl);
+# endif
 #endif
 #ifdef FEAT_COMPL_FUNC
 	    buf->b_p_cfu = vim_strsave(p_cfu);

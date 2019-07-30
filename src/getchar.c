@@ -4009,6 +4009,8 @@ map_mode_to_chars(int mode)
 	    ga_append(&mapmode, 'n');			/* :nmap */
 	if (mode & OP_PENDING)
 	    ga_append(&mapmode, 'o');			/* :omap */
+	if (mode & TERMINAL)
+	    ga_append(&mapmode, 't');			/* :tmap */
 	if ((mode & (VISUAL + SELECTMODE)) == VISUAL + SELECTMODE)
 	    ga_append(&mapmode, 'v');			/* :vmap */
 	else

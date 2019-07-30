@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.1.  Last change: 2019 Jun 02
+*windows.txt*   For Vim version 8.1.  Last change: 2019 Jul 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -864,7 +864,15 @@ height of the preview window when it's opened.  The 'previewwindow' option is
 set in the preview window to be able to recognize it.  The 'winfixheight'
 option is set to have it keep the same height when opening/closing other
 windows.
-
+						*preview-popup*
+Alternatively, a popup window can be used by setting the 'previewpopup'
+option.  When set, it overrules the 'previewwindow' and 'previewheight'
+settings.  The option is a comma separated list of values:
+	height		maximum height of the popup
+	width		maximum width of the popup
+Example: >
+	:set previewpopup=height:10,width:60
+<
 						*:pta* *:ptag*
 :pta[g][!] [tagname]
 		Does ":tag[!] [tagname]" and shows the found tag in a

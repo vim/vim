@@ -3381,7 +3381,7 @@ retnomove:
 #endif
 
     /* compute the position in the buffer line from the posn on the screen */
-    if (mouse_comp_pos(curwin, &row, &col, &curwin->w_cursor.lnum))
+    if (mouse_comp_pos(curwin, &row, &col, &curwin->w_cursor.lnum, NULL))
 	mouse_past_bottom = TRUE;
 
     /* Start Visual mode before coladvance(), for when 'sel' != "old" */
@@ -3429,8 +3429,12 @@ retnomove:
 #if defined(FEAT_MOUSE) || defined(FEAT_TEXT_PROP) || defined(PROTO)
 
 /*
- * Compute the position in the buffer line from the posn on the screen in
+ * Compute the buffer line position from the screen position "rowp" / "colp" in
  * window "win".
+ * "plines_cache" can be NULL (no cache) or an array with "win->w_height"
+ * entries that caches the plines_win() result from a previous call.  Entry is
+ * zero if not computed yet.  There must be no text or setting changes since
+ * the entry is put in the cache.
  * Returns TRUE if the position is below the last line.
  */
     int
@@ -3438,7 +3442,8 @@ mouse_comp_pos(
     win_T	*win,
     int		*rowp,
     int		*colp,
-    linenr_T	*lnump)
+    linenr_T	*lnump,
+    int		*plines_cache)
 {
     int		col = *colp;
     int		row = *rowp;
@@ -3456,23 +3461,32 @@ mouse_comp_pos(
 
     while (row > 0)
     {
-#ifdef FEAT_DIFF
-	/* Don't include filler lines in "count" */
-	if (win->w_p_diff
-# ifdef FEAT_FOLDING
-		&& !hasFoldingWin(win, lnum, NULL, NULL, TRUE, NULL)
-# endif
-		)
-	{
-	    if (lnum == win->w_topline)
-		row -= win->w_topfill;
-	    else
-		row -= diff_check_fill(win, lnum);
-	    count = plines_win_nofill(win, lnum, TRUE);
-	}
+	int cache_idx = lnum - win->w_topline;
+
+	if (plines_cache != NULL && plines_cache[cache_idx] > 0)
+	    count = plines_cache[cache_idx];
 	else
+	{
+#ifdef FEAT_DIFF
+	    /* Don't include filler lines in "count" */
+	    if (win->w_p_diff
+# ifdef FEAT_FOLDING
+		    && !hasFoldingWin(win, lnum, NULL, NULL, TRUE, NULL)
+# endif
+		    )
+	    {
+		if (lnum == win->w_topline)
+		    row -= win->w_topfill;
+		else
+		    row -= diff_check_fill(win, lnum);
+		count = plines_win_nofill(win, lnum, TRUE);
+	    }
+	    else
 #endif
-	    count = plines_win(win, lnum, TRUE);
+		count = plines_win(win, lnum, TRUE);
+	    if (plines_cache != NULL)
+		plines_cache[cache_idx] = count;
+	}
 	if (count > row)
 	    break;	/* Position is in this buffer line. */
 #ifdef FEAT_FOLDING
@@ -3626,7 +3640,7 @@ get_fpos_of_mouse(pos_T *mpos)
 	return IN_UNKNOWN;
 
     /* compute the position in the buffer line from the posn on the screen */
-    if (mouse_comp_pos(curwin, &row, &col, &mpos->lnum))
+    if (mouse_comp_pos(curwin, &row, &col, &mpos->lnum, NULL))
 	return IN_STATUS_LINE; /* past bottom */
 
     mpos->col = vcol2col(wp, mpos->lnum, col);

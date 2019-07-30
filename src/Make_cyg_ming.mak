@@ -730,6 +730,7 @@ OBJ = \
 	$(OUTDIR)/getchar.o \
 	$(OUTDIR)/hardcopy.o \
 	$(OUTDIR)/hashtab.o \
+	$(OUTDIR)/highlight.o \
 	$(OUTDIR)/indent.o \
 	$(OUTDIR)/insexpand.o \
 	$(OUTDIR)/json.o \
@@ -752,10 +753,12 @@ OBJ = \
 	$(OUTDIR)/pathdef.o \
 	$(OUTDIR)/popupmnu.o \
 	$(OUTDIR)/popupwin.o \
+	$(OUTDIR)/profiler.o \
 	$(OUTDIR)/quickfix.o \
 	$(OUTDIR)/regexp.o \
 	$(OUTDIR)/screen.o \
 	$(OUTDIR)/search.o \
+	$(OUTDIR)/session.o \
 	$(OUTDIR)/sha256.o \
 	$(OUTDIR)/sign.o \
 	$(OUTDIR)/spell.o \
@@ -763,12 +766,14 @@ OBJ = \
 	$(OUTDIR)/syntax.o \
 	$(OUTDIR)/tag.o \
 	$(OUTDIR)/term.o \
+	$(OUTDIR)/testing.o \
 	$(OUTDIR)/textprop.o \
 	$(OUTDIR)/ui.o \
 	$(OUTDIR)/undo.o \
 	$(OUTDIR)/usercmd.o \
 	$(OUTDIR)/userfunc.o \
 	$(OUTDIR)/version.o \
+	$(OUTDIR)/viminfo.o \
 	$(OUTDIR)/winclip.o \
 	$(OUTDIR)/window.o
 
@@ -1006,7 +1011,7 @@ install.exe: dosinst.c
 	$(CC) $(CFLAGS) -o install.exe dosinst.c $(LIB) -lole32 -luuid
 
 uninstal.exe: uninstal.c
-	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIB)
+	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIB) -lole32
 
 ifeq ($(VIMDLL),yes)
 $(TARGET): $(OUTDIR) $(OBJ)

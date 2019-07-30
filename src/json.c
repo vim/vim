@@ -1126,4 +1126,53 @@ json_find_end(js_read_T *reader, int options)
     reader->js_used = used_save;
     return ret;
 }
+
+/*
+ * "js_decode()" function
+ */
+    void
+f_js_decode(typval_T *argvars, typval_T *rettv)
+{
+    js_read_T	reader;
+
+    reader.js_buf = tv_get_string(&argvars[0]);
+    reader.js_fill = NULL;
+    reader.js_used = 0;
+    if (json_decode_all(&reader, rettv, JSON_JS) != OK)
+	emsg(_(e_invarg));
+}
+
+/*
+ * "js_encode()" function
+ */
+    void
+f_js_encode(typval_T *argvars, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = json_encode(&argvars[0], JSON_JS);
+}
+
+/*
+ * "json_decode()" function
+ */
+    void
+f_json_decode(typval_T *argvars, typval_T *rettv)
+{
+    js_read_T	reader;
+
+    reader.js_buf = tv_get_string(&argvars[0]);
+    reader.js_fill = NULL;
+    reader.js_used = 0;
+    json_decode_all(&reader, rettv, 0);
+}
+
+/*
+ * "json_encode()" function
+ */
+    void
+f_json_encode(typval_T *argvars, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = json_encode(&argvars[0], 0);
+}
 #endif

@@ -7,6 +7,7 @@ linenr_T tv_get_lnum(typval_T *argvars);
 buf_T *buflist_find_by_name(char_u *name, int curtab_only);
 buf_T *tv_get_buf(typval_T *tv, int curtab_only);
 buf_T *get_buf_arg(typval_T *arg);
+win_T *get_optional_window(typval_T *argvars, int idx);
 void execute_redir_str(char_u *value, int value_len);
 void mzscheme_call_vim(char_u *name, typval_T *args, typval_T *rettv);
 float_T vim_round(float_T f);

@@ -84,10 +84,6 @@ void restore_win_noblock(win_T *save_curwin, tabpage_T *save_curtab, int no_disp
 void switch_buffer(bufref_T *save_curbuf, buf_T *buf);
 void restore_buffer(bufref_T *save_curbuf);
 int win_hasvertsplit(void);
-int match_add(win_T *wp, char_u *grp, char_u *pat, int prio, int id, list_T *pos_list, char_u *conceal_char);
-int match_delete(win_T *wp, int id, int perr);
-void clear_matches(win_T *wp);
-matchitem_T *get_match(win_T *wp, int id);
 int get_win_number(win_T *wp, win_T *first_win);
 int get_tab_number(tabpage_T *tp);
 int win_getid(typval_T *argvars);

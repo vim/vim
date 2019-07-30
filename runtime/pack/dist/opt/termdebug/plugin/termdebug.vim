@@ -838,12 +838,12 @@ endfunc
 " if there is any.
 func TermDebugBalloonExpr()
   if v:beval_winid != s:sourcewin
-    return
+    return ''
   endif
   if !s:stopped
     " Only evaluate when stopped, otherwise setting a breakpoint using the
     " mouse triggers a balloon.
-    return
+    return ''
   endif
   let s:evalFromBalloonExpr = 1
   let s:evalFromBalloonExprResult = ''
