@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Jul 19
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Jul 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,24 +38,11 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
-20)
-Also put :argadd commands at the start for all buffers, so that their order
-remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
-
-Refactor: Move common things out of evalfunc.c, it's too big.
-Move function specs out of eval.txt, it's too big.
-
-Convert comments in option.h
-
-Patch to convert encoding of strftime(). (Ken Takata, #4685, fixes #4681)
-
-Patch to Move viminfo related functions to a separate file: #4686
-
 Popup windows:
-- avoid preview popup going outside of the screen
-- add popup_getpreview() - get ID of preview window
+- Always show the right border, not only when there is a close button?
 - bug: double click in scrollbar starts selection
+- modeless selection fails over ssh and with putty.  Mouse dragging not
+  supported?  Can we force it on?
 - Allow resizing from the bottom-right corner
 - Implement flip option
 - Have a way to scroll to the bottom, e.g. set 'firstline' to -1? (#4577)
@@ -148,28 +135,37 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Error numbers available: E172, E221, E242, E249, E260, E274, E275, E276,
-E278, E279, E281, E290, E291, E292, E361, E362, E366, E396, E450, E451, E452,
-E453, E454, E460, E489, E491, E56, E57, E565, E569, E578, E610, E611, E653,
-E654, E693, E706, E856, E857, E860, E861, E863, E889, E900, E959
+Error numbers available: E260, E274, E275, E276,
+E278, E279, E290, E292, E362, E366, E450, E451, E452,
+E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
+E654, E856, E857, E860, E861, E863, E889, E900
 
-Problem with German spell file.  Hint for solution by Klaus-Peter Schreiner in
-#4314, solves the Rasenmäher problem.
+Patch on issue #4661 to fix resolve(). (Ken Takata)
+https://gist.github.com/k-takata/52d0a677ca9a27bdbaed21d77533244e
+
+Patch to split of map.c from getchar.c (Yegappan, #4740)
 
 Sound: support on Mac?  Or does libcanberra work there?
 
-Patch to use forward slash for completion even when 'shellslash' is set.
-Adds 'completepathslash'.  (Yasuhiro Matsumoto, 2018 Nov 15, #3612)
-
 Patch to add win_splitmove() function. (Andy Massimino, #4561)
 
-Resolve() works incorrectly under windows. (#4661)
+Patch for #4733: #4734.  Test needs improvements.
+
+Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
+20)
+Also put :argadd commands at the start for all buffers, so that their order
+remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
+
+Make heredoc-let a bit more restrictive:
+https://github.com/vim/vim/issues/4705
 
 Completion mixes results from the current buffer with tags and other files.
 Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
 terminal.c and then CTRL-N twice.
 Should do current file first and not split it up when more results are found.
 (Also #1890)
+
+Patch to add :spellrare. (#4291)
 
 Patch to use timers in matchparen. (Daniel Hahler, #1338)
 Ready to include now?
@@ -180,11 +176,17 @@ Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 Patch to support 'cursorlineopt' - only highlight the line number of the
 cursor line: #4693
 
+Let plugins know how much space is available in the last line before
+triggering the hit-enter prompt.  Internally called "sc_col".
+(Daniel Hahler, #4732)
+
 Patch for Template string: #4491  Not ready yet.  New pull: #4634
 
 ":bnext" in a help buffer is supposed to go to the next help buffer, but it
 goes to any buffer, and then :bnext skips help buffers, since they are
 unlisted. (#4478)
+
+Make 'showbreak' global-local.
 
 Problem showing a line if the number column width changes when using "o".
 (Mateusz Morusiewicz, #4245)
@@ -221,6 +223,9 @@ Patch for Inno Setup: #2739
 
 Internal diff doesn't handle binary file like external diff does. (Mike
 Williams, 2018 Oct 30)
+
+"exepath('bin/cmd')" does not work while ":!bin/cmd" does work.
+(Daniel Hahler, #4710)  and executable('bin/cmd') returns 1
 
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
 
@@ -307,6 +312,24 @@ added?
 
 Add test for urxvt mouse codes.  Also test that mouse coordinates can be
 negative. (see #4326)
+
+All functions are global, which makes functions like get() and len() awkward.
+For the future use the ~get() and ~len() syntax.  It also allows for
+chaining: >
+    mylist~get(idx)
+    mylist~uniq()~len()
+    mydict~get(idx)
+    mystring~len()
+Or use -> (like C pointer dereference) >
+    mylist->get(idx)
+    mylist->uniq()->len()
+    mydict->get(idx)
+    mystring->len()
+Alternatives for ~:
+    ^  list^get()    could also be used
+    .  list.get()    already means "member" in Dict
+    $  list$get()    harder to read
+    @  list@get()    harder to read
 
 'cmdheight' has a tab-local value, but it cannot be obtained with
 `:echo gettabwinvar(2, 1, '&cmdheight')` returns the value for the _current_
@@ -521,6 +544,8 @@ when adding a sign for every quickfix entry. (#4557)
 
 Win32 key codes are messy.  Mike Williams tried to fix that, but now old
 mappings no longer work.  Create a new terminal for the better solution?
+
+Patch to "fix" 'visualbell'. Add option to set delay?  (#1789)
 
 Script generated by :mksession does not work well if there are windows with
 modified buffers
@@ -801,18 +826,6 @@ Test_writefile_fails_conversion failure on Solaris because if different iconv
 behavior.  Skip when "uname" returns "SunOS"? (Pavel Heimlich, #1872)
 
 'tagrelative' is broken in specific situation. (xaizek, 2017 Oct 19, #2221)
-
-All functions are global, which makes functions like get() and len() awkward.
-For the future use the ~get() and ~len() syntax, e.g.:
-    mylist~get(idx)
-    mydict~get(idx)
-    mystring~len()
-Alternatives for ~:
-    ^  list^get()    could also be used
-    .  list.get()    already means concatenate
-    $  list$get()    harder to read
-    @  list@get()    harder to read
-    ->  list->get()  two characters, used for lambda
 
 The ++ options for the :edit command are also useful on the Vim command line.
 
@@ -4379,8 +4392,6 @@ Vim script language:
     to avoid a performance penalty (esp. for string options)?
 8   Add referring to key options with "&t_xx".  Both for "echo &t_xx" and
     ":let &t_xx =".  Useful for making portable mappings.
--   Add ":let var ?= value", conditional assignment.  Patch by Dave Eggum,
-    2006 Dec 11.
 -   range for ":exec", pass it on to the executed command.  (Webb)
 8   ":{range}source": source the lines from the current file.
 	You can already yank lines and use :@" to execute them.

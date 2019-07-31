@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.1.  Last change: 2019 Jul 18
+*windows.txt*   For Vim version 8.1.  Last change: 2019 Jul 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -28,8 +28,6 @@ The basics are explained in chapter 7 and 8 of the user manual |usr_07.txt|
 
 {not able to use multiple windows when the |+windows| feature was disabled at
 compile time}
-{not able to use vertically split windows when the |+vertsplit| feature was
-disabled at compile time}
 
 ==============================================================================
 1. Introduction					*windows-intro* *window*
@@ -162,6 +160,10 @@ CTRL-W CTRL-S						*CTRL-W_CTRL-S*
 		Note: CTRL-S does not work on all terminals and might block
 		further input, use CTRL-Q to get going again.
 		Also see |++opt| and |+cmd|.
+							*E242*
+		Be careful when splitting a window in an autocommand, it may
+		mess up the window layout if this happens while making other
+		window layout changes.
 
 CTRL-W CTRL-V						*CTRL-W_CTRL-V*
 CTRL-W v						*CTRL-W_v*
@@ -507,7 +509,6 @@ CTRL-W H	Move the current window to be at the far left, using the
 		current window and then creating another one with
 		":vert topleft split", except that the current window contents
 		is used for the new window.
-		{not available when compiled without the |+vertsplit| feature}
 
 						*CTRL-W_L*
 CTRL-W L	Move the current window to be at the far right, using the full
@@ -515,7 +516,6 @@ CTRL-W L	Move the current window to be at the far right, using the full
 		current window and then creating another one with
 		":vert botright split", except that the current window
 		contents is used for the new window.
-		{not available when compiled without the |+vertsplit| feature}
 
 						*CTRL-W_T*
 CTRL-W T	Move the current window to a new tab page.  This fails if
@@ -667,6 +667,8 @@ can also get to them with the buffer list commands, like ":bnext".
 		|:vertical| was prepended).
 		Buf/Win Enter/Leave autocommands are not executed for the new
 		windows here, that's only done when they are really entered.
+		If autocommands change the window layout while this command is
+		busy an error will be given. *E249*
 
 :[N]sa[rgument][!] [++opt] [+cmd] [N]			*:sa* *:sargument*
 		Short for ":split | argument [N]": split window and go to Nth

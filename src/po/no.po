@@ -1612,9 +1612,6 @@ msgstr "E509: Kan ikke lese backupfil (legg til ! for å overstyre)"
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: Kan ikke lage backupfil (legg til ! for å overstyre)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: Ressursforgreningen ville gått tapt (legg til ! for å overstyre)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Kan ikke finne midlertidig fil for skriving"
 
@@ -2616,40 +2613,11 @@ msgstr "Vis docu av"
 msgid "Generate docu for"
 msgstr "Generer docu for"
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr ""
-"Kan ikke koble til SNiFF+. Sjekk miljøet (\"environment\") (sniffemacs må "
-"bli funnet i $PATH).\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: Feil under lesing. Frakoblet"
-
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ er for øyeblikket "
-
 msgid "not "
 msgstr "ikke "
 
 msgid "connected"
 msgstr "oppkoblet"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: Ukjent SNiFF+-forespørsel: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: Feil ved oppkobling til SNiFF+"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: SNiFF+ ikke tilkoblet"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: Ikke en SNiFF+-buffer"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: Feil under skriving. Frakoblet"
 
 msgid "invalid buffer number"
 msgstr "ugyldig buffernummer"
@@ -3235,14 +3203,8 @@ msgstr "E288: Inndatametode støtter ikke enhver stil"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: Inndatametode støtter ikke min \"preedit\" type"
 
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: \"over-the-spot\"-stil trenger et skrifttypesett"
-
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: Din GTK+ er eldre enn 1.2.3. Statusområde deaktivert"
-
-msgid "E292: Input Method Server is not running"
-msgstr "E292: Inndatametodetjener kjører ikke"
 
 msgid "E293: block was not locked"
 msgstr "E293: Blokken var ikke låst"

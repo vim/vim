@@ -1,4 +1,4 @@
-*testing.txt*	For Vim version 8.1.  Last change: 2019 Jul 21
+*testing.txt*	For Vim version 8.1.  Last change: 2019 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -11,8 +11,8 @@ about writing tests in Vim script.  This can be used for testing Vim itself
 and for testing plugins.
 
 1. Testing Vim				|testing|
-2. Test functions			|test-functions|
-3. Assert funtions			|assert-functions|
+2. Test functions			|test-functions-details|
+3. Assert functions			|assert-functions-details|
 
 ==============================================================================
 1. Testing Vim						*testing*
@@ -36,7 +36,7 @@ without the |+eval| feature.
 Find more information in the file src/testdir/README.txt.
 
 ==============================================================================
-2. Test functions				*test-functions*
+2. Test functions				*test-functions-details*
 
 test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
 		This is for testing: If the memory allocation with {id} is
@@ -198,7 +198,7 @@ test_settime({expr})					*test_settime()*
 		normal behavior is restored.
 
 ==============================================================================
-3. Assert functions				*assert-functions*
+3. Assert functions				*assert-functions-details*
 
 
 assert_beeps({cmd})					*assert_beeps()*

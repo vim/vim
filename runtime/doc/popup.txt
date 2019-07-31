@@ -515,10 +515,10 @@ The second argument of |popup_create()| is a dictionary with options:
 			padding.
 	minheight	Minimum height of the contents, excluding border and
 			padding.
-	maxwidth	Maximum width of the contents, excluding border and
-			padding.
-	minwidth	Minimum width of the contents, excluding border and
-			padding.
+	maxwidth	Maximum width of the contents, excluding border,
+			padding and scrollbar.
+	minwidth	Minimum width of the contents, excluding border,
+			padding and scrollbar.
 	firstline	First buffer line to display.  When larger than one it
 			looks like the text scrolled up.  When out of range
 			the last buffer line will at the top of the window.

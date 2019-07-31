@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.1.  Last change: 2019 Jun 10
+*various.txt*   For Vim version 8.1.  Last change: 2019 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -457,7 +457,6 @@ B  *+vartabs*		Variable-width tabstops. |'vartabstop'|
 N  *+viminfo*		|'viminfo'|
    *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
 			since 8.0.1118.
-			in sync with the |+windows| feature
 N  *+virtualedit*	|'virtualedit'|
 T  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
 T  *+visualextra*	extra Visual mode commands |blockwise-operators|

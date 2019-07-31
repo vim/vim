@@ -1924,40 +1924,11 @@ msgstr "Zobrazení documentace"
 msgid "Generate docu for"
 msgstr "Generována dokumentace pro"
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr ""
-"Nelze se pøipojit k SNiFF+. Zkontrolujte promìnné (sniffemacs musí "
-"být)uvedena v $PATH.\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: Chyba pøi ètení. Odpojeno"
-
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ je právì "
-
 msgid "not "
 msgstr "ne "
 
 msgid "connected"
 msgstr "pøipojen"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: Neznámý po¾adavek SNiFF+: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: Chybné pøipojení k SNiFF+"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: SNiFF+ nepøipojen"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: Není SNiFF+ buffer"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: Chyba pøi zápisu. Odpojeno."
 
 msgid "invalid buffer number"
 msgstr "chybný název bufferu"
@@ -2495,14 +2466,8 @@ msgstr "E288: vstupní metoda nepodporuje ¾ádný styl"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: vstupní metoda nepodporuje mùj 'preedit' typ"
 
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: Nadbodový styl vy¾aduje fontset"
-
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: Máte GTK+ verze star¹í ne¾ 1.2.3. Stavová plocha vypnuta."
-
-msgid "E292: Input Method Server is not running"
-msgstr "E292: Server vstupních metod nebì¾í"
 
 msgid "E293: block was not locked"
 msgstr "E293: blok nebyl zamknut"
@@ -3487,9 +3452,6 @@ msgstr "E244: Nepøípustná jméno znakové sady \"%s\" ve fontu \"%s\""
 #, c-format
 msgid "E245: Illegal char '%c' in font name \"%s\""
 msgstr "E245: Nepøípustný znak '%c' ve fontu \"%s\""
-
-msgid "E366: Invalid 'osfiletype' option - using Text"
-msgstr "E366: Neplatný 'osfiletype' - pou¾it Text"
 
 msgid "Vim: Double signal, exiting\n"
 msgstr "VIm: dvojitý signál, konèím\n"

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Jul 21
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Jul 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1766,7 +1766,7 @@ v:exception	The value of the exception most recently caught and not
 	:try
 	:  throw "oops"
 	:catch /.*/
-	:  echo "caught" v:exception
+	:  echo "caught " .. v:exception
 	:endtry
 <		Output: "caught oops".
 
@@ -2956,7 +2956,7 @@ argv([{nr} [, {winid}])
 		The {winid} argument specifies the window ID, see |argc()|.
 
 
-assert_ functions are documented here: |assert-functions|
+assert_ functions are documented here: |assert-functions-details|
 
 
 asin({expr})						*asin()*
@@ -4423,7 +4423,10 @@ get({blob}, {idx} [, {default}])
 get({dict}, {key} [, {default}])
 		Get item with key {key} from |Dictionary| {dict}.  When this
 		item is not available return {default}.  Return zero when
-		{default} is omitted.
+		{default} is omitted.  Useful example: >
+			let val = get(g:, 'var_name', 'default')
+<		This gets the value of g:var_name if it exists, and uses
+		'default' when it does not exist.
 get({func}, {what})
 		Get an item with from Funcref {func}.  Possible values for
 		{what} are:
@@ -4799,8 +4802,9 @@ getcwd([{winnr} [, {tabnr}]])
 getenv({name})						*getenv()*
 		Return the value of environment variable {name}.
 		When the variable does not exist |v:null| is returned.  That
-		is different from a variable set to an empty string.
-		See also |expr-env|.
+		is different from a variable set to an empty string, although
+		some systems interpret the empty value as the variable being
+		deleted.  See also |expr-env|.
 
 getfontname([{name}])					*getfontname()*
 		Without an argument returns the name of the normal font being
@@ -7162,7 +7166,8 @@ remove({blob}, {idx} [, {end}])
 			:call remove(mylist, 0, 9)
 
 remove({dict}, {key})
-		Remove the entry from {dict} with key {key}.  Example: >
+		Remove the entry from {dict} with key {key} and return it.
+		Example: >
 			:echo "removed " . remove(dict, "one")
 <		If there is no {key} in {dict} this is an error.
 
@@ -8829,7 +8834,7 @@ tempname()					*tempname()* *temp-file-name*
 
 term_ functions are documented here: |terminal-function-details|
 
-test_ functions are documented here: |test-functions|
+test_ functions are documented here: |test-functions-details|
 
 
 							*timer_info()*
