@@ -6742,6 +6742,8 @@ buf_check_timestamp(
 #endif
 		))
     {
+	long prev_b_mtime = buf->b_mtime;
+
 	retval = 1;
 
 	// set b_mtime to stop further warnings (e.g., when executing
@@ -6819,7 +6821,11 @@ buf_check_timestamp(
 	    if (!n)
 	    {
 		if (*reason == 'd')
-		    mesg = _("E211: File \"%s\" no longer available");
+		{
+		    // Only give the message once.
+		    if (prev_b_mtime != -1)
+			mesg = _("E211: File \"%s\" no longer available");
+		}
 		else
 		{
 		    helpmesg = TRUE;
