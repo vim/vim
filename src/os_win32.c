@@ -4882,7 +4882,7 @@ mch_call_shell(
 # ifdef VIMDLL
 			(gui.in_use || gui.starting) &&
 # endif
-			STRCMP(p_shcf, "/c") == 0)
+			s_dont_use_vimrun && STRCMP(p_shcf, "/c") == 0)
 		    // workaround for the case that "vimrun" does not exist
 		    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s %s %s",
 					   p_sh, p_shcf, p_sh, p_shcf, cmd);
