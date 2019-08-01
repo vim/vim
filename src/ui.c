@@ -3067,10 +3067,11 @@ retnomove:
 		popup_close_for_mouse_click(wp);
 		return IN_UNKNOWN;
 	    }
-	    else if (wp->w_popup_drag && popup_on_border(wp, row, col))
+	    else if ((wp->w_popup_flags & (POPF_DRAG | POPF_RESIZE))
+					      && popup_on_border(wp, row, col))
 	    {
 		popup_dragwin = wp;
-		popup_start_drag(wp);
+		popup_start_drag(wp, row, col);
 		return IN_UNKNOWN;
 	    }
 	    // Only close on release, otherwise it's not possible to drag or do

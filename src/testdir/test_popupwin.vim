@@ -354,6 +354,7 @@ func Test_popup_drag()
 	call setline(1, range(1, 20))
 	let winid = popup_create(['1111', '222222', '33333'], #{
 	      \ drag: 1,
+	      \ resize: 1,
 	      \ border: [],
 	      \ line: &lines - 4,
 	      \ })
@@ -362,6 +363,11 @@ func Test_popup_drag()
 	endfunc
 	map <silent> <F3> :call test_setmouse(&lines - 4, &columns / 2)<CR>
 	map <silent> <F4> :call test_setmouse(&lines - 8, &columns / 2)<CR>
+	func Resize()
+	  call feedkeys("\<F5>\<LeftMouse>\<F6>\<LeftDrag>\<LeftRelease>", "xt")
+	endfunc
+	map <silent> <F5> :call test_setmouse(6, 41)<CR>
+	map <silent> <F6> :call test_setmouse(7, 45)<CR>
   END
   call writefile(lines, 'XtestPopupDrag')
   let buf = RunVimInTerminal('-S XtestPopupDrag', #{rows: 10})
@@ -369,6 +375,9 @@ func Test_popup_drag()
 
   call term_sendkeys(buf, ":call Dragit()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_drag_02', {})
+
+  call term_sendkeys(buf, ":call Resize()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_drag_03', {})
 
   " clean up
   call StopVimInTerminal(buf)

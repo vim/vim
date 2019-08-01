@@ -235,13 +235,14 @@ static int drag_start_row;
 static int drag_start_col;
 static int drag_start_wantline;
 static int drag_start_wantcol;
+static int drag_on_resize_handle;
 
 /*
  * Mouse down on border of popup window: start dragging it.
  * Uses mouse_col and mouse_row.
  */
     void
-popup_start_drag(win_T *wp)
+popup_start_drag(win_T *wp, int row, int col)
 {
     drag_start_row = mouse_row;
     drag_start_col = mouse_col;
@@ -258,10 +259,26 @@ popup_start_drag(win_T *wp)
     // Stop centering the popup
     if (wp->w_popup_pos == POPPOS_CENTER)
 	wp->w_popup_pos = POPPOS_TOPLEFT;
+
+    drag_on_resize_handle = wp->w_popup_border[1] > 0
+			    && wp->w_popup_border[2] > 0
+			    && row == popup_height(wp) - 1
+			    && col == popup_width(wp) - 1;
+
+    if (wp->w_popup_pos != POPPOS_TOPLEFT && drag_on_resize_handle)
+    {
+	if (wp->w_popup_pos == POPPOS_TOPRIGHT
+		|| wp->w_popup_pos == POPPOS_BOTRIGHT)
+	    wp->w_wantcol = wp->w_wincol + 1;
+	if (wp->w_popup_pos == POPPOS_BOTLEFT)
+	    wp->w_wantline = wp->w_winrow + 1;
+	wp->w_popup_pos = POPPOS_TOPLEFT;
+    }
 }
 
 /*
- * Mouse moved while dragging a popup window: adjust the window popup position.
+ * Mouse moved while dragging a popup window: adjust the window popup position
+ * or resize.
  */
     void
 popup_drag(win_T *wp)
@@ -270,6 +287,39 @@ popup_drag(win_T *wp)
     if (!win_valid_popup(wp))
 	return;
 
+    if ((wp->w_popup_flags & POPF_RESIZE) && drag_on_resize_handle)
+    {
+	int width_inc = mouse_col - drag_start_col;
+	int height_inc = mouse_row - drag_start_row;
+
+	if (width_inc != 0)
+	{
+	    int width = wp->w_width + width_inc;
+
+	    if (width < 1)
+		width = 1;
+	    wp->w_minwidth = width;
+	    wp->w_maxwidth = width;
+	    drag_start_col = mouse_col;
+	}
+
+	if (height_inc != 0)
+	{
+	    int height = wp->w_height + height_inc;
+
+	    if (height < 1)
+		height = 1;
+	    wp->w_minheight = height;
+	    wp->w_maxheight = height;
+	    drag_start_row = mouse_row;
+	}
+
+	popup_adjust_position(wp);
+	return;
+    }
+
+    if (!(wp->w_popup_flags & POPF_DRAG))
+	return;
     wp->w_wantline = drag_start_wantline + (mouse_row - drag_start_row);
     if (wp->w_wantline < 1)
 	wp->w_wantline = 1;
@@ -550,7 +600,23 @@ apply_general_options(win_T *wp, dict_T *dict)
 
     di = dict_find(dict, (char_u *)"drag", -1);
     if (di != NULL)
-	wp->w_popup_drag = dict_get_number(dict, (char_u *)"drag");
+    {
+	nr = dict_get_number(dict, (char_u *)"drag");
+	if (nr)
+	    wp->w_popup_flags |= POPF_DRAG;
+	else
+	    wp->w_popup_flags &= ~POPF_DRAG;
+    }
+
+    di = dict_find(dict, (char_u *)"resize", -1);
+    if (di != NULL)
+    {
+	nr = dict_get_number(dict, (char_u *)"resize");
+	if (nr)
+	    wp->w_popup_flags |= POPF_RESIZE;
+	else
+	    wp->w_popup_flags &= ~POPF_RESIZE;
+    }
 
     di = dict_find(dict, (char_u *)"close", -1);
     if (di != NULL)
@@ -1477,7 +1543,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	wp->w_wantcol = 10;
 	wp->w_zindex = POPUPWIN_NOTIFICATION_ZINDEX;
 	wp->w_minwidth = 20;
-	wp->w_popup_drag = 1;
+	wp->w_popup_flags |= POPF_DRAG;
 	wp->w_popup_close = POPCLOSE_CLICK;
 	for (i = 0; i < 4; ++i)
 	    wp->w_popup_border[i] = 1;
@@ -1494,7 +1560,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     {
 	wp->w_popup_pos = POPPOS_CENTER;
 	wp->w_zindex = POPUPWIN_DIALOG_ZINDEX;
-	wp->w_popup_drag = 1;
+	wp->w_popup_flags |= POPF_DRAG;
 	for (i = 0; i < 4; ++i)
 	{
 	    wp->w_popup_border[i] = 1;
@@ -1519,7 +1585,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 
     if (type == TYPE_PREVIEW)
     {
-	wp->w_popup_drag = 1;
+	wp->w_popup_flags |= POPF_DRAG | POPF_RESIZE;
 	wp->w_popup_close = POPCLOSE_BUTTON;
 	for (i = 0; i < 4; ++i)
 	    wp->w_popup_border[i] = 1;
@@ -1707,7 +1773,7 @@ filter_handle_drag(win_T *wp, int c, typval_T *rettv)
     int	row = mouse_row;
     int	col = mouse_col;
 
-    if (wp->w_popup_drag
+    if ((wp->w_popup_flags & POPF_DRAG)
 	    && is_mouse_key(c)
 	    && (wp == popup_dragwin
 			  || wp == mouse_find_win(&row, &col, FIND_POPUP)))
@@ -2244,7 +2310,8 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "fixed", wp->w_popup_fixed);
 	dict_add_string(dict, "title", wp->w_popup_title);
 	dict_add_number(dict, "wrap", wp->w_p_wrap);
-	dict_add_number(dict, "drag", wp->w_popup_drag);
+	dict_add_number(dict, "drag", (wp->w_popup_flags & POPF_DRAG) != 0);
+	dict_add_number(dict, "resize", (wp->w_popup_flags & POPF_RESIZE) != 0);
 	dict_add_number(dict, "cursorline",
 				   (wp->w_popup_flags & POPF_CURSORLINE) != 0);
 	dict_add_string(dict, "highlight", wp->w_p_wcr);
@@ -2811,7 +2878,8 @@ update_popups(void (*win_update)(win_T *wp))
 	    border_char[1] = border_char[3] = 0x2551;
 	    border_char[4] = 0x2554;
 	    border_char[5] = 0x2557;
-	    border_char[6] = 0x255d;
+	    border_char[6] = (wp->w_popup_flags & POPF_RESIZE)
+							     ? 0x21f2 : 0x255d;
 	    border_char[7] = 0x255a;
 	}
 	else
@@ -2820,6 +2888,8 @@ update_popups(void (*win_update)(win_T *wp))
 	    border_char[1] = border_char[3] = '|';
 	    for (i = 4; i < 8; ++i)
 		border_char[i] = '+';
+	    if (wp->w_popup_flags & POPF_RESIZE)
+		border_char[6] = '@';
 	}
 	for (i = 0; i < 8; ++i)
 	    if (wp->w_border_char[i] != 0)

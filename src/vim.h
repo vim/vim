@@ -614,11 +614,13 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define VALID_TOPLINE	0x80	// w_topline is valid (for cursor position)
 
 // Values for w_popup_flags.
-#define POPF_IS_POPUP	1	// this is a popup window
-#define POPF_HIDDEN	2	// popup is not displayed
-#define POPF_HANDLED	4	// popup was just redrawn or filtered
-#define POPF_CURSORLINE	8	// popup is highlighting at the cursorline
-#define POPF_ON_CMDLINE	16	// popup overlaps command line
+#define POPF_IS_POPUP	0x01	// this is a popup window
+#define POPF_HIDDEN	0x02	// popup is not displayed
+#define POPF_HANDLED	0x04	// popup was just redrawn or filtered
+#define POPF_CURSORLINE	0x08	// popup is highlighting at the cursorline
+#define POPF_ON_CMDLINE	0x10	// popup overlaps command line
+#define POPF_DRAG	0x20	// popup can be moved by dragging
+#define POPF_RESIZE	0x40	// popup can be resized by dragging
 
 #ifdef FEAT_TEXT_PROP
 # define WIN_IS_POPUP(wp) ((wp)->w_popup_flags != 0)

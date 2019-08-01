@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Jul 28
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Aug 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -434,6 +434,7 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 			callback
 			close
 			drag
+			resize
 			cursorline
 			filter
 			firstline
@@ -542,6 +543,9 @@ The second argument of |popup_create()| is a dictionary with options:
 			popup does not have a border. As soon as dragging
 			starts and "pos" is "center" it is changed to
 			"topleft".
+	resize		TRUE to allow the popup to be resized with the mouse
+			by grabbing at at the bottom right cornder.  Has no
+			effect if the popup does not have a border.
 	close		When "button" an X is displayed in the top-right, on
 			top of any border, padding or text.  When clicked on
 			the X the popup will close.  Any callback is invoked
