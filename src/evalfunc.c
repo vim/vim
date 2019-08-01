@@ -6189,9 +6189,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"lispindent",
 #endif
 	"listcmds",
-#ifdef FEAT_LOCALMAP
 	"localmap",
-#endif
 #ifdef FEAT_LUA
 # ifndef DYNAMIC_LUA
 	"lua",
@@ -7394,84 +7392,6 @@ f_lispindent(typval_T *argvars UNUSED, typval_T *rettv)
 f_localtime(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->vval.v_number = (varnumber_T)time(NULL);
-}
-
-    static void
-get_maparg(typval_T *argvars, typval_T *rettv, int exact)
-{
-    char_u	*keys;
-    char_u	*which;
-    char_u	buf[NUMBUFLEN];
-    char_u	*keys_buf = NULL;
-    char_u	*rhs;
-    int		mode;
-    int		abbr = FALSE;
-    int		get_dict = FALSE;
-    mapblock_T	*mp;
-    int		buffer_local;
-
-    /* return empty string for failure */
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-
-    keys = tv_get_string(&argvars[0]);
-    if (*keys == NUL)
-	return;
-
-    if (argvars[1].v_type != VAR_UNKNOWN)
-    {
-	which = tv_get_string_buf_chk(&argvars[1], buf);
-	if (argvars[2].v_type != VAR_UNKNOWN)
-	{
-	    abbr = (int)tv_get_number(&argvars[2]);
-	    if (argvars[3].v_type != VAR_UNKNOWN)
-		get_dict = (int)tv_get_number(&argvars[3]);
-	}
-    }
-    else
-	which = (char_u *)"";
-    if (which == NULL)
-	return;
-
-    mode = get_map_mode(&which, 0);
-
-    keys = replace_termcodes(keys, &keys_buf, TRUE, TRUE, FALSE);
-    rhs = check_map(keys, mode, exact, FALSE, abbr, &mp, &buffer_local);
-    vim_free(keys_buf);
-
-    if (!get_dict)
-    {
-	/* Return a string. */
-	if (rhs != NULL)
-	{
-	    if (*rhs == NUL)
-		rettv->vval.v_string = vim_strsave((char_u *)"<Nop>");
-	    else
-		rettv->vval.v_string = str2special_save(rhs, FALSE);
-	}
-
-    }
-    else if (rettv_dict_alloc(rettv) != FAIL && rhs != NULL)
-    {
-	/* Return a dictionary. */
-	char_u	    *lhs = str2special_save(mp->m_keys, TRUE);
-	char_u	    *mapmode = map_mode_to_chars(mp->m_mode);
-	dict_T	    *dict = rettv->vval.v_dict;
-
-	dict_add_string(dict, "lhs", lhs);
-	dict_add_string(dict, "rhs", mp->m_orig_str);
-	dict_add_number(dict, "noremap", mp->m_noremap ? 1L : 0L);
-	dict_add_number(dict, "expr", mp->m_expr ? 1L : 0L);
-	dict_add_number(dict, "silent", mp->m_silent ? 1L : 0L);
-	dict_add_number(dict, "sid", (long)mp->m_script_ctx.sc_sid);
-	dict_add_number(dict, "lnum", (long)mp->m_script_ctx.sc_lnum);
-	dict_add_number(dict, "buffer", (long)buffer_local);
-	dict_add_number(dict, "nowait", mp->m_nowait ? 1L : 0L);
-	dict_add_string(dict, "mode", mapmode);
-
-	vim_free(lhs);
-	vim_free(mapmode);
-    }
 }
 
 #ifdef FEAT_FLOAT

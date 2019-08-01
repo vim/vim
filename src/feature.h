@@ -166,10 +166,8 @@
 
 /*
  * +localmap		Mappings and abbreviations local to a buffer.
+ *			Now always included.
  */
-#ifdef FEAT_NORMAL
-# define FEAT_LOCALMAP
-#endif
 
 /*
  * +insert_expand	CTRL-N/CTRL-P/CTRL-X in insert mode. Takes about

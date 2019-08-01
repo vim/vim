@@ -312,8 +312,8 @@ SRC =	arabic.c autocmd.c beval.c blob.c blowfish.c buffer.c change.c charset.c \
 	evalfunc.c ex_cmds.c ex_cmds2.c ex_docmd.c ex_eval.c ex_getln.c \
 	if_cscope.c if_xcmdsrv.c fileio.c findfile.c fold.c getchar.c \
 	hardcopy.c hashtab.c highlight.c indent.c insexpand.c json.c list.c \
-	main.c mark.c menu.c mbyte.c memfile.c memline.c message.c misc1.c \
-	misc2.c move.c normal.c ops.c option.c popupmnu.c popupwin.c \
+	main.c map.c mark.c menu.c mbyte.c memfile.c memline.c message.c \
+	misc1.c misc2.c move.c normal.c ops.c option.c popupmnu.c popupwin.c \
 	profiler.c quickfix.c regexp.c search.c session.c sha256.c sign.c \
 	spell.c spellfile.c syntax.c tag.c term.c termlib.c testing.c \
 	textprop.c ui.c undo.c usercmd.c userfunc.c version.c viminfo.c \
@@ -327,8 +327,8 @@ OBJ = 	arabic.obj autocmd.obj beval.obj blob.obj blowfish.obj buffer.obj change.
 	ex_docmd.obj ex_eval.obj ex_getln.obj if_cscope.obj if_xcmdsrv.obj \
 	fileio.obj findfile.obj fold.obj getchar.obj hardcopy.obj hashtab.obj \
 	highlight.obj indent.obj insexpand.obj json.obj list.obj main.obj \
-	mark.obj menu.obj memfile.obj memline.obj message.obj misc1.obj \
-	misc2.obj move.obj mbyte.obj normal.obj ops.obj option.obj \
+	map.obj mark.obj menu.obj memfile.obj memline.obj message.obj \
+	misc1.obj misc2.obj move.obj mbyte.obj normal.obj ops.obj option.obj \
 	popupmnu.obj popupwin.obj profiler.obj quickfix.obj regexp.obj \
 	search.obj session.obj sha256.obj sign.obj spell.obj spellfile.obj \
 	syntax.obj tag.obj term.obj termlib.obj testing.obj textprop.obj \
@@ -630,6 +630,9 @@ main.obj : main.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h \
  arabic.c
+map.obj : map.c vim.h [.auto]config.h feature.h os_unix.h   \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
+ [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h \
 mark.obj : mark.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h \
