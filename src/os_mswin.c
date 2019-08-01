@@ -1703,55 +1703,12 @@ mch_print_set_fg(long_u fgcol)
 #  include <shlobj.h>
 # endif
 
-typedef enum _FILE_INFO_BY_HANDLE_CLASS_ {
-  FileBasicInfo_,
-  FileStandardInfo_,
-  FileNameInfo_,
-  FileRenameInfo_,
-  FileDispositionInfo_,
-  FileAllocationInfo_,
-  FileEndOfFileInfo_,
-  FileStreamInfo_,
-  FileCompressionInfo_,
-  FileAttributeTagInfo_,
-  FileIdBothDirectoryInfo_,
-  FileIdBothDirectoryRestartInfo_,
-  FileIoPriorityHintInfo_,
-  FileRemoteProtocolInfo_,
-  FileFullDirectoryInfo_,
-  FileFullDirectoryRestartInfo_,
-  FileStorageInfo_,
-  FileAlignmentInfo_,
-  FileIdInfo_,
-  FileIdExtdDirectoryInfo_,
-  FileIdExtdDirectoryRestartInfo_,
-  FileDispositionInfoEx_,
-  FileRenameInfoEx_,
-  MaximumFileInfoByHandleClass_
-} FILE_INFO_BY_HANDLE_CLASS_;
-
-typedef struct _FILE_NAME_INFO_ {
-  DWORD FileNameLength;
-  WCHAR FileName[1];
-} FILE_NAME_INFO_;
-
-typedef BOOL (WINAPI *pfnGetFileInformationByHandleEx)(
-	HANDLE				hFile,
-	FILE_INFO_BY_HANDLE_CLASS_	FileInformationClass,
-	LPVOID				lpFileInformation,
-	DWORD				dwBufferSize);
-static pfnGetFileInformationByHandleEx pGetFileInformationByHandleEx = NULL;
-
-typedef BOOL (WINAPI *pfnGetVolumeInformationByHandleW)(
+typedef BOOL (WINAPI *pfnGetFinalPathNameByHandleW)(
 	HANDLE	hFile,
-	LPWSTR	lpVolumeNameBuffer,
-	DWORD	nVolumeNameSize,
-	LPDWORD	lpVolumeSerialNumber,
-	LPDWORD	lpMaximumComponentLength,
-	LPDWORD	lpFileSystemFlags,
-	LPWSTR	lpFileSystemNameBuffer,
-	DWORD	nFileSystemNameSize);
-static pfnGetVolumeInformationByHandleW pGetVolumeInformationByHandleW = NULL;
+	LPWSTR	lpszFilePath,
+	DWORD	cchFilePath,
+	DWORD	dwFlags);
+static pfnGetFinalPathNameByHandleW pGetFinalPathNameByHandleW = NULL;
 
 # define is_path_sep(c)	    ((c) == L'\\' || (c) == L'/')
 
@@ -1791,28 +1748,21 @@ resolve_reparse_point(char_u *fname)
 {
     HANDLE	    h = INVALID_HANDLE_VALUE;
     DWORD	    size;
-    WCHAR	    *p;
+    WCHAR	    *p, *wp;
     char_u	    *rfname = NULL;
-    FILE_NAME_INFO_ *nameinfo = NULL;
-    WCHAR	    buff[MAX_PATH], *volnames = NULL;
-    HANDLE	    hv;
-    DWORD	    snfile, snfind;
+    WCHAR	    *buff = NULL;
     static BOOL	    loaded = FALSE;
 
-    if (pGetFileInformationByHandleEx == NULL ||
-	    pGetVolumeInformationByHandleW == NULL)
+    if (pGetFinalPathNameByHandleW == NULL)
     {
 	HMODULE hmod = GetModuleHandle("kernel32.dll");
 
 	if (loaded == TRUE)
 	    return NULL;
-	pGetFileInformationByHandleEx = (pfnGetFileInformationByHandleEx)
-		GetProcAddress(hmod, "GetFileInformationByHandleEx");
-	pGetVolumeInformationByHandleW = (pfnGetVolumeInformationByHandleW)
-		GetProcAddress(hmod, "GetVolumeInformationByHandleW");
+	pGetFinalPathNameByHandleW = (pfnGetFinalPathNameByHandleW)
+		GetProcAddress(hmod, "GetFinalPathNameByHandleW");
 	loaded = TRUE;
-	if (pGetFileInformationByHandleEx == NULL ||
-		pGetVolumeInformationByHandleW == NULL)
+	if (pGetFinalPathNameByHandleW == NULL)
 	    return NULL;
     }
 
@@ -1833,60 +1783,32 @@ resolve_reparse_point(char_u *fname)
     if (h == INVALID_HANDLE_VALUE)
 	goto fail;
 
-    size = sizeof(FILE_NAME_INFO_) + sizeof(WCHAR) * (MAX_PATH - 1);
-    nameinfo = alloc(size + sizeof(WCHAR));
-    if (nameinfo == NULL)
+    size = pGetFinalPathNameByHandleW(h, NULL, 0, 0);
+    if (size == 0)
+	goto fail;
+    buff = ALLOC_MULT(WCHAR, size);
+    if (buff == NULL)
+	goto fail;
+    if (pGetFinalPathNameByHandleW(h, buff, size, 0) == 0)
 	goto fail;
 
-    if (!pGetFileInformationByHandleEx(h, FileNameInfo_, nameinfo, size))
-	goto fail;
-
-    nameinfo->FileName[nameinfo->FileNameLength / sizeof(WCHAR)] = 0;
-
-    if (!pGetVolumeInformationByHandleW(
-	    h, NULL, 0, &snfile, NULL, NULL, NULL, 0))
-	goto fail;
-
-    hv = FindFirstVolumeW(buff, MAX_PATH);
-    if (hv == INVALID_HANDLE_VALUE)
-	goto fail;
-
-    do {
-	GetVolumeInformationW(
-		buff, NULL, 0, &snfind, NULL, NULL, NULL, 0);
-	if (snfind == snfile)
-	    break;
-    } while (FindNextVolumeW(hv, buff, MAX_PATH));
-
-    FindVolumeClose(hv);
-
-    if (snfind != snfile)
-	goto fail;
-
-    size = 0;
-    if (!GetVolumePathNamesForVolumeNameW(buff, NULL, 0, &size) &&
-	    GetLastError() != ERROR_MORE_DATA)
-	goto fail;
-
-    volnames = ALLOC_MULT(WCHAR, size);
-    if (!GetVolumePathNamesForVolumeNameW(buff, volnames, size,
-		&size))
-	goto fail;
-
-    wcscpy(buff, volnames);
-    if (nameinfo->FileName[0] == '\\')
-	wcscat(buff, nameinfo->FileName + 1);
+    if (wcsncmp(buff, L"\\\\?\\UNC\\", 8) == 0)
+    {
+	buff[6] = L'\\';
+	wp = buff + 6;
+    }
+    else if (wcsncmp(buff, L"\\\\?\\", 4) == 0)
+	wp = buff + 4;
     else
-	wcscat(buff, nameinfo->FileName);
-    rfname = utf16_to_enc(buff, NULL);
+	wp = buff;
+
+    rfname = utf16_to_enc(wp, NULL);
 
 fail:
     if (h != INVALID_HANDLE_VALUE)
 	CloseHandle(h);
-    if (nameinfo != NULL)
-	vim_free(nameinfo);
-    if (volnames != NULL)
-	vim_free(volnames);
+    if (buff != NULL)
+	vim_free(buff);
 
     return rfname;
 }
