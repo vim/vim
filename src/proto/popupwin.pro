@@ -4,6 +4,7 @@ int popup_on_X_button(win_T *wp, int row, int col);
 void popup_start_drag(win_T *wp);
 void popup_drag(win_T *wp);
 void popup_set_firstline(win_T *wp);
+int popup_is_in_scrollbar(win_T *wp, int row, int col);
 void popup_handle_scrollbar_click(win_T *wp, int row, int col);
 int popup_height(win_T *wp);
 int popup_width(win_T *wp);

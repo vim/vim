@@ -305,6 +305,19 @@ popup_set_firstline(win_T *wp)
 }
 
 /*
+ * Return TRUE if the position is in the popup window scrollbar.
+ */
+    int
+popup_is_in_scrollbar(win_T *wp, int row, int col)
+{
+    return wp->w_has_scrollbar
+	&& row >= wp->w_popup_border[0]
+	&& row < popup_height(wp) - wp->w_popup_border[2]
+	&& col == popup_width(wp) - wp->w_popup_border[1] - 1;
+}
+
+
+/*
  * Handle a click in a popup window, if it is in the scrollbar.
  */
     void
@@ -313,11 +326,7 @@ popup_handle_scrollbar_click(win_T *wp, int row, int col)
     int	    height = popup_height(wp);
     int	    old_topline = wp->w_topline;
 
-    if (wp->w_has_scrollbar == 0)
-	return;
-    if (row >= wp->w_popup_border[0]
-	    && row < height - wp->w_popup_border[2]
-	    && col == popup_width(wp) - wp->w_popup_border[1] - 1)
+    if (popup_is_in_scrollbar(wp, row, col))
     {
 	if (row >= height / 2)
 	{
