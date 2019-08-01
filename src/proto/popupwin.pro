@@ -47,4 +47,6 @@ void f_popup_getpreview(typval_T *argvars, typval_T *rettv);
 int popup_is_popup(win_T *wp);
 int popup_create_preview_window(void);
 void popup_close_preview(void);
+void popup_set_title(win_T *wp);
+void popup_update_preview_title(void);
 /* vim: set ft=c : */

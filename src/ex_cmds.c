@@ -3172,6 +3172,10 @@ do_ecmd(
 #ifdef FEAT_TITLE
 	maketitle();
 #endif
+#ifdef FEAT_TEXT_PROP
+	if (popup_is_popup(curwin) && curwin->w_p_pvw)
+	    popup_set_title(curwin);
+#endif
     }
 
 #ifdef FEAT_DIFF

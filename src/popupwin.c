@@ -3198,4 +3198,41 @@ popup_close_preview()
     }
 }
 
+/*
+ * Set the title of the popup window to the file name.
+ */
+    void
+popup_set_title(win_T *wp)
+{
+    if (wp->w_buffer->b_fname != NULL)
+    {
+	char_u	dirname[MAXPATHL];
+	size_t	len;
+
+	mch_dirname(dirname, MAXPATHL);
+	shorten_buf_fname(wp->w_buffer, dirname, FALSE);
+
+	vim_free(wp->w_popup_title);
+	len = STRLEN(wp->w_buffer->b_fname) + 3;
+	wp->w_popup_title = alloc((int)len);
+	if (wp->w_popup_title != NULL)
+	    vim_snprintf((char *)wp->w_popup_title, len, " %s ",
+							wp->w_buffer->b_fname);
+	redraw_win_later(wp, VALID);
+    }
+}
+
+/*
+ * If there is a preview window, update the title.
+ * Used after changing directory.
+ */
+    void
+popup_update_preview_title(void)
+{
+    win_T *wp = popup_find_preview_window();
+
+    if (wp != NULL)
+	popup_set_title(wp);
+}
+
 #endif // FEAT_TEXT_PROP
