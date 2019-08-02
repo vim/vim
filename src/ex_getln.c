@@ -5096,7 +5096,7 @@ ExpandFromContext(
 	if (free_pat)
 	    vim_free(pat);
 #ifdef BACKSLASH_IN_FILENAME
-	if (p_csl[0] != NUL)
+	if (KeyTyped && p_csl[0] != NUL)
 	{
 	    int	    i;
 
