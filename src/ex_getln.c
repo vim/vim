@@ -5032,7 +5032,7 @@ ExpandFromContext(
     char_u	*pat,
     int		*num_file,
     char_u	***file,
-    int		options)  /* EW_ flags */
+    int		options)  // WILD_ flags
 {
 #ifdef FEAT_CMDL_COMPL
     regmatch_T	regmatch;
@@ -5096,7 +5096,7 @@ ExpandFromContext(
 	if (free_pat)
 	    vim_free(pat);
 #ifdef BACKSLASH_IN_FILENAME
-	if (p_csl[0] != NUL)
+	if (p_csl[0] != NUL && (options & WILD_IGNORE_COMPLETESLASH) == 0)
 	{
 	    int	    i;
 

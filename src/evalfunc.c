@@ -5878,15 +5878,15 @@ f_glob(typval_T *argvars, typval_T *rettv)
     static void
 f_globpath(typval_T *argvars, typval_T *rettv)
 {
-    int		flags = 0;
+    int		flags = WILD_IGNORE_COMPLETESLASH;
     char_u	buf1[NUMBUFLEN];
     char_u	*file = tv_get_string_buf_chk(&argvars[1], buf1);
     int		error = FALSE;
     garray_T	ga;
     int		i;
 
-    /* When the optional second argument is non-zero, don't remove matches
-    * for 'wildignore' and don't put matches for 'suffixes' at the end. */
+    // When the optional second argument is non-zero, don't remove matches
+    // for 'wildignore' and don't put matches for 'suffixes' at the end.
     rettv->v_type = VAR_STRING;
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
