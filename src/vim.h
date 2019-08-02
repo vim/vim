@@ -1268,6 +1268,7 @@ enum auto_event
     EVENT_CMDUNDEFINED,		// command undefined
     EVENT_CMDWINENTER,		// after entering the cmdline window
     EVENT_CMDWINLEAVE,		// before leaving the cmdline window
+    EVENT_CMDWINLEAVEPOST,	// after leaving the cmdline window
     EVENT_COLORSCHEME,		// after loading a colorscheme
     EVENT_COLORSCHEMEPRE,	// before loading a colorscheme
     EVENT_COMPLETECHANGED,	// after completion popup menu changed

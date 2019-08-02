@@ -6943,6 +6943,9 @@ open_cmdwin(void)
     setmouse();
 # endif
 
+    /* Trigger CmdwinLeavePost autocommands. */
+    trigger_cmd_autocmd(cmdwin_type, EVENT_CMDWINLEAVEPOST);
+
     return cmdwin_result;
 }
 #endif /* FEAT_CMDWIN */

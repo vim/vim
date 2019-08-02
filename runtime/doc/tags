@@ -3810,6 +3810,7 @@ CmdlineEnter	autocmd.txt	/*CmdlineEnter*
 CmdlineLeave	autocmd.txt	/*CmdlineLeave*
 CmdwinEnter	autocmd.txt	/*CmdwinEnter*
 CmdwinLeave	autocmd.txt	/*CmdwinLeave*
+CmdwinLeavePost	autocmd.txt	/*CmdwinLeavePost*
 ColorScheme	autocmd.txt	/*ColorScheme*
 ColorSchemePre	autocmd.txt	/*ColorSchemePre*
 Command-line	cmdline.txt	/*Command-line*
