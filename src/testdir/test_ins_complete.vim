@@ -374,6 +374,9 @@ func Test_ins_completeslash()
   call assert_equal('Xdir/', getline('.'))
   %bw!
   call delete('Xdir', 'rf')
+
+  set noshellslash
+  set completeslash=slash
   call assert_true(stridx(globpath(&rtp, 'syntax/*.vim', 1, 1)[0], '\') != -1)
 
   let &shellslash = orig_shellslash
