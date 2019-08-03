@@ -424,10 +424,17 @@ EXTERN int	autocmd_no_leave INIT(= FALSE); // *Leave autocmds disabled
 
 EXTERN int	modified_was_set;		// did ":set modified"
 EXTERN int	did_filetype INIT(= FALSE);	// FileType event found
-EXTERN int	au_did_filetype INIT(= FALSE);
 EXTERN int	keep_filetype INIT(= FALSE);	// value for did_filetype when
 						// starting to execute
 						// autocommands
+
+// Set by the apply_autocmds_group function if the given event is equal to
+// EVENT_FILETYPE. Used by the readfile function in order to determine if
+// EVENT_BUFREADPOST triggered the EVENT_FILETYPE.
+//
+// Relying on this value requires one to reset it prior calling
+// apply_autocmds_group.
+EXTERN int	au_did_filetype INIT(= FALSE);
 
 // When deleting the current buffer, another one must be loaded.  If we know
 // which one is preferred, au_new_curbuf is set to it
