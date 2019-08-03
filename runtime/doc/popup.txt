@@ -246,6 +246,7 @@ popup_dialog({what}, {options})				*popup_dialog()*
 				\ drag: 1,
 				\ border: [],
 				\ padding: [],
+				\ mapping: 0,
 				\})
 <		Use {options} to change the properties. E.g. add a 'filter'
 		option with value 'popup_filter_yesno'.  Example: >
@@ -369,12 +370,20 @@ popup_menu({what}, {options})				 *popup_menu()*
 				\ cursorline: 1,
 				\ padding: [0,1,0,1],
 				\ filter: 'popup_filter_menu',
+				\ mapping: 0,
 				\ })
 <		The current line is highlighted with a match using
 		"PopupSelected", or "PmenuSel" if that is not defined.
 
 		Use {options} to change the properties.  Should at least set
 		"callback" to a function that handles the selected item.
+		Example: >
+			func ColorSelected(id, result)
+			   " use a:result
+			endfunc
+			call popup_menu(['red', 'green', 'blue'], #{
+				\ callback: 'ColorSelected',
+				\ })
 
 
 popup_move({id}, {options})					*popup_move()*
@@ -433,16 +442,17 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 			borderhighlight
 			callback
 			close
-			drag
-			resize
 			cursorline
+			drag
 			filter
 			firstline
 			flip
 			highlight
+			mapping
 			mask
 			moved
 			padding
+			resize
 			scrollbar
 			scrollbarhighlight
 			thumbhighlight
@@ -615,6 +625,9 @@ The second argument of |popup_create()| is a dictionary with options:
 			Default is zero, except for |popup_menu()|.
 	filter		A callback that can filter typed characters, see
 			|popup-filter|.
+	mapping		Allow for key mapping.  When FALSE and the popup is
+			visible and has a filter callback key mapping is
+			disabled.  Default value is TRUE.
 	callback	A callback that is called when the popup closes, e.g.
 			when using |popup_filter_menu()|, see |popup-callback|.
 
@@ -671,8 +684,11 @@ key as a string, e.g.: >
 	  endif
 	  return 0
 	endfunc
-
-Currently the key is what results after any mapping.  This may change...
+<							*popup-mapping*
+Normally the key is what results after any mapping, since the keys pass on as
+normal input if the filter does not use it.  If the filter consumes all the
+keys, set the "mapping" property to zero so that mappings do not get in the
+way.  This is default for |popup_menu()| and |popup_dialog()|.
 
 Some common key actions:
 	x		close the popup (see note below)
@@ -702,6 +718,11 @@ the second argument of `popup_close()`.
 
 If the popup is force-closed, e.g. because the cursor moved or CTRL-C was
 pressed, the number -1 is passed to the callback.
+
+Example: >
+	func SelectedColor(id, result)
+	   echo 'choice made: ' .. a:result
+	endfunc
 
 
 POPUP SCROLLBAR						*popup-scrollbar*

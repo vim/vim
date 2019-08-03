@@ -1575,6 +1575,9 @@ vgetc(void)
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 		    || im_is_preediting()
 #endif
+#if defined(FEAT_TEXT_PROP)
+		    || popup_no_mapping()
+#endif
 		    )
 	    {
 		// no mapping after modifier has been read

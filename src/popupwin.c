@@ -800,6 +800,15 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    set_callback(&wp->w_filter_cb, &callback);
 	}
     }
+    di = dict_find(dict, (char_u *)"mapping", -1);
+    if (di != NULL)
+    {
+	nr = dict_get_number(dict, (char_u *)"mapping");
+	if (nr)
+	    wp->w_popup_flags |= POPF_MAPPING;
+	else
+	    wp->w_popup_flags &= ~POPF_MAPPING;
+    }
 
     di = dict_find(dict, (char_u *)"callback", -1);
     if (di != NULL)
@@ -1413,7 +1422,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     if (rettv != NULL)
 	rettv->vval.v_number = wp->w_id;
     wp->w_popup_pos = POPPOS_TOPLEFT;
-    wp->w_popup_flags = POPF_IS_POPUP;
+    wp->w_popup_flags = POPF_IS_POPUP | POPF_MAPPING;
 
     if (buf != NULL)
     {
@@ -1561,6 +1570,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	wp->w_popup_pos = POPPOS_CENTER;
 	wp->w_zindex = POPUPWIN_DIALOG_ZINDEX;
 	wp->w_popup_flags |= POPF_DRAG;
+	wp->w_popup_flags &= ~POPF_MAPPING;
 	for (i = 0; i < 4; ++i)
 	{
 	    wp->w_popup_border[i] = 1;
@@ -2499,6 +2509,25 @@ popup_do_filter(int c)
 	    res = invoke_popup_filter(wp, c);
 
     return res;
+}
+
+/*
+ * Return TRUE if there is a popup visible with a filter callback and the
+ * "mapping" property off.
+ */
+    int
+popup_no_mapping(void)
+{
+    int	    round;
+    win_T   *wp;
+
+    for (round = 1; round <= 2; ++round)
+	for (wp = round == 1 ? first_popupwin : curtab->tp_first_popupwin;
+						   wp != NULL; wp = wp->w_next)
+	    if (wp->w_filter_cb.cb_name != NULL
+		    && (wp->w_popup_flags & (POPF_HIDDEN | POPF_MAPPING)) == 0)
+		return TRUE;
+    return FALSE;
 }
 
 /*

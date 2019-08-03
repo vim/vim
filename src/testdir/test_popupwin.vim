@@ -657,6 +657,7 @@ func Test_popup_invalid_arguments()
   call assert_fails('call popup_create("text", #{mask: ["asdf"]})', 'E475:')
   call popup_clear()
   call assert_fails('call popup_create("text", #{mask: test_null_list()})', 'E475:')
+  call assert_fails('call popup_create("text", #{mapping: []})', 'E745:')
   call popup_clear()
 endfunc
 
@@ -1203,6 +1204,8 @@ func Test_popup_menu()
     let s:cb_winid = a:id
     let s:cb_res = a:res
   endfunc
+  " mapping won't be used in popup
+  map j k
 
   let winid = ShowMenu(" ", 1)
   let winid = ShowMenu("j \<CR>", 2)
@@ -1215,6 +1218,7 @@ func Test_popup_menu()
   let winid = ShowMenu("\<C-C>", -1)
 
   delfunc QuitCallback
+  unmap j
 endfunc
 
 func Test_popup_menu_screenshot()
@@ -2193,6 +2197,9 @@ func Test_previewpopup()
 
   call term_sendkeys(buf, "/another\<CR>\<C-W>}")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_4', {})
+
+  call term_sendkeys(buf, ":cd ..\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_5', {})
 
   call StopVimInTerminal(buf)
   call delete('Xtags')

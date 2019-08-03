@@ -38,6 +38,7 @@ int error_if_popup_window(void);
 void popup_reset_handled(void);
 win_T *find_next_popup(int lowest);
 int popup_do_filter(int c);
+int popup_no_mapping(void);
 void popup_check_cursor_pos(void);
 void may_update_popup_mask(int type);
 void update_popups(void (*win_update)(win_T *wp));

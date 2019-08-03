@@ -621,6 +621,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define POPF_ON_CMDLINE	0x10	// popup overlaps command line
 #define POPF_DRAG	0x20	// popup can be moved by dragging
 #define POPF_RESIZE	0x40	// popup can be resized by dragging
+#define POPF_MAPPING	0x80	// mapping keys
 
 #ifdef FEAT_TEXT_PROP
 # define WIN_IS_POPUP(wp) ((wp)->w_popup_flags != 0)
