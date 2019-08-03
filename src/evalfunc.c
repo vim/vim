@@ -412,14 +412,16 @@ static void f_xor(typval_T *argvars, typval_T *rettv);
  * Array with names and number of arguments of all internal functions
  * MUST BE KEPT SORTED IN strcmp() ORDER FOR BINARY SEARCH!
  */
-static struct fst
+typedef struct
 {
     char	*f_name;	/* function name */
     char	f_min_argc;	/* minimal number of arguments */
     char	f_max_argc;	/* maximal number of arguments */
     void	(*f_func)(typval_T *args, typval_T *rvar);
 				/* implementation of function */
-} functions[] =
+} funcentry_T;
+
+static funcentry_T global_functions[] =
 {
 #ifdef FEAT_FLOAT
     {"abs",		1, 1, f_abs},
@@ -987,6 +989,37 @@ static struct fst
     {"xor",		2, 2, f_xor},
 };
 
+/*
+ * Methods that call the internal function with the base as the first argument.
+ */
+static funcentry_T base_methods[] =
+{
+    {"add",		1, 1, f_add},
+    {"copy",		0, 0, f_copy},
+    {"count",		1, 3, f_count},
+    {"empty",		0, 0, f_empty},
+    {"extend",		1, 2, f_extend},
+    {"filter",		1, 1, f_filter},
+    {"get",		1, 2, f_get},
+    {"index",		1, 3, f_index},
+    {"insert",		1, 2, f_insert},
+    {"items",		0, 0, f_items},
+    {"join",		0, 1, f_join},
+    {"keys",		0, 0, f_keys},
+    {"len",		0, 0, f_len},
+    {"map",		1, 1, f_map},
+    {"max",		0, 0, f_max},
+    {"min",		0, 0, f_min},
+    {"remove",		1, 2, f_remove},
+    {"repeat",		1, 1, f_repeat},
+    {"reverse",		0, 0, f_reverse},
+    {"sort",		0, 2, f_sort},
+    {"string",		0, 0, f_string},
+    {"type",		0, 0, f_type},
+    {"uniq",		0, 2, f_uniq},
+    {"values",		0, 0, f_values},
+};
+
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 
 /*
@@ -1007,11 +1040,11 @@ get_function_name(expand_T *xp, int idx)
 	if (name != NULL)
 	    return name;
     }
-    if (++intidx < (int)(sizeof(functions) / sizeof(struct fst)))
+    if (++intidx < (int)(sizeof(global_functions) / sizeof(funcentry_T)))
     {
-	STRCPY(IObuff, functions[intidx].f_name);
+	STRCPY(IObuff, global_functions[intidx].f_name);
 	STRCAT(IObuff, "(");
-	if (functions[intidx].f_max_argc == 0)
+	if (global_functions[intidx].f_max_argc == 0)
 	    STRCAT(IObuff, ")");
 	return IObuff;
     }
@@ -1043,21 +1076,25 @@ get_expr_name(expand_T *xp, int idx)
 #endif /* FEAT_CMDL_COMPL */
 
 /*
- * Find internal function in table above.
+ * Find internal function in table "functions".
  * Return index, or -1 if not found
  */
-    int
+    static int
 find_internal_func(
-    char_u	*name)		/* name of the function */
+    char_u	*name,		// name of the function
+    funcentry_T	*functions)	// functions table to use
 {
     int		first = 0;
-    int		last = (int)(sizeof(functions) / sizeof(struct fst)) - 1;
+    int		last;
     int		cmp;
     int		x;
 
-    /*
-     * Find the function name in the table. Binary search.
-     */
+    if (functions == global_functions)
+	last = (int)(sizeof(global_functions) / sizeof(funcentry_T)) - 1;
+    else
+	last = (int)(sizeof(base_methods) / sizeof(funcentry_T)) - 1;
+
+    // Find the function name in the table. Binary search.
     while (first <= last)
     {
 	x = first + ((unsigned)(last - first) >> 1);
@@ -1073,6 +1110,12 @@ find_internal_func(
 }
 
     int
+has_internal_func(char_u *name)
+{
+    return find_internal_func(name, global_functions) >= 0;
+}
+
+    int
 call_internal_func(
 	char_u	    *name,
 	int	    argcount,
@@ -1081,15 +1124,47 @@ call_internal_func(
 {
     int i;
 
-    i = find_internal_func(name);
+    i = find_internal_func(name, global_functions);
     if (i < 0)
 	return ERROR_UNKNOWN;
-    if (argcount < functions[i].f_min_argc)
+    if (argcount < global_functions[i].f_min_argc)
 	return ERROR_TOOFEW;
-    if (argcount > functions[i].f_max_argc)
+    if (argcount > global_functions[i].f_max_argc)
 	return ERROR_TOOMANY;
     argvars[argcount].v_type = VAR_UNKNOWN;
-    functions[i].f_func(argvars, rettv);
+    global_functions[i].f_func(argvars, rettv);
+    return ERROR_NONE;
+}
+
+/*
+ * Invoke a method for base->method().
+ */
+    int
+call_internal_method(
+	char_u	    *name,
+	int	    argcount,
+	typval_T    *argvars,
+	typval_T    *rettv,
+	typval_T    *basetv)
+{
+    int		i;
+    int		fi;
+    typval_T	argv[MAX_FUNC_ARGS + 1];
+
+    fi = find_internal_func(name, base_methods);
+    if (fi < 0)
+	return ERROR_UNKNOWN;
+    if (argcount < base_methods[fi].f_min_argc)
+	return ERROR_TOOFEW;
+    if (argcount > base_methods[fi].f_max_argc)
+	return ERROR_TOOMANY;
+
+    argv[0] = *basetv;
+    for (i = 0; i < argcount; ++i)
+	argv[i + 1] = argvars[i];
+    argv[argcount + 1].v_type = VAR_UNKNOWN;
+
+    base_methods[fi].f_func(argv, rettv);
     return ERROR_NONE;
 }
 

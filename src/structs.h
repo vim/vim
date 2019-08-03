@@ -1619,6 +1619,7 @@ typedef struct {
     int		evaluate;	// actually evaluate expressions
     partial_T	*partial;	// for extra arguments
     dict_T	*selfdict;	// Dictionary for "self"
+    typval_T	*basetv;	// base for base->method()
 } funcexe_T;
 
 struct partial_S

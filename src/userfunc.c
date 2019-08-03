@@ -1431,10 +1431,9 @@ func_call(
     {
 	funcexe_T funcexe;
 
-	funcexe.argv_func = NULL;
+	vim_memset(&funcexe, 0, sizeof(funcexe));
 	funcexe.firstline = curwin->w_cursor.lnum;
 	funcexe.lastline = curwin->w_cursor.lnum;
-	funcexe.doesrange = NULL;
 	funcexe.evaluate = TRUE;
 	funcexe.partial = partial;
 	funcexe.selfdict = selfdict;
@@ -1555,7 +1554,10 @@ call_func(
 	    /*
 	     * User defined function.
 	     */
-	    if (partial != NULL && partial->pt_func != NULL)
+	    if (funcexe->basetv != NULL)
+		// TODO: support User function: base->Method()
+		fp = NULL;
+	    else if (partial != NULL && partial->pt_func != NULL)
 		fp = partial->pt_func;
 	    else
 		fp = find_func(rfname);
@@ -1624,6 +1626,14 @@ call_func(
 		    error = ERROR_NONE;
 		}
 	    }
+	}
+	else if (funcexe->basetv != NULL)
+	{
+	    /*
+	     * Find the method name in the table, call its implementation.
+	     */
+	    error = call_internal_method(fname, argcount, argvars, rettv,
+							      funcexe->basetv);
 	}
 	else
 	{
@@ -2715,7 +2725,7 @@ eval_fname_script(char_u *p)
 translated_function_exists(char_u *name)
 {
     if (builtin_function(name, -1))
-	return find_internal_func(name) >= 0;
+	return has_internal_func(name);
     return find_func(name) != NULL;
 }
 
@@ -3084,7 +3094,7 @@ ex_call(exarg_T *eap)
 
     if (*startarg != '(')
     {
-	semsg(_("E107: Missing parentheses: %s"), eap->arg);
+	semsg(_(e_missingparen), eap->arg);
 	goto end;
     }
 
@@ -3120,7 +3130,7 @@ ex_call(exarg_T *eap)
 	}
 	arg = startarg;
 
-	funcexe.argv_func = NULL;
+	vim_memset(&funcexe, 0, sizeof(funcexe));
 	funcexe.firstline = eap->line1;
 	funcexe.lastline = eap->line2;
 	funcexe.doesrange = &doesrange;

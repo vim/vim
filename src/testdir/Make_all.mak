@@ -180,6 +180,7 @@ NEW_TESTS = \
 	test_matchadd_conceal \
 	test_matchadd_conceal_utf8 \
 	test_memory_usage \
+	test_method \
 	test_menu \
 	test_messages \
 	test_mksession \
@@ -373,6 +374,7 @@ NEW_TESTS_RES = \
 	test_marks.res \
 	test_matchadd_conceal.res \
 	test_memory_usage.res \
+	test_method.res \
 	test_mksession.res \
 	test_nested_function.res \
 	test_netbeans.res \

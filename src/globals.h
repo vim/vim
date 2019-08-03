@@ -1592,6 +1592,7 @@ EXTERN char e_write[]		INIT(= N_("E80: Error while writing"));
 EXTERN char e_zerocount[]	INIT(= N_("E939: Positive count required"));
 #ifdef FEAT_EVAL
 EXTERN char e_usingsid[]	INIT(= N_("E81: Using <SID> not in a script context"));
+EXTERN char e_missingparen[]	INIT(= N_("E107: Missing parentheses: %s"));
 #endif
 #ifdef FEAT_CLIENTSERVER
 EXTERN char e_invexprmsg[]	INIT(= N_("E449: Invalid expression received"));
