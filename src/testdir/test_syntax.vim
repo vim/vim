@@ -582,3 +582,41 @@ func Test_syn_wrong_z_one()
   call test_override("ALL", 0)
   bwipe!
 endfunc
+
+func Test_syntax_after_bufdo()
+  call writefile(['/* aaa comment */'], 'Xaaa.c')
+  call writefile(['/* bbb comment */'], 'Xbbb.c')
+  call writefile(['/* ccc comment */'], 'Xccc.c')
+  call writefile(['/* ddd comment */'], 'Xddd.c')
+
+  let bnr = bufnr('%')
+  new Xaaa.c
+  badd Xbbb.c
+  badd Xccc.c
+  badd Xddd.c
+  exe "bwipe " . bnr
+  let l = []
+  bufdo call add(l, bufnr('%'))
+  call assert_equal(4, len(l))
+
+  syntax on
+
+  " This used to only enable syntax HL in the last buffer.
+  bufdo tab split
+  tabrewind
+  for tab in range(1, 4)
+    norm fm
+    call assert_equal(['cComment'], map(synstack(line("."), col(".")), 'synIDattr(v:val, "name")'))
+    tabnext
+  endfor
+
+  bwipe! Xaaa.c
+  bwipe! Xbbb.c
+  bwipe! Xccc.c
+  bwipe! Xddd.c
+  syntax off
+  call delete('Xaaa.c')
+  call delete('Xbbb.c')
+  call delete('Xccc.c')
+  call delete('Xddd.c')
+endfunc

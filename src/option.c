@@ -7931,6 +7931,7 @@ did_set_string_option(
 	    // recursively, to avoid endless recurrence.
 	    apply_autocmds(EVENT_SYNTAX, curbuf->b_p_syn, curbuf->b_fname,
 		    value_changed || syn_recursive == 1, curbuf);
+	    curbuf->b_flags |= BF_SYN_SET;
 	    --syn_recursive;
 	}
 #endif
