@@ -37,3 +37,20 @@ func CheckUnix()
     throw 'Skipped: only works on Unix'
   endif
 endfunc
+
+" Command to check that making screendumps is supported.
+" Caller must source screendump.vim
+command CheckScreendump call CheckScreendump()
+func CheckScreendump()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+endfunc
+
+" Command to check that we can Run Vim in a terminal window
+command CheckRunVimInTerminal call CheckRunVimInTerminal()
+func CheckRunVimInTerminal()
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot run Vim in a terminal window'
+  endif
+endfunc

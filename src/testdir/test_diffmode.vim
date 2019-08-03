@@ -1,6 +1,7 @@
 " Tests for diff mode
 source shared.vim
 source screendump.vim
+source check.vim
 
 func Test_diff_fold_sync()
   enew!
@@ -748,9 +749,9 @@ func VerifyInternal(buf, dumpfile, extra)
 endfunc
 
 func Test_diff_screen()
-  if !CanRunVimInTerminal() || !has('menu')
-    throw 'Skipped: cannot make screendumps and/or menu feature missing'
-  endif
+  CheckScreendump
+  CheckFeature menu
+
   " clean up already existing swap files, just in case
   call delete('.Xfile1.swp')
   call delete('.Xfile2.swp')
@@ -880,9 +881,7 @@ func Test_diff_screen()
 endfunc
 
 func Test_diff_with_cursorline()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot run Vim in a terminal window'
-  endif
+  CheckScreendump
 
   call writefile([
 	\ 'hi CursorLine ctermbg=red ctermfg=white',
@@ -907,12 +906,8 @@ func Test_diff_with_cursorline()
 endfunc
 
 func Test_diff_of_diff()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot run Vim in a terminal window'
-  endif
-  if !has("rightleft")
-    throw 'Skipped: rightleft not supported'
-  endif
+  CheckScreendump
+  CheckFeature rightleft
 
   call writefile([
 	\ 'call setline(1, ["aa","bb","cc","@@ -3,2 +5,7 @@","dd","ee","ff"])',
