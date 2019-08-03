@@ -1910,7 +1910,7 @@ typedef enum {
 /*
  * Handle mappings in the typeahead buffer.
  * - When something was mapped, return map_result_retry for recursive mappings.
- * - When nothing mapped and typeahead has a character return map_result_get.
+ * - When nothing mapped and typeahead has a character: return map_result_get.
  * - When there is no match yet, return map_result_nomatch, need to get more
  *   typeahead.
  */
@@ -1936,16 +1936,14 @@ handle_mapping(
 
     /*
      * Check for a mappable key sequence.
-     * Walk through one maphash[] list until we find an
-     * entry that matches.
+     * Walk through one maphash[] list until we find an entry that matches.
      *
      * Don't look for mappings if:
      * - no_mapping set: mapping disabled (e.g. for CTRL-V)
      * - maphash_valid not set: no mappings present.
      * - typebuf.tb_buf[typebuf.tb_off] should not be remapped
      * - in insert or cmdline mode and 'paste' option set
-     * - waiting for "hit return to continue" and CR or SPACE
-     *	 typed
+     * - waiting for "hit return to continue" and CR or SPACE typed
      * - waiting for a char with --more--
      * - in Ctrl-X mode, and we get a valid char for that mode
      */
@@ -1961,8 +1959,7 @@ handle_mapping(
 	    && State != ASKMORE
 	    && State != CONFIRM
 #ifdef FEAT_INS_EXPAND
-	    && !((ctrl_x_mode_not_default()
-				   && vim_is_ctrl_x_key(tb_c1))
+	    && !((ctrl_x_mode_not_default() && vim_is_ctrl_x_key(tb_c1))
 		    || ((compl_cont_status & CONT_LOCAL)
 			&& (tb_c1 == Ctrl_N || tb_c1 == Ctrl_P)))
 #endif
@@ -1973,9 +1970,8 @@ handle_mapping(
 	    nolmaplen = 2;
 	else
 	{
-	    LANGMAP_ADJUST(tb_c1,
-			   (State & (CMDLINE | INSERT)) == 0
-			   && get_real_state() != SELECTMODE);
+	    LANGMAP_ADJUST(tb_c1, (State & (CMDLINE | INSERT)) == 0
+					    && get_real_state() != SELECTMODE);
 	    nolmaplen = 0;
 	}
 #endif
@@ -1988,26 +1984,25 @@ handle_mapping(
 	    mp = mp2;
 	    mp2 = NULL;
 	}
+
 	/*
-	 * Loop until a partly matching mapping is found or
-	 * all (local) mappings have been checked.
+	 * Loop until a partly matching mapping is found or all (local)
+	 * mappings have been checked.
 	 * The longest full match is remembered in "mp_match".
-	 * A full match is only accepted if there is no partly
-	 * match, so "aa" and "aaa" can both be mapped.
+	 * A full match is only accepted if there is no partly match, so "aa"
+	 * and "aaa" can both be mapped.
 	 */
 	mp_match = NULL;
 	mp_match_len = 0;
 	for ( ; mp != NULL;
-		mp->m_next == NULL ? (mp = mp2, mp2 = NULL)
-				   : (mp = mp->m_next))
+	       mp->m_next == NULL ? (mp = mp2, mp2 = NULL) : (mp = mp->m_next))
 	{
-	    // Only consider an entry if the first character
-	    // matches and it is for the current state.
+	    // Only consider an entry if the first character matches and it is
+	    // for the current state.
 	    // Skip ":lmap" mappings if keys were mapped.
 	    if (mp->m_keys[0] == tb_c1
 		    && (mp->m_mode & local_State)
-		    && ((mp->m_mode & LANGMAP) == 0
-			|| typebuf.tb_maplen == 0))
+		    && ((mp->m_mode & LANGMAP) == 0 || typebuf.tb_maplen == 0))
 	    {
 #ifdef FEAT_LANGMAP
 		int	nomap = nolmaplen;
@@ -2032,16 +2027,15 @@ handle_mapping(
 			break;
 		}
 
-		// Don't allow mapping the first byte(s) of a
-		// multi-byte char.  Happens when mapping
-		// <M-a> and then changing 'encoding'. Beware
-		// that 0x80 is escaped.
+		// Don't allow mapping the first byte(s) of a multi-byte char.
+		// Happens when mapping <M-a> and then changing 'encoding'.
+		// Beware that 0x80 is escaped.
 		{
 		    char_u *p1 = mp->m_keys;
 		    char_u *p2 = mb_unescape(&p1);
 
 		    if (has_mbyte && p2 != NULL
-			  && MB_BYTE2LEN(tb_c1) > MB_PTR2LEN(p2))
+					&& MB_BYTE2LEN(tb_c1) > MB_PTR2LEN(p2))
 			mlen = 0;
 		}
 
@@ -2049,26 +2043,23 @@ handle_mapping(
 		// - Full match: mlen == keylen
 		// - Partly match: mlen == typebuf.tb_len
 		keylen = mp->m_keylen;
-		if (mlen == keylen
-		     || (mlen == typebuf.tb_len
-				  && typebuf.tb_len < keylen))
+		if (mlen == keylen || (mlen == typebuf.tb_len
+						   && typebuf.tb_len < keylen))
 		{
 		    char_u  *s;
 		    int	    n;
 
-		    // If only script-local mappings are
-		    // allowed, check if the mapping starts
-		    // with K_SNR.
+		    // If only script-local mappings are allowed, check if the
+		    // mapping starts with K_SNR.
 		    s = typebuf.tb_noremap + typebuf.tb_off;
 		    if (*s == RM_SCRIPT
 			    && (mp->m_keys[0] != K_SPECIAL
 				|| mp->m_keys[1] != KS_EXTRA
-				|| mp->m_keys[2]
-					      != (int)KE_SNR))
+				|| mp->m_keys[2] != (int)KE_SNR))
 			continue;
 
-		    // If one of the typed keys cannot be
-		    // remapped, skip the entry.
+		    // If one of the typed keys cannot be remapped, skip the
+		    // entry.
 		    for (n = mlen; --n >= 0; )
 			if (*s++ & (RM_NONE|RM_ABBR))
 			    break;
@@ -2078,7 +2069,7 @@ handle_mapping(
 		    if (keylen > typebuf.tb_len)
 		    {
 			if (!*timedout && !(mp_match != NULL
-				       && mp_match->m_nowait))
+							&& mp_match->m_nowait))
 			{
 			    // break at a partly match
 			    keylen = KEYLEN_PART_MAP;
@@ -2093,15 +2084,14 @@ handle_mapping(
 		    }
 		}
 		else
-		    // No match; may have to check for
-		    // termcode at next character.
+		    // No match; may have to check for termcode at next
+		    // character.
 		    if (max_mlen < mlen)
 			max_mlen = mlen;
 	    }
 	}
 
-	// If no partly match found, use the longest full
-	// match.
+	// If no partly match found, use the longest full match.
 	if (keylen != KEYLEN_PART_MAP)
 	{
 	    mp = mp_match;
@@ -2114,22 +2104,18 @@ handle_mapping(
      */
     if (*p_pt != NUL && mp == NULL && (State & (INSERT|NORMAL)))
     {
-	for (mlen = 0; mlen < typebuf.tb_len && p_pt[mlen];
-						       ++mlen)
-	    if (p_pt[mlen] != typebuf.tb_buf[typebuf.tb_off
-						      + mlen])
+	for (mlen = 0; mlen < typebuf.tb_len && p_pt[mlen]; ++mlen)
+	    if (p_pt[mlen] != typebuf.tb_buf[typebuf.tb_off + mlen])
 		    break;
 	if (p_pt[mlen] == NUL)	// match
 	{
 	    // write chars to script file(s)
 	    if (mlen > typebuf.tb_maplen)
-		gotchars(typebuf.tb_buf + typebuf.tb_off
-					  + typebuf.tb_maplen,
-				    mlen - typebuf.tb_maplen);
+		gotchars(typebuf.tb_buf + typebuf.tb_off + typebuf.tb_maplen,
+						     mlen - typebuf.tb_maplen);
 
 	    del_typebuf(mlen, 0); // remove the chars
-	    set_option_value((char_u *)"paste",
-				     (long)!p_paste, NULL, 0);
+	    set_option_value((char_u *)"paste", (long)!p_paste, NULL, 0);
 	    if (!(State & INSERT))
 	    {
 		msg_col = 0;
@@ -2147,72 +2133,64 @@ handle_mapping(
 	if (mlen == typebuf.tb_len)
 	    keylen = KEYLEN_PART_KEY;
 	else if (max_mlen < mlen)
-	    // no match, may have to check for termcode at
-	    // next character
+	    // no match, may have to check for termcode at next character
 	    max_mlen = mlen + 1;
     }
 
-    if ((mp == NULL || max_mlen >= mp_match_len)
-				 && keylen != KEYLEN_PART_MAP)
+    if ((mp == NULL || max_mlen >= mp_match_len) && keylen != KEYLEN_PART_MAP)
     {
 	int	save_keylen = keylen;
 
 	/*
-	 * When no matching mapping found or found a
-	 * non-matching mapping that matches at least what the
-	 * matching mapping matched:
+	 * When no matching mapping found or found a non-matching mapping that
+	 * matches at least what the matching mapping matched:
 	 * Check if we have a terminal code, when:
-	 *  mapping is allowed,
-	 *  keys have not been mapped,
-	 *  and not an ESC sequence, not in insert mode or
-	 *	p_ek is on,
-	 *  and when not timed out,
+	 * - mapping is allowed,
+	 * - keys have not been mapped,
+	 * - and not an ESC sequence, not in insert mode or p_ek is on,
+	 * - and when not timed out,
 	 */
 	if ((no_mapping == 0 || allow_keys != 0)
 		&& (typebuf.tb_maplen == 0
 		    || (p_remap && typebuf.tb_noremap[
-				   typebuf.tb_off] == RM_YES))
+						    typebuf.tb_off] == RM_YES))
 		&& !*timedout)
 	{
 	    keylen = check_termcode(max_mlen + 1,
 					       NULL, 0, NULL);
 
-	    // If no termcode matched but 'pastetoggle'
-	    // matched partially it's like an incomplete key
-	    // sequence.
+	    // If no termcode matched but 'pastetoggle' matched partially it's
+	    // like an incomplete key sequence.
 	    if (keylen == 0 && save_keylen == KEYLEN_PART_KEY)
 		keylen = KEYLEN_PART_KEY;
 
-	    // When getting a partial match, but the last
-	    // characters were not typed, don't wait for a
-	    // typed character to complete the termcode.
-	    // This helps a lot when a ":normal" command ends
-	    // in an ESC.
-	    if (keylen < 0
-		       && typebuf.tb_len == typebuf.tb_maplen)
+	    // When getting a partial match, but the last characters were not
+	    // typed, don't wait for a typed character to complete the
+	    // termcode.  This helps a lot when a ":normal" command ends in an
+	    // ESC.
+	    if (keylen < 0 && typebuf.tb_len == typebuf.tb_maplen)
 		keylen = 0;
 	}
 	else
 	    keylen = 0;
 	if (keylen == 0)	// no matching terminal code
 	{
-#ifdef AMIGA			// check for window bounds report
+#ifdef AMIGA
+	    // check for window bounds report
 	    if (typebuf.tb_maplen == 0 && (typebuf.tb_buf[
-			       typebuf.tb_off] & 0xff) == CSI)
+						typebuf.tb_off] & 0xff) == CSI)
 	    {
 		char_u *s;
 
 		for (s = typebuf.tb_buf + typebuf.tb_off + 1;
-			s < typebuf.tb_buf + typebuf.tb_off
-					      + typebuf.tb_len
-		   && (VIM_ISDIGIT(*s) || *s == ';'
-						|| *s == ' ');
+			   s < typebuf.tb_buf + typebuf.tb_off + typebuf.tb_len
+		   && (VIM_ISDIGIT(*s) || *s == ';' || *s == ' ');
 			++s)
 		    ;
 		if (*s == 'r' || *s == '|') // found one
 		{
-		    del_typebuf((int)(s + 1 -
-		       (typebuf.tb_buf + typebuf.tb_off)), 0);
+		    del_typebuf(
+			  (int)(s + 1 - (typebuf.tb_buf + typebuf.tb_off)), 0);
 		    // get size and redraw screen
 		    shell_resized();
 		    *keylenp = keylen;
@@ -2223,51 +2201,47 @@ handle_mapping(
 	    }
 	    if (keylen >= 0)
 #endif
-	      // When there was a matching mapping and no
-	      // termcode could be replaced after another one,
-	      // use that mapping (loop around). If there was
-	      // no mapping at all use the character from the
-	      // typeahead buffer right here.
-	      if (mp == NULL)
-	      {
-		*keylenp = keylen;
-		return map_result_get;	    // got character, break for loop
-	      }
+		// When there was a matching mapping and no termcode could be
+		// replaced after another one, use that mapping (loop around).
+		// If there was no mapping at all use the character from the
+		// typeahead buffer right here.
+		if (mp == NULL)
+		{
+		    *keylenp = keylen;
+		    return map_result_get;    // got character, break for loop
+		}
 	}
 
 	if (keylen > 0)	    // full matching terminal code
 	{
 #if defined(FEAT_GUI) && defined(FEAT_MENU)
 	    if (typebuf.tb_len >= 2
-		&& typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
-			 && typebuf.tb_buf[typebuf.tb_off + 1]
-						   == KS_MENU)
+		    && typebuf.tb_buf[typebuf.tb_off] == K_SPECIAL
+			      && typebuf.tb_buf[typebuf.tb_off + 1] == KS_MENU)
 	    {
 		int	idx;
 
-		// Using a menu may cause a break in undo!
-		// It's like using gotchars(), but without
-		// recording or writing to a script file.
+		// Using a menu may cause a break in undo!  It's like using
+		// gotchars(), but without recording or writing to a script
+		// file.
 		may_sync_undo();
 		del_typebuf(3, 0);
 		idx = get_menu_index(current_menu, local_State);
 		if (idx != MENU_INDEX_INVALID)
 		{
-		    // In Select mode and a Visual mode menu
-		    // is used:  Switch to Visual mode
-		    // temporarily.  Append K_SELECT to switch
+		    // In Select mode and a Visual mode menu is used:  Switch
+		    // to Visual mode temporarily.  Append K_SELECT to switch
 		    // back to Select mode.
 		    if (VIsual_active && VIsual_select
-			    && (current_menu->modes & VISUAL))
+					     && (current_menu->modes & VISUAL))
 		    {
 			VIsual_select = FALSE;
 			(void)ins_typebuf(K_SELECT_STRING,
-				  REMAP_NONE, 0, TRUE, FALSE);
+						   REMAP_NONE, 0, TRUE, FALSE);
 		    }
 		    ins_typebuf(current_menu->strings[idx],
 				current_menu->noremap[idx],
-				0, TRUE,
-				   current_menu->silent[idx]);
+				0, TRUE, current_menu->silent[idx]);
 		}
 	    }
 #endif // FEAT_GUI && FEAT_MENU
@@ -2275,8 +2249,8 @@ handle_mapping(
 	    return map_result_retry;	// try mapping again
 	}
 
-	// Partial match: get some more characters.  When a
-	// matching mapping was found use that one.
+	// Partial match: get some more characters.  When a matching mapping
+	// was found use that one.
 	if (mp == NULL || keylen < 0)
 	    keylen = KEYLEN_PART_KEY;
 	else
@@ -2291,11 +2265,11 @@ handle_mapping(
 	char_u *map_str;
 
 #ifdef FEAT_EVAL
-	int save_m_expr;
-	int save_m_noremap;
-	int save_m_silent;
-	char_u *save_m_keys;
-	char_u *save_m_str;
+	int	save_m_expr;
+	int	save_m_noremap;
+	int	save_m_silent;
+	char_u	*save_m_keys;
+	char_u	*save_m_str;
 #else
 # define save_m_noremap mp->m_noremap
 # define save_m_silent mp->m_silent
@@ -2303,9 +2277,8 @@ handle_mapping(
 
 	// write chars to script file(s)
 	if (keylen > typebuf.tb_maplen)
-	    gotchars(typebuf.tb_buf + typebuf.tb_off
-					  + typebuf.tb_maplen,
-				  keylen - typebuf.tb_maplen);
+	    gotchars(typebuf.tb_buf + typebuf.tb_off + typebuf.tb_maplen,
+						   keylen - typebuf.tb_maplen);
 
 	cmd_silent = (typebuf.tb_silent > 0);
 	del_typebuf(keylen, 0);	// remove the mapped keys
@@ -2328,23 +2301,19 @@ handle_mapping(
 	}
 
 	/*
-	 * In Select mode and a Visual mode mapping is used:
-	 * Switch to Visual mode temporarily.  Append K_SELECT
-	 * to switch back to Select mode.
+	 * In Select mode and a Visual mode mapping is used: Switch to Visual
+	 * mode temporarily.  Append K_SELECT to switch back to Select mode.
 	 */
-	if (VIsual_active && VIsual_select
-				     && (mp->m_mode & VISUAL))
+	if (VIsual_active && VIsual_select && (mp->m_mode & VISUAL))
 	{
 	    VIsual_select = FALSE;
-	    (void)ins_typebuf(K_SELECT_STRING, REMAP_NONE,
-					      0, TRUE, FALSE);
+	    (void)ins_typebuf(K_SELECT_STRING, REMAP_NONE, 0, TRUE, FALSE);
 	}
 
 #ifdef FEAT_EVAL
-	// Copy the values from *mp that are used, because
-	// evaluating the expression may invoke a function
-	// that redefines the mapping, thereby making *mp
-	// invalid.
+	// Copy the values from *mp that are used, because evaluating the
+	// expression may invoke a function that redefines the mapping, thereby
+	// making *mp invalid.
 	save_m_expr = mp->m_expr;
 	save_m_noremap = mp->m_noremap;
 	save_m_silent = mp->m_silent;
@@ -2352,9 +2321,8 @@ handle_mapping(
 	save_m_str = NULL;  // only saved when needed
 
 	/*
-	 * Handle ":map <expr>": evaluate the {rhs} as an
-	 * expression.  Also save and restore the command line
-	 * for "normal :".
+	 * Handle ":map <expr>": evaluate the {rhs} as an expression.  Also
+	 * save and restore the command line for "normal :".
 	 */
 	if (mp->m_expr)
 	{
@@ -2377,11 +2345,9 @@ handle_mapping(
 
 	/*
 	 * Insert the 'to' part in the typebuf.tb_buf.
-	 * If 'from' field is the same as the start of the
-	 * 'to' field, don't remap the first character (but do
-	 * allow abbreviations).
-	 * If m_noremap is set, don't remap the whole 'to'
-	 * part.
+	 * If 'from' field is the same as the start of the 'to' field, don't
+	 * remap the first character (but do allow abbreviations).
+	 * If m_noremap is set, don't remap the whole 'to' part.
 	 */
 	if (map_str == NULL)
 	    i = FAIL;
@@ -2393,9 +2359,8 @@ handle_mapping(
 		noremap = save_m_noremap;
 	    else if (
 #ifdef FEAT_EVAL
-		STRNCMP(map_str, save_m_keys != NULL
-				   ? save_m_keys : mp->m_keys,
-					 (size_t)keylen)
+		STRNCMP(map_str, save_m_keys != NULL ? save_m_keys : mp->m_keys,
+								(size_t)keylen)
 #else
 		STRNCMP(map_str, mp->m_keys, (size_t)keylen)
 #endif
@@ -2470,7 +2435,6 @@ vgetorpeek(int advance)
 						for mapping to complete */
     int		mapdepth = 0;	    /* check for recursive mapping */
     int		mode_deleted = FALSE;   /* set when mode has been deleted */
-    int		i;
 #ifdef FEAT_CMDL_INFO
     int		new_wcol, new_wrow;
 #endif
@@ -2541,7 +2505,9 @@ vgetorpeek(int advance)
 	    {
 		long	wait_time;
 		int	keylen = 0;
-
+#ifdef FEAT_CMDL_INFO
+		int	showcmd_idx;
+#endif
 		/*
 		 * ui_breakcheck() is slow, don't use it too often when
 		 * inside a mapping.  But call it each time for typed
@@ -2820,7 +2786,7 @@ vgetorpeek(int advance)
 		 * to the user with showcmd.
 		 */
 #ifdef FEAT_CMDL_INFO
-		i = 0;
+		showcmd_idx = 0;
 #endif
 		c1 = 0;
 		if (typebuf.tb_len > 0 && advance && !exmode_active)
@@ -2846,10 +2812,10 @@ vgetorpeek(int advance)
 			curwin->w_wrow = new_wrow;
 			push_showcmd();
 			if (typebuf.tb_len > SHOWCMD_COLS)
-			    i = typebuf.tb_len - SHOWCMD_COLS;
-			while (i < typebuf.tb_len)
-			    (void)add_to_showcmd(typebuf.tb_buf[typebuf.tb_off
-								      + i++]);
+			    showcmd_idx = typebuf.tb_len - SHOWCMD_COLS;
+			while (showcmd_idx < typebuf.tb_len)
+			    (void)add_to_showcmd(
+			       typebuf.tb_buf[typebuf.tb_off + showcmd_idx++]);
 			curwin->w_wcol = old_wcol;
 			curwin->w_wrow = old_wrow;
 #endif
@@ -2898,7 +2864,7 @@ vgetorpeek(int advance)
 			wait_time);
 
 #ifdef FEAT_CMDL_INFO
-		if (i != 0)
+		if (showcmd_idx != 0)
 		    pop_showcmd();
 #endif
 		if (c1 == 1)
