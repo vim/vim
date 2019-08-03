@@ -765,16 +765,17 @@ eval1_emsg(char_u **arg, typval_T *rettv, int evaluate)
 eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 {
     char_u	*s;
-    int		dummy;
     char_u	buf[NUMBUFLEN];
+    funcexe_T	funcexe;
 
     if (expr->v_type == VAR_FUNC)
     {
 	s = expr->vval.v_string;
 	if (s == NULL || *s == NUL)
 	    return FAIL;
-	if (call_func(s, -1, rettv, argc, argv, NULL,
-				     0L, 0L, &dummy, TRUE, NULL, NULL) == FAIL)
+	vim_memset(&funcexe, 0, sizeof(funcexe));
+	funcexe.evaluate = TRUE;
+	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
 	    return FAIL;
     }
     else if (expr->v_type == VAR_PARTIAL)
@@ -784,8 +785,10 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	s = partial_name(partial);
 	if (s == NULL || *s == NUL)
 	    return FAIL;
-	if (call_func(s, -1, rettv, argc, argv, NULL,
-				  0L, 0L, &dummy, TRUE, partial, NULL) == FAIL)
+	vim_memset(&funcexe, 0, sizeof(funcexe));
+	funcexe.evaluate = TRUE;
+	funcexe.partial = partial;
+	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
 	    return FAIL;
     }
     else
@@ -1092,13 +1095,15 @@ call_vim_function(
     typval_T	*argv,
     typval_T	*rettv)
 {
-    int		doesrange;
     int		ret;
+    funcexe_T	funcexe;
 
     rettv->v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
-    ret = call_func(func, -1, rettv, argc, argv, NULL,
-		    curwin->w_cursor.lnum, curwin->w_cursor.lnum,
-		    &doesrange, TRUE, NULL, NULL);
+    vim_memset(&funcexe, 0, sizeof(funcexe));
+    funcexe.firstline = curwin->w_cursor.lnum;
+    funcexe.lastline = curwin->w_cursor.lnum;
+    funcexe.evaluate = TRUE;
+    ret = call_func(func, -1, rettv, argc, argv, &funcexe);
     if (ret == FAIL)
 	clear_tv(rettv);
 
@@ -4681,10 +4686,19 @@ eval7(
 		if (s == NULL)
 		    ret = FAIL;
 		else
-		    /* Invoke the function. */
-		    ret = get_func_tv(s, len, rettv, arg,
-			      curwin->w_cursor.lnum, curwin->w_cursor.lnum,
-			      &len, evaluate, partial, NULL);
+		{
+		    funcexe_T funcexe;
+
+		    // Invoke the function.
+		    funcexe.argv_func = NULL;
+		    funcexe.firstline = curwin->w_cursor.lnum;
+		    funcexe.lastline = curwin->w_cursor.lnum;
+		    funcexe.doesrange = &len;
+		    funcexe.evaluate = evaluate;
+		    funcexe.partial = partial;
+		    funcexe.selfdict = NULL;
+		    ret = get_func_tv(s, len, rettv, arg, &funcexe);
+		}
 		vim_free(s);
 
 		/* If evaluate is FALSE rettv->v_type was not set in
@@ -7359,7 +7373,6 @@ handle_subscript(
     int		ret = OK;
     dict_T	*selfdict = NULL;
     char_u	*s;
-    int		len;
     typval_T	functv;
 
     // "." is ".name" lookup when we found a dict or when evaluating and
@@ -7377,6 +7390,7 @@ handle_subscript(
 	if (**arg == '(')
 	{
 	    partial_T	*pt = NULL;
+	    funcexe_T	funcexe;
 
 	    /* need to copy the funcref so that we can clear rettv */
 	    if (evaluate)
@@ -7395,9 +7409,15 @@ handle_subscript(
 	    }
 	    else
 		s = (char_u *)"";
-	    ret = get_func_tv(s, -1, rettv, arg,
-			curwin->w_cursor.lnum, curwin->w_cursor.lnum,
-			&len, evaluate, pt, selfdict);
+
+	    funcexe.argv_func = NULL;
+	    funcexe.firstline = curwin->w_cursor.lnum;
+	    funcexe.lastline = curwin->w_cursor.lnum;
+	    funcexe.doesrange = NULL;
+	    funcexe.evaluate = evaluate;
+	    funcexe.partial = pt;
+	    funcexe.selfdict = selfdict;
+	    ret = get_func_tv(s, -1, rettv, arg, &funcexe);
 
 	    /* Clear the funcref afterwards, so that deleting it while
 	     * evaluating the arguments is possible (see test55). */

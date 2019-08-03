@@ -110,15 +110,13 @@ create_timer(long msec, int repeat)
 timer_callback(timer_T *timer)
 {
     typval_T	rettv;
-    int		dummy;
     typval_T	argv[2];
 
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = (varnumber_T)timer->tr_id;
     argv[1].v_type = VAR_UNKNOWN;
 
-    call_callback(&timer->tr_callback, -1,
-			&rettv, 1, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+    call_callback(&timer->tr_callback, -1, &rettv, 1, argv);
     clear_tv(&rettv);
 }
 

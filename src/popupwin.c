@@ -1673,7 +1673,6 @@ f_popup_beval(typval_T *argvars, typval_T *rettv)
 invoke_popup_callback(win_T *wp, typval_T *result)
 {
     typval_T	rettv;
-    int		dummy;
     typval_T	argv[3];
 
     argv[0].v_type = VAR_NUMBER;
@@ -1689,8 +1688,7 @@ invoke_popup_callback(win_T *wp, typval_T *result)
 
     argv[2].v_type = VAR_UNKNOWN;
 
-    call_callback(&wp->w_close_cb, -1,
-			    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+    call_callback(&wp->w_close_cb, -1, &rettv, 2, argv);
     if (result != NULL)
 	clear_tv(&argv[1]);
     clear_tv(&rettv);
@@ -2455,7 +2453,6 @@ invoke_popup_filter(win_T *wp, int c)
 {
     int		res;
     typval_T	rettv;
-    int		dummy;
     typval_T	argv[3];
     char_u	buf[NUMBUFLEN];
     linenr_T	old_lnum = wp->w_cursor.lnum;
@@ -2481,8 +2478,7 @@ invoke_popup_filter(win_T *wp, int c)
     argv[2].v_type = VAR_UNKNOWN;
 
     // NOTE: The callback might close the popup, thus make "wp" invalid.
-    call_callback(&wp->w_filter_cb, -1,
-			    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+    call_callback(&wp->w_filter_cb, -1, &rettv, 2, argv);
     if (win_valid_popup(wp) && old_lnum != wp->w_cursor.lnum)
 	popup_highlight_curline(wp);
 

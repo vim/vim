@@ -1633,7 +1633,6 @@ channel_write_new_lines(buf_T *buf)
 invoke_callback(channel_T *channel, callback_T *callback, typval_T *argv)
 {
     typval_T	rettv;
-    int		dummy;
 
     if (safe_to_invoke_callback == 0)
 	iemsg("INTERNAL: Invoking callback when it is not safe");
@@ -1641,8 +1640,7 @@ invoke_callback(channel_T *channel, callback_T *callback, typval_T *argv)
     argv[0].v_type = VAR_CHANNEL;
     argv[0].vval.v_channel = channel;
 
-    call_callback(callback, -1, &rettv, 2, argv, NULL,
-						   0L, 0L, &dummy, TRUE, NULL);
+    call_callback(callback, -1, &rettv, 2, argv);
     clear_tv(&rettv);
     channel_need_redraw = TRUE;
 }
@@ -3029,7 +3027,6 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	{
 	      typval_T	argv[1];
 	      typval_T	rettv;
-	      int		dummy;
 
 	      /* Increment the refcount to avoid the channel being freed
 	       * halfway. */
@@ -3038,8 +3035,7 @@ channel_close(channel_T *channel, int invoke_close_cb)
 					 (char *)channel->ch_close_cb.cb_name);
 	      argv[0].v_type = VAR_CHANNEL;
 	      argv[0].vval.v_channel = channel;
-	      call_callback(&channel->ch_close_cb, -1,
-			   &rettv, 1, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+	      call_callback(&channel->ch_close_cb, -1, &rettv, 1, argv);
 	      clear_tv(&rettv);
 	      channel_need_redraw = TRUE;
 
@@ -5541,7 +5537,6 @@ job_cleanup(job_T *job)
     {
 	typval_T	argv[3];
 	typval_T	rettv;
-	int		dummy;
 
 	/* Invoke the exit callback. Make sure the refcount is > 0. */
 	ch_log(job->jv_channel, "Invoking exit callback %s",
@@ -5551,8 +5546,7 @@ job_cleanup(job_T *job)
 	argv[0].vval.v_job = job;
 	argv[1].v_type = VAR_NUMBER;
 	argv[1].vval.v_number = job->jv_exitval;
-	call_callback(&job->jv_exit_cb, -1,
-			    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+	call_callback(&job->jv_exit_cb, -1, &rettv, 2, argv);
 	clear_tv(&rettv);
 	--job->jv_refcount;
 	channel_need_redraw = TRUE;
@@ -6036,7 +6030,6 @@ job_stop(job_T *job, typval_T *argvars, char *type)
 invoke_prompt_callback(void)
 {
     typval_T	rettv;
-    int		dummy;
     typval_T	argv[2];
     char_u	*text;
     char_u	*prompt;
@@ -6059,8 +6052,7 @@ invoke_prompt_callback(void)
     argv[0].vval.v_string = vim_strsave(text);
     argv[1].v_type = VAR_UNKNOWN;
 
-    call_callback(&curbuf->b_prompt_callback, -1,
-	      &rettv, 1, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+    call_callback(&curbuf->b_prompt_callback, -1, &rettv, 1, argv);
     clear_tv(&argv[0]);
     clear_tv(&rettv);
 }
@@ -6072,7 +6064,6 @@ invoke_prompt_callback(void)
 invoke_prompt_interrupt(void)
 {
     typval_T	rettv;
-    int		dummy;
     typval_T	argv[1];
 
     if (curbuf->b_prompt_interrupt.cb_name == NULL
@@ -6081,8 +6072,7 @@ invoke_prompt_interrupt(void)
     argv[0].v_type = VAR_UNKNOWN;
 
     got_int = FALSE; // don't skip executing commands
-    call_callback(&curbuf->b_prompt_interrupt, -1,
-	      &rettv, 0, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+    call_callback(&curbuf->b_prompt_interrupt, -1, &rettv, 0, argv);
     clear_tv(&rettv);
     return TRUE;
 }

@@ -7416,31 +7416,31 @@ vim_regsub_both(
 	    if (expr != NULL)
 	    {
 		typval_T	argv[2];
-		int		dummy;
 		char_u		buf[NUMBUFLEN];
 		typval_T	rettv;
 		staticList10_T	matchList;
+		funcexe_T	funcexe;
 
 		rettv.v_type = VAR_STRING;
 		rettv.vval.v_string = NULL;
 		argv[0].v_type = VAR_LIST;
 		argv[0].vval.v_list = &matchList.sl_list;
 		matchList.sl_list.lv_len = 0;
+		vim_memset(&funcexe, 0, sizeof(funcexe));
+		funcexe.argv_func = fill_submatch_list;
+		funcexe.evaluate = TRUE;
 		if (expr->v_type == VAR_FUNC)
 		{
 		    s = expr->vval.v_string;
-		    call_func(s, -1, &rettv,
-				    1, argv, fill_submatch_list,
-					 0L, 0L, &dummy, TRUE, NULL, NULL);
+		    call_func(s, -1, &rettv, 1, argv, &funcexe);
 		}
 		else if (expr->v_type == VAR_PARTIAL)
 		{
 		    partial_T   *partial = expr->vval.v_partial;
 
 		    s = partial_name(partial);
-		    call_func(s, -1, &rettv,
-				    1, argv, fill_submatch_list,
-				      0L, 0L, &dummy, TRUE, partial, NULL);
+		    funcexe.partial = partial;
+		    call_func(s, -1, &rettv, 1, argv, &funcexe);
 		}
 		if (matchList.sl_list.lv_len > 0)
 		    /* fill_submatch_list() was called */
