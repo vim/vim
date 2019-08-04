@@ -1317,6 +1317,12 @@ unserialize_uhp(bufinfo_T *bi, char_u *file_name)
 	int len = undo_read_byte(bi);
 	int what;
 
+	if (len == EOF)
+	{
+	    corruption_error("truncated", file_name);
+	    u_free_uhp(uhp);
+	    return NULL;
+	}
 	if (len == 0)
 	    break;
 	what = undo_read_byte(bi);
