@@ -1495,7 +1495,8 @@ call_func(
     int		argcount = argcount_in;
     typval_T	*argvars = argvars_in;
     dict_T	*selfdict = funcexe->selfdict;
-    typval_T	argv[MAX_FUNC_ARGS + 1]; /* used when "partial" is not NULL */
+    typval_T	argv[MAX_FUNC_ARGS + 1]; // used when "partial" or
+					 // "funcexe->basetv" is not NULL
     int		argv_clear = 0;
     partial_T	*partial = funcexe->partial;
 
@@ -1554,10 +1555,7 @@ call_func(
 	    /*
 	     * User defined function.
 	     */
-	    if (funcexe->basetv != NULL)
-		// TODO: support User function: base->Method()
-		fp = NULL;
-	    else if (partial != NULL && partial->pt_func != NULL)
+	    if (partial != NULL && partial->pt_func != NULL)
 		fp = partial->pt_func;
 	    else
 		fp = find_func(rfname);
@@ -1586,6 +1584,16 @@ call_func(
 		    argcount = funcexe->argv_func(argcount, argvars,
 							   fp->uf_args.ga_len);
 
+		if (funcexe->basetv != NULL)
+		{
+		    // Method call: base->Method()
+		    mch_memmove(&argv[1], argvars, sizeof(typval_T) * argcount);
+		    argv[0] = *funcexe->basetv;
+		    argcount++;
+		}
+		else
+		    memcpy(argv, argvars, sizeof(typval_T) * argcount);
+
 		if (fp->uf_flags & FC_RANGE && funcexe->doesrange != NULL)
 		    *funcexe->doesrange = TRUE;
 		if (argcount < fp->uf_args.ga_len - fp->uf_def_args.ga_len)
@@ -1613,7 +1621,7 @@ call_func(
 			did_save_redo = TRUE;
 		    }
 		    ++fp->uf_calls;
-		    call_user_func(fp, argcount, argvars, rettv,
+		    call_user_func(fp, argcount, argv, rettv,
 					 funcexe->firstline, funcexe->lastline,
 				  (fp->uf_flags & FC_DICT) ? selfdict : NULL);
 		    if (--fp->uf_calls <= 0 && fp->uf_refcount <= 0)
@@ -1630,7 +1638,8 @@ call_func(
 	else if (funcexe->basetv != NULL)
 	{
 	    /*
-	     * Find the method name in the table, call its implementation.
+	     * expr->method(): Find the method name in the table, call its
+	     * implementation with the base as one of the arguments.
 	     */
 	    error = call_internal_method(fname, argcount, argvars, rettv,
 							      funcexe->basetv);

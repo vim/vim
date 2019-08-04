@@ -4734,7 +4734,7 @@ eval7(
     *arg = skipwhite(*arg);
 
     /* Handle following '[', '(' and '.' for expr[expr], expr.name,
-     * expr(expr). */
+     * expr(expr), expr->name(expr) */
     if (ret == OK)
 	ret = handle_subscript(arg, rettv, evaluate, TRUE);
 
@@ -4824,7 +4824,7 @@ eval_method(
 
     // Locate the method name.
     name = *arg;
-    for (len = 0; ASCII_ISALNUM(name[len]) || name[len] == '_'; ++len)
+    for (len = 0; eval_isnamec(name[len]); ++len)
 	;
     if (len == 0)
     {
@@ -4841,6 +4841,8 @@ eval_method(
 	return FAIL;
     }
     *arg += len;
+
+    // TODO: if "name" is a function reference, resolve it.
 
     vim_memset(&funcexe, 0, sizeof(funcexe));
     funcexe.evaluate = evaluate;
