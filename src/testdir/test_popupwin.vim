@@ -946,6 +946,7 @@ func Test_popup_getoptions()
   call assert_equal(21, res.maxheight)
   call assert_equal(100, res.zindex)
   call assert_equal(1, res.fixed)
+  call assert_equal(1, res.mapping)
   if has('timers')
     call assert_equal(5000, res.time)
   endif
