@@ -995,7 +995,8 @@ static funcentry_T global_functions[] =
 #define FEARG_2    2	    // base is the second argument
 
 /*
- * Methods that call the internal function with the base as the first argument.
+ * Methods that call the internal function with the base as one of the
+ * arguments.
  */
 static funcentry_T base_methods[] =
 {
@@ -1011,6 +1012,7 @@ static funcentry_T base_methods[] =
     {"extend",		1, 2, 0,	    f_extend},
     {"filter",		1, 1, 0,	    f_filter},
     {"get",		1, 2, 0,	    f_get},
+    {"has_key",		1, 1, 0,	    f_has_key},
     {"index",		1, 3, 0,	    f_index},
     {"insert",		1, 2, 0,	    f_insert},
     {"items",		0, 0, 0,	    f_items},
@@ -1024,7 +1026,17 @@ static funcentry_T base_methods[] =
     {"repeat",		1, 1, 0,	    f_repeat},
     {"reverse",		0, 0, 0,	    f_reverse},
     {"sort",		0, 2, 0,	    f_sort},
+    {"split",		0, 2, 0,	    f_split},
+    {"str2list",	0, 1, 0,	    f_str2list},
     {"string",		0, 0, 0,	    f_string},
+    {"strlen",		0, 0, 0,	    f_strlen},
+    {"strtrans",	0, 0, 0,	    f_strtrans},
+    {"strwidth",	0, 0, 0,	    f_strwidth},
+    {"substitute",	3, 3, 0,	    f_substitute},
+    {"synIDattr",	1, 2, 0,	    f_synIDattr},
+    {"synIDtrans",	0, 0, 0,	    f_synIDtrans},
+    {"system",		0, 1, 0,	    f_system},
+    {"systemlist",	0, 2, 0,	    f_systemlist},
     {"type",		0, 0, 0,	    f_type},
     {"uniq",		0, 2, 0,	    f_uniq},
     {"values",		0, 0, 0,	    f_values},
