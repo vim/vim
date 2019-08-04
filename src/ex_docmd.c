@@ -161,10 +161,6 @@ static void	ex_popup(exarg_T *eap);
 # define ex_syntax		ex_ni
 # define ex_ownsyntax		ex_ni
 #endif
-#ifndef FEAT_EVAL
-# define ex_packadd		ex_ni
-# define ex_packloadall		ex_ni
-#endif
 #if !defined(FEAT_SYN_HL) || !defined(FEAT_PROFILE)
 # define ex_syntime		ex_ni
 #endif
@@ -269,41 +265,48 @@ static void	ex_psearch(exarg_T *eap);
 static void	ex_tag(exarg_T *eap);
 static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 #ifndef FEAT_EVAL
-# define ex_scriptnames		ex_ni
-# define ex_finish		ex_ni
+# define ex_break		ex_ni
+# define ex_breakadd		ex_ni
+# define ex_breakdel		ex_ni
+# define ex_breaklist		ex_ni
+# define ex_call		ex_ni
+# define ex_catch		ex_ni
+# define ex_compiler		ex_ni
+# define ex_const		ex_ni
+# define ex_continue		ex_ni
+# define ex_debug		ex_ni
+# define ex_debuggreedy		ex_ni
+# define ex_delfunction		ex_ni
 # define ex_echo		ex_ni
 # define ex_echohl		ex_ni
-# define ex_execute		ex_ni
-# define ex_call		ex_ni
-# define ex_if			ex_ni
-# define ex_endif		ex_ni
 # define ex_else		ex_ni
-# define ex_while		ex_ni
-# define ex_continue		ex_ni
-# define ex_break		ex_ni
+# define ex_endfunction		ex_ni
+# define ex_endif		ex_ni
+# define ex_endtry		ex_ni
 # define ex_endwhile		ex_ni
+# define ex_eval		ex_ni
+# define ex_execute		ex_ni
+# define ex_finally		ex_ni
+# define ex_finish		ex_ni
+# define ex_function		ex_ni
+# define ex_if			ex_ni
+# define ex_let			ex_ni
+# define ex_lockvar		ex_ni
+# define ex_oldfiles		ex_ni
+# define ex_options		ex_ni
+# define ex_packadd		ex_ni
+# define ex_packloadall		ex_ni
+# define ex_return		ex_ni
+# define ex_scriptnames		ex_ni
 # define ex_throw		ex_ni
 # define ex_try			ex_ni
-# define ex_catch		ex_ni
-# define ex_finally		ex_ni
-# define ex_endtry		ex_ni
-# define ex_endfunction		ex_ni
-# define ex_let			ex_ni
-# define ex_const		ex_ni
 # define ex_unlet		ex_ni
-# define ex_lockvar		ex_ni
 # define ex_unlockvar		ex_ni
-# define ex_function		ex_ni
-# define ex_delfunction		ex_ni
-# define ex_return		ex_ni
-# define ex_oldfiles		ex_ni
+# define ex_while		ex_ni
 #endif
 static char_u	*arg_all(void);
 #ifndef FEAT_SESSION
 # define ex_loadview		ex_ni
-#endif
-#ifndef FEAT_EVAL
-# define ex_compiler		ex_ni
 #endif
 #ifndef FEAT_VIMINFO
 # define ex_viminfo		ex_ni
@@ -321,9 +324,6 @@ static void	ex_setfiletype(exarg_T *eap);
 #endif
 static void	ex_digraphs(exarg_T *eap);
 static void	ex_set(exarg_T *eap);
-#if !defined(FEAT_EVAL)
-# define ex_options		ex_ni
-#endif
 #ifdef FEAT_SEARCH_EXTRA
 static void	ex_nohlsearch(exarg_T *eap);
 #else
@@ -354,14 +354,6 @@ static void	ex_folddo(exarg_T *eap);
 # define ex_nbclose		ex_ni
 # define ex_nbkey		ex_ni
 # define ex_nbstart		ex_ni
-#endif
-
-#ifndef FEAT_EVAL
-# define ex_debug		ex_ni
-# define ex_breakadd		ex_ni
-# define ex_debuggreedy		ex_ni
-# define ex_breakdel		ex_ni
-# define ex_breaklist		ex_ni
 #endif
 
 #ifndef FEAT_CMDHIST
