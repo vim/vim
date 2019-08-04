@@ -2454,7 +2454,7 @@ do_wqall(exarg_T *eap)
 
 /*
  * Check the 'write' option.
- * Return TRUE and give a message when it's not st.
+ * Return TRUE and give a message when it's not set.
  */
     int
 not_writing(void)
@@ -3118,6 +3118,12 @@ do_ecmd(
 	topline = curwin->w_topline;
 	if (!oldbuf)			    /* need to read the file */
 	{
+#ifdef FEAT_TEXT_PROP
+	    // Don't use the swap-exists dialog for a popup window, can't edit
+	    // the buffer.
+	    if (WIN_IS_POPUP(curwin))
+		curbuf->b_flags |= BF_NO_SEA;
+#endif
 	    swap_exists_action = SEA_DIALOG;
 	    curbuf->b_flags |= BF_CHECK_RO; /* set/reset 'ro' flag */
 
@@ -3131,6 +3137,9 @@ do_ecmd(
 	    (void)open_buffer(FALSE, eap, readfile_flags);
 #endif
 
+#ifdef FEAT_TEXT_PROP
+	    curbuf->b_flags &= ~BF_NO_SEA;
+#endif
 	    if (swap_exists_action == SEA_QUIT)
 		retval = FAIL;
 	    handle_swap_exists(&old_curbuf);
@@ -3173,7 +3182,7 @@ do_ecmd(
 	maketitle();
 #endif
 #ifdef FEAT_TEXT_PROP
-	if (popup_is_popup(curwin) && curwin->w_p_pvw)
+	if (WIN_IS_POPUP(curwin) && curwin->w_p_pvw && retval != FAIL)
 	    popup_set_title(curwin);
 #endif
     }

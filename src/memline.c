@@ -4860,7 +4860,8 @@ findswapname(
 	     * (happens when all .swp files are in one directory).
 	     */
 	    if (!recoverymode && buf_fname != NULL
-				&& !buf->b_help && !(buf->b_flags & BF_DUMMY))
+				&& !buf->b_help
+				&& !(buf->b_flags & (BF_DUMMY | BF_NO_SEA)))
 	    {
 		int		fd;
 		struct block0	b0;

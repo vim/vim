@@ -714,6 +714,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define BF_DUMMY	0x80	// dummy buffer, only used internally
 #define BF_PRESERVED	0x100	// ":preserve" was used
 #define BF_SYN_SET	0x200	// 'syntax' option was set
+#define BF_NO_SEA	0x400	// no swap_exists_action (ATTENTION prompt)
 
 /* Mask to check for flags that prevent normal writing */
 #define BF_WRITE_MASK	(BF_NOTEDITED + BF_NEW + BF_READERR)
