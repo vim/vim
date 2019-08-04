@@ -1282,11 +1282,19 @@ func Test_popup_title()
   " put the title on.
   let lines =<< trim END
 	call setline(1, range(1, 20))
-	call popup_create(['one', 'two', 'another'], #{title: 'Title String'})
+	let winid = popup_create(['one', 'two', 'another'], #{title: 'Title String'})
   END
   call writefile(lines, 'XtestPopupTitle')
   let buf = RunVimInTerminal('-S XtestPopupTitle', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_popupwin_title', {})
+
+  call term_sendkeys(buf, ":call popup_setoptions(winid, #{maxwidth: 20, title: 'a very long title that is not going to fit'})\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_longtitle_1', {})
+
+  call term_sendkeys(buf, ":call popup_setoptions(winid, #{border: []})\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_longtitle_2', {})
 
   " clean up
   call StopVimInTerminal(buf)
