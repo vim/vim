@@ -228,7 +228,6 @@ sound_wndproc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		{
 		    typval_T	argv[3];
 		    typval_T	rettv;
-		    int		dummy;
 		    char	buf[32];
 
 		    vim_snprintf(buf, sizeof(buf), "close sound%06ld",
