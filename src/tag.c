@@ -3693,6 +3693,11 @@ jumpto_tag(
 	}
 #endif
     }
+#if defined(FEAT_QUICKFIX) && defined(FEAT_TEXT_PROP)
+    if (WIN_IS_POPUP(curwin))
+	// something went wrong, still in popup, but it can't have focus
+	win_enter(firstwin, TRUE);
+#endif
 
 erret:
 #if defined(FEAT_QUICKFIX)

@@ -7083,7 +7083,7 @@ do_exedit(
     int		need_hide;
     int		exmode_was = exmode_active;
 
-    if (ERROR_IF_POPUP_WINDOW)
+    if (eap->cmdidx != CMD_pedit && ERROR_IF_POPUP_WINDOW)
 	return;
     /*
      * ":vi" command ends Ex mode.
@@ -8798,9 +8798,11 @@ ex_pedit(exarg_T *eap)
 
     g_do_tagpreview = p_pvh;
     prepare_tagpreview(TRUE);
+
     keep_help_flag = bt_help(curwin_save->w_buffer);
     do_exedit(eap, NULL);
     keep_help_flag = FALSE;
+
     if (curwin != curwin_save && win_valid(curwin_save))
     {
 	/* Return cursor to where we were */
@@ -8808,6 +8810,13 @@ ex_pedit(exarg_T *eap)
 	redraw_later(VALID);
 	win_enter(curwin_save, TRUE);
     }
+# ifdef FEAT_TEXT_PROP
+    else if (WIN_IS_POPUP(curwin))
+    {
+	// can't keep focus in popup window
+	win_enter(firstwin, TRUE);
+    }
+# endif
     g_do_tagpreview = 0;
 }
 #endif

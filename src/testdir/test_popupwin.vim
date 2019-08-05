@@ -2174,11 +2174,15 @@ func Test_previewpopup()
         \ + ['this is another place']
         \ + range(29, 40),
         \ "Xtagfile")
+  call writefile(range(1,10)
+        \ + ['searched word is here']
+        \ + range(12, 20),
+        \ "Xheader.h")
   let lines =<< trim END
         set tags=Xtags
 	call setline(1, [
 	      \ 'one',
-	      \ 'two',
+	      \ '#include "Xheader.h"',
 	      \ 'three',
 	      \ 'four',
 	      \ 'five',
@@ -2189,6 +2193,9 @@ func Test_previewpopup()
 	      \ 'this is another word',
 	      \ 'very long line where the word is also another'])
         set previewpopup=height:4,width:40
+	set path=.
+	call ch_logfile('logfile', 'w')
+	call ch_log('logfile started')
   END
   call writefile(lines, 'XtestPreviewPopup')
   let buf = RunVimInTerminal('-S XtestPreviewPopup', #{rows: 14})
@@ -2209,11 +2216,25 @@ func Test_previewpopup()
 
   call term_sendkeys(buf, ":cd ..\<CR>:\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_5', {})
+  call term_sendkeys(buf, ":cd testdir\<CR>")
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_6', {})
+
+  call term_sendkeys(buf, ":pedit +/theword Xtagfile\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_7', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":psearch searched\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_8', {})
 
   call StopVimInTerminal(buf)
   call delete('Xtags')
   call delete('Xtagfile')
   call delete('XtestPreviewPopup')
+  call delete('Xheader.h')
 endfunc
 
 " vim: shiftwidth=2 sts=2
