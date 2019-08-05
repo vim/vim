@@ -1498,6 +1498,7 @@ call_func(
     typval_T	argv[MAX_FUNC_ARGS + 1]; // used when "partial" or
 					 // "funcexe->basetv" is not NULL
     int		argv_clear = 0;
+    int		argv_base = 0;
     partial_T	*partial = funcexe->partial;
 
     // Make a copy of the name, if it comes from a funcref variable it could
@@ -1590,9 +1591,9 @@ call_func(
 		    mch_memmove(&argv[1], argvars, sizeof(typval_T) * argcount);
 		    argv[0] = *funcexe->basetv;
 		    argcount++;
+		    argvars = argv;
+		    argv_base = 1;
 		}
-		else
-		    memcpy(argv, argvars, sizeof(typval_T) * argcount);
 
 		if (fp->uf_flags & FC_RANGE && funcexe->doesrange != NULL)
 		    *funcexe->doesrange = TRUE;
@@ -1621,7 +1622,7 @@ call_func(
 			did_save_redo = TRUE;
 		    }
 		    ++fp->uf_calls;
-		    call_user_func(fp, argcount, argv, rettv,
+		    call_user_func(fp, argcount, argvars, rettv,
 					 funcexe->firstline, funcexe->lastline,
 				  (fp->uf_flags & FC_DICT) ? selfdict : NULL);
 		    if (--fp->uf_calls <= 0 && fp->uf_refcount <= 0)
@@ -1698,8 +1699,10 @@ call_func(
 	}
     }
 
+    // clear the copies made from the partial
     while (argv_clear > 0)
-	clear_tv(&argv[--argv_clear]);
+	clear_tv(&argv[--argv_clear + argv_base]);
+
     vim_free(tofree);
     vim_free(name);
 

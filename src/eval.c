@@ -3655,6 +3655,74 @@ pattern_match(char_u *pat, char_u *text, int ic)
 }
 
 /*
+ * Handle a name followed by "(".  Both for just "name(arg)" and for
+ * "expr->name(arg)".
+ * Returns OK or FAIL.
+ */
+    static int
+eval_func(
+	char_u	    **arg,	// points to "(", will be advanced
+	char_u	    *name,
+	int	    name_len,
+	typval_T    *rettv,
+	int	    evaluate,
+	typval_T    *basetv)	// "expr" for "expr->name(arg)"
+{
+    char_u	*s = name;
+    int		len = name_len;
+    partial_T	*partial;
+    int		ret = OK;
+
+    if (!evaluate)
+	check_vars(s, len);
+
+    /* If "s" is the name of a variable of type VAR_FUNC
+     * use its contents. */
+    s = deref_func_name(s, &len, &partial, !evaluate);
+
+    /* Need to make a copy, in case evaluating the arguments makes
+     * the name invalid. */
+    s = vim_strsave(s);
+    if (s == NULL)
+	ret = FAIL;
+    else
+    {
+	funcexe_T funcexe;
+
+	// Invoke the function.
+	vim_memset(&funcexe, 0, sizeof(funcexe));
+	funcexe.firstline = curwin->w_cursor.lnum;
+	funcexe.lastline = curwin->w_cursor.lnum;
+	funcexe.doesrange = &len;
+	funcexe.evaluate = evaluate;
+	funcexe.partial = partial;
+	funcexe.basetv = basetv;
+	ret = get_func_tv(s, len, rettv, arg, &funcexe);
+    }
+    vim_free(s);
+
+    /* If evaluate is FALSE rettv->v_type was not set in
+     * get_func_tv, but it's needed in handle_subscript() to parse
+     * what follows. So set it here. */
+    if (rettv->v_type == VAR_UNKNOWN && !evaluate && **arg == '(')
+    {
+	rettv->vval.v_string = NULL;
+	rettv->v_type = VAR_FUNC;
+    }
+
+    /* Stop the expression evaluation when immediately
+     * aborting on error, or when an interrupt occurred or
+     * an exception was thrown but not caught. */
+    if (evaluate && aborting())
+    {
+	if (ret == OK)
+	    clear_tv(rettv);
+	ret = FAIL;
+    }
+    return ret;
+}
+
+/*
  * The "evaluate" argument: When FALSE, the argument is only parsed but not
  * executed.  The function may return OK, but the rettv will be of type
  * VAR_UNKNOWN.  The function still returns FAIL for a syntax error.
@@ -4671,55 +4739,7 @@ eval7(
 	else
 	{
 	    if (**arg == '(')		/* recursive! */
-	    {
-		partial_T *partial;
-
-		if (!evaluate)
-		    check_vars(s, len);
-
-		/* If "s" is the name of a variable of type VAR_FUNC
-		 * use its contents. */
-		s = deref_func_name(s, &len, &partial, !evaluate);
-
-		/* Need to make a copy, in case evaluating the arguments makes
-		 * the name invalid. */
-		s = vim_strsave(s);
-		if (s == NULL)
-		    ret = FAIL;
-		else
-		{
-		    funcexe_T funcexe;
-
-		    // Invoke the function.
-		    vim_memset(&funcexe, 0, sizeof(funcexe));
-		    funcexe.firstline = curwin->w_cursor.lnum;
-		    funcexe.lastline = curwin->w_cursor.lnum;
-		    funcexe.doesrange = &len;
-		    funcexe.evaluate = evaluate;
-		    funcexe.partial = partial;
-		    ret = get_func_tv(s, len, rettv, arg, &funcexe);
-		}
-		vim_free(s);
-
-		/* If evaluate is FALSE rettv->v_type was not set in
-		 * get_func_tv, but it's needed in handle_subscript() to parse
-		 * what follows. So set it here. */
-		if (rettv->v_type == VAR_UNKNOWN && !evaluate && **arg == '(')
-		{
-		    rettv->vval.v_string = NULL;
-		    rettv->v_type = VAR_FUNC;
-		}
-
-		/* Stop the expression evaluation when immediately
-		 * aborting on error, or when an interrupt occurred or
-		 * an exception was thrown but not caught. */
-		if (evaluate && aborting())
-		{
-		    if (ret == OK)
-			clear_tv(rettv);
-		    ret = FAIL;
-		}
-	    }
+		ret = eval_func(arg, s, len, rettv, evaluate, NULL);
 	    else if (evaluate)
 		ret = get_var_tv(s, len, rettv, NULL, TRUE, FALSE);
 	    else
@@ -4815,55 +4835,42 @@ eval_method(
 {
     char_u	*name;
     long	len;
-    funcexe_T	funcexe;
-    int		ret = OK;
+    char_u	*alias;
     typval_T	base = *rettv;
+    int		ret;
 
     // Skip over the ->.
     *arg += 2;
+    rettv->v_type = VAR_UNKNOWN;
 
-    // Locate the method name.
     name = *arg;
-    for (len = 0; eval_isnamec(name[len]); ++len)
-	;
-    if (len == 0)
+    len = get_name_len(arg, &alias, evaluate, TRUE);
+    if (alias != NULL)
+	name = alias;
+
+    if (len <= 0)
     {
 	if (verbose)
 	    emsg(_("E260: Missing name after ->"));
-	return FAIL;
+	ret = FAIL;
     }
-
-    // Check for the "(".  Skip over white space after it.
-    if (name[len] != '(')
+    else
     {
-	if (verbose)
-	    semsg(_(e_missingparen), name);
-	return FAIL;
+	if (**arg != '(')
+	{
+	    if (verbose)
+		semsg(_(e_missingparen), name);
+	    ret = FAIL;
+	}
+	else
+	    ret = eval_func(arg, name, len, rettv, evaluate, &base);
     }
-    *arg += len;
-
-    // TODO: if "name" is a function reference, resolve it.
-
-    vim_memset(&funcexe, 0, sizeof(funcexe));
-    funcexe.evaluate = evaluate;
-    funcexe.basetv = &base;
-    rettv->v_type = VAR_UNKNOWN;
-    ret = get_func_tv(name, len, rettv, arg, &funcexe);
 
     /* Clear the funcref afterwards, so that deleting it while
      * evaluating the arguments is possible (see test55). */
     if (evaluate)
 	clear_tv(&base);
 
-    /* Stop the expression evaluation when immediately aborting on
-     * error, or when an interrupt occurred or an exception was thrown
-     * but not caught. */
-    if (aborting())
-    {
-	if (ret == OK)
-	    clear_tv(rettv);
-	ret = FAIL;
-    }
     return ret;
 }
 
