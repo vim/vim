@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.1.  Last change: 2019 May 07
+*cmdline.txt*   For Vim version 8.1.  Last change: 2019 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1064,8 +1064,7 @@ Also see |`=|.
 In the command-line window the command line can be edited just like editing
 text in any window.  It is a special kind of window, because you cannot leave
 it in a normal way.
-{not available when compiled without the |+cmdline_hist| or |+vertsplit|
-feature}
+{not available when compiled without the |+cmdline_hist| feature}
 
 
 OPEN						*c_CTRL-F* *q:* *q/* *q?*
@@ -1140,7 +1139,6 @@ VARIOUS
 The command-line window cannot be used:
 - when there already is a command-line window (no nesting)
 - for entering an encryption key or when using inputsecret()
-- when Vim was not compiled with the |+vertsplit| feature
 
 Some options are set when the command-line window is opened:
 'filetype'	"vim", when editing an Ex command-line; this starts Vim syntax

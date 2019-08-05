@@ -1364,9 +1364,6 @@ msgstr "E509: Kan rugsteunlêer nie skep nie (gebruik ! om te dwing)"
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: Kan rugsteunlêer nie skep nie (gebruik ! om te dwing)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: Die hulpbronvurk sal verlore gaan (gebruik ! om te dwing)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Kan nie tydelike lêer vind vir skryf nie"
 
@@ -2116,40 +2113,11 @@ msgstr "Wys 'docu' van"
 msgid "Generate docu for"
 msgstr "Genereer 'docu' vir"
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr ""
-"Kan nie 'n verbinding met 'SNiFF+' maak nie. Kyk of die omgewing reg is "
-"('sniffemacs' moet in '$PATH' gevind word).\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: Fout gedurende lees. Verbinding gebreek"
-
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ is tans"
-
 msgid "not "
 msgstr "nie "
 
 msgid "connected"
 msgstr "gekonnekteer"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: Onbekende SNiFF+ versoek: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: Fout in konnekteer met SNiFF+"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: SNiFF+ is nie gekonnekteer nie"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: Nie 'n SNiFF+ buffer nie"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: Fout gedurende stoor. Verbinding gebreek"
 
 msgid "invalid buffer number"
 msgstr "ongeldige buffernommer"
@@ -2713,14 +2681,8 @@ msgstr "E288: invoermetode ondersteun geen styl nie"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: invoermetode ondersteun nie my voor-bewerking tipe nie"
 
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: oor-die-plek styl vereis fontstel"
-
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: Jou GTK+ is ouer as 1.2.3. Statusarea afgeskakel"
-
-msgid "E292: Input Method Server is not running"
-msgstr "E292: Invoermetodebediener voer nie uit nie"
 
 msgid "E293: block was not locked"
 msgstr "E293: blok was nie gesluit nie"
@@ -5150,9 +5112,6 @@ msgstr "E463: Omgewing is onder bewaking, kan nie verander nie"
 #~ msgid "error reading cscope connection %d"
 #~ msgstr "'cscope' verbinding %d kon nie gelees word nie"
 
-#~ msgid "E260: cscope connection not found"
-#~ msgstr "E260: 'cscope' verbinding nie gevind nie"
-
 #~ msgid "cscope connection closed"
 #~ msgstr "'cscope' verbinding gesluit"
 
@@ -5261,12 +5220,6 @@ msgstr "E463: Omgewing is onder bewaking, kan nie verander nie"
 
 #~ msgid "Retrieve next symbol"
 #~ msgstr "Kry volgende simbool"
-
-#~ msgid "-- SNiFF+ commands --"
-#~ msgstr "-- SNiFF+ bevele --"
-
-#~ msgid "Unrecognized sniff request [%s]"
-#~ msgstr "Onbekende sniff versoek [%s]"
 
 #~ msgid "Can't create input context."
 #~ msgstr "Kan nie invoerkonteks skep nie."

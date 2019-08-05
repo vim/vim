@@ -951,10 +951,8 @@ free_buffer_stuff(
 #ifdef FEAT_NETBEANS_INTG
     netbeans_file_killed(buf);
 #endif
-#ifdef FEAT_LOCALMAP
     map_clear_int(buf, MAP_ALL_MODES, TRUE, FALSE);  /* clear local mappings */
     map_clear_int(buf, MAP_ALL_MODES, TRUE, TRUE);   /* clear local abbrevs */
-#endif
     VIM_CLEAR(buf->b_start_fenc);
 }
 
@@ -5100,6 +5098,13 @@ do_arg_all(
 			{
 			    new_curwin = wpnext;
 			    new_curtab = curtab;
+			}
+			else if (wpnext->w_frame->fr_parent
+						 != curwin->w_frame->fr_parent)
+			{
+			    emsg(_("E249: window layout changed unexpectedly"));
+			    i = count;
+			    break;
 			}
 			else
 			    win_move_after(wpnext, curwin);

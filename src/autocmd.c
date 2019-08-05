@@ -240,16 +240,6 @@ static garray_T augroups = {0, 0, sizeof(char_u *), 10, NULL};
 static char_u *deleted_augroup = NULL;
 
 /*
- * Set by the apply_autocmds_group function if the given event is equal to
- * EVENT_FILETYPE. Used by the readfile function in order to determine if
- * EVENT_BUFREADPOST triggered the EVENT_FILETYPE.
- *
- * Relying on this value requires one to reset it prior calling
- * apply_autocmds_group.
- */
-int au_did_filetype INIT(= FALSE);
-
-/*
  * The ID of the current group.  Group 0 is the default one.
  */
 static int current_augroup = AUGROUP_DEFAULT;

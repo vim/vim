@@ -106,6 +106,7 @@ NEW_TESTS = \
 	test_ex_equal \
 	test_ex_undo \
 	test_ex_z \
+	test_excmd \
 	test_exec_while_if \
 	test_execute_func \
 	test_exists \
@@ -179,6 +180,7 @@ NEW_TESTS = \
 	test_matchadd_conceal \
 	test_matchadd_conceal_utf8 \
 	test_memory_usage \
+	test_method \
 	test_menu \
 	test_messages \
 	test_mksession \
@@ -328,6 +330,7 @@ NEW_TESTS_RES = \
 	test_erasebackword.res \
 	test_escaped_glob.res \
 	test_eval_stuff.res \
+	test_excmd.res \
 	test_exec_while_if.res \
 	test_exists.res \
 	test_exists_autocmd.res \
@@ -371,6 +374,7 @@ NEW_TESTS_RES = \
 	test_marks.res \
 	test_matchadd_conceal.res \
 	test_memory_usage.res \
+	test_method.res \
 	test_mksession.res \
 	test_nested_function.res \
 	test_netbeans.res \

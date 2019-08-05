@@ -1,4 +1,4 @@
-*if_tcl.txt*    For Vim version 8.1.  Last change: 2019 May 05
+*if_tcl.txt*    For Vim version 8.1.  Last change: 2019 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Ingo Wilken
@@ -30,7 +30,7 @@ comments, ideas etc to <Ingo.Wilken@informatik.uni-oldenburg.de>
 			is working: >
 				:tcl puts "Hello"
 
-:[range]tc[l] << {endmarker}
+:[range]tc[l] << [endmarker]
 {script}
 {endmarker}
 			Execute Tcl script {script}.
@@ -38,9 +38,11 @@ comments, ideas etc to <Ingo.Wilken@informatik.uni-oldenburg.de>
 			wasn't compiled in.  To avoid errors, see
 			|script-here|.
 
-{endmarker} must NOT be preceded by any white space.  If {endmarker} is
-omitted from after the "<<", a dot '.' must be used after {script}, like for
-the |:append| and |:insert| commands.
+The {endmarker} after {script} must NOT be preceded by any white space.
+
+If [endmarker] is omitted from after the "<<", a dot '.' must be used after
+{script}, like for the |:append| and |:insert| commands.
+
 This form of the |:tcl| command is mainly useful for including tcl code in Vim
 scripts.
 

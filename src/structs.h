@@ -123,6 +123,7 @@ typedef struct {
 // alphabet coding.  To minimize changes to the code, I decided to just
 // increase the number of possible marks.
 #define NMARKS		('z' - 'a' + 1)	// max. # of named marks
+#define EXTRA_MARKS	10		// marks 0-9
 #define JUMPLISTSIZE	100		// max. # of marks in jump list
 #define TAGSTACKSIZE	20		// max. # of tags in tag stack
 
@@ -1197,6 +1198,7 @@ typedef struct hashitem_S
 
 // Initial size for a hashtable.  Our items are relatively small and growing
 // is expensive, thus use 16 as a start.  Must be a power of 2.
+// This allows for storing 10 items (2/3 of 16) before a resize is needed.
 #define HT_INIT_SIZE 16
 
 typedef struct hashtable_S
@@ -1602,6 +1604,23 @@ typedef struct
     int	    dummy;
 } scriptitem_T;
 #endif
+
+// Struct passed between functions dealing with function call execution.
+//
+// "argv_func", when not NULL, can be used to fill in arguments only when the
+// invoked function uses them.  It is called like this:
+//   new_argcount = argv_func(current_argcount, argv, called_func_argcount)
+//
+typedef struct {
+    int		(* argv_func)(int, typval_T *, int);
+    linenr_T	firstline;	// first line of range
+    linenr_T	lastline;	// last line of range
+    int		*doesrange;	// if not NULL: return: function handled range
+    int		evaluate;	// actually evaluate expressions
+    partial_T	*partial;	// for extra arguments
+    dict_T	*selfdict;	// Dictionary for "self"
+    typval_T	*basetv;	// base for base->method()
+} funcexe_T;
 
 struct partial_S
 {
@@ -2291,13 +2310,12 @@ struct file_buffer
      */
     char_u	b_chartab[32];
 
-#ifdef FEAT_LOCALMAP
     // Table used for mappings local to a buffer.
     mapblock_T	*(b_maphash[256]);
 
     // First abbreviation local to a buffer.
     mapblock_T	*b_first_abbr;
-#endif
+
     // User commands local to the buffer.
     garray_T	b_ucmds;
     // start and end of an operator, also used for '[ and ']
@@ -2393,6 +2411,9 @@ struct file_buffer
 #endif
 #ifdef FEAT_INS_EXPAND
     char_u	*b_p_cpt;	// 'complete'
+#endif
+#ifdef BACKSLASH_IN_FILENAME
+    char_u	*b_p_csl;	// 'completeslash'
 #endif
 #ifdef FEAT_COMPL_FUNC
     char_u	*b_p_cfu;	// 'completefunc'
@@ -3013,10 +3034,12 @@ struct window_S
     int		w_popup_mouse_row;  // close popup if mouse moves away
     int		w_popup_mouse_mincol;  // close popup if mouse moves away
     int		w_popup_mouse_maxcol;  // close popup if mouse moves away
-    int		w_popup_drag;	    // allow moving the popup with the mouse
     popclose_T	w_popup_close;	    // allow closing the popup with the mouse
 
-    list_T	*w_popup_mask;	    // list of lists for "mask"
+    list_T	*w_popup_mask;	     // list of lists for "mask"
+    char_u	*w_popup_mask_cells; // cached mask cells
+    int		w_popup_mask_height; // height of w_popup_mask_cells
+    int		w_popup_mask_width;  // width of w_popup_mask_cells
 # if defined(FEAT_TIMERS)
     timer_T	*w_popup_timer;	    // timer for closing popup window
 # endif
@@ -3750,3 +3773,58 @@ typedef enum {
     FIND_POPUP,		// also find popup windows
     FAIL_POPUP		// return NULL if mouse on popup window
 } mouse_find_T;
+
+// Symbolic names for some registers.
+#define DELETION_REGISTER	36
+#ifdef FEAT_CLIPBOARD
+# define STAR_REGISTER		37
+#  ifdef FEAT_X11
+#   define PLUS_REGISTER	38
+#  else
+#   define PLUS_REGISTER	STAR_REGISTER	    // there is only one
+#  endif
+#endif
+#ifdef FEAT_DND
+# define TILDE_REGISTER		(PLUS_REGISTER + 1)
+#endif
+
+#ifdef FEAT_CLIPBOARD
+# ifdef FEAT_DND
+#  define NUM_REGISTERS		(TILDE_REGISTER + 1)
+# else
+#  define NUM_REGISTERS		(PLUS_REGISTER + 1)
+# endif
+#else
+# define NUM_REGISTERS		37
+#endif
+
+// Each yank register has an array of pointers to lines.
+typedef struct
+{
+    char_u	**y_array;	// pointer to array of line pointers
+    linenr_T	y_size;		// number of lines in y_array
+    char_u	y_type;		// MLINE, MCHAR or MBLOCK
+    colnr_T	y_width;	// only set if y_type == MBLOCK
+#ifdef FEAT_VIMINFO
+    time_t	y_time_set;
+#endif
+} yankreg_T;
+
+// The offset for a search command is store in a soff struct
+// Note: only spats[0].off is really used
+typedef struct soffset
+{
+    int		dir;		// search direction, '/' or '?'
+    int		line;		// search has line offset
+    int		end;		// search set cursor at end
+    long	off;		// line or char offset
+} soffset_T;
+
+// A search pattern and its attributes are stored in a spat struct
+typedef struct spat
+{
+    char_u	    *pat;	// the pattern (in allocated memory) or NULL
+    int		    magic;	// magicness of the pattern
+    int		    no_scs;	// no smartcase for this pattern
+    soffset_T	    off;
+} spat_T;

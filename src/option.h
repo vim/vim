@@ -412,6 +412,9 @@ EXTERN int	p_confirm;	// 'confirm'
 EXTERN int	p_cp;		// 'compatible'
 #ifdef FEAT_INS_EXPAND
 EXTERN char_u	*p_cot;		// 'completeopt'
+# ifdef BACKSLASH_IN_FILENAME
+EXTERN char_u	*p_csl;		// 'completeslash'
+# endif
 EXTERN long	p_ph;		// 'pumheight'
 EXTERN long	p_pw;		// 'pumwidth'
 #endif
@@ -996,6 +999,9 @@ enum
     , BV_CPT
     , BV_DICT
     , BV_TSR
+#endif
+#ifdef BACKSLASH_IN_FILENAME
+    , BV_CSL
 #endif
 #ifdef FEAT_COMPL_FUNC
     , BV_CFU

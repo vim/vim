@@ -1401,9 +1401,6 @@ msgstr "E509: 無法建立備份檔 (請使用 ! 強制執行)"
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: 無法製作備份檔 (請使用 ! 強制執行)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: Resource fork 會消失 (請使用 ! 強制執行)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: 找不到寫入用的暫存檔"
 
@@ -2155,38 +2152,11 @@ msgstr "顯示文件: "
 msgid "Generate docu for"
 msgstr "產生文件: "
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr "無法連線到 SNiFF+。請檢查環境變數 ($PATH 裡必需可以找到 sniffemacs)\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: 讀取錯誤. 取消連線"
-
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ 目前"
-
 msgid "not "
 msgstr "未"
 
 msgid "connected"
 msgstr "連線中"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: 不正確的 SNiff+ 呼叫: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: 連線到 SNiFF+ 失敗"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: 未連線到 SNiFF+"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: 不是 SNiFF+ 的緩衝區"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: 寫入錯誤。結束連線"
 
 msgid "invalid buffer number"
 msgstr "緩衝區號碼錯誤"
@@ -2736,14 +2706,8 @@ msgstr "E288: 輸入法不支援任何 style"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: 輸入法不支援任何 style"
 
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: over-the-spot 需要字型集(Fontset)"
-
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: 你的 GTK+ 比 1.2.3 還舊。無法使用狀態區。"
-
-msgid "E292: Input Method Server is not running"
-msgstr "E292: 沒有執行中的輸入法管理程式(Input Method Server)"
 
 msgid "E293: block was not locked"
 msgstr "E293: 區塊未被鎖定"
@@ -5173,9 +5137,6 @@ msgstr "E449: 收到不正確的運算式"
 msgid "E463: Region is guarded, cannot modify"
 msgstr "E463: 區域被保護，無法修改"
 
-#~ msgid "E565: error reading cscope connection %d"
-#~ msgstr "E565: 讀取 cscope 連線 %d 錯誤"
-
 #~ msgid "E260: cscope connection not found"
 #~ msgstr "E260: 找不到 cscope 連線"
 
@@ -5249,9 +5210,6 @@ msgstr "E463: 區域被保護，無法修改"
 #~ msgid "PC (16 bits Vim)"
 #~ msgstr "PC (16 位元 Vim)"
 
-#~ msgid "E362: Unsupported screen mode"
-#~ msgstr "E362: 螢幕模式不支援"
-
 #~ msgid "No servers found for this display"
 #~ msgstr "此Display沒有伺服器(Servers)"
 
@@ -5274,9 +5232,3 @@ msgstr "E463: 區域被保護，無法修改"
 
 #~ msgid "Retrieve next symbol"
 #~ msgstr "讀取: 從下個 symbol"
-
-#~ msgid "-- SNiFF+ commands --"
-#~ msgstr "-- SNiFF+ 命令 --"
-
-#~ msgid "E277: Unrecognized sniff request [%s]"
-#~ msgstr "E277: 無法辨識 sniff 命令 [%s]"

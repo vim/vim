@@ -66,6 +66,38 @@ static win_T *win_alloc(win_T *after, int hidden);
 
 static char *m_onlyone = N_("Already only one window");
 
+// When non-zero splitting a window is forbidden.  Used to avoid that nasty
+// autocommands mess up the window structure.
+static int split_disallowed = 0;
+
+// #define WIN_DEBUG
+#ifdef WIN_DEBUG
+/*
+ * Call this method to log the current window layout.
+ */
+    static void
+log_frame_layout(frame_T *frame)
+{
+    ch_log(NULL, "layout %s, wi: %d, he: %d, wwi: %d, whe: %d, id: %d",
+	    frame->fr_layout == FR_LEAF ? "LEAF"
+				  : frame->fr_layout == FR_ROW ? "ROW" : "COL",
+	    frame->fr_width,
+	    frame->fr_height,
+	    frame->fr_win == NULL ? -1 : frame->fr_win->w_width,
+	    frame->fr_win == NULL ? -1 : frame->fr_win->w_height,
+	    frame->fr_win == NULL ? -1 : frame->fr_win->w_id);
+    if (frame->fr_child != NULL)
+    {
+	ch_log(NULL, "children");
+	log_frame_layout(frame->fr_child);
+	if (frame->fr_next != NULL)
+	    ch_log(NULL, "END of children");
+    }
+    if (frame->fr_next != NULL)
+	log_frame_layout(frame->fr_next);
+}
+#endif
+
 /*
  * All CTRL-W window commands are handled here, called from normal_cmd().
  */
@@ -718,6 +750,21 @@ cmd_with_count(
 }
 
 /*
+ * If "split_disallowed" is set given an error and return FAIL.
+ * Otherwise return OK.
+ */
+    static int
+check_split_disallowed()
+{
+    if (split_disallowed > 0)
+    {
+	emsg(_("E242: Can't split a window while closing another"));
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * split the current window, implements CTRL-W s and :split
  *
  * "size" is the height or width for the new window, 0 to use half of current
@@ -749,6 +796,8 @@ win_split(int size, int flags)
 	emsg(_("E442: Can't split topleft and botright at the same time"));
 	return FAIL;
     }
+    if (check_split_disallowed() == FAIL)
+	return FAIL;
 
     /* When creating the help window make a snapshot of the window layout.
      * Otherwise clear the snapshot, it's now invalid. */
@@ -882,7 +931,7 @@ win_split_ins(
 	/* Only make all windows the same width if one of them (except oldwin)
 	 * is wider than one of the split windows. */
 	if (!do_equal && p_ea && size == 0 && *p_ead != 'v'
-	   && oldwin->w_frame->fr_parent != NULL)
+					 && oldwin->w_frame->fr_parent != NULL)
 	{
 	    frp = oldwin->w_frame->fr_parent->fr_child;
 	    while (frp != NULL)
@@ -1711,6 +1760,8 @@ win_totop(int size, int flags)
 	beep_flush();
 	return;
     }
+    if (check_split_disallowed() == FAIL)
+	return;
 
     /* Remove the window and frame from the tree of frames. */
     (void)winframe_remove(curwin, &dir, NULL);
@@ -1750,6 +1801,12 @@ win_move_after(win_T *win1, win_T *win2)
     /* check if there is something to do */
     if (win2->w_next != win1)
     {
+	if (win1->w_frame->fr_parent != win2->w_frame->fr_parent)
+	{
+	    iemsg("INTERNAL: trying to move a window into another frame");
+	    return;
+	}
+
 	/* may need move the status line/vertical separator of the last window
 	 * */
 	if (win1 == lastwin)
@@ -2490,6 +2547,10 @@ win_close(win_T *win, int free_buf)
 	    || close_last_window_tabpage(win, free_buf, prev_curtab))
 	return FAIL;
 
+    // Now we are really going to close the window.  Disallow any autocommand
+    // to split a window to avoid trouble.
+    ++split_disallowed;
+
     /* Free the memory used for the window and get the window that received
      * the screen space. */
     wp = win_free_mem(win, &dir, NULL);
@@ -2543,6 +2604,8 @@ win_close(win_T *win, int free_buf)
 	    /* careful: after this wp and win may be invalid! */
 	    apply_autocmds(EVENT_BUFENTER, NULL, NULL, FALSE, curbuf);
     }
+
+    --split_disallowed;
 
     /*
      * If last window has a status line now and we don't want one,
@@ -4589,7 +4652,11 @@ win_enter_ext(
 	redraw_later(VALID);	/* causes status line redraw */
 
     /* set window height to desired minimal value */
-    if (curwin->w_height < p_wh && !curwin->w_p_wfh)
+    if (curwin->w_height < p_wh && !curwin->w_p_wfh
+#ifdef FEAT_TEXT_PROP
+	    && !popup_is_popup(curwin)
+#endif
+	    )
 	win_setheight((int)p_wh);
     else if (curwin->w_height == 0)
 	win_setheight(1);
@@ -4861,6 +4928,7 @@ win_free(
     vim_free(wp->w_thumb_highlight);
     vim_free(wp->w_popup_title);
     list_unref(wp->w_popup_mask);
+    vim_free(wp->w_popup_mask_cells);
 #endif
 
 #ifdef FEAT_SYN_HL
@@ -6666,300 +6734,6 @@ win_hasvertsplit(void)
 		return TRUE;
 
     return FALSE;
-}
-#endif
-
-#if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)
-/*
- * Add match to the match list of window 'wp'.  The pattern 'pat' will be
- * highlighted with the group 'grp' with priority 'prio'.
- * Optionally, a desired ID 'id' can be specified (greater than or equal to 1).
- * If no particular ID is desired, -1 must be specified for 'id'.
- * Return ID of added match, -1 on failure.
- */
-    int
-match_add(
-    win_T	*wp,
-    char_u	*grp,
-    char_u	*pat,
-    int		prio,
-    int		id,
-    list_T	*pos_list,
-    char_u      *conceal_char UNUSED) /* pointer to conceal replacement char */
-{
-    matchitem_T	*cur;
-    matchitem_T	*prev;
-    matchitem_T	*m;
-    int		hlg_id;
-    regprog_T	*regprog = NULL;
-    int		rtype = SOME_VALID;
-
-    if (*grp == NUL || (pat != NULL && *pat == NUL))
-	return -1;
-    if (id < -1 || id == 0)
-    {
-	semsg(_("E799: Invalid ID: %d (must be greater than or equal to 1)"), id);
-	return -1;
-    }
-    if (id != -1)
-    {
-	cur = wp->w_match_head;
-	while (cur != NULL)
-	{
-	    if (cur->id == id)
-	    {
-		semsg(_("E801: ID already taken: %d"), id);
-		return -1;
-	    }
-	    cur = cur->next;
-	}
-    }
-    if ((hlg_id = syn_namen2id(grp, (int)STRLEN(grp))) == 0)
-    {
-	semsg(_(e_nogroup), grp);
-	return -1;
-    }
-    if (pat != NULL && (regprog = vim_regcomp(pat, RE_MAGIC)) == NULL)
-    {
-	semsg(_(e_invarg2), pat);
-	return -1;
-    }
-
-    /* Find available match ID. */
-    while (id == -1)
-    {
-	cur = wp->w_match_head;
-	while (cur != NULL && cur->id != wp->w_next_match_id)
-	    cur = cur->next;
-	if (cur == NULL)
-	    id = wp->w_next_match_id;
-	wp->w_next_match_id++;
-    }
-
-    /* Build new match. */
-    m = ALLOC_CLEAR_ONE(matchitem_T);
-    m->id = id;
-    m->priority = prio;
-    m->pattern = pat == NULL ? NULL : vim_strsave(pat);
-    m->hlg_id = hlg_id;
-    m->match.regprog = regprog;
-    m->match.rmm_ic = FALSE;
-    m->match.rmm_maxcol = 0;
-# if defined(FEAT_CONCEAL)
-    m->conceal_char = 0;
-    if (conceal_char != NULL)
-	m->conceal_char = (*mb_ptr2char)(conceal_char);
-# endif
-
-    /* Set up position matches */
-    if (pos_list != NULL)
-    {
-	linenr_T	toplnum = 0;
-	linenr_T	botlnum = 0;
-	listitem_T	*li;
-	int		i;
-
-	for (i = 0, li = pos_list->lv_first; li != NULL && i < MAXPOSMATCH;
-							i++, li = li->li_next)
-	{
-	    linenr_T	lnum = 0;
-	    colnr_T	col = 0;
-	    int		len = 1;
-	    list_T	*subl;
-	    listitem_T	*subli;
-	    int		error = FALSE;
-
-	    if (li->li_tv.v_type == VAR_LIST)
-	    {
-		subl = li->li_tv.vval.v_list;
-		if (subl == NULL)
-		    goto fail;
-		subli = subl->lv_first;
-		if (subli == NULL)
-		    goto fail;
-		lnum = tv_get_number_chk(&subli->li_tv, &error);
-		if (error == TRUE)
-		    goto fail;
-		if (lnum == 0)
-		{
-		    --i;
-		    continue;
-		}
-		m->pos.pos[i].lnum = lnum;
-		subli = subli->li_next;
-		if (subli != NULL)
-		{
-		    col = tv_get_number_chk(&subli->li_tv, &error);
-		    if (error == TRUE)
-			goto fail;
-		    subli = subli->li_next;
-		    if (subli != NULL)
-		    {
-			len = tv_get_number_chk(&subli->li_tv, &error);
-			if (error == TRUE)
-			    goto fail;
-		    }
-		}
-		m->pos.pos[i].col = col;
-		m->pos.pos[i].len = len;
-	    }
-	    else if (li->li_tv.v_type == VAR_NUMBER)
-	    {
-		if (li->li_tv.vval.v_number == 0)
-		{
-		    --i;
-		    continue;
-		}
-		m->pos.pos[i].lnum = li->li_tv.vval.v_number;
-		m->pos.pos[i].col = 0;
-		m->pos.pos[i].len = 0;
-	    }
-	    else
-	    {
-		emsg(_("List or number required"));
-		goto fail;
-	    }
-	    if (toplnum == 0 || lnum < toplnum)
-		toplnum = lnum;
-	    if (botlnum == 0 || lnum >= botlnum)
-		botlnum = lnum + 1;
-	}
-
-	/* Calculate top and bottom lines for redrawing area */
-	if (toplnum != 0)
-	{
-	    if (wp->w_buffer->b_mod_set)
-	    {
-		if (wp->w_buffer->b_mod_top > toplnum)
-		    wp->w_buffer->b_mod_top = toplnum;
-		if (wp->w_buffer->b_mod_bot < botlnum)
-		    wp->w_buffer->b_mod_bot = botlnum;
-	    }
-	    else
-	    {
-		wp->w_buffer->b_mod_set = TRUE;
-		wp->w_buffer->b_mod_top = toplnum;
-		wp->w_buffer->b_mod_bot = botlnum;
-		wp->w_buffer->b_mod_xlines = 0;
-	    }
-	    m->pos.toplnum = toplnum;
-	    m->pos.botlnum = botlnum;
-	    rtype = VALID;
-	}
-    }
-
-    /* Insert new match.  The match list is in ascending order with regard to
-     * the match priorities. */
-    cur = wp->w_match_head;
-    prev = cur;
-    while (cur != NULL && prio >= cur->priority)
-    {
-	prev = cur;
-	cur = cur->next;
-    }
-    if (cur == prev)
-	wp->w_match_head = m;
-    else
-	prev->next = m;
-    m->next = cur;
-
-    redraw_later(rtype);
-    return id;
-
-fail:
-    vim_free(m);
-    return -1;
-}
-
-/*
- * Delete match with ID 'id' in the match list of window 'wp'.
- * Print error messages if 'perr' is TRUE.
- */
-    int
-match_delete(win_T *wp, int id, int perr)
-{
-    matchitem_T	*cur = wp->w_match_head;
-    matchitem_T	*prev = cur;
-    int		rtype = SOME_VALID;
-
-    if (id < 1)
-    {
-	if (perr == TRUE)
-	    semsg(_("E802: Invalid ID: %d (must be greater than or equal to 1)"),
-									  id);
-	return -1;
-    }
-    while (cur != NULL && cur->id != id)
-    {
-	prev = cur;
-	cur = cur->next;
-    }
-    if (cur == NULL)
-    {
-	if (perr == TRUE)
-	    semsg(_("E803: ID not found: %d"), id);
-	return -1;
-    }
-    if (cur == prev)
-	wp->w_match_head = cur->next;
-    else
-	prev->next = cur->next;
-    vim_regfree(cur->match.regprog);
-    vim_free(cur->pattern);
-    if (cur->pos.toplnum != 0)
-    {
-	if (wp->w_buffer->b_mod_set)
-	{
-	    if (wp->w_buffer->b_mod_top > cur->pos.toplnum)
-		wp->w_buffer->b_mod_top = cur->pos.toplnum;
-	    if (wp->w_buffer->b_mod_bot < cur->pos.botlnum)
-		wp->w_buffer->b_mod_bot = cur->pos.botlnum;
-	}
-	else
-	{
-	    wp->w_buffer->b_mod_set = TRUE;
-	    wp->w_buffer->b_mod_top = cur->pos.toplnum;
-	    wp->w_buffer->b_mod_bot = cur->pos.botlnum;
-	    wp->w_buffer->b_mod_xlines = 0;
-	}
-	rtype = VALID;
-    }
-    vim_free(cur);
-    redraw_later(rtype);
-    return 0;
-}
-
-/*
- * Delete all matches in the match list of window 'wp'.
- */
-    void
-clear_matches(win_T *wp)
-{
-    matchitem_T *m;
-
-    while (wp->w_match_head != NULL)
-    {
-	m = wp->w_match_head->next;
-	vim_regfree(wp->w_match_head->match.regprog);
-	vim_free(wp->w_match_head->pattern);
-	vim_free(wp->w_match_head);
-	wp->w_match_head = m;
-    }
-    redraw_later(SOME_VALID);
-}
-
-/*
- * Get match from ID 'id' in window 'wp'.
- * Return NULL if match not found.
- */
-    matchitem_T *
-get_match(win_T *wp, int id)
-{
-    matchitem_T *cur = wp->w_match_head;
-
-    while (cur != NULL && cur->id != id)
-	cur = cur->next;
-    return cur;
 }
 #endif
 

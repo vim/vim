@@ -1368,9 +1368,6 @@ msgid "E510: Can't make backup file (add ! to override)"
 msgstr ""
 "E510: Không tạo được tập tin lưu trữ (thêm ! để bỏ qua việc kiểm tra lại)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: Nhánh tài nguyên sẽ bị mất (thêm ! để bỏ qua việc kiểm tra lại)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Không tìm thấy tập tin tạm thời (temp) để ghi nhớ"
 
@@ -2140,40 +2137,12 @@ msgstr "Hiển thị docu của"
 msgid "Generate docu for"
 msgstr "Tạo docu cho"
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr ""
-"Không kết nối được tới SNiFF+. Hãy kiểm tra cấu hình môi trường.(sniffemacs "
-"phải được chỉ ra trong biến $PATH).\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: Lỗi trong thời gian đọc. Ngắt kết nối"
-
-msgid "SNiFF+ is currently "
-msgstr "Trong thời điểm hiện nay SNiFF+ "
-
 msgid "not "
 msgstr "không "
 
 msgid "connected"
 msgstr "được kết nối"
 
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: không rõ yêu cầu của SNiFF+: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: Lỗi kết nối với SNiFF+"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: SNiFF+ chưa được kết nối"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: Đây không phải là bộ đệm SNiFF+"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: Lỗi trong thời gian ghi nhớ. Ngắt kết nối"
 
 msgid "invalid buffer number"
 msgstr "số của bộ đệm không đúng"
@@ -2742,14 +2711,8 @@ msgstr "E288: phương pháp nhập không hỗ trợ bất kỳ phong cách (st
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: phương pháp nhập không hỗ trợ loại soạn thảo trước của Vim"
 
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: phong cách over-the-spot yêu cầu một bộ phông chữ"
-
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: GTK+ cũ hơn 1.2.3. Vùng chỉ trạng thái không làm việc"
-
-msgid "E292: Input Method Server is not running"
-msgstr "E292: Máy chủ phương pháp nhập liệu chưa được chạy"
 
 msgid "E293: block was not locked"
 msgstr "E293: khối chưa bị khóa"

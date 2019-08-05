@@ -736,6 +736,7 @@ OBJ = \
 	$(OUTDIR)/json.o \
 	$(OUTDIR)/list.o \
 	$(OUTDIR)/main.o \
+	$(OUTDIR)/map.o \
 	$(OUTDIR)/mark.o \
 	$(OUTDIR)/memfile.o \
 	$(OUTDIR)/memline.o \
@@ -758,6 +759,7 @@ OBJ = \
 	$(OUTDIR)/regexp.o \
 	$(OUTDIR)/screen.o \
 	$(OUTDIR)/search.o \
+	$(OUTDIR)/session.o \
 	$(OUTDIR)/sha256.o \
 	$(OUTDIR)/sign.o \
 	$(OUTDIR)/spell.o \

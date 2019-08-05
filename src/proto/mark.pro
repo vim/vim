@@ -27,12 +27,5 @@ void copy_jumplist(win_T *from, win_T *to);
 void free_jumplist(win_T *wp);
 void set_last_cursor(win_T *win);
 void free_all_marks(void);
-int read_viminfo_filemark(vir_T *virp, int force);
-void prepare_viminfo_marks(void);
-void finish_viminfo_marks(void);
-void handle_viminfo_mark(garray_T *values, int force);
-void write_viminfo_filemarks(FILE *fp);
-int removable(char_u *name);
-void write_viminfo_marks(FILE *fp_out, garray_T *buflist);
-void copy_viminfo_marks(vir_T *virp, FILE *fp_out, garray_T *buflist, int eof, int flags);
+xfmark_T *get_namedfm(void);
 /* vim: set ft=c : */

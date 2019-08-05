@@ -34,7 +34,12 @@ list_T *list_copy(list_T *orig, int deep, int copyID);
 void vimlist_remove(list_T *l, listitem_T *item, listitem_T *item2);
 char_u *list2string(typval_T *tv, int copyID, int restore_copyID);
 int list_join(garray_T *gap, list_T *l, char_u *sep, int echo_style, int restore_copyID, int copyID);
+void f_join(typval_T *argvars, typval_T *rettv);
 int get_list_tv(char_u **arg, typval_T *rettv, int evaluate);
 int write_list(FILE *fd, list_T *list, int binary);
 void init_static_list(staticList10_T *sl);
+void f_list2str(typval_T *argvars, typval_T *rettv);
+void list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg);
+void f_sort(typval_T *argvars, typval_T *rettv);
+void f_uniq(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

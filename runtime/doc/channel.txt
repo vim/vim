@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.1.  Last change: 2019 Jul 21
+*channel.txt*      For Vim version 8.1.  Last change: 2019 Jul 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -18,7 +18,7 @@ The Netbeans interface also uses a channel. |netbeans|
 5. Channel commands			|channel-commands|
 6. Using a RAW or NL channel		|channel-raw|
 7. More channel functions		|channel-more|
-8. channel functions details		|channel-functions-details|
+8. Channel functions details		|channel-functions-details|
 9. Starting a job with a channel	|job-start|
 10. Starting a job without a channel	|job-start-nochannel|
 11. Job functions			|job-functions-details|
@@ -462,7 +462,7 @@ For a JS or JSON channel this returns one decoded message.
 This includes any sequence number.
 
 ==============================================================================
-8. channel functions details			*channel-functions-details*
+8. Channel functions details			*channel-functions-details*
 
 ch_canread({handle})						*ch_canread()*
 		Return non-zero when there is something to read from {handle}.

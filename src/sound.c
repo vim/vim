@@ -95,7 +95,6 @@ sound_callback(
     soundcb_T	*soundcb = (soundcb_T *)userdata;
     typval_T	argv[3];
     typval_T	rettv;
-    int		dummy;
 
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = id;
@@ -106,8 +105,7 @@ sound_callback(
 			  ? 1 : 2;
     argv[2].v_type = VAR_UNKNOWN;
 
-    call_callback(&soundcb->snd_callback, -1,
-			    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+    call_callback(&soundcb->snd_callback, -1, &rettv, 2, argv);
     clear_tv(&rettv);
 
     delete_sound_callback(soundcb);
@@ -245,8 +243,7 @@ sound_wndproc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				      : wParam == MCI_NOTIFY_ABORTED ? 1 : 2;
 		    argv[2].v_type = VAR_UNKNOWN;
 
-		    call_callback(&p->snd_callback, -1,
-			    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+		    call_callback(&p->snd_callback, -1, &rettv, 2, argv);
 		    clear_tv(&rettv);
 
 		    delete_sound_callback(p);

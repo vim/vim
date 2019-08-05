@@ -4,13 +4,13 @@ func Test_System()
   if !executable('echo') || !executable('cat') || !executable('wc')
     return
   endif
-  let out = system('echo 123')
+  let out = 'echo 123'->system()
   " On Windows we may get a trailing space.
   if out != "123 \n"
     call assert_equal("123\n", out)
   endif
 
-  let out = systemlist('echo 123')
+  let out = 'echo 123'->systemlist()
   " On Windows we may get a trailing space and CR.
   if out != ["123 \r"]
     call assert_equal(['123'], out)

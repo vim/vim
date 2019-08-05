@@ -38,6 +38,7 @@ highlight.c	| syntax highlighting
 indent.c	| C and Lisp indentation
 insexpand.c	| Insert mode completion
 mark.c		| marks
+map.c		| mapping and abbreviations
 mbyte.c		| multi-byte character handling
 memfile.c	| storing lines for buffers in a swapfile
 memline.c	| storing lines for buffers in memory
@@ -52,6 +53,7 @@ quickfix.c	| quickfix commands (":make", ":cn")
 regexp.c	| pattern matching
 screen.c	| updating the windows
 search.c	| pattern searching
+session.c	| sessions and views
 sign.c		| signs
 spell.c		| spell checking
 syntax.c	| syntax and other highlighting
@@ -62,6 +64,7 @@ textprop.c	| text properties
 undo.c		| undo and redo
 usercmd.c	| user defined commands
 userfunc.c	| user defined functions
+viminfo.c	| viminfo handling
 window.c	| handling split windows
 
 

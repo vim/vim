@@ -78,6 +78,7 @@ let test_values = {
       \ 'complete': [['', 'w,b'], ['xxx']],
       \ 'concealcursor': [['', 'n', 'nvic'], ['xxx']],
       \ 'completeopt': [['', 'menu', 'menu,longest'], ['xxx', 'menu,,,longest,']],
+      \ 'completeslash': [['', 'slash', 'backslash'], ['xxx']],
       \ 'cryptmethod': [['', 'zip'], ['xxx']],
       \ 'cscopequickfix': [['', 's-', 's-,c+,e0'], ['xxx', 's,g,d']],
       \ 'debug': [['', 'msg', 'msg', 'beep'], ['xxx']],

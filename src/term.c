@@ -3718,6 +3718,7 @@ may_req_ambiguous_char_width(void)
 
 	/* This overwrites a few characters on the screen, a redraw is needed
 	 * after this. Clear them out for now. */
+	screen_stop_highlight();
 	term_windgoto(1, 0);
 	out_str((char_u *)"  ");
 	term_windgoto(0, 0);

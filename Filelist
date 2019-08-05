@@ -60,6 +60,7 @@ SRC_ALL =	\
 		src/keymap.h \
 		src/macros.h \
 		src/main.c \
+		src/map.c \
 		src/mark.c \
 		src/mbyte.c \
 		src/memfile.c \
@@ -88,6 +89,7 @@ SRC_ALL =	\
 		src/regexp.h \
 		src/screen.c \
 		src/search.c \
+		src/session.c \
 		src/sha256.c \
 		src/sign.c \
 		src/sound.c \
@@ -198,6 +200,7 @@ SRC_ALL =	\
 		src/proto/json.pro \
 		src/proto/list.pro \
 		src/proto/main.pro \
+		src/proto/map.pro \
 		src/proto/mark.pro \
 		src/proto/mbyte.pro \
 		src/proto/memfile.pro \
@@ -218,6 +221,7 @@ SRC_ALL =	\
 		src/proto/regexp.pro \
 		src/proto/screen.pro \
 		src/proto/search.pro \
+		src/proto/session.pro \
 		src/proto/sha256.pro \
 		src/proto/sign.pro \
 		src/proto/sound.pro \

@@ -615,7 +615,7 @@ CClink = $(CC)
 # Use this with GCC to check for mistakes, unused arguments, etc.
 # Note: If you use -Wextra and get warnings in GTK code about function
 #       parameters, you can add -Wno-cast-function-type
-#CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+#CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wunreachable-code -Wno-cast-function-type -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
 # Add -Wpedantic to find // comments and other C99 constructs.
 # Better disable Perl and Python to avoid a lot of warnings.
 #CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wpedantic -Wunreachable-code -Wunused-result -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
@@ -1612,6 +1612,7 @@ BASIC_SRC = \
 	json.c \
 	list.c \
 	main.c \
+	map.c \
 	mark.c \
 	memfile.c \
 	memline.c \
@@ -1634,6 +1635,7 @@ BASIC_SRC = \
 	regexp.c \
 	screen.c \
 	search.c \
+	session.c \
 	sha256.c \
 	sign.c \
 	sound.c \
@@ -1734,6 +1736,7 @@ OBJ_COMMON = \
 	objects/indent.o \
 	objects/insexpand.o \
 	objects/list.o \
+	objects/map.o \
 	objects/mark.o \
 	objects/memline.o \
 	objects/menu.o \
@@ -1754,6 +1757,7 @@ OBJ_COMMON = \
 	objects/regexp.o \
 	objects/screen.o \
 	objects/search.o \
+	objects/session.o \
 	objects/sha256.o \
 	objects/sign.o \
 	objects/sound.o \
@@ -1877,6 +1881,7 @@ PRO_AUTO = \
 	json.pro \
 	list.pro \
 	main.pro \
+	map.pro \
 	mark.pro \
 	mbyte.pro \
 	memfile.pro \
@@ -1899,6 +1904,7 @@ PRO_AUTO = \
 	regexp.pro \
 	screen.pro \
 	search.pro \
+	session.pro \
 	sha256.pro \
 	sign.pro \
 	sound.pro \
@@ -3166,6 +3172,9 @@ objects/list.o: list.c
 objects/main.o: main.c
 	$(CCC) -o $@ main.c
 
+objects/map.o: map.c
+	$(CCC) -o $@ map.c
+
 objects/mark.o: mark.c
 	$(CCC) -o $@ mark.c
 
@@ -3255,6 +3264,9 @@ objects/screen.o: screen.c
 
 objects/search.o: search.c
 	$(CCC) -o $@ search.c
+
+objects/session.o: session.c
+	$(CCC) -o $@ session.c
 
 objects/sha256.o: sha256.c
 	$(CCC) -o $@ sha256.c
@@ -3598,6 +3610,10 @@ objects/main.o: main.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
+objects/map.o: map.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
 objects/mark.o: mark.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
@@ -3684,6 +3700,10 @@ objects/screen.o: screen.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto.h globals.h
 objects/search.o: search.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/session.o: session.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/sha256.o: sha256.c vim.h protodef.h auto/config.h feature.h os_unix.h \

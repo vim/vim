@@ -86,7 +86,7 @@ func Test_popup_with_border_and_padding()
 	  call setline(1, range(1, 100))
 	  call popup_create('hello border', #{line: 2, col: 3, border: []})
 	  call popup_create('hello padding', #{line: 2, col: 23, padding: []})
-	  call popup_create('hello both', #{line: 2, col: 43, border: [], padding: []})
+	  call popup_create('hello both', #{line: 2, col: 43, border: [], padding: [], highlight: 'Normal'})
 	  call popup_create('border TL', #{line: 6, col: 3, border: [1, 0, 0, 4]})
 	  call popup_create('paddings', #{line: 6, col: 23, padding: [1, 3, 2, 4]})
 	  call popup_create('wrapped longer text', #{line: 8, col: 55, padding: [0, 3, 0, 3], border: [0, 1, 0, 1]})
@@ -354,6 +354,7 @@ func Test_popup_drag()
 	call setline(1, range(1, 20))
 	let winid = popup_create(['1111', '222222', '33333'], #{
 	      \ drag: 1,
+	      \ resize: 1,
 	      \ border: [],
 	      \ line: &lines - 4,
 	      \ })
@@ -362,6 +363,11 @@ func Test_popup_drag()
 	endfunc
 	map <silent> <F3> :call test_setmouse(&lines - 4, &columns / 2)<CR>
 	map <silent> <F4> :call test_setmouse(&lines - 8, &columns / 2)<CR>
+	func Resize()
+	  call feedkeys("\<F5>\<LeftMouse>\<F6>\<LeftDrag>\<LeftRelease>", "xt")
+	endfunc
+	map <silent> <F5> :call test_setmouse(6, 41)<CR>
+	map <silent> <F6> :call test_setmouse(7, 45)<CR>
   END
   call writefile(lines, 'XtestPopupDrag')
   let buf = RunVimInTerminal('-S XtestPopupDrag', #{rows: 10})
@@ -369,6 +375,9 @@ func Test_popup_drag()
 
   call term_sendkeys(buf, ":call Dragit()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_drag_02', {})
+
+  call term_sendkeys(buf, ":call Resize()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_drag_03', {})
 
   " clean up
   call StopVimInTerminal(buf)
@@ -648,6 +657,7 @@ func Test_popup_invalid_arguments()
   call assert_fails('call popup_create("text", #{mask: ["asdf"]})', 'E475:')
   call popup_clear()
   call assert_fails('call popup_create("text", #{mask: test_null_list()})', 'E475:')
+  call assert_fails('call popup_create("text", #{mapping: []})', 'E745:')
   call popup_clear()
 endfunc
 
@@ -936,6 +946,7 @@ func Test_popup_getoptions()
   call assert_equal(21, res.maxheight)
   call assert_equal(100, res.zindex)
   call assert_equal(1, res.fixed)
+  call assert_equal(1, res.mapping)
   if has('timers')
     call assert_equal(5000, res.time)
   endif
@@ -1009,9 +1020,9 @@ func Test_popup_atcursor()
   call cursor(1, 1)
   redraw
   let winid = popup_create('vim', #{
-        \ line: 'cursor+2',
-        \ col: 'cursor+1',
-        \})
+	\ line: 'cursor+2',
+	\ col: 'cursor+1',
+	\})
   redraw
   let line = join(map(range(1, 17), 'screenstring(3, v:val)'), '')
   call assert_equal('xvimxxxxxxxxxxxxx', line)
@@ -1020,9 +1031,9 @@ func Test_popup_atcursor()
   call cursor(3, 3)
   redraw
   let winid = popup_create('vim', #{
-        \ line: 'cursor-2',
-        \ col: 'cursor-1',
-        \})
+	\ line: 'cursor-2',
+	\ col: 'cursor-1',
+	\})
   redraw
   let line = join(map(range(1, 17), 'screenstring(1, v:val)'), '')
   call assert_equal('xvimxxxxxxxxxxxxx', line)
@@ -1194,6 +1205,8 @@ func Test_popup_menu()
     let s:cb_winid = a:id
     let s:cb_res = a:res
   endfunc
+  " mapping won't be used in popup
+  map j k
 
   let winid = ShowMenu(" ", 1)
   let winid = ShowMenu("j \<CR>", 2)
@@ -1206,6 +1219,7 @@ func Test_popup_menu()
   let winid = ShowMenu("\<C-C>", -1)
 
   delfunc QuitCallback
+  unmap j
 endfunc
 
 func Test_popup_menu_screenshot()
@@ -1268,11 +1282,19 @@ func Test_popup_title()
   " put the title on.
   let lines =<< trim END
 	call setline(1, range(1, 20))
-	call popup_create(['one', 'two', 'another'], #{title: 'Title String'})
+	let winid = popup_create(['one', 'two', 'another'], #{title: 'Title String'})
   END
   call writefile(lines, 'XtestPopupTitle')
   let buf = RunVimInTerminal('-S XtestPopupTitle', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_popupwin_title', {})
+
+  call term_sendkeys(buf, ":call popup_setoptions(winid, #{maxwidth: 20, title: 'a very long title that is not going to fit'})\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_longtitle_1', {})
+
+  call term_sendkeys(buf, ":call popup_setoptions(winid, #{border: []})\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_longtitle_2', {})
 
   " clean up
   call StopVimInTerminal(buf)
@@ -1347,11 +1369,11 @@ func Test_popup_never_behind()
   call delete('XtestPopupBehind')
 endfunc
 
-func s:VerifyPosition( p, msg, line, col, width, height )
-  call assert_equal( a:line,   popup_getpos( a:p ).line,   a:msg . ' (l)' )
-  call assert_equal( a:col,    popup_getpos( a:p ).col,    a:msg . ' (c)' )
-  call assert_equal( a:width,  popup_getpos( a:p ).width,  a:msg . ' (w)' )
-  call assert_equal( a:height, popup_getpos( a:p ).height, a:msg . ' (h)' )
+func s:VerifyPosition(p, msg, line, col, width, height)
+  call assert_equal(a:line,   popup_getpos(a:p).line,   a:msg . ' (l)')
+  call assert_equal(a:col,    popup_getpos(a:p).col,    a:msg . ' (c)')
+  call assert_equal(a:width,  popup_getpos(a:p).width,  a:msg . ' (w)')
+  call assert_equal(a:height, popup_getpos(a:p).height, a:msg . ' (h)')
 endfunc
 
 func Test_popup_position_adjust()
@@ -1364,24 +1386,24 @@ func Test_popup_position_adjust()
   " Entries for cases which don't vary based on wrapping.
   " Format is per tests described below
   let both_wrap_tests = [
-        \       [ 'a', 5, &columns,        5, &columns - 2, 1, 1 ],
-        \       [ 'b', 5, &columns + 1,    5, &columns - 2, 1, 1 ],
-        \       [ 'c', 5, &columns - 1,    5, &columns - 2, 1, 1 ],
-        \       [ 'd', 5, &columns - 2,    5, &columns - 2, 1, 1 ],
-        \       [ 'e', 5, &columns - 3,    5, &columns - 3, 1, 1 ],
-        \
-        \       [ 'aa', 5, &columns,        5, &columns - 2, 2, 1 ],
-        \       [ 'bb', 5, &columns + 1,    5, &columns - 2, 2, 1 ],
-        \       [ 'cc', 5, &columns - 1,    5, &columns - 2, 2, 1 ],
-        \       [ 'dd', 5, &columns - 2,    5, &columns - 2, 2, 1 ],
-        \       [ 'ee', 5, &columns - 3,    5, &columns - 3, 2, 1 ],
-        \
-        \       [ 'aaa', 5, &columns,        5, &columns - 2, 3, 1 ],
-        \       [ 'bbb', 5, &columns + 1,    5, &columns - 2, 3, 1 ],
-        \       [ 'ccc', 5, &columns - 1,    5, &columns - 2, 3, 1 ],
-        \       [ 'ddd', 5, &columns - 2,    5, &columns - 2, 3, 1 ],
-        \       [ 'eee', 5, &columns - 3,    5, &columns - 3, 3, 1 ],
-        \ ]
+	\       ['a', 5, &columns,        5, &columns - 2, 1, 1],
+	\       ['b', 5, &columns + 1,    5, &columns - 2, 1, 1],
+	\       ['c', 5, &columns - 1,    5, &columns - 2, 1, 1],
+	\       ['d', 5, &columns - 2,    5, &columns - 2, 1, 1],
+	\       ['e', 5, &columns - 3,    5, &columns - 3, 1, 1],
+	\
+	\       ['aa', 5, &columns,        5, &columns - 2, 2, 1],
+	\       ['bb', 5, &columns + 1,    5, &columns - 2, 2, 1],
+	\       ['cc', 5, &columns - 1,    5, &columns - 2, 2, 1],
+	\       ['dd', 5, &columns - 2,    5, &columns - 2, 2, 1],
+	\       ['ee', 5, &columns - 3,    5, &columns - 3, 2, 1],
+	\
+	\       ['aaa', 5, &columns,        5, &columns - 2, 3, 1],
+	\       ['bbb', 5, &columns + 1,    5, &columns - 2, 3, 1],
+	\       ['ccc', 5, &columns - 1,    5, &columns - 2, 3, 1],
+	\       ['ddd', 5, &columns - 2,    5, &columns - 2, 3, 1],
+	\       ['eee', 5, &columns - 3,    5, &columns - 3, 3, 1],
+	\ ]
 
   " these test groups are dicts with:
   "  - comment: something to identify the group of tests by
@@ -1395,61 +1417,61 @@ func Test_popup_position_adjust()
   "     - expected width
   "     - expected height
   let tests = [
-        \ #{
-        \   comment: 'left-aligned with wrapping',
-        \   options: #{
-        \     wrap: 1,
-        \     pos: 'botleft',
-        \   },
-        \   tests: both_wrap_tests + [
-        \       [ 'aaaa', 5, &columns,        4, &columns - 2, 3, 2 ],
-        \       [ 'bbbb', 5, &columns + 1,    4, &columns - 2, 3, 2 ],
-        \       [ 'cccc', 5, &columns - 1,    4, &columns - 2, 3, 2 ],
-        \       [ 'dddd', 5, &columns - 2,    4, &columns - 2, 3, 2 ],
-        \       [ 'eeee', 5, &columns - 3,    5, &columns - 3, 4, 1 ],
-        \   ],
-        \ },
-        \ #{
-        \   comment: 'left aligned without wrapping',
-        \   options: #{
-        \     wrap: 0,
-        \     pos: 'botleft',
-        \   },
-        \   tests: both_wrap_tests + [
-        \       [ 'aaaa', 5, &columns,        5, &columns - 3, 4, 1 ],
-        \       [ 'bbbb', 5, &columns + 1,    5, &columns - 3, 4, 1 ],
-        \       [ 'cccc', 5, &columns - 1,    5, &columns - 3, 4, 1 ],
-        \       [ 'dddd', 5, &columns - 2,    5, &columns - 3, 4, 1 ],
-        \       [ 'eeee', 5, &columns - 3,    5, &columns - 3, 4, 1 ],
-        \   ],
-        \ },
-        \ #{
-        \   comment: 'left aligned with fixed position',
-        \   options: #{
-        \     wrap: 0,
-        \     fixed: 1,
-        \     pos: 'botleft',
-        \   },
-        \   tests: both_wrap_tests + [
-        \       [ 'aaaa', 5, &columns,        5, &columns - 2, 3, 1 ],
-        \       [ 'bbbb', 5, &columns + 1,    5, &columns - 2, 3, 1 ],
-        \       [ 'cccc', 5, &columns - 1,    5, &columns - 2, 3, 1 ],
-        \       [ 'dddd', 5, &columns - 2,    5, &columns - 2, 3, 1 ],
-        \       [ 'eeee', 5, &columns - 3,    5, &columns - 3, 4, 1 ],
-        \   ],
-        \ },
-      \ ]
+	\ #{
+	\   comment: 'left-aligned with wrapping',
+	\   options: #{
+	\     wrap: 1,
+	\     pos: 'botleft',
+	\   },
+	\   tests: both_wrap_tests + [
+	\       ['aaaa', 5, &columns,        4, &columns - 2, 3, 2],
+	\       ['bbbb', 5, &columns + 1,    4, &columns - 2, 3, 2],
+	\       ['cccc', 5, &columns - 1,    4, &columns - 2, 3, 2],
+	\       ['dddd', 5, &columns - 2,    4, &columns - 2, 3, 2],
+	\       ['eeee', 5, &columns - 3,    5, &columns - 3, 4, 1],
+	\   ],
+	\ },
+	\ #{
+	\   comment: 'left aligned without wrapping',
+	\   options: #{
+	\     wrap: 0,
+	\     pos: 'botleft',
+	\   },
+	\   tests: both_wrap_tests + [
+	\       ['aaaa', 5, &columns,        5, &columns - 3, 4, 1],
+	\       ['bbbb', 5, &columns + 1,    5, &columns - 3, 4, 1],
+	\       ['cccc', 5, &columns - 1,    5, &columns - 3, 4, 1],
+	\       ['dddd', 5, &columns - 2,    5, &columns - 3, 4, 1],
+	\       ['eeee', 5, &columns - 3,    5, &columns - 3, 4, 1],
+	\   ],
+	\ },
+	\ #{
+	\   comment: 'left aligned with fixed position',
+	\   options: #{
+	\     wrap: 0,
+	\     fixed: 1,
+	\     pos: 'botleft',
+	\   },
+	\   tests: both_wrap_tests + [
+	\       ['aaaa', 5, &columns,        5, &columns - 2, 3, 1],
+	\       ['bbbb', 5, &columns + 1,    5, &columns - 2, 3, 1],
+	\       ['cccc', 5, &columns - 1,    5, &columns - 2, 3, 1],
+	\       ['dddd', 5, &columns - 2,    5, &columns - 2, 3, 1],
+	\       ['eeee', 5, &columns - 3,    5, &columns - 3, 4, 1],
+	\   ],
+	\ },
+	\ ]
 
   for test_group in tests
     for test in test_group.tests
       let [ text, line, col, e_line, e_col, e_width, e_height ] = test
       let options = #{
-            \ line: line,
-            \ col: col,
-            \ }
-      call extend( options, test_group.options )
+	    \ line: line,
+	    \ col: col,
+	    \ }
+      call extend(options, test_group.options)
 
-      let p = popup_create( text, options )
+      let p = popup_create(text, options)
 
       let msg = string(extend(options, #{text: text}))
       call s:VerifyPosition(p, msg, e_line, e_col, e_width, e_height)
@@ -1465,62 +1487,62 @@ func Test_adjust_left_past_screen_width()
   " width of screen
   let X = join(map(range(&columns), {->'X'}), '')
 
-  let p = popup_create( X, #{line: 1, col: 1, wrap: 0})
-  call s:VerifyPosition( p, 'full width topleft', 1, 1, &columns, 1 )
+  let p = popup_create(X, #{line: 1, col: 1, wrap: 0})
+  call s:VerifyPosition(p, 'full width topleft', 1, 1, &columns, 1)
 
   redraw
   let line = join(map(range(1, &columns + 1), 'screenstring(1, v:val)'), '')
   call assert_equal(X, line)
 
-  call popup_close( p )
+  call popup_close(p)
   redraw
 
   " Same if placed on the right hand side
-  let p = popup_create( X, #{line: 1, col: &columns, wrap: 0})
-  call s:VerifyPosition( p, 'full width topright', 1, 1, &columns, 1 )
+  let p = popup_create(X, #{line: 1, col: &columns, wrap: 0})
+  call s:VerifyPosition(p, 'full width topright', 1, 1, &columns, 1)
 
   redraw
   let line = join(map(range(1, &columns + 1), 'screenstring(1, v:val)'), '')
   call assert_equal(X, line)
 
-  call popup_close( p )
+  call popup_close(p)
   redraw
 
   " Extend so > window width
   let X .= 'x'
 
-  let p = popup_create( X, #{line: 1, col: 1, wrap: 0})
-  call s:VerifyPosition( p, 'full width +  1 topleft', 1, 1, &columns, 1 )
+  let p = popup_create(X, #{line: 1, col: 1, wrap: 0})
+  call s:VerifyPosition(p, 'full width +  1 topleft', 1, 1, &columns, 1)
 
   redraw
   let line = join(map(range(1, &columns + 1), 'screenstring(1, v:val)'), '')
   call assert_equal(X[ : -2 ], line)
 
-  call popup_close( p )
+  call popup_close(p)
   redraw
 
   " Shifted then truncated (the x is not visible)
-  let p = popup_create( X, #{line: 1, col: &columns - 3, wrap: 0})
-  call s:VerifyPosition( p, 'full width + 1 topright', 1, 1, &columns, 1 )
+  let p = popup_create(X, #{line: 1, col: &columns - 3, wrap: 0})
+  call s:VerifyPosition(p, 'full width + 1 topright', 1, 1, &columns, 1)
 
   redraw
   let line = join(map(range(1, &columns + 1), 'screenstring(1, v:val)'), '')
   call assert_equal(X[ : -2 ], line)
 
-  call popup_close( p )
+  call popup_close(p)
   redraw
 
   " Not shifted, just truncated
-  let p = popup_create( X,
-        \ #{line: 1, col: 2, wrap: 0, fixed: 1})
-  call s:VerifyPosition( p, 'full width + 1 fixed', 1, 2, &columns - 1, 1)
+  let p = popup_create(X,
+	\ #{line: 1, col: 2, wrap: 0, fixed: 1})
+  call s:VerifyPosition(p, 'full width + 1 fixed', 1, 2, &columns - 1, 1)
 
   redraw
   let line = join(map(range(1, &columns + 1), 'screenstring(1, v:val)'), '')
   let e_line = ' ' . X[ 1 : -2 ]
   call assert_equal(e_line, line)
 
-  call popup_close( p )
+  call popup_close(p)
   redraw
 
   call popup_clear()
@@ -1715,7 +1737,7 @@ func Test_popup_settext()
     call popup_settext(p, 'this is a text')
   END
 
-  call writefile( lines, 'XtestPopupSetText' )
+  call writefile(lines, 'XtestPopupSetText')
   let buf = RunVimInTerminal('-S XtestPopupSetText', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_popup_settext_01', {})
 
@@ -2155,16 +2177,17 @@ func Test_previewpopup()
   let lines =<< trim END
         set tags=Xtags
 	call setline(1, [
-              \ 'one',
-              \ 'two',
-              \ 'three',
-              \ 'four',
-              \ 'five',
-              \ 'six',
-              \ 'seven',
-              \ 'find theword somewhere',
-              \ 'nine',
-              \ 'this is another word'])
+	      \ 'one',
+	      \ 'two',
+	      \ 'three',
+	      \ 'four',
+	      \ 'five',
+	      \ 'six',
+	      \ 'seven',
+	      \ 'find theword somewhere',
+	      \ 'nine',
+	      \ 'this is another word',
+	      \ 'very long line where the word is also another'])
         set previewpopup=height:4,width:40
   END
   call writefile(lines, 'XtestPreviewPopup')
@@ -2176,6 +2199,16 @@ func Test_previewpopup()
 
   call term_sendkeys(buf, "/another\<CR>\<C-W>}")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_2', {})
+
+  call term_sendkeys(buf, ":call popup_move(popup_getpreview(), #{col: 15})\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_3', {})
+
+  call term_sendkeys(buf, "/another\<CR>\<C-W>}")
+  call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_4', {})
+
+  call term_sendkeys(buf, ":cd ..\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_5', {})
 
   call StopVimInTerminal(buf)
   call delete('Xtags')

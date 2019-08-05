@@ -24,10 +24,8 @@
 # include <time.h>	/* for time_t */
 #endif
 
-static char *e_listarg = N_("E686: Argument of %s must be a List");
 static char *e_listblobarg = N_("E899: Argument of %s must be a List or Blob");
 static char *e_stringreq = N_("E928: String required");
-static char *e_invalwindow = N_("E957: Invalid window number");
 
 #ifdef FEAT_FLOAT
 static void f_abs(typval_T *argvars, typval_T *rettv);
@@ -76,7 +74,6 @@ static void f_changenr(typval_T *argvars, typval_T *rettv);
 static void f_char2nr(typval_T *argvars, typval_T *rettv);
 static void f_chdir(typval_T *argvars, typval_T *rettv);
 static void f_cindent(typval_T *argvars, typval_T *rettv);
-static void f_clearmatches(typval_T *argvars, typval_T *rettv);
 static void f_col(typval_T *argvars, typval_T *rettv);
 #if defined(FEAT_INS_EXPAND)
 static void f_complete(typval_T *argvars, typval_T *rettv);
@@ -164,7 +161,6 @@ static void f_getftype(typval_T *argvars, typval_T *rettv);
 static void f_getjumplist(typval_T *argvars, typval_T *rettv);
 static void f_getline(typval_T *argvars, typval_T *rettv);
 static void f_getloclist(typval_T *argvars UNUSED, typval_T *rettv UNUSED);
-static void f_getmatches(typval_T *argvars, typval_T *rettv);
 static void f_getpid(typval_T *argvars, typval_T *rettv);
 static void f_getcurpos(typval_T *argvars, typval_T *rettv);
 static void f_getpos(typval_T *argvars, typval_T *rettv);
@@ -184,7 +180,6 @@ static void f_glob(typval_T *argvars, typval_T *rettv);
 static void f_globpath(typval_T *argvars, typval_T *rettv);
 static void f_glob2regpat(typval_T *argvars, typval_T *rettv);
 static void f_has(typval_T *argvars, typval_T *rettv);
-static void f_has_key(typval_T *argvars, typval_T *rettv);
 static void f_haslocaldir(typval_T *argvars, typval_T *rettv);
 static void f_hasmapto(typval_T *argvars, typval_T *rettv);
 static void f_histadd(typval_T *argvars, typval_T *rettv);
@@ -211,13 +206,6 @@ static void f_islocked(typval_T *argvars, typval_T *rettv);
 static void f_isinf(typval_T *argvars, typval_T *rettv);
 static void f_isnan(typval_T *argvars, typval_T *rettv);
 #endif
-static void f_items(typval_T *argvars, typval_T *rettv);
-static void f_join(typval_T *argvars, typval_T *rettv);
-static void f_js_decode(typval_T *argvars, typval_T *rettv);
-static void f_js_encode(typval_T *argvars, typval_T *rettv);
-static void f_json_decode(typval_T *argvars, typval_T *rettv);
-static void f_json_encode(typval_T *argvars, typval_T *rettv);
-static void f_keys(typval_T *argvars, typval_T *rettv);
 static void f_last_buffer_nr(typval_T *argvars, typval_T *rettv);
 static void f_len(typval_T *argvars, typval_T *rettv);
 static void f_libcall(typval_T *argvars, typval_T *rettv);
@@ -225,7 +213,6 @@ static void f_libcallnr(typval_T *argvars, typval_T *rettv);
 static void f_line(typval_T *argvars, typval_T *rettv);
 static void f_line2byte(typval_T *argvars, typval_T *rettv);
 static void f_lispindent(typval_T *argvars, typval_T *rettv);
-static void f_list2str(typval_T *argvars, typval_T *rettv);
 static void f_localtime(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_log(typval_T *argvars, typval_T *rettv);
@@ -238,19 +225,13 @@ static void f_map(typval_T *argvars, typval_T *rettv);
 static void f_maparg(typval_T *argvars, typval_T *rettv);
 static void f_mapcheck(typval_T *argvars, typval_T *rettv);
 static void f_match(typval_T *argvars, typval_T *rettv);
-static void f_matchadd(typval_T *argvars, typval_T *rettv);
-static void f_matchaddpos(typval_T *argvars, typval_T *rettv);
-static void f_matcharg(typval_T *argvars, typval_T *rettv);
-static void f_matchdelete(typval_T *argvars, typval_T *rettv);
 static void f_matchend(typval_T *argvars, typval_T *rettv);
 static void f_matchlist(typval_T *argvars, typval_T *rettv);
 static void f_matchstr(typval_T *argvars, typval_T *rettv);
 static void f_matchstrpos(typval_T *argvars, typval_T *rettv);
 static void f_max(typval_T *argvars, typval_T *rettv);
 static void f_min(typval_T *argvars, typval_T *rettv);
-#ifdef vim_mkdir
 static void f_mkdir(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_mode(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_MZSCHEME
 static void f_mzeval(typval_T *argvars, typval_T *rettv);
@@ -325,7 +306,6 @@ static void f_setenv(typval_T *argvars, typval_T *rettv);
 static void f_setfperm(typval_T *argvars, typval_T *rettv);
 static void f_setline(typval_T *argvars, typval_T *rettv);
 static void f_setloclist(typval_T *argvars, typval_T *rettv);
-static void f_setmatches(typval_T *argvars, typval_T *rettv);
 static void f_setpos(typval_T *argvars, typval_T *rettv);
 static void f_setqflist(typval_T *argvars, typval_T *rettv);
 static void f_setreg(typval_T *argvars, typval_T *rettv);
@@ -343,7 +323,6 @@ static void f_simplify(typval_T *argvars, typval_T *rettv);
 static void f_sin(typval_T *argvars, typval_T *rettv);
 static void f_sinh(typval_T *argvars, typval_T *rettv);
 #endif
-static void f_sort(typval_T *argvars, typval_T *rettv);
 static void f_soundfold(typval_T *argvars, typval_T *rettv);
 static void f_spellbadword(typval_T *argvars, typval_T *rettv);
 static void f_spellsuggest(typval_T *argvars, typval_T *rettv);
@@ -405,8 +384,6 @@ static void f_trunc(typval_T *argvars, typval_T *rettv);
 static void f_type(typval_T *argvars, typval_T *rettv);
 static void f_undofile(typval_T *argvars, typval_T *rettv);
 static void f_undotree(typval_T *argvars, typval_T *rettv);
-static void f_uniq(typval_T *argvars, typval_T *rettv);
-static void f_values(typval_T *argvars, typval_T *rettv);
 static void f_virtcol(typval_T *argvars, typval_T *rettv);
 static void f_visualmode(typval_T *argvars, typval_T *rettv);
 static void f_wildmenumode(typval_T *argvars, typval_T *rettv);
@@ -435,580 +412,587 @@ static void f_xor(typval_T *argvars, typval_T *rettv);
  * Array with names and number of arguments of all internal functions
  * MUST BE KEPT SORTED IN strcmp() ORDER FOR BINARY SEARCH!
  */
-static struct fst
+typedef struct
 {
-    char	*f_name;	/* function name */
-    char	f_min_argc;	/* minimal number of arguments */
-    char	f_max_argc;	/* maximal number of arguments */
+    char	*f_name;	// function name
+    char	f_min_argc;	// minimal number of arguments
+    char	f_max_argc;	// maximal number of arguments
+    char	f_argtype;	// for method: FEARG_ values
     void	(*f_func)(typval_T *args, typval_T *rvar);
-				/* implementation of function */
-} functions[] =
+				// implementation of function
+} funcentry_T;
+
+// values for f_argtype; zero means it cannot be used as a method
+#define FEARG_1    1	    // base is the first argument
+#define FEARG_2    2	    // base is the second argument
+#define FEARG_LAST 9	    // base is the last argument
+
+static funcentry_T global_functions[] =
 {
 #ifdef FEAT_FLOAT
-    {"abs",		1, 1, f_abs},
-    {"acos",		1, 1, f_acos},	/* WJMc */
+    {"abs",		1, 1, 0,	  f_abs},
+    {"acos",		1, 1, 0,	  f_acos},	// WJMc
 #endif
-    {"add",		2, 2, f_add},
-    {"and",		2, 2, f_and},
-    {"append",		2, 2, f_append},
-    {"appendbufline",	3, 3, f_appendbufline},
-    {"argc",		0, 1, f_argc},
-    {"argidx",		0, 0, f_argidx},
-    {"arglistid",	0, 2, f_arglistid},
-    {"argv",		0, 2, f_argv},
+    {"add",		2, 2, FEARG_1,	  f_add},
+    {"and",		2, 2, 0,	  f_and},
+    {"append",		2, 2, FEARG_LAST, f_append},
+    {"appendbufline",	3, 3, FEARG_LAST, f_appendbufline},
+    {"argc",		0, 1, 0,	  f_argc},
+    {"argidx",		0, 0, 0,	  f_argidx},
+    {"arglistid",	0, 2, 0,	  f_arglistid},
+    {"argv",		0, 2, 0,	  f_argv},
 #ifdef FEAT_FLOAT
-    {"asin",		1, 1, f_asin},	/* WJMc */
+    {"asin",		1, 1, 0,	  f_asin},	// WJMc
 #endif
-    {"assert_beeps",	1, 2, f_assert_beeps},
-    {"assert_equal",	2, 3, f_assert_equal},
-    {"assert_equalfile", 2, 2, f_assert_equalfile},
-    {"assert_exception", 1, 2, f_assert_exception},
-    {"assert_fails",	1, 3, f_assert_fails},
-    {"assert_false",	1, 2, f_assert_false},
-    {"assert_inrange",	3, 4, f_assert_inrange},
-    {"assert_match",	2, 3, f_assert_match},
-    {"assert_notequal",	2, 3, f_assert_notequal},
-    {"assert_notmatch",	2, 3, f_assert_notmatch},
-    {"assert_report",	1, 1, f_assert_report},
-    {"assert_true",	1, 2, f_assert_true},
+    {"assert_beeps",	1, 2, 0,	  f_assert_beeps},
+    {"assert_equal",	2, 3, FEARG_2,	  f_assert_equal},
+    {"assert_equalfile", 2, 2, 0,	  f_assert_equalfile},
+    {"assert_exception", 1, 2, 0,	  f_assert_exception},
+    {"assert_fails",	1, 3, 0,	  f_assert_fails},
+    {"assert_false",	1, 2, 0,	  f_assert_false},
+    {"assert_inrange",	3, 4, 0,	  f_assert_inrange},
+    {"assert_match",	2, 3, 0,	  f_assert_match},
+    {"assert_notequal",	2, 3, FEARG_2,	  f_assert_notequal},
+    {"assert_notmatch",	2, 3, 0,	  f_assert_notmatch},
+    {"assert_report",	1, 1, 0,	  f_assert_report},
+    {"assert_true",	1, 2, 0,	  f_assert_true},
 #ifdef FEAT_FLOAT
-    {"atan",		1, 1, f_atan},
-    {"atan2",		2, 2, f_atan2},
+    {"atan",		1, 1, 0,	  f_atan},
+    {"atan2",		2, 2, 0,	  f_atan2},
 #endif
 #ifdef FEAT_BEVAL
-    {"balloon_gettext",	0, 0, f_balloon_gettext},
-    {"balloon_show",	1, 1, f_balloon_show},
+    {"balloon_gettext",	0, 0, 0,	  f_balloon_gettext},
+    {"balloon_show",	1, 1, 0,	  f_balloon_show},
 # if defined(FEAT_BEVAL_TERM)
-    {"balloon_split",	1, 1, f_balloon_split},
+    {"balloon_split",	1, 1, 0,	  f_balloon_split},
 # endif
 #endif
-    {"browse",		4, 4, f_browse},
-    {"browsedir",	2, 2, f_browsedir},
-    {"bufadd",		1, 1, f_bufadd},
-    {"bufexists",	1, 1, f_bufexists},
-    {"buffer_exists",	1, 1, f_bufexists},	/* obsolete */
-    {"buffer_name",	1, 1, f_bufname},	/* obsolete */
-    {"buffer_number",	1, 1, f_bufnr},		/* obsolete */
-    {"buflisted",	1, 1, f_buflisted},
-    {"bufload",		1, 1, f_bufload},
-    {"bufloaded",	1, 1, f_bufloaded},
-    {"bufname",		1, 1, f_bufname},
-    {"bufnr",		1, 2, f_bufnr},
-    {"bufwinid",	1, 1, f_bufwinid},
-    {"bufwinnr",	1, 1, f_bufwinnr},
-    {"byte2line",	1, 1, f_byte2line},
-    {"byteidx",		2, 2, f_byteidx},
-    {"byteidxcomp",	2, 2, f_byteidxcomp},
-    {"call",		2, 3, f_call},
+    {"browse",		4, 4, 0,	  f_browse},
+    {"browsedir",	2, 2, 0,	  f_browsedir},
+    {"bufadd",		1, 1, 0,	  f_bufadd},
+    {"bufexists",	1, 1, 0,	  f_bufexists},
+    {"buffer_exists",	1, 1, 0,	  f_bufexists},	// obsolete
+    {"buffer_name",	1, 1, 0,	  f_bufname},	// obsolete
+    {"buffer_number",	1, 1, 0,	  f_bufnr},	// obsolete
+    {"buflisted",	1, 1, 0,	  f_buflisted},
+    {"bufload",		1, 1, 0,	  f_bufload},
+    {"bufloaded",	1, 1, 0,	  f_bufloaded},
+    {"bufname",		1, 1, 0,	  f_bufname},
+    {"bufnr",		1, 2, 0,	  f_bufnr},
+    {"bufwinid",	1, 1, 0,	  f_bufwinid},
+    {"bufwinnr",	1, 1, 0,	  f_bufwinnr},
+    {"byte2line",	1, 1, 0,	  f_byte2line},
+    {"byteidx",		2, 2, 0,	  f_byteidx},
+    {"byteidxcomp",	2, 2, 0,	  f_byteidxcomp},
+    {"call",		2, 3, 0,	  f_call},
 #ifdef FEAT_FLOAT
-    {"ceil",		1, 1, f_ceil},
+    {"ceil",		1, 1, 0,	  f_ceil},
 #endif
 #ifdef FEAT_JOB_CHANNEL
-    {"ch_canread",	1, 1, f_ch_canread},
-    {"ch_close",	1, 1, f_ch_close},
-    {"ch_close_in",	1, 1, f_ch_close_in},
-    {"ch_evalexpr",	2, 3, f_ch_evalexpr},
-    {"ch_evalraw",	2, 3, f_ch_evalraw},
-    {"ch_getbufnr",	2, 2, f_ch_getbufnr},
-    {"ch_getjob",	1, 1, f_ch_getjob},
-    {"ch_info",		1, 1, f_ch_info},
-    {"ch_log",		1, 2, f_ch_log},
-    {"ch_logfile",	1, 2, f_ch_logfile},
-    {"ch_open",		1, 2, f_ch_open},
-    {"ch_read",		1, 2, f_ch_read},
-    {"ch_readblob",	1, 2, f_ch_readblob},
-    {"ch_readraw",	1, 2, f_ch_readraw},
-    {"ch_sendexpr",	2, 3, f_ch_sendexpr},
-    {"ch_sendraw",	2, 3, f_ch_sendraw},
-    {"ch_setoptions",	2, 2, f_ch_setoptions},
-    {"ch_status",	1, 2, f_ch_status},
+    {"ch_canread",	1, 1, 0,	  f_ch_canread},
+    {"ch_close",	1, 1, 0,	  f_ch_close},
+    {"ch_close_in",	1, 1, 0,	  f_ch_close_in},
+    {"ch_evalexpr",	2, 3, 0,	  f_ch_evalexpr},
+    {"ch_evalraw",	2, 3, 0,	  f_ch_evalraw},
+    {"ch_getbufnr",	2, 2, 0,	  f_ch_getbufnr},
+    {"ch_getjob",	1, 1, 0,	  f_ch_getjob},
+    {"ch_info",		1, 1, 0,	  f_ch_info},
+    {"ch_log",		1, 2, 0,	  f_ch_log},
+    {"ch_logfile",	1, 2, 0,	  f_ch_logfile},
+    {"ch_open",		1, 2, 0,	  f_ch_open},
+    {"ch_read",		1, 2, 0,	  f_ch_read},
+    {"ch_readblob",	1, 2, 0,	  f_ch_readblob},
+    {"ch_readraw",	1, 2, 0,	  f_ch_readraw},
+    {"ch_sendexpr",	2, 3, 0,	  f_ch_sendexpr},
+    {"ch_sendraw",	2, 3, 0,	  f_ch_sendraw},
+    {"ch_setoptions",	2, 2, 0,	  f_ch_setoptions},
+    {"ch_status",	1, 2, 0,	  f_ch_status},
 #endif
-    {"changenr",	0, 0, f_changenr},
-    {"char2nr",		1, 2, f_char2nr},
-    {"chdir",		1, 1, f_chdir},
-    {"cindent",		1, 1, f_cindent},
-    {"clearmatches",	0, 1, f_clearmatches},
-    {"col",		1, 1, f_col},
+    {"changenr",	0, 0, 0,	  f_changenr},
+    {"char2nr",		1, 2, 0,	  f_char2nr},
+    {"chdir",		1, 1, 0,	  f_chdir},
+    {"cindent",		1, 1, 0,	  f_cindent},
+    {"clearmatches",	0, 1, 0,	  f_clearmatches},
+    {"col",		1, 1, 0,	  f_col},
 #if defined(FEAT_INS_EXPAND)
-    {"complete",	2, 2, f_complete},
-    {"complete_add",	1, 1, f_complete_add},
-    {"complete_check",	0, 0, f_complete_check},
-    {"complete_info",	0, 1, f_complete_info},
+    {"complete",	2, 2, 0,	  f_complete},
+    {"complete_add",	1, 1, 0,	  f_complete_add},
+    {"complete_check",	0, 0, 0,	  f_complete_check},
+    {"complete_info",	0, 1, 0,	  f_complete_info},
 #endif
-    {"confirm",		1, 4, f_confirm},
-    {"copy",		1, 1, f_copy},
+    {"confirm",		1, 4, 0,	  f_confirm},
+    {"copy",		1, 1, FEARG_1,	  f_copy},
 #ifdef FEAT_FLOAT
-    {"cos",		1, 1, f_cos},
-    {"cosh",		1, 1, f_cosh},
+    {"cos",		1, 1, 0,	  f_cos},
+    {"cosh",		1, 1, 0,	  f_cosh},
 #endif
-    {"count",		2, 4, f_count},
-    {"cscope_connection",0,3, f_cscope_connection},
-    {"cursor",		1, 3, f_cursor},
+    {"count",		2, 4, FEARG_1,	  f_count},
+    {"cscope_connection",0,3, 0,	  f_cscope_connection},
+    {"cursor",		1, 3, 0,	  f_cursor},
 #ifdef MSWIN
-    {"debugbreak",	1, 1, f_debugbreak},
+    {"debugbreak",	1, 1, 0,	  f_debugbreak},
 #endif
-    {"deepcopy",	1, 2, f_deepcopy},
-    {"delete",		1, 2, f_delete},
-    {"deletebufline",	2, 3, f_deletebufline},
-    {"did_filetype",	0, 0, f_did_filetype},
-    {"diff_filler",	1, 1, f_diff_filler},
-    {"diff_hlID",	2, 2, f_diff_hlID},
-    {"empty",		1, 1, f_empty},
-    {"environ",		0, 0, f_environ},
-    {"escape",		2, 2, f_escape},
-    {"eval",		1, 1, f_eval},
-    {"eventhandler",	0, 0, f_eventhandler},
-    {"executable",	1, 1, f_executable},
-    {"execute",		1, 2, f_execute},
-    {"exepath",		1, 1, f_exepath},
-    {"exists",		1, 1, f_exists},
+    {"deepcopy",	1, 2, 0,	  f_deepcopy},
+    {"delete",		1, 2, 0,	  f_delete},
+    {"deletebufline",	2, 3, 0,	  f_deletebufline},
+    {"did_filetype",	0, 0, 0,	  f_did_filetype},
+    {"diff_filler",	1, 1, 0,	  f_diff_filler},
+    {"diff_hlID",	2, 2, 0,	  f_diff_hlID},
+    {"empty",		1, 1, FEARG_1,	  f_empty},
+    {"environ",		0, 0, 0,	  f_environ},
+    {"escape",		2, 2, 0,	  f_escape},
+    {"eval",		1, 1, FEARG_1,	  f_eval},
+    {"eventhandler",	0, 0, 0,	  f_eventhandler},
+    {"executable",	1, 1, 0,	  f_executable},
+    {"execute",		1, 2, 0,	  f_execute},
+    {"exepath",		1, 1, 0,	  f_exepath},
+    {"exists",		1, 1, 0,	  f_exists},
 #ifdef FEAT_FLOAT
-    {"exp",		1, 1, f_exp},
+    {"exp",		1, 1, 0,	  f_exp},
 #endif
-    {"expand",		1, 3, f_expand},
-    {"expandcmd",	1, 1, f_expandcmd},
-    {"extend",		2, 3, f_extend},
-    {"feedkeys",	1, 2, f_feedkeys},
-    {"file_readable",	1, 1, f_filereadable},	/* obsolete */
-    {"filereadable",	1, 1, f_filereadable},
-    {"filewritable",	1, 1, f_filewritable},
-    {"filter",		2, 2, f_filter},
-    {"finddir",		1, 3, f_finddir},
-    {"findfile",	1, 3, f_findfile},
+    {"expand",		1, 3, 0,	  f_expand},
+    {"expandcmd",	1, 1, 0,	  f_expandcmd},
+    {"extend",		2, 3, FEARG_1,	  f_extend},
+    {"feedkeys",	1, 2, 0,	  f_feedkeys},
+    {"file_readable",	1, 1, 0,	  f_filereadable},	// obsolete
+    {"filereadable",	1, 1, 0,	  f_filereadable},
+    {"filewritable",	1, 1, 0,	  f_filewritable},
+    {"filter",		2, 2, FEARG_1,	  f_filter},
+    {"finddir",		1, 3, 0,	  f_finddir},
+    {"findfile",	1, 3, 0,	  f_findfile},
 #ifdef FEAT_FLOAT
-    {"float2nr",	1, 1, f_float2nr},
-    {"floor",		1, 1, f_floor},
-    {"fmod",		2, 2, f_fmod},
+    {"float2nr",	1, 1, 0,	  f_float2nr},
+    {"floor",		1, 1, 0,	  f_floor},
+    {"fmod",		2, 2, 0,	  f_fmod},
 #endif
-    {"fnameescape",	1, 1, f_fnameescape},
-    {"fnamemodify",	2, 2, f_fnamemodify},
-    {"foldclosed",	1, 1, f_foldclosed},
-    {"foldclosedend",	1, 1, f_foldclosedend},
-    {"foldlevel",	1, 1, f_foldlevel},
-    {"foldtext",	0, 0, f_foldtext},
-    {"foldtextresult",	1, 1, f_foldtextresult},
-    {"foreground",	0, 0, f_foreground},
-    {"funcref",		1, 3, f_funcref},
-    {"function",	1, 3, f_function},
-    {"garbagecollect",	0, 1, f_garbagecollect},
-    {"get",		2, 3, f_get},
-    {"getbufinfo",	0, 1, f_getbufinfo},
-    {"getbufline",	2, 3, f_getbufline},
-    {"getbufvar",	2, 3, f_getbufvar},
-    {"getchangelist",	1, 1, f_getchangelist},
-    {"getchar",		0, 1, f_getchar},
-    {"getcharmod",	0, 0, f_getcharmod},
-    {"getcharsearch",	0, 0, f_getcharsearch},
-    {"getcmdline",	0, 0, f_getcmdline},
-    {"getcmdpos",	0, 0, f_getcmdpos},
-    {"getcmdtype",	0, 0, f_getcmdtype},
-    {"getcmdwintype",	0, 0, f_getcmdwintype},
+    {"fnameescape",	1, 1, 0,	  f_fnameescape},
+    {"fnamemodify",	2, 2, 0,	  f_fnamemodify},
+    {"foldclosed",	1, 1, 0,	  f_foldclosed},
+    {"foldclosedend",	1, 1, 0,	  f_foldclosedend},
+    {"foldlevel",	1, 1, 0,	  f_foldlevel},
+    {"foldtext",	0, 0, 0,	  f_foldtext},
+    {"foldtextresult",	1, 1, 0,	  f_foldtextresult},
+    {"foreground",	0, 0, 0,	  f_foreground},
+    {"funcref",		1, 3, 0,	  f_funcref},
+    {"function",	1, 3, 0,	  f_function},
+    {"garbagecollect",	0, 1, 0,	  f_garbagecollect},
+    {"get",		2, 3, FEARG_1,	  f_get},
+    {"getbufinfo",	0, 1, 0,	  f_getbufinfo},
+    {"getbufline",	2, 3, 0,	  f_getbufline},
+    {"getbufvar",	2, 3, 0,	  f_getbufvar},
+    {"getchangelist",	1, 1, 0,	  f_getchangelist},
+    {"getchar",		0, 1, 0,	  f_getchar},
+    {"getcharmod",	0, 0, 0,	  f_getcharmod},
+    {"getcharsearch",	0, 0, 0,	  f_getcharsearch},
+    {"getcmdline",	0, 0, 0,	  f_getcmdline},
+    {"getcmdpos",	0, 0, 0,	  f_getcmdpos},
+    {"getcmdtype",	0, 0, 0,	  f_getcmdtype},
+    {"getcmdwintype",	0, 0, 0,	  f_getcmdwintype},
 #if defined(FEAT_CMDL_COMPL)
-    {"getcompletion",	2, 3, f_getcompletion},
+    {"getcompletion",	2, 3, 0,	  f_getcompletion},
 #endif
-    {"getcurpos",	0, 0, f_getcurpos},
-    {"getcwd",		0, 2, f_getcwd},
-    {"getenv",		1, 1, f_getenv},
-    {"getfontname",	0, 1, f_getfontname},
-    {"getfperm",	1, 1, f_getfperm},
-    {"getfsize",	1, 1, f_getfsize},
-    {"getftime",	1, 1, f_getftime},
-    {"getftype",	1, 1, f_getftype},
-    {"getjumplist",	0, 2, f_getjumplist},
-    {"getline",		1, 2, f_getline},
-    {"getloclist",	1, 2, f_getloclist},
-    {"getmatches",	0, 1, f_getmatches},
-    {"getpid",		0, 0, f_getpid},
-    {"getpos",		1, 1, f_getpos},
-    {"getqflist",	0, 1, f_getqflist},
-    {"getreg",		0, 3, f_getreg},
-    {"getregtype",	0, 1, f_getregtype},
-    {"gettabinfo",	0, 1, f_gettabinfo},
-    {"gettabvar",	2, 3, f_gettabvar},
-    {"gettabwinvar",	3, 4, f_gettabwinvar},
-    {"gettagstack",	0, 1, f_gettagstack},
-    {"getwininfo",	0, 1, f_getwininfo},
-    {"getwinpos",	0, 1, f_getwinpos},
-    {"getwinposx",	0, 0, f_getwinposx},
-    {"getwinposy",	0, 0, f_getwinposy},
-    {"getwinvar",	2, 3, f_getwinvar},
-    {"glob",		1, 4, f_glob},
-    {"glob2regpat",	1, 1, f_glob2regpat},
-    {"globpath",	2, 5, f_globpath},
-    {"has",		1, 1, f_has},
-    {"has_key",		2, 2, f_has_key},
-    {"haslocaldir",	0, 2, f_haslocaldir},
-    {"hasmapto",	1, 3, f_hasmapto},
-    {"highlightID",	1, 1, f_hlID},		/* obsolete */
-    {"highlight_exists",1, 1, f_hlexists},	/* obsolete */
-    {"histadd",		2, 2, f_histadd},
-    {"histdel",		1, 2, f_histdel},
-    {"histget",		1, 2, f_histget},
-    {"histnr",		1, 1, f_histnr},
-    {"hlID",		1, 1, f_hlID},
-    {"hlexists",	1, 1, f_hlexists},
-    {"hostname",	0, 0, f_hostname},
-    {"iconv",		3, 3, f_iconv},
-    {"indent",		1, 1, f_indent},
-    {"index",		2, 4, f_index},
-    {"input",		1, 3, f_input},
-    {"inputdialog",	1, 3, f_inputdialog},
-    {"inputlist",	1, 1, f_inputlist},
-    {"inputrestore",	0, 0, f_inputrestore},
-    {"inputsave",	0, 0, f_inputsave},
-    {"inputsecret",	1, 2, f_inputsecret},
-    {"insert",		2, 3, f_insert},
-    {"invert",		1, 1, f_invert},
-    {"isdirectory",	1, 1, f_isdirectory},
+    {"getcurpos",	0, 0, 0,	  f_getcurpos},
+    {"getcwd",		0, 2, 0,	  f_getcwd},
+    {"getenv",		1, 1, 0,	  f_getenv},
+    {"getfontname",	0, 1, 0,	  f_getfontname},
+    {"getfperm",	1, 1, 0,	  f_getfperm},
+    {"getfsize",	1, 1, 0,	  f_getfsize},
+    {"getftime",	1, 1, 0,	  f_getftime},
+    {"getftype",	1, 1, 0,	  f_getftype},
+    {"getjumplist",	0, 2, 0,	  f_getjumplist},
+    {"getline",		1, 2, 0,	  f_getline},
+    {"getloclist",	1, 2, 0,	  f_getloclist},
+    {"getmatches",	0, 1, 0,	  f_getmatches},
+    {"getpid",		0, 0, 0,	  f_getpid},
+    {"getpos",		1, 1, 0,	  f_getpos},
+    {"getqflist",	0, 1, 0,	  f_getqflist},
+    {"getreg",		0, 3, 0,	  f_getreg},
+    {"getregtype",	0, 1, 0,	  f_getregtype},
+    {"gettabinfo",	0, 1, 0,	  f_gettabinfo},
+    {"gettabvar",	2, 3, 0,	  f_gettabvar},
+    {"gettabwinvar",	3, 4, 0,	  f_gettabwinvar},
+    {"gettagstack",	0, 1, 0,	  f_gettagstack},
+    {"getwininfo",	0, 1, 0,	  f_getwininfo},
+    {"getwinpos",	0, 1, 0,	  f_getwinpos},
+    {"getwinposx",	0, 0, 0,	  f_getwinposx},
+    {"getwinposy",	0, 0, 0,	  f_getwinposy},
+    {"getwinvar",	2, 3, 0,	  f_getwinvar},
+    {"glob",		1, 4, 0,	  f_glob},
+    {"glob2regpat",	1, 1, 0,	  f_glob2regpat},
+    {"globpath",	2, 5, 0,	  f_globpath},
+    {"has",		1, 1, 0,	  f_has},
+    {"has_key",		2, 2, FEARG_1,	  f_has_key},
+    {"haslocaldir",	0, 2, 0,	  f_haslocaldir},
+    {"hasmapto",	1, 3, 0,	  f_hasmapto},
+    {"highlightID",	1, 1, 0,	  f_hlID},	// obsolete
+    {"highlight_exists",1, 1, 0,	  f_hlexists},	// obsolete
+    {"histadd",		2, 2, 0,	  f_histadd},
+    {"histdel",		1, 2, 0,	  f_histdel},
+    {"histget",		1, 2, 0,	  f_histget},
+    {"histnr",		1, 1, 0,	  f_histnr},
+    {"hlID",		1, 1, 0,	  f_hlID},
+    {"hlexists",	1, 1, 0,	  f_hlexists},
+    {"hostname",	0, 0, 0,	  f_hostname},
+    {"iconv",		3, 3, 0,	  f_iconv},
+    {"indent",		1, 1, 0,	  f_indent},
+    {"index",		2, 4, FEARG_1,	  f_index},
+    {"input",		1, 3, 0,	  f_input},
+    {"inputdialog",	1, 3, 0,	  f_inputdialog},
+    {"inputlist",	1, 1, 0,	  f_inputlist},
+    {"inputrestore",	0, 0, 0,	  f_inputrestore},
+    {"inputsave",	0, 0, 0,	  f_inputsave},
+    {"inputsecret",	1, 2, 0,	  f_inputsecret},
+    {"insert",		2, 3, FEARG_1,	  f_insert},
+    {"invert",		1, 1, 0,	  f_invert},
+    {"isdirectory",	1, 1, 0,	  f_isdirectory},
 #if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
-    {"isinf",		1, 1, f_isinf},
+    {"isinf",		1, 1, 0,	  f_isinf},
 #endif
-    {"islocked",	1, 1, f_islocked},
+    {"islocked",	1, 1, 0,	  f_islocked},
 #if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
-    {"isnan",		1, 1, f_isnan},
+    {"isnan",		1, 1, 0,	  f_isnan},
 #endif
-    {"items",		1, 1, f_items},
+    {"items",		1, 1, FEARG_1,	  f_items},
 #ifdef FEAT_JOB_CHANNEL
-    {"job_getchannel",	1, 1, f_job_getchannel},
-    {"job_info",	0, 1, f_job_info},
-    {"job_setoptions",	2, 2, f_job_setoptions},
-    {"job_start",	1, 2, f_job_start},
-    {"job_status",	1, 1, f_job_status},
-    {"job_stop",	1, 2, f_job_stop},
+    {"job_getchannel",	1, 1, 0,	  f_job_getchannel},
+    {"job_info",	0, 1, 0,	  f_job_info},
+    {"job_setoptions",	2, 2, 0,	  f_job_setoptions},
+    {"job_start",	1, 2, 0,	  f_job_start},
+    {"job_status",	1, 1, 0,	  f_job_status},
+    {"job_stop",	1, 2, 0,	  f_job_stop},
 #endif
-    {"join",		1, 2, f_join},
-    {"js_decode",	1, 1, f_js_decode},
-    {"js_encode",	1, 1, f_js_encode},
-    {"json_decode",	1, 1, f_json_decode},
-    {"json_encode",	1, 1, f_json_encode},
-    {"keys",		1, 1, f_keys},
-    {"last_buffer_nr",	0, 0, f_last_buffer_nr},/* obsolete */
-    {"len",		1, 1, f_len},
-    {"libcall",		3, 3, f_libcall},
-    {"libcallnr",	3, 3, f_libcallnr},
-    {"line",		1, 1, f_line},
-    {"line2byte",	1, 1, f_line2byte},
-    {"lispindent",	1, 1, f_lispindent},
-    {"list2str",	1, 2, f_list2str},
-    {"listener_add",	1, 2, f_listener_add},
-    {"listener_flush",	0, 1, f_listener_flush},
-    {"listener_remove",	1, 1, f_listener_remove},
-    {"localtime",	0, 0, f_localtime},
+    {"join",		1, 2, FEARG_1,	  f_join},
+    {"js_decode",	1, 1, 0,	  f_js_decode},
+    {"js_encode",	1, 1, 0,	  f_js_encode},
+    {"json_decode",	1, 1, 0,	  f_json_decode},
+    {"json_encode",	1, 1, 0,	  f_json_encode},
+    {"keys",		1, 1, FEARG_1,	  f_keys},
+    {"last_buffer_nr",	0, 0, 0,	  f_last_buffer_nr}, // obsolete
+    {"len",		1, 1, FEARG_1,	  f_len},
+    {"libcall",		3, 3, 0,	  f_libcall},
+    {"libcallnr",	3, 3, 0,	  f_libcallnr},
+    {"line",		1, 1, 0,	  f_line},
+    {"line2byte",	1, 1, 0,	  f_line2byte},
+    {"lispindent",	1, 1, 0,	  f_lispindent},
+    {"list2str",	1, 2, 0,	  f_list2str},
+    {"listener_add",	1, 2, 0,	  f_listener_add},
+    {"listener_flush",	0, 1, 0,	  f_listener_flush},
+    {"listener_remove",	1, 1, 0,	  f_listener_remove},
+    {"localtime",	0, 0, 0,	  f_localtime},
 #ifdef FEAT_FLOAT
-    {"log",		1, 1, f_log},
-    {"log10",		1, 1, f_log10},
+    {"log",		1, 1, 0,	  f_log},
+    {"log10",		1, 1, 0,	  f_log10},
 #endif
 #ifdef FEAT_LUA
-    {"luaeval",		1, 2, f_luaeval},
+    {"luaeval",		1, 2, 0,	  f_luaeval},
 #endif
-    {"map",		2, 2, f_map},
-    {"maparg",		1, 4, f_maparg},
-    {"mapcheck",	1, 3, f_mapcheck},
-    {"match",		2, 4, f_match},
-    {"matchadd",	2, 5, f_matchadd},
-    {"matchaddpos",	2, 5, f_matchaddpos},
-    {"matcharg",	1, 1, f_matcharg},
-    {"matchdelete",	1, 2, f_matchdelete},
-    {"matchend",	2, 4, f_matchend},
-    {"matchlist",	2, 4, f_matchlist},
-    {"matchstr",	2, 4, f_matchstr},
-    {"matchstrpos",	2, 4, f_matchstrpos},
-    {"max",		1, 1, f_max},
-    {"min",		1, 1, f_min},
-#ifdef vim_mkdir
-    {"mkdir",		1, 3, f_mkdir},
-#endif
-    {"mode",		0, 1, f_mode},
+    {"map",		2, 2, FEARG_1,	  f_map},
+    {"maparg",		1, 4, 0,	  f_maparg},
+    {"mapcheck",	1, 3, 0,	  f_mapcheck},
+    {"match",		2, 4, 0,	  f_match},
+    {"matchadd",	2, 5, 0,	  f_matchadd},
+    {"matchaddpos",	2, 5, 0,	  f_matchaddpos},
+    {"matcharg",	1, 1, 0,	  f_matcharg},
+    {"matchdelete",	1, 2, 0,	  f_matchdelete},
+    {"matchend",	2, 4, 0,	  f_matchend},
+    {"matchlist",	2, 4, 0,	  f_matchlist},
+    {"matchstr",	2, 4, 0,	  f_matchstr},
+    {"matchstrpos",	2, 4, 0,	  f_matchstrpos},
+    {"max",		1, 1, FEARG_1,	  f_max},
+    {"min",		1, 1, FEARG_1,	  f_min},
+    {"mkdir",		1, 3, 0,	  f_mkdir},
+    {"mode",		0, 1, 0,	  f_mode},
 #ifdef FEAT_MZSCHEME
-    {"mzeval",		1, 1, f_mzeval},
+    {"mzeval",		1, 1, 0,	  f_mzeval},
 #endif
-    {"nextnonblank",	1, 1, f_nextnonblank},
-    {"nr2char",		1, 2, f_nr2char},
-    {"or",		2, 2, f_or},
-    {"pathshorten",	1, 1, f_pathshorten},
+    {"nextnonblank",	1, 1, 0,	  f_nextnonblank},
+    {"nr2char",		1, 2, 0,	  f_nr2char},
+    {"or",		2, 2, 0,	  f_or},
+    {"pathshorten",	1, 1, 0,	  f_pathshorten},
 #ifdef FEAT_PERL
-    {"perleval",	1, 1, f_perleval},
+    {"perleval",	1, 1, 0,	  f_perleval},
 #endif
 #ifdef FEAT_TEXT_PROP
-    {"popup_atcursor",	2, 2, f_popup_atcursor},
-    {"popup_beval",	2, 2, f_popup_beval},
-    {"popup_clear",	0, 0, f_popup_clear},
-    {"popup_close",	1, 2, f_popup_close},
-    {"popup_create",	2, 2, f_popup_create},
-    {"popup_dialog",	2, 2, f_popup_dialog},
-    {"popup_filter_menu", 2, 2, f_popup_filter_menu},
-    {"popup_filter_yesno", 2, 2, f_popup_filter_yesno},
-    {"popup_getoptions", 1, 1, f_popup_getoptions},
-    {"popup_getpos",	1, 1, f_popup_getpos},
-    {"popup_hide",	1, 1, f_popup_hide},
-    {"popup_locate",	2, 2, f_popup_locate},
-    {"popup_menu",	2, 2, f_popup_menu},
-    {"popup_move",	2, 2, f_popup_move},
-    {"popup_notification", 2, 2, f_popup_notification},
-    {"popup_setoptions", 2, 2, f_popup_setoptions},
-    {"popup_settext",	2, 2, f_popup_settext},
-    {"popup_show",	1, 1, f_popup_show},
+    {"popup_atcursor",	2, 2, 0,	  f_popup_atcursor},
+    {"popup_beval",	2, 2, 0,	  f_popup_beval},
+    {"popup_clear",	0, 0, 0,	  f_popup_clear},
+    {"popup_close",	1, 2, 0,	  f_popup_close},
+    {"popup_create",	2, 2, 0,	  f_popup_create},
+    {"popup_dialog",	2, 2, 0,	  f_popup_dialog},
+    {"popup_filter_menu", 2, 2, 0,	  f_popup_filter_menu},
+    {"popup_filter_yesno", 2, 2, 0,	  f_popup_filter_yesno},
+    {"popup_getoptions", 1, 1, 0,	  f_popup_getoptions},
+    {"popup_getpos",	1, 1, 0,	  f_popup_getpos},
+    {"popup_getpreview", 0, 0, 0,	  f_popup_getpreview},
+    {"popup_hide",	1, 1, 0,	  f_popup_hide},
+    {"popup_locate",	2, 2, 0,	  f_popup_locate},
+    {"popup_menu",	2, 2, 0,	  f_popup_menu},
+    {"popup_move",	2, 2, 0,	  f_popup_move},
+    {"popup_notification", 2, 2, 0,	  f_popup_notification},
+    {"popup_setoptions", 2, 2, 0,	  f_popup_setoptions},
+    {"popup_settext",	2, 2, 0,	  f_popup_settext},
+    {"popup_show",	1, 1, 0,	  f_popup_show},
 #endif
 #ifdef FEAT_FLOAT
-    {"pow",		2, 2, f_pow},
+    {"pow",		2, 2, 0,	  f_pow},
 #endif
-    {"prevnonblank",	1, 1, f_prevnonblank},
-    {"printf",		1, 19, f_printf},
+    {"prevnonblank",	1, 1, 0,	  f_prevnonblank},
+    {"printf",		1, 19, 0,	  f_printf},
 #ifdef FEAT_JOB_CHANNEL
-    {"prompt_setcallback", 2, 2, f_prompt_setcallback},
-    {"prompt_setinterrupt", 2, 2, f_prompt_setinterrupt},
-    {"prompt_setprompt", 2, 2, f_prompt_setprompt},
+    {"prompt_setcallback", 2, 2, 0,	  f_prompt_setcallback},
+    {"prompt_setinterrupt", 2, 2, 0,	  f_prompt_setinterrupt},
+    {"prompt_setprompt", 2, 2, 0,	  f_prompt_setprompt},
 #endif
 #ifdef FEAT_TEXT_PROP
-    {"prop_add",	3, 3, f_prop_add},
-    {"prop_clear",	1, 3, f_prop_clear},
-    {"prop_list",	1, 2, f_prop_list},
-    {"prop_remove",	1, 3, f_prop_remove},
-    {"prop_type_add",	2, 2, f_prop_type_add},
-    {"prop_type_change", 2, 2, f_prop_type_change},
-    {"prop_type_delete", 1, 2, f_prop_type_delete},
-    {"prop_type_get",	1, 2, f_prop_type_get},
-    {"prop_type_list",	0, 1, f_prop_type_list},
+    {"prop_add",	3, 3, 0,	  f_prop_add},
+    {"prop_clear",	1, 3, 0,	  f_prop_clear},
+    {"prop_list",	1, 2, 0,	  f_prop_list},
+    {"prop_remove",	1, 3, 0,	  f_prop_remove},
+    {"prop_type_add",	2, 2, 0,	  f_prop_type_add},
+    {"prop_type_change", 2, 2, 0,	  f_prop_type_change},
+    {"prop_type_delete", 1, 2, 0,	  f_prop_type_delete},
+    {"prop_type_get",	1, 2, 0,	  f_prop_type_get},
+    {"prop_type_list",	0, 1, 0,	  f_prop_type_list},
 #endif
-    {"pumvisible",	0, 0, f_pumvisible},
+    {"pumvisible",	0, 0, 0,	  f_pumvisible},
 #ifdef FEAT_PYTHON3
-    {"py3eval",		1, 1, f_py3eval},
+    {"py3eval",		1, 1, 0,	  f_py3eval},
 #endif
 #ifdef FEAT_PYTHON
-    {"pyeval",		1, 1, f_pyeval},
+    {"pyeval",		1, 1, 0,	  f_pyeval},
 #endif
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
-    {"pyxeval",		1, 1, f_pyxeval},
+    {"pyxeval",		1, 1, 0,	  f_pyxeval},
 #endif
-    {"range",		1, 3, f_range},
-    {"readdir",		1, 2, f_readdir},
-    {"readfile",	1, 3, f_readfile},
-    {"reg_executing",	0, 0, f_reg_executing},
-    {"reg_recording",	0, 0, f_reg_recording},
-    {"reltime",		0, 2, f_reltime},
+    {"range",		1, 3, 0,	  f_range},
+    {"readdir",		1, 2, 0,	  f_readdir},
+    {"readfile",	1, 3, 0,	  f_readfile},
+    {"reg_executing",	0, 0, 0,	  f_reg_executing},
+    {"reg_recording",	0, 0, 0,	  f_reg_recording},
+    {"reltime",		0, 2, 0,	  f_reltime},
 #ifdef FEAT_FLOAT
-    {"reltimefloat",	1, 1, f_reltimefloat},
+    {"reltimefloat",	1, 1, 0,	  f_reltimefloat},
 #endif
-    {"reltimestr",	1, 1, f_reltimestr},
-    {"remote_expr",	2, 4, f_remote_expr},
-    {"remote_foreground", 1, 1, f_remote_foreground},
-    {"remote_peek",	1, 2, f_remote_peek},
-    {"remote_read",	1, 2, f_remote_read},
-    {"remote_send",	2, 3, f_remote_send},
-    {"remote_startserver", 1, 1, f_remote_startserver},
-    {"remove",		2, 3, f_remove},
-    {"rename",		2, 2, f_rename},
-    {"repeat",		2, 2, f_repeat},
-    {"resolve",		1, 1, f_resolve},
-    {"reverse",		1, 1, f_reverse},
+    {"reltimestr",	1, 1, 0,	  f_reltimestr},
+    {"remote_expr",	2, 4, 0,	  f_remote_expr},
+    {"remote_foreground", 1, 1, 0,	  f_remote_foreground},
+    {"remote_peek",	1, 2, 0,	  f_remote_peek},
+    {"remote_read",	1, 2, 0,	  f_remote_read},
+    {"remote_send",	2, 3, 0,	  f_remote_send},
+    {"remote_startserver", 1, 1, 0,	  f_remote_startserver},
+    {"remove",		2, 3, FEARG_1,	  f_remove},
+    {"rename",		2, 2, 0,	  f_rename},
+    {"repeat",		2, 2, FEARG_1,	  f_repeat},
+    {"resolve",		1, 1, 0,	  f_resolve},
+    {"reverse",		1, 1, FEARG_1,	  f_reverse},
 #ifdef FEAT_FLOAT
-    {"round",		1, 1, f_round},
+    {"round",		1, 1, 0,	  f_round},
 #endif
 #ifdef FEAT_RUBY
-    {"rubyeval",	1, 1, f_rubyeval},
+    {"rubyeval",	1, 1, 0,	  f_rubyeval},
 #endif
-    {"screenattr",	2, 2, f_screenattr},
-    {"screenchar",	2, 2, f_screenchar},
-    {"screenchars",	2, 2, f_screenchars},
-    {"screencol",	0, 0, f_screencol},
-    {"screenpos",	3, 3, f_screenpos},
-    {"screenrow",	0, 0, f_screenrow},
-    {"screenstring",	2, 2, f_screenstring},
-    {"search",		1, 4, f_search},
-    {"searchdecl",	1, 3, f_searchdecl},
-    {"searchpair",	3, 7, f_searchpair},
-    {"searchpairpos",	3, 7, f_searchpairpos},
-    {"searchpos",	1, 4, f_searchpos},
-    {"server2client",	2, 2, f_server2client},
-    {"serverlist",	0, 0, f_serverlist},
-    {"setbufline",	3, 3, f_setbufline},
-    {"setbufvar",	3, 3, f_setbufvar},
-    {"setcharsearch",	1, 1, f_setcharsearch},
-    {"setcmdpos",	1, 1, f_setcmdpos},
-    {"setenv",		2, 2, f_setenv},
-    {"setfperm",	2, 2, f_setfperm},
-    {"setline",		2, 2, f_setline},
-    {"setloclist",	2, 4, f_setloclist},
-    {"setmatches",	1, 2, f_setmatches},
-    {"setpos",		2, 2, f_setpos},
-    {"setqflist",	1, 3, f_setqflist},
-    {"setreg",		2, 3, f_setreg},
-    {"settabvar",	3, 3, f_settabvar},
-    {"settabwinvar",	4, 4, f_settabwinvar},
-    {"settagstack",	2, 3, f_settagstack},
-    {"setwinvar",	3, 3, f_setwinvar},
+    {"screenattr",	2, 2, 0,	  f_screenattr},
+    {"screenchar",	2, 2, 0,	  f_screenchar},
+    {"screenchars",	2, 2, 0,	  f_screenchars},
+    {"screencol",	0, 0, 0,	  f_screencol},
+    {"screenpos",	3, 3, 0,	  f_screenpos},
+    {"screenrow",	0, 0, 0,	  f_screenrow},
+    {"screenstring",	2, 2, 0,	  f_screenstring},
+    {"search",		1, 4, 0,	  f_search},
+    {"searchdecl",	1, 3, 0,	  f_searchdecl},
+    {"searchpair",	3, 7, 0,	  f_searchpair},
+    {"searchpairpos",	3, 7, 0,	  f_searchpairpos},
+    {"searchpos",	1, 4, 0,	  f_searchpos},
+    {"server2client",	2, 2, 0,	  f_server2client},
+    {"serverlist",	0, 0, 0,	  f_serverlist},
+    {"setbufline",	3, 3, 0,	  f_setbufline},
+    {"setbufvar",	3, 3, 0,	  f_setbufvar},
+    {"setcharsearch",	1, 1, 0,	  f_setcharsearch},
+    {"setcmdpos",	1, 1, 0,	  f_setcmdpos},
+    {"setenv",		2, 2, 0,	  f_setenv},
+    {"setfperm",	2, 2, 0,	  f_setfperm},
+    {"setline",		2, 2, 0,	  f_setline},
+    {"setloclist",	2, 4, 0,	  f_setloclist},
+    {"setmatches",	1, 2, 0,	  f_setmatches},
+    {"setpos",		2, 2, 0,	  f_setpos},
+    {"setqflist",	1, 3, 0,	  f_setqflist},
+    {"setreg",		2, 3, 0,	  f_setreg},
+    {"settabvar",	3, 3, 0,	  f_settabvar},
+    {"settabwinvar",	4, 4, 0,	  f_settabwinvar},
+    {"settagstack",	2, 3, 0,	  f_settagstack},
+    {"setwinvar",	3, 3, 0,	  f_setwinvar},
 #ifdef FEAT_CRYPT
-    {"sha256",		1, 1, f_sha256},
+    {"sha256",		1, 1, 0,	  f_sha256},
 #endif
-    {"shellescape",	1, 2, f_shellescape},
-    {"shiftwidth",	0, 1, f_shiftwidth},
+    {"shellescape",	1, 2, 0,	  f_shellescape},
+    {"shiftwidth",	0, 1, 0,	  f_shiftwidth},
 #ifdef FEAT_SIGNS
-    {"sign_define",	1, 2, f_sign_define},
-    {"sign_getdefined",	0, 1, f_sign_getdefined},
-    {"sign_getplaced",	0, 2, f_sign_getplaced},
-    {"sign_jump",	3, 3, f_sign_jump},
-    {"sign_place",	4, 5, f_sign_place},
-    {"sign_placelist",	1, 1, f_sign_placelist},
-    {"sign_undefine",	0, 1, f_sign_undefine},
-    {"sign_unplace",	1, 2, f_sign_unplace},
-    {"sign_unplacelist",	1, 2, f_sign_unplacelist},
+    {"sign_define",	1, 2, 0,	  f_sign_define},
+    {"sign_getdefined",	0, 1, 0,	  f_sign_getdefined},
+    {"sign_getplaced",	0, 2, 0,	  f_sign_getplaced},
+    {"sign_jump",	3, 3, 0,	  f_sign_jump},
+    {"sign_place",	4, 5, 0,	  f_sign_place},
+    {"sign_placelist",	1, 1, 0,	  f_sign_placelist},
+    {"sign_undefine",	0, 1, 0,	  f_sign_undefine},
+    {"sign_unplace",	1, 2, 0,	  f_sign_unplace},
+    {"sign_unplacelist",	1, 2, 0,	  f_sign_unplacelist},
 #endif
-    {"simplify",	1, 1, f_simplify},
+    {"simplify",	1, 1, 0,	  f_simplify},
 #ifdef FEAT_FLOAT
-    {"sin",		1, 1, f_sin},
-    {"sinh",		1, 1, f_sinh},
+    {"sin",		1, 1, 0,	  f_sin},
+    {"sinh",		1, 1, 0,	  f_sinh},
 #endif
-    {"sort",		1, 3, f_sort},
+    {"sort",		1, 3, FEARG_1,	  f_sort},
 #ifdef FEAT_SOUND
-    {"sound_clear",	0, 0, f_sound_clear},
-    {"sound_playevent",	1, 2, f_sound_playevent},
-    {"sound_playfile",	1, 2, f_sound_playfile},
-    {"sound_stop",	1, 1, f_sound_stop},
+    {"sound_clear",	0, 0, 0,	  f_sound_clear},
+    {"sound_playevent",	1, 2, 0,	  f_sound_playevent},
+    {"sound_playfile",	1, 2, 0,	  f_sound_playfile},
+    {"sound_stop",	1, 1, 0,	  f_sound_stop},
 #endif
-    {"soundfold",	1, 1, f_soundfold},
-    {"spellbadword",	0, 1, f_spellbadword},
-    {"spellsuggest",	1, 3, f_spellsuggest},
-    {"split",		1, 3, f_split},
+    {"soundfold",	1, 1, 0,	  f_soundfold},
+    {"spellbadword",	0, 1, 0,	  f_spellbadword},
+    {"spellsuggest",	1, 3, 0,	  f_spellsuggest},
+    {"split",		1, 3, FEARG_1,	  f_split},
 #ifdef FEAT_FLOAT
-    {"sqrt",		1, 1, f_sqrt},
-    {"str2float",	1, 1, f_str2float},
+    {"sqrt",		1, 1, 0,	  f_sqrt},
+    {"str2float",	1, 1, 0,	  f_str2float},
 #endif
-    {"str2list",	1, 2, f_str2list},
-    {"str2nr",		1, 2, f_str2nr},
-    {"strcharpart",	2, 3, f_strcharpart},
-    {"strchars",	1, 2, f_strchars},
-    {"strdisplaywidth",	1, 2, f_strdisplaywidth},
+    {"str2list",	1, 2, FEARG_1,	  f_str2list},
+    {"str2nr",		1, 2, 0,	  f_str2nr},
+    {"strcharpart",	2, 3, 0,	  f_strcharpart},
+    {"strchars",	1, 2, 0,	  f_strchars},
+    {"strdisplaywidth",	1, 2, 0,	  f_strdisplaywidth},
 #ifdef HAVE_STRFTIME
-    {"strftime",	1, 2, f_strftime},
+    {"strftime",	1, 2, 0,	  f_strftime},
 #endif
-    {"strgetchar",	2, 2, f_strgetchar},
-    {"stridx",		2, 3, f_stridx},
-    {"string",		1, 1, f_string},
-    {"strlen",		1, 1, f_strlen},
-    {"strpart",		2, 3, f_strpart},
-    {"strridx",		2, 3, f_strridx},
-    {"strtrans",	1, 1, f_strtrans},
-    {"strwidth",	1, 1, f_strwidth},
-    {"submatch",	1, 2, f_submatch},
-    {"substitute",	4, 4, f_substitute},
-    {"swapinfo",	1, 1, f_swapinfo},
-    {"swapname",	1, 1, f_swapname},
-    {"synID",		3, 3, f_synID},
-    {"synIDattr",	2, 3, f_synIDattr},
-    {"synIDtrans",	1, 1, f_synIDtrans},
-    {"synconcealed",	2, 2, f_synconcealed},
-    {"synstack",	2, 2, f_synstack},
-    {"system",		1, 2, f_system},
-    {"systemlist",	1, 2, f_systemlist},
-    {"tabpagebuflist",	0, 1, f_tabpagebuflist},
-    {"tabpagenr",	0, 1, f_tabpagenr},
-    {"tabpagewinnr",	1, 2, f_tabpagewinnr},
-    {"tagfiles",	0, 0, f_tagfiles},
-    {"taglist",		1, 2, f_taglist},
+    {"strgetchar",	2, 2, 0,	  f_strgetchar},
+    {"stridx",		2, 3, 0,	  f_stridx},
+    {"string",		1, 1, FEARG_1,	  f_string},
+    {"strlen",		1, 1, FEARG_1,	  f_strlen},
+    {"strpart",		2, 3, 0,	  f_strpart},
+    {"strridx",		2, 3, 0,	  f_strridx},
+    {"strtrans",	1, 1, FEARG_1,	  f_strtrans},
+    {"strwidth",	1, 1, FEARG_1,	  f_strwidth},
+    {"submatch",	1, 2, 0,	  f_submatch},
+    {"substitute",	4, 4, FEARG_1,	  f_substitute},
+    {"swapinfo",	1, 1, 0,	  f_swapinfo},
+    {"swapname",	1, 1, 0,	  f_swapname},
+    {"synID",		3, 3, 0,	  f_synID},
+    {"synIDattr",	2, 3, FEARG_1,	  f_synIDattr},
+    {"synIDtrans",	1, 1, FEARG_1,	  f_synIDtrans},
+    {"synconcealed",	2, 2, 0,	  f_synconcealed},
+    {"synstack",	2, 2, 0,	  f_synstack},
+    {"system",		1, 2, FEARG_1,	  f_system},
+    {"systemlist",	1, 2, FEARG_1,	  f_systemlist},
+    {"tabpagebuflist",	0, 1, 0,	  f_tabpagebuflist},
+    {"tabpagenr",	0, 1, 0,	  f_tabpagenr},
+    {"tabpagewinnr",	1, 2, 0,	  f_tabpagewinnr},
+    {"tagfiles",	0, 0, 0,	  f_tagfiles},
+    {"taglist",		1, 2, 0,	  f_taglist},
 #ifdef FEAT_FLOAT
-    {"tan",		1, 1, f_tan},
-    {"tanh",		1, 1, f_tanh},
+    {"tan",		1, 1, 0,	  f_tan},
+    {"tanh",		1, 1, 0,	  f_tanh},
 #endif
-    {"tempname",	0, 0, f_tempname},
+    {"tempname",	0, 0, 0,	  f_tempname},
 #ifdef FEAT_TERMINAL
-    {"term_dumpdiff",	2, 3, f_term_dumpdiff},
-    {"term_dumpload",	1, 2, f_term_dumpload},
-    {"term_dumpwrite",	2, 3, f_term_dumpwrite},
-    {"term_getaltscreen", 1, 1, f_term_getaltscreen},
+    {"term_dumpdiff",	2, 3, 0,	  f_term_dumpdiff},
+    {"term_dumpload",	1, 2, 0,	  f_term_dumpload},
+    {"term_dumpwrite",	2, 3, 0,	  f_term_dumpwrite},
+    {"term_getaltscreen", 1, 1, 0,	  f_term_getaltscreen},
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-    {"term_getansicolors", 1, 1, f_term_getansicolors},
+    {"term_getansicolors", 1, 1, 0,	  f_term_getansicolors},
 # endif
-    {"term_getattr",	2, 2, f_term_getattr},
-    {"term_getcursor",	1, 1, f_term_getcursor},
-    {"term_getjob",	1, 1, f_term_getjob},
-    {"term_getline",	2, 2, f_term_getline},
-    {"term_getscrolled", 1, 1, f_term_getscrolled},
-    {"term_getsize",	1, 1, f_term_getsize},
-    {"term_getstatus",	1, 1, f_term_getstatus},
-    {"term_gettitle",	1, 1, f_term_gettitle},
-    {"term_gettty",	1, 2, f_term_gettty},
-    {"term_list",	0, 0, f_term_list},
-    {"term_scrape",	2, 2, f_term_scrape},
-    {"term_sendkeys",	2, 2, f_term_sendkeys},
+    {"term_getattr",	2, 2, 0,	  f_term_getattr},
+    {"term_getcursor",	1, 1, 0,	  f_term_getcursor},
+    {"term_getjob",	1, 1, 0,	  f_term_getjob},
+    {"term_getline",	2, 2, 0,	  f_term_getline},
+    {"term_getscrolled", 1, 1, 0,	  f_term_getscrolled},
+    {"term_getsize",	1, 1, 0,	  f_term_getsize},
+    {"term_getstatus",	1, 1, 0,	  f_term_getstatus},
+    {"term_gettitle",	1, 1, 0,	  f_term_gettitle},
+    {"term_gettty",	1, 2, 0,	  f_term_gettty},
+    {"term_list",	0, 0, 0,	  f_term_list},
+    {"term_scrape",	2, 2, 0,	  f_term_scrape},
+    {"term_sendkeys",	2, 2, 0,	  f_term_sendkeys},
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-    {"term_setansicolors", 2, 2, f_term_setansicolors},
+    {"term_setansicolors", 2, 2, 0,	  f_term_setansicolors},
 # endif
-    {"term_setkill",	2, 2, f_term_setkill},
-    {"term_setrestore",	2, 2, f_term_setrestore},
-    {"term_setsize",	3, 3, f_term_setsize},
-    {"term_start",	1, 2, f_term_start},
-    {"term_wait",	1, 2, f_term_wait},
+    {"term_setkill",	2, 2, 0,	  f_term_setkill},
+    {"term_setrestore",	2, 2, 0,	  f_term_setrestore},
+    {"term_setsize",	3, 3, 0,	  f_term_setsize},
+    {"term_start",	1, 2, 0,	  f_term_start},
+    {"term_wait",	1, 2, 0,	  f_term_wait},
 #endif
-    {"test_alloc_fail",	3, 3, f_test_alloc_fail},
-    {"test_autochdir",	0, 0, f_test_autochdir},
-    {"test_feedinput",	1, 1, f_test_feedinput},
-    {"test_garbagecollect_now",	0, 0, f_test_garbagecollect_now},
-    {"test_garbagecollect_soon",	0, 0, f_test_garbagecollect_soon},
-    {"test_getvalue",	1, 1, f_test_getvalue},
-    {"test_ignore_error",	1, 1, f_test_ignore_error},
-    {"test_null_blob",	0, 0, f_test_null_blob},
+    {"test_alloc_fail",	3, 3, 0,	  f_test_alloc_fail},
+    {"test_autochdir",	0, 0, 0,	  f_test_autochdir},
+    {"test_feedinput",	1, 1, 0,	  f_test_feedinput},
+    {"test_garbagecollect_now",	0, 0, 0,	  f_test_garbagecollect_now},
+    {"test_garbagecollect_soon",	0, 0, 0,	  f_test_garbagecollect_soon},
+    {"test_getvalue",	1, 1, 0,	  f_test_getvalue},
+    {"test_ignore_error",	1, 1, 0,	  f_test_ignore_error},
+    {"test_null_blob",	0, 0, 0,	  f_test_null_blob},
 #ifdef FEAT_JOB_CHANNEL
-    {"test_null_channel", 0, 0, f_test_null_channel},
+    {"test_null_channel", 0, 0, 0,	  f_test_null_channel},
 #endif
-    {"test_null_dict",	0, 0, f_test_null_dict},
+    {"test_null_dict",	0, 0, 0,	  f_test_null_dict},
 #ifdef FEAT_JOB_CHANNEL
-    {"test_null_job",	0, 0, f_test_null_job},
+    {"test_null_job",	0, 0, 0,	  f_test_null_job},
 #endif
-    {"test_null_list",	0, 0, f_test_null_list},
-    {"test_null_partial", 0, 0, f_test_null_partial},
-    {"test_null_string", 0, 0, f_test_null_string},
-    {"test_option_not_set", 1, 1, f_test_option_not_set},
-    {"test_override",	2, 2, f_test_override},
-    {"test_refcount",	1, 1, f_test_refcount},
+    {"test_null_list",	0, 0, 0,	  f_test_null_list},
+    {"test_null_partial", 0, 0, 0,	  f_test_null_partial},
+    {"test_null_string", 0, 0, 0,	  f_test_null_string},
+    {"test_option_not_set", 1, 1, 0,	  f_test_option_not_set},
+    {"test_override",	2, 2, 0,	  f_test_override},
+    {"test_refcount",	1, 1, 0,	  f_test_refcount},
 #ifdef FEAT_GUI
-    {"test_scrollbar",	3, 3, f_test_scrollbar},
+    {"test_scrollbar",	3, 3, 0,	  f_test_scrollbar},
 #endif
 #ifdef FEAT_MOUSE
-    {"test_setmouse",	2, 2, f_test_setmouse},
+    {"test_setmouse",	2, 2, 0,	  f_test_setmouse},
 #endif
-    {"test_settime",	1, 1, f_test_settime},
+    {"test_settime",	1, 1, 0,	  f_test_settime},
 #ifdef FEAT_TIMERS
-    {"timer_info",	0, 1, f_timer_info},
-    {"timer_pause",	2, 2, f_timer_pause},
-    {"timer_start",	2, 3, f_timer_start},
-    {"timer_stop",	1, 1, f_timer_stop},
-    {"timer_stopall",	0, 0, f_timer_stopall},
+    {"timer_info",	0, 1, 0,	  f_timer_info},
+    {"timer_pause",	2, 2, 0,	  f_timer_pause},
+    {"timer_start",	2, 3, 0,	  f_timer_start},
+    {"timer_stop",	1, 1, 0,	  f_timer_stop},
+    {"timer_stopall",	0, 0, 0,	  f_timer_stopall},
 #endif
-    {"tolower",		1, 1, f_tolower},
-    {"toupper",		1, 1, f_toupper},
-    {"tr",		3, 3, f_tr},
-    {"trim",		1, 2, f_trim},
+    {"tolower",		1, 1, 0,	  f_tolower},
+    {"toupper",		1, 1, 0,	  f_toupper},
+    {"tr",		3, 3, 0,	  f_tr},
+    {"trim",		1, 2, 0,	  f_trim},
 #ifdef FEAT_FLOAT
-    {"trunc",		1, 1, f_trunc},
+    {"trunc",		1, 1, 0,	  f_trunc},
 #endif
-    {"type",		1, 1, f_type},
-    {"undofile",	1, 1, f_undofile},
-    {"undotree",	0, 0, f_undotree},
-    {"uniq",		1, 3, f_uniq},
-    {"values",		1, 1, f_values},
-    {"virtcol",		1, 1, f_virtcol},
-    {"visualmode",	0, 1, f_visualmode},
-    {"wildmenumode",	0, 0, f_wildmenumode},
-    {"win_execute",	2, 3, f_win_execute},
-    {"win_findbuf",	1, 1, f_win_findbuf},
-    {"win_getid",	0, 2, f_win_getid},
-    {"win_gotoid",	1, 1, f_win_gotoid},
-    {"win_id2tabwin",	1, 1, f_win_id2tabwin},
-    {"win_id2win",	1, 1, f_win_id2win},
-    {"win_screenpos",	1, 1, f_win_screenpos},
-    {"winbufnr",	1, 1, f_winbufnr},
-    {"wincol",		0, 0, f_wincol},
-    {"winheight",	1, 1, f_winheight},
-    {"winlayout",	0, 1, f_winlayout},
-    {"winline",		0, 0, f_winline},
-    {"winnr",		0, 1, f_winnr},
-    {"winrestcmd",	0, 0, f_winrestcmd},
-    {"winrestview",	1, 1, f_winrestview},
-    {"winsaveview",	0, 0, f_winsaveview},
-    {"winwidth",	1, 1, f_winwidth},
-    {"wordcount",	0, 0, f_wordcount},
-    {"writefile",	2, 3, f_writefile},
-    {"xor",		2, 2, f_xor},
+    {"type",		1, 1, FEARG_1,	  f_type},
+    {"undofile",	1, 1, 0,	  f_undofile},
+    {"undotree",	0, 0, 0,	  f_undotree},
+    {"uniq",		1, 3, FEARG_1,	  f_uniq},
+    {"values",		1, 1, FEARG_1,	  f_values},
+    {"virtcol",		1, 1, 0,	  f_virtcol},
+    {"visualmode",	0, 1, 0,	  f_visualmode},
+    {"wildmenumode",	0, 0, 0,	  f_wildmenumode},
+    {"win_execute",	2, 3, 0,	  f_win_execute},
+    {"win_findbuf",	1, 1, 0,	  f_win_findbuf},
+    {"win_getid",	0, 2, 0,	  f_win_getid},
+    {"win_gotoid",	1, 1, 0,	  f_win_gotoid},
+    {"win_id2tabwin",	1, 1, 0,	  f_win_id2tabwin},
+    {"win_id2win",	1, 1, 0,	  f_win_id2win},
+    {"win_screenpos",	1, 1, 0,	  f_win_screenpos},
+    {"winbufnr",	1, 1, 0,	  f_winbufnr},
+    {"wincol",		0, 0, 0,	  f_wincol},
+    {"winheight",	1, 1, 0,	  f_winheight},
+    {"winlayout",	0, 1, 0,	  f_winlayout},
+    {"winline",		0, 0, 0,	  f_winline},
+    {"winnr",		0, 1, 0,	  f_winnr},
+    {"winrestcmd",	0, 0, 0,	  f_winrestcmd},
+    {"winrestview",	1, 1, 0,	  f_winrestview},
+    {"winsaveview",	0, 0, 0,	  f_winsaveview},
+    {"winwidth",	1, 1, 0,	  f_winwidth},
+    {"wordcount",	0, 0, 0,	  f_wordcount},
+    {"writefile",	2, 3, 0,	  f_writefile},
+    {"xor",		2, 2, 0,	  f_xor},
 };
 
 #if defined(FEAT_CMDL_COMPL) || defined(PROTO)
@@ -1031,11 +1015,11 @@ get_function_name(expand_T *xp, int idx)
 	if (name != NULL)
 	    return name;
     }
-    if (++intidx < (int)(sizeof(functions) / sizeof(struct fst)))
+    if (++intidx < (int)(sizeof(global_functions) / sizeof(funcentry_T)))
     {
-	STRCPY(IObuff, functions[intidx].f_name);
+	STRCPY(IObuff, global_functions[intidx].f_name);
 	STRCAT(IObuff, "(");
-	if (functions[intidx].f_max_argc == 0)
+	if (global_functions[intidx].f_max_argc == 0)
 	    STRCAT(IObuff, ")");
 	return IObuff;
     }
@@ -1067,25 +1051,24 @@ get_expr_name(expand_T *xp, int idx)
 #endif /* FEAT_CMDL_COMPL */
 
 /*
- * Find internal function in table above.
+ * Find internal function "name" in table "global_functions".
  * Return index, or -1 if not found
  */
-    int
-find_internal_func(
-    char_u	*name)		/* name of the function */
+    static int
+find_internal_func(char_u *name)
 {
     int		first = 0;
-    int		last = (int)(sizeof(functions) / sizeof(struct fst)) - 1;
+    int		last;
     int		cmp;
     int		x;
 
-    /*
-     * Find the function name in the table. Binary search.
-     */
+    last = (int)(sizeof(global_functions) / sizeof(funcentry_T)) - 1;
+
+    // Find the function name in the table. Binary search.
     while (first <= last)
     {
 	x = first + ((unsigned)(last - first) >> 1);
-	cmp = STRCMP(name, functions[x].f_name);
+	cmp = STRCMP(name, global_functions[x].f_name);
 	if (cmp < 0)
 	    last = x - 1;
 	else if (cmp > 0)
@@ -1094,6 +1077,12 @@ find_internal_func(
 	    return x;
     }
     return -1;
+}
+
+    int
+has_internal_func(char_u *name)
+{
+    return find_internal_func(name) >= 0;
 }
 
     int
@@ -1108,12 +1097,63 @@ call_internal_func(
     i = find_internal_func(name);
     if (i < 0)
 	return ERROR_UNKNOWN;
-    if (argcount < functions[i].f_min_argc)
+    if (argcount < global_functions[i].f_min_argc)
 	return ERROR_TOOFEW;
-    if (argcount > functions[i].f_max_argc)
+    if (argcount > global_functions[i].f_max_argc)
 	return ERROR_TOOMANY;
     argvars[argcount].v_type = VAR_UNKNOWN;
-    functions[i].f_func(argvars, rettv);
+    global_functions[i].f_func(argvars, rettv);
+    return ERROR_NONE;
+}
+
+/*
+ * Invoke a method for base->method().
+ */
+    int
+call_internal_method(
+	char_u	    *name,
+	int	    argcount,
+	typval_T    *argvars,
+	typval_T    *rettv,
+	typval_T    *basetv)
+{
+    int		i;
+    int		fi;
+    typval_T	argv[MAX_FUNC_ARGS + 1];
+
+    fi = find_internal_func(name);
+    if (fi < 0 || global_functions[fi].f_argtype == 0)
+	return ERROR_UNKNOWN;
+    if (argcount + 1 < global_functions[fi].f_min_argc)
+	return ERROR_TOOFEW;
+    if (argcount + 1 > global_functions[fi].f_max_argc)
+	return ERROR_TOOMANY;
+
+    if (global_functions[fi].f_argtype == FEARG_LAST)
+    {
+	// base value goes last
+	for (i = 0; i < argcount; ++i)
+	    argv[i] = argvars[i];
+	argv[argcount] = *basetv;
+    }
+    else if (global_functions[fi].f_argtype == FEARG_2)
+    {
+	// base value goes second
+	argv[0] = argvars[0];
+	argv[1] = *basetv;
+	for (i = 1; i < argcount; ++i)
+	    argv[i + 1] = argvars[i];
+    }
+    else
+    {
+	// FEARG_1: base value goes first
+	argv[0] = *basetv;
+	for (i = 0; i < argcount; ++i)
+	    argv[i + 1] = argvars[i];
+    }
+    argv[argcount + 1].v_type = VAR_UNKNOWN;
+
+    global_functions[fi].f_func(argv, rettv);
     return ERROR_NONE;
 }
 
@@ -1414,12 +1454,7 @@ set_buffer_lines(
 	    if (wp->w_buffer == buf && wp->w_cursor.lnum > append_lnum)
 		wp->w_cursor.lnum += added;
 	check_cursor_col();
-
-#ifdef FEAT_JOB_CHANNEL
-	if (bt_prompt(curbuf) && (State & INSERT))
-	    // show the line with the prompt
-	    update_topline();
-#endif
+	update_topline();
     }
 
     if (!is_curbuf)
@@ -2202,7 +2237,7 @@ f_cindent(typval_T *argvars UNUSED, typval_T *rettv)
 	rettv->vval.v_number = -1;
 }
 
-    static win_T *
+    win_T *
 get_optional_window(typval_T *argvars, int idx)
 {
     win_T   *win = curwin;
@@ -2217,20 +2252,6 @@ get_optional_window(typval_T *argvars, int idx)
 	}
     }
     return win;
-}
-
-/*
- * "clearmatches()" function
- */
-    static void
-f_clearmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_SEARCH_EXTRA
-    win_T   *win = get_optional_window(argvars, 0);
-
-    if (win != NULL)
-	clear_matches(win);
-#endif
 }
 
 /*
@@ -3069,8 +3090,7 @@ f_executable(typval_T *argvars, typval_T *rettv)
     char_u *name = tv_get_string(&argvars[0]);
 
     /* Check in $PATH and also check directly if there is a directory name. */
-    rettv->vval.v_number = mch_can_exe(name, NULL, TRUE)
-		 || (gettail(name) != name && mch_can_exe(name, NULL, FALSE));
+    rettv->vval.v_number = mch_can_exe(name, NULL, TRUE);
 }
 
 static garray_T	redir_execute_ga;
@@ -4238,6 +4258,7 @@ f_get(typval_T *argvars, typval_T *rettv)
     dictitem_T	*di;
     dict_T	*d;
     typval_T	*tv = NULL;
+    int		what_is_dict = FALSE;
 
     if (argvars[0].v_type == VAR_BLOB)
     {
@@ -4311,7 +4332,11 @@ f_get(typval_T *argvars, typval_T *rettv)
 		}
 	    }
 	    else if (STRCMP(what, "dict") == 0)
-		rettv_dict_set(rettv, pt->pt_dict);
+	    {
+		what_is_dict = TRUE;
+		if (pt->pt_dict != NULL)
+		    rettv_dict_set(rettv, pt->pt_dict);
+	    }
 	    else if (STRCMP(what, "args") == 0)
 	    {
 		rettv->v_type = VAR_LIST;
@@ -4325,7 +4350,11 @@ f_get(typval_T *argvars, typval_T *rettv)
 	    }
 	    else
 		semsg(_(e_invarg2), what);
-	    return;
+
+	    // When {what} == "dict" and pt->pt_dict == NULL, evaluate the
+	    // third argument
+	    if (!what_is_dict)
+		return;
 	}
     }
     else
@@ -4766,7 +4795,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 		win = mouse_find_win(&row, &col, FIND_POPUP);
 		if (win == NULL)
 		    return;
-		(void)mouse_comp_pos(win, &row, &col, &lnum);
+		(void)mouse_comp_pos(win, &row, &col, &lnum, NULL);
 # ifdef FEAT_TEXT_PROP
 		if (WIN_IS_POPUP(win))
 		    winnr = 0;
@@ -5281,74 +5310,6 @@ f_getloclist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 
     wp = find_win_by_nr_or_id(&argvars[0]);
     get_qf_loc_list(FALSE, wp, &argvars[1], rettv);
-#endif
-}
-
-/*
- * "getmatches()" function
- */
-    static void
-f_getmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_SEARCH_EXTRA
-    dict_T	*dict;
-    matchitem_T	*cur;
-    int		i;
-    win_T	*win = get_optional_window(argvars, 0);
-
-    if (rettv_list_alloc(rettv) == FAIL || win == NULL)
-	return;
-
-    cur = win->w_match_head;
-    while (cur != NULL)
-    {
-	dict = dict_alloc();
-	if (dict == NULL)
-	    return;
-	if (cur->match.regprog == NULL)
-	{
-	    /* match added with matchaddpos() */
-	    for (i = 0; i < MAXPOSMATCH; ++i)
-	    {
-		llpos_T	*llpos;
-		char	buf[30];  // use 30 to avoid compiler warning
-		list_T	*l;
-
-		llpos = &cur->pos.pos[i];
-		if (llpos->lnum == 0)
-		    break;
-		l = list_alloc();
-		if (l == NULL)
-		    break;
-		list_append_number(l, (varnumber_T)llpos->lnum);
-		if (llpos->col > 0)
-		{
-		    list_append_number(l, (varnumber_T)llpos->col);
-		    list_append_number(l, (varnumber_T)llpos->len);
-		}
-		sprintf(buf, "pos%d", i + 1);
-		dict_add_list(dict, buf, l);
-	    }
-	}
-	else
-	{
-	    dict_add_string(dict, "pattern", cur->pattern);
-	}
-	dict_add_string(dict, "group", syn_id2name(cur->hlg_id));
-	dict_add_number(dict, "priority", (long)cur->priority);
-	dict_add_number(dict, "id", (long)cur->id);
-# if defined(FEAT_CONCEAL)
-	if (cur->conceal_char)
-	{
-	    char_u buf[MB_MAXBYTES + 1];
-
-	    buf[(*mb_char2bytes)((int)cur->conceal_char, buf)] = NUL;
-	    dict_add_string(dict, "conceal", (char_u *)&buf);
-	}
-# endif
-	list_append_dict(rettv->vval.v_list, dict);
-	cur = cur->next;
-    }
 #endif
 }
 
@@ -5981,15 +5942,15 @@ f_glob(typval_T *argvars, typval_T *rettv)
     static void
 f_globpath(typval_T *argvars, typval_T *rettv)
 {
-    int		flags = 0;
+    int		flags = WILD_IGNORE_COMPLETESLASH;
     char_u	buf1[NUMBUFLEN];
     char_u	*file = tv_get_string_buf_chk(&argvars[1], buf1);
     int		error = FALSE;
     garray_T	ga;
     int		i;
 
-    /* When the optional second argument is non-zero, don't remove matches
-    * for 'wildignore' and don't put matches for 'suffixes' at the end. */
+    // When the optional second argument is non-zero, don't remove matches
+    // for 'wildignore' and don't put matches for 'suffixes' at the end.
     rettv->v_type = VAR_STRING;
     if (argvars[2].v_type != VAR_UNKNOWN)
     {
@@ -6292,9 +6253,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"lispindent",
 #endif
 	"listcmds",
-#ifdef FEAT_LOCALMAP
 	"localmap",
-#endif
 #ifdef FEAT_LUA
 # ifndef DYNAMIC_LUA
 	"lua",
@@ -6679,24 +6638,6 @@ f_has(typval_T *argvars, typval_T *rettv)
     }
 
     rettv->vval.v_number = n;
-}
-
-/*
- * "has_key()" function
- */
-    static void
-f_has_key(typval_T *argvars, typval_T *rettv)
-{
-    if (argvars[0].v_type != VAR_DICT)
-    {
-	emsg(_(e_dictreq));
-	return;
-    }
-    if (argvars[0].vval.v_dict == NULL)
-	return;
-
-    rettv->vval.v_number = dict_find(argvars[0].vval.v_dict,
-				      tv_get_string(&argvars[1]), -1) != NULL;
 }
 
 /*
@@ -7342,107 +7283,6 @@ f_isnan(typval_T *argvars, typval_T *rettv)
 #endif
 
 /*
- * "items(dict)" function
- */
-    static void
-f_items(typval_T *argvars, typval_T *rettv)
-{
-    dict_list(argvars, rettv, 2);
-}
-
-/*
- * "join()" function
- */
-    static void
-f_join(typval_T *argvars, typval_T *rettv)
-{
-    garray_T	ga;
-    char_u	*sep;
-
-    if (argvars[0].v_type != VAR_LIST)
-    {
-	emsg(_(e_listreq));
-	return;
-    }
-    if (argvars[0].vval.v_list == NULL)
-	return;
-    if (argvars[1].v_type == VAR_UNKNOWN)
-	sep = (char_u *)" ";
-    else
-	sep = tv_get_string_chk(&argvars[1]);
-
-    rettv->v_type = VAR_STRING;
-
-    if (sep != NULL)
-    {
-	ga_init2(&ga, (int)sizeof(char), 80);
-	list_join(&ga, argvars[0].vval.v_list, sep, TRUE, FALSE, 0);
-	ga_append(&ga, NUL);
-	rettv->vval.v_string = (char_u *)ga.ga_data;
-    }
-    else
-	rettv->vval.v_string = NULL;
-}
-
-/*
- * "js_decode()" function
- */
-    static void
-f_js_decode(typval_T *argvars, typval_T *rettv)
-{
-    js_read_T	reader;
-
-    reader.js_buf = tv_get_string(&argvars[0]);
-    reader.js_fill = NULL;
-    reader.js_used = 0;
-    if (json_decode_all(&reader, rettv, JSON_JS) != OK)
-	emsg(_(e_invarg));
-}
-
-/*
- * "js_encode()" function
- */
-    static void
-f_js_encode(typval_T *argvars, typval_T *rettv)
-{
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = json_encode(&argvars[0], JSON_JS);
-}
-
-/*
- * "json_decode()" function
- */
-    static void
-f_json_decode(typval_T *argvars, typval_T *rettv)
-{
-    js_read_T	reader;
-
-    reader.js_buf = tv_get_string(&argvars[0]);
-    reader.js_fill = NULL;
-    reader.js_used = 0;
-    json_decode_all(&reader, rettv, 0);
-}
-
-/*
- * "json_encode()" function
- */
-    static void
-f_json_encode(typval_T *argvars, typval_T *rettv)
-{
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = json_encode(&argvars[0], 0);
-}
-
-/*
- * "keys()" function
- */
-    static void
-f_keys(typval_T *argvars, typval_T *rettv)
-{
-    dict_list(argvars, rettv, 0);
-}
-
-/*
  * "last_buffer_nr()" function.
  */
     static void
@@ -7610,145 +7450,12 @@ f_lispindent(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
 /*
- * "list2str()" function
- */
-    static void
-f_list2str(typval_T *argvars, typval_T *rettv)
-{
-    list_T	*l;
-    listitem_T	*li;
-    garray_T	ga;
-    int		utf8 = FALSE;
-
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-    if (argvars[0].v_type != VAR_LIST)
-    {
-	emsg(_(e_invarg));
-	return;
-    }
-
-    l = argvars[0].vval.v_list;
-    if (l == NULL)
-	return;  // empty list results in empty string
-
-    if (argvars[1].v_type != VAR_UNKNOWN)
-	utf8 = (int)tv_get_number_chk(&argvars[1], NULL);
-
-    ga_init2(&ga, 1, 80);
-    if (has_mbyte || utf8)
-    {
-	char_u	buf[MB_MAXBYTES + 1];
-	int	(*char2bytes)(int, char_u *);
-
-	if (utf8 || enc_utf8)
-	    char2bytes = utf_char2bytes;
-	else
-	    char2bytes = mb_char2bytes;
-
-	for (li = l->lv_first; li != NULL; li = li->li_next)
-	{
-	    buf[(*char2bytes)(tv_get_number(&li->li_tv), buf)] = NUL;
-	    ga_concat(&ga, buf);
-	}
-	ga_append(&ga, NUL);
-    }
-    else if (ga_grow(&ga, list_len(l) + 1) == OK)
-    {
-	for (li = l->lv_first; li != NULL; li = li->li_next)
-	    ga_append(&ga, tv_get_number(&li->li_tv));
-	ga_append(&ga, NUL);
-    }
-
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = ga.ga_data;
-}
-
-/*
  * "localtime()" function
  */
     static void
 f_localtime(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->vval.v_number = (varnumber_T)time(NULL);
-}
-
-    static void
-get_maparg(typval_T *argvars, typval_T *rettv, int exact)
-{
-    char_u	*keys;
-    char_u	*which;
-    char_u	buf[NUMBUFLEN];
-    char_u	*keys_buf = NULL;
-    char_u	*rhs;
-    int		mode;
-    int		abbr = FALSE;
-    int		get_dict = FALSE;
-    mapblock_T	*mp;
-    int		buffer_local;
-
-    /* return empty string for failure */
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-
-    keys = tv_get_string(&argvars[0]);
-    if (*keys == NUL)
-	return;
-
-    if (argvars[1].v_type != VAR_UNKNOWN)
-    {
-	which = tv_get_string_buf_chk(&argvars[1], buf);
-	if (argvars[2].v_type != VAR_UNKNOWN)
-	{
-	    abbr = (int)tv_get_number(&argvars[2]);
-	    if (argvars[3].v_type != VAR_UNKNOWN)
-		get_dict = (int)tv_get_number(&argvars[3]);
-	}
-    }
-    else
-	which = (char_u *)"";
-    if (which == NULL)
-	return;
-
-    mode = get_map_mode(&which, 0);
-
-    keys = replace_termcodes(keys, &keys_buf, TRUE, TRUE, FALSE);
-    rhs = check_map(keys, mode, exact, FALSE, abbr, &mp, &buffer_local);
-    vim_free(keys_buf);
-
-    if (!get_dict)
-    {
-	/* Return a string. */
-	if (rhs != NULL)
-	{
-	    if (*rhs == NUL)
-		rettv->vval.v_string = vim_strsave((char_u *)"<Nop>");
-	    else
-		rettv->vval.v_string = str2special_save(rhs, FALSE);
-	}
-
-    }
-    else if (rettv_dict_alloc(rettv) != FAIL && rhs != NULL)
-    {
-	/* Return a dictionary. */
-	char_u	    *lhs = str2special_save(mp->m_keys, TRUE);
-	char_u	    *mapmode = map_mode_to_chars(mp->m_mode);
-	dict_T	    *dict = rettv->vval.v_dict;
-
-	dict_add_string(dict, "lhs", lhs);
-	dict_add_string(dict, "rhs", mp->m_orig_str);
-	dict_add_number(dict, "noremap", mp->m_noremap ? 1L : 0L);
-	dict_add_number(dict, "expr", mp->m_expr ? 1L : 0L);
-	dict_add_number(dict, "silent", mp->m_silent ? 1L : 0L);
-	dict_add_number(dict, "sid", (long)mp->m_script_ctx.sc_sid);
-	dict_add_number(dict, "lnum", (long)mp->m_script_ctx.sc_lnum);
-	dict_add_number(dict, "buffer", (long)buffer_local);
-	dict_add_number(dict, "nowait", mp->m_nowait ? 1L : 0L);
-	dict_add_string(dict, "mode", mapmode);
-
-	vim_free(lhs);
-	vim_free(mapmode);
-    }
 }
 
 #ifdef FEAT_FLOAT
@@ -8071,185 +7778,6 @@ f_match(typval_T *argvars, typval_T *rettv)
     find_some_match(argvars, rettv, MATCH_MATCH);
 }
 
-#ifdef FEAT_SEARCH_EXTRA
-    static int
-matchadd_dict_arg(typval_T *tv, char_u **conceal_char, win_T **win)
-{
-    dictitem_T *di;
-
-    if (tv->v_type != VAR_DICT)
-    {
-	emsg(_(e_dictreq));
-	return FAIL;
-    }
-
-    if (dict_find(tv->vval.v_dict, (char_u *)"conceal", -1) != NULL)
-	*conceal_char = dict_get_string(tv->vval.v_dict,
-						   (char_u *)"conceal", FALSE);
-
-    if ((di = dict_find(tv->vval.v_dict, (char_u *)"window", -1)) != NULL)
-    {
-	*win = find_win_by_nr_or_id(&di->di_tv);
-	if (*win == NULL)
-	{
-	    emsg(_(e_invalwindow));
-	    return FAIL;
-	}
-    }
-
-    return OK;
-}
-#endif
-
-/*
- * "matchadd()" function
- */
-    static void
-f_matchadd(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_SEARCH_EXTRA
-    char_u	buf[NUMBUFLEN];
-    char_u	*grp = tv_get_string_buf_chk(&argvars[0], buf);	/* group */
-    char_u	*pat = tv_get_string_buf_chk(&argvars[1], buf);	/* pattern */
-    int		prio = 10;	/* default priority */
-    int		id = -1;
-    int		error = FALSE;
-    char_u	*conceal_char = NULL;
-    win_T	*win = curwin;
-
-    rettv->vval.v_number = -1;
-
-    if (grp == NULL || pat == NULL)
-	return;
-    if (argvars[2].v_type != VAR_UNKNOWN)
-    {
-	prio = (int)tv_get_number_chk(&argvars[2], &error);
-	if (argvars[3].v_type != VAR_UNKNOWN)
-	{
-	    id = (int)tv_get_number_chk(&argvars[3], &error);
-	    if (argvars[4].v_type != VAR_UNKNOWN
-		&& matchadd_dict_arg(&argvars[4], &conceal_char, &win) == FAIL)
-		return;
-	}
-    }
-    if (error == TRUE)
-	return;
-    if (id >= 1 && id <= 3)
-    {
-	semsg(_("E798: ID is reserved for \":match\": %d"), id);
-	return;
-    }
-
-    rettv->vval.v_number = match_add(win, grp, pat, prio, id, NULL,
-								conceal_char);
-#endif
-}
-
-/*
- * "matchaddpos()" function
- */
-    static void
-f_matchaddpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_SEARCH_EXTRA
-    char_u	buf[NUMBUFLEN];
-    char_u	*group;
-    int		prio = 10;
-    int		id = -1;
-    int		error = FALSE;
-    list_T	*l;
-    char_u	*conceal_char = NULL;
-    win_T	*win = curwin;
-
-    rettv->vval.v_number = -1;
-
-    group = tv_get_string_buf_chk(&argvars[0], buf);
-    if (group == NULL)
-	return;
-
-    if (argvars[1].v_type != VAR_LIST)
-    {
-	semsg(_(e_listarg), "matchaddpos()");
-	return;
-    }
-    l = argvars[1].vval.v_list;
-    if (l == NULL)
-	return;
-
-    if (argvars[2].v_type != VAR_UNKNOWN)
-    {
-	prio = (int)tv_get_number_chk(&argvars[2], &error);
-	if (argvars[3].v_type != VAR_UNKNOWN)
-	{
-	    id = (int)tv_get_number_chk(&argvars[3], &error);
-
-	    if (argvars[4].v_type != VAR_UNKNOWN
-		&& matchadd_dict_arg(&argvars[4], &conceal_char, &win) == FAIL)
-		return;
-	}
-    }
-    if (error == TRUE)
-	return;
-
-    /* id == 3 is ok because matchaddpos() is supposed to substitute :3match */
-    if (id == 1 || id == 2)
-    {
-	semsg(_("E798: ID is reserved for \":match\": %d"), id);
-	return;
-    }
-
-    rettv->vval.v_number = match_add(win, group, NULL, prio, id, l,
-								conceal_char);
-#endif
-}
-
-/*
- * "matcharg()" function
- */
-    static void
-f_matcharg(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    if (rettv_list_alloc(rettv) == OK)
-    {
-#ifdef FEAT_SEARCH_EXTRA
-	int	    id = (int)tv_get_number(&argvars[0]);
-	matchitem_T *m;
-
-	if (id >= 1 && id <= 3)
-	{
-	    if ((m = (matchitem_T *)get_match(curwin, id)) != NULL)
-	    {
-		list_append_string(rettv->vval.v_list,
-						syn_id2name(m->hlg_id), -1);
-		list_append_string(rettv->vval.v_list, m->pattern, -1);
-	    }
-	    else
-	    {
-		list_append_string(rettv->vval.v_list, NULL, -1);
-		list_append_string(rettv->vval.v_list, NULL, -1);
-	    }
-	}
-#endif
-    }
-}
-
-/*
- * "matchdelete()" function
- */
-    static void
-f_matchdelete(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_SEARCH_EXTRA
-    win_T   *win = get_optional_window(argvars, 1);
-
-    if (win == NULL)
-	rettv->vval.v_number = -1;
-    else
-	rettv->vval.v_number = match_delete(win,
-				       (int)tv_get_number(&argvars[0]), TRUE);
-#endif
-}
-
 /*
  * "matchend()" function
  */
@@ -8398,7 +7926,6 @@ mkdir_recurse(char_u *dir, int prot)
     return r;
 }
 
-#ifdef vim_mkdir
 /*
  * "mkdir()" function
  */
@@ -8442,7 +7969,6 @@ f_mkdir(typval_T *argvars, typval_T *rettv)
     }
     rettv->vval.v_number = vim_mkdir_emsg(dir, prot);
 }
-#endif
 
 /*
  * "mode()" function
@@ -9566,158 +9092,16 @@ f_remote_startserver(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     static void
 f_remove(typval_T *argvars, typval_T *rettv)
 {
-    list_T	*l;
-    listitem_T	*item, *item2;
-    listitem_T	*li;
-    long	idx;
-    long	end;
-    char_u	*key;
-    dict_T	*d;
-    dictitem_T	*di;
     char_u	*arg_errmsg = (char_u *)N_("remove() argument");
-    int		error = FALSE;
 
     if (argvars[0].v_type == VAR_DICT)
-    {
-	if (argvars[2].v_type != VAR_UNKNOWN)
-	    semsg(_(e_toomanyarg), "remove()");
-	else if ((d = argvars[0].vval.v_dict) != NULL
-		&& !var_check_lock(d->dv_lock, arg_errmsg, TRUE))
-	{
-	    key = tv_get_string_chk(&argvars[1]);
-	    if (key != NULL)
-	    {
-		di = dict_find(d, key, -1);
-		if (di == NULL)
-		    semsg(_(e_dictkey), key);
-		else if (!var_check_fixed(di->di_flags, arg_errmsg, TRUE)
-			    && !var_check_ro(di->di_flags, arg_errmsg, TRUE))
-		{
-		    *rettv = di->di_tv;
-		    init_tv(&di->di_tv);
-		    dictitem_remove(d, di);
-		}
-	    }
-	}
-    }
+	dict_remove(argvars, rettv, arg_errmsg);
     else if (argvars[0].v_type == VAR_BLOB)
-    {
-	idx = (long)tv_get_number_chk(&argvars[1], &error);
-	if (!error)
-	{
-	    blob_T  *b = argvars[0].vval.v_blob;
-	    int	    len = blob_len(b);
-	    char_u  *p;
-
-	    if (idx < 0)
-		// count from the end
-		idx = len + idx;
-	    if (idx < 0 || idx >= len)
-	    {
-		semsg(_(e_blobidx), idx);
-		return;
-	    }
-	    if (argvars[2].v_type == VAR_UNKNOWN)
-	    {
-		// Remove one item, return its value.
-		p = (char_u *)b->bv_ga.ga_data;
-		rettv->vval.v_number = (varnumber_T) *(p + idx);
-		mch_memmove(p + idx, p + idx + 1, (size_t)len - idx - 1);
-		--b->bv_ga.ga_len;
-	    }
-	    else
-	    {
-		blob_T  *blob;
-
-		// Remove range of items, return list with values.
-		end = (long)tv_get_number_chk(&argvars[2], &error);
-		if (error)
-		    return;
-		if (end < 0)
-		    // count from the end
-		    end = len + end;
-		if (end >= len || idx > end)
-		{
-		    semsg(_(e_blobidx), end);
-		    return;
-		}
-		blob = blob_alloc();
-		if (blob == NULL)
-		    return;
-		blob->bv_ga.ga_len = end - idx + 1;
-		if (ga_grow(&blob->bv_ga, end - idx + 1) == FAIL)
-		{
-		    vim_free(blob);
-		    return;
-		}
-		p = (char_u *)b->bv_ga.ga_data;
-		mch_memmove((char_u *)blob->bv_ga.ga_data, p + idx,
-						      (size_t)(end - idx + 1));
-		++blob->bv_refcount;
-		rettv->v_type = VAR_BLOB;
-		rettv->vval.v_blob = blob;
-
-		mch_memmove(p + idx, p + end + 1, (size_t)(len - end));
-		b->bv_ga.ga_len -= end - idx + 1;
-	    }
-	}
-    }
-    else if (argvars[0].v_type != VAR_LIST)
+	blob_remove(argvars, rettv);
+    else if (argvars[0].v_type == VAR_LIST)
+	list_remove(argvars, rettv, arg_errmsg);
+    else
 	semsg(_(e_listdictblobarg), "remove()");
-    else if ((l = argvars[0].vval.v_list) != NULL
-			      && !var_check_lock(l->lv_lock, arg_errmsg, TRUE))
-    {
-	idx = (long)tv_get_number_chk(&argvars[1], &error);
-	if (error)
-	    ;		// type error: do nothing, errmsg already given
-	else if ((item = list_find(l, idx)) == NULL)
-	    semsg(_(e_listidx), idx);
-	else
-	{
-	    if (argvars[2].v_type == VAR_UNKNOWN)
-	    {
-		/* Remove one item, return its value. */
-		vimlist_remove(l, item, item);
-		*rettv = item->li_tv;
-		vim_free(item);
-	    }
-	    else
-	    {
-		// Remove range of items, return list with values.
-		end = (long)tv_get_number_chk(&argvars[2], &error);
-		if (error)
-		    ;		// type error: do nothing
-		else if ((item2 = list_find(l, end)) == NULL)
-		    semsg(_(e_listidx), end);
-		else
-		{
-		    int	    cnt = 0;
-
-		    for (li = item; li != NULL; li = li->li_next)
-		    {
-			++cnt;
-			if (li == item2)
-			    break;
-		    }
-		    if (li == NULL)  /* didn't find "item2" after "item" */
-			emsg(_(e_invrange));
-		    else
-		    {
-			vimlist_remove(l, item, item2);
-			if (rettv_list_alloc(rettv) == OK)
-			{
-			    l = rettv->vval.v_list;
-			    l->lv_first = item;
-			    l->lv_last = item2;
-			    item->li_prev = NULL;
-			    item2->li_next = NULL;
-			    l->lv_len = cnt;
-			}
-		    }
-		}
-	    }
-	}
-    }
 }
 
 /*
@@ -11049,120 +10433,6 @@ f_setloclist(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "setmatches()" function
- */
-    static void
-f_setmatches(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_SEARCH_EXTRA
-    list_T	*l;
-    listitem_T	*li;
-    dict_T	*d;
-    list_T	*s = NULL;
-    win_T	*win = get_optional_window(argvars, 1);
-
-    rettv->vval.v_number = -1;
-    if (argvars[0].v_type != VAR_LIST)
-    {
-	emsg(_(e_listreq));
-	return;
-    }
-    if (win == NULL)
-	return;
-
-    if ((l = argvars[0].vval.v_list) != NULL)
-    {
-	/* To some extent make sure that we are dealing with a list from
-	 * "getmatches()". */
-	li = l->lv_first;
-	while (li != NULL)
-	{
-	    if (li->li_tv.v_type != VAR_DICT
-		    || (d = li->li_tv.vval.v_dict) == NULL)
-	    {
-		emsg(_(e_invarg));
-		return;
-	    }
-	    if (!(dict_find(d, (char_u *)"group", -1) != NULL
-			&& (dict_find(d, (char_u *)"pattern", -1) != NULL
-			    || dict_find(d, (char_u *)"pos1", -1) != NULL)
-			&& dict_find(d, (char_u *)"priority", -1) != NULL
-			&& dict_find(d, (char_u *)"id", -1) != NULL))
-	    {
-		emsg(_(e_invarg));
-		return;
-	    }
-	    li = li->li_next;
-	}
-
-	clear_matches(win);
-	li = l->lv_first;
-	while (li != NULL)
-	{
-	    int		i = 0;
-	    char	buf[30];  // use 30 to avoid compiler warning
-	    dictitem_T  *di;
-	    char_u	*group;
-	    int		priority;
-	    int		id;
-	    char_u	*conceal;
-
-	    d = li->li_tv.vval.v_dict;
-	    if (dict_find(d, (char_u *)"pattern", -1) == NULL)
-	    {
-		if (s == NULL)
-		{
-		    s = list_alloc();
-		    if (s == NULL)
-			return;
-		}
-
-		/* match from matchaddpos() */
-		for (i = 1; i < 9; i++)
-		{
-		    sprintf((char *)buf, (char *)"pos%d", i);
-		    if ((di = dict_find(d, (char_u *)buf, -1)) != NULL)
-		    {
-			if (di->di_tv.v_type != VAR_LIST)
-			    return;
-
-			list_append_tv(s, &di->di_tv);
-			s->lv_refcount++;
-		    }
-		    else
-			break;
-		}
-	    }
-
-	    group = dict_get_string(d, (char_u *)"group", TRUE);
-	    priority = (int)dict_get_number(d, (char_u *)"priority");
-	    id = (int)dict_get_number(d, (char_u *)"id");
-	    conceal = dict_find(d, (char_u *)"conceal", -1) != NULL
-			      ? dict_get_string(d, (char_u *)"conceal", TRUE)
-			      : NULL;
-	    if (i == 0)
-	    {
-		match_add(win, group,
-		    dict_get_string(d, (char_u *)"pattern", FALSE),
-		    priority, id, NULL, conceal);
-	    }
-	    else
-	    {
-		match_add(win, group, NULL, priority, id, s, conceal);
-		list_unref(s);
-		s = NULL;
-	    }
-	    vim_free(group);
-	    vim_free(conceal);
-
-	    li = li->li_next;
-	}
-	rettv->vval.v_number = 0;
-    }
-#endif
-}
-
-/*
  * "setpos()" function
  */
     static void
@@ -11542,388 +10812,6 @@ f_sinh(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_float = 0.0;
 }
 #endif
-
-static int item_compare(const void *s1, const void *s2);
-static int item_compare2(const void *s1, const void *s2);
-
-/* struct used in the array that's given to qsort() */
-typedef struct
-{
-    listitem_T	*item;
-    int		idx;
-} sortItem_T;
-
-/* struct storing information about current sort */
-typedef struct
-{
-    int		item_compare_ic;
-    int		item_compare_numeric;
-    int		item_compare_numbers;
-#ifdef FEAT_FLOAT
-    int		item_compare_float;
-#endif
-    char_u	*item_compare_func;
-    partial_T	*item_compare_partial;
-    dict_T	*item_compare_selfdict;
-    int		item_compare_func_err;
-    int		item_compare_keep_zero;
-} sortinfo_T;
-static sortinfo_T	*sortinfo = NULL;
-#define ITEM_COMPARE_FAIL 999
-
-/*
- * Compare functions for f_sort() and f_uniq() below.
- */
-    static int
-item_compare(const void *s1, const void *s2)
-{
-    sortItem_T  *si1, *si2;
-    typval_T	*tv1, *tv2;
-    char_u	*p1, *p2;
-    char_u	*tofree1 = NULL, *tofree2 = NULL;
-    int		res;
-    char_u	numbuf1[NUMBUFLEN];
-    char_u	numbuf2[NUMBUFLEN];
-
-    si1 = (sortItem_T *)s1;
-    si2 = (sortItem_T *)s2;
-    tv1 = &si1->item->li_tv;
-    tv2 = &si2->item->li_tv;
-
-    if (sortinfo->item_compare_numbers)
-    {
-	varnumber_T	v1 = tv_get_number(tv1);
-	varnumber_T	v2 = tv_get_number(tv2);
-
-	return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
-    }
-
-#ifdef FEAT_FLOAT
-    if (sortinfo->item_compare_float)
-    {
-	float_T	v1 = tv_get_float(tv1);
-	float_T	v2 = tv_get_float(tv2);
-
-	return v1 == v2 ? 0 : v1 > v2 ? 1 : -1;
-    }
-#endif
-
-    /* tv2string() puts quotes around a string and allocates memory.  Don't do
-     * that for string variables. Use a single quote when comparing with a
-     * non-string to do what the docs promise. */
-    if (tv1->v_type == VAR_STRING)
-    {
-	if (tv2->v_type != VAR_STRING || sortinfo->item_compare_numeric)
-	    p1 = (char_u *)"'";
-	else
-	    p1 = tv1->vval.v_string;
-    }
-    else
-	p1 = tv2string(tv1, &tofree1, numbuf1, 0);
-    if (tv2->v_type == VAR_STRING)
-    {
-	if (tv1->v_type != VAR_STRING || sortinfo->item_compare_numeric)
-	    p2 = (char_u *)"'";
-	else
-	    p2 = tv2->vval.v_string;
-    }
-    else
-	p2 = tv2string(tv2, &tofree2, numbuf2, 0);
-    if (p1 == NULL)
-	p1 = (char_u *)"";
-    if (p2 == NULL)
-	p2 = (char_u *)"";
-    if (!sortinfo->item_compare_numeric)
-    {
-	if (sortinfo->item_compare_ic)
-	    res = STRICMP(p1, p2);
-	else
-	    res = STRCMP(p1, p2);
-    }
-    else
-    {
-	double n1, n2;
-	n1 = strtod((char *)p1, (char **)&p1);
-	n2 = strtod((char *)p2, (char **)&p2);
-	res = n1 == n2 ? 0 : n1 > n2 ? 1 : -1;
-    }
-
-    /* When the result would be zero, compare the item indexes.  Makes the
-     * sort stable. */
-    if (res == 0 && !sortinfo->item_compare_keep_zero)
-	res = si1->idx > si2->idx ? 1 : -1;
-
-    vim_free(tofree1);
-    vim_free(tofree2);
-    return res;
-}
-
-    static int
-item_compare2(const void *s1, const void *s2)
-{
-    sortItem_T  *si1, *si2;
-    int		res;
-    typval_T	rettv;
-    typval_T	argv[3];
-    int		dummy;
-    char_u	*func_name;
-    partial_T	*partial = sortinfo->item_compare_partial;
-
-    /* shortcut after failure in previous call; compare all items equal */
-    if (sortinfo->item_compare_func_err)
-	return 0;
-
-    si1 = (sortItem_T *)s1;
-    si2 = (sortItem_T *)s2;
-
-    if (partial == NULL)
-	func_name = sortinfo->item_compare_func;
-    else
-	func_name = partial_name(partial);
-
-    /* Copy the values.  This is needed to be able to set v_lock to VAR_FIXED
-     * in the copy without changing the original list items. */
-    copy_tv(&si1->item->li_tv, &argv[0]);
-    copy_tv(&si2->item->li_tv, &argv[1]);
-
-    rettv.v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
-    res = call_func(func_name, -1, &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE,
-				 partial, sortinfo->item_compare_selfdict);
-    clear_tv(&argv[0]);
-    clear_tv(&argv[1]);
-
-    if (res == FAIL)
-	res = ITEM_COMPARE_FAIL;
-    else
-	res = (int)tv_get_number_chk(&rettv, &sortinfo->item_compare_func_err);
-    if (sortinfo->item_compare_func_err)
-	res = ITEM_COMPARE_FAIL;  /* return value has wrong type */
-    clear_tv(&rettv);
-
-    /* When the result would be zero, compare the pointers themselves.  Makes
-     * the sort stable. */
-    if (res == 0 && !sortinfo->item_compare_keep_zero)
-	res = si1->idx > si2->idx ? 1 : -1;
-
-    return res;
-}
-
-/*
- * "sort({list})" function
- */
-    static void
-do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
-{
-    list_T	*l;
-    listitem_T	*li;
-    sortItem_T	*ptrs;
-    sortinfo_T	*old_sortinfo;
-    sortinfo_T	info;
-    long	len;
-    long	i;
-
-    /* Pointer to current info struct used in compare function. Save and
-     * restore the current one for nested calls. */
-    old_sortinfo = sortinfo;
-    sortinfo = &info;
-
-    if (argvars[0].v_type != VAR_LIST)
-	semsg(_(e_listarg), sort ? "sort()" : "uniq()");
-    else
-    {
-	l = argvars[0].vval.v_list;
-	if (l == NULL || var_check_lock(l->lv_lock,
-	     (char_u *)(sort ? N_("sort() argument") : N_("uniq() argument")),
-									TRUE))
-	    goto theend;
-	rettv_list_set(rettv, l);
-
-	len = list_len(l);
-	if (len <= 1)
-	    goto theend;	/* short list sorts pretty quickly */
-
-	info.item_compare_ic = FALSE;
-	info.item_compare_numeric = FALSE;
-	info.item_compare_numbers = FALSE;
-#ifdef FEAT_FLOAT
-	info.item_compare_float = FALSE;
-#endif
-	info.item_compare_func = NULL;
-	info.item_compare_partial = NULL;
-	info.item_compare_selfdict = NULL;
-	if (argvars[1].v_type != VAR_UNKNOWN)
-	{
-	    /* optional second argument: {func} */
-	    if (argvars[1].v_type == VAR_FUNC)
-		info.item_compare_func = argvars[1].vval.v_string;
-	    else if (argvars[1].v_type == VAR_PARTIAL)
-		info.item_compare_partial = argvars[1].vval.v_partial;
-	    else
-	    {
-		int	    error = FALSE;
-
-		i = (long)tv_get_number_chk(&argvars[1], &error);
-		if (error)
-		    goto theend;	/* type error; errmsg already given */
-		if (i == 1)
-		    info.item_compare_ic = TRUE;
-		else if (argvars[1].v_type != VAR_NUMBER)
-		    info.item_compare_func = tv_get_string(&argvars[1]);
-		else if (i != 0)
-		{
-		    emsg(_(e_invarg));
-		    goto theend;
-		}
-		if (info.item_compare_func != NULL)
-		{
-		    if (*info.item_compare_func == NUL)
-		    {
-			/* empty string means default sort */
-			info.item_compare_func = NULL;
-		    }
-		    else if (STRCMP(info.item_compare_func, "n") == 0)
-		    {
-			info.item_compare_func = NULL;
-			info.item_compare_numeric = TRUE;
-		    }
-		    else if (STRCMP(info.item_compare_func, "N") == 0)
-		    {
-			info.item_compare_func = NULL;
-			info.item_compare_numbers = TRUE;
-		    }
-#ifdef FEAT_FLOAT
-		    else if (STRCMP(info.item_compare_func, "f") == 0)
-		    {
-			info.item_compare_func = NULL;
-			info.item_compare_float = TRUE;
-		    }
-#endif
-		    else if (STRCMP(info.item_compare_func, "i") == 0)
-		    {
-			info.item_compare_func = NULL;
-			info.item_compare_ic = TRUE;
-		    }
-		}
-	    }
-
-	    if (argvars[2].v_type != VAR_UNKNOWN)
-	    {
-		/* optional third argument: {dict} */
-		if (argvars[2].v_type != VAR_DICT)
-		{
-		    emsg(_(e_dictreq));
-		    goto theend;
-		}
-		info.item_compare_selfdict = argvars[2].vval.v_dict;
-	    }
-	}
-
-	/* Make an array with each entry pointing to an item in the List. */
-	ptrs = ALLOC_MULT(sortItem_T, len);
-	if (ptrs == NULL)
-	    goto theend;
-
-	i = 0;
-	if (sort)
-	{
-	    /* sort(): ptrs will be the list to sort */
-	    for (li = l->lv_first; li != NULL; li = li->li_next)
-	    {
-		ptrs[i].item = li;
-		ptrs[i].idx = i;
-		++i;
-	    }
-
-	    info.item_compare_func_err = FALSE;
-	    info.item_compare_keep_zero = FALSE;
-	    /* test the compare function */
-	    if ((info.item_compare_func != NULL
-					 || info.item_compare_partial != NULL)
-		    && item_compare2((void *)&ptrs[0], (void *)&ptrs[1])
-							 == ITEM_COMPARE_FAIL)
-		emsg(_("E702: Sort compare function failed"));
-	    else
-	    {
-		/* Sort the array with item pointers. */
-		qsort((void *)ptrs, (size_t)len, sizeof(sortItem_T),
-		    info.item_compare_func == NULL
-					  && info.item_compare_partial == NULL
-					       ? item_compare : item_compare2);
-
-		if (!info.item_compare_func_err)
-		{
-		    /* Clear the List and append the items in sorted order. */
-		    l->lv_first = l->lv_last = l->lv_idx_item = NULL;
-		    l->lv_len = 0;
-		    for (i = 0; i < len; ++i)
-			list_append(l, ptrs[i].item);
-		}
-	    }
-	}
-	else
-	{
-	    int	(*item_compare_func_ptr)(const void *, const void *);
-
-	    /* f_uniq(): ptrs will be a stack of items to remove */
-	    info.item_compare_func_err = FALSE;
-	    info.item_compare_keep_zero = TRUE;
-	    item_compare_func_ptr = info.item_compare_func != NULL
-					  || info.item_compare_partial != NULL
-					       ? item_compare2 : item_compare;
-
-	    for (li = l->lv_first; li != NULL && li->li_next != NULL;
-							     li = li->li_next)
-	    {
-		if (item_compare_func_ptr((void *)&li, (void *)&li->li_next)
-									 == 0)
-		    ptrs[i++].item = li;
-		if (info.item_compare_func_err)
-		{
-		    emsg(_("E882: Uniq compare function failed"));
-		    break;
-		}
-	    }
-
-	    if (!info.item_compare_func_err)
-	    {
-		while (--i >= 0)
-		{
-		    li = ptrs[i].item->li_next;
-		    ptrs[i].item->li_next = li->li_next;
-		    if (li->li_next != NULL)
-			li->li_next->li_prev = ptrs[i].item;
-		    else
-			l->lv_last = ptrs[i].item;
-		    list_fix_watch(l, li);
-		    listitem_free(li);
-		    l->lv_len--;
-		}
-	    }
-	}
-
-	vim_free(ptrs);
-    }
-theend:
-    sortinfo = old_sortinfo;
-}
-
-/*
- * "sort({list})" function
- */
-    static void
-f_sort(typval_T *argvars, typval_T *rettv)
-{
-    do_sort_uniq(argvars, rettv, TRUE);
-}
-
-/*
- * "uniq({list})" function
- */
-    static void
-f_uniq(typval_T *argvars, typval_T *rettv)
-{
-    do_sort_uniq(argvars, rettv, FALSE);
-}
 
 /*
  * "soundfold({word})" function
@@ -13922,15 +12810,6 @@ f_undotree(typval_T *argvars UNUSED, typval_T *rettv)
 	    dict_add_list(dict, "entries", list);
 	}
     }
-}
-
-/*
- * "values(dict)" function
- */
-    static void
-f_values(typval_T *argvars, typval_T *rettv)
-{
-    dict_list(argvars, rettv, 1);
 }
 
 /*

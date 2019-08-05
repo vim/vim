@@ -745,6 +745,7 @@ OBJ = \
 	$(OUTDIR)\json.obj \
 	$(OUTDIR)\list.obj \
 	$(OUTDIR)\main.obj \
+	$(OUTDIR)\map.obj \
 	$(OUTDIR)\mark.obj \
 	$(OUTDIR)\mbyte.obj \
 	$(OUTDIR)\memfile.obj \
@@ -767,6 +768,7 @@ OBJ = \
 	$(OUTDIR)\regexp.obj \
 	$(OUTDIR)\screen.obj \
 	$(OUTDIR)\search.obj \
+	$(OUTDIR)\session.obj \
 	$(OUTDIR)\sha256.obj \
 	$(OUTDIR)\sign.obj \
 	$(OUTDIR)\spell.obj \
@@ -1555,6 +1557,8 @@ $(OUTDIR)/list.obj:	$(OUTDIR) list.c  $(INCL)
 
 $(OUTDIR)/main.obj:	$(OUTDIR) main.c  $(INCL) $(CUI_INCL)
 
+$(OUTDIR)/map.obj:	$(OUTDIR) map.c  $(INCL)
+
 $(OUTDIR)/mark.obj:	$(OUTDIR) mark.c  $(INCL)
 
 $(OUTDIR)/memfile.obj:	$(OUTDIR) memfile.c  $(INCL)
@@ -1617,6 +1621,8 @@ $(OUTDIR)/regexp.obj:	$(OUTDIR) regexp.c regexp_nfa.c  $(INCL)
 $(OUTDIR)/screen.obj:	$(OUTDIR) screen.c  $(INCL)
 
 $(OUTDIR)/search.obj:	$(OUTDIR) search.c  $(INCL)
+
+$(OUTDIR)/session.obj:	$(OUTDIR) session.c  $(INCL)
 
 $(OUTDIR)/sha256.obj:	$(OUTDIR) sha256.c  $(INCL)
 
@@ -1766,6 +1772,7 @@ proto.h: \
 	proto/json.pro \
 	proto/list.pro \
 	proto/main.pro \
+	proto/map.pro \
 	proto/mark.pro \
 	proto/memfile.pro \
 	proto/memline.pro \
@@ -1788,6 +1795,7 @@ proto.h: \
 	proto/regexp.pro \
 	proto/screen.pro \
 	proto/search.pro \
+	proto/session.pro \
 	proto/sha256.pro \
 	proto/sign.pro \
 	proto/spell.pro \
