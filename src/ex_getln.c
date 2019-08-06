@@ -6910,8 +6910,6 @@ open_cmdwin(void)
 	    }
 	}
 
-	/* Don't execute autocommands while deleting the window. */
-	block_autocmds();
 # ifdef FEAT_CONCEAL
 	/* Avoid command-line window first character being concealed. */
 	curwin->w_p_cole = 0;
@@ -6928,8 +6926,6 @@ open_cmdwin(void)
 
 	/* Restore window sizes. */
 	win_size_restore(&winsizes);
-
-	unblock_autocmds();
     }
 
     ga_clear(&winsizes);
