@@ -143,10 +143,8 @@ search_regcomp(
 	magic = spats[i].magic;
 	no_smartcase = spats[i].no_scs;
     }
-#ifdef FEAT_CMDHIST
     else if (options & SEARCH_HIS)	/* put new pattern in history */
 	add_to_history(HIST_SEARCH, pat, TRUE, NUL);
-#endif
 
 #ifdef FEAT_RIGHTLEFT
     if (mr_pattern_alloced)

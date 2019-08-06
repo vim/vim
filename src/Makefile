@@ -1584,6 +1584,7 @@ BASIC_SRC = \
 	buffer.c \
 	change.c \
 	charset.c \
+	cmdhist.c \
 	crypt.c \
 	crypt_zip.c \
 	debugger.c \
@@ -1709,6 +1710,7 @@ OBJ_COMMON = \
 	objects/change.o \
 	objects/blob.o \
 	objects/blowfish.o \
+	objects/cmdhist.o \
 	objects/crypt.o \
 	objects/crypt_zip.o \
 	objects/debugger.o \
@@ -1847,6 +1849,7 @@ PRO_AUTO = \
 	buffer.pro \
 	change.pro \
 	charset.pro \
+	cmdhist.pro \
 	crypt.pro \
 	crypt_zip.pro \
 	debugger.pro \
@@ -3004,6 +3007,9 @@ objects/change.o: change.c
 objects/charset.o: charset.c
 	$(CCC) -o $@ charset.c
 
+objects/cmdhist.o: cmdhist.c
+	$(CCC) -o $@ cmdhist.c
+
 objects/crypt.o: crypt.c
 	$(CCC) -o $@ crypt.c
 
@@ -3495,6 +3501,10 @@ objects/change.o: change.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h version.h
 objects/charset.o: charset.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/cmdhist.o: cmdhist.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h

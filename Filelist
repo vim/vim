@@ -23,6 +23,7 @@ SRC_ALL =	\
 		src/change.c \
 		src/channel.c \
 		src/charset.c \
+		src/cmdhist.c \
 		src/crypt.c \
 		src/crypt_zip.c \
 		src/debugger.c \

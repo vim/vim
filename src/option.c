@@ -6745,11 +6745,10 @@ did_set_string_option(
     /* 'cryptkey' */
     else if (gvarp == &p_key)
     {
-# if defined(FEAT_CMDHIST)
-	/* Make sure the ":set" command doesn't show the new value in the
-	 * history. */
+	// Make sure the ":set" command doesn't show the new value in the
+	// history.
 	remove_key_from_history();
-# endif
+
 	if (STRCMP(curbuf->b_p_key, oldval) != 0)
 	    /* Need to update the swapfile. */
 	    ml_set_crypt_key(curbuf, oldval,

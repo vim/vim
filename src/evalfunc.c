@@ -182,10 +182,6 @@ static void f_glob2regpat(typval_T *argvars, typval_T *rettv);
 static void f_has(typval_T *argvars, typval_T *rettv);
 static void f_haslocaldir(typval_T *argvars, typval_T *rettv);
 static void f_hasmapto(typval_T *argvars, typval_T *rettv);
-static void f_histadd(typval_T *argvars, typval_T *rettv);
-static void f_histdel(typval_T *argvars, typval_T *rettv);
-static void f_histget(typval_T *argvars, typval_T *rettv);
-static void f_histnr(typval_T *argvars, typval_T *rettv);
 static void f_hlID(typval_T *argvars, typval_T *rettv);
 static void f_hlexists(typval_T *argvars, typval_T *rettv);
 static void f_hostname(typval_T *argvars, typval_T *rettv);
@@ -6114,9 +6110,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_CMDL_COMPL
 	"cmdline_compl",
 #endif
-#ifdef FEAT_CMDHIST
 	"cmdline_hist",
-#endif
 #ifdef FEAT_COMMENTS
 	"comments",
 #endif
@@ -6685,117 +6679,6 @@ f_hasmapto(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_number = TRUE;
     else
 	rettv->vval.v_number = FALSE;
-}
-
-/*
- * "histadd()" function
- */
-    static void
-f_histadd(typval_T *argvars UNUSED, typval_T *rettv)
-{
-#ifdef FEAT_CMDHIST
-    int		histype;
-    char_u	*str;
-    char_u	buf[NUMBUFLEN];
-#endif
-
-    rettv->vval.v_number = FALSE;
-    if (check_secure())
-	return;
-#ifdef FEAT_CMDHIST
-    str = tv_get_string_chk(&argvars[0]);	/* NULL on type error */
-    histype = str != NULL ? get_histtype(str) : -1;
-    if (histype >= 0)
-    {
-	str = tv_get_string_buf(&argvars[1], buf);
-	if (*str != NUL)
-	{
-	    init_history();
-	    add_to_history(histype, str, FALSE, NUL);
-	    rettv->vval.v_number = TRUE;
-	    return;
-	}
-    }
-#endif
-}
-
-/*
- * "histdel()" function
- */
-    static void
-f_histdel(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_CMDHIST
-    int		n;
-    char_u	buf[NUMBUFLEN];
-    char_u	*str;
-
-    str = tv_get_string_chk(&argvars[0]);	/* NULL on type error */
-    if (str == NULL)
-	n = 0;
-    else if (argvars[1].v_type == VAR_UNKNOWN)
-	/* only one argument: clear entire history */
-	n = clr_history(get_histtype(str));
-    else if (argvars[1].v_type == VAR_NUMBER)
-	/* index given: remove that entry */
-	n = del_history_idx(get_histtype(str),
-					  (int)tv_get_number(&argvars[1]));
-    else
-	/* string given: remove all matching entries */
-	n = del_history_entry(get_histtype(str),
-				      tv_get_string_buf(&argvars[1], buf));
-    rettv->vval.v_number = n;
-#endif
-}
-
-/*
- * "histget()" function
- */
-    static void
-f_histget(typval_T *argvars UNUSED, typval_T *rettv)
-{
-#ifdef FEAT_CMDHIST
-    int		type;
-    int		idx;
-    char_u	*str;
-
-    str = tv_get_string_chk(&argvars[0]);	/* NULL on type error */
-    if (str == NULL)
-	rettv->vval.v_string = NULL;
-    else
-    {
-	type = get_histtype(str);
-	if (argvars[1].v_type == VAR_UNKNOWN)
-	    idx = get_history_idx(type);
-	else
-	    idx = (int)tv_get_number_chk(&argvars[1], NULL);
-						    /* -1 on type error */
-	rettv->vval.v_string = vim_strsave(get_history_entry(type, idx));
-    }
-#else
-    rettv->vval.v_string = NULL;
-#endif
-    rettv->v_type = VAR_STRING;
-}
-
-/*
- * "histnr()" function
- */
-    static void
-f_histnr(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    int		i;
-
-#ifdef FEAT_CMDHIST
-    char_u	*history = tv_get_string_chk(&argvars[0]);
-
-    i = history == NULL ? HIST_CMD - 1 : get_histtype(history);
-    if (i >= HIST_CMD && i < HIST_COUNT)
-	i = get_history_idx(i);
-    else
-#endif
-	i = -1;
-    rettv->vval.v_number = i;
 }
 
 /*

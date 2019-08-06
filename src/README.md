@@ -24,8 +24,10 @@ Most code can be found in a file with an obvious name (incomplete list):
 File name       | Description
 --------------- | -----------
 autocmd.c	| autocommands
+blob.c		| blob data type
 buffer.c	| manipulating buffers (loaded files)
 change.c	| handling changes to text
+cmdhist.c	| command-line history
 debugger.c	| vim script debugger
 diff.c		| diff mode (vimdiff)
 eval.c		| expression evaluation

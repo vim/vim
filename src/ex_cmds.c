@@ -3900,10 +3900,8 @@ do_sub(exarg_T *eap)
 
 	if (!cmdmod.keeppatterns)
 	    save_re_pat(RE_SUBST, pat, p_magic);
-#ifdef FEAT_CMDHIST
-	/* put pattern in history */
+	// put pattern in history
 	add_to_history(HIST_SEARCH, pat, TRUE, NUL);
-#endif
 
 	return;
     }
