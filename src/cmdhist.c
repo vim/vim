@@ -667,6 +667,7 @@ ex_history(exarg_T *eap)
 }
 #endif // FEAT_CMDHIST
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * "histadd()" function
  */
@@ -767,9 +768,9 @@ f_histnr(typval_T *argvars UNUSED, typval_T *rettv)
     int		i;
 
 #ifdef FEAT_CMDHIST
-    char_u	*history = tv_get_string_chk(&argvars[0]);
+    char_u	*histname = tv_get_string_chk(&argvars[0]);
 
-    i = history == NULL ? HIST_CMD - 1 : get_histtype(history);
+    i = histname == NULL ? HIST_CMD - 1 : get_histtype(histname);
     if (i >= HIST_CMD && i < HIST_COUNT)
 	i = get_history_idx(i);
     else
@@ -777,3 +778,4 @@ f_histnr(typval_T *argvars UNUSED, typval_T *rettv)
 	i = -1;
     rettv->vval.v_number = i;
 }
+#endif // FEAT_EVAL
