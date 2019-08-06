@@ -2073,6 +2073,8 @@ count_common_word(
 
     if (len == -1)
 	p = word;
+    else if (len >= MAXWLEN)
+	return;
     else
     {
 	vim_strncpy(buf, word, len);
