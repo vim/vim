@@ -109,7 +109,6 @@ static struct event_name
     {"CmdlineLeave",	EVENT_CMDLINELEAVE},
     {"CmdwinEnter",	EVENT_CMDWINENTER},
     {"CmdwinLeave",	EVENT_CMDWINLEAVE},
-    {"CmdwinLeavePost",	EVENT_CMDWINLEAVEPOST},
     {"CmdUndefined",	EVENT_CMDUNDEFINED},
     {"ColorScheme",	EVENT_COLORSCHEME},
     {"ColorSchemePre",	EVENT_COLORSCHEMEPRE},
@@ -1983,7 +1982,6 @@ apply_autocmds_group(
 		|| event == EVENT_CMDLINELEAVE
 		|| event == EVENT_CMDWINENTER
 		|| event == EVENT_CMDWINLEAVE
-		|| event == EVENT_CMDWINLEAVEPOST
 		|| event == EVENT_CMDUNDEFINED
 		|| event == EVENT_FUNCUNDEFINED
 		|| event == EVENT_REMOTEREPLY

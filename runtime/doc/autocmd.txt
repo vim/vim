@@ -337,7 +337,6 @@ Name			triggered by ~
 |TabLeave|		before leaving a tab page
 |CmdwinEnter|		after entering the command-line window
 |CmdwinLeave|		before leaving the command-line window
-|CmdwinLeavePost|	after leaving the command-line window
 
 |CmdlineChanged|	after a change was made to the command-line text
 |CmdlineEnter|		after the cursor moves to the command line
@@ -568,9 +567,6 @@ CmdwinLeave			Before leaving the command-line window.
 				<afile> is set to a single character,
 				indicating the type of command-line.
 				|cmdwin-char|
-							*CmdwinLeavePost*
-CmdwinLeavePost			After leaving the command-line window.
-
 							*ColorScheme*
 ColorScheme			After loading a color scheme. |:colorscheme|
 				The pattern is matched against the
