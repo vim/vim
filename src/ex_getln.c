@@ -6712,9 +6712,6 @@ open_cmdwin(void)
     /* Save current window sizes. */
     win_size_save(&winsizes);
 
-    /* Don't execute autocommands while creating the window. */
-    block_autocmds();
-
 #if defined(FEAT_INS_EXPAND)
     // When using completion in Insert mode with <C-R>=<C-F> one can open the
     // command line window, but we don't want the popup menu then.
@@ -6729,7 +6726,6 @@ open_cmdwin(void)
     if (win_split((int)p_cwh, WSP_BOT) == FAIL)
     {
 	beep_flush();
-	unblock_autocmds();
 	return K_IGNORE;
     }
     cmdwin_type = get_cmdline_type();
@@ -6748,9 +6744,7 @@ open_cmdwin(void)
 # endif
     RESET_BINDING(curwin);
 
-    /* Do execute autocommands for setting the filetype (load syntax). */
-    unblock_autocmds();
-    /* But don't allow switching to another buffer. */
+    /* Don't allow switching to another buffer. */
     ++curbuf_lock;
 
     /* Showing the prompt may have set need_wait_return, reset it. */
