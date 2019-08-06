@@ -1456,7 +1456,6 @@ EXTERN char e_fontwidth[]	INIT(= N_("E236: Font \"%s\" is not fixed-width"));
 EXTERN char e_internal[]	INIT(= N_("E473: Internal error"));
 EXTERN char e_intern2[]	INIT(= N_("E685: Internal error: %s"));
 EXTERN char e_interr[]	INIT(= N_("Interrupted"));
-EXTERN char e_invaddr[]	INIT(= N_("E14: Invalid address"));
 EXTERN char e_invarg[]	INIT(= N_("E474: Invalid argument"));
 EXTERN char e_invarg2[]	INIT(= N_("E475: Invalid argument: %s"));
 EXTERN char e_duparg2[]	INIT(= N_("E983: Duplicate argument: %s"));
