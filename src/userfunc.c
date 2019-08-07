@@ -288,7 +288,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 
 	sprintf((char*)name, "<lambda>%d", ++lambda_no);
 
-	fp = alloc_clear(sizeof(ufunc_T) + STRLEN(name));
+	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
 	if (fp == NULL)
 	    goto errret;
 	pt = ALLOC_CLEAR_ONE(partial_T);
@@ -2631,7 +2631,7 @@ ex_function(exarg_T *eap)
 	    }
 	}
 
-	fp = alloc_clear(sizeof(ufunc_T) + STRLEN(name));
+	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
 	if (fp == NULL)
 	    goto erret;
 

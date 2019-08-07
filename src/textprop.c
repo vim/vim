@@ -695,7 +695,7 @@ prop_type_set(typval_T *argvars, int add)
 	    semsg(_("E969: Property type %s already defined"), name);
 	    return;
 	}
-	prop = alloc_clear(sizeof(proptype_T) + STRLEN(name));
+	prop = alloc_clear(offsetof(proptype_T, pt_name) + STRLEN(name) + 1);
 	if (prop == NULL)
 	    return;
 	STRCPY(prop->pt_name, name);
