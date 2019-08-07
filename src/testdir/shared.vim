@@ -323,10 +323,6 @@ func RunVimPiped(before, after, arguments, pipecmd)
   return 1
 endfunc
 
-func CanRunGui()
-  return has('gui') && ($DISPLAY != "" || has('gui_running'))
-endfunc
-
 func WorkingClipboard()
   if !has('clipboard')
     return 0

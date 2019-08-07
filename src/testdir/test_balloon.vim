@@ -1,17 +1,12 @@
 " Tests for 'balloonevalterm'.
 " A few tests only work in the terminal.
 
-if has('gui_running')
-  throw 'Skipped: only work in the terminal'
-endif
-
 source check.vim
+CheckNotGui
 CheckFeature balloon_eval_term
 
 source screendump.vim
-if !CanRunVimInTerminal()
-  throw 'Skipped: cannot make screendumps'
-endif
+CheckScreendump
 
 let s:common_script =<< trim [CODE]
   call setline(1, ["one one one", "two tXo two", "three three three"])

@@ -1,5 +1,6 @@
 " Tests for various functions.
 source shared.vim
+source check.vim
 
 " Must be done first, since the alternate buffer must be unset.
 func Test_00_bufexists()
@@ -1376,9 +1377,8 @@ endfunc
 
 " Test confirm({msg} [, {choices} [, {default} [, {type}]]])
 func Test_confirm()
-  if !has('unix') || has('gui_running')
-    return
-  endif
+  CheckUnix
+  CheckNotGui
 
   call feedkeys('o', 'L')
   let a = confirm('Press O to proceed')

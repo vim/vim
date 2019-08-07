@@ -1,12 +1,10 @@
 " Tests for bracketed paste and other forms of pasting.
 
 " Bracketed paste only works with "xterm".  Not in GUI or Windows console.
-if has('win32')
-  throw 'Skipped: does not work on MS-Windows'
-endif
-if has('gui_running')
-  throw 'Skipped: does not work in the GUI'
-endif
+source check.vim
+CheckNotMSWindows
+CheckNotGui
+
 set term=xterm
 
 source shared.vim

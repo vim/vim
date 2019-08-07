@@ -2,6 +2,7 @@
 
 source shared.vim
 source screendump.vim
+source check.vim
 
 " Run a Vim debugger command
 " If the expected output argument is supplied, then check for it.
@@ -21,9 +22,7 @@ endfunc
 
 " Debugger tests
 func Test_Debugger()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot run Vim in a terminal window'
-  endif
+  CheckRunVimInTerminal
 
   " Create a Vim script with some functions
   let lines =<< trim END

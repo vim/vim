@@ -2,6 +2,7 @@
 " matchaddpos(), matcharg(), matchdelete(), and setmatches().
 
 source screendump.vim
+source check.vim
 
 function Test_match()
   highlight MyGroup1 term=bold ctermbg=red guibg=red
@@ -267,9 +268,8 @@ func OtherWindowCommon()
 endfunc
 
 func Test_matchdelete_other_window()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let buf = OtherWindowCommon()
   call term_sendkeys(buf, ":call matchdelete(mid, winid)\<CR>")
   call VerifyScreenDump(buf, 'Test_matchdelete_1', {})

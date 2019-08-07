@@ -1,9 +1,8 @@
 " Tests specifically for the GUI
 
 source shared.vim
-if !CanRunGui()
-  throw 'Skipped: cannot run GUI'
-endif
+source check.vim
+CheckCanRunGui
 
 source setup_gui.vim
 
