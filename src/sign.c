@@ -85,7 +85,7 @@ sign_group_ref(char_u *groupname)
     if (HASHITEM_EMPTY(hi))
     {
 	// new group
-	group = alloc(sizeof(signgroup_T) + STRLEN(groupname));
+	group = alloc(offsetof(signgroup_T, sg_name) + STRLEN(groupname) + 1);
 	if (group == NULL)
 	    return NULL;
 	STRCPY(group->sg_name, groupname);
