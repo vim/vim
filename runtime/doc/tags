@@ -2382,6 +2382,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :ene!	editing.txt	/*:ene!*
 :enew	editing.txt	/*:enew*
 :enew!	editing.txt	/*:enew!*
+:eval	eval.txt	/*:eval*
 :ex	editing.txt	/*:ex*
 :exe	eval.txt	/*:exe*
 :exe-comment	eval.txt	/*:exe-comment*
@@ -3880,7 +3881,6 @@ E136	starting.txt	/*E136*
 E137	starting.txt	/*E137*
 E138	starting.txt	/*E138*
 E139	message.txt	/*E139*
-E14	cmdline.txt	/*E14*
 E140	message.txt	/*E140*
 E141	message.txt	/*E141*
 E142	message.txt	/*E142*
@@ -4027,6 +4027,7 @@ E270	if_ruby.txt	/*E270*
 E271	if_ruby.txt	/*E271*
 E272	if_ruby.txt	/*E272*
 E273	if_ruby.txt	/*E273*
+E274	eval.txt	/*E274*
 E277	remote.txt	/*E277*
 E28	syntax.txt	/*E28*
 E280	if_tcl.txt	/*E280*
@@ -7653,6 +7654,7 @@ message-history	message.txt	/*message-history*
 message.txt	message.txt	/*message.txt*
 messages	message.txt	/*messages*
 meta	intro.txt	/*meta*
+method	eval.txt	/*method*
 min()	eval.txt	/*min()*
 missing-options	vi_diff.txt	/*missing-options*
 mkdir()	eval.txt	/*mkdir()*
@@ -8246,6 +8248,7 @@ popup-filter	popup.txt	/*popup-filter*
 popup-function-details	popup.txt	/*popup-function-details*
 popup-functions	popup.txt	/*popup-functions*
 popup-intro	popup.txt	/*popup-intro*
+popup-mapping	popup.txt	/*popup-mapping*
 popup-mask	popup.txt	/*popup-mask*
 popup-menu	gui.txt	/*popup-menu*
 popup-menu-added	version5.txt	/*popup-menu-added*
