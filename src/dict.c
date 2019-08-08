@@ -744,6 +744,7 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
     dictitem_T	*item;
     char_u	*start = skipwhite(*arg + 1);
     char_u	buf[NUMBUFLEN];
+    dictitem_T	*var;
 
     /*
      * First check if it's not a curly-braces thing: {expr}.
@@ -751,8 +752,9 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
      * twice.  Unfortunately this means we need to call eval1() twice for the
      * first item.
      * But {} is an empty Dictionary.
+     * #{} literal does not require this check since # is preceded.
      */
-    if (*start != '}')
+    if (!literal && *start != '}')
     {
 	if (eval1(&start, &tv, FALSE) == FAIL)	/* recursive! */
 	    return FAIL;
@@ -777,7 +779,8 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
 		: eval1(arg, &tvkey, evaluate)) == FAIL)	// recursive!
 	    goto failret;
 
-	if (**arg != ':')
+	if ((**arg != ':') &&
+		(!literal || (**arg != '}' && **arg != ',')))
 	{
 	    semsg(_("E720: Missing colon in Dictionary: %s"), *arg);
 	    clear_tv(&tvkey);
@@ -794,13 +797,29 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
 	    }
 	}
 
-	*arg = skipwhite(*arg + 1);
-	if (eval1(arg, &tv, evaluate) == FAIL)	/* recursive! */
+	if (literal && (**arg != ':'))
 	{
-	    if (evaluate)
-		clear_tv(&tvkey);
-	    goto failret;
+	    var = find_var(tvkey.vval.v_string, NULL, TRUE);
+	    if (var == NULL)
+	    {
+		semsg(_("E121: Undefined variable: %s"), tvkey.vval.v_string);
+		if (evaluate)
+		    clear_tv(&tvkey);
+		goto failret;
+	    }
+	    copy_tv(&var->di_tv, &tv);
 	}
+	else
+	{
+	    *arg = skipwhite(*arg + 1);
+	    if (eval1(arg, &tv, evaluate) == FAIL)	/* recursive! */
+	    {
+		if (evaluate)
+		    clear_tv(&tvkey);
+		goto failret;
+	    }
+	}
+
 	if (evaluate)
 	{
 	    item = dict_find(d, key, -1);

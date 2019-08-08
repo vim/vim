@@ -785,3 +785,43 @@ func Test_scope_dict()
   " Test for v:
   call s:check_scope_dict('v', v:true)
 endfunc
+
+func Test_dict_item_shorthands()
+    let l:x1 = 1
+    let x2 = 2
+
+    " One shorthand only. This is edge case for first check of curly-braces
+    " thing
+    call assert_equal({'x1': x1}, #{x1})
+    " Trailing comma
+    call assert_equal({'x1': x1}, #{x1,})
+    " Multiple shorthands
+    call assert_equal({'x1': x1, 'x2': x2}, #{x1, x2})
+    " Shofthand at first
+    call assert_equal({'x1': x1, 'b': 3}, #{x1, b: 3})
+    " Shofthand at last
+    call assert_equal({'b': 3, 'x1': x1}, #{b: 3, x1})
+    " Multiple shorthands mixed with normal items
+    call assert_equal({'b': 3, 'x1': x1, 'x2': x2}, #{b: 3, x1, x2})
+    call assert_equal({'b': 3, 'x1': x1, 'x2': x2}, #{x1, b: 3, x2})
+    call assert_equal({'b': 3, 'x1': x1, 'x2': x2}, #{x1, x2, b: 3})
+    " The same names as existing variables are still available
+    call assert_equal({'x1': 3, 'x2': 4}, #{x1: 3, x2: 4})
+
+    " Error cases
+
+    " Undefined variable
+    call assert_fails('echo #{x3}', 'E121: Undefined variable: x3')
+    call assert_fails('echo #{b: 3, x3}', 'E121: Undefined variable: x3')
+    call assert_fails('echo #{x3, b: 3}', 'E121: Undefined variable: x3')
+    call assert_fails('echo #{3x}', 'E121: Undefined variable: 3x')
+    call assert_fails('echo #{123}', 'E121: Undefined variable: 123')
+    " Duplicate key
+    call assert_fails('echo #{x1, x1}', 'E721: Duplicate key in Dictionary: "x1"')
+    call assert_fails('echo #{x1: 3, x1}', 'E721: Duplicate key in Dictionary: "x1"')
+    call assert_fails('echo #{x1, x1: 3}', 'E721: Duplicate key in Dictionary: "x1"')
+
+    unlet l:x1
+    unlet x2
+endfunc
+

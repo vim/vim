@@ -489,6 +489,17 @@ does require the key to consist only of ASCII letters, digits, '-' and '_'.
 Example: >
 	let mydict = #{zero: 0, one_key: 1, two-key: 2, 333: 3}
 Note that 333 here is the string "333".  Empty keys are not possible with #{}.
+						*literal-Dict-shorthand*
+When a value in item of #{} is omitted, a variable which has the same name is
+set to the value. If such a variable does not exist, |E121| error is thrown.
+Example: >
+	let zero = 0
+	let one_key = 1
+	let mydict = #{zero, one_key, two-key: 2}
+This example is the same as: >
+	let zero = 0
+	let one_key = 1
+	let mydict = #{zero: zero, one_key: one_key, two-key: 2}
 
 A value can be any expression.  Using a Dictionary for a value creates a
 nested Dictionary: >
