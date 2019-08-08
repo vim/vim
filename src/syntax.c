@@ -4394,7 +4394,7 @@ add_keyword(
 						 name_folded, MAXKEYWLEN + 1);
     else
 	name_ic = name;
-    kp = alloc(sizeof(keyentry_T) + STRLEN(name_ic));
+    kp = alloc(offsetof(keyentry_T, keyword) + STRLEN(name_ic) + 1);
     if (kp == NULL)
 	return;
     STRCPY(kp->keyword, name_ic);
