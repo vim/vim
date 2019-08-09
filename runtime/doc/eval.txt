@@ -483,7 +483,7 @@ String automatically.  Thus the String '4' and the number 4 will find the same
 entry.  Note that the String '04' and the Number 04 are different, since the
 Number will be converted to the String '4'.  The empty string can also be used
 as a key.
-						*literal-Dict*
+						*literal-Dict* *#{}*
 To avoid having to put quotes around every key the #{} form can be used.  This
 does require the key to consist only of ASCII letters, digits, '-' and '_'.
 Example: >
