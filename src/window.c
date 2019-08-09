@@ -6887,24 +6887,48 @@ win_id2tabwin(typval_T *argvars, list_T *list)
     list_append_number(list, 0);
 }
 
+/*
+ * Return the window pointer of window "id".
+ */
     win_T *
 win_id2wp(int id)
+{
+    return win_id2wp_tp(id, NULL);
+}
+
+/*
+ * Return the window and tab pointer of window "id".
+ */
+    win_T *
+win_id2wp_tp(int id, tabpage_T **tpp)
 {
     win_T	*wp;
     tabpage_T   *tp;
 
     FOR_ALL_TAB_WINDOWS(tp, wp)
 	if (wp->w_id == id)
+	{
+	    if (tpp != NULL)
+		*tpp = tp;
 	    return wp;
+	}
 #ifdef FEAT_TEXT_PROP
     // popup windows are in separate lists
      FOR_ALL_TABPAGES(tp)
 	 for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
 	     if (wp->w_id == id)
+	     {
+		 if (tpp != NULL)
+		     *tpp = tp;
 		 return wp;
+	     }
     for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
 	if (wp->w_id == id)
+	{
+	    if (tpp != NULL)
+		*tpp = tp;
 	    return wp;
+	}
 #endif
 
     return NULL;
