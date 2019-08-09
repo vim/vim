@@ -742,9 +742,9 @@ typedef struct proptype_S
 // Sign group
 typedef struct signgroup_S
 {
-    short_u	refcount;		// number of signs in this group
     int		next_sign_id;		// next sign id for this group
-    char_u	sg_name[1];		// sign group name
+    short_u	refcount;		// number of signs in this group
+    char_u	sg_name[1];		// sign group name, actually longer
 } signgroup_T;
 
 typedef struct signlist signlist_T;

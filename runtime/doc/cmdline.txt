@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.1.  Last change: 2019 Jul 21
+*cmdline.txt*   For Vim version 8.1.  Last change: 2019 Aug 06
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -702,7 +702,7 @@ commands ":write" and ":global" have the whole file (1,$) as default.
 If more line specifiers are given than required for the command, the first
 one(s) will be ignored.
 
-Line numbers may be specified with:		*:range* *E14* *{address}*
+Line numbers may be specified with:		*:range* *{address}*
 	{number}	an absolute line number
 	.		the current line			  *:.*
 	$		the last line in the file		  *:$*

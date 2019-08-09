@@ -5726,14 +5726,14 @@ f_getwininfo(typval_T *argvars, typval_T *rettv)
 f_win_execute(typval_T *argvars, typval_T *rettv)
 {
     int		id = (int)tv_get_number(argvars);
-    win_T	*wp = win_id2wp(id);
+    tabpage_T	*tp;
+    win_T	*wp = win_id2wp_tp(id, &tp);
     win_T	*save_curwin;
     tabpage_T	*save_curtab;
 
-    if (wp != NULL)
+    if (wp != NULL && tp != NULL)
     {
-	if (switch_win_noblock(&save_curwin, &save_curtab, wp, curtab, TRUE)
-									 == OK)
+	if (switch_win_noblock(&save_curwin, &save_curtab, wp, tp, TRUE) == OK)
 	{
 	    check_cursor();
 	    execute_common(argvars, rettv, 1);

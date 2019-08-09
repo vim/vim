@@ -1,7 +1,7 @@
 " These commands create the option window.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2019 Jul 18
+" Last Change:	2019 Aug 01
 
 " If there already is an option window, jump to that one.
 let buf = bufnr('option-window')
@@ -1176,6 +1176,8 @@ if has("win32") || has("osfiletype")
   if has("win32")
     call append("$", "shellslash\tuse forward slashes in file names; for Unix-like shells")
     call <SID>BinOptionG("ssl", &ssl)
+    call append("$", "completeslash\tspecifies slash/backslash used for completion")
+    call <SID>OptionG("csl", &csl)
   endif
 endif
 

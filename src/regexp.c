@@ -1319,7 +1319,7 @@ bt_regcomp(char_u *expr, int re_flags)
 	return NULL;
 
     /* Allocate space. */
-    r = alloc(sizeof(bt_regprog_T) + regsize);
+    r = alloc(offsetof(bt_regprog_T, program) + regsize);
     if (r == NULL)
 	return NULL;
     r->re_in_use = FALSE;

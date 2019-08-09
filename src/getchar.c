@@ -232,7 +232,7 @@ add_buff(
 	    len = MINIMAL_SIZE;
 	else
 	    len = slen;
-	p = alloc(sizeof(buffblock_T) + len);
+	p = alloc(offsetof(buffblock_T, b_str) + len + 1);
 	if (p == NULL)
 	    return; /* no space, just forget it */
 	buf->bh_space = (int)(len - slen);

@@ -4862,6 +4862,12 @@ eval_method(
 		semsg(_(e_missingparen), name);
 	    ret = FAIL;
 	}
+	else if (VIM_ISWHITE((*arg)[-1]))
+	{
+	    if (verbose)
+		semsg(_("E274: No white space allowed before parenthesis"));
+	    ret = FAIL;
+	}
 	else
 	    ret = eval_func(arg, name, len, rettv, evaluate, &base);
     }

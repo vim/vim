@@ -112,3 +112,13 @@ func Test_method_funcref()
 
   delfunc Concat
 endfunc
+
+func Test_method_syntax()
+  eval [1, 2, 3]  ->sort( )
+  eval [1, 2, 3]  
+	\ ->sort(
+	\ )
+  call assert_fails('eval [1, 2, 3]-> sort()', 'E260:')
+  call assert_fails('eval [1, 2, 3]->sort ()', 'E274:')
+  call assert_fails('eval [1, 2, 3]-> sort ()', 'E260:')
+endfunc

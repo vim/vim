@@ -1,10 +1,7 @@
 " Tests for 'ballooneval' in the GUI.
 
-if !has('gui_running')
-  throw 'Skipped: only works in the GUI'
-endif
-
 source check.vim
+CheckGui
 CheckFeature balloon_eval
 
 func Test_balloon_show_gui()

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Aug 04
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Aug 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1223,11 +1223,18 @@ For methods that are also available as global functions this is the same as: >
 	name(expr8 [, args])
 There can also be methods specifically for the type of "expr8".
 
-"->name(" must not contain white space.  There can be white space before "->"
-and after the "(".
-
-This allows for chaining, using the type that the method returns: >
+This allows for chaining, passing the value that one method returns to the
+next method: >
 	mylist->filter(filterexpr)->map(mapexpr)->sort()->join()
+<
+							*E274*
+"->name(" must not contain white space.  There can be white space before the
+"->" and after the "(", thus you can split the lines like this: >
+	mylist
+	\ ->filter(filterexpr)
+	\ ->map(mapexpr)
+	\ ->sort()
+	\ ->join()
 <
 
 							*expr9*
@@ -4389,14 +4396,23 @@ function({name} [, {arglist}] [, {dict}])
 		the Funcref and will be used when the Funcref is called.
 
 		The arguments are passed to the function in front of other
-		arguments.  Example: >
+		arguments, but after any argument from |method|.  Example: >
 			func Callback(arg1, arg2, name)
 			...
-			let Func = function('Callback', ['one', 'two'])
+			let Partial = function('Callback', ['one', 'two'])
 			...
-			call Func('name')
+			call Partial('name')
 <		Invokes the function as with: >
 			call Callback('one', 'two', 'name')
+
+<		With a |method|: >
+			func Callback(one, two, three)
+			...
+			let Partial = function('Callback', ['two'])
+			...
+			eval 'one'->Partial('three')
+<		Invokes the function as with: >
+			call Callback('one', 'two', 'three')
 
 <		The function() call can be nested to add more arguments to the
 		Funcref.  The extra arguments are appended to the list of
@@ -6189,6 +6205,8 @@ map({expr1}, {expr2})					*map()*
 			call map(myDict, {key, val -> key . '-' . val})
 <		If you do not use "val" you can leave it out: >
 			call map(myDict, {key -> 'item: ' . key})
+<		If you do not use "key" you can use a short name: >
+			call map(myDict, {_, val -> 'item: ' . val})
 <
 		The operation is done in-place.  If you want a |List| or
 		|Dictionary| to remain unmodified make a copy first: >
@@ -10112,6 +10130,11 @@ option.
 It is also possible to use `:eval`.  It does not support a range, but does
 allow for method chaining, e.g.: >
 	eval GetList()->Filter()->append('$')
+
+A function can also be called as part of evaluating an expression or when it
+is used as a method: >
+	let x = GetList()
+	let y = GetList()->Filter()
 
 
 AUTOMATICALLY LOADING FUNCTIONS ~
