@@ -83,7 +83,7 @@ endfunc
 command CheckCanRunGui call CheckCanRunGui()
 func CheckCanRunGui()
   if !has('gui') || ($DISPLAY == "" && !has('gui_running'))
-    throw 'Skipped: cannot run start the GUI'
+    throw 'Skipped: cannot start the GUI'
   endif
 endfunc
 
