@@ -733,7 +733,7 @@ static funcentry_T global_functions[] =
     {"pow",		2, 2, 0,	  f_pow},
 #endif
     {"prevnonblank",	1, 1, 0,	  f_prevnonblank},
-    {"printf",		1, 19, 0,	  f_printf},
+    {"printf",		1, 19, FEARG_2,	  f_printf},
 #ifdef FEAT_JOB_CHANNEL
     {"prompt_setcallback", 2, 2, 0,	  f_prompt_setcallback},
     {"prompt_setinterrupt", 2, 2, 0,	  f_prompt_setinterrupt},
