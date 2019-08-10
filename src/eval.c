@@ -32,6 +32,7 @@ static char *e_cannot_mod = N_("E995: Cannot modify existing variable");
 #ifdef FEAT_FLOAT
 static char *e_float_as_string = N_("E806: using Float as a String");
 #endif
+static char *e_nowhitespace = N_("E274: No white space allowed before parenthesis");
 
 #define NAMESPACE_CHAR	(char_u *)"abglstvw"
 
@@ -3693,7 +3694,6 @@ eval_func(
 	vim_memset(&funcexe, 0, sizeof(funcexe));
 	funcexe.firstline = curwin->w_cursor.lnum;
 	funcexe.lastline = curwin->w_cursor.lnum;
-	funcexe.doesrange = &len;
 	funcexe.evaluate = evaluate;
 	funcexe.partial = partial;
 	funcexe.basetv = basetv;
@@ -4822,6 +4822,95 @@ eval7(
 }
 
 /*
+ * Call the function referred to in "rettv".
+ */
+    static int
+call_func_rettv(
+	char_u	    **arg,
+	typval_T    *rettv,
+	int	    evaluate,
+	dict_T	    *selfdict,
+	typval_T    *basetv)
+{
+    partial_T	*pt = NULL;
+    funcexe_T	funcexe;
+    typval_T	functv;
+    char_u	*s;
+    int		ret;
+
+    // need to copy the funcref so that we can clear rettv
+    if (evaluate)
+    {
+	functv = *rettv;
+	rettv->v_type = VAR_UNKNOWN;
+
+	/* Invoke the function.  Recursive! */
+	if (functv.v_type == VAR_PARTIAL)
+	{
+	    pt = functv.vval.v_partial;
+	    s = partial_name(pt);
+	}
+	else
+	    s = functv.vval.v_string;
+    }
+    else
+	s = (char_u *)"";
+
+    vim_memset(&funcexe, 0, sizeof(funcexe));
+    funcexe.firstline = curwin->w_cursor.lnum;
+    funcexe.lastline = curwin->w_cursor.lnum;
+    funcexe.evaluate = evaluate;
+    funcexe.partial = pt;
+    funcexe.selfdict = selfdict;
+    funcexe.basetv = basetv;
+    ret = get_func_tv(s, -1, rettv, arg, &funcexe);
+
+    /* Clear the funcref afterwards, so that deleting it while
+     * evaluating the arguments is possible (see test55). */
+    if (evaluate)
+	clear_tv(&functv);
+
+    return ret;
+}
+
+/*
+ * Evaluate "->method()".
+ * "*arg" points to the '-'.
+ * Returns FAIL or OK. "*arg" is advanced to after the ')'.
+ */
+    static int
+eval_lambda(
+    char_u	**arg,
+    typval_T	*rettv,
+    int		evaluate,
+    int		verbose)	/* give error messages */
+{
+    typval_T	base = *rettv;
+    int		ret;
+
+    // Skip over the ->.
+    *arg += 2;
+    rettv->v_type = VAR_UNKNOWN;
+
+    ret = get_lambda_tv(arg, rettv, evaluate);
+    if (ret == NOTDONE)
+	return FAIL;
+    else if (**arg != '(')
+    {
+	if (verbose)
+	{
+	    if (*skipwhite(*arg) == '(')
+		semsg(_(e_nowhitespace));
+	    else
+		semsg(_(e_missingparen), "lambda");
+	}
+	clear_tv(rettv);
+	return FAIL;
+    }
+    return call_func_rettv(arg, rettv, evaluate, NULL, &base);
+}
+
+/*
  * Evaluate "->method()".
  * "*arg" points to the '-'.
  * Returns FAIL or OK. "*arg" is advanced to after the ')'.
@@ -4865,15 +4954,15 @@ eval_method(
 	else if (VIM_ISWHITE((*arg)[-1]))
 	{
 	    if (verbose)
-		semsg(_("E274: No white space allowed before parenthesis"));
+		semsg(_(e_nowhitespace));
 	    ret = FAIL;
 	}
 	else
 	    ret = eval_func(arg, name, len, rettv, evaluate, &base);
     }
 
-    /* Clear the funcref afterwards, so that deleting it while
-     * evaluating the arguments is possible (see test55). */
+    // Clear the funcref afterwards, so that deleting it while
+    // evaluating the arguments is possible (see test55).
     if (evaluate)
 	clear_tv(&base);
 
@@ -7455,8 +7544,6 @@ handle_subscript(
 {
     int		ret = OK;
     dict_T	*selfdict = NULL;
-    char_u	*s;
-    typval_T	functv;
 
     // "." is ".name" lookup when we found a dict or when evaluating and
     // scriptversion is at least 2, where string concatenation is "..".
@@ -7473,43 +7560,11 @@ handle_subscript(
     {
 	if (**arg == '(')
 	{
-	    partial_T	*pt = NULL;
-	    funcexe_T	funcexe;
+	    ret = call_func_rettv(arg, rettv, evaluate, selfdict, NULL);
 
-	    /* need to copy the funcref so that we can clear rettv */
-	    if (evaluate)
-	    {
-		functv = *rettv;
-		rettv->v_type = VAR_UNKNOWN;
-
-		/* Invoke the function.  Recursive! */
-		if (functv.v_type == VAR_PARTIAL)
-		{
-		    pt = functv.vval.v_partial;
-		    s = partial_name(pt);
-		}
-		else
-		    s = functv.vval.v_string;
-	    }
-	    else
-		s = (char_u *)"";
-
-	    vim_memset(&funcexe, 0, sizeof(funcexe));
-	    funcexe.firstline = curwin->w_cursor.lnum;
-	    funcexe.lastline = curwin->w_cursor.lnum;
-	    funcexe.evaluate = evaluate;
-	    funcexe.partial = pt;
-	    funcexe.selfdict = selfdict;
-	    ret = get_func_tv(s, -1, rettv, arg, &funcexe);
-
-	    /* Clear the funcref afterwards, so that deleting it while
-	     * evaluating the arguments is possible (see test55). */
-	    if (evaluate)
-		clear_tv(&functv);
-
-	    /* Stop the expression evaluation when immediately aborting on
-	     * error, or when an interrupt occurred or an exception was thrown
-	     * but not caught. */
+	    // Stop the expression evaluation when immediately aborting on
+	    // error, or when an interrupt occurred or an exception was thrown
+	    // but not caught.
 	    if (aborting())
 	    {
 		if (ret == OK)
@@ -7521,11 +7576,12 @@ handle_subscript(
 	}
 	else if (**arg == '-')
 	{
-	    if (eval_method(arg, rettv, evaluate, verbose) == FAIL)
-	    {
-		clear_tv(rettv);
-		ret = FAIL;
-	    }
+	    if ((*arg)[2] == '{')
+		// expr->{lambda}()
+		ret = eval_lambda(arg, rettv, evaluate, verbose);
+	    else
+		// expr->name()
+		ret = eval_method(arg, rettv, evaluate, verbose);
 	}
 	else /* **arg == '[' || **arg == '.' */
 	{

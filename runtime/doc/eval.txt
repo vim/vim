@@ -1217,7 +1217,8 @@ expr8(expr1, ...)	|Funcref| function call
 When expr8 is a |Funcref| type variable, invoke the function it refers to.
 
 
-expr8->name([args])	method call			*method*
+expr8->name([args])	method call			*method* *->*
+expr8->{lambda}([args])
 
 For methods that are also available as global functions this is the same as: >
 	name(expr8 [, args])
@@ -1227,6 +1228,9 @@ This allows for chaining, passing the value that one method returns to the
 next method: >
 	mylist->filter(filterexpr)->map(mapexpr)->sort()->join()
 <
+Example of using a lambda: >
+	GetPercentage->{x -> x * 100}()->printf('%d%%')
+
 							*E274*
 "->name(" must not contain white space.  There can be white space before the
 "->" and after the "(", thus you can split the lines like this: >
@@ -6735,7 +6739,11 @@ printf({fmt}, {expr1} ...)				*printf()*
 <		May result in:
 			"  99: E42 asdfasdfasdfasdfasdfasdfasdfas" ~
 
-		Often used items are:
+		When used as a |method| the base is passed as the second
+		argument: >
+			Compute()->printf("result: %d")
+
+<		Often used items are:
 		  %s	string
 		  %6S	string right-aligned in 6 display cells
 		  %6s	string right-aligned in 6 bytes
