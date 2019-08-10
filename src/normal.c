@@ -5736,11 +5736,11 @@ nv_ident(cmdarg_T *cap)
 		    ? vim_iswordp(mb_prevptr(ml_get_curline(), ptr))
 		    : vim_iswordc(ptr[-1])))
 	    STRCAT(buf, "\\>");
-#ifdef FEAT_CMDHIST
-	/* put pattern in search history */
+
+	// put pattern in search history
 	init_history();
 	add_to_history(HIST_SEARCH, buf, TRUE, NUL);
-#endif
+
 	(void)normal_search(cap, cmdchar == '*' ? '/' : '?', buf, 0);
     }
     else

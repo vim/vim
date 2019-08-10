@@ -149,6 +149,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'complete'	options.txt	/*'complete'*
 'completefunc'	options.txt	/*'completefunc'*
 'completeopt'	options.txt	/*'completeopt'*
+'completeslash'	options.txt	/*'completeslash'*
 'concealcursor'	options.txt	/*'concealcursor'*
 'conceallevel'	options.txt	/*'conceallevel'*
 'confirm'	options.txt	/*'confirm'*
@@ -169,6 +170,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'cscopetag'	options.txt	/*'cscopetag'*
 'cscopetagorder'	options.txt	/*'cscopetagorder'*
 'cscopeverbose'	options.txt	/*'cscopeverbose'*
+'csl'	options.txt	/*'csl'*
 'cspc'	options.txt	/*'cspc'*
 'csprg'	options.txt	/*'csprg'*
 'csqf'	options.txt	/*'csqf'*
@@ -2380,6 +2382,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :ene!	editing.txt	/*:ene!*
 :enew	editing.txt	/*:enew*
 :enew!	editing.txt	/*:enew!*
+:eval	eval.txt	/*:eval*
 :ex	editing.txt	/*:ex*
 :exe	eval.txt	/*:exe*
 :exe-comment	eval.txt	/*:exe-comment*
@@ -3878,7 +3881,6 @@ E136	starting.txt	/*E136*
 E137	starting.txt	/*E137*
 E138	starting.txt	/*E138*
 E139	message.txt	/*E139*
-E14	cmdline.txt	/*E14*
 E140	message.txt	/*E140*
 E141	message.txt	/*E141*
 E142	message.txt	/*E142*
@@ -3991,12 +3993,14 @@ E239	sign.txt	/*E239*
 E24	message.txt	/*E24*
 E240	remote.txt	/*E240*
 E241	eval.txt	/*E241*
+E242	windows.txt	/*E242*
 E243	if_ole.txt	/*E243*
 E244	gui.txt	/*E244*
 E245	gui.txt	/*E245*
 E246	autocmd.txt	/*E246*
 E247	remote.txt	/*E247*
 E248	remote.txt	/*E248*
+E249	windows.txt	/*E249*
 E25	message.txt	/*E25*
 E250	options.txt	/*E250*
 E251	remote.txt	/*E251*
@@ -4023,6 +4027,7 @@ E270	if_ruby.txt	/*E270*
 E271	if_ruby.txt	/*E271*
 E272	if_ruby.txt	/*E272*
 E273	if_ruby.txt	/*E273*
+E274	eval.txt	/*E274*
 E277	remote.txt	/*E277*
 E28	syntax.txt	/*E28*
 E280	if_tcl.txt	/*E280*
@@ -4736,6 +4741,7 @@ E955	terminal.txt	/*E955*
 E956	pattern.txt	/*E956*
 E957	eval.txt	/*E957*
 E958	terminal.txt	/*E958*
+E959	diff.txt	/*E959*
 E96	diff.txt	/*E96*
 E960	options.txt	/*E960*
 E961	cmdline.txt	/*E961*
@@ -4910,6 +4916,8 @@ P	change.txt	/*P*
 PATHEXT	eval.txt	/*PATHEXT*
 PEP8	filetype.txt	/*PEP8*
 PHP_BracesAtCodeLevel	indent.txt	/*PHP_BracesAtCodeLevel*
+PHP_IndentFunctionCallParameters	indent.txt	/*PHP_IndentFunctionCallParameters*
+PHP_IndentFunctionDeclarationParameters	indent.txt	/*PHP_IndentFunctionDeclarationParameters*
 PHP_autoformatcomment	indent.txt	/*PHP_autoformatcomment*
 PHP_default_indenting	indent.txt	/*PHP_default_indenting*
 PHP_noArrowMatching	indent.txt	/*PHP_noArrowMatching*
@@ -5293,7 +5301,7 @@ asin()	eval.txt	/*asin()*
 asm.vim	syntax.txt	/*asm.vim*
 asm68k	syntax.txt	/*asm68k*
 asmh8300.vim	syntax.txt	/*asmh8300.vim*
-assert-functions	testing.txt	/*assert-functions*
+assert-functions-details	testing.txt	/*assert-functions-details*
 assert-return	eval.txt	/*assert-return*
 assert_beeps()	testing.txt	/*assert_beeps()*
 assert_equal()	testing.txt	/*assert_equal()*
@@ -7646,6 +7654,7 @@ message-history	message.txt	/*message-history*
 message.txt	message.txt	/*message.txt*
 messages	message.txt	/*messages*
 meta	intro.txt	/*meta*
+method	eval.txt	/*method*
 min()	eval.txt	/*min()*
 missing-options	vi_diff.txt	/*missing-options*
 mkdir()	eval.txt	/*mkdir()*
@@ -8239,6 +8248,7 @@ popup-filter	popup.txt	/*popup-filter*
 popup-function-details	popup.txt	/*popup-function-details*
 popup-functions	popup.txt	/*popup-functions*
 popup-intro	popup.txt	/*popup-intro*
+popup-mapping	popup.txt	/*popup-mapping*
 popup-mask	popup.txt	/*popup-mask*
 popup-menu	gui.txt	/*popup-menu*
 popup-menu-added	version5.txt	/*popup-menu-added*
@@ -8262,6 +8272,7 @@ popup_filter_menu()	popup.txt	/*popup_filter_menu()*
 popup_filter_yesno()	popup.txt	/*popup_filter_yesno()*
 popup_getoptions()	popup.txt	/*popup_getoptions()*
 popup_getpos()	popup.txt	/*popup_getpos()*
+popup_getpreview()	popup.txt	/*popup_getpreview()*
 popup_hide()	popup.txt	/*popup_hide()*
 popup_locate()	popup.txt	/*popup_locate()*
 popup_menu()	popup.txt	/*popup_menu()*
@@ -9363,8 +9374,8 @@ terminal-window	terminal.txt	/*terminal-window*
 terminal.txt	terminal.txt	/*terminal.txt*
 terminfo	term.txt	/*terminfo*
 termresponse-variable	eval.txt	/*termresponse-variable*
-test-functions	testing.txt	/*test-functions*
 test-functions	usr_41.txt	/*test-functions*
+test-functions-details	testing.txt	/*test-functions-details*
 test_alloc_fail()	testing.txt	/*test_alloc_fail()*
 test_autochdir()	testing.txt	/*test_autochdir()*
 test_feedinput()	testing.txt	/*test_feedinput()*

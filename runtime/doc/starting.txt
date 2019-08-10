@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.1.  Last change: 2019 Jun 02
+*starting.txt*  For Vim version 8.1.  Last change: 2019 Jul 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1188,6 +1188,8 @@ In case you need the value of $VIMRUNTIME in a shell (e.g., for a script that
 greps in the help files) you might be able to use this: >
 
 	VIMRUNTIME=`vim -e -T dumb --cmd 'exe "set t_cm=\<C-M>"|echo $VIMRUNTIME|quit' | tr -d '\015' `
+
+Don't set $VIMRUNTIME to an empty value, some things may stop working.
 
 ==============================================================================
 6. Suspending						*suspend*

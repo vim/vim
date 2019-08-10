@@ -871,6 +871,18 @@ report_discard_pending(int pending, void *value)
 
 
 /*
+ * ":eval".
+ */
+    void
+ex_eval(exarg_T *eap)
+{
+    typval_T	tv;
+
+    if (eval0(eap->arg, &tv, &eap->nextcmd, !eap->skip) == OK)
+	clear_tv(&tv);
+}
+
+/*
  * ":if".
  */
     void

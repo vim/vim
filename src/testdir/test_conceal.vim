@@ -1,14 +1,11 @@
 " Tests for 'conceal'.
 " Also see test88.in (should be converted to a test function here).
 
-if !has('conceal')
-  throw 'Skipped: conceal feature missing'
-endif
+source check.vim
+CheckFeature conceal
 
 source screendump.vim
-if !CanRunVimInTerminal()
-  throw 'Skipped: cannot make screendumps'
-endif
+CheckScreendump
 
 func Test_conceal_two_windows()
   let code =<< trim [CODE]

@@ -65,6 +65,7 @@ extern int _stricoll(char *a, char *b);
 # include "buffer.pro"
 # include "change.pro"
 # include "charset.pro"
+# include "cmdhist.pro"
 # ifdef FEAT_CSCOPE
 #  include "if_cscope.pro"
 # endif
@@ -98,6 +99,7 @@ extern int _stricoll(char *a, char *b);
 # include "list.pro"
 # include "blob.pro"
 # include "main.pro"
+# include "map.pro"
 # include "mark.pro"
 # include "memfile.pro"
 # include "memline.pro"

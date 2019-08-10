@@ -102,10 +102,8 @@
 
 /*
  * +cmdhist		Command line history.
+ *			Now always included.
  */
-#ifdef FEAT_SMALL
-# define FEAT_CMDHIST
-#endif
 
 /*
  * Message history is fixed at 200 message, 20 for the tiny version.
@@ -123,8 +121,7 @@
 # define FEAT_JUMPLIST
 #endif
 
-/* the cmdline-window requires FEAT_CMDHIST */
-#if defined(FEAT_CMDHIST)
+#if defined(FEAT_SMALL)
 # define FEAT_CMDWIN
 #endif
 
@@ -166,10 +163,8 @@
 
 /*
  * +localmap		Mappings and abbreviations local to a buffer.
+ *			Now always included.
  */
-#ifdef FEAT_NORMAL
-# define FEAT_LOCALMAP
-#endif
 
 /*
  * +insert_expand	CTRL-N/CTRL-P/CTRL-X in insert mode. Takes about

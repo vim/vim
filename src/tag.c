@@ -3543,12 +3543,6 @@ jumpto_tag(
 	    p_ws = TRUE;	/* need 'wrapscan' for backward searches */
 	    p_ic = FALSE;	/* don't ignore case now */
 	    p_scs = FALSE;
-#if 0	/* disabled for now */
-#ifdef FEAT_CMDHIST
-	    /* put pattern in search history */
-	    add_to_history(HIST_SEARCH, pbuf + 1, TRUE, pbuf[0]);
-#endif
-#endif
 	    save_lnum = curwin->w_cursor.lnum;
 	    curwin->w_cursor.lnum = 0;	/* start search before first line */
 	    if (do_search(NULL, pbuf[0], pbuf + 1, (long)1,
@@ -3663,7 +3657,7 @@ jumpto_tag(
 	if (g_do_tagpreview != 0
 			   && curwin != curwin_save && win_valid(curwin_save))
 	{
-	    /* Return cursor to where we were */
+	    // Return cursor to where we were
 	    validate_cursor();
 	    redraw_later(VALID);
 	    win_enter(curwin_save, TRUE);
@@ -3675,12 +3669,29 @@ jumpto_tag(
     else
     {
 	--RedrawingDisabled;
-	if (postponed_split)		/* close the window */
+	got_int = FALSE;  // don't want entering window to fail
+
+	if (postponed_split)		// close the window
 	{
 	    win_close(curwin, FALSE);
 	    postponed_split = 0;
 	}
+#if defined(FEAT_QUICKFIX) && defined(FEAT_TEXT_PROP)
+	else if (WIN_IS_POPUP(curwin))
+	{
+	    win_T   *wp = curwin;
+
+	    if (win_valid(curwin_save))
+		win_enter(curwin_save, TRUE);
+	    popup_close(wp->w_id);
+	}
+#endif
     }
+#if defined(FEAT_QUICKFIX) && defined(FEAT_TEXT_PROP)
+    if (WIN_IS_POPUP(curwin))
+	// something went wrong, still in popup, but it can't have focus
+	win_enter(firstwin, TRUE);
+#endif
 
 erret:
 #if defined(FEAT_QUICKFIX)

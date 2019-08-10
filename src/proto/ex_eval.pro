@@ -12,6 +12,7 @@ void discard_current_exception(void);
 void report_make_pending(int pending, void *value);
 void report_resume_pending(int pending, void *value);
 void report_discard_pending(int pending, void *value);
+void ex_eval(exarg_T *eap);
 void ex_if(exarg_T *eap);
 void ex_endif(exarg_T *eap);
 void ex_else(exarg_T *eap);

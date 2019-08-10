@@ -742,9 +742,9 @@ typedef struct proptype_S
 // Sign group
 typedef struct signgroup_S
 {
-    short_u	refcount;		// number of signs in this group
     int		next_sign_id;		// next sign id for this group
-    char_u	sg_name[1];		// sign group name
+    short_u	refcount;		// number of signs in this group
+    char_u	sg_name[1];		// sign group name, actually longer
 } signgroup_T;
 
 typedef struct signlist signlist_T;
@@ -1605,6 +1605,23 @@ typedef struct
 } scriptitem_T;
 #endif
 
+// Struct passed between functions dealing with function call execution.
+//
+// "argv_func", when not NULL, can be used to fill in arguments only when the
+// invoked function uses them.  It is called like this:
+//   new_argcount = argv_func(current_argcount, argv, called_func_argcount)
+//
+typedef struct {
+    int		(* argv_func)(int, typval_T *, int);
+    linenr_T	firstline;	// first line of range
+    linenr_T	lastline;	// last line of range
+    int		*doesrange;	// if not NULL: return: function handled range
+    int		evaluate;	// actually evaluate expressions
+    partial_T	*partial;	// for extra arguments
+    dict_T	*selfdict;	// Dictionary for "self"
+    typval_T	*basetv;	// base for base->method()
+} funcexe_T;
+
 struct partial_S
 {
     int		pt_refcount;	// reference count
@@ -2293,13 +2310,12 @@ struct file_buffer
      */
     char_u	b_chartab[32];
 
-#ifdef FEAT_LOCALMAP
     // Table used for mappings local to a buffer.
     mapblock_T	*(b_maphash[256]);
 
     // First abbreviation local to a buffer.
     mapblock_T	*b_first_abbr;
-#endif
+
     // User commands local to the buffer.
     garray_T	b_ucmds;
     // start and end of an operator, also used for '[ and ']
@@ -3018,7 +3034,6 @@ struct window_S
     int		w_popup_mouse_row;  // close popup if mouse moves away
     int		w_popup_mouse_mincol;  // close popup if mouse moves away
     int		w_popup_mouse_maxcol;  // close popup if mouse moves away
-    int		w_popup_drag;	    // allow moving the popup with the mouse
     popclose_T	w_popup_close;	    // allow closing the popup with the mouse
 
     list_T	*w_popup_mask;	     // list of lists for "mask"

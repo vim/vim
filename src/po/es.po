@@ -2186,12 +2186,6 @@ msgstr ""
 "E510: No se pudo hacer un archivo de copia de seguridad (añada ! para forzar "
 "la orden)"
 
-#: fileio.c:3958
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr ""
-"E460: Se perdería el segmento (\"fork\") de recursos (añada ! para forzar la "
-"orden)"
-
 #: fileio.c:4067
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: No se pudo encontrar el archivo temporal para escribir en él"
@@ -3483,122 +3477,6 @@ msgstr "E272: excepción sin manejar"
 msgid "E273: unknown longjmp status %d"
 msgstr "E273: El estado %d de \"longjmp\" es desconocido"
 
-#: if_sniff.c:64
-msgid "Toggle implementation/definition"
-msgstr "Intercambiar implementación/definición"
-
-#: if_sniff.c:65
-msgid "Show base class of"
-msgstr "Mostrar la clase base de"
-
-#: if_sniff.c:66
-msgid "Show overridden member function"
-msgstr "Mostrar la función miembro que se ha sobrepasado con el código nuevo"
-
-#: if_sniff.c:67
-msgid "Retrieve from file"
-msgstr "Restaurar del archivo"
-
-#: if_sniff.c:68
-msgid "Retrieve from project"
-msgstr "Restaurar del proyecto"
-
-#: if_sniff.c:70
-msgid "Retrieve from all projects"
-msgstr "Restaurar de todos los proyectos"
-
-#: if_sniff.c:71
-msgid "Retrieve"
-msgstr "Restaurar"
-
-#: if_sniff.c:72
-msgid "Show source of"
-msgstr "Mostrar el origen de "
-
-#: if_sniff.c:73
-msgid "Find symbol"
-msgstr "Buscar símbolo"
-
-#: if_sniff.c:74
-msgid "Browse class"
-msgstr "Navegador de Clases"
-
-#: if_sniff.c:75
-msgid "Show class in hierarchy"
-msgstr "Mostrar la clase en su jerarquía"
-
-#: if_sniff.c:76
-msgid "Show class in restricted hierarchy"
-msgstr "Mostrar la clase en jerarquía restringida"
-
-#: if_sniff.c:77
-msgid "Xref refers to"
-msgstr "Xref se refiere a"
-
-#: if_sniff.c:78
-msgid "Xref referred by"
-msgstr "Xref referida por"
-
-#: if_sniff.c:79
-msgid "Xref has a"
-msgstr "Xref tiene un"
-
-#: if_sniff.c:80
-msgid "Xref used by"
-msgstr "Xref usada por"
-
-#: if_sniff.c:81
-msgid "Show docu of"
-msgstr "Mostrar \"docu\" de"
-
-#: if_sniff.c:82
-msgid "Generate docu for"
-msgstr "Generar \"docu\" de"
-
-#: if_sniff.c:94
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr ""
-"No se pudo conectar a SNiFF+. Verifique el entorno (\"sniffemacs\" debe "
-"estar en \"$PATH\").\n"
-
-#: if_sniff.c:422
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: Error al leer. Desconectado"
-
-#: if_sniff.c:550
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ está actualmente "
-
-#: if_sniff.c:552
-msgid "not "
-msgstr "no "
-
-#: if_sniff.c:553
-msgid "connected"
-msgstr "conectado"
-
-#: if_sniff.c:589
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: Petición de SNiFF+ desconocida: %s"
-
-#: if_sniff.c:602
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: Error al conectarme a SNiFF+"
-
-#: if_sniff.c:1013
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: SNiFF+ no está conectado"
-
-#: if_sniff.c:1022
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: No es un búfer de SNiFF+"
-
-#: if_sniff.c:1089
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: error al escribir. Desconectado"
 
 #: if_tcl.c:419
 msgid "invalid buffer number"
@@ -4399,19 +4277,11 @@ msgstr "E288: el método de entrada no admite ningún estilo"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: El método de entrada no soporta mi tipo de pre-edición"
 
-#: mbyte.c:5316
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: El estilo \"sobre el punto\" requiere del uso de un \"fontset\""
-
 #: mbyte.c:5352
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr ""
 "E291: Su versión de GTK+ es anterior a 1.2.3. Área de estado "
 "desactivada"
-
-#: mbyte.c:5663
-msgid "E292: Input Method Server is not running"
-msgstr "E292: El servidor de método de entrada (IME) no está funcionando"
 
 #: memfile.c:501
 msgid "E293: block was not locked"

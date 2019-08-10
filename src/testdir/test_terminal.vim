@@ -1788,9 +1788,7 @@ endfunc
 
 " must be nearly the last, we can't go back from GUI to terminal
 func Test_zz1_terminal_in_gui()
-  if !CanRunGui()
-    return
-  endif
+  CheckCanRunGui
 
   " Ignore the "failed to create input context" error.
   call test_ignore_error('E285:')
@@ -1810,9 +1808,7 @@ func Test_zz1_terminal_in_gui()
 endfunc
 
 func Test_zz2_terminal_guioptions_bang()
-  if !has('gui_running')
-    return
-  endif
+  CheckGui
   set guioptions+=!
 
   let filename = 'Xtestscript'

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Jul 19
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Aug 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,25 +38,25 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
-20)
-Also put :argadd commands at the start for all buffers, so that their order
-remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 
-Refactor: Move common things out of evalfunc.c, it's too big.
-Move function specs out of eval.txt, it's too big.
-
-Convert comments in option.h
-
-Patch to convert encoding of strftime(). (Ken Takata, #4685, fixes #4681)
-
-Patch to Move viminfo related functions to a separate file: #4686
+Methods:
+- Support lambda?  #4768
+    echo (10.0 / 100.0)->{x -> x * 100}
+- Define a user defined function for a specific type only?
+	func Len(expr) method=list,dict
+	  return a:expr->len()
+	endfunc
+	echo [1, 2, 3]->Len()
+	3
+	call Len([1, 2, 3])
+	error!
 
 Popup windows:
-- avoid preview popup going outside of the screen
-- add popup_getpreview() - get ID of preview window
-- bug: double click in scrollbar starts selection
-- Allow resizing from the bottom-right corner
+- :pedit from help doesn't reset help flag, see pedit example
+- check popupmenu using preview window
+- modeless selection fails over ssh and with putty.  Mouse dragging not
+  supported?  Can we force it on?
+- modeless selection extends into the scrollbar. (#4773)
 - Implement flip option
 - Have a way to scroll to the bottom, e.g. set 'firstline' to -1? (#4577)
 - Why does 'nrformats' leak from the popup window buffer???
@@ -70,7 +70,7 @@ Popup windows:
   do. (#4560)
 - Make redrawing more efficient and avoid flicker:
     - put popup menu also put in popup_mask?
-- Invoke filter with character before mapping?
+- Invoke filter with character before mapping?  #4759
 - Figure out the size and position better.
     if wrapping splits a double-wide character
     if wrapping inserts indent
@@ -148,28 +148,32 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Error numbers available: E172, E221, E242, E249, E260, E274, E275, E276,
-E278, E279, E281, E290, E291, E292, E361, E362, E366, E396, E450, E451, E452,
-E453, E454, E460, E489, E491, E56, E57, E565, E569, E578, E610, E611, E653,
-E654, E693, E706, E856, E857, E860, E861, E863, E889, E900, E959
-
-Problem with German spell file.  Hint for solution by Klaus-Peter Schreiner in
-#4314, solves the Rasenmäher problem.
+Error numbers available: E274, E275, E276,
+E278, E279, E290, E292, E362, E366, E450, E451, E452,
+E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
+E654, E856, E857, E860, E861, E863, E889, E900
 
 Sound: support on Mac?  Or does libcanberra work there?
 
-Patch to use forward slash for completion even when 'shellslash' is set.
-Adds 'completepathslash'.  (Yasuhiro Matsumoto, 2018 Nov 15, #3612)
-
 Patch to add win_splitmove() function. (Andy Massimino, #4561)
 
-Resolve() works incorrectly under windows. (#4661)
+Patch for #4733: #4734.  Test needs improvements.
+
+Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
+20)
+Also put :argadd commands at the start for all buffers, so that their order
+remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
+
+Make heredoc-let a bit more restrictive:
+https://github.com/vim/vim/issues/4705
 
 Completion mixes results from the current buffer with tags and other files.
 Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
 terminal.c and then CTRL-N twice.
 Should do current file first and not split it up when more results are found.
 (Also #1890)
+
+Patch to add :spellrare. (#4291)
 
 Patch to use timers in matchparen. (Daniel Hahler, #1338)
 Ready to include now?
@@ -180,11 +184,20 @@ Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 Patch to support 'cursorlineopt' - only highlight the line number of the
 cursor line: #4693
 
+Let plugins know how much space is available in the last line before
+triggering the hit-enter prompt.  Internally called "sc_col".
+(Daniel Hahler, #4732)
+
 Patch for Template string: #4491  Not ready yet.  New pull: #4634
 
 ":bnext" in a help buffer is supposed to go to the next help buffer, but it
 goes to any buffer, and then :bnext skips help buffers, since they are
 unlisted. (#4478)
+
+Make 'showbreak' global-local.
+
+The :syntax cchar value can only be a single character.  It would be useful to
+support combining characters. (Charles Campbell)  Also #4687
 
 Problem showing a line if the number column width changes when using "o".
 (Mateusz Morusiewicz, #4245)
@@ -194,6 +207,8 @@ default one.  #4698
 
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
+
+Modeless selection doesn't work in gvim. (#4783)
 
 Visual highlight not removed when 'dipslay' is "lastline" and line doesn't
 fit. (Kevin Lawler, #4457)
@@ -219,8 +234,16 @@ it's in a mapping. (2018 Oct 6, #2302, #3522)
 
 Patch for Inno Setup: #2739
 
+Would be nice to set tab-local values for 'diffexpr' and 'diffopt'.  Use
+t:diffexpr_option t:diffopt_option? (#4782)
+
 Internal diff doesn't handle binary file like external diff does. (Mike
 Williams, 2018 Oct 30)
+
+'[ mark in wrong column after put. (#4776)
+
+"exepath('bin/cmd')" does not work while ":!bin/cmd" does work.
+(Daniel Hahler, #4710)  and executable('bin/cmd') returns 1
 
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
 
@@ -238,6 +261,8 @@ be adjusted. (Daniel Steinberg, 2019 Feb 24, #4041)
 
 Patch for ambiguous width characters in libvterm on MS-Windows 10.
 (Nobuhiro Takasaki, #4411)
+
+Window size changes after closing a tab. (#4741)
 
 Problem with colors in terminal window. (Jason Franklin, 2019 May 12)
 
@@ -273,6 +298,8 @@ Many users don't like 'thesaurus' to match so many words. (#4667, #1611)
 
 Some composing characters actually add a cell width to the character they are
 on top off, making the whole thing two characters wide. (#4526)
+
+Add CmdwinLeavePost (#4762).  Also add WinLeavePost then?
 
 Should we include some part of pull request #4505, not increment changedtick
 in some cases?  E.g. for ":write" when the changed flag was already off, the
@@ -521,6 +548,8 @@ when adding a sign for every quickfix entry. (#4557)
 
 Win32 key codes are messy.  Mike Williams tried to fix that, but now old
 mappings no longer work.  Create a new terminal for the better solution?
+
+Patch to "fix" 'visualbell'. Add option to set delay?  (#1789)
 
 Script generated by :mksession does not work well if there are windows with
 modified buffers
@@ -801,18 +830,6 @@ Test_writefile_fails_conversion failure on Solaris because if different iconv
 behavior.  Skip when "uname" returns "SunOS"? (Pavel Heimlich, #1872)
 
 'tagrelative' is broken in specific situation. (xaizek, 2017 Oct 19, #2221)
-
-All functions are global, which makes functions like get() and len() awkward.
-For the future use the ~get() and ~len() syntax, e.g.:
-    mylist~get(idx)
-    mydict~get(idx)
-    mystring~len()
-Alternatives for ~:
-    ^  list^get()    could also be used
-    .  list.get()    already means concatenate
-    $  list$get()    harder to read
-    @  list@get()    harder to read
-    ->  list->get()  two characters, used for lambda
 
 The ++ options for the :edit command are also useful on the Vim command line.
 
@@ -1890,9 +1907,6 @@ need to make the change in where RET_WIN_BUF_CHARTABSIZE() is called.
 Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
 only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
 21, Ben Fritz, 2010 Sep 14)
-
-The :syntax cchar value can only be a single character.  It would be useful to
-support combining characters. (Charles Campbell)
 
 'cursorline' works on a text line only.  Add 'cursorscreenline' for
 highlighting the screen line. (Christian Brabandt, 2012 Mar 31)
@@ -4379,8 +4393,6 @@ Vim script language:
     to avoid a performance penalty (esp. for string options)?
 8   Add referring to key options with "&t_xx".  Both for "echo &t_xx" and
     ":let &t_xx =".  Useful for making portable mappings.
--   Add ":let var ?= value", conditional assignment.  Patch by Dave Eggum,
-    2006 Dec 11.
 -   range for ":exec", pass it on to the executed command.  (Webb)
 8   ":{range}source": source the lines from the current file.
 	You can already yank lines and use :@" to execute them.

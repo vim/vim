@@ -614,11 +614,14 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define VALID_TOPLINE	0x80	// w_topline is valid (for cursor position)
 
 // Values for w_popup_flags.
-#define POPF_IS_POPUP	1	// this is a popup window
-#define POPF_HIDDEN	2	// popup is not displayed
-#define POPF_HANDLED	4	// popup was just redrawn or filtered
-#define POPF_CURSORLINE	8	// popup is highlighting at the cursorline
-#define POPF_ON_CMDLINE	16	// popup overlaps command line
+#define POPF_IS_POPUP	0x01	// this is a popup window
+#define POPF_HIDDEN	0x02	// popup is not displayed
+#define POPF_HANDLED	0x04	// popup was just redrawn or filtered
+#define POPF_CURSORLINE	0x08	// popup is highlighting at the cursorline
+#define POPF_ON_CMDLINE	0x10	// popup overlaps command line
+#define POPF_DRAG	0x20	// popup can be moved by dragging
+#define POPF_RESIZE	0x40	// popup can be resized by dragging
+#define POPF_MAPPING	0x80	// mapping keys
 
 #ifdef FEAT_TEXT_PROP
 # define WIN_IS_POPUP(wp) ((wp)->w_popup_flags != 0)
@@ -696,20 +699,22 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define NOTDONE			2   /* not OK or FAIL but skipped */
 
 /* flags for b_flags */
-#define BF_RECOVERED	0x01	/* buffer has been recovered */
-#define BF_CHECK_RO	0x02	/* need to check readonly when loading file
-				   into buffer (set by ":e", may be reset by
-				   ":buf" */
-#define BF_NEVERLOADED	0x04	/* file has never been loaded into buffer,
-				   many variables still need to be set */
-#define BF_NOTEDITED	0x08	/* Set when file name is changed after
-				   starting to edit, reset when file is
-				   written out. */
-#define BF_NEW		0x10	/* file didn't exist when editing started */
-#define BF_NEW_W	0x20	/* Warned for BF_NEW and file created */
-#define BF_READERR	0x40	/* got errors while reading the file */
-#define BF_DUMMY	0x80	/* dummy buffer, only used internally */
-#define BF_PRESERVED	0x100	/* ":preserve" was used */
+#define BF_RECOVERED	0x01	// buffer has been recovered
+#define BF_CHECK_RO	0x02	// need to check readonly when loading file
+				// into buffer (set by ":e", may be reset by
+				// ":buf"
+#define BF_NEVERLOADED	0x04	// file has never been loaded into buffer,
+				// many variables still need to be set
+#define BF_NOTEDITED	0x08	// Set when file name is changed after
+				// starting to edit, reset when file is
+				// written out.
+#define BF_NEW		0x10	// file didn't exist when editing started
+#define BF_NEW_W	0x20	// Warned for BF_NEW and file created
+#define BF_READERR	0x40	// got errors while reading the file
+#define BF_DUMMY	0x80	// dummy buffer, only used internally
+#define BF_PRESERVED	0x100	// ":preserve" was used
+#define BF_SYN_SET	0x200	// 'syntax' option was set
+#define BF_NO_SEA	0x400	// no swap_exists_action (ATTENTION prompt)
 
 /* Mask to check for flags that prevent normal writing */
 #define BF_WRITE_MASK	(BF_NOTEDITED + BF_NEW + BF_READERR)
@@ -783,16 +788,17 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define WILD_LONGEST		7
 #define WILD_ALL_KEEP		8
 
-#define WILD_LIST_NOTFOUND	0x01
-#define WILD_HOME_REPLACE	0x02
-#define WILD_USE_NL		0x04
-#define WILD_NO_BEEP		0x08
-#define WILD_ADD_SLASH		0x10
-#define WILD_KEEP_ALL		0x20
-#define WILD_SILENT		0x40
-#define WILD_ESCAPE		0x80
-#define WILD_ICASE		0x100
-#define WILD_ALLLINKS		0x200
+#define WILD_LIST_NOTFOUND	    0x01
+#define WILD_HOME_REPLACE	    0x02
+#define WILD_USE_NL		    0x04
+#define WILD_NO_BEEP		    0x08
+#define WILD_ADD_SLASH		    0x10
+#define WILD_KEEP_ALL		    0x20
+#define WILD_SILENT		    0x40
+#define WILD_ESCAPE		    0x80
+#define WILD_ICASE		    0x100
+#define WILD_ALLLINKS		    0x200
+#define WILD_IGNORE_COMPLETESLASH   0x400
 
 // Flags for expand_wildcards()
 #define EW_DIR		0x01	// include directory names

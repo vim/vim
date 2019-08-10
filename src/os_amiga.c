@@ -14,6 +14,7 @@
  */
 
 #include "vim.h"
+#include "version.h"
 
 #ifdef Window
 # undef Window	/* Amiga has its own Window definition */
@@ -107,6 +108,17 @@ static char_u		*oldwindowtitle = NULL;
 int			dos2 = FALSE;	    /* Amiga DOS 2.0x or higher */
 #endif
 int			size_set = FALSE;   /* set to TRUE if window size was set */
+
+#ifdef __GNUC__
+static char version[] __attribute__((used)) =
+    "\0$VER: Vim "
+    VIM_VERSION_MAJOR_STR "."
+    VIM_VERSION_MINOR_STR
+# ifdef PATCHLEVEL
+    "." PATCHLEVEL
+# endif
+    ;
+#endif
 
     void
 win_resize_on(void)

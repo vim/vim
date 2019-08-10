@@ -1058,6 +1058,17 @@ clip_compare_pos(
 clip_start_selection(int col, int row, int repeated_click)
 {
     Clipboard_T	*cb = &clip_star;
+#ifdef FEAT_TEXT_PROP
+    win_T	*wp;
+    int		row_cp = row;
+    int		col_cp = col;
+
+    wp = mouse_find_win(&row_cp, &col_cp, FIND_POPUP);
+    if (wp != NULL && WIN_IS_POPUP(wp)
+				  && popup_is_in_scrollbar(wp, row_cp, col_cp))
+	// click or double click in scrollbar does not start a selection
+	return;
+#endif
 
     if (cb->state == SELECT_DONE)
 	clip_clear_selection(cb);
@@ -1072,30 +1083,23 @@ clip_start_selection(int col, int row, int repeated_click)
     cb->origin_row  = (short_u)cb->start.lnum;
     cb->state	    = SELECT_IN_PROGRESS;
 #ifdef FEAT_TEXT_PROP
+    if (wp != NULL && WIN_IS_POPUP(wp))
     {
-	win_T	    *wp;
-	int	    row_cp = row;
-	int	    col_cp = col;
-
-	wp = mouse_find_win(&row_cp, &col_cp, FIND_POPUP);
-	if (wp != NULL && WIN_IS_POPUP(wp))
-	{
-	    // Click in a popup window restricts selection to that window,
-	    // excluding the border.
-	    cb->min_col = wp->w_wincol + wp->w_popup_border[3];
-	    cb->max_col = wp->w_wincol + popup_width(wp) - 1
-						       - wp->w_popup_border[1];
-	    cb->min_row = wp->w_winrow + wp->w_popup_border[0];
-	    cb->max_row = wp->w_winrow + popup_height(wp) - 1
-						       - wp->w_popup_border[2];
-	}
-	else
-	{
-	    cb->min_col = 0;
-	    cb->max_col = screen_Columns;
-	    cb->min_row = 0;
-	    cb->max_row = screen_Rows;
-	}
+	// Click in a popup window restricts selection to that window,
+	// excluding the border.
+	cb->min_col = wp->w_wincol + wp->w_popup_border[3];
+	cb->max_col = wp->w_wincol + popup_width(wp) - 1
+						   - wp->w_popup_border[1];
+	cb->min_row = wp->w_winrow + wp->w_popup_border[0];
+	cb->max_row = wp->w_winrow + popup_height(wp) - 1
+						   - wp->w_popup_border[2];
+    }
+    else
+    {
+	cb->min_col = 0;
+	cb->max_col = screen_Columns;
+	cb->min_row = 0;
+	cb->max_row = screen_Rows;
     }
 #endif
 
@@ -3063,10 +3067,11 @@ retnomove:
 		popup_close_for_mouse_click(wp);
 		return IN_UNKNOWN;
 	    }
-	    else if (wp->w_popup_drag && popup_on_border(wp, row, col))
+	    else if ((wp->w_popup_flags & (POPF_DRAG | POPF_RESIZE))
+					      && popup_on_border(wp, row, col))
 	    {
 		popup_dragwin = wp;
-		popup_start_drag(wp);
+		popup_start_drag(wp, row, col);
 		return IN_UNKNOWN;
 	    }
 	    // Only close on release, otherwise it's not possible to drag or do

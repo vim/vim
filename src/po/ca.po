@@ -1786,10 +1786,6 @@ msgstr "E509: No s'ha pogut crear la còpia de seguretat (! per a forçar)"
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: No s'ha pogut fer la còpia de seguretat (! per a forçar)"
 
-# MacOS
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: La secció de recursos del fitxer es perdrà (afegiu ! per a forçar)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: No s'ha trobat el fitxer temporal"
 

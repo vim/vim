@@ -2,9 +2,8 @@
 " startup to take effect at runtime.
 
 source shared.vim
-if !CanRunGui()
-  throw 'Skipped: cannot run GUI'
-endif
+source check.vim
+CheckCanRunGui
 
 source setup_gui.vim
 

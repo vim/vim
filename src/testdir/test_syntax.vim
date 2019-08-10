@@ -413,9 +413,8 @@ func Test_highlight_invalid_arg()
 endfunc
 
 func Test_bg_detection()
-  if has('gui_running')
-    return
-  endif
+  CheckNotGui
+
   " auto-detection of &bg, make sure sure it isn't set anywhere before
   " this test
   hi Normal ctermbg=0
@@ -517,8 +516,8 @@ func Test_synstack_synIDtrans()
   call assert_equal([], synstack(1, 1))
 
   norm f/
-  call assert_equal(['cComment', 'cCommentStart'], map(synstack(line("."), col(".")), 'synIDattr(v:val, "name")'))
-  call assert_equal(['Comment', 'Comment'],	   map(synstack(line("."), col(".")), 'synIDattr(synIDtrans(v:val), "name")'))
+  eval synstack(line("."), col("."))->map('synIDattr(v:val, "name")')->assert_equal(['cComment', 'cCommentStart'])
+  eval synstack(line("."), col("."))->map('synIDattr(synIDtrans(v:val), "name")')->assert_equal(['Comment', 'Comment'])
 
   norm fA
   call assert_equal(['cComment'], map(synstack(line("."), col(".")), 'synIDattr(v:val, "name")'))
@@ -581,4 +580,42 @@ func Test_syn_wrong_z_one()
   redraw!
   call test_override("ALL", 0)
   bwipe!
+endfunc
+
+func Test_syntax_after_bufdo()
+  call writefile(['/* aaa comment */'], 'Xaaa.c')
+  call writefile(['/* bbb comment */'], 'Xbbb.c')
+  call writefile(['/* ccc comment */'], 'Xccc.c')
+  call writefile(['/* ddd comment */'], 'Xddd.c')
+
+  let bnr = bufnr('%')
+  new Xaaa.c
+  badd Xbbb.c
+  badd Xccc.c
+  badd Xddd.c
+  exe "bwipe " . bnr
+  let l = []
+  bufdo call add(l, bufnr('%'))
+  call assert_equal(4, len(l))
+
+  syntax on
+
+  " This used to only enable syntax HL in the last buffer.
+  bufdo tab split
+  tabrewind
+  for tab in range(1, 4)
+    norm fm
+    call assert_equal(['cComment'], map(synstack(line("."), col(".")), 'synIDattr(v:val, "name")'))
+    tabnext
+  endfor
+
+  bwipe! Xaaa.c
+  bwipe! Xbbb.c
+  bwipe! Xccc.c
+  bwipe! Xddd.c
+  syntax off
+  call delete('Xaaa.c')
+  call delete('Xbbb.c')
+  call delete('Xccc.c')
+  call delete('Xddd.c')
 endfunc

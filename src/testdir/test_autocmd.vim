@@ -1,6 +1,7 @@
 " Tests for autocommands
 
 source shared.vim
+source check.vim
 
 func s:cleanup_buffers() abort
   for bnr in range(1, bufnr('$'))
@@ -1861,9 +1862,9 @@ func Test_TextChangedI_with_setline()
 endfunc
 
 func Test_Changed_FirstTime()
-  if !has('terminal') || has('gui_running')
-    return
-  endif
+  CheckFeature terminal
+  CheckNotGui
+
   " Prepare file for TextChanged event.
   call writefile([''], 'Xchanged.txt')
   let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': 3})

@@ -3772,7 +3772,7 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
     char_u	*func;
     typval_T	argvars[2];
     typval_T	rettv;
-    int		doesrange;
+    funcexe_T	funcexe;
 
     if (item->li_next == NULL)
     {
@@ -3790,11 +3790,11 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
     argvars[0].v_type = VAR_NUMBER;
     argvars[0].vval.v_number = term->tl_buffer->b_fnum;
     argvars[1] = item->li_next->li_tv;
-    if (call_func(func, -1, &rettv,
-		2, argvars, /* argv_func */ NULL,
-		/* firstline */ 1, /* lastline */ 1,
-		&doesrange, /* evaluate */ TRUE,
-		/* partial */ NULL, /* selfdict */ NULL) == OK)
+    vim_memset(&funcexe, 0, sizeof(funcexe));
+    funcexe.firstline = 1L;
+    funcexe.lastline = 1L;
+    funcexe.evaluate = TRUE;
+    if (call_func(func, -1, &rettv, 2, argvars, &funcexe) == OK)
     {
 	clear_tv(&rettv);
 	ch_log(channel, "Function %s called", func);

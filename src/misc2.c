@@ -1139,16 +1139,12 @@ free_all_mem(void)
     vim_regfree(clip_exclude_prog);
 # endif
     vim_free(last_cmdline);
-# ifdef FEAT_CMDHIST
     vim_free(new_last_cmdline);
-# endif
     set_keep_msg(NULL, 0);
 
     /* Clear cmdline history. */
     p_hi = 0;
-# ifdef FEAT_CMDHIST
     init_history();
-# endif
 # ifdef FEAT_TEXT_PROP
     clear_global_prop_types();
 # endif

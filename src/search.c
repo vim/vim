@@ -143,10 +143,8 @@ search_regcomp(
 	magic = spats[i].magic;
 	no_smartcase = spats[i].no_scs;
     }
-#ifdef FEAT_CMDHIST
     else if (options & SEARCH_HIS)	/* put new pattern in history */
 	add_to_history(HIST_SEARCH, pat, TRUE, NUL);
-#endif
 
 #ifdef FEAT_RIGHTLEFT
     if (mr_pattern_alloced)
@@ -5632,6 +5630,11 @@ search_line:
 		    redraw_later(VALID);
 		    win_enter(curwin_save, TRUE);
 		}
+# ifdef FEAT_TEXT_PROP
+		else if (WIN_IS_POPUP(curwin))
+		    // can't keep focus in popup window
+		    win_enter(firstwin, TRUE);
+# endif
 #endif
 		break;
 	    }

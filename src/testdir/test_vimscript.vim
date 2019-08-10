@@ -1,6 +1,8 @@
 " Test various aspects of the Vim script language.
 " Most of this was formerly in test49.
 
+source check.vim
+
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
 "-------------------------------------------------------------------------------
@@ -1677,10 +1679,7 @@ func Test_funccall_garbage_collect()
 endfunc
 
 func Test_function_defined_line()
-    if has('gui_running')
-        " Can't catch the output of gvim.
-        return
-    endif
+    CheckNotGui
 
     let lines =<< trim [CODE]
     " F1

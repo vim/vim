@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Jul 18
+*options.txt*	For Vim version 8.1.  Last change: 2019 Jul 31
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1131,6 +1131,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	v:beval_col	column number (byte index)
 	v:beval_text	word under or after the mouse pointer
 
+	Instead of showing a balloon, which is limited to plain text, consider
+	using a popup window, see |popup_beval_example|.  A popup window can
+	use highlighting and show a border.
+
 	The evaluation of the expression must not have side effects!
 	Example: >
     function MyBalloonExpr()
@@ -1436,8 +1440,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'cedit'*
 'cedit'			string	(Vi default: "", Vim default: CTRL-F)
 			global
-			{not available when compiled without the |+vertsplit|
-			feature}
 	The key used in Command-line Mode to open the command-line window.
 	The default is CTRL-F when 'compatible' is off.
 	Only non-printable keys are allowed.
@@ -1640,8 +1642,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'cmdwinheight'* *'cwh'*
 'cmdwinheight' 'cwh'	number	(default 7)
 			global
-			{not available when compiled without the |+vertsplit|
-			feature}
 	Number of screen lines to use for the command-line window. |cmdwin|
 
 						*'colorcolumn'* *'cc'*
@@ -2720,8 +2720,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'eadirection'* *'ead'*
 'eadirection' 'ead'	string	(default "both")
 			global
-			{not available when compiled without the |+vertsplit|
-			feature}
 	Tells when the 'equalalways' option applies:
 		ver	vertically, width of windows is not affected
 		hor	horizontally, height of windows is not affected
@@ -7082,8 +7080,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 			*'splitright'* *'spr'* *'nosplitright'* *'nospr'*
 'splitright' 'spr'	boolean	(default off)
 			global
-			{not available when compiled without the |+vertsplit|
-			feature}
 	When on, splitting a window will put the new window right of the
 	current one. |:vsplit|
 
@@ -8792,8 +8788,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'winminwidth'* *'wmw'*
 'winminwidth' 'wmw'	number	(default 1)
 			global
-			{not available when compiled without the |+vertsplit|
-			feature}
 	The minimal width of a window, when it's not the current window.
 	This is a hard minimum, windows will never become smaller.
 	When set to zero, windows may be "squashed" to zero columns (i.e. just
@@ -8821,8 +8815,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'winwidth'* *'wiw'* *E592*
 'winwidth' 'wiw'	number	(default 20)
 			global
-			{not available when compiled without the |+vertsplit|
-			feature}
 	Minimal number of columns for the current window.  This is not a hard
 	minimum, Vim will use fewer columns if there is not enough room.  If
 	the current window is smaller, its size is increased, at the cost of

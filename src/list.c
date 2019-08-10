@@ -1284,9 +1284,9 @@ item_compare2(const void *s1, const void *s2)
     int		res;
     typval_T	rettv;
     typval_T	argv[3];
-    int		dummy;
     char_u	*func_name;
     partial_T	*partial = sortinfo->item_compare_partial;
+    funcexe_T	funcexe;
 
     /* shortcut after failure in previous call; compare all items equal */
     if (sortinfo->item_compare_func_err)
@@ -1306,8 +1306,11 @@ item_compare2(const void *s1, const void *s2)
     copy_tv(&si2->item->li_tv, &argv[1]);
 
     rettv.v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
-    res = call_func(func_name, -1, &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE,
-				 partial, sortinfo->item_compare_selfdict);
+    vim_memset(&funcexe, 0, sizeof(funcexe));
+    funcexe.evaluate = TRUE;
+    funcexe.partial = partial;
+    funcexe.selfdict = sortinfo->item_compare_selfdict;
+    res = call_func(func_name, -1, &rettv, 2, argv, &funcexe);
     clear_tv(&argv[0]);
     clear_tv(&argv[1]);
 

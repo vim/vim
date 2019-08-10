@@ -710,6 +710,7 @@ OBJ = \
 	$(OUTDIR)/buffer.o \
 	$(OUTDIR)/change.o \
 	$(OUTDIR)/charset.o \
+	$(OUTDIR)/cmdhist.o \
 	$(OUTDIR)/crypt.o \
 	$(OUTDIR)/crypt_zip.o \
 	$(OUTDIR)/debugger.o \
@@ -736,6 +737,7 @@ OBJ = \
 	$(OUTDIR)/json.o \
 	$(OUTDIR)/list.o \
 	$(OUTDIR)/main.o \
+	$(OUTDIR)/map.o \
 	$(OUTDIR)/mark.o \
 	$(OUTDIR)/memfile.o \
 	$(OUTDIR)/memline.o \
