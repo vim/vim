@@ -150,7 +150,6 @@ syn match yamlBlockMappingMerge /^\s*\zs<<\ze:\%(\s\|$\)/ nextgroup=yamlKeyValue
 syn match yamlBlockMappingMerge /<<\ze\s*:\%(\s\|$\)/ nextgroup=yamlKeyValueDelimiter contained
 
 syn match   yamlKeyValueDelimiter /\s*:/ contained
-syn match   yamlKeyValueDelimiter /\s*:/ contained
 
 syn cluster yamlScalarWithSpecials contains=yamlPlainScalar,yamlBlockMappingKey,yamlFlowMappingKey
 
