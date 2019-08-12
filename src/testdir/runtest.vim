@@ -329,7 +329,6 @@ let s:flaky_tests = [
       \ 'Test_paused()',
       \ 'Test_pipe_through_sort_all()',
       \ 'Test_pipe_through_sort_some()',
-      \ 'Test_popup_and_window_resize()',
       \ 'Test_quoteplus()',
       \ 'Test_quotestar()',
       \ 'Test_raw_one_time_callback()',
