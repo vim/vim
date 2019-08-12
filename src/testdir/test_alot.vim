@@ -52,6 +52,7 @@ source test_rename.vim
 source test_scroll_opt.vim
 source test_searchpos.vim
 source test_set.vim
+source test_shift.vim
 source test_sort.vim
 source test_sha256.vim
 source test_statusline.vim
