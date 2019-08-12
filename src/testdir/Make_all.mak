@@ -227,6 +227,7 @@ NEW_TESTS = \
 	test_searchpos \
 	test_set \
 	test_sha256 \
+	test_shift \
 	test_shortpathname \
 	test_signals \
 	test_signs \
