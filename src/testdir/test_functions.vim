@@ -1267,7 +1267,7 @@ func Test_libcall_libcallnr()
   elseif has('mac')
     let libc = 'libSystem.B.dylib'
   elseif executable('ldd')
-    let libc = matchstr(split(system('ldd ' . GetVimProg())), '/libc\.so\>')
+    let libc = matchstr(split(system('ldd ' . v:progpath)), '/libc\.so\>')
   endif
   if get(l:, 'libc', '') ==# ''
     " On Unix, libc.so can be in various places.
@@ -1278,7 +1278,7 @@ func Test_libcall_libcallnr()
       let libc = ''
     elseif has('sun')
       " Set the path to libc.so according to the architecture.
-      let test_bits = system('file ' . GetVimProg())
+      let test_bits = system('file ' . v:progpath)
       let test_arch = system('uname -p')
       if test_bits =~ '64-bit' && test_arch =~ 'sparc'
         let libc = '/usr/lib/sparcv9/libc.so'

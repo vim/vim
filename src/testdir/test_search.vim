@@ -590,7 +590,7 @@ func Test_search_cmdline8()
   " Prepare buffer text
   let lines = ['abb vim vim vi', 'vimvivim']
   call writefile(lines, 'Xsearch.txt')
-  let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
+  let buf = term_start([v:progpath, '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
 
   call WaitForAssert({-> assert_equal(lines, [term_getline(buf, 1), term_getline(buf, 2)])})
 
@@ -716,7 +716,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
   " Prepare buffer text
   let lines = ['abb vim vim vi', 'vimvivim']
   call writefile(lines, 'Xsearch.txt')
-  let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
+  let buf = term_start([v:progpath, '--clean', '-c', 'set noswapfile', 'Xsearch.txt'], {'term_rows': 3})
 
   call WaitForAssert({-> assert_equal(lines, [term_getline(buf, 1), term_getline(buf, 2)])})
   " wait for vim to complete initialization
@@ -1146,7 +1146,7 @@ func Test_search_undefined_behaviour()
     return
   endif
   " did cause an undefined left shift
-  let g:buf = term_start([GetVimProg(), '--clean', '-e', '-s', '-c', 'call search(getline("."))', 'samples/test000'], {'term_rows': 3})
+  let g:buf = term_start([v:progpath, '--clean', '-e', '-s', '-c', 'call search(getline("."))', 'samples/test000'], {'term_rows': 3})
   call assert_equal([''], getline(1, '$'))
   call term_sendkeys(g:buf, ":qa!\<cr>")
   bwipe!

@@ -220,16 +220,6 @@ func s:feedkeys(timer)
   call feedkeys('x', 'nt')
 endfunc
 
-" Get $VIMPROG to run Vim executable.
-" The Makefile writes it as the first line in the "vimcmd" file.
-func GetVimProg()
-  if !filereadable('vimcmd')
-    " Assume the script was sourced instead of running "make".
-    return '../vim'
-  endif
-  return readfile('vimcmd')[0]
-endfunc
-
 let g:valgrind_cnt = 1
 
 " Get the command to run Vim, with -u NONE and --not-a-term arguments.

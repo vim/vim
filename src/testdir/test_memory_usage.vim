@@ -63,7 +63,7 @@ endfunc
 let s:term_vim = {}
 
 func s:term_vim.start(...) abort
-  let self.buf = term_start([GetVimProg()] + a:000)
+  let self.buf = term_start([v:progpath] + a:000)
   let self.job = term_getjob(self.buf)
   call WaitFor({-> job_status(self.job) ==# 'run'})
   let self.pid = job_info(self.job).process

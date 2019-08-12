@@ -672,7 +672,7 @@ func Test_popup_and_window_resize()
     return
   endif
   let rows = h / 3
-  let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': rows})
+  let buf = term_start([v:progpath, '--clean', '-c', 'set noswapfile'], {'term_rows': rows})
   call term_sendkeys(buf, (h / 3 - 1) . "o\<esc>")
   " Wait for the nested Vim to exit insert mode, where it will show the ruler.
   " Need to trigger a redraw.

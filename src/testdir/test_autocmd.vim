@@ -1867,7 +1867,7 @@ func Test_Changed_FirstTime()
 
   " Prepare file for TextChanged event.
   call writefile([''], 'Xchanged.txt')
-  let buf = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'], {'term_rows': 3})
+  let buf = term_start([v:progpath, '--clean', '-c', 'set noswapfile'], {'term_rows': 3})
   call assert_equal('running', term_getstatus(buf))
   " Wait for the ruler (in the status line) to be shown.
   " In ConPTY, there is additional character which is drawn up to the width of

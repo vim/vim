@@ -1989,7 +1989,7 @@ func Test_term_gettitle()
     throw "Skipped: can't get/set title"
   endif
 
-  let term = term_start([GetVimProg(), '--clean', '-c', 'set noswapfile'])
+  let term = term_start([v:progpath, '--clean', '-c', 'set noswapfile'])
   if has('autoservername')
     call WaitForAssert({-> assert_match('^\[No Name\] - VIM\d\+$', term_gettitle(term)) })
     call term_sendkeys(term, ":e Xfoo\r")

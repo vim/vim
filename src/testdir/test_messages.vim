@@ -112,7 +112,7 @@ func Test_mode_message_at_leaving_insert_by_ctrl_c()
   call writefile(lines, testfile)
 
   let rows = 10
-  let buf = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
+  let buf = term_start([v:progpath, '--clean', '-S', testfile], {'term_rows': rows})
   call term_wait(buf, 200)
   call assert_equal('run', job_status(term_getjob(buf)))
 
@@ -141,7 +141,7 @@ func Test_mode_message_at_leaving_insert_with_esc_mapped()
   call writefile(lines, testfile)
 
   let rows = 10
-  let buf = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
+  let buf = term_start([v:progpath, '--clean', '-S', testfile], {'term_rows': rows})
   call term_wait(buf, 200)
   call assert_equal('run', job_status(term_getjob(buf)))
 
