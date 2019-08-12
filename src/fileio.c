@@ -27,7 +27,7 @@
 /* Is there any system that doesn't have access()? */
 #define USE_MCH_ACCESS
 
-static char_u *next_fenc(char_u **pp);
+static char_u *next_fenc(char_u **pp, int *alloced);
 #ifdef FEAT_EVAL
 static char_u *readfile_charconvert(char_u *fname, char_u *fenc, int *fdp);
 #endif
@@ -890,8 +890,7 @@ readfile(
     else
     {
 	fenc_next = p_fencs;		/* try items in 'fileencodings' */
-	fenc = next_fenc(&fenc_next);
-	fenc_alloced = TRUE;
+	fenc = next_fenc(&fenc_next, &fenc_alloced);
     }
 
     /*
@@ -994,8 +993,7 @@ retry:
 		vim_free(fenc);
 	    if (fenc_next != NULL)
 	    {
-		fenc = next_fenc(&fenc_next);
-		fenc_alloced = (fenc_next != NULL);
+		fenc = next_fenc(&fenc_next, &fenc_alloced);
 	    }
 	    else
 	    {
@@ -2761,14 +2759,16 @@ set_forced_fenc(exarg_T *eap)
  * "pp" points to fenc_next.  It's advanced to the next item.
  * When there are no more items, an empty string is returned and *pp is set to
  * NULL.
- * When *pp is not set to NULL, the result is in allocated memory.
+ * When *pp is not set to NULL, the result is in allocated memory and "alloced"
+ * is set to TRUE.
  */
     static char_u *
-next_fenc(char_u **pp)
+next_fenc(char_u **pp, int *alloced)
 {
     char_u	*p;
     char_u	*r;
 
+    *alloced = FALSE;
     if (**pp == NUL)
     {
 	*pp = NULL;
@@ -2791,8 +2791,11 @@ next_fenc(char_u **pp)
 	    r = p;
 	}
     }
-    if (r == NULL)	/* out of memory */
+    if (r != NULL)
+	*alloced = TRUE;
+    else
     {
+	// out of memory
 	r = (char_u *)"";
 	*pp = NULL;
     }
