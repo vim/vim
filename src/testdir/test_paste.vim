@@ -70,9 +70,8 @@ func Test_paste_insert_mode()
 endfunc
 
 func Test_paste_clipboard()
-  if !WorkingClipboard()
-    return
-  endif
+  CheckFeature clipboard_working
+
   let @+ = "nasty\<Esc>:!ls\<CR>command"
   new
   exe "normal i\<C-R>+\<Esc>"

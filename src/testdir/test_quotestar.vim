@@ -1,11 +1,9 @@
 " *-register (quotestar) tests
 
 source shared.vim
-if !WorkingClipboard()
-  throw 'Skipped: no working clipboard'
-endif
+source check.vim
 
-source shared.vim
+CheckFeature clipboard_working
 
 func Do_test_quotestar_for_macunix()
   if empty(exepath('pbcopy')) || empty(exepath('pbpaste'))
