@@ -891,7 +891,10 @@ readfile(
     {
 	fenc_next = p_fencs;		/* try items in 'fileencodings' */
 	fenc = next_fenc(&fenc_next);
-	fenc_alloced = TRUE;
+        if (STRCMP(fenc, "") != 0)
+	    fenc_alloced = TRUE;
+        else
+            fenc_alloced = FALSE;
     }
 
     /*
