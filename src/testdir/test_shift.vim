@@ -78,6 +78,10 @@ func Test_ex_shift_left()
 endfunc
 
 func Test_ex_shift_rightleft()
+  if !has('rightleft')
+    return
+  endif
+
   set shiftwidth=2 rightleft
 
   call setline(1, range(1, 4))
