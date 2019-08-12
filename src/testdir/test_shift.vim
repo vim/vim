@@ -78,9 +78,7 @@ func Test_ex_shift_left()
 endfunc
 
 func Test_ex_shift_rightleft()
-  bw!
-  set shiftwidth=2
-  set rightleft
+  set shiftwidth=2 rightleft
 
   call setline(1, range(1, 4))
   2,3<<
@@ -95,8 +93,8 @@ func Test_ex_shift_rightleft()
         \            '  3',
         \            '4'], getline(1, '$'))
 
-  set rightleft&
-  set shiftwidth&
+  bw!
+  set rightleft& shiftwidth&
 endfunc
 
 func Test_ex_shift_errors()
