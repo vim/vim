@@ -256,7 +256,10 @@ prop_add_common(
     }
 
     if (buf->b_ml.ml_mfp == NULL)
-	ml_open(buf);
+    {
+	emsg(_("E275: Cannot add text property to unloaded buffer"));
+	return;
+    }
 
     for (lnum = start_lnum; lnum <= end_lnum; ++lnum)
     {
