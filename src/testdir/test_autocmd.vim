@@ -439,7 +439,7 @@ func Test_autocmd_bufwipe_in_SessLoadPost()
   [CODE]
 
   call writefile(content, 'Xvimrc')
-  call system(v:progpath. ' -u Xvimrc --not-a-term --noplugins -S Session.vim -c cq')
+  call system(GetVimCommand('Xvimrc') .. ' --not-a-term --noplugins -S Session.vim -c cq')
   let errors = join(readfile('Xerrors'))
   call assert_match('E814', errors)
 
@@ -479,7 +479,7 @@ func Test_autocmd_bufwipe_in_SessLoadPost2()
   [CODE]
 
   call writefile(content, 'Xvimrc')
-  call system(v:progpath. ' -u Xvimrc --not-a-term --noplugins -S Session.vim -c cq')
+  call system(GetVimCommand('Xvimrc') .. ' --not-a-term --noplugins -S Session.vim -c cq')
   let errors = join(readfile('Xerrors'))
   " This probably only ever matches on unix.
   call assert_notmatch('Caught deadly signal SEGV', errors)
@@ -1422,7 +1422,7 @@ func Test_bufunload_all()
   call writefile(content, 'Xtest')
 
   call delete('Xout')
-  call system(v:progpath. ' --clean -N --not-a-term -S Xtest')
+  call system(GetVimCommandClean() .. ' -N --not-a-term -S Xtest')
   call assert_true(filereadable('Xout'))
 
   call delete('Xxx1')

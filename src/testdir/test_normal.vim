@@ -1096,7 +1096,7 @@ func Test_normal20_exmode()
   endif
   call writefile(['1a', 'foo', 'bar', '.', 'w! Xfile2', 'q!'], 'Xscript')
   call writefile(['1', '2'], 'Xfile')
-  call system(v:progpath .' -e -s < Xscript Xfile')
+  call system(GetVimCommand() .. ' -e -s < Xscript Xfile')
   let a=readfile('Xfile2')
   call assert_equal(['1', 'foo', 'bar', '2'], a)
 
@@ -1143,13 +1143,13 @@ func Test_normal22_zet()
   " let shell = &shell
   " let &shell = 'sh'
   call writefile(['1', '2'], 'Xfile')
-  let args = ' -u NONE -N -U NONE -i NONE --noplugins -X --not-a-term'
-  call system(v:progpath . args . ' -c "%d" -c ":norm! ZZ" Xfile')
+  let args = ' -N -i NONE --noplugins -X --not-a-term'
+  call system(GetVimCommand() .. args .. ' -c "%d" -c ":norm! ZZ" Xfile')
   let a = readfile('Xfile')
   call assert_equal([], a)
   " Test for ZQ
   call writefile(['1', '2'], 'Xfile')
-  call system(v:progpath . args . ' -c "%d" -c ":norm! ZQ" Xfile')
+  call system(GetVimCommand() . args . ' -c "%d" -c ":norm! ZQ" Xfile')
   let a = readfile('Xfile')
   call assert_equal(['1', '2'], a)
 
