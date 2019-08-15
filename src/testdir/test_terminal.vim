@@ -1686,6 +1686,13 @@ func Test_terminal_termwinkey()
   call feedkeys("\<C-W>w", 'tx')
   call assert_equal(termwin, win_getid())
 
+  set langmap=xjyk
+  call feedkeys("\<C-L>x", 'tx')
+  call assert_equal(thiswin, win_getid())
+  call feedkeys("\<C-W>y", 'tx')
+  call assert_equal(termwin, win_getid())
+  set langmap=
+
   call feedkeys("\<C-L>gt", "xt")
   call assert_equal(3, tabpagenr())
   tabprev
