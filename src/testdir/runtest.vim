@@ -333,6 +333,7 @@ let s:flaky_tests = [
       \ 'Test_quotestar()',
       \ 'Test_raw_one_time_callback()',
       \ 'Test_reltime()',
+      \ 'Test_repeat_many()',
       \ 'Test_repeat_three()',
       \ 'Test_server_crash()',
       \ 'Test_terminal_ansicolors_default()',

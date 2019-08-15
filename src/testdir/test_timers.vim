@@ -43,7 +43,7 @@ func Test_repeat_many()
   let timer = timer_start(50, 'MyHandler', {'repeat': -1})
   sleep 200m
   call timer_stop(timer)
-  call assert_inrange(2, 4, g:val)
+  call assert_inrange(2, 5, g:val)
 endfunc
 
 func Test_with_partial_callback()
