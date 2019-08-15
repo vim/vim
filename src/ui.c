@@ -459,12 +459,22 @@ ui_wait_for_chars_or_timer(
 	}
 	if (due_time <= 0 || (wtime > 0 && due_time > remaining))
 	    due_time = remaining;
-# ifdef FEAT_JOB_CHANNEL
-	if ((due_time < 0 || due_time > 10L)
-#  ifdef FEAT_GUI
-		&& !gui.in_use
+# if defined(FEAT_JOB_CHANNEL) || defined(FEAT_SOUND_CANBERRA)
+	if ((due_time < 0 || due_time > 10L) && (
+#  if defined(FEAT_JOB_CHANNEL)
+		(
+#   if defined(FEAT_GUI)
+		!gui.in_use &&
+#   endif
+		(has_pending_job() || channel_any_readahead()))
+#   ifdef FEAT_SOUND_CANBERRA
+		||
+#   endif
 #  endif
-		&& (has_pending_job() || channel_any_readahead()))
+#  ifdef FEAT_SOUND_CANBERRA
+		    has_any_sound_callback()
+#  endif
+		    ))
 	{
 	    // There is a pending job or channel, should return soon in order
 	    // to handle them ASAP.  Do check for input briefly.

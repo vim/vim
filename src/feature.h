@@ -666,6 +666,9 @@
 #if !defined(FEAT_SOUND) && defined(HAVE_CANBERRA)
 # define FEAT_SOUND
 #endif
+#if defined(FEAT_SOUND) && defined(HAVE_CANBERRA)
+# define FEAT_SOUND_CANBERRA
+#endif
 
 /* There are two ways to use XPM. */
 #if (defined(HAVE_XM_XPMP_H) && defined(FEAT_GUI_MOTIF)) \

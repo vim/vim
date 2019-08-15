@@ -30,6 +30,16 @@ struct soundcb_S {
 
 static soundcb_T    *first_callback = NULL;
 
+/*
+ * Return TRUE when a sound callback has been created, it may be invoked when
+ * the sound finishes playing.  Also see has_sound_callback_in_queue().
+ */
+    int
+has_any_sound_callback(void)
+{
+    return first_callback != NULL;
+}
+
     static soundcb_T *
 get_sound_callback(typval_T *arg)
 {
@@ -85,6 +95,24 @@ delete_sound_callback(soundcb_T *soundcb)
 
 static ca_context   *context = NULL;
 
+// Structure to store info about a sound callback to be invoked soon.
+typedef struct soundcb_queue_S soundcb_queue_T;
+
+struct soundcb_queue_S {
+    soundcb_queue_T	*scb_next;
+    uint32_t		scb_id;		// ID of the sound
+    int			scb_result;	// CA_ value
+    soundcb_T		*scb_callback;	// function to call
+};
+
+// Queue of callbacks to invoke from the main loop.
+static soundcb_queue_T *callback_queue = NULL;
+
+/*
+ * Add a callback to the queue of callbacks to invoke later from the main loop.
+ * That is because the callback may be called from another thread and invoking
+ * another sound function may cause trouble.
+ */
     static void
 sound_callback(
 	ca_context  *c UNUSED,
@@ -92,23 +120,58 @@ sound_callback(
 	int	    error_code,
 	void	    *userdata)
 {
-    soundcb_T	*soundcb = (soundcb_T *)userdata;
-    typval_T	argv[3];
-    typval_T	rettv;
+    soundcb_T	    *soundcb = (soundcb_T *)userdata;
+    soundcb_queue_T *scb;
 
-    argv[0].v_type = VAR_NUMBER;
-    argv[0].vval.v_number = id;
-    argv[1].v_type = VAR_NUMBER;
-    argv[1].vval.v_number = error_code == CA_SUCCESS ? 0
+    scb = ALLOC_ONE(soundcb_queue_T);
+    if (scb == NULL)
+	return;
+    scb->scb_next = callback_queue;
+    callback_queue = scb;
+    scb->scb_id = id;
+    scb->scb_result = error_code == CA_SUCCESS ? 0
 			  : error_code == CA_ERROR_CANCELED
 					    || error_code == CA_ERROR_DESTROYED
 			  ? 1 : 2;
-    argv[2].v_type = VAR_UNKNOWN;
+    scb->scb_callback = soundcb;
+}
 
-    call_callback(&soundcb->snd_callback, -1, &rettv, 2, argv);
-    clear_tv(&rettv);
+/*
+ * Return TRUE if there is a sound callback to be called.
+ */
+    int
+has_sound_callback_in_queue(void)
+{
+    return callback_queue != NULL;
+}
 
-    delete_sound_callback(soundcb);
+/*
+ * Invoke queued sound callbacks.
+ */
+    void
+invoke_sound_callback(void)
+{
+    soundcb_queue_T *scb;
+    typval_T	    argv[3];
+    typval_T	    rettv;
+
+
+    while (callback_queue != NULL)
+    {
+	scb = callback_queue;
+	callback_queue = scb->scb_next;
+
+	argv[0].v_type = VAR_NUMBER;
+	argv[0].vval.v_number = scb->scb_id;
+	argv[1].v_type = VAR_NUMBER;
+	argv[1].vval.v_number = scb->scb_result;
+	argv[2].v_type = VAR_UNKNOWN;
+
+	call_callback(&scb->scb_callback->snd_callback, -1, &rettv, 2, argv);
+	clear_tv(&rettv);
+
+	delete_sound_callback(scb->scb_callback);
+    }
     redraw_after_callback(TRUE);
 }
 

@@ -4486,6 +4486,10 @@ parse_queued_messages(void)
 # ifdef FEAT_TERMINAL
 	free_unused_terminals();
 # endif
+# ifdef FEAT_SOUND_CANBERRA
+	if (has_sound_callback_in_queue())
+	    invoke_sound_callback();
+# endif
 	break;
     }
 
