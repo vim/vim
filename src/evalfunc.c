@@ -75,12 +75,6 @@ static void f_char2nr(typval_T *argvars, typval_T *rettv);
 static void f_chdir(typval_T *argvars, typval_T *rettv);
 static void f_cindent(typval_T *argvars, typval_T *rettv);
 static void f_col(typval_T *argvars, typval_T *rettv);
-#if defined(FEAT_INS_EXPAND)
-static void f_complete(typval_T *argvars, typval_T *rettv);
-static void f_complete_add(typval_T *argvars, typval_T *rettv);
-static void f_complete_check(typval_T *argvars, typval_T *rettv);
-static void f_complete_info(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_confirm(typval_T *argvars, typval_T *rettv);
 static void f_copy(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
@@ -2293,86 +2287,6 @@ f_col(typval_T *argvars, typval_T *rettv)
     }
     rettv->vval.v_number = col;
 }
-
-#if defined(FEAT_INS_EXPAND)
-/*
- * "complete()" function
- */
-    static void
-f_complete(typval_T *argvars, typval_T *rettv UNUSED)
-{
-    int	    startcol;
-
-    if ((State & INSERT) == 0)
-    {
-	emsg(_("E785: complete() can only be used in Insert mode"));
-	return;
-    }
-
-    /* Check for undo allowed here, because if something was already inserted
-     * the line was already saved for undo and this check isn't done. */
-    if (!undo_allowed())
-	return;
-
-    if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
-    {
-	emsg(_(e_invarg));
-	return;
-    }
-
-    startcol = (int)tv_get_number_chk(&argvars[0], NULL);
-    if (startcol <= 0)
-	return;
-
-    set_completion(startcol - 1, argvars[1].vval.v_list);
-}
-
-/*
- * "complete_add()" function
- */
-    static void
-f_complete_add(typval_T *argvars, typval_T *rettv)
-{
-    rettv->vval.v_number = ins_compl_add_tv(&argvars[0], 0);
-}
-
-/*
- * "complete_check()" function
- */
-    static void
-f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    int		saved = RedrawingDisabled;
-
-    RedrawingDisabled = 0;
-    ins_compl_check_keys(0, TRUE);
-    rettv->vval.v_number = ins_compl_interrupted();
-    RedrawingDisabled = saved;
-}
-
-/*
- * "complete_info()" function
- */
-    static void
-f_complete_info(typval_T *argvars, typval_T *rettv)
-{
-    list_T	*what_list = NULL;
-
-    if (rettv_dict_alloc(rettv) != OK)
-	return;
-
-    if (argvars[0].v_type != VAR_UNKNOWN)
-    {
-	if (argvars[0].v_type != VAR_LIST)
-	{
-	    emsg(_(e_listreq));
-	    return;
-	}
-	what_list = argvars[0].vval.v_list;
-    }
-    get_complete_info(what_list, rettv->vval.v_dict);
-}
-#endif
 
 /*
  * "confirm(message, buttons[, default [, type]])" function
