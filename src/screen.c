@@ -8645,10 +8645,16 @@ give_up:
 	}
 	/* Use the last line of the screen for the current line. */
 	current_ScreenLine = new_ScreenLines + Rows * Columns;
+
+#ifdef FEAT_TEXT_PROP
+	vim_memset(new_popup_mask, 0, Rows * Columns * sizeof(short));
+	vim_memset(new_popup_transparent, 0, Rows * Columns * sizeof(char));
+#endif
     }
 
     free_screenlines();
 
+    // NOTE: this may result in all pointers to become NULL.
     ScreenLines = new_ScreenLines;
     ScreenLinesUC = new_ScreenLinesUC;
     for (i = 0; i < p_mco; ++i)
@@ -8661,10 +8667,8 @@ give_up:
     TabPageIdxs = new_TabPageIdxs;
 #ifdef FEAT_TEXT_PROP
     popup_mask = new_popup_mask;
-    vim_memset(popup_mask, 0, Rows * Columns * sizeof(short));
     popup_mask_next = new_popup_mask_next;
     popup_transparent = new_popup_transparent;
-    vim_memset(popup_transparent, 0, Rows * Columns * sizeof(char));
     popup_mask_refresh = TRUE;
 #endif
 

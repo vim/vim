@@ -823,3 +823,25 @@ func Test_textprop_remove_from_buf()
   bwipe! x
   close
 endfunc
+
+func Test_textprop_in_unloaded_buf()
+  edit Xaaa
+  call setline(1, 'aaa')
+  write
+  edit Xbbb
+  call setline(1, 'bbb')
+  write
+  let bnr = bufnr('')
+  edit Xaaa
+
+  call prop_type_add('ErrorMsg', #{highlight:'ErrorMsg'})
+  call assert_fails("call prop_add(1, 1, #{end_lnum: 1, endcol: 2, type: 'ErrorMsg', bufnr: bnr})", 'E275:')
+  exe 'buf ' .. bnr
+  call assert_equal('bbb', getline(1))
+  call assert_equal(0, prop_list(1)->len())
+
+  bwipe! Xaaa
+  bwipe! Xbbb
+  cal delete('Xaaa')
+  cal delete('Xbbb')
+endfunc

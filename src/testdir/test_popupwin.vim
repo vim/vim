@@ -6,9 +6,8 @@ CheckFeature textprop
 source screendump.vim
 
 func Test_simple_popup()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, range(1, 100))
 	hi PopupColor1 ctermbg=lightblue
@@ -77,9 +76,7 @@ func Test_simple_popup()
 endfunc
 
 func Test_popup_with_border_and_padding()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   for iter in range(0, 1)
     let lines =<< trim END
@@ -191,9 +188,8 @@ func Test_popup_with_border_and_padding()
 endfunc
 
 func Test_popup_with_syntax_win_execute()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, range(1, 100))
 	hi PopupColor ctermbg=lightblue
@@ -216,9 +212,8 @@ func Test_popup_with_syntax_win_execute()
 endfunc
 
 func Test_popup_with_syntax_setbufvar()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, range(1, 100))
 	hi PopupColor ctermbg=lightgrey
@@ -241,9 +236,8 @@ func Test_popup_with_syntax_setbufvar()
 endfunc
 
 func Test_popup_with_matches()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, ['111 222 333', '444 555 666'])
 	let winid = popup_create([
@@ -267,9 +261,8 @@ func Test_popup_with_matches()
 endfunc
 
 func Test_popup_all_corners()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, repeat([repeat('-', 60)], 15))
 	set so=0
@@ -316,9 +309,8 @@ func Test_popup_all_corners()
 endfunc
 
 func Test_popup_firstline()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, range(1, 20))
 	call popup_create(['1111', '222222', '33333', '44', '5', '666666', '77777', '888', '9999999999999999'], #{
@@ -346,9 +338,8 @@ func Test_popup_firstline()
 endfunc
 
 func Test_popup_drag()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   " create a popup that covers the command line
   let lines =<< trim END
 	call setline(1, range(1, 20))
@@ -385,9 +376,8 @@ func Test_popup_drag()
 endfunc
 
 func Test_popup_close_with_mouse()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, range(1, 20))
 	" With border, can click on X
@@ -442,9 +432,8 @@ func Test_popup_close_with_mouse()
 endfunction
 
 func Test_popup_with_mask()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, repeat([join(range(1, 42), '')], 13))
 	hi PopupColor ctermbg=lightgrey
@@ -510,12 +499,9 @@ func Test_popup_with_mask()
 endfunc
 
 func Test_popup_select()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
-  if !has('clipboard')
-    throw 'Skipped: clipboard feature missing'
-  endif
+  CheckScreendump
+  CheckFeature clipboard_working
+
   " create a popup with some text to be selected
   let lines =<< trim END
     set clipboard=autoselect
@@ -690,9 +676,8 @@ func Test_win_execute_not_allowed()
 endfunc
 
 func Test_popup_with_wrap()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	 call setline(1, range(1, 100))
 	 let winid = popup_create(
@@ -709,9 +694,8 @@ func Test_popup_with_wrap()
 endfunc
 
 func Test_popup_without_wrap()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	 call setline(1, range(1, 100))
 	 let winid = popup_create(
@@ -728,9 +712,8 @@ func Test_popup_without_wrap()
 endfunc
 
 func Test_popup_with_showbreak()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	 set showbreak=>>\ 
 	 call setline(1, range(1, 20))
@@ -749,9 +732,8 @@ func Test_popup_with_showbreak()
 endfunc
 
 func Test_popup_time()
-  if !has('timers')
-    throw 'Skipped: timer feature not supported'
-  endif
+  CheckFeature timers
+
   topleft vnew
   call setline(1, 'hello')
 
@@ -1070,9 +1052,7 @@ func Test_popup_atcursor()
 endfunc
 
 func Test_popup_beval()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
 	call setline(1, range(1, 20))
@@ -1223,9 +1203,7 @@ func Test_popup_menu()
 endfunc
 
 func Test_popup_menu_screenshot()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
 	call setline(1, range(1, 20))
@@ -1251,9 +1229,7 @@ func Test_popup_menu_screenshot()
 endfunc
 
 func Test_popup_menu_narrow()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
 	call setline(1, range(1, 20))
@@ -1274,9 +1250,7 @@ func Test_popup_menu_narrow()
 endfunc
 
 func Test_popup_title()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   " Create a popup without title or border, a line of padding will be added to
   " put the title on.
@@ -1333,9 +1307,8 @@ func Test_popup_empty()
 endfunc
 
 func Test_popup_never_behind()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   " +-----------------------------+
   " |             |               |
   " |             |               |
@@ -1616,12 +1589,8 @@ func Test_popup_moved()
 endfunc
 
 func Test_notifications()
-  if !has('timers')
-    throw 'Skipped: timer feature not supported'
-  endif
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckFeature timers
+  CheckScreendump
 
   call writefile([
 	\ "call setline(1, range(1, 20))",
@@ -1642,9 +1611,7 @@ func Test_notifications()
 endfunc
 
 func Test_popup_scrollbar()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
     call setline(1, range(1, 20))
@@ -1727,9 +1694,7 @@ func Test_popup_fitting_scrollbar()
 endfunc
 
 func Test_popup_settext()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
     let opts = #{wrap: 0}
@@ -1901,9 +1866,7 @@ func Test_popupwin_buf_close()
 endfunc
 
 func Test_popup_menu_with_maxwidth()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
 	call setline(1, range(1, 10))
@@ -1942,9 +1905,7 @@ func Test_popup_menu_with_maxwidth()
 endfunc
 
 func Test_popup_menu_with_scrollbar()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
     call setline(1, range(1, 20))
@@ -1988,9 +1949,7 @@ func Test_popup_menu_with_scrollbar()
 endfunc
 
 func Test_popup_menu_filter()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
 	function! MyFilter(winid, key) abort
@@ -2044,9 +2003,7 @@ func Test_popup_menu_filter()
 endfunc
 
 func Test_popup_cursorline()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let winid = popup_create('some text', {})
   call assert_equal(0, popup_getoptions(winid).cursorline)
@@ -2160,9 +2117,8 @@ func Test_popup_cursorline()
 endfunc
 
 func Test_previewpopup()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   call writefile([
         \ "!_TAG_FILE_ENCODING\tutf-8\t//",
         \ "another\tXtagfile\t/^this is another",
@@ -2194,8 +2150,6 @@ func Test_previewpopup()
 	      \ 'very long line where the word is also another'])
         set previewpopup=height:4,width:40
 	set path=.
-	call ch_logfile('logfile', 'w')
-	call ch_log('logfile started')
   END
   call writefile(lines, 'XtestPreviewPopup')
   let buf = RunVimInTerminal('-S XtestPreviewPopup', #{rows: 14})

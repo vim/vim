@@ -127,10 +127,9 @@ func Test_quoteplus()
 
     let test_call     = 'Can you hear me?'
     let test_response = 'Yes, I can.'
-    let vim_exe = exepath(v:progpath)
+    let vim_exe = GetVimCommand()
     let testee = 'VIMRUNTIME=' . $VIMRUNTIME . '; export VIMRUNTIME;'
-          \ . vim_exe
-	  \ . ' -u NONE -U NONE --noplugin --not-a-term -c ''%s'''
+          \ . vim_exe . ' --noplugin --not-a-term -c ''%s'''
     " Ignore the "failed to create input context" error.
     let cmd = 'call test_ignore_error("E285") | '
 	  \ . 'gui -f | '

@@ -5127,7 +5127,8 @@ dozet:
 		    if (ptr == NULL && (len = find_ident_under_cursor(&ptr,
 							    FIND_IDENT)) == 0)
 			return;
-		    spell_add_word(ptr, len, nchar == 'w' || nchar == 'W',
+		    spell_add_word(ptr, len, nchar == 'w' || nchar == 'W'
+					      ? SPELL_ADD_BAD : SPELL_ADD_GOOD,
 					    (nchar == 'G' || nchar == 'W')
 						       ? 0 : (int)cap->count1,
 					    undo);

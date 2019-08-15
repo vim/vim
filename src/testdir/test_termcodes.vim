@@ -182,9 +182,7 @@ func Test_xterm_mouse_ctrl_click()
 endfunc
 
 func Test_term_mouse_middle_click()
-  if !WorkingClipboard()
-    throw 'Skipped: No working clipboard'
-  endif
+  CheckFeature clipboard_working
 
   new
   let save_mouse = &mouse

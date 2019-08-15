@@ -322,13 +322,3 @@ func RunVimPiped(before, after, arguments, pipecmd)
   endif
   return 1
 endfunc
-
-func WorkingClipboard()
-  if !has('clipboard')
-    return 0
-  endif
-  if has('x11')
-    return $DISPLAY != ""
-  endif
-  return 1
-endfunc

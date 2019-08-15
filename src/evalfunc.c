@@ -6629,6 +6629,10 @@ f_has(typval_T *argvars, typval_T *rettv)
 	else if (STRICMP(name, "conpty") == 0)
 	    n = use_conpty();
 #endif
+#ifdef FEAT_CLIPBOARD
+	else if (STRICMP(name, "clipboard_working") == 0)
+	    n = clip_star.available;
+#endif
     }
 
     rettv->vval.v_number = n;

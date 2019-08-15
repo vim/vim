@@ -9603,6 +9603,7 @@ byte_offset		Compiled with support for 'o' in 'statusline'
 cindent			Compiled with 'cindent' support.
 clientserver		Compiled with remote invocation support |clientserver|.
 clipboard		Compiled with 'clipboard' support.
+clipboard_working	Compiled with 'clipboard' support and it can be used.
 cmdline_compl		Compiled with |cmdline-completion| support.
 cmdline_hist		Compiled with |cmdline-history| support.
 cmdline_info		Compiled with 'showcmd' and 'ruler' support.
