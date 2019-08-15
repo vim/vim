@@ -814,7 +814,7 @@ pum_set_selected(int n, int repeat)
 			 * update the view on the buffer.  Only go back to
 			 * the window when needed, otherwise it will always be
 			 * redraw. */
-			if (resized)
+			if (resized && win_valid(curwin_save))
 			{
 			    ++no_u_sync;
 			    win_enter(curwin_save, TRUE);
@@ -844,6 +844,11 @@ pum_set_selected(int n, int repeat)
 		    }
 		}
 	    }
+# ifdef FEAT_TEXT_PROP
+	    if (WIN_IS_POPUP(curwin))
+		// can't keep focus in a popup window
+		win_enter(firstwin, TRUE);
+# endif
 	}
 #endif
     }
