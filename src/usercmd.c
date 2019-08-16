@@ -69,9 +69,7 @@ static struct
     {EXPAND_FUNCTIONS, "function"},
     {EXPAND_HELP, "help"},
     {EXPAND_HIGHLIGHT, "highlight"},
-#if defined(FEAT_CMDHIST)
     {EXPAND_HISTORY, "history"},
-#endif
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     {EXPAND_LOCALES, "locale"},
 #endif

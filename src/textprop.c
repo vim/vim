@@ -256,7 +256,10 @@ prop_add_common(
     }
 
     if (buf->b_ml.ml_mfp == NULL)
-	ml_open(buf);
+    {
+	emsg(_("E275: Cannot add text property to unloaded buffer"));
+	return;
+    }
 
     for (lnum = start_lnum; lnum <= end_lnum; ++lnum)
     {
@@ -695,7 +698,7 @@ prop_type_set(typval_T *argvars, int add)
 	    semsg(_("E969: Property type %s already defined"), name);
 	    return;
 	}
-	prop = alloc_clear(sizeof(proptype_T) + STRLEN(name));
+	prop = alloc_clear(offsetof(proptype_T, pt_name) + STRLEN(name) + 1);
 	if (prop == NULL)
 	    return;
 	STRCPY(prop->pt_name, name);

@@ -210,7 +210,7 @@ dictitem_alloc(char_u *key)
 {
     dictitem_T *di;
 
-    di = alloc(sizeof(dictitem_T) + STRLEN(key));
+    di = alloc(offsetof(dictitem_T, di_key) + STRLEN(key) + 1);
     if (di != NULL)
     {
 	STRCPY(di->di_key, key);
@@ -228,7 +228,7 @@ dictitem_copy(dictitem_T *org)
 {
     dictitem_T *di;
 
-    di = alloc(sizeof(dictitem_T) + STRLEN(org->di_key));
+    di = alloc(offsetof(dictitem_T, di_key) + STRLEN(org->di_key) + 1);
     if (di != NULL)
     {
 	STRCPY(di->di_key, org->di_key);

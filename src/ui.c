@@ -459,12 +459,22 @@ ui_wait_for_chars_or_timer(
 	}
 	if (due_time <= 0 || (wtime > 0 && due_time > remaining))
 	    due_time = remaining;
-# ifdef FEAT_JOB_CHANNEL
-	if ((due_time < 0 || due_time > 10L)
-#  ifdef FEAT_GUI
-		&& !gui.in_use
+# if defined(FEAT_JOB_CHANNEL) || defined(FEAT_SOUND_CANBERRA)
+	if ((due_time < 0 || due_time > 10L) && (
+#  if defined(FEAT_JOB_CHANNEL)
+		(
+#   if defined(FEAT_GUI)
+		!gui.in_use &&
+#   endif
+		(has_pending_job() || channel_any_readahead()))
+#   ifdef FEAT_SOUND_CANBERRA
+		||
+#   endif
 #  endif
-		&& (has_pending_job() || channel_any_readahead()))
+#  ifdef FEAT_SOUND_CANBERRA
+		    has_any_sound_callback()
+#  endif
+		    ))
 	{
 	    // There is a pending job or channel, should return soon in order
 	    // to handle them ASAP.  Do check for input briefly.
@@ -1609,12 +1619,12 @@ clip_copy_modeless_selection(int both UNUSED)
 
 	if (row == row2)
 	    end_col = col2;
-	else
 #ifdef FEAT_TEXT_PROP
+	else if (clip_star.max_col < Columns)
 	    end_col = clip_star.max_col + 1;
-#else
-	    end_col = Columns;
 #endif
+	else
+	    end_col = Columns;
 
 	line_end_col = clip_get_line_end(&clip_star, row);
 
@@ -1787,7 +1797,7 @@ clip_get_line_end(Clipboard_T *cbd UNUSED, int row)
 	return 0;
     for (i =
 #ifdef FEAT_TEXT_PROP
-	    cbd->max_col + 1;
+	    cbd->max_col >= screen_Columns ? screen_Columns : cbd->max_col + 1;
 #else
 	    screen_Columns;
 #endif

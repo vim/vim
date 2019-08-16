@@ -3,6 +3,8 @@
 source check.vim
 CheckFeature profile
 
+source shared.vim
+
 func Test_profile_func()
   let lines =<< trim [CODE]
     profile start Xprofile_func.log
@@ -34,7 +36,7 @@ func Test_profile_func()
   [CODE]
 
   call writefile(lines, 'Xprofile_func.vim')
-  call system(v:progpath
+  call system(GetVimCommand()
     \ . ' -es --clean'
     \ . ' -c "so Xprofile_func.vim"'
     \ . ' -c "qall!"')
@@ -120,8 +122,8 @@ func Test_profile_func_with_ifelse()
   [CODE]
 
   call writefile(lines, 'Xprofile_func.vim')
-  call system(v:progpath
-    \ . ' -es -u NONE -U NONE -i NONE --noplugin'
+  call system(GetVimCommand()
+    \ . ' -es -i NONE --noplugin'
     \ . ' -c "profile start Xprofile_func.log"'
     \ . ' -c "profile func Foo*"'
     \ . ' -c "so Xprofile_func.vim"'
@@ -233,8 +235,8 @@ func Test_profile_func_with_trycatch()
   [CODE]
 
   call writefile(lines, 'Xprofile_func.vim')
-  call system(v:progpath
-    \ . ' -es -u NONE -U NONE -i NONE --noplugin'
+  call system(GetVimCommand()
+    \ . ' -es -i NONE --noplugin'
     \ . ' -c "profile start Xprofile_func.log"'
     \ . ' -c "profile func Foo*"'
     \ . ' -c "so Xprofile_func.vim"'
@@ -320,8 +322,8 @@ func Test_profile_file()
   [CODE]
 
   call writefile(lines, 'Xprofile_file.vim')
-  call system(v:progpath
-    \ . ' -es --clean'
+  call system(GetVimCommandClean()
+    \ . ' -es'
     \ . ' -c "profile start Xprofile_file.log"'
     \ . ' -c "profile file Xprofile_file.vim"'
     \ . ' -c "so Xprofile_file.vim"'
@@ -365,8 +367,8 @@ func Test_profile_file_with_cont()
     \ ]
 
   call writefile(lines, 'Xprofile_file.vim')
-  call system(v:progpath
-    \ . ' -es --clean'
+  call system(GetVimCommandClean()
+    \ . ' -es'
     \ . ' -c "profile start Xprofile_file.log"'
     \ . ' -c "profile file Xprofile_file.vim"'
     \ . ' -c "so Xprofile_file.vim"'
@@ -423,8 +425,8 @@ func Test_profile_truncate_mbyte()
     \ ]
 
   call writefile(lines, 'Xprofile_file.vim')
-  call system(v:progpath
-    \ . ' -es --clean --cmd "set enc=utf-8"'
+  call system(GetVimCommandClean()
+    \ . ' -es --cmd "set enc=utf-8"'
     \ . ' -c "profile start Xprofile_file.log"'
     \ . ' -c "profile file Xprofile_file.vim"'
     \ . ' -c "so Xprofile_file.vim"'
@@ -470,7 +472,7 @@ func Test_profdel_func()
     call Foo3()
   [CODE]
   call writefile(lines, 'Xprofile_file.vim')
-  call system(v:progpath . ' -es --clean -c "so Xprofile_file.vim" -c q')
+  call system(GetVimCommandClean() . ' -es -c "so Xprofile_file.vim" -c q')
   call assert_equal(0, v:shell_error)
 
   let lines = readfile('Xprofile_file.log')
@@ -505,7 +507,7 @@ func Test_profdel_star()
     call Foo()
   [CODE]
   call writefile(lines, 'Xprofile_file.vim')
-  call system(v:progpath . ' -es --clean -c "so Xprofile_file.vim" -c q')
+  call system(GetVimCommandClean() . ' -es -c "so Xprofile_file.vim" -c q')
   call assert_equal(0, v:shell_error)
 
   let lines = readfile('Xprofile_file.log')

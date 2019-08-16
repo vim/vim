@@ -356,9 +356,6 @@ static void	ex_folddo(exarg_T *eap);
 # define ex_nbstart		ex_ni
 #endif
 
-#ifndef FEAT_CMDHIST
-# define ex_history		ex_ni
-#endif
 #ifndef FEAT_JUMPLIST
 # define ex_jumps		ex_ni
 # define ex_clearjumps		ex_ni
@@ -985,7 +982,7 @@ do_cmdline(
 	if (next_cmdline == NULL)
 	{
 	    VIM_CLEAR(cmdline_copy);
-#ifdef FEAT_CMDHIST
+
 	    /*
 	     * If the command was typed, remember it for the ':' register.
 	     * Do this AFTER executing the command to make :@: work.
@@ -997,7 +994,6 @@ do_cmdline(
 		last_cmdline = new_last_cmdline;
 		new_last_cmdline = NULL;
 	    }
-#endif
 	}
 	else
 	{
@@ -4130,12 +4126,10 @@ set_one_cmd_context(
 	    xp->xp_pattern = arg;
 	    break;
 
-#if defined(FEAT_CMDHIST)
 	case CMD_history:
 	    xp->xp_context = EXPAND_HISTORY;
 	    xp->xp_pattern = arg;
 	    break;
-#endif
 #if defined(FEAT_PROFILE)
 	case CMD_syntime:
 	    xp->xp_context = EXPAND_SYNTIME;
@@ -4208,6 +4202,15 @@ skip_range(
     return cmd;
 }
 
+    static void
+addr_error(cmd_addr_T addr_type)
+{
+    if (addr_type == ADDR_NONE)
+	emsg(_(e_norange));
+    else
+	emsg(_(e_invrange));
+}
+
 /*
  * Get a single EX address.
  *
@@ -4264,10 +4267,10 @@ get_address(
 		    case ADDR_TABS:
 			lnum = CURRENT_TAB_NR;
 			break;
-		    case ADDR_TABS_RELATIVE:
 		    case ADDR_NONE:
+		    case ADDR_TABS_RELATIVE:
 		    case ADDR_UNSIGNED:
-			emsg(_(e_invrange));
+			addr_error(addr_type);
 			cmd = NULL;
 			goto error;
 			break;
@@ -4314,10 +4317,10 @@ get_address(
 		    case ADDR_TABS:
 			lnum = LAST_TAB_NR;
 			break;
-		    case ADDR_TABS_RELATIVE:
 		    case ADDR_NONE:
+		    case ADDR_TABS_RELATIVE:
 		    case ADDR_UNSIGNED:
-			emsg(_(e_invrange));
+			addr_error(addr_type);
 			cmd = NULL;
 			goto error;
 			break;
@@ -4346,7 +4349,7 @@ get_address(
 		}
 		if (addr_type != ADDR_LINES)
 		{
-		    emsg(_(e_invaddr));
+		    addr_error(addr_type);
 		    cmd = NULL;
 		    goto error;
 		}
@@ -4378,7 +4381,7 @@ get_address(
 		c = *cmd++;
 		if (addr_type != ADDR_LINES)
 		{
-		    emsg(_(e_invaddr));
+		    addr_error(addr_type);
 		    cmd = NULL;
 		    goto error;
 		}
@@ -4428,7 +4431,7 @@ get_address(
 		++cmd;
 		if (addr_type != ADDR_LINES)
 		{
-		    emsg(_(e_invaddr));
+		    addr_error(addr_type);
 		    cmd = NULL;
 		    goto error;
 		}
@@ -7083,7 +7086,7 @@ do_exedit(
     int		need_hide;
     int		exmode_was = exmode_active;
 
-    if (ERROR_IF_POPUP_WINDOW)
+    if (eap->cmdidx != CMD_pedit && ERROR_IF_POPUP_WINDOW)
 	return;
     /*
      * ":vi" command ends Ex mode.
@@ -7672,12 +7675,19 @@ ex_sleep(exarg_T *eap)
     void
 do_sleep(long msec)
 {
-    long	done;
+    long	done = 0;
     long	wait_now;
+# ifdef ELAPSED_FUNC
+    elapsed_T	start_tv;
+
+    // Remember at what time we started, so that we know how much longer we
+    // should wait after waiting for a bit.
+    ELAPSED_INIT(start_tv);
+# endif
 
     cursor_on();
     out_flush_cursor(FALSE, FALSE);
-    for (done = 0; !got_int && done < msec; done += wait_now)
+    while (!got_int && done < msec)
     {
 	wait_now = msec - done > 1000L ? 1000L : msec - done;
 #ifdef FEAT_TIMERS
@@ -7689,10 +7699,15 @@ do_sleep(long msec)
 	}
 #endif
 #ifdef FEAT_JOB_CHANNEL
-	if (has_any_channel() && wait_now > 100L)
-	    wait_now = 100L;
+	if (has_any_channel() && wait_now > 20L)
+	    wait_now = 20L;
+#endif
+#ifdef FEAT_SOUND
+	if (has_any_sound_callback() && wait_now > 20L)
+	    wait_now = 20L;
 #endif
 	ui_delay(wait_now, TRUE);
+
 #ifdef FEAT_JOB_CHANNEL
 	if (has_any_channel())
 	    ui_breakcheck_force(TRUE);
@@ -7700,11 +7715,19 @@ do_sleep(long msec)
 #endif
 	    ui_breakcheck();
 #ifdef MESSAGE_QUEUE
-	/* Process the netbeans and clientserver messages that may have been
-	 * received in the call to ui_breakcheck() when the GUI is in use. This
-	 * may occur when running a test case. */
+	// Process the netbeans and clientserver messages that may have been
+	// received in the call to ui_breakcheck() when the GUI is in use. This
+	// may occur when running a test case.
 	parse_queued_messages();
 #endif
+
+# ifdef ELAPSED_FUNC
+	// actual time passed
+	done = ELAPSED_FUNC(start_tv);
+# else
+	// guestimate time passed (will actually be more)
+	done += wait_now;
+# endif
     }
 
     // If CTRL-C was typed to interrupt the sleep, drop the CTRL-C from the
@@ -7926,7 +7949,7 @@ ex_copymove(exarg_T *eap)
      */
     if (n == MAXLNUM || n < 0 || n > curbuf->b_ml.ml_line_count)
     {
-	emsg(_(e_invaddr));
+	emsg(_(e_invrange));
 	return;
     }
 
@@ -8798,9 +8821,11 @@ ex_pedit(exarg_T *eap)
 
     g_do_tagpreview = p_pvh;
     prepare_tagpreview(TRUE);
+
     keep_help_flag = bt_help(curwin_save->w_buffer);
     do_exedit(eap, NULL);
     keep_help_flag = FALSE;
+
     if (curwin != curwin_save && win_valid(curwin_save))
     {
 	/* Return cursor to where we were */
@@ -8808,6 +8833,13 @@ ex_pedit(exarg_T *eap)
 	redraw_later(VALID);
 	win_enter(curwin_save, TRUE);
     }
+# ifdef FEAT_TEXT_PROP
+    else if (WIN_IS_POPUP(curwin))
+    {
+	// can't keep focus in popup window
+	win_enter(firstwin, TRUE);
+    }
+# endif
     g_do_tagpreview = 0;
 }
 #endif

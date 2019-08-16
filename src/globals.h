@@ -1097,9 +1097,7 @@ EXTERN int	need_start_insertmode INIT(= FALSE);
 					    // start insert mode soon
 EXTERN char_u	*last_cmdline INIT(= NULL); // last command line (for ":)
 EXTERN char_u	*repeat_cmdline INIT(= NULL); // command line for "."
-#ifdef FEAT_CMDHIST
 EXTERN char_u	*new_last_cmdline INIT(= NULL);	// new value for last_cmdline
-#endif
 EXTERN char_u	*autocmd_fname INIT(= NULL); // fname for <afile> on cmdline
 EXTERN int	autocmd_fname_full;	     // autocmd_fname is full path
 EXTERN int	autocmd_bufnr INIT(= 0);     // fnum for <abuf> on cmdline
@@ -1456,7 +1454,6 @@ EXTERN char e_fontwidth[]	INIT(= N_("E236: Font \"%s\" is not fixed-width"));
 EXTERN char e_internal[]	INIT(= N_("E473: Internal error"));
 EXTERN char e_intern2[]	INIT(= N_("E685: Internal error: %s"));
 EXTERN char e_interr[]	INIT(= N_("Interrupted"));
-EXTERN char e_invaddr[]	INIT(= N_("E14: Invalid address"));
 EXTERN char e_invarg[]	INIT(= N_("E474: Invalid argument"));
 EXTERN char e_invarg2[]	INIT(= N_("E475: Invalid argument: %s"));
 EXTERN char e_duparg2[]	INIT(= N_("E983: Duplicate argument: %s"));

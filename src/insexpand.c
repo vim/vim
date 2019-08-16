@@ -859,7 +859,7 @@ completeopt_was_set(void)
  * "startcol" is where the matched text starts (1 is first column).
  * "list" is the list of matches.
  */
-    void
+    static void
 set_completion(colnr_T startcol, list_T *list)
 {
     int save_w_wrow = curwin->w_wrow;
@@ -1522,7 +1522,7 @@ ins_compl_active(void)
 /*
  * Get complete information
  */
-    void
+    static void
 get_complete_info(list_T *what_list, dict_T *retdict)
 {
     int		ret = OK;
@@ -2353,6 +2353,55 @@ theend:
 
 #if defined(FEAT_COMPL_FUNC) || defined(FEAT_EVAL) || defined(PROTO)
 /*
+ * Add a match to the list of matches from a typeval_T.
+ * If the given string is already in the list of completions, then return
+ * NOTDONE, otherwise add it to the list and return OK.  If there is an error,
+ * maybe because alloc() returns NULL, then FAIL is returned.
+ */
+    static int
+ins_compl_add_tv(typval_T *tv, int dir)
+{
+    char_u	*word;
+    int		dup = FALSE;
+    int		empty = FALSE;
+    int		flags = 0;
+    char_u	*(cptext[CPT_COUNT]);
+
+    if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
+    {
+	word = dict_get_string(tv->vval.v_dict, (char_u *)"word", FALSE);
+	cptext[CPT_ABBR] = dict_get_string(tv->vval.v_dict,
+						     (char_u *)"abbr", FALSE);
+	cptext[CPT_MENU] = dict_get_string(tv->vval.v_dict,
+						     (char_u *)"menu", FALSE);
+	cptext[CPT_KIND] = dict_get_string(tv->vval.v_dict,
+						     (char_u *)"kind", FALSE);
+	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict,
+						     (char_u *)"info", FALSE);
+	cptext[CPT_USER_DATA] = dict_get_string(tv->vval.v_dict,
+						 (char_u *)"user_data", FALSE);
+	if (dict_get_string(tv->vval.v_dict, (char_u *)"icase", FALSE) != NULL
+			&& dict_get_number(tv->vval.v_dict, (char_u *)"icase"))
+	    flags |= CP_ICASE;
+	if (dict_get_string(tv->vval.v_dict, (char_u *)"dup", FALSE) != NULL)
+	    dup = dict_get_number(tv->vval.v_dict, (char_u *)"dup");
+	if (dict_get_string(tv->vval.v_dict, (char_u *)"empty", FALSE) != NULL)
+	    empty = dict_get_number(tv->vval.v_dict, (char_u *)"empty");
+	if (dict_get_string(tv->vval.v_dict, (char_u *)"equal", FALSE) != NULL
+			&& dict_get_number(tv->vval.v_dict, (char_u *)"equal"))
+	    flags |= CP_EQUAL;
+    }
+    else
+    {
+	word = tv_get_string_chk(tv);
+	vim_memset(cptext, 0, sizeof(cptext));
+    }
+    if (word == NULL || (!empty && *word == NUL))
+	return FAIL;
+    return ins_compl_add(word, -1, NULL, cptext, dir, flags, dup);
+}
+
+/*
  * Add completions from a list.
  */
     static void
@@ -2399,52 +2448,81 @@ ins_compl_add_dict(dict_T *dict)
 }
 
 /*
- * Add a match to the list of matches from a typeval_T.
- * If the given string is already in the list of completions, then return
- * NOTDONE, otherwise add it to the list and return OK.  If there is an error,
- * maybe because alloc() returns NULL, then FAIL is returned.
+ * "complete()" function
  */
-    int
-ins_compl_add_tv(typval_T *tv, int dir)
+    void
+f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    char_u	*word;
-    int		dup = FALSE;
-    int		empty = FALSE;
-    int		flags = 0;
-    char_u	*(cptext[CPT_COUNT]);
+    int	    startcol;
 
-    if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
+    if ((State & INSERT) == 0)
     {
-	word = dict_get_string(tv->vval.v_dict, (char_u *)"word", FALSE);
-	cptext[CPT_ABBR] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"abbr", FALSE);
-	cptext[CPT_MENU] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"menu", FALSE);
-	cptext[CPT_KIND] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"kind", FALSE);
-	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict,
-						     (char_u *)"info", FALSE);
-	cptext[CPT_USER_DATA] = dict_get_string(tv->vval.v_dict,
-						 (char_u *)"user_data", FALSE);
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"icase", FALSE) != NULL
-			&& dict_get_number(tv->vval.v_dict, (char_u *)"icase"))
-	    flags |= CP_ICASE;
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"dup", FALSE) != NULL)
-	    dup = dict_get_number(tv->vval.v_dict, (char_u *)"dup");
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"empty", FALSE) != NULL)
-	    empty = dict_get_number(tv->vval.v_dict, (char_u *)"empty");
-	if (dict_get_string(tv->vval.v_dict, (char_u *)"equal", FALSE) != NULL
-			&& dict_get_number(tv->vval.v_dict, (char_u *)"equal"))
-	    flags |= CP_EQUAL;
+	emsg(_("E785: complete() can only be used in Insert mode"));
+	return;
     }
-    else
+
+    // Check for undo allowed here, because if something was already inserted
+    // the line was already saved for undo and this check isn't done.
+    if (!undo_allowed())
+	return;
+
+    if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
     {
-	word = tv_get_string_chk(tv);
-	vim_memset(cptext, 0, sizeof(cptext));
+	emsg(_(e_invarg));
+	return;
     }
-    if (word == NULL || (!empty && *word == NUL))
-	return FAIL;
-    return ins_compl_add(word, -1, NULL, cptext, dir, flags, dup);
+
+    startcol = (int)tv_get_number_chk(&argvars[0], NULL);
+    if (startcol <= 0)
+	return;
+
+    set_completion(startcol - 1, argvars[1].vval.v_list);
+}
+
+/*
+ * "complete_add()" function
+ */
+    void
+f_complete_add(typval_T *argvars, typval_T *rettv)
+{
+    rettv->vval.v_number = ins_compl_add_tv(&argvars[0], 0);
+}
+
+/*
+ * "complete_check()" function
+ */
+    void
+f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    int		saved = RedrawingDisabled;
+
+    RedrawingDisabled = 0;
+    ins_compl_check_keys(0, TRUE);
+    rettv->vval.v_number = ins_compl_interrupted();
+    RedrawingDisabled = saved;
+}
+
+/*
+ * "complete_info()" function
+ */
+    void
+f_complete_info(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*what_list = NULL;
+
+    if (rettv_dict_alloc(rettv) != OK)
+	return;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	if (argvars[0].v_type != VAR_LIST)
+	{
+	    emsg(_(e_listreq));
+	    return;
+	}
+	what_list = argvars[0].vval.v_list;
+    }
+    get_complete_info(what_list, rettv->vval.v_dict);
 }
 #endif
 

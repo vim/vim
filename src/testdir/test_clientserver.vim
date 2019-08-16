@@ -1,8 +1,8 @@
 " Tests for the +clientserver feature.
 
-if !has('job') || !has('clientserver')
-  throw 'Skipped: job and/or clientserver feature missing'
-endif
+source check.vim
+CheckFeature job
+CheckFeature clientserver
 
 source shared.vim
 

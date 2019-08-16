@@ -298,4 +298,8 @@ SPELL_EXTERN char e_format[] SPELL_INIT(= N_("E759: Format error in spell file")
 SPELL_EXTERN spelltab_T   spelltab;
 SPELL_EXTERN int	  did_set_spelltab;
 
+// Values for "what" argument of spell_add_word()
+#define SPELL_ADD_GOOD	0
+#define SPELL_ADD_BAD	1
+#define SPELL_ADD_RARE	2
 #endif

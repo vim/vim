@@ -1233,7 +1233,6 @@ do_execreg(
     if (regname == '_')
 	return OK;
 
-#ifdef FEAT_CMDHIST
     // use last command line
     if (regname == ':')
     {
@@ -1262,7 +1261,6 @@ do_execreg(
 	}
 	vim_free(p);
     }
-#endif
 #ifdef FEAT_EVAL
     else if (regname == '=')
     {

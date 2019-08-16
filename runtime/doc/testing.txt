@@ -206,6 +206,9 @@ assert_beeps({cmd})					*assert_beeps()*
 		NOT produce a beep or visual bell.
 		Also see |assert_fails()| and |assert-return|.
 
+		Can also be used as a |method|: >
+			GetCmd()->assert_beeps()
+<
 							*assert_equal()*
 assert_equal({expected}, {actual} [, {msg}])
 		When {expected} and {actual} are not equal an error message is
@@ -255,6 +258,9 @@ assert_fails({cmd} [, {error} [, {msg}]])			*assert_fails()*
 		Note that beeping is not considered an error, and some failing
 		commands only beep.  Use |assert_beeps()| for those.
 
+		Can also be used as a |method|: >
+			GetCmd()->assert_fails('E99:')
+
 assert_false({actual} [, {msg}])				*assert_false()*
 		When {actual} is not false an error message is added to
 		|v:errors|, like with |assert_equal()|.
@@ -263,6 +269,9 @@ assert_false({actual} [, {msg}])				*assert_false()*
 		number the assert fails.
 		When {msg} is omitted an error in the form
 		"Expected False but got {actual}" is produced.
+
+		Can also be used as a |method|: >
+			GetResult()->assert_false()
 
 assert_inrange({lower}, {upper}, {actual} [, {msg}])	 *assert_inrange()*
 		This asserts number and |Float| values.  When {actual}  is lower
@@ -292,6 +301,9 @@ assert_match({pattern}, {actual} [, {msg}])
 <		Will result in a string to be added to |v:errors|:
 	test.vim line 12: Pattern '^f.*o$' does not match 'foobar' ~
 
+		Can also be used as a |method|: >
+			getFile()->assert_match('foo.*')
+<
 							*assert_notequal()*
 assert_notequal({expected}, {actual} [, {msg}])
 		The opposite of `assert_equal()`: add an error message to
@@ -307,6 +319,9 @@ assert_notmatch({pattern}, {actual} [, {msg}])
 		|v:errors| when {pattern} matches {actual}.
 		Also see |assert-return|.
 
+		Can also be used as a |method|: >
+			getFile()->assert_notmatch('bar.*')
+
 assert_report({msg})					*assert_report()*
 		Report a test failure directly, using {msg}.
 		Always returns one.
@@ -320,5 +335,8 @@ assert_true({actual} [, {msg}])				*assert_true()*
 		When {msg} is omitted an error in the form "Expected True but
 		got {actual}" is produced.
 
+		Can also be used as a |method|: >
+			GetResult()->assert_true()
+<
 
  vim:tw=78:ts=8:noet:ft=help:norl:

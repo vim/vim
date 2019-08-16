@@ -1,9 +1,8 @@
 " Test for shortpathname ':8' extension.
 " Only for use on Win32 systems!
 
-if !has('win32')
-  throw 'Skipped: not on MS-Windows'
-endif
+source check.vim
+CheckMSWindows
 
 func TestIt(file, bits, expected)
   let res = fnamemodify(a:file, a:bits)

@@ -1,6 +1,6 @@
 " Tests for ->method()
 
-func Test_list()
+func Test_list_method()
   let l = [1, 2, 3]
   call assert_equal([1, 2, 3, 4], [1, 2, 3]->add(4))
   eval l->assert_equal(l)
@@ -34,7 +34,7 @@ func Test_list()
   call assert_fails('eval l->values()', 'E715:')
 endfunc
 
-func Test_dict()
+func Test_dict_method()
   let d = #{one: 1, two: 2, three: 3}
 
   call assert_equal(d, d->copy())
@@ -66,17 +66,19 @@ func Test_dict()
   call assert_equal([1, 2, 3], d->values())
 endfunc
 
-func Test_string()
-  call assert_equal(['1', '2', '3'], '1 2 3'->split())
-  call assert_equal([1, 2, 3], '1 2 3'->split()->map({i, v -> str2nr(v)}))
-  call assert_equal([65, 66, 67], 'ABC'->str2list())
-  call assert_equal(3, 'ABC'->strlen())
-  call assert_equal('a^Mb^[c', "a\rb\ec"->strtrans())
-  call assert_equal(4, "aあb"->strwidth())
-  call assert_equal('axc', 'abc'->substitute('b', 'x', ''))
+func Test_string_method()
+  eval '1 2 3'->split()->assert_equal(['1', '2', '3'])
+  eval '1 2 3'->split()->map({i, v -> str2nr(v)})->assert_equal([1, 2, 3])
+  eval 'ABC'->str2list()->assert_equal([65, 66, 67])
+  eval 'ABC'->strlen()->assert_equal(3)
+  eval "a\rb\ec"->strtrans()->assert_equal('a^Mb^[c')
+  eval "aあb"->strwidth()->assert_equal(4)
+  eval 'abc'->substitute('b', 'x', '')->assert_equal('axc')
+
+  eval 'abc'->printf('the %s arg')->assert_equal('the abc arg')
 endfunc
 
-func Test_append()
+func Test_method_append()
   new
   eval ['one', 'two', 'three']->append(1)
   call assert_equal(['', 'one', 'two', 'three'], getline(1, '$'))
@@ -88,4 +90,51 @@ func Test_append()
   call assert_equal(['', 'one', 'two', 'three'], getbufline(bnr, 1, '$'))
 
   exe 'bwipe! ' .. bnr
+endfunc
+
+func Test_method_funcref()
+  func Concat(one, two, three)
+    return a:one .. a:two .. a:three
+  endfunc
+  let FuncRef = function('Concat')
+  eval 'foo'->FuncRef('bar', 'tail')->assert_equal('foobartail')
+
+  " not enough arguments
+  call assert_fails("eval 'foo'->FuncRef('bar')", 'E119:')
+  " too many arguments
+  call assert_fails("eval 'foo'->FuncRef('bar', 'tail', 'four')", 'E118:')
+
+  let Partial = function('Concat', ['two'])
+  eval 'one'->Partial('three')->assert_equal('onetwothree')
+
+  " not enough arguments
+  call assert_fails("eval 'one'->Partial()", 'E119:')
+  " too many arguments
+  call assert_fails("eval 'one'->Partial('three', 'four')", 'E118:')
+
+  delfunc Concat
+endfunc
+
+func Test_method_syntax()
+  eval [1, 2, 3]  ->sort( )
+  eval [1, 2, 3]  
+	\ ->sort(
+	\ )
+  call assert_fails('eval [1, 2, 3]-> sort()', 'E260:')
+  call assert_fails('eval [1, 2, 3]->sort ()', 'E274:')
+  call assert_fails('eval [1, 2, 3]-> sort ()', 'E260:')
+endfunc
+
+func Test_method_lambda()
+  eval "text"->{x -> x .. " extended"}()->assert_equal('text extended')
+  eval "text"->{x, y -> x .. " extended " .. y}('more')->assert_equal('text extended more')
+
+  call assert_fails('eval "text"->{x -> x .. " extended"} ()', 'E274:')
+
+  " todo: lambda accepts more arguments than it consumes
+  " call assert_fails('eval "text"->{x -> x .. " extended"}("more")', 'E99:')
+endfunc
+
+func Test_method_not_supported()
+  call assert_fails('eval 123->changenr()', 'E276:')
 endfunc

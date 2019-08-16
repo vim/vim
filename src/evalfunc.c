@@ -75,12 +75,6 @@ static void f_char2nr(typval_T *argvars, typval_T *rettv);
 static void f_chdir(typval_T *argvars, typval_T *rettv);
 static void f_cindent(typval_T *argvars, typval_T *rettv);
 static void f_col(typval_T *argvars, typval_T *rettv);
-#if defined(FEAT_INS_EXPAND)
-static void f_complete(typval_T *argvars, typval_T *rettv);
-static void f_complete_add(typval_T *argvars, typval_T *rettv);
-static void f_complete_check(typval_T *argvars, typval_T *rettv);
-static void f_complete_info(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_confirm(typval_T *argvars, typval_T *rettv);
 static void f_copy(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
@@ -182,10 +176,6 @@ static void f_glob2regpat(typval_T *argvars, typval_T *rettv);
 static void f_has(typval_T *argvars, typval_T *rettv);
 static void f_haslocaldir(typval_T *argvars, typval_T *rettv);
 static void f_hasmapto(typval_T *argvars, typval_T *rettv);
-static void f_histadd(typval_T *argvars, typval_T *rettv);
-static void f_histdel(typval_T *argvars, typval_T *rettv);
-static void f_histget(typval_T *argvars, typval_T *rettv);
-static void f_histnr(typval_T *argvars, typval_T *rettv);
 static void f_hlID(typval_T *argvars, typval_T *rettv);
 static void f_hlexists(typval_T *argvars, typval_T *rettv);
 static void f_hostname(typval_T *argvars, typval_T *rettv);
@@ -425,6 +415,7 @@ typedef struct
 // values for f_argtype; zero means it cannot be used as a method
 #define FEARG_1    1	    // base is the first argument
 #define FEARG_2    2	    // base is the second argument
+#define FEARG_3    3	    // base is the third argument
 #define FEARG_LAST 9	    // base is the last argument
 
 static funcentry_T global_functions[] =
@@ -444,18 +435,18 @@ static funcentry_T global_functions[] =
 #ifdef FEAT_FLOAT
     {"asin",		1, 1, 0,	  f_asin},	// WJMc
 #endif
-    {"assert_beeps",	1, 2, 0,	  f_assert_beeps},
+    {"assert_beeps",	1, 2, FEARG_1,	  f_assert_beeps},
     {"assert_equal",	2, 3, FEARG_2,	  f_assert_equal},
     {"assert_equalfile", 2, 2, 0,	  f_assert_equalfile},
     {"assert_exception", 1, 2, 0,	  f_assert_exception},
-    {"assert_fails",	1, 3, 0,	  f_assert_fails},
-    {"assert_false",	1, 2, 0,	  f_assert_false},
-    {"assert_inrange",	3, 4, 0,	  f_assert_inrange},
-    {"assert_match",	2, 3, 0,	  f_assert_match},
+    {"assert_fails",	1, 3, FEARG_1,	  f_assert_fails},
+    {"assert_false",	1, 2, FEARG_1,	  f_assert_false},
+    {"assert_inrange",	3, 4, FEARG_3,	  f_assert_inrange},
+    {"assert_match",	2, 3, FEARG_2,	  f_assert_match},
     {"assert_notequal",	2, 3, FEARG_2,	  f_assert_notequal},
-    {"assert_notmatch",	2, 3, 0,	  f_assert_notmatch},
+    {"assert_notmatch",	2, 3, FEARG_2,	  f_assert_notmatch},
     {"assert_report",	1, 1, 0,	  f_assert_report},
-    {"assert_true",	1, 2, 0,	  f_assert_true},
+    {"assert_true",	1, 2, FEARG_1,	  f_assert_true},
 #ifdef FEAT_FLOAT
     {"atan",		1, 1, 0,	  f_atan},
     {"atan2",		2, 2, 0,	  f_atan2},
@@ -737,7 +728,7 @@ static funcentry_T global_functions[] =
     {"pow",		2, 2, 0,	  f_pow},
 #endif
     {"prevnonblank",	1, 1, 0,	  f_prevnonblank},
-    {"printf",		1, 19, 0,	  f_printf},
+    {"printf",		1, 19, FEARG_2,	  f_printf},
 #ifdef FEAT_JOB_CHANNEL
     {"prompt_setcallback", 2, 2, 0,	  f_prompt_setcallback},
     {"prompt_setinterrupt", 2, 2, 0,	  f_prompt_setinterrupt},
@@ -1122,8 +1113,10 @@ call_internal_method(
     typval_T	argv[MAX_FUNC_ARGS + 1];
 
     fi = find_internal_func(name);
-    if (fi < 0 || global_functions[fi].f_argtype == 0)
+    if (fi < 0)
 	return ERROR_UNKNOWN;
+    if (global_functions[fi].f_argtype == 0)
+	return ERROR_NOTMETHOD;
     if (argcount + 1 < global_functions[fi].f_min_argc)
 	return ERROR_TOOFEW;
     if (argcount + 1 > global_functions[fi].f_max_argc)
@@ -1142,6 +1135,15 @@ call_internal_method(
 	argv[0] = argvars[0];
 	argv[1] = *basetv;
 	for (i = 1; i < argcount; ++i)
+	    argv[i + 1] = argvars[i];
+    }
+    else if (global_functions[fi].f_argtype == FEARG_3)
+    {
+	// base value goes third
+	argv[0] = argvars[0];
+	argv[1] = argvars[1];
+	argv[2] = *basetv;
+	for (i = 2; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
     else
@@ -2297,86 +2299,6 @@ f_col(typval_T *argvars, typval_T *rettv)
     }
     rettv->vval.v_number = col;
 }
-
-#if defined(FEAT_INS_EXPAND)
-/*
- * "complete()" function
- */
-    static void
-f_complete(typval_T *argvars, typval_T *rettv UNUSED)
-{
-    int	    startcol;
-
-    if ((State & INSERT) == 0)
-    {
-	emsg(_("E785: complete() can only be used in Insert mode"));
-	return;
-    }
-
-    /* Check for undo allowed here, because if something was already inserted
-     * the line was already saved for undo and this check isn't done. */
-    if (!undo_allowed())
-	return;
-
-    if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
-    {
-	emsg(_(e_invarg));
-	return;
-    }
-
-    startcol = (int)tv_get_number_chk(&argvars[0], NULL);
-    if (startcol <= 0)
-	return;
-
-    set_completion(startcol - 1, argvars[1].vval.v_list);
-}
-
-/*
- * "complete_add()" function
- */
-    static void
-f_complete_add(typval_T *argvars, typval_T *rettv)
-{
-    rettv->vval.v_number = ins_compl_add_tv(&argvars[0], 0);
-}
-
-/*
- * "complete_check()" function
- */
-    static void
-f_complete_check(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    int		saved = RedrawingDisabled;
-
-    RedrawingDisabled = 0;
-    ins_compl_check_keys(0, TRUE);
-    rettv->vval.v_number = ins_compl_interrupted();
-    RedrawingDisabled = saved;
-}
-
-/*
- * "complete_info()" function
- */
-    static void
-f_complete_info(typval_T *argvars, typval_T *rettv)
-{
-    list_T	*what_list = NULL;
-
-    if (rettv_dict_alloc(rettv) != OK)
-	return;
-
-    if (argvars[0].v_type != VAR_UNKNOWN)
-    {
-	if (argvars[0].v_type != VAR_LIST)
-	{
-	    emsg(_(e_listreq));
-	    return;
-	}
-	what_list = argvars[0].vval.v_list;
-    }
-    get_complete_info(what_list, rettv->vval.v_dict);
-}
-#endif
 
 /*
  * "confirm(message, buttons[, default [, type]])" function
@@ -5730,14 +5652,14 @@ f_getwininfo(typval_T *argvars, typval_T *rettv)
 f_win_execute(typval_T *argvars, typval_T *rettv)
 {
     int		id = (int)tv_get_number(argvars);
-    win_T	*wp = win_id2wp(id);
+    tabpage_T	*tp;
+    win_T	*wp = win_id2wp_tp(id, &tp);
     win_T	*save_curwin;
     tabpage_T	*save_curtab;
 
-    if (wp != NULL)
+    if (wp != NULL && tp != NULL)
     {
-	if (switch_win_noblock(&save_curwin, &save_curtab, wp, curtab, TRUE)
-									 == OK)
+	if (switch_win_noblock(&save_curwin, &save_curtab, wp, tp, TRUE) == OK)
 	{
 	    check_cursor();
 	    execute_common(argvars, rettv, 1);
@@ -6114,9 +6036,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_CMDL_COMPL
 	"cmdline_compl",
 #endif
-#ifdef FEAT_CMDHIST
 	"cmdline_hist",
-#endif
 #ifdef FEAT_COMMENTS
 	"comments",
 #endif
@@ -6635,6 +6555,10 @@ f_has(typval_T *argvars, typval_T *rettv)
 	else if (STRICMP(name, "conpty") == 0)
 	    n = use_conpty();
 #endif
+#ifdef FEAT_CLIPBOARD
+	else if (STRICMP(name, "clipboard_working") == 0)
+	    n = clip_star.available;
+#endif
     }
 
     rettv->vval.v_number = n;
@@ -6685,117 +6609,6 @@ f_hasmapto(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_number = TRUE;
     else
 	rettv->vval.v_number = FALSE;
-}
-
-/*
- * "histadd()" function
- */
-    static void
-f_histadd(typval_T *argvars UNUSED, typval_T *rettv)
-{
-#ifdef FEAT_CMDHIST
-    int		histype;
-    char_u	*str;
-    char_u	buf[NUMBUFLEN];
-#endif
-
-    rettv->vval.v_number = FALSE;
-    if (check_secure())
-	return;
-#ifdef FEAT_CMDHIST
-    str = tv_get_string_chk(&argvars[0]);	/* NULL on type error */
-    histype = str != NULL ? get_histtype(str) : -1;
-    if (histype >= 0)
-    {
-	str = tv_get_string_buf(&argvars[1], buf);
-	if (*str != NUL)
-	{
-	    init_history();
-	    add_to_history(histype, str, FALSE, NUL);
-	    rettv->vval.v_number = TRUE;
-	    return;
-	}
-    }
-#endif
-}
-
-/*
- * "histdel()" function
- */
-    static void
-f_histdel(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_CMDHIST
-    int		n;
-    char_u	buf[NUMBUFLEN];
-    char_u	*str;
-
-    str = tv_get_string_chk(&argvars[0]);	/* NULL on type error */
-    if (str == NULL)
-	n = 0;
-    else if (argvars[1].v_type == VAR_UNKNOWN)
-	/* only one argument: clear entire history */
-	n = clr_history(get_histtype(str));
-    else if (argvars[1].v_type == VAR_NUMBER)
-	/* index given: remove that entry */
-	n = del_history_idx(get_histtype(str),
-					  (int)tv_get_number(&argvars[1]));
-    else
-	/* string given: remove all matching entries */
-	n = del_history_entry(get_histtype(str),
-				      tv_get_string_buf(&argvars[1], buf));
-    rettv->vval.v_number = n;
-#endif
-}
-
-/*
- * "histget()" function
- */
-    static void
-f_histget(typval_T *argvars UNUSED, typval_T *rettv)
-{
-#ifdef FEAT_CMDHIST
-    int		type;
-    int		idx;
-    char_u	*str;
-
-    str = tv_get_string_chk(&argvars[0]);	/* NULL on type error */
-    if (str == NULL)
-	rettv->vval.v_string = NULL;
-    else
-    {
-	type = get_histtype(str);
-	if (argvars[1].v_type == VAR_UNKNOWN)
-	    idx = get_history_idx(type);
-	else
-	    idx = (int)tv_get_number_chk(&argvars[1], NULL);
-						    /* -1 on type error */
-	rettv->vval.v_string = vim_strsave(get_history_entry(type, idx));
-    }
-#else
-    rettv->vval.v_string = NULL;
-#endif
-    rettv->v_type = VAR_STRING;
-}
-
-/*
- * "histnr()" function
- */
-    static void
-f_histnr(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    int		i;
-
-#ifdef FEAT_CMDHIST
-    char_u	*history = tv_get_string_chk(&argvars[0]);
-
-    i = history == NULL ? HIST_CMD - 1 : get_histtype(history);
-    if (i >= HIST_CMD && i < HIST_COUNT)
-	i = get_history_idx(i);
-    else
-#endif
-	i = -1;
-    rettv->vval.v_number = i;
 }
 
 /*
@@ -10872,6 +10685,7 @@ f_spellbadword(typval_T *argvars UNUSED, typval_T *rettv)
 		}
 		str += len;
 		capcol -= len;
+		len = 0;
 	    }
 	}
     }

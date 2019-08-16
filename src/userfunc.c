@@ -288,7 +288,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 
 	sprintf((char*)name, "<lambda>%d", ++lambda_no);
 
-	fp = alloc_clear(sizeof(ufunc_T) + STRLEN(name));
+	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
 	if (fp == NULL)
 	    goto errret;
 	pt = ALLOC_CLEAR_ONE(partial_T);
@@ -1498,6 +1498,7 @@ call_func(
     typval_T	argv[MAX_FUNC_ARGS + 1]; // used when "partial" or
 					 // "funcexe->basetv" is not NULL
     int		argv_clear = 0;
+    int		argv_base = 0;
     partial_T	*partial = funcexe->partial;
 
     // Make a copy of the name, if it comes from a funcref variable it could
@@ -1590,9 +1591,9 @@ call_func(
 		    mch_memmove(&argv[1], argvars, sizeof(typval_T) * argcount);
 		    argv[0] = *funcexe->basetv;
 		    argcount++;
+		    argvars = argv;
+		    argv_base = 1;
 		}
-		else
-		    memcpy(argv, argvars, sizeof(typval_T) * argcount);
 
 		if (fp->uf_flags & FC_RANGE && funcexe->doesrange != NULL)
 		    *funcexe->doesrange = TRUE;
@@ -1621,7 +1622,7 @@ call_func(
 			did_save_redo = TRUE;
 		    }
 		    ++fp->uf_calls;
-		    call_user_func(fp, argcount, argv, rettv,
+		    call_user_func(fp, argcount, argvars, rettv,
 					 funcexe->firstline, funcexe->lastline,
 				  (fp->uf_flags & FC_DICT) ? selfdict : NULL);
 		    if (--fp->uf_calls <= 0 && fp->uf_refcount <= 0)
@@ -1677,6 +1678,11 @@ call_func(
 	    case ERROR_UNKNOWN:
 		    emsg_funcname(N_("E117: Unknown function: %s"), name);
 		    break;
+	    case ERROR_NOTMETHOD:
+		    emsg_funcname(
+			       N_("E276: Cannot use function as a method: %s"),
+									 name);
+		    break;
 	    case ERROR_DELETED:
 		    emsg_funcname(N_("E933: Function was deleted: %s"), name);
 		    break;
@@ -1684,22 +1690,27 @@ call_func(
 		    emsg_funcname((char *)e_toomanyarg, name);
 		    break;
 	    case ERROR_TOOFEW:
-		    emsg_funcname(N_("E119: Not enough arguments for function: %s"),
+		    emsg_funcname(
+			     N_("E119: Not enough arguments for function: %s"),
 									name);
 		    break;
 	    case ERROR_SCRIPT:
-		    emsg_funcname(N_("E120: Using <SID> not in a script context: %s"),
+		    emsg_funcname(
+			   N_("E120: Using <SID> not in a script context: %s"),
 									name);
 		    break;
 	    case ERROR_DICT:
-		    emsg_funcname(N_("E725: Calling dict function without Dictionary: %s"),
+		    emsg_funcname(
+		      N_("E725: Calling dict function without Dictionary: %s"),
 									name);
 		    break;
 	}
     }
 
+    // clear the copies made from the partial
     while (argv_clear > 0)
-	clear_tv(&argv[--argv_clear]);
+	clear_tv(&argv[--argv_clear + argv_base]);
+
     vim_free(tofree);
     vim_free(name);
 
@@ -2628,7 +2639,7 @@ ex_function(exarg_T *eap)
 	    }
 	}
 
-	fp = alloc_clear(sizeof(ufunc_T) + STRLEN(name));
+	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
 	if (fp == NULL)
 	    goto erret;
 

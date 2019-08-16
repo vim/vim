@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Jul 30
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Aug 08
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,12 +38,25 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+
+Methods:
+- Support lambda?  #4768
+    echo (10.0 / 100.0)->{x -> x * 100}
+- Define a user defined function for a specific type only?
+	func Len(expr) method=list,dict
+	  return a:expr->len()
+	endfunc
+	echo [1, 2, 3]->Len()
+	3
+	call Len([1, 2, 3])
+	error!
+
 Popup windows:
-- Always show the right border, not only when there is a close button?
-- bug: double click in scrollbar starts selection
+- :pedit from help doesn't reset help flag, see pedit example
+- check popupmenu using preview window
 - modeless selection fails over ssh and with putty.  Mouse dragging not
   supported?  Can we force it on?
-- Allow resizing from the bottom-right corner
+- modeless selection extends into the scrollbar. (#4773)
 - Implement flip option
 - Have a way to scroll to the bottom, e.g. set 'firstline' to -1? (#4577)
 - Why does 'nrformats' leak from the popup window buffer???
@@ -57,7 +70,7 @@ Popup windows:
   do. (#4560)
 - Make redrawing more efficient and avoid flicker:
     - put popup menu also put in popup_mask?
-- Invoke filter with character before mapping?
+- Invoke filter with character before mapping?  #4759
 - Figure out the size and position better.
     if wrapping splits a double-wide character
     if wrapping inserts indent
@@ -135,15 +148,10 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Error numbers available: E260, E274, E275, E276,
+Error numbers available: E274, E275, E276,
 E278, E279, E290, E292, E362, E366, E450, E451, E452,
 E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
 E654, E856, E857, E860, E861, E863, E889, E900
-
-Patch on issue #4661 to fix resolve(). (Ken Takata)
-https://gist.github.com/k-takata/52d0a677ca9a27bdbaed21d77533244e
-
-Patch to split of map.c from getchar.c (Yegappan, #4740)
 
 Sound: support on Mac?  Or does libcanberra work there?
 
@@ -188,6 +196,9 @@ unlisted. (#4478)
 
 Make 'showbreak' global-local.
 
+The :syntax cchar value can only be a single character.  It would be useful to
+support combining characters. (Charles Campbell)  Also #4687
+
 Problem showing a line if the number column width changes when using "o".
 (Mateusz Morusiewicz, #4245)
 
@@ -196,6 +207,8 @@ default one.  #4698
 
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
+
+Modeless selection doesn't work in gvim. (#4783)
 
 Visual highlight not removed when 'dipslay' is "lastline" and line doesn't
 fit. (Kevin Lawler, #4457)
@@ -221,8 +234,13 @@ it's in a mapping. (2018 Oct 6, #2302, #3522)
 
 Patch for Inno Setup: #2739
 
+Would be nice to set tab-local values for 'diffexpr' and 'diffopt'.  Use
+t:diffexpr_option t:diffopt_option? (#4782)
+
 Internal diff doesn't handle binary file like external diff does. (Mike
 Williams, 2018 Oct 30)
+
+'[ mark in wrong column after put. (#4776)
 
 "exepath('bin/cmd')" does not work while ":!bin/cmd" does work.
 (Daniel Hahler, #4710)  and executable('bin/cmd') returns 1
@@ -243,6 +261,8 @@ be adjusted. (Daniel Steinberg, 2019 Feb 24, #4041)
 
 Patch for ambiguous width characters in libvterm on MS-Windows 10.
 (Nobuhiro Takasaki, #4411)
+
+Window size changes after closing a tab. (#4741)
 
 Problem with colors in terminal window. (Jason Franklin, 2019 May 12)
 
@@ -279,6 +299,8 @@ Many users don't like 'thesaurus' to match so many words. (#4667, #1611)
 Some composing characters actually add a cell width to the character they are
 on top off, making the whole thing two characters wide. (#4526)
 
+Add CmdwinLeavePost (#4762).  Also add WinLeavePost then?
+
 Should we include some part of pull request #4505, not increment changedtick
 in some cases?  E.g. for ":write" when the changed flag was already off, the
 buffer didn't change at all.
@@ -312,24 +334,6 @@ added?
 
 Add test for urxvt mouse codes.  Also test that mouse coordinates can be
 negative. (see #4326)
-
-All functions are global, which makes functions like get() and len() awkward.
-For the future use the ~get() and ~len() syntax.  It also allows for
-chaining: >
-    mylist~get(idx)
-    mylist~uniq()~len()
-    mydict~get(idx)
-    mystring~len()
-Or use -> (like C pointer dereference) >
-    mylist->get(idx)
-    mylist->uniq()->len()
-    mydict->get(idx)
-    mystring->len()
-Alternatives for ~:
-    ^  list^get()    could also be used
-    .  list.get()    already means "member" in Dict
-    $  list$get()    harder to read
-    @  list@get()    harder to read
 
 'cmdheight' has a tab-local value, but it cannot be obtained with
 `:echo gettabwinvar(2, 1, '&cmdheight')` returns the value for the _current_
@@ -1903,9 +1907,6 @@ need to make the change in where RET_WIN_BUF_CHARTABSIZE() is called.
 Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
 only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
 21, Ben Fritz, 2010 Sep 14)
-
-The :syntax cchar value can only be a single character.  It would be useful to
-support combining characters. (Charles Campbell)
 
 'cursorline' works on a text line only.  Add 'cursorscreenline' for
 highlighting the screen line. (Christian Brabandt, 2012 Mar 31)

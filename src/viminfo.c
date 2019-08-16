@@ -427,7 +427,6 @@ write_viminfo_bufferlist(FILE *fp)
     vim_free(line);
 }
 
-#if defined(FEAT_CMDHIST) || defined(PROTO)
 /*
  * Buffers for history read from a viminfo file.  Only valid while reading.
  */
@@ -913,7 +912,6 @@ write_viminfo_history(FILE *fp, int merge)
 	viminfo_hisidx[type] = 0;
     }
 }
-#endif // FEAT_CMDHIST
 
     static void
 write_viminfo_barlines(vir_T *virp, FILE *fp_out)
@@ -2756,9 +2754,7 @@ read_viminfo_up_to_marks(
     buf_T	*buf;
     int		got_encoding = FALSE;
 
-#ifdef FEAT_CMDHIST
     prepare_viminfo_history(forceit ? 9999 : 0, writing);
-#endif
 
     eof = viminfo_readline(virp);
     while (!eof && virp->vir_line[0] != '>')
@@ -2817,13 +2813,11 @@ read_viminfo_up_to_marks(
 	    case '?':
 	    case '=':
 	    case '@':
-#ifdef FEAT_CMDHIST
 		// When history is in bar lines skip the old style history
 		// lines.
 		if (virp->vir_version < VIMINFO_VERSION_WITH_HISTORY)
 		    eof = read_viminfo_history(virp, writing);
 		else
-#endif
 		    eof = viminfo_readline(virp);
 		break;
 	    case '-':
@@ -2844,11 +2838,9 @@ read_viminfo_up_to_marks(
 	}
     }
 
-#ifdef FEAT_CMDHIST
     // Finish reading history items.
     if (!writing)
 	finish_viminfo_history(virp);
-#endif
 
     // Change file names to buffer numbers for fmarks.
     FOR_ALL_BUFFERS(buf)
@@ -2913,9 +2905,7 @@ do_viminfo(FILE *fp_in, FILE *fp_out, int flags)
 	fprintf(fp_out, "*encoding=%s\n\n", p_enc);
 	write_viminfo_search_pattern(fp_out);
 	write_viminfo_sub_string(fp_out);
-#ifdef FEAT_CMDHIST
 	write_viminfo_history(fp_out, merge);
-#endif
 	write_viminfo_registers(fp_out);
 	finish_viminfo_registers();
 #ifdef FEAT_EVAL

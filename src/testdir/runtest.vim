@@ -34,12 +34,14 @@ so small.vim
 
 " Check that the screen size is at least 24 x 80 characters.
 if &lines < 24 || &columns < 80 
-  let error = 'Screen size too small! Tests require at least 24 lines with 80 characters'
+  let error = 'Screen size too small! Tests require at least 24 lines with 80 characters, got ' .. &lines .. ' lines with ' .. &columns .. ' characters'
   echoerr error
   split test.log
   $put =error
   write
   split messages
+  call append(line('$'), '')
+  call append(line('$'), 'From ' . expand('%') . ':')
   call append(line('$'), error)
   write
   qa!
@@ -170,7 +172,7 @@ func RunTheTest(test)
     endtry
   endif
 
-  " Clear any autocommands
+  " Clear any autocommands and put back the catch-all for SwapExists.
   au!
   au SwapExists * call HandleSwapExists()
 
@@ -320,19 +322,16 @@ let s:flaky_tests = [
       \ 'Test_diff_screen()',
       \ 'Test_exit_callback()',
       \ 'Test_exit_callback_interval()',
+      \ 'Test_map_timeout_with_timer_interrupt()',
       \ 'Test_nb_basic()',
-      \ 'Test_oneshot()',
       \ 'Test_open_delay()',
       \ 'Test_out_cb()',
-      \ 'Test_paused()',
       \ 'Test_pipe_through_sort_all()',
       \ 'Test_pipe_through_sort_some()',
-      \ 'Test_popup_and_window_resize()',
       \ 'Test_quoteplus()',
       \ 'Test_quotestar()',
       \ 'Test_raw_one_time_callback()',
       \ 'Test_reltime()',
-      \ 'Test_repeat_three()',
       \ 'Test_server_crash()',
       \ 'Test_terminal_ansicolors_default()',
       \ 'Test_terminal_ansicolors_func()',
@@ -356,9 +355,15 @@ let s:flaky_tests = [
       \ 'Test_terminal_wall()',
       \ 'Test_terminal_wipe_buffer()',
       \ 'Test_terminal_wqall()',
+      \ 'Test_timer_oneshot()',
+      \ 'Test_timer_paused()',
+      \ 'Test_timer_repeat_many()',
+      \ 'Test_timer_repeat_three()',
+      \ 'Test_timer_stop_all_in_callback()',
+      \ 'Test_timer_stop_in_callback()',
       \ 'Test_two_channels()',
       \ 'Test_unlet_handle()',
-      \ 'Test_with_partial_callback()',
+      \ 'Test_timer_with_partial_callback()',
       \ 'Test_zero_reply()',
       \ 'Test_zz1_terminal_in_gui()',
       \ ]

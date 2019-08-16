@@ -2,6 +2,7 @@
 
 source view_util.vim
 source screendump.vim
+source check.vim
 
 func Test_highlight()
   " basic test if ":highlight" doesn't crash
@@ -532,9 +533,7 @@ func Test_termguicolors()
 endfunc
 
 func Test_cursorline_after_yank()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   call writefile([
 	\ 'set cul rnu',
@@ -554,9 +553,7 @@ func Test_cursorline_after_yank()
 endfunc
 
 func Test_cursorline_with_visualmode()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   call writefile([
 	\ 'set cul',
@@ -574,9 +571,7 @@ func Test_cursorline_with_visualmode()
 endfunc
 
 func Test_wincolor()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
 	set cursorline cursorcolumn rnu

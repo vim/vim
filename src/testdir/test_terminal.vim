@@ -1686,6 +1686,13 @@ func Test_terminal_termwinkey()
   call feedkeys("\<C-W>w", 'tx')
   call assert_equal(termwin, win_getid())
 
+  set langmap=xjyk
+  call feedkeys("\<C-L>x", 'tx')
+  call assert_equal(thiswin, win_getid())
+  call feedkeys("\<C-W>y", 'tx')
+  call assert_equal(termwin, win_getid())
+  set langmap=
+
   call feedkeys("\<C-L>gt", "xt")
   call assert_equal(3, tabpagenr())
   tabprev
@@ -1788,9 +1795,7 @@ endfunc
 
 " must be nearly the last, we can't go back from GUI to terminal
 func Test_zz1_terminal_in_gui()
-  if !CanRunGui()
-    return
-  endif
+  CheckCanRunGui
 
   " Ignore the "failed to create input context" error.
   call test_ignore_error('E285:')
@@ -1810,9 +1815,7 @@ func Test_zz1_terminal_in_gui()
 endfunc
 
 func Test_zz2_terminal_guioptions_bang()
-  if !has('gui_running')
-    return
-  endif
+  CheckGui
   set guioptions+=!
 
   let filename = 'Xtestscript'

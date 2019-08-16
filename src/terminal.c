@@ -2372,8 +2372,13 @@ terminal_loop(int blocking)
 	    }
 	    else if (termwinkey == 0 || c != termwinkey)
 	    {
-		stuffcharReadbuff(Ctrl_W);
-		stuffcharReadbuff(c);
+		char_u buf[MB_MAXBYTES + 2];
+
+		// Put the command into the typeahead buffer, when using the
+		// stuff buffer KeyStuffed is set and 'langmap' won't be used.
+		buf[0] = Ctrl_W;
+		buf[(*mb_char2bytes)(c, buf + 1) + 1] = NUL;
+		ins_typebuf(buf, REMAP_NONE, 0, TRUE, FALSE);
 		ret = OK;
 		goto theend;
 	    }

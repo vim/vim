@@ -102,10 +102,8 @@
 
 /*
  * +cmdhist		Command line history.
+ *			Now always included.
  */
-#ifdef FEAT_SMALL
-# define FEAT_CMDHIST
-#endif
 
 /*
  * Message history is fixed at 200 message, 20 for the tiny version.
@@ -123,8 +121,7 @@
 # define FEAT_JUMPLIST
 #endif
 
-/* the cmdline-window requires FEAT_CMDHIST */
-#if defined(FEAT_CMDHIST)
+#if defined(FEAT_SMALL)
 # define FEAT_CMDWIN
 #endif
 
@@ -668,6 +665,9 @@
  */
 #if !defined(FEAT_SOUND) && defined(HAVE_CANBERRA)
 # define FEAT_SOUND
+#endif
+#if defined(FEAT_SOUND) && defined(HAVE_CANBERRA)
+# define FEAT_SOUND_CANBERRA
 #endif
 
 /* There are two ways to use XPM. */

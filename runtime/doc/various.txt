@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.1.  Last change: 2019 Jul 21
+*various.txt*   For Vim version 8.1.  Last change: 2019 Aug 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -382,7 +382,7 @@ N  *+linebreak*		|'linebreak'|, |'breakat'| and |'showbreak'|
 N  *+lispindent*	|'lisp'|
 T  *+listcmds*		Vim commands for the list of buffers |buffer-hidden|
 			and argument list |:argdelete|
-N  *+localmap*		Support for mappings local to a buffer |:map-local|
+T  *+localmap*		Support for mappings local to a buffer |:map-local|
 m  *+lua*		|Lua| interface
 m  *+lua/dyn*		|Lua| interface |/dyn|
 N  *+menu*		|:menu|

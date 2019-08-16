@@ -855,9 +855,8 @@ func Test_pipe_from_buffer_nr()
 endfunc
 
 func Run_pipe_through_sort(all, use_buffer)
-  if !executable('sort')
-    throw 'Skipped: sort program not found'
-  endif
+  CheckExecutable sort
+
   let options = {'out_io': 'buffer', 'out_name': 'sortout'}
   if a:use_buffer
     split sortin
@@ -1014,9 +1013,8 @@ func Test_pipe_io_one_buffer()
 endfunc
 
 func Test_write_to_buffer_and_scroll()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
       new Xscrollbuffer
       call setline(1, range(1, 200))
@@ -1536,9 +1534,8 @@ func Test_using_freed_memory()
 endfunc
 
 func Test_collapse_buffers()
-  if !executable('cat')
-    throw 'Skipped: cat program not found'
-  endif
+  CheckExecutable cat
+
   sp test_channel.vim
   let g:linecount = line('$')
   close
@@ -1550,9 +1547,8 @@ func Test_collapse_buffers()
 endfunc
 
 func Test_write_to_deleted_buffer()
-  if !executable('echo')
-    throw 'Skipped: echo program not found'
-  endif
+  CheckExecutable echo
+
   let job = job_start('echo hello', {'out_io': 'buffer', 'out_name': 'test_buffer', 'out_msg': 0})
   let bufnr = bufnr('test_buffer')
   call WaitForAssert({-> assert_equal(['hello'], getbufline(bufnr, 1, '$'))})
@@ -1585,9 +1581,7 @@ func Test_cmd_parsing()
 endfunc
 
 func Test_raw_passes_nul()
-  if !executable('cat')
-    throw 'Skipped: cat program not found'
-  endif
+  CheckExecutable cat
 
   " Test lines from the job containing NUL are stored correctly in a buffer.
   new

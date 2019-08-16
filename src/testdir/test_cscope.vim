@@ -3,10 +3,7 @@
 source check.vim
 CheckFeature cscope
 CheckFeature quickfix
-
-if !executable('cscope')
-  throw 'Skipped: cscope program missing'
-endif
+CheckExecutable cscope
 
 func CscopeSetupOrClean(setup)
     if a:setup
