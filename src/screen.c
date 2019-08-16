@@ -4939,14 +4939,19 @@ win_line(
 			p_extra_free = p;
 			for (i = 0; i < tab_len; i++)
 			{
+			    int lcs = lcs_tab2;
 			    if (*p == NUL)
 			    {
 				tab_len = i;
 				break;
 			    }
-			    mb_char2bytes(lcs_tab2, p);
-			    p += mb_char2len(lcs_tab2);
-			    n_extra += mb_char2len(lcs_tab2)
+
+			    // if lcs_tab3 is given, need to change the char for tab
+			    if (lcs_tab3 && i == tab_len - 1)
+				lcs = lcs_tab3;
+			    mb_char2bytes(lcs, p);
+			    p += mb_char2len(lcs);
+			    n_extra += mb_char2len(lcs)
 						 - (saved_nextra > 0 ? 1 : 0);
 			}
 			p_extra = p_extra_free;
