@@ -2173,6 +2173,7 @@ func Test_previewpopup()
   call term_sendkeys(buf, ":cd testdir\<CR>")
 
   call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":\<BS>")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_6', {})
 
   call term_sendkeys(buf, ":pedit +/theword Xtagfile\<CR>")
