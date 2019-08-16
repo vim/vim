@@ -7675,12 +7675,19 @@ ex_sleep(exarg_T *eap)
     void
 do_sleep(long msec)
 {
-    long	done;
+    long	done = 0;
     long	wait_now;
+# ifdef ELAPSED_FUNC
+    elapsed_T	start_tv;
+
+    // Remember at what time we started, so that we know how much longer we
+    // should wait after waiting for a bit.
+    ELAPSED_INIT(start_tv);
+# endif
 
     cursor_on();
     out_flush_cursor(FALSE, FALSE);
-    for (done = 0; !got_int && done < msec; done += wait_now)
+    while (!got_int && done < msec)
     {
 	wait_now = msec - done > 1000L ? 1000L : msec - done;
 #ifdef FEAT_TIMERS
@@ -7700,6 +7707,7 @@ do_sleep(long msec)
 	    wait_now = 20L;
 #endif
 	ui_delay(wait_now, TRUE);
+
 #ifdef FEAT_JOB_CHANNEL
 	if (has_any_channel())
 	    ui_breakcheck_force(TRUE);
@@ -7707,11 +7715,19 @@ do_sleep(long msec)
 #endif
 	    ui_breakcheck();
 #ifdef MESSAGE_QUEUE
-	/* Process the netbeans and clientserver messages that may have been
-	 * received in the call to ui_breakcheck() when the GUI is in use. This
-	 * may occur when running a test case. */
+	// Process the netbeans and clientserver messages that may have been
+	// received in the call to ui_breakcheck() when the GUI is in use. This
+	// may occur when running a test case.
 	parse_queued_messages();
 #endif
+
+# ifdef ELAPSED_FUNC
+	// actual time passed
+	done = ELAPSED_FUNC(start_tv);
+# else
+	// guestimate time passed (will actually be more)
+	done += wait_now;
+# endif
     }
 
     // If CTRL-C was typed to interrupt the sleep, drop the CTRL-C from the
