@@ -336,6 +336,7 @@ let s:flaky_tests = [
       \ 'Test_repeat_many()',
       \ 'Test_repeat_three()',
       \ 'Test_server_crash()',
+      \ 'Test_stop_all_in_callback()',
       \ 'Test_terminal_ansicolors_default()',
       \ 'Test_terminal_ansicolors_func()',
       \ 'Test_terminal_ansicolors_global()',
