@@ -5250,7 +5250,7 @@ fun! netrw#BrowseX(fname,remote)
   endif
 "  call Decho("exten<".exten.">",'~'.expand("<slnum>"))
 
-  if a:remote == 1
+  if a:remote == 1 && a:fname !~ '^https\=:'  " XXX no need to download if we eventually use open(1) or g:netrw_browsex_viewer to open the URL
    " create a local copy
 "   call Decho("remote: a:remote=".a:remote.": create a local copy of <".a:fname.">",'~'.expand("<slnum>"))
    setl bh=delete
@@ -5489,6 +5489,7 @@ endfun
 
 " ---------------------------------------------------------------------
 " netrw#CheckIfRemote: returns 1 if current file looks like an url, 0 else {{{2
+" FIXME the comment above is no longer true as it takes an optional argument
 fun! netrw#CheckIfRemote(...)
 "  call Dfunc("netrw#CheckIfRemote() a:0=".a:0)
   if a:0 > 0
