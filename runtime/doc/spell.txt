@@ -198,8 +198,8 @@ z=			For the word under/after the cursor suggest correctly
 			the good word and <Esc>.  This does NOT work for Thai
 			and other languages without spaces between words.
 
-					*:spellr* *:spellrepall* *E752* *E753*
-:spellr[epall]		Repeat the replacement done by |z=| for all matches
+					*:spellre* *:spellrepall* *E752* *E753*
+:spellre[pall]		Repeat the replacement done by |z=| for all matches
 			with the replaced word in the current window.
 
 In Insert mode, when the cursor is after a badly spelled word, you can use
