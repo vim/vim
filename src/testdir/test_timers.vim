@@ -160,6 +160,7 @@ func StopTimer2(timer)
 endfunc
 
 func Test_timer_stop_in_callback()
+  call assert_equal(0, len(timer_info()))
   let g:timer1 = timer_start(10, 'StopTimer1')
   sleep 40m
   call assert_equal(0, len(timer_info()))
@@ -170,12 +171,18 @@ func StopTimerAll(timer)
 endfunc
 
 func Test_timer_stop_all_in_callback()
-  let g:timer1 = timer_start(10, 'StopTimerAll')
-  let info = timer_info()
-  call assert_equal(1, len(info))
-  sleep 40m
-  let info = timer_info()
-  call assert_equal(0, len(info))
+  call assert_equal(0, len(timer_info()))
+  call timer_start(10, 'StopTimerAll')
+  call assert_equal(1, len(timer_info()))
+  let slept = 0
+  for i in range(10)
+    if len(timer_info()) == 0
+      break
+    endif
+    sleep 10m
+    let slept += 10
+  endfor
+  call assert_inrange(0, 30, slept)
 endfunc
 
 func FeedkeysCb(timer)
