@@ -1113,8 +1113,10 @@ call_internal_method(
     typval_T	argv[MAX_FUNC_ARGS + 1];
 
     fi = find_internal_func(name);
-    if (fi < 0 || global_functions[fi].f_argtype == 0)
+    if (fi < 0)
 	return ERROR_UNKNOWN;
+    if (global_functions[fi].f_argtype == 0)
+	return ERROR_NOTMETHOD;
     if (argcount + 1 < global_functions[fi].f_min_argc)
 	return ERROR_TOOFEW;
     if (argcount + 1 > global_functions[fi].f_max_argc)

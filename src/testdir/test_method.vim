@@ -134,3 +134,7 @@ func Test_method_lambda()
   " todo: lambda accepts more arguments than it consumes
   " call assert_fails('eval "text"->{x -> x .. " extended"}("more")', 'E99:')
 endfunc
+
+func Test_method_not_supported()
+  call assert_fails('eval 123->changenr()', 'E276:')
+endfunc
