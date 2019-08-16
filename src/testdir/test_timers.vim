@@ -152,7 +152,7 @@ func StopTimer1(timer)
   let g:timer2 = timer_start(10, 'StopTimer2')
   " avoid maxfuncdepth error
   call timer_pause(g:timer1, 1)
-  sleep 40m
+  sleep 20m
 endfunc
 
 func StopTimer2(timer)
@@ -162,7 +162,7 @@ endfunc
 func Test_timer_stop_in_callback()
   call assert_equal(0, len(timer_info()))
   let g:timer1 = timer_start(10, 'StopTimer1')
-  sleep 40m
+  sleep 50m
   call assert_equal(0, len(timer_info()))
 endfunc
 
