@@ -1619,12 +1619,12 @@ clip_copy_modeless_selection(int both UNUSED)
 
 	if (row == row2)
 	    end_col = col2;
-	else
 #ifdef FEAT_TEXT_PROP
+	else if (clip_star.max_col < Columns)
 	    end_col = clip_star.max_col + 1;
-#else
-	    end_col = Columns;
 #endif
+	else
+	    end_col = Columns;
 
 	line_end_col = clip_get_line_end(&clip_star, row);
 
@@ -1797,7 +1797,7 @@ clip_get_line_end(Clipboard_T *cbd UNUSED, int row)
 	return 0;
     for (i =
 #ifdef FEAT_TEXT_PROP
-	    cbd->max_col + 1;
+	    cbd->max_col >= screen_Columns ? screen_Columns : cbd->max_col + 1;
 #else
 	    screen_Columns;
 #endif
