@@ -415,6 +415,7 @@ typedef struct
 // values for f_argtype; zero means it cannot be used as a method
 #define FEARG_1    1	    // base is the first argument
 #define FEARG_2    2	    // base is the second argument
+#define FEARG_3    3	    // base is the third argument
 #define FEARG_LAST 9	    // base is the last argument
 
 static funcentry_T global_functions[] =
@@ -434,18 +435,18 @@ static funcentry_T global_functions[] =
 #ifdef FEAT_FLOAT
     {"asin",		1, 1, 0,	  f_asin},	// WJMc
 #endif
-    {"assert_beeps",	1, 2, 0,	  f_assert_beeps},
+    {"assert_beeps",	1, 2, FEARG_1,	  f_assert_beeps},
     {"assert_equal",	2, 3, FEARG_2,	  f_assert_equal},
     {"assert_equalfile", 2, 2, 0,	  f_assert_equalfile},
     {"assert_exception", 1, 2, 0,	  f_assert_exception},
-    {"assert_fails",	1, 3, 0,	  f_assert_fails},
-    {"assert_false",	1, 2, 0,	  f_assert_false},
-    {"assert_inrange",	3, 4, 0,	  f_assert_inrange},
-    {"assert_match",	2, 3, 0,	  f_assert_match},
+    {"assert_fails",	1, 3, FEARG_1,	  f_assert_fails},
+    {"assert_false",	1, 2, FEARG_1,	  f_assert_false},
+    {"assert_inrange",	3, 4, FEARG_3,	  f_assert_inrange},
+    {"assert_match",	2, 3, FEARG_2,	  f_assert_match},
     {"assert_notequal",	2, 3, FEARG_2,	  f_assert_notequal},
-    {"assert_notmatch",	2, 3, 0,	  f_assert_notmatch},
+    {"assert_notmatch",	2, 3, FEARG_2,	  f_assert_notmatch},
     {"assert_report",	1, 1, 0,	  f_assert_report},
-    {"assert_true",	1, 2, 0,	  f_assert_true},
+    {"assert_true",	1, 2, FEARG_1,	  f_assert_true},
 #ifdef FEAT_FLOAT
     {"atan",		1, 1, 0,	  f_atan},
     {"atan2",		2, 2, 0,	  f_atan2},
@@ -1132,6 +1133,15 @@ call_internal_method(
 	argv[0] = argvars[0];
 	argv[1] = *basetv;
 	for (i = 1; i < argcount; ++i)
+	    argv[i + 1] = argvars[i];
+    }
+    else if (global_functions[fi].f_argtype == FEARG_3)
+    {
+	// base value goes third
+	argv[0] = argvars[0];
+	argv[1] = argvars[1];
+	argv[2] = *basetv;
+	for (i = 2; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
     else

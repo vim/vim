@@ -3,8 +3,13 @@
 func Test_assert_false()
   call assert_equal(0, assert_false(0))
   call assert_equal(0, assert_false(v:false))
+  call assert_equal(0, v:false->assert_false())
 
   call assert_equal(1, assert_false(123))
+  call assert_match("Expected False but got 123", v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal(1, 123->assert_false())
   call assert_match("Expected False but got 123", v:errors[0])
   call remove(v:errors, 0)
 endfunc
@@ -13,8 +18,13 @@ func Test_assert_true()
   call assert_equal(0, assert_true(1))
   call assert_equal(0, assert_true(123))
   call assert_equal(0, assert_true(v:true))
+  call assert_equal(0, v:true->assert_true())
 
   call assert_equal(1, assert_true(0))
+  call assert_match("Expected True but got 0", v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal(1, 0->assert_true())
   call assert_match("Expected True but got 0", v:errors[0])
   call remove(v:errors, 0)
 endfunc
@@ -141,6 +151,10 @@ func Test_match()
   call assert_equal(1, assert_match('bar.*foo', 'foobar', 'wrong'))
   call assert_match('wrong', v:errors[0])
   call remove(v:errors, 0)
+
+  call assert_equal(1, 'foobar'->assert_match('bar.*foo', 'wrong'))
+  call assert_match('wrong', v:errors[0])
+  call remove(v:errors, 0)
 endfunc
 
 func Test_notmatch()
@@ -148,6 +162,10 @@ func Test_notmatch()
   call assert_equal(0, assert_notmatch('^foobar$', 'foobars'))
 
   call assert_equal(1, assert_notmatch('foo', 'foobar'))
+  call assert_match("Pattern 'foo' does match 'foobar'", v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal(1, 'foobar'->assert_notmatch('foo'))
   call assert_match("Pattern 'foo' does match 'foobar'", v:errors[0])
   call remove(v:errors, 0)
 endfunc
@@ -162,6 +180,10 @@ func Test_assert_fail_fails()
   call remove(v:errors, 0)
 
   call assert_equal(1, assert_fails('echo', '', 'echo command'))
+  call assert_match("command did not fail: echo command", v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal(1, 'echo'->assert_fails('', 'echo command'))
   call assert_match("command did not fail: echo command", v:errors[0])
   call remove(v:errors, 0)
 endfunc
@@ -179,6 +201,12 @@ func Test_assert_beeps()
   call assert_equal(1, assert_beeps('normal 0'))
   call assert_match("command did not beep: normal 0", v:errors[0])
   call remove(v:errors, 0)
+
+  call assert_equal(0, 'normal h'->assert_beeps())
+  call assert_equal(1, 'normal 0'->assert_beeps())
+  call assert_match("command did not beep: normal 0", v:errors[0])
+  call remove(v:errors, 0)
+
   bwipe
 endfunc
 
@@ -192,6 +220,12 @@ func Test_assert_inrange()
   call assert_match("Expected range 5 - 7, but got 4", v:errors[0])
   call remove(v:errors, 0)
   call assert_equal(1, assert_inrange(5, 7, 8))
+  call assert_match("Expected range 5 - 7, but got 8", v:errors[0])
+  call remove(v:errors, 0)
+
+  call assert_equal(0, 5->assert_inrange(5, 7))
+  call assert_equal(0, 7->assert_inrange(5, 7))
+  call assert_equal(1, 8->assert_inrange(5, 7))
   call assert_match("Expected range 5 - 7, but got 8", v:errors[0])
   call remove(v:errors, 0)
 
