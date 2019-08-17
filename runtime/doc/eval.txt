@@ -2613,6 +2613,7 @@ prop_type_delete({name} [, {props}])
 prop_type_get([{name} [, {props}])
 				Dict	get property type values
 prop_type_list([{props}])	List	get list of property types
+pum_getpos()			Dict	position and size of pum if visible
 pumvisible()			Number	whether popup menu is visible
 pyeval({expr})			any	evaluate |Python| expression
 py3eval({expr})			any	evaluate |python3| expression
@@ -3476,6 +3477,10 @@ complete_info([{what}])
 		If the optional {what} list argument is supplied, then only
 		the items listed in {what} are returned.  Unsupported items in
 		{what} are silently ignored.
+
+		To get the position and size of the popup menu, see
+		|pum_getpos()|. It's also available in |v:event| during the
+		|CompleteChanged| event.
 
 		Examples: >
 			" Get all items
@@ -6976,6 +6981,20 @@ prompt_setprompt({buf}, {text})				*prompt_setprompt()*
 			call prompt_setprompt(bufnr(''), 'command: ')
 <
 prop_ functions are documented here: |text-prop-functions|.
+
+pum_getpos()						*pum_getpos()*
+		If the popup menu (see |ins-completion-menu|) is not visible,
+		returns an empty |Dictionary|, otherwise, returns a
+		|Dictionary| with the following keys:
+			height		nr of items visible
+			width		screen cells
+			row		top screen row (0 first row)
+			col		leftmost screen column (0 first col)
+			size		total nr of items
+			scrollbar	|TRUE| if visible
+
+		The values are the same as in |v:event| during
+		|CompleteChanged|.
 
 pumvisible()						*pumvisible()*
 		Returns non-zero when the popup menu is visible, zero

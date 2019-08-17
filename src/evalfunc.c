@@ -234,6 +234,7 @@ static void f_pow(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_prevnonblank(typval_T *argvars, typval_T *rettv);
 static void f_printf(typval_T *argvars, typval_T *rettv);
+static void f_pum_getpos(typval_T *argvars, typval_T *rettv);
 static void f_pumvisible(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_PYTHON3
 static void f_py3eval(typval_T *argvars, typval_T *rettv);
@@ -741,6 +742,7 @@ static funcentry_T global_functions[] =
     {"prop_type_get",	1, 2, 0,	  f_prop_type_get},
     {"prop_type_list",	0, 1, 0,	  f_prop_type_list},
 #endif
+    {"pum_getpos",	0, 0, 0,	  f_pum_getpos},
     {"pumvisible",	0, 0, 0,	  f_pumvisible},
 #ifdef FEAT_PYTHON3
     {"py3eval",		1, 1, 0,	  f_py3eval},
@@ -7958,6 +7960,19 @@ f_printf(typval_T *argvars, typval_T *rettv)
 	}
     }
     did_emsg |= saved_did_emsg;
+}
+
+/*
+ * "pum_getpos()" function
+ */
+    static void
+f_pum_getpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    if (rettv_dict_alloc(rettv) != OK)
+	return;
+#ifdef FEAT_INS_EXPAND
+    pum_set_event_info(rettv->vval.v_dict);
+#endif
 }
 
 /*

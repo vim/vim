@@ -1033,6 +1033,20 @@ func Test_popup_complete_info_02()
   bwipe!
 endfunc
 
+func Test_popup_complete_info_no_pum()
+  new
+  call assert_false( pumvisible() )
+  let no_pum_info = complete_info()
+  let d = {
+        \   'mode': '',
+        \   'pum_visible': 0,
+        \   'items': [],
+        \   'selected': -1,
+        \  }
+  call assert_equal( d, complete_info() )
+  bwipe!
+endfunc
+
 func Test_CompleteChanged()
   new
   call setline(1, ['foo', 'bar', 'foobar', ''])
@@ -1063,8 +1077,36 @@ func Test_CompleteChanged()
 
   autocmd! AAAAA_Group
   set complete& completeopt&
-  delfunc! OnPumchange
+  delfunc! OnPumChange
   bw!
+endfunc
+
+function! GetPumPosition()
+  call assert_true( pumvisible() )
+  let g:pum_pos = pum_getpos()
+  return ''
+endfunction
+
+func Test_pum_getpos()
+  new
+  inoremap <buffer><F5> <C-R>=GetPumPosition()<CR>
+  setlocal completefunc=UserDefinedComplete
+
+  let d = {
+    \   'height':    5,
+    \   'width':     15,
+    \   'row':       1,
+    \   'col':       0,
+    \   'size':      5,
+    \   'scrollbar': v:false,
+    \ }
+  call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
+  call assert_equal(d, g:pum_pos)
+
+  call assert_false( pumvisible() )
+  call assert_equal( {}, pum_getpos() )
+  bw!
+  unlet g:pum_pos
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
