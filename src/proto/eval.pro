@@ -85,7 +85,7 @@ char_u *v_exception(char_u *oldval);
 char_u *v_throwpoint(char_u *oldval);
 char_u *set_cmdarg(exarg_T *eap, char_u *oldarg);
 int get_var_tv(char_u *name, int len, typval_T *rettv, dictitem_T **dip, int verbose, int no_autoload);
-int handle_subscript(char_u **arg, typval_T *rettv, int evaluate, int verbose);
+int handle_subscript(char_u **arg, typval_T *rettv, int evaluate, int verbose, char_u *start_leader, char_u **end_leaderp);
 typval_T *alloc_tv(void);
 void free_tv(typval_T *varp);
 void clear_tv(typval_T *varp);
