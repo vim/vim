@@ -2241,14 +2241,11 @@ unblock_autocmds(void)
 # endif
 }
 
-#if defined(FEAT_EVAL) && (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM)) \
-	|| defined(PROTO)
     int
 is_autocmd_blocked(void)
 {
     return autocmd_blocked != 0;
 }
-#endif
 
 /*
  * Find next autocommand pattern that matches.
