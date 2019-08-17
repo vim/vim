@@ -235,7 +235,7 @@ NOT:   Serüven sevenler için, Normal kipte iken, komut olmadan sadece nesnenin
   4. Bu sefer   x    komutunu kullanarak satırdaki tüm hataları düzeltin.
   5. Şimdi satırı ilk haline çevirmek için büyük   U    yazın.
   6. Şimdi   U    ve daha önceki komutları geri almak için birkaç defa   u    yazın.
-  7. Şimdi birkaç defa CTRL-R (CTRL'yi basılı tutarken R ye basın) yazarak geri almaları da geri alın.
+  7. Şimdi birkaç defa CTRL-R (CTRL'yi basılı tutarken R'ye basın) yazarak geri almaları da geri alın.
 
 ---> Buu satıırdaki hataları düüzeltinn ve sonra koomutu geri alllın.
 
