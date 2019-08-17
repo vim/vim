@@ -1006,6 +1006,14 @@ func Test_popup_complete_info_02()
   let d = {
     \   'mode': 'function',
     \   'pum_visible': 1,
+    \   'pum_pos': {
+    \      'height':    5,
+    \      'width':     15,
+    \      'row':       1,
+    \      'col':       0,
+    \      'size':      5,
+    \      'scrollbar': v:false,
+    \   },
     \   'items': [
     \     {'word': 'Jan', 'menu': 'January', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
     \     {'word': 'Feb', 'menu': 'February', 'user_data': '', 'info': '', 'kind': '', 'abbr': ''},
@@ -1020,7 +1028,7 @@ func Test_popup_complete_info_02()
   call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
   call assert_equal(d, g:compl_info)
 
-  let g:compl_what = ['mode', 'pum_visible', 'selected']
+  let g:compl_what = ['mode', 'pum_visible', 'pum_pos', 'selected']
   call remove(d, 'items')
   call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
   call assert_equal(d, g:compl_info)
@@ -1028,8 +1036,26 @@ func Test_popup_complete_info_02()
   let g:compl_what = ['mode']
   call remove(d, 'selected')
   call remove(d, 'pum_visible')
+  call remove(d, 'pum_pos')
   call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
   call assert_equal(d, g:compl_info)
+
+  bwipe!
+endfunction
+
+
+func Test_popup_complete_info_no_pum()
+  new
+  call assert_false( pumvisible() )
+  let no_pum_info = complete_info()
+  let d = {
+    \   'mode': '',
+    \   'pum_visible': 0,
+    \   'pum_pos': {},
+    \   'items': [],
+    \   'selected': -1,
+    \  }
+  call assert_equal( d, complete_info() )
   bwipe!
 endfunc
 

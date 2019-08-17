@@ -3445,6 +3445,9 @@ complete_info([{what}])
 				See |complete_info_mode| for the values.
 		   pum_visible	|TRUE| if popup menu is visible.
 				See |pumvisible()|.
+		   pum_pos	Position and size of the popup menu, if it
+				is visible. This data is also available in
+				|v:event| during the |CompleteChanged| event.
 		   items	List of completion matches.  Each item is a
 				dictionary containing the entries "word",
 				"abbr", "menu", "kind", "info" and "user_data".
@@ -3472,6 +3475,15 @@ complete_info([{what}])
 		   "spell"	     Spelling suggestions |i_CTRL-X_s|
 		   "eval"            |complete()| completion
 		   "unknown"	     Other internal modes
+
+		When pum_visible is |FALSE|, pum_pos is an empty dict.
+		Otherwise, it is a dictionary containing the following keys:
+		    height		nr of items visible
+		    width		screen cells
+		    row			top screen row (0 first row)
+		    col			leftmost screen column (0 first row)
+		    size		total nr of items
+		    scrollbar		|TRUE| if visible
 
 		If the optional {what} list argument is supplied, then only
 		the items listed in {what} are returned.  Unsupported items in

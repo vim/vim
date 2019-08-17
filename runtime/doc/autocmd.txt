@@ -595,6 +595,9 @@ CompleteChanged 					*CompleteChanged*
 				    scrollbar		TRUE if visible
 
 				It is not allowed to change the text |textlock|.
+
+				See also |complete_info()| which can be used to
+				get the poup menu position at any time.
 							*CompleteDone*
 CompleteDone			After Insert mode completion is done.  Either
 				when something was completed or abandoning

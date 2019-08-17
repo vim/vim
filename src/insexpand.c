@@ -1532,6 +1532,7 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 #define CI_WHAT_ITEMS		0x04
 #define CI_WHAT_SELECTED	0x08
 #define CI_WHAT_INSERTED	0x10
+#define CI_WHAT_POSITION	0x20
 #define CI_WHAT_ALL		0xff
     int		what_flag;
 
@@ -1554,6 +1555,8 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 		what_flag |= CI_WHAT_SELECTED;
 	    else if (STRCMP(what, "inserted") == 0)
 		what_flag |= CI_WHAT_INSERTED;
+	    else if (STRCMP(what, "pum_pos") == 0)
+		what_flag |= CI_WHAT_POSITION;
 	}
     }
 
@@ -1606,6 +1609,16 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 
     // TODO
     // if (ret == OK && (what_flag & CI_WHAT_INSERTED))
+
+    if (ret == OK && (what_flag & CI_WHAT_POSITION))
+    {
+	dict_T* d = dict_alloc();
+	if (d == NULL)
+	    return;
+	pum_set_event_info(d);
+	ret = dict_add_dict(retdict, "pum_pos", d);
+    }
+
 }
 
 /*
