@@ -1098,7 +1098,8 @@ clip_start_selection(int col, int row, int repeated_click)
 	// Click in a popup window restricts selection to that window,
 	// excluding the border.
 	cb->min_col = wp->w_wincol + wp->w_popup_border[3];
-	cb->max_col = wp->w_wincol + popup_width(wp) - wp->w_popup_border[1];
+	cb->max_col = wp->w_wincol + popup_width(wp)
+				 - wp->w_popup_border[1] - wp->w_has_scrollbar;
 	if (cb->max_col > screen_Columns)
 	    cb->max_col = screen_Columns;
 	cb->min_row = wp->w_winrow + wp->w_popup_border[0];

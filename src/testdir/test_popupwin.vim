@@ -506,11 +506,12 @@ func Test_popup_select()
   let lines =<< trim END
     set clipboard=autoselect
     call setline(1, range(1, 20))
-    let winid = popup_create(['the word', 'some more', 'several words here'], #{
+    let winid = popup_create(['the word', 'some more', 'several words here', 'invisible', '5', '6', '7'], #{
 	  \ drag: 1,
 	  \ border: [],
 	  \ line: 3,
 	  \ col: 10,
+	  \ maxheight: 3,
 	  \ })
     func Select1()
       call feedkeys("\<F3>\<LeftMouse>\<F4>\<LeftDrag>\<LeftRelease>", "xt")
