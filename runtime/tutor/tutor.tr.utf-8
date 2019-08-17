@@ -168,7 +168,7 @@ NOT: <ESC> tuşuna basmak sizi Normal kipe götürür ya da istenmeyen tamamlanm
   3. İmleci doğru olan satırın sonuna götürün. (Birinciden SONRA. )
 
   4. Satırı sonuna kadar silmek için   d$   yazın.
-  ( d$  yazarken d'den sonra <ALT> ile beraber $ tuşuna basın)
+  ( d$  yazarken $ kullanmak için Türkçe Q klavyede <ALT GR> 4, Türkçe F klavyede <SHIFT> 4 ikilisini kullanın.)
 
 ---> Birileri bu satırın sonunu iki defa yazmış. Birileri bu satırın sonunu iki defa yazmış.
 
