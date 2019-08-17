@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Aug 08
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Aug 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -483,7 +483,7 @@ String automatically.  Thus the String '4' and the number 4 will find the same
 entry.  Note that the String '04' and the Number 04 are different, since the
 Number will be converted to the String '4'.  The empty string can also be used
 as a key.
-						*literal-Dict*
+						*literal-Dict* *#{}*
 To avoid having to put quotes around every key the #{} form can be used.  This
 does require the key to consist only of ASCII letters, digits, '-' and '_'.
 Example: >
@@ -1219,7 +1219,7 @@ When expr8 is a |Funcref| type variable, invoke the function it refers to.
 
 expr8->name([args])	method call			*method* *->*
 expr8->{lambda}([args])
-
+							*E276*
 For methods that are also available as global functions this is the same as: >
 	name(expr8 [, args])
 There can also be methods specifically for the type of "expr8".
@@ -1230,7 +1230,7 @@ next method: >
 <
 Example of using a lambda: >
 	GetPercentage->{x -> x * 100}()->printf('%d%%')
-
+<
 							*E274*
 "->name(" must not contain white space.  There can be white space before the
 "->" and after the "(", thus you can split the lines like this: >
@@ -1239,7 +1239,10 @@ Example of using a lambda: >
 	\ ->map(mapexpr)
 	\ ->sort()
 	\ ->join()
-<
+
+When using the lambda form there must be no white space between the } and the
+(.
+
 
 							*expr9*
 number
@@ -2035,14 +2038,19 @@ v:progname	Contains the name (with path removed) with which Vim was
 		Read-only.
 
 					*v:progpath* *progpath-variable*
-v:progpath	Contains the command with which Vim was invoked, including the
-		path.  Useful if you want to message a Vim server using a
+v:progpath	Contains the command with which Vim was invoked, in a form
+		that when passed to the shell will run the same Vim executable
+		as the current one (if $PATH remains unchanged).
+		Useful if you want to message a Vim server using a
 		|--remote-expr|.
 		To get the full path use: >
 			echo exepath(v:progpath)
-<		If the path is relative it will be expanded to the full path,
-		so that it still works after `:cd`. Thus starting "./vim"
-		results in "/home/user/path/to/vim/src/vim".
+<		If the command has a relative path it will be expanded to the
+		full path, so that it still works after `:cd`. Thus starting
+		"./vim" results in "/home/user/path/to/vim/src/vim".
+		On Linux and other systems it will always be the full path.
+		On Mac it may just be "vim" and using exepath() as mentioned
+		above should be used to get the full path.
 		On MS-Windows the executable may be called "vim.exe", but the
 		".exe" is not added to v:progpath.
 		Read-only.
@@ -9320,6 +9328,7 @@ win_execute({id}, {command} [, {silent}])		*win_execute()*
 		autocommands and not actually show syntax highlighting.
 							*E994*
 		Not all commands are allowed in popup windows.
+		When window {id} does not exist then no error is given.
 
 win_findbuf({bufnr})					*win_findbuf()*
 		Returns a list with |window-ID|s for windows that contain
@@ -10341,6 +10350,12 @@ This does NOT work: >
 :let ${env-name} = {expr1}			*:let-environment* *:let-$*
 			Set environment variable {env-name} to the result of
 			the expression {expr1}.  The type is always String.
+
+			On some systems making an environment variable empty
+			causes it to be deleted.  Many systems do not make a
+			difference between an environment variable that is not
+			set and an environment variable that is empty.
+
 :let ${env-name} .= {expr1}
 			Append {expr1} to the environment variable {env-name}.
 			If the environment variable didn't exist yet this

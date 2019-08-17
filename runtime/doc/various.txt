@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.1.  Last change: 2019 Aug 01
+*various.txt*   For Vim version 8.1.  Last change: 2019 Aug 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -332,7 +332,8 @@ N  *+byte_offset*	support for 'o' flag in 'statusline' option, "go"
 m  *+channel*		inter process communication |channel|
 N  *+cindent*		|'cindent'|, C indenting
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
-   *+clipboard*		|clipboard| support
+   *+clipboard*		|clipboard| support compiled-in
+   *+clipboard_working*	|clipboard| support compiled-in and working
 N  *+cmdline_compl*	command line completion |cmdline-completion|
 S  *+cmdline_hist*	command line history |cmdline-history|
 N  *+cmdline_info*	|'showcmd'| and |'ruler'|

@@ -1,6 +1,7 @@
 !	change.txt	/*!*
 !!	change.txt	/*!!*
 #	pattern.txt	/*#*
+#{}	eval.txt	/*#{}*
 $	motion.txt	/*$*
 $HOME	options.txt	/*$HOME*
 $HOME-use	version5.txt	/*$HOME-use*
@@ -1266,6 +1267,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +cindent	various.txt	/*+cindent*
 +clientserver	various.txt	/*+clientserver*
 +clipboard	various.txt	/*+clipboard*
++clipboard_working	various.txt	/*+clipboard_working*
 +cmd	editing.txt	/*+cmd*
 +cmdline_compl	various.txt	/*+cmdline_compl*
 +cmdline_hist	various.txt	/*+cmdline_hist*
@@ -1434,6 +1436,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 --ttyfail	starting.txt	/*--ttyfail*
 --version	starting.txt	/*--version*
 --windowid	starting.txt	/*--windowid*
+->	eval.txt	/*->*
 -?	starting.txt	/*-?*
 -A	starting.txt	/*-A*
 -C	starting.txt	/*-C*
@@ -3093,6 +3096,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :spelli	spell.txt	/*:spelli*
 :spellinfo	spell.txt	/*:spellinfo*
 :spellr	spell.txt	/*:spellr*
+:spellra	spell.txt	/*:spellra*
+:spellrare	spell.txt	/*:spellrare*
 :spellrepall	spell.txt	/*:spellrepall*
 :spellu	spell.txt	/*:spellu*
 :spellundo	spell.txt	/*:spellundo*
@@ -4028,6 +4033,8 @@ E271	if_ruby.txt	/*E271*
 E272	if_ruby.txt	/*E272*
 E273	if_ruby.txt	/*E273*
 E274	eval.txt	/*E274*
+E275	textprop.txt	/*E275*
+E276	eval.txt	/*E276*
 E277	remote.txt	/*E277*
 E28	syntax.txt	/*E28*
 E280	if_tcl.txt	/*E280*
@@ -8350,6 +8357,7 @@ prop_type_list()	textprop.txt	/*prop_type_list()*
 psql	ft_sql.txt	/*psql*
 ptcap.vim	syntax.txt	/*ptcap.vim*
 pterm-mouse	options.txt	/*pterm-mouse*
+pum_getpos()	eval.txt	/*pum_getpos()*
 pumvisible()	eval.txt	/*pumvisible()*
 put	change.txt	/*put*
 put-Visual-mode	change.txt	/*put-Visual-mode*
