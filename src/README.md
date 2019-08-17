@@ -23,6 +23,7 @@ Most code can be found in a file with an obvious name (incomplete list):
 
 File name       | Description
 --------------- | -----------
+arglist.c	| handling argument list
 autocmd.c	| autocommands
 blob.c		| blob data type
 buffer.c	| manipulating buffers (loaded files)

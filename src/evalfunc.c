@@ -35,10 +35,6 @@ static void f_add(typval_T *argvars, typval_T *rettv);
 static void f_and(typval_T *argvars, typval_T *rettv);
 static void f_append(typval_T *argvars, typval_T *rettv);
 static void f_appendbufline(typval_T *argvars, typval_T *rettv);
-static void f_argc(typval_T *argvars, typval_T *rettv);
-static void f_argidx(typval_T *argvars, typval_T *rettv);
-static void f_arglistid(typval_T *argvars, typval_T *rettv);
-static void f_argv(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_asin(typval_T *argvars, typval_T *rettv);
 static void f_atan(typval_T *argvars, typval_T *rettv);
@@ -1494,116 +1490,6 @@ f_appendbufline(typval_T *argvars, typval_T *rettv)
 	lnum = tv_get_lnum_buf(&argvars[1], buf);
 	set_buffer_lines(buf, lnum, TRUE, &argvars[2], rettv);
     }
-}
-
-/*
- * "argc([window id])" function
- */
-    static void
-f_argc(typval_T *argvars, typval_T *rettv)
-{
-    win_T	*wp;
-
-    if (argvars[0].v_type == VAR_UNKNOWN)
-	// use the current window
-	rettv->vval.v_number = ARGCOUNT;
-    else if (argvars[0].v_type == VAR_NUMBER
-					   && tv_get_number(&argvars[0]) == -1)
-	// use the global argument list
-	rettv->vval.v_number = GARGCOUNT;
-    else
-    {
-	// use the argument list of the specified window
-	wp = find_win_by_nr_or_id(&argvars[0]);
-	if (wp != NULL)
-	    rettv->vval.v_number = WARGCOUNT(wp);
-	else
-	    rettv->vval.v_number = -1;
-    }
-}
-
-/*
- * "argidx()" function
- */
-    static void
-f_argidx(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    rettv->vval.v_number = curwin->w_arg_idx;
-}
-
-/*
- * "arglistid()" function
- */
-    static void
-f_arglistid(typval_T *argvars, typval_T *rettv)
-{
-    win_T	*wp;
-
-    rettv->vval.v_number = -1;
-    wp = find_tabwin(&argvars[0], &argvars[1], NULL);
-    if (wp != NULL)
-	rettv->vval.v_number = wp->w_alist->id;
-}
-
-/*
- * Get the argument list for a given window
- */
-    static void
-get_arglist_as_rettv(aentry_T *arglist, int argcount, typval_T *rettv)
-{
-    int		idx;
-
-    if (rettv_list_alloc(rettv) == OK && arglist != NULL)
-	for (idx = 0; idx < argcount; ++idx)
-	    list_append_string(rettv->vval.v_list,
-						alist_name(&arglist[idx]), -1);
-}
-
-/*
- * "argv(nr)" function
- */
-    static void
-f_argv(typval_T *argvars, typval_T *rettv)
-{
-    int		idx;
-    aentry_T	*arglist = NULL;
-    int		argcount = -1;
-
-    if (argvars[0].v_type != VAR_UNKNOWN)
-    {
-	if (argvars[1].v_type == VAR_UNKNOWN)
-	{
-	    arglist = ARGLIST;
-	    argcount = ARGCOUNT;
-	}
-	else if (argvars[1].v_type == VAR_NUMBER
-					   && tv_get_number(&argvars[1]) == -1)
-	{
-	    arglist = GARGLIST;
-	    argcount = GARGCOUNT;
-	}
-	else
-	{
-	    win_T	*wp = find_win_by_nr_or_id(&argvars[1]);
-
-	    if (wp != NULL)
-	    {
-		/* Use the argument list of the specified window */
-		arglist = WARGLIST(wp);
-		argcount = WARGCOUNT(wp);
-	    }
-	}
-
-	rettv->v_type = VAR_STRING;
-	rettv->vval.v_string = NULL;
-	idx = tv_get_number_chk(&argvars[0], NULL);
-	if (arglist != NULL && idx >= 0 && idx < argcount)
-	    rettv->vval.v_string = vim_strsave(alist_name(&arglist[idx]));
-	else if (idx == -1)
-	    get_arglist_as_rettv(arglist, argcount, rettv);
-    }
-    else
-	get_arglist_as_rettv(ARGLIST, ARGCOUNT, rettv);
 }
 
 #ifdef FEAT_FLOAT

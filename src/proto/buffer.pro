@@ -52,8 +52,6 @@ int build_stl_str_hl(win_T *wp, char_u *out, size_t outlen, char_u *fmt, int use
 void get_rel_pos(win_T *wp, char_u *buf, int buflen);
 char_u *fix_fname(char_u *fname);
 void fname_expand(buf_T *buf, char_u **ffname, char_u **sfname);
-char_u *alist_name(aentry_T *aep);
-void do_arg_all(int count, int forceit, int keep_tabs);
 void ex_buffer_all(exarg_T *eap);
 void do_modelines(int flags);
 int bt_normal(buf_T *buf);

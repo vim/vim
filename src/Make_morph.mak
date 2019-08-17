@@ -25,6 +25,7 @@ RM =		rm
 	${CC} ${CFLAGS} $< -o $@
 
 SRC =	arabic.c						\
+	arglist.c						\
 	autocmd.c						\
 	blowfish.c						\
 	buffer.c						\
