@@ -1119,7 +1119,6 @@ in any order.  E.g., these are all possible:
 	expr8->(expr1, ...)[expr1]
 Evaluation is always from left to right.
 
-
 expr8[expr1]		item of String or |List|	*expr-[]* *E111*
 							*E909* *subscript*
 If expr8 is a Number or String this results in a String that contains the
@@ -1230,6 +1229,13 @@ next method: >
 <
 Example of using a lambda: >
 	GetPercentage->{x -> x * 100}()->printf('%d%%')
+<
+When using -> the |expr7| operators will be applied first, thus: >
+	-1.234->string()
+Is equivalent to: >
+	(-1.234)->string()
+And NOT: >
+	-(1.234->string())
 <
 							*E274*
 "->name(" must not contain white space.  There can be white space before the
@@ -2888,7 +2894,11 @@ abs({expr})							*abs()*
 <			5.456  >
 			echo abs(-4)
 <			4
-		{only available when compiled with the |+float| feature}
+
+		Can also be used as a |method|: >
+			Compute()->abs()
+
+<		{only available when compiled with the |+float| feature}
 
 
 acos({expr})							*acos()*
@@ -2901,7 +2911,11 @@ acos({expr})							*acos()*
 <			1.570796 >
 			:echo acos(-0.5)
 <			2.094395
-		{only available when compiled with the |+float| feature}
+
+		Can also be used as a |method|: >
+			Compute()->acos()
+
+<		{only available when compiled with the |+float| feature}
 
 
 add({object}, {expr})					*add()*
@@ -2913,6 +2927,7 @@ add({object}, {expr})					*add()*
 		item.  Use |extend()| to concatenate |Lists|.
 		When {object} is a |Blob| then  {expr} must be a number.
 		Use |insert()| to add an item at another position.
+
 		Can also be used as a |method|: >
 			mylist->add(val1)->add(val2)
 
@@ -3014,6 +3029,10 @@ asin({expr})						*asin()*
 <			0.927295 >
 			:echo asin(-0.5)
 <			-0.523599
+
+		Can also be used as a |method|: >
+			Compute()->asin()
+<
 		{only available when compiled with the |+float| feature}
 
 
@@ -3026,6 +3045,10 @@ atan({expr})						*atan()*
 <			1.560797 >
 			:echo atan(-4.01)
 <			-1.326405
+
+		Can also be used as a |method|: >
+			Compute()->atan()
+<
 		{only available when compiled with the |+float| feature}
 
 
@@ -3038,6 +3061,10 @@ atan2({expr1}, {expr2})					*atan2()*
 <			-0.785398 >
 			:echo atan2(1, -1)
 <			2.356194
+
+		Can also be used as a |method|: >
+			Compute()->atan(1)
+<
 		{only available when compiled with the |+float| feature}
 
 balloon_gettext()					*balloon_gettext()*
@@ -3296,6 +3323,10 @@ ceil({expr})							*ceil()*
 <			-5.0  >
 			echo ceil(4.0)
 <			4.0
+
+		Can also be used as a |method|: >
+			Compute()->ceil()
+<
 		{only available when compiled with the |+float| feature}
 
 
@@ -3572,6 +3603,10 @@ cos({expr})						*cos()*
 <			0.862319 >
 			:echo cos(-4.01)
 <			-0.646043
+
+		Can also be used as a |method|: >
+			Compute()->cos()
+<
 		{only available when compiled with the |+float| feature}
 
 
@@ -3584,6 +3619,10 @@ cosh({expr})						*cosh()*
 <			1.127626 >
 			:echo cosh(-0.5)
 <			-1.127626
+
+		Can also be used as a |method|: >
+			Compute()->cosh()
+<
 		{only available when compiled with the |+float| feature}
 
 
@@ -3969,6 +4008,10 @@ exp({expr})						*exp()*
 <			7.389056 >
 			:echo exp(-1)
 <			0.367879
+
+		Can also be used as a |method|: >
+			Compute()->exp()
+<
 		{only available when compiled with the |+float| feature}
 
 
@@ -4267,6 +4310,10 @@ float2nr({expr})					*float2nr()*
 <			-2147483647 (or -9223372036854775807) >
 			echo float2nr(1.0e-100)
 <			0
+
+		Can also be used as a |method|: >
+			Compute()->float2nr()
+<
 		{only available when compiled with the |+float| feature}
 
 
@@ -4281,6 +4328,10 @@ floor({expr})							*floor()*
 <			-6.0  >
 			echo floor(4.0)
 <			4.0
+
+		Can also be used as a |method|: >
+			Compute()->floor()
+<
 		{only available when compiled with the |+float| feature}
 
 
@@ -4297,6 +4348,10 @@ fmod({expr1}, {expr2})					*fmod()*
 <			0.13 >
 			:echo fmod(-12.33, 1.22)
 <			-0.13
+
+		Can also be used as a |method|: >
+			Compute()->fmod(1.22)
+<
 		{only available when compiled with |+float| feature}
 
 
@@ -5794,6 +5849,9 @@ isinf({expr})						*isinf()*
 			:echo isinf(-1.0 / 0.0)
 <			-1
 
+		Can also be used as a |method|: >
+			Compute()->isinf()
+<
 		{only available when compiled with the |+float| feature}
 
 islocked({expr})					*islocked()* *E786*
@@ -5814,6 +5872,9 @@ isnan({expr})						*isnan()*
 			echo isnan(0.0 / 0.0)
 <			1
 
+		Can also be used as a |method|: >
+			Compute()->isnan()
+<
 		{only available when compiled with the |+float| feature}
 
 items({dict})						*items()*
@@ -6164,6 +6225,10 @@ log({expr})						*log()*
 <			2.302585 >
 			:echo log(exp(5))
 <			5.0
+
+		Can also be used as a |method|: >
+			Compute()->log()
+<
 		{only available when compiled with the |+float| feature}
 
 
@@ -6175,6 +6240,10 @@ log10({expr})						*log10()*
 <			3.0 >
 			:echo log10(0.01)
 <			-2.0
+
+		Can also be used as a |method|: >
+			Compute()->log10()
+<
 		{only available when compiled with the |+float| feature}
 
 luaeval({expr} [, {expr}])					*luaeval()*
@@ -6734,6 +6803,10 @@ pow({x}, {y})						*pow()*
 <			65536.0 >
 			:echo pow(32, 0.20)
 <			2.0
+
+		Can also be used as a |method|: >
+			Compute()->pow(3)
+<
 		{only available when compiled with the |+float| feature}
 
 prevnonblank({lnum})					*prevnonblank()*
@@ -7358,6 +7431,10 @@ round({expr})							*round()*
 <			5.0 >
 			echo round(-4.5)
 <			-5.0
+
+		Can also be used as a |method|: >
+			Compute()->round()
+<
 		{only available when compiled with the |+float| feature}
 
 rubyeval({expr})					*rubyeval()*
@@ -8147,6 +8224,10 @@ sin({expr})						*sin()*
 <			-0.506366 >
 			:echo sin(-4.01)
 <			0.763301
+
+		Can also be used as a |method|: >
+			Compute()->sin()
+<
 		{only available when compiled with the |+float| feature}
 
 
@@ -8159,6 +8240,10 @@ sinh({expr})						*sinh()*
 <			0.521095 >
 			:echo sinh(-0.9)
 <			-1.026517
+
+		Can also be used as a |method|: >
+			Compute()->sinh()
+<
 		{only available when compiled with the |+float| feature}
 
 
@@ -8365,6 +8450,10 @@ sqrt({expr})						*sqrt()*
 			:echo sqrt(-4.01)
 <			nan
 		"nan" may be different, it depends on system libraries.
+
+		Can also be used as a |method|: >
+			Compute()->sqrt()
+<
 		{only available when compiled with the |+float| feature}
 
 
@@ -8381,7 +8470,11 @@ str2float({expr})					*str2float()*
 		12.0.  You can strip out thousands separators with
 		|substitute()|: >
 			let f = str2float(substitute(text, ',', '', 'g'))
-<		{only available when compiled with the |+float| feature}
+<
+		Can also be used as a |method|: >
+			let f = text->substitute(',', '', 'g')->str2float()
+<
+		{only available when compiled with the |+float| feature}
 
 str2list({expr} [, {utf8}])				*str2list()*
 		Return a list containing the number values which represent
@@ -8978,6 +9071,10 @@ tan({expr})						*tan()*
 <			0.648361 >
 			:echo tan(-4.01)
 <			-1.181502
+
+		Can also be used as a |method|: >
+			Compute()->tan()
+<
 		{only available when compiled with the |+float| feature}
 
 
@@ -8990,6 +9087,10 @@ tanh({expr})						*tanh()*
 <			0.462117 >
 			:echo tanh(-1)
 <			-0.761594
+
+		Can also be used as a |method|: >
+			Compute()->tanh()
+<
 		{only available when compiled with the |+float| feature}
 
 
@@ -9143,6 +9244,10 @@ trunc({expr})							*trunc()*
 <			-5.0  >
 			echo trunc(4.0)
 <			4.0
+
+		Can also be used as a |method|: >
+			Compute()->trunc()
+<
 		{only available when compiled with the |+float| feature}
 
 							*type()*
