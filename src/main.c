@@ -541,12 +541,12 @@ vim_main2(void)
 #ifdef FEAT_GUI
     if (gui.starting)
     {
-#if defined(UNIX) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
 	/* When something caused a message from a vimrc script, need to output
 	 * an extra newline before the shell prompt. */
 	if (did_emsg || msg_didout)
 	    putchar('\n');
-#endif
+# endif
 
 	gui_start(NULL);		/* will set full_screen to TRUE */
 	TIME_MSG("starting GUI");
@@ -1485,7 +1485,19 @@ getout(int exitval)
 #endif
 
     if (v_dying <= 1)
+    {
+	int	unblock = 0;
+
+	// deathtrap() blocks autocommands, but we do want to trigger VimLeave.
+	if (is_autocmd_blocked())
+	{
+	    unblock_autocmds();
+	    ++unblock;
+	}
 	apply_autocmds(EVENT_VIMLEAVE, NULL, NULL, FALSE, curbuf);
+	if (unblock)
+	    block_autocmds();
+    }
 
 #ifdef FEAT_PROFILE
     profile_dump();
