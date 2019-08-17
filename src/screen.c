@@ -4891,7 +4891,7 @@ win_line(
 		    if (*p_sbr != NUL && vcol == vcol_sbr && wp->w_p_wrap)
 			vcol_adjusted = vcol - MB_CHARLEN(p_sbr);
 #endif
-		    /* tab amount depends on current column */
+		    // tab amount depends on current column
 #ifdef FEAT_VARTABS
 		    tab_len = tabstop_padding(vcol_adjusted,
 					      wp->w_buffer->b_p_ts,
@@ -4904,30 +4904,29 @@ win_line(
 #ifdef FEAT_LINEBREAK
 		    if (!wp->w_p_lbr || !wp->w_p_list)
 #endif
-		    /* tab amount depends on current column */
+			// tab amount depends on current column
 			n_extra = tab_len;
 #ifdef FEAT_LINEBREAK
 		    else
 		    {
-			char_u *p;
+			char_u	*p;
 			int	len;
 			int	i;
 			int	saved_nextra = n_extra;
 
 #ifdef FEAT_CONCEAL
 			if (vcol_off > 0)
-			    /* there are characters to conceal */
+			    // there are characters to conceal
 			    tab_len += vcol_off;
-			/* boguscols before FIX_FOR_BOGUSCOLS macro from above
-			 */
+			// boguscols before FIX_FOR_BOGUSCOLS macro from above
 			if (wp->w_p_list && lcs_tab1 && old_boguscols > 0
 							 && n_extra > tab_len)
 			    tab_len += n_extra - tab_len;
 #endif
 
-			/* if n_extra > 0, it gives the number of chars, to
-			 * use for a tab, else we need to calculate the width
-			 * for a tab */
+			// if n_extra > 0, it gives the number of chars, to
+			// use for a tab, else we need to calculate the width
+			// for a tab
 			len = (tab_len * mb_char2len(lcs_tab2));
 			if (n_extra > 0)
 			    len += n_extra - tab_len;
@@ -4939,20 +4938,27 @@ win_line(
 			p_extra_free = p;
 			for (i = 0; i < tab_len; i++)
 			{
+			    int lcs = lcs_tab2;
+
 			    if (*p == NUL)
 			    {
 				tab_len = i;
 				break;
 			    }
-			    mb_char2bytes(lcs_tab2, p);
-			    p += mb_char2len(lcs_tab2);
-			    n_extra += mb_char2len(lcs_tab2)
-						 - (saved_nextra > 0 ? 1 : 0);
+
+			    // if lcs_tab3 is given, need to change the char
+			    // for tab
+			    if (lcs_tab3 && i == tab_len - 1)
+				lcs = lcs_tab3;
+			    mb_char2bytes(lcs, p);
+			    p += mb_char2len(lcs);
+			    n_extra += mb_char2len(lcs)
+						  - (saved_nextra > 0 ? 1 : 0);
 			}
 			p_extra = p_extra_free;
 #ifdef FEAT_CONCEAL
-			/* n_extra will be increased by FIX_FOX_BOGUSCOLS
-			 * macro below, so need to adjust for that here */
+			// n_extra will be increased by FIX_FOX_BOGUSCOLS
+			// macro below, so need to adjust for that here
 			if (vcol_off > 0)
 			    n_extra -= vcol_off;
 #endif
