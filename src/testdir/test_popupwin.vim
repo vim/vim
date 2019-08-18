@@ -2194,6 +2194,8 @@ func Test_previewpopup()
 endfunc
 
 func Test_popupmenu_info()
+  CheckScreendump
+
   let lines =<< trim END
       set completeopt+=preview,popup
       set completefunc=CompleteFuncDict
