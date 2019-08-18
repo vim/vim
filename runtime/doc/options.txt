@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Jul 31
+*options.txt*	For Vim version 8.1.  Last change: 2019 Aug 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1914,6 +1914,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   preview  Show extra information about the currently selected
 		    completion in the preview window.  Only works in
 		    combination with "menu" or "menuone".
+
+	   popup    Show extra information about the currently selected
+		    completion in a popup window.  Only works in combination
+		    with "menu" or "menuone".  Overrides "preview".
+		    {only works when compiled with the +textprop feature}
 
 	   noinsert Do not insert any text for a match until the user selects
 		    a match from the menu. Only works in combination with
@@ -5650,6 +5655,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			|+textprop| or |+quickfix| feature}
 	When not empty a popup window is used for commands that would open a
 	preview window.  See |preview-popup|.
+	Not used for the insert completion info, add "popup" to
+	'completeopt' for that.
 
 					*'previewwindow'* *'nopreviewwindow'*
 					*'pvw'* *'nopvw'* *E590*

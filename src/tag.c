@@ -3439,7 +3439,7 @@ jumpto_tag(
 	     * Make the preview window the current window.
 	     * Open a preview window when needed.
 	     */
-	    prepare_tagpreview(TRUE);
+	    prepare_tagpreview(TRUE, TRUE, FALSE);
 	}
     }
 

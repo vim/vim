@@ -5825,7 +5825,7 @@ ex_pclose(exarg_T *eap)
 	}
 # ifdef FEAT_TEXT_PROP
     // Also when 'previewpopup' is empty, it might have been cleared.
-    popup_close_preview();
+    popup_close_preview(FALSE);
 # endif
 }
 #endif
@@ -8614,7 +8614,7 @@ ex_pedit(exarg_T *eap)
 
     // Open the preview window or popup and make it the current window.
     g_do_tagpreview = p_pvh;
-    prepare_tagpreview(TRUE);
+    prepare_tagpreview(TRUE, TRUE, FALSE);
 
     // Edit the file.
     do_exedit(eap, NULL);
