@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.1.  Last change: 2019 Aug 06
+*cmdline.txt*   For Vim version 8.1.  Last change: 2019 Aug 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -380,10 +380,8 @@ word before the cursor.  This is available for:
 - Mappings: Only after a ":map" or similar command.
 - Variable and function names: Only after a ":if", ":call" or similar command.
 
-When Vim was compiled without the |+cmdline_compl| feature only file names,
-directories and help items can be completed.  The number of help item matches
-is limited (currently to 300) to avoid a long delay when there are very many
-matches.
+The number of help item matches is limited (currently to 300) to avoid a long
+delay when there are very many matches.
 
 These are the commands that can be used:
 

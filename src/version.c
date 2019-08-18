@@ -158,11 +158,7 @@ static char *(features[]) =
 #else
 	"-clipboard",
 #endif
-#ifdef FEAT_CMDL_COMPL
 	"+cmdline_compl",
-#else
-	"-cmdline_compl",
-#endif
 	"+cmdline_hist",
 #ifdef FEAT_CMDL_INFO
 	"+cmdline_info",
@@ -769,6 +765,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1887,
 /**/
     1886,
 /**/

@@ -1108,9 +1108,7 @@ free_all_mem(void)
     free_all_marks();
     alist_clear(&global_alist);
     free_homedir();
-# if defined(FEAT_CMDL_COMPL)
     free_users();
-# endif
     free_search_patterns();
     free_old_sub();
     free_last_insert();
@@ -3041,7 +3039,6 @@ get_special_key_code(char_u *name)
     return 0;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     char_u *
 get_key_name(int i)
 {
@@ -3049,7 +3046,6 @@ get_key_name(int i)
 	return NULL;
     return  key_names_table[i].name;
 }
-#endif
 
 #if defined(FEAT_MOUSE) || defined(PROTO)
 /*

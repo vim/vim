@@ -18,17 +18,14 @@ static int	cmd_showtail;	// Only show path tail in lists ?
 static void	set_expand_context(expand_T *xp);
 static int	ExpandFromContext(expand_T *xp, char_u *, int *, char_u ***, int);
 static int	expand_showtail(expand_T *xp);
-#ifdef FEAT_CMDL_COMPL
 static int	expand_shellcmd(char_u *filepat, int *num_file, char_u ***file, int flagsarg);
 static int	ExpandRTDir(char_u *pat, int flags, int *num_file, char_u ***file, char *dirname[]);
 static int	ExpandPackAddDir(char_u *pat, int *num_file, char_u ***file);
-# if defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 static int	ExpandUserDefined(expand_T *xp, regmatch_T *regmatch, int *num_file, char_u ***file);
 static int	ExpandUserList(expand_T *xp, int *num_file, char_u ***file);
-# endif
 #endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     static int
 sort_func_compare(const void *s1, const void *s2)
 {
@@ -39,7 +36,6 @@ sort_func_compare(const void *s1, const void *s2)
     if (*p1 == '<' && *p2 != '<') return 1;
     return STRCMP(p1, p2);
 }
-#endif
 
     static void
 ExpandEscape(
@@ -504,7 +500,7 @@ ExpandInit(expand_T *xp)
 #endif
     xp->xp_numfiles = -1;
     xp->xp_files = NULL;
-#if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+#if defined(FEAT_EVAL)
     xp->xp_arg = NULL;
 #endif
     xp->xp_line = NULL;
@@ -985,18 +981,14 @@ set_cmd_context(
 #ifdef FEAT_EVAL
     if (use_ccline && ccline->cmdfirstc == '=')
     {
-# ifdef FEAT_CMDL_COMPL
 	// pass CMD_SIZE because there is no real command
 	set_context_for_expression(xp, str, CMD_SIZE);
-# endif
     }
     else if (use_ccline && ccline->input_fn)
     {
 	xp->xp_context = ccline->xp_context;
 	xp->xp_pattern = ccline->cmdbuff;
-# if defined(FEAT_CMDL_COMPL)
 	xp->xp_arg = ccline->xp_arg;
-# endif
     }
     else
 #endif
@@ -1131,9 +1123,7 @@ ExpandFromContext(
     char_u	***file,
     int		options)  // WILD_ flags
 {
-#ifdef FEAT_CMDL_COMPL
     regmatch_T	regmatch;
-#endif
     int		ret;
     int		flags;
 
@@ -1230,9 +1220,6 @@ ExpandFromContext(
 	return FAIL;
     }
 
-#ifndef FEAT_CMDL_COMPL
-    return FAIL;
-#else
     if (xp->xp_context == EXPAND_SHELLCMD)
 	return expand_shellcmd(pat, num_file, file, flags);
     if (xp->xp_context == EXPAND_OLD_SETTING)
@@ -1361,10 +1348,8 @@ ExpandFromContext(
     vim_regfree(regmatch.regprog);
 
     return ret;
-#endif // FEAT_CMDL_COMPL
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Expand a list of names.
  *
@@ -1452,11 +1437,11 @@ ExpandGeneric(
 	    sort_strings(*file, *num_file);
     }
 
-# ifdef FEAT_CMDL_COMPL
+#if defined(FEAT_SYN_HL)
     // Reset the variables used for special highlight names expansion, so that
     // they don't show up when getting normal highlight names by ID.
     reset_expand_highlight();
-# endif
+#endif
 
     return OK;
 }
@@ -1890,9 +1875,7 @@ ExpandPackAddDir(
     *num_file = ga.ga_len;
     return OK;
 }
-#endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Expand "file" for all comma-separated directories in "path".
  * Adds the matches to "ga".  Caller must init "ga".
@@ -1955,9 +1938,8 @@ globpath(
 
     vim_free(buf);
 }
-#endif
 
-#if defined(FEAT_CMDL_COMPL) | defined(PROTO)
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * "getcompletion()" function
  */
@@ -2028,4 +2010,4 @@ f_getcompletion(typval_T *argvars, typval_T *rettv)
     vim_free(pat);
     ExpandCleanup(&xpc);
 }
-#endif // FEAT_CMDL_COMPL
+#endif // FEAT_EVAL

@@ -2567,8 +2567,6 @@ buflist_findpat(
     return match;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
 /*
  * Find all buffer names that match.
  * For command line expansion of ":buf" and ":sbuf".
@@ -2672,8 +2670,6 @@ ExpandBufnames(
     *num_file = count;
     return (count == 0 ? FAIL : OK);
 }
-
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * Check for a match on the file name for buffer "buf" with regprog "prog".

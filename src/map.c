@@ -982,7 +982,6 @@ map_to_exists_mode(char_u *rhs, int mode, int abbr)
     return FALSE;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Used below when expanding mapping/abbreviation names.
  */
@@ -1198,7 +1197,6 @@ ExpandMappings(
     *num_file = count;
     return (count == 0 ? FAIL : OK);
 }
-#endif // FEAT_CMDL_COMPL
 
 /*
  * Check for an abbreviation.

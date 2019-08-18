@@ -1878,7 +1878,6 @@ free_signs(void)
 	sign_undefine(first_sign, NULL);
 }
 
-# if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 static enum
 {
     EXP_SUBCMD,		// expand :sign sub-commands
@@ -2107,7 +2106,6 @@ set_context_in_sign_cmd(expand_T *xp, char_u *arg)
 	}
     }
 }
-# endif
 
 /*
  * Define a sign using the attributes in 'dict'. Returns 0 on success and -1 on

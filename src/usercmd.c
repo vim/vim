@@ -23,9 +23,7 @@ typedef struct ucmd
     cmd_addr_T	uc_addr_type;	// The command's address type
 # ifdef FEAT_EVAL
     sctx_T	uc_script_ctx;	// SCTX where the command was defined
-#  ifdef FEAT_CMDL_COMPL
     char_u	*uc_compl_arg;	// completion argument if any
-#  endif
 # endif
 } ucmd_T;
 
@@ -55,7 +53,7 @@ static struct
 #if defined(FEAT_CSCOPE)
     {EXPAND_CSCOPE, "cscope"},
 #endif
-#if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+#if defined(FEAT_EVAL)
     {EXPAND_USER_DEFINED, "custom"},
     {EXPAND_USER_LIST, "customlist"},
 #endif
@@ -185,17 +183,15 @@ find_ucmd(
 		    eap->useridx = j;
 		    eap->addr_type = uc->uc_addr_type;
 
-# ifdef FEAT_CMDL_COMPL
 		    if (complp != NULL)
 			*complp = uc->uc_compl;
-#  ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 		    if (xp != NULL)
 		    {
 			xp->xp_arg = uc->uc_compl_arg;
 			xp->xp_script_ctx = uc->uc_script_ctx;
 			xp->xp_script_ctx.sc_lnum += sourcing_lnum;
 		    }
-#  endif
 # endif
 		    // Do not search for further abbreviations
 		    // if this is an exact match.
@@ -231,8 +227,6 @@ find_ucmd(
 	return p + (matchlen - len);
     return p;
 }
-
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 
     char_u *
 set_context_in_user_cmd(expand_T *xp, char_u *arg_in)
@@ -383,8 +377,6 @@ cmdcomplete_str_to_type(char_u *complete_str)
 
     return EXPAND_NOTHING;
 }
-
-#endif // FEAT_CMDL_COMPL
 
 /*
  * List user commands starting with "name[name_len]".
@@ -622,7 +614,7 @@ parse_compl_arg(
     char_u	**compl_arg UNUSED)
 {
     char_u	*arg = NULL;
-# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+# if defined(FEAT_EVAL)
     size_t	arglen = 0;
 # endif
     int		i;
@@ -634,7 +626,7 @@ parse_compl_arg(
 	if (value[i] == ',')
 	{
 	    arg = &value[i + 1];
-# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+# if defined(FEAT_EVAL)
 	    arglen = vallen - i - 1;
 # endif
 	    valend = i;
@@ -663,7 +655,7 @@ parse_compl_arg(
 	return FAIL;
     }
 
-# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+# if defined(FEAT_EVAL)
     if (*complp != EXPAND_USER_DEFINED && *complp != EXPAND_USER_LIST
 							       && arg != NULL)
 # else
@@ -674,7 +666,7 @@ parse_compl_arg(
 	return FAIL;
     }
 
-# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+# if defined(FEAT_EVAL)
     if ((*complp == EXPAND_USER_DEFINED || *complp == EXPAND_USER_LIST)
 							       && arg == NULL)
     {
@@ -930,7 +922,7 @@ uc_add_command(
 	    }
 
 	    VIM_CLEAR(cmd->uc_rep);
-#if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+#if defined(FEAT_EVAL)
 	    VIM_CLEAR(cmd->uc_compl_arg);
 #endif
 	    break;
@@ -964,9 +956,7 @@ uc_add_command(
 #ifdef FEAT_EVAL
     cmd->uc_script_ctx = current_sctx;
     cmd->uc_script_ctx.sc_lnum += sourcing_lnum;
-# ifdef FEAT_CMDL_COMPL
     cmd->uc_compl_arg = compl_arg;
-# endif
 #endif
     cmd->uc_addr_type = addr_type;
 
@@ -974,7 +964,7 @@ uc_add_command(
 
 fail:
     vim_free(rep_buf);
-#if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+#if defined(FEAT_EVAL)
     vim_free(compl_arg);
 #endif
     return FAIL;
@@ -1074,7 +1064,7 @@ uc_clear(garray_T *gap)
 	cmd = USER_CMD_GA(gap, i);
 	vim_free(cmd->uc_name);
 	vim_free(cmd->uc_rep);
-# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+# if defined(FEAT_EVAL)
 	vim_free(cmd->uc_compl_arg);
 # endif
     }
@@ -1115,7 +1105,7 @@ ex_delcommand(exarg_T *eap)
 
     vim_free(cmd->uc_name);
     vim_free(cmd->uc_rep);
-# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+# if defined(FEAT_EVAL)
     vim_free(cmd->uc_compl_arg);
 # endif
 

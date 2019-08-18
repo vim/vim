@@ -4299,7 +4299,6 @@ find_termcode(char_u *name)
     return NULL;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     char_u *
 get_termcode(int i)
 {
@@ -4307,7 +4306,6 @@ get_termcode(int i)
 	return NULL;
     return &termcodes[i].name[0];
 }
-#endif
 
     void
 del_termcode(char_u *name)
@@ -6700,7 +6698,6 @@ check_for_codes_from_term(void)
 }
 #endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Translate an internal mapping/abbreviation representation into the
  * corresponding external one recognized by :map/:abbrev commands.
@@ -6775,7 +6772,6 @@ translate_mapping(char_u *str)
     ga_append(&ga, NUL);
     return (char_u *)(ga.ga_data);
 }
-#endif
 
 #if (defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))) || defined(PROTO)
 static char ksme_str[20];

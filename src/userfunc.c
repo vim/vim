@@ -2793,8 +2793,6 @@ get_expanded_name(char_u *name, int check)
 }
 #endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
 /*
  * Function given to ExpandGeneric() to obtain the list of user defined
  * function names.
@@ -2837,8 +2835,6 @@ get_user_func_name(expand_T *xp, int idx)
     }
     return NULL;
 }
-
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * ":delfunction {name}"

@@ -3859,7 +3859,6 @@ tagstack_clear_entry(taggy_T *item)
     VIM_CLEAR(item->user_data);
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     int
 expand_tags(
     int		tagnames,	/* expand tag names */
@@ -3907,7 +3906,6 @@ expand_tags(
     }
     return ret;
 }
-#endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*

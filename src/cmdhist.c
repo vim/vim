@@ -88,7 +88,6 @@ static char *(history_names[]) =
     NULL
 };
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Function given to ExpandGeneric() to obtain the possible first
  * arguments of the ":history command.
@@ -112,7 +111,6 @@ get_history_arg(expand_T *xp UNUSED, int idx)
 	return (char_u *)"all";
     return NULL;
 }
-#endif
 
 /*
  * init_history() - Initialize the command line history.

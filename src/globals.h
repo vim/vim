@@ -356,12 +356,10 @@ EXTERN char_u	hash_removed;
 EXTERN int	scroll_region INIT(= FALSE); // term supports scroll region
 EXTERN int	t_colors INIT(= 0);	    // int value of T_CCO
 
-#ifdef FEAT_CMDL_COMPL
 // Flags to indicate an additional string for highlight name completion.
 EXTERN int include_none INIT(= 0);	// when 1 include "None"
 EXTERN int include_default INIT(= 0);	// when 1 include "default"
 EXTERN int include_link INIT(= 0);	// when 2 include "link" and "clear"
-#endif
 
 /*
  * When highlight_match is TRUE, highlight a match, starting at the cursor

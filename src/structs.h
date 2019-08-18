@@ -555,7 +555,7 @@ typedef struct expand
     int		xp_context;		// type of expansion
     char_u	*xp_pattern;		// start of item to expand
     int		xp_pattern_len;		// bytes in xp_pattern before cursor
-#if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+#if defined(FEAT_EVAL)
     char_u	*xp_arg;		// completion function
     sctx_T	xp_script_ctx;		// SCTX for completion function
 #endif

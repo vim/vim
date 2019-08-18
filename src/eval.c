@@ -420,9 +420,7 @@ eval_clear(void)
     hash_clear(&compat_hashtab);
 
     free_scriptnames();
-# if defined(FEAT_CMDL_COMPL)
     free_locales();
-# endif
 
     /* global variables */
     vars_clear(&globvarht);
@@ -1135,10 +1133,6 @@ call_func_retnr(
     return retval;
 }
 
-#if defined(FEAT_CMDL_COMPL) \
-	|| defined(FEAT_COMPL_FUNC) || defined(PROTO)
-
-# if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Call Vim script function "func" and return the result as a string.
  * Returns NULL when calling the function fails.
@@ -1161,7 +1155,6 @@ call_func_retstr(
     clear_tv(&rettv);
     return retval;
 }
-# endif
 
 /*
  * Call Vim script function "func" and return the result as a List.
@@ -1188,7 +1181,6 @@ call_func_retlist(
 
     return rettv.vval.v_list;
 }
-#endif
 
 
 #ifdef FEAT_FOLDING
@@ -2994,8 +2986,6 @@ free_for_info(void *fi_void)
     vim_free(fi);
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
     void
 set_context_for_expression(
     expand_T	*xp,
@@ -3109,8 +3099,6 @@ set_context_for_expression(
     }
     xp->xp_pattern = arg;
 }
-
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * ":unlet[!] var1 ... " command.
@@ -3509,8 +3497,6 @@ del_menutrans_vars(void)
 }
 #endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
 /*
  * Local string buffer for the next two functions to store a variable name
  * with its prefix. Allocated in cat_prefix_varname(), freed later in
@@ -3629,8 +3615,6 @@ get_user_var_name(expand_T *xp, int idx)
     varnamebuflen = 0;
     return NULL;
 }
-
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * Return TRUE if "pat" matches "text".

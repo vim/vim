@@ -573,9 +573,7 @@ static funcentry_T global_functions[] =
     {"getcmdpos",	0, 0, 0,	  f_getcmdpos},
     {"getcmdtype",	0, 0, 0,	  f_getcmdtype},
     {"getcmdwintype",	0, 0, 0,	  f_getcmdwintype},
-#if defined(FEAT_CMDL_COMPL)
     {"getcompletion",	2, 3, 0,	  f_getcompletion},
-#endif
     {"getcurpos",	0, 0, 0,	  f_getcurpos},
     {"getcwd",		0, 2, 0,	  f_getcwd},
     {"getenv",		1, 1, 0,	  f_getenv},
@@ -981,8 +979,6 @@ static funcentry_T global_functions[] =
     {"xor",		2, 2, 0,	  f_xor},
 };
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
 /*
  * Function given to ExpandGeneric() to obtain the list of internal
  * or user defined function names.
@@ -1033,8 +1029,6 @@ get_expr_name(expand_T *xp, int idx)
     }
     return get_user_var_name(xp, ++intidx);
 }
-
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * Find internal function "name" in table "global_functions".
@@ -5845,9 +5839,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_CLIPBOARD
 	"clipboard",
 #endif
-#ifdef FEAT_CMDL_COMPL
 	"cmdline_compl",
-#endif
 	"cmdline_hist",
 #ifdef FEAT_COMMENTS
 	"comments",

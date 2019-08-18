@@ -3045,13 +3045,8 @@ static struct vimoption options[] =
 			    (char_u *)&p_wim, PV_NONE,
 			    {(char_u *)"full", (char_u *)0L} SCTX_INIT},
     {"wildoptions", "wop",  P_STRING|P_VI_DEF,
-#ifdef FEAT_CMDL_COMPL
 			    (char_u *)&p_wop, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)NULL, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"winaltkeys",  "wak",  P_STRING|P_VI_DEF,
 #ifdef FEAT_WAK
@@ -3228,9 +3223,7 @@ static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
 #ifdef FEAT_CRYPT
 static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2", NULL};
 #endif
-#ifdef FEAT_CMDL_COMPL
 static char *(p_wop_values[]) = {"tagfile", NULL};
-#endif
 #ifdef FEAT_WAK
 static char *(p_wak_values[]) = {"yes", "menu", "no", NULL};
 #endif
@@ -6510,14 +6503,12 @@ did_set_string_option(
 	    errmsg = e_invarg;
     }
 
-#ifdef FEAT_CMDL_COMPL
     /* 'wildoptions' */
     else if (varp == &p_wop)
     {
 	if (check_opt_strings(p_wop, p_wop_values, TRUE) != OK)
 	    errmsg = e_invarg;
     }
-#endif
 
 #ifdef FEAT_WAK
     /* 'winaltkeys' */
@@ -11846,7 +11837,6 @@ set_imsearch_global(void)
     p_imsearch = curbuf->b_p_imsearch;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 static int expand_option_idx = -1;
 static char_u expand_option_name[5] = {'t', '_', NUL, NUL, NUL};
 static int expand_option_flags = 0;
@@ -12276,7 +12266,6 @@ ExpandOldSetting(int *num_file, char_u ***file)
     *num_file = 1;
     return OK;
 }
-#endif
 
 /*
  * Get the value for the numeric or string option *opp in a nice format into

@@ -894,9 +894,7 @@ getcmdline_int(
     {
 	xpc.xp_context = ccline.xp_context;
 	xpc.xp_pattern = ccline.cmdbuff;
-# if defined(FEAT_CMDL_COMPL)
 	xpc.xp_arg = ccline.xp_arg;
-# endif
     }
 #endif
 

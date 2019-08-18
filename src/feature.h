@@ -105,6 +105,7 @@
  * +virtualedit		'virtualedit' option and its implementation
  * +user_commands	Allow the user to define his own commands.
  * +multi_byte		Generic multi-byte character handling.
+ * +cmdline_compl	completion of mappings/abbreviations in cmdline mode.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -175,14 +176,6 @@
  */
 #ifdef FEAT_NORMAL
 # define FEAT_INS_EXPAND
-#endif
-
-/*
- * +cmdline_compl	completion of mappings/abbreviations in cmdline mode.
- *			Takes a few Kbyte of code.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_CMDL_COMPL
 #endif
 
 #ifdef FEAT_NORMAL
