@@ -638,6 +638,7 @@ pum_set_selected(int n, int repeat)
 {
     int	    resized = FALSE;
     int	    context = pum_height / 2;
+    int	    prev_selected = pum_selected;
 #ifdef FEAT_TEXT_PROP
     int	    has_info = FALSE;
 #endif
@@ -826,7 +827,16 @@ pum_set_selected(int n, int repeat)
 
 		    curbuf->b_changed = 0;
 		    curbuf->b_p_ma = FALSE;
-		    curwin->w_cursor.lnum = 1;
+		    if (pum_selected != prev_selected)
+		    {
+# ifdef FEAT_TEXT_PROP
+			curwin->w_firstline = 1;
+# endif
+			curwin->w_topline = 1;
+		    }
+		    else if (curwin->w_topline > curbuf->b_ml.ml_line_count)
+			curwin->w_topline = curbuf->b_ml.ml_line_count;
+		    curwin->w_cursor.lnum = curwin->w_topline;
 		    curwin->w_cursor.col = 0;
 		    if (use_popup && win_valid(curwin_save))
 			redraw_win_later(curwin_save, SOME_VALID);
