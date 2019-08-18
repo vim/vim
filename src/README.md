@@ -29,6 +29,7 @@ blob.c		| blob data type
 buffer.c	| manipulating buffers (loaded files)
 change.c	| handling changes to text
 cmdhist.c	| command-line history
+cmdlexpand.c	| command-line completion
 debugger.c	| vim script debugger
 diff.c		| diff mode (vimdiff)
 eval.c		| expression evaluation

@@ -712,6 +712,7 @@ OBJ = \
 	$(OUTDIR)/change.o \
 	$(OUTDIR)/charset.o \
 	$(OUTDIR)/cmdhist.o \
+	$(OUTDIR)/cmdlexpand.o \
 	$(OUTDIR)/crypt.o \
 	$(OUTDIR)/crypt_zip.o \
 	$(OUTDIR)/debugger.o \

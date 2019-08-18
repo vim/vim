@@ -721,6 +721,7 @@ OBJ = \
 	$(OUTDIR)\change.obj \
 	$(OUTDIR)\charset.obj \
 	$(OUTDIR)\cmdhist.obj \
+	$(OUTDIR)\cmdlexpand.obj \
 	$(OUTDIR)\crypt.obj \
 	$(OUTDIR)\crypt_zip.obj \
 	$(OUTDIR)\debugger.obj \
@@ -1452,6 +1453,8 @@ $(OUTDIR)/charset.obj:	$(OUTDIR) charset.c  $(INCL)
 
 $(OUTDIR)/cmdhist.obj:	$(OUTDIR) cmdhist.c  $(INCL)
 
+$(OUTDIR)/cmdlexpand.obj:	$(OUTDIR) cmdlexpand.c  $(INCL)
+
 $(OUTDIR)/crypt.obj:	$(OUTDIR) crypt.c  $(INCL)
 
 $(OUTDIR)/crypt_zip.obj: $(OUTDIR) crypt_zip.c  $(INCL)
@@ -1755,6 +1758,7 @@ proto.h: \
 	proto/change.pro \
 	proto/charset.pro \
 	proto/cmdhist.pro \
+	proto/cmdlexpand.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
 	proto/debugger.pro \
