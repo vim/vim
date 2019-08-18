@@ -758,9 +758,8 @@ func Test_popup_and_previewwindow_dump()
 endfunc
 
 func Test_balloon_split()
-  if !exists('*balloon_split')
-    return
-  endif
+  CheckFunction balloon_split
+
   call assert_equal([
         \ 'tempname: 0x555555e380a0 "/home/mool/.viminfz.tmp"',
         \ ], balloon_split(
@@ -771,13 +770,14 @@ func Test_balloon_split()
         \ ], balloon_split(
         \ 'one two three four one two three four one two three four'))
 
-  call assert_equal([
-        \ 'struct = {',
-        \ '  one = 1,',
-        \ '  two = 2,',
-        \ '  three = 3}',
-        \ ], balloon_split(
-        \ 'struct = {one = 1, two = 2, three = 3}'))
+  eval 'struct = {one = 1, two = 2, three = 3}'
+        \ ->balloon_split()
+        \ ->assert_equal([
+        \   'struct = {',
+        \   '  one = 1,',
+        \   '  two = 2,',
+        \   '  three = 3}',
+        \ ])
 
   call assert_equal([
         \ 'struct = {',

@@ -419,7 +419,7 @@ static funcentry_T global_functions[] =
     {"acos",		1, 1, FEARG_1,	  f_acos},	// WJMc
 #endif
     {"add",		2, 2, FEARG_1,	  f_add},
-    {"and",		2, 2, 0,	  f_and},
+    {"and",		2, 2, FEARG_1,	  f_and},
     {"append",		2, 2, FEARG_LAST, f_append},
     {"appendbufline",	3, 3, FEARG_LAST, f_appendbufline},
     {"argc",		0, 1, 0,	  f_argc},
@@ -447,23 +447,23 @@ static funcentry_T global_functions[] =
 #endif
 #ifdef FEAT_BEVAL
     {"balloon_gettext",	0, 0, 0,	  f_balloon_gettext},
-    {"balloon_show",	1, 1, 0,	  f_balloon_show},
+    {"balloon_show",	1, 1, FEARG_1,	  f_balloon_show},
 # if defined(FEAT_BEVAL_TERM)
-    {"balloon_split",	1, 1, 0,	  f_balloon_split},
+    {"balloon_split",	1, 1, FEARG_1,	  f_balloon_split},
 # endif
 #endif
     {"browse",		4, 4, 0,	  f_browse},
     {"browsedir",	2, 2, 0,	  f_browsedir},
-    {"bufadd",		1, 1, 0,	  f_bufadd},
-    {"bufexists",	1, 1, 0,	  f_bufexists},
-    {"buffer_exists",	1, 1, 0,	  f_bufexists},	// obsolete
+    {"bufadd",		1, 1, FEARG_1,	  f_bufadd},
+    {"bufexists",	1, 1, FEARG_1,	  f_bufexists},
+    {"buffer_exists",	1, 1, FEARG_1,	  f_bufexists},	// obsolete
     {"buffer_name",	1, 1, 0,	  f_bufname},	// obsolete
     {"buffer_number",	1, 1, 0,	  f_bufnr},	// obsolete
-    {"buflisted",	1, 1, 0,	  f_buflisted},
-    {"bufload",		1, 1, 0,	  f_bufload},
-    {"bufloaded",	1, 1, 0,	  f_bufloaded},
-    {"bufname",		1, 1, 0,	  f_bufname},
-    {"bufnr",		1, 2, 0,	  f_bufnr},
+    {"buflisted",	1, 1, FEARG_1,	  f_buflisted},
+    {"bufload",		1, 1, FEARG_1,	  f_bufload},
+    {"bufloaded",	1, 1, FEARG_1,	  f_bufloaded},
+    {"bufname",		1, 1, FEARG_1,	  f_bufname},
+    {"bufnr",		1, 2, FEARG_1,	  f_bufnr},
     {"bufwinid",	1, 1, 0,	  f_bufwinid},
     {"bufwinnr",	1, 1, 0,	  f_bufwinnr},
     {"byte2line",	1, 1, 0,	  f_byte2line},
@@ -626,7 +626,7 @@ static funcentry_T global_functions[] =
     {"inputsave",	0, 0, 0,	  f_inputsave},
     {"inputsecret",	1, 2, 0,	  f_inputsecret},
     {"insert",		2, 3, FEARG_1,	  f_insert},
-    {"invert",		1, 1, 0,	  f_invert},
+    {"invert",		1, 1, FEARG_1,	  f_invert},
     {"isdirectory",	1, 1, 0,	  f_isdirectory},
 #if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
     {"isinf",		1, 1, FEARG_1,	  f_isinf},
@@ -690,7 +690,7 @@ static funcentry_T global_functions[] =
 #endif
     {"nextnonblank",	1, 1, 0,	  f_nextnonblank},
     {"nr2char",		1, 2, 0,	  f_nr2char},
-    {"or",		2, 2, 0,	  f_or},
+    {"or",		2, 2, FEARG_1,	  f_or},
     {"pathshorten",	1, 1, 0,	  f_pathshorten},
 #ifdef FEAT_PERL
     {"perleval",	1, 1, 0,	  f_perleval},
@@ -976,7 +976,7 @@ static funcentry_T global_functions[] =
     {"winwidth",	1, 1, 0,	  f_winwidth},
     {"wordcount",	0, 0, 0,	  f_wordcount},
     {"writefile",	2, 3, 0,	  f_writefile},
-    {"xor",		2, 2, 0,	  f_xor},
+    {"xor",		2, 2, FEARG_1,	  f_xor},
 };
 
 /*

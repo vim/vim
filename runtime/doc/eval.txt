@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Aug 17
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Aug 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2937,6 +2937,8 @@ and({expr}, {expr})					*and()*
 		to a number.  A List, Dict or Float argument causes an error.
 		Example: >
 			:let flag = and(bits, 0x80)
+<		Can also be used as a |method|: >
+			:let flag = bits->and(0x80)
 
 
 append({lnum}, {text})					*append()*
@@ -3088,6 +3090,8 @@ balloon_show({expr})					*balloon_show()*
 			func BalloonCallback(result)
 			  call balloon_show(a:result)
 			endfunc
+<		Can also be used as a |method|: >
+			GetText()->balloon_show()
 <
 		The intended use is that fetching the content of the balloon
 		is initiated from 'balloonexpr'.  It will invoke an
@@ -3105,7 +3109,10 @@ balloon_split({msg})					*balloon_split()*
 		splits are made for the current window size and optimize to
 		show debugger output.
 		Returns a |List| with the split lines.
-		{only available when compiled with the |+balloon_eval_term|
+		Can also be used as a |method|: >
+			GetText()->balloon_split()->balloon_show()
+
+<		{only available when compiled with the |+balloon_eval_term|
 		feature}
 
 							*browse()*
@@ -3117,8 +3124,8 @@ browse({save}, {title}, {initdir}, {default})
 		    {title}	title for the requester
 		    {initdir}	directory to start browsing in
 		    {default}	default file name
-		When the "Cancel" button is hit, something went wrong, or
-		browsing is not possible, an empty string is returned.
+		An empty string is returned when the "Cancel" button is hit,
+		something went wrong, or browsing is not possible.
 
 							*browsedir()*
 browsedir({title}, {initdir})
@@ -3144,6 +3151,8 @@ bufadd({name})						*bufadd()*
 			let bufnr = bufadd('someName')
 			call bufload(bufnr)
 			call setbufline(bufnr, 1, ['some', 'text'])
+<		Can also be used as a |method|: >
+			let bufnr = 'somename'->bufadd()
 
 bufexists({expr})					*bufexists()*
 		The result is a Number, which is |TRUE| if a buffer called
@@ -3166,13 +3175,19 @@ bufexists({expr})					*bufexists()*
 		for MS-Windows 8.3 names in the form "c:\DOCUME~1"
 		Use "bufexists(0)" to test for the existence of an alternate
 		file name.
-							*buffer_exists()*
-		Obsolete name: buffer_exists().
+
+		Can also be used as a |method|: >
+			let exists = 'somename'->bufexists()
+<
+		Obsolete name: buffer_exists().		*buffer_exists()*
 
 buflisted({expr})					*buflisted()*
 		The result is a Number, which is |TRUE| if a buffer called
 		{expr} exists and is listed (has the 'buflisted' option set).
 		The {expr} argument is used like with |bufexists()|.
+
+		Can also be used as a |method|: >
+			let listed = 'somename'->buflisted()
 
 bufload({expr})						*bufload()*
 		Ensure the buffer {expr} is loaded.  When the buffer name
@@ -3183,10 +3198,16 @@ bufload({expr})						*bufload()*
 		there will be no dialog, the buffer will be loaded anyway.
 		The {expr} argument is used like with |bufexists()|.
 
+		Can also be used as a |method|: >
+			eval 'somename'->bufload()
+
 bufloaded({expr})					*bufloaded()*
 		The result is a Number, which is |TRUE| if a buffer called
 		{expr} exists and is loaded (shown in a window or hidden).
 		The {expr} argument is used like with |bufexists()|.
+
+		Can also be used as a |method|: >
+			let loaded = 'somename'->bufloaded()
 
 bufname({expr})						*bufname()*
 		The result is the name of a buffer, as it is displayed by the
@@ -3209,6 +3230,9 @@ bufname({expr})						*bufname()*
 		If the {expr} is a String, but you want to use it as a buffer
 		number, force it to be a Number by adding zero to it: >
 			:echo bufname("3" + 0)
+<		Can also be used as a |method|: >
+			echo bufnr->bufname()
+
 <		If the buffer doesn't exist, or doesn't have a name, an empty
 		string is returned. >
 	bufname("#")		alternate buffer name
@@ -3232,8 +3256,11 @@ bufnr({expr} [, {create}])
 		of existing buffers.  Note that not all buffers with a smaller
 		number necessarily exist, because ":bwipeout" may have removed
 		them.  Use bufexists() to test for the existence of a buffer.
-							*buffer_number()*
-		Obsolete name: buffer_number().
+
+		Can also be used as a |method|: >
+			echo bufref->bufnr()
+<
+		Obsolete name: buffer_number().		*buffer_number()*
 							*last_buffer_nr()*
 		Obsolete name for bufnr("$"): last_buffer_nr().
 
@@ -5834,6 +5861,8 @@ invert({expr})						*invert()*
 		Bitwise invert.  The argument is converted to a number.  A
 		List, Dict or Float argument causes an error.  Example: >
 			:let bits = invert(bits)
+<		Can also be used as a |method|: >
+			:let bits = bits->invert()
 
 isdirectory({directory})				*isdirectory()*
 		The result is a Number, which is |TRUE| when a directory
@@ -6762,11 +6791,14 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 		    let str = join(map(list, {_, val -> nr2char(val)}), '')
 <		Result: "ABC"
 
+
 or({expr}, {expr})					*or()*
 		Bitwise OR on the two arguments.  The arguments are converted
 		to a number.  A List, Dict or Float argument causes an error.
 		Example: >
 			:let bits = or(bits, 0x80)
+<		Can also be used as a |method|: >
+			:let bits = bits->or(0x80)
 
 
 pathshorten({expr})					*pathshorten()*
@@ -9689,6 +9721,8 @@ xor({expr}, {expr})					*xor()*
 		to a number.  A List, Dict or Float argument causes an error.
 		Example: >
 			:let bits = xor(bits, 0x80)
+<		Can also be used as a |method|: >
+			:let bits = bits->xor(0x80)
 <
 
 
