@@ -893,6 +893,15 @@ static struct vimoption options[] =
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCTX_INIT},
+    {"completepopup", "cpp", P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
+#ifdef FEAT_TEXT_PROP
+			    (char_u *)&p_cpp, PV_NONE,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"completeslash",   "csl",  P_STRING|P_VI_DEF|P_VIM,
 #if defined(FEAT_INS_EXPAND) && defined(BACKSLASH_IN_FILENAME)
 			    (char_u *)&p_csl, PV_CSL,
@@ -7824,6 +7833,12 @@ did_set_string_option(
     else if (varp == &p_pvp)
     {
 	if (parse_previewpopup(NULL) == FAIL)
+	    errmsg = e_invarg;
+    }
+    // 'completepopup'
+    else if (varp == &p_cpp)
+    {
+	if (parse_completepopup(NULL) == FAIL)
 	    errmsg = e_invarg;
     }
 #endif

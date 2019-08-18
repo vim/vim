@@ -2199,6 +2199,8 @@ func Test_popupmenu_info()
   let lines =<< trim END
       set completeopt+=preview,popup
       set completefunc=CompleteFuncDict
+      hi InfoPopup ctermbg=yellow
+      set completepopup=height:4,highlight:InfoPopup
 
       func CompleteFuncDict(findstart, base)
 	if a:findstart
@@ -2230,7 +2232,7 @@ func Test_popupmenu_info()
 		    \ 'word': 'noinfo',
 		    \ 'abbr': 'noawrd',
 		    \ 'menu': 'extra text',
-		    \ 'info': 'no words here',
+		    \ 'info': "lets\nshow\na\nscrollbar\nhere",
 		    \ 'kind': 'W',
 		    \ 'user_data': 'notest'
 		  \ },

@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.1.  Last change: 2019 May 07
+*insert.txt*    For Vim version 8.1.  Last change: 2019 Aug 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1092,7 +1092,7 @@ items:
 	menu		extra text for the popup menu, displayed after "word"
 			or "abbr"
 	info		more information about the item, can be displayed in a
-			preview window
+			preview or popup window
 	kind		single letter indicating the type of completion
 	icase		when non-zero case is to be ignored when comparing
 			items to be equal; when omitted zero is used, thus
@@ -1114,11 +1114,22 @@ items in the returned list.
 
 The "menu" item is used in the popup menu and may be truncated, thus it should
 be relatively short.  The "info" item can be longer, it will  be displayed in
-the preview window when "preview" appears in 'completeopt'.  The "info" item
-will also remain displayed after the popup menu has been removed.  This is
-useful for function arguments.  Use a single space for "info" to remove
-existing text in the preview window.  The size of the preview window is three
-lines, but 'previewheight' is used when it has a value of 1 or 2.
+the preview window when "preview" appears in 'completeopt' or in a popup
+window when "popup" appears in 'completeopt'.  In the preview window the
+"info" item will also remain displayed after the popup menu has been removed.
+This is useful for function arguments.  Use a single space for "info" to
+remove existing text in the preview window.  The size of the preview window is
+three lines, but 'previewheight' is used when it has a value of 1 or 2.
+
+						*complete-popup*
+When "popup" is in 'completeopt' a popup window is used to display the "info".
+Then the 'completepopup' option specifies the properties of the popup.  The
+option is a comma separated list of values:
+	height		maximum height of the popup
+	width		maximum width of the popup
+	highlight	highlight group of the popup (default is Pmenu)
+Example: >
+	:set completepopup=height:10,width:60,highlight:InfoPopup
 
 The "kind" item uses a single letter to indicate the kind of completion.  This
 may be used to show the completion differently (different color or icon).

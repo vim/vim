@@ -503,6 +503,7 @@ EXTERN int	p_fs;		// 'fsync'
 #endif
 EXTERN int	p_gd;		// 'gdefault'
 #ifdef FEAT_TEXT_PROP
+EXTERN char_u	*p_cpp;		// 'completepopup'
 EXTERN char_u	*p_pvp;		// 'previewpopup'
 #endif
 #ifdef FEAT_PRINTER

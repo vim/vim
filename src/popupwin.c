@@ -550,8 +550,7 @@ popup_highlight_curline(win_T *wp)
 
 	    if (syn_name2id((char_u *)linehl) == 0)
 		linehl = "PmenuSel";
-	    sign_define_by_name(sign_name, NULL,
-						 (char_u *)linehl, NULL, NULL);
+	    sign_define_by_name(sign_name, NULL, (char_u *)linehl, NULL, NULL);
 	}
 
 	sign_place(&sign_id, (char_u *)"popupmenu", sign_name,
@@ -1286,16 +1285,16 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
 }
 
 /*
- * Parse the 'previewpopup' option and apply the values to window "wp" if it
- * not NULL.
+ * Parse the 'previewpopup' or 'completepopup' option and apply the values to
+ * window "wp" if it is not NULL.
  * Return FAIL if the parsing fails.
  */
-    int
-parse_previewpopup(win_T *wp)
+    static int
+parse_popup_option(win_T *wp, int is_preview)
 {
     char_u *p;
 
-    for (p = p_pvp; *p != NUL; p += (*p == ',' ? 1 : 0))
+    for (p = is_preview ? p_pvp : p_cpp; *p != NUL; p += (*p == ',' ? 1 : 0))
     {
 	char_u	*e, *dig;
 	char_u	*s = p;
@@ -1310,29 +1309,67 @@ parse_previewpopup(win_T *wp)
 	    p = e + STRLEN(e);
 	dig = e + 1;
 	x = getdigits(&dig);
-	if (dig != p)
-	    return FAIL;
 
 	if (STRNCMP(s, "height:", 7) == 0)
 	{
+	    if (dig != p)
+		return FAIL;
 	    if (wp != NULL)
 	    {
-		wp->w_minheight = x;
+		if (is_preview)
+		    wp->w_minheight = x;
 		wp->w_maxheight = x;
 	    }
 	}
 	else if (STRNCMP(s, "width:", 6) == 0)
 	{
+	    if (dig != p)
+		return FAIL;
 	    if (wp != NULL)
 	    {
-		wp->w_minwidth = x;
+		if (is_preview)
+		    wp->w_minwidth = x;
 		wp->w_maxwidth = x;
+	    }
+	}
+	else if (STRNCMP(s, "highlight:", 10) == 0)
+	{
+	    if (wp != NULL)
+	    {
+		int c = *p;
+
+		*p = NUL;
+		set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
+						s + 10, OPT_FREE|OPT_LOCAL, 0);
+		*p = c;
 	    }
 	}
 	else
 	    return FAIL;
     }
     return OK;
+}
+
+/*
+ * Parse the 'previewpopup' option and apply the values to window "wp" if it
+ * is not NULL.
+ * Return FAIL if the parsing fails.
+ */
+    int
+parse_previewpopup(win_T *wp)
+{
+    return parse_popup_option(wp, TRUE);
+}
+
+/*
+ * Parse the 'completepopup' option and apply the values to window "wp" if it
+ * is not NULL.
+ * Return FAIL if the parsing fails.
+ */
+    int
+parse_completepopup(win_T *wp)
+{
+    return parse_popup_option(wp, FALSE);
 }
 
 /*
@@ -1641,6 +1678,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	wp->w_popup_flags |= POPF_DRAG | POPF_RESIZE;
 	wp->w_popup_close = POPCLOSE_BUTTON;
 	add_border_left_right_padding(wp);
+	parse_completepopup(wp);
     }
 
     for (i = 0; i < 4; ++i)

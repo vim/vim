@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Aug 17
+*options.txt*	For Vim version 8.1.  Last change: 2019 Aug 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1918,6 +1918,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   popup    Show extra information about the currently selected
 		    completion in a popup window.  Only works in combination
 		    with "menu" or "menuone".  Overrides "preview".
+		    See |'completepopup'| for specifying properties.
 		    {only works when compiled with the +textprop feature}
 
 	   noinsert Do not insert any text for a match until the user selects
@@ -1927,6 +1928,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   noselect Do not select a match in the menu, force the user to
 		    select one from the menu. Only works in combination with
 		    "menu" or "menuone".
+
+
+					*'completepopup'* *'cpp'*
+'completepopup' 'cpp'	string (default empty)
+			global
+			{not available when compiled without the |+textprop|
+			or |+quickfix| feature}
+	When 'completeopt' contains "popup" then this option is used for the
+	properties of the info popup.  See |complete-popup|.
 
 
 						*'concealcursor'* *'cocu'*
@@ -3160,8 +3170,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'fillchars'* *'fcs'*
 'fillchars' 'fcs'	string	(default "vert:|,fold:-")
 			global
-			{not available when compiled without the |+windows|
-			and |+folding| features}
+			{not available when compiled without the |+folding|
+			feature}
 	Characters to fill the statuslines and vertical separators.
 	It is a comma separated list of items:
 
@@ -3797,8 +3807,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'guitablabel'* *'gtl'*
 'guitablabel' 'gtl'	string	(default empty)
 			global
-			{only available when compiled with GUI enabled and
-			with the |+windows| feature}
+			{only available when compiled with GUI enabled}
 	When nonempty describes the text to use in a label of the GUI tab
 	pages line.  When empty and when the result is empty Vim will use a
 	default label.  See |setting-guitablabel| for more info.
@@ -3816,8 +3825,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'guitabtooltip'* *'gtt'*
 'guitabtooltip' 'gtt'	string	(default empty)
 			global
-			{only available when compiled with GUI enabled and
-			with the |+windows| feature}
+			{only available when compiled with GUI enabled}
 	When nonempty describes the text to use in a tooltip for the GUI tab
 	pages line.  When empty Vim will use a default tooltip.
 	This option is otherwise just like 'guitablabel' above.
@@ -3842,8 +3850,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'helpheight'* *'hh'*
 'helpheight' 'hh'	number	(default 20)
 			global
-			{not available when compiled without the |+windows|
-			feature}
 	Minimal initial height of the help window when it is opened with the
 	":help" command.  The initial height of the help window is half of the
 	current window, or (when the 'ea' option is on) the same as other
@@ -5642,8 +5648,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 					*'previewheight'* *'pvh'*
 'previewheight' 'pvh'	number (default 12)
 			global
-			{not available when compiled without the |+windows| or
-			|+quickfix| features}
+			{not available when compiled without the |+quickfix|
+			feature}
 	Default height for a preview window.  Used for |:ptag| and associated
 	commands.  Used for |CTRL-W_}| when no count is given.  Not used when
 	'previewpopup' is set.
@@ -5651,8 +5657,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 					*'previewpopup'* *'pvp'*
 'previewpopup' 'pvp'	string (default empty)
 			global
-			{not available when compiled without the |+windows|,
-			|+textprop| or |+quickfix| feature}
+			{not available when compiled without the |+textprop|
+			or |+quickfix| feature}
 	When not empty a popup window is used for commands that would open a
 	preview window.  See |preview-popup|.
 	Not used for the insert completion info, add "popup" to
@@ -5662,8 +5668,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 					*'pvw'* *'nopvw'* *E590*
 'previewwindow' 'pvw'	boolean (default off)
 			local to window
-			{not available when compiled without the |+windows| or
-			|+quickfix| features}
+			{not available when compiled without the |+quickfix|
+			feature}
 	Identifies the preview window.  Only one window can have this option
 	set.  It's normally not set directly, but by using one of the commands
 	|:ptag|, |:pedit|, etc.
@@ -6781,8 +6787,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'showtabline'* *'stal'*
 'showtabline' 'stal'	number	(default 1)
 			global
-			{not available when compiled without the |+windows|
-			feature}
 	The value of this option specifies when the line with tab page labels
 	will be displayed:
 		0: never
@@ -7079,8 +7083,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 			*'splitbelow'* *'sb'* *'nosplitbelow'* *'nosb'*
 'splitbelow' 'sb'	boolean	(default off)
 			global
-			{not available when compiled without the |+windows|
-			feature}
 	When on, splitting a window will put the new window below the current
 	one. |:split|
 
@@ -7401,8 +7403,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'tabline'* *'tal'*
 'tabline' 'tal'		string	(default empty)
 			global
-			{not available when compiled without the |+windows|
-			feature}
 	When nonempty, this option determines the content of the tab pages
 	line at the top of the Vim window.  When empty Vim will use a default
 	tab pages line.  See |setting-tabline| for more info.
@@ -7428,8 +7428,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'tabpagemax'* *'tpm'*
 'tabpagemax' 'tpm'	number	(default 10)
 			global
-			{not available when compiled without the |+windows|
-			feature}
 	Maximum number of tab pages to be opened by the |-p| command line
 	argument or the ":tab all" command. |tabpage|
 
@@ -8739,8 +8737,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'winheight'* *'wh'* *E591*
 'winheight' 'wh'	number	(default 1)
 			global
-			{not available when compiled without the |+windows|
-			feature}
 	Minimal number of lines for the current window.  This is not a hard
 	minimum, Vim will use fewer lines if there is not enough room.  If the
 	focus goes to a window that is smaller, its size is increased, at the
@@ -8761,8 +8757,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 			*'winfixheight'* *'wfh'* *'nowinfixheight'* *'nowfh'*
 'winfixheight' 'wfh'	boolean	(default off)
 			local to window
-			{not available when compiled without the |+windows|
-			feature}
 	Keep the window height when windows are opened or closed and
 	'equalalways' is set.  Also for |CTRL-W_=|.  Set by default for the
 	|preview-window| and |quickfix-window|.
@@ -8771,8 +8765,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 			*'winfixwidth'* *'wfw'* *'nowinfixwidth'* *'nowfw'*
 'winfixwidth' 'wfw'	boolean	(default off)
 			local to window
-			{not available when compiled without the |+windows|
-			feature}
 	Keep the window width when windows are opened or closed and
 	'equalalways' is set.  Also for |CTRL-W_=|.
 	The width may be changed anyway when running out of room.
@@ -8780,8 +8772,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'winminheight'* *'wmh'*
 'winminheight' 'wmh'	number	(default 1)
 			global
-			{not available when compiled without the |+windows|
-			feature}
 	The minimal height of a window, when it's not the current window.
 	This is a hard minimum, windows will never become smaller.
 	When set to zero, windows may be "squashed" to zero lines (i.e. just a

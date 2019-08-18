@@ -996,7 +996,12 @@ get_wcr_attr(win_T *wp)
 	wcr_attr = syn_name2attr(wp->w_p_wcr);
 #ifdef FEAT_TEXT_PROP
     else if (WIN_IS_POPUP(wp))
-	wcr_attr = HL_ATTR(HLF_PNI);
+    {
+	if (wp->w_popup_flags & POPF_INFO)
+	    wcr_attr = HL_ATTR(HLF_PSI);    // PmenuSel
+	else
+	    wcr_attr = HL_ATTR(HLF_PNI);    // Pmenu
+    }
 #endif
     return wcr_attr;
 }
