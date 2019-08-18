@@ -28,6 +28,7 @@ autocmd.c	| autocommands
 blob.c		| blob data type
 buffer.c	| manipulating buffers (loaded files)
 change.c	| handling changes to text
+cmdexpand.c	| command-line completion
 cmdhist.c	| command-line history
 debugger.c	| vim script debugger
 diff.c		| diff mode (vimdiff)
