@@ -550,8 +550,7 @@ popup_highlight_curline(win_T *wp)
 
 	    if (syn_name2id((char_u *)linehl) == 0)
 		linehl = "PmenuSel";
-	    sign_define_by_name(sign_name, NULL,
-						 (char_u *)linehl, NULL, NULL);
+	    sign_define_by_name(sign_name, NULL, (char_u *)linehl, NULL, NULL);
 	}
 
 	sign_place(&sign_id, (char_u *)"popupmenu", sign_name,
@@ -951,8 +950,8 @@ popup_top_extra(win_T *wp)
 popup_height(win_T *wp)
 {
     return wp->w_height
-	+ popup_top_extra(wp)
-	+ wp->w_popup_padding[2] + wp->w_popup_border[2];
+	    + popup_top_extra(wp)
+	    + wp->w_popup_padding[2] + wp->w_popup_border[2];
 }
 
 /*
@@ -965,10 +964,19 @@ popup_width(win_T *wp)
     // w_leftcol is how many columns of the core are left of the screen
     // w_popup_rightoff is how many columns of the core are right of the screen
     return wp->w_width + wp->w_leftcol
-	+ wp->w_popup_padding[3] + wp->w_popup_border[3]
-	+ wp->w_popup_padding[1] + wp->w_popup_border[1]
-	+ wp->w_has_scrollbar
-	+ wp->w_popup_rightoff;
+	    + popup_extra_width(wp)
+	    + wp->w_popup_rightoff;
+}
+
+/*
+ * Return the extra width of popup window "wp": border, padding and scrollbar.
+ */
+    int
+popup_extra_width(win_T *wp)
+{
+    return wp->w_popup_padding[3] + wp->w_popup_border[3]
+	    + wp->w_popup_padding[1] + wp->w_popup_border[1]
+	    + wp->w_has_scrollbar;
 }
 
 /*
@@ -1230,7 +1238,8 @@ typedef enum
     TYPE_NOTIFICATION,
     TYPE_DIALOG,
     TYPE_MENU,
-    TYPE_PREVIEW
+    TYPE_PREVIEW,	// preview window
+    TYPE_INFO		// popup menu info
 } create_type_T;
 
 /*
@@ -1276,16 +1285,16 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
 }
 
 /*
- * Parse the 'previewpopup' option and apply the values to window "wp" if it
- * not NULL.
+ * Parse the 'previewpopup' or 'completepopup' option and apply the values to
+ * window "wp" if it is not NULL.
  * Return FAIL if the parsing fails.
  */
-    int
-parse_previewpopup(win_T *wp)
+    static int
+parse_popup_option(win_T *wp, int is_preview)
 {
     char_u *p;
 
-    for (p = p_pvp; *p != NUL; p += (*p == ',' ? 1 : 0))
+    for (p = is_preview ? p_pvp : p_cpp; *p != NUL; p += (*p == ',' ? 1 : 0))
     {
 	char_u	*e, *dig;
 	char_u	*s = p;
@@ -1300,23 +1309,39 @@ parse_previewpopup(win_T *wp)
 	    p = e + STRLEN(e);
 	dig = e + 1;
 	x = getdigits(&dig);
-	if (dig != p)
-	    return FAIL;
 
 	if (STRNCMP(s, "height:", 7) == 0)
 	{
+	    if (dig != p)
+		return FAIL;
 	    if (wp != NULL)
 	    {
-		wp->w_minheight = x;
+		if (is_preview)
+		    wp->w_minheight = x;
 		wp->w_maxheight = x;
 	    }
 	}
 	else if (STRNCMP(s, "width:", 6) == 0)
 	{
+	    if (dig != p)
+		return FAIL;
 	    if (wp != NULL)
 	    {
-		wp->w_minwidth = x;
+		if (is_preview)
+		    wp->w_minwidth = x;
 		wp->w_maxwidth = x;
+	    }
+	}
+	else if (STRNCMP(s, "highlight:", 10) == 0)
+	{
+	    if (wp != NULL)
+	    {
+		int c = *p;
+
+		*p = NUL;
+		set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
+						s + 10, OPT_FREE|OPT_LOCAL, 0);
+		*p = c;
 	    }
 	}
 	else
@@ -1326,11 +1351,33 @@ parse_previewpopup(win_T *wp)
 }
 
 /*
+ * Parse the 'previewpopup' option and apply the values to window "wp" if it
+ * is not NULL.
+ * Return FAIL if the parsing fails.
+ */
+    int
+parse_previewpopup(win_T *wp)
+{
+    return parse_popup_option(wp, TRUE);
+}
+
+/*
+ * Parse the 'completepopup' option and apply the values to window "wp" if it
+ * is not NULL.
+ * Return FAIL if the parsing fails.
+ */
+    int
+parse_completepopup(win_T *wp)
+{
+    return parse_popup_option(wp, FALSE);
+}
+
+/*
  * Set w_wantline and w_wantcol for the cursor position in the current window.
  * Keep at least "width" columns from the right of the screen.
  */
     void
-popup_set_wantpos(win_T *wp, int width)
+popup_set_wantpos_cursor(win_T *wp, int width)
 {
     setcursor_mayforce(TRUE);
     wp->w_wantline = curwin->w_winrow + curwin->w_wrow;
@@ -1351,10 +1398,37 @@ popup_set_wantpos(win_T *wp, int width)
 }
 
 /*
+ * Set w_wantline and w_wantcol for the a given screen position.
+ * Caller must take care of running into the window border.
+ */
+    void
+popup_set_wantpos_rowcol(win_T *wp, int row, int col)
+{
+    wp->w_wantline = row;
+    wp->w_wantcol = col;
+    popup_adjust_position(wp);
+}
+
+/*
+ * Add a border and lef&right padding.
+ */
+    static void
+add_border_left_right_padding(win_T *wp)
+{
+    int i;
+
+    for (i = 0; i < 4; ++i)
+    {
+	wp->w_popup_border[i] = 1;
+	wp->w_popup_padding[i] = (i & 1) ? 1 : 0;
+    }
+}
+
+/*
  * popup_create({text}, {options})
  * popup_atcursor({text}, {options})
  * etc.
- * When creating a preview window popup "argvars" and "rettv" are NULL.
+ * When creating a preview or info popup "argvars" and "rettv" are NULL.
  */
     static win_T *
 popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
@@ -1495,7 +1569,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     }
     if (type == TYPE_ATCURSOR)
     {
-	popup_set_wantpos(wp, 0);
+	popup_set_wantpos_cursor(wp, 0);
 	set_moved_values(wp);
 	set_moved_columns(wp, FIND_STRING);
     }
@@ -1571,11 +1645,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	wp->w_zindex = POPUPWIN_DIALOG_ZINDEX;
 	wp->w_popup_flags |= POPF_DRAG;
 	wp->w_popup_flags &= ~POPF_MAPPING;
-	for (i = 0; i < 4; ++i)
-	{
-	    wp->w_popup_border[i] = 1;
-	    wp->w_popup_padding[i] = (i & 1) ? 1 : 0;
-	}
+	add_border_left_right_padding(wp);
     }
 
     if (type == TYPE_MENU)
@@ -1600,7 +1670,15 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	for (i = 0; i < 4; ++i)
 	    wp->w_popup_border[i] = 1;
 	parse_previewpopup(wp);
-	popup_set_wantpos(wp, wp->w_minwidth);
+	popup_set_wantpos_cursor(wp, wp->w_minwidth);
+    }
+    if (type == TYPE_INFO)
+    {
+	wp->w_popup_pos = POPPOS_TOPLEFT;
+	wp->w_popup_flags |= POPF_DRAG | POPF_RESIZE;
+	wp->w_popup_close = POPCLOSE_BUTTON;
+	add_border_left_right_padding(wp);
+	parse_completepopup(wp);
     }
 
     for (i = 0; i < 4; ++i)
@@ -3171,6 +3249,28 @@ popup_find_preview_window(void)
     return NULL;
 }
 
+    int
+popup_is_popup(win_T *wp)
+{
+    return wp->w_popup_flags != 0;
+}
+
+/*
+ * Find an existing popup used as the info window, in the current tab page.
+ * Return NULL if not found.
+ */
+    win_T *
+popup_find_info_window(void)
+{
+    win_T *wp;
+
+    // info window popup is always local to tab page.
+    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	if (wp->w_popup_flags & POPF_INFO)
+	    return wp;
+    return NULL;
+}
+
     void
 f_popup_getpreview(typval_T *argvars UNUSED, typval_T *rettv)
 {
@@ -3179,26 +3279,23 @@ f_popup_getpreview(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_number = wp == NULL ? 0 : wp->w_id;
 }
 
-    int
-popup_is_popup(win_T *wp)
-{
-    return wp->w_popup_flags != 0;
-}
-
 /*
- * Create a popup to be used as the preview window.
+ * Create a popup to be used as the preview or info window.
  * NOTE: this makes the popup the current window, so that the file can be
  * edited.  However, it must not remain to be the current window, the caller
  * must make sure of that.
  */
     int
-popup_create_preview_window(void)
+popup_create_preview_window(int info)
 {
-    win_T *wp = popup_create(NULL, NULL, TYPE_PREVIEW);
+    win_T *wp = popup_create(NULL, NULL, info ? TYPE_INFO : TYPE_PREVIEW);
 
     if (wp == NULL)
 	return FAIL;
-    wp->w_p_pvw = TRUE;
+    if (info)
+	wp->w_popup_flags |= POPF_INFO;
+    else
+	wp->w_p_pvw = TRUE;
 
     // Set the width to a reasonable value, so that w_topline can be computed.
     if (wp->w_minwidth > 0)
@@ -3216,9 +3313,9 @@ popup_create_preview_window(void)
 }
 
     void
-popup_close_preview()
+popup_close_preview(int info)
 {
-    win_T *wp = popup_find_preview_window();
+    win_T *wp = info ? popup_find_info_window() : popup_find_preview_window();
 
     if (wp != NULL)
     {

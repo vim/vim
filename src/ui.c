@@ -1098,8 +1098,10 @@ clip_start_selection(int col, int row, int repeated_click)
 	// Click in a popup window restricts selection to that window,
 	// excluding the border.
 	cb->min_col = wp->w_wincol + wp->w_popup_border[3];
-	cb->max_col = wp->w_wincol + popup_width(wp) - 1
-						   - wp->w_popup_border[1];
+	cb->max_col = wp->w_wincol + popup_width(wp)
+				 - wp->w_popup_border[1] - wp->w_has_scrollbar;
+	if (cb->max_col > screen_Columns)
+	    cb->max_col = screen_Columns;
 	cb->min_row = wp->w_winrow + wp->w_popup_border[0];
 	cb->max_row = wp->w_winrow + popup_height(wp) - 1
 						   - wp->w_popup_border[2];
@@ -1440,7 +1442,7 @@ clip_invert_area(
     int		max_col;
 
 #ifdef FEAT_TEXT_PROP
-    max_col = cbd->max_col;
+    max_col = cbd->max_col - 1;
 #else
     max_col = Columns - 1;
 #endif
@@ -1519,8 +1521,8 @@ clip_invert_rectangle(
 	width -= cbd->min_col - col;
 	col = cbd->min_col;
     }
-    if (width > cbd->max_col - col + 1)
-	width = cbd->max_col - col + 1;
+    if (width > cbd->max_col - col)
+	width = cbd->max_col - col;
     if (row < cbd->min_row)
     {
 	height -= cbd->min_row - row;
@@ -1581,8 +1583,8 @@ clip_copy_modeless_selection(int both UNUSED)
 #ifdef FEAT_TEXT_PROP
     if (col1 < clip_star.min_col)
 	col1 = clip_star.min_col;
-    if (col2 > clip_star.max_col + 1)
-	col2 = clip_star.max_col + 1;
+    if (col2 > clip_star.max_col)
+	col2 = clip_star.max_col;
     if (row1 < clip_star.min_row)
 	row1 = clip_star.min_row;
     if (row2 > clip_star.max_row)
@@ -1619,19 +1621,19 @@ clip_copy_modeless_selection(int both UNUSED)
 
 	if (row == row2)
 	    end_col = col2;
-#ifdef FEAT_TEXT_PROP
-	else if (clip_star.max_col < Columns)
-	    end_col = clip_star.max_col + 1;
-#endif
 	else
+#ifdef FEAT_TEXT_PROP
+	    end_col = clip_star.max_col;
+#else
 	    end_col = Columns;
+#endif
 
 	line_end_col = clip_get_line_end(&clip_star, row);
 
 	/* See if we need to nuke some trailing whitespace */
 	if (end_col >=
 #ifdef FEAT_TEXT_PROP
-		clip_star.max_col + 1
+		clip_star.max_col
 #else
 		Columns
 #endif
@@ -1797,7 +1799,7 @@ clip_get_line_end(Clipboard_T *cbd UNUSED, int row)
 	return 0;
     for (i =
 #ifdef FEAT_TEXT_PROP
-	    cbd->max_col >= screen_Columns ? screen_Columns : cbd->max_col + 1;
+	    cbd->max_col;
 #else
 	    screen_Columns;
 #endif

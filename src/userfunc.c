@@ -2793,8 +2793,6 @@ get_expanded_name(char_u *name, int check)
 }
 #endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
 /*
  * Function given to ExpandGeneric() to obtain the list of user defined
  * function names.
@@ -2837,8 +2835,6 @@ get_user_func_name(expand_T *xp, int idx)
     }
     return NULL;
 }
-
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * ":delfunction {name}"
@@ -3165,8 +3161,9 @@ ex_call(exarg_T *eap)
 	if (has_watchexpr())
 	    dbg_check_breakpoint(eap);
 
-	/* Handle a function returning a Funcref, Dictionary or List. */
-	if (handle_subscript(&arg, &rettv, !eap->skip, TRUE) == FAIL)
+	// Handle a function returning a Funcref, Dictionary or List.
+	if (handle_subscript(&arg, &rettv, !eap->skip, TRUE,
+							  name, &name) == FAIL)
 	{
 	    failed = TRUE;
 	    break;

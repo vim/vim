@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Aug 08
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Aug 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,25 +38,9 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-
-Methods:
-- Support lambda?  #4768
-    echo (10.0 / 100.0)->{x -> x * 100}
-- Define a user defined function for a specific type only?
-	func Len(expr) method=list,dict
-	  return a:expr->len()
-	endfunc
-	echo [1, 2, 3]->Len()
-	3
-	call Len([1, 2, 3])
-	error!
-
 Popup windows:
-- :pedit from help doesn't reset help flag, see pedit example
-- check popupmenu using preview window
-- modeless selection fails over ssh and with putty.  Mouse dragging not
-  supported?  Can we force it on?
-- modeless selection extends into the scrollbar. (#4773)
+- check popupmenu using preview window  #4544  overlaps complete menu
+    set completeopt+=preview
 - Implement flip option
 - Have a way to scroll to the bottom, e.g. set 'firstline' to -1? (#4577)
 - Why does 'nrformats' leak from the popup window buffer???
@@ -148,10 +132,12 @@ Terminal emulator window:
 - When 'encoding' is not utf-8, or the job is using another encoding, setup
   conversions.
 
-Error numbers available: E274, E275, E276,
+Error numbers available:
 E278, E279, E290, E292, E362, E366, E450, E451, E452,
 E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
 E654, E856, E857, E860, E861, E863, E889, E900
+
+undo result wrong: Masato Nishihata, #4798
 
 Sound: support on Mac?  Or does libcanberra work there?
 
@@ -172,8 +158,6 @@ Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
 terminal.c and then CTRL-N twice.
 Should do current file first and not split it up when more results are found.
 (Also #1890)
-
-Patch to add :spellrare. (#4291)
 
 Patch to use timers in matchparen. (Daniel Hahler, #1338)
 Ready to include now?
@@ -209,6 +193,7 @@ When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
 
 Modeless selection doesn't work in gvim. (#4783)
+Caused by patch 8.1.1534.
 
 Visual highlight not removed when 'dipslay' is "lastline" and line doesn't
 fit. (Kevin Lawler, #4457)
@@ -220,7 +205,7 @@ Does not build with MinGW out of the box:
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
 
-Columns and Rows are long, they should be int.
+Check_external_diff() is used too often. (Daniel Hahler, #4800)
 
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
@@ -493,9 +478,6 @@ Patch to implement 'diffref' option. (#3535)
 
 Patch to specify color for cterm=underline and cterm=undercurl, like "guisp".
 Patch #2405 does something like this, but in the wrong way.
-
-:pedit resets the 'buflisted' option unexpectedly. (Wang Shidong, 2018 Oct 12,
-#3536)
 
 home_replace() uses $HOME instead of "homedir". (Cesar Martins, 2018 Aug 9)
 

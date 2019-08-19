@@ -893,6 +893,15 @@ static struct vimoption options[] =
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCTX_INIT},
+    {"completepopup", "cpp", P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
+#ifdef FEAT_TEXT_PROP
+			    (char_u *)&p_cpp, PV_NONE,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"completeslash",   "csl",  P_STRING|P_VI_DEF|P_VIM,
 #if defined(FEAT_INS_EXPAND) && defined(BACKSLASH_IN_FILENAME)
 			    (char_u *)&p_csl, PV_CSL,
@@ -3036,13 +3045,8 @@ static struct vimoption options[] =
 			    (char_u *)&p_wim, PV_NONE,
 			    {(char_u *)"full", (char_u *)0L} SCTX_INIT},
     {"wildoptions", "wop",  P_STRING|P_VI_DEF,
-#ifdef FEAT_CMDL_COMPL
 			    (char_u *)&p_wop, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)NULL, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"winaltkeys",  "wak",  P_STRING|P_VI_DEF,
 #ifdef FEAT_WAK
@@ -3219,9 +3223,7 @@ static char *(p_ff_values[]) = {FF_UNIX, FF_DOS, FF_MAC, NULL};
 #ifdef FEAT_CRYPT
 static char *(p_cm_values[]) = {"zip", "blowfish", "blowfish2", NULL};
 #endif
-#ifdef FEAT_CMDL_COMPL
 static char *(p_wop_values[]) = {"tagfile", NULL};
-#endif
 #ifdef FEAT_WAK
 static char *(p_wak_values[]) = {"yes", "menu", "no", NULL};
 #endif
@@ -3247,7 +3249,7 @@ static char *(p_fdm_values[]) = {"manual", "expr", "marker", "indent", "syntax",
 static char *(p_fcl_values[]) = {"all", NULL};
 #endif
 #ifdef FEAT_INS_EXPAND
-static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "noinsert", "noselect", NULL};
+static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "popup", "noinsert", "noselect", NULL};
 # ifdef BACKSLASH_IN_FILENAME
 static char *(p_csl_values[]) = {"slash", "backslash", NULL};
 # endif
@@ -6501,14 +6503,12 @@ did_set_string_option(
 	    errmsg = e_invarg;
     }
 
-#ifdef FEAT_CMDL_COMPL
     /* 'wildoptions' */
     else if (varp == &p_wop)
     {
 	if (check_opt_strings(p_wop, p_wop_values, TRUE) != OK)
 	    errmsg = e_invarg;
     }
-#endif
 
 #ifdef FEAT_WAK
     /* 'winaltkeys' */
@@ -7824,6 +7824,12 @@ did_set_string_option(
     else if (varp == &p_pvp)
     {
 	if (parse_previewpopup(NULL) == FAIL)
+	    errmsg = e_invarg;
+    }
+    // 'completepopup'
+    else if (varp == &p_cpp)
+    {
+	if (parse_completepopup(NULL) == FAIL)
 	    errmsg = e_invarg;
     }
 #endif
@@ -11831,7 +11837,6 @@ set_imsearch_global(void)
     p_imsearch = curbuf->b_p_imsearch;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 static int expand_option_idx = -1;
 static char_u expand_option_name[5] = {'t', '_', NUL, NUL, NUL};
 static int expand_option_flags = 0;
@@ -12261,7 +12266,6 @@ ExpandOldSetting(int *num_file, char_u ***file)
     *num_file = 1;
     return OK;
 }
-#endif
 
 /*
  * Get the value for the numeric or string option *opp in a nice format into

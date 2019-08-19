@@ -817,7 +817,6 @@ ex_argdelete(exarg_T *eap)
 #endif
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Function given to ExpandGeneric() to obtain the possible arguments of the
  * argedit and argdelete commands.
@@ -830,7 +829,6 @@ get_arglist_name(expand_T *xp UNUSED, int idx)
 
     return alist_name(&ARGLIST[idx]);
 }
-#endif
 
 /*
  * Get the file name for an argument list entry.

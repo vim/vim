@@ -3499,8 +3499,6 @@ highlight_changed(void)
     return OK;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
 static void highlight_list(void);
 static void highlight_list_two(int cnt, int attr);
 
@@ -3577,10 +3575,6 @@ highlight_list_two(int cnt, int attr)
     ui_delay(cnt == 99 ? 40L : (long)cnt * 50L, FALSE);
 }
 
-#endif // FEAT_CMDL_COMPL
-
-#if defined(FEAT_CMDL_COMPL) || (defined(FEAT_SYN_HL) && defined(FEAT_EVAL)) \
-    || defined(FEAT_SIGNS) || defined(PROTO)
 /*
  * Function given to ExpandGeneric() to obtain the list of group names.
  */
@@ -3605,7 +3599,6 @@ get_highlight_name_ext(expand_T *xp UNUSED, int idx, int skip_cleared)
     if (skip_cleared && idx < highlight_ga.ga_len && HL_TABLE()[idx].sg_cleared)
 	return (char_u *)"";
 
-#ifdef FEAT_CMDL_COMPL
     if (idx == highlight_ga.ga_len && include_none != 0)
 	return (char_u *)"none";
     if (idx == highlight_ga.ga_len + include_none && include_default != 0)
@@ -3616,12 +3609,10 @@ get_highlight_name_ext(expand_T *xp UNUSED, int idx, int skip_cleared)
     if (idx == highlight_ga.ga_len + include_none + include_default + 1
 							 && include_link != 0)
 	return (char_u *)"clear";
-#endif
     if (idx >= highlight_ga.ga_len)
 	return NULL;
     return HL_TABLE()[idx].sg_name;
 }
-#endif
 
 #if defined(FEAT_GUI) || defined(PROTO)
 /*

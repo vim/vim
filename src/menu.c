@@ -43,9 +43,7 @@ static int s_tearoffs = FALSE;
 #endif
 
 static int menu_is_hidden(char_u *name);
-#if defined(FEAT_CMDL_COMPL) || (defined(FEAT_GUI_MSWIN) && defined(FEAT_TEAROFF))
 static int menu_is_tearoff(char_u *name);
-#endif
 
 #if defined(FEAT_MULTI_LANG) || defined(FEAT_TOOLBAR)
 static char_u *menu_skip_part(char_u *p);
@@ -1234,8 +1232,6 @@ show_menus_recursive(vimmenu_T *menu, int modes, int depth)
     }
 }
 
-#ifdef FEAT_CMDL_COMPL
-
 /*
  * Used when expanding menu names.
  */
@@ -1555,7 +1551,6 @@ get_menu_names(expand_T *xp UNUSED, int idx)
 
     return str;
 }
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * Skip over this element of the menu path and return the start of the next
@@ -1864,8 +1859,6 @@ menu_is_hidden(char_u *name)
     return (name[0] == ']') || (menu_is_popup(name) && name[5] != NUL);
 }
 
-#if defined(FEAT_CMDL_COMPL) \
-	|| (defined(FEAT_GUI_MSWIN) && defined(FEAT_TEAROFF))
 /*
  * Return TRUE if the menu is the tearoff menu.
  */
@@ -1878,7 +1871,6 @@ menu_is_tearoff(char_u *name UNUSED)
     return FALSE;
 #endif
 }
-#endif
 
 #if defined(FEAT_GUI) || defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
 

@@ -2241,14 +2241,11 @@ unblock_autocmds(void)
 # endif
 }
 
-#if defined(FEAT_EVAL) && (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM)) \
-	|| defined(PROTO)
     int
 is_autocmd_blocked(void)
 {
     return autocmd_blocked != 0;
 }
-#endif
 
 /*
  * Find next autocommand pattern that matches.
@@ -2425,7 +2422,6 @@ has_autocmd(event_T event, char_u *sfname, buf_T *buf)
     return retval;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Function given to ExpandGeneric() to obtain the list of autocommand group
  * names.
@@ -2510,7 +2506,6 @@ get_event_name(expand_T *xp UNUSED, int idx)
     return (char_u *)event_names[idx - augroups.ga_len].name;
 }
 
-#endif	// FEAT_CMDL_COMPL
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*

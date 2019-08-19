@@ -11,12 +11,12 @@
   dakikadır.
 
   DİKKAT:
-  Derslerdeki komutlar bu metini değiştirecektir. Üzerinde çalışmak için
+  Derslerdeki komutlar bu metni değiştirecektir. Üzerinde çalışmak için
   bu dosyanın bir kopyasını alın (eğer "vimtutor" uygulamasını
   çalıştırdıysanız zaten bir kopyasını almış oldunuz).
 
-  Bu eğitmenin, kullanarak öğretmeye ayarlandığını unutmamak önemlidir. Bu şu
-  anlama gelir; komutları öğrenmek için doğru bir şekilde çalıştırmanız
+  Bu eğitmenin kullanarak öğretmek için tasarlandığını unutmamak önemlidir.
+  Bu şu anlama gelir; komutları öğrenmek için doğru bir şekilde çalıştırmanız
   gerekir. Eğer sadece yazılanları okursanız komutları unutursunuz.
 
   Şimdi Caps-Lock düğmenizin basılı olmadığına emin olun ve Ders 1.1'in
@@ -28,12 +28,11 @@
 Çevirmen Notu: Tüm derslerde <ENTER> gördüğünüzde bu düğmeye basmanız gerekir.
 
   ** İmleci hareket ettirmek için h,j,k,l düğmelerine basın. **
-  
-         ^
-         k		İpucu: h düğmesi soldadır ve sola doğru hareket eder.
-    < h	    l >		l düğmesi sağdadır ve sağa doğru hareket eder.
-         j		j düğmesi aşağı doğru bir oka benzer.
-         v
+        ^
+        k		İpucu: h düğmesi soldadır ve sola doğru hareket eder.
+    < h	  l >		l düğmesi sağdadır ve sağa doğru hareket eder.
+        j		j düğmesi aşağı doğru bir oka benzer.
+        v
 
   1. İmleci kendinizi rahat hissedinceye dek ekranda dolaştırın.
 
@@ -954,14 +953,14 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 	Learning the Vi Editor - by Linda Lamb
 	Publisher: O'Reilly & Associates Inc.
 
-  Vi hakkında bilmek isteyeceğiniz neredeyse herşeyin bulunduğu bir kitap.
-  6. Basım aynı zamanda Vim hakkında bilgi de içermektedir.
+  Vi hakkında bilmek isteyeceğiniz neredeyse her şeyin bulunduğu bir kitap.
+  6. Basım aynı zamanda Vim hakkında da bilgi içermektedir.
 
   Bu eğitmen Michael C. Pierce ve Robert K. Ware tarafından yazıldı,
   Charles Smith tarafından sağlanan fikirlerle Colorado School Of Mines,
-  Colorado State University.  E-mail: bware@mines.colorado.edu.
+  Colorado State University.  E-posta: bware@mines.colorado.edu
 
-  Vim için değiştiren: Bram Moolenaar.
+  Vim için değiştiren: Bram Moolenaar
 
   Türkçe çeviri: Serkan "heartsmagic" Çalış (2005), adresimeyaz (at) yahoo com
   2019 Güncelleme: Emir SARI, emirsari (at) gmail com

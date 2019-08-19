@@ -622,6 +622,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define POPF_DRAG	0x20	// popup can be moved by dragging
 #define POPF_RESIZE	0x40	// popup can be resized by dragging
 #define POPF_MAPPING	0x80	// mapping keys
+#define POPF_INFO	0x100	// used for info of popup menu
 
 #ifdef FEAT_TEXT_PROP
 # define WIN_IS_POPUP(wp) ((wp)->w_popup_flags != 0)

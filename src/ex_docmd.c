@@ -3323,10 +3323,8 @@ set_one_cmd_context(
     char_u		*cmd, *arg;
     int			len = 0;
     exarg_T		ea;
-#ifdef FEAT_CMDL_COMPL
     int			compl = EXPAND_NOTHING;
     int			delim;
-#endif
     int			forceit = FALSE;
     int			usefilter = FALSE;  /* filter instead of file name */
 
@@ -3432,13 +3430,7 @@ set_one_cmd_context(
 	else if (cmd[0] >= 'A' && cmd[0] <= 'Z')
 	{
 	    ea.cmd = cmd;
-	    p = find_ucmd(&ea, p, NULL, xp,
-#if defined(FEAT_CMDL_COMPL)
-		    &compl
-#else
-		    NULL
-#endif
-		    );
+	    p = find_ucmd(&ea, p, NULL, xp, &compl);
 	    if (p == NULL)
 		ea.cmdidx = CMD_SIZE;	// ambiguous user command
 	}
@@ -3662,14 +3654,11 @@ set_one_cmd_context(
 	    {
 		xp->xp_context = EXPAND_ENV_VARS;
 		++xp->xp_pattern;
-#if defined(FEAT_CMDL_COMPL)
 		/* Avoid that the assignment uses EXPAND_FILES again. */
 		if (compl != EXPAND_USER_DEFINED && compl != EXPAND_USER_LIST)
 		    compl = EXPAND_ENV_VARS;
-#endif
 	    }
 	}
-#if defined(FEAT_CMDL_COMPL)
 	/* Check for user names */
 	if (*xp->xp_pattern == '~')
 	{
@@ -3685,7 +3674,6 @@ set_one_cmd_context(
 		++xp->xp_pattern;
 	    }
 	}
-#endif
     }
 
 /*
@@ -3759,8 +3747,7 @@ set_one_cmd_context(
 	    }
 	    return skipwhite(arg);
 
-#ifdef FEAT_CMDL_COMPL
-# ifdef FEAT_SEARCH_EXTRA
+#ifdef FEAT_SEARCH_EXTRA
 	case CMD_match:
 	    if (*arg == NUL || !ends_excmd(*arg))
 	    {
@@ -3774,7 +3761,7 @@ set_one_cmd_context(
 		}
 	    }
 	    return find_nextcmd(arg);
-# endif
+#endif
 
 /*
  * All completion for the +cmdline_compl feature goes here.
@@ -4142,8 +4129,6 @@ set_one_cmd_context(
 	    xp->xp_context = EXPAND_ARGLIST;
 	    xp->xp_pattern = arg;
 	    break;
-
-#endif /* FEAT_CMDL_COMPL */
 
 	default:
 	    break;
@@ -5554,7 +5539,6 @@ check_more(
     return OK;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Function given to ExpandGeneric() to obtain the list of command names.
  */
@@ -5565,7 +5549,6 @@ get_command_name(expand_T *xp UNUSED, int idx)
 	return get_user_command_name(idx);
     return cmdnames[idx].cmd_name;
 }
-#endif
 
     static void
 ex_colorscheme(exarg_T *eap)
@@ -5825,7 +5808,7 @@ ex_pclose(exarg_T *eap)
 	}
 # ifdef FEAT_TEXT_PROP
     // Also when 'previewpopup' is empty, it might have been cleared.
-    popup_close_preview();
+    popup_close_preview(FALSE);
 # endif
 }
 #endif
@@ -8614,7 +8597,7 @@ ex_pedit(exarg_T *eap)
 
     // Open the preview window or popup and make it the current window.
     g_do_tagpreview = p_pvh;
-    prepare_tagpreview(TRUE);
+    prepare_tagpreview(TRUE, TRUE, FALSE);
 
     // Edit the file.
     do_exedit(eap, NULL);
@@ -9178,7 +9161,6 @@ ex_behave(exarg_T *eap)
 	semsg(_(e_invarg2), eap->arg);
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Function given to ExpandGeneric() to obtain the possible arguments of the
  * ":behave {mswin,xterm}" command.
@@ -9204,9 +9186,7 @@ get_messages_arg(expand_T *xp UNUSED, int idx)
 	return (char_u *)"clear";
     return NULL;
 }
-#endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     char_u *
 get_mapclear_arg(expand_T *xp UNUSED, int idx)
 {
@@ -9214,7 +9194,6 @@ get_mapclear_arg(expand_T *xp UNUSED, int idx)
 	return (char_u *)"<buffer>";
     return NULL;
 }
-#endif
 
 static int filetype_detect = FALSE;
 static int filetype_plugin = FALSE;

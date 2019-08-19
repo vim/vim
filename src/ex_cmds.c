@@ -5131,7 +5131,9 @@ free_old_sub(void)
  */
     int
 prepare_tagpreview(
-    int		undo_sync)	/* sync undo when leaving the window */
+    int		undo_sync,	    // sync undo when leaving the window
+    int		use_previewpopup,   // use popup if 'previewpopup' set
+    int		use_popup)	    // use other popup window
 {
     win_T	*wp;
 
@@ -5145,11 +5147,16 @@ prepare_tagpreview(
     if (!curwin->w_p_pvw)
     {
 # ifdef FEAT_TEXT_PROP
-	if (*p_pvp != NUL)
+	if (use_previewpopup && *p_pvp != NUL)
 	{
 	    wp = popup_find_preview_window();
 	    if (wp != NULL)
-		popup_set_wantpos(wp, wp->w_minwidth);
+		popup_set_wantpos_cursor(wp, wp->w_minwidth);
+	}
+	else if (use_popup)
+	{
+	    wp = popup_find_info_window();
+	    // TODO: set position
 	}
 	else
 # endif
@@ -5166,8 +5173,8 @@ prepare_tagpreview(
 	     * There is no preview window open yet.  Create one.
 	     */
 # ifdef FEAT_TEXT_PROP
-	    if (*p_pvp != NUL)
-		return popup_create_preview_window();
+	    if ((use_previewpopup && *p_pvp != NUL) || use_popup)
+		return popup_create_preview_window(use_popup);
 # endif
 	    if (win_split(g_do_tagpreview > 0 ? g_do_tagpreview : 0, 0) == FAIL)
 		return FALSE;

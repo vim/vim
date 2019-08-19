@@ -241,6 +241,7 @@ static int eval4(char_u **arg, typval_T *rettv, int evaluate);
 static int eval5(char_u **arg, typval_T *rettv, int evaluate);
 static int eval6(char_u **arg, typval_T *rettv, int evaluate, int want_string);
 static int eval7(char_u **arg, typval_T *rettv, int evaluate, int want_string);
+static int eval7_leader(typval_T *rettv, char_u *start_leader, char_u **end_leaderp);
 
 static int get_string_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int get_lit_string_tv(char_u **arg, typval_T *rettv, int evaluate);
@@ -419,9 +420,7 @@ eval_clear(void)
     hash_clear(&compat_hashtab);
 
     free_scriptnames();
-# if defined(FEAT_CMDL_COMPL)
     free_locales();
-# endif
 
     /* global variables */
     vars_clear(&globvarht);
@@ -1134,10 +1133,6 @@ call_func_retnr(
     return retval;
 }
 
-#if defined(FEAT_CMDL_COMPL) \
-	|| defined(FEAT_COMPL_FUNC) || defined(PROTO)
-
-# if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Call Vim script function "func" and return the result as a string.
  * Returns NULL when calling the function fails.
@@ -1160,7 +1155,6 @@ call_func_retstr(
     clear_tv(&rettv);
     return retval;
 }
-# endif
 
 /*
  * Call Vim script function "func" and return the result as a List.
@@ -1187,7 +1181,6 @@ call_func_retlist(
 
     return rettv.vval.v_list;
 }
-#endif
 
 
 #ifdef FEAT_FOLDING
@@ -1810,7 +1803,8 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 		{
 		    /* handle d.key, l[idx], f(expr) */
 		    arg_subsc = arg;
-		    if (handle_subscript(&arg, &tv, TRUE, TRUE) == FAIL)
+		    if (handle_subscript(&arg, &tv, TRUE, TRUE,
+							  name, &name) == FAIL)
 			error = TRUE;
 		    else
 		    {
@@ -2992,8 +2986,6 @@ free_for_info(void *fi_void)
     vim_free(fi);
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
     void
 set_context_for_expression(
     expand_T	*xp,
@@ -3107,8 +3099,6 @@ set_context_for_expression(
     }
     xp->xp_pattern = arg;
 }
-
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * ":unlet[!] var1 ... " command.
@@ -3507,8 +3497,6 @@ del_menutrans_vars(void)
 }
 #endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
 /*
  * Local string buffer for the next two functions to store a variable name
  * with its prefix. Allocated in cat_prefix_varname(), freed later in
@@ -3627,8 +3615,6 @@ get_user_var_name(expand_T *xp, int idx)
     varnamebuflen = 0;
     return NULL;
 }
-
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * Return TRUE if "pat" matches "text".
@@ -4756,68 +4742,80 @@ eval7(
     /* Handle following '[', '(' and '.' for expr[expr], expr.name,
      * expr(expr), expr->name(expr) */
     if (ret == OK)
-	ret = handle_subscript(arg, rettv, evaluate, TRUE);
+	ret = handle_subscript(arg, rettv, evaluate, TRUE,
+						    start_leader, &end_leader);
 
     /*
      * Apply logical NOT and unary '-', from right to left, ignore '+'.
      */
     if (ret == OK && evaluate && end_leader > start_leader)
-    {
-	int	    error = FALSE;
-	varnumber_T val = 0;
-#ifdef FEAT_FLOAT
-	float_T	    f = 0.0;
+	ret = eval7_leader(rettv, start_leader, &end_leader);
+    return ret;
+}
 
-	if (rettv->v_type == VAR_FLOAT)
-	    f = rettv->vval.v_float;
-	else
+/*
+ * Apply the leading "!" and "-" before an eval7 expression to "rettv".
+ * Adjusts "end_leaderp" until it is at "start_leader".
+ */
+    static int
+eval7_leader(typval_T *rettv, char_u *start_leader, char_u **end_leaderp)
+{
+    char_u	*end_leader = *end_leaderp;
+    int		ret = OK;
+    int		error = FALSE;
+    varnumber_T val = 0;
+#ifdef FEAT_FLOAT
+    float_T	    f = 0.0;
+
+    if (rettv->v_type == VAR_FLOAT)
+	f = rettv->vval.v_float;
+    else
 #endif
-	    val = tv_get_number_chk(rettv, &error);
-	if (error)
+	val = tv_get_number_chk(rettv, &error);
+    if (error)
+    {
+	clear_tv(rettv);
+	ret = FAIL;
+    }
+    else
+    {
+	while (end_leader > start_leader)
+	{
+	    --end_leader;
+	    if (*end_leader == '!')
+	    {
+#ifdef FEAT_FLOAT
+		if (rettv->v_type == VAR_FLOAT)
+		    f = !f;
+		else
+#endif
+		    val = !val;
+	    }
+	    else if (*end_leader == '-')
+	    {
+#ifdef FEAT_FLOAT
+		if (rettv->v_type == VAR_FLOAT)
+		    f = -f;
+		else
+#endif
+		    val = -val;
+	    }
+	}
+#ifdef FEAT_FLOAT
+	if (rettv->v_type == VAR_FLOAT)
 	{
 	    clear_tv(rettv);
-	    ret = FAIL;
+	    rettv->vval.v_float = f;
 	}
 	else
+#endif
 	{
-	    while (end_leader > start_leader)
-	    {
-		--end_leader;
-		if (*end_leader == '!')
-		{
-#ifdef FEAT_FLOAT
-		    if (rettv->v_type == VAR_FLOAT)
-			f = !f;
-		    else
-#endif
-			val = !val;
-		}
-		else if (*end_leader == '-')
-		{
-#ifdef FEAT_FLOAT
-		    if (rettv->v_type == VAR_FLOAT)
-			f = -f;
-		    else
-#endif
-			val = -val;
-		}
-	    }
-#ifdef FEAT_FLOAT
-	    if (rettv->v_type == VAR_FLOAT)
-	    {
-		clear_tv(rettv);
-		rettv->vval.v_float = f;
-	    }
-	    else
-#endif
-	    {
-		clear_tv(rettv);
-		rettv->v_type = VAR_NUMBER;
-		rettv->vval.v_number = val;
-	    }
+	    clear_tv(rettv);
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = val;
 	}
     }
-
+    *end_leaderp = end_leader;
     return ret;
 }
 
@@ -7539,8 +7537,10 @@ check_vars(char_u *name, int len)
 handle_subscript(
     char_u	**arg,
     typval_T	*rettv,
-    int		evaluate,	/* do more than finding the end */
-    int		verbose)	/* give error messages */
+    int		evaluate,	// do more than finding the end
+    int		verbose,	// give error messages
+    char_u	*start_leader,	// start of '!' and '-' prefixes
+    char_u	**end_leaderp)  // end of '!' and '-' prefixes
 {
     int		ret = OK;
     dict_T	*selfdict = NULL;
@@ -7576,12 +7576,19 @@ handle_subscript(
 	}
 	else if (**arg == '-')
 	{
-	    if ((*arg)[2] == '{')
-		// expr->{lambda}()
-		ret = eval_lambda(arg, rettv, evaluate, verbose);
-	    else
-		// expr->name()
-		ret = eval_method(arg, rettv, evaluate, verbose);
+	    // Expression "-1.0->method()" applies the leader "-" before
+	    // applying ->.
+	    if (evaluate && *end_leaderp > start_leader)
+		ret = eval7_leader(rettv, start_leader, end_leaderp);
+	    if (ret == OK)
+	    {
+		if ((*arg)[2] == '{')
+		    // expr->{lambda}()
+		    ret = eval_lambda(arg, rettv, evaluate, verbose);
+		else
+		    // expr->name()
+		    ret = eval_method(arg, rettv, evaluate, verbose);
+	    }
 	}
 	else /* **arg == '[' || **arg == '.' */
 	{
@@ -9803,7 +9810,7 @@ var_exists(char_u *var)
 	if (n)
 	{
 	    /* handle d.key, l[idx], f(expr) */
-	    n = (handle_subscript(&var, &tv, TRUE, FALSE) == OK);
+	    n = (handle_subscript(&var, &tv, TRUE, FALSE, name, &name) == OK);
 	    if (n)
 		clear_tv(&tv);
 	}

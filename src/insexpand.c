@@ -1943,6 +1943,36 @@ ins_compl_prep(int c)
 	    || c == K_MOUSELEFT || c == K_MOUSERIGHT)
 	return retval;
 
+#ifdef FEAT_TEXT_PROP
+    // Ignore mouse events in a popup window
+    if (is_mouse_key(c))
+    {
+	// Ignore drag and release events, the position does not need to be in
+	// the popup and it may have just closed.
+	if (c == K_LEFTRELEASE
+		|| c == K_LEFTRELEASE_NM
+		|| c == K_MIDDLERELEASE
+		|| c == K_RIGHTRELEASE
+		|| c == K_X1RELEASE
+		|| c == K_X2RELEASE
+		|| c == K_LEFTDRAG
+		|| c == K_MIDDLEDRAG
+		|| c == K_RIGHTDRAG
+		|| c == K_X1DRAG
+		|| c == K_X2DRAG)
+	    return retval;
+	if (popup_visible)
+	{
+	    int	    row = mouse_row;
+	    int	    col = mouse_col;
+	    win_T   *wp = mouse_find_win(&row, &col, FIND_POPUP);
+
+	    if (wp != NULL && WIN_IS_POPUP(wp))
+		return retval;
+	}
+    }
+#endif
+
     // Set "compl_get_longest" when finding the first matches.
     if (ctrl_x_mode == CTRL_X_NOT_DEFINED_YET
 			   || (ctrl_x_mode == CTRL_X_NORMAL && !compl_started))

@@ -94,15 +94,24 @@
  */
 
 /*
- * These features used to be optional but are now always enabled.
+ * These features used to be optional but are now always enabled:
  * +windows		Multiple windows.  Without this there is no help
  *			window and no status lines.
  * +vertsplit		Vertically split windows.
- */
-
-/*
  * +cmdhist		Command line history.
- *			Now always included.
+ * +localmap		Mappings and abbreviations local to a buffer.
+ * +visual		Visual mode
+ * +visualextra		Extra features for Visual mode (mostly block operators).
+ * +virtualedit		'virtualedit' option and its implementation
+ * +user_commands	Allow the user to define his own commands.
+ * +multi_byte		Generic multi-byte character handling.
+ * +cmdline_compl	completion of mappings/abbreviations in cmdline mode.
+ *
+ * Obsolete:
+ * +tag_old_static	Old style static tags: "file:tag  file  ..".
+ *			Support was removed in 8.1.1093.
+ * +farsi		Farsi (Persian language) Keymap support.
+ *			Removed in patch 8.1.0932
  */
 
 /*
@@ -162,11 +171,6 @@
 #endif
 
 /*
- * +localmap		Mappings and abbreviations local to a buffer.
- *			Now always included.
- */
-
-/*
  * +insert_expand	CTRL-N/CTRL-P/CTRL-X in insert mode. Takes about
  *			4Kbyte of code.
  */
@@ -174,28 +178,9 @@
 # define FEAT_INS_EXPAND
 #endif
 
-/*
- * +cmdline_compl	completion of mappings/abbreviations in cmdline mode.
- *			Takes a few Kbyte of code.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_CMDL_COMPL
-#endif
-
 #ifdef FEAT_NORMAL
 # define VIM_BACKTICK		/* internal backtick expansion */
 #endif
-
-/*
- * +visual		Visual mode - now always included.
- * +visualextra		Extra features for Visual mode (mostly block operators).
- *			Now always included.
- */
-
-/*
- * +virtualedit		'virtualedit' option and its implementation
- *			Now always included.
- */
 
 /*
  * +cmdline_info	'showcmd' and 'ruler' options.
@@ -259,11 +244,6 @@
 #endif
 
 /*
- * +farsi		Farsi (Persian language) Keymap support.
- *			Removed in patch 8.1.0932
- */
-
-/*
  * +arabic		Arabic keymap and shaping support.
  *			Requires FEAT_RIGHTLEFT
  *
@@ -298,11 +278,6 @@
 #if !defined(EBCDIC)
 # define FEAT_TAG_BINS
 #endif
-
-/*
- * +tag_old_static	Old style static tags: "file:tag  file  ..".
- *			Support was removed in 8.1.1093.
- */
 
 /*
  * +cscope		Unix only: Cscope support.
@@ -371,11 +346,6 @@
 #if defined(FEAT_INS_EXPAND) && defined(FEAT_EVAL)
 # define FEAT_COMPL_FUNC
 #endif
-
-/*
- * +user_commands	Allow the user to define his own commands.
- *			Now always enabled.
- */
 
 /*
  * +printer		":hardcopy" command
@@ -572,11 +542,6 @@
 	&& (defined(HAVE_LOCALE_H) || defined(X_LOCALE))
 # define FEAT_GETTEXT
 #endif
-
-/*
- * +multi_byte		Generic multi-byte character handling.
- *			Now always enabled.
- */
 
 /*
  * +multi_byte_ime	Win32 IME input method.  Only for far-east Windows, so

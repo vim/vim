@@ -5267,7 +5267,7 @@ ins_mousescroll(int dir)
 	col = mouse_col;
 
 	/* find the window at the pointer coordinates */
-	wp = mouse_find_win(&row, &col, FAIL_POPUP);
+	wp = mouse_find_win(&row, &col, FIND_POPUP);
 	if (wp == NULL)
 	    return;
 	curwin = wp;
@@ -5288,6 +5288,10 @@ ins_mousescroll(int dir)
 			(long)(curwin->w_botline - curwin->w_topline));
 	    else
 		scroll_redraw(dir, 3L);
+# ifdef FEAT_TEXT_PROP
+	if (WIN_IS_POPUP(curwin))
+	    popup_set_firstline(curwin);
+# endif
 	}
 #ifdef FEAT_GUI
 	else

@@ -503,6 +503,7 @@ EXTERN int	p_fs;		// 'fsync'
 #endif
 EXTERN int	p_gd;		// 'gdefault'
 #ifdef FEAT_TEXT_PROP
+EXTERN char_u	*p_cpp;		// 'completepopup'
 EXTERN char_u	*p_pvp;		// 'previewpopup'
 #endif
 #ifdef FEAT_PRINTER
@@ -925,9 +926,7 @@ char_u	*p_vfile = (char_u *)""; // used before options are initialized
 extern char_u	*p_vfile;	// 'verbosefile'
 #endif
 EXTERN int	p_warn;		// 'warn'
-#ifdef FEAT_CMDL_COMPL
 EXTERN char_u	*p_wop;		// 'wildoptions'
-#endif
 EXTERN long	p_window;	// 'window'
 #if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(LINT) \
 	|| defined (FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON)

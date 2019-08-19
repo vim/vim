@@ -506,11 +506,12 @@ func Test_popup_select()
   let lines =<< trim END
     set clipboard=autoselect
     call setline(1, range(1, 20))
-    let winid = popup_create(['the word', 'some more', 'several words here'], #{
+    let winid = popup_create(['the word', 'some more', 'several words here', 'invisible', '5', '6', '7'], #{
 	  \ drag: 1,
 	  \ border: [],
 	  \ line: 3,
 	  \ col: 10,
+	  \ maxheight: 3,
 	  \ })
     func Select1()
       call feedkeys("\<F3>\<LeftMouse>\<F4>\<LeftDrag>\<LeftRelease>", "xt")
@@ -2190,6 +2191,82 @@ func Test_previewpopup()
   call delete('Xtagfile')
   call delete('XtestPreviewPopup')
   call delete('Xheader.h')
+endfunc
+
+func Test_popupmenu_info()
+  CheckScreendump
+
+  let lines =<< trim END
+      set completeopt+=preview,popup
+      set completefunc=CompleteFuncDict
+      hi InfoPopup ctermbg=yellow
+      set completepopup=height:4,highlight:InfoPopup
+
+      func CompleteFuncDict(findstart, base)
+	if a:findstart
+	  if col('.') > 10
+	    return col('.') - 10
+	  endif
+	  return 0
+	endif
+
+	return {
+		\ 'words': [
+		  \ {
+		    \ 'word': 'aword',
+		    \ 'abbr': 'wrd',
+		    \ 'menu': 'extra text',
+		    \ 'info': 'words are cool',
+		    \ 'kind': 'W',
+		    \ 'user_data': 'test'
+		  \ },
+		  \ {
+		    \ 'word': 'anotherword',
+		    \ 'abbr': 'anotwrd',
+		    \ 'menu': 'extra text',
+		    \ 'info': "other words are\ncooler than this and some more text\nto make wrap",
+		    \ 'kind': 'W',
+		    \ 'user_data': 'notest'
+		  \ },
+		  \ {
+		    \ 'word': 'noinfo',
+		    \ 'abbr': 'noawrd',
+		    \ 'menu': 'extra text',
+		    \ 'info': "lets\nshow\na\nscrollbar\nhere",
+		    \ 'kind': 'W',
+		    \ 'user_data': 'notest'
+		  \ },
+		  \ {
+		    \ 'word': 'thatword',
+		    \ 'abbr': 'thatwrd',
+		    \ 'menu': 'extra text',
+		    \ 'info': 'that word is cool',
+		    \ 'kind': 'W',
+		    \ 'user_data': 'notest'
+		  \ },
+		\ ]
+	      \ }
+      endfunc
+      call setline(1, 'text text text text text text text ')
+  END
+  call writefile(lines, 'XtestInfoPopup')
+  let buf = RunVimInTerminal('-S XtestInfoPopup', #{rows: 14})
+  call term_wait(buf, 50)
+
+  call term_sendkeys(buf, "A\<C-X>\<C-U>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_1', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_2', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_3', {})
+
+  call term_sendkeys(buf, "\<C-N>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_4', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestInfoPopup')
 endfunc
 
 " vim: shiftwidth=2 sts=2

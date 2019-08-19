@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.1.  Last change: 2019 Jun 26
+*intro.txt*     For Vim version 8.1.  Last change: 2019 Aug 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -508,6 +508,9 @@ the ":map" command.  The rules are:
 	   <M-a>		Meta- a  ('a' with bit 8 set)
 	   <M-A>		Meta- A  ('A' with bit 8 set)
 	   <t_kd>		"kd" termcap entry (cursor down key)
+    Although you can specify <M-{char}> with {char} being a multi-byte
+    character, Vim may not be able to know what byte sequence that is and then
+    it won't work.
 
 If you want to use the full <> notation in Vim, you have to make sure the '<'
 flag is excluded from 'cpoptions' (when 'compatible' is not set, it already is
