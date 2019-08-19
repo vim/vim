@@ -22,7 +22,6 @@ int do_write(exarg_T *eap);
 int check_overwrite(exarg_T *eap, buf_T *buf, char_u *fname, char_u *ffname, int other);
 void ex_wnext(exarg_T *eap);
 void do_wqall(exarg_T *eap);
-int not_writing(void);
 int getfile(int fnum, char_u *ffname_arg, char_u *sfname_arg, int setpm, linenr_T lnum, int forceit);
 int do_ecmd(int fnum, char_u *ffname, char_u *sfname, exarg_T *eap, linenr_T newlnum, int flags, win_T *oldwin);
 void ex_append(exarg_T *eap);

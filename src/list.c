@@ -53,7 +53,7 @@ list_rem_watch(list_T *l, listwatch_T *lwrem)
  * Just before removing an item from a list: advance watchers to the next
  * item.
  */
-    void
+    static void
 list_fix_watch(list_T *l, listitem_T *item)
 {
     listwatch_T	*lw;

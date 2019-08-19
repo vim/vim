@@ -20,7 +20,6 @@ void u_unchanged(buf_T *buf);
 void u_find_first_changed(void);
 void u_update_save_nr(buf_T *buf);
 void u_clearall(buf_T *buf);
-void u_saveline(linenr_T lnum);
 void u_clearline(void);
 void u_undoline(void);
 void u_blockfree(buf_T *buf);

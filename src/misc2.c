@@ -2530,7 +2530,7 @@ static struct mousetable
  * Return the modifier mask bit (MOD_MASK_*) which corresponds to the given
  * modifier name ('S' for Shift, 'C' for Ctrl etc).
  */
-    int
+    static int
 name_to_mod_mask(int c)
 {
     int	    i;

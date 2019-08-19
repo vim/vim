@@ -87,7 +87,9 @@ static void check_for_codes_from_term(void);
 		|| defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)))
 static int get_bytes_from_buf(char_u *, char_u *, int);
 #endif
+static void del_termcode(char_u *name);
 static void del_termcode_idx(int idx);
+static int find_term_bykeys(char_u *src);
 static int term_is_builtin(char_u *name);
 static int term_7to8bit(char_u *p);
 
@@ -1367,7 +1369,7 @@ static struct builtin_term builtin_termcaps[] =
 };	/* end of builtin_termcaps */
 
 #if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
-    guicolor_T
+    static guicolor_T
 termgui_mch_get_color(char_u *name)
 {
     return gui_get_color_cmn(name);
@@ -4307,7 +4309,7 @@ get_termcode(int i)
     return &termcodes[i].name[0];
 }
 
-    void
+    static void
 del_termcode(char_u *name)
 {
     int	    i;
@@ -6364,7 +6366,7 @@ replace_termcodes(
  * Find a termcode with keys 'src' (must be NUL terminated).
  * Return the index in termcodes[], or -1 if not found.
  */
-    int
+    static int
 find_term_bykeys(char_u *src)
 {
     int		i;

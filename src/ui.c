@@ -720,6 +720,12 @@ ui_breakcheck_force(int force)
 
 #if defined(FEAT_CLIPBOARD) || defined(PROTO)
 
+static void clip_gen_lose_selection(Clipboard_T *cbd);
+static int clip_gen_own_selection(Clipboard_T *cbd);
+#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)
+static int clip_x11_owner_exists(Clipboard_T *cbd);
+#endif
+
 /*
  * Selection stuff using Visual mode, for cutting and pasting text to other
  * windows.
@@ -1840,7 +1846,7 @@ clip_update_modeless_selection(
     }
 }
 
-    int
+    static int
 clip_gen_own_selection(Clipboard_T *cbd)
 {
 #ifdef FEAT_XCLIPBOARD
@@ -1855,7 +1861,7 @@ clip_gen_own_selection(Clipboard_T *cbd)
 #endif
 }
 
-    void
+    static void
 clip_gen_lose_selection(Clipboard_T *cbd)
 {
 #ifdef FEAT_XCLIPBOARD
@@ -2846,7 +2852,7 @@ clip_x11_set_selection(Clipboard_T *cbd UNUSED)
 
 #if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) \
 	|| defined(PROTO)
-    int
+    static int
 clip_x11_owner_exists(Clipboard_T *cbd)
 {
     return XGetSelectionOwner(X_DISPLAY, cbd->sel_atom) != None;

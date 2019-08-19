@@ -65,6 +65,9 @@ static int	yank_copy_line(struct block_def *bd, long y_idx);
 static void	copy_yank_reg(yankreg_T *reg);
 static void	may_set_selection(void);
 #endif
+#if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
+static int	preprocs_left(void);
+#endif
 static void	dis_msg(char_u *p, int skip_esc);
 static void	block_prep(oparg_T *oap, struct block_def *, linenr_T, int);
 static int	do_addsub(int op_type, pos_T *pos, int length, linenr_T Prenum1);
@@ -830,7 +833,7 @@ get_expr_line(void)
 /*
  * Get the '=' register expression itself, without evaluating it.
  */
-    char_u *
+    static char_u *
 get_expr_line_src(void)
 {
     if (expr_line == NULL)
@@ -4088,7 +4091,7 @@ adjust_cursor_eol(void)
 /*
  * Return TRUE if lines starting with '#' should be left aligned.
  */
-    int
+    static int
 preprocs_left(void)
 {
     return

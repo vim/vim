@@ -188,6 +188,7 @@ static int ff_check_visited(ff_visited_T **, char_u *, char_u *);
 #else
 static int ff_check_visited(ff_visited_T **, char_u *);
 #endif
+static void vim_findfile_free_visited(void *search_ctx_arg);
 static void vim_findfile_free_visited_list(ff_visited_list_hdr_T **list_headp);
 static void ff_free_visited_list(ff_visited_T *vl);
 static ff_visited_list_hdr_T* ff_get_visited_list(char_u *, ff_visited_list_hdr_T **list_headp);
@@ -1186,7 +1187,7 @@ fail:
  * Free the list of lists of visited files and directories
  * Can handle it if the passed search_context is NULL;
  */
-    void
+    static void
 vim_findfile_free_visited(void *search_ctx_arg)
 {
     ff_search_ctx_T *search_ctx;

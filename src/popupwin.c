@@ -28,6 +28,8 @@ static poppos_entry_T poppos_entries[] = {
     {"center", POPPOS_CENTER}
 };
 
+static void popup_adjust_position(win_T *wp);
+
 /*
  * Get option value for "key", which is "line" or "col".
  * Handles "cursor+N" and "cursor-N".
@@ -982,7 +984,7 @@ popup_extra_width(win_T *wp)
 /*
  * Adjust the position and size of the popup to fit on the screen.
  */
-    void
+    static void
 popup_adjust_position(win_T *wp)
 {
     linenr_T	lnum;
