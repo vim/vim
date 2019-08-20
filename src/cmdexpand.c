@@ -646,17 +646,19 @@ showmatches(expand_T *xp, int wildmenu UNUSED)
 		    {
 			char_u	*halved_slash;
 			char_u	*exp_path;
+			char_u	*path;
 
 			// Expansion was done before and special characters
 			// were escaped, need to halve backslashes.  Also
 			// $HOME has been replaced with ~/.
 			exp_path = expand_env_save_opt(files_found[k], TRUE);
-			halved_slash = backslash_halve_save(
-				exp_path != NULL ? exp_path : files_found[k]);
+			path = exp_path != NULL ? exp_path : files_found[k];
+			halved_slash = backslash_halve_save(path);
 			j = mch_isdir(halved_slash != NULL ? halved_slash
 							    : files_found[k]);
 			vim_free(exp_path);
-			vim_free(halved_slash);
+			if (halved_slash != path)
+			    vim_free(halved_slash);
 		    }
 		    else
 			// Expansion was done here, file names are literal.

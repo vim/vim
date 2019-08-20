@@ -2015,6 +2015,7 @@ backslash_halve(char_u *p)
 
 /*
  * backslash_halve() plus save the result in allocated memory.
+ * Return p when out of memory.
  */
     char_u *
 backslash_halve_save(char_u *p)
