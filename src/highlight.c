@@ -3016,6 +3016,7 @@ syn_check_group(char_u *pp, int len)
 syn_add_group(char_u *name)
 {
     char_u	*p;
+    char_u	*name_up;
 
     // Check that the name is ASCII letters, digits and underscore.
     for (p = name; *p != NUL; ++p)
@@ -3061,9 +3062,16 @@ syn_add_group(char_u *name)
 	return 0;
     }
 
+    name_up = vim_strsave_up(name);
+    if (name_up == NULL)
+    {
+	vim_free(name);
+	return 0;
+    }
+
     vim_memset(&(HL_TABLE()[highlight_ga.ga_len]), 0, sizeof(hl_group_T));
     HL_TABLE()[highlight_ga.ga_len].sg_name = name;
-    HL_TABLE()[highlight_ga.ga_len].sg_name_u = vim_strsave_up(name);
+    HL_TABLE()[highlight_ga.ga_len].sg_name_u = name_up;
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     HL_TABLE()[highlight_ga.ga_len].sg_gui_bg = INVALCOLOR;
     HL_TABLE()[highlight_ga.ga_len].sg_gui_fg = INVALCOLOR;

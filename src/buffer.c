@@ -181,14 +181,19 @@ open_buffer(
 	    if (curbuf->b_ml.ml_mfp != NULL)
 		break;
 	/*
-	 * if there is no memfile at all, exit
+	 * If there is no memfile at all, exit.
 	 * This is OK, since there are no changes to lose.
 	 */
 	if (curbuf == NULL)
 	{
 	    emsg(_("E82: Cannot allocate any buffer, exiting..."));
+
+	    // Don't try to do any saving, with "curbuf" NULL almost nothing
+	    // will work.
+	    v_dying = 2;
 	    getout(2);
 	}
+
 	emsg(_("E83: Cannot allocate buffer, using other one..."));
 	enter_buffer(curbuf);
 #ifdef FEAT_SYN_HL

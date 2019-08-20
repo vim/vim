@@ -4556,6 +4556,11 @@ do_join(
 
     /* allocate the space for the new line */
     newp = alloc(sumsize + 1);
+    if (newp == NULL)
+    {
+	ret = FAIL;
+	goto theend;
+    }
     cend = newp + sumsize;
     *cend = 0;
 

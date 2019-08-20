@@ -2588,16 +2588,19 @@ msg_puts_printf(char_u *str, int maxlen)
 		int n = (int)(s - p);
 
 		buf = alloc(n + 3);
-		memcpy(buf, p, n);
-		if (!info_message)
-		    buf[n++] = CAR;
-		buf[n++] = NL;
-		buf[n++] = NUL;
-		if (info_message)   // informative message, not an error
-		    mch_msg((char *)buf);
-		else
-		    mch_errmsg((char *)buf);
-		vim_free(buf);
+		if (buf != NULL)
+		{
+		    memcpy(buf, p, n);
+		    if (!info_message)
+			buf[n++] = CAR;
+		    buf[n++] = NL;
+		    buf[n++] = NUL;
+		    if (info_message)   // informative message, not an error
+			mch_msg((char *)buf);
+		    else
+			mch_errmsg((char *)buf);
+		    vim_free(buf);
+		}
 		p = s + 1;
 	    }
 	}
