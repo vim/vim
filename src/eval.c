@@ -9437,7 +9437,7 @@ autoload_name(char_u *name)
     // Get the script file name: replace '#' with '/', append ".vim".
     scriptname = alloc(STRLEN(name) + 14);
     if (scriptname == NULL)
-	return FALSE;
+	return NULL;
     STRCPY(scriptname, "autoload/");
     STRCAT(scriptname, name);
     for (p = scriptname + 9; (p = vim_strchr(p, AUTOLOAD_CHAR)) != NULL;
@@ -9467,6 +9467,8 @@ script_autoload(
 	return FALSE;
 
     tofree = scriptname = autoload_name(name);
+    if (scriptname == NULL)
+	return FALSE;
 
     /* Find the name in the list of previously loaded package names.  Skip
      * "autoload/", it's always the same. */
