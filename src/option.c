@@ -894,7 +894,7 @@ static struct vimoption options[] =
 #endif
 			    SCTX_INIT},
     {"completepopup", "cpp", P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
-#ifdef FEAT_TEXT_PROP
+#if defined(FEAT_TEXT_PROP) && defined(FEAT_QUICKFIX)
 			    (char_u *)&p_cpp, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
 #else
@@ -7830,12 +7830,14 @@ did_set_string_option(
 	if (parse_previewpopup(NULL) == FAIL)
 	    errmsg = e_invarg;
     }
+# ifdef FEAT_QUICKFIX
     // 'completepopup'
     else if (varp == &p_cpp)
     {
 	if (parse_completepopup(NULL) == FAIL)
 	    errmsg = e_invarg;
     }
+# endif
 #endif
 
     /* Options that are a list of flags. */

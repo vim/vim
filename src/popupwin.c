@@ -1294,9 +1294,13 @@ popup_set_buffer_text(buf_T *buf, typval_T text)
     static int
 parse_popup_option(win_T *wp, int is_preview)
 {
-    char_u *p;
+    char_u *p =
+#ifdef FEAT_QUICKFIX
+	!is_preview ? p_cpp :
+#endif
+	p_pvp;
 
-    for (p = is_preview ? p_pvp : p_cpp; *p != NUL; p += (*p == ',' ? 1 : 0))
+    for ( ; *p != NUL; p += (*p == ',' ? 1 : 0))
     {
 	char_u	*e, *dig;
 	char_u	*s = p;
@@ -1674,6 +1678,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	parse_previewpopup(wp);
 	popup_set_wantpos_cursor(wp, wp->w_minwidth);
     }
+# ifdef FEAT_QUICKFIX
     if (type == TYPE_INFO)
     {
 	wp->w_popup_pos = POPPOS_TOPLEFT;
@@ -1682,6 +1687,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	add_border_left_right_padding(wp);
 	parse_completepopup(wp);
     }
+# endif
 
     for (i = 0; i < 4; ++i)
 	VIM_CLEAR(wp->w_border_highlight[i]);
@@ -3257,6 +3263,7 @@ popup_is_popup(win_T *wp)
     return wp->w_popup_flags != 0;
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Find an existing popup used as the info window, in the current tab page.
  * Return NULL if not found.
@@ -3272,6 +3279,7 @@ popup_find_info_window(void)
 	    return wp;
     return NULL;
 }
+#endif
 
     void
 f_popup_getpreview(typval_T *argvars UNUSED, typval_T *rettv)
@@ -3314,6 +3322,7 @@ popup_create_preview_window(int info)
     return OK;
 }
 
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
     void
 popup_close_preview(int info)
 {
@@ -3328,6 +3337,7 @@ popup_close_preview(int info)
 	popup_close_and_callback(wp, &res);
     }
 }
+#endif
 
 /*
  * Set the title of the popup window to the file name.
