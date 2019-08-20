@@ -3082,7 +3082,7 @@ FullName_save(
     return new_fname;
 }
 
-    void
+    static void
 prepare_to_exit(void)
 {
 #if defined(SIGHUP) && defined(SIG_IGN)

@@ -2180,7 +2180,7 @@ listdigraphs(int use_headers)
 			       wrong, in which case we messed up ScreenLines */
 }
 
-struct dg_header_entry {
+static struct dg_header_entry {
     int	    dg_start;
     char    *dg_header;
 } header_table[] = {

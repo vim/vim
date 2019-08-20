@@ -29,6 +29,7 @@ static void free_menu(vimmenu_T **menup);
 static void free_menu_string(vimmenu_T *, int);
 static int show_menus(char_u *, int);
 static void show_menus_recursive(vimmenu_T *, int, int);
+static char_u *menu_name_skip(char_u *name);
 static int menu_name_equal(char_u *name, vimmenu_T *menu);
 static int menu_namecmp(char_u *name, char_u *mname);
 static int get_menu_cmd_modes(char_u *, int, int *, int *);
@@ -1557,7 +1558,7 @@ get_menu_names(expand_T *xp UNUSED, int idx)
  * element.  Any \ and ^Vs are removed from the current element.
  * "name" may be modified.
  */
-    char_u *
+    static char_u *
 menu_name_skip(char_u *name)
 {
     char_u  *p;

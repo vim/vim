@@ -26,6 +26,7 @@
  */
 static xfmark_T namedfm[NMARKS + EXTRA_MARKS];		/* marks with file nr */
 
+static void fname2fnum(xfmark_T *fm);
 static void fmarks_check_one(xfmark_T *fm, char_u *name, buf_T *buf);
 static char_u *mark_line(pos_T *mp, int lead_len);
 static void show_one_mark(int, char_u *, pos_T *, char_u *, int current);
@@ -509,7 +510,7 @@ getnextmark(
  * This is used for marks obtained from the .viminfo file.  It's postponed
  * until the mark is used to avoid a long startup delay.
  */
-    void
+    static void
 fname2fnum(xfmark_T *fm)
 {
     char_u	*p;

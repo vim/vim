@@ -3277,6 +3277,9 @@ static long_u *insecure_flag(int opt_idx, int opt_flags);
 static void set_string_option_global(int opt_idx, char_u **varp);
 static char *did_set_string_option(int opt_idx, char_u **varp, int new_value_alloced, char_u *oldval, char *errbuf, int opt_flags, int *value_checked);
 static char *set_chars_option(char_u **varp);
+#ifdef FEAT_STL_OPT
+static char *check_stl_option(char_u *s);
+#endif
 #ifdef FEAT_CLIPBOARD
 static char *check_clipboard_option(void);
 #endif
@@ -3301,6 +3304,7 @@ static int put_setbool(FILE *fd, char *cmd, char *name, int value);
 static int  istermoption(struct vimoption *);
 static char_u *get_varp_scope(struct vimoption *p, int opt_flags);
 static char_u *get_varp(struct vimoption *);
+static void check_win_options(win_T *win);
 static void option_value2string(struct vimoption *, int opt_flags);
 static void check_winopt(winopt_T *wop);
 static int wc_use_keyname(char_u *varp, long *wcp);
@@ -8246,7 +8250,7 @@ set_chars_option(char_u **varp)
  * Check validity of options with the 'statusline' format.
  * Return error message or NULL.
  */
-    char *
+    static char *
 check_stl_option(char_u *s)
 {
     int		itemcnt = 0;
@@ -11430,7 +11434,7 @@ copy_winopt(winopt_T *from, winopt_T *to)
 /*
  * Check string options in a window for a NULL value.
  */
-    void
+    static void
 check_win_options(win_T *win)
 {
     check_winopt(&win->w_onebuf_opt);
@@ -13341,21 +13345,9 @@ get_sw_value(buf_T *buf)
 }
 
 /*
- * Idem, using the first non-black in the current line.
- */
-    long
-get_sw_value_indent(buf_T *buf)
-{
-    pos_T pos = curwin->w_cursor;
-
-    pos.col = getwhitecols_curline();
-    return get_sw_value_pos(buf, &pos);
-}
-
-/*
  * Idem, using "pos".
  */
-    long
+    static long
 get_sw_value_pos(buf_T *buf, pos_T *pos)
 {
     pos_T save_cursor = curwin->w_cursor;
@@ -13365,6 +13357,18 @@ get_sw_value_pos(buf_T *buf, pos_T *pos)
     sw_value = get_sw_value_col(buf, get_nolist_virtcol());
     curwin->w_cursor = save_cursor;
     return sw_value;
+}
+
+/*
+ * Idem, using the first non-black in the current line.
+ */
+    long
+get_sw_value_indent(buf_T *buf)
+{
+    pos_T pos = curwin->w_cursor;
+
+    pos.col = getwhitecols_curline();
+    return get_sw_value_pos(buf, &pos);
 }
 
 /*

@@ -249,7 +249,7 @@ profile_self(proftime_T *self, proftime_T *total, proftime_T *children)
 /*
  * Get the current waittime.
  */
-    void
+    static void
 profile_get_wait(proftime_T *tm)
 {
     *tm = prof_wait_time;
@@ -270,7 +270,7 @@ profile_sub_wait(proftime_T *tm, proftime_T *tma)
 /*
  * Return TRUE if "tm1" and "tm2" are equal.
  */
-    int
+    static int
 profile_equal(proftime_T *tm1, proftime_T *tm2)
 {
 # ifdef MSWIN

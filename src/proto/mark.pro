@@ -9,7 +9,6 @@ pos_T *getmark_buf(buf_T *buf, int c, int changefile);
 pos_T *getmark(int c, int changefile);
 pos_T *getmark_buf_fnum(buf_T *buf, int c, int changefile, int *fnum);
 pos_T *getnextmark(pos_T *startpos, int dir, int begin_line);
-void fname2fnum(xfmark_T *fm);
 void fmarks_check_names(buf_T *buf);
 int check_mark(pos_T *pos);
 void clrallmarks(buf_T *buf);

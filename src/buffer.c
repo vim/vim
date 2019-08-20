@@ -27,6 +27,8 @@
 
 #include "vim.h"
 
+static void	enter_buffer(buf_T *buf);
+static void	buflist_getfpos(void);
 static char_u	*buflist_match(regmatch_T *rmp, buf_T *buf, int ignore_case);
 static char_u	*fname_match(regmatch_T *rmp, char_u *name, int ignore_case);
 #ifdef UNIX
@@ -43,6 +45,10 @@ static int	append_arg_number(win_T *wp, char_u *buf, int buflen, int add_file);
 static void	free_buffer(buf_T *);
 static void	free_buffer_stuff(buf_T *buf, int free_options);
 static void	clear_wininfo(buf_T *buf);
+#if defined(FEAT_JOB_CHANNEL) \
+	|| defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
+static int	find_win_for_buf(buf_T *buf, win_T **wp, tabpage_T **tp);
+#endif
 
 #ifdef UNIX
 # define dev_T dev_t
@@ -1705,7 +1711,7 @@ set_curbuf(buf_T *buf, int action)
  * Old curbuf must have been abandoned already!  This also means "curbuf" may
  * be pointing to freed memory.
  */
-    void
+    static void
 enter_buffer(buf_T *buf)
 {
     /* Copy buffer and window local option values.  Not for a help buffer. */
@@ -2355,7 +2361,7 @@ buflist_getfile(
 /*
  * go to the last know line number for the current buffer
  */
-    void
+    static void
 buflist_getfpos(void)
 {
     pos_T	*fpos;
@@ -5465,7 +5471,7 @@ restore_win_for_buf(
  * If found OK is returned and "wp" and "tp" are set to the window and tabpage.
  * If not found FAIL is returned.
  */
-    int
+    static int
 find_win_for_buf(
     buf_T     *buf,
     win_T     **wp,

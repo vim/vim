@@ -957,7 +957,7 @@ dict_equal(
  * "what" == 1: list of values
  * "what" == 2: list of items
  */
-    void
+    static void
 dict_list(typval_T *argvars, typval_T *rettv, int what)
 {
     list_T	*l2;

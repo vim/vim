@@ -1659,7 +1659,7 @@ apply_autocmds_retval(
 /*
  * Return TRUE when there is a CursorHold autocommand defined.
  */
-    int
+    static int
 has_cursorhold(void)
 {
     return (first_autopat[(int)(get_real_state() == NORMAL_BUSY

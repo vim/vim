@@ -91,7 +91,9 @@ static int	last_recorded_len = 0;	/* number of last recorded chars */
 static int	read_readbuf(buffheader_T *buf, int advance);
 static void	init_typebuf(void);
 static void	may_sync_undo(void);
+static void	free_typebuf(void);
 static void	closescript(void);
+static void	updatescript(int c);
 static int	vgetorpeek(int);
 static int	inchar(char_u *buf, int maxlen, long wait_time);
 
@@ -1263,7 +1265,7 @@ may_sync_undo(void)
  * Make "typebuf" empty and allocate new buffers.
  * Returns FAIL when out of memory.
  */
-    int
+    static int
 alloc_typebuf(void)
 {
     typebuf.tb_buf = alloc(TYPELEN_INIT);
@@ -1287,7 +1289,7 @@ alloc_typebuf(void)
 /*
  * Free the buffers of "typebuf".
  */
-    void
+    static void
 free_typebuf(void)
 {
     if (typebuf.tb_buf == typebuf_init)
@@ -1511,7 +1513,7 @@ before_blocking(void)
  * All the changed memfiles are synced if c == 0 or when the number of typed
  * characters reaches 'updatecount' and 'updatecount' is non-zero.
  */
-    void
+    static void
 updatescript(int c)
 {
     static int	    count = 0;

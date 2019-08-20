@@ -60,7 +60,6 @@ char_u *concat_fnames(char_u *fname1, char_u *fname2, int sep);
 char_u *concat_str(char_u *str1, char_u *str2);
 void add_pathsep(char_u *p);
 char_u *FullName_save(char_u *fname, int force);
-void prepare_to_exit(void);
 void preserve_exit(void);
 int vim_fexists(char_u *fname);
 void line_breakcheck(void);

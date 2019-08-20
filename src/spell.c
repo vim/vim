@@ -338,6 +338,7 @@ static int count_syllables(slang_T *slang, char_u *word);
 static void clear_midword(win_T *buf);
 static void use_midword(slang_T *lp, win_T *buf);
 static int find_region(char_u *rp, char_u *region);
+static int spell_iswordp_nmw(char_u *p, win_T *wp);
 static int check_need_cap(linenr_T lnum, colnr_T col);
 static void spell_find_suggest(char_u *badptr, int badlen, suginfo_T *su, int maxcount, int banbadword, int need_cap, int interactive);
 #ifdef FEAT_EVAL
@@ -3052,7 +3053,7 @@ spell_iswordp(
  * Return TRUE if "p" points to a word character.
  * Unlike spell_iswordp() this doesn't check for "midword" characters.
  */
-    int
+    static int
 spell_iswordp_nmw(char_u *p, win_T *wp)
 {
     int		c;

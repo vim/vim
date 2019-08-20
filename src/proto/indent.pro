@@ -2,9 +2,6 @@
 int cin_is_cinword(char_u *line);
 pos_T *find_start_comment(int ind_maxcomment);
 int cindent_on(void);
-int cin_islabel(void);
-int cin_iscase(char_u *s, int strict);
-int cin_isscopedecl(char_u *s);
 void parse_cino(buf_T *buf);
 int get_c_indent(void);
 int get_expr_indent(void);

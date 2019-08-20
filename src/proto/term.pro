@@ -1,5 +1,4 @@
 /* term.c */
-guicolor_T termgui_mch_get_color(char_u *name);
 guicolor_T termgui_get_color(char_u *name);
 guicolor_T termgui_mch_get_rgb(guicolor_T color);
 int set_termname(char_u *term);
@@ -65,13 +64,11 @@ void clear_termcodes(void);
 void add_termcode(char_u *name, char_u *string, int flags);
 char_u *find_termcode(char_u *name);
 char_u *get_termcode(int i);
-void del_termcode(char_u *name);
 void set_mouse_topline(win_T *wp);
 int check_termcode(int max_offset, char_u *buf, int bufsize, int *buflen);
 void term_get_fg_color(char_u *r, char_u *g, char_u *b);
 void term_get_bg_color(char_u *r, char_u *g, char_u *b);
 char_u *replace_termcodes(char_u *from, char_u **bufp, int from_part, int do_lt, int special);
-int find_term_bykeys(char_u *src);
 void show_termcodes(void);
 int show_one_termcode(char_u *name, char_u *code, int printit);
 char_u *translate_mapping(char_u *str);

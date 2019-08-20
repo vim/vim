@@ -668,7 +668,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 /*
  * Common for f_prop_type_add() and f_prop_type_change().
  */
-    void
+    static void
 prop_type_set(typval_T *argvars, int add)
 {
     char_u	*name;

@@ -64,7 +64,6 @@ void ga_add_string(garray_T *gap, char_u *p);
 void ga_concat(garray_T *gap, char_u *s);
 void ga_append(garray_T *gap, int c);
 void append_ga_line(garray_T *gap);
-int name_to_mod_mask(int c);
 int simplify_key(int key, int *modifiers);
 int handle_x_keys(int key);
 char_u *get_special_key_name(int c, int modifiers);
