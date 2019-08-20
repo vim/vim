@@ -638,7 +638,9 @@ pum_set_selected(int n, int repeat)
 {
     int	    resized = FALSE;
     int	    context = pum_height / 2;
+#ifdef FEAT_QUICKFIX
     int	    prev_selected = pum_selected;
+#endif
 #ifdef FEAT_TEXT_PROP
     int	    has_info = FALSE;
 #endif
@@ -892,7 +894,7 @@ pum_set_selected(int n, int repeat)
 		    }
 		}
 	    }
-# ifdef FEAT_TEXT_PROP
+# if defined(FEAT_TEXT_PROP) && defined(FEAT_QUICKFIX)
 	    if (WIN_IS_POPUP(curwin))
 		// can't keep focus in a popup window
 		win_enter(firstwin, TRUE);
@@ -900,7 +902,7 @@ pum_set_selected(int n, int repeat)
 	}
 #endif
     }
-# ifdef FEAT_TEXT_PROP
+# if defined(FEAT_TEXT_PROP) && defined(FEAT_QUICKFIX)
     if (!has_info)
 	// close any popup info window
 	popup_close_preview(TRUE);
@@ -922,7 +924,7 @@ pum_undisplay(void)
     redraw_all_later(NOT_VALID);
     redraw_tabline = TRUE;
     status_redraw_all();
-#ifdef FEAT_TEXT_PROP
+# if defined(FEAT_TEXT_PROP) && defined(FEAT_QUICKFIX)
     // close any popup info window
     popup_close_preview(TRUE);
 #endif
