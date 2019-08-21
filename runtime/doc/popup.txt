@@ -289,6 +289,20 @@ popup_filter_yesno({id}, {key})				*popup_filter_yesno()*
 		See the example here: |popup_dialog-example|
 
 
+popup_findinfo()					*popup_findinfo()*
+		Get the |window-ID| for the popup info window, as it used by
+		the popup menu.  See |complete-popup|.  The info popup is
+		hidden when not used, it can be deleted with |popup_clear()|
+		and |popup_close()|.
+		Return zero if there is none.
+
+
+popup_findpreview()					*popup_findpreview()*
+		Get the |window-ID| for the popup preview window.
+		Return zero if there is none.
+
+
+
 popup_getoptions({id})					*popup_getoptions()*
 		Return the {options} for popup {id} in a Dict.
 		A zero value means the option was not set.  For "zindex" the
@@ -335,10 +349,6 @@ popup_getpos({id})					*popup_getpos()*
 		The "core_" values exclude the padding and border.
 
 		If popup window {id} is not found an empty Dict is returned.
-
-popup_getpreview()					*popup_getpreview()*
-		Get the |window-ID| for the popup preview window.
-		Return zero if there is none.
 
 
 popup_hide({id})						*popup_hide()*

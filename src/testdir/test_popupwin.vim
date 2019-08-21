@@ -2162,7 +2162,7 @@ func Test_previewpopup()
   call term_sendkeys(buf, "/another\<CR>\<C-W>}")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_2', {})
 
-  call term_sendkeys(buf, ":call popup_move(popup_getpreview(), #{col: 15})\<CR>")
+  call term_sendkeys(buf, ":call popup_move(popup_findpreview(), #{col: 15})\<CR>")
   call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_3', {})
 
@@ -2245,6 +2245,10 @@ func Get_popupmenu_lines()
 	      \ }
       endfunc
       call setline(1, 'text text text text text text text ')
+      func ChangeColor()
+	let id = popup_findinfo()
+	call popup_setoptions(id, #{highlight: 'InfoPopup'})
+      endfunc
   END
   return lines
 endfunc
@@ -2313,6 +2317,7 @@ func Test_popupmenu_info_align_menu()
   call VerifyScreenDump(buf, 'Test_popupwin_infopopup_align_2', {})
 
   call term_sendkeys(buf, "\<Esc>")
+  call term_sendkeys(buf, ":call ChangeColor()\<CR>")
   call term_sendkeys(buf, ":call setline(2, ['x']->repeat(10))\<CR>")
   call term_sendkeys(buf, "Gotest text test text\<C-X>\<C-U>")
   call VerifyScreenDump(buf, 'Test_popupwin_infopopup_align_3', {})

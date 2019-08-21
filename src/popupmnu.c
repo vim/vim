@@ -923,8 +923,8 @@ pum_set_selected(int n, int repeat UNUSED)
     }
 #if defined(FEAT_TEXT_PROP) && defined(FEAT_QUICKFIX)
     if (!has_info)
-	// close any popup info window
-	popup_close_preview(TRUE);
+	// hide any popup info window
+	popup_hide_info();
 #endif
 
     if (!resized)
@@ -944,8 +944,8 @@ pum_undisplay(void)
     redraw_tabline = TRUE;
     status_redraw_all();
 #if defined(FEAT_TEXT_PROP) && defined(FEAT_QUICKFIX)
-    // close any popup info window
-    popup_close_preview(TRUE);
+    // hide any popup info window
+    popup_hide_info();
 #endif
 }
 

@@ -5808,7 +5808,7 @@ ex_pclose(exarg_T *eap)
 	}
 # ifdef FEAT_TEXT_PROP
     // Also when 'previewpopup' is empty, it might have been cleared.
-    popup_close_preview(FALSE);
+    popup_close_preview();
 # endif
 }
 #endif

@@ -5154,7 +5154,8 @@ prepare_tagpreview(
 	else if (use_popup)
 	{
 	    wp = popup_find_info_window();
-	    // TODO: set position
+	    if (wp != NULL)
+		popup_show(wp);
 	}
 	else
 # endif
