@@ -2292,4 +2292,33 @@ func Test_popupmenu_info_noborder()
   call delete('XtestInfoPopupNb')
 endfunc
 
+func Test_popupmenu_info_align_menu()
+  CheckScreendump
+
+  let lines = Get_popupmenu_lines()
+  call add(lines, 'set completepopup=height:4,border:off,align:menu')
+  call writefile(lines, 'XtestInfoPopupNb')
+
+  let buf = RunVimInTerminal('-S XtestInfoPopupNb', #{rows: 14})
+  call term_wait(buf, 50)
+
+  call term_sendkeys(buf, "A\<C-X>\<C-U>")
+  call term_sendkeys(buf, "\<C-N>")
+  call term_sendkeys(buf, "\<C-N>")
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_align_1', {})
+
+  call term_sendkeys(buf, "test text test text test\<C-X>\<C-U>")
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_align_2', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call term_sendkeys(buf, ":call setline(2, ['x']->repeat(10))\<CR>")
+  call term_sendkeys(buf, "Gotest text test text\<C-X>\<C-U>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_align_3', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestInfoPopupNb')
+endfunc
+
 " vim: shiftwidth=2 sts=2

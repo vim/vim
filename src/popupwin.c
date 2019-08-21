@@ -1300,6 +1300,9 @@ parse_popup_option(win_T *wp, int is_preview)
 #endif
 	p_pvp;
 
+    if (wp != NULL)
+	wp->w_popup_flags &= ~POPF_INFO_MENU;
+
     for ( ; *p != NUL; p += (*p == ',' ? 1 : 0))
     {
 	char_u	*e, *dig;
@@ -1367,6 +1370,17 @@ parse_popup_option(win_T *wp, int is_preview)
 		    // only show the X for close when there is a border
 		    wp->w_popup_close = POPCLOSE_NONE;
 	    }
+	}
+	else if (STRNCMP(s, "align:", 6) == 0)
+	{
+	    char_u	*arg = s + 6;
+	    int		item = STRNCMP(arg, "item", 4) == 0 && arg + 4 == p;
+	    int		menu = STRNCMP(arg, "menu", 4) == 0 && arg + 4 == p;
+
+	    if (!menu && !item)
+		return FAIL;
+	    if (wp != NULL && menu)
+		wp->w_popup_flags |= POPF_INFO_MENU;
 	}
 	else
 	    return FAIL;

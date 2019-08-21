@@ -1124,8 +1124,15 @@ option is a comma separated list of values:
 	height		maximum height of the popup
 	width		maximum width of the popup
 	highlight	highlight group of the popup (default is Pmenu)
+	align		"item" (default) or "menu"
+	border		"on" (default) or "off"
 Example: >
 	:set completepopup=height:10,width:60,highlight:InfoPopup
+
+When the "align" value is "item then the popup is positioned close to the
+selected item.  Changing the selection will also move the popup.  When "align"
+is "menu" then the popup is aligned with the top of the menu if the menu is
+below the text, and the bottom of the menu otherwise.
 
 The "kind" item uses a single letter to indicate the kind of completion.  This
 may be used to show the completion differently (different color or icon).

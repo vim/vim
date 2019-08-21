@@ -745,18 +745,38 @@ pum_set_selected(int n, int repeat UNUSED)
 		if (use_popup)
 		{
 		    int col = pum_col + pum_width + 1;
-		    int row = pum_row + pum_selected - pum_first + 1;
+		    int row = pum_row;
+		    int botpos = POPPOS_BOTLEFT;
 
+		    curwin->w_popup_pos = POPPOS_TOPLEFT;
 		    if (Columns - col < 20 && Columns - col < pum_col)
 		    {
 			col = pum_col - 1;
 			curwin->w_popup_pos = POPPOS_TOPRIGHT;
+			botpos = POPPOS_BOTRIGHT;
 			curwin->w_maxwidth = pum_col - 1;
 		    }
 		    else
 			curwin->w_maxwidth = Columns - col + 1;
 		    curwin->w_maxwidth -= popup_extra_width(curwin);
+
 		    row -= popup_top_extra(curwin);
+		    if (curwin->w_popup_flags & POPF_INFO_MENU)
+		    {
+			if (pum_row < pum_win_row)
+			{
+			    // menu above cursor line, align with bottom
+			    row += pum_height;
+			    curwin->w_popup_pos = botpos;
+			}
+			else
+			    // menu below cursor line, align with top
+			    row += 1;
+		    }
+		    else
+			// align with the selected item
+			row += pum_selected - pum_first + 1;
+
 		    popup_set_wantpos_rowcol(curwin, row, col);
 		}
 # endif
