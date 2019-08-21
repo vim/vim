@@ -2430,9 +2430,12 @@ sign_place_from_dict(
     di = dict_find(dict, (char_u *)"lnum", -1);
     if (di != NULL)
     {
-	lnum = (int)tv_get_number_chk(&di->di_tv, &notanum);
-	if (notanum)
+	lnum = tv_get_lnum(&di->di_tv);
+	if (lnum <= 0)
+	{
+	    emsg(_(e_invarg));
 	    goto cleanup;
+	}
     }
 
     // sign priority
