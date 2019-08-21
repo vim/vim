@@ -1986,7 +1986,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_nf, PV_NF,
 			    {(char_u *)"bin,octal,hex", (char_u *)0L}
 			    SCTX_INIT},
-    {"number",	    "nu",   P_BOOL|P_VI_DEF|P_RCLR,
+    {"number",	    "nu",   P_BOOL|P_VI_DEF|P_RWIN,
 			    (char_u *)VAR_WIN, PV_NU,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"numberwidth", "nuw",  P_NUM|P_RWIN|P_VIM,
@@ -2254,7 +2254,7 @@ static struct vimoption options[] =
     {"regexpengine", "re",  P_NUM|P_VI_DEF,
 			    (char_u *)&p_re, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
-    {"relativenumber", "rnu", P_BOOL|P_VI_DEF|P_RCLR,
+    {"relativenumber", "rnu", P_BOOL|P_VI_DEF|P_RWIN,
 			    (char_u *)VAR_WIN, PV_RNU,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"remap",	    NULL,   P_BOOL|P_VI_DEF,
@@ -9004,6 +9004,21 @@ set_bool_option(
     }
 
 #endif
+
+    else if (((int *)varp == &curwin->w_p_nu
+	       || (int *)varp == &curwin->w_p_rnu)
+	     && (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) == 'u')
+	     && curbuf->b_signlist != NULL)
+    {
+	// If the 'number' or 'relativenumber' options are modified and
+	// 'signcolumn' is set to 'number', then clear the screen for a full
+	// refresh. Otherwise the sign icons are not displayed properly in the
+	// number column.  If the 'number' option is set and only the
+	// 'relativenumber' option is toggled, then don't refresh the screen
+	// (optimization).
+	if (!(curwin->w_p_nu && ((int *)varp == &curwin->w_p_rnu)))
+	    redraw_all_later(CLEAR);
+    }
 
 #ifdef FEAT_TERMGUICOLORS
     /* 'termguicolors' */
