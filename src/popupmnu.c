@@ -632,7 +632,7 @@ pum_redraw(void)
  * must be recomputed.
  */
     static int
-pum_set_selected(int n, int repeat)
+pum_set_selected(int n, int repeat UNUSED)
 {
     int	    resized = FALSE;
     int	    context = pum_height / 2;
@@ -996,6 +996,7 @@ pum_get_height(void)
     return pum_height;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Add size information about the pum to "dict".
  */
@@ -1011,6 +1012,7 @@ pum_set_event_info(dict_T *dict)
     dict_add_number(dict, "size", pum_size);
     dict_add_special(dict, "scrollbar", pum_scrollbar ? VVAL_TRUE : VVAL_FALSE);
 }
+#endif
 
 #if defined(FEAT_BEVAL_TERM) || defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
     static void
