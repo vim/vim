@@ -4086,7 +4086,9 @@ gen_expand_wildcards(
 		addfile(&ga, t, flags | EW_DIR | EW_FILE);
 	    else
 		addfile(&ga, t, flags);
-	    vim_free(t);
+
+	    if (t != p)
+		vim_free(t);
 	}
 
 #if defined(FEAT_SEARCHPATH)
