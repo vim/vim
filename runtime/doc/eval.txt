@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Aug 18
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Aug 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2593,9 +2593,10 @@ popup_create({what}, {options}) Number	create a popup window
 popup_dialog({what}, {options}) Number	create a popup window used as a dialog
 popup_filter_menu({id}, {key})  Number	filter for a menu popup window
 popup_filter_yesno({id}, {key}) Number	filter for a dialog popup window
+popup_findinfo()		Number	get window ID of info popup window
+popup_findpreview()		Number	get window ID of preview popup window
 popup_getoptions({id})		Dict	get options of popup window {id}
 popup_getpos({id})		Dict	get position of popup window {id}
-popup_getpreview()		Number	get window ID of preview popup window
 popup_hide({id})		none	hide popup menu {id}
 popup_menu({what}, {options})	Number	create a popup window used as a menu
 popup_move({id}, {options})	none	set position of popup window {id}
@@ -3274,17 +3275,22 @@ bufwinid({expr})					*bufwinid()*
 <
 		Only deals with the current tab page.
 
+		Can also be used as a |method|: >
+			FindBuffer()->bufwinid()
+
 bufwinnr({expr})					*bufwinnr()*
-		The result is a Number, which is the number of the first
-		window associated with buffer {expr}.  For the use of {expr},
-		see |bufname()| above.  If buffer {expr} doesn't exist or
-		there is no such window, -1 is returned.  Example: >
+		Like |bufwinid()| but return the window number instead of the
+		|window-ID|.
+		If buffer {expr} doesn't exist or there is no such window, -1
+		is returned.  Example: >
 
 	echo "A window containing buffer 1 is " . (bufwinnr(1))
 
 <		The number can be used with |CTRL-W_w| and ":wincmd w"
 		|:wincmd|.
-		Only deals with the current tab page.
+
+		Can also be used as a |method|: >
+			FindBuffer()->bufwinnr()
 
 byte2line({byte})					*byte2line()*
 		Return the line number that contains the character at byte
@@ -9512,6 +9518,9 @@ winbufnr({nr})	The result is a Number, which is the number of the buffer
 		Example: >
   :echo "The file in the current window is " . bufname(winbufnr(0))
 <
+		Can also be used as a |method|: >
+			FindWindow()->winbufnr()->bufname()
+<
 							*wincol()*
 wincol()	The result is a Number, which is the virtual column of the
 		cursor in the window.  This is counting screen cells from the
@@ -9823,7 +9832,7 @@ hangul_input		Compiled with Hangul input support. |hangul|
 hpux			HP-UX version of Vim.
 iconv			Can use iconv() for conversion.
 insert_expand		Compiled with support for CTRL-X expansion commands in
-			Insert mode.
+			Insert mode. (always true)
 jumplist		Compiled with |jumplist| support.
 keymap			Compiled with 'keymap' support.
 lambda			Compiled with |lambda| support.

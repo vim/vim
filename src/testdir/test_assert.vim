@@ -54,7 +54,7 @@ func Test_assert_equalfile()
 
   let goodtext = ["one", "two", "three"]
   call writefile(goodtext, 'Xone')
-  call assert_equal(1, assert_equalfile('Xone', 'xyzxyz'))
+  call assert_equal(1, 'Xone'->assert_equalfile('xyzxyz'))
   call assert_match("E485: Can't read file xyzxyz", v:errors[0])
   call remove(v:errors, 0)
 
@@ -96,6 +96,9 @@ endfunc
 func Test_assert_report()
   call assert_equal(1, assert_report('something is wrong'))
   call assert_match('something is wrong', v:errors[0])
+  call remove(v:errors, 0)
+  call assert_equal(1, 'also wrong'->assert_report())
+  call assert_match('also wrong', v:errors[0])
   call remove(v:errors, 0)
 endfunc
 

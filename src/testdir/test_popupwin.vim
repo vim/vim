@@ -2332,8 +2332,7 @@ func Test_popupmenu_info_align_menu()
 endfunc
 
 func Test_popupwin_recycle_bnr()
-  let winid = popup_notification('nothing wrong', {})
-  let bufnr = winbufnr(winid)
+  let bufnr = popup_notification('nothing wrong', {})->winbufnr()
   call popup_clear()
   let winid = popup_notification('nothing wrong', {})
   call assert_equal(bufnr, winbufnr(winid))
