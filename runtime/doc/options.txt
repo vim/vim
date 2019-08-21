@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Aug 18
+*options.txt*	For Vim version 8.1.  Last change: 2019 Aug 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1866,7 +1866,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'completefunc' 'cfu'	string	(default: empty)
 			local to buffer
 			{not available when compiled without the |+eval|
-			or |+insert_expand| features}
+			feature}
 	This option specifies a function to be used for Insert mode completion
 	with CTRL-X CTRL-U. |i_CTRL-X_CTRL-U|
 	See |complete-functions| for an explanation of how the function is
@@ -1892,8 +1892,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'completeopt'* *'cot'*
 'completeopt' 'cot'	string	(default: "menu,preview")
 			global
-			{not available when compiled without the
-			|+insert_expand| feature}
 	A comma separated list of options for Insert mode completion
 	|ins-completion|.  The supported values are:
 
@@ -5233,8 +5231,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	In the "popup" model the right mouse button produces a pop-up menu.
 	You need to define this first, see |popup-menu|.
-	In a terminal the popup menu works if Vim is compiled with the
-	|+insert_expand| option.
 
 	Note that you can further refine the meaning of buttons with mappings.
 	See |gui-mouse-mapping|.  But mappings are NOT used for modeless
@@ -5419,7 +5415,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'omnifunc' 'ofu'	string	(default: empty)
 			local to buffer
 			{not available when compiled without the |+eval|
-			or |+insert_expand| features}
+			feature}
 	This option specifies a function to be used for Insert mode omni
 	completion with CTRL-X CTRL-O. |i_CTRL-X_CTRL-O|
 	See |complete-functions| for an explanation of how the function is
@@ -5749,8 +5745,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'pumheight'* *'ph'*
 'pumheight' 'ph'	number	(default 0)
 			global
-			{not available when compiled without the
-			|+insert_expand| feature}
 	Determines the maximum number of items to show in the popup menu for
 	Insert mode completion.  When zero as much space as available is used.
 	|ins-completion-menu|.
@@ -5758,8 +5752,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'pumwidth'* *'pw'*
 'pumwidth' 'pw'		number	(default 15)
 			global
-			{not available when compiled without the
-			|+insert_expand| feature}
 	Determines the minimum width to use for the popup menu for Insert mode
 	completion.  |ins-completion-menu|.
 

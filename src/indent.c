@@ -4110,7 +4110,6 @@ in_cinkeys(
 	    {
 		int		match = FALSE;
 
-#ifdef FEAT_INS_EXPAND
 		if (keytyped == KEY_COMPLETE)
 		{
 		    char_u	*s;
@@ -4140,7 +4139,6 @@ in_cinkeys(
 			match = TRUE;
 		}
 		else
-#endif
 		    // TODO: multi-byte
 		    if (keytyped == (int)p[-1] || (icase && keytyped < 256
 			 && TOLOWER_LOC(keytyped) == TOLOWER_LOC((int)p[-1])))

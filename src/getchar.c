@@ -1481,7 +1481,6 @@ close_all_scripts(void)
 }
 #endif
 
-#if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Return TRUE when reading keys from a script file.
  */
@@ -1490,7 +1489,6 @@ using_script(void)
 {
     return scriptin[curscript] != NULL;
 }
-#endif
 
 /*
  * This function is called just before doing a blocking wait.  Thus after
@@ -1866,7 +1864,6 @@ vpeekc_nomap(void)
 }
 #endif
 
-#if defined(FEAT_INS_EXPAND) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Check if any character is available, also half an escape sequence.
  * Trick: when no typeahead found, but there is something in the typeahead
@@ -1882,7 +1879,6 @@ vpeekc_any(void)
 	c = ESC;
     return c;
 }
-#endif
 
 /*
  * Call vpeekc() without causing anything to be mapped.
@@ -1963,12 +1959,9 @@ handle_mapping(
 	    && !(State == HITRETURN && (tb_c1 == CAR || tb_c1 == ' '))
 	    && State != ASKMORE
 	    && State != CONFIRM
-#ifdef FEAT_INS_EXPAND
 	    && !((ctrl_x_mode_not_default() && vim_is_ctrl_x_key(tb_c1))
 		    || ((compl_cont_status & CONT_LOCAL)
-			&& (tb_c1 == Ctrl_N || tb_c1 == Ctrl_P)))
-#endif
-	    )
+			&& (tb_c1 == Ctrl_N || tb_c1 == Ctrl_P))))
     {
 #ifdef FEAT_LANGMAP
 	if (tb_c1 == K_SPECIAL)

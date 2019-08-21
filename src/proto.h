@@ -94,9 +94,7 @@ extern int _stricoll(char *a, char *b);
 # include "hashtab.pro"
 # include "highlight.pro"
 # include "indent.pro"
-# ifdef FEAT_INS_EXPAND
 # include "insexpand.pro"
-# endif
 # include "json.pro"
 # include "list.pro"
 # include "blob.pro"

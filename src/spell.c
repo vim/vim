@@ -8763,7 +8763,6 @@ spell_to_word_end(char_u *start, win_T *win)
     return p;
 }
 
-#if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * For Insert mode completion CTRL-X s:
  * Find start of the word in front of column "startcol".
@@ -8833,6 +8832,5 @@ expand_spelling(
     *matchp = ga.ga_data;
     return ga.ga_len;
 }
-#endif
 
 #endif  /* FEAT_SPELL */

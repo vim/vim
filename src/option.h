@@ -410,14 +410,12 @@ EXTERN long	p_ch;		// 'cmdheight'
 EXTERN int	p_confirm;	// 'confirm'
 #endif
 EXTERN int	p_cp;		// 'compatible'
-#ifdef FEAT_INS_EXPAND
 EXTERN char_u	*p_cot;		// 'completeopt'
-# ifdef BACKSLASH_IN_FILENAME
+#ifdef BACKSLASH_IN_FILENAME
 EXTERN char_u	*p_csl;		// 'completeslash'
-# endif
+#endif
 EXTERN long	p_ph;		// 'pumheight'
 EXTERN long	p_pw;		// 'pumwidth'
-#endif
 EXTERN char_u	*p_cpo;		// 'cpoptions'
 #ifdef FEAT_CSCOPE
 EXTERN char_u	*p_csprg;	// 'cscopeprg'
@@ -443,9 +441,7 @@ EXTERN char_u	*p_dip;		// 'diffopt'
 EXTERN char_u	*p_dex;		// 'diffexpr'
 # endif
 #endif
-#ifdef FEAT_INS_EXPAND
 EXTERN char_u	*p_dict;	// 'dictionary'
-#endif
 #ifdef FEAT_DIGRAPHS
 EXTERN int	p_dg;		// 'digraph'
 #endif
@@ -849,9 +845,7 @@ EXTERN long	p_titlelen;	// 'titlelen'
 EXTERN char_u	*p_titleold;	// 'titleold'
 EXTERN char_u	*p_titlestring;	// 'titlestring'
 #endif
-#ifdef FEAT_INS_EXPAND
 EXTERN char_u	*p_tsr;		// 'thesaurus'
-#endif
 EXTERN int	p_ttimeout;	// 'ttimeout'
 EXTERN long	p_ttm;		// 'ttimeoutlen'
 EXTERN int	p_tbi;		// 'ttybuiltin'
@@ -996,11 +990,9 @@ enum
 #ifdef FEAT_COMMENTS
     , BV_COM
 #endif
-#ifdef FEAT_INS_EXPAND
     , BV_CPT
     , BV_DICT
     , BV_TSR
-#endif
 #ifdef BACKSLASH_IN_FILENAME
     , BV_CSL
 #endif

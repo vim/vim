@@ -300,11 +300,7 @@ static char *(features[]) =
 #else
 	"-iconv",
 #endif
-#ifdef FEAT_INS_EXPAND
 	"+insert_expand",
-#else
-	"-insert_expand",
-#endif
 #ifdef FEAT_JOB_CHANNEL
 	"+job",
 #else
@@ -765,6 +761,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    1901,
 /**/
     1900,
 /**/

@@ -4019,12 +4019,10 @@ gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging)
     if (dont_scroll)
 	return;
 #endif
-#ifdef FEAT_INS_EXPAND
     /* Disallow scrolling the current window when the completion popup menu is
      * visible. */
     if ((sb->wp == NULL || sb->wp == curwin) && pum_visible())
 	return;
-#endif
 
 #ifdef FEAT_RIGHTLEFT
     if (sb->wp == NULL && curwin->w_p_rl)
@@ -4485,13 +4483,12 @@ gui_do_scroll(void)
     {
 	int type = VALID;
 
-#ifdef FEAT_INS_EXPAND
 	if (pum_visible())
 	{
 	    type = NOT_VALID;
 	    wp->w_lines_valid = 0;
 	}
-#endif
+
 	/* Don't set must_redraw here, it may cause the popup menu to
 	 * disappear when losing focus after a scrollbar drag. */
 	if (wp->w_redr_type < type)
@@ -4501,11 +4498,9 @@ gui_do_scroll(void)
 	mch_enable_flush();
     }
 
-#ifdef FEAT_INS_EXPAND
     /* May need to redraw the popup menu. */
     if (pum_visible())
 	pum_redraw();
-#endif
 
     return (wp == curwin && !EQUAL_POS(curwin->w_cursor, old_cursor));
 }

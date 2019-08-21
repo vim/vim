@@ -13,7 +13,6 @@
 
 #include "vim.h"
 
-#ifdef FEAT_INS_EXPAND
 /*
  * Definitions used for CTRL-X submode.
  * Note: If you change CTRL-X submode, you must also maintain ctrl_x_msgs[] and
@@ -209,14 +208,12 @@ static int  ins_compl_pum_key(int c);
 static int  ins_compl_key2count(int c);
 static void show_pum(int prev_w_wrow, int prev_w_leftcol);
 static unsigned  quote_meta(char_u *dest, char_u *str, int len);
-#endif // FEAT_INS_EXPAND
 
 #ifdef FEAT_SPELL
 static void spell_back_to_badword(void);
 static int  spell_bad_len = 0;	// length of located bad word
 #endif
 
-#if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * CTRL-X pressed in Insert mode.
  */
@@ -288,9 +285,9 @@ ctrl_x_mode_not_defined_yet(void)
 has_compl_option(int dict_opt)
 {
     if (dict_opt ? (*curbuf->b_p_dict == NUL && *p_dict == NUL
-# ifdef FEAT_SPELL
+#ifdef FEAT_SPELL
 							&& !curwin->w_p_spell
-# endif
+#endif
 							)
 		 : (*curbuf->b_p_tsr == NUL && *p_tsr == NUL))
     {
@@ -4154,15 +4151,15 @@ quote_meta(char_u *dest, char_u *src, int len)
     return m;
 }
 
-# if defined(EXITFREE) || defined(PROTO)
+#if defined(EXITFREE) || defined(PROTO)
     void
 free_insexpand_stuff(void)
 {
     VIM_CLEAR(compl_orig_text);
 }
-# endif
+#endif
 
-# ifdef FEAT_SPELL
+#ifdef FEAT_SPELL
 /*
  * Called when starting CTRL_X_SPELL mode: Move backwards to a previous badly
  * spelled word, if there is one.
@@ -4176,6 +4173,4 @@ spell_back_to_badword(void)
     if (curwin->w_cursor.col != tpos.col)
 	start_arrow(&tpos);
 }
-# endif
-
-#endif // FEAT_INS_EXPAND
+#endif

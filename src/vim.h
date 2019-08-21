@@ -848,9 +848,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define ACTION_GOTO	2
 #define ACTION_SPLIT	3
 #define ACTION_SHOW_ALL	4
-#ifdef FEAT_INS_EXPAND
-# define ACTION_EXPAND	5
-#endif
+#define ACTION_EXPAND	5
 
 #ifdef FEAT_SYN_HL
 # define SST_MIN_ENTRIES 150	/* minimal size for state stack array */

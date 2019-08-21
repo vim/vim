@@ -1614,9 +1614,7 @@ call_func(
 		     * redo buffer.
 		     */
 		    save_search_patterns();
-#ifdef FEAT_INS_EXPAND
 		    if (!ins_compl_active())
-#endif
 		    {
 			saveRedobuff(&save_redo);
 			did_save_redo = TRUE;

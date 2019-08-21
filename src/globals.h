@@ -129,7 +129,6 @@ EXTERN int	screen_cleared INIT(= FALSE);	// screen has been cleared
  */
 EXTERN colnr_T	dollar_vcol INIT(= -1);
 
-#ifdef FEAT_INS_EXPAND
 /*
  * Variables for Insert mode completion.
  */
@@ -150,7 +149,11 @@ EXTERN int	compl_cont_status INIT(= 0);
 				// word-wise expansion, not set for ^X^L
 # define CONT_LOCAL	32	// for ctrl_x_mode 0, ^X^P/^X^N do a local
 				// expansion, (eg use complete=.)
-#endif
+
+EXTERN char_u	*edit_submode INIT(= NULL); // msg for CTRL-X submode
+EXTERN char_u	*edit_submode_pre INIT(= NULL); // prepended to edit_submode
+EXTERN char_u	*edit_submode_extra INIT(= NULL);// appended to edit_submode
+EXTERN hlf_T	edit_submode_highl;	// highl. method for extra info
 
 /*
  * Functions for putting characters in the command line,
@@ -987,12 +990,6 @@ EXTERN int arrow_used;			// Normally FALSE, set to TRUE after
 					// to call u_sync()
 EXTERN int	ins_at_eol INIT(= FALSE); // put cursor after eol when
 					  // restarting edit after CTRL-O
-#ifdef FEAT_INS_EXPAND
-EXTERN char_u	*edit_submode INIT(= NULL); // msg for CTRL-X submode
-EXTERN char_u	*edit_submode_pre INIT(= NULL); // prepended to edit_submode
-EXTERN char_u	*edit_submode_extra INIT(= NULL);// appended to edit_submode
-EXTERN hlf_T	edit_submode_highl;	// highl. method for extra info
-#endif
 
 EXTERN int	no_abbr INIT(= TRUE);	// TRUE when no abbreviations loaded
 
@@ -1532,9 +1529,7 @@ EXTERN char e_openerrf[]	INIT(= N_("E40: Can't open errorfile %s"));
 EXTERN char e_opendisp[]	INIT(= N_("E233: cannot open display"));
 #endif
 EXTERN char e_outofmem[]	INIT(= N_("E41: Out of memory!"));
-#ifdef FEAT_INS_EXPAND
-EXTERN char e_patnotf[]	INIT(= N_("Pattern not found"));
-#endif
+EXTERN char e_patnotf[]		INIT(= N_("Pattern not found"));
 EXTERN char e_patnotf2[]	INIT(= N_("E486: Pattern not found: %s"));
 EXTERN char e_positive[]	INIT(= N_("E487: Argument must be positive"));
 #if defined(UNIX) || defined(FEAT_SESSION)
@@ -1609,8 +1604,7 @@ EXTERN char e_nobufnr[]	INIT(= N_("E86: Buffer %ld does not exist"));
 
 EXTERN char e_invalpat[]	INIT(= N_("E682: Invalid search pattern or delimiter"));
 EXTERN char e_bufloaded[]	INIT(= N_("E139: File is loaded in another buffer"));
-#if defined(FEAT_SYN_HL) || \
-	(defined(FEAT_INS_EXPAND) && defined(FEAT_COMPL_FUNC))
+#if defined(FEAT_SYN_HL) || defined(FEAT_COMPL_FUNC)
 EXTERN char e_notset[]	INIT(= N_("E764: Option '%s' is not set"));
 #endif
 #ifndef FEAT_CLIPBOARD

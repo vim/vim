@@ -1901,13 +1901,9 @@ find_tags(
 	    else
 #endif
 		fast_breakcheck();
-#ifdef FEAT_INS_EXPAND
 	    if ((flags & TAG_INS_COMP))	/* Double brackets for gcc */
 		ins_compl_check_keys(30, FALSE);
 	    if (got_int || ins_compl_interrupted())
-#else
-	    if (got_int)
-#endif
 	    {
 		stop_searching = TRUE;
 		break;

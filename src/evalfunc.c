@@ -499,12 +499,10 @@ static funcentry_T global_functions[] =
     {"cindent",		1, 1, 0,	  f_cindent},
     {"clearmatches",	0, 1, 0,	  f_clearmatches},
     {"col",		1, 1, 0,	  f_col},
-#if defined(FEAT_INS_EXPAND)
     {"complete",	2, 2, 0,	  f_complete},
     {"complete_add",	1, 1, 0,	  f_complete_add},
     {"complete_check",	0, 0, 0,	  f_complete_check},
     {"complete_info",	0, 1, 0,	  f_complete_info},
-#endif
     {"confirm",		1, 4, 0,	  f_confirm},
     {"copy",		1, 1, FEARG_1,	  f_copy},
 #ifdef FEAT_FLOAT
@@ -5951,9 +5949,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #if defined(HAVE_ICONV_H) && defined(USE_ICONV)
 	"iconv",
 #endif
-#ifdef FEAT_INS_EXPAND
 	"insert_expand",
-#endif
 #ifdef FEAT_JOB_CHANNEL
 	"job",
 #endif
@@ -7638,12 +7634,10 @@ f_mode(typval_T *argvars, typval_T *rettv)
 		buf[0] = 'R';
 	    else
 		buf[0] = 'i';
-#ifdef FEAT_INS_EXPAND
 	    if (ins_compl_active())
 		buf[1] = 'c';
 	    else if (ctrl_x_mode_not_defined_yet())
 		buf[1] = 'x';
-#endif
 	}
     }
     else if ((State & CMDLINE) || exmode_active)
@@ -7886,9 +7880,7 @@ f_pum_getpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
     if (rettv_dict_alloc(rettv) != OK)
 	return;
-#ifdef FEAT_INS_EXPAND
     pum_set_event_info(rettv->vval.v_dict);
-#endif
 }
 
 /*
@@ -7897,10 +7889,8 @@ f_pum_getpos(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     static void
 f_pumvisible(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_INS_EXPAND
     if (pum_visible())
 	rettv->vval.v_number = 1;
-#endif
 }
 
 #ifdef FEAT_PYTHON3

@@ -399,10 +399,7 @@ ignorecase_opt(char_u *pat, int ic_in, int scs)
     int		ic = ic_in;
 
     if (ic && !no_smartcase && scs
-#ifdef FEAT_INS_EXPAND
-			     && !(ctrl_x_mode_not_default() && curbuf->b_p_inf)
-#endif
-								    )
+			    && !(ctrl_x_mode_not_default() && curbuf->b_p_inf))
 	ic = !pat_has_uppercase(pat);
     no_smartcase = FALSE;
 
@@ -1614,7 +1611,6 @@ end_do_search:
     return retval;
 }
 
-#if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * search_for_exact_line(buf, pos, dir, pat)
  *
@@ -1693,7 +1689,6 @@ search_for_exact_line(
     }
     return FAIL;
 }
-#endif /* FEAT_INS_EXPAND */
 
 /*
  * Character Searches
@@ -5092,12 +5087,9 @@ find_pattern_in_path(
 	return;
 
     if (type != CHECK_PATH && type != FIND_DEFINE
-#ifdef FEAT_INS_EXPAND
 	/* when CONT_SOL is set compare "ptr" with the beginning of the line
 	 * is faster than quote_meta/regcomp/regexec "ptr" -- Acevedo */
-	    && !(compl_cont_status & CONT_SOL)
-#endif
-       )
+	    && !(compl_cont_status & CONT_SOL))
     {
 	pat = alloc(len + 5);
 	if (pat == NULL)
@@ -5323,7 +5315,6 @@ find_pattern_in_path(
 		    files[depth].name = curr_fname = new_fname;
 		    files[depth].lnum = 0;
 		    files[depth].matched = FALSE;
-#ifdef FEAT_INS_EXPAND
 		    if (action == ACTION_EXPAND)
 		    {
 			msg_hist_off = TRUE;	/* reset in msg_trunc_attr() */
@@ -5332,9 +5323,7 @@ find_pattern_in_path(
 				(char *)new_fname);
 			msg_trunc_attr((char *)IObuff, TRUE, HL_ATTR(HLF_R));
 		    }
-		    else
-#endif
-			 if (p_verbose >= 5)
+		    else if (p_verbose >= 5)
 		    {
 			verbose_enter();
 			smsg(_("Searching included file %s"),
@@ -5373,11 +5362,7 @@ search_line:
 	     */
 	    if (def_regmatch.regprog == NULL || define_matched)
 	    {
-		if (define_matched
-#ifdef FEAT_INS_EXPAND
-			|| (compl_cont_status & CONT_SOL)
-#endif
-		    )
+		if (define_matched || (compl_cont_status & CONT_SOL))
 		{
 		    /* compare the first "len" chars from "ptr" */
 		    startp = skipwhite(p);
@@ -5442,7 +5427,6 @@ search_line:
 	}
 	if (matched)
 	{
-#ifdef FEAT_INS_EXPAND
 	    if (action == ACTION_EXPAND)
 	    {
 		int	cont_s_ipos = FALSE;
@@ -5524,9 +5508,7 @@ search_line:
 		else if (add_r == FAIL)
 		    break;
 	    }
-	    else
-#endif
-		 if (action == ACTION_SHOW_ALL)
+	    else if (action == ACTION_SHOW_ALL)
 	    {
 		found = TRUE;
 		if (!did_show)
@@ -5638,29 +5620,21 @@ search_line:
 #endif
 		break;
 	    }
-#ifdef FEAT_INS_EXPAND
 exit_matched:
-#endif
 	    matched = FALSE;
 	    /* look for other matches in the rest of the line if we
 	     * are not at the end of it already */
 	    if (def_regmatch.regprog == NULL
-#ifdef FEAT_INS_EXPAND
 		    && action == ACTION_EXPAND
 		    && !(compl_cont_status & CONT_SOL)
-#endif
 		    && *startp != NUL
 		    && *(p = startp + MB_PTR2LEN(startp)) != NUL)
 		goto search_line;
 	}
 	line_breakcheck();
-#ifdef FEAT_INS_EXPAND
 	if (action == ACTION_EXPAND)
 	    ins_compl_check_keys(30, FALSE);
 	if (got_int || ins_compl_interrupted())
-#else
-	if (got_int)
-#endif
 	    break;
 
 	/*
@@ -5721,17 +5695,9 @@ exit_matched:
 		msg(_("No included files"));
 	}
     }
-    else if (!found
-#ifdef FEAT_INS_EXPAND
-		    && action != ACTION_EXPAND
-#endif
-						)
+    else if (!found && action != ACTION_EXPAND)
     {
-#ifdef FEAT_INS_EXPAND
 	if (got_int || ins_compl_interrupted())
-#else
-	if (got_int)
-#endif
 	    emsg(_(e_interr));
 	else if (type == FIND_DEFINE)
 	    emsg(_("E388: Couldn't find definition"));

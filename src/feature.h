@@ -106,6 +106,7 @@
  * +user_commands	Allow the user to define his own commands.
  * +multi_byte		Generic multi-byte character handling.
  * +cmdline_compl	completion of mappings/abbreviations in cmdline mode.
+ * +insert_expand	CTRL-N/CTRL-P/CTRL-X in insert mode.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -168,14 +169,6 @@
  */
 #ifdef FEAT_BIG
 # define FEAT_KEYMAP
-#endif
-
-/*
- * +insert_expand	CTRL-N/CTRL-P/CTRL-X in insert mode. Takes about
- *			4Kbyte of code.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_INS_EXPAND
 #endif
 
 #ifdef FEAT_NORMAL
@@ -343,7 +336,7 @@
 /*
  *			Insert mode completion with 'completefunc'.
  */
-#if defined(FEAT_INS_EXPAND) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 # define FEAT_COMPL_FUNC
 #endif
 
@@ -621,7 +614,7 @@
 /*
  * popup menu in a terminal
  */
-#if defined(FEAT_MENU) && !defined(ALWAYS_USE_GUI) && defined(FEAT_INS_EXPAND)
+#if defined(FEAT_MENU) && !defined(ALWAYS_USE_GUI)
 # define FEAT_TERM_POPUP_MENU
 #endif
 
