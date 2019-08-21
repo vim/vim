@@ -922,13 +922,14 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define GETFILE_UNUSED	    8
 #define GETFILE_SUCCESS(x)  ((x) <= 0)
 
-/* Values for buflist_new() flags */
-#define BLN_CURBUF	1	/* may re-use curbuf for new buffer */
-#define BLN_LISTED	2	/* put new buffer in buffer list */
-#define BLN_DUMMY	4	/* allocating dummy buffer */
-#define BLN_NEW		8	/* create a new buffer */
-#define BLN_NOOPT	16	/* don't copy options to existing buffer */
-#define BLN_DUMMY_OK	32	/* also find an existing dummy buffer */
+// Values for buflist_new() flags
+#define BLN_CURBUF	1	// may re-use curbuf for new buffer
+#define BLN_LISTED	2	// put new buffer in buffer list
+#define BLN_DUMMY	4	// allocating dummy buffer
+#define BLN_NEW		8	// create a new buffer
+#define BLN_NOOPT	16	// don't copy options to existing buffer
+#define BLN_DUMMY_OK	32	// also find an existing dummy buffer
+#define BLN_REUSE	64	// may re-use number from buf_reuse
 
 /* Values for in_cinkeys() */
 #define KEY_OPEN_FORW	0x101
@@ -977,12 +978,13 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define FM_BLOCKSTOP	0x04	/* stop at start/end of block */
 #define FM_SKIPCOMM	0x08	/* skip comments */
 
-/* Values for action argument for do_buffer() */
-#define DOBUF_GOTO	0	/* go to specified buffer */
-#define DOBUF_SPLIT	1	/* split window and go to specified buffer */
-#define DOBUF_UNLOAD	2	/* unload specified buffer(s) */
-#define DOBUF_DEL	3	/* delete specified buffer(s) from buflist */
-#define DOBUF_WIPE	4	/* delete specified buffer(s) really */
+// Values for action argument for do_buffer() and close_buffer()
+#define DOBUF_GOTO	0	// go to specified buffer
+#define DOBUF_SPLIT	1	// split window and go to specified buffer
+#define DOBUF_UNLOAD	2	// unload specified buffer(s)
+#define DOBUF_DEL	3	// delete specified buffer(s) from buflist
+#define DOBUF_WIPE	4	// delete specified buffer(s) really
+#define DOBUF_WIPE_REUSE 5	// like DOBUF_WIPE an keep number for reuse
 
 /* Values for start argument for do_buffer() */
 #define DOBUF_CURRENT	0	/* "count" buffer from current buffer */

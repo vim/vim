@@ -1550,8 +1550,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     {
 	// create a new buffer associated with the popup
 	new_buffer = TRUE;
-	buf = buflist_new(NULL, NULL, (linenr_T)0,
-						 BLN_NEW|BLN_LISTED|BLN_DUMMY);
+	buf = buflist_new(NULL, NULL, (linenr_T)0, BLN_NEW|BLN_DUMMY|BLN_REUSE);
 	if (buf == NULL)
 	    return NULL;
 	ml_open(buf);

@@ -2331,4 +2331,13 @@ func Test_popupmenu_info_align_menu()
   call delete('XtestInfoPopupNb')
 endfunc
 
+func Test_popupwin_recycle_bnr()
+  let winid = popup_notification('nothing wrong', {})
+  let bufnr = winbufnr(winid)
+  call popup_clear()
+  let winid = popup_notification('nothing wrong', {})
+  call assert_equal(bufnr, winbufnr(winid))
+  call popup_clear()
+endfunc
+
 " vim: shiftwidth=2 sts=2

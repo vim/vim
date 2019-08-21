@@ -1,4 +1,5 @@
 /* buffer.c */
+int get_highest_fnum(void);
 void buffer_ensure_loaded(buf_T *buf);
 int open_buffer(int read_stdin, exarg_T *eap, int flags);
 void set_bufref(bufref_T *bufref, buf_T *buf);

@@ -4970,7 +4970,7 @@ win_unlisted(win_T *wp)
 win_free_popup(win_T *win)
 {
     if (bt_popup(win->w_buffer))
-	win_close_buffer(win, DOBUF_WIPE, FALSE);
+	win_close_buffer(win, DOBUF_WIPE_REUSE, FALSE);
     else
 	close_buffer(win, win->w_buffer, 0, FALSE);
 # if defined(FEAT_TIMERS)
