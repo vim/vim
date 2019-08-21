@@ -935,7 +935,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
 /*
  * Get the padding plus border at the top, adjusted to 1 if there is a title.
  */
-    static int
+    int
 popup_top_extra(win_T *wp)
 {
     int	extra = wp->w_popup_border[0] + wp->w_popup_padding[0];
@@ -1348,6 +1348,24 @@ parse_popup_option(win_T *wp, int is_preview)
 		set_string_option_direct_in_win(wp, (char_u *)"wincolor", -1,
 						s + 10, OPT_FREE|OPT_LOCAL, 0);
 		*p = c;
+	    }
+	}
+	else if (STRNCMP(s, "border:", 7) == 0)
+	{
+	    char_u	*arg = s + 7;
+	    int		on = STRNCMP(arg, "on", 2) == 0 && arg + 2 == p;
+	    int		off = STRNCMP(arg, "off", 3) == 0 && arg + 3 == p;
+	    int		i;
+
+	    if (!on && !off)
+		return FAIL;
+	    if (wp != NULL)
+	    {
+		for (i = 0; i < 4; ++i)
+		    wp->w_popup_border[i] = on ? 1 : 0;
+		if (off)
+		    // only show the X for close when there is a border
+		    wp->w_popup_close = POPCLOSE_NONE;
 	    }
 	}
 	else

@@ -745,6 +745,7 @@ pum_set_selected(int n, int repeat)
 		if (use_popup)
 		{
 		    int col = pum_col + pum_width + 1;
+		    int row = pum_row + pum_selected - pum_first + 1;
 
 		    if (Columns - col < 20 && Columns - col < pum_col)
 		    {
@@ -755,8 +756,8 @@ pum_set_selected(int n, int repeat)
 		    else
 			curwin->w_maxwidth = Columns - col + 1;
 		    curwin->w_maxwidth -= popup_extra_width(curwin);
-		    popup_set_wantpos_rowcol(curwin,
-				      pum_row + pum_selected - pum_first, col);
+		    row -= popup_top_extra(curwin);
+		    popup_set_wantpos_rowcol(curwin, row, col);
 		}
 # endif
 		if (!resized

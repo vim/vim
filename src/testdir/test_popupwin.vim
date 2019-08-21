@@ -2193,14 +2193,11 @@ func Test_previewpopup()
   call delete('Xheader.h')
 endfunc
 
-func Test_popupmenu_info()
-  CheckScreendump
-
+func Get_popupmenu_lines()
   let lines =<< trim END
       set completeopt+=preview,popup
       set completefunc=CompleteFuncDict
       hi InfoPopup ctermbg=yellow
-      set completepopup=height:4,highlight:InfoPopup
 
       func CompleteFuncDict(findstart, base)
 	if a:findstart
@@ -2249,7 +2246,16 @@ func Test_popupmenu_info()
       endfunc
       call setline(1, 'text text text text text text text ')
   END
+  return lines
+endfunc
+
+func Test_popupmenu_info_border()
+  CheckScreendump
+
+  let lines = Get_popupmenu_lines()
+  call add(lines, 'set completepopup=height:4,highlight:InfoPopup')
   call writefile(lines, 'XtestInfoPopup')
+
   let buf = RunVimInTerminal('-S XtestInfoPopup', #{rows: 14})
   call term_wait(buf, 50)
 
@@ -2267,6 +2273,23 @@ func Test_popupmenu_info()
 
   call StopVimInTerminal(buf)
   call delete('XtestInfoPopup')
+endfunc
+
+func Test_popupmenu_info_noborder()
+  CheckScreendump
+
+  let lines = Get_popupmenu_lines()
+  call add(lines, 'set completepopup=height:4,border:off')
+  call writefile(lines, 'XtestInfoPopupNb')
+
+  let buf = RunVimInTerminal('-S XtestInfoPopupNb', #{rows: 14})
+  call term_wait(buf, 50)
+
+  call term_sendkeys(buf, "A\<C-X>\<C-U>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_nb_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestInfoPopupNb')
 endfunc
 
 " vim: shiftwidth=2 sts=2
