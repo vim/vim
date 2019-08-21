@@ -2275,6 +2275,11 @@ func Test_popupmenu_info_border()
   call term_sendkeys(buf, "\<C-N>\<C-N>")
   call VerifyScreenDump(buf, 'Test_popupwin_infopopup_4', {})
 
+  " info on the left with scrollbar
+  call term_sendkeys(buf, "test text test text\<C-X>\<C-U>")
+  call term_sendkeys(buf, "\<C-N>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_5', {})
+
   call StopVimInTerminal(buf)
   call delete('XtestInfoPopup')
 endfunc

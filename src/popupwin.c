@@ -1121,7 +1121,10 @@ popup_adjust_position(win_T *wp)
     wp->w_has_scrollbar = wp->w_want_scrollbar
 	   && (wp->w_topline > 1 || lnum <= wp->w_buffer->b_ml.ml_line_count);
     if (wp->w_has_scrollbar)
+    {
 	++right_extra;
+	++extra_width;
+    }
 
     minwidth = wp->w_minwidth;
     if (wp->w_popup_title != NULL && *wp->w_popup_title != NUL)
