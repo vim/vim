@@ -1014,14 +1014,19 @@ do_outofmem_msg(size_t size)
 {
     if (!did_outofmem_msg)
     {
-	/* Don't hide this message */
+	// Don't hide this message
 	emsg_silent = 0;
 
-	/* Must come first to avoid coming back here when printing the error
-	 * message fails, e.g. when setting v:errmsg. */
+	// Must come first to avoid coming back here when printing the error
+	// message fails, e.g. when setting v:errmsg.
 	did_outofmem_msg = TRUE;
 
 	semsg(_("E342: Out of memory!  (allocating %lu bytes)"), (long_u)size);
+
+	if (starting == NO_SCREEN)
+	    // Not even finished with initializations and already out of
+	    // memory?  Then nothing is going to work, exit.
+	    mch_exit(123);
     }
 }
 
