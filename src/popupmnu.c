@@ -621,6 +621,47 @@ pum_redraw(void)
 #endif
 }
 
+#if defined(FEAT_TEXT_PROP) && defined(FEAT_QUICKFIX)
+    static void
+pum_position_info_popup(void)
+{
+    int col = pum_col + pum_width + 1;
+    int row = pum_row;
+    int botpos = POPPOS_BOTLEFT;
+
+    curwin->w_popup_pos = POPPOS_TOPLEFT;
+    if (Columns - col < 20 && Columns - col < pum_col)
+    {
+	col = pum_col - 1;
+	curwin->w_popup_pos = POPPOS_TOPRIGHT;
+	botpos = POPPOS_BOTRIGHT;
+	curwin->w_maxwidth = pum_col - 1;
+    }
+    else
+	curwin->w_maxwidth = Columns - col + 1;
+    curwin->w_maxwidth -= popup_extra_width(curwin);
+
+    row -= popup_top_extra(curwin);
+    if (curwin->w_popup_flags & POPF_INFO_MENU)
+    {
+	if (pum_row < pum_win_row)
+	{
+	    // menu above cursor line, align with bottom
+	    row += pum_height;
+	    curwin->w_popup_pos = botpos;
+	}
+	else
+	    // menu below cursor line, align with top
+	    row += 1;
+    }
+    else
+	// align with the selected item
+	row += pum_selected - pum_first + 1;
+
+    popup_set_wantpos_rowcol(curwin, row, col);
+}
+#endif
+
 /*
  * Set the index of the currently selected item.  The menu will scroll when
  * necessary.  When "n" is out of range don't scroll.
@@ -741,45 +782,6 @@ pum_set_selected(int n, int repeat UNUSED)
 # endif
 		    )
 	    {
-# ifdef FEAT_TEXT_PROP
-		if (use_popup)
-		{
-		    int col = pum_col + pum_width + 1;
-		    int row = pum_row;
-		    int botpos = POPPOS_BOTLEFT;
-
-		    curwin->w_popup_pos = POPPOS_TOPLEFT;
-		    if (Columns - col < 20 && Columns - col < pum_col)
-		    {
-			col = pum_col - 1;
-			curwin->w_popup_pos = POPPOS_TOPRIGHT;
-			botpos = POPPOS_BOTRIGHT;
-			curwin->w_maxwidth = pum_col - 1;
-		    }
-		    else
-			curwin->w_maxwidth = Columns - col + 1;
-		    curwin->w_maxwidth -= popup_extra_width(curwin);
-
-		    row -= popup_top_extra(curwin);
-		    if (curwin->w_popup_flags & POPF_INFO_MENU)
-		    {
-			if (pum_row < pum_win_row)
-			{
-			    // menu above cursor line, align with bottom
-			    row += pum_height;
-			    curwin->w_popup_pos = botpos;
-			}
-			else
-			    // menu below cursor line, align with top
-			    row += 1;
-		    }
-		    else
-			// align with the selected item
-			row += pum_selected - pum_first + 1;
-
-		    popup_set_wantpos_rowcol(curwin, row, col);
-		}
-# endif
 		if (!resized
 			&& curbuf->b_nwindows == 1
 			&& curbuf->b_fname == NULL
@@ -859,9 +861,14 @@ pum_set_selected(int n, int repeat UNUSED)
 			curwin->w_topline = curbuf->b_ml.ml_line_count;
 		    curwin->w_cursor.lnum = curwin->w_topline;
 		    curwin->w_cursor.col = 0;
-		    if (use_popup && win_valid(curwin_save))
-			redraw_win_later(curwin_save, SOME_VALID);
-
+# ifdef FEAT_TEXT_PROP
+		    if (use_popup)
+		    {
+			pum_position_info_popup();
+			if (win_valid(curwin_save))
+			    redraw_win_later(curwin_save, SOME_VALID);
+		    }
+# endif
 		    if ((curwin != curwin_save && win_valid(curwin_save))
 			    || (curtab != curtab_save
 						&& valid_tabpage(curtab_save)))
