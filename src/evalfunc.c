@@ -466,10 +466,10 @@ static funcentry_T global_functions[] =
     {"bufnr",		1, 2, FEARG_1,	  f_bufnr},
     {"bufwinid",	1, 1, FEARG_1,	  f_bufwinid},
     {"bufwinnr",	1, 1, FEARG_1,	  f_bufwinnr},
-    {"byte2line",	1, 1, 0,	  f_byte2line},
-    {"byteidx",		2, 2, 0,	  f_byteidx},
-    {"byteidxcomp",	2, 2, 0,	  f_byteidxcomp},
-    {"call",		2, 3, 0,	  f_call},
+    {"byte2line",	1, 1, FEARG_1,	  f_byte2line},
+    {"byteidx",		2, 2, FEARG_1,	  f_byteidx},
+    {"byteidxcomp",	2, 2, FEARG_1,	  f_byteidxcomp},
+    {"call",		2, 3, FEARG_1,	  f_call},
 #ifdef FEAT_FLOAT
     {"ceil",		1, 1, FEARG_1,	  f_ceil},
 #endif

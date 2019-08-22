@@ -165,21 +165,6 @@ ENDTEST
 x
 
 STARTTEST
-:let a = '.é.' " one char of two bytes
-:let b = '.é.' " normal e with composing char
-/^byteidx
-:put =string([byteidx(a, 0), byteidx(a, 1), byteidx(a, 2), byteidx(a, 3), byteidx(a, 4)])
-:put =string([byteidx(b, 0), byteidx(b, 1), byteidx(b, 2), byteidx(b, 3), byteidx(b, 4)])
-/^byteidxcomp
-:put =string([byteidxcomp(a, 0), byteidxcomp(a, 1), byteidxcomp(a, 2), byteidxcomp(a, 3), byteidxcomp(a, 4)])
-:let b = '.é.'
-:put =string([byteidxcomp(b, 0), byteidxcomp(b, 1), byteidxcomp(b, 2), byteidxcomp(b, 3), byteidxcomp(b, 4), byteidxcomp(b, 5)])
-ENDTEST
-
-byteidx
-byteidxcomp
-
-STARTTEST
 /^substitute
 :let y = substitute('１２３', '\zs', 'a', 'g')    | put =y
 ENDTEST
