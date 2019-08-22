@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.1.  Last change: 2019 Jul 28
+*channel.txt*      For Vim version 8.1.  Last change: 2019 Aug 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -474,17 +474,24 @@ ch_canread({handle})						*ch_canread()*
 		Note that messages are dropped when the channel does not have
 		a callback.  Add a close callback to avoid that.
 
+		Can also be used as a |method|: >
+			GetChannel()->ch_canread()
 
 ch_close({handle})						*ch_close()*
 		Close {handle}.  See |channel-close|.
 		{handle} can be a Channel or a Job that has a Channel.
 		A close callback is not invoked.
 
+		Can also be used as a |method|: >
+			GetChannel()->ch_close()
 
 ch_close_in({handle})						*ch_close_in()*
 		Close the "in" part of {handle}.  See |channel-close-in|.
 		{handle} can be a Channel or a Job that has a Channel.
 		A close callback is not invoked.
+
+		Can also be used as a |method|: >
+			GetChannel()->ch_close_in()
 
 
 ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
@@ -501,6 +508,9 @@ ch_evalexpr({handle}, {expr} [, {options}])			*ch_evalexpr()*
 		expression.  When there is an error or timeout it returns an
 		empty string.
 
+		Can also be used as a |method|: >
+			GetChannel()->ch_evalexpr(expr)
+
 
 ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
 		Send {string} over {handle}.
@@ -516,6 +526,8 @@ ch_evalraw({handle}, {string} [, {options}])		*ch_evalraw()*
 		need to use |ch_readraw()| to fetch the rest.
 		See |channel-use|.
 
+		Can also be used as a |method|: >
+			GetChannel()->ch_evalraw(rawstring)
 
 ch_getbufnr({handle}, {what})				 *ch_getbufnr()*
 		Get the buffer number that {handle} is using for {what}.
@@ -524,11 +536,16 @@ ch_getbufnr({handle}, {what})				 *ch_getbufnr()*
 		socket output.
 		Returns -1 when there is no buffer.
 
+		Can also be used as a |method|: >
+			GetChannel()->ch_getbufnr(what)
 
 ch_getjob({channel})						*ch_getjob()*
 		Get the Job associated with {channel}.
 		If there is no job calling |job_status()| on the returned Job
 		will result in "fail".
+
+		Can also be used as a |method|: >
+			GetChannel()->ch_getjob()
 
 
 ch_info({handle})						*ch_info()*
@@ -558,6 +575,9 @@ ch_info({handle})						*ch_info()*
 		   "in_io"	  "null", "pipe", "file" or "buffer"
 		   "in_timeout"	  timeout in msec
 
+		Can also be used as a |method|: >
+			GetChannel()->ch_info()
+
 
 ch_log({msg} [, {handle}])					*ch_log()*
 		Write {msg} in the channel log file, if it was opened with
@@ -566,6 +586,9 @@ ch_log({msg} [, {handle}])					*ch_log()*
 		message.
 		{handle} can be a Channel or a Job that has a Channel.  The
 		Channel must be open for the channel number to be used.
+
+		Can also be used as a |method|: >
+			'did something'->ch_log()
 
 
 ch_logfile({fname} [, {mode}])					*ch_logfile()*
@@ -584,6 +607,9 @@ ch_logfile({fname} [, {mode}])					*ch_logfile()*
 		aware that this may contain confidential and privacy sensitive
 		information, e.g. a password you type in a terminal window.
 
+		Can also be used as a |method|: >
+			'logfile'->ch_logfile('w')
+
 
 ch_open({address} [, {options}])				*ch_open()*
 		Open a channel to {address}.  See |channel|.
@@ -595,6 +621,9 @@ ch_open({address} [, {options}])				*ch_open()*
 		If {options} is given it must be a |Dictionary|.
 		See |channel-open-options|.
 
+		Can also be used as a |method|: >
+			GetAddress()->ch_open()
+
 
 ch_read({handle} [, {options}])					*ch_read()*
 		Read from {handle} and return the received message.
@@ -603,10 +632,16 @@ ch_read({handle} [, {options}])					*ch_read()*
 		there is nothing more to read (channel was closed).
 		See |channel-more|.
 
+		Can also be used as a |method|: >
+			GetChannel()->ch_read()
+
 
 ch_readblob({handle} [, {options}])			*ch_readblob()*
 		Like ch_read() but reads binary data and returns a |Blob|.
 		See |channel-more|.
+
+		Can also be used as a |method|: >
+			GetChannel()->ch_readblob()
 
 
 ch_readraw({handle} [, {options}])			*ch_readraw()*
@@ -615,6 +650,9 @@ ch_readraw({handle} [, {options}])			*ch_readraw()*
 		the NL to arrive, but otherwise works like ch_read().
 		See |channel-more|.
 
+		Can also be used as a |method|: >
+			GetChannel()->ch_readraw()
+
 
 ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 		Send {expr} over {handle}.  The {expr} is encoded
@@ -622,6 +660,9 @@ ch_sendexpr({handle}, {expr} [, {options}])			*ch_sendexpr()*
 		with a raw channel.
 		See |channel-use|.				*E912*
 		{handle} can be a Channel or a Job that has a Channel.
+
+		Can also be used as a |method|: >
+			GetChannel()->ch_sendexpr(expr)
 
 
 ch_sendraw({handle}, {expr} [, {options}])		*ch_sendraw()*
@@ -632,6 +673,9 @@ ch_sendraw({handle}, {expr} [, {options}])		*ch_sendraw()*
 		in NL mode, the caller must do that.  The NL in the response
 		is removed.
 		See |channel-use|.
+
+		Can also be used as a |method|: >
+			GetChannel()->ch_sendraw(rawexpr)
 
 
 ch_setoptions({handle}, {options})			*ch_setoptions()*
@@ -647,6 +691,9 @@ ch_setoptions({handle}, {options})			*ch_setoptions()*
 
 		These options cannot be changed:
 			"waittime"	only applies to |ch_open()|
+
+		Can also be used as a |method|: >
+			GetChannel()->ch_setoptions(options)
 
 
 ch_status({handle} [, {options}])				*ch_status()*
@@ -664,6 +711,8 @@ ch_status({handle} [, {options}])				*ch_status()*
 		"err".  For example, to get the error status: >
 			ch_status(job, {"part": "err"})
 <
+		Can also be used as a |method|: >
+			GetChannel()->ch_status()
 
 ==============================================================================
 9. Starting a job with a channel			*job-start* *job*
@@ -792,6 +841,8 @@ job_getchannel({job})					 *job_getchannel()*
 		To check if the job has no channel: >
 			if string(job_getchannel()) == 'channel fail'
 <
+		Can also be used as a |method|: >
+			GetJob()->job_getchannel()
 
 job_info([{job}])					*job_info()*
 		Returns a Dictionary with information about {job}:
@@ -817,11 +868,17 @@ job_info([{job}])					*job_info()*
 
 		Without any arguments, returns a List with all Job objects.
 
+		Can also be used as a |method|: >
+			GetJob()->job_info()
+
 
 job_setoptions({job}, {options})			*job_setoptions()*
 		Change options for {job}.  Supported are:
 		   "stoponexit"	|job-stoponexit|
 		   "exit_cb"	|job-exit_cb|
+
+		Can also be used as a |method|: >
+			GetJob()->job_setoptions(options)
 
 
 job_start({command} [, {options}])			*job_start()*
@@ -881,6 +938,9 @@ job_start({command} [, {options}])			*job_start()*
 		{options} must be a Dictionary.  It can contain many optional
 		items, see |job-options|.
 
+		Can also be used as a |method|: >
+			BuildCommand()->job_start()
+
 
 job_status({job})					*job_status()* *E916*
 		Returns a String with the status of {job}:
@@ -896,6 +956,9 @@ job_status({job})					*job_status()* *E916*
 		job is now detected to be "dead" the callback will be invoked.
 
 		For more information see |job_info()|.
+
+		Can also be used as a |method|: >
+			GetJob()->job_status()
 
 
 job_stop({job} [, {how}])					*job_stop()*
@@ -939,6 +1002,9 @@ job_stop({job} [, {how}])					*job_stop()*
 
 		When using "kill" Vim will assume the job will die and close
 		the channel.
+
+		Can also be used as a |method|: >
+			GetJob()->job_stop()
 
 
 ==============================================================================
