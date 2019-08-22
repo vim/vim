@@ -9005,11 +9005,12 @@ set_bool_option(
 
 #endif
 
-#ifdef FEAT_SIGNS
+#if defined(FEAT_SIGNS) && defined(FEAT_GUI)
     else if (((int *)varp == &curwin->w_p_nu
-	       || (int *)varp == &curwin->w_p_rnu)
-	     && (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) == 'u')
-	     && curbuf->b_signlist != NULL)
+		|| (int *)varp == &curwin->w_p_rnu)
+	    && gui.in_use
+	    && (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) == 'u')
+	    && curbuf->b_signlist != NULL)
     {
 	// If the 'number' or 'relativenumber' options are modified and
 	// 'signcolumn' is set to 'number', then clear the screen for a full
