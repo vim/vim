@@ -9005,6 +9005,7 @@ set_bool_option(
 
 #endif
 
+#ifdef FEAT_SIGNS
     else if (((int *)varp == &curwin->w_p_nu
 	       || (int *)varp == &curwin->w_p_rnu)
 	     && (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) == 'u')
@@ -9019,6 +9020,7 @@ set_bool_option(
 	if (!(curwin->w_p_nu && ((int *)varp == &curwin->w_p_rnu)))
 	    redraw_all_later(CLEAR);
     }
+#endif
 
 #ifdef FEAT_TERMGUICOLORS
     /* 'termguicolors' */
