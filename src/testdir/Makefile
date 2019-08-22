@@ -84,7 +84,7 @@ RM_ON_START = tiny.vim small.vim mbyte.vim mzscheme.vim test.ok benchmark.out
 RUN_VIM = VIMRUNTIME=$(SCRIPTSOURCE) $(VALGRIND) $(VIMPROG) -f $(GUI_FLAG) -u unix.vim $(NO_INITS) -s dotest.in
 
 clean:
-	-rm -rf *.out *.failed *.res *.rej *.orig XfakeHOME Xdir1 Xfind
+	-rm -rf *.out *.failed *.res XfakeHOME Xdir1 Xfind
 	-rm -f opt_test.vim test.log test_result.log messages
 	-rm -f $(RM_ON_RUN) $(RM_ON_START)
 	-rm -f valgrind.*
