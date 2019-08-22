@@ -71,6 +71,7 @@ function! netrw_gitignore#Hide(...)
     let escaped = substitute(escaped, '\(\[[^]]*\)\zs\\\.', '\.', 'g')
     let escaped = substitute(escaped, '\(\[[^]]*\)\zs\\\$', '\$', 'g')
     let escaped = substitute(escaped, '\(\[[^]]*\)\zs\.\*', '*', 'g')
+    let escaped = '^' . escaped . '$'
     let escaped_lines = add(escaped_lines, escaped)
   endfor
 
