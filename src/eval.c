@@ -201,6 +201,7 @@ static struct vimvar
     {VV_NAME("termblinkresp",	 VAR_STRING), VV_RO},
     {VV_NAME("event",		 VAR_DICT), VV_RO},
     {VV_NAME("versionlong",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("echospace",	 VAR_NUMBER), VV_RO},
 };
 
 /* shorthand */
@@ -388,6 +389,8 @@ eval_init(void)
     set_vim_var_nr(VV_TYPE_JOB,     VAR_TYPE_JOB);
     set_vim_var_nr(VV_TYPE_CHANNEL, VAR_TYPE_CHANNEL);
     set_vim_var_nr(VV_TYPE_BLOB,    VAR_TYPE_BLOB);
+
+    set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
 
     set_reg_var(0);  /* default for v:register is not 0 but '"' */
 

@@ -10881,6 +10881,9 @@ comp_col(void)
     sc_col = Columns;
     ru_col = Columns;
 #endif
+#ifdef FEAT_EVAL
+    set_vim_var_nr(VV_ECHOSPACE, sc_col - 1);
+#endif
 }
 
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) || defined(PROTO)

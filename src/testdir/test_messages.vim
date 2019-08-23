@@ -155,3 +155,20 @@ func Test_mode_message_at_leaving_insert_with_esc_mapped()
   exe buf . 'bwipe!'
   call delete(testfile)
 endfunc
+
+func Test_echospace()
+  set noruler noshowcmd laststatus=1
+  call assert_equal(&columns - 1, v:echospace)
+  split
+  call assert_equal(&columns - 1, v:echospace)
+  set ruler
+  call assert_equal(&columns - 1, v:echospace)
+  close
+  call assert_equal(&columns - 19, v:echospace)
+  set showcmd noruler
+  call assert_equal(&columns - 12, v:echospace)
+  set showcmd ruler
+  call assert_equal(&columns - 29, v:echospace)
+
+  set ruler& showcmd&
+endfunc
