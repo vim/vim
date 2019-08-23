@@ -1,6 +1,6 @@
 #include "vterm_internal.h"
 
-/* vim: set sw=2 : */
+// vim: set sw=2 :
 #include <stdio.h>
 #include <string.h>
 
@@ -10,10 +10,10 @@
 #define UNICODE_SPACE 0x20
 #define UNICODE_LINEFEED 0x0a
 
-/* State of the pen at some moment in time, also used in a cell */
+// State of the pen at some moment in time, also used in a cell
 typedef struct
 {
-  /* After the bitfield */
+  // After the bitfield
   VTermColor   fg, bg;
 
   unsigned int bold      : 1;
@@ -22,15 +22,15 @@ typedef struct
   unsigned int blink     : 1;
   unsigned int reverse   : 1;
   unsigned int strike    : 1;
-  unsigned int font      : 4; /* 0 to 9 */
+  unsigned int font      : 4; // 0 to 9
 
-  /* Extra state storage that isn't strictly pen-related */
+  // Extra state storage that isn't strictly pen-related
   unsigned int protected_cell : 1;
-  unsigned int dwl            : 1; /* on a DECDWL or DECDHL line */
-  unsigned int dhl            : 2; /* on a DECDHL line (1=top 2=bottom) */
+  unsigned int dwl            : 1; // on a DECDWL or DECDHL line
+  unsigned int dhl            : 2; // on a DECDHL line (1=top 2=bottom)
 } ScreenPen;
 
-/* Internal representation of a screen cell */
+// Internal representation of a screen cell
 typedef struct
 {
   uint32_t chars[VTERM_MAX_CHARS_PER_CELL];
@@ -48,7 +48,7 @@ struct VTermScreen
   void *cbdata;
 
   VTermDamageSize damage_merge;
-  /* start_row == -1 => no damage */
+  // start_row == -1 => no damage
   VTermRect damaged;
   VTermRect pending_scrollrect;
   int pending_scroll_downward, pending_scroll_rightward;
@@ -57,13 +57,13 @@ struct VTermScreen
   int cols;
   int global_reverse;
 
-  /* Primary and Altscreen. buffers[1] is lazily allocated as needed */
+  // Primary and Altscreen. buffers[1] is lazily allocated as needed
   ScreenCell *buffers[2];
 
-  /* buffer will == buffers[0] or buffers[1], depending on altscreen */
+  // buffer will == buffers[0] or buffers[1], depending on altscreen
   ScreenCell *buffer;
 
-  /* buffer for a single screen row used in scrollback storage callbacks */
+  // buffer for a single screen row used in scrollback storage callbacks
   VTermScreenCell *sb_buffer;
 
   ScreenPen pen;
@@ -109,13 +109,13 @@ static void damagerect(VTermScreen *screen, VTermRect rect)
 
   switch(screen->damage_merge) {
   case VTERM_DAMAGE_CELL:
-    /* Always emit damage event */
+    // Always emit damage event
     emit = rect;
     break;
 
   case VTERM_DAMAGE_ROW:
-    /* Emit damage longer than one row. Try to merge with existing damage in
-     * the same row */
+    // Emit damage longer than one row. Try to merge with existing damage in
+    // the same row
     if(rect.end_row > rect.start_row + 1) {
       // Bigger than 1 line - flush existing, emit this
       vterm_screen_flush_damage(screen);
@@ -143,7 +143,7 @@ static void damagerect(VTermScreen *screen, VTermRect rect)
 
   case VTERM_DAMAGE_SCREEN:
   case VTERM_DAMAGE_SCROLL:
-    /* Never emit damage event */
+    // Never emit damage event
     if(screen->damaged.start_row == -1)
       screen->damaged = rect;
     else {
@@ -352,15 +352,14 @@ static int scrollrect(VTermRect rect, int downward, int rightward, void *user)
     return 1;
 
   if(rect_contains(&rect, &screen->damaged)) {
-    /* Scroll region entirely contains the damage; just move it */
+    // Scroll region entirely contains the damage; just move it
     vterm_rect_move(&screen->damaged, -downward, -rightward);
     rect_clip(&screen->damaged, &rect);
   }
-  /* There are a number of possible cases here, but lets restrict this to only
-   * the common case where we might actually gain some performance by
-   * optimising it. Namely, a vertical scroll that neatly cuts the damage
-   * region in half.
-   */
+  // There are a number of possible cases here, but lets restrict this to only
+  // the common case where we might actually gain some performance by
+  // optimising it. Namely, a vertical scroll that neatly cuts the damage
+  // region in half.
   else if(rect.start_col <= screen->damaged.start_col &&
           rect.end_col   >= screen->damaged.end_col &&
           rightward == 0) {
@@ -449,9 +448,8 @@ static int settermprop(VTermProp prop, VTermValue *val, void *user)
       return 0;
 
     screen->buffer = val->boolean ? screen->buffers[1] : screen->buffers[0];
-    /* only send a damage event on disable; because during enable there's an
-     * erase that sends a damage anyway
-     */
+    // only send a damage event on disable; because during enable there's an
+    // erase that sends a damage anyway
     if(!val->boolean)
       damagescreen(screen);
     break;
@@ -460,7 +458,7 @@ static int settermprop(VTermProp prop, VTermValue *val, void *user)
     damagescreen(screen);
     break;
   default:
-    ; /* ignore */
+    ; // ignore
   }
 
   if(screen->callbacks && screen->callbacks->settermprop)
@@ -607,17 +605,17 @@ static int setlineinfo(int row, const VTermLineInfo *newinfo, const VTermLineInf
 }
 
 static VTermStateCallbacks state_cbs = {
-  &putglyph, /* putglyph */
-  &movecursor, /* movecursor */
-  &scrollrect, /* scrollrect */
-  NULL, /* moverect */
-  &erase, /* erase */
-  NULL, /* initpen */
-  &setpenattr, /* setpenattr */
-  &settermprop, /* settermprop */
-  &bell, /* bell */
-  &resize, /* resize */
-  &setlineinfo /* setlineinfo */
+  &putglyph, // putglyph
+  &movecursor, // movecursor
+  &scrollrect, // scrollrect
+  NULL, // moverect
+  &erase, // erase
+  NULL, // initpen
+  &setpenattr, // setpenattr
+  &settermprop, // settermprop
+  &bell, // bell
+  &resize, // resize
+  &setlineinfo // setlineinfo
 };
 
 /*
@@ -743,7 +741,7 @@ size_t vterm_screen_get_text(const VTermScreen *screen, char *str, size_t len, c
   return _get_chars(screen, 1, str, len, rect);
 }
 
-/* Copy internal to external representation of a screen cell */
+// Copy internal to external representation of a screen cell
 int vterm_screen_get_cell(const VTermScreen *screen, VTermPos pos, VTermScreenCell *cell)
 {
   ScreenCell *intcell = getcell(screen, pos.row, pos.col);
@@ -781,7 +779,7 @@ int vterm_screen_get_cell(const VTermScreen *screen, VTermPos pos, VTermScreenCe
   return 1;
 }
 
-/* Copy external to internal representation of a screen cell */
+// Copy external to internal representation of a screen cell
 /* static because it's only used internally for sb_popline during resize */
 static int vterm_screen_set_cell(VTermScreen *screen, VTermPos pos, const VTermScreenCell *cell)
 {
@@ -816,7 +814,7 @@ static int vterm_screen_set_cell(VTermScreen *screen, VTermPos pos, const VTermS
 
 int vterm_screen_is_eol(const VTermScreen *screen, VTermPos pos)
 {
-  /* This cell is EOL if this and every cell to the right is black */
+  // This cell is EOL if this and every cell to the right is black
   for(; pos.col < screen->cols; pos.col++) {
     ScreenCell *cell = getcell(screen, pos.row, pos.col);
     if(cell->chars[0] != 0)

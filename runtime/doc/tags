@@ -1,6 +1,7 @@
 !	change.txt	/*!*
 !!	change.txt	/*!!*
 #	pattern.txt	/*#*
+#{}	eval.txt	/*#{}*
 $	motion.txt	/*$*
 $HOME	options.txt	/*$HOME*
 $HOME-use	version5.txt	/*$HOME-use*
@@ -1266,6 +1267,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +cindent	various.txt	/*+cindent*
 +clientserver	various.txt	/*+clientserver*
 +clipboard	various.txt	/*+clipboard*
++clipboard_working	various.txt	/*+clipboard_working*
 +cmd	editing.txt	/*+cmd*
 +cmdline_compl	various.txt	/*+cmdline_compl*
 +cmdline_hist	various.txt	/*+cmdline_hist*
@@ -1434,6 +1436,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 --ttyfail	starting.txt	/*--ttyfail*
 --version	starting.txt	/*--version*
 --windowid	starting.txt	/*--windowid*
+->	eval.txt	/*->*
 -?	starting.txt	/*-?*
 -A	starting.txt	/*-A*
 -C	starting.txt	/*-C*
@@ -2382,6 +2385,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :ene!	editing.txt	/*:ene!*
 :enew	editing.txt	/*:enew*
 :enew!	editing.txt	/*:enew!*
+:eval	eval.txt	/*:eval*
 :ex	editing.txt	/*:ex*
 :exe	eval.txt	/*:exe*
 :exe-comment	eval.txt	/*:exe-comment*
@@ -3092,6 +3096,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :spelli	spell.txt	/*:spelli*
 :spellinfo	spell.txt	/*:spellinfo*
 :spellr	spell.txt	/*:spellr*
+:spellra	spell.txt	/*:spellra*
+:spellrare	spell.txt	/*:spellrare*
 :spellrepall	spell.txt	/*:spellrepall*
 :spellu	spell.txt	/*:spellu*
 :spellundo	spell.txt	/*:spellundo*
@@ -3880,7 +3886,6 @@ E136	starting.txt	/*E136*
 E137	starting.txt	/*E137*
 E138	starting.txt	/*E138*
 E139	message.txt	/*E139*
-E14	cmdline.txt	/*E14*
 E140	message.txt	/*E140*
 E141	message.txt	/*E141*
 E142	message.txt	/*E142*
@@ -4027,6 +4032,9 @@ E270	if_ruby.txt	/*E270*
 E271	if_ruby.txt	/*E271*
 E272	if_ruby.txt	/*E272*
 E273	if_ruby.txt	/*E273*
+E274	eval.txt	/*E274*
+E275	textprop.txt	/*E275*
+E276	eval.txt	/*E276*
 E277	remote.txt	/*E277*
 E28	syntax.txt	/*E28*
 E280	if_tcl.txt	/*E280*
@@ -7653,6 +7661,7 @@ message-history	message.txt	/*message-history*
 message.txt	message.txt	/*message.txt*
 messages	message.txt	/*messages*
 meta	intro.txt	/*meta*
+method	eval.txt	/*method*
 min()	eval.txt	/*min()*
 missing-options	vi_diff.txt	/*missing-options*
 mkdir()	eval.txt	/*mkdir()*
@@ -8246,6 +8255,7 @@ popup-filter	popup.txt	/*popup-filter*
 popup-function-details	popup.txt	/*popup-function-details*
 popup-functions	popup.txt	/*popup-functions*
 popup-intro	popup.txt	/*popup-intro*
+popup-mapping	popup.txt	/*popup-mapping*
 popup-mask	popup.txt	/*popup-mask*
 popup-menu	gui.txt	/*popup-menu*
 popup-menu-added	version5.txt	/*popup-menu-added*
@@ -8347,6 +8357,7 @@ prop_type_list()	textprop.txt	/*prop_type_list()*
 psql	ft_sql.txt	/*psql*
 ptcap.vim	syntax.txt	/*ptcap.vim*
 pterm-mouse	options.txt	/*pterm-mouse*
+pum_getpos()	eval.txt	/*pum_getpos()*
 pumvisible()	eval.txt	/*pumvisible()*
 put	change.txt	/*put*
 put-Visual-mode	change.txt	/*put-Visual-mode*

@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2019 Jul 14
+# Last change:  2019 Aug 18
 #
 # This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -307,25 +307,27 @@ ALL_CFLAGS_VER = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
 ALL_LIBS = $(LIBS) $(GUI_LIB_DIR) $(GUI_LIB) \
 	   $(PERL_LIB) $(PYTHON_LIB) $(TCL_LIB) $(RUBY_LIB)
 
-SRC =	arabic.c autocmd.c beval.c blob.c blowfish.c buffer.c change.c charset.c \
-	crypt.c crypt_zip.c debugger.c dict.c diff.c digraph.c edit.c eval.c \
-	evalfunc.c ex_cmds.c ex_cmds2.c ex_docmd.c ex_eval.c ex_getln.c \
-	if_cscope.c if_xcmdsrv.c fileio.c findfile.c fold.c getchar.c \
-	hardcopy.c hashtab.c highlight.c indent.c insexpand.c json.c list.c \
-	main.c map.c mark.c menu.c mbyte.c memfile.c memline.c message.c \
-	misc1.c misc2.c move.c normal.c ops.c option.c popupmnu.c popupwin.c \
-	profiler.c quickfix.c regexp.c search.c session.c sha256.c sign.c \
-	spell.c spellfile.c syntax.c tag.c term.c termlib.c testing.c \
-	textprop.c ui.c undo.c usercmd.c userfunc.c version.c viminfo.c \
-	screen.c window.c os_unix.c os_vms.c pathdef.c \
+SRC =	arabic.c arglist.c autocmd.c beval.c blob.c blowfish.c buffer.c \
+	change.c charset.c cmdexpand.c cmdhist.c crypt.c crypt_zip.c \
+	debugger.c dict.c diff.c digraph.c edit.c eval.c evalfunc.c ex_cmds.c \
+	ex_cmds2.c ex_docmd.c ex_eval.c ex_getln.c if_cscope.c if_xcmdsrv.c \
+	fileio.c findfile.c fold.c getchar.c hardcopy.c hashtab.c highlight.c \
+	indent.c insexpand.c json.c list.c main.c map.c mark.c menu.c mbyte.c \
+	memfile.c memline.c message.c misc1.c misc2.c move.c normal.c ops.c \
+	option.c popupmnu.c popupwin.c profiler.c quickfix.c regexp.c \
+	search.c session.c sha256.c sign.c spell.c spellfile.c syntax.c tag.c \
+	term.c termlib.c testing.c textprop.c ui.c undo.c usercmd.c \
+	userfunc.c version.c viminfo.c screen.c window.c os_unix.c os_vms.c \
+	pathdef.c \
 	$(GUI_SRC) $(PERL_SRC) $(PYTHON_SRC) $(TCL_SRC) \
  	$(RUBY_SRC) $(HANGULIN_SRC) $(MZSCH_SRC) $(XDIFF_SRC)
 
-OBJ = 	arabic.obj autocmd.obj beval.obj blob.obj blowfish.obj buffer.obj change.obj \
-	charset.obj crypt.obj crypt_zip.obj debugger.obj dict.obj diff.obj \
-	digraph.obj edit.obj eval.obj evalfunc.obj ex_cmds.obj ex_cmds2.obj \
-	ex_docmd.obj ex_eval.obj ex_getln.obj if_cscope.obj if_xcmdsrv.obj \
-	fileio.obj findfile.obj fold.obj getchar.obj hardcopy.obj hashtab.obj \
+OBJ = 	arabic.obj arglist.obj autocmd.obj beval.obj blob.obj blowfish.obj \
+	buffer.obj change.obj charset.obj cmdexpand.obj cmdhist.obj \
+	crypt.obj crypt_zip.obj debugger.obj dict.obj diff.obj digraph.obj \
+	edit.obj eval.obj evalfunc.obj ex_cmds.obj ex_cmds2.obj ex_docmd.obj \
+	ex_eval.obj ex_getln.obj if_cscope.obj if_xcmdsrv.obj fileio.obj \
+	findfile.obj fold.obj getchar.obj hardcopy.obj hashtab.obj \
 	highlight.obj indent.obj insexpand.obj json.obj list.obj main.obj \
 	map.obj mark.obj menu.obj memfile.obj memline.obj message.obj \
 	misc1.obj misc2.obj move.obj mbyte.obj normal.obj ops.obj option.obj \
@@ -505,6 +507,7 @@ ruby_env :
 .ENDIF
 
 arabic.obj : arabic.c vim.h
+arglist.obj : arglist.c vim.h [.auto]config.h feature.h os_unix.h
 autocmd.obj : autocmd.c vim.h [.auto]config.h feature.h os_unix.h
 blowfish.obj : blowfish.c vim.h [.auto]config.h feature.h os_unix.h
 blob.obj : blob.c vim.h [.auto]config.h feature.h os_unix.h	
@@ -517,6 +520,14 @@ change.obj : change.c vim.h [.auto]config.h feature.h os_unix.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h version.h
 charset.obj : charset.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h
+cmdexpand.obj : cmdexpand.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h
+cmdhist.obj : cmdhist.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h

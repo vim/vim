@@ -28,6 +28,7 @@ static void t_puts(int *t_col, char_u *t_s, char_u *s, int attr);
 static void msg_puts_printf(char_u *str, int maxlen);
 static int do_more_prompt(int typed_char);
 static void msg_screen_putchar(int c, int attr);
+static void msg_moremsg(int full);
 static int  msg_check_screen(void);
 static void redir_write(char_u *s, int maxlen);
 #ifdef FEAT_CON_DIALOG
@@ -35,6 +36,7 @@ static char_u *msg_show_console_dialog(char_u *message, char_u *buttons, int dfl
 static int	confirm_msg_used = FALSE;	/* displaying confirm_msg */
 static char_u	*confirm_msg = NULL;		/* ":confirm" message */
 static char_u	*confirm_msg_tail;		/* tail of confirm_msg */
+static void display_confirm_msg(void);
 #endif
 #ifdef FEAT_JOB_CHANNEL
 static int emsg_to_channel_log = FALSE;
@@ -513,7 +515,7 @@ msg_source(int attr)
  * If "msg" is in 'debug': do error message but without side effects.
  * If "emsg_skip" is set: never do error messages.
  */
-    int
+    static int
 emsg_not_now(void)
 {
     if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL
@@ -1930,13 +1932,7 @@ msg_puts_title(char *s)
  * part in the middle and replace it with "..." when necessary.
  * Does not handle multi-byte characters!
  */
-    void
-msg_outtrans_long_attr(char_u *longstr, int attr)
-{
-    msg_outtrans_long_len_attr(longstr, (int)STRLEN(longstr), attr);
-}
-
-    void
+    static void
 msg_outtrans_long_len_attr(char_u *longstr, int len, int attr)
 {
     int		slen = len;
@@ -1950,6 +1946,12 @@ msg_outtrans_long_len_attr(char_u *longstr, int len, int attr)
 	msg_puts_attr("...", HL_ATTR(HLF_8));
     }
     msg_outtrans_len_attr(longstr + len - slen, slen, attr);
+}
+
+    void
+msg_outtrans_long_attr(char_u *longstr, int attr)
+{
+    msg_outtrans_long_len_attr(longstr, (int)STRLEN(longstr), attr);
 }
 
 /*
@@ -2586,16 +2588,19 @@ msg_puts_printf(char_u *str, int maxlen)
 		int n = (int)(s - p);
 
 		buf = alloc(n + 3);
-		memcpy(buf, p, n);
-		if (!info_message)
-		    buf[n++] = CAR;
-		buf[n++] = NL;
-		buf[n++] = NUL;
-		if (info_message)   // informative message, not an error
-		    mch_msg((char *)buf);
-		else
-		    mch_errmsg((char *)buf);
-		vim_free(buf);
+		if (buf != NULL)
+		{
+		    memcpy(buf, p, n);
+		    if (!info_message)
+			buf[n++] = CAR;
+		    buf[n++] = NL;
+		    buf[n++] = NUL;
+		    if (info_message)   // informative message, not an error
+			mch_msg((char *)buf);
+		    else
+			mch_errmsg((char *)buf);
+		    vim_free(buf);
+		}
 		p = s + 1;
 	    }
 	}
@@ -3141,7 +3146,7 @@ msg_screen_putchar(int c, int attr)
     }
 }
 
-    void
+    static void
 msg_moremsg(int full)
 {
     int		attr;
@@ -3882,7 +3887,7 @@ msg_show_console_dialog(
 /*
  * Display the ":confirm" message.  Also called when screen resized.
  */
-    void
+    static void
 display_confirm_msg(void)
 {
     /* avoid that 'q' at the more prompt truncates the message here */

@@ -288,7 +288,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 
 	sprintf((char*)name, "<lambda>%d", ++lambda_no);
 
-	fp = alloc_clear(sizeof(ufunc_T) + STRLEN(name));
+	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
 	if (fp == NULL)
 	    goto errret;
 	pt = ALLOC_CLEAR_ONE(partial_T);
@@ -432,12 +432,7 @@ get_func_tv(
     int		len,		// length of "name" or -1 to use strlen()
     typval_T	*rettv,
     char_u	**arg,		// argument, pointing to the '('
-    linenr_T	firstline,	// first line of range
-    linenr_T	lastline,	// last line of range
-    int		*doesrange,	// return: function handled range
-    int		evaluate,
-    partial_T	*partial,	// for extra arguments
-    dict_T	*selfdict)	// Dictionary for "self"
+    funcexe_T	*funcexe)	// various values
 {
     char_u	*argp;
     int		ret = OK;
@@ -448,12 +443,13 @@ get_func_tv(
      * Get the arguments.
      */
     argp = *arg;
-    while (argcount < MAX_FUNC_ARGS - (partial == NULL ? 0 : partial->pt_argc))
+    while (argcount < MAX_FUNC_ARGS - (funcexe->partial == NULL ? 0
+						  : funcexe->partial->pt_argc))
     {
 	argp = skipwhite(argp + 1);	    /* skip the '(' or ',' */
 	if (*argp == ')' || *argp == ',' || *argp == NUL)
 	    break;
-	if (eval1(&argp, &argvars[argcount], evaluate) == FAIL)
+	if (eval1(&argp, &argvars[argcount], funcexe->evaluate) == FAIL)
 	{
 	    ret = FAIL;
 	    break;
@@ -483,8 +479,7 @@ get_func_tv(
 								  &argvars[i];
 	}
 
-	ret = call_func(name, len, rettv, argcount, argvars, NULL,
-		 firstline, lastline, doesrange, evaluate, partial, selfdict);
+	ret = call_func(name, len, rettv, argcount, argvars, funcexe);
 
 	funcargs.ga_len -= i;
     }
@@ -1416,7 +1411,6 @@ func_call(
     listitem_T	*item;
     typval_T	argv[MAX_FUNC_ARGS + 1];
     int		argc = 0;
-    int		dummy;
     int		r = 0;
 
     for (item = args->vval.v_list->lv_first; item != NULL;
@@ -1434,9 +1428,17 @@ func_call(
     }
 
     if (item == NULL)
-	r = call_func(name, -1, rettv, argc, argv, NULL,
-				 curwin->w_cursor.lnum, curwin->w_cursor.lnum,
-					     &dummy, TRUE, partial, selfdict);
+    {
+	funcexe_T funcexe;
+
+	vim_memset(&funcexe, 0, sizeof(funcexe));
+	funcexe.firstline = curwin->w_cursor.lnum;
+	funcexe.lastline = curwin->w_cursor.lnum;
+	funcexe.evaluate = TRUE;
+	funcexe.partial = partial;
+	funcexe.selfdict = selfdict;
+	r = call_func(name, -1, rettv, argc, argv, &funcexe);
+    }
 
     /* Free the arguments. */
     while (argc > 0)
@@ -1454,27 +1456,20 @@ call_callback(
     int		len,		// length of "name" or -1 to use strlen()
     typval_T	*rettv,		// return value goes here
     int		argcount,	// number of "argvars"
-    typval_T	*argvars,	// vars for arguments, must have "argcount"
+    typval_T	*argvars)	// vars for arguments, must have "argcount"
 				// PLUS ONE elements!
-    int		(* argv_func)(int, typval_T *, int),
-				// function to fill in argvars
-    linenr_T	firstline,	// first line of range
-    linenr_T	lastline,	// last line of range
-    int		*doesrange,	// return: function handled range
-    int		evaluate,
-    dict_T	*selfdict)	// Dictionary for "self"
 {
+    funcexe_T	funcexe;
+
+    vim_memset(&funcexe, 0, sizeof(funcexe));
+    funcexe.evaluate = TRUE;
+    funcexe.partial = callback->cb_partial;
     return call_func(callback->cb_name, len, rettv, argcount, argvars,
-	    argv_func, firstline, lastline, doesrange, evaluate,
-	    callback->cb_partial, selfdict);
+								     &funcexe);
 }
 
 /*
  * Call a function with its resolved parameters
- *
- * "argv_func", when not NULL, can be used to fill in arguments only when the
- * invoked function uses them.  It is called like this:
- *   new_argcount = argv_func(current_argcount, argv, called_func_argcount)
  *
  * Return FAIL when the function can't be called,  OK otherwise.
  * Also returns OK when an error was encountered while executing the function.
@@ -1487,14 +1482,7 @@ call_func(
     int		argcount_in,	// number of "argvars"
     typval_T	*argvars_in,	// vars for arguments, must have "argcount"
 				// PLUS ONE elements!
-    int		(* argv_func)(int, typval_T *, int),
-				// function to fill in argvars
-    linenr_T	firstline,	// first line of range
-    linenr_T	lastline,	// last line of range
-    int		*doesrange,	// return: function handled range
-    int		evaluate,
-    partial_T	*partial,	// optional, can be NULL
-    dict_T	*selfdict_in)	// Dictionary for "self"
+    funcexe_T	*funcexe)	// more arguments
 {
     int		ret = FAIL;
     int		error = ERROR_NONE;
@@ -1506,9 +1494,12 @@ call_func(
     char_u	*name;
     int		argcount = argcount_in;
     typval_T	*argvars = argvars_in;
-    dict_T	*selfdict = selfdict_in;
-    typval_T	argv[MAX_FUNC_ARGS + 1]; /* used when "partial" is not NULL */
+    dict_T	*selfdict = funcexe->selfdict;
+    typval_T	argv[MAX_FUNC_ARGS + 1]; // used when "partial" or
+					 // "funcexe->basetv" is not NULL
     int		argv_clear = 0;
+    int		argv_base = 0;
+    partial_T	*partial = funcexe->partial;
 
     // Make a copy of the name, if it comes from a funcref variable it could
     // be changed or deleted in the called function.
@@ -1518,15 +1509,15 @@ call_func(
 
     fname = fname_trans_sid(name, fname_buf, &tofree, &error);
 
-    *doesrange = FALSE;
+    if (funcexe->doesrange != NULL)
+	*funcexe->doesrange = FALSE;
 
     if (partial != NULL)
     {
 	/* When the function has a partial with a dict and there is a dict
 	 * argument, use the dict argument.  That is backwards compatible.
 	 * When the dict was bound explicitly use the one from the partial. */
-	if (partial->pt_dict != NULL
-		&& (selfdict_in == NULL || !partial->pt_auto))
+	if (partial->pt_dict != NULL && (selfdict == NULL || !partial->pt_auto))
 	    selfdict = partial->pt_dict;
 	if (error == ERROR_NONE && partial->pt_argc > 0)
 	{
@@ -1542,7 +1533,7 @@ call_func(
     /*
      * Execute the function if executing and no errors were detected.
      */
-    if (!evaluate)
+    if (!funcexe->evaluate)
     {
 	// Not evaluating, which means the return value is unknown.  This
 	// matters for giving error messages.
@@ -1590,11 +1581,22 @@ call_func(
 		error = ERROR_DELETED;
 	    else if (fp != NULL)
 	    {
-		if (argv_func != NULL)
-		    argcount = argv_func(argcount, argvars, fp->uf_args.ga_len);
+		if (funcexe->argv_func != NULL)
+		    argcount = funcexe->argv_func(argcount, argvars,
+							   fp->uf_args.ga_len);
 
-		if (fp->uf_flags & FC_RANGE)
-		    *doesrange = TRUE;
+		if (funcexe->basetv != NULL)
+		{
+		    // Method call: base->Method()
+		    mch_memmove(&argv[1], argvars, sizeof(typval_T) * argcount);
+		    argv[0] = *funcexe->basetv;
+		    argcount++;
+		    argvars = argv;
+		    argv_base = 1;
+		}
+
+		if (fp->uf_flags & FC_RANGE && funcexe->doesrange != NULL)
+		    *funcexe->doesrange = TRUE;
 		if (argcount < fp->uf_args.ga_len - fp->uf_def_args.ga_len)
 		    error = ERROR_TOOFEW;
 		else if (!fp->uf_varargs && argcount > fp->uf_args.ga_len)
@@ -1612,16 +1614,14 @@ call_func(
 		     * redo buffer.
 		     */
 		    save_search_patterns();
-#ifdef FEAT_INS_EXPAND
 		    if (!ins_compl_active())
-#endif
 		    {
 			saveRedobuff(&save_redo);
 			did_save_redo = TRUE;
 		    }
 		    ++fp->uf_calls;
 		    call_user_func(fp, argcount, argvars, rettv,
-					       firstline, lastline,
+					 funcexe->firstline, funcexe->lastline,
 				  (fp->uf_flags & FC_DICT) ? selfdict : NULL);
 		    if (--fp->uf_calls <= 0 && fp->uf_refcount <= 0)
 			/* Function was unreferenced while being used, free it
@@ -1633,6 +1633,15 @@ call_func(
 		    error = ERROR_NONE;
 		}
 	    }
+	}
+	else if (funcexe->basetv != NULL)
+	{
+	    /*
+	     * expr->method(): Find the method name in the table, call its
+	     * implementation with the base as one of the arguments.
+	     */
+	    error = call_internal_method(fname, argcount, argvars, rettv,
+							      funcexe->basetv);
 	}
 	else
 	{
@@ -1667,6 +1676,11 @@ call_func(
 	    case ERROR_UNKNOWN:
 		    emsg_funcname(N_("E117: Unknown function: %s"), name);
 		    break;
+	    case ERROR_NOTMETHOD:
+		    emsg_funcname(
+			       N_("E276: Cannot use function as a method: %s"),
+									 name);
+		    break;
 	    case ERROR_DELETED:
 		    emsg_funcname(N_("E933: Function was deleted: %s"), name);
 		    break;
@@ -1674,22 +1688,27 @@ call_func(
 		    emsg_funcname((char *)e_toomanyarg, name);
 		    break;
 	    case ERROR_TOOFEW:
-		    emsg_funcname(N_("E119: Not enough arguments for function: %s"),
+		    emsg_funcname(
+			     N_("E119: Not enough arguments for function: %s"),
 									name);
 		    break;
 	    case ERROR_SCRIPT:
-		    emsg_funcname(N_("E120: Using <SID> not in a script context: %s"),
+		    emsg_funcname(
+			   N_("E120: Using <SID> not in a script context: %s"),
 									name);
 		    break;
 	    case ERROR_DICT:
-		    emsg_funcname(N_("E725: Calling dict function without Dictionary: %s"),
+		    emsg_funcname(
+		      N_("E725: Calling dict function without Dictionary: %s"),
 									name);
 		    break;
 	}
     }
 
+    // clear the copies made from the partial
     while (argv_clear > 0)
-	clear_tv(&argv[--argv_clear]);
+	clear_tv(&argv[--argv_clear + argv_base]);
+
     vim_free(tofree);
     vim_free(name);
 
@@ -2618,7 +2637,7 @@ ex_function(exarg_T *eap)
 	    }
 	}
 
-	fp = alloc_clear(sizeof(ufunc_T) + STRLEN(name));
+	fp = alloc_clear(offsetof(ufunc_T, uf_name) + STRLEN(name) + 1);
 	if (fp == NULL)
 	    goto erret;
 
@@ -2724,7 +2743,7 @@ eval_fname_script(char_u *p)
 translated_function_exists(char_u *name)
 {
     if (builtin_function(name, -1))
-	return find_internal_func(name) >= 0;
+	return has_internal_func(name);
     return find_func(name) != NULL;
 }
 
@@ -2772,8 +2791,6 @@ get_expanded_name(char_u *name, int check)
 }
 #endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
 /*
  * Function given to ExpandGeneric() to obtain the list of user defined
  * function names.
@@ -2816,8 +2833,6 @@ get_user_func_name(expand_T *xp, int idx)
     }
     return NULL;
 }
-
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * ":delfunction {name}"
@@ -3093,7 +3108,7 @@ ex_call(exarg_T *eap)
 
     if (*startarg != '(')
     {
-	semsg(_("E107: Missing parentheses: %s"), eap->arg);
+	semsg(_(e_missingparen), eap->arg);
 	goto end;
     }
 
@@ -3112,6 +3127,8 @@ ex_call(exarg_T *eap)
 	lnum = eap->line1;
     for ( ; lnum <= eap->line2; ++lnum)
     {
+	funcexe_T funcexe;
+
 	if (!eap->skip && eap->addr_count > 0)
 	{
 	    if (lnum > curbuf->b_ml.ml_line_count)
@@ -3126,9 +3143,15 @@ ex_call(exarg_T *eap)
 	    curwin->w_cursor.coladd = 0;
 	}
 	arg = startarg;
-	if (get_func_tv(name, -1, &rettv, &arg,
-		    eap->line1, eap->line2, &doesrange,
-				   !eap->skip, partial, fudi.fd_dict) == FAIL)
+
+	vim_memset(&funcexe, 0, sizeof(funcexe));
+	funcexe.firstline = eap->line1;
+	funcexe.lastline = eap->line2;
+	funcexe.doesrange = &doesrange;
+	funcexe.evaluate = !eap->skip;
+	funcexe.partial = partial;
+	funcexe.selfdict = fudi.fd_dict;
+	if (get_func_tv(name, -1, &rettv, &arg, &funcexe) == FAIL)
 	{
 	    failed = TRUE;
 	    break;
@@ -3136,8 +3159,9 @@ ex_call(exarg_T *eap)
 	if (has_watchexpr())
 	    dbg_check_breakpoint(eap);
 
-	/* Handle a function returning a Funcref, Dictionary or List. */
-	if (handle_subscript(&arg, &rettv, !eap->skip, TRUE) == FAIL)
+	// Handle a function returning a Funcref, Dictionary or List.
+	if (handle_subscript(&arg, &rettv, !eap->skip, TRUE,
+							  name, &name) == FAIL)
 	{
 	    failed = TRUE;
 	    break;

@@ -5998,6 +5998,11 @@ WaitForCharOrMouse(long msec, int *interrupted, int ignore_input)
 		rest -= msec;
 	}
 # endif
+# ifdef FEAT_SOUND_CANBERRA
+	// Invoke any pending sound callbacks.
+	if (has_sound_callback_in_queue())
+	    invoke_sound_callback();
+# endif
 # ifdef FEAT_MOUSE_GPM
 	gpm_process_wanted = 0;
 	avail = RealWaitForChar(read_cmd_fd, msec,

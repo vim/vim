@@ -1,12 +1,9 @@
 " Tests for decoding escape sequences sent by the terminal.
 
 " This only works for Unix in a terminal
-if has('gui_running')
-  throw 'Skipped: does not work in the GUI'
-endif
-if !has('unix')
-  throw 'Skipped: not on Unix'
-endif
+source check.vim
+CheckNotGui
+CheckUnix
 
 source shared.vim
 
@@ -185,9 +182,7 @@ func Test_xterm_mouse_ctrl_click()
 endfunc
 
 func Test_term_mouse_middle_click()
-  if !WorkingClipboard()
-    throw 'Skipped: No working clipboard'
-  endif
+  CheckFeature clipboard_working
 
   new
   let save_mouse = &mouse

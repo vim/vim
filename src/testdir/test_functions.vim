@@ -1,5 +1,6 @@
 " Tests for various functions.
 source shared.vim
+source check.vim
 
 " Must be done first, since the alternate buffer must be unset.
 func Test_00_bufexists()
@@ -871,7 +872,7 @@ func Test_byte2line_line2byte()
 
   set fileformat=mac
   call assert_equal([-1, -1, 1, 1, 2, 2, 2, 3, 3, -1],
-  \                 map(range(-1, 8), 'byte2line(v:val)'))
+  \                 map(range(-1, 8), 'v:val->byte2line()'))
   call assert_equal([-1, -1, 1, 3, 6, 8, -1],
   \                 map(range(-1, 5), 'line2byte(v:val)'))
 
@@ -892,6 +893,34 @@ func Test_byte2line_line2byte()
 
   set endofline& fixendofline& fileformat&
   bw!
+endfunc
+
+func Test_byteidx()
+  let a = '.é.' " one char of two bytes
+  call assert_equal(0, byteidx(a, 0))
+  call assert_equal(0, byteidxcomp(a, 0))
+  call assert_equal(1, byteidx(a, 1))
+  call assert_equal(1, byteidxcomp(a, 1))
+  call assert_equal(3, byteidx(a, 2))
+  call assert_equal(3, byteidxcomp(a, 2))
+  call assert_equal(4, byteidx(a, 3))
+  call assert_equal(4, byteidxcomp(a, 3))
+  call assert_equal(-1, byteidx(a, 4))
+  call assert_equal(-1, byteidxcomp(a, 4))
+
+  let b = '.é.' " normal e with composing char
+  call assert_equal(0, b->byteidx(0))
+  call assert_equal(1, b->byteidx(1))
+  call assert_equal(4, b->byteidx(2))
+  call assert_equal(5, b->byteidx(3))
+  call assert_equal(-1, b->byteidx(4))
+
+  call assert_equal(0, b->byteidxcomp(0))
+  call assert_equal(1, b->byteidxcomp(1))
+  call assert_equal(2, b->byteidxcomp(2))
+  call assert_equal(4, b->byteidxcomp(3))
+  call assert_equal(5, b->byteidxcomp(4))
+  call assert_equal(-1, b->byteidxcomp(5))
 endfunc
 
 func Test_count()
@@ -1376,9 +1405,8 @@ endfunc
 
 " Test confirm({msg} [, {choices} [, {default} [, {type}]]])
 func Test_confirm()
-  if !has('unix') || has('gui_running')
-    return
-  endif
+  CheckUnix
+  CheckNotGui
 
   call feedkeys('o', 'L')
   let a = confirm('Press O to proceed')
@@ -1506,6 +1534,7 @@ endfunc
 
 func Test_call()
   call assert_equal(3, call('len', [123]))
+  call assert_equal(3, 'len'->call([123]))
   call assert_fails("call call('len', 123)", 'E714:')
   call assert_equal(0, call('', []))
 
@@ -1513,6 +1542,7 @@ func Test_call()
      return len(self.data)
   endfunction
   let mydict = {'data': [0, 1, 2, 3], 'len': function("Mylen")}
+  eval mydict.len->call([], mydict)->assert_equal(4)
   call assert_fails("call call('Mylen', [], 0)", 'E715:')
 endfunc
 
@@ -1537,12 +1567,12 @@ func Test_bufadd_bufload()
 
   let curbuf = bufnr('')
   call writefile(['some', 'text'], 'XotherName')
-  let buf = bufadd('XotherName')
+  let buf = 'XotherName'->bufadd()
   call assert_notequal(0, buf)
-  call assert_equal(1, bufexists('XotherName'))
+  eval 'XotherName'->bufexists()->assert_equal(1)
   call assert_equal(0, getbufvar(buf, '&buflisted'))
   call assert_equal(0, bufloaded(buf))
-  call bufload(buf)
+  eval buf->bufload()
   call assert_equal(1, bufloaded(buf))
   call assert_equal(['some', 'text'], getbufline(buf, 1, '$'))
   call assert_equal(curbuf, bufnr(''))

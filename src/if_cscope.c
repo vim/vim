@@ -79,8 +79,6 @@ cs_usage_msg(csid_e x)
     (void)semsg(_("E560: Usage: cs[cope] %s"), cs_cmds[(int)x].usage);
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
 static enum
 {
     EXP_CSCOPE_SUBCMD,	/* expand ":cscope" sub-commands */
@@ -188,8 +186,6 @@ set_context_in_cscope_cmd(
 	}
     }
 }
-
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * Find the command, print help if invalid, and then call the corresponding

@@ -13,6 +13,7 @@ SRC_ALL =	\
 		src/README.md \
 		src/alloc.h \
 		src/arabic.c \
+		src/arglist.c \
 		src/ascii.h \
 		src/autocmd.c \
 		src/beval.c \
@@ -23,6 +24,8 @@ SRC_ALL =	\
 		src/change.c \
 		src/channel.c \
 		src/charset.c \
+		src/cmdexpand.c \
+		src/cmdhist.c \
 		src/crypt.c \
 		src/crypt_zip.c \
 		src/debugger.c \
@@ -164,6 +167,7 @@ SRC_ALL =	\
 		src/proto.h \
 		src/protodef.h \
 		src/proto/arabic.pro \
+		src/proto/arglist.pro \
 		src/proto/autocmd.pro \
 		src/proto/beval.pro \
 		src/proto/blob.pro \
@@ -172,6 +176,8 @@ SRC_ALL =	\
 		src/proto/change.pro \
 		src/proto/channel.pro \
 		src/proto/charset.pro \
+		src/proto/cmdexpand.pro \
+		src/proto/cmdhist.pro \
 		src/proto/crypt.pro \
 		src/proto/crypt_zip.pro \
 		src/proto/debugger.pro \

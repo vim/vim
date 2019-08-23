@@ -1056,7 +1056,7 @@ theend:
  * "options" can be JSON_JS or zero;
  * Return FAIL if not the whole message was consumed.
  */
-    int
+    static int
 json_decode_all(js_read_T *reader, typval_T *res, int options)
 {
     int ret;

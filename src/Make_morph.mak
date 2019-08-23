@@ -25,11 +25,14 @@ RM =		rm
 	${CC} ${CFLAGS} $< -o $@
 
 SRC =	arabic.c						\
+	arglist.c						\
 	autocmd.c						\
 	blowfish.c						\
 	buffer.c						\
 	change.c						\
 	charset.c						\
+	cmdexpand.c						\
+	cmdhist.c						\
 	crypt.c							\
 	crypt_zip.c						\
 	debugger.c						\

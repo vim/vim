@@ -90,8 +90,8 @@ func Test_argadd_empty_curbuf()
   call assert_equal('', bufname('%'))
   call assert_equal(1, line('$'))
   rew
-  call assert_notequal(curbuf, bufnr('%'))
-  call assert_equal('Xargadd', bufname('%'))
+  call assert_notequal(curbuf, '%'->bufnr())
+  call assert_equal('Xargadd', '%'->bufname())
   call assert_equal(2, line('$'))
 
   call delete('Xargadd')
@@ -495,4 +495,13 @@ func Test_large_arg()
   " access to invalid memory.
   exe 'argadd ' .repeat('x', &columns)
   args
+endfunc
+
+func Test_argdo()
+  next! Xa.c Xb.c Xc.c
+  new
+  let l = []
+  argdo call add(l, expand('%'))
+  call assert_equal(['Xa.c', 'Xb.c', 'Xc.c'], l)
+  bwipe Xa.c Xb.c Xc.c
 endfunc

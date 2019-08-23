@@ -703,6 +703,7 @@ GUIOBJ =  $(OUTDIR)/gui.o $(OUTDIR)/gui_w32.o $(OUTDIR)/gui_beval.o
 CUIOBJ = $(OUTDIR)/iscygpty.o
 OBJ = \
 	$(OUTDIR)/arabic.o \
+	$(OUTDIR)/arglist.o \
 	$(OUTDIR)/autocmd.o \
 	$(OUTDIR)/beval.o \
 	$(OUTDIR)/blob.o \
@@ -710,6 +711,8 @@ OBJ = \
 	$(OUTDIR)/buffer.o \
 	$(OUTDIR)/change.o \
 	$(OUTDIR)/charset.o \
+	$(OUTDIR)/cmdexpand.o \
+	$(OUTDIR)/cmdhist.o \
 	$(OUTDIR)/crypt.o \
 	$(OUTDIR)/crypt_zip.o \
 	$(OUTDIR)/debugger.o \

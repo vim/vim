@@ -145,6 +145,8 @@ script:
   - |
     if do_test make ${SHADOWOPT} ${TEST}; then
       echo -en "travis_fold:end:test\\r\\033[0K"
+    else
+      exit 1
     fi
 
 

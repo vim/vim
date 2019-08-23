@@ -2,6 +2,7 @@
 
 source shared.vim
 source screendump.vim
+source check.vim
 
 func Test_setbufline_getbufline()
   new
@@ -147,16 +148,15 @@ func Test_deletebufline()
 endfunc
 
 func Test_appendbufline_redraw()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
     new foo
-    let winnr=bufwinnr('foo')
-    let buf=bufnr('foo')
+    let winnr = 'foo'->bufwinnr()
+    let buf = bufnr('foo')
     wincmd p
     call appendbufline(buf, '$', range(1,200))
-    exe winnr. 'wincmd w'
+    exe winnr .. 'wincmd w'
     norm! G
     wincmd p
     call deletebufline(buf, 1, '$')

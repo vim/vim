@@ -2,6 +2,7 @@
 
 source shared.vim
 source screendump.vim
+source check.vim
 
 func Test_search_cmdline()
   if !exists('+incsearch')
@@ -575,12 +576,13 @@ endfunc
 func Test_search_cmdline8()
   " Highlighting is cleared in all windows
   " since hls applies to all windows
-  if !exists('+incsearch') || !has('terminal') || has('gui_running') || winwidth(0) < 30
-    return
-  endif
+  CheckOption incsearch
+  CheckFeature terminal
+  CheckNotGui
   if has("win32")
     throw "Skipped: Bug with sending <ESC> to terminal window not fixed yet"
   endif
+
   let h = winheight(0)
   if h < 3
     return
@@ -702,9 +704,10 @@ func Test_search_cmdline_incsearch_highlight()
 endfunc
 
 func Test_search_cmdline_incsearch_highlight_attr()
-  if !exists('+incsearch') || !has('terminal') || has('gui_running')
-    return
-  endif
+  CheckOption incsearch
+  CheckFeature terminal
+  CheckNotGui
+
   let h = winheight(0)
   if h < 3
     return

@@ -1,8 +1,7 @@
 " Test 'autochdir' behavior
 
-if !exists("+autochdir")
-  throw 'Skipped: autochdir feature missing'
-endif
+source check.vim
+CheckOption autochdir
 
 func Test_set_filename()
   let cwd = getcwd()

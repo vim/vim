@@ -240,16 +240,6 @@ static garray_T augroups = {0, 0, sizeof(char_u *), 10, NULL};
 static char_u *deleted_augroup = NULL;
 
 /*
- * Set by the apply_autocmds_group function if the given event is equal to
- * EVENT_FILETYPE. Used by the readfile function in order to determine if
- * EVENT_BUFREADPOST triggered the EVENT_FILETYPE.
- *
- * Relying on this value requires one to reset it prior calling
- * apply_autocmds_group.
- */
-int au_did_filetype INIT(= FALSE);
-
-/*
  * The ID of the current group.  Group 0 is the default one.
  */
 static int current_augroup = AUGROUP_DEFAULT;
@@ -1669,7 +1659,7 @@ apply_autocmds_retval(
 /*
  * Return TRUE when there is a CursorHold autocommand defined.
  */
-    int
+    static int
 has_cursorhold(void)
 {
     return (first_autopat[(int)(get_real_state() == NORMAL_BUSY
@@ -1688,10 +1678,7 @@ trigger_cursorhold(void)
 	    && has_cursorhold()
 	    && reg_recording == 0
 	    && typebuf.tb_len == 0
-#ifdef FEAT_INS_EXPAND
-	    && !ins_compl_active()
-#endif
-	    )
+	    && !ins_compl_active())
     {
 	state = get_real_state();
 	if (state == NORMAL_BUSY || (state & INSERT) != 0)
@@ -1736,7 +1723,6 @@ has_textchangedI(void)
     return (first_autopat[(int)EVENT_TEXTCHANGEDI] != NULL);
 }
 
-#if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Return TRUE when there is a TextChangedP autocommand defined.
  */
@@ -1745,7 +1731,6 @@ has_textchangedP(void)
 {
     return (first_autopat[(int)EVENT_TEXTCHANGEDP] != NULL);
 }
-#endif
 
 /*
  * Return TRUE when there is an InsertCharPre autocommand defined.
@@ -2054,9 +2039,7 @@ apply_autocmds_group(
     if (!autocmd_busy)
     {
 	save_search_patterns();
-#ifdef FEAT_INS_EXPAND
 	if (!ins_compl_active())
-#endif
 	{
 	    saveRedobuff(&save_redo);
 	    did_save_redobuff = TRUE;
@@ -2251,14 +2234,11 @@ unblock_autocmds(void)
 # endif
 }
 
-#if defined(FEAT_EVAL) && (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM)) \
-	|| defined(PROTO)
     int
 is_autocmd_blocked(void)
 {
     return autocmd_blocked != 0;
 }
-#endif
 
 /*
  * Find next autocommand pattern that matches.
@@ -2435,7 +2415,6 @@ has_autocmd(event_T event, char_u *sfname, buf_T *buf)
     return retval;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Function given to ExpandGeneric() to obtain the list of autocommand group
  * names.
@@ -2520,7 +2499,6 @@ get_event_name(expand_T *xp UNUSED, int idx)
     return (char_u *)event_names[idx - augroups.ga_len].name;
 }
 
-#endif	// FEAT_CMDL_COMPL
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*

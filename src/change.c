@@ -341,7 +341,6 @@ invoke_listeners(buf_T *buf)
 {
     listener_T	*lnr;
     typval_T	rettv;
-    int		dummy;
     typval_T	argv[6];
     listitem_T	*li;
     linenr_T	start = MAXLNUM;
@@ -389,8 +388,7 @@ invoke_listeners(buf_T *buf)
 
     for (lnr = buf->b_listener; lnr != NULL; lnr = lnr->lr_next)
     {
-	call_callback(&lnr->lr_callback, -1, &rettv,
-				    5, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+	call_callback(&lnr->lr_callback, -1, &rettv, 5, argv);
 	clear_tv(&rettv);
     }
 
@@ -668,7 +666,7 @@ changed_bytes(linenr_T lnum, colnr_T col)
  * Like changed_bytes() but also adjust text properties for "added" bytes.
  * When "added" is negative text was deleted.
  */
-    void
+    static void
 inserted_bytes(linenr_T lnum, colnr_T col, int added UNUSED)
 {
 #ifdef FEAT_TEXT_PROP
@@ -1010,10 +1008,7 @@ ins_char_bytes(char_u *buf, int charlen)
     // show the match for right parens and braces.
     if (p_sm && (State & INSERT)
 	    && msg_silent == 0
-#ifdef FEAT_INS_EXPAND
-	    && !ins_compl_active()
-#endif
-       )
+	    && !ins_compl_active())
     {
 	if (has_mbyte)
 	    showmatch(mb_ptr2char(buf));

@@ -180,6 +180,7 @@ NEW_TESTS = \
 	test_matchadd_conceal \
 	test_matchadd_conceal_utf8 \
 	test_memory_usage \
+	test_method \
 	test_menu \
 	test_messages \
 	test_mksession \
@@ -226,6 +227,7 @@ NEW_TESTS = \
 	test_searchpos \
 	test_set \
 	test_sha256 \
+	test_shift \
 	test_shortpathname \
 	test_signals \
 	test_signs \
@@ -235,6 +237,7 @@ NEW_TESTS = \
 	test_source \
 	test_source_utf8 \
 	test_spell \
+	test_spellfile \
 	test_startup \
 	test_startup_utf8 \
 	test_stat \
@@ -373,6 +376,7 @@ NEW_TESTS_RES = \
 	test_marks.res \
 	test_matchadd_conceal.res \
 	test_memory_usage.res \
+	test_method.res \
 	test_mksession.res \
 	test_nested_function.res \
 	test_netbeans.res \
@@ -409,6 +413,7 @@ NEW_TESTS_RES = \
 	test_sound.res \
 	test_source.res \
 	test_spell.res \
+	test_spellfile.res \
 	test_startup.res \
 	test_stat.res \
 	test_substitute.res \

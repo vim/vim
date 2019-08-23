@@ -410,14 +410,12 @@ EXTERN long	p_ch;		// 'cmdheight'
 EXTERN int	p_confirm;	// 'confirm'
 #endif
 EXTERN int	p_cp;		// 'compatible'
-#ifdef FEAT_INS_EXPAND
 EXTERN char_u	*p_cot;		// 'completeopt'
-# ifdef BACKSLASH_IN_FILENAME
+#ifdef BACKSLASH_IN_FILENAME
 EXTERN char_u	*p_csl;		// 'completeslash'
-# endif
+#endif
 EXTERN long	p_ph;		// 'pumheight'
 EXTERN long	p_pw;		// 'pumwidth'
-#endif
 EXTERN char_u	*p_cpo;		// 'cpoptions'
 #ifdef FEAT_CSCOPE
 EXTERN char_u	*p_csprg;	// 'cscopeprg'
@@ -443,9 +441,7 @@ EXTERN char_u	*p_dip;		// 'diffopt'
 EXTERN char_u	*p_dex;		// 'diffexpr'
 # endif
 #endif
-#ifdef FEAT_INS_EXPAND
 EXTERN char_u	*p_dict;	// 'dictionary'
-#endif
 #ifdef FEAT_DIGRAPHS
 EXTERN int	p_dg;		// 'digraph'
 #endif
@@ -503,6 +499,9 @@ EXTERN int	p_fs;		// 'fsync'
 #endif
 EXTERN int	p_gd;		// 'gdefault'
 #ifdef FEAT_TEXT_PROP
+# ifdef FEAT_QUICKFIX
+EXTERN char_u	*p_cpp;		// 'completepopup'
+# endif
 EXTERN char_u	*p_pvp;		// 'previewpopup'
 #endif
 #ifdef FEAT_PRINTER
@@ -846,9 +845,7 @@ EXTERN long	p_titlelen;	// 'titlelen'
 EXTERN char_u	*p_titleold;	// 'titleold'
 EXTERN char_u	*p_titlestring;	// 'titlestring'
 #endif
-#ifdef FEAT_INS_EXPAND
 EXTERN char_u	*p_tsr;		// 'thesaurus'
-#endif
 EXTERN int	p_ttimeout;	// 'ttimeout'
 EXTERN long	p_ttm;		// 'ttimeoutlen'
 EXTERN int	p_tbi;		// 'ttybuiltin'
@@ -925,9 +922,7 @@ char_u	*p_vfile = (char_u *)""; // used before options are initialized
 extern char_u	*p_vfile;	// 'verbosefile'
 #endif
 EXTERN int	p_warn;		// 'warn'
-#ifdef FEAT_CMDL_COMPL
 EXTERN char_u	*p_wop;		// 'wildoptions'
-#endif
 EXTERN long	p_window;	// 'window'
 #if defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) || defined(LINT) \
 	|| defined (FEAT_GUI_GTK) || defined(FEAT_GUI_PHOTON)
@@ -995,11 +990,9 @@ enum
 #ifdef FEAT_COMMENTS
     , BV_COM
 #endif
-#ifdef FEAT_INS_EXPAND
     , BV_CPT
     , BV_DICT
     , BV_TSR
-#endif
 #ifdef BACKSLASH_IN_FILENAME
     , BV_CSL
 #endif

@@ -123,6 +123,7 @@ static void unserialize_pos(bufinfo_T *bi, pos_T *pos);
 static void serialize_visualinfo(bufinfo_T *bi, visualinfo_T *info);
 static void unserialize_visualinfo(bufinfo_T *bi, visualinfo_T *info);
 #endif
+static void u_saveline(linenr_T lnum);
 
 #define U_ALLOC_LINE(size) lalloc(size, FALSE)
 
@@ -1317,6 +1318,12 @@ unserialize_uhp(bufinfo_T *bi, char_u *file_name)
 	int len = undo_read_byte(bi);
 	int what;
 
+	if (len == EOF)
+	{
+	    corruption_error("truncated", file_name);
+	    u_free_uhp(uhp);
+	    return NULL;
+	}
 	if (len == 0)
 	    break;
 	what = undo_read_byte(bi);
@@ -3429,7 +3436,7 @@ u_clearall(buf_T *buf)
 /*
  * Save the line "lnum" for the "U" command.
  */
-    void
+    static void
 u_saveline(linenr_T lnum)
 {
     if (lnum == curbuf->b_u_line_lnum)	    /* line is already saved */

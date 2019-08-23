@@ -712,6 +712,7 @@ INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h globals.h \
 
 OBJ = \
 	$(OUTDIR)\arabic.obj \
+	$(OUTDIR)\arglist.obj \
 	$(OUTDIR)\autocmd.obj \
 	$(OUTDIR)\beval.obj \
 	$(OUTDIR)\blob.obj \
@@ -719,6 +720,8 @@ OBJ = \
 	$(OUTDIR)\buffer.obj \
 	$(OUTDIR)\change.obj \
 	$(OUTDIR)\charset.obj \
+	$(OUTDIR)\cmdexpand.obj \
+	$(OUTDIR)\cmdhist.obj \
 	$(OUTDIR)\crypt.obj \
 	$(OUTDIR)\crypt_zip.obj \
 	$(OUTDIR)\debugger.obj \
@@ -1432,6 +1435,8 @@ $(NEW_TESTS):
 
 $(OUTDIR)/arabic.obj:	$(OUTDIR) arabic.c  $(INCL)
 
+$(OUTDIR)/arglist.obj:	$(OUTDIR) arglist.c  $(INCL)
+
 $(OUTDIR)/autocmd.obj:	$(OUTDIR) autocmd.c  $(INCL)
 
 $(OUTDIR)/beval.obj:	$(OUTDIR) beval.c  $(INCL)
@@ -1445,6 +1450,10 @@ $(OUTDIR)/buffer.obj:	$(OUTDIR) buffer.c  $(INCL)
 $(OUTDIR)/change.obj:	$(OUTDIR) change.c  $(INCL)
 
 $(OUTDIR)/charset.obj:	$(OUTDIR) charset.c  $(INCL)
+
+$(OUTDIR)/cmdexpand.obj:	$(OUTDIR) cmdexpand.c  $(INCL)
+
+$(OUTDIR)/cmdhist.obj:	$(OUTDIR) cmdhist.c  $(INCL)
 
 $(OUTDIR)/crypt.obj:	$(OUTDIR) crypt.c  $(INCL)
 
@@ -1741,12 +1750,15 @@ $(PATHDEF_SRC): Make_mvc.mak
 # End Custom Build
 proto.h: \
 	proto/arabic.pro \
+	proto/arglist.pro \
 	proto/autocmd.pro \
 	proto/blob.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/change.pro \
 	proto/charset.pro \
+	proto/cmdexpand.pro \
+	proto/cmdhist.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
 	proto/debugger.pro \

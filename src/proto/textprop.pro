@@ -6,7 +6,6 @@ proptype_T *text_prop_type_by_id(buf_T *buf, int id);
 void f_prop_clear(typval_T *argvars, typval_T *rettv);
 void f_prop_list(typval_T *argvars, typval_T *rettv);
 void f_prop_remove(typval_T *argvars, typval_T *rettv);
-void prop_type_set(typval_T *argvars, int add);
 void f_prop_type_add(typval_T *argvars, typval_T *rettv);
 void f_prop_type_change(typval_T *argvars, typval_T *rettv);
 void f_prop_type_delete(typval_T *argvars, typval_T *rettv);

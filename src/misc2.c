@@ -1014,14 +1014,19 @@ do_outofmem_msg(size_t size)
 {
     if (!did_outofmem_msg)
     {
-	/* Don't hide this message */
+	// Don't hide this message
 	emsg_silent = 0;
 
-	/* Must come first to avoid coming back here when printing the error
-	 * message fails, e.g. when setting v:errmsg. */
+	// Must come first to avoid coming back here when printing the error
+	// message fails, e.g. when setting v:errmsg.
 	did_outofmem_msg = TRUE;
 
 	semsg(_("E342: Out of memory!  (allocating %lu bytes)"), (long_u)size);
+
+	if (starting == NO_SCREEN)
+	    // Not even finished with initializations and already out of
+	    // memory?  Then nothing is going to work, exit.
+	    mch_exit(123);
     }
 }
 
@@ -1060,7 +1065,7 @@ free_all_mem(void)
     spell_free_all();
 # endif
 
-# if defined(FEAT_INS_EXPAND) && defined(FEAT_BEVAL_TERM)
+# if defined(FEAT_BEVAL_TERM)
     ui_remove_balloon();
 # endif
 
@@ -1108,15 +1113,11 @@ free_all_mem(void)
     free_all_marks();
     alist_clear(&global_alist);
     free_homedir();
-# if defined(FEAT_CMDL_COMPL)
     free_users();
-# endif
     free_search_patterns();
     free_old_sub();
     free_last_insert();
-# if defined(FEAT_INS_EXPAND)
     free_insexpand_stuff();
-# endif
     free_prev_shellcmd();
     free_regexp_stuff();
     free_tag_stuff();
@@ -1139,16 +1140,12 @@ free_all_mem(void)
     vim_regfree(clip_exclude_prog);
 # endif
     vim_free(last_cmdline);
-# ifdef FEAT_CMDHIST
     vim_free(new_last_cmdline);
-# endif
     set_keep_msg(NULL, 0);
 
     /* Clear cmdline history. */
     p_hi = 0;
-# ifdef FEAT_CMDHIST
     init_history();
-# endif
 # ifdef FEAT_TEXT_PROP
     clear_global_prop_types();
 # endif
@@ -2536,7 +2533,7 @@ static struct mousetable
  * Return the modifier mask bit (MOD_MASK_*) which corresponds to the given
  * modifier name ('S' for Shift, 'C' for Ctrl etc).
  */
-    int
+    static int
 name_to_mod_mask(int c)
 {
     int	    i;
@@ -2823,10 +2820,10 @@ find_special_key(
 		    l = mb_ptr2len(bp + 1);
 		else
 		    l = 1;
-		/* Anything accepted, like <C-?>.
-		 * <C-"> or <M-"> are not special in strings as " is
-		 * the string delimiter. With a backslash it works: <M-\"> */
-		if (!(in_string && bp[1] == '"') && bp[2] == '>')
+		// Anything accepted, like <C-?>.
+		// <C-"> or <M-"> are not special in strings as " is
+		// the string delimiter. With a backslash it works: <M-\">
+		if (!(in_string && bp[1] == '"') && bp[l + 1] == '>')
 		    bp += l;
 		else if (in_string && bp[1] == '\\' && bp[2] == '"'
 							       && bp[3] == '>')
@@ -3045,7 +3042,6 @@ get_special_key_code(char_u *name)
     return 0;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     char_u *
 get_key_name(int i)
 {
@@ -3053,7 +3049,6 @@ get_key_name(int i)
 	return NULL;
     return  key_names_table[i].name;
 }
-#endif
 
 #if defined(FEAT_MOUSE) || defined(PROTO)
 /*
@@ -4489,6 +4484,10 @@ parse_queued_messages(void)
 # endif
 # ifdef FEAT_TERMINAL
 	free_unused_terminals();
+# endif
+# ifdef FEAT_SOUND_CANBERRA
+	if (has_sound_callback_in_queue())
+	    invoke_sound_callback();
 # endif
 	break;
     }

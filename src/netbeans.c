@@ -1389,17 +1389,18 @@ nb_do_cmd(
 			    && ((pos != NULL && pos->col > 0)
 				|| (lnum == 1 && buf_was_empty)))
 		    {
-			char_u *oldline = ml_get(lnum);
-			char_u *newline;
+			char_u	*oldline = ml_get(lnum);
+			char_u	*newline;
+			int	col = pos == NULL ? 0 : pos->col;
 
 			/* Insert halfway a line. */
 			newline = alloc(STRLEN(oldline) + len + 1);
 			if (newline != NULL)
 			{
-			    mch_memmove(newline, oldline, (size_t)pos->col);
-			    newline[pos->col] = NUL;
+			    mch_memmove(newline, oldline, (size_t)col);
+			    newline[col] = NUL;
 			    STRCAT(newline, args);
-			    STRCAT(newline, oldline + pos->col);
+			    STRCAT(newline, oldline + col);
 			    ml_replace(lnum, newline, FALSE);
 			}
 		    }

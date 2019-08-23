@@ -17,10 +17,13 @@ gui_T gui;
 static void set_guifontwide(char_u *font_name);
 #endif
 static void gui_check_pos(void);
+static void gui_reset_scroll_region(void);
 static void gui_outstr(char_u *, int);
 static int gui_screenchar(int off, int flags, guicolor_T fg, guicolor_T bg, int back);
+static int gui_outstr_nowrap(char_u *s, int len, int flags, guicolor_T fg, guicolor_T bg, int back);
 static void gui_delete_lines(int row, int count);
 static void gui_insert_lines(int row, int count);
+static int gui_xy2colrow(int x, int y, int *colp);
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
 static int gui_has_tabline(void);
 #endif
@@ -1050,7 +1053,7 @@ gui_get_wide_font(void)
     return OK;
 }
 
-    void
+    static void
 gui_set_cursor(int row, int col)
 {
     gui.row = row;
@@ -1713,7 +1716,7 @@ gui_new_shellsize(void)
 /*
  * Make scroll region cover whole screen.
  */
-    void
+    static void
 gui_reset_scroll_region(void)
 {
     gui.scroll_region_top = 0;
@@ -1722,7 +1725,7 @@ gui_reset_scroll_region(void)
     gui.scroll_region_right = gui.num_cols - 1;
 }
 
-    void
+    static void
 gui_start_highlight(int mask)
 {
     if (mask > HL_ALL)		    /* highlight code */
@@ -2227,7 +2230,7 @@ gui_screenstr(
  * Returns OK, unless "back" is non-zero and using the bold trick, then return
  * FAIL (the caller should start drawing "back" chars back).
  */
-    int
+    static int
 gui_outstr_nowrap(
     char_u	*s,
     int		len,
@@ -3380,7 +3383,7 @@ button_set:
  * Corrects for multi-byte character.
  * returns column in "*colp" and row as return value;
  */
-    int
+    static int
 gui_xy2colrow(int x, int y, int *colp)
 {
     int		col = check_col(X_2_COL(x));
@@ -4016,12 +4019,10 @@ gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging)
     if (dont_scroll)
 	return;
 #endif
-#ifdef FEAT_INS_EXPAND
     /* Disallow scrolling the current window when the completion popup menu is
      * visible. */
     if ((sb->wp == NULL || sb->wp == curwin) && pum_visible())
 	return;
-#endif
 
 #ifdef FEAT_RIGHTLEFT
     if (sb->wp == NULL && curwin->w_p_rl)
@@ -4482,13 +4483,12 @@ gui_do_scroll(void)
     {
 	int type = VALID;
 
-#ifdef FEAT_INS_EXPAND
 	if (pum_visible())
 	{
 	    type = NOT_VALID;
 	    wp->w_lines_valid = 0;
 	}
-#endif
+
 	/* Don't set must_redraw here, it may cause the popup menu to
 	 * disappear when losing focus after a scrollbar drag. */
 	if (wp->w_redr_type < type)
@@ -4498,11 +4498,9 @@ gui_do_scroll(void)
 	mch_enable_flush();
     }
 
-#ifdef FEAT_INS_EXPAND
     /* May need to redraw the popup menu. */
     if (pum_visible())
 	pum_redraw();
-#endif
 
     return (wp == curwin && !EQUAL_POS(curwin->w_cursor, old_cursor));
 }

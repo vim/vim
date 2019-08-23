@@ -621,6 +621,9 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define POPF_ON_CMDLINE	0x10	// popup overlaps command line
 #define POPF_DRAG	0x20	// popup can be moved by dragging
 #define POPF_RESIZE	0x40	// popup can be resized by dragging
+#define POPF_MAPPING	0x80	// mapping keys
+#define POPF_INFO	0x100	// used for info of popup menu
+#define POPF_INFO_MENU	0x200	// align info popup with popup menu
 
 #ifdef FEAT_TEXT_PROP
 # define WIN_IS_POPUP(wp) ((wp)->w_popup_flags != 0)
@@ -698,20 +701,22 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define NOTDONE			2   /* not OK or FAIL but skipped */
 
 /* flags for b_flags */
-#define BF_RECOVERED	0x01	/* buffer has been recovered */
-#define BF_CHECK_RO	0x02	/* need to check readonly when loading file
-				   into buffer (set by ":e", may be reset by
-				   ":buf" */
-#define BF_NEVERLOADED	0x04	/* file has never been loaded into buffer,
-				   many variables still need to be set */
-#define BF_NOTEDITED	0x08	/* Set when file name is changed after
-				   starting to edit, reset when file is
-				   written out. */
-#define BF_NEW		0x10	/* file didn't exist when editing started */
-#define BF_NEW_W	0x20	/* Warned for BF_NEW and file created */
-#define BF_READERR	0x40	/* got errors while reading the file */
-#define BF_DUMMY	0x80	/* dummy buffer, only used internally */
-#define BF_PRESERVED	0x100	/* ":preserve" was used */
+#define BF_RECOVERED	0x01	// buffer has been recovered
+#define BF_CHECK_RO	0x02	// need to check readonly when loading file
+				// into buffer (set by ":e", may be reset by
+				// ":buf"
+#define BF_NEVERLOADED	0x04	// file has never been loaded into buffer,
+				// many variables still need to be set
+#define BF_NOTEDITED	0x08	// Set when file name is changed after
+				// starting to edit, reset when file is
+				// written out.
+#define BF_NEW		0x10	// file didn't exist when editing started
+#define BF_NEW_W	0x20	// Warned for BF_NEW and file created
+#define BF_READERR	0x40	// got errors while reading the file
+#define BF_DUMMY	0x80	// dummy buffer, only used internally
+#define BF_PRESERVED	0x100	// ":preserve" was used
+#define BF_SYN_SET	0x200	// 'syntax' option was set
+#define BF_NO_SEA	0x400	// no swap_exists_action (ATTENTION prompt)
 
 /* Mask to check for flags that prevent normal writing */
 #define BF_WRITE_MASK	(BF_NOTEDITED + BF_NEW + BF_READERR)
@@ -785,16 +790,17 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define WILD_LONGEST		7
 #define WILD_ALL_KEEP		8
 
-#define WILD_LIST_NOTFOUND	0x01
-#define WILD_HOME_REPLACE	0x02
-#define WILD_USE_NL		0x04
-#define WILD_NO_BEEP		0x08
-#define WILD_ADD_SLASH		0x10
-#define WILD_KEEP_ALL		0x20
-#define WILD_SILENT		0x40
-#define WILD_ESCAPE		0x80
-#define WILD_ICASE		0x100
-#define WILD_ALLLINKS		0x200
+#define WILD_LIST_NOTFOUND	    0x01
+#define WILD_HOME_REPLACE	    0x02
+#define WILD_USE_NL		    0x04
+#define WILD_NO_BEEP		    0x08
+#define WILD_ADD_SLASH		    0x10
+#define WILD_KEEP_ALL		    0x20
+#define WILD_SILENT		    0x40
+#define WILD_ESCAPE		    0x80
+#define WILD_ICASE		    0x100
+#define WILD_ALLLINKS		    0x200
+#define WILD_IGNORE_COMPLETESLASH   0x400
 
 // Flags for expand_wildcards()
 #define EW_DIR		0x01	// include directory names
@@ -843,9 +849,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define ACTION_GOTO	2
 #define ACTION_SPLIT	3
 #define ACTION_SHOW_ALL	4
-#ifdef FEAT_INS_EXPAND
-# define ACTION_EXPAND	5
-#endif
+#define ACTION_EXPAND	5
 
 #ifdef FEAT_SYN_HL
 # define SST_MIN_ENTRIES 150	/* minimal size for state stack array */
@@ -918,13 +922,14 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define GETFILE_UNUSED	    8
 #define GETFILE_SUCCESS(x)  ((x) <= 0)
 
-/* Values for buflist_new() flags */
-#define BLN_CURBUF	1	/* may re-use curbuf for new buffer */
-#define BLN_LISTED	2	/* put new buffer in buffer list */
-#define BLN_DUMMY	4	/* allocating dummy buffer */
-#define BLN_NEW		8	/* create a new buffer */
-#define BLN_NOOPT	16	/* don't copy options to existing buffer */
-#define BLN_DUMMY_OK	32	/* also find an existing dummy buffer */
+// Values for buflist_new() flags
+#define BLN_CURBUF	1	// may re-use curbuf for new buffer
+#define BLN_LISTED	2	// put new buffer in buffer list
+#define BLN_DUMMY	4	// allocating dummy buffer
+#define BLN_NEW		8	// create a new buffer
+#define BLN_NOOPT	16	// don't copy options to existing buffer
+#define BLN_DUMMY_OK	32	// also find an existing dummy buffer
+#define BLN_REUSE	64	// may re-use number from buf_reuse
 
 /* Values for in_cinkeys() */
 #define KEY_OPEN_FORW	0x101
@@ -973,12 +978,13 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define FM_BLOCKSTOP	0x04	/* stop at start/end of block */
 #define FM_SKIPCOMM	0x08	/* skip comments */
 
-/* Values for action argument for do_buffer() */
-#define DOBUF_GOTO	0	/* go to specified buffer */
-#define DOBUF_SPLIT	1	/* split window and go to specified buffer */
-#define DOBUF_UNLOAD	2	/* unload specified buffer(s) */
-#define DOBUF_DEL	3	/* delete specified buffer(s) from buflist */
-#define DOBUF_WIPE	4	/* delete specified buffer(s) really */
+// Values for action argument for do_buffer() and close_buffer()
+#define DOBUF_GOTO	0	// go to specified buffer
+#define DOBUF_SPLIT	1	// split window and go to specified buffer
+#define DOBUF_UNLOAD	2	// unload specified buffer(s)
+#define DOBUF_DEL	3	// delete specified buffer(s) from buflist
+#define DOBUF_WIPE	4	// delete specified buffer(s) really
+#define DOBUF_WIPE_REUSE 5	// like DOBUF_WIPE an keep number for reuse
 
 /* Values for start argument for do_buffer() */
 #define DOBUF_CURRENT	0	/* "count" buffer from current buffer */
@@ -2514,6 +2520,7 @@ typedef enum {
 #define ERROR_NONE	5
 #define ERROR_OTHER	6
 #define ERROR_DELETED	7
+#define ERROR_NOTMETHOD	8   // function cannot be used as a method
 
 /* flags for find_name_end() */
 #define FNE_INCL_BR	1	/* include [] in name */

@@ -6,9 +6,8 @@ CheckFeature textprop
 source screendump.vim
 
 func Test_simple_popup()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, range(1, 100))
 	hi PopupColor1 ctermbg=lightblue
@@ -77,16 +76,14 @@ func Test_simple_popup()
 endfunc
 
 func Test_popup_with_border_and_padding()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   for iter in range(0, 1)
     let lines =<< trim END
 	  call setline(1, range(1, 100))
 	  call popup_create('hello border', #{line: 2, col: 3, border: []})
 	  call popup_create('hello padding', #{line: 2, col: 23, padding: []})
-	  call popup_create('hello both', #{line: 2, col: 43, border: [], padding: []})
+	  call popup_create('hello both', #{line: 2, col: 43, border: [], padding: [], highlight: 'Normal'})
 	  call popup_create('border TL', #{line: 6, col: 3, border: [1, 0, 0, 4]})
 	  call popup_create('paddings', #{line: 6, col: 23, padding: [1, 3, 2, 4]})
 	  call popup_create('wrapped longer text', #{line: 8, col: 55, padding: [0, 3, 0, 3], border: [0, 1, 0, 1]})
@@ -191,9 +188,8 @@ func Test_popup_with_border_and_padding()
 endfunc
 
 func Test_popup_with_syntax_win_execute()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, range(1, 100))
 	hi PopupColor ctermbg=lightblue
@@ -216,9 +212,8 @@ func Test_popup_with_syntax_win_execute()
 endfunc
 
 func Test_popup_with_syntax_setbufvar()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, range(1, 100))
 	hi PopupColor ctermbg=lightgrey
@@ -241,9 +236,8 @@ func Test_popup_with_syntax_setbufvar()
 endfunc
 
 func Test_popup_with_matches()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, ['111 222 333', '444 555 666'])
 	let winid = popup_create([
@@ -267,9 +261,8 @@ func Test_popup_with_matches()
 endfunc
 
 func Test_popup_all_corners()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, repeat([repeat('-', 60)], 15))
 	set so=0
@@ -316,9 +309,8 @@ func Test_popup_all_corners()
 endfunc
 
 func Test_popup_firstline()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, range(1, 20))
 	call popup_create(['1111', '222222', '33333', '44', '5', '666666', '77777', '888', '9999999999999999'], #{
@@ -346,9 +338,8 @@ func Test_popup_firstline()
 endfunc
 
 func Test_popup_drag()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   " create a popup that covers the command line
   let lines =<< trim END
 	call setline(1, range(1, 20))
@@ -385,9 +376,8 @@ func Test_popup_drag()
 endfunc
 
 func Test_popup_close_with_mouse()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, range(1, 20))
 	" With border, can click on X
@@ -442,9 +432,8 @@ func Test_popup_close_with_mouse()
 endfunction
 
 func Test_popup_with_mask()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	call setline(1, repeat([join(range(1, 42), '')], 13))
 	hi PopupColor ctermbg=lightgrey
@@ -510,21 +499,19 @@ func Test_popup_with_mask()
 endfunc
 
 func Test_popup_select()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
-  if !has('clipboard')
-    throw 'Skipped: clipboard feature missing'
-  endif
+  CheckScreendump
+  CheckFeature clipboard_working
+
   " create a popup with some text to be selected
   let lines =<< trim END
     set clipboard=autoselect
     call setline(1, range(1, 20))
-    let winid = popup_create(['the word', 'some more', 'several words here'], #{
+    let winid = popup_create(['the word', 'some more', 'several words here', 'invisible', '5', '6', '7'], #{
 	  \ drag: 1,
 	  \ border: [],
 	  \ line: 3,
 	  \ col: 10,
+	  \ maxheight: 3,
 	  \ })
     func Select1()
       call feedkeys("\<F3>\<LeftMouse>\<F4>\<LeftDrag>\<LeftRelease>", "xt")
@@ -657,6 +644,7 @@ func Test_popup_invalid_arguments()
   call assert_fails('call popup_create("text", #{mask: ["asdf"]})', 'E475:')
   call popup_clear()
   call assert_fails('call popup_create("text", #{mask: test_null_list()})', 'E475:')
+  call assert_fails('call popup_create("text", #{mapping: []})', 'E745:')
   call popup_clear()
 endfunc
 
@@ -689,9 +677,8 @@ func Test_win_execute_not_allowed()
 endfunc
 
 func Test_popup_with_wrap()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	 call setline(1, range(1, 100))
 	 let winid = popup_create(
@@ -708,9 +695,8 @@ func Test_popup_with_wrap()
 endfunc
 
 func Test_popup_without_wrap()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	 call setline(1, range(1, 100))
 	 let winid = popup_create(
@@ -727,9 +713,8 @@ func Test_popup_without_wrap()
 endfunc
 
 func Test_popup_with_showbreak()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   let lines =<< trim END
 	 set showbreak=>>\ 
 	 call setline(1, range(1, 20))
@@ -748,9 +733,8 @@ func Test_popup_with_showbreak()
 endfunc
 
 func Test_popup_time()
-  if !has('timers')
-    throw 'Skipped: timer feature not supported'
-  endif
+  CheckFeature timers
+
   topleft vnew
   call setline(1, 'hello')
 
@@ -945,6 +929,7 @@ func Test_popup_getoptions()
   call assert_equal(21, res.maxheight)
   call assert_equal(100, res.zindex)
   call assert_equal(1, res.fixed)
+  call assert_equal(1, res.mapping)
   if has('timers')
     call assert_equal(5000, res.time)
   endif
@@ -1068,9 +1053,7 @@ func Test_popup_atcursor()
 endfunc
 
 func Test_popup_beval()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
 	call setline(1, range(1, 20))
@@ -1203,6 +1186,8 @@ func Test_popup_menu()
     let s:cb_winid = a:id
     let s:cb_res = a:res
   endfunc
+  " mapping won't be used in popup
+  map j k
 
   let winid = ShowMenu(" ", 1)
   let winid = ShowMenu("j \<CR>", 2)
@@ -1215,12 +1200,11 @@ func Test_popup_menu()
   let winid = ShowMenu("\<C-C>", -1)
 
   delfunc QuitCallback
+  unmap j
 endfunc
 
 func Test_popup_menu_screenshot()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
 	call setline(1, range(1, 20))
@@ -1246,9 +1230,7 @@ func Test_popup_menu_screenshot()
 endfunc
 
 func Test_popup_menu_narrow()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
 	call setline(1, range(1, 20))
@@ -1269,19 +1251,25 @@ func Test_popup_menu_narrow()
 endfunc
 
 func Test_popup_title()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   " Create a popup without title or border, a line of padding will be added to
   " put the title on.
   let lines =<< trim END
 	call setline(1, range(1, 20))
-	call popup_create(['one', 'two', 'another'], #{title: 'Title String'})
+	let winid = popup_create(['one', 'two', 'another'], #{title: 'Title String'})
   END
   call writefile(lines, 'XtestPopupTitle')
   let buf = RunVimInTerminal('-S XtestPopupTitle', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_popupwin_title', {})
+
+  call term_sendkeys(buf, ":call popup_setoptions(winid, #{maxwidth: 20, title: 'a very long title that is not going to fit'})\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_longtitle_1', {})
+
+  call term_sendkeys(buf, ":call popup_setoptions(winid, #{border: []})\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_longtitle_2', {})
 
   " clean up
   call StopVimInTerminal(buf)
@@ -1320,9 +1308,8 @@ func Test_popup_empty()
 endfunc
 
 func Test_popup_never_behind()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   " +-----------------------------+
   " |             |               |
   " |             |               |
@@ -1603,12 +1590,8 @@ func Test_popup_moved()
 endfunc
 
 func Test_notifications()
-  if !has('timers')
-    throw 'Skipped: timer feature not supported'
-  endif
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckFeature timers
+  CheckScreendump
 
   call writefile([
 	\ "call setline(1, range(1, 20))",
@@ -1629,9 +1612,7 @@ func Test_notifications()
 endfunc
 
 func Test_popup_scrollbar()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
     call setline(1, range(1, 20))
@@ -1714,9 +1695,7 @@ func Test_popup_fitting_scrollbar()
 endfunc
 
 func Test_popup_settext()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
     let opts = #{wrap: 0}
@@ -1888,9 +1867,7 @@ func Test_popupwin_buf_close()
 endfunc
 
 func Test_popup_menu_with_maxwidth()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
 	call setline(1, range(1, 10))
@@ -1929,9 +1906,7 @@ func Test_popup_menu_with_maxwidth()
 endfunc
 
 func Test_popup_menu_with_scrollbar()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
     call setline(1, range(1, 20))
@@ -1975,9 +1950,7 @@ func Test_popup_menu_with_scrollbar()
 endfunc
 
 func Test_popup_menu_filter()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
 	function! MyFilter(winid, key) abort
@@ -2031,9 +2004,7 @@ func Test_popup_menu_filter()
 endfunc
 
 func Test_popup_cursorline()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let winid = popup_create('some text', {})
   call assert_equal(0, popup_getoptions(winid).cursorline)
@@ -2147,9 +2118,8 @@ func Test_popup_cursorline()
 endfunc
 
 func Test_previewpopup()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
+
   call writefile([
         \ "!_TAG_FILE_ENCODING\tutf-8\t//",
         \ "another\tXtagfile\t/^this is another",
@@ -2161,11 +2131,15 @@ func Test_previewpopup()
         \ + ['this is another place']
         \ + range(29, 40),
         \ "Xtagfile")
+  call writefile(range(1,10)
+        \ + ['searched word is here']
+        \ + range(12, 20),
+        \ "Xheader.h")
   let lines =<< trim END
         set tags=Xtags
 	call setline(1, [
 	      \ 'one',
-	      \ 'two',
+	      \ '#include "Xheader.h"',
 	      \ 'three',
 	      \ 'four',
 	      \ 'five',
@@ -2176,6 +2150,7 @@ func Test_previewpopup()
 	      \ 'this is another word',
 	      \ 'very long line where the word is also another'])
         set previewpopup=height:4,width:40
+	set path=.
   END
   call writefile(lines, 'XtestPreviewPopup')
   let buf = RunVimInTerminal('-S XtestPreviewPopup', #{rows: 14})
@@ -2187,17 +2162,181 @@ func Test_previewpopup()
   call term_sendkeys(buf, "/another\<CR>\<C-W>}")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_2', {})
 
-  call term_sendkeys(buf, ":call popup_move(popup_getpreview(), #{col: 15})\<CR>")
+  call term_sendkeys(buf, ":call popup_move(popup_findpreview(), #{col: 15})\<CR>")
   call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_3', {})
 
   call term_sendkeys(buf, "/another\<CR>\<C-W>}")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_4', {})
 
+  call term_sendkeys(buf, ":cd ..\<CR>:\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_5', {})
+  call term_sendkeys(buf, ":cd testdir\<CR>")
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":\<BS>")
+  call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_6', {})
+
+  call term_sendkeys(buf, ":pedit +/theword Xtagfile\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_7', {})
+
+  call term_sendkeys(buf, ":pclose\<CR>")
+  call term_sendkeys(buf, ":psearch searched\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_8', {})
+
   call StopVimInTerminal(buf)
   call delete('Xtags')
   call delete('Xtagfile')
   call delete('XtestPreviewPopup')
+  call delete('Xheader.h')
+endfunc
+
+func Get_popupmenu_lines()
+  let lines =<< trim END
+      set completeopt+=preview,popup
+      set completefunc=CompleteFuncDict
+      hi InfoPopup ctermbg=yellow
+
+      func CompleteFuncDict(findstart, base)
+	if a:findstart
+	  if col('.') > 10
+	    return col('.') - 10
+	  endif
+	  return 0
+	endif
+
+	return {
+		\ 'words': [
+		  \ {
+		    \ 'word': 'aword',
+		    \ 'abbr': 'wrd',
+		    \ 'menu': 'extra text',
+		    \ 'info': 'words are cool',
+		    \ 'kind': 'W',
+		    \ 'user_data': 'test'
+		  \ },
+		  \ {
+		    \ 'word': 'anotherword',
+		    \ 'abbr': 'anotwrd',
+		    \ 'menu': 'extra text',
+		    \ 'info': "other words are\ncooler than this and some more text\nto make wrap",
+		    \ 'kind': 'W',
+		    \ 'user_data': 'notest'
+		  \ },
+		  \ {
+		    \ 'word': 'noinfo',
+		    \ 'abbr': 'noawrd',
+		    \ 'menu': 'extra text',
+		    \ 'info': "lets\nshow\na\nscrollbar\nhere",
+		    \ 'kind': 'W',
+		    \ 'user_data': 'notest'
+		  \ },
+		  \ {
+		    \ 'word': 'thatword',
+		    \ 'abbr': 'thatwrd',
+		    \ 'menu': 'extra text',
+		    \ 'info': 'that word is cool',
+		    \ 'kind': 'W',
+		    \ 'user_data': 'notest'
+		  \ },
+		\ ]
+	      \ }
+      endfunc
+      call setline(1, 'text text text text text text text ')
+      func ChangeColor()
+	let id = popup_findinfo()
+	call popup_setoptions(id, #{highlight: 'InfoPopup'})
+      endfunc
+  END
+  return lines
+endfunc
+
+func Test_popupmenu_info_border()
+  CheckScreendump
+
+  let lines = Get_popupmenu_lines()
+  call add(lines, 'set completepopup=height:4,highlight:InfoPopup')
+  call writefile(lines, 'XtestInfoPopup')
+
+  let buf = RunVimInTerminal('-S XtestInfoPopup', #{rows: 14})
+  call term_wait(buf, 50)
+
+  call term_sendkeys(buf, "A\<C-X>\<C-U>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_1', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_2', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_3', {})
+
+  call term_sendkeys(buf, "\<C-N>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_4', {})
+
+  " info on the left with scrollbar
+  call term_sendkeys(buf, "test text test text\<C-X>\<C-U>")
+  call term_sendkeys(buf, "\<C-N>\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_5', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestInfoPopup')
+endfunc
+
+func Test_popupmenu_info_noborder()
+  CheckScreendump
+
+  let lines = Get_popupmenu_lines()
+  call add(lines, 'set completepopup=height:4,border:off')
+  call writefile(lines, 'XtestInfoPopupNb')
+
+  let buf = RunVimInTerminal('-S XtestInfoPopupNb', #{rows: 14})
+  call term_wait(buf, 50)
+
+  call term_sendkeys(buf, "A\<C-X>\<C-U>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_nb_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestInfoPopupNb')
+endfunc
+
+func Test_popupmenu_info_align_menu()
+  CheckScreendump
+
+  let lines = Get_popupmenu_lines()
+  call add(lines, 'set completepopup=height:4,border:off,align:menu')
+  call writefile(lines, 'XtestInfoPopupNb')
+
+  let buf = RunVimInTerminal('-S XtestInfoPopupNb', #{rows: 14})
+  call term_wait(buf, 50)
+
+  call term_sendkeys(buf, "A\<C-X>\<C-U>")
+  call term_sendkeys(buf, "\<C-N>")
+  call term_sendkeys(buf, "\<C-N>")
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_align_1', {})
+
+  call term_sendkeys(buf, "test text test text test\<C-X>\<C-U>")
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_align_2', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call term_sendkeys(buf, ":call ChangeColor()\<CR>")
+  call term_sendkeys(buf, ":call setline(2, ['x']->repeat(10))\<CR>")
+  call term_sendkeys(buf, "Gotest text test text\<C-X>\<C-U>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_align_3', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestInfoPopupNb')
+endfunc
+
+func Test_popupwin_recycle_bnr()
+  let bufnr = popup_notification('nothing wrong', {})->winbufnr()
+  call popup_clear()
+  let winid = popup_notification('nothing wrong', {})
+  call assert_equal(bufnr, winbufnr(winid))
+  call popup_clear()
 endfunc
 
 " vim: shiftwidth=2 sts=2

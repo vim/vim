@@ -32,6 +32,7 @@ static char *e_cannot_mod = N_("E995: Cannot modify existing variable");
 #ifdef FEAT_FLOAT
 static char *e_float_as_string = N_("E806: using Float as a String");
 #endif
+static char *e_nowhitespace = N_("E274: No white space allowed before parenthesis");
 
 #define NAMESPACE_CHAR	(char_u *)"abglstvw"
 
@@ -240,13 +241,16 @@ static int eval4(char_u **arg, typval_T *rettv, int evaluate);
 static int eval5(char_u **arg, typval_T *rettv, int evaluate);
 static int eval6(char_u **arg, typval_T *rettv, int evaluate, int want_string);
 static int eval7(char_u **arg, typval_T *rettv, int evaluate, int want_string);
+static int eval7_leader(typval_T *rettv, char_u *start_leader, char_u **end_leaderp);
 
 static int get_string_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int get_lit_string_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int free_unref_items(int copyID);
 static int get_env_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int get_env_len(char_u **arg);
-static char_u * make_expanded_name(char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end);
+static int get_name_len(char_u **arg, char_u **alias, int evaluate, int verbose);
+static char_u *make_expanded_name(char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end);
+static int get_var_tv(char_u *name, int len, typval_T *rettv, dictitem_T **dip, int verbose, int no_autoload);
 static void check_vars(char_u *name, int len);
 static typval_T *alloc_string_tv(char_u *string);
 static void delete_var(hashtab_T *ht, hashitem_T *hi);
@@ -418,9 +422,7 @@ eval_clear(void)
     hash_clear(&compat_hashtab);
 
     free_scriptnames();
-# if defined(FEAT_CMDL_COMPL)
     free_locales();
-# endif
 
     /* global variables */
     vars_clear(&globvarht);
@@ -765,16 +767,17 @@ eval1_emsg(char_u **arg, typval_T *rettv, int evaluate)
 eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 {
     char_u	*s;
-    int		dummy;
     char_u	buf[NUMBUFLEN];
+    funcexe_T	funcexe;
 
     if (expr->v_type == VAR_FUNC)
     {
 	s = expr->vval.v_string;
 	if (s == NULL || *s == NUL)
 	    return FAIL;
-	if (call_func(s, -1, rettv, argc, argv, NULL,
-				     0L, 0L, &dummy, TRUE, NULL, NULL) == FAIL)
+	vim_memset(&funcexe, 0, sizeof(funcexe));
+	funcexe.evaluate = TRUE;
+	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
 	    return FAIL;
     }
     else if (expr->v_type == VAR_PARTIAL)
@@ -784,8 +787,10 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	s = partial_name(partial);
 	if (s == NULL || *s == NUL)
 	    return FAIL;
-	if (call_func(s, -1, rettv, argc, argv, NULL,
-				  0L, 0L, &dummy, TRUE, partial, NULL) == FAIL)
+	vim_memset(&funcexe, 0, sizeof(funcexe));
+	funcexe.evaluate = TRUE;
+	funcexe.partial = partial;
+	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
 	    return FAIL;
     }
     else
@@ -1092,13 +1097,15 @@ call_vim_function(
     typval_T	*argv,
     typval_T	*rettv)
 {
-    int		doesrange;
     int		ret;
+    funcexe_T	funcexe;
 
     rettv->v_type = VAR_UNKNOWN;		/* clear_tv() uses this */
-    ret = call_func(func, -1, rettv, argc, argv, NULL,
-		    curwin->w_cursor.lnum, curwin->w_cursor.lnum,
-		    &doesrange, TRUE, NULL, NULL);
+    vim_memset(&funcexe, 0, sizeof(funcexe));
+    funcexe.firstline = curwin->w_cursor.lnum;
+    funcexe.lastline = curwin->w_cursor.lnum;
+    funcexe.evaluate = TRUE;
+    ret = call_func(func, -1, rettv, argc, argv, &funcexe);
     if (ret == FAIL)
 	clear_tv(rettv);
 
@@ -1128,10 +1135,6 @@ call_func_retnr(
     return retval;
 }
 
-#if defined(FEAT_CMDL_COMPL) \
-	|| defined(FEAT_COMPL_FUNC) || defined(PROTO)
-
-# if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Call Vim script function "func" and return the result as a string.
  * Returns NULL when calling the function fails.
@@ -1154,7 +1157,6 @@ call_func_retstr(
     clear_tv(&rettv);
     return retval;
 }
-# endif
 
 /*
  * Call Vim script function "func" and return the result as a List.
@@ -1181,7 +1183,6 @@ call_func_retlist(
 
     return rettv.vval.v_list;
 }
-#endif
 
 
 #ifdef FEAT_FOLDING
@@ -1804,7 +1805,8 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 		{
 		    /* handle d.key, l[idx], f(expr) */
 		    arg_subsc = arg;
-		    if (handle_subscript(&arg, &tv, TRUE, TRUE) == FAIL)
+		    if (handle_subscript(&arg, &tv, TRUE, TRUE,
+							  name, &name) == FAIL)
 			error = TRUE;
 		    else
 		    {
@@ -2986,8 +2988,6 @@ free_for_info(void *fi_void)
     vim_free(fi);
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
     void
 set_context_for_expression(
     expand_T	*xp,
@@ -3101,8 +3101,6 @@ set_context_for_expression(
     }
     xp->xp_pattern = arg;
 }
-
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * ":unlet[!] var1 ... " command.
@@ -3501,8 +3499,6 @@ del_menutrans_vars(void)
 }
 #endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
 /*
  * Local string buffer for the next two functions to store a variable name
  * with its prefix. Allocated in cat_prefix_varname(), freed later in
@@ -3622,8 +3618,6 @@ get_user_var_name(expand_T *xp, int idx)
     return NULL;
 }
 
-#endif /* FEAT_CMDL_COMPL */
-
 /*
  * Return TRUE if "pat" matches "text".
  * Does not use 'cpo' and always uses 'magic'.
@@ -3647,6 +3641,73 @@ pattern_match(char_u *pat, char_u *text, int ic)
     }
     p_cpo = save_cpo;
     return matches;
+}
+
+/*
+ * Handle a name followed by "(".  Both for just "name(arg)" and for
+ * "expr->name(arg)".
+ * Returns OK or FAIL.
+ */
+    static int
+eval_func(
+	char_u	    **arg,	// points to "(", will be advanced
+	char_u	    *name,
+	int	    name_len,
+	typval_T    *rettv,
+	int	    evaluate,
+	typval_T    *basetv)	// "expr" for "expr->name(arg)"
+{
+    char_u	*s = name;
+    int		len = name_len;
+    partial_T	*partial;
+    int		ret = OK;
+
+    if (!evaluate)
+	check_vars(s, len);
+
+    /* If "s" is the name of a variable of type VAR_FUNC
+     * use its contents. */
+    s = deref_func_name(s, &len, &partial, !evaluate);
+
+    /* Need to make a copy, in case evaluating the arguments makes
+     * the name invalid. */
+    s = vim_strsave(s);
+    if (s == NULL)
+	ret = FAIL;
+    else
+    {
+	funcexe_T funcexe;
+
+	// Invoke the function.
+	vim_memset(&funcexe, 0, sizeof(funcexe));
+	funcexe.firstline = curwin->w_cursor.lnum;
+	funcexe.lastline = curwin->w_cursor.lnum;
+	funcexe.evaluate = evaluate;
+	funcexe.partial = partial;
+	funcexe.basetv = basetv;
+	ret = get_func_tv(s, len, rettv, arg, &funcexe);
+    }
+    vim_free(s);
+
+    /* If evaluate is FALSE rettv->v_type was not set in
+     * get_func_tv, but it's needed in handle_subscript() to parse
+     * what follows. So set it here. */
+    if (rettv->v_type == VAR_UNKNOWN && !evaluate && **arg == '(')
+    {
+	rettv->vval.v_string = NULL;
+	rettv->v_type = VAR_FUNC;
+    }
+
+    /* Stop the expression evaluation when immediately
+     * aborting on error, or when an interrupt occurred or
+     * an exception was thrown but not caught. */
+    if (evaluate && aborting())
+    {
+	if (ret == OK)
+	    clear_tv(rettv);
+	ret = FAIL;
+    }
+    return ret;
 }
 
 /*
@@ -4407,6 +4468,7 @@ eval6(
  *  + in front		unary plus (ignored)
  *  trailing []		subscript in String or List
  *  trailing .name	entry in Dictionary
+ *  trailing ->name()	method call
  *
  * "arg" must point to the first non-white of the expression.
  * "arg" is advanced to the next non-white after the recognized expression.
@@ -4665,47 +4727,7 @@ eval7(
 	else
 	{
 	    if (**arg == '(')		/* recursive! */
-	    {
-		partial_T *partial;
-
-		if (!evaluate)
-		    check_vars(s, len);
-
-		/* If "s" is the name of a variable of type VAR_FUNC
-		 * use its contents. */
-		s = deref_func_name(s, &len, &partial, !evaluate);
-
-		/* Need to make a copy, in case evaluating the arguments makes
-		 * the name invalid. */
-		s = vim_strsave(s);
-		if (s == NULL)
-		    ret = FAIL;
-		else
-		    /* Invoke the function. */
-		    ret = get_func_tv(s, len, rettv, arg,
-			      curwin->w_cursor.lnum, curwin->w_cursor.lnum,
-			      &len, evaluate, partial, NULL);
-		vim_free(s);
-
-		/* If evaluate is FALSE rettv->v_type was not set in
-		 * get_func_tv, but it's needed in handle_subscript() to parse
-		 * what follows. So set it here. */
-		if (rettv->v_type == VAR_UNKNOWN && !evaluate && **arg == '(')
-		{
-		    rettv->vval.v_string = NULL;
-		    rettv->v_type = VAR_FUNC;
-		}
-
-		/* Stop the expression evaluation when immediately
-		 * aborting on error, or when an interrupt occurred or
-		 * an exception was thrown but not caught. */
-		if (evaluate && aborting())
-		{
-		    if (ret == OK)
-			clear_tv(rettv);
-		    ret = FAIL;
-		}
-	    }
+		ret = eval_func(arg, s, len, rettv, evaluate, NULL);
 	    else if (evaluate)
 		ret = get_var_tv(s, len, rettv, NULL, TRUE, FALSE);
 	    else
@@ -4720,69 +4742,229 @@ eval7(
     *arg = skipwhite(*arg);
 
     /* Handle following '[', '(' and '.' for expr[expr], expr.name,
-     * expr(expr). */
+     * expr(expr), expr->name(expr) */
     if (ret == OK)
-	ret = handle_subscript(arg, rettv, evaluate, TRUE);
+	ret = handle_subscript(arg, rettv, evaluate, TRUE,
+						    start_leader, &end_leader);
 
     /*
      * Apply logical NOT and unary '-', from right to left, ignore '+'.
      */
     if (ret == OK && evaluate && end_leader > start_leader)
-    {
-	int	    error = FALSE;
-	varnumber_T val = 0;
-#ifdef FEAT_FLOAT
-	float_T	    f = 0.0;
+	ret = eval7_leader(rettv, start_leader, &end_leader);
+    return ret;
+}
 
-	if (rettv->v_type == VAR_FLOAT)
-	    f = rettv->vval.v_float;
-	else
+/*
+ * Apply the leading "!" and "-" before an eval7 expression to "rettv".
+ * Adjusts "end_leaderp" until it is at "start_leader".
+ */
+    static int
+eval7_leader(typval_T *rettv, char_u *start_leader, char_u **end_leaderp)
+{
+    char_u	*end_leader = *end_leaderp;
+    int		ret = OK;
+    int		error = FALSE;
+    varnumber_T val = 0;
+#ifdef FEAT_FLOAT
+    float_T	    f = 0.0;
+
+    if (rettv->v_type == VAR_FLOAT)
+	f = rettv->vval.v_float;
+    else
 #endif
-	    val = tv_get_number_chk(rettv, &error);
-	if (error)
+	val = tv_get_number_chk(rettv, &error);
+    if (error)
+    {
+	clear_tv(rettv);
+	ret = FAIL;
+    }
+    else
+    {
+	while (end_leader > start_leader)
+	{
+	    --end_leader;
+	    if (*end_leader == '!')
+	    {
+#ifdef FEAT_FLOAT
+		if (rettv->v_type == VAR_FLOAT)
+		    f = !f;
+		else
+#endif
+		    val = !val;
+	    }
+	    else if (*end_leader == '-')
+	    {
+#ifdef FEAT_FLOAT
+		if (rettv->v_type == VAR_FLOAT)
+		    f = -f;
+		else
+#endif
+		    val = -val;
+	    }
+	}
+#ifdef FEAT_FLOAT
+	if (rettv->v_type == VAR_FLOAT)
 	{
 	    clear_tv(rettv);
+	    rettv->vval.v_float = f;
+	}
+	else
+#endif
+	{
+	    clear_tv(rettv);
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = val;
+	}
+    }
+    *end_leaderp = end_leader;
+    return ret;
+}
+
+/*
+ * Call the function referred to in "rettv".
+ */
+    static int
+call_func_rettv(
+	char_u	    **arg,
+	typval_T    *rettv,
+	int	    evaluate,
+	dict_T	    *selfdict,
+	typval_T    *basetv)
+{
+    partial_T	*pt = NULL;
+    funcexe_T	funcexe;
+    typval_T	functv;
+    char_u	*s;
+    int		ret;
+
+    // need to copy the funcref so that we can clear rettv
+    if (evaluate)
+    {
+	functv = *rettv;
+	rettv->v_type = VAR_UNKNOWN;
+
+	/* Invoke the function.  Recursive! */
+	if (functv.v_type == VAR_PARTIAL)
+	{
+	    pt = functv.vval.v_partial;
+	    s = partial_name(pt);
+	}
+	else
+	    s = functv.vval.v_string;
+    }
+    else
+	s = (char_u *)"";
+
+    vim_memset(&funcexe, 0, sizeof(funcexe));
+    funcexe.firstline = curwin->w_cursor.lnum;
+    funcexe.lastline = curwin->w_cursor.lnum;
+    funcexe.evaluate = evaluate;
+    funcexe.partial = pt;
+    funcexe.selfdict = selfdict;
+    funcexe.basetv = basetv;
+    ret = get_func_tv(s, -1, rettv, arg, &funcexe);
+
+    /* Clear the funcref afterwards, so that deleting it while
+     * evaluating the arguments is possible (see test55). */
+    if (evaluate)
+	clear_tv(&functv);
+
+    return ret;
+}
+
+/*
+ * Evaluate "->method()".
+ * "*arg" points to the '-'.
+ * Returns FAIL or OK. "*arg" is advanced to after the ')'.
+ */
+    static int
+eval_lambda(
+    char_u	**arg,
+    typval_T	*rettv,
+    int		evaluate,
+    int		verbose)	/* give error messages */
+{
+    typval_T	base = *rettv;
+    int		ret;
+
+    // Skip over the ->.
+    *arg += 2;
+    rettv->v_type = VAR_UNKNOWN;
+
+    ret = get_lambda_tv(arg, rettv, evaluate);
+    if (ret == NOTDONE)
+	return FAIL;
+    else if (**arg != '(')
+    {
+	if (verbose)
+	{
+	    if (*skipwhite(*arg) == '(')
+		semsg(_(e_nowhitespace));
+	    else
+		semsg(_(e_missingparen), "lambda");
+	}
+	clear_tv(rettv);
+	return FAIL;
+    }
+    return call_func_rettv(arg, rettv, evaluate, NULL, &base);
+}
+
+/*
+ * Evaluate "->method()".
+ * "*arg" points to the '-'.
+ * Returns FAIL or OK. "*arg" is advanced to after the ')'.
+ */
+    static int
+eval_method(
+    char_u	**arg,
+    typval_T	*rettv,
+    int		evaluate,
+    int		verbose)	/* give error messages */
+{
+    char_u	*name;
+    long	len;
+    char_u	*alias;
+    typval_T	base = *rettv;
+    int		ret;
+
+    // Skip over the ->.
+    *arg += 2;
+    rettv->v_type = VAR_UNKNOWN;
+
+    name = *arg;
+    len = get_name_len(arg, &alias, evaluate, TRUE);
+    if (alias != NULL)
+	name = alias;
+
+    if (len <= 0)
+    {
+	if (verbose)
+	    emsg(_("E260: Missing name after ->"));
+	ret = FAIL;
+    }
+    else
+    {
+	if (**arg != '(')
+	{
+	    if (verbose)
+		semsg(_(e_missingparen), name);
+	    ret = FAIL;
+	}
+	else if (VIM_ISWHITE((*arg)[-1]))
+	{
+	    if (verbose)
+		semsg(_(e_nowhitespace));
 	    ret = FAIL;
 	}
 	else
-	{
-	    while (end_leader > start_leader)
-	    {
-		--end_leader;
-		if (*end_leader == '!')
-		{
-#ifdef FEAT_FLOAT
-		    if (rettv->v_type == VAR_FLOAT)
-			f = !f;
-		    else
-#endif
-			val = !val;
-		}
-		else if (*end_leader == '-')
-		{
-#ifdef FEAT_FLOAT
-		    if (rettv->v_type == VAR_FLOAT)
-			f = -f;
-		    else
-#endif
-			val = -val;
-		}
-	    }
-#ifdef FEAT_FLOAT
-	    if (rettv->v_type == VAR_FLOAT)
-	    {
-		clear_tv(rettv);
-		rettv->vval.v_float = f;
-	    }
-	    else
-#endif
-	    {
-		clear_tv(rettv);
-		rettv->v_type = VAR_NUMBER;
-		rettv->vval.v_number = val;
-	    }
-	}
+	    ret = eval_func(arg, name, len, rettv, evaluate, &base);
     }
+
+    // Clear the funcref afterwards, so that deleting it while
+    // evaluating the arguments is possible (see test55).
+    if (evaluate)
+	clear_tv(&base);
 
     return ret;
 }
@@ -6744,7 +6926,7 @@ get_id_len(char_u **arg)
  * If the name contains 'magic' {}'s, expand them and return the
  * expanded name in an allocated string via 'alias' - caller must free.
  */
-    int
+    static int
 get_name_len(
     char_u	**arg,
     char_u	**alias,
@@ -7273,7 +7455,7 @@ set_cmdarg(exarg_T *eap, char_u *oldarg)
  * Get the value of internal variable "name".
  * Return OK or FAIL.  If OK is returned "rettv" must be cleared.
  */
-    int
+    static int
 get_var_tv(
     char_u	*name,
     int		len,		/* length of "name" */
@@ -7345,68 +7527,46 @@ check_vars(char_u *name, int len)
 }
 
 /*
- * Handle expr[expr], expr[expr:expr] subscript and .name lookup.
- * Also handle function call with Funcref variable: func(expr)
- * Can all be combined: dict.func(expr)[idx]['func'](expr)
+ * Handle:
+ * - expr[expr], expr[expr:expr] subscript
+ * - ".name" lookup
+ * - function call with Funcref variable: func(expr)
+ * - method call: var->method()
+ *
+ * Can all be combined in any order: dict.func(expr)[idx]['func'](expr)->len()
  */
     int
 handle_subscript(
     char_u	**arg,
     typval_T	*rettv,
-    int		evaluate,	/* do more than finding the end */
-    int		verbose)	/* give error messages */
+    int		evaluate,	// do more than finding the end
+    int		verbose,	// give error messages
+    char_u	*start_leader,	// start of '!' and '-' prefixes
+    char_u	**end_leaderp)  // end of '!' and '-' prefixes
 {
     int		ret = OK;
     dict_T	*selfdict = NULL;
-    char_u	*s;
-    int		len;
-    typval_T	functv;
 
     // "." is ".name" lookup when we found a dict or when evaluating and
     // scriptversion is at least 2, where string concatenation is "..".
     while (ret == OK
-	    && (**arg == '['
-		|| (**arg == '.' && (rettv->v_type == VAR_DICT
+	    && (((**arg == '['
+		    || (**arg == '.' && (rettv->v_type == VAR_DICT
 			|| (!evaluate
 			    && (*arg)[1] != '.'
 			    && current_sctx.sc_version >= 2)))
-		|| (**arg == '(' && (!evaluate || rettv->v_type == VAR_FUNC
+		    || (**arg == '(' && (!evaluate || rettv->v_type == VAR_FUNC
 					    || rettv->v_type == VAR_PARTIAL)))
-	    && !VIM_ISWHITE(*(*arg - 1)))
+		&& !VIM_ISWHITE(*(*arg - 1)))
+	    || (**arg == '-' && (*arg)[1] == '>')))
     {
 	if (**arg == '(')
 	{
-	    partial_T	*pt = NULL;
+	    ret = call_func_rettv(arg, rettv, evaluate, selfdict, NULL);
 
-	    /* need to copy the funcref so that we can clear rettv */
-	    if (evaluate)
-	    {
-		functv = *rettv;
-		rettv->v_type = VAR_UNKNOWN;
-
-		/* Invoke the function.  Recursive! */
-		if (functv.v_type == VAR_PARTIAL)
-		{
-		    pt = functv.vval.v_partial;
-		    s = partial_name(pt);
-		}
-		else
-		    s = functv.vval.v_string;
-	    }
-	    else
-		s = (char_u *)"";
-	    ret = get_func_tv(s, -1, rettv, arg,
-			curwin->w_cursor.lnum, curwin->w_cursor.lnum,
-			&len, evaluate, pt, selfdict);
-
-	    /* Clear the funcref afterwards, so that deleting it while
-	     * evaluating the arguments is possible (see test55). */
-	    if (evaluate)
-		clear_tv(&functv);
-
-	    /* Stop the expression evaluation when immediately aborting on
-	     * error, or when an interrupt occurred or an exception was thrown
-	     * but not caught. */
+	    // Stop the expression evaluation when immediately aborting on
+	    // error, or when an interrupt occurred or an exception was thrown
+	    // but not caught.
 	    if (aborting())
 	    {
 		if (ret == OK)
@@ -7415,6 +7575,22 @@ handle_subscript(
 	    }
 	    dict_unref(selfdict);
 	    selfdict = NULL;
+	}
+	else if (**arg == '-')
+	{
+	    // Expression "-1.0->method()" applies the leader "-" before
+	    // applying ->.
+	    if (evaluate && *end_leaderp > start_leader)
+		ret = eval7_leader(rettv, start_leader, end_leaderp);
+	    if (ret == OK)
+	    {
+		if ((*arg)[2] == '{')
+		    // expr->{lambda}()
+		    ret = eval_lambda(arg, rettv, evaluate, verbose);
+		else
+		    // expr->name()
+		    ret = eval_method(arg, rettv, evaluate, verbose);
+	    }
 	}
 	else /* **arg == '[' || **arg == '.' */
 	{
@@ -7840,7 +8016,7 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
  * Turn a typeval into a string.  Similar to tv_get_string_buf() but uses
  * string() on Dict, List, etc.
  */
-    char_u *
+    static char_u *
 tv_stringify(typval_T *varp, char_u *buf)
 {
     if (varp->v_type == VAR_LIST
@@ -9263,7 +9439,7 @@ autoload_name(char_u *name)
     // Get the script file name: replace '#' with '/', append ".vim".
     scriptname = alloc(STRLEN(name) + 14);
     if (scriptname == NULL)
-	return FALSE;
+	return NULL;
     STRCPY(scriptname, "autoload/");
     STRCAT(scriptname, name);
     for (p = scriptname + 9; (p = vim_strchr(p, AUTOLOAD_CHAR)) != NULL;
@@ -9293,6 +9469,8 @@ script_autoload(
 	return FALSE;
 
     tofree = scriptname = autoload_name(name);
+    if (scriptname == NULL)
+	return FALSE;
 
     /* Find the name in the list of previously loaded package names.  Skip
      * "autoload/", it's always the same. */
@@ -9636,7 +9814,7 @@ var_exists(char_u *var)
 	if (n)
 	{
 	    /* handle d.key, l[idx], f(expr) */
-	    n = (handle_subscript(&var, &tv, TRUE, FALSE) == OK);
+	    n = (handle_subscript(&var, &tv, TRUE, FALSE, name, &name) == OK);
 	    if (n)
 		clear_tv(&tv);
 	}

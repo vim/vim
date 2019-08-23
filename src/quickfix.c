@@ -167,6 +167,7 @@ static int	qf_get_fnum(qf_list_T *qfl, char_u *, char_u *);
 static char_u	*qf_push_dir(char_u *, struct dir_stack_T **, int is_file_stack);
 static char_u	*qf_pop_dir(struct dir_stack_T **);
 static char_u	*qf_guess_filepath(qf_list_T *qfl, char_u *);
+static void	qf_jump_newwin(qf_info_T *qi, int dir, int errornr, int forceit, int newwin);
 static void	qf_fmt_text(char_u *text, char_u *buf, int bufsize);
 static int	qf_win_pos_update(qf_info_T *qi, int old_qf_index);
 static win_T	*qf_find_win(qf_info_T *qi);
@@ -3363,7 +3364,7 @@ qf_jump(qf_info_T	*qi,
  * If 'forceit' is TRUE, then can discard changes to the current buffer.
  * If 'newwin' is TRUE, then open the file in a new window.
  */
-    void
+    static void
 qf_jump_newwin(qf_info_T	*qi,
 	int		dir,
 	int		errornr,

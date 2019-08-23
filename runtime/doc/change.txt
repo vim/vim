@@ -691,10 +691,8 @@ The flags that you can use for the substitute commands:
 	    <Esc>   to quit substituting
 	    'a'	    to substitute this and all remaining matches
 	    'q'	    to quit substituting
-	    CTRL-E  to scroll the screen up {not available when compiled
-		       without the |+insert_expand| feature}
-	    CTRL-Y  to scroll the screen down {not available when compiled
-		       without the |+insert_expand| feature}
+	    CTRL-E  to scroll the screen up
+	    CTRL-Y  to scroll the screen down
 	If the 'edcompatible' option is on, Vim remembers the [c] flag and
 	toggles it each time you use it, but resets it when you give a new
 	search pattern.

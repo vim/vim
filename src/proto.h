@@ -61,10 +61,13 @@ extern int _stricoll(char *a, char *b);
 #  include "crypt.pro"
 #  include "crypt_zip.pro"
 # endif
+# include "arglist.pro"
 # include "autocmd.pro"
 # include "buffer.pro"
 # include "change.pro"
 # include "charset.pro"
+# include "cmdexpand.pro"
+# include "cmdhist.pro"
 # ifdef FEAT_CSCOPE
 #  include "if_cscope.pro"
 # endif
@@ -91,9 +94,7 @@ extern int _stricoll(char *a, char *b);
 # include "hashtab.pro"
 # include "highlight.pro"
 # include "indent.pro"
-# ifdef FEAT_INS_EXPAND
 # include "insexpand.pro"
-# endif
 # include "json.pro"
 # include "list.pro"
 # include "blob.pro"

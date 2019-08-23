@@ -4394,7 +4394,7 @@ add_keyword(
 						 name_folded, MAXKEYWLEN + 1);
     else
 	name_ic = name;
-    kp = alloc(sizeof(keyentry_T) + STRLEN(name_ic));
+    kp = alloc(offsetof(keyentry_T, keyword) + STRLEN(name_ic) + 1);
     if (kp == NULL)
 	return;
     STRCPY(kp->keyword, name_ic);
@@ -6302,7 +6302,6 @@ syntax_present(win_T *win)
 	    || win->w_s->b_keywtab_ic.ht_used > 0);
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 
 static enum
 {
@@ -6409,7 +6408,6 @@ get_syntax_name(expand_T *xp UNUSED, int idx)
     return NULL;
 }
 
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * Function called for expression evaluation: get syntax ID at file position.
@@ -6569,7 +6567,6 @@ syntime_clear(void)
     }
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Function given to ExpandGeneric() to obtain the possible arguments of the
  * ":syntime {on,off,clear,report}" command.
@@ -6586,7 +6583,6 @@ get_syntime_arg(expand_T *xp UNUSED, int idx)
     }
     return NULL;
 }
-#endif
 
 typedef struct
 {

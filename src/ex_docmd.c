@@ -161,10 +161,6 @@ static void	ex_popup(exarg_T *eap);
 # define ex_syntax		ex_ni
 # define ex_ownsyntax		ex_ni
 #endif
-#ifndef FEAT_EVAL
-# define ex_packadd		ex_ni
-# define ex_packloadall		ex_ni
-#endif
 #if !defined(FEAT_SYN_HL) || !defined(FEAT_PROFILE)
 # define ex_syntime		ex_ni
 #endif
@@ -269,41 +265,47 @@ static void	ex_psearch(exarg_T *eap);
 static void	ex_tag(exarg_T *eap);
 static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 #ifndef FEAT_EVAL
-# define ex_scriptnames		ex_ni
-# define ex_finish		ex_ni
+# define ex_break		ex_ni
+# define ex_breakadd		ex_ni
+# define ex_breakdel		ex_ni
+# define ex_breaklist		ex_ni
+# define ex_call		ex_ni
+# define ex_catch		ex_ni
+# define ex_compiler		ex_ni
+# define ex_const		ex_ni
+# define ex_continue		ex_ni
+# define ex_debug		ex_ni
+# define ex_debuggreedy		ex_ni
+# define ex_delfunction		ex_ni
 # define ex_echo		ex_ni
 # define ex_echohl		ex_ni
-# define ex_execute		ex_ni
-# define ex_call		ex_ni
-# define ex_if			ex_ni
-# define ex_endif		ex_ni
 # define ex_else		ex_ni
-# define ex_while		ex_ni
-# define ex_continue		ex_ni
-# define ex_break		ex_ni
+# define ex_endfunction		ex_ni
+# define ex_endif		ex_ni
+# define ex_endtry		ex_ni
 # define ex_endwhile		ex_ni
+# define ex_eval		ex_ni
+# define ex_execute		ex_ni
+# define ex_finally		ex_ni
+# define ex_finish		ex_ni
+# define ex_function		ex_ni
+# define ex_if			ex_ni
+# define ex_let			ex_ni
+# define ex_lockvar		ex_ni
+# define ex_oldfiles		ex_ni
+# define ex_options		ex_ni
+# define ex_packadd		ex_ni
+# define ex_packloadall		ex_ni
+# define ex_return		ex_ni
+# define ex_scriptnames		ex_ni
 # define ex_throw		ex_ni
 # define ex_try			ex_ni
-# define ex_catch		ex_ni
-# define ex_finally		ex_ni
-# define ex_endtry		ex_ni
-# define ex_endfunction		ex_ni
-# define ex_let			ex_ni
-# define ex_const		ex_ni
 # define ex_unlet		ex_ni
-# define ex_lockvar		ex_ni
 # define ex_unlockvar		ex_ni
-# define ex_function		ex_ni
-# define ex_delfunction		ex_ni
-# define ex_return		ex_ni
-# define ex_oldfiles		ex_ni
+# define ex_while		ex_ni
 #endif
-static char_u	*arg_all(void);
 #ifndef FEAT_SESSION
 # define ex_loadview		ex_ni
-#endif
-#ifndef FEAT_EVAL
-# define ex_compiler		ex_ni
 #endif
 #ifndef FEAT_VIMINFO
 # define ex_viminfo		ex_ni
@@ -321,9 +323,6 @@ static void	ex_setfiletype(exarg_T *eap);
 #endif
 static void	ex_digraphs(exarg_T *eap);
 static void	ex_set(exarg_T *eap);
-#if !defined(FEAT_EVAL)
-# define ex_options		ex_ni
-#endif
 #ifdef FEAT_SEARCH_EXTRA
 static void	ex_nohlsearch(exarg_T *eap);
 #else
@@ -356,17 +355,6 @@ static void	ex_folddo(exarg_T *eap);
 # define ex_nbstart		ex_ni
 #endif
 
-#ifndef FEAT_EVAL
-# define ex_debug		ex_ni
-# define ex_breakadd		ex_ni
-# define ex_debuggreedy		ex_ni
-# define ex_breakdel		ex_ni
-# define ex_breaklist		ex_ni
-#endif
-
-#ifndef FEAT_CMDHIST
-# define ex_history		ex_ni
-#endif
 #ifndef FEAT_JUMPLIST
 # define ex_jumps		ex_ni
 # define ex_clearjumps		ex_ni
@@ -993,7 +981,7 @@ do_cmdline(
 	if (next_cmdline == NULL)
 	{
 	    VIM_CLEAR(cmdline_copy);
-#ifdef FEAT_CMDHIST
+
 	    /*
 	     * If the command was typed, remember it for the ':' register.
 	     * Do this AFTER executing the command to make :@: work.
@@ -1005,7 +993,6 @@ do_cmdline(
 		last_cmdline = new_last_cmdline;
 		new_last_cmdline = NULL;
 	    }
-#endif
 	}
 	else
 	{
@@ -3336,10 +3323,8 @@ set_one_cmd_context(
     char_u		*cmd, *arg;
     int			len = 0;
     exarg_T		ea;
-#ifdef FEAT_CMDL_COMPL
     int			compl = EXPAND_NOTHING;
     int			delim;
-#endif
     int			forceit = FALSE;
     int			usefilter = FALSE;  /* filter instead of file name */
 
@@ -3445,13 +3430,7 @@ set_one_cmd_context(
 	else if (cmd[0] >= 'A' && cmd[0] <= 'Z')
 	{
 	    ea.cmd = cmd;
-	    p = find_ucmd(&ea, p, NULL, xp,
-#if defined(FEAT_CMDL_COMPL)
-		    &compl
-#else
-		    NULL
-#endif
-		    );
+	    p = find_ucmd(&ea, p, NULL, xp, &compl);
 	    if (p == NULL)
 		ea.cmdidx = CMD_SIZE;	// ambiguous user command
 	}
@@ -3675,14 +3654,11 @@ set_one_cmd_context(
 	    {
 		xp->xp_context = EXPAND_ENV_VARS;
 		++xp->xp_pattern;
-#if defined(FEAT_CMDL_COMPL)
 		/* Avoid that the assignment uses EXPAND_FILES again. */
 		if (compl != EXPAND_USER_DEFINED && compl != EXPAND_USER_LIST)
 		    compl = EXPAND_ENV_VARS;
-#endif
 	    }
 	}
-#if defined(FEAT_CMDL_COMPL)
 	/* Check for user names */
 	if (*xp->xp_pattern == '~')
 	{
@@ -3698,7 +3674,6 @@ set_one_cmd_context(
 		++xp->xp_pattern;
 	    }
 	}
-#endif
     }
 
 /*
@@ -3772,8 +3747,7 @@ set_one_cmd_context(
 	    }
 	    return skipwhite(arg);
 
-#ifdef FEAT_CMDL_COMPL
-# ifdef FEAT_SEARCH_EXTRA
+#ifdef FEAT_SEARCH_EXTRA
 	case CMD_match:
 	    if (*arg == NUL || !ends_excmd(*arg))
 	    {
@@ -3787,7 +3761,7 @@ set_one_cmd_context(
 		}
 	    }
 	    return find_nextcmd(arg);
-# endif
+#endif
 
 /*
  * All completion for the +cmdline_compl feature goes here.
@@ -4138,12 +4112,10 @@ set_one_cmd_context(
 	    xp->xp_pattern = arg;
 	    break;
 
-#if defined(FEAT_CMDHIST)
 	case CMD_history:
 	    xp->xp_context = EXPAND_HISTORY;
 	    xp->xp_pattern = arg;
 	    break;
-#endif
 #if defined(FEAT_PROFILE)
 	case CMD_syntime:
 	    xp->xp_context = EXPAND_SYNTIME;
@@ -4157,8 +4129,6 @@ set_one_cmd_context(
 	    xp->xp_context = EXPAND_ARGLIST;
 	    xp->xp_pattern = arg;
 	    break;
-
-#endif /* FEAT_CMDL_COMPL */
 
 	default:
 	    break;
@@ -4214,6 +4184,15 @@ skip_range(
 	cmd = skipwhite(cmd + 1);
 
     return cmd;
+}
+
+    static void
+addr_error(cmd_addr_T addr_type)
+{
+    if (addr_type == ADDR_NONE)
+	emsg(_(e_norange));
+    else
+	emsg(_(e_invrange));
 }
 
 /*
@@ -4272,10 +4251,10 @@ get_address(
 		    case ADDR_TABS:
 			lnum = CURRENT_TAB_NR;
 			break;
-		    case ADDR_TABS_RELATIVE:
 		    case ADDR_NONE:
+		    case ADDR_TABS_RELATIVE:
 		    case ADDR_UNSIGNED:
-			emsg(_(e_invrange));
+			addr_error(addr_type);
 			cmd = NULL;
 			goto error;
 			break;
@@ -4322,10 +4301,10 @@ get_address(
 		    case ADDR_TABS:
 			lnum = LAST_TAB_NR;
 			break;
-		    case ADDR_TABS_RELATIVE:
 		    case ADDR_NONE:
+		    case ADDR_TABS_RELATIVE:
 		    case ADDR_UNSIGNED:
-			emsg(_(e_invrange));
+			addr_error(addr_type);
 			cmd = NULL;
 			goto error;
 			break;
@@ -4354,7 +4333,7 @@ get_address(
 		}
 		if (addr_type != ADDR_LINES)
 		{
-		    emsg(_(e_invaddr));
+		    addr_error(addr_type);
 		    cmd = NULL;
 		    goto error;
 		}
@@ -4386,7 +4365,7 @@ get_address(
 		c = *cmd++;
 		if (addr_type != ADDR_LINES)
 		{
-		    emsg(_(e_invaddr));
+		    addr_error(addr_type);
 		    cmd = NULL;
 		    goto error;
 		}
@@ -4436,7 +4415,7 @@ get_address(
 		++cmd;
 		if (addr_type != ADDR_LINES)
 		{
-		    emsg(_(e_invaddr));
+		    addr_error(addr_type);
 		    cmd = NULL;
 		    goto error;
 		}
@@ -4654,8 +4633,9 @@ invalid_range(exarg_T *eap)
 		    return _(e_invrange);
 		break;
 	    case ADDR_BUFFERS:
-		if (eap->line1 < firstbuf->b_fnum
-			|| eap->line2 > lastbuf->b_fnum)
+		// Only a boundary check, not whether the buffers actually
+		// exist.
+		if (eap->line1 < 1 || eap->line2 > get_highest_fnum())
 		    return _(e_invrange);
 		break;
 	    case ADDR_LOADED_BUFFERS:
@@ -5560,7 +5540,6 @@ check_more(
     return OK;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Function given to ExpandGeneric() to obtain the list of command names.
  */
@@ -5571,7 +5550,6 @@ get_command_name(expand_T *xp UNUSED, int idx)
 	return get_user_command_name(idx);
     return cmdnames[idx].cmd_name;
 }
-#endif
 
     static void
 ex_colorscheme(exarg_T *eap)
@@ -6142,18 +6120,6 @@ ex_only(exarg_T *eap)
     close_others(TRUE, eap->forceit);
 }
 
-/*
- * ":all" and ":sall".
- * Also used for ":tab drop file ..." after setting the argument list.
- */
-    void
-ex_all(exarg_T *eap)
-{
-    if (eap->addr_count == 0)
-	eap->line2 = 9999;
-    do_arg_all((int)eap->line2, eap->forceit, eap->cmdidx == CMD_drop);
-}
-
     static void
 ex_hide(exarg_T *eap UNUSED)
 {
@@ -6446,200 +6412,6 @@ handle_any_postponed_drop(void)
     if (!drop_busy && drop_filev != NULL
 		     && !text_locked() && !curbuf_locked() && !updating_screen)
 	handle_drop_internal();
-}
-#endif
-
-/*
- * Clear an argument list: free all file names and reset it to zero entries.
- */
-    void
-alist_clear(alist_T *al)
-{
-    while (--al->al_ga.ga_len >= 0)
-	vim_free(AARGLIST(al)[al->al_ga.ga_len].ae_fname);
-    ga_clear(&al->al_ga);
-}
-
-/*
- * Init an argument list.
- */
-    void
-alist_init(alist_T *al)
-{
-    ga_init2(&al->al_ga, (int)sizeof(aentry_T), 5);
-}
-
-/*
- * Remove a reference from an argument list.
- * Ignored when the argument list is the global one.
- * If the argument list is no longer used by any window, free it.
- */
-    void
-alist_unlink(alist_T *al)
-{
-    if (al != &global_alist && --al->al_refcount <= 0)
-    {
-	alist_clear(al);
-	vim_free(al);
-    }
-}
-
-/*
- * Create a new argument list and use it for the current window.
- */
-    void
-alist_new(void)
-{
-    curwin->w_alist = ALLOC_ONE(alist_T);
-    if (curwin->w_alist == NULL)
-    {
-	curwin->w_alist = &global_alist;
-	++global_alist.al_refcount;
-    }
-    else
-    {
-	curwin->w_alist->al_refcount = 1;
-	curwin->w_alist->id = ++max_alist_id;
-	alist_init(curwin->w_alist);
-    }
-}
-
-#if !defined(UNIX) || defined(PROTO)
-/*
- * Expand the file names in the global argument list.
- * If "fnum_list" is not NULL, use "fnum_list[fnum_len]" as a list of buffer
- * numbers to be re-used.
- */
-    void
-alist_expand(int *fnum_list, int fnum_len)
-{
-    char_u	**old_arg_files;
-    int		old_arg_count;
-    char_u	**new_arg_files;
-    int		new_arg_file_count;
-    char_u	*save_p_su = p_su;
-    int		i;
-
-    /* Don't use 'suffixes' here.  This should work like the shell did the
-     * expansion.  Also, the vimrc file isn't read yet, thus the user
-     * can't set the options. */
-    p_su = empty_option;
-    old_arg_files = ALLOC_MULT(char_u *, GARGCOUNT);
-    if (old_arg_files != NULL)
-    {
-	for (i = 0; i < GARGCOUNT; ++i)
-	    old_arg_files[i] = vim_strsave(GARGLIST[i].ae_fname);
-	old_arg_count = GARGCOUNT;
-	if (expand_wildcards(old_arg_count, old_arg_files,
-		    &new_arg_file_count, &new_arg_files,
-		    EW_FILE|EW_NOTFOUND|EW_ADDSLASH|EW_NOERROR) == OK
-		&& new_arg_file_count > 0)
-	{
-	    alist_set(&global_alist, new_arg_file_count, new_arg_files,
-						   TRUE, fnum_list, fnum_len);
-	    FreeWild(old_arg_count, old_arg_files);
-	}
-    }
-    p_su = save_p_su;
-}
-#endif
-
-/*
- * Set the argument list for the current window.
- * Takes over the allocated files[] and the allocated fnames in it.
- */
-    void
-alist_set(
-    alist_T	*al,
-    int		count,
-    char_u	**files,
-    int		use_curbuf,
-    int		*fnum_list,
-    int		fnum_len)
-{
-    int		i;
-    static int  recursive = 0;
-
-    if (recursive)
-    {
-	emsg(_(e_au_recursive));
-	return;
-    }
-    ++recursive;
-
-    alist_clear(al);
-    if (ga_grow(&al->al_ga, count) == OK)
-    {
-	for (i = 0; i < count; ++i)
-	{
-	    if (got_int)
-	    {
-		/* When adding many buffers this can take a long time.  Allow
-		 * interrupting here. */
-		while (i < count)
-		    vim_free(files[i++]);
-		break;
-	    }
-
-	    /* May set buffer name of a buffer previously used for the
-	     * argument list, so that it's re-used by alist_add. */
-	    if (fnum_list != NULL && i < fnum_len)
-		buf_set_name(fnum_list[i], files[i]);
-
-	    alist_add(al, files[i], use_curbuf ? 2 : 1);
-	    ui_breakcheck();
-	}
-	vim_free(files);
-    }
-    else
-	FreeWild(count, files);
-    if (al == &global_alist)
-	arg_had_last = FALSE;
-
-    --recursive;
-}
-
-/*
- * Add file "fname" to argument list "al".
- * "fname" must have been allocated and "al" must have been checked for room.
- */
-    void
-alist_add(
-    alist_T	*al,
-    char_u	*fname,
-    int		set_fnum)	/* 1: set buffer number; 2: re-use curbuf */
-{
-    if (fname == NULL)		/* don't add NULL file names */
-	return;
-#ifdef BACKSLASH_IN_FILENAME
-    slash_adjust(fname);
-#endif
-    AARGLIST(al)[al->al_ga.ga_len].ae_fname = fname;
-    if (set_fnum > 0)
-	AARGLIST(al)[al->al_ga.ga_len].ae_fnum =
-	    buflist_add(fname, BLN_LISTED | (set_fnum == 2 ? BLN_CURBUF : 0));
-    ++al->al_ga.ga_len;
-}
-
-#if defined(BACKSLASH_IN_FILENAME) || defined(PROTO)
-/*
- * Adjust slashes in file names.  Called after 'shellslash' was set.
- */
-    void
-alist_slash_adjust(void)
-{
-    int		i;
-    win_T	*wp;
-    tabpage_T	*tp;
-
-    for (i = 0; i < GARGCOUNT; ++i)
-	if (GARGLIST[i].ae_fname != NULL)
-	    slash_adjust(GARGLIST[i].ae_fname);
-    FOR_ALL_TAB_WINDOWS(tp, wp)
-	if (wp->w_alist != &global_alist)
-	    for (i = 0; i < WARGCOUNT(wp); ++i)
-		if (WARGLIST(wp)[i].ae_fname != NULL)
-		    slash_adjust(WARGLIST(wp)[i].ae_fname);
 }
 #endif
 
@@ -7091,7 +6863,7 @@ do_exedit(
     int		need_hide;
     int		exmode_was = exmode_active;
 
-    if (ERROR_IF_POPUP_WINDOW)
+    if (eap->cmdidx != CMD_pedit && ERROR_IF_POPUP_WINDOW)
 	return;
     /*
      * ":vi" command ends Ex mode.
@@ -7680,12 +7452,19 @@ ex_sleep(exarg_T *eap)
     void
 do_sleep(long msec)
 {
-    long	done;
+    long	done = 0;
     long	wait_now;
+# ifdef ELAPSED_FUNC
+    elapsed_T	start_tv;
+
+    // Remember at what time we started, so that we know how much longer we
+    // should wait after waiting for a bit.
+    ELAPSED_INIT(start_tv);
+# endif
 
     cursor_on();
     out_flush_cursor(FALSE, FALSE);
-    for (done = 0; !got_int && done < msec; done += wait_now)
+    while (!got_int && done < msec)
     {
 	wait_now = msec - done > 1000L ? 1000L : msec - done;
 #ifdef FEAT_TIMERS
@@ -7697,10 +7476,15 @@ do_sleep(long msec)
 	}
 #endif
 #ifdef FEAT_JOB_CHANNEL
-	if (has_any_channel() && wait_now > 100L)
-	    wait_now = 100L;
+	if (has_any_channel() && wait_now > 20L)
+	    wait_now = 20L;
+#endif
+#ifdef FEAT_SOUND
+	if (has_any_sound_callback() && wait_now > 20L)
+	    wait_now = 20L;
 #endif
 	ui_delay(wait_now, TRUE);
+
 #ifdef FEAT_JOB_CHANNEL
 	if (has_any_channel())
 	    ui_breakcheck_force(TRUE);
@@ -7708,11 +7492,19 @@ do_sleep(long msec)
 #endif
 	    ui_breakcheck();
 #ifdef MESSAGE_QUEUE
-	/* Process the netbeans and clientserver messages that may have been
-	 * received in the call to ui_breakcheck() when the GUI is in use. This
-	 * may occur when running a test case. */
+	// Process the netbeans and clientserver messages that may have been
+	// received in the call to ui_breakcheck() when the GUI is in use. This
+	// may occur when running a test case.
 	parse_queued_messages();
 #endif
+
+# ifdef ELAPSED_FUNC
+	// actual time passed
+	done = ELAPSED_FUNC(start_tv);
+# else
+	// guestimate time passed (will actually be more)
+	done += wait_now;
+# endif
     }
 
     // If CTRL-C was typed to interrupt the sleep, drop the CTRL-C from the
@@ -7934,7 +7726,7 @@ ex_copymove(exarg_T *eap)
      */
     if (n == MAXLNUM || n < 0 || n > curbuf->b_ml.ml_line_count)
     {
-	emsg(_(e_invaddr));
+	emsg(_(e_invrange));
 	return;
     }
 
@@ -8804,18 +8596,27 @@ ex_pedit(exarg_T *eap)
 {
     win_T	*curwin_save = curwin;
 
+    // Open the preview window or popup and make it the current window.
     g_do_tagpreview = p_pvh;
-    prepare_tagpreview(TRUE);
-    keep_help_flag = bt_help(curwin_save->w_buffer);
+    prepare_tagpreview(TRUE, TRUE, FALSE);
+
+    // Edit the file.
     do_exedit(eap, NULL);
-    keep_help_flag = FALSE;
+
     if (curwin != curwin_save && win_valid(curwin_save))
     {
-	/* Return cursor to where we were */
+	// Return cursor to where we were
 	validate_cursor();
 	redraw_later(VALID);
 	win_enter(curwin_save, TRUE);
     }
+# ifdef FEAT_TEXT_PROP
+    else if (WIN_IS_POPUP(curwin))
+    {
+	// can't keep focus in popup window
+	win_enter(firstwin, TRUE);
+    }
+# endif
     g_do_tagpreview = 0;
 }
 #endif
@@ -9261,76 +9062,6 @@ eval_vars(
 }
 
 /*
- * Concatenate all files in the argument list, separated by spaces, and return
- * it in one allocated string.
- * Spaces and backslashes in the file names are escaped with a backslash.
- * Returns NULL when out of memory.
- */
-    static char_u *
-arg_all(void)
-{
-    int		len;
-    int		idx;
-    char_u	*retval = NULL;
-    char_u	*p;
-
-    /*
-     * Do this loop two times:
-     * first time: compute the total length
-     * second time: concatenate the names
-     */
-    for (;;)
-    {
-	len = 0;
-	for (idx = 0; idx < ARGCOUNT; ++idx)
-	{
-	    p = alist_name(&ARGLIST[idx]);
-	    if (p != NULL)
-	    {
-		if (len > 0)
-		{
-		    /* insert a space in between names */
-		    if (retval != NULL)
-			retval[len] = ' ';
-		    ++len;
-		}
-		for ( ; *p != NUL; ++p)
-		{
-		    if (*p == ' '
-#ifndef BACKSLASH_IN_FILENAME
-			    || *p == '\\'
-#endif
-			    || *p == '`')
-		    {
-			/* insert a backslash */
-			if (retval != NULL)
-			    retval[len] = '\\';
-			++len;
-		    }
-		    if (retval != NULL)
-			retval[len] = *p;
-		    ++len;
-		}
-	    }
-	}
-
-	/* second time: break here */
-	if (retval != NULL)
-	{
-	    retval[len] = NUL;
-	    break;
-	}
-
-	/* allocate memory */
-	retval = alloc(len + 1);
-	if (retval == NULL)
-	    break;
-    }
-
-    return retval;
-}
-
-/*
  * Expand the <sfile> string in "arg".
  *
  * Returns an allocated string, or NULL for any error.
@@ -9431,7 +9162,6 @@ ex_behave(exarg_T *eap)
 	semsg(_(e_invarg2), eap->arg);
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Function given to ExpandGeneric() to obtain the possible arguments of the
  * ":behave {mswin,xterm}" command.
@@ -9457,9 +9187,7 @@ get_messages_arg(expand_T *xp UNUSED, int idx)
 	return (char_u *)"clear";
     return NULL;
 }
-#endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     char_u *
 get_mapclear_arg(expand_T *xp UNUSED, int idx)
 {
@@ -9467,7 +9195,6 @@ get_mapclear_arg(expand_T *xp UNUSED, int idx)
 	return (char_u *)"<buffer>";
     return NULL;
 }
-#endif
 
 static int filetype_detect = FALSE;
 static int filetype_plugin = FALSE;

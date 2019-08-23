@@ -15,6 +15,9 @@
 
 #if defined(FEAT_CINDENT) || defined(FEAT_SMARTINDENT)
 
+static int cin_iscase(char_u *s, int strict);
+static int cin_isscopedecl(char_u *s);
+
 /*
  * Return TRUE if the string "line" starts with a word from 'cinwords'.
  */
@@ -408,7 +411,7 @@ cin_islabel_skip(char_u **s)
  * Recognize a label: "label:".
  * Note: curwin->w_cursor must be where we are looking for the label.
  */
-    int
+    static int
 cin_islabel(void)		// XXX
 {
     char_u	*s;
@@ -507,7 +510,7 @@ cin_isinit(void)
 /*
  * Recognize a switch label: "case .*:" or "default:".
  */
-     int
+     static int
 cin_iscase(
     char_u *s,
     int strict) // Allow relaxed check of case statement for JS
@@ -560,7 +563,7 @@ cin_isdefault(char_u *s)
 /*
  * Recognize a "public/private/protected" scope declaration label.
  */
-    int
+    static int
 cin_isscopedecl(char_u *s)
 {
     int		i;
@@ -4107,7 +4110,6 @@ in_cinkeys(
 	    {
 		int		match = FALSE;
 
-#ifdef FEAT_INS_EXPAND
 		if (keytyped == KEY_COMPLETE)
 		{
 		    char_u	*s;
@@ -4137,7 +4139,6 @@ in_cinkeys(
 			match = TRUE;
 		}
 		else
-#endif
 		    // TODO: multi-byte
 		    if (keytyped == (int)p[-1] || (icase && keytyped < 256
 			 && TOLOWER_LOC(keytyped) == TOLOWER_LOC((int)p[-1])))
