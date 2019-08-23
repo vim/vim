@@ -1078,7 +1078,7 @@ func Test_col()
   call assert_equal(7, col('$'))
   call assert_equal(4, col("'x"))
   call assert_equal(6, col("'Y"))
-  call assert_equal(2, col([1, 2]))
+  call assert_equal(2, [1, 2]->col())
   call assert_equal(7, col([1, '$']))
 
   call assert_equal(0, col(''))
@@ -1413,7 +1413,7 @@ func Test_confirm()
   call assert_equal(1, a)
 
   call feedkeys('y', 'L')
-  let a = confirm('Are you sure?', "&Yes\n&No")
+  let a = 'Are you sure?'->confirm("&Yes\n&No")
   call assert_equal(1, a)
 
   call feedkeys('n', 'L')
@@ -1514,7 +1514,7 @@ func Test_readdir()
   let files = readdir('Xdir', {x -> len(add(l, x)) == 2 ? -1 : 1})
   call assert_equal(1, len(files))
 
-  call delete('Xdir', 'rf')
+  eval 'Xdir'->delete('rf')
 endfunc
 
 func Test_delete_rf()
@@ -1548,6 +1548,7 @@ endfunc
 
 func Test_char2nr()
   call assert_equal(12354, char2nr('あ', 1))
+  call assert_equal(120, 'x'->char2nr())
 endfunc
 
 func Test_eventhandler()
