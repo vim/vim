@@ -959,6 +959,812 @@ set_expand_context(expand_T *xp)
     set_cmd_context(xp, ccline->cmdbuff, ccline->cmdlen, ccline->cmdpos, TRUE);
 }
 
+/*
+ * This is all pretty much copied from do_one_cmd(), with all the extra stuff
+ * we don't need/want deleted.	Maybe this could be done better if we didn't
+ * repeat all this stuff.  The only problem is that they may not stay
+ * perfectly compatible with each other, but then the command line syntax
+ * probably won't change that much -- webb.
+ */
+    static char_u *
+set_one_cmd_context(
+    expand_T	*xp,
+    char_u	*buff)	    // buffer for command string
+{
+    char_u		*p;
+    char_u		*cmd, *arg;
+    int			len = 0;
+    exarg_T		ea;
+    int			compl = EXPAND_NOTHING;
+    int			delim;
+    int			forceit = FALSE;
+    int			usefilter = FALSE;  // filter instead of file name
+
+    ExpandInit(xp);
+    xp->xp_pattern = buff;
+    xp->xp_context = EXPAND_COMMANDS;	// Default until we get past command
+    ea.argt = 0;
+
+    // 1. skip comment lines and leading space, colons or bars
+    for (cmd = buff; vim_strchr((char_u *)" \t:|", *cmd) != NULL; cmd++)
+	;
+    xp->xp_pattern = cmd;
+
+    if (*cmd == NUL)
+	return NULL;
+    if (*cmd == '"')	    // ignore comment lines
+    {
+	xp->xp_context = EXPAND_NOTHING;
+	return NULL;
+    }
+
+    // 3. Skip over the range to find the command.
+    cmd = skip_range(cmd, &xp->xp_context);
+    xp->xp_pattern = cmd;
+    if (*cmd == NUL)
+	return NULL;
+    if (*cmd == '"')
+    {
+	xp->xp_context = EXPAND_NOTHING;
+	return NULL;
+    }
+
+    if (*cmd == '|' || *cmd == '\n')
+	return cmd + 1;			// There's another command
+
+    // Isolate the command and search for it in the command table.
+    // Exceptions:
+    // - the 'k' command can directly be followed by any character, but
+    //   do accept "keepmarks", "keepalt" and "keepjumps".
+    // - the 's' command can be followed directly by 'c', 'g', 'i', 'I' or 'r'
+    if (*cmd == 'k' && cmd[1] != 'e')
+    {
+	ea.cmdidx = CMD_k;
+	p = cmd + 1;
+    }
+    else
+    {
+	p = cmd;
+	while (ASCII_ISALPHA(*p) || *p == '*')    // Allow * wild card
+	    ++p;
+	// a user command may contain digits
+	if (ASCII_ISUPPER(cmd[0]))
+	    while (ASCII_ISALNUM(*p) || *p == '*')
+		++p;
+	// for python 3.x: ":py3*" commands completion
+	if (cmd[0] == 'p' && cmd[1] == 'y' && p == cmd + 2 && *p == '3')
+	{
+	    ++p;
+	    while (ASCII_ISALPHA(*p) || *p == '*')
+		++p;
+	}
+	// check for non-alpha command
+	if (p == cmd && vim_strchr((char_u *)"@*!=><&~#", *p) != NULL)
+	    ++p;
+	len = (int)(p - cmd);
+
+	if (len == 0)
+	{
+	    xp->xp_context = EXPAND_UNSUCCESSFUL;
+	    return NULL;
+	}
+
+	ea.cmdidx = excmd_get_cmdidx(cmd, len);
+
+	if (cmd[0] >= 'A' && cmd[0] <= 'Z')
+	    while (ASCII_ISALNUM(*p) || *p == '*')	// Allow * wild card
+		++p;
+    }
+
+    // If the cursor is touching the command, and it ends in an alpha-numeric
+    // character, complete the command name.
+    if (*p == NUL && ASCII_ISALNUM(p[-1]))
+	return NULL;
+
+    if (ea.cmdidx == CMD_SIZE)
+    {
+	if (*cmd == 's' && vim_strchr((char_u *)"cgriI", cmd[1]) != NULL)
+	{
+	    ea.cmdidx = CMD_substitute;
+	    p = cmd + 1;
+	}
+	else if (cmd[0] >= 'A' && cmd[0] <= 'Z')
+	{
+	    ea.cmd = cmd;
+	    p = find_ucmd(&ea, p, NULL, xp, &compl);
+	    if (p == NULL)
+		ea.cmdidx = CMD_SIZE;	// ambiguous user command
+	}
+    }
+    if (ea.cmdidx == CMD_SIZE)
+    {
+	// Not still touching the command and it was an illegal one
+	xp->xp_context = EXPAND_UNSUCCESSFUL;
+	return NULL;
+    }
+
+    xp->xp_context = EXPAND_NOTHING; // Default now that we're past command
+
+    if (*p == '!')		    // forced commands
+    {
+	forceit = TRUE;
+	++p;
+    }
+
+    // 6. parse arguments
+    if (!IS_USER_CMDIDX(ea.cmdidx))
+	ea.argt = excmd_get_argt(ea.cmdidx);
+
+    arg = skipwhite(p);
+
+    if (ea.cmdidx == CMD_write || ea.cmdidx == CMD_update)
+    {
+	if (*arg == '>')			// append
+	{
+	    if (*++arg == '>')
+		++arg;
+	    arg = skipwhite(arg);
+	}
+	else if (*arg == '!' && ea.cmdidx == CMD_write)	// :w !filter
+	{
+	    ++arg;
+	    usefilter = TRUE;
+	}
+    }
+
+    if (ea.cmdidx == CMD_read)
+    {
+	usefilter = forceit;			// :r! filter if forced
+	if (*arg == '!')			// :r !filter
+	{
+	    ++arg;
+	    usefilter = TRUE;
+	}
+    }
+
+    if (ea.cmdidx == CMD_lshift || ea.cmdidx == CMD_rshift)
+    {
+	while (*arg == *cmd)	    // allow any number of '>' or '<'
+	    ++arg;
+	arg = skipwhite(arg);
+    }
+
+    // Does command allow "+command"?
+    if ((ea.argt & EX_CMDARG) && !usefilter && *arg == '+')
+    {
+	// Check if we're in the +command
+	p = arg + 1;
+	arg = skip_cmd_arg(arg, FALSE);
+
+	// Still touching the command after '+'?
+	if (*arg == NUL)
+	    return p;
+
+	// Skip space(s) after +command to get to the real argument
+	arg = skipwhite(arg);
+    }
+
+    // Check for '|' to separate commands and '"' to start comments.
+    // Don't do this for ":read !cmd" and ":write !cmd".
+    if ((ea.argt & EX_TRLBAR) && !usefilter)
+    {
+	p = arg;
+	// ":redir @" is not the start of a comment
+	if (ea.cmdidx == CMD_redir && p[0] == '@' && p[1] == '"')
+	    p += 2;
+	while (*p)
+	{
+	    if (*p == Ctrl_V)
+	    {
+		if (p[1] != NUL)
+		    ++p;
+	    }
+	    else if ( (*p == '"' && !(ea.argt & EX_NOTRLCOM))
+		    || *p == '|' || *p == '\n')
+	    {
+		if (*(p - 1) != '\\')
+		{
+		    if (*p == '|' || *p == '\n')
+			return p + 1;
+		    return NULL;    // It's a comment
+		}
+	    }
+	    MB_PTR_ADV(p);
+	}
+    }
+
+    if (!(ea.argt & EX_EXTRA) && *arg != NUL
+				  && vim_strchr((char_u *)"|\"", *arg) == NULL)
+	// no arguments allowed but there is something
+	return NULL;
+
+    // Find start of last argument (argument just before cursor):
+    p = buff;
+    xp->xp_pattern = p;
+    len = (int)STRLEN(buff);
+    while (*p && p < buff + len)
+    {
+	if (*p == ' ' || *p == TAB)
+	{
+	    // argument starts after a space
+	    xp->xp_pattern = ++p;
+	}
+	else
+	{
+	    if (*p == '\\' && *(p + 1) != NUL)
+		++p; // skip over escaped character
+	    MB_PTR_ADV(p);
+	}
+    }
+
+    if (ea.argt & EX_XFILE)
+    {
+	int	c;
+	int	in_quote = FALSE;
+	char_u	*bow = NULL;	// Beginning of word
+
+	// Allow spaces within back-quotes to count as part of the argument
+	// being expanded.
+	xp->xp_pattern = skipwhite(arg);
+	p = xp->xp_pattern;
+	while (*p != NUL)
+	{
+	    if (has_mbyte)
+		c = mb_ptr2char(p);
+	    else
+		c = *p;
+	    if (c == '\\' && p[1] != NUL)
+		++p;
+	    else if (c == '`')
+	    {
+		if (!in_quote)
+		{
+		    xp->xp_pattern = p;
+		    bow = p + 1;
+		}
+		in_quote = !in_quote;
+	    }
+	    // An argument can contain just about everything, except
+	    // characters that end the command and white space.
+	    else if (c == '|' || c == '\n' || c == '"' || (VIM_ISWHITE(c)
+#ifdef SPACE_IN_FILENAME
+					&& (!(ea.argt & EX_NOSPC) || usefilter)
+#endif
+		    ))
+	    {
+		len = 0;  // avoid getting stuck when space is in 'isfname'
+		while (*p != NUL)
+		{
+		    if (has_mbyte)
+			c = mb_ptr2char(p);
+		    else
+			c = *p;
+		    if (c == '`' || vim_isfilec_or_wc(c))
+			break;
+		    if (has_mbyte)
+			len = (*mb_ptr2len)(p);
+		    else
+			len = 1;
+		    MB_PTR_ADV(p);
+		}
+		if (in_quote)
+		    bow = p;
+		else
+		    xp->xp_pattern = p;
+		p -= len;
+	    }
+	    MB_PTR_ADV(p);
+	}
+
+	// If we are still inside the quotes, and we passed a space, just
+	// expand from there.
+	if (bow != NULL && in_quote)
+	    xp->xp_pattern = bow;
+	xp->xp_context = EXPAND_FILES;
+
+	// For a shell command more chars need to be escaped.
+	if (usefilter || ea.cmdidx == CMD_bang || ea.cmdidx == CMD_terminal)
+	{
+#ifndef BACKSLASH_IN_FILENAME
+	    xp->xp_shell = TRUE;
+#endif
+	    // When still after the command name expand executables.
+	    if (xp->xp_pattern == skipwhite(arg))
+		xp->xp_context = EXPAND_SHELLCMD;
+	}
+
+	// Check for environment variable
+	if (*xp->xp_pattern == '$'
+#if defined(MSWIN)
+		|| *xp->xp_pattern == '%'
+#endif
+		)
+	{
+	    for (p = xp->xp_pattern + 1; *p != NUL; ++p)
+		if (!vim_isIDc(*p))
+		    break;
+	    if (*p == NUL)
+	    {
+		xp->xp_context = EXPAND_ENV_VARS;
+		++xp->xp_pattern;
+		// Avoid that the assignment uses EXPAND_FILES again.
+		if (compl != EXPAND_USER_DEFINED && compl != EXPAND_USER_LIST)
+		    compl = EXPAND_ENV_VARS;
+	    }
+	}
+	// Check for user names
+	if (*xp->xp_pattern == '~')
+	{
+	    for (p = xp->xp_pattern + 1; *p != NUL && *p != '/'; ++p)
+		;
+	    // Complete ~user only if it partially matches a user name.
+	    // A full match ~user<Tab> will be replaced by user's home
+	    // directory i.e. something like ~user<Tab> -> /home/user/
+	    if (*p == NUL && p > xp->xp_pattern + 1
+				       && match_user(xp->xp_pattern + 1) >= 1)
+	    {
+		xp->xp_context = EXPAND_USER;
+		++xp->xp_pattern;
+	    }
+	}
+    }
+
+    // 6. Switch on command name.
+    switch (ea.cmdidx)
+    {
+	case CMD_find:
+	case CMD_sfind:
+	case CMD_tabfind:
+	    if (xp->xp_context == EXPAND_FILES)
+		xp->xp_context = EXPAND_FILES_IN_PATH;
+	    break;
+	case CMD_cd:
+	case CMD_chdir:
+	case CMD_tcd:
+	case CMD_tchdir:
+	case CMD_lcd:
+	case CMD_lchdir:
+	    if (xp->xp_context == EXPAND_FILES)
+		xp->xp_context = EXPAND_DIRECTORIES;
+	    break;
+	case CMD_help:
+	    xp->xp_context = EXPAND_HELP;
+	    xp->xp_pattern = arg;
+	    break;
+
+	// Command modifiers: return the argument.
+	// Also for commands with an argument that is a command.
+	case CMD_aboveleft:
+	case CMD_argdo:
+	case CMD_belowright:
+	case CMD_botright:
+	case CMD_browse:
+	case CMD_bufdo:
+	case CMD_cdo:
+	case CMD_cfdo:
+	case CMD_confirm:
+	case CMD_debug:
+	case CMD_folddoclosed:
+	case CMD_folddoopen:
+	case CMD_hide:
+	case CMD_keepalt:
+	case CMD_keepjumps:
+	case CMD_keepmarks:
+	case CMD_keeppatterns:
+	case CMD_ldo:
+	case CMD_leftabove:
+	case CMD_lfdo:
+	case CMD_lockmarks:
+	case CMD_noautocmd:
+	case CMD_noswapfile:
+	case CMD_rightbelow:
+	case CMD_sandbox:
+	case CMD_silent:
+	case CMD_tab:
+	case CMD_tabdo:
+	case CMD_topleft:
+	case CMD_verbose:
+	case CMD_vertical:
+	case CMD_windo:
+	    return arg;
+
+	case CMD_filter:
+	    if (*arg != NUL)
+		arg = skip_vimgrep_pat(arg, NULL, NULL);
+	    if (arg == NULL || *arg == NUL)
+	    {
+		xp->xp_context = EXPAND_NOTHING;
+		return NULL;
+	    }
+	    return skipwhite(arg);
+
+#ifdef FEAT_SEARCH_EXTRA
+	case CMD_match:
+	    if (*arg == NUL || !ends_excmd(*arg))
+	    {
+		// also complete "None"
+		set_context_in_echohl_cmd(xp, arg);
+		arg = skipwhite(skiptowhite(arg));
+		if (*arg != NUL)
+		{
+		    xp->xp_context = EXPAND_NOTHING;
+		    arg = skip_regexp(arg + 1, *arg, p_magic, NULL);
+		}
+	    }
+	    return find_nextcmd(arg);
+#endif
+
+	// All completion for the +cmdline_compl feature goes here.
+
+	case CMD_command:
+	    return set_context_in_user_cmd(xp, arg);
+
+	case CMD_delcommand:
+	    xp->xp_context = EXPAND_USER_COMMANDS;
+	    xp->xp_pattern = arg;
+	    break;
+
+	case CMD_global:
+	case CMD_vglobal:
+	    delim = *arg;	    // get the delimiter
+	    if (delim)
+		++arg;		    // skip delimiter if there is one
+
+	    while (arg[0] != NUL && arg[0] != delim)
+	    {
+		if (arg[0] == '\\' && arg[1] != NUL)
+		    ++arg;
+		++arg;
+	    }
+	    if (arg[0] != NUL)
+		return arg + 1;
+	    break;
+	case CMD_and:
+	case CMD_substitute:
+	    delim = *arg;
+	    if (delim)
+	    {
+		// skip "from" part
+		++arg;
+		arg = skip_regexp(arg, delim, p_magic, NULL);
+	    }
+	    // skip "to" part
+	    while (arg[0] != NUL && arg[0] != delim)
+	    {
+		if (arg[0] == '\\' && arg[1] != NUL)
+		    ++arg;
+		++arg;
+	    }
+	    if (arg[0] != NUL)	// skip delimiter
+		++arg;
+	    while (arg[0] && vim_strchr((char_u *)"|\"#", arg[0]) == NULL)
+		++arg;
+	    if (arg[0] != NUL)
+		return arg;
+	    break;
+	case CMD_isearch:
+	case CMD_dsearch:
+	case CMD_ilist:
+	case CMD_dlist:
+	case CMD_ijump:
+	case CMD_psearch:
+	case CMD_djump:
+	case CMD_isplit:
+	case CMD_dsplit:
+	    arg = skipwhite(skipdigits(arg));	    // skip count
+	    if (*arg == '/')	// Match regexp, not just whole words
+	    {
+		for (++arg; *arg && *arg != '/'; arg++)
+		    if (*arg == '\\' && arg[1] != NUL)
+			arg++;
+		if (*arg)
+		{
+		    arg = skipwhite(arg + 1);
+
+		    // Check for trailing illegal characters
+		    if (*arg && vim_strchr((char_u *)"|\"\n", *arg) == NULL)
+			xp->xp_context = EXPAND_NOTHING;
+		    else
+			return arg;
+		}
+	    }
+	    break;
+
+	case CMD_autocmd:
+	    return set_context_in_autocmd(xp, arg, FALSE);
+	case CMD_doautocmd:
+	case CMD_doautoall:
+	    return set_context_in_autocmd(xp, arg, TRUE);
+	case CMD_set:
+	    set_context_in_set_cmd(xp, arg, 0);
+	    break;
+	case CMD_setglobal:
+	    set_context_in_set_cmd(xp, arg, OPT_GLOBAL);
+	    break;
+	case CMD_setlocal:
+	    set_context_in_set_cmd(xp, arg, OPT_LOCAL);
+	    break;
+	case CMD_tag:
+	case CMD_stag:
+	case CMD_ptag:
+	case CMD_ltag:
+	case CMD_tselect:
+	case CMD_stselect:
+	case CMD_ptselect:
+	case CMD_tjump:
+	case CMD_stjump:
+	case CMD_ptjump:
+	    if (*p_wop != NUL)
+		xp->xp_context = EXPAND_TAGS_LISTFILES;
+	    else
+		xp->xp_context = EXPAND_TAGS;
+	    xp->xp_pattern = arg;
+	    break;
+	case CMD_augroup:
+	    xp->xp_context = EXPAND_AUGROUP;
+	    xp->xp_pattern = arg;
+	    break;
+#ifdef FEAT_SYN_HL
+	case CMD_syntax:
+	    set_context_in_syntax_cmd(xp, arg);
+	    break;
+#endif
+#ifdef FEAT_EVAL
+	case CMD_let:
+	case CMD_if:
+	case CMD_elseif:
+	case CMD_while:
+	case CMD_for:
+	case CMD_echo:
+	case CMD_echon:
+	case CMD_execute:
+	case CMD_echomsg:
+	case CMD_echoerr:
+	case CMD_call:
+	case CMD_return:
+	case CMD_cexpr:
+	case CMD_caddexpr:
+	case CMD_cgetexpr:
+	case CMD_lexpr:
+	case CMD_laddexpr:
+	case CMD_lgetexpr:
+	    set_context_for_expression(xp, arg, ea.cmdidx);
+	    break;
+
+	case CMD_unlet:
+	    while ((xp->xp_pattern = vim_strchr(arg, ' ')) != NULL)
+		arg = xp->xp_pattern + 1;
+
+	    xp->xp_context = EXPAND_USER_VARS;
+	    xp->xp_pattern = arg;
+
+	    if (*xp->xp_pattern == '$')
+	    {
+		xp->xp_context = EXPAND_ENV_VARS;
+		++xp->xp_pattern;
+	    }
+
+	    break;
+
+	case CMD_function:
+	case CMD_delfunction:
+	    xp->xp_context = EXPAND_USER_FUNC;
+	    xp->xp_pattern = arg;
+	    break;
+
+	case CMD_echohl:
+	    set_context_in_echohl_cmd(xp, arg);
+	    break;
+#endif
+	case CMD_highlight:
+	    set_context_in_highlight_cmd(xp, arg);
+	    break;
+#ifdef FEAT_CSCOPE
+	case CMD_cscope:
+	case CMD_lcscope:
+	case CMD_scscope:
+	    set_context_in_cscope_cmd(xp, arg, ea.cmdidx);
+	    break;
+#endif
+#ifdef FEAT_SIGNS
+	case CMD_sign:
+	    set_context_in_sign_cmd(xp, arg);
+	    break;
+#endif
+	case CMD_bdelete:
+	case CMD_bwipeout:
+	case CMD_bunload:
+	    while ((xp->xp_pattern = vim_strchr(arg, ' ')) != NULL)
+		arg = xp->xp_pattern + 1;
+	    // FALLTHROUGH
+	case CMD_buffer:
+	case CMD_sbuffer:
+	case CMD_checktime:
+	    xp->xp_context = EXPAND_BUFFERS;
+	    xp->xp_pattern = arg;
+	    break;
+
+	case CMD_USER:
+	case CMD_USER_BUF:
+	    if (compl != EXPAND_NOTHING)
+	    {
+		// EX_XFILE: file names are handled above
+		if (!(ea.argt & EX_XFILE))
+		{
+#ifdef FEAT_MENU
+		    if (compl == EXPAND_MENUS)
+			return set_context_in_menu_cmd(xp, cmd, arg, forceit);
+#endif
+		    if (compl == EXPAND_COMMANDS)
+			return arg;
+		    if (compl == EXPAND_MAPPINGS)
+			return set_context_in_map_cmd(xp, (char_u *)"map",
+					 arg, forceit, FALSE, FALSE, CMD_map);
+		    // Find start of last argument.
+		    p = arg;
+		    while (*p)
+		    {
+			if (*p == ' ')
+			    // argument starts after a space
+			    arg = p + 1;
+			else if (*p == '\\' && *(p + 1) != NUL)
+			    ++p; // skip over escaped character
+			MB_PTR_ADV(p);
+		    }
+		    xp->xp_pattern = arg;
+		}
+		xp->xp_context = compl;
+	    }
+	    break;
+
+	case CMD_map:	    case CMD_noremap:
+	case CMD_nmap:	    case CMD_nnoremap:
+	case CMD_vmap:	    case CMD_vnoremap:
+	case CMD_omap:	    case CMD_onoremap:
+	case CMD_imap:	    case CMD_inoremap:
+	case CMD_cmap:	    case CMD_cnoremap:
+	case CMD_lmap:	    case CMD_lnoremap:
+	case CMD_smap:	    case CMD_snoremap:
+	case CMD_tmap:	    case CMD_tnoremap:
+	case CMD_xmap:	    case CMD_xnoremap:
+	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
+						     FALSE, FALSE, ea.cmdidx);
+	case CMD_unmap:
+	case CMD_nunmap:
+	case CMD_vunmap:
+	case CMD_ounmap:
+	case CMD_iunmap:
+	case CMD_cunmap:
+	case CMD_lunmap:
+	case CMD_sunmap:
+	case CMD_tunmap:
+	case CMD_xunmap:
+	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
+						      FALSE, TRUE, ea.cmdidx);
+	case CMD_mapclear:
+	case CMD_nmapclear:
+	case CMD_vmapclear:
+	case CMD_omapclear:
+	case CMD_imapclear:
+	case CMD_cmapclear:
+	case CMD_lmapclear:
+	case CMD_smapclear:
+	case CMD_tmapclear:
+	case CMD_xmapclear:
+	    xp->xp_context = EXPAND_MAPCLEAR;
+	    xp->xp_pattern = arg;
+	    break;
+
+	case CMD_abbreviate:	case CMD_noreabbrev:
+	case CMD_cabbrev:	case CMD_cnoreabbrev:
+	case CMD_iabbrev:	case CMD_inoreabbrev:
+	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
+						      TRUE, FALSE, ea.cmdidx);
+	case CMD_unabbreviate:
+	case CMD_cunabbrev:
+	case CMD_iunabbrev:
+	    return set_context_in_map_cmd(xp, cmd, arg, forceit,
+						       TRUE, TRUE, ea.cmdidx);
+#ifdef FEAT_MENU
+	case CMD_menu:	    case CMD_noremenu:	    case CMD_unmenu:
+	case CMD_amenu:	    case CMD_anoremenu:	    case CMD_aunmenu:
+	case CMD_nmenu:	    case CMD_nnoremenu:	    case CMD_nunmenu:
+	case CMD_vmenu:	    case CMD_vnoremenu:	    case CMD_vunmenu:
+	case CMD_omenu:	    case CMD_onoremenu:	    case CMD_ounmenu:
+	case CMD_imenu:	    case CMD_inoremenu:	    case CMD_iunmenu:
+	case CMD_cmenu:	    case CMD_cnoremenu:	    case CMD_cunmenu:
+	case CMD_tlmenu:    case CMD_tlnoremenu:    case CMD_tlunmenu:
+	case CMD_tmenu:				    case CMD_tunmenu:
+	case CMD_popup:	    case CMD_tearoff:	    case CMD_emenu:
+	    return set_context_in_menu_cmd(xp, cmd, arg, forceit);
+#endif
+
+	case CMD_colorscheme:
+	    xp->xp_context = EXPAND_COLORS;
+	    xp->xp_pattern = arg;
+	    break;
+
+	case CMD_compiler:
+	    xp->xp_context = EXPAND_COMPILER;
+	    xp->xp_pattern = arg;
+	    break;
+
+	case CMD_ownsyntax:
+	    xp->xp_context = EXPAND_OWNSYNTAX;
+	    xp->xp_pattern = arg;
+	    break;
+
+	case CMD_setfiletype:
+	    xp->xp_context = EXPAND_FILETYPE;
+	    xp->xp_pattern = arg;
+	    break;
+
+	case CMD_packadd:
+	    xp->xp_context = EXPAND_PACKADD;
+	    xp->xp_pattern = arg;
+	    break;
+
+#if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
+	case CMD_language:
+	    p = skiptowhite(arg);
+	    if (*p == NUL)
+	    {
+		xp->xp_context = EXPAND_LANGUAGE;
+		xp->xp_pattern = arg;
+	    }
+	    else
+	    {
+		if ( STRNCMP(arg, "messages", p - arg) == 0
+		  || STRNCMP(arg, "ctype", p - arg) == 0
+		  || STRNCMP(arg, "time", p - arg) == 0)
+		{
+		    xp->xp_context = EXPAND_LOCALES;
+		    xp->xp_pattern = skipwhite(p);
+		}
+		else
+		    xp->xp_context = EXPAND_NOTHING;
+	    }
+	    break;
+#endif
+#if defined(FEAT_PROFILE)
+	case CMD_profile:
+	    set_context_in_profile_cmd(xp, arg);
+	    break;
+#endif
+	case CMD_behave:
+	    xp->xp_context = EXPAND_BEHAVE;
+	    xp->xp_pattern = arg;
+	    break;
+
+	case CMD_messages:
+	    xp->xp_context = EXPAND_MESSAGES;
+	    xp->xp_pattern = arg;
+	    break;
+
+	case CMD_history:
+	    xp->xp_context = EXPAND_HISTORY;
+	    xp->xp_pattern = arg;
+	    break;
+#if defined(FEAT_PROFILE)
+	case CMD_syntime:
+	    xp->xp_context = EXPAND_SYNTIME;
+	    xp->xp_pattern = arg;
+	    break;
+#endif
+
+	case CMD_argdelete:
+	    while ((xp->xp_pattern = vim_strchr(arg, ' ')) != NULL)
+		arg = xp->xp_pattern + 1;
+	    xp->xp_context = EXPAND_ARGLIST;
+	    xp->xp_pattern = arg;
+	    break;
+
+	default:
+	    break;
+    }
+    return NULL;
+}
+
     void
 set_cmd_context(
     expand_T	*xp,
@@ -1113,6 +1919,40 @@ cleanup_help_tags(int num_file, char_u **file)
 	}
 }
 #endif
+
+/*
+ * Function given to ExpandGeneric() to obtain the possible arguments of the
+ * ":behave {mswin,xterm}" command.
+ */
+    static char_u *
+get_behave_arg(expand_T *xp UNUSED, int idx)
+{
+    if (idx == 0)
+	return (char_u *)"mswin";
+    if (idx == 1)
+	return (char_u *)"xterm";
+    return NULL;
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain the possible arguments of the
+ * ":messages {clear}" command.
+ */
+    static char_u *
+get_messages_arg(expand_T *xp UNUSED, int idx)
+{
+    if (idx == 0)
+	return (char_u *)"clear";
+    return NULL;
+}
+
+    static char_u *
+get_mapclear_arg(expand_T *xp UNUSED, int idx)
+{
+    if (idx == 0)
+	return (char_u *)"<buffer>";
+    return NULL;
+}
 
 /*
  * Do the expansion based on xp->xp_context and "pat".
