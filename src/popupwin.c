@@ -222,14 +222,22 @@ popup_on_border(win_T *wp, int row, int col)
 }
 
 /*
- * Return TRUE if "row"/"col" is on the "X" button of the popup.
+ * Return TRUE and close the popup if "row"/"col" is on the "X" button of the
+ * popup and w_popup_close is POPCLOSE_BUTTON.
  * The values are relative to the top-left corner.
- * Caller should check w_popup_close is POPCLOSE_BUTTON.
+ * Caller should check the left mouse button was clicked.
+ * Return TRUE if the popup was closed.
  */
     int
-popup_on_X_button(win_T *wp, int row, int col)
+popup_close_if_on_X(win_T *wp, int row, int col)
 {
-    return row == 0 && col == popup_width(wp) - 1;
+    if (wp->w_popup_close == POPCLOSE_BUTTON
+	    && row == 0 && col == popup_width(wp) - 1)
+    {
+	popup_close_for_mouse_click(wp);
+	return TRUE;
+    }
+    return FALSE;
 }
 
 // Values set when dragging a popup window starts.
@@ -2634,6 +2642,16 @@ popup_do_filter(int c)
     win_T	*wp;
 
     popup_reset_handled();
+
+    if (c == K_LEFTMOUSE)
+    {
+	int row = mouse_row;
+	int col = mouse_col;
+
+	wp = mouse_find_win(&row, &col, FIND_POPUP);
+	if (wp != NULL && popup_close_if_on_X(wp, row, col))
+	    return TRUE;
+    }
 
     while (!res && (wp = find_next_popup(FALSE)) != NULL)
 	if (wp->w_filter_cb.cb_name != NULL)

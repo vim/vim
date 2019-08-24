@@ -1,6 +1,6 @@
 /* popupwin.c */
 int popup_on_border(win_T *wp, int row, int col);
-int popup_on_X_button(win_T *wp, int row, int col);
+int popup_close_if_on_X(win_T *wp, int row, int col);
 void popup_start_drag(win_T *wp, int row, int col);
 void popup_drag(win_T *wp);
 void popup_set_firstline(win_T *wp);

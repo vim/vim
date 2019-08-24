@@ -420,6 +420,15 @@ func Test_popup_close_with_mouse()
 	  call feedkeys("\<F4>\<LeftMouse>\<LeftRelease>", "xt")
 	endfunc
 	map <silent> <F4> :call test_setmouse(3, 17)<CR>
+	func CreateWithMenuFilter()
+	  let winid = popup_create('barfoo', #{
+		\ close: 'button',
+		\ filter: 'popup_filter_menu',
+		\ border: [],
+		\ line: 1,
+		\ col: 40,
+		\ })
+	endfunc
   END
   call writefile(lines, 'XtestPopupClose')
   let buf = RunVimInTerminal('-S XtestPopupClose', #{rows: 10})
@@ -430,6 +439,14 @@ func Test_popup_close_with_mouse()
 
   call term_sendkeys(buf, ":call CloseWithClick()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_close_03', {})
+
+  call term_sendkeys(buf, ":call CreateWithMenuFilter()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_close_04', {})
+
+  " We have to send the actual mouse code, feedkeys() would be caught the
+  " filter.
+  call term_sendkeys(buf, "\<Esc>[<0;47;1M")
+  call VerifyScreenDump(buf, 'Test_popupwin_close_05', {})
 
   " clean up
   call StopVimInTerminal(buf)

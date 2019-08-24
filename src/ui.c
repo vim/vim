@@ -3070,7 +3070,8 @@ retnomove:
 	if (row < 0 || col < 0)			// check if it makes sense
 	    return IN_UNKNOWN;
 
-	// find the window where the row is in
+	// find the window where the row is in and adjust "row" and "col" to be
+	// relative to top-left of the window
 	wp = mouse_find_win(&row, &col, FIND_POPUP);
 	if (wp == NULL)
 	    return IN_UNKNOWN;
@@ -3083,11 +3084,8 @@ retnomove:
 	{
 	    on_sep_line = 0;
 	    in_popup_win = TRUE;
-	    if (wp->w_popup_close == POPCLOSE_BUTTON
-		    && which_button == MOUSE_LEFT
-		    && popup_on_X_button(wp, row, col))
+	    if (which_button == MOUSE_LEFT && popup_close_if_on_X(wp, row, col))
 	    {
-		popup_close_for_mouse_click(wp);
 		return IN_UNKNOWN;
 	    }
 	    else if ((wp->w_popup_flags & (POPF_DRAG | POPF_RESIZE))
