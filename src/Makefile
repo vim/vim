@@ -1636,7 +1636,7 @@ BASIC_SRC = \
 	pty.c \
 	quickfix.c \
 	regexp.c \
-	runtime.c \
+	scriptfile.c \
 	screen.c \
 	search.c \
 	session.c \
@@ -1762,7 +1762,7 @@ OBJ_COMMON = \
 	objects/pty.o \
 	objects/quickfix.o \
 	objects/regexp.o \
-	objects/runtime.o \
+	objects/scriptfile.o \
 	objects/screen.o \
 	objects/search.o \
 	objects/session.o \
@@ -1913,7 +1913,7 @@ PRO_AUTO = \
 	pty.pro \
 	quickfix.pro \
 	regexp.pro \
-	runtime.pro \
+	scriptfile.pro \
 	screen.pro \
 	search.pro \
 	session.pro \
@@ -3280,8 +3280,8 @@ objects/quickfix.o: quickfix.c
 objects/regexp.o: regexp.c regexp_nfa.c
 	$(CCC) -o $@ regexp.c
 
-objects/runtime.o: runtime.c
-	$(CCC) -o $@ runtime.c
+objects/scriptfile.o: scriptfile.c
+	$(CCC) -o $@ scriptfile.c
 
 objects/screen.o: screen.c
 	$(CCC) -o $@ screen.c
@@ -3730,7 +3730,7 @@ objects/regexp.o: regexp.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h regexp_nfa.c
-objects/runtime.o: runtime.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+objects/scriptfile.o: scriptfile.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h

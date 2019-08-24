@@ -77,7 +77,7 @@ SRC =	arabic.c						\
 	profiler.c						\
 	quickfix.c						\
 	regexp.c						\
-	runtime.c						\
+	scriptfile.c						\
 	screen.c						\
 	search.c						\
 	session.c						\
