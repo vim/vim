@@ -75,7 +75,6 @@ static int diff_buf_idx_tp(buf_T *buf, tabpage_T *tp);
 static void diff_mark_adjust_tp(tabpage_T *tp, int idx, linenr_T line1, linenr_T line2, long amount, long amount_after);
 static void diff_check_unchanged(tabpage_T *tp, diff_T *dp);
 static int diff_check_sanity(tabpage_T *tp, diff_T *dp);
-static void diff_redraw(int dofold);
 static int check_external_diff(diffio_T *diffio);
 static int diff_file(diffio_T *diffio);
 static int diff_equal_entry(diff_T *dp, int idx1, int idx2);
@@ -520,7 +519,8 @@ diff_mark_adjust_tp(
 
     if (tp == curtab)
     {
-	diff_redraw(TRUE);
+	// Don't redraw right away, this updates the diffs, which can be slow.
+	need_diff_redraw = TRUE;
 
 	/* Need to recompute the scroll binding, may remove or add filler
 	 * lines (e.g., when adding lines above w_topline). But it's slow when
@@ -645,13 +645,14 @@ diff_check_sanity(tabpage_T *tp, diff_T *dp)
 /*
  * Mark all diff buffers in the current tab page for redraw.
  */
-    static void
+    void
 diff_redraw(
     int		dofold)	    // also recompute the folds
 {
     win_T	*wp;
     int		n;
 
+    need_diff_redraw = FALSE;
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_p_diff)
 	{

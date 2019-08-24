@@ -1051,6 +1051,9 @@ EXTERN int	maptick INIT(= 0);	// tick for each non-mapped char
 EXTERN int	must_redraw INIT(= 0);	    // type of redraw necessary
 EXTERN int	skip_redraw INIT(= FALSE);  // skip redraw once
 EXTERN int	do_redraw INIT(= FALSE);    // extra redraw once
+#ifdef FEAT_DIFF
+EXTERN int	need_diff_redraw INIT(= 0); // need to call diff_redraw()
+#endif
 
 EXTERN int	need_highlight_changed INIT(= TRUE);
 

@@ -567,6 +567,12 @@ update_screen(int type_arg)
     }
 #endif
 
+#ifdef FEAT_DIFF
+    // May have postponed updating diffs.
+    if (need_diff_redraw)
+	diff_redraw(TRUE);
+#endif
+
     if (must_redraw)
     {
 	if (type < must_redraw)	    /* use maximal type */

@@ -813,6 +813,11 @@ foldUpdate(win_T *wp, linenr_T top, linenr_T bot)
 
     if (disable_fold_update > 0)
 	return;
+#ifdef FEAT_DIFF
+    if (need_diff_redraw)
+	// will update later
+	return;
+#endif
 
     /* Mark all folds from top to bot as maybe-small. */
     (void)foldFind(&wp->w_folds, top, &fp);
