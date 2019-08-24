@@ -1001,7 +1001,7 @@ func Test_filewritable()
   call assert_equal(0, filewritable('Xfilewritable'))
 
   call assert_notequal(0, setfperm('Xfilewritable', 'rw-r-----'))
-  call assert_equal(1, filewritable('Xfilewritable'))
+  call assert_equal(1, 'Xfilewritable'->filewritable())
 
   call assert_equal(0, filewritable('doesnotexist'))
 
@@ -1012,20 +1012,21 @@ endfunc
 func Test_Executable()
   if has('win32')
     call assert_equal(1, executable('notepad'))
-    call assert_equal(1, executable('notepad.exe'))
+    call assert_equal(1, 'notepad.exe'->executable())
     call assert_equal(0, executable('notepad.exe.exe'))
     call assert_equal(0, executable('shell32.dll'))
     call assert_equal(0, executable('win.ini'))
   elseif has('unix')
-    call assert_equal(1, executable('cat'))
+    call assert_equal(1, 'cat'->executable())
     call assert_equal(0, executable('nodogshere'))
 
     " get "cat" path and remove the leading /
     let catcmd = exepath('cat')[1:]
     new
+    " check that the relative path works in /
     lcd /
     call assert_equal(1, executable(catcmd))
-    call assert_equal('/' .. catcmd, exepath(catcmd))
+    call assert_equal('/' .. catcmd, catcmd->exepath())
     bwipe
   endif
 endfunc
@@ -1349,7 +1350,7 @@ func Test_func_sandbox()
   sandbox let F = {-> 'hello'}
   call assert_equal('hello', F())
 
-  sandbox let F = {-> execute("normal ix\<Esc>")}
+  sandbox let F = {-> "normal ix\<Esc>"->execute()}
   call assert_fails('call F()', 'E48:')
   unlet F
 
@@ -1380,7 +1381,7 @@ func Test_func_exists_on_reload()
   call writefile(['func ExistingFunction()', 'echo "yes"', 'endfunc'], 'Xfuncexists')
   call assert_equal(0, exists('*ExistingFunction'))
   source Xfuncexists
-  call assert_equal(1, exists('*ExistingFunction'))
+  call assert_equal(1, '*ExistingFunction'->exists())
   " Redefining a function when reloading a script is OK.
   source Xfuncexists
   call assert_equal(1, exists('*ExistingFunction'))
@@ -1427,7 +1428,7 @@ func Test_confirm()
 
   " <Esc> requires another character to avoid it being seen as the start of an
   " escape sequence.  Zero should be harmless.
-  call feedkeys("\<Esc>0", 'L')
+  eval "\<Esc>0"->feedkeys('L')
   let a = confirm('Are you sure?', "&Yes\n&No")
   call assert_equal(0, a)
 
@@ -1525,7 +1526,7 @@ func Test_delete_rf()
   call writefile([], 'Xdir/[a-1]/foo.txt')
   call writefile([], 'Xdir/[a-1]/bar.txt')
   call assert_true(filereadable('Xdir/foo.txt'))
-  call assert_true(filereadable('Xdir/[a-1]/foo.txt'))
+  call assert_true('Xdir/[a-1]/foo.txt'->filereadable())
 
   call assert_equal(0, delete('Xdir', 'rf'))
   call assert_false(filereadable('Xdir/foo.txt'))
