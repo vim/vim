@@ -1543,6 +1543,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	// use existing buffer
 	new_buffer = FALSE;
 	win_init_popup_win(wp, buf);
+	set_local_options_default(wp, FALSE);
 	buffer_ensure_loaded(buf);
     }
     else
@@ -1556,7 +1557,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 
 	win_init_popup_win(wp, buf);
 
-	set_local_options_default(wp);
+	set_local_options_default(wp, TRUE);
 	set_string_option_direct_in_buf(buf, (char_u *)"buftype", -1,
 				     (char_u *)"popup", OPT_FREE|OPT_LOCAL, 0);
 	set_string_option_direct_in_buf(buf, (char_u *)"bufhidden", -1,

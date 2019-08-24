@@ -2,7 +2,7 @@
 void set_init_1(int clean_arg);
 void set_string_default(char *name, char_u *val);
 void set_number_default(char *name, long val);
-void set_local_options_default(win_T *wp);
+void set_local_options_default(win_T *wp, int do_buffer);
 void free_all_options(void);
 void set_init_2(void);
 void set_init_3(void);

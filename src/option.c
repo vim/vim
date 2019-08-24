@@ -3892,9 +3892,10 @@ set_number_default(char *name, long val)
 /*
  * Set all window-local and buffer-local options to the Vim default.
  * local-global options will use the global value.
+ * When "do_buffer" is FALSE don't set buffer-local options.
  */
     void
-set_local_options_default(win_T *wp)
+set_local_options_default(win_T *wp, int do_buffer)
 {
     win_T	*save_curwin = curwin;
     int		i;
@@ -3909,6 +3910,7 @@ set_local_options_default(win_T *wp)
 	char_u		    *varp = get_varp_scope(p, OPT_LOCAL);
 
 	if (p->indir != PV_NONE
+		&& (do_buffer || (p->indir & PV_BUF) == 0)
 		&& !(options[i].flags & P_NODEFAULT)
 		&& !optval_default(p, varp, FALSE))
 	    set_option_default(i, OPT_LOCAL, FALSE);

@@ -1814,15 +1814,25 @@ func Test_popupwin_with_buffer()
   call writefile(['some text', 'in a buffer'], 'XsomeFile')
   let buf = bufadd('XsomeFile')
   call assert_equal(0, bufloaded(buf))
+
+  setlocal number
+  call setbufvar(buf, "&wrapmargin", 13)
+
   let winid = popup_create(buf, {})
   call assert_notequal(0, winid)
   let pos = popup_getpos(winid)
   call assert_equal(2, pos.height)
   call assert_equal(1, bufloaded(buf))
+
+  " window-local option is set to default, buffer-local is not
+  call assert_equal(0, getwinvar(winid, '&number'))
+  call assert_equal(13, getbufvar(buf, '&wrapmargin'))
+
   call popup_close(winid)
   call assert_equal({}, popup_getpos(winid))
   call assert_equal(1, bufloaded(buf))
   exe 'bwipe! ' .. buf
+  setlocal nonumber
 
   edit test_popupwin.vim
   let winid = popup_create(bufnr(''), {})
