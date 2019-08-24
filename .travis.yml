@@ -96,7 +96,7 @@ anchors:
       - do_test() { "$@"; }
 
   coverage: &coverage
-    - ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8 latin-1 EUC-KR
+    - ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8
     - (cd "${SRCDIR}" && bash <(curl -s https://codecov.io/bash))
 
   asan_symbolize: &asan_symbolize
