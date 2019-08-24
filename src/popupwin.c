@@ -1219,7 +1219,7 @@ popup_adjust_position(win_T *wp)
     wp->w_popup_last_changedtick = CHANGEDTICK(wp->w_buffer);
 
     // Need to update popup_mask if the position or size changed.
-    // And redraw windows that were behind the popup.
+    // And redraw windows and statuslines that were behind the popup.
     if (org_winrow != wp->w_winrow
 	    || org_wincol != wp->w_wincol
 	    || org_leftcol != wp->w_leftcol
@@ -1227,8 +1227,9 @@ popup_adjust_position(win_T *wp)
 	    || org_width != wp->w_width
 	    || org_height != wp->w_height)
     {
-	redraw_all_later(VALID);
 	redraw_win_later(wp, NOT_VALID);
+	redraw_all_later(SOME_VALID);
+	status_redraw_all();
 	if (wp->w_popup_flags & POPF_ON_CMDLINE)
 	    clear_cmdline = TRUE;
 	popup_mask_refresh = TRUE;

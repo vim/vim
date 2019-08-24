@@ -343,6 +343,11 @@ func Test_popup_drag()
   " create a popup that covers the command line
   let lines =<< trim END
 	call setline(1, range(1, 20))
+	split
+	vsplit
+	$wincmd w
+	vsplit
+	1wincmd w
 	let winid = popup_create(['1111', '222222', '33333'], #{
 	      \ drag: 1,
 	      \ resize: 1,
@@ -353,12 +358,12 @@ func Test_popup_drag()
 	  call feedkeys("\<F3>\<LeftMouse>\<F4>\<LeftDrag>\<LeftRelease>", "xt")
 	endfunc
 	map <silent> <F3> :call test_setmouse(&lines - 4, &columns / 2)<CR>
-	map <silent> <F4> :call test_setmouse(&lines - 8, &columns / 2)<CR>
+	map <silent> <F4> :call test_setmouse(&lines - 8, &columns / 2 - 20)<CR>
 	func Resize()
 	  call feedkeys("\<F5>\<LeftMouse>\<F6>\<LeftDrag>\<LeftRelease>", "xt")
 	endfunc
-	map <silent> <F5> :call test_setmouse(6, 41)<CR>
-	map <silent> <F6> :call test_setmouse(7, 45)<CR>
+	map <silent> <F5> :call test_setmouse(6, 21)<CR>
+	map <silent> <F6> :call test_setmouse(7, 25)<CR>
   END
   call writefile(lines, 'XtestPopupDrag')
   let buf = RunVimInTerminal('-S XtestPopupDrag', #{rows: 10})
