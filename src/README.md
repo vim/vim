@@ -55,6 +55,7 @@ popupwin.c	| popup window
 profiler.c	| vim script profiler
 quickfix.c	| quickfix commands (":make", ":cn")
 regexp.c	| pattern matching
+runtime.c	| runtime directory and file handling
 screen.c	| updating the windows
 search.c	| pattern searching
 session.c	| sessions and views
