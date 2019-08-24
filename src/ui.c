@@ -1184,7 +1184,10 @@ clip_process_selection(
 
     if (button == MOUSE_RELEASE)
     {
-	/* Check to make sure we have something selected */
+	if (cb->state != SELECT_IN_PROGRESS)
+	    return;
+
+	// Check to make sure we have something selected
 	if (cb->start.lnum == cb->end.lnum && cb->start.col == cb->end.col)
 	{
 #ifdef FEAT_GUI
@@ -1591,6 +1594,8 @@ clip_copy_modeless_selection(int both UNUSED)
 	col1 = clip_star.min_col;
     if (col2 > clip_star.max_col)
 	col2 = clip_star.max_col;
+    if (row1 > clip_star.max_row || row2 < clip_star.min_row)
+	return;
     if (row1 < clip_star.min_row)
 	row1 = clip_star.min_row;
     if (row2 > clip_star.max_row)
