@@ -22,7 +22,7 @@ endfunc
 
 func Test_put_char_block2()
   new
-  let a = [ getreg('a'), getregtype('a') ]
+  let a = [ 'a'->getreg(), 'a'->getregtype() ]
   call setreg('a', ' one ', 'v')
   call setline(1, ['Line 1', '', 'Line 3', ''])
   " visually select the first 3 lines and put register a over it

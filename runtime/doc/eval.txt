@@ -2450,7 +2450,7 @@ getbufline({expr}, {lnum} [, {end}])
 				List	lines {lnum} to {end} of buffer {expr}
 getbufvar({expr}, {varname} [, {def}])
 				any	variable {varname} in buffer {expr}
-getchangelist({expr})		List	list of change list items
+getchangelist([{expr}])		List	list of change list items
 getchar([expr])			Number	get one character from the user
 getcharmod()			Number	modifiers for the last typed character
 getcharsearch()			Dict	last character search
@@ -4816,6 +4816,9 @@ getbufline({expr}, {lnum} [, {end}])
 		Example: >
 			:let lines = getbufline(bufnr("myfile"), 1, "$")
 
+<		Can also be used as a |method|: >
+			GetBufnr()->getbufline(lnum)
+
 getbufvar({expr}, {varname} [, {def}])				*getbufvar()*
 		The result is the value of option or local buffer variable
 		{varname} in buffer {expr}.  Note that the name without "b:"
@@ -4835,8 +4838,11 @@ getbufvar({expr}, {varname} [, {def}])				*getbufvar()*
 		Examples: >
 			:let bufmodified = getbufvar(1, "&mod")
 			:echo "todo myvar = " . getbufvar("todo", "myvar")
+
+<		Can also be used as a |method|: >
+			GetBufnr()->getbufvar(varname)
 <
-getchangelist({expr})					*getchangelist()*
+getchangelist([{expr}])					*getchangelist()*
 		Returns the |changelist| for the buffer {expr}. For the use
 		of {expr}, see |bufname()| above. If buffer {expr} doesn't
 		exist, an empty list is returned.
@@ -4851,6 +4857,9 @@ getchangelist({expr})					*getchangelist()*
 		If buffer {expr} is the current buffer, then the current
 		position refers to the position in the list. For other
 		buffers, it is set to the length of the list.
+
+		Can also be used as a |method|: >
+			GetBufnr()->getchangelist()
 
 getchar([expr])						*getchar()*
 		Get a single character from the user or input stream.
@@ -5051,6 +5060,9 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 		If there are no matches, an empty list is returned.  An
 		invalid value for {type} produces an error.
 
+		Can also be used as a |method|: >
+			GetPattern()->getcompletion('color')
+<
 							*getcurpos()*
 getcurpos()	Get the position of the cursor.  This is like getpos('.'), but
 		includes an extra item in the list:
@@ -5097,6 +5109,9 @@ getcwd([{winnr} [, {tabnr}]])
 			:echo getcwd(-1, 3)
 			" Get the working directory of current tabpage
 			:echo getcwd(-1, 0)
+
+<		Can also be used as a |method|: >
+			GetWinnr()->getcwd()
 <
 getenv({name})						*getenv()*
 		Return the value of environment variable {name}.
@@ -5104,6 +5119,9 @@ getenv({name})						*getenv()*
 		is different from a variable set to an empty string, although
 		some systems interpret the empty value as the variable being
 		deleted.  See also |expr-env|.
+
+		Can also be used as a |method|: >
+			GetVarname()->getenv()
 
 getfontname([{name}])					*getfontname()*
 		Without an argument returns the name of the normal font being
@@ -5134,6 +5152,9 @@ getfperm({fname})					*getfperm()*
 <		This will hopefully (from a security point of view) display
 		the string "rw-r--r--" or even "rw-------".
 
+		Can also be used as a |method|: >
+			GetFilename()->getfperm()
+<
 		For setting permissions use |setfperm()|.
 
 getfsize({fname})					*getfsize()*
@@ -5144,12 +5165,18 @@ getfsize({fname})					*getfsize()*
 		If the size of {fname} is too big to fit in a Number then -2
 		is returned.
 
+		Can also be used as a |method|: >
+			GetFilename()->getfsize()
+
 getftime({fname})					*getftime()*
 		The result is a Number, which is the last modification time of
 		the given file {fname}.  The value is measured as seconds
 		since 1st Jan 1970, and may be passed to strftime().  See also
 		|localtime()| and |strftime()|.
 		If the file {fname} can't be found -1 is returned.
+
+		Can also be used as a |method|: >
+			GetFilename()->getftime()
 
 getftype({fname})					*getftype()*
 		The result is a String, which is a description of the kind of
@@ -5172,6 +5199,9 @@ getftype({fname})					*getftype()*
 		"file" are returned.  On MS-Windows a symbolic link to a
 		directory returns "dir" instead of "link".
 
+		Can also be used as a |method|: >
+			GetFilename()->getftype()
+
 getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
 		Returns the |jumplist| for the specified window.
 
@@ -5191,7 +5221,10 @@ getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
 			filename	filename if available
 			lnum		line number
 
-							*getline()*
+		Can also be used as a |method|: >
+			GetWinnr()->getjumplist()
+
+<							*getline()*
 getline({lnum} [, {end}])
 		Without {end} the result is a String, which is line {lnum}
 		from the current buffer.  Example: >
@@ -5213,6 +5246,9 @@ getline({lnum} [, {end}])
 			:let start = line('.')
 			:let end = search("^$") - 1
 			:let lines = getline(start, end)
+
+<		Can also be used as a |method|: >
+			ComputeLnum()->getline()
 
 <		To get lines from another buffer see |getbufline()|
 
@@ -5288,6 +5324,9 @@ getpos({expr})	Get the position for {expr}.  For possible values of {expr}
 			...
 			call setpos("'a", save_a_mark)
 <		Also see |getcurpos()| and |setpos()|.
+
+		Can also be used as a |method|: >
+			GetMark()->getpos()
 
 
 getqflist([{what}])					*getqflist()*
@@ -5405,6 +5444,9 @@ getreg([{regname} [, 1 [, {list}]]])			*getreg()*
 
 		If {regname} is not specified, |v:register| is used.
 
+		Can also be used as a |method|: >
+			GetRegname()->getreg()
+
 
 getregtype([{regname}])					*getregtype()*
 		The result is a String, which is type of register {regname}.
@@ -5415,6 +5457,9 @@ getregtype([{regname}])					*getregtype()*
 		    ""			for an empty or unknown register
 		<CTRL-V> is one character with value 0x16.
 		If {regname} is not specified, |v:register| is used.
+
+		Can also be used as a |method|: >
+			GetRegname()->getregtype()
 
 gettabinfo([{arg}])					*gettabinfo()*
 		If {arg} is not specified, then information about all the tab
@@ -5429,6 +5474,9 @@ gettabinfo([{arg}])					*gettabinfo()*
 					tabpage-local variables
 			windows		List of |window-ID|s in the tab page.
 
+		Can also be used as a |method|: >
+			GetTabnr()->gettabinfo()
+
 gettabvar({tabnr}, {varname} [, {def}])				*gettabvar()*
 		Get the value of a tab-local variable {varname} in tab page
 		{tabnr}. |t:var|
@@ -5438,6 +5486,9 @@ gettabvar({tabnr}, {varname} [, {def}])				*gettabvar()*
 		Note that the name without "t:" must be used.
 		When the tab or variable doesn't exist {def} or an empty
 		string is returned, there is no error message.
+
+		Can also be used as a |method|: >
+			GetTabnr()->gettabvar(varname)
 
 gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])		*gettabwinvar()*
 		Get the value of window-local variable {varname} in window
@@ -5464,6 +5515,9 @@ gettabwinvar({tabnr}, {winnr}, {varname} [, {def}])		*gettabwinvar()*
 <
 		To obtain all window-local variables use: >
 			gettabwinvar({tabnr}, {winnr}, '&')
+
+<		Can also be used as a |method|: >
+			GetTabnr()->gettabvar(winnr, varname)
 
 gettagstack([{nr}])					*gettagstack()*
 		The result is a Dict, which is the tag stack of window {nr}.
@@ -8006,6 +8060,9 @@ setfperm({fname}, {mode})				*setfperm()* *chmod*
 
 		Returns non-zero for success, zero for failure.
 
+		Can also be used as a |method|: >
+			GetFilename()->setfperm(mode)
+<
 		To read permissions see |getfperm()|.
 
 

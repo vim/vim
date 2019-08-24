@@ -2,10 +2,10 @@
 
 func Test_file_perm()
   call assert_equal('', getfperm('Xtest'))
-  call assert_equal(0, setfperm('Xtest', 'r--------'))
+  call assert_equal(0, 'Xtest'->setfperm('r--------'))
 
   call writefile(['one'], 'Xtest')
-  call assert_true(len(getfperm('Xtest')) == 9)
+  call assert_true(len('Xtest'->getfperm()) == 9)
 
   call assert_equal(1, setfperm('Xtest', 'rwx------'))
   if has('win32')

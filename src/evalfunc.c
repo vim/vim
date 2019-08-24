@@ -561,9 +561,9 @@ static funcentry_T global_functions[] =
     {"garbagecollect",	0, 1, 0,	  f_garbagecollect},
     {"get",		2, 3, FEARG_1,	  f_get},
     {"getbufinfo",	0, 1, 0,	  f_getbufinfo},
-    {"getbufline",	2, 3, 0,	  f_getbufline},
-    {"getbufvar",	2, 3, 0,	  f_getbufvar},
-    {"getchangelist",	1, 1, 0,	  f_getchangelist},
+    {"getbufline",	2, 3, FEARG_1,	  f_getbufline},
+    {"getbufvar",	2, 3, FEARG_1,	  f_getbufvar},
+    {"getchangelist",	0, 1, FEARG_1,	  f_getchangelist},
     {"getchar",		0, 1, 0,	  f_getchar},
     {"getcharmod",	0, 0, 0,	  f_getcharmod},
     {"getcharsearch",	0, 0, 0,	  f_getcharsearch},
@@ -571,27 +571,27 @@ static funcentry_T global_functions[] =
     {"getcmdpos",	0, 0, 0,	  f_getcmdpos},
     {"getcmdtype",	0, 0, 0,	  f_getcmdtype},
     {"getcmdwintype",	0, 0, 0,	  f_getcmdwintype},
-    {"getcompletion",	2, 3, 0,	  f_getcompletion},
+    {"getcompletion",	2, 3, FEARG_1,	  f_getcompletion},
     {"getcurpos",	0, 0, 0,	  f_getcurpos},
-    {"getcwd",		0, 2, 0,	  f_getcwd},
-    {"getenv",		1, 1, 0,	  f_getenv},
+    {"getcwd",		0, 2, FEARG_1,	  f_getcwd},
+    {"getenv",		1, 1, FEARG_1,	  f_getenv},
     {"getfontname",	0, 1, 0,	  f_getfontname},
-    {"getfperm",	1, 1, 0,	  f_getfperm},
-    {"getfsize",	1, 1, 0,	  f_getfsize},
-    {"getftime",	1, 1, 0,	  f_getftime},
-    {"getftype",	1, 1, 0,	  f_getftype},
-    {"getjumplist",	0, 2, 0,	  f_getjumplist},
-    {"getline",		1, 2, 0,	  f_getline},
+    {"getfperm",	1, 1, FEARG_1,	  f_getfperm},
+    {"getfsize",	1, 1, FEARG_1,	  f_getfsize},
+    {"getftime",	1, 1, FEARG_1,	  f_getftime},
+    {"getftype",	1, 1, FEARG_1,	  f_getftype},
+    {"getjumplist",	0, 2, FEARG_1,	  f_getjumplist},
+    {"getline",		1, 2, FEARG_1,	  f_getline},
     {"getloclist",	1, 2, 0,	  f_getloclist},
     {"getmatches",	0, 1, 0,	  f_getmatches},
     {"getpid",		0, 0, 0,	  f_getpid},
-    {"getpos",		1, 1, 0,	  f_getpos},
+    {"getpos",		1, 1, FEARG_1,	  f_getpos},
     {"getqflist",	0, 1, 0,	  f_getqflist},
-    {"getreg",		0, 3, 0,	  f_getreg},
-    {"getregtype",	0, 1, 0,	  f_getregtype},
-    {"gettabinfo",	0, 1, 0,	  f_gettabinfo},
-    {"gettabvar",	2, 3, 0,	  f_gettabvar},
-    {"gettabwinvar",	3, 4, 0,	  f_gettabwinvar},
+    {"getreg",		0, 3, FEARG_1,	  f_getreg},
+    {"getregtype",	0, 1, FEARG_1,	  f_getregtype},
+    {"gettabinfo",	0, 1, FEARG_1,	  f_gettabinfo},
+    {"gettabvar",	2, 3, FEARG_1,	  f_gettabvar},
+    {"gettabwinvar",	3, 4, FEARG_1,	  f_gettabwinvar},
     {"gettagstack",	0, 1, 0,	  f_gettagstack},
     {"getwininfo",	0, 1, 0,	  f_getwininfo},
     {"getwinpos",	0, 1, 0,	  f_getwinpos},
@@ -793,7 +793,7 @@ static funcentry_T global_functions[] =
     {"setcharsearch",	1, 1, 0,	  f_setcharsearch},
     {"setcmdpos",	1, 1, 0,	  f_setcmdpos},
     {"setenv",		2, 2, 0,	  f_setenv},
-    {"setfperm",	2, 2, 0,	  f_setfperm},
+    {"setfperm",	2, 2, FEARG_1,	  f_setfperm},
     {"setline",		2, 2, 0,	  f_setline},
     {"setloclist",	2, 4, 0,	  f_setloclist},
     {"setmatches",	1, 2, 0,	  f_setmatches},
@@ -4477,10 +4477,15 @@ f_getchangelist(typval_T *argvars, typval_T *rettv)
 	return;
 
 #ifdef FEAT_JUMPLIST
-    (void)tv_get_number(&argvars[0]);	    /* issue errmsg if type error */
-    ++emsg_off;
-    buf = tv_get_buf(&argvars[0], FALSE);
-    --emsg_off;
+    if (argvars[0].v_type == VAR_UNKNOWN)
+	buf = curbuf;
+    else
+    {
+	(void)tv_get_number(&argvars[0]);    // issue errmsg if type error
+	++emsg_off;
+	buf = tv_get_buf(&argvars[0], FALSE);
+	--emsg_off;
+    }
     if (buf == NULL)
 	return;
 

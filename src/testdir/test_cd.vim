@@ -83,7 +83,7 @@ func Test_chdir_func()
   tabfirst
   call chdir('..')
   call assert_equal('y', fnamemodify(getcwd(1, 2), ':t'))
-  call assert_equal('z', fnamemodify(getcwd(3, 2), ':t'))
+  call assert_equal('z', fnamemodify(3->getcwd(2), ':t'))
   tabnext | wincmd t
   eval '..'->chdir()
   call assert_equal('Xdir', fnamemodify(getcwd(1, 2), ':t'))
