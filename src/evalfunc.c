@@ -457,13 +457,13 @@ static funcentry_T global_functions[] =
     {"bufadd",		1, 1, FEARG_1,	  f_bufadd},
     {"bufexists",	1, 1, FEARG_1,	  f_bufexists},
     {"buffer_exists",	1, 1, FEARG_1,	  f_bufexists},	// obsolete
-    {"buffer_name",	1, 1, 0,	  f_bufname},	// obsolete
-    {"buffer_number",	1, 1, 0,	  f_bufnr},	// obsolete
+    {"buffer_name",	0, 1, FEARG_1,	  f_bufname},	// obsolete
+    {"buffer_number",	0, 1, FEARG_1,	  f_bufnr},	// obsolete
     {"buflisted",	1, 1, FEARG_1,	  f_buflisted},
     {"bufload",		1, 1, FEARG_1,	  f_bufload},
     {"bufloaded",	1, 1, FEARG_1,	  f_bufloaded},
-    {"bufname",		1, 1, FEARG_1,	  f_bufname},
-    {"bufnr",		1, 2, FEARG_1,	  f_bufnr},
+    {"bufname",		0, 1, FEARG_1,	  f_bufname},
+    {"bufnr",		0, 2, FEARG_1,	  f_bufnr},
     {"bufwinid",	1, 1, FEARG_1,	  f_bufwinid},
     {"bufwinnr",	1, 1, FEARG_1,	  f_bufwinnr},
     {"byte2line",	1, 1, FEARG_1,	  f_byte2line},
@@ -1820,15 +1820,20 @@ f_bufname(typval_T *argvars, typval_T *rettv)
 {
     buf_T	*buf;
 
-    (void)tv_get_number(&argvars[0]);	    /* issue errmsg if type error */
-    ++emsg_off;
-    buf = tv_get_buf(&argvars[0], FALSE);
+    if (argvars[0].v_type == VAR_UNKNOWN)
+	buf = curbuf;
+    else
+    {
+	(void)tv_get_number(&argvars[0]);	// issue errmsg if type error
+	++emsg_off;
+	buf = tv_get_buf(&argvars[0], FALSE);
+	--emsg_off;
+    }
     rettv->v_type = VAR_STRING;
     if (buf != NULL && buf->b_fname != NULL)
 	rettv->vval.v_string = vim_strsave(buf->b_fname);
     else
 	rettv->vval.v_string = NULL;
-    --emsg_off;
 }
 
 /*
@@ -1841,13 +1846,18 @@ f_bufnr(typval_T *argvars, typval_T *rettv)
     int		error = FALSE;
     char_u	*name;
 
-    (void)tv_get_number(&argvars[0]);	    /* issue errmsg if type error */
-    ++emsg_off;
-    buf = tv_get_buf(&argvars[0], FALSE);
-    --emsg_off;
+    if (argvars[0].v_type == VAR_UNKNOWN)
+	buf = curbuf;
+    else
+    {
+	(void)tv_get_number(&argvars[0]);    // issue errmsg if type error
+	++emsg_off;
+	buf = tv_get_buf(&argvars[0], FALSE);
+	--emsg_off;
+    }
 
-    /* If the buffer isn't found and the second argument is not zero create a
-     * new buffer. */
+    // If the buffer isn't found and the second argument is not zero create a
+    // new buffer.
     if (buf == NULL
 	    && argvars[1].v_type != VAR_UNKNOWN
 	    && tv_get_number_chk(&argvars[1], &error) != 0
