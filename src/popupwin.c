@@ -1228,8 +1228,6 @@ popup_adjust_position(win_T *wp)
 	    || org_height != wp->w_height)
     {
 	redraw_win_later(wp, NOT_VALID);
-	redraw_all_later(SOME_VALID);
-	status_redraw_all();
 	if (wp->w_popup_flags & POPF_ON_CMDLINE)
 	    clear_cmdline = TRUE;
 	popup_mask_refresh = TRUE;
@@ -2816,7 +2814,8 @@ may_update_popup_mask(int type)
     win_T	*wp;
     short	*mask;
     int		line, col;
-    int		redraw_all = FALSE;
+    int		redraw_all_popups = FALSE;
+    int		redrawing_all_win;
 
     // Need to recompute when switching tabs.
     // Also recompute when the type is CLEAR or NOT_VALID, something basic
@@ -2824,11 +2823,11 @@ may_update_popup_mask(int type)
     if (popup_mask_tab != curtab || type >= NOT_VALID)
     {
 	popup_mask_refresh = TRUE;
-	redraw_all = TRUE;
+	redraw_all_popups = TRUE;
     }
     if (!popup_mask_refresh)
     {
-	// Check if any buffer has changed.
+	// Check if any popup window buffer has changed.
 	for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
 	    if (wp->w_popup_last_changedtick != CHANGEDTICK(wp->w_buffer))
 		popup_mask_refresh = TRUE;
@@ -2844,10 +2843,14 @@ may_update_popup_mask(int type)
     popup_mask_tab = curtab;
     popup_visible = FALSE;
 
-    // If redrawing everything, just update "popup_mask".
+    // If redrawing all windows, just update "popup_mask".
     // If redrawing only what is needed, update "popup_mask_next" and then
     // compare with "popup_mask" to see what changed.
-    if (type >= SOME_VALID)
+    redrawing_all_win = TRUE;
+    FOR_ALL_WINDOWS(wp)
+	if (wp->w_redr_type < SOME_VALID)
+	    redrawing_all_win = FALSE;
+    if (redrawing_all_win)
 	mask = popup_mask;
     else
 	mask = popup_mask_next;
@@ -2865,7 +2868,7 @@ may_update_popup_mask(int type)
 	popup_visible = TRUE;
 
 	// Recompute the position if the text changed.
-	if (redraw_all
+	if (redraw_all_popups
 		|| wp->w_popup_last_changedtick != CHANGEDTICK(wp->w_buffer))
 	    popup_adjust_position(wp);
 
@@ -2930,14 +2933,14 @@ may_update_popup_mask(int type)
 			    if (line_cp >= wp->w_height)
 				// In (or below) status line
 				wp->w_redr_status = TRUE;
-			    // compute the position in the buffer line from the
-			    // position on the screen
-			    else if (mouse_comp_pos(wp, &line_cp, &col_cp,
-							  &lnum, plines_cache))
-				// past bottom
-				wp->w_redr_status = TRUE;
 			    else
+			    {
+				// compute the position in the buffer line from
+				// the position in the window
+				mouse_comp_pos(wp, &line_cp, &col_cp,
+							  &lnum, plines_cache);
 				redrawWinline(wp, lnum);
+			    }
 
 			    // This line is going to be redrawn, no need to
 			    // check until the right side of the window.
