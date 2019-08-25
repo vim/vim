@@ -541,7 +541,6 @@ changed_common(
 		    changed_line_abv_curs_win(wp);
 	    }
 #endif
-
 	    if (wp->w_cursor.lnum > lnum)
 		changed_line_abv_curs_win(wp);
 	    else if (wp->w_cursor.lnum == lnum && wp->w_cursor.col >= col)
@@ -592,8 +591,14 @@ changed_common(
 	    if (hasAnyFolding(wp))
 		set_topline(wp, wp->w_topline);
 #endif
-	    // relative numbering may require updating more
-	    if (wp->w_p_rnu)
+	    // Relative numbering may require updating more.  Cursor line
+	    // highlighting probably needs to be updated if it's below the
+	    // change.
+	    if (wp->w_p_rnu
+#ifdef FEAT_SYN_HL
+		    || (wp->w_p_cul && lnum <= wp->w_last_cursorline)
+#endif
+		    )
 		redraw_win_later(wp, SOME_VALID);
 	}
     }
