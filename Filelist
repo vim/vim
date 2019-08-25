@@ -90,6 +90,7 @@ SRC_ALL =	\
 		src/regexp.c \
 		src/regexp_nfa.c \
 		src/regexp.h \
+		src/scriptfile.c \
 		src/screen.c \
 		src/search.c \
 		src/session.c \
@@ -225,6 +226,7 @@ SRC_ALL =	\
 		src/proto/profiler.pro \
 		src/proto/quickfix.pro \
 		src/proto/regexp.pro \
+		src/proto/scriptfile.pro \
 		src/proto/screen.pro \
 		src/proto/search.pro \
 		src/proto/session.pro \

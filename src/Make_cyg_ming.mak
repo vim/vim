@@ -760,6 +760,7 @@ OBJ = \
 	$(OUTDIR)/profiler.o \
 	$(OUTDIR)/quickfix.o \
 	$(OUTDIR)/regexp.o \
+	$(OUTDIR)/scriptfile.o \
 	$(OUTDIR)/screen.o \
 	$(OUTDIR)/search.o \
 	$(OUTDIR)/session.o \

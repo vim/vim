@@ -769,6 +769,7 @@ OBJ = \
 	$(OUTDIR)\profiler.obj \
 	$(OUTDIR)\quickfix.obj \
 	$(OUTDIR)\regexp.obj \
+	$(OUTDIR)\scriptfile.obj \
 	$(OUTDIR)\screen.obj \
 	$(OUTDIR)\search.obj \
 	$(OUTDIR)\session.obj \
@@ -1627,6 +1628,8 @@ $(OUTDIR)/quickfix.obj:	$(OUTDIR) quickfix.c  $(INCL)
 
 $(OUTDIR)/regexp.obj:	$(OUTDIR) regexp.c regexp_nfa.c  $(INCL)
 
+$(OUTDIR)/scriptfile.obj:	$(OUTDIR) scriptfile.c  $(INCL)
+
 $(OUTDIR)/screen.obj:	$(OUTDIR) screen.c  $(INCL)
 
 $(OUTDIR)/search.obj:	$(OUTDIR) search.c  $(INCL)
@@ -1805,6 +1808,7 @@ proto.h: \
 	proto/profiler.pro \
 	proto/quickfix.pro \
 	proto/regexp.pro \
+	proto/scriptfile.pro \
 	proto/screen.pro \
 	proto/search.pro \
 	proto/session.pro \
