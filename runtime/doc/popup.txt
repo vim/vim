@@ -16,6 +16,7 @@ Displaying text in a floating window.			*popup* *popup-window*
 3. Usage			|popup-usage|
    popup_create() arguments	|popup_create-arguments|
    Popup text properties	|popup-props|
+   Position popup with textprop	|popup-textprop-pos|
    Popup filter			|popup-filter|
    Popup callback		|popup-callback|
    Popup scrollbar		|popup-scrollbar|
@@ -325,6 +326,9 @@ popup_getoptions({id})					*popup_getoptions()*
 		the current tabpage and a positive number for a popup on
 		another tabpage.
 
+		"textprop", "textpropid" and "textpropwin" are only present
+		when "textprop" was set.
+
 		If popup window {id} is not found an empty Dict is returned.
 
 
@@ -507,17 +511,29 @@ The second argument of |popup_create()| is a dictionary with options:
 			the line of the cursor and add or subtract a number of
 			lines.  If omitted the popup is vertically centered.
 			The first line is 1.
+			When using "textprop" the number is relative to the
+			text property and can be negative.
 	col		Screen column where to position the popup.  Can use a
 			number or "cursor" to use the column of the cursor,
 			"cursor+9" or "cursor-9" to add or subtract a number
 			of columns.  If omitted the popup is horizontally
 			centered.  The first column is 1.
+			When using "textprop" the number is relative to the
+			text property and can be negative.
 	pos		"topleft", "topright", "botleft" or "botright":
 			defines what corner of the popup "line" and "col" are
 			used for.  When not set "topleft" is used.
 			Alternatively "center" can be used to position the
 			popup in the center of the Vim window, in which case
 			"line" and "col" are ignored.
+	textprop	When present the popup is positioned next to a text
+			property with this name and will move when the text
+			property moves.  Use an empty string to remove.  See
+			|popup-textprop-pos|.
+	textpropwin	What window to search for the text property.  When
+			omitted or invalid the current window is used.
+	textpropid	Used to identify the text property when "textprop" is
+			present. Use zero to reset.
 	fixed		When FALSE (the default), and:
 			 - "pos" is "botleft" or "topleft", and
 			 - "wrap" is off, and
@@ -668,6 +684,72 @@ So we get:
 			used
 	type		name of the text property type, as added with
 			|prop_type_add()|
+
+
+POSITION POPUP WITH TEXTPROP				*popup-textprop-pos*
+
+Positioning a popup next to a text property causes the popup to move when text
+is inserted or deleted.  The popup functions like a tooltip.
+
+These steps are needed to make this work:
+
+- Define a text property type, it defines the name. >
+  	call prop_type_add('popupMarker', {})
+
+- Place a text property at the desired text: >
+	let lnum = {line of the text}
+	let col = {start column of the text}
+	let len = {length of the text}
+	let propId = {arbitrary but unique number}
+  	call prop_add(lnum, col, #{
+		\ length: len,
+		\ type: 'popupMarker',
+		\ id: propId,
+		\ })
+
+- Create a popup: >
+  	let winid = popup_create('the text', #{
+		\ pos: 'botleft', 
+		\ textprop: 'popupMarker',
+		\ textpropid: propId,
+		\ border: [],
+		\ padding: [0,1,0,1],
+		\ close: 'click',
+		\ })
+
+By default the popup is positioned at the corner of the text, opposite of the
+"pos" specified for the popup.  Thus when the popup uses "botleft", the
+bottom-left corner of the popup is positioned next to the top-right corner of
+the text property:
+			  +----------+
+			  | the text |
+			  +----------+
+	just some PROPERTY as an example
+
+Here the text property is on "PROPERTY".  Move the popup to the left by
+passing a negative "col" value to popup_create().  With "col: -5" you get:
+
+		     +----------+
+		     | the text |
+		     +----------+
+	just some PROPERTY as an example
+
+If the text property moves out of view then the popup will be hidden.
+If the window for which the popup was defined is closed, the popup is closed.
+
+If the popup cannot fit in the desired position, it may show at a nearby
+position.
+
+Some hints:
+- To avoid collision with other plugins the text property type name has to be
+  unique.  You can also use the "bufnr" item to make it local to a buffer.
+- You can leave out the text property ID if there is only ever one text
+  property visible.
+- The popup may be in the way of what the user is doing, making it close with
+  a click, as in the example above, helps for that.
+- If the text property is removed the popup is closed.  Use something like
+  this: >
+  	call prop_remove(#{type: 'popupMarker', id: propId})
 
 
 POPUP FILTER						*popup-filter*

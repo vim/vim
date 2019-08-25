@@ -1179,12 +1179,12 @@ curs_columns(
     curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if (defined(FEAT_EVAL) || defined(FEAT_TEXT_PROP)) || defined(PROTO)
 /*
  * Compute the screen position of text character at "pos" in window "wp"
  * The resulting values are one-based, zero when character is not visible.
  */
-    static void
+    void
 textpos2screenpos(
 	win_T	*wp,
 	pos_T	*pos,
@@ -1213,12 +1213,12 @@ textpos2screenpos(
 	col += off;
 	width = wp->w_width - off + win_col_off2(wp);
 
-	/* long line wrapping, adjust row */
+	// long line wrapping, adjust row
 	if (wp->w_p_wrap
 		&& col >= (colnr_T)wp->w_width
 		&& width > 0)
 	{
-	    /* use same formula as what is used in curs_columns() */
+	    // use same formula as what is used in curs_columns()
 	    rowoff = ((col - wp->w_width) / width + 1);
 	    col -= rowoff * width;
 	}
@@ -1236,7 +1236,9 @@ textpos2screenpos(
     *ccolp = ccol + coloff;
     *ecolp = ecol + coloff;
 }
+#endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * "screenpos({winid}, {lnum}, {col})" function
  */

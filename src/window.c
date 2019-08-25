@@ -2522,6 +2522,10 @@ win_close(win_T *win, int free_buf)
 	out_flush();
 #endif
 
+#ifdef FEAT_TEXT_PROP
+    if (popup_win_closed(win) && !win_valid(win))
+	return FAIL;
+#endif
     win_close_buffer(win, free_buf ? DOBUF_UNLOAD : 0, TRUE);
 
     if (only_one_window() && win_valid(win) && win->w_buffer == NULL

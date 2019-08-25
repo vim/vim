@@ -3022,6 +3022,9 @@ struct window_S
     char_u	*w_popup_title;
     poppos_T	w_popup_pos;
     int		w_popup_fixed;	    // do not shift popup to fit on screen
+    int		w_popup_prop_type;  // when not zero: textprop type ID
+    win_T	*w_popup_prop_win;  // window to search for textprop
+    int		w_popup_prop_id;    // when not zero: textprop ID
     int		w_zindex;
     int		w_minheight;	    // "minheight" for popup window
     int		w_minwidth;	    // "minwidth" for popup window
@@ -3041,8 +3044,14 @@ struct window_S
 
     int		w_popup_leftoff;    // columns left of the screen
     int		w_popup_rightoff;   // columns right of the screen
-    varnumber_T	w_popup_last_changedtick; // b:changedtick when position was
-					  // computed
+    varnumber_T	w_popup_last_changedtick; // b:changedtick of popup buffer
+					  // when position was computed
+    varnumber_T	w_popup_prop_changedtick; // b:changedtick of buffer with
+					  // w_popup_prop_type when position
+					  // was computed
+    int		w_popup_prop_topline; // w_topline of window with
+				      // w_popup_prop_type when position was
+				      // computed
     callback_T	w_close_cb;	    // popup close callback
     callback_T	w_filter_cb;	    // popup filter callback
 

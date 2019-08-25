@@ -91,6 +91,20 @@ find_prop(char_u *name, buf_T *buf)
 }
 
 /*
+ * Get the prop type ID of "name".
+ * When not found return zero.
+ */
+    int
+find_prop_type_id(char_u *name, buf_T *buf)
+{
+    proptype_T *pt = find_prop(name, buf);
+
+    if (pt == NULL)
+	return 0;
+    return pt->pt_id;
+}
+
+/*
  * Lookup a property type by name.  First in "buf" and when not found in the
  * global types.
  * When not found gives an error message and returns NULL.
@@ -365,6 +379,40 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     if (proplen > 0)
 	*props = text + textlen;
     return (int)(proplen / sizeof(textprop_T));
+}
+
+/*
+ * Find text property "type_id" in the visible lines of window "wp".
+ * Match "id" when it is > 0.
+ * Returns FAIL when not found.
+ */
+    int
+find_visible_prop(win_T *wp, int type_id, int id, textprop_T *prop,
+							  linenr_T *found_lnum)
+{
+    linenr_T		lnum;
+    char_u		*props;
+    int			count;
+    int			i;
+
+    // w_botline may not have been updated yet.
+    if (wp->w_botline > wp->w_buffer->b_ml.ml_line_count)
+	wp->w_botline = wp->w_buffer->b_ml.ml_line_count + 1;
+    for (lnum = wp->w_topline; lnum < wp->w_botline; ++lnum)
+    {
+	count = get_text_props(wp->w_buffer, lnum, &props, FALSE);
+	for (i = 0; i < count; ++i)
+	{
+	    mch_memmove(prop, props + i * sizeof(textprop_T),
+							   sizeof(textprop_T));
+	    if (prop->tp_type == type_id && (id <= 0 || prop->tp_id == id))
+	    {
+		*found_lnum = lnum;
+		return OK;
+	    }
+	}
+    }
+    return FAIL;
 }
 
 /*
