@@ -396,8 +396,7 @@ find_visible_prop(win_T *wp, int type_id, int id, textprop_T *prop,
     int			i;
 
     // w_botline may not have been updated yet.
-    if (wp->w_botline > wp->w_buffer->b_ml.ml_line_count)
-	wp->w_botline = wp->w_buffer->b_ml.ml_line_count + 1;
+    validate_botline();
     for (lnum = wp->w_topline; lnum < wp->w_botline; ++lnum)
     {
 	count = get_text_props(wp->w_buffer, lnum, &props, FALSE);
