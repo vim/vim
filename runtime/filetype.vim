@@ -798,7 +798,10 @@ au BufNewFile,BufRead *.java,*.jav		setf java
 au BufNewFile,BufRead *.jj,*.jjt		setf javacc
 
 " JavaScript, ECMAScript
-au BufNewFile,BufRead *.js,*.javascript,*.es,*.jsx,*.mjs   setf javascript
+au BufNewFile,BufRead *.js,*.javascript,*.es,*.mjs   setf javascript
+
+" JavaScript with React
+au BufNewFile,BufRead *.jsx			setf javascriptreact
 
 " Java Server Pages
 au BufNewFile,BufRead *.jsp			setf jsp
@@ -1708,6 +1711,9 @@ au BufNewFile,BufReadPost *.twig		setf twig
 
 " Typescript
 au BufNewFile,BufReadPost *.ts			setf typescript
+
+" TypeScript with React
+au BufNewFile,BufRead *.tsx			setf typescriptreact
 
 " Motif UIT/UIL files
 au BufNewFile,BufRead *.uit,*.uil		setf uil
