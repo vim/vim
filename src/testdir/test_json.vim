@@ -147,7 +147,7 @@ func Test_json_decode()
   " but not twice
   call assert_fails("call json_decode('{\"\": \"ok\", \"\": \"bad\"}')", 'E938:')
 
-  call assert_equal({'n': 1}, json_decode('{"n":1,}'))
+  call assert_equal({'n': 1}, js_decode('{"n":1,}'))
   call assert_fails("call json_decode(\"{'n':'1',}\")", 'E474:')
   call assert_fails("call json_decode(\"'n'\")", 'E474:')
 
@@ -180,6 +180,11 @@ func Test_json_decode()
   call assert_fails('call json_decode("\"\\u111Z\"")', 'E474:')
   call assert_equal('[😂]', json_decode('"[\uD83D\uDE02]"'))
   call assert_equal('a😂b', json_decode('"a\uD83D\uDE02b"'))
+  call assert_equal([v:none], js_decode('[,]'))
+  call assert_equal(['foo','bar'], js_decode('["foo","bar",]'))
+  call assert_equal({'foo': 'bar'}, js_decode('{"foo":"bar",}'))
+  call assert_fails('call json_decode("{,}")', "E474:")
+  call assert_fails('call json_decode("[,]")', "E474:")
 endfunc
 
 let s:jsl5 = '[7,,,]'

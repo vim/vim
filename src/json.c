@@ -585,6 +585,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
     char_u	*p;
     int		len;
     int		retval;
+    int		last_comma = FALSE;
     garray_T	stack;
     typval_T	item;
     typval_T	*cur_item;
@@ -621,6 +622,12 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		/* Check for end of object or array. */
 		if (*p == (top_item->jd_type == JSON_ARRAY ? ']' : '}'))
 		{
+		    if (last_comma && (options & JSON_JS) == 0)
+		    {
+			emsg(_(e_invarg));
+			retval = FAIL;
+			goto theend;
+		    }
 		    ++reader->js_used; /* consume the ']' or '}' */
 		    --stack.ga_len;
 		    if (stack.ga_len == 0)
@@ -632,6 +639,8 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			cur_item = &top_item->jd_tv;
 		    goto item_end;
 		}
+		else
+		    last_comma = FALSE;
 	    }
 	}
 
@@ -944,9 +953,13 @@ item_end:
 		json_skip_white(reader);
 		p = reader->js_buf + reader->js_used;
 		if (*p == ',')
+		{
+		    last_comma = TRUE;
 		    ++reader->js_used;
+		}
 		else if (*p != ']')
 		{
+		    last_comma = FALSE;
 		    if (*p == NUL)
 			retval = MAYBE;
 		    else
@@ -1018,9 +1031,13 @@ item_end:
 		json_skip_white(reader);
 		p = reader->js_buf + reader->js_used;
 		if (*p == ',')
+		{
+		    last_comma = TRUE;
 		    ++reader->js_used;
+		}
 		else if (*p != '}')
 		{
+		    last_comma = FALSE;
 		    if (*p == NUL)
 			retval = MAYBE;
 		    else
