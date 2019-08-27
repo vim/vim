@@ -216,19 +216,17 @@ ex_let_const(exarg_T *eap, int is_const)
     if (*expr != '=' && !((vim_strchr((char_u *)"+-*/%", *expr) != NULL
 						 && expr[1] == '=') || concat))
     {
-	/*
-	 * ":let" without "=": list variables
-	 */
+	// ":let" without "=": list variables
 	if (*arg == '[')
 	    emsg(_(e_invarg));
 	else if (expr[0] == '.')
 	    emsg(_("E985: .= is not supported with script version 2"));
 	else if (!ends_excmd(*arg))
-	    /* ":let var1 var2" */
+	    // ":let var1 var2"
 	    arg = list_arg_vars(eap, arg, &first);
 	else if (!eap->skip)
 	{
-	    /* ":let" */
+	    // ":let"
 	    list_glob_vars(&first);
 	    list_buf_vars(&first);
 	    list_win_vars(&first);
@@ -316,17 +314,13 @@ ex_let_vars(
 
     if (*arg != '[')
     {
-	/*
-	 * ":let var = expr" or ":for var in list"
-	 */
+	// ":let var = expr" or ":for var in list"
 	if (ex_let_one(arg, tv, copy, is_const, op, op) == NULL)
 	    return FAIL;
 	return OK;
     }
 
-    /*
-     * ":let [v1, v2] = list" or ":for [v1, v2] in listlist"
-     */
+    // ":let [v1, v2] = list" or ":for [v1, v2] in listlist"
     if (tv->v_type != VAR_LIST || (l = tv->vval.v_list) == NULL)
     {
 	emsg(_(e_listreq));
@@ -358,8 +352,8 @@ ex_let_vars(
 	arg = skipwhite(arg);
 	if (*arg == ';')
 	{
-	    /* Put the rest of the list (may be empty) in the var after ';'.
-	     * Create a new list for this. */
+	    // Put the rest of the list (may be empty) in the var after ';'.
+	    // Create a new list for this.
 	    l = list_alloc();
 	    if (l == NULL)
 		return FAIL;
@@ -408,11 +402,11 @@ skip_var_list(
 
     if (*arg == '[')
     {
-	/* "[var, var]": find the matching ']'. */
+	// "[var, var]": find the matching ']'.
 	p = arg;
 	for (;;)
 	{
-	    p = skipwhite(p + 1);	/* skip whites after '[', ';' or ',' */
+	    p = skipwhite(p + 1);	// skip whites after '[', ';' or ','
 	    s = skip_var_one(p);
 	    if (s == p)
 	    {
@@ -559,13 +553,13 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 	}
 	else
 	{
-	    /* get_name_len() takes care of expanding curly braces */
+	    // get_name_len() takes care of expanding curly braces
 	    name_start = name = arg;
 	    len = get_name_len(&arg, &tofree, TRUE, TRUE);
 	    if (len <= 0)
 	    {
-		/* This is mainly to keep test 49 working: when expanding
-		 * curly braces fails overrule the exception error message. */
+		// This is mainly to keep test 49 working: when expanding
+		// curly braces fails overrule the exception error message.
 		if (len < 0 && !aborting())
 		{
 		    emsg_severe = TRUE;
@@ -582,7 +576,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
 		    error = TRUE;
 		else
 		{
-		    /* handle d.key, l[idx], f(expr) */
+		    // handle d.key, l[idx], f(expr)
 		    arg_subsc = arg;
 		    if (handle_subscript(&arg, &tv, TRUE, TRUE,
 							  name, &name) == FAIL)
@@ -658,9 +652,7 @@ ex_let_one(
     int		opt_flags;
     char_u	*tofree = NULL;
 
-    /*
-     * ":let $VAR = expr": Set environment variable.
-     */
+    // ":let $VAR = expr": Set environment variable.
     if (*arg == '$')
     {
 	if (is_const)
@@ -668,7 +660,7 @@ ex_let_one(
 	    emsg(_("E996: Cannot lock an environment variable"));
 	    return NULL;
 	}
-	/* Find the end of the name. */
+	// Find the end of the name.
 	++arg;
 	name = arg;
 	len = get_env_len(&arg);
@@ -716,11 +708,9 @@ ex_let_one(
 	}
     }
 
-    /*
-     * ":let &option = expr": Set option value.
-     * ":let &l:option = expr": Set local option value.
-     * ":let &g:option = expr": Set global option value.
-     */
+    // ":let &option = expr": Set option value.
+    // ":let &l:option = expr": Set local option value.
+    // ":let &g:option = expr": Set global option value.
     else if (*arg == '&')
     {
 	if (is_const)
@@ -728,7 +718,7 @@ ex_let_one(
 	    emsg(_("E996: Cannot lock an option"));
 	    return NULL;
 	}
-	/* Find the end of the name. */
+	// Find the end of the name.
 	p = find_option_end(&arg, &opt_flags);
 	if (p == NULL || (endchars != NULL
 			      && vim_strchr(endchars, *skipwhite(p)) == NULL))
@@ -745,7 +735,7 @@ ex_let_one(
 	    *p = NUL;
 
 	    n = (long)tv_get_number(tv);
-	    s = tv_get_string_chk(tv);	    /* != NULL if number or string */
+	    s = tv_get_string_chk(tv);	    // != NULL if number or string
 	    if (s != NULL && op != NULL && *op != '=')
 	    {
 		opt_type = get_option_value(arg, &numval,
@@ -787,9 +777,7 @@ ex_let_one(
 	}
     }
 
-    /*
-     * ":let @r = expr": Set register contents.
-     */
+    // ":let @r = expr": Set register contents.
     else if (*arg == '@')
     {
 	if (is_const)
@@ -827,10 +815,8 @@ ex_let_one(
 	}
     }
 
-    /*
-     * ":let var = expr": Set internal variable.
-     * ":let {expr} = expr": Idem, name made with curly braces
-     */
+    // ":let var = expr": Set internal variable.
+    // ":let {expr} = expr": Idem, name made with curly braces
     else if (eval_isnamec1(*arg) || *arg == '{')
     {
 	lval_T	lv;
@@ -914,11 +900,11 @@ ex_unletlock(
 	    continue;
 	}
 
-	/* Parse the name and find the end. */
+	// Parse the name and find the end.
 	name_end = get_lval(arg, NULL, &lv, TRUE, eap->skip || error, 0,
 							     FNE_CHECK_START);
 	if (lv.ll_name == NULL)
-	    error = TRUE;	    /* error but continue parsing */
+	    error = TRUE;	    // error but continue parsing
 	if (name_end == NULL || (!VIM_ISWHITE(*name_end)
 						   && !ends_excmd(*name_end)))
 	{
@@ -970,7 +956,7 @@ do_unlet_var(
 	cc = *name_end;
 	*name_end = NUL;
 
-	/* Normal name or expanded name. */
+	// Normal name or expanded name.
 	if (do_unlet(lp->ll_name, forceit) == FAIL)
 	    ret = FAIL;
 	*name_end = cc;
@@ -995,7 +981,7 @@ do_unlet_var(
 	    ++ll_n1;
 	}
 
-	/* Delete a range of List items. */
+	// Delete a range of List items.
 	while (lp->ll_li != NULL && (lp->ll_empty2 || lp->ll_n2 >= lp->ll_n1))
 	{
 	    li = lp->ll_li->li_next;
@@ -1007,10 +993,10 @@ do_unlet_var(
     else
     {
 	if (lp->ll_list != NULL)
-	    /* unlet a List item. */
+	    // unlet a List item.
 	    listitem_remove(lp->ll_list, lp->ll_li);
 	else
-	    /* unlet a Dictionary item. */
+	    // unlet a Dictionary item.
 	    dictitem_remove(lp->ll_dict, lp->ll_di);
     }
 
@@ -1088,7 +1074,7 @@ do_lock_var(
     int		cc;
     dictitem_T	*di;
 
-    if (deep == 0)	/* nothing to do */
+    if (deep == 0)	// nothing to do
 	return OK;
 
     if (lp->ll_tv == NULL)
@@ -1096,15 +1082,15 @@ do_lock_var(
 	cc = *name_end;
 	*name_end = NUL;
 
-	/* Normal name or expanded name. */
+	// Normal name or expanded name.
 	di = find_var(lp->ll_name, NULL, TRUE);
 	if (di == NULL)
 	    ret = FAIL;
 	else if ((di->di_flags & DI_FLAGS_FIX)
 			&& di->di_tv.v_type != VAR_DICT
 			&& di->di_tv.v_type != VAR_LIST)
-	    /* For historic reasons this error is not given for a list or dict.
-	     * E.g., the b: dict could be locked/unlocked. */
+	    // For historic reasons this error is not given for a list or dict.
+	    // E.g., the b: dict could be locked/unlocked.
 	    semsg(_("E940: Cannot lock or unlock variable %s"), lp->ll_name);
 	else
 	{
@@ -1120,7 +1106,7 @@ do_lock_var(
     {
 	listitem_T    *li = lp->ll_li;
 
-	/* (un)lock a range of List items. */
+	// (un)lock a range of List items.
 	while (li != NULL && (lp->ll_empty2 || lp->ll_n2 >= lp->ll_n1))
 	{
 	    item_lock(&li->li_tv, deep, lock);
@@ -1129,10 +1115,10 @@ do_lock_var(
 	}
     }
     else if (lp->ll_list != NULL)
-	/* (un)lock a List item. */
+	// (un)lock a List item.
 	item_lock(&lp->ll_li->li_tv, deep, lock);
     else
-	/* (un)lock a Dictionary item. */
+	// (un)lock a Dictionary item.
 	item_lock(&lp->ll_di->di_tv, deep, lock);
 
     return ret;
@@ -1161,7 +1147,7 @@ item_lock(typval_T *tv, int deep, int lock)
 	return;
     ++recurse;
 
-    /* lock/unlock the item itself */
+    // lock/unlock the item itself
     if (lock)
 	tv->v_lock |= VAR_LOCKED;
     else
@@ -1197,7 +1183,7 @@ item_lock(typval_T *tv, int deep, int lock)
 		else
 		    l->lv_lock &= ~VAR_LOCKED;
 		if (deep < 0 || deep > 1)
-		    /* recursive: lock/unlock the items the List contains */
+		    // recursive: lock/unlock the items the List contains
 		    for (li = l->lv_first; li != NULL; li = li->li_next)
 			item_lock(&li->li_tv, deep - 1, lock);
 	    }
@@ -1211,7 +1197,7 @@ item_lock(typval_T *tv, int deep, int lock)
 		    d->dv_lock &= ~VAR_LOCKED;
 		if (deep < 0 || deep > 1)
 		{
-		    /* recursive: lock/unlock the items the List contains */
+		    // recursive: lock/unlock the items the List contains
 		    todo = (int)d->dv_hashtab.ht_used;
 		    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
 		    {
@@ -1234,24 +1220,22 @@ item_lock(typval_T *tv, int deep, int lock)
     int
 get_var_tv(
     char_u	*name,
-    int		len,		/* length of "name" */
-    typval_T	*rettv,		/* NULL when only checking existence */
-    dictitem_T	**dip,		/* non-NULL when typval's dict item is needed */
-    int		verbose,	/* may give error message */
-    int		no_autoload)	/* do not use script autoloading */
+    int		len,		// length of "name"
+    typval_T	*rettv,		// NULL when only checking existence
+    dictitem_T	**dip,		// non-NULL when typval's dict item is needed
+    int		verbose,	// may give error message
+    int		no_autoload)	// do not use script autoloading
 {
     int		ret = OK;
     typval_T	*tv = NULL;
     dictitem_T	*v;
     int		cc;
 
-    /* truncate the name, so that we can use strcmp() */
+    // truncate the name, so that we can use strcmp()
     cc = name[len];
     name[len] = NUL;
 
-    /*
-     * Check for user-defined variables.
-     */
+    // Check for user-defined variables.
     v = find_var(name, NULL, no_autoload);
     if (v != NULL)
     {
@@ -1319,9 +1303,9 @@ vars_clear_ext(hashtab_T *ht, int free_val)
 	{
 	    --todo;
 
-	    /* Free the variable.  Don't remove it from the hashtab,
-	     * ht_array might change then.  hash_clear() takes care of it
-	     * later. */
+	    // Free the variable.  Don't remove it from the hashtab,
+	    // ht_array might change then.  hash_clear() takes care of it
+	    // later.
 	    v = HI2DI(hi);
 	    if (free_val)
 		clear_tv(&v->di_tv);
@@ -1369,12 +1353,12 @@ list_one_var_a(
     char_u	*name,
     int		type,
     char_u	*string,
-    int		*first)  /* when TRUE clear rest of screen and set to FALSE */
+    int		*first)  // when TRUE clear rest of screen and set to FALSE
 {
-    /* don't use msg() or msg_attr() to avoid overwriting "v:statusmsg" */
+    // don't use msg() or msg_attr() to avoid overwriting "v:statusmsg"
     msg_start();
     msg_puts(prefix);
-    if (name != NULL)	/* "a:" vars don't have a name stored */
+    if (name != NULL)	// "a:" vars don't have a name stored
 	msg_puts((char *)name);
     msg_putchar(' ');
     msg_advance(22);
@@ -1446,7 +1430,7 @@ set_var_const(
     }
     v = find_var_in_ht(ht, 0, varname, TRUE);
 
-    /* Search in parent scope which is possible to reference from lambda */
+    // Search in parent scope which is possible to reference from lambda
     if (v == NULL)
 	v = find_var_in_scoped_ht(name, TRUE);
 
@@ -1462,15 +1446,13 @@ set_var_const(
 	    return;
 	}
 
-	/* existing variable, need to clear the value */
+	// existing variable, need to clear the value
 	if (var_check_ro(v->di_flags, name, FALSE)
 			      || var_check_lock(v->di_tv.v_lock, name, FALSE))
 	    return;
 
-	/*
-	 * Handle setting internal v: variables separately where needed to
-	 * prevent changing the type.
-	 */
+	// Handle setting internal v: variables separately where needed to
+	// prevent changing the type.
 	if (is_vimvarht(ht))
 	{
 	    if (v->di_tv.v_type == VAR_STRING)
@@ -1487,7 +1469,7 @@ set_var_const(
 		}
 		else
 		{
-		    /* Take over the string to avoid an extra alloc/free. */
+		    // Take over the string to avoid an extra alloc/free.
 		    v->di_tv.vval.v_string = tv->vval.v_string;
 		    tv->vval.v_string = NULL;
 		}
@@ -1516,7 +1498,7 @@ set_var_const(
 
 	clear_tv(&v->di_tv);
     }
-    else		    /* add a new variable */
+    else		    // add a new variable
     {
 	// Can't add "v:" or "a:" variable.
 	if (is_vimvarht(ht) || ht == get_funccal_args_ht())
@@ -1598,10 +1580,10 @@ var_check_fixed(int flags, char_u *name, int use_gettext)
  */
     int
 var_check_func_name(
-    char_u *name,    /* points to start of variable name */
-    int    new_var)  /* TRUE when creating the variable */
+    char_u *name,    // points to start of variable name
+    int    new_var)  // TRUE when creating the variable
 {
-    /* Allow for w: b: s: and t:. */
+    // Allow for w: b: s: and t:.
     if (!(vim_strchr((char_u *)"wbst", name[0]) != NULL && name[1] == ':')
 	    && !ASCII_ISUPPER((name[0] != NUL && name[1] == ':')
 						     ? name[2] : name[0]))
@@ -1610,9 +1592,9 @@ var_check_func_name(
 									name);
 	return TRUE;
     }
-    /* Don't allow hiding a function.  When "v" is not NULL we might be
-     * assigning another function to the same var, the type is checked
-     * below. */
+    // Don't allow hiding a function.  When "v" is not NULL we might be
+    // assigning another function to the same var, the type is checked
+    // below.
     if (new_var && function_exists(name, FALSE))
     {
 	semsg(_("E705: Variable name conflicts with existing function: %s"),
@@ -1675,7 +1657,7 @@ valid_varname(char_u *varname)
 getwinvar(
     typval_T	*argvars,
     typval_T	*rettv,
-    int		off)	    /* 1 for gettabwinvar() */
+    int		off)	    // 1 for gettabwinvar()
 {
     win_T	*win;
     char_u	*varname;
@@ -1699,9 +1681,9 @@ getwinvar(
 
     if (win != NULL && varname != NULL)
     {
-	/* Set curwin to be our win, temporarily.  Also set the tabpage,
-	 * otherwise the window is not valid. Only do this when needed,
-	 * autocommands get blocked. */
+	// Set curwin to be our win, temporarily.  Also set the tabpage,
+	// otherwise the window is not valid. Only do this when needed,
+	// autocommands get blocked.
 	need_switch_win = !(tp == curtab && win == curwin);
 	if (!need_switch_win
 		  || switch_win(&oldcurwin, &oldtabpage, win, tp, TRUE) == OK)
@@ -1710,7 +1692,7 @@ getwinvar(
 	    {
 		if (varname[1] == NUL)
 		{
-		    /* get all window-local options in a dict */
+		    // get all window-local options in a dict
 		    dict_T	*opts = get_winbuf_options(FALSE);
 
 		    if (opts != NULL)
@@ -1720,13 +1702,13 @@ getwinvar(
 		    }
 		}
 		else if (get_option_tv(&varname, rettv, 1) == OK)
-		    /* window-local-option */
+		    // window-local-option
 		    done = TRUE;
 	    }
 	    else
 	    {
-		/* Look up the variable. */
-		/* Let getwinvar({nr}, "") return the "w:" dictionary. */
+		// Look up the variable.
+		// Let getwinvar({nr}, "") return the "w:" dictionary.
 		v = find_var_in_ht(&win->w_vars->dv_hashtab, 'w',
 							      varname, FALSE);
 		if (v != NULL)
@@ -1738,12 +1720,12 @@ getwinvar(
 	}
 
 	if (need_switch_win)
-	    /* restore previous notion of curwin */
+	    // restore previous notion of curwin
 	    restore_win(oldcurwin, oldtabpage, TRUE);
     }
 
     if (!done && argvars[off + 2].v_type != VAR_UNKNOWN)
-	/* use the default return value */
+	// use the default return value
 	copy_tv(&argvars[off + 2], rettv);
 
     --emsg_off;
@@ -1819,7 +1801,7 @@ var_exists(char_u *var)
     int		len = 0;
     int		n = FALSE;
 
-    /* get_name_len() takes care of expanding curly braces */
+    // get_name_len() takes care of expanding curly braces
     name = var;
     len = get_name_len(&var, &tofree, TRUE, FALSE);
     if (len > 0)
@@ -1829,7 +1811,7 @@ var_exists(char_u *var)
 	n = (get_var_tv(name, len, &tv, NULL, FALSE, TRUE) == OK);
 	if (n)
 	{
-	    /* handle d.key, l[idx], f(expr) */
+	    // handle d.key, l[idx], f(expr)
 	    n = (handle_subscript(&var, &tv, TRUE, FALSE, name, &name) == OK);
 	    if (n)
 		clear_tv(&tv);
@@ -1861,14 +1843,14 @@ f_gettabvar(typval_T *argvars, typval_T *rettv)
     tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
     if (tp != NULL && varname != NULL)
     {
-	/* Set tp to be our tabpage, temporarily.  Also set the window to the
-	 * first window in the tabpage, otherwise the window is not valid. */
+	// Set tp to be our tabpage, temporarily.  Also set the window to the
+	// first window in the tabpage, otherwise the window is not valid.
 	if (switch_win(&oldcurwin, &oldtabpage,
 		tp == curtab || tp->tp_firstwin == NULL ? firstwin
 					    : tp->tp_firstwin, tp, TRUE) == OK)
 	{
-	    /* look up the variable */
-	    /* Let gettabvar({nr}, "") return the "t:" dictionary. */
+	    // look up the variable
+	    // Let gettabvar({nr}, "") return the "t:" dictionary.
 	    v = find_var_in_ht(&tp->tp_vars->dv_hashtab, 't', varname, FALSE);
 	    if (v != NULL)
 	    {
@@ -1877,7 +1859,7 @@ f_gettabvar(typval_T *argvars, typval_T *rettv)
 	    }
 	}
 
-	/* restore previous notion of curwin */
+	// restore previous notion of curwin
 	restore_win(oldcurwin, oldtabpage, TRUE);
     }
 
@@ -1937,7 +1919,7 @@ f_settabvar(typval_T *argvars, typval_T *rettv)
 	    vim_free(tabvarname);
 	}
 
-	/* Restore current tabpage */
+	// Restore current tabpage
 	if (valid_tabpage(save_curtab))
 	    goto_tabpage_tp(save_curtab, FALSE, FALSE);
     }
@@ -1961,4 +1943,4 @@ f_setwinvar(typval_T *argvars, typval_T *rettv)
     setwinvar(argvars, rettv, 0);
 }
 
-#endif /* FEAT_EVAL */
+#endif // FEAT_EVAL
