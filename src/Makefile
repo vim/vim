@@ -1596,6 +1596,7 @@ BASIC_SRC = \
 	edit.c \
 	eval.c \
 	evalfunc.c \
+	evalvars.c \
 	ex_cmds.c \
 	ex_cmds2.c \
 	ex_docmd.c \
@@ -1725,6 +1726,7 @@ OBJ_COMMON = \
 	objects/edit.o \
 	objects/eval.o \
 	objects/evalfunc.o \
+	objects/evalvars.o \
 	objects/ex_cmds.o \
 	objects/ex_cmds2.o \
 	objects/ex_docmd.o \
@@ -1867,6 +1869,7 @@ PRO_AUTO = \
 	edit.pro \
 	eval.pro \
 	evalfunc.pro \
+	evalvars.pro \
 	ex_cmds.pro \
 	ex_cmds2.pro \
 	ex_docmd.pro \
@@ -3052,6 +3055,9 @@ objects/eval.o: eval.c
 objects/evalfunc.o: evalfunc.c
 	$(CCC) -o $@ evalfunc.c
 
+objects/evalvars.o: evalvars.c
+	$(CCC) -o $@ evalvars.c
+
 objects/ex_cmds.o: ex_cmds.c
 	$(CCC) -o $@ ex_cmds.c
 
@@ -3570,6 +3576,10 @@ objects/evalfunc.o: evalfunc.c vim.h protodef.h auto/config.h feature.h os_unix.
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h version.h
+objects/evalvars.o: evalvars.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
 objects/ex_cmds.o: ex_cmds.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

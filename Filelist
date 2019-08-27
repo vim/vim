@@ -35,6 +35,7 @@ SRC_ALL =	\
 		src/edit.c \
 		src/eval.c \
 		src/evalfunc.c \
+		src/evalvars.c \
 		src/ex_cmdidxs.h \
 		src/ex_cmds.c \
 		src/ex_cmds.h \
@@ -188,6 +189,7 @@ SRC_ALL =	\
 		src/proto/edit.pro \
 		src/proto/eval.pro \
 		src/proto/evalfunc.pro \
+		src/proto/evalvars.pro \
 		src/proto/ex_cmds.pro \
 		src/proto/ex_cmds2.pro \
 		src/proto/ex_docmd.pro \
