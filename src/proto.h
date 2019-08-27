@@ -112,6 +112,7 @@ extern int _stricoll(char *a, char *b);
 # ifdef FEAT_VIMINFO
 # include "viminfo.pro"
 # endif
+# include "evalvars.pro"
 
 /* These prototypes cannot be produced automatically. */
 int smsg(const char *, ...)

@@ -2003,6 +2003,8 @@ typedef int sock_T;
 #define VAR_TYPE_CHANNEL    9
 #define VAR_TYPE_BLOB	    10
 
+#define DICT_MAXNEST 100	/* maximum nesting of lists and dicts */
+
 #ifdef FEAT_CLIPBOARD
 
 /* VIM_ATOM_NAME is the older Vim-specific selection type for X11.  Still

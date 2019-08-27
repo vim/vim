@@ -34,6 +34,7 @@ debugger.c	| vim script debugger
 diff.c		| diff mode (vimdiff)
 eval.c		| expression evaluation
 evalfunc.c	| built-in functions
+evalvars.c	| vim variables
 fileio.c	| reading and writing files
 findfile.c	| search for files in 'path'
 fold.c		| folding

@@ -1547,6 +1547,10 @@ EXTERN char e_re_damg[]	INIT(= N_("E43: Damaged match string"));
 EXTERN char e_re_corr[]	INIT(= N_("E44: Corrupted regexp program"));
 EXTERN char e_readonly[]	INIT(= N_("E45: 'readonly' option is set (add ! to override)"));
 #ifdef FEAT_EVAL
+EXTERN char e_undefvar[]	INIT(= N_("E121: Undefined variable: %s"));
+EXTERN char e_letwrong[]	INIT(= N_("E734: Wrong variable type for %s="));
+EXTERN char e_illvar[]		INIT(= N_("E461: Illegal variable name: %s"));
+EXTERN char e_cannot_mod[]	INIT(= N_("E995: Cannot modify existing variable"));
 EXTERN char e_readonlyvar[]	INIT(= N_("E46: Cannot change read-only variable \"%s\""));
 EXTERN char e_readonlysbx[]	INIT(= N_("E794: Cannot set variable in the sandbox: \"%s\""));
 EXTERN char e_emptykey[]	INIT(= N_("E713: Cannot use empty key for Dictionary"));

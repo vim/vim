@@ -155,14 +155,11 @@ static void f_getqflist(typval_T *argvars, typval_T *rettv);
 static void f_getreg(typval_T *argvars, typval_T *rettv);
 static void f_getregtype(typval_T *argvars, typval_T *rettv);
 static void f_gettabinfo(typval_T *argvars, typval_T *rettv);
-static void f_gettabvar(typval_T *argvars, typval_T *rettv);
-static void f_gettabwinvar(typval_T *argvars, typval_T *rettv);
 static void f_gettagstack(typval_T *argvars, typval_T *rettv);
 static void f_getwininfo(typval_T *argvars, typval_T *rettv);
 static void f_getwinpos(typval_T *argvars, typval_T *rettv);
 static void f_getwinposx(typval_T *argvars, typval_T *rettv);
 static void f_getwinposy(typval_T *argvars, typval_T *rettv);
-static void f_getwinvar(typval_T *argvars, typval_T *rettv);
 static void f_glob(typval_T *argvars, typval_T *rettv);
 static void f_globpath(typval_T *argvars, typval_T *rettv);
 static void f_glob2regpat(typval_T *argvars, typval_T *rettv);
@@ -293,10 +290,7 @@ static void f_setloclist(typval_T *argvars, typval_T *rettv);
 static void f_setpos(typval_T *argvars, typval_T *rettv);
 static void f_setqflist(typval_T *argvars, typval_T *rettv);
 static void f_setreg(typval_T *argvars, typval_T *rettv);
-static void f_settabvar(typval_T *argvars, typval_T *rettv);
-static void f_settabwinvar(typval_T *argvars, typval_T *rettv);
 static void f_settagstack(typval_T *argvars, typval_T *rettv);
-static void f_setwinvar(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_CRYPT
 static void f_sha256(typval_T *argvars, typval_T *rettv);
 #endif /* FEAT_CRYPT */
@@ -5315,58 +5309,6 @@ f_gettabinfo(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "gettabvar()" function
- */
-    static void
-f_gettabvar(typval_T *argvars, typval_T *rettv)
-{
-    win_T	*oldcurwin;
-    tabpage_T	*tp, *oldtabpage;
-    dictitem_T	*v;
-    char_u	*varname;
-    int		done = FALSE;
-
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-
-    varname = tv_get_string_chk(&argvars[1]);
-    tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
-    if (tp != NULL && varname != NULL)
-    {
-	/* Set tp to be our tabpage, temporarily.  Also set the window to the
-	 * first window in the tabpage, otherwise the window is not valid. */
-	if (switch_win(&oldcurwin, &oldtabpage,
-		tp == curtab || tp->tp_firstwin == NULL ? firstwin
-					    : tp->tp_firstwin, tp, TRUE) == OK)
-	{
-	    /* look up the variable */
-	    /* Let gettabvar({nr}, "") return the "t:" dictionary. */
-	    v = find_var_in_ht(&tp->tp_vars->dv_hashtab, 't', varname, FALSE);
-	    if (v != NULL)
-	    {
-		copy_tv(&v->di_tv, rettv);
-		done = TRUE;
-	    }
-	}
-
-	/* restore previous notion of curwin */
-	restore_win(oldcurwin, oldtabpage, TRUE);
-    }
-
-    if (!done && argvars[2].v_type != VAR_UNKNOWN)
-	copy_tv(&argvars[2], rettv);
-}
-
-/*
- * "gettabwinvar()" function
- */
-    static void
-f_gettabwinvar(typval_T *argvars, typval_T *rettv)
-{
-    getwinvar(argvars, rettv, 1);
-}
-
-/*
  * "gettagstack()" function
  */
     static void
@@ -5622,15 +5564,6 @@ f_getwinposy(typval_T *argvars UNUSED, typval_T *rettv)
 	    rettv->vval.v_number = y;
     }
 #endif
-}
-
-/*
- * "getwinvar()" function
- */
-    static void
-f_getwinvar(typval_T *argvars, typval_T *rettv)
-{
-    getwinvar(argvars, rettv, 0);
 }
 
 /*
@@ -10243,55 +10176,6 @@ free_lstval:
 }
 
 /*
- * "settabvar()" function
- */
-    static void
-f_settabvar(typval_T *argvars, typval_T *rettv)
-{
-    tabpage_T	*save_curtab;
-    tabpage_T	*tp;
-    char_u	*varname, *tabvarname;
-    typval_T	*varp;
-
-    rettv->vval.v_number = 0;
-
-    if (check_secure())
-	return;
-
-    tp = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
-    varname = tv_get_string_chk(&argvars[1]);
-    varp = &argvars[2];
-
-    if (varname != NULL && varp != NULL && tp != NULL)
-    {
-	save_curtab = curtab;
-	goto_tabpage_tp(tp, FALSE, FALSE);
-
-	tabvarname = alloc(STRLEN(varname) + 3);
-	if (tabvarname != NULL)
-	{
-	    STRCPY(tabvarname, "t:");
-	    STRCPY(tabvarname + 2, varname);
-	    set_var(tabvarname, varp, TRUE);
-	    vim_free(tabvarname);
-	}
-
-	/* Restore current tabpage */
-	if (valid_tabpage(save_curtab))
-	    goto_tabpage_tp(save_curtab, FALSE, FALSE);
-    }
-}
-
-/*
- * "settabwinvar()" function
- */
-    static void
-f_settabwinvar(typval_T *argvars, typval_T *rettv)
-{
-    setwinvar(argvars, rettv, 1);
-}
-
-/*
  * "settagstack()" function
  */
     static void
@@ -10345,15 +10229,6 @@ f_settagstack(typval_T *argvars, typval_T *rettv)
 
     if (set_tagstack(wp, d, action) == OK)
 	rettv->vval.v_number = 0;
-}
-
-/*
- * "setwinvar()" function
- */
-    static void
-f_setwinvar(typval_T *argvars, typval_T *rettv)
-{
-    setwinvar(argvars, rettv, 0);
 }
 
 #ifdef FEAT_CRYPT
