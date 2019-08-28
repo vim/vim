@@ -46,10 +46,8 @@ static struct vimvar
     char	vv_flags;	// VV_COMPAT, VV_RO, VV_RO_SBX
 } vimvars[VV_LEN] =
 {
-    /*
-     * The order here must match the VV_ defines in vim.h!
-     * Initializing a union does not work, leave tv.vval empty to get zero's.
-     */
+    // The order here must match the VV_ defines in vim.h!
+    // Initializing a union does not work, leave tv.vval empty to get zero's.
     {VV_NAME("count",		 VAR_NUMBER), VV_COMPAT+VV_RO},
     {VV_NAME("count1",		 VAR_NUMBER), VV_RO},
     {VV_NAME("prevcount",	 VAR_NUMBER), VV_RO},
@@ -1592,7 +1590,7 @@ cat_prefix_varname(int prefix, char_u *name)
     if (len > varnamebuflen)
     {
 	vim_free(varnamebuf);
-	len += 10;			/* some additional space */
+	len += 10;			// some additional space
 	varnamebuf = alloc(len);
 	if (varnamebuf == NULL)
 	{
@@ -2078,7 +2076,7 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
     if (ret != NULL)
 	return ret;
 
-    /* Search in parent scope for lambda */
+    // Search in parent scope for lambda
     return find_var_in_scoped_ht(name, no_autoload || htp != NULL);
 }
 
@@ -2222,9 +2220,9 @@ new_script_vars(scid_T id)
 
     if (ga_grow(&ga_scripts, (int)(id - ga_scripts.ga_len)) == OK)
     {
-	/* Re-allocating ga_data means that an ht_array pointing to
-	 * ht_smallarray becomes invalid.  We can recognize this: ht_mask is
-	 * at its init value.  Also reset "v_dict", it's always the same. */
+	// Re-allocating ga_data means that an ht_array pointing to
+	// ht_smallarray becomes invalid.  We can recognize this: ht_mask is
+	// at its init value.  Also reset "v_dict", it's always the same.
 	for (i = 1; i <= ga_scripts.ga_len; ++i)
 	{
 	    ht = &SCRIPT_VARS(i);
@@ -2269,8 +2267,8 @@ init_var_dict(dict_T *dict, dictitem_T *dict_var, int scope)
     void
 unref_var_dict(dict_T *dict)
 {
-    /* Now the dict needs to be freed if no one else is using it, go back to
-     * normal reference counting. */
+    // Now the dict needs to be freed if no one else is using it, go back to
+    // normal reference counting.
     dict->dv_refcount -= DO_NOT_FREE_CNT - 1;
     dict_unref(dict);
 }
@@ -2817,7 +2815,7 @@ assert_error(garray_T *gap)
     struct vimvar   *vp = &vimvars[VV_ERRORS];
 
     if (vp->vv_type != VAR_LIST || vimvars[VV_ERRORS].vv_list == NULL)
-	/* Make sure v:errors is a list. */
+	// Make sure v:errors is a list.
 	set_vim_var_list(VV_ERRORS, list_alloc());
     list_append_string(vimvars[VV_ERRORS].vv_list, gap->ga_data, gap->ga_len);
 }

@@ -89,5 +89,8 @@ win_T *win_id2wp(int id);
 win_T *win_id2wp_tp(int id, tabpage_T **tpp);
 int win_id2win(typval_T *argvars);
 void win_findbuf(typval_T *argvars, list_T *list);
+win_T *find_win_by_nr(typval_T *vp, tabpage_T *tp);
+win_T *find_win_by_nr_or_id(typval_T *vp);
+win_T *find_tabwin(typval_T *wvp, typval_T *tvp, tabpage_T **ptp);
 void get_framelayout(frame_T *fr, list_T *l, int outer);
 /* vim: set ft=c : */

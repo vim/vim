@@ -80,9 +80,6 @@ void get_user_input(typval_T *argvars, typval_T *rettv, int inputdialog, int sec
 void ex_echo(exarg_T *eap);
 void ex_echohl(exarg_T *eap);
 void ex_execute(exarg_T *eap);
-win_T *find_win_by_nr(typval_T *vp, tabpage_T *tp);
-win_T *find_win_by_nr_or_id(typval_T *vp);
-win_T *find_tabwin(typval_T *wvp, typval_T *tvp, tabpage_T **ptp);
 char_u *find_option_end(char_u **arg, int *opt_flags);
 char_u *autoload_name(char_u *name);
 int script_autoload(char_u *name, int reload);
