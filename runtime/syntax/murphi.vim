@@ -88,7 +88,7 @@ syn match murphiNumber "\<\d\+\>"
 
 " Operators and special characters.
 syn match murphiOperator "[\+\-\*\/%&|=!<>:\?]\|\."
-syn match murphiDelimiter "\(:[^=]\|[;,]\)"
+syn match murphiDelimiter "\(:=\@!\|[;,]\)"
 syn match murphiSpecial "[()\[\]]"
 
 " Double equal sign is a common error: use one equal sign for equality testing.
