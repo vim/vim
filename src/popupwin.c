@@ -1103,7 +1103,7 @@ popup_adjust_position(win_T *wp)
 	    wantcol = screen_ecol + wantcol;
 	else
 	    // left of the text
-	    wantcol = screen_scol + wantcol - 1;
+	    wantcol = screen_scol + wantcol - 2;
     }
 
     if (wp->w_popup_pos == POPPOS_CENTER)
