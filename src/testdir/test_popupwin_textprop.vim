@@ -96,6 +96,7 @@ func Test_textprop_popup_corners()
   call VerifyScreenDump(buf, 'Test_popup_textprop_corn_3', {})
 
   call term_sendkeys(buf, "u")
+  call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_popup_textprop_corn_4', {})
 
   " clean up
