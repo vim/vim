@@ -17,6 +17,164 @@
 
 static char *e_letunexp	= N_("E18: Unexpected characters in :let");
 
+static dictitem_T	globvars_var;		/* variable used for g: */
+
+/*
+ * Old Vim variables such as "v:version" are also available without the "v:".
+ * Also in functions.  We need a special hashtable for them.
+ */
+static hashtab_T	compat_hashtab;
+
+/*
+ * Array to hold the value of v: variables.
+ * The value is in a dictitem, so that it can also be used in the v: scope.
+ * The reason to use this table anyway is for very quick access to the
+ * variables with the VV_ defines.
+ */
+
+/* values for vv_flags: */
+#define VV_COMPAT	1	/* compatible, also used without "v:" */
+#define VV_RO		2	/* read-only */
+#define VV_RO_SBX	4	/* read-only in the sandbox */
+
+#define VV_NAME(s, t)	s, {{t, 0, {0}}, 0, {0}}
+
+static struct vimvar
+{
+    char	*vv_name;	/* name of variable, without v: */
+    dictitem16_T vv_di;		/* value and name for key (max 16 chars!) */
+    char	vv_flags;	/* VV_COMPAT, VV_RO, VV_RO_SBX */
+} vimvars[VV_LEN] =
+{
+    /*
+     * The order here must match the VV_ defines in vim.h!
+     * Initializing a union does not work, leave tv.vval empty to get zero's.
+     */
+    {VV_NAME("count",		 VAR_NUMBER), VV_COMPAT+VV_RO},
+    {VV_NAME("count1",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("prevcount",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("errmsg",		 VAR_STRING), VV_COMPAT},
+    {VV_NAME("warningmsg",	 VAR_STRING), 0},
+    {VV_NAME("statusmsg",	 VAR_STRING), 0},
+    {VV_NAME("shell_error",	 VAR_NUMBER), VV_COMPAT+VV_RO},
+    {VV_NAME("this_session",	 VAR_STRING), VV_COMPAT},
+    {VV_NAME("version",		 VAR_NUMBER), VV_COMPAT+VV_RO},
+    {VV_NAME("lnum",		 VAR_NUMBER), VV_RO_SBX},
+    {VV_NAME("termresponse",	 VAR_STRING), VV_RO},
+    {VV_NAME("fname",		 VAR_STRING), VV_RO},
+    {VV_NAME("lang",		 VAR_STRING), VV_RO},
+    {VV_NAME("lc_time",		 VAR_STRING), VV_RO},
+    {VV_NAME("ctype",		 VAR_STRING), VV_RO},
+    {VV_NAME("charconvert_from", VAR_STRING), VV_RO},
+    {VV_NAME("charconvert_to",	 VAR_STRING), VV_RO},
+    {VV_NAME("fname_in",	 VAR_STRING), VV_RO},
+    {VV_NAME("fname_out",	 VAR_STRING), VV_RO},
+    {VV_NAME("fname_new",	 VAR_STRING), VV_RO},
+    {VV_NAME("fname_diff",	 VAR_STRING), VV_RO},
+    {VV_NAME("cmdarg",		 VAR_STRING), VV_RO},
+    {VV_NAME("foldstart",	 VAR_NUMBER), VV_RO_SBX},
+    {VV_NAME("foldend",		 VAR_NUMBER), VV_RO_SBX},
+    {VV_NAME("folddashes",	 VAR_STRING), VV_RO_SBX},
+    {VV_NAME("foldlevel",	 VAR_NUMBER), VV_RO_SBX},
+    {VV_NAME("progname",	 VAR_STRING), VV_RO},
+    {VV_NAME("servername",	 VAR_STRING), VV_RO},
+    {VV_NAME("dying",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("exception",	 VAR_STRING), VV_RO},
+    {VV_NAME("throwpoint",	 VAR_STRING), VV_RO},
+    {VV_NAME("register",	 VAR_STRING), VV_RO},
+    {VV_NAME("cmdbang",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("insertmode",	 VAR_STRING), VV_RO},
+    {VV_NAME("val",		 VAR_UNKNOWN), VV_RO},
+    {VV_NAME("key",		 VAR_UNKNOWN), VV_RO},
+    {VV_NAME("profiling",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("fcs_reason",	 VAR_STRING), VV_RO},
+    {VV_NAME("fcs_choice",	 VAR_STRING), 0},
+    {VV_NAME("beval_bufnr",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("beval_winnr",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("beval_winid",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("beval_lnum",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("beval_col",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("beval_text",	 VAR_STRING), VV_RO},
+    {VV_NAME("scrollstart",	 VAR_STRING), 0},
+    {VV_NAME("swapname",	 VAR_STRING), VV_RO},
+    {VV_NAME("swapchoice",	 VAR_STRING), 0},
+    {VV_NAME("swapcommand",	 VAR_STRING), VV_RO},
+    {VV_NAME("char",		 VAR_STRING), 0},
+    {VV_NAME("mouse_win",	 VAR_NUMBER), 0},
+    {VV_NAME("mouse_winid",	 VAR_NUMBER), 0},
+    {VV_NAME("mouse_lnum",	 VAR_NUMBER), 0},
+    {VV_NAME("mouse_col",	 VAR_NUMBER), 0},
+    {VV_NAME("operator",	 VAR_STRING), VV_RO},
+    {VV_NAME("searchforward",	 VAR_NUMBER), 0},
+    {VV_NAME("hlsearch",	 VAR_NUMBER), 0},
+    {VV_NAME("oldfiles",	 VAR_LIST), 0},
+    {VV_NAME("windowid",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("progpath",	 VAR_STRING), VV_RO},
+    {VV_NAME("completed_item",	 VAR_DICT), VV_RO},
+    {VV_NAME("option_new",	 VAR_STRING), VV_RO},
+    {VV_NAME("option_old",	 VAR_STRING), VV_RO},
+    {VV_NAME("option_oldlocal",	 VAR_STRING), VV_RO},
+    {VV_NAME("option_oldglobal", VAR_STRING), VV_RO},
+    {VV_NAME("option_command",	 VAR_STRING), VV_RO},
+    {VV_NAME("option_type",	 VAR_STRING), VV_RO},
+    {VV_NAME("errors",		 VAR_LIST), 0},
+    {VV_NAME("false",		 VAR_SPECIAL), VV_RO},
+    {VV_NAME("true",		 VAR_SPECIAL), VV_RO},
+    {VV_NAME("null",		 VAR_SPECIAL), VV_RO},
+    {VV_NAME("none",		 VAR_SPECIAL), VV_RO},
+    {VV_NAME("vim_did_enter",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("testing",		 VAR_NUMBER), 0},
+    {VV_NAME("t_number",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_string",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_func",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_list",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_dict",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_float",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_bool",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_none",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_job",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_channel",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("t_blob",		 VAR_NUMBER), VV_RO},
+    {VV_NAME("termrfgresp",	 VAR_STRING), VV_RO},
+    {VV_NAME("termrbgresp",	 VAR_STRING), VV_RO},
+    {VV_NAME("termu7resp",	 VAR_STRING), VV_RO},
+    {VV_NAME("termstyleresp",	 VAR_STRING), VV_RO},
+    {VV_NAME("termblinkresp",	 VAR_STRING), VV_RO},
+    {VV_NAME("event",		 VAR_DICT), VV_RO},
+    {VV_NAME("versionlong",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("echospace",	 VAR_NUMBER), VV_RO},
+};
+
+/* shorthand */
+#define vv_type		vv_di.di_tv.v_type
+#define vv_nr		vv_di.di_tv.vval.v_number
+#define vv_float	vv_di.di_tv.vval.v_float
+#define vv_str		vv_di.di_tv.vval.v_string
+#define vv_list		vv_di.di_tv.vval.v_list
+#define vv_dict		vv_di.di_tv.vval.v_dict
+#define vv_blob		vv_di.di_tv.vval.v_blob
+#define vv_tv		vv_di.di_tv
+
+static dictitem_T	vimvars_var;		/* variable used for v: */
+#define vimvarht  vimvardict.dv_hashtab
+
+/* for VIM_VERSION_ defines */
+#include "version.h"
+
+/*
+ * Array to hold the hashtab with variables local to each sourced script.
+ * Each item holds a variable (nameless) that points to the dict_T.
+ */
+typedef struct
+{
+    dictitem_T	sv_var;
+    dict_T	sv_dict;
+} scriptvar_T;
+
+static garray_T	    ga_scripts = {0, 0, sizeof(scriptvar_T *), 4, NULL};
+#define SCRIPT_SV(id) (((scriptvar_T **)ga_scripts.ga_data)[(id) - 1])
+#define SCRIPT_VARS(id) (SCRIPT_SV(id)->sv_dict.dv_hashtab)
+
 static void ex_let_const(exarg_T *eap, int is_const);
 static char_u *skip_var_one(char_u *arg);
 static void list_glob_vars(int *first);
@@ -31,6 +189,206 @@ static int do_lock_var(lval_T *lp, char_u *name_end, int deep, int lock);
 static void item_lock(typval_T *tv, int deep, int lock);
 static void list_one_var(dictitem_T *v, char *prefix, int *first);
 static void list_one_var_a(char *prefix, char_u *name, int type, char_u *string, int *first);
+
+/*
+ * Initialize global and vim special variables
+ */
+    void
+evalvars_init(void)
+{
+    int		    i;
+    struct vimvar   *p;
+
+    init_var_dict(&globvardict, &globvars_var, VAR_DEF_SCOPE);
+    init_var_dict(&vimvardict, &vimvars_var, VAR_SCOPE);
+    vimvardict.dv_lock = VAR_FIXED;
+    hash_init(&compat_hashtab);
+
+    for (i = 0; i < VV_LEN; ++i)
+    {
+	p = &vimvars[i];
+	if (STRLEN(p->vv_name) > DICTITEM16_KEY_LEN)
+	{
+	    iemsg("INTERNAL: name too long, increase size of dictitem16_T");
+	    getout(1);
+	}
+	STRCPY(p->vv_di.di_key, p->vv_name);
+	if (p->vv_flags & VV_RO)
+	    p->vv_di.di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
+	else if (p->vv_flags & VV_RO_SBX)
+	    p->vv_di.di_flags = DI_FLAGS_RO_SBX | DI_FLAGS_FIX;
+	else
+	    p->vv_di.di_flags = DI_FLAGS_FIX;
+
+	/* add to v: scope dict, unless the value is not always available */
+	if (p->vv_type != VAR_UNKNOWN)
+	    hash_add(&vimvarht, p->vv_di.di_key);
+	if (p->vv_flags & VV_COMPAT)
+	    /* add to compat scope dict */
+	    hash_add(&compat_hashtab, p->vv_di.di_key);
+    }
+    vimvars[VV_VERSION].vv_nr = VIM_VERSION_100;
+    vimvars[VV_VERSIONLONG].vv_nr = VIM_VERSION_100 * 10000 + highest_patch();
+
+    set_vim_var_nr(VV_SEARCHFORWARD, 1L);
+    set_vim_var_nr(VV_HLSEARCH, 1L);
+    set_vim_var_dict(VV_COMPLETED_ITEM, dict_alloc_lock(VAR_FIXED));
+    set_vim_var_list(VV_ERRORS, list_alloc());
+    set_vim_var_dict(VV_EVENT, dict_alloc_lock(VAR_FIXED));
+
+    set_vim_var_nr(VV_FALSE, VVAL_FALSE);
+    set_vim_var_nr(VV_TRUE, VVAL_TRUE);
+    set_vim_var_nr(VV_NONE, VVAL_NONE);
+    set_vim_var_nr(VV_NULL, VVAL_NULL);
+
+    set_vim_var_nr(VV_TYPE_NUMBER,  VAR_TYPE_NUMBER);
+    set_vim_var_nr(VV_TYPE_STRING,  VAR_TYPE_STRING);
+    set_vim_var_nr(VV_TYPE_FUNC,    VAR_TYPE_FUNC);
+    set_vim_var_nr(VV_TYPE_LIST,    VAR_TYPE_LIST);
+    set_vim_var_nr(VV_TYPE_DICT,    VAR_TYPE_DICT);
+    set_vim_var_nr(VV_TYPE_FLOAT,   VAR_TYPE_FLOAT);
+    set_vim_var_nr(VV_TYPE_BOOL,    VAR_TYPE_BOOL);
+    set_vim_var_nr(VV_TYPE_NONE,    VAR_TYPE_NONE);
+    set_vim_var_nr(VV_TYPE_JOB,     VAR_TYPE_JOB);
+    set_vim_var_nr(VV_TYPE_CHANNEL, VAR_TYPE_CHANNEL);
+    set_vim_var_nr(VV_TYPE_BLOB,    VAR_TYPE_BLOB);
+
+    set_vim_var_nr(VV_ECHOSPACE,    sc_col - 1);
+
+    set_reg_var(0);  /* default for v:register is not 0 but '"' */
+}
+
+#if defined(EXITFREE) || defined(PROTO)
+/*
+ * Free all vim variables information on exit
+ */
+    void
+evalvars_clear(void)
+{
+    int		    i;
+    struct vimvar   *p;
+
+    for (i = 0; i < VV_LEN; ++i)
+    {
+	p = &vimvars[i];
+	if (p->vv_di.di_tv.v_type == VAR_STRING)
+	    VIM_CLEAR(p->vv_str);
+	else if (p->vv_di.di_tv.v_type == VAR_LIST)
+	{
+	    list_unref(p->vv_list);
+	    p->vv_list = NULL;
+	}
+    }
+    hash_clear(&vimvarht);
+    hash_init(&vimvarht);  /* garbage_collect() will access it */
+    hash_clear(&compat_hashtab);
+
+    /* global variables */
+    vars_clear(&globvarht);
+
+    /* Script-local variables. First clear all the variables and in a second
+     * loop free the scriptvar_T, because a variable in one script might hold
+     * a reference to the whole scope of another script. */
+    for (i = 1; i <= ga_scripts.ga_len; ++i)
+	vars_clear(&SCRIPT_VARS(i));
+    for (i = 1; i <= ga_scripts.ga_len; ++i)
+	vim_free(SCRIPT_SV(i));
+    ga_clear(&ga_scripts);
+}
+#endif
+
+    int
+garbage_collect_vimvars(int copyID)
+{
+    return set_ref_in_ht(&vimvarht, copyID, NULL);
+}
+
+    int
+garbage_collect_scriptvars(int copyID)
+{
+    int		i;
+    int		abort = FALSE;
+
+    for (i = 1; i <= ga_scripts.ga_len; ++i)
+	abort = abort || set_ref_in_ht(&SCRIPT_VARS(i), copyID, NULL);
+
+    return abort;
+}
+
+/*
+ * Set an internal variable to a string value. Creates the variable if it does
+ * not already exist.
+ */
+    void
+set_internal_string_var(char_u *name, char_u *value)
+{
+    char_u	*val;
+    typval_T	*tvp;
+
+    val = vim_strsave(value);
+    if (val != NULL)
+    {
+	tvp = alloc_string_tv(val);
+	if (tvp != NULL)
+	{
+	    set_var(name, tvp, FALSE);
+	    free_tv(tvp);
+	}
+    }
+}
+
+/*
+ * Prepare v: variable "idx" to be used.
+ * Save the current typeval in "save_tv".
+ * When not used yet add the variable to the v: hashtable.
+ */
+    void
+prepare_vimvar(int idx, typval_T *save_tv)
+{
+    *save_tv = vimvars[idx].vv_tv;
+    if (vimvars[idx].vv_type == VAR_UNKNOWN)
+	hash_add(&vimvarht, vimvars[idx].vv_di.di_key);
+}
+
+/*
+ * Restore v: variable "idx" to typeval "save_tv".
+ * When no longer defined, remove the variable from the v: hashtable.
+ */
+    void
+restore_vimvar(int idx, typval_T *save_tv)
+{
+    hashitem_T	*hi;
+
+    vimvars[idx].vv_tv = *save_tv;
+    if (vimvars[idx].vv_type == VAR_UNKNOWN)
+    {
+	hi = hash_find(&vimvarht, vimvars[idx].vv_di.di_key);
+	if (HASHITEM_EMPTY(hi))
+	    internal_error("restore_vimvar()");
+	else
+	    hash_remove(&vimvarht, hi);
+    }
+}
+
+/*
+ * List Vim variables.
+ */
+    static void
+list_vim_vars(int *first)
+{
+    list_hashtable_vars(&vimvarht, "v:", FALSE, first);
+}
+
+/*
+ * List script-local variables, if there is a script.
+ */
+    static void
+list_script_vars(int *first)
+{
+    if (current_sctx.sc_sid > 0 && current_sctx.sc_sid <= ga_scripts.ga_len)
+	list_hashtable_vars(&SCRIPT_VARS(current_sctx.sc_sid),
+							   "s:", FALSE, first);
+}
 
 /*
  * Get a list of lines from a HERE document. The here document is a list of
@@ -1024,7 +1382,7 @@ do_unlet(char_u *name, int forceit)
 	{
 	    if (ht == &globvarht)
 		d = &globvardict;
-	    else if (is_compatht(ht))
+	    else if (ht == &compat_hashtab)
 		d = &vimvardict;
 	    else
 	    {
@@ -1214,6 +1572,409 @@ item_lock(typval_T *tv, int deep, int lock)
 }
 
 /*
+ * Local string buffer for the next two functions to store a variable name
+ * with its prefix. Allocated in cat_prefix_varname(), freed later in
+ * get_user_var_name().
+ */
+
+static char_u	*varnamebuf = NULL;
+static int	varnamebuflen = 0;
+
+/*
+ * Function to concatenate a prefix and a variable name.
+ */
+    static char_u *
+cat_prefix_varname(int prefix, char_u *name)
+{
+    int		len;
+
+    len = (int)STRLEN(name) + 3;
+    if (len > varnamebuflen)
+    {
+	vim_free(varnamebuf);
+	len += 10;			/* some additional space */
+	varnamebuf = alloc(len);
+	if (varnamebuf == NULL)
+	{
+	    varnamebuflen = 0;
+	    return NULL;
+	}
+	varnamebuflen = len;
+    }
+    *varnamebuf = prefix;
+    varnamebuf[1] = ':';
+    STRCPY(varnamebuf + 2, name);
+    return varnamebuf;
+}
+
+/*
+ * Function given to ExpandGeneric() to obtain the list of user defined
+ * (global/buffer/window/built-in) variable names.
+ */
+    char_u *
+get_user_var_name(expand_T *xp, int idx)
+{
+    static long_u	gdone;
+    static long_u	bdone;
+    static long_u	wdone;
+    static long_u	tdone;
+    static int		vidx;
+    static hashitem_T	*hi;
+    hashtab_T		*ht;
+
+    if (idx == 0)
+    {
+	gdone = bdone = wdone = vidx = 0;
+	tdone = 0;
+    }
+
+    /* Global variables */
+    if (gdone < globvarht.ht_used)
+    {
+	if (gdone++ == 0)
+	    hi = globvarht.ht_array;
+	else
+	    ++hi;
+	while (HASHITEM_EMPTY(hi))
+	    ++hi;
+	if (STRNCMP("g:", xp->xp_pattern, 2) == 0)
+	    return cat_prefix_varname('g', hi->hi_key);
+	return hi->hi_key;
+    }
+
+    /* b: variables */
+    ht = &curbuf->b_vars->dv_hashtab;
+    if (bdone < ht->ht_used)
+    {
+	if (bdone++ == 0)
+	    hi = ht->ht_array;
+	else
+	    ++hi;
+	while (HASHITEM_EMPTY(hi))
+	    ++hi;
+	return cat_prefix_varname('b', hi->hi_key);
+    }
+
+    /* w: variables */
+    ht = &curwin->w_vars->dv_hashtab;
+    if (wdone < ht->ht_used)
+    {
+	if (wdone++ == 0)
+	    hi = ht->ht_array;
+	else
+	    ++hi;
+	while (HASHITEM_EMPTY(hi))
+	    ++hi;
+	return cat_prefix_varname('w', hi->hi_key);
+    }
+
+    /* t: variables */
+    ht = &curtab->tp_vars->dv_hashtab;
+    if (tdone < ht->ht_used)
+    {
+	if (tdone++ == 0)
+	    hi = ht->ht_array;
+	else
+	    ++hi;
+	while (HASHITEM_EMPTY(hi))
+	    ++hi;
+	return cat_prefix_varname('t', hi->hi_key);
+    }
+
+    /* v: variables */
+    if (vidx < VV_LEN)
+	return cat_prefix_varname('v', (char_u *)vimvars[vidx++].vv_name);
+
+    VIM_CLEAR(varnamebuf);
+    varnamebuflen = 0;
+    return NULL;
+}
+
+/*
+ * Set number v: variable to "val".
+ */
+    void
+set_vim_var_nr(int idx, varnumber_T val)
+{
+    vimvars[idx].vv_type = VAR_NUMBER;
+    vimvars[idx].vv_nr = val;
+}
+
+/*
+ * Get typval_T v: variable value.
+ */
+    typval_T *
+get_vim_var_tv(int idx)
+{
+    return &vimvars[idx].vv_tv;
+}
+
+/*
+ * Get number v: variable value.
+ */
+    varnumber_T
+get_vim_var_nr(int idx)
+{
+    return vimvars[idx].vv_nr;
+}
+
+/*
+ * Get string v: variable value.  Uses a static buffer, can only be used once.
+ * If the String variable has never been set, return an empty string.
+ * Never returns NULL;
+ */
+    char_u *
+get_vim_var_str(int idx)
+{
+    return tv_get_string(&vimvars[idx].vv_tv);
+}
+
+/*
+ * Get List v: variable value.  Caller must take care of reference count when
+ * needed.
+ */
+    list_T *
+get_vim_var_list(int idx)
+{
+    return vimvars[idx].vv_list;
+}
+
+/*
+ * Get Dict v: variable value.  Caller must take care of reference count when
+ * needed.
+ */
+    dict_T *
+get_vim_var_dict(int idx)
+{
+    return vimvars[idx].vv_dict;
+}
+
+/*
+ * Set v:char to character "c".
+ */
+    void
+set_vim_var_char(int c)
+{
+    char_u	buf[MB_MAXBYTES + 1];
+
+    if (has_mbyte)
+	buf[(*mb_char2bytes)(c, buf)] = NUL;
+    else
+    {
+	buf[0] = c;
+	buf[1] = NUL;
+    }
+    set_vim_var_string(VV_CHAR, buf, -1);
+}
+
+/*
+ * Set v:count to "count" and v:count1 to "count1".
+ * When "set_prevcount" is TRUE first set v:prevcount from v:count.
+ */
+    void
+set_vcount(
+    long	count,
+    long	count1,
+    int		set_prevcount)
+{
+    if (set_prevcount)
+	vimvars[VV_PREVCOUNT].vv_nr = vimvars[VV_COUNT].vv_nr;
+    vimvars[VV_COUNT].vv_nr = count;
+    vimvars[VV_COUNT1].vv_nr = count1;
+}
+
+/*
+ * Save variables that might be changed as a side effect.  Used when executing
+ * a timer callback.
+ */
+    void
+save_vimvars(vimvars_save_T *vvsave)
+{
+    vvsave->vv_prevcount = vimvars[VV_PREVCOUNT].vv_nr;
+    vvsave->vv_count = vimvars[VV_COUNT].vv_nr;
+    vvsave->vv_count1 = vimvars[VV_COUNT1].vv_nr;
+}
+
+/*
+ * Restore variables saved by save_vimvars().
+ */
+    void
+restore_vimvars(vimvars_save_T *vvsave)
+{
+    vimvars[VV_PREVCOUNT].vv_nr = vvsave->vv_prevcount;
+    vimvars[VV_COUNT].vv_nr = vvsave->vv_count;
+    vimvars[VV_COUNT1].vv_nr = vvsave->vv_count1;
+}
+
+/*
+ * Set string v: variable to a copy of "val". If 'copy' is FALSE, then set the
+ * value.
+ */
+    void
+set_vim_var_string(
+    int		idx,
+    char_u	*val,
+    int		len)	    /* length of "val" to use or -1 (whole string) */
+{
+    clear_tv(&vimvars[idx].vv_di.di_tv);
+    vimvars[idx].vv_type = VAR_STRING;
+    if (val == NULL)
+	vimvars[idx].vv_str = NULL;
+    else if (len == -1)
+	vimvars[idx].vv_str = vim_strsave(val);
+    else
+	vimvars[idx].vv_str = vim_strnsave(val, len);
+}
+
+/*
+ * Set List v: variable to "val".
+ */
+    void
+set_vim_var_list(int idx, list_T *val)
+{
+    clear_tv(&vimvars[idx].vv_di.di_tv);
+    vimvars[idx].vv_type = VAR_LIST;
+    vimvars[idx].vv_list = val;
+    if (val != NULL)
+	++val->lv_refcount;
+}
+
+/*
+ * Set Dictionary v: variable to "val".
+ */
+    void
+set_vim_var_dict(int idx, dict_T *val)
+{
+    clear_tv(&vimvars[idx].vv_di.di_tv);
+    vimvars[idx].vv_type = VAR_DICT;
+    vimvars[idx].vv_dict = val;
+    if (val != NULL)
+    {
+	++val->dv_refcount;
+	dict_set_items_ro(val);
+    }
+}
+
+/*
+ * Set v:register if needed.
+ */
+    void
+set_reg_var(int c)
+{
+    char_u	regname;
+
+    if (c == 0 || c == ' ')
+	regname = '"';
+    else
+	regname = c;
+    /* Avoid free/alloc when the value is already right. */
+    if (vimvars[VV_REG].vv_str == NULL || vimvars[VV_REG].vv_str[0] != c)
+	set_vim_var_string(VV_REG, &regname, 1);
+}
+
+/*
+ * Get or set v:exception.  If "oldval" == NULL, return the current value.
+ * Otherwise, restore the value to "oldval" and return NULL.
+ * Must always be called in pairs to save and restore v:exception!  Does not
+ * take care of memory allocations.
+ */
+    char_u *
+v_exception(char_u *oldval)
+{
+    if (oldval == NULL)
+	return vimvars[VV_EXCEPTION].vv_str;
+
+    vimvars[VV_EXCEPTION].vv_str = oldval;
+    return NULL;
+}
+
+/*
+ * Get or set v:throwpoint.  If "oldval" == NULL, return the current value.
+ * Otherwise, restore the value to "oldval" and return NULL.
+ * Must always be called in pairs to save and restore v:throwpoint!  Does not
+ * take care of memory allocations.
+ */
+    char_u *
+v_throwpoint(char_u *oldval)
+{
+    if (oldval == NULL)
+	return vimvars[VV_THROWPOINT].vv_str;
+
+    vimvars[VV_THROWPOINT].vv_str = oldval;
+    return NULL;
+}
+
+/*
+ * Set v:cmdarg.
+ * If "eap" != NULL, use "eap" to generate the value and return the old value.
+ * If "oldarg" != NULL, restore the value to "oldarg" and return NULL.
+ * Must always be called in pairs!
+ */
+    char_u *
+set_cmdarg(exarg_T *eap, char_u *oldarg)
+{
+    char_u	*oldval;
+    char_u	*newval;
+    unsigned	len;
+
+    oldval = vimvars[VV_CMDARG].vv_str;
+    if (eap == NULL)
+    {
+	vim_free(oldval);
+	vimvars[VV_CMDARG].vv_str = oldarg;
+	return NULL;
+    }
+
+    if (eap->force_bin == FORCE_BIN)
+	len = 6;
+    else if (eap->force_bin == FORCE_NOBIN)
+	len = 8;
+    else
+	len = 0;
+
+    if (eap->read_edit)
+	len += 7;
+
+    if (eap->force_ff != 0)
+	len += 10; /* " ++ff=unix" */
+    if (eap->force_enc != 0)
+	len += (unsigned)STRLEN(eap->cmd + eap->force_enc) + 7;
+    if (eap->bad_char != 0)
+	len += 7 + 4;  /* " ++bad=" + "keep" or "drop" */
+
+    newval = alloc(len + 1);
+    if (newval == NULL)
+	return NULL;
+
+    if (eap->force_bin == FORCE_BIN)
+	sprintf((char *)newval, " ++bin");
+    else if (eap->force_bin == FORCE_NOBIN)
+	sprintf((char *)newval, " ++nobin");
+    else
+	*newval = NUL;
+
+    if (eap->read_edit)
+	STRCAT(newval, " ++edit");
+
+    if (eap->force_ff != 0)
+	sprintf((char *)newval + STRLEN(newval), " ++ff=%s",
+						eap->force_ff == 'u' ? "unix"
+						: eap->force_ff == 'd' ? "dos"
+						: "mac");
+    if (eap->force_enc != 0)
+	sprintf((char *)newval + STRLEN(newval), " ++enc=%s",
+					       eap->cmd + eap->force_enc);
+    if (eap->bad_char == BAD_KEEP)
+	STRCPY(newval + STRLEN(newval), " ++bad=keep");
+    else if (eap->bad_char == BAD_DROP)
+	STRCPY(newval + STRLEN(newval), " ++bad=drop");
+    else if (eap->bad_char != 0)
+	sprintf((char *)newval + STRLEN(newval), " ++bad=%c", eap->bad_char);
+    vimvars[VV_CMDARG].vv_str = newval;
+    return oldval;
+}
+
+/*
  * Get the value of internal variable "name".
  * Return OK or FAIL.  If OK is returned "rettv" must be cleared.
  */
@@ -1259,6 +2020,171 @@ get_var_tv(
 }
 
 /*
+ * Check if variable "name[len]" is a local variable or an argument.
+ * If so, "*eval_lavars_used" is set to TRUE.
+ */
+    void
+check_vars(char_u *name, int len)
+{
+    int		cc;
+    char_u	*varname;
+    hashtab_T	*ht;
+
+    if (eval_lavars_used == NULL)
+	return;
+
+    /* truncate the name, so that we can use strcmp() */
+    cc = name[len];
+    name[len] = NUL;
+
+    ht = find_var_ht(name, &varname);
+    if (ht == get_funccal_local_ht() || ht == get_funccal_args_ht())
+    {
+	if (find_var(name, NULL, TRUE) != NULL)
+	    *eval_lavars_used = TRUE;
+    }
+
+    name[len] = cc;
+}
+
+/*
+ * Find variable "name" in the list of variables.
+ * Return a pointer to it if found, NULL if not found.
+ * Careful: "a:0" variables don't have a name.
+ * When "htp" is not NULL we are writing to the variable, set "htp" to the
+ * hashtab_T used.
+ */
+    dictitem_T *
+find_var(char_u *name, hashtab_T **htp, int no_autoload)
+{
+    char_u	*varname;
+    hashtab_T	*ht;
+    dictitem_T	*ret = NULL;
+
+    ht = find_var_ht(name, &varname);
+    if (htp != NULL)
+	*htp = ht;
+    if (ht == NULL)
+	return NULL;
+    ret = find_var_in_ht(ht, *name, varname, no_autoload || htp != NULL);
+    if (ret != NULL)
+	return ret;
+
+    /* Search in parent scope for lambda */
+    return find_var_in_scoped_ht(name, no_autoload || htp != NULL);
+}
+
+/*
+ * Find variable "varname" in hashtab "ht" with name "htname".
+ * Returns NULL if not found.
+ */
+    dictitem_T *
+find_var_in_ht(
+    hashtab_T	*ht,
+    int		htname,
+    char_u	*varname,
+    int		no_autoload)
+{
+    hashitem_T	*hi;
+
+    if (*varname == NUL)
+    {
+	/* Must be something like "s:", otherwise "ht" would be NULL. */
+	switch (htname)
+	{
+	    case 's': return &SCRIPT_SV(current_sctx.sc_sid)->sv_var;
+	    case 'g': return &globvars_var;
+	    case 'v': return &vimvars_var;
+	    case 'b': return &curbuf->b_bufvar;
+	    case 'w': return &curwin->w_winvar;
+	    case 't': return &curtab->tp_winvar;
+	    case 'l': return get_funccal_local_var();
+	    case 'a': return get_funccal_args_var();
+	}
+	return NULL;
+    }
+
+    hi = hash_find(ht, varname);
+    if (HASHITEM_EMPTY(hi))
+    {
+	/* For global variables we may try auto-loading the script.  If it
+	 * worked find the variable again.  Don't auto-load a script if it was
+	 * loaded already, otherwise it would be loaded every time when
+	 * checking if a function name is a Funcref variable. */
+	if (ht == &globvarht && !no_autoload)
+	{
+	    /* Note: script_autoload() may make "hi" invalid. It must either
+	     * be obtained again or not used. */
+	    if (!script_autoload(varname, FALSE) || aborting())
+		return NULL;
+	    hi = hash_find(ht, varname);
+	}
+	if (HASHITEM_EMPTY(hi))
+	    return NULL;
+    }
+    return HI2DI(hi);
+}
+
+/*
+ * Find the hashtab used for a variable name.
+ * Return NULL if the name is not valid.
+ * Set "varname" to the start of name without ':'.
+ */
+    hashtab_T *
+find_var_ht(char_u *name, char_u **varname)
+{
+    hashitem_T	*hi;
+    hashtab_T	*ht;
+
+    if (name[0] == NUL)
+	return NULL;
+    if (name[1] != ':')
+    {
+	/* The name must not start with a colon or #. */
+	if (name[0] == ':' || name[0] == AUTOLOAD_CHAR)
+	    return NULL;
+	*varname = name;
+
+	// "version" is "v:version" in all scopes if scriptversion < 3.
+	// Same for a few other variables marked with VV_COMPAT.
+	if (current_sctx.sc_version < 3)
+	{
+	    hi = hash_find(&compat_hashtab, name);
+	    if (!HASHITEM_EMPTY(hi))
+		return &compat_hashtab;
+	}
+
+	ht = get_funccal_local_ht();
+	if (ht == NULL)
+	    return &globvarht;			/* global variable */
+	return ht;				/* local variable */
+    }
+    *varname = name + 2;
+    if (*name == 'g')				/* global variable */
+	return &globvarht;
+    // There must be no ':' or '#' in the rest of the name, unless g: is used
+    if (vim_strchr(name + 2, ':') != NULL
+			       || vim_strchr(name + 2, AUTOLOAD_CHAR) != NULL)
+	return NULL;
+    if (*name == 'b')				/* buffer variable */
+	return &curbuf->b_vars->dv_hashtab;
+    if (*name == 'w')				/* window variable */
+	return &curwin->w_vars->dv_hashtab;
+    if (*name == 't')				/* tab page variable */
+	return &curtab->tp_vars->dv_hashtab;
+    if (*name == 'v')				/* v: variable */
+	return &vimvarht;
+    if (*name == 'a')				/* a: function argument */
+	return get_funccal_args_ht();
+    if (*name == 'l')				/* l: local function variable */
+	return get_funccal_local_ht();
+    if (*name == 's'				/* script variable */
+	    && current_sctx.sc_sid > 0 && current_sctx.sc_sid <= ga_scripts.ga_len)
+	return &SCRIPT_VARS(current_sctx.sc_sid);
+    return NULL;
+}
+
+/*
  * Get the string value of a (global/local) variable.
  * Note: see tv_get_string() for how long the pointer remains valid.
  * Returns NULL when it doesn't exist.
@@ -1272,6 +2198,72 @@ get_var_value(char_u *name)
     if (v == NULL)
 	return NULL;
     return tv_get_string(&v->di_tv);
+}
+
+/*
+ * Allocate a new hashtab for a sourced script.  It will be used while
+ * sourcing this script and when executing functions defined in the script.
+ */
+    void
+new_script_vars(scid_T id)
+{
+    int		i;
+    hashtab_T	*ht;
+    scriptvar_T *sv;
+
+    if (ga_grow(&ga_scripts, (int)(id - ga_scripts.ga_len)) == OK)
+    {
+	/* Re-allocating ga_data means that an ht_array pointing to
+	 * ht_smallarray becomes invalid.  We can recognize this: ht_mask is
+	 * at its init value.  Also reset "v_dict", it's always the same. */
+	for (i = 1; i <= ga_scripts.ga_len; ++i)
+	{
+	    ht = &SCRIPT_VARS(i);
+	    if (ht->ht_mask == HT_INIT_SIZE - 1)
+		ht->ht_array = ht->ht_smallarray;
+	    sv = SCRIPT_SV(i);
+	    sv->sv_var.di_tv.vval.v_dict = &sv->sv_dict;
+	}
+
+	while (ga_scripts.ga_len < id)
+	{
+	    sv = SCRIPT_SV(ga_scripts.ga_len + 1) =
+		ALLOC_CLEAR_ONE(scriptvar_T);
+	    init_var_dict(&sv->sv_dict, &sv->sv_var, VAR_SCOPE);
+	    ++ga_scripts.ga_len;
+	}
+    }
+}
+
+/*
+ * Initialize dictionary "dict" as a scope and set variable "dict_var" to
+ * point to it.
+ */
+    void
+init_var_dict(dict_T *dict, dictitem_T *dict_var, int scope)
+{
+    hash_init(&dict->dv_hashtab);
+    dict->dv_lock = 0;
+    dict->dv_scope = scope;
+    dict->dv_refcount = DO_NOT_FREE_CNT;
+    dict->dv_copyID = 0;
+    dict_var->di_tv.vval.v_dict = dict;
+    dict_var->di_tv.v_type = VAR_DICT;
+    dict_var->di_tv.v_lock = VAR_FIXED;
+    dict_var->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
+    dict_var->di_key[0] = NUL;
+}
+
+/*
+ * Unreference a dictionary initialized by init_var_dict().
+ */
+    void
+unref_var_dict(dict_T *dict)
+{
+    /* Now the dict needs to be freed if no one else is using it, go back to
+     * normal reference counting. */
+    dict->dv_refcount -= DO_NOT_FREE_CNT - 1;
+    dict_unref(dict);
 }
 
 /*
@@ -1453,7 +2445,7 @@ set_var_const(
 
 	// Handle setting internal v: variables separately where needed to
 	// prevent changing the type.
-	if (is_vimvarht(ht))
+	if (ht == &vimvarht)
 	{
 	    if (v->di_tv.v_type == VAR_STRING)
 	    {
@@ -1501,7 +2493,7 @@ set_var_const(
     else		    // add a new variable
     {
 	// Can't add "v:" or "a:" variable.
-	if (is_vimvarht(ht) || ht == get_funccal_args_ht())
+	if (ht == &vimvarht || ht == get_funccal_args_ht())
 	{
 	    semsg(_(e_illvar), name);
 	    return;
@@ -1790,6 +2782,35 @@ setwinvar(typval_T *argvars, typval_T *rettv UNUSED, int off)
 	if (need_switch_win)
 	    restore_win(save_curwin, save_curtab, TRUE);
     }
+}
+
+/*
+ * reset v:option_new, v:option_old, v:option_oldlocal, v:option_oldglobal,
+ * v:option_type, and v:option_command.
+ */
+    void
+reset_v_option_vars(void)
+{
+    set_vim_var_string(VV_OPTION_NEW,  NULL, -1);
+    set_vim_var_string(VV_OPTION_OLD,  NULL, -1);
+    set_vim_var_string(VV_OPTION_OLDLOCAL, NULL, -1);
+    set_vim_var_string(VV_OPTION_OLDGLOBAL, NULL, -1);
+    set_vim_var_string(VV_OPTION_TYPE, NULL, -1);
+    set_vim_var_string(VV_OPTION_COMMAND, NULL, -1);
+}
+
+/*
+ * Add an assert error to v:errors.
+ */
+    void
+assert_error(garray_T *gap)
+{
+    struct vimvar   *vp = &vimvars[VV_ERRORS];
+
+    if (vp->vv_type != VAR_LIST || vimvars[VV_ERRORS].vv_list == NULL)
+	/* Make sure v:errors is a list. */
+	set_vim_var_list(VV_ERRORS, list_alloc());
+    list_append_string(vimvars[VV_ERRORS].vv_list, gap->ga_data, gap->ga_len);
 }
 
     int
