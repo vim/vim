@@ -40,7 +40,7 @@ Profiling is documented at |profiling|.
 
 1.1 Variable types ~
 						*E712* *E896* *E897* *E899*
-There are nine types of variables:
+There are ten types of variables:
 
 Number		A 32 or 64 bit signed number.  |expr-number| *Number*
 		64-bit Numbers are available only when compiled with the
