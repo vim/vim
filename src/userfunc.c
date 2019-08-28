@@ -1501,7 +1501,7 @@ call_func(
     int		argv_base = 0;
     partial_T	*partial = funcexe->partial;
 
-    // Initialize rettv so that it is safe for caller to invoke clear(rettv)
+    // Initialize rettv so that it is safe for caller to invoke clear_tv(rettv)
     // even when call_func() returns FAIL.
     rettv->v_type = VAR_UNKNOWN;
 
