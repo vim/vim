@@ -500,13 +500,14 @@ put_view(
     static int
 store_session_globals(FILE *fd)
 {
+    hashtab_T	*gvht = get_globvar_ht();
     hashitem_T	*hi;
     dictitem_T	*this_var;
     int		todo;
     char_u	*p, *t;
 
-    todo = (int)globvarht.ht_used;
-    for (hi = globvarht.ht_array; todo > 0; ++hi)
+    todo = (int)gvht->ht_used;
+    for (hi = gvht->ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{

@@ -1277,6 +1277,7 @@ read_viminfo_varlist(vir_T *virp, int writing)
     static void
 write_viminfo_varlist(FILE *fp)
 {
+    hashtab_T	*gvht = get_globvar_ht();
     hashitem_T	*hi;
     dictitem_T	*this_var;
     int		todo;
@@ -1290,8 +1291,8 @@ write_viminfo_varlist(FILE *fp)
 
     fputs(_("\n# global variables:\n"), fp);
 
-    todo = (int)globvarht.ht_used;
-    for (hi = globvarht.ht_array; todo > 0; ++hi)
+    todo = (int)gvht->ht_used;
+    for (hi = gvht->ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{

@@ -35,4 +35,5 @@ int get_cmdline_type(void);
 int get_cmdline_firstc(void);
 int get_list_range(char_u **str, int *num1, int *num2);
 char_u *script_get(exarg_T *eap, char_u *cmd);
+void get_user_input(typval_T *argvars, typval_T *rettv, int inputdialog, int secret);
 /* vim: set ft=c : */
