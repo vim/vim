@@ -7879,6 +7879,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 	    int		i;
 	    typval_T	tv;
 
+	    set_vim_var_type(VV_KEY, VAR_NUMBER);
 	    for (i = 0; i < b->bv_ga.ga_len; i++)
 	    {
 		tv.v_type = VAR_NUMBER;
@@ -7907,6 +7908,8 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 	else
 	{
 	    // argvars[0].v_type == VAR_LIST
+	    set_vim_var_type(VV_KEY, VAR_NUMBER);
+
 	    for (li = l->lv_first; li != NULL; li = nli)
 	    {
 		if (map && var_check_lock(li->li_tv.v_lock, arg_errmsg, TRUE))

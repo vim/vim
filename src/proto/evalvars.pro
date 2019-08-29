@@ -15,6 +15,7 @@ void ex_unlet(exarg_T *eap);
 void ex_lockvar(exarg_T *eap);
 int do_unlet(char_u *name, int forceit);
 char_u *get_user_var_name(expand_T *xp, int idx);
+void set_vim_var_type(int idx, vartype_T type);
 void set_vim_var_nr(int idx, varnumber_T val);
 typval_T *get_vim_var_tv(int idx);
 varnumber_T get_vim_var_nr(int idx);

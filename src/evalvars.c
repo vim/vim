@@ -1691,12 +1691,20 @@ get_user_var_name(expand_T *xp, int idx)
 }
 
 /*
+ * Set type of v: variable to "type".
+ */
+    void
+set_vim_var_type(int idx, vartype_T type)
+{
+    vimvars[idx].vv_type = type;
+}
+
+/*
  * Set number v: variable to "val".
  */
     void
 set_vim_var_nr(int idx, varnumber_T val)
 {
-    vimvars[idx].vv_type = VAR_NUMBER;
     vimvars[idx].vv_nr = val;
 }
 
