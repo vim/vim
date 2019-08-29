@@ -33,6 +33,7 @@ static void popup_adjust_position(win_T *wp);
 /*
  * Get option value for "key", which is "line" or "col".
  * Handles "cursor+N" and "cursor-N".
+ * Returns MAXCOL if the entry is not present.
  */
     static int
 popup_options_one(dict_T *dict, char_u *key)
@@ -45,7 +46,7 @@ popup_options_one(dict_T *dict, char_u *key)
 
     di = dict_find(dict, key, -1);
     if (di == NULL)
-	return 0;
+	return MAXCOL;
 
     val = tv_get_string(&di->di_tv);
     if (STRNCMP(val, "cursor", 6) != 0)
@@ -408,10 +409,10 @@ apply_move_options(win_T *wp, dict_T *d)
 	wp->w_maxheight = nr;
 
     nr = popup_options_one(d, (char_u *)"line");
-    if (nr > 0)
+    if (nr != MAXCOL)
 	wp->w_wantline = nr;
     nr = popup_options_one(d, (char_u *)"col");
-    if (nr > 0)
+    if (nr != MAXCOL)
 	wp->w_wantcol = nr;
 
     di = dict_find(d, (char_u *)"fixed", -1);
@@ -1114,7 +1115,7 @@ popup_adjust_position(win_T *wp)
     }
     else
     {
-	if (wantline != 0 && (wp->w_popup_pos == POPPOS_TOPLEFT
+	if (wantline > 0 && (wp->w_popup_pos == POPPOS_TOPLEFT
 		|| wp->w_popup_pos == POPPOS_TOPRIGHT))
 	{
 	    wp->w_winrow = wantline - 1;
@@ -1124,8 +1125,8 @@ popup_adjust_position(win_T *wp)
 
 	if (wantcol == 0)
 	    center_hor = TRUE;
-	else if (wp->w_popup_pos == POPPOS_TOPLEFT
-		|| wp->w_popup_pos == POPPOS_BOTLEFT)
+	else if (wantcol > 0 && (wp->w_popup_pos == POPPOS_TOPLEFT
+		|| wp->w_popup_pos == POPPOS_BOTLEFT))
 	{
 	    wp->w_wincol = wantcol - 1;
 	    if (wp->w_wincol >= Columns - 3)
@@ -3587,21 +3588,23 @@ popup_hide_info(void)
     int
 popup_win_closed(win_T *win)
 {
-    win_T *wp;
+    int	    round;
+    win_T   *wp;
+    win_T   *next;
+    int	    ret = FALSE;
 
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
-	if (wp->w_popup_prop_win == win)
+    for (round = 1; round <= 2; ++round)
+	for (wp = round == 1 ? first_popupwin : curtab->tp_first_popupwin;
+							 wp != NULL; wp = next)
 	{
-	    popup_close_with_retval(wp, -1);
-	    return TRUE;
+	    next = wp->w_next;
+	    if (wp->w_popup_prop_win == win)
+	    {
+		popup_close_with_retval(wp, -1);
+		ret = TRUE;
+	    }
 	}
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
-	if (wp->w_popup_prop_win == win)
-	{
-	    popup_close_with_retval(wp, -1);
-	    return TRUE;
-	}
-    return FALSE;
+    return ret;
 }
 
 /*
