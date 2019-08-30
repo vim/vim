@@ -2828,12 +2828,31 @@ clean celan: testclean
 	fi
 
 # Make a shadow directory for compilation on another system or with different
-# features.
+# features:
+#  % make shadow
+#  % cd shadow
+#  edit configuration in src/shadow/Makefile
+#  % make
+#
+# Alternatively use a link for the Makefile and run configure with flags in
+# another way.  When new source files are added use "shadowupdate":
+#  % cd shadow
+#  % rm Makefile
+#  % ln -s ../Makefile .
+#  % ./configure {options}
+#  % make
+# And later:
+#  % git pull
+#  % make distclean shadowupdate
+#  % ./configure {options}
+#  % make
 SHADOWDIR = shadow
+
+LINKEDFILES = ../*.[chm] ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../libvterm ../vimtutor ../gvimtutor ../install-sh ../Make_all.mak
 
 shadow:	runtime pixmaps
 	$(MKDIR_P) $(SHADOWDIR)
-	cd $(SHADOWDIR); ln -s ../*.[chm] ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../libvterm ../vimtutor ../gvimtutor ../install-sh ../Make_all.mak .
+	cd $(SHADOWDIR); ln -s $(LINKEDFILES) .
 	mkdir $(SHADOWDIR)/auto
 	cd $(SHADOWDIR)/auto; ln -s ../../auto/configure .
 	$(MKDIR_P) $(SHADOWDIR)/po
@@ -2866,6 +2885,12 @@ shadow:	runtime pixmaps
 				 ../../testdir/dumps \
 				 ../../testdir/test83-tags? \
 				 ../../testdir/*.ok .
+
+# After updating Vim new files may have been created, use this to refresh the
+# symbolic links in the shadow directory. This isn't guaranteed to catch all
+# changes, running "make shadow" again might sometimes be needed.
+shadowupdate:
+	ln -sf $(LINKEDFILES) .
 
 # Link needed for doing "make install" in a shadow directory.
 runtime:
