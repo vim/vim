@@ -46,10 +46,8 @@ static struct vimvar
     char	vv_flags;	// VV_COMPAT, VV_RO, VV_RO_SBX
 } vimvars[VV_LEN] =
 {
-    /*
-     * The order here must match the VV_ defines in vim.h!
-     * Initializing a union does not work, leave tv.vval empty to get zero's.
-     */
+    // The order here must match the VV_ defines in vim.h!
+    // Initializing a union does not work, leave tv.vval empty to get zero's.
     {VV_NAME("count",		 VAR_NUMBER), VV_COMPAT+VV_RO},
     {VV_NAME("count1",		 VAR_NUMBER), VV_RO},
     {VV_NAME("prevcount",	 VAR_NUMBER), VV_RO},
@@ -1592,7 +1590,7 @@ cat_prefix_varname(int prefix, char_u *name)
     if (len > varnamebuflen)
     {
 	vim_free(varnamebuf);
-	len += 10;			/* some additional space */
+	len += 10;			// some additional space
 	varnamebuf = alloc(len);
 	if (varnamebuf == NULL)
 	{
@@ -1701,6 +1699,7 @@ set_vim_var_type(int idx, vartype_T type)
 
 /*
  * Set number v: variable to "val".
+ * Note that this does not set the type, use set_vim_var_type() for that.
  */
     void
 set_vim_var_nr(int idx, varnumber_T val)
@@ -2078,7 +2077,7 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
     if (ret != NULL)
 	return ret;
 
-    /* Search in parent scope for lambda */
+    // Search in parent scope for lambda
     return find_var_in_scoped_ht(name, no_autoload || htp != NULL);
 }
 
@@ -2222,9 +2221,9 @@ new_script_vars(scid_T id)
 
     if (ga_grow(&ga_scripts, (int)(id - ga_scripts.ga_len)) == OK)
     {
-	/* Re-allocating ga_data means that an ht_array pointing to
-	 * ht_smallarray becomes invalid.  We can recognize this: ht_mask is
-	 * at its init value.  Also reset "v_dict", it's always the same. */
+	// Re-allocating ga_data means that an ht_array pointing to
+	// ht_smallarray becomes invalid.  We can recognize this: ht_mask is
+	// at its init value.  Also reset "v_dict", it's always the same.
 	for (i = 1; i <= ga_scripts.ga_len; ++i)
 	{
 	    ht = &SCRIPT_VARS(i);
@@ -2269,8 +2268,8 @@ init_var_dict(dict_T *dict, dictitem_T *dict_var, int scope)
     void
 unref_var_dict(dict_T *dict)
 {
-    /* Now the dict needs to be freed if no one else is using it, go back to
-     * normal reference counting. */
+    // Now the dict needs to be freed if no one else is using it, go back to
+    // normal reference counting.
     dict->dv_refcount -= DO_NOT_FREE_CNT - 1;
     dict_unref(dict);
 }
@@ -2817,7 +2816,7 @@ assert_error(garray_T *gap)
     struct vimvar   *vp = &vimvars[VV_ERRORS];
 
     if (vp->vv_type != VAR_LIST || vimvars[VV_ERRORS].vv_list == NULL)
-	/* Make sure v:errors is a list. */
+	// Make sure v:errors is a list.
 	set_vim_var_list(VV_ERRORS, list_alloc());
     list_append_string(vimvars[VV_ERRORS].vv_list, gap->ga_data, gap->ga_len);
 }
@@ -2916,6 +2915,73 @@ f_getwinvar(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "getbufvar()" function
+ */
+    void
+f_getbufvar(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	*buf;
+    buf_T	*save_curbuf;
+    char_u	*varname;
+    dictitem_T	*v;
+    int		done = FALSE;
+
+    (void)tv_get_number(&argvars[0]);	    // issue errmsg if type error
+    varname = tv_get_string_chk(&argvars[1]);
+    ++emsg_off;
+    buf = tv_get_buf(&argvars[0], FALSE);
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+
+    if (buf != NULL && varname != NULL)
+    {
+	// set curbuf to be our buf, temporarily
+	save_curbuf = curbuf;
+	curbuf = buf;
+
+	if (*varname == '&')
+	{
+	    if (varname[1] == NUL)
+	    {
+		// get all buffer-local options in a dict
+		dict_T	*opts = get_winbuf_options(TRUE);
+
+		if (opts != NULL)
+		{
+		    rettv_dict_set(rettv, opts);
+		    done = TRUE;
+		}
+	    }
+	    else if (get_option_tv(&varname, rettv, TRUE) == OK)
+		// buffer-local-option
+		done = TRUE;
+	}
+	else
+	{
+	    // Look up the variable.
+	    // Let getbufvar({nr}, "") return the "b:" dictionary.
+	    v = find_var_in_ht(&curbuf->b_vars->dv_hashtab,
+							 'b', varname, FALSE);
+	    if (v != NULL)
+	    {
+		copy_tv(&v->di_tv, rettv);
+		done = TRUE;
+	    }
+	}
+
+	// restore previous notion of curbuf
+	curbuf = save_curbuf;
+    }
+
+    if (!done && argvars[2].v_type != VAR_UNKNOWN)
+	// use the default value
+	copy_tv(&argvars[2], rettv);
+
+    --emsg_off;
+}
+
+/*
  * "settabvar()" function
  */
     void
@@ -2971,6 +3037,63 @@ f_settabwinvar(typval_T *argvars, typval_T *rettv)
 f_setwinvar(typval_T *argvars, typval_T *rettv)
 {
     setwinvar(argvars, rettv, 0);
+}
+
+/*
+ * "setbufvar()" function
+ */
+    void
+f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    buf_T	*buf;
+    char_u	*varname, *bufvarname;
+    typval_T	*varp;
+    char_u	nbuf[NUMBUFLEN];
+
+    if (check_secure())
+	return;
+    (void)tv_get_number(&argvars[0]);	    // issue errmsg if type error
+    varname = tv_get_string_chk(&argvars[1]);
+    buf = tv_get_buf(&argvars[0], FALSE);
+    varp = &argvars[2];
+
+    if (buf != NULL && varname != NULL && varp != NULL)
+    {
+	if (*varname == '&')
+	{
+	    long	numval;
+	    char_u	*strval;
+	    int		error = FALSE;
+	    aco_save_T	aco;
+
+	    // set curbuf to be our buf, temporarily
+	    aucmd_prepbuf(&aco, buf);
+
+	    ++varname;
+	    numval = (long)tv_get_number_chk(varp, &error);
+	    strval = tv_get_string_buf_chk(varp, nbuf);
+	    if (!error && strval != NULL)
+		set_option_value(varname, numval, strval, OPT_LOCAL);
+
+	    // reset notion of buffer
+	    aucmd_restbuf(&aco);
+	}
+	else
+	{
+	    buf_T *save_curbuf = curbuf;
+
+	    bufvarname = alloc(STRLEN(varname) + 3);
+	    if (bufvarname != NULL)
+	    {
+		curbuf = buf;
+		STRCPY(bufvarname, "b:");
+		STRCPY(bufvarname + 2, varname);
+		set_var(bufvarname, varp, TRUE);
+		vim_free(bufvarname);
+		curbuf = save_curbuf;
+	    }
+	}
+    }
 }
 
 #endif // FEAT_EVAL

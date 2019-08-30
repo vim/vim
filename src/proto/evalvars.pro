@@ -58,7 +58,9 @@ int var_exists(char_u *var);
 void f_gettabvar(typval_T *argvars, typval_T *rettv);
 void f_gettabwinvar(typval_T *argvars, typval_T *rettv);
 void f_getwinvar(typval_T *argvars, typval_T *rettv);
+void f_getbufvar(typval_T *argvars, typval_T *rettv);
 void f_settabvar(typval_T *argvars, typval_T *rettv);
 void f_settabwinvar(typval_T *argvars, typval_T *rettv);
 void f_setwinvar(typval_T *argvars, typval_T *rettv);
+void f_setbufvar(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */
