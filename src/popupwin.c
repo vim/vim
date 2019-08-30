@@ -610,8 +610,8 @@ apply_general_options(win_T *wp, dict_T *dict)
     di = dict_find(dict, (char_u *)"firstline", -1);
     if (di != NULL)
 	wp->w_firstline = dict_get_number(dict, (char_u *)"firstline");
-    if (wp->w_firstline < 1)
-	wp->w_firstline = 1;
+    if (wp->w_firstline < 0)
+	wp->w_firstline = 0;
 
     di = dict_find(dict, (char_u *)"scrollbar", -1);
     if (di != NULL)
@@ -3192,7 +3192,16 @@ update_popups(void (*win_update)(win_T *wp))
 
 	// Draw the popup text, unless it's off screen.
 	if (wp->w_winrow < screen_Rows && wp->w_wincol < screen_Columns)
+	{
 	    win_update(wp);
+
+	    // move the cursor into the visible lines, otherwise executing
+	    // commands with win_execute() may cause the text to jump.
+	    if (wp->w_cursor.lnum < wp->w_topline)
+		wp->w_cursor.lnum = wp->w_topline;
+	    else if (wp->w_cursor.lnum >= wp->w_botline)
+		wp->w_cursor.lnum = wp->w_botline - 1;
+	}
 
 	wp->w_winrow -= top_off;
 	wp->w_wincol -= left_extra;

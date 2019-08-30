@@ -333,6 +333,36 @@ func Test_popup_firstline()
   call assert_equal(3, popup_getoptions(winid).firstline)
   call popup_setoptions(winid, #{firstline: 1})
   call assert_equal(1, popup_getoptions(winid).firstline)
+  call popup_close(winid)
+
+  let winid = popup_create(['xxx']->repeat(50), #{
+	\ maxheight: 3,
+	\ firstline: 11,
+	\ })
+  redraw
+  call assert_equal(11, popup_getoptions(winid).firstline)
+  call assert_equal(11, popup_getpos(winid).firstline)
+
+  " Normal command changes what is displayed but not "firstline"
+  call win_execute(winid, "normal! \<c-y>")
+  call assert_equal(11, popup_getoptions(winid).firstline)
+  call assert_equal(10, popup_getpos(winid).firstline)
+
+  " Making some property change applies "firstline" again
+  call popup_setoptions(winid, #{line: 4})
+  call assert_equal(11, popup_getoptions(winid).firstline)
+  call assert_equal(11, popup_getpos(winid).firstline)
+
+  " Remove "firstline" property and scroll
+  call popup_setoptions(winid, #{firstline: 0})
+  call win_execute(winid, "normal! \<c-y>")
+  call assert_equal(0, popup_getoptions(winid).firstline)
+  call assert_equal(10, popup_getpos(winid).firstline)
+
+  " Making some property change has no side effect
+  call popup_setoptions(winid, #{line: 3})
+  call assert_equal(0, popup_getoptions(winid).firstline)
+  call assert_equal(10, popup_getpos(winid).firstline)
 
   call popup_close(winid)
 endfunc
@@ -1678,7 +1708,7 @@ func Test_popup_scrollbar()
   call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_4', {})
 
-  call term_sendkeys(buf, ":call popup_setoptions(winid, #{scrollbarhighlight: 'ScrollBar', thumbhighlight: 'ScrollThumb'})\<CR>")
+  call term_sendkeys(buf, ":call popup_setoptions(winid, #{scrollbarhighlight: 'ScrollBar', thumbhighlight: 'ScrollThumb', firstline: 5})\<CR>")
   call term_sendkeys(buf, ":call ScrollUp()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_5', {})
 
