@@ -6007,10 +6007,11 @@ WaitForCharOrMouse(long msec, int *interrupted, int ignore_input)
 	gpm_process_wanted = 0;
 	avail = RealWaitForChar(read_cmd_fd, msec,
 					     &gpm_process_wanted, interrupted);
+	if (!avail && !gpm_process_wanted)
 # else
 	avail = RealWaitForChar(read_cmd_fd, msec, NULL, interrupted);
-# endif
 	if (!avail)
+# endif
 	{
 	    if (!ignore_input && input_available())
 		return 1;
