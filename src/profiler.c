@@ -690,13 +690,16 @@ func_dump_profile(FILE *fd)
 		    fprintf(fd, "FUNCTION  <SNR>%s()\n", fp->uf_name + 3);
 		else
 		    fprintf(fd, "FUNCTION  %s()\n", fp->uf_name);
-		p = home_replace_save(NULL,
-				     get_scriptname(fp->uf_script_ctx.sc_sid));
-		if (p != NULL)
+		if (fp->uf_script_ctx.sc_sid > 0)
 		{
-		    fprintf(fd, "    Defined: %s line %ld\n",
+		    p = home_replace_save(NULL,
+				     get_scriptname(fp->uf_script_ctx.sc_sid));
+		    if (p != NULL)
+		    {
+			fprintf(fd, "    Defined: %s line %ld\n",
 					   p, (long)fp->uf_script_ctx.sc_lnum);
-		    vim_free(p);
+			vim_free(p);
+		    }
 		}
 		if (fp->uf_tm_count == 1)
 		    fprintf(fd, "Called 1 time\n");
