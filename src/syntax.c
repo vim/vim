@@ -5224,8 +5224,11 @@ syn_cmd_region(
 	{
 	    if (!success)
 	    {
-		vim_regfree(ppp->pp_synp->sp_prog);
-		vim_free(ppp->pp_synp->sp_pattern);
+		if (ppp->pp_synp != NULL)
+		{
+		    vim_regfree(ppp->pp_synp->sp_prog);
+		    vim_free(ppp->pp_synp->sp_pattern);
+		}
 	    }
 	    vim_free(ppp->pp_synp);
 	    ppp_next = ppp->pp_next;
