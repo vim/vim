@@ -171,6 +171,7 @@ invoke_sound_callback(void)
 	clear_tv(&rettv);
 
 	delete_sound_callback(scb->scb_callback);
+	vim_free(scb);
     }
     redraw_after_callback(TRUE);
 }
@@ -263,10 +264,21 @@ f_sound_clear(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     void
 sound_free(void)
 {
+    soundcb_queue_T *scb;
+
     if (context != NULL)
 	ca_context_destroy(context);
+
     while (first_callback != NULL)
 	delete_sound_callback(first_callback);
+
+    while (callback_queue != NULL)
+    {
+	scb = callback_queue;
+	callback_queue = scb->scb_next;
+	delete_sound_callback(scb->scb_callback);
+	vim_free(scb);
+    }
 }
 # endif
 
