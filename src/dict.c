@@ -617,11 +617,21 @@ dict_get_string(dict_T *d, char_u *key, int save)
     varnumber_T
 dict_get_number(dict_T *d, char_u *key)
 {
+    return dict_get_number_def(d, key, 0);
+}
+
+/*
+ * Get a number item from a dictionary.
+ * Returns "def" if the entry doesn't exist.
+ */
+    varnumber_T
+dict_get_number_def(dict_T *d, char_u *key, int def)
+{
     dictitem_T	*di;
 
     di = dict_find(d, key, -1);
     if (di == NULL)
-	return 0;
+	return def;
     return tv_get_number(&di->di_tv);
 }
 

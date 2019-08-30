@@ -399,13 +399,13 @@ apply_move_options(win_T *wp, dict_T *d)
     char_u	*str;
     dictitem_T	*di;
 
-    if ((nr = dict_get_number(d, (char_u *)"minwidth")) > 0)
+    if ((nr = dict_get_number_def(d, (char_u *)"minwidth", -1)) >= 0)
 	wp->w_minwidth = nr;
-    if ((nr = dict_get_number(d, (char_u *)"minheight")) > 0)
+    if ((nr = dict_get_number_def(d, (char_u *)"minheight", -1)) >= 0)
 	wp->w_minheight = nr;
-    if ((nr = dict_get_number(d, (char_u *)"maxwidth")) > 0)
+    if ((nr = dict_get_number_def(d, (char_u *)"maxwidth", -1)) >= 0)
 	wp->w_maxwidth = nr;
-    if ((nr = dict_get_number(d, (char_u *)"maxheight")) > 0)
+    if ((nr = dict_get_number_def(d, (char_u *)"maxheight", -1)) >= 0)
 	wp->w_maxheight = nr;
 
     nr = popup_options_one(d, (char_u *)"line");
@@ -609,9 +609,11 @@ apply_general_options(win_T *wp, dict_T *dict)
 
     di = dict_find(dict, (char_u *)"firstline", -1);
     if (di != NULL)
+    {
 	wp->w_firstline = dict_get_number(dict, (char_u *)"firstline");
-    if (wp->w_firstline < 0)
-	wp->w_firstline = 0;
+	if (wp->w_firstline < 0)
+	    wp->w_firstline = -1;
+    }
 
     di = dict_find(dict, (char_u *)"scrollbar", -1);
     if (di != NULL)
@@ -1146,7 +1148,7 @@ popup_adjust_position(win_T *wp)
     }
 
     // start at the desired first line
-    if (wp->w_firstline != 0)
+    if (wp->w_firstline > 0)
 	wp->w_topline = wp->w_firstline;
     if (wp->w_topline > wp->w_buffer->b_ml.ml_line_count)
 	wp->w_topline = wp->w_buffer->b_ml.ml_line_count;
@@ -1154,9 +1156,15 @@ popup_adjust_position(win_T *wp)
     // Compute width based on longest text line and the 'wrap' option.
     // Use a minimum width of one, so that something shows when there is no
     // text.
+    // When "firstline" is -1 then start with the last buffer line and go
+    // backwards.
     // TODO: more accurate wrapping
     wp->w_width = 1;
-    for (lnum = wp->w_topline; lnum <= wp->w_buffer->b_ml.ml_line_count; ++lnum)
+    if (wp->w_firstline < 0)
+	lnum = wp->w_buffer->b_ml.ml_line_count;
+    else
+	lnum = wp->w_topline;
+    while (lnum >= 1 && lnum <= wp->w_buffer->b_ml.ml_line_count)
     {
 	int len;
 	int w_width = wp->w_width;
@@ -1206,9 +1214,20 @@ popup_adjust_position(win_T *wp)
 	}
 	// do not use the width of lines we're not going to show
 	if (wp->w_maxheight > 0
-		       && lnum - wp->w_topline + 1 + wrapped > wp->w_maxheight)
+		   && (wp->w_firstline >= 0
+			       ? lnum - wp->w_topline
+			       : wp->w_buffer->b_ml.ml_line_count - lnum)
+		       + 1 + wrapped > wp->w_maxheight)
 	    break;
+
+	if (wp->w_firstline < 0)
+	    --lnum;
+	else
+	    ++lnum;
     }
+
+    if (wp->w_firstline < 0)
+	wp->w_topline = lnum > 0 ? lnum + 1 : lnum;
 
     wp->w_has_scrollbar = wp->w_want_scrollbar
 	   && (wp->w_topline > 1 || lnum <= wp->w_buffer->b_ml.ml_line_count);

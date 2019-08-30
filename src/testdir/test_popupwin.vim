@@ -313,14 +313,18 @@ func Test_popup_firstline()
 
   let lines =<< trim END
 	call setline(1, range(1, 20))
-	call popup_create(['1111', '222222', '33333', '44', '5', '666666', '77777', '888', '9999999999999999'], #{
+	let winid = popup_create(['1111', '222222', '33333', '44', '5', '666666', '77777', '888', '9999999999999999'], #{
 	      \ maxheight: 4,
 	      \ firstline: 3,
 	      \ })
   END
   call writefile(lines, 'XtestPopupFirstline')
   let buf = RunVimInTerminal('-S XtestPopupFirstline', #{rows: 10})
-  call VerifyScreenDump(buf, 'Test_popupwin_firstline', {})
+  call VerifyScreenDump(buf, 'Test_popupwin_firstline_1', {})
+
+  call term_sendkeys(buf, ":call popup_setoptions(winid, #{firstline: -1})\<CR>")
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_firstline_2', {})
 
   " clean up
   call StopVimInTerminal(buf)
@@ -1728,6 +1732,10 @@ func Test_popup_scrollbar()
 
   call term_sendkeys(buf, ":call ClickBot()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_9', {})
+
+  " remove the minwidth and maxheight
+  call term_sendkeys(buf, ":call popup_setoptions(winid, #{maxheight: 0, minwidth: 0})\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_scroll_10', {})
 
   " clean up
   call StopVimInTerminal(buf)
