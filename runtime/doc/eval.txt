@@ -1228,7 +1228,7 @@ next method: >
 	mylist->filter(filterexpr)->map(mapexpr)->sort()->join()
 <
 Example of using a lambda: >
-	GetPercentage->{x -> x * 100}()->printf('%d%%')
+	GetPercentage()->{x -> x * 100}()->printf('%d%%')
 <
 When using -> the |expr7| operators will be applied first, thus: >
 	-1.234->string()
@@ -6206,6 +6206,9 @@ js_decode({string})					*js_decode()*
 		- Empty items in an array (between two commas) are allowed and
 		  result in v:none items.
 
+		Can also be used as a |method|: >
+			ReadObject()->js_decode()
+
 js_encode({expr})					*js_encode()*
 		This is similar to |json_encode()| with these differences:
 		- Object key names are not in quotes.
@@ -6220,6 +6223,8 @@ js_encode({expr})					*js_encode()*
 		This encoding is valid for JavaScript. It is more efficient
 		than JSON, especially when using an array with optional items.
 
+		Can also be used as a |method|: >
+			GetObject()->js_encode()
 
 json_decode({string})					*json_decode()*
 		This parses a JSON formatted string and returns the equivalent
@@ -6254,6 +6259,8 @@ json_decode({string})					*json_decode()*
 		accepted by json_decode() as the result must be a valid Vim
 		type, e.g. this fails: {"a":"b", "a":"c"}
 
+		Can also be used as a |method|: >
+			ReadObject()->json_decode()
 
 json_encode({expr})					*json_encode()*
 		Encode {expr} as JSON and return this as a string.
@@ -6279,6 +6286,9 @@ json_encode({expr})					*json_encode()*
 		Note that NaN and Infinity are passed on as values.  This is
 		missing in the JSON standard, but several implementations do
 		allow it.  If not then you will get an error.
+
+		Can also be used as a |method|: >
+			GetObject()->json_encode()
 
 keys({dict})						*keys()*
 		Return a |List| with all the keys of {dict}.  The |List| is in
@@ -6346,6 +6356,10 @@ libcall({libname}, {funcname}, {argument})
 		feature is present}
 		Examples: >
 			:echo libcall("libc.so", "getenv", "HOME")
+
+<		Can also be used as a |method|, where the base is passed as
+		the argument to the called function: >
+			GetValue()->libcall("libc.so", "getenv")
 <
 							*libcallnr()*
 libcallnr({libname}, {funcname}, {argument})
@@ -6357,6 +6371,10 @@ libcallnr({libname}, {funcname}, {argument})
 			:echo libcallnr("/usr/lib/libc.so", "getpid", "")
 			:call libcallnr("libc.so", "printf", "Hello World!\n")
 			:call libcallnr("libc.so", "sleep", 10)
+<
+		Can also be used as a |method|, where the base is passed as
+		the argument to the called function: >
+			GetValue()->libcallnr("libc.so", "printf")
 <
 							*line()*
 line({expr})	The result is a Number, which is the line number of the file
@@ -6385,6 +6403,9 @@ line({expr})	The result is a Number, which is the line number of the file
 		To jump to the last known position when opening a file see
 		|last-position-jump|.
 
+		Can also be used as a |method|: >
+			GetValue()->line()
+
 line2byte({lnum})					*line2byte()*
 		Return the byte count from the start of the buffer for line
 		{lnum}.  This includes the end-of-line character, depending on
@@ -6399,6 +6420,9 @@ line2byte({lnum})					*line2byte()*
 		disabled at compile time, -1 is returned.
 		Also see |byte2line()|, |go| and |:goto|.
 
+		Can also be used as a |method|: >
+			GetLnum()->line2byte()
+
 lispindent({lnum})					*lispindent()*
 		Get the amount of indent for line {lnum} according the lisp
 		indenting rules, as with 'lisp'.
@@ -6406,6 +6430,9 @@ lispindent({lnum})					*lispindent()*
 		relevant.  {lnum} is used just like in |getline()|.
 		When {lnum} is invalid or Vim was not compiled the
 		|+lispindent| feature, -1 is returned.
+
+		Can also be used as a |method|: >
+			GetLnum()->lispindent()
 
 list2str({list} [, {utf8}])				*list2str()*
 		Convert each number in {list} to a character string can
@@ -6421,6 +6448,9 @@ list2str({list} [, {utf8}])				*list2str()*
 		With utf-8 composing characters work as expected: >
 			list2str([97, 769])	returns "á"
 <
+		Can also be used as a |method|: >
+			GetList()->list2str()
+
 listener_add({callback} [, {buf}])			*listener_add()*
 		Add a callback function that will be invoked when changes have
 		been made to buffer {buf}.
@@ -6490,6 +6520,10 @@ listener_add({callback} [, {buf}])			*listener_add()*
 		The {callback} is also not invoked when the buffer is
 		unloaded, use the |BufUnload| autocmd event for that.
 
+		Can also be used as a |method|, where the base is passed as
+		the second argument, the buffer: >
+			GetBuffer()->listener_add(callback)
+
 listener_flush([{buf}])					*listener_flush()*
 		Invoke listener callbacks for buffer {buf}.  If there are no
 		pending changes then no callbacks are invoked.
@@ -6498,10 +6532,16 @@ listener_flush([{buf}])					*listener_flush()*
 		values, see |bufname()|.  When {buf} is omitted the current
 		buffer is used.
 
+		Can also be used as a |method|: >
+			GetBuffer()->listener_flush()
+
 listener_remove({id})					*listener_remove()*
 		Remove a listener previously added with listener_add().
 		Returns zero when {id} could not be found, one when {id} was
 		removed.
+
+		Can also be used as a |method|: >
+			GetListenerId()->listener_remove()
 
 localtime()						*localtime()*
 		Return the current time, measured as seconds since 1st Jan
@@ -6550,7 +6590,11 @@ luaeval({expr} [, {expr}])					*luaeval()*
 		as-is.
 		Other objects are returned as zero without any errors.
 		See |lua-luaeval| for more details.
-		{only available when compiled with the |+lua| feature}
+
+		Can also be used as a |method|: >
+			GetExpr()->luaeval()
+
+<		{only available when compiled with the |+lua| feature}
 
 map({expr1}, {expr2})					*map()*
 		{expr1} must be a |List| or a |Dictionary|.

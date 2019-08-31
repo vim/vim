@@ -36,7 +36,7 @@ func Test_eval()
 
   " lua.eval with a string
   lua v = vim.eval('"abc"')
-  call assert_equal('string', luaeval('vim.type(v)'))
+  call assert_equal('string', 'vim.type(v)'->luaeval())
   call assert_equal('abc', luaeval('v'))
 
   " lua.eval with a list

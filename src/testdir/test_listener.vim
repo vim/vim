@@ -59,10 +59,10 @@ func Test_listening()
   " a change above a previous change without a line number change is reported
   " together
   call setline(1, ['one one', 'two'])
-  call listener_flush()
+  call listener_flush(bufnr())
   call append(2, 'two two')
   call setline(1, 'something')
-  call listener_flush()
+  call bufnr()->listener_flush()
   call assert_equal([{'lnum': 3, 'end': 3, 'col': 1, 'added': 1},
 	\ {'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list)
 
@@ -134,7 +134,7 @@ func Test_listening()
   redraw
   call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list3)
 
-  call listener_remove(id)
+  eval id->listener_remove()
   bwipe!
 endfunc
 
@@ -214,7 +214,7 @@ func Test_listening_other_buf()
   call setline(1, ['one', 'two'])
   let bufnr = bufnr('')
   normal ww
-  let id = listener_add(function('s:StoreBufList'), bufnr)
+  let id = bufnr->listener_add(function('s:StoreBufList'))
   let s:list = []
   call setbufline(bufnr, 1, 'hello')
   redraw
