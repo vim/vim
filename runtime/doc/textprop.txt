@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.1.  Last change: 2019 Aug 13
+*textprop.txt*  For Vim version 8.1.  Last change: 2019 Aug 25
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -170,7 +170,7 @@ prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
 
 							*prop_find()*
 prop_find({props} [, {direction}])
-		NOT IMPLEMENTED YET
+		{not implemented yet}
 		Search for a text property as specified with {props}:
 		   id		property with this ID
 		   type		property with this type name
@@ -246,7 +246,7 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 
 prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 		Add a text property type {name}.  If a property type with this
-		name already exists an error is given.
+		name already exists an error is given.  Nothing is returned.
 		{props} is a dictionary with these optional fields:
 		   bufnr	define the property only for this buffer; this
 				avoids name collisions and automatically

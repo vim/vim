@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Aug 24
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Aug 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -40,7 +40,7 @@ Profiling is documented at |profiling|.
 
 1.1 Variable types ~
 						*E712* *E896* *E897* *E899*
-There are nine types of variables:
+There are ten types of variables:
 
 Number		A 32 or 64 bit signed number.  |expr-number| *Number*
 		64-bit Numbers are available only when compiled with the

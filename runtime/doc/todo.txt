@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Aug 17
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Aug 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,30 +39,21 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Popup windows:
-- check popupmenu using preview window  #4544  overlaps complete menu
-    set completeopt+=preview
 - Implement flip option
-- Have a way to scroll to the bottom, e.g. set 'firstline' to -1? (#4577)
 - Why does 'nrformats' leak from the popup window buffer???
   Happens in Test_simple_popup() at the second screendump.
-- Disable commands, feedkeys(), CTRL-W, etc. in a popup window.
-  Use ERROR_IF_POPUP_WINDOW for more commands.
 - For the "moved" property also include mouse movement?
-- Can the buffer be re-used if it was the last one, to avoid using up lots of
-  buffer numbers?
-- Have an option to attach the popup to a text position, like text properties
-  do. (#4560)
 - Make redrawing more efficient and avoid flicker:
-    - put popup menu also put in popup_mask?
-- Invoke filter with character before mapping?  #4759
+    - put popup menu also in popup_mask?
+- Any other commands to disable in a popup window?
+  Use ERROR_IF_POPUP_WINDOW for more commands.
 - Figure out the size and position better.
     if wrapping splits a double-wide character
     if wrapping inserts indent
 - When drawing on top half a double-wide character, display ">" or "<" in the
   incomplete cell.
-- Use a popup window for the "info" item of completion instead of using a
-  preview window.  Ideas in issue #4544.
-  How to add highlighting?
+
+Text properties: See comment at top of src/textprop.c.
 
 'incsearch' with :s: (#3321)
 - Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
@@ -137,6 +128,8 @@ E278, E279, E290, E292, E362, E366, E450, E451, E452,
 E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
 E654, E856, E857, E860, E861, E863, E889, E900
 
+Remove check for cmd_silent when calling search_stat()? (Gary Johnson)
+
 undo result wrong: Masato Nishihata, #4798
 
 Sound: support on Mac?  Or does libcanberra work there?
@@ -149,9 +142,6 @@ Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
 20)
 Also put :argadd commands at the start for all buffers, so that their order
 remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
-
-Make heredoc-let a bit more restrictive:
-https://github.com/vim/vim/issues/4705
 
 Completion mixes results from the current buffer with tags and other files.
 Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
@@ -178,6 +168,8 @@ Patch for Template string: #4491  Not ready yet.  New pull: #4634
 goes to any buffer, and then :bnext skips help buffers, since they are
 unlisted. (#4478)
 
+Patch to fix using zero sc_sid. (#4877)
+
 Make 'showbreak' global-local.
 
 The :syntax cchar value can only be a single character.  It would be useful to
@@ -188,6 +180,8 @@ Problem showing a line if the number column width changes when using "o".
 
 When using :packadd for a replacement language plugin, it is loaded after the
 default one.  #4698
+
+Patch from Namsh to allow building with both XIM and hangulin. (2019 Aug 29)
 
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
@@ -524,6 +518,8 @@ MS-Windows: .lnk file not resolved properly when 'encoding' is set.
 (lkintact, 2018 Sep 22, #3473)
 
 Merge checking for 'cursorline' and 'concealcursor', see neovim #9492.
+
+Display error when a conceal match uses '\%>1l'. (#4854)
 
 Request to add sign_setlist() to make it faster to add a lot of signs, e.g.
 when adding a sign for every quickfix entry. (#4557)
@@ -1075,6 +1071,7 @@ sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 4#1038)
 
 +channel:
+- Add a in_cb, invoked when the write buffer has become empty. (Matteo Landi)
 - Add a separate timeout for opening a socket.  Currently it's fixed at 50
   msec, which is too small for a remote connection. (tverniquet, #2130)
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)

@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.1.  Last change: 2019 Aug 18
+*insert.txt*    For Vim version 8.1.  Last change: 2019 Aug 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1119,8 +1119,9 @@ three lines, but 'previewheight' is used when it has a value of 1 or 2.
 
 						*complete-popup*
 When "popup" is in 'completeopt' a popup window is used to display the "info".
-Then the 'completepopup' option specifies the properties of the popup.  The
-option is a comma separated list of values:
+Then the 'completepopup' option specifies the properties of the popup.  This
+is used when the info popup is created.  The option is a comma separated list
+of values:
 	height		maximum height of the popup
 	width		maximum width of the popup
 	highlight	highlight group of the popup (default is Pmenu)
@@ -1129,10 +1130,13 @@ option is a comma separated list of values:
 Example: >
 	:set completepopup=height:10,width:60,highlight:InfoPopup
 
-When the "align" value is "item then the popup is positioned close to the
+When the "align" value is "item" then the popup is positioned close to the
 selected item.  Changing the selection will also move the popup.  When "align"
 is "menu" then the popup is aligned with the top of the menu if the menu is
 below the text, and the bottom of the menu otherwise.
+
+After the info popup is created it can be found with |popup_findinfo()| and
+properties can be changed with |popup_setoptions()|.
 
 The "kind" item uses a single letter to indicate the kind of completion.  This
 may be used to show the completion differently (different color or icon).

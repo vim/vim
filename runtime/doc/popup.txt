@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Aug 03
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Aug 31
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -125,7 +125,9 @@ is always associated with the popup window and manipulation is restricted:
 It is possible to change the specifically mentioned options, but anything
 might break then, so better leave them alone.
 
-The window does have a cursor position, but the cursor is not displayed.
+The window does have a cursor position, but the cursor is not displayed.  In
+fact, the cursor in the underlying window is displayed, as if it peeks through
+the popup, so you can see where it is.
 
 To execute a command in the context of the popup window and buffer use
 `win_execute()`.  Example: >
@@ -315,6 +317,10 @@ popup_getoptions({id})					*popup_getoptions()*
 		The "mousemoved" entry is a list with screen row, minimum and
 		maximum screen column, [0, 0, 0] when not set.
 
+		"firstline" is the property set on the popup, unlike the
+		"firstline" obtained with |popup_getpos()| which is the actual
+		buffer line at the top of the popup window.
+
 		"border" and "padding" are not included when all values are
 		zero.  When all values are one then an empty list is included.
 
@@ -344,6 +350,7 @@ popup_getpos({id})					*popup_getpos()*
 		    core_width	width of the text box in screen cells
 		    core_height	height of the text box in screen cells
 		    firstline	line of the buffer at top (1 unless scrolled)
+		    		(not the value of the "firstline" property)
 		    scrollbar	non-zero if a scrollbar is displayed
 		    visible	one if the popup is displayed, zero if hidden
 		Note that these are the actual screen positions.  They differ
@@ -559,6 +566,7 @@ The second argument of |popup_create()| is a dictionary with options:
 	firstline	First buffer line to display.  When larger than one it
 			looks like the text scrolled up.  When out of range
 			the last buffer line will at the top of the window.
+			Set to zero to leave the position as set by commands.
 			Also see "scrollbar".
 	hidden		When TRUE the popup exists but is not displayed; use
 			`popup_show()` to unhide it.

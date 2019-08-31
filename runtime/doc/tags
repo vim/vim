@@ -150,6 +150,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'complete'	options.txt	/*'complete'*
 'completefunc'	options.txt	/*'completefunc'*
 'completeopt'	options.txt	/*'completeopt'*
+'completepopup'	options.txt	/*'completepopup'*
 'completeslash'	options.txt	/*'completeslash'*
 'concealcursor'	options.txt	/*'concealcursor'*
 'conceallevel'	options.txt	/*'conceallevel'*
@@ -161,6 +162,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'cp'	options.txt	/*'cp'*
 'cpo'	options.txt	/*'cpo'*
 'cpoptions'	options.txt	/*'cpoptions'*
+'cpp'	options.txt	/*'cpp'*
 'cpt'	options.txt	/*'cpt'*
 'crb'	options.txt	/*'crb'*
 'cryptmethod'	options.txt	/*'cryptmethod'*
@@ -5781,6 +5783,7 @@ compl-whole-line	insert.txt	/*compl-whole-line*
 complete()	eval.txt	/*complete()*
 complete-functions	insert.txt	/*complete-functions*
 complete-items	insert.txt	/*complete-items*
+complete-popup	insert.txt	/*complete-popup*
 complete_CTRL-E	insert.txt	/*complete_CTRL-E*
 complete_CTRL-Y	insert.txt	/*complete_CTRL-Y*
 complete_add()	eval.txt	/*complete_add()*
@@ -6069,6 +6072,7 @@ dtd2vim	insert.txt	/*dtd2vim*
 dying-variable	eval.txt	/*dying-variable*
 e	motion.txt	/*e*
 easy	starting.txt	/*easy*
+echospace-variable	eval.txt	/*echospace-variable*
 edit-a-file	editing.txt	/*edit-a-file*
 edit-binary	editing.txt	/*edit-binary*
 edit-dialogs	editing.txt	/*edit-dialogs*
@@ -8262,6 +8266,7 @@ popup-menu-added	version5.txt	/*popup-menu-added*
 popup-position	popup.txt	/*popup-position*
 popup-props	popup.txt	/*popup-props*
 popup-scrollbar	popup.txt	/*popup-scrollbar*
+popup-textprop-pos	popup.txt	/*popup-textprop-pos*
 popup-usage	popup.txt	/*popup-usage*
 popup-window	popup.txt	/*popup-window*
 popup-window-functions	usr_41.txt	/*popup-window-functions*
@@ -8277,9 +8282,10 @@ popup_dialog()	popup.txt	/*popup_dialog()*
 popup_dialog-example	popup.txt	/*popup_dialog-example*
 popup_filter_menu()	popup.txt	/*popup_filter_menu()*
 popup_filter_yesno()	popup.txt	/*popup_filter_yesno()*
+popup_findinfo()	popup.txt	/*popup_findinfo()*
+popup_findpreview()	popup.txt	/*popup_findpreview()*
 popup_getoptions()	popup.txt	/*popup_getoptions()*
 popup_getpos()	popup.txt	/*popup_getpos()*
-popup_getpreview()	popup.txt	/*popup_getpreview()*
 popup_hide()	popup.txt	/*popup_hide()*
 popup_locate()	popup.txt	/*popup_locate()*
 popup_menu()	popup.txt	/*popup_menu()*
@@ -9574,6 +9580,7 @@ v:count	eval.txt	/*v:count*
 v:count1	eval.txt	/*v:count1*
 v:ctype	eval.txt	/*v:ctype*
 v:dying	eval.txt	/*v:dying*
+v:echospace	eval.txt	/*v:echospace*
 v:errmsg	eval.txt	/*v:errmsg*
 v:errors	eval.txt	/*v:errors*
 v:event	eval.txt	/*v:event*

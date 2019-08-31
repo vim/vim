@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.1.  Last change: 2019 Aug 12
+*various.txt*   For Vim version 8.1.  Last change: 2019 Aug 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -334,7 +334,7 @@ N  *+cindent*		|'cindent'|, C indenting
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
    *+clipboard*		|clipboard| support compiled-in
    *+clipboard_working*	|clipboard| support compiled-in and working
-N  *+cmdline_compl*	command line completion |cmdline-completion|
+T  *+cmdline_compl*	command line completion |cmdline-completion|
 S  *+cmdline_hist*	command line history |cmdline-history|
 N  *+cmdline_info*	|'showcmd'| and |'ruler'|
 N  *+comments*		|'comments'| support
@@ -372,7 +372,7 @@ N  *+gettext*		message translations |multi-lang|
 m  *+hangul_input*	Hangul input support |hangul|
    *+iconv*		Compiled with the |iconv()| function
    *+iconv/dyn*		Likewise |iconv-dynamic| |/dyn|
-N  *+insert_expand*	|insert_expand| Insert mode completion
+T  *+insert_expand*	|insert_expand| Insert mode completion
 m  *+job*		starting and stopping jobs |job|
 S  *+jumplist*		|jumplist|
 B  *+keymap*		|'keymap'|
