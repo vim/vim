@@ -33,7 +33,7 @@ func TerminalEscapeCode(code, row, col, m)
     " need to use byte encoding here.
     let str = list2str([a:code + 0x20, a:col + 0x20, a:row + 0x20])
     if has('iconv')
-      let bytes = iconv(str, 'utf-8', 'latin1')
+      let bytes = str->iconv('utf-8', 'latin1')
     else
       " Hopefully the numbers are not too big.
       let bytes = str

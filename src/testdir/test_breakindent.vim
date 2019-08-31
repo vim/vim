@@ -411,7 +411,7 @@ func Test_breakindent11()
   " test strdisplaywidth()
   call s:test_windows('setl cpo-=n sbr=>> nu nuw=4 nolist briopt= ts=4')
   let text = getline(2)
-  let width = strlen(text[1:])+indent(2)+strlen(&sbr)*3 " text wraps 3 times
+  let width = strlen(text[1:]) + indent(2) + strlen(&sbr) * 3 " text wraps 3 times
   call assert_equal(width, strdisplaywidth(text))
   call s:close_windows('set sbr=')
 endfunc
@@ -423,7 +423,7 @@ func Test_breakindent11_vartabs()
   " test strdisplaywidth()
   call s:test_windows('setl cpo-=n sbr=>> nu nuw=4 nolist briopt= ts=4 vts=4')
   let text = getline(2)
-  let width = strlen(text[1:])+indent(2)+strlen(&sbr)*3 " text wraps 3 times
+  let width = strlen(text[1:]) + 2->indent() + strlen(&sbr) * 3 " text wraps 3 times
   call assert_equal(width, strdisplaywidth(text))
   call s:close_windows('set sbr= vts&')
 endfunc
