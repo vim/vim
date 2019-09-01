@@ -371,6 +371,24 @@ func Test_popup_firstline()
   call popup_close(winid)
 endfunc
 
+func Test_popup_noscrolloff()
+  set scrolloff=5
+  let winid = popup_create(['xxx']->repeat(50), #{
+	\ maxheight: 5,
+	\ firstline: 11,
+	\ })
+  redraw
+  call assert_equal(11, popup_getoptions(winid).firstline)
+  call assert_equal(11, popup_getpos(winid).firstline)
+
+  call popup_setoptions(winid, #{firstline: 0})
+  call win_execute(winid, "normal! \<c-y>")
+  call assert_equal(0, popup_getoptions(winid).firstline)
+  call assert_equal(10, popup_getpos(winid).firstline)
+
+  call popup_close(winid)
+endfunc
+
 func Test_popup_drag()
   CheckScreendump
 
@@ -1019,14 +1037,18 @@ func Test_popup_option_values()
   " global/buffer-local
   setlocal path=/there
   " global/window-local
-  setlocal scrolloff=9
+  setlocal statusline=2
 
   let winid = popup_create('hello', {})
   call assert_equal(0, getwinvar(winid, '&number'))
   call assert_equal(1, getwinvar(winid, '&wrap'))
   call assert_equal('', getwinvar(winid, '&omnifunc'))
   call assert_equal(&g:path, getwinvar(winid, '&path'))
-  call assert_equal(&g:scrolloff, getwinvar(winid, '&scrolloff'))
+  call assert_equal(&g:statusline, getwinvar(winid, '&statusline'))
+
+  " 'scrolloff' is reset to zero
+  call assert_equal(5, &scrolloff)
+  call assert_equal(0, getwinvar(winid, '&scrolloff'))
 
   call popup_close(winid)
   bwipe
@@ -1713,6 +1735,7 @@ func Test_popup_scrollbar()
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_4', {})
 
   call term_sendkeys(buf, ":call popup_setoptions(winid, #{scrollbarhighlight: 'ScrollBar', thumbhighlight: 'ScrollThumb', firstline: 5})\<CR>")
+  " this scrolls two lines (half the window height)
   call term_sendkeys(buf, ":call ScrollUp()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_5', {})
 

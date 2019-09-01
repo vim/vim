@@ -1687,11 +1687,12 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	buf->b_p_swf = FALSE;   // no swap file
 	buf->b_p_bl = FALSE;    // unlisted buffer
 	buf->b_locked = TRUE;
-	wp->w_p_wrap = TRUE;	// 'wrap' is default on
 
 	// Avoid that 'buftype' is reset when this buffer is entered.
 	buf->b_p_initialized = TRUE;
     }
+    wp->w_p_wrap = TRUE;	// 'wrap' is default on
+    wp->w_p_so = 0;		// 'scrolloff' zero
 
     if (tp != NULL)
     {
