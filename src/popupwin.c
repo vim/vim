@@ -2764,8 +2764,14 @@ invoke_popup_filter(win_T *wp, int c)
     int
 popup_do_filter(int c)
 {
+    static int	recursive = FALSE;
     int		res = FALSE;
     win_T	*wp;
+    int		save_KeyTyped = KeyTyped;
+
+    if (recursive)
+	return FALSE;
+    recursive = TRUE;
 
     popup_reset_handled();
 
@@ -2776,13 +2782,15 @@ popup_do_filter(int c)
 
 	wp = mouse_find_win(&row, &col, FIND_POPUP);
 	if (wp != NULL && popup_close_if_on_X(wp, row, col))
-	    return TRUE;
+	    res = TRUE;
     }
 
     while (!res && (wp = find_next_popup(FALSE)) != NULL)
 	if (wp->w_filter_cb.cb_name != NULL)
 	    res = invoke_popup_filter(wp, c);
 
+    recursive = FALSE;
+    KeyTyped = save_KeyTyped;
     return res;
 }
 

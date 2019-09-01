@@ -1919,6 +1919,31 @@ func Test_popupwin_with_buffer()
   call delete('XsomeFile')
 endfunc
 
+func Test_popupwin_with_buffer_and_filter()
+  new Xwithfilter
+  call setline(1, range(100))
+  let bufnr = bufnr()
+  hide
+
+  func BufferFilter(win, key)
+    if a:key == 'G'
+      " recursive use of "G" does not cause problems.
+      call win_execute(a:win, 'normal! G')
+      return 1
+    endif
+    return 0
+  endfunc
+
+  let winid = popup_create(bufnr, #{maxheight: 5, filter: 'BufferFilter'})
+  call assert_equal(1, popup_getpos(winid).firstline)
+  redraw
+  call feedkeys("G", 'xt')
+  call assert_equal(99, popup_getpos(winid).firstline)
+
+  call popup_close(winid)
+  exe 'bwipe! ' .. bufnr
+endfunc
+
 func Test_popupwin_width()
   let winid = popup_create(repeat(['short', 'long long long line', 'medium width'], 50), #{
 	\ maxwidth: 40,
