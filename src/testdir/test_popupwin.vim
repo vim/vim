@@ -1857,7 +1857,7 @@ func Test_popupwin_garbage_collect()
   let winid = popup_create('something', #{filter: function('MyPopupFilter', [{}])})
   call test_garbagecollect_now()
   redraw
-  " Must not crach caused by invalid memory access
+  " Must not crash caused by invalid memory access
   call feedkeys('j', 'xt')
   call assert_true(v:true)
 

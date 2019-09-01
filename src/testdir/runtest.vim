@@ -349,7 +349,7 @@ let s:flaky_tests = [
       \ 'Test_terminal_scrollback()',
       \ 'Test_terminal_split_quit()',
       \ 'Test_terminal_termwinkey()',
-      \ 'Test_terminal_termwinsize_mininmum()',
+      \ 'Test_terminal_termwinsize_minimum()',
       \ 'Test_terminal_termwinsize_option_fixed()',
       \ 'Test_terminal_termwinsize_option_zero()',
       \ 'Test_terminal_tmap()',
@@ -395,7 +395,7 @@ for s:test in sort(s:tests)
 
   " Repeat a flaky test.  Give up when:
   " - it fails again with the same message
-  " - it fails five times (with a different mesage)
+  " - it fails five times (with a different message)
   if len(v:errors) > 0
         \ && (index(s:flaky_tests, s:test) >= 0
         \      || v:errors[0] =~ s:flaky_errors_re)

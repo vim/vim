@@ -24,7 +24,7 @@ func VerifyScreenDump(buf, filename, options, ...)
   let reference = 'dumps/' . a:filename . '.dump'
   let testfile = 'failed/' . a:filename . '.dump'
 
-  " Redraw to execut the code that updates the screen.  Otherwise we get the
+  " Redraw to execute the code that updates the screen.  Otherwise we get the
   " text and attributes only from the internal buffer.
   redraw
 

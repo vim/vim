@@ -1091,7 +1091,7 @@ func Test_OptionSet()
   call assert_equal(g:opt[0], g:opt[1])
 
 
-  " 33: Test autocomands when an option value is converted internally.
+  " 33: Test autocommands when an option value is converted internally.
   noa set backspace=1 " Reset global and local value (without triggering autocmd)
   let g:options=[['backspace', 'indent,eol', 'indent,eol', 'indent,eol', '2', 'global', 'set']]
   set backspace=2
