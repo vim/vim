@@ -1378,7 +1378,6 @@ func Test_popup_never_behind()
   " |                             |
   " +-----------------------------+
   let lines =<< trim END
-    only 
     split
     vsplit
     let info_window1 = getwininfo()[0]
@@ -1649,11 +1648,12 @@ func Test_notifications()
   CheckFeature timers
   CheckScreendump
 
-  call writefile([
-	\ "call setline(1, range(1, 20))",
-	\ "hi Notification ctermbg=lightblue",
-	\ "call popup_notification('first notification', {})",
-	\], 'XtestNotifications')
+  let lines =<< trim END
+	call setline(1, range(1, 20))
+	hi Notification ctermbg=lightblue
+	call popup_notification('first notification', {})
+  END
+  call writefile(lines, 'XtestNotifications')
   let buf = RunVimInTerminal('-S XtestNotifications', #{rows: 10})
   call VerifyScreenDump(buf, 'Test_popupwin_notify_01', {})
 
