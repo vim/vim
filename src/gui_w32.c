@@ -2101,13 +2101,18 @@ gui_mch_wait_for_chars(int wtime)
 
 	    parse_queued_messages();
 
+#ifdef FEAT_TIMERS
+	    if (did_add_timer)
+		break;
+#endif
+
 	    if (pPeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
 	    {
 		process_message();
 		break;
 	    }
-	    else if (MsgWaitForMultipleObjects(0, NULL, FALSE, 100, QS_ALLINPUT)
-							       != WAIT_TIMEOUT)
+	    else if (input_available() || MsgWaitForMultipleObjects(0, NULL,
+				      FALSE, 100, QS_ALLINPUT) != WAIT_TIMEOUT)
 		break;
 	}
 #else
