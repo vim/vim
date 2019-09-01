@@ -20,6 +20,7 @@ void ex_scriptnames(exarg_T *eap);
 void scriptnames_slash_adjust(void);
 char_u *get_scriptname(scid_T id);
 void free_scriptnames(void);
+void free_autoload_scriptnames(void);
 linenr_T get_sourced_lnum(char_u *(*fgetline)(int, void *, int, int), void *cookie);
 char_u *getsourceline(int c, void *cookie, int indent, int do_concat);
 void ex_scriptencoding(exarg_T *eap);
@@ -27,4 +28,6 @@ void ex_scriptversion(exarg_T *eap);
 void ex_finish(exarg_T *eap);
 void do_finish(exarg_T *eap, int reanimate);
 int source_finished(char_u *(*fgetline)(int, void *, int, int), void *cookie);
+char_u *autoload_name(char_u *name);
+int script_autoload(char_u *name, int reload);
 /* vim: set ft=c : */

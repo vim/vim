@@ -6847,8 +6847,8 @@ populate_module(PyObject *m)
 	return -1;
     ADD_OBJECT(m, "error", VimError);
 
-    ADD_CHECKED_OBJECT(m, "vars",  NEW_DICTIONARY(&globvardict));
-    ADD_CHECKED_OBJECT(m, "vvars", NEW_DICTIONARY(&vimvardict));
+    ADD_CHECKED_OBJECT(m, "vars",  NEW_DICTIONARY(get_globvar_dict()));
+    ADD_CHECKED_OBJECT(m, "vvars", NEW_DICTIONARY(get_vimvar_dict()));
     ADD_CHECKED_OBJECT(m, "options",
 	    OptionsNew(SREQ_GLOBAL, NULL, dummy_check, NULL));
 

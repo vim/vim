@@ -38,9 +38,6 @@ static int current_copyID = 0;
 
 static int echo_attr = 0;   /* attributes used for ":echo" */
 
-/* The names of packages that once were loaded are remembered. */
-static garray_T		ga_loaded = {0, 0, sizeof(char_u *), 4, NULL};
-
 /*
  * Info used by a ":for" loop.
  */
@@ -156,8 +153,8 @@ eval_clear(void)
     free_scriptnames();
     free_locales();
 
-    /* autoloaded script names */
-    ga_clear_strings(&ga_loaded);
+    // autoloaded script names
+    free_autoload_scriptnames();
 
     // unreferenced lists and dicts
     (void)garbage_collect(FALSE);
@@ -166,240 +163,6 @@ eval_clear(void)
     free_all_functions();
 }
 #endif
-
-static lval_T	*redir_lval = NULL;
-#define EVALCMD_BUSY (redir_lval == (lval_T *)&redir_lval)
-static garray_T redir_ga;	/* only valid when redir_lval is not NULL */
-static char_u	*redir_endp = NULL;
-static char_u	*redir_varname = NULL;
-
-/*
- * Start recording command output to a variable
- * When "append" is TRUE append to an existing variable.
- * Returns OK if successfully completed the setup.  FAIL otherwise.
- */
-    int
-var_redir_start(char_u *name, int append)
-{
-    int		save_emsg;
-    int		err;
-    typval_T	tv;
-
-    /* Catch a bad name early. */
-    if (!eval_isnamec1(*name))
-    {
-	emsg(_(e_invarg));
-	return FAIL;
-    }
-
-    /* Make a copy of the name, it is used in redir_lval until redir ends. */
-    redir_varname = vim_strsave(name);
-    if (redir_varname == NULL)
-	return FAIL;
-
-    redir_lval = ALLOC_CLEAR_ONE(lval_T);
-    if (redir_lval == NULL)
-    {
-	var_redir_stop();
-	return FAIL;
-    }
-
-    /* The output is stored in growarray "redir_ga" until redirection ends. */
-    ga_init2(&redir_ga, (int)sizeof(char), 500);
-
-    /* Parse the variable name (can be a dict or list entry). */
-    redir_endp = get_lval(redir_varname, NULL, redir_lval, FALSE, FALSE, 0,
-							     FNE_CHECK_START);
-    if (redir_endp == NULL || redir_lval->ll_name == NULL || *redir_endp != NUL)
-    {
-	clear_lval(redir_lval);
-	if (redir_endp != NULL && *redir_endp != NUL)
-	    /* Trailing characters are present after the variable name */
-	    emsg(_(e_trailing));
-	else
-	    emsg(_(e_invarg));
-	redir_endp = NULL;  /* don't store a value, only cleanup */
-	var_redir_stop();
-	return FAIL;
-    }
-
-    /* check if we can write to the variable: set it to or append an empty
-     * string */
-    save_emsg = did_emsg;
-    did_emsg = FALSE;
-    tv.v_type = VAR_STRING;
-    tv.vval.v_string = (char_u *)"";
-    if (append)
-	set_var_lval(redir_lval, redir_endp, &tv, TRUE, FALSE, (char_u *)".");
-    else
-	set_var_lval(redir_lval, redir_endp, &tv, TRUE, FALSE, (char_u *)"=");
-    clear_lval(redir_lval);
-    err = did_emsg;
-    did_emsg |= save_emsg;
-    if (err)
-    {
-	redir_endp = NULL;  /* don't store a value, only cleanup */
-	var_redir_stop();
-	return FAIL;
-    }
-
-    return OK;
-}
-
-/*
- * Append "value[value_len]" to the variable set by var_redir_start().
- * The actual appending is postponed until redirection ends, because the value
- * appended may in fact be the string we write to, changing it may cause freed
- * memory to be used:
- *   :redir => foo
- *   :let foo
- *   :redir END
- */
-    void
-var_redir_str(char_u *value, int value_len)
-{
-    int		len;
-
-    if (redir_lval == NULL)
-	return;
-
-    if (value_len == -1)
-	len = (int)STRLEN(value);	/* Append the entire string */
-    else
-	len = value_len;		/* Append only "value_len" characters */
-
-    if (ga_grow(&redir_ga, len) == OK)
-    {
-	mch_memmove((char *)redir_ga.ga_data + redir_ga.ga_len, value, len);
-	redir_ga.ga_len += len;
-    }
-    else
-	var_redir_stop();
-}
-
-/*
- * Stop redirecting command output to a variable.
- * Frees the allocated memory.
- */
-    void
-var_redir_stop(void)
-{
-    typval_T	tv;
-
-    if (EVALCMD_BUSY)
-    {
-	redir_lval = NULL;
-	return;
-    }
-
-    if (redir_lval != NULL)
-    {
-	/* If there was no error: assign the text to the variable. */
-	if (redir_endp != NULL)
-	{
-	    ga_append(&redir_ga, NUL);  /* Append the trailing NUL. */
-	    tv.v_type = VAR_STRING;
-	    tv.vval.v_string = redir_ga.ga_data;
-	    /* Call get_lval() again, if it's inside a Dict or List it may
-	     * have changed. */
-	    redir_endp = get_lval(redir_varname, NULL, redir_lval,
-					FALSE, FALSE, 0, FNE_CHECK_START);
-	    if (redir_endp != NULL && redir_lval->ll_name != NULL)
-		set_var_lval(redir_lval, redir_endp, &tv, FALSE, FALSE,
-								(char_u *)".");
-	    clear_lval(redir_lval);
-	}
-
-	/* free the collected output */
-	VIM_CLEAR(redir_ga.ga_data);
-
-	VIM_CLEAR(redir_lval);
-    }
-    VIM_CLEAR(redir_varname);
-}
-
-    int
-eval_charconvert(
-    char_u	*enc_from,
-    char_u	*enc_to,
-    char_u	*fname_from,
-    char_u	*fname_to)
-{
-    int		err = FALSE;
-
-    set_vim_var_string(VV_CC_FROM, enc_from, -1);
-    set_vim_var_string(VV_CC_TO, enc_to, -1);
-    set_vim_var_string(VV_FNAME_IN, fname_from, -1);
-    set_vim_var_string(VV_FNAME_OUT, fname_to, -1);
-    if (eval_to_bool(p_ccv, &err, NULL, FALSE))
-	err = TRUE;
-    set_vim_var_string(VV_CC_FROM, NULL, -1);
-    set_vim_var_string(VV_CC_TO, NULL, -1);
-    set_vim_var_string(VV_FNAME_IN, NULL, -1);
-    set_vim_var_string(VV_FNAME_OUT, NULL, -1);
-
-    if (err)
-	return FAIL;
-    return OK;
-}
-
-# if defined(FEAT_POSTSCRIPT) || defined(PROTO)
-    int
-eval_printexpr(char_u *fname, char_u *args)
-{
-    int		err = FALSE;
-
-    set_vim_var_string(VV_FNAME_IN, fname, -1);
-    set_vim_var_string(VV_CMDARG, args, -1);
-    if (eval_to_bool(p_pexpr, &err, NULL, FALSE))
-	err = TRUE;
-    set_vim_var_string(VV_FNAME_IN, NULL, -1);
-    set_vim_var_string(VV_CMDARG, NULL, -1);
-
-    if (err)
-    {
-	mch_remove(fname);
-	return FAIL;
-    }
-    return OK;
-}
-# endif
-
-# if defined(FEAT_DIFF) || defined(PROTO)
-    void
-eval_diff(
-    char_u	*origfile,
-    char_u	*newfile,
-    char_u	*outfile)
-{
-    int		err = FALSE;
-
-    set_vim_var_string(VV_FNAME_IN, origfile, -1);
-    set_vim_var_string(VV_FNAME_NEW, newfile, -1);
-    set_vim_var_string(VV_FNAME_OUT, outfile, -1);
-    (void)eval_to_bool(p_dex, &err, NULL, FALSE);
-    set_vim_var_string(VV_FNAME_IN, NULL, -1);
-    set_vim_var_string(VV_FNAME_NEW, NULL, -1);
-    set_vim_var_string(VV_FNAME_OUT, NULL, -1);
-}
-
-    void
-eval_patch(
-    char_u	*origfile,
-    char_u	*difffile,
-    char_u	*outfile)
-{
-    int		err;
-
-    set_vim_var_string(VV_FNAME_IN, origfile, -1);
-    set_vim_var_string(VV_FNAME_DIFF, difffile, -1);
-    set_vim_var_string(VV_FNAME_OUT, outfile, -1);
-    (void)eval_to_bool(p_pex, &err, NULL, FALSE);
-    set_vim_var_string(VV_FNAME_IN, NULL, -1);
-    set_vim_var_string(VV_FNAME_DIFF, NULL, -1);
-    set_vim_var_string(VV_FNAME_OUT, NULL, -1);
-}
-# endif
 
 /*
  * Top level evaluation function, returning a boolean.
@@ -670,65 +433,6 @@ eval_to_number(char_u *expr)
 
     return retval;
 }
-
-#if defined(FEAT_SPELL) || defined(PROTO)
-/*
- * Evaluate an expression to a list with suggestions.
- * For the "expr:" part of 'spellsuggest'.
- * Returns NULL when there is an error.
- */
-    list_T *
-eval_spell_expr(char_u *badword, char_u *expr)
-{
-    typval_T	save_val;
-    typval_T	rettv;
-    list_T	*list = NULL;
-    char_u	*p = skipwhite(expr);
-
-    /* Set "v:val" to the bad word. */
-    prepare_vimvar(VV_VAL, &save_val);
-    set_vim_var_string(VV_VAL, badword, -1);
-    if (p_verbose == 0)
-	++emsg_off;
-
-    if (eval1(&p, &rettv, TRUE) == OK)
-    {
-	if (rettv.v_type != VAR_LIST)
-	    clear_tv(&rettv);
-	else
-	    list = rettv.vval.v_list;
-    }
-
-    if (p_verbose == 0)
-	--emsg_off;
-    clear_tv(get_vim_var_tv(VV_VAL));
-    restore_vimvar(VV_VAL, &save_val);
-
-    return list;
-}
-
-/*
- * "list" is supposed to contain two items: a word and a number.  Return the
- * word in "pp" and the number as the return value.
- * Return -1 if anything isn't right.
- * Used to get the good word and score from the eval_spell_expr() result.
- */
-    int
-get_spellword(list_T *list, char_u **pp)
-{
-    listitem_T	*li;
-
-    li = list->lv_first;
-    if (li == NULL)
-	return -1;
-    *pp = tv_get_string(&li->li_tv);
-
-    li = li->li_next;
-    if (li == NULL)
-	return -1;
-    return (int)tv_get_number(&li->li_tv);
-}
-#endif
 
 /*
  * Top level evaluation function.
@@ -1153,7 +857,7 @@ get_lval(
 	    if (lp->ll_di == NULL)
 	    {
 		// Can't add "v:" or "a:" variable.
-		if (lp->ll_dict == &vimvardict
+		if (lp->ll_dict == get_vimvar_dict()
 			 || &lp->ll_dict->dv_hashtab == get_funccal_args_ht())
 		{
 		    semsg(_(e_illvar), name);
@@ -1920,31 +1624,6 @@ set_context_for_expression(
     }
     xp->xp_pattern = arg;
 }
-
-#if (defined(FEAT_MENU) && defined(FEAT_MULTI_LANG)) || defined(PROTO)
-/*
- * Delete all "menutrans_" variables.
- */
-    void
-del_menutrans_vars(void)
-{
-    hashitem_T	*hi;
-    int		todo;
-
-    hash_lock(&globvarht);
-    todo = (int)globvarht.ht_used;
-    for (hi = globvarht.ht_array; todo > 0 && !got_int; ++hi)
-    {
-	if (!HASHITEM_EMPTY(hi))
-	{
-	    --todo;
-	    if (STRNCMP(HI2DI(hi)->di_key, "menutrans_", 10) == 0)
-		delete_var(&globvarht, hi);
-	}
-    }
-    hash_unlock(&globvarht);
-}
-#endif
 
 /*
  * Return TRUE if "pat" matches "text".
@@ -4215,7 +3894,7 @@ garbage_collect(int testing)
 	abort = abort || set_ref_in_item(&tp->tp_winvar.di_tv, copyID,
 								  NULL, NULL);
     /* global variables */
-    abort = abort || set_ref_in_ht(&globvarht, copyID, NULL);
+    abort = abort || garbage_collect_globvars(copyID);
 
     /* function-local variables */
     abort = abort || set_ref_in_call_stack(copyID);
@@ -4628,20 +4307,6 @@ set_ref_in_item(
     }
 #endif
     return abort;
-}
-
-    static char *
-get_var_special_name(int nr)
-{
-    switch (nr)
-    {
-	case VVAL_FALSE: return "v:false";
-	case VVAL_TRUE:  return "v:true";
-	case VVAL_NONE:  return "v:none";
-	case VVAL_NULL:  return "v:null";
-    }
-    internal_error("get_var_special_name()");
-    return "42";
 }
 
 /*
@@ -6204,112 +5869,6 @@ item_copy(
 }
 
 /*
- * This function is used by f_input() and f_inputdialog() functions. The third
- * argument to f_input() specifies the type of completion to use at the
- * prompt. The third argument to f_inputdialog() specifies the value to return
- * when the user cancels the prompt.
- */
-    void
-get_user_input(
-    typval_T	*argvars,
-    typval_T	*rettv,
-    int		inputdialog,
-    int		secret)
-{
-    char_u	*prompt = tv_get_string_chk(&argvars[0]);
-    char_u	*p = NULL;
-    int		c;
-    char_u	buf[NUMBUFLEN];
-    int		cmd_silent_save = cmd_silent;
-    char_u	*defstr = (char_u *)"";
-    int		xp_type = EXPAND_NOTHING;
-    char_u	*xp_arg = NULL;
-
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-
-#ifdef NO_CONSOLE_INPUT
-    /* While starting up, there is no place to enter text. When running tests
-     * with --not-a-term we assume feedkeys() will be used. */
-    if (no_console_input() && !is_not_a_term())
-	return;
-#endif
-
-    cmd_silent = FALSE;		/* Want to see the prompt. */
-    if (prompt != NULL)
-    {
-	/* Only the part of the message after the last NL is considered as
-	 * prompt for the command line */
-	p = vim_strrchr(prompt, '\n');
-	if (p == NULL)
-	    p = prompt;
-	else
-	{
-	    ++p;
-	    c = *p;
-	    *p = NUL;
-	    msg_start();
-	    msg_clr_eos();
-	    msg_puts_attr((char *)prompt, echo_attr);
-	    msg_didout = FALSE;
-	    msg_starthere();
-	    *p = c;
-	}
-	cmdline_row = msg_row;
-
-	if (argvars[1].v_type != VAR_UNKNOWN)
-	{
-	    defstr = tv_get_string_buf_chk(&argvars[1], buf);
-	    if (defstr != NULL)
-		stuffReadbuffSpec(defstr);
-
-	    if (!inputdialog && argvars[2].v_type != VAR_UNKNOWN)
-	    {
-		char_u	*xp_name;
-		int	xp_namelen;
-		long	argt;
-
-		/* input() with a third argument: completion */
-		rettv->vval.v_string = NULL;
-
-		xp_name = tv_get_string_buf_chk(&argvars[2], buf);
-		if (xp_name == NULL)
-		    return;
-
-		xp_namelen = (int)STRLEN(xp_name);
-
-		if (parse_compl_arg(xp_name, xp_namelen, &xp_type, &argt,
-							     &xp_arg) == FAIL)
-		    return;
-	    }
-	}
-
-	if (defstr != NULL)
-	{
-	    int save_ex_normal_busy = ex_normal_busy;
-
-	    ex_normal_busy = 0;
-	    rettv->vval.v_string =
-		getcmdline_prompt(secret ? NUL : '@', p, echo_attr,
-							      xp_type, xp_arg);
-	    ex_normal_busy = save_ex_normal_busy;
-	}
-	if (inputdialog && rettv->vval.v_string == NULL
-		&& argvars[1].v_type != VAR_UNKNOWN
-		&& argvars[2].v_type != VAR_UNKNOWN)
-	    rettv->vval.v_string = vim_strsave(tv_get_string_buf(
-							   &argvars[2], buf));
-
-	vim_free(xp_arg);
-
-	/* since the user typed this, no need to wait for return */
-	need_wait_return = FALSE;
-	msg_didout = FALSE;
-    }
-    cmd_silent = cmd_silent_save;
-}
-
-/*
  * ":echo expr1 ..."	print each argument separated with a space, add a
  *			newline at the end.
  * ":echon expr1 ..."	print each argument plain.
@@ -6422,6 +5981,15 @@ ex_echo(exarg_T *eap)
 ex_echohl(exarg_T *eap)
 {
     echo_attr = syn_name2attr(eap->arg);
+}
+
+/*
+ * Returns the :echo attribute
+ */
+    int
+get_echo_attr(void)
+{
+    return echo_attr;
 }
 
 /*
@@ -6548,78 +6116,6 @@ find_option_end(char_u **arg, int *opt_flags)
 	while (ASCII_ISALPHA(*p))
 	    ++p;
     return p;
-}
-
-/*
- * Return the autoload script name for a function or variable name.
- * Returns NULL when out of memory.
- * Caller must make sure that "name" contains AUTOLOAD_CHAR.
- */
-    char_u *
-autoload_name(char_u *name)
-{
-    char_u	*p, *q = NULL;
-    char_u	*scriptname;
-
-    // Get the script file name: replace '#' with '/', append ".vim".
-    scriptname = alloc(STRLEN(name) + 14);
-    if (scriptname == NULL)
-	return NULL;
-    STRCPY(scriptname, "autoload/");
-    STRCAT(scriptname, name);
-    for (p = scriptname + 9; (p = vim_strchr(p, AUTOLOAD_CHAR)) != NULL;
-								    q = p, ++p)
-	*p = '/';
-    STRCPY(q, ".vim");
-    return scriptname;
-}
-
-/*
- * If "name" has a package name try autoloading the script for it.
- * Return TRUE if a package was loaded.
- */
-    int
-script_autoload(
-    char_u	*name,
-    int		reload)	    /* load script again when already loaded */
-{
-    char_u	*p;
-    char_u	*scriptname, *tofree;
-    int		ret = FALSE;
-    int		i;
-
-    /* If there is no '#' after name[0] there is no package name. */
-    p = vim_strchr(name, AUTOLOAD_CHAR);
-    if (p == NULL || p == name)
-	return FALSE;
-
-    tofree = scriptname = autoload_name(name);
-    if (scriptname == NULL)
-	return FALSE;
-
-    /* Find the name in the list of previously loaded package names.  Skip
-     * "autoload/", it's always the same. */
-    for (i = 0; i < ga_loaded.ga_len; ++i)
-	if (STRCMP(((char_u **)ga_loaded.ga_data)[i] + 9, scriptname + 9) == 0)
-	    break;
-    if (!reload && i < ga_loaded.ga_len)
-	ret = FALSE;	    /* was loaded already */
-    else
-    {
-	/* Remember the name if it wasn't loaded already. */
-	if (i == ga_loaded.ga_len && ga_grow(&ga_loaded, 1) == OK)
-	{
-	    ((char_u **)ga_loaded.ga_data)[ga_loaded.ga_len++] = scriptname;
-	    tofree = NULL;
-	}
-
-	/* Try loading the package from $VIMRUNTIME/autoload/<name>.vim */
-	if (source_runtime(scriptname, 0) == OK)
-	    ret = TRUE;
-    }
-
-    vim_free(tofree);
-    return ret;
 }
 
 /*
@@ -7739,6 +7235,8 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 	prepare_vimvar(VV_KEY, &save_key);
 	if (argvars[0].v_type == VAR_DICT)
 	{
+	    set_vim_var_type(VV_KEY, VAR_STRING);
+
 	    ht = &d->dv_hashtab;
 	    hash_lock(ht);
 	    todo = (int)ht->ht_used;
