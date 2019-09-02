@@ -346,6 +346,10 @@ func Test_popup_firstline()
   redraw
   call assert_equal(11, popup_getoptions(winid).firstline)
   call assert_equal(11, popup_getpos(winid).firstline)
+  " check line() works with popup window
+  call assert_equal(11, line('.', winid))
+  call assert_equal(50, line('$', winid))
+  call assert_equal(0, line('$', 123456))
 
   " Normal command changes what is displayed but not "firstline"
   call win_execute(winid, "normal! \<c-y>")

@@ -634,7 +634,7 @@ static funcentry_T global_functions[] =
     {"len",		1, 1, FEARG_1,	  f_len},
     {"libcall",		3, 3, FEARG_3,	  f_libcall},
     {"libcallnr",	3, 3, FEARG_3,	  f_libcallnr},
-    {"line",		1, 1, FEARG_1,	  f_line},
+    {"line",		1, 2, FEARG_1,	  f_line},
     {"line2byte",	1, 1, FEARG_1,	  f_line2byte},
     {"lispindent",	1, 1, FEARG_1,	  f_lispindent},
     {"list2str",	1, 2, FEARG_1,	  f_list2str},
@@ -1154,14 +1154,18 @@ tv_get_lnum(typval_T *argvars)
 {
     typval_T	rettv;
     linenr_T	lnum;
+    int		save_type;
 
     lnum = (linenr_T)tv_get_number_chk(&argvars[0], NULL);
     if (lnum == 0)  /* no valid number, try using line() */
     {
 	rettv.v_type = VAR_NUMBER;
+	save_type = argvars[1].v_type;
+	argvars[1].v_type = VAR_UNKNOWN;
 	f_line(argvars, &rettv);
 	lnum = (linenr_T)rettv.vval.v_number;
 	clear_tv(&rettv);
+	argvars[1].v_type = save_type;
     }
     return lnum;
 }
@@ -6658,16 +6662,40 @@ f_libcallnr(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "line(string)" function
+ * "line(string, [winid])" function
  */
     static void
 f_line(typval_T *argvars, typval_T *rettv)
 {
     linenr_T	lnum = 0;
-    pos_T	*fp;
+    pos_T	*fp = NULL;
     int		fnum;
+    int		id;
+    tabpage_T	*tp;
+    win_T	*wp;
+    win_T	*save_curwin;
+    tabpage_T	*save_curtab;
 
-    fp = var2fpos(&argvars[0], TRUE, &fnum);
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	// use window specified in the second argument
+	id = (int)tv_get_number(&argvars[1]);
+	wp = win_id2wp_tp(id, &tp);
+	if (wp != NULL && tp != NULL)
+	{
+	    if (switch_win_noblock(&save_curwin, &save_curtab, wp, tp, TRUE)
+									 == OK)
+	    {
+		check_cursor();
+		fp = var2fpos(&argvars[0], TRUE, &fnum);
+	    }
+	    restore_win_noblock(save_curwin, save_curtab, TRUE);
+	}
+    }
+    else
+	// use current window
+	fp = var2fpos(&argvars[0], TRUE, &fnum);
+
     if (fp != NULL)
 	lnum = fp->lnum;
     rettv->vval.v_number = lnum;
