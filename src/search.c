@@ -1351,8 +1351,9 @@ do_search(
 	    pat = p;			    /* put pat after search command */
 	}
 
-	if ((options & SEARCH_ECHO) && messaging()
-					    && !cmd_silent && msg_silent == 0)
+	if ((options & SEARCH_ECHO) && messaging() &&
+		!msg_silent &&
+		(!cmd_silent || !shortmess(SHM_SEARCHCOUNT)))
 	{
 	    char_u	*trunc;
 	    char_u	off_buf[40];
@@ -1362,7 +1363,8 @@ do_search(
 	    msg_start();
 
 	    // Get the offset, so we know how long it is.
-	    if (spats[0].off.line || spats[0].off.end || spats[0].off.off)
+	    if (!cmd_silent &&
+		    (spats[0].off.line || spats[0].off.end || spats[0].off.off))
 	    {
 		p = off_buf;
 		*p++ = dirc;
@@ -1383,13 +1385,13 @@ do_search(
 	    else
 		p = searchstr;
 
-	    if (!shortmess(SHM_SEARCHCOUNT))
+	    if (!shortmess(SHM_SEARCHCOUNT) || cmd_silent)
 	    {
 		// Reserve enough space for the search pattern + offset +
 		// search stat.  Use all the space available, so that the
 		// search state is right aligned.  If there is not enough space
 		// msg_strtrunc() will shorten in the middle.
-		if (msg_scrolled != 0)
+		if (msg_scrolled != 0 || cmd_silent)
 		    // Use all the columns.
 		    len = (int)(Rows - msg_row) * Columns - 1;
 		else
@@ -1406,62 +1408,67 @@ do_search(
 	    if (msgbuf != NULL)
 	    {
 		vim_memset(msgbuf, ' ', len);
-		msgbuf[0] = dirc;
 		msgbuf[len - 1] = NUL;
-
-		if (enc_utf8 && utf_iscomposing(utf_ptr2char(p)))
+		// do not fill the msgbuf buffer, if cmd_silent is set, leave it
+		// empty for the search_stat feature.
+		if (!cmd_silent)
 		{
-		    // Use a space to draw the composing char on.
-		    msgbuf[1] = ' ';
-		    mch_memmove(msgbuf + 2, p, STRLEN(p));
-		}
-		else
-		    mch_memmove(msgbuf + 1, p, STRLEN(p));
-		if (off_len > 0)
-		    mch_memmove(msgbuf + STRLEN(p) + 1, off_buf, off_len);
+		    msgbuf[0] = dirc;
 
-		trunc = msg_strtrunc(msgbuf, TRUE);
-		if (trunc != NULL)
-		{
-		    vim_free(msgbuf);
-		    msgbuf = trunc;
-		}
+		    if (enc_utf8 && utf_iscomposing(utf_ptr2char(p)))
+		    {
+			// Use a space to draw the composing char on.
+			msgbuf[1] = ' ';
+			mch_memmove(msgbuf + 2, p, STRLEN(p));
+		    }
+		    else
+			mch_memmove(msgbuf + 1, p, STRLEN(p));
+		    if (off_len > 0)
+			mch_memmove(msgbuf + STRLEN(p) + 1, off_buf, off_len);
 
-#ifdef FEAT_RIGHTLEFT
-		// The search pattern could be shown on the right in rightleft
-		// mode, but the 'ruler' and 'showcmd' area use it too, thus
-		// it would be blanked out again very soon.  Show it on the
-		// left, but do reverse the text.
-		if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
-		{
-		    char_u *r;
-		    size_t pat_len;
-
-		    r = reverse_text(msgbuf);
-		    if (r != NULL)
+		    trunc = msg_strtrunc(msgbuf, TRUE);
+		    if (trunc != NULL)
 		    {
 			vim_free(msgbuf);
-			msgbuf = r;
-			// move reversed text to beginning of buffer
-			while (*r != NUL && *r == ' ')
-			    r++;
-			pat_len = msgbuf + STRLEN(msgbuf) - r;
-			mch_memmove(msgbuf, r, pat_len);
-			// overwrite old text
-			if ((size_t)(r - msgbuf) >= pat_len)
-			    vim_memset(r, ' ', pat_len);
-			else
-			    vim_memset(msgbuf + pat_len, ' ', r - msgbuf);
+			msgbuf = trunc;
 		    }
-		}
-#endif
-		msg_outtrans(msgbuf);
-		msg_clr_eos();
-		msg_check();
 
-		gotocmdline(FALSE);
-		out_flush();
-		msg_nowait = TRUE;	    // don't wait for this message
+    #ifdef FEAT_RIGHTLEFT
+		    // The search pattern could be shown on the right in rightleft
+		    // mode, but the 'ruler' and 'showcmd' area use it too, thus
+		    // it would be blanked out again very soon.  Show it on the
+		    // left, but do reverse the text.
+		    if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
+		    {
+			char_u *r;
+			size_t pat_len;
+
+			r = reverse_text(msgbuf);
+			if (r != NULL)
+			{
+			    vim_free(msgbuf);
+			    msgbuf = r;
+			    // move reversed text to beginning of buffer
+			    while (*r != NUL && *r == ' ')
+				r++;
+			    pat_len = msgbuf + STRLEN(msgbuf) - r;
+			    mch_memmove(msgbuf, r, pat_len);
+			    // overwrite old text
+			    if ((size_t)(r - msgbuf) >= pat_len)
+				vim_memset(r, ' ', pat_len);
+			    else
+				vim_memset(msgbuf + pat_len, ' ', r - msgbuf);
+			}
+		    }
+    #endif
+		    msg_outtrans(msgbuf);
+		    msg_clr_eos();
+		    msg_check();
+
+		    gotocmdline(FALSE);
+		    out_flush();
+		    msg_nowait = TRUE;	    // don't wait for this message
+		}
 	    }
 	}
 
@@ -1569,7 +1576,7 @@ do_search(
 	// Show [1/15] if 'S' is not in 'shortmess'.
 	if ((options & SEARCH_ECHO)
 		&& messaging()
-		&& !(cmd_silent + msg_silent)
+		&& !msg_silent
 		&& c != FAIL
 		&& !shortmess(SHM_SEARCHCOUNT)
 		&& msgbuf != NULL)
