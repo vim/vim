@@ -1550,6 +1550,7 @@ EXTERN char e_illvar[]		INIT(= N_("E461: Illegal variable name: %s"));
 EXTERN char e_cannot_mod[]	INIT(= N_("E995: Cannot modify existing variable"));
 EXTERN char e_readonlyvar[]	INIT(= N_("E46: Cannot change read-only variable \"%s\""));
 EXTERN char e_readonlysbx[]	INIT(= N_("E794: Cannot set variable in the sandbox: \"%s\""));
+EXTERN char e_stringreq[]	INIT(= N_("E928: String required"));
 EXTERN char e_emptykey[]	INIT(= N_("E713: Cannot use empty key for Dictionary"));
 EXTERN char e_dictreq[]	INIT(= N_("E715: Dictionary required"));
 EXTERN char e_listidx[]	INIT(= N_("E684: list index out of range: %ld"));

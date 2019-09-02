@@ -82,6 +82,7 @@ void restore_buffer(bufref_T *save_curbuf);
 int win_hasvertsplit(void);
 int get_win_number(win_T *wp, win_T *first_win);
 int get_tab_number(tabpage_T *tp);
+char *check_colorcolumn(win_T *wp);
 int win_getid(typval_T *argvars);
 int win_gotoid(typval_T *argvars);
 void win_id2tabwin(typval_T *argvars, list_T *list);
