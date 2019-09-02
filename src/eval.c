@@ -7185,8 +7185,6 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
     hashtab_T	*ht;
     hashitem_T	*hi;
     dict_T	*d = NULL;
-    typval_T	save_val;
-    typval_T	save_key;
     blob_T	*b = NULL;
     int		rem;
     int		todo;
@@ -7225,18 +7223,19 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
      * was not passed as argument. */
     if (expr->v_type != VAR_UNKNOWN)
     {
-	prepare_vimvar(VV_VAL, &save_val);
+	typval_T	save_val;
+	typval_T	save_key;
 
-	/* We reset "did_emsg" to be able to detect whether an error
-	 * occurred during evaluation of the expression. */
+	prepare_vimvar(VV_VAL, &save_val);
+	prepare_vimvar(VV_KEY, &save_key);
+
+	// We reset "did_emsg" to be able to detect whether an error
+	// occurred during evaluation of the expression.
 	save_did_emsg = did_emsg;
 	did_emsg = FALSE;
 
-	prepare_vimvar(VV_KEY, &save_key);
 	if (argvars[0].v_type == VAR_DICT)
 	{
-	    set_vim_var_type(VV_KEY, VAR_STRING);
-
 	    ht = &d->dv_hashtab;
 	    hash_lock(ht);
 	    todo = (int)ht->ht_used;
@@ -7274,7 +7273,9 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 	    int		i;
 	    typval_T	tv;
 
+	    // set_vim_var_nr() doesn't set the type
 	    set_vim_var_type(VV_KEY, VAR_NUMBER);
+
 	    for (i = 0; i < b->bv_ga.ga_len; i++)
 	    {
 		tv.v_type = VAR_NUMBER;
@@ -7285,7 +7286,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 		if (tv.v_type != VAR_NUMBER)
 		{
 		    emsg(_(e_invalblob));
-		    return;
+		    break;
 		}
 		tv.v_type = VAR_NUMBER;
 		blob_set(b, i, tv.vval.v_number);
@@ -7300,9 +7301,9 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 		}
 	    }
 	}
-	else
+	else // argvars[0].v_type == VAR_LIST
 	{
-	    // argvars[0].v_type == VAR_LIST
+	    // set_vim_var_nr() doesn't set the type
 	    set_vim_var_type(VV_KEY, VAR_NUMBER);
 
 	    for (li = l->lv_first; li != NULL; li = nli)
