@@ -19,6 +19,9 @@ char_u *check_map(char_u *keys, int mode, int exact, int ign_mod, int abbr, mapb
 void get_maparg(typval_T *argvars, typval_T *rettv, int exact);
 void init_mappings(void);
 void add_map(char_u *map, int mode);
+int langmap_adjust_mb(int c);
+void langmap_init(void);
+void langmap_set(void);
 void ex_abbreviate(exarg_T *eap);
 void ex_map(exarg_T *eap);
 void ex_unmap(exarg_T *eap);

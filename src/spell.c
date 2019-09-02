@@ -8833,4 +8833,90 @@ expand_spelling(
     return ga.ga_len;
 }
 
-#endif  /* FEAT_SPELL */
+/*
+ * Return TRUE if "val" is a valid 'spellang' value.
+ */
+    int
+valid_spellang(char_u *val)
+{
+    return valid_name(val, ".-_,@");
+}
+
+/*
+ * Return TRUE if "val" is a valid 'spellfile' value.
+ */
+    int
+valid_spellfile(char_u *val)
+{
+    char_u *s;
+
+    for (s = val; *s != NUL; ++s)
+	if (!vim_isfilec(*s) && *s != ',')
+	    return FALSE;
+    return TRUE;
+}
+
+/*
+ * Handle side effects of setting 'spell'.
+ * Return an error message or NULL for success.
+ */
+    char *
+did_set_spell_option(int is_spellfile)
+{
+    char    *errmsg = NULL;
+    win_T   *wp;
+    int	    l;
+
+    if (is_spellfile)
+    {
+	l = (int)STRLEN(curwin->w_s->b_p_spf);
+	if (l > 0 && (l < 4
+			|| STRCMP(curwin->w_s->b_p_spf + l - 4, ".add") != 0))
+	    errmsg = e_invarg;
+    }
+
+    if (errmsg == NULL)
+    {
+	FOR_ALL_WINDOWS(wp)
+	    if (wp->w_buffer == curbuf && wp->w_p_spell)
+	    {
+		errmsg = did_set_spelllang(wp);
+		break;
+	    }
+    }
+    return errmsg;
+}
+
+/*
+ * Set curbuf->b_cap_prog to the regexp program for 'spellcapcheck'.
+ * Return error message when failed, NULL when OK.
+ */
+    char *
+compile_cap_prog(synblock_T *synblock)
+{
+    regprog_T   *rp = synblock->b_cap_prog;
+    char_u	*re;
+
+    if (*synblock->b_p_spc == NUL)
+	synblock->b_cap_prog = NULL;
+    else
+    {
+	// Prepend a ^ so that we only match at one column
+	re = concat_str((char_u *)"^", synblock->b_p_spc);
+	if (re != NULL)
+	{
+	    synblock->b_cap_prog = vim_regcomp(re, RE_MAGIC);
+	    vim_free(re);
+	    if (synblock->b_cap_prog == NULL)
+	    {
+		synblock->b_cap_prog = rp; // restore the previous program
+		return e_invarg;
+	    }
+	}
+    }
+
+    vim_regfree(rp);
+    return NULL;
+}
+
+#endif  // FEAT_SPELL

@@ -6305,7 +6305,7 @@ get_qfline_items(qfline_T *qfp, list_T *list)
  * Add each quickfix error to list "list" as a dictionary.
  * If qf_idx is -1, use the current list. Otherwise, use the specified list.
  */
-    int
+    static int
 get_errorlist(qf_info_T *qi_arg, win_T *wp, int qf_idx, list_T *list)
 {
     qf_info_T	*qi = qi_arg;
@@ -6678,7 +6678,7 @@ qf_getprop_idx(qf_list_T *qfl, dict_T *retdict)
  * dictionary. 'what' contains the details to return. If 'list_idx' is -1,
  * then current list is used. Otherwise the specified list is used.
  */
-    int
+    static int
 qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict)
 {
     qf_info_T	*qi = &ql_info;
@@ -7824,5 +7824,153 @@ ex_helpgrep(exarg_T *eap)
 	    curwin->w_llist = qi;
     }
 }
-
 #endif /* FEAT_QUICKFIX */
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+# ifdef FEAT_QUICKFIX
+    static void
+get_qf_loc_list(int is_qf, win_T *wp, typval_T *what_arg, typval_T *rettv)
+{
+    if (what_arg->v_type == VAR_UNKNOWN)
+    {
+	if (rettv_list_alloc(rettv) == OK)
+	    if (is_qf || wp != NULL)
+		(void)get_errorlist(NULL, wp, -1, rettv->vval.v_list);
+    }
+    else
+    {
+	if (rettv_dict_alloc(rettv) == OK)
+	    if (is_qf || (wp != NULL))
+	    {
+		if (what_arg->v_type == VAR_DICT)
+		{
+		    dict_T	*d = what_arg->vval.v_dict;
+
+		    if (d != NULL)
+			qf_get_properties(wp, d, rettv->vval.v_dict);
+		}
+		else
+		    emsg(_(e_dictreq));
+	    }
+    }
+}
+# endif
+
+/*
+ * "getloclist()" function
+ */
+    void
+f_getloclist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+# ifdef FEAT_QUICKFIX
+    win_T	*wp;
+
+    wp = find_win_by_nr_or_id(&argvars[0]);
+    get_qf_loc_list(FALSE, wp, &argvars[1], rettv);
+# endif
+}
+
+/*
+ * "getqflist()" function
+ */
+    void
+f_getqflist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+# ifdef FEAT_QUICKFIX
+    get_qf_loc_list(TRUE, NULL, &argvars[0], rettv);
+# endif
+}
+
+/*
+ * Used by "setqflist()" and "setloclist()" functions
+ */
+    static void
+set_qf_ll_list(
+    win_T	*wp UNUSED,
+    typval_T	*list_arg UNUSED,
+    typval_T	*action_arg UNUSED,
+    typval_T	*what_arg UNUSED,
+    typval_T	*rettv)
+{
+# ifdef FEAT_QUICKFIX
+    static char *e_invact = N_("E927: Invalid action: '%s'");
+    char_u	*act;
+    int		action = 0;
+    static int	recursive = 0;
+# endif
+
+    rettv->vval.v_number = -1;
+
+# ifdef FEAT_QUICKFIX
+    if (list_arg->v_type != VAR_LIST)
+	emsg(_(e_listreq));
+    else if (recursive != 0)
+	emsg(_(e_au_recursive));
+    else
+    {
+	list_T  *l = list_arg->vval.v_list;
+	dict_T	*d = NULL;
+	int	valid_dict = TRUE;
+
+	if (action_arg->v_type == VAR_STRING)
+	{
+	    act = tv_get_string_chk(action_arg);
+	    if (act == NULL)
+		return;		// type error; errmsg already given
+	    if ((*act == 'a' || *act == 'r' || *act == ' ' || *act == 'f') &&
+		    act[1] == NUL)
+		action = *act;
+	    else
+		semsg(_(e_invact), act);
+	}
+	else if (action_arg->v_type == VAR_UNKNOWN)
+	    action = ' ';
+	else
+	    emsg(_(e_stringreq));
+
+	if (action_arg->v_type != VAR_UNKNOWN
+		&& what_arg->v_type != VAR_UNKNOWN)
+	{
+	    if (what_arg->v_type == VAR_DICT)
+		d = what_arg->vval.v_dict;
+	    else
+	    {
+		emsg(_(e_dictreq));
+		valid_dict = FALSE;
+	    }
+	}
+
+	++recursive;
+	if (l != NULL && action && valid_dict && set_errorlist(wp, l, action,
+		     (char_u *)(wp == NULL ? ":setqflist()" : ":setloclist()"),
+		     d) == OK)
+	    rettv->vval.v_number = 0;
+	--recursive;
+    }
+# endif
+}
+
+/*
+ * "setloclist()" function
+ */
+    void
+f_setloclist(typval_T *argvars, typval_T *rettv)
+{
+    win_T	*win;
+
+    rettv->vval.v_number = -1;
+
+    win = find_win_by_nr_or_id(&argvars[0]);
+    if (win != NULL)
+	set_qf_ll_list(win, &argvars[1], &argvars[2], &argvars[3], rettv);
+}
+
+/*
+ * "setqflist()" function
+ */
+    void
+f_setqflist(typval_T *argvars, typval_T *rettv)
+{
+    set_qf_ll_list(NULL, &argvars[0], &argvars[1], &argvars[2], rettv);
+}
+#endif

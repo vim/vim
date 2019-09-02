@@ -10771,6 +10771,55 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 }
 #endif
 
+/*
+ * Compute columns for ruler and shown command. 'sc_col' is also used to
+ * decide what the maximum length of a message on the status line can be.
+ * If there is a status line for the last window, 'sc_col' is independent
+ * of 'ru_col'.
+ */
+
+#define COL_RULER 17	    // columns needed by standard ruler
+
+    void
+comp_col(void)
+{
+#if defined(FEAT_CMDL_INFO)
+    int last_has_status = (p_ls == 2 || (p_ls == 1 && !ONE_WINDOW));
+
+    sc_col = 0;
+    ru_col = 0;
+    if (p_ru)
+    {
+# ifdef FEAT_STL_OPT
+	ru_col = (ru_wid ? ru_wid : COL_RULER) + 1;
+# else
+	ru_col = COL_RULER + 1;
+# endif
+	// no last status line, adjust sc_col
+	if (!last_has_status)
+	    sc_col = ru_col;
+    }
+    if (p_sc)
+    {
+	sc_col += SHOWCMD_COLS;
+	if (!p_ru || last_has_status)	    // no need for separating space
+	    ++sc_col;
+    }
+    sc_col = Columns - sc_col;
+    ru_col = Columns - ru_col;
+    if (sc_col <= 0)		// screen too narrow, will become a mess
+	sc_col = 1;
+    if (ru_col <= 0)
+	ru_col = 1;
+#else
+    sc_col = Columns;
+    ru_col = Columns;
+#endif
+#ifdef FEAT_EVAL
+    set_vim_var_nr(VV_ECHOSPACE, sc_col - 1);
+#endif
+}
+
 #if defined(FEAT_LINEBREAK) || defined(PROTO)
 /*
  * Return the width of the 'number' and 'relativenumber' column.
@@ -10840,3 +10889,133 @@ screen_screenrow(void)
     return screen_cur_row;
 }
 #endif
+
+/*
+ * Handle setting 'listchars' or 'fillchars'.
+ * Returns error message, NULL if it's OK.
+ */
+    char *
+set_chars_option(char_u **varp)
+{
+    int		round, i, len, entries;
+    char_u	*p, *s;
+    int		c1 = 0, c2 = 0, c3 = 0;
+    struct charstab
+    {
+	int	*cp;
+	char	*name;
+    };
+    static struct charstab filltab[] =
+    {
+	{&fill_stl,	"stl"},
+	{&fill_stlnc,	"stlnc"},
+	{&fill_vert,	"vert"},
+	{&fill_fold,	"fold"},
+	{&fill_diff,	"diff"},
+    };
+    static struct charstab lcstab[] =
+    {
+	{&lcs_eol,	"eol"},
+	{&lcs_ext,	"extends"},
+	{&lcs_nbsp,	"nbsp"},
+	{&lcs_prec,	"precedes"},
+	{&lcs_space,	"space"},
+	{&lcs_tab2,	"tab"},
+	{&lcs_trail,	"trail"},
+#ifdef FEAT_CONCEAL
+	{&lcs_conceal,	"conceal"},
+#else
+	{NULL,		"conceal"},
+#endif
+    };
+    struct charstab *tab;
+
+    if (varp == &p_lcs)
+    {
+	tab = lcstab;
+	entries = sizeof(lcstab) / sizeof(struct charstab);
+    }
+    else
+    {
+	tab = filltab;
+	entries = sizeof(filltab) / sizeof(struct charstab);
+    }
+
+    // first round: check for valid value, second round: assign values
+    for (round = 0; round <= 1; ++round)
+    {
+	if (round > 0)
+	{
+	    // After checking that the value is valid: set defaults: space for
+	    // 'fillchars', NUL for 'listchars'
+	    for (i = 0; i < entries; ++i)
+		if (tab[i].cp != NULL)
+		    *(tab[i].cp) = (varp == &p_lcs ? NUL : ' ');
+
+	    if (varp == &p_lcs)
+	    {
+		lcs_tab1 = NUL;
+		lcs_tab3 = NUL;
+	    }
+	    else
+		fill_diff = '-';
+	}
+	p = *varp;
+	while (*p)
+	{
+	    for (i = 0; i < entries; ++i)
+	    {
+		len = (int)STRLEN(tab[i].name);
+		if (STRNCMP(p, tab[i].name, len) == 0
+			&& p[len] == ':'
+			&& p[len + 1] != NUL)
+		{
+		    c2 = c3 = 0;
+		    s = p + len + 1;
+		    c1 = mb_ptr2char_adv(&s);
+		    if (mb_char2cells(c1) > 1)
+			continue;
+		    if (tab[i].cp == &lcs_tab2)
+		    {
+			if (*s == NUL)
+			    continue;
+			c2 = mb_ptr2char_adv(&s);
+			if (mb_char2cells(c2) > 1)
+			    continue;
+			if (!(*s == ',' || *s == NUL))
+			{
+			    c3 = mb_ptr2char_adv(&s);
+			    if (mb_char2cells(c3) > 1)
+				continue;
+			}
+		    }
+
+		    if (*s == ',' || *s == NUL)
+		    {
+			if (round)
+			{
+			    if (tab[i].cp == &lcs_tab2)
+			    {
+				lcs_tab1 = c1;
+				lcs_tab2 = c2;
+				lcs_tab3 = c3;
+			    }
+			    else if (tab[i].cp != NULL)
+				*(tab[i].cp) = c1;
+
+			}
+			p = s;
+			break;
+		    }
+		}
+	    }
+
+	    if (i == entries)
+		return e_invarg;
+	    if (*p == ',')
+		++p;
+	}
+    }
+
+    return NULL;	// no error
+}

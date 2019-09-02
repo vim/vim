@@ -2193,6 +2193,197 @@ add_map(char_u *map, int mode)
 }
 #endif
 
+#if defined(FEAT_LANGMAP) || defined(PROTO)
+/*
+ * Any character has an equivalent 'langmap' character.  This is used for
+ * keyboards that have a special language mode that sends characters above
+ * 128 (although other characters can be translated too).  The "to" field is a
+ * Vim command character.  This avoids having to switch the keyboard back to
+ * ASCII mode when leaving Insert mode.
+ *
+ * langmap_mapchar[] maps any of 256 chars to an ASCII char used for Vim
+ * commands.
+ * langmap_mapga.ga_data is a sorted table of langmap_entry_T.  This does the
+ * same as langmap_mapchar[] for characters >= 256.
+ *
+ * Use growarray for 'langmap' chars >= 256
+ */
+typedef struct
+{
+    int	    from;
+    int     to;
+} langmap_entry_T;
+
+static garray_T langmap_mapga;
+
+/*
+ * Search for an entry in "langmap_mapga" for "from".  If found set the "to"
+ * field.  If not found insert a new entry at the appropriate location.
+ */
+    static void
+langmap_set_entry(int from, int to)
+{
+    langmap_entry_T *entries = (langmap_entry_T *)(langmap_mapga.ga_data);
+    int		    a = 0;
+    int		    b = langmap_mapga.ga_len;
+
+    // Do a binary search for an existing entry.
+    while (a != b)
+    {
+	int i = (a + b) / 2;
+	int d = entries[i].from - from;
+
+	if (d == 0)
+	{
+	    entries[i].to = to;
+	    return;
+	}
+	if (d < 0)
+	    a = i + 1;
+	else
+	    b = i;
+    }
+
+    if (ga_grow(&langmap_mapga, 1) != OK)
+	return;  // out of memory
+
+    // insert new entry at position "a"
+    entries = (langmap_entry_T *)(langmap_mapga.ga_data) + a;
+    mch_memmove(entries + 1, entries,
+			(langmap_mapga.ga_len - a) * sizeof(langmap_entry_T));
+    ++langmap_mapga.ga_len;
+    entries[0].from = from;
+    entries[0].to = to;
+}
+
+/*
+ * Apply 'langmap' to multi-byte character "c" and return the result.
+ */
+    int
+langmap_adjust_mb(int c)
+{
+    langmap_entry_T *entries = (langmap_entry_T *)(langmap_mapga.ga_data);
+    int a = 0;
+    int b = langmap_mapga.ga_len;
+
+    while (a != b)
+    {
+	int i = (a + b) / 2;
+	int d = entries[i].from - c;
+
+	if (d == 0)
+	    return entries[i].to;  // found matching entry
+	if (d < 0)
+	    a = i + 1;
+	else
+	    b = i;
+    }
+    return c;  // no entry found, return "c" unmodified
+}
+
+    void
+langmap_init(void)
+{
+    int i;
+
+    for (i = 0; i < 256; i++)
+	langmap_mapchar[i] = i;	 // we init with a one-to-one map
+    ga_init2(&langmap_mapga, sizeof(langmap_entry_T), 8);
+}
+
+/*
+ * Called when langmap option is set; the language map can be
+ * changed at any time!
+ */
+    void
+langmap_set(void)
+{
+    char_u  *p;
+    char_u  *p2;
+    int	    from, to;
+
+    ga_clear(&langmap_mapga);		    // clear the previous map first
+    langmap_init();			    // back to one-to-one map
+
+    for (p = p_langmap; p[0] != NUL; )
+    {
+	for (p2 = p; p2[0] != NUL && p2[0] != ',' && p2[0] != ';';
+							       MB_PTR_ADV(p2))
+	{
+	    if (p2[0] == '\\' && p2[1] != NUL)
+		++p2;
+	}
+	if (p2[0] == ';')
+	    ++p2;	    // abcd;ABCD form, p2 points to A
+	else
+	    p2 = NULL;	    // aAbBcCdD form, p2 is NULL
+	while (p[0])
+	{
+	    if (p[0] == ',')
+	    {
+		++p;
+		break;
+	    }
+	    if (p[0] == '\\' && p[1] != NUL)
+		++p;
+	    from = (*mb_ptr2char)(p);
+	    to = NUL;
+	    if (p2 == NULL)
+	    {
+		MB_PTR_ADV(p);
+		if (p[0] != ',')
+		{
+		    if (p[0] == '\\')
+			++p;
+		    to = (*mb_ptr2char)(p);
+		}
+	    }
+	    else
+	    {
+		if (p2[0] != ',')
+		{
+		    if (p2[0] == '\\')
+			++p2;
+		    to = (*mb_ptr2char)(p2);
+		}
+	    }
+	    if (to == NUL)
+	    {
+		semsg(_("E357: 'langmap': Matching character missing for %s"),
+							     transchar(from));
+		return;
+	    }
+
+	    if (from >= 256)
+		langmap_set_entry(from, to);
+	    else
+		langmap_mapchar[from & 255] = to;
+
+	    // Advance to next pair
+	    MB_PTR_ADV(p);
+	    if (p2 != NULL)
+	    {
+		MB_PTR_ADV(p2);
+		if (*p == ';')
+		{
+		    p = p2;
+		    if (p[0] != NUL)
+		    {
+			if (p[0] != ',')
+			{
+			    semsg(_("E358: 'langmap': Extra characters after semicolon: %s"), p);
+			    return;
+			}
+			++p;
+		    }
+		    break;
+		}
+	    }
+	}
+    }
+}
+#endif
+
     static void
 do_exmap(exarg_T *eap, int isabbrev)
 {

@@ -26,11 +26,13 @@ void ex_cnext(exarg_T *eap);
 void ex_cbelow(exarg_T *eap);
 void ex_cfile(exarg_T *eap);
 void ex_vimgrep(exarg_T *eap);
-int get_errorlist(qf_info_T *qi_arg, win_T *wp, int qf_idx, list_T *list);
-int qf_get_properties(win_T *wp, dict_T *what, dict_T *retdict);
 int set_errorlist(win_T *wp, list_T *list, int action, char_u *title, dict_T *what);
 int set_ref_in_quickfix(int copyID);
 void ex_cbuffer(exarg_T *eap);
 void ex_cexpr(exarg_T *eap);
 void ex_helpgrep(exarg_T *eap);
+void f_getloclist(typval_T *argvars, typval_T *rettv);
+void f_getqflist(typval_T *argvars, typval_T *rettv);
+void f_setloclist(typval_T *argvars, typval_T *rettv);
+void f_setqflist(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

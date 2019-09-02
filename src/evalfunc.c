@@ -25,7 +25,6 @@
 #endif
 
 static char *e_listblobarg = N_("E899: Argument of %s must be a List or Blob");
-static char *e_stringreq = N_("E928: String required");
 
 #ifdef FEAT_FLOAT
 static void f_abs(typval_T *argvars, typval_T *rettv);
@@ -141,11 +140,9 @@ static void f_getftime(typval_T *argvars, typval_T *rettv);
 static void f_getftype(typval_T *argvars, typval_T *rettv);
 static void f_getjumplist(typval_T *argvars, typval_T *rettv);
 static void f_getline(typval_T *argvars, typval_T *rettv);
-static void f_getloclist(typval_T *argvars UNUSED, typval_T *rettv UNUSED);
 static void f_getpid(typval_T *argvars, typval_T *rettv);
 static void f_getcurpos(typval_T *argvars, typval_T *rettv);
 static void f_getpos(typval_T *argvars, typval_T *rettv);
-static void f_getqflist(typval_T *argvars, typval_T *rettv);
 static void f_getreg(typval_T *argvars, typval_T *rettv);
 static void f_getregtype(typval_T *argvars, typval_T *rettv);
 static void f_gettabinfo(typval_T *argvars, typval_T *rettv);
@@ -279,9 +276,7 @@ static void f_setcmdpos(typval_T *argvars, typval_T *rettv);
 static void f_setenv(typval_T *argvars, typval_T *rettv);
 static void f_setfperm(typval_T *argvars, typval_T *rettv);
 static void f_setline(typval_T *argvars, typval_T *rettv);
-static void f_setloclist(typval_T *argvars, typval_T *rettv);
 static void f_setpos(typval_T *argvars, typval_T *rettv);
-static void f_setqflist(typval_T *argvars, typval_T *rettv);
 static void f_setreg(typval_T *argvars, typval_T *rettv);
 static void f_settagstack(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_CRYPT
@@ -4771,49 +4766,6 @@ f_getline(typval_T *argvars, typval_T *rettv)
     get_buffer_lines(curbuf, lnum, end, retlist, rettv);
 }
 
-#ifdef FEAT_QUICKFIX
-    static void
-get_qf_loc_list(int is_qf, win_T *wp, typval_T *what_arg, typval_T *rettv)
-{
-    if (what_arg->v_type == VAR_UNKNOWN)
-    {
-	if (rettv_list_alloc(rettv) == OK)
-	    if (is_qf || wp != NULL)
-		(void)get_errorlist(NULL, wp, -1, rettv->vval.v_list);
-    }
-    else
-    {
-	if (rettv_dict_alloc(rettv) == OK)
-	    if (is_qf || (wp != NULL))
-	    {
-		if (what_arg->v_type == VAR_DICT)
-		{
-		    dict_T	*d = what_arg->vval.v_dict;
-
-		    if (d != NULL)
-			qf_get_properties(wp, d, rettv->vval.v_dict);
-		}
-		else
-		    emsg(_(e_dictreq));
-	    }
-    }
-}
-#endif
-
-/*
- * "getloclist()" function
- */
-    static void
-f_getloclist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_QUICKFIX
-    win_T	*wp;
-
-    wp = find_win_by_nr_or_id(&argvars[0]);
-    get_qf_loc_list(FALSE, wp, &argvars[1], rettv);
-#endif
-}
-
 /*
  * "getpid()" function
  */
@@ -4892,17 +4844,6 @@ f_getcurpos(typval_T *argvars, typval_T *rettv)
 f_getpos(typval_T *argvars, typval_T *rettv)
 {
     getpos_both(argvars, rettv, FALSE);
-}
-
-/*
- * "getqflist()" function
- */
-    static void
-f_getqflist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_QUICKFIX
-    get_qf_loc_list(TRUE, NULL, &argvars[0], rettv);
-#endif
 }
 
 /*
@@ -9626,90 +9567,6 @@ f_setline(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * Used by "setqflist()" and "setloclist()" functions
- */
-    static void
-set_qf_ll_list(
-    win_T	*wp UNUSED,
-    typval_T	*list_arg UNUSED,
-    typval_T	*action_arg UNUSED,
-    typval_T	*what_arg UNUSED,
-    typval_T	*rettv)
-{
-#ifdef FEAT_QUICKFIX
-    static char *e_invact = N_("E927: Invalid action: '%s'");
-    char_u	*act;
-    int		action = 0;
-    static int	recursive = 0;
-#endif
-
-    rettv->vval.v_number = -1;
-
-#ifdef FEAT_QUICKFIX
-    if (list_arg->v_type != VAR_LIST)
-	emsg(_(e_listreq));
-    else if (recursive != 0)
-	emsg(_(e_au_recursive));
-    else
-    {
-	list_T  *l = list_arg->vval.v_list;
-	dict_T	*d = NULL;
-	int	valid_dict = TRUE;
-
-	if (action_arg->v_type == VAR_STRING)
-	{
-	    act = tv_get_string_chk(action_arg);
-	    if (act == NULL)
-		return;		/* type error; errmsg already given */
-	    if ((*act == 'a' || *act == 'r' || *act == ' ' || *act == 'f') &&
-		    act[1] == NUL)
-		action = *act;
-	    else
-		semsg(_(e_invact), act);
-	}
-	else if (action_arg->v_type == VAR_UNKNOWN)
-	    action = ' ';
-	else
-	    emsg(_(e_stringreq));
-
-	if (action_arg->v_type != VAR_UNKNOWN
-		&& what_arg->v_type != VAR_UNKNOWN)
-	{
-	    if (what_arg->v_type == VAR_DICT)
-		d = what_arg->vval.v_dict;
-	    else
-	    {
-		emsg(_(e_dictreq));
-		valid_dict = FALSE;
-	    }
-	}
-
-	++recursive;
-	if (l != NULL && action && valid_dict && set_errorlist(wp, l, action,
-		     (char_u *)(wp == NULL ? ":setqflist()" : ":setloclist()"),
-		     d) == OK)
-	    rettv->vval.v_number = 0;
-	--recursive;
-    }
-#endif
-}
-
-/*
- * "setloclist()" function
- */
-    static void
-f_setloclist(typval_T *argvars, typval_T *rettv)
-{
-    win_T	*win;
-
-    rettv->vval.v_number = -1;
-
-    win = find_win_by_nr_or_id(&argvars[0]);
-    if (win != NULL)
-	set_qf_ll_list(win, &argvars[1], &argvars[2], &argvars[3], rettv);
-}
-
-/*
  * "setpos()" function
  */
     static void
@@ -9750,15 +9607,6 @@ f_setpos(typval_T *argvars, typval_T *rettv)
 		emsg(_(e_invarg));
 	}
     }
-}
-
-/*
- * "setqflist()" function
- */
-    static void
-f_setqflist(typval_T *argvars, typval_T *rettv)
-{
-    set_qf_ll_list(NULL, &argvars[0], &argvars[1], &argvars[2], rettv);
 }
 
 /*

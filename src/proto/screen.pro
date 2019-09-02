@@ -59,7 +59,9 @@ void get_trans_bufname(buf_T *buf);
 int redrawing(void);
 int messaging(void);
 void showruler(int always);
+void comp_col(void);
 int number_width(win_T *wp);
 int screen_screencol(void);
 int screen_screenrow(void);
+char *set_chars_option(char_u **varp);
 /* vim: set ft=c : */
