@@ -7824,7 +7824,10 @@ ex_helpgrep(exarg_T *eap)
 	    curwin->w_llist = qi;
     }
 }
+#endif /* FEAT_QUICKFIX */
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+# ifdef FEAT_QUICKFIX
     static void
 get_qf_loc_list(int is_qf, win_T *wp, typval_T *what_arg, typval_T *rettv)
 {
@@ -7851,7 +7854,7 @@ get_qf_loc_list(int is_qf, win_T *wp, typval_T *what_arg, typval_T *rettv)
 	    }
     }
 }
-#endif /* FEAT_QUICKFIX */
+# endif
 
 /*
  * "getloclist()" function
@@ -7859,12 +7862,12 @@ get_qf_loc_list(int is_qf, win_T *wp, typval_T *what_arg, typval_T *rettv)
     void
 f_getloclist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
     win_T	*wp;
 
     wp = find_win_by_nr_or_id(&argvars[0]);
     get_qf_loc_list(FALSE, wp, &argvars[1], rettv);
-#endif
+# endif
 }
 
 /*
@@ -7873,9 +7876,9 @@ f_getloclist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
     void
 f_getqflist(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
     get_qf_loc_list(TRUE, NULL, &argvars[0], rettv);
-#endif
+# endif
 }
 
 /*
@@ -7889,16 +7892,16 @@ set_qf_ll_list(
     typval_T	*what_arg UNUSED,
     typval_T	*rettv)
 {
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
     static char *e_invact = N_("E927: Invalid action: '%s'");
     char_u	*act;
     int		action = 0;
     static int	recursive = 0;
-#endif
+# endif
 
     rettv->vval.v_number = -1;
 
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
     if (list_arg->v_type != VAR_LIST)
 	emsg(_(e_listreq));
     else if (recursive != 0)
@@ -7944,7 +7947,7 @@ set_qf_ll_list(
 	    rettv->vval.v_number = 0;
 	--recursive;
     }
-#endif
+# endif
 }
 
 /*
@@ -7970,3 +7973,4 @@ f_setqflist(typval_T *argvars, typval_T *rettv)
 {
     set_qf_ll_list(NULL, &argvars[0], &argvars[1], &argvars[2], rettv);
 }
+#endif
