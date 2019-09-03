@@ -1540,8 +1540,12 @@ func Test_readdir()
 
   " Limit to 1 result.
   let l = []
-  let files = readdir('Xdir', {x -> len(add(l, x)) == 2 ? -1 : 1})
+  let files = readdir('Xdir', { x -> len(add(l, x)) == 2 ? -1 : 1 })
   call assert_equal(1, len(files))
+
+  " Nested readdir() must not crash
+  let files = readdir('Xdir', 'readdir("Xdir", "1") != []')
+  call assert_equal(['bar.txt', 'dir', 'foo.txt'], sort(files))
 
   eval 'Xdir'->delete('rf')
 endfunc
