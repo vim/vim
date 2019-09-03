@@ -57,6 +57,9 @@ func Test_filter_map_nested()
   let x = {"x":10}
   let r = map(range(2), 'filter(copy(x), "1")')
   call assert_equal([x, x], r)
+
+  let r = map(copy(x), 'filter(copy(x), "1")')
+  call assert_equal({"x": x}, r)
 endfunc
 
 " dict with funcref
