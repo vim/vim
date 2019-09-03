@@ -680,6 +680,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define CONFIRM		0x800	// ":confirm" prompt
 #define SELECTMODE	0x1000	// Select mode, only for mappings
 #define TERMINAL        0x2000  // Terminal mode
+#define MODE_ALL	0xffff
 
 // all mode bits used for mapping
 #define MAP_ALL_MODES	(0x3f | SELECTMODE | TERMINAL)

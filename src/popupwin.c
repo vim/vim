@@ -845,6 +845,15 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_popup_flags &= ~POPF_MAPPING;
     }
 
+    str = dict_get_string(dict, (char_u *)"filtermode", FALSE);
+    if (str != NULL)
+    {
+	if (STRCMP(str, "a") == 0)
+	    wp->w_filter_mode = MODE_ALL;
+	else
+	    wp->w_filter_mode = mode_str2flags(str);
+    }
+
     di = dict_find(dict, (char_u *)"callback", -1);
     if (di != NULL)
     {
@@ -1851,6 +1860,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	wp->w_border_char[i] = 0;
     wp->w_want_scrollbar = 1;
     wp->w_popup_fixed = 0;
+    wp->w_filter_mode = MODE_ALL;
 
     if (d != NULL)
 	// Deal with options.
@@ -2768,6 +2778,7 @@ popup_do_filter(int c)
     int		res = FALSE;
     win_T	*wp;
     int		save_KeyTyped = KeyTyped;
+    int		state;
 
     if (recursive)
 	return FALSE;
@@ -2785,8 +2796,10 @@ popup_do_filter(int c)
 	    res = TRUE;
     }
 
+    state = get_real_state();
     while (!res && (wp = find_next_popup(FALSE)) != NULL)
-	if (wp->w_filter_cb.cb_name != NULL)
+	if (wp->w_filter_cb.cb_name != NULL
+		&& (wp->w_filter_mode & state) != 0)
 	    res = invoke_popup_filter(wp, c);
 
     recursive = FALSE;

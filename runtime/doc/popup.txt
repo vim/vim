@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Aug 31
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Sep 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -442,7 +442,7 @@ popup_notification({what}, {options})			 *popup_notification()*
 <		The PopupNotification highlight group is used instead of
 		WarningMsg if it is defined.
 
-		Without the |+timers| feature the poup will not disappear
+		Without the |+timers| feature the popup will not disappear
 		automatically, the user has to click in it.
 
 		The position will be adjusted to avoid overlap with other
@@ -486,7 +486,7 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 		"tabpage" cannot be changed.
 
 popup_settext({id}, {text})				*popup_settext()*
-		Set the text of the buffer in poup win {id}. {text} is the
+		Set the text of the buffer in popup win {id}. {text} is the
 		same as supplied to |popup_create()|, except that a buffer
 		number is not allowed.
 		Does not change the window size or position, other than caused
@@ -583,13 +583,13 @@ The second argument of |popup_create()| is a dictionary with options:
 			start and end as padding.
 	wrap		TRUE to make the lines wrap (default TRUE).
 	drag		TRUE to allow the popup to be dragged with the mouse
-			by grabbing at at the border.  Has no effect if the
+			by grabbing at the border.  Has no effect if the
 			popup does not have a border. As soon as dragging
 			starts and "pos" is "center" it is changed to
 			"topleft".
 	resize		TRUE to allow the popup to be resized with the mouse
-			by grabbing at at the bottom right cornder.  Has no
-			effect if the popup does not have a border.
+			by grabbing at the bottom right corner.  Has no effect
+			if the popup does not have a border.
 	close		When "button" an X is displayed in the top-right, on
 			top of any border, padding or text.  When clicked on
 			the X the popup will close.  Any callback is invoked
@@ -662,6 +662,18 @@ The second argument of |popup_create()| is a dictionary with options:
 	mapping		Allow for key mapping.  When FALSE and the popup is
 			visible and has a filter callback key mapping is
 			disabled.  Default value is TRUE.
+	filtermode	In which modes the filter is used (same flags as with
+			|hasmapto()| plus "a"):
+				n	Normal mode
+				v	Visual and Select mode
+				x	Visual mode
+				s	Select mode
+				o	Operator-pending mode
+				i	Insert mode
+				l	Language-Argument ("r", "f", "t", etc.)
+				c	Command-line mode
+				a	all modes
+			The default value is "a".
 	callback	A callback that is called when the popup closes, e.g.
 			when using |popup_filter_menu()|, see |popup-callback|.
 
@@ -784,13 +796,20 @@ key as a string, e.g.: >
 	  endif
 	  return 0
 	endfunc
-<							*popup-mapping*
+<							*popup-filter-mode*
+The "filtermode" property can be used to specify in what mode the filter is
+invoked.  The default is "a": all modes.  When using "nvi" Command-line mode
+is not included, so that any command typed on the command line is not
+filtered.  However, to get to Command-line mode the filter must not consume
+":".  Just like it must not consume "v" to allow for entering Visual mode.
+
+							*popup-mapping*
 Normally the key is what results after any mapping, since the keys pass on as
 normal input if the filter does not use it.  If the filter consumes all the
 keys, set the "mapping" property to zero so that mappings do not get in the
 way.  This is default for |popup_menu()| and |popup_dialog()|.
 
-Some common key actions:
+Some recommended key actions:
 	x		close the popup (see note below)
 	cursor keys	select another entry
 	Tab		accept current suggestion
@@ -941,7 +960,7 @@ this example simulated with a timer callback: >
 	    call popup_close(s:winid)
 	    let s:winid = 0
 	  endif
-	  " simulate an asynchronous loopup for the text to display
+	  " simulate an asynchronous lookup for the text to display
 	  let s:balloonText = v:beval_text
 	  call timer_start(100, 'ShowPopup')
 	  return ''

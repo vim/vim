@@ -3054,6 +3054,7 @@ struct window_S
 				      // computed
     callback_T	w_close_cb;	    // popup close callback
     callback_T	w_filter_cb;	    // popup filter callback
+    int		w_filter_mode;	    // mode when filter callback is used
 
     win_T	*w_popup_curwin;    // close popup if curwin differs
     linenr_T	w_popup_lnum;	    // close popup if cursor not on this line

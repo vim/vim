@@ -897,20 +897,10 @@ map_clear_int(
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
-/*
- * Return TRUE if a map exists that has "str" in the rhs for mode "modechars".
- * Recognize termcap codes in "str".
- * Also checks mappings local to the current buffer.
- */
     int
-map_to_exists(char_u *str, char_u *modechars, int abbr)
+mode_str2flags(char_u *modechars)
 {
     int		mode = 0;
-    char_u	*rhs;
-    char_u	*buf;
-    int		retval;
-
-    rhs = replace_termcodes(str, &buf, FALSE, TRUE, FALSE);
 
     if (vim_strchr(modechars, 'n') != NULL)
 	mode |= NORMAL;
@@ -929,7 +919,24 @@ map_to_exists(char_u *str, char_u *modechars, int abbr)
     if (vim_strchr(modechars, 'c') != NULL)
 	mode |= CMDLINE;
 
-    retval = map_to_exists_mode(rhs, mode, abbr);
+    return mode;
+}
+
+/*
+ * Return TRUE if a map exists that has "str" in the rhs for mode "modechars".
+ * Recognize termcap codes in "str".
+ * Also checks mappings local to the current buffer.
+ */
+    int
+map_to_exists(char_u *str, char_u *modechars, int abbr)
+{
+    char_u	*rhs;
+    char_u	*buf;
+    int		retval;
+
+    rhs = replace_termcodes(str, &buf, FALSE, TRUE, FALSE);
+
+    retval = map_to_exists_mode(rhs, mode_str2flags(modechars), abbr);
     vim_free(buf);
 
     return retval;

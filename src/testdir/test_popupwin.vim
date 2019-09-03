@@ -1892,6 +1892,72 @@ func Test_popupwin_garbage_collect()
   delfunc MyPopupFilter
 endfunc
 
+func Test_popupwin_filter_mode()
+  func MyPopupFilter(winid, c)
+    let s:typed = a:c
+    if a:c == ':' || a:c == "\r" || a:c == 'v'
+      " can start cmdline mode, get out, and start/stop Visual mode
+      return 0
+    endif
+    return 1
+  endfunc
+
+  " Normal, Visual and Insert mode
+  let winid = popup_create('something', #{filter: 'MyPopupFilter', filtermode: 'nvi'})
+  redraw
+  call feedkeys('x', 'xt')
+  call assert_equal('x', s:typed)
+
+  call feedkeys(":let g:foo = 'foo'\<CR>", 'xt')
+  call assert_equal(':', s:typed)
+  call assert_equal('foo', g:foo)
+
+  let @x = 'something'
+  call feedkeys('v$"xy', 'xt')
+  call assert_equal('y', s:typed)
+  call assert_equal('something', @x)  " yank command is filtered out
+  call feedkeys('v', 'xt')  " end Visual mode
+
+  call popup_close(winid)
+
+  " only Normal mode
+  let winid = popup_create('something', #{filter: 'MyPopupFilter', filtermode: 'n'})
+  redraw
+  call feedkeys('x', 'xt')
+  call assert_equal('x', s:typed)
+
+  call feedkeys(":let g:foo = 'foo'\<CR>", 'xt')
+  call assert_equal(':', s:typed)
+  call assert_equal('foo', g:foo)
+
+  let @x = 'something'
+  call feedkeys('v$"xy', 'xt')
+  call assert_equal('v', s:typed)
+  call assert_notequal('something', @x)
+
+  call popup_close(winid)
+
+  " default: all modes
+  let winid = popup_create('something', #{filter: 'MyPopupFilter'})
+  redraw
+  call feedkeys('x', 'xt')
+  call assert_equal('x', s:typed)
+
+  let g:foo = 'bar'
+  call feedkeys(":let g:foo = 'foo'\<CR>", 'xt')
+  call assert_equal("\r", s:typed)
+  call assert_equal('bar', g:foo)
+
+  let @x = 'something'
+  call feedkeys('v$"xy', 'xt')
+  call assert_equal('y', s:typed)
+  call assert_equal('something', @x)  " yank command is filtered out
+  call feedkeys('v', 'xt')  " end Visual mode
+
+  call popup_close(winid)
+  delfunc MyPopupFilter
+endfunc
+
 func Test_popupwin_with_buffer()
   call writefile(['some text', 'in a buffer'], 'XsomeFile')
   let buf = bufadd('XsomeFile')
