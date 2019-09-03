@@ -760,8 +760,9 @@ pum_set_selected(int n, int repeat UNUSED)
 # else
 #  define use_popup 0
 # endif
+# ifdef FEAT_TEXT_PROP
 	    has_info = TRUE;
-
+# endif
 	    // Open a preview window.  3 lines by default.  Prefer
 	    // 'previewheight' if set and smaller.
 	    g_do_tagpreview = 3;

@@ -45,10 +45,6 @@ static int	append_arg_number(win_T *wp, char_u *buf, int buflen, int add_file);
 static void	free_buffer(buf_T *);
 static void	free_buffer_stuff(buf_T *buf, int free_options);
 static void	clear_wininfo(buf_T *buf);
-#if defined(FEAT_JOB_CHANNEL) \
-	|| defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
-static int	find_win_for_buf(buf_T *buf, win_T **wp, tabpage_T **tp);
-#endif
 
 #ifdef UNIX
 # define dev_T dev_t
@@ -5457,7 +5453,24 @@ buf_spname(buf_T *buf)
 #if defined(FEAT_JOB_CHANNEL) \
 	|| defined(FEAT_PYTHON) || defined(FEAT_PYTHON3) \
 	|| defined(PROTO)
-# define SWITCH_TO_WIN
+/*
+ * Find a window for buffer "buf".
+ * If found OK is returned and "wp" and "tp" are set to the window and tabpage.
+ * If not found FAIL is returned.
+ */
+    static int
+find_win_for_buf(
+    buf_T     *buf,
+    win_T     **wp,
+    tabpage_T **tp)
+{
+    FOR_ALL_TAB_WINDOWS(*tp, *wp)
+	if ((*wp)->w_buffer == buf)
+	    goto win_found;
+    return FAIL;
+win_found:
+    return OK;
+}
 
 /*
  * Find a window that contains "buf" and switch to it.
@@ -5494,27 +5507,6 @@ restore_win_for_buf(
 	restore_win(save_curwin, save_curtab, TRUE);
     else
 	restore_buffer(save_curbuf);
-}
-#endif
-
-#if defined(FEAT_QUICKFIX) || defined(SWITCH_TO_WIN) || defined(PROTO)
-/*
- * Find a window for buffer "buf".
- * If found OK is returned and "wp" and "tp" are set to the window and tabpage.
- * If not found FAIL is returned.
- */
-    static int
-find_win_for_buf(
-    buf_T     *buf,
-    win_T     **wp,
-    tabpage_T **tp)
-{
-    FOR_ALL_TAB_WINDOWS(*tp, *wp)
-	if ((*wp)->w_buffer == buf)
-	    goto win_found;
-    return FAIL;
-win_found:
-    return OK;
 }
 #endif
 

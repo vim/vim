@@ -3381,9 +3381,7 @@ qf_jump_newwin(qf_info_T	*qi,
     int			prev_winid;
     int			opened_window = FALSE;
     int			print_message = TRUE;
-#ifdef FEAT_FOLDING
     int			old_KeyTyped = KeyTyped; // getting file may reset it
-#endif
     int			retval = OK;
 
     if (qi == NULL)
@@ -3427,7 +3425,7 @@ qf_jump_newwin(qf_info_T	*qi,
 	goto theend;
 
     retval = qf_jump_to_buffer(qi, qf_index, qf_ptr, forceit, prev_winid,
-	    &opened_window, old_KeyTyped, print_message);
+				  &opened_window, old_KeyTyped, print_message);
     if (retval == NOTDONE)
     {
 	// Quickfix/location list is freed by an autocmd
