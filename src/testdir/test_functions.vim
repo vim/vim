@@ -1314,6 +1314,23 @@ func Test_inputsecret()
   unlet g:typed2
 endfunc
 
+func Test_getchar()
+  call feedkeys('a', '')
+  call assert_equal(char2nr('a'), getchar())
+
+  call test_setmouse(1, 3)
+  let v:mouse_win = 9
+  let v:mouse_winid = 9
+  let v:mouse_lnum = 9
+  let v:mouse_col = 9
+  call feedkeys("\<S-LeftMouse>", '')
+  call assert_equal("\<S-LeftMouse>", getchar())
+  call assert_equal(1, v:mouse_win)
+  call assert_equal(win_getid(1), v:mouse_winid)
+  call assert_equal(1, v:mouse_lnum)
+  call assert_equal(3, v:mouse_col)
+endfunc
+
 func Test_libcall_libcallnr()
   if !has('libcall')
     return
