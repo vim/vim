@@ -189,6 +189,9 @@ popup_atcursor({what}, {options})			*popup_atcursor()*
 				\ })
 <		Use {options} to change the properties.
 
+		Can also be used as a |method|: >
+			GetText()->popup_atcursor({})
+
 
 popup_beval({what}, {options})			*popup_beval()*
 		Show the {what} above the position from 'ballooneval' and
@@ -203,7 +206,9 @@ popup_beval({what}, {options})			*popup_beval()*
 <		Use {options} to change the properties.
 		See |popup_beval_example| for an example use.
 
-
+		Can also be used as a |method|: >
+			GetText()->popup_beval({})
+<
 							*popup_clear()*
 popup_clear()	Emergency solution to a misbehaving plugin: close all popup
 		windows for the current tab and global popups.
@@ -218,6 +223,8 @@ popup_close({id} [, {result}])				*popup_close()*
 		it will be passed as the second argument of the callback.
 		Otherwise zero is passed to the callback.
 
+		Can also be used as a |method|: >
+			GetPopup()->popup_close()
 
 popup_create({what}, {options})				*popup_create()*
 		Open a popup window showing {what}, which is either:
@@ -240,6 +247,8 @@ popup_create({what}, {options})				*popup_create()*
 			call setbufline(bufnr, 2, 'second line')
 <		In case of failure zero is returned.
 
+		Can also be used as a |method|: >
+			GetText()->popup_create({})
 
 popup_dialog({what}, {options})				*popup_dialog()*
 		Just like |popup_create()| but with these default options: >
@@ -261,6 +270,8 @@ popup_dialog({what}, {options})				*popup_dialog()*
 <		By default the dialog can be dragged, so that text below it
 		can be read if needed.
 
+		Can also be used as a |method|: >
+			GetText()->popup_dialog({})
 
 popup_filter_menu({id}, {key})				*popup_filter_menu()*
 		Filter that can be used for a popup. These keys can be used:
@@ -337,6 +348,8 @@ popup_getoptions({id})					*popup_getoptions()*
 
 		If popup window {id} is not found an empty Dict is returned.
 
+		Can also be used as a |method|: >
+			GetPopup()->popup_getoptions()
 
 popup_getpos({id})					*popup_getpos()*
 		Return the position and size of popup {id}.  Returns a Dict
@@ -361,6 +374,8 @@ popup_getpos({id})					*popup_getpos()*
 
 		If popup window {id} is not found an empty Dict is returned.
 
+		Can also be used as a |method|: >
+			GetPopup()->popup_getpos()
 
 popup_hide({id})						*popup_hide()*
 		If {id} is a displayed popup, hide it now. If the popup has a
@@ -369,6 +384,8 @@ popup_hide({id})						*popup_hide()*
 		If window {id} does not exist nothing happens.  If window {id}
 		exists but is not a popup window an error is given. *E993*
 
+		Can also be used as a |method|: >
+			GetPopup()->popup_hide()
 
 popup_locate({row}, {col})				 *popup_locate()*
 		Return the |window-ID| of the popup at screen position {row}
@@ -406,6 +423,8 @@ popup_menu({what}, {options})				 *popup_menu()*
 				\ callback: 'ColorSelected',
 				\ })
 
+<		Can also be used as a |method|: >
+			GetChoices()->popup_menu({})
 
 popup_move({id}, {options})					*popup_move()*
 		Move popup {id} to the position specified with {options}.
@@ -422,6 +441,8 @@ popup_move({id}, {options})					*popup_move()*
 		For {id} see `popup_hide()`.
 		For other options see |popup_setoptions()|.
 
+		Can also be used as a |method|: >
+			GetPopup()->popup_move(options)
 
 popup_notification({what}, {options})			 *popup_notification()*
 		Show the {what} for 3 seconds at the top of the Vim window.
@@ -449,6 +470,8 @@ popup_notification({what}, {options})			 *popup_notification()*
 		notifications.
 		Use {options} to change the properties.
 
+		Can also be used as a |method|: >
+			GetText()->popup_notification({})
 
 popup_show({id})						*popup_show()*
 		If {id} is a hidden popup, show it now.
@@ -485,6 +508,9 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 		For "hidden" use |popup_hide()| and |popup_show()|.
 		"tabpage" cannot be changed.
 
+		Can also be used as a |method|: >
+			GetPopup()->popup_setoptions(options)
+
 popup_settext({id}, {text})				*popup_settext()*
 		Set the text of the buffer in popup win {id}. {text} is the
 		same as supplied to |popup_create()|, except that a buffer
@@ -492,6 +518,8 @@ popup_settext({id}, {text})				*popup_settext()*
 		Does not change the window size or position, other than caused
 		by the different text.
 
+		Can also be used as a |method|: >
+			GetPopup()->popup_settext('hello')
 
 ==============================================================================
 3. Usage						*popup-usage*
