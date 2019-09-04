@@ -1152,20 +1152,16 @@ non_zero_arg(typval_T *argvars)
     linenr_T
 tv_get_lnum(typval_T *argvars)
 {
-    typval_T	rettv;
     linenr_T	lnum;
-    int		save_type;
 
     lnum = (linenr_T)tv_get_number_chk(&argvars[0], NULL);
-    if (lnum == 0)  /* no valid number, try using line() */
+    if (lnum == 0)  // no valid number, try using arg like line()
     {
-	rettv.v_type = VAR_NUMBER;
-	save_type = argvars[1].v_type;
-	argvars[1].v_type = VAR_UNKNOWN;
-	f_line(argvars, &rettv);
-	lnum = (linenr_T)rettv.vval.v_number;
-	clear_tv(&rettv);
-	argvars[1].v_type = save_type;
+	int	fnum;
+	pos_T	*fp = var2fpos(&argvars[0], TRUE, &fnum);
+
+	if (fp != NULL)
+	    lnum = fp->lnum;
     }
     return lnum;
 }
