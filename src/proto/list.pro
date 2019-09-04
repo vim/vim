@@ -41,4 +41,6 @@ void f_list2str(typval_T *argvars, typval_T *rettv);
 void list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg);
 void f_sort(typval_T *argvars, typval_T *rettv);
 void f_uniq(typval_T *argvars, typval_T *rettv);
+void f_filter(typval_T *argvars, typval_T *rettv);
+void f_map(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

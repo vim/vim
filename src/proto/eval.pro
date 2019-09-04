@@ -11,8 +11,6 @@ int skip_expr(char_u **pp);
 char_u *eval_to_string(char_u *arg, char_u **nextcmd, int convert);
 char_u *eval_to_string_safe(char_u *arg, char_u **nextcmd, int use_sandbox);
 varnumber_T eval_to_number(char_u *expr);
-list_T *eval_spell_expr(char_u *badword, char_u *expr);
-int get_spellword(list_T *list, char_u **pp);
 typval_T *eval_expr(char_u *arg, char_u **nextcmd);
 int call_vim_function(char_u *func, int argc, typval_T *argv, typval_T *rettv);
 varnumber_T call_func_retnr(char_u *func, int argc, typval_T *argv);
@@ -78,5 +76,4 @@ int typval_compare(typval_T *typ1, typval_T *typ2, exptype_T type, int type_is, 
 char_u *typval_tostring(typval_T *arg);
 int modify_fname(char_u *src, int tilde_file, int *usedlen, char_u **fnamep, char_u **bufp, int *fnamelen);
 char_u *do_string_sub(char_u *str, char_u *pat, char_u *sub, typval_T *expr, char_u *flags);
-void filter_map(typval_T *argvars, typval_T *rettv, int map);
 /* vim: set ft=c : */
