@@ -2061,9 +2061,7 @@ typedef struct
 # define B_SPELL(buf)  (0)
 #endif
 
-#ifdef FEAT_QUICKFIX
 typedef struct qf_info_S qf_info_T;
-#endif
 
 #ifdef FEAT_PROFILE
 /*
