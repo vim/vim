@@ -28,4 +28,6 @@ int anyBufIsChanged(void);
 int bufIsChangedNotTerm(buf_T *buf);
 int curbufIsChanged(void);
 void u_eval_tree(u_header_T *first_uhp, list_T *list);
+void f_undofile(typval_T *argvars, typval_T *rettv);
+void f_undotree(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

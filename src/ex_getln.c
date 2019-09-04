@@ -3868,7 +3868,7 @@ get_ccline_ptr(void)
  * Only works when the command line is being edited.
  * Returns NULL when something is wrong.
  */
-    char_u *
+    static char_u *
 get_cmdline_str(void)
 {
     cmdline_info_T *p;
@@ -3882,19 +3882,26 @@ get_cmdline_str(void)
 }
 
 /*
- * Get the current command line position, counted in bytes.
- * Zero is the first position.
- * Only works when the command line is being edited.
- * Returns -1 when something is wrong.
+ * "getcmdline()" function
  */
-    int
-get_cmdline_pos(void)
+    void
+f_getcmdline(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = get_cmdline_str();
+}
+
+/*
+ * "getcmdpos()" function
+ */
+    void
+f_getcmdpos(typval_T *argvars UNUSED, typval_T *rettv)
 {
     cmdline_info_T *p = get_ccline_ptr();
 
-    if (p == NULL)
-	return -1;
-    return p->cmdpos;
+    rettv->vval.v_number = 0;
+    if (p != NULL)
+    rettv->vval.v_number = p->cmdpos + 1;
 }
 
 /*
@@ -3902,7 +3909,7 @@ get_cmdline_pos(void)
  * Only works when the command line is being edited.
  * Returns 1 when failed, 0 when OK.
  */
-    int
+    static int
 set_cmdline_pos(
     int		pos)
 {
@@ -3919,6 +3926,34 @@ set_cmdline_pos(
 	new_cmdpos = pos;
     return 0;
 }
+
+/*
+ * "setcmdpos()" function
+ */
+    void
+f_setcmdpos(typval_T *argvars, typval_T *rettv)
+{
+    int		pos = (int)tv_get_number(&argvars[0]) - 1;
+
+    if (pos >= 0)
+	rettv->vval.v_number = set_cmdline_pos(pos);
+}
+
+/*
+ * "getcmdtype()" function
+ */
+    void
+f_getcmdtype(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = alloc(2);
+    if (rettv->vval.v_string != NULL)
+    {
+	rettv->vval.v_string[0] = get_cmdline_type();
+	rettv->vval.v_string[1] = NUL;
+    }
+}
+
 #endif
 
 #if defined(FEAT_EVAL) || defined(FEAT_CMDWIN) || defined(PROTO)
