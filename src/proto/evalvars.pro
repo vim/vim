@@ -9,6 +9,8 @@ int eval_charconvert(char_u *enc_from, char_u *enc_to, char_u *fname_from, char_
 int eval_printexpr(char_u *fname, char_u *args);
 void eval_diff(char_u *origfile, char_u *newfile, char_u *outfile);
 void eval_patch(char_u *origfile, char_u *difffile, char_u *outfile);
+list_T *eval_spell_expr(char_u *badword, char_u *expr);
+int get_spellword(list_T *list, char_u **pp);
 void prepare_vimvar(int idx, typval_T *save_tv);
 void restore_vimvar(int idx, typval_T *save_tv);
 void ex_let(exarg_T *eap);

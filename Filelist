@@ -45,6 +45,7 @@ SRC_ALL =	\
 		src/ex_getln.c \
 		src/feature.h \
 		src/fileio.c \
+		src/filepath.c \
 		src/findfile.c \
 		src/fold.c \
 		src/getchar.c \
@@ -196,6 +197,7 @@ SRC_ALL =	\
 		src/proto/ex_eval.pro \
 		src/proto/ex_getln.pro \
 		src/proto/fileio.pro \
+		src/proto/filepath.pro \
 		src/proto/findfile.pro \
 		src/proto/fold.pro \
 		src/proto/getchar.pro \

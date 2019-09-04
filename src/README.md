@@ -36,6 +36,7 @@ eval.c		| expression evaluation
 evalfunc.c	| built-in functions
 evalvars.c	| vim variables
 fileio.c	| reading and writing files
+filepath.c	| dealing with file names and paths
 findfile.c	| search for files in 'path'
 fold.c		| folding
 getchar.c	| getting characters and key mapping

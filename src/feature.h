@@ -107,6 +107,7 @@
  * +multi_byte		Generic multi-byte character handling.
  * +cmdline_compl	completion of mappings/abbreviations in cmdline mode.
  * +insert_expand	CTRL-N/CTRL-P/CTRL-X in insert mode.
+ * +modify_fname	modifiers for file name.  E.g., "%:p:h".
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -351,13 +352,6 @@
 #if defined(FEAT_PRINTER) && ((defined(MSWIN) && defined(MSWINPS)) \
 	|| (!defined(MSWIN) && defined(FEAT_EVAL)))
 # define FEAT_POSTSCRIPT
-#endif
-
-/*
- * +modify_fname	modifiers for file name.  E.g., "%:p:h".
- */
-#ifdef FEAT_NORMAL
-# define FEAT_MODIFY_FNAME
 #endif
 
 /*

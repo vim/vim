@@ -7975,10 +7975,8 @@ eval_vars(
     buf_T	*buf;
     int		valid = VALID_HEAD + VALID_PATH;    /* assume valid result */
     int		spec_idx;
-#ifdef FEAT_MODIFY_FNAME
     int		tilde_file = FALSE;
     int		skip_mod = FALSE;
-#endif
     char_u	strbuf[30];
 
     *errormsg = NULL;
@@ -8043,9 +8041,7 @@ eval_vars(
 		else
 		{
 		    result = curbuf->b_fname;
-#ifdef FEAT_MODIFY_FNAME
 		    tilde_file = STRCMP(result, "~") == 0;
-#endif
 		}
 		break;
 
@@ -8057,9 +8053,7 @@ eval_vars(
 		    *usedlen = 2;
 		    if (escaped != NULL)
 			*escaped = TRUE;
-#ifdef FEAT_MODIFY_FNAME
 		    skip_mod = TRUE;
-#endif
 		    break;
 		}
 		s = src + 1;
@@ -8112,9 +8106,7 @@ eval_vars(
 		    else
 		    {
 			result = buf->b_fname;
-#ifdef FEAT_MODIFY_FNAME
 			tilde_file = STRCMP(result, "~") == 0;
-#endif
 		    }
 		}
 		break;
@@ -8221,7 +8213,6 @@ eval_vars(
 	    if ((s = vim_strrchr(result, '.')) != NULL && s >= gettail(result))
 		resultlen = (int)(s - result);
 	}
-#ifdef FEAT_MODIFY_FNAME
 	else if (!skip_mod)
 	{
 	    valid |= modify_fname(src, tilde_file, usedlen, &result, &resultbuf,
@@ -8232,7 +8223,6 @@ eval_vars(
 		return NULL;
 	    }
 	}
-#endif
     }
 
     if (resultlen == 0 || valid != VALID_HEAD + VALID_PATH)

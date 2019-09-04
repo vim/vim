@@ -15,4 +15,5 @@ int vim_ispathlistsep(int c);
 void uniquefy_paths(garray_T *gap, char_u *pattern);
 int expand_in_path(garray_T *gap, char_u *pattern, int flags);
 void simplify_filename(char_u *filename);
+void f_simplify(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

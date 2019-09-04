@@ -2815,3 +2815,19 @@ simplify_filename(char_u *filename)
     } while (*p != NUL);
 #endif // !AMIGA
 }
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * "simplify()" function
+ */
+    void
+f_simplify(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*p;
+
+    p = tv_get_string(&argvars[0]);
+    rettv->vval.v_string = vim_strsave(p);
+    simplify_filename(rettv->vval.v_string);	/* simplify in place */
+    rettv->v_type = VAR_STRING;
+}
+#endif // FEAT_EVAL

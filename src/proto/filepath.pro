@@ -1,0 +1,31 @@
+/* filepath.c */
+int modify_fname(char_u *src, int tilde_file, int *usedlen, char_u **fnamep, char_u **bufp, int *fnamelen);
+void f_chdir(typval_T *argvars, typval_T *rettv);
+void f_delete(typval_T *argvars, typval_T *rettv);
+void f_executable(typval_T *argvars, typval_T *rettv);
+void f_exepath(typval_T *argvars, typval_T *rettv);
+void f_filereadable(typval_T *argvars, typval_T *rettv);
+void f_filewritable(typval_T *argvars, typval_T *rettv);
+void findfilendir(typval_T *argvars, typval_T *rettv, int find_what);
+void f_finddir(typval_T *argvars, typval_T *rettv);
+void f_findfile(typval_T *argvars, typval_T *rettv);
+void f_fnamemodify(typval_T *argvars, typval_T *rettv);
+void f_getcwd(typval_T *argvars, typval_T *rettv);
+void f_getfperm(typval_T *argvars, typval_T *rettv);
+void f_getfsize(typval_T *argvars, typval_T *rettv);
+void f_getftime(typval_T *argvars, typval_T *rettv);
+void f_getftype(typval_T *argvars, typval_T *rettv);
+void f_glob(typval_T *argvars, typval_T *rettv);
+void f_glob2regpat(typval_T *argvars, typval_T *rettv);
+void f_globpath(typval_T *argvars, typval_T *rettv);
+void f_isdirectory(typval_T *argvars, typval_T *rettv);
+void f_mkdir(typval_T *argvars, typval_T *rettv);
+void f_readdir(typval_T *argvars, typval_T *rettv);
+void f_readfile(typval_T *argvars, typval_T *rettv);
+void f_resolve(typval_T *argvars, typval_T *rettv);
+void f_tempname(typval_T *argvars, typval_T *rettv);
+void f_writefile(typval_T *argvars, typval_T *rettv);
+char_u *do_browse(int flags, char_u *title, char_u *dflt, char_u *ext, char_u *initdir, char_u *filter, buf_T *buf);
+void f_browse(typval_T *argvars, typval_T *rettv);
+void f_browsedir(typval_T *argvars, typval_T *rettv);
+/* vim: set ft=c : */

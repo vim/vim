@@ -2582,7 +2582,6 @@ home_replace(
     if (homedir_env != NULL && *homedir_env == NUL)
 	homedir_env = NULL;
 
-#if defined(FEAT_MODIFY_FNAME) || defined(FEAT_EVAL)
     if (homedir_env != NULL && *homedir_env == '~')
     {
 	int	usedlen = 0;
@@ -2597,7 +2596,6 @@ home_replace(
 	    /* Remove the trailing / that is added to a directory. */
 	    homedir_env[flen - 1] = NUL;
     }
-#endif
 
     if (homedir_env != NULL)
 	envlen = STRLEN(homedir_env);

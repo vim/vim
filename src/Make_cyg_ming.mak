@@ -729,6 +729,7 @@ OBJ = \
 	$(OUTDIR)/ex_eval.o \
 	$(OUTDIR)/ex_getln.o \
 	$(OUTDIR)/fileio.o \
+	$(OUTDIR)/filepath.o \
 	$(OUTDIR)/findfile.o \
 	$(OUTDIR)/fold.o \
 	$(OUTDIR)/getchar.o \
