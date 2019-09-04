@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Aug 31
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Sep 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2547,7 +2547,7 @@ keys({dict})			List	keys in {dict}
 len({expr})			Number	the length of {expr}
 libcall({lib}, {func}, {arg})	String	call {func} in library {lib} with {arg}
 libcallnr({lib}, {func}, {arg})	Number	idem, but return a Number
-line({expr})			Number	line nr of cursor, last line or mark
+line({expr} [, {winid}])	Number	line nr of cursor, last line or mark
 line2byte({lnum})		Number	byte count of line {lnum}
 lispindent({lnum})		Number	Lisp indent for line {lnum}
 list2str({list} [, {utf8}])	String	turn numbers in {list} into a String
@@ -5688,8 +5688,8 @@ glob2regpat({expr})					 *glob2regpat()*
 			GetExpr()->glob2regpat()
 <								*globpath()*
 globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
-		Perform glob() on all directories in {path} and concatenate
-		the results.  Example: >
+		Perform glob() for {expr} on all directories in {path} and
+		concatenate the results.  Example: >
 			:echo globpath(&rtp, "syntax/c.vim")
 <
 		{path} is a comma-separated list of directory names.  Each
@@ -5790,7 +5790,9 @@ hasmapto({what} [, {mode} [, {abbr}]])			*hasmapto()*
 		If no matching mapping is found 0 is returned.
 		The following characters are recognized in {mode}:
 			n	Normal mode
-			v	Visual mode
+			v	Visual and Select mode
+			x	Visual mode
+			s	Select mode
 			o	Operator-pending mode
 			i	Insert mode
 			l	Language-Argument ("r", "f", "t", etc.)
@@ -6376,8 +6378,9 @@ libcallnr({libname}, {funcname}, {argument})
 		the argument to the called function: >
 			GetValue()->libcallnr("libc.so", "printf")
 <
-							*line()*
-line({expr})	The result is a Number, which is the line number of the file
+
+line({expr} [, {winid}])				*line()*
+		The result is a Number, which is the line number of the file
 		position given with {expr}.  The accepted positions are:
 		    .	    the cursor position
 		    $	    the last line in the current buffer
@@ -6395,8 +6398,11 @@ line({expr})	The result is a Number, which is the line number of the file
 		then applies to another buffer.
 		To get the column number use |col()|.  To get both use
 		|getpos()|.
+		With the optional {winid} argument the values are obtained for
+		that window instead of the current window.
 		Examples: >
 			line(".")		line number of the cursor
+			line(".", winid)	idem, in window "winid"
 			line("'t")		line number of mark t
 			line("'" . marker)	line number of mark marker
 <
@@ -7547,6 +7553,9 @@ range({expr} [, {max} [, {stride}]])				*range()*
 			range(0)		" []
 			range(2, 0)		" error!
 <
+		Can also be used as a |method|: >
+			GetExpr()->range()
+<
 							*readdir()*
 readdir({directory} [, {expr}])
 		Return a list with file and directory names in {directory}.
@@ -7575,6 +7584,9 @@ readdir({directory} [, {expr}])
 		      \          {x : s:tree(a:dir . '/' . x)} : x})}
                   endfunction
                   echo s:tree(".")
+<
+		Can also be used as a |method|: >
+			GetDirName()->readdir()
 <
 							*readfile()*
 readfile({fname} [, {type} [, {max}]])
@@ -7610,6 +7622,9 @@ readfile({fname} [, {type} [, {max}]])
 		the result is an empty list.
 		Also see |writefile()|.
 
+		Can also be used as a |method|: >
+			GetFileName()->readfile()
+
 reg_executing()						*reg_executing()*
 		Returns the single letter name of the register being executed.
 		Returns an empty string when no register is being executed.
@@ -7631,6 +7646,10 @@ reltime([{start} [, {end}]])				*reltime()*
 		and {end}.
 		The {start} and {end} arguments must be values returned by
 		reltime().
+
+		Can also be used as a |method|: >
+			GetStart()->reltime()
+<
 		{only available when compiled with the |+reltime| feature}
 
 reltimefloat({time})				*reltimefloat()*
@@ -7641,7 +7660,11 @@ reltimefloat({time})				*reltimefloat()*
 			let seconds = reltimefloat(reltime(start))
 <		See the note of reltimestr() about overhead.
 		Also see |profiling|.
-		{only available when compiled with the |+reltime| feature}
+
+		Can also be used as a |method|: >
+			reltime(start)->reltimefloat()
+
+<		{only available when compiled with the |+reltime| feature}
 
 reltimestr({time})				*reltimestr()*
 		Return a String that represents the time value of {time}.
@@ -7656,7 +7679,11 @@ reltimestr({time})				*reltimestr()*
 		can use split() to remove it. >
 			echo split(reltimestr(reltime(start)))[0]
 <		Also see |profiling|.
-		{only available when compiled with the |+reltime| feature}
+
+		Can also be used as a |method|: >
+			reltime(start)->reltimestr()
+
+<		{only available when compiled with the |+reltime| feature}
 
 							*remote_expr()* *E449*
 remote_expr({server}, {string} [, {idvar} [, {timeout}]])
@@ -7685,6 +7712,8 @@ remote_expr({server}, {string} [, {idvar} [, {timeout}]])
 			:echo remote_expr("gvim", "2+2")
 			:echo remote_expr("gvim1", "b:current_syntax")
 <
+		Can also be used as a |method|: >
+			ServerName()->remote_expr(expr)
 
 remote_foreground({server})				*remote_foreground()*
 		Move the Vim server with the name {server} to the foreground.
@@ -7696,7 +7725,11 @@ remote_foreground({server})				*remote_foreground()*
 		Note: This does not restore the window if it was minimized,
 		like foreground() does.
 		This function is not available in the |sandbox|.
-		{only in the Win32, Athena, Motif and GTK GUI versions and the
+
+		Can also be used as a |method|: >
+			ServerName()->remote_foreground()
+
+<		{only in the Win32, Athena, Motif and GTK GUI versions and the
 		Win32 console version}
 
 
@@ -7714,6 +7747,9 @@ remote_peek({serverid} [, {retvar}])		*remote_peek()*
 			:let repl = ""
 			:echo "PEEK: ".remote_peek(id, "repl").": ".repl
 
+<		Can also be used as a |method|: >
+			ServerId()->remote_peek()
+
 remote_read({serverid}, [{timeout}])			*remote_read()*
 		Return the oldest available reply from {serverid} and consume
 		it.  Unless a {timeout} in seconds is given, it blocks until a
@@ -7723,6 +7759,9 @@ remote_read({serverid}, [{timeout}])			*remote_read()*
 		{only available when compiled with the |+clientserver| feature}
 		Example: >
 			:echo remote_read(id)
+
+<		Can also be used as a |method|: >
+			ServerId()->remote_read()
 <
 							*remote_send()* *E241*
 remote_send({server}, {string} [, {idvar}])
@@ -7747,11 +7786,18 @@ remote_send({server}, {string} [, {idvar}])
 		:echo remote_send("gvim", ":sleep 10 | echo ".
 		 \ 'server2client(expand("<client>"), "HELLO")<CR>')
 <
+		Can also be used as a |method|: >
+			ServerName()->remote_send(keys)
+<
 					*remote_startserver()* *E941* *E942*
 remote_startserver({name})
 		Become the server {name}.  This fails if already running as a
 		server, when |v:servername| is not empty.
-		{only available when compiled with the |+clientserver| feature}
+
+		Can also be used as a |method|: >
+			ServerName()->remote_startserver()
+
+<		{only available when compiled with the |+clientserver| feature}
 
 remove({list}, {idx} [, {end}])				*remove()*
 		Without {end}: Remove the item at {idx} from |List| {list} and
@@ -7795,6 +7841,9 @@ rename({from}, {to})					*rename()*
 		NOTE: If {to} exists it is overwritten without warning.
 		This function is not available in the |sandbox|.
 
+		Can also be used as a |method|: >
+			GetOldName()->rename(newname)
+
 repeat({expr}, {count})					*repeat()*
 		Repeat {expr} {count} times and return the concatenated
 		result.  Example: >
@@ -7824,6 +7873,8 @@ resolve({filename})					*resolve()* *E655*
 		current directory (provided the result is still a relative
 		path name) and also keeps a trailing path separator.
 
+		Can also be used as a |method|: >
+			GetName()->resolve()
 
 reverse({object})					*reverse()*
 		Reverse the order of items in {object} in-place.
@@ -7861,7 +7912,11 @@ rubyeval({expr})					*rubyeval()*
 		Hashes are represented as Vim |Dictionary| type.
 		Other objects are represented as strings resulted from their
 		"Object#to_s" method.
-		{only available when compiled with the |+ruby| feature}
+
+		Can also be used as a |method|: >
+			GetRubyExpr()->rubyeval()
+
+<		{only available when compiled with the |+ruby| feature}
 
 screenattr({row}, {col})					*screenattr()*
 		Like |screenchar()|, but return the attribute.  This is a rather
@@ -10231,6 +10286,7 @@ macunix			Synonym for osxdarwin
 menu			Compiled with support for |:menu|.
 mksession		Compiled with support for |:mksession|.
 modify_fname		Compiled with file name modifiers. |filename-modifiers|
+			(always true)
 mouse			Compiled with support mouse.
 mouse_dec		Compiled with support for Dec terminal mouse.
 mouse_gpm		Compiled with support for gpm (Linux console mouse)

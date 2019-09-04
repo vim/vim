@@ -75,7 +75,7 @@ func Test_readfile_binary()
   call setline(1, ['one', 'two', 'three'])
   setlocal ff=dos
   write XReadfile
-  let lines = readfile('XReadfile')
+  let lines = 'XReadfile'->readfile()
   call assert_equal(['one', 'two', 'three'], lines)
   let lines = readfile('XReadfile', '', 2)
   call assert_equal(['one', 'two'], lines)

@@ -684,32 +684,32 @@ static funcentry_T global_functions[] =
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
     {"pyxeval",		1, 1, FEARG_1,	  f_pyxeval},
 #endif
-    {"range",		1, 3, 0,	  f_range},
-    {"readdir",		1, 2, 0,	  f_readdir},
-    {"readfile",	1, 3, 0,	  f_readfile},
+    {"range",		1, 3, FEARG_1,	  f_range},
+    {"readdir",		1, 2, FEARG_1,	  f_readdir},
+    {"readfile",	1, 3, FEARG_1,	  f_readfile},
     {"reg_executing",	0, 0, 0,	  f_reg_executing},
     {"reg_recording",	0, 0, 0,	  f_reg_recording},
-    {"reltime",		0, 2, 0,	  f_reltime},
+    {"reltime",		0, 2, FEARG_1,	  f_reltime},
 #ifdef FEAT_FLOAT
-    {"reltimefloat",	1, 1, 0,	  f_reltimefloat},
+    {"reltimefloat",	1, 1, FEARG_1,	  f_reltimefloat},
 #endif
-    {"reltimestr",	1, 1, 0,	  f_reltimestr},
-    {"remote_expr",	2, 4, 0,	  f_remote_expr},
-    {"remote_foreground", 1, 1, 0,	  f_remote_foreground},
-    {"remote_peek",	1, 2, 0,	  f_remote_peek},
-    {"remote_read",	1, 2, 0,	  f_remote_read},
-    {"remote_send",	2, 3, 0,	  f_remote_send},
-    {"remote_startserver", 1, 1, 0,	  f_remote_startserver},
+    {"reltimestr",	1, 1, FEARG_1,	  f_reltimestr},
+    {"remote_expr",	2, 4, FEARG_1,	  f_remote_expr},
+    {"remote_foreground", 1, 1, FEARG_1,  f_remote_foreground},
+    {"remote_peek",	1, 2, FEARG_1,	  f_remote_peek},
+    {"remote_read",	1, 2, FEARG_1,	  f_remote_read},
+    {"remote_send",	2, 3, FEARG_1,	  f_remote_send},
+    {"remote_startserver", 1, 1, FEARG_1,  f_remote_startserver},
     {"remove",		2, 3, FEARG_1,	  f_remove},
-    {"rename",		2, 2, 0,	  f_rename},
+    {"rename",		2, 2, FEARG_1,	  f_rename},
     {"repeat",		2, 2, FEARG_1,	  f_repeat},
-    {"resolve",		1, 1, 0,	  f_resolve},
+    {"resolve",		1, 1, FEARG_1,	  f_resolve},
     {"reverse",		1, 1, FEARG_1,	  f_reverse},
 #ifdef FEAT_FLOAT
     {"round",		1, 1, FEARG_1,	  f_round},
 #endif
 #ifdef FEAT_RUBY
-    {"rubyeval",	1, 1, 0,	  f_rubyeval},
+    {"rubyeval",	1, 1, FEARG_1,	  f_rubyeval},
 #endif
     {"screenattr",	2, 2, 0,	  f_screenattr},
     {"screenchar",	2, 2, 0,	  f_screenchar},
