@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.1.  Last change: 2019 Aug 25
+*textprop.txt*  For Vim version 8.1.  Last change: 2019 Sep 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -157,6 +157,9 @@ prop_add({lnum}, {col}, {props})
 
 		See |text-properties| for information about text properties.
 
+		Can also be used as a |method|: >
+			GetLnum()->prop_add(col, props)
+
 
 prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
 		Remove all text properties from line {lnum}.
@@ -168,6 +171,9 @@ prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
 
 		See |text-properties| for information about text properties.
 
+		Can also be used as a |method|: >
+			GetLnum()->prop_clear()
+<
 							*prop_find()*
 prop_find({props} [, {direction}])
 		{not implemented yet}
@@ -220,7 +226,9 @@ prop_list({lnum} [, {props}])				*prop_list()*
 
 		See |text-properties| for information about text properties.
 
-
+		Can also be used as a |method|: >
+			GetLnum()->prop_list()
+<
 						*prop_remove()* *E968*
 prop_remove({props} [, {lnum} [, {lnum-end}]])
 		Remove a matching text property from line {lnum}.  When
@@ -242,6 +250,9 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 		Returns the number of properties that were removed.
 
 		See |text-properties| for information about text properties.
+
+		Can also be used as a |method|: >
+			GetProps()->prop_remove()
 
 
 prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
@@ -267,6 +278,8 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 
 		See |text-properties| for information about text properties.
 
+		Can also be used as a |method|: >
+			GetPropName()->prop_type_add(props)
 
 prop_type_change({name}, {props})			*prop_type_change()*
 		Change properties of an existing text property type.  If a
@@ -275,6 +288,8 @@ prop_type_change({name}, {props})			*prop_type_change()*
 
 		See |text-properties| for information about text properties.
 
+		Can also be used as a |method|: >
+			GetPropName()->prop_type_change(props)
 
 prop_type_delete({name} [, {props}])			*prop_type_delete()*
 		Remove the text property type {name}.  When text properties
@@ -289,6 +304,8 @@ prop_type_delete({name} [, {props}])			*prop_type_delete()*
 
 		See |text-properties| for information about text properties.
 
+		Can also be used as a |method|: >
+			GetPropName()->prop_type_delete()
 
 prop_type_get([{name} [, {props}])			*prop_type_get()*
 		Returns the properties of property type {name}.  This is a
@@ -302,6 +319,8 @@ prop_type_get([{name} [, {props}])			*prop_type_get()*
 
 		See |text-properties| for information about text properties.
 
+		Can also be used as a |method|: >
+			GetPropName()->prop_type_get()
 
 prop_type_list([{props}])				*prop_type_list()*
 		Returns a list with all property type names.
