@@ -8,6 +8,7 @@ void add_pack_start_dirs(void);
 void load_start_packages(void);
 void ex_packloadall(exarg_T *eap);
 void ex_packadd(exarg_T *eap);
+void remove_duplicates(garray_T *gap);
 int ExpandRTDir(char_u *pat, int flags, int *num_file, char_u ***file, char *dirnames[]);
 int ExpandPackAddDir(char_u *pat, int *num_file, char_u ***file);
 void ex_source(exarg_T *eap);

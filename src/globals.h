@@ -1183,6 +1183,8 @@ extern char_u *compiled_user;
 extern char_u *compiled_sys;
 #endif
 
+EXTERN char_u	*homedir INIT(= NULL);
+
 // When a window has a local directory, the absolute path of the global
 // current directory is stored here (in allocated memory).  If the current
 // directory is not a local directory, globaldir is NULL.

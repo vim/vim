@@ -92,7 +92,6 @@ void update_mouseshape(int shape_idx);
 int vim_chdir(char_u *new_dir);
 int get_user_name(char_u *buf, int len);
 void sort_strings(char_u **files, int count);
-int pathcmp(const char *p, const char *q, int maxlen);
 int filewritable(char_u *fname);
 int get2c(FILE *fd);
 int get3c(FILE *fd);

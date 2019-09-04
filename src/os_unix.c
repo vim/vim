@@ -6396,7 +6396,6 @@ select_eintr:
     return result;
 }
 
-#ifndef NO_EXPANDPATH
 /*
  * Expand a path into all matching files and/or directories.  Handles "*",
  * "?", "[a-z]", "**", etc.
@@ -6411,7 +6410,6 @@ mch_expandpath(
 {
     return unix_expandpath(gap, path, 0, flags, FALSE);
 }
-#endif
 
 /*
  * mch_expand_wildcards() - this code does wild-card pattern matching using

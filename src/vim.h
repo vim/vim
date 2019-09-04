@@ -835,10 +835,6 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 # define W_WINROW(wp)	(wp->w_winrow)
 #endif
 
-#ifdef NO_EXPANDPATH
-# define gen_expand_wildcards mch_expand_wildcards
-#endif
-
 // Values for the find_pattern_in_path() function args 'type' and 'action':
 #define FIND_ANY	1
 #define FIND_DEFINE	2
