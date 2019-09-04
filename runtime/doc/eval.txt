@@ -7120,6 +7120,9 @@ nextnonblank({lnum})					*nextnonblank()*
 		below it, zero is returned.
 		See also |prevnonblank()|.
 
+		Can also be used as a |method|: >
+			GetLnum()->nextnonblank()
+
 nr2char({expr} [, {utf8}])				*nr2char()*
 		Return a string with a single character, which has the number
 		value {expr}.  Examples: >
@@ -7138,6 +7141,8 @@ nr2char({expr} [, {utf8}])				*nr2char()*
 		    let str = join(map(list, {_, val -> nr2char(val)}), '')
 <		Result: "ABC"
 
+		Can also be used as a |method|: >
+			GetNumber()->nr2char()
 
 or({expr}, {expr})					*or()*
 		Bitwise OR on the two arguments.  The arguments are converted
@@ -7157,6 +7162,9 @@ pathshorten({expr})					*pathshorten()*
 <			~/.v/a/myfile.vim ~
 		It doesn't matter if the path exists or not.
 
+		Can also be used as a |method|: >
+			GetDirectories()->pathshorten()
+
 perleval({expr})					*perleval()*
 		Evaluate Perl expression {expr} in scalar context and return
 		its result converted to Vim data structures. If value can't be
@@ -7166,7 +7174,11 @@ perleval({expr})					*perleval()*
 		Example: >
 			:echo perleval('[1 .. 4]')
 <			[1, 2, 3, 4]
-		{only available when compiled with the |+perl| feature}
+
+		Can also be used as a |method|: >
+			GetExpr()->perleval()
+
+<		{only available when compiled with the |+perl| feature}
 
 
 popup_ functions are documented here: |popup-functions|.
@@ -7196,6 +7208,8 @@ prevnonblank({lnum})					*prevnonblank()*
 		above it, zero is returned.
 		Also see |nextnonblank()|.
 
+		Can also be used as a |method|: >
+			GetLnum()->prevnonblank()
 
 printf({fmt}, {expr1} ...)				*printf()*
 		Return a String with {fmt}, where "%" items are replaced by
@@ -7424,6 +7438,10 @@ prompt_setcallback({buf}, {expr})			*prompt_setcallback()*
 		     endif
 		   endfunc
 
+<		Can also be used as a |method|: >
+			GetBuffer()->prompt_setcallback(callback)
+
+
 prompt_setinterrupt({buf}, {expr})			*prompt_setinterrupt()*
 		Set a callback for buffer {buf} to {expr}.  When {expr} is an
 		empty string the callback is removed.  This has only effect if
@@ -7433,6 +7451,9 @@ prompt_setinterrupt({buf}, {expr})			*prompt_setinterrupt()*
 		mode.  Without setting a callback Vim will exit Insert mode,
 		as in any buffer.
 
+		Can also be used as a |method|: >
+			GetBuffer()->prompt_setinterrupt(callback)
+
 prompt_setprompt({buf}, {text})				*prompt_setprompt()*
 		Set prompt for buffer {buf} to {text}.  You most likely want
 		{text} to end in a space.
@@ -7440,6 +7461,9 @@ prompt_setprompt({buf}, {text})				*prompt_setprompt()*
 		"prompt".  Example: >
 			call prompt_setprompt(bufnr(), 'command: ')
 <
+		Can also be used as a |method|: >
+			GetBuffer()->prompt_setprompt('command: ')
+
 prop_ functions are documented here: |text-prop-functions|.
 
 pum_getpos()						*pum_getpos()*
@@ -7471,7 +7495,11 @@ py3eval({expr})						*py3eval()*
 		Lists are represented as Vim |List| type.
 		Dictionaries are represented as Vim |Dictionary| type with
 		keys converted to strings.
-		{only available when compiled with the |+python3| feature}
+
+		Can also be used as a |method|: >
+			GetExpr()->py3eval()
+
+<		{only available when compiled with the |+python3| feature}
 
 							*E858* *E859*
 pyeval({expr})						*pyeval()*
@@ -7482,14 +7510,22 @@ pyeval({expr})						*pyeval()*
 		Lists are represented as Vim |List| type.
 		Dictionaries are represented as Vim |Dictionary| type,
 		non-string keys result in error.
-		{only available when compiled with the |+python| feature}
+
+		Can also be used as a |method|: >
+			GetExpr()->pyeval()
+
+<		{only available when compiled with the |+python| feature}
 
 pyxeval({expr})						*pyxeval()*
 		Evaluate Python expression {expr} and return its result
 		converted to Vim data structures.
 		Uses Python 2 or 3, see |python_x| and 'pyxversion'.
 		See also: |pyeval()|, |py3eval()|
-		{only available when compiled with the |+python| or the
+
+		Can also be used as a |method|: >
+			GetExpr()->pyxeval()
+
+<		{only available when compiled with the |+python| or the
 		|+python3| feature}
 
 							*E726* *E727*

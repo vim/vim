@@ -625,12 +625,12 @@ static funcentry_T global_functions[] =
 #ifdef FEAT_MZSCHEME
     {"mzeval",		1, 1, FEARG_1,	  f_mzeval},
 #endif
-    {"nextnonblank",	1, 1, 0,	  f_nextnonblank},
-    {"nr2char",		1, 2, 0,	  f_nr2char},
+    {"nextnonblank",	1, 1, FEARG_1,	  f_nextnonblank},
+    {"nr2char",		1, 2, FEARG_1,	  f_nr2char},
     {"or",		2, 2, FEARG_1,	  f_or},
-    {"pathshorten",	1, 1, 0,	  f_pathshorten},
+    {"pathshorten",	1, 1, FEARG_1,	  f_pathshorten},
 #ifdef FEAT_PERL
-    {"perleval",	1, 1, 0,	  f_perleval},
+    {"perleval",	1, 1, FEARG_1,	  f_perleval},
 #endif
 #ifdef FEAT_TEXT_PROP
     {"popup_atcursor",	2, 2, FEARG_1,	  f_popup_atcursor},
@@ -657,12 +657,12 @@ static funcentry_T global_functions[] =
 #ifdef FEAT_FLOAT
     {"pow",		2, 2, FEARG_1,	  f_pow},
 #endif
-    {"prevnonblank",	1, 1, 0,	  f_prevnonblank},
+    {"prevnonblank",	1, 1, FEARG_1,	  f_prevnonblank},
     {"printf",		1, 19, FEARG_2,	  f_printf},
 #ifdef FEAT_JOB_CHANNEL
-    {"prompt_setcallback", 2, 2, 0,	  f_prompt_setcallback},
-    {"prompt_setinterrupt", 2, 2, 0,	  f_prompt_setinterrupt},
-    {"prompt_setprompt", 2, 2, 0,	  f_prompt_setprompt},
+    {"prompt_setcallback", 2, 2, FEARG_1,  f_prompt_setcallback},
+    {"prompt_setinterrupt", 2, 2, FEARG_1, f_prompt_setinterrupt},
+    {"prompt_setprompt", 2, 2, FEARG_1,	   f_prompt_setprompt},
 #endif
 #ifdef FEAT_TEXT_PROP
     {"prop_add",	3, 3, 0,	  f_prop_add},
@@ -678,13 +678,13 @@ static funcentry_T global_functions[] =
     {"pum_getpos",	0, 0, 0,	  f_pum_getpos},
     {"pumvisible",	0, 0, 0,	  f_pumvisible},
 #ifdef FEAT_PYTHON3
-    {"py3eval",		1, 1, 0,	  f_py3eval},
+    {"py3eval",		1, 1, FEARG_1,	  f_py3eval},
 #endif
 #ifdef FEAT_PYTHON
-    {"pyeval",		1, 1, 0,	  f_pyeval},
+    {"pyeval",		1, 1, FEARG_1,	  f_pyeval},
 #endif
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
-    {"pyxeval",		1, 1, 0,	  f_pyxeval},
+    {"pyxeval",		1, 1, FEARG_1,	  f_pyxeval},
 #endif
     {"range",		1, 3, 0,	  f_range},
     {"readdir",		1, 2, 0,	  f_readdir},
