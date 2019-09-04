@@ -19,6 +19,7 @@ void *sign_get_image(int typenr);
 void free_signs(void);
 char_u *get_sign_name(expand_T *xp, int idx);
 void set_context_in_sign_cmd(expand_T *xp, char_u *arg);
+int signcolumn_on(win_T *wp);
 void f_sign_define(typval_T *argvars, typval_T *rettv);
 void f_sign_getdefined(typval_T *argvars, typval_T *rettv);
 void f_sign_getplaced(typval_T *argvars, typval_T *rettv);

@@ -7,6 +7,7 @@ int get_indent_str_vtab(char_u *ptr, int ts, int *vts, int list);
 int set_indent(int size, int flags);
 int get_number_indent(linenr_T lnum);
 int get_breakindent_win(win_T *wp, char_u *line);
+int briopt_check(win_T *wp);
 int get_leader_len(char_u *line, char_u **flags, int backward, int include_space);
 int get_last_leader_offset(char_u *line, char_u **flags);
 int plines(linenr_T lnum);

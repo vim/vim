@@ -2,6 +2,7 @@
 void gui_start(char_u *arg);
 void gui_prepare(int *argc, char **argv);
 int gui_init_check(void);
+char_u *gui_bg_default(void);
 void gui_init(void);
 void gui_exit(int rc);
 void gui_shell_closed(void);

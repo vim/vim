@@ -2167,6 +2167,109 @@ buflist_new(
 }
 
 /*
+ * Check string options in a buffer for NULL value.
+ */
+    void
+check_buf_options(buf_T *buf)
+{
+    check_string_option(&buf->b_p_bh);
+    check_string_option(&buf->b_p_bt);
+    check_string_option(&buf->b_p_fenc);
+    check_string_option(&buf->b_p_ff);
+#ifdef FEAT_FIND_ID
+    check_string_option(&buf->b_p_def);
+    check_string_option(&buf->b_p_inc);
+# ifdef FEAT_EVAL
+    check_string_option(&buf->b_p_inex);
+# endif
+#endif
+#if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
+    check_string_option(&buf->b_p_inde);
+    check_string_option(&buf->b_p_indk);
+#endif
+#if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
+    check_string_option(&buf->b_p_bexpr);
+#endif
+#if defined(FEAT_CRYPT)
+    check_string_option(&buf->b_p_cm);
+#endif
+    check_string_option(&buf->b_p_fp);
+#if defined(FEAT_EVAL)
+    check_string_option(&buf->b_p_fex);
+#endif
+#ifdef FEAT_CRYPT
+    check_string_option(&buf->b_p_key);
+#endif
+    check_string_option(&buf->b_p_kp);
+    check_string_option(&buf->b_p_mps);
+    check_string_option(&buf->b_p_fo);
+    check_string_option(&buf->b_p_flp);
+    check_string_option(&buf->b_p_isk);
+#ifdef FEAT_COMMENTS
+    check_string_option(&buf->b_p_com);
+#endif
+#ifdef FEAT_FOLDING
+    check_string_option(&buf->b_p_cms);
+#endif
+    check_string_option(&buf->b_p_nf);
+#ifdef FEAT_TEXTOBJ
+    check_string_option(&buf->b_p_qe);
+#endif
+#ifdef FEAT_SYN_HL
+    check_string_option(&buf->b_p_syn);
+    check_string_option(&buf->b_s.b_syn_isk);
+#endif
+#ifdef FEAT_SPELL
+    check_string_option(&buf->b_s.b_p_spc);
+    check_string_option(&buf->b_s.b_p_spf);
+    check_string_option(&buf->b_s.b_p_spl);
+#endif
+#ifdef FEAT_SEARCHPATH
+    check_string_option(&buf->b_p_sua);
+#endif
+#ifdef FEAT_CINDENT
+    check_string_option(&buf->b_p_cink);
+    check_string_option(&buf->b_p_cino);
+    parse_cino(buf);
+#endif
+    check_string_option(&buf->b_p_ft);
+#if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
+    check_string_option(&buf->b_p_cinw);
+#endif
+    check_string_option(&buf->b_p_cpt);
+#ifdef FEAT_COMPL_FUNC
+    check_string_option(&buf->b_p_cfu);
+    check_string_option(&buf->b_p_ofu);
+#endif
+#ifdef FEAT_EVAL
+    check_string_option(&buf->b_p_tfu);
+#endif
+#ifdef FEAT_KEYMAP
+    check_string_option(&buf->b_p_keymap);
+#endif
+#ifdef FEAT_QUICKFIX
+    check_string_option(&buf->b_p_gp);
+    check_string_option(&buf->b_p_mp);
+    check_string_option(&buf->b_p_efm);
+#endif
+    check_string_option(&buf->b_p_ep);
+    check_string_option(&buf->b_p_path);
+    check_string_option(&buf->b_p_tags);
+    check_string_option(&buf->b_p_tc);
+    check_string_option(&buf->b_p_dict);
+    check_string_option(&buf->b_p_tsr);
+#ifdef FEAT_LISP
+    check_string_option(&buf->b_p_lw);
+#endif
+    check_string_option(&buf->b_p_bkc);
+    check_string_option(&buf->b_p_menc);
+#ifdef FEAT_VARTABS
+    check_string_option(&buf->b_p_vsts);
+    check_string_option(&buf->b_p_vts);
+#endif
+}
+
+/*
  * Free the memory for the options of a buffer.
  * If "free_p_ff" is TRUE also free 'fileformat', 'buftype' and
  * 'fileencoding'.
@@ -4753,6 +4856,76 @@ build_stl_str_hl(
     }
 
     return width;
+}
+
+/*
+ * Check validity of options with the 'statusline' format.
+ * Return error message or NULL.
+ */
+    char *
+check_stl_option(char_u *s)
+{
+    int		itemcnt = 0;
+    int		groupdepth = 0;
+    static char errbuf[80];
+
+    while (*s && itemcnt < STL_MAX_ITEM)
+    {
+	/* Check for valid keys after % sequences */
+	while (*s && *s != '%')
+	    s++;
+	if (!*s)
+	    break;
+	s++;
+	if (*s != '%' && *s != ')')
+	    ++itemcnt;
+	if (*s == '%' || *s == STL_TRUNCMARK || *s == STL_MIDDLEMARK)
+	{
+	    s++;
+	    continue;
+	}
+	if (*s == ')')
+	{
+	    s++;
+	    if (--groupdepth < 0)
+		break;
+	    continue;
+	}
+	if (*s == '-')
+	    s++;
+	while (VIM_ISDIGIT(*s))
+	    s++;
+	if (*s == STL_USER_HL)
+	    continue;
+	if (*s == '.')
+	{
+	    s++;
+	    while (*s && VIM_ISDIGIT(*s))
+		s++;
+	}
+	if (*s == '(')
+	{
+	    groupdepth++;
+	    continue;
+	}
+	if (vim_strchr(STL_ALL, *s) == NULL)
+	{
+	    return illegal_char(errbuf, *s);
+	}
+	if (*s == '{')
+	{
+	    s++;
+	    while (*s != '}' && *s)
+		s++;
+	    if (*s != '}')
+		return N_("E540: Unclosed expression sequence");
+	}
+    }
+    if (itemcnt >= STL_MAX_ITEM)
+	return N_("E541: too many items");
+    if (groupdepth != 0)
+	return N_("E542: unbalanced groups");
+    return NULL;
 }
 #endif /* FEAT_STL_OPT */
 

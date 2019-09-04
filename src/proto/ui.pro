@@ -35,6 +35,7 @@ void clip_copy_modeless_selection(int both);
 void clip_gen_set_selection(Clipboard_T *cbd);
 void clip_gen_request_selection(Clipboard_T *cbd);
 int clip_gen_owner_exists(Clipboard_T *cbd);
+char *check_clipboard_option(void);
 int vim_is_input_buf_full(void);
 int vim_is_input_buf_empty(void);
 int vim_free_in_input_buf(void);

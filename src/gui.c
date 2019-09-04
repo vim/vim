@@ -478,6 +478,31 @@ gui_init_check(void)
     return result;
 }
 
+#ifdef FEAT_GUI
+    char_u *
+gui_bg_default(void)
+{
+    if (gui_get_lightness(gui.back_pixel) < 127)
+	return (char_u *)"dark";
+    return (char_u *)"light";
+}
+
+/*
+ * Option initializations that can only be done after opening the GUI window.
+ */
+    static void
+init_gui_options(void)
+{
+    /* Set the 'background' option according to the lightness of the
+     * background color, unless the user has set it already. */
+    if (!option_was_set((char_u *)"bg") && STRCMP(p_bg, gui_bg_default()) != 0)
+    {
+	set_option_value((char_u *)"bg", 0L, gui_bg_default(), 0);
+	highlight_changed();
+    }
+}
+#endif
+
 /*
  * This is the call which starts the GUI.
  */
