@@ -55,9 +55,6 @@
 #endif
 
 static void channel_read(channel_T *channel, ch_part_T part, char *func);
-# if defined(MSWIN) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
-static channel_T *channel_fd2channel(sock_T fd, ch_part_T *partp);
-# endif
 static ch_mode_T channel_get_mode(channel_T *channel, ch_part_T part);
 static int channel_get_timeout(channel_T *channel, ch_part_T part);
 static ch_part_T channel_part_send(channel_T *channel);
@@ -505,7 +502,31 @@ free_unused_channels(int copyID, int mask)
 
 #if defined(FEAT_GUI) || defined(PROTO)
 
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+# if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+/*
+ * Lookup the channel from the socket.  Set "partp" to the fd index.
+ * Returns NULL when the socket isn't found.
+ */
+    static channel_T *
+channel_fd2channel(sock_T fd, ch_part_T *partp)
+{
+    channel_T	*channel;
+    ch_part_T	part;
+
+    if (fd != INVALID_FD)
+	for (channel = first_channel; channel != NULL;
+						   channel = channel->ch_next)
+	{
+	    for (part = PART_SOCK; part < PART_IN; ++part)
+		if (channel->ch_part[part].ch_fd == fd)
+		{
+		    *partp = part;
+		    return channel;
+		}
+	}
+    return NULL;
+}
+
     static void
 channel_read_fd(int fd)
 {
@@ -518,12 +539,12 @@ channel_read_fd(int fd)
     else
 	channel_read(channel, part, "channel_read_fd");
 }
-#endif
+# endif
 
 /*
  * Read a command from netbeans.
  */
-#ifdef FEAT_GUI_X11
+# ifdef FEAT_GUI_X11
     static void
 messageFromServerX11(XtPointer clientData,
 		  int *unused1 UNUSED,
@@ -531,10 +552,10 @@ messageFromServerX11(XtPointer clientData,
 {
     channel_read_fd((int)(long)clientData);
 }
-#endif
+# endif
 
-#ifdef FEAT_GUI_GTK
-# if GTK_CHECK_VERSION(3,0,0)
+# ifdef FEAT_GUI_GTK
+#  if GTK_CHECK_VERSION(3,0,0)
     static gboolean
 messageFromServerGtk3(GIOChannel *unused1 UNUSED,
 		  GIOCondition unused2 UNUSED,
@@ -544,7 +565,7 @@ messageFromServerGtk3(GIOChannel *unused1 UNUSED,
     return TRUE; /* Return FALSE instead in case the event source is to
 		  * be removed after this function returns. */
 }
-# else
+#  else
     static void
 messageFromServerGtk2(gpointer clientData,
 		  gint unused1 UNUSED,
@@ -552,8 +573,8 @@ messageFromServerGtk2(gpointer clientData,
 {
     channel_read_fd((int)(long)clientData);
 }
+#  endif
 # endif
-#endif
 
     static void
 channel_gui_register_one(channel_T *channel, ch_part_T part)
@@ -674,7 +695,7 @@ channel_gui_unregister(channel_T *channel)
 	channel_gui_unregister_one(channel, part);
 }
 
-#endif
+#endif  // FEAT_GUI
 
 static char *e_cannot_connect = N_("E902: Cannot connect to port");
 
@@ -3763,33 +3784,6 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw, int blob)
 theend:
     free_job_options(&opt);
 }
-
-# if defined(MSWIN) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
-	|| defined(PROTO)
-/*
- * Lookup the channel from the socket.  Set "partp" to the fd index.
- * Returns NULL when the socket isn't found.
- */
-    static channel_T *
-channel_fd2channel(sock_T fd, ch_part_T *partp)
-{
-    channel_T	*channel;
-    ch_part_T	part;
-
-    if (fd != INVALID_FD)
-	for (channel = first_channel; channel != NULL;
-						   channel = channel->ch_next)
-	{
-	    for (part = PART_SOCK; part < PART_IN; ++part)
-		if (channel->ch_part[part].ch_fd == fd)
-		{
-		    *partp = part;
-		    return channel;
-		}
-	}
-    return NULL;
-}
-# endif
 
 # if defined(MSWIN) || defined(FEAT_GUI) || defined(PROTO)
 /*
