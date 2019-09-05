@@ -1941,7 +1941,7 @@ clip_gen_owner_exists(Clipboard_T *cbd UNUSED)
 }
 #endif
 
-#ifdef FEAT_CLIPBOARD
+#if defined(FEAT_CLIPBOARD) || defined(PROTO)
 /*
  * Extract the items in the 'clipboard' option and set global values.
  * Return an error message or NULL for success.

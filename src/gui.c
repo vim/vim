@@ -478,7 +478,7 @@ gui_init_check(void)
     return result;
 }
 
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) || defined(PROTO)
     char_u *
 gui_bg_default(void)
 {

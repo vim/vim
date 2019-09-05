@@ -60,8 +60,6 @@ static win_T *restore_snapshot_rec(frame_T *sn, frame_T *fr);
 
 static int frame_check_height(frame_T *topfrp, int height);
 static int frame_check_width(frame_T *topfrp, int width);
-static void win_copy_options(win_T *wp_from, win_T *wp_to);
-static void check_winopt(winopt_T *wop);
 
 static win_T *win_alloc(win_T *after, int hidden);
 

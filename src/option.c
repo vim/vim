@@ -3259,7 +3259,9 @@ static int put_setbool(FILE *fd, char *cmd, char *name, int value);
 static int  istermoption(struct vimoption *);
 static char_u *get_varp_scope(struct vimoption *p, int opt_flags);
 static char_u *get_varp(struct vimoption *);
+static void check_win_options(win_T *win);
 static void option_value2string(struct vimoption *, int opt_flags);
+static void check_winopt(winopt_T *wop);
 static int wc_use_keyname(char_u *varp, long *wcp);
 static void paste_option_changed(void);
 static void compatible_set(void);
@@ -5587,6 +5589,109 @@ check_options(void)
     for (opt_idx = 0; options[opt_idx].fullname != NULL; opt_idx++)
 	if ((options[opt_idx].flags & P_STRING) && options[opt_idx].var != NULL)
 	    check_string_option((char_u **)get_varp(&(options[opt_idx])));
+}
+
+/*
+ * Check string options in a buffer for NULL value.
+ */
+    void
+check_buf_options(buf_T *buf)
+{
+    check_string_option(&buf->b_p_bh);
+    check_string_option(&buf->b_p_bt);
+    check_string_option(&buf->b_p_fenc);
+    check_string_option(&buf->b_p_ff);
+#ifdef FEAT_FIND_ID
+    check_string_option(&buf->b_p_def);
+    check_string_option(&buf->b_p_inc);
+# ifdef FEAT_EVAL
+    check_string_option(&buf->b_p_inex);
+# endif
+#endif
+#if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
+    check_string_option(&buf->b_p_inde);
+    check_string_option(&buf->b_p_indk);
+#endif
+#if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
+    check_string_option(&buf->b_p_bexpr);
+#endif
+#if defined(FEAT_CRYPT)
+    check_string_option(&buf->b_p_cm);
+#endif
+    check_string_option(&buf->b_p_fp);
+#if defined(FEAT_EVAL)
+    check_string_option(&buf->b_p_fex);
+#endif
+#ifdef FEAT_CRYPT
+    check_string_option(&buf->b_p_key);
+#endif
+    check_string_option(&buf->b_p_kp);
+    check_string_option(&buf->b_p_mps);
+    check_string_option(&buf->b_p_fo);
+    check_string_option(&buf->b_p_flp);
+    check_string_option(&buf->b_p_isk);
+#ifdef FEAT_COMMENTS
+    check_string_option(&buf->b_p_com);
+#endif
+#ifdef FEAT_FOLDING
+    check_string_option(&buf->b_p_cms);
+#endif
+    check_string_option(&buf->b_p_nf);
+#ifdef FEAT_TEXTOBJ
+    check_string_option(&buf->b_p_qe);
+#endif
+#ifdef FEAT_SYN_HL
+    check_string_option(&buf->b_p_syn);
+    check_string_option(&buf->b_s.b_syn_isk);
+#endif
+#ifdef FEAT_SPELL
+    check_string_option(&buf->b_s.b_p_spc);
+    check_string_option(&buf->b_s.b_p_spf);
+    check_string_option(&buf->b_s.b_p_spl);
+#endif
+#ifdef FEAT_SEARCHPATH
+    check_string_option(&buf->b_p_sua);
+#endif
+#ifdef FEAT_CINDENT
+    check_string_option(&buf->b_p_cink);
+    check_string_option(&buf->b_p_cino);
+    parse_cino(buf);
+#endif
+    check_string_option(&buf->b_p_ft);
+#if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
+    check_string_option(&buf->b_p_cinw);
+#endif
+    check_string_option(&buf->b_p_cpt);
+#ifdef FEAT_COMPL_FUNC
+    check_string_option(&buf->b_p_cfu);
+    check_string_option(&buf->b_p_ofu);
+#endif
+#ifdef FEAT_EVAL
+    check_string_option(&buf->b_p_tfu);
+#endif
+#ifdef FEAT_KEYMAP
+    check_string_option(&buf->b_p_keymap);
+#endif
+#ifdef FEAT_QUICKFIX
+    check_string_option(&buf->b_p_gp);
+    check_string_option(&buf->b_p_mp);
+    check_string_option(&buf->b_p_efm);
+#endif
+    check_string_option(&buf->b_p_ep);
+    check_string_option(&buf->b_p_path);
+    check_string_option(&buf->b_p_tags);
+    check_string_option(&buf->b_p_tc);
+    check_string_option(&buf->b_p_dict);
+    check_string_option(&buf->b_p_tsr);
+#ifdef FEAT_LISP
+    check_string_option(&buf->b_p_lw);
+#endif
+    check_string_option(&buf->b_p_bkc);
+    check_string_option(&buf->b_p_menc);
+#ifdef FEAT_VARTABS
+    check_string_option(&buf->b_p_vsts);
+    check_string_option(&buf->b_p_vts);
+#endif
 }
 
 /*
@@ -10587,6 +10692,196 @@ get_equalprg(void)
     if (*curbuf->b_p_ep == NUL)
 	return p_ep;
     return curbuf->b_p_ep;
+}
+
+/*
+ * Copy options from one window to another.
+ * Used when splitting a window.
+ */
+    void
+win_copy_options(win_T *wp_from, win_T *wp_to)
+{
+    copy_winopt(&wp_from->w_onebuf_opt, &wp_to->w_onebuf_opt);
+    copy_winopt(&wp_from->w_allbuf_opt, &wp_to->w_allbuf_opt);
+#if defined(FEAT_LINEBREAK)
+    briopt_check(wp_to);
+#endif
+}
+
+/*
+ * Copy the options from one winopt_T to another.
+ * Doesn't free the old option values in "to", use clear_winopt() for that.
+ * The 'scroll' option is not copied, because it depends on the window height.
+ * The 'previewwindow' option is reset, there can be only one preview window.
+ */
+    void
+copy_winopt(winopt_T *from, winopt_T *to)
+{
+#ifdef FEAT_ARABIC
+    to->wo_arab = from->wo_arab;
+#endif
+    to->wo_list = from->wo_list;
+    to->wo_nu = from->wo_nu;
+    to->wo_rnu = from->wo_rnu;
+#ifdef FEAT_LINEBREAK
+    to->wo_nuw = from->wo_nuw;
+#endif
+#ifdef FEAT_RIGHTLEFT
+    to->wo_rl  = from->wo_rl;
+    to->wo_rlc = vim_strsave(from->wo_rlc);
+#endif
+#ifdef FEAT_STL_OPT
+    to->wo_stl = vim_strsave(from->wo_stl);
+#endif
+    to->wo_wrap = from->wo_wrap;
+#ifdef FEAT_DIFF
+    to->wo_wrap_save = from->wo_wrap_save;
+#endif
+#ifdef FEAT_LINEBREAK
+    to->wo_lbr = from->wo_lbr;
+    to->wo_bri = from->wo_bri;
+    to->wo_briopt = vim_strsave(from->wo_briopt);
+#endif
+    to->wo_wcr = vim_strsave(from->wo_wcr);
+    to->wo_scb = from->wo_scb;
+    to->wo_scb_save = from->wo_scb_save;
+    to->wo_crb = from->wo_crb;
+    to->wo_crb_save = from->wo_crb_save;
+#ifdef FEAT_SPELL
+    to->wo_spell = from->wo_spell;
+#endif
+#ifdef FEAT_SYN_HL
+    to->wo_cuc = from->wo_cuc;
+    to->wo_cul = from->wo_cul;
+    to->wo_cc = vim_strsave(from->wo_cc);
+#endif
+#ifdef FEAT_DIFF
+    to->wo_diff = from->wo_diff;
+    to->wo_diff_saved = from->wo_diff_saved;
+#endif
+#ifdef FEAT_CONCEAL
+    to->wo_cocu = vim_strsave(from->wo_cocu);
+    to->wo_cole = from->wo_cole;
+#endif
+#ifdef FEAT_TERMINAL
+    to->wo_twk = vim_strsave(from->wo_twk);
+    to->wo_tws = vim_strsave(from->wo_tws);
+#endif
+#ifdef FEAT_FOLDING
+    to->wo_fdc = from->wo_fdc;
+    to->wo_fdc_save = from->wo_fdc_save;
+    to->wo_fen = from->wo_fen;
+    to->wo_fen_save = from->wo_fen_save;
+    to->wo_fdi = vim_strsave(from->wo_fdi);
+    to->wo_fml = from->wo_fml;
+    to->wo_fdl = from->wo_fdl;
+    to->wo_fdl_save = from->wo_fdl_save;
+    to->wo_fdm = vim_strsave(from->wo_fdm);
+    to->wo_fdm_save = from->wo_diff_saved
+			      ? vim_strsave(from->wo_fdm_save) : empty_option;
+    to->wo_fdn = from->wo_fdn;
+# ifdef FEAT_EVAL
+    to->wo_fde = vim_strsave(from->wo_fde);
+    to->wo_fdt = vim_strsave(from->wo_fdt);
+# endif
+    to->wo_fmr = vim_strsave(from->wo_fmr);
+#endif
+#ifdef FEAT_SIGNS
+    to->wo_scl = vim_strsave(from->wo_scl);
+#endif
+    check_winopt(to);		/* don't want NULL pointers */
+}
+
+/*
+ * Check string options in a window for a NULL value.
+ */
+    static void
+check_win_options(win_T *win)
+{
+    check_winopt(&win->w_onebuf_opt);
+    check_winopt(&win->w_allbuf_opt);
+}
+
+/*
+ * Check for NULL pointers in a winopt_T and replace them with empty_option.
+ */
+    static void
+check_winopt(winopt_T *wop UNUSED)
+{
+#ifdef FEAT_FOLDING
+    check_string_option(&wop->wo_fdi);
+    check_string_option(&wop->wo_fdm);
+    check_string_option(&wop->wo_fdm_save);
+# ifdef FEAT_EVAL
+    check_string_option(&wop->wo_fde);
+    check_string_option(&wop->wo_fdt);
+# endif
+    check_string_option(&wop->wo_fmr);
+#endif
+#ifdef FEAT_SIGNS
+    check_string_option(&wop->wo_scl);
+#endif
+#ifdef FEAT_RIGHTLEFT
+    check_string_option(&wop->wo_rlc);
+#endif
+#ifdef FEAT_STL_OPT
+    check_string_option(&wop->wo_stl);
+#endif
+#ifdef FEAT_SYN_HL
+    check_string_option(&wop->wo_cc);
+#endif
+#ifdef FEAT_CONCEAL
+    check_string_option(&wop->wo_cocu);
+#endif
+#ifdef FEAT_TERMINAL
+    check_string_option(&wop->wo_twk);
+    check_string_option(&wop->wo_tws);
+#endif
+#ifdef FEAT_LINEBREAK
+    check_string_option(&wop->wo_briopt);
+#endif
+    check_string_option(&wop->wo_wcr);
+}
+
+/*
+ * Free the allocated memory inside a winopt_T.
+ */
+    void
+clear_winopt(winopt_T *wop UNUSED)
+{
+#ifdef FEAT_FOLDING
+    clear_string_option(&wop->wo_fdi);
+    clear_string_option(&wop->wo_fdm);
+    clear_string_option(&wop->wo_fdm_save);
+# ifdef FEAT_EVAL
+    clear_string_option(&wop->wo_fde);
+    clear_string_option(&wop->wo_fdt);
+# endif
+    clear_string_option(&wop->wo_fmr);
+#endif
+#ifdef FEAT_SIGNS
+    clear_string_option(&wop->wo_scl);
+#endif
+#ifdef FEAT_LINEBREAK
+    clear_string_option(&wop->wo_briopt);
+#endif
+    clear_string_option(&wop->wo_wcr);
+#ifdef FEAT_RIGHTLEFT
+    clear_string_option(&wop->wo_rlc);
+#endif
+#ifdef FEAT_STL_OPT
+    clear_string_option(&wop->wo_stl);
+#endif
+#ifdef FEAT_SYN_HL
+    clear_string_option(&wop->wo_cc);
+#endif
+#ifdef FEAT_CONCEAL
+    clear_string_option(&wop->wo_cocu);
+#endif
+#ifdef FEAT_TERMINAL
+    clear_string_option(&wop->wo_twk);
+    clear_string_option(&wop->wo_tws);
+#endif
 }
 
 /*
