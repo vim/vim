@@ -233,6 +233,7 @@ jobs:
       env:
         - *linux-huge
         - *asan
+        - "CONFOPT='--disable-gui'"
       after_failure: *asan_symbolize
     - <<: *linux
       name: huge-testgui+coverage/gcc
