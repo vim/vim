@@ -3215,4 +3215,77 @@ xdiff_out(void *priv, mmbuffer_t *mb, int nbuf)
     return 0;
 }
 
-#endif	/* FEAT_DIFF */
+#endif	// FEAT_DIFF
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+
+/*
+ * "diff_filler()" function
+ */
+    void
+f_diff_filler(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#ifdef FEAT_DIFF
+    rettv->vval.v_number = diff_check_fill(curwin, tv_get_lnum(argvars));
+#endif
+}
+
+/*
+ * "diff_hlID()" function
+ */
+    void
+f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#ifdef FEAT_DIFF
+    linenr_T		lnum = tv_get_lnum(argvars);
+    static linenr_T	prev_lnum = 0;
+    static varnumber_T	changedtick = 0;
+    static int		fnum = 0;
+    static int		change_start = 0;
+    static int		change_end = 0;
+    static hlf_T	hlID = (hlf_T)0;
+    int			filler_lines;
+    int			col;
+
+    if (lnum < 0)	/* ignore type error in {lnum} arg */
+	lnum = 0;
+    if (lnum != prev_lnum
+	    || changedtick != CHANGEDTICK(curbuf)
+	    || fnum != curbuf->b_fnum)
+    {
+	/* New line, buffer, change: need to get the values. */
+	filler_lines = diff_check(curwin, lnum);
+	if (filler_lines < 0)
+	{
+	    if (filler_lines == -1)
+	    {
+		change_start = MAXCOL;
+		change_end = -1;
+		if (diff_find_change(curwin, lnum, &change_start, &change_end))
+		    hlID = HLF_ADD;	/* added line */
+		else
+		    hlID = HLF_CHD;	/* changed line */
+	    }
+	    else
+		hlID = HLF_ADD;	/* added line */
+	}
+	else
+	    hlID = (hlf_T)0;
+	prev_lnum = lnum;
+	changedtick = CHANGEDTICK(curbuf);
+	fnum = curbuf->b_fnum;
+    }
+
+    if (hlID == HLF_CHD || hlID == HLF_TXD)
+    {
+	col = tv_get_number(&argvars[1]) - 1; /* ignore type error in {col} */
+	if (col >= change_start && col <= change_end)
+	    hlID = HLF_TXD;			/* changed text */
+	else
+	    hlID = HLF_CHD;			/* changed line */
+    }
+    rettv->vval.v_number = hlID == (hlf_T)0 ? 0 : (int)hlID;
+#endif
+}
+
+#endif

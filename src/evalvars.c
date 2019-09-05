@@ -3467,4 +3467,107 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
     }
 }
 
+/*
+ * Get a callback from "arg".  It can be a Funcref or a function name.
+ * When "arg" is zero return an empty string.
+ * "cb_name" is not allocated.
+ * "cb_name" is set to NULL for an invalid argument.
+ */
+    callback_T
+get_callback(typval_T *arg)
+{
+    callback_T res;
+
+    res.cb_free_name = FALSE;
+    if (arg->v_type == VAR_PARTIAL && arg->vval.v_partial != NULL)
+    {
+	res.cb_partial = arg->vval.v_partial;
+	++res.cb_partial->pt_refcount;
+	res.cb_name = partial_name(res.cb_partial);
+    }
+    else
+    {
+	res.cb_partial = NULL;
+	if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
+	{
+	    // Note that we don't make a copy of the string.
+	    res.cb_name = arg->vval.v_string;
+	    func_ref(res.cb_name);
+	}
+	else if (arg->v_type == VAR_NUMBER && arg->vval.v_number == 0)
+	{
+	    res.cb_name = (char_u *)"";
+	}
+	else
+	{
+	    emsg(_("E921: Invalid callback argument"));
+	    res.cb_name = NULL;
+	}
+    }
+    return res;
+}
+
+/*
+ * Copy a callback into a typval_T.
+ */
+    void
+put_callback(callback_T *cb, typval_T *tv)
+{
+    if (cb->cb_partial != NULL)
+    {
+	tv->v_type = VAR_PARTIAL;
+	tv->vval.v_partial = cb->cb_partial;
+	++tv->vval.v_partial->pt_refcount;
+    }
+    else
+    {
+	tv->v_type = VAR_FUNC;
+	tv->vval.v_string = vim_strsave(cb->cb_name);
+	func_ref(cb->cb_name);
+    }
+}
+
+/*
+ * Make a copy of "src" into "dest", allocating the function name if needed,
+ * without incrementing the refcount.
+ */
+    void
+set_callback(callback_T *dest, callback_T *src)
+{
+    if (src->cb_partial == NULL)
+    {
+	// just a function name, make a copy
+	dest->cb_name = vim_strsave(src->cb_name);
+	dest->cb_free_name = TRUE;
+    }
+    else
+    {
+	// cb_name is a pointer into cb_partial
+	dest->cb_name = src->cb_name;
+	dest->cb_free_name = FALSE;
+    }
+    dest->cb_partial = src->cb_partial;
+}
+
+/*
+ * Unref/free "callback" returned by get_callback() or set_callback().
+ */
+    void
+free_callback(callback_T *callback)
+{
+    if (callback->cb_partial != NULL)
+    {
+	partial_unref(callback->cb_partial);
+	callback->cb_partial = NULL;
+    }
+    else if (callback->cb_name != NULL)
+	func_unref(callback->cb_name);
+    if (callback->cb_free_name)
+    {
+	vim_free(callback->cb_name);
+	callback->cb_free_name = FALSE;
+    }
+    callback->cb_name = NULL;
+}
+
 #endif // FEAT_EVAL

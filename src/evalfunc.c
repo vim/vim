@@ -70,7 +70,6 @@ static void f_copy(typval_T *argvars, typval_T *rettv);
 static void f_cos(typval_T *argvars, typval_T *rettv);
 static void f_cosh(typval_T *argvars, typval_T *rettv);
 #endif
-static void f_cscope_connection(typval_T *argvars, typval_T *rettv);
 static void f_cursor(typval_T *argsvars, typval_T *rettv);
 #ifdef MSWIN
 static void f_debugbreak(typval_T *argvars, typval_T *rettv);
@@ -78,8 +77,6 @@ static void f_debugbreak(typval_T *argvars, typval_T *rettv);
 static void f_deepcopy(typval_T *argvars, typval_T *rettv);
 static void f_deletebufline(typval_T *argvars, typval_T *rettv);
 static void f_did_filetype(typval_T *argvars, typval_T *rettv);
-static void f_diff_filler(typval_T *argvars, typval_T *rettv);
-static void f_diff_hlID(typval_T *argvars, typval_T *rettv);
 static void f_empty(typval_T *argvars, typval_T *rettv);
 static void f_environ(typval_T *argvars, typval_T *rettv);
 static void f_escape(typval_T *argvars, typval_T *rettv);
@@ -178,7 +175,6 @@ static void f_mzeval(typval_T *argvars, typval_T *rettv);
 static void f_nextnonblank(typval_T *argvars, typval_T *rettv);
 static void f_nr2char(typval_T *argvars, typval_T *rettv);
 static void f_or(typval_T *argvars, typval_T *rettv);
-static void f_pathshorten(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_PERL
 static void f_perleval(typval_T *argvars, typval_T *rettv);
 #endif
@@ -290,13 +286,6 @@ static void f_tagfiles(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_tan(typval_T *argvars, typval_T *rettv);
 static void f_tanh(typval_T *argvars, typval_T *rettv);
-#endif
-#ifdef FEAT_TIMERS
-static void f_timer_info(typval_T *argvars, typval_T *rettv);
-static void f_timer_pause(typval_T *argvars, typval_T *rettv);
-static void f_timer_start(typval_T *argvars, typval_T *rettv);
-static void f_timer_stop(typval_T *argvars, typval_T *rettv);
-static void f_timer_stopall(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_tolower(typval_T *argvars, typval_T *rettv);
 static void f_toupper(typval_T *argvars, typval_T *rettv);
@@ -2095,33 +2084,6 @@ f_cosh(typval_T *argvars, typval_T *rettv)
 #endif
 
 /*
- * "cscope_connection([{num} , {dbpath} [, {prepend}]])" function
- *
- * Checks the existence of a cscope connection.
- */
-    static void
-f_cscope_connection(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_CSCOPE
-    int		num = 0;
-    char_u	*dbpath = NULL;
-    char_u	*prepend = NULL;
-    char_u	buf[NUMBUFLEN];
-
-    if (argvars[0].v_type != VAR_UNKNOWN
-	    && argvars[1].v_type != VAR_UNKNOWN)
-    {
-	num = (int)tv_get_number(&argvars[0]);
-	dbpath = tv_get_string(&argvars[1]);
-	if (argvars[2].v_type != VAR_UNKNOWN)
-	    prepend = tv_get_string_buf(&argvars[2], buf);
-    }
-
-    rettv->vval.v_number = cs_connection(num, dbpath, prepend);
-#endif
-}
-
-/*
  * "cursor(lnum, col)" function, or
  * "cursor(list)"
  *
@@ -2319,75 +2281,6 @@ f_deletebufline(typval_T *argvars, typval_T *rettv)
 f_did_filetype(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
     rettv->vval.v_number = did_filetype;
-}
-
-/*
- * "diff_filler()" function
- */
-    static void
-f_diff_filler(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_DIFF
-    rettv->vval.v_number = diff_check_fill(curwin, tv_get_lnum(argvars));
-#endif
-}
-
-/*
- * "diff_hlID()" function
- */
-    static void
-f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_DIFF
-    linenr_T		lnum = tv_get_lnum(argvars);
-    static linenr_T	prev_lnum = 0;
-    static varnumber_T	changedtick = 0;
-    static int		fnum = 0;
-    static int		change_start = 0;
-    static int		change_end = 0;
-    static hlf_T	hlID = (hlf_T)0;
-    int			filler_lines;
-    int			col;
-
-    if (lnum < 0)	/* ignore type error in {lnum} arg */
-	lnum = 0;
-    if (lnum != prev_lnum
-	    || changedtick != CHANGEDTICK(curbuf)
-	    || fnum != curbuf->b_fnum)
-    {
-	/* New line, buffer, change: need to get the values. */
-	filler_lines = diff_check(curwin, lnum);
-	if (filler_lines < 0)
-	{
-	    if (filler_lines == -1)
-	    {
-		change_start = MAXCOL;
-		change_end = -1;
-		if (diff_find_change(curwin, lnum, &change_start, &change_end))
-		    hlID = HLF_ADD;	/* added line */
-		else
-		    hlID = HLF_CHD;	/* changed line */
-	    }
-	    else
-		hlID = HLF_ADD;	/* added line */
-	}
-	else
-	    hlID = (hlf_T)0;
-	prev_lnum = lnum;
-	changedtick = CHANGEDTICK(curbuf);
-	fnum = curbuf->b_fnum;
-    }
-
-    if (hlID == HLF_CHD || hlID == HLF_TXD)
-    {
-	col = tv_get_number(&argvars[1]) - 1; /* ignore type error in {col} */
-	if (col >= change_start && col <= change_end)
-	    hlID = HLF_TXD;			/* changed text */
-	else
-	    hlID = HLF_CHD;			/* changed line */
-    }
-    rettv->vval.v_number = hlID == (hlf_T)0 ? 0 : (int)hlID;
-#endif
 }
 
 /*
@@ -6358,27 +6251,6 @@ f_or(typval_T *argvars, typval_T *rettv)
 					| tv_get_number_chk(&argvars[1], NULL);
 }
 
-/*
- * "pathshorten()" function
- */
-    static void
-f_pathshorten(typval_T *argvars, typval_T *rettv)
-{
-    char_u	*p;
-
-    rettv->v_type = VAR_STRING;
-    p = tv_get_string_chk(&argvars[0]);
-    if (p == NULL)
-	rettv->vval.v_string = NULL;
-    else
-    {
-	p = vim_strsave(p);
-	rettv->vval.v_string = p;
-	if (p != NULL)
-	    shorten_dir(p);
-    }
-}
-
 #ifdef FEAT_PERL
 /*
  * "perleval()" function
@@ -9469,223 +9341,6 @@ f_tanh(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_float = tanh(f);
     else
 	rettv->vval.v_float = 0.0;
-}
-#endif
-
-/*
- * Get a callback from "arg".  It can be a Funcref or a function name.
- * When "arg" is zero return an empty string.
- * "cb_name" is not allocated.
- * "cb_name" is set to NULL for an invalid argument.
- */
-    callback_T
-get_callback(typval_T *arg)
-{
-    callback_T res;
-
-    res.cb_free_name = FALSE;
-    if (arg->v_type == VAR_PARTIAL && arg->vval.v_partial != NULL)
-    {
-	res.cb_partial = arg->vval.v_partial;
-	++res.cb_partial->pt_refcount;
-	res.cb_name = partial_name(res.cb_partial);
-    }
-    else
-    {
-	res.cb_partial = NULL;
-	if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
-	{
-	    // Note that we don't make a copy of the string.
-	    res.cb_name = arg->vval.v_string;
-	    func_ref(res.cb_name);
-	}
-	else if (arg->v_type == VAR_NUMBER && arg->vval.v_number == 0)
-	{
-	    res.cb_name = (char_u *)"";
-	}
-	else
-	{
-	    emsg(_("E921: Invalid callback argument"));
-	    res.cb_name = NULL;
-	}
-    }
-    return res;
-}
-
-/*
- * Copy a callback into a typval_T.
- */
-    void
-put_callback(callback_T *cb, typval_T *tv)
-{
-    if (cb->cb_partial != NULL)
-    {
-	tv->v_type = VAR_PARTIAL;
-	tv->vval.v_partial = cb->cb_partial;
-	++tv->vval.v_partial->pt_refcount;
-    }
-    else
-    {
-	tv->v_type = VAR_FUNC;
-	tv->vval.v_string = vim_strsave(cb->cb_name);
-	func_ref(cb->cb_name);
-    }
-}
-
-/*
- * Make a copy of "src" into "dest", allocating the function name if needed,
- * without incrementing the refcount.
- */
-    void
-set_callback(callback_T *dest, callback_T *src)
-{
-    if (src->cb_partial == NULL)
-    {
-	// just a function name, make a copy
-	dest->cb_name = vim_strsave(src->cb_name);
-	dest->cb_free_name = TRUE;
-    }
-    else
-    {
-	// cb_name is a pointer into cb_partial
-	dest->cb_name = src->cb_name;
-	dest->cb_free_name = FALSE;
-    }
-    dest->cb_partial = src->cb_partial;
-}
-
-/*
- * Unref/free "callback" returned by get_callback() or set_callback().
- */
-    void
-free_callback(callback_T *callback)
-{
-    if (callback->cb_partial != NULL)
-    {
-	partial_unref(callback->cb_partial);
-	callback->cb_partial = NULL;
-    }
-    else if (callback->cb_name != NULL)
-	func_unref(callback->cb_name);
-    if (callback->cb_free_name)
-    {
-	vim_free(callback->cb_name);
-	callback->cb_free_name = FALSE;
-    }
-    callback->cb_name = NULL;
-}
-
-#ifdef FEAT_TIMERS
-/*
- * "timer_info([timer])" function
- */
-    static void
-f_timer_info(typval_T *argvars, typval_T *rettv)
-{
-    timer_T *timer = NULL;
-
-    if (rettv_list_alloc(rettv) != OK)
-	return;
-    if (argvars[0].v_type != VAR_UNKNOWN)
-    {
-	if (argvars[0].v_type != VAR_NUMBER)
-	    emsg(_(e_number_exp));
-	else
-	{
-	    timer = find_timer((int)tv_get_number(&argvars[0]));
-	    if (timer != NULL)
-		add_timer_info(rettv, timer);
-	}
-    }
-    else
-	add_timer_info_all(rettv);
-}
-
-/*
- * "timer_pause(timer, paused)" function
- */
-    static void
-f_timer_pause(typval_T *argvars, typval_T *rettv UNUSED)
-{
-    timer_T	*timer = NULL;
-    int		paused = (int)tv_get_number(&argvars[1]);
-
-    if (argvars[0].v_type != VAR_NUMBER)
-	emsg(_(e_number_exp));
-    else
-    {
-	timer = find_timer((int)tv_get_number(&argvars[0]));
-	if (timer != NULL)
-	    timer->tr_paused = paused;
-    }
-}
-
-/*
- * "timer_start(time, callback [, options])" function
- */
-    static void
-f_timer_start(typval_T *argvars, typval_T *rettv)
-{
-    long	msec = (long)tv_get_number(&argvars[0]);
-    timer_T	*timer;
-    int		repeat = 0;
-    callback_T	callback;
-    dict_T	*dict;
-
-    rettv->vval.v_number = -1;
-    if (check_secure())
-	return;
-    if (argvars[2].v_type != VAR_UNKNOWN)
-    {
-	if (argvars[2].v_type != VAR_DICT
-				   || (dict = argvars[2].vval.v_dict) == NULL)
-	{
-	    semsg(_(e_invarg2), tv_get_string(&argvars[2]));
-	    return;
-	}
-	if (dict_find(dict, (char_u *)"repeat", -1) != NULL)
-	    repeat = dict_get_number(dict, (char_u *)"repeat");
-    }
-
-    callback = get_callback(&argvars[1]);
-    if (callback.cb_name == NULL)
-	return;
-
-    timer = create_timer(msec, repeat);
-    if (timer == NULL)
-	free_callback(&callback);
-    else
-    {
-	set_callback(&timer->tr_callback, &callback);
-	rettv->vval.v_number = (varnumber_T)timer->tr_id;
-    }
-}
-
-/*
- * "timer_stop(timer)" function
- */
-    static void
-f_timer_stop(typval_T *argvars, typval_T *rettv UNUSED)
-{
-    timer_T *timer;
-
-    if (argvars[0].v_type != VAR_NUMBER)
-    {
-	emsg(_(e_number_exp));
-	return;
-    }
-    timer = find_timer((int)tv_get_number(&argvars[0]));
-    if (timer != NULL)
-	stop_timer(timer);
-}
-
-/*
- * "timer_stopall()" function
- */
-    static void
-f_timer_stopall(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-    stop_all_timers();
 }
 #endif
 

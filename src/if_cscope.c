@@ -384,7 +384,7 @@ cs_print_tags(void)
  *		Note: All string comparisons are case sensitive!
  */
 #if defined(FEAT_EVAL) || defined(PROTO)
-    int
+    static int
 cs_connection(int num, char_u *dbpath, char_u *ppath)
 {
     int i;
@@ -430,7 +430,35 @@ cs_connection(int num, char_u *dbpath, char_u *ppath)
     }
 
     return FALSE;
-} /* cs_connection */
+}
+
+/*
+ * "cscope_connection([{num} , {dbpath} [, {prepend}]])" function
+ *
+ * Checks the existence of a cscope connection.
+ */
+    void
+f_cscope_connection(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#ifdef FEAT_CSCOPE
+    int		num = 0;
+    char_u	*dbpath = NULL;
+    char_u	*prepend = NULL;
+    char_u	buf[NUMBUFLEN];
+
+    if (argvars[0].v_type != VAR_UNKNOWN
+	    && argvars[1].v_type != VAR_UNKNOWN)
+    {
+	num = (int)tv_get_number(&argvars[0]);
+	dbpath = tv_get_string(&argvars[1]);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    prepend = tv_get_string_buf(&argvars[2], buf);
+    }
+
+    rettv->vval.v_number = cs_connection(num, dbpath, prepend);
+#endif
+}
+
 #endif
 
 

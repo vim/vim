@@ -1311,6 +1311,27 @@ f_mkdir(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "pathshorten()" function
+ */
+    void
+f_pathshorten(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*p;
+
+    rettv->v_type = VAR_STRING;
+    p = tv_get_string_chk(&argvars[0]);
+    if (p == NULL)
+	rettv->vval.v_string = NULL;
+    else
+    {
+	p = vim_strsave(p);
+	rettv->vval.v_string = p;
+	if (p != NULL)
+	    shorten_dir(p);
+    }
+}
+
+/*
  * "readdir()" function
  */
     void

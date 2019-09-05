@@ -20,6 +20,7 @@ void f_glob2regpat(typval_T *argvars, typval_T *rettv);
 void f_globpath(typval_T *argvars, typval_T *rettv);
 void f_isdirectory(typval_T *argvars, typval_T *rettv);
 void f_mkdir(typval_T *argvars, typval_T *rettv);
+void f_pathshorten(typval_T *argvars, typval_T *rettv);
 void f_readdir(typval_T *argvars, typval_T *rettv);
 void f_readfile(typval_T *argvars, typval_T *rettv);
 void f_resolve(typval_T *argvars, typval_T *rettv);
