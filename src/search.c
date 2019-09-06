@@ -5011,7 +5011,9 @@ search_stat(
 	len = STRLEN(t);
 	if (show_top_bot_msg && len + 2 < SEARCH_STAT_BUF_LEN)
 	{
-	    STRCPY(t + len, " W");
+	    mch_memmove(t + 2, t, len);
+	    t[0] = 'W';
+	    t[1] = ' ';
 	    len += 2;
 	}
 
