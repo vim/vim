@@ -10929,9 +10929,6 @@ fun! s:LocalListing()
     " sort by size (handles file sizes up to 1 quintillion bytes, US)
 "    call Decho("getfsize(".filename.")=".getfsize(filename),'~'.expand("<slnum>"))
     let sz   = getfsize(filename)
-    if g:netrw_sizestyle =~# "[hH]"
-     let sz= s:NetrwHumanReadable(sz)
-    endif
     let fsz  = strpart("000000000000000000",1,18-strlen(sz)).sz
 "    call Decho("exe NetrwKeepj put ='".fsz.'/'.filename."'",'~'.expand("<slnum>"))
     let fszpfile= fsz.'/'.pfile
