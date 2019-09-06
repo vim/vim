@@ -833,7 +833,7 @@ func Test_popup_time()
 
   sleep 700m
   redraw
-  let line = join(map(range(1, 5), 'screenstring(1, v:val)'), '')
+  let line = join(map(range(1, 5), '1->screenstring(v:val)'), '')
   call assert_equal('hello', line)
 
   call popup_create('on the command line', #{
