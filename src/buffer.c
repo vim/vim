@@ -5655,7 +5655,7 @@ buflist_find_by_name(char_u *name, int curtab_only)
     char_u	*save_cpo;
     buf_T	*buf;
 
-    /* Ignore 'magic' and 'cpoptions' here to make scripts portable */
+    // Ignore 'magic' and 'cpoptions' here to make scripts portable
     save_magic = p_magic;
     p_magic = TRUE;
     save_cpo = p_cpo;
@@ -5684,8 +5684,8 @@ find_buffer(typval_T *avar)
 	buf = buflist_findname_exp(avar->vval.v_string);
 	if (buf == NULL)
 	{
-	    /* No full path name match, try a match with a URL or a "nofile"
-	     * buffer, these don't use the full path. */
+	    // No full path name match, try a match with a URL or a "nofile"
+	    // buffer, these don't use the full path.
 	    FOR_ALL_BUFFERS(buf)
 		if (buf->b_fname != NULL
 			&& (path_with_url(buf->b_fname)
@@ -5739,12 +5739,12 @@ set_buffer_lines(
     win_T	*curwin_save = NULL;
     int		is_curbuf = buf == curbuf;
 
-    /* When using the current buffer ml_mfp will be set if needed.  Useful when
-     * setline() is used on startup.  For other buffers the buffer must be
-     * loaded. */
+    // When using the current buffer ml_mfp will be set if needed.  Useful when
+    // setline() is used on startup.  For other buffers the buffer must be
+    // loaded.
     if (buf == NULL || (!is_curbuf && buf->b_ml.ml_mfp == NULL) || lnum < 1)
     {
-	rettv->vval.v_number = 1;	/* FAIL */
+	rettv->vval.v_number = 1;	// FAIL
 	return;
     }
 
@@ -5772,27 +5772,27 @@ set_buffer_lines(
     else
 	line = tv_get_string_chk(lines);
 
-    /* default result is zero == OK */
+    // default result is zero == OK
     for (;;)
     {
 	if (l != NULL)
 	{
-	    /* list argument, get next string */
+	    // list argument, get next string
 	    if (li == NULL)
 		break;
 	    line = tv_get_string_chk(&li->li_tv);
 	    li = li->li_next;
 	}
 
-	rettv->vval.v_number = 1;	/* FAIL */
+	rettv->vval.v_number = 1;	// FAIL
 	if (line == NULL || lnum > curbuf->b_ml.ml_line_count + 1)
 	    break;
 
-	/* When coming here from Insert mode, sync undo, so that this can be
-	 * undone separately from what was previously inserted. */
+	// When coming here from Insert mode, sync undo, so that this can be
+	// undone separately from what was previously inserted.
 	if (u_sync_once == 2)
 	{
-	    u_sync_once = 1; /* notify that u_sync() was called */
+	    u_sync_once = 1; // notify that u_sync() was called
 	    u_sync(TRUE);
 	}
 
@@ -5806,18 +5806,18 @@ set_buffer_lines(
 		changed_bytes(lnum, 0);
 		if (is_curbuf && lnum == curwin->w_cursor.lnum)
 		    check_cursor_col();
-		rettv->vval.v_number = 0;	/* OK */
+		rettv->vval.v_number = 0;	// OK
 	    }
 	}
 	else if (added > 0 || u_save(lnum - 1, lnum) == OK)
 	{
-	    /* append the line */
+	    // append the line
 	    ++added;
 	    if (ml_append(lnum - 1, line, (colnr_T)0, FALSE) == OK)
-		rettv->vval.v_number = 0;	/* OK */
+		rettv->vval.v_number = 0;	// OK
 	}
 
-	if (l == NULL)			/* only one string argument */
+	if (l == NULL)			// only one string argument
 	    break;
 	++lnum;
     }
@@ -5870,7 +5870,7 @@ f_appendbufline(typval_T *argvars, typval_T *rettv)
 
     buf = tv_get_buf(&argvars[0], FALSE);
     if (buf == NULL)
-	rettv->vval.v_number = 1; /* FAIL */
+	rettv->vval.v_number = 1; // FAIL
     else
     {
 	lnum = tv_get_lnum_buf(&argvars[1], buf);
@@ -6001,7 +6001,7 @@ buf_win_common(typval_T *argvars, typval_T *rettv, int get_nr)
     int		winnr = 0;
     buf_T	*buf;
 
-    (void)tv_get_number(&argvars[0]);	    /* issue errmsg if type error */
+    (void)tv_get_number(&argvars[0]);	    // issue errmsg if type error
     ++emsg_off;
     buf = tv_get_buf(&argvars[0], TRUE);
     FOR_ALL_WINDOWS(wp)
@@ -6051,7 +6051,7 @@ f_deletebufline(typval_T *argvars, typval_T *rettv)
     buf = tv_get_buf(&argvars[0], FALSE);
     if (buf == NULL)
     {
-	rettv->vval.v_number = 1; /* FAIL */
+	rettv->vval.v_number = 1; // FAIL
 	return;
     }
     is_curbuf = buf == curbuf;
@@ -6065,7 +6065,7 @@ f_deletebufline(typval_T *argvars, typval_T *rettv)
     if (buf->b_ml.ml_mfp == NULL || first < 1
 			   || first > buf->b_ml.ml_line_count || last < first)
     {
-	rettv->vval.v_number = 1;	/* FAIL */
+	rettv->vval.v_number = 1;	// FAIL
 	return;
     }
 
@@ -6090,7 +6090,7 @@ f_deletebufline(typval_T *argvars, typval_T *rettv)
 
     if (u_save(first - 1, last + 1) == FAIL)
     {
-	rettv->vval.v_number = 1;	/* FAIL */
+	rettv->vval.v_number = 1;	// FAIL
 	return;
     }
 
@@ -6176,7 +6176,7 @@ get_buffer_info(buf_T *buf)
 #ifdef FEAT_SIGNS
     if (buf->b_signlist != NULL)
     {
-	/* List of signs placed in this buffer */
+	// List of signs placed in this buffer
 	list_T	*signs = list_alloc();
 	if (signs != NULL)
 	{
@@ -6206,7 +6206,7 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
     if (rettv_list_alloc(rettv) != OK)
 	return;
 
-    /* List of all the buffers or selected buffers */
+    // List of all the buffers or selected buffers
     if (argvars[0].v_type == VAR_DICT)
     {
 	dict_T	*sel_d = argvars[0].vval.v_dict;
@@ -6232,8 +6232,8 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
     }
     else if (argvars[0].v_type != VAR_UNKNOWN)
     {
-	/* Information about one buffer.  Argument specifies the buffer */
-	(void)tv_get_number(&argvars[0]);   /* issue errmsg if type error */
+	// Information about one buffer.  Argument specifies the buffer
+	(void)tv_get_number(&argvars[0]);   // issue errmsg if type error
 	++emsg_off;
 	argbuf = tv_get_buf(&argvars[0], FALSE);
 	--emsg_off;
@@ -6241,7 +6241,7 @@ f_getbufinfo(typval_T *argvars, typval_T *rettv)
 	    return;
     }
 
-    /* Return information about all the buffers or a specified buffer */
+    // Return information about all the buffers or a specified buffer
     FOR_ALL_BUFFERS(buf)
     {
 	if (argbuf != NULL && argbuf != buf)
@@ -6317,7 +6317,7 @@ f_getbufline(typval_T *argvars, typval_T *rettv)
     linenr_T	end;
     buf_T	*buf;
 
-    (void)tv_get_number(&argvars[0]);	    /* issue errmsg if type error */
+    (void)tv_get_number(&argvars[0]);	    // issue errmsg if type error
     ++emsg_off;
     buf = tv_get_buf(&argvars[0], FALSE);
     --emsg_off;
@@ -6367,7 +6367,7 @@ f_setbufline(typval_T *argvars, typval_T *rettv)
 
     buf = tv_get_buf(&argvars[0], FALSE);
     if (buf == NULL)
-	rettv->vval.v_number = 1; /* FAIL */
+	rettv->vval.v_number = 1; // FAIL
     else
     {
 	lnum = tv_get_lnum_buf(&argvars[1], buf);

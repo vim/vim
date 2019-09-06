@@ -7225,7 +7225,7 @@ get_winnr(tabpage_T *tp, typval_T *argvar)
 
 	arg = tv_get_string_chk(argvar);
 	if (arg == NULL)
-	    nr = 0;		/* type error; errmsg already given */
+	    nr = 0;		// type error; errmsg already given
 	else if (STRCMP(arg, "$") == 0)
 	    twin = (tp == curtab) ? lastwin : tp->tp_lastwin;
 	else if (STRCMP(arg, "#") == 0)
@@ -7273,7 +7273,7 @@ get_winnr(tabpage_T *tp, typval_T *argvar)
 	{
 	    if (wp == NULL)
 	    {
-		/* didn't find it in this tabpage */
+		// didn't find it in this tabpage
 		nr = 0;
 		break;
 	    }
@@ -7317,7 +7317,7 @@ get_win_info(win_T *wp, short tpnr, short winnr)
 		      (bt_quickfix(wp->w_buffer) && wp->w_llist_ref != NULL));
 #endif
 
-    /* Add a reference to window variables */
+    // Add a reference to window variables
     dict_add_dict(dict, "variables", wp->w_vars);
 
     return dict;
@@ -7349,7 +7349,7 @@ get_tabpage_info(tabpage_T *tp, int tp_idx)
 	dict_add_list(dict, "windows", l);
     }
 
-    /* Make a reference to tabpage variables */
+    // Make a reference to tabpage variables
     dict_add_dict(dict, "variables", tp->tp_vars);
 
     return dict;
@@ -7370,13 +7370,13 @@ f_gettabinfo(typval_T *argvars, typval_T *rettv)
 
     if (argvars[0].v_type != VAR_UNKNOWN)
     {
-	/* Information about one tab page */
+	// Information about one tab page
 	tparg = find_tabpage((int)tv_get_number_chk(&argvars[0], NULL));
 	if (tparg == NULL)
 	    return;
     }
 
-    /* Get information about a specific tab page or all tab pages */
+    // Get information about a specific tab page or all tab pages
     FOR_ALL_TABPAGES(tp)
     {
 	tpnr++;
@@ -7411,9 +7411,8 @@ f_getwininfo(typval_T *argvars, typval_T *rettv)
 	    return;
     }
 
-    /* Collect information about either all the windows across all the tab
-     * pages or one particular window.
-     */
+    // Collect information about either all the windows across all the tab
+    // pages or one particular window.
     FOR_ALL_TABPAGES(tp)
     {
 	tabnr++;
@@ -7427,7 +7426,7 @@ f_getwininfo(typval_T *argvars, typval_T *rettv)
 	    if (d != NULL)
 		list_append_dict(rettv->vval.v_list, d);
 	    if (wparg != NULL)
-		/* found information about a specific window */
+		// found information about a specific window
 		return;
 	}
     }
