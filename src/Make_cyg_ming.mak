@@ -736,6 +736,7 @@ OBJ = \
 	$(OUTDIR)/hardcopy.o \
 	$(OUTDIR)/hashtab.o \
 	$(OUTDIR)/highlight.o \
+	$(OUTDIR)/if_cscope.o \
 	$(OUTDIR)/indent.o \
 	$(OUTDIR)/insexpand.o \
 	$(OUTDIR)/json.o \
@@ -820,9 +821,6 @@ OBJ += $(OUTDIR)/if_ruby.o
 endif
 ifdef TCL
 OBJ += $(OUTDIR)/if_tcl.o
-endif
-ifeq ($(CSCOPE),yes)
-OBJ += $(OUTDIR)/if_cscope.o
 endif
 
 ifeq ($(NETBEANS),yes)
