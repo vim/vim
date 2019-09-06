@@ -336,6 +336,7 @@ typedef struct
 #define FEARG_1    1	    // base is the first argument
 #define FEARG_2    2	    // base is the second argument
 #define FEARG_3    3	    // base is the third argument
+#define FEARG_4    4	    // base is the fourth argument
 #define FEARG_LAST 9	    // base is the last argument
 
 static funcentry_T global_functions[] =
@@ -721,20 +722,20 @@ static funcentry_T global_functions[] =
     {"setenv",		2, 2, FEARG_2,	  f_setenv},
     {"setfperm",	2, 2, FEARG_1,	  f_setfperm},
     {"setline",		2, 2, FEARG_2,	  f_setline},
-    {"setloclist",	2, 4, 0,	  f_setloclist},
-    {"setmatches",	1, 2, 0,	  f_setmatches},
-    {"setpos",		2, 2, 0,	  f_setpos},
-    {"setqflist",	1, 3, 0,	  f_setqflist},
-    {"setreg",		2, 3, 0,	  f_setreg},
-    {"settabvar",	3, 3, 0,	  f_settabvar},
-    {"settabwinvar",	4, 4, 0,	  f_settabwinvar},
-    {"settagstack",	2, 3, 0,	  f_settagstack},
-    {"setwinvar",	3, 3, 0,	  f_setwinvar},
+    {"setloclist",	2, 4, FEARG_2,	  f_setloclist},
+    {"setmatches",	1, 2, FEARG_1,	  f_setmatches},
+    {"setpos",		2, 2, FEARG_2,	  f_setpos},
+    {"setqflist",	1, 3, FEARG_1,	  f_setqflist},
+    {"setreg",		2, 3, FEARG_2,	  f_setreg},
+    {"settabvar",	3, 3, FEARG_3,	  f_settabvar},
+    {"settabwinvar",	4, 4, FEARG_4,	  f_settabwinvar},
+    {"settagstack",	2, 3, FEARG_2,	  f_settagstack},
+    {"setwinvar",	3, 3, FEARG_3,	  f_setwinvar},
 #ifdef FEAT_CRYPT
-    {"sha256",		1, 1, 0,	  f_sha256},
+    {"sha256",		1, 1, FEARG_1,	  f_sha256},
 #endif
-    {"shellescape",	1, 2, 0,	  f_shellescape},
-    {"shiftwidth",	0, 1, 0,	  f_shiftwidth},
+    {"shellescape",	1, 2, FEARG_1,	  f_shellescape},
+    {"shiftwidth",	0, 1, FEARG_1,	  f_shiftwidth},
 #ifdef FEAT_SIGNS
     {"sign_define",	1, 2, FEARG_1,	  f_sign_define},
     {"sign_getdefined",	0, 1, FEARG_1,	  f_sign_getdefined},
@@ -1058,6 +1059,16 @@ call_internal_method(
 	argv[1] = argvars[1];
 	argv[2] = *basetv;
 	for (i = 2; i < argcount; ++i)
+	    argv[i + 1] = argvars[i];
+    }
+    else if (global_functions[fi].f_argtype == FEARG_4)
+    {
+	// base value goes fourth
+	argv[0] = argvars[0];
+	argv[1] = argvars[1];
+	argv[2] = argvars[2];
+	argv[3] = *basetv;
+	for (i = 3; i < argcount; ++i)
 	    argv[i + 1] = argvars[i];
     }
     else

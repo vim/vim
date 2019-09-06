@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Sep 04
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Sep 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3154,7 +3154,7 @@ bufadd({name})						*bufadd()*
 		number.  Otherwise return the buffer number of the newly
 		created buffer.  When {name} is an empty string then a new
 		buffer is always created.
-		The buffer will not have' 'buflisted' set and not be loaded
+		The buffer will not have 'buflisted' set and not be loaded
 		yet.  To add some text to the buffer use this: >
 			let bufnr = bufadd('someName')
 			call bufload(bufnr)
@@ -6465,7 +6465,7 @@ listener_add({callback} [, {buf}])			*listener_add()*
 		buffer is used.
 		Returns a unique ID that can be passed to |listener_remove()|.
 
-		The {callback} is invoked with four arguments:
+		The {callback} is invoked with five arguments:
 		    a:bufnr	the buffer that was changed
 		    a:start	first changed line number
 		    a:end	first line number below the change
@@ -8396,6 +8396,10 @@ setloclist({nr}, {list} [, {action} [, {what}]])		*setloclist()*
 		only the items listed in {what} are set. Refer to |setqflist()|
 		for the list of supported keys in {what}.
 
+		Can also be used as a |method|, the base is passed as the
+		second argument: >
+			GetLoclist()->setloclist(winnr)
+
 setmatches({list} [, {win}])				*setmatches()*
 		Restores a list of matches saved by |getmatches() for the
 		current window|.  Returns 0 if successful, otherwise -1.  All
@@ -8404,6 +8408,9 @@ setmatches({list} [, {win}])				*setmatches()*
 		If {win} is specified, use the window with this number or
 		window ID instead of the current window.
 
+		Can also be used as a |method|: >
+			GetMatches()->setmatches()
+<
 							*setpos()*
 setpos({expr}, {list})
 		Set the position for {expr}.  Possible values:
@@ -8452,6 +8459,9 @@ setpos({expr}, {list})
 		|k| motions will jump to previous columns!  Use |cursor()| to
 		also set the preferred column.  Also see the "curswant" key in
 		|winrestview()|.
+
+		Can also be used as a |method|: >
+			GetPosition()->setpos('.')
 
 setqflist({list} [, {action} [, {what}]])		*setqflist()*
 		Create or replace or add to the quickfix list.
@@ -8554,7 +8564,10 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 		independent of the 'errorformat' setting.  Use a command like
 		`:cc 1` to jump to the first position.
 
-
+		Can also be used as a |method|, the base is passed as the
+		second argument: >
+			GetErrorlist()->setqflist()
+<
 							*setreg()*
 setreg({regname}, {value} [, {options}])
 		Set the register {regname} to {value}.
@@ -8602,6 +8615,10 @@ setreg({regname}, {value} [, {options}])
 		nothing: >
 			:call setreg('a', '', 'al')
 
+<		Can also be used as a |method|, the base is passed as the
+		second argument: >
+			GetText()->setreg('a')
+
 settabvar({tabnr}, {varname}, {val})			*settabvar()*
 		Set tab-local variable {varname} to {val} in tab page {tabnr}.
 		|t:var|
@@ -8610,6 +8627,9 @@ settabvar({tabnr}, {varname}, {val})			*settabvar()*
 		Note that the variable name without "t:" must be used.
 		Tabs are numbered starting with one.
 		This function is not available in the |sandbox|.
+
+		Can also be used as a |method|, the base is used as the value: >
+			GetValue()->settabvar(tab, name)
 
 settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 		Set option or local variable {varname} in window {winnr} to
@@ -8628,6 +8648,9 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 			:call settabwinvar(1, 1, "&list", 0)
 			:call settabwinvar(3, 2, "myvar", "foobar")
 <		This function is not available in the |sandbox|.
+
+		Can also be used as a |method|, the base is used as the value: >
+			GetValue()->settabvar(tab, winnr, name)
 
 settagstack({nr}, {dict} [, {action}])			*settagstack()*
 		Modify the tag stack of the window {nr} using {dict}.
@@ -8660,16 +8683,26 @@ settagstack({nr}, {dict} [, {action}])			*settagstack()*
 			call settagstack(1003, stack)
 			unlet stack
 <
-setwinvar({nr}, {varname}, {val})			*setwinvar()*
+		Can also be used as a |method|, the base is used as the Dict: >
+			GetStack()->settagstack(winnr)
+
+setwinvar({winnr}, {varname}, {val})			*setwinvar()*
 		Like |settabwinvar()| for the current tab page.
 		Examples: >
 			:call setwinvar(1, "&list", 0)
 			:call setwinvar(2, "myvar", "foobar")
 
+<		Can also be used as a |method|, the base is used as the value: >
+			GetValue()->setwinvar(winnr, name)
+
 sha256({string})						*sha256()*
 		Returns a String with 64 hex characters, which is the SHA256
 		checksum of {string}.
-		{only available when compiled with the |+cryptv| feature}
+
+		Can also be used as a |method|: >
+			GetText()->sha256()
+
+<		{only available when compiled with the |+cryptv| feature}
 
 shellescape({string} [, {special}])			*shellescape()*
 		Escape {string} for use as a shell command argument.
@@ -8701,6 +8734,8 @@ shellescape({string} [, {special}])			*shellescape()*
 		    :call system("chmod +w -- " . shellescape(expand("%")))
 <		See also |::S|.
 
+		Can also be used as a |method|: >
+			GetCommand()->shellescape()
 
 shiftwidth([{col}])						*shiftwidth()*
 		Returns the effective value of 'shiftwidth'. This is the
@@ -8713,6 +8748,9 @@ shiftwidth([{col}])						*shiftwidth()*
 		for which to return the 'shiftwidth' value. This matters for the
 		'vartabstop' feature. If the 'vartabstop' setting is enabled and
 		no {col} argument is given, column 1 will be assumed.
+
+		Can also be used as a |method|: >
+			GetColumn()->shiftwidth()
 
 sign_ functions are documented here: |sign-functions-details|
 
