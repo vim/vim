@@ -479,7 +479,9 @@ ui_wait_for_chars_or_timer(
 	    // There is a pending job or channel, should return soon in order
 	    // to handle them ASAP.  Do check for input briefly.
 	    due_time = 10L;
+#  ifdef FEAT_JOB_CHANNEL
 	    brief_wait = TRUE;
+#  endif
 	}
 # endif
 	if (wait_func(due_time, interrupted, ignore_input))
