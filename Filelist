@@ -34,8 +34,10 @@ SRC_ALL =	\
 		src/digraph.c \
 		src/edit.c \
 		src/eval.c \
+		src/evalbuffer.c \
 		src/evalfunc.c \
 		src/evalvars.c \
+		src/evalwindow.c \
 		src/ex_cmdidxs.h \
 		src/ex_cmds.c \
 		src/ex_cmds.h \
@@ -189,8 +191,10 @@ SRC_ALL =	\
 		src/proto/digraph.pro \
 		src/proto/edit.pro \
 		src/proto/eval.pro \
+		src/proto/evalbuffer.pro \
 		src/proto/evalfunc.pro \
 		src/proto/evalvars.pro \
+		src/proto/evalwindow.pro \
 		src/proto/ex_cmds.pro \
 		src/proto/ex_cmds2.pro \
 		src/proto/ex_docmd.pro \

@@ -65,10 +65,7 @@ int bt_dontwrite(buf_T *buf);
 int bt_dontwrite_msg(buf_T *buf);
 int buf_hide(buf_T *buf);
 char_u *buf_spname(buf_T *buf);
-void switch_to_win_for_buf(buf_T *buf, win_T **save_curwinp, tabpage_T **save_curtabp, bufref_T *save_curbuf);
-void restore_win_for_buf(win_T *save_curwin, tabpage_T *save_curtab, bufref_T *save_curbuf);
 void set_buflisted(int on);
 int buf_contents_changed(buf_T *buf);
 void wipe_buffer(buf_T *buf, int aucmd);
-int set_ref_in_buffers(int copyID);
 /* vim: set ft=c : */

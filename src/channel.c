@@ -1036,7 +1036,7 @@ prepare_buffer(buf_T *buf)
  * Returns NULL if there is something very wrong (error already reported).
  */
     static buf_T *
-find_buffer(char_u *name, int err, int msg)
+channel_find_buffer(char_u *name, int err, int msg)
 {
     buf_T *buf = NULL;
     buf_T *save_curbuf = curbuf;
@@ -1126,7 +1126,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 
 	    if (opt->jo_set2 & JO2_OUT_MSG)
 		msg = opt->jo_message[PART_OUT];
-	    buf = find_buffer(opt->jo_io_name[PART_OUT], FALSE, msg);
+	    buf = channel_find_buffer(opt->jo_io_name[PART_OUT], FALSE, msg);
 	}
 	if (buf != NULL)
 	{
@@ -1173,7 +1173,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 
 	    if (opt->jo_set2 & JO2_ERR_MSG)
 		msg = opt->jo_message[PART_ERR];
-	    buf = find_buffer(opt->jo_io_name[PART_ERR], TRUE, msg);
+	    buf = channel_find_buffer(opt->jo_io_name[PART_ERR], TRUE, msg);
 	}
 	if (buf != NULL)
 	{

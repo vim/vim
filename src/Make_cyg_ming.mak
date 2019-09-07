@@ -721,8 +721,10 @@ OBJ = \
 	$(OUTDIR)/digraph.o \
 	$(OUTDIR)/edit.o \
 	$(OUTDIR)/eval.o \
+	$(OUTDIR)/evalbuffer.o \
 	$(OUTDIR)/evalfunc.o \
 	$(OUTDIR)/evalvars.o \
+	$(OUTDIR)/evalwindow.o \
 	$(OUTDIR)/ex_cmds.o \
 	$(OUTDIR)/ex_cmds2.o \
 	$(OUTDIR)/ex_docmd.o \
