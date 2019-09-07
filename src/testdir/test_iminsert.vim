@@ -33,6 +33,9 @@ endfunc
 
 func Test_imgetstatus()
   if has('gui_running')
+    if !has('win32')
+      throw 'Skipped: running in the GUI, only works on MS-Windows'
+    endif
     set imactivatefunc=
     set imstatusfunc=
   else
