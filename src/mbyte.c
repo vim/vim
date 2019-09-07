@@ -4470,6 +4470,8 @@ enc_locale(void)
 	STRCPY(buf, "ucs-2le");
     else if (acp == 1252)	    /* cp1252 is used as latin1 */
 	STRCPY(buf, "latin1");
+    else if (acp == 65001)
+	STRCPY(buf, "utf-8");
     else
 	sprintf(buf, "cp%ld", acp);
 
