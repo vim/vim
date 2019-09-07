@@ -507,6 +507,7 @@ static funcentry_T global_functions[] =
     {"getfsize",	1, 1, FEARG_1,	  f_getfsize},
     {"getftime",	1, 1, FEARG_1,	  f_getftime},
     {"getftype",	1, 1, FEARG_1,	  f_getftype},
+    {"getimstatus",	0, 0, 0,	  f_getimstatus},
     {"getjumplist",	0, 2, FEARG_1,	  f_getjumplist},
     {"getline",		1, 2, FEARG_1,	  f_getline},
     {"getloclist",	1, 2, 0,	  f_getloclist},

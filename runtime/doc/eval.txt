@@ -2468,6 +2468,7 @@ getfperm({fname})		String	file permissions of file {fname}
 getfsize({fname})		Number	size in bytes of file {fname}
 getftime({fname})		Number	last modification time of file
 getftype({fname})		String	description of type of file {fname}
+getimstatus()			Number	|TRUE| if the IME status is active
 getjumplist([{winnr} [, {tabnr}]])
 				List	list of jump list items
 getline({lnum})			String	line {lnum} of current buffer
@@ -5201,6 +5202,11 @@ getftype({fname})					*getftype()*
 
 		Can also be used as a |method|: >
 			GetFilename()->getftype()
+
+getimstatus()						*getimstatus()*
+		The result is a Number, which is |TRUE| when the IME status is
+		active.
+		See 'imstatusfunc'.
 
 getjumplist([{winnr} [, {tabnr}]])			*getjumplist()*
 		Returns the |jumplist| for the specified window.
