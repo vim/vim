@@ -3326,7 +3326,7 @@ objects/pty.o: pty.c
 objects/quickfix.o: quickfix.c
 	$(CCC) -o $@ quickfix.c
 
-objects/regexp.o: regexp.c regexp_nfa.c
+objects/regexp.o: regexp.c regexp_bt.c regexp_nfa.c
 	$(CCC) -o $@ regexp.c
 
 objects/scriptfile.o: scriptfile.c
@@ -3794,7 +3794,7 @@ objects/quickfix.o: quickfix.c vim.h protodef.h auto/config.h feature.h os_unix.
 objects/regexp.o: regexp.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h regexp_nfa.c
+ proto.h globals.h regexp_bt.c regexp_nfa.c
 objects/scriptfile.o: scriptfile.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

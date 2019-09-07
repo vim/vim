@@ -1179,7 +1179,7 @@ $(OUTDIR)/os_w32exeg.o:	os_w32exe.c $(INCL)
 $(OUTDIR)/os_win32.o:	os_win32.c $(INCL) $(MZSCHEME_INCL)
 	$(CC) -c $(CFLAGS) os_win32.c -o $@
 
-$(OUTDIR)/regexp.o:	regexp.c regexp_nfa.c $(INCL)
+$(OUTDIR)/regexp.o:	regexp.c regexp_bt.c regexp_nfa.c $(INCL)
 	$(CC) -c $(CFLAGS) regexp.c -o $@
 
 $(OUTDIR)/terminal.o:	terminal.c $(INCL) $(TERM_DEPS)

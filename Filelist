@@ -92,6 +92,7 @@ SRC_ALL =	\
 		src/profiler.c \
 		src/quickfix.c \
 		src/regexp.c \
+		src/regexp_bt.c \
 		src/regexp_nfa.c \
 		src/regexp.h \
 		src/scriptfile.c \
