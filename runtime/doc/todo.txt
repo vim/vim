@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Aug 30
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Sep 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -137,6 +137,8 @@ Sound: support on Mac?  Or does libcanberra work there?
 Patch to add win_splitmove() function. (Andy Massimino, #4561)
 
 Patch for #4733: #4734.  Test needs improvements.
+
+Add CmdwinLeavePost (#4762).  Also add WinLeavePost then?
 
 Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
 20)
@@ -277,8 +279,6 @@ Many users don't like 'thesaurus' to match so many words. (#4667, #1611)
 
 Some composing characters actually add a cell width to the character they are
 on top off, making the whole thing two characters wide. (#4526)
-
-Add CmdwinLeavePost (#4762).  Also add WinLeavePost then?
 
 Should we include some part of pull request #4505, not increment changedtick
 in some cases?  E.g. for ":write" when the changed flag was already off, the

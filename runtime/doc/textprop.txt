@@ -341,7 +341,7 @@ will move accordingly.
 When text is deleted and a text property no longer includes any text, it is
 deleted.  However, a text property that was defined as zero-width will remain,
 unless the whole line is deleted.
-`								*E275*
+								*E275*
 When a buffer is unloaded, all the text properties are gone.  There is no way
 to store the properties in a file.  You can only re-create them.  When a
 buffer is hidden the text is preserved and so are the text properties.  It is
