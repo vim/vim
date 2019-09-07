@@ -2779,6 +2779,7 @@ popup_do_filter(int c)
     win_T	*wp;
     int		save_KeyTyped = KeyTyped;
     int		state;
+    int		was_must_redraw = must_redraw;
 
     if (recursive)
 	return FALSE;
@@ -2802,7 +2803,7 @@ popup_do_filter(int c)
 		&& (wp->w_filter_mode & state) != 0)
 	    res = invoke_popup_filter(wp, c);
 
-    if (must_redraw)
+    if (must_redraw > was_must_redraw)
 	redraw_after_callback(FALSE);
     recursive = FALSE;
     KeyTyped = save_KeyTyped;
