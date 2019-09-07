@@ -110,6 +110,7 @@ static void f_getcharsearch(typval_T *argvars, typval_T *rettv);
 static void f_getcmdwintype(typval_T *argvars, typval_T *rettv);
 static void f_getenv(typval_T *argvars, typval_T *rettv);
 static void f_getfontname(typval_T *argvars, typval_T *rettv);
+static void f_getimstatus(typval_T *argvars, typval_T *rettv);
 static void f_getjumplist(typval_T *argvars, typval_T *rettv);
 static void f_getline(typval_T *argvars, typval_T *rettv);
 static void f_getpid(typval_T *argvars, typval_T *rettv);
@@ -507,6 +508,7 @@ static funcentry_T global_functions[] =
     {"getfsize",	1, 1, FEARG_1,	  f_getfsize},
     {"getftime",	1, 1, FEARG_1,	  f_getftime},
     {"getftype",	1, 1, FEARG_1,	  f_getftype},
+    {"getimstatus",	0, 0, 0,	  f_getimstatus},
     {"getjumplist",	0, 2, FEARG_1,	  f_getjumplist},
     {"getline",		1, 2, FEARG_1,	  f_getline},
     {"getloclist",	1, 2, 0,	  f_getloclist},
@@ -3789,6 +3791,15 @@ f_getfontname(typval_T *argvars UNUSED, typval_T *rettv)
 	    gui_mch_free_font(font);
     }
 #endif
+}
+
+/*
+ * "getimstatus()" function
+ */
+    static void
+f_getimstatus(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->vval.v_number = im_get_status();
 }
 
 /*
