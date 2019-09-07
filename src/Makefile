@@ -1595,8 +1595,10 @@ BASIC_SRC = \
 	digraph.c \
 	edit.c \
 	eval.c \
+	evalbuffer.c \
 	evalfunc.c \
 	evalvars.c \
+	evalwindow.c \
 	ex_cmds.c \
 	ex_cmds2.c \
 	ex_docmd.c \
@@ -1726,8 +1728,10 @@ OBJ_COMMON = \
 	objects/digraph.o \
 	objects/edit.o \
 	objects/eval.o \
+	objects/evalbuffer.o \
 	objects/evalfunc.o \
 	objects/evalvars.o \
+	objects/evalwindow.o \
 	objects/ex_cmds.o \
 	objects/ex_cmds2.o \
 	objects/ex_docmd.o \
@@ -1870,8 +1874,10 @@ PRO_AUTO = \
 	digraph.pro \
 	edit.pro \
 	eval.pro \
+	evalbuffer.pro \
 	evalfunc.pro \
 	evalvars.pro \
+	evalwindow.pro \
 	ex_cmds.pro \
 	ex_cmds2.pro \
 	ex_docmd.pro \
@@ -3080,11 +3086,17 @@ objects/edit.o: edit.c
 objects/eval.o: eval.c
 	$(CCC) -o $@ eval.c
 
+objects/evalbuffer.o: evalbuffer.c
+	$(CCC) -o $@ evalbuffer.c
+
 objects/evalfunc.o: evalfunc.c
 	$(CCC) -o $@ evalfunc.c
 
 objects/evalvars.o: evalvars.c
 	$(CCC) -o $@ evalvars.c
+
+objects/evalwindow.o: evalwindow.c
+	$(CCC) -o $@ evalwindow.c
 
 objects/ex_cmds.o: ex_cmds.c
 	$(CCC) -o $@ ex_cmds.c
@@ -3603,11 +3615,19 @@ objects/eval.o: eval.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h version.h
+objects/evalbuffer.o: evalbuffer.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h version.h
 objects/evalfunc.o: evalfunc.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h version.h
 objects/evalvars.o: evalvars.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/evalwindow.o: evalwindow.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h

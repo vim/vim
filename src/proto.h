@@ -75,7 +75,10 @@ extern int _stricoll(char *a, char *b);
 # include "digraph.pro"
 # include "edit.pro"
 # include "eval.pro"
+# include "evalbuffer.pro"
 # include "evalfunc.pro"
+# include "evalvars.pro"
+# include "evalwindow.pro"
 # include "ex_cmds.pro"
 # include "ex_cmds2.pro"
 # include "ex_docmd.pro"
@@ -111,7 +114,6 @@ extern int _stricoll(char *a, char *b);
 # ifdef FEAT_VIMINFO
 # include "viminfo.pro"
 # endif
-# include "evalvars.pro"
 
 /* These prototypes cannot be produced automatically. */
 int smsg(const char *, ...)
