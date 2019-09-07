@@ -2802,6 +2802,8 @@ popup_do_filter(int c)
 		&& (wp->w_filter_mode & state) != 0)
 	    res = invoke_popup_filter(wp, c);
 
+    if (must_redraw)
+	redraw_after_callback(FALSE);
     recursive = FALSE;
     KeyTyped = save_KeyTyped;
     return res;

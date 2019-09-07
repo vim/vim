@@ -2159,9 +2159,9 @@ func Test_popup_menu_filter()
 		call win_execute(a:winid, "call setpos('.', [0, line('.') - 1, 1, 0])")
 		return 1
 	  endif
-	  if a:key == 'x'
+	  if a:key == ':'
 		call popup_close(a:winid)
-		return 1
+		return 0
 	  endif
 	  return 0
 	endfunction
@@ -2185,7 +2185,10 @@ func Test_popup_menu_filter()
   call term_sendkeys(buf, "0")
   call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_4', {})
 
-  call term_sendkeys(buf, "x")
+  " check that when the popup is closed in the filter the screen is redrawn
+  call term_sendkeys(buf, ":")
+  call VerifyScreenDump(buf, 'Test_popupwin_menu_filter_5', {})
+  call term_sendkeys(buf, "\<CR>")
 
   " clean up
   call StopVimInTerminal(buf)
