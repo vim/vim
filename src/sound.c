@@ -435,7 +435,7 @@ f_sound_stop(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_sound_clear(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-    PlaySound(NULL, NULL, 0);
+    PlaySoundW(NULL, NULL, 0);
     mciSendString("close all", NULL, 0, NULL);
 }
 
