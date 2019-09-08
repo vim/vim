@@ -321,10 +321,8 @@ func Test_terminal_scrollback()
 endfunc
 
 func Test_terminal_postponed_scrollback()
-  if !has('unix')
-    " tail -f only works on Unix
-    return
-  endif
+  " tail -f only works on Unix
+  CheckUnix
 
   call writefile(range(50), 'Xtext')
   call writefile([
@@ -740,9 +738,8 @@ endfunc
 
 func Test_terminal_special_chars()
   " this file name only works on Unix
-  if !has('unix')
-    return
-  endif
+  CheckUnix
+
   call mkdir('Xdir with spaces')
   call writefile(['x'], 'Xdir with spaces/quoted"file')
   term ls Xdir\ with\ spaces/quoted\"file
@@ -953,9 +950,7 @@ func Test_terminal_term_start_empty_command()
 endfunc
 
 func Test_terminal_response_to_control_sequence()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
 
   let buf = Run_shell_in_terminal({})
   call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
@@ -1720,9 +1715,8 @@ func Test_terminal_termwinkey()
 endfunc
 
 func Test_terminal_out_err()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
+
   call writefile([
 	\ '#!/bin/sh',
 	\ 'echo "this is standard error" >&2',
@@ -1744,9 +1738,7 @@ func Test_terminal_out_err()
 endfunc
 
 func Test_terminwinscroll()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
 
   " Let the terminal output more than 'termwinscroll' lines, some at the start
   " will be dropped.
@@ -1848,9 +1840,8 @@ func Test_zz2_terminal_guioptions_bang()
 endfunc
 
 func Test_terminal_hidden()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
+
   term ++hidden cat
   let bnr = bufnr('$')
   call assert_equal('terminal', getbufvar(bnr, '&buftype'))
@@ -1887,9 +1878,8 @@ func Test_terminal_switch_mode()
 endfunc
 
 func Test_terminal_hidden_and_close()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
+
   call assert_equal(1, winnr('$'))
   term ++hidden ++close ls
   let bnr = bufnr('$')
@@ -1933,9 +1923,8 @@ func Test_terminal_no_job()
 endfunc
 
 func Test_term_getcursor()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
+
   let buf = Run_shell_in_terminal({})
 
   " Wait for the shell to display a prompt.
@@ -2024,9 +2013,8 @@ endfunc
 " 4. 0.5 sec later: redraw, including statusline (used to trigger bug)
 " 4. 0.5 sec later: should be done, clean up
 func Test_terminal_statusline()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
+
   set statusline=x
   terminal
   let tbuf = bufnr('')
@@ -2088,11 +2076,9 @@ func Test_terminal_getwinpos()
 endfunc
 
 func Test_terminal_altscreen()
-  if has('win32')
-    let cmd = "type Xtext\<CR>"
-  else
-    let cmd = "cat Xtext\<CR>"
-  endif
+  " somehow doesn't work on MS-Windows
+  CheckUnix
+  let cmd = "cat Xtext\<CR>"
 
   let buf = term_start(&shell, {})
   call writefile(["\<Esc>[?1047h"], 'Xtext')
