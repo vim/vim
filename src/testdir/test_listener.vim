@@ -234,7 +234,7 @@ func Test_listener_garbage_collect()
   new
   let id = listener_add(function('MyListener', [{}]), bufnr(''))
   call test_garbagecollect_now()
-  " must not crach caused by invalid memory access
+  " must not crash caused by invalid memory access
   normal ia
   call assert_true(v:true)
 
@@ -267,4 +267,26 @@ func Test_listener_caches_buffer_line()
   call listener_remove(lid)
   iunmap <CR>
   set nocindent
+endfunc
+
+" Verify the fix for issue #4908
+func Test_listener_undo_line_number()
+  function DoIt()
+    " NOP
+  endfunction
+  function EchoChanges(bufnr, start, end, added, changes)
+    call DoIt()
+  endfunction
+
+  new
+  let lid = listener_add("EchoChanges")
+  call setline(1, ['a', 'b', 'c'])
+  set undolevels&  " start new undo block
+  call feedkeys("ggcG\<Esc>", 'xt')
+  undo
+
+  bwipe!
+  delfunc DoIt
+  delfunc EchoChanges
+  call listener_remove(lid)
 endfunc

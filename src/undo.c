@@ -2624,6 +2624,7 @@ u_undoredo(int undo)
     linenr_T	top, bot;
     linenr_T	lnum;
     linenr_T	newlnum = MAXLNUM;
+    pos_T	new_curpos = curwin->w_cursor;
     long	i;
     u_entry_T	*uep, *nuep;
     u_entry_T	*newlist = NULL;
@@ -2667,29 +2668,31 @@ u_undoredo(int undo)
 	{
 	    unblock_autocmds();
 	    iemsg(_("E438: u_undo: line numbers wrong"));
-	    changed();		/* don't want UNCHANGED now */
+	    changed();		// don't want UNCHANGED now
 	    return;
 	}
 
-	oldsize = bot - top - 1;    /* number of lines before undo */
-	newsize = uep->ue_size;	    /* number of lines after undo */
+	oldsize = bot - top - 1;    // number of lines before undo
+	newsize = uep->ue_size;	    // number of lines after undo
 
+	// Decide about the cursor position, depending on what text changed.
+	// Don't set it yet, it may be invalid if lines are going to be added.
 	if (top < newlnum)
 	{
-	    /* If the saved cursor is somewhere in this undo block, move it to
-	     * the remembered position.  Makes "gwap" put the cursor back
-	     * where it was. */
+	    // If the saved cursor is somewhere in this undo block, move it to
+	    // the remembered position.  Makes "gwap" put the cursor back
+	    // where it was.
 	    lnum = curhead->uh_cursor.lnum;
 	    if (lnum >= top && lnum <= top + newsize + 1)
 	    {
-		curwin->w_cursor = curhead->uh_cursor;
-		newlnum = curwin->w_cursor.lnum - 1;
+		new_curpos = curhead->uh_cursor;
+		newlnum = new_curpos.lnum - 1;
 	    }
 	    else
 	    {
-		/* Use the first line that actually changed.  Avoids that
-		 * undoing auto-formatting puts the cursor in the previous
-		 * line. */
+		// Use the first line that actually changed.  Avoids that
+		// undoing auto-formatting puts the cursor in the previous
+		// line.
 		for (i = 0; i < newsize && i < oldsize; ++i)
 		{
 		    char_u *p = ml_get(top + 1 + i);
@@ -2702,28 +2705,29 @@ u_undoredo(int undo)
 		if (i == newsize && newlnum == MAXLNUM && uep->ue_next == NULL)
 		{
 		    newlnum = top;
-		    curwin->w_cursor.lnum = newlnum + 1;
+		    new_curpos.lnum = newlnum + 1;
 		}
 		else if (i < newsize)
 		{
 		    newlnum = top + i;
-		    curwin->w_cursor.lnum = newlnum + 1;
+		    new_curpos.lnum = newlnum + 1;
 		}
 	    }
 	}
 
 	empty_buffer = FALSE;
 
-	/* delete the lines between top and bot and save them in newarray */
+	/*
+	 * Delete the lines between top and bot and save them in newarray.
+	 */
 	if (oldsize > 0)
 	{
 	    if ((newarray = U_ALLOC_LINE(sizeof(undoline_T) * oldsize)) == NULL)
 	    {
 		do_outofmem_msg((long_u)(sizeof(undoline_T) * oldsize));
-		/*
-		 * We have messed up the entry list, repair is impossible.
-		 * we have to free the rest of the list.
-		 */
+
+		// We have messed up the entry list, repair is impossible.
+		// we have to free the rest of the list.
 		while (uep != NULL)
 		{
 		    nuep = uep->ue_next;
@@ -2732,14 +2736,14 @@ u_undoredo(int undo)
 		}
 		break;
 	    }
-	    /* delete backwards, it goes faster in most cases */
+	    // delete backwards, it goes faster in most cases
 	    for (lnum = bot - 1, i = oldsize; --i >= 0; --lnum)
 	    {
-		/* what can we do when we run out of memory? */
+		// what can we do when we run out of memory?
 		if (u_save_line(&newarray[i], lnum) == FAIL)
 		    do_outofmem_msg((long_u)0);
-		/* remember we deleted the last line in the buffer, and a
-		 * dummy empty line will be inserted */
+		// remember we deleted the last line in the buffer, and a
+		// dummy empty line will be inserted
 		if (curbuf->b_ml.ml_line_count == 1)
 		    empty_buffer = TRUE;
 		ml_delete(lnum, FALSE);
@@ -2748,7 +2752,12 @@ u_undoredo(int undo)
 	else
 	    newarray = NULL;
 
-	/* insert the lines in u_array between top and bot */
+	// make sure the cursor is on a valid line after the deletions
+	check_cursor_lnum();
+
+	/*
+	 * Insert the lines in u_array between top and bot.
+	 */
 	if (newsize)
 	{
 	    for (lnum = top, i = 0; i < newsize; ++i, ++lnum)
@@ -2766,7 +2775,7 @@ u_undoredo(int undo)
 	    vim_free((char_u *)uep->ue_array);
 	}
 
-	/* adjust marks */
+	// adjust marks
 	if (oldsize != newsize)
 	{
 	    mark_adjust(top + 1, top + oldsize, (long)MAXLNUM,
@@ -2779,7 +2788,7 @@ u_undoredo(int undo)
 
 	changed_lines(top + 1, 0, bot, newsize - oldsize);
 
-	/* set '[ and '] mark */
+	// set '[ and '] mark
 	if (top + 1 < curbuf->b_op_start.lnum)
 	    curbuf->b_op_start.lnum = top + 1;
 	if (newsize == 0 && top + 1 > curbuf->b_op_end.lnum)
@@ -2800,6 +2809,10 @@ u_undoredo(int undo)
 	uep->ue_next = newlist;
 	newlist = uep;
     }
+
+    // Set the cursor to the desired position.  Check that the line is valid.
+    curwin->w_cursor = new_curpos;
+    check_cursor_lnum();
 
     curhead->uh_entry = newlist;
     curhead->uh_flags = new_flags;
