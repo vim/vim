@@ -2093,11 +2093,10 @@ func Test_terminal_altscreen()
   let buf = term_start(&shell, {})
 
   call term_sendkeys(buf, 'echo "\e[?1047h"' .. "\r")
-  call term_wait(buf)
-  call assert_equal(1, term_getaltscreen(buf))
+  call WaitForAssert({-> assert_equal(1, term_getaltscreen(buf))})
+
   call term_sendkeys(buf, 'echo "\e[?1047l"' .. "\r")
-  call term_wait(buf)
-  call assert_equal(0, buf->term_getaltscreen())
+  call WaitForAssert({-> assert_equal(0, term_getaltscreen(buf))})
 
   call term_sendkeys(buf, "exit\r")
   exe buf . "bwipe!"
