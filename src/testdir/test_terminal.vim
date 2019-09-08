@@ -25,7 +25,7 @@ func Run_shell_in_terminal(options)
   let g:job = term_getjob(buf)
   call assert_equal(v:t_job, type(g:job))
 
-  let string = string({'job': term_getjob(buf)})
+  let string = string({'job': buf->term_getjob()})
   call assert_match("{'job': 'process \\d\\+ run'}", string)
 
   return buf
@@ -42,7 +42,7 @@ func Test_terminal_basic()
     " ConPTY works on anonymous pipe.
     if !has('conpty')
       call assert_match('^\\\\.\\pipe\\', job_info(g:job).tty_out)
-      call assert_match('^\\\\.\\pipe\\', term_gettty(''))
+      call assert_match('^\\\\.\\pipe\\', ''->term_gettty())
     endif
   endif
   call assert_equal('t', mode())
@@ -91,7 +91,7 @@ func Test_terminal_paste_register()
 
   call feedkeys("echo \<C-W>\"\" \<C-W>\"=37 + 5\<CR>\<CR>", 'xt')
   call WaitForAssert({-> assert_match("echo text to paste 42$", getline(1))})
-  call WaitForAssert({-> assert_equal('text to paste 42',       getline(2))})
+  call WaitForAssert({-> assert_equal('text to paste 42',       2->getline())})
 
   exe buf . 'bwipe!'
   unlet g:job
@@ -176,12 +176,14 @@ func Check_123(buf)
   call assert_true(len(l) == 0)
   let l = term_scrape(a:buf, 999)
   call assert_true(len(l) == 0)
-  let l = term_scrape(a:buf, 1)
+  let l = a:buf->term_scrape(1)
   call assert_true(len(l) > 0)
   call assert_equal('1', l[0].chars)
   call assert_equal('2', l[1].chars)
   call assert_equal('3', l[2].chars)
   call assert_equal('#00e000', l[0].fg)
+  call assert_equal(0, term_getattr(l[0].attr, 'bold'))
+  call assert_equal(0, l[0].attr->term_getattr('italic'))
   if has('win32')
     " On Windows 'background' always defaults to dark, even though the terminal
     " may use a light background.  Therefore accept both white and black.
@@ -238,7 +240,7 @@ func Test_terminal_scrape_multibyte()
     " multibyte characters.
     let buf = term_start("cmd /K chcp 65001")
     call term_sendkeys(buf, "type Xtext\<CR>")
-    call term_sendkeys(buf, "exit\<CR>")
+    eval buf->term_sendkeys("exit\<CR>")
     let line = 4
   else
     let buf = term_start("cat Xtext")
@@ -283,7 +285,8 @@ func Test_terminal_scroll()
     sleep 100m
   endif
 
-  let scrolled = term_getscrolled(buf)
+  let scrolled = buf->term_getscrolled()
+  call assert_equal(scrolled, term_getscrolled(buf))
   call assert_equal('1', getline(1))
   call assert_equal('1', term_getline(buf, 1 - scrolled))
   call assert_equal('49', getline(49))
@@ -383,12 +386,12 @@ func Test_terminal_size()
 
   vsplit
   exe 'terminal ++rows=5 ++cols=33 ' . cmd
-  call assert_equal([5, 33], term_getsize(''))
+  call assert_equal([5, 33], ''->term_getsize())
 
   call term_setsize('', 6, 0)
   call assert_equal([6, 33], term_getsize(''))
 
-  call term_setsize('', 0, 35)
+  eval ''->term_setsize(0, 35)
   call assert_equal([6, 35], term_getsize(''))
 
   call term_setsize('', 7, 30)
@@ -407,7 +410,7 @@ func Test_terminal_size()
   bwipe!
   call assert_equal(20, size[1])
 
-  call term_start(cmd, {'vertical': 1, 'term_cols': 26})
+  eval cmd->term_start({'vertical': 1, 'term_cols': 26})
   let size = term_getsize('')
   bwipe!
   call assert_equal(26, size[1])
@@ -618,7 +621,7 @@ func Test_terminal_env()
   else
     call term_sendkeys(buf, "echo $TESTENV\r")
   endif
-  call term_wait(buf)
+  eval buf->term_wait()
   call StopShellInTerminal(buf)
   call WaitForAssert({-> assert_equal('correct', getline(2))})
 
@@ -1006,7 +1009,7 @@ endfunc
 " Run Vim, start a terminal in that Vim, set the kill argument with
 " term_setkill(), check that :qall works.
 func Test_terminal_qall_kill_func()
-  call Run_terminal_qall_kill('term', 'call term_setkill(buf, "kill")')
+  call Run_terminal_qall_kill('term', 'eval buf->term_setkill("kill")')
 endfunc
 
 " Run Vim, start a terminal in that Vim without the kill argument,
@@ -1107,7 +1110,7 @@ func Test_terminal_dumpwrite_composing()
   call writefile([text], 'Xcomposing')
   let buf = RunVimInTerminal('--cmd "set encoding=utf-8" Xcomposing', {})
   call WaitForAssert({-> assert_match(text, term_getline(buf, 1))})
-  call term_dumpwrite(buf, 'Xdump')
+  eval 'Xdump'->term_dumpwrite(buf)
   let dumpline = readfile('Xdump')[0]
   call assert_match('|à| |ê| |ö', dumpline)
 
@@ -1127,7 +1130,7 @@ func Test_terminal_dumpload()
   call Check_dump01(0)
 
   " Load another dump in the same window
-  let buf2 = term_dumpload('dumps/Test_diff_01.dump', {'bufnr': buf})
+  let buf2 = 'dumps/Test_diff_01.dump'->term_dumpload({'bufnr': buf})
   call assert_equal(buf, buf2)
   call assert_notequal('one two three four five', trim(getline(1)))
 
@@ -1148,7 +1151,7 @@ endfunc
 
 func Test_terminal_dumpdiff()
   call assert_equal(1, winnr('$'))
-  call term_dumpdiff('dumps/Test_popup_command_01.dump', 'dumps/Test_popup_command_02.dump')
+  eval 'dumps/Test_popup_command_01.dump'->term_dumpdiff('dumps/Test_popup_command_02.dump')
   call assert_equal(2, winnr('$'))
   call assert_equal(62, line('$'))
   call Check_dump01(0)
@@ -1490,7 +1493,7 @@ func Test_terminal_ansicolors_func()
   call assert_equal(s:test_colors, term_getansicolors(buf))
 
   call term_setansicolors(buf, g:terminal_ansi_colors)
-  call assert_equal(g:terminal_ansi_colors, term_getansicolors(buf))
+  call assert_equal(g:terminal_ansi_colors, buf->term_getansicolors())
 
   let colors = [
 	\ 'ivory', 'AliceBlue',
@@ -1502,7 +1505,7 @@ func Test_terminal_ansicolors_func()
 	\ 'grey47', 'gray97',
 	\ 'MistyRose2', 'DodgerBlue4',
 	\]
-  call term_setansicolors(buf, colors)
+  eval buf->term_setansicolors(colors)
 
   let colors[4] = 'Invalid'
   call assert_fails('call term_setansicolors(buf, colors)', 'E474:')
@@ -1856,7 +1859,7 @@ func Test_terminal_hidden()
   call term_sendkeys(bnr, "asdf\<CR>")
   call WaitForAssert({-> assert_match('asdf', term_getline(bnr, 2))})
   call term_sendkeys(bnr, "\<C-D>")
-  call WaitForAssert({-> assert_equal('finished', term_getstatus(bnr))})
+  call WaitForAssert({-> assert_equal('finished', bnr->term_getstatus())})
   bwipe!
 endfunc
 
@@ -1944,7 +1947,7 @@ func Test_term_getcursor()
 
   " Show the cursor.
   call term_sendkeys(buf, "echo -e '\\033[?25h'\r")
-  call WaitForAssert({-> assert_equal(1, term_getcursor(buf)[2].visible)})
+  call WaitForAssert({-> assert_equal(1, buf->term_getcursor()[2].visible)})
 
   " Change color of cursor.
   call WaitForAssert({-> assert_equal('', term_getcursor(buf)[2].color)})
@@ -1989,7 +1992,7 @@ endfunc
 func Test_term_gettitle()
   " term_gettitle() returns an empty string for a non-terminal buffer
   " and for a non-existing buffer.
-  call assert_equal('', term_gettitle(bufnr('%')))
+  call assert_equal('', bufnr('%')->term_gettitle())
   call assert_equal('', term_gettitle(bufnr('$') + 1))
 
   if !has('title') || &title == 0 || empty(&t_ts)
@@ -2082,4 +2085,20 @@ func Test_terminal_getwinpos()
   exe buf . 'bwipe!'
   set splitright&
   only!
+endfunc
+
+func Test_terminal_altscreen()
+  CheckUnix
+
+  let buf = term_start(&shell, {})
+
+  call term_sendkeys(buf, 'echo "\e[?1047h"' .. "\r")
+  call term_wait(buf)
+  call assert_equal(1, term_getaltscreen(buf))
+  call term_sendkeys(buf, 'echo "\e[?1047l"' .. "\r")
+  call term_wait(buf)
+  call assert_equal(0, buf->term_getaltscreen())
+
+  call term_sendkeys(buf, "exit\r")
+  exe buf . "bwipe!"
 endfunc

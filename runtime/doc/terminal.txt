@@ -479,6 +479,9 @@ term_dumpdiff({filename}, {filename} [, {options}])
 		Using the "s" key the top and bottom parts are swapped.  This
 		makes it easy to spot a difference.
 
+		Can also be used as a |method|: >
+			GetFilename()->term_dumpdiff(otherfile)
+<
 							*term_dumpload()*
 term_dumpload({filename} [, {options}])
 		Open a new window displaying the contents of {filename}
@@ -488,6 +491,9 @@ term_dumpload({filename} [, {options}])
 
 		For {options} see |term_dumpdiff()|.
 
+		Can also be used as a |method|: >
+			GetFilename()-> term_dumpload()
+<
 							*term_dumpwrite()*
 term_dumpwrite({buf}, {filename} [, {options}])
 		Dump the contents of the terminal screen of {buf} in the file
@@ -502,11 +508,18 @@ term_dumpwrite({buf}, {filename} [, {options}])
 			"rows"		maximum number of rows to dump
 			"columns"	maximum number of columns to dump
 
+		Can also be used as a |method|, the base is used for the file
+		name: >
+			GetFilename()-> term_dumpwrite(bufnr)
+
 term_getaltscreen({buf})				*term_getaltscreen()*
 		Returns 1 if the terminal of {buf} is using the alternate
 		screen.
 		{buf} is used as with |term_getsize()|.
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_getaltscreen()
+
 
 term_getansicolors({buf})				*term_getansicolors()*
 		Get the ANSI color palette in use by terminal {buf}.
@@ -517,8 +530,12 @@ term_getansicolors({buf})				*term_getansicolors()*
 
 		{buf} is used as with |term_getsize()|.  If the buffer does not
 		exist or is not a terminal window, an empty list is returned.
-		{only available when compiled with the |+terminal| feature and
-		with GUI enabled and/or the |+termguicolors| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_getansicolors()
+
+<		{only available when compiled with GUI enabled and/or the
+		|+termguicolors| feature}
 
 term_getattr({attr}, {what})				*term_getattr()*
 		Given {attr}, a value returned by term_scrape() in the "attr"
@@ -528,7 +545,10 @@ term_getattr({attr}, {what})				*term_getattr()*
 			underline
 			strike
 			reverse
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetAttr()->term_getattr()
+
 
 term_getcursor({buf})					*term_getcursor()*
 		Get the cursor position of terminal {buf}. Returns a list with
@@ -550,13 +570,18 @@ term_getcursor({buf})					*term_getcursor()*
 		{buf} must be the buffer number of a terminal window. If the
 		buffer does not exist or is not a terminal window, an empty
 		list is returned.
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_getcursor()
 
 term_getjob({buf})					*term_getjob()*
 		Get the Job associated with terminal window {buf}.
 		{buf} is used as with |term_getsize()|.
 		Returns |v:null| when there is no job.
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_getjob()
+
 
 term_getline({buf}, {row})				*term_getline()*
 		Get a line of text from the terminal window of {buf}.
@@ -567,7 +592,10 @@ term_getline({buf}, {row})				*term_getline()*
 		returned.
 
 		To get attributes of each character use |term_scrape()|.
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_getline(row)
+
 
 term_getscrolled({buf})					*term_getscrolled()*
 		Return the number of lines that scrolled to above the top of
@@ -579,7 +607,10 @@ term_getscrolled({buf})					*term_getscrolled()*
 <		(if that line exists).
 
 		{buf} is used as with |term_getsize()|.
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_getscrolled()
+
 
 term_getsize({buf})					*term_getsize()*
 		Get the size of terminal {buf}. Returns a list with two
@@ -589,7 +620,10 @@ term_getsize({buf})					*term_getsize()*
 		{buf} must be the buffer number of a terminal window.  Use an
 		empty string for the current buffer.  If the buffer does not
 		exist or is not a terminal window, an empty list is returned.
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_getsize()
+
 
 term_getstatus({buf})					*term_getstatus()*
 		Get the status of terminal {buf}. This returns a comma
@@ -602,7 +636,10 @@ term_getstatus({buf})					*term_getstatus()*
 		{buf} must be the buffer number of a terminal window. If the
 		buffer does not exist or is not a terminal window, an empty
 		string is returned.
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_getstatus()
+
 
 term_gettitle({buf})					*term_gettitle()*
 		Get the title of terminal {buf}. This is the title that the
@@ -611,7 +648,10 @@ term_gettitle({buf})					*term_gettitle()*
 		{buf} must be the buffer number of a terminal window. If the
 		buffer does not exist or is not a terminal window, an empty
 		string is returned.
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_gettitle()
+
 
 term_gettty({buf} [, {input}])				*term_gettty()*
 		Get the name of the controlling terminal associated with
@@ -620,12 +660,15 @@ term_gettty({buf} [, {input}])				*term_gettty()*
 		When {input} is omitted or 0, return the name for writing
 		(stdout). When {input} is 1 return the name for reading
 		(stdin). On UNIX, both return same name.
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_gettty()
+
 
 term_list()						*term_list()*
 		Return a list with the buffer numbers of all buffers for
 		terminal windows.
-		{only available when compiled with the |+terminal| feature}
+
 
 term_scrape({buf}, {row})				*term_scrape()*
 		Get the contents of {row} of terminal screen of {buf}.
@@ -642,7 +685,10 @@ term_scrape({buf}, {row})				*term_scrape()*
 		    "attr"	attributes of the cell, use |term_getattr()|
 				to get the individual flags
 		    "width"	cell width: 1 or 2
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_scrape(row)
+
 
 term_sendkeys({buf}, {keys})				*term_sendkeys()*
 		Send keystrokes {keys} to terminal {buf}.
@@ -650,7 +696,10 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 
 		{keys} are translated as key sequences. For example, "\<c-x>"
 		means the character CTRL-X.
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_sendkeys(keys)
+
 
 term_setansicolors({buf}, {colors})			*term_setansicolors()*
 		Set the ANSI color palette used by terminal {buf}.
@@ -680,8 +729,12 @@ term_setansicolors({buf}, {colors})			*term_setansicolors()*
 		'termguicolors' is set.  When not using GUI colors (GUI mode
 		or 'termguicolors'), the terminal window always uses the 16
 		ANSI colors of the underlying terminal.
-		{only available when compiled with the |+terminal| feature and
-		with GUI enabled and/or the |+termguicolors| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_setansicolors(colors)
+
+<		{only available with GUI enabled and/or the |+termguicolors|
+		feature}
 
 term_setkill({buf}, {how})				*term_setkill()*
 		When exiting Vim or trying to close the terminal window in
@@ -695,6 +748,10 @@ term_setkill({buf}, {how})				*term_setkill()*
 		After sending the signal Vim will wait for up to a second to
 		check that the job actually stopped.
 
+		Can also be used as a |method|: >
+			GetBufnr()->term_setkill(how)
+
+
 term_setrestore({buf}, {command})			*term_setrestore()*
 		Set the command to write in a session file to restore the job
 		in this terminal.  The line written in the session file is: >
@@ -703,7 +760,10 @@ term_setrestore({buf}, {command})			*term_setrestore()*
 
 		Use an empty {command} to run 'shell'.
 		Use "NONE" to not restore this window.
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_setrestore(command)
+
 
 term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
 		Set the size of terminal {buf}. The size of the window
@@ -714,7 +774,10 @@ term_setsize({buf}, {rows}, {cols})		*term_setsize()* *E955*
 		{buf} must be the buffer number of a terminal window.  Use an
 		empty string for the current buffer.  If the buffer does not
 		exist or is not a terminal window, an error is given.
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_setsize(rows, cols)
+
 
 term_start({cmd} [, {options}])			*term_start()*
 		Open a terminal window and run {cmd} in it.
@@ -781,14 +844,20 @@ term_start({cmd} [, {options}])			*term_start()*
 		   "tty_type"	     (MS-Windows only): Specify which pty to
 				     use.  See 'termwintype' for the values.
 
-		{only available when compiled with the |+terminal| feature}
+		Can also be used as a |method|: >
+			GetCommand()->term_start()
+
+<		{only available when compiled with the |+terminal| feature}
+
 
 term_wait({buf} [, {time}])					*term_wait()*
 		Wait for pending updates of {buf} to be handled.
 		{buf} is used as with |term_getsize()|.
 		{time} is how long to wait for updates to arrive in msec.  If
 		not set then 10 msec will be used.
-		{only available when compiled with the |+terminal| feature}
+
+		Can also be used as a |method|: >
+			GetBufnr()->term_wait()
 
 ==============================================================================
 3. Terminal communication			 *terminal-communication*
