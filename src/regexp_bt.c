@@ -134,124 +134,124 @@
  * The opcodes are:
  */
 
-/* definition	number		   opnd?    meaning */
-#define END		0	/*	End of program or NOMATCH operand. */
-#define BOL		1	/*	Match "" at beginning of line. */
-#define EOL		2	/*	Match "" at end of line. */
-#define BRANCH		3	/* node Match this alternative, or the
-				 *	next... */
-#define BACK		4	/*	Match "", "next" ptr points backward. */
-#define EXACTLY		5	/* str	Match this string. */
-#define NOTHING		6	/*	Match empty string. */
-#define STAR		7	/* node Match this (simple) thing 0 or more
-				 *	times. */
-#define PLUS		8	/* node Match this (simple) thing 1 or more
-				 *	times. */
-#define MATCH		9	/* node match the operand zero-width */
-#define NOMATCH		10	/* node check for no match with operand */
-#define BEHIND		11	/* node look behind for a match with operand */
-#define NOBEHIND	12	/* node look behind for no match with operand */
-#define SUBPAT		13	/* node match the operand here */
-#define BRACE_SIMPLE	14	/* node Match this (simple) thing between m and
-				 *	n times (\{m,n\}). */
-#define BOW		15	/*	Match "" after [^a-zA-Z0-9_] */
-#define EOW		16	/*	Match "" at    [^a-zA-Z0-9_] */
-#define BRACE_LIMITS	17	/* nr nr  define the min & max for BRACE_SIMPLE
-				 *	and BRACE_COMPLEX. */
-#define NEWL		18	/*	Match line-break */
-#define BHPOS		19	/*	End position for BEHIND or NOBEHIND */
+// definition	number		   opnd?    meaning
+#define END		0	//	End of program or NOMATCH operand.
+#define BOL		1	//	Match "" at beginning of line.
+#define EOL		2	//	Match "" at end of line.
+#define BRANCH		3	// node Match this alternative, or the
+				//	next...
+#define BACK		4	//	Match "", "next" ptr points backward.
+#define EXACTLY		5	// str	Match this string.
+#define NOTHING		6	//	Match empty string.
+#define STAR		7	// node Match this (simple) thing 0 or more
+				//	times.
+#define PLUS		8	// node Match this (simple) thing 1 or more
+				//	times.
+#define MATCH		9	// node match the operand zero-width
+#define NOMATCH		10	// node check for no match with operand
+#define BEHIND		11	// node look behind for a match with operand
+#define NOBEHIND	12	// node look behind for no match with operand
+#define SUBPAT		13	// node match the operand here
+#define BRACE_SIMPLE	14	// node Match this (simple) thing between m and
+				//	n times (\{m,n\}).
+#define BOW		15	//	Match "" after [^a-zA-Z0-9_]
+#define EOW		16	//	Match "" at    [^a-zA-Z0-9_]
+#define BRACE_LIMITS	17	// nr nr  define the min & max for BRACE_SIMPLE
+				//	and BRACE_COMPLEX.
+#define NEWL		18	//	Match line-break
+#define BHPOS		19	//	End position for BEHIND or NOBEHIND
 
 
-/* character classes: 20-48 normal, 50-78 include a line-break */
+// character classes: 20-48 normal, 50-78 include a line-break
 #define ADD_NL		30
 #define FIRST_NL	ANY + ADD_NL
-#define ANY		20	/*	Match any one character. */
-#define ANYOF		21	/* str	Match any character in this string. */
-#define ANYBUT		22	/* str	Match any character not in this
-				 *	string. */
-#define IDENT		23	/*	Match identifier char */
-#define SIDENT		24	/*	Match identifier char but no digit */
-#define KWORD		25	/*	Match keyword char */
-#define SKWORD		26	/*	Match word char but no digit */
-#define FNAME		27	/*	Match file name char */
-#define SFNAME		28	/*	Match file name char but no digit */
-#define PRINT		29	/*	Match printable char */
-#define SPRINT		30	/*	Match printable char but no digit */
-#define WHITE		31	/*	Match whitespace char */
-#define NWHITE		32	/*	Match non-whitespace char */
-#define DIGIT		33	/*	Match digit char */
-#define NDIGIT		34	/*	Match non-digit char */
-#define HEX		35	/*	Match hex char */
-#define NHEX		36	/*	Match non-hex char */
-#define OCTAL		37	/*	Match octal char */
-#define NOCTAL		38	/*	Match non-octal char */
-#define WORD		39	/*	Match word char */
-#define NWORD		40	/*	Match non-word char */
-#define HEAD		41	/*	Match head char */
-#define NHEAD		42	/*	Match non-head char */
-#define ALPHA		43	/*	Match alpha char */
-#define NALPHA		44	/*	Match non-alpha char */
-#define LOWER		45	/*	Match lowercase char */
-#define NLOWER		46	/*	Match non-lowercase char */
-#define UPPER		47	/*	Match uppercase char */
-#define NUPPER		48	/*	Match non-uppercase char */
+#define ANY		20	//	Match any one character.
+#define ANYOF		21	// str	Match any character in this string.
+#define ANYBUT		22	// str	Match any character not in this
+				//	string.
+#define IDENT		23	//	Match identifier char
+#define SIDENT		24	//	Match identifier char but no digit
+#define KWORD		25	//	Match keyword char
+#define SKWORD		26	//	Match word char but no digit
+#define FNAME		27	//	Match file name char
+#define SFNAME		28	//	Match file name char but no digit
+#define PRINT		29	//	Match printable char
+#define SPRINT		30	//	Match printable char but no digit
+#define WHITE		31	//	Match whitespace char
+#define NWHITE		32	//	Match non-whitespace char
+#define DIGIT		33	//	Match digit char
+#define NDIGIT		34	//	Match non-digit char
+#define HEX		35	//	Match hex char
+#define NHEX		36	//	Match non-hex char
+#define OCTAL		37	//	Match octal char
+#define NOCTAL		38	//	Match non-octal char
+#define WORD		39	//	Match word char
+#define NWORD		40	//	Match non-word char
+#define HEAD		41	//	Match head char
+#define NHEAD		42	//	Match non-head char
+#define ALPHA		43	//	Match alpha char
+#define NALPHA		44	//	Match non-alpha char
+#define LOWER		45	//	Match lowercase char
+#define NLOWER		46	//	Match non-lowercase char
+#define UPPER		47	//	Match uppercase char
+#define NUPPER		48	//	Match non-uppercase char
 #define LAST_NL		NUPPER + ADD_NL
 #define WITH_NL(op)	((op) >= FIRST_NL && (op) <= LAST_NL)
 
-#define MOPEN		80  /* -89	 Mark this point in input as start of
-				 *	 \( subexpr.  MOPEN + 0 marks start of
-				 *	 match. */
-#define MCLOSE		90  /* -99	 Analogous to MOPEN.  MCLOSE + 0 marks
-				 *	 end of match. */
-#define BACKREF		100 /* -109 node Match same string again \1-\9 */
+#define MOPEN		80  // -89	 Mark this point in input as start of
+				//	 \( subexpr.  MOPEN + 0 marks start of
+				//	 match.
+#define MCLOSE		90  // -99	 Analogous to MOPEN.  MCLOSE + 0 marks
+				//	 end of match.
+#define BACKREF		100 // -109 node Match same string again \1-\9
 
 #ifdef FEAT_SYN_HL
-# define ZOPEN		110 /* -119	 Mark this point in input as start of
-				 *	 \z( subexpr. */
-# define ZCLOSE		120 /* -129	 Analogous to ZOPEN. */
-# define ZREF		130 /* -139 node Match external submatch \z1-\z9 */
+# define ZOPEN		110 // -119	 Mark this point in input as start of
+				//	 \z( subexpr.
+# define ZCLOSE		120 // -129	 Analogous to ZOPEN.
+# define ZREF		130 // -139 node Match external submatch \z1-\z9
 #endif
 
-#define BRACE_COMPLEX	140 /* -149 node Match nodes between m & n times */
+#define BRACE_COMPLEX	140 // -149 node Match nodes between m & n times
 
-#define NOPEN		150	/*	Mark this point in input as start of
-					\%( subexpr. */
-#define NCLOSE		151	/*	Analogous to NOPEN. */
+#define NOPEN		150	//	Mark this point in input as start of
+				//	\%( subexpr.
+#define NCLOSE		151	//	Analogous to NOPEN.
 
-#define MULTIBYTECODE	200	/* mbc	Match one multi-byte character */
-#define RE_BOF		201	/*	Match "" at beginning of file. */
-#define RE_EOF		202	/*	Match "" at end of file. */
-#define CURSOR		203	/*	Match location of cursor. */
+#define MULTIBYTECODE	200	// mbc	Match one multi-byte character
+#define RE_BOF		201	//	Match "" at beginning of file.
+#define RE_EOF		202	//	Match "" at end of file.
+#define CURSOR		203	//	Match location of cursor.
 
-#define RE_LNUM		204	/* nr cmp  Match line number */
-#define RE_COL		205	/* nr cmp  Match column number */
-#define RE_VCOL		206	/* nr cmp  Match virtual column number */
+#define RE_LNUM		204	// nr cmp  Match line number
+#define RE_COL		205	// nr cmp  Match column number
+#define RE_VCOL		206	// nr cmp  Match virtual column number
 
-#define RE_MARK		207	/* mark cmp  Match mark position */
-#define RE_VISUAL	208	/*	Match Visual area */
-#define RE_COMPOSING	209	/* any composing characters */
+#define RE_MARK		207	// mark cmp  Match mark position
+#define RE_VISUAL	208	//	Match Visual area
+#define RE_COMPOSING	209	// any composing characters
 
 /*
  * Flags to be passed up and down.
  */
-#define HASWIDTH	0x1	/* Known never to match null string. */
-#define SIMPLE		0x2	/* Simple enough to be STAR/PLUS operand. */
-#define SPSTART		0x4	/* Starts with * or +. */
-#define HASNL		0x8	/* Contains some \n. */
-#define HASLOOKBH	0x10	/* Contains "\@<=" or "\@<!". */
-#define WORST		0	/* Worst case. */
+#define HASWIDTH	0x1	// Known never to match null string.
+#define SIMPLE		0x2	// Simple enough to be STAR/PLUS operand.
+#define SPSTART		0x4	// Starts with * or +.
+#define HASNL		0x8	// Contains some \n.
+#define HASLOOKBH	0x10	// Contains "\@<=" or "\@<!".
+#define WORST		0	// Worst case.
 
-static int	num_complex_braces; /* Complex \{...} count */
-static char_u	*regcode;	/* Code-emit pointer, or JUST_CALC_SIZE */
-static long	regsize;	/* Code size. */
-static int	reg_toolong;	/* TRUE when offset out of range */
-static char_u	had_endbrace[NSUBEXP];	/* flags, TRUE if end of () found */
-static long	brace_min[10];	/* Minimums for complex brace repeats */
-static long	brace_max[10];	/* Maximums for complex brace repeats */
-static int	brace_count[10]; /* Current counts for complex brace repeats */
-static int	one_exactly = FALSE;	/* only do one char for EXACTLY */
+static int	num_complex_braces; // Complex \{...} count
+static char_u	*regcode;	// Code-emit pointer, or JUST_CALC_SIZE
+static long	regsize;	// Code size.
+static int	reg_toolong;	// TRUE when offset out of range
+static char_u	had_endbrace[NSUBEXP];	// flags, TRUE if end of () found
+static long	brace_min[10];	// Minimums for complex brace repeats
+static long	brace_max[10];	// Maximums for complex brace repeats
+static int	brace_count[10]; // Current counts for complex brace repeats
+static int	one_exactly = FALSE;	// only do one char for EXACTLY
 
-/* When making changes to classchars also change nfa_classcodes. */
+// When making changes to classchars also change nfa_classcodes.
 static char_u	*classchars = (char_u *)".iIkKfFpPsSdDxXoOwWhHaAlLuU";
 static int	classcodes[] = {
     ANY, IDENT, SIDENT, KWORD, SKWORD,
@@ -269,25 +269,25 @@ static int	classcodes[] = {
  */
 #define JUST_CALC_SIZE	((char_u *) -1)
 
-/* Values for rs_state in regitem_T. */
+// Values for rs_state in regitem_T.
 typedef enum regstate_E
 {
-    RS_NOPEN = 0	/* NOPEN and NCLOSE */
-    , RS_MOPEN		/* MOPEN + [0-9] */
-    , RS_MCLOSE		/* MCLOSE + [0-9] */
+    RS_NOPEN = 0	// NOPEN and NCLOSE
+    , RS_MOPEN		// MOPEN + [0-9]
+    , RS_MCLOSE		// MCLOSE + [0-9]
 #ifdef FEAT_SYN_HL
-    , RS_ZOPEN		/* ZOPEN + [0-9] */
-    , RS_ZCLOSE		/* ZCLOSE + [0-9] */
+    , RS_ZOPEN		// ZOPEN + [0-9]
+    , RS_ZCLOSE		// ZCLOSE + [0-9]
 #endif
-    , RS_BRANCH		/* BRANCH */
-    , RS_BRCPLX_MORE	/* BRACE_COMPLEX and trying one more match */
-    , RS_BRCPLX_LONG	/* BRACE_COMPLEX and trying longest match */
-    , RS_BRCPLX_SHORT	/* BRACE_COMPLEX and trying shortest match */
-    , RS_NOMATCH	/* NOMATCH */
-    , RS_BEHIND1	/* BEHIND / NOBEHIND matching rest */
-    , RS_BEHIND2	/* BEHIND / NOBEHIND matching behind part */
-    , RS_STAR_LONG	/* STAR/PLUS/BRACE_SIMPLE longest match */
-    , RS_STAR_SHORT	/* STAR/PLUS/BRACE_SIMPLE shortest match */
+    , RS_BRANCH		// BRANCH
+    , RS_BRCPLX_MORE	// BRACE_COMPLEX and trying one more match
+    , RS_BRCPLX_LONG	// BRACE_COMPLEX and trying longest match
+    , RS_BRCPLX_SHORT	// BRACE_COMPLEX and trying shortest match
+    , RS_NOMATCH	// NOMATCH
+    , RS_BEHIND1	// BEHIND / NOBEHIND matching rest
+    , RS_BEHIND2	// BEHIND / NOBEHIND matching behind part
+    , RS_STAR_LONG	// STAR/PLUS/BRACE_SIMPLE longest match
+    , RS_STAR_SHORT	// STAR/PLUS/BRACE_SIMPLE shortest match
 } regstate_T;
 
 /*
@@ -299,13 +299,13 @@ typedef struct
 {
     union
     {
-	char_u	*ptr;	/* rex.input pointer, for single-line regexp */
-	lpos_T	pos;	/* rex.input pos, for multi-line regexp */
+	char_u	*ptr;	// rex.input pointer, for single-line regexp
+	lpos_T	pos;	// rex.input pos, for multi-line regexp
     } rs_u;
     int		rs_len;
 } regsave_T;
 
-/* struct to save start/end pointer/position in for \(\) */
+// struct to save start/end pointer/position in for \(\)
 typedef struct
 {
     union
@@ -315,7 +315,7 @@ typedef struct
     } se_u;
 } save_se_T;
 
-/* used for BEHIND and NOBEHIND matching */
+// used for BEHIND and NOBEHIND matching
 typedef struct regbehind_S
 {
     regsave_T	save_after;
@@ -344,22 +344,22 @@ typedef struct regitem_S
 } regitem_T;
 
 
-/* used for STAR, PLUS and BRACE_SIMPLE matching */
+// used for STAR, PLUS and BRACE_SIMPLE matching
 typedef struct regstar_S
 {
-    int		nextb;		/* next byte */
-    int		nextb_ic;	/* next byte reverse case */
+    int		nextb;		// next byte
+    int		nextb_ic;	// next byte reverse case
     long	count;
     long	minval;
     long	maxval;
 } regstar_T;
 
-/* used to store input position when a BACK was encountered, so that we now if
- * we made any progress since the last time. */
+// used to store input position when a BACK was encountered, so that we now if
+// we made any progress since the last time.
 typedef struct backpos_S
 {
-    char_u	*bp_scan;	/* "scan" where BACK was encountered */
-    regsave_T	bp_pos;		/* last input position */
+    char_u	*bp_scan;	// "scan" where BACK was encountered
+    regsave_T	bp_pos;		// last input position
 } backpos_T;
 
 /*
@@ -428,12 +428,12 @@ static regsave_T behind_pos;
 #define OP(p)		((int)*(p))
 #define NEXT(p)		(((*((p) + 1) & 0377) << 8) + (*((p) + 2) & 0377))
 #define OPERAND(p)	((p) + 3)
-/* Obtain an operand that was stored as four bytes, MSB first. */
+// Obtain an operand that was stored as four bytes, MSB first.
 #define OPERAND_MIN(p)	(((long)(p)[3] << 24) + ((long)(p)[4] << 16) \
 			+ ((long)(p)[5] << 8) + (long)(p)[6])
-/* Obtain a second operand stored as four bytes. */
+// Obtain a second operand stored as four bytes.
 #define OPERAND_MAX(p)	OPERAND_MIN((p) + 4)
-/* Obtain a second single-byte operand stored after a four bytes operand. */
+// Obtain a second single-byte operand stored after a four bytes operand.
 #define OPERAND_CMP(p)	(p)[7]
 
 static char_u *reg(int paren, int *flagp);
@@ -457,7 +457,7 @@ static int	regnarrate = 0;
     static void
 regcomp_start(
     char_u	*expr,
-    int		re_flags)	    /* see vim_regcomp() */
+    int		re_flags)	    // see vim_regcomp()
 {
     initchr(expr);
     if (re_flags & RE_MAGIC)
@@ -538,7 +538,7 @@ reg_equi_class(int c)
 #ifdef EBCDIC
 	int i;
 
-	/* This might be slower than switch/case below. */
+	// This might be slower than switch/case below.
 	for (i = 0; i < 16; i++)
 	{
 	    if (vim_strchr(EQUIVAL_CLASS_C[i], c) != NULL)
@@ -553,7 +553,7 @@ reg_equi_class(int c)
 #else
 	switch (c)
 	{
-	    /* Do not use '\300' style, it results in a negative number. */
+	    // Do not use '\300' style, it results in a negative number.
 	    case 'A': case 0xc0: case 0xc1: case 0xc2:
 	    case 0xc3: case 0xc4: case 0xc5:
 	    CASEMBC(0x100) CASEMBC(0x102) CASEMBC(0x104) CASEMBC(0x1cd)
@@ -866,7 +866,7 @@ regnode(int op)
     else
     {
 	*regcode++ = op;
-	*regcode++ = NUL;		/* Null "next" pointer. */
+	*regcode++ = NUL;		// Null "next" pointer.
 	*regcode++ = NUL;
     }
     return ret;
@@ -921,7 +921,7 @@ regtail(char_u *p, char_u *val)
     if (p == JUST_CALC_SIZE)
 	return;
 
-    /* Find last node. */
+    // Find last node.
     scan = p;
     for (;;)
     {
@@ -935,9 +935,9 @@ regtail(char_u *p, char_u *val)
 	offset = (int)(scan - val);
     else
 	offset = (int)(val - scan);
-    /* When the offset uses more than 16 bits it can no longer fit in the two
-     * bytes available.  Use a global flag to avoid having to check return
-     * values in too many places. */
+    // When the offset uses more than 16 bits it can no longer fit in the two
+    // bytes available.  Use a global flag to avoid having to check return
+    // values in too many places.
     if (offset > 0xffff)
 	reg_toolong = TRUE;
     else
@@ -953,7 +953,7 @@ regtail(char_u *p, char_u *val)
     static void
 regoptail(char_u *p, char_u *val)
 {
-    /* When op is neither BRANCH nor BRACE_COMPLEX0-9, it is "operandless" */
+    // When op is neither BRANCH nor BRACE_COMPLEX0-9, it is "operandless"
     if (p == NULL || p == JUST_CALC_SIZE
 	    || (OP(p) != BRANCH
 		&& (OP(p) < BRACE_COMPLEX || OP(p) > BRACE_COMPLEX + 9)))
@@ -984,7 +984,7 @@ reginsert(int op, char_u *opnd)
     while (src > opnd)
 	*--dst = *--src;
 
-    place = opnd;		/* Op node, where operand used to be. */
+    place = opnd;		// Op node, where operand used to be.
     *place++ = op;
     *place++ = NUL;
     *place = NUL;
@@ -1012,7 +1012,7 @@ reginsert_nr(int op, long val, char_u *opnd)
     while (src > opnd)
 	*--dst = *--src;
 
-    place = opnd;		/* Op node, where operand used to be. */
+    place = opnd;		// Op node, where operand used to be.
     *place++ = op;
     *place++ = NUL;
     *place++ = NUL;
@@ -1047,7 +1047,7 @@ reginsert_limits(
     while (src > opnd)
 	*--dst = *--src;
 
-    place = opnd;		/* Op node, where operand used to be. */
+    place = opnd;		// Op node, where operand used to be.
     *place++ = op;
     *place++ = NUL;
     *place++ = NUL;
@@ -1069,8 +1069,8 @@ seen_endbrace(int refnum)
     {
 	char_u *p;
 
-	/* Trick: check if "@<=" or "@<!" follows, in which case
-	 * the \1 can appear before the referenced match. */
+	// Trick: check if "@<=" or "@<!" follows, in which case
+	// the \1 can appear before the referenced match.
 	for (p = regparse; *p != NUL; ++p)
 	    if (p[0] == '@' && p[1] == '<' && (p[2] == '!' || p[2] == '='))
 		break;
@@ -1101,7 +1101,7 @@ regatom(int *flagp)
     int		    extra = 0;
     int		    save_prev_at_start = prev_at_start;
 
-    *flagp = WORST;		/* Tentatively. */
+    *flagp = WORST;		// Tentatively.
 
     c = getchr();
     switch (c)
@@ -1127,12 +1127,12 @@ regatom(int *flagp)
 
       case Magic('_'):
 	c = no_Magic(getchr());
-	if (c == '^')		/* "\_^" is start-of-line */
+	if (c == '^')		// "\_^" is start-of-line
 	{
 	    ret = regnode(BOL);
 	    break;
 	}
-	if (c == '$')		/* "\_$" is end-of-line */
+	if (c == '$')		// "\_$" is end-of-line
 	{
 	    ret = regnode(EOL);
 #if defined(FEAT_SYN_HL) || defined(PROTO)
@@ -1144,16 +1144,14 @@ regatom(int *flagp)
 	extra = ADD_NL;
 	*flagp |= HASNL;
 
-	/* "\_[" is character range plus newline */
+	// "\_[" is character range plus newline
 	if (c == '[')
 	    goto collection;
 
-	/* "\_x" is character class plus newline */
-	/* FALLTHROUGH */
+	// "\_x" is character class plus newline
+	// FALLTHROUGH
 
-	/*
-	 * Character classes.
-	 */
+	// Character classes.
       case Magic('.'):
       case Magic('i'):
       case Magic('I'):
@@ -1185,8 +1183,8 @@ regatom(int *flagp)
 	if (p == NULL)
 	    EMSG_RET_NULL(_("E63: invalid use of \\_"));
 
-	/* When '.' is followed by a composing char ignore the dot, so that
-	 * the composing char is matched here. */
+	// When '.' is followed by a composing char ignore the dot, so that
+	// the composing char is matched here.
 	if (enc_utf8 && c == Magic('.') && utf_iscomposing(peekchr()))
 	{
 	    c = getchr();
@@ -1199,7 +1197,7 @@ regatom(int *flagp)
       case Magic('n'):
 	if (reg_string)
 	{
-	    /* In a string "\n" matches a newline character. */
+	    // In a string "\n" matches a newline character.
 	    ret = regnode(EXACTLY);
 	    regc(NL);
 	    regc(NUL);
@@ -1207,7 +1205,7 @@ regatom(int *flagp)
 	}
 	else
 	{
-	    /* In buffer text "\n" matches the end of a line. */
+	    // In buffer text "\n" matches the end of a line.
 	    ret = regnode(NEWL);
 	    *flagp |= HASWIDTH | HASNL;
 	}
@@ -1228,8 +1226,8 @@ regatom(int *flagp)
       case Magic(')'):
 	if (one_exactly)
 	    EMSG_ONE_RET_NULL;
-	IEMSG_RET_NULL(_(e_internal));	/* Supposed to be caught earlier. */
-	/* NOTREACHED */
+	IEMSG_RET_NULL(_(e_internal));	// Supposed to be caught earlier.
+	// NOTREACHED
 
       case Magic('='):
       case Magic('?'):
@@ -1240,9 +1238,9 @@ regatom(int *flagp)
 	c = no_Magic(c);
 	EMSG3_RET_NULL(_("E64: %s%c follows nothing"),
 		(c == '*' ? reg_magic >= MAGIC_ON : reg_magic == MAGIC_ALL), c);
-	/* NOTREACHED */
+	// NOTREACHED
 
-      case Magic('~'):		/* previous substitute pattern */
+      case Magic('~'):		// previous substitute pattern
 	    if (reg_prev_sub != NULL)
 	    {
 		char_u	    *lp;
@@ -1334,7 +1332,7 @@ regatom(int *flagp)
 	    c = no_Magic(getchr());
 	    switch (c)
 	    {
-		/* () without a back reference */
+		// () without a back reference
 		case '(':
 		    if (one_exactly)
 			EMSG_ONE_RET_NULL;
@@ -1344,8 +1342,8 @@ regatom(int *flagp)
 		    *flagp |= flags & (HASWIDTH | SPSTART | HASNL | HASLOOKBH);
 		    break;
 
-		/* Catch \%^ and \%$ regardless of where they appear in the
-		 * pattern -- regardless of whether or not it makes sense. */
+		// Catch \%^ and \%$ regardless of where they appear in the
+		// pattern -- regardless of whether or not it makes sense.
 		case '^':
 		    ret = regnode(RE_BOF);
 		    break;
@@ -1366,10 +1364,10 @@ regatom(int *flagp)
 		    ret = regnode(RE_COMPOSING);
 		    break;
 
-		/* \%[abc]: Emit as a list of branches, all ending at the last
-		 * branch which matches nothing. */
+		// \%[abc]: Emit as a list of branches, all ending at the last
+		// branch which matches nothing.
 		case '[':
-			  if (one_exactly)	/* doesn't nest */
+			  if (one_exactly)	// doesn't nest
 			      EMSG_ONE_RET_NULL;
 			  {
 			      char_u	*lastbranch;
@@ -1408,8 +1406,8 @@ regatom(int *flagp)
 			      {
 				  regtail(lastnode, br);
 				  regtail(lastbranch, br);
-				  /* connect all branches to the NOTHING
-				   * branch at the end */
+				  // connect all branches to the NOTHING
+				  // branch at the end
 				  for (br = ret; br != lastnode; )
 				  {
 				      if (OP(br) == BRANCH)
@@ -1427,11 +1425,11 @@ regatom(int *flagp)
 			      break;
 			  }
 
-		case 'd':   /* %d123 decimal */
-		case 'o':   /* %o123 octal */
-		case 'x':   /* %xab hex 2 */
-		case 'u':   /* %uabcd hex 4 */
-		case 'U':   /* %U1234abcd hex 8 */
+		case 'd':   // %d123 decimal
+		case 'o':   // %o123 octal
+		case 'x':   // %xab hex 2
+		case 'u':   // %uabcd hex 4
+		case 'U':   // %U1234abcd hex 8
 			  {
 			      long i;
 
@@ -1479,7 +1477,7 @@ regatom(int *flagp)
 			      }
 			      if (c == '\'' && n == 0)
 			      {
-				  /* "\%'m", "\%<'m" and "\%>'m": Mark */
+				  // "\%'m", "\%<'m" and "\%>'m": Mark
 				  c = getchr();
 				  ret = regnode(RE_MARK);
 				  if (ret == JUST_CALC_SIZE)
@@ -1507,8 +1505,8 @@ regatom(int *flagp)
 				      regsize += 5;
 				  else
 				  {
-				      /* put the number and the optional
-				       * comparator after the opcode */
+				      // put the number and the optional
+				      // comparator after the opcode
 				      regcode = re_put_long(regcode, n);
 				      *regcode++ = cmp;
 				  }
@@ -1527,21 +1525,17 @@ collection:
 	{
 	    char_u	*lp;
 
-	    /*
-	     * If there is no matching ']', we assume the '[' is a normal
-	     * character.  This makes 'incsearch' and ":help [" work.
-	     */
+	    // If there is no matching ']', we assume the '[' is a normal
+	    // character.  This makes 'incsearch' and ":help [" work.
 	    lp = skip_anyof(regparse);
-	    if (*lp == ']')	/* there is a matching ']' */
+	    if (*lp == ']')	// there is a matching ']'
 	    {
-		int	startc = -1;	/* > 0 when next '-' is a range */
+		int	startc = -1;	// > 0 when next '-' is a range
 		int	endc;
 
-		/*
-		 * In a character class, different parsing rules apply.
-		 * Not even \ is special anymore, nothing is.
-		 */
-		if (*regparse == '^')	    /* Complement of range. */
+		// In a character class, different parsing rules apply.
+		// Not even \ is special anymore, nothing is.
+		if (*regparse == '^')	    // Complement of range.
 		{
 		    ret = regnode(ANYBUT + extra);
 		    regparse++;
@@ -1549,7 +1543,7 @@ collection:
 		else
 		    ret = regnode(ANYOF + extra);
 
-		/* At the start ']' and '-' mean the literal character. */
+		// At the start ']' and '-' mean the literal character.
 		if (*regparse == ']' || *regparse == '-')
 		{
 		    startc = *regparse;
@@ -1561,18 +1555,18 @@ collection:
 		    if (*regparse == '-')
 		    {
 			++regparse;
-			/* The '-' is not used for a range at the end and
-			 * after or before a '\n'. */
+			// The '-' is not used for a range at the end and
+			// after or before a '\n'.
 			if (*regparse == ']' || *regparse == NUL
 				|| startc == -1
 				|| (regparse[0] == '\\' && regparse[1] == 'n'))
 			{
 			    regc('-');
-			    startc = '-';	/* [--x] is a range */
+			    startc = '-';	// [--x] is a range
 			}
 			else
 			{
-			    /* Also accept "a-[.z.]" */
+			    // Also accept "a-[.z.]"
 			    endc = 0;
 			    if (*regparse == '[')
 				endc = get_coll_element(&regparse);
@@ -1584,7 +1578,7 @@ collection:
 				    endc = *regparse++;
 			    }
 
-			    /* Handle \o40, \x20 and \u20AC style sequences */
+			    // Handle \o40, \x20 and \u20AC style sequences
 			    if (endc == '\\' && !reg_cpo_lit && !reg_cpo_bsl)
 				endc = coll_get_char();
 
@@ -1593,7 +1587,7 @@ collection:
 			    if (has_mbyte && ((*mb_char2len)(startc) > 1
 						 || (*mb_char2len)(endc) > 1))
 			    {
-				/* Limit to a range of 256 chars. */
+				// Limit to a range of 256 chars.
 				if (endc > startc + 256)
 				    EMSG_RET_NULL(_(e_large_class));
 				while (++startc <= endc)
@@ -1604,8 +1598,8 @@ collection:
 #ifdef EBCDIC
 				int	alpha_only = FALSE;
 
-				/* for alphabetical range skip the gaps
-				 * 'i'-'j', 'r'-'s', 'I'-'J' and 'R'-'S'.  */
+				// for alphabetical range skip the gaps
+				// 'i'-'j', 'r'-'s', 'I'-'J' and 'R'-'S'.
 				if (isalpha(startc) && isalpha(endc))
 				    alpha_only = TRUE;
 #endif
@@ -1618,12 +1612,10 @@ collection:
 			    startc = -1;
 			}
 		    }
-		    /*
-		     * Only "\]", "\^", "\]" and "\\" are special in Vi.  Vim
-		     * accepts "\t", "\e", etc., but only when the 'l' flag in
-		     * 'cpoptions' is not included.
-		     * Posix doesn't recognize backslash at all.
-		     */
+		    // Only "\]", "\^", "\]" and "\\" are special in Vi.  Vim
+		    // accepts "\t", "\e", etc., but only when the 'l' flag in
+		    // 'cpoptions' is not included.
+		    // Posix doesn't recognize backslash at all.
 		    else if (*regparse == '\\'
 			    && !reg_cpo_bsl
 			    && (vim_strchr(REGEXP_INRANGE, regparse[1]) != NULL
@@ -1634,17 +1626,17 @@ collection:
 			regparse++;
 			if (*regparse == 'n')
 			{
-			    /* '\n' in range: also match NL */
+			    // '\n' in range: also match NL
 			    if (ret != JUST_CALC_SIZE)
 			    {
-				/* Using \n inside [^] does not change what
-				 * matches. "[^\n]" is the same as ".". */
+				// Using \n inside [^] does not change what
+				// matches. "[^\n]" is the same as ".".
 				if (*ret == ANYOF)
 				{
 				    *ret = ANYOF + ADD_NL;
 				    *flagp |= HASNL;
 				}
-				/* else: must have had a \n already */
+				// else: must have had a \n already
 			    }
 			    regparse++;
 			    startc = -1;
@@ -1674,25 +1666,25 @@ collection:
 
 			c_class = get_char_class(&regparse);
 			startc = -1;
-			/* Characters assumed to be 8 bits! */
+			// Characters assumed to be 8 bits!
 			switch (c_class)
 			{
 			    case CLASS_NONE:
 				c_class = get_equi_class(&regparse);
 				if (c_class != 0)
 				{
-				    /* produce equivalence class */
+				    // produce equivalence class
 				    reg_equi_class(c_class);
 				}
 				else if ((c_class =
 					    get_coll_element(&regparse)) != 0)
 				{
-				    /* produce a collating element */
+				    // produce a collating element
 				    regmbc(c_class);
 				}
 				else
 				{
-				    /* literal '[', allow [[-x] as a range */
+				    // literal '[', allow [[-x] as a range
 				    startc = *regparse++;
 				    regc(startc);
 				}
@@ -1792,12 +1784,12 @@ collection:
 			{
 			    int	len;
 
-			    /* produce a multibyte character, including any
-			     * following composing characters */
+			    // produce a multibyte character, including any
+			    // following composing characters
 			    startc = mb_ptr2char(regparse);
 			    len = (*mb_ptr2len)(regparse);
 			    if (enc_utf8 && utf_char2len(startc) != len)
-				startc = -1;	/* composing chars */
+				startc = -1;	// composing chars
 			    while (--len >= 0)
 				regc(*regparse++);
 			}
@@ -1809,24 +1801,24 @@ collection:
 		    }
 		}
 		regc(NUL);
-		prevchr_len = 1;	/* last char was the ']' */
+		prevchr_len = 1;	// last char was the ']'
 		if (*regparse != ']')
-		    EMSG_RET_NULL(_(e_toomsbra));	/* Cannot happen? */
-		skipchr();	    /* let's be friends with the lexer again */
+		    EMSG_RET_NULL(_(e_toomsbra));	// Cannot happen?
+		skipchr();	    // let's be friends with the lexer again
 		*flagp |= HASWIDTH | SIMPLE;
 		break;
 	    }
 	    else if (reg_strict)
 		EMSG2_RET_NULL(_(e_missingbracket), reg_magic > MAGIC_OFF);
 	}
-	/* FALLTHROUGH */
+	// FALLTHROUGH
 
       default:
 	{
 	    int		len;
 
-	    /* A multi-byte character is handled as a separate atom if it's
-	     * before a multi and when it's a composing char. */
+	    // A multi-byte character is handled as a separate atom if it's
+	    // before a multi and when it's a composing char.
 	    if (use_multibytecode(c))
 	    {
 do_multibyte:
@@ -1838,15 +1830,13 @@ do_multibyte:
 
 	    ret = regnode(EXACTLY);
 
-	    /*
-	     * Append characters as long as:
-	     * - there is no following multi, we then need the character in
-	     *   front of it as a single character operand
-	     * - not running into a Magic character
-	     * - "one_exactly" is not set
-	     * But always emit at least one character.  Might be a Multi,
-	     * e.g., a "[" without matching "]".
-	     */
+	    // Append characters as long as:
+	    // - there is no following multi, we then need the character in
+	    //   front of it as a single character operand
+	    // - not running into a Magic character
+	    // - "one_exactly" is not set
+	    // But always emit at least one character.  Might be a Multi,
+	    // e.g., a "[" without matching "]".
 	    for (len = 0; c != NUL && (len == 0
 			|| (re_multi_type(peekchr()) == NOT_MULTI
 			    && !one_exactly
@@ -1860,7 +1850,7 @@ do_multibyte:
 		    {
 			int	l;
 
-			/* Need to get composing character too. */
+			// Need to get composing character too.
 			for (;;)
 			{
 			    l = utf_ptr2len(regparse);
@@ -1917,7 +1907,7 @@ regpiece(int *flagp)
 	*flagp = flags;
 	return ret;
     }
-    /* default flags */
+    // default flags
     *flagp = (WORST | SPSTART | (flags & (HASNL | HASLOOKBH)));
 
     skipchr();
@@ -1928,12 +1918,12 @@ regpiece(int *flagp)
 		reginsert(STAR, ret);
 	    else
 	    {
-		/* Emit x* as (x&|), where & means "self". */
-		reginsert(BRANCH, ret); /* Either x */
-		regoptail(ret, regnode(BACK));	/* and loop */
-		regoptail(ret, ret);	/* back */
-		regtail(ret, regnode(BRANCH));	/* or */
-		regtail(ret, regnode(NOTHING)); /* null. */
+		// Emit x* as (x&|), where & means "self".
+		reginsert(BRANCH, ret); // Either x
+		regoptail(ret, regnode(BACK));	// and loop
+		regoptail(ret, ret);	// back
+		regtail(ret, regnode(BRANCH));	// or
+		regtail(ret, regnode(NOTHING)); // null.
 	    }
 	    break;
 
@@ -1942,12 +1932,12 @@ regpiece(int *flagp)
 		reginsert(PLUS, ret);
 	    else
 	    {
-		/* Emit x+ as x(&|), where & means "self". */
-		next = regnode(BRANCH); /* Either */
+		// Emit x+ as x(&|), where & means "self".
+		next = regnode(BRANCH); // Either
 		regtail(ret, next);
-		regtail(regnode(BACK), ret);	/* loop back */
-		regtail(next, regnode(BRANCH)); /* or */
-		regtail(ret, regnode(NOTHING)); /* null. */
+		regtail(regnode(BACK), ret);	// loop back
+		regtail(next, regnode(BRANCH)); // or
+		regtail(ret, regnode(NOTHING)); // null.
 	    }
 	    *flagp = (WORST | HASWIDTH | (flags & (HASNL | HASLOOKBH)));
 	    break;
@@ -1960,29 +1950,29 @@ regpiece(int *flagp)
 		nr = getdecchrs();
 		switch (no_Magic(getchr()))
 		{
-		    case '=': lop = MATCH; break;		  /* \@= */
-		    case '!': lop = NOMATCH; break;		  /* \@! */
-		    case '>': lop = SUBPAT; break;		  /* \@> */
+		    case '=': lop = MATCH; break;		  // \@=
+		    case '!': lop = NOMATCH; break;		  // \@!
+		    case '>': lop = SUBPAT; break;		  // \@>
 		    case '<': switch (no_Magic(getchr()))
 			      {
-				  case '=': lop = BEHIND; break;   /* \@<= */
-				  case '!': lop = NOBEHIND; break; /* \@<! */
+				  case '=': lop = BEHIND; break;   // \@<=
+				  case '!': lop = NOBEHIND; break; // \@<!
 			      }
 		}
 		if (lop == END)
 		    EMSG2_RET_NULL(_("E59: invalid character after %s@"),
 						      reg_magic == MAGIC_ALL);
-		/* Look behind must match with behind_pos. */
+		// Look behind must match with behind_pos.
 		if (lop == BEHIND || lop == NOBEHIND)
 		{
 		    regtail(ret, regnode(BHPOS));
 		    *flagp |= HASLOOKBH;
 		}
-		regtail(ret, regnode(END)); /* operand ends */
+		regtail(ret, regnode(END)); // operand ends
 		if (lop == BEHIND || lop == NOBEHIND)
 		{
 		    if (nr < 0)
-			nr = 0; /* no limit is same as zero limit */
+			nr = 0; // no limit is same as zero limit
 		    reginsert_nr(lop, nr, ret);
 		}
 		else
@@ -1992,10 +1982,10 @@ regpiece(int *flagp)
 
 	case Magic('?'):
 	case Magic('='):
-	    /* Emit x= as (x|) */
-	    reginsert(BRANCH, ret);		/* Either x */
-	    regtail(ret, regnode(BRANCH));	/* or */
-	    next = regnode(NOTHING);		/* null. */
+	    // Emit x= as (x|)
+	    reginsert(BRANCH, ret);		// Either x
+	    regtail(ret, regnode(BRANCH));	// or
+	    next = regnode(NOTHING);		// null.
 	    regtail(ret, next);
 	    regoptail(ret, next);
 	    break;
@@ -2048,7 +2038,7 @@ regconcat(int *flagp)
     int		flags;
     int		cont = TRUE;
 
-    *flagp = WORST;		/* Tentatively. */
+    *flagp = WORST;		// Tentatively.
 
     while (cont)
     {
@@ -2097,7 +2087,7 @@ regconcat(int *flagp)
 			    if (latest == NULL || reg_toolong)
 				return NULL;
 			    *flagp |= flags & (HASWIDTH | HASNL | HASLOOKBH);
-			    if (chain == NULL)	/* First piece. */
+			    if (chain == NULL)	// First piece.
 				*flagp |= flags & SPSTART;
 			    else
 				regtail(chain, latest);
@@ -2107,7 +2097,7 @@ regconcat(int *flagp)
 			    break;
 	}
     }
-    if (first == NULL)		/* Loop ran zero times. */
+    if (first == NULL)		// Loop ran zero times.
 	first = regnode(NOTHING);
     return first;
 }
@@ -2124,7 +2114,7 @@ regbranch(int *flagp)
     char_u	*latest;
     int		flags;
 
-    *flagp = WORST | HASNL;		/* Tentatively. */
+    *flagp = WORST | HASNL;		// Tentatively.
 
     ret = regnode(BRANCH);
     for (;;)
@@ -2132,19 +2122,19 @@ regbranch(int *flagp)
 	latest = regconcat(&flags);
 	if (latest == NULL)
 	    return NULL;
-	/* If one of the branches has width, the whole thing has.  If one of
-	 * the branches anchors at start-of-line, the whole thing does.
-	 * If one of the branches uses look-behind, the whole thing does. */
+	// If one of the branches has width, the whole thing has.  If one of
+	// the branches anchors at start-of-line, the whole thing does.
+	// If one of the branches uses look-behind, the whole thing does.
 	*flagp |= flags & (HASWIDTH | SPSTART | HASLOOKBH);
-	/* If one of the branches doesn't match a line-break, the whole thing
-	 * doesn't. */
+	// If one of the branches doesn't match a line-break, the whole thing
+	// doesn't.
 	*flagp &= ~HASNL | (flags & HASNL);
 	if (chain != NULL)
 	    regtail(chain, latest);
 	if (peekchr() != Magic('&'))
 	    break;
 	skipchr();
-	regtail(latest, regnode(END)); /* operand ends */
+	regtail(latest, regnode(END)); // operand ends
 	if (reg_toolong)
 	    break;
 	reginsert(MATCH, latest);
@@ -2165,7 +2155,7 @@ regbranch(int *flagp)
  */
     static char_u *
 reg(
-    int		paren,	/* REG_NOPAREN, REG_PAREN, REG_NPAREN or REG_ZPAREN */
+    int		paren,	// REG_NOPAREN, REG_PAREN, REG_NPAREN or REG_ZPAREN
     int		*flagp)
 {
     char_u	*ret;
@@ -2174,12 +2164,12 @@ reg(
     int		parno = 0;
     int		flags;
 
-    *flagp = HASWIDTH;		/* Tentatively. */
+    *flagp = HASWIDTH;		// Tentatively.
 
 #ifdef FEAT_SYN_HL
     if (paren == REG_ZPAREN)
     {
-	/* Make a ZOPEN node. */
+	// Make a ZOPEN node.
 	if (regnzpar >= NSUBEXP)
 	    EMSG_RET_NULL(_("E50: Too many \\z("));
 	parno = regnzpar;
@@ -2190,7 +2180,7 @@ reg(
 #endif
 	if (paren == REG_PAREN)
     {
-	/* Make a MOPEN node. */
+	// Make a MOPEN node.
 	if (regnpar >= NSUBEXP)
 	    EMSG2_RET_NULL(_("E51: Too many %s("), reg_magic == MAGIC_ALL);
 	parno = regnpar;
@@ -2199,23 +2189,23 @@ reg(
     }
     else if (paren == REG_NPAREN)
     {
-	/* Make a NOPEN node. */
+	// Make a NOPEN node.
 	ret = regnode(NOPEN);
     }
     else
 	ret = NULL;
 
-    /* Pick up the branches, linking them together. */
+    // Pick up the branches, linking them together.
     br = regbranch(&flags);
     if (br == NULL)
 	return NULL;
     if (ret != NULL)
-	regtail(ret, br);	/* [MZ]OPEN -> first. */
+	regtail(ret, br);	// [MZ]OPEN -> first.
     else
 	ret = br;
-    /* If one of the branches can be zero-width, the whole thing can.
-     * If one of the branches has * at start or matches a line-break, the
-     * whole thing can. */
+    // If one of the branches can be zero-width, the whole thing can.
+    // If one of the branches has * at start or matches a line-break, the
+    // whole thing can.
     if (!(flags & HASWIDTH))
 	*flagp &= ~HASWIDTH;
     *flagp |= flags & (SPSTART | HASNL | HASLOOKBH);
@@ -2225,13 +2215,13 @@ reg(
 	br = regbranch(&flags);
 	if (br == NULL || reg_toolong)
 	    return NULL;
-	regtail(ret, br);	/* BRANCH -> BRANCH. */
+	regtail(ret, br);	// BRANCH -> BRANCH.
 	if (!(flags & HASWIDTH))
 	    *flagp &= ~HASWIDTH;
 	*flagp |= flags & (SPSTART | HASNL | HASLOOKBH);
     }
 
-    /* Make a closing node, and hook it on the end. */
+    // Make a closing node, and hook it on the end.
     ender = regnode(
 #ifdef FEAT_SYN_HL
 	    paren == REG_ZPAREN ? ZCLOSE + parno :
@@ -2240,11 +2230,11 @@ reg(
 	    paren == REG_NPAREN ? NCLOSE : END);
     regtail(ret, ender);
 
-    /* Hook the tails of the branches to the closing node. */
+    // Hook the tails of the branches to the closing node.
     for (br = ret; br != NULL; br = regnext(br))
 	regoptail(br, ender);
 
-    /* Check for proper termination. */
+    // Check for proper termination.
     if (paren != REG_NOPAREN && getchr() != Magic(')'))
     {
 #ifdef FEAT_SYN_HL
@@ -2262,15 +2252,13 @@ reg(
 	if (curchr == Magic(')'))
 	    EMSG2_RET_NULL(_(e_unmatchedpar), reg_magic == MAGIC_ALL);
 	else
-	    EMSG_RET_NULL(_(e_trailing));	/* "Can't happen". */
-	/* NOTREACHED */
+	    EMSG_RET_NULL(_(e_trailing));	// "Can't happen".
+	// NOTREACHED
     }
-    /*
-     * Here we set the flag allowing back references to this set of
-     * parentheses.
-     */
+    // Here we set the flag allowing back references to this set of
+    // parentheses.
     if (paren == REG_PAREN)
-	had_endbrace[parno] = TRUE;	/* have seen the close paren */
+	had_endbrace[parno] = TRUE;	// have seen the close paren
     return ret;
 }
 
@@ -2442,8 +2430,8 @@ coll_get_char(void)
     }
     if (nr < 0 || nr > INT_MAX)
     {
-	/* If getting the number fails be backwards compatible: the character
-	 * is a backslash. */
+	// If getting the number fails be backwards compatible: the character
+	// is a backslash.
 	--regparse;
 	nr = '\\';
     }
@@ -2495,8 +2483,8 @@ reg_restore(regsave_T *save, garray_T *gap)
     {
 	if (rex.lnum != save->rs_u.pos.lnum)
 	{
-	    /* only call reg_getline() when the line number changed to save
-	     * a bit of time */
+	    // only call reg_getline() when the line number changed to save
+	    // a bit of time
 	    rex.lnum = save->rs_u.pos.lnum;
 	    rex.line = reg_getline(rex.lnum);
 	}
@@ -2519,11 +2507,11 @@ reg_save_equal(regsave_T *save)
     return rex.input == save->rs_u.ptr;
 }
 
-/* Save the sub-expressions before attempting a match. */
+// Save the sub-expressions before attempting a match.
 #define save_se(savep, posp, pp) \
     REG_MULTI ? save_se_multi((savep), (posp)) : save_se_one((savep), (pp))
 
-/* After a failed match restore the sub-expressions. */
+// After a failed match restore the sub-expressions.
 #define restore_se(savep, posp, pp) { \
     if (REG_MULTI) \
 	*(posp) = (savep)->se_u.pos; \
@@ -2559,7 +2547,7 @@ save_se_one(save_se_T *savep, char_u **pp)
     static int
 regrepeat(
     char_u	*p,
-    long	maxcount)   /* maximum number of matches allowed */
+    long	maxcount)   // maximum number of matches allowed
 {
     long	count = 0;
     char_u	*scan;
@@ -2567,7 +2555,7 @@ regrepeat(
     int		mask;
     int		testval = 0;
 
-    scan = rex.input;	    /* Make local copy of rex.input for speed. */
+    scan = rex.input;	    // Make local copy of rex.input for speed.
     opnd = OPERAND(p);
     switch (OP(p))
     {
@@ -2575,8 +2563,8 @@ regrepeat(
       case ANY + ADD_NL:
 	while (count < maxcount)
 	{
-	    /* Matching anything means we continue until end-of-line (or
-	     * end-of-file for ANY + ADD_NL), only limited by maxcount. */
+	    // Matching anything means we continue until end-of-line (or
+	    // end-of-file for ANY + ADD_NL), only limited by maxcount.
 	    while (*scan != NUL && count < maxcount)
 	    {
 		++count;
@@ -2585,7 +2573,7 @@ regrepeat(
 	    if (!REG_MULTI || !WITH_NL(OP(p)) || rex.lnum > rex.reg_maxline
 				      || rex.reg_line_lbr || count == maxcount)
 		break;
-	    ++count;		/* count the line-break */
+	    ++count;		// count the line-break
 	    reg_nextline();
 	    scan = rex.input;
 	    if (got_int)
@@ -2596,7 +2584,7 @@ regrepeat(
       case IDENT:
       case IDENT + ADD_NL:
 	testval = TRUE;
-	/* FALLTHROUGH */
+	// FALLTHROUGH
       case SIDENT:
       case SIDENT + ADD_NL:
 	while (count < maxcount)
@@ -2626,7 +2614,7 @@ regrepeat(
       case KWORD:
       case KWORD + ADD_NL:
 	testval = TRUE;
-	/* FALLTHROUGH */
+	// FALLTHROUGH
       case SKWORD:
       case SKWORD + ADD_NL:
 	while (count < maxcount)
@@ -2657,7 +2645,7 @@ regrepeat(
       case FNAME:
       case FNAME + ADD_NL:
 	testval = TRUE;
-	/* FALLTHROUGH */
+	// FALLTHROUGH
       case SFNAME:
       case SFNAME + ADD_NL:
 	while (count < maxcount)
@@ -2687,7 +2675,7 @@ regrepeat(
       case PRINT:
       case PRINT + ADD_NL:
 	testval = TRUE;
-	/* FALLTHROUGH */
+	// FALLTHROUGH
       case SPRINT:
       case SPRINT + ADD_NL:
 	while (count < maxcount)
@@ -2822,9 +2810,9 @@ do_class:
 	{
 	    int	    cu, cl;
 
-	    /* This doesn't do a multi-byte character, because a MULTIBYTECODE
-	     * would have been used for it.  It does handle single-byte
-	     * characters, such as latin1. */
+	    // This doesn't do a multi-byte character, because a MULTIBYTECODE
+	    // would have been used for it.  It does handle single-byte
+	    // characters, such as latin1.
 	    if (rex.reg_ic)
 	    {
 		cu = MB_TOUPPER(*opnd);
@@ -2851,8 +2839,8 @@ do_class:
 	{
 	    int		i, len, cf = 0;
 
-	    /* Safety check (just in case 'encoding' was changed since
-	     * compiling the program). */
+	    // Safety check (just in case 'encoding' was changed since
+	    // compiling the program).
 	    if ((len = (*mb_ptr2len)(opnd)) > 1)
 	    {
 		if (rex.reg_ic && enc_utf8)
@@ -2875,7 +2863,7 @@ do_class:
       case ANYOF:
       case ANYOF + ADD_NL:
 	testval = TRUE;
-	/* FALLTHROUGH */
+	// FALLTHROUGH
 
       case ANYBUT:
       case ANYBUT + ADD_NL:
@@ -2928,7 +2916,7 @@ do_class:
 	}
 	break;
 
-      default:			/* Oh dear.  Called inappropriately. */
+      default:			// Oh dear.  Called inappropriately.
 	emsg(_(e_re_corr));
 #ifdef DEBUG
 	printf("Called regrepeat with op code %d\n", OP(p));
@@ -2989,8 +2977,8 @@ save_subexpr(regbehind_T *bp)
 {
     int i;
 
-    /* When "rex.need_clear_subexpr" is set we don't need to save the values, only
-     * remember that this flag needs to be set again when restoring. */
+    // When "rex.need_clear_subexpr" is set we don't need to save the values,
+    // only remember that this flag needs to be set again when restoring.
     bp->save_need_clear_subexpr = rex.need_clear_subexpr;
     if (!rex.need_clear_subexpr)
     {
@@ -3018,7 +3006,7 @@ restore_subexpr(regbehind_T *bp)
 {
     int i;
 
-    /* Only need to restore saved values when they are not to be cleared. */
+    // Only need to restore saved values when they are not to be cleared.
     rex.need_clear_subexpr = bp->save_need_clear_subexpr;
     if (!rex.need_clear_subexpr)
     {
@@ -3055,32 +3043,30 @@ restore_subexpr(regbehind_T *bp)
  */
     static int
 regmatch(
-    char_u	*scan,		    /* Current node. */
-    proftime_T	*tm UNUSED,	    /* timeout limit or NULL */
-    int		*timed_out UNUSED)  /* flag set on timeout or NULL */
+    char_u	*scan,		    // Current node.
+    proftime_T	*tm UNUSED,	    // timeout limit or NULL
+    int		*timed_out UNUSED)  // flag set on timeout or NULL
 {
-  char_u	*next;		/* Next node. */
+  char_u	*next;		// Next node.
   int		op;
   int		c;
   regitem_T	*rp;
   int		no;
-  int		status;		/* one of the RA_ values: */
+  int		status;		// one of the RA_ values:
 #ifdef FEAT_RELTIME
   int		tm_count = 0;
 #endif
 
-  /* Make "regstack" and "backpos" empty.  They are allocated and freed in
-   * bt_regexec_both() to reduce malloc()/free() calls. */
+  // Make "regstack" and "backpos" empty.  They are allocated and freed in
+  // bt_regexec_both() to reduce malloc()/free() calls.
   regstack.ga_len = 0;
   backpos.ga_len = 0;
 
-  /*
-   * Repeat until "regstack" is empty.
-   */
+  // Repeat until "regstack" is empty.
   for (;;)
   {
-    /* Some patterns may take a long time to match, e.g., "\([a-z]\+\)\+Q".
-     * Allow interrupting them with CTRL-C. */
+    // Some patterns may take a long time to match, e.g., "\([a-z]\+\)\+Q".
+    // Allow interrupting them with CTRL-C.
     fast_breakcheck();
 
 #ifdef DEBUG
@@ -3091,10 +3077,8 @@ regmatch(
     }
 #endif
 
-    /*
-     * Repeat for items that can be matched sequentially, without using the
-     * regstack.
-     */
+    // Repeat for items that can be matched sequentially, without using the
+    // regstack.
     for (;;)
     {
 	if (got_int || scan == NULL)
@@ -3103,7 +3087,7 @@ regmatch(
 	    break;
 	}
 #ifdef FEAT_RELTIME
-	/* Check for timeout once in a 100 times to avoid overhead. */
+	// Check for timeout once in a 100 times to avoid overhead.
 	if (tm != NULL && ++tm_count == 100)
 	{
 	    tm_count = 0;
@@ -3143,7 +3127,7 @@ regmatch(
 	next = regnext(scan);
 
 	op = OP(scan);
-	/* Check for character class with NL added. */
+	// Check for character class with NL added.
 	if (!rex.reg_line_lbr && WITH_NL(op) && REG_MULTI
 			     && *rex.input == NUL && rex.lnum <= rex.reg_maxline)
 	{
@@ -3174,9 +3158,9 @@ regmatch(
 	    break;
 
 	  case RE_BOF:
-	    /* We're not at the beginning of the file when below the first
-	     * line where we started, not at the start of the line or we
-	     * didn't start at the first line of the buffer. */
+	    // We're not at the beginning of the file when below the first
+	    // line where we started, not at the start of the line or we
+	    // didn't start at the first line of the buffer.
 	    if (rex.lnum != 0 || rex.input != rex.line
 				       || (REG_MULTI && rex.reg_firstlnum > 1))
 		status = RA_NOMATCH;
@@ -3188,8 +3172,8 @@ regmatch(
 	    break;
 
 	  case CURSOR:
-	    /* Check if the buffer is in a window and compare the
-	     * rex.reg_win->w_cursor position to the match position. */
+	    // Check if the buffer is in a window and compare the
+	    // rex.reg_win->w_cursor position to the match position.
 	    if (rex.reg_win == NULL
 		    || (rex.lnum + rex.reg_firstlnum
 						 != rex.reg_win->w_cursor.lnum)
@@ -3199,15 +3183,15 @@ regmatch(
 	    break;
 
 	  case RE_MARK:
-	    /* Compare the mark position to the match position. */
+	    // Compare the mark position to the match position.
 	    {
 		int	mark = OPERAND(scan)[0];
 		int	cmp = OPERAND(scan)[1];
 		pos_T	*pos;
 
 		pos = getmark_buf(rex.reg_buf, mark, FALSE);
-		if (pos == NULL		     /* mark doesn't exist */
-			|| pos->lnum <= 0    /* mark isn't set in reg_buf */
+		if (pos == NULL		     // mark doesn't exist
+			|| pos->lnum <= 0    // mark isn't set in reg_buf
 			|| (pos->lnum == rex.lnum + rex.reg_firstlnum
 				? (pos->col == (colnr_T)(rex.input - rex.line)
 				    ? (cmp == '<' || cmp == '>')
@@ -3244,19 +3228,19 @@ regmatch(
 		status = RA_NOMATCH;
 	    break;
 
-	  case BOW:	/* \<word; rex.input points to w */
-	    if (c == NUL)	/* Can't match at end of line */
+	  case BOW:	// \<word; rex.input points to w
+	    if (c == NUL)	// Can't match at end of line
 		status = RA_NOMATCH;
 	    else if (has_mbyte)
 	    {
 		int this_class;
 
-		/* Get class of current and previous char (if it exists). */
+		// Get class of current and previous char (if it exists).
 		this_class = mb_get_class_buf(rex.input, rex.reg_buf);
 		if (this_class <= 1)
-		    status = RA_NOMATCH;  /* not on a word at all */
+		    status = RA_NOMATCH;  // not on a word at all
 		else if (reg_prev_class() == this_class)
-		    status = RA_NOMATCH;  /* previous char is in same word */
+		    status = RA_NOMATCH;  // previous char is in same word
 	    }
 	    else
 	    {
@@ -3266,14 +3250,14 @@ regmatch(
 	    }
 	    break;
 
-	  case EOW:	/* word\>; rex.input points after d */
-	    if (rex.input == rex.line)    /* Can't match at start of line */
+	  case EOW:	// word\>; rex.input points after d
+	    if (rex.input == rex.line)    // Can't match at start of line
 		status = RA_NOMATCH;
 	    else if (has_mbyte)
 	    {
 		int this_class, prev_class;
 
-		/* Get class of current and previous char (if it exists). */
+		// Get class of current and previous char (if it exists).
 		this_class = mb_get_class_buf(rex.input, rex.reg_buf);
 		prev_class = reg_prev_class();
 		if (this_class == prev_class
@@ -3287,10 +3271,10 @@ regmatch(
 					   && vim_iswordc_buf(c, rex.reg_buf)))
 		    status = RA_NOMATCH;
 	    }
-	    break; /* Matched with EOW */
+	    break; // Matched with EOW
 
 	  case ANY:
-	    /* ANY does not match new lines. */
+	    // ANY does not match new lines.
 	    if (c == NUL)
 		status = RA_NOMATCH;
 	    else
@@ -3486,7 +3470,7 @@ regmatch(
 		char_u	*opnd;
 
 		opnd = OPERAND(scan);
-		/* Inline the first byte, for speed. */
+		// Inline the first byte, for speed.
 		if (*opnd != *rex.input
 			&& (!rex.reg_ic
 			    || (!enc_utf8
@@ -3494,33 +3478,33 @@ regmatch(
 		    status = RA_NOMATCH;
 		else if (*opnd == NUL)
 		{
-		    /* match empty string always works; happens when "~" is
-		     * empty. */
+		    // match empty string always works; happens when "~" is
+		    // empty.
 		}
 		else
 		{
 		    if (opnd[1] == NUL && !(enc_utf8 && rex.reg_ic))
 		    {
-			len = 1;	/* matched a single byte above */
+			len = 1;	// matched a single byte above
 		    }
 		    else
 		    {
-			/* Need to match first byte again for multi-byte. */
+			// Need to match first byte again for multi-byte.
 			len = (int)STRLEN(opnd);
 			if (cstrncmp(opnd, rex.input, &len) != 0)
 			    status = RA_NOMATCH;
 		    }
-		    /* Check for following composing character, unless %C
-		     * follows (skips over all composing chars). */
+		    // Check for following composing character, unless %C
+		    // follows (skips over all composing chars).
 		    if (status != RA_NOMATCH
 			    && enc_utf8
 			    && UTF_COMPOSINGLIKE(rex.input, rex.input + len)
 			    && !rex.reg_icombine
 			    && OP(next) != RE_COMPOSING)
 		    {
-			/* raaron: This code makes a composing character get
-			 * ignored, which is the correct behavior (sometimes)
-			 * for voweled Hebrew texts. */
+			// raaron: This code makes a composing character get
+			// ignored, which is the correct behavior (sometimes)
+			// for voweled Hebrew texts.
 			status = RA_NOMATCH;
 		    }
 		    if (status != RA_NOMATCH)
@@ -3547,8 +3531,8 @@ regmatch(
 		int	opndc = 0, inpc;
 
 		opnd = OPERAND(scan);
-		/* Safety check (just in case 'encoding' was changed since
-		 * compiling the program). */
+		// Safety check (just in case 'encoding' was changed since
+		// compiling the program).
 		if ((len = (*mb_ptr2len)(opnd)) < 2)
 		{
 		    status = RA_NOMATCH;
@@ -3558,8 +3542,8 @@ regmatch(
 		    opndc = utf_ptr2char(opnd);
 		if (enc_utf8 && utf_iscomposing(opndc))
 		{
-		    /* When only a composing char is given match at any
-		     * position where that composing char appears. */
+		    // When only a composing char is given match at any
+		    // position where that composing char appears.
 		    status = RA_NOMATCH;
 		    for (i = 0; rex.input[i] != NUL;
 						i += utf_ptr2len(rex.input + i))
@@ -3572,7 +3556,7 @@ regmatch(
 			}
 			else if (opndc == inpc)
 			{
-			    /* Include all following composing chars. */
+			    // Include all following composing chars.
 			    len = i + utfc_ptr2len(rex.input + i);
 			    status = RA_MATCH;
 			    break;
@@ -3594,7 +3578,7 @@ regmatch(
 	  case RE_COMPOSING:
 	    if (enc_utf8)
 	    {
-		/* Skip composing characters. */
+		// Skip composing characters.
 		while (utf_iscomposing(utf_ptr2char(rex.input)))
 		    MB_CPTR_ADV(rex.input);
 	    }
@@ -3608,33 +3592,31 @@ regmatch(
 		int		i;
 		backpos_T	*bp;
 
-		/*
-		 * When we run into BACK we need to check if we don't keep
-		 * looping without matching any input.  The second and later
-		 * times a BACK is encountered it fails if the input is still
-		 * at the same position as the previous time.
-		 * The positions are stored in "backpos" and found by the
-		 * current value of "scan", the position in the RE program.
-		 */
+		// When we run into BACK we need to check if we don't keep
+		// looping without matching any input.  The second and later
+		// times a BACK is encountered it fails if the input is still
+		// at the same position as the previous time.
+		// The positions are stored in "backpos" and found by the
+		// current value of "scan", the position in the RE program.
 		bp = (backpos_T *)backpos.ga_data;
 		for (i = 0; i < backpos.ga_len; ++i)
 		    if (bp[i].bp_scan == scan)
 			break;
 		if (i == backpos.ga_len)
 		{
-		    /* First time at this BACK, make room to store the pos. */
+		    // First time at this BACK, make room to store the pos.
 		    if (ga_grow(&backpos, 1) == FAIL)
 			status = RA_FAIL;
 		    else
 		    {
-			/* get "ga_data" again, it may have changed */
+			// get "ga_data" again, it may have changed
 			bp = (backpos_T *)backpos.ga_data;
 			bp[i].bp_scan = scan;
 			++backpos.ga_len;
 		    }
 		}
 		else if (reg_save_equal(&bp[i].bp_pos))
-		    /* Still at same position as last time, fail. */
+		    // Still at same position as last time, fail.
 		    status = RA_NOMATCH;
 
 		if (status != RA_FAIL && status != RA_NOMATCH)
@@ -3642,8 +3624,8 @@ regmatch(
 	    }
 	    break;
 
-	  case MOPEN + 0:   /* Match start: \zs */
-	  case MOPEN + 1:   /* \( */
+	  case MOPEN + 0:   // Match start: \zs
+	  case MOPEN + 1:   // \(
 	  case MOPEN + 2:
 	  case MOPEN + 3:
 	  case MOPEN + 4:
@@ -3663,16 +3645,16 @@ regmatch(
 		    rp->rs_no = no;
 		    save_se(&rp->rs_un.sesave, &rex.reg_startpos[no],
 							  &rex.reg_startp[no]);
-		    /* We simply continue and handle the result when done. */
+		    // We simply continue and handle the result when done.
 		}
 	    }
 	    break;
 
-	  case NOPEN:	    /* \%( */
-	  case NCLOSE:	    /* \) after \%( */
+	  case NOPEN:	    // \%(
+	  case NCLOSE:	    // \) after \%(
 		if (regstack_push(RS_NOPEN, scan) == NULL)
 		    status = RA_FAIL;
-		/* We simply continue and handle the result when done. */
+		// We simply continue and handle the result when done.
 		break;
 
 #ifdef FEAT_SYN_HL
@@ -3696,14 +3678,14 @@ regmatch(
 		    rp->rs_no = no;
 		    save_se(&rp->rs_un.sesave, &reg_startzpos[no],
 							     &reg_startzp[no]);
-		    /* We simply continue and handle the result when done. */
+		    // We simply continue and handle the result when done.
 		}
 	    }
 	    break;
 #endif
 
-	  case MCLOSE + 0:  /* Match end: \ze */
-	  case MCLOSE + 1:  /* \) */
+	  case MCLOSE + 0:  // Match end: \ze
+	  case MCLOSE + 1:  // \)
 	  case MCLOSE + 2:
 	  case MCLOSE + 3:
 	  case MCLOSE + 4:
@@ -3723,13 +3705,13 @@ regmatch(
 		    rp->rs_no = no;
 		    save_se(&rp->rs_un.sesave, &rex.reg_endpos[no],
 							    &rex.reg_endp[no]);
-		    /* We simply continue and handle the result when done. */
+		    // We simply continue and handle the result when done.
 		}
 	    }
 	    break;
 
 #ifdef FEAT_SYN_HL
-	  case ZCLOSE + 1:  /* \) after \z( */
+	  case ZCLOSE + 1:  // \) after \z(
 	  case ZCLOSE + 2:
 	  case ZCLOSE + 3:
 	  case ZCLOSE + 4:
@@ -3749,7 +3731,7 @@ regmatch(
 		    rp->rs_no = no;
 		    save_se(&rp->rs_un.sesave, &reg_endzpos[no],
 							      &reg_endzp[no]);
-		    /* We simply continue and handle the result when done. */
+		    // We simply continue and handle the result when done.
 		}
 	    }
 	    break;
@@ -3769,28 +3751,28 @@ regmatch(
 
 		no = op - BACKREF;
 		cleanup_subexpr();
-		if (!REG_MULTI)		/* Single-line regexp */
+		if (!REG_MULTI)		// Single-line regexp
 		{
 		    if (rex.reg_startp[no] == NULL || rex.reg_endp[no] == NULL)
 		    {
-			/* Backref was not set: Match an empty string. */
+			// Backref was not set: Match an empty string.
 			len = 0;
 		    }
 		    else
 		    {
-			/* Compare current input with back-ref in the same
-			 * line. */
+			// Compare current input with back-ref in the same
+			// line.
 			len = (int)(rex.reg_endp[no] - rex.reg_startp[no]);
 			if (cstrncmp(rex.reg_startp[no], rex.input, &len) != 0)
 			    status = RA_NOMATCH;
 		    }
 		}
-		else				/* Multi-line regexp */
+		else				// Multi-line regexp
 		{
 		    if (rex.reg_startpos[no].lnum < 0
 						|| rex.reg_endpos[no].lnum < 0)
 		    {
-			/* Backref was not set: Match an empty string. */
+			// Backref was not set: Match an empty string.
 			len = 0;
 		    }
 		    else
@@ -3798,7 +3780,7 @@ regmatch(
 			if (rex.reg_startpos[no].lnum == rex.lnum
 				&& rex.reg_endpos[no].lnum == rex.lnum)
 			{
-			    /* Compare back-ref within the current line. */
+			    // Compare back-ref within the current line.
 			    len = rex.reg_endpos[no].col
 						    - rex.reg_startpos[no].col;
 			    if (cstrncmp(rex.line + rex.reg_startpos[no].col,
@@ -3807,8 +3789,8 @@ regmatch(
 			}
 			else
 			{
-			    /* Messy situation: Need to compare between two
-			     * lines. */
+			    // Messy situation: Need to compare between two
+			    // lines.
 			    int r = match_with_backref(
 					    rex.reg_startpos[no].lnum,
 					    rex.reg_startpos[no].col,
@@ -3822,7 +3804,7 @@ regmatch(
 		    }
 		}
 
-		/* Matched the backref, skip over it. */
+		// Matched the backref, skip over it.
 		rex.input += len;
 	    }
 	    break;
@@ -3854,7 +3836,7 @@ regmatch(
 		}
 		else
 		{
-		    /* Backref was not set: Match an empty string. */
+		    // Backref was not set: Match an empty string.
 		}
 	    }
 	    break;
@@ -3862,15 +3844,15 @@ regmatch(
 
 	  case BRANCH:
 	    {
-		if (OP(next) != BRANCH) /* No choice. */
-		    next = OPERAND(scan);	/* Avoid recursion. */
+		if (OP(next) != BRANCH) // No choice.
+		    next = OPERAND(scan);	// Avoid recursion.
 		else
 		{
 		    rp = regstack_push(RS_BRANCH, scan);
 		    if (rp == NULL)
 			status = RA_FAIL;
 		    else
-			status = RA_BREAK;	/* rest is below */
+			status = RA_BREAK;	// rest is below
 		}
 	    }
 	    break;
@@ -3912,7 +3894,7 @@ regmatch(
 		no = op - BRACE_COMPLEX;
 		++brace_count[no];
 
-		/* If not matched enough times yet, try one more */
+		// If not matched enough times yet, try one more
 		if (brace_count[no] <= (brace_min[no] <= brace_max[no]
 					     ? brace_min[no] : brace_max[no]))
 		{
@@ -3924,15 +3906,15 @@ regmatch(
 			rp->rs_no = no;
 			reg_save(&rp->rs_un.regsave, &backpos);
 			next = OPERAND(scan);
-			/* We continue and handle the result when done. */
+			// We continue and handle the result when done.
 		    }
 		    break;
 		}
 
-		/* If matched enough times, may try matching some more */
+		// If matched enough times, may try matching some more
 		if (brace_min[no] <= brace_max[no])
 		{
-		    /* Range is the normal way around, use longest match */
+		    // Range is the normal way around, use longest match
 		    if (brace_count[no] <= brace_max[no])
 		    {
 			rp = regstack_push(RS_BRCPLX_LONG, scan);
@@ -3943,13 +3925,13 @@ regmatch(
 			    rp->rs_no = no;
 			    reg_save(&rp->rs_un.regsave, &backpos);
 			    next = OPERAND(scan);
-			    /* We continue and handle the result when done. */
+			    // We continue and handle the result when done.
 			}
 		    }
 		}
 		else
 		{
-		    /* Range is backwards, use shortest match first */
+		    // Range is backwards, use shortest match first
 		    if (brace_count[no] <= brace_min[no])
 		    {
 			rp = regstack_push(RS_BRCPLX_SHORT, scan);
@@ -3958,7 +3940,7 @@ regmatch(
 			else
 			{
 			    reg_save(&rp->rs_un.regsave, &backpos);
-			    /* We continue and handle the result when done. */
+			    // We continue and handle the result when done.
 			}
 		    }
 		}
@@ -3971,10 +3953,8 @@ regmatch(
 	    {
 		regstar_T	rst;
 
-		/*
-		 * Lookahead to avoid useless match attempts when we know
-		 * what character comes next.
-		 */
+		// Lookahead to avoid useless match attempts when we know
+		// what character comes next.
 		if (OP(next) == EXACTLY)
 		{
 		    rst.nextb = *OPERAND(next);
@@ -4004,12 +3984,10 @@ regmatch(
 		    rst.maxval = bl_maxval;
 		}
 
-		/*
-		 * When maxval > minval, try matching as much as possible, up
-		 * to maxval.  When maxval < minval, try matching at least the
-		 * minimal number (since the range is backwards, that's also
-		 * maxval!).
-		 */
+		// When maxval > minval, try matching as much as possible, up
+		// to maxval.  When maxval < minval, try matching at least the
+		// minimal number (since the range is backwards, that's also
+		// maxval!).
 		rst.count = regrepeat(OPERAND(scan), rst.maxval);
 		if (got_int)
 		{
@@ -4019,9 +3997,9 @@ regmatch(
 		if (rst.minval <= rst.maxval
 			  ? rst.count >= rst.minval : rst.count >= rst.maxval)
 		{
-		    /* It could match.  Prepare for trying to match what
-		     * follows.  The code is below.  Parameters are stored in
-		     * a regstar_T on the regstack. */
+		    // It could match.  Prepare for trying to match what
+		    // follows.  The code is below.  Parameters are stored in
+		    // a regstar_T on the regstack.
 		    if ((long)((unsigned)regstack.ga_len >> 10) >= p_mmp)
 		    {
 			emsg(_(e_maxmempat));
@@ -4039,7 +4017,7 @@ regmatch(
 			else
 			{
 			    *(((regstar_T *)rp) - 1) = rst;
-			    status = RA_BREAK;	    /* skip the restore bits */
+			    status = RA_BREAK;	    // skip the restore bits
 			}
 		    }
 		}
@@ -4060,13 +4038,13 @@ regmatch(
 		rp->rs_no = op;
 		reg_save(&rp->rs_un.regsave, &backpos);
 		next = OPERAND(scan);
-		/* We continue and handle the result when done. */
+		// We continue and handle the result when done.
 	    }
 	    break;
 
 	  case BEHIND:
 	  case NOBEHIND:
-	    /* Need a bit of room to store extra positions. */
+	    // Need a bit of room to store extra positions.
 	    if ((long)((unsigned)regstack.ga_len >> 10) >= p_mmp)
 	    {
 		emsg(_(e_maxmempat));
@@ -4082,14 +4060,14 @@ regmatch(
 		    status = RA_FAIL;
 		else
 		{
-		    /* Need to save the subexpr to be able to restore them
-		     * when there is a match but we don't use it. */
+		    // Need to save the subexpr to be able to restore them
+		    // when there is a match but we don't use it.
 		    save_subexpr(((regbehind_T *)rp) - 1);
 
 		    rp->rs_no = op;
 		    reg_save(&rp->rs_un.regsave, &backpos);
-		    /* First try if what follows matches.  If it does then we
-		     * check the behind match by looping. */
+		    // First try if what follows matches.  If it does then we
+		    // check the behind match by looping.
 		}
 	    }
 	    break;
@@ -4117,7 +4095,7 @@ regmatch(
 	    break;
 
 	  case END:
-	    status = RA_MATCH;	/* Success! */
+	    status = RA_MATCH;	// Success!
 	    break;
 
 	  default:
@@ -4130,31 +4108,29 @@ regmatch(
 	  }
 	}
 
-	/* If we can't continue sequentially, break the inner loop. */
+	// If we can't continue sequentially, break the inner loop.
 	if (status != RA_CONT)
 	    break;
 
-	/* Continue in inner loop, advance to next item. */
+	// Continue in inner loop, advance to next item.
 	scan = next;
 
-    } /* end of inner loop */
+    } // end of inner loop
 
-    /*
-     * If there is something on the regstack execute the code for the state.
-     * If the state is popped then loop and use the older state.
-     */
+    // If there is something on the regstack execute the code for the state.
+    // If the state is popped then loop and use the older state.
     while (regstack.ga_len > 0 && status != RA_FAIL)
     {
 	rp = (regitem_T *)((char *)regstack.ga_data + regstack.ga_len) - 1;
 	switch (rp->rs_state)
 	{
 	  case RS_NOPEN:
-	    /* Result is passed on as-is, simply pop the state. */
+	    // Result is passed on as-is, simply pop the state.
 	    regstack_pop(&scan);
 	    break;
 
 	  case RS_MOPEN:
-	    /* Pop the state.  Restore pointers when there is no match. */
+	    // Pop the state.  Restore pointers when there is no match.
 	    if (status == RA_NOMATCH)
 		restore_se(&rp->rs_un.sesave, &rex.reg_startpos[rp->rs_no],
 						  &rex.reg_startp[rp->rs_no]);
@@ -4163,7 +4139,7 @@ regmatch(
 
 #ifdef FEAT_SYN_HL
 	  case RS_ZOPEN:
-	    /* Pop the state.  Restore pointers when there is no match. */
+	    // Pop the state.  Restore pointers when there is no match.
 	    if (status == RA_NOMATCH)
 		restore_se(&rp->rs_un.sesave, &reg_startzpos[rp->rs_no],
 						 &reg_startzp[rp->rs_no]);
@@ -4172,7 +4148,7 @@ regmatch(
 #endif
 
 	  case RS_MCLOSE:
-	    /* Pop the state.  Restore pointers when there is no match. */
+	    // Pop the state.  Restore pointers when there is no match.
 	    if (status == RA_NOMATCH)
 		restore_se(&rp->rs_un.sesave, &rex.reg_endpos[rp->rs_no],
 						    &rex.reg_endp[rp->rs_no]);
@@ -4181,7 +4157,7 @@ regmatch(
 
 #ifdef FEAT_SYN_HL
 	  case RS_ZCLOSE:
-	    /* Pop the state.  Restore pointers when there is no match. */
+	    // Pop the state.  Restore pointers when there is no match.
 	    if (status == RA_NOMATCH)
 		restore_se(&rp->rs_un.sesave, &reg_endzpos[rp->rs_no],
 						   &reg_endzp[rp->rs_no]);
@@ -4191,25 +4167,25 @@ regmatch(
 
 	  case RS_BRANCH:
 	    if (status == RA_MATCH)
-		/* this branch matched, use it */
+		// this branch matched, use it
 		regstack_pop(&scan);
 	    else
 	    {
 		if (status != RA_BREAK)
 		{
-		    /* After a non-matching branch: try next one. */
+		    // After a non-matching branch: try next one.
 		    reg_restore(&rp->rs_un.regsave, &backpos);
 		    scan = rp->rs_scan;
 		}
 		if (scan == NULL || OP(scan) != BRANCH)
 		{
-		    /* no more branches, didn't find a match */
+		    // no more branches, didn't find a match
 		    status = RA_NOMATCH;
 		    regstack_pop(&scan);
 		}
 		else
 		{
-		    /* Prepare to try a branch. */
+		    // Prepare to try a branch.
 		    rp->rs_scan = regnext(scan);
 		    reg_save(&rp->rs_un.regsave, &backpos);
 		    scan = OPERAND(scan);
@@ -4218,23 +4194,23 @@ regmatch(
 	    break;
 
 	  case RS_BRCPLX_MORE:
-	    /* Pop the state.  Restore pointers when there is no match. */
+	    // Pop the state.  Restore pointers when there is no match.
 	    if (status == RA_NOMATCH)
 	    {
 		reg_restore(&rp->rs_un.regsave, &backpos);
-		--brace_count[rp->rs_no];	/* decrement match count */
+		--brace_count[rp->rs_no];	// decrement match count
 	    }
 	    regstack_pop(&scan);
 	    break;
 
 	  case RS_BRCPLX_LONG:
-	    /* Pop the state.  Restore pointers when there is no match. */
+	    // Pop the state.  Restore pointers when there is no match.
 	    if (status == RA_NOMATCH)
 	    {
-		/* There was no match, but we did find enough matches. */
+		// There was no match, but we did find enough matches.
 		reg_restore(&rp->rs_un.regsave, &backpos);
 		--brace_count[rp->rs_no];
-		/* continue with the items after "\{}" */
+		// continue with the items after "\{}"
 		status = RA_CONT;
 	    }
 	    regstack_pop(&scan);
@@ -4243,9 +4219,9 @@ regmatch(
 	    break;
 
 	  case RS_BRCPLX_SHORT:
-	    /* Pop the state.  Restore pointers when there is no match. */
+	    // Pop the state.  Restore pointers when there is no match.
 	    if (status == RA_NOMATCH)
-		/* There was no match, try to match one more item. */
+		// There was no match, try to match one more item.
 		reg_restore(&rp->rs_un.regsave, &backpos);
 	    regstack_pop(&scan);
 	    if (status == RA_NOMATCH)
@@ -4256,15 +4232,15 @@ regmatch(
 	    break;
 
 	  case RS_NOMATCH:
-	    /* Pop the state.  If the operand matches for NOMATCH or
-	     * doesn't match for MATCH/SUBPAT, we fail.  Otherwise backup,
-	     * except for SUBPAT, and continue with the next item. */
+	    // Pop the state.  If the operand matches for NOMATCH or
+	    // doesn't match for MATCH/SUBPAT, we fail.  Otherwise backup,
+	    // except for SUBPAT, and continue with the next item.
 	    if (status == (rp->rs_no == NOMATCH ? RA_MATCH : RA_NOMATCH))
 		status = RA_NOMATCH;
 	    else
 	    {
 		status = RA_CONT;
-		if (rp->rs_no != SUBPAT)	/* zero-width */
+		if (rp->rs_no != SUBPAT)	// zero-width
 		    reg_restore(&rp->rs_un.regsave, &backpos);
 	    }
 	    regstack_pop(&scan);
@@ -4280,21 +4256,21 @@ regmatch(
 	    }
 	    else
 	    {
-		/* The stuff after BEHIND/NOBEHIND matches.  Now try if
-		 * the behind part does (not) match before the current
-		 * position in the input.  This must be done at every
-		 * position in the input and checking if the match ends at
-		 * the current position. */
+		// The stuff after BEHIND/NOBEHIND matches.  Now try if
+		// the behind part does (not) match before the current
+		// position in the input.  This must be done at every
+		// position in the input and checking if the match ends at
+		// the current position.
 
-		/* save the position after the found match for next */
+		// save the position after the found match for next
 		reg_save(&(((regbehind_T *)rp) - 1)->save_after, &backpos);
 
-		/* Start looking for a match with operand at the current
-		 * position.  Go back one character until we find the
-		 * result, hitting the start of the line or the previous
-		 * line (for multi-line matching).
-		 * Set behind_pos to where the match should end, BHPOS
-		 * will match it.  Save the current value. */
+		// Start looking for a match with operand at the current
+		// position.  Go back one character until we find the
+		// result, hitting the start of the line or the previous
+		// line (for multi-line matching).
+		// Set behind_pos to where the match should end, BHPOS
+		// will match it.  Save the current value.
 		(((regbehind_T *)rp) - 1)->save_behind = behind_pos;
 		behind_pos = rp->rs_un.regsave;
 
@@ -4306,21 +4282,19 @@ regmatch(
 	    break;
 
 	  case RS_BEHIND2:
-	    /*
-	     * Looping for BEHIND / NOBEHIND match.
-	     */
+	    // Looping for BEHIND / NOBEHIND match.
 	    if (status == RA_MATCH && reg_save_equal(&behind_pos))
 	    {
-		/* found a match that ends where "next" started */
+		// found a match that ends where "next" started
 		behind_pos = (((regbehind_T *)rp) - 1)->save_behind;
 		if (rp->rs_no == BEHIND)
 		    reg_restore(&(((regbehind_T *)rp) - 1)->save_after,
 								    &backpos);
 		else
 		{
-		    /* But we didn't want a match.  Need to restore the
-		     * subexpr, because what follows matched, so they have
-		     * been set. */
+		    // But we didn't want a match.  Need to restore the
+		    // subexpr, because what follows matched, so they have
+		    // been set.
 		    status = RA_NOMATCH;
 		    restore_subexpr(((regbehind_T *)rp) - 1);
 		}
@@ -4331,8 +4305,8 @@ regmatch(
 	    {
 		long limit;
 
-		/* No match or a match that doesn't end where we want it: Go
-		 * back one character.  May go to previous line once. */
+		// No match or a match that doesn't end where we want it: Go
+		// back one character.  May go to previous line once.
 		no = OK;
 		limit = OPERAND_MIN(rp->rs_scan);
 		if (REG_MULTI)
@@ -4388,20 +4362,20 @@ regmatch(
 		}
 		if (no == OK)
 		{
-		    /* Advanced, prepare for finding match again. */
+		    // Advanced, prepare for finding match again.
 		    reg_restore(&rp->rs_un.regsave, &backpos);
 		    scan = OPERAND(rp->rs_scan) + 4;
 		    if (status == RA_MATCH)
 		    {
-			/* We did match, so subexpr may have been changed,
-			 * need to restore them for the next try. */
+			// We did match, so subexpr may have been changed,
+			// need to restore them for the next try.
 			status = RA_NOMATCH;
 			restore_subexpr(((regbehind_T *)rp) - 1);
 		    }
 		}
 		else
 		{
-		    /* Can't advance.  For NOBEHIND that's a match. */
+		    // Can't advance.  For NOBEHIND that's a match.
 		    behind_pos = (((regbehind_T *)rp) - 1)->save_behind;
 		    if (rp->rs_no == NOBEHIND)
 		    {
@@ -4411,9 +4385,9 @@ regmatch(
 		    }
 		    else
 		    {
-			/* We do want a proper match.  Need to restore the
-			 * subexpr if we had a match, because they may have
-			 * been set. */
+			// We do want a proper match.  Need to restore the
+			// subexpr if we had a match, because they may have
+			// been set.
 			if (status == RA_MATCH)
 			{
 			    status = RA_NOMATCH;
@@ -4438,29 +4412,29 @@ regmatch(
 		    break;
 		}
 
-		/* Tried once already, restore input pointers. */
+		// Tried once already, restore input pointers.
 		if (status != RA_BREAK)
 		    reg_restore(&rp->rs_un.regsave, &backpos);
 
-		/* Repeat until we found a position where it could match. */
+		// Repeat until we found a position where it could match.
 		for (;;)
 		{
 		    if (status != RA_BREAK)
 		    {
-			/* Tried first position already, advance. */
+			// Tried first position already, advance.
 			if (rp->rs_state == RS_STAR_LONG)
 			{
-			    /* Trying for longest match, but couldn't or
-			     * didn't match -- back up one char. */
+			    // Trying for longest match, but couldn't or
+			    // didn't match -- back up one char.
 			    if (--rst->count < rst->minval)
 				break;
 			    if (rex.input == rex.line)
 			    {
-				/* backup to last char of previous line */
+				// backup to last char of previous line
 				--rex.lnum;
 				rex.line = reg_getline(rex.lnum);
-				/* Just in case regrepeat() didn't count
-				 * right. */
+				// Just in case regrepeat() didn't count
+				// right.
 				if (rex.line == NULL)
 				    break;
 				rex.input = rex.line + STRLEN(rex.line);
@@ -4471,10 +4445,10 @@ regmatch(
 			}
 			else
 			{
-			    /* Range is backwards, use shortest match first.
-			     * Careful: maxval and minval are exchanged!
-			     * Couldn't or didn't match: try advancing one
-			     * char. */
+			    // Range is backwards, use shortest match first.
+			    // Careful: maxval and minval are exchanged!
+			    // Couldn't or didn't match: try advancing one
+			    // char.
 			    if (rst->count == rst->minval
 				  || regrepeat(OPERAND(rp->rs_scan), 1L) == 0)
 				break;
@@ -4486,7 +4460,7 @@ regmatch(
 		    else
 			status = RA_NOMATCH;
 
-		    /* If it could match, try it. */
+		    // If it could match, try it.
 		    if (rst->nextb == NUL || *rex.input == rst->nextb
 					     || *rex.input == rst->nextb_ic)
 		    {
@@ -4498,7 +4472,7 @@ regmatch(
 		}
 		if (status != RA_CONT)
 		{
-		    /* Failed. */
+		    // Failed.
 		    regstack_pop(&scan);
 		    regstack.ga_len -= sizeof(regstar_T);
 		    status = RA_NOMATCH;
@@ -4507,28 +4481,24 @@ regmatch(
 	    break;
 	}
 
-	/* If we want to continue the inner loop or didn't pop a state
-	 * continue matching loop */
+	// If we want to continue the inner loop or didn't pop a state
+	// continue matching loop
 	if (status == RA_CONT || rp == (regitem_T *)
 			     ((char *)regstack.ga_data + regstack.ga_len) - 1)
 	    break;
     }
 
-    /* May need to continue with the inner loop, starting at "scan". */
+    // May need to continue with the inner loop, starting at "scan".
     if (status == RA_CONT)
 	continue;
 
-    /*
-     * If the regstack is empty or something failed we are done.
-     */
+    // If the regstack is empty or something failed we are done.
     if (regstack.ga_len == 0 || status == RA_FAIL)
     {
 	if (scan == NULL)
 	{
-	    /*
-	     * We get here only if there's trouble -- normally "case END" is
-	     * the terminating point.
-	     */
+	    // We get here only if there's trouble -- normally "case END" is
+	    // the terminating point.
 	    emsg(_(e_re_corr));
 #ifdef DEBUG
 	    printf("Premature EOL\n");
@@ -4537,9 +4507,9 @@ regmatch(
 	return (status == RA_MATCH);
     }
 
-  } /* End of loop until the regstack is empty. */
+  } // End of loop until the regstack is empty.
 
-  /* NOTREACHED */
+  // NOTREACHED
 }
 
 /*
