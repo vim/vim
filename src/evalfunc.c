@@ -754,11 +754,11 @@ static funcentry_T global_functions[] =
     {"synstack",	2, 2, 0,	  f_synstack},
     {"system",		1, 2, FEARG_1,	  f_system},
     {"systemlist",	1, 2, FEARG_1,	  f_systemlist},
-    {"tabpagebuflist",	0, 1, 0,	  f_tabpagebuflist},
+    {"tabpagebuflist",	0, 1, FEARG_1,	  f_tabpagebuflist},
     {"tabpagenr",	0, 1, 0,	  f_tabpagenr},
-    {"tabpagewinnr",	1, 2, 0,	  f_tabpagewinnr},
+    {"tabpagewinnr",	1, 2, FEARG_1,	  f_tabpagewinnr},
     {"tagfiles",	0, 0, 0,	  f_tagfiles},
-    {"taglist",		1, 2, 0,	  f_taglist},
+    {"taglist",		1, 2, FEARG_1,	  f_taglist},
 #ifdef FEAT_FLOAT
     {"tan",		1, 1, FEARG_1,	  f_tan},
     {"tanh",		1, 1, FEARG_1,	  f_tanh},
@@ -793,13 +793,13 @@ static funcentry_T global_functions[] =
     {"term_start",	1, 2, 0,	  f_term_start},
     {"term_wait",	1, 2, 0,	  f_term_wait},
 #endif
-    {"test_alloc_fail",	3, 3, 0,	  f_test_alloc_fail},
+    {"test_alloc_fail",	3, 3, FEARG_1,	  f_test_alloc_fail},
     {"test_autochdir",	0, 0, 0,	  f_test_autochdir},
-    {"test_feedinput",	1, 1, 0,	  f_test_feedinput},
-    {"test_garbagecollect_now",	0, 0, 0,	  f_test_garbagecollect_now},
-    {"test_garbagecollect_soon",	0, 0, 0,	  f_test_garbagecollect_soon},
-    {"test_getvalue",	1, 1, 0,	  f_test_getvalue},
-    {"test_ignore_error",	1, 1, 0,	  f_test_ignore_error},
+    {"test_feedinput",	1, 1, FEARG_1,	  f_test_feedinput},
+    {"test_garbagecollect_now",	0, 0, 0,  f_test_garbagecollect_now},
+    {"test_garbagecollect_soon", 0, 0, 0, f_test_garbagecollect_soon},
+    {"test_getvalue",	1, 1, FEARG_1,	  f_test_getvalue},
+    {"test_ignore_error", 1, 1, FEARG_1,  f_test_ignore_error},
     {"test_null_blob",	0, 0, 0,	  f_test_null_blob},
 #ifdef FEAT_JOB_CHANNEL
     {"test_null_channel", 0, 0, 0,	  f_test_null_channel},
@@ -811,16 +811,16 @@ static funcentry_T global_functions[] =
     {"test_null_list",	0, 0, 0,	  f_test_null_list},
     {"test_null_partial", 0, 0, 0,	  f_test_null_partial},
     {"test_null_string", 0, 0, 0,	  f_test_null_string},
-    {"test_option_not_set", 1, 1, 0,	  f_test_option_not_set},
-    {"test_override",	2, 2, 0,	  f_test_override},
-    {"test_refcount",	1, 1, 0,	  f_test_refcount},
+    {"test_option_not_set", 1, 1, FEARG_1, f_test_option_not_set},
+    {"test_override",	2, 2, FEARG_2,	  f_test_override},
+    {"test_refcount",	1, 1, FEARG_1,	  f_test_refcount},
 #ifdef FEAT_GUI
-    {"test_scrollbar",	3, 3, 0,	  f_test_scrollbar},
+    {"test_scrollbar",	3, 3, FEARG_2,	  f_test_scrollbar},
 #endif
 #ifdef FEAT_MOUSE
     {"test_setmouse",	2, 2, 0,	  f_test_setmouse},
 #endif
-    {"test_settime",	1, 1, 0,	  f_test_settime},
+    {"test_settime",	1, 1, FEARG_1,	  f_test_settime},
 #ifdef FEAT_TIMERS
     {"timer_info",	0, 1, 0,	  f_timer_info},
     {"timer_pause",	2, 2, 0,	  f_timer_pause},

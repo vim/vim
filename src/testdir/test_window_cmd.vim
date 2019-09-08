@@ -485,7 +485,7 @@ func Test_window_newtab()
   wincmd T
   call assert_equal(2, tabpagenr('$'))
   call assert_equal(['Xb', 'Xa'], map(tabpagebuflist(1), 'bufname(v:val)'))
-  call assert_equal(['Xc'      ], map(tabpagebuflist(2), 'bufname(v:val)'))
+  call assert_equal(['Xc'      ], map(2->tabpagebuflist(), 'bufname(v:val)'))
 
   %bw!
 endfunc
@@ -598,8 +598,11 @@ endfunc
 
 func Fun_RenewFile()
   " Need to wait a bit for the timestamp to be older.
-  sleep 2
-  silent execute '!echo "1" > tmp.txt'
+  let old_ftime = getftime("tmp.txt")
+  while getftime("tmp.txt") == old_ftime
+    sleep 100m
+    silent execute '!echo "1" > tmp.txt'
+  endwhile
   sp
   wincmd p
   edit! tmp.txt
@@ -835,7 +838,7 @@ func Test_winnr()
 
   tabnew
   call assert_equal(8, tabpagewinnr(1, 'j'))
-  call assert_equal(2, tabpagewinnr(1, 'k'))
+  call assert_equal(2, 1->tabpagewinnr('k'))
   call assert_equal(4, tabpagewinnr(1, 'h'))
   call assert_equal(6, tabpagewinnr(1, 'l'))
 

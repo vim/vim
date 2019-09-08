@@ -1596,7 +1596,7 @@ func Test_refcount()
     call assert_equal(1, test_refcount(x))
 
     let x = {}
-    call assert_equal(1, test_refcount(x))
+    call assert_equal(1, x->test_refcount())
 
     let x = 0zff
     call assert_equal(1, test_refcount(x))

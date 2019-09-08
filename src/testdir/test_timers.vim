@@ -251,7 +251,7 @@ func FeedAndPeek(timer)
 endfunc
 
 func Interrupt(timer)
-  call test_feedinput("\<C-C>")
+  eval "\<C-C>"->test_feedinput()
 endfunc
 
 func Test_timer_peek_and_get_char()

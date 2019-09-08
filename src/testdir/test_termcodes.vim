@@ -646,7 +646,7 @@ func Test_term_rgb_response()
 
   " response to t_RB, 4 digits, dark
   set background=light
-  call test_option_not_set('background')
+  eval 'background'->test_option_not_set()
   let red = 0x29
   let green = 0x4a
   let blue = 0x6b
