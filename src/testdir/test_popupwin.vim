@@ -2306,6 +2306,20 @@ func Test_popup_cursorline()
   call term_sendkeys(buf, "x")
   call StopVimInTerminal(buf)
 
+  " ---------
+  " Cursor in second line when creating the popup
+  " ---------
+  let lines =<< trim END
+    let winid = popup_create(['111', '222', '333'], #{
+	  \ cursorline : 1,
+	  \ })
+    call win_execute(winid, "2")
+  END
+  call writefile(lines, 'XtestPopupCursorLine')
+  let buf = RunVimInTerminal('-S XtestPopupCursorLine', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_cursorline_7', {})
+  call StopVimInTerminal(buf)
+
   call delete('XtestPopupCursorLine')
 endfunc
 

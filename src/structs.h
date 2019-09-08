@@ -3050,6 +3050,8 @@ struct window_S
     int		w_popup_prop_topline; // w_topline of window with
 				      // w_popup_prop_type when position was
 				      // computed
+    linenr_T	w_popup_last_curline; // last known w_cursor.lnum of window
+				      // with "cursorline" set
     callback_T	w_close_cb;	    // popup close callback
     callback_T	w_filter_cb;	    // popup filter callback
     int		w_filter_mode;	    // mode when filter callback is used
