@@ -2088,16 +2088,22 @@ func Test_terminal_getwinpos()
 endfunc
 
 func Test_terminal_altscreen()
-  CheckUnix
+  if has('win32')
+    let cmd = "type Xtext\<CR>"
+  else
+    let cmd = "cat Xtext\<CR>"
+  endif
 
   let buf = term_start(&shell, {})
-
-  call term_sendkeys(buf, 'echo "\e[?1047h"' .. "\r")
+  call writefile(["\<Esc>[?1047h"], 'Xtext')
+  call term_sendkeys(buf, cmd)
   call WaitForAssert({-> assert_equal(1, term_getaltscreen(buf))})
 
-  call term_sendkeys(buf, 'echo "\e[?1047l"' .. "\r")
+  call writefile(["\<Esc>[?1047l"], 'Xtext')
+  call term_sendkeys(buf, cmd)
   call WaitForAssert({-> assert_equal(0, term_getaltscreen(buf))})
 
   call term_sendkeys(buf, "exit\r")
   exe buf . "bwipe!"
+  call delete('Xtext')
 endfunc
