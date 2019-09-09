@@ -1276,16 +1276,19 @@ main_loop(
 	    /* display message after redraw */
 	    if (keep_msg != NULL)
 	    {
-		char_u *p;
+		char_u *p = vim_strsave(keep_msg);
 
-		// msg_attr_keep() will set keep_msg to NULL, must free the
-		// string here. Don't reset keep_msg, msg_attr_keep() uses it
-		// to check for duplicates.  Never put this message in history.
-		p = keep_msg;
-		msg_hist_off = TRUE;
-		msg_attr((char *)p, keep_msg_attr);
-		msg_hist_off = FALSE;
-		vim_free(p);
+		if (p != NULL)
+		{
+		    // msg_start() will set keep_msg to NULL, make a copy
+		    // first.  Don't reset keep_msg, msg_attr_keep() uses it to
+		    // check for duplicates.  Never put this message in
+		    // history.
+		    msg_hist_off = TRUE;
+		    msg_attr((char *)p, keep_msg_attr);
+		    msg_hist_off = FALSE;
+		    vim_free(p);
+		}
 	    }
 	    if (need_fileinfo)		/* show file info after redraw */
 	    {

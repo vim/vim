@@ -168,11 +168,6 @@ msg_attr_keep(
 	ch_log(NULL, "ERROR: %s", (char *)s);
 #endif
 
-    /* When displaying keep_msg, don't let msg_start() free it, caller must do
-     * that. */
-    if ((char_u *)s == keep_msg)
-	keep_msg = NULL;
-
     /* Truncate the message if needed. */
     msg_start();
     buf = msg_strtrunc((char_u *)s, FALSE);
