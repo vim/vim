@@ -5055,6 +5055,8 @@ f_term_getattr(typval_T *argvars, typval_T *rettv)
     if (name == NULL)
 	return;
 
+    if (attr > HL_ALL)
+	attr = syn_attr2attr(attr);
     for (i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
 	if (STRCMP(name, attrs[i].name) == 0)
 	{

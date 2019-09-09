@@ -44,6 +44,8 @@ test_alloc_fail({id}, {countdown}, {repeat})		*test_alloc_fail()*
 		let memory allocation fail {repeat} times.  When {repeat} is
 		smaller than one it fails one time.
 
+		Can also be used as a |method|: >
+			GetAllocId()->test_alloc_fail()
 
 test_autochdir()					*test_autochdir()*
 		Set a flag to enable the effect of 'autochdir' before Vim
@@ -55,6 +57,8 @@ test_feedinput({string})				*test_feedinput()*
 		were typed by the user. This uses a low level input buffer.
 		This function works only when with |+unix| or GUI is running.
 
+		Can also be used as a |method|: >
+			GetText()->test_feedinput()
 
 test_garbagecollect_now()			 *test_garbagecollect_now()*
 		Like garbagecollect(), but executed right away.  This must
@@ -73,6 +77,8 @@ test_getvalue({name})					*test_getvalue()*
 		{name} are supported:
 			need_fileinfo
 
+		Can also be used as a |method|: >
+			GetName()->test_getvalue()
 
 test_ignore_error({expr})			 *test_ignore_error()*
 		Ignore any error containing {expr}.  A normal message is given
@@ -84,6 +90,8 @@ test_ignore_error({expr})			 *test_ignore_error()*
 		When the {expr} is the string "RESET" then the list of ignored
 		errors is made empty.
 
+		Can also be used as a |method|: >
+			GetErrorText()->test_ignore_error()
 
 test_null_blob()					*test_null_blob()*
 		Return a |Blob| that is null. Only useful for testing.
@@ -124,6 +132,9 @@ test_option_not_set({name})				*test_option_not_set()*
 		even though the value is "double".
 		Only to be used for testing!
 
+		Can also be used as a |method|: >
+			GetOptionName()->test_option_not_set()
+
 
 test_override({name}, {val})				*test_override()*
 		Overrides certain parts of Vim's internal processing to be able
@@ -155,11 +166,16 @@ test_override({name}, {val})				*test_override()*
 <		The value of "starting" is saved.  It is restored by: >
 			call test_override('starting', 0)
 
+<		Can also be used as a |method|: >
+			GetOverrideVal()-> test_override('starting')
 
 test_refcount({expr})					*test_refcount()*
 		Return the reference count of {expr}.  When {expr} is of a
 		type that does not have a reference count, returns -1.  Only
 		to be used for testing.
+
+		Can also be used as a |method|: >
+			GetVarname()->test_refcount()
 
 
 test_scrollbar({which}, {value}, {dragging})		*test_scrollbar()*
@@ -179,6 +195,8 @@ test_scrollbar({which}, {value}, {dragging})		*test_scrollbar()*
 		Only works when the {which} scrollbar actually exists,
 		obviously only when using the GUI.
 
+		Can also be used as a |method|: >
+			GetValue()->test_scrollbar('right', 0)
 
 test_setmouse({row}, {col})				*test_setmouse()*
 		Set the mouse position to be used for the next mouse action.
@@ -196,6 +214,9 @@ test_settime({expr})					*test_settime()*
 		error message.
 		{expr} must evaluate to a number.  When the value is zero the
 		normal behavior is restored.
+
+		Can also be used as a |method|: >
+			GetTime()->test_settime()
 
 ==============================================================================
 3. Assert functions				*assert-functions-details*
