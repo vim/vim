@@ -1161,6 +1161,7 @@ enum
 #ifdef FEAT_SYN_HL
     , WV_CUC
     , WV_CUL
+    , WV_CULOPT
     , WV_CC
 #endif
 #ifdef FEAT_STL_OPT

@@ -238,6 +238,7 @@
 #ifdef FEAT_SYN_HL
 # define PV_CUC		OPT_WIN(WV_CUC)
 # define PV_CUL		OPT_WIN(WV_CUL)
+# define PV_CULOPT	OPT_WIN(WV_CULOPT)
 # define PV_CC		OPT_WIN(WV_CC)
 #endif
 #ifdef FEAT_STL_OPT
@@ -993,6 +994,13 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+    {"cursorlineopt", "culopt", P_STRING|P_VI_DEF|P_RWIN,
+#ifdef FEAT_SYN_HL
+			    (char_u *)VAR_WIN, PV_CULOPT,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)"both", (char_u *)0L} SCTX_INIT},
     {"debug",	    NULL,   P_STRING|P_VI_DEF,
 			    (char_u *)&p_debug, PV_NONE,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
@@ -3227,6 +3235,9 @@ static char *(p_scl_values[]) = {"yes", "no", "auto", "number", NULL};
 #endif
 #if defined(MSWIN) && defined(FEAT_TERMINAL)
 static char *(p_twt_values[]) = {"winpty", "conpty", "", NULL};
+#endif
+#ifdef FEAT_SYN_HL
+static char *(p_culopt_values[]) = {"line", "number", "both", NULL};
 #endif
 
 static void set_options_default(int opt_flags);
@@ -6326,6 +6337,15 @@ did_set_string_option(
     }
 
 #ifdef FEAT_SYN_HL
+    /* 'cursorlineopt' */
+    else if (varp == &curwin->w_p_culopt
+				  || gvarp == &curwin->w_allbuf_opt.wo_culopt)
+    {
+	if (**varp == NUL
+		    || check_opt_strings(*varp, p_culopt_values, FALSE) != OK)
+	    errmsg = e_invarg;
+    }
+
     /* 'colorcolumn' */
     else if (varp == &curwin->w_p_cc)
 	errmsg = check_colorcolumn(curwin);
@@ -10775,6 +10795,7 @@ get_varp(struct vimoption *p)
 #ifdef FEAT_SYN_HL
 	case PV_CUC:	return (char_u *)&(curwin->w_p_cuc);
 	case PV_CUL:	return (char_u *)&(curwin->w_p_cul);
+	case PV_CULOPT:	return (char_u *)&(curwin->w_p_culopt);
 	case PV_CC:	return (char_u *)&(curwin->w_p_cc);
 #endif
 #ifdef FEAT_DIFF
@@ -11012,6 +11033,7 @@ copy_winopt(winopt_T *from, winopt_T *to)
 #ifdef FEAT_SYN_HL
     to->wo_cuc = from->wo_cuc;
     to->wo_cul = from->wo_cul;
+    to->wo_culopt = vim_strsave(from->wo_culopt);
     to->wo_cc = vim_strsave(from->wo_cc);
 #endif
 #ifdef FEAT_DIFF
@@ -11087,6 +11109,7 @@ check_winopt(winopt_T *wop UNUSED)
     check_string_option(&wop->wo_stl);
 #endif
 #ifdef FEAT_SYN_HL
+    check_string_option(&wop->wo_culopt);
     check_string_option(&wop->wo_cc);
 #endif
 #ifdef FEAT_CONCEAL
@@ -11132,6 +11155,7 @@ clear_winopt(winopt_T *wop UNUSED)
     clear_string_option(&wop->wo_stl);
 #endif
 #ifdef FEAT_SYN_HL
+    clear_string_option(&wop->wo_culopt);
     clear_string_option(&wop->wo_cc);
 #endif
 #ifdef FEAT_CONCEAL
