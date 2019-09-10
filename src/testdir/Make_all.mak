@@ -92,6 +92,7 @@ NEW_TESTS = \
 	test_crypt \
 	test_cscope \
 	test_cursor_func \
+	test_cursorline \
 	test_curswant \
 	test_debugger \
 	test_delete \
