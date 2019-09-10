@@ -850,6 +850,7 @@ static funcentry_T global_functions[] =
     {"win_id2tabwin",	1, 1, FEARG_1,	  f_win_id2tabwin},
     {"win_id2win",	1, 1, FEARG_1,	  f_win_id2win},
     {"win_screenpos",	1, 1, FEARG_1,	  f_win_screenpos},
+    {"win_splitmove",   2, 3, FEARG_1,    f_win_splitmove},
     {"winbufnr",	1, 1, FEARG_1,	  f_winbufnr},
     {"wincol",		0, 0, 0,	  f_wincol},
     {"winheight",	1, 1, FEARG_1,	  f_winheight},
