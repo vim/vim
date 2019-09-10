@@ -155,19 +155,16 @@ changed_internal(void)
 static long next_listener_id = 0;
 
 /*
- * Check if the change at "lnum" / "col" is above or overlaps with an existing
- * changed. If above then flush changes and invoke listeners.
- * If "merge" is TRUE do the merge.
+ * Check if the change at "lnum" is above or overlaps with an existing
+ * change. If above then flush changes and invoke listeners.
  * Returns TRUE if the change was merged.
  */
     static int
 check_recorded_changes(
 	buf_T		*buf,
 	linenr_T	lnum,
-	colnr_T		col,
 	linenr_T	lnume,
-	long		xtra,
-	int		merge)
+	long		xtra)
 {
     if (buf->b_recorded_changes != NULL && xtra != 0)
     {
@@ -182,42 +179,12 @@ check_recorded_changes(
 				      li->li_tv.vval.v_dict, (char_u *)"lnum");
 	    prev_lnume = (linenr_T)dict_get_number(
 				       li->li_tv.vval.v_dict, (char_u *)"end");
-	    if (prev_lnum >= lnum || prev_lnum > lnume
-		    || (prev_lnume >= lnum && xtra != 0))
+	    if (prev_lnum >= lnum || prev_lnum > lnume || prev_lnume >= lnum)
 	    {
-		if (li->li_next == NULL && lnum == prev_lnum
-			&& xtra == 0
-			&& col + 1 == (colnr_T)dict_get_number(
-				      li->li_tv.vval.v_dict, (char_u *)"col"))
-		{
-		    if (merge)
-		    {
-			dictitem_T	*di;
-
-			// Same start point and nothing is following, entries
-			// can be merged.
-			di = dict_find(li->li_tv.vval.v_dict,
-							  (char_u *)"end", -1);
-			if (di != NULL)
-			{
-			    prev_lnum = tv_get_number(&di->di_tv);
-			    if (lnume > prev_lnum)
-				di->di_tv.vval.v_number = lnume;
-			}
-			di = dict_find(li->li_tv.vval.v_dict,
-							(char_u *)"added", -1);
-			if (di != NULL)
-			    di->di_tv.vval.v_number += xtra;
-			return TRUE;
-		    }
-		}
-		else
-		{
-		    // the current change is going to make the line number in
-		    // the older change invalid, flush now
-		    invoke_listeners(curbuf);
-		    break;
-		}
+		// the current change is going to make the line number in
+		// the older change invalid, flush now
+		invoke_listeners(curbuf);
+		break;
 	    }
 	}
     }
@@ -242,7 +209,7 @@ may_record_change(
 
     // If the new change is going to change the line numbers in already listed
     // changes, then flush.
-    if (check_recorded_changes(curbuf, lnum, col, lnume, xtra, TRUE))
+    if (check_recorded_changes(curbuf, lnum, lnume, xtra))
 	return;
 
     if (curbuf->b_recorded_changes == NULL)
@@ -325,15 +292,17 @@ f_listener_flush(typval_T *argvars, typval_T *rettv UNUSED)
  * listener_remove() function
  */
     void
-f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
+f_listener_remove(typval_T *argvars, typval_T *rettv)
 {
     listener_T	*lnr;
     listener_T	*next;
-    listener_T	*prev = NULL;
+    listener_T	*prev;
     int		id = tv_get_number(argvars);
     buf_T	*buf;
 
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    {
+	prev = NULL;
 	for (lnr = buf->b_listener; lnr != NULL; lnr = next)
 	{
 	    next = lnr->lr_next;
@@ -345,9 +314,12 @@ f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
 		    buf->b_listener = lnr->lr_next;
 		free_callback(&lnr->lr_callback);
 		vim_free(lnr);
+		rettv->vval.v_number = 1;
+		return;
 	    }
 	    prev = lnr;
 	}
+    }
 }
 
 /*
@@ -357,7 +329,7 @@ f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
     void
 may_invoke_listeners(buf_T *buf, linenr_T lnum, linenr_T lnume, int added)
 {
-    check_recorded_changes(buf, lnum, 0, lnume, added, FALSE);
+    check_recorded_changes(buf, lnum, lnume, added);
 }
 
 /*
@@ -369,7 +341,6 @@ invoke_listeners(buf_T *buf)
 {
     listener_T	*lnr;
     typval_T	rettv;
-    int		dummy;
     typval_T	argv[6];
     listitem_T	*li;
     linenr_T	start = MAXLNUM;
@@ -417,8 +388,7 @@ invoke_listeners(buf_T *buf)
 
     for (lnr = buf->b_listener; lnr != NULL; lnr = lnr->lr_next)
     {
-	call_callback(&lnr->lr_callback, -1, &rettv,
-				    5, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+	call_callback(&lnr->lr_callback, -1, &rettv, 5, argv);
 	clear_tv(&rettv);
     }
 
@@ -571,7 +541,6 @@ changed_common(
 		    changed_line_abv_curs_win(wp);
 	    }
 #endif
-
 	    if (wp->w_cursor.lnum > lnum)
 		changed_line_abv_curs_win(wp);
 	    else if (wp->w_cursor.lnum == lnum && wp->w_cursor.col >= col)
@@ -622,8 +591,14 @@ changed_common(
 	    if (hasAnyFolding(wp))
 		set_topline(wp, wp->w_topline);
 #endif
-	    // relative numbering may require updating more
-	    if (wp->w_p_rnu)
+	    // Relative numbering may require updating more.  Cursor line
+	    // highlighting probably needs to be updated if it's below the
+	    // change.
+	    if (wp->w_p_rnu
+#ifdef FEAT_SYN_HL
+		    || (wp->w_p_cul && lnum <= wp->w_last_cursorline)
+#endif
+		    )
 		redraw_win_later(wp, SOME_VALID);
 	}
     }
@@ -696,7 +671,7 @@ changed_bytes(linenr_T lnum, colnr_T col)
  * Like changed_bytes() but also adjust text properties for "added" bytes.
  * When "added" is negative text was deleted.
  */
-    void
+    static void
 inserted_bytes(linenr_T lnum, colnr_T col, int added UNUSED)
 {
 #ifdef FEAT_TEXT_PROP
@@ -1038,10 +1013,7 @@ ins_char_bytes(char_u *buf, int charlen)
     // show the match for right parens and braces.
     if (p_sm && (State & INSERT)
 	    && msg_silent == 0
-#ifdef FEAT_INS_EXPAND
-	    && !ins_compl_active()
-#endif
-       )
+	    && !ins_compl_active())
     {
 	if (has_mbyte)
 	    showmatch(mb_ptr2char(buf));

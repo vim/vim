@@ -268,7 +268,7 @@ func Test_getsettagstack()
   enew | only
   call settagstack(1, {'items' : []})
   call assert_equal(0, gettagstack(1).length)
-  call assert_equal([], gettagstack(1).items)
+  call assert_equal([], 1->gettagstack().items)
   " Error cases
   call assert_equal({}, gettagstack(100))
   call assert_equal(-1, settagstack(100, {'items' : []}))
@@ -303,7 +303,7 @@ func Test_getsettagstack()
   " Try to set current index to invalid values
   call settagstack(1, {'curidx' : -1})
   call assert_equal(1, gettagstack().curidx)
-  call settagstack(1, {'curidx' : 50})
+  eval {'curidx' : 50}->settagstack(1)
   call assert_equal(4, gettagstack().curidx)
 
   " Try pushing invalid items onto the stack

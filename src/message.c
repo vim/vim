@@ -28,6 +28,7 @@ static void t_puts(int *t_col, char_u *t_s, char_u *s, int attr);
 static void msg_puts_printf(char_u *str, int maxlen);
 static int do_more_prompt(int typed_char);
 static void msg_screen_putchar(int c, int attr);
+static void msg_moremsg(int full);
 static int  msg_check_screen(void);
 static void redir_write(char_u *s, int maxlen);
 #ifdef FEAT_CON_DIALOG
@@ -35,6 +36,7 @@ static char_u *msg_show_console_dialog(char_u *message, char_u *buttons, int dfl
 static int	confirm_msg_used = FALSE;	/* displaying confirm_msg */
 static char_u	*confirm_msg = NULL;		/* ":confirm" message */
 static char_u	*confirm_msg_tail;		/* tail of confirm_msg */
+static void display_confirm_msg(void);
 #endif
 #ifdef FEAT_JOB_CHANNEL
 static int emsg_to_channel_log = FALSE;
@@ -165,11 +167,6 @@ msg_attr_keep(
 	/* Write message in the channel log. */
 	ch_log(NULL, "ERROR: %s", (char *)s);
 #endif
-
-    /* When displaying keep_msg, don't let msg_start() free it, caller must do
-     * that. */
-    if ((char_u *)s == keep_msg)
-	keep_msg = NULL;
 
     /* Truncate the message if needed. */
     msg_start();
@@ -513,7 +510,7 @@ msg_source(int attr)
  * If "msg" is in 'debug': do error message but without side effects.
  * If "emsg_skip" is set: never do error messages.
  */
-    int
+    static int
 emsg_not_now(void)
 {
     if ((emsg_off > 0 && vim_strchr(p_debug, 'm') == NULL
@@ -652,7 +649,7 @@ emsg_core(char_u *s)
 		redir_write(s, -1);
 	    }
 #ifdef FEAT_JOB_CHANNEL
-	    ch_log(NULL, "ERROR: %s", (char *)s);
+	    ch_log(NULL, "ERROR silent: %s", (char *)s);
 #endif
 	    return TRUE;
 	}
@@ -1930,13 +1927,7 @@ msg_puts_title(char *s)
  * part in the middle and replace it with "..." when necessary.
  * Does not handle multi-byte characters!
  */
-    void
-msg_outtrans_long_attr(char_u *longstr, int attr)
-{
-    msg_outtrans_long_len_attr(longstr, (int)STRLEN(longstr), attr);
-}
-
-    void
+    static void
 msg_outtrans_long_len_attr(char_u *longstr, int len, int attr)
 {
     int		slen = len;
@@ -1950,6 +1941,12 @@ msg_outtrans_long_len_attr(char_u *longstr, int len, int attr)
 	msg_puts_attr("...", HL_ATTR(HLF_8));
     }
     msg_outtrans_len_attr(longstr + len - slen, slen, attr);
+}
+
+    void
+msg_outtrans_long_attr(char_u *longstr, int attr)
+{
+    msg_outtrans_long_len_attr(longstr, (int)STRLEN(longstr), attr);
 }
 
 /*
@@ -2586,16 +2583,19 @@ msg_puts_printf(char_u *str, int maxlen)
 		int n = (int)(s - p);
 
 		buf = alloc(n + 3);
-		memcpy(buf, p, n);
-		if (!info_message)
-		    buf[n++] = CAR;
-		buf[n++] = NL;
-		buf[n++] = NUL;
-		if (info_message)   // informative message, not an error
-		    mch_msg((char *)buf);
-		else
-		    mch_errmsg((char *)buf);
-		vim_free(buf);
+		if (buf != NULL)
+		{
+		    memcpy(buf, p, n);
+		    if (!info_message)
+			buf[n++] = CAR;
+		    buf[n++] = NL;
+		    buf[n++] = NUL;
+		    if (info_message)   // informative message, not an error
+			mch_msg((char *)buf);
+		    else
+			mch_errmsg((char *)buf);
+		    vim_free(buf);
+		}
 		p = s + 1;
 	    }
 	}
@@ -3141,7 +3141,7 @@ msg_screen_putchar(int c, int attr)
     }
 }
 
-    void
+    static void
 msg_moremsg(int full)
 {
     int		attr;
@@ -3882,7 +3882,7 @@ msg_show_console_dialog(
 /*
  * Display the ":confirm" message.  Also called when screen resized.
  */
-    void
+    static void
 display_confirm_msg(void)
 {
     /* avoid that 'q' at the more prompt truncates the message here */
@@ -3951,168 +3951,6 @@ vim_dialog_yesnoallcancel(
 }
 
 #endif /* FEAT_GUI_DIALOG || FEAT_CON_DIALOG */
-
-#if defined(FEAT_BROWSE) || defined(PROTO)
-/*
- * Generic browse function.  Calls gui_mch_browse() when possible.
- * Later this may pop-up a non-GUI file selector (external command?).
- */
-    char_u *
-do_browse(
-    int		flags,		/* BROWSE_SAVE and BROWSE_DIR */
-    char_u	*title,		/* title for the window */
-    char_u	*dflt,		/* default file name (may include directory) */
-    char_u	*ext,		/* extension added */
-    char_u	*initdir,	/* initial directory, NULL for current dir or
-				   when using path from "dflt" */
-    char_u	*filter,	/* file name filter */
-    buf_T	*buf)		/* buffer to read/write for */
-{
-    char_u		*fname;
-    static char_u	*last_dir = NULL;    /* last used directory */
-    char_u		*tofree = NULL;
-    int			save_browse = cmdmod.browse;
-
-    /* Must turn off browse to avoid that autocommands will get the
-     * flag too!  */
-    cmdmod.browse = FALSE;
-
-    if (title == NULL || *title == NUL)
-    {
-	if (flags & BROWSE_DIR)
-	    title = (char_u *)_("Select Directory dialog");
-	else if (flags & BROWSE_SAVE)
-	    title = (char_u *)_("Save File dialog");
-	else
-	    title = (char_u *)_("Open File dialog");
-    }
-
-    /* When no directory specified, use default file name, default dir, buffer
-     * dir, last dir or current dir */
-    if ((initdir == NULL || *initdir == NUL) && dflt != NULL && *dflt != NUL)
-    {
-	if (mch_isdir(dflt))		/* default file name is a directory */
-	{
-	    initdir = dflt;
-	    dflt = NULL;
-	}
-	else if (gettail(dflt) != dflt)	/* default file name includes a path */
-	{
-	    tofree = vim_strsave(dflt);
-	    if (tofree != NULL)
-	    {
-		initdir = tofree;
-		*gettail(initdir) = NUL;
-		dflt = gettail(dflt);
-	    }
-	}
-    }
-
-    if (initdir == NULL || *initdir == NUL)
-    {
-	/* When 'browsedir' is a directory, use it */
-	if (STRCMP(p_bsdir, "last") != 0
-		&& STRCMP(p_bsdir, "buffer") != 0
-		&& STRCMP(p_bsdir, "current") != 0
-		&& mch_isdir(p_bsdir))
-	    initdir = p_bsdir;
-	/* When saving or 'browsedir' is "buffer", use buffer fname */
-	else if (((flags & BROWSE_SAVE) || *p_bsdir == 'b')
-		&& buf != NULL && buf->b_ffname != NULL)
-	{
-	    if (dflt == NULL || *dflt == NUL)
-		dflt = gettail(curbuf->b_ffname);
-	    tofree = vim_strsave(curbuf->b_ffname);
-	    if (tofree != NULL)
-	    {
-		initdir = tofree;
-		*gettail(initdir) = NUL;
-	    }
-	}
-	/* When 'browsedir' is "last", use dir from last browse */
-	else if (*p_bsdir == 'l')
-	    initdir = last_dir;
-	/* When 'browsedir is "current", use current directory.  This is the
-	 * default already, leave initdir empty. */
-    }
-
-# ifdef FEAT_GUI
-    if (gui.in_use)		/* when this changes, also adjust f_has()! */
-    {
-	if (filter == NULL
-#  ifdef FEAT_EVAL
-		&& (filter = get_var_value((char_u *)"b:browsefilter")) == NULL
-		&& (filter = get_var_value((char_u *)"g:browsefilter")) == NULL
-#  endif
-	)
-	    filter = BROWSE_FILTER_DEFAULT;
-	if (flags & BROWSE_DIR)
-	{
-#  if defined(FEAT_GUI_GTK) || defined(MSWIN)
-	    /* For systems that have a directory dialog. */
-	    fname = gui_mch_browsedir(title, initdir);
-#  else
-	    /* Generic solution for selecting a directory: select a file and
-	     * remove the file name. */
-	    fname = gui_mch_browse(0, title, dflt, ext, initdir, (char_u *)"");
-#  endif
-#  if !defined(FEAT_GUI_GTK)
-	    /* Win32 adds a dummy file name, others return an arbitrary file
-	     * name.  GTK+ 2 returns only the directory, */
-	    if (fname != NULL && *fname != NUL && !mch_isdir(fname))
-	    {
-		/* Remove the file name. */
-		char_u	    *tail = gettail_sep(fname);
-
-		if (tail == fname)
-		    *tail++ = '.';	/* use current dir */
-		*tail = NUL;
-	    }
-#  endif
-	}
-	else
-	    fname = gui_mch_browse(flags & BROWSE_SAVE,
-			       title, dflt, ext, initdir, (char_u *)_(filter));
-
-	/* We hang around in the dialog for a while, the user might do some
-	 * things to our files.  The Win32 dialog allows deleting or renaming
-	 * a file, check timestamps. */
-	need_check_timestamps = TRUE;
-	did_check_timestamps = FALSE;
-    }
-    else
-# endif
-    {
-	/* TODO: non-GUI file selector here */
-	emsg(_("E338: Sorry, no file browser in console mode"));
-	fname = NULL;
-    }
-
-    /* keep the directory for next time */
-    if (fname != NULL)
-    {
-	vim_free(last_dir);
-	last_dir = vim_strsave(fname);
-	if (last_dir != NULL && !(flags & BROWSE_DIR))
-	{
-	    *gettail(last_dir) = NUL;
-	    if (*last_dir == NUL)
-	    {
-		/* filename only returned, must be in current dir */
-		vim_free(last_dir);
-		last_dir = alloc(MAXPATHL);
-		if (last_dir != NULL)
-		    mch_dirname(last_dir, MAXPATHL);
-	    }
-	}
-    }
-
-    vim_free(tofree);
-    cmdmod.browse = save_browse;
-
-    return fname;
-}
-#endif
 
 #if defined(FEAT_EVAL)
 static char *e_printf = N_("E766: Insufficient arguments for printf()");

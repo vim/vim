@@ -8,9 +8,8 @@ void vterm_keyboard_unichar(VTerm *vt, uint32_t c, VTermModifier mod)
 {
   int needs_CSIu;
 
-  /* The shift modifier is never important for Unicode characters
-   * apart from Space
-   */
+  // The shift modifier is never important for Unicode characters
+  // apart from Space
   if(c != ' ')
     mod &= ~VTERM_MOD_SHIFT;
 
@@ -23,24 +22,24 @@ void vterm_keyboard_unichar(VTerm *vt, uint32_t c, VTermModifier mod)
   }
 
   switch(c) {
-    /* Special Ctrl- letters that can't be represented elsewise */
+    // Special Ctrl- letters that can't be represented elsewise
     case 'i': case 'j': case 'm': case '[':
       needs_CSIu = 1;
       break;
-    /* Ctrl-\ ] ^ _ don't need CSUu */
+    // Ctrl-\ ] ^ _ don't need CSUu
     case '\\': case ']': case '^': case '_':
       needs_CSIu = 0;
       break;
-    /* Shift-space needs CSIu */
+    // Shift-space needs CSIu
     case ' ':
       needs_CSIu = !!(mod & VTERM_MOD_SHIFT);
       break;
-    /* All other characters needs CSIu except for letters a-z */
+    // All other characters needs CSIu except for letters a-z
     default:
       needs_CSIu = (c < 'a' || c > 'z');
   }
 
-  /* ALT we can just prefix with ESC; anything else requires CSI u */
+  // ALT we can just prefix with ESC; anything else requires CSI u
   if(needs_CSIu && (mod & ~VTERM_MOD_ALT)) {
     vterm_push_output_sprintf_ctrl(vt, C1_CSI, "%d;%du", c, mod+1);
     return;
@@ -68,7 +67,7 @@ typedef struct {
   int csinum;
 } keycodes_s;
 
-/* Order here must be exactly the same as VTermKey enum! */
+// Order here must be exactly the same as VTermKey enum!
 static keycodes_s keycodes[] = {
   { KEYCODE_NONE,       0, 0 }, // NONE
 
@@ -155,7 +154,7 @@ void vterm_keyboard_key(VTerm *vt, VTermKey key, VTermModifier mod)
     break;
 
   case KEYCODE_TAB:
-    /* Shift-Tab is CSI Z but plain Tab is 0x09 */
+    // Shift-Tab is CSI Z but plain Tab is 0x09
     if(mod == VTERM_MOD_SHIFT)
       vterm_push_output_sprintf_ctrl(vt, C1_CSI, "Z");
     else if(mod & VTERM_MOD_SHIFT)
@@ -165,7 +164,7 @@ void vterm_keyboard_key(VTerm *vt, VTermKey key, VTermModifier mod)
     break;
 
   case KEYCODE_ENTER:
-    /* Enter is CRLF in newline mode, but just LF in linefeed */
+    // Enter is CRLF in newline mode, but just LF in linefeed
     if(vt->state->mode.newline)
       vterm_push_output_sprintf(vt, "\r\n");
     else

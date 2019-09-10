@@ -4266,14 +4266,18 @@ mb_lefthalve(int row, int col)
     int
 mb_fix_col(int col, int row)
 {
+    int off;
+
     col = check_col(col);
     row = check_row(row);
+    off = LineOffset[row] + col;
     if (has_mbyte && ScreenLines != NULL && col > 0
 	    && ((enc_dbcs
-		    && ScreenLines[LineOffset[row] + col] != NUL
+		    && ScreenLines[off] != NUL
 		    && dbcs_screen_head_off(ScreenLines + LineOffset[row],
-					 ScreenLines + LineOffset[row] + col))
-		|| (enc_utf8 && ScreenLines[LineOffset[row] + col] == 0)))
+					 ScreenLines + off))
+		|| (enc_utf8 && ScreenLines[off] == 0
+						  && ScreenLinesUC[off] == 0)))
 	return col - 1;
     return col;
 }
@@ -4464,8 +4468,10 @@ enc_locale(void)
 
     if (acp == 1200)
 	STRCPY(buf, "ucs-2le");
-    else if (acp == 1252)	    /* cp1252 is used as latin1 */
+    else if (acp == 1252)	    // cp1252 is used as latin1
 	STRCPY(buf, "latin1");
+    else if (acp == 65001)
+	STRCPY(buf, "utf-8");
     else
 	sprintf(buf, "cp%ld", acp);
 
@@ -5848,6 +5854,11 @@ xim_queue_key_press_event(GdkEventKey *event, int down)
     int
 im_get_status(void)
 {
+#  ifdef FEAT_HANGULIN
+    if (hangul_input_state_get())
+	return TRUE;
+#  endif
+
 #  ifdef FEAT_EVAL
     if (USE_IMSTATUSFUNC)
 	return call_imstatusfunc();
@@ -6488,6 +6499,18 @@ im_set_position(int row UNUSED, int col UNUSED)
 
 #endif /* FEAT_XIM */
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * "getimstatus()" function
+ */
+    void
+f_getimstatus(typval_T *argvars UNUSED, typval_T *rettv)
+{
+# if defined(HAVE_INPUT_METHOD)
+    rettv->vval.v_number = im_get_status();
+# endif
+}
+#endif
 
 /*
  * Setup "vcp" for conversion from "from" to "to".

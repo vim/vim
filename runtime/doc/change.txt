@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.1.  Last change: 2019 May 07
+*change.txt*    For Vim version 8.1.  Last change: 2019 Aug 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -691,10 +691,8 @@ The flags that you can use for the substitute commands:
 	    <Esc>   to quit substituting
 	    'a'	    to substitute this and all remaining matches
 	    'q'	    to quit substituting
-	    CTRL-E  to scroll the screen up {not available when compiled
-		       without the |+insert_expand| feature}
-	    CTRL-Y  to scroll the screen down {not available when compiled
-		       without the |+insert_expand| feature}
+	    CTRL-E  to scroll the screen up
+	    CTRL-Y  to scroll the screen down
 	If the 'edcompatible' option is on, Vim remembers the [c] flag and
 	toggles it each time you use it, but resets it when you give a new
 	search pattern.
@@ -1179,9 +1177,9 @@ There are ten types of registers:			*registers* *E354*
 2. 10 numbered registers "0 to "9
 3. The small delete register "-
 4. 26 named registers "a to "z or "A to "Z
-5. three read-only registers ":, "., "%
-6. alternate buffer register "#
-7. the expression register "=
+5. Three read-only registers ":, "., "%
+6. Alternate buffer register "#
+7. The expression register "=
 8. The selection and drop registers "*, "+ and "~ 
 9. The black hole register "_
 10. Last search pattern register "/

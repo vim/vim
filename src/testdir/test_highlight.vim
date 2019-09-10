@@ -2,6 +2,7 @@
 
 source view_util.vim
 source screendump.vim
+source check.vim
 
 func Test_highlight()
   " basic test if ":highlight" doesn't crash
@@ -532,9 +533,7 @@ func Test_termguicolors()
 endfunc
 
 func Test_cursorline_after_yank()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   call writefile([
 	\ 'set cul rnu',
@@ -553,10 +552,28 @@ func Test_cursorline_after_yank()
   call delete('Xtest_cursorline_yank')
 endfunc
 
+" test for issue #4862
+func Test_put_before_cursorline()
+  new
+  only!
+  call setline(1, 'A')
+  redraw
+  let std_attr = screenattr(1, 1)
+  set cursorline
+  redraw
+  let cul_attr = screenattr(1, 1)
+  normal yyP
+  redraw
+  " Line 1 has cursor so it should be highlighted with CursorLine.
+  call assert_equal(cul_attr, screenattr(1, 1))
+  " And CursorLine highlighting from the second line should be gone.
+  call assert_equal(std_attr, screenattr(2, 1))
+  set nocursorline
+  bwipe!
+endfunc
+
 func Test_cursorline_with_visualmode()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   call writefile([
 	\ 'set cul',
@@ -574,9 +591,7 @@ func Test_cursorline_with_visualmode()
 endfunc
 
 func Test_wincolor()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
 	set cursorline cursorcolumn rnu
@@ -601,10 +616,18 @@ endfunc
 " This test must come before the Test_cursorline test, as it appears this
 " defines the Normal highlighting group anyway.
 func Test_1_highlight_Normalgroup_exists()
-  " MS-Windows GUI sets the font
-  if !has('win32') || !has('gui_running')
-    let hlNormal = HighlightArgs('Normal')
+  let hlNormal = HighlightArgs('Normal')
+  if !has('gui_running')
     call assert_match('hi Normal\s*clear', hlNormal)
+  elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+    " expect is DEFAULT_FONT of gui_gtk_x11.c
+    call assert_match('hi Normal\s*font=Monospace 10', hlNormal)
+  elseif has('gui_motif') || has('gui_athena')
+    " expect is DEFAULT_FONT of gui_x11.c
+    call assert_match('hi Normal\s*font=7x13', hlNormal)
+  elseif has('win32')
+    " expect any font
+    call assert_match('hi Normal\s*font=.*', hlNormal)
   endif
 endfunc
 

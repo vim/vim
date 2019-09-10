@@ -29,6 +29,12 @@
 # include <gtk/gtk.h>
 #endif
 
+// Needed when generating prototypes, since FEAT_GUI is always defined then.
+#if defined(FEAT_XCLIPBOARD) && !defined(FEAT_GUI_MOTIF) \
+	&& !defined(FEAT_GUI_ATHENA) && !defined(FEAT_GUI_GTK)
+# include <X11/Intrinsic.h>
+#endif
+
 #ifdef FEAT_GUI_MAC
 # include <Types.h>
 /*# include <Memory.h>*/

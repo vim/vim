@@ -87,7 +87,9 @@ static void check_for_codes_from_term(void);
 		|| defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)))
 static int get_bytes_from_buf(char_u *, char_u *, int);
 #endif
+static void del_termcode(char_u *name);
 static void del_termcode_idx(int idx);
+static int find_term_bykeys(char_u *src);
 static int term_is_builtin(char_u *name);
 static int term_7to8bit(char_u *p);
 
@@ -1367,7 +1369,7 @@ static struct builtin_term builtin_termcaps[] =
 };	/* end of builtin_termcaps */
 
 #if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
-    guicolor_T
+    static guicolor_T
 termgui_mch_get_color(char_u *name)
 {
     return gui_get_color_cmn(name);
@@ -3425,10 +3427,14 @@ set_shellsize(int width, int height, int mustset)
 
     if (State == HITRETURN || State == SETWSIZE)
     {
-	/* postpone the resizing */
+	// postpone the resizing
 	State = SETWSIZE;
 	return;
     }
+
+    if (updating_screen)
+	// resizing while in update_screen() may cause a crash
+	return;
 
     /* curwin->w_buffer can be NULL when we are closing a window and the
      * buffer has already been closed and removing a scrollbar causes a resize
@@ -3499,13 +3505,11 @@ set_shellsize(int width, int height, int mustset)
 	    else
 	    {
 		update_topline();
-#if defined(FEAT_INS_EXPAND)
 		if (pum_visible())
 		{
 		    redraw_later(NOT_VALID);
 		    ins_compl_show_pum();
 		}
-#endif
 		update_screen(NOT_VALID);
 		if (redrawing())
 		    setcursor();
@@ -3714,6 +3718,7 @@ may_req_ambiguous_char_width(void)
 
 	/* This overwrites a few characters on the screen, a redraw is needed
 	 * after this. Clear them out for now. */
+	screen_stop_highlight();
 	term_windgoto(1, 0);
 	out_str((char_u *)"  ");
 	term_windgoto(0, 0);
@@ -4294,7 +4299,6 @@ find_termcode(char_u *name)
     return NULL;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     char_u *
 get_termcode(int i)
 {
@@ -4302,9 +4306,8 @@ get_termcode(int i)
 	return NULL;
     return &termcodes[i].name[0];
 }
-#endif
 
-    void
+    static void
 del_termcode(char_u *name)
 {
     int	    i;
@@ -6361,7 +6364,7 @@ replace_termcodes(
  * Find a termcode with keys 'src' (must be NUL terminated).
  * Return the index in termcodes[], or -1 if not found.
  */
-    int
+    static int
 find_term_bykeys(char_u *src)
 {
     int		i;
@@ -6695,7 +6698,6 @@ check_for_codes_from_term(void)
 }
 #endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Translate an internal mapping/abbreviation representation into the
  * corresponding external one recognized by :map/:abbrev commands.
@@ -6770,7 +6772,6 @@ translate_mapping(char_u *str)
     ga_append(&ga, NUL);
     return (char_u *)(ga.ga_data);
 }
-#endif
 
 #if (defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))) || defined(PROTO)
 static char ksme_str[20];

@@ -55,6 +55,11 @@
 #endif
 
 static void channel_read(channel_T *channel, ch_part_T part, char *func);
+static ch_mode_T channel_get_mode(channel_T *channel, ch_part_T part);
+static int channel_get_timeout(channel_T *channel, ch_part_T part);
+static ch_part_T channel_part_send(channel_T *channel);
+static ch_part_T channel_part_read(channel_T *channel);
+static void free_job_options(jobopt_T *opt);
 
 /* Whether a redraw is needed for appending a line to a buffer. */
 static int channel_need_redraw = FALSE;
@@ -497,7 +502,31 @@ free_unused_channels(int copyID, int mask)
 
 #if defined(FEAT_GUI) || defined(PROTO)
 
-#if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+# if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+/*
+ * Lookup the channel from the socket.  Set "partp" to the fd index.
+ * Returns NULL when the socket isn't found.
+ */
+    static channel_T *
+channel_fd2channel(sock_T fd, ch_part_T *partp)
+{
+    channel_T	*channel;
+    ch_part_T	part;
+
+    if (fd != INVALID_FD)
+	for (channel = first_channel; channel != NULL;
+						   channel = channel->ch_next)
+	{
+	    for (part = PART_SOCK; part < PART_IN; ++part)
+		if (channel->ch_part[part].ch_fd == fd)
+		{
+		    *partp = part;
+		    return channel;
+		}
+	}
+    return NULL;
+}
+
     static void
 channel_read_fd(int fd)
 {
@@ -510,12 +539,12 @@ channel_read_fd(int fd)
     else
 	channel_read(channel, part, "channel_read_fd");
 }
-#endif
+# endif
 
 /*
  * Read a command from netbeans.
  */
-#ifdef FEAT_GUI_X11
+# ifdef FEAT_GUI_X11
     static void
 messageFromServerX11(XtPointer clientData,
 		  int *unused1 UNUSED,
@@ -523,10 +552,10 @@ messageFromServerX11(XtPointer clientData,
 {
     channel_read_fd((int)(long)clientData);
 }
-#endif
+# endif
 
-#ifdef FEAT_GUI_GTK
-# if GTK_CHECK_VERSION(3,0,0)
+# ifdef FEAT_GUI_GTK
+#  if GTK_CHECK_VERSION(3,0,0)
     static gboolean
 messageFromServerGtk3(GIOChannel *unused1 UNUSED,
 		  GIOCondition unused2 UNUSED,
@@ -536,7 +565,7 @@ messageFromServerGtk3(GIOChannel *unused1 UNUSED,
     return TRUE; /* Return FALSE instead in case the event source is to
 		  * be removed after this function returns. */
 }
-# else
+#  else
     static void
 messageFromServerGtk2(gpointer clientData,
 		  gint unused1 UNUSED,
@@ -544,8 +573,8 @@ messageFromServerGtk2(gpointer clientData,
 {
     channel_read_fd((int)(long)clientData);
 }
+#  endif
 # endif
-#endif
 
     static void
 channel_gui_register_one(channel_T *channel, ch_part_T part)
@@ -666,7 +695,7 @@ channel_gui_unregister(channel_T *channel)
 	channel_gui_unregister_one(channel, part);
 }
 
-#endif
+#endif  // FEAT_GUI
 
 static char *e_cannot_connect = N_("E902: Cannot connect to port");
 
@@ -1007,7 +1036,7 @@ prepare_buffer(buf_T *buf)
  * Returns NULL if there is something very wrong (error already reported).
  */
     static buf_T *
-find_buffer(char_u *name, int err, int msg)
+channel_find_buffer(char_u *name, int err, int msg)
 {
     buf_T *buf = NULL;
     buf_T *save_curbuf = curbuf;
@@ -1097,7 +1126,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 
 	    if (opt->jo_set2 & JO2_OUT_MSG)
 		msg = opt->jo_message[PART_OUT];
-	    buf = find_buffer(opt->jo_io_name[PART_OUT], FALSE, msg);
+	    buf = channel_find_buffer(opt->jo_io_name[PART_OUT], FALSE, msg);
 	}
 	if (buf != NULL)
 	{
@@ -1144,7 +1173,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 
 	    if (opt->jo_set2 & JO2_ERR_MSG)
 		msg = opt->jo_message[PART_ERR];
-	    buf = find_buffer(opt->jo_io_name[PART_ERR], TRUE, msg);
+	    buf = channel_find_buffer(opt->jo_io_name[PART_ERR], TRUE, msg);
 	}
 	if (buf != NULL)
 	{
@@ -1175,7 +1204,7 @@ channel_set_options(channel_T *channel, jobopt_T *opt)
 /*
  * Implements ch_open().
  */
-    channel_T *
+    static channel_T *
 channel_open_func(typval_T *argvars)
 {
     char_u	*address;
@@ -1348,7 +1377,7 @@ channel_set_job(channel_T *channel, job_T *job, jobopt_T *options)
 /*
  * Set the callback for "channel"/"part" for the response with "id".
  */
-    void
+    static void
 channel_set_req_callback(
 	channel_T   *channel,
 	ch_part_T   part,
@@ -1633,7 +1662,6 @@ channel_write_new_lines(buf_T *buf)
 invoke_callback(channel_T *channel, callback_T *callback, typval_T *argv)
 {
     typval_T	rettv;
-    int		dummy;
 
     if (safe_to_invoke_callback == 0)
 	iemsg("INTERNAL: Invoking callback when it is not safe");
@@ -1641,8 +1669,7 @@ invoke_callback(channel_T *channel, callback_T *callback, typval_T *argv)
     argv[0].v_type = VAR_CHANNEL;
     argv[0].vval.v_channel = channel;
 
-    call_callback(callback, -1, &rettv, 2, argv, NULL,
-						   0L, 0L, &dummy, TRUE, NULL);
+    call_callback(callback, -1, &rettv, 2, argv);
     clear_tv(&rettv);
     channel_need_redraw = TRUE;
 }
@@ -2537,19 +2564,26 @@ append_to_buffer(buf_T *buffer, char_u *msg, channel_T *channel, ch_part_T part)
 
 	FOR_ALL_WINDOWS(wp)
 	{
-	    if (wp->w_buffer == buffer
-		    && (save_write_to
-			? wp->w_cursor.lnum == lnum + 1
-			: (wp->w_cursor.lnum == lnum
-			    && wp->w_cursor.col == 0)))
+	    if (wp->w_buffer == buffer)
 	    {
-		++wp->w_cursor.lnum;
-		save_curwin = curwin;
-		curwin = wp;
-		curbuf = curwin->w_buffer;
-		scroll_cursor_bot(0, FALSE);
-		curwin = save_curwin;
-		curbuf = curwin->w_buffer;
+		int move_cursor = save_write_to
+			    ? wp->w_cursor.lnum == lnum + 1
+			    : (wp->w_cursor.lnum == lnum
+				&& wp->w_cursor.col == 0);
+
+		// If the cursor is at or above the new line, move it one line
+		// down.  If the topline is outdated update it now.
+		if (move_cursor || wp->w_topline > buffer->b_ml.ml_line_count)
+		{
+		    if (move_cursor)
+			++wp->w_cursor.lnum;
+		    save_curwin = curwin;
+		    curwin = wp;
+		    curbuf = curwin->w_buffer;
+		    scroll_cursor_bot(0, FALSE);
+		    curwin = save_curwin;
+		    curbuf = curwin->w_buffer;
+		}
 	    }
 	}
 	redraw_buf_and_status_later(buffer, VALID);
@@ -2843,7 +2877,7 @@ channel_is_open(channel_T *channel)
 /*
  * Return TRUE if "channel" has JSON or other typeahead.
  */
-    int
+    static int
 channel_has_readahead(channel_T *channel, ch_part_T part)
 {
     ch_mode_T	ch_mode = channel->ch_part[part].ch_mode;
@@ -2954,7 +2988,7 @@ channel_part_info(channel_T *channel, dict_T *dict, char *name, ch_part_T part)
     dict_add_number(dict, namebuf, chanpart->ch_timeout);
 }
 
-    void
+    static void
 channel_info(channel_T *channel, dict_T *dict)
 {
     dict_add_number(dict, "id", channel->ch_id);
@@ -3022,7 +3056,6 @@ channel_close(channel_T *channel, int invoke_close_cb)
 	{
 	      typval_T	argv[1];
 	      typval_T	rettv;
-	      int		dummy;
 
 	      /* Increment the refcount to avoid the channel being freed
 	       * halfway. */
@@ -3031,8 +3064,7 @@ channel_close(channel_T *channel, int invoke_close_cb)
 					 (char *)channel->ch_close_cb.cb_name);
 	      argv[0].v_type = VAR_CHANNEL;
 	      argv[0].vval.v_channel = channel;
-	      call_callback(&channel->ch_close_cb, -1,
-			   &rettv, 1, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+	      call_callback(&channel->ch_close_cb, -1, &rettv, 1, argv);
 	      clear_tv(&rettv);
 	      channel_need_redraw = TRUE;
 
@@ -3064,7 +3096,7 @@ channel_close(channel_T *channel, int invoke_close_cb)
 /*
  * Close the "in" part channel "channel".
  */
-    void
+    static void
 channel_close_in(channel_T *channel)
 {
     ch_close_part(channel, PART_IN);
@@ -3673,7 +3705,7 @@ get_channel_arg(typval_T *tv, int check_open, int reading, ch_part_T part)
 /*
  * Common for ch_read() and ch_readraw().
  */
-    void
+    static void
 common_channel_read(typval_T *argvars, typval_T *rettv, int raw, int blob)
 {
     channel_T	*channel;
@@ -3752,33 +3784,6 @@ common_channel_read(typval_T *argvars, typval_T *rettv, int raw, int blob)
 theend:
     free_job_options(&opt);
 }
-
-# if defined(MSWIN) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
-	|| defined(PROTO)
-/*
- * Lookup the channel from the socket.  Set "partp" to the fd index.
- * Returns NULL when the socket isn't found.
- */
-    channel_T *
-channel_fd2channel(sock_T fd, ch_part_T *partp)
-{
-    channel_T	*channel;
-    ch_part_T	part;
-
-    if (fd != INVALID_FD)
-	for (channel = first_channel; channel != NULL;
-						   channel = channel->ch_next)
-	{
-	    for (part = PART_SOCK; part < PART_IN; ++part)
-		if (channel->ch_part[part].ch_fd == fd)
-		{
-		    *partp = part;
-		    return channel;
-		}
-	}
-    return NULL;
-}
-# endif
 
 # if defined(MSWIN) || defined(FEAT_GUI) || defined(PROTO)
 /*
@@ -3990,7 +3995,7 @@ channel_send(
 		    writeq_T *last = wq->wq_prev;
 
 		    /* append to the last entry */
-		    if (ga_grow(&last->wq_ga, len) == OK)
+		    if (len > 0 && ga_grow(&last->wq_ga, len) == OK)
 		    {
 			mch_memmove((char *)last->wq_ga.ga_data
 							  + last->wq_ga.ga_len,
@@ -4012,7 +4017,7 @@ channel_send(
 			    wq->wq_prev->wq_next = last;
 			wq->wq_prev = last;
 			ga_init2(&last->wq_ga, 1, 1000);
-			if (ga_grow(&last->wq_ga, len) == OK)
+			if (len > 0 && ga_grow(&last->wq_ga, len) == OK)
 			{
 			    mch_memmove(last->wq_ga.ga_data, buf, len);
 			    last->wq_ga.ga_len = len;
@@ -4089,7 +4094,7 @@ send_common(
 /*
  * common for "ch_evalexpr()" and "ch_sendexpr()"
  */
-    void
+    static void
 ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 {
     char_u	*text;
@@ -4151,7 +4156,7 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 /*
  * common for "ch_evalraw()" and "ch_sendraw()"
  */
-    void
+    static void
 ch_raw_common(typval_T *argvars, typval_T *rettv, int eval)
 {
     char_u	buf[NUMBUFLEN];
@@ -4537,7 +4542,7 @@ set_ref_in_channel(int copyID)
 /*
  * Return the "part" to write to for "channel".
  */
-    ch_part_T
+    static ch_part_T
 channel_part_send(channel_T *channel)
 {
     if (channel->CH_SOCK_FD == INVALID_FD)
@@ -4548,7 +4553,7 @@ channel_part_send(channel_T *channel)
 /*
  * Return the default "part" to read from for "channel".
  */
-    ch_part_T
+    static ch_part_T
 channel_part_read(channel_T *channel)
 {
     if (channel->CH_SOCK_FD == INVALID_FD)
@@ -4560,7 +4565,7 @@ channel_part_read(channel_T *channel)
  * Return the mode of "channel"/"part"
  * If "channel" is invalid returns MODE_JSON.
  */
-    ch_mode_T
+    static ch_mode_T
 channel_get_mode(channel_T *channel, ch_part_T part)
 {
     if (channel == NULL)
@@ -4571,7 +4576,7 @@ channel_get_mode(channel_T *channel, ch_part_T part)
 /*
  * Return the timeout of "channel"/"part"
  */
-    int
+    static int
 channel_get_timeout(channel_T *channel, ch_part_T part)
 {
     return channel->ch_part[part].ch_timeout;
@@ -4635,7 +4640,7 @@ clear_job_options(jobopt_T *opt)
 /*
  * Free any members of a jobopt_T.
  */
-    void
+    static void
 free_job_options(jobopt_T *opt)
 {
     if (opt->jo_callback.cb_partial != NULL)
@@ -5306,7 +5311,7 @@ job_free(job_T *job)
     }
 }
 
-job_T *jobs_to_free = NULL;
+static job_T *jobs_to_free = NULL;
 
 /*
  * Put "job" in a list to be freed later, when it's no longer referenced.
@@ -5534,7 +5539,6 @@ job_cleanup(job_T *job)
     {
 	typval_T	argv[3];
 	typval_T	rettv;
-	int		dummy;
 
 	/* Invoke the exit callback. Make sure the refcount is > 0. */
 	ch_log(job->jv_channel, "Invoking exit callback %s",
@@ -5544,8 +5548,7 @@ job_cleanup(job_T *job)
 	argv[0].vval.v_job = job;
 	argv[1].v_type = VAR_NUMBER;
 	argv[1].vval.v_number = job->jv_exitval;
-	call_callback(&job->jv_exit_cb, -1,
-			    &rettv, 2, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+	call_callback(&job->jv_exit_cb, -1, &rettv, 2, argv);
 	clear_tv(&rettv);
 	--job->jv_refcount;
 	channel_need_redraw = TRUE;
@@ -6029,7 +6032,6 @@ job_stop(job_T *job, typval_T *argvars, char *type)
 invoke_prompt_callback(void)
 {
     typval_T	rettv;
-    int		dummy;
     typval_T	argv[2];
     char_u	*text;
     char_u	*prompt;
@@ -6052,8 +6054,7 @@ invoke_prompt_callback(void)
     argv[0].vval.v_string = vim_strsave(text);
     argv[1].v_type = VAR_UNKNOWN;
 
-    call_callback(&curbuf->b_prompt_callback, -1,
-	      &rettv, 1, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+    call_callback(&curbuf->b_prompt_callback, -1, &rettv, 1, argv);
     clear_tv(&argv[0]);
     clear_tv(&rettv);
 }
@@ -6065,7 +6066,6 @@ invoke_prompt_callback(void)
 invoke_prompt_interrupt(void)
 {
     typval_T	rettv;
-    int		dummy;
     typval_T	argv[1];
 
     if (curbuf->b_prompt_interrupt.cb_name == NULL
@@ -6074,8 +6074,7 @@ invoke_prompt_interrupt(void)
     argv[0].v_type = VAR_UNKNOWN;
 
     got_int = FALSE; // don't skip executing commands
-    call_callback(&curbuf->b_prompt_interrupt, -1,
-	      &rettv, 0, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+    call_callback(&curbuf->b_prompt_interrupt, -1, &rettv, 0, argv);
     clear_tv(&rettv);
     return TRUE;
 }

@@ -517,7 +517,7 @@ func Test_nomem()
   call test_alloc_fail(GetAllocId('qf_dirname_start'), 0, 0)
   call assert_fails('vimgrep vim runtest.vim', 'E342:')
 
-  call test_alloc_fail(GetAllocId('qf_dirname_now'), 0, 0)
+  call GetAllocId('qf_dirname_now')->test_alloc_fail(0, 0)
   call assert_fails('vimgrep vim runtest.vim', 'E342:')
 
   call test_alloc_fail(GetAllocId('qf_namebuf'), 0, 0)
@@ -711,7 +711,7 @@ func Test_locationlist()
       " NOTE: problem 1:
       " intentionally not setting 'lnum' so that the quickfix entries are not
       " valid
-      call setloclist(0, qflist, ' ')
+      eval qflist->setloclist(0, ' ')
     endfor
 
     " Test A
@@ -1515,7 +1515,7 @@ endfunc
 
 func Test_setqflist_invalid_nr()
   " The following command used to crash Vim
-  call setqflist([], ' ', {'nr' : $XXX_DOES_NOT_EXIST})
+  eval []->setqflist(' ', {'nr' : $XXX_DOES_NOT_EXIST})
 endfunc
 
 func Test_quickfix_set_list_with_act()
@@ -1667,7 +1667,7 @@ func Test_switchbuf()
   call assert_equal(1, bufwinnr('Xqftestfile3'))
 
   " If only quickfix window is open in the current tabpage, jumping to an
-  " entry with 'switchubf' set to 'usetab' should search in other tabpages.
+  " entry with 'switchbuf' set to 'usetab' should search in other tabpages.
   enew | only
   set switchbuf=usetab
   tabedit Xqftestfile1

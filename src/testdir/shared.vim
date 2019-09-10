@@ -261,7 +261,7 @@ func GetVimCommand(...)
     let cmd = cmd . ' -u ' . name
   endif
   let cmd .= ' --not-a-term'
-  let cmd = substitute(cmd, 'VIMRUNTIME=.*VIMRUNTIME;', '', '')
+  let cmd = substitute(cmd, 'VIMRUNTIME=\S\+', '', '')
 
   " If using valgrind, make sure every run uses a different log file.
   if cmd =~ 'valgrind.*--log-file='
@@ -272,16 +272,26 @@ func GetVimCommand(...)
   return cmd
 endfunc
 
-" Get the command to run Vim, with --clean.
+" Get the command to run Vim, with --clean instead of "-u NONE".
 func GetVimCommandClean()
   let cmd = GetVimCommand()
   let cmd = substitute(cmd, '-u NONE', '--clean', '')
   let cmd = substitute(cmd, '--not-a-term', '', '')
 
+  " Force using utf-8, Vim may pick up something else from the environment.
+  let cmd ..= ' --cmd "set enc=utf8" '
+
   " Optionally run Vim under valgrind
   " let cmd = 'valgrind --tool=memcheck --leak-check=yes --num-callers=25 --log-file=valgrind ' . cmd
 
   return cmd
+endfunc
+
+" Get the command to run Vim, with --clean, and force to run in terminal so it
+" won't start a new GUI.
+func GetVimCommandCleanTerm()
+  " Add -v to have gvim run in the terminal (if possible)
+  return GetVimCommandClean() .. ' -v '
 endfunc
 
 " Run Vim, using the "vimcmd" file and "-u NORC".
@@ -312,20 +322,6 @@ func RunVimPiped(before, after, arguments, pipecmd)
   endif
   if len(a:after) > 0
     call delete('Xafter.vim')
-  endif
-  return 1
-endfunc
-
-func CanRunGui()
-  return has('gui') && ($DISPLAY != "" || has('gui_running'))
-endfunc
-
-func WorkingClipboard()
-  if !has('clipboard')
-    return 0
-  endif
-  if has('x11')
-    return $DISPLAY != ""
   endif
   return 1
 endfunc

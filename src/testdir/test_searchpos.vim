@@ -7,7 +7,7 @@ func Test_searchpos()
   call cursor(1, 1)
   call assert_equal([1, 1, 2], searchpos('\%(\([a-z]\)\|\_.\)\{-}xyz', 'pcW'))
   call cursor(1, 2)
-  call assert_equal([2, 1, 1], searchpos('\%(\([a-z]\)\|\_.\)\{-}xyz', 'pcW'))
+  call assert_equal([2, 1, 1], '\%(\([a-z]\)\|\_.\)\{-}xyz'->searchpos('pcW'))
   set cpo-=c
   call cursor(1, 2)
   call assert_equal([1, 2, 2], searchpos('\%(\([a-z]\)\|\_.\)\{-}xyz', 'pcW'))

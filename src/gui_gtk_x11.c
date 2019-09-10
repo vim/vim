@@ -159,7 +159,11 @@ static const GtkTargetEntry dnd_targets[] =
  */
 # define DEFAULT_FONT	"Monospace 10"
 
-#if !(defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION))
+#if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
+# define USE_GNOME_SESSION
+#endif
+
+#if !defined(FEAT_GUI_GNOME)
 /*
  * Atoms used to communicate save-yourself from the X11 session manager. There
  * is no need to move them into the GUI struct, since they should be constant.
@@ -377,7 +381,7 @@ static int    gui_argc = 0;
 static char **gui_argv = NULL;
 
 static const char *role_argument = NULL;
-#if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
+#if defined(USE_GNOME_SESSION)
 static const char *restart_command = NULL;
 static       char *abs_restart_command = NULL;
 #endif
@@ -404,7 +408,7 @@ gui_mch_prepare(int *argc, char **argv)
     int			    i	= 0;
     int			    len = 0;
 
-#if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
+#if defined(USE_GNOME_SESSION)
     /*
      * Determine the command used to invoke Vim, to be passed as restart
      * command to the session manager.	If argv[0] contains any directory
@@ -580,7 +584,7 @@ gui_mch_prepare(int *argc, char **argv)
 gui_mch_free_all(void)
 {
     vim_free(gui_argv);
-#if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
+#if defined(USE_GNOME_SESSION)
     vim_free(abs_restart_command);
 #endif
 }
@@ -2274,7 +2278,7 @@ drag_data_received_cb(GtkWidget		*widget,
 #endif /* FEAT_DND */
 
 
-#if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
+#if defined(USE_GNOME_SESSION)
 /*
  * GnomeClient interact callback.  Check for unsaved buffers that cannot
  * be abandoned and pop up a dialog asking the user for confirmation if
@@ -2437,7 +2441,7 @@ setup_save_yourself(void)
     }
 }
 
-#else /* !(FEAT_GUI_GNOME && FEAT_SESSION) */
+#else // !USE_GNOME_SESSION
 
 # ifdef USE_XSMP
 /*
@@ -2571,7 +2575,7 @@ global_event_filter(GdkXEvent *xev,
 
     return GDK_FILTER_CONTINUE;
 }
-#endif /* !(FEAT_GUI_GNOME && FEAT_SESSION) */
+#endif // !USE_GNOME_SESSION
 
 
 /*
@@ -2624,14 +2628,14 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	g_list_free(icons);
     }
 
-#if !(defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION))
+#if !defined(USE_GNOME_SESSION)
     /* Register a handler for WM_SAVE_YOURSELF with GDK's low-level X I/F */
     gdk_window_add_filter(NULL, &global_event_filter, NULL);
 #endif
     /* Setup to indicate to the window manager that we want to catch the
      * WM_SAVE_YOURSELF event.	For GNOME, this connects to the session
      * manager instead. */
-#if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
+#if defined(USE_GNOME_SESSION)
     if (using_gnome)
 #endif
 	setup_save_yourself();
@@ -3933,7 +3937,7 @@ gui_mch_init(void)
     gui.visibility = GDK_VISIBILITY_UNOBSCURED;
 #endif
 
-#if !(defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION))
+#if !defined(USE_GNOME_SESSION)
     wm_protocols_atom = gdk_atom_intern("WM_PROTOCOLS", FALSE);
     save_yourself_atom = gdk_atom_intern("WM_SAVE_YOURSELF", FALSE);
 #endif
@@ -4039,7 +4043,7 @@ gui_mch_init(void)
     return OK;
 }
 
-#if (defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)) || defined(PROTO)
+#if defined(USE_GNOME_SESSION) || defined(PROTO)
 /*
  * This is called from gui_start() after a fork() has been done.
  * We have to tell the session manager our new PID.
@@ -4057,7 +4061,7 @@ gui_mch_forked(void)
 	    gnome_client_set_process_id(client, getpid());
     }
 }
-#endif /* FEAT_GUI_GNOME && FEAT_SESSION */
+#endif // USE_GNOME_SESSION
 
 #if GTK_CHECK_VERSION(3,0,0)
     static GdkRGBA

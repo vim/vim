@@ -1,10 +1,7 @@
 " Tests for 'ballooneval' in the GUI.
 
-if !has('gui_running')
-  throw 'Skipped: only works in the GUI'
-endif
-
 source check.vim
+CheckGui
 CheckFeature balloon_eval
 
 func Test_balloon_show_gui()
@@ -15,7 +12,7 @@ func Test_balloon_show_gui()
   call balloon_show('')
 
   let msg = 'that that'
-  call balloon_show(msg)
+  eval msg->balloon_show()
   call assert_equal(msg, balloon_gettext())
   sleep 10m
   call balloon_show('')

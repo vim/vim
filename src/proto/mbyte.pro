@@ -90,6 +90,7 @@ int preedit_get_status(void);
 int im_is_preediting(void);
 void xim_set_status_area(void);
 int xim_get_status_area_height(void);
+void f_getimstatus(typval_T *argvars, typval_T *rettv);
 int convert_setup(vimconv_T *vcp, char_u *from, char_u *to);
 int convert_setup_ext(vimconv_T *vcp, char_u *from, int from_unicode_is_utf8, char_u *to, int to_unicode_is_utf8);
 int convert_input(char_u *ptr, int len, int maxlen);

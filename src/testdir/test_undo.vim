@@ -335,6 +335,24 @@ func Test_undofile_earlier()
   call delete('Xundofile')
 endfunc
 
+" Check that reading a truncted undo file doesn't hang.
+func Test_undofile_truncated()
+  new
+  call setline(1, 'hello')
+  set ul=100
+  wundo Xundofile
+  let contents = readfile('Xundofile', 'B')
+
+  " try several sizes
+  for size in range(20, 500, 33)
+    call writefile(contents[0:size], 'Xundofile')
+    call assert_fails('rundo Xundofile', 'E825:')
+  endfor
+
+  bwipe!
+"  call delete('Xundofile')
+endfunc
+
 " Test for undo working properly when executing commands from a register.
 " Also test this in an empty buffer.
 func Test_cmd_in_reg_undo()
@@ -438,7 +456,7 @@ funct Test_undofile()
   call delete('Xundodir', 'd')
 
   " Test undofile() with 'undodir' set to a non-existing directory.
-  call assert_equal('', undofile('Xundofoo'))
+  call assert_equal('', 'Xundofoo'->undofile())
 
   if isdirectory('/tmp')
     set undodir=/tmp

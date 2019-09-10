@@ -1789,10 +1789,6 @@ msgid "E510: Can't make backup file (add ! to override)"
 msgstr ""
 "E510: Ei voi tehdä varmuuskopiotiedostoa (lisää komentoon ! ohittaaksesi)"
 
-# tietääkseni resurssiforkki on applen tiedostojärjestelmän tunnistejuttujuttu
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: resurssiosa häviäisi (lisää komentoon ! ohittaaksesi)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Ei voi löytää väliaikaistiedostoa kirjoitettavaksi"
 

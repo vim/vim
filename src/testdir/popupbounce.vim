@@ -6,7 +6,7 @@
 "    ./vim --clean -S testdir/popupbounce.vim main.c
 "    gprof vim gmon.out | vim -
 
-" using line contination
+" using line continuation
 set nocp
 
 " don't switch screens when quitting, so we can read the frames/sec

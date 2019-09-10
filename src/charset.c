@@ -35,6 +35,8 @@ static char_u	g_chartab[256];
 #define CT_ID_CHAR	0x20	/* flag: set for ID chars */
 #define CT_FNAME_CHAR	0x40	/* flag: set for file name chars */
 
+static int in_win_border(win_T *wp, colnr_T vcol);
+
 /*
  * Fill g_chartab[].  Also fills curbuf->b_chartab[] with flags for keyword
  * characters for current buffer.
@@ -312,8 +314,6 @@ trans_characters(
     }
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_TITLE) || defined(FEAT_INS_EXPAND) \
-	|| defined(PROTO)
 /*
  * Translate a string into allocated memory, replacing special chars with
  * printable chars.  Returns NULL when out of memory.
@@ -380,9 +380,7 @@ transstr(char_u *s)
     }
     return res;
 }
-#endif
 
-#if defined(FEAT_SYN_HL) || defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Convert the string "str[orglen]" to do ignore-case comparing.  Uses the
  * current locale.
@@ -493,7 +491,6 @@ str_foldcase(
 	return (char_u *)ga.ga_data;
     return buf;
 }
-#endif
 
 /*
  * Catch 22: g_chartab[] can't be initialized before the options are
@@ -1174,7 +1171,7 @@ win_nolbr_chartabsize(
  * Return TRUE if virtual column "vcol" is in the rightmost column of window
  * "wp".
  */
-    int
+    static int
 in_win_border(win_T *wp, colnr_T vcol)
 {
     int		width1;		/* width of first line (after line number) */
@@ -2013,6 +2010,7 @@ backslash_halve(char_u *p)
 
 /*
  * backslash_halve() plus save the result in allocated memory.
+ * However, returns "p" when out of memory.
  */
     char_u *
 backslash_halve_save(char_u *p)

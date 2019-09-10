@@ -210,7 +210,7 @@ dictitem_alloc(char_u *key)
 {
     dictitem_T *di;
 
-    di = alloc(sizeof(dictitem_T) + STRLEN(key));
+    di = alloc(offsetof(dictitem_T, di_key) + STRLEN(key) + 1);
     if (di != NULL)
     {
 	STRCPY(di->di_key, key);
@@ -228,7 +228,7 @@ dictitem_copy(dictitem_T *org)
 {
     dictitem_T *di;
 
-    di = alloc(sizeof(dictitem_T) + STRLEN(org->di_key));
+    di = alloc(offsetof(dictitem_T, di_key) + STRLEN(org->di_key) + 1);
     if (di != NULL)
     {
 	STRCPY(di->di_key, org->di_key);
@@ -617,11 +617,21 @@ dict_get_string(dict_T *d, char_u *key, int save)
     varnumber_T
 dict_get_number(dict_T *d, char_u *key)
 {
+    return dict_get_number_def(d, key, 0);
+}
+
+/*
+ * Get a number item from a dictionary.
+ * Returns "def" if the entry doesn't exist.
+ */
+    varnumber_T
+dict_get_number_def(dict_T *d, char_u *key, int def)
+{
     dictitem_T	*di;
 
     di = dict_find(d, key, -1);
     if (di == NULL)
-	return 0;
+	return def;
     return tv_get_number(&di->di_tv);
 }
 
@@ -709,11 +719,33 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 }
 
 /*
+ * Get the key for #{key: val} into "tv" and advance "arg".
+ * Return FAIL when there is no valid key.
+ */
+    static int
+get_literal_key(char_u **arg, typval_T *tv)
+{
+    char_u *p;
+
+    if (!ASCII_ISALNUM(**arg) && **arg != '_' && **arg != '-')
+	return FAIL;
+
+    for (p = *arg; ASCII_ISALNUM(*p) || *p == '_' || *p == '-'; ++p)
+	;
+    tv->v_type = VAR_STRING;
+    tv->vval.v_string = vim_strnsave(*arg, (int)(p - *arg));
+
+    *arg = skipwhite(p);
+    return OK;
+}
+
+/*
  * Allocate a variable for a Dictionary and fill it from "*arg".
+ * "literal" is TRUE for #{key: val}
  * Return OK or FAIL.  Returns NOTDONE for {expr}.
  */
     int
-dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
+dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
 {
     dict_T	*d = NULL;
     typval_T	tvkey;
@@ -750,8 +782,11 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
     *arg = skipwhite(*arg + 1);
     while (**arg != '}' && **arg != NUL)
     {
-	if (eval1(arg, &tvkey, evaluate) == FAIL)	/* recursive! */
+	if ((literal
+		? get_literal_key(arg, &tvkey)
+		: eval1(arg, &tvkey, evaluate)) == FAIL)	// recursive!
 	    goto failret;
+
 	if (**arg != ':')
 	{
 	    semsg(_("E720: Missing colon in Dictionary: %s"), *arg);
@@ -932,7 +967,7 @@ dict_equal(
  * "what" == 1: list of values
  * "what" == 2: list of items
  */
-    void
+    static void
 dict_list(typval_T *argvars, typval_T *rettv, int what)
 {
     list_T	*l2;
@@ -1009,6 +1044,33 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 }
 
 /*
+ * "items(dict)" function
+ */
+    void
+f_items(typval_T *argvars, typval_T *rettv)
+{
+    dict_list(argvars, rettv, 2);
+}
+
+/*
+ * "keys()" function
+ */
+    void
+f_keys(typval_T *argvars, typval_T *rettv)
+{
+    dict_list(argvars, rettv, 0);
+}
+
+/*
+ * "values(dict)" function
+ */
+    void
+f_values(typval_T *argvars, typval_T *rettv)
+{
+    dict_list(argvars, rettv, 1);
+}
+
+/*
  * Make each item in the dict readonly (not the value of the item).
  */
     void
@@ -1024,6 +1086,56 @@ dict_set_items_ro(dict_T *di)
 	    continue;
 	--todo;
 	HI2DI(hi)->di_flags |= DI_FLAGS_RO | DI_FLAGS_FIX;
+    }
+}
+
+/*
+ * "has_key()" function
+ */
+    void
+f_has_key(typval_T *argvars, typval_T *rettv)
+{
+    if (argvars[0].v_type != VAR_DICT)
+    {
+	emsg(_(e_dictreq));
+	return;
+    }
+    if (argvars[0].vval.v_dict == NULL)
+	return;
+
+    rettv->vval.v_number = dict_find(argvars[0].vval.v_dict,
+				      tv_get_string(&argvars[1]), -1) != NULL;
+}
+
+/*
+ * "remove({dict})" function
+ */
+    void
+dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
+{
+    dict_T	*d;
+    char_u	*key;
+    dictitem_T	*di;
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+	semsg(_(e_toomanyarg), "remove()");
+    else if ((d = argvars[0].vval.v_dict) != NULL
+	    && !var_check_lock(d->dv_lock, arg_errmsg, TRUE))
+    {
+	key = tv_get_string_chk(&argvars[1]);
+	if (key != NULL)
+	{
+	    di = dict_find(d, key, -1);
+	    if (di == NULL)
+		semsg(_(e_dictkey), key);
+	    else if (!var_check_fixed(di->di_flags, arg_errmsg, TRUE)
+			&& !var_check_ro(di->di_flags, arg_errmsg, TRUE))
+	    {
+		*rettv = di->di_tv;
+		init_tv(&di->di_tv);
+		dictitem_remove(d, di);
+	    }
+	}
     }
 }
 

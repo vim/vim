@@ -1,6 +1,7 @@
 " Tests for mappings and abbreviations
 
 source shared.vim
+source check.vim
 
 func Test_abbreviation()
   " abbreviation with 0x80 should work
@@ -238,6 +239,12 @@ func Test_map_meta_quotes()
   iunmap <M-">
 endfunc
 
+func Test_map_meta_multibyte()
+  imap <M-á> foo
+  call assert_match('i  <M-á>\s*foo', execute('imap'))
+  iunmap <M-á>
+endfunc
+
 func Test_abbr_after_line_join()
   new
   abbr foo bar
@@ -291,7 +298,7 @@ func Test_map_timeout_with_timer_interrupt()
   let g:val = 0
   nnoremap \12 :let g:val = 1<CR>
   nnoremap \123 :let g:val = 2<CR>
-  set timeout timeoutlen=1000
+  set timeout timeoutlen=200
 
   func ExitCb(job, status)
     let g:timer = timer_start(1, {-> feedkeys("3\<Esc>", 't')})
@@ -399,7 +406,9 @@ func Test_motionforce_omap()
 endfunc
 
 func Test_error_in_map_expr()
-  if !has('terminal') || (has('win32') && has('gui_running'))
+  " Unlike CheckRunVimInTerminal this does work in a win32 console
+  CheckFeature terminal
+  if has('win32') && has('gui_running')
     throw 'Skipped: cannot run Vim in a terminal window'
   endif
 
@@ -413,7 +422,7 @@ func Test_error_in_map_expr()
   [CODE]
   call writefile(lines, 'Xtest.vim')
 
-  let buf = term_start(GetVimCommandClean() .. ' -S Xtest.vim', {'term_rows': 8})
+  let buf = term_start(GetVimCommandCleanTerm() .. ' -S Xtest.vim', {'term_rows': 8})
   let job = term_getjob(buf)
   call WaitForAssert({-> assert_notequal('', term_getline(buf, 8))})
 

@@ -27,12 +27,9 @@
 /* Is there any system that doesn't have access()? */
 #define USE_MCH_ACCESS
 
-static char_u *next_fenc(char_u **pp);
+static char_u *next_fenc(char_u **pp, int *alloced);
 #ifdef FEAT_EVAL
 static char_u *readfile_charconvert(char_u *fname, char_u *fenc, int *fdp);
-#endif
-#ifdef FEAT_VIMINFO
-static void check_marks_read(void);
 #endif
 #ifdef FEAT_CRYPT
 static char_u *check_for_cryptkey(char_u *cryptkey, char_u *ptr, long *sizep, off_T *filesizep, int newfile, char_u *fname, int *did_ask);
@@ -114,7 +111,7 @@ static int get_mac_fio_flags(char_u *ptr);
 #endif
 static char *e_auchangedbuf = N_("E812: Autocommands changed buffer or buffer name");
 
-    void
+    static void
 filemess(
     buf_T	*buf,
     char_u	*name,
@@ -893,8 +890,7 @@ readfile(
     else
     {
 	fenc_next = p_fencs;		/* try items in 'fileencodings' */
-	fenc = next_fenc(&fenc_next);
-	fenc_alloced = TRUE;
+	fenc = next_fenc(&fenc_next, &fenc_alloced);
     }
 
     /*
@@ -997,8 +993,7 @@ retry:
 		vim_free(fenc);
 	    if (fenc_next != NULL)
 	    {
-		fenc = next_fenc(&fenc_next);
-		fenc_alloced = (fenc_next != NULL);
+		fenc = next_fenc(&fenc_next, &fenc_alloced);
 	    }
 	    else
 	    {
@@ -2764,14 +2759,16 @@ set_forced_fenc(exarg_T *eap)
  * "pp" points to fenc_next.  It's advanced to the next item.
  * When there are no more items, an empty string is returned and *pp is set to
  * NULL.
- * When *pp is not set to NULL, the result is in allocated memory.
+ * When *pp is not set to NULL, the result is in allocated memory and "alloced"
+ * is set to TRUE.
  */
     static char_u *
-next_fenc(char_u **pp)
+next_fenc(char_u **pp, int *alloced)
 {
     char_u	*p;
     char_u	*r;
 
+    *alloced = FALSE;
     if (**pp == NUL)
     {
 	*pp = NULL;
@@ -2794,8 +2791,11 @@ next_fenc(char_u **pp)
 	    r = p;
 	}
     }
-    if (r == NULL)	/* out of memory */
+    if (r != NULL)
+	*alloced = TRUE;
+    else
     {
+	// out of memory
 	r = (char_u *)"";
 	*pp = NULL;
     }
@@ -2852,25 +2852,6 @@ readfile_charconvert(
 	*fdp = mch_open((char *)fname, O_RDONLY | O_EXTRA, 0);
 
     return tmpname;
-}
-#endif
-
-
-#ifdef FEAT_VIMINFO
-/*
- * Read marks for the current buffer from the viminfo file, when we support
- * buffer marks and the buffer has a name.
- */
-    static void
-check_marks_read(void)
-{
-    if (!curbuf->b_marks_read && get_viminfo_parameter('\'') > 0
-						  && curbuf->b_ffname != NULL)
-	read_viminfo(NULL, VIF_WANT_MARKS);
-
-    /* Always set b_marks_read; needed when 'viminfo' is changed to include
-     * the ' parameter after opening a buffer. */
-    curbuf->b_marks_read = TRUE;
 }
 #endif
 
@@ -6123,6 +6104,9 @@ shorten_fnames(int force)
     }
     status_redraw_all();
     redraw_tabline = TRUE;
+#ifdef FEAT_TEXT_PROP
+    popup_update_preview_title();
+#endif
 }
 
 #if (defined(FEAT_DND) && defined(FEAT_GUI_GTK)) \
@@ -6764,6 +6748,8 @@ buf_check_timestamp(
 #endif
 		))
     {
+	long prev_b_mtime = buf->b_mtime;
+
 	retval = 1;
 
 	// set b_mtime to stop further warnings (e.g., when executing
@@ -6841,7 +6827,11 @@ buf_check_timestamp(
 	    if (!n)
 	    {
 		if (*reason == 'd')
-		    mesg = _("E211: File \"%s\" no longer available");
+		{
+		    // Only give the message once.
+		    if (prev_b_mtime != -1)
+			mesg = _("E211: File \"%s\" no longer available");
+		}
 		else
 		{
 		    helpmesg = TRUE;

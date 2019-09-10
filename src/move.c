@@ -136,10 +136,7 @@ redraw_for_cursorline(win_T *wp)
 #endif
 		)
 	    && (wp->w_valid & VALID_CROW) == 0
-#ifdef FEAT_INS_EXPAND
-	    && !pum_visible()
-#endif
-	    )
+	    && !pum_visible())
     {
 	if (wp->w_p_rnu)
 	    // win_line() will redraw the number column only.
@@ -816,11 +813,7 @@ validate_virtcol_win(win_T *wp)
 	getvvcol(wp, &wp->w_cursor, NULL, &(wp->w_virtcol), NULL);
 	wp->w_valid |= VALID_VIRTCOL;
 #ifdef FEAT_SYN_HL
-	if (wp->w_p_cuc
-# ifdef FEAT_INS_EXPAND
-		&& !pum_visible()
-# endif
-		)
+	if (wp->w_p_cuc && !pum_visible())
 	    redraw_win_later(wp, SOME_VALID);
 #endif
     }
@@ -1179,15 +1172,104 @@ curs_columns(
 #ifdef FEAT_SYN_HL
     /* Redraw when w_virtcol changes and 'cursorcolumn' is set */
     if (curwin->w_p_cuc && (curwin->w_valid & VALID_VIRTCOL) == 0
-# ifdef FEAT_INS_EXPAND
-	    && !pum_visible()
-# endif
-	)
+	    && !pum_visible())
 	redraw_later(SOME_VALID);
 #endif
 
     curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
 }
+
+#if (defined(FEAT_EVAL) || defined(FEAT_TEXT_PROP)) || defined(PROTO)
+/*
+ * Compute the screen position of text character at "pos" in window "wp"
+ * The resulting values are one-based, zero when character is not visible.
+ */
+    void
+textpos2screenpos(
+	win_T	*wp,
+	pos_T	*pos,
+	int	*rowp,	// screen row
+	int	*scolp,	// start screen column
+	int	*ccolp,	// cursor screen column
+	int	*ecolp)	// end screen column
+{
+    colnr_T	scol = 0, ccol = 0, ecol = 0;
+    int		row = 0;
+    int		rowoff = 0;
+    colnr_T	coloff = 0;
+
+    if (pos->lnum >= wp->w_topline && pos->lnum < wp->w_botline)
+    {
+	colnr_T off;
+	colnr_T col;
+	int     width;
+
+	row = plines_m_win(wp, wp->w_topline, pos->lnum - 1) + 1;
+	getvcol(wp, pos, &scol, &ccol, &ecol);
+
+	// similar to what is done in validate_cursor_col()
+	col = scol;
+	off = win_col_off(wp);
+	col += off;
+	width = wp->w_width - off + win_col_off2(wp);
+
+	// long line wrapping, adjust row
+	if (wp->w_p_wrap
+		&& col >= (colnr_T)wp->w_width
+		&& width > 0)
+	{
+	    // use same formula as what is used in curs_columns()
+	    rowoff = ((col - wp->w_width) / width + 1);
+	    col -= rowoff * width;
+	}
+	col -= wp->w_leftcol;
+	if (col >= width)
+	    col = -1;
+	if (col >= 0)
+	    coloff = col - scol + wp->w_wincol + 1;
+	else
+	    // character is left or right of the window
+	    row = scol = ccol = ecol = 0;
+    }
+    *rowp = wp->w_winrow + row + rowoff;
+    *scolp = scol + coloff;
+    *ccolp = ccol + coloff;
+    *ecolp = ecol + coloff;
+}
+#endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * "screenpos({winid}, {lnum}, {col})" function
+ */
+    void
+f_screenpos(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    dict_T	*dict;
+    win_T	*wp;
+    pos_T	pos;
+    int		row = 0;
+    int		scol = 0, ccol = 0, ecol = 0;
+
+    if (rettv_dict_alloc(rettv) != OK)
+	return;
+    dict = rettv->vval.v_dict;
+
+    wp = find_win_by_nr_or_id(&argvars[0]);
+    if (wp == NULL)
+	return;
+
+    pos.lnum = tv_get_number(&argvars[1]);
+    pos.col = tv_get_number(&argvars[2]) - 1;
+    pos.coladd = 0;
+    textpos2screenpos(wp, &pos, &row, &scol, &ccol, &ecol);
+
+    dict_add_number(dict, "row", row);
+    dict_add_number(dict, "col", scol);
+    dict_add_number(dict, "curscol", ccol);
+    dict_add_number(dict, "endcol", ecol);
+}
+#endif
 
 /*
  * Scroll the current window down by "line_count" logical lines.  "CTRL-Y"
@@ -1425,7 +1507,6 @@ max_topfill(void)
 }
 #endif
 
-#if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Scroll the screen one line down, but don't do it if it would move the
  * cursor off the screen.
@@ -1544,7 +1625,6 @@ scrollup_clamp(void)
 	curwin->w_valid &= ~(VALID_WROW|VALID_CROW|VALID_BOTLINE);
     }
 }
-#endif /* FEAT_INS_EXPAND */
 
 /*
  * Add one line above "lp->lnum".  This can be a filler line, a closed fold or

@@ -1,6 +1,8 @@
 " Tests for setbufline(), getbufline(), appendbufline(), deletebufline()
 
 source shared.vim
+source screendump.vim
+source check.vim
 
 func Test_setbufline_getbufline()
   new
@@ -18,9 +20,9 @@ func Test_setbufline_getbufline()
   let b = bufnr('%')
   wincmd w
   call assert_equal(1, setbufline(b, 5, ['x']))
-  call assert_equal(1, setbufline(bufnr('$') + 1, 1, ['x']))
+  call assert_equal(1, ['x']->setbufline(bufnr('$') + 1, 1))
   call assert_equal(0, setbufline(b, 4, ['d', 'e']))
-  call assert_equal(['c'], getbufline(b, 3))
+  call assert_equal(['c'], b->getbufline(3))
   call assert_equal(['d'], getbufline(b, 4))
   call assert_equal(['e'], getbufline(b, 5))
   call assert_equal([], getbufline(b, 6))
@@ -130,7 +132,7 @@ func Test_deletebufline()
   call assert_equal(0, deletebufline(b, 2, 8))
   call assert_equal(['aaa'], getbufline(b, 1, 2))
   exe "bd!" b
-  call assert_equal(1, deletebufline(b, 1))
+  call assert_equal(1, b->deletebufline(1))
 
   call assert_equal(1, deletebufline(-1, 1))
 
@@ -143,4 +145,28 @@ func Test_deletebufline()
   call assert_equal(0, deletebufline(b, 1))
   call assert_equal(['b', 'c'], getbufline(b, 1, 2))
   exe "bwipe! " . b
+endfunc
+
+func Test_appendbufline_redraw()
+  CheckScreendump
+
+  let lines =<< trim END
+    new foo
+    let winnr = 'foo'->bufwinnr()
+    let buf = bufnr('foo')
+    wincmd p
+    call appendbufline(buf, '$', range(1,200))
+    exe winnr .. 'wincmd w'
+    norm! G
+    wincmd p
+    call deletebufline(buf, 1, '$')
+    call appendbufline(buf, '$', 'Hello Vim world...')
+  END
+  call writefile(lines, 'XscriptMatchCommon')
+  let buf = RunVimInTerminal('-S XscriptMatchCommon', #{rows: 10})
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_appendbufline_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XscriptMatchCommon')
 endfunc

@@ -3738,6 +3738,7 @@ ResizeConBufAndWindow(
     CONSOLE_SCREEN_BUFFER_INFO csbi;	/* hold current console buffer info */
     SMALL_RECT	    srWindowRect;	/* hold the new console size */
     COORD	    coordScreen;
+    COORD	    cursor;
     static int	    resized = FALSE;
 
 #ifdef MCH_WRITE_DUMP
@@ -3792,6 +3793,11 @@ ResizeConBufAndWindow(
     }
     else
     {
+	// Workaround for a Windows 10 bug
+	cursor.X = srWindowRect.Left;
+	cursor.Y = srWindowRect.Top;
+	SetConsoleCursorPosition(hConsole, cursor);
+
 	ResizeConBuf(hConsole, coordScreen);
 	ResizeWindow(hConsole, srWindowRect);
 	resized = TRUE;
@@ -4876,7 +4882,7 @@ mch_call_shell(
 # ifdef VIMDLL
 			(gui.in_use || gui.starting) &&
 # endif
-			STRCMP(p_shcf, "/c") == 0)
+			s_dont_use_vimrun && STRCMP(p_shcf, "/c") == 0)
 		    // workaround for the case that "vimrun" does not exist
 		    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s %s %s",
 					   p_sh, p_shcf, p_sh, p_shcf, cmd);

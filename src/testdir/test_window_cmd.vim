@@ -42,6 +42,8 @@ function Test_window_cmd_wincmd_gf()
   function s:swap_exists()
     let v:swapchoice = s:swap_choice
   endfunc
+  " Remove the catch-all that runtest.vim adds
+  au! SwapExists
   augroup test_window_cmd_wincmd_gf
     autocmd!
     exec "autocmd SwapExists " . fname . " call s:swap_exists()"
@@ -70,7 +72,7 @@ endfunc
 func Test_window_quit()
   e Xa
   split Xb
-  call assert_equal(2, winnr('$'))
+  call assert_equal(2, '$'->winnr())
   call assert_equal('Xb', bufname(winbufnr(1)))
   call assert_equal('Xa', bufname(winbufnr(2)))
 
@@ -86,7 +88,7 @@ func Test_window_horizontal_split()
   3wincmd s
   call assert_equal(2, winnr('$'))
   call assert_equal(3, winheight(0))
-  call assert_equal(winwidth(1), winwidth(2))
+  call assert_equal(winwidth(1), 2->winwidth())
 
   call assert_fails('botright topleft wincmd s', 'E442:')
   bw
@@ -188,6 +190,21 @@ func Test_window_preview()
   call assert_fails('wincmd P', 'E441:')
 endfunc
 
+func Test_window_preview_from_help()
+  filetype on
+  call writefile(['/* some C code */'], 'Xpreview.c')
+  help
+  pedit Xpreview.c
+  wincmd P
+  call assert_equal(1, &previewwindow)
+  call assert_equal('c', &filetype)
+  wincmd z
+
+  filetype off
+  close
+  call delete('Xpreview.c')
+endfunc
+
 func Test_window_exchange()
   e Xa
 
@@ -283,7 +300,7 @@ func Test_window_height()
 
   wincmd +
   call assert_equal(wh1, winheight(1))
-  call assert_equal(wh2, winheight(2))
+  call assert_equal(wh2, 2->winheight())
 
   2wincmd _
   call assert_equal(2, winheight(1))
@@ -468,7 +485,7 @@ func Test_window_newtab()
   wincmd T
   call assert_equal(2, tabpagenr('$'))
   call assert_equal(['Xb', 'Xa'], map(tabpagebuflist(1), 'bufname(v:val)'))
-  call assert_equal(['Xc'      ], map(tabpagebuflist(2), 'bufname(v:val)'))
+  call assert_equal(['Xc'      ], map(2->tabpagebuflist(), 'bufname(v:val)'))
 
   %bw!
 endfunc
@@ -529,14 +546,15 @@ func Test_window_colon_command()
 endfunc
 
 func Test_access_freed_mem()
+  call assert_equal(&columns, winwidth(0))
   " This was accessing freed memory
   au * 0 vs xxx
   arg 0
   argadd
-  all
-  all
+  call assert_fails("all", "E249:")
   au!
   bwipe xxx
+  call assert_equal(&columns, winwidth(0))
 endfunc
 
 func Test_visual_cleared_after_window_split()
@@ -579,8 +597,12 @@ func Test_winrestcmd()
 endfunc
 
 func Fun_RenewFile()
-  sleep 2
-  silent execute '!echo "1" > tmp.txt'
+  " Need to wait a bit for the timestamp to be older.
+  let old_ftime = getftime("tmp.txt")
+  while getftime("tmp.txt") == old_ftime
+    sleep 100m
+    silent execute '!echo "1" > tmp.txt'
+  endwhile
   sp
   wincmd p
   edit! tmp.txt
@@ -596,7 +618,6 @@ func Test_window_prevwin()
   call writefile(['2'], 'tmp.txt')
   new tmp.txt
   q
-  " Need to wait a bit for the timestamp to be older.
   call Fun_RenewFile()
   call assert_equal(2, winnr())
   wincmd p
@@ -817,11 +838,23 @@ func Test_winnr()
 
   tabnew
   call assert_equal(8, tabpagewinnr(1, 'j'))
-  call assert_equal(2, tabpagewinnr(1, 'k'))
+  call assert_equal(2, 1->tabpagewinnr('k'))
   call assert_equal(4, tabpagewinnr(1, 'h'))
   call assert_equal(6, tabpagewinnr(1, 'l'))
 
   only | tabonly
+endfunc
+
+func Test_winrestview()
+  split runtest.vim
+  normal 50%
+  let view = winsaveview()
+  close
+  split runtest.vim
+  eval view->winrestview()
+  call assert_equal(view, winsaveview())
+
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

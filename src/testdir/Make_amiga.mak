@@ -26,7 +26,7 @@ nongui:	/tmp $(SCRIPTS_FIRST) $(SCRIPTS)
 	csh -c echo ALL DONE
 
 clean:
-	csh -c \rm -rf *.out /tmp/* Xdotest small.vim tiny.vim mbyte.vim test.ok viminfo
+	csh -c \rm -rf *.out Xdir1 Xfind XfakeHOME Xdotest small.vim tiny.vim mbyte.vim test.ok viminfo
 
 .in.out:
 	copy $*.ok test.ok

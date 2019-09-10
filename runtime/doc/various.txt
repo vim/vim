@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.1.  Last change: 2019 Jun 10
+*various.txt*   For Vim version 8.1.  Last change: 2019 Sep 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -332,8 +332,9 @@ N  *+byte_offset*	support for 'o' flag in 'statusline' option, "go"
 m  *+channel*		inter process communication |channel|
 N  *+cindent*		|'cindent'|, C indenting
 N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
-   *+clipboard*		|clipboard| support
-N  *+cmdline_compl*	command line completion |cmdline-completion|
+   *+clipboard*		|clipboard| support compiled-in
+   *+clipboard_working*	|clipboard| support compiled-in and working
+T  *+cmdline_compl*	command line completion |cmdline-completion|
 S  *+cmdline_hist*	command line history |cmdline-history|
 N  *+cmdline_info*	|'showcmd'| and |'ruler'|
 N  *+comments*		|'comments'| support
@@ -371,7 +372,7 @@ N  *+gettext*		message translations |multi-lang|
 m  *+hangul_input*	Hangul input support |hangul|
    *+iconv*		Compiled with the |iconv()| function
    *+iconv/dyn*		Likewise |iconv-dynamic| |/dyn|
-N  *+insert_expand*	|insert_expand| Insert mode completion
+T  *+insert_expand*	|insert_expand| Insert mode completion
 m  *+job*		starting and stopping jobs |job|
 S  *+jumplist*		|jumplist|
 B  *+keymap*		|'keymap'|
@@ -382,12 +383,12 @@ N  *+linebreak*		|'linebreak'|, |'breakat'| and |'showbreak'|
 N  *+lispindent*	|'lisp'|
 T  *+listcmds*		Vim commands for the list of buffers |buffer-hidden|
 			and argument list |:argdelete|
-N  *+localmap*		Support for mappings local to a buffer |:map-local|
+T  *+localmap*		Support for mappings local to a buffer |:map-local|
 m  *+lua*		|Lua| interface
 m  *+lua/dyn*		|Lua| interface |/dyn|
 N  *+menu*		|:menu|
 N  *+mksession*		|:mksession|
-N  *+modify_fname*	|filename-modifiers|
+T  *+modify_fname*	|filename-modifiers|
 N  *+mouse*		Mouse handling |mouse-using|
 N  *+mouseshape*	|'mouseshape'|
 B  *+mouse_dec*		Unix only: Dec terminal mouse handling |dec-mouse|
@@ -457,7 +458,6 @@ B  *+vartabs*		Variable-width tabstops. |'vartabstop'|
 N  *+viminfo*		|'viminfo'|
    *+vertsplit*		Vertically split windows |:vsplit|; Always enabled
 			since 8.0.1118.
-			in sync with the |+windows| feature
 N  *+virtualedit*	|'virtualedit'|
 T  *+visual*		Visual mode |Visual-mode| Always enabled since 7.4.200.
 T  *+visualextra*	extra Visual mode commands |blockwise-operators|

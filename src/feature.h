@@ -94,18 +94,27 @@
  */
 
 /*
- * These features used to be optional but are now always enabled.
+ * These features used to be optional but are now always enabled:
  * +windows		Multiple windows.  Without this there is no help
  *			window and no status lines.
  * +vertsplit		Vertically split windows.
- */
-
-/*
  * +cmdhist		Command line history.
+ * +localmap		Mappings and abbreviations local to a buffer.
+ * +visual		Visual mode
+ * +visualextra		Extra features for Visual mode (mostly block operators).
+ * +virtualedit		'virtualedit' option and its implementation
+ * +user_commands	Allow the user to define his own commands.
+ * +multi_byte		Generic multi-byte character handling.
+ * +cmdline_compl	completion of mappings/abbreviations in cmdline mode.
+ * +insert_expand	CTRL-N/CTRL-P/CTRL-X in insert mode.
+ * +modify_fname	modifiers for file name.  E.g., "%:p:h".
+ *
+ * Obsolete:
+ * +tag_old_static	Old style static tags: "file:tag  file  ..".
+ *			Support was removed in 8.1.1093.
+ * +farsi		Farsi (Persian language) Keymap support.
+ *			Removed in patch 8.1.0932
  */
-#ifdef FEAT_SMALL
-# define FEAT_CMDHIST
-#endif
 
 /*
  * Message history is fixed at 200 message, 20 for the tiny version.
@@ -123,8 +132,7 @@
 # define FEAT_JUMPLIST
 #endif
 
-/* the cmdline-window requires FEAT_CMDHIST */
-#if defined(FEAT_CMDHIST)
+#if defined(FEAT_SMALL)
 # define FEAT_CMDWIN
 #endif
 
@@ -164,43 +172,9 @@
 # define FEAT_KEYMAP
 #endif
 
-/*
- * +localmap		Mappings and abbreviations local to a buffer.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_LOCALMAP
-#endif
-
-/*
- * +insert_expand	CTRL-N/CTRL-P/CTRL-X in insert mode. Takes about
- *			4Kbyte of code.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_INS_EXPAND
-#endif
-
-/*
- * +cmdline_compl	completion of mappings/abbreviations in cmdline mode.
- *			Takes a few Kbyte of code.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_CMDL_COMPL
-#endif
-
 #ifdef FEAT_NORMAL
 # define VIM_BACKTICK		/* internal backtick expansion */
 #endif
-
-/*
- * +visual		Visual mode - now always included.
- * +visualextra		Extra features for Visual mode (mostly block operators).
- *			Now always included.
- */
-
-/*
- * +virtualedit		'virtualedit' option and its implementation
- *			Now always included.
- */
 
 /*
  * +cmdline_info	'showcmd' and 'ruler' options.
@@ -264,11 +238,6 @@
 #endif
 
 /*
- * +farsi		Farsi (Persian language) Keymap support.
- *			Removed in patch 8.1.0932
- */
-
-/*
  * +arabic		Arabic keymap and shaping support.
  *			Requires FEAT_RIGHTLEFT
  *
@@ -303,11 +272,6 @@
 #if !defined(EBCDIC)
 # define FEAT_TAG_BINS
 #endif
-
-/*
- * +tag_old_static	Old style static tags: "file:tag  file  ..".
- *			Support was removed in 8.1.1093.
- */
 
 /*
  * +cscope		Unix only: Cscope support.
@@ -373,14 +337,9 @@
 /*
  *			Insert mode completion with 'completefunc'.
  */
-#if defined(FEAT_INS_EXPAND) && defined(FEAT_EVAL)
+#if defined(FEAT_EVAL)
 # define FEAT_COMPL_FUNC
 #endif
-
-/*
- * +user_commands	Allow the user to define his own commands.
- *			Now always enabled.
- */
 
 /*
  * +printer		":hardcopy" command
@@ -393,13 +352,6 @@
 #if defined(FEAT_PRINTER) && ((defined(MSWIN) && defined(MSWINPS)) \
 	|| (!defined(MSWIN) && defined(FEAT_EVAL)))
 # define FEAT_POSTSCRIPT
-#endif
-
-/*
- * +modify_fname	modifiers for file name.  E.g., "%:p:h".
- */
-#ifdef FEAT_NORMAL
-# define FEAT_MODIFY_FNAME
 #endif
 
 /*
@@ -483,6 +435,11 @@
 # define FEAT_TEXT_PROP
 #endif
 
+#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)
+// Can limit syntax highlight time to 'redrawtime'.
+# define SYN_TIME_LIMIT 1
+#endif
+
 /*
  * +spell		spell checking
  *
@@ -554,9 +511,9 @@
 
 /*
  * +mksession		":mksession" command.
- *			Requires +windows and +vertsplit.
+ *			fully depends on +eval
  */
-#if defined(FEAT_NORMAL)
+#if defined(FEAT_EVAL)
 # define FEAT_SESSION
 #endif
 
@@ -572,11 +529,6 @@
 	&& (defined(HAVE_LOCALE_H) || defined(X_LOCALE))
 # define FEAT_GETTEXT
 #endif
-
-/*
- * +multi_byte		Generic multi-byte character handling.
- *			Now always enabled.
- */
 
 /*
  * +multi_byte_ime	Win32 IME input method.  Only for far-east Windows, so
@@ -656,7 +608,7 @@
 /*
  * popup menu in a terminal
  */
-#if defined(FEAT_MENU) && !defined(ALWAYS_USE_GUI) && defined(FEAT_INS_EXPAND)
+#if defined(FEAT_MENU) && !defined(ALWAYS_USE_GUI)
 # define FEAT_TERM_POPUP_MENU
 #endif
 
@@ -665,6 +617,9 @@
  */
 #if !defined(FEAT_SOUND) && defined(HAVE_CANBERRA)
 # define FEAT_SOUND
+#endif
+#if defined(FEAT_SOUND) && defined(HAVE_CANBERRA)
+# define FEAT_SOUND_CANBERRA
 #endif
 
 /* There are two ways to use XPM. */
@@ -1236,7 +1191,7 @@
  * +signs		Allow signs to be displayed to the left of text lines.
  *			Adds the ":sign" command.
  */
-#if defined(FEAT_BIG) || defined(FEAT_NETBEANS_INTG)
+#if defined(FEAT_BIG) || defined(FEAT_NETBEANS_INTG) || defined(FEAT_TEXT_PROP)
 # define FEAT_SIGNS
 # if ((defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) \
 		&& defined(HAVE_X11_XPM_H)) \

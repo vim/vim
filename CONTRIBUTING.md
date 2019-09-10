@@ -4,14 +4,23 @@ Patches are welcome in whatever form.
 Discussions about patches happen on the vim-dev maillist.
 If you create a pull request on GitHub it will be
 forwarded to the vim-dev maillist.  You can also send your patch there
-directly.  An attachment with a unified diff format is preferred.
+directly.  In that case an attachment with a unified diff format is preferred.
 Information about the maillist can be found [on the Vim website].
 
 [on the Vim website]: http://www.vim.org/maillist.php#vim-dev
 
-Please consider adding a test.  Test coverage isn't very good yet, this needs
-to improve.  Look through recent patches for examples.  The tests are located
-under "src/testdir".
+A pull request has the advantage that it will trigger the Continuous
+Integration tests, you will be warned of problems (you can ignore the coverage
+warning, it's noisy).
+
+Please consider adding a test.  All new functionality should be tested and bug
+fixes should be tested for regressions: the test should fail before the fix and
+pass after the fix.  Look through recent patches for examples and find help
+with ":help testing".  The tests are located under "src/testdir".
+
+Contributions will be distributed with Vim under the Vim license.  Providing a
+change to be included implies that you agree with this and your contribution
+does not cause us trouble with trademarks or patents.  There is no CLA to sign.
 
 
 # Reporting issues

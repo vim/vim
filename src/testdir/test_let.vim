@@ -164,14 +164,37 @@ func Test_let_heredoc_fails()
   call assert_fails('source XheredocFail', 'E126:')
   call delete('XheredocFail')
 
-  let text =<< trim END
+  let text =<< trim CodeEnd
   func MissingEnd()
     let v =<< END
   endfunc
-  END
+  CodeEnd
   call writefile(text, 'XheredocWrong')
   call assert_fails('source XheredocWrong', 'E126:')
   call delete('XheredocWrong')
+
+  let text =<< trim TEXTend
+    let v =<< " comment
+  TEXTend
+  call writefile(text, 'XheredocNoMarker')
+  call assert_fails('source XheredocNoMarker', 'E172:')
+  call delete('XheredocNoMarker')
+
+  let text =<< trim TEXTend
+    let v =<< text
+  TEXTend
+  call writefile(text, 'XheredocBadMarker')
+  call assert_fails('source XheredocBadMarker', 'E221:')
+  call delete('XheredocBadMarker')
+endfunc
+
+func Test_let_heredoc_trim_no_indent_marker()
+  let text =<< trim END
+  Text
+  with
+  indent
+END
+  call assert_equal(['Text', 'with', 'indent'], text)
 endfunc
 
 " Test for the setting a variable using the heredoc syntax
@@ -184,9 +207,9 @@ END
 
   call assert_equal(["Some sample text", "\tText with indent", "  !@#$%^&*()-+_={}|[]\\~`:\";'<>?,./"], var1)
 
-  let var2 =<<
+  let var2 =<< XXX
 Editor
-.
+XXX
   call assert_equal(['Editor'], var2)
 
   let var3 =<<END
@@ -218,9 +241,9 @@ END
   !!!
   call assert_equal(['Line1', ' line2', "\tLine3", '!!!',], var1)
 
-  let var1 =<< trim
+  let var1 =<< trim XX
     Line1
-  .
+  XX
   call assert_equal(['Line1'], var1)
 
   " ignore "endfunc"
@@ -260,16 +283,16 @@ END
   call assert_equal(['something', 'python << xx'], var1)
 
   " ignore "append"
-  let var1 =<<
+  let var1 =<< E
 something
 app
-.
+E
   call assert_equal(['something', 'app'], var1)
 
   " ignore "append" with trim
-  let var1 =<< trim
+  let var1 =<< trim END
   something
   app
-  .
+  END
   call assert_equal(['something', 'app'], var1)
 endfunc

@@ -88,10 +88,10 @@ func Test_argadd_empty_curbuf()
   argadd Xargadd
   call assert_equal(curbuf, bufnr('%'))
   call assert_equal('', bufname('%'))
-  call assert_equal(1, line('$'))
+  call assert_equal(1, '$'->line())
   rew
-  call assert_notequal(curbuf, bufnr('%'))
-  call assert_equal('Xargadd', bufname('%'))
+  call assert_notequal(curbuf, '%'->bufnr())
+  call assert_equal('Xargadd', '%'->bufname())
   call assert_equal(2, line('$'))
 
   call delete('Xargadd')
@@ -140,10 +140,7 @@ func Test_argument()
 
   call assert_equal(['d', 'c', 'b', 'a', 'c'], g:buffers)
 
-  redir => result
-  args
-  redir END
-  call assert_equal('a   b   [c] d', trim(result))
+  call assert_equal("\na   b   [c] d   ", execute(':args'))
 
   .argd
   call assert_equal(['a', 'b', 'd'], argv())
@@ -171,6 +168,25 @@ func Test_argument()
   call assert_equal(['a', 'f'], argv())
 
   let &hidden = save_hidden
+
+  let save_columns = &columns
+  let &columns = 79
+  exe 'args ' .. join(range(1, 81))
+  call assert_equal(join([
+        \ '',
+        \ '[1] 6   11  16  21  26  31  36  41  46  51  56  61  66  71  76  81  ',
+        \ '2   7   12  17  22  27  32  37  42  47  52  57  62  67  72  77  ',
+        \ '3   8   13  18  23  28  33  38  43  48  53  58  63  68  73  78  ',
+        \ '4   9   14  19  24  29  34  39  44  49  54  59  64  69  74  79  ',
+        \ '5   10  15  20  25  30  35  40  45  50  55  60  65  70  75  80  ',
+        \ ], "\n"),
+        \ execute('args'))
+
+  " No trailing newline with one item per row.
+  let long_arg = repeat('X', 81)
+  exe 'args ' .. long_arg
+  call assert_equal("\n[".long_arg.']', execute('args'))
+  let &columns = save_columns
 
   " Setting argument list should fail when the current buffer has unsaved
   " changes
@@ -382,10 +398,10 @@ func Test_argedit()
   " make sure to use a new buffer number for x when it is loaded
   bw! x
   new
-  let a = bufnr('')
+  let a = bufnr()
   argedit x
-  call assert_equal(a, bufnr(''))
-  call assert_equal('x', bufname(''))
+  call assert_equal(a, bufnr())
+  call assert_equal('x', bufname())
   %argd
   bw! x
 endfunc
@@ -479,4 +495,13 @@ func Test_large_arg()
   " access to invalid memory.
   exe 'argadd ' .repeat('x', &columns)
   args
+endfunc
+
+func Test_argdo()
+  next! Xa.c Xb.c Xc.c
+  new
+  let l = []
+  argdo call add(l, expand('%'))
+  call assert_equal(['Xa.c', 'Xb.c', 'Xc.c'], l)
+  bwipe Xa.c Xb.c Xc.c
 endfunc

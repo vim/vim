@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.1.  Last change: 2019 Jun 13
+*syntax.txt*	For Vim version 8.1.  Last change: 2019 Jul 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1746,7 +1746,7 @@ There are several html preprocessor languages out there.  html.vim has been
 written such that it should be trivial to include it.  To do so add the
 following two lines to the syntax coloring file for that language
 (the example comes from the asp.vim file):
-
+>
     runtime! syntax/html.vim
     syn cluster htmlPreproc add=asp
 
@@ -2622,7 +2622,6 @@ preceding last option and unsetting all other ones): >
 
 Note: only existence of these options matter, not their value. You can replace
       1 above with anything.
-
 
 QUAKE						*quake.vim* *ft-quake-syntax*
 
@@ -5043,7 +5042,8 @@ IncSearch	'incsearch' highlighting; also used for the text replaced with
 LineNr		Line number for ":number" and ":#" commands, and when 'number'
 		or 'relativenumber' option is set.
 							*hl-CursorLineNr*
-CursorLineNr	Like LineNr when 'cursorline' or 'relativenumber' is set for
+CursorLineNr	Like LineNr when 'cursorline' is set and 'cursorlineopt' is
+		set to "number" or "both", or 'relativenumber' is set, for
 		the cursor line.
 							*hl-MatchParen*
 MatchParen	The character under the cursor or just before it, if it

@@ -541,12 +541,12 @@ vim_main2(void)
 #ifdef FEAT_GUI
     if (gui.starting)
     {
-#if defined(UNIX) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
 	/* When something caused a message from a vimrc script, need to output
 	 * an extra newline before the shell prompt. */
 	if (did_emsg || msg_didout)
 	    putchar('\n');
-#endif
+# endif
 
 	gui_start(NULL);		/* will set full_screen to TRUE */
 	TIME_MSG("starting GUI");
@@ -1276,16 +1276,19 @@ main_loop(
 	    /* display message after redraw */
 	    if (keep_msg != NULL)
 	    {
-		char_u *p;
+		char_u *p = vim_strsave(keep_msg);
 
-		// msg_attr_keep() will set keep_msg to NULL, must free the
-		// string here. Don't reset keep_msg, msg_attr_keep() uses it
-		// to check for duplicates.  Never put this message in history.
-		p = keep_msg;
-		msg_hist_off = TRUE;
-		msg_attr((char *)p, keep_msg_attr);
-		msg_hist_off = FALSE;
-		vim_free(p);
+		if (p != NULL)
+		{
+		    // msg_start() will set keep_msg to NULL, make a copy
+		    // first.  Don't reset keep_msg, msg_attr_keep() uses it to
+		    // check for duplicates.  Never put this message in
+		    // history.
+		    msg_hist_off = TRUE;
+		    msg_attr((char *)p, keep_msg_attr);
+		    msg_hist_off = FALSE;
+		    vim_free(p);
+		}
 	    }
 	    if (need_fileinfo)		/* show file info after redraw */
 	    {
@@ -1485,7 +1488,19 @@ getout(int exitval)
 #endif
 
     if (v_dying <= 1)
+    {
+	int	unblock = 0;
+
+	// deathtrap() blocks autocommands, but we do want to trigger VimLeave.
+	if (is_autocmd_blocked())
+	{
+	    unblock_autocmds();
+	    ++unblock;
+	}
 	apply_autocmds(EVENT_VIMLEAVE, NULL, NULL, FALSE, curbuf);
+	if (unblock)
+	    block_autocmds();
+    }
 
 #ifdef FEAT_PROFILE
     profile_dump();

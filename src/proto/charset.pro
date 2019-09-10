@@ -29,7 +29,6 @@ int vim_isprintc_strict(int c);
 int lbr_chartabsize(char_u *line, unsigned char *s, colnr_T col);
 int lbr_chartabsize_adv(char_u *line, char_u **s, colnr_T col);
 int win_lbr_chartabsize(win_T *wp, char_u *line, char_u *s, colnr_T col, int *headp);
-int in_win_border(win_T *wp, colnr_T vcol);
 void getvcol(win_T *wp, pos_T *pos, colnr_T *start, colnr_T *cursor, colnr_T *end);
 colnr_T getvcol_nolist(pos_T *posp);
 void getvvcol(win_T *wp, pos_T *pos, colnr_T *start, colnr_T *cursor, colnr_T *end);

@@ -209,7 +209,7 @@ func Test_getcompletion()
   endif
   let groupcount = len(getcompletion('', 'event'))
   call assert_true(groupcount > 0)
-  let matchcount = len(getcompletion('File', 'event'))
+  let matchcount = len('File'->getcompletion('event'))
   call assert_true(matchcount > 0)
   call assert_true(groupcount > matchcount)
 
@@ -604,6 +604,8 @@ func Check_cmdline(cmdtype)
   return ''
 endfunc
 
+set cpo&
+
 func Test_getcmdtype()
   call feedkeys(":MyCmd a\<C-R>=Check_cmdline(':')\<CR>\<Esc>", "xt")
 
@@ -644,6 +646,37 @@ func Test_getcmdwintype()
   call assert_equal('', getcmdwintype())
 endfunc
 
+func Test_getcmdwin_autocmd()
+  let s:seq = []
+  augroup CmdWin
+  au WinEnter * call add(s:seq, 'WinEnter ' .. win_getid())
+  au WinLeave * call add(s:seq, 'WinLeave ' .. win_getid())
+  au BufEnter * call add(s:seq, 'BufEnter ' .. bufnr())
+  au BufLeave * call add(s:seq, 'BufLeave ' .. bufnr())
+  au CmdWinEnter * call add(s:seq, 'CmdWinEnter ' .. win_getid())
+  au CmdWinLeave * call add(s:seq, 'CmdWinLeave ' .. win_getid())
+
+  let org_winid = win_getid()
+  let org_bufnr = bufnr()
+  call feedkeys("q::let a = getcmdwintype()\<CR>:let s:cmd_winid = win_getid()\<CR>:let s:cmd_bufnr = bufnr()\<CR>:q\<CR>", 'x!')
+  call assert_equal(':', a)
+  call assert_equal([
+	\ 'WinLeave ' .. org_winid,
+	\ 'WinEnter ' .. s:cmd_winid,
+	\ 'BufLeave ' .. org_bufnr,
+	\ 'BufEnter ' .. s:cmd_bufnr,
+	\ 'CmdWinEnter ' .. s:cmd_winid,
+	\ 'CmdWinLeave ' .. s:cmd_winid,
+	\ 'BufLeave ' .. s:cmd_bufnr,
+	\ 'WinLeave ' .. s:cmd_winid,
+	\ 'WinEnter ' .. org_winid,
+	\ 'BufEnter ' .. org_bufnr,
+	\ ], s:seq)
+
+  au!
+  augroup END
+endfunc
+
 func Test_verbosefile()
   set verbosefile=Xlog
   echomsg 'foo'
@@ -672,7 +705,7 @@ func Test_setcmdpos()
   call assert_equal('"12ab', @:)
 
   " setcmdpos() returns 1 when not editing the command line.
-  call assert_equal(1, setcmdpos(3))
+  call assert_equal(1, 3->setcmdpos())
 endfunc
 
 func Test_cmdline_overstrike()
@@ -701,5 +734,3 @@ func Test_cmdline_overstrike()
 
   let &encoding = encoding_save
 endfunc
-
-set cpo&

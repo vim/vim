@@ -1,12 +1,9 @@
 " Tests for decoding escape sequences sent by the terminal.
 
 " This only works for Unix in a terminal
-if has('gui_running')
-  throw 'Skipped: does not work in the GUI'
-endif
-if !has('unix')
-  throw 'Skipped: not on Unix'
-endif
+source check.vim
+CheckNotGui
+CheckUnix
 
 source shared.vim
 
@@ -36,7 +33,7 @@ func TerminalEscapeCode(code, row, col, m)
     " need to use byte encoding here.
     let str = list2str([a:code + 0x20, a:col + 0x20, a:row + 0x20])
     if has('iconv')
-      let bytes = iconv(str, 'utf-8', 'latin1')
+      let bytes = str->iconv('utf-8', 'latin1')
     else
       " Hopefully the numbers are not too big.
       let bytes = str
@@ -185,9 +182,7 @@ func Test_xterm_mouse_ctrl_click()
 endfunc
 
 func Test_term_mouse_middle_click()
-  if !WorkingClipboard()
-    throw 'Skipped: No working clipboard'
-  endif
+  CheckFeature clipboard_working
 
   new
   let save_mouse = &mouse
@@ -651,7 +646,7 @@ func Test_term_rgb_response()
 
   " response to t_RB, 4 digits, dark
   set background=light
-  call test_option_not_set('background')
+  eval 'background'->test_option_not_set()
   let red = 0x29
   let green = 0x4a
   let blue = 0x6b
