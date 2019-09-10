@@ -25,7 +25,7 @@ STARTTEST
 :mz (vim-set-buff-line (vim-eval "line('.')") "1 changed line 1")
 :" scalar test
 :let tmp_string = mzeval('"string"')
-:let tmp_1000 = mzeval('1000')
+:let tmp_1000 = '1000'->mzeval()
 :if tmp_string . tmp_1000 == "string1000"
 :let scalar_res = "OK"
 :else

@@ -9,6 +9,7 @@ source test_cd.vim
 source test_changedtick.vim
 source test_compiler.vim
 source test_cursor_func.vim
+source test_cursorline.vim
 source test_delete.vim
 source test_ex_equal.vim
 source test_ex_undo.vim
@@ -48,9 +49,11 @@ source test_popup.vim
 source test_put.vim
 source test_recover.vim
 source test_reltime.vim
+source test_rename.vim
 source test_scroll_opt.vim
 source test_searchpos.vim
 source test_set.vim
+source test_shift.vim
 source test_sort.vim
 source test_sha256.vim
 source test_statusline.vim
@@ -59,6 +62,7 @@ source test_syn_attr.vim
 source test_tabline.vim
 source test_tabpage.vim
 source test_tagcase.vim
+source test_tagfunc.vim
 source test_tagjump.vim
 source test_taglist.vim
 source test_timers.vim

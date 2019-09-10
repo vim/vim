@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 8.1.  Last change: 2017 Oct 08
+*if_mzsch.txt*  For Vim version 8.1.  Last change: 2019 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -15,10 +15,7 @@ The MzScheme Interface to Vim				*mzscheme* *MzScheme*
 7. Dynamic loading			|mzscheme-dynamic|
 8. MzScheme setup			|mzscheme-setup|
 
-{Vi does not have any of these commands}
-
-The MzScheme interface is available only if Vim was compiled with the
-|+mzscheme| feature.
+{only available when Vim was compiled with the |+mzscheme| feature}
 
 Based on the work of Brent Fulgham.
 Dynamic loading added by Sergey Khorev
@@ -40,9 +37,9 @@ To speed up the process, you might also want to use --disable-gracket and
 
 							*:mzscheme* *:mz*
 :[range]mz[scheme] {stmt}
-			Execute MzScheme statement {stmt}.  {not in Vi}
+			Execute MzScheme statement {stmt}.
 
-:[range]mz[scheme] << {endmarker}
+:[range]mz[scheme] << [endmarker]
 {script}
 {endmarker}
 			Execute inlined MzScheme script {script}.
@@ -50,8 +47,15 @@ To speed up the process, you might also want to use --disable-gracket and
 			feature wasn't compiled in.  To avoid errors, see
 			|script-here|.
 
+			The {endmarker} below the {script} must NOT be
+			preceded by any white space.
+
+			If [endmarker] is omitted from after the "<<", a dot
+			'.' must be used after {script}, like for the
+			|:append| and |:insert| commands.
+
 							*:mzfile* *:mzf*
-:[range]mzf[ile] {file}	Execute the MzScheme script in {file}.  {not in Vi}
+:[range]mzf[ile] {file}	Execute the MzScheme script in {file}.
 
 All of these commands do essentially the same thing - they execute a piece of
 MzScheme code, with the "current range" set to the given line

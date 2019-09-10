@@ -80,12 +80,13 @@ nbdebug_log_init(
 	char		*file;		/* possible nb_debug output file */
 	char		*cp;		/* nb_dlevel pointer */
 
-	if (log_var && (file = getenv(log_var)) != NULL) {
+	if (log_var && (file = getenv(log_var)) != NULL)
+	{
 		time_t now;
 
 		nb_debug = fopen(file, "a");
 		time(&now);
-		fprintf(nb_debug, "%s", asctime(localtime(&now)));
+		fprintf(nb_debug, "%s", get_ctime(now, TRUE));
 		if (level_var && (cp = getenv(level_var)) != NULL) {
 			nb_dlevel = strtoul(cp, NULL, 0);
 		} else {

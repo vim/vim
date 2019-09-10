@@ -2,7 +2,7 @@
 if empty($XXD) && executable('..\xxd\xxd.exe')
   let s:xxd_cmd = '..\xxd\xxd.exe'
 elseif empty($XXD) || !executable($XXD)
-  finish
+  throw 'Skipped: xxd program missing'
 else
   let s:xxd_cmd = $XXD
 endif
@@ -95,9 +95,13 @@ func Test_xxd()
   %d
   exe '0r! ' . s:xxd_cmd . ' -i XXDfile'
   $d
-  let expected = ['unsigned char XXDfile[] = {',
-        \ '  0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a', '};',
-        \ 'unsigned int XXDfile_len = 11;']
+  let expected =<< trim [CODE]
+    unsigned char XXDfile[] = {
+      0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a
+    };
+    unsigned int XXDfile_len = 11;
+  [CODE]
+
   call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
 
   " Test 8: Print C include capitalized
@@ -107,9 +111,12 @@ func Test_xxd()
     %d
     exe '0r! ' . s:xxd_cmd . ' -i ' . arg . ' XXDfile'
     $d
-    let expected = ['unsigned char XXDFILE[] = {',
-	  \ '  0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a', '};',
-	  \ 'unsigned int XXDFILE_LEN = 11;']
+    let expected =<< trim [CODE]
+      unsigned char XXDFILE[] = {
+        0x54, 0x45, 0x53, 0x54, 0x61, 0x62, 0x63, 0x64, 0x30, 0x39, 0x0a
+      };
+      unsigned int XXDFILE_LEN = 11;
+    [CODE]
     call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
   endfor
 

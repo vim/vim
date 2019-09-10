@@ -3452,7 +3452,6 @@ msgstr "E288: Метод вводу не підтримує стилі"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: Метод вводу не підтримує відредаговані типи"
 
-# msgstr "E292: "
 msgid "E293: block was not locked"
 msgstr "E293: Блок не було зафіксовано"
 
@@ -4670,7 +4669,6 @@ msgstr ""
 "\n"
 "Не вдалося запустити оболонку `sh'\n"
 
-# msgstr "E362: "
 msgid ""
 "\n"
 "shell returned "

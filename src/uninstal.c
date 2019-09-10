@@ -60,11 +60,10 @@ reg_delete_key(HKEY hRootKey, const char *key, DWORD flag)
  * Returns non-zero when it's found.
  */
     static int
-popup_gvim_path(char *buf)
+popup_gvim_path(char *buf, DWORD bufsize)
 {
     HKEY	key_handle;
     DWORD	value_type;
-    DWORD	bufsize = BUFSIZE;
     int		r;
 
     /* Open the key where the path to gvim.exe is stored. */
@@ -87,11 +86,10 @@ popup_gvim_path(char *buf)
  * Returns non-zero when it's found.
  */
     static int
-openwith_gvim_path(char *buf)
+openwith_gvim_path(char *buf, DWORD bufsize)
 {
     HKEY	key_handle;
     DWORD	value_type;
-    DWORD	bufsize = BUFSIZE;
     int		r;
 
     /* Open the key where the path to gvim.exe is stored. */
@@ -209,7 +207,7 @@ batfile_thisversion(char *path)
     fd = fopen(path, "r");
     if (fd != NULL)
     {
-	while (fgets(line, BUFSIZE, fd) != NULL)
+	while (fgets(line, sizeof(line), fd) != NULL)
 	{
 	    for (p = line; *p != 0; ++p)
 		/* don't accept "vim60an" when looking for "vim60". */
@@ -321,8 +319,8 @@ main(int argc, char *argv[])
     int		i;
     struct stat st;
     char	icon[BUFSIZE];
-    char	path[BUFSIZE];
-    char	popup_path[BUFSIZE];
+    char	path[MAX_PATH];
+    char	popup_path[MAX_PATH];
 
     /* The nsis uninstaller calls us with a "-nsis" argument. */
     if (argc == 2 && stricmp(argv[1], "-nsis") == 0)
@@ -335,7 +333,7 @@ main(int argc, char *argv[])
 
     printf("This program will remove the following items:\n");
 
-    if (popup_gvim_path(popup_path))
+    if (popup_gvim_path(popup_path, sizeof(popup_path)))
     {
 	printf(" - the \"Edit with Vim\" entry in the popup menu\n");
 	printf("   which uses \"%s\"\n", popup_path);
@@ -349,7 +347,7 @@ main(int argc, char *argv[])
 	    remove_openwith();
 	}
     }
-    else if (openwith_gvim_path(popup_path))
+    else if (openwith_gvim_path(popup_path, sizeof(popup_path)))
     {
 	printf(" - the Vim \"Open With...\" entry in the popup menu\n");
 	printf("   which uses \"%s\"\n", popup_path);

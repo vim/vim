@@ -1605,7 +1605,7 @@ x_IOerror_check(Display *dpy UNUSED)
 {
     /* This function should not return, it causes exit().  Longjump instead. */
     LONGJMP(lc_jump_env, 1);
-#  if defined(VMS) || defined(__CYGWIN__) || defined(__CYGWIN32__)
+#  if defined(VMS) || defined(__CYGWIN__)
     return 0;  /* avoid the compiler complains about missing return value */
 #  endif
 }
@@ -1627,7 +1627,7 @@ x_IOerror_handler(Display *dpy UNUSED)
 
     /* This function should not return, it causes exit().  Longjump instead. */
     LONGJMP(x_jump_env, 1);
-# if defined(VMS) || defined(__CYGWIN__) || defined(__CYGWIN32__)
+# if defined(VMS) || defined(__CYGWIN__)
     return 0;  /* avoid the compiler complains about missing return value */
 # endif
 }
@@ -1658,6 +1658,25 @@ may_restore_clipboard(void)
 	setup_term_clip();
 	get_x11_title(FALSE);
     }
+}
+
+    void
+ex_xrestore(exarg_T *eap)
+{
+    if (eap->arg != NULL && STRLEN(eap->arg) > 0)
+    {
+        if (xterm_display_allocated)
+            vim_free(xterm_display);
+        xterm_display = (char *)vim_strsave(eap->arg);
+        xterm_display_allocated = TRUE;
+    }
+    smsg(_("restoring display %s"), xterm_display == NULL
+			      ? (char *)mch_getenv("DISPLAY") : xterm_display);
+
+    clear_xterm_clip();
+    x11_window = 0;
+    xterm_dpy_retry_count = 5;  // Try reconnecting five times
+    may_restore_clipboard();
 }
 #endif
 
@@ -1761,6 +1780,10 @@ get_x11_windis(void)
 	x11_window = (Window)atol(winid);
 
 #ifdef FEAT_XCLIPBOARD
+    if (xterm_dpy == x11_display)
+	// x11_display may have been set to xterm_dpy elsewhere
+	x11_display_from = XD_XTERM;
+
     if (xterm_dpy != NULL && x11_window != 0)
     {
 	/* We may have checked it already, but Gnome terminal can move us to
@@ -2205,14 +2228,19 @@ mch_settitle(char_u *title, char_u *icon)
     void
 mch_restore_title(int which)
 {
+    int	do_push_pop = did_set_title || did_set_icon;
+
     /* only restore the title or icon when it has been set */
     mch_settitle(((which & SAVE_RESTORE_TITLE) && did_set_title) ?
 			(oldtitle ? oldtitle : p_titleold) : NULL,
 	       ((which & SAVE_RESTORE_ICON) && did_set_icon) ? oldicon : NULL);
 
-    // pop and push from/to the stack
-    term_pop_title(which);
-    term_push_title(which);
+    if (do_push_pop)
+    {
+	// pop and push from/to the stack
+	term_pop_title(which);
+	term_push_title(which);
+    }
 }
 
 #endif /* FEAT_TITLE */
@@ -2393,6 +2421,16 @@ mch_get_pid(void)
     return (long)getpid();
 }
 
+/*
+ * return TRUE if process "pid" is still running
+ */
+    int
+mch_process_running(long pid)
+{
+    // EMX kill() not working correctly, it seems
+    return kill(pid, 0) == 0;
+}
+
 #if !defined(HAVE_STRERROR) && defined(USE_GETCWD)
     static char *
 strerror(int err)
@@ -2409,7 +2447,8 @@ strerror(int err)
 #endif
 
 /*
- * Get name of current directory into buffer 'buf' of length 'len' bytes.
+ * Get name of current directory into buffer "buf" of length "len" bytes.
+ * "len" must be at least PATH_MAX.
  * Return OK for success, FAIL for failure.
  */
     int
@@ -2478,7 +2517,7 @@ mch_FullName(
     {
 	/*
 	 * If the file name has a path, change to that directory for a moment,
-	 * and then do the getwd() (and get back to where we were).
+	 * and then get the directory (and get back to where we were).
 	 * This will get the correct path name with "../" things.
 	 */
 	if (p != NULL)
@@ -3064,12 +3103,11 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
 
     /* When "use_path" is false and if it's an absolute or relative path don't
      * need to use $PATH. */
-    if (!use_path || mch_isFullName(name) || (name[0] == '.'
-		   && (name[1] == '/' || (name[1] == '.' && name[2] == '/'))))
+    if (!use_path || gettail(name) != name)
     {
 	/* There must be a path separator, files in the current directory
 	 * can't be executed. */
-	if (gettail(name) != name && executable_file(name))
+	if ((use_path || gettail(name) != name) && executable_file(name))
 	{
 	    if (path != NULL)
 	    {
@@ -3086,7 +3124,7 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
     p = (char_u *)getenv("PATH");
     if (p == NULL || *p == NUL)
 	return -1;
-    buf = alloc((unsigned)(STRLEN(name) + STRLEN(p) + 2));
+    buf = alloc(STRLEN(name) + STRLEN(p) + 2);
     if (buf == NULL)
 	return -1;
 
@@ -3171,7 +3209,7 @@ mch_early_init(void)
      * Ignore any errors.
      */
 #if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
-    signal_stack = (char *)alloc(SIGSTKSZ);
+    signal_stack = alloc(SIGSTKSZ);
     init_signal_stack();
 #endif
 }
@@ -3596,7 +3634,6 @@ mch_setmouse(int on)
     }
 # endif
 
-# ifdef FEAT_MOUSE_SGR
     if (ttym_flags == TTYM_SGR)
     {
 	/* SGR mode supports columns above 223 */
@@ -3606,7 +3643,6 @@ mch_setmouse(int on)
 		   : IF_EB("\033[?1006l", ESC_STR "[?1006l")));
 	mouse_ison = on;
     }
-# endif
 
 # ifdef FEAT_BEVAL_TERM
     if (bevalterm_ison != (p_bevalterm && on))
@@ -3781,7 +3817,10 @@ check_mouse_termcode(void)
 	    && !gui.in_use
 #  endif
 	    )
-	set_mouse_termcode(KS_MOUSE, (char_u *)IF_EB("\033MG", ESC_STR "MG"));
+	set_mouse_termcode(KS_GPM_MOUSE,
+				      (char_u *)IF_EB("\033MG", ESC_STR "MG"));
+    else
+	del_mouse_termcode(KS_GPM_MOUSE);
 # endif
 
 # ifdef FEAT_SYSMOUSE
@@ -3864,11 +3903,10 @@ check_mouse_termcode(void)
     else
 	del_mouse_termcode(KS_URXVT_MOUSE);
 # endif
-# ifdef FEAT_MOUSE_SGR
     if (use_xterm_mouse() == 4
-#  ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	    && !gui.in_use
-#  endif
+# endif
 	    )
     {
 	set_mouse_termcode(KS_SGR_MOUSE, (char_u *)(term_is_8bit(T_NAME)
@@ -3890,7 +3928,6 @@ check_mouse_termcode(void)
 	del_mouse_termcode(KS_SGR_MOUSE);
 	del_mouse_termcode(KS_SGR_MOUSE_RELEASE);
     }
-# endif
 }
 #endif
 
@@ -4286,7 +4323,7 @@ build_argv(
 
 	/* Break 'shellcmdflag' into white separated parts.  This doesn't
 	 * handle quoted strings, they are very unlikely to appear. */
-	*shcf_tofree = alloc((unsigned)STRLEN(p_shcf) + 1);
+	*shcf_tofree = alloc(STRLEN(p_shcf) + 1);
 	if (*shcf_tofree == NULL)    /* out of memory */
 	    return FAIL;
 	s = *shcf_tofree;
@@ -4421,9 +4458,9 @@ mch_call_shell_system(
 	else
 	    x = system((char *)cmd);
 # else
-	newcmd = lalloc(STRLEN(p_sh)
+	newcmd = alloc(STRLEN(p_sh)
 		+ (extra_shell_arg == NULL ? 0 : STRLEN(extra_shell_arg))
-		+ STRLEN(p_shcf) + STRLEN(cmd) + 4, TRUE);
+		+ STRLEN(p_shcf) + STRLEN(cmd) + 4);
 	if (newcmd == NULL)
 	    x = 0;
 	else
@@ -5611,19 +5648,25 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	close(fd_err[1]);
     if (channel != NULL)
     {
-	int in_fd = use_file_for_in || use_null_for_in
-			? INVALID_FD : fd_in[1] < 0 ? pty_master_fd : fd_in[1];
-	int out_fd = use_file_for_out || use_null_for_out
-		      ? INVALID_FD : fd_out[0] < 0 ? pty_master_fd : fd_out[0];
-	/* When using pty_master_fd only set it for stdout, do not duplicate it
-	 * for stderr, it only needs to be read once. */
-	int err_fd = use_out_for_err || use_file_for_err || use_null_for_err
-		      ? INVALID_FD
-		      : fd_err[0] >= 0
-		         ? fd_err[0]
-		         : (out_fd == pty_master_fd
-				 ? INVALID_FD
-				 : pty_master_fd);
+	int in_fd = INVALID_FD;
+	int out_fd = INVALID_FD;
+	int err_fd = INVALID_FD;
+
+	if (!(use_file_for_in || use_null_for_in))
+	    in_fd = fd_in[1] >= 0 ? fd_in[1] : pty_master_fd;
+
+	if (!(use_file_for_out || use_null_for_out))
+	    out_fd = fd_out[0] >= 0 ? fd_out[0] : pty_master_fd;
+
+	// When using pty_master_fd only set it for stdout, do not duplicate
+	// it for stderr, it only needs to be read once.
+	if (!(use_out_for_err || use_file_for_err || use_null_for_err))
+	{
+	    if (fd_err[0] >= 0)
+		err_fd = fd_err[0];
+	    else if (out_fd != pty_master_fd)
+		err_fd = pty_master_fd;
+	}
 
 	channel_set_pipes(channel, in_fd, out_fd, err_fd);
 	channel_set_job(channel, job, options);
@@ -5928,7 +5971,8 @@ WaitForCharOrMouse(long msec, int *interrupted, int ignore_input)
     if (WantQueryMouse)
     {
 	WantQueryMouse = FALSE;
-	mch_write((char_u *)IF_EB("\033[1'|", ESC_STR "[1'|"), 5);
+	if (!no_query_mouse_for_testing)
+	    mch_write((char_u *)IF_EB("\033[1'|", ESC_STR "[1'|"), 5);
     }
 #endif
 
@@ -5954,14 +5998,20 @@ WaitForCharOrMouse(long msec, int *interrupted, int ignore_input)
 		rest -= msec;
 	}
 # endif
+# ifdef FEAT_SOUND_CANBERRA
+	// Invoke any pending sound callbacks.
+	if (has_sound_callback_in_queue())
+	    invoke_sound_callback();
+# endif
 # ifdef FEAT_MOUSE_GPM
 	gpm_process_wanted = 0;
 	avail = RealWaitForChar(read_cmd_fd, msec,
 					     &gpm_process_wanted, interrupted);
+	if (!avail && !gpm_process_wanted)
 # else
 	avail = RealWaitForChar(read_cmd_fd, msec, NULL, interrupted);
-# endif
 	if (!avail)
+# endif
 	{
 	    if (!ignore_input && input_available())
 		return 1;
@@ -6123,9 +6173,7 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 # endif
 # ifdef FEAT_MOUSE_GPM
 	if (gpm_idx >= 0 && (fds[gpm_idx].revents & POLLIN))
-	{
 	    *check_for_gpm = 1;
-	}
 # endif
 # ifdef USE_XSMP
 	if (xsmp_idx >= 0 && (fds[xsmp_idx].revents & (POLLIN | POLLHUP)))
@@ -6147,9 +6195,9 @@ RealWaitForChar(int fd, long msec, int *check_for_gpm UNUSED, int *interrupted)
 	}
 # endif
 #ifdef FEAT_JOB_CHANNEL
-	/* also call when ret == 0, we may be polling a keep-open channel */
+	// also call when ret == 0, we may be polling a keep-open channel
 	if (ret >= 0)
-	    ret = channel_poll_check(ret, &fds);
+	    channel_poll_check(ret, &fds);
 #endif
 
 #else /* HAVE_SELECT */
@@ -6348,7 +6396,6 @@ select_eintr:
     return result;
 }
 
-#ifndef NO_EXPANDPATH
 /*
  * Expand a path into all matching files and/or directories.  Handles "*",
  * "?", "[a-z]", "**", etc.
@@ -6363,7 +6410,6 @@ mch_expandpath(
 {
     return unix_expandpath(gap, path, 0, flags, FALSE);
 }
-#endif
 
 /*
  * mch_expand_wildcards() - this code does wild-card pattern matching using
@@ -6418,7 +6464,7 @@ mch_expand_wildcards(
     int		shell_style = STYLE_ECHO;
     int		check_spaces;
     static int	did_find_nul = FALSE;
-    int		ampersent = FALSE;
+    int		ampersand = FALSE;
 		/* vimglob() function to define for Posix shell */
     static char *sh_vimglob_func = "vimglob() { while [ $# -ge 1 ]; do echo \"$1\"; shift; done }; vimglob >";
 
@@ -6535,7 +6581,7 @@ mch_expand_wildcards(
 	    --p;
 	if (*p == '&')				/* remove trailing '&' */
 	{
-	    ampersent = TRUE;
+	    ampersand = TRUE;
 	    *p = ' ';
 	}
 	STRCAT(command, ">");
@@ -6604,7 +6650,7 @@ mch_expand_wildcards(
 	}
     if (flags & EW_SILENT)
 	show_shell_mess = FALSE;
-    if (ampersent)
+    if (ampersand)
 	STRCAT(command, "&");		/* put the '&' after the redirection */
 
     /*
@@ -6630,7 +6676,7 @@ mch_expand_wildcards(
 
     /* When running in the background, give it some time to create the temp
      * file, but don't wait for it to finish. */
-    if (ampersent)
+    if (ampersand)
 	mch_delay(10L, TRUE);
 
     extra_shell_arg = NULL;		/* cleanup */
@@ -6713,7 +6759,7 @@ mch_expand_wildcards(
     }
     vim_free(tempname);
 
-# if defined(__CYGWIN__) || defined(__CYGWIN32__)
+# ifdef __CYGWIN__
     /* Translate <CR><NL> into <NL>.  Caution, buffer may contain NUL. */
     p = buffer;
     for (i = 0; i < (int)len; ++i)
@@ -6800,7 +6846,7 @@ mch_expand_wildcards(
 	goto notfound;
     }
     *num_file = i;
-    *file = (char_u **)alloc(sizeof(char_u *) * i);
+    *file = ALLOC_MULT(char_u *, i);
     if (*file == NULL)
     {
 	/* out of memory */
@@ -6857,7 +6903,7 @@ mch_expand_wildcards(
 		    && !mch_can_exe((*file)[i], NULL, !(flags & EW_SHELLCMD)))
 	    continue;
 
-	p = alloc((unsigned)(STRLEN((*file)[i]) + 1 + dir));
+	p = alloc(STRLEN((*file)[i]) + 1 + dir);
 	if (p)
 	{
 	    STRCPY(p, (*file)[i]);
@@ -6895,7 +6941,7 @@ save_patterns(
     int		i;
     char_u	*s;
 
-    *file = (char_u **)alloc(num_pat * sizeof(char_u *));
+    *file = ALLOC_MULT(char_u *, num_pat);
     if (*file == NULL)
 	return FAIL;
     for (i = 0; i < num_pat; i++)
@@ -7003,7 +7049,7 @@ mch_rename(const char *src, const char *dest)
 }
 #endif /* !HAVE_RENAME */
 
-#ifdef FEAT_MOUSE_GPM
+#if defined(FEAT_MOUSE_GPM) || defined(PROTO)
 /*
  * Initializes connection with gpm (if it isn't already opened)
  * Return 1 if succeeded (or connection already opened), 0 if failed
@@ -7040,16 +7086,26 @@ gpm_open(void)
 }
 
 /*
+ * Returns TRUE if the GPM mouse is enabled.
+ */
+    int
+gpm_enabled(void)
+{
+    return gpm_flag && gpm_fd >= 0;
+}
+
+/*
  * Closes connection to gpm
  */
     static void
 gpm_close(void)
 {
-    if (gpm_flag && gpm_fd >= 0) /* if Open */
+    if (gpm_enabled())
 	Gpm_Close();
 }
 
-/* Reads gpm event and adds special keys to input buf. Returns length of
+/*
+ * Reads gpm event and adds special keys to input buf. Returns length of
  * generated key sequence.
  * This function is styled after gui_send_mouse_event().
  */
@@ -7632,7 +7688,7 @@ do_xterm_trace(void)
     return TRUE;
 }
 
-# if defined(FEAT_GUI) || defined(PROTO)
+# if defined(FEAT_GUI) || defined(FEAT_XCLIPBOARD) || defined(PROTO)
 /*
  * Destroy the display, window and app_context.  Required for GTK.
  */
@@ -7722,7 +7778,7 @@ xterm_update(void)
 }
 
     int
-clip_xterm_own_selection(VimClipboard *cbd)
+clip_xterm_own_selection(Clipboard_T *cbd)
 {
     if (xterm_Shell != (Widget)0)
 	return clip_x11_own_selection(xterm_Shell, cbd);
@@ -7730,21 +7786,21 @@ clip_xterm_own_selection(VimClipboard *cbd)
 }
 
     void
-clip_xterm_lose_selection(VimClipboard *cbd)
+clip_xterm_lose_selection(Clipboard_T *cbd)
 {
     if (xterm_Shell != (Widget)0)
 	clip_x11_lose_selection(xterm_Shell, cbd);
 }
 
     void
-clip_xterm_request_selection(VimClipboard *cbd)
+clip_xterm_request_selection(Clipboard_T *cbd)
 {
     if (xterm_Shell != (Widget)0)
 	clip_x11_request_selection(xterm_Shell, xterm_dpy, cbd);
 }
 
     void
-clip_xterm_set_selection(VimClipboard *cbd)
+clip_xterm_set_selection(Clipboard_T *cbd)
 {
     clip_x11_set_selection(cbd);
 }

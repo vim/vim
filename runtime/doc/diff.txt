@@ -1,4 +1,4 @@
-*diff.txt*      For Vim version 8.1.  Last change: 2017 Oct 03
+*diff.txt*      For Vim version 8.1.  Last change: 2019 Jul 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -15,8 +15,6 @@ The basics are explained in section |08.7| of the user manual.
 3. Jumping to diffs		|jumpto-diffs|
 4. Copying diffs		|copy-diffs|
 5. Diff options			|diff-options|
-
-{not in Vi}
 
 ==============================================================================
 1. Starting diff mode					*start-vimdiff*
@@ -179,15 +177,15 @@ loaded.  Since Vim doesn't allow having two buffers for the same file, you
 need another buffer.  This command is useful: >
 	 command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_
 	 	\ | diffthis | wincmd p | diffthis
-(this is in |vimrc_example.vim|).  Use ":DiffOrig" to see the differences
-between the current buffer and the file it was loaded from.
+(this is in |defaults.vim|).  Use ":DiffOrig" to see the differences between
+the current buffer and the file it was loaded from.
 
 A buffer that is unloaded cannot be used for the diff.  But it does work for
 hidden buffers.  You can use ":hide" to close a window without unloading the
 buffer.  If you don't want a buffer to remain used for the diff do ":set
 nodiff" before hiding it.
 
-							*:dif* *:diffupdate*
+						*:dif* *:diff* *:diffupdate*
 :dif[fupdate][!]		Update the diff highlighting and folds.
 
 Vim attempts to keep the differences updated when you make changes to the
@@ -337,7 +335,7 @@ After setting this variable, reload the syntax script: >
 FINDING THE DIFFERENCES					*diff-diffexpr*
 
 The 'diffexpr' option can be set to use something else than the standard
-"diff" program to compare two files and find the differences.
+"diff" program to compare two files and find the differences. *E959*
 
 When 'diffexpr' is empty, Vim uses this command to find the differences
 between file1 and file2: >

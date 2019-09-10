@@ -13,7 +13,7 @@ func Test_fnamemodify()
   call assert_equal('a', fnamemodify('../testdir/a', ':.'))
   call assert_equal('~/testdir/test.out', fnamemodify('test.out', ':~'))
   call assert_equal('~/testdir/a', fnamemodify('../testdir/a', ':~'))
-  call assert_equal('a', fnamemodify('../testdir/a', ':t'))
+  call assert_equal('a', '../testdir/a'->fnamemodify(':t'))
   call assert_equal('', fnamemodify('.', ':p:t'))
   call assert_equal('test.out', fnamemodify('test.out', ':p:t'))
   call assert_equal('out', fnamemodify('test.out', ':p:e'))
@@ -44,10 +44,4 @@ func Test_fnamemodify()
 
   let $HOME = save_home
   let &shell = save_shell
-endfunc
-
-func Test_expand()
-  new
-  call assert_equal("",  expand('%:S'))
-  quit
 endfunc

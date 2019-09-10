@@ -267,11 +267,13 @@ SynMenu HIJK.Hercules:hercules
 SynMenu HIJK.Hex\ dump.XXD:xxd
 SynMenu HIJK.Hex\ dump.Intel\ MCS51:hex
 SynMenu HIJK.Hg\ commit:hgcommit
+SynMenu HIJK.Hollywood:hollywood
 SynMenu HIJK.HTML.HTML:html
 SynMenu HIJK.HTML.HTML\ with\ M4:htmlm4
 SynMenu HIJK.HTML.HTML\ with\ Ruby\ (eRuby):eruby
 SynMenu HIJK.HTML.Cheetah\ HTML\ template:htmlcheetah
 SynMenu HIJK.HTML.Django\ HTML\ template:htmldjango
+SynMenu HIJK.HTML.Vue.js\ HTML\ template:vuejs
 SynMenu HIJK.HTML.HTML/OS:htmlos
 SynMenu HIJK.HTML.XHTML:xhtml
 SynMenu HIJK.Host\.conf:hostconf

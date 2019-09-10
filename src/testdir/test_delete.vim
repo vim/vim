@@ -32,7 +32,7 @@ func Test_recursive_delete()
   call assert_equal(['a', 'b'], readfile('Xdir1/Xfile'))
   call assert_true(isdirectory('Xdir1/subdir'))
   call assert_equal(['a', 'b'], readfile('Xdir1/subdir/Xfile'))
-  call assert_true(isdirectory('Xdir1/empty'))
+  call assert_true('Xdir1/empty'->isdirectory())
   call assert_equal(0, delete('Xdir1', 'rf'))
   call assert_false(isdirectory('Xdir1'))
   call assert_equal(-1, delete('Xdir1', 'd'))
@@ -104,4 +104,9 @@ func Test_symlink_recursive_delete()
   bwipe Xdir3/Xfile
   bwipe Xdir3/subdir/Xfile
   bwipe Xdir4/Xfile
+endfunc
+
+func Test_delete_errors()
+  call assert_fails('call delete('''')', 'E474:')
+  call assert_fails('call delete(''foo'', 0)', 'E15:')
 endfunc

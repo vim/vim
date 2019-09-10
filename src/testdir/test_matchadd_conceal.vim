@@ -1,7 +1,7 @@
 " Test for matchadd() and conceal feature
-if !has('conceal')
-  finish
-endif
+
+source check.vim
+CheckFeature conceal
 
 if !has('gui_running') && has('unix')
   set term=ansi

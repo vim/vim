@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.1.  Last change: 2018 Apr 24
+*windows.txt*   For Vim version 8.1.  Last change: 2019 Aug 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -26,11 +26,8 @@ The basics are explained in chapter 7 and 8 of the user manual |usr_07.txt|
 11. Using hidden buffers			|buffer-hidden|
 12. Special kinds of buffers			|special-buffers|
 
-{Vi does not have any of these commands}
 {not able to use multiple windows when the |+windows| feature was disabled at
 compile time}
-{not able to use vertically split windows when the |+vertsplit| feature was
-disabled at compile time}
 
 ==============================================================================
 1. Introduction					*windows-intro* *window*
@@ -163,6 +160,10 @@ CTRL-W CTRL-S						*CTRL-W_CTRL-S*
 		Note: CTRL-S does not work on all terminals and might block
 		further input, use CTRL-Q to get going again.
 		Also see |++opt| and |+cmd|.
+							*E242*
+		Be careful when splitting a window in an autocommand, it may
+		mess up the window layout if this happens while making other
+		window layout changes.
 
 CTRL-W CTRL-V						*CTRL-W_CTRL-V*
 CTRL-W v						*CTRL-W_v*
@@ -217,7 +218,7 @@ CTRL-W CTRL_N						*CTRL-W_CTRL-N*
 :[N]sv[iew] [++opt] [+cmd] {file}		*:sv* *:sview* *splitview*
 		Same as ":split", but set 'readonly' option for this buffer.
 
-:[N]sf[ind] [++opt] [+cmd] {file}		*:sf* *:sfind* *splitfind*
+:[N]sf[ind] [++opt] [+cmd] {file}	     *:sf* *:sfi* *:sfind* *splitfind*
 		Same as ":split", but search for {file} in 'path' like in
 		|:find|.  Doesn't split if {file} is not found.
 
@@ -508,7 +509,6 @@ CTRL-W H	Move the current window to be at the far left, using the
 		current window and then creating another one with
 		":vert topleft split", except that the current window contents
 		is used for the new window.
-		{not available when compiled without the |+vertsplit| feature}
 
 						*CTRL-W_L*
 CTRL-W L	Move the current window to be at the far right, using the full
@@ -516,7 +516,6 @@ CTRL-W L	Move the current window to be at the far right, using the full
 		current window and then creating another one with
 		":vert botright split", except that the current window
 		contents is used for the new window.
-		{not available when compiled without the |+vertsplit| feature}
 
 						*CTRL-W_T*
 CTRL-W T	Move the current window to a new tab page.  This fails if
@@ -668,6 +667,8 @@ can also get to them with the buffer list commands, like ":bnext".
 		|:vertical| was prepended).
 		Buf/Win Enter/Leave autocommands are not executed for the new
 		windows here, that's only done when they are really entered.
+		If autocommands change the window layout while this command is
+		busy an error will be given. *E249*
 
 :[N]sa[rgument][!] [++opt] [+cmd] [N]			*:sa* *:sargument*
 		Short for ":split | argument [N]": split window and go to Nth
@@ -737,7 +738,7 @@ can also get to them with the buffer list commands, like ":bnext".
 			the current window.
 			{cmd} can contain '|' to concatenate several commands.
 			{cmd} must not open or close windows or reorder them.
-			{not in Vi}
+
 			Also see |:tabdo|, |:argdo|, |:bufdo|, |:cdo|, |:ldo|,
 			|:cfdo| and |:lfdo|
 
@@ -765,7 +766,7 @@ can also get to them with the buffer list commands, like ":bnext".
 			autocommand event is disabled by adding it to
 			'eventignore'.  This considerably speeds up editing
 			each buffer.
-			{not in Vi}
+
 			Also see |:tabdo|, |:argdo|, |:windo|, |:cdo|, |:ldo|,
 			|:cfdo| and |:lfdo|
 
@@ -842,6 +843,12 @@ CTRL-W gF						*CTRL-W_gF*
 		{not available when the |+file_in_path| feature was disabled
 		at compile time}
 
+CTRL-W gt						*CTRL-W_gt*
+		Go to next tab page, same as `gt`.
+
+CTRL-W gT						*CTRL-W_gT*
+		Go to previous tab page, same as `gT`.
+
 Also see |CTRL-W_CTRL-I|: open window for an included file that includes
 the keyword under the cursor.
 
@@ -859,6 +866,24 @@ height of the preview window when it's opened.  The 'previewwindow' option is
 set in the preview window to be able to recognize it.  The 'winfixheight'
 option is set to have it keep the same height when opening/closing other
 windows.
+						*preview-popup*
+Alternatively, a popup window can be used by setting the 'previewpopup'
+option.  When set, it overrules the 'previewwindow' and 'previewheight'
+settings.  The option is a comma separated list of values:
+	height		maximum height of the popup
+	width		maximum width of the popup
+	highlight	highlight group of the popup (default is Pmenu)
+Example: >
+	:set previewpopup=height:10,width:60
+
+A few peculiarities:
+- If the file is in a buffer already, it will be re-used.  This will allow for
+  editing the file while it's visible in the popup window.
+- No ATTENTION dialog will be used, since you can't edit the file in the popup
+  window.  However, if you later open the same buffer in a normal window, you
+  may not notice it's edited elsewhere.  And when then using ":edit" to
+  trigger the ATTENTION and responding "A" for Abort, the preview window will
+  become empty.
 
 						*:pta* *:ptag*
 :pta[g][!] [tagname]
@@ -885,7 +910,7 @@ CTRL-W CTRL-Z					*CTRL-W_CTRL-Z* *:pc* *:pclose*
 							*:pp* *:ppop*
 :[count]pp[op][!]
 		Does ":[count]pop[!]" in the preview window.  See |:pop| and
-		|:ptag|.  {not in Vi}
+		|:ptag|.
 
 CTRL-W }						*CTRL-W_}*
 		Use identifier under cursor as a tag and perform a :ptag on
@@ -1024,6 +1049,13 @@ list of buffers. |unlisted-buffer|
 		Each buffer has a unique number.  That number will not change,
 		thus you can always go to a specific buffer with ":buffer N"
 		or "N CTRL-^", where N is the buffer number.
+
+		For the file name these special values are used:
+			[Prompt]	|prompt-buffer|
+			[Popup]		buffer of a |popup-window|
+			[Scratch]	'buftype' is "nofile"
+			[No Name]	no file name specified
+		For a |terminal-window| buffer the status is used.
 
 		Indicators (chars in the same column are mutually exclusive):
 		u	an unlisted buffer (only displayed when [!] is used)
@@ -1187,7 +1219,6 @@ list of buffers. |unlisted-buffer|
 		the way when you're browsing code/text buffers.  The next three
 		commands also work like this.
 
-
 							*:sbn* *:sbnext*
 :[N]sbn[ext] [+cmd] [N]
 		Split window and go to [N]th next buffer in buffer list.
@@ -1208,7 +1239,7 @@ list of buffers. |unlisted-buffer|
 		Uses 'switchbuf'.
 		Also see |+cmd|.
 
-:br[ewind][!] [+cmd]					*:br* *:brewind*
+:br[ewind][!] [+cmd]					*:br* *:bre* *:brewind*
 		Go to first buffer in buffer list.  If the buffer list is
 		empty, go to the first unlisted buffer.
 		See |:buffer-!| for [!].

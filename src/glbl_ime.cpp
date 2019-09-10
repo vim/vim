@@ -133,14 +133,7 @@ global_ime_DefWindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 
     if (pIApp == NULL || pIApp->OnDefWindowProc(hWnd, Msg,
 					    wParam, lParam, &lResult) != S_OK)
-    {
-#if defined(MSWIN)
-	if (wide_WindowProc)
-	    lResult = DefWindowProcW(hWnd, Msg, wParam, lParam);
-	else
-#endif
-	    lResult = DefWindowProc(hWnd, Msg, wParam, lParam);
-    }
+	lResult = DefWindowProcW(hWnd, Msg, wParam, lParam);
     return lResult;
 }
 

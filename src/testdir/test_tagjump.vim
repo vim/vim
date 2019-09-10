@@ -20,6 +20,7 @@ func Test_cancel_ptjump()
   call assert_equal(2, winnr('$'))
 
   call delete('Xtags')
+  set tags&
   quit
 endfunc
 
@@ -104,6 +105,7 @@ func Test_tagjump_switchbuf()
   enew | only
   call delete('Xfile1')
   call delete('Xtags')
+  set tags&
   set switchbuf&vim
 endfunc
 
@@ -266,7 +268,7 @@ func Test_getsettagstack()
   enew | only
   call settagstack(1, {'items' : []})
   call assert_equal(0, gettagstack(1).length)
-  call assert_equal([], gettagstack(1).items)
+  call assert_equal([], 1->gettagstack().items)
   " Error cases
   call assert_equal({}, gettagstack(100))
   call assert_equal(-1, settagstack(100, {'items' : []}))
@@ -301,7 +303,7 @@ func Test_getsettagstack()
   " Try to set current index to invalid values
   call settagstack(1, {'curidx' : -1})
   call assert_equal(1, gettagstack().curidx)
-  call settagstack(1, {'curidx' : 50})
+  eval {'curidx' : 50}->settagstack(1)
   call assert_equal(4, gettagstack().curidx)
 
   " Try pushing invalid items onto the stack
@@ -364,6 +366,111 @@ func Test_getsettagstack()
   call delete('Xfile3')
   call delete('Xtags')
   set tags&
+endfunc
+
+func Test_tag_with_count()
+  call writefile([
+	\ 'test	Xtest.h	/^void test();$/;"	p	typeref:typename:void	signature:()',
+	\ ], 'Xtags')
+  call writefile([
+	\ 'main	Xtest.c	/^int main()$/;"	f	typeref:typename:int	signature:()',
+	\ 'test	Xtest.c	/^void test()$/;"	f	typeref:typename:void	signature:()',
+	\ ], 'Ytags')
+  cal writefile([
+	\ 'int main()',
+	\ 'void test()',
+	\ ], 'Xtest.c')
+  cal writefile([
+	\ 'void test();',
+	\ ], 'Xtest.h')
+  set tags=Xtags,Ytags
+
+  new Xtest.c
+  let tl = taglist('test', 'Xtest.c')
+  call assert_equal(tl[0].filename, 'Xtest.c')
+  call assert_equal(tl[1].filename, 'Xtest.h')
+
+  tag test
+  call assert_equal(bufname('%'), 'Xtest.c')
+  1tag test
+  call assert_equal(bufname('%'), 'Xtest.c')
+  2tag test
+  call assert_equal(bufname('%'), 'Xtest.h')
+
+  set tags&
+  call delete('Xtags')
+  call delete('Ytags')
+  bwipe Xtest.h
+  bwipe Xtest.c
+  call delete('Xtest.h')
+  call delete('Xtest.c')
+endfunc
+
+func Test_tagnr_recall()
+  call writefile([
+	\ 'test	Xtest.h	/^void test();$/;"	p',
+	\ 'main	Xtest.c	/^int main()$/;"	f',
+	\ 'test	Xtest.c	/^void test()$/;"	f',
+	\ ], 'Xtags')
+  cal writefile([
+	\ 'int main()',
+	\ 'void test()',
+	\ ], 'Xtest.c')
+  cal writefile([
+	\ 'void test();',
+	\ ], 'Xtest.h')
+  set tags=Xtags
+
+  new Xtest.c
+  let tl = taglist('test', 'Xtest.c')
+  call assert_equal(tl[0].filename, 'Xtest.c')
+  call assert_equal(tl[1].filename, 'Xtest.h')
+
+  2tag test
+  call assert_equal(bufname('%'), 'Xtest.h')
+  pop
+  call assert_equal(bufname('%'), 'Xtest.c')
+  tag
+  call assert_equal(bufname('%'), 'Xtest.h')
+
+  set tags&
+  call delete('Xtags')
+  bwipe Xtest.h
+  bwipe Xtest.c
+  call delete('Xtest.h')
+  call delete('Xtest.c')
+endfunc
+
+func Test_tag_line_toolong()
+  call writefile([
+	\ '1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678	django/contrib/admin/templates/admin/edit_inline/stacked.html	16;"	j	line:16	language:HTML'
+	\ ], 'Xtags')
+  set tags=Xtags
+  let old_vbs = &verbose
+  set verbose=5
+  " ":tjump" should give "tag not found" not "Format error in tags file"
+  call assert_fails('tj /foo', 'E426')
+  try
+    tj /foo
+  catch /^Vim\%((\a\+)\)\=:E431/
+    call assert_report(v:exception)
+  catch /.*/
+  endtry
+  call assert_equal('Ignoring long line in tags file', split(execute('messages'), '\n')[-1])
+  call writefile([
+	\ '123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567	django/contrib/admin/templates/admin/edit_inline/stacked.html	16;"	j	line:16	language:HTML'
+	\ ], 'Xtags')
+  call assert_fails('tj /foo', 'E426')
+  try
+    tj /foo
+  catch /^Vim\%((\a\+)\)\=:E431/
+    call assert_report(v:exception)
+  catch /.*/
+  endtry
+  call assert_equal('Ignoring long line in tags file', split(execute('messages'), '\n')[-1])
+  call delete('Xtags')
+  set tags&
+  let &verbose = old_vbs
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

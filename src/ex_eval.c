@@ -251,7 +251,7 @@ cause_errthrow(
 	    while (*plist != NULL)
 		plist = &(*plist)->next;
 
-	    elem = (struct msglist *)alloc((unsigned)sizeof(struct msglist));
+	    elem = ALLOC_ONE(struct msglist);
 	    if (elem == NULL)
 	    {
 		suppress_errthrow = TRUE;
@@ -519,7 +519,7 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
 	}
     }
 
-    excp = (except_T *)alloc((unsigned)sizeof(except_T));
+    excp = ALLOC_ONE(except_T);
     if (excp == NULL)
 	goto nomem;
 
@@ -839,7 +839,7 @@ report_make_pending(int pending, void *value)
  * If something pending in a finally clause is resumed at the ":endtry", report
  * it if required by the 'verbose' option or when debugging.
  */
-    void
+    static void
 report_resume_pending(int pending, void *value)
 {
     if (p_verbose >= 14 || debug_break_level > 0)
@@ -856,7 +856,7 @@ report_resume_pending(int pending, void *value)
  * If something pending in a finally clause is discarded, report it if required
  * by the 'verbose' option or when debugging.
  */
-    void
+    static void
 report_discard_pending(int pending, void *value)
 {
     if (p_verbose >= 14 || debug_break_level > 0)
@@ -869,6 +869,18 @@ report_discard_pending(int pending, void *value)
     }
 }
 
+
+/*
+ * ":eval".
+ */
+    void
+ex_eval(exarg_T *eap)
+{
+    typval_T	tv;
+
+    if (eval0(eap->arg, &tv, &eap->nextcmd, !eap->skip) == OK)
+	clear_tv(&tv);
+}
 
 /*
  * ":if".
@@ -1441,7 +1453,7 @@ ex_try(exarg_T *eap)
 	    {
 		eslist_T	*elem;
 
-		elem = (eslist_T *)alloc((unsigned)sizeof(struct eslist_elem));
+		elem = ALLOC_ONE(struct eslist_elem);
 		if (elem == NULL)
 		    emsg(_(e_outofmem));
 		else

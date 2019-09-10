@@ -136,6 +136,14 @@
 # define O_NOCTTY 0
 #endif
 
+#if defined(HAVE_SVR4_PTYS) || defined(HAVE_POSIX_OPENPT)
+// These should be in stdlib.h, but it depends on _XOPEN_SOURCE.
+char *ptsname(int);
+int unlockpt(int);
+int grantpt(int);
+int posix_openpt(int flags);
+#endif
+
     static void
 initmaster(int f UNUSED)
 {
@@ -178,6 +186,35 @@ setup_slavepty(int fd)
     return 0;
 }
 
+#if defined(HAVE_POSIX_OPENPT) && !defined(PTY_DONE)
+#define PTY_DONE
+    int
+mch_openpty(char **ttyn)
+{
+    int		f;
+    char	*m;
+    RETSIGTYPE (*sigcld) SIGPROTOARG;
+    static char TtyName[32];  // used for opening a new pty-pair
+
+    if ((f = posix_openpt(O_RDWR | O_NOCTTY | O_EXTRA)) == -1)
+	return -1;
+
+    // SIGCHLD set to SIG_DFL for grantpt() because it fork()s and
+    // exec()s pt_chmod
+    sigcld = signal(SIGCHLD, SIG_DFL);
+    if ((m = ptsname(f)) == NULL || grantpt(f) || unlockpt(f))
+    {
+	signal(SIGCHLD, sigcld);
+	close(f);
+	return -1;
+    }
+    signal(SIGCHLD, sigcld);
+    vim_strncpy((char_u *)TtyName, (char_u *)m, sizeof(TtyName) - 1);
+    initmaster(f);
+    *ttyn = TtyName;
+    return f;
+}
+#endif
 
 #if defined(OSX) && !defined(PTY_DONE)
 #define PTY_DONE
@@ -280,9 +317,6 @@ mch_openpty(char **ttyn)
 {
     int		f;
     char	*m;
-    char	*(ptsname(int));
-    int		unlockpt(int);
-    int		grantpt(int);
     RETSIGTYPE (*sigcld) SIGPROTOARG;
     /* used for opening a new pty-pair: */
     static char TtyName[32];

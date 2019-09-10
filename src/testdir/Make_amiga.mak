@@ -12,7 +12,6 @@ include Make_all.mak
 # These tests don't work (yet):
 # test2		"\\tmp" doesn't work
 # test10	'errorformat' is different
-# test11	"cat" doesn't work properly
 # test52	only for Win32
 # test86, 87	no Python interface
 
@@ -27,7 +26,7 @@ nongui:	/tmp $(SCRIPTS_FIRST) $(SCRIPTS)
 	csh -c echo ALL DONE
 
 clean:
-	csh -c \rm -rf *.out /tmp/* Xdotest small.vim tiny.vim mbyte.vim test.ok viminfo
+	csh -c \rm -rf *.out Xdir1 Xfind XfakeHOME Xdotest small.vim tiny.vim mbyte.vim test.ok viminfo
 
 .in.out:
 	copy $*.ok test.ok

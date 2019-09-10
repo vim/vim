@@ -1,8 +1,7 @@
 " Tests for the :cdo, :cfdo, :ldo and :lfdo commands
 
-if !has('quickfix')
-  finish
-endif
+source check.vim
+CheckFeature quickfix
 
 " Create the files used by the tests
 function SetUp()

@@ -1794,9 +1794,6 @@ msgid "E510: Can't make backup file (add ! to override)"
 msgstr ""
 "E510: Ní féidir comhad cúltaca a chruthú (cuir ! leis an ordú chun sárú)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: Chaillfí an forc acmhainne (cuir ! leis an ordú chun sárú)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Ní féidir comhad sealadach a aimsiú chun scríobh ann"
 
@@ -7202,40 +7199,6 @@ msgstr ""
 #~ msgid "Generate docu for"
 #~ msgstr "Gin eolas faoi"
 
-#~ msgid ""
-#~ "Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-#~ "$PATH).\n"
-#~ msgstr ""
-#~ "Ní féidir nasc a dhéanamh le SNiFF+. Seiceáil do chuid athróga "
-#~ "thimpeallachta (caithfidh tú sniffemacs a chur i do $PATH).\n"
-
-#~ msgid "E274: Sniff: Error during read. Disconnected"
-#~ msgstr "E274: Sniff: Earráid sa léamh. Dínasctha"
-
-#~ msgid "SNiFF+ is currently "
-#~ msgstr "SNiFF+ stádas faoi láthair: "
-
-#~ msgid "not "
-#~ msgstr "ní "
-
-#~ msgid "connected"
-#~ msgstr "nasctha"
-
-#~ msgid "E275: Unknown SNiFF+ request: %s"
-#~ msgstr "E275: Iarratas anaithnid SNiFF+: %s"
-
-#~ msgid "E276: Error connecting to SNiFF+"
-#~ msgstr "E276: Earráid ag nascadh le SNiFF+"
-
-#~ msgid "E278: SNiFF+ not connected"
-#~ msgstr "E278: SNiFF+ gan nasc"
-
-#~ msgid "E279: Not a SNiFF+ buffer"
-#~ msgstr "E279: Ní maolán SNiFF+ é"
-
-#~ msgid "Sniff: Error during write. Disconnected"
-#~ msgstr "Sniff: Earráid sa scríobh. Dínasctha"
-
 #~ msgid "  Quit, or continue with caution.\n"
 #~ msgstr "  Scoir, nó lean ar aghaidh go hairdeallach.\n"
 
@@ -7356,16 +7319,10 @@ msgstr ""
 #~ msgid "--rows <number>\tInitial height of window in rows"
 #~ msgstr "--rows <uimhir>\tAirde fhuinneoige i dtosach (rónna)"
 
-#~ msgid "E290: over-the-spot style requires fontset"
-#~ msgstr "E290: tacar cló ag teastáil ó stíl thar-an-spota"
-
 #~ msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 #~ msgstr ""
 #~ "E291: Tá an GTK+ atá agat níos sine ná leagan 1.2.3. Díchumasaítear an "
 #~ "limistéar stádais"
-
-#~ msgid "E292: Input Method Server is not running"
-#~ msgstr "E292: Níl an Freastalaí Mhodh Ionchuir ag rith"
 
 #~ msgid "Vim: preserving files...\n"
 #~ msgstr "Vim: comhaid á gcaomhnú...\n"

@@ -1,5 +1,5 @@
 ===============================================================================
-=    V í t e j t e   v  t u t o r i a l u   V I M       -    Verze 1.5        =
+=    V í t e j t e   v   t u t o r i a l u   V I M       -    Verze 1.5       =
 ===============================================================================
 
      Vim je velmi výkonný editor, který má pøíli¹ mnoho pøíkazù na to, aby
@@ -18,7 +18,7 @@
      nauèení. Pokud si jen ète¹ text, pøíkazy zapomene¹!
 
      Nyní se pøesvìdète, ¾e Caps-Lock NENÍ stlaèený a nìkolikrát stisknìte
-     klávesu  j   aby se kurzor posunul natolik, ¾e lekce 1.1 zaplní celou
+     klávesu   j   aby se kurzor posunul natolik, ¾e lekce 1.1 zaplní celou
      obrazovku.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 			Lekce 1.1:  POHYB KURZORU

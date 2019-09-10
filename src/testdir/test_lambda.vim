@@ -26,20 +26,32 @@ func Test_lambda_with_timer()
   let s:n = 0
   let s:timer_id = 0
   func! s:Foo()
-    "let n = 0
-    let s:timer_id = timer_start(50, {-> execute("let s:n += 1 | echo s:n", "")}, {"repeat": -1})
+    let s:timer_id = timer_start(10, {-> execute("let s:n += 1 | echo s:n", "")}, {"repeat": -1})
   endfunc
 
   call s:Foo()
-  sleep 200ms
+  " check timer works
+  for i in range(0, 10)
+    if s:n > 0
+      break
+    endif
+    sleep 10m
+  endfor
+
   " do not collect lambda
   call test_garbagecollect_now()
+
+  " check timer still works
   let m = s:n
-  sleep 200ms
+  for i in range(0, 10)
+    if s:n > m
+      break
+    endif
+    sleep 10m
+  endfor
+
   call timer_stop(s:timer_id)
-  call assert_true(m > 1)
-  call assert_true(s:n > m + 1)
-  call assert_true(s:n < 9)
+  call assert_true(s:n > m)
 endfunc
 
 func Test_lambda_with_partial()

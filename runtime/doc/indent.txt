@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 8.1.  Last change: 2019 Jan 31
+*indent.txt*    For Vim version 8.1.  Last change: 2019 Aug 01
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -901,7 +901,7 @@ NOTE:	Indenting will be a bit slower if this option is used because some
 	optimizations won't be available.
 -------------
 
-							*PHP_vintage_case_default_indent*
+					*PHP_vintage_case_default_indent*
 To indent 'case:' and 'default:' statements in switch() blocks: >
     :let g:PHP_vintage_case_default_indent = 1
 
@@ -928,6 +928,41 @@ You will obtain the following result: >
         ->age()
         ->info();
 
+-------------
+
+					*PHP_IndentFunctionCallParameters*
+Extra indentation levels to add to parameters in multi-line function calls. >
+    let g:PHP_IndentFunctionCallParameters = 1
+
+Function call arguments will indent 1 extra level. For two-space indentation: >
+
+    function call_the_thing(
+      $with_this,
+      $and_that
+    ) {
+      $this->do_the_thing(
+          $with_this,
+          $and_that
+      );
+    }
+
+-------------
+
+				*PHP_IndentFunctionDeclarationParameters*
+Extra indentation levels to add to arguments in multi-line function definitions. >
+    let g:PHP_IndentFunctionDeclarationParameters = 1
+
+Function arguments in declarations will indent 1 extra level. For two-space indentation: >
+
+    function call_the_thing(
+        $with_this,
+        $and_that
+    ) {
+      $this->do_the_thing(
+        $with_this,
+        $and_that
+      );
+    }
 
 
 PYTHON							*ft-python-indent*
@@ -947,6 +982,11 @@ The method uses |searchpair()| to look back for unclosed parenthesis.  This
 can sometimes be slow, thus it timeouts after 150 msec.  If you notice the
 indenting isn't correct, you can set a larger timeout in msec: >
 	let g:pyindent_searchpair_timeout = 500
+
+If looking back for unclosed parenthesis is still too slow, especially during
+a copy-paste operation, or if you don't need indenting inside multi-line
+parentheses, you can completely disable this feature: >
+	let g:pyindent_disable_parentheses_indenting = 1
 
 
 R								*ft-r-indent*

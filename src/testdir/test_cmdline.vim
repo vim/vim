@@ -14,14 +14,48 @@ func Test_complete_list()
 endfunc
 
 func Test_complete_wildmenu()
-  call writefile(['testfile1'], 'Xtestfile1')
-  call writefile(['testfile2'], 'Xtestfile2')
+  call mkdir('Xdir1/Xdir2', 'p')
+  call writefile(['testfile1'], 'Xdir1/Xtestfile1')
+  call writefile(['testfile2'], 'Xdir1/Xtestfile2')
+  call writefile(['testfile3'], 'Xdir1/Xdir2/Xtestfile3')
+  call writefile(['testfile3'], 'Xdir1/Xdir2/Xtestfile4')
   set wildmenu
-  call feedkeys(":e Xtest\t\t\r", "tx")
+
+  " Pressing <Tab> completes, and moves to next files when pressing again.
+  call feedkeys(":e Xdir1/\<Tab>\<Tab>\<CR>", 'tx')
+  call assert_equal('testfile1', getline(1))
+  call feedkeys(":e Xdir1/\<Tab>\<Tab>\<Tab>\<CR>", 'tx')
   call assert_equal('testfile2', getline(1))
 
-  call delete('Xtestfile1')
-  call delete('Xtestfile2')
+  " <S-Tab> is like <Tab> but begin with the last match and then go to
+  " previous.
+  call feedkeys(":e Xdir1/Xtest\<S-Tab>\<CR>", 'tx')
+  call assert_equal('testfile2', getline(1))
+  call feedkeys(":e Xdir1/Xtest\<S-Tab>\<S-Tab>\<CR>", 'tx')
+  call assert_equal('testfile1', getline(1))
+
+  " <Left>/<Right> to move to previous/next file.
+  call feedkeys(":e Xdir1/\<Tab>\<Right>\<CR>", 'tx')
+  call assert_equal('testfile1', getline(1))
+  call feedkeys(":e Xdir1/\<Tab>\<Right>\<Right>\<CR>", 'tx')
+  call assert_equal('testfile2', getline(1))
+  call feedkeys(":e Xdir1/\<Tab>\<Right>\<Right>\<Left>\<CR>", 'tx')
+  call assert_equal('testfile1', getline(1))
+
+  " <Up>/<Down> to go up/down directories.
+  call feedkeys(":e Xdir1/\<Tab>\<Down>\<CR>", 'tx')
+  call assert_equal('testfile3', getline(1))
+  call feedkeys(":e Xdir1/\<Tab>\<Down>\<Up>\<Right>\<CR>", 'tx')
+  call assert_equal('testfile1', getline(1))
+
+  " cleanup
+  %bwipe
+  call delete('Xdir1/Xdir2/Xtestfile4')
+  call delete('Xdir1/Xdir2/Xtestfile3')
+  call delete('Xdir1/Xtestfile2')
+  call delete('Xdir1/Xtestfile1')
+  call delete('Xdir1/Xdir2', 'd')
+  call delete('Xdir1', 'd')
   set nowildmenu
 endfunc
 
@@ -43,6 +77,64 @@ func Test_map_completion()
   call assert_equal('"map <special> <nowait>', getreg(':'))
   call feedkeys(":map <silent> <sp\<Tab>\<Home>\"\<CR>", 'xt')
   call assert_equal('"map <silent> <special>', getreg(':'))
+
+  map <Middle>x middle
+
+  map ,f commaf
+  map ,g commaf
+  map <Left> left
+  map <A-Left>x shiftleft
+  call feedkeys(":map ,\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"map ,f', getreg(':'))
+  call feedkeys(":map ,\<Tab>\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"map ,g', getreg(':'))
+  call feedkeys(":map <L\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"map <Left>', getreg(':'))
+  call feedkeys(":map <A-Left>\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal("\"map <A-Left>\<Tab>", getreg(':'))
+  unmap ,f
+  unmap ,g
+  unmap <Left>
+  unmap <A-Left>x
+
+  set cpo-=< cpo-=B cpo-=k
+  map <Left> left
+  call feedkeys(":map <L\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"map <Left>', getreg(':'))
+  call feedkeys(":map <M\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal("\"map <M\<Tab>", getreg(':'))
+  unmap <Left>
+
+  set cpo+=<
+  map <Left> left
+  exe "set t_k6=\<Esc>[17~"
+  call feedkeys(":map \<Esc>[17~x f6x\<CR>", 'xt')
+  call feedkeys(":map <L\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"map <Left>', getreg(':'))
+  if !has('gui_running')
+    call feedkeys(":map \<Esc>[17~\<Tab>\<Home>\"\<CR>", 'xt')
+    call assert_equal("\"map <F6>x", getreg(':'))
+  endif
+  unmap <Left>
+  call feedkeys(":unmap \<Esc>[17~x\<CR>", 'xt')
+  set cpo-=<
+
+  set cpo+=B
+  map <Left> left
+  call feedkeys(":map <L\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"map <Left>', getreg(':'))
+  unmap <Left>
+  set cpo-=B
+
+  set cpo+=k
+  map <Left> left
+  call feedkeys(":map <L\<Tab>\<Home>\"\<CR>", 'xt')
+  call assert_equal('"map <Left>', getreg(':'))
+  unmap <Left>
+  set cpo-=k
+
+  unmap <Middle>x
+  set cpo&vim
 endfunc
 
 func Test_match_completion()
@@ -117,7 +209,7 @@ func Test_getcompletion()
   endif
   let groupcount = len(getcompletion('', 'event'))
   call assert_true(groupcount > 0)
-  let matchcount = len(getcompletion('File', 'event'))
+  let matchcount = len('File'->getcompletion('event'))
   call assert_true(matchcount > 0)
   call assert_true(groupcount > matchcount)
 
@@ -286,6 +378,7 @@ func Test_getcompletion()
   endfor
 
   call delete('Xtags')
+  set tags&
 
   call assert_fails('call getcompletion("", "burp")', 'E475:')
 endfunc
@@ -511,6 +604,8 @@ func Check_cmdline(cmdtype)
   return ''
 endfunc
 
+set cpo&
+
 func Test_getcmdtype()
   call feedkeys(":MyCmd a\<C-R>=Check_cmdline(':')\<CR>\<Esc>", "xt")
 
@@ -551,6 +646,37 @@ func Test_getcmdwintype()
   call assert_equal('', getcmdwintype())
 endfunc
 
+func Test_getcmdwin_autocmd()
+  let s:seq = []
+  augroup CmdWin
+  au WinEnter * call add(s:seq, 'WinEnter ' .. win_getid())
+  au WinLeave * call add(s:seq, 'WinLeave ' .. win_getid())
+  au BufEnter * call add(s:seq, 'BufEnter ' .. bufnr())
+  au BufLeave * call add(s:seq, 'BufLeave ' .. bufnr())
+  au CmdWinEnter * call add(s:seq, 'CmdWinEnter ' .. win_getid())
+  au CmdWinLeave * call add(s:seq, 'CmdWinLeave ' .. win_getid())
+
+  let org_winid = win_getid()
+  let org_bufnr = bufnr()
+  call feedkeys("q::let a = getcmdwintype()\<CR>:let s:cmd_winid = win_getid()\<CR>:let s:cmd_bufnr = bufnr()\<CR>:q\<CR>", 'x!')
+  call assert_equal(':', a)
+  call assert_equal([
+	\ 'WinLeave ' .. org_winid,
+	\ 'WinEnter ' .. s:cmd_winid,
+	\ 'BufLeave ' .. org_bufnr,
+	\ 'BufEnter ' .. s:cmd_bufnr,
+	\ 'CmdWinEnter ' .. s:cmd_winid,
+	\ 'CmdWinLeave ' .. s:cmd_winid,
+	\ 'BufLeave ' .. s:cmd_bufnr,
+	\ 'WinLeave ' .. s:cmd_winid,
+	\ 'WinEnter ' .. org_winid,
+	\ 'BufEnter ' .. org_bufnr,
+	\ ], s:seq)
+
+  au!
+  augroup END
+endfunc
+
 func Test_verbosefile()
   set verbosefile=Xlog
   echomsg 'foo'
@@ -579,7 +705,7 @@ func Test_setcmdpos()
   call assert_equal('"12ab', @:)
 
   " setcmdpos() returns 1 when not editing the command line.
-  call assert_equal(1, setcmdpos(3))
+  call assert_equal(1, 3->setcmdpos())
 endfunc
 
 func Test_cmdline_overstrike()
@@ -608,5 +734,3 @@ func Test_cmdline_overstrike()
 
   let &encoding = encoding_save
 endfunc
-
-set cpo&

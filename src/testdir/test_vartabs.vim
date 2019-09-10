@@ -1,10 +1,10 @@
 " Test for variable tabstops
 
-if !has("vartabs")
-  finish
-endif
+source check.vim
+CheckFeature vartabs
 
 source view_util.vim
+
 func s:compare_lines(expect, actual)
   call assert_equal(join(a:expect, "\n"), join(a:actual, "\n"))
 endfunc
@@ -329,7 +329,7 @@ func Test_vartabs_shiftwidth()
   let lines = ScreenLines([1, 2], winwidth(0))
   call s:compare_lines(expect2, lines)
   call assert_equal(20, shiftwidth(virtcol('.')-2))
-  call assert_equal(30, shiftwidth(virtcol('.')))
+  call assert_equal(30, virtcol('.')->shiftwidth())
   norm! $>>
   let expect3 = ['                                        ', '                    x                   ', '~                                       ']
   let lines = ScreenLines([1, 3], winwidth(0))
@@ -371,4 +371,10 @@ func Test_vartabs_failures()
   call assert_fails('set vsts=8,,8,')
   call assert_fails('set vts=,8')
   call assert_fails('set vsts=,8')
+endfunc
+
+func Test_vartabs_reset()
+  set vts=8
+  set all&
+  call assert_equal('', &vts)
 endfunc
