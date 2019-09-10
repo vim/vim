@@ -574,11 +574,17 @@ func Test_set_shell()
     quit!
   [CODE]
 
-  let $SHELL = '/bin/with space/sh'
+  if has('win32')
+    let $SHELL = 'C:\with space\cmd.exe'
+    let expected = '"C:\with space\cmd.exe"'
+  else
+    let $SHELL = '/bin/with space/sh'
+    let expected = '/bin/with\ space/sh'
+  endif
+
   if RunVimPiped([], after, '', '')
     let lines = readfile('Xtestout')
-    " MS-Windows adds a space after the word
-    call assert_equal('/bin/with\ space/sh', lines[0])
+    call assert_equal(expected, lines[0])
   endif
   call delete('Xtestout')
 endfunc
