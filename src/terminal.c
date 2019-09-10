@@ -875,7 +875,7 @@ free_scrollback(term_T *term)
 
 
 // Terminals that need to be freed soon.
-term_T	*terminals_to_free = NULL;
+static term_T	*terminals_to_free = NULL;
 
 /*
  * Free a terminal and everything it refers to.
@@ -6024,7 +6024,7 @@ conpty_term_report_winsize(term_T *term, int rows, int cols)
     pResizePseudoConsole(term->tl_conpty, consize);
 }
 
-    void
+    static void
 term_free_conpty(term_T *term)
 {
     if (term->tl_siex.lpAttributeList != NULL)

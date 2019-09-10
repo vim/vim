@@ -2761,7 +2761,7 @@ done:
 
 # if defined(FEAT_EVAL) || defined(PROTO)
 
-    void
+    static void
 get_cmd_output_as_rettv(
     typval_T	*argvars,
     typval_T	*rettv,

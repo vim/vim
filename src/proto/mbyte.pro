@@ -50,7 +50,6 @@ int utf_isupper(int a);
 int mb_strnicmp(char_u *s1, char_u *s2, size_t nn);
 void show_utf8(void);
 int latin_head_off(char_u *base, char_u *p);
-int dbcs_head_off(char_u *base, char_u *p);
 int dbcs_screen_head_off(char_u *base, char_u *p);
 int utf_head_off(char_u *base, char_u *p);
 void mb_copy_char(char_u **fp, char_u **tp);

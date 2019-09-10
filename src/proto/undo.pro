@@ -7,7 +7,6 @@ int u_savedel(linenr_T lnum, long nlines);
 int undo_allowed(void);
 int u_savecommon(linenr_T top, linenr_T bot, linenr_T newbot, int reload);
 void u_compute_hash(char_u *hash);
-char_u *u_get_undo_file_name(char_u *buf_ffname, int reading);
 void u_write_undo(char_u *name, int forceit, buf_T *buf, char_u *hash);
 void u_read_undo(char_u *name, char_u *hash, char_u *orig_name);
 void u_undo(int count);
@@ -27,7 +26,6 @@ int bufIsChanged(buf_T *buf);
 int anyBufIsChanged(void);
 int bufIsChangedNotTerm(buf_T *buf);
 int curbufIsChanged(void);
-void u_eval_tree(u_header_T *first_uhp, list_T *list);
 void f_undofile(typval_T *argvars, typval_T *rettv);
 void f_undotree(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

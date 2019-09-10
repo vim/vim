@@ -809,7 +809,7 @@ hangul_input_process(char_u *s, int len)
     return len;
 }
 
-    void
+    static void
 hangul_input_clear(void)
 {
     sp = 0;

@@ -144,6 +144,7 @@ static int utf_ptr2cells_len(char_u *p, int size);
 static int dbcs_char2cells(int c);
 static int dbcs_ptr2cells_len(char_u *p, int size);
 static int dbcs_ptr2char(char_u *p);
+static int dbcs_head_off(char_u *base, char_u *p);
 
 /*
  * Lookup table to quickly get the length in bytes of a UTF-8 character from
@@ -3778,7 +3779,7 @@ latin_head_off(char_u *base UNUSED, char_u *p UNUSED)
     return 0;
 }
 
-    int
+    static int
 dbcs_head_off(char_u *base, char_u *p)
 {
     char_u	*q;

@@ -793,7 +793,7 @@ f_filewritable(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_number = filewritable(tv_get_string(&argvars[0]));
 }
 
-    void
+    static void
 findfilendir(
     typval_T	*argvars UNUSED,
     typval_T	*rettv,
