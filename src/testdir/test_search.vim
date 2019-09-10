@@ -2,6 +2,7 @@
 
 source shared.vim
 source screendump.vim
+source check.vim
 
 func Test_search_cmdline()
   if !exists('+incsearch')
@@ -240,6 +241,10 @@ func Test_search_cmdline2()
   " go to previous match (on line 2)
   call feedkeys("/the\<C-G>\<C-G>\<C-G>\<C-T>\<C-T>\<C-T>\<cr>", 'tx')
   call assert_equal('  2 these', getline('.'))
+  1
+  " go to previous match (on line 2)
+  call feedkeys("/the\<C-G>\<C-R>\<C-W>\<cr>", 'tx')
+  call assert_equal('theother', @/)
 
   " Test 2: keep the view,
   " after deleting a character from the search cmd
@@ -251,7 +256,7 @@ func Test_search_cmdline2()
   call assert_equal({'lnum': 10, 'leftcol': 0, 'col': 4, 'topfill': 0, 'topline': 6, 'coladd': 0, 'skipcol': 0, 'curswant': 4}, winsaveview())
 
   " remove all history entries
-  for i in range(10)
+  for i in range(11)
       call histdel('/')
   endfor
 
@@ -262,7 +267,7 @@ func Test_search_cmdline2()
   " nor "/foo\<c-u>\<cr>" works to delete the commandline.
   " In that case Vim should return "E35 no previous regular expression",
   " but it looks like Vim still sees /foo and therefore the test fails.
-  " Therefore, disableing this test
+  " Therefore, disabling this test
   "call assert_fails(feedkeys("/foo\<c-w>\<cr>", 'tx'), 'E35')
   "call assert_equal({'lnum': 1, 'leftcol': 0, 'col': 0, 'topfill': 0, 'topline': 1, 'coladd': 0, 'skipcol': 0, 'curswant': 0}, winsaveview())
 
@@ -477,14 +482,14 @@ func Test_search_cmdline5()
   " Do not call test_override("char_avail", 1) so that <C-g> and <C-t> work
   " regardless char_avail.
   new
-  call setline(1, ['  1 the first', '  2 the second', '  3 the third'])
+  call setline(1, ['  1 the first', '  2 the second', '  3 the third', ''])
   set incsearch
   1
   call feedkeys("/the\<c-g>\<c-g>\<cr>", 'tx')
   call assert_equal('  3 the third', getline('.'))
   $
   call feedkeys("?the\<c-t>\<c-t>\<c-t>\<cr>", 'tx')
-  call assert_equal('  2 the second', getline('.'))
+  call assert_equal('  1 the first', getline('.'))
   " clean up
   set noincsearch
   bw!
@@ -571,12 +576,13 @@ endfunc
 func Test_search_cmdline8()
   " Highlighting is cleared in all windows
   " since hls applies to all windows
-  if !exists('+incsearch') || !has('terminal') || has('gui_running') || winwidth(0) < 30
-    return
-  endif
+  CheckOption incsearch
+  CheckFeature terminal
+  CheckNotGui
   if has("win32")
     throw "Skipped: Bug with sending <ESC> to terminal window not fixed yet"
   endif
+
   let h = winheight(0)
   if h < 3
     return
@@ -698,9 +704,10 @@ func Test_search_cmdline_incsearch_highlight()
 endfunc
 
 func Test_search_cmdline_incsearch_highlight_attr()
-  if !exists('+incsearch') || !has('terminal') || has('gui_running')
-    return
-  endif
+  CheckOption incsearch
+  CheckFeature terminal
+  CheckNotGui
+
   let h = winheight(0)
   if h < 3
     return
@@ -799,7 +806,7 @@ endfunc
 
 func Test_incsearch_scrolling()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call assert_equal(0, &scrolloff)
   call writefile([
@@ -832,7 +839,7 @@ func Test_incsearch_search_dump()
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -887,7 +894,7 @@ func Test_incsearch_substitute_dump()
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -981,13 +988,37 @@ func Test_incsearch_substitute_dump()
   call delete('Xis_subst_script')
 endfunc
 
+func Test_incsearch_with_change()
+  if !has('timers') || !exists('+incsearch') || !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps and/or timers feature and/or incsearch option missing'
+  endif
+
+  call writefile([
+	\ 'set incsearch hlsearch scrolloff=0',
+	\ 'call setline(1, ["one", "two ------ X", "three"])',
+	\ 'call timer_start(200, { _ -> setline(2, "x")})',
+	\ ], 'Xis_change_script')
+  let buf = RunVimInTerminal('-S Xis_change_script', {'rows': 9, 'cols': 70})
+  " Give Vim a chance to redraw to get rid of the spaces in line 2 caused by
+  " the 'ambiwidth' check.
+  sleep 300m
+
+  " Highlight X, it will be deleted by the timer callback.
+  call term_sendkeys(buf, ':%s/X')
+  call VerifyScreenDump(buf, 'Test_incsearch_change_01', {})
+  call term_sendkeys(buf, "\<Esc>")
+
+  call StopVimInTerminal(buf)
+  call delete('Xis_change_script')
+endfunc
+
 " Similar to Test_incsearch_substitute_dump() for :sort
 func Test_incsearch_sort_dump()
   if !exists('+incsearch')
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -1013,7 +1044,7 @@ func Test_incsearch_vimgrep_dump()
     return
   endif
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -1186,4 +1217,139 @@ func Test_search_Ctrl_L_combining()
   call assert_equal(5, line('.'))
   call assert_equal(bufcontent[1], @/)
   call Incsearch_cleanup()
+endfunc
+
+func Test_large_hex_chars1()
+  " This used to cause a crash, the character becomes an NFA state.
+  try
+    /\%Ufffffc23
+  catch
+    call assert_match('E678:', v:exception)
+  endtry
+  try
+    set re=1
+    /\%Ufffffc23
+  catch
+    call assert_match('E678:', v:exception)
+  endtry
+  set re&
+endfunc
+
+func Test_large_hex_chars2()
+  " This used to cause a crash, the character becomes an NFA state.
+  try
+    /[\Ufffffc1f]
+  catch
+    call assert_match('E486:', v:exception)
+  endtry
+  try
+    set re=1
+    /[\Ufffffc1f]
+  catch
+    call assert_match('E486:', v:exception)
+  endtry
+  set re&
+endfunc
+
+func Test_one_error_msg()
+  " This  was also giving an internal error
+  call assert_fails('call search(" \\((\\v[[=P=]]){185}+             ")', 'E871:')
+endfunc
+
+func Test_incsearch_add_char_under_cursor()
+  if !exists('+incsearch')
+    return
+  endif
+  set incsearch
+  new
+  call setline(1, ['find match', 'anything'])
+  1
+  call test_override('char_avail', 1)
+  call feedkeys("fc/m\<C-L>\<C-L>\<C-L>\<C-L>\<C-L>\<CR>", 'tx')
+  call assert_equal('match', @/)
+  call test_override('char_avail', 0)
+
+  set incsearch&
+  bwipe!
+endfunc
+
+" Test for the search() function with match at the cursor position
+func Test_search_match_at_curpos()
+  new
+  call append(0, ['foobar', '', 'one two', ''])
+
+  normal gg
+
+  eval 'foobar'->search('c')
+  call assert_equal([1, 1], [line('.'), col('.')])
+
+  normal j
+  call search('^$', 'c')
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  call search('^$', 'bc')
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  exe "normal /two\<CR>"
+  call search('.', 'c')
+  call assert_equal([3, 5], [line('.'), col('.')])
+
+  close!
+endfunc
+
+func Test_search_display_pattern()
+  new
+  call setline(1, ['foo', 'bar', 'foobar'])
+
+  call cursor(1, 1)
+  let @/ = 'foo'
+  let pat = @/->escape('()*?'. '\s\+')
+  let g:a = execute(':unsilent :norm! n')
+  call assert_match(pat, g:a)
+
+  " right-left
+  if exists("+rightleft")
+    set rl
+    call cursor(1, 1)
+    let @/ = 'foo'
+    let pat = 'oof/\s\+'
+    let g:a = execute(':unsilent :norm! n')
+    call assert_match(pat, g:a)
+    set norl
+  endif
+endfunc
+
+func Test_searchdecl()
+  let lines =<< trim END
+     int global;
+
+     func()
+     {
+       int global;
+       if (cond) {
+	 int local;
+       }
+       int local;
+       // comment
+     }
+  END
+  new
+  call setline(1, lines)
+  10
+  call assert_equal(0, searchdecl('local', 0, 0))
+  call assert_equal(7, getcurpos()[1])
+
+  10
+  call assert_equal(0, 'local'->searchdecl(0, 1))
+  call assert_equal(9, getcurpos()[1])
+
+  10
+  call assert_equal(0, searchdecl('global'))
+  call assert_equal(5, getcurpos()[1])
+
+  10
+  call assert_equal(0, searchdecl('global', 1))
+  call assert_equal(1, getcurpos()[1])
+
+  bwipe!
 endfunc

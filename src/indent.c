@@ -15,6 +15,9 @@
 
 #if defined(FEAT_CINDENT) || defined(FEAT_SMARTINDENT)
 
+static int cin_iscase(char_u *s, int strict);
+static int cin_isscopedecl(char_u *s);
+
 /*
  * Return TRUE if the string "line" starts with a word from 'cinwords'.
  */
@@ -28,7 +31,7 @@ cin_is_cinword(char_u *line)
     int		len;
 
     cinw_len = (int)STRLEN(curbuf->b_p_cinw) + 1;
-    cinw_buf = alloc((unsigned)cinw_len);
+    cinw_buf = alloc(cinw_len);
     if (cinw_buf != NULL)
     {
 	line = skipwhite(line);
@@ -408,7 +411,7 @@ cin_islabel_skip(char_u **s)
  * Recognize a label: "label:".
  * Note: curwin->w_cursor must be where we are looking for the label.
  */
-    int
+    static int
 cin_islabel(void)		// XXX
 {
     char_u	*s;
@@ -507,7 +510,7 @@ cin_isinit(void)
 /*
  * Recognize a switch label: "case .*:" or "default:".
  */
-     int
+     static int
 cin_iscase(
     char_u *s,
     int strict) // Allow relaxed check of case statement for JS
@@ -560,7 +563,7 @@ cin_isdefault(char_u *s)
 /*
  * Recognize a "public/private/protected" scope declaration label.
  */
-    int
+    static int
 cin_isscopedecl(char_u *s)
 {
     int		i;
@@ -3870,9 +3873,7 @@ find_match(int lookfor, linenr_T ourscope)
 	    // this must be the if that we want!
 	    // match the indent level of that if.
 	    if (elselevel <= 0 && whilelevel <= 0)
-	    {
 		return OK;
-	    }
 	}
     }
     return FAIL;
@@ -4109,7 +4110,6 @@ in_cinkeys(
 	    {
 		int		match = FALSE;
 
-#ifdef FEAT_INS_EXPAND
 		if (keytyped == KEY_COMPLETE)
 		{
 		    char_u	*s;
@@ -4139,7 +4139,6 @@ in_cinkeys(
 			match = TRUE;
 		}
 		else
-#endif
 		    // TODO: multi-byte
 		    if (keytyped == (int)p[-1] || (icase && keytyped < 256
 			 && TOLOWER_LOC(keytyped) == TOLOWER_LOC((int)p[-1])))
@@ -4458,3 +4457,361 @@ fix_indent(void)
 }
 
 #endif
+
+#if defined(FEAT_VARTABS) || defined(PROTO)
+
+/*
+ * Set the integer values corresponding to the string setting of 'vartabstop'.
+ * "array" will be set, caller must free it if needed.
+ */
+    int
+tabstop_set(char_u *var, int **array)
+{
+    int valcount = 1;
+    int t;
+    char_u *cp;
+
+    if (var[0] == NUL || (var[0] == '0' && var[1] == NUL))
+    {
+	*array = NULL;
+	return TRUE;
+    }
+
+    for (cp = var; *cp != NUL; ++cp)
+    {
+	if (cp == var || cp[-1] == ',')
+	{
+	    char_u *end;
+
+	    if (strtol((char *)cp, (char **)&end, 10) <= 0)
+	    {
+		if (cp != end)
+		    emsg(_(e_positive));
+		else
+		    emsg(_(e_invarg));
+		return FALSE;
+	    }
+	}
+
+	if (VIM_ISDIGIT(*cp))
+	    continue;
+	if (cp[0] == ',' && cp > var && cp[-1] != ',' && cp[1] != NUL)
+	{
+	    ++valcount;
+	    continue;
+	}
+	emsg(_(e_invarg));
+	return FALSE;
+    }
+
+    *array = ALLOC_MULT(int, valcount + 1);
+    if (*array == NULL)
+	return FALSE;
+    (*array)[0] = valcount;
+
+    t = 1;
+    for (cp = var; *cp != NUL;)
+    {
+	(*array)[t++] = atoi((char *)cp);
+	while (*cp  != NUL && *cp != ',')
+	    ++cp;
+	if (*cp != NUL)
+	    ++cp;
+    }
+
+    return TRUE;
+}
+
+/*
+ * Calculate the number of screen spaces a tab will occupy.
+ * If "vts" is set then the tab widths are taken from that array,
+ * otherwise the value of ts is used.
+ */
+    int
+tabstop_padding(colnr_T col, int ts_arg, int *vts)
+{
+    int		ts = ts_arg == 0 ? 8 : ts_arg;
+    int		tabcount;
+    colnr_T	tabcol = 0;
+    int		t;
+    int		padding = 0;
+
+    if (vts == NULL || vts[0] == 0)
+	return ts - (col % ts);
+
+    tabcount = vts[0];
+
+    for (t = 1; t <= tabcount; ++t)
+    {
+	tabcol += vts[t];
+	if (tabcol > col)
+	{
+	    padding = (int)(tabcol - col);
+	    break;
+	}
+    }
+    if (t > tabcount)
+	padding = vts[tabcount] - (int)((col - tabcol) % vts[tabcount]);
+
+    return padding;
+}
+
+/*
+ * Find the size of the tab that covers a particular column.
+ */
+    int
+tabstop_at(colnr_T col, int ts, int *vts)
+{
+    int		tabcount;
+    colnr_T	tabcol = 0;
+    int		t;
+    int		tab_size = 0;
+
+    if (vts == 0 || vts[0] == 0)
+	return ts;
+
+    tabcount = vts[0];
+    for (t = 1; t <= tabcount; ++t)
+    {
+	tabcol += vts[t];
+	if (tabcol > col)
+	{
+	    tab_size = vts[t];
+	    break;
+	}
+    }
+    if (t > tabcount)
+	tab_size = vts[tabcount];
+
+    return tab_size;
+}
+
+/*
+ * Find the column on which a tab starts.
+ */
+    colnr_T
+tabstop_start(colnr_T col, int ts, int *vts)
+{
+    int		tabcount;
+    colnr_T	tabcol = 0;
+    int		t;
+    int         excess;
+
+    if (vts == NULL || vts[0] == 0)
+	return (col / ts) * ts;
+
+    tabcount = vts[0];
+    for (t = 1; t <= tabcount; ++t)
+    {
+	tabcol += vts[t];
+	if (tabcol > col)
+	    return tabcol - vts[t];
+    }
+
+    excess = tabcol % vts[tabcount];
+    return excess + ((col - excess) / vts[tabcount]) * vts[tabcount];
+}
+
+/*
+ * Find the number of tabs and spaces necessary to get from one column
+ * to another.
+ */
+    void
+tabstop_fromto(
+	colnr_T start_col,
+	colnr_T end_col,
+	int	ts_arg,
+	int	*vts,
+	int	*ntabs,
+	int	*nspcs)
+{
+    int		spaces = end_col - start_col;
+    colnr_T	tabcol = 0;
+    int		padding = 0;
+    int		tabcount;
+    int		t;
+    int		ts = ts_arg == 0 ? curbuf->b_p_ts : ts_arg;
+
+    if (vts == NULL || vts[0] == 0)
+    {
+	int tabs = 0;
+	int initspc = 0;
+
+	initspc = ts - (start_col % ts);
+	if (spaces >= initspc)
+	{
+	    spaces -= initspc;
+	    tabs++;
+	}
+	tabs += spaces / ts;
+	spaces -= (spaces / ts) * ts;
+
+	*ntabs = tabs;
+	*nspcs = spaces;
+	return;
+    }
+
+    // Find the padding needed to reach the next tabstop.
+    tabcount = vts[0];
+    for (t = 1; t <= tabcount; ++t)
+    {
+	tabcol += vts[t];
+	if (tabcol > start_col)
+	{
+	    padding = (int)(tabcol - start_col);
+	    break;
+	}
+    }
+    if (t > tabcount)
+	padding = vts[tabcount] - (int)((start_col - tabcol) % vts[tabcount]);
+
+    // If the space needed is less than the padding no tabs can be used.
+    if (spaces < padding)
+    {
+	*ntabs = 0;
+	*nspcs = spaces;
+	return;
+    }
+
+    *ntabs = 1;
+    spaces -= padding;
+
+    // At least one tab has been used. See if any more will fit.
+    while (spaces != 0 && ++t <= tabcount)
+    {
+	padding = vts[t];
+	if (spaces < padding)
+	{
+	    *nspcs = spaces;
+	    return;
+	}
+	++*ntabs;
+	spaces -= padding;
+    }
+
+    *ntabs += spaces / vts[tabcount];
+    *nspcs =  spaces % vts[tabcount];
+}
+
+/*
+ * See if two tabstop arrays contain the same values.
+ */
+    int
+tabstop_eq(int *ts1, int *ts2)
+{
+    int		t;
+
+    if ((ts1 == 0 && ts2) || (ts1 && ts2 == 0))
+	return FALSE;
+    if (ts1 == ts2)
+	return TRUE;
+    if (ts1[0] != ts2[0])
+	return FALSE;
+
+    for (t = 1; t <= ts1[0]; ++t)
+	if (ts1[t] != ts2[t])
+	    return FALSE;
+
+    return TRUE;
+}
+
+#if defined(FEAT_BEVAL) || defined(PROTO)
+/*
+ * Copy a tabstop array, allocating space for the new array.
+ */
+    int *
+tabstop_copy(int *oldts)
+{
+    int		*newts;
+    int		t;
+
+    if (oldts == NULL)
+	return NULL;
+    newts = ALLOC_MULT(int, oldts[0] + 1);
+    if (newts != NULL)
+	for (t = 0; t <= oldts[0]; ++t)
+	    newts[t] = oldts[t];
+    return newts;
+}
+#endif
+
+/*
+ * Return a count of the number of tabstops.
+ */
+    int
+tabstop_count(int *ts)
+{
+    return ts != NULL ? ts[0] : 0;
+}
+
+/*
+ * Return the first tabstop, or 8 if there are no tabstops defined.
+ */
+    int
+tabstop_first(int *ts)
+{
+    return ts != NULL ? ts[1] : 8;
+}
+
+#endif
+
+/*
+ * Return the effective shiftwidth value for current buffer, using the
+ * 'tabstop' value when 'shiftwidth' is zero.
+ */
+    long
+get_sw_value(buf_T *buf)
+{
+    return get_sw_value_col(buf, 0);
+}
+
+/*
+ * Idem, using "pos".
+ */
+    static long
+get_sw_value_pos(buf_T *buf, pos_T *pos)
+{
+    pos_T save_cursor = curwin->w_cursor;
+    long sw_value;
+
+    curwin->w_cursor = *pos;
+    sw_value = get_sw_value_col(buf, get_nolist_virtcol());
+    curwin->w_cursor = save_cursor;
+    return sw_value;
+}
+
+/*
+ * Idem, using the first non-black in the current line.
+ */
+    long
+get_sw_value_indent(buf_T *buf)
+{
+    pos_T pos = curwin->w_cursor;
+
+    pos.col = getwhitecols_curline();
+    return get_sw_value_pos(buf, &pos);
+}
+
+/*
+ * Idem, using virtual column "col".
+ */
+    long
+get_sw_value_col(buf_T *buf, colnr_T col UNUSED)
+{
+    return buf->b_p_sw ? buf->b_p_sw :
+ #ifdef FEAT_VARTABS
+	tabstop_at(col, buf->b_p_ts, buf->b_p_vts_array);
+ #else
+	buf->b_p_ts;
+ #endif
+}
+
+/*
+ * Return the effective softtabstop value for the current buffer, using the
+ * 'shiftwidth' value when 'softtabstop' is negative.
+ */
+    long
+get_sts_value(void)
+{
+    return curbuf->b_p_sts < 0 ? get_sw_value(curbuf) : curbuf->b_p_sts;
+}

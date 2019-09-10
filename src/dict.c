@@ -28,7 +28,7 @@ dict_alloc(void)
 {
     dict_T *d;
 
-    d = (dict_T *)alloc(sizeof(dict_T));
+    d = ALLOC_CLEAR_ONE(dict_T);
     if (d != NULL)
     {
 	/* Add the dict to the list of dicts for garbage collection. */
@@ -54,7 +54,7 @@ dict_alloc(void)
 dict_alloc_id(alloc_id_T id UNUSED)
 {
 #ifdef FEAT_EVAL
-    if (alloc_fail_id == id && alloc_does_fail((long_u)sizeof(list_T)))
+    if (alloc_fail_id == id && alloc_does_fail(sizeof(list_T)))
 	return NULL;
 #endif
     return (dict_alloc());
@@ -210,7 +210,7 @@ dictitem_alloc(char_u *key)
 {
     dictitem_T *di;
 
-    di = (dictitem_T *)alloc((unsigned)(sizeof(dictitem_T) + STRLEN(key)));
+    di = alloc(offsetof(dictitem_T, di_key) + STRLEN(key) + 1);
     if (di != NULL)
     {
 	STRCPY(di->di_key, key);
@@ -228,8 +228,7 @@ dictitem_copy(dictitem_T *org)
 {
     dictitem_T *di;
 
-    di = (dictitem_T *)alloc((unsigned)(sizeof(dictitem_T)
-						      + STRLEN(org->di_key)));
+    di = alloc(offsetof(dictitem_T, di_key) + STRLEN(org->di_key) + 1);
     if (di != NULL)
     {
 	STRCPY(di->di_key, org->di_key);
@@ -342,18 +341,18 @@ dict_add(dict_T *d, dictitem_T *item)
 }
 
 /*
- * Add a number entry to dictionary "d".
+ * Add a number or special entry to dictionary "d".
  * Returns FAIL when out of memory and when key already exists.
  */
-    int
-dict_add_number(dict_T *d, char *key, varnumber_T nr)
+    static int
+dict_add_number_special(dict_T *d, char *key, varnumber_T nr, int special)
 {
     dictitem_T	*item;
 
     item = dictitem_alloc((char_u *)key);
     if (item == NULL)
 	return FAIL;
-    item->di_tv.v_type = VAR_NUMBER;
+    item->di_tv.v_type = special ? VAR_SPECIAL : VAR_NUMBER;
     item->di_tv.vval.v_number = nr;
     if (dict_add(d, item) == FAIL)
     {
@@ -361,6 +360,26 @@ dict_add_number(dict_T *d, char *key, varnumber_T nr)
 	return FAIL;
     }
     return OK;
+}
+
+/*
+ * Add a number entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_number(dict_T *d, char *key, varnumber_T nr)
+{
+    return dict_add_number_special(d, key, nr, FALSE);
+}
+
+/*
+ * Add a special entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_special(dict_T *d, char *key, varnumber_T nr)
+{
+    return dict_add_number_special(d, key, nr, TRUE);
 }
 
 /*
@@ -426,6 +445,76 @@ dict_add_list(dict_T *d, char *key, list_T *list)
 	return FAIL;
     }
     return OK;
+}
+
+/*
+ * Add a callback to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_callback(dict_T *d, char *key, callback_T *cb)
+{
+    dictitem_T	*item;
+
+    item = dictitem_alloc((char_u *)key);
+    if (item == NULL)
+	return FAIL;
+    put_callback(cb, &item->di_tv);
+    if (dict_add(d, item) == FAIL)
+    {
+	dictitem_free(item);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Initializes "iter" for iterating over dictionary items with
+ * dict_iterate_next().
+ * If "var" is not a Dict or an empty Dict then there will be nothing to
+ * iterate over, no error is given.
+ * NOTE: The dictionary must not change until iterating is finished!
+ */
+    void
+dict_iterate_start(typval_T *var, dict_iterator_T *iter)
+{
+    if (var->v_type != VAR_DICT || var->vval.v_dict == NULL)
+	iter->dit_todo = 0;
+    else
+    {
+	dict_T	*d = var->vval.v_dict;
+
+	iter->dit_todo = d->dv_hashtab.ht_used;
+	iter->dit_hi = d->dv_hashtab.ht_array;
+    }
+}
+
+/*
+ * Iterate over the items referred to by "iter".  It should be initialized with
+ * dict_iterate_start().
+ * Returns a pointer to the key.
+ * "*tv_result" is set to point to the value for that key.
+ * If there are no more items, NULL is returned.
+ */
+    char_u *
+dict_iterate_next(dict_iterator_T *iter, typval_T **tv_result)
+{
+    dictitem_T	*di;
+    char_u      *result;
+
+    if (iter->dit_todo == 0)
+	return NULL;
+
+    while (HASHITEM_EMPTY(iter->dit_hi))
+	++iter->dit_hi;
+
+    di = HI2DI(iter->dit_hi);
+    result = di->di_key;
+    *tv_result = &di->di_tv;
+
+    --iter->dit_todo;
+    ++iter->dit_hi;
+    return result;
 }
 
 /*
@@ -528,11 +617,42 @@ dict_get_string(dict_T *d, char_u *key, int save)
     varnumber_T
 dict_get_number(dict_T *d, char_u *key)
 {
+    return dict_get_number_def(d, key, 0);
+}
+
+/*
+ * Get a number item from a dictionary.
+ * Returns "def" if the entry doesn't exist.
+ */
+    varnumber_T
+dict_get_number_def(dict_T *d, char_u *key, int def)
+{
+    dictitem_T	*di;
+
+    di = dict_find(d, key, -1);
+    if (di == NULL)
+	return def;
+    return tv_get_number(&di->di_tv);
+}
+
+/*
+ * Get a number item from a dictionary.
+ * Returns 0 if the entry doesn't exist.
+ * Give an error if the entry is not a number.
+ */
+    varnumber_T
+dict_get_number_check(dict_T *d, char_u *key)
+{
     dictitem_T	*di;
 
     di = dict_find(d, key, -1);
     if (di == NULL)
 	return 0;
+    if (di->di_tv.v_type != VAR_NUMBER)
+    {
+	semsg(_(e_invarg2), tv_get_string(&di->di_tv));
+	return 0;
+    }
     return tv_get_number(&di->di_tv);
 }
 
@@ -599,11 +719,33 @@ dict2string(typval_T *tv, int copyID, int restore_copyID)
 }
 
 /*
+ * Get the key for #{key: val} into "tv" and advance "arg".
+ * Return FAIL when there is no valid key.
+ */
+    static int
+get_literal_key(char_u **arg, typval_T *tv)
+{
+    char_u *p;
+
+    if (!ASCII_ISALNUM(**arg) && **arg != '_' && **arg != '-')
+	return FAIL;
+
+    for (p = *arg; ASCII_ISALNUM(*p) || *p == '_' || *p == '-'; ++p)
+	;
+    tv->v_type = VAR_STRING;
+    tv->vval.v_string = vim_strnsave(*arg, (int)(p - *arg));
+
+    *arg = skipwhite(p);
+    return OK;
+}
+
+/*
  * Allocate a variable for a Dictionary and fill it from "*arg".
+ * "literal" is TRUE for #{key: val}
  * Return OK or FAIL.  Returns NOTDONE for {expr}.
  */
     int
-dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
+dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
 {
     dict_T	*d = NULL;
     typval_T	tvkey;
@@ -640,8 +782,11 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
     *arg = skipwhite(*arg + 1);
     while (**arg != '}' && **arg != NUL)
     {
-	if (eval1(arg, &tvkey, evaluate) == FAIL)	/* recursive! */
+	if ((literal
+		? get_literal_key(arg, &tvkey)
+		: eval1(arg, &tvkey, evaluate)) == FAIL)	// recursive!
 	    goto failret;
+
 	if (**arg != ':')
 	{
 	    semsg(_("E720: Missing colon in Dictionary: %s"), *arg);
@@ -701,7 +846,7 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate)
     {
 	semsg(_("E723: Missing end of Dictionary '}': %s"), *arg);
 failret:
-	if (evaluate)
+	if (d != NULL)
 	    dict_free(d);
 	return FAIL;
     }
@@ -822,7 +967,7 @@ dict_equal(
  * "what" == 1: list of values
  * "what" == 2: list of items
  */
-    void
+    static void
 dict_list(typval_T *argvars, typval_T *rettv, int what)
 {
     list_T	*l2;
@@ -899,6 +1044,33 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 }
 
 /*
+ * "items(dict)" function
+ */
+    void
+f_items(typval_T *argvars, typval_T *rettv)
+{
+    dict_list(argvars, rettv, 2);
+}
+
+/*
+ * "keys()" function
+ */
+    void
+f_keys(typval_T *argvars, typval_T *rettv)
+{
+    dict_list(argvars, rettv, 0);
+}
+
+/*
+ * "values(dict)" function
+ */
+    void
+f_values(typval_T *argvars, typval_T *rettv)
+{
+    dict_list(argvars, rettv, 1);
+}
+
+/*
  * Make each item in the dict readonly (not the value of the item).
  */
     void
@@ -914,6 +1086,56 @@ dict_set_items_ro(dict_T *di)
 	    continue;
 	--todo;
 	HI2DI(hi)->di_flags |= DI_FLAGS_RO | DI_FLAGS_FIX;
+    }
+}
+
+/*
+ * "has_key()" function
+ */
+    void
+f_has_key(typval_T *argvars, typval_T *rettv)
+{
+    if (argvars[0].v_type != VAR_DICT)
+    {
+	emsg(_(e_dictreq));
+	return;
+    }
+    if (argvars[0].vval.v_dict == NULL)
+	return;
+
+    rettv->vval.v_number = dict_find(argvars[0].vval.v_dict,
+				      tv_get_string(&argvars[1]), -1) != NULL;
+}
+
+/*
+ * "remove({dict})" function
+ */
+    void
+dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
+{
+    dict_T	*d;
+    char_u	*key;
+    dictitem_T	*di;
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+	semsg(_(e_toomanyarg), "remove()");
+    else if ((d = argvars[0].vval.v_dict) != NULL
+	    && !var_check_lock(d->dv_lock, arg_errmsg, TRUE))
+    {
+	key = tv_get_string_chk(&argvars[1]);
+	if (key != NULL)
+	{
+	    di = dict_find(d, key, -1);
+	    if (di == NULL)
+		semsg(_(e_dictkey), key);
+	    else if (!var_check_fixed(di->di_flags, arg_errmsg, TRUE)
+			&& !var_check_ro(di->di_flags, arg_errmsg, TRUE))
+	    {
+		*rettv = di->di_tv;
+		init_tv(&di->di_tv);
+		dictitem_remove(d, di);
+	    }
+	}
     }
 }
 

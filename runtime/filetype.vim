@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2019 Feb 07
+" Last Change:	2019 Aug 26
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -42,6 +42,8 @@ endif
 
 " Function used for patterns that end in a star: don't set the filetype if the
 " file name matches ft_ignore_pat.
+" When using this, the entry should probably be further down below with the
+" other StarSetf() calls.
 func! s:StarSetf(ft)
   if expand("<amatch>") !~ g:ft_ignore_pat
     exe 'setf ' . a:ft
@@ -94,9 +96,6 @@ au BufNewFile,BufRead build.xml			setf ant
 
 " Arduino
 au BufNewFile,BufRead *.ino,*.pde		setf arduino
-
-" Apache style config file
-au BufNewFile,BufRead proftpd.conf*		call s:StarSetf('apachestyle')
 
 " Apache config file
 au BufNewFile,BufRead .htaccess,*/etc/httpd/*.conf		setf apache
@@ -655,7 +654,6 @@ au BufNewFile,BufRead gnashrc,.gnashrc,gnashpluginrc,.gnashpluginrc setf gnash
 
 " Gitolite
 au BufNewFile,BufRead gitolite.conf		setf gitolite
-au BufNewFile,BufRead */gitolite-admin/conf/*	call s:StarSetf('gitolite')
 au BufNewFile,BufRead {,.}gitolite.rc,example.gitolite.rc	setf perl
 
 " Gnuplot scripts
@@ -703,6 +701,9 @@ au BufNewFile,BufRead *.vc,*.ev,*.sum,*.errsum	setf hercules
 " HEX (Intel)
 au BufNewFile,BufRead *.hex,*.h32		setf hex
 
+" Hollywood
+au BufRead,BufNewFile *.hws			setf hollywood
+
 " Tilde (must be before HTML)
 au BufNewFile,BufRead *.t.html			setf tilde
 
@@ -715,8 +716,8 @@ au BufNewFile,BufRead *.erb,*.rhtml		setf eruby
 " HTML with M4
 au BufNewFile,BufRead *.html.m4			setf htmlm4
 
-" HTML Cheetah template
-au BufNewFile,BufRead *.tmpl			setf htmlcheetah
+" Some template.  Used to be HTML Cheetah.
+au BufNewFile,BufRead *.tmpl			setf template
 
 " Host config
 au BufNewFile,BufRead */etc/host.conf		setf hostconf
@@ -797,14 +798,16 @@ au BufNewFile,BufRead *.java,*.jav		setf java
 au BufNewFile,BufRead *.jj,*.jjt		setf javacc
 
 " JavaScript, ECMAScript
-au BufNewFile,BufRead *.js,*.javascript,*.es,*.jsx,*.mjs   setf javascript
+au BufNewFile,BufRead *.js,*.javascript,*.es,*.mjs   setf javascript
+
+" JavaScript with React
+au BufNewFile,BufRead *.jsx			setf javascriptreact
 
 " Java Server Pages
 au BufNewFile,BufRead *.jsp			setf jsp
 
 " Java Properties resource file (note: doesn't catch font.properties.pl)
 au BufNewFile,BufRead *.properties,*.properties_??,*.properties_??_??	setf jproperties
-au BufNewFile,BufRead *.properties_??_??_*	call s:StarSetf('jproperties')
 
 " Jess
 au BufNewFile,BufRead *.clp			setf jess
@@ -1177,6 +1180,10 @@ au BufNewFile,BufRead *.rcp			setf pilrc
 " Pine config
 au BufNewFile,BufRead .pinerc,pinerc,.pinercex,pinercex		setf pine
 
+" Pipenv Pipfiles
+au BufNewFile,BufRead Pipfile			setf config
+au BufNewFile,BufRead Pipfile.lock		setf json
+
 " PL/1, PL/I
 au BufNewFile,BufRead *.pli,*.pl1		setf pli
 
@@ -1462,7 +1469,6 @@ au BufNewFile,BufRead *.decl,*.dcl,*.dec
 
 " SGML catalog file
 au BufNewFile,BufRead catalog			setf catalog
-au BufNewFile,BufRead sgml.catalog*		call s:StarSetf('catalog')
 
 " Shell scripts (sh, ksh, bash, bash2, csh); Allow .profile_foo etc.
 " Gentoo ebuilds and Arch Linux PKGBUILDs are actually bash scripts
@@ -1617,6 +1623,10 @@ au BufNewFile,BufRead */etc/sysctl.conf,*/etc/sysctl.d/*.conf	setf sysctl
 
 " Systemd unit files
 au BufNewFile,BufRead */systemd/*.{automount,mount,path,service,socket,swap,target,timer}	setf systemd
+" Systemd overrides
+au BufNewFile,BufRead /etc/systemd/system/*.d/*.conf	setf systemd
+" Systemd temp files
+au BufNewFile,BufRead /etc/systemd/system/*.d/.#*	setf systemd
 
 " Synopsys Design Constraints
 au BufNewFile,BufRead *.sdc			setf sdc
@@ -1699,6 +1709,12 @@ au BufNewFile,BufReadPost *.tsscl		setf tsscl
 " TWIG files
 au BufNewFile,BufReadPost *.twig		setf twig
 
+" Typescript
+au BufNewFile,BufReadPost *.ts			setf typescript
+
+" TypeScript with React
+au BufNewFile,BufRead *.tsx			setf typescriptreact
+
 " Motif UIT/UIL files
 au BufNewFile,BufRead *.uit,*.uil		setf uil
 
@@ -1739,7 +1755,6 @@ au BufNewFile,BufRead *.sv,*.svh		setf systemverilog
 
 " VHDL
 au BufNewFile,BufRead *.hdl,*.vhd,*.vhdl,*.vbe,*.vst  setf vhdl
-au BufNewFile,BufRead *.vhdl_[0-9]*		call s:StarSetf('vhdl')
 
 " Vim script
 au BufNewFile,BufRead *.vim,*.vba,.exrc,_exrc	setf vim
@@ -1770,11 +1785,14 @@ au BufNewFile,BufRead *.wrl			setf vrml
 " Vroom (vim testing and executable documentation)
 au BufNewFile,BufRead *.vroom			setf vroom
 
-" Webmacro
-au BufNewFile,BufRead *.wm			setf webmacro
+" Vue.js Single File Component
+au BufNewFile,BufRead *.vue			setf vue
 
 " WebAssembly
 au BufNewFile,BufRead *.wast,*.wat		setf wast
+
+" Webmacro
+au BufNewFile,BufRead *.wm			setf webmacro
 
 " Wget config
 au BufNewFile,BufRead .wgetrc,wgetrc		setf wget
@@ -1861,7 +1879,8 @@ au BufNewFile,BufRead *.xmi			setf xml
 au BufNewFile,BufRead *.csproj,*.csproj.user	setf xml
 
 " Qt Linguist translation source and Qt User Interface Files are XML
-au BufNewFile,BufRead *.ts,*.ui			setf xml
+" However, for .ts Typescript is more common.
+au BufNewFile,BufRead *.ui			setf xml
 
 " TPM's are RDF-based descriptions of TeX packages (Nikolai Weibull)
 au BufNewFile,BufRead *.tpm			setf xml
@@ -1952,6 +1971,7 @@ au StdinReadPost * if !did_filetype() | runtime! scripts.vim | endif
 
 " More Apache style config files
 au BufNewFile,BufRead */etc/proftpd/*.conf*,*/etc/proftpd/conf.*/*	call s:StarSetf('apachestyle')
+au BufNewFile,BufRead proftpd.conf*					call s:StarSetf('apachestyle')
 
 " More Apache config files
 au BufNewFile,BufRead access.conf*,apache.conf*,apache2.conf*,httpd.conf*,srm.conf*	call s:StarSetf('apache')
@@ -2008,6 +2028,12 @@ au BufNewFile,BufRead *fvwm2rc*
 " Gedcom
 au BufNewFile,BufRead */tmp/lltmp*		call s:StarSetf('gedcom')
 
+" Git
+au BufNewFile,BufRead */.gitconfig.d/*,/etc/gitconfig.d/* 	call s:StarSetf('gitconfig')
+
+" Gitolite
+au BufNewFile,BufRead */gitolite-admin/conf/*	call s:StarSetf('gitolite')
+
 " GTK RC
 au BufNewFile,BufRead .gtkrc*,gtkrc*		call s:StarSetf('gtkrc')
 
@@ -2019,6 +2045,9 @@ au! BufNewFile,BufRead *jarg*
 	\ if getline(1).getline(2).getline(3).getline(4).getline(5) =~? 'THIS IS THE JARGON FILE'
 	\|  call s:StarSetf('jargon')
 	\|endif
+
+" Java Properties resource file (note: doesn't catch font.properties.pl)
+au BufNewFile,BufRead *.properties_??_??_*	call s:StarSetf('jproperties')
 
 " Kconfig
 au BufNewFile,BufRead Kconfig.*			call s:StarSetf('kconfig')
@@ -2081,6 +2110,9 @@ au BufRead,BufNewFile *.rdf			call dist#ft#Redif()
 " Remind
 au BufNewFile,BufRead .reminders*		call s:StarSetf('remind')
 
+" SGML catalog file
+au BufNewFile,BufRead sgml.catalog*		call s:StarSetf('catalog')
+
 " Shell scripts ending in a star
 au BufNewFile,BufRead .bashrc*,.bash[_-]profile*,.bash[_-]logout*,.bash[_-]aliases*,bash-fc[-.]*,,PKGBUILD* call dist#ft#SetFileTypeSH("bash")
 au BufNewFile,BufRead .kshrc* call dist#ft#SetFileTypeSH("ksh")
@@ -2091,6 +2123,9 @@ au BufNewFile,BufRead .tcshrc*	call dist#ft#SetFileTypeShell("tcsh")
 
 " csh scripts ending in a star
 au BufNewFile,BufRead .login*,.cshrc*  call dist#ft#CSH()
+
+" VHDL
+au BufNewFile,BufRead *.vhdl_[0-9]*		call s:StarSetf('vhdl')
 
 " Vim script
 au BufNewFile,BufRead *vimrc*			call s:StarSetf('vim')

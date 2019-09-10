@@ -1,4 +1,4 @@
-*spell.txt*	For Vim version 8.1.  Last change: 2019 Jan 19
+*spell.txt*	For Vim version 8.1.  Last change: 2019 Aug 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -11,10 +11,7 @@ Spell checking						*spell*
 3. Generating a spell file	|spell-mkspell|
 4. Spell file format		|spell-file-format|
 
-{Vi does not have any of these commands}
-
-Spell checking is not available when the |+syntax| feature has been disabled
-at compile time.
+{not available when the |+syntax| feature has been disabled at compile time}
 
 Note: There also is a vimspell plugin.  If you have it you can do ":help
 vimspell" to find about it.  But you will probably want to get rid of the
@@ -123,6 +120,23 @@ zuG			Undo |zW| and |zG|, remove the word from the internal
 
 :spellw[rong]! {word}	Add {word} as a wrong (bad) word to the internal word
 			list, like with |zW|.
+
+							*:spellra* *:spellrare*
+:[count]spellr[are] {word}
+			Add {word} as a rare word to 'spellfile', similar to
+			|zw|.  Without count the first name is used, with
+			a count of two the second entry, etc.
+
+			There are no normal mode commands to mark words as
+			rare as this is a fairly uncommon command and all
+			intuitive commands for this are already taken. If you
+			want you can add mappings with e.g.: >
+		nnoremap z?  :exe ':spellrare  ' . expand('<cWORD>')<CR>
+		nnoremap z/  :exe ':spellrare! ' . expand('<cWORD>')<CR>
+<			|:spellundo|, |zuw|, or |zuW| can be used to undo this.
+
+:spellr[rare]! {word}	Add {word} as a rare word to the internal word
+			list, similar to |zW|.
 
 :[count]spellu[ndo] {word}				*:spellu* *:spellundo*
 			Like |zuw|.  [count] used as with |:spellgood|.
@@ -312,25 +326,25 @@ Exceptions:
   spell file is used.
 
 For example, with these values:
-	'runtimepath' is "~/.vim,/usr/share/vim70,~/.vim/after"
+	'runtimepath' is "~/.vim,/usr/share/vim81,~/.vim/after"
 	'encoding'    is "iso-8859-2"
 	'spelllang'   is "pl"
 
 Vim will look for:
 1. ~/.vim/spell/pl.iso-8859-2.spl
-2. /usr/share/vim70/spell/pl.iso-8859-2.spl
+2. /usr/share/vim81/spell/pl.iso-8859-2.spl
 3. ~/.vim/spell/pl.iso-8859-2.add.spl
-4. /usr/share/vim70/spell/pl.iso-8859-2.add.spl
+4. /usr/share/vim81/spell/pl.iso-8859-2.add.spl
 5. ~/.vim/after/spell/pl.iso-8859-2.add.spl
 
 This assumes 1. is not found and 2. is found.
 
 If 'encoding' is "latin1" Vim will look for:
 1. ~/.vim/spell/pl.latin1.spl
-2. /usr/share/vim70/spell/pl.latin1.spl
+2. /usr/share/vim81/spell/pl.latin1.spl
 3. ~/.vim/after/spell/pl.latin1.spl
 4. ~/.vim/spell/pl.ascii.spl
-5. /usr/share/vim70/spell/pl.ascii.spl
+5. /usr/share/vim81/spell/pl.ascii.spl
 6. ~/.vim/after/spell/pl.ascii.spl
 
 This assumes none of them are found (Polish doesn't make sense when leaving

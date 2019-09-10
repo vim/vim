@@ -1,4 +1,4 @@
-*netbeans.txt*  For Vim version 8.1.  Last change: 2019 Jan 17
+*netbeans.txt*  For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur et al.
@@ -24,7 +24,6 @@ Vim NetBeans Protocol: a socket interface for Vim integration into an IDE.
     10.4. Obtaining the External Editor Module	|obtaining-exted|
     10.5. Setting up NetBeans to run with Vim	|netbeans-setup|
 
-{Vi does not have any of these features}
 {only available when compiled with the |+netbeans_intg| feature}
 
 ==============================================================================

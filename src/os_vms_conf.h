@@ -24,7 +24,7 @@
 #define HAVE_DATE_TIME
 
 /* Defined to the size of an int */
-#define VIM_SIZEOF_INT  4 
+#define VIM_SIZEOF_INT  4
 
 /* #undef USEBCOPY */
 #define USEMEMMOVE

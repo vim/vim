@@ -1,7 +1,6 @@
 /* list.c */
 void list_add_watch(list_T *l, listwatch_T *lw);
 void list_rem_watch(list_T *l, listwatch_T *lwrem);
-void list_fix_watch(list_T *l, listitem_T *item);
 list_T *list_alloc(void);
 list_T *list_alloc_id(alloc_id_T id);
 int rettv_list_alloc(typval_T *rettv);
@@ -34,7 +33,20 @@ list_T *list_copy(list_T *orig, int deep, int copyID);
 void vimlist_remove(list_T *l, listitem_T *item, listitem_T *item2);
 char_u *list2string(typval_T *tv, int copyID, int restore_copyID);
 int list_join(garray_T *gap, list_T *l, char_u *sep, int echo_style, int restore_copyID, int copyID);
+void f_join(typval_T *argvars, typval_T *rettv);
 int get_list_tv(char_u **arg, typval_T *rettv, int evaluate);
 int write_list(FILE *fd, list_T *list, int binary);
 void init_static_list(staticList10_T *sl);
+void f_list2str(typval_T *argvars, typval_T *rettv);
+void list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg);
+void f_sort(typval_T *argvars, typval_T *rettv);
+void f_uniq(typval_T *argvars, typval_T *rettv);
+void f_filter(typval_T *argvars, typval_T *rettv);
+void f_map(typval_T *argvars, typval_T *rettv);
+void f_add(typval_T *argvars, typval_T *rettv);
+void f_count(typval_T *argvars, typval_T *rettv);
+void f_extend(typval_T *argvars, typval_T *rettv);
+void f_insert(typval_T *argvars, typval_T *rettv);
+void f_remove(typval_T *argvars, typval_T *rettv);
+void f_reverse(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

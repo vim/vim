@@ -130,6 +130,8 @@ gtk_form_put(GtkForm	*form,
 
     /* LINTED: avoid warning: conversion to 'unsigned long' */
     child = g_new(GtkFormChild, 1);
+    if (child == NULL)
+	return;
 
     child->widget = child_widget;
     child->window = NULL;
@@ -561,7 +563,7 @@ gtk_form_draw(GtkWidget *widget, cairo_t *cr)
 	     * gtk_widget_size_allocate() in advance with a well-posed
 	     * allocation for a given child widget in order to set a
 	     * certain private GtkWidget variable, called
-	     * widget->priv->alloc_need, to the proper value; othewise,
+	     * widget->priv->alloc_need, to the proper value; otherwise,
 	     * gtk_widget_draw() fails and the relevant scrollbar won't
 	     * appear on the screen.
 	     *

@@ -711,7 +711,7 @@ mem_pre_alloc_s(size_t *sizep)
 }
 
     static void
-mem_pre_alloc_l(long_u *sizep)
+mem_pre_alloc_l(size_t *sizep)
 {
     *sizep += sizeof(size_t);
 }
@@ -796,7 +796,7 @@ vim_mem_profile_dump(void)
 
 #ifdef FEAT_EVAL
     int
-alloc_does_fail(long_u size)
+alloc_does_fail(size_t size)
 {
     if (alloc_fail_countdown == 0)
     {
@@ -818,84 +818,66 @@ alloc_does_fail(long_u size)
 #define KEEP_ROOM_KB (KEEP_ROOM / 1024L)
 
 /*
- * Note: if unsigned is 16 bits we can only allocate up to 64K with alloc().
- * Use lalloc for larger blocks.
+ * The normal way to allocate memory.  This handles an out-of-memory situation
+ * as well as possible, still returns NULL when we're completely out.
  */
-    char_u *
-alloc(unsigned size)
+    void *
+alloc(size_t size)
 {
-    return (lalloc((long_u)size, TRUE));
+    return lalloc(size, TRUE);
 }
 
 /*
  * alloc() with an ID for alloc_fail().
  */
-    char_u *
-alloc_id(unsigned size, alloc_id_T id UNUSED)
+    void *
+alloc_id(size_t size, alloc_id_T id UNUSED)
 {
 #ifdef FEAT_EVAL
-    if (alloc_fail_id == id && alloc_does_fail((long_u)size))
+    if (alloc_fail_id == id && alloc_does_fail(size))
 	return NULL;
 #endif
-    return (lalloc((long_u)size, TRUE));
+    return lalloc(size, TRUE);
 }
 
 /*
  * Allocate memory and set all bytes to zero.
  */
-    char_u *
-alloc_clear(unsigned size)
+    void *
+alloc_clear(size_t size)
 {
-    char_u *p;
+    void *p;
 
-    p = lalloc((long_u)size, TRUE);
+    p = lalloc(size, TRUE);
     if (p != NULL)
-	(void)vim_memset(p, 0, (size_t)size);
+	(void)vim_memset(p, 0, size);
     return p;
 }
 
 /*
  * Same as alloc_clear() but with allocation id for testing
  */
-    char_u *
-alloc_clear_id(unsigned size, alloc_id_T id UNUSED)
+    void *
+alloc_clear_id(size_t size, alloc_id_T id UNUSED)
 {
 #ifdef FEAT_EVAL
-    if (alloc_fail_id == id && alloc_does_fail((long_u)size))
+    if (alloc_fail_id == id && alloc_does_fail(size))
 	return NULL;
 #endif
     return alloc_clear(size);
 }
 
 /*
- * alloc() with check for maximum line length
- */
-    char_u *
-alloc_check(unsigned size)
-{
-#if !defined(UNIX)
-    if (sizeof(int) == 2 && size > 0x7fff)
-    {
-	/* Don't hide this message */
-	emsg_silent = 0;
-	emsg(_("E340: Line is becoming too long"));
-	return NULL;
-    }
-#endif
-    return (lalloc((long_u)size, TRUE));
-}
-
-/*
  * Allocate memory like lalloc() and set all bytes to zero.
  */
-    char_u *
-lalloc_clear(long_u size, int message)
+    void *
+lalloc_clear(size_t size, int message)
 {
-    char_u *p;
+    void *p;
 
-    p = (lalloc(size, message));
+    p = lalloc(size, message);
     if (p != NULL)
-	(void)vim_memset(p, 0, (size_t)size);
+	(void)vim_memset(p, 0, size);
     return p;
 }
 
@@ -903,22 +885,22 @@ lalloc_clear(long_u size, int message)
  * Low level memory allocation function.
  * This is used often, KEEP IT FAST!
  */
-    char_u *
-lalloc(long_u size, int message)
+    void *
+lalloc(size_t size, int message)
 {
-    char_u	*p;		    /* pointer to new storage space */
+    void	*p;		    /* pointer to new storage space */
     static int	releasing = FALSE;  /* don't do mf_release_all() recursive */
     int		try_again;
 #if defined(HAVE_AVAIL_MEM)
-    static long_u allocated = 0;    /* allocated since last avail check */
+    static size_t allocated = 0;    /* allocated since last avail check */
 #endif
 
-    /* Safety check for allocating zero bytes */
+    // Safety check for allocating zero bytes
     if (size == 0)
     {
-	/* Don't hide this message */
+	// Don't hide this message
 	emsg_silent = 0;
-	siemsg(_("E341: Internal error: lalloc(%ld, )"), size);
+	iemsg(_("E341: Internal error: lalloc(0, )"));
 	return NULL;
     }
 
@@ -939,7 +921,7 @@ lalloc(long_u size, int message)
 	 *    allocating KEEP_ROOM amount of memory.
 	 * 3. Strict check for available memory: call mch_avail_mem()
 	 */
-	if ((p = (char_u *)malloc((size_t)size)) != NULL)
+	if ((p = malloc(size)) != NULL)
 	{
 #ifndef HAVE_AVAIL_MEM
 	    /* 1. No check for available memory: Just return. */
@@ -955,7 +937,7 @@ lalloc(long_u size, int message)
 	    /* 3. check for available memory: call mch_avail_mem() */
 	    if (mch_avail_mem(TRUE) < KEEP_ROOM_KB && !releasing)
 	    {
-		free((char *)p);	/* System is low... no go! */
+		free(p);	/* System is low... no go! */
 		p = NULL;
 	    }
 	    else
@@ -983,7 +965,7 @@ lalloc(long_u size, int message)
 
 theend:
 #ifdef MEM_PROFILE
-    mem_post_alloc((void **)&p, (size_t)size);
+    mem_post_alloc(&p, size);
 #endif
     return p;
 }
@@ -992,14 +974,14 @@ theend:
  * lalloc() with an ID for alloc_fail().
  */
 #if defined(FEAT_SIGNS) || defined(PROTO)
-    char_u *
-lalloc_id(long_u size, int message, alloc_id_T id UNUSED)
+    void *
+lalloc_id(size_t size, int message, alloc_id_T id UNUSED)
 {
 #ifdef FEAT_EVAL
     if (alloc_fail_id == id && alloc_does_fail(size))
 	return NULL;
 #endif
-    return (lalloc((long_u)size, message));
+    return (lalloc(size, message));
 }
 #endif
 
@@ -1028,18 +1010,23 @@ mem_realloc(void *ptr, size_t size)
 * Did_outofmem_msg is reset when a character is read.
 */
     void
-do_outofmem_msg(long_u size)
+do_outofmem_msg(size_t size)
 {
     if (!did_outofmem_msg)
     {
-	/* Don't hide this message */
+	// Don't hide this message
 	emsg_silent = 0;
 
-	/* Must come first to avoid coming back here when printing the error
-	 * message fails, e.g. when setting v:errmsg. */
+	// Must come first to avoid coming back here when printing the error
+	// message fails, e.g. when setting v:errmsg.
 	did_outofmem_msg = TRUE;
 
-	semsg(_("E342: Out of memory!  (allocating %lu bytes)"), size);
+	semsg(_("E342: Out of memory!  (allocating %lu bytes)"), (long_u)size);
+
+	if (starting == NO_SCREEN)
+	    // Not even finished with initializations and already out of
+	    // memory?  Then nothing is going to work, exit.
+	    mch_exit(123);
     }
 }
 
@@ -1068,7 +1055,7 @@ free_all_mem(void)
 
     /* Close all tabs and windows.  Reset 'equalalways' to avoid redraws. */
     p_ea = FALSE;
-    if (first_tabpage->tp_next != NULL)
+    if (first_tabpage != NULL && first_tabpage->tp_next != NULL)
 	do_cmdline_cmd((char_u *)"tabonly!");
     if (!ONE_WINDOW)
 	do_cmdline_cmd((char_u *)"only!");
@@ -1078,38 +1065,40 @@ free_all_mem(void)
     spell_free_all();
 # endif
 
-#if defined(FEAT_INS_EXPAND) && defined(FEAT_BEVAL_TERM)
+# if defined(FEAT_BEVAL_TERM)
     ui_remove_balloon();
 # endif
 
-# if defined(FEAT_USR_CMDS)
-    /* Clear user commands (before deleting buffers). */
+    // Clear user commands (before deleting buffers).
     ex_comclear(NULL);
-# endif
 
+    // When exiting from mainerr_arg_missing curbuf has not been initialized,
+    // and not much else.
+    if (curbuf != NULL)
+    {
 # ifdef FEAT_MENU
-    /* Clear menus. */
-    do_cmdline_cmd((char_u *)"aunmenu *");
+	// Clear menus.
+	do_cmdline_cmd((char_u *)"aunmenu *");
 #  ifdef FEAT_MULTI_LANG
-    do_cmdline_cmd((char_u *)"menutranslate clear");
+	do_cmdline_cmd((char_u *)"menutranslate clear");
 #  endif
 # endif
-
-    /* Clear mappings, abbreviations, breakpoints. */
-    do_cmdline_cmd((char_u *)"lmapclear");
-    do_cmdline_cmd((char_u *)"xmapclear");
-    do_cmdline_cmd((char_u *)"mapclear");
-    do_cmdline_cmd((char_u *)"mapclear!");
-    do_cmdline_cmd((char_u *)"abclear");
+	// Clear mappings, abbreviations, breakpoints.
+	do_cmdline_cmd((char_u *)"lmapclear");
+	do_cmdline_cmd((char_u *)"xmapclear");
+	do_cmdline_cmd((char_u *)"mapclear");
+	do_cmdline_cmd((char_u *)"mapclear!");
+	do_cmdline_cmd((char_u *)"abclear");
 # if defined(FEAT_EVAL)
-    do_cmdline_cmd((char_u *)"breakdel *");
+	do_cmdline_cmd((char_u *)"breakdel *");
 # endif
 # if defined(FEAT_PROFILE)
-    do_cmdline_cmd((char_u *)"profdel *");
+	do_cmdline_cmd((char_u *)"profdel *");
 # endif
 # if defined(FEAT_KEYMAP)
-    do_cmdline_cmd((char_u *)"set keymap=");
-#endif
+	do_cmdline_cmd((char_u *)"set keymap=");
+# endif
+    }
 
 # ifdef FEAT_TITLE
     free_titles();
@@ -1124,12 +1113,11 @@ free_all_mem(void)
     free_all_marks();
     alist_clear(&global_alist);
     free_homedir();
-# if defined(FEAT_CMDL_COMPL)
     free_users();
-# endif
     free_search_patterns();
     free_old_sub();
     free_last_insert();
+    free_insexpand_stuff();
     free_prev_shellcmd();
     free_regexp_stuff();
     free_tag_stuff();
@@ -1141,7 +1129,8 @@ free_all_mem(void)
     set_expr_line(NULL);
 # endif
 # ifdef FEAT_DIFF
-    diff_clear(curtab);
+    if (curtab != NULL)
+	diff_clear(curtab);
 # endif
     clear_sb_text(TRUE);	      /* free any scrollback text */
 
@@ -1151,46 +1140,43 @@ free_all_mem(void)
     vim_regfree(clip_exclude_prog);
 # endif
     vim_free(last_cmdline);
-# ifdef FEAT_CMDHIST
     vim_free(new_last_cmdline);
-# endif
     set_keep_msg(NULL, 0);
 
     /* Clear cmdline history. */
     p_hi = 0;
-# ifdef FEAT_CMDHIST
     init_history();
-# endif
-#ifdef FEAT_TEXT_PROP
+# ifdef FEAT_TEXT_PROP
     clear_global_prop_types();
-#endif
+# endif
 
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
     {
 	win_T	    *win;
 	tabpage_T   *tab;
 
 	qf_free_all(NULL);
-	/* Free all location lists */
+	// Free all location lists
 	FOR_ALL_TAB_WINDOWS(tab, win)
 	    qf_free_all(win);
     }
-#endif
+# endif
 
-    /* Close all script inputs. */
+    // Close all script inputs.
     close_all_scripts();
 
-    /* Destroy all windows.  Must come before freeing buffers. */
-    win_free_all();
+    if (curwin != NULL)
+	// Destroy all windows.  Must come before freeing buffers.
+	win_free_all();
 
     /* Free all option values.  Must come after closing windows. */
     free_all_options();
 
     /* Free all buffers.  Reset 'autochdir' to avoid accessing things that
      * were freed already. */
-#ifdef FEAT_AUTOCHDIR
+# ifdef FEAT_AUTOCHDIR
     p_acd = FALSE;
-#endif
+# endif
     for (buf = firstbuf; buf != NULL; )
     {
 	bufref_T    bufref;
@@ -1205,7 +1191,7 @@ free_all_mem(void)
     }
 
 # ifdef FEAT_ARABIC
-    free_cmdline_buf();
+    free_arshape_buf();
 # endif
 
     /* Clear registers. */
@@ -1222,8 +1208,11 @@ free_all_mem(void)
 
     reset_last_sourcing();
 
-    free_tabpage(first_tabpage);
-    first_tabpage = NULL;
+    if (first_tabpage != NULL)
+    {
+	free_tabpage(first_tabpage);
+	first_tabpage = NULL;
+    }
 
 # ifdef UNIX
     /* Machine-specific free. */
@@ -1255,6 +1244,9 @@ free_all_mem(void)
     /* screenlines (can't display anything now!) */
     free_screenlines();
 
+# if defined(FEAT_SOUND)
+    sound_free();
+# endif
 # if defined(USE_XSMP)
     xsmp_close();
 # endif
@@ -1278,12 +1270,12 @@ free_all_mem(void)
 vim_strsave(char_u *string)
 {
     char_u	*p;
-    unsigned	len;
+    size_t	len;
 
-    len = (unsigned)STRLEN(string) + 1;
+    len = STRLEN(string) + 1;
     p = alloc(len);
     if (p != NULL)
-	mch_memmove(p, string, (size_t)len);
+	mch_memmove(p, string, len);
     return p;
 }
 
@@ -1298,7 +1290,7 @@ vim_strnsave(char_u *string, int len)
 {
     char_u	*p;
 
-    p = alloc((unsigned)(len + 1));
+    p = alloc(len + 1);
     if (p != NULL)
     {
 	STRNCPY(p, string, len);
@@ -1312,12 +1304,12 @@ vim_strnsave(char_u *string, int len)
  * Returns NULL when out of memory.
  */
     char_u *
-vim_memsave(char_u *p, int len)
+vim_memsave(char_u *p, size_t len)
 {
-    char_u *ret = alloc((unsigned)len);
+    char_u *ret = alloc(len);
 
     if (ret != NULL)
-	mch_memmove(ret, p, (size_t)len);
+	mch_memmove(ret, p, len);
     return ret;
 }
 
@@ -1612,7 +1604,7 @@ strup_save(char_u *orig)
 		newl = utf_char2len(uc);
 		if (newl != l)
 		{
-		    s = alloc((unsigned)STRLEN(res) + 1 + newl - l);
+		    s = alloc(STRLEN(res) + 1 + newl - l);
 		    if (s == NULL)
 		    {
 			vim_free(res);
@@ -1679,7 +1671,7 @@ strlow_save(char_u *orig)
 		newl = utf_char2len(lc);
 		if (newl != l)
 		{
-		    s = alloc((unsigned)STRLEN(res) + 1 + newl - l);
+		    s = alloc(STRLEN(res) + 1 + newl - l);
 		    if (s == NULL)
 		    {
 			vim_free(res);
@@ -2065,9 +2057,15 @@ ga_grow(garray_T *gap, int n)
     {
 	if (n < gap->ga_growsize)
 	    n = gap->ga_growsize;
+
+	// A linear growth is very inefficient when the array grows big.  This
+	// is a compromise between allocating memory that won't be used and too
+	// many copy operations. A factor of 1.5 seems reasonable.
+	if (n < gap->ga_len / 2)
+	    n = gap->ga_len / 2;
+
 	new_len = gap->ga_itemsize * (gap->ga_len + n);
-	pp = (gap->ga_data == NULL)
-	      ? alloc((unsigned)new_len) : vim_realloc(gap->ga_data, new_len);
+	pp = vim_realloc(gap->ga_data, new_len);
 	if (pp == NULL)
 	    return FAIL;
 	old_len = gap->ga_itemsize * gap->ga_maxlen;
@@ -2453,10 +2451,8 @@ static struct key_name_entry
 #ifdef FEAT_MOUSE_URXVT
     {K_URXVT_MOUSE,	(char_u *)"UrxvtMouse"},
 #endif
-#ifdef FEAT_MOUSE_SGR
     {K_SGR_MOUSE,	(char_u *)"SgrMouse"},
     {K_SGR_MOUSERELEASE, (char_u *)"SgrMouseRelelase"},
-#endif
     {K_LEFTMOUSE,	(char_u *)"LeftMouse"},
     {K_LEFTMOUSE_NM,	(char_u *)"LeftMouseNM"},
     {K_LEFTDRAG,	(char_u *)"LeftDrag"},
@@ -2488,6 +2484,7 @@ static struct key_name_entry
 #endif
     {K_PLUG,		(char_u *)"Plug"},
     {K_CURSORHOLD,	(char_u *)"CursorHold"},
+    {K_IGNORE,		(char_u *)"Ignore"},
     {0,			NULL}
     /* NOTE: When adding a long name update MAX_KEY_NAME_LEN. */
 };
@@ -2536,7 +2533,7 @@ static struct mousetable
  * Return the modifier mask bit (MOD_MASK_*) which corresponds to the given
  * modifier name ('S' for Shift, 'C' for Ctrl etc).
  */
-    int
+    static int
 name_to_mod_mask(int c)
 {
     int	    i;
@@ -2734,16 +2731,30 @@ get_special_key_name(int c, int modifiers)
 trans_special(
     char_u	**srcp,
     char_u	*dst,
-    int		keycode, /* prefer key code, e.g. K_DEL instead of DEL */
-    int		in_string) /* TRUE when inside a double quoted string */
+    int		keycode,    // prefer key code, e.g. K_DEL instead of DEL
+    int		in_string)  // TRUE when inside a double quoted string
 {
     int		modifiers = 0;
     int		key;
-    int		dlen = 0;
 
     key = find_special_key(srcp, &modifiers, keycode, FALSE, in_string);
     if (key == 0)
 	return 0;
+
+    return special_to_buf(key, modifiers, keycode, dst);
+}
+
+/*
+ * Put the character sequence for "key" with "modifiers" into "dst" and return
+ * the resulting length.
+ * When "keycode" is TRUE prefer key code, e.g. K_DEL instead of DEL.
+ * The sequence is not NUL terminated.
+ * This is how characters in a string are encoded.
+ */
+    int
+special_to_buf(int key, int modifiers, int keycode, char_u *dst)
+{
+    int		dlen = 0;
 
     /* Put the appropriate modifier in a string */
     if (modifiers != 0)
@@ -2809,10 +2820,10 @@ find_special_key(
 		    l = mb_ptr2len(bp + 1);
 		else
 		    l = 1;
-		/* Anything accepted, like <C-?>.
-		 * <C-"> or <M-"> are not special in strings as " is
-		 * the string delimiter. With a backslash it works: <M-\"> */
-		if (!(in_string && bp[1] == '"') && bp[2] == '>')
+		// Anything accepted, like <C-?>.
+		// <C-"> or <M-"> are not special in strings as " is
+		// the string delimiter. With a backslash it works: <M-\">
+		if (!(in_string && bp[1] == '"') && bp[l + 1] == '>')
 		    bp += l;
 		else if (in_string && bp[1] == '\\' && bp[2] == '"'
 							       && bp[3] == '>')
@@ -2823,7 +2834,12 @@ find_special_key(
 	    bp += 3;	/* skip t_xx, xx may be '-' or '>' */
 	else if (STRNICMP(bp, "char-", 5) == 0)
 	{
-	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0);
+	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0, TRUE);
+	    if (l == 0)
+	    {
+		emsg(_(e_invarg));
+		return 0;
+	    }
 	    bp += l + 5;
 	    break;
 	}
@@ -2855,7 +2871,12 @@ find_special_key(
 						 && VIM_ISDIGIT(last_dash[6]))
 	    {
 		/* <Char-123> or <Char-033> or <Char-0x33> */
-		vim_str2nr(last_dash + 6, NULL, NULL, STR2NR_ALL, NULL, &n, 0);
+		vim_str2nr(last_dash + 6, NULL, &l, STR2NR_ALL, NULL, &n, 0, TRUE);
+		if (l == 0)
+		{
+		    emsg(_(e_invarg));
+		    return 0;
+		}
 		key = (int)n;
 	    }
 	    else
@@ -3021,7 +3042,6 @@ get_special_key_code(char_u *name)
     return 0;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     char_u *
 get_key_name(int i)
 {
@@ -3029,7 +3049,6 @@ get_key_name(int i)
 	return NULL;
     return  key_names_table[i].name;
 }
-#endif
 
 #if defined(FEAT_MOUSE) || defined(PROTO)
 /*
@@ -3242,7 +3261,7 @@ call_shell(char_u *cmd, int opt)
 		if (ecmd == NULL)
 		    ecmd = cmd;
 	    }
-	    ncmd = alloc((unsigned)(STRLEN(ecmd) + STRLEN(p_sxq) * 2 + 1));
+	    ncmd = alloc(STRLEN(ecmd) + STRLEN(p_sxq) * 2 + 1);
 	    if (ncmd != NULL)
 	    {
 		STRCPY(ncmd, p_sxq);
@@ -3877,7 +3896,7 @@ qsort(
     int		i, j;
     int		gap;
 
-    buf = alloc((unsigned)elm_size);
+    buf = alloc(elm_size);
     if (buf == NULL)
 	return;
 
@@ -3903,16 +3922,9 @@ qsort(
 /*
  * Sort an array of strings.
  */
-static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
-sort_compare(const void *s1, const void *s2);
+static int sort_compare(const void *s1, const void *s2);
 
     static int
-#ifdef __BORLANDC__
-_RTLENTRYF
-#endif
 sort_compare(const void *s1, const void *s2)
 {
     return STRCMP(*(char **)s1, *(char **)s2);
@@ -3925,82 +3937,6 @@ sort_strings(
 {
     qsort((void *)files, (size_t)count, sizeof(char_u *), sort_compare);
 }
-
-#if !defined(NO_EXPANDPATH) || defined(PROTO)
-/*
- * Compare path "p[]" to "q[]".
- * If "maxlen" >= 0 compare "p[maxlen]" to "q[maxlen]"
- * Return value like strcmp(p, q), but consider path separators.
- */
-    int
-pathcmp(const char *p, const char *q, int maxlen)
-{
-    int		i, j;
-    int		c1, c2;
-    const char	*s = NULL;
-
-    for (i = 0, j = 0; maxlen < 0 || (i < maxlen && j < maxlen);)
-    {
-	c1 = PTR2CHAR((char_u *)p + i);
-	c2 = PTR2CHAR((char_u *)q + j);
-
-	/* End of "p": check if "q" also ends or just has a slash. */
-	if (c1 == NUL)
-	{
-	    if (c2 == NUL)  /* full match */
-		return 0;
-	    s = q;
-	    i = j;
-	    break;
-	}
-
-	/* End of "q": check if "p" just has a slash. */
-	if (c2 == NUL)
-	{
-	    s = p;
-	    break;
-	}
-
-	if ((p_fic ? MB_TOUPPER(c1) != MB_TOUPPER(c2) : c1 != c2)
-#ifdef BACKSLASH_IN_FILENAME
-		/* consider '/' and '\\' to be equal */
-		&& !((c1 == '/' && c2 == '\\')
-		    || (c1 == '\\' && c2 == '/'))
-#endif
-		)
-	{
-	    if (vim_ispathsep(c1))
-		return -1;
-	    if (vim_ispathsep(c2))
-		return 1;
-	    return p_fic ? MB_TOUPPER(c1) - MB_TOUPPER(c2)
-		    : c1 - c2;  /* no match */
-	}
-
-	i += MB_PTR2LEN((char_u *)p + i);
-	j += MB_PTR2LEN((char_u *)q + j);
-    }
-    if (s == NULL)	/* "i" or "j" ran into "maxlen" */
-	return 0;
-
-    c1 = PTR2CHAR((char_u *)s + i);
-    c2 = PTR2CHAR((char_u *)s + i + MB_PTR2LEN((char_u *)s + i));
-    /* ignore a trailing slash, but not "//" or ":/" */
-    if (c2 == NUL
-	    && i > 0
-	    && !after_pathsep((char_u *)s, (char_u *)s + i)
-#ifdef BACKSLASH_IN_FILENAME
-	    && (c1 == '/' || c1 == '\\')
-#else
-	    && c1 == '/'
-#endif
-       )
-	return 0;   /* match with trailing slash */
-    if (s == q)
-	return -1;	    /* no match */
-    return 1;
-}
-#endif
 
 /*
  * The putenv() implementation below comes from the "screen" program.
@@ -4061,7 +3997,7 @@ putenv(const char *string)
 	    if (moreenv() < 0)
 		return -1;
 	}
-	p = (char *)alloc((unsigned)(strlen(string) + 1));
+	p = alloc(strlen(string) + 1);
 	if (p == NULL)		/* not enough core */
 	    return -1;
 	environ[i + 1] = 0;	/* new end of env. */
@@ -4109,13 +4045,13 @@ newenv(void)
 	;
 
     esize = i + EXTRASIZE + 1;
-    env = (char **)alloc((unsigned)(esize * sizeof (elem)));
+    env = ALLOC_MULT(char *, esize);
     if (env == NULL)
 	return -1;
 
     for (i = 0; environ[i]; i++)
     {
-	elem = (char *)alloc((unsigned)(strlen(environ[i]) + 1));
+	elem = alloc(strlen(environ[i]) + 1);
 	if (elem == NULL)
 	    return -1;
 	env[i] = elem;
@@ -4135,7 +4071,7 @@ moreenv(void)
     char    **env;
 
     esize = envsize + EXTRASIZE;
-    env = (char **)vim_realloc((char *)environ, esize * sizeof (*env));
+    env = vim_realloc((char *)environ, esize * sizeof (*env));
     if (env == 0)
 	return -1;
     environ = env;
@@ -4298,7 +4234,7 @@ read_string(FILE *fd, int cnt)
     int		c;
 
     /* allocate memory */
-    str = alloc((unsigned)cnt + 1);
+    str = alloc(cnt + 1);
     if (str != NULL)
     {
 	/* Read the string.  Quit when running into the EOF. */
@@ -4425,13 +4361,21 @@ has_non_ascii(char_u *s)
     void
 parse_queued_messages(void)
 {
-    win_T   *old_curwin = curwin;
+    int	    old_curwin_id = curwin->w_id;
+    int	    old_curbuf_fnum = curbuf->b_fnum;
     int	    i;
+    int	    save_may_garbage_collect = may_garbage_collect;
 
     // Do not handle messages while redrawing, because it may cause buffers to
     // change or be wiped while they are being redrawn.
     if (updating_screen)
 	return;
+
+    // may_garbage_collect is set in main_loop() to do garbage collection when
+    // blocking to wait on a character.  We don't want that while parsing
+    // messages, a callback may invoke vgetc() while lists and dicts are in use
+    // in the call stack.
+    may_garbage_collect = FALSE;
 
     // Loop when a job ended, but don't keep looping forever.
     for (i = 0; i < MAX_REPEAT_PARSE; ++i)
@@ -4465,12 +4409,18 @@ parse_queued_messages(void)
 # ifdef FEAT_TERMINAL
 	free_unused_terminals();
 # endif
+# ifdef FEAT_SOUND_CANBERRA
+	if (has_sound_callback_in_queue())
+	    invoke_sound_callback();
+# endif
 	break;
     }
 
-    // If the current window changed we need to bail out of the waiting loop.
-    // E.g. when a job exit callback closes the terminal window.
-    if (curwin != old_curwin)
+    may_garbage_collect = save_may_garbage_collect;
+
+    // If the current window or buffer changed we need to bail out of the
+    // waiting loop.  E.g. when a job exit callback closes the terminal window.
+    if (curwin->w_id != old_curwin_id || curbuf->b_fnum != old_curbuf_fnum)
 	ins_char_typebuf(K_IGNORE);
 }
 #endif
@@ -4581,7 +4531,7 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 		}
 	    }
 
-	    *argv = (char **)alloc((unsigned)((*argc + 4) * sizeof(char *)));
+	    *argv = ALLOC_MULT(char *, *argc + 4);
 	    if (*argv == NULL)	    /* out of memory */
 		return FAIL;
 	}
@@ -4628,7 +4578,7 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
     char_u	*s;
 
     /* Pass argv[] to mch_call_shell(). */
-    *argv = (char **)alloc(sizeof(char *) * (l->lv_len + 1));
+    *argv = ALLOC_MULT(char *, l->lv_len + 1);
     if (*argv == NULL)
 	return FAIL;
     *argc = 0;

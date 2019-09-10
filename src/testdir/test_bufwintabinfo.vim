@@ -18,7 +18,7 @@ function Test_getbufwintabinfo()
     let l = getbufinfo('%')
     call assert_equal(bufnr('%'), l[0].bufnr)
     call assert_equal('vim', l[0].variables.editor)
-    call assert_notequal(-1, index(l[0].windows, bufwinid('%')))
+    call assert_notequal(-1, index(l[0].windows, '%'->bufwinid()))
 
     " Test for getbufinfo() with 'bufmodified'
     call assert_equal(0, len(getbufinfo({'bufmodified' : 1})))
@@ -47,7 +47,7 @@ function Test_getbufwintabinfo()
     tabnew | let w3_id = win_getid()
     new | let w4_id = win_getid()
     vert new | let w5_id = win_getid()
-    call setwinvar(0, 'signal', 'green')
+    eval 'green'->setwinvar(0, 'signal')
     tabfirst
     let winlist = getwininfo()
     call assert_equal(5, len(winlist))
@@ -77,7 +77,7 @@ function Test_getbufwintabinfo()
 
     call assert_equal('green', winlist[2].variables.signal)
     call assert_equal(w4_id, winlist[3].winid)
-    let winfo = getwininfo(w5_id)[0]
+    let winfo = w5_id->getwininfo()[0]
     call assert_equal(2, winfo.tabnr)
     call assert_equal([], getwininfo(3))
 
@@ -88,7 +88,7 @@ function Test_getbufwintabinfo()
     call assert_equal(2, tablist[1].tabnr)
     call assert_equal('build', tablist[0].variables.space)
     call assert_equal(w2_id, tablist[0].windows[0])
-    call assert_equal([], gettabinfo(3))
+    call assert_equal([], 3->gettabinfo())
 
     tabonly | only
 
@@ -106,7 +106,7 @@ function Test_getbufwintabinfo()
 endfunction
 
 function Test_get_buf_options()
-  let opts = getbufvar(bufnr('%'), '&')
+  let opts = bufnr()->getbufvar('&')
   call assert_equal(v:t_dict, type(opts))
   call assert_equal(8, opts.tabstop)
 endfunc

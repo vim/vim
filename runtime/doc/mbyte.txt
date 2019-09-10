@@ -1,4 +1,4 @@
-*mbyte.txt*     For Vim version 8.1.  Last change: 2018 Jan 21
+*mbyte.txt*     For Vim version 8.1.  Last change: 2019 Jul 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar et al.
@@ -620,6 +620,21 @@ windows maintains a table of which groups of characters are required for a
 locale.  You have to specify all the fonts that a locale requires in the
 'guifontset' option.
 
+Setting the 'guifontset' option also means that all font names will be handled
+as a fontset name.  Also the ones used for the "font" argument of the
+|:highlight| command.
+
+Note the difference between 'guifont' and 'guifontset': In 'guifont'
+the comma-separated names are alternative names, one of which will be
+used.  In 'guifontset' the whole string is one fontset name,
+including the commas.  It is not possible to specify alternative
+fontset names.
+This example works on many X11 systems: >
+	:set guifontset=-*-*-medium-r-normal--16-*-*-*-c-*-*-*
+<
+The fonts must match with the current locale.  If fonts for the character sets
+that the current locale uses are not included, setting 'guifontset' will fail.
+
 NOTE: The fontset always uses the current locale, even though 'encoding' may
 be set to use a different charset.  In that situation you might want to use
 'guifont' and 'guifontwide' instead of 'guifontset'.
@@ -928,11 +943,12 @@ To input multibyte characters on Windows, you can use an Input Method Editor
 IME many many many times.  Because IME with status on is hooking all of your
 key inputs, you cannot input 'j', 'k', or almost all of keys to Vim directly.
 
-This |+multi_byte_ime| feature help this.  It reduce times of switch status of
-IME manually.  In normal mode, there are almost no need working IME, even
-editing multibyte text.  So exiting insert mode with ESC, Vim memorize last
-status of IME and force turn off IME.  When re-enter insert mode, Vim revert
-IME status to that memorized automatically.
+The |+multi_byte_ime| feature helps for this.  It reduces the number of times
+the IME status has to be switched manually.  In Normal mode, there is almost
+no need to use IME, even when editing multibyte text.  So when exiting Insert
+mode, Vim memorizes the last status of IME and turns off IME.  When
+re-entering Insert mode, Vim sets the IME status to that memorized status
+automatically.
 
 This works on not only insert-normal mode, but also search-command input and
 replace mode.

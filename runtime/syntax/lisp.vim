@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:    Lisp
 " Maintainer:  Charles E. Campbell <NdrOchipS@PcampbellAfamily.Mbiz>
-" Last Change: Feb 15, 2018
-" Version:     27
+" Last Change: Jul 11, 2019
+" Version:     29
 " URL:	http://www.drchip.org/astronaut/vim/index.html#SYNTAX_LISP
 "
 "  Thanks to F Xavier Noria for a list of 978 Common Lisp symbols taken from HyperSpec
@@ -16,10 +16,10 @@ endif
 
 if exists("g:lisp_isk")
  exe "setl isk=".g:lisp_isk
-elseif !has("patch-7.4.1142")
- setl isk=38,42,43,45,47-58,60-62,64-90,97-122,_
-else
+elseif (v:version == 704 && has("patch-7.4.1142")) || v:version > 704
  syn iskeyword 38,42,43,45,47-58,60-62,64-90,97-122,_
+else
+ setl isk=38,42,43,45,47-58,60-62,64-90,97-122,_
 endif
 
 if exists("g:lispsyntax_ignorecase") || exists("g:lispsyntax_clisp")
@@ -54,7 +54,7 @@ if exists("g:lisp_rainbow") && g:lisp_rainbow != 0
  syn region lispParen8 contained matchgroup=hlLevel8 start="`\=(" end=")" skip="|.\{-}|" contains=@lispListCluster,lispParen9
  syn region lispParen9 contained matchgroup=hlLevel9 start="`\=(" end=")" skip="|.\{-}|" contains=@lispListCluster,lispParen0
 else
- syn region lispList			matchgroup=Delimiter start="("   skip="|.\{-}|"			matchgroup=Delimiter end=")"	contains=@lispListCluster
+ syn region lispList			matchgroup=lispParen start="("   skip="|.\{-}|"			matchgroup=lispParen end=")"	contains=@lispListCluster
  syn region lispBQList			matchgroup=PreProc   start="`("  skip="|.\{-}|"			matchgroup=PreProc   end=")"		contains=@lispListCluster
 endif
 
@@ -608,6 +608,8 @@ if !exists("skip_lisp_syntax_inits")
     hi def hlLevel8 ctermfg=blue	guifg=darkslateblue
     hi def hlLevel9 ctermfg=darkmagenta	guifg=darkviolet
    endif
+  else
+    hi def link lispParen Delimiter
   endif
 
 endif

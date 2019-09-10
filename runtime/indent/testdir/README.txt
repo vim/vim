@@ -82,9 +82,9 @@ RUNNING THE TEST
 Before running the test, create a FILETYPE.ok file.  You can leave it empty at
 first.
 
-Now run "make test".  After Vim has done the indenting you will see a
-FILETYPE.fail file.  This contains the actual result of indenting, and it's
-different from the FILETYPE.ok file.
+Now run "make test" from the parent directory.  After Vim has done the
+indenting you will see a FILETYPE.fail file.  This contains the actual result
+of indenting, and it's different from the FILETYPE.ok file.
 
 Check the contents of the FILETYPE.fail file.  If it is perfectly OK, then
 rename it to overwrite the FILETYPE.ok file. If you now run "make test" again,

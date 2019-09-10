@@ -1768,9 +1768,6 @@ msgstr "E509: Impossível criar arquivo de backup (adicione ! para forçar)"
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: Impossível fazer o backup (adicione ! para forçar)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: O resource fork seria perdido (adicione ! para forçar)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Não foi possível encontrar arquivo temporário para escrita"
 

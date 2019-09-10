@@ -146,3 +146,153 @@ func Test_let_varg_fail()
   call assert_fails('call s:set_varg8(1)', 'E742:')
   call s:set_varg9([0])
 endfunction
+
+func Test_let_utf8_environment()
+  let $a = 'ĀĒĪŌŪあいうえお'
+  call assert_equal('ĀĒĪŌŪあいうえお', $a)
+endfunc
+
+func Test_let_heredoc_fails()
+  call assert_fails('let v =<< marker', 'E991:')
+
+  let text =<< trim END
+  func WrongSyntax()
+    let v =<< that there
+  endfunc
+  END
+  call writefile(text, 'XheredocFail')
+  call assert_fails('source XheredocFail', 'E126:')
+  call delete('XheredocFail')
+
+  let text =<< trim CodeEnd
+  func MissingEnd()
+    let v =<< END
+  endfunc
+  CodeEnd
+  call writefile(text, 'XheredocWrong')
+  call assert_fails('source XheredocWrong', 'E126:')
+  call delete('XheredocWrong')
+
+  let text =<< trim TEXTend
+    let v =<< " comment
+  TEXTend
+  call writefile(text, 'XheredocNoMarker')
+  call assert_fails('source XheredocNoMarker', 'E172:')
+  call delete('XheredocNoMarker')
+
+  let text =<< trim TEXTend
+    let v =<< text
+  TEXTend
+  call writefile(text, 'XheredocBadMarker')
+  call assert_fails('source XheredocBadMarker', 'E221:')
+  call delete('XheredocBadMarker')
+endfunc
+
+func Test_let_heredoc_trim_no_indent_marker()
+  let text =<< trim END
+  Text
+  with
+  indent
+END
+  call assert_equal(['Text', 'with', 'indent'], text)
+endfunc
+
+" Test for the setting a variable using the heredoc syntax
+func Test_let_heredoc()
+  let var1 =<< END
+Some sample text
+	Text with indent
+  !@#$%^&*()-+_={}|[]\~`:";'<>?,./
+END
+
+  call assert_equal(["Some sample text", "\tText with indent", "  !@#$%^&*()-+_={}|[]\\~`:\";'<>?,./"], var1)
+
+  let var2 =<< XXX
+Editor
+XXX
+  call assert_equal(['Editor'], var2)
+
+  let var3 =<<END
+END
+  call assert_equal([], var3)
+
+  let var3 =<<END
+vim
+
+end
+  END
+END 
+END
+  call assert_equal(['vim', '', 'end', '  END', 'END '], var3)
+
+	let var1 =<< trim END
+	Line1
+	  Line2
+		Line3
+	 END
+	END
+  call assert_equal(['Line1', '  Line2', "\tLine3", ' END'], var1)
+
+  let var1 =<< trim !!!
+	Line1
+	 line2
+		Line3
+	!!!
+  !!!
+  call assert_equal(['Line1', ' line2', "\tLine3", '!!!',], var1)
+
+  let var1 =<< trim XX
+    Line1
+  XX
+  call assert_equal(['Line1'], var1)
+
+  " ignore "endfunc"
+  let var1 =<< END
+something
+endfunc
+END
+  call assert_equal(['something', 'endfunc'], var1)
+
+  " ignore "endfunc" with trim
+  let var1 =<< trim END
+  something
+  endfunc
+  END
+  call assert_equal(['something', 'endfunc'], var1)
+
+  " not concatenate lines
+  let var1 =<< END
+some
+  \thing
+  \ else
+END
+  call assert_equal(['some', '  \thing', '  \ else'], var1)
+
+  " ignore "python << xx"
+  let var1 =<<END
+something
+python << xx
+END
+  call assert_equal(['something', 'python << xx'], var1)
+
+  " ignore "python << xx" with trim
+  let var1 =<< trim END
+  something
+  python << xx
+  END
+  call assert_equal(['something', 'python << xx'], var1)
+
+  " ignore "append"
+  let var1 =<< E
+something
+app
+E
+  call assert_equal(['something', 'app'], var1)
+
+  " ignore "append" with trim
+  let var1 =<< trim END
+  something
+  app
+  END
+  call assert_equal(['something', 'app'], var1)
+endfunc

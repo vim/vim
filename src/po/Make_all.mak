@@ -45,6 +45,49 @@ LANGUAGES = \
 		zh_TW.UTF-8 \
 
 
+POFILES = \
+		af.po \
+		ca.po \
+		cs.po \
+		cs.cp1250.po \
+		da.po \
+		de.po \
+		en_GB.po \
+		eo.po \
+		es.po \
+		fi.po \
+		fr.po \
+		ga.po \
+		it.po \
+		ja.po \
+		ja.euc-jp.po \
+		ja.sjis.po \
+		ko.po \
+		ko.UTF-8.po \
+		lv.po \
+		nb.po \
+		nl.po \
+		no.po \
+		pl.po \
+		pl.UTF-8.po \
+		pl.cp1250.po \
+		pt_BR.po \
+		ru.po \
+		ru.cp1251.po \
+		sk.po \
+		sk.cp1250.po \
+		sr.po \
+		sv.po \
+		uk.po \
+		uk.cp1251.po \
+		vi.po \
+		zh_CN.po \
+		zh_CN.UTF-8.po \
+		zh_CN.cp936.po \
+		zh_TW.po \
+		zh_TW.UTF-8.po \
+
+
 MOFILES = \
 		af.mo \
 		ca.mo \

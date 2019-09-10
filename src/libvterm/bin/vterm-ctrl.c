@@ -1,4 +1,4 @@
-#define _XOPEN_SOURCE 500  /* strdup */
+#define _XOPEN_SOURCE 500  // strdup
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -86,7 +86,7 @@ static void await_c1(unsigned char c1)
 {
   unsigned char c;
 
-  /* await CSI - 8bit or 2byte 7bit form */
+  // await CSI - 8bit or 2byte 7bit form
   int in_esc = FALSE;
   while((c = getchar())) {
     if(c == c1)
@@ -107,8 +107,7 @@ static char *read_csi()
 
   await_c1(0x9B); // CSI
 
-  /* TODO: This really should be a more robust CSI parser
-   */
+  // TODO: This really should be a more robust CSI parser
   for(; i < sizeof(csi)-1; i++) {
     int c = csi[i] = getchar();
     if(c >= 0x40 && c <= 0x7e)
@@ -175,12 +174,11 @@ static int query_dec_mode(int mode)
       free(s);
     s = read_csi();
 
-    /* expect "?" mode ";" value "$y" */
+    // expect "?" mode ";" value "$y"
 
-    /* If the sscanf format string ends in a literal, we can't tell from
-     * its return value if it matches. Hence we'll %c the cmd and check it
-     * explicitly
-     */
+    // If the sscanf format string ends in a literal, we can't tell from
+    // its return value if it matches. Hence we'll %c the cmd and check it
+    // explicitly
     if(sscanf(s, "?%d;%d$%c", &reply_mode, &reply_value, &reply_cmd) < 3)
       continue;
     if(reply_cmd != 'y')

@@ -83,6 +83,7 @@ DOCS = \
 	pi_tar.txt \
 	pi_vimball.txt \
 	pi_zip.txt \
+	popup.txt \
 	print.txt \
 	quickfix.txt \
 	quickref.txt \
@@ -102,6 +103,7 @@ DOCS = \
 	tagsrch.txt \
 	term.txt \
 	terminal.txt \
+	testing.txt \
 	textprop.txt \
 	tips.txt \
 	todo.txt \
@@ -220,6 +222,7 @@ HTMLS = \
 	pi_tar.html \
 	pi_vimball.html \
 	pi_zip.html \
+	popup.html \
 	print.html \
 	quickfix.html \
 	quickref.html \
@@ -239,6 +242,7 @@ HTMLS = \
 	tagsrch.html \
 	term.html \
 	terminal.html \
+	testing.html \
 	textprop.html \
 	tips.html \
 	todo.html \

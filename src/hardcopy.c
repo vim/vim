@@ -186,7 +186,7 @@ parse_list_options(
     int		len;
 
     /* Save the old values, so that they can be restored in case of an error. */
-    old_opts = (option_table_T *)alloc(sizeof(option_table_T) * table_size);
+    old_opts = ALLOC_MULT(option_table_T, table_size);
     if (old_opts == NULL)
 	return NULL;
 
@@ -2236,7 +2236,7 @@ prt_build_cid_fontname(int font, char_u *name, int name_len)
 {
     char    *fontname;
 
-    fontname = (char *)alloc(name_len + 1);
+    fontname = alloc(name_len + 1);
     if (fontname == NULL)
 	return FALSE;
     vim_strncpy((char_u *)fontname, name, name_len);
@@ -2723,9 +2723,7 @@ prt_add_resource(struct prt_ps_resource_S *resource)
     int
 mch_print_begin(prt_settings_T *psettings)
 {
-    time_t	now;
     int		bbox[4];
-    char	*p_time;
     double      left;
     double      right;
     double      top;
@@ -2734,7 +2732,6 @@ mch_print_begin(prt_settings_T *psettings)
     struct prt_ps_resource_S *res_encoding;
     char	buffer[256];
     char_u      *p_encoding;
-    char_u	*p;
     struct prt_ps_resource_S *res_cidfont;
     struct prt_ps_resource_S *res_cmap;
     int		retval = FALSE;
@@ -2761,13 +2758,8 @@ mch_print_begin(prt_settings_T *psettings)
     prt_dsc_textline("For", buffer);
     prt_dsc_textline("Creator", VIM_VERSION_LONG);
     /* Note: to ensure Clean8bit I don't think we can use LC_TIME */
-    now = time(NULL);
-    p_time = ctime(&now);
-    /* Note: ctime() adds a \n so we have to remove it :-( */
-    p = vim_strchr((char_u *)p_time, '\n');
-    if (p != NULL)
-	*p = NUL;
-    prt_dsc_textline("CreationDate", p_time);
+
+    prt_dsc_textline("CreationDate", get_ctime(time(NULL), FALSE));
     prt_dsc_textline("DocumentData", "Clean8Bit");
     prt_dsc_textline("Orientation", "Portrait");
     prt_dsc_atend("Pages");

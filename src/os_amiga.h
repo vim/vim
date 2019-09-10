@@ -88,7 +88,12 @@ typedef long off_t;
 #ifdef __GNUC__
 # include <sys/stat.h>
 # include <unistd.h>
+# include <limits.h>
+# include <errno.h>
+# include <dirent.h>
 #endif
+
+#include <time.h>	// for strftime() and others
 
 #ifndef PROTO
 /*

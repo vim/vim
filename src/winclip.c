@@ -22,7 +22,6 @@
  * posix environment.
  */
 #ifdef FEAT_CYGWIN_WIN32_CLIPBOARD
-# define MSWIN
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 # include "winclip.pro"
@@ -150,7 +149,7 @@ MultiByteToWideChar_alloc(UINT cp, DWORD flags,
 {
     *outlen = MultiByteToWideChar(cp, flags, in, inlen, 0, 0);
     /* Add one one word to avoid a zero-length alloc(). */
-    *out = (LPWSTR)alloc(sizeof(WCHAR) * (*outlen + 1));
+    *out = ALLOC_MULT(WCHAR, *outlen + 1);
     if (*out != NULL)
     {
 	MultiByteToWideChar(cp, flags, in, inlen, *out, *outlen);
@@ -170,7 +169,7 @@ WideCharToMultiByte_alloc(UINT cp, DWORD flags,
 {
     *outlen = WideCharToMultiByte(cp, flags, in, inlen, NULL, 0, def, useddef);
     /* Add one one byte to avoid a zero-length alloc(). */
-    *out = (LPSTR)alloc((unsigned)*outlen + 1);
+    *out = alloc(*outlen + 1);
     if (*out != NULL)
     {
 	WideCharToMultiByte(cp, flags, in, inlen, *out, *outlen, def, useddef);
@@ -192,7 +191,7 @@ win_clip_init(void)
     /*
      * Vim's own clipboard format recognises whether the text is char, line,
      * or rectangular block.  Only useful for copying between two Vims.
-     * "VimClipboard" was used for previous versions, using the first
+     * "Clipboard_T" was used for previous versions, using the first
      * character to specify MCHAR, MLINE or MBLOCK.
      */
     clip_star.format = RegisterClipboardFormat("VimClipboard2");
@@ -213,7 +212,7 @@ typedef struct
  * Make vim the owner of the current selection.  Return OK upon success.
  */
     int
-clip_mch_own_selection(VimClipboard *cbd UNUSED)
+clip_mch_own_selection(Clipboard_T *cbd UNUSED)
 {
     /*
      * Never actually own the clipboard.  If another application sets the
@@ -226,7 +225,7 @@ clip_mch_own_selection(VimClipboard *cbd UNUSED)
  * Make vim NOT the owner of the current selection.
  */
     void
-clip_mch_lose_selection(VimClipboard *cbd UNUSED)
+clip_mch_lose_selection(Clipboard_T *cbd UNUSED)
 {
     /* Nothing needs to be done here */
 }
@@ -245,7 +244,7 @@ crnl_to_nl(const char_u *str, int *size)
     char_u	*retp;
 
     /* Avoid allocating zero bytes, it generates an error message. */
-    ret = lalloc((long_u)(str_len == 0 ? 1 : str_len), TRUE);
+    ret = alloc(str_len == 0 ? 1 : str_len);
     if (ret != NULL)
     {
 	retp = ret;
@@ -294,14 +293,12 @@ vim_open_clipboard(void)
  * <VN>
  */
     void
-clip_mch_request_selection(VimClipboard *cbd)
+clip_mch_request_selection(Clipboard_T *cbd)
 {
     VimClipType_t	metadata = { -1, -1, -1, -1 };
     HGLOBAL		hMem = NULL;
     char_u		*str = NULL;
-#if defined(MSWIN)
     char_u		*to_free = NULL;
-#endif
     HGLOBAL		rawh = NULL;
     int			str_size = 0;
     int			maxlen;
@@ -361,7 +358,6 @@ clip_mch_request_selection(VimClipboard *cbd)
     }
     if (str == NULL)
     {
-#if defined(MSWIN)
 	/* Try to get the clipboard in Unicode if it's not an empty string. */
 	if (IsClipboardFormatAvailable(CF_UNICODETEXT) && metadata.ucslen != 0)
 	{
@@ -391,10 +387,8 @@ clip_mch_request_selection(VimClipboard *cbd)
 		GlobalUnlock(hMemW);
 	    }
 	}
-	else
-#endif
-	    /* Get the clipboard in the Active codepage. */
-	    if (IsClipboardFormatAvailable(CF_TEXT))
+	/* Get the clipboard in the Active codepage. */
+	else if (IsClipboardFormatAvailable(CF_TEXT))
 	{
 	    if ((hMem = GetClipboardData(CF_TEXT)) != NULL)
 	    {
@@ -417,7 +411,6 @@ clip_mch_request_selection(VimClipboard *cbd)
 			    break;
 		}
 
-#if defined(MSWIN)
 		/* The text is in the active codepage.  Convert to
 		 * 'encoding', going through UTF-16. */
 		acp_to_enc(str, str_size, &to_free, &maxlen);
@@ -426,7 +419,6 @@ clip_mch_request_selection(VimClipboard *cbd)
 		    str_size = maxlen;
 		    str = to_free;
 		}
-#endif
 	    }
 	}
     }
@@ -454,16 +446,14 @@ clip_mch_request_selection(VimClipboard *cbd)
     if (rawh != NULL)
 	GlobalUnlock(rawh);
     CloseClipboard();
-#if defined(MSWIN)
     vim_free(to_free);
-#endif
 }
 
 /*
  * Send the current selection to the clipboard.
  */
     void
-clip_mch_set_selection(VimClipboard *cbd)
+clip_mch_set_selection(Clipboard_T *cbd)
 {
     char_u		*str = NULL;
     VimClipType_t	metadata;
@@ -471,9 +461,7 @@ clip_mch_set_selection(VimClipboard *cbd)
     HGLOBAL		hMemRaw = NULL;
     HGLOBAL		hMem = NULL;
     HGLOBAL		hMemVim = NULL;
-# if defined(MSWIN)
     HGLOBAL		hMemW = NULL;
-# endif
 
     /* If the '*' register isn't already filled in, fill it in now */
     cbd->owned = TRUE;
@@ -508,7 +496,6 @@ clip_mch_set_selection(VimClipboard *cbd)
 	    metadata.rawlen = 0;
     }
 
-# if defined(MSWIN)
     {
 	WCHAR		*out;
 	int		len = metadata.txtlen;
@@ -525,8 +512,7 @@ clip_mch_set_selection(VimClipboard *cbd)
 	    metadata.txtlen = WideCharToMultiByte(GetACP(), 0, out, len,
 							       NULL, 0, 0, 0);
 	    vim_free(str);
-	    str = (char_u *)alloc((unsigned)(metadata.txtlen == 0 ? 1
-							  : metadata.txtlen));
+	    str = alloc(metadata.txtlen == 0 ? 1 : metadata.txtlen);
 	    if (str == NULL)
 	    {
 		vim_free(out);
@@ -550,7 +536,6 @@ clip_mch_set_selection(VimClipboard *cbd)
 	    metadata.ucslen = len;
 	}
     }
-# endif
 
     /* Allocate memory for the text, add one NUL byte to terminate the string.
      */
@@ -590,13 +575,11 @@ clip_mch_set_selection(VimClipboard *cbd)
 	{
 	    SetClipboardData(cbd->format, hMemVim);
 	    hMemVim = 0;
-# if defined(MSWIN)
 	    if (hMemW != NULL)
 	    {
 		if (SetClipboardData(CF_UNICODETEXT, hMemW) != NULL)
 		    hMemW = NULL;
 	    }
-# endif
 	    /* Always use CF_TEXT.  On Win98 Notepad won't obtain the
 	     * CF_UNICODETEXT text, only CF_TEXT. */
 	    SetClipboardData(CF_TEXT, hMem);
@@ -611,10 +594,8 @@ clip_mch_set_selection(VimClipboard *cbd)
 	GlobalFree(hMemRaw);
     if (hMem)
 	GlobalFree(hMem);
-# if defined(MSWIN)
     if (hMemW)
 	GlobalFree(hMemW);
-# endif
     if (hMemVim)
 	GlobalFree(hMemVim);
 }
@@ -673,7 +654,7 @@ enc_to_utf16(char_u *str, int *lenp)
 	convert_setup(&conv, NULL, NULL);
 
 	length = utf8_to_utf16(str, *lenp, NULL, NULL);
-	ret = (WCHAR *)alloc((unsigned)((length + 1) * sizeof(WCHAR)));
+	ret = ALLOC_MULT(WCHAR, length + 1);
 	if (ret != NULL)
 	{
 	    utf8_to_utf16(str, *lenp, (short_u *)ret, NULL);
@@ -746,7 +727,6 @@ utf16_to_enc(short_u *str, int *lenp)
     return enc_str;
 }
 
-#if defined(MSWIN) || defined(PROTO)
 /*
  * Convert from the active codepage to 'encoding'.
  * Input is "str[str_size]".
@@ -796,4 +776,3 @@ enc_to_acp(
 	vim_free(widestr);
     }
 }
-#endif

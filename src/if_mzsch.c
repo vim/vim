@@ -822,7 +822,7 @@ static EventLoopTimerRef timer_id = NULL;
 static EventLoopTimerUPP timerUPP;
 #endif
 
-#ifndef FEAT_GUI_MSWIN /* Win32 console and Unix */
+#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) /* Win32 console and Unix */
     void
 mzvim_check_threads(void)
 {
@@ -1775,9 +1775,11 @@ get_option(void *data, int argc, Scheme_Object **argv)
     case -2:
 	MZ_GC_UNREG();
 	raise_vim_exn(_("hidden option"));
+	/*NOTREACHED*/
     case -3:
 	MZ_GC_UNREG();
 	raise_vim_exn(_("unknown option"));
+	/*NOTREACHED*/
     }
     /* unreachable */
     return scheme_void;
@@ -2580,7 +2582,7 @@ set_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	    MZ_GC_VAR_IN_REG(1, rest);
 	    MZ_GC_REG();
 
-	    array = (char **)alloc((new_len+1)* sizeof(char *));
+	    array = ALLOC_MULT(char *, new_len + 1);
 	    vim_memset(array, 0, (new_len+1) * sizeof(char *));
 
 	    rest = line_list;
@@ -2764,7 +2766,7 @@ insert_buffer_line_list(void *data, int argc, Scheme_Object **argv)
 	MZ_GC_VAR_IN_REG(1, rest);
 	MZ_GC_REG();
 
-	array = (char **)alloc((size+1) * sizeof(char *));
+	array = ALLOC_MULT(char *, size + 1);
 	vim_memset(array, 0, (size+1) * sizeof(char *));
 
 	rest = list;
@@ -2884,7 +2886,7 @@ string_to_line(Scheme_Object *obj)
     if (memchr(scheme_str, '\n', len))
 	scheme_signal_error(_("string cannot contain newlines"));
 
-    vim_str = (char *)alloc(len + 1);
+    vim_str = alloc(len + 1);
 
     /* Create a copy of the string, with internal nulls replaced by
      * newline characters, as is the vim convention.
@@ -3211,14 +3213,14 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
 	    tv->vval.v_list = list;
 	    ++list->lv_refcount;
 
-	    v = (typval_T *)alloc(sizeof(typval_T));
+	    v = ALLOC_ONE(typval_T);
 	    if (v == NULL)
 		status = FAIL;
 	    else
 	    {
 		/* add the value in advance to allow handling of self-referential
 		 * data structures */
-		typval_T    *visited_tv = (typval_T *)alloc(sizeof(typval_T));
+		typval_T    *visited_tv = ALLOC_ONE(typval_T);
 		copy_tv(tv, visited_tv);
 		scheme_hash_set(visited, obj, (Scheme_Object *)visited_tv);
 
@@ -3286,7 +3288,7 @@ mzscheme_to_vim_impl(Scheme_Object *obj, typval_T *tv, int depth,
 	    status = FAIL;
 	else
 	{
-	    typval_T    *visited_tv = (typval_T *)alloc(sizeof(typval_T));
+	    typval_T    *visited_tv = ALLOC_ONE(typval_T);
 
 	    tv->v_type = VAR_DICT;
 	    tv->vval.v_dict = dict;
@@ -3351,7 +3353,7 @@ vim_funcref(void *name, int argc, Scheme_Object **argv)
 	++list->lv_refcount;
 	for (i = 0; status == OK && i < argc; ++i)
 	{
-	    typval_T *v = (typval_T *)alloc(sizeof(typval_T));
+	    typval_T *v = ALLOC_ONE(typval_T);
 	    if (v == NULL)
 		status = FAIL;
 	    else
@@ -3805,9 +3807,7 @@ sandbox_file_guard(int argc UNUSED, Scheme_Object **argv)
 	    Scheme_Object *item = SCHEME_CAR(requested_access);
 	    if (scheme_eq(item, M_write) || scheme_eq(item, M_read)
 		    || scheme_eq(item, M_execute) || scheme_eq(item, M_delete))
-	    {
 		raise_vim_exn(_("not allowed in the Vim sandbox"));
-	    }
 	    requested_access = SCHEME_CDR(requested_access);
 	}
     }

@@ -441,7 +441,7 @@ serverSendToVim(
      * Length must be computed exactly!
      */
     length = STRLEN(name) + STRLEN(p_enc) + STRLEN(cmd) + 14;
-    property = (char_u *)alloc((unsigned)length + 30);
+    property = alloc(length + 30);
 
     sprintf((char *)property, "%c%c%c-n %s%c-E %s%c-s %s",
 		      0, asExpr ? 'c' : 'k', 0, name, 0, p_enc, 0, cmd);
@@ -750,7 +750,7 @@ serverSendReply(char_u *name, char_u *str)
 	return -1;
 
     length = STRLEN(p_enc) + STRLEN(str) + 14;
-    if ((property = (char_u *)alloc((unsigned)length + 30)) != NULL)
+    if ((property = alloc(length + 30)) != NULL)
     {
 	sprintf((char *)property, "%cn%c-E %s%c-n %s%c-w %x",
 			    0, 0, p_enc, 0, str, 0, (unsigned int)commWindow);
@@ -1157,7 +1157,7 @@ save_in_queue(char_u *propInfo, long_u len)
 {
     x_queue_T *node;
 
-    node = (x_queue_T *)alloc(sizeof(x_queue_T));
+    node = ALLOC_ONE(x_queue_T);
     if (node == NULL)
 	return;	    /* out of memory */
     node->propInfo = propInfo;
