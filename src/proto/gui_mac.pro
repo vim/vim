@@ -111,10 +111,10 @@ void mch_post_buffer_write (buf_T *buf);
 
 void mch_errmsg(char *str);
 void mch_display_error(void);
-void clip_mch_lose_selection(VimClipboard *cbd);
-void clip_mch_request_selection(VimClipboard *cbd);
-void clip_mch_set_selection(VimClipboard *cbd);
-int clip_mch_own_selection(VimClipboard *cbd);
+void clip_mch_lose_selection(Clipboard_T *cbd);
+void clip_mch_request_selection(Clipboard_T *cbd);
+void clip_mch_set_selection(Clipboard_T *cbd);
+int clip_mch_own_selection(Clipboard_T *cbd);
 
 pascal	OSErr	FindProcessBySignature( const OSType targetType,
 					const OSType targetCreator, ProcessSerialNumberPtr psnPtr );

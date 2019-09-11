@@ -1,9 +1,10 @@
 " Tests for when a file was changed outside of Vim.
 
+source check.vim
+
 func Test_FileChangedShell_reload()
-  if !has('unix')
-    return
-  endif
+  CheckUnix
+
   augroup testreload
     au FileChangedShell Xchanged_r let g:reason = v:fcs_reason | let v:fcs_choice = 'reload'
   augroup END
@@ -91,9 +92,8 @@ func Test_FileChangedShell_reload()
 endfunc
 
 func Test_file_changed_dialog()
-  if !has('unix') || has('gui_running')
-    return
-  endif
+  CheckUnix
+  CheckNotGui
   au! FileChangedShell
 
   new Xchanged_d
@@ -115,8 +115,9 @@ func Test_file_changed_dialog()
   call assert_match('E211:', v:warningmsg)
   call assert_equal(2, line('$'))
   call assert_equal('extra line', getline(2))
+  let v:warningmsg = 'empty'
 
-  " Recreate buffer and reload
+  " change buffer, recreate the file and reload
   call setline(1, 'buffer is changed')
   silent !echo 'new line' >Xchanged_d
   call feedkeys('L', 'L')

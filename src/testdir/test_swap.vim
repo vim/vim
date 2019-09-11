@@ -111,7 +111,7 @@ func Test_swapinfo()
   w
   let fname = s:swapname()
   call assert_match('Xswapinfo', fname)
-  let info = swapinfo(fname)
+  let info = fname->swapinfo()
 
   let ver = printf('VIM %d.%d', v:version / 100, v:version % 100)
   call assert_equal(ver, info.version)
@@ -153,7 +153,7 @@ func Test_swapname()
   let buf = bufnr('%')
   let expected = s:swapname()
   wincmd p
-  call assert_equal(expected, swapname(buf))
+  call assert_equal(expected, buf->swapname())
 
   new Xtest3
   setlocal noswapfile
@@ -219,4 +219,88 @@ func Test_swapfile_delete()
     autocmd!
   augroup END
   augroup! test_swapfile_delete
+endfunc
+
+func Test_swap_recover()
+  autocmd! SwapExists
+  augroup test_swap_recover
+    autocmd!
+    autocmd SwapExists * let v:swapchoice = 'r'
+  augroup END
+
+
+  call mkdir('Xswap')
+  let $Xswap = 'foo'  " Check for issue #4369.
+  set dir=Xswap//
+  " Create a valid swapfile by editing a file.
+  split Xswap/text
+  call setline(1, ['one', 'two', 'three'])
+  write  " file is written, not modified
+  " read the swapfile as a Blob
+  let swapfile_name = swapname('%')
+  let swapfile_bytes = readfile(swapfile_name, 'B')
+
+  " Close the file and recreate the swap file.
+  quit
+  call writefile(swapfile_bytes, swapfile_name)
+  " Edit the file again. This triggers recovery.
+  try
+    split Xswap/text
+  catch
+    " E308 should be caught, not E305.
+    call assert_exception('E308:')  " Original file may have been changed
+  endtry
+  " The file should be recovered.
+  call assert_equal(['one', 'two', 'three'], getline(1, 3))
+  quit!
+
+  call delete('Xswap/text')
+  call delete(swapfile_name)
+  call delete('Xswap', 'd')
+  unlet $Xswap
+  set dir&
+  augroup test_swap_recover
+    autocmd!
+  augroup END
+  augroup! test_swap_recover
+endfunc
+
+func Test_swap_recover_ext()
+  autocmd! SwapExists
+  augroup test_swap_recover_ext
+    autocmd!
+    autocmd SwapExists * let v:swapchoice = 'r'
+  augroup END
+
+
+  " Create a valid swapfile by editing a file with a special extension.
+  split Xtest.scr
+  call setline(1, ['one', 'two', 'three'])
+  write  " file is written, not modified
+  write  " write again to make sure the swapfile is created
+  " read the swapfile as a Blob
+  let swapfile_name = swapname('%')
+  let swapfile_bytes = readfile(swapfile_name, 'B')
+
+  " Close and delete the file and recreate the swap file.
+  quit
+  call delete('Xtest.scr')
+  call writefile(swapfile_bytes, swapfile_name)
+  " Edit the file again. This triggers recovery.
+  try
+    split Xtest.scr
+  catch
+    " E308 should be caught, not E306.
+    call assert_exception('E308:')  " Original file may have been changed
+  endtry
+  " The file should be recovered.
+  call assert_equal(['one', 'two', 'three'], getline(1, 3))
+  quit!
+
+  call delete('Xtest.scr')
+  call delete(swapfile_name)
+  augroup test_swap_recover_ext
+    autocmd!
+  augroup END
+  augroup! test_swap_recover_ext
 endfunc

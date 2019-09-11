@@ -3,11 +3,11 @@
 set encoding=latin1
 scriptencoding latin1
 
-if !has('mksession')
-  finish
-endif
+source check.vim
+CheckFeature mksession
 
 source shared.vim
+source term_util.vim
 
 func Test_mksession()
   tabnew
@@ -339,7 +339,7 @@ func Test_mksession_terminal_shell()
   endfor
   call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+\s*.*$', term_cmd)
 
-  call Stop_shell_in_terminal(bufnr('%'))
+  call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
 endfunc
 
@@ -354,7 +354,7 @@ func Test_mksession_terminal_no_restore_cmdarg()
     endif
   endfor
 
-  call Stop_shell_in_terminal(bufnr('%'))
+  call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
 endfunc
 
@@ -369,7 +369,7 @@ func Test_mksession_terminal_no_restore_funcarg()
     endif
   endfor
 
-  call Stop_shell_in_terminal(bufnr('%'))
+  call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
 endfunc
 
@@ -385,7 +385,7 @@ func Test_mksession_terminal_no_restore_func()
     endif
   endfor
 
-  call Stop_shell_in_terminal(bufnr('%'))
+  call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
 endfunc
 
@@ -401,14 +401,14 @@ func Test_mksession_terminal_no_ssop()
     endif
   endfor
 
-  call Stop_shell_in_terminal(bufnr('%'))
+  call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
   set sessionoptions&
 endfunc
 
 func Test_mksession_terminal_restore_other()
   terminal
-  call term_setrestore(bufnr('%'), 'other')
+  eval bufnr('%')->term_setrestore('other')
   mksession! Xtest_mks.out
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
@@ -419,7 +419,7 @@ func Test_mksession_terminal_restore_other()
   endfor
   call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+.*other', term_cmd)
 
-  call Stop_shell_in_terminal(bufnr('%'))
+  call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
 endfunc
 
@@ -534,6 +534,48 @@ func Test_mksession_quote_in_filename()
 
   %bwipe!
   call delete('Xtest_mks_quoted.out')
+endfunc
+
+func s:ClearMappings()
+  mapclear
+  omapclear
+  mapclear!
+  lmapclear
+  tmapclear
+endfunc
+
+func Test_mkvimrc()
+  let entries = [
+        \ ['', 'nothing', '<Nop>'],
+        \ ['n', 'normal', 'NORMAL'],
+        \ ['v', 'visual', 'VISUAL'],
+        \ ['s', 'select', 'SELECT'],
+        \ ['x', 'visualonly', 'VISUALONLY'],
+        \ ['o', 'operator', 'OPERATOR'],
+        \ ['i', 'insert', 'INSERT'],
+        \ ['l', 'lang', 'LANG'],
+        \ ['c', 'command', 'COMMAND'],
+        \ ['t', 'terminal', 'TERMINAL'],
+        \ ]
+  for entry in entries
+    exe entry[0] .. 'map ' .. entry[1] .. ' ' .. entry[2]
+  endfor
+
+  mkvimrc Xtestvimrc
+
+  call s:ClearMappings()
+  for entry in entries
+    call assert_equal('', maparg(entry[1], entry[0]))
+  endfor
+
+  source Xtestvimrc
+
+  for entry in entries
+    call assert_equal(entry[2], maparg(entry[1], entry[0]))
+  endfor
+
+  call s:ClearMappings()
+  call delete('Xtestvimrc')
 endfunc
 
 

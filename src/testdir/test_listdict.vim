@@ -280,6 +280,14 @@ func Test_dict_func_remove_in_use()
   call assert_equal(expected, d.func(string(remove(d, 'func'))))
 endfunc
 
+func Test_dict_literal_keys()
+  call assert_equal({'one': 1, 'two2': 2, '3three': 3, '44': 4}, #{one: 1, two2: 2, 3three: 3, 44: 4},)
+
+  " why *{} cannot be used
+  let blue = 'blue'
+  call assert_equal('6', trim(execute('echo 2 *{blue: 3}.blue')))
+endfunc
+
 " Nasty: deepcopy() dict that refers to itself (fails when noref used)
 func Test_dict_deepcopy()
   let d = {1:1, 2:2}
@@ -557,7 +565,7 @@ func Test_lockvar_script_autoload()
   set rtp+=./sautest
   lockvar g:footest#x
   unlockvar g:footest#x
-  call assert_equal(-1, islocked('g:footest#x'))
+  call assert_equal(-1, 'g:footest#x'->islocked())
   call assert_equal(0, exists('g:footest#x'))
   call assert_equal(1, g:footest#x)
   let &rtp = old_rtp

@@ -35,7 +35,9 @@ src/auto/pathdef.c
 *.RES
 vim*.dll
 vim*.lib
-src/pathdef.c
+src/dobj*/pathdef.c
+src/gobj*/pathdef.c
+src/obj*/pathdef.c
 src/Obj*/pathdef.c
 gvimext.dll
 gvimext.lib

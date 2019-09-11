@@ -338,6 +338,7 @@ static int count_syllables(slang_T *slang, char_u *word);
 static void clear_midword(win_T *buf);
 static void use_midword(slang_T *lp, win_T *buf);
 static int find_region(char_u *rp, char_u *region);
+static int spell_iswordp_nmw(char_u *p, win_T *wp);
 static int check_need_cap(linenr_T lnum, colnr_T col);
 static void spell_find_suggest(char_u *badptr, int badlen, suginfo_T *su, int maxcount, int banbadword, int need_cap, int interactive);
 #ifdef FEAT_EVAL
@@ -1899,7 +1900,7 @@ slang_alloc(char_u *lang)
 {
     slang_T *lp;
 
-    lp = (slang_T *)alloc_clear(sizeof(slang_T));
+    lp = ALLOC_CLEAR_ONE(slang_T);
     if (lp != NULL)
     {
 	if (lang != NULL)
@@ -2073,6 +2074,8 @@ count_common_word(
 
     if (len == -1)
 	p = word;
+    else if (len >= MAXWLEN)
+	return;
     else
     {
 	vim_strncpy(buf, word, len);
@@ -2083,7 +2086,7 @@ count_common_word(
     hi = hash_lookup(&lp->sl_wordcount, p, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	wc = (wordcount_T *)alloc((unsigned)(sizeof(wordcount_T) + STRLEN(p)));
+	wc = alloc(sizeof(wordcount_T) + STRLEN(p));
 	if (wc == NULL)
 	    return;
 	STRCPY(wc->wc_word, p);
@@ -2343,7 +2346,7 @@ did_set_spelllang(win_T *wp)
 
 	    /* Check if we loaded this language before. */
 	    for (slang = first_lang; slang != NULL; slang = slang->sl_next)
-		if (fullpathcmp(lang, slang->sl_fname, FALSE) == FPC_SAME)
+		if (fullpathcmp(lang, slang->sl_fname, FALSE, TRUE) == FPC_SAME)
 		    break;
 	}
 	else
@@ -2395,7 +2398,8 @@ did_set_spelllang(win_T *wp)
 	 * Loop over the languages, there can be several files for "lang".
 	 */
 	for (slang = first_lang; slang != NULL; slang = slang->sl_next)
-	    if (filename ? fullpathcmp(lang, slang->sl_fname, FALSE) == FPC_SAME
+	    if (filename ? fullpathcmp(lang, slang->sl_fname, FALSE, TRUE)
+								    == FPC_SAME
 			 : STRICMP(lang, slang->sl_name) == 0)
 	    {
 		region_mask = REGION_ALL;
@@ -2463,7 +2467,8 @@ did_set_spelllang(win_T *wp)
 	    for (c = 0; c < ga.ga_len; ++c)
 	    {
 		p = LANGP_ENTRY(ga, c)->lp_slang->sl_fname;
-		if (p != NULL && fullpathcmp(spf_name, p, FALSE) == FPC_SAME)
+		if (p != NULL && fullpathcmp(spf_name, p, FALSE, TRUE)
+								== FPC_SAME)
 		    break;
 	    }
 	    if (c < ga.ga_len)
@@ -2472,7 +2477,8 @@ did_set_spelllang(win_T *wp)
 
 	/* Check if it was loaded already. */
 	for (slang = first_lang; slang != NULL; slang = slang->sl_next)
-	    if (fullpathcmp(spf_name, slang->sl_fname, FALSE) == FPC_SAME)
+	    if (fullpathcmp(spf_name, slang->sl_fname, FALSE, TRUE)
+								== FPC_SAME)
 		break;
 	if (slang == NULL)
 	{
@@ -2880,7 +2886,7 @@ open_spellbuf(void)
 {
     buf_T	*buf;
 
-    buf = (buf_T *)alloc_clear(sizeof(buf_T));
+    buf = ALLOC_CLEAR_ONE(buf_T);
     if (buf != NULL)
     {
 	buf->b_spell = TRUE;
@@ -3047,7 +3053,7 @@ spell_iswordp(
  * Return TRUE if "p" points to a word character.
  * Unlike spell_iswordp() this doesn't check for "midword" characters.
  */
-    int
+    static int
 spell_iswordp_nmw(char_u *p, win_T *wp)
 {
     int		c;
@@ -3074,7 +3080,7 @@ spell_mb_isword_class(int cl, win_T *wp)
     if (wp->w_s->b_cjk)
 	/* East Asian characters are not considered word characters. */
 	return cl == 2 || cl == 0x2800;
-    return cl >= 2 && cl != 0x2070 && cl != 0x2080;
+    return cl >= 2 && cl != 0x2070 && cl != 0x2080 && cl != 3;
 }
 
 /*
@@ -3429,8 +3435,7 @@ spell_suggest(int count)
 	}
 
 	/* Replace the word. */
-	p = alloc((unsigned)STRLEN(line) - stp->st_orglen
-						       + stp->st_wordlen + 1);
+	p = alloc(STRLEN(line) - stp->st_orglen + stp->st_wordlen + 1);
 	if (p != NULL)
 	{
 	    c = (int)(sug.su_badptr - line);
@@ -3549,7 +3554,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
     }
     addlen = (int)(STRLEN(repl_to) - STRLEN(repl_from));
 
-    frompat = alloc((unsigned)STRLEN(repl_from) + 7);
+    frompat = alloc(STRLEN(repl_from) + 7);
     if (frompat == NULL)
 	return;
     sprintf((char *)frompat, "\\V\\<%s\\>", repl_from);
@@ -3570,7 +3575,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
 	if (addlen <= 0 || STRNCMP(line + curwin->w_cursor.col,
 					       repl_to, STRLEN(repl_to)) != 0)
 	{
-	    p = alloc((unsigned)STRLEN(line) + addlen + 1);
+	    p = alloc(STRLEN(line) + addlen + 1);
 	    if (p == NULL)
 		break;
 	    mch_memmove(p, line, curwin->w_cursor.col);
@@ -6221,8 +6226,7 @@ add_sound_suggest(
     hi = hash_lookup(&slang->sl_sounddone, goodword, hash);
     if (HASHITEM_EMPTY(hi))
     {
-	sft = (sftword_T *)alloc((unsigned)(sizeof(sftword_T)
-							 + STRLEN(goodword)));
+	sft = alloc(sizeof(sftword_T) + STRLEN(goodword));
 	if (sft != NULL)
 	{
 	    sft->sft_score = score;
@@ -7819,8 +7823,7 @@ spell_edit_score(
 
     /* We use "cnt" as an array: CNT(badword_idx, goodword_idx). */
 #define CNT(a, b)   cnt[(a) + (b) * (badlen + 1)]
-    cnt = (int *)lalloc((long_u)(sizeof(int) * (badlen + 1) * (goodlen + 1)),
-									TRUE);
+    cnt = ALLOC_MULT(int, (badlen + 1) * (goodlen + 1));
     if (cnt == NULL)
 	return 0;	/* out of memory */
 
@@ -8760,7 +8763,6 @@ spell_to_word_end(char_u *start, win_T *win)
     return p;
 }
 
-#if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * For Insert mode completion CTRL-X s:
  * Find start of the word in front of column "startcol".
@@ -8830,6 +8832,91 @@ expand_spelling(
     *matchp = ga.ga_data;
     return ga.ga_len;
 }
-#endif
 
-#endif  /* FEAT_SPELL */
+/*
+ * Return TRUE if "val" is a valid 'spellang' value.
+ */
+    int
+valid_spellang(char_u *val)
+{
+    return valid_name(val, ".-_,@");
+}
+
+/*
+ * Return TRUE if "val" is a valid 'spellfile' value.
+ */
+    int
+valid_spellfile(char_u *val)
+{
+    char_u *s;
+
+    for (s = val; *s != NUL; ++s)
+	if (!vim_isfilec(*s) && *s != ',')
+	    return FALSE;
+    return TRUE;
+}
+
+/*
+ * Handle side effects of setting 'spell'.
+ * Return an error message or NULL for success.
+ */
+    char *
+did_set_spell_option(int is_spellfile)
+{
+    char    *errmsg = NULL;
+    win_T   *wp;
+    int	    l;
+
+    if (is_spellfile)
+    {
+	l = (int)STRLEN(curwin->w_s->b_p_spf);
+	if (l > 0 && (l < 4
+			|| STRCMP(curwin->w_s->b_p_spf + l - 4, ".add") != 0))
+	    errmsg = e_invarg;
+    }
+
+    if (errmsg == NULL)
+    {
+	FOR_ALL_WINDOWS(wp)
+	    if (wp->w_buffer == curbuf && wp->w_p_spell)
+	    {
+		errmsg = did_set_spelllang(wp);
+		break;
+	    }
+    }
+    return errmsg;
+}
+
+/*
+ * Set curbuf->b_cap_prog to the regexp program for 'spellcapcheck'.
+ * Return error message when failed, NULL when OK.
+ */
+    char *
+compile_cap_prog(synblock_T *synblock)
+{
+    regprog_T   *rp = synblock->b_cap_prog;
+    char_u	*re;
+
+    if (*synblock->b_p_spc == NUL)
+	synblock->b_cap_prog = NULL;
+    else
+    {
+	// Prepend a ^ so that we only match at one column
+	re = concat_str((char_u *)"^", synblock->b_p_spc);
+	if (re != NULL)
+	{
+	    synblock->b_cap_prog = vim_regcomp(re, RE_MAGIC);
+	    vim_free(re);
+	    if (synblock->b_cap_prog == NULL)
+	    {
+		synblock->b_cap_prog = rp; // restore the previous program
+		return e_invarg;
+	    }
+	}
+    }
+
+    vim_regfree(rp);
+    return NULL;
+}
+
+#endif  // FEAT_SPELL

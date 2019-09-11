@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 8.1.  Last change: 2019 May 05
+*if_perl.txt*   For Vim version 8.1.  Last change: 2019 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -55,15 +55,18 @@ The ActiveState one should work, Strawberry Perl is a good alternative.
 			working: >
 				:perl VIM::Msg("Hello")
 
-:pe[rl] << {endpattern}
+:pe[rl] << [endpattern]
 {script}
 {endpattern}
 			Execute Perl script {script}.
-			{endpattern} must NOT be preceded by any white space.
-			If {endpattern} is omitted, it defaults to a dot '.'
+			The {endpattern} after {script} must NOT be preceded
+			by any white space.
+
+			If [endpattern] is omitted, it defaults to a dot '.'
 			like for the |:append| and |:insert| commands.  Using
 			'.' helps when inside a function, because "$i;" looks
 			like the start of an |:insert| command to Vim.
+
 			This form of the |:perl| command is mainly useful for
 			including perl code in vim scripts.
 			Note: This command doesn't work when the Perl feature

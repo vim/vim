@@ -51,7 +51,7 @@ hash_create(void)
 {
     hashtab_T *ht;
 
-    ht = (hashtab_T *)alloc(sizeof(hashtab_T));
+    ht = ALLOC_ONE(hashtab_T);
     if (ht != NULL)
 	hash_init(ht);
     return ht;
@@ -286,7 +286,6 @@ hash_lock(hashtab_T *ht)
     ++ht->ht_locked;
 }
 
-#if 0	    /* currently not used */
 /*
  * Lock a hashtable at the specified number of entries.
  * Caller must make sure no more than "size" entries will be added.
@@ -298,7 +297,6 @@ hash_lock_size(hashtab_T *ht, int size)
     (void)hash_may_resize(ht, size);
     ++ht->ht_locked;
 }
-#endif
 
 /*
  * Unlock a hashtable: allow ht_array changes again.
@@ -368,10 +366,10 @@ hash_may_resize(
     }
     else
     {
-	/* Use specified size. */
-	if ((long_u)minitems < ht->ht_used)	/* just in case... */
+	// Use specified size.
+	if ((long_u)minitems < ht->ht_used)	// just in case...
 	    minitems = (int)ht->ht_used;
-	minsize = minitems * 3 / 2;	/* array is up to 2/3 full */
+	minsize = (minitems * 3 + 1) / 2;	// array is up to 2/3 full
     }
 
     newsize = HT_INIT_SIZE;
@@ -400,8 +398,7 @@ hash_may_resize(
     else
     {
 	/* Allocate an array. */
-	newarray = (hashitem_T *)alloc((unsigned)
-					      (sizeof(hashitem_T) * newsize));
+	newarray = ALLOC_MULT(hashitem_T, newsize);
 	if (newarray == NULL)
 	{
 	    /* Out of memory.  When there are NULL items still return OK.

@@ -18,11 +18,9 @@
 #define BACKSPACE_WORD_NOT_SPACE    3
 #define BACKSPACE_LINE		    4
 
-#ifdef FEAT_INS_EXPAND
 /* Set when doing something for completion that may call edit() recursively,
  * which is not allowed. */
 static int	compl_busy = FALSE;
-#endif /* FEAT_INS_EXPAND */
 
 
 static void ins_ctrl_v(void);
@@ -194,7 +192,6 @@ edit(
 	return FALSE;
     }
 
-#ifdef FEAT_INS_EXPAND
     /* Don't allow recursive insert mode when busy with completion. */
     if (ins_compl_active() || compl_busy || pum_visible())
     {
@@ -202,7 +199,6 @@ edit(
 	return FALSE;
     }
     ins_compl_clear();	    /* clear stuff for CTRL-X mode */
-#endif
 
     /*
      * Trigger InsertEnter autocommands.  Do not do this for "r<CR>" or "grx".
@@ -462,11 +458,7 @@ edit(
 	if (update_Insstart_orig)
 	    Insstart_orig = Insstart;
 
-	if (stop_insert_mode
-#ifdef FEAT_INS_EXPAND
-		&& !pum_visible()
-#endif
-		)
+	if (stop_insert_mode && !pum_visible())
 	{
 	    /* ":stopinsert" used or 'insertmode' reset */
 	    count = 0;
@@ -631,7 +623,6 @@ edit(
 	    c = hkmap(c);		/* Hebrew mode mapping */
 #endif
 
-#ifdef FEAT_INS_EXPAND
 	/*
 	 * Special handling of keys while the popup menu is visible or wanted
 	 * and the cursor is still in the completed word.  Only when there is
@@ -701,7 +692,6 @@ edit(
 	ins_compl_init_get_longest();
 	if (ins_compl_prep(c))
 	    continue;
-#endif
 
 	/* CTRL-\ CTRL-N goes to Normal mode,
 	 * CTRL-\ CTRL-G goes to mode selected with 'insertmode',
@@ -740,10 +730,8 @@ edit(
 	c = do_digraph(c);
 #endif
 
-#ifdef FEAT_INS_EXPAND
 	if ((c == Ctrl_V || c == Ctrl_Q) && ctrl_x_mode_cmdline())
 	    goto docomplete;
-#endif
 	if (c == Ctrl_V || c == Ctrl_Q)
 	{
 	    ins_ctrl_v();
@@ -752,11 +740,7 @@ edit(
 	}
 
 #ifdef FEAT_CINDENT
-	if (cindent_on()
-# ifdef FEAT_INS_EXPAND
-		&& ctrl_x_mode_none()
-# endif
-	   )
+	if (cindent_on() && ctrl_x_mode_none())
 	{
 	    /* A key name preceded by a bang means this key is not to be
 	     * inserted.  Skip ahead to the re-indenting below.
@@ -950,21 +934,20 @@ doESCkey:
 #endif
 
 	case Ctrl_D:	/* Make indent one shiftwidth smaller. */
-#if defined(FEAT_INS_EXPAND) && defined(FEAT_FIND_ID)
+#if defined(FEAT_FIND_ID)
 	    if (ctrl_x_mode_path_defines())
 		goto docomplete;
 #endif
 	    /* FALLTHROUGH */
 
 	case Ctrl_T:	/* Make indent one shiftwidth greater. */
-# ifdef FEAT_INS_EXPAND
 	    if (c == Ctrl_T && ctrl_x_mode_thesaurus())
 	    {
 		if (has_compl_option(FALSE))
 		    goto docomplete;
 		break;
 	    }
-# endif
+
 	    ins_shift(c, lastc);
 	    auto_format(FALSE, TRUE);
 	    inserted_space = FALSE;
@@ -1131,10 +1114,8 @@ doESCkey:
 	    break;
 
 	case K_UP:	/* <Up> */
-#ifdef FEAT_INS_EXPAND
 	    if (pum_visible())
 		goto docomplete;
-#endif
 	    if (mod_mask & MOD_MASK_SHIFT)
 		ins_pageup();
 	    else
@@ -1144,18 +1125,14 @@ doESCkey:
 	case K_S_UP:	/* <S-Up> */
 	case K_PAGEUP:
 	case K_KPAGEUP:
-#ifdef FEAT_INS_EXPAND
 	    if (pum_visible())
 		goto docomplete;
-#endif
 	    ins_pageup();
 	    break;
 
 	case K_DOWN:	/* <Down> */
-#ifdef FEAT_INS_EXPAND
 	    if (pum_visible())
 		goto docomplete;
-#endif
 	    if (mod_mask & MOD_MASK_SHIFT)
 		ins_pagedown();
 	    else
@@ -1165,10 +1142,8 @@ doESCkey:
 	case K_S_DOWN:	/* <S-Down> */
 	case K_PAGEDOWN:
 	case K_KPAGEDOWN:
-#ifdef FEAT_INS_EXPAND
 	    if (pum_visible())
 		goto docomplete;
-#endif
 	    ins_pagedown();
 	    break;
 
@@ -1183,7 +1158,7 @@ doESCkey:
 	    /* FALLTHROUGH */
 
 	case TAB:	/* TAB or Complete patterns along path */
-#if defined(FEAT_INS_EXPAND) && defined(FEAT_FIND_ID)
+#if defined(FEAT_FIND_ID)
 	    if (ctrl_x_mode_path_patterns())
 		goto docomplete;
 #endif
@@ -1235,25 +1210,20 @@ doESCkey:
 	    inserted_space = FALSE;
 	    break;
 
-#if defined(FEAT_DIGRAPHS) || defined(FEAT_INS_EXPAND)
 	case Ctrl_K:	    /* digraph or keyword completion */
-# ifdef FEAT_INS_EXPAND
 	    if (ctrl_x_mode_dictionary())
 	    {
 		if (has_compl_option(TRUE))
 		    goto docomplete;
 		break;
 	    }
-# endif
-# ifdef FEAT_DIGRAPHS
+#ifdef FEAT_DIGRAPHS
 	    c = ins_digraph();
 	    if (c == NUL)
 		break;
-# endif
-	    goto normalchar;
 #endif
+	    goto normalchar;
 
-#ifdef FEAT_INS_EXPAND
 	case Ctrl_X:	/* Enter CTRL-X mode */
 	    ins_ctrl_x();
 	    break;
@@ -1273,12 +1243,9 @@ doESCkey:
 	    if (!ctrl_x_mode_spell())
 		goto normalchar;
 	    goto docomplete;
-#endif
 
 	case Ctrl_L:	/* Whole line completion after ^X */
-#ifdef FEAT_INS_EXPAND
 	    if (!ctrl_x_mode_whole_line())
-#endif
 	    {
 		/* CTRL-L with 'insertmode' set: Leave Insert mode */
 		if (p_im)
@@ -1289,7 +1256,6 @@ doESCkey:
 		}
 		goto normalchar;
 	    }
-#ifdef FEAT_INS_EXPAND
 	    /* FALLTHROUGH */
 
 	case Ctrl_P:	/* Do previous/next pattern completion */
@@ -1313,7 +1279,6 @@ docomplete:
 #endif
 	    compl_busy = FALSE;
 	    break;
-#endif /* FEAT_INS_EXPAND */
 
 	case Ctrl_Y:	/* copy from previous line or scroll down */
 	case Ctrl_E:	/* copy from next line	   or scroll up */
@@ -1419,11 +1384,7 @@ normalchar:
 	    inserted_space = FALSE;
 
 #ifdef FEAT_CINDENT
-	if (can_cindent && cindent_on()
-# ifdef FEAT_INS_EXPAND
-		&& ctrl_x_mode_normal()
-# endif
-	   )
+	if (can_cindent && cindent_on() && ctrl_x_mode_normal())
 	{
 force_cindent:
 	    /*
@@ -1456,8 +1417,7 @@ ins_need_undo_get(void)
  * inserting sequences of characters (e.g., for CTRL-R).
  */
     void
-ins_redraw(
-    int		ready UNUSED)	    /* not busy with something */
+ins_redraw(int ready)	    // not busy with something
 {
 #ifdef FEAT_CONCEAL
     linenr_T	conceal_old_cursor_line = 0;
@@ -1468,19 +1428,18 @@ ins_redraw(
     if (char_avail())
 	return;
 
-#if defined(FEAT_CONCEAL)
     /* Trigger CursorMoved if the cursor moved.  Not when the popup menu is
      * visible, the command might delete it. */
     if (ready && (has_cursormovedI()
+# ifdef FEAT_TEXT_PROP
+		|| popup_visible
+# endif
 # if defined(FEAT_CONCEAL)
 		|| curwin->w_p_cole > 0
 # endif
 		)
 	    && !EQUAL_POS(last_cursormoved, curwin->w_cursor)
-# ifdef FEAT_INS_EXPAND
-	    && !pum_visible()
-# endif
-       )
+	    && !pum_visible())
     {
 # ifdef FEAT_SYN_HL
 	/* Need to update the screen first, to make sure syntax
@@ -1497,6 +1456,10 @@ ins_redraw(
 	    update_curswant();
 	    ins_apply_autocmds(EVENT_CURSORMOVEDI);
 	}
+#ifdef FEAT_TEXT_PROP
+	if (popup_visible)
+	    popup_check_cursor_pos();
+#endif
 # ifdef FEAT_CONCEAL
 	if (curwin->w_p_cole > 0)
 	{
@@ -1507,15 +1470,11 @@ ins_redraw(
 # endif
 	last_cursormoved = curwin->w_cursor;
     }
-#endif
 
     /* Trigger TextChangedI if b_changedtick differs. */
     if (ready && has_textchangedI()
 	    && curbuf->b_last_changedtick != CHANGEDTICK(curbuf)
-#ifdef FEAT_INS_EXPAND
-	    && !pum_visible()
-#endif
-	    )
+	    && !pum_visible())
     {
 	aco_save_T	aco;
 	varnumber_T	tick = CHANGEDTICK(curbuf);
@@ -1530,7 +1489,6 @@ ins_redraw(
 					(linenr_T)(curwin->w_cursor.lnum + 1));
     }
 
-#ifdef FEAT_INS_EXPAND
     /* Trigger TextChangedP if b_changedtick differs. When the popupmenu closes
      * TextChangedI will need to trigger for backwards compatibility, thus use
      * different b_last_changedtick* variables. */
@@ -1550,7 +1508,6 @@ ins_redraw(
 	    u_save(curwin->w_cursor.lnum,
 					(linenr_T)(curwin->w_cursor.lnum + 1));
     }
-#endif
 
 #if defined(FEAT_CONCEAL)
     if ((conceal_update_lines
@@ -1943,7 +1900,7 @@ change_indent(
 	{
 	    curwin->w_cursor.col = (colnr_T)new_cursor_col;
 	    i = (int)curwin->w_virtcol - vcol;
-	    ptr = alloc((unsigned)(i + 1));
+	    ptr = alloc(i + 1);
 	    if (ptr != NULL)
 	    {
 		new_cursor_col += i;
@@ -3859,7 +3816,7 @@ replace_push(
     if (replace_stack_len <= replace_stack_nr)
     {
 	replace_stack_len += 50;
-	p = lalloc(sizeof(char_u) * replace_stack_len, TRUE);
+	p = ALLOC_MULT(char_u, replace_stack_len);
 	if (p == NULL)	    /* out of memory */
 	{
 	    replace_stack_len -= 50;
@@ -4324,10 +4281,8 @@ ins_ctrl_g(void)
 {
     int		c;
 
-#ifdef FEAT_INS_EXPAND
-    /* Right after CTRL-X the cursor will be after the ruler. */
+    // Right after CTRL-X the cursor will be after the ruler.
     setcursor();
-#endif
 
     /*
      * Don't map the second key. This also prevents the mode message to be
@@ -5249,9 +5204,7 @@ ins_mousescroll(int dir)
 {
     pos_T	tpos;
     win_T	*old_curwin = curwin, *wp;
-# ifdef FEAT_INS_EXPAND
     int		did_scroll = FALSE;
-# endif
 
     tpos = curwin->w_cursor;
 
@@ -5263,7 +5216,7 @@ ins_mousescroll(int dir)
 	col = mouse_col;
 
 	/* find the window at the pointer coordinates */
-	wp = mouse_find_win(&row, &col);
+	wp = mouse_find_win(&row, &col, FIND_POPUP);
 	if (wp == NULL)
 	    return;
 	curwin = wp;
@@ -5272,10 +5225,8 @@ ins_mousescroll(int dir)
     if (curwin == old_curwin)
 	undisplay_dollar();
 
-# ifdef FEAT_INS_EXPAND
     /* Don't scroll the window in which completion is being done. */
     if (!pum_visible() || curwin != old_curwin)
-# endif
     {
 	if (dir == MSCR_DOWN || dir == MSCR_UP)
 	{
@@ -5284,6 +5235,10 @@ ins_mousescroll(int dir)
 			(long)(curwin->w_botline - curwin->w_topline));
 	    else
 		scroll_redraw(dir, 3L);
+# ifdef FEAT_TEXT_PROP
+	if (WIN_IS_POPUP(curwin))
+	    popup_set_firstline(curwin);
+# endif
 	}
 #ifdef FEAT_GUI
 	else
@@ -5298,9 +5253,7 @@ ins_mousescroll(int dir)
 	    gui_do_horiz_scroll(val, TRUE);
 	}
 #endif
-# ifdef FEAT_INS_EXPAND
 	did_scroll = TRUE;
-# endif
     }
 
     curwin->w_redr_status = TRUE;
@@ -5308,7 +5261,6 @@ ins_mousescroll(int dir)
     curwin = old_curwin;
     curbuf = curwin->w_buffer;
 
-# ifdef FEAT_INS_EXPAND
     /* The popup menu may overlay the window, need to redraw it.
      * TODO: Would be more efficient to only redraw the windows that are
      * overlapped by the popup menu. */
@@ -5317,7 +5269,6 @@ ins_mousescroll(int dir)
 	redraw_all_later(NOT_VALID);
 	ins_compl_show_pum();
     }
-# endif
 
     if (!EQUAL_POS(curwin->w_cursor, tpos))
     {
@@ -6248,7 +6199,6 @@ ins_ctrl_ey(int tc)
 {
     int	    c = tc;
 
-#ifdef FEAT_INS_EXPAND
     if (ctrl_x_mode_scroll())
     {
 	if (c == Ctrl_Y)
@@ -6258,7 +6208,6 @@ ins_ctrl_ey(int tc)
 	redraw_later(VALID);
     }
     else
-#endif
     {
 	c = ins_copychar(curwin->w_cursor.lnum + (c == Ctrl_Y ? -1 : 1));
 	if (c != NUL)

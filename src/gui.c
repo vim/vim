@@ -17,10 +17,13 @@ gui_T gui;
 static void set_guifontwide(char_u *font_name);
 #endif
 static void gui_check_pos(void);
+static void gui_reset_scroll_region(void);
 static void gui_outstr(char_u *, int);
 static int gui_screenchar(int off, int flags, guicolor_T fg, guicolor_T bg, int back);
+static int gui_outstr_nowrap(char_u *s, int len, int flags, guicolor_T fg, guicolor_T bg, int back);
 static void gui_delete_lines(int row, int count);
 static void gui_insert_lines(int row, int count);
+static int gui_xy2colrow(int x, int y, int *colp);
 #if defined(FEAT_GUI_TABLINE) || defined(PROTO)
 static int gui_has_tabline(void);
 #endif
@@ -603,22 +606,22 @@ gui_init(void)
 #endif
 
 		if (       fullpathcmp((char_u *)USR_GVIMRC_FILE,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #ifdef SYS_GVIMRC_FILE
 			&& fullpathcmp((char_u *)SYS_GVIMRC_FILE,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 #ifdef USR_GVIMRC_FILE2
 			&& fullpathcmp((char_u *)USR_GVIMRC_FILE2,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 #ifdef USR_GVIMRC_FILE3
 			&& fullpathcmp((char_u *)USR_GVIMRC_FILE3,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 #ifdef USR_GVIMRC_FILE4
 			&& fullpathcmp((char_u *)USR_GVIMRC_FILE4,
-				     (char_u *)GVIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 			)
 		    do_source((char_u *)GVIMRC_FILE, TRUE, DOSO_GVIMRC);
@@ -1050,7 +1053,7 @@ gui_get_wide_font(void)
     return OK;
 }
 
-    void
+    static void
 gui_set_cursor(int row, int col)
 {
     gui.row = row;
@@ -1713,7 +1716,7 @@ gui_new_shellsize(void)
 /*
  * Make scroll region cover whole screen.
  */
-    void
+    static void
 gui_reset_scroll_region(void)
 {
     gui.scroll_region_top = 0;
@@ -1722,7 +1725,7 @@ gui_reset_scroll_region(void)
     gui.scroll_region_right = gui.num_cols - 1;
 }
 
-    void
+    static void
 gui_start_highlight(int mask)
 {
     if (mask > HL_ALL)		    /* highlight code */
@@ -2162,7 +2165,7 @@ gui_screenstr(
 
     if (enc_utf8)
     {
-	buf = alloc((unsigned)(len * MB_MAXBYTES + 1));
+	buf = alloc(len * MB_MAXBYTES + 1);
 	if (buf == NULL)
 	    return OK; /* not much we could do here... */
 
@@ -2185,7 +2188,7 @@ gui_screenstr(
     }
     else if (enc_dbcs == DBCS_JPNU)
     {
-	buf = alloc((unsigned)(len * 2 + 1));
+	buf = alloc(len * 2 + 1);
 	if (buf == NULL)
 	    return OK; /* not much we could do here... */
 
@@ -2227,7 +2230,7 @@ gui_screenstr(
  * Returns OK, unless "back" is non-zero and using the bold trick, then return
  * FAIL (the caller should start drawing "back" chars back).
  */
-    int
+    static int
 gui_outstr_nowrap(
     char_u	*s,
     int		len,
@@ -2253,6 +2256,8 @@ gui_outstr_nowrap(
     int		col = gui.col;
 #ifdef FEAT_SIGN_ICONS
     int		draw_sign = FALSE;
+    int		signcol = 0;
+    char_u	extra[18];
 # ifdef FEAT_NETBEANS_INTG
     int		multi_sign = FALSE;
 # endif
@@ -2268,17 +2273,29 @@ gui_outstr_nowrap(
 # ifdef FEAT_NETBEANS_INTG
 	  || *s == MULTISIGN_BYTE
 # endif
-    )
+       )
     {
 # ifdef FEAT_NETBEANS_INTG
 	if (*s == MULTISIGN_BYTE)
 	    multi_sign = TRUE;
 # endif
 	/* draw spaces instead */
-	s = (char_u *)"  ";
+	if (*curwin->w_p_scl == 'n' && *(curwin->w_p_scl + 1) == 'u' &&
+		(curwin->w_p_nu || curwin->w_p_rnu))
+	{
+	    sprintf((char *)extra, "%*c ", number_width(curwin), ' ');
+	    s = extra;
+	}
+	else
+	    s = (char_u *)"  ";
 	if (len == 1 && col > 0)
 	    --col;
-	len = 2;
+	len = (int)STRLEN(s);
+	if (len > 2)
+	    // right align sign icon in the number column
+	    signcol = col + len - 3;
+	else
+	    signcol = col;
 	draw_sign = TRUE;
 	highlight_mask = 0;
     }
@@ -2604,7 +2621,7 @@ gui_outstr_nowrap(
 #ifdef FEAT_SIGN_ICONS
     if (draw_sign)
 	/* Draw the sign on top of the spaces. */
-	gui_mch_drawsign(gui.row, col, gui.highlight_mask);
+	gui_mch_drawsign(gui.row, signcol, gui.highlight_mask);
 # if defined(FEAT_NETBEANS_INTG) && (defined(FEAT_GUI_X11) \
 	|| defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MSWIN))
     if (multi_sign)
@@ -3366,7 +3383,7 @@ button_set:
  * Corrects for multi-byte character.
  * returns column in "*colp" and row as return value;
  */
-    int
+    static int
 gui_xy2colrow(int x, int y, int *colp)
 {
     int		col = check_col(X_2_COL(x));
@@ -4002,12 +4019,10 @@ gui_drag_scrollbar(scrollbar_T *sb, long value, int still_dragging)
     if (dont_scroll)
 	return;
 #endif
-#ifdef FEAT_INS_EXPAND
     /* Disallow scrolling the current window when the completion popup menu is
      * visible. */
     if ((sb->wp == NULL || sb->wp == curwin) && pum_visible())
 	return;
-#endif
 
 #ifdef FEAT_RIGHTLEFT
     if (sb->wp == NULL && curwin->w_p_rl)
@@ -4468,13 +4483,12 @@ gui_do_scroll(void)
     {
 	int type = VALID;
 
-#ifdef FEAT_INS_EXPAND
 	if (pum_visible())
 	{
 	    type = NOT_VALID;
 	    wp->w_lines_valid = 0;
 	}
-#endif
+
 	/* Don't set must_redraw here, it may cause the popup menu to
 	 * disappear when losing focus after a scrollbar drag. */
 	if (wp->w_redr_type < type)
@@ -4484,11 +4498,9 @@ gui_do_scroll(void)
 	mch_enable_flush();
     }
 
-#ifdef FEAT_INS_EXPAND
     /* May need to redraw the popup menu. */
     if (pum_visible())
 	pum_redraw();
-#endif
 
     return (wp == curwin && !EQUAL_POS(curwin->w_cursor, old_cursor));
 }
@@ -4812,17 +4824,14 @@ gui_focus_change(int in_focus)
 }
 
 /*
- * Called when the mouse moved (but not when dragging).
+ * When mouse moved: apply 'mousefocus'.
+ * Also updates the mouse pointer shape.
  */
-    void
-gui_mouse_moved(int x, int y)
+    static void
+gui_mouse_focus(int x, int y)
 {
     win_T	*wp;
     char_u	st[8];
-
-    /* Ignore this while still starting up. */
-    if (!gui.in_use || gui.starting)
-	return;
 
 #ifdef FEAT_MOUSESHAPE
     /* Get window pointer, and update mouse shape as well. */
@@ -4883,6 +4892,27 @@ gui_mouse_moved(int x, int y)
 }
 
 /*
+ * Called when the mouse moved (but not when dragging).
+ */
+    void
+gui_mouse_moved(int x, int y)
+{
+    // Ignore this while still starting up.
+    if (!gui.in_use || gui.starting)
+	return;
+
+    // apply 'mousefocus' and pointer shape
+    gui_mouse_focus(x, y);
+
+#ifdef FEAT_TEXT_PROP
+    if (popup_visible)
+	// Generate a mouse-moved event, so that the popup can perhaps be
+	// closed, just like in the terminal.
+	gui_send_mouse_event(MOUSE_DRAG, x, y, FALSE, 0);
+#endif
+}
+
+/*
  * Called when mouse should be moved to window with focus.
  */
     void
@@ -4926,7 +4956,7 @@ xy2win(int x, int y)
     col = X_2_COL(x);
     if (row < 0 || col < 0)		/* before first window */
 	return NULL;
-    wp = mouse_find_win(&row, &col);
+    wp = mouse_find_win(&row, &col, FALSE);
     if (wp == NULL)
 	return NULL;
 #ifdef FEAT_MOUSESHAPE
@@ -5117,6 +5147,9 @@ gui_update_screen(void)
 
     /* Trigger CursorMoved if the cursor moved. */
     if (!finish_op && (has_cursormoved()
+# ifdef FEAT_TEXT_PROP
+		|| popup_visible
+# endif
 # ifdef FEAT_CONCEAL
 		|| curwin->w_p_cole > 0
 # endif
@@ -5124,6 +5157,10 @@ gui_update_screen(void)
     {
 	if (has_cursormoved())
 	    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
+#ifdef FEAT_TEXT_PROP
+	if (popup_visible)
+	    popup_check_cursor_pos();
+#endif
 # ifdef FEAT_CONCEAL
 	if (curwin->w_p_cole > 0)
 	{
@@ -5375,7 +5412,7 @@ gui_wingoto_xy(int x, int y)
 
     if (row >= 0 && col >= 0)
     {
-	wp = mouse_find_win(&row, &col);
+	wp = mouse_find_win(&row, &col, FAIL_POPUP);
 	if (wp != NULL && wp != curwin)
 	    win_goto(wp);
     }

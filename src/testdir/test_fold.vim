@@ -1,5 +1,6 @@
 " Test for folding
 
+source check.vim
 source view_util.vim
 source screendump.vim
 
@@ -88,7 +89,7 @@ func Test_indent_fold2()
     setl fen fdm=marker
     2
     norm! >>
-    let a=map(range(1,5), 'foldclosed(v:val)')
+    let a=map(range(1,5), 'v:val->foldclosed()')
     call assert_equal([-1,-1,-1,4,4], a)
     bw!
 endfunc
@@ -132,7 +133,7 @@ func Test_indent_fold_with_read()
   call assert_equal(0, foldlevel(3))
   call assert_equal(0, foldlevel(4))
   call assert_equal(1, foldlevel(5))
-  call assert_equal(7, foldclosedend(5))
+  call assert_equal(7, 5->foldclosedend())
 
   bwipe!
   set foldmethod&
@@ -207,7 +208,7 @@ func Test_update_folds_expr_read()
   %foldclose
   call assert_equal(2, foldclosedend(1))
   call assert_equal(0, foldlevel(3))
-  call assert_equal(0, foldlevel(4))
+  call assert_equal(0, 4->foldlevel())
   call assert_equal(6, foldclosedend(5))
   call assert_equal(10, foldclosedend(7))
   call assert_equal(14, foldclosedend(11))
@@ -655,7 +656,7 @@ func Test_fold_move()
   call assert_equal(10, foldclosed(10))
   call assert_equal(11, foldclosedend(10))
   call assert_equal('+--  2 lines: Line2', foldtextresult(2))
-  call assert_equal('+--  2 lines: Line8', foldtextresult(10))
+  call assert_equal('+--  2 lines: Line8', 10->foldtextresult())
 
   set fdm& sw& fdl&
   enew!
@@ -707,9 +708,7 @@ func Test_fold_last_line_with_pagedown()
 endfunc
 
 func Test_folds_with_rnu()
-  if !CanRunVimInTerminal()
-    return
-  endif
+  CheckScreendump
 
   call writefile([
 	\ 'set fdm=marker rnu foldcolumn=2',
@@ -740,5 +739,21 @@ func Test_folds_marker_in_comment2()
   call assert_equal(['Lorem ipsum dolor sit<!--}}}-->'], getreg(0,1,1))
 
   set foldmethod&
+  bwipe!
+endfunc
+
+func Test_fold_delete_with_marker()
+  new
+  call setline(1, ['func Func() {{{1', 'endfunc'])
+  1,2yank
+  new
+  set fdm=marker
+  call setline(1, 'x')
+  normal! Vp
+  normal! zd
+  call assert_equal(['func Func() ', 'endfunc'], getline(1, '$'))
+
+  set fdm&
+  bwipe!
   bwipe!
 endfunc

@@ -1731,9 +1731,6 @@ msgstr "E509: Nie mogę stworzyć pliku zabezpieczenia (wymuś przez !)"
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: Nie mogę zrobić pliku zabezpieczenia (wymuś przez !)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: Rozdział zasobów zostanie utracony (wymuś przez !)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Nie mogę znaleźć pliku tymczasowego do zapisania"
 
@@ -2729,40 +2726,11 @@ msgstr "Pokaż dokumentację dla"
 msgid "Generate docu for"
 msgstr "Utwórz dokumentację dla"
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr ""
-"Nie mogę podłączyć do SNiFF+. Sprawdź środowisko (sniffemacs musi być "
-"odnaleziony w $PATH).\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: Błąd podczas czytania. Rozłączenie"
-
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ jest obecnie "
-
 msgid "not "
 msgstr "nie "
 
 msgid "connected"
 msgstr "podłączony"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: Nieznane zapytanie SNiFF+: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: Błąd w trakcie podłączania do SNiFF+"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: SNiFF+ niepodłączony"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: Nie jest buforem SNiFF+"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: Błąd w trakcie zapisu. Rozłączony"
 
 msgid "invalid buffer number"
 msgstr "niewłaściwy numer bufora"
@@ -6882,14 +6850,8 @@ msgstr ""
 #~ msgid "Font Selection"
 #~ msgstr "Wybór czcionki"
 
-#~ msgid "E290: over-the-spot style requires fontset"
-#~ msgstr "E290: styl nadpunktowy wymaga +fontset"
-
 #~ msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 #~ msgstr "E291: Twój GTK+ jest starszy niż 1.2.3. Pole statusu wyłączono"
-
-#~ msgid "E292: Input Method Server is not running"
-#~ msgstr "E292: Serwer metod wprowadzeń nie jest uruchomiony"
 
 #~ msgid "with GTK-GNOME GUI."
 #~ msgstr "z GTK-GNOME GUI."

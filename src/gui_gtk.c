@@ -559,7 +559,7 @@ translate_mnemonic_tag(char_u *name, int use_mnemonic)
 	if (*psrc == '_')
 	    ++n_underscores;
 
-    buf = alloc((unsigned)(psrc - name + n_underscores + 1));
+    buf = alloc(psrc - name + n_underscores + 1);
     if (buf != NULL)
     {
 	pdest = buf;
@@ -1452,7 +1452,7 @@ split_button_string(char_u *button_string, int *n_buttons)
 	if (*p == DLG_BUTTON_SEP)
 	    ++count;
 
-    array = (char **)alloc((count + 1) * sizeof(char *));
+    array = ALLOC_MULT(char *, count + 1);
     count = 0;
 
     if (array != NULL)

@@ -90,7 +90,7 @@ func Test_echoerr()
   if has('float')
     call assert_equal("\n1.23 IgNoRe", execute(':echoerr 1.23 "IgNoRe"'))
   endif
-  call test_ignore_error('<lambda>')
+  eval '<lambda>'->test_ignore_error()
   call assert_match("function('<lambda>\\d*')", execute(':echoerr {-> 1234}'))
   call test_ignore_error('RESET')
 endfunc
@@ -102,13 +102,14 @@ func Test_mode_message_at_leaving_insert_by_ctrl_c()
 
   " Set custom statusline built by user-defined function.
   let testfile = 'Xtest.vim'
-  call writefile([
-        \ 'func StatusLine() abort',
-        \ '  return ""',
-        \ 'endfunc',
-        \ 'set statusline=%!StatusLine()',
-        \ 'set laststatus=2',
-        \ ], testfile)
+  let lines =<< trim END
+        func StatusLine() abort
+          return ""
+        endfunc
+        set statusline=%!StatusLine()
+        set laststatus=2
+  END
+  call writefile(lines, testfile)
 
   let rows = 10
   let buf = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
@@ -133,10 +134,11 @@ func Test_mode_message_at_leaving_insert_with_esc_mapped()
 
   " Set custom statusline built by user-defined function.
   let testfile = 'Xtest.vim'
-  call writefile([
-        \ 'set laststatus=2',
-        \ 'inoremap <Esc> <Esc>00',
-        \ ], testfile)
+  let lines =<< trim END
+        set laststatus=2
+        inoremap <Esc> <Esc>00
+  END
+  call writefile(lines, testfile)
 
   let rows = 10
   let buf = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
@@ -152,4 +154,21 @@ func Test_mode_message_at_leaving_insert_with_esc_mapped()
   call WaitForAssert({-> assert_equal('dead', job_status(term_getjob(buf)))})
   exe buf . 'bwipe!'
   call delete(testfile)
+endfunc
+
+func Test_echospace()
+  set noruler noshowcmd laststatus=1
+  call assert_equal(&columns - 1, v:echospace)
+  split
+  call assert_equal(&columns - 1, v:echospace)
+  set ruler
+  call assert_equal(&columns - 1, v:echospace)
+  close
+  call assert_equal(&columns - 19, v:echospace)
+  set showcmd noruler
+  call assert_equal(&columns - 12, v:echospace)
+  set showcmd ruler
+  call assert_equal(&columns - 29, v:echospace)
+
+  set ruler& showcmd&
 endfunc

@@ -645,7 +645,7 @@ crypt_blowfish_init(
     char_u*		seed,
     int			seed_len)
 {
-    bf_state_T	*bfs = (bf_state_T *)alloc_clear(sizeof(bf_state_T));
+    bf_state_T	*bfs = ALLOC_CLEAR_ONE(bf_state_T);
 
     if (bfs == NULL)
 	return FAIL;

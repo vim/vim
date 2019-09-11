@@ -24,6 +24,7 @@ all: tutor.utf-8 \
 	tutor.nb.utf-8 \
 	tutor.ru tutor.ru.cp1251 \
 	tutor.sv.utf-8 \
+	tutor.tr.iso9 \
 	tutor.zh.utf-8
 
 tutor.utf-8: tutor
@@ -92,6 +93,9 @@ tutor.ru: tutor.ru.utf-8
 
 tutor.ru.cp1251: tutor.ru.utf-8
 	iconv -f UTF-8 -t cp1251 tutor.ru.utf-8 > tutor.ru.cp1251
+
+tutor.tr.iso9: tutor.tr.utf-8
+	iconv -f UTF-8 -t ISO-8859-9 tutor.tr.utf-8 > tutor.tr.iso9
 
 tutor.sv.utf-8: tutor.sv
 	iconv -f ISO-8859-1 -t UTF-8 tutor.sv > tutor.sv.utf-8

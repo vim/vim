@@ -2076,8 +2076,7 @@ executable_exists(char *name, char_u **path, int use_path)
 	return FALSE;
 
     wcurpath = _wgetenv(L"PATH");
-    wnewpath = (WCHAR*)alloc((unsigned)(wcslen(wcurpath) + 3)
-	    * sizeof(WCHAR));
+    wnewpath = ALLOC_MULT(WCHAR, wcslen(wcurpath) + 3);
     if (wnewpath == NULL)
 	return FALSE;
     wcscpy(wnewpath, L".;");
@@ -2340,7 +2339,7 @@ SaveConsoleBuffer(
 	cb->BufferSize.Y = cb->Info.dwSize.Y;
 	NumCells = cb->BufferSize.X * cb->BufferSize.Y;
 	vim_free(cb->Buffer);
-	cb->Buffer = (PCHAR_INFO)alloc(NumCells * sizeof(CHAR_INFO));
+	cb->Buffer = ALLOC_MULT(CHAR_INFO, NumCells);
 	if (cb->Buffer == NULL)
 	    return FALSE;
     }
@@ -2364,7 +2363,7 @@ SaveConsoleBuffer(
     {
 	cb->NumRegions = numregions;
 	vim_free(cb->Regions);
-	cb->Regions = (PSMALL_RECT)alloc(cb->NumRegions * sizeof(SMALL_RECT));
+	cb->Regions = ALLOC_MULT(SMALL_RECT, cb->NumRegions);
 	if (cb->Regions == NULL)
 	{
 	    VIM_CLEAR(cb->Buffer);
@@ -2763,7 +2762,7 @@ mch_init(void)
 mch_exit(int r)
 {
 #ifdef VIMDLL
-    if (gui.starting || gui.in_use)
+    if (gui.in_use || gui.starting)
 	mch_exit_g(r);
     else
 	mch_exit_c(r);
@@ -3396,7 +3395,7 @@ mch_get_acl(char_u *fname)
     struct my_acl   *p = NULL;
     DWORD   err;
 
-    p = (struct my_acl *)alloc_clear((unsigned)sizeof(struct my_acl));
+    p = ALLOC_CLEAR_ONE(struct my_acl);
     if (p != NULL)
     {
 	WCHAR	*wn;
@@ -3740,6 +3739,7 @@ ResizeConBufAndWindow(
     CONSOLE_SCREEN_BUFFER_INFO csbi;	/* hold current console buffer info */
     SMALL_RECT	    srWindowRect;	/* hold the new console size */
     COORD	    coordScreen;
+    COORD	    cursor;
     static int	    resized = FALSE;
 
 #ifdef MCH_WRITE_DUMP
@@ -3794,6 +3794,11 @@ ResizeConBufAndWindow(
     }
     else
     {
+	// Workaround for a Windows 10 bug
+	cursor.X = srWindowRect.Left;
+	cursor.Y = srWindowRect.Top;
+	SetConsoleCursorPosition(hConsole, cursor);
+
 	ResizeConBuf(hConsole, coordScreen);
 	ResizeWindow(hConsole, srWindowRect);
 	resized = TRUE;
@@ -4501,7 +4506,7 @@ mch_system_c(char *cmd, int options)
 mch_system(char *cmd, int options)
 {
 #ifdef VIMDLL
-    if (gui.in_use)
+    if (gui.in_use || gui.starting)
 	return mch_system_g(cmd, options);
     else
 	return mch_system_c(cmd, options);
@@ -4535,7 +4540,7 @@ mch_call_shell_terminal(
 	cmdlen = STRLEN(p_sh) + 1;
     else
 	cmdlen = STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10;
-    newcmd = lalloc(cmdlen, TRUE);
+    newcmd = alloc(cmdlen);
     if (newcmd == NULL)
 	return 255;
     if (cmd == NULL)
@@ -4642,20 +4647,30 @@ mch_call_shell(
     }
 #endif
 #if defined(FEAT_GUI) && defined(FEAT_TERMINAL)
-    /* TODO: make the terminal window work with input or output redirected. */
+    // TODO: make the terminal window work with input or output redirected.
     if (
 # ifdef VIMDLL
-	gui.in_use &&
+	    gui.in_use &&
 # endif
-	vim_strchr(p_go, GO_TERMINAL) != NULL
+	    vim_strchr(p_go, GO_TERMINAL) != NULL
 	 && (options & (SHELL_FILTER|SHELL_DOOUT|SHELL_WRITE|SHELL_READ)) == 0)
     {
-	/* Use a terminal window to run the command in. */
-	x = mch_call_shell_terminal(cmd, options);
+	char_u	*cmdbase = cmd;
+
+	// Skip a leading quote and (.
+	while (*cmdbase == '"' || *cmdbase == '(')
+	    ++cmdbase;
+
+	// Check the command does not begin with "start "
+	if (STRNICMP(cmdbase, "start", 5) != 0 || !VIM_ISWHITE(cmdbase[5]))
+	{
+	    // Use a terminal window to run the command in.
+	    x = mch_call_shell_terminal(cmd, options);
 # ifdef FEAT_TITLE
-	resettitle();
+	    resettitle();
 # endif
-	return x;
+	    return x;
+	}
     }
 #endif
 
@@ -4774,7 +4789,7 @@ mch_call_shell(
 		{
 		    /* make "cmd.exe /c arguments" */
 		    cmdlen = STRLEN(cmd_shell) + STRLEN(subcmd) + 5;
-		    newcmd = lalloc(cmdlen, TRUE);
+		    newcmd = alloc(cmdlen);
 		    if (newcmd != NULL)
 			vim_snprintf((char *)newcmd, cmdlen, "%s /c %s",
 						       cmd_shell, subcmd);
@@ -4822,20 +4837,20 @@ mch_call_shell(
 	{
 	    cmdlen =
 #ifdef FEAT_GUI_MSWIN
-		(gui.in_use ?
+		((gui.in_use || gui.starting) ?
 		    (!s_dont_use_vimrun && p_stmp ?
 			STRLEN(vimrun_path) : STRLEN(p_sh) + STRLEN(p_shcf))
 		    : 0) +
 #endif
 		STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10;
 
-	    newcmd = lalloc(cmdlen, TRUE);
+	    newcmd = alloc(cmdlen);
 	    if (newcmd != NULL)
 	    {
 #if defined(FEAT_GUI_MSWIN)
 		if (
 # ifdef VIMDLL
-		    gui.in_use &&
+		    (gui.in_use || gui.starting) &&
 # endif
 		    need_vimrun_warning)
 		{
@@ -4854,30 +4869,28 @@ mch_call_shell(
 		}
 		if (
 # ifdef VIMDLL
-		    gui.in_use &&
+		    (gui.in_use || gui.starting) &&
 # endif
 		    !s_dont_use_vimrun && p_stmp)
-		    /* Use vimrun to execute the command.  It opens a console
-		     * window, which can be closed without killing Vim. */
+		    // Use vimrun to execute the command.  It opens a console
+		    // window, which can be closed without killing Vim.
 		    vim_snprintf((char *)newcmd, cmdlen, "%s%s%s %s %s",
 			    vimrun_path,
 			    (msg_silent != 0 || (options & SHELL_DOOUT))
 								 ? "-s " : "",
 			    p_sh, p_shcf, cmd);
-		else
+		else if (
 # ifdef VIMDLL
-		if (gui.in_use)
+			(gui.in_use || gui.starting) &&
 # endif
+			s_dont_use_vimrun && STRCMP(p_shcf, "/c") == 0)
+		    // workaround for the case that "vimrun" does not exist
 		    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s %s %s",
 					   p_sh, p_shcf, p_sh, p_shcf, cmd);
-# ifdef VIMDLL
 		else
-# endif
 #endif
-#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 		    vim_snprintf((char *)newcmd, cmdlen, "%s %s %s",
 							   p_sh, p_shcf, cmd);
-#endif
 		x = mch_system((char *)newcmd, options);
 		vim_free(newcmd);
 	    }
@@ -4890,7 +4903,7 @@ mch_call_shell(
     /* Print the return value, unless "vimrun" was used. */
     if (x != 0 && !(options & SHELL_SILENT) && !emsg_silent
 #if defined(FEAT_GUI_MSWIN)
-	    && (gui.in_use ?
+	    && ((gui.in_use || gui.starting) ?
 		((options & SHELL_DOOUT) || s_dont_use_vimrun || !p_stmp) : 1)
 #endif
 	    )
@@ -5956,7 +5969,7 @@ visual_bell(void)
     WORD    attrFlash = ~g_attrCurrent & 0xff;
 
     DWORD   dwDummy;
-    LPWORD  oldattrs = (LPWORD)alloc(Rows * Columns * sizeof(WORD));
+    LPWORD  oldattrs = ALLOC_MULT(WORD, Rows * Columns);
 
     if (oldattrs == NULL)
 	return;
@@ -6007,7 +6020,7 @@ write_chars(
     if (unicodebuf == NULL || length > unibuflen)
     {
 	vim_free(unicodebuf);
-	unicodebuf = (WCHAR *)lalloc(length * sizeof(WCHAR), FALSE);
+	unicodebuf = LALLOC_MULT(WCHAR, length);
 	unibuflen = length;
     }
     MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite,
@@ -7121,7 +7134,7 @@ fix_arg_enc(void)
 	return;
 
     /* Remember the buffer numbers for the arguments. */
-    fnum_list = (int *)alloc((int)sizeof(int) * GARGCOUNT);
+    fnum_list = ALLOC_MULT(int, GARGCOUNT);
     if (fnum_list == NULL)
 	return;		/* out of memory */
     for (i = 0; i < GARGCOUNT; ++i)
@@ -7208,7 +7221,7 @@ mch_setenv(char *var, char *value, int x)
     char_u	*envbuf;
     WCHAR	*p;
 
-    envbuf = alloc((unsigned)(STRLEN(var) + STRLEN(value) + 2));
+    envbuf = alloc(STRLEN(var) + STRLEN(value) + 2);
     if (envbuf == NULL)
 	return -1;
 

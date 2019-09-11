@@ -1167,7 +1167,7 @@ gui_mch_prepare(int *argc, char **argv)
      * Move all the entries in argv which are relevant to X into gui_argv.
      */
     gui_argc = 0;
-    gui_argv = (char **)lalloc((long_u)(*argc * sizeof(char *)), FALSE);
+    gui_argv = LALLOC_MULT(char *, *argc);
     if (gui_argv == NULL)
 	return;
     gui_argv[gui_argc++] = argv[0];
@@ -2872,26 +2872,26 @@ gui_x11_check_copy_area(void)
  */
 
     void
-clip_mch_lose_selection(VimClipboard *cbd)
+clip_mch_lose_selection(Clipboard_T *cbd)
 {
     clip_x11_lose_selection(vimShell, cbd);
 }
 
     int
-clip_mch_own_selection(VimClipboard *cbd)
+clip_mch_own_selection(Clipboard_T *cbd)
 {
     return clip_x11_own_selection(vimShell, cbd);
 }
 
     void
-clip_mch_request_selection(VimClipboard *cbd)
+clip_mch_request_selection(Clipboard_T *cbd)
 {
  clip_x11_request_selection(vimShell, gui.dpy, cbd);
 }
 
     void
 clip_mch_set_selection(
-    VimClipboard	*cbd)
+    Clipboard_T	*cbd)
 {
     clip_x11_set_selection(cbd);
 }

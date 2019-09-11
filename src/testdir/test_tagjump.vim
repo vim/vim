@@ -20,6 +20,7 @@ func Test_cancel_ptjump()
   call assert_equal(2, winnr('$'))
 
   call delete('Xtags')
+  set tags&
   quit
 endfunc
 
@@ -104,6 +105,7 @@ func Test_tagjump_switchbuf()
   enew | only
   call delete('Xfile1')
   call delete('Xtags')
+  set tags&
   set switchbuf&vim
 endfunc
 
@@ -266,7 +268,7 @@ func Test_getsettagstack()
   enew | only
   call settagstack(1, {'items' : []})
   call assert_equal(0, gettagstack(1).length)
-  call assert_equal([], gettagstack(1).items)
+  call assert_equal([], 1->gettagstack().items)
   " Error cases
   call assert_equal({}, gettagstack(100))
   call assert_equal(-1, settagstack(100, {'items' : []}))
@@ -301,7 +303,7 @@ func Test_getsettagstack()
   " Try to set current index to invalid values
   call settagstack(1, {'curidx' : -1})
   call assert_equal(1, gettagstack().curidx)
-  call settagstack(1, {'curidx' : 50})
+  eval {'curidx' : 50}->settagstack(1)
   call assert_equal(4, gettagstack().curidx)
 
   " Try pushing invalid items onto the stack
@@ -431,7 +433,7 @@ func Test_tagnr_recall()
   tag
   call assert_equal(bufname('%'), 'Xtest.h')
 
-  set tag&
+  set tags&
   call delete('Xtags')
   bwipe Xtest.h
   bwipe Xtest.c
@@ -467,6 +469,7 @@ func Test_tag_line_toolong()
   endtry
   call assert_equal('Ignoring long line in tags file', split(execute('messages'), '\n')[-1])
   call delete('Xtags')
+  set tags&
   let &verbose = old_vbs
 endfunc
 

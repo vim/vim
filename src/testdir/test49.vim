@@ -1,6 +1,6 @@
 " Vim script language tests
 " Author:	Servatius Brandt <Servatius.Brandt@fujitsu-siemens.com>
-" Last Change:	2019 Jan 13
+" Last Change:	2019 May 24
 
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
@@ -521,7 +521,7 @@ endfunction
 "
 " Create a script that consists of the body of the function a:funcname.
 " Replace any ":return" by a ":finish", any argument variable by a global
-" variable, and and every ":call" by a ":source" for the next following argument
+" variable, and every ":call" by a ":source" for the next following argument
 " in the variable argument list.  This function is useful if similar tests are
 " to be made for a ":return" from a function call or a ":finish" in a script
 " file.
@@ -9005,5 +9005,4 @@ Xcheck 50443995
 "-------------------------------------------------------------------------------
 " Modelines								    {{{1
 " vim: ts=8 sw=4 tw=80 fdm=marker
-" vim: fdt=substitute(substitute(foldtext(),\ '\\%(^+--\\)\\@<=\\(\\s*\\)\\(.\\{-}\\)\:\ \\%(\"\ \\)\\=\\(Test\ \\d*\\)\:\\s*',\ '\\3\ (\\2)\:\ \\1',\ \"\"),\ '\\(Test\\s*\\)\\(\\d\\)\\D\\@=',\ '\\1\ \\2',\ "")
 "-------------------------------------------------------------------------------

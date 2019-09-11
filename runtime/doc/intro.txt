@@ -1,4 +1,4 @@
-*intro.txt*     For Vim version 8.1.  Last change: 2019 May 07
+*intro.txt*     For Vim version 8.1.  Last change: 2019 Aug 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -65,14 +65,21 @@ contain links to the most recent version of Vim.  The FAQ is a list of
 Frequently Asked Questions.  Read this if you have problems.
 
 	Vim home page:	  https://www.vim.org/
-	Vim FAQ:	  https://vimhelp.appspot.com/vim_faq.txt.html
+	Vim FAQ:	  https://vimhelp.org/vim_faq.txt.html
 	Downloading:	  https://www.vim.org/download.php
+
+
+Asking questions, finding answers: https://vi.stackexchange.com/
+"Vi and Vim Stack Exchange is a question and answer site for people using the
+vi and Vim families of text editors"
 
 
 Usenet News group where Vim is discussed:		*news* *usenet*
 	comp.editors
 This group is also for other editors.  If you write about Vim, don't forget to
 mention that.
+You can access it here:
+https://groups.google.com/forum/#!topic/comp.editors
 
 						*mail-list* *maillist*
 There are several mailing lists for Vim:
@@ -501,6 +508,9 @@ the ":map" command.  The rules are:
 	   <M-a>		Meta- a  ('a' with bit 8 set)
 	   <M-A>		Meta- A  ('A' with bit 8 set)
 	   <t_kd>		"kd" termcap entry (cursor down key)
+    Although you can specify <M-{char}> with {char} being a multi-byte
+    character, Vim may not be able to know what byte sequence that is and then
+    it won't work.
 
 If you want to use the full <> notation in Vim, you have to make sure the '<'
 flag is excluded from 'cpoptions' (when 'compatible' is not set, it already is

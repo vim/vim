@@ -155,64 +155,36 @@ changed_internal(void)
 static long next_listener_id = 0;
 
 /*
- * Check if the change at "lnum" / "col" is above or overlaps with an existing
- * changed. If above then flush changes and invoke listeners.
- * If "merge" is TRUE do the merge.
+ * Check if the change at "lnum" is above or overlaps with an existing
+ * change. If above then flush changes and invoke listeners.
  * Returns TRUE if the change was merged.
  */
     static int
 check_recorded_changes(
 	buf_T		*buf,
 	linenr_T	lnum,
-	colnr_T		col,
 	linenr_T	lnume,
-	long		xtra,
-	int		merge)
+	long		xtra)
 {
     if (buf->b_recorded_changes != NULL && xtra != 0)
     {
 	listitem_T *li;
-	linenr_T    nr;
+	linenr_T    prev_lnum;
+	linenr_T    prev_lnume;
 
 	for (li = buf->b_recorded_changes->lv_first; li != NULL;
 							      li = li->li_next)
 	{
-	    nr = (linenr_T)dict_get_number(
+	    prev_lnum = (linenr_T)dict_get_number(
 				      li->li_tv.vval.v_dict, (char_u *)"lnum");
-	    if (nr >= lnum || nr > lnume)
+	    prev_lnume = (linenr_T)dict_get_number(
+				       li->li_tv.vval.v_dict, (char_u *)"end");
+	    if (prev_lnum >= lnum || prev_lnum > lnume || prev_lnume >= lnum)
 	    {
-		if (li->li_next == NULL && lnum == nr
-			&& col + 1 == (colnr_T)dict_get_number(
-				      li->li_tv.vval.v_dict, (char_u *)"col"))
-		{
-		    if (merge)
-		    {
-			dictitem_T	*di;
-
-			// Same start point and nothing is following, entries
-			// can be merged.
-			di = dict_find(li->li_tv.vval.v_dict,
-							  (char_u *)"end", -1);
-			if (di != NULL)
-			{
-			    nr = tv_get_number(&di->di_tv);
-			    if (lnume > nr)
-				di->di_tv.vval.v_number = lnume;
-			}
-			di = dict_find(li->li_tv.vval.v_dict,
-							(char_u *)"added", -1);
-			if (di != NULL)
-			    di->di_tv.vval.v_number += xtra;
-			return TRUE;
-		    }
-		}
-		else
-		{
-		    // the current change is going to make the line number in
-		    // the older change invalid, flush now
-		    invoke_listeners(curbuf);
-		    break;
-		}
+		// the current change is going to make the line number in
+		// the older change invalid, flush now
+		invoke_listeners(curbuf);
+		break;
 	    }
 	}
     }
@@ -237,7 +209,7 @@ may_record_change(
 
     // If the new change is going to change the line numbers in already listed
     // changes, then flush.
-    if (check_recorded_changes(curbuf, lnum, col, lnume, xtra, TRUE))
+    if (check_recorded_changes(curbuf, lnum, lnume, xtra))
 	return;
 
     if (curbuf->b_recorded_changes == NULL)
@@ -266,36 +238,34 @@ may_record_change(
     void
 f_listener_add(typval_T *argvars, typval_T *rettv)
 {
-    char_u	*callback;
-    partial_T	*partial;
+    callback_T	callback;
     listener_T	*lnr;
     buf_T	*buf = curbuf;
 
-    callback = get_callback(&argvars[0], &partial);
-    if (callback == NULL)
+    callback = get_callback(&argvars[0]);
+    if (callback.cb_name == NULL)
 	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
 	buf = get_buf_arg(&argvars[1]);
 	if (buf == NULL)
+	{
+	    free_callback(&callback);
 	    return;
+	}
     }
 
-    lnr = (listener_T *)alloc_clear((sizeof(listener_T)));
+    lnr = ALLOC_CLEAR_ONE(listener_T);
     if (lnr == NULL)
     {
-	free_callback(callback, partial);
+	free_callback(&callback);
 	return;
     }
     lnr->lr_next = buf->b_listener;
     buf->b_listener = lnr;
 
-    if (partial == NULL)
-	lnr->lr_callback = vim_strsave(callback);
-    else
-	lnr->lr_callback = callback;  // pointer into the partial
-    lnr->lr_partial = partial;
+    set_callback(&lnr->lr_callback, &callback);
 
     lnr->lr_id = ++next_listener_id;
     rettv->vval.v_number = lnr->lr_id;
@@ -322,15 +292,17 @@ f_listener_flush(typval_T *argvars, typval_T *rettv UNUSED)
  * listener_remove() function
  */
     void
-f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
+f_listener_remove(typval_T *argvars, typval_T *rettv)
 {
     listener_T	*lnr;
     listener_T	*next;
-    listener_T	*prev = NULL;
+    listener_T	*prev;
     int		id = tv_get_number(argvars);
     buf_T	*buf;
 
     for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    {
+	prev = NULL;
 	for (lnr = buf->b_listener; lnr != NULL; lnr = next)
 	{
 	    next = lnr->lr_next;
@@ -340,11 +312,14 @@ f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
 		    prev->lr_next = lnr->lr_next;
 		else
 		    buf->b_listener = lnr->lr_next;
-		free_callback(lnr->lr_callback, lnr->lr_partial);
+		free_callback(&lnr->lr_callback);
 		vim_free(lnr);
+		rettv->vval.v_number = 1;
+		return;
 	    }
 	    prev = lnr;
 	}
+    }
 }
 
 /*
@@ -354,7 +329,7 @@ f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
     void
 may_invoke_listeners(buf_T *buf, linenr_T lnum, linenr_T lnume, int added)
 {
-    check_recorded_changes(buf, lnum, 0, lnume, added, FALSE);
+    check_recorded_changes(buf, lnum, lnume, added);
 }
 
 /*
@@ -366,16 +341,23 @@ invoke_listeners(buf_T *buf)
 {
     listener_T	*lnr;
     typval_T	rettv;
-    int		dummy;
     typval_T	argv[6];
     listitem_T	*li;
     linenr_T	start = MAXLNUM;
     linenr_T	end = 0;
     linenr_T	added = 0;
+    int		save_updating_screen = updating_screen;
+    static int	recursive = FALSE;
 
     if (buf->b_recorded_changes == NULL  // nothing changed
-	    || buf->b_listener == NULL)  // no listeners
+	    || buf->b_listener == NULL   // no listeners
+	    || recursive)		 // already busy
 	return;
+    recursive = TRUE;
+
+    // Block messages on channels from being handled, so that they don't make
+    // text changes here.
+    ++updating_screen;
 
     argv[0].v_type = VAR_NUMBER;
     argv[0].vval.v_number = buf->b_fnum; // a:bufnr
@@ -406,14 +388,19 @@ invoke_listeners(buf_T *buf)
 
     for (lnr = buf->b_listener; lnr != NULL; lnr = lnr->lr_next)
     {
-	call_func(lnr->lr_callback, -1, &rettv,
-		   5, argv, NULL, 0L, 0L, &dummy, TRUE, lnr->lr_partial, NULL);
+	call_callback(&lnr->lr_callback, -1, &rettv, 5, argv);
 	clear_tv(&rettv);
     }
 
     --textlock;
     list_unref(buf->b_recorded_changes);
     buf->b_recorded_changes = NULL;
+
+    if (save_updating_screen)
+	updating_screen = TRUE;
+    else
+	after_updating_screen(TRUE);
+    recursive = FALSE;
 }
 #endif
 
@@ -554,7 +541,6 @@ changed_common(
 		    changed_line_abv_curs_win(wp);
 	    }
 #endif
-
 	    if (wp->w_cursor.lnum > lnum)
 		changed_line_abv_curs_win(wp);
 	    else if (wp->w_cursor.lnum == lnum && wp->w_cursor.col >= col)
@@ -605,8 +591,14 @@ changed_common(
 	    if (hasAnyFolding(wp))
 		set_topline(wp, wp->w_topline);
 #endif
-	    // relative numbering may require updating more
-	    if (wp->w_p_rnu)
+	    // Relative numbering may require updating more.  Cursor line
+	    // highlighting probably needs to be updated if it's below the
+	    // change.
+	    if (wp->w_p_rnu
+#ifdef FEAT_SYN_HL
+		    || (wp->w_p_cul && lnum <= wp->w_last_cursorline)
+#endif
+		    )
 		redraw_win_later(wp, SOME_VALID);
 	}
     }
@@ -679,7 +671,7 @@ changed_bytes(linenr_T lnum, colnr_T col)
  * Like changed_bytes() but also adjust text properties for "added" bytes.
  * When "added" is negative text was deleted.
  */
-    void
+    static void
 inserted_bytes(linenr_T lnum, colnr_T col, int added UNUSED)
 {
 #ifdef FEAT_TEXT_PROP
@@ -825,9 +817,11 @@ changed_lines(
 /*
  * Called when the changed flag must be reset for buffer "buf".
  * When "ff" is TRUE also reset 'fileformat'.
+ * When "always_inc_changedtick" is TRUE b:changedtick is incremented also when
+ * the changed flag was off.
  */
     void
-unchanged(buf_T *buf, int ff)
+unchanged(buf_T *buf, int ff, int always_inc_changedtick)
 {
     if (buf->b_changed || (ff && file_ff_differs(buf, FALSE)))
     {
@@ -840,8 +834,10 @@ unchanged(buf_T *buf, int ff)
 #ifdef FEAT_TITLE
 	need_maketitle = TRUE;	    // set window title later
 #endif
+	++CHANGEDTICK(buf);
     }
-    ++CHANGEDTICK(buf);
+    else if (always_inc_changedtick)
+	++CHANGEDTICK(buf);
 #ifdef FEAT_NETBEANS_INTG
     netbeans_unmodified(buf);
 #endif
@@ -985,7 +981,7 @@ ins_char_bytes(char_u *buf, int charlen)
 	}
     }
 
-    newp = alloc_check((unsigned)(linelen + newlen - oldlen));
+    newp = alloc(linelen + newlen - oldlen);
     if (newp == NULL)
 	return;
 
@@ -1017,10 +1013,7 @@ ins_char_bytes(char_u *buf, int charlen)
     // show the match for right parens and braces.
     if (p_sm && (State & INSERT)
 	    && msg_silent == 0
-#ifdef FEAT_INS_EXPAND
-	    && !ins_compl_active()
-#endif
-       )
+	    && !ins_compl_active())
     {
 	if (has_mbyte)
 	    showmatch(mb_ptr2char(buf));
@@ -1060,7 +1053,7 @@ ins_str(char_u *s)
     oldp = ml_get(lnum);
     oldlen = (int)STRLEN(oldp);
 
-    newp = alloc_check((unsigned)(oldlen + newlen + 1));
+    newp = alloc(oldlen + newlen + 1);
     if (newp == NULL)
 	return;
     if (col > 0)
@@ -1213,7 +1206,7 @@ del_bytes(
 	newp = oldp;			    // use same allocated memory
     else
     {					    // need to allocate a new line
-	newp = alloc((unsigned)(newlen + 1));
+	newp = alloc(newlen + 1);
 	if (newp == NULL)
 	    return FAIL;
 	mch_memmove(newp, oldp, (size_t)col);

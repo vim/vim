@@ -1430,7 +1430,7 @@ find_tagfunc_tags(
 	if (name_only)
 	    mfp = vim_strsave(res_name);
 	else
-	    mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
+	    mfp = alloc(sizeof(char_u) + len + 1);
 
 	if (mfp == NULL)
 	    continue;
@@ -1901,13 +1901,9 @@ find_tags(
 	    else
 #endif
 		fast_breakcheck();
-#ifdef FEAT_INS_EXPAND
 	    if ((flags & TAG_INS_COMP))	/* Double brackets for gcc */
 		ins_compl_check_keys(30, FALSE);
 	    if (got_int || ins_compl_interrupted())
-#else
-	    if (got_int)
-#endif
 	    {
 		stop_searching = TRUE;
 		break;
@@ -2536,8 +2532,7 @@ parse_line:
 		     */
 		    *tagp.tagname_end = NUL;
 		    len = (int)(tagp.tagname_end - tagp.tagname);
-		    mfp = (char_u *)alloc((int)sizeof(char_u)
-						    + len + 10 + ML_EXTRA + 1);
+		    mfp = alloc(sizeof(char_u) + len + 10 + ML_EXTRA + 1);
 		    if (mfp != NULL)
 		    {
 			int heuristic;
@@ -2574,7 +2569,7 @@ parse_line:
 			if (tagp.command + 2 < temp_end)
 			{
 			    len = (int)(temp_end - tagp.command - 2);
-			    mfp = (char_u *)alloc(len + 2);
+			    mfp = alloc(len + 2);
 			    if (mfp != NULL)
 				vim_strncpy(mfp, tagp.command + 2, len);
 			}
@@ -2585,7 +2580,7 @@ parse_line:
 		    else
 		    {
 			len = (int)(tagp.tagname_end - tagp.tagname);
-			mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
+			mfp = alloc(sizeof(char_u) + len + 1);
 			if (mfp != NULL)
 			    vim_strncpy(mfp, tagp.tagname, len);
 
@@ -2620,7 +2615,7 @@ parse_line:
 		    else
 			++len;
 #endif
-		    mfp = (char_u *)alloc((int)sizeof(char_u) + len + 1);
+		    mfp = alloc(sizeof(char_u) + len + 1);
 		    if (mfp != NULL)
 		    {
 			p = mfp;
@@ -2789,8 +2784,7 @@ findtag_end:
 	match_count = 0;
 
     if (match_count > 0)
-	matches = (char_u **)lalloc((long_u)(match_count * sizeof(char_u *)),
-									TRUE);
+	matches = ALLOC_MULT(char_u *, match_count);
     else
 	matches = NULL;
     match_count = 0;
@@ -3347,7 +3341,7 @@ jumpto_tag(
     /* Make a copy of the line, it can become invalid when an autocommand calls
      * back here recursively. */
     len = matching_line_len(lbuf_arg) + 1;
-    lbuf = alloc((int)len);
+    lbuf = alloc(len);
     if (lbuf != NULL)
 	mch_memmove(lbuf, lbuf_arg, len);
 
@@ -3441,7 +3435,7 @@ jumpto_tag(
 	     * Make the preview window the current window.
 	     * Open a preview window when needed.
 	     */
-	    prepare_tagpreview(TRUE);
+	    prepare_tagpreview(TRUE, TRUE, FALSE);
 	}
     }
 
@@ -3545,12 +3539,6 @@ jumpto_tag(
 	    p_ws = TRUE;	/* need 'wrapscan' for backward searches */
 	    p_ic = FALSE;	/* don't ignore case now */
 	    p_scs = FALSE;
-#if 0	/* disabled for now */
-#ifdef FEAT_CMDHIST
-	    /* put pattern in search history */
-	    add_to_history(HIST_SEARCH, pbuf + 1, TRUE, pbuf[0]);
-#endif
-#endif
 	    save_lnum = curwin->w_cursor.lnum;
 	    curwin->w_cursor.lnum = 0;	/* start search before first line */
 	    if (do_search(NULL, pbuf[0], pbuf + 1, (long)1,
@@ -3665,7 +3653,7 @@ jumpto_tag(
 	if (g_do_tagpreview != 0
 			   && curwin != curwin_save && win_valid(curwin_save))
 	{
-	    /* Return cursor to where we were */
+	    // Return cursor to where we were
 	    validate_cursor();
 	    redraw_later(VALID);
 	    win_enter(curwin_save, TRUE);
@@ -3677,12 +3665,29 @@ jumpto_tag(
     else
     {
 	--RedrawingDisabled;
-	if (postponed_split)		/* close the window */
+	got_int = FALSE;  // don't want entering window to fail
+
+	if (postponed_split)		// close the window
 	{
 	    win_close(curwin, FALSE);
 	    postponed_split = 0;
 	}
+#if defined(FEAT_QUICKFIX) && defined(FEAT_TEXT_PROP)
+	else if (WIN_IS_POPUP(curwin))
+	{
+	    win_T   *wp = curwin;
+
+	    if (win_valid(curwin_save))
+		win_enter(curwin_save, TRUE);
+	    popup_close(wp->w_id);
+	}
+#endif
     }
+#if defined(FEAT_QUICKFIX) && defined(FEAT_TEXT_PROP)
+    if (WIN_IS_POPUP(curwin))
+	// something went wrong, still in popup, but it can't have focus
+	win_enter(firstwin, TRUE);
+#endif
 
 erret:
 #if defined(FEAT_QUICKFIX)
@@ -3781,7 +3786,7 @@ test_for_current(
 	fullname = expand_tag_fname(fname, tag_fname, TRUE);
 	if (fullname != NULL)
 	{
-	    retval = (fullpathcmp(fullname, buf_ffname, TRUE) & FPC_SAME);
+	    retval = (fullpathcmp(fullname, buf_ffname, TRUE, TRUE) & FPC_SAME);
 	    vim_free(fullname);
 	}
 #ifdef FEAT_EMACS_TAGS
@@ -3850,7 +3855,6 @@ tagstack_clear_entry(taggy_T *item)
     VIM_CLEAR(item->user_data);
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     int
 expand_tags(
     int		tagnames,	/* expand tag names */
@@ -3898,7 +3902,6 @@ expand_tags(
     }
     return ret;
 }
-#endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*

@@ -143,6 +143,7 @@ static void	nv_at(cmdarg_T *cap);
 static void	nv_halfpage(cmdarg_T *cap);
 static void	nv_join(cmdarg_T *cap);
 static void	nv_put(cmdarg_T *cap);
+static void	nv_put_opt(cmdarg_T *cap, int fix_indent);
 static void	nv_open(cmdarg_T *cap);
 #ifdef FEAT_NETBEANS_INTG
 static void	nv_nbcmd(cmdarg_T *cap);
@@ -1181,12 +1182,17 @@ getcount:
 
 	    kmsg = keep_msg;
 	    keep_msg = NULL;
-	    /* showmode() will clear keep_msg, but we want to use it anyway */
+	    // showmode() will clear keep_msg, but we want to use it anyway
 	    update_screen(0);
-	    /* now reset it, otherwise it's put in the history again */
+	    // now reset it, otherwise it's put in the history again
 	    keep_msg = kmsg;
-	    msg_attr((char *)kmsg, keep_msg_attr);
-	    vim_free(kmsg);
+
+	    kmsg = vim_strsave(keep_msg);
+	    if (kmsg != NULL)
+	    {
+		msg_attr((char *)kmsg, keep_msg_attr);
+		vim_free(kmsg);
+	    }
 	}
 	setcursor();
 	cursor_on();
@@ -2328,6 +2334,9 @@ do_mouse(
 	    bevalexpr_due_set = TRUE;
 	}
 #endif
+#ifdef FEAT_TEXT_PROP
+	popup_handle_mouse_moved();
+#endif
 	return FALSE;
     }
 
@@ -3323,28 +3332,28 @@ find_is_eval_item(
  * Find the identifier under or to the right of the cursor.
  * "find_type" can have one of three values:
  * FIND_IDENT:   find an identifier (keyword)
- * FIND_STRING:  find any non-white string
- * FIND_IDENT + FIND_STRING: find any non-white string, identifier preferred.
+ * FIND_STRING:  find any non-white text
+ * FIND_IDENT + FIND_STRING: find any non-white text, identifier preferred.
  * FIND_EVAL:	 find text useful for C program debugging
  *
  * There are three steps:
- * 1. Search forward for the start of an identifier/string.  Doesn't move if
+ * 1. Search forward for the start of an identifier/text.  Doesn't move if
  *    already on one.
- * 2. Search backward for the start of this identifier/string.
+ * 2. Search backward for the start of this identifier/text.
  *    This doesn't match the real Vi but I like it a little better and it
  *    shouldn't bother anyone.
- * 3. Search forward to the end of this identifier/string.
+ * 3. Search forward to the end of this identifier/text.
  *    When FIND_IDENT isn't defined, we backup until a blank.
  *
- * Returns the length of the string, or zero if no string is found.
- * If a string is found, a pointer to the string is put in "*string".  This
- * string is not always NUL terminated.
+ * Returns the length of the text, or zero if no text is found.
+ * If text is found, a pointer to the text is put in "*text".  This
+ * points into the current buffer line and is not always NUL terminated.
  */
     int
-find_ident_under_cursor(char_u **string, int find_type)
+find_ident_under_cursor(char_u **text, int find_type)
 {
     return find_ident_at_pos(curwin, curwin->w_cursor.lnum,
-				     curwin->w_cursor.col, string, find_type);
+				curwin->w_cursor.col, text, NULL, find_type);
 }
 
 /*
@@ -3356,33 +3365,34 @@ find_ident_at_pos(
     win_T	*wp,
     linenr_T	lnum,
     colnr_T	startcol,
-    char_u	**string,
+    char_u	**text,
+    int		*textcol,	// column where "text" starts, can be NULL
     int		find_type)
 {
     char_u	*ptr;
-    int		col = 0;	    /* init to shut up GCC */
+    int		col = 0;	// init to shut up GCC
     int		i;
     int		this_class = 0;
     int		prev_class;
     int		prevcol;
-    int		bn = 0;	    /* bracket nesting */
+    int		bn = 0;		// bracket nesting
 
     /*
      * if i == 0: try to find an identifier
-     * if i == 1: try to find any non-white string
+     * if i == 1: try to find any non-white text
      */
     ptr = ml_get_buf(wp->w_buffer, lnum, FALSE);
     for (i = (find_type & FIND_IDENT) ? 0 : 1;	i < 2; ++i)
     {
 	/*
-	 * 1. skip to start of identifier/string
+	 * 1. skip to start of identifier/text
 	 */
 	col = startcol;
 	if (has_mbyte)
 	{
 	    while (ptr[col] != NUL)
 	    {
-		/* Stop at a ']' to evaluate "a[x]". */
+		// Stop at a ']' to evaluate "a[x]".
 		if ((find_type & FIND_EVAL) && ptr[col] == ']')
 		    break;
 		this_class = mb_get_class(ptr + col);
@@ -3398,11 +3408,11 @@ find_ident_at_pos(
 		    )
 		++col;
 
-	/* When starting on a ']' count it, so that we include the '['. */
+	// When starting on a ']' count it, so that we include the '['.
 	bn = ptr[col] == ']';
 
 	/*
-	 * 2. Back up to start of identifier/string.
+	 * 2. Back up to start of identifier/text.
 	 */
 	if (has_mbyte)
 	{
@@ -3428,8 +3438,8 @@ find_ident_at_pos(
 		col = prevcol;
 	    }
 
-	    /* If we don't want just any old string, or we've found an
-	     * identifier, stop searching. */
+	    // If we don't want just any old text, or we've found an
+	    // identifier, stop searching.
 	    if (this_class > 2)
 		this_class = 2;
 	    if (!(find_type & FIND_STRING) || this_class == 2)
@@ -3450,8 +3460,8 @@ find_ident_at_pos(
 			))
 		--col;
 
-	    /* If we don't want just any old string, or we've found an
-	     * identifier, stop searching. */
+	    // If we don't want just any old text, or we've found an
+	    // identifier, stop searching.
 	    if (!(find_type & FIND_STRING) || vim_iswordc(ptr[col]))
 		break;
 	}
@@ -3460,27 +3470,30 @@ find_ident_at_pos(
     if (ptr[col] == NUL || (i == 0
 		&& (has_mbyte ? this_class != 2 : !vim_iswordc(ptr[col]))))
     {
-	/*
-	 * didn't find an identifier or string
-	 */
-	if (find_type & FIND_STRING)
-	    emsg(_("E348: No string under cursor"));
-	else
-	    emsg(_(e_noident));
+	// didn't find an identifier or text
+	if ((find_type & FIND_NOERROR) == 0)
+	{
+	    if (find_type & FIND_STRING)
+		emsg(_("E348: No string under cursor"));
+	    else
+		emsg(_(e_noident));
+	}
 	return 0;
     }
     ptr += col;
-    *string = ptr;
+    *text = ptr;
+    if (textcol != NULL)
+	*textcol = col;
 
     /*
-     * 3. Find the end if the identifier/string.
+     * 3. Find the end if the identifier/text.
      */
     bn = 0;
     startcol -= col;
     col = 0;
     if (has_mbyte)
     {
-	/* Search for point of changing multibyte character class. */
+	// Search for point of changing multibyte character class.
 	this_class = mb_get_class(ptr);
 	while (ptr[col] != NUL
 		&& ((i == 0 ? mb_get_class(ptr + col) == this_class
@@ -4519,9 +4532,13 @@ nv_mousescroll(cmdarg_T *cap)
 	col = mouse_col;
 
 	/* find the window at the pointer coordinates */
-	wp = mouse_find_win(&row, &col);
+	wp = mouse_find_win(&row, &col, FIND_POPUP);
 	if (wp == NULL)
 	    return;
+#ifdef FEAT_TEXT_PROP
+	if (WIN_IS_POPUP(wp) && !wp->w_has_scrollbar)
+	    return;
+#endif
 	curwin = wp;
 	curbuf = curwin->w_buffer;
     }
@@ -4541,10 +4558,22 @@ nv_mousescroll(cmdarg_T *cap)
 	}
 	else
 	{
-	    cap->count1 = 3;
-	    cap->count0 = 3;
+	    // Don't scroll more than half the window height.
+	    if (curwin->w_height < 6)
+	    {
+		cap->count1 = curwin->w_height / 2;
+		if (cap->count1 == 0)
+		    cap->count1 = 1;
+	    }
+	    else
+		cap->count1 = 3;
+	    cap->count0 = cap->count1;
 	    nv_scroll_line(cap);
 	}
+#ifdef FEAT_TEXT_PROP
+	if (WIN_IS_POPUP(curwin))
+	    popup_set_firstline(curwin);
+#endif
     }
 # ifdef FEAT_GUI
     else
@@ -5103,7 +5132,8 @@ dozet:
 		    if (ptr == NULL && (len = find_ident_under_cursor(&ptr,
 							    FIND_IDENT)) == 0)
 			return;
-		    spell_add_word(ptr, len, nchar == 'w' || nchar == 'W',
+		    spell_add_word(ptr, len, nchar == 'w' || nchar == 'W'
+					      ? SPELL_ADD_BAD : SPELL_ADD_GOOD,
 					    (nchar == 'G' || nchar == 'W')
 						       ? 0 : (int)cap->count1,
 					    undo);
@@ -5654,7 +5684,7 @@ nv_ident(cmdarg_T *cap)
 	    vim_free(buf);
 	    return;
 	}
-	newbuf = (char_u *)vim_realloc(buf, STRLEN(buf) + STRLEN(p) + 1);
+	newbuf = vim_realloc(buf, STRLEN(buf) + STRLEN(p) + 1);
 	if (newbuf == NULL)
 	{
 	    vim_free(buf);
@@ -5712,11 +5742,11 @@ nv_ident(cmdarg_T *cap)
 		    ? vim_iswordp(mb_prevptr(ml_get_curline(), ptr))
 		    : vim_iswordc(ptr[-1])))
 	    STRCAT(buf, "\\>");
-#ifdef FEAT_CMDHIST
-	/* put pattern in search history */
+
+	// put pattern in search history
 	init_history();
 	add_to_history(HIST_SEARCH, buf, TRUE, NUL);
-#endif
+
 	(void)normal_search(cap, cmdchar == '*' ? '/' : '?', buf, 0);
     }
     else
@@ -6235,7 +6265,7 @@ nv_search(cmdarg_T *cap)
 
     /* When using 'incsearch' the cursor may be moved to set a different search
      * start position. */
-    cap->searchbuf = getcmdline(cap->cmdchar, cap->count1, 0);
+    cap->searchbuf = getcmdline(cap->cmdchar, cap->count1, 0, TRUE);
 
     if (cap->searchbuf == NULL)
     {
@@ -6583,57 +6613,7 @@ nv_brackets(cmdarg_T *cap)
      */
     else if (cap->nchar == 'p' || cap->nchar == 'P')
     {
-	if (!checkclearop(cap->oap))
-	{
-	    int	    dir = (cap->cmdchar == ']' && cap->nchar == 'p')
-							 ? FORWARD : BACKWARD;
-	    int	    regname = cap->oap->regname;
-	    int	    was_visual = VIsual_active;
-	    int	    line_count = curbuf->b_ml.ml_line_count;
-	    pos_T   start, end;
-
-	    if (VIsual_active)
-	    {
-		start = LTOREQ_POS(VIsual, curwin->w_cursor)
-						  ? VIsual : curwin->w_cursor;
-		end =  EQUAL_POS(start,VIsual) ? curwin->w_cursor : VIsual;
-		curwin->w_cursor = (dir == BACKWARD ? start : end);
-	    }
-# ifdef FEAT_CLIPBOARD
-	    adjust_clip_reg(&regname);
-# endif
-	    prep_redo_cmd(cap);
-
-	    do_put(regname, dir, cap->count1, PUT_FIXINDENT);
-	    if (was_visual)
-	    {
-		VIsual = start;
-		curwin->w_cursor = end;
-		if (dir == BACKWARD)
-		{
-		    /* adjust lines */
-		    VIsual.lnum += curbuf->b_ml.ml_line_count - line_count;
-		    curwin->w_cursor.lnum +=
-				      curbuf->b_ml.ml_line_count - line_count;
-		}
-
-		VIsual_active = TRUE;
-		if (VIsual_mode == 'V')
-		{
-		    /* delete visually selected lines */
-		    cap->cmdchar = 'd';
-		    cap->nchar = NUL;
-		    cap->oap->regname = regname;
-		    nv_operator(cap);
-		    do_pending_operator(cap, 0, FALSE);
-		}
-		if (VIsual_active)
-		{
-		    end_visual_mode();
-		    redraw_later(SOME_VALID);
-		}
-	    }
-	}
+	nv_put_opt(cap, TRUE);
     }
 
     /*
@@ -8088,10 +8068,14 @@ nv_g_cmd(cmdarg_T *cap)
 	    }
 	    else
 	    {
+		if (cap->count1 > 1)
+		    // if it fails, let the cursor still move to the last char
+		    (void)cursor_down(cap->count1 - 1, FALSE);
+
 		i = curwin->w_leftcol + curwin->w_width - col_off - 1;
 		coladvance((colnr_T)i);
 
-		/* Make sure we stick in this column. */
+		// Make sure we stick in this column.
 		validate_virtcol();
 		curwin->w_curswant = curwin->w_virtcol;
 		curwin->w_set_curswant = FALSE;
@@ -8919,6 +8903,27 @@ nv_esc(cmdarg_T *cap)
 }
 
 /*
+ * Move the cursor for the "A" command.
+ */
+    void
+set_cursor_for_append_to_line(void)
+{
+    curwin->w_set_curswant = TRUE;
+    if (ve_flags == VE_ALL)
+    {
+	int save_State = State;
+
+	/* Pretend Insert mode here to allow the cursor on the
+	 * character past the end of the line */
+	State = INSERT;
+	coladvance((colnr_T)MAXCOL);
+	State = save_State;
+    }
+    else
+	curwin->w_cursor.col += (colnr_T)STRLEN(ml_get_cursor());
+}
+
+/*
  * Handle "A", "a", "I", "i" and <Insert> commands.
  * Also handle K_PS, start bracketed paste.
  */
@@ -9004,19 +9009,7 @@ nv_edit(cmdarg_T *cap)
 	switch (cap->cmdchar)
 	{
 	    case 'A':	/* "A"ppend after the line */
-		curwin->w_set_curswant = TRUE;
-		if (ve_flags == VE_ALL)
-		{
-		    int save_State = State;
-
-		    /* Pretend Insert mode here to allow the cursor on the
-		     * character past the end of the line */
-		    State = INSERT;
-		    coladvance((colnr_T)MAXCOL);
-		    State = save_State;
-		}
-		else
-		    curwin->w_cursor.col += (colnr_T)STRLEN(ml_get_cursor());
+		set_cursor_for_append_to_line();
 		break;
 
 	    case 'I':	/* "I"nsert before the first non-blank */
@@ -9290,6 +9283,16 @@ nv_join(cmdarg_T *cap)
     static void
 nv_put(cmdarg_T *cap)
 {
+    nv_put_opt(cap, FALSE);
+}
+
+/*
+ * "P", "gP", "p" and "gp" commands.
+ * "fix_indent" is TRUE for "[p", "[P", "]p" and "]P".
+ */
+    static void
+nv_put_opt(cmdarg_T *cap, int fix_indent)
+{
     int		regname = 0;
     void	*reg1 = NULL, *reg2 = NULL;
     int		empty = FALSE;
@@ -9318,8 +9321,15 @@ nv_put(cmdarg_T *cap)
 #endif
     else
     {
-	dir = (cap->cmdchar == 'P'
-		|| (cap->cmdchar == 'g' && cap->nchar == 'P'))
+	if (fix_indent)
+	{
+	    dir = (cap->cmdchar == ']' && cap->nchar == 'p')
+							 ? FORWARD : BACKWARD;
+	    flags |= PUT_FIXINDENT;
+	}
+	else
+	    dir = (cap->cmdchar == 'P'
+				 || (cap->cmdchar == 'g' && cap->nchar == 'P'))
 							 ? BACKWARD : FORWARD;
 	prep_redo_cmd(cap);
 	if (cap->cmdchar == 'g')
@@ -9350,13 +9360,15 @@ nv_put(cmdarg_T *cap)
 		reg1 = get_register(regname, TRUE);
 	    }
 
-	    /* Now delete the selected text. */
+	    // Now delete the selected text. Avoid messages here.
 	    cap->cmdchar = 'd';
 	    cap->nchar = NUL;
 	    cap->oap->regname = NUL;
+	    ++msg_silent;
 	    nv_operator(cap);
 	    do_pending_operator(cap, 0, FALSE);
 	    empty = (curbuf->b_ml.ml_flags & ML_EMPTY);
+	    --msg_silent;
 
 	    /* delete PUT_LINE_BACKWARD; */
 	    cap->oap->regname = regname;
@@ -9411,6 +9423,7 @@ nv_put(cmdarg_T *cap)
 	if (empty && *ml_get(curbuf->b_ml.ml_line_count) == NUL)
 	{
 	    ml_delete(curbuf->b_ml.ml_line_count, TRUE);
+	    deleted_lines(curbuf->b_ml.ml_line_count + 1, 1);
 
 	    /* If the cursor was in that line, move it to the end of the last
 	     * line. */

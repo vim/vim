@@ -38,7 +38,9 @@
 #	  is yes)
 #	Global IME support: GIME=yes (requires GUI=yes)
 #
-#       Terminal support: TERMINAL=yes (default is yes)
+#	Terminal support: TERMINAL=yes (default is yes)
+#
+#	Sound support: SOUND=yes (default is yes)
 #
 #	DLL support (EXPERIMENTAL): VIMDLL=yes (default is no)
 #	  Creates vim{32,64}.dll, and stub gvim.exe and vim.exe.
@@ -347,8 +349,6 @@ CSCOPE = yes
 
 !if "$(CSCOPE)" == "yes"
 # CSCOPE - Include support for Cscope
-CSCOPE_INCL  = if_cscope.h
-CSCOPE_OBJ   = $(OBJDIR)/if_cscope.obj
 CSCOPE_DEFS  = -DFEAT_CSCOPE
 !endif
 
@@ -379,6 +379,14 @@ TERM_DEPS = \
 	libvterm/src/rect.h \
 	libvterm/src/utf8.h \
 	libvterm/src/vterm_internal.h
+!endif
+
+!ifndef SOUND
+! if "$(FEATURES)"=="HUGE" || "$(FEATURES)"=="BIG"
+SOUND = yes
+! else
+SOUND = no
+! endif
 !endif
 
 !ifndef NETBEANS
@@ -454,6 +462,13 @@ XPM_INC	  = -I $(XPM)\include -I $(XPM)\..\include
 ! endif
 !endif # GUI
 
+!if "$(SOUND)" == "yes"
+SOUND_PRO	= proto/sound.pro
+SOUND_OBJ	= $(OBJDIR)/sound.obj
+SOUND_DEFS	= -DFEAT_SOUND
+SOUND_LIB	= winmm.lib
+!endif
+
 !if "$(CHANNEL)" == "yes"
 CHANNEL_PRO	= proto/channel.pro
 CHANNEL_OBJ	= $(OBJDIR)/channel.obj
@@ -494,7 +509,7 @@ WINVER = 0x0501
 #VIMRUNTIMEDIR = somewhere
 
 CFLAGS = -c /W3 /nologo $(CVARS) -I. -Iproto -DHAVE_PATHDEF -DWIN32 \
-		$(CSCOPE_DEFS) $(TERM_DEFS) $(NETBEANS_DEFS) $(CHANNEL_DEFS) \
+		$(CSCOPE_DEFS) $(TERM_DEFS) $(SOUND_DEFS) $(NETBEANS_DEFS) $(CHANNEL_DEFS) \
 		$(NBDEBUG_DEFS) $(XPM_DEFS) \
 		$(DEFINES) -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER)
 
@@ -695,6 +710,7 @@ INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h globals.h \
 
 OBJ = \
 	$(OUTDIR)\arabic.obj \
+	$(OUTDIR)\arglist.obj \
 	$(OUTDIR)\autocmd.obj \
 	$(OUTDIR)\beval.obj \
 	$(OUTDIR)\blob.obj \
@@ -702,6 +718,8 @@ OBJ = \
 	$(OUTDIR)\buffer.obj \
 	$(OUTDIR)\change.obj \
 	$(OUTDIR)\charset.obj \
+	$(OUTDIR)\cmdexpand.obj \
+	$(OUTDIR)\cmdhist.obj \
 	$(OUTDIR)\crypt.obj \
 	$(OUTDIR)\crypt_zip.obj \
 	$(OUTDIR)\debugger.obj \
@@ -710,23 +728,30 @@ OBJ = \
 	$(OUTDIR)\digraph.obj \
 	$(OUTDIR)\edit.obj \
 	$(OUTDIR)\eval.obj \
+	$(OUTDIR)\evalbuffer.obj \
 	$(OUTDIR)\evalfunc.obj \
+	$(OUTDIR)\evalvars.obj \
+	$(OUTDIR)\evalwindow.obj \
 	$(OUTDIR)\ex_cmds.obj \
 	$(OUTDIR)\ex_cmds2.obj \
 	$(OUTDIR)\ex_docmd.obj \
 	$(OUTDIR)\ex_eval.obj \
 	$(OUTDIR)\ex_getln.obj \
 	$(OUTDIR)\fileio.obj \
+	$(OUTDIR)\filepath.obj \
 	$(OUTDIR)\findfile.obj \
 	$(OUTDIR)\fold.obj \
 	$(OUTDIR)\getchar.obj \
 	$(OUTDIR)\hardcopy.obj \
 	$(OUTDIR)\hashtab.obj \
+	$(OUTDIR)\highlight.obj \
+	$(OBJDIR)\if_cscope.obj \
 	$(OUTDIR)\indent.obj \
 	$(OUTDIR)\insexpand.obj \
 	$(OUTDIR)\json.obj \
 	$(OUTDIR)\list.obj \
 	$(OUTDIR)\main.obj \
+	$(OUTDIR)\map.obj \
 	$(OUTDIR)\mark.obj \
 	$(OUTDIR)\mbyte.obj \
 	$(OUTDIR)\memfile.obj \
@@ -743,10 +768,14 @@ OBJ = \
 	$(OUTDIR)\os_win32.obj \
 	$(OUTDIR)\pathdef.obj \
 	$(OUTDIR)\popupmnu.obj \
+	$(OUTDIR)\popupwin.obj \
+	$(OUTDIR)\profiler.obj \
 	$(OUTDIR)\quickfix.obj \
 	$(OUTDIR)\regexp.obj \
+	$(OUTDIR)\scriptfile.obj \
 	$(OUTDIR)\screen.obj \
 	$(OUTDIR)\search.obj \
+	$(OUTDIR)\session.obj \
 	$(OUTDIR)\sha256.obj \
 	$(OUTDIR)\sign.obj \
 	$(OUTDIR)\spell.obj \
@@ -754,11 +783,13 @@ OBJ = \
 	$(OUTDIR)\syntax.obj \
 	$(OUTDIR)\tag.obj \
 	$(OUTDIR)\term.obj \
+	$(OUTDIR)\testing.obj \
 	$(OUTDIR)\textprop.obj \
 	$(OUTDIR)\ui.obj \
 	$(OUTDIR)\undo.obj \
 	$(OUTDIR)\usercmd.obj \
 	$(OUTDIR)\userfunc.obj \
+	$(OUTDIR)\viminfo.obj \
 	$(OUTDIR)\winclip.obj \
 	$(OUTDIR)\window.obj \
 
@@ -847,7 +878,7 @@ XDIFF_DEPS = \
 !if "$(SUBSYSTEM_VER)" != ""
 SUBSYSTEM = $(SUBSYSTEM),$(SUBSYSTEM_VER)
 SUBSYSTEM_TOOLS = $(SUBSYSTEM_TOOLS),$(SUBSYSTEM_VER)
-! if "$(VIMDLL)" != "yes"
+! if "$(VIMDLL)" == "yes"
 SUBSYSTEM_CON = $(SUBSYSTEM_CON),$(SUBSYSTEM_VER)
 ! endif
 # Pass SUBSYSTEM_VER to GvimExt and other tools
@@ -1216,7 +1247,7 @@ conflags = $(conflags) /map /mapinfo:lines
 LINKARGS1 = $(linkdebug) $(conflags)
 LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) user32.lib \
 		$(LUA_LIB) $(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(RUBY_LIB) \
-		$(TCL_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(LINK_PDB)
+		$(TCL_LIB) $(SOUND_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(LINK_PDB)
 
 # Report link time code generation progress if used. 
 !ifdef NODEBUG
@@ -1248,17 +1279,22 @@ all:	$(MAIN_TARGET) \
 	tee/tee.exe \
 	GvimExt/gvimext.dll
 
+# To get around the command line limit: Make use of nmake's response files to
+# capture the arguments for $(link) in a file  using the @<<ARGS<< syntax.
+
 !if "$(VIMDLL)" == "yes"
 
 $(VIMDLLBASE).dll: $(OUTDIR) $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
 		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
-		$(CSCOPE_OBJ) $(TERM_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
+		$(TERM_OBJ) $(SOUND_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
 		version.c version.h
 	$(CC) $(CFLAGS_OUTDIR) version.c
-	$(link) $(LINKARGS1) /dll -out:$(VIMDLLBASE).dll $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) \
-		$(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) \
-		$(TCL_OBJ) $(CSCOPE_OBJ) $(TERM_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) \
-		$(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
+	$(link) @<<
+$(LINKARGS1) /dll -out:$(VIMDLLBASE).dll $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ)
+$(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ)
+$(TCL_OBJ) $(TERM_OBJ) $(SOUND_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ)
+$(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
+<<
 
 $(GVIM).exe: $(OUTDIR) $(EXEOBJG) $(VIMDLLBASE).dll
 	$(link) $(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(GVIM).exe $(EXEOBJG) $(VIMDLLBASE).lib $(LIBC)
@@ -1272,13 +1308,15 @@ $(VIM).exe: $(OUTDIR) $(EXEOBJC) $(VIMDLLBASE).dll
 
 $(VIM).exe: $(OUTDIR) $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) $(OLE_IDL) $(MZSCHEME_OBJ) \
 		$(LUA_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) $(TCL_OBJ) \
-		$(CSCOPE_OBJ) $(TERM_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
+		$(TERM_OBJ) $(SOUND_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) $(XPM_OBJ) \
 		version.c version.h
 	$(CC) $(CFLAGS_OUTDIR) version.c
-	$(link) $(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(VIM).exe $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ) \
-		$(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ) \
-		$(TCL_OBJ) $(CSCOPE_OBJ) $(TERM_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ) \
-		$(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
+	$(link) @<<
+$(LINKARGS1) /subsystem:$(SUBSYSTEM) -out:$(VIM).exe $(OBJ) $(XDIFF_OBJ) $(GUI_OBJ) $(CUI_OBJ) $(OLE_OBJ)
+$(LUA_OBJ) $(MZSCHEME_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(PYTHON3_OBJ) $(RUBY_OBJ)
+$(TCL_OBJ) $(TERM_OBJ) $(SOUND_OBJ) $(NETBEANS_OBJ) $(CHANNEL_OBJ)
+$(XPM_OBJ) $(OUTDIR)\version.obj $(LINKARGS2)
+<<
 	if exist $(VIM).exe.manifest mt.exe -nologo -manifest $(VIM).exe.manifest -updateresource:$(VIM).exe;1
 
 !endif
@@ -1401,6 +1439,8 @@ $(NEW_TESTS):
 
 $(OUTDIR)/arabic.obj:	$(OUTDIR) arabic.c  $(INCL)
 
+$(OUTDIR)/arglist.obj:	$(OUTDIR) arglist.c  $(INCL)
+
 $(OUTDIR)/autocmd.obj:	$(OUTDIR) autocmd.c  $(INCL)
 
 $(OUTDIR)/beval.obj:	$(OUTDIR) beval.c  $(INCL)
@@ -1414,6 +1454,10 @@ $(OUTDIR)/buffer.obj:	$(OUTDIR) buffer.c  $(INCL)
 $(OUTDIR)/change.obj:	$(OUTDIR) change.c  $(INCL)
 
 $(OUTDIR)/charset.obj:	$(OUTDIR) charset.c  $(INCL)
+
+$(OUTDIR)/cmdexpand.obj:	$(OUTDIR) cmdexpand.c  $(INCL)
+
+$(OUTDIR)/cmdhist.obj:	$(OUTDIR) cmdhist.c  $(INCL)
 
 $(OUTDIR)/crypt.obj:	$(OUTDIR) crypt.c  $(INCL)
 
@@ -1443,7 +1487,13 @@ $(OUTDIR)/edit.obj:	$(OUTDIR) edit.c  $(INCL)
 
 $(OUTDIR)/eval.obj:	$(OUTDIR) eval.c  $(INCL)
 
+$(OUTDIR)/evalbuffer.obj:	$(OUTDIR) evalbuffer.c  $(INCL)
+
 $(OUTDIR)/evalfunc.obj:	$(OUTDIR) evalfunc.c  $(INCL)
+
+$(OUTDIR)/evalvars.obj:	$(OUTDIR) evalvars.c  $(INCL)
+
+$(OUTDIR)/evalwindow.obj:	$(OUTDIR) evalwindow.c  $(INCL)
 
 $(OUTDIR)/ex_cmds.obj:	$(OUTDIR) ex_cmds.c  $(INCL)
 
@@ -1457,6 +1507,8 @@ $(OUTDIR)/ex_getln.obj:	$(OUTDIR) ex_getln.c  $(INCL)
 
 $(OUTDIR)/fileio.obj:	$(OUTDIR) fileio.c  $(INCL)
 
+$(OUTDIR)/filepath.obj:	$(OUTDIR) filepath.c  $(INCL)
+
 $(OUTDIR)/findfile.obj:	$(OUTDIR) findfile.c  $(INCL)
 
 $(OUTDIR)/fold.obj:	$(OUTDIR) fold.c  $(INCL)
@@ -1466,6 +1518,8 @@ $(OUTDIR)/getchar.obj:	$(OUTDIR) getchar.c  $(INCL)
 $(OUTDIR)/hardcopy.obj:	$(OUTDIR) hardcopy.c  $(INCL)
 
 $(OUTDIR)/hashtab.obj:	$(OUTDIR) hashtab.c  $(INCL)
+
+$(OUTDIR)/highlight.obj:	$(OUTDIR) highlight.c  $(INCL)
 
 $(OUTDIR)/indent.obj:	$(OUTDIR) indent.c  $(INCL)
 
@@ -1477,7 +1531,7 @@ $(OUTDIR)/gui_beval.obj:	$(OUTDIR) gui_beval.c $(INCL) $(GUI_INCL)
 
 $(OUTDIR)/gui_w32.obj:	$(OUTDIR) gui_w32.c $(INCL) $(GUI_INCL)
 
-$(OUTDIR)/gui_dwrite.obj:	$(OUTDIR) gui_dwrite.cpp $(INCL) $(GUI_INCL)
+$(OUTDIR)/gui_dwrite.obj:	$(OUTDIR) gui_dwrite.cpp gui_dwrite.h
 
 $(OUTDIR)/if_cscope.obj: $(OUTDIR) if_cscope.c  $(INCL) if_cscope.h
 
@@ -1523,6 +1577,8 @@ $(OUTDIR)/json.obj:	$(OUTDIR) json.c  $(INCL)
 $(OUTDIR)/list.obj:	$(OUTDIR) list.c  $(INCL)
 
 $(OUTDIR)/main.obj:	$(OUTDIR) main.c  $(INCL) $(CUI_INCL)
+
+$(OUTDIR)/map.obj:	$(OUTDIR) map.c  $(INCL)
 
 $(OUTDIR)/mark.obj:	$(OUTDIR) mark.c  $(INCL)
 
@@ -1575,13 +1631,21 @@ $(OUTDIR)/pathdef.obj:	$(OUTDIR) $(PATHDEF_SRC) $(INCL)
 
 $(OUTDIR)/popupmnu.obj:	$(OUTDIR) popupmnu.c  $(INCL)
 
+$(OUTDIR)/popupwin.obj:	$(OUTDIR) popupwin.c  $(INCL)
+
+$(OUTDIR)/profiler.obj:	$(OUTDIR) profiler.c  $(INCL)
+
 $(OUTDIR)/quickfix.obj:	$(OUTDIR) quickfix.c  $(INCL)
 
-$(OUTDIR)/regexp.obj:	$(OUTDIR) regexp.c regexp_nfa.c  $(INCL)
+$(OUTDIR)/regexp.obj:	$(OUTDIR) regexp.c regexp_bt.c regexp_nfa.c  $(INCL)
+
+$(OUTDIR)/scriptfile.obj:	$(OUTDIR) scriptfile.c  $(INCL)
 
 $(OUTDIR)/screen.obj:	$(OUTDIR) screen.c  $(INCL)
 
 $(OUTDIR)/search.obj:	$(OUTDIR) search.c  $(INCL)
+
+$(OUTDIR)/session.obj:	$(OUTDIR) session.c  $(INCL)
 
 $(OUTDIR)/sha256.obj:	$(OUTDIR) sha256.c  $(INCL)
 
@@ -1597,6 +1661,8 @@ $(OUTDIR)/tag.obj:	$(OUTDIR) tag.c  $(INCL)
 
 $(OUTDIR)/term.obj:	$(OUTDIR) term.c  $(INCL)
 
+$(OUTDIR)/term.obj:	$(OUTDIR) testing.c  $(INCL)
+
 $(OUTDIR)/textprop.obj:	$(OUTDIR) textprop.c  $(INCL)
 
 $(OUTDIR)/ui.obj:	$(OUTDIR) ui.c  $(INCL)
@@ -1606,6 +1672,8 @@ $(OUTDIR)/undo.obj:	$(OUTDIR) undo.c  $(INCL)
 $(OUTDIR)/usercmd.obj:	$(OUTDIR) usercmd.c  $(INCL)
 
 $(OUTDIR)/userfunc.obj:	$(OUTDIR) userfunc.c  $(INCL)
+
+$(OUTDIR)/viminfo.obj:	$(OUTDIR) viminfo.c  $(INCL)
 
 $(OUTDIR)/window.obj:	$(OUTDIR) window.c  $(INCL)
 
@@ -1683,7 +1751,7 @@ E0_LINKARGS2 = $(LINKARGS2:\=\\)
 E_LINKARGS2 = $(E0_LINKARGS2:"=\")
 # ") stop the string
 
-$(PATHDEF_SRC): auto
+$(PATHDEF_SRC): Make_mvc.mak
 	@echo creating $(PATHDEF_SRC)
 	@echo /* pathdef.c */ > $(PATHDEF_SRC)
 	@echo #include "vim.h" >> $(PATHDEF_SRC)
@@ -1694,18 +1762,18 @@ $(PATHDEF_SRC): auto
 	@echo char_u *compiled_user = (char_u *)"$(USERNAME)"; >> $(PATHDEF_SRC)
 	@echo char_u *compiled_sys = (char_u *)"$(USERDOMAIN)"; >> $(PATHDEF_SRC)
 
-auto:
-	if not exist auto/nul mkdir auto
-
 # End Custom Build
 proto.h: \
 	proto/arabic.pro \
+	proto/arglist.pro \
 	proto/autocmd.pro \
 	proto/blob.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
 	proto/change.pro \
 	proto/charset.pro \
+	proto/cmdexpand.pro \
+	proto/cmdhist.pro \
 	proto/crypt.pro \
 	proto/crypt_zip.pro \
 	proto/debugger.pro \
@@ -1714,22 +1782,28 @@ proto.h: \
 	proto/digraph.pro \
 	proto/edit.pro \
 	proto/eval.pro \
+	proto/evalbuffer.pro \
 	proto/evalfunc.pro \
+	proto/evalvars.pro \
+	proto/evalwindow.pro \
 	proto/ex_cmds.pro \
 	proto/ex_cmds2.pro \
 	proto/ex_docmd.pro \
 	proto/ex_eval.pro \
 	proto/ex_getln.pro \
 	proto/fileio.pro \
+	proto/filepath.pro \
 	proto/findfile.pro \
 	proto/getchar.pro \
 	proto/hardcopy.pro \
 	proto/hashtab.pro \
+	proto/highlight.pro \
 	proto/indent.pro \
 	proto/insexpand.pro \
 	proto/json.pro \
 	proto/list.pro \
 	proto/main.pro \
+	proto/map.pro \
 	proto/mark.pro \
 	proto/memfile.pro \
 	proto/memline.pro \
@@ -1746,10 +1820,14 @@ proto.h: \
 	proto/winclip.pro \
 	proto/os_win32.pro \
 	proto/popupmnu.pro \
+	proto/popupwin.pro \
+	proto/profiler.pro \
 	proto/quickfix.pro \
 	proto/regexp.pro \
+	proto/scriptfile.pro \
 	proto/screen.pro \
 	proto/search.pro \
+	proto/session.pro \
 	proto/sha256.pro \
 	proto/sign.pro \
 	proto/spell.pro \
@@ -1757,12 +1835,15 @@ proto.h: \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \
+	proto/testing.pro \
 	proto/textprop.pro \
 	proto/ui.pro \
 	proto/undo.pro \
 	proto/usercmd.pro \
 	proto/userfunc.pro \
+	proto/viminfo.pro \
 	proto/window.pro \
+	$(SOUND_PRO) \
 	$(NETBEANS_PRO) \
 	$(CHANNEL_PRO)
 

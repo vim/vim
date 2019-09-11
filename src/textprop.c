@@ -12,6 +12,7 @@
  *
  * TODO:
  * - Adjust text property column and length when text is inserted/deleted.
+ *   -> :substitute with multiple matches, issue #4427
  *   -> a :substitute with a multi-line match
  *   -> search for changed_bytes() from misc1.c
  *   -> search for mark_col_adjust()
@@ -90,6 +91,20 @@ find_prop(char_u *name, buf_T *buf)
 }
 
 /*
+ * Get the prop type ID of "name".
+ * When not found return zero.
+ */
+    int
+find_prop_type_id(char_u *name, buf_T *buf)
+{
+    proptype_T *pt = find_prop(name, buf);
+
+    if (pt == NULL)
+	return 0;
+    return pt->pt_id;
+}
+
+/*
  * Lookup a property type by name.  First in "buf" and when not found in the
  * global types.
  * When not found gives an error message and returns NULL.
@@ -128,7 +143,7 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
     di = dict_find(arg->vval.v_dict, (char_u *)"bufnr", -1);
     if (di != NULL)
     {
-	*buf = tv_get_buf(&di->di_tv, FALSE);
+	*buf = get_buf_arg(&di->di_tv);
 	if (*buf == NULL)
 	    return FAIL;
     }
@@ -141,23 +156,8 @@ get_bufnr_from_arg(typval_T *arg, buf_T **buf)
     void
 f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    linenr_T	lnum;
     linenr_T	start_lnum;
-    linenr_T	end_lnum;
     colnr_T	start_col;
-    colnr_T	end_col;
-    dict_T	*dict;
-    char_u	*type_name;
-    proptype_T	*type;
-    buf_T	*buf = curbuf;
-    int		id = 0;
-    char_u	*newtext;
-    int		proplen;
-    size_t	textlen;
-    char_u	*props = NULL;
-    char_u	*newprops;
-    textprop_T	tmp_prop;
-    int		i;
 
     start_lnum = tv_get_number(&argvars[0]);
     start_col = tv_get_number(&argvars[1]);
@@ -171,7 +171,38 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	emsg(_(e_dictreq));
 	return;
     }
-    dict = argvars[2].vval.v_dict;
+
+    prop_add_common(start_lnum, start_col, argvars[2].vval.v_dict,
+							  curbuf, &argvars[2]);
+}
+
+/*
+ * Shared between prop_add() and popup_create().
+ * "dict_arg" is the function argument of a dict containing "bufnr".
+ * it is NULL for popup_create().
+ */
+    void
+prop_add_common(
+	linenr_T    start_lnum,
+	colnr_T	    start_col,
+	dict_T	    *dict,
+	buf_T	    *default_buf,
+	typval_T    *dict_arg)
+{
+    linenr_T	lnum;
+    linenr_T	end_lnum;
+    colnr_T	end_col;
+    char_u	*type_name;
+    proptype_T	*type;
+    buf_T	*buf = default_buf;
+    int		id = 0;
+    char_u	*newtext;
+    int		proplen;
+    size_t	textlen;
+    char_u	*props = NULL;
+    char_u	*newprops;
+    textprop_T	tmp_prop;
+    int		i;
 
     if (dict == NULL || dict_find(dict, (char_u *)"type", -1) == NULL)
     {
@@ -220,7 +251,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     if (dict_find(dict, (char_u *)"id", -1) != NULL)
 	id = dict_get_number(dict, (char_u *)"id");
 
-    if (get_bufnr_from_arg(&argvars[2], &buf) == FAIL)
+    if (dict_arg != NULL && get_bufnr_from_arg(dict_arg, &buf) == FAIL)
 	return;
 
     type = lookup_prop_type(type_name, buf);
@@ -235,6 +266,12 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
     if (end_lnum < start_lnum || end_lnum > buf->b_ml.ml_line_count)
     {
 	semsg(_(e_invalid_lnum), (long)end_lnum);
+	return;
+    }
+
+    if (buf->b_ml.ml_mfp == NULL)
+    {
+	emsg(_("E275: Cannot add text property to unloaded buffer"));
 	return;
     }
 
@@ -274,12 +311,12 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	mch_memmove(newtext, buf->b_ml.ml_line_ptr, textlen);
 
 	// Find the index where to insert the new property.
-	// Since the text properties are not aligned properly when stored with the
-	// text, we need to copy them as bytes before using it as a struct.
+	// Since the text properties are not aligned properly when stored with
+	// the text, we need to copy them as bytes before using it as a struct.
 	for (i = 0; i < proplen; ++i)
 	{
 	    mch_memmove(&tmp_prop, props + i * sizeof(textprop_T),
-							       sizeof(textprop_T));
+							   sizeof(textprop_T));
 	    if (tmp_prop.tp_col >= col)
 		break;
 	}
@@ -294,7 +331,7 @@ f_prop_add(typval_T *argvars, typval_T *rettv UNUSED)
 	tmp_prop.tp_flags = (lnum > start_lnum ? TP_FLAG_CONT_PREV : 0)
 			  | (lnum < end_lnum ? TP_FLAG_CONT_NEXT : 0);
 	mch_memmove(newprops + i * sizeof(textprop_T), &tmp_prop,
-							       sizeof(textprop_T));
+							   sizeof(textprop_T));
 
 	if (i < proplen)
 	    mch_memmove(newprops + (i + 1) * sizeof(textprop_T),
@@ -327,7 +364,7 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
 
     // Be quick when no text property types have been defined or the buffer,
     // unless we are adding one.
-    if (!buf->b_has_textprop && !will_change)
+    if ((!buf->b_has_textprop && !will_change) || buf->b_ml.ml_mfp == NULL)
 	return 0;
 
     // Fetch the line to get the ml_line_len field updated.
@@ -342,6 +379,39 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     if (proplen > 0)
 	*props = text + textlen;
     return (int)(proplen / sizeof(textprop_T));
+}
+
+/*
+ * Find text property "type_id" in the visible lines of window "wp".
+ * Match "id" when it is > 0.
+ * Returns FAIL when not found.
+ */
+    int
+find_visible_prop(win_T *wp, int type_id, int id, textprop_T *prop,
+							  linenr_T *found_lnum)
+{
+    linenr_T		lnum;
+    char_u		*props;
+    int			count;
+    int			i;
+
+    // w_botline may not have been updated yet.
+    validate_botline();
+    for (lnum = wp->w_topline; lnum < wp->w_botline; ++lnum)
+    {
+	count = get_text_props(wp->w_buffer, lnum, &props, FALSE);
+	for (i = 0; i < count; ++i)
+	{
+	    mch_memmove(prop, props + i * sizeof(textprop_T),
+							   sizeof(textprop_T));
+	    if (prop->tp_type == type_id && (id <= 0 || prop->tp_id == id))
+	    {
+		*found_lnum = lnum;
+		return OK;
+	    }
+	}
+    }
+    return FAIL;
 }
 
 /*
@@ -556,13 +626,10 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     }
 
     dict = argvars[0].vval.v_dict;
-    di = dict_find(dict, (char_u *)"bufnr", -1);
-    if (di != NULL)
-    {
-	buf = tv_get_buf(&di->di_tv, FALSE);
-	if (buf == NULL)
-	    return;
-    }
+    if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
+	return;
+    if (buf->b_ml.ml_mfp == NULL)
+	return;
 
     di = dict_find(dict, (char_u*)"all", -1);
     if (di != NULL)
@@ -624,7 +691,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 			buf->b_ml.ml_flags |= ML_LINE_DIRTY;
 
 			cur_prop = buf->b_ml.ml_line_ptr + len
-							+ idx * sizeof(textprop_T);
+						    + idx * sizeof(textprop_T);
 		    }
 
 		    taillen = buf->b_ml.ml_line_len - len
@@ -648,7 +715,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 /*
  * Common for f_prop_type_add() and f_prop_type_change().
  */
-    void
+    static void
 prop_type_set(typval_T *argvars, int add)
 {
     char_u	*name;
@@ -678,7 +745,7 @@ prop_type_set(typval_T *argvars, int add)
 	    semsg(_("E969: Property type %s already defined"), name);
 	    return;
 	}
-	prop = (proptype_T *)alloc_clear((int)(sizeof(proptype_T) + STRLEN(name)));
+	prop = alloc_clear(offsetof(proptype_T, pt_name) + STRLEN(name) + 1);
 	if (prop == NULL)
 	    return;
 	STRCPY(prop->pt_name, name);
@@ -686,7 +753,7 @@ prop_type_set(typval_T *argvars, int add)
 	htp = buf == NULL ? &global_proptypes : &buf->b_proptypes;
 	if (*htp == NULL)
 	{
-	    *htp = (hashtab_T *)alloc(sizeof(hashtab_T));
+	    *htp = ALLOC_ONE(hashtab_T);
 	    if (*htp == NULL)
 	    {
 		vim_free(prop);
@@ -1160,7 +1227,7 @@ adjust_props_for_join(
     proplen = get_text_props(curbuf, lnum, &props, FALSE);
     if (proplen > 0)
     {
-	*prop_line = (textprop_T *)alloc(proplen * (int)sizeof(textprop_T));
+	*prop_line = ALLOC_MULT(textprop_T, proplen);
 	if (*prop_line != NULL)
 	{
 	    for (ri = 0; ri < proplen; ++ri)
@@ -1203,7 +1270,7 @@ join_prop_lines(
     size_t	oldproplen;
     char_u	*props;
     int		i;
-    int		len;
+    size_t	len;
     char_u	*line;
     size_t	l;
 
@@ -1218,14 +1285,17 @@ join_prop_lines(
     // get existing properties of the joined line
     oldproplen = get_text_props(curbuf, lnum, &props, FALSE);
 
-    len = (int)STRLEN(newp) + 1;
-    line = alloc(len + (oldproplen + proplen) * (int)sizeof(textprop_T));
+    len = STRLEN(newp) + 1;
+    line = alloc(len + (oldproplen + proplen) * sizeof(textprop_T));
     if (line == NULL)
 	return;
     mch_memmove(line, newp, len);
-    l = oldproplen * sizeof(textprop_T);
-    mch_memmove(line + len, props, l);
-    len += l;
+    if (oldproplen > 0)
+    {
+	l = oldproplen * sizeof(textprop_T);
+	mch_memmove(line + len, props, l);
+	len += l;
+    }
 
     for (i = 0; i < count - 1; ++i)
 	if (prop_lines[i] != NULL)
@@ -1236,7 +1306,7 @@ join_prop_lines(
 	    vim_free(prop_lines[i]);
 	}
 
-    ml_replace_len(lnum, line, len, TRUE, FALSE);
+    ml_replace_len(lnum, line, (colnr_T)len, TRUE, FALSE);
     vim_free(newp);
     vim_free(prop_lines);
     vim_free(prop_lengths);

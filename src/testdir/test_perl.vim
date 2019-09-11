@@ -1,8 +1,7 @@
 " Tests for Perl interface
 
-if !has('perl')
-  finish
-end
+source check.vim
+CheckFeature perl
 
 " FIXME: RunTest don't see any error when Perl abort...
 perl $SIG{__WARN__} = sub { die "Unexpected warnings from perl: @_" };
@@ -31,7 +30,7 @@ endfunc
 
 funct Test_VIM_Blob()
   call assert_equal('0z',         perleval('VIM::Blob("")'))
-  call assert_equal('0z31326162', perleval('VIM::Blob("12ab")'))
+  call assert_equal('0z31326162', 'VIM::Blob("12ab")'->perleval())
   call assert_equal('0z00010203', perleval('VIM::Blob("\x00\x01\x02\x03")'))
   call assert_equal('0z8081FEFF', perleval('VIM::Blob("\x80\x81\xfe\xff")'))
 endfunc

@@ -541,12 +541,12 @@ vim_main2(void)
 #ifdef FEAT_GUI
     if (gui.starting)
     {
-#if defined(UNIX) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
 	/* When something caused a message from a vimrc script, need to output
 	 * an extra newline before the shell prompt. */
 	if (did_emsg || msg_didout)
 	    putchar('\n');
-#endif
+# endif
 
 	gui_start(NULL);		/* will set full_screen to TRUE */
 	TIME_MSG("starting GUI");
@@ -1159,6 +1159,9 @@ main_loop(
 	    /* Trigger CursorMoved if the cursor moved. */
 	    if (!finish_op && (
 			has_cursormoved()
+#ifdef FEAT_TEXT_PROP
+			|| popup_visible
+#endif
 #ifdef FEAT_CONCEAL
 			|| curwin->w_p_cole > 0
 #endif
@@ -1168,14 +1171,18 @@ main_loop(
 		if (has_cursormoved())
 		    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL,
 							       FALSE, curbuf);
-# ifdef FEAT_CONCEAL
+#ifdef FEAT_TEXT_PROP
+		if (popup_visible)
+		    popup_check_cursor_pos();
+#endif
+#ifdef FEAT_CONCEAL
 		if (curwin->w_p_cole > 0)
 		{
 		    conceal_old_cursor_line = last_cursormoved.lnum;
 		    conceal_new_cursor_line = curwin->w_cursor.lnum;
 		    conceal_update_lines = TRUE;
 		}
-# endif
+#endif
 		last_cursormoved = curwin->w_cursor;
 	    }
 
@@ -1269,14 +1276,19 @@ main_loop(
 	    /* display message after redraw */
 	    if (keep_msg != NULL)
 	    {
-		char_u *p;
+		char_u *p = vim_strsave(keep_msg);
 
-		/* msg_attr_keep() will set keep_msg to NULL, must free the
-		 * string here. Don't reset keep_msg, msg_attr_keep() uses it
-		 * to check for duplicates. */
-		p = keep_msg;
-		msg_attr((char *)p, keep_msg_attr);
-		vim_free(p);
+		if (p != NULL)
+		{
+		    // msg_start() will set keep_msg to NULL, make a copy
+		    // first.  Don't reset keep_msg, msg_attr_keep() uses it to
+		    // check for duplicates.  Never put this message in
+		    // history.
+		    msg_hist_off = TRUE;
+		    msg_attr((char *)p, keep_msg_attr);
+		    msg_hist_off = FALSE;
+		    vim_free(p);
+		}
 	    }
 	    if (need_fileinfo)		/* show file info after redraw */
 	    {
@@ -1476,7 +1488,19 @@ getout(int exitval)
 #endif
 
     if (v_dying <= 1)
+    {
+	int	unblock = 0;
+
+	// deathtrap() blocks autocommands, but we do want to trigger VimLeave.
+	if (is_autocmd_blocked())
+	{
+	    unblock_autocmds();
+	    ++unblock;
+	}
 	apply_autocmds(EVENT_VIMLEAVE, NULL, NULL, FALSE, curbuf);
+	if (unblock)
+	    block_autocmds();
+    }
 
 #ifdef FEAT_PROFILE
     profile_dump();
@@ -2298,7 +2322,7 @@ command_line_scan(mparm_T *parmp)
 			}
 			else
 			    a = argv[0];
-			p = alloc((unsigned)(STRLEN(a) + 4));
+			p = alloc(STRLEN(a) + 4);
 			if (p == NULL)
 			    mch_exit(2);
 			sprintf((char *)p, "so %s", a);
@@ -2524,7 +2548,7 @@ scripterror:
      * one. */
     if (parmp->n_commands > 0)
     {
-	p = alloc((unsigned)STRLEN(parmp->commands[0]) + 3);
+	p = alloc(STRLEN(parmp->commands[0]) + 3);
 	if (p != NULL)
 	{
 	    sprintf((char *)p, ":%s\r", parmp->commands[0]);
@@ -2684,7 +2708,7 @@ create_windows(mparm_T *parmp UNUSED)
     if (recoverymode)			/* do recover */
     {
 	msg_scroll = TRUE;		/* scroll message up */
-	ml_recover();
+	ml_recover(TRUE);
 	if (curbuf->b_ml.ml_mfp == NULL) /* failed */
 	    getout(1);
 	do_modelines(0);		/* do modelines */
@@ -3101,18 +3125,18 @@ source_startup_scripts(mparm_T *parmp)
 
 	    i = FAIL;
 	    if (fullpathcmp((char_u *)USR_VIMRC_FILE,
-				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #ifdef USR_VIMRC_FILE2
 		    && fullpathcmp((char_u *)USR_VIMRC_FILE2,
-				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 #ifdef USR_VIMRC_FILE3
 		    && fullpathcmp((char_u *)USR_VIMRC_FILE3,
-				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 #ifdef SYS_VIMRC_FILE
 		    && fullpathcmp((char_u *)SYS_VIMRC_FILE,
-				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 				)
 		i = do_source((char_u *)VIMRC_FILE, TRUE, DOSO_VIMRC);
@@ -3127,10 +3151,10 @@ source_startup_scripts(mparm_T *parmp)
 		    secure = 0;
 #endif
 		if (	   fullpathcmp((char_u *)USR_EXRC_FILE,
-				      (char_u *)EXRC_FILE, FALSE) != FPC_SAME
+				(char_u *)EXRC_FILE, FALSE, TRUE) != FPC_SAME
 #ifdef USR_EXRC_FILE2
 			&& fullpathcmp((char_u *)USR_EXRC_FILE2,
-				      (char_u *)EXRC_FILE, FALSE) != FPC_SAME
+				(char_u *)EXRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 				)
 		    (void)do_source((char_u *)EXRC_FILE, FALSE, DOSO_NONE);
@@ -4261,7 +4285,7 @@ sendToLocalVim(char_u *cmd, int asExpr, char_u **result)
 		size_t	len = STRLEN(cmd) + STRLEN(err) + 5;
 		char_u	*msg;
 
-		msg = alloc((unsigned)len);
+		msg = alloc(len);
 		if (msg != NULL)
 		    vim_snprintf((char *)msg, len, "%s: \"%s\"", err, cmd);
 		*result = msg;

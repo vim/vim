@@ -1,11 +1,13 @@
 /* textprop.c */
+int find_prop_type_id(char_u *name, buf_T *buf);
 void f_prop_add(typval_T *argvars, typval_T *rettv);
+void prop_add_common(linenr_T start_lnum, colnr_T start_col, dict_T *dict, buf_T *default_buf, typval_T *dict_arg);
 int get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change);
+int find_visible_prop(win_T *wp, int type_id, int id, textprop_T *prop, linenr_T *found_lnum);
 proptype_T *text_prop_type_by_id(buf_T *buf, int id);
 void f_prop_clear(typval_T *argvars, typval_T *rettv);
 void f_prop_list(typval_T *argvars, typval_T *rettv);
 void f_prop_remove(typval_T *argvars, typval_T *rettv);
-void prop_type_set(typval_T *argvars, int add);
 void f_prop_type_add(typval_T *argvars, typval_T *rettv);
 void f_prop_type_change(typval_T *argvars, typval_T *rettv);
 void f_prop_type_delete(typval_T *argvars, typval_T *rettv);

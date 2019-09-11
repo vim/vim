@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.1.  Last change: 2019 May 05
+*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Jun 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -407,8 +407,8 @@ BufFilePost			After changing the name of the current buffer
 BufFilePre			Before changing the name of the current buffer
 				with the ":file" or ":saveas" command.
 							*BufHidden*
-BufHidden			Just after a buffer has become hidden.  That
-				is, when there are no longer windows that show
+BufHidden			Just before a buffer becomes hidden.  That is,
+				when there are no longer windows that show
 				the buffer, but the buffer is not unloaded or
 				deleted.  Not used for ":qa" or ":q" when
 				exiting Vim.
@@ -554,16 +554,14 @@ CmdlineLeave			Before leaving the command line.
 							*CmdwinEnter*
 CmdwinEnter			After entering the command-line window.
 				Useful for setting options specifically for
-				this special type of window.  This is
-				triggered _instead_ of BufEnter and WinEnter.
+				this special type of window.
 				<afile> is set to a single character,
 				indicating the type of command-line.
 				|cmdwin-char|
 							*CmdwinLeave*
 CmdwinLeave			Before leaving the command-line window.
 				Useful to clean up any global setting done
-				with CmdwinEnter.  This is triggered _instead_
-				of BufLeave and WinLeave.
+				with CmdwinEnter.
 				<afile> is set to a single character,
 				indicating the type of command-line.
 				|cmdwin-char|
@@ -595,6 +593,10 @@ CompleteChanged 					*CompleteChanged*
 				    scrollbar		TRUE if visible
 
 				It is not allowed to change the text |textlock|.
+
+				The size and position of the popup are also
+				available by calling |pum_getpos()|.
+
 							*CompleteDone*
 CompleteDone			After Insert mode completion is done.  Either
 				when something was completed or abandoning
@@ -873,15 +875,32 @@ MenuPopup			Just before showing the popup menu (under the
 							*OptionSet*
 OptionSet			After setting an option.  The pattern is
 				matched against the long option name.
-				The |v:option_old| variable indicates the
-				old option value, |v:option_new| variable
-				indicates the newly set value, the
-				|v:option_type| variable indicates whether
-				it's global or local scoped and |<amatch>|
-				indicates what option has been set.
+				|<amatch>| indicates what option has been set.
 
-				Is not triggered on startup and for the 'key'
-				option for obvious reasons.
+				|v:option_type| indicates whether it's global
+				or local scoped.
+				|v:option_command| indicates what type of
+				set/let command was used (follow the tag to
+				see the table).
+				|v:option_new| indicates the newly set value.
+				|v:option_oldlocal| has the old local value.
+				|v:option_oldglobal| has the old global value.
+				|v:option_old| indicates the old option value.
+
+				|v:option_oldlocal| is only set when |:set|
+				or |:setlocal| or a |modeline| was used to set
+				the option. Similarly |v:option_oldglobal| is
+				only set when |:set| or |:setglobal| was used.
+
+				Note that when setting a |global-local| string
+				option with |:set|, then |v:option_old| is the
+				old global value. However, for all other kinds
+				of options (local string options, global-local
+				number options, ...) it is the old local
+				value.
+
+				OptionSet is not triggered on startup and for
+				the 'key' option for obvious reasons.
 
 				Usage example: Check for the existence of the
 				directory in the 'backupdir' and 'undodir'
@@ -1365,7 +1384,7 @@ have changed autocommands, or when Vim has executed the wrong autocommands
 Note that the 'eventignore' option applies here too.  Events listed in this
 option will not cause any commands to be executed.
 
-					*:do* *:doau* *:doautocmd* *E217*
+				*:do* *:doau* *:doaut* *:doautocmd* *E217*
 :do[autocmd] [<nomodeline>] [group] {event} [fname]
 			Apply the autocommands matching [fname] (default:
 			current file name) for {event} to the current buffer.

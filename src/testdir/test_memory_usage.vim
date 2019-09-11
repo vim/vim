@@ -1,9 +1,13 @@
 " Tests for memory usage.
 
-if !has('terminal') || has('gui_running') || $ASAN_OPTIONS !=# ''
+source check.vim
+CheckFeature terminal
+CheckNotGui
+
+if execute('version') =~# '-fsanitize=[a-z,]*\<address\>'
   " Skip tests on Travis CI ASAN build because it's difficult to estimate
   " memory usage.
-  finish
+  throw 'Skipped: does not work with ASAN'
 endif
 
 source shared.vim
@@ -14,7 +18,7 @@ endfunc
 
 if has('win32')
   if !executable('wmic')
-    finish
+    throw 'Skipped: wmic program missing'
   endif
   func s:memory_usage(pid) abort
     let cmd = printf('wmic process where processid=%d get WorkingSetSize', a:pid)
@@ -22,13 +26,13 @@ if has('win32')
   endfunc
 elseif has('unix')
   if !executable('ps')
-    finish
+    throw 'Skipped: ps program missing'
   endif
   func s:memory_usage(pid) abort
     return s:pick_nr(system('ps -o rss= -p ' . a:pid))
   endfunc
 else
-  finish
+  throw 'Skipped: not win32 or unix'
 endif
 
 " Wait for memory usage to level off.
@@ -79,14 +83,15 @@ func Test_memory_func_capture_vargs()
   " Case: if a local variable captures a:000, funccall object will be free
   " just after it finishes.
   let testfile = 'Xtest.vim'
-  call writefile([
-        \ 'func s:f(...)',
-        \ '  let x = a:000',
-        \ 'endfunc',
-        \ 'for _ in range(10000)',
-        \ '  call s:f(0)',
-        \ 'endfor',
-        \ ], testfile)
+  let lines =<< trim END
+        func s:f(...)
+          let x = a:000
+        endfunc
+        for _ in range(10000)
+          call s:f(0)
+        endfor
+  END
+  call writefile(lines, testfile)
 
   let vim = s:vim_new()
   call vim.start('--clean', '-c', 'set noswapfile', testfile)
@@ -97,13 +102,14 @@ func Test_memory_func_capture_vargs()
   let after = s:monitor_memory_usage(vim.pid)
 
   " Estimate the limit of max usage as 2x initial usage.
-  " The lower limit can fluctuate a bit, use 98%.
-  call assert_inrange(before * 98 / 100, 2 * before, after.max)
+  " The lower limit can fluctuate a bit, use 97%.
+  call assert_inrange(before * 97 / 100, 2 * before, after.max)
 
   " In this case, garbage collecting is not needed.
-  " The value might fluctuate a bit, allow for 3% tolerance.
+  " The value might fluctuate a bit, allow for 3% tolerance below and 5% above.
+  " Based on various test runs.
   let lower = after.last * 97 / 100
-  let upper = after.last * 103 / 100
+  let upper = after.last * 105 / 100
   call assert_inrange(lower, upper, after.max)
 
   call vim.stop()
@@ -115,14 +121,15 @@ func Test_memory_func_capture_lvars()
   " free until garbage collector runs, but after that memory usage doesn't
   " increase so much even when rerun Xtest.vim since system memory caches.
   let testfile = 'Xtest.vim'
-  call writefile([
-        \ 'func s:f()',
-        \ '  let x = l:',
-        \ 'endfunc',
-        \ 'for _ in range(10000)',
-        \ '  call s:f()',
-        \ 'endfor',
-        \ ], testfile)
+  let lines =<< trim END
+        func s:f()
+          let x = l:
+        endfunc
+        for _ in range(10000)
+          call s:f()
+        endfor
+  END
+  call writefile(lines, testfile)
 
   let vim = s:vim_new()
   call vim.start('--clean', '-c', 'set noswapfile', testfile)

@@ -376,7 +376,7 @@ CVim::Eval(BSTR expr, BSTR *result)
     if (len == 0)
 	return E_INVALIDARG;
 
-    buffer = (char *)alloc((unsigned)len);
+    buffer = (char *)alloc(len);
 
     if (buffer == NULL)
 	return E_OUTOFMEMORY;

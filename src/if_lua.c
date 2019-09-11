@@ -1980,31 +1980,19 @@ luaV_setref(lua_State *L)
 	{
 	    list_T *l = (list_T *)lua_touserdata(L, 5); // key
 
-	    if (l->lv_copyID != copyID)
-	    {
-		l->lv_copyID = copyID;
-		abort = set_ref_in_list(l, copyID, NULL);
-	    }
+	    abort = set_ref_in_list(l, copyID);
 	}
 	else if (lua_rawequal(L, -1, 3)) // dict?
 	{
 	    dict_T *d = (dict_T *)lua_touserdata(L, 5); // key
 
-	    if (d->dv_copyID != copyID)
-	    {
-		d->dv_copyID = copyID;
-		abort = set_ref_in_ht(&d->dv_hashtab, copyID, NULL);
-	    }
+	    abort = set_ref_in_dict(d, copyID);
 	}
 	else if (lua_rawequal(L, -1, 4)) // funcref?
 	{
 	    luaV_Funcref *f = (luaV_Funcref *)lua_touserdata(L, 5); // key
 
-	    if (f->self != NULL && f->self->dv_copyID != copyID)
-	    {
-		f->self->dv_copyID = copyID;
-		abort = set_ref_in_ht(&f->self->dv_hashtab, copyID, NULL);
-	    }
+	    abort = set_ref_in_dict(f->self, copyID);
 	}
 	lua_pop(L, 2); // metatable and value
     }

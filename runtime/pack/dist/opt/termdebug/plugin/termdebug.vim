@@ -117,10 +117,14 @@ func s:StartDebug_internal(dict)
   let s:startsigncolumn = &signcolumn
 
   let s:save_columns = 0
+  let s:allleft = 0
   if exists('g:termdebug_wide')
     if &columns < g:termdebug_wide
       let s:save_columns = &columns
       let &columns = g:termdebug_wide
+      " If we make the Vim window wider, use the whole left halve for the debug
+      " windows.
+      let s:allleft = 1
     endif
     let s:vertical = 1
   else
@@ -165,6 +169,10 @@ func s:StartDebug_term(dict)
     " Assuming the source code window will get a signcolumn, use two more
     " columns for that, thus one less for the terminal window.
     exe (&columns / 2 - 1) . "wincmd |"
+    if s:allleft
+      " use the whole left column
+      wincmd H
+    endif
   endif
 
   " Create a hidden terminal window to communicate with gdb
@@ -217,10 +225,12 @@ func s:StartDebug_term(dict)
     endif
 
     let response = ''
-    for lnum in range(1,200)
-      if term_getline(s:gdbbuf, lnum) =~ 'new-ui mi '
+    for lnum in range(1, 200)
+      let line1 = term_getline(s:gdbbuf, lnum)
+      let line2 = term_getline(s:gdbbuf, lnum + 1)
+      if line1 =~ 'new-ui mi '
         " response can be in the same line or the next line
-        let response = term_getline(s:gdbbuf, lnum) . term_getline(s:gdbbuf, lnum + 1)
+        let response = line1 . line2
         if response =~ 'Undefined command'
           echoerr 'Sorry, your gdb is too old, gdb 7.12 is required'
 	  call s:CloseBuffers()
@@ -230,6 +240,9 @@ func s:StartDebug_term(dict)
           " Success!
           break
         endif
+      elseif line1 =~ 'Reading symbols from' && line2 !~ 'new-ui mi '
+	" Reading symbols might take a while, try more times
+	let try_count -= 1
       endif
     endfor
     if response =~ 'New UI allocated'
@@ -830,12 +843,12 @@ endfunc
 " if there is any.
 func TermDebugBalloonExpr()
   if v:beval_winid != s:sourcewin
-    return
+    return ''
   endif
   if !s:stopped
     " Only evaluate when stopped, otherwise setting a breakpoint using the
     " mouse triggers a balloon.
-    return
+    return ''
   endif
   let s:evalFromBalloonExpr = 1
   let s:evalFromBalloonExprResult = ''

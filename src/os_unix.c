@@ -2447,7 +2447,8 @@ strerror(int err)
 #endif
 
 /*
- * Get name of current directory into buffer 'buf' of length 'len' bytes.
+ * Get name of current directory into buffer "buf" of length "len" bytes.
+ * "len" must be at least PATH_MAX.
  * Return OK for success, FAIL for failure.
  */
     int
@@ -2516,7 +2517,7 @@ mch_FullName(
     {
 	/*
 	 * If the file name has a path, change to that directory for a moment,
-	 * and then do the getwd() (and get back to where we were).
+	 * and then get the directory (and get back to where we were).
 	 * This will get the correct path name with "../" things.
 	 */
 	if (p != NULL)
@@ -3102,12 +3103,11 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
 
     /* When "use_path" is false and if it's an absolute or relative path don't
      * need to use $PATH. */
-    if (!use_path || mch_isFullName(name) || (name[0] == '.'
-		   && (name[1] == '/' || (name[1] == '.' && name[2] == '/'))))
+    if (!use_path || gettail(name) != name)
     {
 	/* There must be a path separator, files in the current directory
 	 * can't be executed. */
-	if (gettail(name) != name && executable_file(name))
+	if ((use_path || gettail(name) != name) && executable_file(name))
 	{
 	    if (path != NULL)
 	    {
@@ -3124,7 +3124,7 @@ mch_can_exe(char_u *name, char_u **path, int use_path)
     p = (char_u *)getenv("PATH");
     if (p == NULL || *p == NUL)
 	return -1;
-    buf = alloc((unsigned)(STRLEN(name) + STRLEN(p) + 2));
+    buf = alloc(STRLEN(name) + STRLEN(p) + 2);
     if (buf == NULL)
 	return -1;
 
@@ -3209,7 +3209,7 @@ mch_early_init(void)
      * Ignore any errors.
      */
 #if defined(HAVE_SIGALTSTACK) || defined(HAVE_SIGSTACK)
-    signal_stack = (char *)alloc(SIGSTKSZ);
+    signal_stack = alloc(SIGSTKSZ);
     init_signal_stack();
 #endif
 }
@@ -4276,7 +4276,7 @@ open_pty(int *pty_master_fd, int *pty_slave_fd, char_u **name1, char_u **name2)
 /*
  * Send SIGINT to a child process if "c" is an interrupt character.
  */
-    void
+    static void
 may_send_sigint(int c UNUSED, pid_t pid UNUSED, pid_t wpid UNUSED)
 {
 # ifdef SIGINT
@@ -4323,7 +4323,7 @@ build_argv(
 
 	/* Break 'shellcmdflag' into white separated parts.  This doesn't
 	 * handle quoted strings, they are very unlikely to appear. */
-	*shcf_tofree = alloc((unsigned)STRLEN(p_shcf) + 1);
+	*shcf_tofree = alloc(STRLEN(p_shcf) + 1);
 	if (*shcf_tofree == NULL)    /* out of memory */
 	    return FAIL;
 	s = *shcf_tofree;
@@ -4458,9 +4458,9 @@ mch_call_shell_system(
 	else
 	    x = system((char *)cmd);
 # else
-	newcmd = lalloc(STRLEN(p_sh)
+	newcmd = alloc(STRLEN(p_sh)
 		+ (extra_shell_arg == NULL ? 0 : STRLEN(extra_shell_arg))
-		+ STRLEN(p_shcf) + STRLEN(cmd) + 4, TRUE);
+		+ STRLEN(p_shcf) + STRLEN(cmd) + 4);
 	if (newcmd == NULL)
 	    x = 0;
 	else
@@ -5998,14 +5998,20 @@ WaitForCharOrMouse(long msec, int *interrupted, int ignore_input)
 		rest -= msec;
 	}
 # endif
+# ifdef FEAT_SOUND_CANBERRA
+	// Invoke any pending sound callbacks.
+	if (has_sound_callback_in_queue())
+	    invoke_sound_callback();
+# endif
 # ifdef FEAT_MOUSE_GPM
 	gpm_process_wanted = 0;
 	avail = RealWaitForChar(read_cmd_fd, msec,
 					     &gpm_process_wanted, interrupted);
+	if (!avail && !gpm_process_wanted)
 # else
 	avail = RealWaitForChar(read_cmd_fd, msec, NULL, interrupted);
-# endif
 	if (!avail)
+# endif
 	{
 	    if (!ignore_input && input_available())
 		return 1;
@@ -6390,7 +6396,6 @@ select_eintr:
     return result;
 }
 
-#ifndef NO_EXPANDPATH
 /*
  * Expand a path into all matching files and/or directories.  Handles "*",
  * "?", "[a-z]", "**", etc.
@@ -6405,7 +6410,6 @@ mch_expandpath(
 {
     return unix_expandpath(gap, path, 0, flags, FALSE);
 }
-#endif
 
 /*
  * mch_expand_wildcards() - this code does wild-card pattern matching using
@@ -6842,7 +6846,7 @@ mch_expand_wildcards(
 	goto notfound;
     }
     *num_file = i;
-    *file = (char_u **)alloc(sizeof(char_u *) * i);
+    *file = ALLOC_MULT(char_u *, i);
     if (*file == NULL)
     {
 	/* out of memory */
@@ -6899,7 +6903,7 @@ mch_expand_wildcards(
 		    && !mch_can_exe((*file)[i], NULL, !(flags & EW_SHELLCMD)))
 	    continue;
 
-	p = alloc((unsigned)(STRLEN((*file)[i]) + 1 + dir));
+	p = alloc(STRLEN((*file)[i]) + 1 + dir);
 	if (p)
 	{
 	    STRCPY(p, (*file)[i]);
@@ -6937,7 +6941,7 @@ save_patterns(
     int		i;
     char_u	*s;
 
-    *file = (char_u **)alloc(num_pat * sizeof(char_u *));
+    *file = ALLOC_MULT(char_u *, num_pat);
     if (*file == NULL)
 	return FAIL;
     for (i = 0; i < num_pat; i++)
@@ -7774,7 +7778,7 @@ xterm_update(void)
 }
 
     int
-clip_xterm_own_selection(VimClipboard *cbd)
+clip_xterm_own_selection(Clipboard_T *cbd)
 {
     if (xterm_Shell != (Widget)0)
 	return clip_x11_own_selection(xterm_Shell, cbd);
@@ -7782,21 +7786,21 @@ clip_xterm_own_selection(VimClipboard *cbd)
 }
 
     void
-clip_xterm_lose_selection(VimClipboard *cbd)
+clip_xterm_lose_selection(Clipboard_T *cbd)
 {
     if (xterm_Shell != (Widget)0)
 	clip_x11_lose_selection(xterm_Shell, cbd);
 }
 
     void
-clip_xterm_request_selection(VimClipboard *cbd)
+clip_xterm_request_selection(Clipboard_T *cbd)
 {
     if (xterm_Shell != (Widget)0)
 	clip_x11_request_selection(xterm_Shell, xterm_dpy, cbd);
 }
 
     void
-clip_xterm_set_selection(VimClipboard *cbd)
+clip_xterm_set_selection(Clipboard_T *cbd)
 {
     clip_x11_set_selection(cbd);
 }

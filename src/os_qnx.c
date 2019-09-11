@@ -48,18 +48,18 @@ void qnx_clip_init(void)
 
 /* No support for owning the clipboard */
 int
-clip_mch_own_selection(VimClipboard *cbd)
+clip_mch_own_selection(Clipboard_T *cbd)
 {
     return FALSE;
 }
 
 void
-clip_mch_lose_selection(VimClipboard *cbd)
+clip_mch_lose_selection(Clipboard_T *cbd)
 {
 }
 
 void
-clip_mch_request_selection(VimClipboard *cbd)
+clip_mch_request_selection(Clipboard_T *cbd)
 {
     int		    type = MLINE, clip_length = 0, is_type_set = FALSE;
     void	    *cbdata;
@@ -102,7 +102,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 }
 
 void
-clip_mch_set_selection(VimClipboard *cbd)
+clip_mch_set_selection(Clipboard_T *cbd)
 {
     int type;
     long_u  len;
@@ -120,7 +120,7 @@ clip_mch_set_selection(VimClipboard *cbd)
     type = clip_convert_selection(&str, &len, cbd);
     if (type >= 0)
     {
-	text_clip = lalloc(len + 1, TRUE); /* Normal text */
+	text_clip = alloc(len + 1); // Normal text
 
 	if (text_clip && vim_clip)
 	{

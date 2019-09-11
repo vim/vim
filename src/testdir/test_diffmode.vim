@@ -1,6 +1,7 @@
 " Tests for diff mode
 source shared.vim
 source screendump.vim
+source check.vim
 
 func Test_diff_fold_sync()
   enew!
@@ -329,7 +330,7 @@ func Test_diffoff()
   call setline(1, ['One', '', 'Two', 'Three'])
   diffthis
   redraw
-  call assert_notequal(normattr, screenattr(1, 1))
+  call assert_notequal(normattr, 1->screenattr(1))
   diffoff!
   redraw
   call assert_equal(normattr, screenattr(1, 1))
@@ -667,13 +668,13 @@ func Test_diff_hlID()
   diffthis
   redraw
 
-  call assert_equal(synIDattr(diff_hlID(-1, 1), "name"), "")
+  call diff_hlID(-1, 1)->synIDattr("name")->assert_equal("")
 
-  call assert_equal(synIDattr(diff_hlID(1, 1), "name"), "DiffChange")
-  call assert_equal(synIDattr(diff_hlID(1, 2), "name"), "DiffText")
-  call assert_equal(synIDattr(diff_hlID(2, 1), "name"), "")
-  call assert_equal(synIDattr(diff_hlID(3, 1), "name"), "DiffAdd")
-  call assert_equal(synIDattr(diff_hlID(4, 1), "name"), "")
+  call diff_hlID(1, 1)->synIDattr("name")->assert_equal("DiffChange")
+  call diff_hlID(1, 2)->synIDattr("name")->assert_equal("DiffText")
+  call diff_hlID(2, 1)->synIDattr("name")->assert_equal("")
+  call diff_hlID(3, 1)->synIDattr("name")->assert_equal("DiffAdd")
+  eval 4->diff_hlID(1)->synIDattr("name")->assert_equal("")
 
   wincmd w
   call assert_equal(synIDattr(diff_hlID(1, 1), "name"), "DiffChange")
@@ -692,7 +693,7 @@ func Test_diff_filler()
   diffthis
   redraw
 
-  call assert_equal([0, 0, 0, 0, 0, 0, 0, 1, 0], map(range(-1, 7), 'diff_filler(v:val)'))
+  call assert_equal([0, 0, 0, 0, 0, 0, 0, 1, 0], map(range(-1, 7), 'v:val->diff_filler()'))
   wincmd w
   call assert_equal([0, 0, 0, 0, 2, 0, 0, 0], map(range(-1, 6), 'diff_filler(v:val)'))
 
@@ -743,13 +744,14 @@ func VerifyInternal(buf, dumpfile, extra)
   call term_sendkeys(a:buf, ":diffupdate!\<CR>")
   " trailing : for leaving the cursor on the command line
   call term_sendkeys(a:buf, ":set diffopt=internal,filler" . a:extra . "\<CR>:")
+  call term_wait(a:buf)
   call VerifyScreenDump(a:buf, a:dumpfile, {})
 endfunc
 
 func Test_diff_screen()
-  if !CanRunVimInTerminal() || !has('menu')
-    return
-  endif
+  CheckScreendump
+  CheckFeature menu
+
   " clean up already existing swap files, just in case
   call delete('.Xfile1.swp')
   call delete('.Xfile2.swp')
@@ -879,9 +881,7 @@ func Test_diff_screen()
 endfunc
 
 func Test_diff_with_cursorline()
-  if !CanRunVimInTerminal()
-    return
-  endif
+  CheckScreendump
 
   call writefile([
 	\ 'hi CursorLine ctermbg=red ctermfg=white',
@@ -906,9 +906,8 @@ func Test_diff_with_cursorline()
 endfunc
 
 func Test_diff_of_diff()
-  if !CanRunVimInTerminal()
-    return
-  endif
+  CheckScreendump
+  CheckFeature rightleft
 
   call writefile([
 	\ 'call setline(1, ["aa","bb","cc","@@ -3,2 +5,7 @@","dd","ee","ff"])',

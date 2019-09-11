@@ -358,6 +358,16 @@ setup_job_options(jobopt_T *opt, int rows, int cols)
 }
 
 /*
+ * Flush messages on channels.
+ */
+    static void
+term_flush_messages()
+{
+    mch_check_messages();
+    parse_queued_messages();
+}
+
+/*
  * Close a terminal buffer (and its window).  Used when creating the terminal
  * fails.
  */
@@ -413,7 +423,7 @@ term_start(
 	return NULL;
     }
 
-    term = (term_T *)alloc_clear(sizeof(term_T));
+    term = ALLOC_CLEAR_ONE(term_T);
     if (term == NULL)
 	return NULL;
     term->tl_dirty_row_end = MAX_ROW;
@@ -534,7 +544,7 @@ term_start(
 	    cmd = (char_u*)"";
 
 	len = STRLEN(cmd) + 10;
-	p = alloc((int)len);
+	p = alloc(len);
 
 	for (i = 0; p != NULL; ++i)
 	{
@@ -865,7 +875,7 @@ free_scrollback(term_T *term)
 
 
 // Terminals that need to be freed soon.
-term_T	*terminals_to_free = NULL;
+static term_T	*terminals_to_free = NULL;
 
 /*
  * Free a terminal and everything it refers to.
@@ -1455,8 +1465,7 @@ term_try_stop_job(buf_T *buf)
 	    return OK;
 
 	ui_delay(10L, FALSE);
-	mch_check_messages();
-	parse_queued_messages();
+	term_flush_messages();
     }
     return FAIL;
 }
@@ -1630,7 +1639,7 @@ update_snapshot(term_T *term)
 	    if (len == 0)
 		p = NULL;
 	    else
-		p = (cellattr_T *)alloc((int)sizeof(cellattr_T) * len);
+		p = ALLOC_MULT(cellattr_T, len);
 	    if ((p != NULL || len == 0)
 				     && ga_grow(&term->tl_scrollback, 1) == OK)
 	    {
@@ -2363,8 +2372,13 @@ terminal_loop(int blocking)
 	    }
 	    else if (termwinkey == 0 || c != termwinkey)
 	    {
-		stuffcharReadbuff(Ctrl_W);
-		stuffcharReadbuff(c);
+		char_u buf[MB_MAXBYTES + 2];
+
+		// Put the command into the typeahead buffer, when using the
+		// stuff buffer KeyStuffed is set and 'langmap' won't be used.
+		buf[0] = Ctrl_W;
+		buf[(*mb_char2bytes)(c, buf + 1) + 1] = NUL;
+		ins_typebuf(buf, REMAP_NONE, 0, TRUE, FALSE);
 		ret = OK;
 		goto theend;
 	    }
@@ -2884,7 +2898,7 @@ handle_pushline(int cols, const VTermScreenCell *cells, void *user)
 
 	ga_init2(&ga, 1, 100);
 	if (len > 0)
-	    p = (cellattr_T *)alloc((int)sizeof(cellattr_T) * len);
+	    p = ALLOC_MULT(cellattr_T, len);
 	if (p != NULL)
 	{
 	    for (col = 0; col < len; col += cells[col].width)
@@ -3019,6 +3033,8 @@ term_after_channel_closed(term_T *term)
 	    ch_log(NULL, "terminal job finished, closing window");
 	    aucmd_prepbuf(&aco, term->tl_buffer);
 	    // Avoid closing the window if we temporarily use it.
+	    if (curwin == aucmd_win)
+		do_set_w_closing = TRUE;
 	    if (do_set_w_closing)
 		curwin->w_closing = TRUE;
 	    do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
@@ -3062,7 +3078,7 @@ term_channel_closed(channel_T *ch)
     for (term = first_term; term != NULL; term = next_term)
     {
 	next_term = term->tl_next;
-	if (term->tl_job == ch->ch_job)
+	if (term->tl_job == ch->ch_job && !term->tl_channel_closed)
 	{
 	    term->tl_channel_closed = TRUE;
 	    did_one = TRUE;
@@ -3257,7 +3273,7 @@ update_system_term(term_T *term)
 	else
 	    pos.col = 0;
 
-	screen_line(term->tl_toprow + pos.row, 0, pos.col, Columns, FALSE);
+	screen_line(term->tl_toprow + pos.row, 0, pos.col, Columns, 0);
     }
 
     term->tl_dirty_row_start = MAX_ROW;
@@ -3368,7 +3384,7 @@ term_update_window(win_T *wp)
 #ifdef FEAT_MENU
 				+ winbar_height(wp)
 #endif
-				, wp->w_wincol, pos.col, wp->w_width, FALSE);
+				, wp->w_wincol, pos.col, wp->w_width, 0);
     }
     term->tl_dirty_row_start = MAX_ROW;
     term->tl_dirty_row_end = 0;
@@ -3718,7 +3734,7 @@ handle_drop_command(listitem_T *item)
 	    p = dict_get_string(dict, (char_u *)"encoding", FALSE);
 	if (p != NULL)
 	{
-	    ea.cmd = alloc((int)STRLEN(p) + 12);
+	    ea.cmd = alloc(STRLEN(p) + 12);
 	    if (ea.cmd != NULL)
 	    {
 		sprintf((char *)ea.cmd, "sbuf ++enc=%s", p);
@@ -3761,7 +3777,7 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
     char_u	*func;
     typval_T	argvars[2];
     typval_T	rettv;
-    int		doesrange;
+    funcexe_T	funcexe;
 
     if (item->li_next == NULL)
     {
@@ -3779,11 +3795,11 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
     argvars[0].v_type = VAR_NUMBER;
     argvars[0].vval.v_number = term->tl_buffer->b_fnum;
     argvars[1] = item->li_next->li_tv;
-    if (call_func(func, -1, &rettv,
-		2, argvars, /* argv_func */ NULL,
-		/* firstline */ 1, /* lastline */ 1,
-		&doesrange, /* evaluate */ TRUE,
-		/* partial */ NULL, /* selfdict */ NULL) == OK)
+    vim_memset(&funcexe, 0, sizeof(funcexe));
+    funcexe.firstline = 1L;
+    funcexe.lastline = 1L;
+    funcexe.evaluate = TRUE;
+    if (call_func(func, -1, &rettv, 2, argvars, &funcexe) == OK)
     {
 	clear_tv(&rettv);
 	ch_log(channel, "Function %s called", func);
@@ -3925,7 +3941,7 @@ static VTermParserCallbacks parser_fallbacks = {
     static void *
 vterm_malloc(size_t size, void *data UNUSED)
 {
-    return alloc_clear((unsigned) size);
+    return alloc_clear(size);
 }
 
     static void
@@ -4031,7 +4047,7 @@ term_get_status_text(term_T *term)
 	else
 	    txt = (char_u *)_("finished");
 	len = 9 + STRLEN(term->tl_buffer->b_fname) + STRLEN(txt);
-	term->tl_status_text = alloc((int)len);
+	term->tl_status_text = alloc(len);
 	if (term->tl_status_text != NULL)
 	    vim_snprintf((char *)term->tl_status_text, len, "%s [%s]",
 						term->tl_buffer->b_fname, txt);
@@ -4049,7 +4065,7 @@ set_ref_in_term(int copyID)
     term_T	*term;
     typval_T	tv;
 
-    for (term = first_term; term != NULL; term = term->tl_next)
+    for (term = first_term; !abort && term != NULL; term = term->tl_next)
 	if (term->tl_job != NULL)
 	{
 	    tv.v_type = VAR_JOB;
@@ -4616,7 +4632,7 @@ get_separator(int text_width, char_u *fname)
 term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 {
     jobopt_T	opt;
-    buf_T	*buf;
+    buf_T	*buf = NULL;
     char_u	buf1[NUMBUFLEN];
     char_u	buf2[NUMBUFLEN];
     char_u	*fname1;
@@ -4663,7 +4679,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
     {
 	size_t len = STRLEN(fname1) + 12;
 
-	fname_tofree = alloc((int)len);
+	fname_tofree = alloc(len);
 	if (fname_tofree != NULL)
 	{
 	    vim_snprintf((char *)fname_tofree, len, "dump diff %s", fname1);
@@ -4671,7 +4687,27 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	}
     }
 
-    buf = term_start(&argvars[0], NULL, &opt, TERM_START_NOJOB);
+    if (opt.jo_bufnr_buf != NULL)
+    {
+	win_T *wp = buf_jump_open_win(opt.jo_bufnr_buf);
+
+	// With "bufnr" argument: enter the window with this buffer and make it
+	// empty.
+	if (wp == NULL)
+	    semsg(_(e_invarg2), "bufnr");
+	else
+	{
+	    buf = curbuf;
+	    while (!(curbuf->b_ml.ml_flags & ML_EMPTY))
+		ml_delete((linenr_T)1, FALSE);
+	    ga_clear(&curbuf->b_term->tl_scrollback);
+	    redraw_later(NOT_VALID);
+	}
+    }
+    else
+	// Create a new terminal window.
+	buf = term_start(&argvars[0], NULL, &opt, TERM_START_NOJOB);
+
     if (buf != NULL && buf->b_term != NULL)
     {
 	int		i;
@@ -4935,7 +4971,7 @@ term_swap_diff()
     else
     {
 	size_t		size = sizeof(sb_line_T) * term->tl_scrollback.ga_len;
-	sb_line_T	*temp = (sb_line_T *)alloc((int)size);
+	sb_line_T	*temp = alloc(size);
 
 	/* need to copy cell properties into temp memory */
 	if (temp != NULL)
@@ -5019,6 +5055,8 @@ f_term_getattr(typval_T *argvars, typval_T *rettv)
     if (name == NULL)
 	return;
 
+    if (attr > HL_ALL)
+	attr = syn_attr2attr(attr);
     for (i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
 	if (STRCMP(name, attrs[i].name) == 0)
 	{
@@ -5606,33 +5644,31 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 	ch_log(NULL, "term_wait(): waiting for channel to close");
 	while (buf->b_term != NULL && !buf->b_term->tl_channel_closed)
 	{
-	    mch_check_messages();
-	    parse_queued_messages();
+	    term_flush_messages();
+
 	    ui_delay(10L, FALSE);
 	    if (!buf_valid(buf))
 		/* If the terminal is closed when the channel is closed the
 		 * buffer disappears. */
 		break;
 	}
-	mch_check_messages();
-	parse_queued_messages();
+
+	term_flush_messages();
     }
     else
     {
 	long wait = 10L;
 
-	mch_check_messages();
-	parse_queued_messages();
+	term_flush_messages();
 
 	/* Wait for some time for any channel I/O. */
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	    wait = tv_get_number(&argvars[1]);
 	ui_delay(wait, TRUE);
-	mch_check_messages();
 
 	/* Flushing messages on channels is hopefully sufficient.
 	 * TODO: is there a better way? */
-	parse_queued_messages();
+	term_flush_messages();
     }
 }
 
@@ -5800,7 +5836,7 @@ conpty_term_and_job_init(
     {
 	/* Request by CreateProcessW */
 	breq = wcslen(cmd_wchar) + 1 + 1;	/* Addition of NUL by API */
-	cmd_wchar_copy = (PWSTR)alloc((int)(breq * sizeof(WCHAR)));
+	cmd_wchar_copy = ALLOC_MULT(WCHAR, breq);
 	wcsncpy(cmd_wchar_copy, cmd_wchar, breq - 1);
     }
 
@@ -5829,8 +5865,7 @@ conpty_term_and_job_init(
 
     /* Set up pipe inheritance safely: Vista or later. */
     pInitializeProcThreadAttributeList(NULL, 1, 0, &breq);
-    term->tl_siex.lpAttributeList =
-	    (PPROC_THREAD_ATTRIBUTE_LIST)alloc((int)breq);
+    term->tl_siex.lpAttributeList = alloc(breq);
     if (!term->tl_siex.lpAttributeList)
 	goto failed;
     if (!pInitializeProcThreadAttributeList(term->tl_siex.lpAttributeList, 1,
@@ -5989,7 +6024,7 @@ conpty_term_report_winsize(term_T *term, int rows, int cols)
     pResizePseudoConsole(term->tl_conpty, consize);
 }
 
-    void
+    static void
 term_free_conpty(term_T *term)
 {
     if (term->tl_siex.lpAttributeList != NULL)

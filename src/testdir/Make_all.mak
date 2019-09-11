@@ -13,7 +13,6 @@ SCRIPTS_FIRST = \
 
 # Tests that run on all systems.
 SCRIPTS_ALL = \
-	test3.out \
 	test39.out \
 	test42.out \
 	test44.out \
@@ -42,7 +41,6 @@ SCRIPTS_MORE2 = \
 
 # Tests that run on most systems, but not on VMS
 SCRIPTS_MORE4 = \
-	test30.out \
 	test59.out \
 	test72.out \
 
@@ -67,6 +65,7 @@ NEW_TESTS = \
 	test_backspace_opt \
 	test_backup \
 	test_balloon \
+	test_balloon_gui \
 	test_behave \
 	test_blob \
 	test_blockedit \
@@ -89,9 +88,11 @@ NEW_TESTS = \
 	test_comparators \
 	test_compiler \
 	test_conceal \
+	test_const \
 	test_crypt \
 	test_cscope \
 	test_cursor_func \
+	test_cursorline \
 	test_curswant \
 	test_debugger \
 	test_delete \
@@ -106,6 +107,7 @@ NEW_TESTS = \
 	test_ex_equal \
 	test_ex_undo \
 	test_ex_z \
+	test_excmd \
 	test_exec_while_if \
 	test_execute_func \
 	test_exists \
@@ -179,6 +181,7 @@ NEW_TESTS = \
 	test_matchadd_conceal \
 	test_matchadd_conceal_utf8 \
 	test_memory_usage \
+	test_method \
 	test_menu \
 	test_messages \
 	test_mksession \
@@ -196,6 +199,8 @@ NEW_TESTS = \
 	test_perl \
 	test_plus_arg_edit \
 	test_popup \
+	test_popupwin \
+	test_popupwin_textprop \
 	test_preview \
 	test_profile \
 	test_prompt_buffer \
@@ -224,14 +229,17 @@ NEW_TESTS = \
 	test_searchpos \
 	test_set \
 	test_sha256 \
+	test_shift \
 	test_shortpathname \
 	test_signals \
 	test_signs \
 	test_smartindent \
 	test_sort \
+	test_sound \
 	test_source \
 	test_source_utf8 \
 	test_spell \
+	test_spellfile \
 	test_startup \
 	test_startup_utf8 \
 	test_stat \
@@ -250,8 +258,8 @@ NEW_TESTS = \
 	test_tagjump \
 	test_taglist \
 	test_tcl \
-	test_termencoding \
 	test_termcodes \
+	test_termencoding \
 	test_terminal \
 	test_terminal_fail \
 	test_textformat \
@@ -296,6 +304,7 @@ NEW_TESTS_RES = \
 	test_autoload.res \
 	test_backspace_opt.res \
 	test_balloon.res \
+	test_balloon_gui.res \
 	test_blob.res \
 	test_blockedit.res \
 	test_breakindent.res \
@@ -312,6 +321,7 @@ NEW_TESTS_RES = \
 	test_command_count.res \
 	test_comparators.res \
 	test_conceal.res \
+	test_const.res \
 	test_crypt.res \
 	test_cscope.res \
 	test_curswant.res \
@@ -324,6 +334,7 @@ NEW_TESTS_RES = \
 	test_erasebackword.res \
 	test_escaped_glob.res \
 	test_eval_stuff.res \
+	test_excmd.res \
 	test_exec_while_if.res \
 	test_exists.res \
 	test_exists_autocmd.res \
@@ -367,6 +378,7 @@ NEW_TESTS_RES = \
 	test_marks.res \
 	test_matchadd_conceal.res \
 	test_memory_usage.res \
+	test_method.res \
 	test_mksession.res \
 	test_nested_function.res \
 	test_netbeans.res \
@@ -377,6 +389,8 @@ NEW_TESTS_RES = \
 	test_paste.res \
 	test_perl.res \
 	test_plus_arg_edit.res \
+	test_popupwin.res \
+	test_popupwin_textprop.res \
 	test_preview.res \
 	test_profile.res \
 	test_prompt_buffer.res \
@@ -399,8 +413,10 @@ NEW_TESTS_RES = \
 	test_signals.res \
 	test_signs.res \
 	test_smartindent.res \
+	test_sound.res \
 	test_source.res \
 	test_spell.res \
+	test_spellfile.res \
 	test_startup.res \
 	test_stat.res \
 	test_substitute.res \
@@ -409,8 +425,8 @@ NEW_TESTS_RES = \
 	test_system.res \
 	test_tab.res \
 	test_tcl.res \
-	test_termencoding.res \
 	test_termcodes.res \
+	test_termencoding.res \
 	test_terminal.res \
 	test_terminal_fail.res \
 	test_textformat.res \

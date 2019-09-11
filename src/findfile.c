@@ -188,6 +188,7 @@ static int ff_check_visited(ff_visited_T **, char_u *, char_u *);
 #else
 static int ff_check_visited(ff_visited_T **, char_u *);
 #endif
+static void vim_findfile_free_visited(void *search_ctx_arg);
 static void vim_findfile_free_visited_list(ff_visited_list_hdr_T **list_headp);
 static void ff_free_visited_list(ff_visited_T *vl);
 static ff_visited_list_hdr_T* ff_get_visited_list(char_u *, ff_visited_list_hdr_T **list_headp);
@@ -319,7 +320,7 @@ vim_findfile_init(
 	search_ctx = search_ctx_arg;
     else
     {
-	search_ctx = (ff_search_ctx_T*)alloc((unsigned)sizeof(ff_search_ctx_T));
+	search_ctx = ALLOC_ONE(ff_search_ctx_T);
 	if (search_ctx == NULL)
 	    goto error_return;
 	vim_memset(search_ctx, 0, sizeof(ff_search_ctx_T));
@@ -350,7 +351,7 @@ vim_findfile_init(
 
     if (ff_expand_buffer == NULL)
     {
-	ff_expand_buffer = (char_u*)alloc(MAXPATHL);
+	ff_expand_buffer = alloc(MAXPATHL);
 	if (ff_expand_buffer == NULL)
 	    goto error_return;
     }
@@ -430,8 +431,7 @@ vim_findfile_init(
 	    walker++;
 
 	dircount = 1;
-	search_ctx->ffsc_stopdirs_v =
-				 (char_u **)alloc((unsigned)sizeof(char_u *));
+	search_ctx->ffsc_stopdirs_v = ALLOC_ONE(char_u *);
 
 	if (search_ctx->ffsc_stopdirs_v != NULL)
 	{
@@ -589,9 +589,9 @@ vim_findfile_init(
 	    if (search_ctx->ffsc_wc_path != NULL)
 	    {
 		wc_path = vim_strsave(search_ctx->ffsc_wc_path);
-		temp = alloc((int)(STRLEN(search_ctx->ffsc_wc_path)
+		temp = alloc(STRLEN(search_ctx->ffsc_wc_path)
 				 + STRLEN(search_ctx->ffsc_fix_path + len)
-				 + 1));
+				 + 1);
 		if (temp == NULL || wc_path == NULL)
 		{
 		    vim_free(buf);
@@ -723,7 +723,7 @@ vim_findfile(void *search_ctx_arg)
      * filepath is used as buffer for various actions and as the storage to
      * return a found filename.
      */
-    if ((file_path = alloc((int)MAXPATHL)) == NULL)
+    if ((file_path = alloc(MAXPATHL)) == NULL)
 	return NULL;
 
 #ifdef FEAT_PATH_EXTRA
@@ -926,8 +926,7 @@ vim_findfile(void *search_ctx_arg)
 		 */
 		if (path_with_url(dirptrs[0]))
 		{
-		    stackp->ffs_filearray = (char_u **)
-					      alloc((unsigned)sizeof(char *));
+		    stackp->ffs_filearray = ALLOC_ONE(char_u *);
 		    if (stackp->ffs_filearray != NULL
 			    && (stackp->ffs_filearray[0]
 				= vim_strsave(dirptrs[0])) != NULL)
@@ -1188,7 +1187,7 @@ fail:
  * Free the list of lists of visited files and directories
  * Can handle it if the passed search_context is NULL;
  */
-    void
+    static void
 vim_findfile_free_visited(void *search_ctx_arg)
 {
     ff_search_ctx_T *search_ctx;
@@ -1285,7 +1284,7 @@ ff_get_visited_list(
     /*
      * if we reach this we didn't find a list and we have to allocate new list
      */
-    retptr = (ff_visited_list_hdr_T*)alloc((unsigned)sizeof(*retptr));
+    retptr = ALLOC_ONE(ff_visited_list_hdr_T);
     if (retptr == NULL)
 	return NULL;
 
@@ -1413,8 +1412,7 @@ ff_check_visited(
     /*
      * New file/dir.  Add it to the list of visited files/dirs.
      */
-    vp = (ff_visited_T *)alloc((unsigned)(sizeof(ff_visited_T)
-						 + STRLEN(ff_expand_buffer)));
+    vp = alloc(sizeof(ff_visited_T) + STRLEN(ff_expand_buffer));
 
     if (vp != NULL)
     {
@@ -1462,7 +1460,7 @@ ff_create_stack_element(
 {
     ff_stack_T	*new;
 
-    new = (ff_stack_T *)alloc((unsigned)sizeof(ff_stack_T));
+    new = ALLOC_ONE(ff_stack_T);
     if (new == NULL)
 	return NULL;
 
@@ -1869,7 +1867,7 @@ find_file_in_path_option(
 		    break;
 		}
 
-		if ((buf = alloc((int)(MAXPATHL))) == NULL)
+		if ((buf = alloc(MAXPATHL)) == NULL)
 		    break;
 
 		// copy next path
@@ -2277,7 +2275,7 @@ expand_path_option(char_u *curdir, garray_T *gap)
     char_u	*p;
     int		len;
 
-    if ((buf = alloc((int)MAXPATHL)) == NULL)
+    if ((buf = alloc(MAXPATHL)) == NULL)
 	return;
 
     while (*path_option != NUL)
@@ -2427,12 +2425,12 @@ uniquefy_paths(garray_T *gap, char_u *pattern)
     if (regmatch.regprog == NULL)
 	return;
 
-    if ((curdir = alloc((int)(MAXPATHL))) == NULL)
+    if ((curdir = alloc(MAXPATHL)) == NULL)
 	goto theend;
     mch_dirname(curdir, MAXPATHL);
     expand_path_option(curdir, &path_ga);
 
-    in_curdir = (char_u **)alloc_clear(gap->ga_len * sizeof(char_u *));
+    in_curdir = ALLOC_CLEAR_MULT(char_u *, gap->ga_len);
     if (in_curdir == NULL)
 	goto theend;
 
@@ -2535,7 +2533,7 @@ uniquefy_paths(garray_T *gap, char_u *pattern)
 	    continue;
 	}
 
-	rel_path = alloc((int)(STRLEN(short_name) + STRLEN(PATHSEPSTR) + 2));
+	rel_path = alloc(STRLEN(short_name) + STRLEN(PATHSEPSTR) + 2);
 	if (rel_path == NULL)
 	    goto theend;
 	STRCPY(rel_path, ".");
@@ -2579,7 +2577,7 @@ expand_in_path(
     char_u	*paths = NULL;
     int		glob_flags = 0;
 
-    if ((curdir = alloc((unsigned)MAXPATHL)) == NULL)
+    if ((curdir = alloc(MAXPATHL)) == NULL)
 	return 0;
     mch_dirname(curdir, MAXPATHL);
 
@@ -2817,3 +2815,19 @@ simplify_filename(char_u *filename)
     } while (*p != NUL);
 #endif // !AMIGA
 }
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * "simplify()" function
+ */
+    void
+f_simplify(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*p;
+
+    p = tv_get_string(&argvars[0]);
+    rettv->vval.v_string = vim_strsave(p);
+    simplify_filename(rettv->vval.v_string);	/* simplify in place */
+    rettv->v_type = VAR_STRING;
+}
+#endif // FEAT_EVAL

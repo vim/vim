@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.1.  Last change: 2019 May 05
+*starting.txt*  For Vim version 8.1.  Last change: 2019 Jul 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -152,8 +152,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		This can be used to find out where time is spent while loading
 		your .vimrc, plugins and opening the first file.
 		When {fname} already exists new messages are appended.
-		(Only available when compiled with the |+startuptime|
-		feature).
+		{only available when compiled with the |+startuptime|
+		feature}
 
 							*--literal*
 --literal	Take file names literally, don't expand wildcards.  Not needed
@@ -311,10 +311,10 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 -l		Lisp mode.  Sets the 'lisp' and 'showmatch' options on.
 
 							*-A*
--A		Arabic mode.  Sets the 'arabic' option on.  (Only when
+-A		Arabic mode.  Sets the 'arabic' option on.  {only when
 		compiled with the |+arabic| features (which include
 		|+rightleft|), otherwise Vim gives an error message
-		and exits.)
+		and exits}
 
 							*-F*
 -F		This was used for Farsi mode, which has been removed.
@@ -322,8 +322,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 
 							*-H*
 -H		Hebrew mode.  Sets the 'hkmap' and 'rightleft' options on.
-		(Only when compiled with the |+rightleft| feature, otherwise
-		Vim gives an error message and exits.)
+		{only when compiled with the |+rightleft| feature, otherwise
+		Vim gives an error message and exits}
 
 							*-V* *verbose*
 -V[N]		Verbose.  Sets the 'verbose' option to [N] (default: 10).
@@ -1189,6 +1189,8 @@ greps in the help files) you might be able to use this: >
 
 	VIMRUNTIME=`vim -e -T dumb --cmd 'exe "set t_cm=\<C-M>"|echo $VIMRUNTIME|quit' | tr -d '\015' `
 
+Don't set $VIMRUNTIME to an empty value, some things may stop working.
+
 ==============================================================================
 6. Suspending						*suspend*
 
@@ -1252,7 +1254,7 @@ vimrc file.
 			options to [file] (default ".exrc" in the current
 			directory).
 
-							*:mkv* *:mkvimrc*
+						*:mkv* *:mkvi* *:mkvimrc*
 :mkv[imrc][!] [file]	Like ":mkexrc", but the default is ".vimrc" in the
 			current directory.  The ":version" command is also
 			written to the file.

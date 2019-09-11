@@ -4,7 +4,7 @@
 # Authors:	Zoltan Arpadffy, <arpadffy@polarhome.com>
 #		Sandor Kopanyi,  <sandor.kopanyi@mailbox.hu>
 #
-# Last change:  2016 Nov 04
+# Last change:  2019 May 31
 #
 # This has been tested on VMS 6.2 to 8.3 on DEC Alpha, VAX and IA64.
 # Edit the lines in the Configuration section below to select.
@@ -73,8 +73,8 @@ VIMPROG = <->vim.exe
 
 .SUFFIXES : .out .in
 
-SCRIPT = test1.out test3.out \
-       test30.out test39.out \
+SCRIPT = test1.out \
+       test39.out \
        test42.out test44.out test48.out test49.out \
        test64.out test69.out \
        test72.out test77a.out test88.out \
@@ -82,8 +82,6 @@ SCRIPT = test1.out test3.out \
        test_eval.out
 
 # Known problems:
-#
-# test30: bug, most probably - a problem around mac format
 #
 # test59: Failed/Hangs - VMS does not support spell files (file names
 # with too many dots).

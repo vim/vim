@@ -34,7 +34,7 @@ function Test_tabpage()
   tabnew
   tabfirst
   call settabvar(2, 'val_num', 100)
-  call settabvar(2, 'val_str', 'SetTabVar test')
+  eval 'SetTabVar test'->settabvar(2, 'val_str')
   call settabvar(2, 'val_list', ['red', 'blue', 'green'])
   "
   call assert_true(gettabvar(2, 'val_num') == 100 && gettabvar(2, 'val_str') == 'SetTabVar test' && gettabvar(2, 'val_list') == ['red', 'blue', 'green'])
@@ -58,7 +58,7 @@ function Test_tabpage()
   q
   "
   "
-  " Test for ":tab drop multi-opend-file" to keep current tabpage and window.
+  " Test for ":tab drop multi-opened-file" to keep current tabpage and window.
   new test1
   tabnew
   new test1
@@ -183,7 +183,7 @@ function Test_tabpage_with_autocmd()
   let s:li = split(join(map(copy(winr), 'gettabwinvar('.tabn.', v:val, "a")')), '\s\+')
   call assert_equal(['a', 'a'], s:li)
   let s:li = []
-  C call map(copy(winr), 'settabwinvar('.tabn.', v:val, ''a'', v:val*2)')
+  C call map(copy(winr), '(v:val*2)->settabwinvar(' .. tabn .. ', v:val, ''a'')')
   let s:li = split(join(map(copy(winr), 'gettabwinvar('.tabn.', v:val, "a")')), '\s\+')
   call assert_equal(['2', '4'], s:li)
 
@@ -555,7 +555,7 @@ endfunc
 
 func Test_tabpage_cmdheight()
   if !CanRunVimInTerminal()
-    throw 'Skipped: only works with terminal'
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
         \ 'set laststatus=2',

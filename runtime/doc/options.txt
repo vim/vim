@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 May 08
+*options.txt*	For Vim version 8.1.  Last change: 2019 Aug 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -578,14 +578,17 @@ backslash in front of the ':' will be removed.  Example:
    /* vi:set dir=c\:\tmp: */ ~
 This sets the 'dir' option to "c:\tmp".  Only a single backslash before the
 ':' is removed.  Thus to include "\:" you have to specify "\\:".
-
+							*E992*
 No other commands than "set" are supported, for security reasons (somebody
 might create a Trojan horse text file with modelines).  And not all options
-can be set.  For some options a flag is set, so that when it's used the
-|sandbox| is effective.  Still, there is always a small risk that a modeline
-causes trouble.  E.g., when some joker sets 'textwidth' to 5 all your lines
-are wrapped unexpectedly.  So disable modelines before editing untrusted text.
-The mail ftplugin does this, for example.
+can be set.  For some options a flag is set, so that when the value is used
+the |sandbox| is effective.  Some options can only be set from the modeline
+when 'modelineexpr' is set (the default is off).
+
+Still, there is always a small risk that a modeline causes trouble.  E.g.,
+when some joker sets 'textwidth' to 5 all your lines are wrapped unexpectedly.
+So disable modelines before editing untrusted text.  The mail ftplugin does
+this, for example.
 
 Hint: If you would like to do something else than setting an option, you could
 define an autocommand that checks the file for a specific string.  For
@@ -1128,6 +1131,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	v:beval_col	column number (byte index)
 	v:beval_text	word under or after the mouse pointer
 
+	Instead of showing a balloon, which is limited to plain text, consider
+	using a popup window, see |popup_beval_example|.  A popup window can
+	use highlighting and show a border.
+
 	The evaluation of the expression must not have side effects!
 	Example: >
     function MyBalloonExpr()
@@ -1139,8 +1146,10 @@ A jump table for the options with a short description can be found at |Q_op|.
     set bexpr=MyBalloonExpr()
     set ballooneval
 <
-	Also see |balloon_show()|, can be used if the content of the balloon
-	is to be fetched asynchronously.
+	Also see |balloon_show()|, it can be used if the content of the balloon
+	is to be fetched asynchronously.  In that case evaluating
+	'balloonexpr' should result in an empty string.  If you get a balloon
+	with only "0" you probably didn't return anything from your function.
 
 	NOTE: The balloon is displayed only if the cursor is on a text
 	character.  If the result of evaluating 'balloonexpr' is not empty,
@@ -1149,9 +1158,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	It is not allowed to change text or jump to another window while
-	evaluating 'balloonexpr' |textlock|.
+	evaluating 'balloonexpr', see |textlock|.
 
 	To check whether line breaks in the balloon text work use this check: >
 		if has("balloon_multiline")
@@ -1357,6 +1367,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  prompt	buffer where only the last line can be edited, meant
 			to be used by a plugin, see |prompt-buffer|
 			{only when compiled with the |+channel| feature}
+	  popup		buffer used in a popup window, see |popup|.
+			{only when compiled with the |+textprop| feature}
 
 	This option is used together with 'bufhidden' and 'swapfile' to
 	specify special kinds of buffers.   See |special-buffers|.
@@ -1428,8 +1440,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'cedit'*
 'cedit'			string	(Vi default: "", Vim default: CTRL-F)
 			global
-			{not available when compiled without the |+vertsplit|
-			feature}
 	The key used in Command-line Mode to open the command-line window.
 	The default is CTRL-F when 'compatible' is off.
 	Only non-printable keys are allowed.
@@ -1632,8 +1642,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'cmdwinheight'* *'cwh'*
 'cmdwinheight' 'cwh'	number	(default 7)
 			global
-			{not available when compiled without the |+vertsplit|
-			feature}
 	Number of screen lines to use for the command-line window. |cmdwin|
 
 						*'colorcolumn'* *'cc'*
@@ -1858,7 +1866,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'completefunc' 'cfu'	string	(default: empty)
 			local to buffer
 			{not available when compiled without the |+eval|
-			or |+insert_expand| features}
+			feature}
 	This option specifies a function to be used for Insert mode completion
 	with CTRL-X CTRL-U. |i_CTRL-X_CTRL-U|
 	See |complete-functions| for an explanation of how the function is
@@ -1866,11 +1874,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
+						*'completeslash'* *'csl'*
+'completeslash' 'csl'	string	(default: "")
+			local to buffer
+			{not in Vi}  {only for MS-Windows}
+	When this option is set it overrules 'shellslash' for completion:
+	- When this option is set to "slash", a forward slash is used for path
+	  completion in insert mode. This is useful when editing HTML tag, or
+	  Makefile with 'noshellslash' on Windows.
+	- When this option is set to "backslash", backslash is used. This is
+	  useful when editing a batch file with 'shellslash' set on Windows.
+	- When this option is empty, same character is used as for
+	  'shellslash'.
+	For Insert mode completion the buffer-local value is used.  For
+	command line completion the global value is used.
+
 						*'completeopt'* *'cot'*
 'completeopt' 'cot'	string	(default: "menu,preview")
 			global
-			{not available when compiled without the
-			|+insert_expand| feature}
 	A comma separated list of options for Insert mode completion
 	|ins-completion|.  The supported values are:
 
@@ -1892,6 +1913,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    completion in the preview window.  Only works in
 		    combination with "menu" or "menuone".
 
+	   popup    Show extra information about the currently selected
+		    completion in a popup window.  Only works in combination
+		    with "menu" or "menuone".  Overrides "preview".
+		    See |'completepopup'| for specifying properties.
+		    {only works when compiled with the +textprop feature}
+
 	   noinsert Do not insert any text for a match until the user selects
 		    a match from the menu. Only works in combination with
 		    "menu" or "menuone". No effect if "longest" is present.
@@ -1899,6 +1926,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   noselect Do not select a match in the menu, force the user to
 		    select one from the menu. Only works in combination with
 		    "menu" or "menuone".
+
+
+					*'completepopup'* *'cpp'*
+'completepopup' 'cpp'	string (default empty)
+			global
+			{not available when compiled without the |+textprop|
+			or |+quickfix| feature}
+	When 'completeopt' contains "popup" then this option is used for the
+	properties of the info popup when it is created.  You can also use
+	|popup_findinfo()| and then set properties for an existing info popup
+	with |popup_setoptions()|.  See |complete-popup|.
 
 
 						*'concealcursor'* *'cocu'*
@@ -2423,11 +2461,24 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to window
 			{not available when compiled without the |+syntax|
 			feature}
-	Highlight the screen line of the cursor with CursorLine
-	|hl-CursorLine|.  Useful to easily spot the cursor.  Will make screen
-	redrawing slower.
+	Highlight the text line of the cursor with CursorLine |hl-CursorLine|.
+	Useful to easily spot the cursor.  Will make screen redrawing slower.
 	When Visual mode is active the highlighting isn't used to make it
 	easier to see the selected text.
+
+
+						*'cursorlineopt'* *'culopt'*
+'cursorlineopt' 'culopt' string (default: "both")
+			local to window
+			{not in Vi}
+			{not available when compiled without the |+syntax|
+			feature}
+	Settings for how 'cursorline' is displayed.  Valid values:
+	    "line"	Highlight the text line of the cursor with
+			CursorLine |hl-CursorLine|.
+	    "number"	Highlight the line number of the cursor with
+			CursorLineNr |hl-CursorLineNr|.
+	    "both"	Highlight as both "line" and "number" are set.
 
 
 						*'debug'*
@@ -2697,8 +2748,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'eadirection'* *'ead'*
 'eadirection' 'ead'	string	(default "both")
 			global
-			{not available when compiled without the |+vertsplit|
-			feature}
 	Tells when the 'equalalways' option applies:
 		ver	vertically, width of windows is not affected
 		hor	horizontally, height of windows is not affected
@@ -3134,8 +3183,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'fillchars'* *'fcs'*
 'fillchars' 'fcs'	string	(default "vert:|,fold:-")
 			global
-			{not available when compiled without the |+windows|
-			and |+folding| features}
+			{not available when compiled without the |+folding|
+			feature}
 	Characters to fill the statuslines and vertical separators.
 	It is a comma separated list of items:
 
@@ -3226,7 +3275,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The expression will be evaluated in the |sandbox| if set from a
 	modeline, see |sandbox-option|.
 	This option can't be set from a |modeline| when the 'diff' option is
-	on.
+	on or the 'modelineexpr' option is off.
 
 	It is not allowed to change text or jump to another window while
 	evaluating 'foldexpr' |textlock|.
@@ -3359,6 +3408,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The expression will be evaluated in the |sandbox| if set from a
 	modeline, see |sandbox-option|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	It is not allowed to change text or jump to another window while
 	evaluating 'foldtext' |textlock|.
@@ -3396,6 +3446,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.  That stops the option from working,
 	since changing the buffer text is not allowed.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 	NOTE: This option is set to "" when 'compatible' is set.
 
 					*'formatlistpat'* *'flp'*
@@ -3452,6 +3503,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Also see 'swapsync' for controlling fsync() on swap files.
 	'fsync' also applies to |writefile()|, unless a flag is used to
 	overrule it.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 				   *'gdefault'* *'gd'* *'nogdefault'* *'nogd'*
 'gdefault' 'gd'		boolean	(default off)
@@ -3619,7 +3672,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'guiheadroom'* *'ghr'*
 'guiheadroom' 'ghr'	number	(default 50)
 			global
-- 			{only for GTK and X11 GUI}
+			{only for GTK and X11 GUI}
 	The number of pixels subtracted from the screen height when fitting
 	the GUI window on the screen.  Set this before the GUI is started,
 	e.g., in your |gvimrc| file.  When zero, the whole screen height will
@@ -3767,8 +3820,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'guitablabel'* *'gtl'*
 'guitablabel' 'gtl'	string	(default empty)
 			global
-			{only available when compiled with GUI enabled and
-			with the |+windows| feature}
+			{only available when compiled with GUI enabled}
 	When nonempty describes the text to use in a label of the GUI tab
 	pages line.  When empty and when the result is empty Vim will use a
 	default label.  See |setting-guitablabel| for more info.
@@ -3777,6 +3829,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'guitabtooltip' is used for the tooltip, see below.
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	Only used when the GUI tab pages line is displayed.  'e' must be
 	present in 'guioptions'.  For the non-GUI tab pages line 'tabline' is
@@ -3785,8 +3838,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'guitabtooltip'* *'gtt'*
 'guitabtooltip' 'gtt'	string	(default empty)
 			global
-			{only available when compiled with GUI enabled and
-			with the |+windows| feature}
+			{only available when compiled with GUI enabled}
 	When nonempty describes the text to use in a tooltip for the GUI tab
 	pages line.  When empty Vim will use a default tooltip.
 	This option is otherwise just like 'guitablabel' above.
@@ -3811,8 +3863,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'helpheight'* *'hh'*
 'helpheight' 'hh'	number	(default 20)
 			global
-			{not available when compiled without the |+windows|
-			feature}
 	Minimal initial height of the help window when it is opened with the
 	":help" command.  The initial height of the help window is half of the
 	current window, or (when the 'ea' option is on) the same as other
@@ -4027,6 +4077,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When this option contains printf-style '%' items, they will be
 	expanded according to the rules used for 'statusline'.  See
 	'titlestring' for example settings.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 	{not available when compiled without the |+statusline| feature}
 
 			*'ignorecase'* *'ic'* *'noignorecase'* *'noic'*
@@ -4044,6 +4095,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option specifies a function that will be called to
 	activate or deactivate the Input Method.
 	It is not used in the GUI.
+	The expression will be evaluated in the |sandbox| when set from a
+	modeline, see |sandbox-option|.
 
 	Example: >
 		function ImActivateFunc(active)
@@ -4160,6 +4213,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		set imstatusfunc=ImStatusFunc
 <
 	NOTE: This function is invoked very often.  Keep it fast.
+	The expression will be evaluated in the |sandbox| when set from a
+	modeline, see |sandbox-option|.
 
 						*'imstyle'* *'imst'*
 'imstyle' 'imst'	number (default 1)
@@ -4176,6 +4231,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|single-repeat|, etc.  Therefore over-the-spot style becomes the
 	default now.  This should work fine for most people, however if you
 	have any problem with it, try using on-the-spot style.
+	The expression will be evaluated in the |sandbox| when set from a
+	modeline, see |sandbox-option|.
 
 						*'include'* *'inc'*
 'include' 'inc'		string	(default "^\s*#\s*include")
@@ -4210,6 +4267,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	It is not allowed to change text or jump to another window while
 	evaluating 'includeexpr' |textlock|.
@@ -4297,6 +4355,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	The expression will be evaluated in the |sandbox| when set from a
 	modeline, see |sandbox-option|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	It is not allowed to change text or jump to another window while
 	evaluating 'indentexpr' |textlock|.
@@ -4915,7 +4974,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'matchtime'* *'mat'*
 'matchtime' 'mat'	number	(default 5)
 			global
-			{in Nvi}
 	Tenths of a second to show the matching paren, when 'showmatch' is
 	set.  Note that this is not in milliseconds, like other options that
 	set a time.  This is to be compatible with Nvi.
@@ -5045,10 +5103,25 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	If you have less than 512 Mbyte |:mkspell| may fail for some
 	languages, no matter what you set 'mkspellmem' to.
 
+	This option cannot be set from a |modeline| or in the |sandbox|.
+
 				   *'modeline'* *'ml'* *'nomodeline'* *'noml'*
 'modeline' 'ml'		boolean	(Vim default: on (off for root),
 				 Vi default: off)
 			local to buffer
+	If 'modeline' is on 'modelines' gives the number of lines that is
+	checked for set commands.  If 'modeline' is off or 'modelines' is zero
+	no lines are checked.  See |modeline|.
+
+			   *'modelineexpr'* *'mle'* *'nomodelineexpr'* *'nomle'*
+'modelineexpr' 'mle'	boolean (default: off)
+			global
+	When on allow some options that are an expression to be set in the
+	modeline.  Check the option for whether it is affected by
+	'modelineexpr'.  Also see |modeline|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
+
 						*'modelines'* *'mls'*
 'modelines' 'mls'	number	(default 5)
 			global
@@ -5059,9 +5132,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	set and to the Vim default value when 'compatible' is reset.
 
 				*'modifiable'* *'ma'* *'nomodifiable'* *'noma'*
+				*E21*
 'modifiable' 'ma'	boolean	(default on)
 			local to buffer
-			*E21*
 	When off the buffer contents cannot be changed.  The 'fileformat' and
 	'fileencoding' options also can't be changed.
 	Can be reset on startup with the |-M| command line argument.
@@ -5173,8 +5246,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	In the "popup" model the right mouse button produces a pop-up menu.
 	You need to define this first, see |popup-menu|.
-	In a terminal the popup menu works if Vim is compiled with the
-	|+insert_expand| option.
 
 	Note that you can further refine the meaning of buttons with mappings.
 	See |gui-mouse-mapping|.  But mappings are NOT used for modeless
@@ -5351,7 +5422,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	rows in the window, depending on whether 'number' or 'relativenumber'
 	is set. Thus with the Vim default of 4 there is room for a line number
 	up to 999. When the buffer has 1000 lines five columns will be used.
-	The minimum value is 1, the maximum value is 10.
+	The minimum value is 1, the maximum value is 20.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 
@@ -5359,7 +5430,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 'omnifunc' 'ofu'	string	(default: empty)
 			local to buffer
 			{not available when compiled without the |+eval|
-			or |+insert_expand| features}
+			feature}
 	This option specifies a function to be used for Insert mode omni
 	completion with CTRL-X CTRL-O. |i_CTRL-X_CTRL-O|
 	See |complete-functions| for an explanation of how the function is
@@ -5588,17 +5659,28 @@ A jump table for the options with a short description can be found at |Q_op|.
 					*'previewheight'* *'pvh'*
 'previewheight' 'pvh'	number (default 12)
 			global
-			{not available when compiled without the |+windows| or
-			|+quickfix| features}
+			{not available when compiled without the |+quickfix|
+			feature}
 	Default height for a preview window.  Used for |:ptag| and associated
-	commands.  Used for |CTRL-W_}| when no count is given.
+	commands.  Used for |CTRL-W_}| when no count is given.  Not used when
+	'previewpopup' is set.
+
+					*'previewpopup'* *'pvp'*
+'previewpopup' 'pvp'	string (default empty)
+			global
+			{not available when compiled without the |+textprop|
+			or |+quickfix| feature}
+	When not empty a popup window is used for commands that would open a
+	preview window.  See |preview-popup|.
+	Not used for the insert completion info, add "popup" to
+	'completeopt' for that.
 
 					*'previewwindow'* *'nopreviewwindow'*
 					*'pvw'* *'nopvw'* *E590*
 'previewwindow' 'pvw'	boolean (default off)
 			local to window
-			{not available when compiled without the |+windows| or
-			|+quickfix| features}
+			{not available when compiled without the |+quickfix|
+			feature}
 	Identifies the preview window.  Only one window can have this option
 	set.  It's normally not set directly, but by using one of the commands
 	|:ptag|, |:pedit|, etc.
@@ -5678,8 +5760,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'pumheight'* *'ph'*
 'pumheight' 'ph'	number	(default 0)
 			global
-			{not available when compiled without the
-			|+insert_expand| feature}
 	Determines the maximum number of items to show in the popup menu for
 	Insert mode completion.  When zero as much space as available is used.
 	|ins-completion-menu|.
@@ -5687,8 +5767,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'pumwidth'* *'pw'*
 'pumwidth' 'pw'		number	(default 15)
 			global
-			{not available when compiled without the
-			|+insert_expand| feature}
 	Determines the minimum width to use for the popup menu for Insert mode
 	completion.  |ins-completion-menu|.
 
@@ -6058,6 +6136,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When this option is not empty, it determines the content of the ruler
 	string, as displayed for the 'ruler' option.
 	The format of this option is like that of 'statusline'.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
+
 	The default ruler width is 17 characters.  To make the ruler 15
 	characters wide, put "%15(" at the start and "%)" at the end.
 	Example: >
@@ -6474,7 +6554,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'shellslash' only works when a backslash can be used as a path
 	separator.  To test if this is so use: >
 		if exists('+shellslash')
-<
+<	Also see 'completeslash'.
+
 			*'shelltemp'* *'stmp'* *'noshelltemp'* *'nostmp'*
 'shelltemp' 'stmp'	boolean	(Vi default off, Vim default on)
 			global
@@ -6598,7 +6679,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		"Pattern not found", "Back at original", etc.
 	  q	use "recording" instead of "recording @a"
 	  F	don't give the file info when editing a file, like `:silent`
-		was used for the command
+		was used for the command; note that this also affects messages
+		from autocommands
 	  S     do not show search count message when searching, e.g.
 	        "[1/5]"
 
@@ -6712,8 +6794,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'showtabline'* *'stal'*
 'showtabline' 'stal'	number	(default 1)
 			global
-			{not available when compiled without the |+windows|
-			feature}
 	The value of this option specifies when the line with tab page labels
 	will be displayed:
 		0: never
@@ -6766,6 +6846,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   "auto"   	only when there is a sign to display
 	   "no"	    	never
 	   "yes"    	always
+	   "number"	display signs in the 'number' column. If the number
+			column is not present, then behaves like "auto".
 
 
 			*'smartcase'* *'scs'* *'nosmartcase'* *'noscs'*
@@ -7008,16 +7090,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 			*'splitbelow'* *'sb'* *'nosplitbelow'* *'nosb'*
 'splitbelow' 'sb'	boolean	(default off)
 			global
-			{not available when compiled without the |+windows|
-			feature}
 	When on, splitting a window will put the new window below the current
 	one. |:split|
 
 			*'splitright'* *'spr'* *'nosplitright'* *'nospr'*
 'splitright' 'spr'	boolean	(default off)
 			global
-			{not available when compiled without the |+vertsplit|
-			feature}
 	When on, splitting a window will put the new window right of the
 	current one. |:vsplit|
 
@@ -7052,7 +7130,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When the option starts with "%!" then it is used as an expression,
 	evaluated and the result is used as the option value.  Example: >
 		:set statusline=%!MyStatusLine()
-<	The result can contain %{} items that will be evaluated too.
+<	The *g:statusline_winid* variable will be set to the |window-ID| of the
+	window that the status line belongs to.
+	The result can contain %{} items that will be evaluated too.
 	Note that the "%!" expression is evaluated in the context of the
 	current window and buffer, while %{} items are evaluated in the
 	context of the window that the statusline belongs to.
@@ -7155,16 +7235,19 @@ A jump table for the options with a short description can be found at |Q_op|.
 	become empty.  This will make a group like the following disappear
 	completely from the statusline when none of the flags are set. >
 		:set statusline=...%(\ [%M%R%H]%)...
-<							*g:actual_curbuf*
-	Beware that an expression is evaluated each and every time the status
-	line is displayed.  The current buffer and current window will be set
-	temporarily to that of the window (and buffer) whose statusline is
-	currently being drawn.  The expression will evaluate in this context.
-	The variable "g:actual_curbuf" is set to the `bufnr()` number of the
-	real current buffer.
+<	Beware that an expression is evaluated each and every time the status
+	line is displayed.
+					*g:actual_curbuf* *g:actual_curwin*
+	The current buffer and current window will be set temporarily to that
+	of the window (and buffer) whose statusline is currently being drawn.
+	The expression will evaluate in this context.  The variable
+	"g:actual_curbuf" is set to the `bufnr()` number of the real current
+	buffer and "g:actual_curwin" to the |window-ID| of the real current
+	window.  These values are strings.
 
 	The 'statusline' option will be evaluated in the |sandbox| if set from
 	a modeline, see |sandbox-option|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	It is not allowed to change text or jump to another window while
 	evaluating 'statusline' |textlock|.
@@ -7327,8 +7410,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'tabline'* *'tal'*
 'tabline' 'tal'		string	(default empty)
 			global
-			{not available when compiled without the |+windows|
-			feature}
 	When nonempty, this option determines the content of the tab pages
 	line at the top of the Vim window.  When empty Vim will use a default
 	tab pages line.  See |setting-tabline| for more info.
@@ -7345,6 +7426,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	When changing something that is used in 'tabline' that does not
 	trigger it to be updated, use |:redrawtabline|.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
 
 	Keep in mind that only one of the tab pages is the current one, others
 	are invisible and you can't jump to their windows.
@@ -7353,8 +7435,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'tabpagemax'* *'tpm'*
 'tabpagemax' 'tpm'	number	(default 10)
 			global
-			{not available when compiled without the |+windows|
-			feature}
 	Maximum number of tab pages to be opened by the |-p| command line
 	argument or the ":tab all" command. |tabpage|
 
@@ -7873,8 +7953,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 	non-empty 't_ts' option).
 	When Vim was compiled with HAVE_X11 defined, the original title will
 	be restored if possible, see |X11|.
+
 	When this option contains printf-style '%' items, they will be
 	expanded according to the rules used for 'statusline'.
+	This option cannot be set in a modeline when 'modelineexpr' is off.
+
 	Example: >
     :auto BufEnter * let &titlestring = hostname() . "/" . expand("%:p")
     :set title titlestring=%<%F%=%l/%L-%P titlelen=70
@@ -8022,7 +8105,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	already.
 	Additionally, if vim is compiled with the |+termresponse| feature and
 	|t_RV| is set to the escape sequence to request the xterm version
-	number, more intelligent detection process runs.
+	number, more intelligent detection is done.
 	The "xterm2" value will be set if the xterm version is reported to be
 	from 95 to 276.  The "sgr" value will be set if Vim detects Mac
 	Terminal.app, iTerm2 or mintty, and when the xterm version is 277 or
@@ -8060,6 +8143,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	undo file that exists is used.  When it cannot be read an error is
 	given, no further entry is used.
 	See |undo-persistence|.
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 				*'undofile'* *'noundofile'* *'udf'* *'noudf'*
 'undofile' 'udf'	boolean	(default off)
@@ -8369,6 +8454,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When equal to "NONE" no viminfo file will be read or written.
 	This option can be set with the |-i| command line flag.  The |--clean|
 	command line flag sets it to "NONE".
+	This option cannot be set from a |modeline| or in the |sandbox|, for
+	security reasons.
 
 					    *'virtualedit'* *'ve'*
 'virtualedit' 've'	string	(default "")
@@ -8635,6 +8722,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option is not used for <F10>; on Win32 and with GTK <F10> will
 	select the menu, unless it has been mapped.
 
+						*'wincolor'* *'wcr'*
+'wincolor' 'wcr' string (default empty)
+			local to window
+	Highlight group name to use for this window instead of the Normal
+	color |hl-Normal|.
+
 						*'window'* *'wi'*
 'window' 'wi'		number  (default screen height - 1)
 			global
@@ -8651,8 +8744,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'winheight'* *'wh'* *E591*
 'winheight' 'wh'	number	(default 1)
 			global
-			{not available when compiled without the |+windows|
-			feature}
 	Minimal number of lines for the current window.  This is not a hard
 	minimum, Vim will use fewer lines if there is not enough room.  If the
 	focus goes to a window that is smaller, its size is increased, at the
@@ -8673,8 +8764,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 			*'winfixheight'* *'wfh'* *'nowinfixheight'* *'nowfh'*
 'winfixheight' 'wfh'	boolean	(default off)
 			local to window
-			{not available when compiled without the |+windows|
-			feature}
 	Keep the window height when windows are opened or closed and
 	'equalalways' is set.  Also for |CTRL-W_=|.  Set by default for the
 	|preview-window| and |quickfix-window|.
@@ -8683,8 +8772,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 			*'winfixwidth'* *'wfw'* *'nowinfixwidth'* *'nowfw'*
 'winfixwidth' 'wfw'	boolean	(default off)
 			local to window
-			{not available when compiled without the |+windows|
-			feature}
 	Keep the window width when windows are opened or closed and
 	'equalalways' is set.  Also for |CTRL-W_=|.
 	The width may be changed anyway when running out of room.
@@ -8692,8 +8779,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'winminheight'* *'wmh'*
 'winminheight' 'wmh'	number	(default 1)
 			global
-			{not available when compiled without the |+windows|
-			feature}
 	The minimal height of a window, when it's not the current window.
 	This is a hard minimum, windows will never become smaller.
 	When set to zero, windows may be "squashed" to zero lines (i.e. just a
@@ -8707,8 +8792,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'winminwidth'* *'wmw'*
 'winminwidth' 'wmw'	number	(default 1)
 			global
-			{not available when compiled without the |+vertsplit|
-			feature}
 	The minimal width of a window, when it's not the current window.
 	This is a hard minimum, windows will never become smaller.
 	When set to zero, windows may be "squashed" to zero columns (i.e. just
@@ -8736,8 +8819,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'winwidth'* *'wiw'* *E592*
 'winwidth' 'wiw'	number	(default 20)
 			global
-			{not available when compiled without the |+vertsplit|
-			feature}
 	Minimal number of columns for the current window.  This is not a hard
 	minimum, Vim will use fewer columns if there is not enough room.  If
 	the current window is smaller, its size is increased, at the cost of

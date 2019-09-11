@@ -87,7 +87,9 @@ static void check_for_codes_from_term(void);
 		|| defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)))
 static int get_bytes_from_buf(char_u *, char_u *, int);
 #endif
+static void del_termcode(char_u *name);
 static void del_termcode_idx(int idx);
+static int find_term_bykeys(char_u *src);
 static int term_is_builtin(char_u *name);
 static int term_7to8bit(char_u *p);
 
@@ -1367,7 +1369,7 @@ static struct builtin_term builtin_termcaps[] =
 };	/* end of builtin_termcaps */
 
 #if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
-    guicolor_T
+    static guicolor_T
 termgui_mch_get_color(char_u *name)
 {
     return gui_get_color_cmn(name);
@@ -3425,10 +3427,14 @@ set_shellsize(int width, int height, int mustset)
 
     if (State == HITRETURN || State == SETWSIZE)
     {
-	/* postpone the resizing */
+	// postpone the resizing
 	State = SETWSIZE;
 	return;
     }
+
+    if (updating_screen)
+	// resizing while in update_screen() may cause a crash
+	return;
 
     /* curwin->w_buffer can be NULL when we are closing a window and the
      * buffer has already been closed and removing a scrollbar causes a resize
@@ -3499,13 +3505,11 @@ set_shellsize(int width, int height, int mustset)
 	    else
 	    {
 		update_topline();
-#if defined(FEAT_INS_EXPAND)
 		if (pum_visible())
 		{
 		    redraw_later(NOT_VALID);
 		    ins_compl_show_pum();
 		}
-#endif
 		update_screen(NOT_VALID);
 		if (redrawing())
 		    setcursor();
@@ -3714,6 +3718,7 @@ may_req_ambiguous_char_width(void)
 
 	/* This overwrites a few characters on the screen, a redraw is needed
 	 * after this. Clear them out for now. */
+	screen_stop_highlight();
 	term_windgoto(1, 0);
 	out_str((char_u *)"  ");
 	term_windgoto(0, 0);
@@ -4015,7 +4020,8 @@ term_cursor_color(char_u *color)
 blink_state_is_inverted()
 {
 #ifdef FEAT_TERMRESPONSE
-    return rbm_status.tr_progress == STATUS_GOT && rcs_status.tr_progress == STATUS_GOT
+    return rbm_status.tr_progress == STATUS_GOT
+	&& rcs_status.tr_progress == STATUS_GOT
 		&& initial_cursor_blink != initial_cursor_shape_blink;
 #else
     return FALSE;
@@ -4187,8 +4193,7 @@ add_termcode(char_u *name, char_u *string, int flags)
     if (tc_len == tc_max_len)
     {
 	tc_max_len += 20;
-	new_tc = (struct termcode *)alloc(
-			    (unsigned)(tc_max_len * sizeof(struct termcode)));
+	new_tc = ALLOC_MULT(struct termcode, tc_max_len);
 	if (new_tc == NULL)
 	{
 	    tc_max_len -= 20;
@@ -4294,7 +4299,6 @@ find_termcode(char_u *name)
     return NULL;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     char_u *
 get_termcode(int i)
 {
@@ -4302,9 +4306,8 @@ get_termcode(int i)
 	return NULL;
     return &termcodes[i].name[0];
 }
-#endif
 
-    void
+    static void
 del_termcode(char_u *name)
 {
     int	    i;
@@ -4963,6 +4966,7 @@ check_termcode(
 	    /* Check for fore/background color response from the terminal:
 	     *
 	     *       {lead}{code};rgb:{rrrr}/{gggg}/{bbbb}{tail}
+	     * or    {lead}{code};rgb:{rr}/{gg}/{bb}{tail}
 	     *
 	     * {code} is 10 for foreground, 11 for background
 	     * {lead} can be <Esc>] or OSC
@@ -4986,19 +4990,27 @@ check_termcode(
 			: (tp[i] == ESC && i + 1 < len && tp[i + 1] == '\\')))
 		    {
 			int is_bg = argp[1] == '1';
+			int is_4digit = i - j >= 21 && tp[j + 11] == '/'
+							  && tp[j + 16] == '/';
 
-			if (i - j >= 21 && STRNCMP(tp + j + 3, "rgb:", 4) == 0
-			    && tp[j + 11] == '/' && tp[j + 16] == '/')
+			if (i - j >= 15 && STRNCMP(tp + j + 3, "rgb:", 4) == 0
+			    && (is_4digit
+				   || (tp[j + 9] == '/' && tp[i + 12 == '/'])))
 			{
+			    char_u *tp_r = tp + j + 7;
+			    char_u *tp_g = tp + j + (is_4digit ? 12 : 10);
+			    char_u *tp_b = tp + j + (is_4digit ? 17 : 13);
 # ifdef FEAT_TERMINAL
-			    int rval = hexhex2nr(tp + j + 7);
-			    int gval = hexhex2nr(tp + j + 12);
-			    int bval = hexhex2nr(tp + j + 17);
+			    int rval, gval, bval;
+
+			    rval = hexhex2nr(tp_r);
+			    gval = hexhex2nr(tp_b);
+			    bval = hexhex2nr(tp_g);
 # endif
 			    if (is_bg)
 			    {
-				char *newval = (3 * '6' < tp[j+7] + tp[j+12]
-						+ tp[j+17]) ? "light" : "dark";
+				char *new_bg_val = (3 * '6' < *tp_r + *tp_g +
+						     *tp_b) ? "light" : "dark";
 
 				LOG_TR(("Received RBG response: %s", tp));
 				rbg_status.tr_progress = STATUS_GOT;
@@ -5008,11 +5020,11 @@ check_termcode(
 				bg_b = bval;
 # endif
 				if (!option_was_set((char_u *)"bg")
-						  && STRCMP(p_bg, newval) != 0)
+					      && STRCMP(p_bg, new_bg_val) != 0)
 				{
 				    /* value differs, apply it */
 				    set_option_value((char_u *)"bg", 0L,
-							  (char_u *)newval, 0);
+						      (char_u *)new_bg_val, 0);
 				    reset_option_was_set((char_u *)"bg");
 				    redraw_asap(CLEAR);
 				}
@@ -5057,7 +5069,7 @@ check_termcode(
 	     * {lead}1$r<digit> q{tail}
 	     *
 	     * {lead} can be <Esc>P or DCS
-	     * {tail} can be Esc>\ or STERM
+	     * {tail} can be <Esc>\ or STERM
 	     *
 	     * Consume any code that starts with "{lead}.+r" or "{lead}.$r".
 	     */
@@ -5067,29 +5079,29 @@ check_termcode(
 	    {
 		j = 1 + (tp[0] == ESC);
 		if (len < j + 3)
-		    i = len; /* need more chars */
+		    i = len; // need more chars
 		else if ((argp[1] != '+' && argp[1] != '$') || argp[2] != 'r')
-		  i = 0; /* no match */
+		    i = 0; // no match
 		else if (argp[1] == '+')
-		  /* key code response */
-		  for (i = j; i < len; ++i)
-		  {
-		    if ((tp[i] == ESC && i + 1 < len && tp[i + 1] == '\\')
-			    || tp[i] == STERM)
+		    // key code response
+		    for (i = j; i < len; ++i)
 		    {
-			if (i - j >= 3)
-			    got_code_from_term(tp + j, i);
-			key_name[0] = (int)KS_EXTRA;
-			key_name[1] = (int)KE_IGNORE;
-			slen = i + 1 + (tp[i] == ESC);
-			break;
+			if ((tp[i] == ESC && i + 1 < len && tp[i + 1] == '\\')
+				|| tp[i] == STERM)
+			{
+			    if (i - j >= 3)
+				got_code_from_term(tp + j, i);
+			    key_name[0] = (int)KS_EXTRA;
+			    key_name[1] = (int)KE_IGNORE;
+			    slen = i + 1 + (tp[i] == ESC);
+			    break;
+			}
 		    }
-		  }
 		else
 		{
-		    /* Probably the cursor shape response.  Make sure that "i"
-		     * is equal to "len" when there are not sufficient
-		     * characters. */
+		    // Probably the cursor shape response.  Make sure that "i"
+		    // is equal to "len" when there are not sufficient
+		    // characters.
 		    for (i = j + 3; i < len; ++i)
 		    {
 			if (i - j == 3 && !isdigit(tp[i]))
@@ -5105,13 +5117,13 @@ check_termcode(
 			{
 			    int number = argp[3] - '0';
 
-			    /* 0, 1 = block blink, 2 = block
-			     * 3 = underline blink, 4 = underline
-			     * 5 = vertical bar blink, 6 = vertical bar */
+			    // 0, 1 = block blink, 2 = block
+			    // 3 = underline blink, 4 = underline
+			    // 5 = vertical bar blink, 6 = vertical bar
 			    number = number == 0 ? 1 : number;
 			    initial_cursor_shape = (number + 1) / 2;
-			    /* The blink flag is actually inverted, compared to
-			     * the value set with T_SH. */
+			    // The blink flag is actually inverted, compared to
+			    // the value set with T_SH.
 			    initial_cursor_shape_blink =
 						   (number & 1) ? FALSE : TRUE;
 			    rcs_status.tr_progress = STATUS_GOT;
@@ -6165,7 +6177,7 @@ replace_termcodes(
      * Allocate space for the translation.  Worst case a single character is
      * replaced by 6 bytes (shifted special key), plus a NUL at the end.
      */
-    result = alloc((unsigned)STRLEN(from) * 6 + 1);
+    result = alloc(STRLEN(from) * 6 + 1);
     if (result == NULL)		/* out of memory */
     {
 	*bufp = NULL;
@@ -6352,7 +6364,7 @@ replace_termcodes(
  * Find a termcode with keys 'src' (must be NUL terminated).
  * Return the index in termcodes[], or -1 if not found.
  */
-    int
+    static int
 find_term_bykeys(char_u *src)
 {
     int		i;
@@ -6420,7 +6432,7 @@ show_termcodes(void)
 
     if (tc_len == 0)	    /* no terminal codes (must be GUI) */
 	return;
-    items = (int *)alloc((unsigned)(sizeof(int) * tc_len));
+    items = ALLOC_MULT(int, tc_len);
     if (items == NULL)
 	return;
 
@@ -6686,7 +6698,6 @@ check_for_codes_from_term(void)
 }
 #endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Translate an internal mapping/abbreviation representation into the
  * corresponding external one recognized by :map/:abbrev commands.
@@ -6761,7 +6772,6 @@ translate_mapping(char_u *str)
     ga_append(&ga, NUL);
     return (char_u *)(ga.ga_data);
 }
-#endif
 
 #if (defined(MSWIN) && (!defined(FEAT_GUI) || defined(VIMDLL))) || defined(PROTO)
 static char ksme_str[20];
@@ -7071,8 +7081,7 @@ gui_get_color_cmn(char_u *name)
 	{
 	    if (!counting)
 	    {
-		colornames_table = (struct rgbcolor_table_S *)alloc(
-			   (unsigned)(sizeof(struct rgbcolor_table_S) * size));
+		colornames_table = ALLOC_MULT(struct rgbcolor_table_S, size);
 		if (colornames_table == NULL)
 		{
 		    fclose(fd);

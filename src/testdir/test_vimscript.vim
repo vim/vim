@@ -1,6 +1,9 @@
 " Test various aspects of the Vim script language.
 " Most of this was formerly in test49.
 
+source check.vim
+source shared.vim
+
 "-------------------------------------------------------------------------------
 " Test environment							    {{{1
 "-------------------------------------------------------------------------------
@@ -635,7 +638,7 @@ function! MSG(enr, emsg)
 	if v:errmsg == ""
 	    Xout "Message missing."
 	else
-	    let v:errmsg = escape(v:errmsg, '"')
+	    let v:errmsg = v:errmsg->escape('"')
 	    Xout "Unexpected message:" v:errmsg
 	endif
     endif
@@ -1327,6 +1330,7 @@ func Test_bitwise_functions()
     " and
     call assert_equal(127, and(127, 127))
     call assert_equal(16, and(127, 16))
+    eval 127->and(16)->assert_equal(16)
     call assert_equal(0, and(127, 128))
     call assert_fails("call and(1.0, 1)", 'E805:')
     call assert_fails("call and([], 1)", 'E745:')
@@ -1337,6 +1341,7 @@ func Test_bitwise_functions()
     " or
     call assert_equal(23, or(16, 7))
     call assert_equal(15, or(8, 7))
+    eval 8->or(7)->assert_equal(15)
     call assert_equal(123, or(0, 123))
     call assert_fails("call or(1.0, 1)", 'E805:')
     call assert_fails("call or([], 1)", 'E745:')
@@ -1347,6 +1352,7 @@ func Test_bitwise_functions()
     " xor
     call assert_equal(0, xor(127, 127))
     call assert_equal(111, xor(127, 16))
+    eval 127->xor(16)->assert_equal(111)
     call assert_equal(255, xor(127, 128))
     call assert_fails("call xor(1.0, 1)", 'E805:')
     call assert_fails("call xor([], 1)", 'E745:')
@@ -1356,6 +1362,7 @@ func Test_bitwise_functions()
     call assert_fails("call xor(1, {})", 'E728:')
     " invert
     call assert_equal(65408, and(invert(127), 65535))
+    eval 127->invert()->and(65535)->assert_equal(65408)
     call assert_equal(65519, and(invert(16), 65535))
     call assert_equal(65407, and(invert(128), 65535))
     call assert_fails("call invert(1.0)", 'E805:')
@@ -1589,7 +1596,7 @@ func Test_refcount()
     call assert_equal(1, test_refcount(x))
 
     let x = {}
-    call assert_equal(1, test_refcount(x))
+    call assert_equal(1, x->test_refcount())
 
     let x = 0zff
     call assert_equal(1, test_refcount(x))
@@ -1665,8 +1672,85 @@ func Test_refcount()
     delfunc DictFunc
 endfunc
 
+func Test_funccall_garbage_collect()
+    func Func(x, ...)
+        call add(a:x, a:000)
+    endfunc
+    call Func([], [])
+    " Must not crash cause by invalid freeing
+    call test_garbagecollect_now()
+    call assert_true(v:true)
+    delfunc Func
+endfunc
+
+func Test_function_defined_line()
+    CheckNotGui
+
+    let lines =<< trim [CODE]
+    " F1
+    func F1()
+        " F2
+        func F2()
+            "
+            "
+            "
+            return
+        endfunc
+        " F3
+        execute "func F3()\n\n\n\nreturn\nendfunc"
+        " F4
+        execute "func F4()\n
+                    \\n
+                    \\n
+                    \\n
+                    \return\n
+                    \endfunc"
+    endfunc
+    " F5
+    execute "func F5()\n\n\n\nreturn\nendfunc"
+    " F6
+    execute "func F6()\n
+                \\n
+                \\n
+                \\n
+                \return\n
+                \endfunc"
+    call F1()
+    verbose func F1
+    verbose func F2
+    verbose func F3
+    verbose func F4
+    verbose func F5
+    verbose func F6
+    qall!
+    [CODE]
+
+    call writefile(lines, 'Xtest.vim')
+    let res = system(GetVimCommandClean() .. ' -es -X -S Xtest.vim')
+    call assert_equal(0, v:shell_error)
+
+    let m = matchstr(res, 'function F1()[^[:print:]]*[[:print:]]*')
+    call assert_match(' line 2$', m)
+
+    let m = matchstr(res, 'function F2()[^[:print:]]*[[:print:]]*')
+    call assert_match(' line 4$', m)
+
+    let m = matchstr(res, 'function F3()[^[:print:]]*[[:print:]]*')
+    call assert_match(' line 11$', m)
+
+    let m = matchstr(res, 'function F4()[^[:print:]]*[[:print:]]*')
+    call assert_match(' line 13$', m)
+
+    let m = matchstr(res, 'function F5()[^[:print:]]*[[:print:]]*')
+    call assert_match(' line 21$', m)
+
+    let m = matchstr(res, 'function F6()[^[:print:]]*[[:print:]]*')
+    call assert_match(' line 23$', m)
+
+    call delete('Xtest.vim')
+endfunc
+
 "-------------------------------------------------------------------------------
 " Modelines								    {{{1
 " vim: ts=8 sw=4 tw=80 fdm=marker
-" vim: fdt=substitute(substitute(foldtext(),\ '\\%(^+--\\)\\@<=\\(\\s*\\)\\(.\\{-}\\)\:\ \\%(\"\ \\)\\=\\(Test\ \\d*\\)\:\\s*',\ '\\3\ (\\2)\:\ \\1',\ \"\"),\ '\\(Test\\s*\\)\\(\\d\\)\\D\\@=',\ '\\1\ \\2',\ "")
 "-------------------------------------------------------------------------------

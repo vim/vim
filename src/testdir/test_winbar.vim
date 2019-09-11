@@ -1,8 +1,7 @@
 " Test WinBar
 
-if !has('menu')
-  finish
-endif
+source check.vim
+CheckFeature menu
 
 source shared.vim
 
@@ -110,3 +109,15 @@ func Test_click_in_other_winbar()
 
   bwipe!
 endfunc
+
+func Test_redraw_after_scroll()
+  new
+  amenu 1.10 WinBar.Next :let g:did_next = 11<CR>
+  redraw
+  call assert_equal("  Next", Screenline(1))
+  echo "some\nmore"
+  redraw
+  call assert_equal("  Next", Screenline(1))
+  bwipe!
+endfunc
+

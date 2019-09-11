@@ -1466,10 +1466,6 @@ msgstr "E509: Nedá sa vytvori» zálo¾ný súbor (pou¾ite ! pre vynútenie)"
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: Nedá sa vytvori» zálo¾ný súbor (pou¾ite ! pre vynútenie)"
 
-# TODO: resource fork ?! Note: used only in MACOS_X version
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: 'Resource fork' bude stratený (pou¾ite ! pre vynútenie)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Nedá sa nájs» doèasný súbor pre ukladanie"
 
@@ -2417,40 +2413,11 @@ msgstr "Ukáza» dokumentáciu"
 msgid "Generate docu for"
 msgstr "Vytvori» dokumentáciu pre"
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr ""
-"Zlyhalo pripojenie na SNiFF+, Preverte prostredie (sniffemacs sa musí "
-"nachádza» v $PATH).\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: Chyba poèas èítania. Odpojené"
-
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ je aktuálne "
-
 msgid "not "
 msgstr "ne"
 
 msgid "connected"
 msgstr "pripojený"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: Neznáma SNiFF+ po¾iadavka: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: Chyba pripojenia na SNiFF+"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: SNiFF+ nie je pripojený"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: Nie je SNiFF+ bufferom"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: Chyba zápisu. Odpojené"
 
 msgid "invalid buffer number"
 msgstr "chybné èíslo bufferu"
@@ -3037,14 +3004,8 @@ msgstr "E288: vstupná metóda nepodporuje ¾iadny ¹týl"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: vstupná metóda nepodporuje môj 'preedit' typ"
 
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: Nadbodový ¹týl vy¾aduje sadu fontov (fontset)"
-
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: Máte GTK+ verziu star¹iu ne¾ 1.2.3. Stavová plocha vypnutá."
-
-msgid "E292: Input Method Server is not running"
-msgstr "E292: Server vstupných metód nebe¾í"
 
 msgid "E293: block was not locked"
 msgstr "E293: blok nebol zamknutý"

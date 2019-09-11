@@ -1,9 +1,10 @@
 " Tests for bracketed paste and other forms of pasting.
 
 " Bracketed paste only works with "xterm".  Not in GUI or Windows console.
-if has('gui_running') || has('win32')
-  finish
-endif
+source check.vim
+CheckNotMSWindows
+CheckNotGui
+
 set term=xterm
 
 source shared.vim
@@ -69,9 +70,8 @@ func Test_paste_insert_mode()
 endfunc
 
 func Test_paste_clipboard()
-  if !WorkingClipboard()
-    return
-  endif
+  CheckFeature clipboard_working
+
   let @+ = "nasty\<Esc>:!ls\<CR>command"
   new
   exe "normal i\<C-R>+\<Esc>"
@@ -122,7 +122,6 @@ func Test_xrestore()
   if !has('xterm_clipboard')
     return
   endif
-call ch_logfile('logfile', 'w')
   let display = $DISPLAY
   new
   call CheckCopyPaste()
@@ -133,6 +132,5 @@ call ch_logfile('logfile', 'w')
   exe "xrestore " .. display
   call CheckCopyPaste()
 
-call ch_logfile('', '')
   bwipe!
 endfunc
