@@ -1,6 +1,7 @@
 " Tests for system() and systemlist()
 
 source shared.vim
+source check.vim
 
 func Test_System()
   if !executable('echo') || !executable('cat') || !executable('wc')
@@ -91,4 +92,36 @@ func Test_system_exmode()
   let cmd = ' -es -c "call doesnotexist()|let a=1" +q'
   let a = system(GetVimCommand() . cmd)
   call assert_notequal(0, v:shell_error)
+endfunc
+
+func Test_system_with_shell_quote()
+  CheckMSWindows
+
+  let shell_save = &shell
+  let shellxquote_save = &shellxquote
+  try
+
+    " Enclose the shell in double quotes.
+    if &shell !~ '"'
+      let &shell = '"' . &shell . '"'
+    endif
+
+    let sxq_tests = ['', '(', '"']
+
+    for sxq in sxq_tests
+
+      let &shellxquote = sxq
+      let out = 'echo 123'->system()
+      " On Windows we may get a trailing space and CR.
+      if out != "123 \n"
+        let msg = printf('shellxquote=%s', &shellxquote)
+        call assert_equal("123\n", out, msg)
+      endif
+
+    endfor
+
+  finally
+    let &shell = shell_save
+    let &shellxquote = shellxquote_save
+  endtry
 endfunc
