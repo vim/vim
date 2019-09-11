@@ -1279,6 +1279,9 @@ MAIN_TARGET = $(GVIM).exe $(VIM).exe $(VIMDLLBASE).dll
 MAIN_TARGET = $(VIM).exe
 !endif
 
+# Target to run individual tests.
+VIMTESTTARGET = $(VIM).exe
+
 all:	$(MAIN_TARGET) \
 	vimrun.exe \
 	install.exe \
@@ -1424,9 +1427,9 @@ testclean:
 $(NEW_TESTS):
 	cd testdir
 	- if exist $@.res del $@.res
-	$(MAKE) /NOLOGO -f Make_dos.mak nolog
-	$(MAKE) /NOLOGO -f Make_dos.mak $@.res
-	$(MAKE) /NOLOGO -f Make_dos.mak report
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) nolog
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) $@.res
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) report
 	cd ..
 
 ###########################################################################
