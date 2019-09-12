@@ -158,6 +158,7 @@ static void win_redr_custom(win_T *wp, int draw_ruler);
 #ifdef FEAT_CMDL_INFO
 static void win_redr_ruler(win_T *wp, int always, int ignore_pum);
 #endif
+static void margin_columns_win(win_T *wp, int *lmargin, int *rmargin);
 
 /* Ugly global: overrule attribute used by screen_char() */
 static int screen_char_attr = 0;
@@ -3286,6 +3287,12 @@ win_line(
 #ifdef FEAT_TERMINAL
     int		get_term_attr = FALSE;
 #endif
+#ifdef FEAT_SYN_HL
+    // margin columns for the screen line, needed for when
+    // 'cursorlineopt' contains screenline
+    int		lcol;
+    int		rcol;
+#endif 
 
     /* draw_state: items that are drawn in sequence: */
 #define WL_START	0		/* nothing done yet */
@@ -3819,10 +3826,19 @@ win_line(
 	// not clear what is selected then.  Do update w_last_cursorline.
 	if (!(wp == curwin && VIsual_active) && *wp->w_p_culopt != 'n')
 	{
-	    line_attr = HL_ATTR(HLF_CUL);
-	    area_highlighting = TRUE;
+	    // only when screenline is not present in cursorlineopt
+	    if (!(wp->w_p_wrap && *wp->w_p_culopt == 's'))
+	    {
+		line_attr = HL_ATTR(HLF_CUL);
+		area_highlighting = TRUE;
+		wp->w_last_cursorline = wp->w_cursor.lnum;
+	    }
+	    else
+		wp->w_last_cursorline = 0;
+
 	}
-	wp->w_last_cursorline = wp->w_cursor.lnum;
+	else
+	    wp->w_last_cursorline = wp->w_cursor.lnum;
     }
 #endif
 
@@ -4057,9 +4073,8 @@ win_line(
 			char_attr = HL_ATTR(diff_hlf);
 #  ifdef FEAT_SYN_HL
 			if (wp->w_p_cul && lnum == wp->w_cursor.lnum
-						    && *wp->w_p_culopt != 'n')
-			    char_attr = hl_combine_attr(char_attr,
-							    HL_ATTR(HLF_CUL));
+				    && *wp->w_p_culopt != 'n' && *wp->w_p_culopt != 's')
+				char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
 #  endif
 		    }
 # endif
@@ -4120,9 +4135,8 @@ win_line(
 #ifdef FEAT_SYN_HL
 		    /* combine 'showbreak' with 'cursorline' */
 		    if (wp->w_p_cul && lnum == wp->w_cursor.lnum
-						    && *wp->w_p_culopt != 'n')
-			char_attr = hl_combine_attr(char_attr,
-							    HL_ATTR(HLF_CUL));
+				    && *wp->w_p_culopt != 'n' && *wp->w_p_culopt != 's')
+			char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
 #endif
 		}
 # endif
@@ -4146,6 +4160,22 @@ win_line(
 	    }
 	}
 
+#ifdef FEAT_SYN_HL
+	// actual content of the line starts
+	if (wp->w_p_cul && lnum == wp->w_cursor.lnum
+			&& *wp->w_p_culopt == 's' && wp->w_p_wrap
+			&& n_extra == 0)
+	{
+	    // if a tab wraps around, this will also highlight the
+	    // tab at the next line. That is expected!
+	    margin_columns_win(wp, &lcol, &rcol);
+	    if (vcol >= lcol && vcol <= rcol)
+		char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
+	    else
+		// TODO: Is this needed????
+		char_attr = 0;
+	}
+ #endif
 	// When still displaying '$' of change command, stop at cursor.
 	// When only displaying the (relative) line number and that's done,
 	// stop here.
@@ -4214,10 +4244,22 @@ win_line(
 		if (diff_hlf == HLF_TXD && ptr - line > change_end
 							      && n_extra == 0)
 		    diff_hlf = HLF_CHD;		/* changed line */
-		line_attr = HL_ATTR(diff_hlf);
 		if (wp->w_p_cul && lnum == wp->w_cursor.lnum
-						    && *wp->w_p_culopt != 'n')
-		    line_attr = hl_combine_attr(line_attr, HL_ATTR(HLF_CUL));
+			&& *wp->w_p_culopt != 'n')
+		{
+		    if (*wp->w_p_culopt == 's' && wp->w_p_wrap)
+		    {
+			margin_columns_win(wp, &lcol, &rcol);
+			char_attr = HL_ATTR(diff_hlf);
+			if (vcol >= lcol && vcol <= rcol)
+			    char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
+		    }
+		    else
+		    {
+			line_attr = HL_ATTR(diff_hlf);
+			line_attr = hl_combine_attr(line_attr, HL_ATTR(HLF_CUL));
+		    }
+		}
 	    }
 #endif
 
@@ -5185,9 +5227,17 @@ win_line(
 			{
 			    char_attr = HL_ATTR(diff_hlf);
 			    if (wp->w_p_cul && lnum == wp->w_cursor.lnum
-						    && *wp->w_p_culopt != 'n')
-				char_attr = hl_combine_attr(char_attr,
-							    HL_ATTR(HLF_CUL));
+				    && *wp->w_p_culopt != 'n')
+			    {
+				if (*wp->w_p_culopt == 's' && wp->w_p_wrap)
+				{
+				    margin_columns_win(wp, &lcol, &rcol);
+				    if (vcol >= lcol && vcol <= rcol)
+					char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
+				}
+				else
+				    char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
+			    }
 			}
 		    }
 # endif
@@ -5196,8 +5246,16 @@ win_line(
 		    {
 			char_attr = win_attr;
 			if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
-			    char_attr = hl_combine_attr(char_attr,
-							    HL_ATTR(HLF_CUL));
+			{
+			    if (*wp->w_p_culopt == 's' && wp->w_p_wrap)
+			    {
+				margin_columns_win(wp, &lcol, &rcol);
+				if (vcol >= lcol && vcol <= rcol)
+				    char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
+			    }
+			    else
+				char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
+			}
 			else if (line_attr)
 			    char_attr = hl_combine_attr(char_attr, line_attr);
 		    }
@@ -11023,4 +11081,19 @@ set_chars_option(char_u **varp)
     }
 
     return NULL;	// no error
+}
+
+    static void
+margin_columns_win(win_T *wp, int *lmargin, int *rmargin)
+{
+    int	width1 = wp->w_width - win_col_off(wp);
+    int	width2 = width1 + win_col_off2(wp);
+
+    *lmargin = 0;
+    *rmargin = width1;
+
+    if (wp->w_virtcol >= (colnr_T)width1)
+	*rmargin = width1 - 1 + ((wp->w_virtcol - width1) / width2 + 1) * width2;
+    if (wp->w_virtcol >= (colnr_T)width1 && width2 > 0)
+	*lmargin = (wp->w_virtcol - width1) / width2 * width2 + width1;
 }
