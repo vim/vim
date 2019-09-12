@@ -1,3 +1,5 @@
+scriptencoding utf-8
+
 func Test_cjk_linebreak_after()
   for punct in [
     '!', '%', ')', ',', ':', ';', '>', '?', ']', '}', '’', '”', '†', '‡',
