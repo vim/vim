@@ -596,7 +596,8 @@ changed_common(
 	    // change.
 	    if (wp->w_p_rnu
 #ifdef FEAT_SYN_HL
-		    || (wp->w_p_cul && lnum <= wp->w_last_cursorline)
+		    || (wp->w_p_cul && (lnum <= wp->w_last_cursorline
+			    || *wp->w_p_culopt == 's'))
 #endif
 		    )
 		redraw_win_later(wp, SOME_VALID);
