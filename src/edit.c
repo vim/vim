@@ -2659,7 +2659,7 @@ internal_format(
 		if (curwin->w_cursor.col <= (colnr_T)wantcol)
 		    break;
 	    }
-	    else if (cc >= 0x100 && fo_multibyte)
+	    else if (fo_multibyte)
 	    {
 		int ncc;
 		int allow_break;
