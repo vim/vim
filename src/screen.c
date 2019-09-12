@@ -4038,6 +4038,7 @@ win_line(
 		       * when CursorLineNr isn't set? */
 		      if ((wp->w_p_cul || wp->w_p_rnu)
 						 && *wp->w_p_culopt != 'l'
+						 && *wp->w_p_culopt != 's'
 						 && lnum == wp->w_cursor.lnum)
 			char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_CLN));
 #endif
@@ -4073,7 +4074,8 @@ win_line(
 			char_attr = HL_ATTR(diff_hlf);
 #  ifdef FEAT_SYN_HL
 			if (wp->w_p_cul && lnum == wp->w_cursor.lnum
-				    && *wp->w_p_culopt != 'n' && *wp->w_p_culopt != 's')
+				    && *wp->w_p_culopt != 'n'
+				    && *wp->w_p_culopt != 's')
 				char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
 #  endif
 		    }
@@ -4135,7 +4137,8 @@ win_line(
 #ifdef FEAT_SYN_HL
 		    /* combine 'showbreak' with 'cursorline' */
 		    if (wp->w_p_cul && lnum == wp->w_cursor.lnum
-				    && *wp->w_p_culopt != 'n' && *wp->w_p_culopt != 's')
+				    && *wp->w_p_culopt != 'n'
+				    && *wp->w_p_culopt != 's')
 			char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
 #endif
 		}
@@ -4164,15 +4167,14 @@ win_line(
 	// actual content of the line starts
 	if (wp->w_p_cul && lnum == wp->w_cursor.lnum
 			&& *wp->w_p_culopt == 's' && wp->w_p_wrap
-			&& n_extra == 0)
+			&& draw_state == WL_LINE)
 	{
-	    // if a tab wraps around, this will also highlight the
-	    // tab at the next line. That is expected!
 	    margin_columns_win(wp, &lcol, &rcol);
 	    if (vcol >= lcol && vcol <= rcol)
 		char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
-	    else
-		// TODO: Is this needed????
+	    else if (vcol > rcol)
+		// This is needed to reset the cursorline highlighting
+		// after a line break
 		char_attr = 0;
 	}
  #endif
@@ -4244,21 +4246,18 @@ win_line(
 		if (diff_hlf == HLF_TXD && ptr - line > change_end
 							      && n_extra == 0)
 		    diff_hlf = HLF_CHD;		/* changed line */
+		line_attr = HL_ATTR(diff_hlf);
 		if (wp->w_p_cul && lnum == wp->w_cursor.lnum
 			&& *wp->w_p_culopt != 'n')
 		{
 		    if (*wp->w_p_culopt == 's' && wp->w_p_wrap)
 		    {
 			margin_columns_win(wp, &lcol, &rcol);
-			char_attr = HL_ATTR(diff_hlf);
 			if (vcol >= lcol && vcol <= rcol)
-			    char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
+			    line_attr = hl_combine_attr(line_attr, HL_ATTR(HLF_CUL));
 		    }
 		    else
-		    {
-			line_attr = HL_ATTR(diff_hlf);
 			line_attr = hl_combine_attr(line_attr, HL_ATTR(HLF_CUL));
-		    }
 		}
 	    }
 #endif
@@ -6027,7 +6026,19 @@ win_line(
 	    saved_p_extra = p_extra;
 	    saved_c_extra = c_extra;
 	    saved_c_final = c_final;
-	    saved_char_attr = char_attr;
+ #ifdef FEAT_SYN_HL
+	    if (!(wp->w_p_wrap
+			&& wp->w_p_cul
+			&& lnum == wp->w_cursor.lnum
+			&& *wp->w_p_culopt == 's'
+ #ifdef FEAT_DIFF
+			&& diff_hlf == (hlf_T)0)
+ #endif
+		    )
+		saved_char_attr = char_attr;
+	    else
+ #endif
+		saved_char_attr = 0;
 	    n_extra = 0;
 	    lcs_prec_todo = lcs_prec;
 #ifdef FEAT_LINEBREAK
