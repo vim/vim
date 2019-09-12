@@ -10,14 +10,12 @@
  * optiondefs.h: option definitions
  */
 
-/*
- * The options that are local to a window or buffer have "indir" set to one of
- * these values.  Special values:
- * PV_NONE: global option.
- * PV_WIN is added: window-local option
- * PV_BUF is added: buffer-local option
- * PV_BOTH is added: global option which also has a local value.
- */
+// The options that are local to a window or buffer have "indir" set to one of
+// these values.  Special values:
+// PV_NONE: global option.
+// PV_WIN is added: window-local option
+// PV_BUF is added: buffer-local option
+// PV_BOTH is added: global option which also has a local value.
 #define PV_BOTH 0x1000
 #define PV_WIN  0x2000
 #define PV_BUF  0x4000
@@ -26,10 +24,8 @@
 #define OPT_BUF(x)  (idopt_T)(PV_BUF + (int)(x))
 #define OPT_BOTH(x) (idopt_T)(PV_BOTH + (int)(x))
 
-/*
- * Definition of the PV_ values for buffer-local options.
- * The BV_ values are defined in option.h.
- */
+// Definition of the PV_ values for buffer-local options.
+// The BV_ values are defined in option.h.
 #define PV_AI		OPT_BUF(BV_AI)
 #define PV_AR		OPT_BOTH(OPT_BUF(BV_AR))
 #define PV_BKC		OPT_BOTH(OPT_BUF(BV_BKC))
@@ -159,10 +155,8 @@
 # define PV_VTS		OPT_BUF(BV_VTS)
 #endif
 
-/*
- * Definition of the PV_ values for window-local options.
- * The WV_ values are defined in option.h.
- */
+// Definition of the PV_ values for window-local options.
+// The WV_ values are defined in option.h.
 #define PV_LIST		OPT_WIN(WV_LIST)
 #ifdef FEAT_ARABIC
 # define PV_ARAB	OPT_WIN(WV_ARAB)
@@ -238,23 +232,19 @@
 # define PV_SCL		OPT_WIN(WV_SCL)
 #endif
 
-/* WV_ and BV_ values get typecasted to this for the "indir" field */
+// WV_ and BV_ values get typecasted to this for the "indir" field
 typedef enum
 {
     PV_NONE = 0,
-    PV_MAXVAL = 0xffff    /* to avoid warnings for value out of range */
+    PV_MAXVAL = 0xffff    // to avoid warnings for value out of range
 } idopt_T;
 
-/*
- * Options local to a window have a value local to a buffer and global to all
- * buffers.  Indicate this by setting "var" to VAR_WIN.
- */
+// Options local to a window have a value local to a buffer and global to all
+// buffers.  Indicate this by setting "var" to VAR_WIN.
 #define VAR_WIN ((char_u *)-1)
 
-/*
- * These are the global values for options which are also local to a buffer.
- * Only to be used in option.c!
- */
+// These are the global values for options which are also local to a buffer.
+// Only to be used in option.c!
 static int	p_ai;
 static int	p_bin;
 static int	p_bomb;
@@ -356,16 +346,16 @@ static char_u	*p_vts;
 static char_u	*p_keymap;
 #endif
 #ifdef FEAT_TERMINAL
-static long	p_twsl;		/* 'termwinscroll' */
+static long	p_twsl;		// 'termwinscroll'
 #endif
 
-/* Saved values for when 'bin' is set. */
+// Saved values for when 'bin' is set.
 static int	p_et_nobin;
 static int	p_ml_nobin;
 static long	p_tw_nobin;
 static long	p_wm_nobin;
 
-/* Saved values for when 'paste' is set */
+// Saved values for when 'paste' is set
 static int	p_ai_nopaste;
 static int	p_et_nopaste;
 static long	p_sts_nopaste;
@@ -394,60 +384,60 @@ struct vimoption
 #endif
 };
 
-#define VI_DEFAULT  0	    /* def_val[VI_DEFAULT] is Vi default value */
-#define VIM_DEFAULT 1	    /* def_val[VIM_DEFAULT] is Vim default value */
+#define VI_DEFAULT  0	    // def_val[VI_DEFAULT] is Vi default value
+#define VIM_DEFAULT 1	    // def_val[VIM_DEFAULT] is Vim default value
 
-/*
- * Flags
- */
-#define P_BOOL		0x01	/* the option is boolean */
-#define P_NUM		0x02	/* the option is numeric */
-#define P_STRING	0x04	/* the option is a string */
-#define P_ALLOCED	0x08	/* the string option is in allocated memory,
-				   must use free_string_option() when
-				   assigning new value. Not set if default is
-				   the same. */
-#define P_EXPAND	0x10	/* environment expansion.  NOTE: P_EXPAND can
-				   never be used for local or hidden options! */
-#define P_NODEFAULT	0x40	/* don't set to default value */
-#define P_DEF_ALLOCED	0x80	/* default value is in allocated memory, must
-				    use vim_free() when assigning new value */
-#define P_WAS_SET	0x100	/* option has been set/reset */
-#define P_NO_MKRC	0x200	/* don't include in :mkvimrc output */
-#define P_VI_DEF	0x400	/* Use Vi default for Vim */
-#define P_VIM		0x800	/* Vim option, reset when 'cp' set */
+//
+// Flags
+//
+#define P_BOOL		0x01	// the option is boolean
+#define P_NUM		0x02	// the option is numeric
+#define P_STRING	0x04	// the option is a string
+#define P_ALLOCED	0x08	// the string option is in allocated memory,
+				// must use free_string_option() when
+				// assigning new value. Not set if default is
+				// the same.
+#define P_EXPAND	0x10	// environment expansion.  NOTE: P_EXPAND can
+				// never be used for local or hidden options!
+#define P_NODEFAULT	0x40	// don't set to default value
+#define P_DEF_ALLOCED	0x80	// default value is in allocated memory, must
+				//  use vim_free() when assigning new value
+#define P_WAS_SET	0x100	// option has been set/reset
+#define P_NO_MKRC	0x200	// don't include in :mkvimrc output
+#define P_VI_DEF	0x400	// Use Vi default for Vim
+#define P_VIM		0x800	// Vim option, reset when 'cp' set
 
-				/* when option changed, what to display: */
-#define P_RSTAT		0x1000	/* redraw status lines */
-#define P_RWIN		0x2000	/* redraw current window and recompute text */
-#define P_RBUF		0x4000	/* redraw current buffer and recompute text */
-#define P_RALL		0x6000	/* redraw all windows */
-#define P_RCLR		0x7000	/* clear and redraw all */
+				// when option changed, what to display:
+#define P_RSTAT		0x1000	// redraw status lines
+#define P_RWIN		0x2000	// redraw current window and recompute text
+#define P_RBUF		0x4000	// redraw current buffer and recompute text
+#define P_RALL		0x6000	// redraw all windows
+#define P_RCLR		0x7000	// clear and redraw all
 
-#define P_COMMA		 0x8000	 /* comma separated list */
-#define P_ONECOMMA	0x18000L /* P_COMMA and cannot have two consecutive
-				  * commas */
-#define P_NODUP		0x20000L /* don't allow duplicate strings */
-#define P_FLAGLIST	0x40000L /* list of single-char flags */
+#define P_COMMA		 0x8000	 // comma separated list
+#define P_ONECOMMA	0x18000L // P_COMMA and cannot have two consecutive
+				 // commas
+#define P_NODUP		0x20000L // don't allow duplicate strings
+#define P_FLAGLIST	0x40000L // list of single-char flags
 
-#define P_SECURE	0x80000L /* cannot change in modeline or secure mode */
-#define P_GETTEXT      0x100000L /* expand default value with _() */
-#define P_NOGLOB       0x200000L /* do not use local value for global vimrc */
-#define P_NFNAME       0x400000L /* only normal file name chars allowed */
-#define P_INSECURE     0x800000L /* option was set from a modeline */
-#define P_PRI_MKRC    0x1000000L /* priority for :mkvimrc (setting option has
-				    side effects) */
-#define P_NO_ML       0x2000000L /* not allowed in modeline */
-#define P_CURSWANT    0x4000000L /* update curswant required; not needed when
-				  * there is a redraw flag */
-#define P_NDNAME      0x8000000L /* only normal dir name chars allowed */
-#define P_RWINONLY   0x10000000L /* only redraw current window */
-#define P_MLE	     0x20000000L /* under control of 'modelineexpr' */
+#define P_SECURE	0x80000L // cannot change in modeline or secure mode
+#define P_GETTEXT      0x100000L // expand default value with _()
+#define P_NOGLOB       0x200000L // do not use local value for global vimrc
+#define P_NFNAME       0x400000L // only normal file name chars allowed
+#define P_INSECURE     0x800000L // option was set from a modeline
+#define P_PRI_MKRC    0x1000000L // priority for :mkvimrc (setting option has
+				 // side effects)
+#define P_NO_ML       0x2000000L // not allowed in modeline
+#define P_CURSWANT    0x4000000L // update curswant required; not needed when
+				 // there is a redraw flag
+#define P_NDNAME      0x8000000L // only normal dir name chars allowed
+#define P_RWINONLY   0x10000000L // only redraw current window
+#define P_MLE	     0x20000000L // under control of 'modelineexpr'
 
 #define ISK_LATIN1  (char_u *)"@,48-57,_,192-255"
 
-/* 'isprint' for latin1 is also used for MS-Windows cp1252, where 0x80 is used
- * for the currency sign. */
+// 'isprint' for latin1 is also used for MS-Windows cp1252, where 0x80 is used
+// for the currency sign.
 #if defined(MSWIN)
 # define ISP_LATIN1 (char_u *)"@,~-255"
 #else
@@ -456,7 +446,7 @@ struct vimoption
 
 # define HIGHLIGHT_INIT "8:SpecialKey,~:EndOfBuffer,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,N:CursorLineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,-:Conceal,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb,*:TabLine,#:TabLineSel,_:TabLineFill,!:CursorColumn,.:CursorLine,o:ColorColumn,q:QuickFixLine,z:StatusLineTerm,Z:StatusLineTermNC"
 
-/* Default python version for pyx* commands */
+// Default python version for pyx* commands
 #if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
 # define DEFAULT_PYTHON_VER	0
 #elif defined(FEAT_PYTHON3)
@@ -470,14 +460,12 @@ struct vimoption
 // used for 'cinkeys' and 'indentkeys'
 #define INDENTKEYS_DEFAULT (char_u *)"0{,0},0),0],:,0#,!^F,o,O,e"
 
-/*
- * options[] is initialized here.
- * The order of the options MUST be alphabetic for ":set all" and findoption().
- * All option names MUST start with a lowercase letter (for findoption()).
- * Exception: "t_" options are at the end.
- * The options with a NULL variable are 'hidden': a set command for them is
- * ignored and they are not printed.
- */
+// options[] is initialized here.
+// The order of the options MUST be alphabetic for ":set all" and findoption().
+// All option names MUST start with a lowercase letter (for findoption()).
+// Exception: "t_" options are at the end.
+// The options with a NULL variable are 'hidden': a set command for them is
+// ignored and they are not printed.
 static struct vimoption options[] =
 {
     {"aleph",	    "al",   P_NUM|P_VI_DEF|P_CURSWANT,
@@ -817,8 +805,8 @@ static struct vimoption options[] =
 			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCTX_INIT},
-			    /* P_PRI_MKRC isn't needed here, optval_default()
-			     * always returns TRUE for 'compatible' */
+			    // P_PRI_MKRC isn't needed here, optval_default()
+			    // always returns TRUE for 'compatible'
     {"compatible",  "cp",   P_BOOL|P_RALL,
 			    (char_u *)&p_cp, PV_NONE,
 			    {(char_u *)TRUE, (char_u *)FALSE} SCTX_INIT},
@@ -1303,12 +1291,12 @@ static struct vimoption options[] =
 			    (char_u *)&p_gp, PV_GP,
 			    {
 # ifdef MSWIN
-			    /* may be changed to "grep -n" in os_win32.c */
+			    // may be changed to "grep -n" in os_win32.c
 			    (char_u *)"findstr /n",
 # else
 #  ifdef UNIX
-			    /* Add an extra file name so that grep will always
-			     * insert a file name in the match line. */
+			    // Add an extra file name so that grep will always
+			    // insert a file name in the match line.
 			    (char_u *)"grep -n $* /dev/null",
 #  else
 #   ifdef VMS
@@ -1330,7 +1318,7 @@ static struct vimoption options[] =
 			    {
 # ifdef FEAT_GUI
 				(char_u *)"n-v-c:block-Cursor/lCursor,ve:ver35-Cursor,o:hor50-Cursor,i-ci:ver25-Cursor/lCursor,r-cr:hor20-Cursor/lCursor,sm:block-Cursor-blinkwait175-blinkoff150-blinkon175",
-# else	/* Win32 console */
+# else	// Win32 console
 				(char_u *)"n-v-c:block,o:hor50,i-ci:hor15,r-cr:hor30,sm:block",
 # endif
 				    (char_u *)0L}
@@ -1576,8 +1564,8 @@ static struct vimoption options[] =
 			    (char_u *)&p_isf, PV_NONE,
 			    {
 #ifdef BACKSLASH_IN_FILENAME
-				/* Excluded are: & and ^ are special in cmd.exe
-				 * ( and ) are used in text separating fnames */
+				// Excluded are: & and ^ are special in cmd.exe
+				// ( and ) are used in text separating fnames
 			    (char_u *)"@,48-57,/,\\,.,-,_,+,,,#,$,%,{,},[,],:,@-@,!,~,=",
 #else
 # ifdef AMIGA
@@ -1585,7 +1573,7 @@ static struct vimoption options[] =
 # else
 #  ifdef VMS
 			    (char_u *)"@,48-57,/,.,-,_,+,,,#,$,%,<,>,[,],:,;,~",
-#  else /* UNIX et al. */
+#  else // UNIX et al.
 #   ifdef EBCDIC
 			    (char_u *)"@,240-249,/,.,-,_,+,,,#,$,%,~,=",
 #   else
@@ -1602,7 +1590,7 @@ static struct vimoption options[] =
 			    (char_u *)"@,48-57,_,128-167,224-235",
 #else
 # ifdef EBCDIC
-			    /* TODO: EBCDIC Check this! @ == isalpha()*/
+			    // TODO: EBCDIC Check this! @ == isalpha()
 			    (char_u *)"@,240-249,_,66-73,81-89,98-105,"
 				    "112-120,128,140-142,156,158,172,"
 				    "174,186,191,203-207,219-225,235-239,"
@@ -1617,7 +1605,7 @@ static struct vimoption options[] =
 			    {
 #ifdef EBCDIC
 			     (char_u *)"@,240-249,_",
-			     /* TODO: EBCDIC Check this! @ == isalpha()*/
+			     // TODO: EBCDIC Check this! @ == isalpha()
 			     (char_u *)"@,240-249,_,66-73,81-89,98-105,"
 				    "112-120,128,140-142,156,158,172,"
 				    "174,186,191,203-207,219-225,235-239,"
@@ -1638,7 +1626,7 @@ static struct vimoption options[] =
 			    (char_u *)"@,~-255",
 #else
 # ifdef EBCDIC
-			    /* all chars above 63 are printable */
+			    // all chars above 63 are printable
 			    (char_u *)"63-255",
 # else
 			    ISP_LATIN1,
@@ -2125,8 +2113,8 @@ static struct vimoption options[] =
     {"printheader", "pheader",  P_STRING|P_VI_DEF|P_GETTEXT,
 #ifdef FEAT_PRINTER
 			    (char_u *)&p_header, PV_NONE,
-			    /* untranslated to avoid problems when 'encoding'
-			     * is changed */
+			    // untranslated to avoid problems when 'encoding'
+			    // is changed
 			    {(char_u *)"%<%f%h%m%=Page %N", (char_u *)0L}
 #else
 			    (char_u *)NULL, PV_NONE,
@@ -2361,11 +2349,11 @@ static struct vimoption options[] =
 			    (char_u *)"-",
 #else
 # if defined(MSWIN)
-			    (char_u *)"",	/* set in set_init_1() */
+			    (char_u *)"",	// set in set_init_1()
 # else
 			    (char_u *)"sh",
 # endif
-#endif /* VMS */
+#endif // VMS
 				(char_u *)0L} SCTX_INIT},
     {"shellcmdflag","shcf", P_STRING|P_VI_DEF|P_SECURE,
 			    (char_u *)&p_shcf, PV_NONE,
@@ -2630,7 +2618,7 @@ static struct vimoption options[] =
 			    {(char_u *)8L, (char_u *)0L} SCTX_INIT},
     {"tagbsearch",  "tbs",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_tbs, PV_NONE,
-#ifdef VMS	/* binary searching doesn't appear to work on VMS */
+#ifdef VMS	// binary searching doesn't appear to work on VMS
 			    {(char_u *)0L, (char_u *)0L}
 #else
 			    {(char_u *)TRUE, (char_u *)0L}
@@ -3078,7 +3066,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_wd, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},
 
-/* terminal output codes */
+// terminal output codes
 #define p_term(sss, vvv)   {sss, NULL, P_STRING|P_VI_DEF|P_RALL|P_SECURE, \
 			    (char_u *)&vvv, PV_NONE, \
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
@@ -3162,9 +3150,9 @@ static struct vimoption options[] =
     p_term("t_8f", T_8F)
     p_term("t_8b", T_8B)
 
-/* terminal key codes are not in here */
+// terminal key codes are not in here
 
-    /* end marker */
+    // end marker
     {NULL, NULL, 0, NULL, PV_NONE, {NULL, NULL} SCTX_INIT}
 };
 
