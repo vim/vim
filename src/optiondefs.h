@@ -3201,5 +3201,5 @@ static char *(p_scl_values[]) = {"yes", "no", "auto", "number", NULL};
 static char *(p_twt_values[]) = {"winpty", "conpty", "", NULL};
 #endif
 #ifdef FEAT_SYN_HL
-static char *(p_culopt_values[]) = {"line", "number", "both", NULL};
+static char *(p_culopt_values[]) = {"line", "number", "both", "screenline", NULL};
 #endif
