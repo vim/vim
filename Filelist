@@ -87,6 +87,7 @@ SRC_ALL =	\
 		src/ops.c \
 		src/option.c \
 		src/option.h \
+		src/optiondefs.h \
 		src/popupmnu.c \
 		src/popupwin.c \
 		src/profiler.c \
