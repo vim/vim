@@ -296,6 +296,11 @@
 #define BS_EOL		'o'	// "eOl"
 #define BS_START	's'	// "Start"
 
+/* flags for the 'culopt' option */
+#define CULOPT_LINE	0x001	// Highlight complete line
+#define CULOPT_SCRLINE	0x002	// Highlight screen line
+#define CULOPT_NBR	0x004	// Highlight Number column
+
 #define LISPWORD_VALUE	"defun,define,defmacro,set!,lambda,if,case,let,flet,let*,letrec,do,do*,define-syntax,let-syntax,letrec-syntax,destructuring-bind,defpackage,defparameter,defstruct,deftype,defvar,do-all-symbols,do-external-symbols,do-symbols,dolist,dotimes,ecase,etypecase,eval-when,labels,macrolet,multiple-value-bind,multiple-value-call,multiple-value-prog1,multiple-value-setq,prog1,progv,typecase,unless,unwind-protect,when,with-input-from-string,with-open-file,with-open-stream,with-output-to-string,with-package-iterator,define-condition,handler-bind,handler-case,restart-bind,restart-case,with-simple-restart,store-value,use-value,muffle-warning,abort,continue,with-slots,with-slots*,with-accessors,with-accessors*,defclass,defmethod,print-unreadable-object"
 
 /*

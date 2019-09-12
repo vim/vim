@@ -3207,6 +3207,7 @@ struct window_S
 #endif
 #ifdef FEAT_SYN_HL
     int		*w_p_cc_cols;	    // array of columns to highlight or NULL
+    char_u	w_p_culopt_flags;   // flags for cursorline highlighting
 #endif
 #ifdef FEAT_LINEBREAK
     int		w_p_brimin;	    // minimum width for breakindent
@@ -3287,7 +3288,6 @@ struct window_S
      */
     qf_info_T	*w_llist_ref;
 #endif
-
 
 #ifdef FEAT_MZSCHEME
     void	*w_mzscheme_ref;	// The MzScheme value for this window
