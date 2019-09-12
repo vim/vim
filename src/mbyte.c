@@ -3932,6 +3932,8 @@ utf_allow_break_before(cc)
 	0x2047, /* ⁇ double question mark */
 	0x2048, /* ⁈ question exclamation mark */
 	0x2049, /* ⁉ exclamation question mark */
+	0x2103, /* ℃ degree celsius */
+	0x2109, /* ℉ degree fahrenheit */
 	0x3001, /* 、 ideographic comma */
 	0x3002, /* 。 ideographic full stop */
 	0x3009, /* 〉 right angle bracket */
@@ -3988,8 +3990,6 @@ utf_allow_break_after(cc)
 	0x2018, /* ‘ left single quotation mark */
 	0x201c, /* “ left double quotation mark */
 	/*0x2053,*/ /* ～ swung dash */
-	0x2103, /* ℃ degree celsius */
-	0x2109, /* ℉ degree fahrenheit */
 	0x3008, /* 〈 left angle bracket */
 	0x300a, /* 《 left double angle bracket */
 	0x300c, /* 「 left corner bracket */
