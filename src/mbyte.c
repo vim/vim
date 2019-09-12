@@ -3896,10 +3896,10 @@ utf_head_off(char_u *base, char_u *p)
 utf_eat_space(cc)
     int		cc;
 {
-    if (cc >= 0x2000 && cc <= 0x206F	      /* General punctuations */
-	    || cc >= 0x2e00 && cc <= 0x2e7f   /* Supplemental punctuations */
-	    || cc >= 0x3000 && cc <= 0x303f   /* CJK symbols and punctuations */
-	    || cc >= 0xff00 && cc <= 0xffef)  /* Full width ASCII punctuations */
+    if ((cc >= 0x2000 && cc <= 0x206F)	      /* General punctuations */
+	    || (cc >= 0x2e00 && cc <= 0x2e7f)   /* Supplemental punctuations */
+	    || (cc >= 0x3000 && cc <= 0x303f)   /* CJK symbols and punctuations */
+	    || (cc >= 0xff00 && cc <= 0xffef))  /* Full width ASCII punctuations */
 	return TRUE;
 
     return FALSE;
