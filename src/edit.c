@@ -2676,7 +2676,7 @@ internal_format(
 
 		    allow_break =
 			enc_utf8 && utf_allow_break(cc, ncc)
-			|| enc_dbcs && dbcs_allow_break(cc, ncc);
+			|| enc_dbcs;
 
 		    /* If we have already checked this position, skip! */
 		    if (curwin->w_cursor.col != skip_pos && allow_break)
@@ -2709,7 +2709,7 @@ internal_format(
 
 		allow_break =
 		    enc_utf8 && utf_allow_break(cc, ncc)
-		    || enc_dbcs && dbcs_allow_break(cc, ncc);
+		    || enc_dbcs;
 
 		/* must handle this to respect line break prohibition */
 		if (allow_break)
@@ -2720,7 +2720,7 @@ internal_format(
 		if (curwin->w_cursor.col <= (colnr_T)wantcol) {
 		    int ncc_allow_break =
 			enc_utf8 && utf_allow_break_before(ncc)
-			|| enc_dbcs && dbcs_allow_break_before(ncc);
+			|| enc_dbcs;
 
 		    if (allow_break)
 			break;
@@ -2749,7 +2749,7 @@ internal_format(
 
 			    allow_break =
 				enc_utf8 && utf_allow_break(cc, ncc)
-				|| enc_dbcs && dbcs_allow_break(cc, ncc);
+				|| enc_dbcs;
 
 			    if (allow_break)
 			    {

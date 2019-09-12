@@ -3798,45 +3798,6 @@ dbcs_head_off(char_u *base, char_u *p)
 }
 
 /*
- * whether space is allowed before/after 'c'
- * return  TRUE    if not allowed(eat space)
- *	   FALSE   otherwise
- */
-    int
-dbcs_eat_space(cc)
-    int		cc;
-{
-    return FALSE;
-}
-
-    int
-dbcs_allow_break_after(cc)
-    int		cc;
-{
-    return TRUE;
-}
-
-    int
-dbcs_allow_break_before(cc)
-    int		cc;
-{
-    return TRUE;
-}
-
-/*
- * whether line break is allowed between cc and ncc
- * return  TRUE    if allowed
- *	   FALSE   otherwise
- */
-    int
-dbcs_allow_break(cc, ncc)
-    int		cc;
-    int		ncc;
-{
-    return dbcs_allow_break_after(cc) && dbcs_allow_break_before(ncc);
-}
-
-/*
  * Special version of dbcs_head_off() that works for ScreenLines[], where
  * single-width DBCS_JPNU characters are stored separately.
  */

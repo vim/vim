@@ -4506,10 +4506,8 @@ do_join(
 		    && (!has_format_option(FO_MBYTE_JOIN2)
 			|| mb_ptr2char(curr) < 0x100
 			    && !(enc_utf8 && utf_eat_space(endcurr1))
-			    && !(enc_dbcs != 0 && dbcs_eat_space(endcurr1))
 			|| endcurr1 < 0x100
-			    && !(enc_utf8 && utf_eat_space(mb_ptr2char(curr)))
-			    && !(enc_dbcs != 0 && dbcs_eat_space(mb_ptr2char(curr))))
+			    && !(enc_utf8 && utf_eat_space(mb_ptr2char(curr))))
 	       )
 	    {
 		/* don't add a space if the line is ending in a space */
