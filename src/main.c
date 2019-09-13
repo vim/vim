@@ -1255,8 +1255,10 @@ main_loop(
 	    update_topline();
 	    validate_cursor();
 
-	    if (curwin->w_p_cul && curwin->w_p_wrap && *curwin->w_p_culopt == 's')
+#ifdef FEAT_SYN_HL
+	    if (curwin->w_p_cul && curwin->w_p_wrap && (curwin->w_p_culopt_flags & CULOPT_SCRLINE))
 		must_redraw = NOT_VALID;
+#endif
 
 	    if (VIsual_active)
 		update_curbuf(INVERTED);/* update inverted part */
@@ -1268,7 +1270,7 @@ main_loop(
 		// TODO: can we optimize this?
 		if (curwin->w_p_cul &&
 		    curwin->w_p_wrap &&
-		    *curwin->w_p_culopt == 's' && 
+		    (curwin->w_p_culopt_flags & CULOPT_SCRLINE) &&
 		    !char_avail())
 		    update_screen(VALID);
 		else
