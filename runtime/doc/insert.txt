@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.1.  Last change: 2019 Aug 21
+*insert.txt*    For Vim version 8.1.  Last change: 2019 Sep 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1124,7 +1124,7 @@ is used when the info popup is created.  The option is a comma separated list
 of values:
 	height		maximum height of the popup
 	width		maximum width of the popup
-	highlight	highlight group of the popup (default is Pmenu)
+	highlight	highlight group of the popup (default is PmenuSel)
 	align		"item" (default) or "menu"
 	border		"on" (default) or "off"
 Example: >

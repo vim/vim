@@ -183,9 +183,11 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'csverb'	options.txt	/*'csverb'*
 'cuc'	options.txt	/*'cuc'*
 'cul'	options.txt	/*'cul'*
+'culopt'	options.txt	/*'culopt'*
 'cursorbind'	options.txt	/*'cursorbind'*
 'cursorcolumn'	options.txt	/*'cursorcolumn'*
 'cursorline'	options.txt	/*'cursorline'*
+'cursorlineopt'	options.txt	/*'cursorlineopt'*
 'cwh'	options.txt	/*'cwh'*
 'debug'	options.txt	/*'debug'*
 'deco'	options.txt	/*'deco'*
@@ -9968,6 +9970,7 @@ win_gotoid()	eval.txt	/*win_gotoid()*
 win_id2tabwin()	eval.txt	/*win_id2tabwin()*
 win_id2win()	eval.txt	/*win_id2win()*
 win_screenpos()	eval.txt	/*win_screenpos()*
+win_splitmove()	eval.txt	/*win_splitmove()*
 winbufnr()	eval.txt	/*winbufnr()*
 wincol()	eval.txt	/*wincol()*
 window	windows.txt	/*window*

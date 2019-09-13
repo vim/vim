@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Sep 07
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Sep 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,6 +37,8 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Split off part of option.c: #4918
 
 Popup windows:
 - Implement flip option
@@ -132,13 +134,11 @@ Remove check for cmd_silent when calling search_stat()? (Gary Johnson)
 
 undo result wrong: Masato Nishihata, #4798
 
+Undo puts cursor in wrong line after "cG<Esc>" undo.
+
 Sound: support on Mac?  Or does libcanberra work there?
 
-Patch to add win_splitmove() function. (Andy Massimino, #4561)
-
 Patch for #4733: #4734.  Test needs improvements.
-
-Add CmdwinLeavePost (#4762).  Also add WinLeavePost then?
 
 Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
 20)
@@ -156,15 +156,6 @@ Ready to include now?
 
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
-
-Patch to support 'cursorlineopt' - only highlight the line number of the
-cursor line: #4693
-
-Let plugins know how much space is available in the last line before
-triggering the hit-enter prompt.  Internally called "sc_col".
-(Daniel Hahler, #4732)
-
-Patch for Template string: #4491  Not ready yet.  New pull: #4634
 
 ":bnext" in a help buffer is supposed to go to the next help buffer, but it
 goes to any buffer, and then :bnext skips help buffers, since they are
@@ -191,8 +182,17 @@ with packages under "start". (xtal8, #1994)
 Modeless selection doesn't work in gvim. (#4783)
 Caused by patch 8.1.1534.
 
+Patch to add random number generator. (Hong Xu, 2010 Nov 8, update Nov 10)
+Alternative from Christian Brabandt. (2010 Sep 19)
+New one from Yasuhiro Matsumoto, #1277.
+
 Visual highlight not removed when 'dipslay' is "lastline" and line doesn't
 fit. (Kevin Lawler, #4457)
+
+Patch to add interrupt(). (Yasuhiro Matsumoto, #2834)
+
+Patch to add per-tabpage and per-window previous directory: "lcd -" and "tcd
+-". (Yegappan Lakshmanan, #4362)
 
 Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
@@ -202,6 +202,11 @@ Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
 
 Check_external_diff() is used too often. (Daniel Hahler, #4800)
+
+Incorrect formatting with autoindent. (Sebastian Gniazdowski, #4909)
+
+Patch to sort buffers on b_last_used time.  (Andy Massimino, #4722)
+Needs a test.
 
 Errors found with random data:
     heap-buffer-overflow in alist_add (#2472)
@@ -310,6 +315,9 @@ Support setting the character displayed below the last line?  Neovim uses
 
 Check: __attribute__((format(printf, on semsg() and siemsg().  Where was this
 added?
+
+Patch to add a flatten() function.  #3676.  Check that the doc explains the
+maxdepth argument (applies to the input "recursiveness").
 
 Add test for urxvt mouse codes.  Also test that mouse coordinates can be
 negative. (see #4326)
@@ -638,6 +646,9 @@ Column number is wrong when using 'linebreak' and 'wrap'. (Keith Smiley, 2018
 Jan 15, #2555)
 
 ":bufdo e" disabled syntax HL in windows other than the current. (BPJ)
+
+Patch for Template string: #4491.  New pull: #4634
+It's an awful lot of code for something that is just a bit nicer syntax.
 
 Check argument of systemlist(). (Pavlov)
 
@@ -988,10 +999,6 @@ somewhere else.  :{range}copy {dest} !cmd
 
 Patch to fix that empty first tab is not in session.
 (Hirohito Higashi, 2016 Nov 25, #1282)
-
-Patch to add random number generator. (Hong Xu, 2010 Nov 8, update Nov 10)
-Alternative from Christian Brabandt. (2010 Sep 19)
-New one from Yasuhiro Matsumoto, #1277.
 
 Patch to fix escaping of job arguments. (Yasuhiro Matsumoto, 2016 Oct 5)
 Update Oct 14: https://gist.github.com/mattn/d47e7d3bfe5ade4be86062b565a4bfca

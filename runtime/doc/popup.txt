@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Sep 04
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Sep 08
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -204,7 +204,7 @@ popup_beval({what}, {options})			*popup_beval()*
 			\ mousemoved: 'WORD',
 			\ })
 <		Use {options} to change the properties.
-		See |popup_beval_example| for an example use.
+		See |popup_beval_example| for an example.
 
 		Can also be used as a |method|: >
 			GetText()->popup_beval({})

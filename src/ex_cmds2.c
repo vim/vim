@@ -260,7 +260,7 @@ check_due_timer(void)
 /*
  * Find a timer by ID.  Returns NULL if not found;
  */
-    timer_T *
+    static timer_T *
 find_timer(long id)
 {
     timer_T *timer;
@@ -291,7 +291,7 @@ stop_timer(timer_T *timer)
     }
 }
 
-    void
+    static void
 stop_all_timers(void)
 {
     timer_T *timer;
@@ -304,7 +304,7 @@ stop_all_timers(void)
     }
 }
 
-    void
+    static void
 add_timer_info(typval_T *rettv, timer_T *timer)
 {
     list_T	*list = rettv->vval.v_list;
@@ -338,7 +338,7 @@ add_timer_info(typval_T *rettv, timer_T *timer)
     }
 }
 
-    void
+    static void
 add_timer_info_all(typval_T *rettv)
 {
     timer_T *timer;
