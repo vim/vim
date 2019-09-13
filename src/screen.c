@@ -4162,6 +4162,16 @@ win_line(
 		    p_extra = saved_p_extra;
 		    char_attr = saved_char_attr;
 		    extra_attr = saved_extra_attr;
+#ifdef FEAT_SYN_HL
+		    // line wrapped and need to apply screen line cursorline highlighting
+		    if (wp->w_p_cul
+			    && lnum == wp->w_cursor.lnum
+			    && *wp->w_p_culopt == 's'
+			    && wp->w_p_wrap
+			    && vcol >= lcol
+			    && vcol < rcol)
+		    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
+ #endif
 		}
 		else
 		    char_attr = win_attr;
