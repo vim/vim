@@ -4601,3 +4601,22 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
 }
 # endif
 #endif
+
+/*
+ * Change the behavior of vterm.
+ * 0: As usual.
+ * 1: Windows 10 version 1809
+ *      The bug causes unstable handling of ambiguous width character.
+ * 2: Windows 10 version 1903
+ *      Use the wrong result because each result is different.
+ * 3: Windows 10 insider preview (current latest logic)
+ */
+    int
+get_special_pty_type(void)
+{
+#ifdef MSWIN
+    return get_conpty_type();
+#else
+    return 0;
+#endif
+}
