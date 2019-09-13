@@ -160,7 +160,7 @@ static void win_redr_ruler(win_T *wp, int always, int ignore_pum);
 #endif
 #ifdef FEAT_SYN_HL
 static void margin_columns_win(win_T *wp, int *lmargin, int *rmargin);
- #endif
+#endif
 
 /* Ugly global: overrule attribute used by screen_char() */
 static int screen_char_attr = 0;
@@ -3293,8 +3293,8 @@ win_line(
 #ifdef FEAT_SYN_HL
     // margin columns for the screen line, needed for when
     // 'cursorlineopt' contains screenline
-    int		lcol;
-    int		rcol;
+    int		lcol = 0;
+    int		rcol = 0;
     int         need_cul_screenline = FALSE;  // apply 'cul' highlight only per screenline
 #endif 
 
@@ -4174,7 +4174,7 @@ win_line(
 		    char_attr = win_attr;
 	    }
 	}
- #ifdef FEAT_SYN_HL
+#ifdef FEAT_SYN_HL
 	if (wp->w_p_cul && lnum == wp->w_cursor.lnum
 		&& (wp->w_p_culopt_flags & CULOPT_SCRLINE)
 		&& wp->w_p_wrap)
@@ -4480,7 +4480,7 @@ win_line(
 #ifdef FEAT_SYN_HL
 			if (need_cul_screenline)
 			    multi_attr = hl_combine_attr(multi_attr, HL_ATTR(HLF_CUL));
- #endif
+#endif
 			/* put the pointer back to output the double-width
 			 * character at the start of the next line. */
 			++n_extra;
@@ -4575,7 +4575,7 @@ win_line(
 #ifdef FEAT_SYN_HL
 			    if (need_cul_screenline)
 				extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
- #endif
+#endif
 			    saved_attr2 = char_attr; /* save current attr */
 			}
 		    }
@@ -4651,7 +4651,7 @@ win_line(
 #ifdef FEAT_SYN_HL
 				if (need_cul_screenline)
 				    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
- #endif
+#endif
 			    }
 			    mb_c = c;
 			}
@@ -4700,7 +4700,7 @@ win_line(
 #ifdef FEAT_SYN_HL
 			if (need_cul_screenline)
 			    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
- #endif
+#endif
 		    }
 		    mb_c = c;
 		    mb_utf8 = FALSE;
@@ -4941,7 +4941,7 @@ win_line(
 #ifdef FEAT_SYN_HL
 			if (need_cul_screenline)
 			    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
- #endif
+#endif
 		    }
 		    mb_c = c;
 		    if (enc_utf8 && utf_char2len(c) > 1)
@@ -4966,7 +4966,7 @@ win_line(
 #ifdef FEAT_SYN_HL
 			if (need_cul_screenline)
 			    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
- #endif
+#endif
 		    }
 		    mb_c = c;
 		    if (enc_utf8 && utf_char2len(c) > 1)
@@ -5111,7 +5111,7 @@ win_line(
 #ifdef FEAT_SYN_HL
 			if (need_cul_screenline)
 			    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
- #endif
+#endif
 			mb_c = c;
 			if (enc_utf8 && utf_char2len(c) > 1)
 			{
@@ -5186,7 +5186,7 @@ win_line(
 #ifdef FEAT_SYN_HL
 			if (need_cul_screenline)
 			    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
- #endif
+#endif
 			n_attr = 1;
 		    }
 		    mb_c = c;
@@ -5237,7 +5237,7 @@ win_line(
 #ifdef FEAT_SYN_HL
 			if (need_cul_screenline)
 			    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
- #endif
+#endif
 			saved_attr2 = char_attr; /* save current attr */
 		    }
 		    mb_utf8 = FALSE;	/* don't draw as UTF-8 */
@@ -5501,7 +5501,7 @@ win_line(
 #ifdef FEAT_SYN_HL
 		if (need_cul_screenline)
 		    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
- #endif
+#endif
 	    }
 	    mb_c = c;
 	    if (enc_utf8 && utf_char2len(c) > 1)
@@ -11179,9 +11179,11 @@ margin_columns_win(win_T *wp, int *lmargin, int *rmargin)
     static win_T *prev_wp;
     static int prev_lcol;
     static int prev_rcol;
-    static int prev_col_off;;
+    static int prev_col_off;
 
     int cur_col_off = win_col_off(wp);
+    int	width1;
+    int	width2;
 
     if (saved_w_virtcol == wp->w_virtcol &&
 	    prev_wp == wp && prev_col_off == cur_col_off)
@@ -11191,8 +11193,8 @@ margin_columns_win(win_T *wp, int *lmargin, int *rmargin)
 	return;
     }
 
-    int	width1 = wp->w_width - cur_col_off;
-    int	width2 = width1 + win_col_off2(wp);
+    width1 = wp->w_width - cur_col_off;
+    width2 = width1 + win_col_off2(wp);
 
     *lmargin = 0;
     *rmargin = width1;

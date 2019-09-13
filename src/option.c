@@ -9525,7 +9525,7 @@ get_winbuf_options(int bufopt)
 
 #ifdef FEAT_SYN_HL
 /*
- * This is called when 'culopt' is change
+ * This is called when 'culopt' is changed
  */
     static int
 fill_culopt_flags(char_u *val, win_T *wp)

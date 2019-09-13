@@ -596,7 +596,7 @@ changed_common(
 	    // change (or is using screenline highlighting)
 	    if (wp->w_p_rnu
 #ifdef FEAT_SYN_HL
-		    || (wp->w_p_cul && lnum <= wp->w_last_cursorline
+		    || ((wp->w_p_cul && lnum <= wp->w_last_cursorline)
 			    || (wp->w_p_culopt_flags & CULOPT_SCRLINE))
 #endif
 		    )
