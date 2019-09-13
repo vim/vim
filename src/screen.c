@@ -158,7 +158,9 @@ static void win_redr_custom(win_T *wp, int draw_ruler);
 #ifdef FEAT_CMDL_INFO
 static void win_redr_ruler(win_T *wp, int always, int ignore_pum);
 #endif
+#ifdef FEAT_SYN_HL
 static void margin_columns_win(win_T *wp, int *lmargin, int *rmargin);
+ #endif
 
 /* Ugly global: overrule attribute used by screen_char() */
 static int screen_char_attr = 0;
@@ -4162,6 +4164,11 @@ win_line(
 		    char_attr = win_attr;
 	    }
 	}
+ #ifdef FEAT_SYN_HL
+	if (wp->w_p_cul && lnum == wp->w_cursor.lnum && *wp->w_p_culopt == 's'
+		&& wp->w_p_wrap)
+	    margin_columns_win(wp, &lcol, &rcol);
+#endif
 
 #ifdef FEAT_SYN_HL
 	// actual content of the line starts
@@ -4169,7 +4176,6 @@ win_line(
 			&& *wp->w_p_culopt == 's' && wp->w_p_wrap
 			&& draw_state == WL_LINE)
 	{
-	    margin_columns_win(wp, &lcol, &rcol);
 	    if (vcol >= lcol && vcol <= rcol)
 		char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
 	    else if (vcol > rcol)
@@ -4252,7 +4258,6 @@ win_line(
 		{
 		    if (*wp->w_p_culopt == 's' && wp->w_p_wrap)
 		    {
-			margin_columns_win(wp, &lcol, &rcol);
 			if (vcol >= lcol && vcol <= rcol)
 			    line_attr = hl_combine_attr(line_attr, HL_ATTR(HLF_CUL));
 		    }
@@ -5230,7 +5235,6 @@ win_line(
 			    {
 				if (*wp->w_p_culopt == 's' && wp->w_p_wrap)
 				{
-				    margin_columns_win(wp, &lcol, &rcol);
 				    if (vcol >= lcol && vcol <= rcol)
 					char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
 				}
@@ -5248,7 +5252,6 @@ win_line(
 			{
 			    if (*wp->w_p_culopt == 's' && wp->w_p_wrap)
 			    {
-				margin_columns_win(wp, &lcol, &rcol);
 				if (vcol >= lcol && vcol <= rcol)
 				    char_attr = hl_combine_attr(char_attr, HL_ATTR(HLF_CUL));
 			    }
@@ -11094,10 +11097,29 @@ set_chars_option(char_u **varp)
     return NULL;	// no error
 }
 
+ #ifdef FEAT_SYN_HL
     static void
 margin_columns_win(win_T *wp, int *lmargin, int *rmargin)
 {
-    int	width1 = wp->w_width - win_col_off(wp);
+    // cache previous calculations depending on
+    // w_virtcol
+    static int saved_w_virtcol;
+    static win_T *prev_wp;
+    static int prev_lcol;
+    static int prev_rcol;
+    static int prev_col_off;;
+
+    int cur_col_off = win_col_off(wp);
+
+    if (saved_w_virtcol == wp->w_virtcol &&
+	    prev_wp == wp && prev_col_off == cur_col_off)
+    {
+	*rmargin = prev_rcol;
+	*lmargin = prev_lcol;
+	return;
+    }
+
+    int	width1 = wp->w_width - cur_col_off;
     int	width2 = width1 + win_col_off2(wp);
 
     *lmargin = 0;
@@ -11107,4 +11129,12 @@ margin_columns_win(win_T *wp, int *lmargin, int *rmargin)
 	*rmargin = width1 - 1 + ((wp->w_virtcol - width1) / width2 + 1) * width2;
     if (wp->w_virtcol >= (colnr_T)width1 && width2 > 0)
 	*lmargin = (wp->w_virtcol - width1) / width2 * width2 + width1;
+
+    // cache values
+    prev_lcol = *lmargin;
+    prev_rcol = *rmargin;
+    prev_wp = wp;
+    saved_w_virtcol = wp->w_virtcol;
+    prev_col_off = cur_col_off;
 }
+#endif
