@@ -3187,6 +3187,7 @@ win_line(
     int		saved_c_extra = 0;
     int		saved_c_final = 0;
     int		saved_char_attr = 0;
+    int		saved_extra_attr = 0;
 
     int		n_attr = 0;		/* chars with special attr */
     int		saved_attr2 = 0;	/* char_attr saved for n_attr */
@@ -3294,6 +3295,7 @@ win_line(
     // 'cursorlineopt' contains screenline
     int		lcol;
     int		rcol;
+    int         need_cul_screenline = FALSE;  // apply 'cul' highlight only per screenline
 #endif 
 
     /* draw_state: items that are drawn in sequence: */
@@ -4159,6 +4161,7 @@ win_line(
 		    c_final = saved_c_final;
 		    p_extra = saved_p_extra;
 		    char_attr = saved_char_attr;
+		    extra_attr = saved_extra_attr;
 		}
 		else
 		    char_attr = win_attr;
@@ -4168,6 +4171,14 @@ win_line(
 	if (wp->w_p_cul && lnum == wp->w_cursor.lnum && *wp->w_p_culopt == 's'
 		&& wp->w_p_wrap)
 	    margin_columns_win(wp, &lcol, &rcol);
+
+	need_cul_screenline = (wp->w_p_cul
+		&& lnum == wp->w_cursor.lnum
+		&& *wp->w_p_culopt == 's'
+		&& wp->w_p_wrap
+		&& draw_state == WL_LINE
+		&& vcol >= lcol
+		&& vcol <= rcol);
 #endif
 
 #ifdef FEAT_SYN_HL
@@ -4456,6 +4467,10 @@ win_line(
 			mb_l = 1;
 			mb_utf8 = FALSE;
 			multi_attr = HL_ATTR(HLF_AT);
+#ifdef FEAT_SYN_HL
+			if (need_cul_screenline)
+			    multi_attr = hl_combine_attr(multi_attr, HL_ATTR(HLF_CUL));
+ #endif
 			/* put the pointer back to output the double-width
 			 * character at the start of the next line. */
 			++n_extra;
@@ -4546,6 +4561,11 @@ win_line(
 			{
 			    n_attr = n_extra + 1;
 			    extra_attr = HL_ATTR(HLF_8);
+			    saved_extra_attr = extra_attr;
+#ifdef FEAT_SYN_HL
+			    if (need_cul_screenline)
+				extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
+ #endif
 			    saved_attr2 = char_attr; /* save current attr */
 			}
 		    }
@@ -4617,6 +4637,11 @@ win_line(
 				n_attr = n_extra + 1;
 				extra_attr = HL_ATTR(HLF_8);
 				saved_attr2 = char_attr; /* save current attr */
+				saved_extra_attr = extra_attr;
+#ifdef FEAT_SYN_HL
+				if (need_cul_screenline)
+				    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
+ #endif
 			    }
 			    mb_c = c;
 			}
@@ -4661,6 +4686,11 @@ win_line(
 			n_attr = n_extra + 1;
 			extra_attr = HL_ATTR(HLF_AT);
 			saved_attr2 = char_attr; /* save current attr */
+			saved_extra_attr = extra_attr;
+#ifdef FEAT_SYN_HL
+			if (need_cul_screenline)
+			    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
+ #endif
 		    }
 		    mb_c = c;
 		    mb_utf8 = FALSE;
@@ -4897,6 +4927,11 @@ win_line(
 			n_attr = 1;
 			extra_attr = HL_ATTR(HLF_8);
 			saved_attr2 = char_attr; /* save current attr */
+			saved_extra_attr = extra_attr;
+#ifdef FEAT_SYN_HL
+			if (need_cul_screenline)
+			    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
+ #endif
 		    }
 		    mb_c = c;
 		    if (enc_utf8 && utf_char2len(c) > 1)
@@ -4917,6 +4952,11 @@ win_line(
 			n_attr = 1;
 			extra_attr = HL_ATTR(HLF_8);
 			saved_attr2 = char_attr; /* save current attr */
+			saved_extra_attr = extra_attr;
+#ifdef FEAT_SYN_HL
+			if (need_cul_screenline)
+			    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
+ #endif
 		    }
 		    mb_c = c;
 		    if (enc_utf8 && utf_char2len(c) > 1)
@@ -5056,7 +5096,12 @@ win_line(
 			c_final = lcs_tab3;
 			n_attr = tab_len + 1;
 			extra_attr = HL_ATTR(HLF_8);
+			saved_extra_attr = extra_attr;
 			saved_attr2 = char_attr; /* save current attr */
+#ifdef FEAT_SYN_HL
+			if (need_cul_screenline)
+			    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
+ #endif
 			mb_c = c;
 			if (enc_utf8 && utf_char2len(c) > 1)
 			{
@@ -5127,6 +5172,11 @@ win_line(
 		    if (!attr_pri)
 		    {
 			extra_attr = HL_ATTR(HLF_AT);
+			saved_extra_attr = extra_attr;
+#ifdef FEAT_SYN_HL
+			if (need_cul_screenline)
+			    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
+ #endif
 			n_attr = 1;
 		    }
 		    mb_c = c;
@@ -5173,6 +5223,11 @@ win_line(
 		    {
 			n_attr = n_extra + 1;
 			extra_attr = HL_ATTR(HLF_8);
+			saved_extra_attr = extra_attr;
+#ifdef FEAT_SYN_HL
+			if (need_cul_screenline)
+			    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
+ #endif
 			saved_attr2 = char_attr; /* save current attr */
 		    }
 		    mb_utf8 = FALSE;	/* don't draw as UTF-8 */
@@ -5430,6 +5485,11 @@ win_line(
 		n_extra = 1;
 		n_attr = 2;
 		extra_attr = HL_ATTR(HLF_AT);
+		saved_extra_attr = extra_attr;
+#ifdef FEAT_SYN_HL
+		if (need_cul_screenline)
+		    extra_attr = hl_combine_attr(extra_attr, HL_ATTR(HLF_CUL));
+ #endif
 	    }
 	    mb_c = c;
 	    if (enc_utf8 && utf_char2len(c) > 1)
