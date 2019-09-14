@@ -88,6 +88,9 @@ static int check_opt_wim(void);
 #ifdef FEAT_LINEBREAK
 static int briopt_check(win_T *wp);
 #endif
+#ifdef FEAT_SYN_HL
+static int fill_culopt_flags(char_u *val, win_T *wp);
+#endif
 
 /*
  * Initialize the options, first part.
@@ -2447,7 +2450,9 @@ didset_options(void)
     /* initialize the table for 'breakat'. */
     fill_breakat_flags();
 #endif
-
+#ifdef FEAT_SYN_HL
+    fill_culopt_flags(NULL, curwin);
+#endif
 }
 
 /*
@@ -3136,8 +3141,7 @@ did_set_string_option(
     else if (varp == &curwin->w_p_culopt
 				  || gvarp == &curwin->w_allbuf_opt.wo_culopt)
     {
-	if (**varp == NUL
-		    || check_opt_strings(*varp, p_culopt_values, FALSE) != OK)
+	if (**varp == NUL || fill_culopt_flags(*varp, curwin) != OK)
 	    errmsg = e_invarg;
     }
 
@@ -7781,6 +7785,9 @@ win_copy_options(win_T *wp_from, win_T *wp_to)
 #if defined(FEAT_LINEBREAK)
     briopt_check(wp_to);
 #endif
+#ifdef FEAT_SYN_HL
+    fill_culopt_flags(NULL, wp_to);
+#endif
 }
 
 /*
@@ -9513,5 +9520,57 @@ get_winbuf_options(int bufopt)
     }
 
     return d;
+}
+#endif
+
+#ifdef FEAT_SYN_HL
+/*
+ * This is called when 'culopt' is changed
+ */
+    static int
+fill_culopt_flags(char_u *val, win_T *wp)
+{
+    char_u	*p;
+    char_u	culopt_flags_new = 0;
+
+    if (val == NULL)
+	p = wp->w_p_culopt;
+    else
+	p = val;
+    while (*p != NUL)
+    {
+	if (STRNCMP(p, "line", 4) == 0)
+	{
+	    p += 4;
+	    culopt_flags_new |= CULOPT_LINE;
+	}
+	else if (STRNCMP(p, "both", 4) == 0)
+	{
+	    p += 4;
+	    culopt_flags_new |= CULOPT_LINE | CULOPT_NBR;
+	}
+	else if (STRNCMP(p, "number", 6) == 0)
+	{
+	    p += 6;
+	    culopt_flags_new |= CULOPT_NBR;
+	}
+	else if (STRNCMP(p, "screenline", 10) == 0)
+	{
+	    p += 10;
+	    culopt_flags_new |= CULOPT_SCRLINE;
+	}
+
+	if (*p != ',' && *p != NUL)
+	    return FAIL;
+	if (*p == ',')
+	    ++p;
+    }
+
+    // Can't have both "line" and "screenline".
+    if ((culopt_flags_new & CULOPT_LINE) && (culopt_flags_new & CULOPT_SCRLINE))
+	return FAIL;
+    wp->w_p_culopt_flags = culopt_flags_new;
+
+    return OK;
 }
 #endif

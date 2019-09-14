@@ -958,7 +958,7 @@ static struct vimoption options[] =
 			    (char_u *)NULL, PV_NONE,
 #endif
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
-    {"cursorlineopt", "culopt", P_STRING|P_VI_DEF|P_RWIN,
+    {"cursorlineopt", "culopt", P_STRING|P_VI_DEF|P_RWIN|P_ONECOMMA|P_NODUP,
 #ifdef FEAT_SYN_HL
 			    (char_u *)VAR_WIN, PV_CULOPT,
 #else
@@ -3199,7 +3199,4 @@ static char *(p_scl_values[]) = {"yes", "no", "auto", "number", NULL};
 #endif
 #if defined(MSWIN) && defined(FEAT_TERMINAL)
 static char *(p_twt_values[]) = {"winpty", "conpty", "", NULL};
-#endif
-#ifdef FEAT_SYN_HL
-static char *(p_culopt_values[]) = {"line", "number", "both", NULL};
 #endif
