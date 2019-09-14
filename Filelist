@@ -88,6 +88,7 @@ SRC_ALL =	\
 		src/option.c \
 		src/option.h \
 		src/optiondefs.h \
+		src/optionstr.c \
 		src/popupmnu.c \
 		src/popupwin.c \
 		src/profiler.c \
@@ -231,6 +232,7 @@ SRC_ALL =	\
 		src/proto/normal.pro \
 		src/proto/ops.pro \
 		src/proto/option.pro \
+		src/proto/optionstr.pro \
 		src/proto/popupmnu.pro \
 		src/proto/popupwin.pro \
 		src/proto/profiler.pro \

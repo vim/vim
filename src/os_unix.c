@@ -135,7 +135,7 @@ static int get_x11_title(int);
 
 static char_u	*oldtitle = NULL;
 static volatile sig_atomic_t oldtitle_outdated = FALSE;
-static int	did_set_title = FALSE;
+static int	unix_did_set_title = FALSE;
 static char_u	*oldicon = NULL;
 static int	did_set_icon = FALSE;
 #endif
@@ -2187,7 +2187,7 @@ mch_settitle(char_u *title, char_u *icon)
 	else
 	    gui_mch_settitle(title, icon);
 #endif
-	did_set_title = TRUE;
+	unix_did_set_title = TRUE;
     }
 
     if ((type || *T_CIS != NUL) && icon != NULL)
@@ -2228,10 +2228,10 @@ mch_settitle(char_u *title, char_u *icon)
     void
 mch_restore_title(int which)
 {
-    int	do_push_pop = did_set_title || did_set_icon;
+    int	do_push_pop = unix_did_set_title || did_set_icon;
 
     /* only restore the title or icon when it has been set */
-    mch_settitle(((which & SAVE_RESTORE_TITLE) && did_set_title) ?
+    mch_settitle(((which & SAVE_RESTORE_TITLE) && unix_did_set_title) ?
 			(oldtitle ? oldtitle : p_titleold) : NULL,
 	       ((which & SAVE_RESTORE_ICON) && did_set_icon) ? oldicon : NULL);
 

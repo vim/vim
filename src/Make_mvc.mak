@@ -764,6 +764,7 @@ OBJ = \
 	$(OUTDIR)\normal.obj \
 	$(OUTDIR)\ops.obj \
 	$(OUTDIR)\option.obj \
+	$(OUTDIR)\optionstr.obj \
 	$(OUTDIR)\os_mswin.obj \
 	$(OUTDIR)\os_win32.obj \
 	$(OUTDIR)\pathdef.obj \
@@ -1606,6 +1607,8 @@ $(OUTDIR)/normal.obj:	$(OUTDIR) normal.c  $(INCL)
 
 $(OUTDIR)/option.obj:	$(OUTDIR) option.c  $(INCL) optiondefs.h
 
+$(OUTDIR)/optionstr.obj:	$(OUTDIR) optionstr.c  $(INCL)
+
 $(OUTDIR)/ops.obj:	$(OUTDIR) ops.c  $(INCL)
 
 $(OUTDIR)/os_mswin.obj:	$(OUTDIR) os_mswin.c  $(INCL)
@@ -1816,6 +1819,7 @@ proto.h: \
 	proto/normal.pro \
 	proto/ops.pro \
 	proto/option.pro \
+	proto/optionstr.pro \
 	proto/os_mswin.pro \
 	proto/winclip.pro \
 	proto/os_win32.pro \
