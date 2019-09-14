@@ -5374,6 +5374,7 @@ win_line(
 		wp->w_wcol = col - boguscols;
 	    wp->w_wrow = row;
 	    did_wcol = TRUE;
+	    curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
 	}
 #endif
 
