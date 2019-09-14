@@ -8,6 +8,7 @@ void gui_mch_stop_blink(int may_call_gui_update_cursor);
 void gui_mch_start_blink(void);
 int gui_mch_early_init_check(int give_message);
 int gui_mch_init_check(void);
+void gui_mch_set_dark_theme(int dark);
 void gui_mch_show_tabline(int showit);
 int gui_mch_showing_tabline(void);
 void gui_mch_update_tabline(void);
