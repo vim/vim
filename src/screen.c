@@ -5383,9 +5383,11 @@ win_line(
 		&& draw_state == WL_LINE
 		&& !attr_pri)
 	{
+#ifdef LINE_ATTR
 	    if (line_attr)
 		char_attr = hl_combine_attr(extra_attr, line_attr);
 	    else
+#endif
 		char_attr = extra_attr;
 	}
 
