@@ -797,8 +797,9 @@ func Test_popup_with_showbreak()
 	 set showbreak=>>\ 
 	 call setline(1, range(1, 20))
 	 let winid = popup_dialog(
-	   \ 'a long line here',
-	   \ #{filter: 'popup_filter_yesno'})
+	   \ 'a long line here that wraps',
+	   \ #{filter: 'popup_filter_yesno',
+	   \   maxwidth: 12})
   END
   call writefile(lines, 'XtestPopupShowbreak')
   let buf = RunVimInTerminal('-S XtestPopupShowbreak', #{rows: 10})

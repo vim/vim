@@ -4153,6 +4153,9 @@ win_line(
 		     * required when 'linebreak' is also set. */
 		    if (tocol == vcol)
 			tocol += n_extra;
+		    // combine 'showbreak' with 'wincolor'
+		    if (win_attr != 0)
+			char_attr = hl_combine_attr(win_attr, char_attr);
 #  ifdef FEAT_SYN_HL
 		    // combine 'showbreak' with 'cursorline'
 		    if (cul_attr != 0)
