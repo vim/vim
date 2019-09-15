@@ -87,11 +87,13 @@ SRC_ALL =	\
 		src/ops.c \
 		src/option.c \
 		src/option.h \
+		src/optiondefs.h \
 		src/popupmnu.c \
 		src/popupwin.c \
 		src/profiler.c \
 		src/quickfix.c \
 		src/regexp.c \
+		src/regexp_bt.c \
 		src/regexp_nfa.c \
 		src/regexp.h \
 		src/scriptfile.c \

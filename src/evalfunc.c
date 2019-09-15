@@ -715,38 +715,38 @@ static funcentry_T global_functions[] =
     {"sort",		1, 3, FEARG_1,	  f_sort},
 #ifdef FEAT_SOUND
     {"sound_clear",	0, 0, 0,	  f_sound_clear},
-    {"sound_playevent",	1, 2, 0,	  f_sound_playevent},
-    {"sound_playfile",	1, 2, 0,	  f_sound_playfile},
-    {"sound_stop",	1, 1, 0,	  f_sound_stop},
+    {"sound_playevent",	1, 2, FEARG_1,	  f_sound_playevent},
+    {"sound_playfile",	1, 2, FEARG_1,	  f_sound_playfile},
+    {"sound_stop",	1, 1, FEARG_1,	  f_sound_stop},
 #endif
-    {"soundfold",	1, 1, 0,	  f_soundfold},
-    {"spellbadword",	0, 1, 0,	  f_spellbadword},
-    {"spellsuggest",	1, 3, 0,	  f_spellsuggest},
+    {"soundfold",	1, 1, FEARG_1,	  f_soundfold},
+    {"spellbadword",	0, 1, FEARG_1,	  f_spellbadword},
+    {"spellsuggest",	1, 3, FEARG_1,	  f_spellsuggest},
     {"split",		1, 3, FEARG_1,	  f_split},
 #ifdef FEAT_FLOAT
     {"sqrt",		1, 1, FEARG_1,	  f_sqrt},
     {"str2float",	1, 1, FEARG_1,	  f_str2float},
 #endif
     {"str2list",	1, 2, FEARG_1,	  f_str2list},
-    {"str2nr",		1, 2, 0,	  f_str2nr},
-    {"strcharpart",	2, 3, 0,	  f_strcharpart},
-    {"strchars",	1, 2, 0,	  f_strchars},
-    {"strdisplaywidth",	1, 2, 0,	  f_strdisplaywidth},
+    {"str2nr",		1, 3, FEARG_1,	  f_str2nr},
+    {"strcharpart",	2, 3, FEARG_1,	  f_strcharpart},
+    {"strchars",	1, 2, FEARG_1,	  f_strchars},
+    {"strdisplaywidth",	1, 2, FEARG_1,	  f_strdisplaywidth},
 #ifdef HAVE_STRFTIME
-    {"strftime",	1, 2, 0,	  f_strftime},
+    {"strftime",	1, 2, FEARG_1,	  f_strftime},
 #endif
-    {"strgetchar",	2, 2, 0,	  f_strgetchar},
-    {"stridx",		2, 3, 0,	  f_stridx},
+    {"strgetchar",	2, 2, FEARG_1,	  f_strgetchar},
+    {"stridx",		2, 3, FEARG_1,	  f_stridx},
     {"string",		1, 1, FEARG_1,	  f_string},
     {"strlen",		1, 1, FEARG_1,	  f_strlen},
-    {"strpart",		2, 3, 0,	  f_strpart},
-    {"strridx",		2, 3, 0,	  f_strridx},
+    {"strpart",		2, 3, FEARG_1,	  f_strpart},
+    {"strridx",		2, 3, FEARG_1,	  f_strridx},
     {"strtrans",	1, 1, FEARG_1,	  f_strtrans},
     {"strwidth",	1, 1, FEARG_1,	  f_strwidth},
-    {"submatch",	1, 2, 0,	  f_submatch},
+    {"submatch",	1, 2, FEARG_1,	  f_submatch},
     {"substitute",	4, 4, FEARG_1,	  f_substitute},
-    {"swapinfo",	1, 1, 0,	  f_swapinfo},
-    {"swapname",	1, 1, 0,	  f_swapname},
+    {"swapinfo",	1, 1, FEARG_1,	  f_swapinfo},
+    {"swapname",	1, 1, FEARG_1,	  f_swapname},
     {"synID",		3, 3, 0,	  f_synID},
     {"synIDattr",	2, 3, FEARG_1,	  f_synIDattr},
     {"synIDtrans",	1, 1, FEARG_1,	  f_synIDtrans},
@@ -754,52 +754,52 @@ static funcentry_T global_functions[] =
     {"synstack",	2, 2, 0,	  f_synstack},
     {"system",		1, 2, FEARG_1,	  f_system},
     {"systemlist",	1, 2, FEARG_1,	  f_systemlist},
-    {"tabpagebuflist",	0, 1, 0,	  f_tabpagebuflist},
+    {"tabpagebuflist",	0, 1, FEARG_1,	  f_tabpagebuflist},
     {"tabpagenr",	0, 1, 0,	  f_tabpagenr},
-    {"tabpagewinnr",	1, 2, 0,	  f_tabpagewinnr},
+    {"tabpagewinnr",	1, 2, FEARG_1,	  f_tabpagewinnr},
     {"tagfiles",	0, 0, 0,	  f_tagfiles},
-    {"taglist",		1, 2, 0,	  f_taglist},
+    {"taglist",		1, 2, FEARG_1,	  f_taglist},
 #ifdef FEAT_FLOAT
     {"tan",		1, 1, FEARG_1,	  f_tan},
     {"tanh",		1, 1, FEARG_1,	  f_tanh},
 #endif
     {"tempname",	0, 0, 0,	  f_tempname},
 #ifdef FEAT_TERMINAL
-    {"term_dumpdiff",	2, 3, 0,	  f_term_dumpdiff},
-    {"term_dumpload",	1, 2, 0,	  f_term_dumpload},
-    {"term_dumpwrite",	2, 3, 0,	  f_term_dumpwrite},
-    {"term_getaltscreen", 1, 1, 0,	  f_term_getaltscreen},
+    {"term_dumpdiff",	2, 3, FEARG_1,	  f_term_dumpdiff},
+    {"term_dumpload",	1, 2, FEARG_1,	  f_term_dumpload},
+    {"term_dumpwrite",	2, 3, FEARG_2,	  f_term_dumpwrite},
+    {"term_getaltscreen", 1, 1, FEARG_1,  f_term_getaltscreen},
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-    {"term_getansicolors", 1, 1, 0,	  f_term_getansicolors},
+    {"term_getansicolors", 1, 1, FEARG_1, f_term_getansicolors},
 # endif
-    {"term_getattr",	2, 2, 0,	  f_term_getattr},
-    {"term_getcursor",	1, 1, 0,	  f_term_getcursor},
-    {"term_getjob",	1, 1, 0,	  f_term_getjob},
-    {"term_getline",	2, 2, 0,	  f_term_getline},
-    {"term_getscrolled", 1, 1, 0,	  f_term_getscrolled},
-    {"term_getsize",	1, 1, 0,	  f_term_getsize},
-    {"term_getstatus",	1, 1, 0,	  f_term_getstatus},
-    {"term_gettitle",	1, 1, 0,	  f_term_gettitle},
-    {"term_gettty",	1, 2, 0,	  f_term_gettty},
+    {"term_getattr",	2, 2, FEARG_1,	  f_term_getattr},
+    {"term_getcursor",	1, 1, FEARG_1,	  f_term_getcursor},
+    {"term_getjob",	1, 1, FEARG_1,	  f_term_getjob},
+    {"term_getline",	2, 2, FEARG_1,	  f_term_getline},
+    {"term_getscrolled", 1, 1, FEARG_1,	  f_term_getscrolled},
+    {"term_getsize",	1, 1, FEARG_1,	  f_term_getsize},
+    {"term_getstatus",	1, 1, FEARG_1,	  f_term_getstatus},
+    {"term_gettitle",	1, 1, FEARG_1,	  f_term_gettitle},
+    {"term_gettty",	1, 2, FEARG_1,	  f_term_gettty},
     {"term_list",	0, 0, 0,	  f_term_list},
-    {"term_scrape",	2, 2, 0,	  f_term_scrape},
-    {"term_sendkeys",	2, 2, 0,	  f_term_sendkeys},
+    {"term_scrape",	2, 2, FEARG_1,	  f_term_scrape},
+    {"term_sendkeys",	2, 2, FEARG_1,	  f_term_sendkeys},
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-    {"term_setansicolors", 2, 2, 0,	  f_term_setansicolors},
+    {"term_setansicolors", 2, 2, FEARG_1, f_term_setansicolors},
 # endif
-    {"term_setkill",	2, 2, 0,	  f_term_setkill},
-    {"term_setrestore",	2, 2, 0,	  f_term_setrestore},
-    {"term_setsize",	3, 3, 0,	  f_term_setsize},
-    {"term_start",	1, 2, 0,	  f_term_start},
-    {"term_wait",	1, 2, 0,	  f_term_wait},
+    {"term_setkill",	2, 2, FEARG_1,	  f_term_setkill},
+    {"term_setrestore",	2, 2, FEARG_1,	  f_term_setrestore},
+    {"term_setsize",	3, 3, FEARG_1,	  f_term_setsize},
+    {"term_start",	1, 2, FEARG_1,	  f_term_start},
+    {"term_wait",	1, 2, FEARG_1,	  f_term_wait},
 #endif
-    {"test_alloc_fail",	3, 3, 0,	  f_test_alloc_fail},
+    {"test_alloc_fail",	3, 3, FEARG_1,	  f_test_alloc_fail},
     {"test_autochdir",	0, 0, 0,	  f_test_autochdir},
-    {"test_feedinput",	1, 1, 0,	  f_test_feedinput},
-    {"test_garbagecollect_now",	0, 0, 0,	  f_test_garbagecollect_now},
-    {"test_garbagecollect_soon",	0, 0, 0,	  f_test_garbagecollect_soon},
-    {"test_getvalue",	1, 1, 0,	  f_test_getvalue},
-    {"test_ignore_error",	1, 1, 0,	  f_test_ignore_error},
+    {"test_feedinput",	1, 1, FEARG_1,	  f_test_feedinput},
+    {"test_garbagecollect_now",	0, 0, 0,  f_test_garbagecollect_now},
+    {"test_garbagecollect_soon", 0, 0, 0, f_test_garbagecollect_soon},
+    {"test_getvalue",	1, 1, FEARG_1,	  f_test_getvalue},
+    {"test_ignore_error", 1, 1, FEARG_1,  f_test_ignore_error},
     {"test_null_blob",	0, 0, 0,	  f_test_null_blob},
 #ifdef FEAT_JOB_CHANNEL
     {"test_null_channel", 0, 0, 0,	  f_test_null_channel},
@@ -811,57 +811,58 @@ static funcentry_T global_functions[] =
     {"test_null_list",	0, 0, 0,	  f_test_null_list},
     {"test_null_partial", 0, 0, 0,	  f_test_null_partial},
     {"test_null_string", 0, 0, 0,	  f_test_null_string},
-    {"test_option_not_set", 1, 1, 0,	  f_test_option_not_set},
-    {"test_override",	2, 2, 0,	  f_test_override},
-    {"test_refcount",	1, 1, 0,	  f_test_refcount},
+    {"test_option_not_set", 1, 1, FEARG_1, f_test_option_not_set},
+    {"test_override",	2, 2, FEARG_2,	  f_test_override},
+    {"test_refcount",	1, 1, FEARG_1,	  f_test_refcount},
 #ifdef FEAT_GUI
-    {"test_scrollbar",	3, 3, 0,	  f_test_scrollbar},
+    {"test_scrollbar",	3, 3, FEARG_2,	  f_test_scrollbar},
 #endif
 #ifdef FEAT_MOUSE
     {"test_setmouse",	2, 2, 0,	  f_test_setmouse},
 #endif
-    {"test_settime",	1, 1, 0,	  f_test_settime},
+    {"test_settime",	1, 1, FEARG_1,	  f_test_settime},
 #ifdef FEAT_TIMERS
-    {"timer_info",	0, 1, 0,	  f_timer_info},
-    {"timer_pause",	2, 2, 0,	  f_timer_pause},
-    {"timer_start",	2, 3, 0,	  f_timer_start},
-    {"timer_stop",	1, 1, 0,	  f_timer_stop},
+    {"timer_info",	0, 1, FEARG_1,	  f_timer_info},
+    {"timer_pause",	2, 2, FEARG_1,	  f_timer_pause},
+    {"timer_start",	2, 3, FEARG_1,	  f_timer_start},
+    {"timer_stop",	1, 1, FEARG_1,	  f_timer_stop},
     {"timer_stopall",	0, 0, 0,	  f_timer_stopall},
 #endif
-    {"tolower",		1, 1, 0,	  f_tolower},
-    {"toupper",		1, 1, 0,	  f_toupper},
-    {"tr",		3, 3, 0,	  f_tr},
-    {"trim",		1, 2, 0,	  f_trim},
+    {"tolower",		1, 1, FEARG_1,	  f_tolower},
+    {"toupper",		1, 1, FEARG_1,	  f_toupper},
+    {"tr",		3, 3, FEARG_1,	  f_tr},
+    {"trim",		1, 2, FEARG_1,	  f_trim},
 #ifdef FEAT_FLOAT
     {"trunc",		1, 1, FEARG_1,	  f_trunc},
 #endif
     {"type",		1, 1, FEARG_1,	  f_type},
-    {"undofile",	1, 1, 0,	  f_undofile},
+    {"undofile",	1, 1, FEARG_1,	  f_undofile},
     {"undotree",	0, 0, 0,	  f_undotree},
     {"uniq",		1, 3, FEARG_1,	  f_uniq},
     {"values",		1, 1, FEARG_1,	  f_values},
-    {"virtcol",		1, 1, 0,	  f_virtcol},
+    {"virtcol",		1, 1, FEARG_1,	  f_virtcol},
     {"visualmode",	0, 1, 0,	  f_visualmode},
     {"wildmenumode",	0, 0, 0,	  f_wildmenumode},
-    {"win_execute",	2, 3, 0,	  f_win_execute},
-    {"win_findbuf",	1, 1, 0,	  f_win_findbuf},
-    {"win_getid",	0, 2, 0,	  f_win_getid},
-    {"win_gotoid",	1, 1, 0,	  f_win_gotoid},
-    {"win_id2tabwin",	1, 1, 0,	  f_win_id2tabwin},
-    {"win_id2win",	1, 1, 0,	  f_win_id2win},
-    {"win_screenpos",	1, 1, 0,	  f_win_screenpos},
+    {"win_execute",	2, 3, FEARG_2,	  f_win_execute},
+    {"win_findbuf",	1, 1, FEARG_1,	  f_win_findbuf},
+    {"win_getid",	0, 2, FEARG_1,	  f_win_getid},
+    {"win_gotoid",	1, 1, FEARG_1,	  f_win_gotoid},
+    {"win_id2tabwin",	1, 1, FEARG_1,	  f_win_id2tabwin},
+    {"win_id2win",	1, 1, FEARG_1,	  f_win_id2win},
+    {"win_screenpos",	1, 1, FEARG_1,	  f_win_screenpos},
+    {"win_splitmove",   2, 3, FEARG_1,    f_win_splitmove},
     {"winbufnr",	1, 1, FEARG_1,	  f_winbufnr},
     {"wincol",		0, 0, 0,	  f_wincol},
-    {"winheight",	1, 1, 0,	  f_winheight},
-    {"winlayout",	0, 1, 0,	  f_winlayout},
+    {"winheight",	1, 1, FEARG_1,	  f_winheight},
+    {"winlayout",	0, 1, FEARG_1,	  f_winlayout},
     {"winline",		0, 0, 0,	  f_winline},
-    {"winnr",		0, 1, 0,	  f_winnr},
+    {"winnr",		0, 1, FEARG_1,	  f_winnr},
     {"winrestcmd",	0, 0, 0,	  f_winrestcmd},
-    {"winrestview",	1, 1, 0,	  f_winrestview},
+    {"winrestview",	1, 1, FEARG_1,	  f_winrestview},
     {"winsaveview",	0, 0, 0,	  f_winsaveview},
-    {"winwidth",	1, 1, 0,	  f_winwidth},
+    {"winwidth",	1, 1, FEARG_1,	  f_winwidth},
     {"wordcount",	0, 0, 0,	  f_wordcount},
-    {"writefile",	2, 3, 0,	  f_writefile},
+    {"writefile",	2, 3, FEARG_1,	  f_writefile},
     {"xor",		2, 2, FEARG_1,	  f_xor},
 };
 
@@ -7322,7 +7323,7 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
     int		base = 10;
     char_u	*p;
     varnumber_T	n;
-    int		what;
+    int		what = 0;
     int		isneg;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
@@ -7333,6 +7334,8 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
 	    emsg(_(e_invarg));
 	    return;
 	}
+	if (argvars[2].v_type != VAR_UNKNOWN && tv_get_number(&argvars[2]))
+	    what |= STR2NR_QUOTE;
     }
 
     p = skipwhite(tv_get_string(&argvars[0]));
@@ -7341,10 +7344,9 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
 	p = skipwhite(p + 1);
     switch (base)
     {
-	case 2: what = STR2NR_BIN + STR2NR_FORCE; break;
-	case 8: what = STR2NR_OCT + STR2NR_FORCE; break;
-	case 16: what = STR2NR_HEX + STR2NR_FORCE; break;
-	default: what = 0;
+	case 2: what |= STR2NR_BIN + STR2NR_FORCE; break;
+	case 8: what |= STR2NR_OCT + STR2NR_FORCE; break;
+	case 16: what |= STR2NR_HEX + STR2NR_FORCE; break;
     }
     vim_str2nr(p, NULL, NULL, what, &n, NULL, 0, FALSE);
     // Text after the number is silently ignored.

@@ -4276,7 +4276,7 @@ open_pty(int *pty_master_fd, int *pty_slave_fd, char_u **name1, char_u **name2)
 /*
  * Send SIGINT to a child process if "c" is an interrupt character.
  */
-    void
+    static void
 may_send_sigint(int c UNUSED, pid_t pid UNUSED, pid_t wpid UNUSED)
 {
 # ifdef SIGINT

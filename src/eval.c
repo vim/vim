@@ -2617,7 +2617,9 @@ eval7(
 		else
 		{
 		    // decimal, hex or octal number
-		    vim_str2nr(*arg, NULL, &len, STR2NR_ALL, &n, NULL, 0, TRUE);
+		    vim_str2nr(*arg, NULL, &len, current_sctx.sc_version >= 4
+				  ? STR2NR_NO_OCT + STR2NR_QUOTE
+				  : STR2NR_ALL, &n, NULL, 0, TRUE);
 		    if (len == 0)
 		    {
 			semsg(_(e_invexpr2), *arg);

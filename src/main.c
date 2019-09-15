@@ -1255,12 +1255,28 @@ main_loop(
 	    update_topline();
 	    validate_cursor();
 
+#ifdef FEAT_SYN_HL
+	    if (curwin->w_p_cul && curwin->w_p_wrap
+				&& (curwin->w_p_culopt_flags & CULOPT_SCRLINE))
+		must_redraw = NOT_VALID;
+#endif
+
 	    if (VIsual_active)
-		update_curbuf(INVERTED);/* update inverted part */
+		update_curbuf(INVERTED); // update inverted part
 	    else if (must_redraw)
 	    {
-		mch_disable_flush();	/* Stop issuing gui_mch_flush(). */
-		update_screen(0);
+		mch_disable_flush();	// Stop issuing gui_mch_flush().
+#ifdef FEAT_SYN_HL
+		// Might need some more update for the cursorscreen line.
+		// TODO: can we optimize this?
+		if (curwin->w_p_cul
+			&& curwin->w_p_wrap
+			&& (curwin->w_p_culopt_flags & CULOPT_SCRLINE)
+			&& !char_avail())
+		    update_screen(VALID);
+		else
+#endif
+		    update_screen(0);
 		mch_enable_flush();
 	    }
 	    else if (redraw_cmdline || clear_cmdline)
@@ -1276,16 +1292,19 @@ main_loop(
 	    /* display message after redraw */
 	    if (keep_msg != NULL)
 	    {
-		char_u *p;
+		char_u *p = vim_strsave(keep_msg);
 
-		// msg_attr_keep() will set keep_msg to NULL, must free the
-		// string here. Don't reset keep_msg, msg_attr_keep() uses it
-		// to check for duplicates.  Never put this message in history.
-		p = keep_msg;
-		msg_hist_off = TRUE;
-		msg_attr((char *)p, keep_msg_attr);
-		msg_hist_off = FALSE;
-		vim_free(p);
+		if (p != NULL)
+		{
+		    // msg_start() will set keep_msg to NULL, make a copy
+		    // first.  Don't reset keep_msg, msg_attr_keep() uses it to
+		    // check for duplicates.  Never put this message in
+		    // history.
+		    msg_hist_off = TRUE;
+		    msg_attr((char *)p, keep_msg_attr);
+		    msg_hist_off = FALSE;
+		    vim_free(p);
+		}
 	    }
 	    if (need_fileinfo)		/* show file info after redraw */
 	    {

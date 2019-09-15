@@ -186,6 +186,7 @@ static int win32_setattrs(char_u *name, int attrs);
 static int win32_set_archive(char_u *name);
 
 static int conpty_working = 0;
+static int conpty_type = 0;
 static int conpty_stable = 0;
 static void vtp_flag_init();
 
@@ -7249,9 +7250,25 @@ mch_setenv(char *var, char *value, int x)
 
 /*
  * Support for pseudo-console (ConPTY) was added in windows 10
- * version 1809 (October 2018 update).  However, that version is unstable.
+ * version 1809 (October 2018 update).
  */
 #define CONPTY_FIRST_SUPPORT_BUILD  MAKE_VER(10, 0, 17763)
+
+/*
+ * ConPTY differences between versions, need different logic.
+ * version 1903 (May 2019 update).
+ */
+#define CONPTY_1903_BUILD	    MAKE_VER(10, 0, 18362)
+
+/*
+ * Confirm until this version.  Also the logic changes.
+ * insider preview.
+ */
+#define CONPTY_INSIDER_BUILD	    MAKE_VER(10, 0, 18898)
+
+/*
+ * Not stable now.
+ */
 #define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 32767)  // T.B.D.
 
     static void
@@ -7281,6 +7298,12 @@ vtp_flag_init(void)
     if (ver >= CONPTY_STABLE_BUILD)
 	conpty_stable = 1;
 
+    if (ver <= CONPTY_INSIDER_BUILD)
+	conpty_type = 3;
+    if (ver <= CONPTY_1903_BUILD)
+	conpty_type = 2;
+    if (ver < CONPTY_FIRST_SUPPORT_BUILD)
+	conpty_type = 1;
 }
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)
@@ -7500,6 +7523,12 @@ has_vtp_working(void)
 has_conpty_working(void)
 {
     return conpty_working;
+}
+
+    int
+get_conpty_type(void)
+{
+    return conpty_type;
 }
 
     int

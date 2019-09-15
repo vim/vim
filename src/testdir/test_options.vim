@@ -510,7 +510,7 @@ func Test_shortmess_F2()
   call assert_true(empty(execute('bn', '')))
   call assert_false(test_getvalue('need_fileinfo'))
   call assert_true(empty(execute('bn', '')))
-  call assert_false(test_getvalue('need_fileinfo'))
+  call assert_false('need_fileinfo'->test_getvalue())
   set hidden
   call assert_true(empty(execute('bn', '')))
   call assert_false(test_getvalue('need_fileinfo'))

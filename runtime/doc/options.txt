@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Aug 21
+*options.txt*	For Vim version 8.1.  Last change: 2019 Sep 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -856,6 +856,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set background&
 <	Vim will guess the value.  In the GUI this should work correctly,
 	in other cases Vim might not be able to guess the right value.
+	If the GUI supports a dark them, you can use the "d" flag in
+	'guioptions', see 'go-d'.
 
 	When the |t_RB| option is set, Vim will use it to request the background
 	color from the terminal.  If the returned RGB value is dark/light and
@@ -2461,11 +2463,31 @@ A jump table for the options with a short description can be found at |Q_op|.
 			local to window
 			{not available when compiled without the |+syntax|
 			feature}
-	Highlight the screen line of the cursor with CursorLine
-	|hl-CursorLine|.  Useful to easily spot the cursor.  Will make screen
-	redrawing slower.
+	Highlight the text line of the cursor with CursorLine |hl-CursorLine|.
+	Useful to easily spot the cursor.  Will make screen redrawing slower.
 	When Visual mode is active the highlighting isn't used to make it
 	easier to see the selected text.
+
+
+						*'cursorlineopt'* *'culopt'*
+'cursorlineopt' 'culopt' string (default: "number,line")
+			local to window
+			{not in Vi}
+			{not available when compiled without the |+syntax|
+			feature}
+	Comma separated list of settings for how 'cursorline' is displayed.
+	Valid values:
+	"line"		Highlight the text line of the cursor with
+			CursorLine |hl-CursorLine|.
+	"screenline"	Highlight only the screen line of the cursor with
+			CursorLine |hl-CursorLine|.
+	"number"	Highlight the line number of the cursor with
+			CursorLineNr |hl-CursorLineNr|.
+
+	Special value:
+	"both"		Alias for the values "line,number".
+
+	"line" and "screenline" cannot be used together.
 
 
 						*'debug'*
@@ -3720,6 +3742,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 								*'go-c'*
 	  'c'	Use console dialogs instead of popup dialogs for simple
 		choices.
+								*'go-d'*
+	  'd'	Use dark theme variant if available. Currently only works for
+		GTK+ GUI.
 								*'go-e'*
 	  'e'	Add tab pages when indicated with 'showtabline'.
 		'guitablabel' can be used to change the text in the labels.

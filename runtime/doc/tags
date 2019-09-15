@@ -183,9 +183,11 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'csverb'	options.txt	/*'csverb'*
 'cuc'	options.txt	/*'cuc'*
 'cul'	options.txt	/*'cul'*
+'culopt'	options.txt	/*'culopt'*
 'cursorbind'	options.txt	/*'cursorbind'*
 'cursorcolumn'	options.txt	/*'cursorcolumn'*
 'cursorline'	options.txt	/*'cursorline'*
+'cursorlineopt'	options.txt	/*'cursorlineopt'*
 'cwh'	options.txt	/*'cwh'*
 'debug'	options.txt	/*'debug'*
 'deco'	options.txt	/*'deco'*
@@ -6846,6 +6848,7 @@ getfperm()	eval.txt	/*getfperm()*
 getfsize()	eval.txt	/*getfsize()*
 getftime()	eval.txt	/*getftime()*
 getftype()	eval.txt	/*getftype()*
+getimstatus()	eval.txt	/*getimstatus()*
 getjumplist()	eval.txt	/*getjumplist()*
 getlatestvimscripts-install	pi_getscript.txt	/*getlatestvimscripts-install*
 getline()	eval.txt	/*getline()*
@@ -8256,6 +8259,7 @@ popup-callback	popup.txt	/*popup-callback*
 popup-close	popup.txt	/*popup-close*
 popup-examples	popup.txt	/*popup-examples*
 popup-filter	popup.txt	/*popup-filter*
+popup-filter-mode	popup.txt	/*popup-filter-mode*
 popup-function-details	popup.txt	/*popup-function-details*
 popup-functions	popup.txt	/*popup-functions*
 popup-intro	popup.txt	/*popup-intro*
@@ -9966,6 +9970,7 @@ win_gotoid()	eval.txt	/*win_gotoid()*
 win_id2tabwin()	eval.txt	/*win_id2tabwin()*
 win_id2win()	eval.txt	/*win_id2win()*
 win_screenpos()	eval.txt	/*win_screenpos()*
+win_splitmove()	eval.txt	/*win_splitmove()*
 winbufnr()	eval.txt	/*winbufnr()*
 wincol()	eval.txt	/*wincol()*
 window	windows.txt	/*window*

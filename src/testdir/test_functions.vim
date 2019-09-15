@@ -138,7 +138,7 @@ func Test_str2nr()
   call assert_equal(-123456789, str2nr('-123456789'))
 
   call assert_equal(5, str2nr('101', 2))
-  call assert_equal(5, str2nr('0b101', 2))
+  call assert_equal(5, '0b101'->str2nr(2))
   call assert_equal(5, str2nr('0B101', 2))
   call assert_equal(-5, str2nr('-101', 2))
   call assert_equal(-5, str2nr('-0b101', 2))
@@ -156,6 +156,12 @@ func Test_str2nr()
   call assert_equal(11259375, str2nr('0Xabcdef', 16))
   call assert_equal(11259375, str2nr('0XABCDEF', 16))
   call assert_equal(-11259375, str2nr('-0xABCDEF', 16))
+
+  call assert_equal(1, str2nr("1'000'000", 10, 0))
+  call assert_equal(256, str2nr("1'0000'0000", 2, 1))
+  call assert_equal(262144, str2nr("1'000'000", 8, 1))
+  call assert_equal(1000000, str2nr("1'000'000", 10, 1))
+  call assert_equal(65536, str2nr("1'00'00", 16, 1))
 
   call assert_equal(0, str2nr('0x10'))
   call assert_equal(0, str2nr('0b10'))
@@ -184,7 +190,7 @@ func Test_strftime()
   " of strftime() can be 17 or 18, depending on timezone.
   call assert_match('^2017-01-1[78]$', strftime('%Y-%m-%d', 1484695512))
   "
-  call assert_match('^\d\d\d\d-\(0\d\|1[012]\)-\([012]\d\|3[01]\) \([01]\d\|2[0-3]\):[0-5]\d:\([0-5]\d\|60\)$', strftime('%Y-%m-%d %H:%M:%S'))
+  call assert_match('^\d\d\d\d-\(0\d\|1[012]\)-\([012]\d\|3[01]\) \([01]\d\|2[0-3]\):[0-5]\d:\([0-5]\d\|60\)$', '%Y-%m-%d %H:%M:%S'->strftime())
 
   call assert_fails('call strftime([])', 'E730:')
   call assert_fails('call strftime("%Y", [])', 'E745:')
@@ -266,7 +272,7 @@ endfunc
 func s:normalize_fname(fname)
   let ret = substitute(a:fname, '\', '/', 'g')
   let ret = substitute(ret, '//', '/', 'g')
-  return tolower(ret)
+  return ret->tolower()
 endfunc
 
 func Test_resolve_win32()
@@ -415,7 +421,7 @@ endfunc
 func Test_strpart()
   call assert_equal('de', strpart('abcdefg', 3, 2))
   call assert_equal('ab', strpart('abcdefg', -2, 4))
-  call assert_equal('abcdefg', strpart('abcdefg', -2))
+  call assert_equal('abcdefg', 'abcdefg'->strpart(-2))
   call assert_equal('fg', strpart('abcdefg', 5, 4))
   call assert_equal('defg', strpart('abcdefg', 3))
 
@@ -505,7 +511,7 @@ func Test_toupper()
           \ toupper(' !"#$%&''()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'))
 
   " Test with a few lowercase diacritics.
-  call assert_equal("AÀÁÂÃÄÅĀĂĄǍǞǠẢ", toupper("aàáâãäåāăąǎǟǡả"))
+  call assert_equal("AÀÁÂÃÄÅĀĂĄǍǞǠẢ", "aàáâãäåāăąǎǟǡả"->toupper())
   call assert_equal("BḂḆ", toupper("bḃḇ"))
   call assert_equal("CÇĆĈĊČ", toupper("cçćĉċč"))
   call assert_equal("DĎĐḊḎḐ", toupper("dďđḋḏḑ"))
@@ -566,6 +572,11 @@ func Test_toupper()
   " invalid memory.
   call toupper("\xC0\x80\xC0")
   call toupper("123\xC0\x80\xC0")
+endfunc
+
+func Test_tr()
+  call assert_equal('foo', tr('bar', 'bar', 'foo'))
+  call assert_equal('zxy', 'cab'->tr('abc', 'xyz'))
 endfunc
 
 " Tests for the mode() function
@@ -763,11 +774,11 @@ endfunc
 func Test_stridx()
   call assert_equal(-1, stridx('', 'l'))
   call assert_equal(0,  stridx('', ''))
-  call assert_equal(0,  stridx('hello', ''))
+  call assert_equal(0,  'hello'->stridx(''))
   call assert_equal(-1, stridx('hello', 'L'))
   call assert_equal(2,  stridx('hello', 'l', -1))
   call assert_equal(2,  stridx('hello', 'l', 0))
-  call assert_equal(2,  stridx('hello', 'l', 1))
+  call assert_equal(2,  'hello'->stridx('l', 1))
   call assert_equal(3,  stridx('hello', 'l', 3))
   call assert_equal(-1, stridx('hello', 'l', 4))
   call assert_equal(-1, stridx('hello', 'l', 10))
@@ -780,7 +791,7 @@ func Test_strridx()
   call assert_equal(0,  strridx('', ''))
   call assert_equal(5,  strridx('hello', ''))
   call assert_equal(-1, strridx('hello', 'L'))
-  call assert_equal(3,  strridx('hello', 'l'))
+  call assert_equal(3,  'hello'->strridx('l'))
   call assert_equal(3,  strridx('hello', 'l', 10))
   call assert_equal(3,  strridx('hello', 'l', 3))
   call assert_equal(2,  strridx('hello', 'l', 2))
@@ -1203,7 +1214,7 @@ endfunc
 
 func Test_trim()
   call assert_equal("Testing", trim("  \t\r\r\x0BTesting  \t\n\r\n\t\x0B\x0B"))
-  call assert_equal("Testing", trim("  \t  \r\r\n\n\x0BTesting  \t\n\r\n\t\x0B\x0B"))
+  call assert_equal("Testing", "  \t  \r\r\n\n\x0BTesting  \t\n\r\n\t\x0B\x0B"->trim())
   call assert_equal("RESERVE", trim("xyz \twwRESERVEzyww \t\t", " wxyz\t"))
   call assert_equal("wRE    \tSERVEzyww", trim("wRE    \tSERVEzyww"))
   call assert_equal("abcd\t     xxxx   tail", trim(" \tabcd\t     xxxx   tail"))
@@ -1617,7 +1628,7 @@ func Test_bufadd_bufload()
   call assert_equal([''], getbufline(buf, 1, '$'))
 
   let curbuf = bufnr('')
-  call writefile(['some', 'text'], 'XotherName')
+  eval ['some', 'text']->writefile('XotherName')
   let buf = 'XotherName'->bufadd()
   call assert_notequal(0, buf)
   eval 'XotherName'->bufexists()->assert_equal(1)

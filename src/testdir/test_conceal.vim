@@ -135,3 +135,23 @@ func Test_conceal_with_cursorline()
   call StopVimInTerminal(buf)
   call delete('XTest_conceal_cul')
 endfunc
+
+func Test_conceal_resize_term()
+  let code =<< trim [CODE]
+    call setline(1, '`one` `two` `three` `four` `five`, the backticks should be concealed')
+    setl cocu=n cole=3
+    syn region CommentCodeSpan matchgroup=Comment start=/`/ end=/`/ concealends
+    normal fb
+  [CODE]
+  call writefile(code, 'XTest_conceal_resize')
+  let buf = RunVimInTerminal('-S XTest_conceal_resize', {'rows': 6})
+  call VerifyScreenDump(buf, 'Test_conceal_resize_01', {})
+
+  call win_execute(buf->win_findbuf()[0], 'wincmd +')
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_conceal_resize_02', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XTest_conceal_resize')
+endfunc

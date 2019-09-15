@@ -71,7 +71,7 @@ endfunc
 
 func Test_timer_info()
   let id = timer_start(1000, 'MyHandler')
-  let info = timer_info(id)
+  let info = id->timer_info()
   call assert_equal(id, info[0]['id'])
   call assert_equal(1000, info[0]['time'])
   call assert_true(info[0]['remaining'] > 500)
@@ -109,7 +109,7 @@ func Test_timer_paused()
   let info = timer_info(id)
   call assert_equal(0, info[0]['paused'])
 
-  call timer_pause(id, 1)
+  eval id->timer_pause(1)
   let info = timer_info(id)
   call assert_equal(1, info[0]['paused'])
   sleep 100m
@@ -149,7 +149,7 @@ func Test_timer_delete_myself()
 endfunc
 
 func StopTimer1(timer)
-  let g:timer2 = timer_start(10, 'StopTimer2')
+  let g:timer2 = 10->timer_start('StopTimer2')
   " avoid maxfuncdepth error
   call timer_pause(g:timer1, 1)
   sleep 20m
@@ -251,7 +251,7 @@ func FeedAndPeek(timer)
 endfunc
 
 func Interrupt(timer)
-  call test_feedinput("\<C-C>")
+  eval "\<C-C>"->test_feedinput()
 endfunc
 
 func Test_timer_peek_and_get_char()
@@ -262,7 +262,7 @@ func Test_timer_peek_and_get_char()
   let intr = timer_start(100, 'Interrupt')
   let c = getchar()
   call assert_equal(char2nr('a'), c)
-  call timer_stop(intr)
+  eval intr->timer_stop()
 endfunc
 
 func Test_timer_getchar_zero()

@@ -1182,12 +1182,17 @@ getcount:
 
 	    kmsg = keep_msg;
 	    keep_msg = NULL;
-	    /* showmode() will clear keep_msg, but we want to use it anyway */
+	    // showmode() will clear keep_msg, but we want to use it anyway
 	    update_screen(0);
-	    /* now reset it, otherwise it's put in the history again */
+	    // now reset it, otherwise it's put in the history again
 	    keep_msg = kmsg;
-	    msg_attr((char *)kmsg, keep_msg_attr);
-	    vim_free(kmsg);
+
+	    kmsg = vim_strsave(keep_msg);
+	    if (kmsg != NULL)
+	    {
+		msg_attr((char *)kmsg, keep_msg_attr);
+		vim_free(kmsg);
+	    }
 	}
 	setcursor();
 	cursor_on();

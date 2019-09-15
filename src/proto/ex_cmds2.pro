@@ -2,11 +2,7 @@
 long proftime_time_left(proftime_T *due, proftime_T *now);
 timer_T *create_timer(long msec, int repeat);
 long check_due_timer(void);
-timer_T *find_timer(long id);
 void stop_timer(timer_T *timer);
-void stop_all_timers(void);
-void add_timer_info(typval_T *rettv, timer_T *timer);
-void add_timer_info_all(typval_T *rettv);
 int set_ref_in_timer(int copyID);
 void timer_free_all(void);
 void f_timer_info(typval_T *argvars, typval_T *rettv);

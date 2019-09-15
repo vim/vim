@@ -4069,30 +4069,26 @@ open_cmdwin(void)
     }
     set_bufref(&old_curbuf, curbuf);
 
-    /* Save current window sizes. */
+    // Save current window sizes.
     win_size_save(&winsizes);
-
-    /* Don't execute autocommands while creating the window. */
-    block_autocmds();
 
     // When using completion in Insert mode with <C-R>=<C-F> one can open the
     // command line window, but we don't want the popup menu then.
     pum_undisplay();
 
-    /* don't use a new tab page */
+    // don't use a new tab page
     cmdmod.tab = 0;
     cmdmod.noswapfile = 1;
 
-    /* Create a window for the command-line buffer. */
+    // Create a window for the command-line buffer.
     if (win_split((int)p_cwh, WSP_BOT) == FAIL)
     {
 	beep_flush();
-	unblock_autocmds();
 	return K_IGNORE;
     }
     cmdwin_type = get_cmdline_type();
 
-    /* Create the command-line buffer empty. */
+    // Create the command-line buffer empty.
     (void)do_ecmd(0, NULL, NULL, NULL, ECMD_ONE, ECMD_HIDE, NULL);
     (void)setfname(curbuf, (char_u *)"[Command Line]", NULL, TRUE);
     set_option_value((char_u *)"bt", 0L, (char_u *)"nofile", OPT_LOCAL);
@@ -4106,12 +4102,10 @@ open_cmdwin(void)
 # endif
     RESET_BINDING(curwin);
 
-    /* Do execute autocommands for setting the filetype (load syntax). */
-    unblock_autocmds();
-    /* But don't allow switching to another buffer. */
+    // Don't allow switching to another buffer.
     ++curbuf_lock;
 
-    /* Showing the prompt may have set need_wait_return, reset it. */
+    // Showing the prompt may have set need_wait_return, reset it.
     need_wait_return = FALSE;
 
     histtype = hist_char2type(cmdwin_type);
@@ -4126,11 +4120,11 @@ open_cmdwin(void)
     }
     --curbuf_lock;
 
-    /* Reset 'textwidth' after setting 'filetype' (the Vim filetype plugin
-     * sets 'textwidth' to 78). */
+    // Reset 'textwidth' after setting 'filetype' (the Vim filetype plugin
+    // sets 'textwidth' to 78).
     curbuf->b_p_tw = 0;
 
-    /* Fill the buffer with the history. */
+    // Fill the buffer with the history.
     init_history();
     if (get_hislen() > 0)
     {
@@ -4169,9 +4163,9 @@ open_cmdwin(void)
 
     cur_cmdwin = curwin;
 
-    /* Trigger CmdwinEnter autocommands. */
+    // Trigger CmdwinEnter autocommands.
     trigger_cmd_autocmd(cmdwin_type, EVENT_CMDWINENTER);
-    if (restart_edit != 0)	/* autocmd with ":startinsert" */
+    if (restart_edit != 0)	// autocmd with ":startinsert"
 	stuffcharReadbuff(K_NOP);
 
     i = RedrawingDisabled;
@@ -4189,11 +4183,11 @@ open_cmdwin(void)
     save_KeyTyped = KeyTyped;
 # endif
 
-    /* Trigger CmdwinLeave autocommands. */
+    // Trigger CmdwinLeave autocommands.
     trigger_cmd_autocmd(cmdwin_type, EVENT_CMDWINLEAVE);
 
 # ifdef FEAT_FOLDING
-    /* Restore KeyTyped in case it is modified by autocommands */
+    // Restore KeyTyped in case it is modified by autocommands
     KeyTyped = save_KeyTyped;
 # endif
 
@@ -4270,10 +4264,8 @@ open_cmdwin(void)
 	    }
 	}
 
-	/* Don't execute autocommands while deleting the window. */
-	block_autocmds();
 # ifdef FEAT_CONCEAL
-	/* Avoid command-line window first character being concealed. */
+	// Avoid command-line window first character being concealed.
 	curwin->w_p_cole = 0;
 # endif
 	wp = cur_cmdwin;
@@ -4281,15 +4273,13 @@ open_cmdwin(void)
 	win_goto(old_curwin);
 	win_close(wp, TRUE);
 
-	/* win_close() may have already wiped the buffer when 'bh' is
-	 * set to 'wipe' */
+	// win_close() may have already wiped the buffer when 'bh' is
+	// set to 'wipe'
 	if (bufref_valid(&bufref))
 	    close_buffer(NULL, bufref.br_buf, DOBUF_WIPE, FALSE);
 
-	/* Restore window sizes. */
+	// Restore window sizes.
 	win_size_restore(&winsizes);
-
-	unblock_autocmds();
     }
 
     ga_clear(&winsizes);
@@ -4305,7 +4295,7 @@ open_cmdwin(void)
 
     return cmdwin_result;
 }
-#endif /* FEAT_CMDWIN */
+#endif // FEAT_CMDWIN
 
 /*
  * Used for commands that either take a simple command string argument, or:

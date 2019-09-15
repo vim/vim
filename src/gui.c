@@ -3425,6 +3425,10 @@ static int	prev_which_scrollbars[3];
     void
 gui_init_which_components(char_u *oldval UNUSED)
 {
+#ifdef FEAT_GUI_DARKTHEME
+    static int	prev_dark_theme = -1;
+    int		using_dark_theme = FALSE;
+#endif
 #ifdef FEAT_MENU
     static int	prev_menu_is_active = -1;
 #endif
@@ -3495,6 +3499,11 @@ gui_init_which_components(char_u *oldval UNUSED)
 	    case GO_BOT:
 		gui.which_scrollbars[SBAR_BOTTOM] = TRUE;
 		break;
+#ifdef FEAT_GUI_DARKTHEME
+	    case GO_DARKTHEME:
+		using_dark_theme = TRUE;
+		break;
+#endif
 #ifdef FEAT_MENU
 	    case GO_MENUS:
 		gui.menu_is_active = TRUE;
@@ -3527,6 +3536,14 @@ gui_init_which_components(char_u *oldval UNUSED)
     {
 	need_set_size = 0;
 	fix_size = FALSE;
+
+#ifdef FEAT_GUI_DARKTHEME
+	if (using_dark_theme != prev_dark_theme)
+	{
+	    gui_mch_set_dark_theme(using_dark_theme);
+	    prev_dark_theme = using_dark_theme;
+	}
+#endif
 
 #ifdef FEAT_GUI_TABLINE
 	/* Update the GUI tab line, it may appear or disappear.  This may

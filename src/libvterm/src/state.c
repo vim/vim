@@ -336,6 +336,11 @@ static int on_text(const char bytes[], size_t len, void *user)
 
     for( ; i < glyph_ends; i++) {
       int this_width;
+      if(vterm_get_special_pty_type() == 2) {
+        state->vt->in_backspace -= (state->vt->in_backspace > 0) ? 1 : 0;
+        if(state->vt->in_backspace == 1)
+          codepoints[i] = 0; // codepoints under this condition must be 0
+      }
       chars[i - glyph_starts] = codepoints[i];
       this_width = vterm_unicode_width(codepoints[i]);
 #ifdef DEBUG
@@ -425,6 +430,12 @@ static int on_control(unsigned char control, void *user)
 
   VTermPos oldpos = state->pos;
 
+  VTermScreenCell cell;
+
+  // Preparing to see the leading byte
+  VTermPos leadpos = state->pos;
+  leadpos.col -= (leadpos.col >= 2 ? 2 : 0);
+
   switch(control) {
   case 0x07: // BEL - ECMA-48 8.3.3
     if(state->callbacks && state->callbacks->bell)
@@ -434,6 +445,12 @@ static int on_control(unsigned char control, void *user)
   case 0x08: // BS - ECMA-48 8.3.5
     if(state->pos.col > 0)
       state->pos.col--;
+    if(vterm_get_special_pty_type() == 2) {
+      // In 2 cell letters, go back 2 cells
+      vterm_screen_get_cell(state->vt->screen, leadpos, &cell);
+      if(vterm_unicode_width(cell.chars[0]) == 2)
+        state->pos.col--;
+    }
     break;
 
   case 0x09: // HT - ECMA-48 8.3.60
@@ -1019,6 +1036,26 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     row = CSI_ARG_OR(args[0], 1);
     col = argcount < 2 || CSI_ARG_IS_MISSING(args[1]) ? 1 : CSI_ARG(args[1]);
     // zero-based
+    if(vterm_get_special_pty_type() == 2) {
+      // Fix a sequence that is not correct right now
+      if(state->pos.row == row - 1) {
+        int cnt, ptr = 0;
+        for(cnt = 0; cnt < col - 1; ++cnt) {
+	  VTermPos p;
+	  VTermScreenCell c0, c1;
+	  p.row = row - 1;
+	  p.col = ptr;
+	  vterm_screen_get_cell(state->vt->screen, p, &c0);
+	  p.col++;
+	  vterm_screen_get_cell(state->vt->screen, p, &c1);
+	  ptr += (c1.chars[0] == (uint32_t)-1)		    // double cell?
+	     ? (vterm_unicode_is_ambiguous(c0.chars[0]))    // is ambiguous?
+	     ? vterm_unicode_width(0x00a1) : 1		    // &ambiwidth
+	     : 1;					    // not ambiguous
+        }
+        col = ptr + 1;
+      }
+    }
     state->pos.row = row-1;
     state->pos.col = col-1;
     if(state->mode.origin) {

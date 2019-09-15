@@ -6,7 +6,6 @@ void f_executable(typval_T *argvars, typval_T *rettv);
 void f_exepath(typval_T *argvars, typval_T *rettv);
 void f_filereadable(typval_T *argvars, typval_T *rettv);
 void f_filewritable(typval_T *argvars, typval_T *rettv);
-void findfilendir(typval_T *argvars, typval_T *rettv, int find_what);
 void f_finddir(typval_T *argvars, typval_T *rettv);
 void f_findfile(typval_T *argvars, typval_T *rettv);
 void f_fnamemodify(typval_T *argvars, typval_T *rettv);
