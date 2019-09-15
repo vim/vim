@@ -4763,14 +4763,18 @@ win_line(
 							  comb_attr, cul_attr);
 			    else
 #endif
+				if (line_attr)
+				char_attr = hl_combine_attr(
+							 comb_attr, line_attr);
+			    else
 				char_attr = comb_attr;
 			}
 			else
 			    char_attr = hl_combine_attr(comb_attr, char_attr);
 		    }
 # ifdef FEAT_CONCEAL
-		    /* no concealing past the end of the line, it interferes
-		     * with line highlighting */
+		    // no concealing past the end of the line, it interferes
+		    // with line highlighting
 		    if (c == NUL)
 			syntax_flags = 0;
 		    else
