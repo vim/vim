@@ -702,4 +702,11 @@ func Test_cmdline_overstrike()
   let &encoding = encoding_save
 endfunc
 
+func Test_cmdwin_bug()
+  sp
+  call feedkeys("q::call win_gotoid(1000)\<CR>\<CR>")
+  sleep 1
+  bw!
+endfunc
+
 set cpo&

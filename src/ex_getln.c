@@ -4040,7 +4040,7 @@ get_list_range(char_u **str, int *num1, int *num2)
 open_cmdwin(void)
 {
     bufref_T		old_curbuf;
-    win_T		*old_curwin = curwin;
+    win_T		*old_curwin = curwin, *cur_cmdwin;
     bufref_T		bufref;
     win_T		*wp;
     int			i;
@@ -4167,6 +4167,8 @@ open_cmdwin(void)
     setmouse();
 # endif
 
+    cur_cmdwin = curwin;
+
     /* Trigger CmdwinEnter autocommands. */
     trigger_cmd_autocmd(cmdwin_type, EVENT_CMDWINENTER);
     if (restart_edit != 0)	/* autocmd with ":startinsert" */
@@ -4274,7 +4276,7 @@ open_cmdwin(void)
 	/* Avoid command-line window first character being concealed. */
 	curwin->w_p_cole = 0;
 # endif
-	wp = curwin;
+	wp = cur_cmdwin;
 	set_bufref(&bufref, curbuf);
 	win_goto(old_curwin);
 	win_close(wp, TRUE);
