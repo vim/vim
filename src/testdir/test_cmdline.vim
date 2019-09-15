@@ -738,6 +738,5 @@ endfunc
 func Test_cmdwin_bug()
   sp
   call feedkeys("q::call win_gotoid(1000)\<CR>\<CR>")
-  sleep 1
-  bw!
+  call feedkeys(":bw!\<CR>")
 endfunc
