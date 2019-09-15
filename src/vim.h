@@ -307,11 +307,15 @@
 #define NUMBUFLEN 65
 
 // flags for vim_str2nr()
-#define STR2NR_BIN 1
-#define STR2NR_OCT 2
-#define STR2NR_HEX 4
+#define STR2NR_BIN 0x01
+#define STR2NR_OCT 0x02
+#define STR2NR_HEX 0x04
 #define STR2NR_ALL (STR2NR_BIN + STR2NR_OCT + STR2NR_HEX)
-#define STR2NR_FORCE 8 // only when ONE of the above is used
+#define STR2NR_NO_OCT (STR2NR_BIN + STR2NR_HEX)
+
+#define STR2NR_FORCE 0x80   // only when ONE of the above is used
+
+#define STR2NR_QUOTE 0x10   // ignore embedded single quotes
 
 /*
  * Shorthand for unsigned variables. Many systems, but not all, have u_char

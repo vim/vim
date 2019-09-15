@@ -74,7 +74,7 @@ func Test_readfile_binary()
   new
   call setline(1, ['one', 'two', 'three'])
   setlocal ff=dos
-  write XReadfile
+  silent write XReadfile
   let lines = 'XReadfile'->readfile()
   call assert_equal(['one', 'two', 'three'], lines)
   let lines = readfile('XReadfile', '', 2)
@@ -122,6 +122,15 @@ func Test_string_concatenation()
   let a = 'a'
   let a..=b
   call assert_equal('ab', a)
+endfunc
+
+" Test fix for issue #4507
+func Test_skip_after_throw()
+  try
+    throw 'something'
+    let x = wincol() || &ts
+  catch /something/
+  endtry
 endfunc
 
 scriptversion 2
@@ -183,17 +192,23 @@ func Test_dict_access_scriptversion2()
   call assert_true(1 && l:x.foo)
 endfunc
 
-func Test_scriptversion()
+scriptversion 4
+func Test_vvar_scriptversion4()
+  call assert_equal(17, 017)
+  call assert_equal(18, 018)
+  call assert_equal(64, 0b1'00'00'00)
+  call assert_equal(1048576, 0x10'00'00)
+  call assert_equal(1000000, 1'000'000)
+endfunc
+
+scriptversion 1
+func Test_vvar_scriptversion1()
+  call assert_equal(15, 017)
+  call assert_equal(18, 018)
+endfunc
+
+func Test_scriptversion_fail()
   call writefile(['scriptversion 9'], 'Xversionscript')
   call assert_fails('source Xversionscript', 'E999:')
   call delete('Xversionscript')
-endfunc
-
-" Test fix for issue #4507
-func Test_skip_after_throw()
-  try
-    throw 'something'
-    let x = wincol() || &ts
-  catch /something/
-  endtry
 endfunc

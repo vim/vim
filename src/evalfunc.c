@@ -728,7 +728,7 @@ static funcentry_T global_functions[] =
     {"str2float",	1, 1, FEARG_1,	  f_str2float},
 #endif
     {"str2list",	1, 2, FEARG_1,	  f_str2list},
-    {"str2nr",		1, 2, FEARG_1,	  f_str2nr},
+    {"str2nr",		1, 3, FEARG_1,	  f_str2nr},
     {"strcharpart",	2, 3, FEARG_1,	  f_strcharpart},
     {"strchars",	1, 2, FEARG_1,	  f_strchars},
     {"strdisplaywidth",	1, 2, FEARG_1,	  f_strdisplaywidth},
@@ -7323,7 +7323,7 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
     int		base = 10;
     char_u	*p;
     varnumber_T	n;
-    int		what;
+    int		what = 0;
     int		isneg;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
@@ -7334,6 +7334,8 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
 	    emsg(_(e_invarg));
 	    return;
 	}
+	if (argvars[2].v_type != VAR_UNKNOWN && tv_get_number(&argvars[2]))
+	    what |= STR2NR_QUOTE;
     }
 
     p = skipwhite(tv_get_string(&argvars[0]));
@@ -7342,10 +7344,9 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
 	p = skipwhite(p + 1);
     switch (base)
     {
-	case 2: what = STR2NR_BIN + STR2NR_FORCE; break;
-	case 8: what = STR2NR_OCT + STR2NR_FORCE; break;
-	case 16: what = STR2NR_HEX + STR2NR_FORCE; break;
-	default: what = 0;
+	case 2: what |= STR2NR_BIN + STR2NR_FORCE; break;
+	case 8: what |= STR2NR_OCT + STR2NR_FORCE; break;
+	case 16: what |= STR2NR_HEX + STR2NR_FORCE; break;
     }
     vim_str2nr(p, NULL, NULL, what, &n, NULL, 0, FALSE);
     // Text after the number is silently ignored.
