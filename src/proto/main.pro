@@ -2,6 +2,9 @@
 int vim_main2(void);
 void common_init(mparm_T *paramp);
 int is_not_a_term(void);
+void may_trigger_safestate(int safe);
+void enter_unsafe_state(void);
+void leave_unsafe_state(void);
 void main_loop(int cmdwin, int noexmode);
 void getout_preserve_modified(int exitval);
 void getout(int exitval);

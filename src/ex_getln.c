@@ -971,6 +971,9 @@ getcmdline_int(
 				   that occurs while typing a command should
 				   cause the command not to be executed. */
 
+	// Trigger SafeState if nothing is pending.
+	may_trigger_safestate(xpc.xp_numfiles <= 0);
+
 	cursorcmd();		/* set the cursor on the right spot */
 
 	/* Get a character.  Ignore K_IGNORE and K_NOP, they should not do

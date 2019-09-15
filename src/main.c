@@ -1028,6 +1028,64 @@ is_not_a_term()
     return params.not_a_term;
 }
 
+
+static int	was_safe = FALSE;
+static int	not_safe_now = 0;
+
+/*
+ * Trigger SafeState if currently in a safe state for main_loop().
+ */
+    static void
+may_trigger_safestate_main(oparg_T *oap)
+{
+    may_trigger_safestate(
+	    !finish_op
+	    && oap->prev_opcount > 0
+	    && oap->prev_count0 == 0
+	    && oap->op_type == OP_NOP
+	    && oap->regname == NUL
+	    && restart_edit == 0);
+}
+
+/*
+ * Trigger SafeState if currently in s safe state, that is "safe" is TRUE and
+ * there is no typeahead.
+ */
+    void
+may_trigger_safestate(int safe)
+{
+    int is_safe = safe
+		    && stuff_empty()
+		    && typebuf.tb_len == 0
+		    && !global_busy;
+
+    if (is_safe)
+	apply_autocmds(EVENT_SAFESTATE, NULL, NULL, FALSE, curbuf);
+    was_safe = is_safe;
+}
+
+/*
+ * Entering a not-safe state.
+ */
+    void
+enter_unsafe_state(void)
+{
+    ++not_safe_now;
+}
+
+/*
+ * Leaving a not-safe state.  Trigger SafeState if we were in a safe state
+ * before first calling enter_not_safe_state().
+ */
+    void
+leave_unsafe_state(void)
+{
+    --not_safe_now;
+    if (not_safe_now == 0 && was_safe)
+	apply_autocmds(EVENT_SAFESTATE, NULL, NULL, FALSE, curbuf);
+}
+
+
 /*
  * Main loop: Execute Normal mode commands until exiting Vim.
  * Also used to handle commands in the command-line window, until the window
@@ -1133,6 +1191,9 @@ main_loop(
 	    msg_scroll = FALSE;
 	quit_more = FALSE;
 
+	// it's not safe unless may_trigger_safestate_main() is called
+	was_safe = FALSE;
+
 	/*
 	 * If skip redraw is set (for ":" in wait_return()), don't redraw now.
 	 * If there is nothing in the stuff_buffer or do_redraw is TRUE,
@@ -1210,6 +1271,10 @@ main_loop(
 		apply_autocmds(EVENT_TEXTCHANGED, NULL, NULL, FALSE, curbuf);
 		curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
 	    }
+
+	    // If nothing is pending and we are going to wait for the user to
+	    // type a character, trigger SafeState.
+	    may_trigger_safestate_main(&oa);
 
 #if defined(FEAT_DIFF)
 	    // Updating diffs from changed() does not always work properly,
