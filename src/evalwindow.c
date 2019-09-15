@@ -50,22 +50,6 @@ win_getid(typval_T *argvars)
     return 0;
 }
 
-    static int
-win_gotoid(typval_T *argvars)
-{
-    win_T	*wp;
-    tabpage_T   *tp;
-    int		id = tv_get_number(&argvars[0]);
-
-    FOR_ALL_TAB_WINDOWS(tp, wp)
-	    if (wp->w_id == id)
-	    {
-		goto_tabpage_win(tp, wp);
-		return 1;
-	    }
-    return 0;
-}
-
     static void
 win_id2tabwin(typval_T *argvars, list_T *list)
 {
@@ -705,7 +689,24 @@ f_win_getid(typval_T *argvars, typval_T *rettv)
     void
 f_win_gotoid(typval_T *argvars, typval_T *rettv)
 {
-    rettv->vval.v_number = win_gotoid(argvars);
+    win_T	*wp;
+    tabpage_T   *tp;
+    int		id = tv_get_number(&argvars[0]);
+
+#ifdef FEAT_CMDWIN
+    if (cmdwin_type != 0)
+    {
+	emsg(_(e_cmdwin));
+	return;
+    }
+#endif
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+	if (wp->w_id == id)
+	{
+	    goto_tabpage_win(tp, wp);
+	    rettv->vval.v_number = 1;
+	    return;
+	}
 }
 
 /*
