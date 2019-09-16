@@ -3483,6 +3483,7 @@ channel_read(channel_T *channel, ch_part_T part, char *func)
  * Read from RAW or NL "channel"/"part".  Blocks until there is something to
  * read or the timeout expires.
  * When "raw" is TRUE don't block waiting on a NL.
+ * Does not trigger timers or handle messages.
  * Returns what was read in allocated memory.
  * Returns NULL in case of error or timeout.
  */
@@ -3569,6 +3570,17 @@ channel_read_block(
     return msg;
 }
 
+static int channel_blocking_wait = 0;
+
+/*
+ * Return TRUE if in a blocking wait that might trigger callbacks.
+ */
+    int
+channel_in_blocking_wait(void)
+{
+    return channel_blocking_wait > 0;
+}
+
 /*
  * Read one JSON message with ID "id" from "channel"/"part" and store the
  * result in "rettv".
@@ -3592,6 +3604,7 @@ channel_read_json_block(
     int		retval = FAIL;
 
     ch_log(channel, "Blocking read JSON for id %d", id);
+    ++channel_blocking_wait;
 
     if (id >= 0)
 	channel_add_block_id(chanpart, id);
@@ -3661,6 +3674,7 @@ channel_read_json_block(
     }
     if (id >= 0)
 	channel_remove_block_id(chanpart, id);
+    --channel_blocking_wait;
 
     return retval;
 }

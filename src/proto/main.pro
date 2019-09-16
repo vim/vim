@@ -2,6 +2,7 @@
 int vim_main2(void);
 void common_init(mparm_T *paramp);
 int is_not_a_term(void);
+int op_pending(void);
 void may_trigger_safestate(int safe);
 void state_no_longer_safe(void);
 void leave_unsafe_state(void);

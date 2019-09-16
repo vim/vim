@@ -2755,6 +2755,7 @@ spellsuggest({word} [, {max} [, {capital}]])
 split({expr} [, {pat} [, {keepempty}]])
 				List	make |List| from {pat} separated {expr}
 sqrt({expr})			Float	square root of {expr}
+state([{what}])			String	current state of Vim
 str2float({expr})		Float	convert String to Float
 str2list({expr} [, {utf8}])	List	convert each character of {expr} to
 					ASCII/UTF8 value
@@ -7066,6 +7067,7 @@ mode([expr])	Return a string that indicates the current mode.
 		If [expr] is supplied and it evaluates to a non-zero Number or
 		a non-empty String (|non-zero-arg|), then the full mode is
 		returned, otherwise only the first letter is returned.
+		Also see |state()|.
 
 		   n	    Normal, Terminal-Normal
 		   no	    Operator-pending
@@ -9040,6 +9042,34 @@ sqrt({expr})						*sqrt()*
 <
 		{only available when compiled with the |+float| feature}
 
+
+state([{what}])						*state()*
+		Return a string which contains characters indicating the
+		current state.  Mostly useful in callbacks that want to do
+		work that may not always be safe.  Roughly this works like:
+		- callback uses state() to check if work is safe to do.
+		  If yes, then do it right away.
+		  Otherwise add to work queue and add SafeState and/or
+		  SafeStateAgain autocommand.
+		- When SafeState or SafeStateAgain is triggered, check with
+		  state() if the work can be done now, and if yes remove it
+		  from the queue and execute.
+		Also see |mode()|.
+
+		When {what} is given only characters in this string will be
+		added.  E.g, this checks if the screen has scrolled: >
+			if state('s') != ''
+<
+		These characters indicate the state:
+		    m  halfway a mapping, :normal command, feedkeys() or
+		       stuffed command
+		    o  operator pending or waiting for a command argument
+		    a  Insert mode autocomplete active
+		    x  executing an autocommand
+		    w  blocked on waiting, e.g. ch_evalexpr() and
+		       ch_read(), ch_readraw() when reading json.
+		    c  callback invoked (repeats for recursiveness up to "ccc")
+		    s  screen has scrolled for messages
 
 str2float({expr})					*str2float()*
 		Convert String {expr} to a Float.  This mostly works the same

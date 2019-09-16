@@ -146,7 +146,6 @@ static void f_matchstr(typval_T *argvars, typval_T *rettv);
 static void f_matchstrpos(typval_T *argvars, typval_T *rettv);
 static void f_max(typval_T *argvars, typval_T *rettv);
 static void f_min(typval_T *argvars, typval_T *rettv);
-static void f_mode(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_MZSCHEME
 static void f_mzeval(typval_T *argvars, typval_T *rettv);
 #endif
@@ -723,6 +722,9 @@ static funcentry_T global_functions[] =
     {"split",		1, 3, FEARG_1,	  f_split},
 #ifdef FEAT_FLOAT
     {"sqrt",		1, 1, FEARG_1,	  f_sqrt},
+#endif
+    {"state",		0, 1, FEARG_1,	  f_state},
+#ifdef FEAT_FLOAT
     {"str2float",	1, 1, FEARG_1,	  f_str2float},
 #endif
     {"str2list",	1, 2, FEARG_1,	  f_str2list},
@@ -1046,7 +1048,7 @@ call_internal_method(
 /*
  * Return TRUE for a non-zero Number and a non-empty String.
  */
-    static int
+    int
 non_zero_arg(typval_T *argvars)
 {
     return ((argvars[0].v_type == VAR_NUMBER
@@ -4909,97 +4911,6 @@ f_max(typval_T *argvars, typval_T *rettv)
 f_min(typval_T *argvars, typval_T *rettv)
 {
     max_min(argvars, rettv, FALSE);
-}
-
-/*
- * "mode()" function
- */
-    static void
-f_mode(typval_T *argvars, typval_T *rettv)
-{
-    char_u	buf[4];
-
-    vim_memset(buf, 0, sizeof(buf));
-
-    if (time_for_testing == 93784)
-    {
-	/* Testing the two-character code. */
-	buf[0] = 'x';
-	buf[1] = '!';
-    }
-#ifdef FEAT_TERMINAL
-    else if (term_use_loop())
-	buf[0] = 't';
-#endif
-    else if (VIsual_active)
-    {
-	if (VIsual_select)
-	    buf[0] = VIsual_mode + 's' - 'v';
-	else
-	    buf[0] = VIsual_mode;
-    }
-    else if (State == HITRETURN || State == ASKMORE || State == SETWSIZE
-		|| State == CONFIRM)
-    {
-	buf[0] = 'r';
-	if (State == ASKMORE)
-	    buf[1] = 'm';
-	else if (State == CONFIRM)
-	    buf[1] = '?';
-    }
-    else if (State == EXTERNCMD)
-	buf[0] = '!';
-    else if (State & INSERT)
-    {
-	if (State & VREPLACE_FLAG)
-	{
-	    buf[0] = 'R';
-	    buf[1] = 'v';
-	}
-	else
-	{
-	    if (State & REPLACE_FLAG)
-		buf[0] = 'R';
-	    else
-		buf[0] = 'i';
-	    if (ins_compl_active())
-		buf[1] = 'c';
-	    else if (ctrl_x_mode_not_defined_yet())
-		buf[1] = 'x';
-	}
-    }
-    else if ((State & CMDLINE) || exmode_active)
-    {
-	buf[0] = 'c';
-	if (exmode_active == EXMODE_VIM)
-	    buf[1] = 'v';
-	else if (exmode_active == EXMODE_NORMAL)
-	    buf[1] = 'e';
-    }
-    else
-    {
-	buf[0] = 'n';
-	if (finish_op)
-	{
-	    buf[1] = 'o';
-	    // to be able to detect force-linewise/blockwise/characterwise operations
-	    buf[2] = motion_force;
-	}
-	else if (restart_edit == 'I' || restart_edit == 'R'
-							|| restart_edit == 'V')
-	{
-	    buf[1] = 'i';
-	    buf[2] = restart_edit;
-	}
-    }
-
-    /* Clear out the minor mode when the argument is not a non-zero number or
-     * non-empty string.  */
-    if (!non_zero_arg(&argvars[0]))
-	buf[1] = NUL;
-
-    rettv->vval.v_string = vim_strsave(buf);
-    rettv->v_type = VAR_STRING;
 }
 
 #if defined(FEAT_MZSCHEME) || defined(PROTO)
