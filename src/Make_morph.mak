@@ -76,6 +76,7 @@ SRC =	arabic.c						\
 	normal.c						\
 	ops.c							\
 	option.c						\
+	optionstr.c						\
 	os_amiga.c						\
 	popupmnu.c						\
 	profiler.c						\

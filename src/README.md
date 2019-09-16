@@ -54,6 +54,7 @@ menu.c		| menus
 message.c	| (error) messages
 ops.c		| handling operators ("d", "y", "p")
 option.c	| options
+optionstr.c	| handling string options
 popupmnu.c	| popup menu
 popupwin.c	| popup window
 profiler.c	| vim script profiler

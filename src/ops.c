@@ -315,14 +315,14 @@ shift_line(
 {
     int		count;
     int		i, j;
-    int		p_sw = (int)get_sw_value_indent(curbuf);
+    int		sw_val = (int)get_sw_value_indent(curbuf);
 
     count = get_indent();	/* get current indent */
 
     if (round)			/* round off indent */
     {
-	i = count / p_sw;	/* number of p_sw rounded down */
-	j = count % p_sw;	/* extra spaces */
+	i = count / sw_val;	/* number of p_sw rounded down */
+	j = count % sw_val;	/* extra spaces */
 	if (j && left)		/* first remove extra spaces */
 	    --amount;
 	if (left)
@@ -333,18 +333,18 @@ shift_line(
 	}
 	else
 	    i += amount;
-	count = i * p_sw;
+	count = i * sw_val;
     }
     else		/* original vi indent */
     {
 	if (left)
 	{
-	    count -= p_sw * amount;
+	    count -= sw_val * amount;
 	    if (count < 0)
 		count = 0;
 	}
 	else
-	    count += p_sw * amount;
+	    count += sw_val * amount;
     }
 
     /* Set new indent */
@@ -366,11 +366,8 @@ shift_block(oparg_T *oap, int amount)
     int			total;
     char_u		*newp, *oldp;
     int			oldcol = curwin->w_cursor.col;
-    int			p_sw = (int)get_sw_value_indent(curbuf);
-#ifdef FEAT_VARTABS
-    int			*p_vts = curbuf->b_p_vts_array;
-#endif
-    int			p_ts = (int)curbuf->b_p_ts;
+    int			sw_val = (int)get_sw_value_indent(curbuf);
+    int			ts_val = (int)curbuf->b_p_ts;
     struct block_def	bd;
     int			incr;
     colnr_T		ws_vcol;
@@ -388,8 +385,8 @@ shift_block(oparg_T *oap, int amount)
 	return;
 
     /* total is number of screen columns to be inserted/removed */
-    total = (int)((unsigned)amount * (unsigned)p_sw);
-    if ((total / p_sw) != amount)
+    total = (int)((unsigned)amount * (unsigned)sw_val);
+    if ((total / sw_val) != amount)
 	return; /* multiplication overflow */
 
     oldp = ml_get_curline();
@@ -431,14 +428,15 @@ shift_block(oparg_T *oap, int amount)
 	 * non-ws char in the block. */
 #ifdef FEAT_VARTABS
 	if (!curbuf->b_p_et)
-	    tabstop_fromto(ws_vcol, ws_vcol + total, p_ts, p_vts, &i, &j);
+	    tabstop_fromto(ws_vcol, ws_vcol + total,
+					ts_val, curbuf->b_p_vts_array, &i, &j);
 	else
 	    j = total;
 #else
 	if (!curbuf->b_p_et)
-	    i = ((ws_vcol % p_ts) + total) / p_ts; /* number of tabs */
+	    i = ((ws_vcol % ts_val) + total) / ts_val; /* number of tabs */
 	if (i)
-	    j = ((ws_vcol % p_ts) + total) % p_ts; /* number of spp */
+	    j = ((ws_vcol % ts_val) + total) % ts_val; /* number of spp */
 	else
 	    j = total;
 #endif
@@ -567,7 +565,7 @@ block_insert(
     int			b_insert,
     struct block_def	*bdp)
 {
-    int		p_ts;
+    int		ts_val;
     int		count = 0;	/* extra spaces to replace a cut TAB */
     int		spaces = 0;	/* non-zero if cutting a TAB */
     colnr_T	offset;		/* pointer along new line */
@@ -589,20 +587,20 @@ block_insert(
 
 	if (b_insert)
 	{
-	    p_ts = bdp->start_char_vcols;
+	    ts_val = bdp->start_char_vcols;
 	    spaces = bdp->startspaces;
 	    if (spaces != 0)
-		count = p_ts - 1; /* we're cutting a TAB */
+		count = ts_val - 1; /* we're cutting a TAB */
 	    offset = bdp->textcol;
 	}
 	else /* append */
 	{
-	    p_ts = bdp->end_char_vcols;
+	    ts_val = bdp->end_char_vcols;
 	    if (!bdp->is_short) /* spaces = padding after block */
 	    {
-		spaces = (bdp->endspaces ? p_ts - bdp->endspaces : 0);
+		spaces = (bdp->endspaces ? ts_val - bdp->endspaces : 0);
 		if (spaces != 0)
-		    count = p_ts - 1; /* we're cutting a TAB */
+		    count = ts_val - 1; /* we're cutting a TAB */
 		offset = bdp->textcol + bdp->textlen - (spaces != 0);
 	    }
 	    else /* spaces = padding to block edge */
@@ -651,7 +649,7 @@ block_insert(
 	if (spaces && !bdp->is_short)
 	{
 	    /* insert post-padding */
-	    vim_memset(newp + offset + spaces, ' ', (size_t)(p_ts - spaces));
+	    vim_memset(newp + offset + spaces, ' ', (size_t)(ts_val - spaces));
 	    /* We're splitting a TAB, don't copy it. */
 	    oldp++;
 	    /* We allowed for that TAB, remember this now */
@@ -5591,10 +5589,10 @@ do_addsub(
     pos_T	startpos;
     pos_T	endpos;
 
-    dohex = (vim_strchr(curbuf->b_p_nf, 'x') != NULL);	/* "heX" */
-    dooct = (vim_strchr(curbuf->b_p_nf, 'o') != NULL);	/* "Octal" */
-    dobin = (vim_strchr(curbuf->b_p_nf, 'b') != NULL);	/* "Bin" */
-    doalp = (vim_strchr(curbuf->b_p_nf, 'p') != NULL);	/* "alPha" */
+    dohex = (vim_strchr(curbuf->b_p_nf, 'x') != NULL);	// "heX"
+    dooct = (vim_strchr(curbuf->b_p_nf, 'o') != NULL);	// "Octal"
+    dobin = (vim_strchr(curbuf->b_p_nf, 'b') != NULL);	// "Bin"
+    doalp = (vim_strchr(curbuf->b_p_nf, 'p') != NULL);	// "alPha"
 
     curwin->w_cursor = *pos;
     ptr = ml_get(pos->lnum);
