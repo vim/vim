@@ -357,6 +357,7 @@ Name			triggered by ~
 
 |SafeState|		nothing pending, going to wait for the user to type a
 			character
+|SafeStateAgain|	repeated SafeState
 
 |ColorSchemePre|	before loading a color scheme
 |ColorScheme|		after loading a color scheme
@@ -978,6 +979,11 @@ SafeState			When nothing is pending, going to wait for the
 				Depending on what you want to do, you may also
 				check more with `state()`, e.g. whether the
 				screen was scrolled for messages.
+							*SafeStateAgain*
+SafeStateAgain			Like SafeState but after processing any
+				messages and invoking callbacks. This may be
+				triggered often, don't do something that takes
+				time.
 
 							*SessionLoadPost*
 SessionLoadPost			After loading the session file created using

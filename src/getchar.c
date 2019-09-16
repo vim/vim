@@ -933,6 +933,7 @@ ins_typebuf(
     init_typebuf();
     if (++typebuf.tb_change_cnt == 0)
 	typebuf.tb_change_cnt = 1;
+    state_no_longer_safe();
 
     addlen = (int)STRLEN(str);
 
@@ -1779,10 +1780,11 @@ vgetc(void)
      */
     may_garbage_collect = FALSE;
 #endif
+
 #ifdef FEAT_BEVAL_TERM
     if (c != K_MOUSEMOVE && c != K_IGNORE && c != K_CURSORHOLD)
     {
-	/* Don't trigger 'balloonexpr' unless only the mouse was moved. */
+	// Don't trigger 'balloonexpr' unless only the mouse was moved.
 	bevalexpr_due_set = FALSE;
 	ui_remove_balloon();
     }
@@ -1791,6 +1793,11 @@ vgetc(void)
     if (popup_do_filter(c))
 	c = K_IGNORE;
 #endif
+
+    // Need to process the character before we know it's safe to do something
+    // else.
+    if (c != K_IGNORE)
+	state_no_longer_safe();
 
     return c;
 }
@@ -2039,11 +2046,14 @@ parse_queued_messages(void)
     int	    old_curbuf_fnum = curbuf->b_fnum;
     int	    i;
     int	    save_may_garbage_collect = may_garbage_collect;
+    static int entered = 0;
 
     // Do not handle messages while redrawing, because it may cause buffers to
     // change or be wiped while they are being redrawn.
     if (updating_screen)
 	return;
+
+    ++entered;
 
     // may_garbage_collect is set in main_loop() to do garbage collection when
     // blocking to wait on a character.  We don't want that while parsing
@@ -2090,12 +2100,19 @@ parse_queued_messages(void)
 	break;
     }
 
+    // When not nested we'll go back to waiting for a typed character.  If it
+    // was safe before then this triggers a SafeStateAgain autocommand event.
+    if (entered == 1)
+	leave_unsafe_state();
+
     may_garbage_collect = save_may_garbage_collect;
 
     // If the current window or buffer changed we need to bail out of the
     // waiting loop.  E.g. when a job exit callback closes the terminal window.
     if (curwin->w_id != old_curwin_id || curbuf->b_fnum != old_curbuf_fnum)
 	ins_char_typebuf(K_IGNORE);
+
+    --entered;
 }
 #endif
 

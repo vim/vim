@@ -1029,8 +1029,8 @@ is_not_a_term()
 }
 
 
+// When TRUE in a safe state when starting to wait for a character.
 static int	was_safe = FALSE;
-static int	not_safe_now = 0;
 
 /*
  * Trigger SafeState if currently in a safe state for main_loop().
@@ -1057,6 +1057,7 @@ may_trigger_safestate(int safe)
     int is_safe = safe
 		    && stuff_empty()
 		    && typebuf.tb_len == 0
+		    && scriptin[curscript] == NULL
 		    && !global_busy;
 
     if (is_safe)
@@ -1065,24 +1066,25 @@ may_trigger_safestate(int safe)
 }
 
 /*
- * Entering a not-safe state.
+ * Something changed which causes the state possibly to be unsafe, e.g. a
+ * character was typed.  It will remain unsafe until the next call to
+ * may_trigger_safestate().
  */
     void
-enter_unsafe_state(void)
+state_no_longer_safe(void)
 {
-    ++not_safe_now;
+    was_safe = FALSE;
 }
 
 /*
- * Leaving a not-safe state.  Trigger SafeState if we were in a safe state
- * before first calling enter_not_safe_state().
+ * Invoked when leaving code that invokes callbacks.  Then trigger
+ * SafeStateAgain, if it was safe when starting to wait for a character.
  */
     void
 leave_unsafe_state(void)
 {
-    --not_safe_now;
-    if (not_safe_now == 0 && was_safe)
-	apply_autocmds(EVENT_SAFESTATE, NULL, NULL, FALSE, curbuf);
+    if (was_safe)
+	apply_autocmds(EVENT_SAFESTATEAGAIN, NULL, NULL, FALSE, curbuf);
 }
 
 

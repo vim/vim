@@ -3593,10 +3593,6 @@ channel_read_json_block(
 
     ch_log(channel, "Blocking read JSON for id %d", id);
 
-    // Not considered a safe state here, since we are processing a JSON message
-    // and parsing other messages while waiting.
-    enter_unsafe_state();
-
     if (id >= 0)
 	channel_add_block_id(chanpart, id);
 
@@ -3665,9 +3661,6 @@ channel_read_json_block(
     }
     if (id >= 0)
 	channel_remove_block_id(chanpart, id);
-
-    // This may trigger a SafeState autocommand.
-    leave_unsafe_state();
 
     return retval;
 }
