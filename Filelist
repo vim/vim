@@ -32,6 +32,8 @@ SRC_ALL =	\
 		src/dict.c \
 		src/diff.c \
 		src/digraph.c \
+		src/drawline.c \
+		src/drawscreen.c \
 		src/edit.c \
 		src/eval.c \
 		src/evalbuffer.c \
@@ -192,6 +194,8 @@ SRC_ALL =	\
 		src/proto/dict.pro \
 		src/proto/diff.pro \
 		src/proto/digraph.pro \
+		src/proto/drawline.pro \
+		src/proto/drawscreen.pro \
 		src/proto/edit.pro \
 		src/proto/eval.pro \
 		src/proto/evalbuffer.pro \

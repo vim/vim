@@ -726,6 +726,8 @@ OBJ = \
 	$(OUTDIR)\dict.obj \
 	$(OUTDIR)\diff.obj \
 	$(OUTDIR)\digraph.obj \
+	$(OUTDIR)\drawline.obj \
+	$(OUTDIR)\drawscreen.obj \
 	$(OUTDIR)\edit.obj \
 	$(OUTDIR)\eval.obj \
 	$(OUTDIR)\evalbuffer.obj \
@@ -1484,6 +1486,10 @@ $(OUTDIR)/xpatience.obj:	$(OUTDIR) xdiff/xpatience.c  $(XDIFF_DEPS)
 
 $(OUTDIR)/digraph.obj:	$(OUTDIR) digraph.c  $(INCL)
 
+$(OUTDIR)/drawline.obj:	$(OUTDIR) drawline.c  $(INCL)
+
+$(OUTDIR)/drawscreen.obj:	$(OUTDIR) drawscreen.c  $(INCL)
+
 $(OUTDIR)/edit.obj:	$(OUTDIR) edit.c  $(INCL)
 
 $(OUTDIR)/eval.obj:	$(OUTDIR) eval.c  $(INCL)
@@ -1783,6 +1789,8 @@ proto.h: \
 	proto/dict.pro \
 	proto/diff.pro \
 	proto/digraph.pro \
+	proto/drawline.pro \
+	proto/drawscreen.pro \
 	proto/edit.pro \
 	proto/eval.pro \
 	proto/evalbuffer.pro \
