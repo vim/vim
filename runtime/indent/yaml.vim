@@ -132,10 +132,25 @@ function GetYAMLIndent(lnum)
         " Same for line containing mapping key
         let prevmapline = s:FindPrevLEIndentedLineMatchingRegex(a:lnum,
                     \                                           s:mapkeyregex)
+        " Look for any previous mapping with the same indent.
+        " (https://github.com/neovim/neovim/issues/11039).
+        let cur_indent = indent(a:lnum)
+        while 1
+          let prev_indent = indent(prevmapline)
+          if prev_indent <= cur_indent
+            break
+          endif
+          let abovemapline = s:FindPrevLEIndentedLineMatchingRegex(prevmapline,
+                    \                                              s:mapkeyregex)
+          if !abovemapline
+            break
+          endif
+          let prevmapline = abovemapline
+        endwhile
         if getline(prevmapline) =~# '^\s*- '
-            return indent(prevmapline) + 2
+            return prev_indent + 2
         else
-            return indent(prevmapline)
+            return prev_indent
         endif
     elseif prevline =~# '^\s*- '
         " - List with

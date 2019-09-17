@@ -1,0 +1,9 @@
+# vim: set ft=yaml sw=2 :
+
+# START_INDENT
+map1:
+  sub1:
+    - list item
+map2:
+  - another list
+# END_INDENT
