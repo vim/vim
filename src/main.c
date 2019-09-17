@@ -1061,11 +1061,13 @@ may_trigger_safestate(int safe)
 		    && scriptin[curscript] == NULL
 		    && !global_busy;
 
+#ifdef FEAT_JOB_CHANNEL
     if (was_safe != is_safe)
 	// Only log when the state changes, otherwise it happens at nearly
 	// every key stroke.
 	ch_log(NULL, is_safe ? "Start triggering SafeState"
 						: "Stop triggering SafeState");
+#endif
     if (is_safe)
 	apply_autocmds(EVENT_SAFESTATE, NULL, NULL, FALSE, curbuf);
     was_safe = is_safe;
@@ -1079,8 +1081,10 @@ may_trigger_safestate(int safe)
     void
 state_no_longer_safe(void)
 {
+#ifdef FEAT_JOB_CHANNEL
     if (was_safe)
 	ch_log(NULL, "safe state reset");
+#endif
     was_safe = FALSE;
 }
 
@@ -1093,11 +1097,15 @@ may_trigger_safestateagain(void)
 {
     if (was_safe)
     {
+#ifdef FEAT_JOB_CHANNEL
 	ch_log(NULL, "Leaving unsafe area, triggering SafeStateAgain");
+#endif
 	apply_autocmds(EVENT_SAFESTATEAGAIN, NULL, NULL, FALSE, curbuf);
     }
+#ifdef FEAT_JOB_CHANNEL
     else
 	ch_log(NULL, "Leaving unsafe area, not triggering SafeStateAgain");
+#endif
 }
 
 
