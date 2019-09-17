@@ -7381,8 +7381,8 @@ nv_optrans(cmdarg_T *cap)
 
     if (!checkclearopq(cap->oap))
     {
-	/* In Vi "2D" doesn't delete the next line.  Can't translate it
-	 * either, because "2." should also not use the count. */
+	// In Vi "2D" doesn't delete the next line.  Can't translate it
+	// either, because "2." should also not use the count.
 	if (cap->cmdchar == 'D' && vim_strchr(p_cpo, CPO_HASH) != NULL)
 	{
 	    cap->oap->start = curwin->w_cursor;
@@ -7400,7 +7400,13 @@ nv_optrans(cmdarg_T *cap)
 	{
 	    if (cap->count0)
 		stuffnumReadbuff(cap->count0);
-	    stuffReadbuff(ar[(int)(vim_strchr(str, cap->cmdchar) - str)]);
+	    // If on an empty line and using 'x' and "l" is included in the
+	    // whichwrap option, do not delete the next line.
+	    if (cap->cmdchar == 'x' && vim_strchr(p_ww, 'l') != NULL
+						      && gchar_cursor() == NUL)
+		stuffReadbuff((char_u *)"dd");
+	    else
+		stuffReadbuff(ar[(int)(vim_strchr(str, cap->cmdchar) - str)]);
 	}
     }
     cap->opcount = 0;
