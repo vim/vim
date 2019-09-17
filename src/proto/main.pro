@@ -5,7 +5,7 @@ int is_not_a_term(void);
 int op_pending(void);
 void may_trigger_safestate(int safe);
 void state_no_longer_safe(void);
-void leave_unsafe_state(void);
+void may_trigger_safestateagain(void);
 void main_loop(int cmdwin, int noexmode);
 void getout_preserve_modified(int exitval);
 void getout(int exitval);

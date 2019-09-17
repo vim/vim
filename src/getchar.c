@@ -2103,7 +2103,7 @@ parse_queued_messages(void)
     // When not nested we'll go back to waiting for a typed character.  If it
     // was safe before then this triggers a SafeStateAgain autocommand event.
     if (entered == 1)
-	leave_unsafe_state();
+	may_trigger_safestateagain();
 
     may_garbage_collect = save_may_garbage_collect;
 

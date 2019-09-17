@@ -1061,6 +1061,11 @@ may_trigger_safestate(int safe)
 		    && scriptin[curscript] == NULL
 		    && !global_busy;
 
+    if (was_safe != is_safe)
+	// Only log when the state changes, otherwise it happens at nearly
+	// every key stroke.
+	ch_log(NULL, is_safe ? "Start triggering SafeState"
+						: "Stop triggering SafeState");
     if (is_safe)
 	apply_autocmds(EVENT_SAFESTATE, NULL, NULL, FALSE, curbuf);
     was_safe = is_safe;
@@ -1074,6 +1079,8 @@ may_trigger_safestate(int safe)
     void
 state_no_longer_safe(void)
 {
+    if (was_safe)
+	ch_log(NULL, "safe state reset");
     was_safe = FALSE;
 }
 
@@ -1082,10 +1089,15 @@ state_no_longer_safe(void)
  * SafeStateAgain, if it was safe when starting to wait for a character.
  */
     void
-leave_unsafe_state(void)
+may_trigger_safestateagain(void)
 {
     if (was_safe)
+    {
+	ch_log(NULL, "Leaving unsafe area, triggering SafeStateAgain");
 	apply_autocmds(EVENT_SAFESTATEAGAIN, NULL, NULL, FALSE, curbuf);
+    }
+    else
+	ch_log(NULL, "Leaving unsafe area, not triggering SafeStateAgain");
 }
 
 
