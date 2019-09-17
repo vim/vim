@@ -20,6 +20,7 @@ func HandleSwapExists()
   endif
 endfunc
 
+let some_failed = 0
 for fname in glob('testdir/*.in', 1, 1)
   let root = substitute(fname, '\.in', '', '')
 
@@ -110,6 +111,7 @@ for fname in glob('testdir/*.in', 1, 1)
     endif
 
     if failed
+      let some_failed += 1
       exe 'write ' . root . '.fail'
       echoerr 'Test ' . fname . ' FAILED!'
     else
@@ -123,4 +125,7 @@ endfor
 " Matching "if 1" at the start.
 endif
 
+if some_failed
+  cq
+endif
 qall!
