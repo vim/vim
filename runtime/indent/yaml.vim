@@ -29,7 +29,7 @@ function s:FindPrevLessIndentedLine(lnum, ...)
     let curindent = a:0 ? a:1 : indent(a:lnum)
     while           prevlnum
                 \&&  indent(prevlnum) >=  curindent
-                \&& getline(prevlnum) =~# '^\s*#'
+                \&& getline(prevlnum) !~# '^\s*#'
         let prevlnum = prevnonblank(prevlnum-1)
     endwhile
     return prevlnum
@@ -132,25 +132,10 @@ function GetYAMLIndent(lnum)
         " Same for line containing mapping key
         let prevmapline = s:FindPrevLEIndentedLineMatchingRegex(a:lnum,
                     \                                           s:mapkeyregex)
-        " Look for any previous mapping with the same indent.
-        " (https://github.com/neovim/neovim/issues/11039).
-        let cur_indent = indent(a:lnum)
-        while 1
-          let prev_indent = indent(prevmapline)
-          if prev_indent <= cur_indent
-            break
-          endif
-          let abovemapline = s:FindPrevLEIndentedLineMatchingRegex(prevmapline,
-                    \                                              s:mapkeyregex)
-          if !abovemapline
-            break
-          endif
-          let prevmapline = abovemapline
-        endwhile
         if getline(prevmapline) =~# '^\s*- '
-            return prev_indent + 2
+            return indent(prevmapline) + 2
         else
-            return prev_indent
+            return indent(prevmapline)
         endif
     elseif prevline =~# '^\s*- '
         " - List with
