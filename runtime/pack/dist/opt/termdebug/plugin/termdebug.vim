@@ -233,7 +233,7 @@ func s:StartDebug_term(dict)
         let response = line1 . line2
         if response =~ 'Undefined command'
           echoerr 'Sorry, your gdb is too old, gdb 7.12 is required'
-	  call s:CloseBuffers()
+          call s:CloseBuffers()
           return
         endif
         if response =~ 'New UI allocated'
@@ -241,8 +241,8 @@ func s:StartDebug_term(dict)
           break
         endif
       elseif line1 =~ 'Reading symbols from' && line2 !~ 'new-ui mi '
-	" Reading symbols might take a while, try more times
-	let try_count -= 1
+        " Reading symbols might take a while, try more times
+        let try_count -= 1
       endif
     endfor
     if response =~ 'New UI allocated'
@@ -511,6 +511,11 @@ func s:DecodeMessage(quotedText)
         " drop \n
         let i += 1
         continue
+      elseif a:quotedText[i] == 't'
+        " append \t
+        let i += 1
+        let result .= "\t"
+        continue
       endif
     endif
     let result .= a:quotedText[i]
@@ -610,6 +615,16 @@ func s:CommOutput(chan, msg)
   endfor
 endfunc
 
+func s:GotoProgram()
+  if has('win32')
+    if executable('powershell')
+      call system(printf('powershell -Command "add-type -AssemblyName microsoft.VisualBasic;[Microsoft.VisualBasic.Interaction]::AppActivate(%d);"', s:pid))
+    endif
+  else
+    win_gotoid(s:ptywin)
+  endif
+endfunc
+
 " Install commands in the current window to control the debugger.
 func s:InstallCommands()
   let save_cpo = &cpo
@@ -633,7 +648,7 @@ func s:InstallCommands()
 
   command -range -nargs=* Evaluate call s:Evaluate(<range>, <q-args>)
   command Gdb call win_gotoid(s:gdbwin)
-  command Program call win_gotoid(s:ptywin)
+  command Program call s:GotoProgram()
   command Source call s:GotoSourcewinOrCreateIt()
   command Winbar call s:InstallWinbar()
 
@@ -772,7 +787,7 @@ func s:ClearBreakpoint()
         unlet s:breakpoint_locations[bploc][idx]
         break
       else
-	let idx += 1
+        let idx += 1
       endif
     endfor
     if empty(s:breakpoint_locations[bploc])
@@ -897,7 +912,7 @@ func s:HandleCursor(msg)
   if a:msg =~ '^\(\*stopped\|=thread-selected\)' && filereadable(fname)
     let lnum = substitute(a:msg, '.*line="\([^"]*\)".*', '\1', '')
     if lnum =~ '^[0-9]*$'
-    call s:GotoSourcewinOrCreateIt()
+      call s:GotoSourcewinOrCreateIt()
       if expand('%:p') != fnamemodify(fname, ':p')
         if &modified
           " TODO: find existing window
