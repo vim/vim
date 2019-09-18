@@ -3939,6 +3939,7 @@ static char *WindowAttrs[] = {
     "options",
     "number",
     "tabpage",
+    "id",
     "valid",
     NULL
 };
@@ -3998,6 +3999,8 @@ WindowAttr(WindowObject *self, char *name)
 	Py_INCREF(self->tabObject);
 	return (PyObject *)(self->tabObject);
     }
+    else if (strcmp(name, "id") == 0)
+	return PyLong_FromLong((long)(self->win->w_id));
     else if (strcmp(name, "__members__") == 0)
 	return ObjectDir(NULL, WindowAttrs);
     else

@@ -556,6 +556,7 @@ Window attributes are:
 	row, col (read-only)	On-screen window position in display cells.
 				First position is zero.
 	tabpage (read-only)	Window tab page.
+	id (read-only)		|window-ID|.
 	valid (read-write)	True or False. Window object becomes invalid 
 				when corresponding window is closed.
 
