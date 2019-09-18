@@ -9060,7 +9060,8 @@ state([{what}])						*state()*
 		added.  E.g, this checks if the screen has scrolled: >
 			if state('s') != ''
 <
-		These characters indicate the state:
+		These characters indicate the state, generally indicating that
+		something is busy:
 		    m  halfway a mapping, :normal command, feedkeys() or
 		       stuffed command
 		    o  operator pending or waiting for a command argument
@@ -9068,7 +9069,9 @@ state([{what}])						*state()*
 		    x  executing an autocommand
 		    w  blocked on waiting, e.g. ch_evalexpr() and
 		       ch_read(), ch_readraw() when reading json.
-		    c  callback invoked (repeats for recursiveness up to "ccc")
+		    S  not triggering SafeState or SafeStateAgain
+		    c  callback invoked, including timer (repeats for
+		       recursiveness up to "ccc")
 		    s  screen has scrolled for messages
 
 str2float({expr})					*str2float()*
