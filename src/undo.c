@@ -123,6 +123,7 @@ static void unserialize_pos(bufinfo_T *bi, pos_T *pos);
 static void serialize_visualinfo(bufinfo_T *bi, visualinfo_T *info);
 static void unserialize_visualinfo(bufinfo_T *bi, visualinfo_T *info);
 #endif
+static void u_saveline(linenr_T lnum);
 
 #define U_ALLOC_LINE(size) lalloc(size, FALSE)
 
@@ -774,7 +775,7 @@ u_compute_hash(char_u *hash)
  * When "reading" is FALSE use the first name where the directory exists.
  * Returns NULL when there is no place to write or no file to read.
  */
-    char_u *
+    static char_u *
 u_get_undo_file_name(char_u *buf_ffname, int reading)
 {
     char_u	*dirp;
@@ -2623,6 +2624,7 @@ u_undoredo(int undo)
     linenr_T	top, bot;
     linenr_T	lnum;
     linenr_T	newlnum = MAXLNUM;
+    pos_T	new_curpos = curwin->w_cursor;
     long	i;
     u_entry_T	*uep, *nuep;
     u_entry_T	*newlist = NULL;
@@ -2666,29 +2668,31 @@ u_undoredo(int undo)
 	{
 	    unblock_autocmds();
 	    iemsg(_("E438: u_undo: line numbers wrong"));
-	    changed();		/* don't want UNCHANGED now */
+	    changed();		// don't want UNCHANGED now
 	    return;
 	}
 
-	oldsize = bot - top - 1;    /* number of lines before undo */
-	newsize = uep->ue_size;	    /* number of lines after undo */
+	oldsize = bot - top - 1;    // number of lines before undo
+	newsize = uep->ue_size;	    // number of lines after undo
 
+	// Decide about the cursor position, depending on what text changed.
+	// Don't set it yet, it may be invalid if lines are going to be added.
 	if (top < newlnum)
 	{
-	    /* If the saved cursor is somewhere in this undo block, move it to
-	     * the remembered position.  Makes "gwap" put the cursor back
-	     * where it was. */
+	    // If the saved cursor is somewhere in this undo block, move it to
+	    // the remembered position.  Makes "gwap" put the cursor back
+	    // where it was.
 	    lnum = curhead->uh_cursor.lnum;
 	    if (lnum >= top && lnum <= top + newsize + 1)
 	    {
-		curwin->w_cursor = curhead->uh_cursor;
-		newlnum = curwin->w_cursor.lnum - 1;
+		new_curpos = curhead->uh_cursor;
+		newlnum = new_curpos.lnum - 1;
 	    }
 	    else
 	    {
-		/* Use the first line that actually changed.  Avoids that
-		 * undoing auto-formatting puts the cursor in the previous
-		 * line. */
+		// Use the first line that actually changed.  Avoids that
+		// undoing auto-formatting puts the cursor in the previous
+		// line.
 		for (i = 0; i < newsize && i < oldsize; ++i)
 		{
 		    char_u *p = ml_get(top + 1 + i);
@@ -2701,28 +2705,29 @@ u_undoredo(int undo)
 		if (i == newsize && newlnum == MAXLNUM && uep->ue_next == NULL)
 		{
 		    newlnum = top;
-		    curwin->w_cursor.lnum = newlnum + 1;
+		    new_curpos.lnum = newlnum + 1;
 		}
 		else if (i < newsize)
 		{
 		    newlnum = top + i;
-		    curwin->w_cursor.lnum = newlnum + 1;
+		    new_curpos.lnum = newlnum + 1;
 		}
 	    }
 	}
 
 	empty_buffer = FALSE;
 
-	/* delete the lines between top and bot and save them in newarray */
+	/*
+	 * Delete the lines between top and bot and save them in newarray.
+	 */
 	if (oldsize > 0)
 	{
 	    if ((newarray = U_ALLOC_LINE(sizeof(undoline_T) * oldsize)) == NULL)
 	    {
 		do_outofmem_msg((long_u)(sizeof(undoline_T) * oldsize));
-		/*
-		 * We have messed up the entry list, repair is impossible.
-		 * we have to free the rest of the list.
-		 */
+
+		// We have messed up the entry list, repair is impossible.
+		// we have to free the rest of the list.
 		while (uep != NULL)
 		{
 		    nuep = uep->ue_next;
@@ -2731,14 +2736,14 @@ u_undoredo(int undo)
 		}
 		break;
 	    }
-	    /* delete backwards, it goes faster in most cases */
+	    // delete backwards, it goes faster in most cases
 	    for (lnum = bot - 1, i = oldsize; --i >= 0; --lnum)
 	    {
-		/* what can we do when we run out of memory? */
+		// what can we do when we run out of memory?
 		if (u_save_line(&newarray[i], lnum) == FAIL)
 		    do_outofmem_msg((long_u)0);
-		/* remember we deleted the last line in the buffer, and a
-		 * dummy empty line will be inserted */
+		// remember we deleted the last line in the buffer, and a
+		// dummy empty line will be inserted
 		if (curbuf->b_ml.ml_line_count == 1)
 		    empty_buffer = TRUE;
 		ml_delete(lnum, FALSE);
@@ -2747,7 +2752,12 @@ u_undoredo(int undo)
 	else
 	    newarray = NULL;
 
-	/* insert the lines in u_array between top and bot */
+	// make sure the cursor is on a valid line after the deletions
+	check_cursor_lnum();
+
+	/*
+	 * Insert the lines in u_array between top and bot.
+	 */
 	if (newsize)
 	{
 	    for (lnum = top, i = 0; i < newsize; ++i, ++lnum)
@@ -2765,7 +2775,7 @@ u_undoredo(int undo)
 	    vim_free((char_u *)uep->ue_array);
 	}
 
-	/* adjust marks */
+	// adjust marks
 	if (oldsize != newsize)
 	{
 	    mark_adjust(top + 1, top + oldsize, (long)MAXLNUM,
@@ -2778,7 +2788,7 @@ u_undoredo(int undo)
 
 	changed_lines(top + 1, 0, bot, newsize - oldsize);
 
-	/* set '[ and '] mark */
+	// set '[ and '] mark
 	if (top + 1 < curbuf->b_op_start.lnum)
 	    curbuf->b_op_start.lnum = top + 1;
 	if (newsize == 0 && top + 1 > curbuf->b_op_end.lnum)
@@ -2799,6 +2809,10 @@ u_undoredo(int undo)
 	uep->ue_next = newlist;
 	newlist = uep;
     }
+
+    // Set the cursor to the desired position.  Check that the line is valid.
+    curwin->w_cursor = new_curpos;
+    check_cursor_lnum();
 
     curhead->uh_entry = newlist;
     curhead->uh_flags = new_flags;
@@ -3435,7 +3449,7 @@ u_clearall(buf_T *buf)
 /*
  * Save the line "lnum" for the "U" command.
  */
-    void
+    static void
 u_saveline(linenr_T lnum)
 {
     if (lnum == curbuf->b_u_line_lnum)	    /* line is already saved */
@@ -3571,11 +3585,12 @@ curbufIsChanged(void)
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
+
 /*
  * For undotree(): Append the list of undo blocks at "first_uhp" to "list".
  * Recursive.
  */
-    void
+    static void
 u_eval_tree(u_header_T *first_uhp, list_T *list)
 {
     u_header_T  *uhp = first_uhp;
@@ -3611,4 +3626,62 @@ u_eval_tree(u_header_T *first_uhp, list_T *list)
 	uhp = uhp->uh_prev.ptr;
     }
 }
+
+/*
+ * "undofile(name)" function
+ */
+    void
+f_undofile(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+#ifdef FEAT_PERSISTENT_UNDO
+    {
+	char_u *fname = tv_get_string(&argvars[0]);
+
+	if (*fname == NUL)
+	{
+	    /* If there is no file name there will be no undo file. */
+	    rettv->vval.v_string = NULL;
+	}
+	else
+	{
+	    char_u *ffname = FullName_save(fname, TRUE);
+
+	    if (ffname != NULL)
+		rettv->vval.v_string = u_get_undo_file_name(ffname, FALSE);
+	    vim_free(ffname);
+	}
+    }
+#else
+    rettv->vval.v_string = NULL;
+#endif
+}
+
+/*
+ * "undotree()" function
+ */
+    void
+f_undotree(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    if (rettv_dict_alloc(rettv) == OK)
+    {
+	dict_T *dict = rettv->vval.v_dict;
+	list_T *list;
+
+	dict_add_number(dict, "synced", (long)curbuf->b_u_synced);
+	dict_add_number(dict, "seq_last", curbuf->b_u_seq_last);
+	dict_add_number(dict, "save_last", (long)curbuf->b_u_save_nr_last);
+	dict_add_number(dict, "seq_cur", curbuf->b_u_seq_cur);
+	dict_add_number(dict, "time_cur", (long)curbuf->b_u_time_cur);
+	dict_add_number(dict, "save_cur", (long)curbuf->b_u_save_nr_cur);
+
+	list = list_alloc();
+	if (list != NULL)
+	{
+	    u_eval_tree(curbuf->b_u_oldhead, list);
+	    dict_add_list(dict, "entries", list);
+	}
+    }
+}
+
 #endif

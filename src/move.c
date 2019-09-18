@@ -136,10 +136,7 @@ redraw_for_cursorline(win_T *wp)
 #endif
 		)
 	    && (wp->w_valid & VALID_CROW) == 0
-#ifdef FEAT_INS_EXPAND
-	    && !pum_visible()
-#endif
-	    )
+	    && !pum_visible())
     {
 	if (wp->w_p_rnu)
 	    // win_line() will redraw the number column only.
@@ -816,11 +813,7 @@ validate_virtcol_win(win_T *wp)
 	getvvcol(wp, &wp->w_cursor, NULL, &(wp->w_virtcol), NULL);
 	wp->w_valid |= VALID_VIRTCOL;
 #ifdef FEAT_SYN_HL
-	if (wp->w_p_cuc
-# ifdef FEAT_INS_EXPAND
-		&& !pum_visible()
-# endif
-		)
+	if (wp->w_p_cuc && !pum_visible())
 	    redraw_win_later(wp, SOME_VALID);
 #endif
     }
@@ -1179,22 +1172,19 @@ curs_columns(
 #ifdef FEAT_SYN_HL
     /* Redraw when w_virtcol changes and 'cursorcolumn' is set */
     if (curwin->w_p_cuc && (curwin->w_valid & VALID_VIRTCOL) == 0
-# ifdef FEAT_INS_EXPAND
-	    && !pum_visible()
-# endif
-	)
+	    && !pum_visible())
 	redraw_later(SOME_VALID);
 #endif
 
     curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
 }
 
-#if defined(FEAT_EVAL) || defined(PROTO)
+#if (defined(FEAT_EVAL) || defined(FEAT_TEXT_PROP)) || defined(PROTO)
 /*
  * Compute the screen position of text character at "pos" in window "wp"
  * The resulting values are one-based, zero when character is not visible.
  */
-    static void
+    void
 textpos2screenpos(
 	win_T	*wp,
 	pos_T	*pos,
@@ -1223,12 +1213,12 @@ textpos2screenpos(
 	col += off;
 	width = wp->w_width - off + win_col_off2(wp);
 
-	/* long line wrapping, adjust row */
+	// long line wrapping, adjust row
 	if (wp->w_p_wrap
 		&& col >= (colnr_T)wp->w_width
 		&& width > 0)
 	{
-	    /* use same formula as what is used in curs_columns() */
+	    // use same formula as what is used in curs_columns()
 	    rowoff = ((col - wp->w_width) / width + 1);
 	    col -= rowoff * width;
 	}
@@ -1246,7 +1236,9 @@ textpos2screenpos(
     *ccolp = ccol + coloff;
     *ecolp = ecol + coloff;
 }
+#endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * "screenpos({winid}, {lnum}, {col})" function
  */
@@ -1515,7 +1507,6 @@ max_topfill(void)
 }
 #endif
 
-#if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Scroll the screen one line down, but don't do it if it would move the
  * cursor off the screen.
@@ -1634,7 +1625,6 @@ scrollup_clamp(void)
 	curwin->w_valid &= ~(VALID_WROW|VALID_CROW|VALID_BOTLINE);
     }
 }
-#endif /* FEAT_INS_EXPAND */
 
 /*
  * Add one line above "lp->lnum".  This can be a filler line, a closed fold or

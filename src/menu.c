@@ -29,6 +29,7 @@ static void free_menu(vimmenu_T **menup);
 static void free_menu_string(vimmenu_T *, int);
 static int show_menus(char_u *, int);
 static void show_menus_recursive(vimmenu_T *, int, int);
+static char_u *menu_name_skip(char_u *name);
 static int menu_name_equal(char_u *name, vimmenu_T *menu);
 static int menu_namecmp(char_u *name, char_u *mname);
 static int get_menu_cmd_modes(char_u *, int, int *, int *);
@@ -43,9 +44,7 @@ static int s_tearoffs = FALSE;
 #endif
 
 static int menu_is_hidden(char_u *name);
-#if defined(FEAT_CMDL_COMPL) || (defined(FEAT_GUI_MSWIN) && defined(FEAT_TEAROFF))
 static int menu_is_tearoff(char_u *name);
-#endif
 
 #if defined(FEAT_MULTI_LANG) || defined(FEAT_TOOLBAR)
 static char_u *menu_skip_part(char_u *p);
@@ -1234,8 +1233,6 @@ show_menus_recursive(vimmenu_T *menu, int modes, int depth)
     }
 }
 
-#ifdef FEAT_CMDL_COMPL
-
 /*
  * Used when expanding menu names.
  */
@@ -1555,14 +1552,13 @@ get_menu_names(expand_T *xp UNUSED, int idx)
 
     return str;
 }
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * Skip over this element of the menu path and return the start of the next
  * element.  Any \ and ^Vs are removed from the current element.
  * "name" may be modified.
  */
-    char_u *
+    static char_u *
 menu_name_skip(char_u *name)
 {
     char_u  *p;
@@ -1864,8 +1860,6 @@ menu_is_hidden(char_u *name)
     return (name[0] == ']') || (menu_is_popup(name) && name[5] != NUL);
 }
 
-#if defined(FEAT_CMDL_COMPL) \
-	|| (defined(FEAT_GUI_MSWIN) && defined(FEAT_TEAROFF))
 /*
  * Return TRUE if the menu is the tearoff menu.
  */
@@ -1878,7 +1872,6 @@ menu_is_tearoff(char_u *name UNUSED)
     return FALSE;
 #endif
 }
-#endif
 
 #if defined(FEAT_GUI) || defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
 

@@ -8,6 +8,7 @@ func Test_list_method()
   eval l->assert_notequal([3, 2, 1])
   eval l->assert_notequal([3, 2, 1], 'wrong')
   call assert_equal(l, l->copy())
+  call assert_equal(l, l->deepcopy())
   call assert_equal(1, l->count(2))
   call assert_false(l->empty())
   call assert_true([]->empty())
@@ -38,6 +39,7 @@ func Test_dict_method()
   let d = #{one: 1, two: 2, three: 3}
 
   call assert_equal(d, d->copy())
+  call assert_equal(d, d->deepcopy())
   call assert_equal(1, d->count(2))
   call assert_false(d->empty())
   call assert_true({}->empty())
@@ -115,6 +117,11 @@ func Test_method_funcref()
   delfunc Concat
 endfunc
 
+func Test_method_float()
+  eval 1.234->string()->assert_equal('1.234')
+  eval -1.234->string()->assert_equal('-1.234')
+endfunc
+
 func Test_method_syntax()
   eval [1, 2, 3]  ->sort( )
   eval [1, 2, 3]  
@@ -133,4 +140,8 @@ func Test_method_lambda()
 
   " todo: lambda accepts more arguments than it consumes
   " call assert_fails('eval "text"->{x -> x .. " extended"}("more")', 'E99:')
+endfunc
+
+func Test_method_not_supported()
+  call assert_fails('eval 123->changenr()', 'E276:')
 endfunc

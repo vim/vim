@@ -14,14 +14,8 @@ func Test_sign()
   " icon is ignored when not supported.  "(not supported)" is shown after
   " the icon name when listing signs.
   sign define Sign1 text=x
-  try
-    sign define Sign2 text=xy texthl=Title linehl=Error
-		\ icon=../../pixmaps/stock_vim_find_help.png
-  catch /E255:/
-    " Ignore error: E255: Couldn't read in sign data!
-    " This error can happen when running in the GUI.
-    " Some gui like Motif do not support the png icon format.
-  endtry
+
+  call Sign_command_ignore_error('sign define Sign2 text=xy texthl=Title linehl=Error icon=../../pixmaps/stock_vim_find_help.png')
 
   " Test listing signs.
   let a=execute('sign list')
@@ -103,12 +97,7 @@ func Test_sign()
   edit foo
   call setline(1, ['A', 'B', 'C', 'D'])
 
-  try
-    sign define Sign3 text=y texthl=DoesNotExist linehl=DoesNotExist
-		\ icon=doesnotexist.xpm
-  catch /E255:/
-    " ignore error: E255: it can happens for guis.
-  endtry
+  call Sign_command_ignore_error('sign define Sign3 text=y texthl=DoesNotExist linehl=DoesNotExist icon=doesnotexist.xpm')
 
   let fn = expand('%:p')
   exe 'sign place 43 line=2 name=Sign3 file=' . fn
@@ -377,6 +366,25 @@ func Test_sign_delete_buffer()
   sign undefine Sign
 endfunc
 
+" Ignore error: E255: Couldn't read in sign data!
+" This error can happen when running in the GUI.
+" Some gui like Motif do not support the png icon format.
+func Sign_command_ignore_error(cmd)
+  try
+    exe a:cmd
+  catch /E255:/
+  endtry
+endfunc
+
+" ignore error: E255: Couldn't read in sign data!
+" This error can happen when running in gui.
+func Sign_define_ignore_error(name, attr)
+  try
+    call sign_define(a:name, a:attr)
+  catch /E255:/
+  endtry
+endfunc
+
 " Test for Vim script functions for managing signs
 func Test_sign_funcs()
   " Remove all the signs
@@ -385,7 +393,7 @@ func Test_sign_funcs()
 
   " Tests for sign_define()
   let attr = {'text' : '=>', 'linehl' : 'Search', 'texthl' : 'Error'}
-  call assert_equal(0, sign_define("sign1", attr))
+  call assert_equal(0, "sign1"->sign_define(attr))
   call assert_equal([{'name' : 'sign1', 'texthl' : 'Error',
 	      \ 'linehl' : 'Search', 'text' : '=>'}], sign_getdefined())
 
@@ -393,21 +401,16 @@ func Test_sign_funcs()
   call sign_define("sign2")
   let attr = {'text' : '!!', 'linehl' : 'DiffAdd', 'texthl' : 'DiffChange',
 	      \ 'icon' : 'sign2.ico'}
-  try
-    call sign_define("sign2", attr)
-  catch /E255:/
-    " ignore error: E255: Couldn't read in sign data!
-    " This error can happen when running in gui.
-  endtry
+  call Sign_define_ignore_error("sign2", attr)
   call assert_equal([{'name' : 'sign2', 'texthl' : 'DiffChange',
 	      \ 'linehl' : 'DiffAdd', 'text' : '!!', 'icon' : 'sign2.ico'}],
-	      \ sign_getdefined("sign2"))
+	      \ "sign2"->sign_getdefined())
 
   " Test for a sign name with digits
   call assert_equal(0, sign_define(0002, {'linehl' : 'StatusLine'}))
   call assert_equal([{'name' : '2', 'linehl' : 'StatusLine'}],
 	      \ sign_getdefined(0002))
-  call sign_undefine(0002)
+  eval 0002->sign_undefine()
 
   " Tests for invalid arguments to sign_define()
   call assert_fails('call sign_define("sign4", {"text" : "===>"})', 'E239:')
@@ -431,7 +434,7 @@ func Test_sign_funcs()
   call assert_equal([{'bufnr' : bufnr(''), 'signs' :
 	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
 	      \ 'priority' : 10}]}],
-	      \ sign_getplaced('%', {'lnum' : 20}))
+	      \ '%'->sign_getplaced({'lnum' : 20}))
   call assert_equal([{'bufnr' : bufnr(''), 'signs' :
 	      \ [{'id' : 10, 'group' : '', 'lnum' : 20, 'name' : 'sign1',
 	      \ 'priority' : 10}]}],
@@ -457,11 +460,11 @@ func Test_sign_funcs()
   call assert_fails('call sign_place(5, "", "sign1", [], {"lnum" : 10})',
 	      \ 'E158:')
   call assert_fails('call sign_place(21, "", "sign1", "Xsign",
-	      \ {"lnum" : -1})', 'E885:')
+	      \ {"lnum" : -1})', 'E474:')
   call assert_fails('call sign_place(22, "", "sign1", "Xsign",
-	      \ {"lnum" : 0})', 'E885:')
+	      \ {"lnum" : 0})', 'E474:')
   call assert_fails('call sign_place(22, "", "sign1", "Xsign",
-	      \ {"lnum" : []})', 'E745:')
+	      \ {"lnum" : []})', 'E474:')
   call assert_equal(-1, sign_place(1, "*", "sign1", "Xsign", {"lnum" : 10}))
 
   " Tests for sign_getplaced()
@@ -487,10 +490,10 @@ func Test_sign_funcs()
 	      \ 'E745:')
 
   " Tests for sign_unplace()
-  call sign_place(20, '', 'sign2', 'Xsign', {"lnum" : 30})
+  eval 20->sign_place('', 'sign2', 'Xsign', {"lnum" : 30})
   call assert_equal(0, sign_unplace('',
 	      \ {'id' : 20, 'buffer' : 'Xsign'}))
-  call assert_equal(-1, sign_unplace('',
+  call assert_equal(-1, ''->sign_unplace(
 	      \ {'id' : 30, 'buffer' : 'Xsign'}))
   call sign_place(20, '', 'sign2', 'Xsign', {"lnum" : 30})
   call assert_fails("call sign_unplace('',
@@ -516,6 +519,16 @@ func Test_sign_funcs()
   call assert_equal([], sign_getdefined("sign1"))
   call assert_fails('call sign_undefine("none")', 'E155:')
   call assert_fails('call sign_undefine({})', 'E731:')
+
+  " Test for using '.' as the line number for sign_place()
+  call Sign_define_ignore_error("sign1", attr)
+  call cursor(22, 1)
+  call assert_equal(15, sign_place(15, '', 'sign1', 'Xsign',
+	      \ {'lnum' : '.'}))
+  call assert_equal([{'bufnr' : bufnr(''), 'signs' :
+	      \ [{'id' : 15, 'group' : '', 'lnum' : 22, 'name' : 'sign1',
+	      \ 'priority' : 10}]}],
+	      \ sign_getplaced('%', {'lnum' : 22}))
 
   call delete("Xsign")
   call sign_unplace('*')
@@ -1698,7 +1711,7 @@ func Test_sign_jump_func()
   let r = sign_jump(5, '', 'foo')
   call assert_equal(2, r)
   call assert_equal(2, line('.'))
-  let r = sign_jump(6, 'g1', 'foo')
+  let r = 6->sign_jump('g1', 'foo')
   call assert_equal(5, r)
   call assert_equal(5, line('.'))
   let r = sign_jump(5, '', 'bar')
@@ -1922,10 +1935,17 @@ func Test_sign_funcs_multi()
 	      \ 'group' : 'g1', 'priority' : 10}], s[0].signs)
 
   " Change an existing sign without specifying the group
-  call assert_equal([5], sign_placelist([
-	      \ {'id' : 5, 'name' : 'sign1', 'buffer' : 'Xsign'}]))
+  call assert_equal([5], [{'id' : 5, 'name' : 'sign1', 'buffer' : 'Xsign'}]->sign_placelist())
   let s = sign_getplaced('Xsign', {'id' : 5, 'group' : ''})
   call assert_equal([{'id' : 5, 'name' : 'sign1', 'lnum' : 11,
+	      \ 'group' : '', 'priority' : 10}], s[0].signs)
+
+  " Place a sign using '.' as the line number
+  call cursor(23, 1)
+  call assert_equal([7], sign_placelist([
+	      \ {'id' : 7, 'name' : 'sign1', 'buffer' : '%', 'lnum' : '.'}]))
+  let s = sign_getplaced('%', {'lnum' : '.'})
+  call assert_equal([{'id' : 7, 'name' : 'sign1', 'lnum' : 23,
 	      \ 'group' : '', 'priority' : 10}], s[0].signs)
 
   " Place sign without a sign name
@@ -1948,7 +1968,7 @@ func Test_sign_funcs_multi()
 	      \ {'id' : 1, 'group' : 'g1'}, {'id' : 1, 'group' : 'g2'}]))
 
   " Invalid arguments
-  call assert_equal([], sign_unplacelist([]))
+  call assert_equal([], []->sign_unplacelist())
   call assert_fails('call sign_unplacelist({})', "E714:")
   call assert_fails('call sign_unplacelist([[]])', "E715:")
   call assert_fails('call sign_unplacelist(["abc"])', "E715:")

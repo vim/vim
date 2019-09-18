@@ -65,6 +65,9 @@ static int	yank_copy_line(struct block_def *bd, long y_idx);
 static void	copy_yank_reg(yankreg_T *reg);
 static void	may_set_selection(void);
 #endif
+#if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
+static int	preprocs_left(void);
+#endif
 static void	dis_msg(char_u *p, int skip_esc);
 static void	block_prep(oparg_T *oap, struct block_def *, linenr_T, int);
 static int	do_addsub(int op_type, pos_T *pos, int length, linenr_T Prenum1);
@@ -312,14 +315,14 @@ shift_line(
 {
     int		count;
     int		i, j;
-    int		p_sw = (int)get_sw_value_indent(curbuf);
+    int		sw_val = (int)get_sw_value_indent(curbuf);
 
     count = get_indent();	/* get current indent */
 
     if (round)			/* round off indent */
     {
-	i = count / p_sw;	/* number of p_sw rounded down */
-	j = count % p_sw;	/* extra spaces */
+	i = count / sw_val;	/* number of p_sw rounded down */
+	j = count % sw_val;	/* extra spaces */
 	if (j && left)		/* first remove extra spaces */
 	    --amount;
 	if (left)
@@ -330,18 +333,18 @@ shift_line(
 	}
 	else
 	    i += amount;
-	count = i * p_sw;
+	count = i * sw_val;
     }
     else		/* original vi indent */
     {
 	if (left)
 	{
-	    count -= p_sw * amount;
+	    count -= sw_val * amount;
 	    if (count < 0)
 		count = 0;
 	}
 	else
-	    count += p_sw * amount;
+	    count += sw_val * amount;
     }
 
     /* Set new indent */
@@ -363,11 +366,8 @@ shift_block(oparg_T *oap, int amount)
     int			total;
     char_u		*newp, *oldp;
     int			oldcol = curwin->w_cursor.col;
-    int			p_sw = (int)get_sw_value_indent(curbuf);
-#ifdef FEAT_VARTABS
-    int			*p_vts = curbuf->b_p_vts_array;
-#endif
-    int			p_ts = (int)curbuf->b_p_ts;
+    int			sw_val = (int)get_sw_value_indent(curbuf);
+    int			ts_val = (int)curbuf->b_p_ts;
     struct block_def	bd;
     int			incr;
     colnr_T		ws_vcol;
@@ -385,8 +385,8 @@ shift_block(oparg_T *oap, int amount)
 	return;
 
     /* total is number of screen columns to be inserted/removed */
-    total = (int)((unsigned)amount * (unsigned)p_sw);
-    if ((total / p_sw) != amount)
+    total = (int)((unsigned)amount * (unsigned)sw_val);
+    if ((total / sw_val) != amount)
 	return; /* multiplication overflow */
 
     oldp = ml_get_curline();
@@ -428,14 +428,15 @@ shift_block(oparg_T *oap, int amount)
 	 * non-ws char in the block. */
 #ifdef FEAT_VARTABS
 	if (!curbuf->b_p_et)
-	    tabstop_fromto(ws_vcol, ws_vcol + total, p_ts, p_vts, &i, &j);
+	    tabstop_fromto(ws_vcol, ws_vcol + total,
+					ts_val, curbuf->b_p_vts_array, &i, &j);
 	else
 	    j = total;
 #else
 	if (!curbuf->b_p_et)
-	    i = ((ws_vcol % p_ts) + total) / p_ts; /* number of tabs */
+	    i = ((ws_vcol % ts_val) + total) / ts_val; /* number of tabs */
 	if (i)
-	    j = ((ws_vcol % p_ts) + total) % p_ts; /* number of spp */
+	    j = ((ws_vcol % ts_val) + total) % ts_val; /* number of spp */
 	else
 	    j = total;
 #endif
@@ -564,7 +565,7 @@ block_insert(
     int			b_insert,
     struct block_def	*bdp)
 {
-    int		p_ts;
+    int		ts_val;
     int		count = 0;	/* extra spaces to replace a cut TAB */
     int		spaces = 0;	/* non-zero if cutting a TAB */
     colnr_T	offset;		/* pointer along new line */
@@ -586,20 +587,20 @@ block_insert(
 
 	if (b_insert)
 	{
-	    p_ts = bdp->start_char_vcols;
+	    ts_val = bdp->start_char_vcols;
 	    spaces = bdp->startspaces;
 	    if (spaces != 0)
-		count = p_ts - 1; /* we're cutting a TAB */
+		count = ts_val - 1; /* we're cutting a TAB */
 	    offset = bdp->textcol;
 	}
 	else /* append */
 	{
-	    p_ts = bdp->end_char_vcols;
+	    ts_val = bdp->end_char_vcols;
 	    if (!bdp->is_short) /* spaces = padding after block */
 	    {
-		spaces = (bdp->endspaces ? p_ts - bdp->endspaces : 0);
+		spaces = (bdp->endspaces ? ts_val - bdp->endspaces : 0);
 		if (spaces != 0)
-		    count = p_ts - 1; /* we're cutting a TAB */
+		    count = ts_val - 1; /* we're cutting a TAB */
 		offset = bdp->textcol + bdp->textlen - (spaces != 0);
 	    }
 	    else /* spaces = padding to block edge */
@@ -648,7 +649,7 @@ block_insert(
 	if (spaces && !bdp->is_short)
 	{
 	    /* insert post-padding */
-	    vim_memset(newp + offset + spaces, ' ', (size_t)(p_ts - spaces));
+	    vim_memset(newp + offset + spaces, ' ', (size_t)(ts_val - spaces));
 	    /* We're splitting a TAB, don't copy it. */
 	    oldp++;
 	    /* We allowed for that TAB, remember this now */
@@ -830,7 +831,7 @@ get_expr_line(void)
 /*
  * Get the '=' register expression itself, without evaluating it.
  */
-    char_u *
+    static char_u *
 get_expr_line_src(void)
 {
     if (expr_line == NULL)
@@ -4088,7 +4089,7 @@ adjust_cursor_eol(void)
 /*
  * Return TRUE if lines starting with '#' should be left aligned.
  */
-    int
+    static int
 preprocs_left(void)
 {
     return
@@ -4553,6 +4554,11 @@ do_join(
 
     /* allocate the space for the new line */
     newp = alloc(sumsize + 1);
+    if (newp == NULL)
+    {
+	ret = FAIL;
+	goto theend;
+    }
     cend = newp + sumsize;
     *cend = 0;
 
@@ -5583,10 +5589,10 @@ do_addsub(
     pos_T	startpos;
     pos_T	endpos;
 
-    dohex = (vim_strchr(curbuf->b_p_nf, 'x') != NULL);	/* "heX" */
-    dooct = (vim_strchr(curbuf->b_p_nf, 'o') != NULL);	/* "Octal" */
-    dobin = (vim_strchr(curbuf->b_p_nf, 'b') != NULL);	/* "Bin" */
-    doalp = (vim_strchr(curbuf->b_p_nf, 'p') != NULL);	/* "alPha" */
+    dohex = (vim_strchr(curbuf->b_p_nf, 'x') != NULL);	// "heX"
+    dooct = (vim_strchr(curbuf->b_p_nf, 'o') != NULL);	// "Octal"
+    dobin = (vim_strchr(curbuf->b_p_nf, 'b') != NULL);	// "Bin"
+    doalp = (vim_strchr(curbuf->b_p_nf, 'p') != NULL);	// "alPha"
 
     curwin->w_cursor = *pos;
     ptr = ml_get(pos->lnum);
@@ -7066,12 +7072,12 @@ cursor_pos_info(dict_T *dict)
 	}
 
 	bom_count = bomb_size();
-	if (bom_count > 0)
+	if (dict == NULL && bom_count > 0)
 	    vim_snprintf((char *)IObuff + STRLEN(IObuff), IOSIZE,
 				 _("(+%lld for BOM)"), (long_long_T)bom_count);
 	if (dict == NULL)
 	{
-	    /* Don't shorten this message, the user asked for it. */
+	    // Don't shorten this message, the user asked for it.
 	    p = p_shm;
 	    p_shm = (char_u *)"";
 	    msg((char *)IObuff);

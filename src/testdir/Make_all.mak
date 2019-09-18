@@ -92,6 +92,7 @@ NEW_TESTS = \
 	test_crypt \
 	test_cscope \
 	test_cursor_func \
+	test_cursorline \
 	test_curswant \
 	test_debugger \
 	test_delete \
@@ -199,6 +200,7 @@ NEW_TESTS = \
 	test_plus_arg_edit \
 	test_popup \
 	test_popupwin \
+	test_popupwin_textprop \
 	test_preview \
 	test_profile \
 	test_prompt_buffer \
@@ -388,6 +390,7 @@ NEW_TESTS_RES = \
 	test_perl.res \
 	test_plus_arg_edit.res \
 	test_popupwin.res \
+	test_popupwin_textprop.res \
 	test_preview.res \
 	test_profile.res \
 	test_prompt_buffer.res \

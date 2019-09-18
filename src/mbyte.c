@@ -144,6 +144,7 @@ static int utf_ptr2cells_len(char_u *p, int size);
 static int dbcs_char2cells(int c);
 static int dbcs_ptr2cells_len(char_u *p, int size);
 static int dbcs_ptr2char(char_u *p);
+static int dbcs_head_off(char_u *base, char_u *p);
 
 /*
  * Lookup table to quickly get the length in bytes of a UTF-8 character from
@@ -3778,7 +3779,7 @@ latin_head_off(char_u *base UNUSED, char_u *p UNUSED)
     return 0;
 }
 
-    int
+    static int
 dbcs_head_off(char_u *base, char_u *p)
 {
     char_u	*q;
@@ -4468,8 +4469,10 @@ enc_locale(void)
 
     if (acp == 1200)
 	STRCPY(buf, "ucs-2le");
-    else if (acp == 1252)	    /* cp1252 is used as latin1 */
+    else if (acp == 1252)	    // cp1252 is used as latin1
 	STRCPY(buf, "latin1");
+    else if (acp == 65001)
+	STRCPY(buf, "utf-8");
     else
 	sprintf(buf, "cp%ld", acp);
 
@@ -6497,6 +6500,18 @@ im_set_position(int row UNUSED, int col UNUSED)
 
 #endif /* FEAT_XIM */
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * "getimstatus()" function
+ */
+    void
+f_getimstatus(typval_T *argvars UNUSED, typval_T *rettv)
+{
+# if defined(HAVE_INPUT_METHOD)
+    rettv->vval.v_number = im_get_status();
+# endif
+}
+#endif
 
 /*
  * Setup "vcp" for conversion from "from" to "to".

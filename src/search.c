@@ -399,10 +399,7 @@ ignorecase_opt(char_u *pat, int ic_in, int scs)
     int		ic = ic_in;
 
     if (ic && !no_smartcase && scs
-#ifdef FEAT_INS_EXPAND
-			     && !(ctrl_x_mode_not_default() && curbuf->b_p_inf)
-#endif
-								    )
+			    && !(ctrl_x_mode_not_default() && curbuf->b_p_inf))
 	ic = !pat_has_uppercase(pat);
     no_smartcase = FALSE;
 
@@ -1354,8 +1351,9 @@ do_search(
 	    pat = p;			    /* put pat after search command */
 	}
 
-	if ((options & SEARCH_ECHO) && messaging()
-					    && !cmd_silent && msg_silent == 0)
+	if ((options & SEARCH_ECHO) && messaging() &&
+		!msg_silent &&
+		(!cmd_silent || !shortmess(SHM_SEARCHCOUNT)))
 	{
 	    char_u	*trunc;
 	    char_u	off_buf[40];
@@ -1365,7 +1363,8 @@ do_search(
 	    msg_start();
 
 	    // Get the offset, so we know how long it is.
-	    if (spats[0].off.line || spats[0].off.end || spats[0].off.off)
+	    if (!cmd_silent &&
+		    (spats[0].off.line || spats[0].off.end || spats[0].off.off))
 	    {
 		p = off_buf;
 		*p++ = dirc;
@@ -1386,13 +1385,13 @@ do_search(
 	    else
 		p = searchstr;
 
-	    if (!shortmess(SHM_SEARCHCOUNT))
+	    if (!shortmess(SHM_SEARCHCOUNT) || cmd_silent)
 	    {
 		// Reserve enough space for the search pattern + offset +
 		// search stat.  Use all the space available, so that the
 		// search state is right aligned.  If there is not enough space
 		// msg_strtrunc() will shorten in the middle.
-		if (msg_scrolled != 0)
+		if (msg_scrolled != 0 && !cmd_silent)
 		    // Use all the columns.
 		    len = (int)(Rows - msg_row) * Columns - 1;
 		else
@@ -1409,62 +1408,67 @@ do_search(
 	    if (msgbuf != NULL)
 	    {
 		vim_memset(msgbuf, ' ', len);
-		msgbuf[0] = dirc;
 		msgbuf[len - 1] = NUL;
-
-		if (enc_utf8 && utf_iscomposing(utf_ptr2char(p)))
+		// do not fill the msgbuf buffer, if cmd_silent is set, leave it
+		// empty for the search_stat feature.
+		if (!cmd_silent)
 		{
-		    // Use a space to draw the composing char on.
-		    msgbuf[1] = ' ';
-		    mch_memmove(msgbuf + 2, p, STRLEN(p));
-		}
-		else
-		    mch_memmove(msgbuf + 1, p, STRLEN(p));
-		if (off_len > 0)
-		    mch_memmove(msgbuf + STRLEN(p) + 1, off_buf, off_len);
+		    msgbuf[0] = dirc;
 
-		trunc = msg_strtrunc(msgbuf, TRUE);
-		if (trunc != NULL)
-		{
-		    vim_free(msgbuf);
-		    msgbuf = trunc;
-		}
+		    if (enc_utf8 && utf_iscomposing(utf_ptr2char(p)))
+		    {
+			// Use a space to draw the composing char on.
+			msgbuf[1] = ' ';
+			mch_memmove(msgbuf + 2, p, STRLEN(p));
+		    }
+		    else
+			mch_memmove(msgbuf + 1, p, STRLEN(p));
+		    if (off_len > 0)
+			mch_memmove(msgbuf + STRLEN(p) + 1, off_buf, off_len);
 
-#ifdef FEAT_RIGHTLEFT
-		// The search pattern could be shown on the right in rightleft
-		// mode, but the 'ruler' and 'showcmd' area use it too, thus
-		// it would be blanked out again very soon.  Show it on the
-		// left, but do reverse the text.
-		if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
-		{
-		    char_u *r;
-		    size_t pat_len;
-
-		    r = reverse_text(msgbuf);
-		    if (r != NULL)
+		    trunc = msg_strtrunc(msgbuf, TRUE);
+		    if (trunc != NULL)
 		    {
 			vim_free(msgbuf);
-			msgbuf = r;
-			// move reversed text to beginning of buffer
-			while (*r != NUL && *r == ' ')
-			    r++;
-			pat_len = msgbuf + STRLEN(msgbuf) - r;
-			mch_memmove(msgbuf, r, pat_len);
-			// overwrite old text
-			if ((size_t)(r - msgbuf) >= pat_len)
-			    vim_memset(r, ' ', pat_len);
-			else
-			    vim_memset(msgbuf + pat_len, ' ', r - msgbuf);
+			msgbuf = trunc;
 		    }
-		}
-#endif
-		msg_outtrans(msgbuf);
-		msg_clr_eos();
-		msg_check();
 
-		gotocmdline(FALSE);
-		out_flush();
-		msg_nowait = TRUE;	    // don't wait for this message
+    #ifdef FEAT_RIGHTLEFT
+		    // The search pattern could be shown on the right in rightleft
+		    // mode, but the 'ruler' and 'showcmd' area use it too, thus
+		    // it would be blanked out again very soon.  Show it on the
+		    // left, but do reverse the text.
+		    if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
+		    {
+			char_u *r;
+			size_t pat_len;
+
+			r = reverse_text(msgbuf);
+			if (r != NULL)
+			{
+			    vim_free(msgbuf);
+			    msgbuf = r;
+			    // move reversed text to beginning of buffer
+			    while (*r != NUL && *r == ' ')
+				r++;
+			    pat_len = msgbuf + STRLEN(msgbuf) - r;
+			    mch_memmove(msgbuf, r, pat_len);
+			    // overwrite old text
+			    if ((size_t)(r - msgbuf) >= pat_len)
+				vim_memset(r, ' ', pat_len);
+			    else
+				vim_memset(msgbuf + pat_len, ' ', r - msgbuf);
+			}
+		    }
+    #endif
+		    msg_outtrans(msgbuf);
+		    msg_clr_eos();
+		    msg_check();
+
+		    gotocmdline(FALSE);
+		    out_flush();
+		    msg_nowait = TRUE;	    // don't wait for this message
+		}
 	    }
 	}
 
@@ -1572,7 +1576,7 @@ do_search(
 	// Show [1/15] if 'S' is not in 'shortmess'.
 	if ((options & SEARCH_ECHO)
 		&& messaging()
-		&& !(cmd_silent + msg_silent)
+		&& !msg_silent
 		&& c != FAIL
 		&& !shortmess(SHM_SEARCHCOUNT)
 		&& msgbuf != NULL)
@@ -1614,7 +1618,6 @@ end_do_search:
     return retval;
 }
 
-#if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * search_for_exact_line(buf, pos, dir, pat)
  *
@@ -1693,7 +1696,6 @@ search_for_exact_line(
     }
     return FAIL;
 }
-#endif /* FEAT_INS_EXPAND */
 
 /*
  * Character Searches
@@ -5009,7 +5011,9 @@ search_stat(
 	len = STRLEN(t);
 	if (show_top_bot_msg && len + 2 < SEARCH_STAT_BUF_LEN)
 	{
-	    STRCPY(t + len, " W");
+	    mch_memmove(t + 2, t, len);
+	    t[0] = 'W';
+	    t[1] = ' ';
 	    len += 2;
 	}
 
@@ -5092,12 +5096,9 @@ find_pattern_in_path(
 	return;
 
     if (type != CHECK_PATH && type != FIND_DEFINE
-#ifdef FEAT_INS_EXPAND
 	/* when CONT_SOL is set compare "ptr" with the beginning of the line
 	 * is faster than quote_meta/regcomp/regexec "ptr" -- Acevedo */
-	    && !(compl_cont_status & CONT_SOL)
-#endif
-       )
+	    && !(compl_cont_status & CONT_SOL))
     {
 	pat = alloc(len + 5);
 	if (pat == NULL)
@@ -5323,7 +5324,6 @@ find_pattern_in_path(
 		    files[depth].name = curr_fname = new_fname;
 		    files[depth].lnum = 0;
 		    files[depth].matched = FALSE;
-#ifdef FEAT_INS_EXPAND
 		    if (action == ACTION_EXPAND)
 		    {
 			msg_hist_off = TRUE;	/* reset in msg_trunc_attr() */
@@ -5332,9 +5332,7 @@ find_pattern_in_path(
 				(char *)new_fname);
 			msg_trunc_attr((char *)IObuff, TRUE, HL_ATTR(HLF_R));
 		    }
-		    else
-#endif
-			 if (p_verbose >= 5)
+		    else if (p_verbose >= 5)
 		    {
 			verbose_enter();
 			smsg(_("Searching included file %s"),
@@ -5373,11 +5371,7 @@ search_line:
 	     */
 	    if (def_regmatch.regprog == NULL || define_matched)
 	    {
-		if (define_matched
-#ifdef FEAT_INS_EXPAND
-			|| (compl_cont_status & CONT_SOL)
-#endif
-		    )
+		if (define_matched || (compl_cont_status & CONT_SOL))
 		{
 		    /* compare the first "len" chars from "ptr" */
 		    startp = skipwhite(p);
@@ -5442,7 +5436,6 @@ search_line:
 	}
 	if (matched)
 	{
-#ifdef FEAT_INS_EXPAND
 	    if (action == ACTION_EXPAND)
 	    {
 		int	cont_s_ipos = FALSE;
@@ -5524,9 +5517,7 @@ search_line:
 		else if (add_r == FAIL)
 		    break;
 	    }
-	    else
-#endif
-		 if (action == ACTION_SHOW_ALL)
+	    else if (action == ACTION_SHOW_ALL)
 	    {
 		found = TRUE;
 		if (!did_show)
@@ -5578,7 +5569,7 @@ search_line:
 		    if (g_do_tagpreview != 0)
 		    {
 			curwin_save = curwin;
-			prepare_tagpreview(TRUE);
+			prepare_tagpreview(TRUE, TRUE, FALSE);
 		    }
 #endif
 		    if (action == ACTION_SPLIT)
@@ -5638,29 +5629,21 @@ search_line:
 #endif
 		break;
 	    }
-#ifdef FEAT_INS_EXPAND
 exit_matched:
-#endif
 	    matched = FALSE;
 	    /* look for other matches in the rest of the line if we
 	     * are not at the end of it already */
 	    if (def_regmatch.regprog == NULL
-#ifdef FEAT_INS_EXPAND
 		    && action == ACTION_EXPAND
 		    && !(compl_cont_status & CONT_SOL)
-#endif
 		    && *startp != NUL
 		    && *(p = startp + MB_PTR2LEN(startp)) != NUL)
 		goto search_line;
 	}
 	line_breakcheck();
-#ifdef FEAT_INS_EXPAND
 	if (action == ACTION_EXPAND)
 	    ins_compl_check_keys(30, FALSE);
 	if (got_int || ins_compl_interrupted())
-#else
-	if (got_int)
-#endif
 	    break;
 
 	/*
@@ -5721,17 +5704,9 @@ exit_matched:
 		msg(_("No included files"));
 	}
     }
-    else if (!found
-#ifdef FEAT_INS_EXPAND
-		    && action != ACTION_EXPAND
-#endif
-						)
+    else if (!found && action != ACTION_EXPAND)
     {
-#ifdef FEAT_INS_EXPAND
 	if (got_int || ins_compl_interrupted())
-#else
-	if (got_int)
-#endif
 	    emsg(_(e_interr));
 	else if (type == FIND_DEFINE)
 	    emsg(_("E388: Couldn't find definition"));

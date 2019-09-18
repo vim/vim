@@ -8,12 +8,14 @@
  */
 
 /*
- * list.c: List support
+ * list.c: List support and container (List, Dict, Blob) functions.
  */
 
 #include "vim.h"
 
 #if defined(FEAT_EVAL) || defined(PROTO)
+
+static char *e_listblobarg = N_("E899: Argument of %s must be a List or Blob");
 
 /* List heads for garbage collection. */
 static list_T		*first_list = NULL;	/* list of all lists */
@@ -53,7 +55,7 @@ list_rem_watch(list_T *l, listwatch_T *lwrem)
  * Just before removing an item from a list: advance watchers to the next
  * item.
  */
-    void
+    static void
 list_fix_watch(list_T *l, listitem_T *item)
 {
     listwatch_T	*lw;
@@ -1547,4 +1549,590 @@ f_uniq(typval_T *argvars, typval_T *rettv)
     do_sort_uniq(argvars, rettv, FALSE);
 }
 
-#endif /* defined(FEAT_EVAL) */
+/*
+ * Handle one item for map() and filter().
+ */
+    static int
+filter_map_one(typval_T *tv, typval_T *expr, int map, int *remp)
+{
+    typval_T	rettv;
+    typval_T	argv[3];
+    int		retval = FAIL;
+
+    copy_tv(tv, get_vim_var_tv(VV_VAL));
+    argv[0] = *get_vim_var_tv(VV_KEY);
+    argv[1] = *get_vim_var_tv(VV_VAL);
+    if (eval_expr_typval(expr, argv, 2, &rettv) == FAIL)
+	goto theend;
+    if (map)
+    {
+	// map(): replace the list item value
+	clear_tv(tv);
+	rettv.v_lock = 0;
+	*tv = rettv;
+    }
+    else
+    {
+	int	    error = FALSE;
+
+	// filter(): when expr is zero remove the item
+	*remp = (tv_get_number_chk(&rettv, &error) == 0);
+	clear_tv(&rettv);
+	// On type error, nothing has been removed; return FAIL to stop the
+	// loop.  The error message was given by tv_get_number_chk().
+	if (error)
+	    goto theend;
+    }
+    retval = OK;
+theend:
+    clear_tv(get_vim_var_tv(VV_VAL));
+    return retval;
+}
+
+/*
+ * Implementation of map() and filter().
+ */
+    static void
+filter_map(typval_T *argvars, typval_T *rettv, int map)
+{
+    typval_T	*expr;
+    listitem_T	*li, *nli;
+    list_T	*l = NULL;
+    dictitem_T	*di;
+    hashtab_T	*ht;
+    hashitem_T	*hi;
+    dict_T	*d = NULL;
+    blob_T	*b = NULL;
+    int		rem;
+    int		todo;
+    char_u	*ermsg = (char_u *)(map ? "map()" : "filter()");
+    char_u	*arg_errmsg = (char_u *)(map ? N_("map() argument")
+				   : N_("filter() argument"));
+    int		save_did_emsg;
+    int		idx = 0;
+
+    if (argvars[0].v_type == VAR_BLOB)
+    {
+	if ((b = argvars[0].vval.v_blob) == NULL)
+	    return;
+    }
+    else if (argvars[0].v_type == VAR_LIST)
+    {
+	if ((l = argvars[0].vval.v_list) == NULL
+	      || (!map && var_check_lock(l->lv_lock, arg_errmsg, TRUE)))
+	    return;
+    }
+    else if (argvars[0].v_type == VAR_DICT)
+    {
+	if ((d = argvars[0].vval.v_dict) == NULL
+	      || (!map && var_check_lock(d->dv_lock, arg_errmsg, TRUE)))
+	    return;
+    }
+    else
+    {
+	semsg(_(e_listdictarg), ermsg);
+	return;
+    }
+
+    expr = &argvars[1];
+    // On type errors, the preceding call has already displayed an error
+    // message.  Avoid a misleading error message for an empty string that
+    // was not passed as argument.
+    if (expr->v_type != VAR_UNKNOWN)
+    {
+	typval_T	save_val;
+	typval_T	save_key;
+
+	prepare_vimvar(VV_VAL, &save_val);
+	prepare_vimvar(VV_KEY, &save_key);
+
+	// We reset "did_emsg" to be able to detect whether an error
+	// occurred during evaluation of the expression.
+	save_did_emsg = did_emsg;
+	did_emsg = FALSE;
+
+	if (argvars[0].v_type == VAR_DICT)
+	{
+	    ht = &d->dv_hashtab;
+	    hash_lock(ht);
+	    todo = (int)ht->ht_used;
+	    for (hi = ht->ht_array; todo > 0; ++hi)
+	    {
+		if (!HASHITEM_EMPTY(hi))
+		{
+		    int r;
+
+		    --todo;
+		    di = HI2DI(hi);
+		    if (map && (var_check_lock(di->di_tv.v_lock,
+							   arg_errmsg, TRUE)
+				|| var_check_ro(di->di_flags,
+							   arg_errmsg, TRUE)))
+			break;
+		    set_vim_var_string(VV_KEY, di->di_key, -1);
+		    r = filter_map_one(&di->di_tv, expr, map, &rem);
+		    clear_tv(get_vim_var_tv(VV_KEY));
+		    if (r == FAIL || did_emsg)
+			break;
+		    if (!map && rem)
+		    {
+			if (var_check_fixed(di->di_flags, arg_errmsg, TRUE)
+			    || var_check_ro(di->di_flags, arg_errmsg, TRUE))
+			    break;
+			dictitem_remove(d, di);
+		    }
+		}
+	    }
+	    hash_unlock(ht);
+	}
+	else if (argvars[0].v_type == VAR_BLOB)
+	{
+	    int		i;
+	    typval_T	tv;
+
+	    // set_vim_var_nr() doesn't set the type
+	    set_vim_var_type(VV_KEY, VAR_NUMBER);
+
+	    for (i = 0; i < b->bv_ga.ga_len; i++)
+	    {
+		tv.v_type = VAR_NUMBER;
+		tv.vval.v_number = blob_get(b, i);
+		set_vim_var_nr(VV_KEY, idx);
+		if (filter_map_one(&tv, expr, map, &rem) == FAIL || did_emsg)
+		    break;
+		if (tv.v_type != VAR_NUMBER)
+		{
+		    emsg(_(e_invalblob));
+		    break;
+		}
+		tv.v_type = VAR_NUMBER;
+		blob_set(b, i, tv.vval.v_number);
+		if (!map && rem)
+		{
+		    char_u *p = (char_u *)argvars[0].vval.v_blob->bv_ga.ga_data;
+
+		    mch_memmove(p + idx, p + i + 1,
+					      (size_t)b->bv_ga.ga_len - i - 1);
+		    --b->bv_ga.ga_len;
+		    --i;
+		}
+	    }
+	}
+	else // argvars[0].v_type == VAR_LIST
+	{
+	    // set_vim_var_nr() doesn't set the type
+	    set_vim_var_type(VV_KEY, VAR_NUMBER);
+
+	    for (li = l->lv_first; li != NULL; li = nli)
+	    {
+		if (map && var_check_lock(li->li_tv.v_lock, arg_errmsg, TRUE))
+		    break;
+		nli = li->li_next;
+		set_vim_var_nr(VV_KEY, idx);
+		if (filter_map_one(&li->li_tv, expr, map, &rem) == FAIL
+								  || did_emsg)
+		    break;
+		if (!map && rem)
+		    listitem_remove(l, li);
+		++idx;
+	    }
+	}
+
+	restore_vimvar(VV_KEY, &save_key);
+	restore_vimvar(VV_VAL, &save_val);
+
+	did_emsg |= save_did_emsg;
+    }
+
+    copy_tv(&argvars[0], rettv);
+}
+
+/*
+ * "filter()" function
+ */
+    void
+f_filter(typval_T *argvars, typval_T *rettv)
+{
+    filter_map(argvars, rettv, FALSE);
+}
+
+/*
+ * "map()" function
+ */
+    void
+f_map(typval_T *argvars, typval_T *rettv)
+{
+    filter_map(argvars, rettv, TRUE);
+}
+
+/*
+ * "add(list, item)" function
+ */
+    void
+f_add(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l;
+    blob_T	*b;
+
+    rettv->vval.v_number = 1; /* Default: Failed */
+    if (argvars[0].v_type == VAR_LIST)
+    {
+	if ((l = argvars[0].vval.v_list) != NULL
+		&& !var_check_lock(l->lv_lock,
+					 (char_u *)N_("add() argument"), TRUE)
+		&& list_append_tv(l, &argvars[1]) == OK)
+	    copy_tv(&argvars[0], rettv);
+    }
+    else if (argvars[0].v_type == VAR_BLOB)
+    {
+	if ((b = argvars[0].vval.v_blob) != NULL
+		&& !var_check_lock(b->bv_lock,
+					 (char_u *)N_("add() argument"), TRUE))
+	{
+	    int		error = FALSE;
+	    varnumber_T n = tv_get_number_chk(&argvars[1], &error);
+
+	    if (!error)
+	    {
+		ga_append(&b->bv_ga, (int)n);
+		copy_tv(&argvars[0], rettv);
+	    }
+	}
+    }
+    else
+	emsg(_(e_listblobreq));
+}
+
+/*
+ * "count()" function
+ */
+    void
+f_count(typval_T *argvars, typval_T *rettv)
+{
+    long	n = 0;
+    int		ic = FALSE;
+    int		error = FALSE;
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+	ic = (int)tv_get_number_chk(&argvars[2], &error);
+
+    if (argvars[0].v_type == VAR_STRING)
+    {
+	char_u *expr = tv_get_string_chk(&argvars[1]);
+	char_u *p = argvars[0].vval.v_string;
+	char_u *next;
+
+	if (!error && expr != NULL && *expr != NUL && p != NULL)
+	{
+	    if (ic)
+	    {
+		size_t len = STRLEN(expr);
+
+		while (*p != NUL)
+		{
+		    if (MB_STRNICMP(p, expr, len) == 0)
+		    {
+			++n;
+			p += len;
+		    }
+		    else
+			MB_PTR_ADV(p);
+		}
+	    }
+	    else
+		while ((next = (char_u *)strstr((char *)p, (char *)expr))
+								       != NULL)
+		{
+		    ++n;
+		    p = next + STRLEN(expr);
+		}
+	}
+
+    }
+    else if (argvars[0].v_type == VAR_LIST)
+    {
+	listitem_T	*li;
+	list_T		*l;
+	long		idx;
+
+	if ((l = argvars[0].vval.v_list) != NULL)
+	{
+	    li = l->lv_first;
+	    if (argvars[2].v_type != VAR_UNKNOWN)
+	    {
+		if (argvars[3].v_type != VAR_UNKNOWN)
+		{
+		    idx = (long)tv_get_number_chk(&argvars[3], &error);
+		    if (!error)
+		    {
+			li = list_find(l, idx);
+			if (li == NULL)
+			    semsg(_(e_listidx), idx);
+		    }
+		}
+		if (error)
+		    li = NULL;
+	    }
+
+	    for ( ; li != NULL; li = li->li_next)
+		if (tv_equal(&li->li_tv, &argvars[1], ic, FALSE))
+		    ++n;
+	}
+    }
+    else if (argvars[0].v_type == VAR_DICT)
+    {
+	int		todo;
+	dict_T		*d;
+	hashitem_T	*hi;
+
+	if ((d = argvars[0].vval.v_dict) != NULL)
+	{
+	    if (argvars[2].v_type != VAR_UNKNOWN)
+	    {
+		if (argvars[3].v_type != VAR_UNKNOWN)
+		    emsg(_(e_invarg));
+	    }
+
+	    todo = error ? 0 : (int)d->dv_hashtab.ht_used;
+	    for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
+	    {
+		if (!HASHITEM_EMPTY(hi))
+		{
+		    --todo;
+		    if (tv_equal(&HI2DI(hi)->di_tv, &argvars[1], ic, FALSE))
+			++n;
+		}
+	    }
+	}
+    }
+    else
+	semsg(_(e_listdictarg), "count()");
+    rettv->vval.v_number = n;
+}
+
+/*
+ * "extend(list, list [, idx])" function
+ * "extend(dict, dict [, action])" function
+ */
+    void
+f_extend(typval_T *argvars, typval_T *rettv)
+{
+    char_u      *arg_errmsg = (char_u *)N_("extend() argument");
+
+    if (argvars[0].v_type == VAR_LIST && argvars[1].v_type == VAR_LIST)
+    {
+	list_T		*l1, *l2;
+	listitem_T	*item;
+	long		before;
+	int		error = FALSE;
+
+	l1 = argvars[0].vval.v_list;
+	l2 = argvars[1].vval.v_list;
+	if (l1 != NULL && !var_check_lock(l1->lv_lock, arg_errmsg, TRUE)
+		&& l2 != NULL)
+	{
+	    if (argvars[2].v_type != VAR_UNKNOWN)
+	    {
+		before = (long)tv_get_number_chk(&argvars[2], &error);
+		if (error)
+		    return;		/* type error; errmsg already given */
+
+		if (before == l1->lv_len)
+		    item = NULL;
+		else
+		{
+		    item = list_find(l1, before);
+		    if (item == NULL)
+		    {
+			semsg(_(e_listidx), before);
+			return;
+		    }
+		}
+	    }
+	    else
+		item = NULL;
+	    list_extend(l1, l2, item);
+
+	    copy_tv(&argvars[0], rettv);
+	}
+    }
+    else if (argvars[0].v_type == VAR_DICT && argvars[1].v_type == VAR_DICT)
+    {
+	dict_T	*d1, *d2;
+	char_u	*action;
+	int	i;
+
+	d1 = argvars[0].vval.v_dict;
+	d2 = argvars[1].vval.v_dict;
+	if (d1 != NULL && !var_check_lock(d1->dv_lock, arg_errmsg, TRUE)
+		&& d2 != NULL)
+	{
+	    /* Check the third argument. */
+	    if (argvars[2].v_type != VAR_UNKNOWN)
+	    {
+		static char *(av[]) = {"keep", "force", "error"};
+
+		action = tv_get_string_chk(&argvars[2]);
+		if (action == NULL)
+		    return;		/* type error; errmsg already given */
+		for (i = 0; i < 3; ++i)
+		    if (STRCMP(action, av[i]) == 0)
+			break;
+		if (i == 3)
+		{
+		    semsg(_(e_invarg2), action);
+		    return;
+		}
+	    }
+	    else
+		action = (char_u *)"force";
+
+	    dict_extend(d1, d2, action);
+
+	    copy_tv(&argvars[0], rettv);
+	}
+    }
+    else
+	semsg(_(e_listdictarg), "extend()");
+}
+
+/*
+ * "insert()" function
+ */
+    void
+f_insert(typval_T *argvars, typval_T *rettv)
+{
+    long	before = 0;
+    listitem_T	*item;
+    list_T	*l;
+    int		error = FALSE;
+
+    if (argvars[0].v_type == VAR_BLOB)
+    {
+	int	    val, len;
+	char_u	    *p;
+
+	len = blob_len(argvars[0].vval.v_blob);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	{
+	    before = (long)tv_get_number_chk(&argvars[2], &error);
+	    if (error)
+		return;		// type error; errmsg already given
+	    if (before < 0 || before > len)
+	    {
+		semsg(_(e_invarg2), tv_get_string(&argvars[2]));
+		return;
+	    }
+	}
+	val = tv_get_number_chk(&argvars[1], &error);
+	if (error)
+	    return;
+	if (val < 0 || val > 255)
+	{
+	    semsg(_(e_invarg2), tv_get_string(&argvars[1]));
+	    return;
+	}
+
+	if (ga_grow(&argvars[0].vval.v_blob->bv_ga, 1) == FAIL)
+	    return;
+	p = (char_u *)argvars[0].vval.v_blob->bv_ga.ga_data;
+	mch_memmove(p + before + 1, p + before, (size_t)len - before);
+	*(p + before) = val;
+	++argvars[0].vval.v_blob->bv_ga.ga_len;
+
+	copy_tv(&argvars[0], rettv);
+    }
+    else if (argvars[0].v_type != VAR_LIST)
+	semsg(_(e_listblobarg), "insert()");
+    else if ((l = argvars[0].vval.v_list) != NULL
+	    && !var_check_lock(l->lv_lock,
+				     (char_u *)N_("insert() argument"), TRUE))
+    {
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    before = (long)tv_get_number_chk(&argvars[2], &error);
+	if (error)
+	    return;		/* type error; errmsg already given */
+
+	if (before == l->lv_len)
+	    item = NULL;
+	else
+	{
+	    item = list_find(l, before);
+	    if (item == NULL)
+	    {
+		semsg(_(e_listidx), before);
+		l = NULL;
+	    }
+	}
+	if (l != NULL)
+	{
+	    list_insert_tv(l, &argvars[1], item);
+	    copy_tv(&argvars[0], rettv);
+	}
+    }
+}
+
+/*
+ * "remove()" function
+ */
+    void
+f_remove(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*arg_errmsg = (char_u *)N_("remove() argument");
+
+    if (argvars[0].v_type == VAR_DICT)
+	dict_remove(argvars, rettv, arg_errmsg);
+    else if (argvars[0].v_type == VAR_BLOB)
+	blob_remove(argvars, rettv);
+    else if (argvars[0].v_type == VAR_LIST)
+	list_remove(argvars, rettv, arg_errmsg);
+    else
+	semsg(_(e_listdictblobarg), "remove()");
+}
+
+/*
+ * "reverse({list})" function
+ */
+    void
+f_reverse(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l;
+    listitem_T	*li, *ni;
+
+    if (argvars[0].v_type == VAR_BLOB)
+    {
+	blob_T	*b = argvars[0].vval.v_blob;
+	int	i, len = blob_len(b);
+
+	for (i = 0; i < len / 2; i++)
+	{
+	    int tmp = blob_get(b, i);
+
+	    blob_set(b, i, blob_get(b, len - i - 1));
+	    blob_set(b, len - i - 1, tmp);
+	}
+	rettv_blob_set(rettv, b);
+	return;
+    }
+
+    if (argvars[0].v_type != VAR_LIST)
+	semsg(_(e_listblobarg), "reverse()");
+    else if ((l = argvars[0].vval.v_list) != NULL
+	    && !var_check_lock(l->lv_lock,
+				    (char_u *)N_("reverse() argument"), TRUE))
+    {
+	li = l->lv_last;
+	l->lv_first = l->lv_last = NULL;
+	l->lv_len = 0;
+	while (li != NULL)
+	{
+	    ni = li->li_prev;
+	    list_append(l, li);
+	    li = ni;
+	}
+	rettv_list_set(rettv, l);
+	l->lv_idx = l->lv_len - l->lv_idx - 1;
+    }
+}
+
+#endif // defined(FEAT_EVAL)

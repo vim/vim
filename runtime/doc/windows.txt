@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.1.  Last change: 2019 Aug 04
+*windows.txt*   For Vim version 8.1.  Last change: 2019 Aug 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -872,6 +872,7 @@ option.  When set, it overrules the 'previewwindow' and 'previewheight'
 settings.  The option is a comma separated list of values:
 	height		maximum height of the popup
 	width		maximum width of the popup
+	highlight	highlight group of the popup (default is Pmenu)
 Example: >
 	:set previewpopup=height:10,width:60
 

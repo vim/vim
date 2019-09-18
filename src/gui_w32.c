@@ -2074,7 +2074,7 @@ gui_mch_wait_for_chars(int wtime)
     focus = gui.in_focus;
     while (!s_timed_out)
     {
-	/* Stop or start blinking when focus changes */
+	// Stop or start blinking when focus changes
 	if (gui.in_focus != focus)
 	{
 	    if (gui.in_focus)
@@ -2094,29 +2094,31 @@ gui_mch_wait_for_chars(int wtime)
 	did_add_timer = FALSE;
 #endif
 #ifdef MESSAGE_QUEUE
-	/* Check channel I/O while waiting for a message. */
+	// Check channel I/O while waiting for a message.
 	for (;;)
 	{
 	    MSG msg;
 
 	    parse_queued_messages();
-
+#ifdef FEAT_TIMERS
+	    if (did_add_timer)
+		break;
+#endif
 	    if (pPeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE))
 	    {
 		process_message();
 		break;
 	    }
-	    else if (MsgWaitForMultipleObjects(0, NULL, FALSE, 100, QS_ALLINPUT)
-							       != WAIT_TIMEOUT)
+	    else if (input_available()
+		    || MsgWaitForMultipleObjects(0, NULL, FALSE, 100,
+						  QS_ALLINPUT) != WAIT_TIMEOUT)
 		break;
 	}
 #else
-	/*
-	 * Don't use gui_mch_update() because then we will spin-lock until a
-	 * char arrives, instead we use GetMessage() to hang until an
-	 * event arrives.  No need to check for input_buf_full because we are
-	 * returning as soon as it contains a single char -- webb
-	 */
+	// Don't use gui_mch_update() because then we will spin-lock until a
+	// char arrives, instead we use GetMessage() to hang until an
+	// event arrives.  No need to check for input_buf_full because we are
+	// returning as soon as it contains a single char -- webb
 	process_message();
 #endif
 
@@ -2125,9 +2127,9 @@ gui_mch_wait_for_chars(int wtime)
 	    remove_any_timer();
 	    allow_scrollbar = FALSE;
 
-	    /* Clear pending mouse button, the release event may have been
-	     * taken by the dialog window.  But don't do this when getting
-	     * focus, we need the mouse-up event then. */
+	    // Clear pending mouse button, the release event may have been
+	    // taken by the dialog window.  But don't do this when getting
+	    // focus, we need the mouse-up event then.
 	    if (!s_getting_focus)
 		s_button_pending = -1;
 
@@ -2137,7 +2139,7 @@ gui_mch_wait_for_chars(int wtime)
 #ifdef FEAT_TIMERS
 	if (did_add_timer)
 	{
-	    /* Need to recompute the waiting time. */
+	    // Need to recompute the waiting time.
 	    remove_any_timer();
 	    break;
 	}

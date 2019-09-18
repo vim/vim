@@ -541,7 +541,6 @@ changed_common(
 		    changed_line_abv_curs_win(wp);
 	    }
 #endif
-
 	    if (wp->w_cursor.lnum > lnum)
 		changed_line_abv_curs_win(wp);
 	    else if (wp->w_cursor.lnum == lnum && wp->w_cursor.col >= col)
@@ -592,8 +591,15 @@ changed_common(
 	    if (hasAnyFolding(wp))
 		set_topline(wp, wp->w_topline);
 #endif
-	    // relative numbering may require updating more
-	    if (wp->w_p_rnu)
+	    // Relative numbering may require updating more.  Cursor line
+	    // highlighting probably needs to be updated if it's below the
+	    // change (or is using screenline highlighting)
+	    if (wp->w_p_rnu
+#ifdef FEAT_SYN_HL
+		    || ((wp->w_p_cul && lnum <= wp->w_last_cursorline)
+			    || (wp->w_p_culopt_flags & CULOPT_SCRLINE))
+#endif
+		    )
 		redraw_win_later(wp, SOME_VALID);
 	}
     }
@@ -666,7 +672,7 @@ changed_bytes(linenr_T lnum, colnr_T col)
  * Like changed_bytes() but also adjust text properties for "added" bytes.
  * When "added" is negative text was deleted.
  */
-    void
+    static void
 inserted_bytes(linenr_T lnum, colnr_T col, int added UNUSED)
 {
 #ifdef FEAT_TEXT_PROP
@@ -1008,10 +1014,7 @@ ins_char_bytes(char_u *buf, int charlen)
     // show the match for right parens and braces.
     if (p_sm && (State & INSERT)
 	    && msg_silent == 0
-#ifdef FEAT_INS_EXPAND
-	    && !ins_compl_active()
-#endif
-       )
+	    && !ins_compl_active())
     {
 	if (has_mbyte)
 	    showmatch(mb_ptr2char(buf));

@@ -4,7 +4,7 @@ source check.vim
 CheckFeature tcl
 
 " Helper function as there is no builtin tcleval() function similar
-" to perleval, luaevel(), pyeval(), etc.
+" to perleval, luaeval(), pyeval(), etc.
 func TclEval(tcl_expr)
   let s = split(execute('tcl ' . a:tcl_expr), "\n")
   return (len(s) == 0) ? '' : s[-1]

@@ -23,4 +23,5 @@ void do_nv_ident(int c1, int c2);
 int get_visual_text(cmdarg_T *cap, char_u **pp, int *lenp);
 void start_selection(void);
 void may_start_select(int c);
+void set_cursor_for_append_to_line(void);
 /* vim: set ft=c : */

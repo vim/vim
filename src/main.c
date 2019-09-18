@@ -541,12 +541,12 @@ vim_main2(void)
 #ifdef FEAT_GUI
     if (gui.starting)
     {
-#if defined(UNIX) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
 	/* When something caused a message from a vimrc script, need to output
 	 * an extra newline before the shell prompt. */
 	if (did_emsg || msg_didout)
 	    putchar('\n');
-#endif
+# endif
 
 	gui_start(NULL);		/* will set full_screen to TRUE */
 	TIME_MSG("starting GUI");
@@ -1028,6 +1028,87 @@ is_not_a_term()
     return params.not_a_term;
 }
 
+
+// When TRUE in a safe state when starting to wait for a character.
+static int	was_safe = FALSE;
+static oparg_T	*current_oap = NULL;
+
+/*
+ * Return TRUE if an operator was started but not finished yet.
+ * Includes typing a count or a register name.
+ */
+    int
+op_pending(void)
+{
+    return !(current_oap != NULL
+	    && !finish_op
+	    && current_oap->prev_opcount == 0
+	    && current_oap->prev_count0 == 0
+	    && current_oap->op_type == OP_NOP
+	    && current_oap->regname == NUL);
+}
+
+/*
+ * Trigger SafeState if currently in s safe state, that is "safe" is TRUE and
+ * there is no typeahead.
+ */
+    void
+may_trigger_safestate(int safe)
+{
+    int is_safe = safe
+		    && stuff_empty()
+		    && typebuf.tb_len == 0
+		    && scriptin[curscript] == NULL
+		    && !global_busy;
+
+#ifdef FEAT_JOB_CHANNEL
+    if (was_safe != is_safe)
+	// Only log when the state changes, otherwise it happens at nearly
+	// every key stroke.
+	ch_log(NULL, is_safe ? "Start triggering SafeState"
+						: "Stop triggering SafeState");
+#endif
+    if (is_safe)
+	apply_autocmds(EVENT_SAFESTATE, NULL, NULL, FALSE, curbuf);
+    was_safe = is_safe;
+}
+
+/*
+ * Something changed which causes the state possibly to be unsafe, e.g. a
+ * character was typed.  It will remain unsafe until the next call to
+ * may_trigger_safestate().
+ */
+    void
+state_no_longer_safe(void)
+{
+#ifdef FEAT_JOB_CHANNEL
+    if (was_safe)
+	ch_log(NULL, "safe state reset");
+#endif
+    was_safe = FALSE;
+}
+
+/*
+ * Invoked when leaving code that invokes callbacks.  Then trigger
+ * SafeStateAgain, if it was safe when starting to wait for a character.
+ */
+    void
+may_trigger_safestateagain(void)
+{
+    if (was_safe)
+    {
+#ifdef FEAT_JOB_CHANNEL
+	ch_log(NULL, "Leaving unsafe area, triggering SafeStateAgain");
+#endif
+	apply_autocmds(EVENT_SAFESTATEAGAIN, NULL, NULL, FALSE, curbuf);
+    }
+#ifdef FEAT_JOB_CHANNEL
+    else
+	ch_log(NULL, "Leaving unsafe area, not triggering SafeStateAgain");
+#endif
+}
+
+
 /*
  * Main loop: Execute Normal mode commands until exiting Vim.
  * Also used to handle commands in the command-line window, until the window
@@ -1040,14 +1121,18 @@ main_loop(
     int		cmdwin,	    /* TRUE when working in the command-line window */
     int		noexmode)   /* TRUE when return on entering Ex mode */
 {
-    oparg_T	oa;	/* operator arguments */
-    volatile int previous_got_int = FALSE;	/* "got_int" was TRUE */
+    oparg_T	oa;		// operator arguments
+    oparg_T	*prev_oap;	// operator arguments
+    volatile int previous_got_int = FALSE;	// "got_int" was TRUE
 #ifdef FEAT_CONCEAL
-    /* these are static to avoid a compiler warning */
+    // these are static to avoid a compiler warning
     static linenr_T	conceal_old_cursor_line = 0;
     static linenr_T	conceal_new_cursor_line = 0;
     static int		conceal_update_lines = FALSE;
 #endif
+
+    prev_oap = current_oap;
+    current_oap = &oa;
 
 #if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
     /* Setup to catch a terminating error from the X server.  Just ignore
@@ -1133,6 +1218,9 @@ main_loop(
 	    msg_scroll = FALSE;
 	quit_more = FALSE;
 
+	// it's not safe unless may_trigger_safestate_main() is called
+	was_safe = FALSE;
+
 	/*
 	 * If skip redraw is set (for ":" in wait_return()), don't redraw now.
 	 * If there is nothing in the stuff_buffer or do_redraw is TRUE,
@@ -1211,6 +1299,10 @@ main_loop(
 		curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
 	    }
 
+	    // If nothing is pending and we are going to wait for the user to
+	    // type a character, trigger SafeState.
+	    may_trigger_safestate(!op_pending() && restart_edit == 0);
+
 #if defined(FEAT_DIFF)
 	    // Updating diffs from changed() does not always work properly,
 	    // esp. updating folds.  Do an update just before redrawing if
@@ -1255,12 +1347,28 @@ main_loop(
 	    update_topline();
 	    validate_cursor();
 
+#ifdef FEAT_SYN_HL
+	    if (curwin->w_p_cul && curwin->w_p_wrap
+				&& (curwin->w_p_culopt_flags & CULOPT_SCRLINE))
+		must_redraw = NOT_VALID;
+#endif
+
 	    if (VIsual_active)
-		update_curbuf(INVERTED);/* update inverted part */
+		update_curbuf(INVERTED); // update inverted part
 	    else if (must_redraw)
 	    {
-		mch_disable_flush();	/* Stop issuing gui_mch_flush(). */
-		update_screen(0);
+		mch_disable_flush();	// Stop issuing gui_mch_flush().
+#ifdef FEAT_SYN_HL
+		// Might need some more update for the cursorscreen line.
+		// TODO: can we optimize this?
+		if (curwin->w_p_cul
+			&& curwin->w_p_wrap
+			&& (curwin->w_p_culopt_flags & CULOPT_SCRLINE)
+			&& !char_avail())
+		    update_screen(VALID);
+		else
+#endif
+		    update_screen(0);
 		mch_enable_flush();
 	    }
 	    else if (redraw_cmdline || clear_cmdline)
@@ -1276,16 +1384,19 @@ main_loop(
 	    /* display message after redraw */
 	    if (keep_msg != NULL)
 	    {
-		char_u *p;
+		char_u *p = vim_strsave(keep_msg);
 
-		// msg_attr_keep() will set keep_msg to NULL, must free the
-		// string here. Don't reset keep_msg, msg_attr_keep() uses it
-		// to check for duplicates.  Never put this message in history.
-		p = keep_msg;
-		msg_hist_off = TRUE;
-		msg_attr((char *)p, keep_msg_attr);
-		msg_hist_off = FALSE;
-		vim_free(p);
+		if (p != NULL)
+		{
+		    // msg_start() will set keep_msg to NULL, make a copy
+		    // first.  Don't reset keep_msg, msg_attr_keep() uses it to
+		    // check for duplicates.  Never put this message in
+		    // history.
+		    msg_hist_off = TRUE;
+		    msg_attr((char *)p, keep_msg_attr);
+		    msg_hist_off = FALSE;
+		    vim_free(p);
+		}
 	    }
 	    if (need_fileinfo)		/* show file info after redraw */
 	    {
@@ -1344,7 +1455,7 @@ main_loop(
 	if (exmode_active)
 	{
 	    if (noexmode)   /* End of ":global/path/visual" commands */
-		return;
+		goto theend;
 	    do_exmode(exmode_active == EXMODE_VIM);
 	}
 	else
@@ -1371,6 +1482,9 @@ main_loop(
 	    }
 	}
     }
+
+theend:
+    current_oap = prev_oap;
 }
 
 
@@ -1485,7 +1599,19 @@ getout(int exitval)
 #endif
 
     if (v_dying <= 1)
+    {
+	int	unblock = 0;
+
+	// deathtrap() blocks autocommands, but we do want to trigger VimLeave.
+	if (is_autocmd_blocked())
+	{
+	    unblock_autocmds();
+	    ++unblock;
+	}
 	apply_autocmds(EVENT_VIMLEAVE, NULL, NULL, FALSE, curbuf);
+	if (unblock)
+	    block_autocmds();
+    }
 
 #ifdef FEAT_PROFILE
     profile_dump();

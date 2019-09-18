@@ -111,7 +111,7 @@ static int get_mac_fio_flags(char_u *ptr);
 #endif
 static char *e_auchangedbuf = N_("E812: Autocommands changed buffer or buffer name");
 
-    void
+    static void
 filemess(
     buf_T	*buf,
     char_u	*name,

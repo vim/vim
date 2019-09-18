@@ -322,19 +322,18 @@ let s:flaky_tests = [
       \ 'Test_diff_screen()',
       \ 'Test_exit_callback()',
       \ 'Test_exit_callback_interval()',
+      \ 'Test_map_timeout_with_timer_interrupt()',
       \ 'Test_nb_basic()',
-      \ 'Test_oneshot()',
       \ 'Test_open_delay()',
       \ 'Test_out_cb()',
-      \ 'Test_paused()',
       \ 'Test_pipe_through_sort_all()',
       \ 'Test_pipe_through_sort_some()',
       \ 'Test_quoteplus()',
       \ 'Test_quotestar()',
       \ 'Test_raw_one_time_callback()',
       \ 'Test_reltime()',
-      \ 'Test_repeat_three()',
       \ 'Test_server_crash()',
+      \ 'Test_term_mouse_double_click_to_create_tab()',
       \ 'Test_terminal_ansicolors_default()',
       \ 'Test_terminal_ansicolors_func()',
       \ 'Test_terminal_ansicolors_global()',
@@ -350,16 +349,22 @@ let s:flaky_tests = [
       \ 'Test_terminal_scrollback()',
       \ 'Test_terminal_split_quit()',
       \ 'Test_terminal_termwinkey()',
-      \ 'Test_terminal_termwinsize_mininmum()',
+      \ 'Test_terminal_termwinsize_minimum()',
       \ 'Test_terminal_termwinsize_option_fixed()',
       \ 'Test_terminal_termwinsize_option_zero()',
       \ 'Test_terminal_tmap()',
       \ 'Test_terminal_wall()',
       \ 'Test_terminal_wipe_buffer()',
       \ 'Test_terminal_wqall()',
+      \ 'Test_timer_oneshot()',
+      \ 'Test_timer_paused()',
+      \ 'Test_timer_repeat_many()',
+      \ 'Test_timer_repeat_three()',
+      \ 'Test_timer_stop_all_in_callback()',
+      \ 'Test_timer_stop_in_callback()',
       \ 'Test_two_channels()',
       \ 'Test_unlet_handle()',
-      \ 'Test_with_partial_callback()',
+      \ 'Test_timer_with_partial_callback()',
       \ 'Test_zero_reply()',
       \ 'Test_zz1_terminal_in_gui()',
       \ ]
@@ -390,7 +395,7 @@ for s:test in sort(s:tests)
 
   " Repeat a flaky test.  Give up when:
   " - it fails again with the same message
-  " - it fails five times (with a different mesage)
+  " - it fails five times (with a different message)
   if len(v:errors) > 0
         \ && (index(s:flaky_tests, s:test) >= 0
         \      || v:errors[0] =~ s:flaky_errors_re)

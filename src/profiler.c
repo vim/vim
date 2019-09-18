@@ -249,7 +249,7 @@ profile_self(proftime_T *self, proftime_T *total, proftime_T *children)
 /*
  * Get the current waittime.
  */
-    void
+    static void
 profile_get_wait(proftime_T *tm)
 {
     *tm = prof_wait_time;
@@ -270,7 +270,7 @@ profile_sub_wait(proftime_T *tm, proftime_T *tma)
 /*
  * Return TRUE if "tm1" and "tm2" are equal.
  */
-    int
+    static int
 profile_equal(proftime_T *tm1, proftime_T *tm2)
 {
 # ifdef MSWIN
@@ -690,13 +690,16 @@ func_dump_profile(FILE *fd)
 		    fprintf(fd, "FUNCTION  <SNR>%s()\n", fp->uf_name + 3);
 		else
 		    fprintf(fd, "FUNCTION  %s()\n", fp->uf_name);
-		p = home_replace_save(NULL,
-				     get_scriptname(fp->uf_script_ctx.sc_sid));
-		if (p != NULL)
+		if (fp->uf_script_ctx.sc_sid > 0)
 		{
-		    fprintf(fd, "    Defined: %s line %ld\n",
+		    p = home_replace_save(NULL,
+				     get_scriptname(fp->uf_script_ctx.sc_sid));
+		    if (p != NULL)
+		    {
+			fprintf(fd, "    Defined: %s line %ld\n",
 					   p, (long)fp->uf_script_ctx.sc_lnum);
-		    vim_free(p);
+			vim_free(p);
+		    }
 		}
 		if (fp->uf_tm_count == 1)
 		    fprintf(fd, "Called 1 time\n");

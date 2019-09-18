@@ -408,7 +408,7 @@ endfunc
 
 func Test_mksession_terminal_restore_other()
   terminal
-  call term_setrestore(bufnr('%'), 'other')
+  eval bufnr('%')->term_setrestore('other')
   mksession! Xtest_mks.out
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''

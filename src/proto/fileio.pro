@@ -1,5 +1,4 @@
 /* fileio.c */
-void filemess(buf_T *buf, char_u *name, char_u *s, int attr);
 int readfile(char_u *fname, char_u *sfname, linenr_T from, linenr_T lines_to_skip, linenr_T lines_to_read, exarg_T *eap, int flags);
 int is_dev_fd_file(char_u *fname);
 int prep_exarg(exarg_T *eap, buf_T *buf);

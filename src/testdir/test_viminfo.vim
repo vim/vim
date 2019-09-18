@@ -171,7 +171,7 @@ func Test_cmdline_history_order()
 
   call histdel(':')
   " items go before and after
-  call test_settime(8)
+  eval 8->test_settime()
   call histadd(':', "echo '8'")
   call test_settime(39)
   call histadd(':', "echo '39'")

@@ -459,17 +459,29 @@ ui_wait_for_chars_or_timer(
 	}
 	if (due_time <= 0 || (wtime > 0 && due_time > remaining))
 	    due_time = remaining;
-# ifdef FEAT_JOB_CHANNEL
-	if ((due_time < 0 || due_time > 10L)
-#  ifdef FEAT_GUI
-		&& !gui.in_use
+# if defined(FEAT_JOB_CHANNEL) || defined(FEAT_SOUND_CANBERRA)
+	if ((due_time < 0 || due_time > 10L) && (
+#  if defined(FEAT_JOB_CHANNEL)
+		(
+#   if defined(FEAT_GUI)
+		!gui.in_use &&
+#   endif
+		(has_pending_job() || channel_any_readahead()))
+#   ifdef FEAT_SOUND_CANBERRA
+		||
+#   endif
 #  endif
-		&& (has_pending_job() || channel_any_readahead()))
+#  ifdef FEAT_SOUND_CANBERRA
+		    has_any_sound_callback()
+#  endif
+		    ))
 	{
 	    // There is a pending job or channel, should return soon in order
 	    // to handle them ASAP.  Do check for input briefly.
 	    due_time = 10L;
+#  ifdef FEAT_JOB_CHANNEL
 	    brief_wait = TRUE;
+#  endif
 	}
 # endif
 	if (wait_func(due_time, interrupted, ignore_input))
@@ -709,6 +721,12 @@ ui_breakcheck_force(int force)
  */
 
 #if defined(FEAT_CLIPBOARD) || defined(PROTO)
+
+static void clip_gen_lose_selection(Clipboard_T *cbd);
+static int clip_gen_own_selection(Clipboard_T *cbd);
+#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)
+static int clip_x11_owner_exists(Clipboard_T *cbd);
+#endif
 
 /*
  * Selection stuff using Visual mode, for cutting and pasting text to other
@@ -1088,8 +1106,10 @@ clip_start_selection(int col, int row, int repeated_click)
 	// Click in a popup window restricts selection to that window,
 	// excluding the border.
 	cb->min_col = wp->w_wincol + wp->w_popup_border[3];
-	cb->max_col = wp->w_wincol + popup_width(wp) - 1
-						   - wp->w_popup_border[1];
+	cb->max_col = wp->w_wincol + popup_width(wp)
+				 - wp->w_popup_border[1] - wp->w_has_scrollbar;
+	if (cb->max_col > screen_Columns)
+	    cb->max_col = screen_Columns;
 	cb->min_row = wp->w_winrow + wp->w_popup_border[0];
 	cb->max_row = wp->w_winrow + popup_height(wp) - 1
 						   - wp->w_popup_border[2];
@@ -1166,7 +1186,10 @@ clip_process_selection(
 
     if (button == MOUSE_RELEASE)
     {
-	/* Check to make sure we have something selected */
+	if (cb->state != SELECT_IN_PROGRESS)
+	    return;
+
+	// Check to make sure we have something selected
 	if (cb->start.lnum == cb->end.lnum && cb->start.col == cb->end.col)
 	{
 #ifdef FEAT_GUI
@@ -1430,7 +1453,7 @@ clip_invert_area(
     int		max_col;
 
 #ifdef FEAT_TEXT_PROP
-    max_col = cbd->max_col;
+    max_col = cbd->max_col - 1;
 #else
     max_col = Columns - 1;
 #endif
@@ -1509,8 +1532,8 @@ clip_invert_rectangle(
 	width -= cbd->min_col - col;
 	col = cbd->min_col;
     }
-    if (width > cbd->max_col - col + 1)
-	width = cbd->max_col - col + 1;
+    if (width > cbd->max_col - col)
+	width = cbd->max_col - col;
     if (row < cbd->min_row)
     {
 	height -= cbd->min_row - row;
@@ -1571,8 +1594,10 @@ clip_copy_modeless_selection(int both UNUSED)
 #ifdef FEAT_TEXT_PROP
     if (col1 < clip_star.min_col)
 	col1 = clip_star.min_col;
-    if (col2 > clip_star.max_col + 1)
-	col2 = clip_star.max_col + 1;
+    if (col2 > clip_star.max_col)
+	col2 = clip_star.max_col;
+    if (row1 > clip_star.max_row || row2 < clip_star.min_row)
+	return;
     if (row1 < clip_star.min_row)
 	row1 = clip_star.min_row;
     if (row2 > clip_star.max_row)
@@ -1611,7 +1636,7 @@ clip_copy_modeless_selection(int both UNUSED)
 	    end_col = col2;
 	else
 #ifdef FEAT_TEXT_PROP
-	    end_col = clip_star.max_col + 1;
+	    end_col = clip_star.max_col;
 #else
 	    end_col = Columns;
 #endif
@@ -1621,7 +1646,7 @@ clip_copy_modeless_selection(int both UNUSED)
 	/* See if we need to nuke some trailing whitespace */
 	if (end_col >=
 #ifdef FEAT_TEXT_PROP
-		clip_star.max_col + 1
+		clip_star.max_col
 #else
 		Columns
 #endif
@@ -1787,7 +1812,7 @@ clip_get_line_end(Clipboard_T *cbd UNUSED, int row)
 	return 0;
     for (i =
 #ifdef FEAT_TEXT_PROP
-	    cbd->max_col + 1;
+	    cbd->max_col;
 #else
 	    screen_Columns;
 #endif
@@ -1828,7 +1853,7 @@ clip_update_modeless_selection(
     }
 }
 
-    int
+    static int
 clip_gen_own_selection(Clipboard_T *cbd)
 {
 #ifdef FEAT_XCLIPBOARD
@@ -1843,7 +1868,7 @@ clip_gen_own_selection(Clipboard_T *cbd)
 #endif
 }
 
-    void
+    static void
 clip_gen_lose_selection(Clipboard_T *cbd)
 {
 #ifdef FEAT_XCLIPBOARD
@@ -2834,7 +2859,7 @@ clip_x11_set_selection(Clipboard_T *cbd UNUSED)
 
 #if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) \
 	|| defined(PROTO)
-    int
+    static int
 clip_x11_owner_exists(Clipboard_T *cbd)
 {
     return XGetSelectionOwner(X_DISPLAY, cbd->sel_atom) != None;
@@ -3047,7 +3072,8 @@ retnomove:
 	if (row < 0 || col < 0)			// check if it makes sense
 	    return IN_UNKNOWN;
 
-	// find the window where the row is in
+	// find the window where the row is in and adjust "row" and "col" to be
+	// relative to top-left of the window
 	wp = mouse_find_win(&row, &col, FIND_POPUP);
 	if (wp == NULL)
 	    return IN_UNKNOWN;
@@ -3060,11 +3086,8 @@ retnomove:
 	{
 	    on_sep_line = 0;
 	    in_popup_win = TRUE;
-	    if (wp->w_popup_close == POPCLOSE_BUTTON
-		    && which_button == MOUSE_LEFT
-		    && popup_on_X_button(wp, row, col))
+	    if (which_button == MOUSE_LEFT && popup_close_if_on_X(wp, row, col))
 	    {
-		popup_close_for_mouse_click(wp);
 		return IN_UNKNOWN;
 	    }
 	    else if ((wp->w_popup_flags & (POPF_DRAG | POPF_RESIZE))
@@ -3616,6 +3639,8 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
 	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_TERM_POPUP_MENU) \
 	|| defined(PROTO)
+# define NEED_VCOL2COL
+
 /*
  * Translate window coordinates to buffer position without any side effects
  */
@@ -3657,10 +3682,8 @@ get_fpos_of_mouse(pos_T *mpos)
 }
 #endif
 
-#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MAC) \
-	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_BEVAL) \
-	|| defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
+#if defined(NEED_VCOL2COL) || defined(FEAT_BEVAL) || defined(FEAT_TEXT_PROP) \
+	|| defined(PROTO)
 /*
  * Convert a virtual (screen) column to a character column.
  * The first column is one.

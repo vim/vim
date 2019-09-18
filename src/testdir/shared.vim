@@ -272,11 +272,14 @@ func GetVimCommand(...)
   return cmd
 endfunc
 
-" Get the command to run Vim, with --clean.
+" Get the command to run Vim, with --clean instead of "-u NONE".
 func GetVimCommandClean()
   let cmd = GetVimCommand()
   let cmd = substitute(cmd, '-u NONE', '--clean', '')
   let cmd = substitute(cmd, '--not-a-term', '', '')
+
+  " Force using utf-8, Vim may pick up something else from the environment.
+  let cmd ..= ' --cmd "set enc=utf8" '
 
   " Optionally run Vim under valgrind
   " let cmd = 'valgrind --tool=memcheck --leak-check=yes --num-callers=25 --log-file=valgrind ' . cmd

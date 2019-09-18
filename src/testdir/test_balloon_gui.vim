@@ -12,7 +12,7 @@ func Test_balloon_show_gui()
   call balloon_show('')
 
   let msg = 'that that'
-  call balloon_show(msg)
+  eval msg->balloon_show()
   call assert_equal(msg, balloon_gettext())
   sleep 10m
   call balloon_show('')

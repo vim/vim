@@ -355,6 +355,10 @@ Name			triggered by ~
 			when popup menu visible
 |TextYankPost|		after text has been yanked or deleted
 
+|SafeState|		nothing pending, going to wait for the user to type a
+			character
+|SafeStateAgain|	repeated SafeState
+
 |ColorSchemePre|	before loading a color scheme
 |ColorScheme|		after loading a color scheme
 
@@ -554,16 +558,14 @@ CmdlineLeave			Before leaving the command line.
 							*CmdwinEnter*
 CmdwinEnter			After entering the command-line window.
 				Useful for setting options specifically for
-				this special type of window.  This is
-				triggered _instead_ of BufEnter and WinEnter.
+				this special type of window.
 				<afile> is set to a single character,
 				indicating the type of command-line.
 				|cmdwin-char|
 							*CmdwinLeave*
 CmdwinLeave			Before leaving the command-line window.
 				Useful to clean up any global setting done
-				with CmdwinEnter.  This is triggered _instead_
-				of BufLeave and WinLeave.
+				with CmdwinEnter.
 				<afile> is set to a single character,
 				indicating the type of command-line.
 				|cmdwin-char|
@@ -595,6 +597,10 @@ CompleteChanged 					*CompleteChanged*
 				    scrollbar		TRUE if visible
 
 				It is not allowed to change the text |textlock|.
+
+				The size and position of the popup are also
+				available by calling |pum_getpos()|.
+
 							*CompleteDone*
 CompleteDone			After Insert mode completion is done.  Either
 				when something was completed or abandoning
@@ -953,6 +959,32 @@ RemoteReply			When a reply from a Vim that functions as
 				Note that even if an autocommand is defined,
 				the reply should be read with |remote_read()|
 				to consume it.
+							*SafeState*
+SafeState			When nothing is pending, going to wait for the
+				user to type a character.
+				This will not be triggered when:
+				- an operator is pending
+				- a register was entered with "r
+				- halfway executing a command
+				- executing a mapping
+				- there is typeahead
+				- Insert mode completion is active
+				- Command line completion is active
+				You can use `mode()` to find out what state
+				Vim is in.  That may be:
+				- VIsual mode
+				- Normal mode
+				- Insert mode
+				- Command-line mode
+				Depending on what you want to do, you may also
+				check more with `state()`, e.g. whether the
+				screen was scrolled for messages.
+							*SafeStateAgain*
+SafeStateAgain			Like SafeState but after processing any
+				messages and invoking callbacks. This may be
+				triggered often, don't do something that takes
+				time.
+
 							*SessionLoadPost*
 SessionLoadPost			After loading the session file created using
 				the |:mksession| command.

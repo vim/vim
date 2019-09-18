@@ -347,7 +347,7 @@ mch_openpty(char **ttyn)
 #define PTY_DONE
 
 #ifdef _IBMR2
-int aixhack = -1;
+static int aixhack = -1;
 #endif
 
     int

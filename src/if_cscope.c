@@ -79,8 +79,6 @@ cs_usage_msg(csid_e x)
     (void)semsg(_("E560: Usage: cs[cope] %s"), cs_cmds[(int)x].usage);
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
 static enum
 {
     EXP_CSCOPE_SUBCMD,	/* expand ":cscope" sub-commands */
@@ -188,8 +186,6 @@ set_context_in_cscope_cmd(
 	}
     }
 }
-
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * Find the command, print help if invalid, and then call the corresponding
@@ -388,7 +384,7 @@ cs_print_tags(void)
  *		Note: All string comparisons are case sensitive!
  */
 #if defined(FEAT_EVAL) || defined(PROTO)
-    int
+    static int
 cs_connection(int num, char_u *dbpath, char_u *ppath)
 {
     int i;
@@ -434,7 +430,8 @@ cs_connection(int num, char_u *dbpath, char_u *ppath)
     }
 
     return FALSE;
-} /* cs_connection */
+}
+
 #endif
 
 
@@ -496,18 +493,15 @@ cs_add_common(
     char	*fname2 = NULL;
     char	*ppath = NULL;
     int		i;
-#ifdef FEAT_MODIFY_FNAME
     int		len;
     int		usedlen = 0;
     char_u	*fbuf = NULL;
-#endif
 
     /* get the filename (arg1), expand it, and try to stat it */
     if ((fname = alloc(MAXPATHL + 1)) == NULL)
 	goto add_err;
 
     expand_env((char_u *)arg1, (char_u *)fname, MAXPATHL);
-#ifdef FEAT_MODIFY_FNAME
     len = (int)STRLEN(fname);
     fbuf = (char_u *)fname;
     (void)modify_fname((char_u *)":p", FALSE, &usedlen,
@@ -516,7 +510,7 @@ cs_add_common(
 	goto add_err;
     fname = (char *)vim_strnsave((char_u *)fname, len);
     vim_free(fbuf);
-#endif
+
     ret = mch_stat(fname, &statbuf);
     if (ret < 0)
     {
@@ -2506,4 +2500,33 @@ cs_end(void)
 
 #endif	/* FEAT_CSCOPE */
 
-/* the end */
+#if defined(FEAT_EVAL) || defined(PROTO)
+
+/*
+ * "cscope_connection([{num} , {dbpath} [, {prepend}]])" function
+ *
+ * Checks the existence of a cscope connection.
+ */
+    void
+f_cscope_connection(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+# ifdef FEAT_CSCOPE
+    int		num = 0;
+    char_u	*dbpath = NULL;
+    char_u	*prepend = NULL;
+    char_u	buf[NUMBUFLEN];
+
+    if (argvars[0].v_type != VAR_UNKNOWN
+	    && argvars[1].v_type != VAR_UNKNOWN)
+    {
+	num = (int)tv_get_number(&argvars[0]);
+	dbpath = tv_get_string(&argvars[1]);
+	if (argvars[2].v_type != VAR_UNKNOWN)
+	    prepend = tv_get_string_buf(&argvars[2], buf);
+    }
+
+    rettv->vval.v_number = cs_connection(num, dbpath, prepend);
+# endif
+}
+
+#endif // FEAT_EVAL

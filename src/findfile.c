@@ -188,6 +188,7 @@ static int ff_check_visited(ff_visited_T **, char_u *, char_u *);
 #else
 static int ff_check_visited(ff_visited_T **, char_u *);
 #endif
+static void vim_findfile_free_visited(void *search_ctx_arg);
 static void vim_findfile_free_visited_list(ff_visited_list_hdr_T **list_headp);
 static void ff_free_visited_list(ff_visited_T *vl);
 static ff_visited_list_hdr_T* ff_get_visited_list(char_u *, ff_visited_list_hdr_T **list_headp);
@@ -1186,7 +1187,7 @@ fail:
  * Free the list of lists of visited files and directories
  * Can handle it if the passed search_context is NULL;
  */
-    void
+    static void
 vim_findfile_free_visited(void *search_ctx_arg)
 {
     ff_search_ctx_T *search_ctx;
@@ -2814,3 +2815,19 @@ simplify_filename(char_u *filename)
     } while (*p != NUL);
 #endif // !AMIGA
 }
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * "simplify()" function
+ */
+    void
+f_simplify(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*p;
+
+    p = tv_get_string(&argvars[0]);
+    rettv->vval.v_string = vim_strsave(p);
+    simplify_filename(rettv->vval.v_string);	/* simplify in place */
+    rettv->v_type = VAR_STRING;
+}
+#endif // FEAT_EVAL

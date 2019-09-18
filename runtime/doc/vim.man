@@ -62,10 +62,10 @@ DESCRIPTION
        -q [errorfile]
                    Start  in  quickFix mode.  The file [errorfile] is read and
                    the first error is displayed.  If [errorfile]  is  omitted,
-                   the  filename  is  obtained  from  the  'errorfile'  option
-                   (defaults to "AztecC.Err" for the  Amiga,  "errors.err"  on
-                   other  systems).   Further errors can be jumped to with the
-                   ":cn" command.  See ":help quickfix".
+                   the  filename  is obtained from the 'errorfile' option (de‐
+                   faults to "AztecC.Err" for the Amiga, "errors.err" on other
+                   systems).   Further  errors can be jumped to with the ":cn"
+                   command.  See ":help quickfix".
 
        Vim behaves differently, depending on the name of the command (the exe‐
        cutable may still be the same file).
@@ -92,8 +92,8 @@ DESCRIPTION
                  done with the "-Z" argument.
 
 OPTIONS
-       The  options  may  be  given  in  any order, before or after filenames.
-       Options without an argument can be combined after a single dash.
+       The  options may be given in any order, before or after filenames.  Op‐
+       tions without an argument can be combined after a single dash.
 
        +[num]      For the first file the cursor will be  positioned  on  line
                    "num".   If "num" is missing, the cursor will be positioned
@@ -132,8 +132,8 @@ OPTIONS
                    sible to edit a binary or executable file.
 
        -C          Compatible.   Set  the 'compatible' option.  This will make
-                   Vim behave mostly  like  Vi,  even  though  a  .vimrc  file
-                   exists.
+                   Vim behave mostly like Vi, even though a  .vimrc  file  ex‐
+                   ists.
 
        -d          Start  in  diff  mode.   There should be two, three or four
                    file name arguments.  Vim will open all the files and  show
@@ -151,15 +151,15 @@ OPTIONS
        -E          Start Vim in improved Ex mode, just like the executable was
                    called "exim".
 
-       -f          Foreground.   For  the  GUI  version, Vim will not fork and
-                   detach from the shell it was started in.  On the Amiga, Vim
+       -f          Foreground.  For the GUI version, Vim will not fork and de‐
+                   tach from the shell it was started in.  On the  Amiga,  Vim
                    is  not restarted to open a new window.  This option should
                    be used when Vim is executed by a program  that  will  wait
                    for  the  edit session to finish (e.g. mail).  On the Amiga
                    the ":sh" and ":!" commands will not work.
 
-       --nofork    Foreground.  For the GUI version, Vim  will  not  fork  and
-                   detach from the shell it was started in.
+       --nofork    Foreground.  For the GUI version, Vim will not fork and de‐
+                   tach from the shell it was started in.
 
        -F          If  Vim  has  been  compiled with FKMAP support for editing
                    right-to-left oriented files and  Farsi  keyboard  mapping,
@@ -167,12 +167,12 @@ OPTIONS
                    'rightleft' are set.  Otherwise an error message  is  given
                    and Vim aborts.
 
-       -g          If  Vim  has  been  compiled  with GUI support, this option
-                   enables the GUI.  If no GUI support  was  compiled  in,  an
-                   error message is given and Vim aborts.
+       -g          If  Vim has been compiled with GUI support, this option en‐
+                   ables the GUI.  If no GUI support was compiled in, an error
+                   message is given and Vim aborts.
 
-       -h          Give  a  bit  of  help about the command line arguments and
-                   options.  After this Vim exits.
+       -h          Give a bit of help about the command line arguments and op‐
+                   tions.  After this Vim exits.
 
        -H          If Vim has been compiled with RIGHTLEFT support for editing
                    right-to-left  oriented  files and Hebrew keyboard mapping,
@@ -181,10 +181,10 @@ OPTIONS
                    and Vim aborts.
 
        -i {viminfo}
-                   When using the viminfo file is enabled,  this  option  sets
-                   the  filename  to use, instead of the default "~/.viminfo".
-                   This can also be used to skip the use of the .viminfo file,
-                   by giving the name "NONE".
+                   Specifies the filename to use when reading or  writing  the
+                   viminfo  file,  instead  of the default "~/.viminfo".  This
+                   can also be used to skip the use of the .viminfo  file,  by
+                   giving the name "NONE".
 
        -L          Same as -r.
 
@@ -199,7 +199,7 @@ OPTIONS
                    files  can  not be written.  Note that these options can be
                    set to enable making modifications.
 
-       -N          No-compatible mode.  Reset the 'compatible'  option.   This
+       -N          No-compatible mode.  Resets the 'compatible' option.   This
                    will  make Vim behave a bit better, but less Vi compatible,
                    even though a .vimrc file does not exist.
 
@@ -208,8 +208,8 @@ OPTIONS
                    slow medium (e.g. floppy).  Can also  be  done  with  ":set
                    uc=0".  Can be undone with ":set uc=200".
 
-       -nb         Become  an  editor  server  for NetBeans.  See the docs for
-                   details.
+       -nb         Become an editor server for NetBeans.  See the docs for de‐
+                   tails.
 
        -o[N]       Open N windows stacked.  When N is omitted, open one window
                    for each file.
@@ -228,8 +228,8 @@ OPTIONS
                    above).  The 'readonly' option  can  be  reset  with  ":set
                    noro".  See ":help 'readonly'".
 
-       -r          List  swap  files,  with  information  about using them for
-                   recovery.
+       -r          List  swap files, with information about using them for re‐
+                   covery.
 
        -r {file}   Recovery mode.  The swap file is used to recover a  crashed
                    editing  session.   The  swap  file is a file with the same
@@ -247,8 +247,8 @@ OPTIONS
                    characters are read from the keyboard.
 
        -T {terminal}
-                   Tells Vim the name of the terminal  you  are  using.   Only
-                   required  when the automatic way doesn't work.  Should be a
+                   Tells Vim the name of the terminal you are using.  Only re‐
+                   quired  when  the  automatic way doesn't work.  Should be a
                    terminal known to Vim (builtin) or defined in  the  termcap
                    or terminfo file.
 
@@ -342,8 +342,8 @@ OPTIONS
                    the server to connect to.
 
        --socketid {id}
-                   GTK  GUI  only:  Use  the  GtkPlug mechanism to run gvim in
-                   another window.
+                   GTK  GUI only: Use the GtkPlug mechanism to run gvim in an‐
+                   other window.
 
        --version   Print version information and exit.
 

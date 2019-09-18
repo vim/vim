@@ -267,7 +267,7 @@ func Test_search_cmdline2()
   " nor "/foo\<c-u>\<cr>" works to delete the commandline.
   " In that case Vim should return "E35 no previous regular expression",
   " but it looks like Vim still sees /foo and therefore the test fails.
-  " Therefore, disableing this test
+  " Therefore, disabling this test
   "call assert_fails(feedkeys("/foo\<c-w>\<cr>", 'tx'), 'E35')
   "call assert_equal({'lnum': 1, 'leftcol': 0, 'col': 0, 'topfill': 0, 'topline': 1, 'coladd': 0, 'skipcol': 0, 'curswant': 0}, winsaveview())
 
@@ -1280,7 +1280,7 @@ func Test_search_match_at_curpos()
 
   normal gg
 
-  call search('foobar', 'c')
+  eval 'foobar'->search('c')
   call assert_equal([1, 1], [line('.'), col('.')])
 
   normal j
@@ -1303,7 +1303,7 @@ func Test_search_display_pattern()
 
   call cursor(1, 1)
   let @/ = 'foo'
-  let pat = escape(@/, '()*?'. '\s\+')
+  let pat = @/->escape('()*?'. '\s\+')
   let g:a = execute(':unsilent :norm! n')
   call assert_match(pat, g:a)
 
@@ -1317,4 +1317,39 @@ func Test_search_display_pattern()
     call assert_match(pat, g:a)
     set norl
   endif
+endfunc
+
+func Test_searchdecl()
+  let lines =<< trim END
+     int global;
+
+     func()
+     {
+       int global;
+       if (cond) {
+	 int local;
+       }
+       int local;
+       // comment
+     }
+  END
+  new
+  call setline(1, lines)
+  10
+  call assert_equal(0, searchdecl('local', 0, 0))
+  call assert_equal(7, getcurpos()[1])
+
+  10
+  call assert_equal(0, 'local'->searchdecl(0, 1))
+  call assert_equal(9, getcurpos()[1])
+
+  10
+  call assert_equal(0, searchdecl('global'))
+  call assert_equal(5, getcurpos()[1])
+
+  10
+  call assert_equal(0, searchdecl('global', 1))
+  call assert_equal(1, getcurpos()[1])
+
+  bwipe!
 endfunc

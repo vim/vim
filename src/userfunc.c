@@ -1447,6 +1447,14 @@ func_call(
     return r;
 }
 
+static int callback_depth = 0;
+
+    int
+get_callback_depth(void)
+{
+    return callback_depth;
+}
+
 /*
  * Invoke call_func() with a callback.
  */
@@ -1460,12 +1468,15 @@ call_callback(
 				// PLUS ONE elements!
 {
     funcexe_T	funcexe;
+    int		ret;
 
     vim_memset(&funcexe, 0, sizeof(funcexe));
     funcexe.evaluate = TRUE;
     funcexe.partial = callback->cb_partial;
-    return call_func(callback->cb_name, len, rettv, argcount, argvars,
-								     &funcexe);
+    ++callback_depth;
+    ret = call_func(callback->cb_name, len, rettv, argcount, argvars, &funcexe);
+    --callback_depth;
+    return ret;
 }
 
 /*
@@ -1501,6 +1512,10 @@ call_func(
     int		argv_base = 0;
     partial_T	*partial = funcexe->partial;
 
+    // Initialize rettv so that it is safe for caller to invoke clear_tv(rettv)
+    // even when call_func() returns FAIL.
+    rettv->v_type = VAR_UNKNOWN;
+
     // Make a copy of the name, if it comes from a funcref variable it could
     // be changed or deleted in the called function.
     name = len > 0 ? vim_strnsave(funcname, len) : vim_strsave(funcname);
@@ -1530,16 +1545,7 @@ call_func(
 	}
     }
 
-    /*
-     * Execute the function if executing and no errors were detected.
-     */
-    if (!funcexe->evaluate)
-    {
-	// Not evaluating, which means the return value is unknown.  This
-	// matters for giving error messages.
-	rettv->v_type = VAR_UNKNOWN;
-    }
-    else if (error == ERROR_NONE)
+    if (error == ERROR_NONE && funcexe->evaluate)
     {
 	char_u *rfname = fname;
 
@@ -1614,9 +1620,7 @@ call_func(
 		     * redo buffer.
 		     */
 		    save_search_patterns();
-#ifdef FEAT_INS_EXPAND
 		    if (!ins_compl_active())
-#endif
 		    {
 			saveRedobuff(&save_redo);
 			did_save_redo = TRUE;
@@ -1678,6 +1682,11 @@ call_func(
 	    case ERROR_UNKNOWN:
 		    emsg_funcname(N_("E117: Unknown function: %s"), name);
 		    break;
+	    case ERROR_NOTMETHOD:
+		    emsg_funcname(
+			       N_("E276: Cannot use function as a method: %s"),
+									 name);
+		    break;
 	    case ERROR_DELETED:
 		    emsg_funcname(N_("E933: Function was deleted: %s"), name);
 		    break;
@@ -1685,15 +1694,18 @@ call_func(
 		    emsg_funcname((char *)e_toomanyarg, name);
 		    break;
 	    case ERROR_TOOFEW:
-		    emsg_funcname(N_("E119: Not enough arguments for function: %s"),
+		    emsg_funcname(
+			     N_("E119: Not enough arguments for function: %s"),
 									name);
 		    break;
 	    case ERROR_SCRIPT:
-		    emsg_funcname(N_("E120: Using <SID> not in a script context: %s"),
+		    emsg_funcname(
+			   N_("E120: Using <SID> not in a script context: %s"),
 									name);
 		    break;
 	    case ERROR_DICT:
-		    emsg_funcname(N_("E725: Calling dict function without Dictionary: %s"),
+		    emsg_funcname(
+		      N_("E725: Calling dict function without Dictionary: %s"),
 									name);
 		    break;
 	}
@@ -2785,8 +2797,6 @@ get_expanded_name(char_u *name, int check)
 }
 #endif
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
-
 /*
  * Function given to ExpandGeneric() to obtain the list of user defined
  * function names.
@@ -2829,8 +2839,6 @@ get_user_func_name(expand_T *xp, int idx)
     }
     return NULL;
 }
-
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * ":delfunction {name}"
@@ -3157,8 +3165,9 @@ ex_call(exarg_T *eap)
 	if (has_watchexpr())
 	    dbg_check_breakpoint(eap);
 
-	/* Handle a function returning a Funcref, Dictionary or List. */
-	if (handle_subscript(&arg, &rettv, !eap->skip, TRUE) == FAIL)
+	// Handle a function returning a Funcref, Dictionary or List.
+	if (handle_subscript(&arg, &rettv, !eap->skip, TRUE,
+							  name, &name) == FAIL)
 	{
 	    failed = TRUE;
 	    break;

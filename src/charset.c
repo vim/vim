@@ -35,6 +35,8 @@ static char_u	g_chartab[256];
 #define CT_ID_CHAR	0x20	/* flag: set for ID chars */
 #define CT_FNAME_CHAR	0x40	/* flag: set for file name chars */
 
+static int in_win_border(win_T *wp, colnr_T vcol);
+
 /*
  * Fill g_chartab[].  Also fills curbuf->b_chartab[] with flags for keyword
  * characters for current buffer.
@@ -312,8 +314,6 @@ trans_characters(
     }
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_TITLE) || defined(FEAT_INS_EXPAND) \
-	|| defined(PROTO)
 /*
  * Translate a string into allocated memory, replacing special chars with
  * printable chars.  Returns NULL when out of memory.
@@ -380,9 +380,7 @@ transstr(char_u *s)
     }
     return res;
 }
-#endif
 
-#if defined(FEAT_SYN_HL) || defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Convert the string "str[orglen]" to do ignore-case comparing.  Uses the
  * current locale.
@@ -493,7 +491,6 @@ str_foldcase(
 	return (char_u *)ga.ga_data;
     return buf;
 }
-#endif
 
 /*
  * Catch 22: g_chartab[] can't be initialized before the options are
@@ -1174,7 +1171,7 @@ win_nolbr_chartabsize(
  * Return TRUE if virtual column "vcol" is in the rightmost column of window
  * "wp".
  */
-    int
+    static int
 in_win_border(win_T *wp, colnr_T vcol)
 {
     int		width1;		/* width of first line (after line number) */
@@ -1776,6 +1773,7 @@ vim_isblankline(char_u *lbuf)
  * If "what" contains STR2NR_OCT recognize octal numbers
  * If "what" contains STR2NR_HEX recognize hex numbers
  * If "what" contains STR2NR_FORCE always assume bin/oct/hex.
+ * If "what" contains STR2NR_QUOTE ignore embedded single quotes
  * If maxlen > 0, check at a maximum maxlen chars.
  * If strict is TRUE, check the number strictly. return *len = 0 if fail.
  */
@@ -1844,7 +1842,8 @@ vim_str2nr(
 
     // Do the conversion manually to avoid sscanf() quirks.
     n = 1;
-    if (pre == 'B' || pre == 'b' || what == STR2NR_BIN + STR2NR_FORCE)
+    if (pre == 'B' || pre == 'b'
+			     || ((what & STR2NR_BIN) && (what & STR2NR_FORCE)))
     {
 	/* bin */
 	if (pre != 0)
@@ -1859,9 +1858,16 @@ vim_str2nr(
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
+	    if ((what & STR2NR_QUOTE) && *ptr == '\''
+					     && '0' <= ptr[1] && ptr[1] <= '1')
+	    {
+		++ptr;
+		if (n++ == maxlen)
+		    break;
+	    }
 	}
     }
-    else if (pre == '0' || what == STR2NR_OCT + STR2NR_FORCE)
+    else if (pre == '0' || ((what & STR2NR_OCT) && (what & STR2NR_FORCE)))
     {
 	/* octal */
 	while ('0' <= *ptr && *ptr <= '7')
@@ -1874,9 +1880,16 @@ vim_str2nr(
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
+	    if ((what & STR2NR_QUOTE) && *ptr == '\''
+					     && '0' <= ptr[1] && ptr[1] <= '7')
+	    {
+		++ptr;
+		if (n++ == maxlen)
+		    break;
+	    }
 	}
     }
-    else if (pre != 0 || what == STR2NR_HEX + STR2NR_FORCE)
+    else if (pre != 0 || ((what & STR2NR_HEX) && (what & STR2NR_FORCE)))
     {
 	/* hex */
 	if (pre != 0)
@@ -1891,6 +1904,12 @@ vim_str2nr(
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
+	    if ((what & STR2NR_QUOTE) && *ptr == '\'' && vim_isxdigit(ptr[1]))
+	    {
+		++ptr;
+		if (n++ == maxlen)
+		    break;
+	    }
 	}
     }
     else
@@ -1909,8 +1928,15 @@ vim_str2nr(
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
+	    if ((what & STR2NR_QUOTE) && *ptr == '\'' && VIM_ISDIGIT(ptr[1]))
+	    {
+		++ptr;
+		if (n++ == maxlen)
+		    break;
+	    }
 	}
     }
+
     // Check for an alpha-numeric character immediately following, that is
     // most likely a typo.
     if (strict && n - 1 != maxlen && ASCII_ISALNUM(*ptr))
@@ -2013,6 +2039,7 @@ backslash_halve(char_u *p)
 
 /*
  * backslash_halve() plus save the result in allocated memory.
+ * However, returns "p" when out of memory.
  */
     char_u *
 backslash_halve_save(char_u *p)

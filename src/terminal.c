@@ -875,7 +875,7 @@ free_scrollback(term_T *term)
 
 
 // Terminals that need to be freed soon.
-term_T	*terminals_to_free = NULL;
+static term_T	*terminals_to_free = NULL;
 
 /*
  * Free a terminal and everything it refers to.
@@ -2372,8 +2372,13 @@ terminal_loop(int blocking)
 	    }
 	    else if (termwinkey == 0 || c != termwinkey)
 	    {
-		stuffcharReadbuff(Ctrl_W);
-		stuffcharReadbuff(c);
+		char_u buf[MB_MAXBYTES + 2];
+
+		// Put the command into the typeahead buffer, when using the
+		// stuff buffer KeyStuffed is set and 'langmap' won't be used.
+		buf[0] = Ctrl_W;
+		buf[(*mb_char2bytes)(c, buf + 1) + 1] = NUL;
+		ins_typebuf(buf, REMAP_NONE, 0, TRUE, FALSE);
 		ret = OK;
 		goto theend;
 	    }
@@ -5050,6 +5055,8 @@ f_term_getattr(typval_T *argvars, typval_T *rettv)
     if (name == NULL)
 	return;
 
+    if (attr > HL_ALL)
+	attr = syn_attr2attr(attr);
     for (i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
 	if (STRCMP(name, attrs[i].name) == 0)
 	{
@@ -6017,7 +6024,7 @@ conpty_term_report_winsize(term_T *term, int rows, int cols)
     pResizePseudoConsole(term->tl_conpty, consize);
 }
 
-    void
+    static void
 term_free_conpty(term_T *term)
 {
     if (term->tl_siex.lpAttributeList != NULL)

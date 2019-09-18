@@ -152,8 +152,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 		This can be used to find out where time is spent while loading
 		your .vimrc, plugins and opening the first file.
 		When {fname} already exists new messages are appended.
-		(Only available when compiled with the |+startuptime|
-		feature).
+		{only available when compiled with the |+startuptime|
+		feature}
 
 							*--literal*
 --literal	Take file names literally, don't expand wildcards.  Not needed
@@ -311,10 +311,10 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 -l		Lisp mode.  Sets the 'lisp' and 'showmatch' options on.
 
 							*-A*
--A		Arabic mode.  Sets the 'arabic' option on.  (Only when
+-A		Arabic mode.  Sets the 'arabic' option on.  {only when
 		compiled with the |+arabic| features (which include
 		|+rightleft|), otherwise Vim gives an error message
-		and exits.)
+		and exits}
 
 							*-F*
 -F		This was used for Farsi mode, which has been removed.
@@ -322,8 +322,8 @@ a slash.  Thus "-R" means recovery and "-/R" readonly.
 
 							*-H*
 -H		Hebrew mode.  Sets the 'hkmap' and 'rightleft' options on.
-		(Only when compiled with the |+rightleft| feature, otherwise
-		Vim gives an error message and exits.)
+		{only when compiled with the |+rightleft| feature, otherwise
+		Vim gives an error message and exits}
 
 							*-V* *verbose*
 -V[N]		Verbose.  Sets the 'verbose' option to [N] (default: 10).

@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.1.  Last change: 2019 Aug 06
+*cmdline.txt*   For Vim version 8.1.  Last change: 2019 Sep 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -380,10 +380,8 @@ word before the cursor.  This is available for:
 - Mappings: Only after a ":map" or similar command.
 - Variable and function names: Only after a ":if", ":call" or similar command.
 
-When Vim was compiled without the |+cmdline_compl| feature only file names,
-directories and help items can be completed.  The number of help item matches
-is limited (currently to 300) to avoid a long delay when there are very many
-matches.
+The number of help item matches is limited (currently to 300) to avoid a long
+delay when there are very many matches.
 
 These are the commands that can be used:
 
@@ -911,8 +909,7 @@ Note: these are typed literally, they are not special keys!
      *%:8* *%:p* *%:.* *%:~* *%:h* *%:t* *%:r* *%:e* *%:s* *%:gs* *%:S*
 The file name modifiers can be used after "%", "#", "#n", "<cfile>", "<sfile>",
 "<afile>" or "<abuf>".  They are also used with the |fnamemodify()| function.
-These are not available when Vim has been compiled without the |+modify_fname|
-feature.
+
 These modifiers can be given, in this order:
 	:p	Make file name a full path.  Must be the first modifier.  Also
 		changes "~/" (and "~user/" for Unix and VMS) to the path for
@@ -1174,11 +1171,9 @@ edited as described in |cmdwin-char|.
 
 AUTOCOMMANDS
 
-Two autocommand events are used: |CmdwinEnter| and |CmdwinLeave|.  Since this
-window is of a special type, the WinEnter, WinLeave, BufEnter and BufLeave
-events are not triggered.  You can use the Cmdwin events to do settings
-specifically for the command-line window.  Be careful not to cause side
-effects!
+Two autocommand events are used: |CmdwinEnter| and |CmdwinLeave|.  You can use
+the Cmdwin events to do settings specifically for the command-line window.
+Be careful not to cause side effects!
 Example: >
 	:au CmdwinEnter :  let b:cpt_save = &cpt | set cpt=.
 	:au CmdwinLeave :  let &cpt = b:cpt_save

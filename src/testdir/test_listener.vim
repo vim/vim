@@ -59,10 +59,10 @@ func Test_listening()
   " a change above a previous change without a line number change is reported
   " together
   call setline(1, ['one one', 'two'])
-  call listener_flush()
+  call listener_flush(bufnr())
   call append(2, 'two two')
   call setline(1, 'something')
-  call listener_flush()
+  call bufnr()->listener_flush()
   call assert_equal([{'lnum': 3, 'end': 3, 'col': 1, 'added': 1},
 	\ {'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list)
 
@@ -134,7 +134,7 @@ func Test_listening()
   redraw
   call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list3)
 
-  call listener_remove(id)
+  eval id->listener_remove()
   bwipe!
 endfunc
 
@@ -214,7 +214,7 @@ func Test_listening_other_buf()
   call setline(1, ['one', 'two'])
   let bufnr = bufnr('')
   normal ww
-  let id = listener_add(function('s:StoreBufList'), bufnr)
+  let id = bufnr->listener_add(function('s:StoreBufList'))
   let s:list = []
   call setbufline(bufnr, 1, 'hello')
   redraw
@@ -234,7 +234,7 @@ func Test_listener_garbage_collect()
   new
   let id = listener_add(function('MyListener', [{}]), bufnr(''))
   call test_garbagecollect_now()
-  " must not crach caused by invalid memory access
+  " must not crash caused by invalid memory access
   normal ia
   call assert_true(v:true)
 
@@ -267,4 +267,26 @@ func Test_listener_caches_buffer_line()
   call listener_remove(lid)
   iunmap <CR>
   set nocindent
+endfunc
+
+" Verify the fix for issue #4908
+func Test_listener_undo_line_number()
+  function DoIt()
+    " NOP
+  endfunction
+  function EchoChanges(bufnr, start, end, added, changes)
+    call DoIt()
+  endfunction
+
+  new
+  let lid = listener_add("EchoChanges")
+  call setline(1, ['a', 'b', 'c'])
+  set undolevels&  " start new undo block
+  call feedkeys("ggcG\<Esc>", 'xt')
+  undo
+
+  bwipe!
+  delfunc DoIt
+  delfunc EchoChanges
+  call listener_remove(lid)
 endfunc

@@ -59,7 +59,6 @@ int mch_get_shellsize(void);
 int mch_report_winsize(int fd, int rows, int cols);
 void mch_set_shellsize(void);
 void mch_new_shellsize(void);
-void may_send_sigint(int c, pid_t pid, pid_t wpid);
 int mch_call_shell(char_u *cmd, int options);
 void mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal);
 char *mch_job_status(job_T *job);

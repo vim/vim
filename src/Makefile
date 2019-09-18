@@ -1577,6 +1577,7 @@ include testdir/Make_all.mak
 
 BASIC_SRC = \
 	arabic.c \
+	arglist.c \
 	autocmd.c \
 	beval.c \
 	blob.c \
@@ -1584,6 +1585,7 @@ BASIC_SRC = \
 	buffer.c \
 	change.c \
 	charset.c \
+	cmdexpand.c \
 	cmdhist.c \
 	crypt.c \
 	crypt_zip.c \
@@ -1593,13 +1595,17 @@ BASIC_SRC = \
 	digraph.c \
 	edit.c \
 	eval.c \
+	evalbuffer.c \
 	evalfunc.c \
+	evalvars.c \
+	evalwindow.c \
 	ex_cmds.c \
 	ex_cmds2.c \
 	ex_docmd.c \
 	ex_eval.c \
 	ex_getln.c \
 	fileio.c \
+	filepath.c \
 	findfile.c \
 	fold.c \
 	getchar.c \
@@ -1626,6 +1632,7 @@ BASIC_SRC = \
 	normal.c \
 	ops.c \
 	option.c \
+	optionstr.c \
 	os_unix.c \
 	auto/pathdef.c \
 	popupmnu.c \
@@ -1634,6 +1641,7 @@ BASIC_SRC = \
 	pty.c \
 	quickfix.c \
 	regexp.c \
+	scriptfile.c \
 	screen.c \
 	search.c \
 	session.c \
@@ -1704,12 +1712,14 @@ LINT_SRC = $(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) \
 
 OBJ_COMMON = \
 	objects/arabic.o \
+	objects/arglist.o \
 	objects/autocmd.o \
 	objects/beval.o \
 	objects/buffer.o \
 	objects/change.o \
 	objects/blob.o \
 	objects/blowfish.o \
+	objects/cmdexpand.o \
 	objects/cmdhist.o \
 	objects/crypt.o \
 	objects/crypt_zip.o \
@@ -1719,13 +1729,17 @@ OBJ_COMMON = \
 	objects/digraph.o \
 	objects/edit.o \
 	objects/eval.o \
+	objects/evalbuffer.o \
 	objects/evalfunc.o \
+	objects/evalvars.o \
+	objects/evalwindow.o \
 	objects/ex_cmds.o \
 	objects/ex_cmds2.o \
 	objects/ex_docmd.o \
 	objects/ex_eval.o \
 	objects/ex_getln.o \
 	objects/fileio.o \
+	objects/filepath.o \
 	objects/findfile.o \
 	objects/fold.o \
 	objects/getchar.o \
@@ -1749,6 +1763,7 @@ OBJ_COMMON = \
 	objects/normal.o \
 	objects/ops.o \
 	objects/option.o \
+	objects/optionstr.o \
 	objects/os_unix.o \
 	objects/pathdef.o \
 	objects/popupmnu.o \
@@ -1757,6 +1772,7 @@ OBJ_COMMON = \
 	objects/pty.o \
 	objects/quickfix.o \
 	objects/regexp.o \
+	objects/scriptfile.o \
 	objects/screen.o \
 	objects/search.o \
 	objects/session.o \
@@ -1844,11 +1860,13 @@ ALL_OBJ = $(OBJ_COMMON) \
 
 PRO_AUTO = \
 	arabic.pro \
+	arglist.pro \
 	autocmd.pro \
 	blowfish.pro \
 	buffer.pro \
 	change.pro \
 	charset.pro \
+	cmdexpand.pro \
 	cmdhist.pro \
 	crypt.pro \
 	crypt_zip.pro \
@@ -1858,13 +1876,17 @@ PRO_AUTO = \
 	digraph.pro \
 	edit.pro \
 	eval.pro \
+	evalbuffer.pro \
 	evalfunc.pro \
+	evalvars.pro \
+	evalwindow.pro \
 	ex_cmds.pro \
 	ex_cmds2.pro \
 	ex_docmd.pro \
 	ex_eval.pro \
 	ex_getln.pro \
 	fileio.pro \
+	filepath.pro \
 	findfile.pro \
 	fold.pro \
 	getchar.pro \
@@ -1897,6 +1919,7 @@ PRO_AUTO = \
 	normal.pro \
 	ops.pro \
 	option.pro \
+	optionstr.pro \
 	os_mac_conv.pro \
 	os_unix.pro \
 	popupmnu.pro \
@@ -1905,6 +1928,7 @@ PRO_AUTO = \
 	pty.pro \
 	quickfix.pro \
 	regexp.pro \
+	scriptfile.pro \
 	screen.pro \
 	search.pro \
 	session.pro \
@@ -2816,12 +2840,31 @@ clean celan: testclean
 	fi
 
 # Make a shadow directory for compilation on another system or with different
-# features.
+# features:
+#  % make shadow
+#  % cd shadow
+#  edit configuration in src/shadow/Makefile
+#  % make
+#
+# Alternatively use a link for the Makefile and run configure with flags in
+# another way.  When new source files are added use "shadowupdate":
+#  % cd shadow
+#  % rm Makefile
+#  % ln -s ../Makefile .
+#  % ./configure {options}
+#  % make
+# And later:
+#  % git pull
+#  % make distclean shadowupdate
+#  % ./configure {options}
+#  % make
 SHADOWDIR = shadow
+
+LINKEDFILES = ../*.[chm] ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../libvterm ../vimtutor ../gvimtutor ../install-sh ../Make_all.mak
 
 shadow:	runtime pixmaps
 	$(MKDIR_P) $(SHADOWDIR)
-	cd $(SHADOWDIR); ln -s ../*.[chm] ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../libvterm ../vimtutor ../gvimtutor ../install-sh ../Make_all.mak .
+	cd $(SHADOWDIR); ln -s $(LINKEDFILES) .
 	mkdir $(SHADOWDIR)/auto
 	cd $(SHADOWDIR)/auto; ln -s ../../auto/configure .
 	$(MKDIR_P) $(SHADOWDIR)/po
@@ -2854,6 +2897,12 @@ shadow:	runtime pixmaps
 				 ../../testdir/dumps \
 				 ../../testdir/test83-tags? \
 				 ../../testdir/*.ok .
+
+# After updating Vim new files may have been created, use this to refresh the
+# symbolic links in the shadow directory. This isn't guaranteed to catch all
+# changes, running "make shadow" again might sometimes be needed.
+shadowupdate:
+	ln -sf $(LINKEDFILES) .
 
 # Link needed for doing "make install" in a shadow directory.
 runtime:
@@ -2989,6 +3038,9 @@ $(ALL_OBJ): objects/.dirstamp
 objects/arabic.o: arabic.c
 	$(CCC) -o $@ arabic.c
 
+objects/arglist.o: arglist.c
+	$(CCC) -o $@ arglist.c
+
 objects/autocmd.o: autocmd.c
 	$(CCC) -o $@ autocmd.c
 
@@ -3006,6 +3058,9 @@ objects/change.o: change.c
 
 objects/charset.o: charset.c
 	$(CCC) -o $@ charset.c
+
+objects/cmdexpand.o: cmdexpand.c
+	$(CCC) -o $@ cmdexpand.c
 
 objects/cmdhist.o: cmdhist.c
 	$(CCC) -o $@ cmdhist.c
@@ -3034,8 +3089,17 @@ objects/edit.o: edit.c
 objects/eval.o: eval.c
 	$(CCC) -o $@ eval.c
 
+objects/evalbuffer.o: evalbuffer.c
+	$(CCC) -o $@ evalbuffer.c
+
 objects/evalfunc.o: evalfunc.c
 	$(CCC) -o $@ evalfunc.c
+
+objects/evalvars.o: evalvars.c
+	$(CCC) -o $@ evalvars.c
+
+objects/evalwindow.o: evalwindow.c
+	$(CCC) -o $@ evalwindow.c
 
 objects/ex_cmds.o: ex_cmds.c
 	$(CCC) -o $@ ex_cmds.c
@@ -3054,6 +3118,9 @@ objects/ex_getln.o: ex_getln.c
 
 objects/fileio.o: fileio.c
 	$(CCC) -o $@ fileio.c
+
+objects/filepath.o: filepath.c
+	$(CCC) -o $@ filepath.c
 
 objects/findfile.o: findfile.c
 	$(CCC) -o $@ findfile.c
@@ -3220,8 +3287,11 @@ objects/normal.o: normal.c
 objects/ops.o: ops.c
 	$(CCC) -o $@ ops.c
 
-objects/option.o: option.c
+objects/option.o: option.c optiondefs.h
 	$(CCC_NF) $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(PYTHON3_CFLAGS) $(RUBY_CFLAGS) $(TCL_CFLAGS) $(ALL_CFLAGS) -o $@ option.c
+
+objects/optionstr.o: optionstr.c
+	$(CCC_NF) $(LUA_CFLAGS) $(PERL_CFLAGS) $(PYTHON_CFLAGS) $(PYTHON3_CFLAGS) $(RUBY_CFLAGS) $(TCL_CFLAGS) $(ALL_CFLAGS) -o $@ optionstr.c
 
 objects/os_beos.o: os_beos.c
 	$(CCC) -o $@ os_beos.c
@@ -3262,8 +3332,11 @@ objects/pty.o: pty.c
 objects/quickfix.o: quickfix.c
 	$(CCC) -o $@ quickfix.c
 
-objects/regexp.o: regexp.c regexp_nfa.c
+objects/regexp.o: regexp.c regexp_bt.c regexp_nfa.c
 	$(CCC) -o $@ regexp.c
+
+objects/scriptfile.o: scriptfile.c
+	$(CCC) -o $@ scriptfile.c
 
 objects/screen.o: screen.c
 	$(CCC) -o $@ screen.c
@@ -3476,6 +3549,10 @@ objects/arabic.o: arabic.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
+objects/arglist.o: arglist.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
 objects/autocmd.o: autocmd.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
@@ -3501,6 +3578,10 @@ objects/change.o: change.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h version.h
 objects/charset.o: charset.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/cmdexpand.o: cmdexpand.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
@@ -3540,10 +3621,22 @@ objects/eval.o: eval.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h version.h
+objects/evalbuffer.o: evalbuffer.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h version.h
 objects/evalfunc.o: evalfunc.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h version.h
+objects/evalvars.o: evalvars.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/evalwindow.o: evalwindow.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
 objects/ex_cmds.o: ex_cmds.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
@@ -3565,6 +3658,10 @@ objects/ex_getln.o: ex_getln.c vim.h protodef.h auto/config.h feature.h os_unix.
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/fileio.o: fileio.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/filepath.o: filepath.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
@@ -3671,6 +3768,10 @@ objects/ops.o: ops.c vim.h protodef.h auto/config.h feature.h os_unix.h \
 objects/option.o: option.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h optiondefs.h
+objects/optionstr.o: optionstr.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/os_unix.o: os_unix.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
@@ -3703,7 +3804,11 @@ objects/quickfix.o: quickfix.c vim.h protodef.h auto/config.h feature.h os_unix.
 objects/regexp.o: regexp.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h regexp_nfa.c
+ proto.h globals.h regexp_bt.c regexp_nfa.c
+objects/scriptfile.o: scriptfile.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
 objects/screen.o: screen.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

@@ -91,7 +91,9 @@ static int	last_recorded_len = 0;	/* number of last recorded chars */
 static int	read_readbuf(buffheader_T *buf, int advance);
 static void	init_typebuf(void);
 static void	may_sync_undo(void);
+static void	free_typebuf(void);
 static void	closescript(void);
+static void	updatescript(int c);
 static int	vgetorpeek(int);
 static int	inchar(char_u *buf, int maxlen, long wait_time);
 
@@ -931,6 +933,7 @@ ins_typebuf(
     init_typebuf();
     if (++typebuf.tb_change_cnt == 0)
 	typebuf.tb_change_cnt = 1;
+    state_no_longer_safe();
 
     addlen = (int)STRLEN(str);
 
@@ -1263,7 +1266,7 @@ may_sync_undo(void)
  * Make "typebuf" empty and allocate new buffers.
  * Returns FAIL when out of memory.
  */
-    int
+    static int
 alloc_typebuf(void)
 {
     typebuf.tb_buf = alloc(TYPELEN_INIT);
@@ -1287,7 +1290,7 @@ alloc_typebuf(void)
 /*
  * Free the buffers of "typebuf".
  */
-    void
+    static void
 free_typebuf(void)
 {
     if (typebuf.tb_buf == typebuf_init)
@@ -1479,7 +1482,6 @@ close_all_scripts(void)
 }
 #endif
 
-#if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Return TRUE when reading keys from a script file.
  */
@@ -1488,7 +1490,6 @@ using_script(void)
 {
     return scriptin[curscript] != NULL;
 }
-#endif
 
 /*
  * This function is called just before doing a blocking wait.  Thus after
@@ -1511,7 +1512,7 @@ before_blocking(void)
  * All the changed memfiles are synced if c == 0 or when the number of typed
  * characters reaches 'updatecount' and 'updatecount' is non-zero.
  */
-    void
+    static void
 updatescript(int c)
 {
     static int	    count = 0;
@@ -1779,10 +1780,11 @@ vgetc(void)
      */
     may_garbage_collect = FALSE;
 #endif
+
 #ifdef FEAT_BEVAL_TERM
     if (c != K_MOUSEMOVE && c != K_IGNORE && c != K_CURSORHOLD)
     {
-	/* Don't trigger 'balloonexpr' unless only the mouse was moved. */
+	// Don't trigger 'balloonexpr' unless only the mouse was moved.
 	bevalexpr_due_set = FALSE;
 	ui_remove_balloon();
     }
@@ -1791,6 +1793,11 @@ vgetc(void)
     if (popup_do_filter(c))
 	c = K_IGNORE;
 #endif
+
+    // Need to process the character before we know it's safe to do something
+    // else.
+    if (c != K_IGNORE)
+	state_no_longer_safe();
 
     return c;
 }
@@ -1864,7 +1871,6 @@ vpeekc_nomap(void)
 }
 #endif
 
-#if defined(FEAT_INS_EXPAND) || defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Check if any character is available, also half an escape sequence.
  * Trick: when no typeahead found, but there is something in the typeahead
@@ -1880,7 +1886,6 @@ vpeekc_any(void)
 	c = ESC;
     return c;
 }
-#endif
 
 /*
  * Call vpeekc() without causing anything to be mapped.
@@ -1902,6 +1907,215 @@ char_avail(void)
     --no_mapping;
     return (retval != NUL);
 }
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * "getchar()" function
+ */
+    void
+f_getchar(typval_T *argvars, typval_T *rettv)
+{
+    varnumber_T		n;
+    int			error = FALSE;
+
+#ifdef MESSAGE_QUEUE
+    // vpeekc() used to check for messages, but that caused problems, invoking
+    // a callback where it was not expected.  Some plugins use getchar(1) in a
+    // loop to await a message, therefore make sure we check for messages here.
+    parse_queued_messages();
+#endif
+
+    /* Position the cursor.  Needed after a message that ends in a space. */
+    windgoto(msg_row, msg_col);
+
+    ++no_mapping;
+    ++allow_keys;
+    for (;;)
+    {
+	if (argvars[0].v_type == VAR_UNKNOWN)
+	    /* getchar(): blocking wait. */
+	    n = plain_vgetc();
+	else if (tv_get_number_chk(&argvars[0], &error) == 1)
+	    /* getchar(1): only check if char avail */
+	    n = vpeekc_any();
+	else if (error || vpeekc_any() == NUL)
+	    /* illegal argument or getchar(0) and no char avail: return zero */
+	    n = 0;
+	else
+	    /* getchar(0) and char avail: return char */
+	    n = plain_vgetc();
+
+	if (n == K_IGNORE)
+	    continue;
+	break;
+    }
+    --no_mapping;
+    --allow_keys;
+
+    set_vim_var_nr(VV_MOUSE_WIN, 0);
+    set_vim_var_nr(VV_MOUSE_WINID, 0);
+    set_vim_var_nr(VV_MOUSE_LNUM, 0);
+    set_vim_var_nr(VV_MOUSE_COL, 0);
+
+    rettv->vval.v_number = n;
+    if (IS_SPECIAL(n) || mod_mask != 0)
+    {
+	char_u		temp[10];   /* modifier: 3, mbyte-char: 6, NUL: 1 */
+	int		i = 0;
+
+	/* Turn a special key into three bytes, plus modifier. */
+	if (mod_mask != 0)
+	{
+	    temp[i++] = K_SPECIAL;
+	    temp[i++] = KS_MODIFIER;
+	    temp[i++] = mod_mask;
+	}
+	if (IS_SPECIAL(n))
+	{
+	    temp[i++] = K_SPECIAL;
+	    temp[i++] = K_SECOND(n);
+	    temp[i++] = K_THIRD(n);
+	}
+	else if (has_mbyte)
+	    i += (*mb_char2bytes)(n, temp + i);
+	else
+	    temp[i++] = n;
+	temp[i++] = NUL;
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = vim_strsave(temp);
+
+#ifdef FEAT_MOUSE
+	if (is_mouse_key(n))
+	{
+	    int		row = mouse_row;
+	    int		col = mouse_col;
+	    win_T	*win;
+	    linenr_T	lnum;
+	    win_T	*wp;
+	    int		winnr = 1;
+
+	    if (row >= 0 && col >= 0)
+	    {
+		/* Find the window at the mouse coordinates and compute the
+		 * text position. */
+		win = mouse_find_win(&row, &col, FIND_POPUP);
+		if (win == NULL)
+		    return;
+		(void)mouse_comp_pos(win, &row, &col, &lnum, NULL);
+# ifdef FEAT_TEXT_PROP
+		if (WIN_IS_POPUP(win))
+		    winnr = 0;
+		else
+# endif
+		    for (wp = firstwin; wp != win && wp != NULL;
+							       wp = wp->w_next)
+			++winnr;
+		set_vim_var_nr(VV_MOUSE_WIN, winnr);
+		set_vim_var_nr(VV_MOUSE_WINID, win->w_id);
+		set_vim_var_nr(VV_MOUSE_LNUM, lnum);
+		set_vim_var_nr(VV_MOUSE_COL, col + 1);
+	    }
+	}
+#endif
+    }
+}
+
+/*
+ * "getcharmod()" function
+ */
+    void
+f_getcharmod(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->vval.v_number = mod_mask;
+}
+#endif // FEAT_EVAL
+
+#if defined(MESSAGE_QUEUE) || defined(PROTO)
+# define MAX_REPEAT_PARSE 8
+
+/*
+ * Process messages that have been queued for netbeans or clientserver.
+ * Also check if any jobs have ended.
+ * These functions can call arbitrary vimscript and should only be called when
+ * it is safe to do so.
+ */
+    void
+parse_queued_messages(void)
+{
+    int	    old_curwin_id = curwin->w_id;
+    int	    old_curbuf_fnum = curbuf->b_fnum;
+    int	    i;
+    int	    save_may_garbage_collect = may_garbage_collect;
+    static int entered = 0;
+
+    // Do not handle messages while redrawing, because it may cause buffers to
+    // change or be wiped while they are being redrawn.
+    if (updating_screen)
+	return;
+
+    ++entered;
+
+    // may_garbage_collect is set in main_loop() to do garbage collection when
+    // blocking to wait on a character.  We don't want that while parsing
+    // messages, a callback may invoke vgetc() while lists and dicts are in use
+    // in the call stack.
+    may_garbage_collect = FALSE;
+
+    // Loop when a job ended, but don't keep looping forever.
+    for (i = 0; i < MAX_REPEAT_PARSE; ++i)
+    {
+	// For Win32 mch_breakcheck() does not check for input, do it here.
+# if defined(MSWIN) && defined(FEAT_JOB_CHANNEL)
+	channel_handle_events(FALSE);
+# endif
+
+# ifdef FEAT_NETBEANS_INTG
+	// Process the queued netbeans messages.
+	netbeans_parse_messages();
+# endif
+# ifdef FEAT_JOB_CHANNEL
+	// Write any buffer lines still to be written.
+	channel_write_any_lines();
+
+	// Process the messages queued on channels.
+	channel_parse_messages();
+# endif
+# if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
+	// Process the queued clientserver messages.
+	server_parse_messages();
+# endif
+# ifdef FEAT_JOB_CHANNEL
+	// Check if any jobs have ended.  If so, repeat the above to handle
+	// changes, e.g. stdin may have been closed.
+	if (job_check_ended())
+	    continue;
+# endif
+# ifdef FEAT_TERMINAL
+	free_unused_terminals();
+# endif
+# ifdef FEAT_SOUND_CANBERRA
+	if (has_sound_callback_in_queue())
+	    invoke_sound_callback();
+# endif
+	break;
+    }
+
+    // When not nested we'll go back to waiting for a typed character.  If it
+    // was safe before then this triggers a SafeStateAgain autocommand event.
+    if (entered == 1)
+	may_trigger_safestateagain();
+
+    may_garbage_collect = save_may_garbage_collect;
+
+    // If the current window or buffer changed we need to bail out of the
+    // waiting loop.  E.g. when a job exit callback closes the terminal window.
+    if (curwin->w_id != old_curwin_id || curbuf->b_fnum != old_curbuf_fnum)
+	ins_char_typebuf(K_IGNORE);
+
+    --entered;
+}
+#endif
+
 
 typedef enum {
     map_result_fail,    // failed, break loop
@@ -1961,12 +2175,9 @@ handle_mapping(
 	    && !(State == HITRETURN && (tb_c1 == CAR || tb_c1 == ' '))
 	    && State != ASKMORE
 	    && State != CONFIRM
-#ifdef FEAT_INS_EXPAND
 	    && !((ctrl_x_mode_not_default() && vim_is_ctrl_x_key(tb_c1))
 		    || ((compl_cont_status & CONT_LOCAL)
-			&& (tb_c1 == Ctrl_N || tb_c1 == Ctrl_P)))
-#endif
-	    )
+			&& (tb_c1 == Ctrl_N || tb_c1 == Ctrl_P))))
     {
 #ifdef FEAT_LANGMAP
 	if (tb_c1 == K_SPECIAL)
@@ -3021,7 +3232,6 @@ inchar(
 #endif
 	    )
     {
-
 #ifdef MESSAGE_QUEUE
 	parse_queued_messages();
 #endif

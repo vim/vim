@@ -25,7 +25,7 @@ func Test_proptype_global()
 
   call prop_type_add('one', {})
   call assert_equal(1, len(prop_type_list()))
-  let proptype = prop_type_get('one')
+  let proptype = 'one'->prop_type_get()
   call assert_false(has_key(proptype, 'highlight'))
   call assert_equal(0, proptype['priority'])
   call assert_equal(0, proptype['start_incl'])
@@ -53,7 +53,7 @@ func Test_proptype_buf()
   call assert_equal(1, proptype['end_incl'])
 
   call prop_type_delete('comment', {'bufnr': bufnr})
-  call assert_equal(0, len(prop_type_list({'bufnr': bufnr})))
+  call assert_equal(0, len({'bufnr': bufnr}->prop_type_list()))
 
   call prop_type_add('one', {'bufnr': bufnr})
   let proptype = prop_type_get('one', {'bufnr': bufnr})
@@ -89,7 +89,7 @@ endfunc
 func SetupPropsInFirstLine()
   call setline(1, 'one two three')
   call prop_add(1, 1, {'length': 3, 'id': 11, 'type': 'one'})
-  call prop_add(1, 5, {'length': 3, 'id': 12, 'type': 'two'})
+  eval 1->prop_add(5, {'length': 3, 'id': 12, 'type': 'two'})
   call prop_add(1, 9, {'length': 5, 'id': 13, 'type': 'three'})
   call prop_add(1, 1, {'length': 13, 'id': 14, 'type': 'whole'})
 endfunc
@@ -139,7 +139,7 @@ func Test_prop_remove()
   call assert_equal(props, prop_list(1))
 
   " remove by id
-  call assert_equal(1, prop_remove({'id': 12}, 1))
+  call assert_equal(1, {'id': 12}->prop_remove(1))
   unlet props[2]
   call assert_equal(props, prop_list(1))
 
@@ -344,8 +344,8 @@ func Test_prop_clear()
   call SetupPropsInFirstLine()
   call assert_equal(Get_expected_props(), prop_list(1))
 
-  call prop_clear(1)
-  call assert_equal([], prop_list(1))
+  eval 1->prop_clear()
+  call assert_equal([], 1->prop_list())
 
   call DeletePropTypes()
   bwipe!
@@ -489,7 +489,7 @@ func Setup_three_line_prop()
 endfunc
 
 func Test_prop_multiline()
-  call prop_type_add('comment', {'highlight': 'Directory'})
+  eval 'comment'->prop_type_add({'highlight': 'Directory'})
   new
   call setline(1, ['xxxxxxx', 'yyyyyyyyy', 'zzzzzzzz'])
 
@@ -672,11 +672,13 @@ func Test_textprop_screenshot_various()
 	\ "hi BackgroundProp ctermbg=lightgrey",
 	\ "hi UnderlineProp cterm=underline",
 	\ "call prop_type_add('number', {'highlight': 'NumberProp'})",
-	\ "call prop_type_add('long', {'highlight': 'LongProp'})",
+	\ "call prop_type_add('long', {'highlight': 'NumberProp'})",
+	\ "call prop_type_change('long', {'highlight': 'LongProp'})",
 	\ "call prop_type_add('start', {'highlight': 'NumberProp', 'start_incl': 1})",
 	\ "call prop_type_add('end', {'highlight': 'NumberProp', 'end_incl': 1})",
 	\ "call prop_type_add('both', {'highlight': 'NumberProp', 'start_incl': 1, 'end_incl': 1})",
-	\ "call prop_type_add('background', {'highlight': 'BackgroundProp', 'combine': 1})",
+	\ "call prop_type_add('background', {'highlight': 'NumberProp', 'combine': 1})",
+	\ "eval 'background'->prop_type_change({'highlight': 'BackgroundProp'})",
 	\ "call prop_type_add('error', {'highlight': 'UnderlineProp', 'combine': 1})",
 	\ "call prop_add(1, 4, {'end_lnum': 3, 'end_col': 3, 'type': 'long'})",
 	\ "call prop_add(2, 9, {'length': 3, 'type': 'number'})",

@@ -330,7 +330,7 @@ func Test_diffoff()
   call setline(1, ['One', '', 'Two', 'Three'])
   diffthis
   redraw
-  call assert_notequal(normattr, screenattr(1, 1))
+  call assert_notequal(normattr, 1->screenattr(1))
   diffoff!
   redraw
   call assert_equal(normattr, screenattr(1, 1))
@@ -674,7 +674,7 @@ func Test_diff_hlID()
   call diff_hlID(1, 2)->synIDattr("name")->assert_equal("DiffText")
   call diff_hlID(2, 1)->synIDattr("name")->assert_equal("")
   call diff_hlID(3, 1)->synIDattr("name")->assert_equal("DiffAdd")
-  call diff_hlID(4, 1)->synIDattr("name")->assert_equal("")
+  eval 4->diff_hlID(1)->synIDattr("name")->assert_equal("")
 
   wincmd w
   call assert_equal(synIDattr(diff_hlID(1, 1), "name"), "DiffChange")
@@ -693,7 +693,7 @@ func Test_diff_filler()
   diffthis
   redraw
 
-  call assert_equal([0, 0, 0, 0, 0, 0, 0, 1, 0], map(range(-1, 7), 'diff_filler(v:val)'))
+  call assert_equal([0, 0, 0, 0, 0, 0, 0, 1, 0], map(range(-1, 7), 'v:val->diff_filler()'))
   wincmd w
   call assert_equal([0, 0, 0, 0, 2, 0, 0, 0], map(range(-1, 6), 'diff_filler(v:val)'))
 
@@ -903,6 +903,42 @@ func Test_diff_with_cursorline()
   " clean up
   call StopVimInTerminal(buf)
   call delete('Xtest_diff_cursorline')
+endfunc
+
+func Test_diff_with_syntax()
+  CheckScreendump
+
+  let lines =<< trim END
+  	void doNothing() {
+	   int x = 0;
+	   char *s = "hello";
+	   return 5;
+	}
+  END
+  call writefile(lines, 'Xprogram1.c')
+  let lines =<< trim END
+  	void doSomething() {
+	   int x = 0;
+	   char *s = "there";
+	   return 5;
+	}
+  END
+  call writefile(lines, 'Xprogram2.c')
+
+  let lines =<< trim END
+  	edit Xprogram1.c
+	diffsplit Xprogram2.c
+  END
+  call writefile(lines, 'Xtest_diff_syntax')
+  let buf = RunVimInTerminal('-S Xtest_diff_syntax', {})
+
+  call VerifyScreenDump(buf, 'Test_diff_syntax_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_diff_syntax')
+  call delete('Xprogram1.c')
+  call delete('Xprogram2.c')
 endfunc
 
 func Test_diff_of_diff()

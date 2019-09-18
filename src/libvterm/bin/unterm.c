@@ -208,14 +208,14 @@ static int screen_resize(int new_rows, int new_cols, void *user)
 }
 
 static VTermScreenCallbacks cb_screen = {
-  NULL, /* damage */
-  NULL, /* moverect */
-  NULL, /* movecursor */
-  NULL, /* settermprop */
-  NULL, /* bell */
-  &screen_resize, /* resize */
-  &screen_sb_pushline, /* sb_pushline */
-  NULL, /* popline */
+  NULL, // damage
+  NULL, // moverect
+  NULL, // movecursor
+  NULL, // settermprop
+  NULL, // bell
+  &screen_resize, // resize
+  &screen_sb_pushline, // sb_pushline
+  NULL, // popline
 };
 
 int main(int argc, char *argv[])

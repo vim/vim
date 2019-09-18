@@ -56,7 +56,6 @@ void f_term_start(typval_T *argvars, typval_T *rettv);
 void f_term_wait(typval_T *argvars, typval_T *rettv);
 void term_send_eof(channel_T *ch);
 job_T *term_getjob(term_T *term);
-void term_free_conpty(term_T *term);
 int use_conpty(void);
 int terminal_enabled(void);
 /* vim: set ft=c : */

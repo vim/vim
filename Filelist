@@ -13,6 +13,7 @@ SRC_ALL =	\
 		src/README.md \
 		src/alloc.h \
 		src/arabic.c \
+		src/arglist.c \
 		src/ascii.h \
 		src/autocmd.c \
 		src/beval.c \
@@ -23,6 +24,7 @@ SRC_ALL =	\
 		src/change.c \
 		src/channel.c \
 		src/charset.c \
+		src/cmdexpand.c \
 		src/cmdhist.c \
 		src/crypt.c \
 		src/crypt_zip.c \
@@ -32,7 +34,10 @@ SRC_ALL =	\
 		src/digraph.c \
 		src/edit.c \
 		src/eval.c \
+		src/evalbuffer.c \
 		src/evalfunc.c \
+		src/evalvars.c \
+		src/evalwindow.c \
 		src/ex_cmdidxs.h \
 		src/ex_cmds.c \
 		src/ex_cmds.h \
@@ -42,6 +47,7 @@ SRC_ALL =	\
 		src/ex_getln.c \
 		src/feature.h \
 		src/fileio.c \
+		src/filepath.c \
 		src/findfile.c \
 		src/fold.c \
 		src/getchar.c \
@@ -81,13 +87,17 @@ SRC_ALL =	\
 		src/ops.c \
 		src/option.c \
 		src/option.h \
+		src/optiondefs.h \
+		src/optionstr.c \
 		src/popupmnu.c \
 		src/popupwin.c \
 		src/profiler.c \
 		src/quickfix.c \
 		src/regexp.c \
+		src/regexp_bt.c \
 		src/regexp_nfa.c \
 		src/regexp.h \
+		src/scriptfile.c \
 		src/screen.c \
 		src/search.c \
 		src/session.c \
@@ -165,6 +175,7 @@ SRC_ALL =	\
 		src/proto.h \
 		src/protodef.h \
 		src/proto/arabic.pro \
+		src/proto/arglist.pro \
 		src/proto/autocmd.pro \
 		src/proto/beval.pro \
 		src/proto/blob.pro \
@@ -173,6 +184,8 @@ SRC_ALL =	\
 		src/proto/change.pro \
 		src/proto/channel.pro \
 		src/proto/charset.pro \
+		src/proto/cmdexpand.pro \
+		src/proto/cmdhist.pro \
 		src/proto/crypt.pro \
 		src/proto/crypt_zip.pro \
 		src/proto/debugger.pro \
@@ -181,13 +194,17 @@ SRC_ALL =	\
 		src/proto/digraph.pro \
 		src/proto/edit.pro \
 		src/proto/eval.pro \
+		src/proto/evalbuffer.pro \
 		src/proto/evalfunc.pro \
+		src/proto/evalvars.pro \
+		src/proto/evalwindow.pro \
 		src/proto/ex_cmds.pro \
 		src/proto/ex_cmds2.pro \
 		src/proto/ex_docmd.pro \
 		src/proto/ex_eval.pro \
 		src/proto/ex_getln.pro \
 		src/proto/fileio.pro \
+		src/proto/filepath.pro \
 		src/proto/findfile.pro \
 		src/proto/fold.pro \
 		src/proto/getchar.pro \
@@ -215,11 +232,13 @@ SRC_ALL =	\
 		src/proto/normal.pro \
 		src/proto/ops.pro \
 		src/proto/option.pro \
+		src/proto/optionstr.pro \
 		src/proto/popupmnu.pro \
 		src/proto/popupwin.pro \
 		src/proto/profiler.pro \
 		src/proto/quickfix.pro \
 		src/proto/regexp.pro \
+		src/proto/scriptfile.pro \
 		src/proto/screen.pro \
 		src/proto/search.pro \
 		src/proto/session.pro \
