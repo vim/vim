@@ -32,6 +32,8 @@ cmdexpand.c	| command-line completion
 cmdhist.c	| command-line history
 debugger.c	| vim script debugger
 diff.c		| diff mode (vimdiff)
+drawline.c	| drawing a window line
+drawscreen.c	| drawing the windows
 eval.c		| expression evaluation
 evalbuffer.c	| buffer related built-in functions
 evalfunc.c	| built-in functions

@@ -587,6 +587,13 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define NOT_VALID		40  // buffer needs complete redraw
 #define CLEAR			50  // screen messed up, clear it
 
+// flags for screen_line()
+#define SLF_RIGHTLEFT	1
+#define SLF_POPUP	2
+
+#define MB_FILLER_CHAR '<'  // character used when a double-width character
+			    // doesn't fit.
+
 /*
  * Flags for w_valid.
  * These are set when something in a window structure becomes invalid, except

@@ -62,6 +62,31 @@ EXTERN int	Screen_mco INIT(= 0);		// value of p_mco used when
 EXTERN schar_T	*ScreenLines2 INIT(= NULL);
 
 /*
+ * Buffer for one screen line (characters and attributes).
+ */
+EXTERN schar_T	*current_ScreenLine INIT(= NULL);
+
+/*
+ * Last known cursor position.
+ * Positioning the cursor is reduced by remembering the last position.
+ * Mostly used by windgoto() and screen_char().
+ */
+EXTERN int	screen_cur_row INIT(= 0);
+EXTERN int	screen_cur_col INIT(= 0);
+
+#ifdef FEAT_SEARCH_EXTRA
+EXTERN match_T	screen_search_hl; // used for 'hlsearch' highlight matching
+#endif
+
+#ifdef FEAT_FOLDING
+EXTERN foldinfo_T win_foldinfo;	// info for 'foldcolumn'
+#endif
+
+// Flag that is set when drawing for a callback, not from the main command
+// loop.
+EXTERN int redrawing_for_callback INIT(= 0);
+
+/*
  * Indexes for tab page line:
  *	N > 0 for label of tab page N
  *	N == 0 for no label

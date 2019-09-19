@@ -39,6 +39,8 @@ SRC =	arabic.c						\
 	dict.c							\
 	diff.c							\
 	digraph.c						\
+	drawline.c						\
+	drawscreen.c						\
 	edit.c							\
 	eval.c							\
 	evalbuffer.c						\
