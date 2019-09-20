@@ -2482,7 +2482,9 @@ win_line(
 	// special character (via 'listchars' option "precedes:<char>".
 	if (lcs_prec_todo != NUL
 		&& wp->w_p_list
-		&& (wp->w_p_wrap ? wp->w_skipcol > 0 : wp->w_leftcol > 0)
+		&& (wp->w_p_wrap ?
+		    (wp->w_skipcol > 0  && row == 0) :
+		    wp->w_leftcol > 0)
 #ifdef FEAT_DIFF
 		&& filler_todo <= 0
 #endif
