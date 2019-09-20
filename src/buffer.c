@@ -3176,7 +3176,7 @@ buflist_list(exarg_T *eap)
 	while (--i > 0 && len < IOSIZE - 18);
 #ifdef FEAT_VIMINFO
 	if (vim_strchr(eap->arg, 't') && buf->b_last_used)
-	    u_add_time((char *)IObuff + len, (size_t)(IOSIZE - len),
+	    add_time((char *)IObuff + len, (size_t)(IOSIZE - len),
 		    buf->b_last_used);
 	else
 #endif
