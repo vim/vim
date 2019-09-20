@@ -312,6 +312,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'go-a'	options.txt	/*'go-a'*
 'go-b'	options.txt	/*'go-b'*
 'go-c'	options.txt	/*'go-c'*
+'go-d'	options.txt	/*'go-d'*
 'go-e'	options.txt	/*'go-e'*
 'go-f'	options.txt	/*'go-f'*
 'go-g'	options.txt	/*'go-g'*
@@ -5003,6 +5004,8 @@ S	change.txt	/*S*
 SHELL	starting.txt	/*SHELL*
 SQLGetType	ft_sql.txt	/*SQLGetType*
 SQLSetType	ft_sql.txt	/*SQLSetType*
+SafeState	autocmd.txt	/*SafeState*
+SafeStateAgain	autocmd.txt	/*SafeStateAgain*
 Select	visual.txt	/*Select*
 Select-mode	visual.txt	/*Select-mode*
 Select-mode-mapping	visual.txt	/*Select-mode-mapping*
@@ -6425,6 +6428,7 @@ ft-ia64-syntax	syntax.txt	/*ft-ia64-syntax*
 ft-inform-syntax	syntax.txt	/*ft-inform-syntax*
 ft-java-syntax	syntax.txt	/*ft-java-syntax*
 ft-javascript-omni	insert.txt	/*ft-javascript-omni*
+ft-json-syntax	syntax.txt	/*ft-json-syntax*
 ft-ksh-syntax	syntax.txt	/*ft-ksh-syntax*
 ft-lace-syntax	syntax.txt	/*ft-lace-syntax*
 ft-lex-syntax	syntax.txt	/*ft-lex-syntax*
@@ -7411,6 +7415,7 @@ join()	eval.txt	/*join()*
 js_decode()	eval.txt	/*js_decode()*
 js_encode()	eval.txt	/*js_encode()*
 jsbterm-mouse	options.txt	/*jsbterm-mouse*
+json.vim	syntax.txt	/*json.vim*
 json_decode()	eval.txt	/*json_decode()*
 json_encode()	eval.txt	/*json_encode()*
 jtags	tagsrch.txt	/*jtags*
@@ -8646,6 +8651,7 @@ scriptversion	eval.txt	/*scriptversion*
 scriptversion-1	eval.txt	/*scriptversion-1*
 scriptversion-2	eval.txt	/*scriptversion-2*
 scriptversion-3	eval.txt	/*scriptversion-3*
+scriptversion-4	eval.txt	/*scriptversion-4*
 scroll-binding	scroll.txt	/*scroll-binding*
 scroll-cursor	scroll.txt	/*scroll-cursor*
 scroll-down	scroll.txt	/*scroll-down*
@@ -8925,6 +8931,7 @@ starting.txt	starting.txt	/*starting.txt*
 startup	starting.txt	/*startup*
 startup-options	starting.txt	/*startup-options*
 startup-terminal	term.txt	/*startup-terminal*
+state()	eval.txt	/*state()*
 static-tag	tagsrch.txt	/*static-tag*
 status-line	windows.txt	/*status-line*
 statusmsg-variable	eval.txt	/*statusmsg-variable*
