@@ -4657,12 +4657,16 @@ mch_call_shell(
     {
 	char_u	*cmdbase = cmd;
 
-	// Skip a leading quote and (.
-	while (*cmdbase == '"' || *cmdbase == '(')
-	    ++cmdbase;
+	if (cmd != NULL)
+	{
+	    // Skip a leading quote and (.
+	    while (*cmdbase == '"' || *cmdbase == '(')
+		++cmdbase;
+	}
 
 	// Check the command does not begin with "start "
-	if (STRNICMP(cmdbase, "start", 5) != 0 || !VIM_ISWHITE(cmdbase[5]))
+	if (cmd == NULL ||
+	    (STRNICMP(cmdbase, "start", 5) != 0 || !VIM_ISWHITE(cmdbase[5])))
 	{
 	    // Use a terminal window to run the command in.
 	    x = mch_call_shell_terminal(cmd, options);
