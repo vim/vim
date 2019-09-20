@@ -1535,7 +1535,8 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    {
 		if (hasFolding(oap->start.lnum, &oap->start.lnum, NULL))
 		    oap->start.col = 0;
-		if (hasFolding(curwin->w_cursor.lnum, NULL,
+		if ((curwin->w_cursor.col > 0 || oap->inclusive)
+			&& hasFolding(curwin->w_cursor.lnum, NULL,
 						      &curwin->w_cursor.lnum))
 		    curwin->w_cursor.col = (colnr_T)STRLEN(ml_get_curline());
 	    }
@@ -6001,8 +6002,7 @@ nv_right(cmdarg_T *cap)
 	    else
 	    {
 		if (has_mbyte)
-		    curwin->w_cursor.col +=
-					 (*mb_ptr2len)(ml_get_cursor());
+		    curwin->w_cursor.col += (*mb_ptr2len)(ml_get_cursor());
 		else
 		    ++curwin->w_cursor.col;
 	    }
@@ -7400,13 +7400,7 @@ nv_optrans(cmdarg_T *cap)
 	{
 	    if (cap->count0)
 		stuffnumReadbuff(cap->count0);
-	    // If on an empty line and using 'x' and "l" is included in the
-	    // whichwrap option, do not delete the next line.
-	    if (cap->cmdchar == 'x' && vim_strchr(p_ww, 'l') != NULL
-						      && gchar_cursor() == NUL)
-		stuffReadbuff((char_u *)"dd");
-	    else
-		stuffReadbuff(ar[(int)(vim_strchr(str, cap->cmdchar) - str)]);
+	    stuffReadbuff(ar[(int)(vim_strchr(str, cap->cmdchar) - str)]);
 	}
     }
     cap->opcount = 0;
