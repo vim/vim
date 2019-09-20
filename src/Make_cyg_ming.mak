@@ -754,6 +754,7 @@ OBJ = \
 	$(OUTDIR)/message.o \
 	$(OUTDIR)/misc1.o \
 	$(OUTDIR)/misc2.o \
+	$(OUTDIR)/mouse.o \
 	$(OUTDIR)/move.o \
 	$(OUTDIR)/mbyte.o \
 	$(OUTDIR)/normal.o \
@@ -866,7 +867,7 @@ ifeq ($(TERMINAL),yes)
 OBJ += $(OUTDIR)/terminal.o \
 	$(OUTDIR)/encoding.o \
 	$(OUTDIR)/keyboard.o \
-	$(OUTDIR)/mouse.o \
+	$(OUTDIR)/termmouse.o \
 	$(OUTDIR)/parser.o \
 	$(OUTDIR)/pen.o \
 	$(OUTDIR)/termscreen.o \

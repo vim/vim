@@ -74,8 +74,6 @@ int extract_modifiers(int key, int *modp);
 int find_special_key_in_table(int c);
 int get_special_key_code(char_u *name);
 char_u *get_key_name(int i);
-int get_mouse_button(int code, int *is_click, int *is_drag);
-int get_pseudo_mouse_code(int button, int is_click, int is_drag);
 int get_fileformat(buf_T *buf);
 int get_fileformat_force(buf_T *buf, exarg_T *eap);
 void set_fileformat(int t, int opt_flags);

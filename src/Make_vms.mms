@@ -316,7 +316,8 @@ SRC =	arabic.c arglist.c autocmd.c beval.c blob.c blowfish.c buffer.c \
 	if_cscope.c if_xcmdsrv.c fileio.c filepath.c, findfile.c fold.c \
 	getchar.c hardcopy.c hashtab.c highlight.c \
 	indent.c insexpand.c json.c list.c main.c map.c mark.c menu.c mbyte.c \
-	memfile.c memline.c message.c misc1.c misc2.c move.c normal.c ops.c \
+	memfile.c memline.c message.c misc1.c misc2.c mouse.c move.c normal.c \
+	ops.c \
 	option.c optionstr.c popupmnu.c popupwin.c profiler.c quickfix.c \
 	regexp.c scriptfile.c \
 	search.c session.c sha256.c sign.c spell.c spellfile.c syntax.c tag.c \
@@ -336,7 +337,8 @@ OBJ = 	arabic.obj arglist.obj autocmd.obj beval.obj blob.obj blowfish.obj \
 	findfile.obj fold.obj getchar.obj hardcopy.obj hashtab.obj \
 	highlight.obj indent.obj insexpand.obj json.obj list.obj main.obj \
 	map.obj mark.obj menu.obj memfile.obj memline.obj message.obj \
-	misc1.obj misc2.obj move.obj mbyte.obj normal.obj ops.obj option.obj \
+	misc1.obj misc2.obj mouse.obj move.obj mbyte.obj normal.obj ops.obj \
+	option.obj \
 	optionstr.obj popupmnu.obj popupwin.obj profiler.obj quickfix.obj \
 	regexp.obj scriptfile.obj \
 	search.obj session.obj sha256.obj sign.obj spell.obj spellfile.obj \
@@ -695,6 +697,9 @@ misc1.obj : misc1.c vim.h [.auto]config.h feature.h os_unix.h   \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h \
  version.h
 misc2.obj : misc2.c vim.h [.auto]config.h feature.h os_unix.h   \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
+ [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h
+mouse.obj : mouse.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h
 move.obj : move.c vim.h [.auto]config.h feature.h os_unix.h   \

@@ -80,6 +80,7 @@ SRC_ALL =	\
 		src/message_test.c \
 		src/misc1.c \
 		src/misc2.c \
+		src/mouse.c \
 		src/move.c \
 		src/mysign \
 		src/nbdebug.c \
@@ -231,6 +232,7 @@ SRC_ALL =	\
 		src/proto/message.pro \
 		src/proto/misc1.pro \
 		src/proto/misc2.pro \
+		src/proto/mouse.pro \
 		src/proto/move.pro \
 		src/proto/netbeans.pro \
 		src/proto/normal.pro \

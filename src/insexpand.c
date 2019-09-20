@@ -1995,7 +1995,7 @@ ins_compl_prep(int c)
 	    }
 
 #ifdef FEAT_CINDENT
-	    want_cindent = (can_cindent_get() && cindent_on());
+	    want_cindent = (get_can_cindent() && cindent_on());
 #endif
 	    // When completing whole lines: fix indent for 'cindent'.
 	    // Otherwise, break line if it's too long.

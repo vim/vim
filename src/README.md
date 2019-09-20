@@ -54,6 +54,7 @@ memfile.c	| storing lines for buffers in a swapfile
 memline.c	| storing lines for buffers in memory
 menu.c		| menus
 message.c	| (error) messages
+mouse.c		| handling the mouse
 ops.c		| handling operators ("d", "y", "p")
 option.c	| options
 optionstr.c	| handling string options
