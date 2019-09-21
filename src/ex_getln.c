@@ -3754,7 +3754,7 @@ ccheck_abbr(int c)
  * Returns the result in allocated memory.
  */
     char_u *
-vim_strsave_fnameescape(char_u *fname, int shell)
+vim_strsave_fnameescape(char_u *fname, int shell UNUSED)
 {
     char_u	*p;
 #ifdef BACKSLASH_IN_FILENAME

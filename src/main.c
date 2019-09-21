@@ -3658,7 +3658,7 @@ static struct timeval	prev_timeval;
  * Windows doesn't have gettimeofday(), although it does have struct timeval.
  */
     static int
-gettimeofday(struct timeval *tv, char *dummy)
+gettimeofday(struct timeval *tv, char *dummy UNUSED)
 {
     long t = clock();
     tv->tv_sec = t / CLOCKS_PER_SEC;

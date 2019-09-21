@@ -2981,7 +2981,7 @@ set_file_time(
     int
 check_file_readonly(
     char_u	*fname,		/* full path to file */
-    int		perm)		/* known permissions on file */
+    int		perm UNUSED)	/* known permissions on file */
 {
 #ifndef USE_MCH_ACCESS
     int	    fd = 0;

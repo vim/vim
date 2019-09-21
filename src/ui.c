@@ -649,7 +649,7 @@ ui_new_shellsize(void)
  * Return FAIL when not possible.
  */
     int
-ui_get_winpos(int *x, int *y, varnumber_T timeout)
+ui_get_winpos(int *x, int *y, varnumber_T timeout UNUSED)
 {
 # ifdef FEAT_GUI
     if (gui.in_use)

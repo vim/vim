@@ -7335,7 +7335,7 @@ close_redir(void)
 
 #if (defined(FEAT_SESSION) || defined(FEAT_EVAL)) || defined(PROTO)
     int
-vim_mkdir_emsg(char_u *name, int prot)
+vim_mkdir_emsg(char_u *name, int prot UNUSED)
 {
     if (vim_mkdir(name, prot) != 0)
     {

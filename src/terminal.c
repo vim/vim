@@ -957,7 +957,7 @@ free_unused_terminals()
  * possible to do "1,5term vim -".
  */
     static ch_part_T
-get_tty_part(term_T *term)
+get_tty_part(term_T *term UNUSED)
 {
 #ifdef UNIX
     ch_part_T	parts[3] = {PART_IN, PART_OUT, PART_ERR};
@@ -5787,7 +5787,7 @@ dyn_conpty_init(int verbose)
 conpty_term_and_job_init(
 	term_T	    *term,
 	typval_T    *argvar,
-	char	    **argv,
+	char	    **argv UNUSED,
 	jobopt_T    *opt,
 	jobopt_T    *orig_opt)
 {
@@ -6139,7 +6139,7 @@ dyn_winpty_init(int verbose)
 winpty_term_and_job_init(
 	term_T	    *term,
 	typval_T    *argvar,
-	char	    **argv,
+	char	    **argv UNUSED,
 	jobopt_T    *opt,
 	jobopt_T    *orig_opt)
 {
