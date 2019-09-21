@@ -7,6 +7,7 @@ char_u *prompt_text(void);
 int prompt_curpos_editable(void);
 void edit_unputchar(void);
 void display_dollar(colnr_T col);
+void undisplay_dollar(void);
 void change_indent(int type, int amount, int round, int replaced, int call_changed_bytes);
 void truncate_spaces(char_u *line);
 void backspace_until_column(int col);
@@ -36,6 +37,7 @@ void ins_horscroll(void);
 int ins_eol(int c);
 int ins_copychar(linenr_T lnum);
 colnr_T get_nolist_virtcol(void);
-int can_cindent_get(void);
+int get_can_cindent(void);
+void set_can_cindent(int val);
 int ins_apply_autocmds(event_T event);
 /* vim: set ft=c : */

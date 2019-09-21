@@ -684,9 +684,7 @@ vim_main2(void)
     starttermcap();	    /* start termcap if not done by wait_return() */
     TIME_MSG("start termcap");
 
-#ifdef FEAT_MOUSE
-    setmouse();				/* may start using the mouse */
-#endif
+    setmouse();				// may start using the mouse
     if (scroll_region)
 	scroll_region_reset();		/* In case Rows changed */
     scroll_start();	/* may scroll the screen to the right position */
@@ -1182,9 +1180,7 @@ main_loop(
 	emsg_skip = 0;
 # endif
 	emsg_off = 0;
-# ifdef FEAT_MOUSE
 	setmouse();
-# endif
 	settmode(TMODE_RAW);
 	starttermcap();
 	scroll_start();

@@ -7578,9 +7578,7 @@ ex_normal(exarg_T *eap)
 
     restore_current_state(&save_state);
     --ex_normal_busy;
-#ifdef FEAT_MOUSE
     setmouse();
-#endif
 #ifdef CURSOR_SHAPE
     ui_cursor_shape();		/* may show different cursor shape */
 #endif

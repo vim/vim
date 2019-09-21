@@ -54,6 +54,7 @@ memfile.c	| storing lines for buffers in a swapfile
 memline.c	| storing lines for buffers in memory
 menu.c		| menus
 message.c	| (error) messages
+mouse.c		| handling the mouse
 ops.c		| handling operators ("d", "y", "p")
 option.c	| options
 optionstr.c	| handling string options
@@ -63,7 +64,7 @@ profiler.c	| vim script profiler
 quickfix.c	| quickfix commands (":make", ":cn")
 regexp.c	| pattern matching
 scriptfile.c	| runtime directory handling and sourcing scripts
-screen.c	| updating the windows
+screen.c	| lower level screen functions
 search.c	| pattern searching
 session.c	| sessions and views
 sign.c		| signs

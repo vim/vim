@@ -23,7 +23,6 @@ int inindent(int extra);
 char_u *skip_to_option_part(char_u *p);
 void check_status(buf_T *buf);
 int ask_yesno(char_u *str, int direct);
-int is_mouse_key(int c);
 void f_mode(typval_T *argvars, typval_T *rettv);
 void f_state(typval_T *argvars, typval_T *rettv);
 int get_keystroke(void);

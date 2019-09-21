@@ -365,7 +365,7 @@ TERM_OBJ = \
 	$(OBJDIR)/terminal.obj \
 	$(OBJDIR)/encoding.obj \
 	$(OBJDIR)/keyboard.obj \
-	$(OBJDIR)/mouse.obj \
+	$(OBJDIR)/termmouse.obj \
 	$(OBJDIR)/parser.obj \
 	$(OBJDIR)/pen.obj \
 	$(OBJDIR)/termscreen.obj \
@@ -762,6 +762,7 @@ OBJ = \
 	$(OUTDIR)\message.obj \
 	$(OUTDIR)\misc1.obj \
 	$(OUTDIR)\misc2.obj \
+	$(OUTDIR)\mouse.obj \
 	$(OUTDIR)\move.obj \
 	$(OUTDIR)\normal.obj \
 	$(OUTDIR)\ops.obj \
@@ -1601,6 +1602,8 @@ $(OUTDIR)/misc1.obj:	$(OUTDIR) misc1.c  $(INCL)
 
 $(OUTDIR)/misc2.obj:	$(OUTDIR) misc2.c  $(INCL)
 
+$(OUTDIR)/mouse.obj:	$(OUTDIR) mouse.c  $(INCL)
+
 $(OUTDIR)/move.obj:	$(OUTDIR) move.c  $(INCL)
 
 $(OUTDIR)/mbyte.obj: $(OUTDIR) mbyte.c  $(INCL)
@@ -1736,7 +1739,7 @@ $(OUTDIR)/encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
 
 $(OUTDIR)/keyboard.obj: $(OUTDIR) libvterm/src/keyboard.c $(TERM_DEPS)
 
-$(OUTDIR)/mouse.obj: $(OUTDIR) libvterm/src/mouse.c $(TERM_DEPS)
+$(OUTDIR)/termmouse.obj: $(OUTDIR) libvterm/src/termmouse.c $(TERM_DEPS)
 
 $(OUTDIR)/parser.obj: $(OUTDIR) libvterm/src/parser.c $(TERM_DEPS)
 
@@ -1822,6 +1825,7 @@ proto.h: \
 	proto/message.pro \
 	proto/misc1.pro \
 	proto/misc2.pro \
+	proto/mouse.pro \
 	proto/move.pro \
 	proto/mbyte.pro \
 	proto/normal.pro \

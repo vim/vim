@@ -87,7 +87,6 @@ static void check_for_codes_from_term(void);
 		|| defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)))
 static int get_bytes_from_buf(char_u *, char_u *, int);
 #endif
-static void del_termcode(char_u *name);
 static void del_termcode_idx(int idx);
 static int find_term_bykeys(char_u *src);
 static int term_is_builtin(char_u *name);
@@ -2048,9 +2047,7 @@ set_termname(char_u *term)
     if (starting != NO_SCREEN)
     {
 	starttermcap();		/* may change terminal mode */
-#ifdef FEAT_MOUSE
 	setmouse();		/* may start using the mouse */
-#endif
 #ifdef FEAT_TITLE
 	maketitle();		/* may display window title */
 #endif
@@ -2100,126 +2097,6 @@ set_termname(char_u *term)
 
     return OK;
 }
-
-#if defined(FEAT_MOUSE) || defined(PROTO)
-
-# ifdef FEAT_MOUSE_TTY
-#  define HMT_NORMAL	1
-#  define HMT_NETTERM	2
-#  define HMT_DEC	4
-#  define HMT_JSBTERM	8
-#  define HMT_PTERM	16
-#  define HMT_URXVT	32
-#  define HMT_GPM	64
-#  define HMT_SGR	128
-#  define HMT_SGR_REL	256
-static int has_mouse_termcode = 0;
-# endif
-
-# if (!defined(UNIX) || defined(FEAT_MOUSE_TTY)) || defined(PROTO)
-    void
-set_mouse_termcode(
-    int		n,	/* KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE */
-    char_u	*s)
-{
-    char_u	name[2];
-
-    name[0] = n;
-    name[1] = KE_FILLER;
-    add_termcode(name, s, FALSE);
-#  ifdef FEAT_MOUSE_TTY
-#   ifdef FEAT_MOUSE_JSB
-    if (n == KS_JSBTERM_MOUSE)
-	has_mouse_termcode |= HMT_JSBTERM;
-    else
-#   endif
-#   ifdef FEAT_MOUSE_NET
-    if (n == KS_NETTERM_MOUSE)
-	has_mouse_termcode |= HMT_NETTERM;
-    else
-#   endif
-#   ifdef FEAT_MOUSE_DEC
-    if (n == KS_DEC_MOUSE)
-	has_mouse_termcode |= HMT_DEC;
-    else
-#   endif
-#   ifdef FEAT_MOUSE_PTERM
-    if (n == KS_PTERM_MOUSE)
-	has_mouse_termcode |= HMT_PTERM;
-    else
-#   endif
-#   ifdef FEAT_MOUSE_URXVT
-    if (n == KS_URXVT_MOUSE)
-	has_mouse_termcode |= HMT_URXVT;
-    else
-#   endif
-#   ifdef FEAT_MOUSE_GPM
-    if (n == KS_GPM_MOUSE)
-	has_mouse_termcode |= HMT_GPM;
-    else
-#   endif
-    if (n == KS_SGR_MOUSE)
-	has_mouse_termcode |= HMT_SGR;
-    else if (n == KS_SGR_MOUSE_RELEASE)
-	has_mouse_termcode |= HMT_SGR_REL;
-    else
-	has_mouse_termcode |= HMT_NORMAL;
-#  endif
-}
-# endif
-
-# if ((defined(UNIX) || defined(VMS)) \
-	&& defined(FEAT_MOUSE_TTY)) || defined(PROTO)
-    void
-del_mouse_termcode(
-    int		n)	/* KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE */
-{
-    char_u	name[2];
-
-    name[0] = n;
-    name[1] = KE_FILLER;
-    del_termcode(name);
-#  ifdef FEAT_MOUSE_TTY
-#   ifdef FEAT_MOUSE_JSB
-    if (n == KS_JSBTERM_MOUSE)
-	has_mouse_termcode &= ~HMT_JSBTERM;
-    else
-#   endif
-#   ifdef FEAT_MOUSE_NET
-    if (n == KS_NETTERM_MOUSE)
-	has_mouse_termcode &= ~HMT_NETTERM;
-    else
-#   endif
-#   ifdef FEAT_MOUSE_DEC
-    if (n == KS_DEC_MOUSE)
-	has_mouse_termcode &= ~HMT_DEC;
-    else
-#   endif
-#   ifdef FEAT_MOUSE_PTERM
-    if (n == KS_PTERM_MOUSE)
-	has_mouse_termcode &= ~HMT_PTERM;
-    else
-#   endif
-#   ifdef FEAT_MOUSE_URXVT
-    if (n == KS_URXVT_MOUSE)
-	has_mouse_termcode &= ~HMT_URXVT;
-    else
-#   endif
-#   ifdef FEAT_MOUSE_GPM
-    if (n == KS_GPM_MOUSE)
-	has_mouse_termcode &= ~HMT_GPM;
-    else
-#   endif
-    if (n == KS_SGR_MOUSE)
-	has_mouse_termcode &= ~HMT_SGR;
-    else if (n == KS_SGR_MOUSE_RELEASE)
-	has_mouse_termcode &= ~HMT_SGR_REL;
-    else
-	has_mouse_termcode &= ~HMT_NORMAL;
-#  endif
-}
-# endif
-#endif
 
 #ifdef HAVE_TGETENT
 /*
@@ -3574,10 +3451,8 @@ settmode(int tmode)
 	    out_flush();
 	    mch_settmode(tmode);	// machine specific function
 	    cur_tmode = tmode;
-#ifdef FEAT_MOUSE
 	    if (tmode == TMODE_RAW)
 		setmouse();		// may switch mouse on
-#endif
 	    out_flush();
 	}
 #ifdef FEAT_TERMRESPONSE
@@ -3810,94 +3685,6 @@ swapping_screen(void)
 {
     return (full_screen && *T_TI != NUL);
 }
-
-#if defined(FEAT_MOUSE) || defined(PROTO)
-/*
- * setmouse() - switch mouse on/off depending on current mode and 'mouse'
- */
-    void
-setmouse(void)
-{
-# ifdef FEAT_MOUSE_TTY
-    int	    checkfor;
-# endif
-
-# ifdef FEAT_MOUSESHAPE
-    update_mouseshape(-1);
-# endif
-
-# ifdef FEAT_MOUSE_TTY /* Should be outside proc, but may break MOUSESHAPE */
-#  ifdef FEAT_GUI
-    /* In the GUI the mouse is always enabled. */
-    if (gui.in_use)
-	return;
-#  endif
-    /* be quick when mouse is off */
-    if (*p_mouse == NUL || has_mouse_termcode == 0)
-	return;
-
-    /* don't switch mouse on when not in raw mode (Ex mode) */
-    if (cur_tmode != TMODE_RAW)
-    {
-	mch_setmouse(FALSE);
-	return;
-    }
-
-    if (VIsual_active)
-	checkfor = MOUSE_VISUAL;
-    else if (State == HITRETURN || State == ASKMORE || State == SETWSIZE)
-	checkfor = MOUSE_RETURN;
-    else if (State & INSERT)
-	checkfor = MOUSE_INSERT;
-    else if (State & CMDLINE)
-	checkfor = MOUSE_COMMAND;
-    else if (State == CONFIRM || State == EXTERNCMD)
-	checkfor = ' '; /* don't use mouse for ":confirm" or ":!cmd" */
-    else
-	checkfor = MOUSE_NORMAL;    /* assume normal mode */
-
-    if (mouse_has(checkfor))
-	mch_setmouse(TRUE);
-    else
-	mch_setmouse(FALSE);
-# endif
-}
-
-/*
- * Return TRUE if
- * - "c" is in 'mouse', or
- * - 'a' is in 'mouse' and "c" is in MOUSE_A, or
- * - the current buffer is a help file and 'h' is in 'mouse' and we are in a
- *   normal editing mode (not at hit-return message).
- */
-    int
-mouse_has(int c)
-{
-    char_u	*p;
-
-    for (p = p_mouse; *p; ++p)
-	switch (*p)
-	{
-	    case 'a': if (vim_strchr((char_u *)MOUSE_A, c) != NULL)
-			  return TRUE;
-		      break;
-	    case MOUSE_HELP: if (c != MOUSE_RETURN && curbuf->b_help)
-				 return TRUE;
-			     break;
-	    default: if (c == *p) return TRUE; break;
-	}
-    return FALSE;
-}
-
-/*
- * Return TRUE when 'mousemodel' is set to "popup" or "popup_setpos".
- */
-    int
-mouse_model_popup(void)
-{
-    return (p_mousem[0] == 'p');
-}
-#endif
 
 /*
  * By outputting the 'cursor very visible' termcap code, for some windowed
@@ -4307,7 +4094,7 @@ get_termcode(int i)
     return &termcodes[i].name[0];
 }
 
-    static void
+    void
 del_termcode(char_u *name)
 {
     int	    i;
@@ -5298,23 +5085,23 @@ check_termcode(
 		 * are decimal instead of bytes.
 		 *
 		 * \033[%d;%d;%dM
-		 *		  ^-- row
-		 *	       ^----- column
-		 *	    ^-------- code
+		 *	       ^-- row
+		 *	    ^----- column
+		 *	 ^-------- code
 		 *
 		 * SGR 1006 mouse reporting mode:
 		 * Almost identical to xterm mouse mode, except the values
 		 * are decimal instead of bytes.
 		 *
 		 * \033[<%d;%d;%dM
-		 *		   ^-- row
-		 *	        ^----- column
-		 *	     ^-------- code
+		 *	       ^-- row
+		 *	    ^----- column
+		 *	 ^-------- code
 		 *
 		 * \033[<%d;%d;%dm        : mouse release event
-		 *		   ^-- row
-		 *	        ^----- column
-		 *	     ^-------- code
+		 *	       ^-- row
+		 *	    ^----- column
+		 *	 ^-------- code
 		 */
 		p = modifiers_start;
 		if (p == NULL)
