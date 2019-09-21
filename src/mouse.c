@@ -150,8 +150,8 @@ do_mouse(
     static int	got_click = FALSE;	// got a click some time back
 
     int		which_button;	// MOUSE_LEFT, _MIDDLE or _RIGHT
-    int		is_click;	// If FALSE it's a drag or release event
-    int		is_drag;	// If TRUE it's a drag event
+    int		is_click = FALSE; // If FALSE it's a drag or release event
+    int		is_drag = FALSE;  // If TRUE it's a drag event
     int		jump_flags = 0;	// flags for jump_to_mouse()
     pos_T	start_visual;
     int		moved;		// Has cursor moved?
