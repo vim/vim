@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Sep 10
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Sep 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -92,7 +92,8 @@ the Number.  Examples:
 							*octal*
 Conversion from a String to a Number is done by converting the first digits to
 a number.  Hexadecimal "0xf9", Octal "017", and Binary "0b10" numbers are
-recognized.  If the String doesn't start with digits, the result is zero.
+recognized (NOTE: when using |scriptversion-4| octal is not recognized).  If
+the String doesn't start with digits, the result is zero.
 Examples:
 	String "456"	-->	Number 456 ~
 	String "6bar"	-->	Number 6 ~
@@ -2594,7 +2595,7 @@ or({expr}, {expr})		Number	bitwise OR
 pathshorten({expr})		String	shorten directory names in a path
 perleval({expr})		any	evaluate |Perl| expression
 popup_atcursor({what}, {options}) Number create popup window near the cursor
-popup_beval({what}, {options}) 	Number 	create popup window for 'ballooneval'
+popup_beval({what}, {options})	Number	create popup window for 'ballooneval'
 popup_clear()			none	close all popup windows
 popup_close({id} [, {result}])	none	close popup window {id}
 popup_create({what}, {options}) Number	create a popup window
@@ -2754,10 +2755,12 @@ spellsuggest({word} [, {max} [, {capital}]])
 split({expr} [, {pat} [, {keepempty}]])
 				List	make |List| from {pat} separated {expr}
 sqrt({expr})			Float	square root of {expr}
+state([{what}])			String	current state of Vim
 str2float({expr})		Float	convert String to Float
 str2list({expr} [, {utf8}])	List	convert each character of {expr} to
 					ASCII/UTF8 value
-str2nr({expr} [, {base}])	Number	convert String to Number
+str2nr({expr} [, {base} [, {quoted}]])
+				Number	convert String to Number
 strchars({expr} [, {skipcc}])	Number	character length of the String {expr}
 strcharpart({str}, {start} [, {len}])
 				String	{len} characters of {str} at {start}
@@ -7064,6 +7067,7 @@ mode([expr])	Return a string that indicates the current mode.
 		If [expr] is supplied and it evaluates to a non-zero Number or
 		a non-empty String (|non-zero-arg|), then the full mode is
 		returned, otherwise only the first letter is returned.
+		Also see |state()|.
 
 		   n	    Normal, Terminal-Normal
 		   no	    Operator-pending
@@ -9039,6 +9043,42 @@ sqrt({expr})						*sqrt()*
 		{only available when compiled with the |+float| feature}
 
 
+state([{what}])						*state()*
+		Return a string which contains characters indicating the
+		current state.  Mostly useful in callbacks that want to do
+		work that may not always be safe.  Roughly this works like:
+		- callback uses state() to check if work is safe to do.
+		  Yes: then do it right away.
+		  No:  add to work queue and add a |SafeState| and/or
+		       |SafeStateAgain| autocommand (|SafeState| triggers at
+		       toplevel, |SafeStateAgain| triggers after handling
+		       messages and callbacks).
+		- When SafeState or SafeStateAgain is triggered and executes
+		  your autocommand, check with `state()` if the work can be
+		  done now, and if yes remove it from the queue and execute.
+		  Remove the autocommand if the queue is now empty.
+		Also see |mode()|.
+
+		When {what} is given only characters in this string will be
+		added.  E.g, this checks if the screen has scrolled: >
+			if state('s') == ''
+			   " screen has not scrolled
+<
+		These characters indicate the state, generally indicating that
+		something is busy:
+		    m	halfway a mapping, :normal command, feedkeys() or
+			stuffed command
+		    o	operator pending or waiting for a command argument,
+		        e.g. after |f|
+		    a	Insert mode autocomplete active
+		    x	executing an autocommand
+		    w	blocked on waiting, e.g. ch_evalexpr() and
+			ch_read(), ch_readraw() when reading json.
+		    S	not triggering SafeState or SafeStateAgain
+		    c	callback invoked, including timer (repeats for
+			recursiveness up to "ccc")
+		    s	screen has scrolled for messages
+
 str2float({expr})					*str2float()*
 		Convert String {expr} to a Float.  This mostly works the same
 		as when using a floating point number in an expression, see
@@ -9075,9 +9115,11 @@ str2list({expr} [, {utf8}])				*str2list()*
 			GetString()->str2list()
 
 
-str2nr({expr} [, {base}])				*str2nr()*
+str2nr({expr} [, {base} [, {quoted}]])				*str2nr()*
 		Convert string {expr} to a number.
 		{base} is the conversion base, it can be 2, 8, 10 or 16.
+		When {quoted} is present and non-zero then embedded single
+		quotes are ignored, thus "1'000'000" is a million.
 
 		When {base} is omitted base 10 is used.  This also means that
 		a leading zero doesn't cause octal conversion to be used, as
@@ -12937,6 +12979,23 @@ instead of failing in mysterious ways.
 
 	Test for support with: >
 		has('vimscript-3')
+<
+							*scriptversion-4*  >
+ :scriptversion 4
+<	Numbers with a leading zero are not recognized as octal.  With the
+	previous version you get: >
+		echo 017   " displays 15
+		echo 018   " displays 18
+<	with script version 4: >
+		echo 017   " displays 17
+		echo 018   " displays 18
+<	Also, it is possible to use single quotes inside numbers to make them
+	easier to read: >
+		echo 1'000'000
+<	The quotes must be surrounded by digits.
+
+	Test for support with: >
+		has('vimscript-4')
 
 ==============================================================================
 11. No +eval feature				*no-eval-feature*

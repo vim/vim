@@ -39,6 +39,8 @@ SRC =	arabic.c						\
 	dict.c							\
 	diff.c							\
 	digraph.c						\
+	drawline.c						\
+	drawscreen.c						\
 	edit.c							\
 	eval.c							\
 	evalbuffer.c						\
@@ -76,6 +78,7 @@ SRC =	arabic.c						\
 	normal.c						\
 	ops.c							\
 	option.c						\
+	optionstr.c						\
 	os_amiga.c						\
 	popupmnu.c						\
 	profiler.c						\

@@ -647,6 +647,13 @@
 #endif
 
 /*
+ * GUI dark theme variant
+ */
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK3)
+# define FEAT_GUI_DARKTHEME
+#endif
+
+/*
  * GUI tabline
  */
 #if defined(FEAT_NORMAL) \

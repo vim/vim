@@ -90,8 +90,6 @@ static void f_function(typval_T *argvars, typval_T *rettv);
 static void f_garbagecollect(typval_T *argvars, typval_T *rettv);
 static void f_get(typval_T *argvars, typval_T *rettv);
 static void f_getchangelist(typval_T *argvars, typval_T *rettv);
-static void f_getchar(typval_T *argvars, typval_T *rettv);
-static void f_getcharmod(typval_T *argvars, typval_T *rettv);
 static void f_getcharsearch(typval_T *argvars, typval_T *rettv);
 static void f_getcmdwintype(typval_T *argvars, typval_T *rettv);
 static void f_getenv(typval_T *argvars, typval_T *rettv);
@@ -148,7 +146,6 @@ static void f_matchstr(typval_T *argvars, typval_T *rettv);
 static void f_matchstrpos(typval_T *argvars, typval_T *rettv);
 static void f_max(typval_T *argvars, typval_T *rettv);
 static void f_min(typval_T *argvars, typval_T *rettv);
-static void f_mode(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_MZSCHEME
 static void f_mzeval(typval_T *argvars, typval_T *rettv);
 #endif
@@ -725,10 +722,13 @@ static funcentry_T global_functions[] =
     {"split",		1, 3, FEARG_1,	  f_split},
 #ifdef FEAT_FLOAT
     {"sqrt",		1, 1, FEARG_1,	  f_sqrt},
+#endif
+    {"state",		0, 1, FEARG_1,	  f_state},
+#ifdef FEAT_FLOAT
     {"str2float",	1, 1, FEARG_1,	  f_str2float},
 #endif
     {"str2list",	1, 2, FEARG_1,	  f_str2list},
-    {"str2nr",		1, 2, FEARG_1,	  f_str2nr},
+    {"str2nr",		1, 3, FEARG_1,	  f_str2nr},
     {"strcharpart",	2, 3, FEARG_1,	  f_strcharpart},
     {"strchars",	1, 2, FEARG_1,	  f_strchars},
     {"strdisplaywidth",	1, 2, FEARG_1,	  f_strdisplaywidth},
@@ -1048,7 +1048,7 @@ call_internal_method(
 /*
  * Return TRUE for a non-zero Number and a non-empty String.
  */
-    static int
+    int
 non_zero_arg(typval_T *argvars)
 {
     return ((argvars[0].v_type == VAR_NUMBER
@@ -2857,125 +2857,6 @@ f_getchangelist(typval_T *argvars, typval_T *rettv)
     }
 #endif
 }
-/*
- * "getchar()" function
- */
-    static void
-f_getchar(typval_T *argvars, typval_T *rettv)
-{
-    varnumber_T		n;
-    int			error = FALSE;
-
-#ifdef MESSAGE_QUEUE
-    // vpeekc() used to check for messages, but that caused problems, invoking
-    // a callback where it was not expected.  Some plugins use getchar(1) in a
-    // loop to await a message, therefore make sure we check for messages here.
-    parse_queued_messages();
-#endif
-
-    /* Position the cursor.  Needed after a message that ends in a space. */
-    windgoto(msg_row, msg_col);
-
-    ++no_mapping;
-    ++allow_keys;
-    for (;;)
-    {
-	if (argvars[0].v_type == VAR_UNKNOWN)
-	    /* getchar(): blocking wait. */
-	    n = plain_vgetc();
-	else if (tv_get_number_chk(&argvars[0], &error) == 1)
-	    /* getchar(1): only check if char avail */
-	    n = vpeekc_any();
-	else if (error || vpeekc_any() == NUL)
-	    /* illegal argument or getchar(0) and no char avail: return zero */
-	    n = 0;
-	else
-	    /* getchar(0) and char avail: return char */
-	    n = plain_vgetc();
-
-	if (n == K_IGNORE)
-	    continue;
-	break;
-    }
-    --no_mapping;
-    --allow_keys;
-
-    set_vim_var_nr(VV_MOUSE_WIN, 0);
-    set_vim_var_nr(VV_MOUSE_WINID, 0);
-    set_vim_var_nr(VV_MOUSE_LNUM, 0);
-    set_vim_var_nr(VV_MOUSE_COL, 0);
-
-    rettv->vval.v_number = n;
-    if (IS_SPECIAL(n) || mod_mask != 0)
-    {
-	char_u		temp[10];   /* modifier: 3, mbyte-char: 6, NUL: 1 */
-	int		i = 0;
-
-	/* Turn a special key into three bytes, plus modifier. */
-	if (mod_mask != 0)
-	{
-	    temp[i++] = K_SPECIAL;
-	    temp[i++] = KS_MODIFIER;
-	    temp[i++] = mod_mask;
-	}
-	if (IS_SPECIAL(n))
-	{
-	    temp[i++] = K_SPECIAL;
-	    temp[i++] = K_SECOND(n);
-	    temp[i++] = K_THIRD(n);
-	}
-	else if (has_mbyte)
-	    i += (*mb_char2bytes)(n, temp + i);
-	else
-	    temp[i++] = n;
-	temp[i++] = NUL;
-	rettv->v_type = VAR_STRING;
-	rettv->vval.v_string = vim_strsave(temp);
-
-#ifdef FEAT_MOUSE
-	if (is_mouse_key(n))
-	{
-	    int		row = mouse_row;
-	    int		col = mouse_col;
-	    win_T	*win;
-	    linenr_T	lnum;
-	    win_T	*wp;
-	    int		winnr = 1;
-
-	    if (row >= 0 && col >= 0)
-	    {
-		/* Find the window at the mouse coordinates and compute the
-		 * text position. */
-		win = mouse_find_win(&row, &col, FIND_POPUP);
-		if (win == NULL)
-		    return;
-		(void)mouse_comp_pos(win, &row, &col, &lnum, NULL);
-# ifdef FEAT_TEXT_PROP
-		if (WIN_IS_POPUP(win))
-		    winnr = 0;
-		else
-# endif
-		    for (wp = firstwin; wp != win && wp != NULL;
-							       wp = wp->w_next)
-			++winnr;
-		set_vim_var_nr(VV_MOUSE_WIN, winnr);
-		set_vim_var_nr(VV_MOUSE_WINID, win->w_id);
-		set_vim_var_nr(VV_MOUSE_LNUM, lnum);
-		set_vim_var_nr(VV_MOUSE_COL, col + 1);
-	    }
-	}
-#endif
-    }
-}
-
-/*
- * "getcharmod()" function
- */
-    static void
-f_getcharmod(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    rettv->vval.v_number = mod_mask;
-}
 
 /*
  * "getcharsearch()" function
@@ -3771,6 +3652,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"vimscript-1",
 	"vimscript-2",
 	"vimscript-3",
+	"vimscript-4",
 	"virtualedit",
 	"visual",
 	"visualextra",
@@ -5029,97 +4911,6 @@ f_max(typval_T *argvars, typval_T *rettv)
 f_min(typval_T *argvars, typval_T *rettv)
 {
     max_min(argvars, rettv, FALSE);
-}
-
-/*
- * "mode()" function
- */
-    static void
-f_mode(typval_T *argvars, typval_T *rettv)
-{
-    char_u	buf[4];
-
-    vim_memset(buf, 0, sizeof(buf));
-
-    if (time_for_testing == 93784)
-    {
-	/* Testing the two-character code. */
-	buf[0] = 'x';
-	buf[1] = '!';
-    }
-#ifdef FEAT_TERMINAL
-    else if (term_use_loop())
-	buf[0] = 't';
-#endif
-    else if (VIsual_active)
-    {
-	if (VIsual_select)
-	    buf[0] = VIsual_mode + 's' - 'v';
-	else
-	    buf[0] = VIsual_mode;
-    }
-    else if (State == HITRETURN || State == ASKMORE || State == SETWSIZE
-		|| State == CONFIRM)
-    {
-	buf[0] = 'r';
-	if (State == ASKMORE)
-	    buf[1] = 'm';
-	else if (State == CONFIRM)
-	    buf[1] = '?';
-    }
-    else if (State == EXTERNCMD)
-	buf[0] = '!';
-    else if (State & INSERT)
-    {
-	if (State & VREPLACE_FLAG)
-	{
-	    buf[0] = 'R';
-	    buf[1] = 'v';
-	}
-	else
-	{
-	    if (State & REPLACE_FLAG)
-		buf[0] = 'R';
-	    else
-		buf[0] = 'i';
-	    if (ins_compl_active())
-		buf[1] = 'c';
-	    else if (ctrl_x_mode_not_defined_yet())
-		buf[1] = 'x';
-	}
-    }
-    else if ((State & CMDLINE) || exmode_active)
-    {
-	buf[0] = 'c';
-	if (exmode_active == EXMODE_VIM)
-	    buf[1] = 'v';
-	else if (exmode_active == EXMODE_NORMAL)
-	    buf[1] = 'e';
-    }
-    else
-    {
-	buf[0] = 'n';
-	if (finish_op)
-	{
-	    buf[1] = 'o';
-	    // to be able to detect force-linewise/blockwise/characterwise operations
-	    buf[2] = motion_force;
-	}
-	else if (restart_edit == 'I' || restart_edit == 'R'
-							|| restart_edit == 'V')
-	{
-	    buf[1] = 'i';
-	    buf[2] = restart_edit;
-	}
-    }
-
-    /* Clear out the minor mode when the argument is not a non-zero number or
-     * non-empty string.  */
-    if (!non_zero_arg(&argvars[0]))
-	buf[1] = NUL;
-
-    rettv->vval.v_string = vim_strsave(buf);
-    rettv->v_type = VAR_STRING;
 }
 
 #if defined(FEAT_MZSCHEME) || defined(PROTO)
@@ -7323,7 +7114,7 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
     int		base = 10;
     char_u	*p;
     varnumber_T	n;
-    int		what;
+    int		what = 0;
     int		isneg;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
@@ -7334,6 +7125,8 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
 	    emsg(_(e_invarg));
 	    return;
 	}
+	if (argvars[2].v_type != VAR_UNKNOWN && tv_get_number(&argvars[2]))
+	    what |= STR2NR_QUOTE;
     }
 
     p = skipwhite(tv_get_string(&argvars[0]));
@@ -7342,10 +7135,9 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
 	p = skipwhite(p + 1);
     switch (base)
     {
-	case 2: what = STR2NR_BIN + STR2NR_FORCE; break;
-	case 8: what = STR2NR_OCT + STR2NR_FORCE; break;
-	case 16: what = STR2NR_HEX + STR2NR_FORCE; break;
-	default: what = 0;
+	case 2: what |= STR2NR_BIN + STR2NR_FORCE; break;
+	case 8: what |= STR2NR_OCT + STR2NR_FORCE; break;
+	case 16: what |= STR2NR_HEX + STR2NR_FORCE; break;
     }
     vim_str2nr(p, NULL, NULL, what, &n, NULL, 0, FALSE);
     // Text after the number is silently ignored.

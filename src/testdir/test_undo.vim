@@ -350,7 +350,7 @@ func Test_undofile_truncated()
   endfor
 
   bwipe!
-"  call delete('Xundofile')
+  call delete('Xundofile')
 endfunc
 
 " Test for undo working properly when executing commands from a register.

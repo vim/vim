@@ -1509,6 +1509,11 @@ ins_redraw(int ready)	    // not busy with something
 					(linenr_T)(curwin->w_cursor.lnum + 1));
     }
 
+    // Trigger SafeState if nothing is pending.
+    may_trigger_safestate(ready
+	    && !ins_compl_active()
+	    && !pum_visible());
+
 #if defined(FEAT_CONCEAL)
     if ((conceal_update_lines
 	    && (conceal_old_cursor_line != conceal_new_cursor_line

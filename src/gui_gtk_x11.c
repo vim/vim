@@ -3130,6 +3130,19 @@ update_window_manager_hints(int force_width, int force_height)
     }
 }
 
+#if defined(FEAT_GUI_DARKTHEME) || defined(PROTO)
+    void
+gui_mch_set_dark_theme(int dark)
+{
+# if GTK_CHECK_VERSION(3,0,0)
+    GtkSettings *gtk_settings;
+
+    gtk_settings = gtk_settings_get_for_screen(gdk_screen_get_default());
+    g_object_set(gtk_settings, "gtk-application-prefer-dark-theme", (gboolean)dark, NULL);
+# endif
+}
+#endif /* FEAT_GUI_DARKTHEME */
+
 #ifdef FEAT_TOOLBAR
 
 /*

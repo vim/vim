@@ -3363,10 +3363,12 @@ update_popups(void (*win_update)(win_T *wp))
 	// Compute scrollbar thumb position and size.
 	if (wp->w_has_scrollbar)
 	{
-	    linenr_T linecount = wp->w_buffer->b_ml.ml_line_count;
+	    linenr_T	linecount = wp->w_buffer->b_ml.ml_line_count;
+	    int		height = wp->w_height;
 
-	    sb_thumb_height = (wp->w_height * wp->w_height + linecount / 2)
-								   / linecount;
+	    sb_thumb_height = (height * height + linecount / 2) / linecount;
+	    if (wp->w_topline > 1 && sb_thumb_height == height)
+		--sb_thumb_height;  // scrolled, no full thumb
 	    if (sb_thumb_height == 0)
 		sb_thumb_height = 1;
 	    if (linecount <= wp->w_height)
@@ -3377,6 +3379,9 @@ update_popups(void (*win_update)(win_T *wp))
 				+ (linecount / wp->w_height) / 2)
 				* (wp->w_height - sb_thumb_height)
 						  / (linecount - wp->w_height);
+	    if (wp->w_topline > 1 && sb_thumb_top == 0 && height > 1)
+		sb_thumb_top = 1;  // show it's scrolled
+
 	    if (wp->w_scrollbar_highlight != NULL)
 		attr_scroll = syn_name2attr(wp->w_scrollbar_highlight);
 	    else

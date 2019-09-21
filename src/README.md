@@ -32,6 +32,8 @@ cmdexpand.c	| command-line completion
 cmdhist.c	| command-line history
 debugger.c	| vim script debugger
 diff.c		| diff mode (vimdiff)
+drawline.c	| drawing a window line
+drawscreen.c	| drawing the windows
 eval.c		| expression evaluation
 evalbuffer.c	| buffer related built-in functions
 evalfunc.c	| built-in functions
@@ -54,6 +56,7 @@ menu.c		| menus
 message.c	| (error) messages
 ops.c		| handling operators ("d", "y", "p")
 option.c	| options
+optionstr.c	| handling string options
 popupmnu.c	| popup menu
 popupwin.c	| popup window
 profiler.c	| vim script profiler

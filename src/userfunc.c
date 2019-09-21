@@ -1447,6 +1447,14 @@ func_call(
     return r;
 }
 
+static int callback_depth = 0;
+
+    int
+get_callback_depth(void)
+{
+    return callback_depth;
+}
+
 /*
  * Invoke call_func() with a callback.
  */
@@ -1460,12 +1468,15 @@ call_callback(
 				// PLUS ONE elements!
 {
     funcexe_T	funcexe;
+    int		ret;
 
     vim_memset(&funcexe, 0, sizeof(funcexe));
     funcexe.evaluate = TRUE;
     funcexe.partial = callback->cb_partial;
-    return call_func(callback->cb_name, len, rettv, argcount, argvars,
-								     &funcexe);
+    ++callback_depth;
+    ret = call_func(callback->cb_name, len, rettv, argcount, argvars, &funcexe);
+    --callback_depth;
+    return ret;
 }
 
 /*

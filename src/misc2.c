@@ -4349,82 +4349,6 @@ has_non_ascii(char_u *s)
 }
 #endif
 
-#if defined(MESSAGE_QUEUE) || defined(PROTO)
-# define MAX_REPEAT_PARSE 8
-
-/*
- * Process messages that have been queued for netbeans or clientserver.
- * Also check if any jobs have ended.
- * These functions can call arbitrary vimscript and should only be called when
- * it is safe to do so.
- */
-    void
-parse_queued_messages(void)
-{
-    int	    old_curwin_id = curwin->w_id;
-    int	    old_curbuf_fnum = curbuf->b_fnum;
-    int	    i;
-    int	    save_may_garbage_collect = may_garbage_collect;
-
-    // Do not handle messages while redrawing, because it may cause buffers to
-    // change or be wiped while they are being redrawn.
-    if (updating_screen)
-	return;
-
-    // may_garbage_collect is set in main_loop() to do garbage collection when
-    // blocking to wait on a character.  We don't want that while parsing
-    // messages, a callback may invoke vgetc() while lists and dicts are in use
-    // in the call stack.
-    may_garbage_collect = FALSE;
-
-    // Loop when a job ended, but don't keep looping forever.
-    for (i = 0; i < MAX_REPEAT_PARSE; ++i)
-    {
-	// For Win32 mch_breakcheck() does not check for input, do it here.
-# if defined(MSWIN) && defined(FEAT_JOB_CHANNEL)
-	channel_handle_events(FALSE);
-# endif
-
-# ifdef FEAT_NETBEANS_INTG
-	// Process the queued netbeans messages.
-	netbeans_parse_messages();
-# endif
-# ifdef FEAT_JOB_CHANNEL
-	// Write any buffer lines still to be written.
-	channel_write_any_lines();
-
-	// Process the messages queued on channels.
-	channel_parse_messages();
-# endif
-# if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
-	// Process the queued clientserver messages.
-	server_parse_messages();
-# endif
-# ifdef FEAT_JOB_CHANNEL
-	// Check if any jobs have ended.  If so, repeat the above to handle
-	// changes, e.g. stdin may have been closed.
-	if (job_check_ended())
-	    continue;
-# endif
-# ifdef FEAT_TERMINAL
-	free_unused_terminals();
-# endif
-# ifdef FEAT_SOUND_CANBERRA
-	if (has_sound_callback_in_queue())
-	    invoke_sound_callback();
-# endif
-	break;
-    }
-
-    may_garbage_collect = save_may_garbage_collect;
-
-    // If the current window or buffer changed we need to bail out of the
-    // waiting loop.  E.g. when a job exit callback closes the terminal window.
-    if (curwin->w_id != old_curwin_id || curbuf->b_fnum != old_curbuf_fnum)
-	ins_char_typebuf(K_IGNORE);
-}
-#endif
-
 #ifndef PROTO  /* proto is defined in vim.h */
 # ifdef ELAPSED_TIMEVAL
 /*
@@ -4601,3 +4525,22 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
 }
 # endif
 #endif
+
+/*
+ * Change the behavior of vterm.
+ * 0: As usual.
+ * 1: Windows 10 version 1809
+ *      The bug causes unstable handling of ambiguous width character.
+ * 2: Windows 10 version 1903
+ *      Use the wrong result because each result is different.
+ * 3: Windows 10 insider preview (current latest logic)
+ */
+    int
+get_special_pty_type(void)
+{
+#ifdef MSWIN
+    return get_conpty_type();
+#else
+    return 0;
+#endif
+}

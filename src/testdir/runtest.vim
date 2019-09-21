@@ -333,7 +333,7 @@ let s:flaky_tests = [
       \ 'Test_raw_one_time_callback()',
       \ 'Test_reltime()',
       \ 'Test_server_crash()',
-      \ 'Test_term_mouse_double_click_to_create_tab',
+      \ 'Test_term_mouse_double_click_to_create_tab()',
       \ 'Test_terminal_ansicolors_default()',
       \ 'Test_terminal_ansicolors_func()',
       \ 'Test_terminal_ansicolors_global()',

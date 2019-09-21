@@ -1213,6 +1213,144 @@ is_mouse_key(int c)
 }
 #endif
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+
+/*
+ * "mode()" function
+ */
+    void
+f_mode(typval_T *argvars, typval_T *rettv)
+{
+    char_u	buf[4];
+
+    vim_memset(buf, 0, sizeof(buf));
+
+    if (time_for_testing == 93784)
+    {
+	/* Testing the two-character code. */
+	buf[0] = 'x';
+	buf[1] = '!';
+    }
+#ifdef FEAT_TERMINAL
+    else if (term_use_loop())
+	buf[0] = 't';
+#endif
+    else if (VIsual_active)
+    {
+	if (VIsual_select)
+	    buf[0] = VIsual_mode + 's' - 'v';
+	else
+	    buf[0] = VIsual_mode;
+    }
+    else if (State == HITRETURN || State == ASKMORE || State == SETWSIZE
+		|| State == CONFIRM)
+    {
+	buf[0] = 'r';
+	if (State == ASKMORE)
+	    buf[1] = 'm';
+	else if (State == CONFIRM)
+	    buf[1] = '?';
+    }
+    else if (State == EXTERNCMD)
+	buf[0] = '!';
+    else if (State & INSERT)
+    {
+	if (State & VREPLACE_FLAG)
+	{
+	    buf[0] = 'R';
+	    buf[1] = 'v';
+	}
+	else
+	{
+	    if (State & REPLACE_FLAG)
+		buf[0] = 'R';
+	    else
+		buf[0] = 'i';
+	    if (ins_compl_active())
+		buf[1] = 'c';
+	    else if (ctrl_x_mode_not_defined_yet())
+		buf[1] = 'x';
+	}
+    }
+    else if ((State & CMDLINE) || exmode_active)
+    {
+	buf[0] = 'c';
+	if (exmode_active == EXMODE_VIM)
+	    buf[1] = 'v';
+	else if (exmode_active == EXMODE_NORMAL)
+	    buf[1] = 'e';
+    }
+    else
+    {
+	buf[0] = 'n';
+	if (finish_op)
+	{
+	    buf[1] = 'o';
+	    // to be able to detect force-linewise/blockwise/characterwise operations
+	    buf[2] = motion_force;
+	}
+	else if (restart_edit == 'I' || restart_edit == 'R'
+							|| restart_edit == 'V')
+	{
+	    buf[1] = 'i';
+	    buf[2] = restart_edit;
+	}
+    }
+
+    /* Clear out the minor mode when the argument is not a non-zero number or
+     * non-empty string.  */
+    if (!non_zero_arg(&argvars[0]))
+	buf[1] = NUL;
+
+    rettv->vval.v_string = vim_strsave(buf);
+    rettv->v_type = VAR_STRING;
+}
+
+    static void
+may_add_state_char(garray_T *gap, char_u *include, int c)
+{
+    if (include == NULL || vim_strchr(include, c) != NULL)
+	ga_append(gap, c);
+}
+
+/*
+ * "state()" function
+ */
+    void
+f_state(typval_T *argvars, typval_T *rettv)
+{
+    garray_T	ga;
+    char_u	*include = NULL;
+    int		i;
+
+    ga_init2(&ga, 1, 20);
+    if (argvars[0].v_type != VAR_UNKNOWN)
+	include = tv_get_string(&argvars[0]);
+
+    if (!(stuff_empty() && typebuf.tb_len == 0 && scriptin[curscript] == NULL))
+	may_add_state_char(&ga, include, 'm');
+    if (op_pending())
+	may_add_state_char(&ga, include, 'o');
+    if (autocmd_busy)
+	may_add_state_char(&ga, include, 'x');
+    if (!ctrl_x_mode_none())
+	may_add_state_char(&ga, include, 'a');
+
+# ifdef FEAT_JOB_CHANNEL
+    if (channel_in_blocking_wait())
+	may_add_state_char(&ga, include, 'w');
+# endif
+    for (i = 0; i < get_callback_depth() && i < 3; ++i)
+	may_add_state_char(&ga, include, 'c');
+    if (msg_scrolled > 0)
+	may_add_state_char(&ga, include, 's');
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = ga.ga_data;
+}
+
+#endif // FEAT_EVAL
+
 /*
  * Get a key stroke directly from the user.
  * Ignores mouse clicks and scrollbar events, except a click for the left

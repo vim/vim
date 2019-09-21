@@ -24,6 +24,7 @@ char *channel_status(channel_T *channel, int req_part);
 void channel_close(channel_T *channel, int invoke_close_cb);
 void channel_clear(channel_T *channel);
 void channel_free_all(void);
+int channel_in_blocking_wait(void);
 void channel_handle_events(int only_keep_open);
 int channel_any_keep_open(void);
 void channel_set_nonblock(channel_T *channel, ch_part_T part);

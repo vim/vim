@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Sep 10
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Sep 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,9 +38,21 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Split off part of option.c: #4918
+Add test for state().
+Add test for using SafeState and SafeStateAgain autocommand.
+Then plugin can:
+- When callback is invoked and state() returns non-empty, add to work queue
+- When SafeState autocommand event triggers, process work queue
+
+Fix for "x" should be done by fixing "dl" ?  8.1.2052
+
+'completeopt' "popup" variant that uses a callback after the popup has been
+created, so the contents can be changed.  Make it hidden, callback
+or later has to make it visible. #4924  Setting the buffer contents later
+doesn't work well.
 
 Popup windows:
+- Use popup (or popup menu) for command line completion
 - Implement flip option
 - Why does 'nrformats' leak from the popup window buffer???
   Happens in Test_simple_popup() at the second screendump.
@@ -129,6 +141,11 @@ Error numbers available:
 E278, E279, E290, E292, E362, E366, E450, E451, E452,
 E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
 E654, E856, E857, E860, E861, E863, E889, E900
+
+Improve running tests on MS-Windows: #4922
+
+Patch to properly break CJK lines: #3875
+Ready to include now?
 
 Remove check for cmd_silent when calling search_stat()? (Gary Johnson)
 
@@ -510,9 +527,6 @@ Further xdiff changes:
 
 Difference between two regexp engines: #3373
 
-Patch to properly break CJK lines: #3875
-Requires more tests.  dbcs_ functions are not implemented.
-
 Patch to add ch_listen() (Yasuhiro Matsumoto, 2018 Nov 26, #3639)
 What is the practical use for this?
 
@@ -783,7 +797,7 @@ Problem with 'delcombine'. (agguser, 2017 Nov 10, #2313)
 MS-Windows: buffer completion doesn't work when using backslash (or slash)
 for a path separator. (xtal8, #2201)
 
-Would be nice for insert mode completion to highlight the text that was added
+Would be nice for Insert mode completion to highlight the text that was added
 (and may change when picking another completion).
 
 Test runtime files.
@@ -1893,9 +1907,6 @@ need to make the change in where RET_WIN_BUF_CHARTABSIZE() is called.
 Syntax region with 'concealends' and a 'cchar' value, 'conceallevel' set to 2,
 only one of the two ends gets the cchar displayed. (Brett Stahlman, 2010 Aug
 21, Ben Fritz, 2010 Sep 14)
-
-'cursorline' works on a text line only.  Add 'cursorscreenline' for
-highlighting the screen line. (Christian Brabandt, 2012 Mar 31)
 
 Win32: Patch to use task dialogs when available. (Sergiu Dotenco, 2011 Sep 17)
 New feature, requires testing.  Made some remarks.

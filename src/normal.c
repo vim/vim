@@ -1535,7 +1535,8 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    {
 		if (hasFolding(oap->start.lnum, &oap->start.lnum, NULL))
 		    oap->start.col = 0;
-		if (hasFolding(curwin->w_cursor.lnum, NULL,
+		if ((curwin->w_cursor.col > 0 || oap->inclusive)
+			&& hasFolding(curwin->w_cursor.lnum, NULL,
 						      &curwin->w_cursor.lnum))
 		    curwin->w_cursor.col = (colnr_T)STRLEN(ml_get_curline());
 	    }
@@ -6001,8 +6002,7 @@ nv_right(cmdarg_T *cap)
 	    else
 	    {
 		if (has_mbyte)
-		    curwin->w_cursor.col +=
-					 (*mb_ptr2len)(ml_get_cursor());
+		    curwin->w_cursor.col += (*mb_ptr2len)(ml_get_cursor());
 		else
 		    ++curwin->w_cursor.col;
 	    }
@@ -7381,8 +7381,8 @@ nv_optrans(cmdarg_T *cap)
 
     if (!checkclearopq(cap->oap))
     {
-	/* In Vi "2D" doesn't delete the next line.  Can't translate it
-	 * either, because "2." should also not use the count. */
+	// In Vi "2D" doesn't delete the next line.  Can't translate it
+	// either, because "2." should also not use the count.
 	if (cap->cmdchar == 'D' && vim_strchr(p_cpo, CPO_HASH) != NULL)
 	{
 	    cap->oap->start = curwin->w_cursor;
