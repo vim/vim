@@ -1137,7 +1137,7 @@ endfunc
 
 func Test_popup_beval()
   CheckScreendump
-  CheckFeature balloon_eval
+  CheckFeature balloon_eval_term
 
   let lines =<< trim END
 	call setline(1, range(1, 20))

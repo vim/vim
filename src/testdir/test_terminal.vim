@@ -1466,6 +1466,7 @@ let s:test_colors = [
 	\]
 
 func Test_terminal_ansicolors_global()
+  CheckFeature termguicolors
   if !exists('*term_getansicolors')
     throw 'Skipped: term_getansicolors() not supported'
   endif
@@ -1480,6 +1481,7 @@ func Test_terminal_ansicolors_global()
 endfunc
 
 func Test_terminal_ansicolors_func()
+  CheckFeature termguicolors
   if !exists('*term_getansicolors')
     throw 'Skipped: term_getansicolors() not supported'
   endif
