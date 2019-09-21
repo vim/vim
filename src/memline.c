@@ -2101,7 +2101,7 @@ static char	tz_cache[64];
     struct tm *
 vim_localtime(
     const time_t	*timep,		// timestamp for local representation
-    struct tm		*result)	// pointer to caller return buffer
+    struct tm		*result UNUSED)	// pointer to caller return buffer
 {
 #ifdef HAVE_LOCALTIME_R
 # ifdef HAVE_TZSET

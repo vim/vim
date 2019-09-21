@@ -577,7 +577,7 @@ messageFromServerGtk2(gpointer clientData,
 # endif
 
     static void
-channel_gui_register_one(channel_T *channel, ch_part_T part)
+channel_gui_register_one(channel_T *channel, ch_part_T part UNUSED)
 {
     if (!CH_HAS_GUI)
 	return;
@@ -661,7 +661,7 @@ channel_gui_register_all(void)
 }
 
     static void
-channel_gui_unregister_one(channel_T *channel, ch_part_T part)
+channel_gui_unregister_one(channel_T *channel UNUSED, ch_part_T part UNUSED)
 {
 # ifdef FEAT_GUI_X11
     if (channel->ch_part[part].ch_inputHandler != (XtInputId)NULL)
@@ -5800,7 +5800,7 @@ job_check_ended(void)
     job_T *
 job_start(
 	typval_T    *argvars,
-	char	    **argv_arg,
+	char	    **argv_arg UNUSED,
 	jobopt_T    *opt_arg,
 	int	    is_terminal UNUSED)
 {

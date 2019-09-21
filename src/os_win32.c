@@ -365,7 +365,7 @@ read_console_input(
 peek_console_input(
     HANDLE	    hInput,
     INPUT_RECORD    *lpBuffer,
-    DWORD	    nLength,
+    DWORD	    nLength UNUSED,
     LPDWORD	    lpEvents)
 {
     return read_console_input(hInput, lpBuffer, -1, lpEvents);
@@ -1006,7 +1006,7 @@ decode_key_event(
     WCHAR		*pch,
     WCHAR		*pch2,
     int			*pmodifiers,
-    BOOL		fDoPost)
+    BOOL		fDoPost UNUSED)
 {
     int i;
     const int nModifs = pker->dwControlKeyState & (SHIFT | ALT | CTRL);
@@ -4486,7 +4486,7 @@ mch_system_g(char *cmd, int options)
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
     static int
-mch_system_c(char *cmd, int options)
+mch_system_c(char *cmd, int options UNUSED)
 {
     int		ret;
     WCHAR	*wcmd;
@@ -6456,7 +6456,7 @@ mch_remove(char_u *name)
  * Check for an "interrupt signal": CTRL-break or CTRL-C.
  */
     void
-mch_breakcheck(int force)
+mch_breakcheck(int force UNUSED)
 {
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 # ifdef VIMDLL
@@ -7218,7 +7218,7 @@ fix_arg_enc(void)
 }
 
     int
-mch_setenv(char *var, char *value, int x)
+mch_setenv(char *var, char *value, int x UNUSED)
 {
     char_u	*envbuf;
     WCHAR	*p;
