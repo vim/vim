@@ -38,7 +38,7 @@ func Test_buffers_lastused()
   call assert_equal(['bufb', 'bufa', 'bufc'], bufs[1:]->map({i,v->v[0]}))
   call assert_match('1[0-3] seconds ago', bufs[1][1])
   call assert_match('\d\d:\d\d:\d\d', bufs[2][1])
-  call assert_equal('2019/02/12 17:20:00', bufs[3][1])
+  call assert_match('2019/02/1\d \d\d:\d\d:00', bufs[3][1])
 
   bwipeout bufa
   bwipeout bufb
