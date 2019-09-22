@@ -1297,7 +1297,7 @@ f_state(typval_T *argvars, typval_T *rettv)
 	may_add_state_char(&ga, include, 'o');
     if (autocmd_busy)
 	may_add_state_char(&ga, include, 'x');
-    if (!ctrl_x_mode_none())
+    if (ins_compl_active())
 	may_add_state_char(&ga, include, 'a');
 
 # ifdef FEAT_JOB_CHANNEL
