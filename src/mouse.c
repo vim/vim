@@ -15,8 +15,6 @@
 
 #if defined(FEAT_MOUSE) || defined(PROTO)
 
-static int	get_fpos_of_mouse(pos_T *mpos);
-
 /*
  * Get class of a character for selection: same class means same word.
  * 0: blank
@@ -101,6 +99,52 @@ find_end_of_word(pos_T *pos)
 	pos->col = col;
     }
 }
+
+#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) \
+	    || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
+	    || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_PHOTON) \
+	    || defined(FEAT_TERM_POPUP_MENU)
+# define USE_POPUP_SETPOS
+# define NEED_VCOL2COL
+
+/*
+ * Translate window coordinates to buffer position without any side effects
+ */
+    static int
+get_fpos_of_mouse(pos_T *mpos)
+{
+    win_T	*wp;
+    int		row = mouse_row;
+    int		col = mouse_col;
+
+    if (row < 0 || col < 0)		// check if it makes sense
+	return IN_UNKNOWN;
+
+    // find the window where the row is in
+    wp = mouse_find_win(&row, &col, FAIL_POPUP);
+    if (wp == NULL)
+	return IN_UNKNOWN;
+    // winpos and height may change in win_enter()!
+    if (row >= wp->w_height)	// In (or below) status line
+	return IN_STATUS_LINE;
+    if (col >= wp->w_width)	// In vertical separator line
+	return IN_SEP_LINE;
+
+    if (wp != curwin)
+	return IN_UNKNOWN;
+
+    // compute the position in the buffer line from the posn on the screen
+    if (mouse_comp_pos(curwin, &row, &col, &mpos->lnum, NULL))
+	return IN_STATUS_LINE; // past bottom
+
+    mpos->col = vcol2col(wp, mpos->lnum, col);
+
+    if (mpos->col > 0)
+	--mpos->col;
+    mpos->coladd = 0;
+    return IN_BUFFER;
+}
+#endif
 
 /*
  * Do the appropriate action for the current mouse click in the current mode.
@@ -469,10 +513,7 @@ do_mouse(
 	if (which_button == MOUSE_RIGHT
 			    && !(mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL)))
 	{
-#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) \
-	    || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
-	    || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_PHOTON) \
-	    || defined(FEAT_TERM_POPUP_MENU)
+#ifdef USE_POPUP_SETPOS
 # ifdef FEAT_GUI
 	    if (gui.in_use)
 	    {
@@ -2231,51 +2272,6 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
 	}
     return NULL;
 }
-
-#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MAC) \
-	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_TERM_POPUP_MENU) \
-	|| defined(PROTO)
-# define NEED_VCOL2COL
-
-/*
- * Translate window coordinates to buffer position without any side effects
- */
-    static int
-get_fpos_of_mouse(pos_T *mpos)
-{
-    win_T	*wp;
-    int		row = mouse_row;
-    int		col = mouse_col;
-
-    if (row < 0 || col < 0)		// check if it makes sense
-	return IN_UNKNOWN;
-
-    // find the window where the row is in
-    wp = mouse_find_win(&row, &col, FAIL_POPUP);
-    if (wp == NULL)
-	return IN_UNKNOWN;
-    // winpos and height may change in win_enter()!
-    if (row >= wp->w_height)	// In (or below) status line
-	return IN_STATUS_LINE;
-    if (col >= wp->w_width)	// In vertical separator line
-	return IN_SEP_LINE;
-
-    if (wp != curwin)
-	return IN_UNKNOWN;
-
-    // compute the position in the buffer line from the posn on the screen
-    if (mouse_comp_pos(curwin, &row, &col, &mpos->lnum, NULL))
-	return IN_STATUS_LINE; // past bottom
-
-    mpos->col = vcol2col(wp, mpos->lnum, col);
-
-    if (mpos->col > 0)
-	--mpos->col;
-    mpos->coladd = 0;
-    return IN_BUFFER;
-}
-#endif
 
 #if defined(NEED_VCOL2COL) || defined(FEAT_BEVAL) || defined(FEAT_TEXT_PROP) \
 	|| defined(PROTO)
