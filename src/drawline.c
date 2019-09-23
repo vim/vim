@@ -1367,6 +1367,7 @@ win_line(
 
 		text_prop_attr = 0;
 		text_prop_combine = FALSE;
+		text_prop_type = NULL;
 		if (text_props_active > 0)
 		{
 		    // Sort the properties on priority and/or starting last.
@@ -1406,8 +1407,11 @@ win_line(
 # ifdef FEAT_TEXT_PROP
 	    else if (text_prop_type != NULL)
 	    {
-		char_attr = hl_combine_attr(
-			line_attr != 0 ? line_attr : win_attr, text_prop_attr);
+		char_attr = hl_combine_attr(line_attr != 0
+						? line_attr
+						: syntax_attr != 0
+						    ? syntax_attr
+						    : win_attr, text_prop_attr);
 	    }
 # endif
 	    else if (line_attr != 0 && ((fromcol == -10 && tocol == MAXCOL)

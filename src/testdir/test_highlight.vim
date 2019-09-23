@@ -595,8 +595,13 @@ func Test_wincolor()
 
   let lines =<< trim END
 	set cursorline cursorcolumn rnu
-	call setline(1, ["","1111111111","22222222222","3 here 3",""])
+	call setline(1, ["","1111111111","22222222222","3 here 3","","the cat is out of the bag"])
 	set wincolor=Pmenu
+	hi CatLine guifg=green ctermfg=green
+	hi Reverse gui=reverse cterm=reverse
+	syn match CatLine /^the.*/
+	call prop_type_add("foo", {"highlight": "Reverse", "combine": 1})
+	call prop_add(6, 12, {"type": "foo", "end_col": 15})
 	/here
   END
   call writefile(lines, 'Xtest_wincolor')
