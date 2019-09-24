@@ -3406,8 +3406,8 @@ nv_screengo(oparg_T *oap, int dir, long dist)
       {
 	if (dir == BACKWARD)
 	{
-	    if ((long)curwin->w_curswant >= width2)
-		/* move back within line */
+	    if ((long)curwin->w_curswant > width2)
+		// move back within line
 		curwin->w_curswant -= width2;
 	    else
 	    {
