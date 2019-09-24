@@ -1498,6 +1498,7 @@ get_number(
 #endif
 	else if (n == 0 && c == ':' && colon)
 	{
+	    msg_puts("-\n");
 	    stuffcharReadbuff(':');
 	    if (!exmode_active)
 		cmdline_row = msg_row;
