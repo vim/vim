@@ -1498,7 +1498,7 @@ get_number(
 #endif
 	else if (n == 0 && c == ':' && colon)
 	{
-	    msg_puts("-\n");
+	    msg_putchar('-');
 	    stuffcharReadbuff(':');
 	    if (!exmode_active)
 		cmdline_row = msg_row;
@@ -1507,7 +1507,8 @@ get_number(
 	    break;
 	}
 	else if (c == CAR || c == NL || c == Ctrl_C || c == ESC) {
-	    msg_putchar('\n');
+	    if (!typed)
+		msg_putchar('0');
 	    break;
 	}
     }

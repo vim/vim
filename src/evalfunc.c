@@ -4131,6 +4131,9 @@ f_inputlist(typval_T *argvars, typval_T *rettv)
     selected = prompt_for_number(&mouse_used);
     if (mouse_used)
 	selected -= lines_left;
+    msg_putchar('\n');
+    need_wait_return = FALSE;
+    msg_didany = FALSE;
 
     rettv->vval.v_number = selected;
 }
