@@ -1505,8 +1505,10 @@ get_number(
 	    do_redraw = FALSE;
 	    break;
 	}
-	else if (c == CAR || c == NL || c == Ctrl_C || c == ESC)
+	else if (c == CAR || c == NL || c == Ctrl_C || c == ESC) {
+	    msg_putchar('\n');
 	    break;
+	}
     }
     --no_mapping;
     --allow_keys;
