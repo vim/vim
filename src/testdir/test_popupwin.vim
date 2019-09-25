@@ -1992,6 +1992,12 @@ func Test_popupwin_with_buffer()
   call delete('XsomeFile')
 endfunc
 
+func Test_popupwin_terminal_buffer()
+  let ptybuf = term_start(&shell, #{hidden: 1})
+  call assert_fails('let winnr = popup_create(ptybuf, #{})', 'E278:')
+  exe 'bwipe! ' .. ptybuf
+endfunc
+
 func Test_popupwin_with_buffer_and_filter()
   new Xwithfilter
   call setline(1, range(100))

@@ -3347,6 +3347,8 @@ term_update_window(win_T *wp)
 	    newcols = MIN(newcols, twp->w_width);
 	}
     }
+    if (newrows == 99999 || newcols == 99999)
+	return; // safety exit
     newrows = rows == 0 ? newrows : minsize ? MAX(rows, newrows) : rows;
     newcols = cols == 0 ? newcols : minsize ? MAX(cols, newcols) : cols;
 
