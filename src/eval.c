@@ -53,6 +53,10 @@ static int eval6(char_u **arg, typval_T *rettv, int flags, int want_string);
 static int eval7(char_u **arg, typval_T *rettv, int flags, int want_string);
 static int eval7_leader(typval_T *rettv, char_u *start_leader, char_u **end_leaderp);
 
+static int get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate);
+static int read_template_expr(garray_T *result, char_u **expr, int is_literal_string);
+static int read_template_var(garray_T *result, char_u **expr);
+static int is_escaped_quote(int is_literal_string, char_u *quotes);
 static int free_unref_items(int copyID);
 static char_u *make_expanded_name(char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end);
 
@@ -2650,9 +2654,18 @@ eval7(
 		break;
 
     /*
+     * Template string constant: $"${var}", $'${val}'.
+     * or
      * Environment variable: $VAR.
      */
-    case '$':	ret = get_env_tv(arg, rettv, evaluate);
+    case '$':	if (*(*arg + 1) == '"' || *(*arg + 1) == '\'')
+		{
+		    ret = get_template_string_tv(arg, rettv, evaluate);
+		}
+		else
+		{
+		    ret = get_env_tv(arg, rettv, evaluate);
+		}
 		break;
 
     /*
@@ -3306,6 +3319,319 @@ eval_index(
 		}
 		break;
 	}
+    }
+
+    return OK;
+}
+
+    static int
+is_closing_quote(char_u *template, int is_literal_string, int *is_skipping_needed)
+{
+    char_u quote = is_literal_string ? '\'' : '"';
+
+    if (is_escaped_quote(is_literal_string, template))
+    {
+	*is_skipping_needed = TRUE;
+	return FALSE;
+    }
+
+    *is_skipping_needed = FALSE;
+    return *template == quote;
+}
+
+/*
+ * Allocate a variable for $"${var}" and $'${val}' constant.
+ * Return OK or FAIL.
+ */
+    static int
+get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
+{
+    garray_T	result;  // a string that is not a template string
+    char_u	*arg_orig = *arg;
+    char_u	quote = *(*arg + 1);
+    int		is_literal_string = (quote == '\'');
+    int		is_skipping_needed;
+
+    *arg += 2;  // $'
+
+    ga_init2(&result, 1, 80);
+    ga_append(&result, quote);
+
+    // Continue while it is not NULL and it is not a closing quote.
+    for (; (**arg != NUL) && !is_closing_quote(*arg, is_literal_string, &is_skipping_needed); ++*arg)
+    {
+	if (is_skipping_needed)
+	{
+	    ga_append(&result, (int) **arg);
+	    ++*arg;
+	    ga_append(&result, (int) **arg);
+	    continue;
+	}
+	else if (**arg == '$')
+	{
+	    int success;
+	    int does_expect_embraced = *(*arg + 1) == '{';
+
+	    *arg += does_expect_embraced ? 2 : 1;  // forward to beginning of the template literal
+	    success = does_expect_embraced
+		? read_template_expr(&result, arg, is_literal_string)
+		: read_template_var(&result, arg);
+	    if (!success)
+	    {
+		ga_clear(&result);
+		return FAIL;
+	    }
+	    continue;
+	}
+	ga_append(&result, (int) **arg);
+    }
+
+    if (**arg == NUL)
+    {
+	ga_clear(&result);
+	semsg(_("E115: Missing quote: %s"), arg_orig);
+	return FAIL;
+    }
+    MB_PTR_ADV(*arg);
+    ga_append(&result, quote);
+
+    if (!evaluate)
+    {
+	ga_clear(&result);
+	return OK;
+    }
+    else
+    {
+	char_u	*to_free = (char_u *) result.ga_data;
+	int	success = eval1((char_u**) &result.ga_data, rettv, TRUE);
+
+	vim_free(to_free);
+	return success;
+    }
+}
+
+    static int
+did_encount_string_quote(char_u **expr, int is_literal_string)
+{
+    // encounted a double quote in the single quoted string (lit str),
+    int did_encount_double_in_single =
+	(is_literal_string && **expr == '"');
+
+    // a single quote in the double quoted string,
+    int did_encount_single_in_double =
+	(!is_literal_string && **expr == '\'');
+
+    // or a single quote in the double quoted string?
+    int did_encount_escaped_quote = is_escaped_quote(is_literal_string, *expr);
+
+    int result =
+	did_encount_double_in_single ||
+	did_encount_single_in_double ||
+	did_encount_escaped_quote;
+
+    if (did_encount_escaped_quote)
+    {
+	++*expr;
+    }
+
+    return result;
+}
+
+    static int
+is_escaped_quote(int is_literal_string, char_u *p)
+{
+    return
+	(is_literal_string && *p == '\'' && *(p + 1) == '\'') ||
+	(!is_literal_string && *p == '\\' && *(p + 1) == '"');
+}
+
+    static char_u*
+remove_all_quote_escaping(char_u *expr, int is_literal_string)
+{
+    garray_T	result;
+    char_u	*p;
+
+    ga_init2(&result, 1, 80);
+
+    for (p = expr; *p != NUL; MB_PTR_ADV(p))
+    {
+	if (is_escaped_quote(is_literal_string, p))
+	{
+	    ga_append(&result, *(p + 1));
+	    MB_PTR_ADV(p);
+	    continue;
+	}
+	ga_append(&result, *p);
+    }
+
+    return (char_u *) result.ga_data;
+}
+
+    static char_u*
+escape_quotes_in_quote(char_u *x, int is_literal_string)
+{
+    garray_T	result;
+    char_u	*p;
+
+    ga_init2(&result, 1, 80);
+
+    for (p = x; *p != NUL; MB_PTR_ADV(p))
+    {
+	if (is_literal_string && *p == '\'') {
+	    ga_concat(&result, (char_u *) "''");
+	    continue;
+	} else if (!is_literal_string && *p == '"')
+	{
+	    ga_concat(&result, (char_u *) "\\\"");
+	    continue;
+	}
+	ga_append(&result, *p);
+    }
+
+    return (char_u *) result.ga_data;
+}
+
+/*
+ * Returns OK when succeed, or returns FAIL.
+ */
+    static int
+read_template_expr(garray_T *result, char_u **expr, int is_literal_string)
+{
+    char_u	    *expr_head = *expr;
+    size_t	    nested_blocks = 0;
+    int		    is_in_quote = FALSE;
+
+    // While the closing '}' encounted. The '}' is neither '}' of a dict nor '}' in a string.
+    for (; !(!is_in_quote && **expr == '}' && nested_blocks == 0); MB_PTR_ADV(*expr))
+    {
+	switch (**expr)
+	{
+	    case '{':
+		if (!is_in_quote)
+		{
+		    ++nested_blocks;
+		}
+		break;
+	    case '}':
+		if (!is_in_quote)
+		{
+		    --nested_blocks;
+		}
+		break;
+	    case NUL:
+		semsg(_("E451: Unterminated template literal: %s"), expr_head);
+		return FAIL;
+	    default:
+		if (did_encount_string_quote(expr, is_literal_string))
+		{
+		    is_in_quote = !is_in_quote;
+		}
+		break;
+	}
+    }
+
+    if (*expr == expr_head)
+    {
+	semsg(_("E452: Empty template literal: %s"), expr_head);
+	return FAIL;
+    }
+
+    /*
+     * Evaluate the expr
+     */
+    {
+	const char_u    *STRINGIFY = (char_u *) "{ x -> (type(x) is v:t_string) ? x : string(x) }(%s)";
+	size_t		stringify_length = STRLEN(STRINGIFY) - 2;  // 2 is %s
+	typval_T	var_value = { VAR_UNKNOWN, VAR_LOCKED, { 0 } };
+	char_u		*literal;
+	char_u		*stringified;
+	char_u		*to_free_stringified;
+	int		success;
+	char_u		*escaped;
+
+	// Get the expr
+	**expr = NUL;
+	literal = remove_all_quote_escaping(expr_head, is_literal_string);
+	**expr = '}';
+
+	// Get a lambda call of STRINGIFY and the expr
+	stringified = (char_u *) alloc(stringify_length + STRLEN(literal) + 1);
+	sprintf((char *) stringified, (char *) STRINGIFY, literal);
+	vim_free(literal);
+	to_free_stringified = stringified;
+
+	success = eval1(&stringified, &var_value, TRUE);
+	vim_free(to_free_stringified);
+	if (!success)
+	{
+	    return FAIL;
+	}
+
+	// Evaluate the lambda call
+	escaped = escape_quotes_in_quote(var_value.vval.v_string, is_literal_string);
+	ga_concat(result, escaped);
+	vim_free(var_value.vval.v_string);
+	vim_free(escaped);
+    }
+
+    return OK;
+}
+
+/*
+ * Returns OK when succeed, or returns FALSE.
+ */
+    static int
+read_template_var(garray_T *result, char_u **expr)
+{
+    char_u *expr_head = *expr;
+
+    if (!ASCII_ISALPHA(**expr) && **expr != '_')
+    {
+	semsg(_("E450: Illegal template literal: %s"), expr_head);
+	return FAIL;
+    }
+    ++*expr;
+
+    for (; ASCII_ISALNUM(**expr) || (**expr == '_'); MB_PTR_ADV(*expr))
+    {
+	if (**expr == NUL)
+	{
+	    semsg(_("E451: Unterminated template literal: %s"), expr_head);
+	    return FAIL;
+	}
+    }
+
+    /*
+     * Evaluate the variable
+     */
+    {
+	const char_u    *STRINGIFY = (char_u *) "{ x -> (type(x) is v:t_string) ? x : string(x) }(%s)";
+	size_t		stringify_length = STRLEN(STRINGIFY) - 2;  // 2 is %s
+	int		success;
+	char_u		*stringified;
+	char_u		*to_free_stringified;
+	typval_T	var_value = { VAR_UNKNOWN, VAR_LOCKED, { 0 } };
+	char_u		last = **expr;  // to recover
+
+	// Get a lambda call of STRINGIFY and the var
+	**expr = NUL;
+	stringified = (char_u *) alloc(stringify_length + STRLEN(expr_head) + 1);
+	sprintf((char *) stringified, (char *) STRINGIFY, expr_head);
+	to_free_stringified = stringified;
+	**expr = last;
+
+	// Evaluate the lambda call
+	success = eval1(&stringified, &var_value, TRUE);
+	vim_free(to_free_stringified);
+	if (!success)
+	{
+	    vim_free(var_value.vval.v_string);
+	    return FAIL;
+	}
+
+	ga_concat(result, var_value.vval.v_string);
+	vim_free(var_value.vval.v_string);
+	--*expr;  // To be forwarded by for's continue, look up a last character of the identifier
     }
 
     return OK;
