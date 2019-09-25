@@ -618,6 +618,31 @@ func Test_wincolor()
   call delete('Xtest_wincolor')
 endfunc
 
+func Test_colorcolumn()
+  CheckScreendump
+
+  " check that setting 'colorcolumn' when entering a buffer works
+  let lines =<< trim END
+	split
+	edit X
+	call setline(1, ["1111111111","22222222222","3333333333"])
+	set nomodified
+	set colorcolumn=3,9
+	set number cursorline cursorlineopt=number
+	wincmd w
+	buf X
+  END
+  call writefile(lines, 'Xtest_colorcolumn')
+  let buf = RunVimInTerminal('-S Xtest_colorcolumn', {'rows': 10})
+  call term_sendkeys(buf, ":\<CR>")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_colorcolumn_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_colorcolumn')
+endfunc
+
 " This test must come before the Test_cursorline test, as it appears this
 " defines the Normal highlighting group anyway.
 func Test_1_highlight_Normalgroup_exists()

@@ -2323,19 +2323,14 @@ didset_options(void)
     (void)did_set_spell_option(TRUE);
 #endif
 #ifdef FEAT_CMDWIN
-    /* set cedit_key */
+    // set cedit_key
     (void)check_cedit();
-#endif
-#ifdef FEAT_LINEBREAK
-    briopt_check(curwin);
 #endif
 #ifdef FEAT_LINEBREAK
     /* initialize the table for 'breakat'. */
     fill_breakat_flags();
 #endif
-#ifdef FEAT_SYN_HL
-    fill_culopt_flags(NULL, curwin);
-#endif
+    after_copy_winopt(curwin);
 }
 
 /*
@@ -5528,11 +5523,21 @@ win_copy_options(win_T *wp_from, win_T *wp_to)
 {
     copy_winopt(&wp_from->w_onebuf_opt, &wp_to->w_onebuf_opt);
     copy_winopt(&wp_from->w_allbuf_opt, &wp_to->w_allbuf_opt);
-#if defined(FEAT_LINEBREAK)
-    briopt_check(wp_to);
+    after_copy_winopt(wp_to);
+}
+
+/*
+ * After copying window options: update variables depending on options.
+ */
+    void
+after_copy_winopt(win_T *wp)
+{
+#ifdef FEAT_LINEBREAK
+    briopt_check(wp);
 #endif
 #ifdef FEAT_SYN_HL
-    fill_culopt_flags(NULL, wp_to);
+    fill_culopt_flags(NULL, wp);
+    check_colorcolumn(wp);
 #endif
 }
 
