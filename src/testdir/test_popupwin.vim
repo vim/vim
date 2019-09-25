@@ -1993,6 +1993,8 @@ func Test_popupwin_with_buffer()
 endfunc
 
 func Test_popupwin_terminal_buffer()
+  CheckFeature terminal
+
   let ptybuf = term_start(&shell, #{hidden: 1})
   call assert_fails('let winnr = popup_create(ptybuf, #{})', 'E278:')
   exe 'bwipe! ' .. ptybuf
