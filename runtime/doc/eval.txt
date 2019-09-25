@@ -1389,6 +1389,50 @@ to be doubled.  These two commands are equivalent: >
 	if a =~ '\s*'
 
 
+template-string					*template-string* *E1000*
+---------------
+
+$"string"	template string			*expr-$quote*
+$'string'	template literal string		*expr-$'*
+
+Note that either single quotes or double quotes are used.
+
+These strings support 'string-interpolations'. That embeds any expressions by
+'${}' into a string. For example
+>
+	" Embedding literals
+	echo $'I have ${10}'          " I have 10
+	echo $'I ${{"love": 1000}}'   " I {'love': 1000}
+<
+These are same as
+>
+	echo 'I have ' . string(10)
+	echo 'I ' . string({"love": 1000})
+<
+'string-interpolations' helps you to write complex string. Other rules:
+>
+	" Only strings or literal strings doesn't apply string()
+	echo $'I am a ${"vim"}'   " I am a vim
+	                          " not: I am a 'vim'
+	echo $"I am a ${'vim'}"   " I am a vim
+
+	" Only unscoped variables can omit {}
+	let x = 10
+	echo $'$x'  " 10
+
+	" In template-string, you can write '$' as $$
+	echo $'$$'  " $
+
+	" Escaping in template (non-literal) string
+	echo $"${10} \\ \""   " 10 \ "
+<
+Exceptions:
+>
+	echo $'$10'        " E450: Illegal template literal: $'$10'
+	echo $'${var'      " E451: Unterminated template literal: $'${var'
+	echo $'---${}---'  " E452: Empty template literal: $'---${}---'
+<
+
 option						*expr-option* *E112* *E113*
 ------
 &option			option value, local value if possible
