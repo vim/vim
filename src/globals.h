@@ -1728,3 +1728,9 @@ typedef int HINSTANCE;
 EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 EXTERN HINSTANCE g_hinst INIT(= NULL);
 #endif
+
+#if defined(FEAT_JOB_CHANNEL)
+EXTERN int did_repeated_msg INIT(= 0);
+# define REPEATED_MSG_LOOKING	    1
+# define REPEATED_MSG_SAFESTATE	    2
+#endif

@@ -1122,7 +1122,16 @@ may_trigger_safestateagain(void)
     if (was_safe)
     {
 #ifdef FEAT_JOB_CHANNEL
-	ch_log(NULL, "SafeState: back to waiting, triggering SafeStateAgain");
+	// Only do this message when another message was given, otherwise we
+	// get lots of them.
+	if ((did_repeated_msg & REPEATED_MSG_SAFESTATE) == 0)
+	{
+	    int did = did_repeated_msg;
+
+	    ch_log(NULL,
+		      "SafeState: back to waiting, triggering SafeStateAgain");
+	    did_repeated_msg = did | REPEATED_MSG_SAFESTATE;
+	}
 #endif
 	apply_autocmds(EVENT_SAFESTATEAGAIN, NULL, NULL, FALSE, curbuf);
     }
