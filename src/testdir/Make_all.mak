@@ -272,6 +272,7 @@ NEW_TESTS = \
 	test_tagjump \
 	test_taglist \
 	test_tcl \
+	test_template_string \
 	test_termcodes \
 	test_termencoding \
 	test_terminal \
