@@ -63,6 +63,7 @@ popupwin.c	| popup window
 profiler.c	| vim script profiler
 quickfix.c	| quickfix commands (":make", ":cn")
 regexp.c	| pattern matching
+register.c	| handling registers
 scriptfile.c	| runtime directory handling and sourcing scripts
 screen.c	| lower level screen functions
 search.c	| pattern searching

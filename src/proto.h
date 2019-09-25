@@ -188,6 +188,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # endif
 # include "quickfix.pro"
 # include "regexp.pro"
+# include "register.pro"
 # include "scriptfile.pro"
 # include "screen.pro"
 # include "session.pro"

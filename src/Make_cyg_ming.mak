@@ -769,6 +769,7 @@ OBJ = \
 	$(OUTDIR)/profiler.o \
 	$(OUTDIR)/quickfix.o \
 	$(OUTDIR)/regexp.o \
+	$(OUTDIR)/register.o \
 	$(OUTDIR)/scriptfile.o \
 	$(OUTDIR)/screen.o \
 	$(OUTDIR)/search.o \
@@ -1185,6 +1186,9 @@ $(OUTDIR)/os_win32.o:	os_win32.c $(INCL) $(MZSCHEME_INCL)
 
 $(OUTDIR)/regexp.o:	regexp.c regexp_bt.c regexp_nfa.c $(INCL)
 	$(CC) -c $(CFLAGS) regexp.c -o $@
+
+$(OUTDIR)/register.o:	register.c $(INCL)
+	$(CC) -c $(CFLAGS) register.c -o $@
 
 $(OUTDIR)/terminal.o:	terminal.c $(INCL) $(TERM_DEPS)
 	$(CC) -c $(CFLAGS) terminal.c -o $@

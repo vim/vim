@@ -1644,6 +1644,7 @@ BASIC_SRC = \
 	pty.c \
 	quickfix.c \
 	regexp.c \
+	register.c \
 	scriptfile.c \
 	screen.c \
 	search.c \
@@ -1778,6 +1779,7 @@ OBJ_COMMON = \
 	objects/pty.o \
 	objects/quickfix.o \
 	objects/regexp.o \
+	objects/register.o \
 	objects/scriptfile.o \
 	objects/screen.o \
 	objects/search.o \
@@ -1937,6 +1939,7 @@ PRO_AUTO = \
 	pty.pro \
 	quickfix.pro \
 	regexp.pro \
+	register.pro \
 	scriptfile.pro \
 	screen.pro \
 	search.pro \
@@ -3353,6 +3356,9 @@ objects/quickfix.o: quickfix.c
 objects/regexp.o: regexp.c regexp_bt.c regexp_nfa.c
 	$(CCC) -o $@ regexp.c
 
+objects/register.o: register.c
+	$(CCC) -o $@ register.c
+
 objects/scriptfile.o: scriptfile.c
 	$(CCC) -o $@ scriptfile.c
 
@@ -3835,6 +3841,10 @@ objects/regexp.o: regexp.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h regexp_bt.c regexp_nfa.c
+objects/register.o: register.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
 objects/scriptfile.o: scriptfile.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

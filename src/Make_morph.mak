@@ -85,6 +85,7 @@ SRC =	arabic.c						\
 	profiler.c						\
 	quickfix.c						\
 	regexp.c						\
+	register.c						\
 	scriptfile.c						\
 	screen.c						\
 	search.c						\
