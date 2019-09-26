@@ -5841,14 +5841,26 @@ gotoxy(
     if (x < 1 || x > (unsigned)Columns || y < 1 || y > (unsigned)Rows)
 	return;
 
-    /* external cursor coords are 1-based; internal are 0-based */
-    g_coord.X = x - 1;
-    g_coord.Y = y - 1;
-
     if (!USE_VTP)
+    {
+	/* external cursor coords are 1-based; internal are 0-based */
+	g_coord.X = x - 1;
+	g_coord.Y = y - 1;
+
 	SetConsoleCursorPosition(g_hConOut, g_coord);
+    }
     else
+    {
+	// Move the cursor to the left edge of the screen to prevent screen
+	// destruction.  Insider build bug.
+	if (conpty_type == 3)
+	    vtp_printf("\033[%d;%dH", g_coord.Y + 1, 1);
+
 	vtp_printf("\033[%d;%dH", y, x);
+
+	g_coord.X = x - 1;
+	g_coord.Y = y - 1;
+    }
 }
 
 
@@ -7266,7 +7278,7 @@ mch_setenv(char *var, char *value, int x UNUSED)
  * Confirm until this version.  Also the logic changes.
  * insider preview.
  */
-#define CONPTY_INSIDER_BUILD	    MAKE_VER(10, 0, 18898)
+#define CONPTY_INSIDER_BUILD	    MAKE_VER(10, 0, 18990)
 
 /*
  * Not stable now.
