@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Sep 15
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Sep 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2595,7 +2595,7 @@ or({expr}, {expr})		Number	bitwise OR
 pathshorten({expr})		String	shorten directory names in a path
 perleval({expr})		any	evaluate |Perl| expression
 popup_atcursor({what}, {options}) Number create popup window near the cursor
-popup_beval({what}, {options}) 	Number 	create popup window for 'ballooneval'
+popup_beval({what}, {options})	Number	create popup window for 'ballooneval'
 popup_clear()			none	close all popup windows
 popup_close({id} [, {result}])	none	close popup window {id}
 popup_create({what}, {options}) Number	create a popup window
@@ -9048,28 +9048,36 @@ state([{what}])						*state()*
 		current state.  Mostly useful in callbacks that want to do
 		work that may not always be safe.  Roughly this works like:
 		- callback uses state() to check if work is safe to do.
-		  If yes, then do it right away.
-		  Otherwise add to work queue and add SafeState and/or
-		  SafeStateAgain autocommand.
-		- When SafeState or SafeStateAgain is triggered, check with
-		  state() if the work can be done now, and if yes remove it
-		  from the queue and execute.
+		  Yes: then do it right away.
+		  No:  add to work queue and add a |SafeState| and/or
+		       |SafeStateAgain| autocommand (|SafeState| triggers at
+		       toplevel, |SafeStateAgain| triggers after handling
+		       messages and callbacks).
+		- When SafeState or SafeStateAgain is triggered and executes
+		  your autocommand, check with `state()` if the work can be
+		  done now, and if yes remove it from the queue and execute.
+		  Remove the autocommand if the queue is now empty.
 		Also see |mode()|.
 
 		When {what} is given only characters in this string will be
 		added.  E.g, this checks if the screen has scrolled: >
-			if state('s') != ''
+			if state('s') == ''
+			   " screen has not scrolled
 <
-		These characters indicate the state:
-		    m  halfway a mapping, :normal command, feedkeys() or
-		       stuffed command
-		    o  operator pending or waiting for a command argument
-		    a  Insert mode autocomplete active
-		    x  executing an autocommand
-		    w  blocked on waiting, e.g. ch_evalexpr() and
-		       ch_read(), ch_readraw() when reading json.
-		    c  callback invoked (repeats for recursiveness up to "ccc")
-		    s  screen has scrolled for messages
+		These characters indicate the state, generally indicating that
+		something is busy:
+		    m	halfway a mapping, :normal command, feedkeys() or
+			stuffed command
+		    o	operator pending or waiting for a command argument,
+		        e.g. after |f|
+		    a	Insert mode autocomplete active
+		    x	executing an autocommand
+		    w	blocked on waiting, e.g. ch_evalexpr() and
+			ch_read(), ch_readraw() when reading json.
+		    S	not triggering SafeState or SafeStateAgain
+		    c	callback invoked, including timer (repeats for
+			recursiveness up to "ccc")
+		    s	screen has scrolled for messages
 
 str2float({expr})					*str2float()*
 		Convert String {expr} to a Float.  This mostly works the same

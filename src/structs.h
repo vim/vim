@@ -587,23 +587,23 @@ typedef struct expand
  */
 typedef struct
 {
-    char_u	*cmdbuff;	/* pointer to command line buffer */
-    int		cmdbufflen;	/* length of cmdbuff */
-    int		cmdlen;		/* number of chars in command line */
-    int		cmdpos;		/* current cursor position */
-    int		cmdspos;	/* cursor column on screen */
-    int		cmdfirstc;	/* ':', '/', '?', '=', '>' or NUL */
-    int		cmdindent;	/* number of spaces before cmdline */
-    char_u	*cmdprompt;	/* message in front of cmdline */
-    int		cmdattr;	/* attributes for prompt */
-    int		overstrike;	/* Typing mode on the command line.  Shared by
-				   getcmdline() and put_on_cmdline(). */
-    expand_T	*xpc;		/* struct being used for expansion, xp_pattern
-				   may point into cmdbuff */
-    int		xp_context;	/* type of expansion */
+    char_u	*cmdbuff;	// pointer to command line buffer
+    int		cmdbufflen;	// length of cmdbuff
+    int		cmdlen;		// number of chars in command line
+    int		cmdpos;		// current cursor position
+    int		cmdspos;	// cursor column on screen
+    int		cmdfirstc;	// ':', '/', '?', '=', '>' or NUL
+    int		cmdindent;	// number of spaces before cmdline
+    char_u	*cmdprompt;	// message in front of cmdline
+    int		cmdattr;	// attributes for prompt
+    int		overstrike;	// Typing mode on the command line.  Shared by
+				// getcmdline() and put_on_cmdline().
+    expand_T	*xpc;		// struct being used for expansion, xp_pattern
+				// may point into cmdbuff
+    int		xp_context;	// type of expansion
 # ifdef FEAT_EVAL
-    char_u	*xp_arg;	/* user-defined expansion arg */
-    int		input_fn;	/* when TRUE Invoked for input() function */
+    char_u	*xp_arg;	// user-defined expansion arg
+    int		input_fn;	// when TRUE Invoked for input() function
 # endif
 } cmdline_info_T;
 
@@ -1150,10 +1150,10 @@ typedef struct
  */
 typedef struct hist_entry
 {
-    int		hisnum;		/* identifying number */
-    int		viminfo;	/* when TRUE hisstr comes from viminfo */
-    char_u	*hisstr;	/* actual entry, separator char after the NUL */
-    time_t	time_set;	/* when it was typed, zero if unknown */
+    int		hisnum;		// identifying number
+    int		viminfo;	// when TRUE hisstr comes from viminfo
+    char_u	*hisstr;	// actual entry, separator char after the NUL
+    time_t	time_set;	// when it was typed, zero if unknown
 } histentry_T;
 
 #define CONV_NONE		0
@@ -1579,23 +1579,23 @@ typedef struct scriptitem_S
     ino_t	sn_ino;
 # endif
 # ifdef FEAT_PROFILE
-    int		sn_prof_on;	/* TRUE when script is/was profiled */
-    int		sn_pr_force;	/* forceit: profile functions in this script */
-    proftime_T	sn_pr_child;	/* time set when going into first child */
-    int		sn_pr_nest;	/* nesting for sn_pr_child */
-    /* profiling the script as a whole */
-    int		sn_pr_count;	/* nr of times sourced */
-    proftime_T	sn_pr_total;	/* time spent in script + children */
-    proftime_T	sn_pr_self;	/* time spent in script itself */
-    proftime_T	sn_pr_start;	/* time at script start */
-    proftime_T	sn_pr_children; /* time in children after script start */
-    /* profiling the script per line */
-    garray_T	sn_prl_ga;	/* things stored for every line */
-    proftime_T	sn_prl_start;	/* start time for current line */
-    proftime_T	sn_prl_children; /* time spent in children for this line */
-    proftime_T	sn_prl_wait;	/* wait start time for current line */
-    int		sn_prl_idx;	/* index of line being timed; -1 if none */
-    int		sn_prl_execed;	/* line being timed was executed */
+    int		sn_prof_on;	// TRUE when script is/was profiled
+    int		sn_pr_force;	// forceit: profile functions in this script
+    proftime_T	sn_pr_child;	// time set when going into first child
+    int		sn_pr_nest;	// nesting for sn_pr_child
+    // profiling the script as a whole
+    int		sn_pr_count;	// nr of times sourced
+    proftime_T	sn_pr_total;	// time spent in script + children
+    proftime_T	sn_pr_self;	// time spent in script itself
+    proftime_T	sn_pr_start;	// time at script start
+    proftime_T	sn_pr_children; // time in children after script start
+    // profiling the script per line
+    garray_T	sn_prl_ga;	// things stored for every line
+    proftime_T	sn_prl_start;	// start time for current line
+    proftime_T	sn_prl_children; // time spent in children for this line
+    proftime_T	sn_prl_wait;	// wait start time for current line
+    int		sn_prl_idx;	// index of line being timed; -1 if none
+    int		sn_prl_execed;	// line being timed was executed
 # endif
 } scriptitem_T;
 
@@ -1603,9 +1603,9 @@ typedef struct scriptitem_S
 /* Struct used in sn_prl_ga for every line of a script. */
 typedef struct sn_prl_S
 {
-    int		snp_count;	/* nr of times line was executed */
-    proftime_T	sn_prl_total;	/* time spent in a line + children */
-    proftime_T	sn_prl_self;	/* time spent in a line itself */
+    int		snp_count;	// nr of times line was executed
+    proftime_T	sn_prl_total;	// time spent in a line + children
+    proftime_T	sn_prl_self;	// time spent in a line itself
 } sn_prl_T;
 
 #  define PRL_ITEM(si, idx)	(((sn_prl_T *)(si)->sn_prl_ga.ga_data)[(idx)])
@@ -2345,7 +2345,7 @@ struct file_buffer
     garray_T	b_ucmds;
     // start and end of an operator, also used for '[ and ']
     pos_T	b_op_start;
-    pos_T	b_op_start_orig;  /* used for Insstart_orig */
+    pos_T	b_op_start_orig;  // used for Insstart_orig
     pos_T	b_op_end;
 
 #ifdef FEAT_VIMINFO
@@ -3223,8 +3223,8 @@ struct window_S
     long	w_scbind_pos;
 
 #ifdef FEAT_EVAL
-    dictitem_T	w_winvar;	/* variable for "w:" Dictionary */
-    dict_T	*w_vars;	/* internal variables, local to window */
+    dictitem_T	w_winvar;	// variable for "w:" Dictionary
+    dict_T	*w_vars;	// internal variables, local to window
 #endif
 
     /*
@@ -3793,9 +3793,9 @@ typedef enum {
 // Variable flavor
 typedef enum
 {
-    VAR_FLAVOUR_DEFAULT,	/* doesn't start with uppercase */
-    VAR_FLAVOUR_SESSION,	/* starts with uppercase, some lower */
-    VAR_FLAVOUR_VIMINFO		/* all uppercase */
+    VAR_FLAVOUR_DEFAULT,	// doesn't start with uppercase
+    VAR_FLAVOUR_SESSION,	// starts with uppercase, some lower
+    VAR_FLAVOUR_VIMINFO		// all uppercase
 } var_flavour_T;
 
 // argument for mouse_find_win()
@@ -3828,6 +3828,26 @@ typedef enum {
 #else
 # define NUM_REGISTERS		37
 #endif
+
+// structure used by block_prep, op_delete and op_yank for blockwise operators
+// also op_change, op_shift, op_insert, op_replace - AKelly
+struct block_def
+{
+    int		startspaces;	// 'extra' cols before first char
+    int		endspaces;	// 'extra' cols after last char
+    int		textlen;	// chars in block
+    char_u	*textstart;	// pointer to 1st char (partially) in block
+    colnr_T	textcol;	// index of chars (partially) in block
+    colnr_T	start_vcol;	// start col of 1st char wholly inside block
+    colnr_T	end_vcol;	// start col of 1st char wholly after block
+    int		is_short;	// TRUE if line is too short to fit in block
+    int		is_MAX;		// TRUE if curswant==MAXCOL when starting
+    int		is_oneChar;	// TRUE if block within one character
+    int		pre_whitesp;	// screen cols of ws before block
+    int		pre_whitesp_c;	// chars of ws before block
+    colnr_T	end_char_vcols;	// number of vcols of post-block char
+    colnr_T	start_char_vcols; // number of vcols of pre-block char
+};
 
 // Each yank register has an array of pointers to lines.
 typedef struct

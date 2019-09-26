@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Sep 09
+*options.txt*	For Vim version 8.1.  Last change: 2019 Sep 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4842,9 +4842,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 			off and the line continues beyond the right of the
 			screen.
 							*lcs-precedes*
-	  precedes:c	Character to show in the first column, when 'wrap'
-			is off and there is text preceding the character
-			visible in the first column.
+	  precedes:c	Character to show in the first visible column of the
+			physical line, when there is text preceding the
+			character visible in the first column.
 							*lcs-conceal*
 	  conceal:c	Character to show in place of concealed text, when
 			'conceallevel' is set to 1.
@@ -8565,8 +8565,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	":map <BS> X" to make backspace delete the character in front of the
 	cursor.
 	When 'l' is included and it is used after an operator at the end of a
-	line then it will not move to the next line.  This makes "dl", "cl",
-	"yl" etc. work normally.
+	line (not an empty line) then it will not move to the next line.  This
+	makes "dl", "cl", "yl" etc. work normally.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
 

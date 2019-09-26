@@ -696,7 +696,7 @@ func_dump_profile(FILE *fd)
 				     get_scriptname(fp->uf_script_ctx.sc_sid));
 		    if (p != NULL)
 		    {
-			fprintf(fd, "    Defined: %s line %ld\n",
+			fprintf(fd, "    Defined: %s:%ld\n",
 					   p, (long)fp->uf_script_ctx.sc_lnum);
 			vim_free(p);
 		    }

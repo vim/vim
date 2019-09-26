@@ -6720,7 +6720,7 @@ gui_mch_dialog(
     char_u	*buttons,
     int		 dfltbutton,
     char_u	*textfield,
-    int		ex_cmd)
+    int		ex_cmd UNUSED)
 {
     WORD	*p, *pdlgtemplate, *pnumitems;
     DWORD	*dwp;
@@ -8517,7 +8517,7 @@ gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
 
     BalloonEval *
 gui_mch_create_beval_area(
-    void	*target,	/* ignored, always use s_textArea */
+    void	*target UNUSED,	/* ignored, always use s_textArea */
     char_u	*mesg,
     void	(*mesgCB)(BalloonEval *, int),
     void	*clientData)

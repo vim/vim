@@ -2106,7 +2106,7 @@ if test "$enable_terminal" = "yes" -a "$enable_channel" = "yes"; then
   AC_DEFINE(FEAT_TERMINAL)
   TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/termscreen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
   AC_SUBST(TERM_SRC)
-  TERM_OBJ="objects/encoding.o objects/keyboard.o objects/mouse.o objects/parser.o objects/pen.o objects/termscreen.o objects/state.o objects/unicode.o objects/vterm.o"
+  TERM_OBJ="objects/encoding.o objects/keyboard.o objects/termmouse.o objects/parser.o objects/pen.o objects/termscreen.o objects/state.o objects/unicode.o objects/vterm.o"
   AC_SUBST(TERM_OBJ)
 fi
 

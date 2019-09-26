@@ -7335,7 +7335,7 @@ close_redir(void)
 
 #if (defined(FEAT_SESSION) || defined(FEAT_EVAL)) || defined(PROTO)
     int
-vim_mkdir_emsg(char_u *name, int prot)
+vim_mkdir_emsg(char_u *name, int prot UNUSED)
 {
     if (vim_mkdir(name, prot) != 0)
     {
@@ -7578,9 +7578,7 @@ ex_normal(exarg_T *eap)
 
     restore_current_state(&save_state);
     --ex_normal_busy;
-#ifdef FEAT_MOUSE
     setmouse();
-#endif
 #ifdef CURSOR_SHAPE
     ui_cursor_shape();		/* may show different cursor shape */
 #endif

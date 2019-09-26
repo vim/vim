@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 Sep 08
+*terminal.txt*	For Vim version 8.1.  Last change: 2019 Sep 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1225,8 +1225,10 @@ gdb:
  `:Run` [args]	    run the program with [args] or the previous arguments
  `:Arguments` {args}  set arguments for the next `:Run`
 
- *:Break*	set a breakpoint at the current line; a sign will be displayed
- *:Clear*	delete the breakpoint at the current line
+ *:Break*	set a breakpoint at the cursor position
+ :Break {position}
+ 		set a breakpoint at the specified position
+ *:Clear*	delete the breakpoint at the cursor position
 
  *:Step*	execute the gdb "step" command
  *:Over*	execute the gdb "next" command (`:Next` is a Vim command)

@@ -684,9 +684,7 @@ vim_main2(void)
     starttermcap();	    /* start termcap if not done by wait_return() */
     TIME_MSG("start termcap");
 
-#ifdef FEAT_MOUSE
-    setmouse();				/* may start using the mouse */
-#endif
+    setmouse();				// may start using the mouse
     if (scroll_region)
 	scroll_region_reset();		/* In case Rows changed */
     scroll_start();	/* may scroll the screen to the right position */
@@ -1049,24 +1047,33 @@ op_pending(void)
 }
 
 /*
+ * Return whether currently it is safe, assuming it was safe before (high level
+ * state didn't change).
+ */
+    static int
+is_safe_now(void)
+{
+    return stuff_empty()
+	&& typebuf.tb_len == 0
+	&& scriptin[curscript] == NULL
+	&& !global_busy;
+}
+
+/*
  * Trigger SafeState if currently in s safe state, that is "safe" is TRUE and
  * there is no typeahead.
  */
     void
 may_trigger_safestate(int safe)
 {
-    int is_safe = safe
-		    && stuff_empty()
-		    && typebuf.tb_len == 0
-		    && scriptin[curscript] == NULL
-		    && !global_busy;
+    int is_safe = safe && is_safe_now();
 
 #ifdef FEAT_JOB_CHANNEL
     if (was_safe != is_safe)
 	// Only log when the state changes, otherwise it happens at nearly
 	// every key stroke.
-	ch_log(NULL, is_safe ? "Start triggering SafeState"
-						: "Stop triggering SafeState");
+	ch_log(NULL, is_safe ? "SafeState: Start triggering"
+					       : "SafeState: Stop triggering");
 #endif
     if (is_safe)
 	apply_autocmds(EVENT_SAFESTATE, NULL, NULL, FALSE, curbuf);
@@ -1079,13 +1086,19 @@ may_trigger_safestate(int safe)
  * may_trigger_safestate().
  */
     void
-state_no_longer_safe(void)
+state_no_longer_safe(char *reason UNUSED)
 {
 #ifdef FEAT_JOB_CHANNEL
     if (was_safe)
-	ch_log(NULL, "safe state reset");
+	ch_log(NULL, "SafeState: reset: %s", reason);
 #endif
     was_safe = FALSE;
+}
+
+    int
+get_was_safe_state(void)
+{
+    return was_safe;
 }
 
 /*
@@ -1095,16 +1108,37 @@ state_no_longer_safe(void)
     void
 may_trigger_safestateagain(void)
 {
+    if (!was_safe)
+    {
+	// If the safe state was reset in state_no_longer_safe(), e.g. because
+	// of calling feedkeys(), we check if it's now safe again (all keys
+	// were consumed).
+	was_safe = is_safe_now();
+#ifdef FEAT_JOB_CHANNEL
+	if (was_safe)
+	    ch_log(NULL, "SafeState: undo reset");
+#endif
+    }
     if (was_safe)
     {
 #ifdef FEAT_JOB_CHANNEL
-	ch_log(NULL, "Leaving unsafe area, triggering SafeStateAgain");
+	// Only do this message when another message was given, otherwise we
+	// get lots of them.
+	if ((did_repeated_msg & REPEATED_MSG_SAFESTATE) == 0)
+	{
+	    int did = did_repeated_msg;
+
+	    ch_log(NULL,
+		      "SafeState: back to waiting, triggering SafeStateAgain");
+	    did_repeated_msg = did | REPEATED_MSG_SAFESTATE;
+	}
 #endif
 	apply_autocmds(EVENT_SAFESTATEAGAIN, NULL, NULL, FALSE, curbuf);
     }
 #ifdef FEAT_JOB_CHANNEL
     else
-	ch_log(NULL, "Leaving unsafe area, not triggering SafeStateAgain");
+	ch_log(NULL,
+		  "SafeState: back to waiting, not triggering SafeStateAgain");
 #endif
 }
 
@@ -1155,9 +1189,7 @@ main_loop(
 	emsg_skip = 0;
 # endif
 	emsg_off = 0;
-# ifdef FEAT_MOUSE
 	setmouse();
-# endif
 	settmode(TMODE_RAW);
 	starttermcap();
 	scroll_start();
@@ -3635,7 +3667,7 @@ static struct timeval	prev_timeval;
  * Windows doesn't have gettimeofday(), although it does have struct timeval.
  */
     static int
-gettimeofday(struct timeval *tv, char *dummy)
+gettimeofday(struct timeval *tv, char *dummy UNUSED)
 {
     long t = clock();
     tv->tv_sec = t / CLOCKS_PER_SEC;

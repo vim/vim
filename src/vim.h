@@ -229,8 +229,10 @@
 
 // Mark unused function arguments with UNUSED, so that gcc -Wunused-parameter
 // can be used to check for mistakes.
-#ifdef HAVE_ATTRIBUTE_UNUSED
-# define UNUSED __attribute__((unused))
+#if defined(HAVE_ATTRIBUTE_UNUSED) || defined(__MINGW32__)
+# if !defined(UNUSED)
+#  define UNUSED __attribute__((unused))
+# endif
 #else
 # define UNUSED
 #endif
@@ -586,6 +588,13 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define SOME_VALID		35  // like NOT_VALID but may scroll
 #define NOT_VALID		40  // buffer needs complete redraw
 #define CLEAR			50  // screen messed up, clear it
+
+// flags for screen_line()
+#define SLF_RIGHTLEFT	1
+#define SLF_POPUP	2
+
+#define MB_FILLER_CHAR '<'  // character used when a double-width character
+			    // doesn't fit.
 
 /*
  * Flags for w_valid.

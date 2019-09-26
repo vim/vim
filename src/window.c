@@ -4672,9 +4672,7 @@ win_enter_ext(
     if (curwin->w_width < p_wiw && !curwin->w_p_wfw)
 	win_setwidth((int)p_wiw);
 
-#ifdef FEAT_MOUSE
-    setmouse();			/* in case jumped to/from help buffer */
-#endif
+    setmouse();			// in case jumped to/from help buffer
 
     /* Change directories when the 'acd' option is set. */
     DO_AUTOCHDIR;

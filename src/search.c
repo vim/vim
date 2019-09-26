@@ -4803,9 +4803,7 @@ current_search(
 #endif
 
     may_start_select('c');
-#ifdef FEAT_MOUSE
     setmouse();
-#endif
 #ifdef FEAT_CLIPBOARD
     /* Make sure the clipboard gets updated.  Needed because start and
      * end are still the same, and the selection needs to be owned */

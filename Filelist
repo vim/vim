@@ -32,6 +32,8 @@ SRC_ALL =	\
 		src/dict.c \
 		src/diff.c \
 		src/digraph.c \
+		src/drawline.c \
+		src/drawscreen.c \
 		src/edit.c \
 		src/eval.c \
 		src/evalbuffer.c \
@@ -78,6 +80,7 @@ SRC_ALL =	\
 		src/message_test.c \
 		src/misc1.c \
 		src/misc2.c \
+		src/mouse.c \
 		src/move.c \
 		src/mysign \
 		src/nbdebug.c \
@@ -97,6 +100,7 @@ SRC_ALL =	\
 		src/regexp_bt.c \
 		src/regexp_nfa.c \
 		src/regexp.h \
+		src/register.c \
 		src/scriptfile.c \
 		src/screen.c \
 		src/search.c \
@@ -192,6 +196,8 @@ SRC_ALL =	\
 		src/proto/dict.pro \
 		src/proto/diff.pro \
 		src/proto/digraph.pro \
+		src/proto/drawline.pro \
+		src/proto/drawscreen.pro \
 		src/proto/edit.pro \
 		src/proto/eval.pro \
 		src/proto/evalbuffer.pro \
@@ -227,6 +233,7 @@ SRC_ALL =	\
 		src/proto/message.pro \
 		src/proto/misc1.pro \
 		src/proto/misc2.pro \
+		src/proto/mouse.pro \
 		src/proto/move.pro \
 		src/proto/netbeans.pro \
 		src/proto/normal.pro \
@@ -238,6 +245,7 @@ SRC_ALL =	\
 		src/proto/profiler.pro \
 		src/proto/quickfix.pro \
 		src/proto/regexp.pro \
+		src/proto/register.pro \
 		src/proto/scriptfile.pro \
 		src/proto/screen.pro \
 		src/proto/search.pro \

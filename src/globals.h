@@ -62,6 +62,31 @@ EXTERN int	Screen_mco INIT(= 0);		// value of p_mco used when
 EXTERN schar_T	*ScreenLines2 INIT(= NULL);
 
 /*
+ * Buffer for one screen line (characters and attributes).
+ */
+EXTERN schar_T	*current_ScreenLine INIT(= NULL);
+
+/*
+ * Last known cursor position.
+ * Positioning the cursor is reduced by remembering the last position.
+ * Mostly used by windgoto() and screen_char().
+ */
+EXTERN int	screen_cur_row INIT(= 0);
+EXTERN int	screen_cur_col INIT(= 0);
+
+#ifdef FEAT_SEARCH_EXTRA
+EXTERN match_T	screen_search_hl; // used for 'hlsearch' highlight matching
+#endif
+
+#ifdef FEAT_FOLDING
+EXTERN foldinfo_T win_foldinfo;	// info for 'foldcolumn'
+#endif
+
+// Flag that is set when drawing for a callback, not from the main command
+// loop.
+EXTERN int redrawing_for_callback INIT(= 0);
+
+/*
  * Indexes for tab page line:
  *	N > 0 for label of tab page N
  *	N == 0 for no label
@@ -1702,4 +1727,10 @@ typedef int HINSTANCE;
 # endif
 EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 EXTERN HINSTANCE g_hinst INIT(= NULL);
+#endif
+
+#if defined(FEAT_JOB_CHANNEL)
+EXTERN int did_repeated_msg INIT(= 0);
+# define REPEATED_MSG_LOOKING	    1
+# define REPEATED_MSG_SAFESTATE	    2
 #endif

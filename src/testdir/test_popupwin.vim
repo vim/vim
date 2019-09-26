@@ -1137,7 +1137,7 @@ endfunc
 
 func Test_popup_beval()
   CheckScreendump
-  CheckFeature balloon_eval
+  CheckFeature balloon_eval_term
 
   let lines =<< trim END
 	call setline(1, range(1, 20))
@@ -1990,6 +1990,14 @@ func Test_popupwin_with_buffer()
   redraw
   call popup_close(winid)
   call delete('XsomeFile')
+endfunc
+
+func Test_popupwin_terminal_buffer()
+  CheckFeature terminal
+
+  let ptybuf = term_start(&shell, #{hidden: 1})
+  call assert_fails('let winnr = popup_create(ptybuf, #{})', 'E278:')
+  exe 'bwipe! ' .. ptybuf
 endfunc
 
 func Test_popupwin_with_buffer_and_filter()

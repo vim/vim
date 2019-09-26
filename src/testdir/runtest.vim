@@ -307,6 +307,7 @@ endif
 
 " Names of flaky tests.
 let s:flaky_tests = [
+      \ 'Test_autocmd_SafeState()',
       \ 'Test_call()',
       \ 'Test_channel_handler()',
       \ 'Test_client_server()',

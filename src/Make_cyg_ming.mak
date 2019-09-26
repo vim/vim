@@ -719,6 +719,8 @@ OBJ = \
 	$(OUTDIR)/dict.o \
 	$(OUTDIR)/diff.o \
 	$(OUTDIR)/digraph.o \
+	$(OUTDIR)/drawline.o \
+	$(OUTDIR)/drawscreen.o \
 	$(OUTDIR)/edit.o \
 	$(OUTDIR)/eval.o \
 	$(OUTDIR)/evalbuffer.o \
@@ -752,6 +754,7 @@ OBJ = \
 	$(OUTDIR)/message.o \
 	$(OUTDIR)/misc1.o \
 	$(OUTDIR)/misc2.o \
+	$(OUTDIR)/mouse.o \
 	$(OUTDIR)/move.o \
 	$(OUTDIR)/mbyte.o \
 	$(OUTDIR)/normal.o \
@@ -766,6 +769,7 @@ OBJ = \
 	$(OUTDIR)/profiler.o \
 	$(OUTDIR)/quickfix.o \
 	$(OUTDIR)/regexp.o \
+	$(OUTDIR)/register.o \
 	$(OUTDIR)/scriptfile.o \
 	$(OUTDIR)/screen.o \
 	$(OUTDIR)/search.o \
@@ -864,7 +868,7 @@ ifeq ($(TERMINAL),yes)
 OBJ += $(OUTDIR)/terminal.o \
 	$(OUTDIR)/encoding.o \
 	$(OUTDIR)/keyboard.o \
-	$(OUTDIR)/mouse.o \
+	$(OUTDIR)/termmouse.o \
 	$(OUTDIR)/parser.o \
 	$(OUTDIR)/pen.o \
 	$(OUTDIR)/termscreen.o \
@@ -1182,6 +1186,9 @@ $(OUTDIR)/os_win32.o:	os_win32.c $(INCL) $(MZSCHEME_INCL)
 
 $(OUTDIR)/regexp.o:	regexp.c regexp_bt.c regexp_nfa.c $(INCL)
 	$(CC) -c $(CFLAGS) regexp.c -o $@
+
+$(OUTDIR)/register.o:	register.c $(INCL)
+	$(CC) -c $(CFLAGS) register.c -o $@
 
 $(OUTDIR)/terminal.o:	terminal.c $(INCL) $(TERM_DEPS)
 	$(CC) -c $(CFLAGS) terminal.c -o $@

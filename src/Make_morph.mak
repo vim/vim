@@ -39,6 +39,8 @@ SRC =	arabic.c						\
 	dict.c							\
 	diff.c							\
 	digraph.c						\
+	drawline.c						\
+	drawscreen.c						\
 	edit.c							\
 	eval.c							\
 	evalbuffer.c						\
@@ -72,6 +74,7 @@ SRC =	arabic.c						\
 	message.c						\
 	misc1.c							\
 	misc2.c							\
+	mouse.c							\
 	move.c							\
 	normal.c						\
 	ops.c							\
@@ -82,6 +85,7 @@ SRC =	arabic.c						\
 	profiler.c						\
 	quickfix.c						\
 	regexp.c						\
+	register.c						\
 	scriptfile.c						\
 	screen.c						\
 	search.c						\

@@ -2491,44 +2491,6 @@ static struct key_name_entry
 
 #define KEY_NAMES_TABLE_LEN (sizeof(key_names_table) / sizeof(struct key_name_entry))
 
-#ifdef FEAT_MOUSE
-static struct mousetable
-{
-    int	    pseudo_code;	/* Code for pseudo mouse event */
-    int	    button;		/* Which mouse button is it? */
-    int	    is_click;		/* Is it a mouse button click event? */
-    int	    is_drag;		/* Is it a mouse drag event? */
-} mouse_table[] =
-{
-    {(int)KE_LEFTMOUSE,		MOUSE_LEFT,	TRUE,	FALSE},
-#ifdef FEAT_GUI
-    {(int)KE_LEFTMOUSE_NM,	MOUSE_LEFT,	TRUE,	FALSE},
-#endif
-    {(int)KE_LEFTDRAG,		MOUSE_LEFT,	FALSE,	TRUE},
-    {(int)KE_LEFTRELEASE,	MOUSE_LEFT,	FALSE,	FALSE},
-#ifdef FEAT_GUI
-    {(int)KE_LEFTRELEASE_NM,	MOUSE_LEFT,	FALSE,	FALSE},
-#endif
-    {(int)KE_MIDDLEMOUSE,	MOUSE_MIDDLE,	TRUE,	FALSE},
-    {(int)KE_MIDDLEDRAG,	MOUSE_MIDDLE,	FALSE,	TRUE},
-    {(int)KE_MIDDLERELEASE,	MOUSE_MIDDLE,	FALSE,	FALSE},
-    {(int)KE_RIGHTMOUSE,	MOUSE_RIGHT,	TRUE,	FALSE},
-    {(int)KE_RIGHTDRAG,		MOUSE_RIGHT,	FALSE,	TRUE},
-    {(int)KE_RIGHTRELEASE,	MOUSE_RIGHT,	FALSE,	FALSE},
-    {(int)KE_X1MOUSE,		MOUSE_X1,	TRUE,	FALSE},
-    {(int)KE_X1DRAG,		MOUSE_X1,	FALSE,	TRUE},
-    {(int)KE_X1RELEASE,		MOUSE_X1,	FALSE,	FALSE},
-    {(int)KE_X2MOUSE,		MOUSE_X2,	TRUE,	FALSE},
-    {(int)KE_X2DRAG,		MOUSE_X2,	FALSE,	TRUE},
-    {(int)KE_X2RELEASE,		MOUSE_X2,	FALSE,	FALSE},
-    /* DRAG without CLICK */
-    {(int)KE_MOUSEMOVE,		MOUSE_RELEASE,	FALSE,	TRUE},
-    /* RELEASE without CLICK */
-    {(int)KE_IGNORE,		MOUSE_RELEASE,	FALSE,	FALSE},
-    {0,				0,		0,	0},
-};
-#endif /* FEAT_MOUSE */
-
 /*
  * Return the modifier mask bit (MOD_MASK_*) which corresponds to the given
  * modifier name ('S' for Shift, 'C' for Ctrl etc).
@@ -3049,66 +3011,6 @@ get_key_name(int i)
 	return NULL;
     return  key_names_table[i].name;
 }
-
-#if defined(FEAT_MOUSE) || defined(PROTO)
-/*
- * Look up the given mouse code to return the relevant information in the other
- * arguments.  Return which button is down or was released.
- */
-    int
-get_mouse_button(int code, int *is_click, int *is_drag)
-{
-    int	    i;
-
-    for (i = 0; mouse_table[i].pseudo_code; i++)
-	if (code == mouse_table[i].pseudo_code)
-	{
-	    *is_click = mouse_table[i].is_click;
-	    *is_drag = mouse_table[i].is_drag;
-	    return mouse_table[i].button;
-	}
-    return 0;	    /* Shouldn't get here */
-}
-
-/*
- * Return the appropriate pseudo mouse event token (KE_LEFTMOUSE etc) based on
- * the given information about which mouse button is down, and whether the
- * mouse was clicked, dragged or released.
- */
-    int
-get_pseudo_mouse_code(
-    int	    button,	/* eg MOUSE_LEFT */
-    int	    is_click,
-    int	    is_drag)
-{
-    int	    i;
-
-    for (i = 0; mouse_table[i].pseudo_code; i++)
-	if (button == mouse_table[i].button
-	    && is_click == mouse_table[i].is_click
-	    && is_drag == mouse_table[i].is_drag)
-	{
-#ifdef FEAT_GUI
-	    /* Trick: a non mappable left click and release has mouse_col -1
-	     * or added MOUSE_COLOFF.  Used for 'mousefocus' in
-	     * gui_mouse_moved() */
-	    if (mouse_col < 0 || mouse_col > MOUSE_COLOFF)
-	    {
-		if (mouse_col < 0)
-		    mouse_col = 0;
-		else
-		    mouse_col -= MOUSE_COLOFF;
-		if (mouse_table[i].pseudo_code == (int)KE_LEFTMOUSE)
-		    return (int)KE_LEFTMOUSE_NM;
-		if (mouse_table[i].pseudo_code == (int)KE_LEFTRELEASE)
-		    return (int)KE_LEFTRELEASE_NM;
-	    }
-#endif
-	    return mouse_table[i].pseudo_code;
-	}
-    return (int)KE_IGNORE;	    /* not recognized, ignore it */
-}
-#endif /* FEAT_MOUSE */
 
 /*
  * Return the current end-of-line type: EOL_DOS, EOL_UNIX or EOL_MAC.
