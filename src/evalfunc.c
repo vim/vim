@@ -787,6 +787,7 @@ static funcentry_T global_functions[] =
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     {"term_setansicolors", 2, 2, FEARG_1, f_term_setansicolors},
 # endif
+    {"term_setapi",	2, 2, FEARG_1,	  f_term_setapi},
     {"term_setkill",	2, 2, FEARG_1,	  f_term_setkill},
     {"term_setrestore",	2, 2, FEARG_1,	  f_term_setrestore},
     {"term_setsize",	3, 3, FEARG_1,	  f_term_setsize},

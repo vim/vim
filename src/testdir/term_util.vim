@@ -61,11 +61,16 @@ func RunVimInTerminal(arguments, options)
 
   let cmd = GetVimCommandCleanTerm() .. a:arguments
 
-  let buf = term_start(cmd, {
+  let options = {
 	\ 'curwin': 1,
 	\ 'term_rows': rows,
 	\ 'term_cols': cols,
-	\ })
+	\ }
+  " Accept other options whose name starts with 'term_'.
+  call extend(options, filter(copy(a:options), 'v:key =~# "^term_"'))
+
+  let buf = term_start(cmd, options)
+
   if &termwinsize == ''
     " in the GUI we may end up with a different size, try to set it.
     if term_getsize(buf) != [rows, cols]

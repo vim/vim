@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Sep 19
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Sep 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2819,6 +2819,7 @@ term_gettty({buf}, [{input}])	String	get the tty name of a terminal
 term_list()			List	get the list of terminal buffers
 term_scrape({buf}, {row})	List	get row of a terminal screen
 term_sendkeys({buf}, {keys})	none	send keystrokes to a terminal
+term_setapi({buf}, {expr})	none	set |terminal-api| function name prefix
 term_setansicolors({buf}, {colors})
 				none	set ANSI palette in GUI color mode
 term_setkill({buf}, {how})	none	set signal to stop job in terminal
@@ -3262,9 +3263,14 @@ bufnr([{expr} [, {create}]])
 		The result is the number of a buffer, as it is displayed by
 		the ":ls" command.  For the use of {expr}, see |bufname()|
 		above.
+
 		If the buffer doesn't exist, -1 is returned.  Or, if the
 		{create} argument is present and not zero, a new, unlisted,
-		buffer is created and its number is returned.
+		buffer is created and its number is returned.  Example: >
+			let newbuf = bufnr('Scratch001', 1)
+<		Using an empty name uses the current buffer. To create a new
+		buffer with an empty name use |bufadd()|.
+
 		bufnr("$") is the last buffer: >
 			:let last_buffer = bufnr("$")
 <		The result is a Number, which is the highest buffer number
