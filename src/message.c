@@ -4408,8 +4408,12 @@ vim_vsnprintf_typval(
 			    char_u *p1 = (char_u *)str_arg;
 			    size_t i;
 
-			    for (i = 0; i < precision && *p1; i++)
+			    for (i = 0; *p1;) {
+				i += (size_t)mb_ptr2cells(p1);
+				if (i > precision)
+				    break;
 				p1 += mb_ptr2len(p1);
+			    }
 
 			    str_arg_l = precision = p1 - (char_u *)str_arg;
 			}
