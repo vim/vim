@@ -151,6 +151,8 @@ struct slang_S
 #define WF_FIXCAP   0x40	/* keep-case word, allcap not allowed */
 #define WF_KEEPCAP  0x80	/* keep-case word */
 
+#define WF_CAPMASK (WF_ONECAP | WF_ALLCAP | WF_KEEPCAP | WF_FIXCAP)
+
 /* for <flags2>, shifted up one byte to be used in wn_flags */
 #define WF_HAS_AFF  0x0100	/* word includes affix */
 #define WF_NEEDCOMP 0x0200	/* word only valid in compound */
@@ -302,4 +304,18 @@ SPELL_EXTERN int	  did_set_spelltab;
 #define SPELL_ADD_GOOD	0
 #define SPELL_ADD_BAD	1
 #define SPELL_ADD_RARE	2
+
+typedef struct wordcount_S
+{
+    short_u	wc_count;	    /* nr of times word was seen */
+    char_u	wc_word[1];	    /* word, actually longer */
+} wordcount_T;
+
+#define WC_KEY_OFF  offsetof(wordcount_T, wc_word)
+#define HI2WC(hi)     ((wordcount_T *)((hi)->hi_key - WC_KEY_OFF))
+#define MAXWORDCOUNT 0xffff
+
+/* Remember what "z?" replaced. */
+SPELL_EXTERN char_u	*repl_from SPELL_INIT(= NULL);
+SPELL_EXTERN char_u	*repl_to SPELL_INIT(= NULL);
 #endif

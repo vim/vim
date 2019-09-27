@@ -69,7 +69,9 @@ screen.c	| lower level screen functions
 search.c	| pattern searching
 session.c	| sessions and views
 sign.c		| signs
-spell.c		| spell checking
+spell.c		| spell checking core
+spellfile.c	| spell file handling
+spellsuggest.c	| spell correction suggestions
 syntax.c	| syntax and other highlighting
 tag.c		| tags
 term.c		| terminal handling, termcap codes

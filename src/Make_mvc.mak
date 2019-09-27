@@ -785,6 +785,7 @@ OBJ = \
 	$(OUTDIR)\sign.obj \
 	$(OUTDIR)\spell.obj \
 	$(OUTDIR)\spellfile.obj \
+	$(OUTDIR)\spellsuggest.obj \
 	$(OUTDIR)\syntax.obj \
 	$(OUTDIR)\tag.obj \
 	$(OUTDIR)\term.obj \
@@ -1670,6 +1671,8 @@ $(OUTDIR)/spell.obj:	$(OUTDIR) spell.c  $(INCL)
 
 $(OUTDIR)/spellfile.obj:	$(OUTDIR) spellfile.c  $(INCL)
 
+$(OUTDIR)/spellsuggest.obj:	$(OUTDIR) spellsuggest.c  $(INCL)
+
 $(OUTDIR)/syntax.obj:	$(OUTDIR) syntax.c  $(INCL)
 
 $(OUTDIR)/tag.obj:	$(OUTDIR) tag.c  $(INCL)
@@ -1852,6 +1855,7 @@ proto.h: \
 	proto/sign.pro \
 	proto/spell.pro \
 	proto/spellfile.pro \
+	proto/spellsuggest.pro \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \

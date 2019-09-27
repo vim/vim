@@ -94,6 +94,7 @@ SRC =	arabic.c						\
 	sign.c							\
 	spell.c							\
 	spellfile.c						\
+	spellsuggest.c						\
 	syntax.c						\
 	tag.c							\
 	term.c							\
