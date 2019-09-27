@@ -141,7 +141,13 @@ ch_logfile(char_u *fname, char_u *opt)
     FILE   *file = NULL;
 
     if (log_fd != NULL)
+    {
+	if (*fname != NUL)
+	    ch_log(NULL, "closing, opening %s", fname);
+	else
+	    ch_log(NULL, "closing");
 	fclose(log_fd);
+    }
 
     if (*fname != NUL)
     {
