@@ -4405,12 +4405,16 @@ vim_vsnprintf_typval(
 				     - mb_string2cells((char_u *)str_arg, -1);
 			if (precision)
 			{
-			    char_u *p1 = (char_u *)str_arg;
-			    size_t i;
+			    char_u  *p1;
+			    size_t  i = 0;
 
-			    for (i = 0; i < precision && *p1; i++)
-				p1 += mb_ptr2len(p1);
-
+			    for (p1 = (char_u *)str_arg; *p1;
+							  p1 += mb_ptr2len(p1))
+			    {
+				i += (size_t)mb_ptr2cells(p1);
+				if (i > precision)
+				    break;
+			    }
 			    str_arg_l = precision = p1 - (char_u *)str_arg;
 			}
 		    }
