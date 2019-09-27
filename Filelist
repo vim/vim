@@ -292,7 +292,7 @@ SRC_ALL =	\
 		src/libvterm/src/encoding/uk.inc \
 		src/libvterm/src/encoding/uk.tbl \
 		src/libvterm/src/keyboard.c \
-		src/libvterm/src/mouse.c \
+		src/libvterm/src/termmouse.c \
 		src/libvterm/src/parser.c \
 		src/libvterm/src/pen.c \
 		src/libvterm/src/rect.h \
