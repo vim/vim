@@ -7,32 +7,32 @@ There are three ways to remove Vim:
    executable.  This has a minimal number of questions.  It can delete
    everything that was installed.  This also unregisters the VisVim.dll.
 
-2. With uninstal.exe.
+2. With uninstall.exe.
    This removes most installed items, but does not delete the files you
    unpacked.
 
 3. By hand.
    This is a bit more work, but you can decide exactly what you want to
    remove.  For uninstalling the "Edit with Vim" popup menu entry you still
-   have to use uninstal.exe.
+   have to use uninstall.exe.
 
 It's recommended to use the method that matches with how you installed Vim.
 Thus if you installed Vim by hand, delete it by hand.
 
 The first two methods should be available from the Add/Remove software window
 and the Vim entry in the Start menu.  If these have been removed already, find
-"uninstall-gui.exe" or "uninstal.exe" in the Vim directory.
+"uninstall-gui.exe" or "uninstall.exe" in the Vim directory.
    Running these programs should be self-explanatory.  Carefully read the
 messages to avoid deleting something you want to keep.
 
 Here are guidelines for removing Vim by hand:
 
 1. Remove the "Edit with Vim" popup menu entry, if it exists.  This is done by
-   running the uninstal.exe program.  It removes the registry entries for the
-   "Edit with Vim" popup menu entry.  You only need to run uninstal.exe when
-   you have installed the menu entry.  You can also run uninstal.exe from the
+   running the uninstall.exe program.  It removes the registry entries for the
+   "Edit with Vim" popup menu entry.  You only need to run uninstall.exe when
+   you have installed the menu entry.  You can also run uninstall.exe from the
    Control panel with the Add/Remove programs application.
-   Note that uninstal.exe offers you the option to uninstal other items.  You
+   Note that uninstall.exe offers you the option to uninstall other items.  You
    can skip this.
 
 2. Only if you have used the OLE version of gvim: Remove the registration of

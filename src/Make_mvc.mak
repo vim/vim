@@ -771,7 +771,7 @@ OBJ = \
 	$(OUTDIR)\os_mswin.obj \
 	$(OUTDIR)\os_win32.obj \
 	$(OUTDIR)\pathdef.obj \
-	$(OUTDIR)\popupmnu.obj \
+	$(OUTDIR)\popupmenu.obj \
 	$(OUTDIR)\popupwin.obj \
 	$(OUTDIR)\profiler.obj \
 	$(OUTDIR)\quickfix.obj \
@@ -1280,7 +1280,7 @@ MAIN_TARGET = $(VIM).exe
 all:	$(MAIN_TARGET) \
 	vimrun.exe \
 	install.exe \
-	uninstal.exe \
+	uninstall.exe \
 	xxd/xxd.exe \
 	tee/tee.exe \
 	GvimExt/gvimext.dll
@@ -1339,8 +1339,8 @@ install.exe: dosinst.c
 	- if exist install.exe del install.exe
 	ren dosinst.exe install.exe
 
-uninstal.exe: uninstal.c
-	$(CC) /nologo -DNDEBUG -DWIN32 uninstal.c shell32.lib advapi32.lib \
+uninstall.exe: uninstall.c
+	$(CC) /nologo -DNDEBUG -DWIN32 uninstall.c shell32.lib advapi32.lib \
 		-link -subsystem:$(SUBSYSTEM_TOOLS)
 
 vimrun.exe: vimrun.c
@@ -1387,7 +1387,7 @@ clean:
 !endif
 	- if exist vimrun.exe del vimrun.exe
 	- if exist install.exe del install.exe
-	- if exist uninstal.exe del uninstal.exe
+	- if exist uninstall.exe del uninstall.exe
 	- if exist if_perl.c del if_perl.c
 	- if exist auto\if_perl.c del auto\if_perl.c
 	- if exist dimm.h del dimm.h
@@ -1643,7 +1643,7 @@ $(OUTDIR)/os_w32exeg.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
 $(OUTDIR)/pathdef.obj:	$(OUTDIR) $(PATHDEF_SRC) $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(PATHDEF_SRC)
 
-$(OUTDIR)/popupmnu.obj:	$(OUTDIR) popupmnu.c  $(INCL)
+$(OUTDIR)/popupmenu.obj:	$(OUTDIR) popupmenu.c  $(INCL)
 
 $(OUTDIR)/popupwin.obj:	$(OUTDIR) popupwin.c  $(INCL)
 
@@ -1841,7 +1841,7 @@ proto.h: \
 	proto/os_mswin.pro \
 	proto/winclip.pro \
 	proto/os_win32.pro \
-	proto/popupmnu.pro \
+	proto/popupmenu.pro \
 	proto/popupwin.pro \
 	proto/profiler.pro \
 	proto/quickfix.pro \

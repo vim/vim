@@ -81,7 +81,7 @@ SRC =	arabic.c						\
 	option.c						\
 	optionstr.c						\
 	os_amiga.c						\
-	popupmnu.c						\
+	popupmenu.c						\
 	profiler.c						\
 	quickfix.c						\
 	regexp.c						\

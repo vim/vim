@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2019 Sep 04
+# Last change:  2019 Sep 27
 #
 # This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -318,7 +318,7 @@ SRC =	arabic.c arglist.c autocmd.c beval.c blob.c blowfish.c buffer.c \
 	indent.c insexpand.c json.c list.c main.c map.c mark.c menu.c mbyte.c \
 	memfile.c memline.c message.c misc1.c misc2.c mouse.c move.c normal.c \
 	ops.c \
-	option.c optionstr.c popupmnu.c popupwin.c profiler.c quickfix.c \
+	option.c optionstr.c popupmenu.c popupwin.c profiler.c quickfix.c \
 	regexp.c register.c scriptfile.c \
 	search.c session.c sha256.c sign.c spell.c spellfile.c spellsuggest.c \
 	syntax.c tag.c \
@@ -340,7 +340,7 @@ OBJ = 	arabic.obj arglist.obj autocmd.obj beval.obj blob.obj blowfish.obj \
 	map.obj mark.obj menu.obj memfile.obj memline.obj message.obj \
 	misc1.obj misc2.obj mouse.obj move.obj mbyte.obj normal.obj ops.obj \
 	option.obj \
-	optionstr.obj popupmnu.obj popupwin.obj profiler.obj quickfix.obj \
+	optionstr.obj popupmenu.obj popupwin.obj profiler.obj quickfix.obj \
 	regexp.obj register.obj scriptfile.obj \
 	search.obj session.obj sha256.obj sign.obj spell.obj spellfile.obj \
 	spellsuggest.obj syntax.obj tag.obj term.obj termlib.obj testing.obj \
@@ -737,7 +737,7 @@ pathdef.obj : pathdef.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h
-popupmnu.obj : popupmnu.c vim.h [.auto]config.h feature.h os_unix.h \
+popupmenu.obj : popupmenu.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h

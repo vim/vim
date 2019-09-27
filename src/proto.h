@@ -182,7 +182,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # include "ops.pro"
 # include "option.pro"
 # include "optionstr.pro"
-# include "popupmnu.pro"
+# include "popupmenu.pro"
 # if defined(FEAT_PROFILE) || defined(FEAT_RELTIME)
 # include "profiler.pro"
 # endif

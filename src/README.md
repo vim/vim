@@ -58,7 +58,7 @@ mouse.c		| handling the mouse
 ops.c		| handling operators ("d", "y", "p")
 option.c	| options
 optionstr.c	| handling string options
-popupmnu.c	| popup menu
+popupmenu.c	| popup menu
 popupwin.c	| popup window
 profiler.c	| vim script profiler
 quickfix.c	| quickfix commands (":make", ":cn")

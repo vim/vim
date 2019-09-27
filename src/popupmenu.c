@@ -8,7 +8,7 @@
  */
 
 /*
- * popupmnu.c: Popup menu (PUM)
+ * popupmenu.c: Popup menu (PUM)
  */
 #include "vim.h"
 
