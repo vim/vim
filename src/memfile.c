@@ -130,7 +130,7 @@ mf_open(char_u *fname, int flags)
     struct STATFS	stf;
 #endif
 
-    if ((mfp = (memfile_T *)alloc((unsigned)sizeof(memfile_T))) == NULL)
+    if ((mfp = ALLOC_ONE(memfile_T)) == NULL)
 	return NULL;
 
     if (fname == NULL)	    /* no file for this memfile, use memory only */
@@ -362,7 +362,7 @@ mf_new(memfile_T *mfp, int negative, int page_count)
 	}
 	else if (hp == NULL)	    /* need to allocate memory for this block */
 	{
-	    if ((p = (char_u *)alloc(mfp->mf_page_size * page_count)) == NULL)
+	    if ((p = alloc(mfp->mf_page_size * page_count)) == NULL)
 		return NULL;
 	    hp = mf_rem_free(mfp);
 	    hp->bh_data = p;
@@ -893,10 +893,9 @@ mf_alloc_bhdr(memfile_T *mfp, int page_count)
 {
     bhdr_T	*hp;
 
-    if ((hp = (bhdr_T *)alloc((unsigned)sizeof(bhdr_T))) != NULL)
+    if ((hp = ALLOC_ONE(bhdr_T)) != NULL)
     {
-	if ((hp->bh_data = (char_u *)alloc(mfp->mf_page_size * page_count))
-								      == NULL)
+	if ((hp->bh_data = alloc(mfp->mf_page_size * page_count)) == NULL)
 	{
 	    vim_free(hp);	    /* not enough memory */
 	    return NULL;
@@ -994,7 +993,8 @@ mf_write(memfile_T *mfp, bhdr_T *hp)
     unsigned	page_count; /* number of pages written */
     unsigned	size;	    /* number of bytes written */
 
-    if (mfp->mf_fd < 0)	    /* there is no file, can't write */
+    if (mfp->mf_fd < 0 && !mfp->mf_reopen)
+	// there is no file and there was no file, can't write
 	return FAIL;
 
     if (hp->bh_bnum < 0)	/* must assign file block number */
@@ -1011,6 +1011,8 @@ mf_write(memfile_T *mfp, bhdr_T *hp)
      */
     for (;;)
     {
+	int attempt;
+
 	nr = hp->bh_bnum;
 	if (nr > mfp->mf_infile_count)		/* beyond end of file */
 	{
@@ -1021,29 +1023,49 @@ mf_write(memfile_T *mfp, bhdr_T *hp)
 	    hp2 = hp;
 
 	offset = (off_T)page_size * nr;
-	if (vim_lseek(mfp->mf_fd, offset, SEEK_SET) != offset)
-	{
-	    PERROR(_("E296: Seek error in swap file write"));
-	    return FAIL;
-	}
 	if (hp2 == NULL)	    /* freed block, fill with dummy data */
 	    page_count = 1;
 	else
 	    page_count = hp2->bh_page_count;
 	size = page_size * page_count;
-	if (mf_write_block(mfp, hp2 == NULL ? hp : hp2, offset, size) == FAIL)
+
+	for (attempt = 1; attempt <= 2; ++attempt)
 	{
-	    /*
-	     * Avoid repeating the error message, this mostly happens when the
-	     * disk is full. We give the message again only after a successful
-	     * write or when hitting a key. We keep on trying, in case some
-	     * space becomes available.
-	     */
-	    if (!did_swapwrite_msg)
-		emsg(_("E297: Write error in swap file"));
-	    did_swapwrite_msg = TRUE;
-	    return FAIL;
+	    if (mfp->mf_fd >= 0)
+	    {
+		if (vim_lseek(mfp->mf_fd, offset, SEEK_SET) != offset)
+		{
+		    PERROR(_("E296: Seek error in swap file write"));
+		    return FAIL;
+		}
+		if (mf_write_block(mfp,
+				   hp2 == NULL ? hp : hp2, offset, size) == OK)
+		    break;
+	    }
+
+	    if (attempt == 1)
+	    {
+		// If the swap file is on a network drive, and the network
+		// gets disconnected and then re-connected, we can maybe fix it
+		// by closing and then re-opening the file.
+		if (mfp->mf_fd >= 0)
+		    close(mfp->mf_fd);
+		mfp->mf_fd = mch_open_rw((char *)mfp->mf_fname, mfp->mf_flags);
+		mfp->mf_reopen = (mfp->mf_fd < 0);
+	    }
+	    if (attempt == 2 || mfp->mf_fd < 0)
+	    {
+		// Avoid repeating the error message, this mostly happens when
+		// the disk is full. We give the message again only after a
+		// successful write or when hitting a key. We keep on trying,
+		// in case some space becomes available.
+		if (!did_swapwrite_msg)
+		    emsg(_("E297: Write error in swap file"));
+		did_swapwrite_msg = TRUE;
+		return FAIL;
+	    }
 	}
+
 	did_swapwrite_msg = FALSE;
 	if (hp2 != NULL)		    /* written a non-dummy block */
 	    hp2->bh_flags &= ~BH_DIRTY;
@@ -1108,7 +1130,7 @@ mf_trans_add(memfile_T *mfp, bhdr_T *hp)
     if (hp->bh_bnum >= 0)		    /* it's already positive */
 	return OK;
 
-    if ((np = (NR_TRANS *)alloc((unsigned)sizeof(NR_TRANS))) == NULL)
+    if ((np = ALLOC_ONE(NR_TRANS)) == NULL)
 	return FAIL;
 
 /*
@@ -1271,6 +1293,7 @@ mf_do_open(
 	 * the file) */
 	flags |= O_NOINHERIT;
 #endif
+	mfp->mf_flags = flags;
 	mfp->mf_fd = mch_open_rw((char *)mfp->mf_fname, flags);
     }
 
@@ -1436,7 +1459,7 @@ mf_hash_grow(mf_hashtab_T *mht)
     size_t	    size;
 
     size = (mht->mht_mask + 1) * MHT_GROWTH_FACTOR * sizeof(void *);
-    buckets = (mf_hashitem_T **)lalloc_clear(size, FALSE);
+    buckets = lalloc_clear(size, FALSE);
     if (buckets == NULL)
 	return FAIL;
 

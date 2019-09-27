@@ -33,7 +33,7 @@
 # include <stdlib.h>
 #endif
 
-#if defined(__CYGWIN__) || defined(__CYGWIN32__)
+#ifdef __CYGWIN__
 # define WIN32UNIX	/* Compiling for Win32 using Unix files. */
 # define BINARY_FILE_IO
 
@@ -396,10 +396,6 @@ typedef struct dsc$descriptor   DESC;
 
 /* Special wildcards that need to be handled by the shell */
 #define SPECIAL_WILDCHAR    "`'{"
-
-#ifndef HAVE_OPENDIR
-# define NO_EXPANDPATH
-#endif
 
 /*
  * Unix has plenty of memory, use large buffers

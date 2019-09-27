@@ -4,11 +4,12 @@ if !has('gui_running') && has('unix')
 endif
 
 source view_util.vim
+source check.vim
+source screendump.vim
 
 func Test_display_foldcolumn()
-  if !has("folding")
-    return
-  endif
+  CheckFeature folding
+
   new
   vnew
   vert resize 25
@@ -24,10 +25,10 @@ func Test_display_foldcolumn()
 
   call cursor(2, 1)
   norm! zt
-  let lines=ScreenLines([1,2], winwidth(0))
+  let lines = ScreenLines([1,2], winwidth(0))
   call assert_equal(expect, lines)
   set fdc=2
-  let lines=ScreenLines([1,2], winwidth(0))
+  let lines = ScreenLines([1,2], winwidth(0))
   let expect = [
         \ "  e more noise blah blah<",
         \ "  82> more stuff here    "
@@ -39,9 +40,8 @@ func Test_display_foldcolumn()
 endfunc
 
 func Test_display_foldtext_mbyte()
-  if !has("folding")
-    return
-  endif
+  CheckFeature folding
+
   call NewWindow(10, 40)
   call append(0, range(1,20))
   exe "set foldmethod=manual foldtext=foldtext() fillchars=fold:\u2500,vert:\u2502 fdc=2"
@@ -65,5 +65,96 @@ func Test_display_foldtext_mbyte()
   call assert_equal(expect, lines)
 
   set foldtext& fillchars& foldmethod& fdc&
+  bw!
+endfunc
+
+" check that win_ins_lines() and win_del_lines() work when t_cs is empty.
+func Test_scroll_without_region()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, range(1, 20))
+    set t_cs=
+    set laststatus=2
+  END
+  call writefile(lines, 'Xtestscroll')
+  let buf = RunVimInTerminal('-S Xtestscroll', #{rows: 10})
+
+  call VerifyScreenDump(buf, 'Test_scroll_no_region_1', {})
+
+  call term_sendkeys(buf, ":3delete\<cr>")
+  call VerifyScreenDump(buf, 'Test_scroll_no_region_2', {})
+
+  call term_sendkeys(buf, ":4put\<cr>")
+  call VerifyScreenDump(buf, 'Test_scroll_no_region_3', {})
+
+  call term_sendkeys(buf, ":undo\<cr>")
+  call term_sendkeys(buf, ":undo\<cr>")
+  call term_sendkeys(buf, ":set laststatus=0\<cr>")
+  call VerifyScreenDump(buf, 'Test_scroll_no_region_4', {})
+
+  call term_sendkeys(buf, ":3delete\<cr>")
+  call VerifyScreenDump(buf, 'Test_scroll_no_region_5', {})
+
+  call term_sendkeys(buf, ":4put\<cr>")
+  call VerifyScreenDump(buf, 'Test_scroll_no_region_6', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtestscroll')
+endfunc
+
+func Test_display_listchars_precedes()
+  call NewWindow(10, 10)
+  " Need a physical line that wraps over the complete
+  " window size
+  call append(0, repeat('aaa aaa aa ', 10))
+  call append(1, repeat(['bbb bbb bbb bbb'], 2))
+  " remove blank trailing line
+  $d
+  set list nowrap
+  call cursor(1, 1)
+  " move to end of line and scroll 2 characters back
+  norm! $2zh
+  let lines=ScreenLines([1,4], winwidth(0)+1)
+  let expect = [
+        \ " aaa aa $ |",
+        \ "$         |",
+        \ "$         |",
+        \ "~         |",
+        \ ]
+  call assert_equal(expect, lines)
+  set list listchars+=precedes:< nowrap
+  call cursor(1, 1)
+  " move to end of line and scroll 2 characters back
+  norm! $2zh
+  let lines = ScreenLines([1,4], winwidth(0)+1)
+  let expect = [
+        \ "<aaa aa $ |",
+        \ "<         |",
+        \ "<         |",
+        \ "~         |",
+        \ ]
+  call assert_equal(expect, lines)
+  set wrap
+  call cursor(1, 1)
+  " the complete line should be displayed in the window
+  norm! $
+
+  let lines = ScreenLines([1,10], winwidth(0)+1)
+  let expect = [
+        \ "<aaa aaa a|",
+        \ "a aaa aaa |",
+        \ "aa aaa aaa|",
+        \ " aa aaa aa|",
+        \ "a aa aaa a|",
+        \ "aa aa aaa |",
+        \ "aaa aa aaa|",
+        \ " aaa aa aa|",
+        \ "a aaa aa a|",
+        \ "aa aaa aa |",
+        \ ]
+  call assert_equal(expect, lines)
+  set list& listchars& wrap&
   bw!
 endfunc

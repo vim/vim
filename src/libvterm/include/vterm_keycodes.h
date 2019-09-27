@@ -7,10 +7,10 @@ typedef enum {
   VTERM_MOD_ALT   = 0x02,
   VTERM_MOD_CTRL  = 0x04,
 
-  VTERM_ALL_MODS_MASK = 0x07 
+  VTERM_ALL_MODS_MASK = 0x07
 } VTermModifier;
 
-/* The order here must match keycodes[] in src/keyboard.c! */
+// The order here must match keycodes[] in src/keyboard.c!
 typedef enum {
   VTERM_KEY_NONE,
 
@@ -31,11 +31,11 @@ typedef enum {
   VTERM_KEY_PAGEUP,
   VTERM_KEY_PAGEDOWN,
 
-  /* F1 is VTERM_KEY_FUNCTION(1), F2 VTERM_KEY_FUNCTION(2), etc. */
+  // F1 is VTERM_KEY_FUNCTION(1), F2 VTERM_KEY_FUNCTION(2), etc.
   VTERM_KEY_FUNCTION_0   = 256,
   VTERM_KEY_FUNCTION_MAX = VTERM_KEY_FUNCTION_0 + 255,
 
-  /* keypad keys */
+  // keypad keys
   VTERM_KEY_KP_0,
   VTERM_KEY_KP_1,
   VTERM_KEY_KP_2,

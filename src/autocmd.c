@@ -52,6 +52,7 @@ typedef struct AutoCmd
 {
     char_u	    *cmd;		// The command to be executed (NULL
 					// when command has been removed).
+    char	    once;		// "One shot": removed after execution
     char	    nested;		// If autocommands nest here.
     char	    last;		// last command in list
 #ifdef FEAT_EVAL
@@ -111,6 +112,7 @@ static struct event_name
     {"CmdUndefined",	EVENT_CMDUNDEFINED},
     {"ColorScheme",	EVENT_COLORSCHEME},
     {"ColorSchemePre",	EVENT_COLORSCHEMEPRE},
+    {"CompleteChanged",	EVENT_COMPLETECHANGED},
     {"CompleteDone",	EVENT_COMPLETEDONE},
     {"CursorHold",	EVENT_CURSORHOLD},
     {"CursorHoldI",	EVENT_CURSORHOLDI},
@@ -153,6 +155,8 @@ static struct event_name
     {"QuickFixCmdPre",	EVENT_QUICKFIXCMDPRE},
     {"QuitPre",		EVENT_QUITPRE},
     {"RemoteReply",	EVENT_REMOTEREPLY},
+    {"SafeState",	EVENT_SAFESTATE},
+    {"SafeStateAgain",	EVENT_SAFESTATEAGAIN},
     {"SessionLoadPost",	EVENT_SESSIONLOADPOST},
     {"ShellCmdPost",	EVENT_SHELLCMDPOST},
     {"ShellFilterPost",	EVENT_SHELLFILTERPOST},
@@ -238,16 +242,6 @@ static garray_T augroups = {0, 0, sizeof(char_u *), 10, NULL};
 static char_u *deleted_augroup = NULL;
 
 /*
- * Set by the apply_autocmds_group function if the given event is equal to
- * EVENT_FILETYPE. Used by the readfile function in order to determine if
- * EVENT_BUFREADPOST triggered the EVENT_FILETYPE.
- *
- * Relying on this value requires one to reset it prior calling
- * apply_autocmds_group.
- */
-int au_did_filetype INIT(= FALSE);
-
-/*
  * The ID of the current group.  Group 0 is the default one.
  */
 static int current_augroup = AUGROUP_DEFAULT;
@@ -256,7 +250,7 @@ static int au_need_clean = FALSE;   /* need to delete marked patterns */
 
 static char_u *event_nr2name(event_T event);
 static int au_get_grouparg(char_u **argp);
-static int do_autocmd_event(event_T event, char_u *pat, int nested, char_u *cmd, int forceit, int group);
+static int do_autocmd_event(event_T event, char_u *pat, int once, int nested, char_u *cmd, int forceit, int group);
 static int apply_autocmds_group(event_T event, char_u *fname, char_u *fname_io, int force, int group, buf_T *buf, exarg_T *eap);
 static void auto_next_pat(AutoPatCmd *apc, int stop_at_last);
 static int au_find_group(char_u *name);
@@ -361,6 +355,13 @@ au_remove_cmds(AutoPat *ap)
     au_need_clean = TRUE;
 }
 
+// Delete one command from an autocmd pattern.
+static void au_del_cmd(AutoCmd *ac)
+{
+    VIM_CLEAR(ac->cmd);
+    au_need_clean = TRUE;
+}
+
 /*
  * Cleanup autocommands and patterns that have been deleted.
  * This is only done when not executing autocommands.
@@ -383,6 +384,8 @@ au_cleanup(void)
 	prev_ap = &(first_autopat[(int)event]);
 	for (ap = *prev_ap; ap != NULL; ap = *prev_ap)
 	{
+	    int has_cmd = FALSE;
+
 	    // loop over all commands for this pattern
 	    prev_ac = &(ap->cmds);
 	    for (ac = *prev_ac; ac != NULL; ac = *prev_ac)
@@ -396,8 +399,16 @@ au_cleanup(void)
 		    vim_free(ac);
 		}
 		else
+		{
+		    has_cmd = TRUE;
 		    prev_ac = &(ac->next);
+		}
 	    }
+
+	    if (ap->pat != NULL && !has_cmd)
+		// Pattern was not marked for deletion, but all of its
+		// commands were.  So mark the pattern for deletion.
+		au_remove_pat(ap);
 
 	    // remove the pattern if it has been marked for deletion
 	    if (ap->pat == NULL)
@@ -517,9 +528,7 @@ au_del_group(char_u *name)
 	}
 	vim_free(AUGROUP_NAME(i));
 	if (in_use)
-	{
 	    AUGROUP_NAME(i) = get_deleted_augroup();
-	}
 	else
 	    AUGROUP_NAME(i) = NULL;
     }
@@ -817,7 +826,9 @@ do_autocmd(char_u *arg_in, int forceit)
     event_T	event;
     int		need_free = FALSE;
     int		nested = FALSE;
+    int		once = FALSE;
     int		group;
+    int		i;
 
     if (*arg == '|')
     {
@@ -876,15 +887,38 @@ do_autocmd(char_u *arg_in, int forceit)
 		pat = envpat;
 	}
 
-	/*
-	 * Check for "nested" flag.
-	 */
 	cmd = skipwhite(cmd);
-	if (*cmd != NUL && STRNCMP(cmd, "nested", 6) == 0
-							&& VIM_ISWHITE(cmd[6]))
+	for (i = 0; i < 2; i++)
 	{
-	    nested = TRUE;
-	    cmd = skipwhite(cmd + 6);
+	    if (*cmd != NUL)
+	    {
+		// Check for "++once" flag.
+		if (STRNCMP(cmd, "++once", 6) == 0 && VIM_ISWHITE(cmd[6]))
+		{
+		    if (once)
+			semsg(_(e_duparg2), "++once");
+		    once = TRUE;
+		    cmd = skipwhite(cmd + 6);
+		}
+
+		// Check for "++nested" flag.
+		if ((STRNCMP(cmd, "++nested", 8) == 0 && VIM_ISWHITE(cmd[8])))
+		{
+		    if (nested)
+			semsg(_(e_duparg2), "++nested");
+		    nested = TRUE;
+		    cmd = skipwhite(cmd + 8);
+		}
+
+		// Check for the old "nested" flag.
+		if (STRNCMP(cmd, "nested", 6) == 0 && VIM_ISWHITE(cmd[6]))
+		{
+		    if (nested)
+			semsg(_(e_duparg2), "nested");
+		    nested = TRUE;
+		    cmd = skipwhite(cmd + 6);
+		}
+	    }
 	}
 
 	/*
@@ -917,14 +951,14 @@ do_autocmd(char_u *arg_in, int forceit)
 	for (event = (event_T)0; (int)event < (int)NUM_EVENTS;
 					    event = (event_T)((int)event + 1))
 	    if (do_autocmd_event(event, pat,
-					 nested, cmd, forceit, group) == FAIL)
+				 once, nested, cmd, forceit, group) == FAIL)
 		break;
     }
     else
     {
 	while (*arg && *arg != '|' && !VIM_ISWHITE(*arg))
 	    if (do_autocmd_event(event_name2nr(arg, &arg), pat,
-					nested,	cmd, forceit, group) == FAIL)
+				 once, nested,	cmd, forceit, group) == FAIL)
 		break;
     }
 
@@ -975,6 +1009,7 @@ au_get_grouparg(char_u **argp)
 do_autocmd_event(
     event_T	event,
     char_u	*pat,
+    int		once,
     int		nested,
     char_u	*cmd,
     int		forceit,
@@ -1150,7 +1185,7 @@ do_autocmd_event(
 		    return FAIL;
 		}
 
-		ap = (AutoPat *)alloc((unsigned)sizeof(AutoPat));
+		ap = ALLOC_ONE(AutoPat);
 		if (ap == NULL)
 		    return FAIL;
 		ap->pat = vim_strnsave(pat, patlen);
@@ -1199,7 +1234,7 @@ do_autocmd_event(
 	    prev_ac = &(ap->cmds);
 	    while ((ac = *prev_ac) != NULL)
 		prev_ac = &ac->next;
-	    ac = (AutoCmd *)alloc((unsigned)sizeof(AutoCmd));
+	    ac = ALLOC_ONE(AutoCmd);
 	    if (ac == NULL)
 		return FAIL;
 	    ac->cmd = vim_strsave(cmd);
@@ -1214,6 +1249,7 @@ do_autocmd_event(
 	    }
 	    ac->next = NULL;
 	    *prev_ac = ac;
+	    ac->once = once;
 	    ac->nested = nested;
 	}
     }
@@ -1379,7 +1415,7 @@ aucmd_prepbuf(
     // back to using the current window.
     if (win == NULL && aucmd_win == NULL)
     {
-	win_alloc_aucmd_win();
+	aucmd_win = win_alloc_popup_win();
 	if (aucmd_win == NULL)
 	    win = curwin;
     }
@@ -1407,19 +1443,11 @@ aucmd_prepbuf(
 	// unexpected results.
 	aco->use_aucmd_win = TRUE;
 	aucmd_win_used = TRUE;
-	aucmd_win->w_buffer = buf;
-#if defined(FEAT_SYN_HL) || defined(FEAT_SPELL)
-	aucmd_win->w_s = &buf->b_s;
-#endif
-	++buf->b_nwindows;
-	win_init_empty(aucmd_win); // set cursor and topline to safe values
 
-	// Make sure w_localdir and globaldir are NULL to avoid a chdir() in
-	// win_enter_ext().
-	VIM_CLEAR(aucmd_win->w_localdir);
+	win_init_popup_win(aucmd_win, buf);
+
 	aco->globaldir = globaldir;
 	globaldir = NULL;
-
 
 	// Split the current window, put the aucmd_win in the upper half.
 	// We don't want the BufEnter or WinEnter autocommands.
@@ -1633,7 +1661,7 @@ apply_autocmds_retval(
 /*
  * Return TRUE when there is a CursorHold autocommand defined.
  */
-    int
+    static int
 has_cursorhold(void)
 {
     return (first_autopat[(int)(get_real_state() == NORMAL_BUSY
@@ -1652,10 +1680,7 @@ trigger_cursorhold(void)
 	    && has_cursorhold()
 	    && reg_recording == 0
 	    && typebuf.tb_len == 0
-#ifdef FEAT_INS_EXPAND
-	    && !ins_compl_active()
-#endif
-	    )
+	    && !ins_compl_active())
     {
 	state = get_real_state();
 	if (state == NORMAL_BUSY || (state & INSERT) != 0)
@@ -1673,7 +1698,6 @@ has_cursormoved(void)
     return (first_autopat[(int)EVENT_CURSORMOVED] != NULL);
 }
 
-#if defined(FEAT_CONCEAL) || defined(PROTO)
 /*
  * Return TRUE when there is a CursorMovedI autocommand defined.
  */
@@ -1682,7 +1706,6 @@ has_cursormovedI(void)
 {
     return (first_autopat[(int)EVENT_CURSORMOVEDI] != NULL);
 }
-#endif
 
 /*
  * Return TRUE when there is a TextChanged autocommand defined.
@@ -1702,7 +1725,6 @@ has_textchangedI(void)
     return (first_autopat[(int)EVENT_TEXTCHANGEDI] != NULL);
 }
 
-#if defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Return TRUE when there is a TextChangedP autocommand defined.
  */
@@ -1711,7 +1733,6 @@ has_textchangedP(void)
 {
     return (first_autopat[(int)EVENT_TEXTCHANGEDP] != NULL);
 }
-#endif
 
 /*
  * Return TRUE when there is an InsertCharPre autocommand defined.
@@ -1748,6 +1769,17 @@ has_funcundefined(void)
 has_textyankpost(void)
 {
     return (first_autopat[(int)EVENT_TEXTYANKPOST] != NULL);
+}
+#endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Return TRUE when there is a CompleteChanged autocommand defined.
+ */
+    int
+has_completechanged(void)
+{
+    return (first_autopat[(int)EVENT_COMPLETECHANGED] != NULL);
 }
 #endif
 
@@ -2009,9 +2041,7 @@ apply_autocmds_group(
     if (!autocmd_busy)
     {
 	save_search_patterns();
-#ifdef FEAT_INS_EXPAND
 	if (!ins_compl_active())
-#endif
 	{
 	    saveRedobuff(&save_redo);
 	    did_save_redobuff = TRUE;
@@ -2068,9 +2098,16 @@ apply_autocmds_group(
 	for (ap = patcmd.curpat; ap->next != NULL; ap = ap->next)
 	    ap->last = FALSE;
 	ap->last = TRUE;
-	check_lnums(TRUE);	// make sure cursor and topline are valid
+
+	// make sure cursor and topline are valid
+	check_lnums(TRUE);
+
 	do_cmdline(NULL, getnextac, (void *)&patcmd,
 				     DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT);
+
+	// restore cursor and topline, unless they were changed
+	reset_lnums();
+
 #ifdef FEAT_EVAL
 	if (eap != NULL)
 	{
@@ -2199,14 +2236,11 @@ unblock_autocmds(void)
 # endif
 }
 
-#if defined(FEAT_EVAL) && (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM)) \
-	|| defined(PROTO)
     int
 is_autocmd_blocked(void)
 {
     return autocmd_blocked != 0;
 }
-#endif
 
 /*
  * Find next autocommand pattern that matches.
@@ -2241,8 +2275,8 @@ auto_next_pat(
 	    {
 		name = event_nr2name(apc->event);
 		s = _("%s Autocommands for \"%s\"");
-		sourcing_name = alloc((unsigned)(STRLEN(s)
-					    + STRLEN(name) + ap->patlen + 1));
+		sourcing_name = alloc(STRLEN(s)
+					      + STRLEN(name) + ap->patlen + 1);
 		if (sourcing_name != NULL)
 		{
 		    sprintf((char *)sourcing_name, s,
@@ -2277,7 +2311,7 @@ auto_next_pat(
  * Returns allocated string, or NULL for end of autocommands.
  */
     char_u *
-getnextac(int c UNUSED, void *cookie, int indent UNUSED)
+getnextac(int c UNUSED, void *cookie, int indent UNUSED, int do_concat UNUSED)
 {
     AutoPatCmd	    *acp = (AutoPatCmd *)cookie;
     char_u	    *retval;
@@ -2321,6 +2355,9 @@ getnextac(int c UNUSED, void *cookie, int indent UNUSED)
 	verbose_leave_scroll();
     }
     retval = vim_strsave(ac->cmd);
+    // Remove one-shot ("once") autocmd in anticipation of its execution.
+    if (ac->once)
+	au_del_cmd(ac);
     autocmd_nested = ac->nested;
 #ifdef FEAT_EVAL
     current_sctx = ac->script_ctx;
@@ -2380,7 +2417,6 @@ has_autocmd(event_T event, char_u *sfname, buf_T *buf)
     return retval;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 /*
  * Function given to ExpandGeneric() to obtain the list of autocommand group
  * names.
@@ -2465,7 +2501,6 @@ get_event_name(expand_T *xp UNUSED, int idx)
     return (char_u *)event_names[idx - augroups.ga_len].name;
 }
 
-#endif	// FEAT_CMDL_COMPL
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*

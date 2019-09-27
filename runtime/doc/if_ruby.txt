@@ -1,4 +1,4 @@
-*if_ruby.txt*   For Vim version 8.1.  Last change: 2019 Jan 29
+*if_ruby.txt*   For Vim version 8.1.  Last change: 2019 Jul 21
 
 
 		  VIM REFERENCE MANUAL    by Shugo Maeda
@@ -11,12 +11,12 @@ The Ruby Interface to Vim				*ruby* *Ruby*
 3. Vim::Buffer objects		|ruby-buffer|
 4. Vim::Window objects		|ruby-window|
 5. Global variables		|ruby-globals|
-6. Dynamic loading		|ruby-dynamic|
+6. rubyeval() Vim function	|ruby-rubyeval|
+7. Dynamic loading		|ruby-dynamic|
 
-{Vi does not have any of these commands}
 			*E266* *E267* *E268* *E269* *E270* *E271* *E272* *E273*
 
-The Ruby interface only works when Vim was compiled with the |+ruby| feature.
+{only available when Vim was compiled with the |+ruby| feature}
 
 The home page for ruby is http://www.ruby-lang.org/.  You can find links for
 downloading Ruby there.
@@ -28,15 +28,19 @@ downloading Ruby there.
 :rub[y] {cmd}		Execute Ruby command {cmd}.  A command to try it out: >
 				:ruby print "Hello"
 
-:rub[y] << {endpattern}
+:rub[y] << [endpattern]
 {script}
 {endpattern}
 			Execute Ruby script {script}.
-			{endpattern} must NOT be preceded by any white space.
-			If {endpattern} is omitted, it defaults to a dot '.'
-			like for the |:append| and |:insert| commands.  This
-			form of the |:ruby| command is mainly useful for
+			The {endpattern} after {script} must NOT be preceded
+			by any white space.
+
+			If [endpattern] is omitted, it defaults to a dot '.'
+			like for the |:append| and |:insert| commands.
+
+			This form of the |:ruby| command is mainly useful for
 			including ruby code in vim scripts.
+
 			Note: This command doesn't work when the Ruby feature
 			wasn't compiled in.  To avoid errors, see
 			|script-here|.
@@ -198,7 +202,16 @@ $curwin		The current window object.
 $curbuf		The current buffer object.
 
 ==============================================================================
-6. Dynamic loading					*ruby-dynamic*
+6. rubyeval() Vim function				*ruby-rubyeval*
+
+To facilitate bi-directional interface, you can use |rubyeval()| function to
+evaluate Ruby expressions and pass their values to Vim script.
+
+The Ruby value "true", "false" and "nil" are converted to v:true, v:false and
+v:null, respectively.
+
+==============================================================================
+7. Dynamic loading					*ruby-dynamic*
 
 On MS-Windows and Unix the Ruby library can be loaded dynamically.  The
 |:version| output then includes |+ruby/dyn|.

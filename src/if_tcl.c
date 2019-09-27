@@ -811,9 +811,7 @@ bufselfcmd(
 
 	    pos = NULL;
 	    if (line[0] != '\0'  &&  line[1] == '\0')
-	    {
 		pos = getmark(line[0], FALSE);
-	    }
 	    if (pos == NULL)
 	    {
 		Tcl_SetResult(interp, _("invalid mark name"), TCL_STATIC);
@@ -1529,9 +1527,7 @@ tclsetdelcmd(
 	if (reflist->interp == interp && reflist->vimobj == vimobj)
 	{
 	    if (reflist->delcmd)
-	    {
 		Tcl_DecrRefCount(reflist->delcmd);
-	    }
 	    Tcl_IncrRefCount(delcmd);
 	    reflist->delcmd = delcmd;
 	    return TCL_OK;

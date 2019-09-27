@@ -55,7 +55,7 @@ CCommands::~CCommands()
 void CCommands::SetApplicationObject(IApplication * pApplication)
 {
 	// This function assumes pApplication has already been AddRef'd
-	// for us, which CDSAddIn did in it's QueryInterface call
+	// for us, which CDSAddIn did in its QueryInterface call
 	// just before it called us.
 	m_pApplication = pApplication;
 	if (! m_pApplication)
@@ -504,7 +504,7 @@ static BOOL VimOpenFile(BSTR& FileName, long LineNr)
 {
 
 	// OLE automation object for com. with Vim
-	// When the object goes out of scope, it's destructor destroys the OLE
+	// When the object goes out of scope, its destructor destroys the OLE
 	// connection;
 	// This is important to avoid blocking the object
 	// (in this memory corruption would be likely when terminating Vim
@@ -653,7 +653,7 @@ static void VimErrDiag(COleAutomationControl& VimOle)
 		VimOle.ErrDiag();
 }
 
-// Change directory to the directory the file 'FileName' is in or it's parent
+// Change directory to the directory the file 'FileName' is in or its parent
 // directory according to the setting of the global 'g_ChangeDir':
 // 'FileName' is expected to contain an absolute DOS path including the drive
 // letter.

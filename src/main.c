@@ -19,7 +19,7 @@
 # include <limits.h>
 #endif
 
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
 # include "iscygpty.h"
 #endif
 
@@ -50,9 +50,7 @@ static void exe_pre_commands(mparm_T *parmp);
 static void exe_commands(mparm_T *parmp);
 static void source_startup_scripts(mparm_T *parmp);
 static void main_start_gui(void);
-# if defined(HAS_SWAP_EXISTS_ACTION)
 static void check_swap_exists_action(void);
-# endif
 # ifdef FEAT_EVAL
 static void set_progpath(char_u *argv0);
 # endif
@@ -95,14 +93,11 @@ static char_u *start_dir = NULL;	/* current working dir on startup */
 
 static int has_dash_c_arg = FALSE;
 
-    int
 # ifdef VIMDLL
-_export
+__declspec(dllexport)
 # endif
-# ifdef FEAT_GUI_MSWIN
-#  ifdef __BORLANDC__
-_cdecl
-#  endif
+    int
+# ifdef MSWIN
 VimMain
 # else
 main
@@ -176,6 +171,13 @@ main
 	}
 #endif
     common_init(&params);
+
+#ifdef VIMDLL
+    // Check if the current executable file is for the GUI subsystem.
+    gui.starting = mch_is_gui_executable();
+#elif defined(FEAT_GUI_MSWIN)
+    gui.starting = TRUE;
+#endif
 
 #ifdef FEAT_CLIENTSERVER
     /*
@@ -295,7 +297,8 @@ main
      * For GTK we can't be sure, but when started from the desktop it doesn't
      * make sense to try using a terminal.
      */
-#if defined(ALWAYS_USE_GUI) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK)
+#if defined(ALWAYS_USE_GUI) || defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
+	|| defined(VIMDLL)
     if (gui.starting
 # ifdef FEAT_GUI_GTK
 	    && !isatty(2)
@@ -371,9 +374,9 @@ main
 	setvbuf(stdout, NULL, _IOLBF, 0);
 #endif
 
-    /* This message comes before term inits, but after setting "silent_mode"
-     * when the input is not a tty. */
-    if (GARGCOUNT > 1 && !silent_mode)
+    // This message comes before term inits, but after setting "silent_mode"
+    // when the input is not a tty. Omit the message with --not-a-term.
+    if (GARGCOUNT > 1 && !silent_mode && !is_not_a_term())
 	printf(_("%d files to edit\n"), GARGCOUNT);
 
     if (params.want_full_screen && !silent_mode)
@@ -538,14 +541,14 @@ vim_main2(void)
 #ifdef FEAT_GUI
     if (gui.starting)
     {
-#if defined(UNIX) || defined(VMS)
+# if defined(UNIX) || defined(VMS)
 	/* When something caused a message from a vimrc script, need to output
 	 * an extra newline before the shell prompt. */
 	if (did_emsg || msg_didout)
 	    putchar('\n');
-#endif
+# endif
 
-	gui_start();		/* will set full_screen to TRUE */
+	gui_start(NULL);		/* will set full_screen to TRUE */
 	TIME_MSG("starting GUI");
 
 	/* When running "evim" or "gvim -y" we need the menus, exit if we
@@ -681,9 +684,7 @@ vim_main2(void)
     starttermcap();	    /* start termcap if not done by wait_return() */
     TIME_MSG("start termcap");
 
-#ifdef FEAT_MOUSE
-    setmouse();				/* may start using the mouse */
-#endif
+    setmouse();				// may start using the mouse
     if (scroll_region)
 	scroll_region_reset();		/* In case Rows changed */
     scroll_start();	/* may scroll the screen to the right position */
@@ -778,19 +779,15 @@ vim_main2(void)
      */
     if (params.tagname != NULL)
     {
-#if defined(HAS_SWAP_EXISTS_ACTION)
 	swap_exists_did_quit = FALSE;
-#endif
 
 	vim_snprintf((char *)IObuff, IOSIZE, "ta %s", params.tagname);
 	do_cmdline_cmd(IObuff);
 	TIME_MSG("jumping to tag");
 
-#if defined(HAS_SWAP_EXISTS_ACTION)
 	/* If the user doesn't want to edit the file then we quit here. */
 	if (swap_exists_did_quit)
 	    getout(1);
-#endif
     }
 
     /* Execute any "+", "-c" and "-S" arguments. */
@@ -854,8 +851,11 @@ vim_main2(void)
     }
 #endif
 
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
-    mch_set_winsize_now();	    /* Allow winsize changes from now on */
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+# ifdef VIMDLL
+    if (!gui.in_use)
+# endif
+	mch_set_winsize_now();	    /* Allow winsize changes from now on */
 #endif
 
 #if defined(FEAT_GUI)
@@ -1026,6 +1026,123 @@ is_not_a_term()
     return params.not_a_term;
 }
 
+
+// When TRUE in a safe state when starting to wait for a character.
+static int	was_safe = FALSE;
+static oparg_T	*current_oap = NULL;
+
+/*
+ * Return TRUE if an operator was started but not finished yet.
+ * Includes typing a count or a register name.
+ */
+    int
+op_pending(void)
+{
+    return !(current_oap != NULL
+	    && !finish_op
+	    && current_oap->prev_opcount == 0
+	    && current_oap->prev_count0 == 0
+	    && current_oap->op_type == OP_NOP
+	    && current_oap->regname == NUL);
+}
+
+/*
+ * Return whether currently it is safe, assuming it was safe before (high level
+ * state didn't change).
+ */
+    static int
+is_safe_now(void)
+{
+    return stuff_empty()
+	&& typebuf.tb_len == 0
+	&& scriptin[curscript] == NULL
+	&& !global_busy;
+}
+
+/*
+ * Trigger SafeState if currently in s safe state, that is "safe" is TRUE and
+ * there is no typeahead.
+ */
+    void
+may_trigger_safestate(int safe)
+{
+    int is_safe = safe && is_safe_now();
+
+#ifdef FEAT_JOB_CHANNEL
+    if (was_safe != is_safe)
+	// Only log when the state changes, otherwise it happens at nearly
+	// every key stroke.
+	ch_log(NULL, is_safe ? "SafeState: Start triggering"
+					       : "SafeState: Stop triggering");
+#endif
+    if (is_safe)
+	apply_autocmds(EVENT_SAFESTATE, NULL, NULL, FALSE, curbuf);
+    was_safe = is_safe;
+}
+
+/*
+ * Something changed which causes the state possibly to be unsafe, e.g. a
+ * character was typed.  It will remain unsafe until the next call to
+ * may_trigger_safestate().
+ */
+    void
+state_no_longer_safe(char *reason UNUSED)
+{
+#ifdef FEAT_JOB_CHANNEL
+    if (was_safe)
+	ch_log(NULL, "SafeState: reset: %s", reason);
+#endif
+    was_safe = FALSE;
+}
+
+    int
+get_was_safe_state(void)
+{
+    return was_safe;
+}
+
+/*
+ * Invoked when leaving code that invokes callbacks.  Then trigger
+ * SafeStateAgain, if it was safe when starting to wait for a character.
+ */
+    void
+may_trigger_safestateagain(void)
+{
+    if (!was_safe)
+    {
+	// If the safe state was reset in state_no_longer_safe(), e.g. because
+	// of calling feedkeys(), we check if it's now safe again (all keys
+	// were consumed).
+	was_safe = is_safe_now();
+#ifdef FEAT_JOB_CHANNEL
+	if (was_safe)
+	    ch_log(NULL, "SafeState: undo reset");
+#endif
+    }
+    if (was_safe)
+    {
+#ifdef FEAT_JOB_CHANNEL
+	// Only do this message when another message was given, otherwise we
+	// get lots of them.
+	if ((did_repeated_msg & REPEATED_MSG_SAFESTATE) == 0)
+	{
+	    int did = did_repeated_msg;
+
+	    ch_log(NULL,
+		      "SafeState: back to waiting, triggering SafeStateAgain");
+	    did_repeated_msg = did | REPEATED_MSG_SAFESTATE;
+	}
+#endif
+	apply_autocmds(EVENT_SAFESTATEAGAIN, NULL, NULL, FALSE, curbuf);
+    }
+#ifdef FEAT_JOB_CHANNEL
+    else
+	ch_log(NULL,
+		  "SafeState: back to waiting, not triggering SafeStateAgain");
+#endif
+}
+
+
 /*
  * Main loop: Execute Normal mode commands until exiting Vim.
  * Also used to handle commands in the command-line window, until the window
@@ -1038,14 +1155,18 @@ main_loop(
     int		cmdwin,	    /* TRUE when working in the command-line window */
     int		noexmode)   /* TRUE when return on entering Ex mode */
 {
-    oparg_T	oa;	/* operator arguments */
-    volatile int previous_got_int = FALSE;	/* "got_int" was TRUE */
+    oparg_T	oa;		// operator arguments
+    oparg_T	*prev_oap;	// operator arguments
+    volatile int previous_got_int = FALSE;	// "got_int" was TRUE
 #ifdef FEAT_CONCEAL
-    /* these are static to avoid a compiler warning */
+    // these are static to avoid a compiler warning
     static linenr_T	conceal_old_cursor_line = 0;
     static linenr_T	conceal_new_cursor_line = 0;
     static int		conceal_update_lines = FALSE;
 #endif
+
+    prev_oap = current_oap;
+    current_oap = &oa;
 
 #if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
     /* Setup to catch a terminating error from the X server.  Just ignore
@@ -1068,9 +1189,7 @@ main_loop(
 	emsg_skip = 0;
 # endif
 	emsg_off = 0;
-# ifdef FEAT_MOUSE
 	setmouse();
-# endif
 	settmode(TMODE_RAW);
 	starttermcap();
 	scroll_start();
@@ -1131,6 +1250,9 @@ main_loop(
 	    msg_scroll = FALSE;
 	quit_more = FALSE;
 
+	// it's not safe unless may_trigger_safestate_main() is called
+	was_safe = FALSE;
+
 	/*
 	 * If skip redraw is set (for ":" in wait_return()), don't redraw now.
 	 * If there is nothing in the stuff_buffer or do_redraw is TRUE,
@@ -1157,6 +1279,9 @@ main_loop(
 	    /* Trigger CursorMoved if the cursor moved. */
 	    if (!finish_op && (
 			has_cursormoved()
+#ifdef FEAT_TEXT_PROP
+			|| popup_visible
+#endif
 #ifdef FEAT_CONCEAL
 			|| curwin->w_p_cole > 0
 #endif
@@ -1166,14 +1291,18 @@ main_loop(
 		if (has_cursormoved())
 		    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL,
 							       FALSE, curbuf);
-# ifdef FEAT_CONCEAL
+#ifdef FEAT_TEXT_PROP
+		if (popup_visible)
+		    popup_check_cursor_pos();
+#endif
+#ifdef FEAT_CONCEAL
 		if (curwin->w_p_cole > 0)
 		{
 		    conceal_old_cursor_line = last_cursormoved.lnum;
 		    conceal_new_cursor_line = curwin->w_cursor.lnum;
 		    conceal_update_lines = TRUE;
 		}
-# endif
+#endif
 		last_cursormoved = curwin->w_cursor;
 	    }
 
@@ -1201,6 +1330,10 @@ main_loop(
 		apply_autocmds(EVENT_TEXTCHANGED, NULL, NULL, FALSE, curbuf);
 		curbuf->b_last_changedtick = CHANGEDTICK(curbuf);
 	    }
+
+	    // If nothing is pending and we are going to wait for the user to
+	    // type a character, trigger SafeState.
+	    may_trigger_safestate(!op_pending() && restart_edit == 0);
 
 #if defined(FEAT_DIFF)
 	    // Updating diffs from changed() does not always work properly,
@@ -1246,12 +1379,28 @@ main_loop(
 	    update_topline();
 	    validate_cursor();
 
+#ifdef FEAT_SYN_HL
+	    if (curwin->w_p_cul && curwin->w_p_wrap
+				&& (curwin->w_p_culopt_flags & CULOPT_SCRLINE))
+		must_redraw = NOT_VALID;
+#endif
+
 	    if (VIsual_active)
-		update_curbuf(INVERTED);/* update inverted part */
+		update_curbuf(INVERTED); // update inverted part
 	    else if (must_redraw)
 	    {
-		mch_disable_flush();	/* Stop issuing gui_mch_flush(). */
-		update_screen(0);
+		mch_disable_flush();	// Stop issuing gui_mch_flush().
+#ifdef FEAT_SYN_HL
+		// Might need some more update for the cursorscreen line.
+		// TODO: can we optimize this?
+		if (curwin->w_p_cul
+			&& curwin->w_p_wrap
+			&& (curwin->w_p_culopt_flags & CULOPT_SCRLINE)
+			&& !char_avail())
+		    update_screen(VALID);
+		else
+#endif
+		    update_screen(0);
 		mch_enable_flush();
 	    }
 	    else if (redraw_cmdline || clear_cmdline)
@@ -1267,14 +1416,19 @@ main_loop(
 	    /* display message after redraw */
 	    if (keep_msg != NULL)
 	    {
-		char_u *p;
+		char_u *p = vim_strsave(keep_msg);
 
-		/* msg_attr_keep() will set keep_msg to NULL, must free the
-		 * string here. Don't reset keep_msg, msg_attr_keep() uses it
-		 * to check for duplicates. */
-		p = keep_msg;
-		msg_attr((char *)p, keep_msg_attr);
-		vim_free(p);
+		if (p != NULL)
+		{
+		    // msg_start() will set keep_msg to NULL, make a copy
+		    // first.  Don't reset keep_msg, msg_attr_keep() uses it to
+		    // check for duplicates.  Never put this message in
+		    // history.
+		    msg_hist_off = TRUE;
+		    msg_attr((char *)p, keep_msg_attr);
+		    msg_hist_off = FALSE;
+		    vim_free(p);
+		}
 	    }
 	    if (need_fileinfo)		/* show file info after redraw */
 	    {
@@ -1333,7 +1487,7 @@ main_loop(
 	if (exmode_active)
 	{
 	    if (noexmode)   /* End of ":global/path/visual" commands */
-		return;
+		goto theend;
 	    do_exmode(exmode_active == EXMODE_VIM);
 	}
 	else
@@ -1360,6 +1514,9 @@ main_loop(
 	    }
 	}
     }
+
+theend:
+    current_oap = prev_oap;
 }
 
 
@@ -1474,7 +1631,19 @@ getout(int exitval)
 #endif
 
     if (v_dying <= 1)
+    {
+	int	unblock = 0;
+
+	// deathtrap() blocks autocommands, but we do want to trigger VimLeave.
+	if (is_autocmd_blocked())
+	{
+	    unblock_autocmds();
+	    ++unblock;
+	}
 	apply_autocmds(EVENT_VIMLEAVE, NULL, NULL, FALSE, curbuf);
+	if (unblock)
+	    block_autocmds();
+    }
 
 #ifdef FEAT_PROFILE
     profile_dump();
@@ -1764,7 +1933,15 @@ parse_command_name(mparm_T *parmp)
 #ifdef FEAT_GUI
 	++initstr;
 #endif
+#ifdef GUI_MAY_SPAWN
+	gui.dospawn = FALSE;	// No need to spawn a new process.
+#endif
     }
+#ifdef GUI_MAY_SPAWN
+    else
+	gui.dospawn = TRUE;	// Not "gvim". Need to spawn gvim.exe.
+#endif
+
 
     if (STRNICMP(initstr, "view", 4) == 0)
     {
@@ -2184,7 +2361,7 @@ command_line_scan(mparm_T *parmp)
 
 	    case 'v':		/* "-v"  Vi-mode (as if called "vi") */
 		exmode_active = 0;
-#ifdef FEAT_GUI
+#if defined(FEAT_GUI) && !defined(VIMDLL)
 		gui.starting = FALSE;	/* don't start GUI */
 #endif
 		break;
@@ -2288,7 +2465,7 @@ command_line_scan(mparm_T *parmp)
 			}
 			else
 			    a = argv[0];
-			p = alloc((unsigned)(STRLEN(a) + 4));
+			p = alloc(STRLEN(a) + 4);
 			if (p == NULL)
 			    mch_exit(2);
 			sprintf((char *)p, "so %s", a);
@@ -2514,7 +2691,7 @@ scripterror:
      * one. */
     if (parmp->n_commands > 0)
     {
-	p = alloc((unsigned)STRLEN(parmp->commands[0]) + 3);
+	p = alloc(STRLEN(parmp->commands[0]) + 3);
 	if (p != NULL)
 	{
 	    sprintf((char *)p, ":%s\r", parmp->commands[0]);
@@ -2561,8 +2738,12 @@ check_tty(mparm_T *parmp)
 	    exit(1);
 	}
 #endif
-#if defined(MSWIN) && !defined(FEAT_GUI_MSWIN)
-	if (is_cygpty_used())
+#if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+	if (
+# ifdef VIMDLL
+	    !gui.starting &&
+# endif
+	    is_cygpty_used())
 	{
 # if defined(HAVE_BIND_TEXTDOMAIN_CODESET) \
 	&& defined(FEAT_GETTEXT)
@@ -2604,20 +2785,18 @@ read_stdin(void)
 {
     int	    i;
 
-#if defined(HAS_SWAP_EXISTS_ACTION)
-    /* When getting the ATTENTION prompt here, use a dialog */
+    // When getting the ATTENTION prompt here, use a dialog
     swap_exists_action = SEA_DIALOG;
-#endif
+
     no_wait_return = TRUE;
     i = msg_didany;
     set_buflisted(TRUE);
-    (void)open_buffer(TRUE, NULL, 0);	/* create memfile and read file */
+    (void)open_buffer(TRUE, NULL, 0);	// create memfile and read file
     no_wait_return = FALSE;
     msg_didany = i;
     TIME_MSG("reading stdin");
-#if defined(HAS_SWAP_EXISTS_ACTION)
+
     check_swap_exists_action();
-#endif
 #if !(defined(AMIGA) || defined(MACOS_X))
     /*
      * Close stdin and dup it from stderr.  Required for GPM to work
@@ -2672,7 +2851,7 @@ create_windows(mparm_T *parmp UNUSED)
     if (recoverymode)			/* do recover */
     {
 	msg_scroll = TRUE;		/* scroll message up */
-	ml_recover();
+	ml_recover(TRUE);
 	if (curbuf->b_ml.ml_mfp == NULL) /* failed */
 	    getout(1);
 	do_modelines(0);		/* do modelines */
@@ -2720,16 +2899,14 @@ create_windows(mparm_T *parmp UNUSED)
 		if (p_fdls >= 0)
 		    curwin->w_p_fdl = p_fdls;
 #endif
-#if defined(HAS_SWAP_EXISTS_ACTION)
-		/* When getting the ATTENTION prompt here, use a dialog */
+		// When getting the ATTENTION prompt here, use a dialog
 		swap_exists_action = SEA_DIALOG;
-#endif
+
 		set_buflisted(TRUE);
 
 		/* create memfile, read file */
 		(void)open_buffer(FALSE, NULL, 0);
 
-#if defined(HAS_SWAP_EXISTS_ACTION)
 		if (swap_exists_action == SEA_QUIT)
 		{
 		    if (got_int || only_one_window())
@@ -2747,7 +2924,6 @@ create_windows(mparm_T *parmp UNUSED)
 		}
 		else
 		    handle_swap_exists(NULL);
-#endif
 		dorewind = TRUE;		/* start again */
 	    }
 	    ui_breakcheck();
@@ -2780,6 +2956,7 @@ edit_buffers(
     int		i;
     int		advance = TRUE;
     win_T	*win;
+    char_u	*p_shm_save = NULL;
 
     /*
      * Don't execute Win/Buf Enter/Leave autocommands here
@@ -2815,6 +2992,17 @@ edit_buffers(
 		if (curtab->tp_next == NULL)	/* just checking */
 		    break;
 		goto_tabpage(0);
+		// Temporarily reset 'shm' option to not print fileinfo when
+		// loading the other buffers. This would overwrite the already
+		// existing fileinfo for the first tab.
+		if (i == 1)
+		{
+		    char buf[100];
+
+		    p_shm_save = vim_strsave(p_shm);
+		    vim_snprintf(buf, 100, "F%s", p_shm);
+		    set_option_value((char_u *)"shm", 0L, (char_u *)buf, 0);
+		}
 	    }
 	    else
 	    {
@@ -2832,13 +3020,10 @@ edit_buffers(
 	    curwin->w_arg_idx = arg_idx;
 	    /* Edit file from arg list, if there is one.  When "Quit" selected
 	     * at the ATTENTION prompt close the window. */
-# ifdef HAS_SWAP_EXISTS_ACTION
 	    swap_exists_did_quit = FALSE;
-# endif
 	    (void)do_ecmd(0, arg_idx < GARGCOUNT
 			  ? alist_name(&GARGLIST[arg_idx]) : NULL,
 			  NULL, NULL, ECMD_LASTL, ECMD_HIDE, curwin);
-# ifdef HAS_SWAP_EXISTS_ACTION
 	    if (swap_exists_did_quit)
 	    {
 		/* abort or quit selected */
@@ -2851,7 +3036,6 @@ edit_buffers(
 		win_close(curwin, TRUE);
 		advance = FALSE;
 	    }
-# endif
 	    if (arg_idx == GARGCOUNT - 1)
 		arg_had_last = TRUE;
 	    ++arg_idx;
@@ -2862,6 +3046,12 @@ edit_buffers(
 	    (void)vgetc();	/* only break the file loading, not the rest */
 	    break;
 	}
+    }
+
+    if (p_shm_save != NULL)
+    {
+	set_option_value((char_u *)"shm", 0L, p_shm_save, 0);
+	vim_free(p_shm_save);
     }
 
     if (parmp->window_layout == WIN_TABS)
@@ -3078,18 +3268,18 @@ source_startup_scripts(mparm_T *parmp)
 
 	    i = FAIL;
 	    if (fullpathcmp((char_u *)USR_VIMRC_FILE,
-				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #ifdef USR_VIMRC_FILE2
 		    && fullpathcmp((char_u *)USR_VIMRC_FILE2,
-				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 #ifdef USR_VIMRC_FILE3
 		    && fullpathcmp((char_u *)USR_VIMRC_FILE3,
-				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 #ifdef SYS_VIMRC_FILE
 		    && fullpathcmp((char_u *)SYS_VIMRC_FILE,
-				      (char_u *)VIMRC_FILE, FALSE) != FPC_SAME
+				(char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 				)
 		i = do_source((char_u *)VIMRC_FILE, TRUE, DOSO_VIMRC);
@@ -3104,10 +3294,10 @@ source_startup_scripts(mparm_T *parmp)
 		    secure = 0;
 #endif
 		if (	   fullpathcmp((char_u *)USR_EXRC_FILE,
-				      (char_u *)EXRC_FILE, FALSE) != FPC_SAME
+				(char_u *)EXRC_FILE, FALSE, TRUE) != FPC_SAME
 #ifdef USR_EXRC_FILE2
 			&& fullpathcmp((char_u *)USR_EXRC_FILE2,
-				      (char_u *)EXRC_FILE, FALSE) != FPC_SAME
+				(char_u *)EXRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 				)
 		    (void)do_source((char_u *)EXRC_FILE, FALSE, DOSO_NONE);
@@ -3169,6 +3359,7 @@ process_env(
 	current_sctx.sc_sid = SID_ENV;
 	current_sctx.sc_seq = 0;
 	current_sctx.sc_lnum = 0;
+	current_sctx.sc_version = 1;
 #endif
 	do_cmdline_cmd(initstr);
 	sourcing_name = save_sourcing_name;
@@ -3215,6 +3406,14 @@ mainerr(
 {
 #if defined(UNIX) || defined(VMS)
     reset_signals();		/* kill us with CTRL-C here, if you like */
+#endif
+
+    // If this is a Windows GUI executable, show an error dialog box.
+#ifdef VIMDLL
+    gui.in_use = mch_is_gui_executable();
+#endif
+#ifdef FEAT_GUI_MSWIN
+    gui.starting = FALSE;   // Needed to show as error.
 #endif
 
     init_longVersion();
@@ -3424,8 +3623,13 @@ usage(void)
     main_msg(_("--echo-wid\t\tMake gvim echo the Window ID on stdout"));
 #endif
 #ifdef FEAT_GUI_MSWIN
-    main_msg(_("-P <parent title>\tOpen Vim inside parent application"));
-    main_msg(_("--windowid <HWND>\tOpen Vim inside another win32 widget"));
+# ifdef VIMDLL
+    if (gui.starting)
+# endif
+    {
+	main_msg(_("-P <parent title>\tOpen Vim inside parent application"));
+	main_msg(_("--windowid <HWND>\tOpen Vim inside another win32 widget"));
+    }
 #endif
 
 #ifdef FEAT_GUI_GNOME
@@ -3440,7 +3644,6 @@ usage(void)
 	mch_exit(0);
 }
 
-#if defined(HAS_SWAP_EXISTS_ACTION)
 /*
  * Check the result of the ATTENTION dialog:
  * When "Quit" selected, exit Vim.
@@ -3453,7 +3656,6 @@ check_swap_exists_action(void)
 	getout(1);
     handle_swap_exists(NULL);
 }
-#endif
 
 #endif /* NO_VIM_MAIN */
 
@@ -3465,7 +3667,7 @@ static struct timeval	prev_timeval;
  * Windows doesn't have gettimeofday(), although it does have struct timeval.
  */
     static int
-gettimeofday(struct timeval *tv, char *dummy)
+gettimeofday(struct timeval *tv, char *dummy UNUSED)
 {
     long t = clock();
     tv->tv_sec = t / CLOCKS_PER_SEC;
@@ -4226,7 +4428,7 @@ sendToLocalVim(char_u *cmd, int asExpr, char_u **result)
 		size_t	len = STRLEN(cmd) + STRLEN(err) + 5;
 		char_u	*msg;
 
-		msg = alloc((unsigned)len);
+		msg = alloc(len);
 		if (msg != NULL)
 		    vim_snprintf((char *)msg, len, "%s: \"%s\"", err, cmd);
 		*result = msg;

@@ -81,7 +81,7 @@ typedef struct
 
 /*
  * Structure representing a NFA state.
- * A NFA state may have no outgoing edge, when it is a NFA_MATCH state.
+ * An NFA state may have no outgoing edge, when it is a NFA_MATCH state.
  */
 typedef struct nfa_state nfa_state_T;
 struct nfa_state

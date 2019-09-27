@@ -75,7 +75,6 @@ static int diff_buf_idx_tp(buf_T *buf, tabpage_T *tp);
 static void diff_mark_adjust_tp(tabpage_T *tp, int idx, linenr_T line1, linenr_T line2, long amount, long amount_after);
 static void diff_check_unchanged(tabpage_T *tp, diff_T *dp);
 static int diff_check_sanity(tabpage_T *tp, diff_T *dp);
-static void diff_redraw(int dofold);
 static int check_external_diff(diffio_T *diffio);
 static int diff_file(diffio_T *diffio);
 static int diff_equal_entry(diff_T *dp, int idx1, int idx2);
@@ -520,7 +519,8 @@ diff_mark_adjust_tp(
 
     if (tp == curtab)
     {
-	diff_redraw(TRUE);
+	// Don't redraw right away, this updates the diffs, which can be slow.
+	need_diff_redraw = TRUE;
 
 	/* Need to recompute the scroll binding, may remove or add filler
 	 * lines (e.g., when adding lines above w_topline). But it's slow when
@@ -537,7 +537,7 @@ diff_alloc_new(tabpage_T *tp, diff_T *dprev, diff_T *dp)
 {
     diff_T	*dnew;
 
-    dnew = (diff_T *)alloc((unsigned)sizeof(diff_T));
+    dnew = ALLOC_ONE(diff_T);
     if (dnew != NULL)
     {
 	dnew->df_next = dp;
@@ -645,13 +645,14 @@ diff_check_sanity(tabpage_T *tp, diff_T *dp)
 /*
  * Mark all diff buffers in the current tab page for redraw.
  */
-    static void
+    void
 diff_redraw(
     int		dofold)	    // also recompute the folds
 {
     win_T	*wp;
     int		n;
 
+    need_diff_redraw = FALSE;
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_p_diff)
 	{
@@ -710,7 +711,7 @@ diff_write_buffer(buf_T *buf, diffin_T *din)
     // xdiff requires one big block of memory with all the text.
     for (lnum = 1; lnum <= buf->b_ml.ml_line_count; ++lnum)
 	len += (long)STRLEN(ml_get_buf(buf, lnum, FALSE)) + 1;
-    ptr = lalloc(len, TRUE);
+    ptr = alloc(len);
     if (ptr == NULL)
     {
 	// Allocating memory failed.  This can happen, because we try to read
@@ -866,7 +867,11 @@ theend:
     int
 diff_internal(void)
 {
-    return (diff_flags & DIFF_INTERNAL) != 0 && *p_dex == NUL;
+    return (diff_flags & DIFF_INTERNAL) != 0
+#ifdef FEAT_EVAL
+	&& *p_dex == NUL
+#endif
+	;
 }
 
 /*
@@ -1119,7 +1124,7 @@ diff_file(diffio_T *dio)
     {
 	len = STRLEN(tmp_orig) + STRLEN(tmp_new)
 				      + STRLEN(tmp_diff) + STRLEN(p_srr) + 27;
-	cmd = alloc((unsigned)len);
+	cmd = alloc(len);
 	if (cmd == NULL)
 	    return FAIL;
 
@@ -1214,7 +1219,7 @@ ex_diffpatch(exarg_T *eap)
     if (esc_name == NULL)
 	goto theend;
     buflen = STRLEN(tmp_orig) + STRLEN(esc_name) + STRLEN(tmp_new) + 16;
-    buf = alloc((unsigned)buflen);
+    buf = alloc(buflen);
     if (buf == NULL)
 	goto theend;
 
@@ -1443,18 +1448,14 @@ diff_win_options(
 	wp->w_p_wrap_save = wp->w_p_wrap;
     wp->w_p_wrap = FALSE;
 # ifdef FEAT_FOLDING
-    curwin = wp;
-    curbuf = curwin->w_buffer;
     if (!wp->w_p_diff)
     {
 	if (wp->w_p_diff_saved)
 	    free_string_option(wp->w_p_fdm_save);
 	wp->w_p_fdm_save = vim_strsave(wp->w_p_fdm);
     }
-    set_string_option_direct((char_u *)"fdm", -1, (char_u *)"diff",
+    set_string_option_direct_in_win(wp, (char_u *)"fdm", -1, (char_u *)"diff",
 						       OPT_LOCAL|OPT_FREE, 0);
-    curwin = old_curwin;
-    curbuf = curwin->w_buffer;
     if (!wp->w_p_diff)
     {
 	wp->w_p_fdc_save = wp->w_p_fdc;
@@ -2277,7 +2278,7 @@ diffopt_changed(void)
 	    tp->tp_diff_invalid = TRUE;
 
     diff_flags = diff_flags_new;
-    diff_context = diff_context_new;
+    diff_context = diff_context_new == 0 ? 1 : diff_context_new;
     diff_foldcolumn = diff_foldcolumn_new;
     diff_algorithm = diff_algorithm_new;
 
@@ -3214,4 +3215,77 @@ xdiff_out(void *priv, mmbuffer_t *mb, int nbuf)
     return 0;
 }
 
-#endif	/* FEAT_DIFF */
+#endif	// FEAT_DIFF
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+
+/*
+ * "diff_filler()" function
+ */
+    void
+f_diff_filler(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#ifdef FEAT_DIFF
+    rettv->vval.v_number = diff_check_fill(curwin, tv_get_lnum(argvars));
+#endif
+}
+
+/*
+ * "diff_hlID()" function
+ */
+    void
+f_diff_hlID(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+#ifdef FEAT_DIFF
+    linenr_T		lnum = tv_get_lnum(argvars);
+    static linenr_T	prev_lnum = 0;
+    static varnumber_T	changedtick = 0;
+    static int		fnum = 0;
+    static int		change_start = 0;
+    static int		change_end = 0;
+    static hlf_T	hlID = (hlf_T)0;
+    int			filler_lines;
+    int			col;
+
+    if (lnum < 0)	/* ignore type error in {lnum} arg */
+	lnum = 0;
+    if (lnum != prev_lnum
+	    || changedtick != CHANGEDTICK(curbuf)
+	    || fnum != curbuf->b_fnum)
+    {
+	/* New line, buffer, change: need to get the values. */
+	filler_lines = diff_check(curwin, lnum);
+	if (filler_lines < 0)
+	{
+	    if (filler_lines == -1)
+	    {
+		change_start = MAXCOL;
+		change_end = -1;
+		if (diff_find_change(curwin, lnum, &change_start, &change_end))
+		    hlID = HLF_ADD;	/* added line */
+		else
+		    hlID = HLF_CHD;	/* changed line */
+	    }
+	    else
+		hlID = HLF_ADD;	/* added line */
+	}
+	else
+	    hlID = (hlf_T)0;
+	prev_lnum = lnum;
+	changedtick = CHANGEDTICK(curbuf);
+	fnum = curbuf->b_fnum;
+    }
+
+    if (hlID == HLF_CHD || hlID == HLF_TXD)
+    {
+	col = tv_get_number(&argvars[1]) - 1; /* ignore type error in {col} */
+	if (col >= change_start && col <= change_end)
+	    hlID = HLF_TXD;			/* changed text */
+	else
+	    hlID = HLF_CHD;			/* changed line */
+    }
+    rettv->vval.v_number = hlID == (hlf_T)0 ? 0 : (int)hlID;
+#endif
+}
+
+#endif

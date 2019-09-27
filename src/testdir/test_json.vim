@@ -70,7 +70,7 @@ let s:varvals = [v:true, v:false, v:null, v:null]
 func Test_json_encode()
   call assert_equal(s:json1, json_encode(s:var1))
   call assert_equal(s:json2, json_encode(s:var2))
-  call assert_equal(s:json3, json_encode(s:var3))
+  call assert_equal(s:json3, s:var3->json_encode())
   call assert_equal(s:json4, json_encode(s:var4))
   call assert_equal(s:json5, json_encode(s:var5))
 
@@ -110,7 +110,7 @@ endfunc
 func Test_json_decode()
   call assert_equal(s:var1, json_decode(s:json1))
   call assert_equal(s:var2, json_decode(s:json2))
-  call assert_equal(s:var3, json_decode(s:json3))
+  call assert_equal(s:var3, s:json3->json_decode())
   call assert_equal(s:var4, json_decode(s:json4))
   call assert_equal(s:var5, json_decode(s:json5))
 
@@ -176,6 +176,10 @@ func Test_json_decode()
 
   call assert_fails('call json_decode("{{}:42}")', "E474:")
   call assert_fails('call json_decode("{[]:42}")', "E474:")
+
+  call assert_fails('call json_decode("\"\\u111Z\"")', 'E474:')
+  call assert_equal('[😂]', json_decode('"[\uD83D\uDE02]"'))
+  call assert_equal('a😂b', json_decode('"a\uD83D\uDE02b"'))
 endfunc
 
 let s:jsl5 = '[7,,,]'
@@ -184,7 +188,7 @@ let s:varl5 = [7, v:none, v:none]
 func Test_js_encode()
   call assert_equal(s:json1, js_encode(s:var1))
   call assert_equal(s:json2, js_encode(s:var2))
-  call assert_equal(s:json3, js_encode(s:var3))
+  call assert_equal(s:json3, s:var3->js_encode())
   call assert_equal(s:json4, js_encode(s:var4))
   call assert_equal(s:json5, js_encode(s:var5))
 
@@ -222,7 +226,7 @@ endfunc
 func Test_js_decode()
   call assert_equal(s:var1, js_decode(s:json1))
   call assert_equal(s:var2, js_decode(s:json2))
-  call assert_equal(s:var3, js_decode(s:json3))
+  call assert_equal(s:var3, s:json3->js_decode())
   call assert_equal(s:var4, js_decode(s:json4))
   call assert_equal(s:var5, js_decode(s:json5))
 
@@ -288,4 +292,11 @@ func Test_js_decode()
   call assert_fails('call js_decode("[1 2]")', "E474:")
 
   call assert_equal(s:varl5, js_decode(s:jsl5))
+endfunc
+
+func Test_json_encode_long()
+  " The growarray uses a grow size of 4000, check that a result that is exactly
+  " 4000 bytes long is not missing the final NUL.
+  let json = json_encode([repeat('a', 3996)])
+  call assert_equal(4000, len(json))
 endfunc

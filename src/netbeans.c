@@ -321,7 +321,7 @@ postpone_keycommand(char_u *keystr)
 {
     keyQ_T *node;
 
-    node = (keyQ_T *)alloc(sizeof(keyQ_T));
+    node = ALLOC_ONE(keyQ_T);
     if (node == NULL)
 	return;  /* out of memory, drop the key */
 
@@ -667,7 +667,7 @@ nb_get_buf(int bufno)
     if (!buf_list)
     {
 	/* initialize */
-	buf_list = (nbbuf_T *)alloc_clear(100 * sizeof(nbbuf_T));
+	buf_list = alloc_clear(100 * sizeof(nbbuf_T));
 	buf_list_size = 100;
     }
     if (bufno >= buf_list_used) /* new */
@@ -678,8 +678,7 @@ nb_get_buf(int bufno)
 
 	    incr = bufno - buf_list_size + 90;
 	    buf_list_size += incr;
-	    buf_list = (nbbuf_T *)vim_realloc(
-				   buf_list, buf_list_size * sizeof(nbbuf_T));
+	    buf_list = vim_realloc(buf_list, buf_list_size * sizeof(nbbuf_T));
 	    if (buf_list == NULL)
 	    {
 		vim_free(t_buf_list);
@@ -790,7 +789,7 @@ nb_reply_text(int cmdno, char_u *result)
 
     nbdebug(("REP %d: %s\n", cmdno, (char *)result));
 
-    reply = alloc((unsigned)STRLEN(result) + 32);
+    reply = alloc(STRLEN(result) + 32);
     sprintf((char *)reply, "%d %s\n", cmdno, (char *)result);
     nb_send((char *)reply, "nb_reply_text");
 
@@ -819,7 +818,7 @@ nb_reply_nr(int cmdno, long result)
     static char_u *
 nb_quote(char_u *txt)
 {
-    char_u *buf = alloc((unsigned)(2 * STRLEN(txt) + 1));
+    char_u *buf = alloc(2 * STRLEN(txt) + 1);
     char_u *p = txt;
     char_u *q = buf;
 
@@ -863,7 +862,7 @@ nb_unquote(char_u *p, char_u **endp)
     int done = 0;
 
     /* result is never longer than input */
-    result = (char *)alloc_clear((unsigned)STRLEN(p) + 1);
+    result = alloc_clear(STRLEN(p) + 1);
     if (result == NULL)
 	return NULL;
 
@@ -951,7 +950,7 @@ nb_joinlines(linenr_T first, linenr_T other)
 
     len_first = (int)STRLEN(ml_get(first));
     len_other = (int)STRLEN(ml_get(other));
-    p = alloc((unsigned)(len_first + len_other + 1));
+    p = alloc(len_first + len_other + 1);
     if (p != NULL)
     {
       mch_memmove(p, ml_get(first), len_first);
@@ -1084,8 +1083,7 @@ nb_do_cmd(
 	    {
 		len = get_buf_size(buf->bufp);
 		nlines = buf->bufp->b_ml.ml_line_count;
-		text = alloc((unsigned)((len > 0)
-						 ? ((len + nlines) * 2) : 4));
+		text = alloc((len > 0) ? ((len + nlines) * 2) : 4);
 		if (text == NULL)
 		{
 		    nbdebug(("    nb_do_cmd: getText has null text field\n"));
@@ -1391,18 +1389,18 @@ nb_do_cmd(
 			    && ((pos != NULL && pos->col > 0)
 				|| (lnum == 1 && buf_was_empty)))
 		    {
-			char_u *oldline = ml_get(lnum);
-			char_u *newline;
+			char_u	*oldline = ml_get(lnum);
+			char_u	*newline;
+			int	col = pos == NULL ? 0 : pos->col;
 
 			/* Insert halfway a line. */
-			newline = alloc_check(
-				       (unsigned)(STRLEN(oldline) + len + 1));
+			newline = alloc(STRLEN(oldline) + len + 1);
 			if (newline != NULL)
 			{
-			    mch_memmove(newline, oldline, (size_t)pos->col);
-			    newline[pos->col] = NUL;
+			    mch_memmove(newline, oldline, (size_t)col);
+			    newline[col] = NUL;
 			    STRCAT(newline, args);
-			    STRCAT(newline, oldline + pos->col);
+			    STRCAT(newline, oldline + col);
 			    ml_replace(lnum, newline, FALSE);
 			}
 		    }
@@ -1509,9 +1507,7 @@ nb_do_cmd(
 	    long savedChars = atol((char *)args);
 
 	    if (buf == NULL || buf->bufp == NULL)
-	    {
 		nbdebug(("    invalid buffer identifier in saveDone\n"));
-	    }
 	    else
 		print_save_msg(buf, savedChars);
 /* =====================================================================*/
@@ -1990,9 +1986,7 @@ nb_do_cmd(
 	    args = (char_u *)cp;
 # ifdef NBDEBUG
 	    if (vim_ignored != -1)
-	    {
 		nbdebug(("    partial line annotation -- Not Yet Implemented!\n"));
-	    }
 # endif
 	    if (serNum >= GUARDEDOFFSET)
 	    {
@@ -2476,7 +2470,7 @@ netbeans_beval_cb(
 	 * length. */
 	if (text != NULL && text[0] != NUL && STRLEN(text) < MAXPATHL)
 	{
-	    buf = (char *)alloc(MAXPATHL * 2 + 25);
+	    buf = alloc(MAXPATHL * 2 + 25);
 	    if (buf != NULL)
 	    {
 		p = nb_quote(text);
@@ -3216,7 +3210,7 @@ addsigntype(
 	    if (globalsignmaplen == 0) /* first allocation */
 	    {
 		globalsignmaplen = 20;
-		globalsignmap = (char **)alloc_clear(globalsignmaplen*sizeof(char *));
+		globalsignmap = ALLOC_CLEAR_MULT(char *, globalsignmaplen);
 	    }
 	    else    /* grow it */
 	    {
@@ -3226,7 +3220,7 @@ addsigntype(
 
 		globalsignmaplen *= 2;
 		incr = globalsignmaplen - oldlen;
-		globalsignmap = (char **)vim_realloc(globalsignmap,
+		globalsignmap = vim_realloc(globalsignmap,
 					   globalsignmaplen * sizeof(char *));
 		if (globalsignmap == NULL)
 		{
@@ -3253,7 +3247,7 @@ addsigntype(
 	if (buf->signmaplen == 0) /* first allocation */
 	{
 	    buf->signmaplen = 5;
-	    buf->signmap = (int *)alloc_clear(buf->signmaplen * sizeof(int));
+	    buf->signmap = ALLOC_CLEAR_MULT(int, buf->signmaplen);
 	}
 	else    /* grow it */
 	{
@@ -3263,7 +3257,7 @@ addsigntype(
 
 	    buf->signmaplen *= 2;
 	    incr = buf->signmaplen - oldlen;
-	    buf->signmap = (int *)vim_realloc(buf->signmap,
+	    buf->signmap = vim_realloc(buf->signmap,
 					       buf->signmaplen * sizeof(int));
 	    if (buf->signmap == NULL)
 	    {

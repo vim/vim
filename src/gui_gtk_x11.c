@@ -159,7 +159,11 @@ static const GtkTargetEntry dnd_targets[] =
  */
 # define DEFAULT_FONT	"Monospace 10"
 
-#if !(defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION))
+#if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
+# define USE_GNOME_SESSION
+#endif
+
+#if !defined(FEAT_GUI_GNOME)
 /*
  * Atoms used to communicate save-yourself from the X11 session manager. There
  * is no need to move them into the GUI struct, since they should be constant.
@@ -377,7 +381,7 @@ static int    gui_argc = 0;
 static char **gui_argv = NULL;
 
 static const char *role_argument = NULL;
-#if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
+#if defined(USE_GNOME_SESSION)
 static const char *restart_command = NULL;
 static       char *abs_restart_command = NULL;
 #endif
@@ -404,7 +408,7 @@ gui_mch_prepare(int *argc, char **argv)
     int			    i	= 0;
     int			    len = 0;
 
-#if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
+#if defined(USE_GNOME_SESSION)
     /*
      * Determine the command used to invoke Vim, to be passed as restart
      * command to the session manager.	If argv[0] contains any directory
@@ -429,7 +433,7 @@ gui_mch_prepare(int *argc, char **argv)
      * into gui_argv.  Freed later in gui_mch_init().
      */
     gui_argc = 0;
-    gui_argv = (char **)alloc((unsigned)((*argc + 1) * sizeof(char *)));
+    gui_argv = ALLOC_MULT(char *, *argc + 1);
 
     g_return_if_fail(gui_argv != NULL);
 
@@ -580,7 +584,7 @@ gui_mch_prepare(int *argc, char **argv)
 gui_mch_free_all(void)
 {
     vim_free(gui_argv);
-#if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
+#if defined(USE_GNOME_SESSION)
     vim_free(abs_restart_command);
 #endif
 }
@@ -1394,7 +1398,7 @@ selection_received_cb(GtkWidget		*widget UNUSED,
 		      guint		time_ UNUSED,
 		      gpointer		user_data UNUSED)
 {
-    VimClipboard    *cbd;
+    Clipboard_T	    *cbd;
     char_u	    *text;
     char_u	    *tmpbuf = NULL;
     guchar	    *tmpbuf_utf8 = NULL;
@@ -1511,7 +1515,7 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
     int		    length;
     int		    motion_type;
     GdkAtom	    type;
-    VimClipboard    *cbd;
+    Clipboard_T    *cbd;
 
     if (gtk_selection_data_get_selection(selection_data)
 	    == clip_plus.gtk_sel_atom)
@@ -1544,7 +1548,7 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 
     if (info == (guint)TARGET_VIM)
     {
-	tmpbuf = alloc((unsigned)length + 1);
+	tmpbuf = alloc(length + 1);
 	if (tmpbuf != NULL)
 	{
 	    tmpbuf[0] = motion_type;
@@ -1576,12 +1580,15 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 	if (string != NULL)
 	{
 	    tmpbuf = alloc(length + 2);
-	    tmpbuf[0] = 0xff;
-	    tmpbuf[1] = 0xfe;
-	    mch_memmove(tmpbuf + 2, string, (size_t)length);
-	    vim_free(string);
-	    string = tmpbuf;
-	    length += 2;
+	    if (tmpbuf != NULL)
+	    {
+		tmpbuf[0] = 0xff;
+		tmpbuf[1] = 0xfe;
+		mch_memmove(tmpbuf + 2, string, (size_t)length);
+		vim_free(string);
+		string = tmpbuf;
+		length += 2;
+	    }
 
 #if !GTK_CHECK_VERSION(3,0,0)
 	    /* Looks redundant even for GTK2 because these values are
@@ -1600,16 +1607,16 @@ selection_get_cb(GtkWidget	    *widget UNUSED,
 	int l = STRLEN(p_enc);
 
 	/* contents: motion_type 'encoding' NUL text */
-	tmpbuf = alloc((unsigned)length + l + 2);
+	tmpbuf = alloc(length + l + 2);
 	if (tmpbuf != NULL)
 	{
 	    tmpbuf[0] = motion_type;
 	    STRCPY(tmpbuf + 1, p_enc);
 	    mch_memmove(tmpbuf + l + 2, string, (size_t)length);
+	    length += l + 2;
+	    vim_free(string);
+	    string = tmpbuf;
 	}
-	length += l + 2;
-	vim_free(string);
-	string = tmpbuf;
 	type = vimenc_atom;
     }
 
@@ -2154,10 +2161,10 @@ parse_uri_list(int *count, char_u *data, int len)
     char_u  *tmp    = NULL;
     char_u  **array = NULL;
 
-    if (data != NULL && len > 0 && (tmp = (char_u *)alloc(len + 1)) != NULL)
+    if (data != NULL && len > 0 && (tmp = alloc(len + 1)) != NULL)
     {
 	n = count_and_decode_uri_list(tmp, data, len);
-	if (n > 0 && (array = (char_u **)alloc(n * sizeof(char_u *))) != NULL)
+	if (n > 0 && (array = ALLOC_MULT(char_u *, n)) != NULL)
 	    n = filter_uri_list(array, n, tmp);
     }
     vim_free(tmp);
@@ -2271,7 +2278,7 @@ drag_data_received_cb(GtkWidget		*widget,
 #endif /* FEAT_DND */
 
 
-#if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
+#if defined(USE_GNOME_SESSION)
 /*
  * GnomeClient interact callback.  Check for unsaved buffers that cannot
  * be abandoned and pop up a dialog asking the user for confirmation if
@@ -2309,75 +2316,6 @@ sm_client_check_changed_any(GnomeClient	    *client UNUSED,
      * will be cancelled.  Wow, quite powerful feature (:
      */
     gnome_interaction_key_return(key, shutdown_cancelled);
-}
-
-/*
- * Generate a script that can be used to restore the current editing session.
- * Save the value of v:this_session before running :mksession in order to make
- * automagic session save fully transparent.  Return TRUE on success.
- */
-    static int
-write_session_file(char_u *filename)
-{
-    char_u	    *escaped_filename;
-    char	    *mksession_cmdline;
-    unsigned int    save_ssop_flags;
-    int		    failed;
-
-    /*
-     * Build an ex command line to create a script that restores the current
-     * session if executed.  Escape the filename to avoid nasty surprises.
-     */
-    escaped_filename = vim_strsave_escaped(filename, escape_chars);
-    if (escaped_filename == NULL)
-	return FALSE;
-    mksession_cmdline = g_strconcat("mksession ", (char *)escaped_filename,
-									NULL);
-    vim_free(escaped_filename);
-
-    /*
-     * Use a reasonable hardcoded set of 'sessionoptions' flags to avoid
-     * unpredictable effects when the session is saved automatically.  Also,
-     * we definitely need SSOP_GLOBALS to be able to restore v:this_session.
-     * Don't use SSOP_BUFFERS to prevent the buffer list from becoming
-     * enormously large if the GNOME session feature is used regularly.
-     */
-    save_ssop_flags = ssop_flags;
-    ssop_flags = (SSOP_BLANK|SSOP_CURDIR|SSOP_FOLDS|SSOP_GLOBALS
-		  |SSOP_HELP|SSOP_OPTIONS|SSOP_WINSIZE|SSOP_TABPAGES);
-
-    do_cmdline_cmd((char_u *)"let Save_VV_this_session = v:this_session");
-    failed = (do_cmdline_cmd((char_u *)mksession_cmdline) == FAIL);
-    do_cmdline_cmd((char_u *)"let v:this_session = Save_VV_this_session");
-    do_unlet((char_u *)"Save_VV_this_session", TRUE);
-
-    ssop_flags = save_ssop_flags;
-    g_free(mksession_cmdline);
-
-    /*
-     * Reopen the file and append a command to restore v:this_session,
-     * as if this save never happened.	This is to avoid conflicts with
-     * the user's own sessions.  FIXME: It's probably less hackish to add
-     * a "stealth" flag to 'sessionoptions' -- gotta ask Bram.
-     */
-    if (!failed)
-    {
-	FILE *fd;
-
-	fd = open_exfile(filename, TRUE, APPENDBIN);
-
-	failed = (fd == NULL
-	       || put_line(fd, "let v:this_session = Save_VV_this_session") == FAIL
-	       || put_line(fd, "unlet Save_VV_this_session") == FAIL);
-
-	if (fd != NULL && fclose(fd) != 0)
-	    failed = TRUE;
-
-	if (failed)
-	    mch_remove(filename);
-    }
-
-    return !failed;
 }
 
 /*
@@ -2503,7 +2441,7 @@ setup_save_yourself(void)
     }
 }
 
-#else /* !(FEAT_GUI_GNOME && FEAT_SESSION) */
+#else // !USE_GNOME_SESSION
 
 # ifdef USE_XSMP
 /*
@@ -2578,8 +2516,7 @@ setup_save_yourself(void)
 	    if (i == count)
 	    {
 		/* allocate an Atoms array which is one item longer */
-		new_atoms = (Atom *)alloc((unsigned)((count + 1)
-							     * sizeof(Atom)));
+		new_atoms = ALLOC_MULT(Atom, count + 1);
 		if (new_atoms != NULL)
 		{
 		    memcpy(new_atoms, existing_atoms, count * sizeof(Atom));
@@ -2638,7 +2575,7 @@ global_event_filter(GdkXEvent *xev,
 
     return GDK_FILTER_CONTINUE;
 }
-#endif /* !(FEAT_GUI_GNOME && FEAT_SESSION) */
+#endif // !USE_GNOME_SESSION
 
 
 /*
@@ -2691,14 +2628,14 @@ mainwin_realize(GtkWidget *widget UNUSED, gpointer data UNUSED)
 	g_list_free(icons);
     }
 
-#if !(defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION))
+#if !defined(USE_GNOME_SESSION)
     /* Register a handler for WM_SAVE_YOURSELF with GDK's low-level X I/F */
     gdk_window_add_filter(NULL, &global_event_filter, NULL);
 #endif
     /* Setup to indicate to the window manager that we want to catch the
      * WM_SAVE_YOURSELF event.	For GNOME, this connects to the session
      * manager instead. */
-#if defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)
+#if defined(USE_GNOME_SESSION)
     if (using_gnome)
 #endif
 	setup_save_yourself();
@@ -3192,6 +3129,19 @@ update_window_manager_hints(int force_width, int force_height)
 	old_char_height = gui.char_height;
     }
 }
+
+#if defined(FEAT_GUI_DARKTHEME) || defined(PROTO)
+    void
+gui_mch_set_dark_theme(int dark)
+{
+# if GTK_CHECK_VERSION(3,0,0)
+    GtkSettings *gtk_settings;
+
+    gtk_settings = gtk_settings_get_for_screen(gdk_screen_get_default());
+    g_object_set(gtk_settings, "gtk-application-prefer-dark-theme", (gboolean)dark, NULL);
+# endif
+}
+#endif /* FEAT_GUI_DARKTHEME */
 
 #ifdef FEAT_TOOLBAR
 
@@ -4000,7 +3950,7 @@ gui_mch_init(void)
     gui.visibility = GDK_VISIBILITY_UNOBSCURED;
 #endif
 
-#if !(defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION))
+#if !defined(USE_GNOME_SESSION)
     wm_protocols_atom = gdk_atom_intern("WM_PROTOCOLS", FALSE);
     save_yourself_atom = gdk_atom_intern("WM_SAVE_YOURSELF", FALSE);
 #endif
@@ -4106,7 +4056,7 @@ gui_mch_init(void)
     return OK;
 }
 
-#if (defined(FEAT_GUI_GNOME) && defined(FEAT_SESSION)) || defined(PROTO)
+#if defined(USE_GNOME_SESSION) || defined(PROTO)
 /*
  * This is called from gui_start() after a fork() has been done.
  * We have to tell the session manager our new PID.
@@ -4124,7 +4074,7 @@ gui_mch_forked(void)
 	    gnome_client_set_process_id(client, getpid());
     }
 }
-#endif /* FEAT_GUI_GNOME && FEAT_SESSION */
+#endif // USE_GNOME_SESSION
 
 #if GTK_CHECK_VERSION(3,0,0)
     static GdkRGBA
@@ -6669,7 +6619,7 @@ gui_mch_insert_lines(int row, int num_lines)
  * X Selection stuff, for cutting and pasting text to other windows.
  */
     void
-clip_mch_request_selection(VimClipboard *cbd)
+clip_mch_request_selection(Clipboard_T *cbd)
 {
     GdkAtom	target;
     unsigned	i;
@@ -6706,7 +6656,7 @@ clip_mch_request_selection(VimClipboard *cbd)
  * Disown the selection.
  */
     void
-clip_mch_lose_selection(VimClipboard *cbd UNUSED)
+clip_mch_lose_selection(Clipboard_T *cbd UNUSED)
 {
     if (!in_selection_clear_event)
     {
@@ -6719,7 +6669,7 @@ clip_mch_lose_selection(VimClipboard *cbd UNUSED)
  * Own the selection and return OK if it worked.
  */
     int
-clip_mch_own_selection(VimClipboard *cbd)
+clip_mch_own_selection(Clipboard_T *cbd)
 {
     int success;
 
@@ -6734,13 +6684,13 @@ clip_mch_own_selection(VimClipboard *cbd)
  * will fill in the selection only when requested by another app.
  */
     void
-clip_mch_set_selection(VimClipboard *cbd UNUSED)
+clip_mch_set_selection(Clipboard_T *cbd UNUSED)
 {
 }
 
 #if (defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) || defined(PROTO)
     int
-clip_gtk_owner_exists(VimClipboard *cbd)
+clip_gtk_owner_exists(Clipboard_T *cbd)
 {
     return gdk_selection_owner_get(cbd->gtk_sel_atom) != NULL;
 }
@@ -7015,7 +6965,7 @@ gui_mch_drawsign(int row, int col, int typenr)
 		 (double)(MIN(height, SIGN_HEIGHT))) < 1.15)
 	    {
 		/* Change the aspect ratio by at most 15% to fill the
-		 * available space completly. */
+		 * available space completely. */
 		height = (double)SIGN_HEIGHT * SIGN_ASPECT / aspect;
 		height = MIN(height, SIGN_HEIGHT);
 	    }

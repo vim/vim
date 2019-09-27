@@ -1,4 +1,4 @@
-*pi_gzip.txt*   For Vim version 8.1.  Last change: 2016 Nov 06
+*pi_gzip.txt*   For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -12,8 +12,6 @@ The functionality mentioned here is a |standard-plugin|.
 This plugin is only available if 'compatible' is not set.
 You can avoid loading this plugin by setting the "loaded_gzip" variable: >
 	:let loaded_gzip = 1
-
-{Vi does not have any of this}
 
 ==============================================================================
 1. Autocommands						*gzip-autocmd*

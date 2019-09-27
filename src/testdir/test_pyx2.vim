@@ -1,9 +1,8 @@
 " Test for pyx* commands and functions with Python 2.
 
 set pyx=2
-if !has('python')
-  finish
-endif
+source check.vim
+CheckFeature python
 
 let s:py2pattern = '^2\.[0-7]\.\d\+'
 let s:py3pattern = '^3\.\d\+\.\d\+'
@@ -35,7 +34,7 @@ endfunc
 
 func Test_pyxeval()
   pyx import sys
-  call assert_match(s:py2pattern, split(pyxeval('sys.version'))[0])
+  call assert_match(s:py2pattern, split('sys.version'->pyxeval())[0])
 endfunc
 
 
@@ -71,4 +70,12 @@ func Test_pyxfile()
     redir END
     call assert_match(s:py3pattern, split(var)[0])
   endif
+endfunc
+
+func Test_Catch_Exception_Message()
+  try
+    pyx raise RuntimeError( 'TEST' )
+  catch /.*/
+    call assert_match( '^Vim(.*):RuntimeError: TEST$', v:exception )
+  endtry
 endfunc

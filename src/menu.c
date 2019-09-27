@@ -29,6 +29,7 @@ static void free_menu(vimmenu_T **menup);
 static void free_menu_string(vimmenu_T *, int);
 static int show_menus(char_u *, int);
 static void show_menus_recursive(vimmenu_T *, int, int);
+static char_u *menu_name_skip(char_u *name);
 static int menu_name_equal(char_u *name, vimmenu_T *menu);
 static int menu_namecmp(char_u *name, char_u *mname);
 static int get_menu_cmd_modes(char_u *, int, int *, int *);
@@ -43,9 +44,7 @@ static int s_tearoffs = FALSE;
 #endif
 
 static int menu_is_hidden(char_u *name);
-#if defined(FEAT_CMDL_COMPL) || (defined(FEAT_GUI_MSWIN) && defined(FEAT_TEAROFF))
 static int menu_is_tearoff(char_u *name);
-#endif
 
 #if defined(FEAT_MULTI_LANG) || defined(FEAT_TOOLBAR)
 static char_u *menu_skip_part(char_u *p);
@@ -583,7 +582,7 @@ add_menu_path(
 	    }
 
 	    /* Not already there, so lets add it */
-	    menu = (vimmenu_T *)alloc_clear((unsigned)sizeof(vimmenu_T));
+	    menu = ALLOC_CLEAR_ONE(vimmenu_T);
 	    if (menu == NULL)
 		goto erret;
 
@@ -694,7 +693,7 @@ add_menu_path(
 		 * \'s and ^V's stripped out. But menu_path is a "raw"
 		 * string, so we must correct for special characters.
 		 */
-		tearpath = alloc((unsigned int)STRLEN(menu_path) + TEAR_LEN + 2);
+		tearpath = alloc(STRLEN(menu_path) + TEAR_LEN + 2);
 		if (tearpath != NULL)
 		{
 		    char_u  *s;
@@ -780,7 +779,7 @@ add_menu_path(
 
 		if (c != 0)
 		{
-		    menu->strings[i] = alloc((unsigned)(STRLEN(call_data) + 5 ));
+		    menu->strings[i] = alloc(STRLEN(call_data) + 5);
 		    if (menu->strings[i] != NULL)
 		    {
 			menu->strings[i][0] = c;
@@ -1214,7 +1213,7 @@ show_menus_recursive(vimmenu_T *menu, int modes, int depth)
 		if (*menu->strings[bit] == NUL)
 		    msg_puts_attr("<Nop>", HL_ATTR(HLF_8));
 		else
-		    msg_outtrans_special(menu->strings[bit], FALSE);
+		    msg_outtrans_special(menu->strings[bit], FALSE, 0);
 	    }
     }
     else
@@ -1233,8 +1232,6 @@ show_menus_recursive(vimmenu_T *menu, int modes, int depth)
 		show_menus_recursive(menu, modes, depth + 1);
     }
 }
-
-#ifdef FEAT_CMDL_COMPL
 
 /*
  * Used when expanding menu names.
@@ -1316,7 +1313,7 @@ set_context_in_menu_cmd(
 	menu = root_menu;
 	if (after_dot != arg)
 	{
-	    path_name = alloc((unsigned)(after_dot - arg));
+	    path_name = alloc(after_dot - arg);
 	    if (path_name == NULL)
 		return NULL;
 	    vim_strncpy(path_name, arg, after_dot - arg - 1);
@@ -1555,14 +1552,13 @@ get_menu_names(expand_T *xp UNUSED, int idx)
 
     return str;
 }
-#endif /* FEAT_CMDL_COMPL */
 
 /*
  * Skip over this element of the menu path and return the start of the next
  * element.  Any \ and ^Vs are removed from the current element.
  * "name" may be modified.
  */
-    char_u *
+    static char_u *
 menu_name_skip(char_u *name)
 {
     char_u  *p;
@@ -1701,9 +1697,7 @@ popup_mode_name(char_u *name, int idx)
     {
 	mch_memmove(p + 5 + mode_chars_len, p + 5, (size_t)(len - 4));
 	for (i = 0; i < mode_chars_len; ++i)
-	{
 	    p[5 + i] = menu_mode_chars[idx][i];
-	}
     }
     return p;
 }
@@ -1866,8 +1860,6 @@ menu_is_hidden(char_u *name)
     return (name[0] == ']') || (menu_is_popup(name) && name[5] != NUL);
 }
 
-#if defined(FEAT_CMDL_COMPL) \
-	|| (defined(FEAT_GUI_MSWIN) && defined(FEAT_TEAROFF))
 /*
  * Return TRUE if the menu is the tearoff menu.
  */
@@ -1880,7 +1872,6 @@ menu_is_tearoff(char_u *name UNUSED)
     return FALSE;
 #endif
 }
-#endif
 
 #if defined(FEAT_GUI) || defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
 
@@ -1889,9 +1880,7 @@ get_menu_mode(void)
 {
 #ifdef FEAT_TERMINAL
     if (term_use_loop())
-    {
 	return MENU_INDEX_TERMINAL;
-    }
 #endif
     if (VIsual_active)
     {
@@ -2341,7 +2330,8 @@ execute_menu(exarg_T *eap, vimmenu_T *menu, int mode_idx)
     if (idx == -1 || eap == NULL)
 	idx = MENU_INDEX_NORMAL;
 
-    if (idx != MENU_INDEX_INVALID && menu->strings[idx] != NULL)
+    if (idx != MENU_INDEX_INVALID && menu->strings[idx] != NULL
+						 && (menu->modes & (1 << idx)))
     {
 	/* When executing a script or function execute the commands right now.
 	 * Also for the window toolbar.
@@ -2492,7 +2482,7 @@ winbar_click(win_T *wp, int col)
 
 	if (col >= item->wb_startcol && col <= item->wb_endcol)
 	{
-	    win_T *save_curwin = NULL;
+	    win_T   *save_curwin = NULL;
 	    pos_T   save_visual = VIsual;
 	    int	    save_visual_active = VIsual_active;
 	    int	    save_visual_select = VIsual_select;
@@ -2510,9 +2500,10 @@ winbar_click(win_T *wp, int col)
 		check_cursor();
 	    }
 
+	    // Note: the command might close the current window.
 	    execute_menu(NULL, item->wb_menu, -1);
 
-	    if (save_curwin != NULL)
+	    if (save_curwin != NULL && win_valid(save_curwin))
 	    {
 		curwin = save_curwin;
 		curbuf = curwin->w_buffer;
@@ -2522,6 +2513,8 @@ winbar_click(win_T *wp, int col)
 		VIsual_reselect = save_visual_reselect;
 		VIsual_mode = save_visual_mode;
 	    }
+	    if (!win_valid(wp))
+		break;
 	}
     }
 }

@@ -1,6 +1,8 @@
 " Tests for system() and systemlist()
 
-function! Test_System()
+source shared.vim
+
+func Test_System()
   if !has('win32')
     call assert_equal("123\n", system('echo 123'))
     call assert_equal(['123'], systemlist('echo 123'))
@@ -10,14 +12,34 @@ function! Test_System()
   else
     call assert_equal("123\n", system('echo 123'))
     call assert_equal(["123\r"], systemlist('echo 123'))
-    call assert_equal("123\n",   system('more', '123'))
-    call assert_equal(["123\r"], systemlist('more', '123'))
-    call assert_equal(["as\r", "df\r"], systemlist('more', ["as\<NL>df"]))
+    call assert_equal("123",   system('more', '123'))
+    call assert_equal(["123"], systemlist('more', '123'))
+    call assert_equal(["as\<NL>df"], systemlist('more', ["as\<NL>df"]))
   endif
 
-  if !executable('wc') || !executable('cat')
+  if !executable('cat') || !executable('wc')
     return
   endif
+
+  let out = 'echo 123'->system()
+  " On Windows we may get a trailing space.
+  if out != "123 \n"
+    call assert_equal("123\n", out)
+  endif
+
+  let out = 'echo 123'->systemlist()
+  if !has('win32')
+    call assert_equal(["123"], out)
+  else
+    call assert_equal(["123\r"], out)
+  endif
+
+  if executable('cat')
+    call assert_equal('123',   system('cat', '123'))	
+    call assert_equal(['123'], systemlist('cat', '123'))	
+    call assert_equal(["as\<NL>df"], systemlist('cat', ["as\<NL>df"])) 
+  endif
+
   new Xdummy
   call setline(1, ['asdf', "pw\<NL>er", 'xxxx'])
   let out = system('wc -l', bufnr('%'))
@@ -40,7 +62,7 @@ function! Test_System()
     call assert_equal(['asdf', "pw\<NL>er", 'xxxx'],  out)
   else
     let out = systemlist('more', bufnr('%'))
-    call assert_equal(["asdf\r", "pw\r", "er\r", "xxxx\r"],  out)
+    call assert_equal(['asdf', "pw\<NL>er", 'xxxx'],  out)
   endif
   bwipe!
 
@@ -49,11 +71,11 @@ endfunc
 
 func Test_system_exmode()
   if has('unix') " echo $? only works on Unix
-    let cmd = ' -es -u NONE -c "source Xscript" +q; echo "result=$?"'
+    let cmd = ' -es -c "source Xscript" +q; echo "result=$?"'
     " Need to put this in a script, "catch" isn't found after an unknown
     " function.
     call writefile(['try', 'call doesnotexist()', 'catch', 'endtry'], 'Xscript')
-    let a = system(v:progpath . cmd)
+    let a = system(GetVimCommand() . cmd)
     call assert_match('result=0', a)
     call assert_equal(0, v:shell_error)
   endif
@@ -61,32 +83,32 @@ func Test_system_exmode()
   " Error before try does set error flag.
   call writefile(['call nosuchfunction()', 'try', 'call doesnotexist()', 'catch', 'endtry'], 'Xscript')
   if has('unix') " echo $? only works on Unix
-    let a = system(v:progpath . cmd)
+    let a = system(GetVimCommand() . cmd)
     call assert_notequal('0', a[0])
   endif
 
-  let cmd = ' -es -u NONE -c "source Xscript" +q'
-  let a = system(v:progpath . cmd)
+  let cmd = ' -es -c "source Xscript" +q'
+  let a = system(GetVimCommand() . cmd)
   call assert_notequal(0, v:shell_error)
   call delete('Xscript')
 
   if has('unix') " echo $? only works on Unix
-    let cmd = ' -es -u NONE -c "call doesnotexist()" +q; echo $?'
-    let a = system(v:progpath. cmd)
+    let cmd = ' -es -c "call doesnotexist()" +q; echo $?'
+    let a = system(GetVimCommand() . cmd)
     call assert_notequal(0, a[0])
   endif
 
-  let cmd = ' -es -u NONE -c "call doesnotexist()" +q'
-  let a = system(v:progpath. cmd)
+  let cmd = ' -es -c "call doesnotexist()" +q'
+  let a = system(GetVimCommand(). cmd)
   call assert_notequal(0, v:shell_error)
 
   if has('unix') " echo $? only works on Unix
-    let cmd = ' -es -u NONE -c "call doesnotexist()|let a=1" +q; echo $?'
-    let a = system(v:progpath. cmd)
+    let cmd = ' -es -c "call doesnotexist()|let a=1" +q; echo $?'
+    let a = system(GetVimCommand() . cmd)
     call assert_notequal(0, a[0])
   endif
 
-  let cmd = ' -es -u NONE -c "call doesnotexist()|let a=1" +q'
-  let a = system(v:progpath. cmd)
+  let cmd = ' -es -c "call doesnotexist()|let a=1" +q'
+  let a = system(GetVimCommand() . cmd)
   call assert_notequal(0, v:shell_error)
 endfunc

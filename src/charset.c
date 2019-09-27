@@ -35,6 +35,8 @@ static char_u	g_chartab[256];
 #define CT_ID_CHAR	0x20	/* flag: set for ID chars */
 #define CT_FNAME_CHAR	0x40	/* flag: set for file name chars */
 
+static int in_win_border(win_T *wp, colnr_T vcol);
+
 /*
  * Fill g_chartab[].  Also fills curbuf->b_chartab[] with flags for keyword
  * characters for current buffer.
@@ -312,8 +314,6 @@ trans_characters(
     }
 }
 
-#if defined(FEAT_EVAL) || defined(FEAT_TITLE) || defined(FEAT_INS_EXPAND) \
-	|| defined(PROTO)
 /*
  * Translate a string into allocated memory, replacing special chars with
  * printable chars.  Returns NULL when out of memory.
@@ -355,10 +355,10 @@ transstr(char_u *s)
 		    len += 4;	/* illegal byte sequence */
 	    }
 	}
-	res = alloc((unsigned)(len + 1));
+	res = alloc(len + 1);
     }
     else
-	res = alloc((unsigned)(vim_strsize(s) + 1));
+	res = alloc(vim_strsize(s) + 1);
     if (res != NULL)
     {
 	*res = NUL;
@@ -380,9 +380,7 @@ transstr(char_u *s)
     }
     return res;
 }
-#endif
 
-#if defined(FEAT_SYN_HL) || defined(FEAT_INS_EXPAND) || defined(PROTO)
 /*
  * Convert the string "str[orglen]" to do ignore-case comparing.  Uses the
  * current locale.
@@ -493,7 +491,6 @@ str_foldcase(
 	return (char_u *)ga.ga_data;
     return buf;
 }
-#endif
 
 /*
  * Catch 22: g_chartab[] can't be initialized before the options are
@@ -1055,7 +1052,6 @@ win_lbr_chartabsize(
 	    if (col2 >= colmax)		/* doesn't fit */
 	    {
 		size = colmax - col + col_adj;
-		tab_corr = FALSE;
 		break;
 	    }
 	}
@@ -1106,14 +1102,16 @@ win_lbr_chartabsize(
 	    {
 		if (size + sbrlen + numberwidth > (colnr_T)wp->w_width)
 		{
-		    /* calculate effective window width */
+		    // calculate effective window width
 		    int width = (colnr_T)wp->w_width - sbrlen - numberwidth;
-		    int prev_width = col ? ((colnr_T)wp->w_width - (sbrlen + col)) : 0;
-		    if (width == 0)
-			width = (colnr_T)wp->w_width;
+		    int prev_width = col
+				 ? ((colnr_T)wp->w_width - (sbrlen + col)) : 0;
+
+		    if (width <= 0)
+			width = (colnr_T)1;
 		    added += ((size - prev_width) / width) * vim_strsize(p_sbr);
 		    if ((size - prev_width) % width)
-			/* wrapped, add another length of 'sbr' */
+			// wrapped, add another length of 'sbr'
 			added += vim_strsize(p_sbr);
 		}
 		else
@@ -1173,7 +1171,7 @@ win_nolbr_chartabsize(
  * Return TRUE if virtual column "vcol" is in the rightmost column of window
  * "wp".
  */
-    int
+    static int
 in_win_border(win_T *wp, colnr_T vcol)
 {
     int		width1;		/* width of first line (after line number) */
@@ -1775,25 +1773,31 @@ vim_isblankline(char_u *lbuf)
  * If "what" contains STR2NR_OCT recognize octal numbers
  * If "what" contains STR2NR_HEX recognize hex numbers
  * If "what" contains STR2NR_FORCE always assume bin/oct/hex.
+ * If "what" contains STR2NR_QUOTE ignore embedded single quotes
  * If maxlen > 0, check at a maximum maxlen chars.
+ * If strict is TRUE, check the number strictly. return *len = 0 if fail.
  */
     void
 vim_str2nr(
     char_u		*start,
-    int			*prep,	    /* return: type of number 0 = decimal, 'x'
-				       or 'X' is hex, '0' = octal, 'b' or 'B'
-				       is bin */
-    int			*len,	    /* return: detected length of number */
-    int			what,	    /* what numbers to recognize */
-    varnumber_T		*nptr,	    /* return: signed result */
-    uvarnumber_T	*unptr,	    /* return: unsigned result */
-    int			maxlen)     /* max length of string to check */
+    int			*prep,	    // return: type of number 0 = decimal, 'x'
+				    // or 'X' is hex, '0' = octal, 'b' or 'B'
+				    // is bin
+    int			*len,	    // return: detected length of number
+    int			what,	    // what numbers to recognize
+    varnumber_T		*nptr,	    // return: signed result
+    uvarnumber_T	*unptr,	    // return: unsigned result
+    int			maxlen,     // max length of string to check
+    int			strict)     // check strictly
 {
     char_u	    *ptr = start;
-    int		    pre = 0;		/* default is decimal */
+    int		    pre = 0;		// default is decimal
     int		    negative = FALSE;
     uvarnumber_T    un = 0;
     int		    n;
+
+    if (len != NULL)
+	*len = 0;
 
     if (ptr[0] == '-')
     {
@@ -1836,11 +1840,10 @@ vim_str2nr(
 	}
     }
 
-    /*
-    * Do the string-to-numeric conversion "manually" to avoid sscanf quirks.
-    */
+    // Do the conversion manually to avoid sscanf() quirks.
     n = 1;
-    if (pre == 'B' || pre == 'b' || what == STR2NR_BIN + STR2NR_FORCE)
+    if (pre == 'B' || pre == 'b'
+			     || ((what & STR2NR_BIN) && (what & STR2NR_FORCE)))
     {
 	/* bin */
 	if (pre != 0)
@@ -1855,9 +1858,16 @@ vim_str2nr(
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
+	    if ((what & STR2NR_QUOTE) && *ptr == '\''
+					     && '0' <= ptr[1] && ptr[1] <= '1')
+	    {
+		++ptr;
+		if (n++ == maxlen)
+		    break;
+	    }
 	}
     }
-    else if (pre == '0' || what == STR2NR_OCT + STR2NR_FORCE)
+    else if (pre == '0' || ((what & STR2NR_OCT) && (what & STR2NR_FORCE)))
     {
 	/* octal */
 	while ('0' <= *ptr && *ptr <= '7')
@@ -1870,9 +1880,16 @@ vim_str2nr(
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
+	    if ((what & STR2NR_QUOTE) && *ptr == '\''
+					     && '0' <= ptr[1] && ptr[1] <= '7')
+	    {
+		++ptr;
+		if (n++ == maxlen)
+		    break;
+	    }
 	}
     }
-    else if (pre != 0 || what == STR2NR_HEX + STR2NR_FORCE)
+    else if (pre != 0 || ((what & STR2NR_HEX) && (what & STR2NR_FORCE)))
     {
 	/* hex */
 	if (pre != 0)
@@ -1887,6 +1904,12 @@ vim_str2nr(
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
+	    if ((what & STR2NR_QUOTE) && *ptr == '\'' && vim_isxdigit(ptr[1]))
+	    {
+		++ptr;
+		if (n++ == maxlen)
+		    break;
+	    }
 	}
     }
     else
@@ -1905,8 +1928,19 @@ vim_str2nr(
 	    ++ptr;
 	    if (n++ == maxlen)
 		break;
+	    if ((what & STR2NR_QUOTE) && *ptr == '\'' && VIM_ISDIGIT(ptr[1]))
+	    {
+		++ptr;
+		if (n++ == maxlen)
+		    break;
+	    }
 	}
     }
+
+    // Check for an alpha-numeric character immediately following, that is
+    // most likely a typo.
+    if (strict && n - 1 != maxlen && ASCII_ISALNUM(*ptr))
+	return;
 
     if (prep != NULL)
 	*prep = pre;
@@ -1963,7 +1997,7 @@ hexhex2nr(char_u *p)
 
 /*
  * Return TRUE if "str" starts with a backslash that should be removed.
- * For MS-DOS, WIN32 and OS/2 this is only done when the character after the
+ * For MS-DOS, MSWIN and OS/2 this is only done when the character after the
  * backslash is not a normal file name character.
  * '$' is a valid file name character, we don't remove the backslash before
  * it.  This means it is not possible to use an environment variable after a
@@ -2005,6 +2039,7 @@ backslash_halve(char_u *p)
 
 /*
  * backslash_halve() plus save the result in allocated memory.
+ * However, returns "p" when out of memory.
  */
     char_u *
 backslash_halve_save(char_u *p)

@@ -14,7 +14,7 @@ To build the installable .exe:
 	gvim.exe (the OLE version),
 	vimrun.exe,
 	install.exe,
-	uninstal.exe,
+	uninstall.exe,
 	tee/tee.exe,
 	xxd/xxd.exe,
 

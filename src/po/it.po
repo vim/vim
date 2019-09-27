@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: vim 8.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-06-26 09:09+0200\n"
-"PO-Revision-Date: 2018-06-26 15:33+0200\n"
+"POT-Creation-Date: 2019-04-10 21:36+0200\n"
+"PO-Revision-Date: 2019-04-10 22:10+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -24,6 +24,58 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "--Deleted--"
+msgstr "--Cancellato--"
+
+msgid "auto-removing autocommand: %s <buffer=%d>"
+msgstr "auto-rimozione dell'autocomando: %s <buffer=%d>"
+
+msgid "E367: No such group: \"%s\""
+msgstr "E367: Gruppo inesistente: \"%s\""
+
+msgid "E936: Cannot delete the current group"
+msgstr "E936: Non posso cancellare il gruppo corrente"
+
+msgid "W19: Deleting augroup that is still in use"
+msgstr "W19: Cancello augroup, ma è ancora in uso"
+
+msgid "E215: Illegal character after *: %s"
+msgstr "E215: Carattere non ammesso dopo *: %s"
+
+msgid "E216: No such event: %s"
+msgstr "E216: Evento inesistente: %s"
+
+msgid "E216: No such group or event: %s"
+msgstr "E216: Evento o gruppo inesistente: %s"
+
+msgid ""
+"\n"
+"--- Autocommands ---"
+msgstr ""
+"\n"
+"--- Autocomandi ---"
+
+msgid "E680: <buffer=%d>: invalid buffer number "
+msgstr "E680: <buffer=%d>: numero buffer non valido"
+
+msgid "E217: Can't execute autocommands for ALL events"
+msgstr "E217: Non posso eseguire autocomandi for TUTTI gli eventi"
+
+msgid "No matching autocommands"
+msgstr "Nessun autocomando corrispondente"
+
+msgid "E218: autocommand nesting too deep"
+msgstr "E218: nidificazione dell'autocomando troppo estesa"
+
+msgid "%s Autocommands for \"%s\""
+msgstr "%s Autocomandi per \"%s\""
+
+msgid "Executing %s"
+msgstr "Eseguo %s"
+
+msgid "autocommand %s"
+msgstr "autocomando %s"
 
 msgid "E831: bf_key_init() called with empty password"
 msgstr "E831: chiamata a bf_key_init() con password nulla"
@@ -70,23 +122,20 @@ msgstr "E516: Nessun buffer tolto dalla lista"
 msgid "E517: No buffers were wiped out"
 msgstr "E517: Nessun buffer cancellato"
 
-msgid "1 buffer unloaded"
-msgstr "1 buffer scaricato"
+msgid "%d buffer unloaded"
+msgid_plural "%d buffers unloaded"
+msgstr[0] "%d buffer scaricato"
+msgstr[1] "%d buffer scaricati"
 
-msgid "%d buffers unloaded"
-msgstr "%d buffer scaricati"
+msgid "%d buffer deleted"
+msgid_plural "%d buffers deleted"
+msgstr[0] "%d buffer tolto dalla lista"
+msgstr[1] "%d buffer tolti dalla lista"
 
-msgid "1 buffer deleted"
-msgstr "1 buffer tolto dalla lista"
-
-msgid "%d buffers deleted"
-msgstr "%d buffer tolti dalla lista"
-
-msgid "1 buffer wiped out"
-msgstr "1 buffer cancellato"
-
-msgid "%d buffers wiped out"
-msgstr "%d buffer cancellati"
+msgid "%d buffer wiped out"
+msgid_plural "%d buffers wiped out"
+msgstr[0] "%d buffer cancellato"
+msgstr[1] "%d buffer cancellati"
 
 msgid "E90: Cannot unload last buffer"
 msgstr "E90: Non riesco a scaricare l'ultimo buffer"
@@ -103,9 +152,9 @@ msgstr "E87: Non posso oltrepassare l'ultimo buffer"
 msgid "E88: Cannot go before first buffer"
 msgstr "E88: Non posso andare prima del primo buffer"
 
-msgid "E89: No write since last change for buffer %ld (add ! to override)"
+msgid "E89: No write since last change for buffer %d (add ! to override)"
 msgstr ""
-"E89: Buffer %ld non salvato dopo modifica (aggiungi ! per eseguire comunque)"
+"E89: Buffer %d non salvato dopo modifica (aggiungi ! per eseguire comunque)"
 
 msgid "E948: Job still running (add ! to end the job)"
 msgstr "E948: Lavoro ancora in esecuzione (aggiungi! per terminarlo)"
@@ -122,8 +171,8 @@ msgstr "E37: Non salvato dopo l'ultima modifica"
 msgid "W14: Warning: List of file names overflow"
 msgstr "W14: Avviso: Superato limite della lista dei nomi di file"
 
-msgid "E92: Buffer %ld not found"
-msgstr "E92: Buffer %ld non trovato"
+msgid "E92: Buffer %d not found"
+msgstr "E92: Buffer %d non trovato"
 
 msgid "E93: More than one match for %s"
 msgstr "E93: Più di una corrispondenza per %s"
@@ -155,11 +204,10 @@ msgstr "[Sola Lettura]"
 msgid "[readonly]"
 msgstr "[in sola lettura]"
 
-msgid "1 line --%d%%--"
-msgstr "1 riga --%d%%--"
-
-msgid "%ld lines --%d%%--"
-msgstr "%ld righe --%d%%--"
+msgid "%ld line --%d%%--"
+msgid_plural "%ld lines --%d%%--"
+msgstr[0] "%ld riga --%d%%--"
+msgstr[1] "%ld righe --%d%%--"
 
 msgid "line %ld of %ld --%d%%-- col "
 msgstr "riga %ld di %ld --%d%%-- col "
@@ -200,19 +248,6 @@ msgstr "[Richiesta]"
 
 msgid "[Scratch]"
 msgstr "[Volatile]"
-
-msgid ""
-"\n"
-"--- Signs ---"
-msgstr ""
-"\n"
-"--- Segni ---"
-
-msgid "Signs for %s:"
-msgstr "Segni per %s:"
-
-msgid "    line=%ld  id=%d  name=%s"
-msgstr "    riga=%ld id=%d, nome=%s"
 
 msgid "E902: Cannot connect to port"
 msgstr "E902: Non posso commettermi alla porta"
@@ -295,14 +330,20 @@ msgstr "argomento di extend()"
 msgid "E737: Key already exists: %s"
 msgstr "E737: Chiave già esistente: %s"
 
-msgid "E96: Cannot diff more than %ld buffers"
-msgstr "E96: Non supporto differenze fra più di %ld buffer"
+msgid "E96: Cannot diff more than %d buffers"
+msgstr "E96: Non supporto differenze fra più di %d buffer"
+
+msgid "Not enough memory to use internal diff for buffer \"%s\""
+msgstr "Memoria insufficiente per usare diff interna per il buffer \"%s\""
 
 msgid "E810: Cannot read or write temp files"
 msgstr "E810: Non riesco a leggere o scrivere file temporanei"
 
 msgid "E97: Cannot create diffs"
 msgstr "E97: Non riesco a creare differenze"
+
+msgid "E960: Problem creating the internal diff"
+msgstr "E960: Problemi nella preparazione della diff interna"
 
 msgid "Patch file"
 msgstr "File di differenze"
@@ -312,6 +353,9 @@ msgstr "E816: Non riesco a leggere output del comando 'patch'"
 
 msgid "E98: Cannot read diff output"
 msgstr "E98: Non riesco a leggere output del comando 'diff'"
+
+msgid "E959: Invalid diff format."
+msgstr "E959: Formato diff non valido."
 
 msgid "E99: Current buffer is not in diff mode"
 msgstr "E99: Buffer corrente non in modalità 'diff'"
@@ -335,7 +379,82 @@ msgid "E787: Buffer changed unexpectedly"
 msgstr "E787: Il buffer è variato inaspettatamente"
 
 msgid "E104: Escape not allowed in digraph"
-msgstr "E104: Escape not ammesso nei digrammi"
+msgstr "E104: Escape non consentito nei digrammi"
+
+msgid "Custom"
+msgstr "Personalizzato"
+
+msgid "Latin supplement"
+msgstr "Supplemento latino"
+
+msgid "Greek and Coptic"
+msgstr "Greco e copto"
+
+msgid "Cyrillic"
+msgstr "Cirillico"
+
+msgid "Hebrew"
+msgstr "Ebraico"
+
+msgid "Arabic"
+msgstr "Arabo"
+
+msgid "Latin extended"
+msgstr "Latino esteso"
+
+msgid "Greek extended"
+msgstr "Greco esteso"
+
+msgid "Punctuation"
+msgstr "Punteggiatura"
+
+msgid "Super- and subscripts"
+msgstr "Apici e pedici"
+
+msgid "Currency"
+msgstr "Valuta"
+
+msgid "Other"
+msgstr "Altri"
+
+msgid "Roman numbers"
+msgstr "Numeri romani"
+
+msgid "Arrows"
+msgstr "Frecce"
+
+msgid "Mathematical operators"
+msgstr "Operatori matematici"
+
+msgid "Technical"
+msgstr "Tecnico"
+
+msgid "Box drawing"
+msgstr "Disegno caselle"
+
+msgid "Block elements"
+msgstr "Elementi di blocchi"
+
+msgid "Geometric shapes"
+msgstr "Forme geometriche"
+
+msgid "Symbols"
+msgstr "Simboli"
+
+msgid "Dingbats"
+msgstr "Dingbat"
+
+msgid "CJK symbols and punctuation"
+msgstr "Simboli e punteggiatura ChinJapKorea"
+
+msgid "Hiragana"
+msgstr "Hiragana"
+
+msgid "Katakana"
+msgstr "Katakana"
+
+msgid "Bopomofo"
+msgstr "Bopomofo"
 
 msgid "E544: Keymap file not found"
 msgstr "E544: File keymap non trovato"
@@ -345,102 +464,6 @@ msgstr "E105: Uso di :loadkeymap fuori da un file di comandi"
 
 msgid "E791: Empty keymap entry"
 msgstr "E791: Nessuna keymap per questo tasto"
-
-msgid " Keyword completion (^N^P)"
-msgstr " Completamento Keyword (^N^P)"
-
-msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
-msgstr " modalità ^X (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
-
-msgid " Whole line completion (^L^N^P)"
-msgstr " Completamento riga intera (^L^N^P)"
-
-msgid " File name completion (^F^N^P)"
-msgstr " Completamento nomi file (^F^N^P)"
-
-msgid " Tag completion (^]^N^P)"
-msgstr " Completamento Tag (^]^N^P)"
-
-msgid " Path pattern completion (^N^P)"
-msgstr " Completamento modello Path (^N^P)"
-
-msgid " Definition completion (^D^N^P)"
-msgstr " Completamento Definizione (^D^N^P)"
-
-msgid " Dictionary completion (^K^N^P)"
-msgstr " Completamento Dizionario (^K^N^P)"
-
-msgid " Thesaurus completion (^T^N^P)"
-msgstr " Completamento Thesaurus (^T^N^P)"
-
-msgid " Command-line completion (^V^N^P)"
-msgstr " Completamento riga comandi (^V^N^P)"
-
-msgid " User defined completion (^U^N^P)"
-msgstr " Completamento definito dall'utente (^U^N^P)"
-
-msgid " Omni completion (^O^N^P)"
-msgstr " Completamento globale (^O^N^P)"
-
-msgid " Spelling suggestion (s^N^P)"
-msgstr " Suggerimento ortografico (s^N^P)"
-
-msgid " Keyword Local completion (^N^P)"
-msgstr " Completamento Keyword Locale (^N^P)"
-
-msgid "Hit end of paragraph"
-msgstr "Giunto alla fine del paragrafo"
-
-msgid "E839: Completion function changed window"
-msgstr "E839: La funzione di completamento ha modificato la finestra"
-
-msgid "E840: Completion function deleted text"
-msgstr "E840: La funzione di completamento ha eliminato del testo"
-
-msgid "'dictionary' option is empty"
-msgstr "l'opzione 'dictionary' non è impostata"
-
-msgid "'thesaurus' option is empty"
-msgstr "l'opzione 'thesaurus' non è impostata"
-
-msgid "Scanning dictionary: %s"
-msgstr "Scansione dizionario: %s"
-
-msgid " (insert) Scroll (^E/^Y)"
-msgstr " (inserisci) Scroll (^E/^Y)"
-
-msgid " (replace) Scroll (^E/^Y)"
-msgstr " (sostituisci) Scroll (^E/^Y)"
-
-msgid "Scanning: %s"
-msgstr "Scansione: %s"
-
-msgid "Scanning tags."
-msgstr "Scansione tag."
-
-msgid "match in file"
-msgstr "corrispondenza nel file"
-
-msgid " Adding"
-msgstr " Aggiungo"
-
-msgid "-- Searching..."
-msgstr "-- Ricerca..."
-
-msgid "Back at original"
-msgstr "Ritorno all'originale"
-
-msgid "Word from other line"
-msgstr "Parola da un'altra riga"
-
-msgid "The only match"
-msgstr "L'unica corrispondenza"
-
-msgid "match %d of %d"
-msgstr "corrispondenza %d di %d"
-
-msgid "match %d"
-msgstr "corrispondenza %d"
 
 msgid "E18: Unexpected characters in :let"
 msgstr "E18: Caratteri non previsti in :let"
@@ -458,10 +481,13 @@ msgid "E734: Wrong variable type for %s="
 msgstr "E734: Tipo di variabile errato per %s="
 
 msgid "E461: Illegal variable name: %s"
-msgstr "E461: Nome di variabile non ammesso: %s"
+msgstr "E461: Nome di variabile non consentito: %s"
 
 msgid "E806: using Float as a String"
-msgstr "E806: uso di un Numero-a-virgola-mobile come Stringa"
+msgstr "E806: Uso di un Numero-a-virgola-mobile come una Stringa"
+
+msgid "E985: .= is not supported with script version 2"
+msgstr "E985: .= non è supportato con script versione 2"
 
 msgid "E687: Less targets than List items"
 msgstr "E687: Destinazioni più numerose degli elementi di Lista"
@@ -475,14 +501,17 @@ msgstr "Doppio ; nella lista di variabili"
 msgid "E738: Can't list variables for %s"
 msgstr "E738: Non riesco a elencare le variabili per %s"
 
-msgid "E689: Can only index a List or Dictionary"
-msgstr "E689: Posso indicizzare solo una Lista o un Dizionario"
+msgid "E689: Can only index a List, Dictionary or Blob"
+msgstr "E689: Posso indicizzare solo una Lista, un Dizionario o un Blob"
 
 msgid "E708: [:] must come last"
-msgstr "E708: [:] deve essere alla fine"
+msgstr "E708: [:] dev'essere alla fine"
 
-msgid "E709: [:] requires a List value"
-msgstr "E709: [:] necessita un valore Lista"
+msgid "E709: [:] requires a List or Blob value"
+msgstr "E709: [:] richiede un valore Lista o Blob"
+
+msgid "E972: Blob value does not have the right number of bytes"
+msgstr "E972: Il valore del Blob non ha il numero giusto di byte"
 
 msgid "E710: List value has more items than target"
 msgstr "E710: Il valore Lista ha più elementi della destinazione"
@@ -507,6 +536,10 @@ msgstr "E109: Manca ':' dopo '?'"
 
 msgid "E804: Cannot use '%' with Float"
 msgstr "E804: Non si può usare '%' con un Numero-a-virgola-mobile"
+
+msgid "E973: Blob literal should have an even number of hex characters"
+msgstr ""
+"E973: Una stringa Blob dovrebbe avere un numero pari di caratteri esadecimali"
 
 msgid "E110: Missing ')'"
 msgstr "E110: Manca ')'"
@@ -536,55 +569,67 @@ msgid "E724: variable nested too deep for displaying"
 msgstr "E724: variabile troppo nidificata per la visualizzazione"
 
 msgid "E805: Using a Float as a Number"
-msgstr "E805: Uso di un Numero-a-virgola-mobile come Numero"
+msgstr "E805: Uso di un Numero-a-virgola-mobile come un Numero"
 
 msgid "E703: Using a Funcref as a Number"
-msgstr "E703: Uso di Funcref come Numero"
+msgstr "E703: Uso di una Funcref come un Numero"
 
 msgid "E745: Using a List as a Number"
-msgstr "E745: Uso di Lista come Numero"
+msgstr "E745: Uso di una Lista come un Numero"
 
 msgid "E728: Using a Dictionary as a Number"
-msgstr "E728: Uso di Dizionario come Numero"
+msgstr "E728: Uso di un Dizionario come un Numero"
 
 msgid "E910: Using a Job as a Number"
-msgstr "E910: Uso di Job come Numero"
+msgstr "E910: Uso di un Job come un Numero"
 
 msgid "E913: Using a Channel as a Number"
-msgstr "E913: Uso di Canale come Numero"
+msgstr "E913: Uso di un Canale come un Numero"
+
+msgid "E974: Using a Blob as a Number"
+msgstr "E974: Uso di un Blob come un Numero"
 
 msgid "E891: Using a Funcref as a Float"
-msgstr "E891: Uso di Funcref come Numero-a-virgola-mobile"
+msgstr "E891: Uso di una Funcref come un Numero-a-virgola-mobile"
 
 msgid "E892: Using a String as a Float"
-msgstr "E892: Uso di Stringa come Numero-a-virgola-mobile"
+msgstr "E892: Uso di una Stringa come un Numero-a-virgola-mobile"
 
 msgid "E893: Using a List as a Float"
-msgstr "E893: Uso di Lista come Numero-a-virgola-mobile"
+msgstr "E893: Uso di una Lista come un Numero-a-virgola-mobile"
 
 msgid "E894: Using a Dictionary as a Float"
-msgstr "E894: Uso di Dizionario come Numero-a-virgola-mobile"
+msgstr "E894: Uso di un Dizionario come un Numero-a-virgola-mobile"
 
 msgid "E907: Using a special value as a Float"
-msgstr "E907: Uso di valore speciale come Numero-a-virgola-mobile"
+msgstr "E907: Uso di un valore speciale come un Numero-a-virgola-mobile"
 
 msgid "E911: Using a Job as a Float"
-msgstr "E911: Uso di Job come Numero-a-virgola-mobile"
+msgstr "E911: Uso di un Job come un Numero-a-virgola-mobile"
 
 msgid "E914: Using a Channel as a Float"
-msgstr "E914: Uso di Canale come Numero-a-virgola-mobile"
+msgstr "E914: Uso di un Canale come un Numero-a-virgola-mobile"
+
+msgid "E975: Using a Blob as a Float"
+msgstr "E975: Uso di un Blob come un Numero-a-virgola-mobile"
 
 msgid "E729: using Funcref as a String"
-msgstr "E729: uso di Funcref come Stringa"
+msgstr "E729: Uso di una Funcref come una Stringa"
 
 msgid "E730: using List as a String"
-msgstr "E730: uso di Lista come Stringa"
+msgstr "E730: Uso di una Lista come una Stringa"
 
 msgid "E731: using Dictionary as a String"
-msgstr "E731: uso di Dizionario come Stringa"
+msgstr "E731: Uso di un Dizionario come una Stringa"
+
+msgid "E976: using Blob as a String"
+msgstr "E976: Uso di un Blob come una Stringa"
 
 msgid "E908: using an invalid value as a String"
-msgstr "E908: uso di un valore non valido come Stringa"
+msgstr "E908: Uso di un valore non valido come una Stringa"
+
+msgid "E963: setting %s to value with wrong type"
+msgstr "E963: impostazione di %s a un valore di tipo errato"
 
 msgid "E795: Cannot delete variable %s"
 msgstr "E795: Non posso cancellare la variabile %s"
@@ -622,6 +667,12 @@ msgstr ""
 "\n"
 "\tImpostata l'ultima volta da "
 
+msgid " line "
+msgstr " riga "
+
+msgid "E977: Can only compare Blob with Blob"
+msgstr "E977: Posso confrontare un Blob solo con un altro Blob"
+
 msgid "E691: Can only compare List with List"
 msgstr "E691: Posso confrontare una Lista solo con un'altra Lista"
 
@@ -644,10 +695,16 @@ msgid "filter() argument"
 msgstr "argomento di filter()"
 
 msgid "E686: Argument of %s must be a List"
-msgstr "E686: L'argomento di %s deve essere una Lista"
+msgstr "E686: L'argomento di %s dev'essere una Lista"
+
+msgid "E899: Argument of %s must be a List or Blob"
+msgstr "E899: L'argomento di %s dev'essere una Lista o un Blob"
 
 msgid "E928: String required"
 msgstr "E928: Stringa necessaria"
+
+msgid "E957: Invalid window number"
+msgstr "E957: Numero di finestra non valido"
 
 msgid "E808: Number or Float required"
 msgstr "E808: Ci vuole un Numero o un Numero-a-virgola-mobile"
@@ -655,11 +712,17 @@ msgstr "E808: Ci vuole un Numero o un Numero-a-virgola-mobile"
 msgid "add() argument"
 msgstr "argomento di add()"
 
+msgid "E158: Invalid buffer name: %s"
+msgstr "E158: Nome buffer non valido: %s"
+
 msgid "E785: complete() can only be used in Insert mode"
 msgstr "E785: complete() può essere usata solo in modalità inserimento"
 
 msgid "&Ok"
 msgstr "&OK"
+
+msgid "E980: lowlevel input not supported"
+msgstr "E980: input lowlevel non supportato"
 
 msgid "+-%s%3ld line: "
 msgid_plural "+-%s%3ld lines: "
@@ -698,8 +761,8 @@ msgstr "E916: job non valido"
 msgid "E701: Invalid type for len()"
 msgstr "E701: Tipo non valido per len()"
 
-msgid "E798: ID is reserved for \":match\": %ld"
-msgstr "E798: ID riservato per \":match\": %ld"
+msgid "E798: ID is reserved for \":match\": %d"
+msgstr "E798: ID riservato per \":match\": %d"
 
 msgid "E726: Stride is zero"
 msgstr "E726: Incremento indice a zero"
@@ -739,6 +802,9 @@ msgstr "E258: Impossibile inviare al client"
 
 msgid "E927: Invalid action: '%s'"
 msgstr "E927: Azione non valida: '%s'"
+
+msgid "E962: Invalid action: '%s'"
+msgstr "E962: Azione non valida: '%s'"
 
 msgid "sort() argument"
 msgstr "argomento di sort()"
@@ -782,14 +848,13 @@ msgstr "> %d, Esa %04x, Ottale %o"
 msgid "> %d, Hex %08x, Octal %o"
 msgstr "> %d, Esa %08x, Ottale %o"
 
-msgid "E134: Move lines into themselves"
-msgstr "E134: Movimento di righe verso se stesse"
+msgid "E134: Cannot move a range of lines into itself"
+msgstr "E134: Movimento di righe verso se stesse non valido"
 
-msgid "1 line moved"
-msgstr "1 riga mossa"
-
-msgid "%ld lines moved"
-msgstr "%ld righe mosse"
+msgid "%ld line moved"
+msgid_plural "%ld lines moved"
+msgstr[0] "%ld riga mossa"
+msgstr[1] "%ld righe mosse"
 
 msgid "%ld lines filtered"
 msgstr "%ld righe filtrate"
@@ -850,7 +915,7 @@ msgid "# Value of 'encoding' when this file was written\n"
 msgstr "# Valore di 'encoding' al momento della scrittura di questo file\n"
 
 msgid "Illegal starting char"
-msgstr "Carattere iniziale non ammesso"
+msgstr "Carattere iniziale non consentito"
 
 msgid ""
 "\n"
@@ -912,8 +977,8 @@ msgstr ""
 msgid "E144: non-numeric argument to :z"
 msgstr "E144: argomento non-numerico a :z"
 
-msgid "E145: Shell commands not allowed in rvim"
-msgstr "E145: Comandi Shell non permessi in rvim"
+msgid "E145: Shell commands and some functionality not allowed in rvim"
+msgstr "E145: Comandi Shell e alcune funzionalità non consentiti in rvim"
 
 msgid "E146: Regular expressions can't be delimited by letters"
 msgstr "E146: Le espressioni regolari non possono essere delimitate da lettere"
@@ -924,23 +989,25 @@ msgstr "sostituire con %s (y/n/a/q/l/^E/^Y)?"
 msgid "(Interrupted) "
 msgstr "(Interrotto) "
 
-msgid "1 match"
-msgstr "1 corrisp."
+msgid "%ld match on %ld line"
+msgid_plural "%ld matches on %ld line"
+msgstr[0] "%ld corrispondenza in %ld riga"
+msgstr[1] "%ld corrispondenze in %ld riga"
 
-msgid "1 substitution"
-msgstr "1 sostituzione"
+msgid "%ld substitution on %ld line"
+msgid_plural "%ld substitutions on %ld line"
+msgstr[0] "%ld sostituzione su %ld riga"
+msgstr[1] "%ld sostituzioni su %ld riga"
 
-msgid "%ld matches"
-msgstr "%ld corrisp."
+msgid "%ld match on %ld lines"
+msgid_plural "%ld matches on %ld lines"
+msgstr[0] "%ld corrispondenza in %ld righe"
+msgstr[1] "%ld corrispondenze in %ld righe"
 
-msgid "%ld substitutions"
-msgstr "%ld sostituzioni"
-
-msgid " on 1 line"
-msgstr " in 1 riga"
-
-msgid " on %ld lines"
-msgstr " in %ld righe"
+msgid "%ld substitution on %ld lines"
+msgid_plural "%ld substitutions on %ld lines"
+msgstr[0] "%ld sostituzione in %ld righe"
+msgstr[1] "%ld sostituzioni in %ld righe"
 
 msgid "E147: Cannot do :global recursive with a range"
 msgstr "E147: :global non può essere usato ricorsivamente con un intervallo"
@@ -992,45 +1059,6 @@ msgstr "E154: Tag duplicato \"%s\" nel file %s/%s"
 
 msgid "E150: Not a directory: %s"
 msgstr "E150: %s non è una directory"
-
-msgid "E160: Unknown sign command: %s"
-msgstr "E160: Comando 'sign' sconosciuto: %s"
-
-msgid "E156: Missing sign name"
-msgstr "E156: Manca nome 'sign'"
-
-msgid "E612: Too many signs defined"
-msgstr "E612: Troppi 'sign' definiti"
-
-msgid "E239: Invalid sign text: %s"
-msgstr "E239: Testo 'sign' non valido: %s"
-
-msgid "E155: Unknown sign: %s"
-msgstr "E155: 'sign' sconosciuto: %s"
-
-msgid "E159: Missing sign number"
-msgstr "E159: Manca numero 'sign'"
-
-msgid "E158: Invalid buffer name: %s"
-msgstr "E158: Nome buffer non valido: %s"
-
-msgid "E934: Cannot jump to a buffer that does not have a name"
-msgstr "E934: Impossibile passare a un buffer che non ha un nome"
-
-msgid "E157: Invalid sign ID: %ld"
-msgstr "E157: ID 'sign' non valido: %ld"
-
-msgid "E885: Not possible to change sign %s"
-msgstr "E885: Impossibile cambiare segno %s"
-
-msgid " (NOT FOUND)"
-msgstr " (NON TROVATO)"
-
-msgid " (not supported)"
-msgstr " (non supportata)"
-
-msgid "[Deleted]"
-msgstr "[Cancellato]"
 
 msgid "No old files"
 msgstr "Nessun file elaborato in precedenza"
@@ -1161,6 +1189,12 @@ msgstr "W15: Avviso: Separatore di riga errato, forse manca ^M"
 msgid "E167: :scriptencoding used outside of a sourced file"
 msgstr "E167: :scriptencoding usato fuori da un file di comandi"
 
+msgid "E984: :scriptversion used outside of a sourced file"
+msgstr "E984: :scriptversion usato fuori da un file di comandi"
+
+msgid "E999: scriptversion not supported: %d"
+msgstr "E999: scriptversion non supportata: %d"
+
 msgid "E168: :finish used outside of a sourced file"
 msgstr "E168: :finish usato fuori da file di comandi"
 
@@ -1194,6 +1228,9 @@ msgstr "E464: Uso ambiguo di comando definito dall'utente"
 msgid "E492: Not an editor command"
 msgstr "E492: Non è un comando dell'editor"
 
+msgid "E981: Command not allowed in rvim"
+msgstr "E981: Comando non consentito in rvim"
+
 msgid "E493: Backwards range given"
 msgstr "E493: Intervallo rovesciato"
 
@@ -1209,20 +1246,18 @@ msgstr "E943: Tabella dei comandi da aggiornare, eseguire 'make cmdidxs'"
 msgid "E319: Sorry, the command is not available in this version"
 msgstr "E319: Spiacente, comando non disponibile in questa versione"
 
-msgid "1 more file to edit.  Quit anyway?"
-msgstr "1 ulteriore file da elaborare.  Esco lo stesso?"
+msgid "%d more file to edit.  Quit anyway?"
+msgid_plural "%d more files to edit.  Quit anyway?"
+msgstr[0] "%d ulteriore file da elaborare.  Esco lo stesso?"
+msgstr[1] "%d ulteriori file da elaborare.  Esco lo stesso?"
 
-msgid "%d more files to edit.  Quit anyway?"
-msgstr "%d ulteriori file da elaborare.  Esco lo stesso?"
+msgid "E173: %d more file to edit"
+msgid_plural "E173: %d more files to edit"
+msgstr[0] "E173: %d ulteriore file da elaborare"
+msgstr[1] "E173: %d ulteriori file da elaborare"
 
-msgid "E173: 1 more file to edit"
-msgstr "E173: ancora 1 file da elaborare"
-
-msgid "E173: %ld more files to edit"
-msgstr "E173: ancora %ld file da elaborare"
-
-msgid "E174: Command already exists: add ! to replace it"
-msgstr "E174: Il comando esiste già: aggiungi ! per sostituirlo"
+msgid "E174: Command already exists: add ! to replace it: %s"
+msgstr "E174: Il comando esiste già: aggiungi ! per sostituirlo: %s"
 
 msgid ""
 "\n"
@@ -1363,7 +1398,7 @@ msgstr "E190: Non riesco ad aprire \"%s\" in scrittura"
 
 msgid "E191: Argument must be a letter or forward/backward quote"
 msgstr ""
-"E191: L'argomento deve essere una lettera, oppure un apice/apice retroverso"
+"E191: L'argomento dev'essere una lettera, oppure un apice/apice retroverso"
 
 msgid "E192: Recursive use of :normal too deep"
 msgstr "E192: Uso ricorsivo di :normal troppo esteso"
@@ -1391,6 +1426,9 @@ msgstr ""
 
 msgid "E842: no line number to use for \"<slnum>\""
 msgstr "E842: nessun numero di riga da usare per \"<slnum>\""
+
+msgid "E961: no line number to use for \"<sflnum>\""
+msgstr "E961: nessun numero di riga da usare per \"<sflnum>\""
 
 msgid "E499: Empty file name for '%' or '#', only works with \":p:h\""
 msgstr "E499: Un nome di file nullo per '%' o '#', va bene solo con \":p:h\""
@@ -1501,7 +1539,7 @@ msgid "E193: :endfunction not inside a function"
 msgstr "E193: :endfunction non contenuto in una funzione"
 
 msgid "E788: Not allowed to edit another buffer now"
-msgstr "E788: Non si può aprire ora un altro buffer"
+msgstr "E788: Non consentito aprire ora un altro buffer"
 
 msgid "E811: Not allowed to change buffer information now"
 msgstr "E811: Non consentito modificare informazioni del buffer ora"
@@ -1537,9 +1575,6 @@ msgstr "Riga di Input"
 msgid "Debug Line"
 msgstr "Riga di Debug"
 
-msgid "E198: cmd_pchar beyond the command length"
-msgstr "E198: cmd_pchar dopo la fine del comando"
-
 msgid "E199: Active window or buffer deleted"
 msgstr "E199: Finestra attiva o buffer cancellato"
 
@@ -1547,7 +1582,7 @@ msgid "E812: Autocommands changed buffer or buffer name"
 msgstr "E812: Gli autocomandi hanno modificato il buffer o il nome del buffer"
 
 msgid "Illegal file name"
-msgstr "Nome di file non ammesso"
+msgstr "Nome di file non consentito"
 
 msgid "is a directory"
 msgstr "è una directory"
@@ -1585,9 +1620,6 @@ msgstr "Leggo da 'stdin'..."
 msgid "E202: Conversion made file unreadable!"
 msgstr "E202: La conversione ha reso il file illeggibile!"
 
-msgid "[fifo/socket]"
-msgstr "[fifo/socket]"
-
 msgid "[fifo]"
 msgstr "[fifo]"
 
@@ -1613,7 +1645,7 @@ msgid "[CONVERSION ERROR in line %ld]"
 msgstr "[ERRORE DI CONVERSIONE alla riga %ld]"
 
 msgid "[ILLEGAL BYTE in line %ld]"
-msgstr "[BYTE NON VALIDO alla riga %ld]"
+msgstr "[BYTE NON CONSENTITO alla riga %ld]"
 
 msgid "[READ ERRORS]"
 msgstr "[ERRORI IN LETTURA]"
@@ -1769,17 +1801,15 @@ msgstr "[Unix]"
 msgid "[unix format]"
 msgstr "[in formato Unix]"
 
-msgid "1 line, "
-msgstr "1 riga, "
+msgid "%ld line, "
+msgid_plural "%ld lines, "
+msgstr[0] "%ld riga,"
+msgstr[1] "%ld righe,"
 
-msgid "%ld lines, "
-msgstr "%ld righe,"
-
-msgid "1 character"
-msgstr "1 carattere"
-
-msgid "%lld characters"
-msgstr "%lld caratteri"
+msgid "%lld character"
+msgid_plural "%lld characters"
+msgstr[0] "%lld carattere"
+msgstr[1] "%lld caratteri"
 
 msgid "[noeol]"
 msgstr "[noeol]"
@@ -1848,63 +1878,39 @@ msgstr "E462: Non riesco a preparare per ri-caricare \"%s\""
 msgid "E321: Could not reload \"%s\""
 msgstr "E321: Non riesco a ri-caricare \"%s\""
 
-msgid "--Deleted--"
-msgstr "--Cancellato--"
-
-msgid "auto-removing autocommand: %s <buffer=%d>"
-msgstr "auto-rimozione dell'autocomando: %s <buffer=%d>"
-
-msgid "E367: No such group: \"%s\""
-msgstr "E367: Gruppo inesistente: \"%s\""
-
-msgid "E936: Cannot delete the current group"
-msgstr "E936: Non posso cancellare il gruppo corrente"
-
-msgid "W19: Deleting augroup that is still in use"
-msgstr "W19: Cancello augroup, ma è ancora in uso"
-
-msgid "E215: Illegal character after *: %s"
-msgstr "E215: Carattere non ammesso dopo *: %s"
-
-msgid "E216: No such event: %s"
-msgstr "E216: Evento inesistente: %s"
-
-msgid "E216: No such group or event: %s"
-msgstr "E216: Evento o gruppo inesistente: %s"
-
-msgid ""
-"\n"
-"--- Autocommands ---"
-msgstr ""
-"\n"
-"--- Autocomandi ---"
-
-msgid "E680: <buffer=%d>: invalid buffer number "
-msgstr "E680: <buffer=%d>: numero buffer non valido"
-
-msgid "E217: Can't execute autocommands for ALL events"
-msgstr "E217: Non posso eseguire autocomandi for TUTTI gli eventi"
-
-msgid "No matching autocommands"
-msgstr "Nessun autocomando corrispondente"
-
-msgid "E218: autocommand nesting too deep"
-msgstr "E218: nidificazione dell'autocomando troppo estesa"
-
-msgid "%s Autocommands for \"%s\""
-msgstr "%s Autocomandi per \"%s\""
-
-msgid "Executing %s"
-msgstr "Eseguo %s"
-
-msgid "autocommand %s"
-msgstr "autocomando %s"
-
 msgid "E219: Missing {."
 msgstr "E219: Manca {."
 
 msgid "E220: Missing }."
 msgstr "E220: Manca }."
+
+msgid "E854: path too long for completion"
+msgstr "E854: percorso troppo lungo per il completamento"
+
+msgid ""
+"E343: Invalid path: '**[number]' must be at the end of the path or be "
+"followed by '%s'."
+msgstr ""
+"E343: Percorso non valido: '**[numero]' dev'essere a fine percorso o essere "
+"seguito da '%s'."
+
+msgid "E344: Can't find directory \"%s\" in cdpath"
+msgstr "E344: Non riesco a trovare la directory \"%s\" nel 'cdpath'"
+
+msgid "E345: Can't find file \"%s\" in path"
+msgstr "E345: Non riesco a trovare il file \"%s\" nel percorso"
+
+msgid "E346: No more directory \"%s\" found in cdpath"
+msgstr "E346: Nessun altra directory \"%s\" trovata nel 'cdpath'"
+
+msgid "E347: No more file \"%s\" found in path"
+msgstr "E347: Nessun altro file \"%s\" trovato nel percorso"
+
+msgid "E446: No file name under cursor"
+msgstr "E446: Nessun nome file sotto il cursore"
+
+msgid "E447: Can't find file \"%s\" in path"
+msgstr "E447: Non riesco a trovare il file \"%s\" nel percorso"
 
 msgid "E490: No fold found"
 msgstr "E490: Non trovo alcuna piegatura"
@@ -1966,7 +1972,7 @@ msgid "E231: 'guifontwide' invalid"
 msgstr "E231: 'guifontwide' non valido"
 
 msgid "E599: Value of 'imactivatekey' is invalid"
-msgstr "E599: Il valore di 'imactivatekey' non è valido"
+msgstr "E599: Valore di 'imactivatekey' non valido"
 
 msgid "E254: Cannot allocate color %s"
 msgstr "E254: Non riesco ad allocare il colore %s"
@@ -2127,11 +2133,11 @@ msgstr "&U Disfa"
 msgid "Open tab..."
 msgstr "Apri linguetta..."
 
-msgid "Find string (use '\\\\' to find a '\\')"
-msgstr "Stringa di ricerca (usa '\\\\' per cercare un '\\')"
+msgid "Find string"
+msgstr "Trova stringa"
 
-msgid "Find & Replace (use '\\\\' to find a '\\')"
-msgstr "Sostituisci (usa '\\\\' per cercare un '\\')"
+msgid "Find & Replace"
+msgstr "Trova & Sostituisci"
 
 msgid "Not Used"
 msgstr "Non Utilizzato"
@@ -2168,17 +2174,17 @@ msgstr "E253: Nome fontset: %s"
 msgid "Font0: %s"
 msgstr "Font0: %s"
 
-msgid "Font1: %s"
-msgstr "Font1: %s"
+msgid "Font%d: %s"
+msgstr "Font%d: %s"
 
-msgid "Font%ld width is not twice that of font0"
-msgstr "La larghezza di font%ld non è doppia di quella di font0"
+msgid "Font%d width is not twice that of font0"
+msgstr "La larghezza di font%d non è doppia di quella di font0"
 
-msgid "Font0 width: %ld"
-msgstr "Larghezza di Font0: %ld"
+msgid "Font0 width: %d"
+msgstr "Larghezza di Font0: %d"
 
-msgid "Font1 width: %ld"
-msgstr "Larghezza di Font1: %ld"
+msgid "Font%d width: %d"
+msgstr "Larghezza di Font%d: %d"
 
 msgid "Invalid font specification"
 msgstr "Specifica di font non valida"
@@ -2217,7 +2223,7 @@ msgid "E550: Missing colon"
 msgstr "E550: Manca ':'"
 
 msgid "E551: Illegal component"
-msgstr "E551: Componente non valido"
+msgstr "E551: Componente non consentito"
 
 msgid "E552: digit expected"
 msgstr "E552: aspettavo un numero"
@@ -2336,8 +2342,8 @@ msgstr "E564: %s non è una directory o un database cscope valido"
 msgid "Added cscope database %s"
 msgstr "Aggiunto database cscope %s"
 
-msgid "E262: error reading cscope connection %ld"
-msgstr "E262: errore leggendo connessione cscope %ld"
+msgid "E262: error reading cscope connection %d"
+msgstr "E262: errore leggendo connessione cscope %d"
 
 msgid "E561: unknown cscope search type"
 msgstr "E561: tipo di ricerca cscope sconosciuta"
@@ -2513,7 +2519,7 @@ msgid "linenr out of range"
 msgstr "numero riga non nell'intervallo"
 
 msgid "not allowed in the Vim sandbox"
-msgstr "non ammesso in ambiente protetto"
+msgstr "non consentito in ambiente protetto"
 
 msgid "E836: This Vim cannot execute :python after using :py3"
 msgstr "E836: Python: Impossibile usare :py e :py3 nella stessa sessione"
@@ -2539,7 +2545,7 @@ msgid "E837: This Vim cannot execute :py3 after using :python"
 msgstr "E837: Impossibile usare ora :py3 dopo aver usato :python"
 
 msgid "E265: $_ must be an instance of String"
-msgstr "E265: $_ deve essere un'istanza di String"
+msgstr "E265: $_ dev'essere un'istanza di String"
 
 msgid ""
 "E266: Sorry, this command is disabled, the Ruby library could not be loaded."
@@ -2648,6 +2654,102 @@ msgstr "E573: Identificativo di server non valido: %s"
 
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr "E251: Proprietà registry relative a VIM non adeguate.  Cancellate!"
+
+msgid " Keyword completion (^N^P)"
+msgstr " Completamento Keyword (^N^P)"
+
+msgid " ^X mode (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
+msgstr " modalità ^X (^]^D^E^F^I^K^L^N^O^Ps^U^V^Y)"
+
+msgid " Whole line completion (^L^N^P)"
+msgstr " Completamento riga intera (^L^N^P)"
+
+msgid " File name completion (^F^N^P)"
+msgstr " Completamento nomi file (^F^N^P)"
+
+msgid " Tag completion (^]^N^P)"
+msgstr " Completamento Tag (^]^N^P)"
+
+msgid " Path pattern completion (^N^P)"
+msgstr " Completamento modello Path (^N^P)"
+
+msgid " Definition completion (^D^N^P)"
+msgstr " Completamento Definizione (^D^N^P)"
+
+msgid " Dictionary completion (^K^N^P)"
+msgstr " Completamento Dizionario (^K^N^P)"
+
+msgid " Thesaurus completion (^T^N^P)"
+msgstr " Completamento Thesaurus (^T^N^P)"
+
+msgid " Command-line completion (^V^N^P)"
+msgstr " Completamento riga comandi (^V^N^P)"
+
+msgid " User defined completion (^U^N^P)"
+msgstr " Completamento definito dall'utente (^U^N^P)"
+
+msgid " Omni completion (^O^N^P)"
+msgstr " Completamento globale (^O^N^P)"
+
+msgid " Spelling suggestion (s^N^P)"
+msgstr " Suggerimento ortografico (s^N^P)"
+
+msgid " Keyword Local completion (^N^P)"
+msgstr " Completamento Keyword Locale (^N^P)"
+
+msgid "Hit end of paragraph"
+msgstr "Giunto alla fine del paragrafo"
+
+msgid "E839: Completion function changed window"
+msgstr "E839: La funzione di completamento ha modificato la finestra"
+
+msgid "E840: Completion function deleted text"
+msgstr "E840: La funzione di completamento ha eliminato del testo"
+
+msgid "'dictionary' option is empty"
+msgstr "l'opzione 'dictionary' non è impostata"
+
+msgid "'thesaurus' option is empty"
+msgstr "l'opzione 'thesaurus' non è impostata"
+
+msgid "Scanning dictionary: %s"
+msgstr "Scansione dizionario: %s"
+
+msgid " (insert) Scroll (^E/^Y)"
+msgstr " (inserisci) Scroll (^E/^Y)"
+
+msgid " (replace) Scroll (^E/^Y)"
+msgstr " (sostituisci) Scroll (^E/^Y)"
+
+msgid "Scanning: %s"
+msgstr "Scansione: %s"
+
+msgid "Scanning tags."
+msgstr "Scansione tag."
+
+msgid "match in file"
+msgstr "corrispondenza nel file"
+
+msgid " Adding"
+msgstr " Aggiungo"
+
+msgid "-- Searching..."
+msgstr "-- Ricerca..."
+
+msgid "Back at original"
+msgstr "Ritorno all'originale"
+
+msgid "Word from other line"
+msgstr "Parola da un'altra riga"
+
+msgid "The only match"
+msgstr "L'unica corrispondenza"
+
+msgid "match %d of %d"
+msgstr "corrispondenza %d di %d"
+
+msgid "match %d"
+msgstr "corrispondenza %d"
 
 msgid "E938: Duplicate key in JSON: \"%s\""
 msgstr "E938: Chiave duplicata in JSON: \"%s\""
@@ -2813,10 +2915,10 @@ msgid "-Z\t\t\tRestricted mode (like \"rvim\")"
 msgstr "-Z\t\t\tModalità Ristretta (come \"rvim\")"
 
 msgid "-m\t\t\tModifications (writing files) not allowed"
-msgstr "-m\t\t\tRiscritture del file non permesse"
+msgstr "-m\t\t\tRiscritture del file non consentita"
 
 msgid "-M\t\t\tModifications in text not allowed"
-msgstr "-M\t\t\tModifiche nel file non permesse"
+msgstr "-M\t\t\tModifiche nel file non consentite"
 
 msgid "-b\t\t\tBinary mode"
 msgstr "-b\t\t\tModalità Binaria"
@@ -2859,9 +2961,6 @@ msgstr "-A\t\t\tComincia in modalità Araba"
 
 msgid "-H\t\t\tStart in Hebrew mode"
 msgstr "-H\t\t\tComincia in modalità Ebraica"
-
-msgid "-F\t\t\tStart in Farsi mode"
-msgstr "-F\t\t\tComincia in modalità Farsi (Persiano)"
 
 msgid "-T <terminal>\tSet terminal type to <terminal>"
 msgstr "-T <terminale>\tImposta tipo terminale a <terminale>"
@@ -3430,8 +3529,8 @@ msgstr ""
 "\n"
 "   ID del processo: "
 
-msgid " (still running)"
-msgstr " (ancora attivo)"
+msgid " (STILL RUNNING)"
+msgstr " (ANCORA IN ESECUZIONE)"
 
 msgid ""
 "\n"
@@ -3520,8 +3619,11 @@ msgstr ""
 msgid "While opening file \""
 msgstr "Mentre aprivo file \""
 
+msgid "      CANNOT BE FOUND"
+msgstr "      NON TROVATO"
+
 msgid "      NEWER than swap file!\n"
-msgstr "      più RECENTE dello swap file!\n"
+msgstr "      PIÙ RECENTE dello swap file!\n"
 
 msgid ""
 "\n"
@@ -3604,14 +3706,11 @@ msgid "E327: Part of menu-item path is not sub-menu"
 msgstr ""
 "E327: Parte del percorso di questo elemento di Menu non è un sotto-Menu"
 
-msgid "E328: Menu only exists in another mode"
-msgstr "E328: I Menu esistono solo in un'altra modalità"
-
 msgid "E329: No menu \"%s\""
 msgstr "E329: Nessun Menu \"%s\""
 
 msgid "E792: Empty menu name"
-msgstr "E792: Nome menu non valido"
+msgstr "E792: Nome menu vuoto"
 
 msgid "E330: Menu path must not lead to a sub-menu"
 msgstr "E330: Il percorso del Menu non deve condurre a un sotto-Menu"
@@ -3729,17 +3828,15 @@ msgstr ""
 msgid "Type number and <Enter> (empty cancels): "
 msgstr "Inserire numero e <Invio> (vuoto per annullare): "
 
-msgid "1 more line"
-msgstr "1 riga in più"
+msgid "%ld more line"
+msgid_plural "%ld more lines"
+msgstr[0] "%ld riga in più"
+msgstr[1] "%ld righe in più"
 
-msgid "1 line less"
-msgstr "1 riga in meno"
-
-msgid "%ld more lines"
-msgstr "%ld righe in più"
-
-msgid "%ld fewer lines"
-msgstr "%ld righe in meno"
+msgid "%ld line less"
+msgid_plural "%ld fewer lines"
+msgstr[0] "%ld riga in meno"
+msgstr[1] "%ld righe in meno"
 
 msgid " (Interrupted)"
 msgstr " (Interrotto)"
@@ -3780,45 +3877,23 @@ msgid "E545: Missing colon"
 msgstr "E545: Manca ':'"
 
 msgid "E546: Illegal mode"
-msgstr "E546: Modalità non valida"
+msgstr "E546: Modalità non consentita"
 
 msgid "E547: Illegal mouseshape"
-msgstr "E547: Forma del mouse non valida"
+msgstr "E547: Forma del mouse non consentita"
 
 msgid "E548: digit expected"
 msgstr "E548: aspettavo un numero"
 
 msgid "E549: Illegal percentage"
-msgstr "E549: Percentuale non valida"
-
-msgid "E854: path too long for completion"
-msgstr "E854: percorso troppo lungo per il completamento"
-
-msgid ""
-"E343: Invalid path: '**[number]' must be at the end of the path or be "
-"followed by '%s'."
-msgstr ""
-"E343: Percorso non valido: '**[numero]' deve essere a fine percorso o essere "
-"seguito da '%s'."
-
-msgid "E344: Can't find directory \"%s\" in cdpath"
-msgstr "E344: Non riesco a trovare la directory \"%s\" nel 'cdpath'"
-
-msgid "E345: Can't find file \"%s\" in path"
-msgstr "E345: Non riesco a trovare il file \"%s\" nel percorso"
-
-msgid "E346: No more directory \"%s\" found in cdpath"
-msgstr "E346: Nessun altra directory \"%s\" trovata nel 'cdpath'"
-
-msgid "E347: No more file \"%s\" found in path"
-msgstr "E347: Nessun altro file \"%s\" trovato nel percorso"
+msgstr "E549: Percentuale non consentita"
 
 msgid "E668: Wrong access mode for NetBeans connection info file: \"%s\""
 msgstr ""
 "E668: Modalità errata di accesso a file info connessione NetBeans: \"%s\""
 
-msgid "E658: NetBeans connection lost for buffer %ld"
-msgstr "E658: Connessione NetBeans persa per il buffer %ld"
+msgid "E658: NetBeans connection lost for buffer %d"
+msgstr "E658: Connessione NetBeans persa per il buffer %d"
 
 msgid "E838: netbeans is not supported with this GUI"
 msgstr "E838: netbeans non è supportato con questa GUI"
@@ -3859,26 +3934,26 @@ msgstr "E663: Alla fine della lista modifiche"
 msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
 msgstr "Batti  :qa! e premi <Invio> per ignorare le modifiche e uscire da Vim"
 
-msgid "1 line %sed 1 time"
-msgstr "1 riga %sa 1 volta"
+msgid "Type  :qa  and press <Enter> to exit Vim"
+msgstr "Batti  :qa  e premi <Invio> per uscire da Vim"
 
-msgid "1 line %sed %d times"
-msgstr "1 riga %sa %d volte"
+msgid "%ld line %sed %d time"
+msgid_plural "%ld line %sed %d times"
+msgstr[0] "%ld riga %sa %d volta"
+msgstr[1] "%ld riga %se %d volte"
 
-msgid "%ld lines %sed 1 time"
-msgstr "%ld righe %se 1 volta"
-
-msgid "%ld lines %sed %d times"
-msgstr "%ld righe %se %d volte"
+msgid "%ld lines %sed %d time"
+msgid_plural "%ld lines %sed %d times"
+msgstr[0] "%ld righe %sa %d volta"
+msgstr[1] "%ld righe %se %d volte"
 
 msgid "%ld lines to indent... "
 msgstr "%ld righe da rientrare... "
 
-msgid "1 line indented "
-msgstr "1 riga rientrata "
-
-msgid "%ld lines indented "
-msgstr "%ld righe rientrate "
+msgid "%ld line indented "
+msgid_plural "%ld lines indented "
+msgstr[0] "%ld riga rientrata "
+msgstr[1] "%ld righe rientrate "
 
 msgid "E748: No previously used register"
 msgstr "E748: Nessun registro usato in precedenza"
@@ -3886,11 +3961,10 @@ msgstr "E748: Nessun registro usato in precedenza"
 msgid "cannot yank; delete anyway"
 msgstr "non riesco a salvare in un registro; cancello comunque"
 
-msgid "1 line changed"
-msgstr "1 riga cambiata"
-
-msgid "%ld lines changed"
-msgstr "%ld righe cambiate"
+msgid "%ld line changed"
+msgid_plural "%ld lines changed"
+msgstr[0] "%ld riga cambiata"
+msgstr[1] "%ld righe cambiate"
 
 msgid "freeing %ld lines"
 msgstr "libero %ld righe"
@@ -3898,17 +3972,15 @@ msgstr "libero %ld righe"
 msgid " into \"%c"
 msgstr " in \"%c"
 
-msgid "block of 1 line yanked%s"
-msgstr "blocco di 1 riga messo in registro%s"
+msgid "block of %ld line yanked%s"
+msgid_plural "block of %ld lines yanked%s"
+msgstr[0] "blocco di %ld riga messo in registro%s"
+msgstr[1] "blocco di %ld righe messo in registro%s"
 
-msgid "1 line yanked%s"
-msgstr "1 riga messa in registro%s"
-
-msgid "block of %ld lines yanked%s"
-msgstr "blocco di %ld righe messo in registro%s"
-
-msgid "%ld lines yanked%s"
-msgstr "%ld righe messe in registro%s"
+msgid "%ld line yanked%s"
+msgid_plural "%ld lines yanked%s"
+msgstr[0] "%ld riga messa in registro%s"
+msgstr[1] "%ld righe messe in registro%s"
 
 msgid "E353: Nothing in register %s"
 msgstr "E353: Niente nel registro %s"
@@ -3990,7 +4062,7 @@ msgid "E522: Not found in termcap"
 msgstr "E522: Non trovato in 'termcap'"
 
 msgid "E539: Illegal character <%s>"
-msgstr "E539: Carattere non ammesso <%s>"
+msgstr "E539: Carattere non consentito <%s>"
 
 msgid "For option %s"
 msgstr "Per opzione %s"
@@ -4053,13 +4125,13 @@ msgid "E534: Invalid wide font"
 msgstr "E534: 'Wide font' non valido"
 
 msgid "E535: Illegal character after <%c>"
-msgstr "E535: Carattere non ammesso dopo <%c>"
+msgstr "E535: Carattere non consentito dopo <%c>"
 
 msgid "E536: comma required"
 msgstr "E536: virgola mancante"
 
 msgid "E537: 'commentstring' must be empty or contain %s"
-msgstr "E537: 'commentstring' deve essere nulla o contenere %s"
+msgstr "E537: 'commentstring' dev'essere nulla o contenere %s"
 
 msgid "E538: No mouse support"
 msgstr "E538: Manca supporto mouse"
@@ -4200,13 +4272,13 @@ msgid "Printing '%s'"
 msgstr "Stampato: '%s'"
 
 msgid "E244: Illegal charset name \"%s\" in font name \"%s\""
-msgstr "E244: Nome di charset non ammesso \"%s\" nel fonte di nome \"%s\""
+msgstr "E244: Nome di charset non consentito \"%s\" nel fonte di nome \"%s\""
 
 msgid "E244: Illegal quality name \"%s\" in font name \"%s\""
-msgstr "E244: Nome di qualità non ammesso \"%s\" nel font di nome \"%s\""
+msgstr "E244: Nome di qualità non consentito \"%s\" nel font di nome \"%s\""
 
 msgid "E245: Illegal char '%c' in font name \"%s\""
-msgstr "E245: Carattere non ammesso '%c' nel font di nome \"%s\""
+msgstr "E245: Carattere non consentito '%c' nel font di nome \"%s\""
 
 msgid "Opening the X display took %ld msec"
 msgstr "Attivazione visualizzazione X ha richiesto %ld msec"
@@ -4309,15 +4381,6 @@ msgstr "XSMP SmcOpenConnection fallita: %s"
 
 msgid "At line"
 msgstr "Alla riga"
-
-msgid "Could not load vim32.dll!"
-msgstr "Non riesco a caricare vim32.dll!"
-
-msgid "VIM Error"
-msgstr "Errore VIM"
-
-msgid "Could not fix up function pointers to the DLL!"
-msgstr "Non sono riuscito a impostare puntatori di funzione verso la DLL!"
 
 msgid "Vim: Caught %s event\n"
 msgstr "Vim: Intercettato evento %s\n"
@@ -4451,8 +4514,11 @@ msgstr "E69: Manca ] dopo %s%%["
 msgid "E70: Empty %s%%[]"
 msgstr "E70: %s%%[] vuoto"
 
+msgid "E956: Cannot use pattern recursively"
+msgstr "E956: Uso ricorsivo di espressione di ricerca non consentito"
+
 msgid "E65: Illegal back reference"
-msgstr "E65: Riferimento all'indietro non ammesso"
+msgstr "E65: Riferimento all'indietro non consentito"
 
 msgid "E339: Pattern too long"
 msgstr "E339: Espressione troppo lunga"
@@ -4467,7 +4533,7 @@ msgid "E52: Unmatched \\z("
 msgstr "E52: Senza riscontro: \\z("
 
 msgid "E59: invalid character after %s@"
-msgstr "E59: Carattere non ammesso dopo %s@"
+msgstr "E59: Carattere non valido dopo %s@"
 
 msgid "E60: Too many complex %s{...}s"
 msgstr "E60: Troppi %s{...}s complessi"
@@ -4485,13 +4551,13 @@ msgid "E64: %s%c follows nothing"
 msgstr "E64: %s%c senza nulla prima"
 
 msgid "E68: Invalid character after \\z"
-msgstr "E68: Carattere non ammesso dopo \\z"
+msgstr "E68: Carattere non valido dopo \\z"
 
 msgid "E678: Invalid character after %s%%[dxouU]"
 msgstr "E678: Carattere non valido dopo %s%%[dxouU]"
 
 msgid "E71: Invalid character after %s%%"
-msgstr "E71: Carattere non ammesso dopo %s%%"
+msgstr "E71: Carattere non valido dopo %s%%"
 
 msgid "E554: Syntax error in %s{...}"
 msgstr "E554: Errore sintattico in %s{...}"
@@ -4518,8 +4584,8 @@ msgstr "E865: (NFA) Fine prematura dell'espressione regolare"
 msgid "E866: (NFA regexp) Misplaced %c"
 msgstr "E866: (NFA regexp) %c fuori posto"
 
-msgid "E877: (NFA regexp) Invalid character class: %ld"
-msgstr "E877: (NFA regexp) Classe di caratteri non valida: %ld"
+msgid "E877: (NFA regexp) Invalid character class: %d"
+msgstr "E877: (NFA regexp) Classe di caratteri non valida: %d"
 
 msgid "E867: (NFA) Unknown operator '\\z%c'"
 msgstr "E867: (NFA) Operatore sconosciuto '\\z%c'"
@@ -4685,6 +4751,58 @@ msgstr ""
 "# Ult. %sEspressione di Ricerca:\n"
 "~"
 
+msgid "[Deleted]"
+msgstr "[Cancellato]"
+
+msgid ""
+"\n"
+"--- Signs ---"
+msgstr ""
+"\n"
+"--- Segni ---"
+
+msgid "Signs for %s:"
+msgstr "Segni per %s:"
+
+msgid "  group=%s"
+msgstr "  gruppo=%s"
+
+msgid "    line=%ld  id=%d%s  name=%s  priority=%d"
+msgstr "    riga=%ld  id=%d%s, nome=%s  priorità=%d"
+
+msgid "E612: Too many signs defined"
+msgstr "E612: Troppi 'sign' definiti"
+
+msgid "E239: Invalid sign text: %s"
+msgstr "E239: Testo 'sign' non valido: %s"
+
+msgid "E155: Unknown sign: %s"
+msgstr "E155: 'sign' sconosciuto: %s"
+
+msgid "E885: Not possible to change sign %s"
+msgstr "E885: Impossibile cambiare segno %s"
+
+msgid "E159: Missing sign number"
+msgstr "E159: Manca numero 'sign'"
+
+msgid "E157: Invalid sign ID: %d"
+msgstr "E157: ID 'sign' non valido: %d"
+
+msgid "E934: Cannot jump to a buffer that does not have a name"
+msgstr "E934: Impossibile passare a un buffer che non ha un nome"
+
+msgid "E160: Unknown sign command: %s"
+msgstr "E160: Comando 'sign' sconosciuto: %s"
+
+msgid "E156: Missing sign name"
+msgstr "E156: Manca nome 'sign'"
+
+msgid " (NOT FOUND)"
+msgstr " (NON TROVATO)"
+
+msgid " (not supported)"
+msgstr " (non supportata)"
+
 msgid "E756: Spell checking is not enabled"
 msgstr "E756: Controllo ortografico non abilitato"
 
@@ -4775,9 +4893,6 @@ msgstr "Conversione fallita per una parola in %s riga %d: %s"
 msgid "Conversion in %s not supported: from %s to %s"
 msgstr "Conversione in %s non supportata: da %s a %s"
 
-msgid "Conversion in %s not supported"
-msgstr "Conversione in %s non supportata"
-
 msgid "Invalid value for FLAG in %s line %d: %s"
 msgstr "Valore di FLAG non valido in %s riga %d: %s"
 
@@ -4827,7 +4942,7 @@ msgstr ""
 "in %s riga %d: %s"
 
 msgid "Expected Y or N in %s line %d: %s"
-msgstr "Y o N deve essere presente in %s riga %d: %s"
+msgstr "Y o N dev'essere presente in %s riga %d: %s"
 
 msgid "Broken condition in %s line %d: %s"
 msgstr "Condizione non rispettata in %s riga %d: %s"
@@ -4869,7 +4984,7 @@ msgid "Flag is not a number in %s line %d: %s"
 msgstr "Il flag non è un numero in %s riga %d: %s"
 
 msgid "Illegal flag in %s line %d: %s"
-msgstr "Flag non ammesso in %s riga %d: %s"
+msgstr "Flag non consentita in %s riga %d: %s"
 
 msgid "%s value differs from what is used in another .aff file"
 msgstr "Il valore di %s è diverso da quello usato in un altro file .aff"
@@ -4949,8 +5064,8 @@ msgstr "Uso stimato di memoria durante esecuzione: %d byte"
 msgid "E751: Output file name must not have region name"
 msgstr "E751: Il nome del file di output non deve avere il nome di regione"
 
-msgid "E754: Only up to %ld regions supported"
-msgstr "E754: Sono supportate al massimo %ld regioni"
+msgid "E754: Only up to %d regions supported"
+msgstr "E754: Sono supportate al massimo %d regioni"
 
 msgid "E755: Invalid region in %s"
 msgstr "E755: Regione non valida in %s"
@@ -4964,8 +5079,8 @@ msgstr "Scrivo file ortografico %s..."
 msgid "Done!"
 msgstr "Fatto!"
 
-msgid "E765: 'spellfile' does not have %ld entries"
-msgstr "E765: 'spellfile' non ha %ld elementi"
+msgid "E765: 'spellfile' does not have %d entries"
+msgstr "E765: 'spellfile' non ha %d elementi"
 
 msgid "Word '%.*s' removed from %s"
 msgstr "Parola '%.*s' rimossa da %s"
@@ -4982,6 +5097,9 @@ msgstr "E783: carattere duplicato nell'elemento MAP"
 msgid "No Syntax items defined for this buffer"
 msgstr "Nessun elemento sintattico definito per questo buffer"
 
+msgid "'redrawtime' exceeded, syntax highlighting disabled"
+msgstr "'redrawtime' superato, evidenziazione sintattica disabilitata"
+
 msgid "syntax conceal on"
 msgstr "syntax conceal attivo"
 
@@ -4989,7 +5107,7 @@ msgid "syntax conceal off"
 msgstr "syntax conceal inattivo"
 
 msgid "E390: Illegal argument: %s"
-msgstr "E390: Argomento non ammesso: %s"
+msgstr "E390: Argomento non consentito: %s"
 
 msgid "syntax case ignore"
 msgstr "syntax, ignorare maiuscolo/minuscolo"
@@ -5008,6 +5126,9 @@ msgstr "syntax, usare valore di default per lo spell"
 
 msgid "syntax iskeyword "
 msgstr "syntax iskeyword "
+
+msgid "syntax iskeyword not set"
+msgstr "syntax iskeyword non impostato"
 
 msgid "E391: No such syntax cluster: %s"
 msgstr "E391: 'cluster' sintattico inesistente: %s"
@@ -5067,7 +5188,7 @@ msgid "E844: invalid cchar value"
 msgstr "E844: valore cchar non valido"
 
 msgid "E393: group[t]here not accepted here"
-msgstr "E393: group[t]here non ammesso qui"
+msgstr "E393: group[t]here non consentito qui"
 
 msgid "E394: Didn't find region item for %s"
 msgstr "E394: Elemento di 'region' non trovato per %s"
@@ -5107,7 +5228,7 @@ msgstr ""
 "E403: syntax sync: espressione di continuazione riga specificata due volte"
 
 msgid "E404: Illegal arguments: %s"
-msgstr "E404: Argomenti non validi: %s"
+msgstr "E404: Argomenti non consentiti: %s"
 
 msgid "E405: Missing equal sign: %s"
 msgstr "E405: Manca '=': %s"
@@ -5157,7 +5278,7 @@ msgid "E417: missing argument: %s"
 msgstr "E417: manca argomento: %s"
 
 msgid "E418: Illegal value: %s"
-msgstr "E418: Valore non ammesso: %s"
+msgstr "E418: Valore non consentito: %s"
 
 msgid "E419: FG color unknown"
 msgstr "E419: colore di testo sconosciuto"
@@ -5172,7 +5293,7 @@ msgid "E422: terminal code too long: %s"
 msgstr "E422: codice terminale troppo lungo: %s"
 
 msgid "E423: Illegal argument: %s"
-msgstr "E423: Argomento non ammesso: %s"
+msgstr "E423: Argomento non consentito: %s"
 
 msgid "E424: Too many different highlighting attributes in use"
 msgstr "E424: Troppi gruppi evidenziazione differenti in uso"
@@ -5181,7 +5302,7 @@ msgid "E669: Unprintable character in group name"
 msgstr "E669: Carattere non stampabile in un nome di gruppo"
 
 msgid "W18: Invalid character in group name"
-msgstr "W18: Carattere non ammesso in un nome di gruppo"
+msgstr "W18: Carattere non valido in un nome di gruppo"
 
 msgid "E849: Too many highlight and syntax groups"
 msgstr "E849: Troppi gruppi di evidenziazione e sintassi"
@@ -5197,12 +5318,6 @@ msgstr "E425: Non posso andare prima del primo tag corrispondente"
 
 msgid "E426: tag not found: %s"
 msgstr "E426: tag non trovato: %s"
-
-msgid "  # pri kind tag"
-msgstr "  # pri tipo tag"
-
-msgid "file\n"
-msgstr "file\n"
 
 msgid "E427: There is only one matching tag"
 msgstr "E427: C'è solo un tag corrispondente"
@@ -5224,6 +5339,12 @@ msgstr "  Uso tag ignorando maiuscole/minuscole!"
 
 msgid "E429: File \"%s\" does not exist"
 msgstr "E429: Il file \"%s\" non esiste"
+
+msgid "  # pri kind tag"
+msgstr "  # pri tipo tag"
+
+msgid "file\n"
+msgstr "file\n"
 
 msgid ""
 "\n"
@@ -5311,11 +5432,41 @@ msgstr "in esecuzione"
 msgid "finished"
 msgstr "terminato"
 
+msgid "E958: Job already finished"
+msgstr "E958: Job già terminato"
+
 msgid "E953: File exists: %s"
 msgstr "E953: File già esistente: %s"
 
 msgid "E955: Not a terminal buffer"
 msgstr "E955: Il buffer non è un terminale"
+
+msgid "E982: ConPTY is not available"
+msgstr "E982: ConPTY non disponibile"
+
+msgid "E971: Property type %s does not exist"
+msgstr "E971: Tipo di proprietà %s non esistente"
+
+msgid "E964: Invalid column number: %ld"
+msgstr "E964: Numero di colonna non valido: %ld"
+
+msgid "E966: Invalid line number: %ld"
+msgstr "E966: Numero di riga non valido: %ld"
+
+msgid "E965: missing property type name"
+msgstr "E965: Nome del tipo di proprietà non disponibile"
+
+msgid "E967: text property info corrupted"
+msgstr "E967: informazione sul testo corrotta"
+
+msgid "E968: Need at least one of 'id' or 'type'"
+msgstr "E968: Serve almeno conoscere 'id' o 'type'"
+
+msgid "E969: Property type %s already defined"
+msgstr "E969: Tipo di proprietà %s già definito"
+
+msgid "E970: Unknown highlight group name: '%s'"
+msgstr "E970: Nome gruppo di evidenziazione sconosciuto: '%s'"
 
 msgid "new shell started\n"
 msgstr "fatto eseguire nuovo shell\n"
@@ -5431,8 +5582,10 @@ msgstr "Nessuna modifica, Undo impossibile"
 msgid "number changes  when               saved"
 msgstr "numero modif.   quando             salv."
 
-msgid "%ld seconds ago"
-msgstr "%ld secondi fa"
+msgid "%ld second ago"
+msgid_plural "%ld seconds ago"
+msgstr[0] "%ld secondo fa"
+msgstr[1] "%ld secondi fa"
 
 msgid "E790: undojoin is not allowed after undo"
 msgstr "E790: undojoin non è consentito dopo undo"
@@ -5456,7 +5609,7 @@ msgid "E130: Unknown function: %s"
 msgstr "E130: Funzione sconosciuta: %s"
 
 msgid "E125: Illegal argument: %s"
-msgstr "E125: Argomento non ammesso: %s"
+msgstr "E125: Argomento non consentito: %s"
 
 msgid "E853: Duplicate argument name: %s"
 msgstr "E853: Nome argomento duplicato: %s"
@@ -5826,6 +5979,9 @@ msgstr "menu  Aiuto->Sponsor/Registrazione  per informazioni "
 msgid "Already only one window"
 msgstr "C'è già una finestra sola"
 
+msgid "E92: Buffer %ld not found"
+msgstr "E92: Buffer %ld non trovato"
+
 msgid "E441: There is no preview window"
 msgstr "E441: Non c'è una finestra di pre-visualizzazione"
 
@@ -5849,26 +6005,20 @@ msgstr ""
 msgid "E445: Other window contains changes"
 msgstr "E445: Altre finestre contengono modifiche"
 
-msgid "E446: No file name under cursor"
-msgstr "E446: Nessun nome file sotto il cursore"
+msgid "E799: Invalid ID: %d (must be greater than or equal to 1)"
+msgstr "E799: ID non valido: %d (dev'essere maggiore o uguale a 1)"
 
-msgid "E447: Can't find file \"%s\" in path"
-msgstr "E447: Non riesco a trovare il file \"%s\" nel percorso"
-
-msgid "E799: Invalid ID: %ld (must be greater than or equal to 1)"
-msgstr "E799: ID non valido: %ld (dev'essere maggiore o uguale a 1)"
-
-msgid "E801: ID already taken: %ld"
-msgstr "E801: ID già utilizzato: %ld"
+msgid "E801: ID already taken: %d"
+msgstr "E801: ID già utilizzato: %d"
 
 msgid "List or number required"
-msgstr "È necessaria una Lista o un numero"
+msgstr "È necessaria una Lista o un Numero"
 
-msgid "E802: Invalid ID: %ld (must be greater than or equal to 1)"
-msgstr "E802: ID non valido: %ld (dev'essere maggiore o uguale a 1)"
+msgid "E802: Invalid ID: %d (must be greater than or equal to 1)"
+msgstr "E802: ID non valido: %d (dev'essere maggiore o uguale a 1)"
 
-msgid "E803: ID not found: %ld"
-msgstr "E803: ID non trovato: %ld"
+msgid "E803: ID not found: %d"
+msgstr "E803: ID non trovato: %d"
 
 msgid "E370: Could not load library %s"
 msgstr "E370: Non riesco a caricare la libreria %s"
@@ -5893,6 +6043,9 @@ msgstr "Differenza con Vim"
 
 msgid "Edit with &Vim"
 msgstr "Apri con &Vim"
+
+msgid "Edit with existing Vim"
+msgstr "Apri con Vim esistente"
 
 msgid "Edit with existing Vim - "
 msgstr "Apri con Vim esistente - "
@@ -5928,7 +6081,8 @@ msgstr "E11: Non valido nella finestra comandi; <INVIO> esegue, CTRL-C ignora"
 
 msgid "E12: Command not allowed from exrc/vimrc in current dir or tag search"
 msgstr ""
-"E12: Comando non ammesso da exrc/vimrc nella dir. in uso o nella ricerca tag"
+"E12: Comando non consentito da exrc/vimrc nella dir. in uso o nella ricerca "
+"tag"
 
 msgid "E171: Missing :endif"
 msgstr "E171: Manca :endif"
@@ -5980,6 +6134,9 @@ msgstr "E474: Argomento non valido"
 
 msgid "E475: Invalid argument: %s"
 msgstr "E475: Argomento non valido: %s"
+
+msgid "E983: Duplicate argument: %s"
+msgstr "E983: Argomento duplicato: %s"
 
 msgid "E475: Invalid value for argument %s"
 msgstr "E475: Valore non valido per l'argomento %s"
@@ -6035,8 +6192,8 @@ msgstr "E25: GUI non utilizzabile: Non abilitata in compilazione"
 msgid "E26: Hebrew cannot be used: Not enabled at compile time\n"
 msgstr "E26: Ebraico non utilizzabile: Non abilitato in compilazione\n"
 
-msgid "E27: Farsi cannot be used: Not enabled at compile time\n"
-msgstr "E27: Farsi non utilizzabile: Non abilitato in compilazione\n"
+msgid "E27: Farsi support has been removed\n"
+msgstr "E27: Il supporto per la lingua farsi non è più disponibile\n"
 
 msgid "E800: Arabic cannot be used: Not enabled at compile time\n"
 msgstr "E800: Arabo non utilizzabile: Non abilitato in compilazione\n"
@@ -6114,7 +6271,7 @@ msgid "E486: Pattern not found: %s"
 msgstr "E486: Espressione non trovata: %s"
 
 msgid "E487: Argument must be positive"
-msgstr "E487: L'argomento deve essere positivo"
+msgstr "E487: L'argomento dev'essere positivo"
 
 msgid "E459: Cannot go back to previous directory"
 msgstr "E459: Non posso tornare alla directory precedente"
@@ -6148,7 +6305,13 @@ msgid "E715: Dictionary required"
 msgstr "E715: È necessario un Dizionario"
 
 msgid "E684: list index out of range: %ld"
-msgstr "E684: indice lista fuori intervallo: %ld"
+msgstr "E684: Indice di Lista fuori intervallo: %ld"
+
+msgid "E979: Blob index out of range: %ld"
+msgstr "E979: Indice di Blob fuori intervallo: %ld"
+
+msgid "E978: Invalid operation for Blob"
+msgstr "E978: Operazione non valida per Blob"
 
 msgid "E118: Too many arguments for function: %s"
 msgstr "E118: Troppi argomenti per la funzione: %s"
@@ -6159,14 +6322,20 @@ msgstr "E716: Chiave assente dal Dizionario: %s"
 msgid "E714: List required"
 msgstr "E714: È necessaria una Lista"
 
+msgid "E897: List or Blob required"
+msgstr "E897: È necessaria una Lista o un Blob"
+
 msgid "E712: Argument of %s must be a List or Dictionary"
-msgstr "E712: L'argomento di %s deve essere una Lista o un Dizionario"
+msgstr "E712: L'argomento di %s dev'essere una Lista o un Dizionario"
+
+msgid "E896: Argument of %s must be a List, Dictionary or Blob"
+msgstr "E896: L'argomento di %s dev'essere una Lista, un Dizionario o un Blob"
 
 msgid "E47: Error while reading errorfile"
 msgstr "E47: Errore leggendo il file errori"
 
 msgid "E48: Not allowed in sandbox"
-msgstr "E48: Non ammesso in ambiente protetto"
+msgstr "E48: Non consentito in ambiente protetto"
 
 msgid "E523: Not allowed here"
 msgstr "E523: Non consentito qui"
@@ -6261,6 +6430,9 @@ msgstr "E919: Directory non trovata in '%s': \"%s\""
 msgid "E952: Autocommand caused recursive behavior"
 msgstr "E952: L'autocomando ha generato un comportamento ricorsivo"
 
+msgid "E328: Menu only exists in another mode"
+msgstr "E328: I Menu esistono solo in un'altra modalità"
+
 msgid "search hit TOP, continuing at BOTTOM"
 msgstr "raggiunta la CIMA nella ricerca, continuo dal FONDO"
 
@@ -6308,7 +6480,7 @@ msgid "value is too small to fit into C int type"
 msgstr "valore troppo piccolo per il tipo int del C"
 
 msgid "number must be greater than zero"
-msgstr "il numero deve essere maggiore di zero"
+msgstr "il numero dev'essere maggiore di zero"
 
 msgid "number must be greater or equal to zero"
 msgstr "il numero dev'essere maggiore o uguale a zero"
@@ -6356,7 +6528,7 @@ msgid "list constructor does not accept keyword arguments"
 msgstr "il costruttore di lista non accetta parole chiave come argomenti"
 
 msgid "list index out of range"
-msgstr "indice di lista non nell'intervallo"
+msgstr "Indice di Lista fuori intervallo"
 
 msgid "internal error: failed to get vim list item %d"
 msgstr "errore interno: non ho potuto ottenere l'elemento di vim list %d"

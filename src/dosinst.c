@@ -10,11 +10,11 @@
 /*
  * dosinst.c: Install program for Vim on MS-DOS and MS-Windows
  *
- * Compile with Make_mvc.mak, Make_bc3.mak, Make_bc5.mak or Make_djg.mak.
+ * Compile with Make_mvc.mak, Make_cyg.mak or Make_ming.mak.
  */
 
 /*
- * Include common code for dosinst.c and uninstal.c.
+ * Include common code for dosinst.c and uninstall.c.
  */
 #define DOSINST
 #include "dosinst.h"
@@ -306,7 +306,7 @@ findoldfile(char **destination)
 	    || strchr(cp, '/') != NULL)
 	return;
 
-    tmpname = alloc((int)strlen(cp) + 1);
+    tmpname = alloc(strlen(cp) + 1);
     strcpy(tmpname, cp);
     tmpname[strlen(tmpname) - 1] = 'x';	/* .exe -> .exx */
 
@@ -388,7 +388,7 @@ get_vim_env(void)
 
     /* First get $VIMRUNTIME.  If it's set, remove the tail. */
     vim = getenv("VIMRUNTIME");
-    if (vim != NULL && *vim != 0 && strlen(vim) < BUFSIZE)
+    if (vim != NULL && *vim != 0 && strlen(vim) < sizeof(buf))
     {
 	strcpy(buf, vim);
 	remove_tail(buf);
@@ -411,7 +411,7 @@ get_vim_env(void)
 
     /* NSIS also uses GetTempPath(), thus we should get the same directory
      * name as where NSIS will look for vimini.ini. */
-    GetTempPath(BUFSIZE, fname);
+    GetTempPath(sizeof(fname) - 12, fname);
     add_pathsep(fname);
     strcat(fname, "vimini.ini");
 
@@ -505,8 +505,8 @@ uninstall_check(int skip_question)
     HKEY	uninstall_key_handle;
     char	*uninstall_key = "software\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
     char	subkey_name_buff[BUFSIZE];
-    char	temp_string_buffer[BUFSIZE];
-    DWORD	local_bufsize = BUFSIZE;
+    char	temp_string_buffer[BUFSIZE-2];
+    DWORD	local_bufsize;
     FILETIME	temp_pfiletime;
     DWORD	key_index;
     char	input;
@@ -521,12 +521,14 @@ uninstall_check(int skip_question)
 				     KEY_WOW64_64KEY | KEY_READ, &key_handle);
     CHECK_REG_ERROR(code);
 
-    for (key_index = 0;
-	 RegEnumKeyEx(key_handle, key_index, subkey_name_buff, &local_bufsize,
-		NULL, NULL, NULL, &temp_pfiletime) != ERROR_NO_MORE_ITEMS;
-	    key_index++)
+    key_index = 0;
+    while (TRUE)
     {
-	local_bufsize = BUFSIZE;
+	local_bufsize = sizeof(subkey_name_buff);
+	if (RegEnumKeyEx(key_handle, key_index, subkey_name_buff, &local_bufsize,
+		NULL, NULL, NULL, &temp_pfiletime) == ERROR_NO_MORE_ITEMS)
+	    break;
+
 	if (strncmp("Vim", subkey_name_buff, 3) == 0)
 	{
 	    /* Open the key named Vim* */
@@ -535,10 +537,10 @@ uninstall_check(int skip_question)
 	    CHECK_REG_ERROR(code);
 
 	    /* get the DisplayName out of it to show the user */
+	    local_bufsize = sizeof(temp_string_buffer);
 	    code = RegQueryValueEx(uninstall_key_handle, "displayname", 0,
 		    &value_type, (LPBYTE)temp_string_buffer,
 		    &local_bufsize);
-	    local_bufsize = BUFSIZE;
 	    CHECK_REG_ERROR(code);
 
 	    allow_silent = 0;
@@ -568,9 +570,9 @@ uninstall_check(int skip_question)
 	    fflush(stdout);
 
 	    /* get the UninstallString */
+	    local_bufsize = sizeof(temp_string_buffer);
 	    code = RegQueryValueEx(uninstall_key_handle, "uninstallstring", 0,
 		    &value_type, (LPBYTE)temp_string_buffer, &local_bufsize);
-	    local_bufsize = BUFSIZE;
 	    CHECK_REG_ERROR(code);
 
 	    /* Remember the directory, it is used as the default for NSIS. */
@@ -683,6 +685,8 @@ uninstall_check(int skip_question)
 
 	    RegCloseKey(uninstall_key_handle);
 	}
+
+	key_index++;
     }
     RegCloseKey(key_handle);
 
@@ -845,7 +849,7 @@ install_bat_choice(int idx)
 	     * for MSDOS and NT.
 	     * The order of preference is:
 	     * 1. $VIMRUNTIME/vim.exe	    (user preference)
-	     * 2. $VIM/vim70/vim.exe	    (hard coded version)
+	     * 2. $VIM/vim81/vim.exe	    (hard coded version)
 	     * 3. installdir/vim.exe	    (hard coded install directory)
 	     */
 	    fprintf(fd, "set VIM_EXE_DIR=%s\n", installdir);
@@ -958,7 +962,7 @@ alloc_text(int idx, char *fmt, char *arg)
     if (choices[idx].text != NULL)
 	free(choices[idx].text);
 
-    choices[idx].text = alloc((int)(strlen(fmt) + strlen(arg)) - 1);
+    choices[idx].text = alloc(strlen(fmt) + strlen(arg) - 1);
     sprintf(choices[idx].text, fmt, arg);
 }
 
@@ -1036,7 +1040,7 @@ change_bat_choice(int idx)
 		s = p + strlen(p);
 	    if (names != NULL)
 	    {
-		names[count] = alloc((int)(s - p) + 1);
+		names[count] = alloc(s - p + 1);
 		strncpy(names[count], p, s - p);
 		names[count][s - p] = NUL;
 	    }
@@ -1047,7 +1051,7 @@ change_bat_choice(int idx)
 	}
 	if (names != NULL)
 	    break;
-	names = alloc((int)(count + 1) * sizeof(char *));
+	names = alloc((count + 1) * sizeof(char *));
     }
     names[0] = alloc(50);
     sprintf(names[0], "Select directory to create %s in:", name);
@@ -1564,9 +1568,7 @@ register_openwith(
 
 	for (i = 0; ERROR_SUCCESS == lRet
 			   && i < sizeof(openwith) / sizeof(openwith[0]); i++)
-	{
 	    lRet = reg_create_key_and_value(hRootKey, openwith[i], NULL, "", flag);
-	}
     }
 
     return lRet;
@@ -1614,7 +1616,7 @@ install_registry(void)
     const char	*vim_ext_ThreadingModel = "Apartment";
     const char	*vim_ext_name = "Vim Shell Extension";
     const char	*vim_ext_clsid = "{51EEE242-AD87-11d3-9C1E-0090278BBD99}";
-    char	vim_exe_path[BUFSIZE];
+    char	vim_exe_path[MAX_PATH];
     char	display_name[BUFSIZE];
     char	uninstall_string[BUFSIZE];
     char	icon_string[BUFSIZE];
@@ -1675,14 +1677,16 @@ install_registry(void)
 
     printf("Creating an uninstall entry\n");
     sprintf(display_name, "Vim " VIM_VERSION_SHORT
-#ifdef _WIN64
+#ifdef _M_ARM64
+	    " (arm64)"
+#elif _M_X64
 	    " (x64)"
 #endif
 	    );
 
     /* For the NSIS installer use the generated uninstaller. */
     if (interactive)
-	sprintf(uninstall_string, "%s\\uninstal.exe", installdir);
+	sprintf(uninstall_string, "%s\\uninstall.exe", installdir);
     else
 	sprintf(uninstall_string, "%s\\uninstall-gui.exe", installdir);
 
@@ -1826,7 +1830,7 @@ create_shortcut(
 	    /* translate the (possibly) multibyte shortcut filename to windows
 	     * Unicode so it can be used as a file name.
 	     */
-	    MultiByteToWideChar(CP_ACP, 0, shortcut_name, -1, wsz, BUFSIZE);
+	    MultiByteToWideChar(CP_ACP, 0, shortcut_name, -1, wsz, sizeof(wsz)/sizeof(wsz[0]));
 
 	    /* set the attributes */
 	    shelllink_ptr->lpVtbl->SetPath(shelllink_ptr, shortcut_target);
@@ -1869,7 +1873,7 @@ build_link_name(
 	const char *link_name,
 	const char *shell_folder_name)
 {
-    char	shell_folder_path[BUFSIZE];
+    char	shell_folder_path[MAX_PATH];
 
     if (get_shell_folder_path(shell_folder_path, shell_folder_name) == FAIL)
     {
@@ -1958,7 +1962,7 @@ install_start_menu(int idx)
 	    return;
     }
     if (build_shortcut("Uninstall",
-		interactive ? "uninstal.exe" : "uninstall-gui.exe", "",
+		interactive ? "uninstall.exe" : "uninstall-gui.exe", "",
 					   VIM_STARTMENU, installdir) == FAIL)
 	return;
     /* For Windows NT the working dir of the vimtutor.bat must be right,
@@ -2135,7 +2139,7 @@ install_OLE_register(void)
  * result in "to[]".
  */
     static void
-dir_remove_last(const char *path, char to[BUFSIZE])
+dir_remove_last(const char *path, char to[MAX_PATH])
 {
     char c;
     long last_char_to_copy;
@@ -2206,7 +2210,7 @@ init_homedir(void)
 	if (homepath == NULL || *homepath == NUL)
 	    homepath = "\\";
 	if (homedrive != NULL
-			   && strlen(homedrive) + strlen(homepath) < MAX_PATH)
+		   && strlen(homedrive) + strlen(homepath) < sizeof(buf))
 	{
 	    sprintf(buf, "%s%s", homedrive, homepath);
 	    if (buf[0] != NUL)
@@ -2234,10 +2238,9 @@ init_homedir(void)
 	    buf[p - (var + 1)] = NUL;
 	    exp = getenv(buf);
 	    if (exp != NULL && *exp != NUL
-					&& strlen(exp) + strlen(p) < MAX_PATH)
+				&& strlen(exp) + strlen(p) < sizeof(buf))
 	    {
-		_snprintf(buf, MAX_PATH, "%s%s", exp, p + 1);
-		buf[MAX_PATH - 1] = NUL;
+		sprintf(buf, "%s%s", exp, p + 1);
 		var = buf;
 	    }
 	}
@@ -2278,8 +2281,8 @@ install_vimfilesdir(int idx)
     int i;
     int vimfiles_dir_choice = choices[idx].arg;
     char *p;
-    char vimdir_path[BUFSIZE];
-    char vimfiles_path[BUFSIZE];
+    char vimdir_path[MAX_PATH];
+    char vimfiles_path[MAX_PATH + 9];
     char tmp_dirname[BUFSIZE];
 
     /* switch on the location that the user wants the plugin directories
@@ -2351,10 +2354,11 @@ init_directories_choice(void)
 
     // Check if the "compiler" directory already exists.  That's a good
     // indication that the plugin directories were already created.
-    if (getenv("HOME") != NULL)
+    p = getenv("HOME");
+    if (p != NULL)
     {
 	vimfiles_dir_choice = (int)vimfiles_dir_home;
-	sprintf(tmp_dirname, "%s\\vimfiles\\compiler", getenv("HOME"));
+	sprintf(tmp_dirname, "%s\\vimfiles\\compiler", p);
 	if (stat(tmp_dirname, &st) == 0)
 	    vimfiles_dir_choice = (int)vimfiles_dir_none;
     }

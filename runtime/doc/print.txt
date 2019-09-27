@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 8.1.  Last change: 2010 Jul 20
+*print.txt*     For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -15,7 +15,6 @@ Printing						*printing*
 7. PostScript Utilities			|postscript-print-util|
 8. Formfeed Characters			|printing-formfeed|
 
-{Vi has None of this}
 {only available when compiled with the |+printer| feature}
 
 ==============================================================================
@@ -254,9 +253,9 @@ possible.  The following tables show the valid combinations:
   Japanese	JIS_C_1978	   x	   x
 		JIS_X_1983	   x	   x
 		JIS_X_1990	   x		  x	  x
-		MSWINDOWS	   x
-		KANJITALK6	   x
-		KANJITALK7	   x
+		MSWINDOWS		   x
+		KANJITALK6		   x
+		KANJITALK7		   x
 
 				euc-kr	 cp949	ucs-2	utf-8 ~
   Korean	KS_X_1992	   x

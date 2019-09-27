@@ -1,5 +1,7 @@
 " Test for various Normal mode commands
 
+source shared.vim
+
 func Setup_NewWindow()
   10new
   call setline(1, range(1,100))
@@ -1087,160 +1089,6 @@ func Test_normal18_z_fold()
   bw!
 endfunc
 
-func Test_normal19_z_spell()
-  if !has("spell") || !has('syntax')
-    return
-  endif
-  new
-  call append(0, ['1 good', '2 goood', '3 goood'])
-  set spell spellfile=./Xspellfile.add spelllang=en
-  let oldlang=v:lang
-  lang C
-
-  " Test for zg
-  1
-  norm! ]s
-  call assert_equal('2 goood', getline('.'))
-  norm! zg
-  1
-  let a=execute('unsilent :norm! ]s')
-  call assert_equal('1 good', getline('.'))
-  call assert_equal('search hit BOTTOM, continuing at TOP', a[1:])
-  let cnt=readfile('./Xspellfile.add')
-  call assert_equal('goood', cnt[0])
-
-  " Test for zw
-  2
-  norm! $zw
-  1
-  norm! ]s
-  call assert_equal('2 goood', getline('.'))
-  let cnt=readfile('./Xspellfile.add')
-  call assert_equal('#oood', cnt[0])
-  call assert_equal('goood/!', cnt[1])
-
-  " Test for zg in visual mode
-  let a=execute('unsilent :norm! V$zg')
-  call assert_equal("Word '2 goood' added to ./Xspellfile.add", a[1:])
-  1
-  norm! ]s
-  call assert_equal('3 goood', getline('.'))
-  let cnt=readfile('./Xspellfile.add')
-  call assert_equal('2 goood', cnt[2])
-  " Remove "2 good" from spellfile
-  2
-  let a=execute('unsilent norm! V$zw')
-  call assert_equal("Word '2 goood' added to ./Xspellfile.add", a[1:])
-  let cnt=readfile('./Xspellfile.add')
-  call assert_equal('2 goood/!', cnt[3])
-
-  " Test for zG
-  let a=execute('unsilent norm! V$zG')
-  call assert_match("Word '2 goood' added to .*", a)
-  let fname=matchstr(a, 'to\s\+\zs\f\+$')
-  let cnt=readfile(fname)
-  call assert_equal('2 goood', cnt[0])
-
-  " Test for zW
-  let a=execute('unsilent norm! V$zW')
-  call assert_match("Word '2 goood' added to .*", a)
-  let cnt=readfile(fname)
-  call assert_equal('# goood', cnt[0])
-  call assert_equal('2 goood/!', cnt[1])
-
-  " Test for zuW
-  let a=execute('unsilent norm! V$zuW')
-  call assert_match("Word '2 goood' removed from .*", a)
-  let cnt=readfile(fname)
-  call assert_equal('# goood', cnt[0])
-  call assert_equal('# goood/!', cnt[1])
-
-  " Test for zuG
-  let a=execute('unsilent norm! $zG')
-  call assert_match("Word 'goood' added to .*", a)
-  let cnt=readfile(fname)
-  call assert_equal('# goood', cnt[0])
-  call assert_equal('# goood/!', cnt[1])
-  call assert_equal('goood', cnt[2])
-  let a=execute('unsilent norm! $zuG')
-  let cnt=readfile(fname)
-  call assert_match("Word 'goood' removed from .*", a)
-  call assert_equal('# goood', cnt[0])
-  call assert_equal('# goood/!', cnt[1])
-  call assert_equal('#oood', cnt[2])
-  " word not found in wordlist
-  let a=execute('unsilent norm! V$zuG')
-  let cnt=readfile(fname)
-  call assert_match("", a)
-  call assert_equal('# goood', cnt[0])
-  call assert_equal('# goood/!', cnt[1])
-  call assert_equal('#oood', cnt[2])
-
-  " Test for zug
-  call delete('./Xspellfile.add')
-  2
-  let a=execute('unsilent norm! $zg')
-  let cnt=readfile('./Xspellfile.add')
-  call assert_equal('goood', cnt[0])
-  let a=execute('unsilent norm! $zug')
-  call assert_match("Word 'goood' removed from \./Xspellfile.add", a)
-  let cnt=readfile('./Xspellfile.add')
-  call assert_equal('#oood', cnt[0])
-  " word not in wordlist
-  let a=execute('unsilent norm! V$zug')
-  call assert_match('', a)
-  let cnt=readfile('./Xspellfile.add')
-  call assert_equal('#oood', cnt[0])
-
-  " Test for zuw
-  call delete('./Xspellfile.add')
-  2
-  let a=execute('unsilent norm! Vzw')
-  let cnt=readfile('./Xspellfile.add')
-  call assert_equal('2 goood/!', cnt[0])
-  let a=execute('unsilent norm! Vzuw')
-  call assert_match("Word '2 goood' removed from \./Xspellfile.add", a)
-  let cnt=readfile('./Xspellfile.add')
-  call assert_equal('# goood/!', cnt[0])
-  " word not in wordlist
-  let a=execute('unsilent norm! $zug')
-  call assert_match('', a)
-  let cnt=readfile('./Xspellfile.add')
-  call assert_equal('# goood/!', cnt[0])
-
-  " add second entry to spellfile setting
-  set spellfile=./Xspellfile.add,./Xspellfile2.add
-  call delete('./Xspellfile.add')
-  2
-  let a=execute('unsilent norm! $2zg')
-  let cnt=readfile('./Xspellfile2.add')
-  call assert_match("Word 'goood' added to ./Xspellfile2.add", a)
-  call assert_equal('goood', cnt[0])
-
-  " Test for :spellgood!
-  let temp = execute(':spe!0/0')
-  call assert_match('Invalid region', temp)
-  let spellfile = matchstr(temp, 'Invalid region nr in \zs.*\ze line \d: 0')
-  call assert_equal(['# goood', '# goood/!', '#oood', '0/0'], readfile(spellfile))
-  call delete(spellfile)
-
-  " clean up
-  exe "lang" oldlang
-  call delete("./Xspellfile.add")
-  call delete("./Xspellfile2.add")
-  call delete("./Xspellfile.add.spl")
-  call delete("./Xspellfile2.add.spl")
-
-  " zux -> no-op
-  2
-  norm! $zux
-  call assert_equal([], glob('Xspellfile.add',0,1))
-  call assert_equal([], glob('Xspellfile2.add',0,1))
-
-  set spellfile=
-  bw!
-endfunc
-
 func Test_normal20_exmode()
   if !has("unix")
     " Reading from redirected file doesn't work on MS-Windows
@@ -1248,7 +1096,7 @@ func Test_normal20_exmode()
   endif
   call writefile(['1a', 'foo', 'bar', '.', 'w! Xfile2', 'q!'], 'Xscript')
   call writefile(['1', '2'], 'Xfile')
-  call system(v:progpath .' -e -s < Xscript Xfile')
+  call system(GetVimCommand() .. ' -e -s < Xscript Xfile')
   let a=readfile('Xfile2')
   call assert_equal(['1', 'foo', 'bar', '2'], a)
 
@@ -1295,13 +1143,13 @@ func Test_normal22_zet()
   " let shell = &shell
   " let &shell = 'sh'
   call writefile(['1', '2'], 'Xfile')
-  let args = ' -u NONE -N -U NONE -i NONE --noplugins -X --not-a-term'
-  call system(v:progpath . args . ' -c "%d" -c ":norm! ZZ" Xfile')
+  let args = ' -N -i NONE --noplugins -X --not-a-term'
+  call system(GetVimCommand() .. args .. ' -c "%d" -c ":norm! ZZ" Xfile')
   let a = readfile('Xfile')
   call assert_equal([], a)
   " Test for ZQ
   call writefile(['1', '2'], 'Xfile')
-  call system(v:progpath . args . ' -c "%d" -c ":norm! ZQ" Xfile')
+  call system(GetVimCommand() . args . ' -c "%d" -c ":norm! ZQ" Xfile')
   let a = readfile('Xfile')
   call assert_equal(['1', '2'], a)
 
@@ -1356,11 +1204,21 @@ func Test_normal23_K()
     bw!
     return
   endif
-  set keywordprg=man\ --pager=cat
+
+  if has('mac')
+    " In MacOS, the option for specifying a pager is different
+    set keywordprg=man\ -P\ cat
+  else
+    set keywordprg=man\ --pager=cat
+  endif
   " Test for using man
   2
   let a = execute('unsilent norm! K')
-  call assert_match("man --pager=cat 'man'", a)
+  if has('mac')
+    call assert_match("man -P cat 'man'", a)
+  else
+    call assert_match("man --pager=cat 'man'", a)
+  endif
 
   " clean up
   let &keywordprg = k
@@ -1543,73 +1401,158 @@ endfunc
 
 fun! Test_normal29_brace()
   " basic test for { and } movements
-  let text= ['A paragraph begins after each empty line, and also at each of a set of',
-  \ 'paragraph macros, specified by the pairs of characters in the ''paragraphs''',
-  \ 'option.  The default is "IPLPPPQPP TPHPLIPpLpItpplpipbp", which corresponds to',
-  \ 'the macros ".IP", ".LP", etc.  (These are nroff macros, so the dot must be in',
-  \ 'the first column).  A section boundary is also a paragraph boundary.',
-  \ 'Note that a blank line (only containing white space) is NOT a paragraph',
-  \ 'boundary.',
-  \ '',
-  \ '',
-  \ 'Also note that this does not include a ''{'' or ''}'' in the first column.  When',
-  \ 'the ''{'' flag is in ''cpoptions'' then ''{'' in the first column is used as a',
-  \ 'paragraph boundary |posix|.',
-  \ '{',
-  \ 'This is no paragraph',
-  \ 'unless the ''{'' is set',
-  \ 'in ''cpoptions''',
-  \ '}',
-  \ '.IP',
-  \ 'The nroff macros IP separates a paragraph',
-  \ 'That means, it must be a ''.''',
-  \ 'followed by IP',
-  \ '.LPIt does not matter, if afterwards some',
-  \ 'more characters follow.',
-  \ '.SHAlso section boundaries from the nroff',
-  \ 'macros terminate a paragraph. That means',
-  \ 'a character like this:',
-  \ '.NH',
-  \ 'End of text here']
+  let text =<< trim [DATA]
+    A paragraph begins after each empty line, and also at each of a set of
+    paragraph macros, specified by the pairs of characters in the 'paragraphs'
+    option.  The default is "IPLPPPQPP TPHPLIPpLpItpplpipbp", which corresponds to
+    the macros ".IP", ".LP", etc.  (These are nroff macros, so the dot must be in
+    the first column).  A section boundary is also a paragraph boundary.
+    Note that a blank line (only containing white space) is NOT a paragraph
+    boundary.
+
+
+    Also note that this does not include a '{' or '}' in the first column.  When
+    the '{' flag is in 'cpoptions' then '{' in the first column is used as a
+    paragraph boundary |posix|.
+    {
+    This is no paragraph
+    unless the '{' is set
+    in 'cpoptions'
+    }
+    .IP
+    The nroff macros IP separates a paragraph
+    That means, it must be a '.'
+    followed by IP
+    .LPIt does not matter, if afterwards some
+    more characters follow.
+    .SHAlso section boundaries from the nroff
+    macros terminate a paragraph. That means
+    a character like this:
+    .NH
+    End of text here
+  [DATA]
+
   new
   call append(0, text)
   1
   norm! 0d2}
-  call assert_equal(['.IP',
-    \  'The nroff macros IP separates a paragraph', 'That means, it must be a ''.''', 'followed by IP',
-    \ '.LPIt does not matter, if afterwards some', 'more characters follow.', '.SHAlso section boundaries from the nroff',
-    \  'macros terminate a paragraph. That means', 'a character like this:', '.NH', 'End of text here', ''], getline(1,'$'))
+
+  let expected =<< trim [DATA]
+    .IP
+    The nroff macros IP separates a paragraph
+    That means, it must be a '.'
+    followed by IP
+    .LPIt does not matter, if afterwards some
+    more characters follow.
+    .SHAlso section boundaries from the nroff
+    macros terminate a paragraph. That means
+    a character like this:
+    .NH
+    End of text here
+
+  [DATA]
+  call assert_equal(expected, getline(1, '$'))
+
   norm! 0d}
-  call assert_equal(['.LPIt does not matter, if afterwards some', 'more characters follow.',
-    \ '.SHAlso section boundaries from the nroff', 'macros terminate a paragraph. That means',
-    \ 'a character like this:', '.NH', 'End of text here', ''], getline(1, '$'))
+
+  let expected =<< trim [DATA]
+    .LPIt does not matter, if afterwards some
+    more characters follow.
+    .SHAlso section boundaries from the nroff
+    macros terminate a paragraph. That means
+    a character like this:
+    .NH
+    End of text here
+  
+  [DATA]
+  call assert_equal(expected, getline(1, '$'))
+
   $
   norm! d{
-  call assert_equal(['.LPIt does not matter, if afterwards some', 'more characters follow.',
-	\ '.SHAlso section boundaries from the nroff', 'macros terminate a paragraph. That means', 'a character like this:', ''], getline(1, '$'))
+
+  let expected =<< trim [DATA]
+    .LPIt does not matter, if afterwards some
+    more characters follow.
+    .SHAlso section boundaries from the nroff
+    macros terminate a paragraph. That means
+    a character like this:
+
+  [DATA]
+  call assert_equal(expected, getline(1, '$'))
+
   norm! d{
-  call assert_equal(['.LPIt does not matter, if afterwards some', 'more characters follow.', ''], getline(1,'$'))
+
+  let expected =<< trim [DATA]
+    .LPIt does not matter, if afterwards some
+    more characters follow.
+
+  [DATA]
+  call assert_equal(expected, getline(1, '$'))
+
   " Test with { in cpooptions
   %d
   call append(0, text)
   set cpo+={
   1
   norm! 0d2}
-  call assert_equal(['{', 'This is no paragraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}',
-    \ '.IP', 'The nroff macros IP separates a paragraph', 'That means, it must be a ''.''',
-    \ 'followed by IP', '.LPIt does not matter, if afterwards some', 'more characters follow.',
-    \ '.SHAlso section boundaries from the nroff', 'macros terminate a paragraph. That means',
-    \ 'a character like this:', '.NH', 'End of text here', ''], getline(1,'$'))
+
+  let expected =<< trim [DATA]
+    {
+    This is no paragraph
+    unless the '{' is set
+    in 'cpoptions'
+    }
+    .IP
+    The nroff macros IP separates a paragraph
+    That means, it must be a '.'
+    followed by IP
+    .LPIt does not matter, if afterwards some
+    more characters follow.
+    .SHAlso section boundaries from the nroff
+    macros terminate a paragraph. That means
+    a character like this:
+    .NH
+    End of text here
+
+  [DATA]
+  call assert_equal(expected, getline(1, '$'))
+
   $
   norm! d}
-  call assert_equal(['{', 'This is no paragraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}',
-    \ '.IP', 'The nroff macros IP separates a paragraph', 'That means, it must be a ''.''',
-    \ 'followed by IP', '.LPIt does not matter, if afterwards some', 'more characters follow.',
-    \ '.SHAlso section boundaries from the nroff', 'macros terminate a paragraph. That means',
-    \ 'a character like this:', '.NH', 'End of text here', ''], getline(1,'$'))
+
+  let expected =<< trim [DATA]
+    {
+    This is no paragraph
+    unless the '{' is set
+    in 'cpoptions'
+    }
+    .IP
+    The nroff macros IP separates a paragraph
+    That means, it must be a '.'
+    followed by IP
+    .LPIt does not matter, if afterwards some
+    more characters follow.
+    .SHAlso section boundaries from the nroff
+    macros terminate a paragraph. That means
+    a character like this:
+    .NH
+    End of text here
+
+  [DATA]
+  call assert_equal(expected, getline(1, '$'))
+
   norm! gg}
   norm! d5}
-  call assert_equal(['{', 'This is no paragraph', 'unless the ''{'' is set', 'in ''cpoptions''', '}', ''], getline(1,'$'))
+
+  let expected =<< trim [DATA]
+    {
+    This is no paragraph
+    unless the '{' is set
+    in 'cpoptions'
+    }
+
+  [DATA]
+  call assert_equal(expected, getline(1, '$'))
 
   " clean up
   set cpo-={
@@ -2541,4 +2484,174 @@ func Test_nv_hat_count()
   call assert_equal('Xbar', fnamemodify(bufname('%'), ':t'))
 
   %bwipeout!
+endfunc
+
+func Test_message_when_using_ctrl_c()
+  " Make sure no buffers are changed.
+  %bwipe!
+
+  exe "normal \<C-C>"
+  call assert_match("Type  :qa  and press <Enter> to exit Vim", Screenline(&lines))
+
+  new
+  cal setline(1, 'hi!')
+  exe "normal \<C-C>"
+  call assert_match("Type  :qa!  and press <Enter> to abandon all changes and exit Vim", Screenline(&lines))
+
+  bwipe!
+endfunc
+
+" Test for '[m', ']m', '[M' and ']M'
+" Jumping to beginning and end of methods in Java-like languages
+func Test_java_motion()
+  new
+  a
+Piece of Java
+{
+	tt m1 {
+		t1;
+	} e1
+
+	tt m2 {
+		t2;
+	} e2
+
+	tt m3 {
+		if (x)
+		{
+			t3;
+		}
+	} e3
+}
+.
+
+  normal gg
+
+  normal 2]maA
+  call assert_equal("\ttt m1 {A", getline('.'))
+  call assert_equal([3, 9, 16], [line('.'), col('.'), virtcol('.')])
+
+  normal j]maB
+  call assert_equal("\ttt m2 {B", getline('.'))
+  call assert_equal([7, 9, 16], [line('.'), col('.'), virtcol('.')])
+
+  normal ]maC
+  call assert_equal("\ttt m3 {C", getline('.'))
+  call assert_equal([11, 9, 16], [line('.'), col('.'), virtcol('.')])
+
+  normal [maD
+  call assert_equal("\ttt m3 {DC", getline('.'))
+  call assert_equal([11, 9, 16], [line('.'), col('.'), virtcol('.')])
+
+  normal k2[maE
+  call assert_equal("\ttt m1 {EA", getline('.'))
+  call assert_equal([3, 9, 16], [line('.'), col('.'), virtcol('.')])
+
+  normal 3[maF
+  call assert_equal("{F", getline('.'))
+  call assert_equal([2, 2, 2], [line('.'), col('.'), virtcol('.')])
+
+  normal ]MaG
+  call assert_equal("\t}G e1", getline('.'))
+  call assert_equal([5, 3, 10], [line('.'), col('.'), virtcol('.')])
+
+  normal j2]MaH
+  call assert_equal("\t}H e3", getline('.'))
+  call assert_equal([16, 3, 10], [line('.'), col('.'), virtcol('.')])
+
+  normal ]M]M
+  normal aI
+  call assert_equal("}I", getline('.'))
+  call assert_equal([17, 2, 2], [line('.'), col('.'), virtcol('.')])
+
+  normal 2[MaJ
+  call assert_equal("\t}JH e3", getline('.'))
+  call assert_equal([16, 3, 10], [line('.'), col('.'), virtcol('.')])
+
+  normal k[MaK
+  call assert_equal("\t}K e2", getline('.'))
+  call assert_equal([9, 3, 10], [line('.'), col('.'), virtcol('.')])
+
+  normal 3[MaL
+  call assert_equal("{LF", getline('.'))
+  call assert_equal([2, 2, 2], [line('.'), col('.'), virtcol('.')])
+
+  close!
+endfunc
+
+fun! Test_normal_gdollar_cmd()
+  if !has("jumplist")
+    return
+  endif
+  " Tests for g cmds
+  call Setup_NewWindow()
+  " Make long lines that will wrap
+  %s/$/\=repeat(' foobar', 10)/
+  20vsp
+  set wrap
+  " Test for g$ with count
+  norm! gg
+  norm! 0vg$y
+  call assert_equal(20, col("'>"))
+  call assert_equal('1 foobar foobar foob', getreg(0))
+  norm! gg
+  norm! 0v4g$y
+  call assert_equal(72, col("'>"))
+  call assert_equal('1 foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar'.."\n", getreg(0))
+  norm! gg
+  norm! 0v6g$y
+  call assert_equal(40, col("'>"))
+  call assert_equal('1 foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar'.. "\n"..
+		  \ '2 foobar foobar foobar foobar foobar foo', getreg(0))
+  set nowrap
+  " clean up
+  norm! gg
+  norm! 0vg$y
+  call assert_equal(20, col("'>"))
+  call assert_equal('1 foobar foobar foob', getreg(0))
+  norm! gg
+  norm! 0v4g$y
+  call assert_equal(20, col("'>"))
+  call assert_equal('1 foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar'.. "\n"..
+                 \  '2 foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar'.. "\n"..
+                 \  '3 foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar'.. "\n"..
+                 \  '4 foobar foobar foob', getreg(0))
+  norm! gg
+  norm! 0v6g$y
+  call assert_equal(20, col("'>"))
+  call assert_equal('1 foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar'.. "\n"..
+                 \  '2 foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar'.. "\n"..
+                 \  '3 foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar'.. "\n"..
+                 \  '4 foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar'.. "\n"..
+                 \  '5 foobar foobar foobar foobar foobar foobar foobar foobar foobar foobar'.. "\n"..
+                 \  '6 foobar foobar foob', getreg(0))
+  " Move to last line, also down movement is not possible, should still move
+  " the cursor to the last visible char
+  norm! G
+  norm! 0v6g$y
+  call assert_equal(20, col("'>"))
+  call assert_equal('100 foobar foobar fo', getreg(0))
+  bw!
+endfunc
+
+func Test_normal_gk()
+  " needs 80 column new window
+  new
+  vert 80new
+  put =[repeat('x',90)..' {{{1', 'x {{{1']
+  norm! gk
+  " In a 80 column wide terminal the window will be only 78 char
+  " (because Vim will leave space for the other window),
+  " but if the terminal is larger, it will be 80 chars, so verify the
+  " cursor column correctly.
+  call assert_equal(winwidth(0)+1, col('.'))
+  call assert_equal(winwidth(0)+1, virtcol('.'))
+  norm! j
+  call assert_equal(6, col('.'))
+  call assert_equal(6, virtcol('.'))
+  norm! gk
+  call assert_equal(95, col('.'))
+  call assert_equal(95, virtcol('.'))
+  bw!
+  bw!
 endfunc

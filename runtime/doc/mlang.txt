@@ -1,4 +1,4 @@
-*mlang.txt*     For Vim version 8.1.  Last change: 2018 May 06
+*mlang.txt*     For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -17,7 +17,6 @@ The basics are explained in the user manual: |usr_45.txt|.
 
 Also see |help-translated| for multi-language help.
 
-{Vi does not have any of these features}
 {not available when compiled without the |+multi_lang| feature}
 
 ==============================================================================

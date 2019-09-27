@@ -1,6 +1,6 @@
 #define DEFINE_INLINES
 
-/* vim: set sw=2 : */
+// vim: set sw=2 :
 #include "vterm_internal.h"
 
 #include <stdio.h>
@@ -39,7 +39,7 @@ VTerm *vterm_new(int rows, int cols)
 
 VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *funcs, void *allocdata)
 {
-  /* Need to bootstrap using the allocator function directly */
+  // Need to bootstrap using the allocator function directly
   VTerm *vt = (*funcs->malloc)(sizeof(VTerm), allocdata);
 
   if (vt == NULL)
@@ -55,7 +55,7 @@ VTerm *vterm_new_with_allocator(int rows, int cols, VTermAllocatorFunctions *fun
   vt->parser.callbacks = NULL;
   vt->parser.cbdata    = NULL;
 
-  vt->parser.strbuffer_len = 500; /* should be able to hold an OSC string */
+  vt->parser.strbuffer_len = 500; // should be able to hold an OSC string
   vt->parser.strbuffer_cur = 0;
   vt->parser.strbuffer = vterm_allocator_malloc(vt, vt->parser.strbuffer_len);
   if (vt->parser.strbuffer == NULL)
@@ -154,7 +154,7 @@ static int outbuffer_is_full(VTerm *vt)
 # define VSNPRINTF vsnprintf
 #else
 # ifdef VSNPRINTF
-/* Use a provided vsnprintf() function. */
+// Use a provided vsnprintf() function.
 int VSNPRINTF(char *str, size_t str_m, const char *fmt, va_list ap);
 # endif
 #endif
@@ -164,8 +164,8 @@ INTERNAL void vterm_push_output_vsprintf(VTerm *vt, const char *format, va_list 
 {
   int written;
 #ifndef VSNPRINTF
-  /* When vsnprintf() is not available (C90) fall back to vsprintf(). */
-  char buffer[1024]; /* 1Kbyte is enough for everybody, right? */
+  // When vsnprintf() is not available (C90) fall back to vsprintf().
+  char buffer[1024]; // 1Kbyte is enough for everybody, right?
 #endif
 
   if(outbuffer_is_full(vt)) {
@@ -179,7 +179,7 @@ INTERNAL void vterm_push_output_vsprintf(VTerm *vt, const char *format, va_list 
       format, args);
 
   if(written == (int)(vt->outbuffer_len - vt->outbuffer_cur)) {
-    /* output was truncated */
+    // output was truncated
     vt->outbuffer_cur = vt->outbuffer_len - 1;
   }
   else
@@ -188,7 +188,7 @@ INTERNAL void vterm_push_output_vsprintf(VTerm *vt, const char *format, va_list 
   written = vsprintf(buffer, format, args);
 
   if(written >= (int)(vt->outbuffer_len - vt->outbuffer_cur - 1)) {
-    /* output was truncated */
+    // output was truncated
     written = vt->outbuffer_len - vt->outbuffer_cur - 1;
   }
   if (written > 0)
@@ -290,7 +290,7 @@ VTermValueType vterm_get_attr_type(VTermAttr attr)
 
     case VTERM_N_ATTRS: return 0;
   }
-  return 0; /* UNREACHABLE */
+  return 0; // UNREACHABLE
 }
 
 VTermValueType vterm_get_prop_type(VTermProp prop)
@@ -308,7 +308,7 @@ VTermValueType vterm_get_prop_type(VTermProp prop)
 
     case VTERM_N_PROPS: return 0;
   }
-  return 0; /* UNREACHABLE */
+  return 0; // UNREACHABLE
 }
 
 void vterm_scroll_rect(VTermRect rect,
@@ -323,26 +323,24 @@ void vterm_scroll_rect(VTermRect rect,
 
   if(abs(downward)  >= rect.end_row - rect.start_row ||
      abs(rightward) >= rect.end_col - rect.start_col) {
-    /* Scroll more than area; just erase the lot */
+    // Scroll more than area; just erase the lot
     (*eraserect)(rect, 0, user);
     return;
   }
 
   if(rightward >= 0) {
-    /* rect: [XXX................]
-     * src:     [----------------]
-     * dest: [----------------]
-     */
+    // rect: [XXX................]
+    // src:     [----------------]
+    // dest: [----------------]
     dest.start_col = rect.start_col;
     dest.end_col   = rect.end_col   - rightward;
     src.start_col  = rect.start_col + rightward;
     src.end_col    = rect.end_col;
   }
   else {
-    /* rect: [................XXX]
-     * src:  [----------------]
-     * dest:    [----------------]
-     */
+    // rect: [................XXX]
+    // src:  [----------------]
+    // dest:    [----------------]
     int leftward = -rightward;
     dest.start_col = rect.start_col + leftward;
     dest.end_col   = rect.end_col;
@@ -398,7 +396,8 @@ void vterm_copy_cells(VTermRect dest,
     test_row = dest.start_row - 1;
     inc_row = -1;
   }
-  else /* downward >= 0 */ {
+  else {
+    // downward >= 0
     init_row = dest.start_row;
     test_row = dest.end_row;
     inc_row = +1;
@@ -409,7 +408,8 @@ void vterm_copy_cells(VTermRect dest,
     test_col = dest.start_col - 1;
     inc_col = -1;
   }
-  else /* rightward >= 0 */ {
+  else {
+    // rightward >= 0
     init_col = dest.start_col;
     test_col = dest.end_col;
     inc_col = +1;

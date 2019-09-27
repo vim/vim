@@ -1,4 +1,4 @@
-*remote.txt*    For Vim version 8.1.  Last change: 2017 Nov 12
+*remote.txt*    For Vim version 8.1.  Last change: 2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -9,8 +9,6 @@ Vim client-server communication				*client-server*
 1. Common functionality		|clientserver|
 2. X11 specific items		|x11-clientserver|
 3. MS-Windows specific items	|w32-clientserver|
-
-{Vi does not have any of these commands}
 
 ==============================================================================
 1. Common functionality					*clientserver*

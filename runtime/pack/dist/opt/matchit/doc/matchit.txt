@@ -4,7 +4,7 @@ For instructions on installing this file, type
 	`:help matchit-install`
 inside Vim.
 
-For Vim version 8.1.  Last change:  2019 Jan 28
+For Vim version 8.1.  Last change:  2019 May 05
 
 
 		  VIM REFERENCE MANUAL    by Benji Fisher et al
@@ -19,8 +19,6 @@ For Vim version 8.1.  Last change:  2019 Jan 28
 
 The functionality mentioned here is a plugin, see |add-plugin|.
 This plugin is only available if 'compatible' is not set.
-
-{Vi does not have any of this}
 
 ==============================================================================
 1. Extended matching with "%"				*matchit-intro*

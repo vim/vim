@@ -244,10 +244,11 @@ hasFoldingWin(
 }
 
 /* foldLevel() {{{2 */
+#ifdef FEAT_EVAL
 /*
  * Return fold level at line number "lnum" in the current window.
  */
-    int
+    static int
 foldLevel(linenr_T lnum)
 {
     /* While updating the folds lines between invalid_top and invalid_bot have
@@ -265,6 +266,7 @@ foldLevel(linenr_T lnum)
 
     return foldLevelWin(curwin, lnum);
 }
+#endif
 
 /* lineFolded()	{{{2 */
 /*
@@ -813,6 +815,11 @@ foldUpdate(win_T *wp, linenr_T top, linenr_T bot)
 
     if (disable_fold_update > 0)
 	return;
+#ifdef FEAT_DIFF
+    if (need_diff_redraw)
+	// will update later
+	return;
+#endif
 
     /* Mark all folds from top to bot as maybe-small. */
     (void)foldFind(&wp->w_folds, top, &fp);
@@ -1770,7 +1777,7 @@ foldAddMarker(linenr_T lnum, char_u *marker, int markerlen)
 	/* Check if the line ends with an unclosed comment */
 	(void)skip_comment(line, FALSE, FALSE, &line_is_comment);
 #endif
-	newline = alloc((unsigned)(line_len + markerlen + STRLEN(cms) + 1));
+	newline = alloc(line_len + markerlen + STRLEN(cms) + 1);
 	if (newline == NULL)
 	    return;
 	STRCPY(newline, line);
@@ -1813,7 +1820,7 @@ deleteFoldMarkers(
 /*
  * Delete marker "marker[markerlen]" at the end of line "lnum".
  * Delete 'commentstring' if it matches.
- * If the marker is not found, there is no error message.  Could a missing
+ * If the marker is not found, there is no error message.  Could be a missing
  * close-marker.
  */
     static void
@@ -1826,6 +1833,9 @@ foldDelMarker(linenr_T lnum, char_u *marker, int markerlen)
     char_u	*cms = curbuf->b_p_cms;
     char_u	*cms2;
 
+    // end marker may be missing and fold extends below the last line
+    if (lnum > curbuf->b_ml.ml_line_count)
+	return;
     line = ml_get(lnum);
     for (p = line; *p != NUL; ++p)
 	if (STRNCMP(p, marker, markerlen) == 0)
@@ -1849,7 +1859,7 @@ foldDelMarker(linenr_T lnum, char_u *marker, int markerlen)
 	    if (u_save(lnum - 1, lnum + 1) == OK)
 	    {
 		/* Make new line: text-before-marker + text-after-marker */
-		newline = alloc((unsigned)(STRLEN(line) - len + 1));
+		newline = alloc(STRLEN(line) - len + 1);
 		if (newline != NULL)
 		{
 		    STRNCPY(newline, line, p - line);
@@ -1981,10 +1991,11 @@ get_foldtext(
 }
 
 /* foldtext_cleanup() {{{2 */
+#ifdef FEAT_EVAL
 /*
  * Remove 'foldmarker' and 'commentstring' from "str" (in-place).
  */
-    void
+    static void
 foldtext_cleanup(char_u *str)
 {
     char_u	*cms_start;	/* first part or the whole comment */
@@ -2070,6 +2081,7 @@ foldtext_cleanup(char_u *str)
 	}
     }
 }
+#endif
 
 /* Folding by indent, expr, marker and syntax. {{{1 */
 /* Define "fline_T", passed to get fold level for a line. {{{2 */
@@ -2733,16 +2745,19 @@ foldUpdateIEMSRecurse(
      * lvl >= level: fold continues below "bot"
      */
 
-    /* Current fold at least extends until lnum. */
+    // Current fold at least extends until lnum.
     if (fp->fd_len < flp->lnum - fp->fd_top)
     {
 	fp->fd_len = flp->lnum - fp->fd_top;
 	fp->fd_small = MAYBE;
 	fold_changed = TRUE;
     }
+    else if (fp->fd_top + fp->fd_len > linecount)
+	// running into the end of the buffer (deleted last line)
+	fp->fd_len = linecount - fp->fd_top + 1;
 
-    /* Delete contained folds from the end of the last one found until where
-     * we stopped looking. */
+    // Delete contained folds from the end of the last one found until where
+    // we stopped looking.
     foldRemove(&fp->fd_nested, startlnum2 - fp->fd_top,
 						  flp->lnum - 1 - fp->fd_top);
 
@@ -3605,4 +3620,175 @@ put_fold_open_close(FILE *fd, fold_T *fp, linenr_T off)
 #endif /* FEAT_SESSION */
 
 /* }}}1 */
-#endif /* defined(FEAT_FOLDING) || defined(PROTO) */
+#endif // defined(FEAT_FOLDING) || defined(PROTO)
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+
+/*
+ * "foldclosed()" and "foldclosedend()" functions
+ */
+    static void
+foldclosed_both(
+    typval_T	*argvars UNUSED,
+    typval_T	*rettv,
+    int		end UNUSED)
+{
+# ifdef FEAT_FOLDING
+    linenr_T	lnum;
+    linenr_T	first, last;
+
+    lnum = tv_get_lnum(argvars);
+    if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
+    {
+	if (hasFoldingWin(curwin, lnum, &first, &last, FALSE, NULL))
+	{
+	    if (end)
+		rettv->vval.v_number = (varnumber_T)last;
+	    else
+		rettv->vval.v_number = (varnumber_T)first;
+	    return;
+	}
+    }
+#endif
+    rettv->vval.v_number = -1;
+}
+
+/*
+ * "foldclosed()" function
+ */
+    void
+f_foldclosed(typval_T *argvars, typval_T *rettv)
+{
+    foldclosed_both(argvars, rettv, FALSE);
+}
+
+/*
+ * "foldclosedend()" function
+ */
+    void
+f_foldclosedend(typval_T *argvars, typval_T *rettv)
+{
+    foldclosed_both(argvars, rettv, TRUE);
+}
+
+/*
+ * "foldlevel()" function
+ */
+    void
+f_foldlevel(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+# ifdef FEAT_FOLDING
+    linenr_T	lnum;
+
+    lnum = tv_get_lnum(argvars);
+    if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
+	rettv->vval.v_number = foldLevel(lnum);
+# endif
+}
+
+/*
+ * "foldtext()" function
+ */
+    void
+f_foldtext(typval_T *argvars UNUSED, typval_T *rettv)
+{
+# ifdef FEAT_FOLDING
+    linenr_T	foldstart;
+    linenr_T	foldend;
+    char_u	*dashes;
+    linenr_T	lnum;
+    char_u	*s;
+    char_u	*r;
+    int		len;
+    char	*txt;
+    long	count;
+# endif
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+# ifdef FEAT_FOLDING
+    foldstart = (linenr_T)get_vim_var_nr(VV_FOLDSTART);
+    foldend = (linenr_T)get_vim_var_nr(VV_FOLDEND);
+    dashes = get_vim_var_str(VV_FOLDDASHES);
+    if (foldstart > 0 && foldend <= curbuf->b_ml.ml_line_count
+	    && dashes != NULL)
+    {
+	// Find first non-empty line in the fold.
+	for (lnum = foldstart; lnum < foldend; ++lnum)
+	    if (!linewhite(lnum))
+		break;
+
+	// Find interesting text in this line.
+	s = skipwhite(ml_get(lnum));
+	// skip C comment-start
+	if (s[0] == '/' && (s[1] == '*' || s[1] == '/'))
+	{
+	    s = skipwhite(s + 2);
+	    if (*skipwhite(s) == NUL
+			    && lnum + 1 < (linenr_T)get_vim_var_nr(VV_FOLDEND))
+	    {
+		s = skipwhite(ml_get(lnum + 1));
+		if (*s == '*')
+		    s = skipwhite(s + 1);
+	    }
+	}
+	count = (long)(foldend - foldstart + 1);
+	txt = NGETTEXT("+-%s%3ld line: ", "+-%s%3ld lines: ", count);
+	r = alloc(STRLEN(txt)
+		    + STRLEN(dashes)	    // for %s
+		    + 20		    // for %3ld
+		    + STRLEN(s));	    // concatenated
+	if (r != NULL)
+	{
+	    sprintf((char *)r, txt, dashes, count);
+	    len = (int)STRLEN(r);
+	    STRCAT(r, s);
+	    // remove 'foldmarker' and 'commentstring'
+	    foldtext_cleanup(r + len);
+	    rettv->vval.v_string = r;
+	}
+    }
+# endif
+}
+
+/*
+ * "foldtextresult(lnum)" function
+ */
+    void
+f_foldtextresult(typval_T *argvars UNUSED, typval_T *rettv)
+{
+# ifdef FEAT_FOLDING
+    linenr_T	lnum;
+    char_u	*text;
+    char_u	buf[FOLD_TEXT_LEN];
+    foldinfo_T  foldinfo;
+    int		fold_count;
+    static int	entered = FALSE;
+# endif
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+# ifdef FEAT_FOLDING
+    if (entered)
+	return; // reject recursive use
+    entered = TRUE;
+
+    lnum = tv_get_lnum(argvars);
+    // treat illegal types and illegal string values for {lnum} the same
+    if (lnum < 0)
+	lnum = 0;
+    fold_count = foldedCount(curwin, lnum, &foldinfo);
+    if (fold_count > 0)
+    {
+	text = get_foldtext(curwin, lnum, lnum + fold_count - 1,
+							       &foldinfo, buf);
+	if (text == buf)
+	    text = vim_strsave(text);
+	rettv->vval.v_string = text;
+    }
+
+    entered = FALSE;
+# endif
+}
+
+#endif // FEAT_EVAL

@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.1.  Last change: 2018 Dec 27
+*syntax.txt*	For Vim version 8.1.  Last change: 2019 Sep 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1746,7 +1746,7 @@ There are several html preprocessor languages out there.  html.vim has been
 written such that it should be trivial to include it.  To do so add the
 following two lines to the syntax coloring file for that language
 (the example comes from the asp.vim file):
-
+>
     runtime! syntax/html.vim
     syn cluster htmlPreproc add=asp
 
@@ -1923,6 +1923,16 @@ displayed line.  The default value is 10.  The disadvantage of using a larger
 number is that redrawing can become slow.
 
 
+JSON						*json.vim* *ft-json-syntax*
+
+The json syntax file provides syntax highlighting with conceal support by
+default. To disable concealment: >
+	let g:vim_json_conceal = 0
+
+To disable syntax highlighting of errors: >
+	let g:vim_json_warnings = 0
+
+
 LACE						*lace.vim* *ft-lace-syntax*
 
 Lace (Language for Assembly of Classes in Eiffel) is case insensitive, but the
@@ -1962,7 +1972,7 @@ The g:lisp_rainbow option provides 10 levels of individual colorization for
 the parentheses and backquoted parentheses.  Because of the quantity of
 colorization levels, unlike non-rainbow highlighting, the rainbow mode
 specifies its highlighting using ctermfg and guifg, thereby bypassing the
-usual colorscheme control using standard highlighting groups.  The actual
+usual color scheme control using standard highlighting groups.  The actual
 highlighting used depends on the dark/bright setting  (see |'bg'|).
 
 
@@ -2623,7 +2633,6 @@ preceding last option and unsetting all other ones): >
 Note: only existence of these options matter, not their value. You can replace
       1 above with anything.
 
-
 QUAKE						*quake.vim* *ft-quake-syntax*
 
 The Quake syntax definition should work for most any FPS (First Person
@@ -3140,7 +3149,7 @@ in your <.vimrc>, and :set fdm=syntax.  I suggest doing the latter via a
 modeline at the end of your LaTeX file: >
 	% vim: fdm=syntax
 If your system becomes too slow, then you might wish to look into >
-	https://vimhelp.appspot.com/vim_faq.txt.html#faq-29.7
+	https://vimhelp.org/vim_faq.txt.html#faq-29.7
 <
 						*g:tex_nospell*
  Tex: No Spell Checking Wanted~
@@ -4694,9 +4703,9 @@ in their own color.
 			Doesn't work recursively, thus you can't use
 			":colorscheme" in a color scheme script.
 
-			To customize a colorscheme use another name, e.g.
+			To customize a color scheme use another name, e.g.
 			"~/.vim/colors/mine.vim", and use `:runtime` to load
-			the original colorscheme: >
+			the original color scheme: >
 				runtime colors/evening.vim
 				hi Statement ctermfg=Blue guifg=Blue
 
@@ -4704,7 +4713,7 @@ in their own color.
 			|ColorSchemePre| autocommand event is triggered.
 			After the color scheme has been loaded the
 			|ColorScheme| autocommand event is triggered.
-			For info about writing a colorscheme file: >
+			For info about writing a color scheme file: >
 				:edit $VIMRUNTIME/colors/README.txt
 
 :hi[ghlight]		List all the current highlight groups that have
@@ -4827,8 +4836,9 @@ cterm={attr-list}					*highlight-cterm*
 	The "cterm" argument is likely to be different from "term", when
 	colors are used.  For example, in a normal terminal comments could
 	be underlined, in a color terminal they can be made Blue.
-	Note: Many terminals (e.g., DOS console) can't mix these attributes
-	with coloring.	Use only one of "cterm=" OR "ctermfg=" OR "ctermbg=".
+	Note: Some terminals (e.g., DOS console) can't mix these attributes
+	with coloring.	To be portable, use only one of "cterm=" OR "ctermfg="
+	OR "ctermbg=".
 
 ctermfg={color-nr}				*highlight-ctermfg* *E421*
 ctermbg={color-nr}				*highlight-ctermbg*
@@ -4901,7 +4911,7 @@ ctermbg={color-nr}				*highlight-ctermbg*
 	explicitly.  This causes the highlight groups that depend on
 	'background' to change!  This means you should set the colors for
 	Normal first, before setting other colors.
-	When a colorscheme is being used, changing 'background' causes it to
+	When a color scheme is being used, changing 'background' causes it to
 	be reloaded, which may reset all colors (including Normal).  First
 	delete the "g:colors_name" variable when you don't want this.
 
@@ -5002,6 +5012,8 @@ Conceal		placeholder characters substituted for concealed
 		text (see 'conceallevel')
 							*hl-Cursor*
 Cursor		the character under the cursor
+lCursor		the character under the cursor when |language-mapping|
+		is used (see 'guicursor')
 							*hl-CursorIM*
 CursorIM	like Cursor, but used when in IME mode |CursorIM|
 							*hl-CursorColumn*
@@ -5040,7 +5052,8 @@ IncSearch	'incsearch' highlighting; also used for the text replaced with
 LineNr		Line number for ":number" and ":#" commands, and when 'number'
 		or 'relativenumber' option is set.
 							*hl-CursorLineNr*
-CursorLineNr	Like LineNr when 'cursorline' or 'relativenumber' is set for
+CursorLineNr	Like LineNr when 'cursorline' is set and 'cursorlineopt' is
+		set to "number" or "both", or 'relativenumber' is set, for
 		the cursor line.
 							*hl-MatchParen*
 MatchParen	The character under the cursor or just before it, if it
@@ -5207,6 +5220,15 @@ load the syntax file.
 The command also deletes the "b:current_syntax" variable, since no syntax is
 loaded after this command.
 
+To clean up specific syntax groups for the current buffer: >
+  :syntax clear {group-name} ..
+This removes all patterns and keywords for {group-name}.
+
+To clean up specific syntax group lists for the current buffer: >
+  :syntax clear @{grouplist-name} ..
+This sets {grouplist-name}'s contents to an empty list.
+
+						*:syntax-off* *:syn-off*
 If you want to disable syntax highlighting for all buffers, you need to remove
 the autocommands that load the syntax files: >
   :syntax off
@@ -5215,14 +5237,6 @@ What this command actually does, is executing the command >
   :source $VIMRUNTIME/syntax/nosyntax.vim
 See the "nosyntax.vim" file for details.  Note that for this to work
 $VIMRUNTIME must be valid.  See |$VIMRUNTIME|.
-
-To clean up specific syntax groups for the current buffer: >
-  :syntax clear {group-name} ..
-This removes all patterns and keywords for {group-name}.
-
-To clean up specific syntax group lists for the current buffer: >
-  :syntax clear @{grouplist-name} ..
-This sets {grouplist-name}'s contents to an empty list.
 
 						*:syntax-reset* *:syn-reset*
 If you have changed the colors and messed them up, use this command to get the
