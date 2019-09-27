@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	man
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change: 	2019 Jul 22
+" Last Change: 	2019 Sep 26
 "		(fix by Jason Franklin)
 
 " To make the ":Man" command available before editing a manual page, source
@@ -132,11 +132,17 @@ func <SID>GetPage(cmdmods, ...)
     let page = expand('<cword>')
   endif
 
-  if sect != "" && s:FindPage(sect, page) == 0
-    let sect = ""
+  if !exists('g:ft_man_no_sect_fallback') || (g:ft_man_no_sect_fallback == 0)
+    if sect != "" && s:FindPage(sect, page) == 0
+      let sect = ""
+    endif
   endif
   if s:FindPage(sect, page) == 0
-    echo "\nCannot find a '".page."'."
+    let msg = "\nNo manual entry for ".page
+    if sect != ""
+      let msg .= " in section ".sect
+    endif
+    echo msg
     return
   endif
   exec "let s:man_tag_buf_".s:man_tag_depth." = ".bufnr("%")

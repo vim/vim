@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 May 13
+*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 Sep 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -703,7 +703,7 @@ first character).
 
 CTRL-A works like CTRL-@ but does not leave insert mode.
 
-CTRL-R {0-9a-z..} can be used to insert the contents of a register.
+CTRL-R {register} can be used to insert the contents of a register.
 
 When the 'smartindent' option is set, C programs will be better auto-indented.
 With 'cindent' even more.
