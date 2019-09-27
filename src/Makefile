@@ -2262,6 +2262,10 @@ test1 \
 
 # Run individual NEW style test.
 # These do not depend on the executable, compile it when needed.
+# Set $TEST_FILTER to select what test function to invoke, e.g.:
+#	export TEST_FILTER=Test_terminal_wipe_buffer
+# A partial match also works:
+#	export TEST_FILTER=wipe_buffer
 $(NEW_TESTS):
 	cd testdir; $(MAKE) $@ VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
