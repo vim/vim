@@ -320,7 +320,8 @@ SRC =	arabic.c arglist.c autocmd.c beval.c blob.c blowfish.c buffer.c \
 	ops.c \
 	option.c optionstr.c popupmnu.c popupwin.c profiler.c quickfix.c \
 	regexp.c register.c scriptfile.c \
-	search.c session.c sha256.c sign.c spell.c spellfile.c syntax.c tag.c \
+	search.c session.c sha256.c sign.c spell.c spellfile.c spellsuggest.c \
+	syntax.c tag.c \
 	term.c termlib.c testing.c textprop.c ui.c undo.c usercmd.c \
 	userfunc.c version.c viminfo.c screen.c window.c os_unix.c os_vms.c \
 	pathdef.c \
@@ -342,7 +343,8 @@ OBJ = 	arabic.obj arglist.obj autocmd.obj beval.obj blob.obj blowfish.obj \
 	optionstr.obj popupmnu.obj popupwin.obj profiler.obj quickfix.obj \
 	regexp.obj register.obj scriptfile.obj \
 	search.obj session.obj sha256.obj sign.obj spell.obj spellfile.obj \
-	syntax.obj tag.obj term.obj termlib.obj testing.obj textprop.obj \
+	spellsuggest.obj syntax.obj tag.obj term.obj termlib.obj testing.obj \
+	textprop.obj \
 	ui.obj undo.obj usercmd.obj userfunc.obj screen.obj version.obj \
 	viminfo.obj window.obj os_unix.obj os_vms.obj pathdef.obj if_mzsch.obj \
 	$(GUI_OBJ) $(PERL_OBJ) $(PYTHON_OBJ) $(TCL_OBJ) \
@@ -788,6 +790,10 @@ spell.obj : spell.c vim.h [.auto]config.h feature.h os_unix.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h
 spellfile.obj : spellfile.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h option.h structs.h \
+ regexp.h gui.h beval.h [.proto]gui_beval.pro alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+spellsuggest.obj : spellsuggest.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h option.h structs.h \
  regexp.h gui.h beval.h [.proto]gui_beval.pro alloc.h ex_cmds.h spell.h \
  proto.h globals.h

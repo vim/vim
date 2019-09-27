@@ -70,6 +70,7 @@ search.c	| pattern searching
 session.c	| sessions and views
 sign.c		| signs
 spell.c		| spell checking
+spellsuggest.c	| spell correction suggestions
 syntax.c	| syntax and other highlighting
 tag.c		| tags
 term.c		| terminal handling, termcap codes
