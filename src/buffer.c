@@ -908,6 +908,7 @@ free_buffer(buf_T *buf)
 #ifdef FEAT_JOB_CHANNEL
     vim_free(buf->b_prompt_text);
     free_callback(&buf->b_prompt_callback);
+    free_callback(&buf->b_prompt_interrupt);
 #endif
 
     buf_hashtab_remove(buf);
