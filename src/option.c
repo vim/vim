@@ -5530,7 +5530,7 @@ win_copy_options(win_T *wp_from, win_T *wp_to)
  * After copying window options: update variables depending on options.
  */
     void
-after_copy_winopt(win_T *wp)
+after_copy_winopt(win_T *wp UNUSED)
 {
 #ifdef FEAT_LINEBREAK
     briopt_check(wp);
@@ -5852,6 +5852,8 @@ buf_copy_options(buf_T *buf, int flags)
 #endif
 	    buf->b_p_fo = vim_strsave(p_fo);
 	    buf->b_p_flp = vim_strsave(p_flp);
+	    // NOTE: Valgrind may report a bogus memory leak for 'nrformats'
+	    // when it is set to 8 bytes in defaults.vim.
 	    buf->b_p_nf = vim_strsave(p_nf);
 	    buf->b_p_mps = vim_strsave(p_mps);
 #ifdef FEAT_SMARTINDENT

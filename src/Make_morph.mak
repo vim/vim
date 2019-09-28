@@ -29,6 +29,7 @@ SRC =	arabic.c						\
 	autocmd.c						\
 	blowfish.c						\
 	buffer.c						\
+	bufwrite.c						\
 	change.c						\
 	charset.c						\
 	cmdexpand.c						\
