@@ -223,6 +223,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # include "userfunc.pro"
 # include "version.pro"
 # include "window.pro"
+# include "bufwrite.pro"
 
 # ifdef FEAT_LUA
 #  include "if_lua.pro"

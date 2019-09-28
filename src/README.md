@@ -27,6 +27,7 @@ arglist.c	| handling argument list
 autocmd.c	| autocommands
 blob.c		| blob data type
 buffer.c	| manipulating buffers (loaded files)
+bufwrite.c	| writing a buffer to file
 change.c	| handling changes to text
 cmdexpand.c	| command-line completion
 cmdhist.c	| command-line history
