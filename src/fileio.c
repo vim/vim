@@ -29,9 +29,6 @@ static char_u *check_for_cryptkey(char_u *cryptkey, char_u *ptr, long *sizep, of
 #endif
 static linenr_T readfile_linenr(linenr_T linecnt, char_u *p, char_u *endp);
 static char_u *check_for_bom(char_u *p, long size, int *lenp, int flags);
-#ifdef MSWIN
-static int get_win_fio_flags(char_u *ptr);
-#endif
 static char *e_auchangedbuf = N_("E812: Autocommands changed buffer or buffer name");
 
     void
@@ -3128,13 +3125,13 @@ get_fio_flags(char_u *ptr)
     return 0;
 }
 
-#ifdef MSWIN
+#if defined(MSWIN) || defined(PROTO)
 /*
  * Check "ptr" for a MS-Windows codepage name and return the FIO_ flags needed
  * for the conversion MS-Windows can do for us.  Also accept "utf-8".
  * Used for conversion between 'encoding' and 'fileencoding'.
  */
-    static int
+    int
 get_win_fio_flags(char_u *ptr)
 {
     int		cp;

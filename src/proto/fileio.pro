@@ -15,6 +15,7 @@ void msg_add_eol(void);
 int time_differs(long t1, long t2);
 int need_conversion(char_u *fenc);
 int get_fio_flags(char_u *ptr);
+int get_win_fio_flags(char_u *ptr);
 int get_mac_fio_flags(char_u *ptr);
 char_u *shorten_fname1(char_u *full_path);
 char_u *shorten_fname(char_u *full_path, char_u *dir_name);
