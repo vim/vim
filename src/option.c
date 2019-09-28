@@ -5386,9 +5386,7 @@ get_varp(struct vimoption *p)
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 	case PV_CINW:	return (char_u *)&(curbuf->b_p_cinw);
 #endif
-#ifdef FEAT_COMMENTS
 	case PV_COM:	return (char_u *)&(curbuf->b_p_com);
-#endif
 #ifdef FEAT_FOLDING
 	case PV_CMS:	return (char_u *)&(curbuf->b_p_cms);
 #endif
@@ -5844,9 +5842,7 @@ buf_copy_options(buf_T *buf, int flags)
 				 ? vim_strsave(p_vsts_nopaste) : NULL;
 #endif
 	    buf->b_p_sn = p_sn;
-#ifdef FEAT_COMMENTS
 	    buf->b_p_com = vim_strsave(p_com);
-#endif
 #ifdef FEAT_FOLDING
 	    buf->b_p_cms = vim_strsave(p_cms);
 #endif

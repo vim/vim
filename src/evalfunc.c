@@ -3315,9 +3315,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 	"cmdline_compl",
 	"cmdline_hist",
-#ifdef FEAT_COMMENTS
 	"comments",
-#endif
 #ifdef FEAT_CONCEAL
 	"conceal",
 #endif

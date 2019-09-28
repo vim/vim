@@ -18,11 +18,7 @@ static void shift_block(oparg_T *oap, int amount);
 static void	mb_adjust_opend(oparg_T *oap);
 static int	do_addsub(int op_type, pos_T *pos, int length, linenr_T Prenum1);
 static int	ends_in_white(linenr_T lnum);
-#ifdef FEAT_COMMENTS
 static int	fmt_check_par(linenr_T, int *, char_u **, int do_comments);
-#else
-static int	fmt_check_par(linenr_T);
-#endif
 
 // Flags for third item in "opchars".
 #define OPF_LINES  1	// operator always works on lines
@@ -229,19 +225,19 @@ shift_line(
     int	left,
     int	round,
     int	amount,
-    int call_changed_bytes)	/* call changed_bytes() */
+    int call_changed_bytes)	// call changed_bytes()
 {
     int		count;
     int		i, j;
     int		sw_val = (int)get_sw_value_indent(curbuf);
 
-    count = get_indent();	/* get current indent */
+    count = get_indent();	// get current indent
 
-    if (round)			/* round off indent */
+    if (round)			// round off indent
     {
-	i = count / sw_val;	/* number of p_sw rounded down */
-	j = count % sw_val;	/* extra spaces */
-	if (j && left)		/* first remove extra spaces */
+	i = count / sw_val;	// number of 'shiftwidth' rounded down
+	j = count % sw_val;	// extra spaces
+	if (j && left)		// first remove extra spaces
 	    --amount;
 	if (left)
 	{
@@ -253,7 +249,7 @@ shift_line(
 	    i += amount;
 	count = i * sw_val;
     }
-    else		/* original vi indent */
+    else		// original vi indent
     {
 	if (left)
 	{
@@ -265,7 +261,7 @@ shift_line(
 	    count += sw_val * amount;
     }
 
-    /* Set new indent */
+    // Set new indent
     if (State & VREPLACE_FLAG)
 	change_indent(INDENT_SET, count, FALSE, NUL, call_changed_bytes);
     else
@@ -1944,7 +1940,6 @@ preprocs_left(void)
 }
 #endif
 
-#if defined(FEAT_COMMENTS) || defined(PROTO)
 /*
  * If "process" is TRUE and the line begins with a comment leader (possibly
  * after some white space), return a pointer to the text after it. Put a boolean
@@ -2015,7 +2010,6 @@ skip_comment(
 
     return line;
 }
-#endif
 
 /*
  * Join 'count' lines (minimal 2) at cursor position.
@@ -2047,12 +2041,10 @@ do_join(
     linenr_T	t;
     colnr_T	col = 0;
     int		ret = OK;
-#if defined(FEAT_COMMENTS) || defined(PROTO)
     int		*comments = NULL;
     int		remove_comments = (use_formatoptions == TRUE)
 				  && has_format_option(FO_REMOVE_COMS);
     int		prev_was_comment;
-#endif
 #ifdef FEAT_TEXT_PROP
     textprop_T	**prop_lines = NULL;
     int		*prop_lengths = NULL;
@@ -2068,7 +2060,6 @@ do_join(
     spaces = lalloc_clear(count, TRUE);
     if (spaces == NULL)
 	return FAIL;
-#if defined(FEAT_COMMENTS) || defined(PROTO)
     if (remove_comments)
     {
 	comments = lalloc_clear(count * sizeof(int), TRUE);
@@ -2078,7 +2069,6 @@ do_join(
 	    return FAIL;
 	}
     }
-#endif
 
     /*
      * Don't move anything yet, just compute the final line length
@@ -2094,7 +2084,6 @@ do_join(
 	    curwin->w_buffer->b_op_start.lnum = curwin->w_cursor.lnum;
 	    curwin->w_buffer->b_op_start.col  = (colnr_T)STRLEN(curr);
 	}
-#if defined(FEAT_COMMENTS) || defined(PROTO)
 	if (remove_comments)
 	{
 	    /* We don't want to remove the comment leader if the
@@ -2111,7 +2100,6 @@ do_join(
 		curr = skip_comment(curr, FALSE, insert_space,
 							   &prev_was_comment);
 	}
-#endif
 
 	if (insert_space && t > 0)
 	{
@@ -2230,10 +2218,8 @@ do_join(
 #endif
 
 	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t - 1));
-#if defined(FEAT_COMMENTS)
 	if (remove_comments)
 	    curr += comments[t - 1];
-#endif
 	if (insert_space && t > 1)
 	    curr = skipwhite(curr);
 	currsize = (int)STRLEN(curr);
@@ -2282,14 +2268,11 @@ do_join(
 
 theend:
     vim_free(spaces);
-#if defined(FEAT_COMMENTS) || defined(PROTO)
     if (remove_comments)
 	vim_free(comments);
-#endif
     return ret;
 }
 
-#ifdef FEAT_COMMENTS
 /*
  * Return TRUE if the two comment leaders given are the same.  "lnum" is
  * the first line.  White-space is ignored.  Note that the whole of
@@ -2365,7 +2348,6 @@ same_leader(
     }
     return (idx2 == leader2_len && idx1 == leader1_len);
 }
-#endif
 
 /*
  * Implementation of the format operator 'gq'.
@@ -2513,14 +2495,12 @@ format_lines(
     int		is_end_par;		/* at end of paragraph */
     int		prev_is_end_par = FALSE;/* prev. line not part of parag. */
     int		next_is_start_par = FALSE;
-#ifdef FEAT_COMMENTS
     int		leader_len = 0;		/* leader len of current line */
     int		next_leader_len;	/* leader len of next line */
     char_u	*leader_flags = NULL;	/* flags for leader of current line */
     char_u	*next_leader_flags;	/* flags for leader of next line */
     int		do_comments;		/* format comments */
     int		do_comments_list = 0;	/* format comments with 'n' or '2' */
-#endif
     int		advance = TRUE;
     int		second_indent = -1;	/* indent for second line (comment
 					 * aware) */
@@ -2538,9 +2518,7 @@ format_lines(
     max_len = comp_textwidth(TRUE) * 3;
 
     /* check for 'q', '2' and '1' in 'formatoptions' */
-#ifdef FEAT_COMMENTS
     do_comments = has_format_option(FO_Q_COMS);
-#endif
     do_second_indent = has_format_option(FO_Q_SECOND);
     do_number_indent = has_format_option(FO_Q_NUMBER);
     do_trail_white = has_format_option(FO_WHITE_PAR);
@@ -2550,17 +2528,11 @@ format_lines(
      */
     if (curwin->w_cursor.lnum > 1)
 	is_not_par = fmt_check_par(curwin->w_cursor.lnum - 1
-#ifdef FEAT_COMMENTS
-				, &leader_len, &leader_flags, do_comments
-#endif
-				);
+				, &leader_len, &leader_flags, do_comments);
     else
 	is_not_par = TRUE;
     next_is_not_par = fmt_check_par(curwin->w_cursor.lnum
-#ifdef FEAT_COMMENTS
-			   , &next_leader_len, &next_leader_flags, do_comments
-#endif
-				);
+			  , &next_leader_len, &next_leader_flags, do_comments);
     is_end_par = (is_not_par || next_is_not_par);
     if (!is_end_par && do_trail_white)
 	is_end_par = !ends_in_white(curwin->w_cursor.lnum - 1);
@@ -2576,10 +2548,8 @@ format_lines(
 	    curwin->w_cursor.lnum++;
 	    prev_is_end_par = is_end_par;
 	    is_not_par = next_is_not_par;
-#ifdef FEAT_COMMENTS
 	    leader_len = next_leader_len;
 	    leader_flags = next_leader_flags;
-#endif
 	}
 
 	/*
@@ -2588,18 +2558,13 @@ format_lines(
 	if (count == 1 || curwin->w_cursor.lnum == curbuf->b_ml.ml_line_count)
 	{
 	    next_is_not_par = TRUE;
-#ifdef FEAT_COMMENTS
 	    next_leader_len = 0;
 	    next_leader_flags = NULL;
-#endif
 	}
 	else
 	{
 	    next_is_not_par = fmt_check_par(curwin->w_cursor.lnum + 1
-#ifdef FEAT_COMMENTS
-			   , &next_leader_len, &next_leader_flags, do_comments
-#endif
-					);
+			  , &next_leader_len, &next_leader_flags, do_comments);
 	    if (do_number_indent)
 		next_is_start_par =
 			   (get_number_indent(curwin->w_cursor.lnum + 1) > 0);
@@ -2630,32 +2595,25 @@ format_lines(
 	    {
 		if (do_second_indent && !LINEEMPTY(curwin->w_cursor.lnum + 1))
 		{
-#ifdef FEAT_COMMENTS
 		    if (leader_len == 0 && next_leader_len == 0)
 		    {
 			/* no comment found */
-#endif
 			second_indent =
 				   get_indent_lnum(curwin->w_cursor.lnum + 1);
-#ifdef FEAT_COMMENTS
 		    }
 		    else
 		    {
 			second_indent = next_leader_len;
 			do_comments_list = 1;
 		    }
-#endif
 		}
 		else if (do_number_indent)
 		{
-#ifdef FEAT_COMMENTS
 		    if (leader_len == 0 && next_leader_len == 0)
 		    {
 			/* no comment found */
-#endif
 			second_indent =
 				     get_number_indent(curwin->w_cursor.lnum);
-#ifdef FEAT_COMMENTS
 		    }
 		    else
 		    {
@@ -2664,7 +2622,6 @@ format_lines(
 				     get_number_indent(curwin->w_cursor.lnum);
 			do_comments_list = 1;
 		    }
-#endif
 		}
 	    }
 
@@ -2672,12 +2629,9 @@ format_lines(
 	     * When the comment leader changes, it's the end of the paragraph.
 	     */
 	    if (curwin->w_cursor.lnum >= curbuf->b_ml.ml_line_count
-#ifdef FEAT_COMMENTS
 		    || !same_leader(curwin->w_cursor.lnum,
 					leader_len, leader_flags,
-					  next_leader_len, next_leader_flags)
-#endif
-		    )
+					   next_leader_len, next_leader_flags))
 		is_end_par = TRUE;
 
 	    /*
@@ -2702,11 +2656,9 @@ format_lines(
 		smd_save = p_smd;
 		p_smd = FALSE;
 		insertchar(NUL, INSCHAR_FORMAT
-#ifdef FEAT_COMMENTS
 			+ (do_comments ? INSCHAR_DO_COM : 0)
 			+ (do_comments && do_comments_list
 						       ? INSCHAR_COM_LIST : 0)
-#endif
 			+ (avoid_fex ? INSCHAR_NO_FEX : 0), second_indent);
 		State = old_State;
 		p_smd = smd_save;
@@ -2735,15 +2687,13 @@ format_lines(
 		curwin->w_cursor.col = 0;
 		if (line_count < 0 && u_save_cursor() == FAIL)
 		    break;
-#ifdef FEAT_COMMENTS
 		if (next_leader_len > 0)
 		{
 		    (void)del_bytes((long)next_leader_len, FALSE, FALSE);
 		    mark_col_adjust(curwin->w_cursor.lnum, (colnr_T)0, 0L,
-						      (long)-next_leader_len, 0);
-		} else
-#endif
-		    if (second_indent > 0)  /* the "leader" for FO_Q_SECOND */
+						    (long)-next_leader_len, 0);
+		}
+		else if (second_indent > 0)  // the "leader" for FO_Q_SECOND
 		{
 		    int indent = getwhitecols_curline();
 
@@ -2797,7 +2747,6 @@ ends_in_white(linenr_T lnum)
  * previous line.  A new paragraph starts after a blank line, or when the
  * comment leader changes -- webb.
  */
-#ifdef FEAT_COMMENTS
     static int
 fmt_check_par(
     linenr_T	lnum,
@@ -2828,13 +2777,6 @@ fmt_check_par(
 	    || (*leader_len > 0 && *flags == COM_END)
 	    || startPS(lnum, NUL, FALSE));
 }
-#else
-    static int
-fmt_check_par(linenr_T lnum)
-{
-    return (*skipwhite(ml_get(lnum)) == NUL || startPS(lnum, NUL, FALSE));
-}
-#endif
 
 /*
  * Return TRUE when a paragraph starts in line "lnum".  Return FALSE when the
@@ -2844,13 +2786,11 @@ fmt_check_par(linenr_T lnum)
 paragraph_start(linenr_T lnum)
 {
     char_u	*p;
-#ifdef FEAT_COMMENTS
     int		leader_len = 0;		/* leader len of current line */
     char_u	*leader_flags = NULL;	/* flags for leader of current line */
     int		next_leader_len;	/* leader len of next line */
     char_u	*next_leader_flags;	/* flags for leader of next line */
     int		do_comments;		/* format comments */
-#endif
 
     if (lnum <= 1)
 	return TRUE;		/* start of the file */
@@ -2859,21 +2799,11 @@ paragraph_start(linenr_T lnum)
     if (*p == NUL)
 	return TRUE;		/* after empty line */
 
-#ifdef FEAT_COMMENTS
     do_comments = has_format_option(FO_Q_COMS);
-#endif
-    if (fmt_check_par(lnum - 1
-#ifdef FEAT_COMMENTS
-				, &leader_len, &leader_flags, do_comments
-#endif
-		))
+    if (fmt_check_par(lnum - 1, &leader_len, &leader_flags, do_comments))
 	return TRUE;		/* after non-paragraph line */
 
-    if (fmt_check_par(lnum
-#ifdef FEAT_COMMENTS
-			   , &next_leader_len, &next_leader_flags, do_comments
-#endif
-		))
+    if (fmt_check_par(lnum, &next_leader_len, &next_leader_flags, do_comments))
 	return TRUE;		/* "lnum" is not a paragraph line */
 
     if (has_format_option(FO_WHITE_PAR) && !ends_in_white(lnum - 1))
@@ -2882,11 +2812,9 @@ paragraph_start(linenr_T lnum)
     if (has_format_option(FO_Q_NUMBER) && (get_number_indent(lnum) > 0))
 	return TRUE;		/* numbered item starts in "lnum". */
 
-#ifdef FEAT_COMMENTS
     if (!same_leader(lnum - 1, leader_len, leader_flags,
 					  next_leader_len, next_leader_flags))
 	return TRUE;		/* change of comment leader. */
-#endif
 
     return FALSE;
 }

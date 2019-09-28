@@ -2226,9 +2226,7 @@ free_buf_options(
     keymap_clear(&buf->b_kmap_ga);
     ga_clear(&buf->b_kmap_ga);
 #endif
-#ifdef FEAT_COMMENTS
     clear_string_option(&buf->b_p_com);
-#endif
 #ifdef FEAT_FOLDING
     clear_string_option(&buf->b_p_cms);
 #endif

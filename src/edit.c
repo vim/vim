@@ -2272,9 +2272,7 @@ insertchar(
     int		second_indent)		/* indent for second line if >= 0 */
 {
     int		textwidth;
-#ifdef FEAT_COMMENTS
     char_u	*p;
-#endif
     int		fo_ins_blank;
     int		force_format = flags & INSCHAR_FORMAT;
 
@@ -2332,12 +2330,11 @@ insertchar(
     if (c == NUL)	    /* only formatting was wanted */
 	return;
 
-#ifdef FEAT_COMMENTS
-    /* Check whether this character should end a comment. */
+    // Check whether this character should end a comment.
     if (did_ai && (int)c == end_comment_pending)
     {
 	char_u  *line;
-	char_u	lead_end[COM_MAX_LEN];	    /* end-comment string */
+	char_u	lead_end[COM_MAX_LEN];	    // end-comment string
 	int	middle_len, end_len;
 	int	i;
 
@@ -2346,46 +2343,43 @@ insertchar(
 	 * comment leader.  First, check what comment leader we can find.
 	 */
 	i = get_leader_len(line = ml_get_curline(), &p, FALSE, TRUE);
-	if (i > 0 && vim_strchr(p, COM_MIDDLE) != NULL)	/* Just checking */
+	if (i > 0 && vim_strchr(p, COM_MIDDLE) != NULL)	// Just checking
 	{
-	    /* Skip middle-comment string */
-	    while (*p && p[-1] != ':')	/* find end of middle flags */
+	    // Skip middle-comment string
+	    while (*p && p[-1] != ':')	// find end of middle flags
 		++p;
 	    middle_len = copy_option_part(&p, lead_end, COM_MAX_LEN, ",");
-	    /* Don't count trailing white space for middle_len */
+	    // Don't count trailing white space for middle_len
 	    while (middle_len > 0 && VIM_ISWHITE(lead_end[middle_len - 1]))
 		--middle_len;
 
-	    /* Find the end-comment string */
-	    while (*p && p[-1] != ':')	/* find end of end flags */
+	    // Find the end-comment string
+	    while (*p && p[-1] != ':')	// find end of end flags
 		++p;
 	    end_len = copy_option_part(&p, lead_end, COM_MAX_LEN, ",");
 
-	    /* Skip white space before the cursor */
+	    // Skip white space before the cursor
 	    i = curwin->w_cursor.col;
 	    while (--i >= 0 && VIM_ISWHITE(line[i]))
 		;
 	    i++;
 
-	    /* Skip to before the middle leader */
+	    // Skip to before the middle leader
 	    i -= middle_len;
 
-	    /* Check some expected things before we go on */
+	    // Check some expected things before we go on
 	    if (i >= 0 && lead_end[end_len - 1] == end_comment_pending)
 	    {
-		/* Backspace over all the stuff we want to replace */
+		// Backspace over all the stuff we want to replace
 		backspace_until_column(i);
 
-		/*
-		 * Insert the end-comment string, except for the last
-		 * character, which will get inserted as normal later.
-		 */
+		// Insert the end-comment string, except for the last
+		// character, which will get inserted as normal later.
 		ins_bytes_len(lead_end, end_len - 1);
 	    }
 	}
     }
     end_comment_pending = NUL;
-#endif
 
     did_ai = FALSE;
 #ifdef FEAT_SMARTINDENT
@@ -2518,11 +2512,9 @@ internal_format(
     int		fo_multibyte = has_format_option(FO_MBYTE_BREAK);
     int		fo_white_par = has_format_option(FO_WHITE_PAR);
     int		first_line = TRUE;
-#ifdef FEAT_COMMENTS
     colnr_T	leader_len;
     int		no_leader = FALSE;
     int		do_comments = (flags & INSCHAR_DO_COM);
-#endif
 #ifdef FEAT_LINEBREAK
     int		has_lbr = curwin->w_p_lbr;
 
@@ -2566,7 +2558,6 @@ internal_format(
 	if (virtcol <= (colnr_T)textwidth)
 	    break;
 
-#ifdef FEAT_COMMENTS
 	if (no_leader)
 	    do_comments = FALSE;
 	else if (!(flags & INSCHAR_FORMAT)
@@ -2585,11 +2576,8 @@ internal_format(
 	 * to start with %. */
 	if (leader_len == 0)
 	    no_leader = TRUE;
-#endif
 	if (!(flags & INSCHAR_FORMAT)
-#ifdef FEAT_COMMENTS
 		&& leader_len == 0
-#endif
 		&& !has_format_option(FO_WRAP))
 
 	    break;
@@ -2641,21 +2629,17 @@ internal_format(
 		if (has_format_option(FO_PERIOD_ABBR) && cc == '.' && wcc < 2)
 		    continue;
 
-#ifdef FEAT_COMMENTS
 		/* Don't break until after the comment leader */
 		if (curwin->w_cursor.col < leader_len)
 		    break;
-#endif
 		if (has_format_option(FO_ONE_LETTER))
 		{
 		    /* do not break after one-letter words */
 		    if (curwin->w_cursor.col == 0)
 			break;	/* one-letter word at begin */
-#ifdef FEAT_COMMENTS
 		    /* do not break "#a b" when 'tw' is 2 */
 		    if (curwin->w_cursor.col <= leader_len)
 			break;
-#endif
 		    col = curwin->w_cursor.col;
 		    dec_cursor();
 		    cc = gchar_cursor();
@@ -2677,11 +2661,9 @@ internal_format(
 		/* Break after or before a multi-byte character. */
 		if (curwin->w_cursor.col != startcol)
 		{
-#ifdef FEAT_COMMENTS
 		    /* Don't break until after the comment leader */
 		    if (curwin->w_cursor.col < leader_len)
 			break;
-#endif
 		    col = curwin->w_cursor.col;
 		    inc_cursor();
 		    /* Don't change end_foundcol if already set. */
@@ -2705,11 +2687,9 @@ internal_format(
 
 		if (WHITECHAR(cc))
 		    continue;		/* break with space */
-#ifdef FEAT_COMMENTS
 		/* Don't break until after the comment leader */
 		if (curwin->w_cursor.col < leader_len)
 		    break;
-#endif
 
 		curwin->w_cursor.col = col;
 
@@ -2783,10 +2763,8 @@ internal_format(
 	 */
 	open_line(FORWARD, OPENLINE_DELSPACES + OPENLINE_MARKFIX
 		+ (fo_white_par ? OPENLINE_KEEPTRAIL : 0)
-#ifdef FEAT_COMMENTS
 		+ (do_comments ? OPENLINE_DO_COM : 0)
 		+ ((flags & INSCHAR_COM_LIST) ? OPENLINE_COM_LIST : 0)
-#endif
 		, ((flags & INSCHAR_COM_LIST) ? second_indent : old_indent));
 	if (!(flags & INSCHAR_COM_LIST))
 	    old_indent = 0;
@@ -2812,7 +2790,6 @@ internal_format(
 			change_indent(INDENT_SET, second_indent,
 							    FALSE, NUL, TRUE);
 		    else
-#ifdef FEAT_COMMENTS
 			if (leader_len > 0 && second_indent - leader_len > 0)
 		    {
 			int i;
@@ -2829,11 +2806,8 @@ internal_format(
 		    }
 		    else
 		    {
-#endif
 			(void)set_indent(second_indent, SIN_CHANGED);
-#ifdef FEAT_COMMENTS
 		    }
-#endif
 		}
 	    }
 	    first_line = FALSE;
@@ -2937,13 +2911,11 @@ auto_format(
 	curwin->w_cursor = pos;
     }
 
-#ifdef FEAT_COMMENTS
     /* With the 'c' flag in 'formatoptions' and 't' missing: only format
      * comments. */
     if (has_format_option(FO_WRAP_COMS) && !has_format_option(FO_WRAP)
-				     && get_leader_len(old, NULL, FALSE, TRUE) == 0)
+				&& get_leader_len(old, NULL, FALSE, TRUE) == 0)
 	return;
-#endif
 
     /*
      * May start formatting in a previous line, so that after "x" a word is
@@ -4796,9 +4768,7 @@ ins_bs(
     if (in_indent)
 	can_cindent = FALSE;
 #endif
-#ifdef FEAT_COMMENTS
     end_comment_pending = NUL;	/* After BS, don't auto-end comment */
-#endif
 #ifdef FEAT_RIGHTLEFT
     if (revins_on)	    /* put cursor after last inserted char */
 	inc_cursor();
@@ -5912,10 +5882,7 @@ ins_eol(int c)
 
     AppendToRedobuff(NL_STR);
     i = open_line(FORWARD,
-#ifdef FEAT_COMMENTS
-	    has_format_option(FO_RET_COMS) ? OPENLINE_DO_COM :
-#endif
-	    0, old_indent);
+	    has_format_option(FO_RET_COMS) ? OPENLINE_DO_COM : 0, old_indent);
     old_indent = 0;
 #ifdef FEAT_CINDENT
     can_cindent = TRUE;

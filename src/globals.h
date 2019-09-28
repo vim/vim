@@ -800,7 +800,6 @@ EXTERN int     did_ai INIT(= FALSE);
  */
 EXTERN colnr_T	ai_col INIT(= 0);
 
-#ifdef FEAT_COMMENTS
 /*
  * This is a character which will end a start-middle-end comment when typed as
  * the first character on a new line.  It is taken from the last character of
@@ -808,7 +807,6 @@ EXTERN colnr_T	ai_col INIT(= 0);
  * comment end in 'comments'.  It is only valid when did_ai is TRUE.
  */
 EXTERN int     end_comment_pending INIT(= NUL);
-#endif
 
 /*
  * This flag is set after a ":syncbind" to let the check_scrollbind() function

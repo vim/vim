@@ -1618,8 +1618,6 @@ By default, "b:#" is included.  This means that a line that starts with
 "#include" is not recognized as a comment line.  But a line that starts with
 "# define" is recognized.  This is a compromise.
 
-{not available when compiled without the |+comments| feature}
-
 							*fo-table*
 You can use the 'formatoptions' option  to influence how Vim formats text.
 'formatoptions' is a string that can contain any of the letters below.  The

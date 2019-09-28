@@ -466,11 +466,10 @@ get_number_indent(linenr_T lnum)
 	return -1;
     pos.lnum = 0;
 
-#ifdef FEAT_COMMENTS
     /* In format_lines() (i.e. not insert mode), fo+=q is needed too...  */
     if ((State & INSERT) || has_format_option(FO_Q_COMS))
 	lead_len = get_leader_len(ml_get(lnum), NULL, FALSE, TRUE);
-#endif
+
     regmatch.regprog = vim_regcomp(curbuf->b_p_flp, RE_MAGIC);
     if (regmatch.regprog != NULL)
     {
@@ -561,7 +560,6 @@ get_breakindent_win(
 }
 #endif
 
-#if defined(FEAT_COMMENTS) || defined(PROTO)
 /*
  * get_leader_len() returns the length in bytes of the prefix of the given
  * string which introduces a comment.  If this string is not a comment then
@@ -862,7 +860,6 @@ get_last_leader_offset(char_u *line, char_u **flags)
     }
     return result;
 }
-#endif
 
 /*
  * Return the number of window lines occupied by buffer line "lnum".
@@ -1548,8 +1545,6 @@ prompt_for_number(int *mouse_used)
 	if (msg_row > 0)
 	    cmdline_row = msg_row - 1;
 	need_wait_return = FALSE;
-	msg_didany = FALSE;
-	msg_didout = FALSE;
     }
     else
 	cmdline_row = save_cmdline_row;

@@ -2429,9 +2429,7 @@ struct file_buffer
 #if defined(FEAT_CINDENT) || defined(FEAT_SMARTINDENT)
     char_u	*b_p_cinw;	// 'cinwords'
 #endif
-#ifdef FEAT_COMMENTS
     char_u	*b_p_com;	// 'comments'
-#endif
 #ifdef FEAT_FOLDING
     char_u	*b_p_cms;	// 'commentstring'
 #endif
