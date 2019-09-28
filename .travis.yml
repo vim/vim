@@ -215,7 +215,9 @@ jobs:
     - <<: *linux
       name: huge+coverage/clang
       compiler: clang
-      env: *linux-huge
+      env:
+        - *linux-huge
+        - TEST=scripttests
       after_success: *coverage
     - <<: *linux
       name: huge+coverage/gcc
