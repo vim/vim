@@ -565,6 +565,9 @@ endfunc
 
 " Test for changing backslash to forward slash in filenames
 func Test_mksession_slash()
+  if exists('+shellslash')
+    throw 'Skipped: cannot use backslash in file name'
+  endif
   enew
   %bwipe!
   e a\\b\\c
