@@ -2914,9 +2914,17 @@ eval_lambda(
 		semsg(_(e_missingparen), "lambda");
 	}
 	clear_tv(rettv);
-	return FAIL;
+	ret = FAIL;
     }
-    return call_func_rettv(arg, rettv, evaluate, NULL, &base);
+    else
+	ret = call_func_rettv(arg, rettv, evaluate, NULL, &base);
+
+    // Clear the funcref afterwards, so that deleting it while
+    // evaluating the arguments is possible (see test55).
+    if (evaluate)
+	clear_tv(&base);
+
+    return ret;
 }
 
 /*
