@@ -2213,8 +2213,7 @@ f_expand(typval_T *argvars, typval_T *rettv)
 	{
 	    if (rettv_list_alloc(rettv) != FAIL && result != NULL)
 		list_append_string(rettv->vval.v_list, result, -1);
-	    else
-		vim_free(result);
+	    vim_free(result);
 	}
 	else
 	    rettv->vval.v_string = result;
