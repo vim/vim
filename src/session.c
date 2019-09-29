@@ -985,7 +985,7 @@ ex_loadview(exarg_T *eap)
     }
 }
 
-# if defined(USE_GNOME_SESSION) \
+# if defined(FEAT_GUI_GNOME) \
 	|| (defined(GUI_MAY_SPAWN) && defined(EXPERIMENTAL_GUI_CMD)) \
 	|| defined(PROTO)
 /*
