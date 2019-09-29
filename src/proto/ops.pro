@@ -1,16 +1,13 @@
 /* ops.c */
 int get_op_type(int char1, int char2);
-int op_on_lines(int op);
 int op_is_change(int op);
 int get_op_char(int optype);
 int get_extra_op_char(int optype);
 void op_shift(oparg_T *oap, int curs_top, int amount);
 void shift_line(int left, int round, int amount, int call_changed_bytes);
-void op_reindent(oparg_T *oap, int (*how)(void));
 void stuffescaped(char_u *arg, int literally);
 int op_delete(oparg_T *oap);
 int op_replace(oparg_T *oap, int c);
-void op_tilde(oparg_T *oap);
 int swapchar(int op_type, pos_T *pos);
 void op_insert(oparg_T *oap, long count1);
 int op_change(oparg_T *oap);
@@ -18,8 +15,6 @@ void adjust_cursor_eol(void);
 int preprocs_left(void);
 char_u *skip_comment(char_u *line, int process, int include_space, int *is_comment);
 int do_join(long count, int insert_space, int save_undo, int use_formatoptions, int setmark);
-void op_format(oparg_T *oap, int keep_cursor);
-void op_formatexpr(oparg_T *oap);
 int fex_format(linenr_T lnum, long count, int c);
 void format_lines(linenr_T line_count, int avoid_fex);
 int paragraph_start(linenr_T lnum);
@@ -28,4 +23,5 @@ void op_addsub(oparg_T *oap, linenr_T Prenum1, int g_cmd);
 void x11_export_final_selection(void);
 void clear_oparg(oparg_T *oap);
 void cursor_pos_info(dict_T *dict);
+void do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank);
 /* vim: set ft=c : */
