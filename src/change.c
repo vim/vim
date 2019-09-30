@@ -1414,18 +1414,14 @@ open_line(
     int		n;
     int		trunc_line = FALSE;	// truncate current line afterwards
     int		retval = FAIL;		// return value
-#ifdef FEAT_COMMENTS
     int		extra_len = 0;		// length of p_extra string
     int		lead_len;		// length of comment leader
     char_u	*lead_flags;	// position in 'comments' for comment leader
     char_u	*leader = NULL;		// copy of comment leader
-#endif
     char_u	*allocated = NULL;	// allocated memory
     char_u	*p;
     int		saved_char = NUL;	// init for GCC
-#if defined(FEAT_SMARTINDENT) || defined(FEAT_COMMENTS)
     pos_T	*pos;
-#endif
 #ifdef FEAT_SMARTINDENT
     int		do_si = (!p_paste && curbuf->b_p_si
 # ifdef FEAT_CINDENT
@@ -1493,9 +1489,7 @@ open_line(
 	    first_char = *p;
 	}
 #endif
-#ifdef FEAT_COMMENTS
 	extra_len = (int)STRLEN(p_extra);
-#endif
 	saved_char = *p_extra;
 	*p_extra = NUL;
     }
@@ -1544,27 +1538,20 @@ open_line(
 
 	    old_cursor = curwin->w_cursor;
 	    ptr = saved_line;
-# ifdef FEAT_COMMENTS
 	    if (flags & OPENLINE_DO_COM)
 		lead_len = get_leader_len(ptr, NULL, FALSE, TRUE);
 	    else
 		lead_len = 0;
-# endif
 	    if (dir == FORWARD)
 	    {
 		// Skip preprocessor directives, unless they are
 		// recognised as comments.
-		if (
-# ifdef FEAT_COMMENTS
-			lead_len == 0 &&
-# endif
-			ptr[0] == '#')
+		if ( lead_len == 0 && ptr[0] == '#')
 		{
 		    while (ptr[0] == '#' && curwin->w_cursor.lnum > 1)
 			ptr = ml_get(--curwin->w_cursor.lnum);
 		    newindent = get_indent();
 		}
-# ifdef FEAT_COMMENTS
 		if (flags & OPENLINE_DO_COM)
 		    lead_len = get_leader_len(ptr, NULL, FALSE, TRUE);
 		else
@@ -1600,7 +1587,6 @@ open_line(
 		    }
 		}
 		else	// Not a comment line
-# endif
 		{
 		    // Find last non-blank in line
 		    p = ptr + STRLEN(ptr) - 1;
@@ -1651,11 +1637,7 @@ open_line(
 	    {
 		// Skip preprocessor directives, unless they are
 		// recognised as comments.
-		if (
-# ifdef FEAT_COMMENTS
-			lead_len == 0 &&
-# endif
-			ptr[0] == '#')
+		if (lead_len == 0 && ptr[0] == '#')
 		{
 		    int was_backslashed = FALSE;
 
@@ -1688,7 +1670,6 @@ open_line(
 	did_ai = TRUE;
     }
 
-#ifdef FEAT_COMMENTS
     // Find out if the current line starts with a comment leader.
     // This may then be inserted in front of the new line.
     end_comment_pending = NUL;
@@ -2086,7 +2067,6 @@ open_line(
 	    }
 	}
     }
-#endif
 
     // (State == INSERT || State == REPLACE), only when dir == FORWARD
     if (p_extra != NULL)
@@ -2120,7 +2100,6 @@ open_line(
     if (p_extra == NULL)
 	p_extra = (char_u *)"";		    // append empty line
 
-#ifdef FEAT_COMMENTS
     // concatenate leader and p_extra, if there is a leader
     if (lead_len)
     {
@@ -2147,7 +2126,6 @@ open_line(
     }
     else
 	end_comment_pending = NUL;  // turns out there was no leader
-#endif
 
     old_cursor = curwin->w_cursor;
     if (dir == BACKWARD)
@@ -2237,13 +2215,11 @@ open_line(
 #endif
     }
 
-#ifdef FEAT_COMMENTS
     // In REPLACE mode, for each character in the extra leader, there must be
     // a NUL on the replace stack, for when it is deleted with BS.
     if (REPLACE_NORMAL(State))
 	while (lead_len-- > 0)
 	    replace_push(NUL);
-#endif
 
     curwin->w_cursor = old_cursor;
 
@@ -2299,9 +2275,7 @@ open_line(
 #ifdef FEAT_LISP
     // May do lisp indenting.
     if (!p_paste
-# ifdef FEAT_COMMENTS
 	    && leader == NULL
-# endif
 	    && curbuf->b_p_lisp
 	    && curbuf->b_p_ai)
     {

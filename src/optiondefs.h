@@ -52,9 +52,7 @@
 #ifdef FEAT_FOLDING
 # define PV_CMS		OPT_BUF(BV_CMS)
 #endif
-#ifdef FEAT_COMMENTS
-# define PV_COM		OPT_BUF(BV_COM)
-#endif
+#define PV_COM		OPT_BUF(BV_COM)
 #define PV_CPT		OPT_BUF(BV_CPT)
 #define PV_DICT	OPT_BOTH(OPT_BUF(BV_DICT))
 #define PV_TSR		OPT_BOTH(OPT_BUF(BV_TSR))
@@ -634,14 +632,9 @@ static struct vimoption options[] =
 			    {(char_u *)80L, (char_u *)0L} SCTX_INIT},
     {"comments",    "com",  P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA
 							  |P_NODUP|P_CURSWANT,
-#ifdef FEAT_COMMENTS
 			    (char_u *)&p_com, PV_COM,
 			    {(char_u *)"s1:/*,mb:*,ex:*/,://,b:#,:%,:XCOMM,n:>,fb:-",
 				(char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"commentstring", "cms", P_STRING|P_ALLOCED|P_VI_DEF|P_CURSWANT,
 #ifdef FEAT_FOLDING

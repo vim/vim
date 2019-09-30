@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Jul 06
+*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Sep 23
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -856,6 +856,7 @@ Insert mode completion:				*completion-functions*
 	complete_check()	check if completion should be aborted
 	complete_info()		get current completion information
 	pumvisible()		check if the popup menu is displayed
+	pum_getpos()		position and size of popup menu if visible
 
 Folding:					*folding-functions*
 	foldclosed()		check for a closed fold at a specific line

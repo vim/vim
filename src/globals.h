@@ -800,7 +800,6 @@ EXTERN int     did_ai INIT(= FALSE);
  */
 EXTERN colnr_T	ai_col INIT(= 0);
 
-#ifdef FEAT_COMMENTS
 /*
  * This is a character which will end a start-middle-end comment when typed as
  * the first character on a new line.  It is taken from the last character of
@@ -808,7 +807,6 @@ EXTERN colnr_T	ai_col INIT(= 0);
  * comment end in 'comments'.  It is only valid when did_ai is TRUE.
  */
 EXTERN int     end_comment_pending INIT(= NUL);
-#endif
 
 /*
  * This flag is set after a ":syncbind" to let the check_scrollbind() function
@@ -1727,4 +1725,10 @@ typedef int HINSTANCE;
 # endif
 EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 EXTERN HINSTANCE g_hinst INIT(= NULL);
+#endif
+
+#if defined(FEAT_JOB_CHANNEL)
+EXTERN int did_repeated_msg INIT(= 0);
+# define REPEATED_MSG_LOOKING	    1
+# define REPEATED_MSG_SAFESTATE	    2
 #endif

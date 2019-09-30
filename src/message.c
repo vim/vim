@@ -1058,9 +1058,7 @@ wait_return(int redraw)
 	screenalloc(FALSE);
 
 	State = HITRETURN;
-#ifdef FEAT_MOUSE
 	setmouse();
-#endif
 #ifdef USE_ON_FLY_SCROLL
 	dont_scroll = TRUE;		/* disallow scrolling here */
 #endif
@@ -1216,9 +1214,7 @@ wait_return(int redraw)
      */
     tmpState = State;
     State = oldState;		    /* restore State before set_shellsize */
-#ifdef FEAT_MOUSE
     setmouse();
-#endif
     msg_check();
 
 #if defined(UNIX) || defined(VMS)
@@ -2684,9 +2680,7 @@ do_more_prompt(int typed_char)
     }
 
     State = ASKMORE;
-#ifdef FEAT_MOUSE
     setmouse();
-#endif
     if (typed_char == NUL)
 	msg_moremsg(FALSE);
     for (;;)
@@ -2902,9 +2896,7 @@ do_more_prompt(int typed_char)
     /* clear the --more-- message */
     screen_fill((int)Rows - 1, (int)Rows, 0, (int)Columns, ' ', ' ', 0);
     State = oldState;
-#ifdef FEAT_MOUSE
     setmouse();
-#endif
     if (quit_more)
     {
 	msg_row = Rows - 1;
@@ -3608,9 +3600,7 @@ do_dialog(
 
     oldState = State;
     State = CONFIRM;
-#ifdef FEAT_MOUSE
     setmouse();
-#endif
 
     /*
      * Since we wait for a keypress, don't make the
@@ -3673,9 +3663,7 @@ do_dialog(
     }
 
     State = oldState;
-#ifdef FEAT_MOUSE
     setmouse();
-#endif
     --no_wait_return;
     msg_end_prompt();
 
@@ -4417,12 +4405,16 @@ vim_vsnprintf_typval(
 				     - mb_string2cells((char_u *)str_arg, -1);
 			if (precision)
 			{
-			    char_u *p1 = (char_u *)str_arg;
-			    size_t i;
+			    char_u  *p1;
+			    size_t  i = 0;
 
-			    for (i = 0; i < precision && *p1; i++)
-				p1 += mb_ptr2len(p1);
-
+			    for (p1 = (char_u *)str_arg; *p1;
+							  p1 += mb_ptr2len(p1))
+			    {
+				i += (size_t)mb_ptr2cells(p1);
+				if (i > precision)
+				    break;
+			    }
 			    str_arg_l = precision = p1 - (char_u *)str_arg;
 			}
 		    }

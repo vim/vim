@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.1.  Last change: 2019 Aug 21
+*change.txt*    For Vim version 8.1.  Last change: 2019 Sep 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1172,7 +1172,7 @@ Rationale:	In Vi the "y" command followed by a backwards motion would
 With a linewise yank command the cursor is put in the first line, but the
 column is unmodified, thus it may not be on the first yanked character.
 
-There are ten types of registers:			*registers* *E354*
+There are ten types of registers:		*registers* *{register}* *E354*
 1. The unnamed register ""
 2. 10 numbered registers "0 to "9
 3. The small delete register "-
@@ -1312,7 +1312,7 @@ When writing to this register, nothing happens.  This can be used to delete
 text without affecting the normal registers.  When reading from this register,
 nothing is returned.
 
-10. Last search pattern register	"/			*quote_/* *quote/*
+10. Last search pattern register	"/		*quote_/* *quote/*
 Contains the most recent search-pattern.  This is used for "n" and 'hlsearch'.
 It is writable with `:let`, you can change it to have 'hlsearch' highlight
 other matches without actually searching.  You can't yank or delete into this
@@ -1617,8 +1617,6 @@ Other examples: >
 By default, "b:#" is included.  This means that a line that starts with
 "#include" is not recognized as a comment line.  But a line that starts with
 "# define" is recognized.  This is a compromise.
-
-{not available when compiled without the |+comments| feature}
 
 							*fo-table*
 You can use the 'formatoptions' option  to influence how Vim formats text.

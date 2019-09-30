@@ -1,4 +1,4 @@
-/* popupmnu.c */
+/* popupmenu.c */
 void pum_display(pumitem_T *array, int size, int selected);
 void pum_call_update_screen(void);
 int pum_under_menu(int row, int col);

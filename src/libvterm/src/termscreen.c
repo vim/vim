@@ -75,6 +75,8 @@ static ScreenCell *getcell(const VTermScreen *screen, int row, int col)
     return NULL;
   if(col < 0 || col >= screen->cols)
     return NULL;
+  if (screen->buffer == NULL)
+    return NULL;
   return screen->buffer + (screen->cols * row) + col;
 }
 

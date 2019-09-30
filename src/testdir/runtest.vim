@@ -253,11 +253,18 @@ func FinishTesting()
   endif
 
   if s:done == 0
-    let message = 'NO tests executed'
+    if s:filtered > 0
+      let message = "NO tests match $TEST_FILTER: '" .. $TEST_FILTER .. "'"
+    else
+      let message = 'NO tests executed'
+    endif
   else
+    if s:filtered > 0
+      call add(s:messages, "Filtered " .. s:filtered .. " tests with $TEST_FILTER")
+    endif
     let message = 'Executed ' . s:done . (s:done > 1 ? ' tests' : ' test')
   endif
-  if has('reltime')
+  if s:done > 0 && has('reltime')
     let message ..= ' in ' .. reltimestr(reltime(s:start_time)) .. ' seconds'
   endif
   echo message
@@ -307,6 +314,7 @@ endif
 
 " Names of flaky tests.
 let s:flaky_tests = [
+      \ 'Test_autocmd_SafeState()',
       \ 'Test_call()',
       \ 'Test_channel_handler()',
       \ 'Test_client_server()',
@@ -381,6 +389,15 @@ let s:tests = split(substitute(@q, 'function \(\k*()\)', '\1', 'g'))
 " If there is an extra argument filter the function names against it.
 if argc() > 1
   let s:tests = filter(s:tests, 'v:val =~ argv(1)')
+endif
+
+" If the environment variable $TEST_FILTER is set then filter the function
+" names against it.
+let s:filtered = 0
+if $TEST_FILTER != ''
+  let s:filtered = len(s:tests)
+  let s:tests = filter(s:tests, 'v:val =~ $TEST_FILTER')
+  let s:filtered -= len(s:tests)
 endif
 
 " Execute the tests in alphabetical order.

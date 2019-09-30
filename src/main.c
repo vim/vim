@@ -684,9 +684,7 @@ vim_main2(void)
     starttermcap();	    /* start termcap if not done by wait_return() */
     TIME_MSG("start termcap");
 
-#ifdef FEAT_MOUSE
-    setmouse();				/* may start using the mouse */
-#endif
+    setmouse();				// may start using the mouse
     if (scroll_region)
 	scroll_region_reset();		/* In case Rows changed */
     scroll_start();	/* may scroll the screen to the right position */
@@ -1124,7 +1122,16 @@ may_trigger_safestateagain(void)
     if (was_safe)
     {
 #ifdef FEAT_JOB_CHANNEL
-	ch_log(NULL, "SafeState: back to waiting, triggering SafeStateAgain");
+	// Only do this message when another message was given, otherwise we
+	// get lots of them.
+	if ((did_repeated_msg & REPEATED_MSG_SAFESTATE) == 0)
+	{
+	    int did = did_repeated_msg;
+
+	    ch_log(NULL,
+		      "SafeState: back to waiting, triggering SafeStateAgain");
+	    did_repeated_msg = did | REPEATED_MSG_SAFESTATE;
+	}
 #endif
 	apply_autocmds(EVENT_SAFESTATEAGAIN, NULL, NULL, FALSE, curbuf);
     }
@@ -1182,9 +1189,7 @@ main_loop(
 	emsg_skip = 0;
 # endif
 	emsg_off = 0;
-# ifdef FEAT_MOUSE
 	setmouse();
-# endif
 	settmode(TMODE_RAW);
 	starttermcap();
 	scroll_start();
@@ -3662,7 +3667,7 @@ static struct timeval	prev_timeval;
  * Windows doesn't have gettimeofday(), although it does have struct timeval.
  */
     static int
-gettimeofday(struct timeval *tv, char *dummy)
+gettimeofday(struct timeval *tv, char *dummy UNUSED)
 {
     long t = clock();
     tv->tv_sec = t / CLOCKS_PER_SEC;

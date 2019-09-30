@@ -8,7 +8,7 @@
  */
 
 /*
- * uninstal.c:	Minimalistic uninstall program for Vim on MS-Windows
+ * uninstall.c:	Minimalistic uninstall program for Vim on MS-Windows
  *		Removes:
  *		- the "Edit with Vim" popup menu entry
  *		- the Vim "Open With..." popup menu entry
@@ -17,7 +17,7 @@
  *		- the Vim entry in the Start Menu
  */
 
-/* Include common code for dosinst.c and uninstal.c. */
+/* Include common code for dosinst.c and uninstall.c. */
 #include "dosinst.h"
 
 /*

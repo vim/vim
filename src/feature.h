@@ -108,6 +108,7 @@
  * +cmdline_compl	completion of mappings/abbreviations in cmdline mode.
  * +insert_expand	CTRL-N/CTRL-P/CTRL-X in insert mode.
  * +modify_fname	modifiers for file name.  E.g., "%:p:h".
+ * +comments		'comments' option.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -493,13 +494,6 @@
 
 #ifdef FEAT_NORMAL
 # define FEAT_SMARTINDENT
-#endif
-
-/*
- * +comments		'comments' option.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_COMMENTS
 #endif
 
 /*

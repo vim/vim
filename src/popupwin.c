@@ -1638,6 +1638,13 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 		semsg(_(e_nobufnr), argvars[0].vval.v_number);
 		return NULL;
 	    }
+#ifdef FEAT_TERMINAL
+	    if (buf->b_term != NULL)
+	    {
+		emsg(_("E278: Cannot put a terminal buffer in a popup window"));
+		return NULL;
+	    }
+#endif
 	}
 	else if (!(argvars[0].v_type == VAR_STRING
 			&& argvars[0].vval.v_string != NULL)

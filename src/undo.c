@@ -1784,7 +1784,7 @@ theend:
  * "hash[UNDO_HASH_SIZE]" must be the hash value of the buffer text.
  */
     void
-u_read_undo(char_u *name, char_u *hash, char_u *orig_name)
+u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 {
     char_u	*file_name;
     FILE	*fp;

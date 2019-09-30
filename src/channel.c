@@ -141,7 +141,13 @@ ch_logfile(char_u *fname, char_u *opt)
     FILE   *file = NULL;
 
     if (log_fd != NULL)
+    {
+	if (*fname != NUL)
+	    ch_log(NULL, "closing, opening %s", fname);
+	else
+	    ch_log(NULL, "closing");
 	fclose(log_fd);
+    }
 
     if (*fname != NUL)
     {
@@ -194,8 +200,6 @@ ch_log_lead(const char *what, channel_T *ch, ch_part_T part)
     }
 }
 
-static int did_log_msg = TRUE;
-
 #ifndef PROTO  // prototype is in proto.h
     void
 ch_log(channel_T *ch, const char *fmt, ...)
@@ -210,7 +214,7 @@ ch_log(channel_T *ch, const char *fmt, ...)
 	va_end(ap);
 	fputc('\n', log_fd);
 	fflush(log_fd);
-	did_log_msg = TRUE;
+	did_repeated_msg = 0;
     }
 }
 #endif
@@ -235,7 +239,7 @@ ch_error(channel_T *ch, const char *fmt, ...)
 	va_end(ap);
 	fputc('\n', log_fd);
 	fflush(log_fd);
-	did_log_msg = TRUE;
+	did_repeated_msg = 0;
     }
 }
 
@@ -577,7 +581,7 @@ messageFromServerGtk2(gpointer clientData,
 # endif
 
     static void
-channel_gui_register_one(channel_T *channel, ch_part_T part)
+channel_gui_register_one(channel_T *channel, ch_part_T part UNUSED)
 {
     if (!CH_HAS_GUI)
 	return;
@@ -661,7 +665,7 @@ channel_gui_register_all(void)
 }
 
     static void
-channel_gui_unregister_one(channel_T *channel, ch_part_T part)
+channel_gui_unregister_one(channel_T *channel UNUSED, ch_part_T part UNUSED)
 {
 # ifdef FEAT_GUI_X11
     if (channel->ch_part[part].ch_inputHandler != (XtInputId)NULL)
@@ -3918,7 +3922,7 @@ channel_send(
 	vim_ignored = (int)fwrite(buf_arg, len_arg, 1, log_fd);
 	fprintf(log_fd, "'\n");
 	fflush(log_fd);
-	did_log_msg = TRUE;
+	did_repeated_msg = 0;
     }
 
     for (;;)
@@ -4432,10 +4436,11 @@ channel_parse_messages(void)
 
     /* Only do this message when another message was given, otherwise we get
      * lots of them. */
-    if (did_log_msg)
+    if ((did_repeated_msg & REPEATED_MSG_LOOKING) == 0)
     {
 	ch_log(NULL, "looking for messages on channels");
-	did_log_msg = FALSE;
+	// now we should also give the message for SafeState
+	did_repeated_msg = REPEATED_MSG_LOOKING;
     }
     while (channel != NULL)
     {
@@ -5145,6 +5150,14 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		memcpy(opt->jo_ansi_colors, rgb, sizeof(rgb));
 	    }
 # endif
+	    else if (STRCMP(hi->hi_key, "term_api") == 0)
+	    {
+		if (!(supported2 & JO2_TERM_API))
+		    break;
+		opt->jo_set2 |= JO2_TERM_API;
+		opt->jo_term_api = tv_get_string_buf_chk(item,
+							 opt->jo_term_api_buf);
+	    }
 #endif
 	    else if (STRCMP(hi->hi_key, "env") == 0)
 	    {
@@ -5800,7 +5813,7 @@ job_check_ended(void)
     job_T *
 job_start(
 	typval_T    *argvars,
-	char	    **argv_arg,
+	char	    **argv_arg UNUSED,
 	jobopt_T    *opt_arg,
 	int	    is_terminal UNUSED)
 {

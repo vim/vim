@@ -478,9 +478,7 @@ EXTERN char_u	*p_csl;		// 'completeslash'
 #endif
 EXTERN long	p_ph;		// 'pumheight'
 EXTERN long	p_pw;		// 'pumwidth'
-#ifdef FEAT_COMMENTS
 EXTERN char_u	*p_com;		// 'comments'
-#endif
 EXTERN char_u	*p_cpo;		// 'cpoptions'
 #ifdef FEAT_CSCOPE
 EXTERN char_u	*p_csprg;	// 'cscopeprg'
@@ -1094,9 +1092,7 @@ enum
 #ifdef FEAT_FOLDING
     , BV_CMS
 #endif
-#ifdef FEAT_COMMENTS
     , BV_COM
-#endif
     , BV_CPT
     , BV_DICT
     , BV_TSR

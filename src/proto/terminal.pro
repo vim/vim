@@ -50,6 +50,7 @@ void f_term_scrape(typval_T *argvars, typval_T *rettv);
 void f_term_sendkeys(typval_T *argvars, typval_T *rettv);
 void f_term_getansicolors(typval_T *argvars, typval_T *rettv);
 void f_term_setansicolors(typval_T *argvars, typval_T *rettv);
+void f_term_setapi(typval_T *argvars, typval_T *rettv);
 void f_term_setrestore(typval_T *argvars, typval_T *rettv);
 void f_term_setkill(typval_T *argvars, typval_T *rettv);
 void f_term_start(typval_T *argvars, typval_T *rettv);

@@ -822,7 +822,6 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
 		goto failret;
 	    }
 	    item = dictitem_alloc(key);
-	    clear_tv(&tvkey);
 	    if (item != NULL)
 	    {
 		item->di_tv = tv;
@@ -831,6 +830,7 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
 		    dictitem_free(item);
 	    }
 	}
+	clear_tv(&tvkey);
 
 	if (**arg == '}')
 	    break;

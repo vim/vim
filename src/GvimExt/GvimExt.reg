@@ -17,4 +17,4 @@ REGEDIT4
 
 [HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\Vim 8.1]
    "DisplayName"="Vim 8.1: Edit with Vim popup menu entry"
-   "UninstallString"="uninstal.exe"
+   "UninstallString"="uninstall.exe"

@@ -272,7 +272,7 @@ mch_input_isatty(void)
     void
 mch_settitle(
     char_u *title,
-    char_u *icon)
+    char_u *icon UNUSED)
 {
 # ifdef FEAT_GUI_MSWIN
 #  ifdef VIMDLL
@@ -1164,7 +1164,7 @@ AbortProc(HDC hdcPrn UNUSED, int iCode UNUSED)
 PrintHookProc(
 	HWND hDlg,	// handle to dialog box
 	UINT uiMsg,	// message identifier
-	WPARAM wParam,	// message parameter
+	WPARAM wParam UNUSED,	// message parameter
 	LPARAM lParam	// message parameter
 	)
 {

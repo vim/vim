@@ -7,7 +7,7 @@
  * See README.txt for an overview of the Vim source code.
  */
 /*
- * dosinst.h: Common code for dosinst.c and uninstal.c
+ * dosinst.h: Common code for dosinst.c and uninstall.c
  */
 
 /* Visual Studio 2005 has 'deprecated' many of the standard CRT functions */
