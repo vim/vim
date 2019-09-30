@@ -778,6 +778,13 @@ EXTERN int	VIsual_mode INIT(= 'v');
 EXTERN int	redo_VIsual_busy INIT(= FALSE);
 				// TRUE when redoing Visual
 
+/*
+ * The Visual area is remembered for reselection.
+ */
+EXTERN int	resel_VIsual_mode INIT(= NUL);	// 'v', 'V', or Ctrl-V
+EXTERN linenr_T	resel_VIsual_line_count;	// number of lines
+EXTERN colnr_T	resel_VIsual_vcol;		// nr of cols or end col
+
 #ifdef FEAT_MOUSE
 /*
  * When pasting text with the middle mouse button in visual mode with

@@ -1,16 +1,17 @@
 /* normal.c */
 void init_normal_cmds(void);
 void normal_cmd(oparg_T *oap, int toplevel);
-void do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank);
 void check_visual_highlight(void);
 void end_visual_mode(void);
 void reset_VIsual_and_resel(void);
 void reset_VIsual(void);
+void restore_visual_mode(void);
 int find_ident_under_cursor(char_u **text, int find_type);
 int find_ident_at_pos(win_T *wp, linenr_T lnum, colnr_T startcol, char_u **text, int *textcol, int find_type);
-void prep_redo(int regname, long, int, int, int, int, int);
+void prep_redo(int regname, long num, int cmd1, int cmd2, int cmd3, int cmd4, int cmd5);
 void clearop(oparg_T *oap);
 void clearopbeep(oparg_T *oap);
+void may_clear_cmdline(void);
 void clear_showcmd(void);
 int add_to_showcmd(int c);
 void add_to_showcmd_c(int c);
@@ -26,5 +27,6 @@ void do_nv_ident(int c1, int c2);
 int get_visual_text(cmdarg_T *cap, char_u **pp, int *lenp);
 void start_selection(void);
 void may_start_select(int c);
+int unadjust_for_sel(void);
 void set_cursor_for_append_to_line(void);
 /* vim: set ft=c : */
