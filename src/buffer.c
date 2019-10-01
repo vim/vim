@@ -880,6 +880,7 @@ free_buffer(buf_T *buf)
     /* b:changedtick uses an item in buf_T, remove it now */
     dictitem_remove(buf->b_vars, (dictitem_T *)&buf->b_ct_di);
     unref_var_dict(buf->b_vars);
+    remove_listeners(buf);
 #endif
 #ifdef FEAT_LUA
     lua_buffer_free(buf);
@@ -908,6 +909,7 @@ free_buffer(buf_T *buf)
 #ifdef FEAT_JOB_CHANNEL
     vim_free(buf->b_prompt_text);
     free_callback(&buf->b_prompt_callback);
+    free_callback(&buf->b_prompt_interrupt);
 #endif
 
     buf_hashtab_remove(buf);

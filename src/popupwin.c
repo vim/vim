@@ -3365,6 +3365,7 @@ update_popups(void (*win_update)(win_T *wp))
 	    trunc_string(wp->w_popup_title, title, total_width - 2, len);
 	    screen_puts(title, wp->w_winrow, wp->w_wincol + 1,
 		    wp->w_popup_border[0] > 0 ? border_attr[0] : popup_attr);
+	    vim_free(title);
 	}
 
 	// Compute scrollbar thumb position and size.
