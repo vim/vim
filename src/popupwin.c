@@ -2638,7 +2638,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	{
 	    win_T *p;
 
-	     for (p = tp->tp_first_popupwin; p != NULL; p = wp->w_next)
+	     for (p = tp->tp_first_popupwin; p != NULL; p = p->w_next)
 		 if (p->w_id == id)
 		     break;
 	     if (p != NULL)
