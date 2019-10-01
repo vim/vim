@@ -166,12 +166,12 @@ func Test_xterm_mouse_ctrl_click()
     call MouseCtrlLeftClick(row, col)
     call MouseLeftRelease(row, col)
     call assert_match('usr_02.txt$', bufname('%'), msg)
-    call assert_equal('*usr_02.txt*', expand('<cWORD>'))
+    call assert_equal('*usr_02.txt*', expand('<cWORD>'), msg)
 
     call MouseCtrlRightClick(row, col)
     call MouseRightRelease(row, col)
     call assert_match('help.txt$', bufname('%'), msg)
-    call assert_equal('|usr_02.txt|', expand('<cWORD>'))
+    call assert_equal('|usr_02.txt|', expand('<cWORD>'), msg)
 
     helpclose
   endfor
