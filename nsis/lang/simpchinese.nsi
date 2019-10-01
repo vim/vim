@@ -5,7 +5,7 @@
 #
 # Locale ID    : 2052
 # fileencoding : UTF-8
-# Author       : Guopeng Wen
+# Author       : Guopeng Wen, David Liu
 
 !insertmacro MUI_LANGUAGE "SimpChinese"
 
@@ -254,14 +254,14 @@ LangString str_msg_compat_vim      ${LANG_SIMPCHINESE} \
 LangString str_msg_compat_defaults ${LANG_SIMPCHINESE} \
     "Vim 原始版本和部分扩展 (加载 defaults.vim)"
 LangString str_msg_compat_all      ${LANG_SIMPCHINESE} \
-    "Vim 原始版本和所有扩展 (加载 vimrc_example.vim) (默认)"
+    "Vim 原始版本和所有扩展 (加载 vimrc_example.vim) (缺省)"
 
 LangString str_msg_keymap_title   ${LANG_SIMPCHINESE} \
     "键盘映射"
 LangString str_msg_keymap_desc    ${LANG_SIMPCHINESE} \
     "为 Windows 映射按键(&R) (例如:Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F 等)"
 LangString str_msg_keymap_default ${LANG_SIMPCHINESE} \
-    "不映射按键 (默认)"
+    "不映射按键 (缺省)"
 LangString str_msg_keymap_windows ${LANG_SIMPCHINESE} \
     "映射一些按键"
 
@@ -270,7 +270,7 @@ LangString str_msg_mouse_title   ${LANG_SIMPCHINESE} \
 LangString str_msg_mouse_desc    ${LANG_SIMPCHINESE} \
     "左键和右键行为(&B)"
 LangString str_msg_mouse_default ${LANG_SIMPCHINESE} \
-    "右键：弹出菜单, 左键：可视化模式 (Unix)"
+    "右键：弹出菜单, 左键：可视化模式 (缺省)"
 LangString str_msg_mouse_windows ${LANG_SIMPCHINESE} \
     "右键：弹出菜单, 左键:选择模式 (Windows)"
 LangString str_msg_mouse_unix    ${LANG_SIMPCHINESE} \
