@@ -1778,28 +1778,30 @@ make_filter_cmd(
     }
     else
     {
-	char_u	*p;
+	STRCPY(buf, cmd);
+	if (itmp != NULL)
+	{
+	    char_u	*p;
 
-	/*
-	 * If there is a pipe, we have to put the '<' in front of it.
-	 * Don't do this when 'shellquote' is not empty, otherwise the
-	 * redirection would be inside the quotes.
-	 */
-	if (*p_shq == NUL)
-	{
-	    p = find_pipe(buf);
-	    if (p != NULL)
-		*p = NUL;
-	}
-	STRCAT(buf, " <");	/* " < " causes problems on Amiga */
-	STRCAT(buf, itmp);
-	if (*p_shq == NUL)
-	{
-	    p = find_pipe(cmd);
-	    if (p != NULL)
+	    // If there is a pipe, we have to put the '<' in front of it.
+	    // Don't do this when 'shellquote' is not empty, otherwise the
+	    // redirection would be inside the quotes.
+	    if (*p_shq == NUL)
 	    {
-		STRCAT(buf, " ");   /* insert a space before the '|' for DOS */
-		STRCAT(buf, p);
+		p = find_pipe(buf);
+		if (p != NULL)
+		    *p = NUL;
+	    }
+	    STRCAT(buf, " <");	// " < " causes problems on Amiga
+	    STRCAT(buf, itmp);
+	    if (*p_shq == NUL)
+	    {
+		p = find_pipe(cmd);
+		if (p != NULL)
+		{
+		    STRCAT(buf, " ");  // insert a space before the '|' for DOS
+		    STRCAT(buf, p);
+		}
 	    }
 	}
     }
