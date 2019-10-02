@@ -168,6 +168,9 @@ static RETSIGTYPE sig_winch SIGPROTOARG;
 #if defined(SIGINT)
 static RETSIGTYPE catch_sigint SIGPROTOARG;
 #endif
+#if defined(SIGUSR1)
+static RETSIGTYPE catch_sigusr1 SIGPROTOARG;
+#endif
 #if defined(SIGPWR)
 static RETSIGTYPE catch_sigpwr SIGPROTOARG;
 #endif
@@ -300,7 +303,7 @@ static struct signalinfo
     {SIGXFSZ,	    "XFSZ",	TRUE},
 #endif
 #ifdef SIGUSR1
-    {SIGUSR1,	    "USR1",	TRUE},
+    {SIGUSR1,	    "USR1",	FALSE},
 #endif
 #if defined(SIGUSR2) && !defined(FEAT_SYSMOUSE)
     /* Used for sysmouse handling */
@@ -838,6 +841,17 @@ catch_sigint SIGDEFARG(sigarg)
 }
 #endif
 
+#if defined(SIGUSR1)
+    static RETSIGTYPE
+catch_sigusr1 SIGDEFARG(sigarg)
+{
+    /* this is not required on all systems, but it doesn't hurt anybody */
+    signal(SIGUSR1, catch_sigusr1);
+    got_usr1 = TRUE;
+    SIGRETURN;
+}
+#endif
+
 #if defined(SIGPWR)
     static RETSIGTYPE
 catch_sigpwr SIGDEFARG(sigarg)
@@ -1327,6 +1341,13 @@ set_signals(void)
 
 #ifdef SIGINT
     catch_int_signal();
+#endif
+
+    /*
+     * Call user's handler on SIGUSR1
+     */
+#ifdef SIGUSR1
+    signal(SIGUSR1, catch_sigusr1);
 #endif
 
     /*

@@ -1093,6 +1093,11 @@ EXTERN int	read_cmd_fd INIT(= 0);	    // fd to read commands from
 // volatile because it is used in signal handler catch_sigint().
 EXTERN volatile sig_atomic_t got_int INIT(= FALSE); // set to TRUE when interrupt
 						// signal occurred
+#ifdef SIGUSR1
+// volatile because it is used in signal handler catch_sigusr1().
+EXTERN volatile sig_atomic_t got_usr1 INIT(= FALSE); // set to TRUE when interrupt
+                                                // signal occurred
+#endif
 #ifdef USE_TERM_CONSOLE
 EXTERN int	term_console INIT(= FALSE); // set to TRUE when console used
 #endif
