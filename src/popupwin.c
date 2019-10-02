@@ -2636,12 +2636,12 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	i = 1;
 	FOR_ALL_TABPAGES(tp)
 	{
-	    win_T *p;
+	    win_T *twp;
 
-	     for (p = tp->tp_first_popupwin; p != NULL; p = wp->w_next)
-		 if (p->w_id == id)
+	     for (twp = tp->tp_first_popupwin; twp != NULL; twp = twp->w_next)
+		 if (twp->w_id == id)
 		     break;
-	     if (p != NULL)
+	     if (twp != NULL)
 		 break;
 	     ++i;
 	}
