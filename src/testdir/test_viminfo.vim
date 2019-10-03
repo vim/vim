@@ -221,6 +221,7 @@ func Test_viminfo_registers()
     call add(l, 'something')
   endfor
   call setreg('d', l, 'l')
+  call setreg('e', "abc\<C-V>xyz")
   wviminfo Xviminfo
 
   call test_settime(10)
@@ -231,6 +232,7 @@ func Test_viminfo_registers()
   call setreg('c', 'keep', 'l')
   call test_settime(30)
   call setreg('d', 'drop', 'l')
+  call setreg('e', 'drop')
   rviminfo Xviminfo
 
   call assert_equal("", getreg('a'))
@@ -241,6 +243,7 @@ func Test_viminfo_registers()
   call assert_equal("V", getregtype('c'))
   call assert_equal(l, getreg('d', 1, 1))
   call assert_equal("V", getregtype('d'))
+  call assert_equal("abc\<C-V>xyz", getreg('e'))
 
   " Length around 440 switches to line continuation.
   let len = 434
@@ -520,6 +523,13 @@ func Test_viminfo_oldfiles()
 	\ '# comment line',
 	\ '*encoding=utf-8',
 	\ '',
+	\ ':h viminfo',
+	\ '?/session',
+	\ '=myvar',
+	\ '@123',
+	\ '',
+	\ "'E  2  0  /tmp/nothing",
+	\ '',
 	\ "> /tmp/file_one.txt",
 	\ "\t\"\t11\t0",
 	\ "",
@@ -531,9 +541,15 @@ func Test_viminfo_oldfiles()
 	\ "",
 	\ ]
   call writefile(lines, 'Xviminfo')
+  delmark E
   rviminfo! Xviminfo
   call delete('Xviminfo')
 
+  call assert_equal('h viminfo', histget(':'))
+  call assert_equal('session', histget('/'))
+  call assert_equal('myvar', histget('='))
+  call assert_equal('123', histget('@'))
+  call assert_equal(2, line("'E"))
   call assert_equal(['1: /tmp/file_one.txt', '2: /tmp/file_two.txt', '3: /tmp/another.txt'], filter(split(execute('oldfiles'), "\n"), {i, v -> v =~ '/tmp/'}))
   call assert_equal(['1: /tmp/file_one.txt', '2: /tmp/file_two.txt'], filter(split(execute('filter file_ oldfiles'), "\n"), {i, v -> v =~ '/tmp/'}))
   call assert_equal(['3: /tmp/another.txt'], filter(split(execute('filter /another/ oldfiles'), "\n"), {i, v -> v =~ '/tmp/'}))
@@ -543,4 +559,80 @@ func Test_viminfo_oldfiles()
   browse oldfiles
   call assert_equal("/tmp/another.txt", expand("%"))
   bwipe
+  delmark E
+endfunc
+
+" Test for storing and restoring buffer list in 'viminfo'
+func Test_viminfo_bufferlist()
+  " If there are arguments, then :rviminfo doesn't read the buffer list.
+  " Need to delete all the arguments for :rviminfo to work.
+  %argdelete
+
+  edit Xfile1
+  edit Xfile2
+  set viminfo-=%
+  wviminfo Xviminfo
+  %bwipe
+  rviminfo Xviminfo
+  call assert_equal(1, len(getbufinfo()))
+
+  edit Xfile1
+  edit Xfile2
+  set viminfo^=%
+  wviminfo Xviminfo
+  %bwipe
+  rviminfo Xviminfo
+  let l = getbufinfo()
+  call assert_equal(3, len(l))
+  call assert_equal('Xfile1', bufname(l[1].bufnr))
+  call assert_equal('Xfile2', bufname(l[2].bufnr))
+
+  call delete('Xviminfo')
+  %bwipe
+  set viminfo-=%
+endfunc
+
+" Test for errors in a viminfo file
+func Test_viminfo_error()
+  " Non-existing viminfo files
+  call assert_fails('rviminfo xyz', 'E195:')
+
+  " Illegal starting character
+  call writefile(["a 123"], 'Xviminfo')
+  call assert_fails('rv Xviminfo', 'E575:')
+
+  " Illegal register name in the viminfo file
+  call writefile(['"@	LINE	0'], 'Xviminfo')
+  call assert_fails('rv Xviminfo', 'E577:')
+
+  " Invalid file mark line
+  call writefile(['>', '@'], 'Xviminfo')
+  call assert_fails('rv Xviminfo', 'E576:')
+
+  " Too many errors in viminfo file
+  call writefile(repeat(["a 123"], 15), 'Xviminfo')
+  call assert_fails('rv Xviminfo', 'E136:')
+
+  call writefile(['>'] + repeat(['@'], 10), 'Xviminfo')
+  call assert_fails('rv Xviminfo', 'E136:')
+
+  call writefile(repeat(['"@'], 15), 'Xviminfo')
+  call assert_fails('rv Xviminfo', 'E136:')
+
+  call delete('Xviminfo')
+endfunc
+
+" Test for saving and restoring last substitute string in viminfo
+func Test_viminfo_lastsub()
+  enew
+  call append(0, "blue blue blue")
+  call cursor(1,1)
+  s/blue/green/
+  wviminfo Xviminfo
+  s/blue/yellow/
+  rviminfo! Xviminfo
+  &
+  call assert_equal("green yellow green", getline(1))
+  enew!
+  call delete('Xviminfo')
 endfunc
