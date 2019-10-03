@@ -1791,7 +1791,11 @@ vgetc(void)
 #endif
 #ifdef FEAT_TEXT_PROP
     if (popup_do_filter(c))
+    {
+	if (c == Ctrl_C)
+	    got_int = FALSE;  // avoid looping
 	c = K_IGNORE;
+    }
 #endif
 
     // Need to process the character before we know it's safe to do something
