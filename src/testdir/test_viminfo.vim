@@ -40,6 +40,9 @@ function Test_viminfo_read_and_write()
 endfunc
 
 func Test_global_vars()
+  let g:MY_GLOBAL_STRING = "Vim Editor"
+  let g:MY_GLOBAL_NUM = 345
+  let g:MY_GLOBAL_FLOAT = 3.14
   let test_dict = {'foo': 1, 'bar': 0, 'longvarible': 1000}
   let g:MY_GLOBAL_DICT = test_dict
   " store a really long list, so line wrapping will occur in viminfo file
@@ -59,6 +62,9 @@ func Test_global_vars()
   set viminfo='100,<50,s10,h,!,nviminfo
   wv! Xviminfo
 
+  unlet g:MY_GLOBAL_STRING
+  unlet g:MY_GLOBAL_NUM
+  unlet g:MY_GLOBAL_FLOAT
   unlet g:MY_GLOBAL_DICT
   unlet g:MY_GLOBAL_LIST
   unlet g:MY_GLOBAL_BLOB
@@ -68,6 +74,9 @@ func Test_global_vars()
   unlet g:MY_GLOBAL_NONE
 
   rv! Xviminfo
+  call assert_equal("Vim Editor", g:MY_GLOBAL_STRING)
+  call assert_equal(345, g:MY_GLOBAL_NUM)
+  call assert_equal(3.14, g:MY_GLOBAL_FLOAT)
   call assert_equal(test_dict, g:MY_GLOBAL_DICT)
   call assert_equal(test_list, g:MY_GLOBAL_LIST)
   call assert_equal(test_blob, g:MY_GLOBAL_BLOB)
@@ -635,4 +644,38 @@ func Test_viminfo_lastsub()
   call assert_equal("green yellow green", getline(1))
   enew!
   call delete('Xviminfo')
+endfunc
+
+" Test saving and restoring the register values using the older method
+func Test_viminfo_registers_old()
+  let lines = [
+	\ '# Viminfo version',
+	\ '|1,1',
+	\ '',
+	\ '*encoding=utf-8',
+	\ '',
+	\ '# Registers:',
+	\ '""0 CHAR  0',
+	\ '	Vim',
+	\ '"a  CHAR  0',
+	\ '	red',
+	\ '"m@ CHAR  0',
+	\ "	:echo 'Hello'\<CR>",
+	\ "",
+	\ ]
+  call writefile(lines, 'Xviminfo')
+  let @a = 'one'
+  let @b = 'two'
+  let @m = 'three'
+  let @" = 'four'
+  let @t = ":echo 'Unix'\<CR>"
+  silent! normal @t
+  rviminfo! Xviminfo
+  call assert_equal('red', getreg('a'))
+  call assert_equal('two', getreg('b'))
+  call assert_equal(":echo 'Hello'\<CR>", getreg('m'))
+  call assert_equal('Vim', getreg('"'))
+  call assert_equal("\nHello", execute('normal @@'))
+  call delete('Xviminfo')
+  let @" = ''
 endfunc
