@@ -626,7 +626,7 @@ endfunc
 func Test_viminfo_lastsub()
   enew
   call append(0, "blue blue blue")
-  call cursor(1,1)
+  call cursor(1, 1)
   s/blue/green/
   wviminfo Xviminfo
   s/blue/yellow/
