@@ -526,6 +526,28 @@ func Test_viminfo_file_mark_zero_time()
   delmark B
 endfunc
 
+" Test for saving and restoring file marks in unloaded buffers
+func Test_viminfo_file_mark_unloaded_buf()
+  let save_viminfo = &viminfo
+  set viminfo&vim
+  call writefile(repeat(['vim'], 10), 'Xfile1')
+  %bwipe
+  edit! Xfile1
+  call setpos("'u", [0, 3, 1, 0])
+  call setpos("'v", [0, 5, 1, 0])
+  enew
+  wviminfo Xviminfo
+  %bwipe
+  edit Xfile1
+  rviminfo! Xviminfo
+  call assert_equal([0, 3, 1, 0], getpos("'u"))
+  call assert_equal([0, 5, 1, 0], getpos("'v"))
+  %bwipe
+  call delete('Xfile1')
+  call delete('Xviminfo')
+  let &viminfo = save_viminfo
+endfunc
+
 func Test_viminfo_oldfiles()
   let v:oldfiles = []
   let lines = [
