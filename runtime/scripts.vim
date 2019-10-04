@@ -35,10 +35,12 @@ let s:line1 = getline(1)
 if s:line1 =~# "^#!"
   " A script that starts with "#!".
 
-  " Check for a line like "#!/usr/bin/env VAR=val bash".  Turn it into
-  " "#!/usr/bin/bash" to make matching easier.
+  " Check for a line like "#!/usr/bin/env VAR=val bash" and/or
+  " "#!/usr/bin/env -S bash --norc".  Turn it into "#!/usr/bin/bash"
+  " to make matching easier.
   if s:line1 =~# '^#!\s*\S*\<env\s'
     let s:line1 = substitute(s:line1, '\S\+=\S\+', '', 'g')
+    let s:line1 = substitute(s:line1, '\(-S\|--split-string\)', '', '')
     let s:line1 = substitute(s:line1, '\<env\s\+', '', '')
   endif
 
