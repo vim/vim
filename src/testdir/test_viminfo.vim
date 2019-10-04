@@ -701,3 +701,40 @@ func Test_viminfo_registers_old()
   call delete('Xviminfo')
   let @" = ''
 endfunc
+
+" Test for saving and restoring large number of lines in a register
+func Test_viminfo_large_register()
+  let save_viminfo = &viminfo
+  set viminfo&vim
+  set viminfo-=<50
+  set viminfo+=<200
+  let lines = ['"r	CHAR	0']
+  call extend(lines, repeat(["\tsun is rising"], 200))
+  call writefile(lines, 'Xviminfo')
+  let @r = ''
+  rviminfo! Xviminfo
+  call assert_equal(join(repeat(["sun is rising"], 200), "\n"), @r)
+  call delete('Xviminfo')
+  let &viminfo = save_viminfo
+endfunc
+
+" Test for setting 'viminfofile' to NONE
+func Test_viminfofile_none()
+  set viminfofile=NONE
+  wviminfo Xviminfo
+  call assert_false(filereadable('Xviminfo'))
+  call writefile([''], 'Xviminfo')
+  call assert_fails('rviminfo Xviminfo', 'E195:')
+  call delete('Xviminfo')
+endfunc
+
+" Test for an unwritable 'viminfo' file
+func Test_viminfo_readonly()
+  if !has('unix')
+      return
+  endif
+  call writefile([''], 'Xviminfo')
+  call setfperm('Xviminfo', 'r-x------')
+  call assert_fails('wviminfo Xviminfo', 'E137:')
+  call delete('Xviminfo')
+endfunc
