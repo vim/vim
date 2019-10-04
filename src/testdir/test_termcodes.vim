@@ -195,7 +195,7 @@ func Test_xterm_mouse_right_click_extends_visual()
       call MouseRightRelease(5, 5)
       norm! r2
 
-      if visual_mode == 'v'
+      if visual_mode ==# 'v'
         call assert_equal(['-------',
               \            '-111111',
               \            '1122222',
@@ -203,7 +203,7 @@ func Test_xterm_mouse_right_click_extends_visual()
               \            '2222211',
               \            '111111-',
               \            '-------'], getline(1, '$'), msg)
-      elseif visual_mode == 'V'
+      elseif visual_mode ==# 'V'
         call assert_equal(['-------',
               \            '1111111',
               \            '2222222',
