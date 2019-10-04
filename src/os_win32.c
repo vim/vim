@@ -7277,7 +7277,7 @@ mch_setenv(char *var, char *value, int x UNUSED)
  * Confirm until this version.  Also the logic changes.
  * insider preview.
  */
-#define CONPTY_INSIDER_BUILD	    MAKE_VER(10, 0, 18990)
+#define CONPTY_INSIDER_BUILD	    MAKE_VER(10, 0, 18995)
 
 /*
  * Not stable now.
