@@ -112,9 +112,12 @@ set_init_1(int clean_arg)
 	{
 	    len = STRLEN(p) + 3;  // two quotes and a trailing NUL
 	    cmd = alloc(len);
-	    vim_snprintf((char *)cmd, len, "\"%s\"", p);
-	    set_string_default("sh", cmd);
-	    vim_free(cmd);
+	    if (cmd != NULL)
+	    {
+		vim_snprintf((char *)cmd, len, "\"%s\"", p);
+		set_string_default("sh", cmd);
+		vim_free(cmd);
+	    }
 	}
 	else
 	    set_string_default("sh", p);
