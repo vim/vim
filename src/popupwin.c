@@ -2763,7 +2763,12 @@ invoke_popup_filter(win_T *wp, int c)
     // Emergency exit: CTRL-C closes the popup.
     if (c == Ctrl_C)
     {
+	int save_got_int = got_int;
+
+	// Reset got_int to avoid the callback isn't called.
+	got_int = FALSE;
 	popup_close_with_retval(wp, -1);
+	got_int |= save_got_int;
 	return 1;
     }
 
