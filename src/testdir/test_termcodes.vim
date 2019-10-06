@@ -798,7 +798,11 @@ func Test_xx_term_style_response()
 endfunc
 
 func Test_get_termcode()
-  let k1 = &t_k1
+  try
+    let k1 = &t_k1
+  catch /E113/
+    throw 'Skipped: Unable to query termcodes'
+  endtry
   set t_k1=
   set t_k1&
   call assert_equal(k1, &t_k1)
