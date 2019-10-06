@@ -267,7 +267,7 @@ modify_fname(
 {
     int		valid = 0;
     char_u	*tail;
-    char_u	*s, *p, *pbuf;
+    char_u	*s, *p, *pbuf, *limit;
     char_u	dirname[MAXPATHL];
     int		c;
     int		has_fullname = 0;
@@ -563,7 +563,10 @@ repeat:
 	}
 	else				// :r
 	{
-	    if (s > tail)	// remove one extension
+	    limit = *fnamep;
+	    if (tail > limit)
+		limit = tail;
+	    if (s > limit)	// remove one extension
 		*fnamelen = (int)(s - *fnamep);
 	}
 	*usedlen += 2;

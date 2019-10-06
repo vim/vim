@@ -42,6 +42,8 @@ func Test_fnamemodify()
   set shell=tcsh
   call assert_equal("'abc\\\ndef'",  fnamemodify("abc\ndef", ':S'))
 
+  call assert_equal("with", fnamemodify("path/to/file.with.extensions", ':e:e:r:r'))
+
   let $HOME = save_home
   let &shell = save_shell
 endfunc
