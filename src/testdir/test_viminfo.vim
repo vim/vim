@@ -1,5 +1,7 @@
 " Test for reading and writing .viminfo
 
+source check.vim
+
 function Test_viminfo_read_and_write()
   " First clear 'history', so that "hislen" is zero.  Then set it again,
   " simulating Vim starting up.
@@ -730,9 +732,8 @@ endfunc
 
 " Test for an unwritable 'viminfo' file
 func Test_viminfo_readonly()
-  if !has('unix')
-      return
-  endif
+  CheckUnix
+  CheckNotRoot
   call writefile([''], 'Xviminfo')
   call setfperm('Xviminfo', 'r-x------')
   call assert_fails('wviminfo Xviminfo', 'E137:')
