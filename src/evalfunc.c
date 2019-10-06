@@ -6454,7 +6454,7 @@ f_setcharsearch(typval_T *argvars, typval_T *rettv UNUSED)
 	    }
 	    else
 		set_last_csearch(PTR2CHAR(csearch),
-						csearch, MB_PTR2LEN(csearch));
+						csearch, mb_ptr2len(csearch));
 	}
 
 	di = dict_find(d, (char_u *)"forward", -1);

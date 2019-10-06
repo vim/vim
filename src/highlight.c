@@ -4392,7 +4392,7 @@ update_search_hl(
 		    && col >= shl->startcol
 		    && col < shl->endcol)
 	    {
-		int next_col = col + MB_PTR2LEN(*line + col);
+		int next_col = col + mb_ptr2len(*line + col);
 
 		if (shl->endcol < next_col)
 		    shl->endcol = next_col;

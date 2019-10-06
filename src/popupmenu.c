@@ -1151,7 +1151,7 @@ split_message(char_u *mesg, pumitem_T **array)
 		}
 	    }
 	    item->cells += ptr2cells(p);
-	    p += MB_PTR2LEN(p);
+	    p += mb_ptr2len(p);
 	}
 	item->bytelen = p - item->start;
 	if (item->cells > max_cells)
@@ -1195,7 +1195,7 @@ split_message(char_u *mesg, pumitem_T **array)
 	    {
 		cells = item->indent * 2;
 		for (p = item->start + skip; p < item->start + item->bytelen;
-							    p += MB_PTR2LEN(p))
+							    p += mb_ptr2len(p))
 		    if ((cells += ptr2cells(p)) > BALLOON_MIN_WIDTH)
 			break;
 		thislen = p - (item->start + skip);

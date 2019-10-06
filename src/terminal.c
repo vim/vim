@@ -5431,7 +5431,7 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	    attrs = cellattr->attrs;
 	    fg = cellattr->fg;
 	    bg = cellattr->bg;
-	    len = MB_PTR2LEN(p);
+	    len = mb_ptr2len(p);
 	    mch_memmove(mbs, p, len);
 	    mbs[len] = NUL;
 	    p += len;

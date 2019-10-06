@@ -6446,7 +6446,7 @@ do_string_sub(
 		if (zero_width == regmatch.startp[0])
 		{
 		    /* avoid getting stuck on a match with an empty string */
-		    i = MB_PTR2LEN(tail);
+		    i = mb_ptr2len(tail);
 		    mch_memmove((char_u *)ga.ga_data + ga.ga_len, tail,
 								   (size_t)i);
 		    ga.ga_len += i;

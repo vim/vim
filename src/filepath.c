@@ -2613,9 +2613,9 @@ vim_fnamencmp(char_u *x, char_u *y, size_t len)
 		&& !(cx == '/' && cy == '\\')
 		&& !(cx == '\\' && cy == '/')))
 	    break;
-	len -= MB_PTR2LEN(px);
-	px += MB_PTR2LEN(px);
-	py += MB_PTR2LEN(py);
+	len -= mb_ptr2len(px);
+	px += mb_ptr2len(px);
+	py += mb_ptr2len(py);
     }
     if (len == 0)
 	return 0;
@@ -3769,14 +3769,14 @@ pathcmp(const char *p, const char *q, int maxlen)
 		    : c1 - c2;  // no match
 	}
 
-	i += MB_PTR2LEN((char_u *)p + i);
-	j += MB_PTR2LEN((char_u *)q + j);
+	i += mb_ptr2len((char_u *)p + i);
+	j += mb_ptr2len((char_u *)q + j);
     }
     if (s == NULL)	// "i" or "j" ran into "maxlen"
 	return 0;
 
     c1 = PTR2CHAR((char_u *)s + i);
-    c2 = PTR2CHAR((char_u *)s + i + MB_PTR2LEN((char_u *)s + i));
+    c2 = PTR2CHAR((char_u *)s + i + mb_ptr2len((char_u *)s + i));
     // ignore a trailing slash, but not "//" or ":/"
     if (c2 == NUL
 	    && i > 0

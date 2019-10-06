@@ -2254,7 +2254,7 @@ handle_mapping(
 		    char_u *p2 = mb_unescape(&p1);
 
 		    if (has_mbyte && p2 != NULL
-					&& MB_BYTE2LEN(tb_c1) > MB_PTR2LEN(p2))
+					&& MB_BYTE2LEN(tb_c1) > mb_ptr2len(p2))
 			mlen = 0;
 		}
 

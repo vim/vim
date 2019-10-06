@@ -2621,7 +2621,7 @@ spell_iswordp(
 
     if (has_mbyte)
     {
-	l = MB_PTR2LEN(p);
+	l = mb_ptr2len(p);
 	s = p;
 	if (l == 1)
 	{
