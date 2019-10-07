@@ -1,8 +1,7 @@
 " Test signal handling.
 
-if !has('unix')
-  finish
-endif
+source check.vim
+CheckUnix
 
 source shared.vim
 
@@ -14,8 +13,9 @@ endfunc
 
 " Test signal WINCH (window resize signal)
 func Test_signal_WINCH()
-  if has('gui_running') || !HasSignal('WINCH')
-    return
+  CheckNotGui
+  if !HasSignal('WINCH')
+    throw 'Skipped: WINCH signal not supported'
   endif
 
   " We do not actually want to change the size of the terminal.

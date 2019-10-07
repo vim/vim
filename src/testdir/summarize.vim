@@ -1,7 +1,6 @@
-set nocp
 if 1
-  " This is executed with the eval feature
-  set nocp
+  " This is executed only with the eval feature
+  set nocompatible
   func Count(match, type)
     if a:type ==# 'executed'
       let g:executed += (a:match+0)
@@ -9,7 +8,7 @@ if 1
       let g:failed += a:match+0
     elseif a:type ==# 'skipped'
       let g:skipped += 1
-      call extend(g:skipped_output, ["\t".a:match])
+      call extend(g:skipped_output, ["\t" .. a:match])
     endif
   endfunc
 
@@ -20,12 +19,17 @@ if 1
   let g:failed_output = []
   let output = [""]
 
+  if $TEST_FILTER != ''
+    call extend(g:skipped_output, ["\tAll tests not matching $TEST_FILTER: '" .. $TEST_FILTER .. "'"])
+  endif
+
   try
     " This uses the :s command to just fetch and process the output of the
-    " tests, it doesn't acutally replay anything
-    %s/^Executed\s\+\zs\d\+\ze\s\+tests/\=Count(submatch(0),'executed')/egn
-    %s/^SKIPPED \zs.*/\=Count(submatch(0), 'skipped')/egn
-    %s/^\(\d\+\)\s\+FAILED:/\=Count(submatch(1), 'failed')/egn
+    " tests, it doesn't actually replace anything.
+    " And it uses "silent" to avoid reporting the number of matches.
+    silent %s/^Executed\s\+\zs\d\+\ze\s\+tests\?/\=Count(submatch(0),'executed')/egn
+    silent %s/^SKIPPED \zs.*/\=Count(submatch(0), 'skipped')/egn
+    silent %s/^\(\d\+\)\s\+FAILED:/\=Count(submatch(1), 'failed')/egn
 
     call extend(output, ["Skipped:"]) 
     call extend(output, skipped_output)
@@ -37,7 +41,7 @@ if 1
           \ printf(" Skipped: %5d Tests", g:skipped),
           \ printf("  %s: %5d Tests", g:failed == 0 ? 'Failed' : 'FAILED', g:failed),
           \ "",
-          \ ]) 
+          \ ])
     if filereadable('test.log')
       " outputs and indents the failed test result
       call extend(output, ["", "Failures: "])

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Jun 02
+*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Sep 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -355,6 +355,10 @@ Name			triggered by ~
 			when popup menu visible
 |TextYankPost|		after text has been yanked or deleted
 
+|SafeState|		nothing pending, going to wait for the user to type a
+			character
+|SafeStateAgain|	repeated SafeState
+
 |ColorSchemePre|	before loading a color scheme
 |ColorScheme|		after loading a color scheme
 
@@ -407,8 +411,8 @@ BufFilePost			After changing the name of the current buffer
 BufFilePre			Before changing the name of the current buffer
 				with the ":file" or ":saveas" command.
 							*BufHidden*
-BufHidden			Just after a buffer has become hidden.  That
-				is, when there are no longer windows that show
+BufHidden			Just before a buffer becomes hidden.  That is,
+				when there are no longer windows that show
 				the buffer, but the buffer is not unloaded or
 				deleted.  Not used for ":qa" or ":q" when
 				exiting Vim.
@@ -554,16 +558,14 @@ CmdlineLeave			Before leaving the command line.
 							*CmdwinEnter*
 CmdwinEnter			After entering the command-line window.
 				Useful for setting options specifically for
-				this special type of window.  This is
-				triggered _instead_ of BufEnter and WinEnter.
+				this special type of window.
 				<afile> is set to a single character,
 				indicating the type of command-line.
 				|cmdwin-char|
 							*CmdwinLeave*
 CmdwinLeave			Before leaving the command-line window.
 				Useful to clean up any global setting done
-				with CmdwinEnter.  This is triggered _instead_
-				of BufLeave and WinLeave.
+				with CmdwinEnter.
 				<afile> is set to a single character,
 				indicating the type of command-line.
 				|cmdwin-char|
@@ -579,7 +581,7 @@ ColorScheme			After loading a color scheme. |:colorscheme|
 ColorSchemePre			Before loading a color scheme. |:colorscheme|
 				Useful to setup removing things added by a
 				color scheme, before another one is loaded.
-CompleteChanged 					*CompleteChanged*
+CompleteChanged						*CompleteChanged*
 				After each time the Insert mode completion
 				menu changed.  Not fired on popup menu hide,
 				use |CompleteDone| for that.  Never triggered
@@ -595,6 +597,10 @@ CompleteChanged 					*CompleteChanged*
 				    scrollbar		TRUE if visible
 
 				It is not allowed to change the text |textlock|.
+
+				The size and position of the popup are also
+				available by calling |pum_getpos()|.
+
 							*CompleteDone*
 CompleteDone			After Insert mode completion is done.  Either
 				when something was completed or abandoning
@@ -873,15 +879,32 @@ MenuPopup			Just before showing the popup menu (under the
 							*OptionSet*
 OptionSet			After setting an option.  The pattern is
 				matched against the long option name.
-				The |v:option_old| variable indicates the
-				old option value, |v:option_new| variable
-				indicates the newly set value, the
-				|v:option_type| variable indicates whether
-				it's global or local scoped and |<amatch>|
-				indicates what option has been set.
+				|<amatch>| indicates what option has been set.
 
-				Is not triggered on startup and for the 'key'
-				option for obvious reasons.
+				|v:option_type| indicates whether it's global
+				or local scoped.
+				|v:option_command| indicates what type of
+				set/let command was used (follow the tag to
+				see the table).
+				|v:option_new| indicates the newly set value.
+				|v:option_oldlocal| has the old local value.
+				|v:option_oldglobal| has the old global value.
+				|v:option_old| indicates the old option value.
+
+				|v:option_oldlocal| is only set when |:set|
+				or |:setlocal| or a |modeline| was used to set
+				the option. Similarly |v:option_oldglobal| is
+				only set when |:set| or |:setglobal| was used.
+
+				Note that when setting a |global-local| string
+				option with |:set|, then |v:option_old| is the
+				old global value. However, for all other kinds
+				of options (local string options, global-local
+				number options, ...) it is the old local
+				value.
+
+				OptionSet is not triggered on startup and for
+				the 'key' option for obvious reasons.
 
 				Usage example: Check for the existence of the
 				directory in the 'backupdir' and 'undodir'
@@ -936,6 +959,32 @@ RemoteReply			When a reply from a Vim that functions as
 				Note that even if an autocommand is defined,
 				the reply should be read with |remote_read()|
 				to consume it.
+							*SafeState*
+SafeState			When nothing is pending, going to wait for the
+				user to type a character.
+				This will not be triggered when:
+				- an operator is pending
+				- a register was entered with "r
+				- halfway executing a command
+				- executing a mapping
+				- there is typeahead
+				- Insert mode completion is active
+				- Command line completion is active
+				You can use `mode()` to find out what state
+				Vim is in.  That may be:
+				- VIsual mode
+				- Normal mode
+				- Insert mode
+				- Command-line mode
+				Depending on what you want to do, you may also
+				check more with `state()`, e.g. whether the
+				screen was scrolled for messages.
+							*SafeStateAgain*
+SafeStateAgain			Like SafeState but after processing any
+				messages and invoking callbacks. This may be
+				triggered often, don't do something that takes
+				time.
+
 							*SessionLoadPost*
 SessionLoadPost			After loading the session file created using
 				the |:mksession| command.
@@ -1068,8 +1117,8 @@ TextYankPost			After text has been yanked or deleted in the
 				current buffer.  The following values of
 				|v:event| can be used to determine the operation
 				that triggered this autocmd:
-				   operator    	The operation performed.
-				   regcontents 	Text that was stored in the
+				   operator	The operation performed.
+				   regcontents	Text that was stored in the
 						register, as a list of lines,
 						like with: >
 						getreg(r, 1, 1)
@@ -1105,7 +1154,7 @@ VimEnter			After doing all the startup stuff, including
 				   if v:vim_did_enter
 				     call s:init()
 				   else
- 	  			     au VimEnter * call s:init()
+				     au VimEnter * call s:init()
 				   endif
 <							*VimLeave*
 VimLeave			Before exiting Vim, just after writing the

@@ -3,11 +3,11 @@
 set encoding=latin1
 scriptencoding latin1
 
-if !has('mksession')
-  finish
-endif
+source check.vim
+CheckFeature mksession
 
 source shared.vim
+source term_util.vim
 
 func Test_mksession()
   tabnew
@@ -154,13 +154,19 @@ func Test_mksession_rtp()
 endfunc
 
 func Test_mksession_arglist()
-  argdel *
+  %argdel
   next file1 file2 file3 file4
+  new
+  next | next
   mksession! Xtest_mks.out
   source Xtest_mks.out
   call assert_equal(['file1', 'file2', 'file3', 'file4'], argv())
+  call assert_equal(2, argidx())
+  wincmd w
+  call assert_equal(0, argidx())
 
   call delete('Xtest_mks.out')
+  enew | only
   argdel *
 endfunc
 
@@ -339,7 +345,7 @@ func Test_mksession_terminal_shell()
   endfor
   call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+\s*.*$', term_cmd)
 
-  call Stop_shell_in_terminal(bufnr('%'))
+  call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
 endfunc
 
@@ -354,7 +360,7 @@ func Test_mksession_terminal_no_restore_cmdarg()
     endif
   endfor
 
-  call Stop_shell_in_terminal(bufnr('%'))
+  call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
 endfunc
 
@@ -369,7 +375,7 @@ func Test_mksession_terminal_no_restore_funcarg()
     endif
   endfor
 
-  call Stop_shell_in_terminal(bufnr('%'))
+  call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
 endfunc
 
@@ -385,7 +391,7 @@ func Test_mksession_terminal_no_restore_func()
     endif
   endfor
 
-  call Stop_shell_in_terminal(bufnr('%'))
+  call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
 endfunc
 
@@ -401,14 +407,14 @@ func Test_mksession_terminal_no_ssop()
     endif
   endfor
 
-  call Stop_shell_in_terminal(bufnr('%'))
+  call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
   set sessionoptions&
 endfunc
 
 func Test_mksession_terminal_restore_other()
   terminal
-  call term_setrestore(bufnr('%'), 'other')
+  eval bufnr('%')->term_setrestore('other')
   mksession! Xtest_mks.out
   let lines = readfile('Xtest_mks.out')
   let term_cmd = ''
@@ -419,7 +425,7 @@ func Test_mksession_terminal_restore_other()
   endfor
   call assert_match('terminal ++curwin ++cols=\d\+ ++rows=\d\+.*other', term_cmd)
 
-  call Stop_shell_in_terminal(bufnr('%'))
+  call StopShellInTerminal(bufnr('%'))
   call delete('Xtest_mks.out')
 endfunc
 
@@ -536,5 +542,270 @@ func Test_mksession_quote_in_filename()
   call delete('Xtest_mks_quoted.out')
 endfunc
 
+" Test for storing global variables in a session file
+func Test_mksession_globals()
+  set sessionoptions+=globals
+
+  " create different global variables
+  let g:Global_string = "Sun is shining\r\n"
+  let g:Global_count = 100
+  let g:Global_pi = 3.14
+  let g:Global_neg_float = -2.68
+
+  mksession! Xtest_mks.out
+
+  unlet g:Global_string
+  unlet g:Global_count
+  unlet g:Global_pi
+  unlet g:Global_neg_float
+
+  source Xtest_mks.out
+  call assert_equal("Sun is shining\r\n", g:Global_string)
+  call assert_equal(100, g:Global_count)
+  call assert_equal(3.14, g:Global_pi)
+  call assert_equal(-2.68, g:Global_neg_float)
+
+  unlet g:Global_string
+  unlet g:Global_count
+  unlet g:Global_pi
+  unlet g:Global_neg_float
+  call delete('Xtest_mks.out')
+  set sessionoptions&
+endfunc
+
+" Test for changing backslash to forward slash in filenames
+func Test_mksession_slash()
+  if exists('+shellslash')
+    throw 'Skipped: cannot use backslash in file name'
+  endif
+  enew
+  %bwipe!
+  e a\\b\\c
+  mksession! Xtest_mks1.out
+  set sessionoptions+=slash
+  mksession! Xtest_mks2.out
+
+  %bwipe!
+  source Xtest_mks1.out
+  call assert_equal('a\b\c', bufname(''))
+  %bwipe!
+  source Xtest_mks2.out
+  call assert_equal('a/b/c', bufname(''))
+
+  %bwipe!
+  call delete('Xtest_mks1.out')
+  call delete('Xtest_mks2.out')
+  set sessionoptions&
+endfunc
+
+" Test for storing global and local argument list in a session file
+func Test_mkseesion_arglocal()
+  enew | only
+  n a b c
+  new
+  arglocal
+  mksession! Xtest_mks.out
+
+  %bwipe!
+  %argdelete
+  argglobal
+  source Xtest_mks.out
+  call assert_equal(2, winnr('$'))
+  call assert_equal(2, arglistid(1))
+  call assert_equal(0, arglistid(2))
+
+  %bwipe!
+  %argdelete
+  argglobal
+  call delete('Xtest_mks.out')
+endfunc
+
+" Test for changing directory to the session file directory
+func Test_mksession_sesdir()
+  call mkdir('Xproj')
+  mksession! Xproj/Xtest_mks1.out
+  set sessionoptions-=curdir
+  set sessionoptions+=sesdir
+  mksession! Xproj/Xtest_mks2.out
+
+  source Xproj/Xtest_mks1.out
+  call assert_equal('testdir', fnamemodify(getcwd(), ':t'))
+  source Xproj/Xtest_mks2.out
+  call assert_equal('Xproj', fnamemodify(getcwd(), ':t'))
+  cd ..
+
+  set sessionoptions&
+  call delete('Xproj', 'rf')
+endfunc
+
+" Test for storing the 'lines' and 'columns' settings
+func Test_mksession_resize()
+  mksession! Xtest_mks1.out
+  set sessionoptions+=resize
+  mksession! Xtest_mks2.out
+
+  let lines = readfile('Xtest_mks1.out')
+  let found_resize = v:false
+  for line in lines
+    if line =~ '^set lines='
+      let found_resize = v:true
+      break
+    endif
+  endfor
+  call assert_false(found_resize)
+  let lines = readfile('Xtest_mks2.out')
+  let found_resize = v:false
+  for line in lines
+    if line =~ '^set lines='
+      let found_resize = v:true
+      break
+    endif
+  endfor
+  call assert_true(found_resize)
+
+  call delete('Xtest_mks1.out')
+  call delete('Xtest_mks2.out')
+  set sessionoptions&
+endfunc
+
+" Test for mksession with a named scratch buffer
+func Test_mksession_scratch()
+  enew | only
+  file Xscratch
+  set buftype=nofile
+  mksession! Xtest_mks.out
+  %bwipe
+  source Xtest_mks.out
+  call assert_equal('Xscratch', bufname(''))
+  call assert_equal('nofile', &buftype)
+  %bwipe
+  call delete('Xtest_mks.out')
+endfunc
+
+" Test for mksession with fold options
+func Test_mksession_foldopt()
+  set sessionoptions-=options
+  set sessionoptions+=folds
+  new
+  setlocal foldenable
+  setlocal foldmethod=expr
+  setlocal foldmarker=<<<,>>>
+  setlocal foldignore=%
+  setlocal foldlevel=2
+  setlocal foldminlines=10
+  setlocal foldnestmax=15
+  mksession! Xtest_mks.out
+  close
+  %bwipe
+
+  source Xtest_mks.out
+  call assert_true(&foldenable)
+  call assert_equal('expr', &foldmethod)
+  call assert_equal('<<<,>>>', &foldmarker)
+  call assert_equal('%', &foldignore)
+  call assert_equal(2, &foldlevel)
+  call assert_equal(10, &foldminlines)
+  call assert_equal(15, &foldnestmax)
+
+  close
+  %bwipe
+  set sessionoptions&
+endfunc
+
+" Test for mksession with window position
+func Test_mksession_winpos()
+  if !has('gui_running')
+    " Only applicable in GUI Vim
+    return
+  endif
+  set sessionoptions+=winpos
+  mksession! Xtest_mks.out
+  let found_winpos = v:false
+  let lines = readfile('Xtest_mks.out')
+  for line in lines
+    if line =~ '^winpos '
+      let found_winpos = v:true
+      break
+    endif
+  endfor
+  call assert_true(found_winpos)
+  call delete('Xtest_mks.out')
+  set sessionoptions&
+endfunc
+
+" Test for mksession with 'compatible' option
+func Test_mksession_compatible()
+  mksession! Xtest_mks1.out
+  set compatible
+  mksession! Xtest_mks2.out
+  set nocp
+
+  let test_success = v:false
+  let lines = readfile('Xtest_mks1.out')
+  for line in lines
+    if line =~ '^if &cp | set nocp | endif'
+      let test_success = v:true
+      break
+    endif
+  endfor
+  call assert_true(test_success)
+
+  let test_success = v:false
+  let lines = readfile('Xtest_mks2.out')
+  for line in lines
+    if line =~ '^if !&cp | set cp | endif'
+      let test_success = v:true
+      break
+    endif
+  endfor
+  call assert_true(test_success)
+
+  call delete('Xtest_mks1.out')
+  call delete('Xtest_mks2.out')
+  set compatible&
+  set sessionoptions&
+endfunc
+
+func s:ClearMappings()
+  mapclear
+  omapclear
+  mapclear!
+  lmapclear
+  tmapclear
+endfunc
+
+func Test_mkvimrc()
+  let entries = [
+        \ ['', 'nothing', '<Nop>'],
+        \ ['n', 'normal', 'NORMAL'],
+        \ ['v', 'visual', 'VISUAL'],
+        \ ['s', 'select', 'SELECT'],
+        \ ['x', 'visualonly', 'VISUALONLY'],
+        \ ['o', 'operator', 'OPERATOR'],
+        \ ['i', 'insert', 'INSERT'],
+        \ ['l', 'lang', 'LANG'],
+        \ ['c', 'command', 'COMMAND'],
+        \ ['t', 'terminal', 'TERMINAL'],
+        \ ]
+  for entry in entries
+    exe entry[0] .. 'map ' .. entry[1] .. ' ' .. entry[2]
+  endfor
+
+  mkvimrc Xtestvimrc
+
+  call s:ClearMappings()
+  for entry in entries
+    call assert_equal('', maparg(entry[1], entry[0]))
+  endfor
+
+  source Xtestvimrc
+
+  for entry in entries
+    call assert_equal(entry[2], maparg(entry[1], entry[0]))
+  endfor
+
+  call s:ClearMappings()
+  call delete('Xtestvimrc')
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

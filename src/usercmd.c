@@ -23,9 +23,7 @@ typedef struct ucmd
     cmd_addr_T	uc_addr_type;	// The command's address type
 # ifdef FEAT_EVAL
     sctx_T	uc_script_ctx;	// SCTX where the command was defined
-#  ifdef FEAT_CMDL_COMPL
     char_u	*uc_compl_arg;	// completion argument if any
-#  endif
 # endif
 } ucmd_T;
 
@@ -55,7 +53,7 @@ static struct
 #if defined(FEAT_CSCOPE)
     {EXPAND_CSCOPE, "cscope"},
 #endif
-#if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+#if defined(FEAT_EVAL)
     {EXPAND_USER_DEFINED, "custom"},
     {EXPAND_USER_LIST, "customlist"},
 #endif
@@ -69,9 +67,7 @@ static struct
     {EXPAND_FUNCTIONS, "function"},
     {EXPAND_HELP, "help"},
     {EXPAND_HIGHLIGHT, "highlight"},
-#if defined(FEAT_CMDHIST)
     {EXPAND_HISTORY, "history"},
-#endif
 #if defined(HAVE_LOCALE_H) || defined(X_LOCALE)
     {EXPAND_LOCALES, "locale"},
 #endif
@@ -187,17 +183,15 @@ find_ucmd(
 		    eap->useridx = j;
 		    eap->addr_type = uc->uc_addr_type;
 
-# ifdef FEAT_CMDL_COMPL
 		    if (complp != NULL)
 			*complp = uc->uc_compl;
-#  ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 		    if (xp != NULL)
 		    {
 			xp->xp_arg = uc->uc_compl_arg;
 			xp->xp_script_ctx = uc->uc_script_ctx;
 			xp->xp_script_ctx.sc_lnum += sourcing_lnum;
 		    }
-#  endif
 # endif
 		    // Do not search for further abbreviations
 		    // if this is an exact match.
@@ -233,8 +227,6 @@ find_ucmd(
 	return p + (matchlen - len);
     return p;
 }
-
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
 
     char_u *
 set_context_in_user_cmd(expand_T *xp, char_u *arg_in)
@@ -309,9 +301,16 @@ get_user_command_name(int idx)
     char_u *
 get_user_commands(expand_T *xp UNUSED, int idx)
 {
-    if (idx < curbuf->b_ucmds.ga_len)
-	return USER_CMD_GA(&curbuf->b_ucmds, idx)->uc_name;
-    idx -= curbuf->b_ucmds.ga_len;
+    // In cmdwin, the alternative buffer should be used.
+    buf_T *buf =
+#ifdef FEAT_CMDWIN
+	(cmdwin_type != 0 && get_cmdline_type() == NUL) ? prevwin->w_buffer :
+#endif
+	curbuf;
+
+    if (idx < buf->b_ucmds.ga_len)
+	return USER_CMD_GA(&buf->b_ucmds, idx)->uc_name;
+    idx -= buf->b_ucmds.ga_len;
     if (idx < ucmds.ga_len)
 	return USER_CMD(idx)->uc_name;
     return NULL;
@@ -379,8 +378,6 @@ cmdcomplete_str_to_type(char_u *complete_str)
     return EXPAND_NOTHING;
 }
 
-#endif // FEAT_CMDL_COMPL
-
 /*
  * List user commands starting with "name[name_len]".
  */
@@ -395,7 +392,13 @@ uc_list(char_u *name, size_t name_len)
     long	a;
     garray_T	*gap;
 
-    gap = &curbuf->b_ucmds;
+    /* In cmdwin, the alternative buffer should be used. */
+    gap =
+#ifdef FEAT_CMDWIN
+	(cmdwin_type != 0 && get_cmdline_type() == NUL) ?
+	&prevwin->w_buffer->b_ucmds :
+#endif
+	&curbuf->b_ucmds;
     for (;;)
     {
 	for (i = 0; i < gap->ga_len; ++i)
@@ -419,12 +422,12 @@ uc_list(char_u *name, size_t name_len)
 
 	    // Special cases
 	    len = 4;
-	    if (a & BANG)
+	    if (a & EX_BANG)
 	    {
 		msg_putchar('!');
 		--len;
 	    }
-	    if (a & REGSTR)
+	    if (a & EX_REGSTR)
 	    {
 		msg_putchar('"');
 		--len;
@@ -434,7 +437,7 @@ uc_list(char_u *name, size_t name_len)
 		msg_putchar('b');
 		--len;
 	    }
-	    if (a & TRLBAR)
+	    if (a & EX_TRLBAR)
 	    {
 		msg_putchar('|');
 		--len;
@@ -456,13 +459,13 @@ uc_list(char_u *name, size_t name_len)
 	    len = 0;
 
 	    // Arguments
-	    switch ((int)(a & (EXTRA|NOSPC|NEEDARG)))
+	    switch ((int)(a & (EX_EXTRA|EX_NOSPC|EX_NEEDARG)))
 	    {
-		case 0:			    IObuff[len++] = '0'; break;
-		case (EXTRA):		    IObuff[len++] = '*'; break;
-		case (EXTRA|NOSPC):	    IObuff[len++] = '?'; break;
-		case (EXTRA|NEEDARG):	    IObuff[len++] = '+'; break;
-		case (EXTRA|NOSPC|NEEDARG): IObuff[len++] = '1'; break;
+		case 0:				IObuff[len++] = '0'; break;
+		case (EX_EXTRA):		IObuff[len++] = '*'; break;
+		case (EX_EXTRA|EX_NOSPC):	IObuff[len++] = '?'; break;
+		case (EX_EXTRA|EX_NEEDARG):	IObuff[len++] = '+'; break;
+		case (EX_EXTRA|EX_NOSPC|EX_NEEDARG): IObuff[len++] = '1'; break;
 	    }
 
 	    do {
@@ -470,15 +473,15 @@ uc_list(char_u *name, size_t name_len)
 	    } while (len < 5 - over);
 
 	    // Address / Range
-	    if (a & (RANGE|COUNT))
+	    if (a & (EX_RANGE|EX_COUNT))
 	    {
-		if (a & COUNT)
+		if (a & EX_COUNT)
 		{
 		    // -count=N
 		    sprintf((char *)IObuff + len, "%ldc", cmd->uc_def);
 		    len += (int)STRLEN(IObuff + len);
 		}
-		else if (a & DFLALL)
+		else if (a & EX_DFLALL)
 		    IObuff[len++] = '%';
 		else if (cmd->uc_def >= 0)
 		{
@@ -611,7 +614,7 @@ parse_compl_arg(
     char_u	**compl_arg UNUSED)
 {
     char_u	*arg = NULL;
-# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+# if defined(FEAT_EVAL)
     size_t	arglen = 0;
 # endif
     int		i;
@@ -623,7 +626,7 @@ parse_compl_arg(
 	if (value[i] == ',')
 	{
 	    arg = &value[i + 1];
-# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+# if defined(FEAT_EVAL)
 	    arglen = vallen - i - 1;
 # endif
 	    valend = i;
@@ -638,10 +641,10 @@ parse_compl_arg(
 	{
 	    *complp = command_complete[i].expand;
 	    if (command_complete[i].expand == EXPAND_BUFFERS)
-		*argt |= BUFNAME;
+		*argt |= EX_BUFNAME;
 	    else if (command_complete[i].expand == EXPAND_DIRECTORIES
 		    || command_complete[i].expand == EXPAND_FILES)
-		*argt |= XFILE;
+		*argt |= EX_XFILE;
 	    break;
 	}
     }
@@ -652,7 +655,7 @@ parse_compl_arg(
 	return FAIL;
     }
 
-# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+# if defined(FEAT_EVAL)
     if (*complp != EXPAND_USER_DEFINED && *complp != EXPAND_USER_LIST
 							       && arg != NULL)
 # else
@@ -663,7 +666,7 @@ parse_compl_arg(
 	return FAIL;
     }
 
-# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+# if defined(FEAT_EVAL)
     if ((*complp == EXPAND_USER_DEFINED || *complp == EXPAND_USER_LIST)
 							       && arg == NULL)
     {
@@ -702,13 +705,13 @@ uc_scan_attr(
 
     // First, try the simple attributes (no arguments)
     if (STRNICMP(attr, "bang", len) == 0)
-	*argt |= BANG;
+	*argt |= EX_BANG;
     else if (STRNICMP(attr, "buffer", len) == 0)
 	*flags |= UC_BUFFER;
     else if (STRNICMP(attr, "register", len) == 0)
-	*argt |= REGSTR;
+	*argt |= EX_REGSTR;
     else if (STRNICMP(attr, "bar", len) == 0)
-	*argt |= TRLBAR;
+	*argt |= EX_TRLBAR;
     else
     {
 	int	i;
@@ -736,13 +739,13 @@ uc_scan_attr(
 		    // Do nothing - this is the default
 		    ;
 		else if (*val == '1')
-		    *argt |= (EXTRA | NOSPC | NEEDARG);
+		    *argt |= (EX_EXTRA | EX_NOSPC | EX_NEEDARG);
 		else if (*val == '*')
-		    *argt |= EXTRA;
+		    *argt |= EX_EXTRA;
 		else if (*val == '?')
-		    *argt |= (EXTRA | NOSPC);
+		    *argt |= (EX_EXTRA | EX_NOSPC);
 		else if (*val == '+')
-		    *argt |= (EXTRA | NEEDARG);
+		    *argt |= (EX_EXTRA | EX_NEEDARG);
 		else
 		    goto wrong_nargs;
 	    }
@@ -755,9 +758,9 @@ wrong_nargs:
 	}
 	else if (STRNICMP(attr, "range", attrlen) == 0)
 	{
-	    *argt |= RANGE;
+	    *argt |= EX_RANGE;
 	    if (vallen == 1 && *val == '%')
-		*argt |= DFLALL;
+		*argt |= EX_DFLALL;
 	    else if (val != NULL)
 	    {
 		p = val;
@@ -769,7 +772,7 @@ two_count:
 		}
 
 		*def = getdigits(&p);
-		*argt |= ZEROR;
+		*argt |= EX_ZEROR;
 
 		if (p != val + vallen || vallen == 0)
 		{
@@ -784,7 +787,7 @@ invalid_count:
 	}
 	else if (STRNICMP(attr, "count", attrlen) == 0)
 	{
-	    *argt |= (COUNT | ZEROR | RANGE);
+	    *argt |= (EX_COUNT | EX_ZEROR | EX_RANGE);
 	    // default for -count is using any number
 	    if (*addr_type_arg == ADDR_NONE)
 		*addr_type_arg = ADDR_OTHER;
@@ -818,7 +821,7 @@ invalid_count:
 	}
 	else if (STRNICMP(attr, "addr", attrlen) == 0)
 	{
-	    *argt |= RANGE;
+	    *argt |= EX_RANGE;
 	    if (val == NULL)
 	    {
 		emsg(_("E179: argument required for -addr"));
@@ -827,7 +830,7 @@ invalid_count:
 	    if (parse_addr_type_arg(val, (int)vallen, addr_type_arg) == FAIL)
 		return FAIL;
 	    if (*addr_type_arg != ADDR_LINES)
-		*argt |= ZEROR;
+		*argt |= EX_ZEROR;
 	}
 	else
 	{
@@ -919,7 +922,7 @@ uc_add_command(
 	    }
 
 	    VIM_CLEAR(cmd->uc_rep);
-#if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+#if defined(FEAT_EVAL)
 	    VIM_CLEAR(cmd->uc_compl_arg);
 #endif
 	    break;
@@ -953,9 +956,7 @@ uc_add_command(
 #ifdef FEAT_EVAL
     cmd->uc_script_ctx = current_sctx;
     cmd->uc_script_ctx.sc_lnum += sourcing_lnum;
-# ifdef FEAT_CMDL_COMPL
     cmd->uc_compl_arg = compl_arg;
-# endif
 #endif
     cmd->uc_addr_type = addr_type;
 
@@ -963,7 +964,7 @@ uc_add_command(
 
 fail:
     vim_free(rep_buf);
-#if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+#if defined(FEAT_EVAL)
     vim_free(compl_arg);
 #endif
     return FAIL;
@@ -1063,7 +1064,7 @@ uc_clear(garray_T *gap)
 	cmd = USER_CMD_GA(gap, i);
 	vim_free(cmd->uc_name);
 	vim_free(cmd->uc_rep);
-# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+# if defined(FEAT_EVAL)
 	vim_free(cmd->uc_compl_arg);
 # endif
     }
@@ -1104,7 +1105,7 @@ ex_delcommand(exarg_T *eap)
 
     vim_free(cmd->uc_name);
     vim_free(cmd->uc_rep);
-# if defined(FEAT_EVAL) && defined(FEAT_CMDL_COMPL)
+# if defined(FEAT_EVAL)
     vim_free(cmd->uc_compl_arg);
 # endif
 
@@ -1315,7 +1316,7 @@ uc_check_code(
 
 	// When specified there is a single argument don't split it.
 	// Works for ":Cmd %" when % is "a b c".
-	if ((eap->argt & NOSPC) && quote == 2)
+	if ((eap->argt & EX_NOSPC) && quote == 2)
 	    quote = 1;
 
 	switch (quote)

@@ -191,7 +191,7 @@ win_clip_init(void)
     /*
      * Vim's own clipboard format recognises whether the text is char, line,
      * or rectangular block.  Only useful for copying between two Vims.
-     * "VimClipboard" was used for previous versions, using the first
+     * "Clipboard_T" was used for previous versions, using the first
      * character to specify MCHAR, MLINE or MBLOCK.
      */
     clip_star.format = RegisterClipboardFormat("VimClipboard2");
@@ -212,7 +212,7 @@ typedef struct
  * Make vim the owner of the current selection.  Return OK upon success.
  */
     int
-clip_mch_own_selection(VimClipboard *cbd UNUSED)
+clip_mch_own_selection(Clipboard_T *cbd UNUSED)
 {
     /*
      * Never actually own the clipboard.  If another application sets the
@@ -225,7 +225,7 @@ clip_mch_own_selection(VimClipboard *cbd UNUSED)
  * Make vim NOT the owner of the current selection.
  */
     void
-clip_mch_lose_selection(VimClipboard *cbd UNUSED)
+clip_mch_lose_selection(Clipboard_T *cbd UNUSED)
 {
     /* Nothing needs to be done here */
 }
@@ -293,7 +293,7 @@ vim_open_clipboard(void)
  * <VN>
  */
     void
-clip_mch_request_selection(VimClipboard *cbd)
+clip_mch_request_selection(Clipboard_T *cbd)
 {
     VimClipType_t	metadata = { -1, -1, -1, -1 };
     HGLOBAL		hMem = NULL;
@@ -453,7 +453,7 @@ clip_mch_request_selection(VimClipboard *cbd)
  * Send the current selection to the clipboard.
  */
     void
-clip_mch_set_selection(VimClipboard *cbd)
+clip_mch_set_selection(Clipboard_T *cbd)
 {
     char_u		*str = NULL;
     VimClipType_t	metadata;

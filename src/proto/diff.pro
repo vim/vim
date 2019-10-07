@@ -4,6 +4,7 @@ void diff_buf_adjust(win_T *win);
 void diff_buf_add(buf_T *buf);
 void diff_invalidate(buf_T *buf);
 void diff_mark_adjust(linenr_T line1, linenr_T line2, long amount, long amount_after);
+void diff_redraw(int dofold);
 int diff_internal(void);
 void ex_diffupdate(exarg_T *eap);
 void ex_diffpatch(exarg_T *eap);
@@ -26,4 +27,6 @@ int diff_mode_buf(buf_T *buf);
 int diff_move_to(int dir, long count);
 linenr_T diff_get_corresponding_line(buf_T *buf1, linenr_T lnum1);
 linenr_T diff_lnum_win(linenr_T lnum, win_T *wp);
+void f_diff_filler(typval_T *argvars, typval_T *rettv);
+void f_diff_hlID(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

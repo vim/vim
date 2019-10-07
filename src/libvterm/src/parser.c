@@ -125,7 +125,10 @@ static void done_string(VTerm *vt, const char *str, size_t len)
 size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
 {
   size_t pos = 0;
-  const char *string_start = NULL;  /* init to avoid gcc warning */
+  const char *string_start = NULL;  // init to avoid gcc warning
+
+  vt->in_backspace = 0;		    // Count down with BS key and activate when
+				    // it reaches 1
 
   switch(vt->parser.state) {
   case NORMAL:
@@ -172,6 +175,13 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
       // fallthrough
     }
     else if(c < 0x20) { // other C0
+      if(vterm_get_special_pty_type() == 2) {
+        if(c == 0x08) // BS
+          // Set the trick for BS output after a sequence, to delay backspace
+          // activation
+          if(pos + 2 < len && bytes[pos + 1] == 0x20 && bytes[pos + 2] == 0x08)
+            vt->in_backspace = 2; // Trigger when count down to 1
+      }
       if(vt->parser.state >= STRING)
         more_string(vt, string_start, bytes + pos - string_start);
       do_control(vt, c);
@@ -226,23 +236,23 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
       break;
 
     case CSI_LEADER:
-      /* Extract leader bytes 0x3c to 0x3f */
+      // Extract leader bytes 0x3c to 0x3f
       if(c >= 0x3c && c <= 0x3f) {
         if(vt->parser.csi_leaderlen < CSI_LEADER_MAX-1)
           vt->parser.csi_leader[vt->parser.csi_leaderlen++] = c;
         break;
       }
 
-      /* else fallthrough */
+      // else fallthrough
       vt->parser.csi_leader[vt->parser.csi_leaderlen] = 0;
 
       vt->parser.csi_argi = 0;
       vt->parser.csi_args[0] = CSI_ARG_MISSING;
       vt->parser.state = CSI_ARGS;
 
-      /* fallthrough */
+      // fallthrough
     case CSI_ARGS:
-      /* Numerical value of argument */
+      // Numerical value of argument
       if(c >= '0' && c <= '9') {
         if(vt->parser.csi_args[vt->parser.csi_argi] == CSI_ARG_MISSING)
           vt->parser.csi_args[vt->parser.csi_argi] = 0;
@@ -260,11 +270,11 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
         break;
       }
 
-      /* else fallthrough */
+      // else fallthrough
       vt->parser.csi_argi++;
       vt->parser.intermedlen = 0;
       vt->parser.state = CSI_INTERMED;
-      /* fallthrough */
+      // fallthrough
     case CSI_INTERMED:
       if(is_intermed(c)) {
         if(vt->parser.intermedlen < INTERMED_MAX-1)
@@ -272,13 +282,13 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
         break;
       }
       else if(c == 0x1b) {
-        /* ESC in CSI cancels */
+        // ESC in CSI cancels
       }
       else if(c >= 0x40 && c <= 0x7e) {
         vt->parser.intermed[vt->parser.intermedlen] = 0;
         do_csi(vt, c);
       }
-      /* else was invalid CSI */
+      // else was invalid CSI
 
       ENTER_NORMAL_STATE();
       break;
@@ -289,8 +299,8 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
         ENTER_NORMAL_STATE();
       }
       else if (pos + 1 == len) {
-	/* end of input but OSC string isn't finished yet, copy it to
-	 * vt->parser.strbuffer to continue it later */
+	// end of input but OSC string isn't finished yet, copy it to
+	// vt->parser.strbuffer to continue it later
         more_string(vt, string_start, bytes + pos + 1 - string_start);
       }
       break;
@@ -321,7 +331,7 @@ size_t vterm_input_write(VTerm *vt, const char *bytes, size_t len)
 
         if(!eaten) {
           DEBUG_LOG("libvterm: Text callback did not consume any input\n");
-          /* force it to make progress */
+          // force it to make progress
           eaten = 1;
         }
 

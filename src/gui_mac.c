@@ -4434,7 +4434,7 @@ gui_mch_insert_lines(int row, int num_lines)
      */
 
     void
-clip_mch_request_selection(VimClipboard *cbd)
+clip_mch_request_selection(Clipboard_T *cbd)
 {
 
     Handle	textOfClip;
@@ -4524,7 +4524,7 @@ clip_mch_request_selection(VimClipboard *cbd)
 }
 
     void
-clip_mch_lose_selection(VimClipboard *cbd)
+clip_mch_lose_selection(Clipboard_T *cbd)
 {
     /*
      * TODO: Really nothing to do?
@@ -4532,7 +4532,7 @@ clip_mch_lose_selection(VimClipboard *cbd)
 }
 
     int
-clip_mch_own_selection(VimClipboard *cbd)
+clip_mch_own_selection(Clipboard_T *cbd)
 {
     return OK;
 }
@@ -4541,7 +4541,7 @@ clip_mch_own_selection(VimClipboard *cbd)
  * Send the current selection to the clipboard.
  */
     void
-clip_mch_set_selection(VimClipboard *cbd)
+clip_mch_set_selection(Clipboard_T *cbd)
 {
     Handle	textOfClip;
     long	scrapSize;

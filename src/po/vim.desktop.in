@@ -11,6 +11,7 @@ Comment=Edit text files
 # be overwritten by the po file when generating the desktop.file.
 GenericName[da]=Teksteditor
 GenericName[pl]=Edytor tekstu
+GenericName[sr]=Едитор текста
 GenericName[is]=Ritvinnsluforrit
 Comment[af]=Redigeer tekslêers
 Comment[am]=የጽሑፍ ፋይሎች ያስተካክሉ

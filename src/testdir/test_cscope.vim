@@ -1,8 +1,9 @@
 " Test for cscope commands.
 
-if !has('cscope') || !executable('cscope') || !has('quickfix')
-  finish
-endif
+source check.vim
+CheckFeature cscope
+CheckFeature quickfix
+CheckExecutable cscope
 
 func CscopeSetupOrClean(setup)
     if a:setup

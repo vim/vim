@@ -243,7 +243,6 @@ static void set_b0_dir_flag(ZERO_BL *b0p, buf_T *buf);
 static void add_b0_fenc(ZERO_BL *b0p, buf_T *buf);
 static time_t swapfile_info(char_u *);
 static int recov_file_names(char_u **, char_u *, int prepend_dot);
-static int ml_append_int(buf_T *, linenr_T, char_u *, colnr_T, int, int);
 static int ml_delete_int(buf_T *, linenr_T, int);
 static char_u *findswapname(buf_T *, char_u **, char_u *);
 static void ml_flush_line(buf_T *);
@@ -2082,6 +2081,48 @@ get_b0_dict(char_u *fname, dict_T *d)
 #endif
 
 /*
+ * Cache of the current timezone name as retrieved from TZ, or an empty string
+ * where unset, up to 64 octets long including trailing null byte.
+ */
+#if defined(HAVE_LOCALTIME_R) && defined(HAVE_TZSET)
+static char	tz_cache[64];
+#endif
+
+/*
+ * Call either localtime(3) or localtime_r(3) from POSIX libc time.h, with the
+ * latter version preferred for reentrancy.
+ *
+ * If we use localtime_r(3) and we have tzset(3) available, check to see if the
+ * environment variable TZ has changed since the last run, and call tzset(3) to
+ * update the global timezone variables if it has.  This is because the POSIX
+ * standard doesn't require localtime_r(3) implementations to do that as it
+ * does with localtime(3), and we don't want to call tzset(3) every time.
+ */
+    struct tm *
+vim_localtime(
+    const time_t	*timep,		// timestamp for local representation
+    struct tm		*result UNUSED)	// pointer to caller return buffer
+{
+#ifdef HAVE_LOCALTIME_R
+# ifdef HAVE_TZSET
+    char		*tz;		// pointer for TZ environment var
+
+    tz = (char *)mch_getenv((char_u *)"TZ");
+    if (tz == NULL)
+	tz = "";
+    if (STRNCMP(tz_cache, tz, sizeof(tz_cache) - 1) != 0)
+    {
+	tzset();
+	vim_strncpy((char_u *)tz_cache, (char_u *)tz, sizeof(tz_cache) - 1);
+    }
+# endif	// HAVE_TZSET
+    return localtime_r(timep, result);
+#else
+    return localtime(timep);
+#endif	// HAVE_LOCALTIME_R
+}
+
+/*
  * Replacement for ctime(), which is not safe to use.
  * Requires strftime(), otherwise returns "(unknown)".
  * If "thetime" is invalid returns "(invalid)".  Never returns NULL.
@@ -2093,21 +2134,32 @@ get_ctime(time_t thetime, int add_newline)
 {
     static char buf[50];
 #ifdef HAVE_STRFTIME
-# ifdef HAVE_LOCALTIME_R
     struct tm	tmval;
-# endif
     struct tm	*curtime;
 
-# ifdef HAVE_LOCALTIME_R
-    curtime = localtime_r(&thetime, &tmval);
-# else
-    curtime = localtime(&thetime);
-# endif
+    curtime = vim_localtime(&thetime, &tmval);
     /* MSVC returns NULL for an invalid value of seconds. */
     if (curtime == NULL)
 	vim_strncpy((char_u *)buf, (char_u *)_("(Invalid)"), sizeof(buf) - 1);
     else
-	(void)strftime(buf, sizeof(buf) - 1, "%a %b %d %H:%M:%S %Y", curtime);
+    {
+	(void)strftime(buf, sizeof(buf) - 1, _("%a %b %d %H:%M:%S %Y"),
+								    curtime);
+# ifdef MSWIN
+	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
+	{
+	    char_u	*to_free = NULL;
+	    int		len;
+
+	    acp_to_enc((char_u *)buf, (int)strlen(buf), &to_free, &len);
+	    if (to_free != NULL)
+	    {
+		STRCPY(buf, to_free);
+		vim_free(to_free);
+	    }
+	}
+# endif
+    }
 #else
     STRCPY(buf, "(unknown)");
 #endif
@@ -2664,7 +2716,7 @@ add_text_props_for_append(
     int		count;
     int		n;
     char_u	*props;
-    int		new_len;
+    int		new_len = 0;  // init for gcc
     char_u	*new_line;
     textprop_T	prop;
 
@@ -2710,56 +2762,6 @@ add_text_props_for_append(
 }
 #endif
 
-/*
- * Append a line after lnum (may be 0 to insert a line in front of the file).
- * "line" does not need to be allocated, but can't be another line in a
- * buffer, unlocking may make it invalid.
- *
- *   newfile: TRUE when starting to edit a new file, meaning that pe_old_lnum
- *		will be set for recovery
- * Check: The caller of this function should probably also call
- * appended_lines().
- *
- * return FAIL for failure, OK otherwise
- */
-    int
-ml_append(
-    linenr_T	lnum,		/* append after this line (can be 0) */
-    char_u	*line,		/* text of the new line */
-    colnr_T	len,		/* length of new line, including NUL, or 0 */
-    int		newfile)	/* flag, see above */
-{
-    /* When starting up, we might still need to create the memfile */
-    if (curbuf->b_ml.ml_mfp == NULL && open_buffer(FALSE, NULL, 0) == FAIL)
-	return FAIL;
-
-    if (curbuf->b_ml.ml_line_lnum != 0)
-	ml_flush_line(curbuf);
-    return ml_append_int(curbuf, lnum, line, len, newfile, FALSE);
-}
-
-#if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(PROTO)
-/*
- * Like ml_append() but for an arbitrary buffer.  The buffer must already have
- * a memline.
- */
-    int
-ml_append_buf(
-    buf_T	*buf,
-    linenr_T	lnum,		/* append after this line (can be 0) */
-    char_u	*line,		/* text of the new line */
-    colnr_T	len,		/* length of new line, including NUL, or 0 */
-    int		newfile)	/* flag, see above */
-{
-    if (buf->b_ml.ml_mfp == NULL)
-	return FAIL;
-
-    if (buf->b_ml.ml_line_lnum != 0)
-	ml_flush_line(buf);
-    return ml_append_int(buf, lnum, line, len, newfile, FALSE);
-}
-#endif
-
     static int
 ml_append_int(
     buf_T	*buf,
@@ -2797,12 +2799,6 @@ ml_append_int(
 
     if (len == 0)
 	len = (colnr_T)STRLEN(line) + 1;	// space needed for the text
-
-#ifdef FEAT_EVAL
-    // When inserting above recorded changes: flush the changes before changing
-    // the text.
-    may_invoke_listeners(buf, lnum + 1, lnum + 1, 1);
-#endif
 
 #ifdef FEAT_TEXT_PROP
     if (curbuf->b_has_textprop && lnum > 0)
@@ -3288,6 +3284,79 @@ theend:
 }
 
 /*
+ * Flush any pending change and call ml_append_int()
+ */
+    static int
+ml_append_flush(
+    buf_T	*buf,
+    linenr_T	lnum,		// append after this line (can be 0)
+    char_u	*line,		// text of the new line
+    colnr_T	len,		// length of line, including NUL, or 0
+    int		newfile)	// flag, see above
+{
+    if (lnum > buf->b_ml.ml_line_count)
+	return FAIL;  // lnum out of range
+
+    if (buf->b_ml.ml_line_lnum != 0)
+	// This may also invoke ml_append_int().
+	ml_flush_line(buf);
+
+#ifdef FEAT_EVAL
+    // When inserting above recorded changes: flush the changes before changing
+    // the text.  Then flush the cached line, it may become invalid.
+    may_invoke_listeners(buf, lnum + 1, lnum + 1, 1);
+    if (buf->b_ml.ml_line_lnum != 0)
+	ml_flush_line(buf);
+#endif
+
+    return ml_append_int(buf, lnum, line, len, newfile, FALSE);
+}
+
+/*
+ * Append a line after lnum (may be 0 to insert a line in front of the file).
+ * "line" does not need to be allocated, but can't be another line in a
+ * buffer, unlocking may make it invalid.
+ *
+ *   newfile: TRUE when starting to edit a new file, meaning that pe_old_lnum
+ *		will be set for recovery
+ * Check: The caller of this function should probably also call
+ * appended_lines().
+ *
+ * return FAIL for failure, OK otherwise
+ */
+    int
+ml_append(
+    linenr_T	lnum,		/* append after this line (can be 0) */
+    char_u	*line,		/* text of the new line */
+    colnr_T	len,		/* length of new line, including NUL, or 0 */
+    int		newfile)	/* flag, see above */
+{
+    /* When starting up, we might still need to create the memfile */
+    if (curbuf->b_ml.ml_mfp == NULL && open_buffer(FALSE, NULL, 0) == FAIL)
+	return FAIL;
+    return ml_append_flush(curbuf, lnum, line, len, newfile);
+}
+
+#if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(PROTO)
+/*
+ * Like ml_append() but for an arbitrary buffer.  The buffer must already have
+ * a memline.
+ */
+    int
+ml_append_buf(
+    buf_T	*buf,
+    linenr_T	lnum,		/* append after this line (can be 0) */
+    char_u	*line,		/* text of the new line */
+    colnr_T	len,		/* length of new line, including NUL, or 0 */
+    int		newfile)	/* flag, see above */
+{
+    if (buf->b_ml.ml_mfp == NULL)
+	return FAIL;
+    return ml_append_flush(buf, lnum, line, len, newfile);
+}
+#endif
+
+/*
  * Replace line lnum, with buffering, in current buffer.
  *
  * If "copy" is TRUE, make a copy of the line, otherwise the line has been
@@ -3514,6 +3583,15 @@ adjust_text_props_for_delete(
 ml_delete(linenr_T lnum, int message)
 {
     ml_flush_line(curbuf);
+    if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
+	return FAIL;
+
+#ifdef FEAT_EVAL
+    // When inserting above recorded changes: flush the changes before changing
+    // the text.
+    may_invoke_listeners(curbuf, lnum, lnum + 1, -1);
+#endif
+
     return ml_delete_int(curbuf, lnum, message);
 }
 
@@ -3538,14 +3616,6 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
     int		textprop_save_len;
 #endif
 
-    if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
-	return FAIL;
-
-#ifdef FEAT_EVAL
-    // When inserting above recorded changes: flush the changes before changing
-    // the text.
-    may_invoke_listeners(buf, lnum, lnum + 1, -1);
-#endif
     if (lowest_marked && lowest_marked > lnum)
 	lowest_marked--;
 
@@ -4790,7 +4860,8 @@ findswapname(
 	     * (happens when all .swp files are in one directory).
 	     */
 	    if (!recoverymode && buf_fname != NULL
-				&& !buf->b_help && !(buf->b_flags & BF_DUMMY))
+				&& !buf->b_help
+				&& !(buf->b_flags & (BF_DUMMY | BF_NO_SEA)))
 	    {
 		int		fd;
 		struct block0	b0;

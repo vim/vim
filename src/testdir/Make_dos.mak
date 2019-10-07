@@ -134,5 +134,5 @@ test_gui_init.res: test_gui_init.vim
 
 test_options.res test_alot.res: opt_test.vim
 
-opt_test.vim: ../option.c gen_opt_test.vim
-	$(VIMPROG) -u NONE -S gen_opt_test.vim --noplugin --not-a-term ../option.c
+opt_test.vim: ../optiondefs.h gen_opt_test.vim
+	$(VIMPROG) -u NONE -S gen_opt_test.vim --noplugin --not-a-term ../optiondefs.h

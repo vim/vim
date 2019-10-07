@@ -1564,9 +1564,6 @@ msgstr "E509: 无法创建备份文件 (请加 ! 强制执行)"
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: 无法生成备份文件 (请加 ! 强制执行)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: Resource fork 会丢失 (请加 ! 强制执行)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: 找不到用于写入的临时文件"
 
@@ -2537,38 +2534,11 @@ msgstr "显示文件: "
 msgid "Generate docu for"
 msgstr "产生文件: "
 
-msgid ""
-"Cannot connect to SNiFF+. Check environment (sniffemacs must be found in "
-"$PATH).\n"
-msgstr "不能连接到 SNiFF+。请检查环境变量 ($PATH 里必需可以找到 sniffemacs)\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: 读取错误. 取消连接"
-
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ 目前"
-
 msgid "not "
 msgstr "未"
 
 msgid "connected"
 msgstr "连接中"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: 不正确的 SNiff+ 调用: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: 连接到 SNiFF+ 失败"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: 未连接到 SNiFF+"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: 不是 SNiFF+ 的缓冲区"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: 写入错误。结束连接"
 
 msgid "invalid buffer number"
 msgstr "无效的缓冲区号"
@@ -3132,14 +3102,8 @@ msgstr "E288: 输入法不支持任何风格"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: 输入法不支持我的预编辑类型"
 
-msgid "E290: over-the-spot style requires fontset"
-msgstr "E290: over-the-spot 风格需要 Fontset"
-
 msgid "E291: Your GTK+ is older than 1.2.3. Status area disabled"
 msgstr "E291: 你的 GTK+ 比 1.2.3 旧。状态区不可用。"
-
-msgid "E292: Input Method Server is not running"
-msgstr "E292: 输入法服务器未运行"
 
 msgid "E293: block was not locked"
 msgstr "E293: 块未被锁定"

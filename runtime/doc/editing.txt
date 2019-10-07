@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.1.  Last change: 2019 Jun 10
+*editing.txt*   For Vim version 8.1.  Last change: 2019 Sep 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -100,7 +100,7 @@ g CTRL-G		Prints the current position of the cursor in five
 :buffers
 :files
 :ls			List all the currently known file names.  See
-			'windows.txt' |:files| |:buffers| |:ls|.
+			|windows.txt| |:files| |:buffers| |:ls|.
 
 Vim will remember the full path name of a file name that you enter.  In most
 cases when the file name is displayed only the name you typed is shown, but
@@ -1233,7 +1233,7 @@ The syntax is best shown via some examples: >
 <		Open the browser in the C:/bar directory, with the current
 		buffer filename as default, and save the buffer under the
 		filename chosen.
-Also see the |'browsedir'| option.
+Also see the 'browsedir' option.
 For versions of Vim where browsing is not supported, the command is executed
 unmodified.
 
@@ -1554,7 +1554,7 @@ focus.
 If you want to automatically reload a file when it has been changed outside of
 Vim, set the 'autoread' option.  This doesn't work at the moment you write the
 file though, only when the file wasn't changed inside of Vim.
-
+							*ignore-timestamp*
 If you do not want to be asked or automatically reload the file, you can use
 this: >
 	set buftype=nofile

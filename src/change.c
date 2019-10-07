@@ -155,19 +155,16 @@ changed_internal(void)
 static long next_listener_id = 0;
 
 /*
- * Check if the change at "lnum" / "col" is above or overlaps with an existing
- * changed. If above then flush changes and invoke listeners.
- * If "merge" is TRUE do the merge.
+ * Check if the change at "lnum" is above or overlaps with an existing
+ * change. If above then flush changes and invoke listeners.
  * Returns TRUE if the change was merged.
  */
     static int
 check_recorded_changes(
 	buf_T		*buf,
 	linenr_T	lnum,
-	colnr_T		col,
 	linenr_T	lnume,
-	long		xtra,
-	int		merge)
+	long		xtra)
 {
     if (buf->b_recorded_changes != NULL && xtra != 0)
     {
@@ -182,42 +179,12 @@ check_recorded_changes(
 				      li->li_tv.vval.v_dict, (char_u *)"lnum");
 	    prev_lnume = (linenr_T)dict_get_number(
 				       li->li_tv.vval.v_dict, (char_u *)"end");
-	    if (prev_lnum >= lnum || prev_lnum > lnume
-		    || (prev_lnume >= lnum && xtra != 0))
+	    if (prev_lnum >= lnum || prev_lnum > lnume || prev_lnume >= lnum)
 	    {
-		if (li->li_next == NULL && lnum == prev_lnum
-			&& xtra == 0
-			&& col + 1 == (colnr_T)dict_get_number(
-				      li->li_tv.vval.v_dict, (char_u *)"col"))
-		{
-		    if (merge)
-		    {
-			dictitem_T	*di;
-
-			// Same start point and nothing is following, entries
-			// can be merged.
-			di = dict_find(li->li_tv.vval.v_dict,
-							  (char_u *)"end", -1);
-			if (di != NULL)
-			{
-			    prev_lnum = tv_get_number(&di->di_tv);
-			    if (lnume > prev_lnum)
-				di->di_tv.vval.v_number = lnume;
-			}
-			di = dict_find(li->li_tv.vval.v_dict,
-							(char_u *)"added", -1);
-			if (di != NULL)
-			    di->di_tv.vval.v_number += xtra;
-			return TRUE;
-		    }
-		}
-		else
-		{
-		    // the current change is going to make the line number in
-		    // the older change invalid, flush now
-		    invoke_listeners(curbuf);
-		    break;
-		}
+		// the current change is going to make the line number in
+		// the older change invalid, flush now
+		invoke_listeners(curbuf);
+		break;
 	    }
 	}
     }
@@ -242,7 +209,7 @@ may_record_change(
 
     // If the new change is going to change the line numbers in already listed
     // changes, then flush.
-    if (check_recorded_changes(curbuf, lnum, col, lnume, xtra, TRUE))
+    if (check_recorded_changes(curbuf, lnum, lnume, xtra))
 	return;
 
     if (curbuf->b_recorded_changes == NULL)
@@ -325,15 +292,17 @@ f_listener_flush(typval_T *argvars, typval_T *rettv UNUSED)
  * listener_remove() function
  */
     void
-f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
+f_listener_remove(typval_T *argvars, typval_T *rettv)
 {
     listener_T	*lnr;
     listener_T	*next;
-    listener_T	*prev = NULL;
+    listener_T	*prev;
     int		id = tv_get_number(argvars);
     buf_T	*buf;
 
-    for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+    FOR_ALL_BUFFERS(buf)
+    {
+	prev = NULL;
 	for (lnr = buf->b_listener; lnr != NULL; lnr = next)
 	{
 	    next = lnr->lr_next;
@@ -345,9 +314,12 @@ f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
 		    buf->b_listener = lnr->lr_next;
 		free_callback(&lnr->lr_callback);
 		vim_free(lnr);
+		rettv->vval.v_number = 1;
+		return;
 	    }
 	    prev = lnr;
 	}
+    }
 }
 
 /*
@@ -357,7 +329,7 @@ f_listener_remove(typval_T *argvars, typval_T *rettv UNUSED)
     void
 may_invoke_listeners(buf_T *buf, linenr_T lnum, linenr_T lnume, int added)
 {
-    check_recorded_changes(buf, lnum, 0, lnume, added, FALSE);
+    check_recorded_changes(buf, lnum, lnume, added);
 }
 
 /*
@@ -369,7 +341,6 @@ invoke_listeners(buf_T *buf)
 {
     listener_T	*lnr;
     typval_T	rettv;
-    int		dummy;
     typval_T	argv[6];
     listitem_T	*li;
     linenr_T	start = MAXLNUM;
@@ -417,8 +388,7 @@ invoke_listeners(buf_T *buf)
 
     for (lnr = buf->b_listener; lnr != NULL; lnr = lnr->lr_next)
     {
-	call_callback(&lnr->lr_callback, -1, &rettv,
-				    5, argv, NULL, 0L, 0L, &dummy, TRUE, NULL);
+	call_callback(&lnr->lr_callback, -1, &rettv, 5, argv);
 	clear_tv(&rettv);
     }
 
@@ -431,6 +401,24 @@ invoke_listeners(buf_T *buf)
     else
 	after_updating_screen(TRUE);
     recursive = FALSE;
+}
+
+/*
+ * Remove all listeners associated with "buf".
+ */
+    void
+remove_listeners(buf_T *buf)
+{
+    listener_T	*lnr;
+    listener_T	*next;
+
+    for (lnr = buf->b_listener; lnr != NULL; lnr = next)
+    {
+	next = lnr->lr_next;
+	free_callback(&lnr->lr_callback);
+	vim_free(lnr);
+    }
+    buf->b_listener = NULL;
 }
 #endif
 
@@ -571,7 +559,6 @@ changed_common(
 		    changed_line_abv_curs_win(wp);
 	    }
 #endif
-
 	    if (wp->w_cursor.lnum > lnum)
 		changed_line_abv_curs_win(wp);
 	    else if (wp->w_cursor.lnum == lnum && wp->w_cursor.col >= col)
@@ -622,8 +609,15 @@ changed_common(
 	    if (hasAnyFolding(wp))
 		set_topline(wp, wp->w_topline);
 #endif
-	    // relative numbering may require updating more
-	    if (wp->w_p_rnu)
+	    // Relative numbering may require updating more.  Cursor line
+	    // highlighting probably needs to be updated if it's below the
+	    // change (or is using screenline highlighting)
+	    if (wp->w_p_rnu
+#ifdef FEAT_SYN_HL
+		    || ((wp->w_p_cul && lnum <= wp->w_last_cursorline)
+			    || (wp->w_p_culopt_flags & CULOPT_SCRLINE))
+#endif
+		    )
 		redraw_win_later(wp, SOME_VALID);
 	}
     }
@@ -696,7 +690,7 @@ changed_bytes(linenr_T lnum, colnr_T col)
  * Like changed_bytes() but also adjust text properties for "added" bytes.
  * When "added" is negative text was deleted.
  */
-    void
+    static void
 inserted_bytes(linenr_T lnum, colnr_T col, int added UNUSED)
 {
 #ifdef FEAT_TEXT_PROP
@@ -1038,10 +1032,7 @@ ins_char_bytes(char_u *buf, int charlen)
     // show the match for right parens and braces.
     if (p_sm && (State & INSERT)
 	    && msg_silent == 0
-#ifdef FEAT_INS_EXPAND
-	    && !ins_compl_active()
-#endif
-       )
+	    && !ins_compl_active())
     {
 	if (has_mbyte)
 	    showmatch(mb_ptr2char(buf));
@@ -1441,18 +1432,14 @@ open_line(
     int		n;
     int		trunc_line = FALSE;	// truncate current line afterwards
     int		retval = FAIL;		// return value
-#ifdef FEAT_COMMENTS
     int		extra_len = 0;		// length of p_extra string
     int		lead_len;		// length of comment leader
     char_u	*lead_flags;	// position in 'comments' for comment leader
     char_u	*leader = NULL;		// copy of comment leader
-#endif
     char_u	*allocated = NULL;	// allocated memory
     char_u	*p;
     int		saved_char = NUL;	// init for GCC
-#if defined(FEAT_SMARTINDENT) || defined(FEAT_COMMENTS)
     pos_T	*pos;
-#endif
 #ifdef FEAT_SMARTINDENT
     int		do_si = (!p_paste && curbuf->b_p_si
 # ifdef FEAT_CINDENT
@@ -1520,9 +1507,7 @@ open_line(
 	    first_char = *p;
 	}
 #endif
-#ifdef FEAT_COMMENTS
 	extra_len = (int)STRLEN(p_extra);
-#endif
 	saved_char = *p_extra;
 	*p_extra = NUL;
     }
@@ -1571,27 +1556,20 @@ open_line(
 
 	    old_cursor = curwin->w_cursor;
 	    ptr = saved_line;
-# ifdef FEAT_COMMENTS
 	    if (flags & OPENLINE_DO_COM)
 		lead_len = get_leader_len(ptr, NULL, FALSE, TRUE);
 	    else
 		lead_len = 0;
-# endif
 	    if (dir == FORWARD)
 	    {
 		// Skip preprocessor directives, unless they are
 		// recognised as comments.
-		if (
-# ifdef FEAT_COMMENTS
-			lead_len == 0 &&
-# endif
-			ptr[0] == '#')
+		if ( lead_len == 0 && ptr[0] == '#')
 		{
 		    while (ptr[0] == '#' && curwin->w_cursor.lnum > 1)
 			ptr = ml_get(--curwin->w_cursor.lnum);
 		    newindent = get_indent();
 		}
-# ifdef FEAT_COMMENTS
 		if (flags & OPENLINE_DO_COM)
 		    lead_len = get_leader_len(ptr, NULL, FALSE, TRUE);
 		else
@@ -1627,7 +1605,6 @@ open_line(
 		    }
 		}
 		else	// Not a comment line
-# endif
 		{
 		    // Find last non-blank in line
 		    p = ptr + STRLEN(ptr) - 1;
@@ -1678,11 +1655,7 @@ open_line(
 	    {
 		// Skip preprocessor directives, unless they are
 		// recognised as comments.
-		if (
-# ifdef FEAT_COMMENTS
-			lead_len == 0 &&
-# endif
-			ptr[0] == '#')
+		if (lead_len == 0 && ptr[0] == '#')
 		{
 		    int was_backslashed = FALSE;
 
@@ -1715,7 +1688,6 @@ open_line(
 	did_ai = TRUE;
     }
 
-#ifdef FEAT_COMMENTS
     // Find out if the current line starts with a comment leader.
     // This may then be inserted in front of the new line.
     end_comment_pending = NUL;
@@ -2113,7 +2085,6 @@ open_line(
 	    }
 	}
     }
-#endif
 
     // (State == INSERT || State == REPLACE), only when dir == FORWARD
     if (p_extra != NULL)
@@ -2147,7 +2118,6 @@ open_line(
     if (p_extra == NULL)
 	p_extra = (char_u *)"";		    // append empty line
 
-#ifdef FEAT_COMMENTS
     // concatenate leader and p_extra, if there is a leader
     if (lead_len)
     {
@@ -2174,7 +2144,6 @@ open_line(
     }
     else
 	end_comment_pending = NUL;  // turns out there was no leader
-#endif
 
     old_cursor = curwin->w_cursor;
     if (dir == BACKWARD)
@@ -2264,13 +2233,11 @@ open_line(
 #endif
     }
 
-#ifdef FEAT_COMMENTS
     // In REPLACE mode, for each character in the extra leader, there must be
     // a NUL on the replace stack, for when it is deleted with BS.
     if (REPLACE_NORMAL(State))
 	while (lead_len-- > 0)
 	    replace_push(NUL);
-#endif
 
     curwin->w_cursor = old_cursor;
 
@@ -2326,9 +2293,7 @@ open_line(
 #ifdef FEAT_LISP
     // May do lisp indenting.
     if (!p_paste
-# ifdef FEAT_COMMENTS
 	    && leader == NULL
-# endif
 	    && curbuf->b_p_lisp
 	    && curbuf->b_p_ai)
     {

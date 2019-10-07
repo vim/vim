@@ -25,7 +25,7 @@ func Test_listchars()
   redraw!
   for i in range(1, 5)
     call cursor(i, 1)
-    call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))
+    call assert_equal([expected[i - 1]], ScreenLines(i, '$'->virtcol()))
   endfor
 
   set listchars-=trail:<
@@ -57,6 +57,26 @@ func Test_listchars()
     call cursor(i, 1)
     call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))
   endfor
+
+  " tab with 3rd character and linebreak set
+  set listchars-=tab:<=>
+  set listchars+=tab:<·>
+  set linebreak
+  let expected = [
+	      \ '<······>aa<····>$',
+	      \ '..bb<··>--$',
+	      \ '...cccc>-$',
+	      \ 'dd........ee--<>$',
+	      \ '-$'
+	      \ ]
+  redraw!
+  for i in range(1, 5)
+    call cursor(i, 1)
+    call assert_equal([expected[i - 1]], ScreenLines(i, virtcol('$')))
+  endfor
+  set nolinebreak
+  set listchars-=tab:<·>
+  set listchars+=tab:<=>
 
   set listchars-=trail:-
   let expected = [

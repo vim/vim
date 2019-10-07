@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2019 Jan 27
+" Last Change:	2019 Sep 26
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -29,7 +29,8 @@ if exists("v:lang") || &langmenu != ""
     let s:lang = v:lang
   endif
   " A language name must be at least two characters, don't accept "C"
-  if strlen(s:lang) > 1
+  " Also skip "en_US" to avoid picking up "en_gb" translations.
+  if strlen(s:lang) > 1 && s:lang !~? '^en_us'
     " When the language does not include the charset add 'encoding'
     if s:lang =~ '^\a\a$\|^\a\a_\a\a$'
       let s:lang = s:lang . '.' . &enc
@@ -359,8 +360,8 @@ func! s:SetupColorSchemes() abort
   let s:did_setup_color_schemes = 1
 
   let n = globpath(&runtimepath, "colors/*.vim", 1, 1)
-  let n += globpath(&runtimepath, "pack/*/start/*/colors/*.vim", 1, 1)
-  let n += globpath(&runtimepath, "pack/*/opt/*/colors/*.vim", 1, 1)
+  let n += globpath(&packpath, "pack/*/start/*/colors/*.vim", 1, 1)
+  let n += globpath(&packpath, "pack/*/opt/*/colors/*.vim", 1, 1)
 
   " Ignore case for VMS and windows, sort on name
   let names = sort(map(n, 'substitute(v:val, "\\c.*[/\\\\:\\]]\\([^/\\\\:]*\\)\\.vim", "\\1", "")'), 1)

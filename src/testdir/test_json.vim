@@ -70,7 +70,7 @@ let s:varvals = [v:true, v:false, v:null, v:null]
 func Test_json_encode()
   call assert_equal(s:json1, json_encode(s:var1))
   call assert_equal(s:json2, json_encode(s:var2))
-  call assert_equal(s:json3, json_encode(s:var3))
+  call assert_equal(s:json3, s:var3->json_encode())
   call assert_equal(s:json4, json_encode(s:var4))
   call assert_equal(s:json5, json_encode(s:var5))
 
@@ -110,7 +110,7 @@ endfunc
 func Test_json_decode()
   call assert_equal(s:var1, json_decode(s:json1))
   call assert_equal(s:var2, json_decode(s:json2))
-  call assert_equal(s:var3, json_decode(s:json3))
+  call assert_equal(s:var3, s:json3->json_decode())
   call assert_equal(s:var4, json_decode(s:json4))
   call assert_equal(s:var5, json_decode(s:json5))
 
@@ -188,7 +188,7 @@ let s:varl5 = [7, v:none, v:none]
 func Test_js_encode()
   call assert_equal(s:json1, js_encode(s:var1))
   call assert_equal(s:json2, js_encode(s:var2))
-  call assert_equal(s:json3, js_encode(s:var3))
+  call assert_equal(s:json3, s:var3->js_encode())
   call assert_equal(s:json4, js_encode(s:var4))
   call assert_equal(s:json5, js_encode(s:var5))
 
@@ -226,7 +226,7 @@ endfunc
 func Test_js_decode()
   call assert_equal(s:var1, js_decode(s:json1))
   call assert_equal(s:var2, js_decode(s:json2))
-  call assert_equal(s:var3, js_decode(s:json3))
+  call assert_equal(s:var3, s:json3->js_decode())
   call assert_equal(s:var4, js_decode(s:json4))
   call assert_equal(s:var5, js_decode(s:json5))
 

@@ -61,26 +61,34 @@ extern int _stricoll(char *a, char *b);
 #  include "crypt.pro"
 #  include "crypt_zip.pro"
 # endif
+# include "arglist.pro"
 # include "autocmd.pro"
 # include "buffer.pro"
+# include "bufwrite.pro"
 # include "change.pro"
 # include "charset.pro"
-# ifdef FEAT_CSCOPE
-#  include "if_cscope.pro"
-# endif
+# include "cmdexpand.pro"
+# include "cmdhist.pro"
+# include "if_cscope.pro"
 # include "debugger.pro"
 # include "dict.pro"
 # include "diff.pro"
 # include "digraph.pro"
+# include "drawline.pro"
+# include "drawscreen.pro"
 # include "edit.pro"
 # include "eval.pro"
+# include "evalbuffer.pro"
 # include "evalfunc.pro"
+# include "evalvars.pro"
+# include "evalwindow.pro"
 # include "ex_cmds.pro"
 # include "ex_cmds2.pro"
 # include "ex_docmd.pro"
 # include "ex_eval.pro"
 # include "ex_getln.pro"
 # include "fileio.pro"
+# include "filepath.pro"
 # include "findfile.pro"
 # include "fold.pro"
 # include "getchar.pro"
@@ -89,14 +97,14 @@ extern int _stricoll(char *a, char *b);
 # endif
 # include "hardcopy.pro"
 # include "hashtab.pro"
+# include "highlight.pro"
 # include "indent.pro"
-# ifdef FEAT_INS_EXPAND
 # include "insexpand.pro"
-# endif
 # include "json.pro"
 # include "list.pro"
 # include "blob.pro"
 # include "main.pro"
+# include "map.pro"
 # include "mark.pro"
 # include "memfile.pro"
 # include "memline.pro"
@@ -105,6 +113,9 @@ extern int _stricoll(char *a, char *b);
 # endif
 # ifdef FEAT_ARABIC
 #  include "arabic.pro"
+# endif
+# ifdef FEAT_VIMINFO
+# include "viminfo.pro"
 # endif
 
 /* These prototypes cannot be produced automatically. */
@@ -165,17 +176,23 @@ char_u *vim_strpbrk(char_u *s, char_u *charset);
 /* Use our own qsort(), don't define the prototype when not used. */
 void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void *, const void *));
 #endif
+# include "mouse.pro"
 # include "move.pro"
 # include "mbyte.pro"
 # include "normal.pro"
 # include "ops.pro"
 # include "option.pro"
-# include "popupmnu.pro"
-# ifdef FEAT_QUICKFIX
-#  include "quickfix.pro"
+# include "optionstr.pro"
+# include "popupmenu.pro"
+# if defined(FEAT_PROFILE) || defined(FEAT_RELTIME)
+# include "profiler.pro"
 # endif
+# include "quickfix.pro"
 # include "regexp.pro"
+# include "register.pro"
+# include "scriptfile.pro"
 # include "screen.pro"
+# include "session.pro"
 # if defined(FEAT_CRYPT) || defined(FEAT_PERSISTENT_UNDO)
 #  include "sha256.pro"
 # endif
@@ -186,6 +203,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # include "sound.pro"
 # include "spell.pro"
 # include "spellfile.pro"
+# include "spellsuggest.pro"
 # include "syntax.pro"
 # include "tag.pro"
 # include "term.pro"
@@ -199,6 +217,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 #  include "popupwin.pro"
 #  include "textprop.pro"
 # endif
+# include "testing.pro"
 # include "ui.pro"
 # include "undo.pro"
 # include "usercmd.pro"
@@ -230,12 +249,13 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 #  include "if_ruby.pro"
 # endif
 
-/* Ugly solution for "BalloonEval" not being defined while it's used in some
- * .pro files. */
-# ifdef FEAT_BEVAL
-#  include "beval.pro"
-# else
+// Ugly solution for "BalloonEval" not being defined while it's used in some
+// .pro files.
+# ifndef FEAT_BEVAL
 #  define BalloonEval int
+# endif
+# if defined(FEAT_BEVAL) || defined(FEAT_TEXT_PROP)
+#  include "beval.pro"
 # endif
 
 # ifdef FEAT_NETBEANS_INTG
@@ -320,9 +340,9 @@ extern char *vim_SelFile(Widget toplevel, char *prompt, char *init_path, int (*s
 #endif
 #if defined(MACOS_X_DARWIN) && defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
 /* functions in os_macosx.m */
-void clip_mch_lose_selection(VimClipboard *cbd);
-int clip_mch_own_selection(VimClipboard *cbd);
-void clip_mch_request_selection(VimClipboard *cbd);
-void clip_mch_set_selection(VimClipboard *cbd);
+void clip_mch_lose_selection(Clipboard_T *cbd);
+int clip_mch_own_selection(Clipboard_T *cbd);
+void clip_mch_request_selection(Clipboard_T *cbd);
+void clip_mch_set_selection(Clipboard_T *cbd);
 #endif
 #endif /* !PROTO && !NOPROTO */

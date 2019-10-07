@@ -1,8 +1,7 @@
 " tests for 'langmap'
 
-if !has('langmap')
-  finish
-endif
+source check.vim
+CheckFeature langmap
 
 func Test_langmap()
   new

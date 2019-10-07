@@ -91,7 +91,7 @@ func Test_win_execute()
   if has('textprop')
     let popupwin = popup_create('the popup win', {'line': 2, 'col': 3})
     redraw
-    let line = win_execute(popupwin, 'echo getline(1)')
+    let line = 'echo getline(1)'->win_execute(popupwin)
     call assert_match('the popup win', line)
 
     call popup_close(popupwin)
@@ -99,4 +99,13 @@ func Test_win_execute()
 
   call win_gotoid(otherwin)
   bwipe!
+endfunc
+
+func Test_win_execute_other_tab()
+  let thiswin = win_getid()
+  tabnew
+  call win_execute(thiswin, 'let xyz = 1')
+  call assert_equal(1, xyz)
+  tabclose
+  unlet xyz
 endfunc

@@ -459,17 +459,29 @@ ui_wait_for_chars_or_timer(
 	}
 	if (due_time <= 0 || (wtime > 0 && due_time > remaining))
 	    due_time = remaining;
-# ifdef FEAT_JOB_CHANNEL
-	if ((due_time < 0 || due_time > 10L)
-#  ifdef FEAT_GUI
-		&& !gui.in_use
+# if defined(FEAT_JOB_CHANNEL) || defined(FEAT_SOUND_CANBERRA)
+	if ((due_time < 0 || due_time > 10L) && (
+#  if defined(FEAT_JOB_CHANNEL)
+		(
+#   if defined(FEAT_GUI)
+		!gui.in_use &&
+#   endif
+		(has_pending_job() || channel_any_readahead()))
+#   ifdef FEAT_SOUND_CANBERRA
+		||
+#   endif
 #  endif
-		&& (has_pending_job() || channel_any_readahead()))
+#  ifdef FEAT_SOUND_CANBERRA
+		    has_any_sound_callback()
+#  endif
+		    ))
 	{
 	    // There is a pending job or channel, should return soon in order
 	    // to handle them ASAP.  Do check for input briefly.
 	    due_time = 10L;
+#  ifdef FEAT_JOB_CHANNEL
 	    brief_wait = TRUE;
+#  endif
 	}
 # endif
 	if (wait_func(due_time, interrupted, ignore_input))
@@ -637,7 +649,7 @@ ui_new_shellsize(void)
  * Return FAIL when not possible.
  */
     int
-ui_get_winpos(int *x, int *y, varnumber_T timeout)
+ui_get_winpos(int *x, int *y, varnumber_T timeout UNUSED)
 {
 # ifdef FEAT_GUI
     if (gui.in_use)
@@ -710,6 +722,12 @@ ui_breakcheck_force(int force)
 
 #if defined(FEAT_CLIPBOARD) || defined(PROTO)
 
+static void clip_gen_lose_selection(Clipboard_T *cbd);
+static int clip_gen_own_selection(Clipboard_T *cbd);
+#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)
+static int clip_x11_owner_exists(Clipboard_T *cbd);
+#endif
+
 /*
  * Selection stuff using Visual mode, for cutting and pasting text to other
  * windows.
@@ -724,7 +742,7 @@ ui_breakcheck_force(int force)
     void
 clip_init(int can_use)
 {
-    VimClipboard *cb;
+    Clipboard_T *cb;
 
     cb = &clip_star;
     for (;;)
@@ -751,7 +769,7 @@ clip_init(int can_use)
  * this is called whenever VIsual mode is ended.
  */
     void
-clip_update_selection(VimClipboard *clip)
+clip_update_selection(Clipboard_T *clip)
 {
     pos_T	    start, end;
 
@@ -786,7 +804,7 @@ clip_update_selection(VimClipboard *clip)
 }
 
     void
-clip_own_selection(VimClipboard *cbd)
+clip_own_selection(Clipboard_T *cbd)
 {
     /*
      * Also want to check somehow that we are reading from the keyboard rather
@@ -822,7 +840,7 @@ clip_own_selection(VimClipboard *cbd)
 }
 
     void
-clip_lose_selection(VimClipboard *cbd)
+clip_lose_selection(Clipboard_T *cbd)
 {
 #ifdef FEAT_X11
     int	    was_owned = cbd->owned;
@@ -860,7 +878,7 @@ clip_lose_selection(VimClipboard *cbd)
 }
 
     static void
-clip_copy_selection(VimClipboard *clip)
+clip_copy_selection(Clipboard_T *clip)
 {
     if (VIsual_active && (State & NORMAL) && clip->available)
     {
@@ -988,21 +1006,20 @@ clip_isautosel_plus(void)
  * Stuff for general mouse selection, without using Visual mode.
  */
 
-static void clip_invert_area(int, int, int, int, int how);
-static void clip_invert_rectangle(int row, int col, int height, int width, int invert);
-static void clip_get_word_boundaries(VimClipboard *, int, int);
-static int  clip_get_line_end(int);
-static void clip_update_modeless_selection(VimClipboard *, int, int,
-						    int, int);
+static void clip_invert_area(Clipboard_T *, int, int, int, int, int how);
+static void clip_invert_rectangle(Clipboard_T *, int row, int col, int height, int width, int invert);
+static void clip_get_word_boundaries(Clipboard_T *, int, int);
+static int  clip_get_line_end(Clipboard_T *, int);
+static void clip_update_modeless_selection(Clipboard_T *, int, int, int, int);
 
-/* flags for clip_invert_area() */
+// "how" flags for clip_invert_area()
 #define CLIP_CLEAR	1
 #define CLIP_SET	2
 #define CLIP_TOGGLE	3
 
 /*
  * Start, continue or end a modeless selection.  Used when editing the
- * command-line and in the cmdline window.
+ * command-line, in the cmdline window and when the mouse is in a popup window.
  */
     void
 clip_modeless(int button, int is_click, int is_drag)
@@ -1058,7 +1075,18 @@ clip_compare_pos(
     void
 clip_start_selection(int col, int row, int repeated_click)
 {
-    VimClipboard	*cb = &clip_star;
+    Clipboard_T	*cb = &clip_star;
+#ifdef FEAT_TEXT_PROP
+    win_T	*wp;
+    int		row_cp = row;
+    int		col_cp = col;
+
+    wp = mouse_find_win(&row_cp, &col_cp, FIND_POPUP);
+    if (wp != NULL && WIN_IS_POPUP(wp)
+				  && popup_is_in_scrollbar(wp, row_cp, col_cp))
+	// click or double click in scrollbar does not start a selection
+	return;
+#endif
 
     if (cb->state == SELECT_DONE)
 	clip_clear_selection(cb);
@@ -1072,6 +1100,28 @@ clip_start_selection(int col, int row, int repeated_click)
     cb->end	    = cb->start;
     cb->origin_row  = (short_u)cb->start.lnum;
     cb->state	    = SELECT_IN_PROGRESS;
+#ifdef FEAT_TEXT_PROP
+    if (wp != NULL && WIN_IS_POPUP(wp))
+    {
+	// Click in a popup window restricts selection to that window,
+	// excluding the border.
+	cb->min_col = wp->w_wincol + wp->w_popup_border[3];
+	cb->max_col = wp->w_wincol + popup_width(wp)
+				 - wp->w_popup_border[1] - wp->w_has_scrollbar;
+	if (cb->max_col > screen_Columns)
+	    cb->max_col = screen_Columns;
+	cb->min_row = wp->w_winrow + wp->w_popup_border[0];
+	cb->max_row = wp->w_winrow + popup_height(wp) - 1
+						   - wp->w_popup_border[2];
+    }
+    else
+    {
+	cb->min_col = 0;
+	cb->max_col = screen_Columns;
+	cb->min_row = 0;
+	cb->max_row = screen_Rows;
+    }
+#endif
 
     if (repeated_click)
     {
@@ -1091,7 +1141,7 @@ clip_start_selection(int col, int row, int repeated_click)
     {
 	case SELECT_MODE_CHAR:
 	    cb->origin_start_col = cb->start.col;
-	    cb->word_end_col = clip_get_line_end((int)cb->start.lnum);
+	    cb->word_end_col = clip_get_line_end(cb, (int)cb->start.lnum);
 	    break;
 
 	case SELECT_MODE_WORD:
@@ -1099,14 +1149,14 @@ clip_start_selection(int col, int row, int repeated_click)
 	    cb->origin_start_col = cb->word_start_col;
 	    cb->origin_end_col	 = cb->word_end_col;
 
-	    clip_invert_area((int)cb->start.lnum, cb->word_start_col,
+	    clip_invert_area(cb, (int)cb->start.lnum, cb->word_start_col,
 			    (int)cb->end.lnum, cb->word_end_col, CLIP_SET);
 	    cb->start.col = cb->word_start_col;
 	    cb->end.col   = cb->word_end_col;
 	    break;
 
 	case SELECT_MODE_LINE:
-	    clip_invert_area((int)cb->start.lnum, 0, (int)cb->start.lnum,
+	    clip_invert_area(cb, (int)cb->start.lnum, 0, (int)cb->start.lnum,
 			    (int)Columns, CLIP_SET);
 	    cb->start.col = 0;
 	    cb->end.col   = Columns;
@@ -1130,13 +1180,16 @@ clip_process_selection(
     int		row,
     int_u	repeated_click)
 {
-    VimClipboard	*cb = &clip_star;
-    int			diff;
-    int			slen = 1;	/* cursor shape width */
+    Clipboard_T	*cb = &clip_star;
+    int		diff;
+    int		slen = 1;	// cursor shape width
 
     if (button == MOUSE_RELEASE)
     {
-	/* Check to make sure we have something selected */
+	if (cb->state != SELECT_IN_PROGRESS)
+	    return;
+
+	// Check to make sure we have something selected
 	if (cb->start.lnum == cb->end.lnum && cb->start.col == cb->end.col)
 	{
 #ifdef FEAT_GUI
@@ -1224,7 +1277,7 @@ clip_process_selection(
 	case SELECT_MODE_CHAR:
 	    /* If we're on a different line, find where the line ends */
 	    if (row != cb->prev.lnum)
-		cb->word_end_col = clip_get_line_end(row);
+		cb->word_end_col = clip_get_line_end(cb, row);
 
 	    /* See if we are before or after the origin of the selection */
 	    if (clip_compare_pos(row, col, cb->origin_row,
@@ -1317,7 +1370,7 @@ clip_may_redraw_selection(int row, int col, int len)
 	if (row == clip_star.end.lnum && end > (int)clip_star.end.col)
 	    end = clip_star.end.col;
 	if (end > start)
-	    clip_invert_area(row, start, row, end, 0);
+	    clip_invert_area(&clip_star, row, start, row, end, 0);
     }
 }
 # endif
@@ -1326,14 +1379,14 @@ clip_may_redraw_selection(int row, int col, int len)
  * Called from outside to clear selected region from the display
  */
     void
-clip_clear_selection(VimClipboard *cbd)
+clip_clear_selection(Clipboard_T *cbd)
 {
 
     if (cbd->state == SELECT_CLEARED)
 	return;
 
-    clip_invert_area((int)cbd->start.lnum, cbd->start.col, (int)cbd->end.lnum,
-						     cbd->end.col, CLIP_CLEAR);
+    clip_invert_area(cbd, (int)cbd->start.lnum, cbd->start.col,
+				 (int)cbd->end.lnum, cbd->end.col, CLIP_CLEAR);
     cbd->state = SELECT_CLEARED;
 }
 
@@ -1389,13 +1442,21 @@ clip_scroll_selection(
  */
     static void
 clip_invert_area(
-    int		row1,
-    int		col1,
-    int		row2,
-    int		col2,
-    int		how)
+	Clipboard_T	*cbd,
+	int		row1,
+	int		col1,
+	int		row2,
+	int		col2,
+	int		how)
 {
     int		invert = FALSE;
+    int		max_col;
+
+#ifdef FEAT_TEXT_PROP
+    max_col = cbd->max_col - 1;
+#else
+    max_col = Columns - 1;
+#endif
 
     if (how == CLIP_SET)
 	invert = TRUE;
@@ -1418,28 +1479,29 @@ clip_invert_area(
     /* If all on the same line, do it the easy way */
     if (row1 == row2)
     {
-	clip_invert_rectangle(row1, col1, 1, col2 - col1, invert);
+	clip_invert_rectangle(cbd, row1, col1, 1, col2 - col1, invert);
     }
     else
     {
 	/* Handle a piece of the first line */
 	if (col1 > 0)
 	{
-	    clip_invert_rectangle(row1, col1, 1, (int)Columns - col1, invert);
+	    clip_invert_rectangle(cbd, row1, col1, 1,
+						  (int)Columns - col1, invert);
 	    row1++;
 	}
 
 	/* Handle a piece of the last line */
-	if (col2 < Columns - 1)
+	if (col2 < max_col)
 	{
-	    clip_invert_rectangle(row2, 0, 1, col2, invert);
+	    clip_invert_rectangle(cbd, row2, 0, 1, col2, invert);
 	    row2--;
 	}
 
 	/* Handle the rectangle thats left */
 	if (row2 >= row1)
-	    clip_invert_rectangle(row1, 0, row2 - row1 + 1, (int)Columns,
-								      invert);
+	    clip_invert_rectangle(cbd, row1, 0, row2 - row1 + 1,
+							 (int)Columns, invert);
     }
 }
 
@@ -1449,15 +1511,36 @@ clip_invert_area(
  */
     static void
 clip_invert_rectangle(
-    int		row,
-    int		col,
-    int		height,
-    int		width,
-    int		invert)
+	Clipboard_T	*cbd UNUSED,
+	int		row_arg,
+	int		col_arg,
+	int		height_arg,
+	int		width_arg,
+	int		invert)
 {
+    int		row = row_arg;
+    int		col = col_arg;
+    int		height = height_arg;
+    int		width = width_arg;
+
 #ifdef FEAT_TEXT_PROP
     // this goes on top of all popup windows
-    screen_zindex = 32000;
+    screen_zindex = CLIP_ZINDEX;
+
+    if (col < cbd->min_col)
+    {
+	width -= cbd->min_col - col;
+	col = cbd->min_col;
+    }
+    if (width > cbd->max_col - col)
+	width = cbd->max_col - col;
+    if (row < cbd->min_row)
+    {
+	height -= cbd->min_row - row;
+	row = cbd->min_row;
+    }
+    if (height > cbd->max_row - row + 1)
+	height = cbd->max_row - row + 1;
 #endif
 #ifdef FEAT_GUI
     if (gui.in_use)
@@ -1508,6 +1591,18 @@ clip_copy_modeless_selection(int both UNUSED)
     {
 	row = col1; col1 = col2; col2 = row;
     }
+#ifdef FEAT_TEXT_PROP
+    if (col1 < clip_star.min_col)
+	col1 = clip_star.min_col;
+    if (col2 > clip_star.max_col)
+	col2 = clip_star.max_col;
+    if (row1 > clip_star.max_row || row2 < clip_star.min_row)
+	return;
+    if (row1 < clip_star.min_row)
+	row1 = clip_star.min_row;
+    if (row2 > clip_star.max_row)
+	row2 = clip_star.max_row;
+#endif
     /* correct starting point for being on right halve of double-wide char */
     p = ScreenLines + LineOffset[row1];
     if (enc_dbcs != 0)
@@ -1531,17 +1626,31 @@ clip_copy_modeless_selection(int both UNUSED)
 	if (row == row1)
 	    start_col = col1;
 	else
+#ifdef FEAT_TEXT_PROP
+	    start_col = clip_star.min_col;
+#else
 	    start_col = 0;
+#endif
 
 	if (row == row2)
 	    end_col = col2;
 	else
+#ifdef FEAT_TEXT_PROP
+	    end_col = clip_star.max_col;
+#else
 	    end_col = Columns;
+#endif
 
-	line_end_col = clip_get_line_end(row);
+	line_end_col = clip_get_line_end(&clip_star, row);
 
 	/* See if we need to nuke some trailing whitespace */
-	if (end_col >= Columns && (row < row2 || end_col > line_end_col))
+	if (end_col >=
+#ifdef FEAT_TEXT_PROP
+		clip_star.max_col
+#else
+		Columns
+#endif
+		    && (row < row2 || end_col > line_end_col))
 	{
 	    /* Get rid of trailing whitespace */
 	    end_col = line_end_col;
@@ -1557,6 +1666,7 @@ clip_copy_modeless_selection(int both UNUSED)
 	if (row > row1 && !LineWraps[row - 1])
 	    *bufp++ = NL;
 
+	// Safetey check for in case resizing went wrong
 	if (row < screen_Rows && end_col <= screen_Columns)
 	{
 	    if (enc_dbcs != 0)
@@ -1651,7 +1761,7 @@ clip_copy_modeless_selection(int both UNUSED)
 #define CHAR_CLASS(c)	(c <= ' ' ? ' ' : vim_iswordc(c))
 
     static void
-clip_get_word_boundaries(VimClipboard *cb, int row, int col)
+clip_get_word_boundaries(Clipboard_T *cb, int row, int col)
 {
     int		start_class;
     int		temp_col;
@@ -1691,16 +1801,22 @@ clip_get_word_boundaries(VimClipboard *cb, int row, int col)
 
 /*
  * Find the column position for the last non-whitespace character on the given
- * line.
+ * line at or before start_col.
  */
     static int
-clip_get_line_end(int row)
+clip_get_line_end(Clipboard_T *cbd UNUSED, int row)
 {
     int	    i;
 
     if (row >= screen_Rows || ScreenLines == NULL)
 	return 0;
-    for (i = screen_Columns; i > 0; i--)
+    for (i =
+#ifdef FEAT_TEXT_PROP
+	    cbd->max_col;
+#else
+	    screen_Columns;
+#endif
+			    i > 0; i--)
 	if (ScreenLines[LineOffset[row] + i - 1] != ' ')
 	    break;
     return i;
@@ -1712,7 +1828,7 @@ clip_get_line_end(int row)
  */
     static void
 clip_update_modeless_selection(
-    VimClipboard    *cb,
+    Clipboard_T    *cb,
     int		    row1,
     int		    col1,
     int		    row2,
@@ -1721,7 +1837,7 @@ clip_update_modeless_selection(
     /* See if we changed at the beginning of the selection */
     if (row1 != cb->start.lnum || col1 != (int)cb->start.col)
     {
-	clip_invert_area(row1, col1, (int)cb->start.lnum, cb->start.col,
+	clip_invert_area(cb, row1, col1, (int)cb->start.lnum, cb->start.col,
 								 CLIP_TOGGLE);
 	cb->start.lnum = row1;
 	cb->start.col  = col1;
@@ -1730,15 +1846,15 @@ clip_update_modeless_selection(
     /* See if we changed at the end of the selection */
     if (row2 != cb->end.lnum || col2 != (int)cb->end.col)
     {
-	clip_invert_area((int)cb->end.lnum, cb->end.col, row2, col2,
+	clip_invert_area(cb, (int)cb->end.lnum, cb->end.col, row2, col2,
 								 CLIP_TOGGLE);
 	cb->end.lnum = row2;
 	cb->end.col  = col2;
     }
 }
 
-    int
-clip_gen_own_selection(VimClipboard *cbd)
+    static int
+clip_gen_own_selection(Clipboard_T *cbd)
 {
 #ifdef FEAT_XCLIPBOARD
 # ifdef FEAT_GUI
@@ -1752,8 +1868,8 @@ clip_gen_own_selection(VimClipboard *cbd)
 #endif
 }
 
-    void
-clip_gen_lose_selection(VimClipboard *cbd)
+    static void
+clip_gen_lose_selection(Clipboard_T *cbd)
 {
 #ifdef FEAT_XCLIPBOARD
 # ifdef FEAT_GUI
@@ -1768,7 +1884,7 @@ clip_gen_lose_selection(VimClipboard *cbd)
 }
 
     void
-clip_gen_set_selection(VimClipboard *cbd)
+clip_gen_set_selection(Clipboard_T *cbd)
 {
     if (!clip_did_set_selection)
     {
@@ -1794,7 +1910,7 @@ clip_gen_set_selection(VimClipboard *cbd)
 }
 
     void
-clip_gen_request_selection(VimClipboard *cbd)
+clip_gen_request_selection(Clipboard_T *cbd)
 {
 #ifdef FEAT_XCLIPBOARD
 # ifdef FEAT_GUI
@@ -1810,7 +1926,7 @@ clip_gen_request_selection(VimClipboard *cbd)
 
 #if (defined(FEAT_X11) && defined(USE_SYSTEM)) || defined(PROTO)
     int
-clip_gen_owner_exists(VimClipboard *cbd UNUSED)
+clip_gen_owner_exists(Clipboard_T *cbd UNUSED)
 {
 #ifdef FEAT_XCLIPBOARD
 # ifdef FEAT_GUI_GTK
@@ -2372,7 +2488,7 @@ clip_x11_request_selection_cb(
     long_u	len;
     char_u	*p;
     char	**text_list = NULL;
-    VimClipboard	*cbd;
+    Clipboard_T	*cbd;
     char_u	*tmpbuf = NULL;
 
     if (*sel_atom == clip_plus.sel_atom)
@@ -2463,7 +2579,7 @@ clip_x11_request_selection_cb(
 clip_x11_request_selection(
     Widget	myShell,
     Display	*dpy,
-    VimClipboard	*cbd)
+    Clipboard_T	*cbd)
 {
     XEvent	event;
     Atom	type;
@@ -2566,7 +2682,7 @@ clip_x11_convert_selection_cb(
     static long_u   save_length = 0;
     char_u	    *string;
     int		    motion_type;
-    VimClipboard    *cbd;
+    Clipboard_T    *cbd;
     int		    i;
 
     if (*sel_atom == clip_plus.sel_atom)
@@ -2692,7 +2808,7 @@ clip_x11_lose_ownership_cb(Widget w UNUSED, Atom *sel_atom)
 }
 
     void
-clip_x11_lose_selection(Widget myShell, VimClipboard *cbd)
+clip_x11_lose_selection(Widget myShell, Clipboard_T *cbd)
 {
     XtDisownSelection(myShell, cbd->sel_atom,
 				XtLastTimestampProcessed(XtDisplay(myShell)));
@@ -2705,7 +2821,7 @@ clip_x11_notify_cb(Widget w UNUSED, Atom *sel_atom UNUSED, Atom *target UNUSED)
 }
 
     int
-clip_x11_own_selection(Widget myShell, VimClipboard *cbd)
+clip_x11_own_selection(Widget myShell, Clipboard_T *cbd)
 {
     /* When using the GUI we have proper timestamps, use the one of the last
      * event.  When in the console we don't get events (the terminal gets
@@ -2737,14 +2853,14 @@ clip_x11_own_selection(Widget myShell, VimClipboard *cbd)
  * will fill in the selection only when requested by another app.
  */
     void
-clip_x11_set_selection(VimClipboard *cbd UNUSED)
+clip_x11_set_selection(Clipboard_T *cbd UNUSED)
 {
 }
 
 #if (defined(FEAT_X11) && defined(FEAT_XCLIPBOARD) && defined(USE_SYSTEM)) \
 	|| defined(PROTO)
-    int
-clip_x11_owner_exists(VimClipboard *cbd)
+    static int
+clip_x11_owner_exists(Clipboard_T *cbd)
 {
     return XGetSelectionOwner(X_DISPLAY, cbd->sel_atom) != None;
 }
@@ -2757,7 +2873,7 @@ clip_x11_owner_exists(VimClipboard *cbd)
  * Get the contents of the X CUT_BUFFER0 and put it in "cbd".
  */
     void
-yank_cut_buffer0(Display *dpy, VimClipboard *cbd)
+yank_cut_buffer0(Display *dpy, Clipboard_T *cbd)
 {
     int		nbytes = 0;
     char_u	*buffer = (char_u *)XFetchBuffer(dpy, &nbytes, 0);
@@ -2800,734 +2916,6 @@ yank_cut_buffer0(Display *dpy, VimClipboard *cbd)
     }
 }
 #endif
-
-#if defined(FEAT_MOUSE) || defined(PROTO)
-
-/*
- * Move the cursor to the specified row and column on the screen.
- * Change current window if necessary.	Returns an integer with the
- * CURSOR_MOVED bit set if the cursor has moved or unset otherwise.
- *
- * The MOUSE_FOLD_CLOSE bit is set when clicked on the '-' in a fold column.
- * The MOUSE_FOLD_OPEN bit is set when clicked on the '+' in a fold column.
- *
- * If flags has MOUSE_FOCUS, then the current window will not be changed, and
- * if the mouse is outside the window then the text will scroll, or if the
- * mouse was previously on a status line, then the status line may be dragged.
- *
- * If flags has MOUSE_MAY_VIS, then VIsual mode will be started before the
- * cursor is moved unless the cursor was on a status line.
- * This function returns one of IN_UNKNOWN, IN_BUFFER, IN_STATUS_LINE or
- * IN_SEP_LINE depending on where the cursor was clicked.
- *
- * If flags has MOUSE_MAY_STOP_VIS, then Visual mode will be stopped, unless
- * the mouse is on the status line of the same window.
- *
- * If flags has MOUSE_DID_MOVE, nothing is done if the mouse didn't move since
- * the last call.
- *
- * If flags has MOUSE_SETPOS, nothing is done, only the current position is
- * remembered.
- */
-    int
-jump_to_mouse(
-    int		flags,
-    int		*inclusive,	/* used for inclusive operator, can be NULL */
-    int		which_button)	/* MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MIDDLE */
-{
-    static int	on_status_line = 0;	/* #lines below bottom of window */
-    static int	on_sep_line = 0;	/* on separator right of window */
-#ifdef FEAT_MENU
-    static int  in_winbar = FALSE;
-#endif
-#ifdef FEAT_TEXT_PROP
-    static int  in_popup_win = FALSE;
-#endif
-    static int	prev_row = -1;
-    static int	prev_col = -1;
-    static win_T *dragwin = NULL;	/* window being dragged */
-    static int	did_drag = FALSE;	/* drag was noticed */
-
-    win_T	*wp, *old_curwin;
-    pos_T	old_cursor;
-    int		count;
-    int		first;
-    int		row = mouse_row;
-    int		col = mouse_col;
-#ifdef FEAT_FOLDING
-    int		mouse_char;
-#endif
-
-    mouse_past_bottom = FALSE;
-    mouse_past_eol = FALSE;
-
-    if (flags & MOUSE_RELEASED)
-    {
-	/* On button release we may change window focus if positioned on a
-	 * status line and no dragging happened. */
-	if (dragwin != NULL && !did_drag)
-	    flags &= ~(MOUSE_FOCUS | MOUSE_DID_MOVE);
-	dragwin = NULL;
-	did_drag = FALSE;
-    }
-
-    if ((flags & MOUSE_DID_MOVE)
-	    && prev_row == mouse_row
-	    && prev_col == mouse_col)
-    {
-retnomove:
-	/* before moving the cursor for a left click which is NOT in a status
-	 * line, stop Visual mode */
-	if (on_status_line)
-	    return IN_STATUS_LINE;
-	if (on_sep_line)
-	    return IN_SEP_LINE;
-#ifdef FEAT_MENU
-	if (in_winbar)
-	{
-	    /* A quick second click may arrive as a double-click, but we use it
-	     * as a second click in the WinBar. */
-	    if ((mod_mask & MOD_MASK_MULTI_CLICK) && !(flags & MOUSE_RELEASED))
-	    {
-		wp = mouse_find_win(&row, &col, FAIL_POPUP);
-		if (wp == NULL)
-		    return IN_UNKNOWN;
-		winbar_click(wp, col);
-	    }
-	    return IN_OTHER_WIN | MOUSE_WINBAR;
-	}
-#endif
-	if (flags & MOUSE_MAY_STOP_VIS)
-	{
-	    end_visual_mode();
-	    redraw_curbuf_later(INVERTED);	/* delete the inversion */
-	}
-#if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
-	// Continue a modeless selection in another window.
-	if (cmdwin_type != 0 && row < curwin->w_winrow)
-	    return IN_OTHER_WIN;
-#endif
-#ifdef FEAT_TEXT_PROP
-	// Continue a modeless selection in a popup window.
-	if (in_popup_win)
-	    return IN_OTHER_WIN;
-#endif
-	return IN_BUFFER;
-    }
-
-    prev_row = mouse_row;
-    prev_col = mouse_col;
-
-    if (flags & MOUSE_SETPOS)
-	goto retnomove;				/* ugly goto... */
-
-#ifdef FEAT_FOLDING
-    /* Remember the character under the mouse, it might be a '-' or '+' in the
-     * fold column. */
-    if (row >= 0 && row < Rows && col >= 0 && col <= Columns
-						       && ScreenLines != NULL)
-	mouse_char = ScreenLines[LineOffset[row] + col];
-    else
-	mouse_char = ' ';
-#endif
-
-    old_curwin = curwin;
-    old_cursor = curwin->w_cursor;
-
-    if (!(flags & MOUSE_FOCUS))
-    {
-	if (row < 0 || col < 0)			/* check if it makes sense */
-	    return IN_UNKNOWN;
-
-	/* find the window where the row is in */
-	wp = mouse_find_win(&row, &col, FIND_POPUP);
-	if (wp == NULL)
-	    return IN_UNKNOWN;
-	dragwin = NULL;
-
-#ifdef FEAT_TEXT_PROP
-	// Click in a popup window may start modeless selection, but not much
-	// else.
-	if (bt_popup(wp->w_buffer))
-	{
-	    on_sep_line = 0;
-	    in_popup_win = TRUE;
-# ifdef FEAT_CLIPBOARD
-	    return IN_OTHER_WIN;
-# else
-	    return IN_UNKNOWN;
-# endif
-	}
-	    in_popup_win = FALSE;
-#endif
-#ifdef FEAT_MENU
-	if (row == -1)
-	{
-	    /* A click in the window toolbar does not enter another window or
-	     * change Visual highlighting. */
-	    winbar_click(wp, col);
-	    in_winbar = TRUE;
-	    return IN_OTHER_WIN | MOUSE_WINBAR;
-	}
-	in_winbar = FALSE;
-#endif
-
-	/*
-	 * winpos and height may change in win_enter()!
-	 */
-	if (row >= wp->w_height)		/* In (or below) status line */
-	{
-	    on_status_line = row - wp->w_height + 1;
-	    dragwin = wp;
-	}
-	else
-	    on_status_line = 0;
-	if (col >= wp->w_width)		/* In separator line */
-	{
-	    on_sep_line = col - wp->w_width + 1;
-	    dragwin = wp;
-	}
-	else
-	    on_sep_line = 0;
-
-	/* The rightmost character of the status line might be a vertical
-	 * separator character if there is no connecting window to the right. */
-	if (on_status_line && on_sep_line)
-	{
-	    if (stl_connected(wp))
-		on_sep_line = 0;
-	    else
-		on_status_line = 0;
-	}
-
-	/* Before jumping to another buffer, or moving the cursor for a left
-	 * click, stop Visual mode. */
-	if (VIsual_active
-		&& (wp->w_buffer != curwin->w_buffer
-		    || (!on_status_line && !on_sep_line
-#ifdef FEAT_FOLDING
-			&& (
-# ifdef FEAT_RIGHTLEFT
-			    wp->w_p_rl ? col < wp->w_width - wp->w_p_fdc :
-# endif
-			    col >= wp->w_p_fdc
-# ifdef FEAT_CMDWIN
-				  + (cmdwin_type == 0 && wp == curwin ? 0 : 1)
-# endif
-			    )
-#endif
-			&& (flags & MOUSE_MAY_STOP_VIS))))
-	{
-	    end_visual_mode();
-	    redraw_curbuf_later(INVERTED);	/* delete the inversion */
-	}
-#ifdef FEAT_CMDWIN
-	if (cmdwin_type != 0 && wp != curwin)
-	{
-	    /* A click outside the command-line window: Use modeless
-	     * selection if possible.  Allow dragging the status lines. */
-	    on_sep_line = 0;
-# ifdef FEAT_CLIPBOARD
-	    if (on_status_line)
-		return IN_STATUS_LINE;
-	    return IN_OTHER_WIN;
-# else
-	    row = 0;
-	    col += wp->w_wincol;
-	    wp = curwin;
-# endif
-	}
-#endif
-	/* Only change window focus when not clicking on or dragging the
-	 * status line.  Do change focus when releasing the mouse button
-	 * (MOUSE_FOCUS was set above if we dragged first). */
-	if (dragwin == NULL || (flags & MOUSE_RELEASED))
-	    win_enter(wp, TRUE);		/* can make wp invalid! */
-
-	if (curwin != old_curwin)
-	{
-#ifdef CHECK_DOUBLE_CLICK
-	    /* set topline, to be able to check for double click ourselves */
-	    set_mouse_topline(curwin);
-#endif
-#ifdef FEAT_TERMINAL
-	    /* when entering a terminal window may change state */
-	    term_win_entered();
-#endif
-	}
-	if (on_status_line)			/* In (or below) status line */
-	{
-	    /* Don't use start_arrow() if we're in the same window */
-	    if (curwin == old_curwin)
-		return IN_STATUS_LINE;
-	    else
-		return IN_STATUS_LINE | CURSOR_MOVED;
-	}
-	if (on_sep_line)			/* In (or below) status line */
-	{
-	    /* Don't use start_arrow() if we're in the same window */
-	    if (curwin == old_curwin)
-		return IN_SEP_LINE;
-	    else
-		return IN_SEP_LINE | CURSOR_MOVED;
-	}
-
-	curwin->w_cursor.lnum = curwin->w_topline;
-#ifdef FEAT_GUI
-	/* remember topline, needed for double click */
-	gui_prev_topline = curwin->w_topline;
-# ifdef FEAT_DIFF
-	gui_prev_topfill = curwin->w_topfill;
-# endif
-#endif
-    }
-    else if (on_status_line && which_button == MOUSE_LEFT)
-    {
-	if (dragwin != NULL)
-	{
-	    /* Drag the status line */
-	    count = row - dragwin->w_winrow - dragwin->w_height + 1
-							     - on_status_line;
-	    win_drag_status_line(dragwin, count);
-	    did_drag |= count;
-	}
-	return IN_STATUS_LINE;			/* Cursor didn't move */
-    }
-    else if (on_sep_line && which_button == MOUSE_LEFT)
-    {
-	if (dragwin != NULL)
-	{
-	    /* Drag the separator column */
-	    count = col - dragwin->w_wincol - dragwin->w_width + 1
-								- on_sep_line;
-	    win_drag_vsep_line(dragwin, count);
-	    did_drag |= count;
-	}
-	return IN_SEP_LINE;			/* Cursor didn't move */
-    }
-#ifdef FEAT_MENU
-    else if (in_winbar)
-    {
-	/* After a click on the window toolbar don't start Visual mode. */
-	return IN_OTHER_WIN | MOUSE_WINBAR;
-    }
-#endif
-    else /* keep_window_focus must be TRUE */
-    {
-	/* before moving the cursor for a left click, stop Visual mode */
-	if (flags & MOUSE_MAY_STOP_VIS)
-	{
-	    end_visual_mode();
-	    redraw_curbuf_later(INVERTED);	/* delete the inversion */
-	}
-
-#if defined(FEAT_CMDWIN) && defined(FEAT_CLIPBOARD)
-	/* Continue a modeless selection in another window. */
-	if (cmdwin_type != 0 && row < curwin->w_winrow)
-	    return IN_OTHER_WIN;
-#endif
-#ifdef FEAT_TEXT_PROP
-	// Continue a modeless selection in a popup window.
-	if (in_popup_win)
-	    return IN_OTHER_WIN;
-#endif
-
-	row -= W_WINROW(curwin);
-	col -= curwin->w_wincol;
-
-	/*
-	 * When clicking beyond the end of the window, scroll the screen.
-	 * Scroll by however many rows outside the window we are.
-	 */
-	if (row < 0)
-	{
-	    count = 0;
-	    for (first = TRUE; curwin->w_topline > 1; )
-	    {
-#ifdef FEAT_DIFF
-		if (curwin->w_topfill < diff_check(curwin, curwin->w_topline))
-		    ++count;
-		else
-#endif
-		    count += plines(curwin->w_topline - 1);
-		if (!first && count > -row)
-		    break;
-		first = FALSE;
-#ifdef FEAT_FOLDING
-		(void)hasFolding(curwin->w_topline, &curwin->w_topline, NULL);
-#endif
-#ifdef FEAT_DIFF
-		if (curwin->w_topfill < diff_check(curwin, curwin->w_topline))
-		    ++curwin->w_topfill;
-		else
-#endif
-		{
-		    --curwin->w_topline;
-#ifdef FEAT_DIFF
-		    curwin->w_topfill = 0;
-#endif
-		}
-	    }
-#ifdef FEAT_DIFF
-	    check_topfill(curwin, FALSE);
-#endif
-	    curwin->w_valid &=
-		      ~(VALID_WROW|VALID_CROW|VALID_BOTLINE|VALID_BOTLINE_AP);
-	    redraw_later(VALID);
-	    row = 0;
-	}
-	else if (row >= curwin->w_height)
-	{
-	    count = 0;
-	    for (first = TRUE; curwin->w_topline < curbuf->b_ml.ml_line_count; )
-	    {
-#ifdef FEAT_DIFF
-		if (curwin->w_topfill > 0)
-		    ++count;
-		else
-#endif
-		    count += plines(curwin->w_topline);
-		if (!first && count > row - curwin->w_height + 1)
-		    break;
-		first = FALSE;
-#ifdef FEAT_FOLDING
-		if (hasFolding(curwin->w_topline, NULL, &curwin->w_topline)
-			&& curwin->w_topline == curbuf->b_ml.ml_line_count)
-		    break;
-#endif
-#ifdef FEAT_DIFF
-		if (curwin->w_topfill > 0)
-		    --curwin->w_topfill;
-		else
-#endif
-		{
-		    ++curwin->w_topline;
-#ifdef FEAT_DIFF
-		    curwin->w_topfill =
-				   diff_check_fill(curwin, curwin->w_topline);
-#endif
-		}
-	    }
-#ifdef FEAT_DIFF
-	    check_topfill(curwin, FALSE);
-#endif
-	    redraw_later(VALID);
-	    curwin->w_valid &=
-		      ~(VALID_WROW|VALID_CROW|VALID_BOTLINE|VALID_BOTLINE_AP);
-	    row = curwin->w_height - 1;
-	}
-	else if (row == 0)
-	{
-	    /* When dragging the mouse, while the text has been scrolled up as
-	     * far as it goes, moving the mouse in the top line should scroll
-	     * the text down (done later when recomputing w_topline). */
-	    if (mouse_dragging > 0
-		    && curwin->w_cursor.lnum
-				       == curwin->w_buffer->b_ml.ml_line_count
-		    && curwin->w_cursor.lnum == curwin->w_topline)
-		curwin->w_valid &= ~(VALID_TOPLINE);
-	}
-    }
-
-#ifdef FEAT_FOLDING
-    /* Check for position outside of the fold column. */
-    if (
-# ifdef FEAT_RIGHTLEFT
-	    curwin->w_p_rl ? col < curwin->w_width - curwin->w_p_fdc :
-# endif
-	    col >= curwin->w_p_fdc
-#  ifdef FEAT_CMDWIN
-				+ (cmdwin_type == 0 ? 0 : 1)
-#  endif
-       )
-	mouse_char = ' ';
-#endif
-
-    /* compute the position in the buffer line from the posn on the screen */
-    if (mouse_comp_pos(curwin, &row, &col, &curwin->w_cursor.lnum))
-	mouse_past_bottom = TRUE;
-
-    /* Start Visual mode before coladvance(), for when 'sel' != "old" */
-    if ((flags & MOUSE_MAY_VIS) && !VIsual_active)
-    {
-	check_visual_highlight();
-	VIsual = old_cursor;
-	VIsual_active = TRUE;
-	VIsual_reselect = TRUE;
-	/* if 'selectmode' contains "mouse", start Select mode */
-	may_start_select('o');
-	setmouse();
-	if (p_smd && msg_silent == 0)
-	    redraw_cmdline = TRUE;	/* show visual mode later */
-    }
-
-    curwin->w_curswant = col;
-    curwin->w_set_curswant = FALSE;	/* May still have been TRUE */
-    if (coladvance(col) == FAIL)	/* Mouse click beyond end of line */
-    {
-	if (inclusive != NULL)
-	    *inclusive = TRUE;
-	mouse_past_eol = TRUE;
-    }
-    else if (inclusive != NULL)
-	*inclusive = FALSE;
-
-    count = IN_BUFFER;
-    if (curwin != old_curwin || curwin->w_cursor.lnum != old_cursor.lnum
-	    || curwin->w_cursor.col != old_cursor.col)
-	count |= CURSOR_MOVED;		/* Cursor has moved */
-
-# ifdef FEAT_FOLDING
-    if (mouse_char == '+')
-	count |= MOUSE_FOLD_OPEN;
-    else if (mouse_char != ' ')
-	count |= MOUSE_FOLD_CLOSE;
-# endif
-
-    return count;
-}
-#endif
-
-// Functions also used for popup windows.
-#if defined(FEAT_MOUSE) || defined(FEAT_TEXT_PROP) || defined(PROTO)
-
-/*
- * Compute the position in the buffer line from the posn on the screen in
- * window "win".
- * Returns TRUE if the position is below the last line.
- */
-    int
-mouse_comp_pos(
-    win_T	*win,
-    int		*rowp,
-    int		*colp,
-    linenr_T	*lnump)
-{
-    int		col = *colp;
-    int		row = *rowp;
-    linenr_T	lnum;
-    int		retval = FALSE;
-    int		off;
-    int		count;
-
-#ifdef FEAT_RIGHTLEFT
-    if (win->w_p_rl)
-	col = win->w_width - 1 - col;
-#endif
-
-    lnum = win->w_topline;
-
-    while (row > 0)
-    {
-#ifdef FEAT_DIFF
-	/* Don't include filler lines in "count" */
-	if (win->w_p_diff
-# ifdef FEAT_FOLDING
-		&& !hasFoldingWin(win, lnum, NULL, NULL, TRUE, NULL)
-# endif
-		)
-	{
-	    if (lnum == win->w_topline)
-		row -= win->w_topfill;
-	    else
-		row -= diff_check_fill(win, lnum);
-	    count = plines_win_nofill(win, lnum, TRUE);
-	}
-	else
-#endif
-	    count = plines_win(win, lnum, TRUE);
-	if (count > row)
-	    break;	/* Position is in this buffer line. */
-#ifdef FEAT_FOLDING
-	(void)hasFoldingWin(win, lnum, NULL, &lnum, TRUE, NULL);
-#endif
-	if (lnum == win->w_buffer->b_ml.ml_line_count)
-	{
-	    retval = TRUE;
-	    break;		/* past end of file */
-	}
-	row -= count;
-	++lnum;
-    }
-
-    if (!retval)
-    {
-	/* Compute the column without wrapping. */
-	off = win_col_off(win) - win_col_off2(win);
-	if (col < off)
-	    col = off;
-	col += row * (win->w_width - off);
-	/* add skip column (for long wrapping line) */
-	col += win->w_skipcol;
-    }
-
-    if (!win->w_p_wrap)
-	col += win->w_leftcol;
-
-    /* skip line number and fold column in front of the line */
-    col -= win_col_off(win);
-    if (col < 0)
-    {
-#ifdef FEAT_NETBEANS_INTG
-	netbeans_gutter_click(lnum);
-#endif
-	col = 0;
-    }
-
-    *colp = col;
-    *rowp = row;
-    *lnump = lnum;
-    return retval;
-}
-
-/*
- * Find the window at screen position "*rowp" and "*colp".  The positions are
- * updated to become relative to the top-left of the window.
- * When "popup" is FAIL_POPUP and the position is in a popup window then NULL
- * is returned.  When "popup" is IGNORE_POPUP then do not even check popup
- * windows.
- * Returns NULL when something is wrong.
- */
-    win_T *
-mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
-{
-    frame_T	*fp;
-    win_T	*wp;
-
-#ifdef FEAT_TEXT_PROP
-    win_T	*pwp = NULL;
-
-    if (popup != IGNORE_POPUP)
-    {
-	popup_reset_handled();
-	while ((wp = find_next_popup(TRUE)) != NULL)
-	{
-	    if (*rowp >= wp->w_winrow && *rowp < wp->w_winrow + popup_height(wp)
-		    && *colp >= wp->w_wincol
-					 && *colp < wp->w_wincol + popup_width(wp))
-		pwp = wp;
-	}
-	if (pwp != NULL)
-	{
-	    if (popup == FAIL_POPUP)
-		return NULL;
-	    *rowp -= pwp->w_winrow;
-	    *colp -= pwp->w_wincol;
-	    return pwp;
-	}
-    }
-#endif
-
-    fp = topframe;
-    *rowp -= firstwin->w_winrow;
-    for (;;)
-    {
-	if (fp->fr_layout == FR_LEAF)
-	    break;
-	if (fp->fr_layout == FR_ROW)
-	{
-	    for (fp = fp->fr_child; fp->fr_next != NULL; fp = fp->fr_next)
-	    {
-		if (*colp < fp->fr_width)
-		    break;
-		*colp -= fp->fr_width;
-	    }
-	}
-	else    /* fr_layout == FR_COL */
-	{
-	    for (fp = fp->fr_child; fp->fr_next != NULL; fp = fp->fr_next)
-	    {
-		if (*rowp < fp->fr_height)
-		    break;
-		*rowp -= fp->fr_height;
-	    }
-	}
-    }
-    /* When using a timer that closes a window the window might not actually
-     * exist. */
-    FOR_ALL_WINDOWS(wp)
-	if (wp == fp->fr_win)
-	{
-#ifdef FEAT_MENU
-	    *rowp -= wp->w_winbar_height;
-#endif
-	    return wp;
-	}
-    return NULL;
-}
-
-#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MAC) \
-	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_TERM_POPUP_MENU) \
-	|| defined(PROTO)
-/*
- * Translate window coordinates to buffer position without any side effects
- */
-    int
-get_fpos_of_mouse(pos_T *mpos)
-{
-    win_T	*wp;
-    int		row = mouse_row;
-    int		col = mouse_col;
-
-    if (row < 0 || col < 0)		/* check if it makes sense */
-	return IN_UNKNOWN;
-
-    /* find the window where the row is in */
-    wp = mouse_find_win(&row, &col, FAIL_POPUP);
-    if (wp == NULL)
-	return IN_UNKNOWN;
-    /*
-     * winpos and height may change in win_enter()!
-     */
-    if (row >= wp->w_height)	/* In (or below) status line */
-	return IN_STATUS_LINE;
-    if (col >= wp->w_width)	/* In vertical separator line */
-	return IN_SEP_LINE;
-
-    if (wp != curwin)
-	return IN_UNKNOWN;
-
-    /* compute the position in the buffer line from the posn on the screen */
-    if (mouse_comp_pos(curwin, &row, &col, &mpos->lnum))
-	return IN_STATUS_LINE; /* past bottom */
-
-    mpos->col = vcol2col(wp, mpos->lnum, col);
-
-    if (mpos->col > 0)
-	--mpos->col;
-    mpos->coladd = 0;
-    return IN_BUFFER;
-}
-#endif
-
-#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MAC) \
-	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_BEVAL) \
-	|| defined(FEAT_TERM_POPUP_MENU) || defined(PROTO)
-/*
- * Convert a virtual (screen) column to a character column.
- * The first column is one.
- */
-    int
-vcol2col(win_T *wp, linenr_T lnum, int vcol)
-{
-    /* try to advance to the specified column */
-    int		count = 0;
-    char_u	*ptr;
-    char_u	*line;
-
-    line = ptr = ml_get_buf(wp->w_buffer, lnum, FALSE);
-    while (count < vcol && *ptr != NUL)
-    {
-	count += win_lbr_chartabsize(wp, line, ptr, count, NULL);
-	MB_PTR_ADV(ptr);
-    }
-    return (int)(ptr - line);
-}
-#endif
-
-#endif /* FEAT_MOUSE */
 
 #if defined(FEAT_GUI) || defined(MSWIN) || defined(PROTO)
 /*

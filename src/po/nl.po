@@ -1667,9 +1667,6 @@ msgstr "E509: kan back-upbestand niet aanmaken (voeg ! toe om dit toch aan te ma
 msgid "E510: Can't make backup file (add ! to override)"
 msgstr "E510: kan back-upbestand niet maken (voeg ! toe om dit toch te maken)"
 
-msgid "E460: The resource fork would be lost (add ! to override)"
-msgstr "E460: de afsplitsing van middelen zou verloren gaan (voeg ! toe om dit toch te doen)"
-
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: kan tijdelijk bestand voor wegschrijven niet vinden"
 
@@ -2123,14 +2120,6 @@ msgstr "&Alles vervangen"
 
 msgid "&Undo"
 msgstr "&Herstellen"
-
-#, c-format
-msgid "E610: Can't load Zap font '%s'"
-msgstr "E610: Zap-lettertype '%s' kan niet worden geladen"
-
-#, c-format
-msgid "E611: Can't use font %s"
-msgstr "E611: lettertype %s kan niet worden gebruikt"
 
 msgid ""
 "\n"
@@ -2696,36 +2685,11 @@ msgstr "Toon documentatie van"
 msgid "Generate docu for"
 msgstr "Genereer documentatie voor"
 
-msgid "Cannot connect to SNiFF+. Check environment (sniffemacs must be found in $PATH).\n"
-msgstr "Verbinden met SNiFF+ is mislukt. Controleer omgevingsvariabelen (sniffemacs moet in $PATH staan).\n"
-
-msgid "E274: Sniff: Error during read. Disconnected"
-msgstr "E274: Sniff: leesfout. Verbroken"
-
-msgid "SNiFF+ is currently "
-msgstr "SNiFF+ is momenteel "
-
 msgid "not "
 msgstr "niet "
 
 msgid "connected"
 msgstr "verbonden"
-
-#, c-format
-msgid "E275: Unknown SNiFF+ request: %s"
-msgstr "E275: onbekend SNiFF+-verzoek: %s"
-
-msgid "E276: Error connecting to SNiFF+"
-msgstr "E276: verbinden met SNiFF+ is mislukt"
-
-msgid "E278: SNiFF+ not connected"
-msgstr "E278: SNiFF+ niet verbonden"
-
-msgid "E279: Not a SNiFF+ buffer"
-msgstr "E279: geen SNiFF+-buffer"
-
-msgid "Sniff: Error during write. Disconnected"
-msgstr "Sniff: schrijven is mislukt. Verbroken"
 
 msgid "invalid buffer number"
 msgstr "buffernummer is ongeldig"
@@ -3903,9 +3867,6 @@ msgstr "Vim stoppen met %d\n"
 
 #, c-format
 #~ msgid "E245: Illegal char '%c' in font name \"%s\""
-#~ msgstr ""
-
-#~ msgid "E366: Invalid 'osfiletype' option - using Text"
 #~ msgstr ""
 
 msgid "Vim: Double signal, exiting\n"

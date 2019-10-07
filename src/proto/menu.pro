@@ -5,7 +5,6 @@ void remove_winbar(win_T *wp);
 char_u *set_context_in_menu_cmd(expand_T *xp, char_u *cmd, char_u *arg, int forceit);
 char_u *get_menu_name(expand_T *xp, int idx);
 char_u *get_menu_names(expand_T *xp, int idx);
-char_u *menu_name_skip(char_u *name);
 int get_menu_index(vimmenu_T *menu, int state);
 int menu_is_menubar(char_u *name);
 int menu_is_popup(char_u *name);

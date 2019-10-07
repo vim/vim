@@ -16,7 +16,7 @@ INLINE unsigned int utf8_seqlen(long codepoint)
 }
 #endif
 
-/* Does NOT NUL-terminate the buffer */
+// Does NOT NUL-terminate the buffer
 int fill_utf8(long codepoint, char *str);
 
 #if defined(DEFINE_INLINES) || USE_INLINE
@@ -44,4 +44,4 @@ INLINE int fill_utf8(long codepoint, char *str)
   return nbytes;
 }
 #endif
-/* end copy */
+// end copy

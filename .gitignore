@@ -35,7 +35,9 @@ src/auto/pathdef.c
 *.RES
 vim*.dll
 vim*.lib
-src/pathdef.c
+src/dobj*/pathdef.c
+src/gobj*/pathdef.c
+src/obj*/pathdef.c
 src/Obj*/pathdef.c
 gvimext.dll
 gvimext.lib
@@ -75,6 +77,7 @@ src/testdir/messages
 src/testdir/viminfo
 src/testdir/opt_test.vim
 runtime/indent/testdir/*.out
+runtime/indent/testdir/*.fail
 src/memfile_test
 src/json_test
 src/message_test

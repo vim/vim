@@ -1,8 +1,7 @@
 " Test WinBar
 
-if !has('menu')
-  finish
-endif
+source check.vim
+CheckFeature menu
 
 source shared.vim
 

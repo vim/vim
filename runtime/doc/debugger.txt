@@ -1,10 +1,14 @@
-*debugger.txt*  For Vim version 8.1.  Last change: 2019 May 12
+*debugger.txt*  For Vim version 8.1.  Last change: 2019 Jul 06
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
 
 
 Debugger Support Features				*debugger-support*
+
+These features are for integration with a debugger or an Integrated
+Programming Environment (IPE) or Integrated Development Environment (IDE).
+For the debugger running in a Vim terminal window see |terminal-debugger|.
 
 1. Debugger Features		|debugger-features|
 2. Vim Compile Options		|debugger-compilation|
@@ -14,9 +18,7 @@ Debugger Support Features				*debugger-support*
 ==============================================================================
 1. Debugger Features					*debugger-features*
 
-The following features are available for an integration with a debugger or
-an Integrated Programming Environment (IPE) or Integrated Development
-Environment (IDE):
+The following features are available:
 
 	Alternate Command Input				|alt-input|
 	Debug Signs					|debug-signs|
@@ -90,6 +92,9 @@ However, the feature was implemented in as general a manner as possible and
 could be used for displaying other information as well.  The functionality is
 limited though, for advanced popups see |popup-window|.
 
+Another way to use the balloon is with the 'balloonexpr' option.  This is
+completely user definable.
+
 The Balloon Evaluation has some settable parameters too.  For Motif the font
 list and colors can be set via X resources (XmNballoonEvalFontList,
 XmNballoonEvalBackground, and XmNballoonEvalForeground).
@@ -105,9 +110,6 @@ matters.
 The Balloon evaluation functions are also used to show a tooltip for the
 toolbar.  The 'ballooneval' option does not need to be set for this.  But the
 other settings apply.
-
-Another way to use the balloon is with the 'balloonexpr' option.  This is
-completely user definable.
 
 ==============================================================================
 2. Vim Compile Options					*debugger-compilation*

@@ -1,9 +1,8 @@
 " Tests specifically for the GUI
 
 source shared.vim
-if !CanRunGui()
-  finish
-endif
+source check.vim
+CheckCanRunGui
 
 source setup_gui.vim
 
@@ -128,10 +127,9 @@ func Test_quoteplus()
 
     let test_call     = 'Can you hear me?'
     let test_response = 'Yes, I can.'
-    let vim_exe = exepath(v:progpath)
+    let vim_exe = GetVimCommand()
     let testee = 'VIMRUNTIME=' . $VIMRUNTIME . '; export VIMRUNTIME;'
-          \ . vim_exe
-	  \ . ' -u NONE -U NONE --noplugin --not-a-term -c ''%s'''
+          \ . vim_exe . ' --noplugin --not-a-term -c ''%s'''
     " Ignore the "failed to create input context" error.
     let cmd = 'call test_ignore_error("E285") | '
 	  \ . 'gui -f | '
@@ -400,71 +398,68 @@ func Test_set_guifont()
 endfunc
 
 func Test_set_guifontset()
+  CheckFeature xfontset
   let skipped = ''
 
-  if !has('xfontset')
-    let skipped = g:not_supported . 'xfontset'
-  else
-    let ctype_saved = v:ctype
+  let ctype_saved = v:ctype
 
-    " First, since XCreateFontSet(3) is very sensitive to locale, fonts must
-    " be chosen meticulously.
-    let font_head = '-misc-fixed-medium-r-normal--14'
+  " First, since XCreateFontSet(3) is very sensitive to locale, fonts must
+  " be chosen meticulously.
+  let font_head = '-misc-fixed-medium-r-normal--14'
 
-    let font_aw70 = font_head . '-130-75-75-c-70'
-    let font_aw140 = font_head . '-130-75-75-c-140'
+  let font_aw70 = font_head . '-130-75-75-c-70'
+  let font_aw140 = font_head . '-130-75-75-c-140'
 
-    let font_jisx0201 = font_aw70 . '-jisx0201.1976-0'
-    let font_jisx0208 = font_aw140 . '-jisx0208.1983-0'
+  let font_jisx0201 = font_aw70 . '-jisx0201.1976-0'
+  let font_jisx0208 = font_aw140 . '-jisx0208.1983-0'
 
-    let full_XLFDs = join([ font_jisx0208, font_jisx0201 ], ',')
-    let short_XLFDs = join([ font_aw140, font_aw70 ], ',')
-    let singleton = font_head . '-*'
-    let aliases = 'k14,r14'
+  let full_XLFDs = join([ font_jisx0208, font_jisx0201 ], ',')
+  let short_XLFDs = join([ font_aw140, font_aw70 ], ',')
+  let singleton = font_head . '-*'
+  let aliases = 'k14,r14'
 
-    " Second, among 'locales', look up such a locale that gets 'set
-    " guifontset=' to work successfully with every fontset specified with
-    " 'fontsets'.
-    let locales = [ 'ja_JP.UTF-8', 'ja_JP.eucJP', 'ja_JP.SJIS' ]
-    let fontsets = [ full_XLFDs, short_XLFDs, singleton, aliases ]
+  " Second, among 'locales', look up such a locale that gets 'set
+  " guifontset=' to work successfully with every fontset specified with
+  " 'fontsets'.
+  let locales = [ 'ja_JP.UTF-8', 'ja_JP.eucJP', 'ja_JP.SJIS' ]
+  let fontsets = [ full_XLFDs, short_XLFDs, singleton, aliases ]
 
-    let feasible = 0
-    for locale in locales
+  let feasible = 0
+  for locale in locales
+    try
+      exec 'language ctype' locale
+    catch /^Vim\%((\a\+)\)\=:E197/
+      continue
+    endtry
+    let done = 0
+    for fontset in fontsets
       try
-        exec 'language ctype' locale
-      catch /^Vim\%((\a\+)\)\=:E197/
-        continue
+	exec 'set guifontset=' . fontset
+      catch /^Vim\%((\a\+)\)\=:E\%(250\|252\|234\|597\|598\)/
+	break
       endtry
-      let done = 0
-      for fontset in fontsets
-        try
-          exec 'set guifontset=' . fontset
-        catch /^Vim\%((\a\+)\)\=:E\%(250\|252\|234\|597\|598\)/
-          break
-        endtry
-        let done += 1
-      endfor
-      if done == len(fontsets)
-        let feasible = 1
-        break
-      endif
+      let done += 1
     endfor
-
-    " Third, give a set of tests if it is found feasible.
-    if !feasible
-      let skipped = g:not_hosted
-    else
-      " N.B. 'v:ctype' has already been set to an appropriate value in the
-      " previous loop.
-      for fontset in fontsets
-        exec 'set guifontset=' . fontset
-        call assert_equal(fontset, &guifontset)
-      endfor
+    if done == len(fontsets)
+      let feasible = 1
+      break
     endif
+  endfor
 
-    " Finally, restore ctype.
-    exec 'language ctype' ctype_saved
+  " Third, give a set of tests if it is found feasible.
+  if !feasible
+    let skipped = g:not_hosted
+  else
+    " N.B. 'v:ctype' has already been set to an appropriate value in the
+    " previous loop.
+    for fontset in fontsets
+      exec 'set guifontset=' . fontset
+      call assert_equal(fontset, &guifontset)
+    endfor
   endif
+
+  " Finally, restore ctype.
+  exec 'language ctype' ctype_saved
 
   if !empty(skipped)
     throw skipped
@@ -648,6 +643,15 @@ func Test_set_guioptions()
       call assert_equal('aegi', &guioptions)
     endif
 
+    if has('gui_gtk3')
+      set guioptions+=d
+      exec 'sleep' . duration
+      call assert_equal('aegid', &guioptions)
+      set guioptions-=d
+      exec 'sleep' . duration
+      call assert_equal('aegi', &guioptions)
+    endif
+
     " Restore GUI ornaments to the default state.
     set guioptions+=m
     exec 'sleep' . duration
@@ -679,7 +683,7 @@ func Test_scrollbars()
   set guioptions+=rlb
 
   " scroll to move line 11 at top, moves the cursor there
-  call test_scrollbar('left', 10, 0)
+  eval 10->test_scrollbar('left', 0)
   redraw
   call assert_equal(1, winline())
   call assert_equal(11, line('.'))
@@ -792,10 +796,11 @@ endfunc
 func Test_gui_dash_g()
   let cmd = GetVimCommand('Xscriptgui')
   call writefile([""], "Xtestgui")
-  call writefile([
-	\ 'au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")',
-	\ 'au GUIEnter * qall',
-	\ ], 'Xscriptgui')
+  let lines =<< trim END
+	au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")
+	au GUIEnter * qall
+  END
+  call writefile(lines, 'Xscriptgui')
   call system(cmd . ' -g')
   call WaitForAssert({-> assert_equal(['insertmode: 0'], readfile('Xtestgui'))})
 
@@ -807,10 +812,11 @@ endfunc
 func Test_gui_dash_y()
   let cmd = GetVimCommand('Xscriptgui')
   call writefile([""], "Xtestgui")
-  call writefile([
-	\ 'au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")',
-	\ 'au GUIEnter * qall',
-	\ ], 'Xscriptgui')
+  let lines =<< trim END
+	au GUIEnter * call writefile(["insertmode: " . &insertmode], "Xtestgui")
+	au GUIEnter * qall
+  END
+  call writefile(lines, 'Xscriptgui')
   call system(cmd . ' -y')
   call WaitForAssert({-> assert_equal(['insertmode: 1'], readfile('Xtestgui'))})
 

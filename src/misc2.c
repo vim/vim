@@ -1014,14 +1014,19 @@ do_outofmem_msg(size_t size)
 {
     if (!did_outofmem_msg)
     {
-	/* Don't hide this message */
+	// Don't hide this message
 	emsg_silent = 0;
 
-	/* Must come first to avoid coming back here when printing the error
-	 * message fails, e.g. when setting v:errmsg. */
+	// Must come first to avoid coming back here when printing the error
+	// message fails, e.g. when setting v:errmsg.
 	did_outofmem_msg = TRUE;
 
 	semsg(_("E342: Out of memory!  (allocating %lu bytes)"), (long_u)size);
+
+	if (starting == NO_SCREEN)
+	    // Not even finished with initializations and already out of
+	    // memory?  Then nothing is going to work, exit.
+	    mch_exit(123);
     }
 }
 
@@ -1060,7 +1065,7 @@ free_all_mem(void)
     spell_free_all();
 # endif
 
-#if defined(FEAT_INS_EXPAND) && defined(FEAT_BEVAL_TERM)
+# if defined(FEAT_BEVAL_TERM)
     ui_remove_balloon();
 # endif
 
@@ -1092,7 +1097,7 @@ free_all_mem(void)
 # endif
 # if defined(FEAT_KEYMAP)
 	do_cmdline_cmd((char_u *)"set keymap=");
-#endif
+# endif
     }
 
 # ifdef FEAT_TITLE
@@ -1108,15 +1113,11 @@ free_all_mem(void)
     free_all_marks();
     alist_clear(&global_alist);
     free_homedir();
-# if defined(FEAT_CMDL_COMPL)
     free_users();
-# endif
     free_search_patterns();
     free_old_sub();
     free_last_insert();
-# if defined(FEAT_INS_EXPAND)
     free_insexpand_stuff();
-# endif
     free_prev_shellcmd();
     free_regexp_stuff();
     free_tag_stuff();
@@ -1139,21 +1140,17 @@ free_all_mem(void)
     vim_regfree(clip_exclude_prog);
 # endif
     vim_free(last_cmdline);
-# ifdef FEAT_CMDHIST
     vim_free(new_last_cmdline);
-# endif
     set_keep_msg(NULL, 0);
 
     /* Clear cmdline history. */
     p_hi = 0;
-# ifdef FEAT_CMDHIST
     init_history();
-# endif
-#ifdef FEAT_TEXT_PROP
+# ifdef FEAT_TEXT_PROP
     clear_global_prop_types();
-#endif
+# endif
 
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
     {
 	win_T	    *win;
 	tabpage_T   *tab;
@@ -1163,7 +1160,7 @@ free_all_mem(void)
 	FOR_ALL_TAB_WINDOWS(tab, win)
 	    qf_free_all(win);
     }
-#endif
+# endif
 
     // Close all script inputs.
     close_all_scripts();
@@ -1177,9 +1174,9 @@ free_all_mem(void)
 
     /* Free all buffers.  Reset 'autochdir' to avoid accessing things that
      * were freed already. */
-#ifdef FEAT_AUTOCHDIR
+# ifdef FEAT_AUTOCHDIR
     p_acd = FALSE;
-#endif
+# endif
     for (buf = firstbuf; buf != NULL; )
     {
 	bufref_T    bufref;
@@ -1194,7 +1191,7 @@ free_all_mem(void)
     }
 
 # ifdef FEAT_ARABIC
-    free_cmdline_buf();
+    free_arshape_buf();
 # endif
 
     /* Clear registers. */
@@ -2494,49 +2491,11 @@ static struct key_name_entry
 
 #define KEY_NAMES_TABLE_LEN (sizeof(key_names_table) / sizeof(struct key_name_entry))
 
-#ifdef FEAT_MOUSE
-static struct mousetable
-{
-    int	    pseudo_code;	/* Code for pseudo mouse event */
-    int	    button;		/* Which mouse button is it? */
-    int	    is_click;		/* Is it a mouse button click event? */
-    int	    is_drag;		/* Is it a mouse drag event? */
-} mouse_table[] =
-{
-    {(int)KE_LEFTMOUSE,		MOUSE_LEFT,	TRUE,	FALSE},
-#ifdef FEAT_GUI
-    {(int)KE_LEFTMOUSE_NM,	MOUSE_LEFT,	TRUE,	FALSE},
-#endif
-    {(int)KE_LEFTDRAG,		MOUSE_LEFT,	FALSE,	TRUE},
-    {(int)KE_LEFTRELEASE,	MOUSE_LEFT,	FALSE,	FALSE},
-#ifdef FEAT_GUI
-    {(int)KE_LEFTRELEASE_NM,	MOUSE_LEFT,	FALSE,	FALSE},
-#endif
-    {(int)KE_MIDDLEMOUSE,	MOUSE_MIDDLE,	TRUE,	FALSE},
-    {(int)KE_MIDDLEDRAG,	MOUSE_MIDDLE,	FALSE,	TRUE},
-    {(int)KE_MIDDLERELEASE,	MOUSE_MIDDLE,	FALSE,	FALSE},
-    {(int)KE_RIGHTMOUSE,	MOUSE_RIGHT,	TRUE,	FALSE},
-    {(int)KE_RIGHTDRAG,		MOUSE_RIGHT,	FALSE,	TRUE},
-    {(int)KE_RIGHTRELEASE,	MOUSE_RIGHT,	FALSE,	FALSE},
-    {(int)KE_X1MOUSE,		MOUSE_X1,	TRUE,	FALSE},
-    {(int)KE_X1DRAG,		MOUSE_X1,	FALSE,	TRUE},
-    {(int)KE_X1RELEASE,		MOUSE_X1,	FALSE,	FALSE},
-    {(int)KE_X2MOUSE,		MOUSE_X2,	TRUE,	FALSE},
-    {(int)KE_X2DRAG,		MOUSE_X2,	FALSE,	TRUE},
-    {(int)KE_X2RELEASE,		MOUSE_X2,	FALSE,	FALSE},
-    /* DRAG without CLICK */
-    {(int)KE_MOUSEMOVE,		MOUSE_RELEASE,	FALSE,	TRUE},
-    /* RELEASE without CLICK */
-    {(int)KE_IGNORE,		MOUSE_RELEASE,	FALSE,	FALSE},
-    {0,				0,		0,	0},
-};
-#endif /* FEAT_MOUSE */
-
 /*
  * Return the modifier mask bit (MOD_MASK_*) which corresponds to the given
  * modifier name ('S' for Shift, 'C' for Ctrl etc).
  */
-    int
+    static int
 name_to_mod_mask(int c)
 {
     int	    i;
@@ -2823,10 +2782,10 @@ find_special_key(
 		    l = mb_ptr2len(bp + 1);
 		else
 		    l = 1;
-		/* Anything accepted, like <C-?>.
-		 * <C-"> or <M-"> are not special in strings as " is
-		 * the string delimiter. With a backslash it works: <M-\"> */
-		if (!(in_string && bp[1] == '"') && bp[2] == '>')
+		// Anything accepted, like <C-?>.
+		// <C-"> or <M-"> are not special in strings as " is
+		// the string delimiter. With a backslash it works: <M-\">
+		if (!(in_string && bp[1] == '"') && bp[l + 1] == '>')
 		    bp += l;
 		else if (in_string && bp[1] == '\\' && bp[2] == '"'
 							       && bp[3] == '>')
@@ -3045,7 +3004,6 @@ get_special_key_code(char_u *name)
     return 0;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     char_u *
 get_key_name(int i)
 {
@@ -3053,67 +3011,6 @@ get_key_name(int i)
 	return NULL;
     return  key_names_table[i].name;
 }
-#endif
-
-#if defined(FEAT_MOUSE) || defined(PROTO)
-/*
- * Look up the given mouse code to return the relevant information in the other
- * arguments.  Return which button is down or was released.
- */
-    int
-get_mouse_button(int code, int *is_click, int *is_drag)
-{
-    int	    i;
-
-    for (i = 0; mouse_table[i].pseudo_code; i++)
-	if (code == mouse_table[i].pseudo_code)
-	{
-	    *is_click = mouse_table[i].is_click;
-	    *is_drag = mouse_table[i].is_drag;
-	    return mouse_table[i].button;
-	}
-    return 0;	    /* Shouldn't get here */
-}
-
-/*
- * Return the appropriate pseudo mouse event token (KE_LEFTMOUSE etc) based on
- * the given information about which mouse button is down, and whether the
- * mouse was clicked, dragged or released.
- */
-    int
-get_pseudo_mouse_code(
-    int	    button,	/* eg MOUSE_LEFT */
-    int	    is_click,
-    int	    is_drag)
-{
-    int	    i;
-
-    for (i = 0; mouse_table[i].pseudo_code; i++)
-	if (button == mouse_table[i].button
-	    && is_click == mouse_table[i].is_click
-	    && is_drag == mouse_table[i].is_drag)
-	{
-#ifdef FEAT_GUI
-	    /* Trick: a non mappable left click and release has mouse_col -1
-	     * or added MOUSE_COLOFF.  Used for 'mousefocus' in
-	     * gui_mouse_moved() */
-	    if (mouse_col < 0 || mouse_col > MOUSE_COLOFF)
-	    {
-		if (mouse_col < 0)
-		    mouse_col = 0;
-		else
-		    mouse_col -= MOUSE_COLOFF;
-		if (mouse_table[i].pseudo_code == (int)KE_LEFTMOUSE)
-		    return (int)KE_LEFTMOUSE_NM;
-		if (mouse_table[i].pseudo_code == (int)KE_LEFTRELEASE)
-		    return (int)KE_LEFTRELEASE_NM;
-	    }
-#endif
-	    return mouse_table[i].pseudo_code;
-	}
-    return (int)KE_IGNORE;	    /* not recognized, ignore it */
-}
-#endif /* FEAT_MOUSE */
 
 /*
  * Return the current end-of-line type: EOL_DOS, EOL_UNIX or EOL_MAC.
@@ -3260,7 +3157,7 @@ call_shell(char_u *cmd, int opt)
 	{
 	    char_u *ecmd = cmd;
 
-	    if (*p_sxe != NUL && STRCMP(p_sxq, "(") == 0)
+	    if (*p_sxe != NUL && *p_sxq == '(')
 	    {
 		ecmd = vim_strsave_escaped_ext(cmd, p_sxe, '^', FALSE);
 		if (ecmd == NULL)
@@ -3271,11 +3168,11 @@ call_shell(char_u *cmd, int opt)
 	    {
 		STRCPY(ncmd, p_sxq);
 		STRCAT(ncmd, ecmd);
-		/* When 'shellxquote' is ( append ).
-		 * When 'shellxquote' is "( append )". */
-		STRCAT(ncmd, STRCMP(p_sxq, "(") == 0 ? (char_u *)")"
-			   : STRCMP(p_sxq, "\"(") == 0 ? (char_u *)")\""
-			   : p_sxq);
+		// When 'shellxquote' is ( append ).
+		// When 'shellxquote' is "( append )".
+		STRCAT(ncmd, *p_sxq == '(' ? (char_u *)")"
+		    : *p_sxq == '"' && *(p_sxq+1) == '(' ? (char_u *)")\""
+		    : p_sxq);
 		retval = mch_call_shell(ncmd, opt);
 		vim_free(ncmd);
 	    }
@@ -3943,82 +3840,6 @@ sort_strings(
     qsort((void *)files, (size_t)count, sizeof(char_u *), sort_compare);
 }
 
-#if !defined(NO_EXPANDPATH) || defined(PROTO)
-/*
- * Compare path "p[]" to "q[]".
- * If "maxlen" >= 0 compare "p[maxlen]" to "q[maxlen]"
- * Return value like strcmp(p, q), but consider path separators.
- */
-    int
-pathcmp(const char *p, const char *q, int maxlen)
-{
-    int		i, j;
-    int		c1, c2;
-    const char	*s = NULL;
-
-    for (i = 0, j = 0; maxlen < 0 || (i < maxlen && j < maxlen);)
-    {
-	c1 = PTR2CHAR((char_u *)p + i);
-	c2 = PTR2CHAR((char_u *)q + j);
-
-	/* End of "p": check if "q" also ends or just has a slash. */
-	if (c1 == NUL)
-	{
-	    if (c2 == NUL)  /* full match */
-		return 0;
-	    s = q;
-	    i = j;
-	    break;
-	}
-
-	/* End of "q": check if "p" just has a slash. */
-	if (c2 == NUL)
-	{
-	    s = p;
-	    break;
-	}
-
-	if ((p_fic ? MB_TOUPPER(c1) != MB_TOUPPER(c2) : c1 != c2)
-#ifdef BACKSLASH_IN_FILENAME
-		/* consider '/' and '\\' to be equal */
-		&& !((c1 == '/' && c2 == '\\')
-		    || (c1 == '\\' && c2 == '/'))
-#endif
-		)
-	{
-	    if (vim_ispathsep(c1))
-		return -1;
-	    if (vim_ispathsep(c2))
-		return 1;
-	    return p_fic ? MB_TOUPPER(c1) - MB_TOUPPER(c2)
-		    : c1 - c2;  /* no match */
-	}
-
-	i += MB_PTR2LEN((char_u *)p + i);
-	j += MB_PTR2LEN((char_u *)q + j);
-    }
-    if (s == NULL)	/* "i" or "j" ran into "maxlen" */
-	return 0;
-
-    c1 = PTR2CHAR((char_u *)s + i);
-    c2 = PTR2CHAR((char_u *)s + i + MB_PTR2LEN((char_u *)s + i));
-    /* ignore a trailing slash, but not "//" or ":/" */
-    if (c2 == NUL
-	    && i > 0
-	    && !after_pathsep((char_u *)s, (char_u *)s + i)
-#ifdef BACKSLASH_IN_FILENAME
-	    && (c1 == '/' || c1 == '\\')
-#else
-	    && c1 == '/'
-#endif
-       )
-	return 0;   /* match with trailing slash */
-    if (s == q)
-	return -1;	    /* no match */
-    return 1;
-}
-#endif
-
 /*
  * The putenv() implementation below comes from the "screen" program.
  * Included with permission from Juergen Weigert.
@@ -4430,68 +4251,6 @@ has_non_ascii(char_u *s)
 }
 #endif
 
-#if defined(MESSAGE_QUEUE) || defined(PROTO)
-# define MAX_REPEAT_PARSE 8
-
-/*
- * Process messages that have been queued for netbeans or clientserver.
- * Also check if any jobs have ended.
- * These functions can call arbitrary vimscript and should only be called when
- * it is safe to do so.
- */
-    void
-parse_queued_messages(void)
-{
-    win_T   *old_curwin = curwin;
-    int	    i;
-
-    // Do not handle messages while redrawing, because it may cause buffers to
-    // change or be wiped while they are being redrawn.
-    if (updating_screen)
-	return;
-
-    // Loop when a job ended, but don't keep looping forever.
-    for (i = 0; i < MAX_REPEAT_PARSE; ++i)
-    {
-	// For Win32 mch_breakcheck() does not check for input, do it here.
-# if defined(MSWIN) && defined(FEAT_JOB_CHANNEL)
-	channel_handle_events(FALSE);
-# endif
-
-# ifdef FEAT_NETBEANS_INTG
-	// Process the queued netbeans messages.
-	netbeans_parse_messages();
-# endif
-# ifdef FEAT_JOB_CHANNEL
-	// Write any buffer lines still to be written.
-	channel_write_any_lines();
-
-	// Process the messages queued on channels.
-	channel_parse_messages();
-# endif
-# if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
-	// Process the queued clientserver messages.
-	server_parse_messages();
-# endif
-# ifdef FEAT_JOB_CHANNEL
-	// Check if any jobs have ended.  If so, repeat the above to handle
-	// changes, e.g. stdin may have been closed.
-	if (job_check_ended())
-	    continue;
-# endif
-# ifdef FEAT_TERMINAL
-	free_unused_terminals();
-# endif
-	break;
-    }
-
-    // If the current window changed we need to bail out of the waiting loop.
-    // E.g. when a job exit callback closes the terminal window.
-    if (curwin != old_curwin)
-	ins_char_typebuf(K_IGNORE);
-}
-#endif
-
 #ifndef PROTO  /* proto is defined in vim.h */
 # ifdef ELAPSED_TIMEVAL
 /*
@@ -4669,79 +4428,21 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
 # endif
 #endif
 
-#if defined(FEAT_SESSION) || defined(PROTO)
 /*
- * Generate a script that can be used to restore the current editing session.
- * Save the value of v:this_session before running :mksession in order to make
- * automagic session save fully transparent.  Return TRUE on success.
+ * Change the behavior of vterm.
+ * 0: As usual.
+ * 1: Windows 10 version 1809
+ *      The bug causes unstable handling of ambiguous width character.
+ * 2: Windows 10 version 1903
+ *      Use the wrong result because each result is different.
+ * 3: Windows 10 insider preview (current latest logic)
  */
     int
-write_session_file(char_u *filename)
+get_special_pty_type(void)
 {
-    char_u	    *escaped_filename;
-    char	    *mksession_cmdline;
-    unsigned int    save_ssop_flags;
-    int		    failed;
-
-    /*
-     * Build an ex command line to create a script that restores the current
-     * session if executed.  Escape the filename to avoid nasty surprises.
-     */
-    escaped_filename = vim_strsave_escaped(filename, escape_chars);
-    if (escaped_filename == NULL)
-	return FALSE;
-    mksession_cmdline = alloc(10 + (int)STRLEN(escaped_filename) + 1);
-    if (mksession_cmdline == NULL)
-    {
-	vim_free(escaped_filename);
-	return FALSE;
-    }
-    strcpy(mksession_cmdline, "mksession ");
-    STRCAT(mksession_cmdline, escaped_filename);
-    vim_free(escaped_filename);
-
-    /*
-     * Use a reasonable hardcoded set of 'sessionoptions' flags to avoid
-     * unpredictable effects when the session is saved automatically.  Also,
-     * we definitely need SSOP_GLOBALS to be able to restore v:this_session.
-     * Don't use SSOP_BUFFERS to prevent the buffer list from becoming
-     * enormously large if the GNOME session feature is used regularly.
-     */
-    save_ssop_flags = ssop_flags;
-    ssop_flags = (SSOP_BLANK|SSOP_CURDIR|SSOP_FOLDS|SSOP_GLOBALS
-		  |SSOP_HELP|SSOP_OPTIONS|SSOP_WINSIZE|SSOP_TABPAGES);
-
-    do_cmdline_cmd((char_u *)"let Save_VV_this_session = v:this_session");
-    failed = (do_cmdline_cmd((char_u *)mksession_cmdline) == FAIL);
-    do_cmdline_cmd((char_u *)"let v:this_session = Save_VV_this_session");
-    do_unlet((char_u *)"Save_VV_this_session", TRUE);
-
-    ssop_flags = save_ssop_flags;
-    vim_free(mksession_cmdline);
-
-    /*
-     * Reopen the file and append a command to restore v:this_session,
-     * as if this save never happened.	This is to avoid conflicts with
-     * the user's own sessions.  FIXME: It's probably less hackish to add
-     * a "stealth" flag to 'sessionoptions' -- gotta ask Bram.
-     */
-    if (!failed)
-    {
-	FILE *fd;
-
-	fd = open_exfile(filename, TRUE, APPENDBIN);
-
-	failed = (fd == NULL
-	       || put_line(fd, "let v:this_session = Save_VV_this_session") == FAIL
-	       || put_line(fd, "unlet Save_VV_this_session") == FAIL);
-
-	if (fd != NULL && fclose(fd) != 0)
-	    failed = TRUE;
-
-	if (failed)
-	    mch_remove(filename);
-    }
-
-    return !failed;
-}
+#ifdef MSWIN
+    return get_conpty_type();
+#else
+    return 0;
 #endif
+}

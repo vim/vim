@@ -34,12 +34,17 @@ so small.vim
 
 " Check that the screen size is at least 24 x 80 characters.
 if &lines < 24 || &columns < 80 
-  let error = 'Screen size too small! Tests require at least 24 lines with 80 characters'
+  let error = 'Screen size too small! Tests require at least 24 lines with 80 characters, got ' .. &lines .. ' lines with ' .. &columns .. ' characters'
   echoerr error
   split test.log
   $put =error
-  w
-  cquit
+  write
+  split messages
+  call append(line('$'), '')
+  call append(line('$'), 'From ' . expand('%') . ':')
+  call append(line('$'), error)
+  write
+  qa!
 endif
 
 if has('reltime')
@@ -65,10 +70,14 @@ set encoding=utf-8
 let s:test_script_fname = expand('%')
 au! SwapExists * call HandleSwapExists()
 func HandleSwapExists()
-  " Only ignore finding a swap file for the test script (the user might be
+  " Ignore finding a swap file for the test script (the user might be
   " editing it and do ":make test_name") and the output file.
+  " Report finding another swap file and chose 'q' to avoid getting stuck.
   if expand('<afile>') == 'messages' || expand('<afile>') =~ s:test_script_fname
     let v:swapchoice = 'e'
+  else
+    call assert_report('Unexpected swap file: ' .. v:swapname)
+    let v:swapchoice = 'q'
   endif
 endfunc
 
@@ -163,9 +172,14 @@ func RunTheTest(test)
     endtry
   endif
 
-  " Clear any autocommands
+  " Clear any autocommands and put back the catch-all for SwapExists.
   au!
   au SwapExists * call HandleSwapExists()
+
+  " Close any stray popup windows
+  if has('textprop')
+    call popup_clear()
+  endif
 
   " Close any extra tab pages and windows and make the current one not modified.
   while tabpagenr('$') > 1
@@ -239,11 +253,18 @@ func FinishTesting()
   endif
 
   if s:done == 0
-    let message = 'NO tests executed'
+    if s:filtered > 0
+      let message = "NO tests match $TEST_FILTER: '" .. $TEST_FILTER .. "'"
+    else
+      let message = 'NO tests executed'
+    endif
   else
+    if s:filtered > 0
+      call add(s:messages, "Filtered " .. s:filtered .. " tests with $TEST_FILTER")
+    endif
     let message = 'Executed ' . s:done . (s:done > 1 ? ' tests' : ' test')
   endif
-  if has('reltime')
+  if s:done > 0 && has('reltime')
     let message ..= ' in ' .. reltimestr(reltime(s:start_time)) .. ' seconds'
   endif
   echo message
@@ -293,6 +314,7 @@ endif
 
 " Names of flaky tests.
 let s:flaky_tests = [
+      \ 'Test_autocmd_SafeState()',
       \ 'Test_call()',
       \ 'Test_channel_handler()',
       \ 'Test_client_server()',
@@ -308,20 +330,18 @@ let s:flaky_tests = [
       \ 'Test_diff_screen()',
       \ 'Test_exit_callback()',
       \ 'Test_exit_callback_interval()',
+      \ 'Test_map_timeout_with_timer_interrupt()',
       \ 'Test_nb_basic()',
-      \ 'Test_oneshot()',
       \ 'Test_open_delay()',
       \ 'Test_out_cb()',
-      \ 'Test_paused()',
       \ 'Test_pipe_through_sort_all()',
       \ 'Test_pipe_through_sort_some()',
-      \ 'Test_popup_and_window_resize()',
       \ 'Test_quoteplus()',
       \ 'Test_quotestar()',
       \ 'Test_raw_one_time_callback()',
       \ 'Test_reltime()',
-      \ 'Test_repeat_three()',
       \ 'Test_server_crash()',
+      \ 'Test_term_mouse_double_click_to_create_tab()',
       \ 'Test_terminal_ansicolors_default()',
       \ 'Test_terminal_ansicolors_func()',
       \ 'Test_terminal_ansicolors_global()',
@@ -337,16 +357,22 @@ let s:flaky_tests = [
       \ 'Test_terminal_scrollback()',
       \ 'Test_terminal_split_quit()',
       \ 'Test_terminal_termwinkey()',
-      \ 'Test_terminal_termwinsize_mininmum()',
+      \ 'Test_terminal_termwinsize_minimum()',
       \ 'Test_terminal_termwinsize_option_fixed()',
       \ 'Test_terminal_termwinsize_option_zero()',
       \ 'Test_terminal_tmap()',
       \ 'Test_terminal_wall()',
       \ 'Test_terminal_wipe_buffer()',
       \ 'Test_terminal_wqall()',
+      \ 'Test_timer_oneshot()',
+      \ 'Test_timer_paused()',
+      \ 'Test_timer_repeat_many()',
+      \ 'Test_timer_repeat_three()',
+      \ 'Test_timer_stop_all_in_callback()',
+      \ 'Test_timer_stop_in_callback()',
       \ 'Test_two_channels()',
       \ 'Test_unlet_handle()',
-      \ 'Test_with_partial_callback()',
+      \ 'Test_timer_with_partial_callback()',
       \ 'Test_zero_reply()',
       \ 'Test_zz1_terminal_in_gui()',
       \ ]
@@ -365,6 +391,15 @@ if argc() > 1
   let s:tests = filter(s:tests, 'v:val =~ argv(1)')
 endif
 
+" If the environment variable $TEST_FILTER is set then filter the function
+" names against it.
+let s:filtered = 0
+if $TEST_FILTER != ''
+  let s:filtered = len(s:tests)
+  let s:tests = filter(s:tests, 'v:val =~ $TEST_FILTER')
+  let s:filtered -= len(s:tests)
+endif
+
 " Execute the tests in alphabetical order.
 for s:test in sort(s:tests)
   " Silence, please!
@@ -377,7 +412,7 @@ for s:test in sort(s:tests)
 
   " Repeat a flaky test.  Give up when:
   " - it fails again with the same message
-  " - it fails five times (with a different mesage)
+  " - it fails five times (with a different message)
   if len(v:errors) > 0
         \ && (index(s:flaky_tests, s:test) >= 0
         \      || v:errors[0] =~ s:flaky_errors_re)

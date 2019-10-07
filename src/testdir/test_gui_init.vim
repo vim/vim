@@ -2,9 +2,8 @@
 " startup to take effect at runtime.
 
 source shared.vim
-if !CanRunGui()
-  finish
-endif
+source check.vim
+CheckCanRunGui
 
 source setup_gui.vim
 

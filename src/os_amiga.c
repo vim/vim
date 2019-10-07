@@ -14,6 +14,7 @@
  */
 
 #include "vim.h"
+#include "version.h"
 
 #ifdef Window
 # undef Window	/* Amiga has its own Window definition */
@@ -61,6 +62,17 @@
 #endif /* PROTO */
 
 /*
+ * Set stack size to 1 MiB on NG systems. This should be enough even for
+ * hungry syntax HL / plugin combinations. Leave the stack alone on OS 3
+ * and below, those systems might be low on memory.
+ */
+#if defined(__amigaos4__)
+static const char* __attribute__((used)) stackcookie = "$STACK: 1048576";
+#elif defined(__AROS__) || defined(__MORPHOS__)
+unsigned long __stack = 1048576;
+#endif
+
+/*
  * At this point TRUE and FALSE are defined as 1L and 0L, but we want 1 and 0.
  */
 #undef	TRUE
@@ -96,6 +108,17 @@ static char_u		*oldwindowtitle = NULL;
 int			dos2 = FALSE;	    /* Amiga DOS 2.0x or higher */
 #endif
 int			size_set = FALSE;   /* set to TRUE if window size was set */
+
+#ifdef __GNUC__
+static char version[] __attribute__((used)) =
+    "\0$VER: Vim "
+    VIM_VERSION_MAJOR_STR "."
+    VIM_VERSION_MINOR_STR
+# ifdef PATCHLEVEL
+    "." PATCHLEVEL
+# endif
+    ;
+#endif
 
     void
 win_resize_on(void)
@@ -191,7 +214,7 @@ mch_char_avail(void)
     long_u
 mch_avail_mem(int special)
 {
-#ifdef __amigaos4__
+#if defined(__amigaos4__) || defined(__AROS__) || defined(__MORPHOS__)
     return (long_u)AvailMem(MEMF_ANY) >> 10;
 #else
     return (long_u)(AvailMem(special ? (long)MEMF_CHIP : (long)MEMF_ANY)) >> 10;
@@ -641,7 +664,15 @@ mch_can_restore_icon(void)
     int
 mch_get_user_name(char_u *s, int len)
 {
-    /* TODO: Implement this. */
+#if defined(__amigaos4__) || defined(__AROS__) || defined(__MORPHOS__)
+    struct passwd   *pwd = getpwuid(getuid());
+
+    if (pwd != NULL && pwd->pw_name && len > 0)
+    {
+        vim_strncpy(s, (char_u *)pwd->pw_name, len - 1);
+        return OK;
+    }
+#endif
     *s = NUL;
     return FAIL;
 }

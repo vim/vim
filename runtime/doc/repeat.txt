@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.1.  Last change: 2019 May 22
+*repeat.txt*    For Vim version 8.1.  Last change: 2019 Sep 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -219,10 +219,10 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 
 			When {file} contains wildcards it is expanded to all
 			matching files.  Example: >
-				:runtime! plugin/*.vim
+				:runtime! plugin/**/*.vim
 <			This is what Vim uses to load the plugin files when
 			starting up.  This similar command: >
-				:runtime plugin/*.vim
+				:runtime plugin/**/*.vim
 <			would source the first file only.
 
 			When 'verbose' is one or higher, there is a message
@@ -280,9 +280,16 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			after loading your .vimrc file.  With this command it
 			can be done earlier.
 
-			Packages will be loaded only once.  After this command
-			it won't happen again.  When the optional ! is added
-			this command will load packages even when done before.
+			Packages will be loaded only once.  Using
+			`:packloadall` a second time will have no effect.
+			When the optional ! is added this command will load
+			packages even when done before.
+
+			Note that when using `:packloadall` in the |vimrc|
+			file, the 'runtimepath' option is updated, and later
+			all plugins in 'runtimepath' will be loaded, which
+			means they are loaded again.  Plugins are expected to
+			handle that.
 
 			An error only causes sourcing the script where it
 			happens to be aborted, further plugins will be loaded.

@@ -13,7 +13,7 @@ func Test_taglist()
   split Xtext
 
   call assert_equal(['FFoo', 'BFoo'], map(taglist("Foo"), {i, v -> v.name}))
-  call assert_equal(['FFoo', 'BFoo'], map(taglist("Foo", "Xtext"), {i, v -> v.name}))
+  call assert_equal(['FFoo', 'BFoo'], map("Foo"->taglist("Xtext"), {i, v -> v.name}))
   call assert_equal(['FFoo', 'BFoo'], map(taglist("Foo", "Xfoo"), {i, v -> v.name}))
   call assert_equal(['BFoo', 'FFoo'], map(taglist("Foo", "Xbar"), {i, v -> v.name}))
 
@@ -30,6 +30,7 @@ func Test_taglist()
   call assert_equal('call cursor(3, 4)', cmd[0]['cmd'])
 
   call delete('Xtags')
+  set tags&
   bwipe
 endfunc
 
@@ -50,6 +51,7 @@ func Test_taglist_native_etags()
 	\ map(taglist('set_signals'), {i, v -> [v.name, v.cmd]}))
 
   call delete('Xtags')
+  set tags&
 endfunc
 
 func Test_taglist_ctags_etags()
@@ -69,6 +71,7 @@ func Test_taglist_ctags_etags()
 	\ map(taglist('set_signals'), {i, v -> [v.name, v.cmd]}))
 
   call delete('Xtags')
+  set tags&
 endfunc
 
 func Test_tags_too_long()
@@ -110,4 +113,5 @@ func Test_tagsfile_without_trailing_newline()
   call assert_equal('Foo', tl[0].name)
 
   call delete('Xtags')
+  set tags&
 endfunc

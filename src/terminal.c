@@ -109,6 +109,7 @@ struct terminal_S {
 #define TL_FINISH_OPEN	    'o'	/* ++open */
     char_u	*tl_opencmd;
     char_u	*tl_eof_chars;
+    char_u	*tl_api;	// prefix for terminal API function
 
     char_u	*tl_arg0_cmd;	// To format the status bar
 
@@ -355,6 +356,16 @@ setup_job_options(jobopt_T *opt, int rows, int cols)
 	opt->jo_term_rows = rows;
     if ((opt->jo_set2 & JO2_TERM_COLS) == 0)
 	opt->jo_term_cols = cols;
+}
+
+/*
+ * Flush messages on channels.
+ */
+    static void
+term_flush_messages()
+{
+    mch_check_messages();
+    parse_queued_messages();
 }
 
 /*
@@ -631,6 +642,11 @@ term_start(
 	term->tl_kill = vim_strnsave(opt->jo_term_kill, p - opt->jo_term_kill);
     }
 
+    if (opt->jo_term_api != NULL)
+	term->tl_api = vim_strsave(opt->jo_term_api);
+    else
+	term->tl_api = vim_strsave((char_u *)"Tapi_");
+
     /* System dependent: setup the vterm and maybe start the job in it. */
     if (argv == NULL
 	    && argvar->v_type == VAR_STRING
@@ -698,44 +714,58 @@ ex_terminal(exarg_T *eap)
 	cmd += 2;
 	p = skiptowhite(cmd);
 	ep = vim_strchr(cmd, '=');
-	if (ep != NULL && ep < p)
-	    p = ep;
+	if (ep != NULL)
+	{
+	    if (ep < p)
+		p = ep;
+	    else
+		ep = NULL;
+	}
 
-	if ((int)(p - cmd) == 5 && STRNICMP(cmd, "close", 5) == 0)
+# define OPTARG_HAS(name) ((int)(p - cmd) == sizeof(name) - 1 \
+				 && STRNICMP(cmd, name, sizeof(name) - 1) == 0)
+	if (OPTARG_HAS("close"))
 	    opt.jo_term_finish = 'c';
-	else if ((int)(p - cmd) == 7 && STRNICMP(cmd, "noclose", 7) == 0)
+	else if (OPTARG_HAS("noclose"))
 	    opt.jo_term_finish = 'n';
-	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "open", 4) == 0)
+	else if (OPTARG_HAS("open"))
 	    opt.jo_term_finish = 'o';
-	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "curwin", 6) == 0)
+	else if (OPTARG_HAS("curwin"))
 	    opt.jo_curwin = 1;
-	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "hidden", 6) == 0)
+	else if (OPTARG_HAS("hidden"))
 	    opt.jo_hidden = 1;
-	else if ((int)(p - cmd) == 9 && STRNICMP(cmd, "norestore", 9) == 0)
+	else if (OPTARG_HAS("norestore"))
 	    opt.jo_term_norestore = 1;
-	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "kill", 4) == 0
-		&& ep != NULL)
+	else if (OPTARG_HAS("kill") && ep != NULL)
 	{
 	    opt.jo_set2 |= JO2_TERM_KILL;
 	    opt.jo_term_kill = ep + 1;
 	    p = skiptowhite(cmd);
 	}
-	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "rows", 4) == 0
-		&& ep != NULL && isdigit(ep[1]))
+	else if (OPTARG_HAS("api"))
+	{
+	    opt.jo_set2 |= JO2_TERM_API;
+	    if (ep != NULL)
+	    {
+		opt.jo_term_api = ep + 1;
+		p = skiptowhite(cmd);
+	    }
+	    else
+		opt.jo_term_api = NULL;
+	}
+	else if (OPTARG_HAS("rows") && ep != NULL && isdigit(ep[1]))
 	{
 	    opt.jo_set2 |= JO2_TERM_ROWS;
 	    opt.jo_term_rows = atoi((char *)ep + 1);
 	    p = skiptowhite(cmd);
 	}
-	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "cols", 4) == 0
-		&& ep != NULL && isdigit(ep[1]))
+	else if (OPTARG_HAS("cols") && ep != NULL && isdigit(ep[1]))
 	{
 	    opt.jo_set2 |= JO2_TERM_COLS;
 	    opt.jo_term_cols = atoi((char *)ep + 1);
 	    p = skiptowhite(cmd);
 	}
-	else if ((int)(p - cmd) == 3 && STRNICMP(cmd, "eof", 3) == 0
-								 && ep != NULL)
+	else if (OPTARG_HAS("eof") && ep != NULL)
 	{
 	    char_u *buf = NULL;
 	    char_u *keys;
@@ -775,6 +805,7 @@ ex_terminal(exarg_T *eap)
 	    semsg(_("E181: Invalid attribute: %s"), cmd);
 	    goto theend;
 	}
+# undef OPTARG_HAS
 	cmd = skipwhite(p);
     }
     if (*cmd == NUL)
@@ -865,7 +896,7 @@ free_scrollback(term_T *term)
 
 
 // Terminals that need to be freed soon.
-term_T	*terminals_to_free = NULL;
+static term_T	*terminals_to_free = NULL;
 
 /*
  * Free a terminal and everything it refers to.
@@ -923,6 +954,7 @@ free_unused_terminals()
 	free_scrollback(term);
 
 	term_free_vterm(term);
+	vim_free(term->tl_api);
 	vim_free(term->tl_title);
 #ifdef FEAT_SESSION
 	vim_free(term->tl_command);
@@ -947,7 +979,7 @@ free_unused_terminals()
  * possible to do "1,5term vim -".
  */
     static ch_part_T
-get_tty_part(term_T *term)
+get_tty_part(term_T *term UNUSED)
 {
 #ifdef UNIX
     ch_part_T	parts[3] = {PART_IN, PART_OUT, PART_ERR};
@@ -1455,8 +1487,7 @@ term_try_stop_job(buf_T *buf)
 	    return OK;
 
 	ui_delay(10L, FALSE);
-	mch_check_messages();
-	parse_queued_messages();
+	term_flush_messages();
     }
     return FAIL;
 }
@@ -2363,8 +2394,13 @@ terminal_loop(int blocking)
 	    }
 	    else if (termwinkey == 0 || c != termwinkey)
 	    {
-		stuffcharReadbuff(Ctrl_W);
-		stuffcharReadbuff(c);
+		char_u buf[MB_MAXBYTES + 2];
+
+		// Put the command into the typeahead buffer, when using the
+		// stuff buffer KeyStuffed is set and 'langmap' won't be used.
+		buf[0] = Ctrl_W;
+		buf[(*mb_char2bytes)(c, buf + 1) + 1] = NUL;
+		ins_typebuf(buf, REMAP_NONE, 0, TRUE, FALSE);
 		ret = OK;
 		goto theend;
 	    }
@@ -3019,6 +3055,8 @@ term_after_channel_closed(term_T *term)
 	    ch_log(NULL, "terminal job finished, closing window");
 	    aucmd_prepbuf(&aco, term->tl_buffer);
 	    // Avoid closing the window if we temporarily use it.
+	    if (curwin == aucmd_win)
+		do_set_w_closing = TRUE;
 	    if (do_set_w_closing)
 		curwin->w_closing = TRUE;
 	    do_bufdel(DOBUF_WIPE, (char_u *)"", 1, fnum, fnum, FALSE);
@@ -3062,7 +3100,7 @@ term_channel_closed(channel_T *ch)
     for (term = first_term; term != NULL; term = next_term)
     {
 	next_term = term->tl_next;
-	if (term->tl_job == ch->ch_job)
+	if (term->tl_job == ch->ch_job && !term->tl_channel_closed)
 	{
 	    term->tl_channel_closed = TRUE;
 	    did_one = TRUE;
@@ -3331,6 +3369,8 @@ term_update_window(win_T *wp)
 	    newcols = MIN(newcols, twp->w_width);
 	}
     }
+    if (newrows == 99999 || newcols == 99999)
+	return; // safety exit
     newrows = rows == 0 ? newrows : minsize ? MAX(rows, newrows) : rows;
     newcols = cols == 0 ? newcols : minsize ? MAX(cols, newcols) : cols;
 
@@ -3752,6 +3792,15 @@ handle_drop_command(listitem_T *item)
 }
 
 /*
+ * Return TRUE if "func" starts with "pat" and "pat" isn't empty.
+ */
+    static int
+is_permitted_term_api(char_u *func, char_u *pat)
+{
+    return pat != NULL && *pat != NUL && STRNICMP(func, pat, STRLEN(pat)) == 0;
+}
+
+/*
  * Handles a function call from the job running in a terminal.
  * "item" is the function name, "item->li_next" has the arguments.
  */
@@ -3761,7 +3810,7 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
     char_u	*func;
     typval_T	argvars[2];
     typval_T	rettv;
-    int		doesrange;
+    funcexe_T	funcexe;
 
     if (item->li_next == NULL)
     {
@@ -3770,20 +3819,20 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
     }
     func = tv_get_string(&item->li_tv);
 
-    if (STRNCMP(func, "Tapi_", 5) != 0)
+    if (!is_permitted_term_api(func, term->tl_api))
     {
-	ch_log(channel, "Invalid function name: %s", func);
+	ch_log(channel, "Unpermitted function: %s", func);
 	return;
     }
 
     argvars[0].v_type = VAR_NUMBER;
     argvars[0].vval.v_number = term->tl_buffer->b_fnum;
     argvars[1] = item->li_next->li_tv;
-    if (call_func(func, -1, &rettv,
-		2, argvars, /* argv_func */ NULL,
-		/* firstline */ 1, /* lastline */ 1,
-		&doesrange, /* evaluate */ TRUE,
-		/* partial */ NULL, /* selfdict */ NULL) == OK)
+    vim_memset(&funcexe, 0, sizeof(funcexe));
+    funcexe.firstline = 1L;
+    funcexe.lastline = 1L;
+    funcexe.evaluate = TRUE;
+    if (call_func(func, -1, &rettv, 2, argvars, &funcexe) == OK)
     {
 	clear_tv(&rettv);
 	ch_log(channel, "Function %s called", func);
@@ -4049,7 +4098,7 @@ set_ref_in_term(int copyID)
     term_T	*term;
     typval_T	tv;
 
-    for (term = first_term; term != NULL; term = term->tl_next)
+    for (term = first_term; !abort && term != NULL; term = term->tl_next)
 	if (term->tl_job != NULL)
 	{
 	    tv.v_type = VAR_JOB;
@@ -4553,6 +4602,7 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
     }
 
     ga_clear(&ga_text);
+    ga_clear(&ga_cell);
     vim_free(prev_char);
 
     return max_cells;
@@ -4684,7 +4734,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	    buf = curbuf;
 	    while (!(curbuf->b_ml.ml_flags & ML_EMPTY))
 		ml_delete((linenr_T)1, FALSE);
-	    ga_clear(&curbuf->b_term->tl_scrollback);
+	    free_scrollback(curbuf->b_term);
 	    redraw_later(NOT_VALID);
 	}
     }
@@ -5039,6 +5089,8 @@ f_term_getattr(typval_T *argvars, typval_T *rettv)
     if (name == NULL)
 	return;
 
+    if (attr > HL_ALL)
+	attr = syn_attr2attr(attr);
     for (i = 0; i < sizeof(attrs)/sizeof(attrs[0]); ++i)
 	if (STRCMP(name, attrs[i].name) == 0)
 	{
@@ -5379,7 +5431,7 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	    attrs = cellattr->attrs;
 	    fg = cellattr->fg;
 	    bg = cellattr->bg;
-	    len = MB_PTR2LEN(p);
+	    len = mb_ptr2len(p);
 	    mch_memmove(mbs, p, len);
 	    mbs[len] = NUL;
 	    p += len;
@@ -5526,6 +5578,27 @@ f_term_setansicolors(typval_T *argvars, typval_T *rettv UNUSED)
 #endif
 
 /*
+ * "term_setapi(buf, api)" function
+ */
+    void
+f_term_setapi(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    buf_T	*buf = term_get_buf(argvars, "term_setapi()");
+    term_T	*term;
+    char_u	*api;
+
+    if (buf == NULL)
+	return;
+    term = buf->b_term;
+    vim_free(term->tl_api);
+    api = tv_get_string_chk(&argvars[1]);
+    if (api != NULL)
+	term->tl_api = vim_strsave(api);
+    else
+	term->tl_api = NULL;
+}
+
+/*
  * "term_setrestore(buf, command)" function
  */
     void
@@ -5588,7 +5661,7 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL + JO2_CURWIN
 		    + JO2_CWD + JO2_ENV + JO2_EOF_CHARS
 		    + JO2_NORESTORE + JO2_TERM_KILL
-		    + JO2_ANSI_COLORS + JO2_TTY_TYPE) == FAIL)
+		    + JO2_ANSI_COLORS + JO2_TTY_TYPE + JO2_TERM_API) == FAIL)
 	return;
 
     buf = term_start(&argvars[0], NULL, &opt, 0);
@@ -5626,33 +5699,31 @@ f_term_wait(typval_T *argvars, typval_T *rettv UNUSED)
 	ch_log(NULL, "term_wait(): waiting for channel to close");
 	while (buf->b_term != NULL && !buf->b_term->tl_channel_closed)
 	{
-	    mch_check_messages();
-	    parse_queued_messages();
+	    term_flush_messages();
+
 	    ui_delay(10L, FALSE);
 	    if (!buf_valid(buf))
 		/* If the terminal is closed when the channel is closed the
 		 * buffer disappears. */
 		break;
 	}
-	mch_check_messages();
-	parse_queued_messages();
+
+	term_flush_messages();
     }
     else
     {
 	long wait = 10L;
 
-	mch_check_messages();
-	parse_queued_messages();
+	term_flush_messages();
 
 	/* Wait for some time for any channel I/O. */
 	if (argvars[1].v_type != VAR_UNKNOWN)
 	    wait = tv_get_number(&argvars[1]);
 	ui_delay(wait, TRUE);
-	mch_check_messages();
 
 	/* Flushing messages on channels is hopefully sufficient.
 	 * TODO: is there a better way? */
-	parse_queued_messages();
+	term_flush_messages();
     }
 }
 
@@ -5771,7 +5842,7 @@ dyn_conpty_init(int verbose)
 conpty_term_and_job_init(
 	term_T	    *term,
 	typval_T    *argvar,
-	char	    **argv,
+	char	    **argv UNUSED,
 	jobopt_T    *opt,
 	jobopt_T    *orig_opt)
 {
@@ -6008,7 +6079,7 @@ conpty_term_report_winsize(term_T *term, int rows, int cols)
     pResizePseudoConsole(term->tl_conpty, consize);
 }
 
-    void
+    static void
 term_free_conpty(term_T *term)
 {
     if (term->tl_siex.lpAttributeList != NULL)
@@ -6123,7 +6194,7 @@ dyn_winpty_init(int verbose)
 winpty_term_and_job_init(
 	term_T	    *term,
 	typval_T    *argvar,
-	char	    **argv,
+	char	    **argv UNUSED,
 	jobopt_T    *opt,
 	jobopt_T    *orig_opt)
 {

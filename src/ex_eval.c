@@ -839,7 +839,7 @@ report_make_pending(int pending, void *value)
  * If something pending in a finally clause is resumed at the ":endtry", report
  * it if required by the 'verbose' option or when debugging.
  */
-    void
+    static void
 report_resume_pending(int pending, void *value)
 {
     if (p_verbose >= 14 || debug_break_level > 0)
@@ -856,7 +856,7 @@ report_resume_pending(int pending, void *value)
  * If something pending in a finally clause is discarded, report it if required
  * by the 'verbose' option or when debugging.
  */
-    void
+    static void
 report_discard_pending(int pending, void *value)
 {
     if (p_verbose >= 14 || debug_break_level > 0)
@@ -869,6 +869,18 @@ report_discard_pending(int pending, void *value)
     }
 }
 
+
+/*
+ * ":eval".
+ */
+    void
+ex_eval(exarg_T *eap)
+{
+    typval_T	tv;
+
+    if (eval0(eap->arg, &tv, &eap->nextcmd, !eap->skip) == OK)
+	clear_tv(&tv);
+}
 
 /*
  * ":if".

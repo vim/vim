@@ -2872,26 +2872,26 @@ gui_x11_check_copy_area(void)
  */
 
     void
-clip_mch_lose_selection(VimClipboard *cbd)
+clip_mch_lose_selection(Clipboard_T *cbd)
 {
     clip_x11_lose_selection(vimShell, cbd);
 }
 
     int
-clip_mch_own_selection(VimClipboard *cbd)
+clip_mch_own_selection(Clipboard_T *cbd)
 {
     return clip_x11_own_selection(vimShell, cbd);
 }
 
     void
-clip_mch_request_selection(VimClipboard *cbd)
+clip_mch_request_selection(Clipboard_T *cbd)
 {
  clip_x11_request_selection(vimShell, gui.dpy, cbd);
 }
 
     void
 clip_mch_set_selection(
-    VimClipboard	*cbd)
+    Clipboard_T	*cbd)
 {
     clip_x11_set_selection(cbd);
 }

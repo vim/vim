@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.1.  Last change: 2019 May 20
+*gui.txt*       For Vim version 8.1.  Last change: 2019 Aug 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1013,7 +1013,7 @@ it behaves in a strange way.
 				have at least one subentry, but need not
 				appear on the menu-bar (see |hidden-menus|).
 				{only available for Win32 and GTK GUI or in
-				the terminal when compiled with +insert_expand}
+				the terminal}
 
 :popu[p]! {name}		Like above, but use the position of the mouse
 				pointer instead of the cursor.
