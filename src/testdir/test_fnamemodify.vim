@@ -1,5 +1,32 @@
 " Test filename modifiers.
 
+func Test_fnamemodify_er()
+  call assert_equal("with", fnamemodify("path/to/file.with.extensions", ':e:e:r:r'))
+
+  call assert_equal('c', fnamemodify('a.c', ':e'))
+  call assert_equal('c', fnamemodify('a.c', ':e:e'))
+  call assert_equal('c', fnamemodify('a.c', ':e:e:r'))
+  call assert_equal('c', fnamemodify('a.c', ':e:e:r:r'))
+
+  call assert_equal('rb', fnamemodify('a.spec.rb', ':e:r'))
+  call assert_equal('rb', fnamemodify('a.spec.rb', ':e:r'))
+  call assert_equal('spec', fnamemodify('a.spec.rb', ':e:e:r'))
+  call assert_equal('spec', fnamemodify('a.spec.rb', ':e:e:r:r'))
+  call assert_equal('spec', fnamemodify('a.b.spec.rb', ':e:e:r'))
+  call assert_equal('b.spec', fnamemodify('a.b.spec.rb', ':e:e:e:r'))
+  call assert_equal('b', fnamemodify('a.b.spec.rb', ':e:e:e:r:r'))
+
+  call assert_equal('spec', fnamemodify('a.b.spec.rb', ':r:e'))
+  call assert_equal('b', fnamemodify('a.b.spec.rb', ':r:r:e'))
+
+  call assert_equal('c', fnamemodify('a.b.c.d.e', ':r:r:e'))
+  call assert_equal('b.c', fnamemodify('a.b.c.d.e', ':r:r:e:e'))
+
+  " :e never includes the whole filename, so "a.b":e:e:e --> "b"
+  call assert_equal('b.c', fnamemodify('a.b.c.d.e', ':r:r:e:e:e'))
+  call assert_equal('b.c', fnamemodify('a.b.c.d.e', ':r:r:e:e:e:e'))
+endfunc
+
 func Test_fnamemodify()
   let save_home = $HOME
   let save_shell = &shell
@@ -42,7 +69,7 @@ func Test_fnamemodify()
   set shell=tcsh
   call assert_equal("'abc\\\ndef'",  fnamemodify("abc\ndef", ':S'))
 
-  call assert_equal("with", fnamemodify("path/to/file.with.extensions", ':e:e:r:r'))
+  call Test_fnamemodify_er()
 
   let $HOME = save_home
   let &shell = save_shell
