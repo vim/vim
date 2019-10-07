@@ -45,7 +45,7 @@ msgstr ""
 "Project-Id-Version: Vim - Chinese (traditional)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-10-07 18:40+0800\n"
-"PO-Revision-Date: 2019-06-13 20:00+0800\n"
+"PO-Revision-Date: 2019-10-07 18:48+0800\n"
 "Last-Translator: pan93412 <pan93412@gmail.com>\n"
 "Language-Team: Chinese <chinese-l10n@googlegroups.com>\n"
 "Language: zh_TW\n"
@@ -69,7 +69,7 @@ msgstr "E165：已經在最後一個檔案了"
 
 #: arglist.c:1057
 msgid "E249: window layout changed unexpectedly"
-msgstr ""
+msgstr "E249：視窗配置突然變更"
 
 #: autocmd.c:266
 msgid "--Deleted--"
@@ -195,10 +195,9 @@ msgid "E931: Buffer cannot be registered"
 msgstr "E931：無法註冊緩衝區"
 
 #: buffer.c:468
-#, fuzzy, c-format
-#| msgid "E937: Attempt to delete a buffer that is in use"
+#, c-format
 msgid "E937: Attempt to delete a buffer that is in use: %s"
-msgstr "E937：嘗試刪除仍在使用的緩衝區"
+msgstr "E937：嘗試刪除仍在使用的緩衝區：%s"
 
 #: buffer.c:1224
 msgid "E515: No buffers were unloaded"
@@ -423,7 +422,7 @@ msgstr "不是檔案或可寫入的裝置"
 
 #: bufwrite.c:1060
 msgid "writing to device disabled with 'opendevice' option"
-msgstr ""
+msgstr "已使用 'opendevice' 選項停用寫入裝置功能。"
 
 #: bufwrite.c:1100
 msgid "is read-only (add ! to override)"
@@ -581,11 +580,11 @@ msgstr "E903：接收到包含非字串參數的指令"
 
 #: channel.c:2418
 msgid "E904: last argument for expr/call must be a number"
-msgstr ""
+msgstr "E904: 上一個 expr/call 參數必須是數字"
 
 #: channel.c:2424
 msgid "E904: third argument for call must be a list"
-msgstr ""
+msgstr "E904: call 的第三個參數必須是列表"
 
 #: channel.c:2480
 #, fuzzy, c-format
@@ -600,7 +599,7 @@ msgstr "E663：已在變更列表的結尾"
 #: channel.c:3909
 #, c-format
 msgid "E630: %s(): write while not connected"
-msgstr ""
+msgstr "E630: %s(): 在未連線時寫入"
 
 #: channel.c:4055
 #, fuzzy, c-format
@@ -614,15 +613,15 @@ msgstr "E197：不能設定語言成「%s」"
 
 #: channel.c:4143
 msgid "E912: cannot use ch_evalexpr()/ch_sendexpr() with a raw or nl channel"
-msgstr ""
+msgstr "E912: 不能將 raw 或 nl 頻道與 ch_evalexpr()/ch_sendexpr() 配合使用"
 
 #: channel.c:5863
 msgid "E920: _io file requires _name to be set"
-msgstr ""
+msgstr "E920: _io 檔案需要先設定 _name"
 
 #: channel.c:5880
 msgid "E915: in_io buffer requires in_buf or in_name to be set"
-msgstr ""
+msgstr "E915: in_io 緩衝區需要先設定 in_buf 或 in_name"
 
 #: channel.c:5898
 #, fuzzy, c-format
@@ -648,11 +647,11 @@ msgstr "選項 'history' 是零"
 
 #: crypt.c:173
 msgid "E821: File is encrypted with unknown method"
-msgstr ""
+msgstr "E821: 檔案使用了未知的方法加密"
 
 #: crypt.c:525
 msgid "Warning: Using a weak encryption method; see :help 'cm'"
-msgstr ""
+msgstr "警告：使用脆弱的加密方法；請檢視 :help 'cm'"
 
 #: crypt.c:555
 msgid "Enter encryption key: "
@@ -677,12 +676,12 @@ msgstr "進入除錯模式. 輸入 \"cont\" 以回到正常模式."
 #: debugger.c:97
 #, c-format
 msgid "Oldval = \"%s\""
-msgstr ""
+msgstr "舊值 = \"%s\""
 
 #: debugger.c:103
 #, c-format
 msgid "Newval = \"%s\""
-msgstr ""
+msgstr "新值 = \"%s\""
 
 #: debugger.c:110 debugger.c:382 ex_docmd.c:951
 #, c-format
@@ -696,12 +695,12 @@ msgstr "cmd：%s"
 
 #: debugger.c:340
 msgid "frame is zero"
-msgstr ""
+msgstr "frame 是 zero"
 
 #: debugger.c:349
 #, c-format
 msgid "frame at highest level: %d"
-msgstr ""
+msgstr "最高階的 frame: %d"
 
 #: debugger.c:437
 #, c-format
@@ -725,7 +724,7 @@ msgstr "%3d  %s %s  第 %ld 行 "
 #: debugger.c:819
 #, c-format
 msgid "%3d  expr %s"
-msgstr ""
+msgstr "%3d  expr %s"
 
 #: dict.c:792
 #, fuzzy, c-format
@@ -735,7 +734,7 @@ msgstr "E242：找不到顏色：%s"
 #: dict.c:819
 #, c-format
 msgid "E721: Duplicate key in Dictionary: \"%s\""
-msgstr ""
+msgstr "E721: 字典中有重複的鍵：「%s」"
 
 #: dict.c:839
 #, fuzzy, c-format
@@ -749,7 +748,7 @@ msgstr "E126：缺少 :endfunction"
 
 #: dict.c:873 list.c:1920
 msgid "extend() argument"
-msgstr ""
+msgstr "extend() 參數"
 
 #: dict.c:901
 #, fuzzy, c-format
