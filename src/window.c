@@ -4654,6 +4654,9 @@ win_enter_ext(
     maketitle();
 #endif
     curwin->w_redr_status = TRUE;
+    if (bt_terminal(wp->w_buffer))
+	// terminal is likely in another mode
+	redraw_mode = TRUE;
     redraw_tabline = TRUE;
     if (restart_edit)
 	redraw_later(VALID);	/* causes status line redraw */
