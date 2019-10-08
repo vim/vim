@@ -563,7 +563,11 @@ repeat:
 	}
 	else				// :r
 	{
-	    if (s > tail)	// remove one extension
+	    char_u *limit = *fnamep;
+
+	    if (limit < tail)
+		limit = tail;
+	    if (s > limit)	// remove one extension
 		*fnamelen = (int)(s - *fnamep);
 	}
 	*usedlen += 2;
