@@ -2857,6 +2857,7 @@ clean celan: testclean
 	-rm -f runtime pixmaps
 	-rm -rf $(APPDIR)
 	-rm -rf mzscheme_base.c
+	-rm -rf libvterm/.libs libterm/t/.libs libvterm/src/*.o libvterm/src/*.lo libvterm/t/*.o libvterm/t/*.lo libvterm/t/harness libvterm/libvterm.la
 	if test -d $(PODIR); then \
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
 	fi
