@@ -896,6 +896,8 @@ op_delete(oparg_T *oap)
 		    oap->end.col = curwin->w_cursor.col;
 		    oap->end.coladd = curwin->w_cursor.coladd;
 		    curwin->w_cursor = oap->start;
+		    if (has_mbyte)
+			mb_adjust_opend(oap);
 		}
 	    }
 
