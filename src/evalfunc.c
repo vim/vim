@@ -51,7 +51,6 @@ static void f_ceil(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_changenr(typval_T *argvars, typval_T *rettv);
 static void f_char2nr(typval_T *argvars, typval_T *rettv);
-static void f_cindent(typval_T *argvars, typval_T *rettv);
 static void f_col(typval_T *argvars, typval_T *rettv);
 static void f_confirm(typval_T *argvars, typval_T *rettv);
 static void f_copy(typval_T *argvars, typval_T *rettv);
@@ -108,7 +107,6 @@ static void f_hlID(typval_T *argvars, typval_T *rettv);
 static void f_hlexists(typval_T *argvars, typval_T *rettv);
 static void f_hostname(typval_T *argvars, typval_T *rettv);
 static void f_iconv(typval_T *argvars, typval_T *rettv);
-static void f_indent(typval_T *argvars, typval_T *rettv);
 static void f_index(typval_T *argvars, typval_T *rettv);
 static void f_input(typval_T *argvars, typval_T *rettv);
 static void f_inputdialog(typval_T *argvars, typval_T *rettv);
@@ -128,7 +126,6 @@ static void f_libcall(typval_T *argvars, typval_T *rettv);
 static void f_libcallnr(typval_T *argvars, typval_T *rettv);
 static void f_line(typval_T *argvars, typval_T *rettv);
 static void f_line2byte(typval_T *argvars, typval_T *rettv);
-static void f_lispindent(typval_T *argvars, typval_T *rettv);
 static void f_localtime(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_log(typval_T *argvars, typval_T *rettv);
@@ -1489,29 +1486,6 @@ f_char2nr(typval_T *argvars, typval_T *rettv)
     }
     else
 	rettv->vval.v_number = tv_get_string(&argvars[0])[0];
-}
-
-/*
- * "cindent(lnum)" function
- */
-    static void
-f_cindent(typval_T *argvars UNUSED, typval_T *rettv)
-{
-#ifdef FEAT_CINDENT
-    pos_T	pos;
-    linenr_T	lnum;
-
-    pos = curwin->w_cursor;
-    lnum = tv_get_lnum(argvars);
-    if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
-    {
-	curwin->w_cursor.lnum = lnum;
-	rettv->vval.v_number = get_c_indent();
-	curwin->w_cursor = pos;
-    }
-    else
-#endif
-	rettv->vval.v_number = -1;
 }
 
     win_T *
@@ -3946,21 +3920,6 @@ f_iconv(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
 /*
- * "indent()" function
- */
-    static void
-f_indent(typval_T *argvars, typval_T *rettv)
-{
-    linenr_T	lnum;
-
-    lnum = tv_get_lnum(argvars);
-    if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
-	rettv->vval.v_number = get_indent_lnum(lnum);
-    else
-	rettv->vval.v_number = -1;
-}
-
-/*
  * "index()" function
  */
     static void
@@ -4448,29 +4407,6 @@ f_line2byte(typval_T *argvars UNUSED, typval_T *rettv)
     if (rettv->vval.v_number >= 0)
 	++rettv->vval.v_number;
 #endif
-}
-
-/*
- * "lispindent(lnum)" function
- */
-    static void
-f_lispindent(typval_T *argvars UNUSED, typval_T *rettv)
-{
-#ifdef FEAT_LISP
-    pos_T	pos;
-    linenr_T	lnum;
-
-    pos = curwin->w_cursor;
-    lnum = tv_get_lnum(argvars);
-    if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
-    {
-	curwin->w_cursor.lnum = lnum;
-	rettv->vval.v_number = get_lisp_indent();
-	curwin->w_cursor = pos;
-    }
-    else
-#endif
-	rettv->vval.v_number = -1;
 }
 
 /*

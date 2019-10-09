@@ -32,6 +32,7 @@ SRC =	arabic.c						\
 	bufwrite.c						\
 	change.c						\
 	charset.c						\
+	cindent.c						\
 	cmdexpand.c						\
 	cmdhist.c						\
 	crypt.c							\

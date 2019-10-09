@@ -67,6 +67,7 @@ extern int _stricoll(char *a, char *b);
 # include "bufwrite.pro"
 # include "change.pro"
 # include "charset.pro"
+# include "cindent.pro"
 # include "cmdexpand.pro"
 # include "cmdhist.pro"
 # include "if_cscope.pro"

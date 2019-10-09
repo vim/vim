@@ -712,6 +712,7 @@ OBJ = \
 	$(OUTDIR)/bufwrite.o \
 	$(OUTDIR)/change.o \
 	$(OUTDIR)/charset.o \
+	$(OUTDIR)/cindent.o \
 	$(OUTDIR)/cmdexpand.o \
 	$(OUTDIR)/cmdhist.o \
 	$(OUTDIR)/crypt.o \

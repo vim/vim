@@ -843,6 +843,8 @@ EXTERN int	can_si INIT(= FALSE);
 EXTERN int	can_si_back INIT(= FALSE);
 #endif
 
+EXTERN int	old_indent INIT(= 0);	// for ^^D command in insert mode
+
 EXTERN pos_T	saved_cursor		// w_cursor before formatting text.
 #ifdef DO_INIT
 	= {0, 0, 0}

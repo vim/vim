@@ -1,12 +1,4 @@
 /* misc1.c */
-int get_indent(void);
-int get_indent_lnum(linenr_T lnum);
-int get_indent_buf(buf_T *buf, linenr_T lnum);
-int get_indent_str(char_u *ptr, int ts, int list);
-int get_indent_str_vtab(char_u *ptr, int ts, int *vts, int list);
-int set_indent(int size, int flags);
-int get_number_indent(linenr_T lnum);
-int get_breakindent_win(win_T *wp, char_u *line);
 int get_leader_len(char_u *line, char_u **flags, int backward, int include_space);
 int get_last_leader_offset(char_u *line, char_u **flags);
 int plines(linenr_T lnum);
@@ -19,7 +11,6 @@ int plines_m_win(win_T *wp, linenr_T first, linenr_T last);
 int gchar_pos(pos_T *pos);
 int gchar_cursor(void);
 void pchar_cursor(int c);
-int inindent(int extra);
 char_u *skip_to_option_part(char_u *p);
 void check_status(buf_T *buf);
 int ask_yesno(char_u *str, int direct);
