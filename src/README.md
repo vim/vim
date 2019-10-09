@@ -29,6 +29,7 @@ blob.c		| blob data type
 buffer.c	| manipulating buffers (loaded files)
 bufwrite.c	| writing a buffer to file
 change.c	| handling changes to text
+cindent.c	| C and Lisp indentation
 cmdexpand.c	| command-line completion
 cmdhist.c	| command-line history
 debugger.c	| vim script debugger
@@ -46,7 +47,7 @@ findfile.c	| search for files in 'path'
 fold.c		| folding
 getchar.c	| getting characters and key mapping
 highlight.c	| syntax highlighting
-indent.c	| C and Lisp indentation
+indent.c	| text indentation
 insexpand.c	| Insert mode completion
 mark.c		| marks
 map.c		| mapping and abbreviations

@@ -8,7 +8,7 @@
  */
 
 /*
- * eval.c: User defined function support
+ * userfunc.c: User defined function support
  */
 
 #include "vim.h"
