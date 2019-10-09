@@ -5783,12 +5783,18 @@ show_pat_in_path(
 #endif
 
 #ifdef FEAT_VIMINFO
+/*
+ * Return the last used search pattern at "idx".
+ */
     spat_T *
 get_spat(int idx)
 {
     return &spats[idx];
 }
 
+/*
+ * Return the last used search pattern index.
+ */
     int
 get_spat_last_idx(void)
 {

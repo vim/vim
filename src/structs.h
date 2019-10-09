@@ -1134,18 +1134,6 @@ typedef struct
 } vimconv_T;
 
 /*
- * Structure used for reading from the viminfo file.
- */
-typedef struct
-{
-    char_u	*vir_line;	// text of the current line
-    FILE	*vir_fd;	// file descriptor
-    vimconv_T	vir_conv;	// encoding conversion
-    int		vir_version;	// viminfo version detected or -1
-    garray_T	vir_barlines;	// lines starting with |
-} vir_T;
-
-/*
  * Structure used for the command line history.
  */
 typedef struct hist_entry

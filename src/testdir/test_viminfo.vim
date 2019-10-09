@@ -1,5 +1,7 @@
 " Test for reading and writing .viminfo
 
+source check.vim
+
 function Test_viminfo_read_and_write()
   " First clear 'history', so that "hislen" is zero.  Then set it again,
   " simulating Vim starting up.
@@ -715,26 +717,78 @@ func Test_viminfo_large_register()
   rviminfo! Xviminfo
   call assert_equal(join(repeat(["sun is rising"], 200), "\n"), @r)
   call delete('Xviminfo')
+  let @r = ''
   let &viminfo = save_viminfo
 endfunc
 
 " Test for setting 'viminfofile' to NONE
 func Test_viminfofile_none()
+  let save_vif = &viminfofile
   set viminfofile=NONE
   wviminfo Xviminfo
   call assert_false(filereadable('Xviminfo'))
   call writefile([''], 'Xviminfo')
   call assert_fails('rviminfo Xviminfo', 'E195:')
   call delete('Xviminfo')
+  let &viminfofile = save_vif
 endfunc
 
-" Test for an unwritable 'viminfo' file
-func Test_viminfo_readonly()
-  if !has('unix')
-      return
-  endif
+" Test for an unwritable and unreadble 'viminfo' file
+func Test_viminfo_perm()
+  CheckUnix
   call writefile([''], 'Xviminfo')
   call setfperm('Xviminfo', 'r-x------')
   call assert_fails('wviminfo Xviminfo', 'E137:')
+  call setfperm('Xviminfo', '--x------')
+  call assert_fails('rviminfo Xviminfo', 'E195:')
   call delete('Xviminfo')
+endfunc
+
+" Test for writing to an existing viminfo file merges the file marks
+func XTest_viminfo_marks_merge()
+  let save_viminfo = &viminfo
+  set viminfo&vim
+  set viminfo^=%
+  enew
+  %argdelete
+  %bwipe
+
+  call writefile(repeat(['editor'], 10), 'Xbufa')
+  call writefile(repeat(['Vim'], 10), 'Xbufb')
+
+  " set marks in buffers
+  call test_settime(10)
+  edit Xbufa
+  4mark a
+  wviminfo Xviminfo
+  edit Xbufb
+  4mark b
+  wviminfo Xviminfo
+  %bwipe
+
+  " set marks in buffers again
+  call test_settime(20)
+  edit Xbufb
+  6mark b
+  wviminfo Xviminfo
+  edit Xbufa
+  6mark a
+  wviminfo Xviminfo
+  %bwipe
+
+  " Load the buffer and check the marks
+  edit Xbufa
+  rviminfo! Xviminfo
+  call assert_equal(6, line("'a"))
+  edit Xbufb
+  rviminfo! Xviminfo
+  call assert_equal(6, line("'b"))
+
+  " cleanup
+  %bwipe
+  call delete('Xviminfo')
+  call delete('Xbufa')
+  call delete('Xbufb')
+  call test_settime(0)
+  let &viminfo=save_viminfo
 endfunc
