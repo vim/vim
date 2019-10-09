@@ -14,6 +14,18 @@
 #include "vim.h"
 #include "version.h"
 
+/*
+ * Structure used for reading from the viminfo file.
+ */
+typedef struct
+{
+    char_u	*vir_line;	// text of the current line
+    FILE	*vir_fd;	// file descriptor
+    vimconv_T	vir_conv;	// encoding conversion
+    int		vir_version;	// viminfo version detected or -1
+    garray_T	vir_barlines;	// lines starting with |
+} vir_T;
+
 #if defined(FEAT_VIMINFO) || defined(PROTO)
 
 static int  viminfo_errcnt;
@@ -822,11 +834,9 @@ write_viminfo_history(FILE *fp, int merge)
 	if (num_saved > hislen)
 	    num_saved = hislen;
 
-	/*
-	 * Merge typed and viminfo history:
-	 * round 1: history of typed commands.
-	 * round 2: history from recently read viminfo.
-	 */
+	// Merge typed and viminfo history:
+	// round 1: history of typed commands.
+	// round 2: history from recently read viminfo.
 	for (round = 1; round <= 2; ++round)
 	{
 	    if (round == 1)
@@ -2671,16 +2681,14 @@ read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing)
     int		i;
     int		read_next = TRUE;
 
-    /*
-     * The format is: |{bartype},{value},...
-     * For a very long string:
-     *     |{bartype},>{length of "{text}{text2}"}
-     *     |<{text1}
-     *     |<{text2},{value}
-     * For a long line not using a string
-     *     |{bartype},{lots of values},>
-     *     |<{value},{value}
-     */
+    // The format is: |{bartype},{value},...
+    // For a very long string:
+    //     |{bartype},>{length of "{text}{text2}"}
+    //     |<{text1}
+    //     |<{text2},{value}
+    // For a long line not using a string
+    //     |{bartype},{lots of values},>
+    //     |<{value},{value}
     if (*p == '<')
     {
 	// Continuation line of an unrecognized item.
@@ -3032,18 +3040,14 @@ write_viminfo(char_u *file, int forceit)
     }
     else
     {
-	/*
-	 * There is an existing viminfo file.  Create a temporary file to
-	 * write the new viminfo into, in the same directory as the
-	 * existing viminfo file, which will be renamed once all writing is
-	 * successful.
-	 */
+	// There is an existing viminfo file.  Create a temporary file to
+	// write the new viminfo into, in the same directory as the
+	// existing viminfo file, which will be renamed once all writing is
+	// successful.
 #ifdef UNIX
-	/*
-	 * For Unix we check the owner of the file.  It's not very nice to
-	 * overwrite a user's viminfo file after a "su root", with a
-	 * viminfo file that the user can't read.
-	 */
+	// For Unix we check the owner of the file.  It's not very nice to
+	// overwrite a user's viminfo file after a "su root", with a
+	// viminfo file that the user can't read.
 	st_old.st_dev = (dev_t)0;
 	st_old.st_ino = 0;
 	st_old.st_mode = 0600;
@@ -3069,14 +3073,12 @@ write_viminfo(char_u *file, int forceit)
 	hidden = mch_ishidden(fname);
 #endif
 
-	/*
-	 * Make tempname, find one that does not exist yet.
-	 * Beware of a race condition: If someone logs out and all Vim
-	 * instances exit at the same time a temp file might be created between
-	 * stat() and open().  Use mch_open() with O_EXCL to avoid that.
-	 * May try twice: Once normal and once with shortname set, just in
-	 * case somebody puts his viminfo file in an 8.3 filesystem.
-	 */
+	// Make tempname, find one that does not exist yet.
+	// Beware of a race condition: If someone logs out and all Vim
+	// instances exit at the same time a temp file might be created between
+	// stat() and open().  Use mch_open() with O_EXCL to avoid that.
+	// May try twice: Once normal and once with shortname set, just in
+	// case somebody puts his viminfo file in an 8.3 filesystem.
 	for (;;)
 	{
 	    int		next_char = 'z';
@@ -3098,30 +3100,24 @@ write_viminfo(char_u *file, int forceit)
 	    if (tempname == NULL)		// out of memory
 		break;
 
-	    /*
-	     * Try a series of names.  Change one character, just before
-	     * the extension.  This should also work for an 8.3
-	     * file name, when after adding the extension it still is
-	     * the same file as the original.
-	     */
+	    // Try a series of names.  Change one character, just before
+	    // the extension.  This should also work for an 8.3
+	    // file name, when after adding the extension it still is
+	    // the same file as the original.
 	    wp = tempname + STRLEN(tempname) - 5;
 	    if (wp < gettail(tempname))	    // empty file name?
 		wp = gettail(tempname);
 	    for (;;)
 	    {
-		/*
-		 * Check if tempfile already exists.  Never overwrite an
-		 * existing file!
-		 */
+		// Check if tempfile already exists.  Never overwrite an
+		// existing file!
 		if (mch_stat((char *)tempname, &st_new) == 0)
 		{
 #ifdef UNIX
-		    /*
-		     * Check if tempfile is same as original file.  May happen
-		     * when modname() gave the same file back.  E.g.  silly
-		     * link, or file name-length reached.  Try again with
-		     * shortname set.
-		     */
+		    // Check if tempfile is same as original file.  May happen
+		    // when modname() gave the same file back.  E.g.  silly
+		    // link, or file name-length reached.  Try again with
+		    // shortname set.
 		    if (!shortname && st_new.st_dev == st_old.st_dev
 						&& st_new.st_ino == st_old.st_ino)
 		    {
@@ -3199,10 +3195,8 @@ write_viminfo(char_u *file, int forceit)
 	{
 		stat_T	tmp_st;
 
-	    /*
-	     * Make sure the original owner can read/write the tempfile and
-	     * otherwise preserve permissions, making sure the group matches.
-	     */
+	    // Make sure the original owner can read/write the tempfile and
+	    // otherwise preserve permissions, making sure the group matches.
 	    if (mch_stat((char *)tempname, &tmp_st) >= 0)
 	    {
 		if (st_old.st_uid != tmp_st.st_uid)
@@ -3222,9 +3216,7 @@ write_viminfo(char_u *file, int forceit)
 #endif
     }
 
-    /*
-     * Check if the new viminfo file can be written to.
-     */
+    // Check if the new viminfo file can be written to.
     if (fp_out == NULL)
     {
 	semsg(_("E138: Can't write viminfo file %s!"),
