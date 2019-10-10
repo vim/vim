@@ -363,15 +363,15 @@ TERMINAL = no
 !if "$(TERMINAL)" == "yes"
 TERM_OBJ = \
 	$(OBJDIR)/terminal.obj \
-	$(OBJDIR)/encoding.obj \
-	$(OBJDIR)/keyboard.obj \
-	$(OBJDIR)/termmouse.obj \
-	$(OBJDIR)/parser.obj \
-	$(OBJDIR)/pen.obj \
-	$(OBJDIR)/termscreen.obj \
-	$(OBJDIR)/state.obj \
-	$(OBJDIR)/unicode.obj \
-	$(OBJDIR)/vterm.obj
+	$(OBJDIR)/vterm_encoding.obj \
+	$(OBJDIR)/vterm_keyboard.obj \
+	$(OBJDIR)/vterm_mouse.obj \
+	$(OBJDIR)/vterm_parser.obj \
+	$(OBJDIR)/vterm_pen.obj \
+	$(OBJDIR)/vterm_screen.obj \
+	$(OBJDIR)/vterm_state.obj \
+	$(OBJDIR)/vterm_unicode.obj \
+	$(OBJDIR)/vterm_vterm.obj
 TERM_DEFS = -DFEAT_TERMINAL
 TERM_DEPS = \
 	libvterm/include/vterm.h \
@@ -1743,27 +1743,32 @@ CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	-DGET_SPECIAL_PTY_TYPE_FUNCTION=get_special_pty_type \
 	-D_CRT_SECURE_NO_WARNINGS
 
-# Create a default rule for libvterm.
-{libvterm/src/}.c{$(OUTDIR)/}.obj::
-	$(CCCTERM) -Fo$(OUTDIR)/ $<
+$(OUTDIR)/vterm_encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ $<
 
-$(OUTDIR)/encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
+$(OUTDIR)/vterm_keyboard.obj: $(OUTDIR) libvterm/src/keyboard.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ $<
 
-$(OUTDIR)/keyboard.obj: $(OUTDIR) libvterm/src/keyboard.c $(TERM_DEPS)
+$(OUTDIR)/vterm_mouse.obj: $(OUTDIR) libvterm/src/mouse.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ $<
 
-$(OUTDIR)/termmouse.obj: $(OUTDIR) libvterm/src/termmouse.c $(TERM_DEPS)
+$(OUTDIR)/vterm_parser.obj: $(OUTDIR) libvterm/src/parser.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ $<
 
-$(OUTDIR)/parser.obj: $(OUTDIR) libvterm/src/parser.c $(TERM_DEPS)
+$(OUTDIR)/vterm_pen.obj: $(OUTDIR) libvterm/src/pen.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ $<
 
-$(OUTDIR)/pen.obj: $(OUTDIR) libvterm/src/pen.c $(TERM_DEPS)
+$(OUTDIR)/vterm_screen.obj: $(OUTDIR) libvterm/src/screen.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ $<
 
-$(OUTDIR)/termscreen.obj: $(OUTDIR) libvterm/src/termscreen.c $(TERM_DEPS)
+$(OUTDIR)/vterm_state.obj: $(OUTDIR) libvterm/src/state.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ $<
 
-$(OUTDIR)/state.obj: $(OUTDIR) libvterm/src/state.c $(TERM_DEPS)
+$(OUTDIR)/vterm_unicode.obj: $(OUTDIR) libvterm/src/unicode.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ $<
 
-$(OUTDIR)/unicode.obj: $(OUTDIR) libvterm/src/unicode.c $(TERM_DEPS)
-
-$(OUTDIR)/vterm.obj: $(OUTDIR) libvterm/src/vterm.c $(TERM_DEPS)
+$(OUTDIR)/vterm_vterm.obj: $(OUTDIR) libvterm/src/vterm.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ $<
 
 
 # $CFLAGS may contain backslashes and double quotes, escape them both.
