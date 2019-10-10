@@ -1733,25 +1733,6 @@ vgetc(void)
 		case K_XRIGHT:	c = K_RIGHT; break;
 	    }
 
-	    if (!no_reduce_keys)
-	    {
-		// A modifier was not used for a mapping, apply it to ASCII
-		// keys.
-		if ((mod_mask & MOD_MASK_CTRL)
-			&& ((c >= '`' && c <= 0x7f)
-			    || (c >= '@' && c <= '_')))
-		{
-		    c &= 0x1f;
-		    mod_mask &= ~MOD_MASK_CTRL;
-		}
-		if ((mod_mask & (MOD_MASK_META | MOD_MASK_ALT))
-			&& c >= 0 && c <= 127)
-		{
-		    c += 0x80;
-		    mod_mask &= ~MOD_MASK_META;
-		}
-	    }
-
 	    // For a multi-byte character get all the bytes and return the
 	    // converted character.
 	    // Note: This will loop until enough bytes are received!
@@ -1785,6 +1766,25 @@ vgetc(void)
 		}
 		--no_mapping;
 		c = (*mb_ptr2char)(buf);
+	    }
+
+	    if (!no_reduce_keys)
+	    {
+		// A modifier was not used for a mapping, apply it to ASCII
+		// keys.
+		if ((mod_mask & MOD_MASK_CTRL)
+			&& ((c >= '`' && c <= 0x7f)
+			    || (c >= '@' && c <= '_')))
+		{
+		    c &= 0x1f;
+		    mod_mask &= ~MOD_MASK_CTRL;
+		}
+		if ((mod_mask & (MOD_MASK_META | MOD_MASK_ALT))
+			&& c >= 0 && c <= 127)
+		{
+		    c += 0x80;
+		    mod_mask &= ~(MOD_MASK_META|MOD_MASK_ALT);
+		}
 	    }
 
 	    break;
