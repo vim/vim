@@ -1006,6 +1006,8 @@ EXTERN int no_mapping INIT(= FALSE);	// currently no mapping allowed
 EXTERN int no_zero_mapping INIT(= 0);	// mapping zero not allowed
 EXTERN int allow_keys INIT(= FALSE);	// allow key codes when no_mapping
 					// is set
+EXTERN int no_reduce_keys INIT(= FALSE);  // do not apply Ctrl, Shift and Alt
+					  // to the key
 EXTERN int no_u_sync INIT(= 0);		// Don't call u_sync()
 #ifdef FEAT_EVAL
 EXTERN int u_sync_once INIT(= 0);	// Call u_sync() once when evaluating

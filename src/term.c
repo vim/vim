@@ -4199,6 +4199,99 @@ is_mouse_topline(win_T *wp)
 #endif
 
 /*
+ * Put "string[new_slen]" in typebuf, or in "buf[bufsize]" if "buf" is not NULL.
+ * Remove "slen" bytes.
+ * Returns FAIL for error.
+ */
+    static int
+put_string_in_typebuf(
+	int	offset,
+	int	slen,
+	char_u	*string,
+	int	new_slen,
+	char_u	*buf,
+	int	bufsize,
+	int	*buflen)
+{
+    int		extra = new_slen - slen;
+
+    string[new_slen] = NUL;
+    if (buf == NULL)
+    {
+	if (extra < 0)
+	    // remove matched chars, taking care of noremap
+	    del_typebuf(-extra, offset);
+	else if (extra > 0)
+	    // insert the extra space we need
+	    ins_typebuf(string + slen, REMAP_YES, offset, FALSE, FALSE);
+
+	// Careful: del_typebuf() and ins_typebuf() may have reallocated
+	// typebuf.tb_buf[]!
+	mch_memmove(typebuf.tb_buf + typebuf.tb_off + offset, string,
+							     (size_t)new_slen);
+    }
+    else
+    {
+	if (extra < 0)
+	    // remove matched characters
+	    mch_memmove(buf + offset, buf + offset - extra,
+					   (size_t)(*buflen + offset + extra));
+	else if (extra > 0)
+	{
+	    // Insert the extra space we need.  If there is insufficient
+	    // space return -1.
+	    if (*buflen + extra + new_slen >= bufsize)
+		return FAIL;
+	    mch_memmove(buf + offset + extra, buf + offset,
+						   (size_t)(*buflen - offset));
+	}
+	mch_memmove(buf + offset, string, (size_t)new_slen);
+	*buflen = *buflen + extra + new_slen;
+    }
+    return OK;
+}
+
+/*
+ * Decode a modifier number as xterm provides it into MOD_MASK bits.
+ */
+    static int
+decode_modifiers(int n)
+{
+    int	    code = n - 1;
+    int	    modifiers = 0;
+
+    if (code & 1)
+	modifiers |= MOD_MASK_SHIFT;
+    if (code & 2)
+	modifiers |= MOD_MASK_ALT;
+    if (code & 4)
+	modifiers |= MOD_MASK_CTRL;
+    if (code & 8)
+	modifiers |= MOD_MASK_META;
+    return modifiers;
+}
+
+    static int
+modifiers2keycode(int modifiers, int *key, char_u *string)
+{
+    int new_slen = 0;
+
+    if (modifiers != 0)
+    {
+	// Some keys have the modifier included.  Need to handle that here to
+	// make mappings work.
+	*key = simplify_key(*key, &modifiers);
+	if (modifiers != 0)
+	{
+	    string[new_slen++] = K_SPECIAL;
+	    string[new_slen++] = (int)KS_MODIFIER;
+	    string[new_slen++] = modifiers;
+	}
+    }
+    return new_slen;
+}
+
+/*
  * Check if typebuf.tb_buf[] contains a terminal key code.
  * Check from typebuf.tb_buf[typebuf.tb_off] to typebuf.tb_buf[typebuf.tb_off
  * + max_offset].
@@ -4229,8 +4322,7 @@ check_termcode(
     int		modifiers;
     char_u	*modifiers_start = NULL;
     int		key;
-    int		new_slen;
-    int		extra;
+    int		new_slen;   // Length of what will replace the termcode
     char_u	string[MAX_KEY_CODE_LEN + 1];
     int		i, j;
     int		idx = 0;
@@ -4401,16 +4493,9 @@ check_termcode(
 
 			    modifiers_start = tp + slen - 2;
 
-			    /* Match!  Convert modifier bits. */
-			    n = atoi((char *)modifiers_start) - 1;
-			    if (n & 1)
-				modifiers |= MOD_MASK_SHIFT;
-			    if (n & 2)
-				modifiers |= MOD_MASK_ALT;
-			    if (n & 4)
-				modifiers |= MOD_MASK_CTRL;
-			    if (n & 8)
-				modifiers |= MOD_MASK_META;
+			    // Match!  Convert modifier bits.
+			    n = atoi((char *)modifiers_start);
+			    modifiers |= decode_modifiers(n);
 
 			    slen = j;
 			}
@@ -4751,9 +4836,32 @@ not_enough:
 			winpos_status.tr_progress = STATUS_GOT;
 		}
 
-		// TODO: key with modifier:
+		// Key with modifier:
 		//	{lead}27;{modifier};{key}~
 		//	{lead}{key};{modifier}u
+		else if ((arg[0] == 27 && argc == 3 && trail == '~')
+			|| (argc == 2 && trail == 'u'))
+		{
+		    if (trail == 'u')
+			key = arg[0];
+		    else
+			key = arg[2];
+
+		    // insert modifiers with KS_MODIFIER
+		    modifiers = decode_modifiers(arg[1]);
+		    new_slen = modifiers2keycode(modifiers, &key, string);
+		    slen = csi_len;
+
+		    if (has_mbyte)
+			new_slen += (*mb_char2bytes)(key, string + new_slen);
+		    else
+			string[new_slen++] = key;
+
+		    if (put_string_in_typebuf(offset, slen, string, new_slen,
+						 buf, bufsize, buflen) == FAIL)
+			return -1;
+		    return len + new_slen - slen + offset;
+		}
 
 		// else: Unknown CSI sequence.  We could drop it, but then the
 		// user can't create a map for it.
@@ -5138,19 +5246,7 @@ not_enough:
 	/*
 	 * Add any modifier codes to our string.
 	 */
-	new_slen = 0;		/* Length of what will replace the termcode */
-	if (modifiers != 0)
-	{
-	    /* Some keys have the modifier included.  Need to handle that here
-	     * to make mappings work. */
-	    key = simplify_key(key, &modifiers);
-	    if (modifiers != 0)
-	    {
-		string[new_slen++] = K_SPECIAL;
-		string[new_slen++] = (int)KS_MODIFIER;
-		string[new_slen++] = modifiers;
-	    }
-	}
+	new_slen = modifiers2keycode(modifiers, &key, string);
 
 	/* Finally, add the special key code to our string */
 	key_name[0] = KEY2TERMCAP0(key);
@@ -5176,43 +5272,10 @@ not_enough:
 	    string[new_slen++] = key_name[0];
 	    string[new_slen++] = key_name[1];
 	}
-	string[new_slen] = NUL;
-	extra = new_slen - slen;
-	if (buf == NULL)
-	{
-	    if (extra < 0)
-		/* remove matched chars, taking care of noremap */
-		del_typebuf(-extra, offset);
-	    else if (extra > 0)
-		/* insert the extra space we need */
-		ins_typebuf(string + slen, REMAP_YES, offset, FALSE, FALSE);
-
-	    /*
-	     * Careful: del_typebuf() and ins_typebuf() may have reallocated
-	     * typebuf.tb_buf[]!
-	     */
-	    mch_memmove(typebuf.tb_buf + typebuf.tb_off + offset, string,
-							    (size_t)new_slen);
-	}
-	else
-	{
-	    if (extra < 0)
-		/* remove matched characters */
-		mch_memmove(buf + offset, buf + offset - extra,
-					   (size_t)(*buflen + offset + extra));
-	    else if (extra > 0)
-	    {
-		/* Insert the extra space we need.  If there is insufficient
-		 * space return -1. */
-		if (*buflen + extra + new_slen >= bufsize)
-		    return -1;
-		mch_memmove(buf + offset + extra, buf + offset,
-						   (size_t)(*buflen - offset));
-	    }
-	    mch_memmove(buf + offset, string, (size_t)new_slen);
-	    *buflen = *buflen + extra + new_slen;
-	}
-	return retval == 0 ? (len + extra + offset) : retval;
+	if (put_string_in_typebuf(offset, slen, string, new_slen,
+						 buf, bufsize, buflen) == FAIL)
+	    return -1;
+	return retval == 0 ? (len + new_slen - slen + offset) : retval;
     }
 
 #ifdef FEAT_TERMRESPONSE
