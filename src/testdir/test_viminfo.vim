@@ -736,6 +736,7 @@ endfunc
 " Test for an unwritable and unreadble 'viminfo' file
 func Test_viminfo_perm()
   CheckUnix
+  CheckNotRoot
   call writefile([''], 'Xviminfo')
   call setfperm('Xviminfo', 'r-x------')
   call assert_fails('wviminfo Xviminfo', 'E137:')

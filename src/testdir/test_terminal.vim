@@ -570,7 +570,7 @@ func Test_terminal_cwd_failure()
 
   " Case 3: Directory exists but is not accessible.
   " Skip this for root, it will be accessible anyway.
-  if $USER != 'root'
+  if !IsRoot()
     call mkdir('XdirNoAccess', '', '0600')
     " return early if the directory permissions could not be set properly
     if getfperm('XdirNoAccess')[2] == 'x'
@@ -1353,7 +1353,6 @@ endfunc
 func Test_terminal_api_call()
   CheckRunVimInTerminal
 
-call ch_logfile('logfile', 'w')
   unlet! g:called_bufnum
   unlet! g:called_arg
 
