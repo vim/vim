@@ -1744,31 +1744,31 @@ CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	-D_CRT_SECURE_NO_WARNINGS
 
 $(OUTDIR)/vterm_encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ $<
+	$(CCCTERM) /Fo$@ libvterm/src/encoding.c
 
 $(OUTDIR)/vterm_keyboard.obj: $(OUTDIR) libvterm/src/keyboard.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ $<
+	$(CCCTERM) /Fo$@ libvterm/src/keyboard.c
 
 $(OUTDIR)/vterm_mouse.obj: $(OUTDIR) libvterm/src/mouse.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ $<
+	$(CCCTERM) /Fo$@ libvterm/src/mouse.c
 
 $(OUTDIR)/vterm_parser.obj: $(OUTDIR) libvterm/src/parser.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ $<
+	$(CCCTERM) /Fo$@ libvterm/src/parser.c
 
 $(OUTDIR)/vterm_pen.obj: $(OUTDIR) libvterm/src/pen.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ $<
+	$(CCCTERM) /Fo$@ libvterm/src/pen.c
 
 $(OUTDIR)/vterm_screen.obj: $(OUTDIR) libvterm/src/screen.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ $<
+	$(CCCTERM) /Fo$@ libvterm/src/screen.c
 
 $(OUTDIR)/vterm_state.obj: $(OUTDIR) libvterm/src/state.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ $<
+	$(CCCTERM) /Fo$@ libvterm/src/state.c
 
 $(OUTDIR)/vterm_unicode.obj: $(OUTDIR) libvterm/src/unicode.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ $<
+	$(CCCTERM) /Fo$@ libvterm/src/unicode.c
 
 $(OUTDIR)/vterm_vterm.obj: $(OUTDIR) libvterm/src/vterm.c $(TERM_DEPS)
-	$(CCCTERM) /Fo$@ $<
+	$(CCCTERM) /Fo$@ libvterm/src/vterm.c
 
 
 # $CFLAGS may contain backslashes and double quotes, escape them both.
