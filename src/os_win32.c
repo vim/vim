@@ -5868,9 +5868,9 @@ gotoxy(
     else
     {
 	// Move the cursor to the left edge of the screen to prevent screen
-	// destruction.  Insider build bug.
-	if (conpty_type == 3)
-	    vtp_printf("\033[%d;%dH", g_coord.Y + 1, 1);
+	// destruction.  Insider build bug.  Always enabled because it's cheap
+	// and avoids mistakes with recognizing the build.
+	vtp_printf("\033[%d;%dH", g_coord.Y + 1, 1);
 
 	vtp_printf("\033[%d;%dH", y, x);
 
