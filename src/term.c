@@ -4661,6 +4661,7 @@ not_enough:
 			int need_flush = FALSE;
 			int is_iterm2 = FALSE;
 			int is_mintty = FALSE;
+			int is_screen = FALSE;
 
 			// mintty 2.9.5 sends 77;20905;0c.
 			// (77 is ASCII 'M' for mintty.)
@@ -4706,14 +4707,22 @@ not_enough:
 				is_not_xterm = TRUE;
 			}
 
+			// screen sends 83;40500;0
+			if (arg[0] == 83)
+			{
+			    is_screen = TRUE;
+			    is_not_xterm = TRUE;
+			}
+
 			// Only set 'ttymouse' automatically if it was not set
 			// by the user already.
 			if (!option_was_set((char_u *)"ttym"))
 			{
 			    // Xterm version 277 supports SGR.  Also support
-			    // Terminal.app, iTerm2 and mintty.
+			    // Terminal.app, iTerm2, mintty, and screen 4.7+.
 			    if (version >= 277 || is_iterm2 || is_mac_terminal
-				    || is_mintty)
+				    || is_mintty
+				    || (is_screen && version >= 40700))
 				set_option_value((char_u *)"ttym", 0L,
 							  (char_u *)"sgr", 0);
 			    // if xterm version >= 95 use mouse dragging
@@ -4728,7 +4737,6 @@ not_enough:
 
 			// Gnome terminal sends 1;3801;0, 1;4402;0 or 1;2501;0.
 			// xfce4-terminal sends 1;2802;0.
-			// screen sends 83;40500;0
 			// Assuming any version number over 2500 is not an
 			// xterm (without the limit for rxvt and screen).
 			if (arg[1] >= 2500)
