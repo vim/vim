@@ -2288,3 +2288,11 @@ func Test_autocmd_CmdWinEnter()
   call StopVimInTerminal(buf)
   call delete(filename)
 endfunc
+
+func Test_autocmd_was_using_freed_memory()
+  pedit xx
+  n x
+  au WinEnter * quit
+  split
+  au! WinEnter
+endfunc

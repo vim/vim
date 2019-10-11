@@ -4641,6 +4641,7 @@ win_enter_ext(
 #ifdef FEAT_JOB_CHANNEL
     entering_window(curwin);
 #endif
+    // Careful: autocommands may close the window and make "wp" invalid
     if (trigger_new_autocmds)
 	apply_autocmds(EVENT_WINNEW, NULL, NULL, FALSE, curbuf);
     if (trigger_enter_autocmds)
@@ -4655,7 +4656,7 @@ win_enter_ext(
 #endif
     curwin->w_redr_status = TRUE;
 #ifdef FEAT_TERMINAL
-    if (bt_terminal(wp->w_buffer))
+    if (bt_terminal(curwin->w_buffer))
 	// terminal is likely in another mode
 	redraw_mode = TRUE;
 #endif
