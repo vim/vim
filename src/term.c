@@ -4708,6 +4708,7 @@ not_enough:
 			}
 
 			// screen sends 83;40500;0
+			// 83 is 'S' in ASCII.
 			if (arg[0] == 83)
 			{
 			    is_screen = TRUE;
@@ -4720,7 +4721,9 @@ not_enough:
 			{
 			    // Xterm version 277 supports SGR.  Also support
 			    // Terminal.app, iTerm2, mintty, and screen 4.7+.
-			    if (version >= 277 || is_iterm2 || is_mac_terminal
+			    if ((!is_screen && version >= 277)
+				    || is_iterm2
+				    || is_mac_terminal
 				    || is_mintty
 				    || (is_screen && version >= 40700))
 				set_option_value((char_u *)"ttym", 0L,
