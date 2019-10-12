@@ -1624,6 +1624,7 @@ get_term_entries(int *height, int *width)
 			{KS_CM, "cm"}, {KS_SR, "sr"},
 			{KS_CRI,"RI"}, {KS_VB, "vb"}, {KS_KS, "ks"},
 			{KS_KE, "ke"}, {KS_TI, "ti"}, {KS_TE, "te"},
+			{KS_CTI, "TI"}, {KS_CTE, "TE"},
 			{KS_BC, "bc"}, {KS_CSB,"Sb"}, {KS_CSF,"Sf"},
 			{KS_CAB,"AB"}, {KS_CAF,"AF"}, {KS_LE, "le"},
 			{KS_ND, "nd"}, {KS_OP, "op"}, {KS_CRV, "RV"},
@@ -3462,6 +3463,7 @@ starttermcap(void)
     if (full_screen && !termcap_active)
     {
 	out_str(T_TI);			/* start termcap mode */
+	out_str(T_CTI);			/* start "raw" mode */
 	out_str(T_KS);			/* start "keypad transmit" mode */
 	out_str(T_BE);			/* enable bracketed paste mode */
 	out_flush();
@@ -3517,6 +3519,7 @@ stoptermcap(void)
 	out_flush();
 	termcap_active = FALSE;
 	cursor_on();			/* just in case it is still off */
+	out_str(T_CTE);			/* stop "raw" mode */
 	out_str(T_TE);			/* stop termcap mode */
 	screen_start();			/* don't know where cursor is now */
 	out_flush();
