@@ -501,6 +501,7 @@ func Test_tselect()
   call term_sendkeys(buf, ":tselect main\<CR>2\<CR>")
   call VerifyScreenDump(buf, 'Test_tselect_1', {})
 
+  call StopVimInTerminal(buf)
   call delete('Xtags')
   call delete('Xtest.c')
   call delete('XTest_tselect')

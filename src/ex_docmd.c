@@ -559,6 +559,27 @@ do_exmode(
 }
 
 /*
+ * Print the executed command for when 'verbose' is set.
+ * When "lnum" is 0 only print the command.
+ */
+    static void
+msg_verbose_cmd(linenr_T lnum, char_u *cmd)
+{
+    ++no_wait_return;
+    verbose_enter_scroll();
+
+    if (lnum == 0)
+	smsg(_("Executing: %s"), cmd);
+    else
+	smsg(_("line %ld: %s"), (long)lnum, cmd);
+    if (msg_silent == 0)
+	msg_puts("\n");   // don't overwrite this
+
+    verbose_leave_scroll();
+    --no_wait_return;
+}
+
+/*
  * Execute a simple command line.  Used for translated commands like "*".
  */
     int
@@ -944,18 +965,7 @@ do_cmdline(
 	}
 
 	if (p_verbose >= 15 && sourcing_name != NULL)
-	{
-	    ++no_wait_return;
-	    verbose_enter_scroll();
-
-	    smsg(_("line %ld: %s"),
-					   (long)sourcing_lnum, cmdline_copy);
-	    if (msg_silent == 0)
-		msg_puts("\n");   /* don't overwrite this */
-
-	    verbose_leave_scroll();
-	    --no_wait_return;
-	}
+	    msg_verbose_cmd(sourcing_lnum, cmdline_copy);
 
 	/*
 	 * 2. Execute one '|' separated command.
@@ -1665,6 +1675,9 @@ do_one_cmd(
     /* "#!anything" is handled like a comment. */
     if ((*cmdlinep)[0] == '#' && (*cmdlinep)[1] == '!')
 	goto doend;
+
+    if (p_verbose >= 16)
+	msg_verbose_cmd(0, *cmdlinep);
 
 /*
  * 1. Skip comment lines and leading white space and colons.
@@ -8534,9 +8547,9 @@ ex_folddo(exarg_T *eap)
 {
     linenr_T	lnum;
 
-#ifdef FEAT_CLIPBOARD
+# ifdef FEAT_CLIPBOARD
     start_global_changes();
-#endif
+# endif
 
     /* First set the marks for all lines closed/open. */
     for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
@@ -8546,9 +8559,9 @@ ex_folddo(exarg_T *eap)
     /* Execute the command on the marked lines. */
     global_exe(eap->arg);
     ml_clearmarked();	   /* clear rest of the marks */
-#ifdef FEAT_CLIPBOARD
+# ifdef FEAT_CLIPBOARD
     end_global_changes();
-#endif
+# endif
 }
 #endif
 
@@ -8566,7 +8579,7 @@ is_loclist_cmd(int cmdidx)
 }
 #endif
 
-# if defined(FEAT_TIMERS) || defined(PROTO)
+#if defined(FEAT_TIMERS) || defined(PROTO)
     int
 get_pressedreturn(void)
 {
