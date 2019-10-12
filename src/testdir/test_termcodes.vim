@@ -845,3 +845,67 @@ func Test_get_termcode()
 
   set ttybuiltin
 endfunc
+
+func GetEscCodeCSI27(key, modifier)
+  let key = printf("%d", char2nr(a:key))
+  let mod = printf("%d", a:modifier)
+  return "\<Esc>[27;" .. mod .. ';' .. key .. '~'
+endfunc
+
+func GetEscCodeCSIu(key, modifier)
+  let key = printf("%d", char2nr(a:key))
+  let mod = printf("%d", a:modifier)
+  return "\<Esc>[" .. key .. ';' .. mod .. 'u'
+endfunc
+
+" This checks the CSI sequences when in modifyOtherKeys mode.
+" The mode doesn't need to be enabled, the codes are always detected.
+func RunTest_modifyOtherKeys(func)
+  new
+  set timeoutlen=20
+
+  " Shift-X is send as 'X' with the shift modifier
+  call feedkeys('a' .. a:func('X', 2) .. "\<Esc>", 'Lx!')
+  call assert_equal('X', getline(1))
+
+  " Ctrl-i is Tab
+  call setline(1, '')
+  call feedkeys('a' .. a:func('i', 5) .. "\<Esc>", 'Lx!')
+  call assert_equal("\t", getline(1))
+
+  " Ctrl-I is also Tab
+  call setline(1, '')
+  call feedkeys('a' .. a:func('I', 5) .. "\<Esc>", 'Lx!')
+  call assert_equal("\t", getline(1))
+
+  " Alt-x is ø
+  call setline(1, '')
+  call feedkeys('a' .. a:func('x', 3) .. "\<Esc>", 'Lx!')
+  call assert_equal("ø", getline(1))
+
+  " Meta-x is also ø
+  call setline(1, '')
+  call feedkeys('a' .. a:func('x', 9) .. "\<Esc>", 'Lx!')
+  call assert_equal("ø", getline(1))
+
+  " Alt-X is Ø
+  call setline(1, '')
+  call feedkeys('a' .. a:func('X', 3) .. "\<Esc>", 'Lx!')
+  call assert_equal("Ø", getline(1))
+
+  " Meta-X is ø
+  call setline(1, '')
+  call feedkeys('a' .. a:func('X', 9) .. "\<Esc>", 'Lx!')
+  call assert_equal("Ø", getline(1))
+
+  bwipe!
+  set timeoutlen&
+endfunc
+
+func Test_modifyOtherKeys_CSI27()
+  call RunTest_modifyOtherKeys(function('GetEscCodeCSI27'))
+endfunc
+
+func Test_modifyOtherKeys_CSIu()
+  call RunTest_modifyOtherKeys(function('GetEscCodeCSIu'))
+endfunc
