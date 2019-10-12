@@ -1980,15 +1980,14 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
 	attr &= ~MSG_HIST;
     }
 
-    /*
-     * When writing something to the screen after it has scrolled, requires a
-     * wait-return prompt later.  Needed when scrolling, resetting
-     * need_wait_return after some prompt, and then outputting something
-     * without scrolling
-     */
-    if (msg_scrolled != 0 && !msg_scrolled_ign)
+    // When writing something to the screen after it has scrolled, requires a
+    // wait-return prompt later.  Needed when scrolling, resetting
+    // need_wait_return after some prompt, and then outputting something
+    // without scrolling
+    // Not needed when only using CR to move the cursor.
+    if (msg_scrolled != 0 && !msg_scrolled_ign && STRCMP(str, "\r") != 0)
 	need_wait_return = TRUE;
-    msg_didany = TRUE;		/* remember that something was outputted */
+    msg_didany = TRUE;		// remember that something was outputted
 
     /*
      * If there is no valid screen, use fprintf so we can see error messages.
