@@ -779,9 +779,9 @@ func Test_term_rgb_response()
 endfunc
 
 " This only checks if the sequence is recognized.
-" This must be last, because it has side effects to xterm properties.
-" TODO: check that the values were parsed properly
-func Test_xx_term_style_response()
+" This must be after other tests, because it has side effects to xterm
+" properties.
+func Test_xx01_term_style_response()
   " Termresponse is only parsed when t_RV is not empty.
   set t_RV=x
 
@@ -793,6 +793,24 @@ func Test_xx_term_style_response()
   let seq = "\<Esc>P1$r2 q\<Esc>\\"
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termstyleresp)
+
+  set t_RV=
+endfunc
+
+" This checks the libvterm version response.
+" This must be after other tests, because it has side effects to xterm
+" properties.
+" TODO: check other terminals response
+func Test_xx02_libvterm_response()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+
+  let seq = "\<Esc>[>0;100;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('sgr', &ttymouse)
 
   set t_RV=
 endfunc
