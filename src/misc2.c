@@ -119,10 +119,11 @@ getvpos(pos_T *pos, colnr_T wcol)
     static int
 coladvance2(
     pos_T	*pos,
-    int		addspaces,	/* change the text to achieve our goal? */
-    int		finetune,	/* change char offset for the exact column */
-    colnr_T	wcol)		/* column to move to */
+    int		addspaces,	// change the text to achieve our goal?
+    int		finetune,	// change char offset for the exact column
+    colnr_T	wcol_arg)	// column to move to (can be negative)
 {
+    colnr_T	wcol = wcol_arg;
     int		idx;
     char_u	*ptr;
     char_u	*line;
@@ -136,7 +137,7 @@ coladvance2(
     one_more = (State & INSERT)
 		    || restart_edit != NUL
 		    || (VIsual_active && *p_sel != 'o')
-		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL) ;
+		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL);
     line = ml_get_buf(curbuf, pos->lnum, FALSE);
 
     if (wcol >= MAXCOL)
@@ -206,6 +207,7 @@ coladvance2(
 
 	if (virtual_active()
 		&& addspaces
+		&& wcol >= 0
 		&& ((col != wcol && col != wcol + 1) || csize > 1))
 	{
 	    /* 'virtualedit' is set: The difference between wcol and col is
@@ -305,7 +307,7 @@ coladvance2(
     if (has_mbyte)
 	mb_adjustpos(curbuf, pos);
 
-    if (col < wcol)
+    if (wcol < 0 || col < wcol)
 	return FAIL;
     return OK;
 }
