@@ -4847,8 +4847,17 @@ not_enough:
 		    else
 			key = arg[2];
 
-		    // insert modifiers with KS_MODIFIER
 		    modifiers = decode_modifiers(arg[1]);
+
+		    // Some keys already have Shift included, pass them as
+		    // normal keys.
+		    if (modifiers == MOD_MASK_SHIFT
+			    && ((key >= '@' && key <= 'Z')
+				|| key == '^' || key == '_'
+				|| (key >= '{' && key <= '~')))
+			modifiers = 0;
+
+		    // insert modifiers with KS_MODIFIER
 		    new_slen = modifiers2keycode(modifiers, &key, string);
 		    slen = csi_len;
 

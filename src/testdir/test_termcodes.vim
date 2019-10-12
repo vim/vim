@@ -909,3 +909,42 @@ endfunc
 func Test_modifyOtherKeys_CSIu()
   call RunTest_modifyOtherKeys(function('GetEscCodeCSIu'))
 endfunc
+
+func RunTest_mapping_shift(key, func)
+  call setline(1, '')
+  if a:key == '|'
+    exe 'inoremap \| xyz'
+  else
+    exe 'inoremap ' .. a:key .. ' xyz'
+  endif
+  call feedkeys('a' .. a:func(a:key, 2) .. "\<Esc>", 'Lx!')
+  call assert_equal("xyz", getline(1))
+  if a:key == '|'
+    exe 'iunmap \|'
+  else
+    exe 'iunmap ' .. a:key
+  endif
+endfunc
+
+func RunTest_mapping_works_with_shift(func)
+  new
+  set timeoutlen=20
+
+  call RunTest_mapping_shift('@', a:func)
+  call RunTest_mapping_shift('A', a:func)
+  call RunTest_mapping_shift('Z', a:func)
+  call RunTest_mapping_shift('^', a:func)
+  call RunTest_mapping_shift('_', a:func)
+  call RunTest_mapping_shift('{', a:func)
+  call RunTest_mapping_shift('|', a:func)
+  call RunTest_mapping_shift('}', a:func)
+  call RunTest_mapping_shift('~', a:func)
+
+  bwipe!
+  set timeoutlen&
+endfunc
+
+func Test_mapping_works_with_shift()
+  call RunTest_mapping_works_with_shift(function('GetEscCodeCSI27'))
+  call RunTest_mapping_works_with_shift(function('GetEscCodeCSIu'))
+endfunc
