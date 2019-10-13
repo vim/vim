@@ -772,7 +772,8 @@ ex_terminal(exarg_T *eap)
 
 	    p = skiptowhite(cmd);
 	    *p = NUL;
-	    keys = replace_termcodes(ep + 1, &buf, TRUE, TRUE, TRUE);
+	    keys = replace_termcodes(ep + 1, &buf,
+		    REPTERM_FROM_PART | REPTERM_DO_LT | REPTERM_SPECIAL, NULL);
 	    opt.jo_set2 |= JO2_EOF_CHARS;
 	    opt.jo_eof_chars = vim_strsave(keys);
 	    vim_free(buf);
@@ -1372,7 +1373,12 @@ term_convert_key(term_T *term, int c, char *buf)
     }
 
     // add modifiers for the typed key
-    mod |= mod_mask;
+    if (mod_mask & MOD_MASK_SHIFT)
+	mod |= VTERM_MOD_SHIFT;
+    if (mod_mask & MOD_MASK_CTRL)
+	mod |= VTERM_MOD_CTRL;
+    if (mod_mask & (MOD_MASK_ALT | MOD_MASK_META))
+	mod |= VTERM_MOD_ALT;
 
     /*
      * Convert special keys to vterm keys:

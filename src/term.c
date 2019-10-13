@@ -4845,6 +4845,7 @@ not_enough:
 		else if ((arg[0] == 27 && argc == 3 && trail == '~')
 			|| (argc == 2 && trail == 'u'))
 		{
+		    seenModifyOtherKeys = TRUE;
 		    if (trail == 'u')
 			key = arg[0];
 		    else
@@ -4853,12 +4854,19 @@ not_enough:
 		    modifiers = decode_modifiers(arg[1]);
 
 		    // Some keys already have Shift included, pass them as
-		    // normal keys.
+		    // normal keys.  Not when Ctrl is also used, because <C-H>
+		    // and <C-S-H> are different.
 		    if (modifiers == MOD_MASK_SHIFT
 			    && ((key >= '@' && key <= 'Z')
 				|| key == '^' || key == '_'
 				|| (key >= '{' && key <= '~')))
 			modifiers = 0;
+
+		    // When used with Ctrl we always make a letter upper case,
+		    // so that mapping <C-H> and <C-h> are the same.  Typing
+		    // <C-S-H> also uses "H" but modifier is different.
+		    if ((modifiers & MOD_MASK_CTRL) && ASCII_ISALPHA(key))
+			key = TOUPPER_ASC(key);
 
 		    // insert modifiers with KS_MODIFIER
 		    new_slen = modifiers2keycode(modifiers, &key, string);
@@ -5340,18 +5348,26 @@ term_get_bg_color(char_u *r, char_u *g, char_u *b)
  * pointer to it is returned. If something fails *bufp is set to NULL and from
  * is returned.
  *
- * CTRL-V characters are removed.  When "from_part" is TRUE, a trailing CTRL-V
- * is included, otherwise it is removed (for ":map xx ^V", maps xx to
- * nothing).  When 'cpoptions' does not contain 'B', a backslash can be used
- * instead of a CTRL-V.
+ * CTRL-V characters are removed.  When "flags" has REPTERM_FROM_PART, a
+ * trailing CTRL-V is included, otherwise it is removed (for ":map xx ^V", maps
+ * xx to nothing).  When 'cpoptions' does not contain 'B', a backslash can be
+ * used instead of a CTRL-V.
+ *
+ * Flags:
+ *  REPTERM_FROM_PART	see above
+ *  REPTERM_DO_LT	also translate <lt>
+ *  REPTERM_SPECIAL	always accept <key> notation
+ *  REPTERM_NO_SIMPLIFY	do not simplify <C-H> to 0x08 and set 8th bit for <A-x>
+ *
+ * "did_simplify" is set when some <C-H> or <A-x> code was simplified, unless
+ * it is NULL.
  */
     char_u *
 replace_termcodes(
     char_u	*from,
     char_u	**bufp,
-    int		from_part,
-    int		do_lt,		/* also translate <lt> */
-    int		special)	/* always accept <key> notation */
+    int		flags,
+    int		*did_simplify)
 {
     int		i;
     int		slen;
@@ -5364,7 +5380,8 @@ replace_termcodes(
     char_u	*result;	/* buffer for resulting string */
 
     do_backslash = (vim_strchr(p_cpo, CPO_BSLASH) == NULL);
-    do_special = (vim_strchr(p_cpo, CPO_SPECI) == NULL) || special;
+    do_special = (vim_strchr(p_cpo, CPO_SPECI) == NULL)
+						  || (flags & REPTERM_SPECIAL);
     do_key_code = (vim_strchr(p_cpo, CPO_KEYCODE) == NULL);
 
     /*
@@ -5383,7 +5400,7 @@ replace_termcodes(
     /*
      * Check for #n at start only: function key n
      */
-    if (from_part && src[0] == '#' && VIM_ISDIGIT(src[1]))  /* function key */
+    if ((flags & REPTERM_FROM_PART) && src[0] == '#' && VIM_ISDIGIT(src[1]))
     {
 	result[dlen++] = K_SPECIAL;
 	result[dlen++] = 'k';
@@ -5403,7 +5420,8 @@ replace_termcodes(
 	 * If 'cpoptions' does not contain '<', check for special key codes,
 	 * like "<C-S-LeftMouse>"
 	 */
-	if (do_special && (do_lt || STRNCMP(src, "<lt>", 4) != 0))
+	if (do_special && ((flags & REPTERM_DO_LT)
+					      || STRNCMP(src, "<lt>", 4) != 0))
 	{
 #ifdef FEAT_EVAL
 	    /*
@@ -5429,7 +5447,8 @@ replace_termcodes(
 	    }
 #endif
 
-	    slen = trans_special(&src, result + dlen, TRUE, FALSE);
+	    slen = trans_special(&src, result + dlen, TRUE, FALSE,
+			     (flags & REPTERM_NO_SIMPLIFY) == 0, did_simplify);
 	    if (slen)
 	    {
 		dlen += slen;
@@ -5509,7 +5528,7 @@ replace_termcodes(
 	    ++src;				/* skip CTRL-V or backslash */
 	    if (*src == NUL)
 	    {
-		if (from_part)
+		if (flags & REPTERM_FROM_PART)
 		    result[dlen++] = key;
 		break;
 	    }

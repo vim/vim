@@ -1172,6 +1172,8 @@ struct mapblock
     char_u	*m_orig_str;	// rhs as entered by the user
     int		m_keylen;	// strlen(m_keys)
     int		m_mode;		// valid mode
+    int		m_simplified;	// m_keys was simplified, do not use this map
+				// if seenModifyOtherKeys is TRUE
     int		m_noremap;	// if non-zero no re-mapping for m_str
     char	m_silent;	// <silent> used, don't echo commands
     char	m_nowait;	// <nowait> used

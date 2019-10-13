@@ -850,7 +850,7 @@ _OnSysChar(
 	modifiers &= ~MOD_MASK_SHIFT;
 
     /* Interpret the ALT key as making the key META, include SHIFT, etc. */
-    ch = extract_modifiers(ch, &modifiers);
+    ch = extract_modifiers(ch, &modifiers, TRUE, NULL);
     if (ch == CSI)
 	ch = K_CSI;
 

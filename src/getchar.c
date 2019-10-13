@@ -52,7 +52,7 @@ static int typeahead_char = 0;		/* typeahead char that's not flushed */
  */
 static int	block_redo = FALSE;
 
-static int		KeyNoremap = 0;	    /* remapping flags */
+static int	KeyNoremap = 0;	    // remapping flags
 
 /*
  * Variables used by vgetorpeek() and flush_buffers().
@@ -1771,7 +1771,7 @@ vgetc(void)
 	    if (!no_reduce_keys)
 	    {
 		// A modifier was not used for a mapping, apply it to ASCII
-		// keys.
+		// keys.  Shift would already have been applied.
 		if ((mod_mask & MOD_MASK_CTRL)
 			&& ((c >= '`' && c <= 0x7f)
 			    || (c >= '@' && c <= '_')))
@@ -2240,6 +2240,7 @@ handle_mapping(
 	    // Skip ":lmap" mappings if keys were mapped.
 	    if (mp->m_keys[0] == tb_c1
 		    && (mp->m_mode & local_State)
+		    && !(mp->m_simplified && seenModifyOtherKeys)
 		    && ((mp->m_mode & LANGMAP) == 0 || typebuf.tb_maplen == 0))
 	    {
 #ifdef FEAT_LANGMAP

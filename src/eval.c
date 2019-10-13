@@ -3526,7 +3526,8 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 			  break;
 
 			    /* Special key, e.g.: "\<C-W>" */
-		case '<': extra = trans_special(&p, name, TRUE, TRUE);
+		case '<': extra = trans_special(&p, name, TRUE, TRUE,
+								   TRUE, NULL);
 			  if (extra != 0)
 			  {
 			      name += extra;

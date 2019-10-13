@@ -1002,6 +1002,10 @@ EXTERN int ex_no_reprint INIT(= FALSE); // no need to print after z or p
 EXTERN int reg_recording INIT(= 0);	// register for recording  or zero
 EXTERN int reg_executing INIT(= 0);	// register being executed or zero
 
+// Set when a modifyOtherKeys sequence was seen, then simplified mappings will
+// no longer be used.
+EXTERN int seenModifyOtherKeys INIT(= FALSE);
+
 EXTERN int no_mapping INIT(= FALSE);	// currently no mapping allowed
 EXTERN int no_zero_mapping INIT(= 0);	// mapping zero not allowed
 EXTERN int allow_keys INIT(= FALSE);	// allow key codes when no_mapping

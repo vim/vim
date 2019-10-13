@@ -4339,7 +4339,7 @@ server_to_input_buf(char_u *str)
      *  <lt> sequence is recognised - needed for a real backslash.
      */
     p_cpo = (char_u *)"Bk";
-    str = replace_termcodes((char_u *)str, &ptr, FALSE, TRUE, FALSE);
+    str = replace_termcodes((char_u *)str, &ptr, REPTERM_DO_LT, NULL);
     p_cpo = cpo_save;
 
     if (*ptr != NUL)	/* trailing CTRL-V results in nothing */

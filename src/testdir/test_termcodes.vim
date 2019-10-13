@@ -862,7 +862,7 @@ endfunc
 " The mode doesn't need to be enabled, the codes are always detected.
 func RunTest_modifyOtherKeys(func)
   new
-  set timeoutlen=20
+  set timeoutlen=10
 
   " Shift-X is send as 'X' with the shift modifier
   call feedkeys('a' .. a:func('X', 2) .. "\<Esc>", 'Lx!')
@@ -902,11 +902,8 @@ func RunTest_modifyOtherKeys(func)
   set timeoutlen&
 endfunc
 
-func Test_modifyOtherKeys_CSI27()
+func Test_modifyOtherKeys_basic()
   call RunTest_modifyOtherKeys(function('GetEscCodeCSI27'))
-endfunc
-
-func Test_modifyOtherKeys_CSIu()
   call RunTest_modifyOtherKeys(function('GetEscCodeCSIu'))
 endfunc
 
@@ -928,7 +925,7 @@ endfunc
 
 func RunTest_mapping_works_with_shift(func)
   new
-  set timeoutlen=20
+  set timeoutlen=10
 
   call RunTest_mapping_shift('@', a:func)
   call RunTest_mapping_shift('A', a:func)
@@ -944,7 +941,88 @@ func RunTest_mapping_works_with_shift(func)
   set timeoutlen&
 endfunc
 
-func Test_mapping_works_with_shift()
+func Test_mapping_works_with_shift_plain()
   call RunTest_mapping_works_with_shift(function('GetEscCodeCSI27'))
   call RunTest_mapping_works_with_shift(function('GetEscCodeCSIu'))
+endfunc
+
+func RunTest_mapping_mods(map, key, func, code)
+  call setline(1, '')
+  exe 'inoremap ' .. a:map .. ' xyz'
+  call feedkeys('a' .. a:func(a:key, a:code) .. "\<Esc>", 'Lx!')
+  call assert_equal("xyz", getline(1))
+  exe 'iunmap ' .. a:map
+endfunc
+
+func RunTest_mapping_works_with_mods(func, mods, code)
+  new
+  set timeoutlen=10
+
+  if a:mods !~ 'S'
+    " Shift by itself has no effect
+    call RunTest_mapping_mods('<' .. a:mods .. '-@>', '@', a:func, a:code)
+  endif
+  call RunTest_mapping_mods('<' .. a:mods .. '-A>', 'A', a:func, a:code)
+  call RunTest_mapping_mods('<' .. a:mods .. '-Z>', 'Z', a:func, a:code)
+  if a:mods !~ 'S'
+    " with Shift code is always upper case
+    call RunTest_mapping_mods('<' .. a:mods .. '-a>', 'a', a:func, a:code)
+    call RunTest_mapping_mods('<' .. a:mods .. '-z>', 'z', a:func, a:code)
+  endif
+  if a:mods != 'A'
+    " with Alt code is not in upper case
+    call RunTest_mapping_mods('<' .. a:mods .. '-a>', 'A', a:func, a:code)
+    call RunTest_mapping_mods('<' .. a:mods .. '-z>', 'Z', a:func, a:code)
+  endif
+  call RunTest_mapping_mods('<' .. a:mods .. '-á>', 'á', a:func, a:code)
+  if a:mods !~ 'S'
+    " Shift by itself has no effect
+    call RunTest_mapping_mods('<' .. a:mods .. '-^>', '^', a:func, a:code)
+    call RunTest_mapping_mods('<' .. a:mods .. '-_>', '_', a:func, a:code)
+    call RunTest_mapping_mods('<' .. a:mods .. '-{>', '{', a:func, a:code)
+    call RunTest_mapping_mods('<' .. a:mods .. '-\|>', '|', a:func, a:code)
+    call RunTest_mapping_mods('<' .. a:mods .. '-}>', '}', a:func, a:code)
+    call RunTest_mapping_mods('<' .. a:mods .. '-~>', '~', a:func, a:code)
+  endif
+
+  bwipe!
+  set timeoutlen&
+endfunc
+
+func Test_mapping_works_with_shift()
+  call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'S', 2)
+  call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'S', 2)
+endfunc
+  
+func Test_mapping_works_with_ctrl()
+  call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'C', 5)
+  call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'C', 5)
+endfunc
+
+func Test_mapping_works_with_shift_ctrl()
+  call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'C-S', 6)
+  call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'C-S', 6)
+endfunc
+
+" Below we also test the "u" code with Alt, This works, but libvterm would not
+" send the Alt key like this but by prefixing an Esc.
+  
+func Test_mapping_works_with_alt()
+  call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'A', 3)
+  call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'A', 3)
+endfunc
+
+func Test_mapping_works_with_shift_alt()
+  call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'S-A', 4)
+  call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'S-A', 4)
+endfunc
+
+func Test_mapping_works_with_ctrl_alt()
+  call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'C-A', 7)
+  call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'C-A', 7)
+endfunc
+
+func Test_mapping_works_with_shift_ctrl_alt()
+  call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'C-S-A', 8)
+  call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'C-S-A', 8)
 endfunc
