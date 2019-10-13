@@ -162,7 +162,7 @@ endfunc
 
 func Test_xterm_mouse_right_click_extends_visual()
   if has('mac')
-    throw "Skipped: test right click in visual modes does not work on macOs (why?)"
+    throw "Skipped: test right click in visual mode does not work on macOs (why?)"
   endif
   let save_mouse = &mouse
   let save_term = &term
