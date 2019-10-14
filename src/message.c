@@ -356,34 +356,61 @@ int vim_snprintf(char *str, size_t str_m, const char *fmt, ...);
     int
 smsg(const char *s, ...)
 {
-    va_list arglist;
+    if (IObuff == NULL)
+    {
+	// Very early in initialisation and already something wrong, just
+	// give the raw message so the user at least gets a hint.
+	return msg((char *)s);
+    }
+    else
+    {
+	va_list arglist;
 
-    va_start(arglist, s);
-    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
-    va_end(arglist);
-    return msg((char *)IObuff);
+	va_start(arglist, s);
+	vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
+	va_end(arglist);
+	return msg((char *)IObuff);
+    }
 }
 
     int
 smsg_attr(int attr, const char *s, ...)
 {
-    va_list arglist;
+    if (IObuff == NULL)
+    {
+	// Very early in initialisation and already something wrong, just
+	// give the raw message so the user at least gets a hint.
+	return msg_attr((char *)s, attr);
+    }
+    else
+    {
+	va_list arglist;
 
-    va_start(arglist, s);
-    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
-    va_end(arglist);
-    return msg_attr((char *)IObuff, attr);
+	va_start(arglist, s);
+	vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
+	va_end(arglist);
+	return msg_attr((char *)IObuff, attr);
+    }
 }
 
     int
 smsg_attr_keep(int attr, const char *s, ...)
 {
-    va_list arglist;
+    if (IObuff == NULL)
+    {
+	// Very early in initialisation and already something wrong, just
+	// give the raw message so the user at least gets a hint.
+	return msg_attr_keep((char *)s, attr, TRUE);
+    }
+    else
+    {
+	va_list arglist;
 
-    va_start(arglist, s);
-    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
-    va_end(arglist);
-    return msg_attr_keep((char *)IObuff, attr, TRUE);
+	va_start(arglist, s);
+	vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
+	va_end(arglist);
+	return msg_attr_keep((char *)IObuff, attr, TRUE);
+    }
 }
 
 #endif
@@ -723,17 +750,26 @@ emsg(char *s)
     int
 semsg(const char *s, ...)
 {
-    /* Skip this if not giving error messages at the moment. */
+    // Skip this if not giving error messages at the moment.
     if (!emsg_not_now())
     {
-	va_list ap;
+	if (IObuff == NULL)
+	{
+	    // Very early in initialisation and already something wrong, just
+	    // give the raw message so the user at least gets a hint.
+	    return emsg_core((char_u *)s);
+	}
+	else
+	{
+	    va_list ap;
 
-	va_start(ap, s);
-	vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
-	va_end(ap);
-	return emsg_core(IObuff);
+	    va_start(ap, s);
+	    vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
+	    va_end(ap);
+	    return emsg_core(IObuff);
+	}
     }
-    return TRUE;		/* no error messages at the moment */
+    return TRUE;		// no error messages at the moment
 }
 #endif
 
@@ -764,12 +800,21 @@ siemsg(const char *s, ...)
 {
     if (!emsg_not_now())
     {
-	va_list ap;
+	if (IObuff == NULL)
+	{
+	    // Very early in initialisation and already something wrong, just
+	    // give the raw message so the user at least gets a hint.
+	    emsg_core((char_u *)s);
+	}
+	else
+	{
+	    va_list ap;
 
-	va_start(ap, s);
-	vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
-	va_end(ap);
-	emsg_core(IObuff);
+	    va_start(ap, s);
+	    vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
+	    va_end(ap);
+	    emsg_core(IObuff);
+	}
     }
 # ifdef ABORT_ON_INTERNAL_ERROR
     abort();
@@ -3506,8 +3551,17 @@ give_warning(char_u *message, int hl)
     void
 give_warning2(char_u *message, char_u *a1, int hl)
 {
-    vim_snprintf((char *)IObuff, IOSIZE, (char *)message, a1);
-    give_warning(IObuff, hl);
+    if (IObuff == NULL)
+    {
+	// Very early in initialisation and already something wrong, just give
+	// the raw message so the user at least gets a hint.
+	give_warning((char_u *)message, hl);
+    }
+    else
+    {
+	vim_snprintf((char *)IObuff, IOSIZE, (char *)message, a1);
+	give_warning(IObuff, hl);
+    }
 }
 #endif
 
