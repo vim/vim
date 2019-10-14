@@ -863,6 +863,14 @@ func Test_term_rgb_response()
   set t_RF= t_RB=
 endfunc
 
+" Helper function to reset ttymouse after it has been set.
+func Reset_ttymouse()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+endfunc
+
 " This only checks if the sequence is recognized.
 " This must be after other tests, because it has side effects to xterm
 " properties.
@@ -899,10 +907,31 @@ func Test_xx02_libvterm_response()
   set t_RV=
 endfunc
 
+" This checks the screen version response.
+" This must be after other tests, because it has side effects to xterm
+" properties.
+func Test_xx03_screen_response()
+  call Reset_ttymouse()
+
+  " Old versions of screen don't support SGR mouse mode.
+  let seq = "\<Esc>[>83;40500;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('xterm', &ttymouse)
+
+  " screen supports SGR mouse mode starting in version 4.7.
+  let seq = "\<Esc>[>83;40700;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('sgr', &ttymouse)
+
+  set t_RV=
+endfunc
+
 " This checks the xterm version response.
 " This must be after other tests, because it has side effects to xterm
 " properties.
-func Test_xx03_xterm_response()
+func Test_xx04_xterm_response()
   " Termresponse is only parsed when t_RV is not empty.
   set t_RV=x
 
