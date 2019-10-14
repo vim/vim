@@ -885,13 +885,12 @@ endfunc
 " This checks the libvterm version response.
 " This must be after other tests, because it has side effects to xterm
 " properties.
-" TODO: check other terminals response
 func Test_xx02_libvterm_response()
   " Termresponse is only parsed when t_RV is not empty.
   set t_RV=x
+
   set ttymouse=xterm
   call test_option_not_set('ttymouse')
-
   let seq = "\<Esc>[>0;100;0c"
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termresponse)
@@ -899,6 +898,42 @@ func Test_xx02_libvterm_response()
 
   set t_RV=
 endfunc
+
+" This checks the xterm version response.
+" This must be after other tests, because it has side effects to xterm
+" properties.
+func Test_xx03_xterm_response()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
+
+  " xterm < 95: "xterm" (actually unmodified)
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+  let seq = "\<Esc>[>0;94;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('xterm', &ttymouse)
+
+  " xterm >= 95 < 277 "xterm2"
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+  let seq = "\<Esc>[>0;267;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('xterm2', &ttymouse)
+
+  " xterm >= 277: "sgr"
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+  let seq = "\<Esc>[>0;277;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('sgr', &ttymouse)
+
+  set t_RV=
+endfunc
+
+" TODO: check other terminals response
 
 func Test_get_termcode()
   try
