@@ -4725,7 +4725,7 @@ not_enough:
 				    || is_iterm2
 				    || is_mac_terminal
 				    || is_mintty
-				    || (is_screen && version >= 40700))
+				    || (is_screen && arg[1] >= 40700))
 				set_option_value((char_u *)"ttym", 0L,
 							  (char_u *)"sgr", 0);
 			    // if xterm version >= 95 use mouse dragging
