@@ -134,6 +134,9 @@ msg_attr_keep(
     int		retval;
     char_u	*buf = NULL;
 
+    if (quit_more)
+	return TRUE;
+
     /* Skip messages not matching ":filter pattern".
      * Don't filter when there is an error. */
     if (!emsg_on_display && message_filtered((char_u *)s))
