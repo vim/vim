@@ -2198,23 +2198,23 @@ line_read_in:
 #endif
 
 #ifdef FEAT_TAG_BINS
-		/*
-		 * When starting a binary search, get the size of the file and
-		 * compute the first offset.
-		 */
+		// When starting a binary search, get the size of the file and
+		// compute the first offset.
 		if (state == TS_BINARY)
 		{
-		    /* Get the tag file size (don't use mch_fstat(), it's not
-		     * portable). */
-		    if ((filesize = vim_lseek(fileno(fp),
-						   (off_T)0L, SEEK_END)) <= 0)
+		    if (vim_fseek(fp, 0L, SEEK_END) != 0)
+			// can't seek, don't use binary search
 			state = TS_LINEAR;
 		    else
 		    {
-			vim_lseek(fileno(fp), (off_T)0L, SEEK_SET);
+			// Get the tag file size (don't use mch_fstat(), it's
+			// not portable).  Don't use lseek(), it doesn't work
+			// properly on MacOS Catalina.
+			filesize = vim_ftell(fp);
+			vim_fseek(fp, 0L, SEEK_SET);
 
-			/* Calculate the first read offset in the file.  Start
-			 * the search in the middle of the file. */
+			// Calculate the first read offset in the file.  Start
+			// the search in the middle of the file.
 			search_info.low_offset = 0;
 			search_info.low_char = 0;
 			search_info.high_offset = filesize;
