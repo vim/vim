@@ -2107,14 +2107,14 @@ msg_puts_display(
 	    if (p_more && lines_left == 0 && State != HITRETURN
 					    && !msg_no_more && !exmode_active)
 	    {
-		if (quit_more)
-		    return;
 #ifdef FEAT_CON_DIALOG
 		if (do_more_prompt(NUL))
 		    s = confirm_msg_tail;
 #else
 		(void)do_more_prompt(NUL);
 #endif
+		if (quit_more)
+		    return;
 	    }
 
 	    /* When we displayed a char in last column need to check if there
