@@ -296,11 +296,11 @@ SRC_ALL =	\
 		src/libvterm/src/encoding/uk.inc \
 		src/libvterm/src/encoding/uk.tbl \
 		src/libvterm/src/keyboard.c \
-		src/libvterm/src/termmouse.c \
+		src/libvterm/src/mouse.c \
 		src/libvterm/src/parser.c \
 		src/libvterm/src/pen.c \
 		src/libvterm/src/rect.h \
-		src/libvterm/src/termscreen.c \
+		src/libvterm/src/screen.c \
 		src/libvterm/src/state.c \
 		src/libvterm/src/unicode.c \
 		src/libvterm/src/utf8.h \
