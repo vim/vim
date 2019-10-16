@@ -496,7 +496,7 @@ term_dumpload({filename} [, {options}])
 		For {options} see |term_dumpdiff()|.
 
 		Can also be used as a |method|: >
-			GetFilename()-> term_dumpload()
+			GetFilename()->term_dumpload()
 <
 							*term_dumpwrite()*
 term_dumpwrite({buf}, {filename} [, {options}])
@@ -514,7 +514,7 @@ term_dumpwrite({buf}, {filename} [, {options}])
 
 		Can also be used as a |method|, the base is used for the file
 		name: >
-			GetFilename()-> term_dumpwrite(bufnr)
+			GetFilename()->term_dumpwrite(bufnr)
 
 term_getaltscreen({buf})				*term_getaltscreen()*
 		Returns 1 if the terminal of {buf} is using the alternate
@@ -862,8 +862,6 @@ term_start({cmd} [, {options}])			*term_start()*
 
 		Can also be used as a |method|: >
 			GetCommand()->term_start()
-
-<		{only available when compiled with the |+terminal| feature}
 
 
 term_wait({buf} [, {time}])					*term_wait()*
@@ -1243,7 +1241,7 @@ gdb:
 
  *:Break*	set a breakpoint at the cursor position
  :Break {position}
- 		set a breakpoint at the specified position
+		set a breakpoint at the specified position
  *:Clear*	delete the breakpoint at the cursor position
 
  *:Step*	execute the gdb "step" command

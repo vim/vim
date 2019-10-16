@@ -361,7 +361,7 @@ popup_getpos({id})					*popup_getpos()*
 		    core_width	width of the text box in screen cells
 		    core_height	height of the text box in screen cells
 		    firstline	line of the buffer at top (1 unless scrolled)
-		    		(not the value of the "firstline" property)
+				(not the value of the "firstline" property)
 		    scrollbar	non-zero if a scrollbar is displayed
 		    visible	one if the popup is displayed, zero if hidden
 		Note that these are the actual screen positions.  They differ
@@ -744,22 +744,22 @@ is inserted or deleted.  The popup functions like a tooltip.
 These steps are needed to make this work:
 
 - Define a text property type, it defines the name. >
-  	call prop_type_add('popupMarker', {})
+	call prop_type_add('popupMarker', {})
 
 - Place a text property at the desired text: >
 	let lnum = {line of the text}
 	let col = {start column of the text}
 	let len = {length of the text}
 	let propId = {arbitrary but unique number}
-  	call prop_add(lnum, col, #{
+	call prop_add(lnum, col, #{
 		\ length: len,
 		\ type: 'popupMarker',
 		\ id: propId,
 		\ })
 
 - Create a popup: >
-  	let winid = popup_create('the text', #{
-		\ pos: 'botleft', 
+	let winid = popup_create('the text', #{
+		\ pos: 'botleft',
 		\ textprop: 'popupMarker',
 		\ textpropid: propId,
 		\ border: [],
@@ -799,7 +799,7 @@ Some hints:
   a click, as in the example above, helps for that.
 - If the text property is removed the popup is closed.  Use something like
   this: >
-  	call prop_remove(#{type: 'popupMarker', id: propId})
+	call prop_remove(#{type: 'popupMarker', id: propId})
 
 
 POPUP FILTER						*popup-filter*

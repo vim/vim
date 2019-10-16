@@ -480,7 +480,7 @@ try to solve the memory shortage.  To stay on the safe side, exit Vim and
 start again.
 
 If this happens while Vim is still initializing, editing files is very
-unlikely to work, therefore Vim will exit with value 123. 
+unlikely to work, therefore Vim will exit with value 123.
 
 Buffers are only partly kept in memory, thus editing a very large file is
 unlikely to cause an out-of-memory situation.  Undo information is completely

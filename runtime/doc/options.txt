@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Sep 26
+*options.txt*	For Vim version 8.1.  Last change: 2019 Sep 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -856,7 +856,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set background&
 <	Vim will guess the value.  In the GUI this should work correctly,
 	in other cases Vim might not be able to guess the right value.
-	If the GUI supports a dark them, you can use the "d" flag in
+	If the GUI supports a dark theme, you can use the "d" flag in
 	'guioptions', see 'go-d'.
 
 	When the |t_RB| option is set, Vim will use it to request the background
@@ -1877,7 +1877,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'completeslash'* *'csl'*
 'completeslash' 'csl'	string	(default: "")
 			local to buffer
-			{not in Vi}  {only for MS-Windows}
+			{only for MS-Windows}
 	When this option is set it overrules 'shellslash' for completion:
 	- When this option is set to "slash", a forward slash is used for path
 	  completion in insert mode. This is useful when editing HTML tag, or
@@ -1917,7 +1917,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    completion in a popup window.  Only works in combination
 		    with "menu" or "menuone".  Overrides "preview".
 		    See |'completepopup'| for specifying properties.
-		    {only works when compiled with the +textprop feature}
+		    {only works when compiled with the |+textprop| feature}
 
 	   noinsert Do not insert any text for a match until the user selects
 		    a match from the menu. Only works in combination with
@@ -2470,7 +2470,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'cursorlineopt'* *'culopt'*
 'cursorlineopt' 'culopt' string (default: "number,line")
 			local to window
-			{not in Vi}
 			{not available when compiled without the |+syntax|
 			feature}
 	Comma separated list of settings for how 'cursorline' is displayed.
