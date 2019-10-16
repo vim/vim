@@ -1421,7 +1421,9 @@ win_line(
 			syntax_attr = prev_syntax_attr;
 		    else
 		    {
+# ifdef FEAT_SPELL
 			can_spell = TRUE;
+# endif
 			syntax_attr = get_syntax_attr((colnr_T)v,
 # ifdef FEAT_SPELL
 						has_spell ? &can_spell :
