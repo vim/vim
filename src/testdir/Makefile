@@ -71,10 +71,11 @@ $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
 
 # Execute an individual new style test, e.g.:
 # 	make test_largefile
+$(NEW_TESTS): MAKEFLAGS+=--no-print-directory
 $(NEW_TESTS):
-	rm -f $@.res test.log messages
-	$(MAKE) -f Makefile $@.res
-	cat messages
+	@rm -f $@.res test.log messages
+	@$(MAKE) -f Makefile $@.res
+	@cat messages
 	@if test -f test.log; then \
 		exit 1; \
 	fi
