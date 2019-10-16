@@ -289,6 +289,8 @@ win_line(
 #ifdef FEAT_SYN_HL
     int		vcol_save_attr = 0;	// saved attr for 'cursorcolumn'
     int		syntax_attr = 0;	// attributes desired by syntax
+    int		prev_syntax_col = -1;	// column of prev_syntax_attr
+    int		prev_syntax_attr = 0;	// syntax_attr at prev_syntax_col
     int		has_syntax = FALSE;	// this buffer has syntax highl.
     int		save_did_emsg;
     int		draw_color_col = FALSE;	// highlight colorcolumn
@@ -1414,12 +1416,20 @@ win_line(
 		    did_emsg = FALSE;
 
 		    v = (long)(ptr - line);
-		    can_spell = TRUE;
-		    syntax_attr = get_syntax_attr((colnr_T)v,
+		    if (v == prev_syntax_col)
+			// at same column again
+			syntax_attr = prev_syntax_attr;
+		    else
+		    {
+			can_spell = TRUE;
+			syntax_attr = get_syntax_attr((colnr_T)v,
 # ifdef FEAT_SPELL
 						has_spell ? &can_spell :
 # endif
 						NULL, FALSE);
+			prev_syntax_col = v;
+			prev_syntax_attr = syntax_attr;
+		    }
 
 		    // combine syntax attribute with 'wincolor'
 		    if (syntax_attr != 0 && win_attr != 0)

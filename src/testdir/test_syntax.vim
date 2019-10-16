@@ -551,10 +551,10 @@ func Test_syntax_c()
 	\ '}',
 	\ '   static void',
 	\ 'myFunction(const double count, struct nothing, long there) {',
-	\ '  // 123: nothing to read here',
-	\ '  for (int i = 0; i < count; ++i) {',
-	\ '    break;',
-	\ '  }',
+	\ "\t// 123: nothing to read here",
+	\ "\tfor (int i = 0; i < count; ++i) {",
+	\ "\t   break;",
+	\ "\t}",
 	\ '}',
 	\ ], 'Xtest.c')
  
