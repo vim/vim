@@ -756,10 +756,13 @@ ex_let_const(exarg_T *eap, int is_const)
 	if (l != NULL)
 	{
 	    rettv_list_set(&rettv, l);
-	    op[0] = '=';
-	    op[1] = NUL;
-	    (void)ex_let_vars(eap->arg, &rettv, FALSE, semicolon, var_count,
+	    if (!eap->skip)
+	    {
+		op[0] = '=';
+		op[1] = NUL;
+		(void)ex_let_vars(eap->arg, &rettv, FALSE, semicolon, var_count,
 								is_const, op);
+	    }
 	    clear_tv(&rettv);
 	}
     }
