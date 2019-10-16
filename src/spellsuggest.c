@@ -1782,7 +1782,7 @@ suggest_trie_walk(
 			{
 			    int	    l;
 
-			    l = MB_PTR2LEN(fword + sp->ts_fidx);
+			    l = mb_ptr2len(fword + sp->ts_fidx);
 			    if (fword_ends)
 			    {
 				// Copy the skipped character to preword.
@@ -1937,7 +1937,7 @@ suggest_trie_walk(
 				// Correct ts_fidx for the byte length of the
 				// character (we didn't check that before).
 				sp->ts_fidx = sp->ts_fcharstart
-					    + MB_PTR2LEN(
+					    + mb_ptr2len(
 						    fword + sp->ts_fcharstart);
 				// For changing a composing character adjust
 				// the score from SCORE_SUBST to
@@ -2053,7 +2053,7 @@ suggest_trie_walk(
 		if (has_mbyte)
 		{
 		    c = mb_ptr2char(fword + sp->ts_fidx);
-		    stack[depth].ts_fidx += MB_PTR2LEN(fword + sp->ts_fidx);
+		    stack[depth].ts_fidx += mb_ptr2len(fword + sp->ts_fidx);
 		    if (enc_utf8 && utf_iscomposing(c))
 			stack[depth].ts_score -= SCORE_DEL - SCORE_DELCOMP;
 		    else if (c == mb_ptr2char(fword + stack[depth].ts_fidx))
@@ -2266,9 +2266,9 @@ suggest_trie_walk(
 	    p = fword + sp->ts_fidx;
 	    if (has_mbyte)
 	    {
-		n = MB_PTR2LEN(p);
+		n = mb_ptr2len(p);
 		c = mb_ptr2char(p + n);
-		mch_memmove(p + MB_PTR2LEN(p + n), p, n);
+		mch_memmove(p + mb_ptr2len(p + n), p, n);
 		mb_char2bytes(c, p);
 	    }
 	    else
@@ -2354,11 +2354,11 @@ suggest_trie_walk(
 	    p = fword + sp->ts_fidx;
 	    if (has_mbyte)
 	    {
-		n = MB_PTR2LEN(p);
+		n = mb_ptr2len(p);
 		c2 = mb_ptr2char(p + n);
-		fl = MB_PTR2LEN(p + n);
+		fl = mb_ptr2len(p + n);
 		c = mb_ptr2char(p + n + fl);
-		tl = MB_PTR2LEN(p + n + fl);
+		tl = mb_ptr2len(p + n + fl);
 		mch_memmove(p + fl + tl, p, n);
 		mb_char2bytes(c, p);
 		mb_char2bytes(c2, p + tl);
@@ -2427,10 +2427,10 @@ suggest_trie_walk(
 	    p = fword + sp->ts_fidx;
 	    if (has_mbyte)
 	    {
-		n = MB_PTR2LEN(p);
-		n += MB_PTR2LEN(p + n);
+		n = mb_ptr2len(p);
+		n += mb_ptr2len(p + n);
 		c = mb_ptr2char(p + n);
-		tl = MB_PTR2LEN(p + n);
+		tl = mb_ptr2len(p + n);
 		mch_memmove(p + tl, p, n);
 		mb_char2bytes(c, p);
 	    }
@@ -2489,9 +2489,9 @@ suggest_trie_walk(
 	    if (has_mbyte)
 	    {
 		c = mb_ptr2char(p);
-		tl = MB_PTR2LEN(p);
-		n = MB_PTR2LEN(p + tl);
-		n += MB_PTR2LEN(p + tl + n);
+		tl = mb_ptr2len(p);
+		n = mb_ptr2len(p + tl);
+		n += mb_ptr2len(p + tl + n);
 		mch_memmove(p, p + tl, n);
 		mb_char2bytes(c, p + n);
 	    }

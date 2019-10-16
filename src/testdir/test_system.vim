@@ -1,6 +1,7 @@
 " Tests for system() and systemlist()
 
 source shared.vim
+source check.vim
 
 func Test_System()
   if !has('win32')
@@ -111,4 +112,54 @@ func Test_system_exmode()
   let cmd = ' -es -c "call doesnotexist()|let a=1" +q'
   let a = system(GetVimCommand() . cmd)
   call assert_notequal(0, v:shell_error)
+endfunc
+
+func Test_system_with_shell_quote()
+  CheckMSWindows
+
+  call mkdir('Xdir with spaces', 'p')
+  call system('copy "%COMSPEC%" "Xdir with spaces\cmd.exe"')
+
+  let shell_save = &shell
+  let shellxquote_save = &shellxquote
+  try
+    " Set 'shell' always needs noshellslash.
+    let shellslash_save = &shellslash
+    set noshellslash
+    let shell_tests = [
+          \ expand('$COMSPEC'),
+          \ '"' . fnamemodify('Xdir with spaces\cmd.exe', ':p') . '"',
+          \]
+    let &shellslash = shellslash_save
+
+    let sxq_tests = ['', '(', '"']
+
+    " Matrix tests: 'shell' * 'shellxquote'
+    for shell in shell_tests
+      let &shell = shell
+      for sxq in sxq_tests
+        let &shellxquote = sxq
+
+        let msg = printf('shell=%s shellxquote=%s', &shell, &shellxquote)
+
+        try
+          let out = 'echo 123'->system()
+        catch
+          call assert_report(printf('%s: %s', msg, v:exception))
+          continue
+        endtry
+
+        " On Windows we may get a trailing space and CR.
+        if out != "123 \n"
+          call assert_equal("123\n", out, msg)
+        endif
+
+      endfor
+    endfor
+
+  finally
+    let &shell = shell_save
+    let &shellxquote = shellxquote_save
+    call delete('Xdir with spaces', 'rf')
+  endtry
 endfunc

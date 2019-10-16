@@ -2556,4 +2556,38 @@ func Test_popupwin_recycle_bnr()
   call popup_clear()
 endfunc
 
+func Test_popupwin_getoptions_tablocal()
+  topleft split
+  let win1 = popup_create('nothing', #{maxheight: 8})
+  let win2 = popup_create('something', #{maxheight: 10})
+  let win3 = popup_create('something', #{maxheight: 15})
+  call assert_equal(8, popup_getoptions(win1).maxheight)
+  call assert_equal(10, popup_getoptions(win2).maxheight)
+  call assert_equal(15, popup_getoptions(win3).maxheight)
+  call popup_clear()
+  quit
+endfunc
+
+func Test_popupwin_cancel()
+  let win1 = popup_create('one', #{line: 5, filter: {... -> 0}})
+  let win2 = popup_create('two', #{line: 10, filter: {... -> 0}})
+  let win3 = popup_create('three', #{line: 15, filter: {... -> 0}})
+  call assert_equal(5, popup_getpos(win1).line)
+  call assert_equal(10, popup_getpos(win2).line)
+  call assert_equal(15, popup_getpos(win3).line)
+  " TODO: this also works without patch 8.1.2110
+  call feedkeys("\<C-C>", 'xt')
+  call assert_equal(5, popup_getpos(win1).line)
+  call assert_equal(10, popup_getpos(win2).line)
+  call assert_equal({}, popup_getpos(win3))
+  call feedkeys("\<C-C>", 'xt')
+  call assert_equal(5, popup_getpos(win1).line)
+  call assert_equal({}, popup_getpos(win2))
+  call assert_equal({}, popup_getpos(win3))
+  call feedkeys("\<C-C>", 'xt')
+  call assert_equal({}, popup_getpos(win1))
+  call assert_equal({}, popup_getpos(win2))
+  call assert_equal({}, popup_getpos(win3))
+endfunc
+
 " vim: shiftwidth=2 sts=2

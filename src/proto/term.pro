@@ -67,7 +67,7 @@ int is_mouse_topline(win_T *wp);
 int check_termcode(int max_offset, char_u *buf, int bufsize, int *buflen);
 void term_get_fg_color(char_u *r, char_u *g, char_u *b);
 void term_get_bg_color(char_u *r, char_u *g, char_u *b);
-char_u *replace_termcodes(char_u *from, char_u **bufp, int from_part, int do_lt, int special);
+char_u *replace_termcodes(char_u *from, char_u **bufp, int flags, int *did_simplify);
 void show_termcodes(void);
 int show_one_termcode(char_u *name, char_u *code, int printit);
 char_u *translate_mapping(char_u *str);

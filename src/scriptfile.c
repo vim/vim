@@ -1358,7 +1358,10 @@ free_scriptnames(void)
     int			i;
 
     for (i = script_items.ga_len; i > 0; --i)
+    {
 	vim_free(SCRIPT_ITEM(i).sn_name);
+	ga_clear(&SCRIPT_ITEM(i).sn_prl_ga);
+    }
     ga_clear(&script_items);
 }
 

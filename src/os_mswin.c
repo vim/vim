@@ -1654,7 +1654,7 @@ mch_print_text_out(char_u *p, int len)
     /* This is wrong when printing spaces for a TAB. */
     if (p[len] != NUL)
     {
-	wlen = MB_PTR2LEN(p + len);
+	wlen = mb_ptr2len(p + len);
 	wp = enc_to_utf16(p + len, &wlen);
 	if (wp != NULL)
 	{

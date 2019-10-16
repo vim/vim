@@ -2621,7 +2621,7 @@ spell_iswordp(
 
     if (has_mbyte)
     {
-	l = MB_PTR2LEN(p);
+	l = mb_ptr2len(p);
 	s = p;
 	if (l == 1)
 	{
@@ -4367,7 +4367,7 @@ compile_cap_prog(synblock_T *synblock)
     regprog_T   *rp = synblock->b_cap_prog;
     char_u	*re;
 
-    if (*synblock->b_p_spc == NUL)
+    if (synblock->b_p_spc == NULL || *synblock->b_p_spc == NUL)
 	synblock->b_cap_prog = NULL;
     else
     {

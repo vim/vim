@@ -136,11 +136,11 @@ restore_viewstate(viewstate_T *vs)
 // Struct to store the state of 'incsearch' highlighting.
 typedef struct {
     pos_T	search_start;	// where 'incsearch' starts searching
-    pos_T       save_cursor;
+    pos_T	save_cursor;
     viewstate_T	init_viewstate;
     viewstate_T	old_viewstate;
-    pos_T       match_start;
-    pos_T       match_end;
+    pos_T	match_start;
+    pos_T	match_end;
     int		did_incsearch;
     int		incsearch_postponed;
     int		magic_save;
@@ -2781,7 +2781,7 @@ redraw:
 		    }
 		    else
 		    {
-			len = MB_PTR2LEN(p);
+			len = mb_ptr2len(p);
 			msg_outtrans_len(p, len);
 			vcol += ptr2cells(p);
 			p += len;
@@ -4152,11 +4152,14 @@ open_cmdwin(void)
     invalidate_botline();
     redraw_later(SOME_VALID);
 
-    /* No Ex mode here! */
+    // No Ex mode here!
     exmode_active = 0;
 
     State = NORMAL;
     setmouse();
+
+    // Reset here so it can be set by a CmdWinEnter autocommand.
+    cmdwin_result = 0;
 
     // Trigger CmdwinEnter autocommands.
     trigger_cmd_autocmd(cmdwin_type, EVENT_CMDWINENTER);
@@ -4169,7 +4172,6 @@ open_cmdwin(void)
     /*
      * Call the main loop until <CR> or CTRL-C is typed.
      */
-    cmdwin_result = 0;
     main_loop(TRUE, FALSE);
 
     RedrawingDisabled = i;

@@ -2633,4 +2633,10 @@ long elapsed(DWORD start_tick);
 
 #define CLIP_ZINDEX 32000
 
+// Flags for replace_termcodes()
+#define REPTERM_FROM_PART	1
+#define REPTERM_DO_LT		2
+#define REPTERM_SPECIAL		4
+#define REPTERM_NO_SIMPLIFY	8
+
 #endif // VIM__H

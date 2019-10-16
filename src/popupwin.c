@@ -2636,12 +2636,12 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	i = 1;
 	FOR_ALL_TABPAGES(tp)
 	{
-	    win_T *p;
+	    win_T *twp;
 
-	     for (p = tp->tp_first_popupwin; p != NULL; p = wp->w_next)
-		 if (p->w_id == id)
+	     for (twp = tp->tp_first_popupwin; twp != NULL; twp = twp->w_next)
+		 if (twp->w_id == id)
 		     break;
-	     if (p != NULL)
+	     if (twp != NULL)
 		 break;
 	     ++i;
 	}
@@ -2763,7 +2763,12 @@ invoke_popup_filter(win_T *wp, int c)
     // Emergency exit: CTRL-C closes the popup.
     if (c == Ctrl_C)
     {
+	int save_got_int = got_int;
+
+	// Reset got_int to avoid the callback isn't called.
+	got_int = FALSE;
 	popup_close_with_retval(wp, -1);
+	got_int |= save_got_int;
 	return 1;
     }
 
@@ -3365,6 +3370,7 @@ update_popups(void (*win_update)(win_T *wp))
 	    trunc_string(wp->w_popup_title, title, total_width - 2, len);
 	    screen_puts(title, wp->w_winrow, wp->w_wincol + 1,
 		    wp->w_popup_border[0] > 0 ? border_attr[0] : popup_attr);
+	    vim_free(title);
 	}
 
 	// Compute scrollbar thumb position and size.

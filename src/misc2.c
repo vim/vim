@@ -119,10 +119,11 @@ getvpos(pos_T *pos, colnr_T wcol)
     static int
 coladvance2(
     pos_T	*pos,
-    int		addspaces,	/* change the text to achieve our goal? */
-    int		finetune,	/* change char offset for the exact column */
-    colnr_T	wcol)		/* column to move to */
+    int		addspaces,	// change the text to achieve our goal?
+    int		finetune,	// change char offset for the exact column
+    colnr_T	wcol_arg)	// column to move to (can be negative)
 {
+    colnr_T	wcol = wcol_arg;
     int		idx;
     char_u	*ptr;
     char_u	*line;
@@ -136,7 +137,7 @@ coladvance2(
     one_more = (State & INSERT)
 		    || restart_edit != NUL
 		    || (VIsual_active && *p_sel != 'o')
-		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL) ;
+		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL);
     line = ml_get_buf(curbuf, pos->lnum, FALSE);
 
     if (wcol >= MAXCOL)
@@ -206,6 +207,7 @@ coladvance2(
 
 	if (virtual_active()
 		&& addspaces
+		&& wcol >= 0
 		&& ((col != wcol && col != wcol + 1) || csize > 1))
 	{
 	    /* 'virtualedit' is set: The difference between wcol and col is
@@ -305,7 +307,7 @@ coladvance2(
     if (has_mbyte)
 	mb_adjustpos(curbuf, pos);
 
-    if (col < wcol)
+    if (wcol < 0 || col < wcol)
 	return FAIL;
     return OK;
 }
@@ -2694,12 +2696,15 @@ trans_special(
     char_u	**srcp,
     char_u	*dst,
     int		keycode,    // prefer key code, e.g. K_DEL instead of DEL
-    int		in_string)  // TRUE when inside a double quoted string
+    int		in_string,  // TRUE when inside a double quoted string
+    int		simplify,	// simplify <C-H> and <A-x>
+    int		*did_simplify)  // found <C-H> or <A-x>
 {
     int		modifiers = 0;
     int		key;
 
-    key = find_special_key(srcp, &modifiers, keycode, FALSE, in_string);
+    key = find_special_key(srcp, &modifiers, keycode, FALSE, in_string,
+						       simplify, did_simplify);
     if (key == 0)
 	return 0;
 
@@ -2751,9 +2756,11 @@ special_to_buf(int key, int modifiers, int keycode, char_u *dst)
 find_special_key(
     char_u	**srcp,
     int		*modp,
-    int		keycode,     /* prefer key code, e.g. K_DEL instead of DEL */
-    int		keep_x_key,  /* don't translate xHome to Home key */
-    int		in_string)   /* TRUE in string, double quote is escaped */
+    int		keycode,	// prefer key code, e.g. K_DEL instead of DEL
+    int		keep_x_key,	// don't translate xHome to Home key
+    int		in_string,	// TRUE in string, double quote is escaped
+    int		simplify,	// simplify <C-H> and <A-x>
+    int		*did_simplify)  // found <C-H> or <A-x>
 {
     char_u	*last_dash;
     char_u	*end_of_name;
@@ -2833,7 +2840,8 @@ find_special_key(
 						 && VIM_ISDIGIT(last_dash[6]))
 	    {
 		/* <Char-123> or <Char-033> or <Char-0x33> */
-		vim_str2nr(last_dash + 6, NULL, &l, STR2NR_ALL, NULL, &n, 0, TRUE);
+		vim_str2nr(last_dash + 6, NULL, &l, STR2NR_ALL, NULL,
+								  &n, 0, TRUE);
 		if (l == 0)
 		{
 		    emsg(_(e_invarg));
@@ -2883,11 +2891,10 @@ find_special_key(
 			key = DEL;
 		}
 
-		/*
-		 * Normal Key with modifier: Try to make a single byte code.
-		 */
+		// Normal Key with modifier: Try to make a single byte code.
 		if (!IS_SPECIAL(key))
-		    key = extract_modifiers(key, &modifiers);
+		    key = extract_modifiers(key, &modifiers,
+						       simplify, did_simplify);
 
 		*modp = modifiers;
 		*srcp = end_of_name;
@@ -2901,26 +2908,37 @@ find_special_key(
 /*
  * Try to include modifiers in the key.
  * Changes "Shift-a" to 'A', "Alt-A" to 0xc0, etc.
+ * When "simplify" is FALSE don't do Ctrl and Alt.
+ * When "simplify" is TRUE and Ctrl or Alt is removed from modifiers set
+ * "did_simplify" when it's not NULL.
  */
     int
-extract_modifiers(int key, int *modp)
+extract_modifiers(int key, int *modp, int simplify, int *did_simplify)
 {
     int	modifiers = *modp;
 
 #ifdef MACOS_X
-    /* Command-key really special, no fancynest */
+    // Command-key really special, no fancynest
     if (!(modifiers & MOD_MASK_CMD))
 #endif
     if ((modifiers & MOD_MASK_SHIFT) && ASCII_ISALPHA(key))
     {
 	key = TOUPPER_ASC(key);
-	modifiers &= ~MOD_MASK_SHIFT;
+	// With <C-S-a> and <A-S-a> we keep the shift modifier.
+	// With <S-a> and <S-A> we don't keep the shift modifier.
+	if (simplify || modifiers == MOD_MASK_SHIFT)
+	    modifiers &= ~MOD_MASK_SHIFT;
     }
-    if ((modifiers & MOD_MASK_CTRL)
+
+    // <C-H> and <C-h> mean the same thing, always use "H"
+    if ((modifiers & MOD_MASK_CTRL) && ASCII_ISALPHA(key))
+	key = TOUPPER_ASC(key);
+
+    if (simplify && (modifiers & MOD_MASK_CTRL)
 #ifdef EBCDIC
-	    /* * TODO: EBCDIC Better use:
-	     * && (Ctrl_chr(key) || key == '?')
-	     * ???  */
+	    // TODO: EBCDIC Better use:
+	    // && (Ctrl_chr(key) || key == '?')
+	    // ???
 	    && strchr("?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_", key)
 						       != NULL
 #else
@@ -2933,16 +2951,21 @@ extract_modifiers(int key, int *modp)
 	/* <C-@> is <Nul> */
 	if (key == 0)
 	    key = K_ZERO;
+	if (did_simplify != NULL)
+	    *did_simplify = TRUE;
     }
+
 #ifdef MACOS_X
     /* Command-key really special, no fancynest */
     if (!(modifiers & MOD_MASK_CMD))
 #endif
-    if ((modifiers & MOD_MASK_ALT) && key < 0x80
+    if (simplify && (modifiers & MOD_MASK_ALT) && key < 0x80
 	    && !enc_dbcs)		// avoid creating a lead byte
     {
 	key |= 0x80;
 	modifiers &= ~MOD_MASK_ALT;	/* remove the META modifier */
+	if (did_simplify != NULL)
+	    *did_simplify = TRUE;
     }
 
     *modp = modifiers;

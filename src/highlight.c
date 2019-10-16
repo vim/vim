@@ -1417,7 +1417,8 @@ do_highlight(
 		 */
 		for (p = arg, off = 0; off < 100 - 6 && *p; )
 		{
-		    len = trans_special(&p, buf + off, FALSE, FALSE);
+		    len = trans_special(&p, buf + off, FALSE, FALSE,
+								   TRUE, NULL);
 		    if (len > 0)	    // recognized special char
 			off += len;
 		    else		    // copy as normal char
@@ -4392,7 +4393,7 @@ update_search_hl(
 		    && col >= shl->startcol
 		    && col < shl->endcol)
 	    {
-		int next_col = col + MB_PTR2LEN(*line + col);
+		int next_col = col + mb_ptr2len(*line + col);
 
 		if (shl->endcol < next_col)
 		    shl->endcol = next_col;

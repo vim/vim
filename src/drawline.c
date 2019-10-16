@@ -1113,11 +1113,11 @@ win_line(
 		      // the line number itself.
 		      // TODO: Can we use CursorLine instead of CursorLineNr
 		      // when CursorLineNr isn't set?
-		      if ((wp->w_p_cul || wp->w_p_rnu)
+		      if (wp->w_p_cul
+			      && lnum == wp->w_cursor.lnum
 			      && (wp->w_p_culopt_flags & CULOPT_NBR)
 			      && (row == startrow
-				  || wp->w_p_culopt_flags & CULOPT_LINE)
-			      && lnum == wp->w_cursor.lnum)
+				  || wp->w_p_culopt_flags & CULOPT_LINE))
 			char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_CLN));
 #endif
 		    }

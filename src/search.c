@@ -2078,7 +2078,7 @@ findmatchlimit(
 		    find_mps_values(&initc, &findc, &backwards, FALSE);
 		    if (findc)
 			break;
-		    pos.col += MB_PTR2LEN(linep + pos.col);
+		    pos.col += mb_ptr2len(linep + pos.col);
 		}
 		if (!findc)
 		{
@@ -2657,14 +2657,14 @@ showmatch(
 	if (PTR2CHAR(p) == c && (curwin->w_p_rl ^ p_ri))
 	    break;
 #endif
-	p += MB_PTR2LEN(p) + 1;
+	p += mb_ptr2len(p) + 1;
 	if (PTR2CHAR(p) == c
 #ifdef FEAT_RIGHTLEFT
 		&& !(curwin->w_p_rl ^ p_ri)
 #endif
 	   )
 	    break;
-	p += MB_PTR2LEN(p);
+	p += mb_ptr2len(p);
 	if (*p == NUL)
 	    return;
     }
@@ -5633,7 +5633,7 @@ exit_matched:
 		    && action == ACTION_EXPAND
 		    && !(compl_cont_status & CONT_SOL)
 		    && *startp != NUL
-		    && *(p = startp + MB_PTR2LEN(startp)) != NUL)
+		    && *(p = startp + mb_ptr2len(startp)) != NUL)
 		goto search_line;
 	}
 	line_breakcheck();
@@ -5783,12 +5783,18 @@ show_pat_in_path(
 #endif
 
 #ifdef FEAT_VIMINFO
+/*
+ * Return the last used search pattern at "idx".
+ */
     spat_T *
 get_spat(int idx)
 {
     return &spats[idx];
 }
 
+/*
+ * Return the last used search pattern index.
+ */
     int
 get_spat_last_idx(void)
 {

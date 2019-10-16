@@ -1624,6 +1624,7 @@ get_term_entries(int *height, int *width)
 			{KS_CM, "cm"}, {KS_SR, "sr"},
 			{KS_CRI,"RI"}, {KS_VB, "vb"}, {KS_KS, "ks"},
 			{KS_KE, "ke"}, {KS_TI, "ti"}, {KS_TE, "te"},
+			{KS_CTI, "TI"}, {KS_CTE, "TE"},
 			{KS_BC, "bc"}, {KS_CSB,"Sb"}, {KS_CSF,"Sf"},
 			{KS_CAB,"AB"}, {KS_CAF,"AF"}, {KS_LE, "le"},
 			{KS_ND, "nd"}, {KS_OP, "op"}, {KS_CRV, "RV"},
@@ -3462,6 +3463,7 @@ starttermcap(void)
     if (full_screen && !termcap_active)
     {
 	out_str(T_TI);			/* start termcap mode */
+	out_str(T_CTI);			/* start "raw" mode */
 	out_str(T_KS);			/* start "keypad transmit" mode */
 	out_str(T_BE);			/* enable bracketed paste mode */
 	out_flush();
@@ -3517,6 +3519,7 @@ stoptermcap(void)
 	out_flush();
 	termcap_active = FALSE;
 	cursor_on();			/* just in case it is still off */
+	out_str(T_CTE);			/* stop "raw" mode */
 	out_str(T_TE);			/* stop termcap mode */
 	screen_start();			/* don't know where cursor is now */
 	out_flush();
@@ -4199,6 +4202,99 @@ is_mouse_topline(win_T *wp)
 #endif
 
 /*
+ * Put "string[new_slen]" in typebuf, or in "buf[bufsize]" if "buf" is not NULL.
+ * Remove "slen" bytes.
+ * Returns FAIL for error.
+ */
+    static int
+put_string_in_typebuf(
+	int	offset,
+	int	slen,
+	char_u	*string,
+	int	new_slen,
+	char_u	*buf,
+	int	bufsize,
+	int	*buflen)
+{
+    int		extra = new_slen - slen;
+
+    string[new_slen] = NUL;
+    if (buf == NULL)
+    {
+	if (extra < 0)
+	    // remove matched chars, taking care of noremap
+	    del_typebuf(-extra, offset);
+	else if (extra > 0)
+	    // insert the extra space we need
+	    ins_typebuf(string + slen, REMAP_YES, offset, FALSE, FALSE);
+
+	// Careful: del_typebuf() and ins_typebuf() may have reallocated
+	// typebuf.tb_buf[]!
+	mch_memmove(typebuf.tb_buf + typebuf.tb_off + offset, string,
+							     (size_t)new_slen);
+    }
+    else
+    {
+	if (extra < 0)
+	    // remove matched characters
+	    mch_memmove(buf + offset, buf + offset - extra,
+					   (size_t)(*buflen + offset + extra));
+	else if (extra > 0)
+	{
+	    // Insert the extra space we need.  If there is insufficient
+	    // space return -1.
+	    if (*buflen + extra + new_slen >= bufsize)
+		return FAIL;
+	    mch_memmove(buf + offset + extra, buf + offset,
+						   (size_t)(*buflen - offset));
+	}
+	mch_memmove(buf + offset, string, (size_t)new_slen);
+	*buflen = *buflen + extra + new_slen;
+    }
+    return OK;
+}
+
+/*
+ * Decode a modifier number as xterm provides it into MOD_MASK bits.
+ */
+    static int
+decode_modifiers(int n)
+{
+    int	    code = n - 1;
+    int	    modifiers = 0;
+
+    if (code & 1)
+	modifiers |= MOD_MASK_SHIFT;
+    if (code & 2)
+	modifiers |= MOD_MASK_ALT;
+    if (code & 4)
+	modifiers |= MOD_MASK_CTRL;
+    if (code & 8)
+	modifiers |= MOD_MASK_META;
+    return modifiers;
+}
+
+    static int
+modifiers2keycode(int modifiers, int *key, char_u *string)
+{
+    int new_slen = 0;
+
+    if (modifiers != 0)
+    {
+	// Some keys have the modifier included.  Need to handle that here to
+	// make mappings work.
+	*key = simplify_key(*key, &modifiers);
+	if (modifiers != 0)
+	{
+	    string[new_slen++] = K_SPECIAL;
+	    string[new_slen++] = (int)KS_MODIFIER;
+	    string[new_slen++] = modifiers;
+	}
+    }
+    return new_slen;
+}
+
+/*
  * Check if typebuf.tb_buf[] contains a terminal key code.
  * Check from typebuf.tb_buf[typebuf.tb_off] to typebuf.tb_buf[typebuf.tb_off
  * + max_offset].
@@ -4229,8 +4325,7 @@ check_termcode(
     int		modifiers;
     char_u	*modifiers_start = NULL;
     int		key;
-    int		new_slen;
-    int		extra;
+    int		new_slen;   // Length of what will replace the termcode
     char_u	string[MAX_KEY_CODE_LEN + 1];
     int		i, j;
     int		idx = 0;
@@ -4401,16 +4496,9 @@ check_termcode(
 
 			    modifiers_start = tp + slen - 2;
 
-			    /* Match!  Convert modifier bits. */
-			    n = atoi((char *)modifiers_start) - 1;
-			    if (n & 1)
-				modifiers |= MOD_MASK_SHIFT;
-			    if (n & 2)
-				modifiers |= MOD_MASK_ALT;
-			    if (n & 4)
-				modifiers |= MOD_MASK_CTRL;
-			    if (n & 8)
-				modifiers |= MOD_MASK_META;
+			    // Match!  Convert modifier bits.
+			    n = atoi((char *)modifiers_start);
+			    modifiers |= decode_modifiers(n);
 
 			    slen = j;
 			}
@@ -4435,72 +4523,105 @@ check_termcode(
 # endif
 	   )
 	{
-	    /* Check for some responses from the terminal starting with
-	     * "<Esc>[" or CSI:
+	    char_u *argp = tp[0] == ESC ? tp + 2 : tp + 1;
+
+	    /*
+	     * Check for responses from the terminal starting with {lead}:
+	     * "<Esc>[" or CSI followed by [0-9>?]
 	     *
-	     * - Xterm version string: <Esc>[>{x};{vers};{y}c
-	     *   Libvterm returns {x} == 0, {vers} == 100, {y} == 0.
+	     * - Xterm version string: {lead}>{x};{vers};{y}c
 	     *   Also eat other possible responses to t_RV, rxvt returns
-	     *   "<Esc>[?1;2c". Also accept CSI instead of <Esc>[.
-	     *   mrxvt has been reported to have "+" in the version. Assume
-	     *   the escape sequence ends with a letter or one of "{|}~".
+	     *   "{lead}?1;2c".
 	     *
-	     * - Cursor position report: <Esc>[{row};{col}R
+	     * - Cursor position report: {lead}{row};{col}R
 	     *   The final byte must be 'R'. It is used for checking the
 	     *   ambiguous-width character state.
 	     *
-	     * - window position reply: <Esc>[3;{x};{y}t
+	     * - window position reply: {lead}3;{x};{y}t
+	     *
+	     * - key with modifiers when modifyOtherKeys is enabled:
+	     *	    {lead}27;{modifier};{key}~
+	     *	    {lead}{key};{modifier}u
 	     */
-	    char_u *argp = tp[0] == ESC ? tp + 2 : tp + 1;
-
-	    if ((*T_CRV != NUL || *T_U7 != NUL || did_request_winpos)
-			&& ((tp[0] == ESC && len >= 3 && tp[1] == '[')
+	    if (((tp[0] == ESC && len >= 3 && tp[1] == '[')
 			    || (tp[0] == CSI && len >= 2))
-			&& (VIM_ISDIGIT(*argp) || *argp == '>' || *argp == '?'))
+		    && (VIM_ISDIGIT(*argp) || *argp == '>' || *argp == '?'))
 	    {
-		int col = 0;
-		int semicols = 0;
-		int row_char = NUL;
+		int	first = -1;  // optional char right after {lead}
+		int	trail;	     // char that ends CSI sequence
+		int	arg[3] = {-1, -1, -1};	// argument numbers
+		int	argc;			// number of arguments
+		char_u	*ap = argp;
+		int	csi_len;
 
-		extra = 0;
-		for (i = 2 + (tp[0] != CSI); i < len
-				&& !(tp[i] >= '{' && tp[i] <= '~')
-				&& !ASCII_ISALPHA(tp[i]); ++i)
-		    if (tp[i] == ';' && ++semicols == 1)
+		// Check for non-digit after CSI.
+		if (!VIM_ISDIGIT(*ap))
+		    first = *ap++;
+
+		// Find up to three argument numbers.
+		for (argc = 0; argc < 3; )
+		{
+		    if (ap >= tp + len)
 		    {
-			extra = i + 1;
-			row_char = tp[i - 1];
+not_enough:
+			LOG_TR(("Not enough characters for CSI sequence"));
+			return -1;
 		    }
-		if (i == len)
-		{
-		    LOG_TR(("Not enough characters for CRV"));
-		    return -1;
+		    if (*ap == ';')
+			arg[argc++] = -1;  // omitted number
+		    else if (VIM_ISDIGIT(*ap))
+		    {
+			arg[argc] = 0;
+			for (;;)
+			{
+			    if (ap >= tp + len)
+				goto not_enough;
+			    if (!VIM_ISDIGIT(*ap))
+				break;
+			    arg[argc] = arg[argc] * 10 + (*ap - '0');
+			    ++ap;
+			}
+			++argc;
+		    }
+		    if (*ap == ';')
+			++ap;
+		    else
+			break;
 		}
-		if (extra > 0)
-		    col = atoi((char *)tp + extra);
+		// mrxvt has been reported to have "+" in the version. Assume
+		// the escape sequence ends with a letter or one of "{|}~".
+		while (ap < tp + len
+			&& !(*ap >= '{' && *ap <= '~')
+			&& !ASCII_ISALPHA(*ap))
+		    ++ap;
+		if (ap >= tp + len)
+		    goto not_enough;
+		trail = *ap;
+		csi_len = (int)(ap - tp) + 1;
 
-		/* Eat it when it has 2 arguments and ends in 'R'. Also when
-		 * u7_status is not "sent", it may be from a previous Vim that
-		 * just exited.  But not for <S-F3>, it sends something
-		 * similar, check for row and column to make sense. */
-		if (semicols == 1 && tp[i] == 'R')
+		// Cursor position report: Eat it when there are 2 arguments
+		// and it ends in 'R'. Also when u7_status is not "sent", it
+		// may be from a previous Vim that just exited.  But not for
+		// <S-F3>, it sends something similar, check for row and column
+		// to make sense.
+		if (first == -1 && argc == 2 && trail == 'R')
 		{
-		    if (row_char == '2' && col >= 2)
+		    if (arg[0] == 2 && arg[1] >= 2)
 		    {
 			char *aw = NULL;
 
 			LOG_TR(("Received U7 status: %s", tp));
 			u7_status.tr_progress = STATUS_GOT;
 			did_cursorhold = TRUE;
-			if (col == 2)
+			if (arg[1] == 2)
 			    aw = "single";
-			else if (col == 3)
+			else if (arg[1] == 3)
 			    aw = "double";
 			if (aw != NULL && STRCMP(aw, p_ambw) != 0)
 			{
-			    /* Setting the option causes a screen redraw. Do
-			     * that right away if possible, keeping any
-			     * messages. */
+			    // Setting the option causes a screen redraw. Do
+			    // that right away if possible, keeping any
+			    // messages.
 			    set_option_value((char_u *)"ambw", 0L,
 					     (char_u *)aw, 0);
 # ifdef DEBUG_TERMRESPONSE
@@ -4516,34 +4637,35 @@ check_termcode(
 		    }
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
-		    slen = i + 1;
+		    slen = csi_len;
 # ifdef FEAT_EVAL
 		    set_vim_var_string(VV_TERMU7RESP, tp, slen);
 # endif
 		}
-		/* eat it when at least one digit and ending in 'c' */
-		else if (*T_CRV != NUL && i > 2 + (tp[0] != CSI)
-							       && tp[i] == 'c')
+
+		// Version string: Eat it when there is at least one digit and
+		// it ends in 'c'
+		else if (*T_CRV != NUL && ap > argp + 1 && trail == 'c')
 		{
-		    int version = col;
+		    int version = arg[1];
 
 		    LOG_TR(("Received CRV response: %s", tp));
 		    crv_status.tr_progress = STATUS_GOT;
 		    did_cursorhold = TRUE;
 
-		    /* If this code starts with CSI, you can bet that the
-		     * terminal uses 8-bit codes. */
+		    // If this code starts with CSI, you can bet that the
+		    // terminal uses 8-bit codes.
 		    if (tp[0] == CSI)
 			switch_to_8bit();
 
-		    /* rxvt sends its version number: "20703" is 2.7.3.
-		     * Screen sends 40500.
-		     * Ignore it for when the user has set 'term' to xterm,
-		     * even though it's an rxvt. */
+		    // rxvt sends its version number: "20703" is 2.7.3.
+		    // Screen sends 40500.
+		    // Ignore it for when the user has set 'term' to xterm,
+		    // even though it's an rxvt.
 		    if (version > 20000)
 			version = 0;
 
-		    if (tp[1 + (tp[0] != CSI)] == '>' && semicols == 2)
+		    if (first == '>' && argc == 3)
 		    {
 			int need_flush = FALSE;
 			int is_iterm2 = FALSE;
@@ -4551,10 +4673,10 @@ check_termcode(
 
 			// mintty 2.9.5 sends 77;20905;0c.
 			// (77 is ASCII 'M' for mintty.)
-			if (STRNCMP(tp + extra - 3, "77;", 3) == 0)
+			if (arg[0] == 77)
 			    is_mintty = TRUE;
 
-			/* if xterm version >= 141 try to get termcap codes */
+			// if xterm version >= 141 try to get termcap codes
 			if (version >= 141)
 			{
 			    LOG_TR(("Enable checking for XT codes"));
@@ -4563,13 +4685,12 @@ check_termcode(
 			    req_codes_from_term();
 			}
 
-			/* libvterm sends 0;100;0 */
-			if (version == 100
-				&& STRNCMP(tp + extra - 2, "0;100;0c", 8) == 0)
+			// libvterm sends 0;100;0
+			if (version == 100 && arg[0] == 0 && arg[2] == 0)
 			{
-			    /* If run from Vim $COLORS is set to the number of
-			     * colors the terminal supports.  Otherwise assume
-			     * 256, libvterm supports even more. */
+			    // If run from Vim $COLORS is set to the number of
+			    // colors the terminal supports.  Otherwise assume
+			    // 256, libvterm supports even more.
 			    if (mch_getenv((char_u *)"COLORS") == NULL)
 				may_adjust_color_count(256);
 			    /* Libvterm can handle SGR mouse reporting. */
@@ -4581,56 +4702,54 @@ check_termcode(
 			if (version == 95)
 			{
 			    // Mac Terminal.app sends 1;95;0
-			    if (STRNCMP(tp + extra - 2, "1;95;0c", 7) == 0)
+			    if (arg[0] == 1 && arg[2] == 0)
 			    {
 				is_not_xterm = TRUE;
 				is_mac_terminal = TRUE;
 			    }
 			    // iTerm2 sends 0;95;0
-			    if (STRNCMP(tp + extra - 2, "0;95;0c", 7) == 0)
+			    else if (arg[0] == 0 && arg[2] == 0)
 				is_iterm2 = TRUE;
 			    // old iTerm2 sends 0;95;
-			    else if (STRNCMP(tp + extra - 2, "0;95;c", 6) == 0)
+			    else if (arg[0] == 0 && arg[2] == -1)
 				is_not_xterm = TRUE;
 			}
 
-			/* Only set 'ttymouse' automatically if it was not set
-			 * by the user already. */
+			// Only set 'ttymouse' automatically if it was not set
+			// by the user already.
 			if (!option_was_set((char_u *)"ttym"))
 			{
-			    /* Xterm version 277 supports SGR.  Also support
-			     * Terminal.app, iTerm2 and mintty. */
+			    // Xterm version 277 supports SGR.  Also support
+			    // Terminal.app, iTerm2 and mintty.
 			    if (version >= 277 || is_iterm2 || is_mac_terminal
 				    || is_mintty)
 				set_option_value((char_u *)"ttym", 0L,
 							  (char_u *)"sgr", 0);
-			    /* if xterm version >= 95 use mouse dragging */
+			    // if xterm version >= 95 use mouse dragging
 			    else if (version >= 95)
 				set_option_value((char_u *)"ttym", 0L,
 						       (char_u *)"xterm2", 0);
 			}
 
-			/* Detect terminals that set $TERM to something like
-			 * "xterm-256colors"  but are not fully xterm
-			 * compatible. */
+			// Detect terminals that set $TERM to something like
+			// "xterm-256colors"  but are not fully xterm
+			// compatible.
 
-			/* Gnome terminal sends 1;3801;0, 1;4402;0 or 1;2501;0.
-			 * xfce4-terminal sends 1;2802;0.
-			 * screen sends 83;40500;0
-			 * Assuming any version number over 2500 is not an
-			 * xterm (without the limit for rxvt and screen). */
-			if (col >= 2500)
+			// Gnome terminal sends 1;3801;0, 1;4402;0 or 1;2501;0.
+			// xfce4-terminal sends 1;2802;0.
+			// screen sends 83;40500;0
+			// Assuming any version number over 2500 is not an
+			// xterm (without the limit for rxvt and screen).
+			if (arg[1] >= 2500)
 			    is_not_xterm = TRUE;
 
-			/* PuTTY sends 0;136;0
-			 * vandyke SecureCRT sends 1;136;0 */
-			if (version == 136
-				&& STRNCMP(tp + extra - 1, ";136;0c", 7) == 0)
+			// PuTTY sends 0;136;0
+			// vandyke SecureCRT sends 1;136;0
+			else if (version == 136 && arg[2] == 0)
 			    is_not_xterm = TRUE;
 
-			/* Konsole sends 0;115;0 */
-			if (version == 115
-				&& STRNCMP(tp + extra - 2, "0;115;0c", 8) == 0)
+			// Konsole sends 0;115;0
+			else if (version == 115 && arg[0] == 0 && arg[2] == 0)
 			    is_not_xterm = TRUE;
 
 			// Xterm first responded to this request at patch level
@@ -4638,11 +4757,11 @@ check_termcode(
 			if (version < 95)
 			    is_not_xterm = TRUE;
 
-			/* Only request the cursor style if t_SH and t_RS are
-			 * set. Only supported properly by xterm since version
-			 * 279 (otherwise it returns 0x18).
-			 * Not for Terminal.app, it can't handle t_RS, it
-			 * echoes the characters to the screen. */
+			// Only request the cursor style if t_SH and t_RS are
+			// set. Only supported properly by xterm since version
+			// 279 (otherwise it returns 0x18).
+			// Not for Terminal.app, it can't handle t_RS, it
+			// echoes the characters to the screen.
 			if (rcs_status.tr_progress == STATUS_GET
 				&& version >= 279
 				&& !is_not_xterm
@@ -4655,9 +4774,9 @@ check_termcode(
 			    need_flush = TRUE;
 			}
 
-			/* Only request the cursor blink mode if t_RC set. Not
-			 * for Gnome terminal, it can't handle t_RC, it
-			 * echoes the characters to the screen. */
+			// Only request the cursor blink mode if t_RC set. Not
+			// for Gnome terminal, it can't handle t_RC, it
+			// echoes the characters to the screen.
 			if (rbm_status.tr_progress == STATUS_GET
 				&& !is_not_xterm
 				&& *T_CRC != NUL)
@@ -4671,7 +4790,7 @@ check_termcode(
 			if (need_flush)
 			    out_flush();
 		    }
-		    slen = i + 1;
+		    slen = csi_len;
 # ifdef FEAT_EVAL
 		    set_vim_var_string(VV_TERMRESPONSE, tp, slen);
 # endif
@@ -4681,69 +4800,91 @@ check_termcode(
 		    key_name[1] = (int)KE_IGNORE;
 		}
 
-		/* Check blinking cursor from xterm:
-		 * {lead}?12;1$y       set
-		 * {lead}?12;2$y       not set
-		 *
-		 * {lead} can be <Esc>[ or CSI
-		 */
+		// Check blinking cursor from xterm:
+		// {lead}?12;1$y       set
+		// {lead}?12;2$y       not set
+		//
+		// {lead} can be <Esc>[ or CSI
 		else if (rbm_status.tr_progress == STATUS_SENT
-			&& tp[(j = 1 + (tp[0] == ESC))] == '?'
-			&& i == j + 6
-			&& tp[j + 1] == '1'
-			&& tp[j + 2] == '2'
-			&& tp[j + 3] == ';'
-			&& tp[i - 1] == '$'
-			&& tp[i] == 'y')
+			&& first == '?'
+			&& ap == argp + 6
+			&& arg[0] == 12
+			&& ap[-1] == '$'
+			&& trail == 'y')
 		{
-		    initial_cursor_blink = (tp[j + 4] == '1');
+		    initial_cursor_blink = (arg[1] == '1');
 		    rbm_status.tr_progress = STATUS_GOT;
 		    LOG_TR(("Received cursor blinking mode response: %s", tp));
 		    key_name[0] = (int)KS_EXTRA;
 		    key_name[1] = (int)KE_IGNORE;
-		    slen = i + 1;
+		    slen = csi_len;
 # ifdef FEAT_EVAL
 		    set_vim_var_string(VV_TERMBLINKRESP, tp, slen);
 # endif
 		}
 
-		/*
-		 * Check for a window position response from the terminal:
-		 *       {lead}3;{x};{y}t
-		 */
-		else if (did_request_winpos
-			    && ((len >= 4 && tp[0] == ESC && tp[1] == '[')
-				|| (len >= 3 && tp[0] == CSI))
-			    && tp[(j = 1 + (tp[0] == ESC))] == '3'
-			    && tp[j + 1] == ';')
+		// Check for a window position response from the terminal:
+		//       {lead}3;{x};{y}t
+		else if (did_request_winpos && argc == 3 && arg[0] == 3
+							       && trail == 't')
 		{
-		    j += 2;
-		    for (i = j; i < len && vim_isdigit(tp[i]); ++i)
-			;
-		    if (i < len && tp[i] == ';')
-		    {
-			winpos_x = atoi((char *)tp + j);
-			j = i + 1;
-			for (i = j; i < len && vim_isdigit(tp[i]); ++i)
-			    ;
-			if (i < len && tp[i] == 't')
-			{
-			    winpos_y = atoi((char *)tp + j);
-			    /* got finished code: consume it */
-			    key_name[0] = (int)KS_EXTRA;
-			    key_name[1] = (int)KE_IGNORE;
-			    slen = i + 1;
+		    winpos_x = arg[1];
+		    winpos_y = arg[2];
+		    // got finished code: consume it
+		    key_name[0] = (int)KS_EXTRA;
+		    key_name[1] = (int)KE_IGNORE;
+		    slen = csi_len;
 
-			    if (--did_request_winpos <= 0)
-				winpos_status.tr_progress = STATUS_GOT;
-			}
-		    }
-		    if (i == len)
-		    {
-			LOG_TR(("not enough characters for winpos"));
-			return -1;
-		    }
+		    if (--did_request_winpos <= 0)
+			winpos_status.tr_progress = STATUS_GOT;
 		}
+
+		// Key with modifier:
+		//	{lead}27;{modifier};{key}~
+		//	{lead}{key};{modifier}u
+		else if ((arg[0] == 27 && argc == 3 && trail == '~')
+			|| (argc == 2 && trail == 'u'))
+		{
+		    seenModifyOtherKeys = TRUE;
+		    if (trail == 'u')
+			key = arg[0];
+		    else
+			key = arg[2];
+
+		    modifiers = decode_modifiers(arg[1]);
+
+		    // Some keys already have Shift included, pass them as
+		    // normal keys.  Not when Ctrl is also used, because <C-H>
+		    // and <C-S-H> are different.
+		    if (modifiers == MOD_MASK_SHIFT
+			    && ((key >= '@' && key <= 'Z')
+				|| key == '^' || key == '_'
+				|| (key >= '{' && key <= '~')))
+			modifiers = 0;
+
+		    // When used with Ctrl we always make a letter upper case,
+		    // so that mapping <C-H> and <C-h> are the same.  Typing
+		    // <C-S-H> also uses "H" but modifier is different.
+		    if ((modifiers & MOD_MASK_CTRL) && ASCII_ISALPHA(key))
+			key = TOUPPER_ASC(key);
+
+		    // insert modifiers with KS_MODIFIER
+		    new_slen = modifiers2keycode(modifiers, &key, string);
+		    slen = csi_len;
+
+		    if (has_mbyte)
+			new_slen += (*mb_char2bytes)(key, string + new_slen);
+		    else
+			string[new_slen++] = key;
+
+		    if (put_string_in_typebuf(offset, slen, string, new_slen,
+						 buf, bufsize, buflen) == FAIL)
+			return -1;
+		    return len + new_slen - slen + offset;
+		}
+
+		// else: Unknown CSI sequence.  We could drop it, but then the
+		// user can't create a map for it.
 	    }
 
 	    /* Check for fore/background color response from the terminal:
@@ -5125,19 +5266,7 @@ check_termcode(
 	/*
 	 * Add any modifier codes to our string.
 	 */
-	new_slen = 0;		/* Length of what will replace the termcode */
-	if (modifiers != 0)
-	{
-	    /* Some keys have the modifier included.  Need to handle that here
-	     * to make mappings work. */
-	    key = simplify_key(key, &modifiers);
-	    if (modifiers != 0)
-	    {
-		string[new_slen++] = K_SPECIAL;
-		string[new_slen++] = (int)KS_MODIFIER;
-		string[new_slen++] = modifiers;
-	    }
-	}
+	new_slen = modifiers2keycode(modifiers, &key, string);
 
 	/* Finally, add the special key code to our string */
 	key_name[0] = KEY2TERMCAP0(key);
@@ -5163,43 +5292,10 @@ check_termcode(
 	    string[new_slen++] = key_name[0];
 	    string[new_slen++] = key_name[1];
 	}
-	string[new_slen] = NUL;
-	extra = new_slen - slen;
-	if (buf == NULL)
-	{
-	    if (extra < 0)
-		/* remove matched chars, taking care of noremap */
-		del_typebuf(-extra, offset);
-	    else if (extra > 0)
-		/* insert the extra space we need */
-		ins_typebuf(string + slen, REMAP_YES, offset, FALSE, FALSE);
-
-	    /*
-	     * Careful: del_typebuf() and ins_typebuf() may have reallocated
-	     * typebuf.tb_buf[]!
-	     */
-	    mch_memmove(typebuf.tb_buf + typebuf.tb_off + offset, string,
-							    (size_t)new_slen);
-	}
-	else
-	{
-	    if (extra < 0)
-		/* remove matched characters */
-		mch_memmove(buf + offset, buf + offset - extra,
-					   (size_t)(*buflen + offset + extra));
-	    else if (extra > 0)
-	    {
-		/* Insert the extra space we need.  If there is insufficient
-		 * space return -1. */
-		if (*buflen + extra + new_slen >= bufsize)
-		    return -1;
-		mch_memmove(buf + offset + extra, buf + offset,
-						   (size_t)(*buflen - offset));
-	    }
-	    mch_memmove(buf + offset, string, (size_t)new_slen);
-	    *buflen = *buflen + extra + new_slen;
-	}
-	return retval == 0 ? (len + extra + offset) : retval;
+	if (put_string_in_typebuf(offset, slen, string, new_slen,
+						 buf, bufsize, buflen) == FAIL)
+	    return -1;
+	return retval == 0 ? (len + new_slen - slen + offset) : retval;
     }
 
 #ifdef FEAT_TERMRESPONSE
@@ -5252,18 +5348,26 @@ term_get_bg_color(char_u *r, char_u *g, char_u *b)
  * pointer to it is returned. If something fails *bufp is set to NULL and from
  * is returned.
  *
- * CTRL-V characters are removed.  When "from_part" is TRUE, a trailing CTRL-V
- * is included, otherwise it is removed (for ":map xx ^V", maps xx to
- * nothing).  When 'cpoptions' does not contain 'B', a backslash can be used
- * instead of a CTRL-V.
+ * CTRL-V characters are removed.  When "flags" has REPTERM_FROM_PART, a
+ * trailing CTRL-V is included, otherwise it is removed (for ":map xx ^V", maps
+ * xx to nothing).  When 'cpoptions' does not contain 'B', a backslash can be
+ * used instead of a CTRL-V.
+ *
+ * Flags:
+ *  REPTERM_FROM_PART	see above
+ *  REPTERM_DO_LT	also translate <lt>
+ *  REPTERM_SPECIAL	always accept <key> notation
+ *  REPTERM_NO_SIMPLIFY	do not simplify <C-H> to 0x08 and set 8th bit for <A-x>
+ *
+ * "did_simplify" is set when some <C-H> or <A-x> code was simplified, unless
+ * it is NULL.
  */
     char_u *
 replace_termcodes(
     char_u	*from,
     char_u	**bufp,
-    int		from_part,
-    int		do_lt,		/* also translate <lt> */
-    int		special)	/* always accept <key> notation */
+    int		flags,
+    int		*did_simplify)
 {
     int		i;
     int		slen;
@@ -5276,7 +5380,8 @@ replace_termcodes(
     char_u	*result;	/* buffer for resulting string */
 
     do_backslash = (vim_strchr(p_cpo, CPO_BSLASH) == NULL);
-    do_special = (vim_strchr(p_cpo, CPO_SPECI) == NULL) || special;
+    do_special = (vim_strchr(p_cpo, CPO_SPECI) == NULL)
+						  || (flags & REPTERM_SPECIAL);
     do_key_code = (vim_strchr(p_cpo, CPO_KEYCODE) == NULL);
 
     /*
@@ -5295,7 +5400,7 @@ replace_termcodes(
     /*
      * Check for #n at start only: function key n
      */
-    if (from_part && src[0] == '#' && VIM_ISDIGIT(src[1]))  /* function key */
+    if ((flags & REPTERM_FROM_PART) && src[0] == '#' && VIM_ISDIGIT(src[1]))
     {
 	result[dlen++] = K_SPECIAL;
 	result[dlen++] = 'k';
@@ -5315,7 +5420,8 @@ replace_termcodes(
 	 * If 'cpoptions' does not contain '<', check for special key codes,
 	 * like "<C-S-LeftMouse>"
 	 */
-	if (do_special && (do_lt || STRNCMP(src, "<lt>", 4) != 0))
+	if (do_special && ((flags & REPTERM_DO_LT)
+					      || STRNCMP(src, "<lt>", 4) != 0))
 	{
 #ifdef FEAT_EVAL
 	    /*
@@ -5341,7 +5447,8 @@ replace_termcodes(
 	    }
 #endif
 
-	    slen = trans_special(&src, result + dlen, TRUE, FALSE);
+	    slen = trans_special(&src, result + dlen, TRUE, FALSE,
+			     (flags & REPTERM_NO_SIMPLIFY) == 0, did_simplify);
 	    if (slen)
 	    {
 		dlen += slen;
@@ -5421,7 +5528,7 @@ replace_termcodes(
 	    ++src;				/* skip CTRL-V or backslash */
 	    if (*src == NUL)
 	    {
-		if (from_part)
+		if (flags & REPTERM_FROM_PART)
 		    result[dlen++] = key;
 		break;
 	    }

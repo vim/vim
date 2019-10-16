@@ -778,6 +778,13 @@ EXTERN int	VIsual_mode INIT(= 'v');
 EXTERN int	redo_VIsual_busy INIT(= FALSE);
 				// TRUE when redoing Visual
 
+/*
+ * The Visual area is remembered for reselection.
+ */
+EXTERN int	resel_VIsual_mode INIT(= NUL);	// 'v', 'V', or Ctrl-V
+EXTERN linenr_T	resel_VIsual_line_count;	// number of lines
+EXTERN colnr_T	resel_VIsual_vcol;		// nr of cols or end col
+
 #ifdef FEAT_MOUSE
 /*
  * When pasting text with the middle mouse button in visual mode with
@@ -835,6 +842,8 @@ EXTERN int	can_si INIT(= FALSE);
  */
 EXTERN int	can_si_back INIT(= FALSE);
 #endif
+
+EXTERN int	old_indent INIT(= 0);	// for ^^D command in insert mode
 
 EXTERN pos_T	saved_cursor		// w_cursor before formatting text.
 #ifdef DO_INIT
@@ -993,10 +1002,16 @@ EXTERN int ex_no_reprint INIT(= FALSE); // no need to print after z or p
 EXTERN int reg_recording INIT(= 0);	// register for recording  or zero
 EXTERN int reg_executing INIT(= 0);	// register being executed or zero
 
+// Set when a modifyOtherKeys sequence was seen, then simplified mappings will
+// no longer be used.
+EXTERN int seenModifyOtherKeys INIT(= FALSE);
+
 EXTERN int no_mapping INIT(= FALSE);	// currently no mapping allowed
 EXTERN int no_zero_mapping INIT(= 0);	// mapping zero not allowed
 EXTERN int allow_keys INIT(= FALSE);	// allow key codes when no_mapping
 					// is set
+EXTERN int no_reduce_keys INIT(= FALSE);  // do not apply Ctrl, Shift and Alt
+					  // to the key
 EXTERN int no_u_sync INIT(= 0);		// Don't call u_sync()
 #ifdef FEAT_EVAL
 EXTERN int u_sync_once INIT(= 0);	// Call u_sync() once when evaluating
