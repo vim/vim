@@ -1906,6 +1906,33 @@ func Test_terminal_switch_mode()
   bwipe!
 endfunc
 
+func Test_terminal_normal_mode()
+  CheckRunVimInTerminal
+
+  " Run Vim in a terminal and open a terminal window to run Vim in.
+  let lines =<< trim END
+    call setline(1, range(11111, 11122))
+    3
+  END
+  call writefile(lines, 'XtermNormal')
+  let buf = RunVimInTerminal('-S XtermNormal', {'rows': 8})
+  call term_wait(buf)
+
+  call term_sendkeys(buf, "\<C-W>N")
+  call term_sendkeys(buf, ":set number cursorline culopt=both\r")
+  call VerifyScreenDump(buf, 'Test_terminal_normal_1', {})
+
+  call term_sendkeys(buf, ":set culopt=number\r")
+  call VerifyScreenDump(buf, 'Test_terminal_normal_2', {})
+
+  call term_sendkeys(buf, ":set culopt=line\r")
+  call VerifyScreenDump(buf, 'Test_terminal_normal_3', {})
+
+  call term_sendkeys(buf, "a:q!\<CR>:q\<CR>:q\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('XtermNormal')
+endfunc
+
 func Test_terminal_hidden_and_close()
   CheckUnix
 

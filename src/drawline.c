@@ -1401,14 +1401,7 @@ win_line(
 	    {
 #ifdef FEAT_TERMINAL
 		if (get_term_attr)
-		{
 		    syntax_attr = term_get_attr(wp->w_buffer, lnum, vcol);
-
-		    if (!attr_pri)
-			char_attr = syntax_attr;
-		    else
-			char_attr = hl_combine_attr(syntax_attr, char_attr);
-		}
 #endif
 
 #ifdef FEAT_SYN_HL
@@ -2295,7 +2288,8 @@ win_line(
 		    if (win_attr != 0)
 		    {
 			char_attr = win_attr;
-			if (wp->w_p_cul && lnum == wp->w_cursor.lnum)
+			if (wp->w_p_cul && lnum == wp->w_cursor.lnum
+				    && wp->w_p_culopt_flags != CULOPT_NBR)
 			{
 			    if (!cul_screenline || (vcol >= left_curline_col
 						  && vcol <= right_curline_col))
