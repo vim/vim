@@ -535,7 +535,7 @@ check_highlight(dict_T *dict, char *name, char_u **pval)
 }
 
 /*
- * Scroll to show the line with the cursor.  This assumes lines don't wrap.
+ * Scroll to show the line with the cursor.
  */
     static void
 popup_show_curline(win_T *wp)
@@ -550,6 +550,11 @@ popup_show_curline(win_T *wp)
 	    wp->w_topline = 1;
 	else if (wp->w_topline > wp->w_buffer->b_ml.ml_line_count)
 	    wp->w_topline = wp->w_buffer->b_ml.ml_line_count;
+	while (wp->w_topline < wp->w_cursor.lnum
+		&& wp->w_topline < wp->w_buffer->b_ml.ml_line_count
+		&& plines_m_win(wp, wp->w_topline, wp->w_cursor.lnum)
+								> wp->w_height)
+	    ++wp->w_topline;
     }
 
     // Don't use "firstline" now.
@@ -1041,6 +1046,7 @@ popup_adjust_position(win_T *wp)
     linenr_T	lnum;
     int		wrapped = 0;
     int		maxwidth;
+    int		used_maxwidth = FALSE;
     int		maxspace;
     int		center_vert = FALSE;
     int		center_hor = FALSE;
@@ -1208,6 +1214,7 @@ popup_adjust_position(win_T *wp)
 		++wrapped;
 		len -= maxwidth;
 		wp->w_width = maxwidth;
+		used_maxwidth = TRUE;
 	    }
 	}
 	else if (len > maxwidth
@@ -1259,6 +1266,8 @@ popup_adjust_position(win_T *wp)
     {
 	++right_extra;
 	++extra_width;
+	if (used_maxwidth)
+	    maxwidth -= 2;  // try to show the scrollbar
     }
 
     minwidth = wp->w_minwidth;
