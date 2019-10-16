@@ -1517,7 +1517,7 @@ win_line(
 		else
 #endif
 #ifdef FEAT_SYN_HL
-		if (has_syntax)
+		if (has_syntax || get_term_attr)
 		    char_attr = syntax_attr;
 		else
 #endif

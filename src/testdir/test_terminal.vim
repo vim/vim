@@ -1140,6 +1140,20 @@ func Test_terminal_dumpload()
   quit
 endfunc
 
+func Test_terminal_dumpload_dump()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+     call term_dumpload('dumps/Test_popupwin_22.dump', #{term_rows: 12})
+  END
+  call writefile(lines, 'XtermDumpload')
+  let buf = RunVimInTerminal('-S XtermDumpload', #{rows: 15})
+  call VerifyScreenDump(buf, 'Test_terminal_dumpload', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtermDumpload')
+endfunc
+
 func Test_terminal_dumpdiff()
   call assert_equal(1, winnr('$'))
   eval 'dumps/Test_popup_command_01.dump'->term_dumpdiff('dumps/Test_popup_command_02.dump')
