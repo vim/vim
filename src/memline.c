@@ -767,6 +767,11 @@ ml_open_file(buf_T *buf)
      * Try all directories in 'directory' option.
      */
     dirp = p_dir;
+    // Empty 'directory' setting: do not use swap files.
+    if (*dirp == NUL) {
+	buf->b_may_swap = FALSE;
+	return;
+    }
     for (;;)
     {
 	if (*dirp == NUL)
