@@ -863,14 +863,6 @@ func Test_term_rgb_response()
   set t_RF= t_RB=
 endfunc
 
-" Helper function to reset ttymouse after it has been set.
-func Reset_ttymouse()
-  " Termresponse is only parsed when t_RV is not empty.
-  set t_RV=x
-  set ttymouse=xterm
-  call test_option_not_set('ttymouse')
-endfunc
-
 " This only checks if the sequence is recognized.
 " This must be after other tests, because it has side effects to xterm
 " properties.
@@ -894,14 +886,19 @@ endfunc
 " This must be after other tests, because it has side effects to xterm
 " properties.
 func Test_xx02_iTerm2_response()
-  call Reset_ttymouse()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
 
   " Old versions of iTerm2 used a different style term response.
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
   let seq = "\<Esc>[>0;95;c"
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termresponse)
   call assert_equal('xterm', &ttymouse)
 
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
   let seq = "\<Esc>[>0;95;0c"
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termresponse)
@@ -914,8 +911,11 @@ endfunc
 " This must be after other tests, because it has side effects to xterm
 " properties.
 func Test_xx03_libvterm_response()
-  call Reset_ttymouse()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
 
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
   let seq = "\<Esc>[>0;100;0c"
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termresponse)
@@ -928,8 +928,11 @@ endfunc
 " This must be after other tests, because it has side effects to xterm
 " properties.
 func Test_xx04_Mac_Terminal_response()
-  call Reset_ttymouse()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
 
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
   let seq = "\<Esc>[>1;95;0c"
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termresponse)
@@ -942,8 +945,11 @@ endfunc
 " This must be after other tests, because it has side effects to xterm
 " properties.
 func Test_xx05_mintty_response()
-  call Reset_ttymouse()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
 
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
   let seq = "\<Esc>[>77;20905;0c"
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termresponse)
@@ -956,15 +962,20 @@ endfunc
 " This must be after other tests, because it has side effects to xterm
 " properties.
 func Test_xx06_screen_response()
-  call Reset_ttymouse()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
 
   " Old versions of screen don't support SGR mouse mode.
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
   let seq = "\<Esc>[>83;40500;0c"
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termresponse)
   call assert_equal('xterm', &ttymouse)
 
   " screen supports SGR mouse mode starting in version 4.7.
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
   let seq = "\<Esc>[>83;40700;0c"
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termresponse)
