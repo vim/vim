@@ -660,7 +660,7 @@ msgid ""
 "\tLast set from "
 msgstr ""
 "\n"
-"\tПоследњи сет од "
+"\tПоследње постављено из "
 
 msgid "E691: Can only compare List with List"
 msgstr "E691: List може да се пореди само са List"
