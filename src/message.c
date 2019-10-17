@@ -1200,7 +1200,6 @@ wait_return(int redraw)
 #ifdef FEAT_GUI
 				|| c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR
 #endif
-#ifdef FEAT_MOUSE
 				|| c == K_LEFTDRAG   || c == K_LEFTRELEASE
 				|| c == K_MIDDLEDRAG || c == K_MIDDLERELEASE
 				|| c == K_RIGHTDRAG  || c == K_RIGHTRELEASE
@@ -1214,19 +1213,15 @@ wait_return(int redraw)
 					|| c == K_RIGHTMOUSE
 					|| c == K_X1MOUSE
 					|| c == K_X2MOUSE))
-#endif
 				);
 	ui_breakcheck();
-#ifdef FEAT_MOUSE
 	/*
 	 * Avoid that the mouse-up event causes visual mode to start.
 	 */
 	if (c == K_LEFTMOUSE || c == K_MIDDLEMOUSE || c == K_RIGHTMOUSE
 					  || c == K_X1MOUSE || c == K_X2MOUSE)
 	    (void)jump_to_mouse(MOUSE_SETPOS, NULL, 0);
-	else
-#endif
-	    if (vim_strchr((char_u *)"\r\n ", c) == NULL && c != Ctrl_C)
+	else if (vim_strchr((char_u *)"\r\n ", c) == NULL && c != Ctrl_C)
 	{
 	    /* Put the character back in the typeahead buffer.  Don't use the
 	     * stuff buffer, because lmaps wouldn't work. */

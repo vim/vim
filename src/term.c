@@ -1962,9 +1962,7 @@ set_termname(char_u *term)
     is_mac_terminal = FALSE;
 #endif
 
-#ifdef FEAT_MOUSE
-# if defined(UNIX) || defined(VMS)
-#  ifdef FEAT_MOUSE_TTY
+#if defined(UNIX) || defined(VMS)
     /*
      * For Unix, set the 'ttymouse' option to the type of mouse to be used.
      * The termcode for the mouse is added as a side effect in option.c.
@@ -1972,7 +1970,7 @@ set_termname(char_u *term)
     {
 	char_u	*p = (char_u *)"";
 
-#  ifdef FEAT_MOUSE_XTERM
+# ifdef FEAT_MOUSE_XTERM
 	if (use_xterm_like_mouse(term))
 	{
 	    if (use_xterm_mouse())
@@ -1980,7 +1978,7 @@ set_termname(char_u *term)
 	    else
 		p = (char_u *)"xterm";
 	}
-#  endif
+# endif
 	if (p != NULL)
 	{
 	    set_option_value((char_u *)"ttym", 0L, p, 0);
@@ -1989,17 +1987,15 @@ set_termname(char_u *term)
 	    reset_option_was_set((char_u *)"ttym");
 	}
 	if (p == NULL
-#   ifdef FEAT_GUI
+#  ifdef FEAT_GUI
 		|| gui.in_use
-#   endif
+#  endif
 		)
 	    check_mouse_termcode();	/* set mouse termcode anyway */
     }
-#  endif
-# else
+#else
     set_mouse_termcode(KS_MOUSE, (char_u *)"\233M");
-# endif
-#endif	/* FEAT_MOUSE */
+#endif
 
 #ifdef USE_TERM_CONSOLE
     /* DEFAULT_TERM indicates that it is the machine console. */
@@ -2565,8 +2561,6 @@ out_char_nf(unsigned c)
 	out_flush();
 }
 
-#if defined(FEAT_TITLE) || defined(FEAT_MOUSE_TTY) || defined(FEAT_GUI) \
-    || defined(FEAT_TERMRESPONSE) || defined(PROTO)
 /*
  * A never-padding out_str.
  * use this whenever you don't want to run the string through tputs.
@@ -2590,7 +2584,6 @@ out_str_nf(char_u *s)
     if (p_wd)
 	out_flush();
 }
-#endif
 
 /*
  * A conditional-flushing out_str, mainly for visualbell.
@@ -3151,9 +3144,6 @@ get_long_from_buf(char_u *buf, long_u *val)
 }
 #endif
 
-#if defined(FEAT_GUI) \
-    || (defined(FEAT_MOUSE) && (!defined(UNIX) || defined(FEAT_MOUSE_XTERM) \
-		|| defined(FEAT_MOUSE_GPM) || defined(FEAT_SYSMOUSE)))
 /*
  * Read the next num_bytes bytes from buf, and store them in bytes.  Assume
  * that buf has been through inchar().	Returns the actual number of bytes used
@@ -3191,7 +3181,6 @@ get_bytes_from_buf(char_u *buf, char_u *bytes, int num_bytes)
     }
     return len;
 }
-#endif
 
 /*
  * Check if the new shell size is valid, correct it if it's too small or way
@@ -3436,10 +3425,8 @@ settmode(int tmode)
 		check_for_codes_from_term();
 	    }
 #endif
-#ifdef FEAT_MOUSE_TTY
 	    if (tmode != TMODE_RAW)
 		mch_setmouse(FALSE);	// switch mouse off
-#endif
 	    if (termcap_active)
 	    {
 		if (tmode != TMODE_RAW)
@@ -5084,8 +5071,7 @@ not_enough:
 
 	/* We only get here when we have a complete termcode match */
 
-#ifdef FEAT_MOUSE
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 	/*
 	 * Only in the GUI: Fetch the pointer coordinates of the scroll event
 	 * so that we know which window to scroll later.
@@ -5109,29 +5095,29 @@ not_enough:
 	    slen += num_bytes;
 	}
 	else
-# endif
+#endif
 	/*
 	 * If it is a mouse click, get the coordinates.
 	 */
 	if (key_name[0] == KS_MOUSE
-# ifdef FEAT_MOUSE_GPM
+#ifdef FEAT_MOUSE_GPM
 		|| key_name[0] == KS_GPM_MOUSE
-# endif
-# ifdef FEAT_MOUSE_JSB
+#endif
+#ifdef FEAT_MOUSE_JSB
 		|| key_name[0] == KS_JSBTERM_MOUSE
-# endif
-# ifdef FEAT_MOUSE_NET
+#endif
+#ifdef FEAT_MOUSE_NET
 		|| key_name[0] == KS_NETTERM_MOUSE
-# endif
-# ifdef FEAT_MOUSE_DEC
+#endif
+#ifdef FEAT_MOUSE_DEC
 		|| key_name[0] == KS_DEC_MOUSE
-# endif
-# ifdef FEAT_MOUSE_PTERM
+#endif
+#ifdef FEAT_MOUSE_PTERM
 		|| key_name[0] == KS_PTERM_MOUSE
-# endif
-# ifdef FEAT_MOUSE_URXVT
+#endif
+#ifdef FEAT_MOUSE_URXVT
 		|| key_name[0] == KS_URXVT_MOUSE
-# endif
+#endif
 		|| key_name[0] == KS_SGR_MOUSE
 		|| key_name[0] == KS_SGR_MOUSE_RELEASE)
 	{
@@ -5139,7 +5125,6 @@ not_enough:
 							     &modifiers) == -1)
 		return -1;
 	}
-#endif /* FEAT_MOUSE */
 
 #ifdef FEAT_GUI
 	/*

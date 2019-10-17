@@ -47,7 +47,7 @@ static char *(p_toolbar_values[]) = {"text", "icons", "tooltips", "horiz", NULL}
 #if defined(FEAT_TOOLBAR) && defined(FEAT_GUI_GTK)
 static char *(p_tbis_values[]) = {"tiny", "small", "medium", "large", "huge", "giant", NULL};
 #endif
-#if defined(FEAT_MOUSE) && (defined(UNIX) || defined(VMS))
+#if defined(UNIX) || defined(VMS)
 static char *(p_ttym_values[]) = {"xterm", "xterm2", "dec", "netterm", "jsbterm", "pterm", "urxvt", "sgr", NULL};
 #endif
 static char *(p_ve_values[]) = {"block", "insert", "all", "onemore", NULL};
@@ -110,7 +110,7 @@ didset_string_options(void)
     (void)opt_strings_flags(p_dy, p_dy_values, &dy_flags, TRUE);
     (void)opt_strings_flags(p_tc, p_tc_values, &tc_flags, FALSE);
     (void)opt_strings_flags(p_ve, p_ve_values, &ve_flags, TRUE);
-#if defined(FEAT_MOUSE) && (defined(UNIX) || defined(VMS))
+#if defined(UNIX) || defined(VMS)
     (void)opt_strings_flags(p_ttym, p_ttym_values, &ttym_flags, FALSE);
 #endif
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
@@ -1588,7 +1588,7 @@ did_set_string_option(
     }
 #endif
 
-#if defined(FEAT_MOUSE_TTY) && (defined(UNIX) || defined(VMS))
+#if defined(UNIX) || defined(VMS)
     // 'ttymouse'
     else if (varp == &p_ttym)
     {
@@ -2254,12 +2254,7 @@ did_set_string_option(
 #endif
 	else if (varp == &p_mouse) // 'mouse'
 	{
-#ifdef FEAT_MOUSE
 	    p = (char_u *)MOUSE_ALL;
-#else
-	    if (*p_mouse != NUL)
-		errmsg = N_("E538: No mouse support");
-#endif
 	}
 #if defined(FEAT_GUI)
 	else if (varp == &p_go) // 'guioptions'
@@ -2389,20 +2384,16 @@ did_set_string_option(
 #endif
     }
 
-#ifdef FEAT_MOUSE
     if (varp == &p_mouse)
     {
-# ifdef FEAT_MOUSE_TTY
 	if (*p_mouse == NUL)
 	    mch_setmouse(FALSE);    // switch mouse off
 	else
-# endif
 	    setmouse();		    // in case 'mouse' changed
     }
-#endif
 
     if (curwin->w_curswant != MAXCOL
-		     && (get_option_flags(opt_idx) & (P_CURSWANT | P_RALL)) != 0)
+		   && (get_option_flags(opt_idx) & (P_CURSWANT | P_RALL)) != 0)
 	curwin->w_set_curswant = TRUE;
 
 #ifdef FEAT_GUI

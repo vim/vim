@@ -815,9 +815,7 @@ static funcentry_T global_functions[] =
 #ifdef FEAT_GUI
     {"test_scrollbar",	3, 3, FEARG_2,	  f_test_scrollbar},
 #endif
-#ifdef FEAT_MOUSE
     {"test_setmouse",	2, 2, 0,	  f_test_setmouse},
-#endif
     {"test_settime",	1, 1, FEARG_1,	  f_test_settime},
 #ifdef FEAT_TIMERS
     {"timer_info",	0, 1, FEARG_1,	  f_timer_info},
@@ -3433,9 +3431,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"mksession",
 #endif
 	"modify_fname",
-#ifdef FEAT_MOUSE
 	"mouse",
-#endif
 #ifdef FEAT_MOUSESHAPE
 	"mouseshape",
 #endif

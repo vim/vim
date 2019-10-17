@@ -303,7 +303,6 @@ static const struct nv_cmd
 
     /* pound sign */
     {POUND,	nv_ident,	0,			0},
-#ifdef FEAT_MOUSE
     {K_MOUSEUP, nv_mousescroll,	0,			MSCR_UP},
     {K_MOUSEDOWN, nv_mousescroll, 0,			MSCR_DOWN},
     {K_MOUSELEFT, nv_mousescroll, 0,			MSCR_LEFT},
@@ -326,7 +325,6 @@ static const struct nv_cmd
     {K_X2MOUSE, nv_mouse,	0,			0},
     {K_X2DRAG, nv_mouse,	0,			0},
     {K_X2RELEASE, nv_mouse,	0,			0},
-#endif
     {K_IGNORE,	nv_ignore,	NV_KEEPREG,		0},
     {K_NOP,	nv_nop,		0,			0},
     {K_INS,	nv_edit,	0,			0},
@@ -1319,10 +1317,8 @@ end_visual_mode(void)
 #endif
 
     VIsual_active = FALSE;
-#ifdef FEAT_MOUSE
     setmouse();
     mouse_dragging = 0;
-#endif
 
     /* Save the current VIsual area for '< and '> marks, and "gv" */
     curbuf->b_visual.vi_mode = VIsual_mode;
@@ -1849,14 +1845,13 @@ add_to_showcmd(int c)
     int		old_len;
     int		extra_len;
     int		overflow;
-#if defined(FEAT_MOUSE)
     int		i;
     static int	ignore[] =
     {
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 	K_VER_SCROLLBAR, K_HOR_SCROLLBAR,
 	K_LEFTMOUSE_NM, K_LEFTRELEASE_NM,
-# endif
+#endif
 	K_IGNORE, K_PS,
 	K_LEFTMOUSE, K_LEFTDRAG, K_LEFTRELEASE, K_MOUSEMOVE,
 	K_MIDDLEMOUSE, K_MIDDLEDRAG, K_MIDDLERELEASE,
@@ -1866,7 +1861,6 @@ add_to_showcmd(int c)
 	K_CURSORHOLD,
 	0
     };
-#endif
 
     if (!p_sc || msg_silent != 0)
 	return FALSE;
@@ -1877,13 +1871,11 @@ add_to_showcmd(int c)
 	showcmd_visual = FALSE;
     }
 
-#if defined(FEAT_MOUSE)
     /* Ignore keys that are scrollbar updates and mouse clicks */
     if (IS_SPECIAL(c))
 	for (i = 0; ignore[i] != 0; ++i)
 	    if (ignore[i] == c)
 		return FALSE;
-#endif
 
     p = transchar(c);
     if (*p == ' ')
@@ -4625,7 +4617,6 @@ nv_brackets(cmdarg_T *cap)
 	nv_cursormark(cap, cap->nchar == '\'', pos);
     }
 
-#ifdef FEAT_MOUSE
     /*
      * [ or ] followed by a middle mouse click: put selected text with
      * indent adjustment.  Any other button just does as usual.
@@ -4636,7 +4627,6 @@ nv_brackets(cmdarg_T *cap)
 		       (cap->cmdchar == ']') ? FORWARD : BACKWARD,
 		       cap->count1, PUT_FIXINDENT);
     }
-#endif /* FEAT_MOUSE */
 
 #ifdef FEAT_FOLDING
     /*
@@ -6220,7 +6210,6 @@ nv_g_cmd(cmdarg_T *cap)
 	nv_gd(oap, cap->nchar, (int)cap->count0);
 	break;
 
-#ifdef FEAT_MOUSE
     /*
      * g<*Mouse> : <C-*mouse>
      */
@@ -6243,7 +6232,6 @@ nv_g_cmd(cmdarg_T *cap)
 	mod_mask = MOD_MASK_CTRL;
 	(void)do_mouse(oap, cap->nchar, BACKWARD, cap->count1, 0);
 	break;
-#endif
 
     case K_IGNORE:
 	break;
