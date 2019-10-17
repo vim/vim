@@ -906,7 +906,18 @@ func Test_xx03_xterm_response()
   " Termresponse is only parsed when t_RV is not empty.
   set t_RV=x
 
+  " Do Terminal.app first to check that is_mac_terminal is reset.
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+  let seq = "\<Esc>[>1;95;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('sgr', &ttymouse)
+
   " xterm < 95: "xterm" (actually unmodified)
+  set t_RV=
+  set term=xterm
+  set t_RV=x
   set ttymouse=xterm
   call test_option_not_set('ttymouse')
   let seq = "\<Esc>[>0;94;0c"

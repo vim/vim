@@ -1957,6 +1957,8 @@ set_termname(char_u *term)
 #if defined(UNIX) || defined(VMS)
     term_is_xterm = vim_is_xterm(term);
 #endif
+    is_not_xterm = FALSE;
+    is_mac_terminal = FALSE;
 
 #ifdef FEAT_MOUSE
 # if defined(UNIX) || defined(VMS)
