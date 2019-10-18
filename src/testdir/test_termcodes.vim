@@ -938,7 +938,10 @@ func Test_xx04_Mac_Terminal_response()
   call assert_equal(seq, v:termresponse)
   call assert_equal('sgr', &ttymouse)
 
+  " Reset is_not_xterm and is_mac_terminal.
   set t_RV=
+  set term=xterm
+  set t_RV=x
 endfunc
 
 " This checks the mintty version response.
