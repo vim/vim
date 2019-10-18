@@ -1170,7 +1170,7 @@ official Dart language website at https://dart.dev
 
 dart.vim syntax detects and highlights Dart statements, reserved words,
 type declarations, storage classes, conditionals, loops, interpolated values,
-and comments.  There is no support idioms from Flutter or any other Dart
+and comments.  There is no support for idioms from Flutter or any other Dart
 framework.
 
 Changes, fixes?  Submit an issue or pull request via:
