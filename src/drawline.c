@@ -1470,9 +1470,21 @@ win_line(
 	    attr_pri = TRUE;
 #ifdef LINE_ATTR
 	    if (area_attr != 0)
+	    {
 		char_attr = hl_combine_attr(line_attr, area_attr);
+# ifdef FEAT_SYN_HL
+		if (syntax_attr != 0)
+		    char_attr = hl_combine_attr(syntax_attr, char_attr);
+# endif
+	    }
 	    else if (search_attr != 0)
+	    {
 		char_attr = hl_combine_attr(line_attr, search_attr);
+# ifdef FEAT_SYN_HL
+		if (syntax_attr != 0)
+		    char_attr = hl_combine_attr(syntax_attr, char_attr);
+# endif
+	    }
 # ifdef FEAT_TEXT_PROP
 	    else if (text_prop_type != NULL)
 	    {

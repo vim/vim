@@ -551,7 +551,7 @@ func Test_syntax_c()
 	\ '}',
 	\ '   static void',
 	\ 'myFunction(const double count, struct nothing, long there) {',
-	\ "\t// 123: nothing to read here",
+	\ "\t// 123: nothing to endif here",
 	\ "\tfor (int i = 0; i < count; ++i) {",
 	\ "\t   break;",
 	\ "\t}",
@@ -563,7 +563,12 @@ func Test_syntax_c()
   let $COLORFGBG = '15;0'
 
   let buf = RunVimInTerminal('Xtest.c', {})
+  call term_sendkeys(buf, ":set hlsearch\r")
+  call term_sendkeys(buf, "/endif\r")
+  call term_sendkeys(buf, "vjfC")
   call VerifyScreenDump(buf, 'Test_syntax_c_01', {})
+
+  call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
 
   let $COLORFGBG = ''
