@@ -1325,10 +1325,8 @@ save_typebuf(void)
 
 static int old_char = -1;	/* character put back by vungetc() */
 static int old_mod_mask;	/* mod_mask for ungotten character */
-#ifdef FEAT_MOUSE
 static int old_mouse_row;	/* mouse_row related to old_char */
 static int old_mouse_col;	/* mouse_col related to old_char */
-#endif
 
 /*
  * Save all three kinds of typeahead, so that the user must type at a prompt.
@@ -1559,10 +1557,8 @@ vgetc(void)
 	c = old_char;
 	old_char = -1;
 	mod_mask = old_mod_mask;
-#ifdef FEAT_MOUSE
 	mouse_row = old_mouse_row;
 	mouse_col = old_mouse_col;
-#endif
     }
     else
     {
@@ -2007,7 +2003,6 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 	rettv->v_type = VAR_STRING;
 	rettv->vval.v_string = vim_strsave(temp);
 
-#ifdef FEAT_MOUSE
 	if (is_mouse_key(n))
 	{
 	    int		row = mouse_row;
@@ -2025,11 +2020,11 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 		if (win == NULL)
 		    return;
 		(void)mouse_comp_pos(win, &row, &col, &lnum, NULL);
-# ifdef FEAT_TEXT_PROP
+#ifdef FEAT_TEXT_PROP
 		if (WIN_IS_POPUP(win))
 		    winnr = 0;
 		else
-# endif
+#endif
 		    for (wp = firstwin; wp != win && wp != NULL;
 							       wp = wp->w_next)
 			++winnr;
@@ -2039,7 +2034,6 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 		set_vim_var_nr(VV_MOUSE_COL, col + 1);
 	    }
 	}
-#endif
     }
 }
 
@@ -2636,10 +2630,8 @@ vungetc(int c)
 {
     old_char = c;
     old_mod_mask = mod_mask;
-#ifdef FEAT_MOUSE
     old_mouse_row = mouse_row;
     old_mouse_col = mouse_col;
-#endif
 }
 
 /*

@@ -13,8 +13,6 @@
 
 #include "vim.h"
 
-#if defined(FEAT_MOUSE) || defined(PROTO)
-
 /*
  * Get class of a character for selection: same class means same word.
  * 0: blank
@@ -1258,20 +1256,17 @@ get_pseudo_mouse_code(
     return (int)KE_IGNORE;	    // not recognized, ignore it
 }
 
-# ifdef FEAT_MOUSE_TTY
-#  define HMT_NORMAL	1
-#  define HMT_NETTERM	2
-#  define HMT_DEC	4
-#  define HMT_JSBTERM	8
-#  define HMT_PTERM	16
-#  define HMT_URXVT	32
-#  define HMT_GPM	64
-#  define HMT_SGR	128
-#  define HMT_SGR_REL	256
+# define HMT_NORMAL	1
+# define HMT_NETTERM	2
+# define HMT_DEC	4
+# define HMT_JSBTERM	8
+# define HMT_PTERM	16
+# define HMT_URXVT	32
+# define HMT_GPM	64
+# define HMT_SGR	128
+# define HMT_SGR_REL	256
 static int has_mouse_termcode = 0;
-# endif
 
-# if (!defined(UNIX) || defined(FEAT_MOUSE_TTY)) || defined(PROTO)
     void
 set_mouse_termcode(
     int		n,	// KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE
@@ -1282,7 +1277,6 @@ set_mouse_termcode(
     name[0] = n;
     name[1] = KE_FILLER;
     add_termcode(name, s, FALSE);
-#  ifdef FEAT_MOUSE_TTY
 #   ifdef FEAT_MOUSE_JSB
     if (n == KS_JSBTERM_MOUSE)
 	has_mouse_termcode |= HMT_JSBTERM;
@@ -1319,12 +1313,9 @@ set_mouse_termcode(
 	has_mouse_termcode |= HMT_SGR_REL;
     else
 	has_mouse_termcode |= HMT_NORMAL;
-#  endif
 }
-# endif
 
-# if ((defined(UNIX) || defined(VMS)) \
-	&& defined(FEAT_MOUSE_TTY)) || defined(PROTO)
+# if defined(UNIX) || defined(VMS) || defined(PROTO)
     void
 del_mouse_termcode(
     int		n)	// KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE
@@ -1334,7 +1325,6 @@ del_mouse_termcode(
     name[0] = n;
     name[1] = KE_FILLER;
     del_termcode(name);
-#  ifdef FEAT_MOUSE_TTY
 #   ifdef FEAT_MOUSE_JSB
     if (n == KS_JSBTERM_MOUSE)
 	has_mouse_termcode &= ~HMT_JSBTERM;
@@ -1371,7 +1361,6 @@ del_mouse_termcode(
 	has_mouse_termcode &= ~HMT_SGR_REL;
     else
 	has_mouse_termcode &= ~HMT_NORMAL;
-#  endif
 }
 # endif
 
@@ -1381,15 +1370,13 @@ del_mouse_termcode(
     void
 setmouse(void)
 {
-# ifdef FEAT_MOUSE_TTY
     int	    checkfor;
-# endif
 
 # ifdef FEAT_MOUSESHAPE
     update_mouseshape(-1);
 # endif
 
-# ifdef FEAT_MOUSE_TTY // Should be outside proc, but may break MOUSESHAPE
+    // Should be outside proc, but may break MOUSESHAPE
 #  ifdef FEAT_GUI
     // In the GUI the mouse is always enabled.
     if (gui.in_use)
@@ -1423,7 +1410,6 @@ setmouse(void)
 	mch_setmouse(TRUE);
     else
 	mch_setmouse(FALSE);
-# endif
 }
 
 /*
@@ -2289,7 +2275,7 @@ check_termcode_mouse(
 #   endif
 	   )
 	{
-#   if defined(UNIX) && defined(FEAT_MOUSE_TTY)
+#   if defined(UNIX)
 	    if (use_xterm_mouse() > 1 && mouse_code >= 0x80)
 		// mouse-move event, using MOUSE_DRAG works
 		mouse_code = MOUSE_DRAG;
@@ -2314,7 +2300,7 @@ check_termcode_mouse(
 	}
 #   endif
 
-#   if defined(UNIX) && defined(FEAT_MOUSE_TTY)
+#   if defined(UNIX)
 	else if (use_xterm_mouse() > 1)
 	{
 	    if (mouse_code & MOUSE_DRAG_XTERM)
@@ -2810,10 +2796,8 @@ check_termcode_mouse(
 
     return 0;
 }
-#endif // FEAT_MOUSE
 
 // Functions also used for popup windows.
-#if defined(FEAT_MOUSE) || defined(FEAT_TEXT_PROP) || defined(PROTO)
 
 /*
  * Compute the buffer line position from the screen position "rowp" / "colp" in
@@ -3017,15 +3001,3 @@ vcol2col(win_T *wp, linenr_T lnum, int vcol)
     return (int)(ptr - line);
 }
 #endif
-
-#else // FEAT_MOUSE
-
-/*
- * Dummy implementation of setmouse() to avoid lots of #ifdefs.
- */
-    void
-setmouse(void)
-{
-}
-
-#endif // FEAT_MOUSE

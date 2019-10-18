@@ -352,7 +352,6 @@ free_register(void *reg)
 }
 #endif
 
-#if defined(FEAT_MOUSE) || defined(PROTO)
 /*
  * return TRUE if the current yank register has type MLINE
  */
@@ -366,7 +365,6 @@ yank_register_mline(int regname)
     get_yank_register(regname, FALSE);
     return (y_current->y_type == MLINE);
 }
-#endif
 
 /*
  * Start or stop recording into a yank register.

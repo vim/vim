@@ -235,7 +235,6 @@ edit(
     conceal_check_cursor_line();
 #endif
 
-#ifdef FEAT_MOUSE
     /*
      * When doing a paste with the middle mouse button, Insstart is set to
      * where the paste started.
@@ -243,7 +242,6 @@ edit(
     if (where_paste_started.lnum != 0)
 	Insstart = where_paste_started;
     else
-#endif
     {
 	Insstart = curwin->w_cursor;
 	if (startln)
@@ -336,7 +334,6 @@ edit(
      */
     if (restart_edit != 0 && stuff_empty())
     {
-#ifdef FEAT_MOUSE
 	/*
 	 * After a paste we consider text typed to be part of the insert for
 	 * the pasted text. You can backspace over the pasted text too.
@@ -344,7 +341,6 @@ edit(
 	if (where_paste_started.lnum)
 	    arrow_used = FALSE;
 	else
-#endif
 	    arrow_used = TRUE;
 	restart_edit = 0;
 
@@ -381,9 +377,7 @@ edit(
     /* Need to save the line for undo before inserting the first char. */
     ins_need_undo = TRUE;
 
-#ifdef FEAT_MOUSE
     where_paste_started.lnum = 0;
-#endif
 #ifdef FEAT_CINDENT
     can_cindent = TRUE;
 #endif
@@ -980,7 +974,6 @@ doESCkey:
 	    inserted_space = FALSE;
 	    break;
 
-#ifdef FEAT_MOUSE
 	case K_LEFTMOUSE:   /* mouse keys */
 	case K_LEFTMOUSE_NM:
 	case K_LEFTDRAG:
@@ -1017,7 +1010,7 @@ doESCkey:
 	case K_MOUSERIGHT: /* Scroll wheel right */
 	    ins_mousescroll(MSCR_RIGHT);
 	    break;
-#endif
+
 	case K_PS:
 	    bracketed_paste(PASTE_INSERT, FALSE, NULL);
 	    if (cmdchar == K_PS)

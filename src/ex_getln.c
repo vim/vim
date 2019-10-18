@@ -795,11 +795,9 @@ getcmdline_int(
     int		save_msg_scroll = msg_scroll;
     int		save_State = State;	/* remember State when called */
     int		some_key_typed = FALSE;	/* one of the keys was typed */
-#ifdef FEAT_MOUSE
     /* mouse drag and release events are ignored, unless they are
      * preceded with a mouse down event */
     int		ignore_drag_release = TRUE;
-#endif
 #ifdef FEAT_EVAL
     int		break_ctrl_c = FALSE;
 #endif
@@ -1856,7 +1854,6 @@ getcmdline_int(
 	    break;
 #endif
 
-#ifdef FEAT_MOUSE
 	case K_MIDDLEDRAG:
 	case K_MIDDLERELEASE:
 		goto cmdline_not_changed;	/* Ignore mouse */
@@ -1960,8 +1957,6 @@ getcmdline_int(
 	case K_X2RELEASE:
 	case K_MOUSEMOVE:
 		goto cmdline_not_changed;
-
-#endif	/* FEAT_MOUSE */
 
 #ifdef FEAT_GUI
 	case K_LEFTMOUSE_NM:	/* mousefocus click, ignored */
@@ -2195,9 +2190,7 @@ getcmdline_int(
 
 	case Ctrl_V:
 	case Ctrl_Q:
-#ifdef FEAT_MOUSE
 		ignore_drag_release = TRUE;
-#endif
 		putcmdline('^', TRUE);
 		c = get_literal();	    /* get next (two) character(s) */
 		do_abbr = FALSE;	    /* don't do abbreviation now */
@@ -2213,13 +2206,11 @@ getcmdline_int(
 
 #ifdef FEAT_DIGRAPHS
 	case Ctrl_K:
-#ifdef FEAT_MOUSE
 		ignore_drag_release = TRUE;
-#endif
 		putcmdline('?', TRUE);
-#ifdef USE_ON_FLY_SCROLL
+# ifdef USE_ON_FLY_SCROLL
 		dont_scroll = TRUE;	    /* disallow scrolling here */
-#endif
+# endif
 		c = get_digraph(TRUE);
 		extra_char = NUL;
 		if (c != NUL)
@@ -2227,7 +2218,7 @@ getcmdline_int(
 
 		redrawcmd();
 		goto cmdline_not_changed;
-#endif /* FEAT_DIGRAPHS */
+#endif // FEAT_DIGRAPHS
 
 #ifdef FEAT_RIGHTLEFT
 	case Ctrl__:	    /* CTRL-_: switch language mode */

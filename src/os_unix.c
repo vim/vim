@@ -2282,7 +2282,6 @@ use_xterm_like_mouse(char_u *name)
 }
 #endif
 
-#if defined(FEAT_MOUSE_TTY) || defined(PROTO)
 /*
  * Return non-zero when using an xterm mouse, according to 'ttymouse'.
  * Return 1 for "xterm".
@@ -2303,7 +2302,6 @@ use_xterm_mouse(void)
 	return 1;
     return 0;
 }
-#endif
 
     int
 vim_is_iris(char_u *name)
@@ -3592,7 +3590,6 @@ get_tty_info(int fd, ttyinfo_T *info)
 
 #endif /* VMS  */
 
-#if defined(FEAT_MOUSE_TTY) || defined(PROTO)
 static int	mouse_ison = FALSE;
 
 /*
@@ -3601,29 +3598,29 @@ static int	mouse_ison = FALSE;
     void
 mch_setmouse(int on)
 {
-# ifdef FEAT_BEVAL_TERM
+#ifdef FEAT_BEVAL_TERM
     static int	bevalterm_ison = FALSE;
-# endif
+#endif
     int		xterm_mouse_vers;
 
-# if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
+#if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
     if (!on)
 	// Make sure not tracing mouse movements.  Important when a button-down
 	// was received but no release yet.
 	stop_xterm_trace();
-# endif
+#endif
 
     if (on == mouse_ison
-# ifdef FEAT_BEVAL_TERM
+#ifdef FEAT_BEVAL_TERM
 	    && p_bevalterm == bevalterm_ison
-# endif
+#endif
 	    )
 	/* return quickly if nothing to do */
 	return;
 
     xterm_mouse_vers = use_xterm_mouse();
 
-# ifdef FEAT_MOUSE_URXVT
+#ifdef FEAT_MOUSE_URXVT
     if (ttym_flags == TTYM_URXVT)
     {
 	out_str_nf((char_u *)
@@ -3632,7 +3629,7 @@ mch_setmouse(int on)
 		   : IF_EB("\033[?1015l", ESC_STR "[?1015l")));
 	mouse_ison = on;
     }
-# endif
+#endif
 
     if (ttym_flags == TTYM_SGR)
     {
@@ -3644,7 +3641,7 @@ mch_setmouse(int on)
 	mouse_ison = on;
     }
 
-# ifdef FEAT_BEVAL_TERM
+#ifdef FEAT_BEVAL_TERM
     if (bevalterm_ison != (p_bevalterm && on))
     {
 	bevalterm_ison = (p_bevalterm && on);
@@ -3653,7 +3650,7 @@ mch_setmouse(int on)
 	    out_str_nf((char_u *)
 			(IF_EB("\033[?1003l", ESC_STR "[?1003l")));
     }
-# endif
+#endif
 
     if (xterm_mouse_vers > 0)
     {
@@ -3661,10 +3658,10 @@ mch_setmouse(int on)
 	    out_str_nf((char_u *)
 		       (xterm_mouse_vers > 1
 			? (
-# ifdef FEAT_BEVAL_TERM
+#ifdef FEAT_BEVAL_TERM
 			    bevalterm_ison
 			       ? IF_EB("\033[?1003h", ESC_STR "[?1003h") :
-# endif
+#endif
 			      IF_EB("\033[?1002h", ESC_STR "[?1002h"))
 			: IF_EB("\033[?1000h", ESC_STR "[?1000h")));
 	else	/* disable mouse events, could probably always send the same */
@@ -3675,7 +3672,7 @@ mch_setmouse(int on)
 	mouse_ison = on;
     }
 
-# ifdef FEAT_MOUSE_DEC
+#ifdef FEAT_MOUSE_DEC
     else if (ttym_flags == TTYM_DEC)
     {
 	if (on)	/* enable mouse events */
@@ -3684,9 +3681,9 @@ mch_setmouse(int on)
 	    out_str_nf((char_u *)"\033['z");
 	mouse_ison = on;
     }
-# endif
+#endif
 
-# ifdef FEAT_MOUSE_GPM
+#ifdef FEAT_MOUSE_GPM
     else
     {
 	if (on)
@@ -3700,9 +3697,9 @@ mch_setmouse(int on)
 	    mouse_ison = FALSE;
 	}
     }
-# endif
+#endif
 
-# ifdef FEAT_SYSMOUSE
+#ifdef FEAT_SYSMOUSE
     else
     {
 	if (on)
@@ -3716,9 +3713,9 @@ mch_setmouse(int on)
 	    mouse_ison = FALSE;
 	}
     }
-# endif
+#endif
 
-# ifdef FEAT_MOUSE_JSB
+#ifdef FEAT_MOUSE_JSB
     else
     {
 	if (on)
@@ -3738,14 +3735,14 @@ mch_setmouse(int on)
 	     *	  4 = Windows Cross Hair
 	     *	  5 = Windows UP Arrow
 	     */
-#  ifdef JSBTERM_MOUSE_NONADVANCED
+# ifdef JSBTERM_MOUSE_NONADVANCED
 	    /* Disables full feedback of pointer movements */
 	    out_str_nf((char_u *)IF_EB("\033[0~ZwLMRK1Q\033\\",
 					 ESC_STR "[0~ZwLMRK1Q" ESC_STR "\\"));
-#  else
+# else
 	    out_str_nf((char_u *)IF_EB("\033[0~ZwLMRK+1Q\033\\",
 					ESC_STR "[0~ZwLMRK+1Q" ESC_STR "\\"));
-#  endif
+# endif
 	    mouse_ison = TRUE;
 	}
 	else
@@ -3755,8 +3752,8 @@ mch_setmouse(int on)
 	    mouse_ison = FALSE;
 	}
     }
-# endif
-# ifdef FEAT_MOUSE_PTERM
+#endif
+#ifdef FEAT_MOUSE_PTERM
     else
     {
 	/* 1 = button press, 6 = release, 7 = drag, 1h...9l = right button */
@@ -3766,7 +3763,7 @@ mch_setmouse(int on)
 	    out_str_nf("\033[>1l\033[>6l\033[>7l\033[>1l\033[>9h");
 	mouse_ison = on;
     }
-# endif
+#endif
 }
 
 #if defined(FEAT_BEVAL_TERM) || defined(PROTO)
@@ -3929,7 +3926,6 @@ check_mouse_termcode(void)
 	del_mouse_termcode(KS_SGR_MOUSE_RELEASE);
     }
 }
-#endif
 
 /*
  * set screen mode, always fails.
