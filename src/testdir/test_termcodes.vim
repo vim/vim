@@ -882,10 +882,35 @@ func Test_xx01_term_style_response()
   set t_RV=
 endfunc
 
+" This checks the iTerm2 version response.
+" This must be after other tests, because it has side effects to xterm
+" properties.
+func Test_xx02_iTerm2_response()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
+
+  " Old versions of iTerm2 used a different style term response.
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+  let seq = "\<Esc>[>0;95;c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('xterm', &ttymouse)
+
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+  let seq = "\<Esc>[>0;95;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('sgr', &ttymouse)
+
+  set t_RV=
+endfunc
+
 " This checks the libvterm version response.
 " This must be after other tests, because it has side effects to xterm
 " properties.
-func Test_xx02_libvterm_response()
+func Test_xx03_libvterm_response()
   " Termresponse is only parsed when t_RV is not empty.
   set t_RV=x
 
@@ -899,10 +924,73 @@ func Test_xx02_libvterm_response()
   set t_RV=
 endfunc
 
+" This checks the Mac Terminal.app version response.
+" This must be after other tests, because it has side effects to xterm
+" properties.
+func Test_xx04_Mac_Terminal_response()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
+
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+  let seq = "\<Esc>[>1;95;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('sgr', &ttymouse)
+
+  " Reset is_not_xterm and is_mac_terminal.
+  set t_RV=
+  set term=xterm
+  set t_RV=x
+endfunc
+
+" This checks the mintty version response.
+" This must be after other tests, because it has side effects to xterm
+" properties.
+func Test_xx05_mintty_response()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
+
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+  let seq = "\<Esc>[>77;20905;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('sgr', &ttymouse)
+
+  set t_RV=
+endfunc
+
+" This checks the screen version response.
+" This must be after other tests, because it has side effects to xterm
+" properties.
+func Test_xx06_screen_response()
+  " Termresponse is only parsed when t_RV is not empty.
+  set t_RV=x
+
+  " Old versions of screen don't support SGR mouse mode.
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+  let seq = "\<Esc>[>83;40500;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('xterm', &ttymouse)
+
+  " screen supports SGR mouse mode starting in version 4.7.
+  set ttymouse=xterm
+  call test_option_not_set('ttymouse')
+  let seq = "\<Esc>[>83;40700;0c"
+  call feedkeys(seq, 'Lx!')
+  call assert_equal(seq, v:termresponse)
+  call assert_equal('sgr', &ttymouse)
+
+  set t_RV=
+endfunc
+
 " This checks the xterm version response.
 " This must be after other tests, because it has side effects to xterm
 " properties.
-func Test_xx03_xterm_response()
+func Test_xx07_xterm_response()
   " Termresponse is only parsed when t_RV is not empty.
   set t_RV=x
 
@@ -943,8 +1031,6 @@ func Test_xx03_xterm_response()
 
   set t_RV=
 endfunc
-
-" TODO: check other terminals response
 
 func Test_get_termcode()
   try
