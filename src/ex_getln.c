@@ -373,6 +373,7 @@ may_do_incsearch_highlighting(
     pos_T	end_pos;
 #ifdef FEAT_RELTIME
     proftime_T	tm;
+    searchit_arg_T sia;
 #endif
     int		next_char;
     int		use_last_pat;
@@ -445,12 +446,16 @@ may_do_incsearch_highlighting(
 	if (search_first_line != 0)
 	    search_flags += SEARCH_START;
 	ccline.cmdbuff[skiplen + patlen] = NUL;
+#ifdef FEAT_RELTIME
+	vim_memset(&sia, 0, sizeof(sia));
+	sia.sa_tm = &tm;
+#endif
 	found = do_search(NULL, firstc == ':' ? '/' : firstc,
 				 ccline.cmdbuff + skiplen, count, search_flags,
 #ifdef FEAT_RELTIME
-		&tm, NULL
+		&sia
 #else
-		NULL, NULL
+		NULL
 #endif
 		);
 	ccline.cmdbuff[skiplen + patlen] = next_char;
@@ -597,8 +602,7 @@ may_adjust_incsearch_highlighting(
     pat[patlen] = NUL;
     i = searchit(curwin, curbuf, &t, NULL,
 		 c == Ctrl_G ? FORWARD : BACKWARD,
-		 pat, count, search_flags,
-		 RE_SEARCH, 0, NULL, NULL);
+		 pat, count, search_flags, RE_SEARCH, NULL);
     --emsg_off;
     pat[patlen] = save;
     if (i)

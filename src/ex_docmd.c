@@ -3600,7 +3600,7 @@ get_address(
 			curwin->w_cursor.col = 0;
 		    searchcmdlen = 0;
 		    flags = silent ? 0 : SEARCH_HIS | SEARCH_MSG;
-		    if (!do_search(NULL, c, cmd, 1L, flags, NULL, NULL))
+		    if (!do_search(NULL, c, cmd, 1L, flags, NULL))
 		    {
 			curwin->w_cursor = pos;
 			cmd = NULL;
@@ -3654,8 +3654,7 @@ get_address(
 		    pos.coladd = 0;
 		    if (searchit(curwin, curbuf, &pos, NULL,
 				*cmd == '?' ? BACKWARD : FORWARD,
-				(char_u *)"", 1L, SEARCH_MSG,
-					i, (linenr_T)0, NULL, NULL) != FAIL)
+				(char_u *)"", 1L, SEARCH_MSG, i, NULL) != FAIL)
 			lnum = pos.lnum;
 		    else
 		    {
