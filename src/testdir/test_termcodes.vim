@@ -987,7 +987,7 @@ endfunc
 " This checks the xterm version response.
 " This must be after other tests, because it has side effects to xterm
 " properties.
-func Test_xx04_xterm_response()
+func Test_xx07_xterm_response()
   " Termresponse is only parsed when t_RV is not empty.
   set t_RV=x
 
