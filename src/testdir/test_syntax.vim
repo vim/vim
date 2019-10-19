@@ -555,6 +555,7 @@ func Test_syntax_c()
 	\ "\tfor (int i = 0; i < count; ++i) {",
 	\ "\t   break;",
 	\ "\t}",
+	\ "\tNote: asdf",
 	\ '}',
 	\ ], 'Xtest.c')
  
@@ -562,7 +563,8 @@ func Test_syntax_c()
   " response to t_RB corrects it to "light".
   let $COLORFGBG = '15;0'
 
-  let buf = RunVimInTerminal('Xtest.c', {})
+  let buf = RunVimInTerminal('Xtest.c', #{rows: 22})
+  call term_sendkeys(buf, ":syn keyword Search Note\r")
   call term_sendkeys(buf, ":set hlsearch\r")
   call term_sendkeys(buf, "/endif\r")
   call term_sendkeys(buf, "vjfC")
