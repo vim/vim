@@ -4,7 +4,7 @@
 " Last Change:          2017 Jun 13
 "   https://github.com/jakar/vim-json/commit/20b650e22aa750c4ab6a66aa646bdd95d7cd548a#diff-e81fc111b2052e306d126bd9989f7b7c
 " Original Author:	Rogerz Zhang <rogerz.zhang at gmail.com> http://github.com/rogerz/vim-json
-" Acknowledgement:      Based off of vim-javascript maintained by Darrick Wiebe 
+" Acknowledgement:      Based off of vim-javascript maintained by Darrick Wiebe
 "                       http://www.vim.org/scripts/script.php?script_id=2765
 
 " 0. Initialization {{{1
@@ -61,21 +61,23 @@ endfunction
 
 " Check if line 'lnum' has more opening brackets than closing ones.
 function s:LineHasOpeningBrackets(lnum)
-  let open_0 = 0
-  let open_2 = 0
-  let open_4 = 0
   let line = getline(a:lnum)
-  let pos = match(line, '[][(){}]', 0)
-  while pos != -1
-    let idx = stridx('(){}[]', line[pos])
-    if idx % 2 == 0
-      let open_{idx} = open_{idx} + 1
-    else
-      let open_{idx - 1} = open_{idx - 1} - 1
-    endif
-    let pos = match(line, '[][(){}]', pos + 1)
-  endwhile
-  return (open_0 > 0) . (open_2 > 0) . (open_4 > 0)
+  let counts = { "[": [], "]": [], "(": [], ")": [], "{": [], "}": [] }
+
+  " :substitute expression to add bracket to appropriate dict entry
+  let Sub = {m -> add(counts[m[0]], m[0]) is []}
+
+  " Get rid of strings in the line so we don't count any brackets in a string
+  let safe_line = substitute(line, '\([^\\]\)".\{-}[^\\]"', '\1""', 'g')
+
+  call substitute(safe_line, '[][(){}]', Sub, 'g')
+
+  " How many more [,(,{ than ],),}
+  let square_diff = len(counts["["]) - len(counts["]"])
+  let paren_diff  = len(counts["("]) - len(counts[")"])
+  let curly_diff  = len(counts["{"]) - len(counts["}"])
+
+  return square_diff > 0 || paren_diff > 0 || curly_diff > 0
 endfunction
 
 function s:Match(lnum, regex)
@@ -112,7 +114,7 @@ function GetJSONIndent()
     let pairend = escape(bs[1], ']')
     let pairline = searchpair(pairstart, '', pairend, 'bW')
 
-    if pairline > 0 
+    if pairline > 0
       let ind = indent(pairline)
     else
       let ind = virtcol('.') - 1
