@@ -149,8 +149,7 @@ function GetJSONIndent()
   " If the previous line contained an opening bracket, and we are still in it,
   " add indent depending on the bracket type.
   if line =~ '[[({]'
-    let counts = s:LineHasOpeningBrackets(lnum)
-    if counts[0] == '1' || counts[1] == '1' || counts[2] == '1'
+    if s:LineHasOpeningBrackets(lnum)
       return ind + shiftwidth()
     else
       call cursor(v:lnum, vcol)
