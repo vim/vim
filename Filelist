@@ -4,6 +4,7 @@
 # source files for all source archives
 SRC_ALL =	\
 		.gitignore \
+		.gitattributes \
 		.hgignore \
 		.lgtm.yml \
 		.travis.yml \
