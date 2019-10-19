@@ -1612,7 +1612,8 @@ luaV_print(lua_State *L)
 	lua_pop(L, 1);
     }
     luaL_pushresult(&b);
-    luaV_msg(L);
+    if (!got_int)
+	luaV_msg(L);
     return 0;
 }
 
