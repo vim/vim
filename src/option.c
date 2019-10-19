@@ -5812,8 +5812,8 @@ buf_copy_options(buf_T *buf, int flags)
 
 	if (should_copy || (flags & BCO_ALWAYS))
 	{
-	    vim_memset(buf->b_p_script_ctx, 0, sizeof(buf->b_p_script_ctx));
 #ifdef FEAT_EVAL
+	    vim_memset(buf->b_p_script_ctx, 0, sizeof(buf->b_p_script_ctx));
 	    init_buf_opt_idx();
 #endif
 	    // Don't copy the options specific to a help buffer when
