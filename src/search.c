@@ -4877,7 +4877,7 @@ is_one_char(char_u *pattern, int move, pos_T *cur, int direction)
 	    regmatch.startpos[0].col++;
 	    nmatched = vim_regexec_multi(&regmatch, curwin, curbuf,
 			       pos.lnum, regmatch.startpos[0].col, NULL, NULL);
-	    if (!nmatched)
+	    if (nmatched != 0)
 		break;
 	} while (direction == FORWARD ? regmatch.startpos[0].col < pos.col
 				      : regmatch.startpos[0].col > pos.col);
@@ -4887,8 +4887,9 @@ is_one_char(char_u *pattern, int move, pos_T *cur, int direction)
 	    result = (nmatched != 0
 		&& regmatch.startpos[0].lnum == regmatch.endpos[0].lnum
 		&& regmatch.startpos[0].col == regmatch.endpos[0].col);
-	    /* one char width */
-	    if (!result && inc(&pos) >= 0 && pos.col == regmatch.endpos[0].col)
+	    // one char width
+	    if (!result && nmatched != 0
+			&& inc(&pos) >= 0 && pos.col == regmatch.endpos[0].col)
 		result = TRUE;
 	}
     }
