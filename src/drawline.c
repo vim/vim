@@ -1399,14 +1399,14 @@ win_line(
 	    }
 #endif
 
-	    if (extra_check)
+#ifdef FEAT_SYN_HL
+	    syntax_attr = 0;
+	    if (extra_check && n_extra == 0)
 	    {
-#ifdef FEAT_TERMINAL
+# ifdef FEAT_TERMINAL
 		if (get_term_attr)
 		    syntax_attr = term_get_attr(wp->w_buffer, lnum, vcol);
-#endif
-
-#ifdef FEAT_SYN_HL
+# endif
 		// Get syntax attribute.
 		if (has_syntax)
 		{
@@ -1463,8 +1463,8 @@ win_line(
 			syntax_flags = get_syntax_info(&syntax_seqnr);
 # endif
 		}
-#endif
 	    }
+#endif
 
 	    // Decide which of the highlight attributes to use.
 	    attr_pri = TRUE;
@@ -1502,7 +1502,7 @@ win_line(
 		// Use line_attr when not in the Visual or 'incsearch' area
 		// (area_attr may be 0 when "noinvcur" is set).
 # ifdef FEAT_SYN_HL
-		if (has_syntax)
+		if (syntax_attr != 0)
 		    char_attr = hl_combine_attr(syntax_attr, line_attr);
 		else
 # endif
@@ -1531,15 +1531,10 @@ win_line(
 		else
 #endif
 #ifdef FEAT_SYN_HL
-		    if (has_syntax
-# ifdef FEAT_TERMINAL
-			    || get_term_attr
-# endif
-		       )
-			char_attr = syntax_attr;
-		else
-#endif
+		    char_attr = syntax_attr;
+#else
 		    char_attr = 0;
+#endif
 	    }
 	}
 	if (char_attr == 0)

@@ -430,18 +430,6 @@
 #endif
 
 /*
- * +textprop		Text properties and popup windows
- */
-#if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
-# define FEAT_TEXT_PROP
-#endif
-
-#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)
-// Can limit syntax highlight time to 'redrawtime'.
-# define SYN_TIME_LIMIT 1
-#endif
-
-/*
  * +spell		spell checking
  *
  * Disabled for EBCDIC: * Doesn't work (SIGSEGV).
@@ -1119,10 +1107,6 @@
 # define FEAT_ARP
 #endif
 
-/*
- * +GUI_Athena		To compile Vim with or without the GUI (gvim) you have
- * +GUI_Motif		to edit the Makefile.
- */
 
 /*
  * +ole			Win32 OLE automation: Use Makefile.ovc.
@@ -1138,6 +1122,8 @@
  * +tcl			TCL interface: "--enable-tclinterp"
  * +netbeans_intg	Netbeans integration
  * +channel		Inter process communication
+ * +GUI_Athena		Athena GUI
+ * +GUI_Motif		Motif GUI
  */
 
 /*
@@ -1170,6 +1156,23 @@
 #if defined(FEAT_TERMINAL) && !defined(CURSOR_SHAPE)
 # define CURSOR_SHAPE
 #endif
+#if defined(FEAT_TERMINAL) && !defined(FEAT_SYN_HL)
+// simplify the code a bit by enabling +syntax when +terminal is enabled
+# define FEAT_SYN_HL
+#endif
+
+/*
+ * +textprop		Text properties and popup windows
+ */
+#if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
+# define FEAT_TEXT_PROP
+#endif
+
+#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)
+// Can limit syntax highlight time to 'redrawtime'.
+# define SYN_TIME_LIMIT 1
+#endif
+
 
 /*
  * +signs		Allow signs to be displayed to the left of text lines.
