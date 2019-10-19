@@ -2,17 +2,17 @@
 "
 " Language:     Dart
 " Maintainer:   Eugene 'pr3d4t0r' Ciurana <dart.syntax AT cime.net >
-" URL:          https://github.com/pr3d4t0r/dart-vim-syntax
-" Last Change:  See GitHub URL
+" Source:       https://github.com/pr3d4t0r/dart-vim-syntax
+"
+" License:      Vim is Charityware.  dart.vim syntax is Charityware.
+"               (c) Copyright 2019 by Eugene Ciurana / pr3d4t0r.  Licensed
+"               under the standard VIM LICENSE - Vim command :help uganda.txt
+"               for details.
+"
+" Questions, comments:  <dart.syntax AT cime.net>
+"                       https://ciurana.eu/pgp, https://keybase.io/pr3d4t0r
 "
 " vim: set fileencoding=utf-8:
-
-
-" Support links (remove in a future version of this syntax file):
-"
-" https://github.com/Houl/ExplainPattern-vim
-" http://vimregex.com/
-" http://vimhelp.appspot.com/pattern.txt.html#pattern%2Etxt
 
 
 " Quit when a (custom) syntax file was already loaded
