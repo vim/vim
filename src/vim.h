@@ -810,6 +810,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define WILD_ICASE		    0x100
 #define WILD_ALLLINKS		    0x200
 #define WILD_IGNORE_COMPLETESLASH   0x400
+#define WILD_NOERROR		    0x800  // sets EW_NOERROR
 
 // Flags for expand_wildcards()
 #define EW_DIR		0x01	// include directory names
