@@ -647,7 +647,8 @@ Summary: 					*help-summary*  >
 <    Also if you want to access a certain chapter in the help, the chapter
     number can be accessed directly like this: >
     	:help 10.1
-<    goes to chapter 10.1 in |usr_10.txt| and talks about recording macros.
+<    which goes to chapter 10.1 in |usr_10.txt| and talks about recording
+    macros.
 
 19) Highlighting groups.  Always start with hl-groupname.  E.g. >
     	:help hl-WarningMsg
