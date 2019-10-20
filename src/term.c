@@ -912,6 +912,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_TE,	IF_EB("\033[2J\033[?47l\0338",
 				  ESC_STR "[2J" ESC_STR_nc "[?47l" ESC_STR_nc "8")},
 #  endif
+    {(int)KS_CTI,	IF_EB("\033[>4;2m", ESC_STR_nc "[>4;2m")},
+    {(int)KS_CTE,	IF_EB("\033[>4;m", ESC_STR_nc "[>4;m")},
     {(int)KS_CIS,	IF_EB("\033]1;", ESC_STR "]1;")},
     {(int)KS_CIE,	"\007"},
     {(int)KS_TS,	IF_EB("\033]2;", ESC_STR "]2;")},
