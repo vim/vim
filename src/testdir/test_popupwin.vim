@@ -170,6 +170,10 @@ func Test_popup_with_border_and_padding()
   call assert_equal(['Top', 'Right', 'Bottom', 'Left'], options.borderhighlight)
   call assert_equal(['1', '^', '2', '>', '3', 'v', '4', '<'], options.borderchars)
 
+  " Check that popup_setoptions() takes the output of popup_getoptions()
+  call popup_setoptions(winid, options)
+  call assert_equal(options, popup_getoptions(winid))
+
   let winid = popup_create('hello both', #{line: 3, col: 8, border: [], padding: []})
   call assert_equal(#{
 	\ line: 3,

@@ -474,6 +474,8 @@ popup_notification({what}, {options})			 *popup_notification()*
 popup_show({id})						*popup_show()*
 		If {id} is a hidden popup, show it now.
 		For {id} see `popup_hide()`.
+		If {id} is the info popup it will be positioned next to the
+		current popup menu item.
 
 
 popup_setoptions({id}, {options})			*popup_setoptions()*
@@ -680,8 +682,13 @@ The second argument of |popup_create()| is a dictionary with options:
 			- "expr": if the cursor moved outside |<cexpr>|
 			- [{start}, {end}]: if the cursor moved before column
 			  {start} or after {end}
+			- [{lnum}, {start}, {end}]: if the cursor moved away
+			  from line {lnum}, before column {start} or after
+			  {end}
 			The popup also closes if the cursor moves to another
 			line or to another window.
+	mousemoved	Like "moved" but referring to the mouse pointer
+			position
 	cursorline	non-zero: Highlight the cursor line. Also scrolls the
 				  text to show this line (only works properly
 				  when 'wrap' is off).
