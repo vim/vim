@@ -43,7 +43,7 @@ the commands and options used for it.  Use these two commands:
 Many links are in vertical bars, like this: |bars|.  The bars themselves may
 be hidden or invisible; see below.  An option name, like 'number', a command
 in double quotes like ":write" and any other word can also be used as a link.
-Try it out: Move the cursor to  CTRL-]  and press CTRL-] on it.
+Try it out: move the cursor to  CTRL-]  and press CTRL-] on it.
 
 Other subjects can be found with the ":help" command; see |help.txt|.
 
