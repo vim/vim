@@ -4817,9 +4817,9 @@ before_quit_autocmds(win_T *wp, int quit_all, int forceit)
 {
     apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, wp->w_buffer);
 
-    /* Bail out when autocommands closed the window.
-     * Refuse to quit when the buffer in the last window is being closed (can
-     * only happen in autocommands). */
+    // Bail out when autocommands closed the window.
+    // Refuse to quit when the buffer in the last window is being closed (can
+    // only happen in autocommands).
     if (!win_valid(wp)
 	    || curbuf_locked()
 	    || (wp->w_buffer->b_nwindows == 1 && wp->w_buffer->b_locked > 0))
@@ -4828,9 +4828,10 @@ before_quit_autocmds(win_T *wp, int quit_all, int forceit)
     if (quit_all || (check_more(FALSE, forceit) == OK && only_one_window()))
     {
 	apply_autocmds(EVENT_EXITPRE, NULL, NULL, FALSE, curbuf);
-	/* Refuse to quit when locked or when the buffer in the last window is
-	 * being closed (can only happen in autocommands). */
-	if (curbuf_locked()
+	// Refuse to quit when locked or when the window was closed or the
+	// buffer in the last window is being closed (can only happen in
+	// autocommands).
+	if (!win_valid(wp) || curbuf_locked()
 			  || (curbuf->b_nwindows == 1 && curbuf->b_locked > 0))
 	    return TRUE;
     }
