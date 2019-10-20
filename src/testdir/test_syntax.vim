@@ -549,6 +549,7 @@ func Test_syntax_c()
 	\ '   printf("Just an example piece of C code\n");',
 	\ '   return 0x0ff;',
 	\ '}',
+	\ "\t\t ",
 	\ '   static void',
 	\ 'myFunction(const double count, struct nothing, long there) {',
 	\ "\t// 123: nothing to endif here",
@@ -565,6 +566,7 @@ func Test_syntax_c()
 
   let buf = RunVimInTerminal('Xtest.c', #{rows: 22})
   call term_sendkeys(buf, ":syn keyword Search Note\r")
+  call term_sendkeys(buf, ":syn match Error /^\\s\\+$/\r")
   call term_sendkeys(buf, ":set hlsearch\r")
   call term_sendkeys(buf, "/endif\r")
   call term_sendkeys(buf, "vjfC")

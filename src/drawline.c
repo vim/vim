@@ -1400,9 +1400,9 @@ win_line(
 #endif
 
 #ifdef FEAT_SYN_HL
-	    syntax_attr = 0;
 	    if (extra_check && n_extra == 0)
 	    {
+		syntax_attr = 0;
 # ifdef FEAT_TERMINAL
 		if (get_term_attr)
 		    syntax_attr = term_get_attr(wp->w_buffer, lnum, vcol);
