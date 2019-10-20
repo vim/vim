@@ -69,9 +69,14 @@ $(TEST_OUTFILES): $(DOSTMP)\$(*B).in
 $(SCRIPTS) $(SCRIPTS_GUI) $(SCRIPTS_WIN32) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
 
 report:
-	@echo ""
+	@rem without the +eval feature test_result.log is a copy of test.log
+	@if exist test.log ( copy /y test.log test_result.log > nul ) \
+		else ( echo No failures reported > test_result.log )
+	$(VIMPROG) -u NONE $(NO_INITS) -S summarize.vim messages
+	@echo.
 	@echo Test results:
-	@if exist test.log ( type test.log & echo TEST FAILURE & exit /b 1 ) \
+	@type test_result.log
+	@if exist test.log ( echo TEST FAILURE & exit /b 1 ) \
 		else ( echo ALL DONE )
 
 clean:
@@ -92,12 +97,14 @@ clean:
 	-for /d %i in (X*) do @rmdir /s/q %i
 	-if exist viminfo del viminfo
 	-if exist test.log del test.log
+	-if exist test_result.log del test_result.log
 	-if exist messages del messages
 	-if exist benchmark.out del benchmark.out
 	-if exist opt_test.vim del opt_test.vim
 
 nolog:
 	-if exist test.log del test.log
+	-if exist test_result.log del test_result.log
 	-if exist messages del messages
 
 benchmark:

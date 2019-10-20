@@ -1279,6 +1279,17 @@ MAIN_TARGET = $(GVIM).exe $(VIM).exe $(VIMDLLBASE).dll
 MAIN_TARGET = $(VIM).exe
 !endif
 
+# Target to run individual tests.
+VIMTESTTARGET = $(VIM).exe
+
+OLD_TEST_OUTFILES = \
+	$(SCRIPTS_FIRST) \
+	$(SCRIPTS_ALL) \
+	$(SCRIPTS_MORE1) \
+	$(SCRIPTS_MORE4) \
+	$(SCRIPTS_WIN32) \
+	$(SCRIPTS_GUI)
+
 all:	$(MAIN_TARGET) \
 	vimrun.exe \
 	install.exe \
@@ -1370,7 +1381,7 @@ tags: notags
 notags:
 	- if exist tags del tags
 
-clean:
+clean: testclean
 	- if exist $(OUTDIR)/nul $(DEL_TREE) $(OUTDIR)
 	- if exist *.obj del *.obj
 	- if exist $(VIM).exe del $(VIM).exe
@@ -1405,7 +1416,6 @@ clean:
 	cd GvimExt
 	$(MAKE) /NOLOGO -f Makefile clean
 	cd ..
-	- if exist testdir\*.out del testdir\*.out
 
 test:
 	cd testdir
@@ -1422,13 +1432,24 @@ testclean:
 	$(MAKE) /NOLOGO -f Make_dos.mak clean
 	cd ..
 
+# Run individual OLD style test.
+# These do not depend on the executable, compile it when needed.
+$(OLD_TEST_OUTFILES:.out=):
+	cd testdir
+	- if exist $@.out del $@.out
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) nolog
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) $@.out
+	@ if exist test.log ( type test.log & exit /b 1 )
+	cd ..
+
+# Run individual NEW style test.
+# These do not depend on the executable, compile it when needed.
 $(NEW_TESTS):
 	cd testdir
 	- if exist $@.res del $@.res
-	$(MAKE) /NOLOGO -f Make_dos.mak nolog
-	$(MAKE) /NOLOGO -f Make_dos.mak $@.res
-	$(MAKE) /NOLOGO -f Make_dos.mak report
-	type messages
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) nolog
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) $@.res
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) report
 	cd ..
 
 ###########################################################################
