@@ -398,7 +398,7 @@ message and refuse to exit:
 	E37: No write since last change (use ! to override) ~
 
 By specifying the override, you are in effect telling Vim, "I know that what
-I'm doing looks stupid, but I'm a big boy and really want to do this."
+I'm doing looks stupid, but I really want to do this."
 
 If you want to continue editing with Vim: The ":e!" command reloads the
 original version of the file.
