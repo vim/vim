@@ -375,7 +375,7 @@ To exit, use the "ZZ" command.  This command writes the file and exits.
 	Unlike many other editors, Vim does not automatically make a backup
 	file.  If you type "ZZ", your changes are committed and there's no
 	turning back.  You can configure the Vim editor to produce backup
-	files, see |07.4|.
+	files; see |07.4|.
 
 
 DISCARDING CHANGES
