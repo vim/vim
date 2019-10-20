@@ -561,8 +561,8 @@ Summary: 					*help-summary*  >
 10) Key combinations.  They usually start with a single letter indicating
     the mode for which they can be used.  E.g.: >
    	:help i_CTRL-X
-<    takes you to the family of Ctrl-X commands for insert mode which can be
-    used to auto complete different things.  Note, that certain keys will
+<    takes you to the family of CTRL-X commands for insert mode which can be
+    used to auto-complete different things.  Note, that certain keys will
     always be written the same, e.g. Control will always be CTRL.
     For normal mode commands there is no prefix and the topic is available at
     :h CTRL-<Letter>. E.g.  >
@@ -571,7 +571,7 @@ Summary: 					*help-summary*  >
 	:help c_CTRL-R
 <    will describe what the Ctrl-R does when entering commands in the Command
     line and >
-   	:help v_Ctrl-A
+   	:help v_CTRL-A
 <    talks about incrementing numbers in visual mode and >
 	:help g_CTRL-A
 <    talks about the g<C-A> command (e.g. you have to press "g" then <Ctrl-A>).
