@@ -689,7 +689,7 @@ Summary: 					*help-summary*  >
 <    takes you exactly to the description of the swap error message and >
 	:help W10
 <    talks about the warning "Changing a readonly file".
-    Sometimes however, those error codes are not described, but rather are
+    Sometimes, however, those error codes are not described, but rather are
     listed at the Vim command that usually causes this.  So: >
     	:help E128
 <    takes you to the |:function| command
