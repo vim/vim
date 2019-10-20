@@ -81,8 +81,8 @@ The "$" command moves the cursor to the end of a line.  If your keyboard has
 an <End> key it will do the same thing.
 
 The "^" command moves to the first non-blank character of the line.  The "0"
-command (zero) moves to the very first character of the line.  The <Home> key
-does the same thing.  In a picture:
+command (zero) moves to the very first character of the line, and the <Home>
+key does the same.  In a picture:
 
 		  ^
 	     <------------
