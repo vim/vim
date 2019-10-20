@@ -87,7 +87,6 @@ static char_u	*replace_makeprg(exarg_T *eap, char_u *p, char_u **cmdlinep);
 static char_u	*repl_cmdline(exarg_T *eap, char_u *src, int srclen, char_u *repl, char_u **cmdlinep);
 static void	ex_highlight(exarg_T *eap);
 static void	ex_colorscheme(exarg_T *eap);
-static void	ex_quit(exarg_T *eap);
 static void	ex_cquit(exarg_T *eap);
 static void	ex_quit_all(exarg_T *eap);
 static void	ex_close(exarg_T *eap);
@@ -4842,8 +4841,9 @@ before_quit_autocmds(win_T *wp, int quit_all, int forceit)
 /*
  * ":quit": quit current window, quit Vim if the last window is closed.
  * ":{nr}quit": quit window {nr}
+ * Also used when closing a terminal window that's the last one.
  */
-    static void
+    void
 ex_quit(exarg_T *eap)
 {
     win_T	*wp;

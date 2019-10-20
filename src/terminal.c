@@ -3073,6 +3073,16 @@ term_after_channel_closed(term_T *term)
 	    aco_save_T	aco;
 	    int		do_set_w_closing = term->tl_buffer->b_nwindows == 0;
 
+	    // If this is the last normal window: exit Vim.
+	    if (term->tl_buffer->b_nwindows > 0 && only_one_window())
+	    {
+		exarg_T ea;
+
+		vim_memset(&ea, 0, sizeof(ea));
+		ex_quit(&ea);
+		return TRUE;
+	    }
+
 	    // ++close or term_finish == "close"
 	    ch_log(NULL, "terminal job finished, closing window");
 	    aucmd_prepbuf(&aco, term->tl_buffer);

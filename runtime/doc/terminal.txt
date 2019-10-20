@@ -193,6 +193,7 @@ Command syntax ~
 			Supported [options] are:
 			++close		The terminal window will close
 					automatically when the job terminates.
+					|terminal-close|
 			++noclose	The terminal window will NOT close
 					automatically when the job terminates.
 			++open		When the job terminates and no window
@@ -266,6 +267,12 @@ You can use `CTRL-W :hide` to close the terminal window and make the buffer
 hidden, the job keeps running.  The `:buffer` command can be used to turn the
 current window into a terminal window.  If there are unsaved changes this
 fails, use ! to force, as usual.
+
+							*terminal-close*
+When the terminal window is closed, e.g. when the shell exits and "++close"
+argument was used, and this is the last normal Vim window, then Vim will exit.
+This is like using |:quit| in a normal window. Help and preview windows are
+not counted.
 
 To have a background job run without a window, and open the window when it's
 done, use options like this: >

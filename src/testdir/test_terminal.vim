@@ -1051,6 +1051,32 @@ func Test_terminal_qall_prompt()
   quit
 endfunc
 
+" Run Vim in a terminal, then start a terminal window with a shell and check
+" that Vim exits if it is closed.
+func Test_terminal_exit()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+     let winid = win_getid()
+     help
+     term
+     let termid = win_getid()
+     call win_gotoid(winid)
+     close
+     call win_gotoid(termid)
+  END
+  call writefile(lines, 'XtermExit')
+  let buf = RunVimInTerminal('-S XtermExit', #{rows: 10})
+  let job = term_getjob(buf)
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
+
+  " quit the shell, it will make Vim exit
+  call term_sendkeys(buf, "exit\<CR>")
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+
+  call delete('XtermExit')
+endfunc
+
 func Test_terminal_open_autocmd()
   augroup repro
     au!
