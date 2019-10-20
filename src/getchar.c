@@ -2143,6 +2143,24 @@ typedef enum {
 } map_result_T;
 
 /*
+ * Check if the bytes at the start of the typeahead buffer are a character used
+ * in CTRL-X mode.  This includes the form with a CTRL modifier.
+ */
+    static int
+at_ctrl_x_key(void)
+{
+    char_u  *p = typebuf.tb_buf + typebuf.tb_off;
+    int	    c = *p;
+
+    if (typebuf.tb_len > 3
+	    && c == K_SPECIAL
+	    && p[1] == KS_MODIFIER
+	    && (p[2] & MOD_MASK_CTRL))
+	c = p[3] & 0x1f;
+    return vim_is_ctrl_x_key(c);
+}
+
+/*
  * Handle mappings in the typeahead buffer.
  * - When something was mapped, return map_result_retry for recursive mappings.
  * - When nothing mapped and typeahead has a character: return map_result_get.
@@ -2193,7 +2211,7 @@ handle_mapping(
 	    && !(State == HITRETURN && (tb_c1 == CAR || tb_c1 == ' '))
 	    && State != ASKMORE
 	    && State != CONFIRM
-	    && !((ctrl_x_mode_not_default() && vim_is_ctrl_x_key(tb_c1))
+	    && !((ctrl_x_mode_not_default() && at_ctrl_x_key())
 		    || ((compl_cont_status & CONT_LOCAL)
 			&& (tb_c1 == Ctrl_N || tb_c1 == Ctrl_P))))
     {
