@@ -637,8 +637,8 @@ Summary: 					*help-summary*  >
 <    Move around to the match you like and press Enter to jump to that help.
 
 18) The user manual.  This describes help topics for beginners in a rather
-    friendly way.  Start at |usr_toc.txt| to find the table of content (as you
-    might have guessed): >
+    friendly way.  Start at |usr_toc.txt| to find the table of contents (as
+    you might have guessed): >
     	:help usr_toc.txt
 <    Skim over the contents to find interesting topics. The "Digraphs" and
     "Entering special characters" items are in chapter 24, so to go to that
