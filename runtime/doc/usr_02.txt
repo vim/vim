@@ -654,7 +654,7 @@ Summary: 					*help-summary*  >
     	:help hl-WarningMsg
 <    talks about the WarningMsg highlighting group.
 
-20) Syntax highlighting is namespaced to :syn-topic e.g. >
+20) Syntax highlighting is namespaced to :syn-topic.  E.g. >
 	:help :syn-conceal
 <    talks about the conceal argument for the :syn command.
 
