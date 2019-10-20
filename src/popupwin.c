@@ -2225,7 +2225,7 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
 	popup_close_and_callback(wp, &argvars[1]);
 }
 
-    static void
+    void
 popup_hide(win_T *wp)
 {
     if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
@@ -2272,7 +2272,11 @@ f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
     win_T	*wp = find_popup_win(id);
 
     if (wp != NULL)
+    {
 	popup_show(wp);
+	if (wp->w_popup_flags & POPF_INFO)
+	    pum_position_info_popup(wp);
+    }
 }
 
 /*

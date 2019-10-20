@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Sep 28
+*options.txt*	For Vim version 8.1.  Last change: 2019 Oct 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1917,6 +1917,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    completion in a popup window.  Only works in combination
 		    with "menu" or "menuone".  Overrides "preview".
 		    See |'completepopup'| for specifying properties.
+		    {only works when compiled with the |+textprop| feature}
+
+	   popuphidden
+	   	    Just like "popup" but initially hide the popup.  Use a
+		    |CompleteChanged| autocommand to fetch the info and call
+		    |popup_show()| once the popup has been filled.
+		    See the example at |complete-popuphidden|.
 		    {only works when compiled with the |+textprop| feature}
 
 	   noinsert Do not insert any text for a match until the user selects

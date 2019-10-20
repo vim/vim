@@ -2112,6 +2112,13 @@ typedef enum {
     FLUSH_INPUT		// flush typebuf and inchar() input
 } flush_buffers_T;
 
+// Argument for prepare_tagpreview()
+typedef enum {
+    USEPOPUP_NONE,
+    USEPOPUP_NORMAL,	// use info popup
+    USEPOPUP_HIDDEN	// use info popup initially hidden
+} use_popup_T;
+
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff
 

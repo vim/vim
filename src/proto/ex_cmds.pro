@@ -35,7 +35,7 @@ void global_exe(char_u *cmd);
 char_u *get_old_sub(void);
 void set_old_sub(char_u *val);
 void free_old_sub(void);
-int prepare_tagpreview(int undo_sync, int use_previewpopup, int use_popup);
+int prepare_tagpreview(int undo_sync, int use_previewpopup, use_popup_T use_popup);
 void ex_help(exarg_T *eap);
 void ex_helpclose(exarg_T *eap);
 char_u *check_help_lang(char_u *arg);
