@@ -221,7 +221,8 @@ you can see?  This figure shows the three commands you can use:
 		L -->	| text sample text	    |
 			+---------------------------+
 
-Hints: "H" stands for Home, "M" for Middle and "L" for Last.
+Hints: "H" stands for Home, "M" for Middle and "L" for Last.  Alternatively,
+"H" for High, "M" for Middle and "L" for Low.
 
 ==============================================================================
 *03.6*	Telling where you are
