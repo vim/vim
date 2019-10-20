@@ -576,7 +576,7 @@ Summary: 					*help-summary*  >
 	:help g_CTRL-A
 <    talks about the g<C-A> command (i.e. you have to press "g" then <Ctrl-A>).
     Here the "g" stand for the normal command "g" which always expects a second
-    key before doing something similar to the commands starting with "z"
+    key before doing something, similar to the commands starting with "z"
 
 11) Regexp items always start with /.  So to get help for the "\+" quantifier
     in Vim regexes: >
