@@ -253,6 +253,9 @@ linelen(int *has_tab)
 
     /* find the first non-blank character */
     line = ml_get_curline();
+    if (*line == NUL)
+	return 0;
+
     first = skipwhite(line);
 
     /* find the character after the last non-blank character */

@@ -489,3 +489,21 @@ func Test_format_list_auto()
   bwipe!
   set fo& ai& bs&
 endfunc
+
+func Test_crash_5095()
+  if !has('autocmd')
+    return
+  endif
+
+  " This used to segfault, see https://github.com/vim/vim/issues/5095
+  augroup testing
+    au BufNew x center
+  augroup END
+
+  next! x
+
+  bw
+  augroup testing
+    au!
+  augroup END
+endfunc
