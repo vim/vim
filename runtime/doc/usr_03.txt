@@ -501,8 +501,8 @@ Regular expressions are an extremely powerful and compact way to specify a
 search pattern.  Unfortunately, this power comes at a price, because regular
 expressions are a bit tricky to specify.
    In this section we mention only a few essential ones.  More about search
-patterns and commands in chapter 27 |usr_27.txt|.  You can find the full
-explanation here: |pattern|.
+patterns and commands can be found in chapter 27 |usr_27.txt|.  You can find
+the full explanation here: |pattern|.
 
 
 BEGINNING AND END OF A LINE
