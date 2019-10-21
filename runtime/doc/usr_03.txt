@@ -463,8 +463,8 @@ really jump to that location.  Or type more to change the search string.
 	:set nowrapscan
 
 This stops the search at the end of the file.  Or, when you are searching
-backwards, at the start of the file.  The 'wrapscan' option is on by default,
-thus searching wraps around the end of the file.
+backwards, it stops the search at the start of the file.  The 'wrapscan'
+option is on by default, thus searching wraps around the end of the file.
 
 
 INTERMEZZO
