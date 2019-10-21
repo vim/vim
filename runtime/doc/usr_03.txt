@@ -618,7 +618,7 @@ Thus to move to the a mark:
 
 The command 'mark (single quotation mark, or apostrophe) moves you to the
 beginning of the line containing the mark.  This differs from the `mark
-command, which moves you to marked column.
+command, which moves you to the marked column.
 
 The marks can be very useful when working on two related parts in a file.
 Suppose you have some text near the start of the file you need to look at,
