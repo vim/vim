@@ -387,7 +387,7 @@ To put text from the clipboard back into the text: >
 	"*p
 
 This only works on versions of Vim that include clipboard support.  More about
-the clipboard in section |09.3| and here: |clipboard|.
+the clipboard can be found in section |09.3| and here: |clipboard|.
 
 ==============================================================================
 *04.8*	Text objects
