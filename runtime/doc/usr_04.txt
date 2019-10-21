@@ -497,7 +497,7 @@ yank the text.  And so forth.
 There are a few common commands to make changes that didn't fit somewhere
 else:
 
-	~	change case of the character under the cursor, and move the
+	~	Change case of the character under the cursor, and move the
 		cursor to the next character.  This is not an operator (unless
 		'tildeop' is set), thus you can't use it with a motion
 		command.  It does work in Visual mode and changes case for
