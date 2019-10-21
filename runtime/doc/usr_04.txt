@@ -137,7 +137,7 @@ REPLACING WITH ONE CHARACTER
 
 The "r" command is not an operator.  It waits for you to type a character, and
 will replace the character under the cursor with it.  You could do the same
-with "cl" or with the "s" command, but with "r" you don't have to press <Esc>
+with "cl" or with the "s" command, but with "r" you don't have to press <Esc>.
 
 	there is somerhing grong here ~
 	rT	     rt    rw
