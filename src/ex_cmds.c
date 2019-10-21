@@ -251,18 +251,23 @@ linelen(int *has_tab)
     int	    save;
     int	    len;
 
-    /* find the first non-blank character */
+    // Get the line.  If it's empty bail out early (could be the empty string
+    // for an unloaded buffer).
     line = ml_get_curline();
+    if (*line == NUL)
+	return 0;
+
+    // find the first non-blank character
     first = skipwhite(line);
 
-    /* find the character after the last non-blank character */
+    // find the character after the last non-blank character
     for (last = first + STRLEN(first);
 				last > first && VIM_ISWHITE(last[-1]); --last)
 	;
     save = *last;
     *last = NUL;
-    len = linetabsize(line);		/* get line length */
-    if (has_tab != NULL)		/* check for embedded TAB */
+    len = linetabsize(line);		// get line length
+    if (has_tab != NULL)		// check for embedded TAB
 	*has_tab = (vim_strchr(first, TAB) != NULL);
     *last = save;
 
