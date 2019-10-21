@@ -255,11 +255,11 @@ restores the character.
 
 	g intelligent turtle ~
 
-The next u command restores the next-to-last character deleted:
+The next "u" command restores the next-to-last character deleted:
 
 	ng intelligent turtle ~
 
-The next u command gives you the u, and so on:
+The next "u" command gives you the u, and so on:
 
 	ung intelligent turtle ~
 	oung intelligent turtle ~
@@ -551,7 +551,7 @@ Summary: 					*help-summary*  >
    command argument %: >
    	:help c_%
 
-8) Ex-commands always start with ":", so to go to the :s command help: >
+8) Ex-commands always start with ":", so to go to the ":s" command help: >
 	:help :s
 
 9) Commands specifically for debugging start with ">".  To go to the help
@@ -574,7 +574,7 @@ Summary: 					*help-summary*  >
    	:help v_CTRL-A
 <    talks about incrementing numbers in visual mode and >
 	:help g_CTRL-A
-<    talks about the g<C-A> command (i.e. you have to press "g" then <Ctrl-A>).
+<    talks about the "g<C-A>" command (i.e. you have to press "g" then <Ctrl-A>).
     Here the "g" stand for the normal command "g" which always expects a second
     key before doing something, similar to the commands starting with "z".
 
@@ -656,7 +656,7 @@ Summary: 					*help-summary*  >
 
 20) Syntax highlighting is namespaced to :syn-topic.  E.g. >
 	:help :syn-conceal
-<    talks about the conceal argument for the :syn command.
+<    talks about the conceal argument for the ":syn" command.
 
 21) Quickfix commands usually start with :c while location list commands
     usually start with :l
