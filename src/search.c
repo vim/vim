@@ -4706,23 +4706,14 @@ current_search(
     if (VIsual_active && *p_sel == 'e' && LT_POS(VIsual, curwin->w_cursor))
 	dec_cursor();
 
+    orig_pos = pos = curwin->w_cursor;
     if (VIsual_active)
     {
-	orig_pos = curwin->w_cursor;
-
-	pos = curwin->w_cursor;
-
-	/* make sure, searching further will extend the match */
-	if (VIsual_active)
-	{
-	    if (forward)
-		incl(&pos);
-	    else
-		decl(&pos);
-	}
+	if (forward)
+	    incl(&pos);
+	else
+	    decl(&pos);
     }
-    else
-	orig_pos = pos = curwin->w_cursor;
 
     /* Is the pattern is zero-width?, this time, don't care about the direction
      */
