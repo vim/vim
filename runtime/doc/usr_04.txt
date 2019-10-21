@@ -472,7 +472,7 @@ character.
 *04.10*	Conclusion
 
 The operators, movement commands and text objects give you the possibility to
-make lots of combinations.  Now that you know how it works, you can use N
+make lots of combinations.  Now that you know how they work, you can use N
 operators with M movement commands to make N * M commands!
 
 You can find a list of operators here: |operator|
