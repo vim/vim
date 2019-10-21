@@ -4775,7 +4775,6 @@ current_search(
 				ml_get(curwin->w_buffer->b_ml.ml_line_count));
 	    }
 	}
-	p_ws = old_p_ws;
     }
 
     start_pos = pos;
