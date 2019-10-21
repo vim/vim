@@ -364,11 +364,11 @@ Use "y$" to yank to the end of the line.
 
 If you are using the GUI version of Vim (gvim), you can find the "Copy" item
 in the "Edit" menu.  First select some text with Visual mode, then use the
-Edit/Copy menu.  The selected text is now copied to the clipboard.  You can
-paste the text in other programs.  In Vim itself too.
+menu to choose Edit/Copy.  The selected text is now copied to the clipboard.
+You can paste the text in other programs.  In Vim itself too.
 
 If you have copied text to the clipboard in another application, you can paste
-it in Vim with the Edit/Paste menu.  This works in Normal mode and Insert
+it in Vim with the Edit/Paste menu item.  This works in Normal mode and Insert
 mode.  In Visual mode the selected text is replaced with the pasted text.
 
 The "Cut" menu item deletes the text before it's put on the clipboard.  The
