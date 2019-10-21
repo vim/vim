@@ -528,7 +528,7 @@ And with "/^the" we find this one:
 	the solder holding one of the chips melted and the ~
 	xxx
 
-You can try searching with "/^the$", it will only match a single line
+You can try searching with "/^the$"; it will only match a single line
 consisting of "the".  White space does matter here, thus if a line contains a
 space after the word, like "the ", the pattern will not match.
 
