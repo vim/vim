@@ -431,11 +431,11 @@ sentence "Another line.":
 	some text. ~
 
 "cis" consists of the "c" (change) operator and the "is" text object.  This
-stands for "Inner Sentence".  There is also the "as" (a sentence) object.  The
-difference is that "as" includes the white space after the sentence and "is"
-doesn't.  If you would delete a sentence, you want to delete the white space
-at the same time, thus use "das".  If you want to type new text the white
-space can remain, thus you use "cis".
+stands for "Inner Sentence".  There is also the "as" ("A Sentence") object.
+The difference is that "as" includes the white space after the sentence and
+"is" doesn't.  If you would delete a sentence, you want to delete the white
+space at the same time, thus use "das".  If you want to type new text the
+white space can remain, thus you use "cis".
 
 You can also use text objects in Visual mode.  It will include the text object
 in the Visual selection.  Visual mode continues, thus you can do this several
