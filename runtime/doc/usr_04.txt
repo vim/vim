@@ -114,7 +114,7 @@ Insert mode and append new text.
 SHORTCUTS
 
 Some operator-motion commands are used so often that they have been given a
-single letter command:
+single-letter command:
 
 	x  stands for  dl  (delete character under the cursor)
 	X  stands for  dh  (delete character left of the cursor)
