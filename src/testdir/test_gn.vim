@@ -136,7 +136,8 @@ func Test_gn_command()
   call setline('.', ['abcdefghi'])
   let @/ = 'b'
   exe "norm! 0fhvhhgngU"
-  call assert_equal(['aBCDEFGHi'], getline(1,'$'))
+  call assert_equal(['abcdefghi'], getline(1,'$'))
+  sil! %d _
   call setline('.', ['abcdefghi'])
   let @/ = 'f'
   exe "norm! 0vllgngU"
