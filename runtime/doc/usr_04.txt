@@ -91,7 +91,7 @@ This "c2wbe<Esc>" contains these bits:
 	be	insert this text
 	<Esc>	back to Normal mode
 
-You may have noticed something strange: The space before "human" isn't
+You may have noticed something strange: the space before "human" isn't
 deleted.  There is a saying that for every problem there is an answer that is
 simple, clear, and wrong.  That is the case with the example used here for the
 "cw" command.  The c operator works just like the d operator, with one
@@ -179,7 +179,7 @@ cursor on the < and use the "." command.
 The "." command works for all changes you make, except for the "u" (undo),
 CTRL-R (redo) and commands that start with a colon (:).
 
-Another example: You want to change the word "four" to "five".  It appears
+Another example: you want to change the word "four" to "five".  It appears
 several times in your text.  You can do this quickly with this sequence of
 commands:
 
