@@ -33,7 +33,7 @@ using a count: "4x" deletes four characters.
 move word command.  In fact, the "d" command may be followed by any motion
 command, and it deletes from the current location to the place where the
 cursor winds up.
-   The "4w" command, for example, moves the cursor over four words.  The d4w
+   The "4w" command, for example, moves the cursor over four words.  The "d4w"
 command deletes four words.
 
 	To err is human. To really foul up you need a computer. ~
@@ -272,7 +272,7 @@ where they open a new line below or above the cursor.
 *04.5*	Moving text
 
 When you delete something with "d", "x", or another command, the text is
-saved.  You can paste it back by using the p command.  (The Vim name for
+saved.  You can paste it back by using the "p" command.  (The Vim name for
 this is put).
    Take a look at how this works.  First you will delete an entire line, by
 putting the cursor on the line you want to delete and typing "dd".  Now you
