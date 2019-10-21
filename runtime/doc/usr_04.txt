@@ -212,8 +212,8 @@ word:
 		This is an example of visual mode ~
 
 When doing this you don't really have to count how many times you have to
-press "l" to end up in the right position.  You can immediately see what text
-will be deleted when you press "d".
+press "l" to end up in the right position.  You know that when you press "d"
+exactly the text currently highlighted is what will be deleted.
 
 If at any time you decide you don't want to do anything with the highlighted
 text, just press <Esc> and Visual mode will stop without doing anything.
