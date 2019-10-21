@@ -4787,6 +4787,8 @@ current_search(
     curwin->w_cursor = end_pos;
     if (LT_POS(VIsual, end_pos))
 	dec_cursor();
+    else if (VIsual_active && LT_POS(curwin->w_cursor, VIsual))
+	curwin->w_cursor = pos;   // put the cursor on the start of the match
     VIsual_active = TRUE;
     VIsual_mode = 'v';
 
