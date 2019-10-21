@@ -565,8 +565,8 @@ where you came from, use this command: >
 
 This ` is a backtick or open single-quote character.
    If you use the same command a second time you will jump back again.  That's
-because the ` command is a jump itself, and the position from before this jump
-is remembered.
+because the "`" command is a jump itself, and the position from before this
+jump is remembered.
 
 Generally, every time you do a command that can move the cursor further than
 within the same line, this is called a jump.  This includes the search
@@ -575,7 +575,7 @@ the character searches with "fx" and "tx" or the word movements "w" and "e".
    Also, "j" and "k" are not considered to be a jump, even when you use a
 count to make them move the cursor quite a long way away.
 
-The `` command jumps back and forth, between two points.  The CTRL-O command
+The "``" command jumps back and forth, between two points.  The CTRL-O command
 jumps to older positions (Hint: O for older).  CTRL-I then jumps back to newer
 positions (Hint: for many common keyboard layouts, I is just next to O).
 Consider this sequence of commands: >
@@ -616,8 +616,8 @@ Thus to move to the a mark:
 >
 	`a
 
-The command 'mark (single quotation mark, or apostrophe) moves you to the
-beginning of the line containing the mark.  This differs from the `mark
+The command "'mark" (single quotation mark, or apostrophe) moves you to the
+beginning of the line containing the mark.  This differs from the "`mark"
 command, which also moves you to the marked column.
 
 The marks can be very useful when working on two related parts in a file.
