@@ -4676,7 +4676,7 @@ abort_search:
 
 #endif /* FEAT_TEXTOBJ */
 
-static int is_one_char(char_u *pattern, int move, pos_T *cur, int direction);
+static int is_zero_width(char_u *pattern, int move, pos_T *cur, int direction);
 
 /*
  * Find next search match under cursor, cursor at end.
@@ -4697,7 +4697,7 @@ current_search(
     char_u	old_p_ws = p_ws;
     int		flags = 0;
     pos_T	save_VIsual = VIsual;
-    int		one_char;
+    int		zero_width;
 
     /* wrapping should not occur */
     p_ws = FALSE;
@@ -4726,9 +4726,9 @@ current_search(
 
     /* Is the pattern is zero-width?, this time, don't care about the direction
      */
-    one_char = is_one_char(spats[last_idx].pat, TRUE, &curwin->w_cursor,
+    zero_width = is_zero_width(spats[last_idx].pat, TRUE, &curwin->w_cursor,
 								      FORWARD);
-    if (one_char == -1)
+    if (zero_width == -1)
     {
 	p_ws = old_p_ws;
 	return FAIL;  /* pattern not found */
@@ -4747,7 +4747,7 @@ current_search(
 	    dir = !i;
 
 	flags = 0;
-	if (!dir && !one_char)
+	if (!dir && !zero_width)
 	    flags = SEARCH_END;
 	end_pos = pos;
 
@@ -4800,7 +4800,6 @@ current_search(
     VIsual_active = TRUE;
     VIsual_mode = 'v';
 
-    redraw_curbuf_later(INVERTED);	/* update the inversion */
     if (*p_sel == 'e')
     {
 	/* Correction for exclusive selection depends on the direction. */
@@ -4836,7 +4835,7 @@ current_search(
  * Returns TRUE, FALSE or -1 for failure.
  */
     static int
-is_one_char(char_u *pattern, int move, pos_T *cur, int direction)
+is_zero_width(char_u *pattern, int move, pos_T *cur, int direction)
 {
     regmmatch_T	regmatch;
     int		nmatched = 0;
@@ -4887,10 +4886,6 @@ is_one_char(char_u *pattern, int move, pos_T *cur, int direction)
 	    result = (nmatched != 0
 		&& regmatch.startpos[0].lnum == regmatch.endpos[0].lnum
 		&& regmatch.startpos[0].col == regmatch.endpos[0].col);
-	    // one char width
-	    if (!result && nmatched != 0
-			&& inc(&pos) >= 0 && pos.col == regmatch.endpos[0].col)
-		result = TRUE;
 	}
     }
 
