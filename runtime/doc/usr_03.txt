@@ -577,8 +577,8 @@ count to make them move the cursor quite a long way away.
 
 The `` command jumps back and forth, between two points.  The CTRL-O command
 jumps to older positions (Hint: O for older).  CTRL-I then jumps back to newer
-positions (Hint: I is just next to O on the keyboard).  Consider this sequence
-of commands: >
+positions (Hint: for many common keyboard layouts, I is just next to O).
+Consider this sequence of commands: >
 
 	33G
 	/^The
