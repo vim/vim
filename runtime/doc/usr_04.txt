@@ -177,8 +177,8 @@ cursor on the < and use the "." command.
 	f<   find next <		       ------------->
 	.    repeat df>					    -->
 
-The "." command works for all changes you make, except for the "u" (undo),
-CTRL-R (redo) and commands that start with a colon (:).
+The "." command works for all changes you make, except for "u" (undo), CTRL-R
+(redo) and commands that start with a colon (:).
 
 Another example: you want to change the word "four" to "five".  It appears
 several times in your text.  You can do this quickly with this sequence of
