@@ -299,9 +299,9 @@ To scroll one line at a time use CTRL-E (scroll up) and CTRL-Y (scroll down).
 Think of CTRL-E to give you one line Extra.  (If you use MS-Windows compatible
 key mappings CTRL-Y will redo a change instead of scroll.)
 
-To scroll forwards by a whole screen (except for two lines) use CTRL-F.  The
-other way is backwards, CTRL-B is the command to use.  Fortunately CTRL-F is
-Forwards and CTRL-B is Backwards, that's easy to remember.
+To scroll forwards by a whole screen (except for two lines) use CTRL-F.  To
+scroll backwards, use CTRL-B.  These should be easy to remember: F for
+Forwards and B for Backwards.
 
 A common issue is that after moving down many lines with "j" your cursor is at
 the bottom of the screen.  You would like to see the context of the line with
