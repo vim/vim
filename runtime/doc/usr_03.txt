@@ -486,7 +486,8 @@ Vim.  Example: >
 	Go:set hlsearch<Esc>
 
 "G" moves to the end of the file.  "o" starts a new line, where you type the
-":set" command.  You end insert mode with <Esc>.  Then write the file: >
+":set" command.  You end insert mode with <Esc>.  Then write and close the
+file: >
 
 	ZZ
 
