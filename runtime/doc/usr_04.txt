@@ -478,7 +478,7 @@ operators with M movement commands to make N * M commands!
 You can find a list of operators here: |operator|.
 
 For example, there are many other ways to delete pieces of text.  Here are a
-few often used ones:
+few common ones:
 
 x	delete character under the cursor (short for "dl")
 X	delete character before the cursor (short for "dh")
@@ -494,7 +494,7 @@ If you use "c" instead of "d" they become change commands.  And with "y" you
 yank the text.  And so forth.
 
 
-There are a few often used commands to make changes that didn't fit somewhere
+There are a few common commands to make changes that didn't fit somewhere
 else:
 
 	~	change case of the character under the cursor, and move the
