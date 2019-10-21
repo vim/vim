@@ -139,7 +139,7 @@ After you return to Normal mode, you can move around by using these keys:
 
 At first, it may appear that these commands were chosen at random.  After all,
 who ever heard of using l for right?  But actually, there is a very good
-reason for these choices: Moving the cursor is the most common thing you do in
+reason for these choices: moving the cursor is the most common thing you do in
 an editor, and these keys are on the home row of your right hand.  In other
 words, these commands are placed where you can type them the fastest
 (especially when you type with ten fingers).
@@ -241,8 +241,8 @@ Move the cursor to the first line and press "J":
 
 Suppose you delete too much.  Well, you can type it in again, but an easier
 way exists.  The "u" command undoes the last edit.  Take a look at this in
-action: After using "dd" to delete the first line, "u" brings it back.
-   Another one: Move the cursor to the A in the first line:
+action: after using "dd" to delete the first line, "u" brings it back.
+   Another one: move the cursor to the A in the first line:
 
 	A young intelligent turtle ~
 
@@ -400,7 +400,7 @@ message and refuse to exit:
 By specifying the override, you are in effect telling Vim, "I know that what
 I'm doing looks stupid, but I really want to do this."
 
-If you want to continue editing with Vim: The ":e!" command reloads the
+If you want to continue editing with Vim: the ":e!" command reloads the
 original version of the file.
 
 ==============================================================================
@@ -424,7 +424,7 @@ You could also use the first function key <F1>.  If your keyboard has a <Help>
 key it might work as well.
    If you don't supply a subject, ":help" displays the general help window.
 The creators of Vim did something very clever (or very lazy) with the help
-system: They made the help window a normal editing window.  You can use all
+system: they made the help window a normal editing window.  You can use all
 the normal Vim commands to move through the help information.  Therefore h, j,
 k, and l move left, down, up and right.
    To get out of the help window, use the same command you use to get out of
