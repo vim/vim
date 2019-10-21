@@ -403,8 +403,8 @@ to do this: "daw".
 
 The "d" of "daw" is the delete operator.  "aw" is a text object.  Hint: "aw"
 stands for "A Word".  Thus "daw" is "Delete A Word".  To be precise, the white
-space after the word is also deleted (the white space before the word at the
-end of the line).
+space after the word is also deleted (or the white space before the word if at
+the end of the line).
 
 Using text objects is the third way to make changes in Vim.  We already had
 operator-motion and Visual mode.  Now we add operator-text object.
