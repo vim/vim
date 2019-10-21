@@ -151,7 +151,7 @@ operations, not just searches.
 *03.4*	Matching a parenthesis
 
 When writing a program you often end up with nested () constructs.  Then the
-"%" command is very handy: It moves to the matching paren.  If the cursor is
+"%" command is very handy: it moves to the matching paren.  If the cursor is
 on a "(" it will move to the matching ")".  If it's on a ")" it will move to
 the matching "(".
 
@@ -399,7 +399,7 @@ SEARCHING FOR A WORD IN THE TEXT
 Suppose you see the word "TheLongFunctionName" in the text and you want to
 find the next occurrence of it.  You could type "/TheLongFunctionName", but
 that's a lot of typing.  And when you make a mistake Vim won't find it.
-   There is an easier way: Position the cursor on the word and use the "*"
+   There is an easier way: position the cursor on the word and use the "*"
 command.  Vim will grab the word under the cursor and use it as the search
 string.
    The "#" command does the same in the other direction.  You can prepend a
