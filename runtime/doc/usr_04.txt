@@ -165,7 +165,7 @@ The "." command is one of the most simple yet powerful commands in Vim.  It
 repeats the last change.  For instance, suppose you are editing an HTML file
 and want to delete all the <B> tags.  You position the cursor on the first <
 and delete the <B> with the command "df>".  You then go to the < of the next
-</B> and kill it using the "." command.  The "." command executes the last
+</B> and delete it using the "." command.  The "." command executes the last
 change command (in this case, "df>").  To delete another tag, position the
 cursor on the < and use the "." command.
 
