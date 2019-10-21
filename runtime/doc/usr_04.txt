@@ -271,7 +271,7 @@ where they open a new line below or above the cursor.
 ==============================================================================
 *04.5*	Moving text
 
-When you delete something with the "d", "x", or another command, the text is
+When you delete something with "d", "x", or another command, the text is
 saved.  You can paste it back by using the p command.  (The Vim name for
 this is put).
    Take a look at how this works.  First you will delete an entire line, by
