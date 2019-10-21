@@ -506,4 +506,5 @@ func Test_crash_5095()
   augroup testing
     au!
   augroup END
+  augroup! testing
 endfunc
