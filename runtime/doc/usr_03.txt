@@ -308,13 +308,13 @@ the bottom of the screen.  You would like to see the context of the line with
 the cursor.  That's done with the "zz" command.
 
 	+------------------+		 +------------------+
-	| some text	   |		 | some text	    |
-	| some text	   |		 | some text	    |
-	| some text	   |		 | some text	    |
-	| some text	   |   zz  -->	 | line with cursor |
-	| some text	   |		 | some text	    |
-	| some text	   |		 | some text	    |
-	| line with cursor |		 | some text	    |
+	| earlier text	   |		 | earlier text	    |
+	| earlier text	   |		 | earlier text	    |
+	| earlier text	   |		 | earlier text	    |
+	| earlier text	   |   zz  -->	 | line with cursor |
+	| earlier text	   |		 | later text	    |
+	| earlier text	   |		 | later text	    |
+	| line with cursor |		 | later text	    |
 	+------------------+		 +------------------+
 
 The "zt" command puts the cursor line at the top, "zb" at the bottom.  There
