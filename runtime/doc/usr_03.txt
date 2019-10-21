@@ -529,8 +529,8 @@ And with "/^the" we find this one:
 	xxx
 
 You can try searching with "/^the$"; it will only match a single line
-consisting of "the".  White space does matter here, thus if a line contains a
-space after the word, like "the ", the pattern will not match.
+consisting entirely of "the".  White space does matter here, thus if a line
+contains a space after the word, like "the ", the pattern will not match.
 
 
 MATCHING ANY SINGLE CHARACTER
