@@ -324,8 +324,8 @@ context around the cursor, use the 'scrolloff' option.
 ==============================================================================
 *03.8*	Simple searches
 
-To search for a string, use the "/string" command.  To find the word include,
-for example, use the command: >
+To search for a string, use the "/{pattern}" command.  To find the word
+include, for example, use the command: >
 
 	/include
 
