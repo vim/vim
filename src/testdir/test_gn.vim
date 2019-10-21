@@ -143,6 +143,11 @@ func Test_gn_command()
   exe "norm! 0vllgngU"
   call assert_equal(['ABCDEFghi'], getline(1,'$'))
   sil! %d _
+  call setline('.', ['12345678'])
+  let @/ = '5'
+  norm! gg0f7vhhhhgnd
+  call assert_equal(['12348'], getline(1,'$'))
+  sil! %d _
 
   set wrapscan&vim
 endfu
