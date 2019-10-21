@@ -572,7 +572,7 @@ Generally, every time you do a command that can move the cursor further than
 within the same line, this is called a jump.  This includes the search
 commands "/" and "n" (it doesn't matter how far away the match is).  But not
 the character searches with "fx" and "tx" or the word movements "w" and "e".
-   Also, "j" and "k" are not considered to be a jump.  Even when you use a
+   Also, "j" and "k" are not considered to be a jump, even when you use a
 count to make them move the cursor quite a long way away.
 
 The `` command jumps back and forth, between two points.  The CTRL-O command
