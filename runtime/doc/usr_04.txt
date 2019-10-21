@@ -91,14 +91,14 @@ This "c2wbe<Esc>" contains these bits:
 	be	insert this text
 	<Esc>	back to Normal mode
 
-If you have paid attention, you will have noticed something strange: The space
-before "human" isn't deleted.  There is a saying that for every problem there
-is an answer that is simple, clear, and wrong.  That is the case with the
-example used here for the "cw" command.  The c operator works just like the
-d operator, with one exception: "cw".  It actually works like "ce", change to
-end of word.  Thus the space after the word isn't included.  This is an
-exception that dates back to the old Vi.  Since many people are used to it
-now, the inconsistency has remained in Vim.
+You may have noticed something strange: The space before "human" isn't
+deleted.  There is a saying that for every problem there is an answer that is
+simple, clear, and wrong.  That is the case with the example used here for the
+"cw" command.  The c operator works just like the d operator, with one
+exception: "cw".  It actually works like "ce", change to end of word.  Thus
+the space after the word isn't included.  This is an exception that dates back
+to the old Vi.  Since many people are used to it now, the inconsistency has
+remained in Vim.
 
 
 MORE CHANGES
