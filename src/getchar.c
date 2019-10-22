@@ -2059,8 +2059,8 @@ f_getcharmod(typval_T *argvars UNUSED, typval_T *rettv)
     void
 parse_queued_messages(void)
 {
-    int	    old_curwin_id = curwin->w_id;
-    int	    old_curbuf_fnum = curbuf->b_fnum;
+    int	    old_curwin_id;
+    int	    old_curbuf_fnum;
     int	    i;
     int	    save_may_garbage_collect = may_garbage_collect;
     static int entered = 0;
@@ -2070,6 +2070,14 @@ parse_queued_messages(void)
     // change or be wiped while they are being redrawn.
     if (updating_screen)
 	return;
+
+    // If memory allocation fails during startup we'll exit but curbuf or
+    // curwin could be NULL.
+    if (curbuf == NULL || curwin == NULL)
+       return;
+
+    old_curbuf_fnum = curbuf->b_fnum;
+    old_curwin_id = curwin->w_id;
 
     ++entered;
 
