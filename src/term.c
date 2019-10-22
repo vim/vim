@@ -2548,15 +2548,14 @@ static void out_char_nf(unsigned);
 
 /*
  * out_char_nf(c): like out_char(), but don't flush when p_wd is set
+ *
+ * This path does not translate a LF into CR-LF as this path is expected to be
+ * working with terminal commands that may use the code 0x0A and it would make
+ * a mess of them to perform this translation.
  */
     static void
 out_char_nf(unsigned c)
 {
-#if defined(UNIX) || defined(VMS) || defined(AMIGA) || defined(MACOS_X)
-    if (c == '\n')	/* turn LF into CR-LF (CRMOD doesn't seem to do this) */
-	out_char_nf('\r');
-#endif
-
     out_buf[out_pos++] = c;
 
     if (out_pos >= OUT_SIZE)
