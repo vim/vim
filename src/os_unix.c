@@ -3456,8 +3456,11 @@ mch_settmode(int tmode)
 				    /* but it breaks function keys on MINT */
 # endif
 				);
-# ifdef ONLCR	    /* don't map NL -> CR NL, we do it ourselves */
-	tnew.c_oflag &= ~ONLCR;
+# ifdef ONLCR
+	/* Don't map NL -> CR NL or expands tabs, we do it ourselves,
+	 * but not for terminal commands! */
+	tnew.c_oflag &= ~(ONLCR | TABDLY);
+	tnew.c_oflag |= TAB0;
 # endif
 	tnew.c_cc[VMIN] = 1;		/* return after 1 char */
 	tnew.c_cc[VTIME] = 0;		/* don't wait */
