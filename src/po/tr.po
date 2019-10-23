@@ -204,7 +204,7 @@ msgstr "E94: %s için eşleşen arabellek yok"
 
 #, c-format
 msgid "line %ld"
-msgstr "satır %ld"
+msgstr "%ld. satır"
 
 msgid "E95: Buffer with this name already exists"
 msgstr "E95: Aynı adda bir arabellek halihazırda var"
@@ -341,7 +341,7 @@ msgid ""
 "E513: write error, conversion failed in line %ld (make 'fenc' empty to "
 "override)"
 msgstr ""
-"E513: Yazma hatası, %ld satırında dönüştürme başarısız (yoksaymak için dosya "
+"E513: Yazma hatası, %ld. satırda dönüştürme başarısız (yoksaymak için dosya "
 "kodlamasını boş yapın)"
 
 msgid "E514: write error (file system full?)"
@@ -352,7 +352,7 @@ msgstr " DÖNÜŞTÜRME HATASI"
 
 #, c-format
 msgid " in line %ld;"
-msgstr " şu satırda: %ld;"
+msgstr " %ld. satırda;"
 
 msgid "[NOT converted]"
 msgstr "[dönüştürülmedi]"
@@ -497,7 +497,7 @@ msgstr "Yeni değer = \"%s\""
 
 #, c-format
 msgid "line %ld: %s"
-msgstr "satır: %ld: %s"
+msgstr "%ld. satır: %s"
 
 #, c-format
 msgid "cmd: %s"
@@ -512,7 +512,7 @@ msgstr "çerçeve en yüksek düzeyde: %d"
 
 #, c-format
 msgid "Breakpoint in \"%s%s\" line %ld"
-msgstr "Kesme noktası şurada: \"%s%s\", satır %ld"
+msgstr "Kesme noktası şurada: \"%s%s\", %ld. satır"
 
 #, c-format
 msgid "E161: Breakpoint not found: %s"
@@ -523,7 +523,7 @@ msgstr "Hiçbir kesme noktası tanımlanmamış"
 
 #, c-format
 msgid "%3d  %s %s  line %ld"
-msgstr "%3d  %s %s  satır %ld"
+msgstr "%3d  %s %s  %ld. satır"
 
 #, c-format
 msgid "%3d  expr %s"
@@ -1136,26 +1136,26 @@ msgstr "(Kesildi) "
 #, c-format
 msgid "%ld match on %ld line"
 msgid_plural "%ld matches on %ld line"
-msgstr[0] "%ld eşleşme/%ld. satır"
-msgstr[1] "%ld eşleşme/%ld. satır"
+msgstr[0] "%ld eşleşme/%ld satırda"
+msgstr[1] "%ld eşleşme/%ld satırda"
 
 #, c-format
 msgid "%ld substitution on %ld line"
 msgid_plural "%ld substitutions on %ld line"
-msgstr[0] "%ld değiştirme/%ld. satır"
-msgstr[1] "%ld değiştirme/%ld. satır"
+msgstr[0] "%ld değiştirme/%ld satırda"
+msgstr[1] "%ld değiştirme/%ld satırda"
 
 #, c-format
 msgid "%ld match on %ld lines"
 msgid_plural "%ld matches on %ld lines"
-msgstr[0] "%ld eşleşme/%ld. satır"
-msgstr[1] "%ld eşleşme/%ld. satır"
+msgstr[0] "%ld eşleşme/%ld satırda"
+msgstr[1] "%ld eşleşme/%ld satırda"
 
 #, c-format
 msgid "%ld substitution on %ld lines"
 msgid_plural "%ld substitutions on %ld lines"
-msgstr[0] "%ld değiştirme/%ld. satır"
-msgstr[1] "%ld değiştirme/%ld. satır"
+msgstr[0] "%ld değiştirme/%ld satırda"
+msgstr[1] "%ld değiştirme/%ld satırda"
 
 msgid "E147: Cannot do :global recursive with a range"
 msgstr "E147: :global özyinelemesi bir erim ile yapılamaz"
@@ -1435,7 +1435,7 @@ msgstr "Kural dışı durum kenara atıldı: %s"
 
 #, c-format
 msgid "%s, line %ld"
-msgstr "%s, satır %ld"
+msgstr "%s, %ld. satır"
 
 #, c-format
 msgid "Exception caught: %s"
@@ -1581,11 +1581,11 @@ msgstr "[uzun satırlar bölünmüş]"
 
 #, c-format
 msgid "[CONVERSION ERROR in line %ld]"
-msgstr "[%ld satırında DÖNÜŞTÜRME HATASI]"
+msgstr "[%ld. satırda DÖNÜŞTÜRME HATASI]"
 
 #, c-format
 msgid "[ILLEGAL BYTE in line %ld]"
-msgstr "[%ld satırında GEÇERSİZ BAYT]"
+msgstr "[%ld. satırda GEÇERSİZ BAYT]"
 
 msgid "[READ ERRORS]"
 msgstr "[OKUMA HATALARI]"
@@ -3579,7 +3579,7 @@ msgstr "E315: ml_get: geçersiz satır numarası: %ld"
 
 #, c-format
 msgid "E316: ml_get: cannot find line %ld"
-msgstr "E316: ml_get: satır %ld bulunamıyor"
+msgstr "E316: ml_get: %ld. satır bulunamıyor"
 
 msgid "E317: pointer block id wrong 3"
 msgstr "E317: Blok 3 gösterge kimliği yanlış"
@@ -3598,7 +3598,7 @@ msgstr "Blok 1 mi silindi?"
 
 #, c-format
 msgid "E320: Cannot find line %ld"
-msgstr "E320: Satır %ld bulunamıyor"
+msgstr "E320: %ld. satır bulunamıyor"
 
 msgid "E317: pointer block id wrong"
 msgstr "E317: Gösterge blok kimliği yanlış"
@@ -3608,11 +3608,11 @@ msgstr "pe_line_count sıfır"
 
 #, c-format
 msgid "E322: line number out of range: %ld past the end"
-msgstr "E322: satır numarası erimin dışında: %ld sonunu geçmiş"
+msgstr "E322: satır numarası erimin dışında: %ld en sonuncuyu geçmiş"
 
 #, c-format
 msgid "E323: line count wrong in block %ld"
-msgstr "E323: Blok %ld içinde satır sayısı yanlış"
+msgstr "E323: %ld. blokta satır sayısı yanlış"
 
 msgid "Stack size increases"
 msgstr "Yığın boyutu artıyor"
@@ -3777,7 +3777,7 @@ msgstr "Sürdürmek için ENTER'a basın veya komut girin"
 
 #, c-format
 msgid "%s line %ld"
-msgstr "%s satır %ld"
+msgstr "%s %ld. satır"
 
 msgid "-- More --"
 msgstr "-- Daha fazla --"
@@ -3826,14 +3826,14 @@ msgstr "Sayı girin ve <Enter>'a basın (boş iptal eder): "
 #, c-format
 msgid "%ld more line"
 msgid_plural "%ld more lines"
-msgstr[0] "%ld daha fazla satır"
-msgstr[1] "%ld daha fazla satır"
+msgstr[0] "%ld fazla satır"
+msgstr[1] "%ld fazla satır"
 
 #, c-format
 msgid "%ld line less"
 msgid_plural "%ld fewer lines"
-msgstr[0] "%ld daha az satır"
-msgstr[1] "%ld daha az satır"
+msgstr[0] "%ld az satır"
+msgstr[1] "%ld az satır"
 
 msgid " (Interrupted)"
 msgstr " (Yarıda kesildi)"
@@ -4784,7 +4784,7 @@ msgstr "\"%s\" kaynak alınamadı"
 
 #, c-format
 msgid "line %ld: could not source \"%s\""
-msgstr "satır %ld: \"%s\" kaynak alınamadı"
+msgstr "%ld. satır: \"%s\" kaynak alınamadı"
 
 #, c-format
 msgid "sourcing \"%s\""
@@ -4792,7 +4792,7 @@ msgstr "\"%s\" kaynak alınıyor"
 
 #, c-format
 msgid "line %ld: sourcing \"%s\""
-msgstr "satır %ld: \"%s\" kaynak alınıyor"
+msgstr "%ld. satır: \"%s\" kaynak alınıyor"
 
 #, c-format
 msgid "finished sourcing %s"
