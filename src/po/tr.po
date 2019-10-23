@@ -1385,7 +1385,7 @@ msgid "E809: #< is not available without the +eval feature"
 msgstr "E809: #<, +eval özelliği olmadan kullanılamaz"
 
 msgid "E194: No alternate file name to substitute for '#'"
-msgstr "E194: '#' yerine koymak için alternatif dosya adı yok"
+msgstr "E194: '#' yerine koymak için başka dosya adı yok"
 
 msgid "E495: no autocommand file name to substitute for \"<afile>\""
 msgstr "E495: \"<afile>\" yerine koymak için otokomut dosya adı yok"
@@ -6658,7 +6658,7 @@ msgid "E22: Scripts nested too deep"
 msgstr "E22: Betikler çok iç içe geçmiş"
 
 msgid "E23: No alternate file"
-msgstr "E23: Alternatif dosya yok"
+msgstr "E23: Başka bir dosya yok"
 
 msgid "E24: No such abbreviation"
 msgstr "E24: Böyle bir kısaltma yok"
