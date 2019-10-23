@@ -1494,7 +1494,7 @@ term_try_stop_job(buf_T *buf)
 	if (job->jv_status >= JOB_ENDED)
 	    return OK;
 
-	ui_delay(10L, FALSE);
+	ui_delay(10L, TRUE);
 	term_flush_messages();
     }
     return FAIL;
