@@ -2526,7 +2526,6 @@ dnd_yank_drag_data(char_u *str, long len)
 #endif
 
 
-#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the type of a register.
  * Used for getregtype()
@@ -2571,6 +2570,7 @@ get_reg_type(int regname, long *reglen)
     return MAUTO;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * When "flags" has GREG_LIST return a list with text "s".
  * Otherwise just return "s".
