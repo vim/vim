@@ -341,8 +341,8 @@ msgid ""
 "E513: write error, conversion failed in line %ld (make 'fenc' empty to "
 "override)"
 msgstr ""
-"E513: Yazma hatası, %ld satırında dönüştürme başarısız (yoksaymak için 'fenc'i "
-"boş yapın)"
+"E513: Yazma hatası, %ld satırında dönüştürme başarısız (yoksaymak için dosya "
+"kodlamasını boş yapın)"
 
 msgid "E514: write error (file system full?)"
 msgstr "E514: Yazma hatası (dosya sistemi dolu mu?)"
@@ -554,20 +554,20 @@ msgstr "E737: Anahtar halihazırda var: %s"
 
 #, c-format
 msgid "E96: Cannot diff more than %d buffers"
-msgstr "E96: %d arabellekten fazlasında ayrımlar gözetilemez"
+msgstr "E96: %d arabellekten fazlasında karşılaştırma yapılamıyor"
 
 #, c-format
 msgid "Not enough memory to use internal diff for buffer \"%s\""
-msgstr "\"%s\" arabelleği için ayrımları gözetecek yeterli bellek yok"
+msgstr "\"%s\" arabelleği için karşılaştırma yapacak yeterli bellek yok"
 
 msgid "E810: Cannot read or write temp files"
 msgstr "E810: Geçici dosyalar okunamıyor veya yazılamıyor"
 
 msgid "E97: Cannot create diffs"
-msgstr "E97: Ayrımlar gözetilemiyor"
+msgstr "E97: Karşılaştırma yapılamıyor"
 
 msgid "E960: Problem creating the internal diff"
-msgstr "E960: Ayrımlar gözetilirken sorun"
+msgstr "E960: Karşılaştırma hazırlanırken sorun"
 
 msgid "Patch file"
 msgstr "Yama dosyası"
@@ -576,19 +576,19 @@ msgid "E816: Cannot read patch output"
 msgstr "E816: Yama çıktısı okunamıyor"
 
 msgid "E98: Cannot read diff output"
-msgstr "E98: Ayrım çıktısı okunamıyor"
+msgstr "E98: Karşılaştırma çıktısı okunamıyor"
 
 msgid "E959: Invalid diff format."
-msgstr "E959: Geçersiz ayrım biçimi"
+msgstr "E959: Geçersiz karşılaştırma biçimi"
 
 msgid "E99: Current buffer is not in diff mode"
-msgstr "E99: Şu anki arabellek ayrım kipinde değil"
+msgstr "E99: Şu anki arabellek karşılaştırma kipinde değil"
 
 msgid "E793: No other buffer in diff mode is modifiable"
-msgstr "E793: Ayrım kipindeki başka hiçbir arabellek değiştirilebilir değil"
+msgstr "E793: Karşılaştırma kipindeki başka hiçbir arabellek değiştirilebilir değil"
 
 msgid "E100: No other buffer in diff mode"
-msgstr "E100: Ayrım kipinde başka hiçbir arabellek yok"
+msgstr "E100: Karşılaştırma kipinde başka hiçbir arabellek yok"
 
 #, c-format
 msgid "E102: Can't find buffer \"%s\""
@@ -596,7 +596,7 @@ msgstr "E102: Arabellek \"%s\" bulunamıyor"
 
 #, c-format
 msgid "E103: Buffer \"%s\" is not in diff mode"
-msgstr "E103: Arabellek \"%s\" ayrım kipinde değil"
+msgstr "E103: Arabellek \"%s\" karşılaştırma kipinde değil"
 
 msgid "E787: Buffer changed unexpectedly"
 msgstr "E787: Arabellek beklenmeyen bir biçimde değiştirildi"
@@ -2783,7 +2783,7 @@ msgid "'-nb' cannot be used: not enabled at compile time\n"
 msgstr "'-nb' kullanılamıyor: derleme sırasında etkinleştirilmemiş\n"
 
 msgid "This Vim was not compiled with the diff feature."
-msgstr "Bu Vim ayrım gözetme özelliği ile derlenmemiş"
+msgstr "Bu Vim karşılaştırma özelliği ile derlenmemiş"
 
 msgid "Attempt to open script file again: \""
 msgstr "Betik dosyası yeniden açılmaya çalışılıyor: \""
@@ -2899,7 +2899,7 @@ msgid "-s\t\t\tSilent (batch) mode (only for \"ex\")"
 msgstr "-s\t\t\tSessiz (toplu iş) kipi (yalnızca \"ex\" için)"
 
 msgid "-d\t\t\tDiff mode (like \"vimdiff\")"
-msgstr "-d\t\t\tAyrım kipi (like \"vimdiff\")"
+msgstr "-d\t\t\tKarşılaştırma kipi (like \"vimdiff\")"
 
 msgid "-y\t\t\tEasy mode (like \"evim\", modeless)"
 msgstr "-y\t\t\tKolay kip (\"evim\" gibi, kipsiz)"
@@ -3451,7 +3451,7 @@ msgstr ""
 "(Bu dosyası başka bir adla kaydetmek isteyebilir\n"
 
 msgid "and run diff with the original file to check for changes)"
-msgstr "ve orijinal dosya ile (varsa) ayrımlarını gözetmek isteyebilirsiniz)"
+msgstr "ve orijinal dosya ile (varsa) karşılaştırmasını yapmak isteyebilirsiniz)"
 
 msgid "Recovery completed. Buffer contents equals file contents."
 msgstr "Kurtarma tamamlandı. Arabellek içeriği dosya içeriğine eşit."
@@ -6282,13 +6282,13 @@ msgid "Running modeless, typed text is inserted"
 msgstr "Kipsiz çalışıyor, girilen metin doğrudan eklenir"
 
 msgid "menu  Edit->Global Settings->Toggle Insert Mode  "
-msgstr "menü -> Düzen -> Global Ayarlar -> Ekle Kipine Geç"
+msgstr "menü -> Düzen -> Genel Ayarlar -> Ekleme Kipine Geç"
 
 msgid "                              for two modes      "
 msgstr "                              iki kip için       "
 
 msgid "menu  Edit->Global Settings->Toggle Vi Compatible"
-msgstr "menü -> Düzen -> Global Ayarlar -> Vi Uyumlu Kipe Geç"
+msgstr "menü -> Düzen -> Genel Ayarlar -> Vi Uyumlu Kipi Aç/Kapat"
 
 msgid "                              for Vim defaults   "
 msgstr "                        Vim öntanımlıları için   "
