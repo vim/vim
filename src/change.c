@@ -371,9 +371,9 @@ invoke_listeners(buf_T *buf)
 	if (start > lnum)
 	    start = lnum;
 	lnum = dict_get_number(li->li_tv.vval.v_dict, (char_u *)"end");
-	if (lnum > end)
+	if (end < lnum)
 	    end = lnum;
-	added = dict_get_number(li->li_tv.vval.v_dict, (char_u *)"added");
+	added += dict_get_number(li->li_tv.vval.v_dict, (char_u *)"added");
     }
     argv[1].v_type = VAR_NUMBER;
     argv[1].vval.v_number = start;
