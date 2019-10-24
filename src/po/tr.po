@@ -71,7 +71,7 @@ msgid "E680: <buffer=%d>: invalid buffer number "
 msgstr "E680: <buffer=%d>: geçersiz arabellek numarası"
 
 msgid "E217: Can't execute autocommands for ALL events"
-msgstr "E217: TÜM olaylar için otokomutlar çalıştırılamıyor"
+msgstr "E217: Otokomutlar BÜTÜN olaylar için çalıştırılamıyor"
 
 msgid "No matching autocommands"
 msgstr "Eşleşen otokomut yok"
@@ -173,7 +173,7 @@ msgstr "E88: İlk arabellekten öncesine gidilemez"
 #, c-format
 msgid "E89: No write since last change for buffer %d (add ! to override)"
 msgstr ""
-"E89: Arabellek %d için son eklemeden beri yazma yok (yoksaymak için ! ekleyin)"
+"E89: Arabellek %d son eklemeden beri yazılmamış (yoksaymak için ! ekleyin)"
 
 msgid "E948: Job still running (add ! to end the job)"
 msgstr "E948: İş hâlâ sürüyor (bitirmek için ! ekleyin)"
@@ -918,7 +918,7 @@ msgid "E941: already started a server"
 msgstr "E941: Sunucu halihazırda çalışıyor"
 
 msgid "E942: +clientserver feature not available"
-msgstr "E942: +clientserver özelliği kullanılamıyor"
+msgstr "E942: +clientserver özelliği mevcut değil"
 
 msgid "E258: Unable to send to client"
 msgstr "E258: İstemciye gönderilemiyor"
@@ -1000,7 +1000,7 @@ msgstr "E704: Funcref değişkeni BÜYÜK harf ile başlamalıdır: %s"
 
 #, c-format
 msgid "E705: Variable name conflicts with existing function: %s"
-msgstr "E705: Değişken adı var olan işlevle çakışıyor: %s"
+msgstr "E705: Değişken adı mevcut işlevle çakışıyor: %s"
 
 #, c-format
 msgid "E741: Value is locked: %s"
@@ -1070,7 +1070,7 @@ msgstr "E140: Arabelleğin bir kısmını yazmak için ! kullanın"
 
 #, c-format
 msgid "Overwrite existing file \"%s\"?"
-msgstr "Var olan \"%s\" dosyasının üzerine yazılsın mı?"
+msgstr "Mevcut \"%s\" dosyasının üzerine yazılsın mı?"
 
 #, c-format
 msgid "Swap file \"%s\" exists, overwrite anyway?"
@@ -1913,10 +1913,10 @@ msgid "Replace All"
 msgstr "Tümünü Değiştir"
 
 msgid "_Close"
-msgstr "_Kapat"
+msgstr "K_apat"
 
 msgid "Vim: Received \"die\" request from session manager\n"
-msgstr "Vim: Oturum yöneticisinden işi sonlandırma buyruğu geldi\n"
+msgstr "Vim: Oturum yöneticisinden işi sonlandırma isteği geldi\n"
 
 msgid "Close tab"
 msgstr "Sekmeyi kapat"
@@ -2039,7 +2039,7 @@ msgid "Invalid font specification"
 msgstr "Geçersiz yazıtipi belirtimi"
 
 msgid "&Dismiss"
-msgstr "&Yoksay"
+msgstr "So&nlandır"
 
 msgid "no specific match"
 msgstr "belirli bir eşleşme yok"
@@ -2869,7 +2869,7 @@ msgstr ""
 "Değişkenler:\n"
 
 msgid "--\t\t\tOnly file names after this"
-msgstr "--\t\t\tBundan sonra yalnızca dosya adları"
+msgstr "--\t\t\tBundan son2920Gra yalnızca dosya adları"
 
 msgid "--literal\t\tDon't expand wildcards"
 msgstr "--literal\t\tGenel arama karakterlerini genişletme!"
@@ -2996,9 +2996,6 @@ msgstr "--cmd <komut>\tHerhangi bir vimrc dosyası yüklemeden <komut> çalışt
 
 msgid "-c <command>\t\tExecute <command> after loading the first file"
 msgstr "-c <komut>\t\tİlk dosyayı açtıktan sonra <komut> komutunu çalıştır"
-
-#~ msgid "-S <session>\t\tSource file <session> after loading the first file"
-#~ msgstr "-S <oturum>\t\tİlk dosyayı açtıktan sonra <oturum> dosyasından kaynak al"
 
 msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
 msgstr "-s <betikal>\tNormal kip komutlarını <betikal> dosyasından oku"
@@ -3465,9 +3462,6 @@ msgstr ""
 "Bu .swp dosyasını silmeniz iyi olur.\n"
 "\n"
 
-#~ msgid "Using crypt key from swap file for the text file.\n"
-#~ msgstr "Metin dosyası için takas dosyasından alınan şifreleme anahtarı kullanılıyor\n"
-
 msgid "Swap files found:"
 msgstr "Takas dosyası bulundu:"
 
@@ -3853,7 +3847,7 @@ msgid ""
 "[bytes] total alloc-freed %lu-%lu, in use %lu, peak use %lu\n"
 msgstr ""
 "\n"
-"[bitler] toplam ayrılan/boşaltılan %lu-%lu, kullanımda %lu, doruk nok. %lu\n"
+"[bitler] toplam ayrılan/boşaltılan %lu-%lu, kullanımda %lu, doruk nokt. %lu\n"
 
 #, c-format
 msgid ""
@@ -3927,9 +3921,6 @@ msgstr "E662: Değişiklik listesinin başında"
 
 msgid "E663: At end of changelist"
 msgstr "E663: Değişiklik listesinin sonunda"
-
-#~ msgid "Type  :qa!  and press <Enter> to abandon all changes and exit Vim"
-#~ msgstr "Değişiklikleri kaydetmeden Vim'den çıkmak için :qa! yazıp <Enter>'a basın"
 
 msgid "Type  :qa  and press <Enter> to exit Vim"
 msgstr "Vim'den çıkmak için :qa yazıp <Enter>'a basın"
@@ -5625,7 +5616,7 @@ msgid "Terminal"
 msgstr "Uçbirim"
 
 msgid "Terminal-finished"
-msgstr "Uçbirim-bitmiş"
+msgstr "Uçbirim-bitti"
 
 msgid "active"
 msgstr "etkin"
@@ -5634,7 +5625,7 @@ msgid "running"
 msgstr "çalışıyor"
 
 msgid "finished"
-msgstr "bitmiş"
+msgstr "bitti"
 
 msgid "E958: Job already finished"
 msgstr "E958: İş bitti bile"
@@ -5832,7 +5823,7 @@ msgid ""
 "    Name              Args Address Complete    Definition"
 msgstr ""
 "\n"
-"    Ad                Dğşk Adres   Tam         Tanım"
+"    Ad                Dğkl Adres   Tam         Tanım"
 
 msgid "No user-defined commands found"
 msgstr "Kullanıcı tanımlı bir komut bulunamadı"
@@ -6800,7 +6791,7 @@ msgstr "E46: Salt okunur değişken \"%s\" değiştirilemiyor"
 
 #, c-format
 msgid "E794: Cannot set variable in the sandbox: \"%s\""
-msgstr "E794: Kum havuzunda değişken ayarlanamıyor: \"%s\""
+msgstr "E794: Değişken kum havuzunda ayarlanamıyor: \"%s\""
 
 msgid "E928: String required"
 msgstr "E928: Dizi gerekli"
@@ -7276,9 +7267,6 @@ msgstr "Metin dosyaları düzenle"
 
 msgid "Text;editor;"
 msgstr "Metin;düzenleyici;"
-
-#~ msgid "gvim"
-#~ msgstr ""
 
 msgid "Vim"
 msgstr "Vim"
