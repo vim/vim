@@ -2869,7 +2869,7 @@ msgstr ""
 "Değişkenler:\n"
 
 msgid "--\t\t\tOnly file names after this"
-msgstr "--\t\t\tBundan son2920Gra yalnızca dosya adları"
+msgstr "--\t\t\tBundan sonra yalnızca dosya adları"
 
 msgid "--literal\t\tDon't expand wildcards"
 msgstr "--literal\t\tGenel arama karakterlerini genişletme!"
