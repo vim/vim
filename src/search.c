@@ -4676,7 +4676,73 @@ abort_search:
 
 #endif /* FEAT_TEXTOBJ */
 
-static int is_one_char(char_u *pattern, int move, pos_T *cur, int direction);
+/*
+ * Check if the pattern is one character long or zero-width.
+ * If move is TRUE, check from the beginning of the buffer, else from position
+ * "cur".
+ * "direction" is FORWARD or BACKWARD.
+ * Returns TRUE, FALSE or -1 for failure.
+ */
+    static int
+is_zero_width(char_u *pattern, int move, pos_T *cur, int direction)
+{
+    regmmatch_T	regmatch;
+    int		nmatched = 0;
+    int		result = -1;
+    pos_T	pos;
+    int		save_called_emsg = called_emsg;
+    int		flag = 0;
+
+    if (pattern == NULL)
+	pattern = spats[last_idx].pat;
+
+    if (search_regcomp(pattern, RE_SEARCH, RE_SEARCH,
+					      SEARCH_KEEP, &regmatch) == FAIL)
+	return -1;
+
+    // init startcol correctly
+    regmatch.startpos[0].col = -1;
+    // move to match
+    if (move)
+    {
+	CLEAR_POS(&pos);
+    }
+    else
+    {
+	pos = *cur;
+	// accept a match at the cursor position
+	flag = SEARCH_START;
+    }
+
+    if (searchit(curwin, curbuf, &pos, NULL, direction, pattern, 1,
+				  SEARCH_KEEP + flag, RE_SEARCH, NULL) != FAIL)
+    {
+	// Zero-width pattern should match somewhere, then we can check if
+	// start and end are in the same position.
+	called_emsg = FALSE;
+	do
+	{
+	    regmatch.startpos[0].col++;
+	    nmatched = vim_regexec_multi(&regmatch, curwin, curbuf,
+			       pos.lnum, regmatch.startpos[0].col, NULL, NULL);
+	    if (nmatched != 0)
+		break;
+	} while (direction == FORWARD ? regmatch.startpos[0].col < pos.col
+				      : regmatch.startpos[0].col > pos.col);
+
+	if (!called_emsg)
+	{
+	    result = (nmatched != 0
+		&& regmatch.startpos[0].lnum == regmatch.endpos[0].lnum
+		&& regmatch.startpos[0].col == regmatch.endpos[0].col);
+	}
+    }
+
+    called_emsg |= save_called_emsg;
+    vim_regfree(regmatch.regprog);
+    return result;
+}
+
 
 /*
  * Find next search match under cursor, cursor at end.
@@ -4697,7 +4763,7 @@ current_search(
     char_u	old_p_ws = p_ws;
     int		flags = 0;
     pos_T	save_VIsual = VIsual;
-    int		one_char;
+    int		zero_width;
 
     /* wrapping should not occur */
     p_ws = FALSE;
@@ -4706,29 +4772,20 @@ current_search(
     if (VIsual_active && *p_sel == 'e' && LT_POS(VIsual, curwin->w_cursor))
 	dec_cursor();
 
+    orig_pos = pos = curwin->w_cursor;
     if (VIsual_active)
     {
-	orig_pos = curwin->w_cursor;
-
-	pos = curwin->w_cursor;
-
-	/* make sure, searching further will extend the match */
-	if (VIsual_active)
-	{
-	    if (forward)
-		incl(&pos);
-	    else
-		decl(&pos);
-	}
+	if (forward)
+	    incl(&pos);
+	else
+	    decl(&pos);
     }
-    else
-	orig_pos = pos = curwin->w_cursor;
 
     /* Is the pattern is zero-width?, this time, don't care about the direction
      */
-    one_char = is_one_char(spats[last_idx].pat, TRUE, &curwin->w_cursor,
+    zero_width = is_zero_width(spats[last_idx].pat, TRUE, &curwin->w_cursor,
 								      FORWARD);
-    if (one_char == -1)
+    if (zero_width == -1)
     {
 	p_ws = old_p_ws;
 	return FAIL;  /* pattern not found */
@@ -4747,7 +4804,7 @@ current_search(
 	    dir = !i;
 
 	flags = 0;
-	if (!dir && !one_char)
+	if (!dir && !zero_width)
 	    flags = SEARCH_END;
 	end_pos = pos;
 
@@ -4784,7 +4841,6 @@ current_search(
 				ml_get(curwin->w_buffer->b_ml.ml_line_count));
 	    }
 	}
-	p_ws = old_p_ws;
     }
 
     start_pos = pos;
@@ -4797,10 +4853,11 @@ current_search(
     curwin->w_cursor = end_pos;
     if (LT_POS(VIsual, end_pos))
 	dec_cursor();
+    else if (VIsual_active && LT_POS(curwin->w_cursor, VIsual))
+	curwin->w_cursor = pos;   // put the cursor on the start of the match
     VIsual_active = TRUE;
     VIsual_mode = 'v';
 
-    redraw_curbuf_later(INVERTED);	/* update the inversion */
     if (*p_sel == 'e')
     {
 	/* Correction for exclusive selection depends on the direction. */
@@ -4826,77 +4883,6 @@ current_search(
     showmode();
 
     return OK;
-}
-
-/*
- * Check if the pattern is one character long or zero-width.
- * If move is TRUE, check from the beginning of the buffer, else from position
- * "cur".
- * "direction" is FORWARD or BACKWARD.
- * Returns TRUE, FALSE or -1 for failure.
- */
-    static int
-is_one_char(char_u *pattern, int move, pos_T *cur, int direction)
-{
-    regmmatch_T	regmatch;
-    int		nmatched = 0;
-    int		result = -1;
-    pos_T	pos;
-    int		save_called_emsg = called_emsg;
-    int		flag = 0;
-
-    if (pattern == NULL)
-	pattern = spats[last_idx].pat;
-
-    if (search_regcomp(pattern, RE_SEARCH, RE_SEARCH,
-					      SEARCH_KEEP, &regmatch) == FAIL)
-	return -1;
-
-    /* init startcol correctly */
-    regmatch.startpos[0].col = -1;
-    /* move to match */
-    if (move)
-    {
-	CLEAR_POS(&pos);
-    }
-    else
-    {
-	pos = *cur;
-	/* accept a match at the cursor position */
-	flag = SEARCH_START;
-    }
-
-    if (searchit(curwin, curbuf, &pos, NULL, direction, pattern, 1,
-			 SEARCH_KEEP + flag, RE_SEARCH, NULL) != FAIL)
-    {
-	/* Zero-width pattern should match somewhere, then we can check if
-	 * start and end are in the same position. */
-	called_emsg = FALSE;
-	do
-	{
-	    regmatch.startpos[0].col++;
-	    nmatched = vim_regexec_multi(&regmatch, curwin, curbuf,
-			       pos.lnum, regmatch.startpos[0].col, NULL, NULL);
-	    if (nmatched != 0)
-		break;
-	} while (direction == FORWARD ? regmatch.startpos[0].col < pos.col
-				      : regmatch.startpos[0].col > pos.col);
-
-	if (!called_emsg)
-	{
-	    result = (nmatched != 0
-		&& regmatch.startpos[0].lnum == regmatch.endpos[0].lnum
-		&& regmatch.startpos[0].col == regmatch.endpos[0].col);
-	    // one char width
-	    if (!result && nmatched != 0
-			&& inc(&pos) >= 0 && pos.col == regmatch.endpos[0].col)
-		result = TRUE;
-	}
-    }
-
-    called_emsg |= save_called_emsg;
-    vim_regfree(regmatch.regprog);
-    return result;
 }
 
 #if defined(FEAT_LISP) || defined(FEAT_CINDENT) || defined(FEAT_TEXTOBJ) \
