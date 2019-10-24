@@ -1082,7 +1082,6 @@ popup_adjust_position(win_T *wp)
     int		org_leftoff = wp->w_popup_leftoff;
     int		minwidth;
     int		wantline = wp->w_wantline;  // adjusted for textprop
-    int		use_wantline = wantline != 0;
     int		wantcol = wp->w_wantcol;    // adjusted for textprop
     int		use_wantcol = wantcol != 0;
 
@@ -1096,15 +1095,6 @@ popup_adjust_position(win_T *wp)
     // "topline"
     if (wp->w_popup_last_curline != wp->w_cursor.lnum)
 	popup_highlight_curline(wp);
-
-    // If no line was specified default to vertical centering.
-    if (wantline == 0)
-	center_vert = TRUE;
-    else if (wantline < 0)
-	// If "wantline" is negative it actually means zero.
-	wantline = 0;
-    if (wantcol < 0)
-	wantcol = 0;
 
     if (wp->w_popup_prop_type > 0 && win_valid(wp->w_popup_prop_win))
     {
@@ -1159,6 +1149,19 @@ popup_adjust_position(win_T *wp)
 	else
 	    // left of the text
 	    wantcol = screen_scol + wantcol - 2;
+	use_wantcol = TRUE;
+    }
+    else
+    {
+	// If no line was specified default to vertical centering.
+	if (wantline == 0)
+	    center_vert = TRUE;
+	else if (wantline < 0)
+	    // If "wantline" is negative it actually means zero.
+	    wantline = 0;
+	if (wantcol < 0)
+	    // If "wantcol" is negative it actually means zero.
+	    wantcol = 0;
     }
 
     if (wp->w_popup_pos == POPPOS_CENTER)
@@ -1169,8 +1172,8 @@ popup_adjust_position(win_T *wp)
     }
     else
     {
-	if (use_wantline && (wp->w_popup_pos == POPPOS_TOPLEFT
-		|| wp->w_popup_pos == POPPOS_TOPRIGHT))
+	if (wantline > 0 && (wp->w_popup_pos == POPPOS_TOPLEFT
+					|| wp->w_popup_pos == POPPOS_TOPRIGHT))
 	{
 	    wp->w_winrow = wantline - 1;
 	    if (wp->w_winrow >= Rows)
