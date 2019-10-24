@@ -676,7 +676,7 @@ EXTERN buf_T	*curbuf INIT(= NULL);	// currently active buffer
 
 // Iterate through all the signs placed in a buffer
 #define FOR_ALL_SIGNS_IN_BUF(buf, sign) \
-	for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
+	for (sign = buf->b_signlist; sign != NULL; sign = sign->se_next)
 
 // Flag that is set when switching off 'swapfile'.  It means that all blocks
 // are to be loaded into memory.  Shouldn't be global...

@@ -771,33 +771,32 @@ typedef struct proptype_S
 // Sign group
 typedef struct signgroup_S
 {
-    int		next_sign_id;		// next sign id for this group
-    short_u	refcount;		// number of signs in this group
+    int		sg_next_sign_id;	// next sign id for this group
+    short_u	sg_refcount;		// number of signs in this group
     char_u	sg_name[1];		// sign group name, actually longer
 } signgroup_T;
 
-typedef struct signlist signlist_T;
-
-struct signlist
+typedef struct sign_entry sign_entry_T;
+struct sign_entry
 {
-    int		id;		// unique identifier for each placed sign
-    linenr_T	lnum;		// line number which has this sign
-    int		typenr;		// typenr of sign
-    signgroup_T	*group;		// sign group
-    int		priority;	// priority for highlighting
-    signlist_T	*next;		// next signlist entry
-    signlist_T  *prev;		// previous entry -- for easy reordering
+    int		 se_id;		// unique identifier for each placed sign
+    linenr_T	 se_lnum;	// line number which has this sign
+    int		 se_typenr;	// typenr of sign
+    signgroup_T	 *se_group;	// sign group
+    int		 se_priority;	// priority for highlighting
+    sign_entry_T *se_next;	// next entry in a list of signs
+    sign_entry_T *se_prev;	// previous entry -- for easy reordering
 };
 
 /*
  * Sign attributes. Used by the screen refresh routines.
  */
 typedef struct sign_attrs_S {
-    int		typenr;
-    void	*icon;
-    char_u	*text;
-    int		texthl;
-    int		linehl;
+    int		sat_typenr;
+    void	*sat_icon;
+    char_u	*sat_text;
+    int		sat_texthl;
+    int		sat_linehl;
 } sign_attrs_T;
 
 #if defined(FEAT_SIGNS) || defined(PROTO)
@@ -2675,7 +2674,7 @@ struct file_buffer
 #endif
 
 #ifdef FEAT_SIGNS
-    signlist_T	*b_signlist;	   // list of signs to draw
+    sign_entry_T *b_signlist;	   // list of placed signs
 # ifdef FEAT_NETBEANS_INTG
     int		b_has_sign_column; // Flag that is set when a first sign is
 				   // added and remains set until the end of

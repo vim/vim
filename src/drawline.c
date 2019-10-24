@@ -121,9 +121,9 @@ get_sign_display_info(
 #endif
        )
     {
-	text_sign = (sattr->text != NULL) ? sattr->typenr : 0;
+	text_sign = (sattr->sat_text != NULL) ? sattr->sat_typenr : 0;
 # ifdef FEAT_SIGN_ICONS
-	icon_sign = (sattr->icon != NULL) ? sattr->typenr : 0;
+	icon_sign = (sattr->sat_icon != NULL) ? sattr->sat_typenr : 0;
 	if (gui.in_use && icon_sign != 0)
 	{
 	    // Use the image in this position.
@@ -158,7 +158,7 @@ get_sign_display_info(
 # endif
 	    if (text_sign != 0)
 	    {
-		*pp_extra = sattr->text;
+		*pp_extra = sattr->sat_text;
 		if (*pp_extra != NULL)
 		{
 		    if (nrcol)
@@ -176,7 +176,7 @@ get_sign_display_info(
 		    *c_finalp = NUL;
 		    *n_extrap = (int)STRLEN(*pp_extra);
 		}
-		*char_attrp = sattr->texthl;
+		*char_attrp = sattr->sat_texthl;
 	    }
     }
 }
@@ -597,7 +597,8 @@ win_line(
 	    }
 
 	    // Check if the character under the cursor should not be inverted
-	    if (!highlight_match && lnum == curwin->w_cursor.lnum && wp == curwin
+	    if (!highlight_match && lnum == curwin->w_cursor.lnum
+								&& wp == curwin
 #ifdef FEAT_GUI
 		    && !gui.in_use
 #endif
@@ -677,7 +678,7 @@ win_line(
 # ifdef FEAT_SIGNS
     // If this line has a sign with line highlighting set line_attr.
     if (sign_present)
-	line_attr = sattr.linehl;
+	line_attr = sattr.sat_linehl;
 # endif
 # if defined(FEAT_QUICKFIX)
     // Highlight the current line in the quickfix window.
