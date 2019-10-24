@@ -815,9 +815,7 @@ static funcentry_T global_functions[] =
 #ifdef FEAT_GUI
     {"test_scrollbar",	3, 3, FEARG_2,	  f_test_scrollbar},
 #endif
-#ifdef FEAT_MOUSE
     {"test_setmouse",	2, 2, 0,	  f_test_setmouse},
-#endif
     {"test_settime",	1, 1, FEARG_1,	  f_test_settime},
 #ifdef FEAT_TIMERS
     {"timer_info",	0, 1, FEARG_1,	  f_timer_info},
@@ -3433,9 +3431,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"mksession",
 #endif
 	"modify_fname",
-#ifdef FEAT_MOUSE
 	"mouse",
-#endif
 #ifdef FEAT_MOUSESHAPE
 	"mouseshape",
 #endif
@@ -5698,12 +5694,13 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     int		dir;
     int		retval = 0;	/* default: FAIL */
     long	lnum_stop = 0;
-    proftime_T	tm;
 #ifdef FEAT_RELTIME
+    proftime_T	tm;
     long	time_limit = 0;
 #endif
     int		options = SEARCH_KEEP;
     int		subpatnum;
+    searchit_arg_T sia;
 
     pat = tv_get_string(&argvars[0]);
     dir = get_search_arg(&argvars[1], flagsp);	/* may set p_ws */
@@ -5752,8 +5749,13 @@ search_cmn(typval_T *argvars, pos_T *match_pos, int *flagsp)
     }
 
     pos = save_cursor = curwin->w_cursor;
+    vim_memset(&sia, 0, sizeof(sia));
+    sia.sa_stop_lnum = (linenr_T)lnum_stop;
+#ifdef FEAT_RELTIME
+    sia.sa_tm = &tm;
+#endif
     subpatnum = searchit(curwin, curbuf, &pos, NULL, dir, pat, 1L,
-			   options, RE_SEARCH, (linenr_T)lnum_stop, &tm, NULL);
+						     options, RE_SEARCH, &sia);
     if (subpatnum != FAIL)
     {
 	if (flags & SP_SUBPAT)
@@ -6151,7 +6153,9 @@ do_searchpair(
     int		use_skip = FALSE;
     int		err;
     int		options = SEARCH_KEEP;
+#ifdef FEAT_RELTIME
     proftime_T	tm;
+#endif
 
     /* Make 'cpoptions' empty, the 'l' flag should not be used here. */
     save_cpo = p_cpo;
@@ -6192,8 +6196,15 @@ do_searchpair(
     pat = pat3;
     for (;;)
     {
+	searchit_arg_T sia;
+
+	vim_memset(&sia, 0, sizeof(sia));
+	sia.sa_stop_lnum = lnum_stop;
+#ifdef FEAT_RELTIME
+	sia.sa_tm = &tm;
+#endif
 	n = searchit(curwin, curbuf, &pos, NULL, dir, pat, 1L,
-				     options, RE_SEARCH, lnum_stop, &tm, NULL);
+						     options, RE_SEARCH, &sia);
 	if (n == FAIL || (firstpos.lnum != 0 && EQUAL_POS(pos, firstpos)))
 	    /* didn't find it or found the first match again: FAIL */
 	    break;

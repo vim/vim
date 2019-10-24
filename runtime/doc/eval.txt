@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Sep 27
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Oct 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2880,7 +2880,7 @@ win_id2tabwin({expr})		List	get tab and window nr from window ID
 win_id2win({expr})		Number	get window nr from window ID
 win_screenpos({nr})		List	get screen position of window {nr}
 win_splitmove({nr}, {target} [, {options}])
-				none	move window {nr} to split of {target}
+				Number	move window {nr} to split of {target}
 winbufnr({nr})			Number	buffer number of window {nr}
 wincol()			Number	window column of the cursor
 winheight({nr})			Number	height of window {nr}
@@ -2973,6 +2973,9 @@ append({lnum}, {text})					*append()*
 
 appendbufline({expr}, {lnum}, {text})			*appendbufline()*
 		Like |append()| but append the text in buffer {expr}.
+
+		This function works only for loaded buffers. First call
+		|bufload()| if needed.
 
 		For the use of {expr}, see |bufname()|.
 
@@ -3540,8 +3543,8 @@ complete({startcol}, {matches})			*complete()* *E785*
 <		This isn't very useful, but it shows how it works.  Note that
 		an empty string is returned to avoid a zero being inserted.
 
-		Can also be used as a |method|, the second argument is passed
-		in: >
+		Can also be used as a |method|, the base is passed as the
+		second argument: >
 			GetMatches()->complete(col('.'))
 
 complete_add({expr})				*complete_add()*
@@ -3676,7 +3679,7 @@ confirm({msg} [, {choices} [, {default} [, {type}]]])
 
 		Can also be used as a |method|in: >
 			BuildMessage()->confirm("&Yes\n&No")
-
+<
 							*copy()*
 copy({expr})	Make a copy of {expr}.  For Numbers and Strings this isn't
 		different from using {expr} directly.
@@ -3871,6 +3874,9 @@ deletebufline({expr}, {first} [, {last}])		*deletebufline()*
 		If {last} is omitted then delete line {first} only.
 		On success 0 is returned, on failure 1 is returned.
 
+		This function works only for loaded buffers. First call
+		|bufload()| if needed.
+
 		For the use of {expr}, see |bufname()| above.
 
 		{first} and {last} are used like with |getline()|. Note that
@@ -3879,7 +3885,7 @@ deletebufline({expr}, {first} [, {last}])		*deletebufline()*
 
 		Can also be used as a |method|: >
 			GetBuffer()->deletebufline(1)
-
+<
 							*did_filetype()*
 did_filetype()	Returns |TRUE| when autocommands are being executed and the
 		FileType event has been triggered at least once.  Can be used
@@ -4040,7 +4046,7 @@ exepath({expr})						*exepath()*
 
 		Can also be used as a |method|: >
 			GetCommand()->exepath()
-
+<
 							*exists()*
 exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 		zero otherwise.
@@ -4566,7 +4572,7 @@ foldlevel({lnum})					*foldlevel()*
 
 		Can also be used as a |method|: >
 			GetLnum()->foldlevel()
-
+<
 							*foldtext()*
 foldtext()	Returns a String, to be displayed for a closed fold.  This is
 		the default function used for the 'foldtext' option and should
@@ -5848,7 +5854,7 @@ histadd({history}, {item})				*histadd()*
 			:let date=input("Enter date: ")
 <		This function is not available in the |sandbox|.
 
-		Can also be used as a |method|, the base is used for the
+		Can also be used as a |method|, the base is passed as the
 		second argument: >
 			GetHistory()->histadd('search')
 
@@ -6376,8 +6382,8 @@ libcall({libname}, {funcname}, {argument})
 		Examples: >
 			:echo libcall("libc.so", "getenv", "HOME")
 
-<		Can also be used as a |method|, where the base is passed as
-		the argument to the called function: >
+<		Can also be used as a |method|, the base is passed as the
+		third argument: >
 			GetValue()->libcall("libc.so", "getenv")
 <
 							*libcallnr()*
@@ -6391,8 +6397,8 @@ libcallnr({libname}, {funcname}, {argument})
 			:call libcallnr("libc.so", "printf", "Hello World!\n")
 			:call libcallnr("libc.so", "sleep", 10)
 <
-		Can also be used as a |method|, where the base is passed as
-		the argument to the called function: >
+		Can also be used as a |method|, the base is passed as the
+		third argument: >
 			GetValue()->libcallnr("libc.so", "printf")
 <
 
@@ -6543,8 +6549,8 @@ listener_add({callback} [, {buf}])			*listener_add()*
 		The {callback} is also not invoked when the buffer is
 		unloaded, use the |BufUnload| autocmd event for that.
 
-		Can also be used as a |method|, where the base is passed as
-		the second argument, the buffer: >
+		Can also be used as a |method|, the base is passed as the
+		second argument: >
 			GetBuffer()->listener_add(callback)
 
 listener_flush([{buf}])					*listener_flush()*
@@ -7014,6 +7020,7 @@ matchstrpos({expr}, {pat} [, {start} [, {count}]])		*matchstrpos()*
 
 		Can also be used as a |method|: >
 			GetText()->matchstrpos('word')
+<
 							*max()*
 max({expr})	Return the maximum value of all items in {expr}.
 		{expr} can be a list or a dictionary.  For a dictionary,
@@ -8270,20 +8277,31 @@ serverlist()					*serverlist()*
 			:echo serverlist()
 <
 setbufline({expr}, {lnum}, {text})			*setbufline()*
-		Set line {lnum} to {text} in buffer {expr}.  To insert
-		lines use |append()|.  Any text properties in {lnum} are
-		cleared.
+		Set line {lnum} to {text} in buffer {expr}.  This works like
+		|setline()| for the specified buffer.
+
+		This function works only for loaded buffers. First call
+		|bufload()| if needed.
+
+		To insert lines use |appendbufline()|.
+		Any text properties in {lnum} are cleared.
+
+		{text} can be a string to set one line, or a list of strings
+		to set multiple lines.  If the list extends below the last
+		line then those lines are added.
 
 		For the use of {expr}, see |bufname()| above.
 
 		{lnum} is used like with |setline()|.
-		This works like |setline()| for the specified buffer.
+		When {lnum} is just below the last line the {text} will be
+		added below the last line.
 
 		When {expr} is not a valid buffer, the buffer is not loaded or
 		{lnum} is not valid then 1 is returned.  On success 0 is
 		returned.
 
-		Can also be used as a |method|: >
+		Can also be used as a |method|, the base is passed as the
+		third argument: >
 			GetText()->setbufline(buf, lnum)
 
 setbufvar({expr}, {varname}, {val})			*setbufvar()*
@@ -8299,7 +8317,8 @@ setbufvar({expr}, {varname}, {val})			*setbufvar()*
 			:call setbufvar("todo", "myvar", "foobar")
 <		This function is not available in the |sandbox|.
 
-		Can also be used as a |method|: >
+		Can also be used as a |method|, the base is passed as the
+		third argument: >
 			GetValue()->setbufvar(buf, varname)
 
 setcharsearch({dict})					*setcharsearch()*
@@ -8348,7 +8367,8 @@ setenv({name}, {val})						*setenv()*
 		When {val} is |v:null| the environment variable is deleted.
 		See also |expr-env|.
 
-		Can also be used as a |method|, passing the value as the base: >
+		Can also be used as a |method|, the base is passed as the
+		second argument: >
 			GetPath()->setenv('PATH')
 
 setfperm({fname}, {mode})				*setfperm()* *chmod*
@@ -8379,7 +8399,7 @@ setline({lnum}, {text})					*setline()*
 
 		{lnum} is used like with |getline()|.
 		When {lnum} is just below the last line the {text} will be
-		added as a new line.
+		added below the last line.
 
 		If this succeeds, 0 is returned.  If this fails (most likely
 		because {lnum} is invalid) 1 is returned.
@@ -8397,7 +8417,8 @@ setline({lnum}, {text})					*setline()*
 
 <		Note: The '[ and '] marks are not set.
 
-		Can also be used as a |method|, passing the text as the base: >
+		Can also be used as a |method|, the base is passed as the
+		second argument: >
 			GetText()->setline(lnum)
 
 setloclist({nr}, {list} [, {action} [, {what}]])		*setloclist()*
@@ -8646,7 +8667,8 @@ settabvar({tabnr}, {varname}, {val})			*settabvar()*
 		Tabs are numbered starting with one.
 		This function is not available in the |sandbox|.
 
-		Can also be used as a |method|, the base is used as the value: >
+		Can also be used as a |method|, the base is passed as the
+		third argument: >
 			GetValue()->settabvar(tab, name)
 
 settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
@@ -8667,7 +8689,8 @@ settabwinvar({tabnr}, {winnr}, {varname}, {val})	*settabwinvar()*
 			:call settabwinvar(3, 2, "myvar", "foobar")
 <		This function is not available in the |sandbox|.
 
-		Can also be used as a |method|, the base is used as the value: >
+		Can also be used as a |method|, the base is passed as the
+		fourth argument: >
 			GetValue()->settabvar(tab, winnr, name)
 
 settagstack({nr}, {dict} [, {action}])			*settagstack()*
@@ -8701,7 +8724,8 @@ settagstack({nr}, {dict} [, {action}])			*settagstack()*
 			call settagstack(1003, stack)
 			unlet stack
 <
-		Can also be used as a |method|, the base is used as the Dict: >
+		Can also be used as a |method|, the base is passed as the
+		second argument: >
 			GetStack()->settagstack(winnr)
 
 setwinvar({winnr}, {varname}, {val})			*setwinvar()*
@@ -8710,7 +8734,8 @@ setwinvar({winnr}, {varname}, {val})			*setwinvar()*
 			:call setwinvar(1, "&list", 0)
 			:call setwinvar(2, "myvar", "foobar")
 
-<		Can also be used as a |method|, the base is used as the value: >
+<		Can also be used as a |method|, the base is passed as the
+		third argument: >
 			GetValue()->setwinvar(winnr, name)
 
 sha256({string})						*sha256()*
@@ -9078,8 +9103,8 @@ state([{what}])						*state()*
 		        e.g. after |f|
 		    a	Insert mode autocomplete active
 		    x	executing an autocommand
-		    w	blocked on waiting, e.g. ch_evalexpr() and
-			ch_read(), ch_readraw() when reading json.
+		    w	blocked on waiting, e.g. ch_evalexpr(), ch_read() and
+			ch_readraw() when reading json.
 		    S	not triggering SafeState or SafeStateAgain
 		    c	callback invoked, including timer (repeats for
 			recursiveness up to "ccc")
@@ -9130,7 +9155,7 @@ str2nr({expr} [, {base} [, {quoted}]])				*str2nr()*
 		When {base} is omitted base 10 is used.  This also means that
 		a leading zero doesn't cause octal conversion to be used, as
 		with the default String to Number conversion.  Example: >
-			let nr = str2nr('123')
+			let nr = str2nr('0123')
 <
 		When {base} is 16 a leading "0x" or "0X" is ignored.  With a
 		different base the result will be zero.  Similarly, when
@@ -9247,6 +9272,7 @@ stridx({haystack}, {needle} [, {start}])		*stridx()*
 
 		Can also be used as a |method|: >
 			GetHaystack()->stridx(needle)
+<
 							*string()*
 string({expr})	Return {expr} converted to a String.  If {expr} is a Number,
 		Float, String, Blob or a composition of them, then the result
@@ -10142,8 +10168,8 @@ win_execute({id}, {command} [, {silent}])		*win_execute()*
 		Not all commands are allowed in popup windows.
 		When window {id} does not exist then no error is given.
 
-		Can also be used as a |method|, the base is used for the
-		command: >
+		Can also be used as a |method|, the base is passed as the
+		second argument: >
 			GetCommand()->win_execute(winid)
 
 win_findbuf({bufnr})					*win_findbuf()*
@@ -10461,10 +10487,10 @@ xor({expr}, {expr})					*xor()*
 		to a number.  A List, Dict or Float argument causes an error.
 		Example: >
 			:let bits = xor(bits, 0x80)
-<		Can also be used as a |method|: >
+<
+		Can also be used as a |method|: >
 			:let bits = bits->xor(0x80)
 <
-
 
 							*feature-list*
 There are four types of features:
@@ -11338,21 +11364,22 @@ This does NOT work: >
 
 						*:let=<<* *:let-heredoc*
 						*E990* *E991* *E172* *E221*
-:let {var-name} =<< [trim] {marker}
+:let {var-name} =<< [trim] {endmarker}
 text...
 text...
-{marker}
+{endmarker}
 			Set internal variable {var-name} to a List containing
-			the lines of text bounded by the string {marker}.
-			{marker} must not contain white space.
-			{marker} cannot start with a lower case character.
-			The last line should end only with the {marker} string
-			without any other character.  Watch out for white
-			space after {marker}!
+			the lines of text bounded by the string {endmarker}.
+			{endmarker} must not contain white space.
+			{endmarker} cannot start with a lower case character.
+			The last line should end only with the {endmarker}
+			string without any other character.  Watch out for
+			white space after {endmarker}!
 
 			Without "trim" any white space characters in the lines
 			of text are preserved.  If "trim" is specified before
-			{marker}, then indentation is stripped so you can do: >
+			{endmarker}, then indentation is stripped so you can
+			do: >
 				let text =<< trim END
 				   if ok
 				     echo 'done'
@@ -11366,23 +11393,31 @@ text...
 			non-empty text line is stripped from the input lines.
 			All leading indentation exactly matching the leading
 			indentation before `let` is stripped from the line
-			containing {marker}.  Note that the difference between
-			space and tab matters here.
+			containing {endmarker}.  Note that the difference
+			between space and tab matters here.
 
 			If {var-name} didn't exist yet, it is created.
 			Cannot be followed by another command, but can be
 			followed by a comment.
 
+			To avoid line continuation to be applied, consider
+			adding 'C' to 'cpoptions': >
+				set cpo+=C
+				let var =<< END
+				   \ leading backslash
+				END
+				set cpo-=C
+<
 			Examples: >
 				let var1 =<< END
-			Sample text 1
-			    Sample text 2
-			Sample text 3
-			END
+				Sample text 1
+				    Sample text 2
+				Sample text 3
+				END
 
 				let data =<< trim DATA
-				1 2 3 4
-				5 6 7 8
+					1 2 3 4
+					5 6 7 8
 				DATA
 <
 								*E121*

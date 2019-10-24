@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 Sep 27
+*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 Oct 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -63,6 +63,9 @@ sourceany		boolean	(default off)		*'sourceany'*
 w300			number	(default 23)		*'w300'*
 w1200			number	(default 23)		*'w1200'*
 w9600			number	(default 23)		*'w9600'*
+
+Vi did not allow for changing the termcap entries, you would have to exit Vi,
+edit the termcap entry and try again.  Vim has the |terminal-options|.
 
 ==============================================================================
 3. Limits						*limits*

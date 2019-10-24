@@ -359,15 +359,11 @@ static char *(features[]) =
 	"-mksession",
 #endif
 	"+modify_fname",
-#ifdef FEAT_MOUSE
 	"+mouse",
-#  ifdef FEAT_MOUSESHAPE
+#ifdef FEAT_MOUSESHAPE
 	"+mouseshape",
-#  else
+#else
 	"-mouseshape",
-#  endif
-# else
-	"-mouse",
 #endif
 
 #if defined(UNIX) || defined(VMS)
@@ -402,11 +398,7 @@ static char *(features[]) =
 #endif
 
 #if defined(UNIX) || defined(VMS)
-# ifdef FEAT_MOUSE_XTERM
 	"+mouse_sgr",
-# else
-	"-mouse_sgr",
-# endif
 # ifdef FEAT_SYSMOUSE
 	"+mouse_sysmouse",
 # else
@@ -417,11 +409,7 @@ static char *(features[]) =
 # else
 	"-mouse_urxvt",
 # endif
-# ifdef FEAT_MOUSE_XTERM
 	"+mouse_xterm",
-# else
-	"-mouse_xterm",
-# endif
 #endif
 
 #ifdef FEAT_MBYTE_IME
@@ -753,6 +741,110 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    2204,
+/**/
+    2203,
+/**/
+    2202,
+/**/
+    2201,
+/**/
+    2200,
+/**/
+    2199,
+/**/
+    2198,
+/**/
+    2197,
+/**/
+    2196,
+/**/
+    2195,
+/**/
+    2194,
+/**/
+    2193,
+/**/
+    2192,
+/**/
+    2191,
+/**/
+    2190,
+/**/
+    2189,
+/**/
+    2188,
+/**/
+    2187,
+/**/
+    2186,
+/**/
+    2185,
+/**/
+    2184,
+/**/
+    2183,
+/**/
+    2182,
+/**/
+    2181,
+/**/
+    2180,
+/**/
+    2179,
+/**/
+    2178,
+/**/
+    2177,
+/**/
+    2176,
+/**/
+    2175,
+/**/
+    2174,
+/**/
+    2173,
+/**/
+    2172,
+/**/
+    2171,
+/**/
+    2170,
+/**/
+    2169,
+/**/
+    2168,
+/**/
+    2167,
+/**/
+    2166,
+/**/
+    2165,
+/**/
+    2164,
+/**/
+    2163,
+/**/
+    2162,
+/**/
+    2161,
+/**/
+    2160,
+/**/
+    2159,
+/**/
+    2158,
+/**/
+    2157,
+/**/
+    2156,
+/**/
+    2155,
+/**/
+    2154,
+/**/
+    2153,
 /**/
     2152,
 /**/

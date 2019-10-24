@@ -652,9 +652,10 @@ endfunc
 
 " screenshot test with textprop highlighting
 func Test_textprop_screenshot_various()
+  CheckScreendump
   " The Vim running in the terminal needs to use utf-8.
-  if !CanRunVimInTerminal() || g:orig_encoding != 'utf-8'
-    throw 'Skipped: cannot make screendumps or not using utf-8'
+  if g:orig_encoding != 'utf-8'
+    throw 'Skipped: not using utf-8'
   endif
   call writefile([
 	\ "call setline(1, ["
@@ -750,9 +751,7 @@ endfunc
 
 " screenshot test with Visual block mode operations
 func Test_textprop_screenshot_visual()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   " Delete two columns while text props are three chars wide.
   call RunTestVisualBlock(2, '01')
@@ -762,9 +761,7 @@ func Test_textprop_screenshot_visual()
 endfunc
 
 func Test_textprop_after_tab()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
        call setline(1, [
@@ -783,6 +780,28 @@ func Test_textprop_after_tab()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPropTab')
+endfunc
+
+func Test_textprop_with_syntax()
+  CheckScreendump
+
+  let lines =<< trim END
+       call setline(1, [
+             \ "(abc)",
+             \ ])
+       syn match csParens "[()]" display
+       hi! link csParens MatchParen
+
+       call prop_type_add('TPTitle', #{ highlight: 'Title' })
+       call prop_add(1, 2, #{type: 'TPTitle', end_col: 5})
+  END
+  call writefile(lines, 'XtestPropSyn')
+  let buf = RunVimInTerminal('-S XtestPropSyn', {'rows': 6})
+  call VerifyScreenDump(buf, 'Test_textprop_syn_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPropSyn')
 endfunc
 
 " Adding a text property to a new buffer should not fail

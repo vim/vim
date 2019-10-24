@@ -1325,10 +1325,8 @@ save_typebuf(void)
 
 static int old_char = -1;	/* character put back by vungetc() */
 static int old_mod_mask;	/* mod_mask for ungotten character */
-#ifdef FEAT_MOUSE
 static int old_mouse_row;	/* mouse_row related to old_char */
 static int old_mouse_col;	/* mouse_col related to old_char */
-#endif
 
 /*
  * Save all three kinds of typeahead, so that the user must type at a prompt.
@@ -1559,10 +1557,8 @@ vgetc(void)
 	c = old_char;
 	old_char = -1;
 	mod_mask = old_mod_mask;
-#ifdef FEAT_MOUSE
 	mouse_row = old_mouse_row;
 	mouse_col = old_mouse_col;
-#endif
     }
     else
     {
@@ -2007,7 +2003,6 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 	rettv->v_type = VAR_STRING;
 	rettv->vval.v_string = vim_strsave(temp);
 
-#ifdef FEAT_MOUSE
 	if (is_mouse_key(n))
 	{
 	    int		row = mouse_row;
@@ -2025,11 +2020,11 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 		if (win == NULL)
 		    return;
 		(void)mouse_comp_pos(win, &row, &col, &lnum, NULL);
-# ifdef FEAT_TEXT_PROP
+#ifdef FEAT_TEXT_PROP
 		if (WIN_IS_POPUP(win))
 		    winnr = 0;
 		else
-# endif
+#endif
 		    for (wp = firstwin; wp != win && wp != NULL;
 							       wp = wp->w_next)
 			++winnr;
@@ -2039,7 +2034,6 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 		set_vim_var_nr(VV_MOUSE_COL, col + 1);
 	    }
 	}
-#endif
     }
 }
 
@@ -2065,8 +2059,8 @@ f_getcharmod(typval_T *argvars UNUSED, typval_T *rettv)
     void
 parse_queued_messages(void)
 {
-    int	    old_curwin_id = curwin->w_id;
-    int	    old_curbuf_fnum = curbuf->b_fnum;
+    int	    old_curwin_id;
+    int	    old_curbuf_fnum;
     int	    i;
     int	    save_may_garbage_collect = may_garbage_collect;
     static int entered = 0;
@@ -2076,6 +2070,14 @@ parse_queued_messages(void)
     // change or be wiped while they are being redrawn.
     if (updating_screen)
 	return;
+
+    // If memory allocation fails during startup we'll exit but curbuf or
+    // curwin could be NULL.
+    if (curbuf == NULL || curwin == NULL)
+       return;
+
+    old_curbuf_fnum = curbuf->b_fnum;
+    old_curwin_id = curwin->w_id;
 
     ++entered;
 
@@ -2149,6 +2151,24 @@ typedef enum {
 } map_result_T;
 
 /*
+ * Check if the bytes at the start of the typeahead buffer are a character used
+ * in CTRL-X mode.  This includes the form with a CTRL modifier.
+ */
+    static int
+at_ctrl_x_key(void)
+{
+    char_u  *p = typebuf.tb_buf + typebuf.tb_off;
+    int	    c = *p;
+
+    if (typebuf.tb_len > 3
+	    && c == K_SPECIAL
+	    && p[1] == KS_MODIFIER
+	    && (p[2] & MOD_MASK_CTRL))
+	c = p[3] & 0x1f;
+    return vim_is_ctrl_x_key(c);
+}
+
+/*
  * Handle mappings in the typeahead buffer.
  * - When something was mapped, return map_result_retry for recursive mappings.
  * - When nothing mapped and typeahead has a character: return map_result_get.
@@ -2199,7 +2219,7 @@ handle_mapping(
 	    && !(State == HITRETURN && (tb_c1 == CAR || tb_c1 == ' '))
 	    && State != ASKMORE
 	    && State != CONFIRM
-	    && !((ctrl_x_mode_not_default() && vim_is_ctrl_x_key(tb_c1))
+	    && !((ctrl_x_mode_not_default() && at_ctrl_x_key())
 		    || ((compl_cont_status & CONT_LOCAL)
 			&& (tb_c1 == Ctrl_N || tb_c1 == Ctrl_P))))
     {
@@ -2636,10 +2656,8 @@ vungetc(int c)
 {
     old_char = c;
     old_mod_mask = mod_mask;
-#ifdef FEAT_MOUSE
     old_mouse_row = mouse_row;
     old_mouse_col = mouse_col;
-#endif
 }
 
 /*

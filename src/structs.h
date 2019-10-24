@@ -3871,6 +3871,19 @@ typedef struct spat
     soffset_T	    off;
 } spat_T;
 
+/*
+ * Optional extra arguments for searchit().
+ */
+typedef struct
+{
+    linenr_T	sa_stop_lnum;	// stop after this line number when != 0
+#ifdef FEAT_RELTIME
+    proftime_T	*sa_tm;		// timeout limit or NULL
+    int		sa_timed_out;	// set when timed out
+#endif
+    int		sa_wrapped;	// search wrapped around
+} searchit_arg_T;
+
 #define WRITEBUFSIZE	8192	// size of normal write buffer
 
 #define FIO_LATIN1	0x01	// convert Latin1

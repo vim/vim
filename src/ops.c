@@ -4369,10 +4369,8 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    if (!gui_yank)
 	    {
 		VIsual_active = FALSE;
-#ifdef FEAT_MOUSE
 		setmouse();
 		mouse_dragging = 0;
-#endif
 		may_clear_cmdline();
 		if ((oap->op_type == OP_YANK
 			    || oap->op_type == OP_COLON

@@ -73,8 +73,8 @@ $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
 # 	make test_largefile
 $(NEW_TESTS):
 	rm -f $@.res test.log messages
-	$(MAKE) -f Makefile $@.res
-	cat messages
+	@MAKEFLAGS=--no-print-directory $(MAKE) -f Makefile $@.res
+	@cat messages
 	@if test -f test.log; then \
 		exit 1; \
 	fi

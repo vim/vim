@@ -26,6 +26,7 @@ void f_popup_dialog(typval_T *argvars, typval_T *rettv);
 void f_popup_menu(typval_T *argvars, typval_T *rettv);
 void f_popup_notification(typval_T *argvars, typval_T *rettv);
 void f_popup_close(typval_T *argvars, typval_T *rettv);
+void popup_hide(win_T *wp);
 void f_popup_hide(typval_T *argvars, typval_T *rettv);
 void popup_show(win_T *wp);
 void f_popup_show(typval_T *argvars, typval_T *rettv);

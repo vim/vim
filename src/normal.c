@@ -65,7 +65,7 @@ static void	nv_end(cmdarg_T *cap);
 static void	nv_dollar(cmdarg_T *cap);
 static void	nv_search(cmdarg_T *cap);
 static void	nv_next(cmdarg_T *cap);
-static int	normal_search(cmdarg_T *cap, int dir, char_u *pat, int opt);
+static int	normal_search(cmdarg_T *cap, int dir, char_u *pat, int opt, int *wrapped);
 static void	nv_csearch(cmdarg_T *cap);
 static void	nv_brackets(cmdarg_T *cap);
 static void	nv_percent(cmdarg_T *cap);
@@ -303,7 +303,6 @@ static const struct nv_cmd
 
     /* pound sign */
     {POUND,	nv_ident,	0,			0},
-#ifdef FEAT_MOUSE
     {K_MOUSEUP, nv_mousescroll,	0,			MSCR_UP},
     {K_MOUSEDOWN, nv_mousescroll, 0,			MSCR_DOWN},
     {K_MOUSELEFT, nv_mousescroll, 0,			MSCR_LEFT},
@@ -326,7 +325,6 @@ static const struct nv_cmd
     {K_X2MOUSE, nv_mouse,	0,			0},
     {K_X2DRAG, nv_mouse,	0,			0},
     {K_X2RELEASE, nv_mouse,	0,			0},
-#endif
     {K_IGNORE,	nv_ignore,	NV_KEEPREG,		0},
     {K_NOP,	nv_nop,		0,			0},
     {K_INS,	nv_edit,	0,			0},
@@ -1319,10 +1317,8 @@ end_visual_mode(void)
 #endif
 
     VIsual_active = FALSE;
-#ifdef FEAT_MOUSE
     setmouse();
     mouse_dragging = 0;
-#endif
 
     /* Save the current VIsual area for '< and '> marks, and "gv" */
     curbuf->b_visual.vi_mode = VIsual_mode;
@@ -1849,14 +1845,13 @@ add_to_showcmd(int c)
     int		old_len;
     int		extra_len;
     int		overflow;
-#if defined(FEAT_MOUSE)
     int		i;
     static int	ignore[] =
     {
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 	K_VER_SCROLLBAR, K_HOR_SCROLLBAR,
 	K_LEFTMOUSE_NM, K_LEFTRELEASE_NM,
-# endif
+#endif
 	K_IGNORE, K_PS,
 	K_LEFTMOUSE, K_LEFTDRAG, K_LEFTRELEASE, K_MOUSEMOVE,
 	K_MIDDLEMOUSE, K_MIDDLEDRAG, K_MIDDLERELEASE,
@@ -1866,7 +1861,6 @@ add_to_showcmd(int c)
 	K_CURSORHOLD,
 	0
     };
-#endif
 
     if (!p_sc || msg_silent != 0)
 	return FALSE;
@@ -1877,13 +1871,11 @@ add_to_showcmd(int c)
 	showcmd_visual = FALSE;
     }
 
-#if defined(FEAT_MOUSE)
     /* Ignore keys that are scrollbar updates and mouse clicks */
     if (IS_SPECIAL(c))
 	for (i = 0; ignore[i] != 0; ++i)
 	    if (ignore[i] == c)
 		return FALSE;
-#endif
 
     p = transchar(c);
     if (*p == ' ')
@@ -2354,7 +2346,7 @@ find_decl(
     for (;;)
     {
 	t = searchit(curwin, curbuf, &curwin->w_cursor, NULL, FORWARD,
-		       pat, 1L, searchflags, RE_LAST, (linenr_T)0, NULL, NULL);
+					  pat, 1L, searchflags, RE_LAST, NULL);
 	if (curwin->w_cursor.lnum >= old_pos.lnum)
 	    t = FAIL;	/* match after start is failure too */
 
@@ -3738,7 +3730,7 @@ nv_ident(cmdarg_T *cap)
 	init_history();
 	add_to_history(HIST_SEARCH, buf, TRUE, NUL);
 
-	(void)normal_search(cap, cmdchar == '*' ? '/' : '?', buf, 0);
+	(void)normal_search(cap, cmdchar == '*' ? '/' : '?', buf, 0, NULL);
     }
     else
     {
@@ -4265,7 +4257,7 @@ nv_search(cmdarg_T *cap)
 
     (void)normal_search(cap, cap->cmdchar, cap->searchbuf,
 			(cap->arg || !EQUAL_POS(save_cursor, curwin->w_cursor))
-							   ? 0 : SEARCH_MARK);
+						      ? 0 : SEARCH_MARK, NULL);
 }
 
 /*
@@ -4275,16 +4267,17 @@ nv_search(cmdarg_T *cap)
     static void
 nv_next(cmdarg_T *cap)
 {
-    pos_T old = curwin->w_cursor;
-    int   i = normal_search(cap, 0, NULL, SEARCH_MARK | cap->arg);
+    pos_T   old = curwin->w_cursor;
+    int	    wrapped = FALSE;
+    int	    i = normal_search(cap, 0, NULL, SEARCH_MARK | cap->arg, &wrapped);
 
-    if (i == 1 && EQUAL_POS(old, curwin->w_cursor))
+    if (i == 1 && !wrapped && EQUAL_POS(old, curwin->w_cursor))
     {
 	/* Avoid getting stuck on the current cursor position, which can
 	 * happen when an offset is given and the cursor is on the last char
 	 * in the buffer: Repeat with count + 1. */
 	cap->count1 += 1;
-	(void)normal_search(cap, 0, NULL, SEARCH_MARK | cap->arg);
+	(void)normal_search(cap, 0, NULL, SEARCH_MARK | cap->arg, NULL);
 	cap->count1 -= 1;
     }
 }
@@ -4299,17 +4292,22 @@ normal_search(
     cmdarg_T	*cap,
     int		dir,
     char_u	*pat,
-    int		opt)		/* extra flags for do_search() */
+    int		opt,		// extra flags for do_search()
+    int		*wrapped)
 {
     int		i;
+    searchit_arg_T sia;
 
     cap->oap->motion_type = MCHAR;
     cap->oap->inclusive = FALSE;
     cap->oap->use_reg_one = TRUE;
     curwin->w_set_curswant = TRUE;
 
+    vim_memset(&sia, 0, sizeof(sia));
     i = do_search(cap->oap, dir, pat, cap->count1,
-		      opt | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG, NULL, NULL);
+			    opt | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG, &sia);
+    if (wrapped != NULL)
+	*wrapped = sia.sa_wrapped;
     if (i == 0)
 	clearop(cap->oap);
     else
@@ -4625,7 +4623,6 @@ nv_brackets(cmdarg_T *cap)
 	nv_cursormark(cap, cap->nchar == '\'', pos);
     }
 
-#ifdef FEAT_MOUSE
     /*
      * [ or ] followed by a middle mouse click: put selected text with
      * indent adjustment.  Any other button just does as usual.
@@ -4636,7 +4633,6 @@ nv_brackets(cmdarg_T *cap)
 		       (cap->cmdchar == ']') ? FORWARD : BACKWARD,
 		       cap->count1, PUT_FIXINDENT);
     }
-#endif /* FEAT_MOUSE */
 
 #ifdef FEAT_FOLDING
     /*
@@ -6220,7 +6216,6 @@ nv_g_cmd(cmdarg_T *cap)
 	nv_gd(oap, cap->nchar, (int)cap->count0);
 	break;
 
-#ifdef FEAT_MOUSE
     /*
      * g<*Mouse> : <C-*mouse>
      */
@@ -6243,7 +6238,6 @@ nv_g_cmd(cmdarg_T *cap)
 	mod_mask = MOD_MASK_CTRL;
 	(void)do_mouse(oap, cap->nchar, BACKWARD, cap->count1, 0);
 	break;
-#endif
 
     case K_IGNORE:
 	break;

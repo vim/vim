@@ -151,9 +151,6 @@
 # if defined(FEAT_SMALL) && !defined(FEAT_CLIPBOARD)
 #  define FEAT_CLIPBOARD
 # endif
-# if defined(FEAT_SMALL) && !defined(FEAT_MOUSE)
-#  define FEAT_MOUSE
-# endif
 #endif
 
 // +x11 is only enabled when it's both available and wanted.
@@ -813,6 +810,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define WILD_ICASE		    0x100
 #define WILD_ALLLINKS		    0x200
 #define WILD_IGNORE_COMPLETESLASH   0x400
+#define WILD_NOERROR		    0x800  // sets EW_NOERROR
 
 // Flags for expand_wildcards()
 #define EW_DIR		0x01	// include directory names
@@ -1817,80 +1815,78 @@ typedef int sock_T;
 #define PROF_YES	1	// profiling busy
 #define PROF_PAUSED	2	// profiling paused
 
-#ifdef FEAT_MOUSE
 
 // Codes for mouse button events in lower three bits:
-# define MOUSE_LEFT	0x00
-# define MOUSE_MIDDLE	0x01
-# define MOUSE_RIGHT	0x02
-# define MOUSE_RELEASE	0x03
+#define MOUSE_LEFT	0x00
+#define MOUSE_MIDDLE	0x01
+#define MOUSE_RIGHT	0x02
+#define MOUSE_RELEASE	0x03
 
 // bit masks for modifiers:
-# define MOUSE_SHIFT	0x04
-# define MOUSE_ALT	0x08
-# define MOUSE_CTRL	0x10
+#define MOUSE_SHIFT	0x04
+#define MOUSE_ALT	0x08
+#define MOUSE_CTRL	0x10
 
 // mouse buttons that are handled like a key press (GUI only)
 // Note that the scroll wheel keys are inverted: MOUSE_5 scrolls lines up but
 // the result of this is that the window moves down, similarly MOUSE_6 scrolls
 // columns left but the window moves right.
-# define MOUSE_4	0x100	// scroll wheel down
-# define MOUSE_5	0x200	// scroll wheel up
+#define MOUSE_4	0x100	// scroll wheel down
+#define MOUSE_5	0x200	// scroll wheel up
 
-# define MOUSE_X1	0x300 // Mouse-button X1 (6th)
-# define MOUSE_X2	0x400 // Mouse-button X2
+#define MOUSE_X1	0x300 // Mouse-button X1 (6th)
+#define MOUSE_X2	0x400 // Mouse-button X2
 
-# define MOUSE_6	0x500	// scroll wheel left
-# define MOUSE_7	0x600	// scroll wheel right
+#define MOUSE_6	0x500	// scroll wheel left
+#define MOUSE_7	0x600	// scroll wheel right
 
 // 0x20 is reserved by xterm
-# define MOUSE_DRAG_XTERM   0x40
+#define MOUSE_DRAG_XTERM   0x40
 
-# define MOUSE_DRAG	(0x40 | MOUSE_RELEASE)
+#define MOUSE_DRAG	(0x40 | MOUSE_RELEASE)
 
 // Lowest button code for using the mouse wheel (xterm only)
-# define MOUSEWHEEL_LOW		0x60
+#define MOUSEWHEEL_LOW		0x60
 
-# define MOUSE_CLICK_MASK	0x03
+#define MOUSE_CLICK_MASK	0x03
 
-# define NUM_MOUSE_CLICKS(code) \
+#define NUM_MOUSE_CLICKS(code) \
     (((unsigned)((code) & 0xC0) >> 6) + 1)
 
-# define SET_NUM_MOUSE_CLICKS(code, num) \
+#define SET_NUM_MOUSE_CLICKS(code, num) \
     (code) = ((code) & 0x3f) | ((((num) - 1) & 3) << 6)
 
 // Added to mouse column for GUI when 'mousefocus' wants to give focus to a
 // window by simulating a click on its status line.  We could use up to 128 *
 // 128 = 16384 columns, now it's reduced to 10000.
-# define MOUSE_COLOFF 10000
+#define MOUSE_COLOFF 10000
 
 /*
  * jump_to_mouse() returns one of first four these values, possibly with
  * some of the other three added.
  */
-# define IN_UNKNOWN		0
-# define IN_BUFFER		1
-# define IN_STATUS_LINE		2	// on status or command line
-# define IN_SEP_LINE		4	// on vertical separator line
-# define IN_OTHER_WIN		8	// in other window but can't go there
-# define CURSOR_MOVED		0x100
-# define MOUSE_FOLD_CLOSE	0x200	// clicked on '-' in fold column
-# define MOUSE_FOLD_OPEN	0x400	// clicked on '+' in fold column
-# define MOUSE_WINBAR		0x800	// in window toolbar
+#define IN_UNKNOWN		0
+#define IN_BUFFER		1
+#define IN_STATUS_LINE		2	// on status or command line
+#define IN_SEP_LINE		4	// on vertical separator line
+#define IN_OTHER_WIN		8	// in other window but can't go there
+#define CURSOR_MOVED		0x100
+#define MOUSE_FOLD_CLOSE	0x200	// clicked on '-' in fold column
+#define MOUSE_FOLD_OPEN		0x400	// clicked on '+' in fold column
+#define MOUSE_WINBAR		0x800	// in window toolbar
 
 // flags for jump_to_mouse()
-# define MOUSE_FOCUS		0x01	// need to stay in this window
-# define MOUSE_MAY_VIS		0x02	// may start Visual mode
-# define MOUSE_DID_MOVE		0x04	// only act when mouse has moved
-# define MOUSE_SETPOS		0x08	// only set current mouse position
-# define MOUSE_MAY_STOP_VIS	0x10	// may stop Visual mode
-# define MOUSE_RELEASED		0x20	// button was released
+#define MOUSE_FOCUS		0x01	// need to stay in this window
+#define MOUSE_MAY_VIS		0x02	// may start Visual mode
+#define MOUSE_DID_MOVE		0x04	// only act when mouse has moved
+#define MOUSE_SETPOS		0x08	// only set current mouse position
+#define MOUSE_MAY_STOP_VIS	0x10	// may stop Visual mode
+#define MOUSE_RELEASED		0x20	// button was released
 
-# if defined(UNIX) && defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
-#  define CHECK_DOUBLE_CLICK 1	// Checking for double clicks ourselves.
-# endif
+#if defined(UNIX) && defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+# define CHECK_DOUBLE_CLICK 1	// Checking for double clicks ourselves.
+#endif
 
-#endif // FEAT_MOUSE
 
 // defines for eval_vars()
 #define VALID_PATH		1
@@ -2115,6 +2111,13 @@ typedef enum {
     FLUSH_TYPEAHEAD,	// flush current typebuf contents
     FLUSH_INPUT		// flush typebuf and inchar() input
 } flush_buffers_T;
+
+// Argument for prepare_tagpreview()
+typedef enum {
+    USEPOPUP_NONE,
+    USEPOPUP_NORMAL,	// use info popup
+    USEPOPUP_HIDDEN	// use info popup initially hidden
+} use_popup_T;
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff

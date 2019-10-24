@@ -493,12 +493,28 @@ handle_moved_argument(win_T *wp, dictitem_T *di, int mousemoved)
     }
     else if (di->di_tv.v_type == VAR_LIST
 	    && di->di_tv.vval.v_list != NULL
-	    && di->di_tv.vval.v_list->lv_len == 2)
+	    && (di->di_tv.vval.v_list->lv_len == 2
+	     || di->di_tv.vval.v_list->lv_len == 3))
     {
-	list_T	*l = di->di_tv.vval.v_list;
-	int	mincol = tv_get_number(&l->lv_first->li_tv);
-	int	maxcol = tv_get_number(&l->lv_first->li_next->li_tv);
+	list_T	    *l = di->di_tv.vval.v_list;
+	listitem_T  *li = l->lv_first;
+	int	    mincol;
+	int	    maxcol;
 
+	if (di->di_tv.vval.v_list->lv_len == 3)
+	{
+	    varnumber_T nr = tv_get_number(&l->lv_first->li_tv);
+
+	    // Three numbers, might be from popup_getoptions().
+	    if (mousemoved)
+		wp->w_popup_mouse_row = nr;
+	    else
+		wp->w_popup_lnum = nr;
+	    li = li->li_next;
+	}
+
+	mincol = tv_get_number(&li->li_tv);
+	maxcol = tv_get_number(&li->li_next->li_tv);
 	if (mousemoved)
 	{
 	    wp->w_popup_mouse_mincol = mincol;
@@ -535,7 +551,7 @@ check_highlight(dict_T *dict, char *name, char_u **pval)
 }
 
 /*
- * Scroll to show the line with the cursor.  This assumes lines don't wrap.
+ * Scroll to show the line with the cursor.
  */
     static void
 popup_show_curline(win_T *wp)
@@ -550,6 +566,11 @@ popup_show_curline(win_T *wp)
 	    wp->w_topline = 1;
 	else if (wp->w_topline > wp->w_buffer->b_ml.ml_line_count)
 	    wp->w_topline = wp->w_buffer->b_ml.ml_line_count;
+	while (wp->w_topline < wp->w_cursor.lnum
+		&& wp->w_topline < wp->w_buffer->b_ml.ml_line_count
+		&& plines_m_win(wp, wp->w_topline, wp->w_cursor.lnum)
+								> wp->w_height)
+	    ++wp->w_topline;
     }
 
     // Don't use "firstline" now.
@@ -1041,6 +1062,7 @@ popup_adjust_position(win_T *wp)
     linenr_T	lnum;
     int		wrapped = 0;
     int		maxwidth;
+    int		used_maxwidth = FALSE;
     int		maxspace;
     int		center_vert = FALSE;
     int		center_hor = FALSE;
@@ -1208,6 +1230,7 @@ popup_adjust_position(win_T *wp)
 		++wrapped;
 		len -= maxwidth;
 		wp->w_width = maxwidth;
+		used_maxwidth = TRUE;
 	    }
 	}
 	else if (len > maxwidth
@@ -1259,6 +1282,8 @@ popup_adjust_position(win_T *wp)
     {
 	++right_extra;
 	++extra_width;
+	if (used_maxwidth)
+	    maxwidth -= 2;  // try to show the scrollbar
     }
 
     minwidth = wp->w_minwidth;
@@ -2216,7 +2241,7 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
 	popup_close_and_callback(wp, &argvars[1]);
 }
 
-    static void
+    void
 popup_hide(win_T *wp)
 {
     if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
@@ -2263,7 +2288,11 @@ f_popup_show(typval_T *argvars, typval_T *rettv UNUSED)
     win_T	*wp = find_popup_win(id);
 
     if (wp != NULL)
+    {
 	popup_show(wp);
+	if (wp->w_popup_flags & POPF_INFO)
+	    pum_position_info_popup(wp);
+    }
 }
 
 /*

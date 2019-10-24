@@ -20,7 +20,8 @@ manual.
    1.8 Examples				|map-examples|
    1.9 Using mappings			|map-typing|
    1.10 Mapping alt-keys		|:map-alt-keys|
-   1.11 Mapping an operator		|:map-operator|
+   1.11 Mapping in modifyOtherKeys mode	|modifyOtherKeys|
+   1.12 Mapping an operator		|:map-operator|
 2. Abbreviations		|abbreviations|
 3. Local mappings and functions	|script-local|
 4. User-defined commands	|user-commands|
@@ -777,6 +778,9 @@ In the GUI Vim handles the Alt key itself, thus mapping keys with ALT should
 always work.  But in a terminal Vim gets a sequence of bytes and has to figure
 out whether ALT was pressed or not.
 
+If the terminal supports the modifyOtherKeys mode and it has been enabled,
+then Vim can recognize more key combinations, see |modifyOtherKeys| below.
+
 By default Vim assumes that pressing the ALT key sets the 8th bit of a typed
 character.  Most decent terminals can work that way, such as xterm, aterm and
 rxvt.  If your <A-k> mappings don't work it might be that the terminal is
@@ -814,7 +818,31 @@ on the terminal; that's a good last resource in case you want to send ESC when
 using other applications but not when inside Vim.
 
 
-1.11 MAPPING AN OPERATOR				*:map-operator*
+1.11 MAPPING IN modifyOtherKeys mode			*modifyOtherKeys*
+
+Xterm and a few other terminals can be put in a mode where keys with modifiers
+are sent with a special escape code.  Vim recognizes these codes and can then
+make a difference between CTRL-H and Backspace, even when Backspace sends the
+character 8.  And many more special keys.
+
+For xterm modifyOtherKeys is enabled in the builtin termcap entry.  If this is
+not used you can enable modifyOtherKeys with these lines in your vimrc: >
+      let &t_TI = "\<Esc>[>4;2m"
+      let &t_TE = "\<Esc>[>4;m"
+
+In case the modifyOtherKeys mode causes problems you can disable it: >
+      let &t_TI = ""
+      let &t_TE = ""
+It does not take effect immediately.  To have this work without restarting Vim
+execute a shell command, e.g.: `!ls`
+
+A known side effect effect is that in Insert mode the raw escape sequence is
+inserted after the CTRL-V key.  This can be used to check whether
+modifyOtherKeys is enabled: In Insert mode type CTRL-V CTRL-V, if you get
+one byte then modifyOtherKeys is off, if you get <1b>27;5;118~ then it is on.
+
+
+1.12 MAPPING AN OPERATOR				*:map-operator*
 
 An operator is used before a {motion} command.  To define your own operator
 you must create mapping that first sets the 'operatorfunc' option and then

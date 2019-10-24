@@ -656,6 +656,7 @@ X_PRE_LIBS
 X_CFLAGS
 XMKMF
 xmkmfpath
+TERM_TEST
 TERM_OBJ
 TERM_SRC
 CHANNEL_OBJ
@@ -7910,6 +7911,8 @@ if test "$enable_terminal" = "yes" -a "$enable_channel" = "yes"; then
   TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/creen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
 
   TERM_OBJ="objects/vterm_encoding.o objects/vterm_keyboard.o objects/vterm_mouse.o objects/vterm_parser.o objects/vterm_pen.o objects/vterm_screen.o objects/vterm_state.o objects/vterm_unicode.o objects/vterm_vterm.o"
+
+  TERM_TEST="test_libvterm"
 
 fi
 

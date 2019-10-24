@@ -1016,6 +1016,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 't_Sb'	term.txt	/*'t_Sb'*
 't_Sf'	term.txt	/*'t_Sf'*
 't_Si'	term.txt	/*'t_Si'*
+'t_TE'	term.txt	/*'t_TE'*
+'t_TI'	term.txt	/*'t_TI'*
 't_Te'	term.txt	/*'t_Te'*
 't_Ts'	term.txt	/*'t_Ts'*
 't_VS'	term.txt	/*'t_VS'*
@@ -8087,7 +8089,6 @@ new-vimgrep	version7.txt	/*new-vimgrep*
 new-virtedit	version6.txt	/*new-virtedit*
 news	intro.txt	/*news*
 nextnonblank()	eval.txt	/*nextnonblank()*
-nice	todo.txt	/*nice*
 no-eval-feature	eval.txt	/*no-eval-feature*
 no-type-checking	eval.txt	/*no-type-checking*
 no_buffers_menu	gui.txt	/*no_buffers_menu*
@@ -9104,6 +9105,8 @@ t_ST	term.txt	/*t_ST*
 t_Sb	term.txt	/*t_Sb*
 t_Sf	term.txt	/*t_Sf*
 t_Si	term.txt	/*t_Si*
+t_TE	term.txt	/*t_TE*
+t_TI	term.txt	/*t_TI*
 t_Te	term.txt	/*t_Te*
 t_Ts	term.txt	/*t_Ts*
 t_VS	term.txt	/*t_VS*

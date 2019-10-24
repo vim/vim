@@ -2108,6 +2108,8 @@ if test "$enable_terminal" = "yes" -a "$enable_channel" = "yes"; then
   AC_SUBST(TERM_SRC)
   TERM_OBJ="objects/vterm_encoding.o objects/vterm_keyboard.o objects/vterm_mouse.o objects/vterm_parser.o objects/vterm_pen.o objects/vterm_screen.o objects/vterm_state.o objects/vterm_unicode.o objects/vterm_vterm.o"
   AC_SUBST(TERM_OBJ)
+  TERM_TEST="test_libvterm"
+  AC_SUBST(TERM_TEST)
 fi
 
 AC_MSG_CHECKING(--enable-autoservername argument)

@@ -554,7 +554,7 @@ do_map(
 		for ( ; mp != NULL && !got_int; mp = mp->m_next)
 		{
 		    // check entries with the same mode
-		    if ((mp->m_mode & mode) != 0)
+		    if (!mp->m_simplified && (mp->m_mode & mode) != 0)
 		    {
 			if (!haskey)		    // show all entries
 			{
@@ -599,15 +599,19 @@ do_map(
 		for (mp = *mpp; mp != NULL && !got_int; mp = *mpp)
 		{
 
-		    if (!(mp->m_mode & mode))   // skip entries with wrong mode
+		    if ((mp->m_mode & mode) == 0)
 		    {
+			// skip entries with wrong mode
 			mpp = &(mp->m_next);
 			continue;
 		    }
 		    if (!haskey)	// show all entries
 		    {
-			showmap(mp, map_table != maphash);
-			did_it = TRUE;
+			if (!mp->m_simplified)
+			{
+			    showmap(mp, map_table != maphash);
+			    did_it = TRUE;
+			}
 		    }
 		    else	// do we have a match?
 		    {
@@ -643,8 +647,11 @@ do_map(
 			    }
 			    else if (!hasarg)	// show matching entry
 			    {
-				showmap(mp, map_table != maphash);
-				did_it = TRUE;
+				if (!mp->m_simplified)
+				{
+				    showmap(mp, map_table != maphash);
+				    did_it = TRUE;
+				}
 			    }
 			    else if (n != len)	// new entry is ambiguous
 			    {

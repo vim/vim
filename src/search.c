@@ -595,8 +595,8 @@ last_pat_prog(regmmatch_T *regmatch)
  */
     int
 searchit(
-    win_T	*win,		/* window to search in; can be NULL for a
-				   buffer without a window! */
+    win_T	*win,		// window to search in; can be NULL for a
+				// buffer without a window!
     buf_T	*buf,
     pos_T	*pos,
     pos_T	*end_pos,	// set to end of the match, unless NULL
@@ -604,10 +604,8 @@ searchit(
     char_u	*pat,
     long	count,
     int		options,
-    int		pat_use,	/* which pattern to use when "pat" is empty */
-    linenr_T	stop_lnum,	/* stop after this line number when != 0 */
-    proftime_T	*tm UNUSED,	/* timeout limit or NULL */
-    int		*timed_out UNUSED)  /* set when timed out or NULL */
+    int		pat_use,	// which pattern to use when "pat" is empty
+    searchit_arg_T *extra_arg)	// optional extra arguments, can be NULL
 {
     int		found;
     linenr_T	lnum;		/* no init to shut up Apollo cc */
@@ -630,6 +628,20 @@ searchit(
 #ifdef FEAT_SEARCH_EXTRA
     int		break_loop = FALSE;
 #endif
+    linenr_T	stop_lnum = 0;	// stop after this line number when != 0
+#ifdef FEAT_RELTIME
+    proftime_T	*tm = NULL;	// timeout limit or NULL
+    int		*timed_out = NULL;  // set when timed out or NULL
+#endif
+
+    if (extra_arg != NULL)
+    {
+	stop_lnum = extra_arg->sa_stop_lnum;
+#ifdef FEAT_RELTIME
+	tm = extra_arg->sa_tm;
+	timed_out = &extra_arg->sa_timed_out;
+#endif
+    }
 
     if (search_regcomp(pat, RE_SEARCH, pat_use,
 		   (options & (SEARCH_HIS + SEARCH_KEEP)), &regmatch) == FAIL)
@@ -1067,6 +1079,8 @@ searchit(
 	    if (!shortmess(SHM_SEARCH) && (options & SEARCH_MSG))
 		give_warning((char_u *)_(dir == BACKWARD
 					  ? top_bot_msg : bot_top_msg), TRUE);
+	    if (extra_arg != NULL)
+		extra_arg->sa_wrapped = TRUE;
 	}
 	if (got_int || called_emsg
 #ifdef FEAT_RELTIME
@@ -1178,8 +1192,7 @@ do_search(
     char_u	    *pat,
     long	    count,
     int		    options,
-    proftime_T	    *tm,	/* timeout limit or NULL */
-    int		    *timed_out) /* flag set on timeout or NULL */
+    searchit_arg_T  *sia)	// optional arguments or NULL
 {
     pos_T	    pos;	/* position of the last match */
     char_u	    *searchstr;
@@ -1269,7 +1282,7 @@ do_search(
      */
     for (;;)
     {
-	int	show_top_bot_msg = FALSE;
+	int		show_top_bot_msg = FALSE;
 
 	searchstr = pat;
 	dircp = NULL;
@@ -1511,7 +1524,7 @@ do_search(
 		       (SEARCH_KEEP + SEARCH_PEEK + SEARCH_HIS
 			+ SEARCH_MSG + SEARCH_START
 			+ ((pat != NULL && *pat == ';') ? 0 : SEARCH_NOOF))),
-		RE_LAST, (linenr_T)0, tm, timed_out);
+		RE_LAST, sia);
 
 	if (dircp != NULL)
 	    *dircp = dirc;	// restore second '/' or '?' for normal_cmd()
@@ -4741,7 +4754,7 @@ current_search(
 	result = searchit(curwin, curbuf, &pos, &end_pos,
 		(dir ? FORWARD : BACKWARD),
 		spats[last_idx].pat, (long) (i ? count : 1),
-		SEARCH_KEEP | flags, RE_SEARCH, 0, NULL, NULL);
+		SEARCH_KEEP | flags, RE_SEARCH, NULL);
 
 	/* First search may fail, but then start searching from the
 	 * beginning of the file (cursor might be on the search match)
@@ -4854,7 +4867,7 @@ is_one_char(char_u *pattern, int move, pos_T *cur, int direction)
     }
 
     if (searchit(curwin, curbuf, &pos, NULL, direction, pattern, 1,
-			 SEARCH_KEEP + flag, RE_SEARCH, 0, NULL, NULL) != FAIL)
+			 SEARCH_KEEP + flag, RE_SEARCH, NULL) != FAIL)
     {
 	/* Zero-width pattern should match somewhere, then we can check if
 	 * start and end are in the same position. */
@@ -4864,7 +4877,7 @@ is_one_char(char_u *pattern, int move, pos_T *cur, int direction)
 	    regmatch.startpos[0].col++;
 	    nmatched = vim_regexec_multi(&regmatch, curwin, curbuf,
 			       pos.lnum, regmatch.startpos[0].col, NULL, NULL);
-	    if (!nmatched)
+	    if (nmatched != 0)
 		break;
 	} while (direction == FORWARD ? regmatch.startpos[0].col < pos.col
 				      : regmatch.startpos[0].col > pos.col);
@@ -4874,8 +4887,9 @@ is_one_char(char_u *pattern, int move, pos_T *cur, int direction)
 	    result = (nmatched != 0
 		&& regmatch.startpos[0].lnum == regmatch.endpos[0].lnum
 		&& regmatch.startpos[0].col == regmatch.endpos[0].col);
-	    /* one char width */
-	    if (!result && inc(&pos) >= 0 && pos.col == regmatch.endpos[0].col)
+	    // one char width
+	    if (!result && nmatched != 0
+			&& inc(&pos) >= 0 && pos.col == regmatch.endpos[0].col)
 		result = TRUE;
 	}
     }
@@ -4954,8 +4968,7 @@ search_stat(
 	profile_setlimit(20L, &start);
 #endif
 	while (!got_int && searchit(curwin, curbuf, &lastpos, NULL,
-					FORWARD, NULL, 1, SEARCH_KEEP, RE_LAST,
-					      (linenr_T)0, NULL, NULL) != FAIL)
+			 FORWARD, NULL, 1, SEARCH_KEEP, RE_LAST, NULL) != FAIL)
 	{
 #ifdef FEAT_RELTIME
 	    // Stop after passing the time limit.

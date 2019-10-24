@@ -470,7 +470,6 @@ EXTERN bufref_T	au_new_curbuf INIT(= {NULL COMMA 0 COMMA 0});
 EXTERN buf_T	*au_pending_free_buf INIT(= NULL);
 EXTERN win_T	*au_pending_free_win INIT(= NULL);
 
-#ifdef FEAT_MOUSE
 /*
  * Mouse coordinates, set by check_termcode()
  */
@@ -480,15 +479,15 @@ EXTERN int	mouse_past_bottom INIT(= FALSE);// mouse below last line
 EXTERN int	mouse_past_eol INIT(= FALSE);	// mouse right of line
 EXTERN int	mouse_dragging INIT(= 0);	// extending Visual area with
 						// mouse dragging
-# if defined(FEAT_MOUSE_DEC)
+#if defined(FEAT_MOUSE_DEC)
 /*
  * When the DEC mouse has been pressed but not yet released we enable
  * automatic queries for the mouse position.
  */
 EXTERN int	WantQueryMouse INIT(= FALSE);
-# endif
+#endif
 
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 // When the window layout is about to be changed, need_mouse_correct is set,
 // so that gui_mouse_correct() is called afterwards, to correct the mouse
 // pointer when focus-follow-mouse is being used.
@@ -496,10 +495,10 @@ EXTERN int	need_mouse_correct INIT(= FALSE);
 
 // When double clicking, topline must be the same
 EXTERN linenr_T gui_prev_topline INIT(= 0);
-#  ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 EXTERN int	gui_prev_topfill INIT(= 0);
-#  endif
 # endif
+#endif
 
 # ifdef FEAT_MOUSESHAPE
 EXTERN int	drag_status_line INIT(= FALSE);	// dragging the status line
@@ -508,7 +507,6 @@ EXTERN int	postponed_mouseshape INIT(= FALSE); // postponed updating the
 EXTERN int	drag_sep_line INIT(= FALSE);	// dragging vert separator
 # endif
 
-#endif
 
 #ifdef FEAT_DIFF
 // Value set from 'diffopt'.
@@ -785,13 +783,11 @@ EXTERN int	resel_VIsual_mode INIT(= NUL);	// 'v', 'V', or Ctrl-V
 EXTERN linenr_T	resel_VIsual_line_count;	// number of lines
 EXTERN colnr_T	resel_VIsual_vcol;		// nr of cols or end col
 
-#ifdef FEAT_MOUSE
 /*
  * When pasting text with the middle mouse button in visual mode with
  * restart_edit set, remember where it started so we can set Insstart.
  */
 EXTERN pos_T	where_paste_started;
-#endif
 
 /*
  * This flag is used to make auto-indent work right on lines where only a

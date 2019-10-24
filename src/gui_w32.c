@@ -2610,7 +2610,9 @@ ex_simalt(exarg_T *eap)
 	key_name[1] = KS_EXTRA;
 	key_name[2] = KE_NOP;
 	key_name[3] = NUL;
+#if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
 	typebuf_was_filled = TRUE;
+#endif
 	(void)ins_typebuf(key_name, REMAP_NONE, 0, TRUE, FALSE);
     }
 }

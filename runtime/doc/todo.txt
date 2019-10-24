@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Sep 27
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Oct 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -47,7 +47,10 @@ Popup windows:
 - Use popup (or popup menu) for command line completion
 - Implement flip option
 - Why does 'nrformats' leak from the popup window buffer???
-  Happens in Test_simple_popup() at the second screendump.
+  Happens in Test_simple_popup() at:
+      call VerifyScreenDump(buf, 'Test_popupwin_04a', {})
+  Only when this line is in defaults.vim:
+    set nrformats-=octal
 - For the "moved" property also include mouse movement?
 - Make redrawing more efficient and avoid flicker:
     - put popup menu also in popup_mask?
@@ -76,7 +79,7 @@ Text properties: See comment at top of src/textprop.c.
   Then :%s?foo should take the first match above the cursor line.
 
 Prompt buffer:
-- Add a command line history.
+- Add a command line history, using up/down keys.  #5010
 - delay next prompt until plugin gives OK?
 - add prompt_addtext({buf}, {expr})	none	add text to a prompt buffer
 
@@ -134,6 +137,21 @@ E279, E290, E292, E362, E366, E450, E451, E452,
 E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
 E654, E856, E857, E860, E861, E863, E889, E900
 
+Try out enabling modifyOtherKeys in xterm:
+     CSI > 4 ; 2 m
+Need to disable when going to cooked mode:
+    CSI > 4 ; m
+Known problems:
+-  CTRL-V key inserts Esc sequence
+
+Patch to skip tests that don't work when run as root. (James McCoy, #5020)
+Or just bail out completely?
+
+Patch to test right click. (Dominique Pelle, #5018)
+
+Python output doesn't stop when got_int is set. #5053
+Check got_int in write_output() in if_py_both.h?
+
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif? Now test_gui crashes in submenu_change().
 Athena is OK.
@@ -141,8 +159,13 @@ Motif: Build on Ubuntu can't enter any text in dialog text fields.
 
 Improve running tests on MS-Windows: #4922
 
-Patch to properly break CJK lines: #3875
-Ready to include now?
+In a function these two lines are different:
+    let [a, b, c] =<< trim END      fails
+    let [a,b,c] =<< trim END        works
+issue #5051
+
+Patch to properly break CJK lines: Anton Kochkov, #3875
+Should be ready to include now.
 
 Remove check for cmd_silent when calling search_stat()? (Gary Johnson)
 
@@ -159,10 +182,13 @@ Patch to sort buffers on b_last_used time.  (Andy Massimino, #4722)
 Patch to highlight the line number differently below the cursor line. (Shaun
 Brady, #624)
 
+Patch to add more tests for cmd.exe: #4928
+
 Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
 20)
 Also put :argadd commands at the start for all buffers, so that their order
 remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
+Also #4994: window-local options not always restored, related to using :badd.
 
 Completion mixes results from the current buffer with tags and other files.
 Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
@@ -176,11 +202,16 @@ Ready to include now?
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
 
+":helptags ALL" should skip directories where "tags" cannot be written.
+(Matěj Cepl, #5026)
+
 ":bnext" in a help buffer is supposed to go to the next help buffer, but it
 goes to any buffer, and then :bnext skips help buffers, since they are
 unlisted. (#4478)
 
 Patch to fix using zero sc_sid. (#4877)
+
+Enable 'termbidi' if $VTE_VERSION >= 5703 ?
 
 Universal solution to detect if t_RS is working, using cursor position.
 Koichi Iwamoto, #2126
@@ -212,8 +243,6 @@ Patch to remove FORTIFY_SOURCE also from CPPFLAGS. (Benedikt Morbach, #2786)
 
 Patch from Namsh to allow building with both XIM and hangulin. (2019 Aug 29)
 
-Patch to fix redirect of shell on MS-Windows. (Yasuhiro Matsumoto, #2054)
-
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
 
@@ -242,6 +271,14 @@ Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 Patch to configure BUILD_DATE for reproducible builds. (James McCoy, #513)
 
 Patch to add MODIFIED_BY to MSVC build file. (Chen Lei, 2016 Nov 24, #1275)
+
+xterm should be able to pass focus changes to Vim, so that Vim can check for
+buffers that changed.  Perhaps in misc.c, function selectwindow().
+Xterm 224 supports it!
+Patch to make FocusGained and FocusLost work in modern terminals. (Hayaki
+Saito, 2013 Apr 24) Update 2016 Aug 12.
+Also see issue #609.
+We could add the enable/disable sequences to t_ti/t_te or t_ks/t_ke.
 
 Check_external_diff() is used too often. (Daniel Hahler, #4800)
 
@@ -296,6 +333,8 @@ Williams, 2018 Oct 30)
 
 "exepath('bin/cmd')" does not work while ":!bin/cmd" does work.
 (Daniel Hahler, #4710)  and executable('bin/cmd') returns 1
+
+Error drawing the number column when 'cursorline' is set. (#3893)
 
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
 
@@ -1604,14 +1643,6 @@ compatible with Vim spell files.  The old files can no longer be downloaded.
 Spell checking: Add a feature to only consider two spaces after a dot to start
 a new sentence.  Don't give the capitalization error when there is one space.
 
-xterm should be able to pass focus changes to Vim, so that Vim can check for
-buffers that changed.  Perhaps in misc.c, function selectwindow().
-Xterm 224 supports it!
-Patch to make FocusGained and FocusLost work in modern terminals. (Hayaki
-Saito, 2013 Apr 24) Update 2016 Aug 12.
-Also see issue #609.
-We could add the enable/disable sequences to t_ti/t_te or t_ks/t_ke.
-
 Idea: For a window in the middle (has window above and below it), use
 right-mouse-drag on the status line to move a window up/down without changing
 its height?  It's like dragging the status bar above it at the same time.
@@ -2154,10 +2185,6 @@ Looks like only bash can do it. (Yakov Lerner)
 
 Cscope "cs add" stopped working somewhat before 7.2.438. (Gary Johnson, 2010
 Jun 29)  Caused by 7.2.433?
-
-I often see pasted text (from Firefox, to Vim in xterm) appear twice.
-Also, Vim in xterm sometimes loses copy/paste ability (probably after running
-an external command).
 
 Jumplist doesn't work properly in Insert mode? (Jean Johner, 2010 Mar 20)
 
@@ -2754,10 +2781,6 @@ If the variable "g:x#y#z" exists completion after ":echo g:x#" doesn't work.
 Feature request: Command to go to previous tab, like what CTRL-W p does for
 windows. (Adam George)
 
-F1 - F4 in an xterm produce a different escape sequence when used with a
-modifier key.  Need to catch three different sequences.  Use K_ZF1, like
-K_ZHOME? (Dickey, 2007 Dec 2)
-
 In debug mode, using CTRL-R = to evaluate a function causes stepping through
 the function. (Hari Krishna Dara, 2006 Jun 28)
 
@@ -2892,12 +2915,6 @@ Setting 'background' resets the Normal background color:
 This is undesired, 'background' is supposed to tell Vim what the background
 color is, not reset it.
 
-Linux distributions:
-- Suggest compiling xterm with --enable-tcap-query, so that nr of colors is
-  known to Vim.  88 colors instead of 16 works better.  See ":help
-  xfree-xterm".
-- Suggest including bare "vi" and "vim" with X11, syntax, etc.
-
 Completion menu: For a wrapping line, completing a long file name, only the
 start of the path is shown in the menu.  Should move the menu to the right to
 show more text of the completions.  Shorten the items that don't fit in the
@@ -2911,12 +2928,6 @@ the buffer is displayed. (Antonios Tsakiridis)
 
 When ":cn" moves to an error in the same line the message isn't shortened.
 Only skip shortening for ":cc"?
-
-Write "making vim work better" for the docs (mostly pointers): *nice*
-    - sourcing $VIMRUNTIME/vimrc_example.vim
-    - setting 'mouse' to "a"
-    - getting colors in xterm
-    - compiling Vim with X11, GUI, etc.
 
 Problem with ":call" and dictionary function. Hari Krishna Dara, Charles
 Campbell 2006 Jul 06.
@@ -3011,11 +3022,6 @@ When 'encoding' is utf-8 typing text at the end of the line causes previously
 typed characters to be redrawn.  Caused by patch 7.1.329. (Tyler Spivey, 2008
 Sep 3, 11)
 
-When Vim in an xterm owns the selection and the user does ":shell" Vim doesn't
-respond to selection requests.  Invoking XtDisownSelection() before executing
-the shell doesn't help.  Would require forking and doing a message loop, like
-what happens for the GUI.
-
 ":vimgrep" does not recognize a recursive symlink.  Is it possible to detect
 this, at least for Unix (using device/inode)?
 
@@ -3104,11 +3110,6 @@ Awaiting updated patches:
     use the patch that keeps using HLF_8 if HLF_WS has not
     been given values.
     Add section in help files for these highlight groups?
-8   "fg" and "bg" don't work in an xterm.  Get default colors from xterm
-    with an ESC sequence.
-    xterm can send colors for many things.  E.g. for the cursor:
-	<Esc>]12;?<Bel>
-    Can use this to get the background color and restore the colors on exit.
 7   Add "DefaultFG" and "DefaultBG" for the colors of the menu. (Marcin
     Dalecki has a patch for Motif and Carbon)
 -   Add possibility to highlight specific columns (for Fortran).  Or put a
@@ -3702,7 +3703,6 @@ Macintosh:
 8   Xterm sends ^[[H for <Home> and ^[[F for <End> in some mode.  Also
     recognize these keys?  Mostly useful for xterm simulators, like gnometerm.
     See http://dickey.his.com/xterm/xterm.faq.html#xterm_pc_style.
-8   For xterm also recognize keypad up/down/left/right and insert.
 8   '[ and '] should be set to start/end of line when using a linewise operator
     (e.g., ":w").
 8   CTRL-A can't handle big "long" numbers, they become negative.  Check for
@@ -3717,10 +3717,6 @@ Macintosh:
     filesystem, an illegal file name may be created: ".vim".
 8   For each buffer that is opened, the viminfo file is opened and read to
     check for file marks.  This can be slow.
-7   In xterm, recognize both vt100 and vt220 cursor keys.  Change
-    add_termcode() to not remove an existing entry for a name, when it's
-    needed.
-    Need a generic solution to recognize different codes for the same key.
 8   Core dump within signal function: gdb doesn't show stack backtrace!  Option
     to skip catch_signals()?
 9   Repeating a "cw" with "." doesn't work if the text was pasted from the

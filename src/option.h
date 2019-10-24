@@ -979,7 +979,7 @@ EXTERN unsigned tbis_flags;
 # define TBIS_GIANT		0x20
 #endif
 EXTERN long	p_ttyscroll;	// 'ttyscroll'
-#if defined(FEAT_MOUSE) && (defined(UNIX) || defined(VMS))
+#if defined(UNIX) || defined(VMS)
 EXTERN char_u	*p_ttym;	// 'ttymouse'
 EXTERN unsigned ttym_flags;
 # define TTYM_XTERM		0x01

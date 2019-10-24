@@ -5,7 +5,7 @@
 #
 # Locale ID    : 2052
 # fileencoding : UTF-8
-# Author       : Guopeng Wen
+# Author       : Guopeng Wen, David Liu
 
 !insertmacro MUI_LANGUAGE "SimpChinese"
 
@@ -112,7 +112,7 @@ LangString str_desc_plugin          ${LANG_SIMPCHINESE} \
 LangString str_section_plugin_home  ${LANG_SIMPCHINESE} \
     "私有插件目录"
 LangString str_desc_plugin_home     ${LANG_SIMPCHINESE} \
-    "Create plugin directories in HOME directory."
+    "在主目录创建私有插件目录。"
 
 LangString str_section_plugin_vim   ${LANG_SIMPCHINESE} \
     "公共插件目录"
@@ -141,14 +141,14 @@ LangString str_desc_rm_exe          ${LANG_SIMPCHINESE} \
     "删除 Vim 的所有执行文件及脚本。"
 
 LangString str_ungroup_plugin       ${LANG_SIMPCHINESE} \
-    "Remove plugin directories"
+    "移除插件目录"
 LangString str_desc_rm_plugin       ${LANG_SIMPCHINESE} \
-    "Remove the plugin directories if they are empty."
+    "移除插件目录（如果目录为空）。"
 
 LangString str_unsection_plugin_home ${LANG_SIMPCHINESE} \
     "私有插件目录"
 LangString str_desc_rm_plugin_home  ${LANG_SIMPCHINESE} \
-    "Remove the plugin directories from HOME directory."
+    "从主目录中移除私有插件目录。"
 
 LangString str_unsection_plugin_vim ${LANG_SIMPCHINESE} \
     "公共插件目录"
@@ -241,37 +241,37 @@ LangString str_msg_unregistering ${LANG_SIMPCHINESE} \
 LangString str_vimrc_page_title    ${LANG_SIMPCHINESE} \
     "设置 _vimrc"
 LangString str_vimrc_page_subtitle ${LANG_SIMPCHINESE} \
-    "选择键盘、鼠标和增强选项。"
+    "选择键盘、鼠标和扩展设置。"
 
 LangString str_msg_compat_title    ${LANG_SIMPCHINESE} \
     "Vi / Vim 行为"
 LangString str_msg_compat_desc     ${LANG_SIMPCHINESE} \
-    "&Compatibility and enhancements"
+    "兼容性与扩展(&B)"
 LangString str_msg_compat_vi       ${LANG_SIMPCHINESE} \
-    "Vi compatible"
+    "原始 Vi"
 LangString str_msg_compat_vim      ${LANG_SIMPCHINESE} \
-    "Vim original"
+    "原始 Vim"
 LangString str_msg_compat_defaults ${LANG_SIMPCHINESE} \
-    "Vim with some enhancements (load defaults.vim)"
+    "Vim 原始版本和部分扩展 (加载 defaults.vim)"
 LangString str_msg_compat_all      ${LANG_SIMPCHINESE} \
-    "Vim with all enhancements (load vimrc_example.vim) (Default)"
+    "Vim 原始版本和所有扩展 (加载 vimrc_example.vim) (缺省)"
 
 LangString str_msg_keymap_title   ${LANG_SIMPCHINESE} \
     "键盘映射"
 LangString str_msg_keymap_desc    ${LANG_SIMPCHINESE} \
-    "&Remap a few keys for Windows (Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F, etc)"
+    "为 Windows 映射按键(&R) (例如:Ctrl-V, Ctrl-C, Ctrl-A, Ctrl-S, Ctrl-F 等)"
 LangString str_msg_keymap_default ${LANG_SIMPCHINESE} \
-    "Do not remap keys (Default)"
+    "不映射按键 (缺省)"
 LangString str_msg_keymap_windows ${LANG_SIMPCHINESE} \
-    "Remap a few keys"
+    "映射一些按键"
 
 LangString str_msg_mouse_title   ${LANG_SIMPCHINESE} \
     "鼠标"
 LangString str_msg_mouse_desc    ${LANG_SIMPCHINESE} \
-    "&Behavior of right and left buttons"
+    "左键和右键行为(&B)"
 LangString str_msg_mouse_default ${LANG_SIMPCHINESE} \
-    "Right: popup menu, Left: visual mode (Default)"
+    "右键：弹出菜单, 左键：可视化模式 (缺省)"
 LangString str_msg_mouse_windows ${LANG_SIMPCHINESE} \
-    "Right: popup menu, Left: select mode (Windows)"
+    "右键：弹出菜单, 左键:选择模式 (Windows)"
 LangString str_msg_mouse_unix    ${LANG_SIMPCHINESE} \
-    "Right: extends selection, Left: visual mode (Unix)"
+    "右键： 扩展选择, 左键：可视化模式 (Unix)"

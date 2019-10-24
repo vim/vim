@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.1.  Last change: 2019 Sep 27
+*insert.txt*    For Vim version 8.1.  Last change: 2019 Oct 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1138,6 +1138,27 @@ below the text, and the bottom of the menu otherwise.
 After the info popup is created it can be found with |popup_findinfo()| and
 properties can be changed with |popup_setoptions()|.
 
+						*complete-popuphidden*
+If the information for the popup is obtained asynchronously, use "popuphidden"
+in 'completeopt'.  The info popup will then be initally hidden and
+|popup_show()| must be called once it has been filled with the info.  This can
+be done with a |CompleteChanged| autocommand, something like this: >
+	set completeopt+=popuphidden
+	au CompleteChanged * call UpdateCompleteInfo()
+	func UpdateCompleteInfo()
+	  " Cancel any pending info fetch
+	  let item = v:event.completed_item
+	  " Start fetching info for the item then call ShowCompleteInfo(info)
+	endfunc
+	func ShowCompleteInfo(info)
+	  let id = popup_findinfo()
+	  if id
+	    call popup_settext(id, 'async info: ' .. a:info)
+	    call popup_show(id)
+	  endif
+	endfunc
+
+<						*complete-item-kind*
 The "kind" item uses a single letter to indicate the kind of completion.  This
 may be used to show the completion differently (different color or icon).
 Currently these types can be used:

@@ -87,7 +87,6 @@ static char_u	*replace_makeprg(exarg_T *eap, char_u *p, char_u **cmdlinep);
 static char_u	*repl_cmdline(exarg_T *eap, char_u *src, int srclen, char_u *repl, char_u **cmdlinep);
 static void	ex_highlight(exarg_T *eap);
 static void	ex_colorscheme(exarg_T *eap);
-static void	ex_quit(exarg_T *eap);
 static void	ex_cquit(exarg_T *eap);
 static void	ex_quit_all(exarg_T *eap);
 static void	ex_close(exarg_T *eap);
@@ -3600,7 +3599,7 @@ get_address(
 			curwin->w_cursor.col = 0;
 		    searchcmdlen = 0;
 		    flags = silent ? 0 : SEARCH_HIS | SEARCH_MSG;
-		    if (!do_search(NULL, c, cmd, 1L, flags, NULL, NULL))
+		    if (!do_search(NULL, c, cmd, 1L, flags, NULL))
 		    {
 			curwin->w_cursor = pos;
 			cmd = NULL;
@@ -3654,8 +3653,7 @@ get_address(
 		    pos.coladd = 0;
 		    if (searchit(curwin, curbuf, &pos, NULL,
 				*cmd == '?' ? BACKWARD : FORWARD,
-				(char_u *)"", 1L, SEARCH_MSG,
-					i, (linenr_T)0, NULL, NULL) != FAIL)
+				(char_u *)"", 1L, SEARCH_MSG, i, NULL) != FAIL)
 			lnum = pos.lnum;
 		    else
 		    {
@@ -4212,7 +4210,8 @@ expand_filename(
 		else /* n == 2 */
 		{
 		    expand_T	xpc;
-		    int		options = WILD_LIST_NOTFOUND|WILD_ADD_SLASH;
+		    int		options = WILD_LIST_NOTFOUND
+					       | WILD_NOERROR | WILD_ADD_SLASH;
 
 		    ExpandInit(&xpc);
 		    xpc.xp_context = EXPAND_FILES;
@@ -4818,9 +4817,9 @@ before_quit_autocmds(win_T *wp, int quit_all, int forceit)
 {
     apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, wp->w_buffer);
 
-    /* Bail out when autocommands closed the window.
-     * Refuse to quit when the buffer in the last window is being closed (can
-     * only happen in autocommands). */
+    // Bail out when autocommands closed the window.
+    // Refuse to quit when the buffer in the last window is being closed (can
+    // only happen in autocommands).
     if (!win_valid(wp)
 	    || curbuf_locked()
 	    || (wp->w_buffer->b_nwindows == 1 && wp->w_buffer->b_locked > 0))
@@ -4829,9 +4828,10 @@ before_quit_autocmds(win_T *wp, int quit_all, int forceit)
     if (quit_all || (check_more(FALSE, forceit) == OK && only_one_window()))
     {
 	apply_autocmds(EVENT_EXITPRE, NULL, NULL, FALSE, curbuf);
-	/* Refuse to quit when locked or when the buffer in the last window is
-	 * being closed (can only happen in autocommands). */
-	if (curbuf_locked()
+	// Refuse to quit when locked or when the window was closed or the
+	// buffer in the last window is being closed (can only happen in
+	// autocommands).
+	if (!win_valid(wp) || curbuf_locked()
 			  || (curbuf->b_nwindows == 1 && curbuf->b_locked > 0))
 	    return TRUE;
     }
@@ -4842,8 +4842,9 @@ before_quit_autocmds(win_T *wp, int quit_all, int forceit)
 /*
  * ":quit": quit current window, quit Vim if the last window is closed.
  * ":{nr}quit": quit window {nr}
+ * Also used when closing a terminal window that's the last one.
  */
-    static void
+    void
 ex_quit(exarg_T *eap)
 {
     win_T	*wp;

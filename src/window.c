@@ -5725,8 +5725,6 @@ win_setminwidth(void)
     }
 }
 
-#if defined(FEAT_MOUSE) || defined(PROTO)
-
 /*
  * Status line of dragwin is dragged "offset" lines down (negative is up).
  */
@@ -5958,7 +5956,6 @@ win_drag_vsep_line(win_T *dragwin, int offset)
     (void)win_comp_pos();
     redraw_all_later(NOT_VALID);
 }
-#endif /* FEAT_MOUSE */
 
 #define FRACTION_MULT	16384L
 

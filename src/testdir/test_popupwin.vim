@@ -170,6 +170,10 @@ func Test_popup_with_border_and_padding()
   call assert_equal(['Top', 'Right', 'Bottom', 'Left'], options.borderhighlight)
   call assert_equal(['1', '^', '2', '>', '3', 'v', '4', '<'], options.borderchars)
 
+  " Check that popup_setoptions() takes the output of popup_getoptions()
+  call popup_setoptions(winid, options)
+  call assert_equal(options, popup_getoptions(winid))
+
   let winid = popup_create('hello both', #{line: 3, col: 8, border: [], padding: []})
   call assert_equal(#{
 	\ line: 3,
@@ -507,6 +511,38 @@ func Test_popup_close_with_mouse()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPopupClose')
+endfunction
+
+func Test_popup_menu_wrap()
+  CheckScreendump
+
+  let lines =<< trim END
+	call setline(1, range(1, 20))
+	call popup_create([
+	      \ 'one',
+	      \ 'asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfas',
+	      \ 'three',
+	      \ 'four',
+	      \ ], #{
+	      \ pos: "botleft",
+	      \ border: [],
+	      \ padding: [0,1,0,1],
+	      \ maxheight: 3,
+	      \ cursorline: 1,
+	      \ filter: 'popup_filter_menu',
+	      \ })
+  END
+  call writefile(lines, 'XtestPopupWrap')
+  let buf = RunVimInTerminal('-S XtestPopupWrap', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_wrap_1', {})
+
+  call term_sendkeys(buf, "jj")
+  call VerifyScreenDump(buf, 'Test_popupwin_wrap_2', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupWrap')
 endfunction
 
 func Test_popup_with_mask()
@@ -2466,6 +2502,41 @@ func Get_popupmenu_lines()
 	let id = popup_findinfo()
 	eval id->popup_setoptions(#{highlight: 'InfoPopup'})
       endfunc
+
+      func InfoHidden()
+	set completepopup=height:4,border:off,align:menu
+	set completeopt-=popup completeopt+=popuphidden
+	au CompleteChanged * call HandleChange()
+      endfunc
+
+      let s:counter = 0
+      func HandleChange()
+	let s:counter += 1
+	let selected = complete_info(['selected']).selected
+	if selected <= 0
+	  " First time: do nothing, info remains hidden
+	  return
+	endif
+	if selected == 1
+	  " Second time: show info right away
+	  let id = popup_findinfo()
+	  if id
+	    call popup_settext(id, 'immediate info ' .. s:counter)
+	    call popup_show(id)
+	  endif
+	else
+	  " Third time: show info after a short delay
+	  call timer_start(100, 'ShowInfo')
+	endif
+      endfunc
+
+      func ShowInfo(...)
+	let id = popup_findinfo()
+	if id
+	  call popup_settext(id, 'async info ' .. s:counter)
+	  call popup_show(id)
+	endif
+      endfunc
   END
   return lines
 endfunc
@@ -2546,6 +2617,30 @@ func Test_popupmenu_info_align_menu()
 
   call StopVimInTerminal(buf)
   call delete('XtestInfoPopupNb')
+endfunc
+
+func Test_popupmenu_info_hidden()
+  CheckScreendump
+
+  let lines = Get_popupmenu_lines()
+  call add(lines, 'call InfoHidden()')
+  call writefile(lines, 'XtestInfoPopupHidden')
+
+  let buf = RunVimInTerminal('-S XtestInfoPopupHidden', #{rows: 14})
+  call term_wait(buf, 50)
+
+  call term_sendkeys(buf, "A\<C-X>\<C-U>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_hidden_1', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_hidden_2', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_hidden_3', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+  call delete('XtestInfoPopupHidden')
 endfunc
 
 func Test_popupwin_recycle_bnr()

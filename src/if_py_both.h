@@ -375,9 +375,13 @@ writer(writefn fn, char_u *str, PyInt n)
 	PythonIO_Flush();
     old_fn = fn;
 
-    /* Write each NL separated line.  Text after the last NL is kept for
-     * writing later. */
-    while (n > 0 && (ptr = memchr(str, '\n', n)) != NULL)
+    // Write each NL separated line.  Text after the last NL is kept for
+    // writing later.
+    // For normal messages: Do not output when "got_int" was set.  This avoids
+    // a loop gone crazy flooding the terminal with messages.  Also for when
+    // "q" is pressed at the more-prompt.
+    while (n > 0 && (ptr = memchr(str, '\n', n)) != NULL
+					  && (fn == (writefn)emsg || !got_int))
     {
 	PyInt len = ptr - str;
 
@@ -392,8 +396,9 @@ writer(writefn fn, char_u *str, PyInt n)
 	io_ga.ga_len = 0;
     }
 
-    /* Put the remaining text into io_ga for later printing. */
-    if (n > 0 && ga_grow(&io_ga, (int)(n + 1)) == OK)
+    // Put the remaining text into io_ga for later printing.
+    if (n > 0 && (fn == (writefn)emsg || !got_int)
+					&& ga_grow(&io_ga, (int)(n + 1)) == OK)
     {
 	mch_memmove(((char *)io_ga.ga_data) + io_ga.ga_len, str, (size_t)n);
 	io_ga.ga_len += (int)n;

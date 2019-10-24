@@ -1127,17 +1127,15 @@ decode_key_event(
 #endif /* FEAT_GUI_MSWIN */
 
 
-#ifdef FEAT_MOUSE
-
 /*
  * For the GUI the mouse handling is in gui_w32.c.
  */
-# if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
+#if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
     void
 mch_setmouse(int on UNUSED)
 {
 }
-# else
+#else
 static int g_fMouseAvail = FALSE;   /* mouse present */
 static int g_fMouseActive = FALSE;  /* mouse enabled */
 static int g_nMouseClick = -1;	    /* mouse status */
@@ -1152,10 +1150,10 @@ mch_setmouse(int on)
 {
     DWORD cmodein;
 
-#  ifdef VIMDLL
+# ifdef VIMDLL
     if (gui.in_use)
 	return;
-#  endif
+# endif
     if (!g_fMouseAvail)
 	return;
 
@@ -1171,7 +1169,7 @@ mch_setmouse(int on)
 }
 
 
-#if defined(FEAT_BEVAL_TERM) || defined(PROTO)
+# if defined(FEAT_BEVAL_TERM) || defined(PROTO)
 /*
  * Called when 'balloonevalterm' changed.
  */
@@ -1180,7 +1178,7 @@ mch_bevalterm_changed(void)
 {
     mch_setmouse(g_fMouseActive);
 }
-#endif
+# endif
 
 /*
  * Decode a MOUSE_EVENT.  If it's a valid event, return MOUSE_LEFT,
@@ -1218,9 +1216,9 @@ decode_mouse_event(
     static int s_xOldMouse = -1;
     static int s_yOldMouse = -1;
     static linenr_T s_old_topline = 0;
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
     static int s_old_topfill = 0;
-#endif
+# endif
     static int s_cClicks = 1;
     static BOOL s_fReleased = TRUE;
     static DWORD s_dwLastClickTime = 0;
@@ -1275,12 +1273,12 @@ decode_mouse_event(
 	/* If the last thing returned was MOUSE_RELEASE, ignore this */
 	if (s_fReleased)
 	{
-#ifdef FEAT_BEVAL_TERM
+# ifdef FEAT_BEVAL_TERM
 	    /* do return mouse move events when we want them */
 	    if (p_bevalterm)
 		nButton = MOUSE_DRAG;
 	    else
-#endif
+# endif
 		return FALSE;
 	}
 
@@ -1386,9 +1384,9 @@ decode_mouse_event(
 		    || s_yOldMouse != g_yMouse
 		    || s_nOldButton != nButton
 		    || s_old_topline != curwin->w_topline
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 		    || s_old_topfill != curwin->w_topfill
-#endif
+# endif
 		    || (int)(dwCurrentTime - s_dwLastClickTime) > p_mouset)
 	    {
 		s_cClicks = 1;
@@ -1439,16 +1437,15 @@ decode_mouse_event(
     s_xOldMouse = g_xMouse;
     s_yOldMouse = g_yMouse;
     s_old_topline = curwin->w_topline;
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
     s_old_topfill = curwin->w_topfill;
-#endif
+# endif
     s_nOldMouseClick = g_nMouseClick;
 
     return TRUE;
 }
 
-# endif /* FEAT_GUI_MSWIN */
-#endif /* FEAT_MOUSE */
+#endif // FEAT_GUI_MSWIN
 
 
 #ifdef MCH_CURSOR_SHAPE
@@ -1547,10 +1544,7 @@ WaitForChar(long msec, int ignore_input)
 #endif
 	}
 
-	if (0
-#ifdef FEAT_MOUSE
-		|| g_nMouseClick != -1
-#endif
+	if (g_nMouseClick != -1
 #ifdef FEAT_CLIENTSERVER
 		|| (!ignore_input && input_available())
 #endif
@@ -1683,11 +1677,9 @@ WaitForChar(long msec, int ignore_input)
 		    shell_resized();
 		}
 	    }
-#ifdef FEAT_MOUSE
 	    else if (ir.EventType == MOUSE_EVENT
 		    && decode_mouse_event(&ir.Event.MouseEvent))
 		return TRUE;
-#endif
 	}
 	else if (msec == 0)
 	    break;
@@ -1760,10 +1752,8 @@ tgetch(int *pmodifiers, WCHAR *pch2)
 	(void)WaitForChar(-1L, FALSE);
 	if (input_available())
 	    return 0;
-# ifdef FEAT_MOUSE
 	if (g_nMouseClick != -1)
 	    return 0;
-# endif
 #endif
 	if (read_console_input(g_hConIn, &ir, 1, &cRecords) == 0)
 	{
@@ -1783,13 +1773,11 @@ tgetch(int *pmodifiers, WCHAR *pch2)
 	    handle_focus_event(ir);
 	else if (ir.EventType == WINDOW_BUFFER_SIZE_EVENT)
 	    shell_resized();
-#ifdef FEAT_MOUSE
 	else if (ir.EventType == MOUSE_EVENT)
 	{
 	    if (decode_mouse_event(&ir.Event.MouseEvent))
 		return 0;
 	}
-#endif
     }
 }
 #endif /* !FEAT_GUI_MSWIN */
@@ -1879,14 +1867,13 @@ mch_inchar(
 	    typeaheadlen = 0;
 	    break;
 	}
-#ifdef FEAT_MOUSE
 	if (g_nMouseClick != -1)
 	{
-# ifdef MCH_WRITE_DUMP
+#ifdef MCH_WRITE_DUMP
 	    if (fdDump)
 		fprintf(fdDump, "{%02x @ %d, %d}",
 			g_nMouseClick, g_xMouse, g_yMouse);
-# endif
+#endif
 	    typeahead[typeaheadlen++] = ESC + 128;
 	    typeahead[typeaheadlen++] = 'M';
 	    typeahead[typeaheadlen++] = g_nMouseClick;
@@ -1895,7 +1882,6 @@ mch_inchar(
 	    g_nMouseClick = -1;
 	}
 	else
-#endif
 	{
 	    WCHAR	ch2 = NUL;
 	    int		modifiers = 0;
@@ -1918,9 +1904,7 @@ mch_inchar(
 		got_int = TRUE;
 	    }
 
-#ifdef FEAT_MOUSE
 	    if (g_nMouseClick == -1)
-#endif
 	    {
 		int	n = 1;
 
@@ -2675,9 +2659,7 @@ mch_init_c(void)
 
     g_fWindInitCalled = TRUE;
 
-#ifdef FEAT_MOUSE
     g_fMouseAvail = GetSystemMetrics(SM_MOUSEPRESENT);
-#endif
 
 #ifdef FEAT_CLIPBOARD
     win_clip_init();
@@ -3609,10 +3591,8 @@ mch_settmode(int tmode)
     {
 	cmodein &= ~(ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT |
 		     ENABLE_ECHO_INPUT);
-#ifdef FEAT_MOUSE
 	if (g_fMouseActive)
 	    cmodein |= ENABLE_MOUSE_INPUT;
-#endif
 	cmodeout &= ~(
 #ifdef FEAT_TERMGUICOLORS
 	    /* Do not turn off the ENABLE_PROCESSED_OUTPUT flag when using
@@ -5501,12 +5481,10 @@ termcap_mode_start(void)
 #endif
 
     GetConsoleMode(g_hConIn, &cmodein);
-#ifdef FEAT_MOUSE
     if (g_fMouseActive)
 	cmodein |= ENABLE_MOUSE_INPUT;
     else
 	cmodein &= ~ENABLE_MOUSE_INPUT;
-#endif
     cmodein |= ENABLE_WINDOW_INPUT;
     SetConsoleMode(g_hConIn, cmodein);
 
