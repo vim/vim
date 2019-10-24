@@ -2544,19 +2544,12 @@ out_char(unsigned c)
 	out_flush();
 }
 
-static void out_char_nf(unsigned);
-
 /*
- * out_char_nf(c): like out_char(), but don't flush when p_wd is set
+ * Output "c" like out_char(), but don't flush when p_wd is set.
  */
     static void
 out_char_nf(unsigned c)
 {
-#if defined(UNIX) || defined(VMS) || defined(AMIGA) || defined(MACOS_X)
-    if (c == '\n')	/* turn LF into CR-LF (CRMOD doesn't seem to do this) */
-	out_char_nf('\r');
-#endif
-
     out_buf[out_pos++] = c;
 
     if (out_pos >= OUT_SIZE)
@@ -2564,9 +2557,9 @@ out_char_nf(unsigned c)
 }
 
 /*
- * A never-padding out_str.
- * use this whenever you don't want to run the string through tputs.
- * tputs above is harmless, but tputs from the termcap library
+ * A never-padding out_str().
+ * Use this whenever you don't want to run the string through tputs().
+ * tputs() above is harmless, but tputs() from the termcap library
  * is likely to strip off leading digits, that it mistakes for padding
  * information, and "%i", "%d", etc.
  * This should only be used for writing terminal codes, not for outputting
@@ -2660,7 +2653,7 @@ out_str_cf(char_u *s)
 
 /*
  * out_str(s): Put a character string a byte at a time into the output buffer.
- * If HAVE_TGETENT is defined use the termcap parser. (jw)
+ * If HAVE_TGETENT is defined use tputs(), the termcap parser. (jw)
  * This should only be used for writing terminal codes, not for outputting
  * normal text (use functions like msg_puts() and screen_putchar() for that).
  */
@@ -2943,10 +2936,10 @@ term_bg_rgb_color(guicolor_T rgb)
     void
 term_settitle(char_u *title)
 {
-    /* t_ts takes one argument: column in status line */
-    OUT_STR(tgoto((char *)T_TS, 0, 0));	/* set title start */
+    // t_ts takes one argument: column in status line
+    OUT_STR(tgoto((char *)T_TS, 0, 0));	// set title start
     out_str_nf(title);
-    out_str(T_FS);			/* set title end */
+    out_str(T_FS);			// set title end
     out_flush();
 }
 
@@ -3786,9 +3779,9 @@ term_cursor_color(char_u *color)
 {
     if (*T_CSC != NUL)
     {
-	out_str(T_CSC);			/* set cursor color start */
+	out_str(T_CSC);		// set cursor color start
 	out_str_nf(color);
-	out_str(T_CEC);			/* set cursor color end */
+	out_str(T_CEC);		// set cursor color end
 	out_flush();
     }
 }
