@@ -2161,16 +2161,23 @@ ex_display(exarg_T *eap)
     int		attr;
     char_u	*arg = eap->arg;
     int		clen;
+    char_u      type[2];
 
     if (arg != NULL && *arg == NUL)
 	arg = NULL;
     attr = HL_ATTR(HLF_8);
 
     // Highlight title
-    msg_puts_title(_("\n--- Registers ---"));
+    msg_puts_title(_("\nType Name Content"));
     for (i = -1; i < NUM_REGISTERS && !got_int; ++i)
     {
 	name = get_register_name(i);
+	switch (get_reg_type(name, NULL))
+	{
+	    case MLINE: type[0] = 'l'; break;
+	    case MCHAR: type[0] = 'c'; break;
+	    default:	type[0] = 'b'; break;
+	}
 	if (arg != NULL && vim_strchr(arg, name) == NULL
 #ifdef ONE_CLIPBOARD
 	    // Star register and plus register contain the same thing.
@@ -2207,11 +2214,14 @@ ex_display(exarg_T *eap)
 	if (yb->y_array != NULL)
 	{
 	    msg_putchar('\n');
+	    msg_puts("  ");
+	    msg_putchar(type[0]);
+	    msg_puts("  ");
 	    msg_putchar('"');
 	    msg_putchar(name);
 	    msg_puts("   ");
 
-	    n = (int)Columns - 6;
+	    n = (int)Columns - 11;
 	    for (j = 0; j < yb->y_size && n > 1; ++j)
 	    {
 		if (j)
@@ -2237,7 +2247,7 @@ ex_display(exarg_T *eap)
     if ((p = get_last_insert()) != NULL
 		 && (arg == NULL || vim_strchr(arg, '.') != NULL) && !got_int)
     {
-	msg_puts("\n\".   ");
+	msg_puts("\n  c  \".   ");
 	dis_msg(p, TRUE);
     }
 
@@ -2245,7 +2255,7 @@ ex_display(exarg_T *eap)
     if (last_cmdline != NULL && (arg == NULL || vim_strchr(arg, ':') != NULL)
 								  && !got_int)
     {
-	msg_puts("\n\":   ");
+	msg_puts("\n  c  \":   ");
 	dis_msg(last_cmdline, FALSE);
     }
 
@@ -2253,7 +2263,7 @@ ex_display(exarg_T *eap)
     if (curbuf->b_fname != NULL
 	    && (arg == NULL || vim_strchr(arg, '%') != NULL) && !got_int)
     {
-	msg_puts("\n\"%   ");
+	msg_puts("\n  c  \"%   ");
 	dis_msg(curbuf->b_fname, FALSE);
     }
 
@@ -2265,7 +2275,7 @@ ex_display(exarg_T *eap)
 
 	if (buflist_name_nr(0, &fname, &dummy) != FAIL)
 	{
-	    msg_puts("\n\"#   ");
+	    msg_puts("\n  c  \"#   ");
 	    dis_msg(fname, FALSE);
 	}
     }
@@ -2274,7 +2284,7 @@ ex_display(exarg_T *eap)
     if (last_search_pat() != NULL
 		 && (arg == NULL || vim_strchr(arg, '/') != NULL) && !got_int)
     {
-	msg_puts("\n\"/   ");
+	msg_puts("\n  c  \"/   ");
 	dis_msg(last_search_pat(), FALSE);
     }
 
@@ -2283,7 +2293,7 @@ ex_display(exarg_T *eap)
     if (expr_line != NULL && (arg == NULL || vim_strchr(arg, '=') != NULL)
 								  && !got_int)
     {
-	msg_puts("\n\"=   ");
+	msg_puts("\n  c  \"=   ");
 	dis_msg(expr_line, FALSE);
     }
 #endif
@@ -2515,7 +2525,6 @@ dnd_yank_drag_data(char_u *str, long len)
 #endif
 
 
-#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the type of a register.
  * Used for getregtype()
@@ -2560,6 +2569,7 @@ get_reg_type(int regname, long *reglen)
     return MAUTO;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * When "flags" has GREG_LIST return a list with text "s".
  * Otherwise just return "s".
