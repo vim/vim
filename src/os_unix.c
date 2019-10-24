@@ -2201,9 +2201,9 @@ mch_settitle(char_u *title, char_u *icon)
 
 	if (*T_CIS != NUL)
 	{
-	    out_str(T_CIS);			/* set icon start */
+	    out_str(T_CIS);			// set icon start
 	    out_str_nf(icon);
-	    out_str(T_CIE);			/* set icon end */
+	    out_str(T_CIE);			// set icon end
 	    out_flush();
 	}
 #ifdef FEAT_X11
@@ -3456,11 +3456,21 @@ mch_settmode(int tmode)
 				    /* but it breaks function keys on MINT */
 # endif
 				);
-# ifdef ONLCR	    /* don't map NL -> CR NL, we do it ourselves */
+# ifdef ONLCR
+	// Don't map NL -> CR NL, we do it ourselves.
+	// Also disable expanding tabs if possible.
+#  ifdef XTABS
+	tnew.c_oflag &= ~(ONLCR | XTABS);
+#  else
+#   ifdef TAB3
+	tnew.c_oflag &= ~(ONLCR | TAB3);
+#   else
 	tnew.c_oflag &= ~ONLCR;
+#   endif
+#  endif
 # endif
-	tnew.c_cc[VMIN] = 1;		/* return after 1 char */
-	tnew.c_cc[VTIME] = 0;		/* don't wait */
+	tnew.c_cc[VMIN] = 1;		// return after 1 char
+	tnew.c_cc[VTIME] = 0;		// don't wait
     }
     else if (tmode == TMODE_SLEEP)
     {
