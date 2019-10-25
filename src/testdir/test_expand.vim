@@ -79,5 +79,7 @@ func Test_expandcmd()
   call assert_fails('call expandcmd("make <afile>")', 'E495:')
   enew
   call assert_fails('call expandcmd("make %")', 'E499:')
+  let home = expand("~"). '.bar'
+  call assert_match(home .. ' '.. home, expandcmd('~/bar ~/bar'))
   close
 endfunc

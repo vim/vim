@@ -4200,7 +4200,7 @@ expand_filename(
 			    || vim_strchr(eap->arg, '~') != NULL)
 		    {
 			expand_env_esc(eap->arg, NameBuff, MAXPATHL,
-							    TRUE, TRUE, NULL);
+							    TRUE, FALSE, NULL);
 			has_wildcards = mch_has_wildcard(NameBuff);
 			p = NameBuff;
 		    }
