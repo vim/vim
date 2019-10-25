@@ -5100,7 +5100,7 @@ msgstr ""
 
 #, c-format
 msgid "Expected Y or N in %s line %d: %s"
-msgstr "%s içinde %d. satırda E veya H bekleniyordu: %s"
+msgstr "%s içinde %d. satırda Y veya N bekleniyordu: %s"
 
 #, c-format
 msgid "Broken condition in %s line %d: %s"
