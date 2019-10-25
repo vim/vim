@@ -5509,8 +5509,14 @@ ex_cfile(exarg_T *eap)
     int		res;
 
     au_name = cfile_get_auname(eap->cmdidx);
-    if (au_name != NULL)
-	apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name, NULL, FALSE, curbuf);
+    if (au_name != NULL && apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
+							NULL, FALSE, curbuf))
+    {
+#ifdef FEAT_EVAL
+	if (aborting())
+	    return;
+#endif
+    }
 
     enc = (*curbuf->b_p_menc != NUL) ? curbuf->b_p_menc : p_menc;
 #ifdef FEAT_BROWSE
