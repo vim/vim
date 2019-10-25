@@ -866,3 +866,31 @@ func Test_textprop_in_unloaded_buf()
   cal delete('Xaaa')
   cal delete('Xbbb')
 endfunc
+
+func Test_proptype_substitute2()
+  new
+  " text_prop.vim
+  call setline(1, [
+        \ 'The   num  123 is smaller than 4567.',
+        \ '123 The number 123 is smaller than 4567.',
+        \ '123 The number 123 is smaller than 4567.'])
+
+  call prop_type_add('number', {'highlight': 'ErrorMsg'})
+
+  call prop_add(1, 12, {'length': 3, 'type': 'number'})
+  call prop_add(2, 1, {'length': 3, 'type': 'number'})
+  call prop_add(3, 36, {'length': 4, 'type': 'number'})
+  set ul&
+  let expected = [{'id': 0, 'col': 13, 'end': 1, 'type': 'number', 'length': 3, 'start': 1}, 
+        \ {'id': 0, 'col': 1, 'end': 1, 'type': 'number', 'length': 3, 'start': 1}, 
+        \ {'id': 0, 'col': 50, 'end': 1, 'type': 'number', 'length': 4, 'start': 1}]
+  " Add some text in between
+  %s/\s\+/   /g
+  call assert_equal(expected, prop_list(1) + prop_list(2) + prop_list(3)) 
+
+  " remove some text
+  :1s/[a-z]\{3\}//g
+  let expected = [{'id': 0, 'col': 10, 'end': 1, 'type': 'number', 'length': 3, 'start': 1}]
+  call assert_equal(expected, prop_list(1))
+  bwipe!
+endfunc

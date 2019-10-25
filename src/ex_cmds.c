@@ -3856,6 +3856,7 @@ do_sub(exarg_T *eap)
 	    colnr_T	matchcol;
 	    colnr_T	prev_matchcol = MAXCOL;
 	    char_u	*new_end, *new_start = NULL;
+	    colnr_T	total_added =  0;
 	    unsigned	new_start_len = 0;
 	    char_u	*p1;
 	    int		did_sub = FALSE;
@@ -4279,13 +4280,18 @@ do_sub(exarg_T *eap)
 #ifdef FEAT_TEXT_PROP
 		    if (curbuf->b_has_textprop)
 		    {
+			int bytes_added = sublen - 1 - (regmatch.endpos[0].col
+						   - regmatch.startpos[0].col);
+
 			// When text properties are changed, need to save for
 			// undo first, unless done already.
-			if (adjust_prop_columns(lnum, regmatch.startpos[0].col,
-			      sublen - 1 - (regmatch.endpos[0].col
-						   - regmatch.startpos[0].col),
-								    apc_flags))
+			if (adjust_prop_columns(lnum,
+					total_added + regmatch.startpos[0].col,
+						       bytes_added, apc_flags))
 			    apc_flags &= ~APC_SAVE_FOR_UNDO;
+			// Offset for column byte number of the text property
+			// in the resulting buffer afterwards.
+			total_added += bytes_added;
 		    }
 #endif
 		}
