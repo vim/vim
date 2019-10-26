@@ -1341,6 +1341,7 @@ enum auto_event
     EVENT_TABNEW,		// when entering a new tab page
     EVENT_TERMCHANGED,		// after changing 'term'
     EVENT_TERMINALOPEN,		// after a terminal buffer was created
+    EVENT_TERMINALWINOPEN,	// after a terminal buffer was created and entering its window
     EVENT_TERMRESPONSE,		// after setting "v:termresponse"
     EVENT_TEXTCHANGED,		// text was modified not in Insert mode
     EVENT_TEXTCHANGEDI,         // text was modified in Insert mode

@@ -268,7 +268,6 @@ Name			triggered by ~
 |BufCreate|		just after adding a buffer to the buffer list
 |BufDelete|		before deleting a buffer from the buffer list
 |BufWipeout|		before completely deleting a buffer
-|TerminalOpen|		after a terminal buffer was created
 
 |BufFilePre|		before changing the name of the current buffer
 |BufFilePost|		after changing the name of the current buffer
@@ -301,6 +300,10 @@ Name			triggered by ~
 |ExitPre|		when using a command that may make Vim exit
 |VimLeavePre|		before exiting Vim, before writing the viminfo file
 |VimLeave|		before exiting Vim, after writing the viminfo file
+
+	Terminal
+|TerminalOpen|		after a terminal buffer was created
+|TerminalWinOpen|	after a terminal buffer was created in a new window
 
 	Various
 |FileChangedShell|	Vim notices that a file changed since editing started
@@ -1081,6 +1084,12 @@ TerminalOpen			Just after a terminal buffer was created, with
 				`:terminal` or |term_start()|. This event is
 				triggered even if the buffer is created
 				without a window, with the ++hidden option.
+							*TerminalWinOpen*
+TerminalWinOpen			Just after a terminal buffer was created, with
+				`:terminal` or |term_start()|. This event is
+				triggered only if the buffer is created
+				with a window.  Can be used to set window
+				local options for the terminal window.
 							*TermResponse*
 TermResponse			After the response to |t_RV| is received from
 				the terminal.  The value of |v:termresponse|
