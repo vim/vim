@@ -525,6 +525,7 @@ may_do_incsearch_highlighting(
 	curwin->w_redr_status = TRUE;
 
     update_screen(SOME_VALID);
+    highlight_match = FALSE;
     restore_last_search_pattern();
 
     // Leave it at the end to make CTRL-R CTRL-W work.  But not when beyond the
@@ -642,6 +643,7 @@ may_adjust_incsearch_highlighting(
 	highlight_match = TRUE;
 	save_viewstate(&is_state->old_viewstate);
 	update_screen(NOT_VALID);
+	highlight_match = FALSE;
 	redrawcmdline();
 	curwin->w_cursor = is_state->match_end;
     }
