@@ -3207,8 +3207,7 @@ qf_jump_goto_line(
 	// Move the cursor to the first line in the buffer
 	save_cursor = curwin->w_cursor;
 	curwin->w_cursor.lnum = 0;
-	if (!do_search(NULL, '/', qf_pattern, (long)1,
-		    SEARCH_KEEP, NULL, NULL))
+	if (!do_search(NULL, '/', qf_pattern, (long)1, SEARCH_KEEP, NULL))
 	    curwin->w_cursor = save_cursor;
     }
 }
@@ -4046,8 +4045,8 @@ qf_goto_cwindow(qf_info_T *qi, int resize, int sz, int vertsplit)
 	    if (sz != win->w_width)
 		win_setwidth(sz);
 	}
-	else if (sz != win->w_height
-			 && win->w_height + win->w_status_height < cmdline_row)
+	else if (sz != win->w_height && win->w_height
+		       + win->w_status_height + tabline_height() < cmdline_row)
 	    win_setheight(sz);
     }
 
@@ -5510,8 +5509,14 @@ ex_cfile(exarg_T *eap)
     int		res;
 
     au_name = cfile_get_auname(eap->cmdidx);
-    if (au_name != NULL)
-	apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name, NULL, FALSE, curbuf);
+    if (au_name != NULL && apply_autocmds(EVENT_QUICKFIXCMDPRE, au_name,
+							NULL, FALSE, curbuf))
+    {
+#ifdef FEAT_EVAL
+	if (aborting())
+	    return;
+#endif
+    }
 
     enc = (*curbuf->b_p_menc != NUL) ? curbuf->b_p_menc : p_menc;
 #ifdef FEAT_BROWSE

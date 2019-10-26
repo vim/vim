@@ -363,15 +363,15 @@ TERMINAL = no
 !if "$(TERMINAL)" == "yes"
 TERM_OBJ = \
 	$(OBJDIR)/terminal.obj \
-	$(OBJDIR)/encoding.obj \
-	$(OBJDIR)/keyboard.obj \
-	$(OBJDIR)/termmouse.obj \
-	$(OBJDIR)/parser.obj \
-	$(OBJDIR)/pen.obj \
-	$(OBJDIR)/termscreen.obj \
-	$(OBJDIR)/state.obj \
-	$(OBJDIR)/unicode.obj \
-	$(OBJDIR)/vterm.obj
+	$(OBJDIR)/vterm_encoding.obj \
+	$(OBJDIR)/vterm_keyboard.obj \
+	$(OBJDIR)/vterm_mouse.obj \
+	$(OBJDIR)/vterm_parser.obj \
+	$(OBJDIR)/vterm_pen.obj \
+	$(OBJDIR)/vterm_screen.obj \
+	$(OBJDIR)/vterm_state.obj \
+	$(OBJDIR)/vterm_unicode.obj \
+	$(OBJDIR)/vterm_vterm.obj
 TERM_DEFS = -DFEAT_TERMINAL
 TERM_DEPS = \
 	libvterm/include/vterm.h \
@@ -716,8 +716,10 @@ OBJ = \
 	$(OUTDIR)\blob.obj \
 	$(OUTDIR)\blowfish.obj \
 	$(OUTDIR)\buffer.obj \
+	$(OUTDIR)\bufwrite.obj \
 	$(OUTDIR)\change.obj \
 	$(OUTDIR)\charset.obj \
+	$(OUTDIR)\cindent.obj \
 	$(OUTDIR)\cmdexpand.obj \
 	$(OUTDIR)\cmdhist.obj \
 	$(OUTDIR)\crypt.obj \
@@ -771,7 +773,7 @@ OBJ = \
 	$(OUTDIR)\os_mswin.obj \
 	$(OUTDIR)\os_win32.obj \
 	$(OUTDIR)\pathdef.obj \
-	$(OUTDIR)\popupmnu.obj \
+	$(OUTDIR)\popupmenu.obj \
 	$(OUTDIR)\popupwin.obj \
 	$(OUTDIR)\profiler.obj \
 	$(OUTDIR)\quickfix.obj \
@@ -785,6 +787,7 @@ OBJ = \
 	$(OUTDIR)\sign.obj \
 	$(OUTDIR)\spell.obj \
 	$(OUTDIR)\spellfile.obj \
+	$(OUTDIR)\spellsuggest.obj \
 	$(OUTDIR)\syntax.obj \
 	$(OUTDIR)\tag.obj \
 	$(OUTDIR)\term.obj \
@@ -1276,10 +1279,21 @@ MAIN_TARGET = $(GVIM).exe $(VIM).exe $(VIMDLLBASE).dll
 MAIN_TARGET = $(VIM).exe
 !endif
 
+# Target to run individual tests.
+VIMTESTTARGET = $(VIM).exe
+
+OLD_TEST_OUTFILES = \
+	$(SCRIPTS_FIRST) \
+	$(SCRIPTS_ALL) \
+	$(SCRIPTS_MORE1) \
+	$(SCRIPTS_MORE4) \
+	$(SCRIPTS_WIN32) \
+	$(SCRIPTS_GUI)
+
 all:	$(MAIN_TARGET) \
 	vimrun.exe \
 	install.exe \
-	uninstal.exe \
+	uninstall.exe \
 	xxd/xxd.exe \
 	tee/tee.exe \
 	GvimExt/gvimext.dll
@@ -1338,8 +1352,8 @@ install.exe: dosinst.c
 	- if exist install.exe del install.exe
 	ren dosinst.exe install.exe
 
-uninstal.exe: uninstal.c
-	$(CC) /nologo -DNDEBUG -DWIN32 uninstal.c shell32.lib advapi32.lib \
+uninstall.exe: uninstall.c
+	$(CC) /nologo -DNDEBUG -DWIN32 uninstall.c shell32.lib advapi32.lib \
 		-link -subsystem:$(SUBSYSTEM_TOOLS)
 
 vimrun.exe: vimrun.c
@@ -1367,7 +1381,7 @@ tags: notags
 notags:
 	- if exist tags del tags
 
-clean:
+clean: testclean
 	- if exist $(OUTDIR)/nul $(DEL_TREE) $(OUTDIR)
 	- if exist *.obj del *.obj
 	- if exist $(VIM).exe del $(VIM).exe
@@ -1386,7 +1400,7 @@ clean:
 !endif
 	- if exist vimrun.exe del vimrun.exe
 	- if exist install.exe del install.exe
-	- if exist uninstal.exe del uninstal.exe
+	- if exist uninstall.exe del uninstall.exe
 	- if exist if_perl.c del if_perl.c
 	- if exist auto\if_perl.c del auto\if_perl.c
 	- if exist dimm.h del dimm.h
@@ -1402,7 +1416,6 @@ clean:
 	cd GvimExt
 	$(MAKE) /NOLOGO -f Makefile clean
 	cd ..
-	- if exist testdir\*.out del testdir\*.out
 
 test:
 	cd testdir
@@ -1419,13 +1432,24 @@ testclean:
 	$(MAKE) /NOLOGO -f Make_dos.mak clean
 	cd ..
 
+# Run individual OLD style test.
+# These do not depend on the executable, compile it when needed.
+$(OLD_TEST_OUTFILES:.out=):
+	cd testdir
+	- if exist $@.out del $@.out
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) nolog
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) $@.out
+	@ if exist test.log ( type test.log & exit /b 1 )
+	cd ..
+
+# Run individual NEW style test.
+# These do not depend on the executable, compile it when needed.
 $(NEW_TESTS):
 	cd testdir
 	- if exist $@.res del $@.res
-	$(MAKE) /NOLOGO -f Make_dos.mak nolog
-	$(MAKE) /NOLOGO -f Make_dos.mak $@.res
-	$(MAKE) /NOLOGO -f Make_dos.mak report
-	type messages
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) nolog
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) $@.res
+	$(MAKE) /NOLOGO -f Make_dos.mak VIMPROG=..\$(VIMTESTTARGET) report
 	cd ..
 
 ###########################################################################
@@ -1456,9 +1480,13 @@ $(OUTDIR)/blowfish.obj:	$(OUTDIR) blowfish.c  $(INCL)
 
 $(OUTDIR)/buffer.obj:	$(OUTDIR) buffer.c  $(INCL)
 
+$(OUTDIR)/bufwrite.obj:	$(OUTDIR) bufwrite.c  $(INCL)
+
 $(OUTDIR)/change.obj:	$(OUTDIR) change.c  $(INCL)
 
 $(OUTDIR)/charset.obj:	$(OUTDIR) charset.c  $(INCL)
+
+$(OUTDIR)/cindent.obj:	$(OUTDIR) cindent.c  $(INCL)
 
 $(OUTDIR)/cmdexpand.obj:	$(OUTDIR) cmdexpand.c  $(INCL)
 
@@ -1642,7 +1670,7 @@ $(OUTDIR)/os_w32exeg.obj:	$(OUTDIR) os_w32exe.c  $(INCL)
 $(OUTDIR)/pathdef.obj:	$(OUTDIR) $(PATHDEF_SRC) $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(PATHDEF_SRC)
 
-$(OUTDIR)/popupmnu.obj:	$(OUTDIR) popupmnu.c  $(INCL)
+$(OUTDIR)/popupmenu.obj:	$(OUTDIR) popupmenu.c  $(INCL)
 
 $(OUTDIR)/popupwin.obj:	$(OUTDIR) popupwin.c  $(INCL)
 
@@ -1669,6 +1697,8 @@ $(OUTDIR)/sign.obj:	$(OUTDIR) sign.c  $(INCL)
 $(OUTDIR)/spell.obj:	$(OUTDIR) spell.c  $(INCL)
 
 $(OUTDIR)/spellfile.obj:	$(OUTDIR) spellfile.c  $(INCL)
+
+$(OUTDIR)/spellsuggest.obj:	$(OUTDIR) spellsuggest.c  $(INCL)
 
 $(OUTDIR)/syntax.obj:	$(OUTDIR) syntax.c  $(INCL)
 
@@ -1734,27 +1764,32 @@ CCCTERM = $(CC) $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	-DGET_SPECIAL_PTY_TYPE_FUNCTION=get_special_pty_type \
 	-D_CRT_SECURE_NO_WARNINGS
 
-# Create a default rule for libvterm.
-{libvterm/src/}.c{$(OUTDIR)/}.obj::
-	$(CCCTERM) -Fo$(OUTDIR)/ $<
+$(OUTDIR)/vterm_encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ libvterm/src/encoding.c
 
-$(OUTDIR)/encoding.obj: $(OUTDIR) libvterm/src/encoding.c $(TERM_DEPS)
+$(OUTDIR)/vterm_keyboard.obj: $(OUTDIR) libvterm/src/keyboard.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ libvterm/src/keyboard.c
 
-$(OUTDIR)/keyboard.obj: $(OUTDIR) libvterm/src/keyboard.c $(TERM_DEPS)
+$(OUTDIR)/vterm_mouse.obj: $(OUTDIR) libvterm/src/mouse.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ libvterm/src/mouse.c
 
-$(OUTDIR)/termmouse.obj: $(OUTDIR) libvterm/src/termmouse.c $(TERM_DEPS)
+$(OUTDIR)/vterm_parser.obj: $(OUTDIR) libvterm/src/parser.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ libvterm/src/parser.c
 
-$(OUTDIR)/parser.obj: $(OUTDIR) libvterm/src/parser.c $(TERM_DEPS)
+$(OUTDIR)/vterm_pen.obj: $(OUTDIR) libvterm/src/pen.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ libvterm/src/pen.c
 
-$(OUTDIR)/pen.obj: $(OUTDIR) libvterm/src/pen.c $(TERM_DEPS)
+$(OUTDIR)/vterm_screen.obj: $(OUTDIR) libvterm/src/screen.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ libvterm/src/screen.c
 
-$(OUTDIR)/termscreen.obj: $(OUTDIR) libvterm/src/termscreen.c $(TERM_DEPS)
+$(OUTDIR)/vterm_state.obj: $(OUTDIR) libvterm/src/state.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ libvterm/src/state.c
 
-$(OUTDIR)/state.obj: $(OUTDIR) libvterm/src/state.c $(TERM_DEPS)
+$(OUTDIR)/vterm_unicode.obj: $(OUTDIR) libvterm/src/unicode.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ libvterm/src/unicode.c
 
-$(OUTDIR)/unicode.obj: $(OUTDIR) libvterm/src/unicode.c $(TERM_DEPS)
-
-$(OUTDIR)/vterm.obj: $(OUTDIR) libvterm/src/vterm.c $(TERM_DEPS)
+$(OUTDIR)/vterm_vterm.obj: $(OUTDIR) libvterm/src/vterm.c $(TERM_DEPS)
+	$(CCCTERM) /Fo$@ libvterm/src/vterm.c
 
 
 # $CFLAGS may contain backslashes and double quotes, escape them both.
@@ -1785,8 +1820,10 @@ proto.h: \
 	proto/blob.pro \
 	proto/blowfish.pro \
 	proto/buffer.pro \
+	proto/bufwrite.pro \
 	proto/change.pro \
 	proto/charset.pro \
+	proto/cindent.pro \
 	proto/cmdexpand.pro \
 	proto/cmdhist.pro \
 	proto/crypt.pro \
@@ -1838,7 +1875,7 @@ proto.h: \
 	proto/os_mswin.pro \
 	proto/winclip.pro \
 	proto/os_win32.pro \
-	proto/popupmnu.pro \
+	proto/popupmenu.pro \
 	proto/popupwin.pro \
 	proto/profiler.pro \
 	proto/quickfix.pro \
@@ -1852,6 +1889,7 @@ proto.h: \
 	proto/sign.pro \
 	proto/spell.pro \
 	proto/spellfile.pro \
+	proto/spellsuggest.pro \
 	proto/syntax.pro \
 	proto/tag.pro \
 	proto/term.pro \

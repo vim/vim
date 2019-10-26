@@ -229,12 +229,10 @@
  * MB_COPY_CHAR(f, t): copy one char from "f" to "t" and advance the pointers.
  * PTR2CHAR(): get character from pointer.
  */
-/* Get the length of the character p points to, including composing chars */
-#define MB_PTR2LEN(p)	    (has_mbyte ? (*mb_ptr2len)(p) : 1)
 /* Advance multi-byte pointer, skip over composing chars. */
-#define MB_PTR_ADV(p)	    p += has_mbyte ? (*mb_ptr2len)(p) : 1
+#define MB_PTR_ADV(p)	    p += (*mb_ptr2len)(p)
 /* Advance multi-byte pointer, do not skip over composing chars. */
-#define MB_CPTR_ADV(p)	    p += enc_utf8 ? utf_ptr2len(p) : has_mbyte ? (*mb_ptr2len)(p) : 1
+#define MB_CPTR_ADV(p)	    p += enc_utf8 ? utf_ptr2len(p) : (*mb_ptr2len)(p)
 /* Backup multi-byte pointer. Only use with "p" > "s" ! */
 #define MB_PTR_BACK(s, p)  p -= has_mbyte ? ((*mb_head_off)(s, p - 1) + 1) : 1
 /* get length of multi-byte char, not including composing chars */

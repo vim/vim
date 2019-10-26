@@ -14,7 +14,7 @@
  */
 
 /*
- * Include common code for dosinst.c and uninstal.c.
+ * Include common code for dosinst.c and uninstall.c.
  */
 #define DOSINST
 #include "dosinst.h"
@@ -1686,7 +1686,7 @@ install_registry(void)
 
     /* For the NSIS installer use the generated uninstaller. */
     if (interactive)
-	sprintf(uninstall_string, "%s\\uninstal.exe", installdir);
+	sprintf(uninstall_string, "%s\\uninstall.exe", installdir);
     else
 	sprintf(uninstall_string, "%s\\uninstall-gui.exe", installdir);
 
@@ -1962,7 +1962,7 @@ install_start_menu(int idx)
 	    return;
     }
     if (build_shortcut("Uninstall",
-		interactive ? "uninstal.exe" : "uninstall-gui.exe", "",
+		interactive ? "uninstall.exe" : "uninstall-gui.exe", "",
 					   VIM_STARTMENU, installdir) == FAIL)
 	return;
     /* For Windows NT the working dir of the vimtutor.bat must be right,

@@ -27,7 +27,9 @@ arglist.c	| handling argument list
 autocmd.c	| autocommands
 blob.c		| blob data type
 buffer.c	| manipulating buffers (loaded files)
+bufwrite.c	| writing a buffer to file
 change.c	| handling changes to text
+cindent.c	| C and Lisp indentation
 cmdexpand.c	| command-line completion
 cmdhist.c	| command-line history
 debugger.c	| vim script debugger
@@ -45,7 +47,7 @@ findfile.c	| search for files in 'path'
 fold.c		| folding
 getchar.c	| getting characters and key mapping
 highlight.c	| syntax highlighting
-indent.c	| C and Lisp indentation
+indent.c	| text indentation
 insexpand.c	| Insert mode completion
 mark.c		| marks
 map.c		| mapping and abbreviations
@@ -58,7 +60,7 @@ mouse.c		| handling the mouse
 ops.c		| handling operators ("d", "y", "p")
 option.c	| options
 optionstr.c	| handling string options
-popupmnu.c	| popup menu
+popupmenu.c	| popup menu
 popupwin.c	| popup window
 profiler.c	| vim script profiler
 quickfix.c	| quickfix commands (":make", ":cn")
@@ -69,7 +71,9 @@ screen.c	| lower level screen functions
 search.c	| pattern searching
 session.c	| sessions and views
 sign.c		| signs
-spell.c		| spell checking
+spell.c		| spell checking core
+spellfile.c	| spell file handling
+spellsuggest.c	| spell correction suggestions
 syntax.c	| syntax and other highlighting
 tag.c		| tags
 term.c		| terminal handling, termcap codes

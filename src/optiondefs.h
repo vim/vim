@@ -52,9 +52,7 @@
 #ifdef FEAT_FOLDING
 # define PV_CMS		OPT_BUF(BV_CMS)
 #endif
-#ifdef FEAT_COMMENTS
-# define PV_COM		OPT_BUF(BV_COM)
-#endif
+#define PV_COM		OPT_BUF(BV_COM)
 #define PV_CPT		OPT_BUF(BV_CPT)
 #define PV_DICT	OPT_BOTH(OPT_BUF(BV_DICT))
 #define PV_TSR		OPT_BOTH(OPT_BUF(BV_TSR))
@@ -634,14 +632,9 @@ static struct vimoption options[] =
 			    {(char_u *)80L, (char_u *)0L} SCTX_INIT},
     {"comments",    "com",  P_STRING|P_ALLOCED|P_VI_DEF|P_ONECOMMA
 							  |P_NODUP|P_CURSWANT,
-#ifdef FEAT_COMMENTS
 			    (char_u *)&p_com, PV_COM,
 			    {(char_u *)"s1:/*,mb:*,ex:*/,://,b:#,:%,:XCOMM,n:>,fb:-",
 				(char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
-#endif
 			    SCTX_INIT},
     {"commentstring", "cms", P_STRING|P_ALLOCED|P_VI_DEF|P_CURSWANT,
 #ifdef FEAT_FOLDING
@@ -2662,7 +2655,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_tf, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"ttymouse",    "ttym", P_STRING|P_NODEFAULT|P_NO_MKRC|P_VI_DEF,
-#if defined(FEAT_MOUSE) && (defined(UNIX) || defined(VMS))
+#if defined(UNIX) || defined(VMS)
 			    (char_u *)&p_ttym, PV_NONE,
 #else
 			    (char_u *)NULL, PV_NONE,
@@ -2976,7 +2969,9 @@ static struct vimoption options[] =
     p_term("t_ST", T_CST)
     p_term("t_Te", T_STE)
     p_term("t_te", T_TE)
+    p_term("t_TE", T_CTE)
     p_term("t_ti", T_TI)
+    p_term("t_TI", T_CTI)
     p_term("t_Ts", T_STS)
     p_term("t_ts", T_TS)
     p_term("t_u7", T_U7)

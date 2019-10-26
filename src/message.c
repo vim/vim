@@ -356,34 +356,61 @@ int vim_snprintf(char *str, size_t str_m, const char *fmt, ...);
     int
 smsg(const char *s, ...)
 {
-    va_list arglist;
+    if (IObuff == NULL)
+    {
+	// Very early in initialisation and already something wrong, just
+	// give the raw message so the user at least gets a hint.
+	return msg((char *)s);
+    }
+    else
+    {
+	va_list arglist;
 
-    va_start(arglist, s);
-    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
-    va_end(arglist);
-    return msg((char *)IObuff);
+	va_start(arglist, s);
+	vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
+	va_end(arglist);
+	return msg((char *)IObuff);
+    }
 }
 
     int
 smsg_attr(int attr, const char *s, ...)
 {
-    va_list arglist;
+    if (IObuff == NULL)
+    {
+	// Very early in initialisation and already something wrong, just
+	// give the raw message so the user at least gets a hint.
+	return msg_attr((char *)s, attr);
+    }
+    else
+    {
+	va_list arglist;
 
-    va_start(arglist, s);
-    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
-    va_end(arglist);
-    return msg_attr((char *)IObuff, attr);
+	va_start(arglist, s);
+	vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
+	va_end(arglist);
+	return msg_attr((char *)IObuff, attr);
+    }
 }
 
     int
 smsg_attr_keep(int attr, const char *s, ...)
 {
-    va_list arglist;
+    if (IObuff == NULL)
+    {
+	// Very early in initialisation and already something wrong, just
+	// give the raw message so the user at least gets a hint.
+	return msg_attr_keep((char *)s, attr, TRUE);
+    }
+    else
+    {
+	va_list arglist;
 
-    va_start(arglist, s);
-    vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
-    va_end(arglist);
-    return msg_attr_keep((char *)IObuff, attr, TRUE);
+	va_start(arglist, s);
+	vim_vsnprintf((char *)IObuff, IOSIZE, s, arglist);
+	va_end(arglist);
+	return msg_attr_keep((char *)IObuff, attr, TRUE);
+    }
 }
 
 #endif
@@ -723,17 +750,26 @@ emsg(char *s)
     int
 semsg(const char *s, ...)
 {
-    /* Skip this if not giving error messages at the moment. */
+    // Skip this if not giving error messages at the moment.
     if (!emsg_not_now())
     {
-	va_list ap;
+	if (IObuff == NULL)
+	{
+	    // Very early in initialisation and already something wrong, just
+	    // give the raw message so the user at least gets a hint.
+	    return emsg_core((char_u *)s);
+	}
+	else
+	{
+	    va_list ap;
 
-	va_start(ap, s);
-	vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
-	va_end(ap);
-	return emsg_core(IObuff);
+	    va_start(ap, s);
+	    vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
+	    va_end(ap);
+	    return emsg_core(IObuff);
+	}
     }
-    return TRUE;		/* no error messages at the moment */
+    return TRUE;		// no error messages at the moment
 }
 #endif
 
@@ -764,12 +800,21 @@ siemsg(const char *s, ...)
 {
     if (!emsg_not_now())
     {
-	va_list ap;
+	if (IObuff == NULL)
+	{
+	    // Very early in initialisation and already something wrong, just
+	    // give the raw message so the user at least gets a hint.
+	    emsg_core((char_u *)s);
+	}
+	else
+	{
+	    va_list ap;
 
-	va_start(ap, s);
-	vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
-	va_end(ap);
-	emsg_core(IObuff);
+	    va_start(ap, s);
+	    vim_vsnprintf((char *)IObuff, IOSIZE, s, ap);
+	    va_end(ap);
+	    emsg_core(IObuff);
+	}
     }
 # ifdef ABORT_ON_INTERNAL_ERROR
     abort();
@@ -1155,7 +1200,6 @@ wait_return(int redraw)
 #ifdef FEAT_GUI
 				|| c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR
 #endif
-#ifdef FEAT_MOUSE
 				|| c == K_LEFTDRAG   || c == K_LEFTRELEASE
 				|| c == K_MIDDLEDRAG || c == K_MIDDLERELEASE
 				|| c == K_RIGHTDRAG  || c == K_RIGHTRELEASE
@@ -1169,19 +1213,15 @@ wait_return(int redraw)
 					|| c == K_RIGHTMOUSE
 					|| c == K_X1MOUSE
 					|| c == K_X2MOUSE))
-#endif
 				);
 	ui_breakcheck();
-#ifdef FEAT_MOUSE
 	/*
 	 * Avoid that the mouse-up event causes visual mode to start.
 	 */
 	if (c == K_LEFTMOUSE || c == K_MIDDLEMOUSE || c == K_RIGHTMOUSE
 					  || c == K_X1MOUSE || c == K_X2MOUSE)
 	    (void)jump_to_mouse(MOUSE_SETPOS, NULL, 0);
-	else
-#endif
-	    if (vim_strchr((char_u *)"\r\n ", c) == NULL && c != Ctrl_C)
+	else if (vim_strchr((char_u *)"\r\n ", c) == NULL && c != Ctrl_C)
 	{
 	    /* Put the character back in the typeahead buffer.  Don't use the
 	     * stuff buffer, because lmaps wouldn't work. */
@@ -1980,15 +2020,14 @@ msg_puts_attr_len(char *str, int maxlen, int attr)
 	attr &= ~MSG_HIST;
     }
 
-    /*
-     * When writing something to the screen after it has scrolled, requires a
-     * wait-return prompt later.  Needed when scrolling, resetting
-     * need_wait_return after some prompt, and then outputting something
-     * without scrolling
-     */
-    if (msg_scrolled != 0 && !msg_scrolled_ign)
+    // When writing something to the screen after it has scrolled, requires a
+    // wait-return prompt later.  Needed when scrolling, resetting
+    // need_wait_return after some prompt, and then outputting something
+    // without scrolling
+    // Not needed when only using CR to move the cursor.
+    if (msg_scrolled != 0 && !msg_scrolled_ign && STRCMP(str, "\r") != 0)
 	need_wait_return = TRUE;
-    msg_didany = TRUE;		/* remember that something was outputted */
+    msg_didany = TRUE;		// remember that something was outputted
 
     /*
      * If there is no valid screen, use fprintf so we can see error messages.
@@ -3507,8 +3546,17 @@ give_warning(char_u *message, int hl)
     void
 give_warning2(char_u *message, char_u *a1, int hl)
 {
-    vim_snprintf((char *)IObuff, IOSIZE, (char *)message, a1);
-    give_warning(IObuff, hl);
+    if (IObuff == NULL)
+    {
+	// Very early in initialisation and already something wrong, just give
+	// the raw message so the user at least gets a hint.
+	give_warning((char_u *)message, hl);
+    }
+    else
+    {
+	vim_snprintf((char *)IObuff, IOSIZE, (char *)message, a1);
+	give_warning(IObuff, hl);
+    }
 }
 #endif
 
@@ -4405,12 +4453,16 @@ vim_vsnprintf_typval(
 				     - mb_string2cells((char_u *)str_arg, -1);
 			if (precision)
 			{
-			    char_u *p1 = (char_u *)str_arg;
-			    size_t i;
+			    char_u  *p1;
+			    size_t  i = 0;
 
-			    for (i = 0; i < precision && *p1; i++)
-				p1 += mb_ptr2len(p1);
-
+			    for (p1 = (char_u *)str_arg; *p1;
+							  p1 += mb_ptr2len(p1))
+			    {
+				i += (size_t)mb_ptr2cells(p1);
+				if (i > precision)
+				    break;
+			    }
 			    str_arg_l = precision = p1 - (char_u *)str_arg;
 			}
 		    }

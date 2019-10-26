@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Sep 18
+*options.txt*	For Vim version 8.1.  Last change: 2019 Oct 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -856,7 +856,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set background&
 <	Vim will guess the value.  In the GUI this should work correctly,
 	in other cases Vim might not be able to guess the right value.
-	If the GUI supports a dark them, you can use the "d" flag in
+	If the GUI supports a dark theme, you can use the "d" flag in
 	'guioptions', see 'go-d'.
 
 	When the |t_RB| option is set, Vim will use it to request the background
@@ -1685,8 +1685,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 'comments' 'com'	string	(default
 				"s1:/*,mb:*,ex:*/,://,b:#,:%,:XCOMM,n:>,fb:-")
 			local to buffer
-			{not available when compiled without the |+comments|
-			feature}
 	A comma separated list of strings that can start a comment line.  See
 	|format-comments|.  See |option-backslash| about using backslashes to
 	insert a space.
@@ -1879,7 +1877,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'completeslash'* *'csl'*
 'completeslash' 'csl'	string	(default: "")
 			local to buffer
-			{not in Vi}  {only for MS-Windows}
+			{only for MS-Windows}
 	When this option is set it overrules 'shellslash' for completion:
 	- When this option is set to "slash", a forward slash is used for path
 	  completion in insert mode. This is useful when editing HTML tag, or
@@ -1919,7 +1917,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    completion in a popup window.  Only works in combination
 		    with "menu" or "menuone".  Overrides "preview".
 		    See |'completepopup'| for specifying properties.
-		    {only works when compiled with the +textprop feature}
+		    {only works when compiled with the |+textprop| feature}
+
+	   popuphidden
+	   	    Just like "popup" but initially hide the popup.  Use a
+		    |CompleteChanged| autocommand to fetch the info and call
+		    |popup_show()| once the popup has been filled.
+		    See the example at |complete-popuphidden|.
+		    {only works when compiled with the |+textprop| feature}
 
 	   noinsert Do not insert any text for a match until the user selects
 		    a match from the menu. Only works in combination with
@@ -2472,7 +2477,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'cursorlineopt'* *'culopt'*
 'cursorlineopt' 'culopt' string (default: "number,line")
 			local to window
-			{not in Vi}
 			{not available when compiled without the |+syntax|
 			feature}
 	Comma separated list of settings for how 'cursorline' is displayed.
@@ -2696,7 +2700,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	- The swap file will be created in the first directory where this is
 	  possible.
 	- Empty means that no swap file will be used (recovery is
-	  impossible!).
+	  impossible!) and no |E303| error will be given.
 	- A directory "." means to put the swap file in the same directory as
 	  the edited file.  On Unix, a dot is prepended to the file name, so
 	  it doesn't show in a directory listing.  On MS-Windows the "hidden"
@@ -6493,10 +6497,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For Unix the default it "| tee".  The stdout of the compiler is saved
 	in a file and echoed to the screen.  If the 'shell' option is "csh" or
 	"tcsh" after initializations, the default becomes "|& tee".  If the
-	'shell' option is "sh", "ksh", "mksh", "pdksh", "zsh" or "bash" the
-	default becomes "2>&1| tee".  This means that stderr is also included.
-	Before using the 'shell' option a path is removed, thus "/bin/sh" uses
-	"sh".
+	'shell' option is "sh", "ksh", "mksh", "pdksh", "zsh", "zsh-beta",
+	"bash" or "fish" the default becomes "2>&1| tee".  This means that
+	stderr is also included.  Before using the 'shell' option a path is
+	removed, thus "/bin/sh" uses "sh".
 	The initialization of this option is done after reading the ".vimrc"
 	and the other initializations, so that when the 'shell' option is set
 	there, the 'shellpipe' option changes automatically, unless it was
@@ -6536,13 +6540,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The name of the temporary file can be represented by "%s" if necessary
 	(the file name is appended automatically if no %s appears in the value
 	of this option).
-	The default is ">".  For Unix, if the 'shell' option is "csh", "tcsh"
-	or "zsh" during initializations, the default becomes ">&".  If the
-	'shell' option is "sh", "ksh" or "bash" the default becomes
-	">%s 2>&1".  This means that stderr is also included.
-	For Win32, the Unix checks are done and additionally "cmd" is checked
-	for, which makes the default ">%s 2>&1".  Also, the same names with
-	".exe" appended are checked for.
+	The default is ">".  For Unix, if the 'shell' option is "csh" or
+	"tcsh" during initializations, the default becomes ">&".  If the
+	'shell' option is "sh", "ksh", "mksh", "pdksh", "zsh",
+	"zsh-beta","bash" or "fish", the default becomes ">%s 2>&1".  This
+	means that stderr is also included.  For Win32, the Unix checks are
+	done and additionally "cmd" is checked for, which makes the default
+	">%s 2>&1".  Also, the same names with ".exe" appended are checked
+	for.
 	The initialization of this option is done after reading the ".vimrc"
 	and the other initializations, so that when the 'shell' option is set
 	there, the 'shellredir' option changes automatically unless it was
@@ -8177,8 +8182,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 						Win32 and OS/2)
 			global or local to buffer |global-local|
 	Maximum number of changes that can be undone.  Since undo information
-	is kept in memory, higher numbers will cause more memory to be used
-	(nevertheless, a single change can use an unlimited amount of memory).
+	is kept in memory, higher numbers will cause more memory to be used.
+	Nevertheless, a single change can already use a large amount of memory.
 	Set to 0 for Vi compatibility: One level of undo and "u" undoes
 	itself: >
 		set ul=0

@@ -102,7 +102,29 @@ set_init_1(int clean_arg)
 	    || ((p = (char_u *)default_shell()) != NULL && *p != NUL)
 #endif
 	    )
+#if defined(MSWIN)
+    {
+	// For MS-Windows put the path in quotes instead of escaping spaces.
+	char_u	    *cmd;
+	size_t	    len;
+
+	if (vim_strchr(p, ' ') != NULL)
+	{
+	    len = STRLEN(p) + 3;  // two quotes and a trailing NUL
+	    cmd = alloc(len);
+	    if (cmd != NULL)
+	    {
+		vim_snprintf((char *)cmd, len, "\"%s\"", p);
+		set_string_default("sh", cmd);
+		vim_free(cmd);
+	    }
+	}
+	else
+	    set_string_default("sh", p);
+    }
+#else
 	set_string_default_esc("sh", p, TRUE);
+#endif
 
 #ifdef FEAT_WILDIGN
     /*
@@ -686,7 +708,7 @@ set_local_options_default(win_T *wp, int do_buffer)
 		&& (do_buffer || (p->indir & PV_BUF) == 0)
 		&& !(options[i].flags & P_NODEFAULT)
 		&& !optval_default(p, varp, FALSE))
-	    set_option_default(i, OPT_LOCAL, FALSE);
+	    set_option_default(i, OPT_FREE|OPT_LOCAL, FALSE);
     }
 
     unblock_autocmds();
@@ -4473,7 +4495,7 @@ find_key_option(char_u *arg_arg, int has_lt)
     {
 	--arg;			    /* put arg at the '<' */
 	modifiers = 0;
-	key = find_special_key(&arg, &modifiers, TRUE, TRUE, FALSE);
+	key = find_special_key(&arg, &modifiers, TRUE, TRUE, FALSE, TRUE, NULL);
 	if (modifiers)		    /* can't handle modifiers here */
 	    key = 0;
     }
@@ -4954,9 +4976,7 @@ clear_termoptions(void)
      * outputting a few things that the terminal doesn't understand, but the
      * screen will be cleared later, so this is OK.
      */
-#ifdef FEAT_MOUSE_TTY
-    mch_setmouse(FALSE);	    /* switch mouse off */
-#endif
+    mch_setmouse(FALSE);	    // switch mouse off
 #ifdef FEAT_TITLE
     mch_restore_title(SAVE_RESTORE_BOTH);    /* restore window titles */
 #endif
@@ -5386,9 +5406,7 @@ get_varp(struct vimoption *p)
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 	case PV_CINW:	return (char_u *)&(curbuf->b_p_cinw);
 #endif
-#ifdef FEAT_COMMENTS
 	case PV_COM:	return (char_u *)&(curbuf->b_p_com);
-#endif
 #ifdef FEAT_FOLDING
 	case PV_CMS:	return (char_u *)&(curbuf->b_p_cms);
 #endif
@@ -5530,7 +5548,7 @@ win_copy_options(win_T *wp_from, win_T *wp_to)
  * After copying window options: update variables depending on options.
  */
     void
-after_copy_winopt(win_T *wp)
+after_copy_winopt(win_T *wp UNUSED)
 {
 #ifdef FEAT_LINEBREAK
     briopt_check(wp);
@@ -5622,6 +5640,12 @@ copy_winopt(winopt_T *from, winopt_T *to)
 #endif
 #ifdef FEAT_SIGNS
     to->wo_scl = vim_strsave(from->wo_scl);
+#endif
+
+#ifdef FEAT_EVAL
+    // Copy the script context so that we know where the value was last set.
+    mch_memmove(to->wo_script_ctx, from->wo_script_ctx,
+						    sizeof(to->wo_script_ctx));
 #endif
     check_winopt(to);		/* don't want NULL pointers */
 }
@@ -5720,11 +5744,36 @@ clear_winopt(winopt_T *wop UNUSED)
 #endif
 }
 
+#ifdef FEAT_EVAL
+// Index into the options table for a buffer-local option enum.
+static int buf_opt_idx[BV_COUNT];
+# define COPY_OPT_SCTX(buf, bv) buf->b_p_script_ctx[bv] = options[buf_opt_idx[bv]].script_ctx
+
+/*
+ * Initialize buf_opt_idx[] if not done already.
+ */
+    static void
+init_buf_opt_idx(void)
+{
+    static int did_init_buf_opt_idx = FALSE;
+    int i;
+
+    if (did_init_buf_opt_idx)
+	return;
+    did_init_buf_opt_idx = TRUE;
+    for (i = 0; !istermoption_idx(i); i++)
+	if (options[i].indir & PV_BUF)
+	    buf_opt_idx[options[i].indir & PV_MASK] = i;
+}
+#else
+# define COPY_OPT_SCTX(buf, bv)
+#endif
+
 /*
  * Copy global option values to local options for one buffer.
  * Used when creating a new buffer and sometimes when entering a buffer.
  * flags:
- * BCO_ENTER	We will enter the buf buffer.
+ * BCO_ENTER	We will enter the buffer "buf".
  * BCO_ALWAYS	Always copy the options, but only set b_p_initialized when
  *		appropriate.
  * BCO_NOHELP	Don't copy the values to a help buffer.
@@ -5763,12 +5812,16 @@ buf_copy_options(buf_T *buf, int flags)
 
 	if (should_copy || (flags & BCO_ALWAYS))
 	{
-	    /* Don't copy the options specific to a help buffer when
-	     * BCO_NOHELP is given or the options were initialized already
-	     * (jumping back to a help file with CTRL-T or CTRL-O) */
+#ifdef FEAT_EVAL
+	    vim_memset(buf->b_p_script_ctx, 0, sizeof(buf->b_p_script_ctx));
+	    init_buf_opt_idx();
+#endif
+	    // Don't copy the options specific to a help buffer when
+	    // BCO_NOHELP is given or the options were initialized already
+	    // (jumping back to a help file with CTRL-T or CTRL-O)
 	    dont_do_help = ((flags & BCO_NOHELP) && buf->b_help)
 						       || buf->b_p_initialized;
-	    if (dont_do_help)		/* don't free b_p_isk */
+	    if (dont_do_help)		// don't free b_p_isk
 	    {
 		save_p_isk = buf->b_p_isk;
 		buf->b_p_isk = NULL;
@@ -5803,39 +5856,62 @@ buf_copy_options(buf_T *buf, int flags)
 		free_buf_options(buf, FALSE);
 
 	    buf->b_p_ai = p_ai;
+	    COPY_OPT_SCTX(buf, BV_AI);
 	    buf->b_p_ai_nopaste = p_ai_nopaste;
 	    buf->b_p_sw = p_sw;
+	    COPY_OPT_SCTX(buf, BV_SW);
 	    buf->b_p_tw = p_tw;
+	    COPY_OPT_SCTX(buf, BV_TW);
 	    buf->b_p_tw_nopaste = p_tw_nopaste;
 	    buf->b_p_tw_nobin = p_tw_nobin;
 	    buf->b_p_wm = p_wm;
+	    COPY_OPT_SCTX(buf, BV_WM);
 	    buf->b_p_wm_nopaste = p_wm_nopaste;
 	    buf->b_p_wm_nobin = p_wm_nobin;
 	    buf->b_p_bin = p_bin;
+	    COPY_OPT_SCTX(buf, BV_BIN);
 	    buf->b_p_bomb = p_bomb;
+	    COPY_OPT_SCTX(buf, BV_BOMB);
 	    buf->b_p_fixeol = p_fixeol;
+	    COPY_OPT_SCTX(buf, BV_FIXEOL);
 	    buf->b_p_et = p_et;
+	    COPY_OPT_SCTX(buf, BV_ET);
 	    buf->b_p_et_nobin = p_et_nobin;
 	    buf->b_p_et_nopaste = p_et_nopaste;
 	    buf->b_p_ml = p_ml;
+	    COPY_OPT_SCTX(buf, BV_ML);
 	    buf->b_p_ml_nobin = p_ml_nobin;
 	    buf->b_p_inf = p_inf;
-	    buf->b_p_swf = cmdmod.noswapfile ? FALSE : p_swf;
+	    COPY_OPT_SCTX(buf, BV_INF);
+	    if (cmdmod.noswapfile)
+		buf->b_p_swf = FALSE;
+	    else
+	    {
+		buf->b_p_swf = p_swf;
+		COPY_OPT_SCTX(buf, BV_INF);
+	    }
 	    buf->b_p_cpt = vim_strsave(p_cpt);
+	    COPY_OPT_SCTX(buf, BV_CPT);
 #ifdef BACKSLASH_IN_FILENAME
 	    buf->b_p_csl = vim_strsave(p_csl);
+	    COPY_OPT_SCTX(buf, BV_CSL);
 #endif
 #ifdef FEAT_COMPL_FUNC
 	    buf->b_p_cfu = vim_strsave(p_cfu);
+	    COPY_OPT_SCTX(buf, BV_CFU);
 	    buf->b_p_ofu = vim_strsave(p_ofu);
+	    COPY_OPT_SCTX(buf, BV_OFU);
 #endif
 #ifdef FEAT_EVAL
 	    buf->b_p_tfu = vim_strsave(p_tfu);
+	    COPY_OPT_SCTX(buf, BV_TFU);
 #endif
 	    buf->b_p_sts = p_sts;
+	    COPY_OPT_SCTX(buf, BV_STS);
 	    buf->b_p_sts_nopaste = p_sts_nopaste;
 #ifdef FEAT_VARTABS
 	    buf->b_p_vsts = vim_strsave(p_vsts);
+	    COPY_OPT_SCTX(buf, BV_VSTS);
 	    if (p_vsts && p_vsts != empty_option)
 		tabstop_set(p_vsts, &buf->b_p_vsts_array);
 	    else
@@ -5844,71 +5920,99 @@ buf_copy_options(buf_T *buf, int flags)
 				 ? vim_strsave(p_vsts_nopaste) : NULL;
 #endif
 	    buf->b_p_sn = p_sn;
-#ifdef FEAT_COMMENTS
+	    COPY_OPT_SCTX(buf, BV_SN);
 	    buf->b_p_com = vim_strsave(p_com);
-#endif
+	    COPY_OPT_SCTX(buf, BV_COM);
 #ifdef FEAT_FOLDING
 	    buf->b_p_cms = vim_strsave(p_cms);
+	    COPY_OPT_SCTX(buf, BV_CMS);
 #endif
 	    buf->b_p_fo = vim_strsave(p_fo);
+	    COPY_OPT_SCTX(buf, BV_FO);
 	    buf->b_p_flp = vim_strsave(p_flp);
+	    COPY_OPT_SCTX(buf, BV_FLP);
+	    // NOTE: Valgrind may report a bogus memory leak for 'nrformats'
+	    // when it is set to 8 bytes in defaults.vim.
 	    buf->b_p_nf = vim_strsave(p_nf);
+	    COPY_OPT_SCTX(buf, BV_NF);
 	    buf->b_p_mps = vim_strsave(p_mps);
+	    COPY_OPT_SCTX(buf, BV_MPS);
 #ifdef FEAT_SMARTINDENT
 	    buf->b_p_si = p_si;
+	    COPY_OPT_SCTX(buf, BV_SI);
 #endif
 	    buf->b_p_ci = p_ci;
+	    COPY_OPT_SCTX(buf, BV_CI);
 #ifdef FEAT_CINDENT
 	    buf->b_p_cin = p_cin;
+	    COPY_OPT_SCTX(buf, BV_CIN);
 	    buf->b_p_cink = vim_strsave(p_cink);
+	    COPY_OPT_SCTX(buf, BV_CINK);
 	    buf->b_p_cino = vim_strsave(p_cino);
+	    COPY_OPT_SCTX(buf, BV_CINO);
 #endif
-	    /* Don't copy 'filetype', it must be detected */
+	    // Don't copy 'filetype', it must be detected
 	    buf->b_p_ft = empty_option;
 	    buf->b_p_pi = p_pi;
+	    COPY_OPT_SCTX(buf, BV_PI);
 #if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT)
 	    buf->b_p_cinw = vim_strsave(p_cinw);
+	    COPY_OPT_SCTX(buf, BV_CINW);
 #endif
 #ifdef FEAT_LISP
 	    buf->b_p_lisp = p_lisp;
+	    COPY_OPT_SCTX(buf, BV_LISP);
 #endif
 #ifdef FEAT_SYN_HL
 	    /* Don't copy 'syntax', it must be set */
 	    buf->b_p_syn = empty_option;
 	    buf->b_p_smc = p_smc;
+	    COPY_OPT_SCTX(buf, BV_SMC);
 	    buf->b_s.b_syn_isk = empty_option;
 #endif
 #ifdef FEAT_SPELL
 	    buf->b_s.b_p_spc = vim_strsave(p_spc);
+	    COPY_OPT_SCTX(buf, BV_SPC);
 	    (void)compile_cap_prog(&buf->b_s);
 	    buf->b_s.b_p_spf = vim_strsave(p_spf);
+	    COPY_OPT_SCTX(buf, BV_SPF);
 	    buf->b_s.b_p_spl = vim_strsave(p_spl);
+	    COPY_OPT_SCTX(buf, BV_SPL);
 #endif
 #if defined(FEAT_CINDENT) && defined(FEAT_EVAL)
 	    buf->b_p_inde = vim_strsave(p_inde);
+	    COPY_OPT_SCTX(buf, BV_INDE);
 	    buf->b_p_indk = vim_strsave(p_indk);
+	    COPY_OPT_SCTX(buf, BV_INDK);
 #endif
 	    buf->b_p_fp = empty_option;
 #if defined(FEAT_EVAL)
 	    buf->b_p_fex = vim_strsave(p_fex);
+	    COPY_OPT_SCTX(buf, BV_FEX);
 #endif
 #ifdef FEAT_CRYPT
 	    buf->b_p_key = vim_strsave(p_key);
+	    COPY_OPT_SCTX(buf, BV_KEY);
 #endif
 #ifdef FEAT_SEARCHPATH
 	    buf->b_p_sua = vim_strsave(p_sua);
+	    COPY_OPT_SCTX(buf, BV_SUA);
 #endif
 #ifdef FEAT_KEYMAP
 	    buf->b_p_keymap = vim_strsave(p_keymap);
+	    COPY_OPT_SCTX(buf, BV_KMAP);
 	    buf->b_kmap_state |= KEYMAP_INIT;
 #endif
 #ifdef FEAT_TERMINAL
 	    buf->b_p_twsl = p_twsl;
+	    COPY_OPT_SCTX(buf, BV_TWSL);
 #endif
 	    /* This isn't really an option, but copying the langmap and IME
 	     * state from the current buffer is better than resetting it. */
 	    buf->b_p_iminsert = p_iminsert;
+	    COPY_OPT_SCTX(buf, BV_IMI);
 	    buf->b_p_imsearch = p_imsearch;
+	    COPY_OPT_SCTX(buf, BV_IMS);
 
 	    /* options that are normally global but also have a local value
 	     * are not copied, start using the global value */
@@ -5932,12 +6036,14 @@ buf_copy_options(buf_T *buf, int flags)
 	    buf->b_p_inc = empty_option;
 # ifdef FEAT_EVAL
 	    buf->b_p_inex = vim_strsave(p_inex);
+	    COPY_OPT_SCTX(buf, BV_INEX);
 # endif
 #endif
 	    buf->b_p_dict = empty_option;
 	    buf->b_p_tsr = empty_option;
 #ifdef FEAT_TEXTOBJ
 	    buf->b_p_qe = vim_strsave(p_qe);
+	    COPY_OPT_SCTX(buf, BV_QE);
 #endif
 #if defined(FEAT_BEVAL) && defined(FEAT_EVAL)
 	    buf->b_p_bexpr = empty_option;
@@ -5947,6 +6053,7 @@ buf_copy_options(buf_T *buf, int flags)
 #endif
 #ifdef FEAT_PERSISTENT_UNDO
 	    buf->b_p_udf = p_udf;
+	    COPY_OPT_SCTX(buf, BV_UDF);
 #endif
 #ifdef FEAT_LISP
 	    buf->b_p_lw = empty_option;
@@ -5972,10 +6079,12 @@ buf_copy_options(buf_T *buf, int flags)
 	    else
 	    {
 		buf->b_p_isk = vim_strsave(p_isk);
+		COPY_OPT_SCTX(buf, BV_ISK);
 		did_isk = TRUE;
 		buf->b_p_ts = p_ts;
 #ifdef FEAT_VARTABS
 		buf->b_p_vts = vim_strsave(p_vts);
+		COPY_OPT_SCTX(buf, BV_VTS);
 		if (p_vts && p_vts != empty_option && !buf->b_p_vts_array)
 		    tabstop_set(p_vts, &buf->b_p_vts_array);
 		else
@@ -5985,6 +6094,7 @@ buf_copy_options(buf_T *buf, int flags)
 		if (buf->b_p_bt[0] == 'h')
 		    clear_string_option(&buf->b_p_bt);
 		buf->b_p_ma = p_ma;
+		COPY_OPT_SCTX(buf, BV_MA);
 	    }
 	}
 

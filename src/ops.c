@@ -18,11 +18,7 @@ static void shift_block(oparg_T *oap, int amount);
 static void	mb_adjust_opend(oparg_T *oap);
 static int	do_addsub(int op_type, pos_T *pos, int length, linenr_T Prenum1);
 static int	ends_in_white(linenr_T lnum);
-#ifdef FEAT_COMMENTS
 static int	fmt_check_par(linenr_T, int *, char_u **, int do_comments);
-#else
-static int	fmt_check_par(linenr_T);
-#endif
 
 // Flags for third item in "opchars".
 #define OPF_LINES  1	// operator always works on lines
@@ -100,7 +96,7 @@ get_op_type(int char1, int char2)
 /*
  * Return TRUE if operator "op" always works on whole lines.
  */
-    int
+    static int
 op_on_lines(int op)
 {
     return opchars[op][2] & OPF_LINES;
@@ -229,19 +225,19 @@ shift_line(
     int	left,
     int	round,
     int	amount,
-    int call_changed_bytes)	/* call changed_bytes() */
+    int call_changed_bytes)	// call changed_bytes()
 {
     int		count;
     int		i, j;
     int		sw_val = (int)get_sw_value_indent(curbuf);
 
-    count = get_indent();	/* get current indent */
+    count = get_indent();	// get current indent
 
-    if (round)			/* round off indent */
+    if (round)			// round off indent
     {
-	i = count / sw_val;	/* number of p_sw rounded down */
-	j = count % sw_val;	/* extra spaces */
-	if (j && left)		/* first remove extra spaces */
+	i = count / sw_val;	// number of 'shiftwidth' rounded down
+	j = count % sw_val;	// extra spaces
+	if (j && left)		// first remove extra spaces
 	    --amount;
 	if (left)
 	{
@@ -253,7 +249,7 @@ shift_line(
 	    i += amount;
 	count = i * sw_val;
     }
-    else		/* original vi indent */
+    else		// original vi indent
     {
 	if (left)
 	{
@@ -265,7 +261,7 @@ shift_line(
 	    count += sw_val * amount;
     }
 
-    /* Set new indent */
+    // Set new indent
     if (State & VREPLACE_FLAG)
 	change_indent(INDENT_SET, count, FALSE, NUL, call_changed_bytes);
     else
@@ -593,90 +589,6 @@ block_insert(
 
     State = oldstate;
 }
-
-#if defined(FEAT_LISP) || defined(FEAT_CINDENT) || defined(PROTO)
-/*
- * op_reindent - handle reindenting a block of lines.
- */
-    void
-op_reindent(oparg_T *oap, int (*how)(void))
-{
-    long	i;
-    char_u	*l;
-    int		amount;
-    linenr_T	first_changed = 0;
-    linenr_T	last_changed = 0;
-    linenr_T	start_lnum = curwin->w_cursor.lnum;
-
-    /* Don't even try when 'modifiable' is off. */
-    if (!curbuf->b_p_ma)
-    {
-	emsg(_(e_modifiable));
-	return;
-    }
-
-    for (i = oap->line_count; --i >= 0 && !got_int; )
-    {
-	/* it's a slow thing to do, so give feedback so there's no worry that
-	 * the computer's just hung. */
-
-	if (i > 1
-		&& (i % 50 == 0 || i == oap->line_count - 1)
-		&& oap->line_count > p_report)
-	    smsg(_("%ld lines to indent... "), i);
-
-	/*
-	 * Be vi-compatible: For lisp indenting the first line is not
-	 * indented, unless there is only one line.
-	 */
-#ifdef FEAT_LISP
-	if (i != oap->line_count - 1 || oap->line_count == 1
-						    || how != get_lisp_indent)
-#endif
-	{
-	    l = skipwhite(ml_get_curline());
-	    if (*l == NUL)		    /* empty or blank line */
-		amount = 0;
-	    else
-		amount = how();		    /* get the indent for this line */
-
-	    if (amount >= 0 && set_indent(amount, SIN_UNDO))
-	    {
-		/* did change the indent, call changed_lines() later */
-		if (first_changed == 0)
-		    first_changed = curwin->w_cursor.lnum;
-		last_changed = curwin->w_cursor.lnum;
-	    }
-	}
-	++curwin->w_cursor.lnum;
-	curwin->w_cursor.col = 0;  /* make sure it's valid */
-    }
-
-    /* put cursor on first non-blank of indented line */
-    curwin->w_cursor.lnum = start_lnum;
-    beginline(BL_SOL | BL_FIX);
-
-    /* Mark changed lines so that they will be redrawn.  When Visual
-     * highlighting was present, need to continue until the last line.  When
-     * there is no change still need to remove the Visual highlighting. */
-    if (last_changed != 0)
-	changed_lines(first_changed, 0,
-		oap->is_VIsual ? start_lnum + oap->line_count :
-		last_changed + 1, 0L);
-    else if (oap->is_VIsual)
-	redraw_curbuf_later(INVERTED);
-
-    if (oap->line_count > p_report)
-    {
-	i = oap->line_count - (i + 1);
-	smsg(NGETTEXT("%ld line indented ",
-						 "%ld lines indented ", i), i);
-    }
-    /* set '[ and '] marks */
-    curbuf->b_op_start = oap->start;
-    curbuf->b_op_end = oap->end;
-}
-#endif /* defined(FEAT_LISP) || defined(FEAT_CINDENT) */
 
 /*
  * Stuff a string into the typeahead buffer, such that edit() will insert it
@@ -1350,7 +1262,7 @@ static int swapchars(int op_type, pos_T *pos, int length);
 /*
  * Handle the (non-standard vi) tilde operator.  Also for "gu", "gU" and "g?".
  */
-    void
+    static void
 op_tilde(oparg_T *oap)
 {
     pos_T		pos;
@@ -1921,30 +1833,6 @@ adjust_cursor_eol(void)
     }
 }
 
-#if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT) || defined(PROTO)
-/*
- * Return TRUE if lines starting with '#' should be left aligned.
- */
-    int
-preprocs_left(void)
-{
-    return
-# ifdef FEAT_SMARTINDENT
-#  ifdef FEAT_CINDENT
-	(curbuf->b_p_si && !curbuf->b_p_cin) ||
-#  else
-	curbuf->b_p_si
-#  endif
-# endif
-# ifdef FEAT_CINDENT
-	(curbuf->b_p_cin && in_cinkeys('#', ' ', TRUE)
-					   && curbuf->b_ind_hash_comment == 0)
-# endif
-	;
-}
-#endif
-
-#if defined(FEAT_COMMENTS) || defined(PROTO)
 /*
  * If "process" is TRUE and the line begins with a comment leader (possibly
  * after some white space), return a pointer to the text after it. Put a boolean
@@ -2015,7 +1903,6 @@ skip_comment(
 
     return line;
 }
-#endif
 
 /*
  * Join 'count' lines (minimal 2) at cursor position.
@@ -2047,12 +1934,10 @@ do_join(
     linenr_T	t;
     colnr_T	col = 0;
     int		ret = OK;
-#if defined(FEAT_COMMENTS) || defined(PROTO)
     int		*comments = NULL;
     int		remove_comments = (use_formatoptions == TRUE)
 				  && has_format_option(FO_REMOVE_COMS);
     int		prev_was_comment;
-#endif
 #ifdef FEAT_TEXT_PROP
     textprop_T	**prop_lines = NULL;
     int		*prop_lengths = NULL;
@@ -2068,7 +1953,6 @@ do_join(
     spaces = lalloc_clear(count, TRUE);
     if (spaces == NULL)
 	return FAIL;
-#if defined(FEAT_COMMENTS) || defined(PROTO)
     if (remove_comments)
     {
 	comments = lalloc_clear(count * sizeof(int), TRUE);
@@ -2078,7 +1962,6 @@ do_join(
 	    return FAIL;
 	}
     }
-#endif
 
     /*
      * Don't move anything yet, just compute the final line length
@@ -2094,7 +1977,6 @@ do_join(
 	    curwin->w_buffer->b_op_start.lnum = curwin->w_cursor.lnum;
 	    curwin->w_buffer->b_op_start.col  = (colnr_T)STRLEN(curr);
 	}
-#if defined(FEAT_COMMENTS) || defined(PROTO)
 	if (remove_comments)
 	{
 	    /* We don't want to remove the comment leader if the
@@ -2111,7 +1993,6 @@ do_join(
 		curr = skip_comment(curr, FALSE, insert_space,
 							   &prev_was_comment);
 	}
-#endif
 
 	if (insert_space && t > 0)
 	{
@@ -2230,10 +2111,8 @@ do_join(
 #endif
 
 	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t - 1));
-#if defined(FEAT_COMMENTS)
 	if (remove_comments)
 	    curr += comments[t - 1];
-#endif
 	if (insert_space && t > 1)
 	    curr = skipwhite(curr);
 	currsize = (int)STRLEN(curr);
@@ -2282,14 +2161,11 @@ do_join(
 
 theend:
     vim_free(spaces);
-#if defined(FEAT_COMMENTS) || defined(PROTO)
     if (remove_comments)
 	vim_free(comments);
-#endif
     return ret;
 }
 
-#ifdef FEAT_COMMENTS
 /*
  * Return TRUE if the two comment leaders given are the same.  "lnum" is
  * the first line.  White-space is ignored.  Note that the whole of
@@ -2365,12 +2241,11 @@ same_leader(
     }
     return (idx2 == leader2_len && idx1 == leader1_len);
 }
-#endif
 
 /*
  * Implementation of the format operator 'gq'.
  */
-    void
+    static void
 op_format(
     oparg_T	*oap,
     int		keep_cursor)		/* keep cursor on same text char */
@@ -2443,7 +2318,7 @@ op_format(
 /*
  * Implementation of the format operator 'gq' for when using 'formatexpr'.
  */
-    void
+    static void
 op_formatexpr(oparg_T *oap)
 {
     if (oap->is_VIsual)
@@ -2513,14 +2388,12 @@ format_lines(
     int		is_end_par;		/* at end of paragraph */
     int		prev_is_end_par = FALSE;/* prev. line not part of parag. */
     int		next_is_start_par = FALSE;
-#ifdef FEAT_COMMENTS
     int		leader_len = 0;		/* leader len of current line */
     int		next_leader_len;	/* leader len of next line */
     char_u	*leader_flags = NULL;	/* flags for leader of current line */
     char_u	*next_leader_flags;	/* flags for leader of next line */
     int		do_comments;		/* format comments */
     int		do_comments_list = 0;	/* format comments with 'n' or '2' */
-#endif
     int		advance = TRUE;
     int		second_indent = -1;	/* indent for second line (comment
 					 * aware) */
@@ -2538,9 +2411,7 @@ format_lines(
     max_len = comp_textwidth(TRUE) * 3;
 
     /* check for 'q', '2' and '1' in 'formatoptions' */
-#ifdef FEAT_COMMENTS
     do_comments = has_format_option(FO_Q_COMS);
-#endif
     do_second_indent = has_format_option(FO_Q_SECOND);
     do_number_indent = has_format_option(FO_Q_NUMBER);
     do_trail_white = has_format_option(FO_WHITE_PAR);
@@ -2550,17 +2421,11 @@ format_lines(
      */
     if (curwin->w_cursor.lnum > 1)
 	is_not_par = fmt_check_par(curwin->w_cursor.lnum - 1
-#ifdef FEAT_COMMENTS
-				, &leader_len, &leader_flags, do_comments
-#endif
-				);
+				, &leader_len, &leader_flags, do_comments);
     else
 	is_not_par = TRUE;
     next_is_not_par = fmt_check_par(curwin->w_cursor.lnum
-#ifdef FEAT_COMMENTS
-			   , &next_leader_len, &next_leader_flags, do_comments
-#endif
-				);
+			  , &next_leader_len, &next_leader_flags, do_comments);
     is_end_par = (is_not_par || next_is_not_par);
     if (!is_end_par && do_trail_white)
 	is_end_par = !ends_in_white(curwin->w_cursor.lnum - 1);
@@ -2576,10 +2441,8 @@ format_lines(
 	    curwin->w_cursor.lnum++;
 	    prev_is_end_par = is_end_par;
 	    is_not_par = next_is_not_par;
-#ifdef FEAT_COMMENTS
 	    leader_len = next_leader_len;
 	    leader_flags = next_leader_flags;
-#endif
 	}
 
 	/*
@@ -2588,18 +2451,13 @@ format_lines(
 	if (count == 1 || curwin->w_cursor.lnum == curbuf->b_ml.ml_line_count)
 	{
 	    next_is_not_par = TRUE;
-#ifdef FEAT_COMMENTS
 	    next_leader_len = 0;
 	    next_leader_flags = NULL;
-#endif
 	}
 	else
 	{
 	    next_is_not_par = fmt_check_par(curwin->w_cursor.lnum + 1
-#ifdef FEAT_COMMENTS
-			   , &next_leader_len, &next_leader_flags, do_comments
-#endif
-					);
+			  , &next_leader_len, &next_leader_flags, do_comments);
 	    if (do_number_indent)
 		next_is_start_par =
 			   (get_number_indent(curwin->w_cursor.lnum + 1) > 0);
@@ -2630,32 +2488,25 @@ format_lines(
 	    {
 		if (do_second_indent && !LINEEMPTY(curwin->w_cursor.lnum + 1))
 		{
-#ifdef FEAT_COMMENTS
 		    if (leader_len == 0 && next_leader_len == 0)
 		    {
 			/* no comment found */
-#endif
 			second_indent =
 				   get_indent_lnum(curwin->w_cursor.lnum + 1);
-#ifdef FEAT_COMMENTS
 		    }
 		    else
 		    {
 			second_indent = next_leader_len;
 			do_comments_list = 1;
 		    }
-#endif
 		}
 		else if (do_number_indent)
 		{
-#ifdef FEAT_COMMENTS
 		    if (leader_len == 0 && next_leader_len == 0)
 		    {
 			/* no comment found */
-#endif
 			second_indent =
 				     get_number_indent(curwin->w_cursor.lnum);
-#ifdef FEAT_COMMENTS
 		    }
 		    else
 		    {
@@ -2664,7 +2515,6 @@ format_lines(
 				     get_number_indent(curwin->w_cursor.lnum);
 			do_comments_list = 1;
 		    }
-#endif
 		}
 	    }
 
@@ -2672,12 +2522,9 @@ format_lines(
 	     * When the comment leader changes, it's the end of the paragraph.
 	     */
 	    if (curwin->w_cursor.lnum >= curbuf->b_ml.ml_line_count
-#ifdef FEAT_COMMENTS
 		    || !same_leader(curwin->w_cursor.lnum,
 					leader_len, leader_flags,
-					  next_leader_len, next_leader_flags)
-#endif
-		    )
+					   next_leader_len, next_leader_flags))
 		is_end_par = TRUE;
 
 	    /*
@@ -2702,11 +2549,9 @@ format_lines(
 		smd_save = p_smd;
 		p_smd = FALSE;
 		insertchar(NUL, INSCHAR_FORMAT
-#ifdef FEAT_COMMENTS
 			+ (do_comments ? INSCHAR_DO_COM : 0)
 			+ (do_comments && do_comments_list
 						       ? INSCHAR_COM_LIST : 0)
-#endif
 			+ (avoid_fex ? INSCHAR_NO_FEX : 0), second_indent);
 		State = old_State;
 		p_smd = smd_save;
@@ -2735,15 +2580,13 @@ format_lines(
 		curwin->w_cursor.col = 0;
 		if (line_count < 0 && u_save_cursor() == FAIL)
 		    break;
-#ifdef FEAT_COMMENTS
 		if (next_leader_len > 0)
 		{
 		    (void)del_bytes((long)next_leader_len, FALSE, FALSE);
 		    mark_col_adjust(curwin->w_cursor.lnum, (colnr_T)0, 0L,
-						      (long)-next_leader_len, 0);
-		} else
-#endif
-		    if (second_indent > 0)  /* the "leader" for FO_Q_SECOND */
+						    (long)-next_leader_len, 0);
+		}
+		else if (second_indent > 0)  // the "leader" for FO_Q_SECOND
 		{
 		    int indent = getwhitecols_curline();
 
@@ -2797,7 +2640,6 @@ ends_in_white(linenr_T lnum)
  * previous line.  A new paragraph starts after a blank line, or when the
  * comment leader changes -- webb.
  */
-#ifdef FEAT_COMMENTS
     static int
 fmt_check_par(
     linenr_T	lnum,
@@ -2828,13 +2670,6 @@ fmt_check_par(
 	    || (*leader_len > 0 && *flags == COM_END)
 	    || startPS(lnum, NUL, FALSE));
 }
-#else
-    static int
-fmt_check_par(linenr_T lnum)
-{
-    return (*skipwhite(ml_get(lnum)) == NUL || startPS(lnum, NUL, FALSE));
-}
-#endif
 
 /*
  * Return TRUE when a paragraph starts in line "lnum".  Return FALSE when the
@@ -2844,13 +2679,11 @@ fmt_check_par(linenr_T lnum)
 paragraph_start(linenr_T lnum)
 {
     char_u	*p;
-#ifdef FEAT_COMMENTS
     int		leader_len = 0;		/* leader len of current line */
     char_u	*leader_flags = NULL;	/* flags for leader of current line */
     int		next_leader_len;	/* leader len of next line */
     char_u	*next_leader_flags;	/* flags for leader of next line */
     int		do_comments;		/* format comments */
-#endif
 
     if (lnum <= 1)
 	return TRUE;		/* start of the file */
@@ -2859,21 +2692,11 @@ paragraph_start(linenr_T lnum)
     if (*p == NUL)
 	return TRUE;		/* after empty line */
 
-#ifdef FEAT_COMMENTS
     do_comments = has_format_option(FO_Q_COMS);
-#endif
-    if (fmt_check_par(lnum - 1
-#ifdef FEAT_COMMENTS
-				, &leader_len, &leader_flags, do_comments
-#endif
-		))
+    if (fmt_check_par(lnum - 1, &leader_len, &leader_flags, do_comments))
 	return TRUE;		/* after non-paragraph line */
 
-    if (fmt_check_par(lnum
-#ifdef FEAT_COMMENTS
-			   , &next_leader_len, &next_leader_flags, do_comments
-#endif
-		))
+    if (fmt_check_par(lnum, &next_leader_len, &next_leader_flags, do_comments))
 	return TRUE;		/* "lnum" is not a paragraph line */
 
     if (has_format_option(FO_WHITE_PAR) && !ends_in_white(lnum - 1))
@@ -2882,11 +2705,9 @@ paragraph_start(linenr_T lnum)
     if (has_format_option(FO_Q_NUMBER) && (get_number_indent(lnum) > 0))
 	return TRUE;		/* numbered item starts in "lnum". */
 
-#ifdef FEAT_COMMENTS
     if (!same_leader(lnum - 1, leader_len, leader_flags,
 					  next_leader_len, next_leader_flags))
 	return TRUE;		/* change of comment leader. */
-#endif
 
     return FALSE;
 }
@@ -3295,7 +3116,7 @@ do_addsub(
 	    while (ptr[col] != NUL
 		    && !vim_isdigit(ptr[col])
 		    && !(doalp && ASCII_ISALPHA(ptr[col])))
-		col += MB_PTR2LEN(ptr + col);
+		col += mb_ptr2len(ptr + col);
 
 	    while (col > 0
 		    && vim_isdigit(ptr[col - 1])
@@ -3314,7 +3135,7 @@ do_addsub(
 		&& !vim_isdigit(ptr[col])
 		&& !(doalp && ASCII_ISALPHA(ptr[col])))
 	{
-	    int mb_len = MB_PTR2LEN(ptr + col);
+	    int mb_len = mb_ptr2len(ptr + col);
 
 	    col += mb_len;
 	    length -= mb_len;
@@ -4008,5 +3829,934 @@ cursor_pos_info(dict_T *dict)
 	dict_add_number(dict, VIsual_active ? "visual_words" : "cursor_words",
 		word_count_cursor);
     }
+#endif
+}
+
+/*
+ * Handle indent and format operators and visual mode ":".
+ */
+    static void
+op_colon(oparg_T *oap)
+{
+    stuffcharReadbuff(':');
+    if (oap->is_VIsual)
+	stuffReadbuff((char_u *)"'<,'>");
+    else
+    {
+	// Make the range look nice, so it can be repeated.
+	if (oap->start.lnum == curwin->w_cursor.lnum)
+	    stuffcharReadbuff('.');
+	else
+	    stuffnumReadbuff((long)oap->start.lnum);
+	if (oap->end.lnum != oap->start.lnum)
+	{
+	    stuffcharReadbuff(',');
+	    if (oap->end.lnum == curwin->w_cursor.lnum)
+		stuffcharReadbuff('.');
+	    else if (oap->end.lnum == curbuf->b_ml.ml_line_count)
+		stuffcharReadbuff('$');
+	    else if (oap->start.lnum == curwin->w_cursor.lnum)
+	    {
+		stuffReadbuff((char_u *)".+");
+		stuffnumReadbuff((long)oap->line_count - 1);
+	    }
+	    else
+		stuffnumReadbuff((long)oap->end.lnum);
+	}
+    }
+    if (oap->op_type != OP_COLON)
+	stuffReadbuff((char_u *)"!");
+    if (oap->op_type == OP_INDENT)
+    {
+#ifndef FEAT_CINDENT
+	if (*get_equalprg() == NUL)
+	    stuffReadbuff((char_u *)"indent");
+	else
+#endif
+	    stuffReadbuff(get_equalprg());
+	stuffReadbuff((char_u *)"\n");
+    }
+    else if (oap->op_type == OP_FORMAT)
+    {
+	if (*curbuf->b_p_fp != NUL)
+	    stuffReadbuff(curbuf->b_p_fp);
+	else if (*p_fp != NUL)
+	    stuffReadbuff(p_fp);
+	else
+	    stuffReadbuff((char_u *)"fmt");
+	stuffReadbuff((char_u *)"\n']");
+    }
+
+    // do_cmdline() does the rest
+}
+
+/*
+ * Handle the "g@" operator: call 'operatorfunc'.
+ */
+    static void
+op_function(oparg_T *oap UNUSED)
+{
+#ifdef FEAT_EVAL
+    typval_T	argv[2];
+    int		save_virtual_op = virtual_op;
+
+    if (*p_opfunc == NUL)
+	emsg(_("E774: 'operatorfunc' is empty"));
+    else
+    {
+	// Set '[ and '] marks to text to be operated on.
+	curbuf->b_op_start = oap->start;
+	curbuf->b_op_end = oap->end;
+	if (oap->motion_type != MLINE && !oap->inclusive)
+	    // Exclude the end position.
+	    decl(&curbuf->b_op_end);
+
+	argv[0].v_type = VAR_STRING;
+	if (oap->block_mode)
+	    argv[0].vval.v_string = (char_u *)"block";
+	else if (oap->motion_type == MLINE)
+	    argv[0].vval.v_string = (char_u *)"line";
+	else
+	    argv[0].vval.v_string = (char_u *)"char";
+	argv[1].v_type = VAR_UNKNOWN;
+
+	// Reset virtual_op so that 'virtualedit' can be changed in the
+	// function.
+	virtual_op = MAYBE;
+
+	(void)call_func_retnr(p_opfunc, 1, argv);
+
+	virtual_op = save_virtual_op;
+    }
+#else
+    emsg(_("E775: Eval feature not available"));
+#endif
+}
+
+/*
+ * Calculate start/end virtual columns for operating in block mode.
+ */
+    static void
+get_op_vcol(
+    oparg_T	*oap,
+    colnr_T	redo_VIsual_vcol,
+    int		initial)    // when TRUE adjust position for 'selectmode'
+{
+    colnr_T	    start, end;
+
+    if (VIsual_mode != Ctrl_V
+	    || (!initial && oap->end.col < curwin->w_width))
+	return;
+
+    oap->block_mode = TRUE;
+
+    // prevent from moving onto a trail byte
+    if (has_mbyte)
+	mb_adjustpos(curwin->w_buffer, &oap->end);
+
+    getvvcol(curwin, &(oap->start), &oap->start_vcol, NULL, &oap->end_vcol);
+
+    if (!redo_VIsual_busy)
+    {
+	getvvcol(curwin, &(oap->end), &start, NULL, &end);
+
+	if (start < oap->start_vcol)
+	    oap->start_vcol = start;
+	if (end > oap->end_vcol)
+	{
+	    if (initial && *p_sel == 'e' && start >= 1
+				    && start - 1 >= oap->end_vcol)
+		oap->end_vcol = start - 1;
+	    else
+		oap->end_vcol = end;
+	}
+    }
+
+    // if '$' was used, get oap->end_vcol from longest line
+    if (curwin->w_curswant == MAXCOL)
+    {
+	curwin->w_cursor.col = MAXCOL;
+	oap->end_vcol = 0;
+	for (curwin->w_cursor.lnum = oap->start.lnum;
+		curwin->w_cursor.lnum <= oap->end.lnum;
+					++curwin->w_cursor.lnum)
+	{
+	    getvvcol(curwin, &curwin->w_cursor, NULL, NULL, &end);
+	    if (end > oap->end_vcol)
+		oap->end_vcol = end;
+	}
+    }
+    else if (redo_VIsual_busy)
+	oap->end_vcol = oap->start_vcol + redo_VIsual_vcol - 1;
+    // Correct oap->end.col and oap->start.col to be the
+    // upper-left and lower-right corner of the block area.
+    //
+    // (Actually, this does convert column positions into character
+    // positions)
+    curwin->w_cursor.lnum = oap->end.lnum;
+    coladvance(oap->end_vcol);
+    oap->end = curwin->w_cursor;
+
+    curwin->w_cursor = oap->start;
+    coladvance(oap->start_vcol);
+    oap->start = curwin->w_cursor;
+}
+
+/*
+ * Handle an operator after Visual mode or when the movement is finished.
+ * "gui_yank" is true when yanking text for the clipboard.
+ */
+    void
+do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
+{
+    oparg_T	*oap = cap->oap;
+    pos_T	old_cursor;
+    int		empty_region_error;
+    int		restart_edit_save;
+#ifdef FEAT_LINEBREAK
+    int		lbr_saved = curwin->w_p_lbr;
+#endif
+
+    // The visual area is remembered for redo
+    static int	    redo_VIsual_mode = NUL; // 'v', 'V', or Ctrl-V
+    static linenr_T redo_VIsual_line_count; // number of lines
+    static colnr_T  redo_VIsual_vcol;	    // number of cols or end column
+    static long	    redo_VIsual_count;	    // count for Visual operator
+    static int	    redo_VIsual_arg;	    // extra argument
+    int		    include_line_break = FALSE;
+
+#if defined(FEAT_CLIPBOARD)
+    // Yank the visual area into the GUI selection register before we operate
+    // on it and lose it forever.
+    // Don't do it if a specific register was specified, so that ""x"*P works.
+    // This could call do_pending_operator() recursively, but that's OK
+    // because gui_yank will be TRUE for the nested call.
+    if ((clip_star.available || clip_plus.available)
+	    && oap->op_type != OP_NOP
+	    && !gui_yank
+	    && VIsual_active
+	    && !redo_VIsual_busy
+	    && oap->regname == 0)
+	clip_auto_select();
+#endif
+    old_cursor = curwin->w_cursor;
+
+    // If an operation is pending, handle it...
+    if ((finish_op || VIsual_active) && oap->op_type != OP_NOP)
+    {
+	// Yank can be redone when 'y' is in 'cpoptions', but not when yanking
+	// for the clipboard.
+	int	redo_yank = vim_strchr(p_cpo, CPO_YANK) != NULL && !gui_yank;
+
+#ifdef FEAT_LINEBREAK
+	// Avoid a problem with unwanted linebreaks in block mode.
+	if (curwin->w_p_lbr)
+	    curwin->w_valid &= ~VALID_VIRTCOL;
+	curwin->w_p_lbr = FALSE;
+#endif
+	oap->is_VIsual = VIsual_active;
+	if (oap->motion_force == 'V')
+	    oap->motion_type = MLINE;
+	else if (oap->motion_force == 'v')
+	{
+	    // If the motion was linewise, "inclusive" will not have been set.
+	    // Use "exclusive" to be consistent.  Makes "dvj" work nice.
+	    if (oap->motion_type == MLINE)
+		oap->inclusive = FALSE;
+	    // If the motion already was characterwise, toggle "inclusive"
+	    else if (oap->motion_type == MCHAR)
+		oap->inclusive = !oap->inclusive;
+	    oap->motion_type = MCHAR;
+	}
+	else if (oap->motion_force == Ctrl_V)
+	{
+	    // Change line- or characterwise motion into Visual block mode.
+	    if (!VIsual_active)
+	    {
+		VIsual_active = TRUE;
+		VIsual = oap->start;
+	    }
+	    VIsual_mode = Ctrl_V;
+	    VIsual_select = FALSE;
+	    VIsual_reselect = FALSE;
+	}
+
+	// Only redo yank when 'y' flag is in 'cpoptions'.
+	// Never redo "zf" (define fold).
+	if ((redo_yank || oap->op_type != OP_YANK)
+		&& ((!VIsual_active || oap->motion_force)
+		    // Also redo Operator-pending Visual mode mappings
+		    || (VIsual_active && cap->cmdchar == ':'
+						 && oap->op_type != OP_COLON))
+		&& cap->cmdchar != 'D'
+#ifdef FEAT_FOLDING
+		&& oap->op_type != OP_FOLD
+		&& oap->op_type != OP_FOLDOPEN
+		&& oap->op_type != OP_FOLDOPENREC
+		&& oap->op_type != OP_FOLDCLOSE
+		&& oap->op_type != OP_FOLDCLOSEREC
+		&& oap->op_type != OP_FOLDDEL
+		&& oap->op_type != OP_FOLDDELREC
+#endif
+		)
+	{
+	    prep_redo(oap->regname, cap->count0,
+		    get_op_char(oap->op_type), get_extra_op_char(oap->op_type),
+		    oap->motion_force, cap->cmdchar, cap->nchar);
+	    if (cap->cmdchar == '/' || cap->cmdchar == '?') // was a search
+	    {
+		// If 'cpoptions' does not contain 'r', insert the search
+		// pattern to really repeat the same command.
+		if (vim_strchr(p_cpo, CPO_REDO) == NULL)
+		    AppendToRedobuffLit(cap->searchbuf, -1);
+		AppendToRedobuff(NL_STR);
+	    }
+	    else if (cap->cmdchar == ':')
+	    {
+		// do_cmdline() has stored the first typed line in
+		// "repeat_cmdline".  When several lines are typed repeating
+		// won't be possible.
+		if (repeat_cmdline == NULL)
+		    ResetRedobuff();
+		else
+		{
+		    AppendToRedobuffLit(repeat_cmdline, -1);
+		    AppendToRedobuff(NL_STR);
+		    VIM_CLEAR(repeat_cmdline);
+		}
+	    }
+	}
+
+	if (redo_VIsual_busy)
+	{
+	    // Redo of an operation on a Visual area. Use the same size from
+	    // redo_VIsual_line_count and redo_VIsual_vcol.
+	    oap->start = curwin->w_cursor;
+	    curwin->w_cursor.lnum += redo_VIsual_line_count - 1;
+	    if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
+		curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
+	    VIsual_mode = redo_VIsual_mode;
+	    if (redo_VIsual_vcol == MAXCOL || VIsual_mode == 'v')
+	    {
+		if (VIsual_mode == 'v')
+		{
+		    if (redo_VIsual_line_count <= 1)
+		    {
+			validate_virtcol();
+			curwin->w_curswant =
+				     curwin->w_virtcol + redo_VIsual_vcol - 1;
+		    }
+		    else
+			curwin->w_curswant = redo_VIsual_vcol;
+		}
+		else
+		{
+		    curwin->w_curswant = MAXCOL;
+		}
+		coladvance(curwin->w_curswant);
+	    }
+	    cap->count0 = redo_VIsual_count;
+	    if (redo_VIsual_count != 0)
+		cap->count1 = redo_VIsual_count;
+	    else
+		cap->count1 = 1;
+	}
+	else if (VIsual_active)
+	{
+	    if (!gui_yank)
+	    {
+		// Save the current VIsual area for '< and '> marks, and "gv"
+		curbuf->b_visual.vi_start = VIsual;
+		curbuf->b_visual.vi_end = curwin->w_cursor;
+		curbuf->b_visual.vi_mode = VIsual_mode;
+		restore_visual_mode();
+		curbuf->b_visual.vi_curswant = curwin->w_curswant;
+# ifdef FEAT_EVAL
+		curbuf->b_visual_mode_eval = VIsual_mode;
+# endif
+	    }
+
+	    // In Select mode, a linewise selection is operated upon like a
+	    // characterwise selection.
+	    // Special case: gH<Del> deletes the last line.
+	    if (VIsual_select && VIsual_mode == 'V'
+					    && cap->oap->op_type != OP_DELETE)
+	    {
+		if (LT_POS(VIsual, curwin->w_cursor))
+		{
+		    VIsual.col = 0;
+		    curwin->w_cursor.col =
+			       (colnr_T)STRLEN(ml_get(curwin->w_cursor.lnum));
+		}
+		else
+		{
+		    curwin->w_cursor.col = 0;
+		    VIsual.col = (colnr_T)STRLEN(ml_get(VIsual.lnum));
+		}
+		VIsual_mode = 'v';
+	    }
+	    // If 'selection' is "exclusive", backup one character for
+	    // charwise selections.
+	    else if (VIsual_mode == 'v')
+		include_line_break = unadjust_for_sel();
+
+	    oap->start = VIsual;
+	    if (VIsual_mode == 'V')
+	    {
+		oap->start.col = 0;
+		oap->start.coladd = 0;
+	    }
+	}
+
+	// Set oap->start to the first position of the operated text, oap->end
+	// to the end of the operated text.  w_cursor is equal to oap->start.
+	if (LT_POS(oap->start, curwin->w_cursor))
+	{
+#ifdef FEAT_FOLDING
+	    // Include folded lines completely.
+	    if (!VIsual_active)
+	    {
+		if (hasFolding(oap->start.lnum, &oap->start.lnum, NULL))
+		    oap->start.col = 0;
+		if ((curwin->w_cursor.col > 0 || oap->inclusive)
+			&& hasFolding(curwin->w_cursor.lnum, NULL,
+						      &curwin->w_cursor.lnum))
+		    curwin->w_cursor.col = (colnr_T)STRLEN(ml_get_curline());
+	    }
+#endif
+	    oap->end = curwin->w_cursor;
+	    curwin->w_cursor = oap->start;
+
+	    // w_virtcol may have been updated; if the cursor goes back to its
+	    // previous position w_virtcol becomes invalid and isn't updated
+	    // automatically.
+	    curwin->w_valid &= ~VALID_VIRTCOL;
+	}
+	else
+	{
+#ifdef FEAT_FOLDING
+	    // Include folded lines completely.
+	    if (!VIsual_active && oap->motion_type == MLINE)
+	    {
+		if (hasFolding(curwin->w_cursor.lnum, &curwin->w_cursor.lnum,
+									NULL))
+		    curwin->w_cursor.col = 0;
+		if (hasFolding(oap->start.lnum, NULL, &oap->start.lnum))
+		    oap->start.col = (colnr_T)STRLEN(ml_get(oap->start.lnum));
+	    }
+#endif
+	    oap->end = oap->start;
+	    oap->start = curwin->w_cursor;
+	}
+
+	// Just in case lines were deleted that make the position invalid.
+	check_pos(curwin->w_buffer, &oap->end);
+	oap->line_count = oap->end.lnum - oap->start.lnum + 1;
+
+	// Set "virtual_op" before resetting VIsual_active.
+	virtual_op = virtual_active();
+
+	if (VIsual_active || redo_VIsual_busy)
+	{
+	    get_op_vcol(oap, redo_VIsual_vcol, TRUE);
+
+	    if (!redo_VIsual_busy && !gui_yank)
+	    {
+		// Prepare to reselect and redo Visual: this is based on the
+		// size of the Visual text
+		resel_VIsual_mode = VIsual_mode;
+		if (curwin->w_curswant == MAXCOL)
+		    resel_VIsual_vcol = MAXCOL;
+		else
+		{
+		    if (VIsual_mode != Ctrl_V)
+			getvvcol(curwin, &(oap->end),
+						  NULL, NULL, &oap->end_vcol);
+		    if (VIsual_mode == Ctrl_V || oap->line_count <= 1)
+		    {
+			if (VIsual_mode != Ctrl_V)
+			    getvvcol(curwin, &(oap->start),
+						&oap->start_vcol, NULL, NULL);
+			resel_VIsual_vcol = oap->end_vcol - oap->start_vcol + 1;
+		    }
+		    else
+			resel_VIsual_vcol = oap->end_vcol;
+		}
+		resel_VIsual_line_count = oap->line_count;
+	    }
+
+	    // can't redo yank (unless 'y' is in 'cpoptions') and ":"
+	    if ((redo_yank || oap->op_type != OP_YANK)
+		    && oap->op_type != OP_COLON
+#ifdef FEAT_FOLDING
+		    && oap->op_type != OP_FOLD
+		    && oap->op_type != OP_FOLDOPEN
+		    && oap->op_type != OP_FOLDOPENREC
+		    && oap->op_type != OP_FOLDCLOSE
+		    && oap->op_type != OP_FOLDCLOSEREC
+		    && oap->op_type != OP_FOLDDEL
+		    && oap->op_type != OP_FOLDDELREC
+#endif
+		    && oap->motion_force == NUL
+		    )
+	    {
+		// Prepare for redoing.  Only use the nchar field for "r",
+		// otherwise it might be the second char of the operator.
+		if (cap->cmdchar == 'g' && (cap->nchar == 'n'
+							|| cap->nchar == 'N'))
+		    prep_redo(oap->regname, cap->count0,
+			    get_op_char(oap->op_type), get_extra_op_char(oap->op_type),
+			    oap->motion_force, cap->cmdchar, cap->nchar);
+		else if (cap->cmdchar != ':')
+		{
+		    int nchar = oap->op_type == OP_REPLACE ? cap->nchar : NUL;
+
+		    // reverse what nv_replace() did
+		    if (nchar == REPLACE_CR_NCHAR)
+			nchar = CAR;
+		    else if (nchar == REPLACE_NL_NCHAR)
+			nchar = NL;
+		    prep_redo(oap->regname, 0L, NUL, 'v',
+					get_op_char(oap->op_type),
+					get_extra_op_char(oap->op_type),
+					nchar);
+		}
+		if (!redo_VIsual_busy)
+		{
+		    redo_VIsual_mode = resel_VIsual_mode;
+		    redo_VIsual_vcol = resel_VIsual_vcol;
+		    redo_VIsual_line_count = resel_VIsual_line_count;
+		    redo_VIsual_count = cap->count0;
+		    redo_VIsual_arg = cap->arg;
+		}
+	    }
+
+	    // oap->inclusive defaults to TRUE.
+	    // If oap->end is on a NUL (empty line) oap->inclusive becomes
+	    // FALSE.  This makes "d}P" and "v}dP" work the same.
+	    if (oap->motion_force == NUL || oap->motion_type == MLINE)
+		oap->inclusive = TRUE;
+	    if (VIsual_mode == 'V')
+		oap->motion_type = MLINE;
+	    else
+	    {
+		oap->motion_type = MCHAR;
+		if (VIsual_mode != Ctrl_V && *ml_get_pos(&(oap->end)) == NUL
+			&& (include_line_break || !virtual_op))
+		{
+		    oap->inclusive = FALSE;
+		    // Try to include the newline, unless it's an operator
+		    // that works on lines only.
+		    if (*p_sel != 'o'
+			    && !op_on_lines(oap->op_type)
+			    && oap->end.lnum < curbuf->b_ml.ml_line_count)
+		    {
+			++oap->end.lnum;
+			oap->end.col = 0;
+			oap->end.coladd = 0;
+			++oap->line_count;
+		    }
+		}
+	    }
+
+	    redo_VIsual_busy = FALSE;
+
+	    // Switch Visual off now, so screen updating does
+	    // not show inverted text when the screen is redrawn.
+	    // With OP_YANK and sometimes with OP_COLON and OP_FILTER there is
+	    // no screen redraw, so it is done here to remove the inverted
+	    // part.
+	    if (!gui_yank)
+	    {
+		VIsual_active = FALSE;
+		setmouse();
+		mouse_dragging = 0;
+		may_clear_cmdline();
+		if ((oap->op_type == OP_YANK
+			    || oap->op_type == OP_COLON
+			    || oap->op_type == OP_FUNCTION
+			    || oap->op_type == OP_FILTER)
+			&& oap->motion_force == NUL)
+		{
+#ifdef FEAT_LINEBREAK
+		    // make sure redrawing is correct
+		    curwin->w_p_lbr = lbr_saved;
+#endif
+		    redraw_curbuf_later(INVERTED);
+		}
+	    }
+	}
+
+	// Include the trailing byte of a multi-byte char.
+	if (has_mbyte && oap->inclusive)
+	{
+	    int		l;
+
+	    l = (*mb_ptr2len)(ml_get_pos(&oap->end));
+	    if (l > 1)
+		oap->end.col += l - 1;
+	}
+	curwin->w_set_curswant = TRUE;
+
+	// oap->empty is set when start and end are the same.  The inclusive
+	// flag affects this too, unless yanking and the end is on a NUL.
+	oap->empty = (oap->motion_type == MCHAR
+		    && (!oap->inclusive
+			|| (oap->op_type == OP_YANK
+			    && gchar_pos(&oap->end) == NUL))
+		    && EQUAL_POS(oap->start, oap->end)
+		    && !(virtual_op && oap->start.coladd != oap->end.coladd));
+	// For delete, change and yank, it's an error to operate on an
+	// empty region, when 'E' included in 'cpoptions' (Vi compatible).
+	empty_region_error = (oap->empty
+				&& vim_strchr(p_cpo, CPO_EMPTYREGION) != NULL);
+
+	// Force a redraw when operating on an empty Visual region, when
+	// 'modifiable is off or creating a fold.
+	if (oap->is_VIsual && (oap->empty || !curbuf->b_p_ma
+#ifdef FEAT_FOLDING
+		    || oap->op_type == OP_FOLD
+#endif
+		    ))
+	{
+#ifdef FEAT_LINEBREAK
+	    curwin->w_p_lbr = lbr_saved;
+#endif
+	    redraw_curbuf_later(INVERTED);
+	}
+
+	// If the end of an operator is in column one while oap->motion_type
+	// is MCHAR and oap->inclusive is FALSE, we put op_end after the last
+	// character in the previous line. If op_start is on or before the
+	// first non-blank in the line, the operator becomes linewise
+	// (strange, but that's the way vi does it).
+	if (	   oap->motion_type == MCHAR
+		&& oap->inclusive == FALSE
+		&& !(cap->retval & CA_NO_ADJ_OP_END)
+		&& oap->end.col == 0
+		&& (!oap->is_VIsual || *p_sel == 'o')
+		&& !oap->block_mode
+		&& oap->line_count > 1)
+	{
+	    oap->end_adjusted = TRUE;	    // remember that we did this
+	    --oap->line_count;
+	    --oap->end.lnum;
+	    if (inindent(0))
+		oap->motion_type = MLINE;
+	    else
+	    {
+		oap->end.col = (colnr_T)STRLEN(ml_get(oap->end.lnum));
+		if (oap->end.col)
+		{
+		    --oap->end.col;
+		    oap->inclusive = TRUE;
+		}
+	    }
+	}
+	else
+	    oap->end_adjusted = FALSE;
+
+	switch (oap->op_type)
+	{
+	case OP_LSHIFT:
+	case OP_RSHIFT:
+	    op_shift(oap, TRUE, oap->is_VIsual ? (int)cap->count1 : 1);
+	    auto_format(FALSE, TRUE);
+	    break;
+
+	case OP_JOIN_NS:
+	case OP_JOIN:
+	    if (oap->line_count < 2)
+		oap->line_count = 2;
+	    if (curwin->w_cursor.lnum + oap->line_count - 1 >
+						   curbuf->b_ml.ml_line_count)
+		beep_flush();
+	    else
+	    {
+		(void)do_join(oap->line_count, oap->op_type == OP_JOIN,
+							    TRUE, TRUE, TRUE);
+		auto_format(FALSE, TRUE);
+	    }
+	    break;
+
+	case OP_DELETE:
+	    VIsual_reselect = FALSE;	    // don't reselect now
+	    if (empty_region_error)
+	    {
+		vim_beep(BO_OPER);
+		CancelRedo();
+	    }
+	    else
+	    {
+		(void)op_delete(oap);
+		if (oap->motion_type == MLINE && has_format_option(FO_AUTO))
+		    u_save_cursor();	    // cursor line wasn't saved yet
+		auto_format(FALSE, TRUE);
+	    }
+	    break;
+
+	case OP_YANK:
+	    if (empty_region_error)
+	    {
+		if (!gui_yank)
+		{
+		    vim_beep(BO_OPER);
+		    CancelRedo();
+		}
+	    }
+	    else
+	    {
+#ifdef FEAT_LINEBREAK
+		curwin->w_p_lbr = lbr_saved;
+#endif
+		(void)op_yank(oap, FALSE, !gui_yank);
+	    }
+	    check_cursor_col();
+	    break;
+
+	case OP_CHANGE:
+	    VIsual_reselect = FALSE;	    // don't reselect now
+	    if (empty_region_error)
+	    {
+		vim_beep(BO_OPER);
+		CancelRedo();
+	    }
+	    else
+	    {
+		// This is a new edit command, not a restart.  Need to
+		// remember it to make 'insertmode' work with mappings for
+		// Visual mode.  But do this only once and not when typed and
+		// 'insertmode' isn't set.
+		if (p_im || !KeyTyped)
+		    restart_edit_save = restart_edit;
+		else
+		    restart_edit_save = 0;
+		restart_edit = 0;
+#ifdef FEAT_LINEBREAK
+		// Restore linebreak, so that when the user edits it looks as
+		// before.
+		if (curwin->w_p_lbr != lbr_saved)
+		{
+		    curwin->w_p_lbr = lbr_saved;
+		    get_op_vcol(oap, redo_VIsual_mode, FALSE);
+		}
+#endif
+		// Reset finish_op now, don't want it set inside edit().
+		finish_op = FALSE;
+		if (op_change(oap))	// will call edit()
+		    cap->retval |= CA_COMMAND_BUSY;
+		if (restart_edit == 0)
+		    restart_edit = restart_edit_save;
+	    }
+	    break;
+
+	case OP_FILTER:
+	    if (vim_strchr(p_cpo, CPO_FILTER) != NULL)
+		AppendToRedobuff((char_u *)"!\r");  // use any last used !cmd
+	    else
+		bangredo = TRUE;    // do_bang() will put cmd in redo buffer
+	    // FALLTHROUGH
+
+	case OP_INDENT:
+	case OP_COLON:
+
+#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
+	    // If 'equalprg' is empty, do the indenting internally.
+	    if (oap->op_type == OP_INDENT && *get_equalprg() == NUL)
+	    {
+# ifdef FEAT_LISP
+		if (curbuf->b_p_lisp)
+		{
+		    op_reindent(oap, get_lisp_indent);
+		    break;
+		}
+# endif
+# ifdef FEAT_CINDENT
+		op_reindent(oap,
+#  ifdef FEAT_EVAL
+			*curbuf->b_p_inde != NUL ? get_expr_indent :
+#  endif
+			    get_c_indent);
+		break;
+# endif
+	    }
+#endif
+
+	    op_colon(oap);
+	    break;
+
+	case OP_TILDE:
+	case OP_UPPER:
+	case OP_LOWER:
+	case OP_ROT13:
+	    if (empty_region_error)
+	    {
+		vim_beep(BO_OPER);
+		CancelRedo();
+	    }
+	    else
+		op_tilde(oap);
+	    check_cursor_col();
+	    break;
+
+	case OP_FORMAT:
+#if defined(FEAT_EVAL)
+	    if (*curbuf->b_p_fex != NUL)
+		op_formatexpr(oap);	// use expression
+	    else
+#endif
+		if (*p_fp != NUL || *curbuf->b_p_fp != NUL)
+		op_colon(oap);		// use external command
+	    else
+		op_format(oap, FALSE);	// use internal function
+	    break;
+
+	case OP_FORMAT2:
+	    op_format(oap, TRUE);	// use internal function
+	    break;
+
+	case OP_FUNCTION:
+#ifdef FEAT_LINEBREAK
+	    // Restore linebreak, so that when the user edits it looks as
+	    // before.
+	    curwin->w_p_lbr = lbr_saved;
+#endif
+	    op_function(oap);		// call 'operatorfunc'
+	    break;
+
+	case OP_INSERT:
+	case OP_APPEND:
+	    VIsual_reselect = FALSE;	// don't reselect now
+	    if (empty_region_error)
+	    {
+		vim_beep(BO_OPER);
+		CancelRedo();
+	    }
+	    else
+	    {
+		// This is a new edit command, not a restart.  Need to
+		// remember it to make 'insertmode' work with mappings for
+		// Visual mode.  But do this only once.
+		restart_edit_save = restart_edit;
+		restart_edit = 0;
+#ifdef FEAT_LINEBREAK
+		// Restore linebreak, so that when the user edits it looks as
+		// before.
+		if (curwin->w_p_lbr != lbr_saved)
+		{
+		    curwin->w_p_lbr = lbr_saved;
+		    get_op_vcol(oap, redo_VIsual_mode, FALSE);
+		}
+#endif
+		op_insert(oap, cap->count1);
+#ifdef FEAT_LINEBREAK
+		// Reset linebreak, so that formatting works correctly.
+		curwin->w_p_lbr = FALSE;
+#endif
+
+		// TODO: when inserting in several lines, should format all
+		// the lines.
+		auto_format(FALSE, TRUE);
+
+		if (restart_edit == 0)
+		    restart_edit = restart_edit_save;
+		else
+		    cap->retval |= CA_COMMAND_BUSY;
+	    }
+	    break;
+
+	case OP_REPLACE:
+	    VIsual_reselect = FALSE;	// don't reselect now
+	    if (empty_region_error)
+	    {
+		vim_beep(BO_OPER);
+		CancelRedo();
+	    }
+	    else
+	    {
+#ifdef FEAT_LINEBREAK
+		// Restore linebreak, so that when the user edits it looks as
+		// before.
+		if (curwin->w_p_lbr != lbr_saved)
+		{
+		    curwin->w_p_lbr = lbr_saved;
+		    get_op_vcol(oap, redo_VIsual_mode, FALSE);
+		}
+#endif
+		op_replace(oap, cap->nchar);
+	    }
+	    break;
+
+#ifdef FEAT_FOLDING
+	case OP_FOLD:
+	    VIsual_reselect = FALSE;	// don't reselect now
+	    foldCreate(oap->start.lnum, oap->end.lnum);
+	    break;
+
+	case OP_FOLDOPEN:
+	case OP_FOLDOPENREC:
+	case OP_FOLDCLOSE:
+	case OP_FOLDCLOSEREC:
+	    VIsual_reselect = FALSE;	// don't reselect now
+	    opFoldRange(oap->start.lnum, oap->end.lnum,
+		    oap->op_type == OP_FOLDOPEN
+					    || oap->op_type == OP_FOLDOPENREC,
+		    oap->op_type == OP_FOLDOPENREC
+					  || oap->op_type == OP_FOLDCLOSEREC,
+					  oap->is_VIsual);
+	    break;
+
+	case OP_FOLDDEL:
+	case OP_FOLDDELREC:
+	    VIsual_reselect = FALSE;	// don't reselect now
+	    deleteFold(oap->start.lnum, oap->end.lnum,
+			       oap->op_type == OP_FOLDDELREC, oap->is_VIsual);
+	    break;
+#endif
+	case OP_NR_ADD:
+	case OP_NR_SUB:
+	    if (empty_region_error)
+	    {
+		vim_beep(BO_OPER);
+		CancelRedo();
+	    }
+	    else
+	    {
+		VIsual_active = TRUE;
+#ifdef FEAT_LINEBREAK
+		curwin->w_p_lbr = lbr_saved;
+#endif
+		op_addsub(oap, cap->count1, redo_VIsual_arg);
+		VIsual_active = FALSE;
+	    }
+	    check_cursor_col();
+	    break;
+	default:
+	    clearopbeep(oap);
+	}
+	virtual_op = MAYBE;
+	if (!gui_yank)
+	{
+	    // if 'sol' not set, go back to old column for some commands
+	    if (!p_sol && oap->motion_type == MLINE && !oap->end_adjusted
+		    && (oap->op_type == OP_LSHIFT || oap->op_type == OP_RSHIFT
+						|| oap->op_type == OP_DELETE))
+	    {
+#ifdef FEAT_LINEBREAK
+		curwin->w_p_lbr = FALSE;
+#endif
+		coladvance(curwin->w_curswant = old_col);
+	    }
+	}
+	else
+	{
+	    curwin->w_cursor = old_cursor;
+	}
+	oap->block_mode = FALSE;
+	clearop(oap);
+	motion_force = NUL;
+    }
+#ifdef FEAT_LINEBREAK
+    curwin->w_p_lbr = lbr_saved;
 #endif
 }

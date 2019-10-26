@@ -4,16 +4,19 @@
 # Translators: This is the Application Name used in the Vim desktop file
 Name[de]=Vim
 Name[eo]=Vim
+Name[tr]=Vim
 Name=Vim
 # Translators: This is the Generic Application Name used in the Vim desktop file
 GenericName[de]=Texteditor
 GenericName[eo]=Tekstoredaktilo
 GenericName[ja]=テキストエディタ
+GenericName[tr]=Metin Düzenleyici
 GenericName=Text Editor
 # Translators: This is the comment used in the Vim desktop file
 Comment[de]=Textdateien bearbeiten
 Comment[eo]=Redakti tekstajn dosierojn
 Comment[ja]=テキストファイルを編集します
+Comment[tr]=Metin dosyaları düzenle
 Comment=Edit text files
 # The translations should come from the po file. Leave them here for now, they will
 # be overwritten by the po file when generating the desktop.file.
@@ -81,7 +84,6 @@ Comment[sv]=Redigera textfiler
 Comment[ta]=உரை கோப்புகளை தொகுக்கவும்
 Comment[th]=แก้ไขแฟ้มข้อความ
 Comment[tk]=Metin faýllary editle
-Comment[tr]=Metin dosyalarını düzenle
 Comment[uk]=Редактор текстових файлів
 Comment[vi]=Soạn thảo tập tin văn bản
 Comment[wa]=Asspougnî des fitchîs tecses
@@ -95,6 +97,7 @@ Type=Application
 Keywords[de]=Text;Editor;
 Keywords[eo]=Teksto;redaktilo;
 Keywords[ja]=テキスト;エディタ;
+Keywords[tr]=Metin;düzenleyici;
 Keywords=Text;editor;
 # Translators: This is the Icon file name. Do NOT translate
 Icon[de]=gvim

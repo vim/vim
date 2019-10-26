@@ -170,6 +170,10 @@ func Test_popup_with_border_and_padding()
   call assert_equal(['Top', 'Right', 'Bottom', 'Left'], options.borderhighlight)
   call assert_equal(['1', '^', '2', '>', '3', 'v', '4', '<'], options.borderchars)
 
+  " Check that popup_setoptions() takes the output of popup_getoptions()
+  call popup_setoptions(winid, options)
+  call assert_equal(options, popup_getoptions(winid))
+
   let winid = popup_create('hello both', #{line: 3, col: 8, border: [], padding: []})
   call assert_equal(#{
 	\ line: 3,
@@ -274,7 +278,7 @@ func Test_popup_all_corners()
 	      \ border: [],
 	      \ padding: [],
 	      \ })
-	normal 25|r@
+	normal 24|r@
 	let winid1 = popup_create(['First', 'SeconD'], #{
 	      \ line: 'cursor+1',
 	      \ col: 'cursor',
@@ -282,7 +286,7 @@ func Test_popup_all_corners()
 	      \ border: [],
 	      \ padding: [],
 	      \ })
-	normal 9G29|r%
+	normal 9G27|r%
 	let winid1 = popup_create(['fiRSt', 'seCOnd'], #{
 	      \ line: 'cursor-1',
 	      \ col: 'cursor',
@@ -290,11 +294,19 @@ func Test_popup_all_corners()
 	      \ border: [],
 	      \ padding: [],
 	      \ })
-	normal 51|r&
+	normal 48|r&
 	let winid1 = popup_create(['FIrsT', 'SEcoND'], #{
 	      \ line: 'cursor-1',
 	      \ col: 'cursor',
 	      \ pos: 'botright',
+	      \ border: [],
+	      \ padding: [],
+	      \ })
+	normal 1G51|r*
+	let winid1 = popup_create(['one', 'two'], #{
+	      \ line: 'cursor-1',
+	      \ col: 'cursor',
+	      \ pos: 'botleft',
 	      \ border: [],
 	      \ padding: [],
 	      \ })
@@ -507,6 +519,38 @@ func Test_popup_close_with_mouse()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPopupClose')
+endfunction
+
+func Test_popup_menu_wrap()
+  CheckScreendump
+
+  let lines =<< trim END
+	call setline(1, range(1, 20))
+	call popup_create([
+	      \ 'one',
+	      \ 'asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfas',
+	      \ 'three',
+	      \ 'four',
+	      \ ], #{
+	      \ pos: "botleft",
+	      \ border: [],
+	      \ padding: [0,1,0,1],
+	      \ maxheight: 3,
+	      \ cursorline: 1,
+	      \ filter: 'popup_filter_menu',
+	      \ })
+  END
+  call writefile(lines, 'XtestPopupWrap')
+  let buf = RunVimInTerminal('-S XtestPopupWrap', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_wrap_1', {})
+
+  call term_sendkeys(buf, "jj")
+  call VerifyScreenDump(buf, 'Test_popupwin_wrap_2', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupWrap')
 endfunction
 
 func Test_popup_with_mask()
@@ -2466,6 +2510,41 @@ func Get_popupmenu_lines()
 	let id = popup_findinfo()
 	eval id->popup_setoptions(#{highlight: 'InfoPopup'})
       endfunc
+
+      func InfoHidden()
+	set completepopup=height:4,border:off,align:menu
+	set completeopt-=popup completeopt+=popuphidden
+	au CompleteChanged * call HandleChange()
+      endfunc
+
+      let s:counter = 0
+      func HandleChange()
+	let s:counter += 1
+	let selected = complete_info(['selected']).selected
+	if selected <= 0
+	  " First time: do nothing, info remains hidden
+	  return
+	endif
+	if selected == 1
+	  " Second time: show info right away
+	  let id = popup_findinfo()
+	  if id
+	    call popup_settext(id, 'immediate info ' .. s:counter)
+	    call popup_show(id)
+	  endif
+	else
+	  " Third time: show info after a short delay
+	  call timer_start(100, 'ShowInfo')
+	endif
+      endfunc
+
+      func ShowInfo(...)
+	let id = popup_findinfo()
+	if id
+	  call popup_settext(id, 'async info ' .. s:counter)
+	  call popup_show(id)
+	endif
+      endfunc
   END
   return lines
 endfunc
@@ -2548,12 +2627,70 @@ func Test_popupmenu_info_align_menu()
   call delete('XtestInfoPopupNb')
 endfunc
 
+func Test_popupmenu_info_hidden()
+  CheckScreendump
+
+  let lines = Get_popupmenu_lines()
+  call add(lines, 'call InfoHidden()')
+  call writefile(lines, 'XtestInfoPopupHidden')
+
+  let buf = RunVimInTerminal('-S XtestInfoPopupHidden', #{rows: 14})
+  call term_wait(buf, 50)
+
+  call term_sendkeys(buf, "A\<C-X>\<C-U>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_hidden_1', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_hidden_2', {})
+
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_hidden_3', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+  call delete('XtestInfoPopupHidden')
+endfunc
+
 func Test_popupwin_recycle_bnr()
   let bufnr = popup_notification('nothing wrong', {})->winbufnr()
   call popup_clear()
   let winid = 'nothing wrong'->popup_notification({})
   call assert_equal(bufnr, winbufnr(winid))
   call popup_clear()
+endfunc
+
+func Test_popupwin_getoptions_tablocal()
+  topleft split
+  let win1 = popup_create('nothing', #{maxheight: 8})
+  let win2 = popup_create('something', #{maxheight: 10})
+  let win3 = popup_create('something', #{maxheight: 15})
+  call assert_equal(8, popup_getoptions(win1).maxheight)
+  call assert_equal(10, popup_getoptions(win2).maxheight)
+  call assert_equal(15, popup_getoptions(win3).maxheight)
+  call popup_clear()
+  quit
+endfunc
+
+func Test_popupwin_cancel()
+  let win1 = popup_create('one', #{line: 5, filter: {... -> 0}})
+  let win2 = popup_create('two', #{line: 10, filter: {... -> 0}})
+  let win3 = popup_create('three', #{line: 15, filter: {... -> 0}})
+  call assert_equal(5, popup_getpos(win1).line)
+  call assert_equal(10, popup_getpos(win2).line)
+  call assert_equal(15, popup_getpos(win3).line)
+  " TODO: this also works without patch 8.1.2110
+  call feedkeys("\<C-C>", 'xt')
+  call assert_equal(5, popup_getpos(win1).line)
+  call assert_equal(10, popup_getpos(win2).line)
+  call assert_equal({}, popup_getpos(win3))
+  call feedkeys("\<C-C>", 'xt')
+  call assert_equal(5, popup_getpos(win1).line)
+  call assert_equal({}, popup_getpos(win2))
+  call assert_equal({}, popup_getpos(win3))
+  call feedkeys("\<C-C>", 'xt')
+  call assert_equal({}, popup_getpos(win1))
+  call assert_equal({}, popup_getpos(win2))
+  call assert_equal({}, popup_getpos(win3))
 endfunc
 
 " vim: shiftwidth=2 sts=2

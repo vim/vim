@@ -2,7 +2,6 @@
 void do_ascii(exarg_T *eap);
 void ex_align(exarg_T *eap);
 void ex_sort(exarg_T *eap);
-void ex_retab(exarg_T *eap);
 int do_move(linenr_T line1, linenr_T line2, linenr_T dest);
 void ex_copy(linenr_T line1, linenr_T line2, linenr_T n);
 void free_prev_shellcmd(void);
@@ -36,7 +35,7 @@ void global_exe(char_u *cmd);
 char_u *get_old_sub(void);
 void set_old_sub(char_u *val);
 void free_old_sub(void);
-int prepare_tagpreview(int undo_sync, int use_previewpopup, int use_popup);
+int prepare_tagpreview(int undo_sync, int use_previewpopup, use_popup_T use_popup);
 void ex_help(exarg_T *eap);
 void ex_helpclose(exarg_T *eap);
 char_u *check_help_lang(char_u *arg);

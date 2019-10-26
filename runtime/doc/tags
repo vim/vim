@@ -1016,6 +1016,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 't_Sb'	term.txt	/*'t_Sb'*
 't_Sf'	term.txt	/*'t_Sf'*
 't_Si'	term.txt	/*'t_Si'*
+'t_TE'	term.txt	/*'t_TE'*
+'t_TI'	term.txt	/*'t_TI'*
 't_Te'	term.txt	/*'t_Te'*
 't_Ts'	term.txt	/*'t_Ts'*
 't_VS'	term.txt	/*'t_VS'*
@@ -4041,6 +4043,7 @@ E274	eval.txt	/*E274*
 E275	textprop.txt	/*E275*
 E276	eval.txt	/*E276*
 E277	remote.txt	/*E277*
+E278	popup.txt	/*E278*
 E28	syntax.txt	/*E28*
 E280	if_tcl.txt	/*E280*
 E282	starting.txt	/*E282*
@@ -5047,6 +5050,7 @@ Terminal-Job	terminal.txt	/*Terminal-Job*
 Terminal-Normal	terminal.txt	/*Terminal-Normal*
 Terminal-mode	terminal.txt	/*Terminal-mode*
 TerminalOpen	autocmd.txt	/*TerminalOpen*
+TerminalWinOpen	autocmd.txt	/*TerminalWinOpen*
 TextChanged	autocmd.txt	/*TextChanged*
 TextChangedI	autocmd.txt	/*TextChangedI*
 TextChangedP	autocmd.txt	/*TextChangedP*
@@ -5787,8 +5791,10 @@ compl-vim	insert.txt	/*compl-vim*
 compl-whole-line	insert.txt	/*compl-whole-line*
 complete()	eval.txt	/*complete()*
 complete-functions	insert.txt	/*complete-functions*
+complete-item-kind	insert.txt	/*complete-item-kind*
 complete-items	insert.txt	/*complete-items*
 complete-popup	insert.txt	/*complete-popup*
+complete-popuphidden	insert.txt	/*complete-popuphidden*
 complete_CTRL-E	insert.txt	/*complete_CTRL-E*
 complete_CTRL-Y	insert.txt	/*complete_CTRL-Y*
 complete_add()	eval.txt	/*complete_add()*
@@ -5948,6 +5954,7 @@ daB	motion.txt	/*daB*
 daW	motion.txt	/*daW*
 dab	motion.txt	/*dab*
 dap	motion.txt	/*dap*
+dart.vim	syntax.txt	/*dart.vim*
 das	motion.txt	/*das*
 date-functions	usr_41.txt	/*date-functions*
 dav	pi_netrw.txt	/*dav*
@@ -6399,6 +6406,7 @@ ft-csh-syntax	syntax.txt	/*ft-csh-syntax*
 ft-css-omni	insert.txt	/*ft-css-omni*
 ft-cweb-syntax	syntax.txt	/*ft-cweb-syntax*
 ft-cynlib-syntax	syntax.txt	/*ft-cynlib-syntax*
+ft-dart-syntax	syntax.txt	/*ft-dart-syntax*
 ft-dash-syntax	syntax.txt	/*ft-dash-syntax*
 ft-desktop-syntax	syntax.txt	/*ft-desktop-syntax*
 ft-dircolors-syntax	syntax.txt	/*ft-dircolors-syntax*
@@ -7293,6 +7301,7 @@ if_ruby.txt	if_ruby.txt	/*if_ruby.txt*
 if_sniff.txt	if_sniff.txt	/*if_sniff.txt*
 if_tcl.txt	if_tcl.txt	/*if_tcl.txt*
 ignore-errors	eval.txt	/*ignore-errors*
+ignore-timestamp	editing.txt	/*ignore-timestamp*
 improved-autocmds-5.4	version5.txt	/*improved-autocmds-5.4*
 improved-quickfix	version5.txt	/*improved-quickfix*
 improved-sessions	version5.txt	/*improved-sessions*
@@ -7690,6 +7699,7 @@ modeless-selection	gui.txt	/*modeless-selection*
 modeline	options.txt	/*modeline*
 modeline-local	options.txt	/*modeline-local*
 modeline-version	options.txt	/*modeline-version*
+modifyOtherKeys	map.txt	/*modifyOtherKeys*
 moo.vim	syntax.txt	/*moo.vim*
 more-compatible	version5.txt	/*more-compatible*
 more-prompt	message.txt	/*more-prompt*
@@ -8085,7 +8095,6 @@ new-vimgrep	version7.txt	/*new-vimgrep*
 new-virtedit	version6.txt	/*new-virtedit*
 news	intro.txt	/*news*
 nextnonblank()	eval.txt	/*nextnonblank()*
-nice	todo.txt	/*nice*
 no-eval-feature	eval.txt	/*no-eval-feature*
 no-type-checking	eval.txt	/*no-type-checking*
 no_buffers_menu	gui.txt	/*no_buffers_menu*
@@ -9102,6 +9111,8 @@ t_ST	term.txt	/*t_ST*
 t_Sb	term.txt	/*t_Sb*
 t_Sf	term.txt	/*t_Sf*
 t_Si	term.txt	/*t_Si*
+t_TE	term.txt	/*t_TE*
+t_TI	term.txt	/*t_TI*
 t_Te	term.txt	/*t_Te*
 t_Ts	term.txt	/*t_Ts*
 t_VS	term.txt	/*t_VS*
@@ -9342,6 +9353,7 @@ term_list()	terminal.txt	/*term_list()*
 term_scrape()	terminal.txt	/*term_scrape()*
 term_sendkeys()	terminal.txt	/*term_sendkeys()*
 term_setansicolors()	terminal.txt	/*term_setansicolors()*
+term_setapi()	terminal.txt	/*term_setapi()*
 term_setkill()	terminal.txt	/*term_setkill()*
 term_setrestore()	terminal.txt	/*term_setrestore()*
 term_setsize()	terminal.txt	/*term_setsize()*
@@ -9369,6 +9381,7 @@ termdebug_wide	terminal.txt	/*termdebug_wide*
 terminal	terminal.txt	/*terminal*
 terminal-api	terminal.txt	/*terminal-api*
 terminal-client-server	terminal.txt	/*terminal-client-server*
+terminal-close	terminal.txt	/*terminal-close*
 terminal-colors	os_unix.txt	/*terminal-colors*
 terminal-communication	terminal.txt	/*terminal-communication*
 terminal-cursor-style	terminal.txt	/*terminal-cursor-style*
@@ -10163,6 +10176,7 @@ zz	scroll.txt	/*zz*
 {move-around}	visual.txt	/*{move-around}*
 {offset}	pattern.txt	/*{offset}*
 {pat}	autocmd.txt	/*{pat}*
+{register}	change.txt	/*{register}*
 {rhs}	map.txt	/*{rhs}*
 {subject}	helphelp.txt	/*{subject}*
 {}	intro.txt	/*{}*

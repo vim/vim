@@ -709,8 +709,10 @@ OBJ = \
 	$(OUTDIR)/blob.o \
 	$(OUTDIR)/blowfish.o \
 	$(OUTDIR)/buffer.o \
+	$(OUTDIR)/bufwrite.o \
 	$(OUTDIR)/change.o \
 	$(OUTDIR)/charset.o \
+	$(OUTDIR)/cindent.o \
 	$(OUTDIR)/cmdexpand.o \
 	$(OUTDIR)/cmdhist.o \
 	$(OUTDIR)/crypt.o \
@@ -764,7 +766,7 @@ OBJ = \
 	$(OUTDIR)/os_mswin.o \
 	$(OUTDIR)/os_win32.o \
 	$(OUTDIR)/pathdef.o \
-	$(OUTDIR)/popupmnu.o \
+	$(OUTDIR)/popupmenu.o \
 	$(OUTDIR)/popupwin.o \
 	$(OUTDIR)/profiler.o \
 	$(OUTDIR)/quickfix.o \
@@ -778,6 +780,7 @@ OBJ = \
 	$(OUTDIR)/sign.o \
 	$(OUTDIR)/spell.o \
 	$(OUTDIR)/spellfile.o \
+	$(OUTDIR)/spellsuggest.o \
 	$(OUTDIR)/syntax.o \
 	$(OUTDIR)/tag.o \
 	$(OUTDIR)/term.o \
@@ -866,15 +869,15 @@ endif
 
 ifeq ($(TERMINAL),yes)
 OBJ += $(OUTDIR)/terminal.o \
-	$(OUTDIR)/encoding.o \
-	$(OUTDIR)/keyboard.o \
-	$(OUTDIR)/termmouse.o \
-	$(OUTDIR)/parser.o \
-	$(OUTDIR)/pen.o \
-	$(OUTDIR)/termscreen.o \
-	$(OUTDIR)/state.o \
-	$(OUTDIR)/unicode.o \
-	$(OUTDIR)/vterm.o
+	$(OUTDIR)/vterm_encoding.o \
+	$(OUTDIR)/vterm_keyboard.o \
+	$(OUTDIR)/vterm_mouse.o \
+	$(OUTDIR)/vterm_parser.o \
+	$(OUTDIR)/vterm_pen.o \
+	$(OUTDIR)/vterm_screen.o \
+	$(OUTDIR)/vterm_state.o \
+	$(OUTDIR)/vterm_unicode.o \
+	$(OUTDIR)/vterm_vterm.o
 endif
 
 ifeq ($(SOUND),yes)
@@ -1014,7 +1017,7 @@ ifeq (yes, $(MAP))
 LFLAGS += -Wl,-Map=$(TARGET).map
 endif
 
-all: $(MAIN_TARGET) vimrun.exe xxd/xxd.exe tee/tee.exe install.exe uninstal.exe GvimExt/gvimext.dll
+all: $(MAIN_TARGET) vimrun.exe xxd/xxd.exe tee/tee.exe install.exe uninstall.exe GvimExt/gvimext.dll
 
 vimrun.exe: vimrun.c
 	$(CC) $(CFLAGS) -o vimrun.exe vimrun.c $(LIB)
@@ -1022,8 +1025,8 @@ vimrun.exe: vimrun.c
 install.exe: dosinst.c
 	$(CC) $(CFLAGS) -o install.exe dosinst.c $(LIB) -lole32 -luuid
 
-uninstal.exe: uninstal.c
-	$(CC) $(CFLAGS) -o uninstal.exe uninstal.c $(LIB) -lole32
+uninstall.exe: uninstall.c
+	$(CC) $(CFLAGS) -o uninstall.exe uninstall.c $(LIB) -lole32
 
 ifeq ($(VIMDLL),yes)
 $(TARGET): $(OUTDIR) $(OBJ)
@@ -1067,7 +1070,7 @@ clean:
 	-$(DEL) $(OUTDIR)$(DIRSLASH)*.res
 	-$(DEL) $(OUTDIR)$(DIRSLASH)pathdef.c
 	-rmdir $(OUTDIR)
-	-$(DEL) $(MAIN_TARGET) vimrun.exe install.exe uninstal.exe
+	-$(DEL) $(MAIN_TARGET) vimrun.exe install.exe uninstall.exe
 ifdef PERL
 	-$(DEL) if_perl.c
 	-$(DEL) auto$(DIRSLASH)if_perl.c
@@ -1203,7 +1206,7 @@ CCCTERM = $(CC) -c $(CFLAGS) -Ilibvterm/include -DINLINE="" \
 	  -DWCWIDTH_FUNCTION=utf_uint2cells \
 	  -DGET_SPECIAL_PTY_TYPE_FUNCTION=get_special_pty_type
 
-$(OUTDIR)/%.o : libvterm/src/%.c $(TERM_DEPS)
+$(OUTDIR)/vterm_%.o : libvterm/src/%.c $(TERM_DEPS)
 	$(CCCTERM) $< -o $@
 
 

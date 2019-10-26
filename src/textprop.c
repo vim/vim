@@ -1067,13 +1067,7 @@ adjust_prop_columns(
 	if (bytes_added > 0
 		&& (tmp_prop.tp_col >= col + (start_incl ? 2 : 1)))
 	{
-	    if (tmp_prop.tp_col < col + (start_incl ? 2 : 1))
-	    {
-		tmp_prop.tp_len += (tmp_prop.tp_col - 1 - col) + bytes_added;
-		tmp_prop.tp_col = col + 1;
-	    }
-	    else
-		tmp_prop.tp_col += bytes_added;
+	    tmp_prop.tp_col += bytes_added;
 	    // Save for undo if requested and not done yet.
 	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
 		u_savesub(lnum);

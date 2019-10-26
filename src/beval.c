@@ -92,7 +92,7 @@ find_word_under_cursor(
 			lbuf = ml_get_buf(curwin->w_buffer, VIsual.lnum, FALSE);
 			len = epos->col - spos->col;
 			if (*p_sel != 'e')
-			    len += MB_PTR2LEN(lbuf + epos->col);
+			    len += mb_ptr2len(lbuf + epos->col);
 			lbuf = vim_strnsave(lbuf + spos->col, len);
 			lnum = spos->lnum;
 			col = spos->col;

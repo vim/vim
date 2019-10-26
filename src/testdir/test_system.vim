@@ -1,11 +1,27 @@
 " Tests for system() and systemlist()
 
 source shared.vim
+source check.vim
 
 func Test_System()
-  if !executable('echo') || !executable('cat') || !executable('wc')
+  if !has('win32')
+    call assert_equal("123\n", system('echo 123'))
+    call assert_equal(['123'], systemlist('echo 123'))
+    call assert_equal('123',   system('cat', '123'))
+    call assert_equal(['123'], systemlist('cat', '123'))
+    call assert_equal(["as\<NL>df"], systemlist('cat', ["as\<NL>df"]))
+  else
+    call assert_equal("123\n", system('echo 123'))
+    call assert_equal(["123\r"], systemlist('echo 123'))
+    call assert_equal("123\n",   system('more', '123'))
+    call assert_equal(["123\r"], systemlist('more', '123'))
+    call assert_equal(["as\r", "df\r"], systemlist('more', ["as\<NL>df"]))
+  endif
+
+  if !executable('cat') || !executable('wc')
     return
   endif
+
   let out = 'echo 123'->system()
   " On Windows we may get a trailing space.
   if out != "123 \n"
@@ -13,14 +29,17 @@ func Test_System()
   endif
 
   let out = 'echo 123'->systemlist()
-  " On Windows we may get a trailing space and CR.
-  if out != ["123 \r"]
-    call assert_equal(['123'], out)
+  if !has('win32')
+    call assert_equal(["123"], out)
+  else
+    call assert_equal(["123\r"], out)
   endif
 
-  call assert_equal('123',   system('cat', '123'))
-  call assert_equal(['123'], systemlist('cat', '123'))
-  call assert_equal(["as\<NL>df"], systemlist('cat', ["as\<NL>df"]))
+  if executable('cat')
+    call assert_equal('123',   system('cat', '123'))	
+    call assert_equal(['123'], systemlist('cat', '123'))	
+    call assert_equal(["as\<NL>df"], systemlist('cat', ["as\<NL>df"])) 
+  endif
 
   new Xdummy
   call setline(1, ['asdf', "pw\<NL>er", 'xxxx'])
@@ -39,10 +58,12 @@ func Test_System()
     call assert_equal(['3'],  out)
   endif
 
-  let out = systemlist('cat', bufnr('%'))
-  " On Windows we may get a trailing CR.
-  if out != ["asdf\r", "pw\<NL>er\r", "xxxx\r"]
+  if !has('win32')
+    let out = systemlist('cat', bufnr('%'))
     call assert_equal(['asdf', "pw\<NL>er", 'xxxx'],  out)
+  else
+    let out = systemlist('more', bufnr('%'))
+    call assert_equal(["asdf\r", "pw\r", "er\r", "xxxx\r"],  out)
   endif
   bwipe!
 
@@ -91,4 +112,54 @@ func Test_system_exmode()
   let cmd = ' -es -c "call doesnotexist()|let a=1" +q'
   let a = system(GetVimCommand() . cmd)
   call assert_notequal(0, v:shell_error)
+endfunc
+
+func Test_system_with_shell_quote()
+  CheckMSWindows
+
+  call mkdir('Xdir with spaces', 'p')
+  call system('copy "%COMSPEC%" "Xdir with spaces\cmd.exe"')
+
+  let shell_save = &shell
+  let shellxquote_save = &shellxquote
+  try
+    " Set 'shell' always needs noshellslash.
+    let shellslash_save = &shellslash
+    set noshellslash
+    let shell_tests = [
+          \ expand('$COMSPEC'),
+          \ '"' . fnamemodify('Xdir with spaces\cmd.exe', ':p') . '"',
+          \]
+    let &shellslash = shellslash_save
+
+    let sxq_tests = ['', '(', '"']
+
+    " Matrix tests: 'shell' * 'shellxquote'
+    for shell in shell_tests
+      let &shell = shell
+      for sxq in sxq_tests
+        let &shellxquote = sxq
+
+        let msg = printf('shell=%s shellxquote=%s', &shell, &shellxquote)
+
+        try
+          let out = 'echo 123'->system()
+        catch
+          call assert_report(printf('%s: %s', msg, v:exception))
+          continue
+        endtry
+
+        " On Windows we may get a trailing space and CR.
+        if out != "123 \n"
+          call assert_equal("123\n", out, msg)
+        endif
+
+      endfor
+    endfor
+
+  finally
+    let &shell = shell_save
+    let &shellxquote = shellxquote_save
+    call delete('Xdir with spaces', 'rf')
+  endtry
 endfunc

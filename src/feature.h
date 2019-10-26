@@ -108,6 +108,7 @@
  * +cmdline_compl	completion of mappings/abbreviations in cmdline mode.
  * +insert_expand	CTRL-N/CTRL-P/CTRL-X in insert mode.
  * +modify_fname	modifiers for file name.  E.g., "%:p:h".
+ * +comments		'comments' option.
  *
  * Obsolete:
  * +tag_old_static	Old style static tags: "file:tag  file  ..".
@@ -429,18 +430,6 @@
 #endif
 
 /*
- * +textprop		Text properties and popup windows
- */
-#if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
-# define FEAT_TEXT_PROP
-#endif
-
-#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)
-// Can limit syntax highlight time to 'redrawtime'.
-# define SYN_TIME_LIMIT 1
-#endif
-
-/*
  * +spell		spell checking
  *
  * Disabled for EBCDIC: * Doesn't work (SIGSEGV).
@@ -493,13 +482,6 @@
 
 #ifdef FEAT_NORMAL
 # define FEAT_SMARTINDENT
-#endif
-
-/*
- * +comments		'comments' option.
- */
-#ifdef FEAT_NORMAL
-# define FEAT_COMMENTS
 #endif
 
 /*
@@ -970,12 +952,12 @@
  *			console mouse handling.
  * +mouse_urxvt		Unix only: Include code for for urxvt mosue handling.
  * +mouse		Any mouse support (any of the above enabled).
+ *			Always included, since either FEAT_MOUSE_XTERM or
+ *			DOS_MOUSE is defined.
  */
 /* OS/2 and Amiga console have no mouse support */
-#if !defined(AMIGA)
-# ifdef FEAT_NORMAL
-#  define FEAT_MOUSE_XTERM
-# endif
+#if defined(UNIX) || defined(VMS)
+# define FEAT_MOUSE_XTERM
 # ifdef FEAT_BIG
 #  define FEAT_MOUSE_NET
 # endif
@@ -985,12 +967,12 @@
 # ifdef FEAT_BIG
 #  define FEAT_MOUSE_URXVT
 # endif
-# if defined(FEAT_NORMAL) && defined(MSWIN)
-#  define DOS_MOUSE
-# endif
-# if defined(FEAT_NORMAL) && defined(__QNX__)
-#  define FEAT_MOUSE_PTERM
-# endif
+#endif
+#if defined(MSWIN)
+# define DOS_MOUSE
+#endif
+#if defined(__QNX__)
+# define FEAT_MOUSE_PTERM
 #endif
 
 /*
@@ -1008,26 +990,9 @@
 # define FEAT_SYSMOUSE
 #endif
 
-/* urxvt is a small variation of mouse_xterm, and shares its code */
+// urxvt is a small variation of mouse_xterm, and shares its code
 #if defined(FEAT_MOUSE_URXVT) && !defined(FEAT_MOUSE_XTERM)
 # define FEAT_MOUSE_XTERM
-#endif
-
-/* Define FEAT_MOUSE when any of the above is defined or FEAT_GUI. */
-#if !defined(FEAT_MOUSE_TTY) \
-	&& (defined(FEAT_MOUSE_XTERM) \
-	    || defined(FEAT_MOUSE_NET) \
-	    || defined(FEAT_MOUSE_DEC) \
-	    || defined(DOS_MOUSE) \
-	    || defined(FEAT_MOUSE_GPM) \
-	    || defined(FEAT_MOUSE_JSB) \
-	    || defined(FEAT_MOUSE_PTERM) \
-	    || defined(FEAT_SYSMOUSE) \
-	    || defined(FEAT_MOUSE_URXVT))
-# define FEAT_MOUSE_TTY		/* include non-GUI mouse support */
-#endif
-#if !defined(FEAT_MOUSE) && (defined(FEAT_MOUSE_TTY) || defined(FEAT_GUI))
-# define FEAT_MOUSE		/* include generic mouse support */
 #endif
 
 /*
@@ -1099,7 +1064,7 @@
  *			to check if mouse dragging can be used and if term
  *			codes can be obtained.
  */
-#if (defined(FEAT_NORMAL) || defined(FEAT_MOUSE)) && defined(HAVE_TGETENT)
+#if defined(HAVE_TGETENT)
 # define FEAT_TERMRESPONSE
 #endif
 
@@ -1142,10 +1107,6 @@
 # define FEAT_ARP
 #endif
 
-/*
- * +GUI_Athena		To compile Vim with or without the GUI (gvim) you have
- * +GUI_Motif		to edit the Makefile.
- */
 
 /*
  * +ole			Win32 OLE automation: Use Makefile.ovc.
@@ -1161,6 +1122,8 @@
  * +tcl			TCL interface: "--enable-tclinterp"
  * +netbeans_intg	Netbeans integration
  * +channel		Inter process communication
+ * +GUI_Athena		Athena GUI
+ * +GUI_Motif		Motif GUI
  */
 
 /*
@@ -1193,6 +1156,23 @@
 #if defined(FEAT_TERMINAL) && !defined(CURSOR_SHAPE)
 # define CURSOR_SHAPE
 #endif
+#if defined(FEAT_TERMINAL) && !defined(FEAT_SYN_HL)
+// simplify the code a bit by enabling +syntax when +terminal is enabled
+# define FEAT_SYN_HL
+#endif
+
+/*
+ * +textprop		Text properties and popup windows
+ */
+#if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
+# define FEAT_TEXT_PROP
+#endif
+
+#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)
+// Can limit syntax highlight time to 'redrawtime'.
+# define SYN_TIME_LIMIT 1
+#endif
+
 
 /*
  * +signs		Allow signs to be displayed to the left of text lines.

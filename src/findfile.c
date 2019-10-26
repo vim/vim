@@ -1337,8 +1337,8 @@ ff_wc_equal(char_u *s1, char_u *s2)
 	prev2 = prev1;
 	prev1 = c1;
 
-	i += MB_PTR2LEN(s1 + i);
-	j += MB_PTR2LEN(s2 + j);
+	i += mb_ptr2len(s1 + i);
+	j += mb_ptr2len(s2 + j);
     }
     return s1[i] == s2[j];
 }

@@ -2124,7 +2124,12 @@ win_update(win_T *wp)
 				|| (wp->w_match_head != NULL
 						    && buf->b_mod_xlines != 0)
 #endif
-				)))))
+				))))
+#ifdef FEAT_SYN_HL
+		|| (wp->w_p_cul && (lnum == wp->w_cursor.lnum
+					     || lnum == wp->w_last_cursorline))
+#endif
+				)
 	{
 #ifdef FEAT_SEARCH_EXTRA
 	    if (lnum == mod_top)

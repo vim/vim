@@ -2177,7 +2177,8 @@ gui_mac_unicode_key_event(
 	    key_char = simplify_key(key_char, (int *)&vimModifiers);
 
 	    /* Interpret META, include SHIFT, etc. */
-	    key_char = extract_modifiers(key_char, (int *)&vimModifiers);
+	    key_char = extract_modifiers(key_char, (int *)&vimModifiers,
+		    TRUE, NULL);
 	    if (key_char == CSI)
 		key_char = K_CSI;
 
@@ -4772,7 +4773,8 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	char_u	    *p_actext;
 
 	p_actext = menu->actext;
-	key = find_special_key(&p_actext, &modifiers, FALSE, FALSE, FALSE);
+	key = find_special_key(&p_actext, &modifiers, FALSE, FALSE, FALSE,
+								   TRUE, NULL);
 	if (*p_actext != 0)
 	    key = 0; /* error: trailing text */
 	/* find_special_key() returns a keycode with as many of the

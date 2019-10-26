@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 Sep 20
+*terminal.txt*	For Vim version 8.1.  Last change: 2019 Oct 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -193,6 +193,7 @@ Command syntax ~
 			Supported [options] are:
 			++close		The terminal window will close
 					automatically when the job terminates.
+					|terminal-close|
 			++noclose	The terminal window will NOT close
 					automatically when the job terminates.
 			++open		When the job terminates and no window
@@ -222,7 +223,7 @@ Command syntax ~
 					Vim width (no window left or right of
 					the terminal window) this value is
 					ignored.
-			++eof={text}	when using [range]: text to send after
+			++eof={text}	When using [range]: text to send after
 					the last line was written. Cannot
 					contain white space.  A CR is
 					appended.  For MS-Windows the default
@@ -234,6 +235,10 @@ Command syntax ~
 			++type={pty}	(MS-Windows only): Use {pty} as the
 					virtual console.  See 'termwintype'
 					for the values.
+			++api={expr}	Permit the function name starting with
+					{expr} to be called as |terminal-api|
+					function.  If {expr} is empty then no
+					function can be called.
 
 			If you want to use more options use the |term_start()|
 			function.
@@ -262,6 +267,12 @@ You can use `CTRL-W :hide` to close the terminal window and make the buffer
 hidden, the job keeps running.  The `:buffer` command can be used to turn the
 current window into a terminal window.  If there are unsaved changes this
 fails, use ! to force, as usual.
+
+							*terminal-close*
+When the terminal window is closed, e.g. when the shell exits and "++close"
+argument was used, and this is the last normal Vim window, then Vim will exit.
+This is like using |:quit| in a normal window. Help and preview windows are
+not counted.
 
 To have a background job run without a window, and open the window when it's
 done, use options like this: >
@@ -492,7 +503,7 @@ term_dumpload({filename} [, {options}])
 		For {options} see |term_dumpdiff()|.
 
 		Can also be used as a |method|: >
-			GetFilename()-> term_dumpload()
+			GetFilename()->term_dumpload()
 <
 							*term_dumpwrite()*
 term_dumpwrite({buf}, {filename} [, {options}])
@@ -510,7 +521,7 @@ term_dumpwrite({buf}, {filename} [, {options}])
 
 		Can also be used as a |method|, the base is used for the file
 		name: >
-			GetFilename()-> term_dumpwrite(bufnr)
+			GetFilename()->term_dumpwrite(bufnr)
 
 term_getaltscreen({buf})				*term_getaltscreen()*
 		Returns 1 if the terminal of {buf} is using the alternate
@@ -701,6 +712,15 @@ term_sendkeys({buf}, {keys})				*term_sendkeys()*
 			GetBufnr()->term_sendkeys(keys)
 
 
+term_setapi({buf}, {expr})				*term_setapi()*
+		Set the function name prefix to be used for the |terminal-api|
+		function in terminal {buf}.  For example: >
+		    :call term_setapi(buf, "Myapi_")
+		    :call term_setapi(buf, "")
+<
+		The default is "Tapi_".  When {expr} is an empty string then
+		no |terminal-api| function can be used for {buf}.
+
 term_setansicolors({buf}, {colors})			*term_setansicolors()*
 		Set the ANSI color palette used by terminal {buf}.
 		{colors} must be a List of 16 valid color names or hexadecimal
@@ -843,11 +863,12 @@ term_start({cmd} [, {options}])			*term_start()*
 				     color modes.  See |g:terminal_ansi_colors|.
 		   "tty_type"	     (MS-Windows only): Specify which pty to
 				     use.  See 'termwintype' for the values.
+		   "term_api"	     function name prefix for the
+				     |terminal-api| function.  See
+				     |term_setapi()|.
 
 		Can also be used as a |method|: >
 			GetCommand()->term_start()
-
-<		{only available when compiled with the |+terminal| feature}
 
 
 term_wait({buf} [, {time}])					*term_wait()*
@@ -902,9 +923,9 @@ Currently supported commands:
 		Call a user defined function with {argument}.
 		The function is called with two arguments: the buffer number
 		of the terminal and {argument}, the decoded JSON argument. 
-		The function name must start with "Tapi_" to avoid
+		By default, the function name must start with "Tapi_" to avoid
 		accidentally calling a function not meant to be used for the
-		terminal API.
+		terminal API.  This can be changed with |term_setapi()|.
 		The user function should sanity check the argument.
 		The function can use |term_sendkeys()| to send back a reply.
 		Example in JSON: >
@@ -1227,7 +1248,7 @@ gdb:
 
  *:Break*	set a breakpoint at the cursor position
  :Break {position}
- 		set a breakpoint at the specified position
+		set a breakpoint at the specified position
  *:Clear*	delete the breakpoint at the cursor position
 
  *:Step*	execute the gdb "step" command

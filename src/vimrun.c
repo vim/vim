@@ -27,6 +27,8 @@
 main(void)
 {
     const wchar_t   *p;
+    wchar_t	    *cmd;
+    size_t	    cmdlen;
     int		    retval;
     int		    inquote = 0;
     int		    silent = 0;
@@ -63,15 +65,35 @@ main(void)
 	    ++p;
     }
 
-    /* Print the command, including quotes and redirection. */
+    // Print the command, including quotes and redirection.
     hstdout = GetStdHandle(STD_OUTPUT_HANDLE);
     WriteConsoleW(hstdout, p, wcslen(p), &written, NULL);
     WriteConsoleW(hstdout, L"\r\n", 2, &written, NULL);
+
+    // If the command starts and ends with double quotes,
+    // Enclose the command in parentheses.
+    cmd = NULL;
+    cmdlen = wcslen(p);
+    if (cmdlen >= 2 && p[0] == L'"' && p[cmdlen - 1] == L'"')
+    {
+	cmdlen += 3;
+	cmd = (wchar_t *)malloc(cmdlen * sizeof(wchar_t));
+	if (cmd == NULL)
+	{
+	    perror("vimrun malloc(): ");
+	    return -1;
+	}
+	_snwprintf(cmd, cmdlen, L"(%s)", p);
+	p = cmd;
+    }
 
     /*
      * Do it!
      */
     retval = _wsystem(p);
+
+    if (cmd)
+	free(cmd);
 
     if (retval == -1)
 	perror("vimrun system(): ");

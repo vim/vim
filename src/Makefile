@@ -1585,6 +1585,7 @@ BASIC_SRC = \
 	buffer.c \
 	change.c \
 	charset.c \
+	cindent.c \
 	cmdexpand.c \
 	cmdhist.c \
 	crypt.c \
@@ -1638,7 +1639,7 @@ BASIC_SRC = \
 	optionstr.c \
 	os_unix.c \
 	auto/pathdef.c \
-	popupmnu.c \
+	popupmenu.c \
 	popupwin.c \
 	profiler.c \
 	pty.c \
@@ -1654,6 +1655,7 @@ BASIC_SRC = \
 	sound.c \
 	spell.c \
 	spellfile.c \
+	spellsuggest.c \
 	syntax.c \
 	tag.c \
 	term.c \
@@ -1667,6 +1669,7 @@ BASIC_SRC = \
 	version.c \
 	viminfo.c \
 	window.c \
+	bufwrite.c \
 	$(OS_EXTRA_SRC)
 
 SRC =	$(BASIC_SRC) \
@@ -1723,6 +1726,7 @@ OBJ_COMMON = \
 	objects/change.o \
 	objects/blob.o \
 	objects/blowfish.o \
+	objects/cindent.o \
 	objects/cmdexpand.o \
 	objects/cmdhist.o \
 	objects/crypt.o \
@@ -1773,7 +1777,7 @@ OBJ_COMMON = \
 	objects/optionstr.o \
 	objects/os_unix.o \
 	objects/pathdef.o \
-	objects/popupmnu.o \
+	objects/popupmenu.o \
 	objects/popupwin.o \
 	objects/profiler.o \
 	objects/pty.o \
@@ -1789,6 +1793,7 @@ OBJ_COMMON = \
 	objects/sound.o \
 	objects/spell.o \
 	objects/spellfile.o \
+	objects/spellsuggest.o \
 	objects/syntax.o \
 	objects/tag.o \
 	objects/term.o \
@@ -1802,6 +1807,7 @@ OBJ_COMMON = \
 	objects/version.o \
 	objects/viminfo.o \
 	objects/window.o \
+	objects/bufwrite.o \
 	$(GUI_OBJ) \
 	$(TERM_OBJ) \
 	$(LUA_OBJ) \
@@ -1874,6 +1880,7 @@ PRO_AUTO = \
 	buffer.pro \
 	change.pro \
 	charset.pro \
+	cindent.pro \
 	cmdexpand.pro \
 	cmdhist.pro \
 	crypt.pro \
@@ -1933,7 +1940,7 @@ PRO_AUTO = \
 	optionstr.pro \
 	os_mac_conv.pro \
 	os_unix.pro \
-	popupmnu.pro \
+	popupmenu.pro \
 	popupwin.pro \
 	profiler.pro \
 	pty.pro \
@@ -1949,6 +1956,7 @@ PRO_AUTO = \
 	sound.pro \
 	spell.pro \
 	spellfile.pro \
+	spellsuggest.pro \
 	syntax.pro \
 	tag.pro \
 	term.pro \
@@ -1963,6 +1971,7 @@ PRO_AUTO = \
 	version.pro \
 	viminfo.pro \
 	window.pro \
+	bufwrite.pro \
 	beval.pro \
 	gui_beval.pro \
 	netbeans.pro \
@@ -2184,7 +2193,7 @@ types.vim: $(TAGS_FILES)
 #
 # Execute the test scripts and the unittests.
 # Do the scripttests first, so that the summary shows last.
-test check: unittests test_libvterm scripttests
+test check: unittests $(TERM_TEST) scripttests
 
 # Execute the test scripts.  Run these after compiling Vim, before installing.
 # This doesn't depend on $(VIMTARGET), because that won't work when configure
@@ -2259,6 +2268,10 @@ test1 \
 
 # Run individual NEW style test.
 # These do not depend on the executable, compile it when needed.
+# Set $TEST_FILTER to select what test function to invoke, e.g.:
+#	export TEST_FILTER=Test_terminal_wipe_buffer
+# A partial match also works:
+#	export TEST_FILTER=wipe_buffer
 $(NEW_TESTS):
 	cd testdir; $(MAKE) $@ VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
@@ -2847,6 +2860,7 @@ clean celan: testclean
 	-rm -f runtime pixmaps
 	-rm -rf $(APPDIR)
 	-rm -rf mzscheme_base.c
+	-rm -rf libvterm/.libs libterm/t/.libs libvterm/src/*.o libvterm/src/*.lo libvterm/t/*.o libvterm/t/*.lo libvterm/t/harness libvterm/libvterm.la
 	if test -d $(PODIR); then \
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
 	fi
@@ -3070,6 +3084,9 @@ objects/change.o: change.c
 
 objects/charset.o: charset.c
 	$(CCC) -o $@ charset.c
+
+objects/cindent.o: cindent.c
+	$(CCC) -o $@ cindent.c
 
 objects/cmdexpand.o: cmdexpand.c
 	$(CCC) -o $@ cmdexpand.c
@@ -3338,8 +3355,8 @@ objects/winclip.o: winclip.c
 objects/pathdef.o: auto/pathdef.c
 	$(CCC) -o $@ auto/pathdef.c
 
-objects/popupmnu.o: popupmnu.c
-	$(CCC) -o $@ popupmnu.c
+objects/popupmenu.o: popupmenu.c
+	$(CCC) -o $@ popupmenu.c
 
 objects/popupwin.o: popupwin.c
 	$(CCC) -o $@ popupwin.c
@@ -3386,6 +3403,9 @@ objects/spell.o: spell.c
 objects/spellfile.o: spellfile.c
 	$(CCC) -o $@ spellfile.c
 
+objects/spellsuggest.o: spellsuggest.c
+	$(CCC) -o $@ spellsuggest.c
+
 objects/syntax.o: syntax.c
 	$(CCC) -o $@ syntax.c
 
@@ -3422,6 +3442,9 @@ objects/viminfo.o: viminfo.c
 objects/window.o: window.c
 	$(CCC) -o $@ window.c
 
+objects/bufwrite.o: bufwrite.c
+	$(CCC) -o $@ bufwrite.c
+
 objects/netbeans.o: netbeans.c
 	$(CCC) -o $@ netbeans.c
 
@@ -3431,36 +3454,39 @@ objects/channel.o: channel.c
 Makefile:
 	@echo The name of the makefile MUST be "Makefile" (with capital M)!!!!
 
+# Build rules for libvterm.  Putting them here allows for adding compilation
+# options specific for Vim.  Since the .o files go into objects/ we do need to
+# prefix vterm_ to avoid name clashes.
 CCCTERM = $(CCC_NF) $(VTERM_CFLAGS) $(ALL_CFLAGS) -DINLINE="" \
 	  -DVSNPRINTF=vim_vsnprintf \
 	  -DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
 	  -DWCWIDTH_FUNCTION=utf_uint2cells
 
-objects/encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
+objects/vterm_encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/encoding.c
 
-objects/keyboard.o: libvterm/src/keyboard.c $(TERM_DEPS)
+objects/vterm_keyboard.o: libvterm/src/keyboard.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/keyboard.c
 
-objects/termmouse.o: libvterm/src/termmouse.c $(TERM_DEPS)
-	$(CCCTERM) -o $@ libvterm/src/termmouse.c
+objects/vterm_mouse.o: libvterm/src/mouse.c $(TERM_DEPS)
+	$(CCCTERM) -o $@ libvterm/src/mouse.c
 
-objects/parser.o: libvterm/src/parser.c $(TERM_DEPS)
+objects/vterm_parser.o: libvterm/src/parser.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/parser.c
 
-objects/pen.o: libvterm/src/pen.c $(TERM_DEPS)
+objects/vterm_pen.o: libvterm/src/pen.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/pen.c
 
-objects/termscreen.o: libvterm/src/termscreen.c $(TERM_DEPS)
-	$(CCCTERM) -o $@ libvterm/src/termscreen.c
+objects/vterm_screen.o: libvterm/src/screen.c $(TERM_DEPS)
+	$(CCCTERM) -o $@ libvterm/src/screen.c
 
-objects/state.o: libvterm/src/state.c $(TERM_DEPS)
+objects/vterm_state.o: libvterm/src/state.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/state.c
 
-objects/unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
+objects/vterm_unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/unicode.c
 
-objects/vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
+objects/vterm_vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/vterm.c
 
 CCCDIFF = $(CCC_NF) $(ALL_CFLAGS)
@@ -3602,6 +3628,10 @@ objects/change.o: change.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h version.h
 objects/charset.o: charset.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/cindent.o: cindent.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
@@ -3817,7 +3847,7 @@ objects/pathdef.o: auto/pathdef.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
-objects/popupmnu.o: popupmnu.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+objects/popupmenu.o: popupmenu.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
@@ -3881,6 +3911,10 @@ objects/spellfile.o: spellfile.c vim.h protodef.h auto/config.h feature.h \
  os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
+objects/spellsuggest.o: spellsuggest.c vim.h protodef.h auto/config.h feature.h \
+ os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
 objects/syntax.o: syntax.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
@@ -3932,6 +3966,10 @@ objects/viminfo.o: viminfo.c vim.h protodef.h auto/config.h feature.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/window.o: window.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/bufwrite.o: bufwrite.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
@@ -4077,27 +4115,27 @@ objects/channel.o: channel.c vim.h protodef.h auto/config.h feature.h os_unix.h 
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/gui_gtk_gresources.o: auto/gui_gtk_gresources.c
-objects/encoding.o: libvterm/src/encoding.c libvterm/src/vterm_internal.h \
+objects/vterm_encoding.o: libvterm/src/encoding.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/encoding/DECdrawing.inc libvterm/src/encoding/uk.inc
-objects/keyboard.o: libvterm/src/keyboard.c libvterm/src/vterm_internal.h \
+objects/vterm_keyboard.o: libvterm/src/keyboard.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/utf8.h
-objects/termmouse.o: libvterm/src/termmouse.c libvterm/src/vterm_internal.h \
+objects/vterm_mouse.o: libvterm/src/mouse.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/utf8.h
-objects/parser.o: libvterm/src/parser.c libvterm/src/vterm_internal.h \
+objects/vterm_parser.o: libvterm/src/parser.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/pen.o: libvterm/src/pen.c libvterm/src/vterm_internal.h \
+objects/vterm_pen.o: libvterm/src/pen.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/state.o: libvterm/src/state.c libvterm/src/vterm_internal.h \
+objects/vterm_state.o: libvterm/src/state.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/termscreen.o: libvterm/src/termscreen.c libvterm/src/vterm_internal.h \
+objects/vterm_screen.o: libvterm/src/screen.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/rect.h libvterm/src/utf8.h
-objects/unicode.o: libvterm/src/unicode.c libvterm/src/vterm_internal.h \
+objects/vterm_unicode.o: libvterm/src/unicode.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/vterm.o: libvterm/src/vterm.c libvterm/src/vterm_internal.h \
+objects/vterm_vterm.o: libvterm/src/vterm.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/utf8.h
 objects/xdiffi.o: xdiff/xdiffi.c xdiff/xinclude.h auto/config.h \

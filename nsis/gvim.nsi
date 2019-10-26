@@ -341,13 +341,13 @@ Section "$(str_section_exe)" id_section_exe
 	File ${VIMSRC}\vim${BIT}.dll
 !endif
 	File /oname=install.exe ${VIMSRC}\installw32.exe
-	File /oname=uninstal.exe ${VIMSRC}\uninstalw32.exe
+	File /oname=uninstall.exe ${VIMSRC}\uninstallw32.exe
 	File ${VIMSRC}\vimrun.exe
 	File /oname=tee.exe ${VIMSRC}\teew32.exe
 	File /oname=xxd.exe ${VIMSRC}\xxdw32.exe
 	File ..\vimtutor.bat
 	File ..\README.txt
-	File ..\uninstal.txt
+	File ..\uninstall.txt
 	File ${VIMRT}\*.vim
 	File ${VIMRT}\rgb.txt
 
@@ -955,7 +955,7 @@ Section "un.$(str_unsection_register)" id_unsection_register
 
 	# delete the context menu entry and batch files
 	DetailPrint "$(str_msg_unregistering)"
-	nsExec::Exec "$0\uninstal.exe -nsis"
+	nsExec::Exec "$0\uninstall.exe -nsis"
 	Pop $3
 
 	# We may have been put to the background when uninstall did something.

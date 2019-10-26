@@ -652,9 +652,10 @@ endfunc
 
 " screenshot test with textprop highlighting
 func Test_textprop_screenshot_various()
+  CheckScreendump
   " The Vim running in the terminal needs to use utf-8.
-  if !CanRunVimInTerminal() || g:orig_encoding != 'utf-8'
-    throw 'Skipped: cannot make screendumps or not using utf-8'
+  if g:orig_encoding != 'utf-8'
+    throw 'Skipped: not using utf-8'
   endif
   call writefile([
 	\ "call setline(1, ["
@@ -750,9 +751,7 @@ endfunc
 
 " screenshot test with Visual block mode operations
 func Test_textprop_screenshot_visual()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   " Delete two columns while text props are three chars wide.
   call RunTestVisualBlock(2, '01')
@@ -762,9 +761,7 @@ func Test_textprop_screenshot_visual()
 endfunc
 
 func Test_textprop_after_tab()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
        call setline(1, [
@@ -783,6 +780,28 @@ func Test_textprop_after_tab()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPropTab')
+endfunc
+
+func Test_textprop_with_syntax()
+  CheckScreendump
+
+  let lines =<< trim END
+       call setline(1, [
+             \ "(abc)",
+             \ ])
+       syn match csParens "[()]" display
+       hi! link csParens MatchParen
+
+       call prop_type_add('TPTitle', #{ highlight: 'Title' })
+       call prop_add(1, 2, #{type: 'TPTitle', end_col: 5})
+  END
+  call writefile(lines, 'XtestPropSyn')
+  let buf = RunVimInTerminal('-S XtestPropSyn', {'rows': 6})
+  call VerifyScreenDump(buf, 'Test_textprop_syn_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPropSyn')
 endfunc
 
 " Adding a text property to a new buffer should not fail
@@ -846,4 +865,32 @@ func Test_textprop_in_unloaded_buf()
   bwipe! Xbbb
   cal delete('Xaaa')
   cal delete('Xbbb')
+endfunc
+
+func Test_proptype_substitute2()
+  new
+  " text_prop.vim
+  call setline(1, [
+        \ 'The   num  123 is smaller than 4567.',
+        \ '123 The number 123 is smaller than 4567.',
+        \ '123 The number 123 is smaller than 4567.'])
+
+  call prop_type_add('number', {'highlight': 'ErrorMsg'})
+
+  call prop_add(1, 12, {'length': 3, 'type': 'number'})
+  call prop_add(2, 1, {'length': 3, 'type': 'number'})
+  call prop_add(3, 36, {'length': 4, 'type': 'number'})
+  set ul&
+  let expected = [{'id': 0, 'col': 13, 'end': 1, 'type': 'number', 'length': 3, 'start': 1}, 
+        \ {'id': 0, 'col': 1, 'end': 1, 'type': 'number', 'length': 3, 'start': 1}, 
+        \ {'id': 0, 'col': 50, 'end': 1, 'type': 'number', 'length': 4, 'start': 1}]
+  " Add some text in between
+  %s/\s\+/   /g
+  call assert_equal(expected, prop_list(1) + prop_list(2) + prop_list(3)) 
+
+  " remove some text
+  :1s/[a-z]\{3\}//g
+  let expected = [{'id': 0, 'col': 10, 'end': 1, 'type': 'number', 'length': 3, 'start': 1}]
+  call assert_equal(expected, prop_list(1))
+  bwipe!
 endfunc

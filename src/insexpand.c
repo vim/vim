@@ -2881,7 +2881,7 @@ ins_compl_get_exp(pos_T *ini)
 		    found_new_match = searchit(NULL, ins_buf, pos, NULL,
 							      compl_direction,
 				 compl_pattern, 1L, SEARCH_KEEP + SEARCH_NFMSG,
-					     RE_LAST, (linenr_T)0, NULL, NULL);
+								RE_LAST, NULL);
 		--msg_silent;
 		if (!compl_started || set_match_pos)
 		{
@@ -3861,17 +3861,13 @@ ins_complete(int c, int enable_pum)
 	    if (ctrl_x_mode_line_or_eval())
 	    {
 		// Insert a new line, keep indentation but ignore 'comments'
-#ifdef FEAT_COMMENTS
 		char_u *old = curbuf->b_p_com;
 
 		curbuf->b_p_com = (char_u *)"";
-#endif
 		compl_startpos.lnum = curwin->w_cursor.lnum;
 		compl_startpos.col = compl_col;
 		ins_eol('\r');
-#ifdef FEAT_COMMENTS
 		curbuf->b_p_com = old;
-#endif
 		compl_length = 0;
 		compl_col = curwin->w_cursor.col;
 	    }

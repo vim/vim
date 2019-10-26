@@ -4,6 +4,8 @@
 source check.vim
 CheckFeature spell
 
+source screendump.vim
+
 func TearDown()
   set nospell
   call delete('Xtest.aff')
@@ -128,20 +130,21 @@ endfunc
 
 func Test_spellinfo()
   new
+  let runtime = substitute($VIMRUNTIME, '\\', '/', 'g')
 
   set enc=latin1 spell spelllang=en
-  call assert_match("^\nfile: .*/runtime/spell/en.latin1.spl\n$", execute('spellinfo'))
+  call assert_match("^\nfile: " .. runtime .. "/spell/en.latin1.spl\n$", execute('spellinfo'))
 
   set enc=cp1250 spell spelllang=en
-  call assert_match("^\nfile: .*/runtime/spell/en.ascii.spl\n$", execute('spellinfo'))
+  call assert_match("^\nfile: " .. runtime .. "/spell/en.ascii.spl\n$", execute('spellinfo'))
 
   set enc=utf-8 spell spelllang=en
-  call assert_match("^\nfile: .*/runtime/spell/en.utf-8.spl\n$", execute('spellinfo'))
+  call assert_match("^\nfile: " .. runtime .. "/spell/en.utf-8.spl\n$", execute('spellinfo'))
 
   set enc=latin1 spell spelllang=en_us,en_nz
   call assert_match("^\n" .
-                 \  "file: .*/runtime/spell/en.latin1.spl\n" .
-                 \  "file: .*/runtime/spell/en.latin1.spl\n$", execute('spellinfo'))
+                 \  "file: " .. runtime .. "/spell/en.latin1.spl\n" .
+                 \  "file: " .. runtime.. "/spell/en.latin1.spl\n$", execute('spellinfo'))
 
   set spell spelllang=
   call assert_fails('spellinfo', 'E756:')
@@ -457,6 +460,29 @@ func RunGoodBad(good, bad, expected_words, expected_bad_words)
   let bad_words = TestGoodBadBase()
   call assert_equal(a:expected_bad_words, bad_words)
   bwipe!
+endfunc
+
+func Test_spell_screendump()
+  CheckScreendump
+
+  let lines =<< trim END
+       call setline(1, [
+             \ "This is some text without any spell errors.  Everything",
+             \ "should just be black, nothing wrong here.",
+             \ "",
+             \ "This line has a sepll error. and missing caps.",
+             \ "And and this is the the duplication.",
+             \ "with missing caps here.",
+             \ ])
+       set spell spelllang=en_nz
+  END
+  call writefile(lines, 'XtestSpell')
+  let buf = RunVimInTerminal('-S XtestSpell', {'rows': 8})
+  call VerifyScreenDump(buf, 'Test_spell_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestSpell')
 endfunc
 
 let g:test_data_aff1 = [

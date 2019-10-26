@@ -68,6 +68,23 @@ func Test_terminal_basic()
   unlet g:job
 endfunc
 
+func Test_terminal_TerminalWinOpen()
+  au TerminalWinOpen * let b:done = 'yes'
+  let buf = Run_shell_in_terminal({})
+  call assert_equal('yes', b:done)
+  call StopShellInTerminal(buf)
+  " closing window wipes out the terminal buffer with the finished job
+  close
+
+  if has("unix")
+    terminal ++hidden ++open sleep 1
+    sleep 1
+    call assert_fails("echo b:done", 'E121:')
+  endif
+
+  au! TerminalWinOpen
+endfunc
+
 func Test_terminal_make_change()
   let buf = Run_shell_in_terminal({})
   call StopShellInTerminal(buf)
@@ -570,7 +587,7 @@ func Test_terminal_cwd_failure()
 
   " Case 3: Directory exists but is not accessible.
   " Skip this for root, it will be accessible anyway.
-  if $USER != 'root'
+  if !IsRoot()
     call mkdir('XdirNoAccess', '', '0600')
     " return early if the directory permissions could not be set properly
     if getfperm('XdirNoAccess')[2] == 'x'
@@ -1051,6 +1068,32 @@ func Test_terminal_qall_prompt()
   quit
 endfunc
 
+" Run Vim in a terminal, then start a terminal window with a shell and check
+" that Vim exits if it is closed.
+func Test_terminal_exit()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+     let winid = win_getid()
+     help
+     term
+     let termid = win_getid()
+     call win_gotoid(winid)
+     close
+     call win_gotoid(termid)
+  END
+  call writefile(lines, 'XtermExit')
+  let buf = RunVimInTerminal('-S XtermExit', #{rows: 10})
+  let job = term_getjob(buf)
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
+
+  " quit the shell, it will make Vim exit
+  call term_sendkeys(buf, "exit\<CR>")
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+
+  call delete('XtermExit')
+endfunc
+
 func Test_terminal_open_autocmd()
   augroup repro
     au!
@@ -1138,6 +1181,20 @@ func Test_terminal_dumpload()
   call assert_fails("call term_dumpload('dumps/Test_popup_command_01.dump', {'bufnr': closedbuf})", 'E475:')
 
   quit
+endfunc
+
+func Test_terminal_dumpload_dump()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+     call term_dumpload('dumps/Test_popupwin_22.dump', #{term_rows: 12})
+  END
+  call writefile(lines, 'XtermDumpload')
+  let buf = RunVimInTerminal('-S XtermDumpload', #{rows: 15})
+  call VerifyScreenDump(buf, 'Test_terminal_dumpload', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtermDumpload')
 endfunc
 
 func Test_terminal_dumpdiff()
@@ -1353,30 +1410,89 @@ endfunc
 func Test_terminal_api_call()
   CheckRunVimInTerminal
 
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+
   call WriteApiCall('Tapi_TryThis')
+
+  " Default
   let buf = RunVimInTerminal('-S Xscript', {})
   call WaitFor({-> exists('g:called_bufnum')})
   call assert_equal(buf, g:called_bufnum)
   call assert_equal(['hello', 123], g:called_arg)
-
   call StopVimInTerminal(buf)
+
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+
+  " Enable explicitly
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': 'Tapi_Try'})
+  call WaitFor({-> exists('g:called_bufnum')})
+  call assert_equal(buf, g:called_bufnum)
+  call assert_equal(['hello', 123], g:called_arg)
+  call StopVimInTerminal(buf)
+
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+
+  func! ApiCall_TryThis(bufnum, arg)
+    let g:called_bufnum2 = a:bufnum
+    let g:called_arg2 = a:arg
+  endfunc
+
+  call WriteApiCall('ApiCall_TryThis')
+
+  " Use prefix match
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': 'ApiCall_'})
+  call WaitFor({-> exists('g:called_bufnum2')})
+  call assert_equal(buf, g:called_bufnum2)
+  call assert_equal(['hello', 123], g:called_arg2)
+  call StopVimInTerminal(buf)
+
+  unlet! g:called_bufnum2
+  unlet! g:called_arg2
+
   call delete('Xscript')
-  unlet g:called_bufnum
-  unlet g:called_arg
+  delfunction! ApiCall_TryThis
+  unlet! g:called_bufnum2
+  unlet! g:called_arg2
 endfunc
 
 func Test_terminal_api_call_fails()
   CheckRunVimInTerminal
 
-  call WriteApiCall('TryThis')
-  call ch_logfile('Xlog', 'w')
-  let buf = RunVimInTerminal('-S Xscript', {})
-  call WaitForAssert({-> assert_match('Invalid function name: TryThis', string(readfile('Xlog')))})
+  func! TryThis(bufnum, arg)
+    let g:called_bufnum3 = a:bufnum
+    let g:called_arg3 = a:arg
+  endfunc
 
+  call WriteApiCall('TryThis')
+
+  unlet! g:called_bufnum3
+  unlet! g:called_arg3
+
+  " Not permitted
+  call ch_logfile('Xlog', 'w')
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': ''})
+  call WaitForAssert({-> assert_match('Unpermitted function: TryThis', string(readfile('Xlog')))})
+  call assert_false(exists('g:called_bufnum3'))
+  call assert_false(exists('g:called_arg3'))
   call StopVimInTerminal(buf)
+
+  " No match
+  call ch_logfile('Xlog', 'w')
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': 'TryThat'})
+  call WaitFor({-> string(readfile('Xlog')) =~ 'Unpermitted function: TryThis'})
+  call assert_false(exists('g:called_bufnum3'))
+  call assert_false(exists('g:called_arg3'))
+  call StopVimInTerminal(buf)
+
   call delete('Xscript')
-  call ch_logfile('', '')
+  call ch_logfile('')
   call delete('Xlog')
+  delfunction! TryThis
+  unlet! g:called_bufnum3
+  unlet! g:called_arg3
 endfunc
 
 let s:caught_e937 = 0
@@ -1847,6 +1963,33 @@ func Test_terminal_switch_mode()
   bwipe!
 endfunc
 
+func Test_terminal_normal_mode()
+  CheckRunVimInTerminal
+
+  " Run Vim in a terminal and open a terminal window to run Vim in.
+  let lines =<< trim END
+    call setline(1, range(11111, 11122))
+    3
+  END
+  call writefile(lines, 'XtermNormal')
+  let buf = RunVimInTerminal('-S XtermNormal', {'rows': 8})
+  call term_wait(buf)
+
+  call term_sendkeys(buf, "\<C-W>N")
+  call term_sendkeys(buf, ":set number cursorline culopt=both\r")
+  call VerifyScreenDump(buf, 'Test_terminal_normal_1', {})
+
+  call term_sendkeys(buf, ":set culopt=number\r")
+  call VerifyScreenDump(buf, 'Test_terminal_normal_2', {})
+
+  call term_sendkeys(buf, ":set culopt=line\r")
+  call VerifyScreenDump(buf, 'Test_terminal_normal_3', {})
+
+  call term_sendkeys(buf, "a:q!\<CR>:q\<CR>:q\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('XtermNormal')
+endfunc
+
 func Test_terminal_hidden_and_close()
   CheckUnix
 
@@ -2060,4 +2203,35 @@ func Test_terminal_altscreen()
   call term_sendkeys(buf, "exit\r")
   exe buf . "bwipe!"
   call delete('Xtext')
+endfunc
+
+func Test_terminal_setapi_and_call()
+  if !CanRunVimInTerminal()
+    return
+  endif
+
+  call WriteApiCall('Tapi_TryThis')
+  call ch_logfile('Xlog', 'w')
+
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': 0})
+  call WaitForAssert({-> assert_match('Unpermitted function: Tapi_TryThis', string(readfile('Xlog')))})
+  call assert_false(exists('g:called_bufnum'))
+  call assert_false(exists('g:called_arg'))
+
+  call term_setapi(buf, 'Tapi_TryThis')
+  call term_sendkeys(buf, ":set notitle\<CR>")
+  call term_sendkeys(buf, ":source Xscript\<CR>")
+  call WaitFor({-> exists('g:called_bufnum')})
+  call assert_equal(buf, g:called_bufnum)
+  call assert_equal(['hello', 123], g:called_arg)
+  call StopVimInTerminal(buf)
+
+  call delete('Xscript')
+  call ch_logfile('')
+  call delete('Xlog')
+  unlet! g:called_bufnum
+  unlet! g:called_arg
 endfunc

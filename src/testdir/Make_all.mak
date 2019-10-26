@@ -375,6 +375,7 @@ NEW_TESTS_RES = \
 	test_makeencoding.res \
 	test_man.res \
 	test_maparg.res \
+	test_mapping.res \
 	test_marks.res \
 	test_matchadd_conceal.res \
 	test_memory_usage.res \

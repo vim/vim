@@ -1334,6 +1334,11 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     vterm_state_setpen(state, args, argcount);
     break;
 
+  case LEADER('>', 0x6d): // xterm resource modifyOtherKeys
+    if (argcount == 2 && args[0] == 4)
+      state->mode.modify_other_keys = args[1] == 2;
+    break;
+
   case 0x6e: // DSR - ECMA-48 8.3.35
   case LEADER('?', 0x6e): // DECDSR
     val = CSI_ARG_OR(args[0], 0);

@@ -65,7 +65,9 @@ enum SpecialKey
     KS_KS,	/* put term in "keypad transmit" mode */
     KS_KE,	/* out of "keypad transmit" mode */
     KS_TI,	/* put terminal in termcap mode */
-    KS_TE,	/* out of termcap mode */
+    KS_CTI,	/* put terminal in "raw" mode */
+    KS_TE,	/* end of termcap mode */
+    KS_CTE,	/* end of "raw" mode */
     KS_BC,	/* backspace character (cursor left) */
     KS_CCS,	/* cur is relative to scroll region */
     KS_CCO,	/* number of colors */
@@ -164,7 +166,9 @@ extern char_u *(term_strings[]);    /* current terminal strings */
 #define T_KS	(TERM_STR(KS_KS))	/* put term in "keypad transmit" mode */
 #define T_KE	(TERM_STR(KS_KE))	/* out of "keypad transmit" mode */
 #define T_TI	(TERM_STR(KS_TI))	/* put terminal in termcap mode */
-#define T_TE	(TERM_STR(KS_TE))	/* out of termcap mode */
+#define T_CTI	(TERM_STR(KS_CTI))	/* put terminal in "raw" mode */
+#define T_TE	(TERM_STR(KS_TE))	/* end of termcap mode */
+#define T_CTE	(TERM_STR(KS_CTE))	/* end of "raw" mode */
 #define T_BC	(TERM_STR(KS_BC))	/* backspace character */
 #define T_CCS	(TERM_STR(KS_CCS))	/* cur is relative to scroll region */
 #define T_CCO	(TERM_STR(KS_CCO))	/* number of colors */

@@ -1,17 +1,10 @@
-*textprop.txt*  For Vim version 8.1.  Last change: 2019 Sep 04
+*textprop.txt*  For Vim version 8.1.  Last change: 2019 Oct 23
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
 Displaying text with properties attached.	*textprop* *text-properties*
-
-THIS IS UNDER DEVELOPMENT - ANYTHING MAY STILL CHANGE  *E967*
-
-What is not working yet:
-- Adjusting column/length when inserting text
-- Text properties spanning more than one line
-- prop_find()
 
 
 1. Introduction			|text-prop-intro|
@@ -93,6 +86,12 @@ and/or ends with a specific character, such as the quote surrounding a string.
 
 Nevertheless, when text is inserted or deleted the text may need to be parsed
 and the text properties updated.  But this can be done asynchronously.
+
+
+Internal error *E967*
+
+If you see E967, please report the bug.  You can do this at Github:
+https://github.com/vim/vim/issues/new
 
 ==============================================================================
 2. Functions						*text-prop-functions*

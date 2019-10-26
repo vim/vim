@@ -771,33 +771,32 @@ typedef struct proptype_S
 // Sign group
 typedef struct signgroup_S
 {
-    int		next_sign_id;		// next sign id for this group
-    short_u	refcount;		// number of signs in this group
+    int		sg_next_sign_id;	// next sign id for this group
+    short_u	sg_refcount;		// number of signs in this group
     char_u	sg_name[1];		// sign group name, actually longer
 } signgroup_T;
 
-typedef struct signlist signlist_T;
-
-struct signlist
+typedef struct sign_entry sign_entry_T;
+struct sign_entry
 {
-    int		id;		// unique identifier for each placed sign
-    linenr_T	lnum;		// line number which has this sign
-    int		typenr;		// typenr of sign
-    signgroup_T	*group;		// sign group
-    int		priority;	// priority for highlighting
-    signlist_T	*next;		// next signlist entry
-    signlist_T  *prev;		// previous entry -- for easy reordering
+    int		 se_id;		// unique identifier for each placed sign
+    linenr_T	 se_lnum;	// line number which has this sign
+    int		 se_typenr;	// typenr of sign
+    signgroup_T	 *se_group;	// sign group
+    int		 se_priority;	// priority for highlighting
+    sign_entry_T *se_next;	// next entry in a list of signs
+    sign_entry_T *se_prev;	// previous entry -- for easy reordering
 };
 
 /*
  * Sign attributes. Used by the screen refresh routines.
  */
 typedef struct sign_attrs_S {
-    int		typenr;
-    void	*icon;
-    char_u	*text;
-    int		texthl;
-    int		linehl;
+    int		sat_typenr;
+    void	*sat_icon;
+    char_u	*sat_text;
+    int		sat_texthl;
+    int		sat_linehl;
 } sign_attrs_T;
 
 #if defined(FEAT_SIGNS) || defined(PROTO)
@@ -1134,18 +1133,6 @@ typedef struct
 } vimconv_T;
 
 /*
- * Structure used for reading from the viminfo file.
- */
-typedef struct
-{
-    char_u	*vir_line;	// text of the current line
-    FILE	*vir_fd;	// file descriptor
-    vimconv_T	vir_conv;	// encoding conversion
-    int		vir_version;	// viminfo version detected or -1
-    garray_T	vir_barlines;	// lines starting with |
-} vir_T;
-
-/*
  * Structure used for the command line history.
  */
 typedef struct hist_entry
@@ -1184,6 +1171,8 @@ struct mapblock
     char_u	*m_orig_str;	// rhs as entered by the user
     int		m_keylen;	// strlen(m_keys)
     int		m_mode;		// valid mode
+    int		m_simplified;	// m_keys was simplified, do not use this map
+				// if seenModifyOtherKeys is TRUE
     int		m_noremap;	// if non-zero no re-mapping for m_str
     char	m_silent;	// <silent> used, don't echo commands
     char	m_nowait;	// <nowait> used
@@ -1938,6 +1927,7 @@ struct channel_S {
 #define JO2_ANSI_COLORS	    0x8000	// "ansi_colors"
 #define JO2_TTY_TYPE	    0x10000	// "tty_type"
 #define JO2_BUFNR	    0x20000	// "bufnr"
+#define JO2_TERM_API	    0x40000	// "term_api"
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -2007,6 +1997,8 @@ typedef struct
     long_u	jo_ansi_colors[16];
 # endif
     int		jo_tty_type;	    // first character of "tty_type"
+    char_u	*jo_term_api;
+    char_u	jo_term_api_buf[NUMBUFLEN];
 #endif
 } jobopt_T;
 
@@ -2426,9 +2418,7 @@ struct file_buffer
 #if defined(FEAT_CINDENT) || defined(FEAT_SMARTINDENT)
     char_u	*b_p_cinw;	// 'cinwords'
 #endif
-#ifdef FEAT_COMMENTS
     char_u	*b_p_com;	// 'comments'
-#endif
 #ifdef FEAT_FOLDING
     char_u	*b_p_cms;	// 'commentstring'
 #endif
@@ -2684,7 +2674,7 @@ struct file_buffer
 #endif
 
 #ifdef FEAT_SIGNS
-    signlist_T	*b_signlist;	   // list of signs to draw
+    sign_entry_T *b_signlist;	   // list of placed signs
 # ifdef FEAT_NETBEANS_INTG
     int		b_has_sign_column; // Flag that is set when a first sign is
 				   // added and remains set until the end of
@@ -3879,3 +3869,45 @@ typedef struct spat
     int		    no_scs;	// no smartcase for this pattern
     soffset_T	    off;
 } spat_T;
+
+/*
+ * Optional extra arguments for searchit().
+ */
+typedef struct
+{
+    linenr_T	sa_stop_lnum;	// stop after this line number when != 0
+#ifdef FEAT_RELTIME
+    proftime_T	*sa_tm;		// timeout limit or NULL
+    int		sa_timed_out;	// set when timed out
+#endif
+    int		sa_wrapped;	// search wrapped around
+} searchit_arg_T;
+
+#define WRITEBUFSIZE	8192	// size of normal write buffer
+
+#define FIO_LATIN1	0x01	// convert Latin1
+#define FIO_UTF8	0x02	// convert UTF-8
+#define FIO_UCS2	0x04	// convert UCS-2
+#define FIO_UCS4	0x08	// convert UCS-4
+#define FIO_UTF16	0x10	// convert UTF-16
+#ifdef MSWIN
+# define FIO_CODEPAGE	0x20	// convert MS-Windows codepage
+# define FIO_PUT_CP(x) (((x) & 0xffff) << 16)	// put codepage in top word
+# define FIO_GET_CP(x)	(((x)>>16) & 0xffff)	// get codepage from top word
+#endif
+#ifdef MACOS_CONVERT
+# define FIO_MACROMAN	0x20	// convert MacRoman
+#endif
+#define FIO_ENDIAN_L	0x80	// little endian
+#define FIO_ENCRYPTED	0x1000	// encrypt written bytes
+#define FIO_NOCONVERT	0x2000	// skip encoding conversion
+#define FIO_UCSBOM	0x4000	// check for BOM at start of file
+#define FIO_ALL	-1	// allow all formats
+
+// When converting, a read() or write() may leave some bytes to be converted
+// for the next call.  The value is guessed...
+#define CONV_RESTLEN 30
+
+// We have to guess how much a sequence of bytes may expand when converting
+// with iconv() to be able to allocate a buffer.
+#define ICONV_MULT 8
