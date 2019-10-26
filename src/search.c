@@ -4677,7 +4677,7 @@ abort_search:
 #endif /* FEAT_TEXTOBJ */
 
 /*
- * Check if the pattern is one character long or zero-width.
+ * Check if the pattern is zero-width.
  * If move is TRUE, check from the beginning of the buffer, else from position
  * "cur".
  * "direction" is FORWARD or BACKWARD.
@@ -4851,7 +4851,7 @@ current_search(
 
     // put cursor on last character of match
     curwin->w_cursor = end_pos;
-    if (LT_POS(VIsual, end_pos))
+    if (LT_POS(VIsual, end_pos) && forward)
 	dec_cursor();
     else if (VIsual_active && LT_POS(curwin->w_cursor, VIsual))
 	curwin->w_cursor = pos;   // put the cursor on the start of the match
