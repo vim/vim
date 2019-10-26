@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-09-09 08:53+0200\n"
+"POT-Creation-Date: 2019-10-24 20:05+0200\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -272,6 +272,144 @@ msgstr "[Popup]"
 
 msgid "[Scratch]"
 msgstr "[Scratch]"
+
+msgid "WARNING: The file has been changed since reading it!!!"
+msgstr "ACHTUNG: Die Datei wurde seit dem letzten Lesen geändert!!!"
+
+msgid "Do you really want to write to it"
+msgstr "Möchten Sie sie wirklich schreiben"
+
+msgid "E676: No matching autocommands for acwrite buffer"
+msgstr "E676: Keine übereinstimmenden Autokommandos für acwrite Puffer"
+
+msgid "E203: Autocommands deleted or unloaded buffer to be written"
+msgstr ""
+"E203: Autokommandos haben den zu schreibenden Puffer gelöscht oder entladen"
+
+msgid "E204: Autocommand changed number of lines in unexpected way"
+msgstr ""
+"E204: Autokommandos haben die Anzahl der Zeilen in unerwarteter Weise "
+"verändert"
+
+msgid "NetBeans disallows writes of unmodified buffers"
+msgstr "NetBeans verweigert das Schreiben von unveränderten Puffern."
+
+msgid "Partial writes disallowed for NetBeans buffers"
+msgstr "Partielles Schreiben für NetBeans Puffer verweigert"
+
+msgid "is a directory"
+msgstr "ist ein Verzeichnis"
+
+msgid "is not a file or writable device"
+msgstr "ist keine Datei oder beschreibbares Device"
+
+msgid "writing to device disabled with 'opendevice' option"
+msgstr "Schreiben auf Gerät durch 'opendevice' Option deaktiviert."
+
+msgid "is read-only (add ! to override)"
+msgstr "ist schreibgeschützt (erzwinge mit !)"
+
+msgid "E506: Can't write to backup file (add ! to override)"
+msgstr "E506: Sicherungsdatei kann nicht geschrieben werden (erzwinge mit !)"
+
+msgid "E507: Close error for backup file (add ! to override)"
+msgstr "E507: Fehler beim Schließen der Sicherungsdatei (erzwinge mit !)"
+
+msgid "E508: Can't read file for backup (add ! to override)"
+msgstr "E508: Sicherungsdatei kann nicht gelesen werden (erzwinge mit !)"
+
+msgid "E509: Cannot create backup file (add ! to override)"
+msgstr "E509: Sicherungsdatei kann nicht angelegt werden (erzwinge mit !)"
+
+msgid "E510: Can't make backup file (add ! to override)"
+msgstr "E510: Sicherungsdatei kann nicht erstellt werden (erzwinge mit !)"
+
+msgid "E214: Can't find temp file for writing"
+msgstr "E214: Temporäre Datei kann nicht zum Schreiben geöffnet werden"
+
+msgid "E213: Cannot convert (add ! to write without conversion)"
+msgstr "E213: Fehler bei der Umwandlung (schreibe ohne Umwandlung mit !)"
+
+msgid "E166: Can't open linked file for writing"
+msgstr "E166: Gelinkte Datei kann nicht zum Schreiben geöffnet werden"
+
+msgid "E212: Can't open file for writing"
+msgstr "E212: Datei kann nicht zum Schreiben geöffnet werden"
+
+msgid "E949: File changed while writing"
+msgstr "E949: Datei wurde während des Schreibens verändert"
+
+msgid "E512: Close failed"
+msgstr "E512: Fehler beim Schließen"
+
+msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
+msgstr ""
+"E513: Schreibfehler, Umwandlung schlug fehl (leere 'fenc' um es zu erzwingen)"
+
+#, c-format
+msgid ""
+"E513: write error, conversion failed in line %ld (make 'fenc' empty to "
+"override)"
+msgstr ""
+"E513: Schreibfehler, Konvertierung in Zeile %ld fehlgeschlagen (leere 'fenc' "
+"um es zu erzwingen)"
+
+msgid "E514: write error (file system full?)"
+msgstr "E514: Schreibfehler (Dateisystem voll?)"
+
+msgid " CONVERSION ERROR"
+msgstr "KONVERTIERUNGSFEHLER"
+
+#, c-format
+msgid " in line %ld;"
+msgstr " in Zeile %ld"
+
+msgid "[NOT converted]"
+msgstr "[NICHT konvertiert]"
+
+msgid "[converted]"
+msgstr "[konvertiert]"
+
+msgid "[Device]"
+msgstr "[Ausgabegerät]"
+
+msgid "[New]"
+msgstr "[Neu]"
+
+msgid "[New File]"
+msgstr "[Neue Datei]"
+
+msgid " [a]"
+msgstr " [a]"
+
+msgid " appended"
+msgstr " angefügt"
+
+msgid " [w]"
+msgstr " [w]"
+
+msgid " written"
+msgstr " geschrieben"
+
+msgid "E205: Patchmode: can't save original file"
+msgstr "E205: patchmode: Original-Datei kann nicht gespeichert werden"
+
+msgid "E206: patchmode: can't touch empty original file"
+msgstr "E206: patchmode: leere Original-Datei kann nicht verändert werden"
+
+msgid "E207: Can't delete backup file"
+msgstr "E207: Backup-Datei kann nicht gelöscht werden"
+
+msgid ""
+"\n"
+"WARNING: Original file may be lost or damaged\n"
+msgstr ""
+"\n"
+"ACHTUNG: Original-Datei könnte verloren oder beschädigt sein\n"
+
+msgid "don't quit the editor until the file is successfully written!"
+msgstr ""
+"beenden Sie nicht den Editor bis die Datei erfolgreich geschrieben wurde!"
 
 msgid "W10: Warning: Changing a readonly file"
 msgstr "W10: Achtung: Ändern einer schreibgeschützten Datei"
@@ -742,21 +880,8 @@ msgstr "E736: Unzulässige Funktion für ein Dictionary"
 msgid "E694: Invalid operation for Funcrefs"
 msgstr "E694: Unzulässige Operation für Funktionsreferenzen"
 
-msgid "map() argument"
-msgstr "map() Argument"
-
-msgid "filter() argument"
-msgstr "filter() Argument"
-
-#, c-format
-msgid "E899: Argument of %s must be a List or Blob"
-msgstr "E899: Argument von %s muss eine Liste oder ein Blob sein."
-
 msgid "E808: Number or Float required"
 msgstr "E808: Zahl oder Float benötigt."
-
-msgid "add() argument"
-msgstr "add() Argument"
 
 #, c-format
 msgid "E158: Invalid buffer name: %s"
@@ -790,9 +915,6 @@ msgstr ""
 msgid "called inputrestore() more often than inputsave()"
 msgstr "inputrestore() wurde häufiger als inputsave() aufgerufen."
 
-msgid "insert() argument"
-msgstr "insert() Argument"
-
 msgid "E786: Range not allowed"
 msgstr "E786: Bereich nicht erlaubt"
 
@@ -804,9 +926,6 @@ msgstr "E726: Stride ist Null"
 
 msgid "E727: Start past end"
 msgstr "E727: Start hinter dem Ende"
-
-msgid "<empty>"
-msgstr "<leer>"
 
 msgid "E240: No connection to the X server"
 msgstr "E240: Keine Verbindung zum X-Server"
@@ -824,15 +943,6 @@ msgstr "E941: Server bereits gestartet."
 msgid "E942: +clientserver feature not available"
 msgstr "E942: +clientserver Eigenschaft nicht verfügbar"
 
-msgid "remove() argument"
-msgstr "remove() Argument"
-
-msgid "E655: Too many symbolic links (cycle?)"
-msgstr "E655: Zu viele symbolische Links (zirkulär?)"
-
-msgid "reverse() argument"
-msgstr "reverse() Argument"
-
 msgid "E258: Unable to send to client"
 msgstr "E258: Kann nicht zum Client senden."
 
@@ -846,12 +956,6 @@ msgstr "(Ungültig)"
 #, c-format
 msgid "E935: invalid submatch number: %d"
 msgstr "E935: Ungültige Submatch Nummer: %d"
-
-msgid "E677: Error writing temp file"
-msgstr "E677: Fehler beim Schreiben einer temporären Datei"
-
-msgid "E921: Invalid callback argument"
-msgstr "E921: Ungülgültiges Callback Argument"
 
 msgid "E18: Unexpected characters in :let"
 msgstr "E18: Unerwartete Zeichen in :let"
@@ -932,6 +1036,9 @@ msgstr "Unbekannt"
 #, c-format
 msgid "E742: Cannot change value of %s"
 msgstr "E742: Kann Wert nicht ändern: %s"
+
+msgid "E921: Invalid callback argument"
+msgstr "E921: Ungülgültiges Callback Argument"
 
 #, c-format
 msgid "<%s>%s%s  %d,  Hex %02x,  Oct %03o, Digr %s"
@@ -1180,6 +1287,10 @@ msgstr ""
 msgid "E501: At end-of-file"
 msgstr "E501: Am Dateiende"
 
+#, c-format
+msgid "Executing: %s"
+msgstr "Führe aus: %s"
+
 msgid "E169: Command too recursive"
 msgstr "E169: Befehl zu rekursiv"
 
@@ -1214,8 +1325,8 @@ msgstr "E494: Verwenden Sie w oder w>>"
 msgid ""
 "INTERNAL: Cannot use EX_DFLALL with ADDR_NONE, ADDR_UNSIGNED or ADDR_QUICKFIX"
 msgstr ""
-"INTERN: Kann EX_DFLALL nicht zusammen mit ADDR_NONE, ADDR_UNSIGNED "
-"oder ADDR_QUICKFIX nutzen"
+"INTERN: Kann EX_DFLALL nicht zusammen mit ADDR_NONE, ADDR_UNSIGNED oder "
+"ADDR_QUICKFIX nutzen"
 
 msgid "E943: Command table needs to be updated, run 'make cmdidxs'"
 msgstr ""
@@ -1474,17 +1585,11 @@ msgstr "E812: Autokommandos veränderten Puffer oder Puffername."
 msgid "Illegal file name"
 msgstr "Unzulässiger Dateiname"
 
-msgid "is a directory"
-msgstr "ist ein Verzeichnis"
-
 msgid "is not a file"
 msgstr "ist keine Datei"
 
 msgid "is a device (disabled with 'opendevice' option)"
 msgstr "ist ein Gerät (durch 'opendevice' Option deaktiviert)"
-
-msgid "[New File]"
-msgstr "[Neue Datei]"
 
 msgid "[New DIRECTORY]"
 msgstr "[Neues VERZEICHNIS]"
@@ -1526,12 +1631,6 @@ msgstr "[CR fehlt]"
 msgid "[long lines split]"
 msgstr "[lange Zeilen geteilt]"
 
-msgid "[NOT converted]"
-msgstr "[NICHT konvertiert]"
-
-msgid "[converted]"
-msgstr "[konvertiert]"
-
 #, c-format
 msgid "[CONVERSION ERROR in line %ld]"
 msgstr "UMWANDLUNGSFEHLER in Zeile %ld]"
@@ -1551,126 +1650,6 @@ msgstr "Fehler bei der Umwandlung mit 'charconvert'"
 
 msgid "can't read output of 'charconvert'"
 msgstr "Ausgabe von 'charconvert' kann nicht gelesen werden"
-
-msgid "E676: No matching autocommands for acwrite buffer"
-msgstr "E676: Keine übereinstimmenden Autokommandos für acwrite Puffer"
-
-msgid "E203: Autocommands deleted or unloaded buffer to be written"
-msgstr ""
-"E203: Autokommandos haben den zu schreibenden Puffer gelöscht oder entladen"
-
-msgid "E204: Autocommand changed number of lines in unexpected way"
-msgstr ""
-"E204: Autokommandos haben die Anzahl der Zeilen in unerwarteter Weise "
-"verändert"
-
-msgid "NetBeans disallows writes of unmodified buffers"
-msgstr "NetBeans verweigert das Schreiben von unveränderten Puffern."
-
-msgid "Partial writes disallowed for NetBeans buffers"
-msgstr "Partielles Schreiben für NetBeans Puffer verweigert"
-
-msgid "is not a file or writable device"
-msgstr "ist keine Datei oder beschreibbares Device"
-
-msgid "writing to device disabled with 'opendevice' option"
-msgstr "Schreiben auf Gerät durch 'opendevice' Option deaktiviert."
-
-msgid "is read-only (add ! to override)"
-msgstr "ist schreibgeschützt (erzwinge mit !)"
-
-msgid "E506: Can't write to backup file (add ! to override)"
-msgstr "E506: Sicherungsdatei kann nicht geschrieben werden (erzwinge mit !)"
-
-msgid "E507: Close error for backup file (add ! to override)"
-msgstr "E507: Fehler beim Schließen der Sicherungsdatei (erzwinge mit !)"
-
-msgid "E508: Can't read file for backup (add ! to override)"
-msgstr "E508: Sicherungsdatei kann nicht gelesen werden (erzwinge mit !)"
-
-msgid "E509: Cannot create backup file (add ! to override)"
-msgstr "E509: Sicherungsdatei kann nicht angelegt werden (erzwinge mit !)"
-
-msgid "E510: Can't make backup file (add ! to override)"
-msgstr "E510: Sicherungsdatei kann nicht erstellt werden (erzwinge mit !)"
-
-msgid "E214: Can't find temp file for writing"
-msgstr "E214: Temporäre Datei kann nicht zum Schreiben geöffnet werden"
-
-msgid "E213: Cannot convert (add ! to write without conversion)"
-msgstr "E213: Fehler bei der Umwandlung (schreibe ohne Umwandlung mit !)"
-
-msgid "E166: Can't open linked file for writing"
-msgstr "E166: Gelinkte Datei kann nicht zum Schreiben geöffnet werden"
-
-msgid "E212: Can't open file for writing"
-msgstr "E212: Datei kann nicht zum Schreiben geöffnet werden"
-
-msgid "E949: File changed while writing"
-msgstr "E949: Datei wurde während des Schreibens verändert"
-
-msgid "E512: Close failed"
-msgstr "E512: Fehler beim Schließen"
-
-msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
-msgstr ""
-"E513: Schreibfehler, Umwandlung schlug fehl (leere 'fenc' um es zu erzwingen)"
-
-#, c-format
-msgid ""
-"E513: write error, conversion failed in line %ld (make 'fenc' empty to "
-"override)"
-msgstr ""
-"E513: Schreibfehler, Konvertierung in Zeile %ld fehlgeschlagen (leere 'fenc' "
-"um es zu erzwingen)"
-
-msgid "E514: write error (file system full?)"
-msgstr "E514: Schreibfehler (Dateisystem voll?)"
-
-msgid " CONVERSION ERROR"
-msgstr "KONVERTIERUNGSFEHLER"
-
-#, c-format
-msgid " in line %ld;"
-msgstr " in Zeile %ld"
-
-msgid "[Device]"
-msgstr "[Ausgabegerät]"
-
-msgid "[New]"
-msgstr "[Neu]"
-
-msgid " [a]"
-msgstr " [a]"
-
-msgid " appended"
-msgstr " angefügt"
-
-msgid " [w]"
-msgstr " [w]"
-
-msgid " written"
-msgstr " geschrieben"
-
-msgid "E205: Patchmode: can't save original file"
-msgstr "E205: patchmode: Original-Datei kann nicht gespeichert werden"
-
-msgid "E206: patchmode: can't touch empty original file"
-msgstr "E206: patchmode: leere Original-Datei kann nicht verändert werden"
-
-msgid "E207: Can't delete backup file"
-msgstr "E207: Backup-Datei kann nicht gelöscht werden"
-
-msgid ""
-"\n"
-"WARNING: Original file may be lost or damaged\n"
-msgstr ""
-"\n"
-"ACHTUNG: Original-Datei könnte verloren oder beschädigt sein\n"
-
-msgid "don't quit the editor until the file is successfully written!"
-msgstr ""
-"beenden Sie nicht den Editor bis die Datei erfolgreich geschrieben wurde!"
 
 msgid "[dos]"
 msgstr "[dos]"
@@ -1707,12 +1686,6 @@ msgstr "[noeol]"
 
 msgid "[Incomplete last line]"
 msgstr "[Unvollständige letzte Zeile]"
-
-msgid "WARNING: The file has been changed since reading it!!!"
-msgstr "ACHTUNG: Die Datei wurde seit dem letzten Lesen geändert!!!"
-
-msgid "Do you really want to write to it"
-msgstr "Möchten Sie sie wirklich schreiben"
 
 #, c-format
 msgid "E208: Error writing to \"%s\""
@@ -1791,6 +1764,24 @@ msgstr "E219: Es fehlt ein {."
 
 msgid "E220: Missing }."
 msgstr "E220: Es fehlt ein }."
+
+msgid "<empty>"
+msgstr "<leer>"
+
+msgid "E655: Too many symbolic links (cycle?)"
+msgstr "E655: Zu viele symbolische Links (zirkulär?)"
+
+msgid "Select Directory dialog"
+msgstr "Verzeichnis Auswahl Dialog"
+
+msgid "Save File dialog"
+msgstr "Datei Speichern Dialog"
+
+msgid "Open File dialog"
+msgstr "Datei Öffnen Dialog"
+
+msgid "E338: Sorry, no file browser in console mode"
+msgstr "E338: Kein Datei-Dialog im Konsole-Modus"
 
 msgid "E854: path too long for completion"
 msgstr "E854: Pfad für Vervollständigung zu lang."
@@ -2696,6 +2687,16 @@ msgstr "E573: Ungültige Server ID verwendet: %s"
 msgid "E251: VIM instance registry property is badly formed.  Deleted!"
 msgstr "E251: Registry-Eigenschaft der VIM Instanz ist fehlerhaft. Gelöscht!"
 
+#, c-format
+msgid "%ld lines to indent... "
+msgstr "%ld Zeilen zum Einrücken... "
+
+#, c-format
+msgid "%ld line indented "
+msgid_plural "%ld lines indented "
+msgstr[0] "%ld Zeile eingerückt... "
+msgstr[1] "%ld Zeilen eingerückt... "
+
 msgid " Keyword completion (^N^P)"
 msgstr " Stichwort Vervollständigung (^N^P)"
 
@@ -2804,6 +2805,10 @@ msgid "E938: Duplicate key in JSON: \"%s\""
 msgstr "E938: Doppelter Schlüssel im JSON: \"%s\""
 
 #, c-format
+msgid "E899: Argument of %s must be a List or Blob"
+msgstr "E899: Argument von %s muss eine Liste oder ein Blob sein."
+
+#, c-format
 msgid "E696: Missing comma in List: %s"
 msgstr "E696: Fehlendes Komma in der Liste: %s"
 
@@ -2822,6 +2827,24 @@ msgstr "E702: Die Vergleichsfunktion der Sortierung ist fehlgeschlagen."
 
 msgid "E882: Uniq compare function failed"
 msgstr "E882: Die Uniq Vergleichsfunktion ist fehlgeschlagen."
+
+msgid "map() argument"
+msgstr "map() Argument"
+
+msgid "filter() argument"
+msgstr "filter() Argument"
+
+msgid "add() argument"
+msgstr "add() Argument"
+
+msgid "insert() argument"
+msgstr "insert() Argument"
+
+msgid "remove() argument"
+msgstr "remove() Argument"
+
+msgid "reverse() argument"
+msgstr "reverse() Argument"
 
 msgid "Unknown option argument"
 msgstr "Unbekanntes Optionsargument"
@@ -3938,18 +3961,6 @@ msgstr ""
 "Alle &Verwerfen\n"
 "&Abbrechen"
 
-msgid "Select Directory dialog"
-msgstr "Verzeichnis Auswahl Dialog"
-
-msgid "Save File dialog"
-msgstr "Datei Speichern Dialog"
-
-msgid "Open File dialog"
-msgstr "Datei Öffnen Dialog"
-
-msgid "E338: Sorry, no file browser in console mode"
-msgstr "E338: Kein Datei-Dialog im Konsole-Modus"
-
 msgid "E766: Insufficient arguments for printf()"
 msgstr "E766: Zu wenige Argumente für printf()"
 
@@ -3984,6 +3995,9 @@ msgstr " (Unterbrochen)"
 
 msgid "Beep!"
 msgstr "Beep!"
+
+msgid "E677: Error writing temp file"
+msgstr "E677: Fehler beim Schreiben einer temporären Datei"
 
 msgid "ERROR: "
 msgstr "FEHLER: "
@@ -4055,12 +4069,6 @@ msgstr "E505: %s ist schreibgeschützt (erzwinge mit !)"
 msgid "E349: No identifier under cursor"
 msgstr "E349: Kein Merkmal unter dem Cursor"
 
-msgid "E774: 'operatorfunc' is empty"
-msgstr "E774: 'operatorfunc' is empty"
-
-msgid "E775: Eval feature not available"
-msgstr "E775: Eval Eigenschaft nicht verfügbar"
-
 msgid "Warning: terminal cannot highlight"
 msgstr "Achtung: Terminal unterstützt keine Hervorhebung"
 
@@ -4101,19 +4109,6 @@ msgid_plural "%ld lines %sed %d times"
 msgstr[0] "%ld Zeilen %s %d Mal"
 msgstr[1] "%ld Zeilen %s %d Mal"
 
-#, c-format
-msgid "%ld lines to indent... "
-msgstr "%ld Zeilen zum Einrücken... "
-
-#, c-format
-msgid "%ld line indented "
-msgid_plural "%ld lines indented "
-msgstr[0] "%ld Zeile eingerückt... "
-msgstr[1] "%ld Zeilen eingerückt... "
-
-msgid "E748: No previously used register"
-msgstr "E748: Kein bereits verwendetes Register"
-
 msgid "cannot yank; delete anyway"
 msgstr "kann nicht kopieren; lösche trotzdem"
 
@@ -4122,44 +4117,6 @@ msgid "%ld line changed"
 msgid_plural "%ld lines changed"
 msgstr[0] "%ld Zeile geändert"
 msgstr[1] "%ld Zeilen geändert"
-
-#, c-format
-msgid "freeing %ld lines"
-msgstr "gebe %ld Zeilen frei"
-
-#, c-format
-msgid " into \"%c"
-msgstr " in \"%c"
-
-#, c-format
-msgid "block of %ld line yanked%s"
-msgid_plural "block of %ld lines yanked%s"
-msgstr[0] "Block von %ld Zeile kopiert%s"
-msgstr[1] "Block von %ld Zeilen kopiert%s"
-
-#, c-format
-msgid "%ld line yanked%s"
-msgid_plural "%ld lines yanked%s"
-msgstr[0] "%ld Zeile kopiert%s"
-msgstr[1] "%ld Zeilen kopiert%s"
-
-#, c-format
-msgid "E353: Nothing in register %s"
-msgstr "E353: Register %s ist leer"
-
-msgid ""
-"\n"
-"--- Registers ---"
-msgstr ""
-"\n"
-"--- Register ---"
-
-msgid ""
-"E883: search pattern and expression register may not contain two or more "
-"lines"
-msgstr ""
-"E883: Suchmuster- und Ausdrucksregister dürfen nicht mehr als 1 Zeile "
-"enthalten."
 
 #, c-format
 msgid "%ld Cols; "
@@ -4195,8 +4152,11 @@ msgstr ""
 msgid "(+%lld for BOM)"
 msgstr "(+%lld für BOM)"
 
-msgid "Thanks for flying Vim"
-msgstr "Danke für die Benutzung von Vim"
+msgid "E774: 'operatorfunc' is empty"
+msgstr "E774: 'operatorfunc' is empty"
+
+msgid "E775: Eval feature not available"
+msgstr "E775: Eval Eigenschaft nicht verfügbar"
 
 msgid "E518: Unknown option"
 msgstr "E518: Unbekannte Option"
@@ -4221,6 +4181,65 @@ msgstr "E521: Zahl benötigt nach ="
 msgid "E522: Not found in termcap"
 msgstr "E522: Nicht gefunden in 'termcap'"
 
+msgid "E946: Cannot make a terminal with running job modifiable"
+msgstr "E946: Kann ein Terminal mit einem laufenden Job nicht modifizieren"
+
+msgid "E590: A preview window already exists"
+msgstr "E590: Ein Vorschaufenster existiert bereits"
+
+msgid "W17: Arabic requires UTF-8, do ':set encoding=utf-8'"
+msgstr "W17: Arabisch benötigt UTF-8, bitte ':set encoding=utf-8' ausführen"
+
+msgid "E954: 24-bit colors are not supported on this environment"
+msgstr "E954: 24-bit Farben werden in dieser Umgebung nicht unterstützt"
+
+#, c-format
+msgid "E593: Need at least %d lines"
+msgstr "E593: Mindestens %d Zeilen werden benötigt"
+
+#, c-format
+msgid "E594: Need at least %d columns"
+msgstr "E594: Mindestens %d Spalten werden benötigt"
+
+#, c-format
+msgid "E355: Unknown option: %s"
+msgstr "E355: Unbekannte Option: %s"
+
+#, c-format
+msgid "E521: Number required: &%s = '%s'"
+msgstr "E521: Zahl benötigt: &%s = '%s'"
+
+msgid ""
+"\n"
+"--- Terminal codes ---"
+msgstr ""
+"\n"
+"--- Terminal Codes ---"
+
+msgid ""
+"\n"
+"--- Global option values ---"
+msgstr ""
+"\n"
+"--- Globale Optionswerte ---"
+
+msgid ""
+"\n"
+"--- Local option values ---"
+msgstr ""
+"\n"
+"--- Lokale Optionswerte ---"
+
+msgid ""
+"\n"
+"--- Options ---"
+msgstr ""
+"\n"
+"--- Optionen ---"
+
+msgid "E356: get_varp ERROR"
+msgstr "E356: get_varp FEHLER"
+
 #, c-format
 msgid "E539: Illegal character <%s>"
 msgstr "E539: Unzulässiges Zeichen <%s>"
@@ -4228,6 +4247,15 @@ msgstr "E539: Unzulässiges Zeichen <%s>"
 #, c-format
 msgid "For option %s"
 msgstr "Für Option %s"
+
+msgid "E540: Unclosed expression sequence"
+msgstr "E540: Nicht-geschlossene Ausdrucksfolge"
+
+msgid "E541: too many items"
+msgstr "E541: Zu viele Elemente"
+
+msgid "E542: unbalanced groups"
+msgstr "E542: Unausgewogene Gruppen"
 
 msgid "E529: Cannot set 'term' to empty string"
 msgstr "E529: 'term' darf keine leere Zeichenkette sein"
@@ -4298,77 +4326,6 @@ msgstr "E536: Komma benötigt"
 #, c-format
 msgid "E537: 'commentstring' must be empty or contain %s"
 msgstr "E537: 'commentstring' muss leer sein oder %s enthalten"
-
-msgid "E538: No mouse support"
-msgstr "E538: Keine Maus-Unterstützung"
-
-msgid "E540: Unclosed expression sequence"
-msgstr "E540: Nicht-geschlossene Ausdrucksfolge"
-
-msgid "E541: too many items"
-msgstr "E541: Zu viele Elemente"
-
-msgid "E542: unbalanced groups"
-msgstr "E542: Unausgewogene Gruppen"
-
-msgid "E946: Cannot make a terminal with running job modifiable"
-msgstr "E946: Kann ein Terminal mit einem laufenden Job nicht modifizieren"
-
-msgid "E590: A preview window already exists"
-msgstr "E590: Ein Vorschaufenster existiert bereits"
-
-msgid "W17: Arabic requires UTF-8, do ':set encoding=utf-8'"
-msgstr "W17: Arabisch benötigt UTF-8, bitte ':set encoding=utf-8' ausführen"
-
-msgid "E954: 24-bit colors are not supported on this environment"
-msgstr "E954: 24-bit Farben werden in dieser Umgebung nicht unterstützt"
-
-#, c-format
-msgid "E593: Need at least %d lines"
-msgstr "E593: Mindestens %d Zeilen werden benötigt"
-
-#, c-format
-msgid "E594: Need at least %d columns"
-msgstr "E594: Mindestens %d Spalten werden benötigt"
-
-#, c-format
-msgid "E355: Unknown option: %s"
-msgstr "E355: Unbekannte Option: %s"
-
-#, c-format
-msgid "E521: Number required: &%s = '%s'"
-msgstr "E521: Zahl benötigt: &%s = '%s'"
-
-msgid ""
-"\n"
-"--- Terminal codes ---"
-msgstr ""
-"\n"
-"--- Terminal Codes ---"
-
-msgid ""
-"\n"
-"--- Global option values ---"
-msgstr ""
-"\n"
-"--- Globale Optionswerte ---"
-
-msgid ""
-"\n"
-"--- Local option values ---"
-msgstr ""
-"\n"
-"--- Lokale Optionswerte ---"
-
-msgid ""
-"\n"
-"--- Options ---"
-msgstr ""
-"\n"
-"--- Optionen ---"
-
-msgid "E356: get_varp ERROR"
-msgstr "E356: get_varp FEHLER"
 
 msgid "cannot open "
 msgstr "kann nicht öffnen"
@@ -4595,13 +4552,17 @@ msgstr "Vim Achtung"
 msgid "shell returned %d"
 msgstr "Shell gab %d zurück"
 
+msgid "E278: Cannot put a terminal buffer in a popup window"
+msgstr ""
+"E278: Terminal kann nicht in einem Popup-Fenster geöffnet werdent."
+
 #, c-format
 msgid "E997: Tabpage not found: %d"
 msgstr "E997: Konnte Reiter \"%d\" nicht finden"
 
 #, c-format
 msgid "E993: window %d is not a popup window"
-msgstr "E993: Fenster %d is kein Popup-Fenster"
+msgstr "E993: Fenster %d ist kein Popup-Fenster"
 
 msgid "E994: Not allowed in a popup window"
 msgstr "E994: Nicht innerhalb eines Popup-Fensters erlaubt"
@@ -4733,37 +4694,26 @@ msgstr "E70: %s%%[] ist leer"
 msgid "E956: Cannot use pattern recursively"
 msgstr "E956: Kann Muster nicht rekursiv ausführen"
 
+#, c-format
+msgid "E554: Syntax error in %s{...}"
+msgstr "E554: Syntaxfehler in %s{...}"
+
+#, c-format
+msgid "E888: (NFA regexp) cannot repeat %s"
+msgstr "E888: (NFA regexp) kann nicht wiederholt werden %s"
+
+msgid ""
+"E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
+"used "
+msgstr ""
+"E864: Auf \\%#= muss 0, 1, oder 2 folgen. Die automatische Engine wird "
+"genutzt "
+
+msgid "Switching to backtracking RE engine for pattern: "
+msgstr "Wechsele zur Backtracking RE Engine für Muster: "
+
 msgid "E65: Illegal back reference"
 msgstr "E65: Ungültige Rückreferenz"
-
-msgid "E339: Pattern too long"
-msgstr "E339: Muster zu lang"
-
-msgid "E50: Too many \\z("
-msgstr "E50: Zu viele \\z("
-
-#, c-format
-msgid "E51: Too many %s("
-msgstr "E51: Zu viele %s("
-
-msgid "E52: Unmatched \\z("
-msgstr "E52: \\z( ohne Gegenstück"
-
-#, c-format
-msgid "E59: invalid character after %s@"
-msgstr "E59: Ungültiges Zeichen nach %s@"
-
-#, c-format
-msgid "E60: Too many complex %s{...}s"
-msgstr "E60: Zu viele komplexe %s{...}s"
-
-#, c-format
-msgid "E61: Nested %s*"
-msgstr "E61: Verschachteltes %s*"
-
-#, c-format
-msgid "E62: Nested %s%c"
-msgstr "E62: Verschachteltes %s%c"
 
 msgid "E63: invalid use of \\_"
 msgstr "E63: Ungültige Verwendung von \\_"
@@ -4784,25 +4734,36 @@ msgid "E71: Invalid character after %s%%"
 msgstr "E71: Ungültiges Zeichen nach %s%%"
 
 #, c-format
-msgid "E554: Syntax error in %s{...}"
-msgstr "E554: Syntaxfehler in %s{...}"
+msgid "E59: invalid character after %s@"
+msgstr "E59: Ungültiges Zeichen nach %s@"
+
+#, c-format
+msgid "E60: Too many complex %s{...}s"
+msgstr "E60: Zu viele komplexe %s{...}s"
+
+#, c-format
+msgid "E61: Nested %s*"
+msgstr "E61: Verschachteltes %s*"
+
+#, c-format
+msgid "E62: Nested %s%c"
+msgstr "E62: Verschachteltes %s%c"
+
+msgid "E50: Too many \\z("
+msgstr "E50: Zu viele \\z("
+
+#, c-format
+msgid "E51: Too many %s("
+msgstr "E51: Zu viele %s("
+
+msgid "E52: Unmatched \\z("
+msgstr "E52: \\z( ohne Gegenstück"
+
+msgid "E339: Pattern too long"
+msgstr "E339: Muster zu lang"
 
 msgid "External submatches:\n"
 msgstr "Externe 'submatches':\n"
-
-#, c-format
-msgid "E888: (NFA regexp) cannot repeat %s"
-msgstr "E888: (NFA regexp) kann nicht wiederholt werden %s"
-
-msgid ""
-"E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
-"used "
-msgstr ""
-"E864: Auf \\%#= muss 0, 1, oder 2 folgen. Die automatische Engine wird "
-"genutzt "
-
-msgid "Switching to backtracking RE engine for pattern: "
-msgstr "Wechsele zur Backtracking RE Engine für Muster: "
 
 msgid "E865: (NFA) Regexp end encountered prematurely"
 msgstr "E865: (NFA) Regexp Ende verfrüht aufgetreten"
@@ -4868,6 +4829,47 @@ msgstr "E876: (NFA regexp) Nicht genug Speicher zum Speichern der NFA"
 
 msgid "E878: (NFA) Could not allocate memory for branch traversal!"
 msgstr "E878: (NFA) Konnte nicht Speicher allokieren um Äste zu durchlaufen!"
+
+msgid "E748: No previously used register"
+msgstr "E748: Kein bereits verwendetes Register"
+
+#, c-format
+msgid "freeing %ld lines"
+msgstr "gebe %ld Zeilen frei"
+
+#, c-format
+msgid " into \"%c"
+msgstr " in \"%c"
+
+#, c-format
+msgid "block of %ld line yanked%s"
+msgid_plural "block of %ld lines yanked%s"
+msgstr[0] "Block von %ld Zeile kopiert%s"
+msgstr[1] "Block von %ld Zeilen kopiert%s"
+
+#, c-format
+msgid "%ld line yanked%s"
+msgid_plural "%ld lines yanked%s"
+msgstr[0] "%ld Zeile kopiert%s"
+msgstr[1] "%ld Zeilen kopiert%s"
+
+#, c-format
+msgid "E353: Nothing in register %s"
+msgstr "E353: Register %s ist leer"
+
+msgid ""
+"\n"
+"--- Registers ---"
+msgstr ""
+"\n"
+"--- Register ---"
+
+msgid ""
+"E883: search pattern and expression register may not contain two or more "
+"lines"
+msgstr ""
+"E883: Suchmuster- und Ausdrucksregister dürfen nicht mehr als 1 Zeile "
+"enthalten."
 
 msgid " VREPLACE"
 msgstr " V-ERSETZEN"
@@ -5138,21 +5140,6 @@ msgstr "E797: SpellFileMissing-Autokommando löschte Puffer"
 #, c-format
 msgid "Warning: region %s not supported"
 msgstr "Achtung: Region %s nicht unterstützt"
-
-msgid "Sorry, no suggestions"
-msgstr "Leider keine Vorschläge"
-
-#, c-format
-msgid "Sorry, only %ld suggestions"
-msgstr "Leider nur %ld Vorschläge"
-
-#, c-format
-msgid "Change \"%.*s\" to:"
-msgstr "Ändere \"%.*s\" nach:"
-
-#, c-format
-msgid " < \"%.*s\""
-msgstr " < \"%.*s\""
 
 msgid "E752: No previous spell replacement"
 msgstr "E752: Keine vorhergehende Ersetzung"
@@ -5486,6 +5473,21 @@ msgstr ""
 msgid "E783: duplicate char in MAP entry"
 msgstr "E783: Doppeltes Zeichen im MAP Eintrag"
 
+msgid "Sorry, no suggestions"
+msgstr "Leider keine Vorschläge"
+
+#, c-format
+msgid "Sorry, only %ld suggestions"
+msgstr "Leider nur %ld Vorschläge"
+
+#, c-format
+msgid "Change \"%.*s\" to:"
+msgstr "Ändere \"%.*s\" nach:"
+
+#, c-format
+msgid " < \"%.*s\""
+msgstr " < \"%.*s\""
+
 msgid "No Syntax items defined for this buffer"
 msgstr "Keine Syntax-Elemente für diesen Puffer definiert"
 
@@ -5671,7 +5673,8 @@ msgid "E556: at top of tag stack"
 msgstr "E556: Am Anfang des Tag-Stacks"
 
 msgid "E986: cannot modify the tag stack within tagfunc"
-msgstr "E986: Kann den Tag-Stack nicht innerhalb der tagfunc Funktion verändern"
+msgstr ""
+"E986: Kann den Tag-Stack nicht innerhalb der tagfunc Funktion verändern"
 
 msgid "E987: invalid return value from tagfunc"
 msgstr "E987: Ungültiges Ergebnis der tagfunc Funktion"
@@ -6690,7 +6693,8 @@ msgid "E444: Cannot close last window"
 msgstr "E444: Letztes Fenster kann nicht geschlossen werden"
 
 msgid "E813: Cannot close autocmd or popup window"
-msgstr "E813: Autokommando-Fenster oder Popup-Fenster kann nicht geschlossen werden"
+msgstr ""
+"E813: Autokommando-Fenster oder Popup-Fenster kann nicht geschlossen werden"
 
 msgid "E814: Cannot close window, only autocmd window would remain"
 msgstr ""

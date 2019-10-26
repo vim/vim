@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Oct 16
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Oct 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,20 +38,11 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-'completeopt' "popup" variant that uses a callback after the popup has been
-created, so the contents can be changed.  Make it hidden, callback
-or later has to make it visible. #4924  Setting the buffer contents later
-doesn't work well.
+Termdebug:  Ctrl-W . doesn't work with modifyOtherKeys set.
 
 Popup windows:
 - Use popup (or popup menu) for command line completion
 - Implement flip option
-- Why does 'nrformats' leak from the popup window buffer???
-  Happens in Test_simple_popup() at:
-      call VerifyScreenDump(buf, 'Test_popupwin_04a', {})
-  Only when this line is in defaults.vim:
-    set nrformats-=octal
-- For the "moved" property also include mouse movement?
 - Make redrawing more efficient and avoid flicker:
     - put popup menu also in popup_mask?
 - Any other commands to disable in a popup window?
@@ -62,8 +53,11 @@ Popup windows:
 - When drawing on top half a double-wide character, display ">" or "<" in the
   incomplete cell.
 
-Text properties: See comment at top of src/textprop.c.
+Text properties:
 - Implement prop_find() #4970
+- Adjusting column/length when inserting text
+- Text properties spanning more than one line
+- prop_find()
 
 'incsearch' with :s: (#3321)
 - Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
@@ -99,8 +93,6 @@ Terminal debugger:
   with another Vim instance.
 
 Terminal emulator window:
-- When typing "exit" in a terminal window with a shell and it's the only
-  window, should exit Vim instead of editing another buffer. (#4539)
 - When the job in the terminal doesn't use mouse events, let the scroll wheel
   scroll the scrollback, like a terminal does at the shell prompt. #2490
   And use modeless selection.  #2962
@@ -137,27 +129,13 @@ E279, E290, E292, E362, E366, E450, E451, E452,
 E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
 E654, E856, E857, E860, E861, E863, E889, E900
 
-Try out enabling modifyOtherKeys in xterm:
-     CSI > 4 ; 2 m
-Need to disable when going to cooked mode:
-    CSI > 4 ; m
-Known problems:
--  CTRL-V key inserts Esc sequence
-
-Patch to skip tests that don't work when run as root. (James McCoy, #5020)
-Or just bail out completely?
-
-Patch to test right click. (Dominique Pelle, #5018)
-
-Python output doesn't stop when got_int is set. #5053
-Check got_int in write_output() in if_py_both.h?
+"gN" does not work properly with single-char search pattern. (Jaehwang Jerry
+Jung, #5075)
 
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif? Now test_gui crashes in submenu_change().
 Athena is OK.
 Motif: Build on Ubuntu can't enter any text in dialog text fields.
-
-Improve running tests on MS-Windows: #4922
 
 In a function these two lines are different:
     let [a, b, c] =<< trim END      fails
@@ -165,7 +143,7 @@ In a function these two lines are different:
 issue #5051
 
 Patch to properly break CJK lines: Anton Kochkov, #3875
-Should be ready to include now.
+Flag in 'formatoptions' is not used in the tests.
 
 Remove check for cmd_silent when calling search_stat()? (Gary Johnson)
 
@@ -338,6 +316,8 @@ Error drawing the number column when 'cursorline' is set. (#3893)
 
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
 
+Add an argument to expandcmd() to expand like ":next" does.
+
 The quoting of the [command] argument of :terminal is not clearly documented.
 Give a few examples. (#4288)
 
@@ -352,8 +332,6 @@ Patch for this (Tristan Konolige, #1011, only adds the option, no implem.):
 Bug: script written with "-W scriptout" contains Key codes, while the script
 read with "-s scriptin" expects escape codes.  Probably "scriptout" needs to
 be adjusted. (Daniel Steinberg, 2019 Feb 24, #4041)
-
-":registers" should indicate char/block/linewise.  (Ayberk Aydin, #4546)
 
 Patch for ambiguous width characters in libvterm on MS-Windows 10.
 (Nobuhiro Takasaki, #4411)
@@ -630,6 +608,9 @@ MS-Windows: .lnk file not resolved properly when 'encoding' is set.
 Merge checking for 'cursorline' and 'concealcursor', see neovim #9492.
 
 Display error when a conceal match uses '\%>1l'. (#4854)
+
+Add a windowID argument to placing a sign, so that it only shows up in one
+window for the buffer.
 
 Request to add sign_setlist() to make it faster to add a lot of signs, e.g.
 when adding a sign for every quickfix entry. (#4557)
