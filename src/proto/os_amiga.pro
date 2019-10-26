@@ -43,4 +43,5 @@ int mch_has_exp_wildcard(char_u *p);
 int mch_has_wildcard(char_u *p);
 char_u *mch_getenv(char_u *var);
 int mch_setenv(char *var, char *value, int x);
+void mch_setmouse(int on);
 /* vim: set ft=c : */
