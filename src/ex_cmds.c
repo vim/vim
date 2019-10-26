@@ -3856,7 +3856,6 @@ do_sub(exarg_T *eap)
 	    colnr_T	matchcol;
 	    colnr_T	prev_matchcol = MAXCOL;
 	    char_u	*new_end, *new_start = NULL;
-	    colnr_T	total_added =  0;
 	    unsigned	new_start_len = 0;
 	    char_u	*p1;
 	    int		did_sub = FALSE;
@@ -3868,6 +3867,7 @@ do_sub(exarg_T *eap)
 	    linenr_T	sub_firstlnum;	/* nr of first sub line */
 #ifdef FEAT_TEXT_PROP
 	    int		apc_flags = APC_SAVE_FOR_UNDO | APC_SUBSTITUTE;
+	    colnr_T	total_added =  0;
 #endif
 
 	    /*
