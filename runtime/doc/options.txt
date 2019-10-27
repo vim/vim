@@ -5191,12 +5191,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'mouse'* *E538*
 'mouse'			string	(default "", "a" for GUI, MS-DOS and Win32,
-						 set to "a" in |defaults.vim|)
+					set to "a" or "nvi" in |defaults.vim|)
 			global
-	Enable the use of the mouse.  Only works for certain terminals
-	(xterm, MS-DOS, Win32 |win32-mouse|, QNX pterm, *BSD console with
-	sysmouse and Linux console with gpm).  For using the mouse in the
-	GUI, see |gui-mouse|.
+	Enable the use of the mouse.  Works for most terminals (xterm, MS-DOS,
+	Win32 |win32-mouse|, QNX pterm, *BSD console with sysmouse and Linux
+	console with gpm).  For using the mouse in the GUI, see |gui-mouse|.
 	The mouse can be enabled for different modes:
 		n	Normal mode and Terminal modes
 		v	Visual mode
@@ -5207,7 +5206,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 		r	for |hit-enter| and |more-prompt| prompt
 	Normally you would enable the mouse in all five modes with: >
 		:set mouse=a
-<	When the mouse is not enabled, the GUI will still use the mouse for
+<	If your terminal can't overrule the mouse events going to the
+	application, use: >
+		:set mouse=nvi
+<	The you can press ":", select text for the system, and press Esc to go
+	back to Vim using the mouse events.
+	In |defaults.vim| "nvi" is used if the 'term' option is not matching
+	"xterm".
+
+	When the mouse is not enabled, the GUI will still use the mouse for
 	modeless selection.  This doesn't move the text cursor.
 
 	See |mouse-using|.  Also see |'clipboard'|.

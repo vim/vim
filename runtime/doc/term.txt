@@ -746,12 +746,21 @@ jump to tags).
 Whether the selection that is started with the mouse is in Visual mode or
 Select mode depends on whether "mouse" is included in the 'selectmode'
 option.
-
+							*terminal-mouse*
 In an xterm, with the currently active mode included in the 'mouse' option,
 normal mouse clicks are used by Vim, mouse clicks with the shift or ctrl key
 pressed go to the xterm.  With the currently active mode not included in
 'mouse' all mouse clicks go to the xterm.
 
+For terminals where it is not possible to have the mouse events be used by the
+terminal itself by using a modifier, a workaround is to not use mouse events
+for Vim in command-line mode: >
+	:set mouse=nvi
+Then to select text with the terminal, use ":" to go to command-line mode,
+select and copy the text to the system, then press Esc.
+
+Another way is to temporarily use ":sh" to run a shell, copy the text, then
+exit the shell.  'mouse' can remain set to "a" then.
 							*xterm-clipboard*
 In the Athena and Motif GUI versions, when running in a terminal and there is
 access to the X-server (DISPLAY is set), the copy and paste will behave like
