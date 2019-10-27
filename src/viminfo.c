@@ -2152,7 +2152,7 @@ write_viminfo_filemarks(FILE *fp)
 /*
  * Compare functions for qsort() below, that compares b_last_used.
  */
-    static int
+    int
 buf_compare(const void *s1, const void *s2)
 {
     buf_T *buf1 = *(buf_T **)s1;

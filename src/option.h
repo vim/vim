@@ -338,6 +338,7 @@
 #define WIM_FULL	0x01
 #define WIM_LONGEST	0x02
 #define WIM_LIST	0x04
+#define WIM_BUFLASTUSED	0x08
 
 // arguments for can_bs()
 #define BS_INDENT	'i'	// "Indent"

@@ -139,3 +139,15 @@ function Test_get_win_options()
     set foldlevel=0
   endif
 endfunc
+
+function Test_getbufinfo_lastused()
+  call test_settime(1234567)
+  edit Xtestfile1
+  enew
+  call test_settime(7654321)
+  edit Xtestfile2
+  enew
+  call assert_equal(getbufinfo('Xtestfile1')[0].lastused, 1234567)
+  call assert_equal(getbufinfo('Xtestfile2')[0].lastused, 7654321)
+  call test_settime(0)
+endfunc

@@ -106,7 +106,6 @@ static void u_getbot(void);
 static void u_doit(int count);
 static void u_undoredo(int undo);
 static void u_undo_end(int did_undo, int absolute);
-static void u_add_time(char_u *buf, size_t buflen, time_t tt);
 static void u_freeheader(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
 static void u_freebranch(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
 static void u_freeentries(buf_T *buf, u_header_T *uhp, u_header_T **uhpp);
@@ -2973,7 +2972,7 @@ u_undo_end(
     if (uhp == NULL)
 	*msgbuf = NUL;
     else
-	u_add_time(msgbuf, sizeof(msgbuf), uhp->uh_time);
+	add_time(msgbuf, sizeof(msgbuf), uhp->uh_time);
 
 #ifdef FEAT_CONCEAL
     {
@@ -3050,7 +3049,7 @@ ex_undolist(exarg_T *eap UNUSED)
 		break;
 	    vim_snprintf((char *)IObuff, IOSIZE, "%6ld %7d  ",
 							uhp->uh_seq, changes);
-	    u_add_time(IObuff + STRLEN(IObuff), IOSIZE - STRLEN(IObuff),
+	    add_time(IObuff + STRLEN(IObuff), IOSIZE - STRLEN(IObuff),
 								uhp->uh_time);
 	    if (uhp->uh_save_nr > 0)
 	    {
@@ -3121,37 +3120,6 @@ ex_undolist(exarg_T *eap UNUSED)
 	msg_end();
 
 	ga_clear_strings(&ga);
-    }
-}
-
-/*
- * Put the timestamp of an undo header in "buf[buflen]" in a nice format.
- */
-    static void
-u_add_time(char_u *buf, size_t buflen, time_t tt)
-{
-#ifdef HAVE_STRFTIME
-    struct tm	tmval;
-    struct tm	*curtime;
-
-    if (vim_time() - tt >= 100)
-    {
-	curtime = vim_localtime(&tt, &tmval);
-	if (vim_time() - tt < (60L * 60L * 12L))
-	    /* within 12 hours */
-	    (void)strftime((char *)buf, buflen, "%H:%M:%S", curtime);
-	else
-	    /* longer ago */
-	    (void)strftime((char *)buf, buflen, "%Y/%m/%d %H:%M:%S", curtime);
-    }
-    else
-#endif
-    {
-	long seconds = (long)(vim_time() - tt);
-
-	vim_snprintf((char *)buf, buflen,
-		NGETTEXT("%ld second ago", "%ld seconds ago", seconds),
-		seconds);
     }
 }
 
