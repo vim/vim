@@ -1127,6 +1127,16 @@ win_line(
 				  || wp->w_p_culopt_flags & CULOPT_LINE))
 			char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_CLN));
 #endif
+		      if (wp->w_p_rnu && lnum < wp->w_cursor.lnum
+						      && HL_ATTR(HLF_LNA) != 0)
+			  // Use LineNrAbove
+			  char_attr = hl_combine_attr(wcr_attr,
+							     HL_ATTR(HLF_LNA));
+		      if (wp->w_p_rnu && lnum > wp->w_cursor.lnum
+						      && HL_ATTR(HLF_LNB) != 0)
+			  // Use LineNrBelow
+			  char_attr = hl_combine_attr(wcr_attr,
+							     HL_ATTR(HLF_LNB));
 		    }
 		}
 	    }
