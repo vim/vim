@@ -563,11 +563,14 @@ func Test_terminal_finish_open_close()
 endfunc
 
 func Test_terminal_cwd()
-  if !executable('pwd')
-    return
+  if has('win32')
+    let cmd = 'cmd /c cd'
+  else
+    CheckExecutable pwd
+    let cmd = 'pwd'
   endif
   call mkdir('Xdir')
-  let buf = term_start('pwd', {'cwd': 'Xdir'})
+  let buf = term_start(cmd, {'cwd': 'Xdir'})
   call WaitForAssert({-> assert_equal('Xdir', fnamemodify(getline(1), ":t"))})
 
   exe buf . 'bwipe'
@@ -2031,7 +2034,13 @@ func Test_terminal_does_not_truncate_last_newlines()
 endfunc
 
 func Test_terminal_no_job()
-  let term = term_start('false', {'term_finish': 'close'})
+  if has('win32')
+    let cmd = 'cmd /c ""'
+  else
+    CheckExecutable false
+    let cmd = 'false'
+  endif
+  let term = term_start(cmd, {'term_finish': 'close'})
   call WaitForAssert({-> assert_equal(v:null, term_getjob(term)) })
 endfunc
 
