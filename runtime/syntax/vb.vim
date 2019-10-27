@@ -4,6 +4,7 @@
 " Former Maintainer:	Robert M. Cortopassi <cortopar@mindspring.com>
 "	(tried multiple times to contact, but email bounced)
 " Last Change:
+"   2019 Oct 27  Added class keyword by Luca Pedrale
 "   2005 May 25  Synched with work by Thomas Barthel
 "   2004 May 30  Added a few keywords
 
@@ -225,6 +226,7 @@ syn keyword vbStatement Return RmDir SavePicture SaveSetting Seek SendKeys
 syn keyword vbStatement Sendkeys Set SetAttr Static Step Stop Sub Time
 syn keyword vbStatement Type Unload Unlock Until Wend While Width With
 syn keyword vbStatement Write
+syn keyword vbStatement Class
 
 syn keyword vbKeyword As Binary ByRef ByVal Date Empty Error Friend Get
 syn keyword vbKeyword Input Is Len Lock Me Mid New Nothing Null On
