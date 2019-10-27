@@ -2663,7 +2663,10 @@ errorret:
 		/* Avoid giving this message for a recursive call, may happen
 		 * when the GUI redraws part of the text. */
 		++recursive;
-		siemsg(_("E316: ml_get: cannot find line %ld"), lnum);
+		get_trans_bufname(buf);
+		shorten_dir(NameBuff);
+		siemsg(_("E316: ml_get: cannot find line %ld in buffer %d %s"),
+						  lnum, buf->b_fnum, NameBuff);
 		--recursive;
 	    }
 	    goto errorret;

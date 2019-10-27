@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Oct 13
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Oct 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4242,8 +4242,8 @@ expandcmd({expr})					*expandcmd()*
 		Expand special items in {expr} like what is done for an Ex
 		command such as `:edit`.  This expands special keywords, like
 		with |expand()|, and environment variables, anywhere in
-		{expr}.  Returns the expanded string.
-		Example: >
+		{expr}.  "~user" and "~/path" are only expanded at the start.
+		Returns the expanded string.  Example: >
 			:echo expandcmd('make %<.o')
 
 <		Can also be used as a |method|: >
@@ -4778,6 +4778,10 @@ getbufinfo([{dict}])
 			changed		TRUE if the buffer is modified.
 			changedtick	number of changes made to the buffer.
 			hidden		TRUE if the buffer is hidden.
+			lastused	timestamp in seconds, like
+					|localtime()|, when the buffer was
+					last used.
+					{only with the |+viminfo| feature}
 			listed		TRUE if the buffer is listed.
 			lnum		current line number in buffer.
 			loaded		TRUE if the buffer is loaded.
@@ -6492,8 +6496,8 @@ listener_add({callback} [, {buf}])			*listener_add()*
 		    a:bufnr	the buffer that was changed
 		    a:start	first changed line number
 		    a:end	first line number below the change
-		    a:added	total number of lines added, negative if lines
-				were deleted
+		    a:added	number of lines added, negative if lines were
+				deleted
 		    a:changes	a List of items with details about the changes
 
 		Example: >
@@ -7506,7 +7510,7 @@ pum_getpos()						*pum_getpos()*
 			row		top screen row (0 first row)
 			col		leftmost screen column (0 first col)
 			size		total nr of items
-			scrollbar	|TRUE| if visible
+			scrollbar	|TRUE| if scrollbar is visible
 
 		The values are the same as in |v:event| during
 		|CompleteChanged|.

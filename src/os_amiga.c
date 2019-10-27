@@ -658,6 +658,12 @@ mch_can_restore_icon(void)
 }
 #endif
 
+    void
+mch_setmouse(int on UNUSED)
+{
+    // TODO: implement
+}
+
 /*
  * Insert user name in s[len].
  */

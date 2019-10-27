@@ -595,6 +595,10 @@ get_buffer_info(buf_T *buf)
     }
 #endif
 
+#ifdef FEAT_VIMINFO
+    dict_add_number(dict, "lastused", buf->b_last_used);
+#endif
+
     return dict;
 }
 

@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.1.  Last change: 2019 Aug 18
+*windows.txt*   For Vim version 8.1.  Last change: 2019 Oct 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -312,6 +312,9 @@ CTRL-W CTRL-Q						*CTRL-W_CTRL-Q*
 		    :+quit  " quit the next window
 		    :+2quit " quit the second next window
 <
+		When closing a help window, Vim will try to restore the
+		previous window layout |:helpclose|.
+
 :q[uit]!
 :{count}q[uit]!
 		Without {count}: Quit the current window.  If {count} is
@@ -1087,6 +1090,7 @@ list of buffers. |unlisted-buffer|
 		     R	 terminal buffers with a running job
 		     F	 terminal buffers with a finished job
 		     ?   terminal buffers without a job: `:terminal NONE`
+		     t   show time last used and sort buffers
 		Combining flags means they are "and"ed together, e.g.:
 		     h+   hidden buffers which are modified
 		     a+   active buffers which are modified

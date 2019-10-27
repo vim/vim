@@ -690,6 +690,8 @@ term_start(
     }
 
     apply_autocmds(EVENT_TERMINALOPEN, NULL, NULL, FALSE, newbuf);
+    if (!opt->jo_hidden && !(flags & TERM_START_SYSTEM))
+	apply_autocmds(EVENT_TERMINALWINOPEN, NULL, NULL, FALSE, newbuf);
     return newbuf;
 }
 

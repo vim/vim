@@ -68,6 +68,23 @@ func Test_terminal_basic()
   unlet g:job
 endfunc
 
+func Test_terminal_TerminalWinOpen()
+  au TerminalWinOpen * let b:done = 'yes'
+  let buf = Run_shell_in_terminal({})
+  call assert_equal('yes', b:done)
+  call StopShellInTerminal(buf)
+  " closing window wipes out the terminal buffer with the finished job
+  close
+
+  if has("unix")
+    terminal ++hidden ++open sleep 1
+    sleep 1
+    call assert_fails("echo b:done", 'E121:')
+  endif
+
+  au! TerminalWinOpen
+endfunc
+
 func Test_terminal_make_change()
   let buf = Run_shell_in_terminal({})
   call StopShellInTerminal(buf)

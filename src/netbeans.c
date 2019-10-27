@@ -2977,16 +2977,16 @@ netbeans_deleted_all_lines(buf_T *bufp)
     int
 netbeans_is_guarded(linenr_T top, linenr_T bot)
 {
-    signlist_T	*p;
-    int		lnum;
+    sign_entry_T	*p;
+    int			lnum;
 
     if (!NETBEANS_OPEN)
 	return FALSE;
 
-    for (p = curbuf->b_signlist; p != NULL; p = p->next)
-	if (p->id >= GUARDEDOFFSET)
+    for (p = curbuf->b_signlist; p != NULL; p = p->se_next)
+	if (p->se_id >= GUARDEDOFFSET)
 	    for (lnum = top + 1; lnum < bot; lnum++)
-		if (lnum == p->lnum)
+		if (lnum == p->se_lnum)
 		    return TRUE;
 
     return FALSE;
@@ -3091,36 +3091,36 @@ netbeans_draw_multisign_indicator(int row)
     void
 netbeans_gutter_click(linenr_T lnum)
 {
-    signlist_T	*p;
+    sign_entry_T	*p;
 
     if (!NETBEANS_OPEN)
 	return;
 
-    for (p = curbuf->b_signlist; p != NULL; p = p->next)
+    for (p = curbuf->b_signlist; p != NULL; p = p->se_next)
     {
-	if (p->lnum == lnum && p->next && p->next->lnum == lnum)
+	if (p->se_lnum == lnum && p->se_next && p->se_next->se_lnum == lnum)
 	{
-	    signlist_T *tail;
+	    sign_entry_T *tail;
 
 	    /* remove "p" from list, reinsert it at the tail of the sublist */
-	    if (p->prev)
-		p->prev->next = p->next;
+	    if (p->se_prev)
+		p->se_prev->se_next = p->se_next;
 	    else
-		curbuf->b_signlist = p->next;
-	    p->next->prev = p->prev;
+		curbuf->b_signlist = p->se_next;
+	    p->se_next->se_prev = p->se_prev;
 	    /* now find end of sublist and insert p */
-	    for (tail = p->next;
-		  tail->next && tail->next->lnum == lnum
-					    && tail->next->id < GUARDEDOFFSET;
-		  tail = tail->next)
+	    for (tail = p->se_next;
+		  tail->se_next && tail->se_next->se_lnum == lnum
+				       && tail->se_next->se_id < GUARDEDOFFSET;
+		  tail = tail->se_next)
 		;
 	    /* tail now points to last entry with same lnum (except
 	     * that "guarded" annotations are always last) */
-	    p->next = tail->next;
-	    if (tail->next)
-		tail->next->prev = p;
-	    p->prev = tail;
-	    tail->next = p;
+	    p->se_next = tail->se_next;
+	    if (tail->se_next)
+		tail->se_next->se_prev = p;
+	    p->se_prev = tail;
+	    tail->se_next = p;
 	    update_debug_sign(curbuf, lnum);
 	    break;
 	}

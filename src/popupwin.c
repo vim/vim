@@ -71,8 +71,9 @@ popup_options_one(dict_T *dict, char_u *key)
     else // "col"
 	n = screen_screencol() + 1 + n;
 
-    if (n < 1)
-	n = 1;
+    // Zero means "not set", use -1 instead.
+    if (n == 0)
+	n = -1;
     return n;
 }
 
@@ -222,7 +223,7 @@ popup_start_drag(win_T *wp, int row, int col)
 {
     drag_start_row = mouse_row;
     drag_start_col = mouse_col;
-    if (wp->w_wantline == 0)
+    if (wp->w_wantline <= 0)
 	drag_start_wantline = wp->w_winrow + 1;
     else
 	drag_start_wantline = wp->w_wantline;
@@ -1082,6 +1083,7 @@ popup_adjust_position(win_T *wp)
     int		minwidth;
     int		wantline = wp->w_wantline;  // adjusted for textprop
     int		wantcol = wp->w_wantcol;    // adjusted for textprop
+    int		use_wantcol = wantcol != 0;
 
     wp->w_winrow = 0;
     wp->w_wincol = 0;
@@ -1093,10 +1095,6 @@ popup_adjust_position(win_T *wp)
     // "topline"
     if (wp->w_popup_last_curline != wp->w_cursor.lnum)
 	popup_highlight_curline(wp);
-
-    // If no line was specified default to vertical centering.
-    if (wantline == 0)
-	center_vert = TRUE;
 
     if (wp->w_popup_prop_type > 0 && win_valid(wp->w_popup_prop_win))
     {
@@ -1151,6 +1149,19 @@ popup_adjust_position(win_T *wp)
 	else
 	    // left of the text
 	    wantcol = screen_scol + wantcol - 2;
+	use_wantcol = TRUE;
+    }
+    else
+    {
+	// If no line was specified default to vertical centering.
+	if (wantline == 0)
+	    center_vert = TRUE;
+	else if (wantline < 0)
+	    // If "wantline" is negative it actually means zero.
+	    wantline = 0;
+	if (wantcol < 0)
+	    // If "wantcol" is negative it actually means zero.
+	    wantcol = 0;
     }
 
     if (wp->w_popup_pos == POPPOS_CENTER)
@@ -1162,14 +1173,14 @@ popup_adjust_position(win_T *wp)
     else
     {
 	if (wantline > 0 && (wp->w_popup_pos == POPPOS_TOPLEFT
-		|| wp->w_popup_pos == POPPOS_TOPRIGHT))
+					|| wp->w_popup_pos == POPPOS_TOPRIGHT))
 	{
 	    wp->w_winrow = wantline - 1;
 	    if (wp->w_winrow >= Rows)
 		wp->w_winrow = Rows - 1;
 	}
 
-	if (wantcol == 0)
+	if (!use_wantcol)
 	    center_hor = TRUE;
 	else if (wantcol > 0 && (wp->w_popup_pos == POPPOS_TOPLEFT
 		|| wp->w_popup_pos == POPPOS_BOTLEFT))
@@ -1372,8 +1383,8 @@ popup_adjust_position(win_T *wp)
 	    // bottom aligned: may move down
 	    wp->w_winrow = wantline - (wp->w_height + extra_height);
 	else
-	    // not enough space, make top aligned
-	    wp->w_winrow = wantline + 1;
+	    // Not enough space, make top aligned.
+	    wp->w_winrow = (wantline < 0 ? 0 : wantline) + 1;
     }
     if (wp->w_winrow >= Rows)
 	wp->w_winrow = Rows - 1;
