@@ -1255,19 +1255,19 @@ msgid "continuing in %s"
 msgstr "наставља се у %s"
 
 msgid "modeline"
-msgstr "режимска линија (modeline)"
+msgstr "режимскe линијe (modeline)"
 
 msgid "--cmd argument"
-msgstr "--cmd аргумент"
+msgstr "--cmd аргументa"
 
 msgid "-c argument"
-msgstr "-c аргумент"
+msgstr "-c аргументa"
 
 msgid "environment variable"
-msgstr "променљива окружења"
+msgstr "променљивe окружења"
 
 msgid "error handler"
-msgstr "процедура за обраду грешке"
+msgstr "процедурe за обраду грешке"
 
 msgid "W15: Warning: Wrong line separator, ^M may be missing"
 msgstr "W15: Упозорење: Погрешан сепаратор линије, можда недостаје ^M"
