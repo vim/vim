@@ -4263,7 +4263,7 @@ msgid "E520: Not allowed in a modeline"
 msgstr "E520: Није довољено у режимској линији"
 
 msgid "E846: Key code not set"
-msgstr "E846: Није постављрн код тастера"
+msgstr "E846: Није постављeн код тастера"
 
 msgid "E521: Number required after ="
 msgstr "E521: Потребан је број након ="
