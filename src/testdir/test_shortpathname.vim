@@ -1,6 +1,9 @@
 " Test for shortpathname ':8' extension.
 " Only for use on Win32 systems!
 
+set encoding=utf-8
+scriptencoding utf-8
+
 source check.vim
 CheckMSWindows
 
@@ -63,6 +66,35 @@ func Test_ColonEight()
   call delete(file2)
   call delete(file1)
   call delete(dir2, 'd')
+  call delete(dir1, 'd')
+
+  exe "cd " . save_dir
+endfunc
+
+func Test_ColonEight_MultiByte()
+  let save_dir = getcwd()
+
+  " This could change for CygWin to //cygdrive/c
+  let dir1 = 'c:/日本語のフォルダ'
+  if filereadable(dir1) || isdirectory(dir1)
+    call assert_report("Fatal: '" . dir1 . "' exists, cannot run test")
+    return
+  endif
+
+  let file1 = dir1 . '/日本語のファイル.txt'
+
+  call mkdir(dir1)
+  let resdir1 = substitute(fnamemodify(dir1, ':p:8'), '/$', '', '')
+  call assert_match('\V\^c:/日本語~1\$', resdir1)
+
+  let resfile1 = resdir1 . '/日本語~1.TXT'
+
+  call writefile([], file1)
+
+  call TestIt(file1, ':p:8', resfile1)
+
+  cd c:/
+  call delete(file1)
   call delete(dir1, 'd')
 
   exe "cd " . save_dir
