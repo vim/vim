@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 8.1.  Last change: 2019 Jun 02
+*motion.txt*    For Vim version 8.1.  Last change: 2019 Oct 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -226,6 +226,12 @@ g^			When lines wrap ('wrap' on): To the first non-blank
 							*gm*
 gm			Like "g0", but half a screenwidth to the right (or as
 			much as possible).
+
+							*gm* *gM*
+gM			Like "g0", but to halfway the text of the line.
+			With a count: to this percentage of text in the line.
+			Thus "10gM" is near the start of the text and "90gM"
+			is near the end of the text.
 
 							*g$* *g<End>*
 g$ or g<End>		When lines wrap ('wrap' on): To the last character of

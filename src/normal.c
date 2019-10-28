@@ -5979,6 +5979,24 @@ nv_g_cmd(cmdarg_T *cap)
 	curwin->w_set_curswant = TRUE;
 	break;
 
+    case 'M':
+	{
+	    char_u  *ptr = ml_get_curline();
+
+	    oap->motion_type = MCHAR;
+	    oap->inclusive = FALSE;
+	    if (has_mbyte)
+		i = mb_string2cells(ptr, STRLEN(ptr));
+	    else
+		i = (int)STRLEN(ptr);
+	    if (cap->count0 > 0 && cap->count0 <= 100)
+		coladvance((colnr_T)(i * cap->count0 / 100));
+	    else
+		coladvance((colnr_T)(i / 2));
+	    curwin->w_set_curswant = TRUE;
+	}
+	break;
+
     case '_':
 	/* "g_": to the last non-blank character in the line or <count> lines
 	 * downward. */
