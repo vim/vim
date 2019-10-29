@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Oct 26
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Oct 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1662,6 +1662,10 @@ PREDEFINED VIM VARIABLES			*vim-variable* *v:var* *v:*
 								*E963*
 Some variables can be set by the user, but the type cannot be changed.
 
+					*v:argv* *argv-variable*
+v:argv		The command line arguments Vim was invoked with.  This is a
+		list of strings.  The first item is the Vim command.
+
 					*v:beval_col* *beval_col-variable*
 v:beval_col	The number of the column, over which the mouse pointer is.
 		This is the byte index in the |v:beval_lnum| line.
@@ -3034,6 +3038,7 @@ argv([{nr} [, {winid}])
 		the whole |arglist| is returned.
 
 		The {winid} argument specifies the window ID, see |argc()|.
+		For the Vim command line arguments see |v:argv|.
 
 
 assert_ functions are documented here: |assert-functions-details|
