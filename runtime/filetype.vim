@@ -385,7 +385,7 @@ au BufNewFile,BufRead configure.in,configure.ac setf config
 au BufNewFile,BufRead *.cu,*.cuh		setf cuda
 
 " Dockerfile
-au BufNewFile,BufRead Dockerfile,*.Dockerfile	setf dockerfile
+au BufNewFile,BufRead Containerfile,Dockerfile,*.Dockerfile	setf dockerfile
 
 " WildPackets EtherPeek Decoder
 au BufNewFile,BufRead *.dcd			setf dcd
