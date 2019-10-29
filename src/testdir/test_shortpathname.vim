@@ -72,30 +72,18 @@ func Test_ColonEight()
 endfunc
 
 func Test_ColonEight_MultiByte()
-  let save_dir = getcwd()
+  let dir = 'Xtest'
 
-  " This could change for CygWin to //cygdrive/c
-  let dir1 = 'c:/日本語のフォルダ'
-  if filereadable(dir1) || isdirectory(dir1)
-    call assert_report("Fatal: '" . dir1 . "' exists, cannot run test")
-    return
-  endif
+  let file = dir . '/日本語のファイル.txt'
 
-  let file1 = dir1 . '/日本語のファイル.txt'
+  call mkdir(dir)
+  call writefile([], file)
 
-  call mkdir(dir1)
-  let resdir1 = substitute(fnamemodify(dir1, ':p:8'), '/$', '', '')
-  call assert_match('\V\^c:/日本語~1\$', resdir1)
+  let sfile = fnamemodify(file, ':8')
 
-  let resfile1 = resdir1 . '/日本語~1.TXT'
+  call assert_notequal(file, sfile)
+  call assert_match('\~', sfile)
 
-  call writefile([], file1)
-
-  call TestIt(file1, ':p:8', resfile1)
-
-  cd c:/
-  call delete(file1)
-  call delete(dir1, 'd')
-
-  exe "cd " . save_dir
+  call delete(file)
+  call delete(dir, 'd')
 endfunc
