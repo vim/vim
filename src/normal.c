@@ -870,13 +870,13 @@ getcount:
 	 */
 	if (cp != NULL)
 	{
-#ifdef CURSOR_SHAPE
 	    if (repl)
 	    {
 		State = REPLACE;	/* pretend Replace mode */
+#ifdef CURSOR_SHAPE
 		ui_cursor_shape();	/* show different cursor shape */
-	    }
 #endif
+	    }
 	    if (lang && curbuf->b_p_iminsert == B_IMODE_LMAP)
 	    {
 		/* Allow mappings defined with ":lmap". */
@@ -913,9 +913,7 @@ getcount:
 	    }
 	    p_smd = save_smd;
 #endif
-#ifdef CURSOR_SHAPE
 	    State = NORMAL_BUSY;
-#endif
 #ifdef FEAT_CMDL_INFO
 	    need_flushbuf |= add_to_showcmd(*cp);
 #endif
