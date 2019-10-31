@@ -3947,6 +3947,11 @@ do_sub(exarg_T *eap)
 		    VIM_CLEAR(sub_firstline);
 		}
 
+		// Match might be after the last line for "\n\zs" matching at
+		// the end of the last line.
+		if (lnum > curbuf->b_ml.ml_line_count)
+		    break;
+
 		if (sub_firstline == NULL)
 		{
 		    sub_firstline = vim_strsave(ml_get(sub_firstlnum));
