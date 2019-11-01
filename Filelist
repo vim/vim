@@ -663,6 +663,7 @@ RT_ALL =	\
 		runtime/doc/*.txt \
 		runtime/doc/Makefile \
 		runtime/doc/doctags.c \
+		runtime/doc/doctags.vim \
 		runtime/doc/test_urls.vim \
 		runtime/doc/vim.1 \
 		runtime/doc/evim.1 \

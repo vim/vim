@@ -142,7 +142,10 @@ script:
       "${SRCDIR}"/vim --not-a-term -u NONE -S "${SRCDIR}"/testdir/if_ver-2.vim -c quit > /dev/null
       cat if_ver.txt
     fi
-  - do_test make ${SHADOWOPT} ${TEST} && FOLD_MARKER=travis_fold
+  - >
+    do_test make ${SHADOWOPT} ${TEST} &&
+    make -C runtime/doc vimtags VIMEXE=../../"${SRCDIR}"/vim &&
+    FOLD_MARKER=travis_fold
   - echo -en "${FOLD_MARKER}:end:test\\r\\033[0K"
 
 
