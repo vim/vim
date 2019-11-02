@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Oct 26
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 02
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -40,7 +40,27 @@ browser use: https://github.com/vim/vim/issues/1234
 
 Termdebug:  Ctrl-W . doesn't work with modifyOtherKeys set.
 
+Cannot scroll popup window with mouse in GUI? (#5138)
+
+Add a way to make ":term cmd" run "cmd" in a shell, instead of executing it
+directly.  Perhaps ":term ++shell cmd". (issue #3340)
+
+Include netrw 166a?
+
+In a function these two lines are different:
+    let [a, b, c] =<< trim END      fails
+    let [a,b,c] =<< trim END        works
+issue #5051
+
+Make 'showbreak' global-local.
+
+Update libvterm on github, rename termscreen.c back to screen.c.
+
+Graduate FEAT_TAG_BINS and make LSIZE for tags bigger.
+
 Popup windows:
+- When using "botleft" for "pos" and there is not enough space, positioning
+  goes below, but this must not happen if there is less space there. #5151
 - Use popup (or popup menu) for command line completion
 - Implement flip option
 - Make redrawing more efficient and avoid flicker:
@@ -54,14 +74,14 @@ Popup windows:
   incomplete cell.
 
 Text properties:
-- Implement prop_find() #4970
+- Implement prop_find() issue #4970
 - Adjusting column/length when inserting text
 - Text properties spanning more than one line
-- prop_find()
+- See remakrs at top of src/textprop.c
 
-'incsearch' with :s: (#3321)
+'incsearch' with :s: 
 - Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
-  was set. (#3837)
+  was set. (issue #3837)
 - :s/foo  using CTRL-G moves to another line, should not happen, or use the
   correct line (it uses the last but one line) (Lifepillar, Aug 18, #3345)
 - :s@pat/tern@ doesn't include "/" in the pattern. (Takahiro Yoshihara, #3637)
@@ -73,7 +93,7 @@ Text properties:
   Then :%s?foo should take the first match above the cursor line.
 
 Prompt buffer:
-- Add a command line history, using up/down keys.  #5010
+- Add a command line history, using up/down keys.  issue #5010
 - delay next prompt until plugin gives OK?
 - add prompt_addtext({buf}, {expr})	none	add text to a prompt buffer
 
@@ -86,7 +106,7 @@ Terminal debugger:
 - Termdebug does not work when Vim was build with mzscheme: gdb hangs just
   after "run".  Everything else works, including communication channel.  Not
   initializing mzscheme avoid the problem, thus it's not some #ifdef.
-- Add support for lldb?  #3565
+- Add support for lldb?  issue #3565
 - Could we do something similar for debugging Vim scripts?  At least see the
   script while stepping through it.  Simple version would use an extra window.
   More complete solution would actually run Vim in a Terminal and control it
@@ -104,8 +124,6 @@ Terminal emulator window:
 - Allow for specifying the directory, with ++cwd={dir}.
 - With a vertical split only one window is updated. (Linwei, 2018 Jun 2,
   #2977)
-- Add a way to make ":term cmd" run "cmd" in a shell, instead of executing it
-  directly.  Perhaps ":term ++shell cmd". (#3340)
 - When pasting should call vterm_keyboard_start_paste(), e.g. when using
   K_MIDDLEMOUSE, calling insert_reg().
 - Users expect parsing the :term argument like a shell does, also support
@@ -129,18 +147,10 @@ E279, E290, E292, E362, E366, E450, E451, E452,
 E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
 E654, E856, E857, E860, E861, E863, E889, E900
 
-"gN" does not work properly with single-char search pattern. (Jaehwang Jerry
-Jung, #5075)
-
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif? Now test_gui crashes in submenu_change().
 Athena is OK.
 Motif: Build on Ubuntu can't enter any text in dialog text fields.
-
-In a function these two lines are different:
-    let [a, b, c] =<< trim END      fails
-    let [a,b,c] =<< trim END        works
-issue #5051
 
 Patch to properly break CJK lines: Anton Kochkov, #3875
 Flag in 'formatoptions' is not used in the tests.
@@ -153,14 +163,9 @@ Undo puts cursor in wrong line after "cG<Esc>" undo.
 
 Sound: support on Mac?  Or does libcanberra work there?
 
-Patch for #4733: #4734.  Test needs improvements.
-
-Patch to sort buffers on b_last_used time.  (Andy Massimino, #4722)
-
-Patch to highlight the line number differently below the cursor line. (Shaun
-Brady, #624)
-
-Patch to add more tests for cmd.exe: #4928
+Patch to user manual: #5098.  Comments by DC Slagel:
+- semicolon use should be OK.
+- Keep capital after colon.
 
 Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
 20)
@@ -174,9 +179,6 @@ terminal.c and then CTRL-N twice.
 Should do current file first and not split it up when more results are found.
 (Also #1890)
 
-Patch to use timers in matchparen. (Daniel Hahler, #1338)
-Ready to include now?
-
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
 
@@ -187,24 +189,15 @@ Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 goes to any buffer, and then :bnext skips help buffers, since they are
 unlisted. (#4478)
 
-Patch to fix using zero sc_sid. (#4877)
-
 Enable 'termbidi' if $VTE_VERSION >= 5703 ?
 
 Universal solution to detect if t_RS is working, using cursor position.
 Koichi Iwamoto, #2126
 
-Make 'showbreak' global-local.
-
 The :syntax cchar value can only be a single character.  It would be useful to
 support combining characters. (Charles Campbell)  Also #4687
 
-Patch to make gM move to middle of line. (Yasuhiro Matsumoto, Sep 8, #2070)
-
-Patch to add v:argv, arguments that Vim was started with. (Dmitri
-Vereshchagin, #1322)
-
-New value "uselast" for 'switchbuf'. (Lemonboy, 2017 Apr 23, #1652)
+Patch: New value "uselast" for 'switchbuf'. (Lemonboy, 2017 Apr 23, #1652)
 
 Include Haiku port. (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 It can replace the BeOS code, which is likely not used anymore.
@@ -332,6 +325,12 @@ Patch for this (Tristan Konolige, #1011, only adds the option, no implem.):
 Bug: script written with "-W scriptout" contains Key codes, while the script
 read with "-s scriptin" expects escape codes.  Probably "scriptout" needs to
 be adjusted. (Daniel Steinberg, 2019 Feb 24, #4041)
+
+Add a string to the 'display' option ("smoothscroll" ?) to make CTRL-E and
+CTRL-Y scroll one screen line, also if this means the first line doesn't start
+with the first character (like what happens with a last line that doesn't
+fit).  Display "<<<" at the start of the first visible line (like "@@@" is
+displayed in the last line). (Arseny Nasokin,  #5154)
 
 Patch for ambiguous width characters in libvterm on MS-Windows 10.
 (Nobuhiro Takasaki, #4411)
@@ -1146,6 +1145,9 @@ sort() is not stable when using numeric/float sort (Nikolay Pavlov, 2016 Sep
 
 +channel:
 - Add a in_cb, invoked when the write buffer has become empty. (Matteo Landi)
+- Add ch_readlines(): for a channel in NL mode, reads as many lines as are
+  available.  Should be more efficient than looping over ch_read() with
+  ch_status() to check for more.
 - Add a separate timeout for opening a socket.  Currently it's fixed at 50
   msec, which is too small for a remote connection. (tverniquet, #2130)
 - Problem with stderr on Windows? (Vincent Rischmann, 2016 Aug 31, #1026)
@@ -4629,9 +4631,6 @@ Messages:
 
 
 Screen updating:
-7   Add a string to the 'display' option to make CTRL-E and CTRL-Y scroll one
-    screen line, also if this means the first line doesn't start with the
-    first character (like what happens with a single line that doesn't fit).
 -   screen_line():
     - insert/delete character stuff.
     - improve delete rest of line (spaces at end of line).

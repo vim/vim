@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.1.  Last change: 2019 Oct 12
+*term.txt*      For Vim version 8.1.  Last change: 2019 Oct 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

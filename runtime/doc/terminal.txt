@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 Oct 20
+*terminal.txt*	For Vim version 8.1.  Last change: 2019 Nov 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1173,8 +1173,12 @@ Example session ~
 							*termdebug-example*
 Start in the Vim "src" directory and build Vim: >
 	% make
+Make sure that debug symbols are present, usually that means that $CFLAGS
+includes "-g".
+
 Start Vim: >
 	% ./vim
+
 Load the termdebug plugin and start debugging Vim: >
 	:packadd termdebug
 	:Termdebug vim

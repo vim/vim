@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Oct 26
+*options.txt*	For Vim version 8.1.  Last change: 2019 Nov 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6453,8 +6453,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	See |option-backslash| about including spaces and backslashes.
 	Environment variables are expanded |:set_env|.
 
-	If the name of the shell contains a space, you might need to enclose
-	it in quotes or escape the space.  Example with quotes: >
+	If the name of the shell contains a space, you need to enclose it in
+	quotes and escape the space.  Example: >
 		:set shell=\"c:\program\ files\unix\sh.exe\"\ -f
 <	Note the backslash before each quote (to avoid starting a comment) and
 	each space (to avoid ending the option value).  Also note that the
