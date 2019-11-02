@@ -899,8 +899,8 @@ adjust_clip_reg(int *rp)
 	    *rp = ((clip_unnamed & CLIP_UNNAMED_PLUS) && clip_plus.available)
 								  ? '+' : '*';
 	else
-	    *rp = ((clip_unnamed_saved & CLIP_UNNAMED_PLUS) && clip_plus.available)
-								  ? '+' : '*';
+	    *rp = ((clip_unnamed_saved & CLIP_UNNAMED_PLUS)
+					   && clip_plus.available) ? '+' : '*';
     }
     if (!clip_star.available && *rp == '*')
 	*rp = 0;
@@ -1288,7 +1288,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 		&& !oap->block_mode
 		&& yanklines == 1)
 	    yanklines = 0;
-	// Some versions of Vi use ">=" here, some don't... 
+	// Some versions of Vi use ">=" here, some don't...
 	if (yanklines > p_report)
 	{
 	    char namebuf[100];

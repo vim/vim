@@ -3497,7 +3497,7 @@ struct VimMenu
 #ifdef FEAT_GUI_MAC
 //  MenuHandle	id;
 //  short	index;		    // the item index within the father menu
-    short	menu_id;	    // the menu id to which this item belong
+    short	menu_id;	    // the menu id to which this item belongs
     short	submenu_id;	    // the menu id of the children (could be
 				    // get through some tricks)
     MenuHandle	menu_handle;

@@ -2307,7 +2307,7 @@ copy_viminfo_marks(
 			else
 			{
 			    // No timestamp, must be written by an older Vim.
-			    // Assume all remaining buffers are older then
+			    // Assume all remaining buffers are older than
 			    // ours.
 			    while (count < num_marked_files
 					    && buflist_used < buflist->ga_len)
@@ -3201,7 +3201,7 @@ write_viminfo(char_u *file, int forceit)
 	    {
 		if (st_old.st_uid != tmp_st.st_uid)
 		    // Changing the owner might fail, in which case the
-		    // file will now owned by the current user, oh well.
+		    // file will now be owned by the current user, oh well.
 		    vim_ignored = fchown(fileno(fp_out), st_old.st_uid, -1);
 		if (st_old.st_gid != tmp_st.st_gid
 			&& fchown(fileno(fp_out), -1, st_old.st_gid) == -1)

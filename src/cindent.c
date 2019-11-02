@@ -1778,10 +1778,10 @@ parse_cino(buf_T *buf)
     // should be located.
     buf->b_ind_continuation = sw;
 
-    // Spaces from the indent of the line with an unclosed parentheses.
+    // Spaces from the indent of the line with an unclosed parenthesis.
     buf->b_ind_unclosed = sw * 2;
 
-    // Spaces from the indent of the line with an unclosed parentheses, which
+    // Spaces from the indent of the line with an unclosed parenthesis, which
     // itself is also unclosed.
     buf->b_ind_unclosed2 = sw;
 
@@ -1795,7 +1795,7 @@ parse_cino(buf_T *buf)
     buf->b_ind_unclosed_wrapped = 0;
 
     // Suppress ignoring white space when lining up with the character after
-    // an unclosed parentheses.
+    // an unclosed parenthesis.
     buf->b_ind_unclosed_whiteok = 0;
 
     // Indent a closing parentheses under the line start of the matching
@@ -2725,7 +2725,7 @@ get_c_indent(void)
 		if (curwin->w_cursor.lnum <= ourscope)
 		{
 		    // We reached end of scope:
-		    // If looking for a enum or structure initialization
+		    // If looking for an enum or structure initialization
 		    // go further back:
 		    // If it is an initializer (enum xxx or xxx =), then
 		    // don't add ind_continuation, otherwise it is a variable
@@ -2785,7 +2785,7 @@ get_c_indent(void)
 			    if (terminated == ',')
 				break;
 
-			    // if it es a enum declaration or an assignment,
+			    // if it is an enum declaration or an assignment,
 			    // we are done.
 			    if (terminated != ';' && cin_isinit())
 				break;
@@ -3083,7 +3083,7 @@ get_c_indent(void)
 		//   123,
 		//   sizeof
 		//	  here
-		// Otherwise check whether it is a enumeration or structure
+		// Otherwise check whether it is an enumeration or structure
 		// initialisation (not indented) or a variable declaration
 		// (indented).
 		terminated = cin_isterminated(l, FALSE, TRUE);

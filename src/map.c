@@ -1924,7 +1924,7 @@ check_map_keycodes(void)
     save_name = sourcing_name;
     sourcing_name = (char_u *)"mappings"; // avoids giving error messages
 
-    // This this once for each buffer, and then once for global
+    // Do this once for each buffer, and then once for global
     // mappings/abbreviations with bp == NULL
     for (bp = firstbuf; ; bp = bp->b_next)
     {

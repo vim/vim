@@ -990,7 +990,7 @@ spell_suggest_intern(suginfo_T *su, int interactive)
     {
 	if (sps_flags & SPS_BEST)
 	    // Adjust the word score for the suggestions found so far for how
-	    // they sounds like.
+	    // they sound like.
 	    rescore_suggestions(su);
 
 	// While going through the soundfold tree "su_maxscore" is the score

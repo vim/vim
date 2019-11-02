@@ -12,13 +12,12 @@
  *
  * TODO:
  * - Adjust text property column and length when text is inserted/deleted.
- *   -> :substitute with multiple matches, issue #4427
  *   -> a :substitute with a multi-line match
  *   -> search for changed_bytes() from misc1.c
  *   -> search for mark_col_adjust()
  * - Perhaps we only need TP_FLAG_CONT_NEXT and can drop TP_FLAG_CONT_PREV?
- * - Add an arrray for global_proptypes, to quickly lookup a prop type by ID
- * - Add an arrray for b_proptypes, to quickly lookup a prop type by ID
+ * - Add an array for global_proptypes, to quickly lookup a prop type by ID
+ * - Add an array for b_proptypes, to quickly lookup a prop type by ID
  * - Checking the text length to detect text properties is slow.  Use a flag in
  *   the index, like DB_MARKED?
  * - Also test line2byte() with many lines, so that ml_updatechunk() is taken
@@ -126,7 +125,7 @@ lookup_prop_type(char_u *name, buf_T *buf)
  * When the argument is not used or "bufnr" is not present then "buf" is
  * unchanged.
  * If "bufnr" is valid or not present return OK.
- * When "arg" is not a dict or "bufnr" is invalide return FAIL.
+ * When "arg" is not a dict or "bufnr" is invalid return FAIL.
  */
     static int
 get_bufnr_from_arg(typval_T *arg, buf_T **buf)

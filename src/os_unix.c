@@ -877,7 +877,7 @@ sig_alarm SIGDEFARG(sigarg)
 static JMP_BUF lc_jump_env;
 
 # ifdef SIGHASARG
-// Caught signal number, 0 when no was signal caught; used for mch_libcall().
+// Caught signal number, 0 when no signal was caught; used for mch_libcall().
 // Volatile because it is used in signal handlers.
 static volatile sig_atomic_t lc_signal;
 # endif
@@ -3067,7 +3067,7 @@ executable_file(char_u *name)
 	return 0;
 #ifdef VMS
     /* Like on Unix system file can have executable rights but not necessarily
-     * be an executable, but on Unix is not a default for an ordianry file to
+     * be an executable, but on Unix is not a default for an ordinary file to
      * have an executable flag - on VMS it is in most cases.
      * Therefore, this check does not have any sense - let keep us to the
      * conventions instead:
