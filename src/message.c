@@ -1616,7 +1616,7 @@ msg_make(char_u *arg)
 msg_outtrans_special(
     char_u	*strstart,
     int		from,	// TRUE for lhs of a mapping
-    int		maxlen) // screen columns, 0 for unlimeted
+    int		maxlen) // screen columns, 0 for unlimited
 {
     char_u	*str = strstart;
     int		retval = 0;

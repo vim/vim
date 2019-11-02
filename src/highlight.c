@@ -4346,7 +4346,7 @@ prepare_search_hl_line(
  * After end, check for start/end of next match.
  * When another match, have to check for start again.
  * Watch out for matching an empty string!
- * Return the udpated search_attr.
+ * Return the updated search_attr.
  */
     int
 update_search_hl(

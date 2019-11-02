@@ -325,7 +325,7 @@ typedef unsigned short	short_u;
 typedef unsigned int	int_u;
 
 // Older systems do not have support for long long
-// use a typedef instead of hadcoded long long
+// use a typedef instead of hard-coded long long
 #ifdef HAVE_NO_LONG_LONG
  typedef long long_long_T;
  typedef long unsigned long_long_u_T;

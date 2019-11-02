@@ -1861,7 +1861,7 @@ qf_new_list(qf_info_T *qi, char_u *qf_title)
 
     // If the current entry is not the last entry, delete entries beyond
     // the current entry.  This makes it possible to browse in a tree-like
-    // way with ":grep'.
+    // way with ":grep".
     while (qi->qf_listcount > qi->qf_curlist + 1)
 	qf_free(&qi->qf_lists[--qi->qf_listcount]);
 
@@ -5224,7 +5224,7 @@ qf_find_entry_after_pos(
 	int		*errornr)
 {
     if (qf_entry_after_pos(qfp, pos, linewise))
-	// First entry is after postion 'pos'
+	// First entry is after position 'pos'
 	return qfp;
 
     // Find the entry just before or at the position 'pos'

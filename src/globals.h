@@ -99,7 +99,7 @@ EXTERN short	*TabPageIdxs INIT(= NULL);
 // Array with size Rows x Columns containing zindex of popups.
 EXTERN short	*popup_mask INIT(= NULL);
 EXTERN short	*popup_mask_next INIT(= NULL);
-// Array with flags for tansparent cells of current popup.
+// Array with flags for transparent cells of current popup.
 EXTERN char	*popup_transparent INIT(= NULL);
 
 // Flag set to TRUE when popup_mask needs to be updated.
@@ -393,7 +393,7 @@ EXTERN int include_link INIT(= 0);	// when 2 include "link" and "clear"
  * character just after the match in the last line.
  */
 EXTERN int	highlight_match INIT(= FALSE);	// show search match pos
-EXTERN linenr_T	search_match_lines;		// lines of of matched string
+EXTERN linenr_T	search_match_lines;		// lines of matched string
 EXTERN colnr_T	search_match_endcol;		// col nr of match end
 #ifdef FEAT_SEARCH_EXTRA
 EXTERN linenr_T	search_first_line INIT(= 0);	  // for :{FIRST},{last}s/pat

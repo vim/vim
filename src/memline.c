@@ -2318,7 +2318,7 @@ swapfile_unchanged(char_u *fname)
 	ret = FALSE;
 
 #if defined(UNIX) || defined(MSWIN)
-    // process must known and not be running
+    // process must be known and not be running
     pid = char_to_long(b0.b0_pid);
     if (pid == 0L || mch_process_running(pid))
 	ret = FALSE;

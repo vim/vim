@@ -1504,7 +1504,7 @@ before_blocking(void)
 }
 
 /*
- * updatescipt() is called when a character can be written into the script file
+ * updatescript() is called when a character can be written into the script file
  * or when we have waited some time for a character (c == 0)
  *
  * All the changed memfiles are synced if c == 0 or when the number of typed
