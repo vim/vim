@@ -1764,6 +1764,42 @@ func Test_popup_scrollbar()
       call popup_setoptions(g:winid, #{border: [], close: 'button'})
       call feedkeys("\<F5>\<LeftMouse>", "xt")
     endfunc
+    func Popup_filter(winid, key)
+      if a:key == 'j'
+	let line = popup_getoptions(a:winid).firstline
+	let nlines = line('$', a:winid)
+	let newline = line < nlines ? (line + 1) : nlines
+	call popup_setoptions(a:winid, #{firstline: newline})
+	return v:true
+      elseif a:key == 'x'
+	call popup_close(a:winid)
+	return v:true
+      endif
+    endfunc
+
+    func PopupScroll()
+      call popup_clear()
+      let text =<< trim END
+	  1
+	  2
+	  3
+	  4
+	  long line long line long line long line long line long line
+	  long line long line long line long line long line long line
+	  long line long line long line long line long line long line
+      END
+      call popup_create(text, #{
+	    \ minwidth: 30,
+	    \ maxwidth: 30,
+	    \ minheight: 4,
+	    \ maxheight: 4,
+	    \ firstline: 1,
+	    \ wrap: v:true,
+	    \ scrollbar: v:true,
+	    \ mapping: v:false,
+	    \ filter: funcref('Popup_filter')
+	    \ })
+    endfunc
     map <silent> <F3> :call test_setmouse(5, 36)<CR>
     map <silent> <F4> :call test_setmouse(4, 42)<CR>
     map <silent> <F5> :call test_setmouse(7, 42)<CR>
@@ -1810,6 +1846,15 @@ func Test_popup_scrollbar()
   call term_sendkeys(buf, ":call popup_setoptions(winid, #{maxheight: 0, minwidth: 0})\<CR>")
   call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_scroll_10', {})
+
+  " check size with non-wrapping lines
+  call term_sendkeys(buf, ":call PopupScroll()\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_scroll_11', {})
+
+  " check size with wrapping lines
+  call term_sendkeys(buf, "j")
+  call VerifyScreenDump(buf, 'Test_popupwin_scroll_12', {})
+  call term_sendkeys(buf, "x")
 
   " clean up
   call StopVimInTerminal(buf)

@@ -1201,6 +1201,7 @@ popup_adjust_position(win_T *wp)
 	allow_adjust_left = FALSE;
 	maxwidth = wp->w_maxwidth;
     }
+    minwidth = wp->w_minwidth;
 
     // start at the desired first line
     if (wp->w_firstline > 0)
@@ -1270,18 +1271,19 @@ popup_adjust_position(win_T *wp)
 	    if (wp->w_maxwidth > 0 && wp->w_width > wp->w_maxwidth)
 		wp->w_width = wp->w_maxwidth;
 	}
-	// do not use the width of lines we're not going to show
-	if (wp->w_maxheight > 0
-		   && (wp->w_firstline >= 0
-			       ? lnum - wp->w_topline
-			       : wp->w_buffer->b_ml.ml_line_count - lnum)
-		       + 1 + wrapped > wp->w_maxheight)
-	    break;
 
 	if (wp->w_firstline < 0)
 	    --lnum;
 	else
 	    ++lnum;
+
+	// do not use the width of lines we're not going to show
+	if (wp->w_maxheight > 0
+		   && (wp->w_firstline >= 0
+			       ? lnum - wp->w_topline
+			       : wp->w_buffer->b_ml.ml_line_count - lnum)
+		       + wrapped >= wp->w_maxheight)
+	    break;
     }
 
     if (wp->w_firstline < 0)
@@ -1293,11 +1295,13 @@ popup_adjust_position(win_T *wp)
     {
 	++right_extra;
 	++extra_width;
-	if (used_maxwidth)
-	    maxwidth -= 2;  // try to show the scrollbar
+	// make space for the scrollbar if needed, when lines wrap and when
+	// applying minwidth
+	if (maxwidth + right_extra >= maxspace
+		&& (used_maxwidth || (minwidth > 0 && wp->w_width < minwidth)))
+	    maxwidth -= wp->w_popup_padding[1] + 1;
     }
 
-    minwidth = wp->w_minwidth;
     if (wp->w_popup_title != NULL && *wp->w_popup_title != NUL)
     {
 	int title_len = vim_strsize(wp->w_popup_title) + 2 - extra_width;
