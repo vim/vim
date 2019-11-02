@@ -751,8 +751,6 @@ win_line(
 	win_attr = wcr_attr;
 	area_highlighting = TRUE;
     }
-    if (vi_attr != 0 && win_attr != 0)
-	vi_attr = hl_combine_attr(win_attr, vi_attr);
 
 #ifdef FEAT_TEXT_PROP
     if (WIN_IS_POPUP(wp))
@@ -1444,10 +1442,6 @@ win_line(
 			prev_syntax_attr = syntax_attr;
 		    }
 
-		    // combine syntax attribute with 'wincolor'
-		    if (syntax_attr != 0 && win_attr != 0)
-			syntax_attr = hl_combine_attr(win_attr, syntax_attr);
-
 		    if (did_emsg)
 		    {
 			wp->w_s->b_syn_error = TRUE;
@@ -1548,8 +1542,15 @@ win_line(
 #endif
 	    }
 	}
-	if (char_attr == 0)
-	    char_attr = win_attr;
+
+	// combine attribute with 'wincolor'
+	if (win_attr != 0)
+	{
+	    if (char_attr == 0)
+		char_attr = win_attr;
+	    else
+		char_attr = hl_combine_attr(win_attr, char_attr);
+	}
 
 	// Get the next character to put on the screen.
 
@@ -3140,4 +3141,3 @@ win_line(
     vim_free(p_extra_free);
     return row;
 }
-
