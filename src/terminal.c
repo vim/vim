@@ -703,6 +703,7 @@ ex_terminal(exarg_T *eap)
 {
     typval_T	argvar[2];
     jobopt_T	opt;
+    int		opt_shell = FALSE;
     char_u	*cmd;
     char_u	*tofree = NULL;
 
@@ -738,6 +739,8 @@ ex_terminal(exarg_T *eap)
 	    opt.jo_hidden = 1;
 	else if (OPTARG_HAS("norestore"))
 	    opt.jo_term_norestore = 1;
+	else if (OPTARG_HAS("shell"))
+	    opt_shell = TRUE;
 	else if (OPTARG_HAS("kill") && ep != NULL)
 	{
 	    opt.jo_set2 |= JO2_TERM_KILL;
@@ -831,10 +834,30 @@ ex_terminal(exarg_T *eap)
 	opt.jo_in_bot = eap->line2;
     }
 
-    argvar[0].v_type = VAR_STRING;
-    argvar[0].vval.v_string = cmd;
-    argvar[1].v_type = VAR_UNKNOWN;
-    term_start(argvar, NULL, &opt, eap->forceit ? TERM_START_FORCEIT : 0);
+    if (opt_shell && tofree == NULL)
+    {
+#ifdef UNIX
+	char	**argv = NULL;
+	char_u	*tofree1 = NULL;
+	char_u	*tofree2 = NULL;
+
+	// :term ++shell command
+	if (unix_build_argv(cmd, &argv, &tofree1, &tofree2) == OK)
+	    term_start(NULL, argv, &opt, eap->forceit ? TERM_START_FORCEIT : 0);
+	vim_free(tofree1);
+	vim_free(tofree2);
+#else
+	emsg(_("E279: Sorry, ++shell is not supported on this system"));
+#endif
+    }
+    else
+    {
+	argvar[0].v_type = VAR_STRING;
+	argvar[0].vval.v_string = cmd;
+	argvar[1].v_type = VAR_UNKNOWN;
+	term_start(argvar, NULL, &opt, eap->forceit ? TERM_START_FORCEIT : 0);
+    }
+
     vim_free(tofree);
 
 theend:
@@ -6474,7 +6497,7 @@ failed:
 term_and_job_init(
 	term_T	    *term,
 	typval_T    *argvar,
-	char	    **argv UNUSED,
+	char	    **argv,
 	jobopt_T    *opt,
 	jobopt_T    *orig_opt)
 {

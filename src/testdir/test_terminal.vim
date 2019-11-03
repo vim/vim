@@ -2214,6 +2214,18 @@ func Test_terminal_altscreen()
   call delete('Xtext')
 endfunc
 
+func Test_terminal_shell_option()
+  CheckUnix
+  " exec is a shell builtin command, should fail without a shell.
+  term exec ls runtest.vim
+  call WaitForAssert({-> assert_match('job failed', term_getline(bufnr(), 1))})
+  bwipe!
+
+  term ++shell exec ls runtest.vim
+  call WaitForAssert({-> assert_match('runtest.vim', term_getline(bufnr(), 1))})
+  bwipe!
+endfunc
+
 func Test_terminal_setapi_and_call()
   if !CanRunVimInTerminal()
     return

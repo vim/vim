@@ -4299,10 +4299,10 @@ may_send_sigint(int c UNUSED, pid_t pid UNUSED, pid_t wpid UNUSED)
 # endif
 }
 
-#if !defined(USE_SYSTEM) || (defined(FEAT_GUI) && defined(FEAT_TERMINAL))
+#if !defined(USE_SYSTEM) || defined(FEAT_TERMINAL) || defined(PROTO)
 
-    static int
-build_argv(
+    int
+unix_build_argv(
 	char_u *cmd,
 	char ***argvp,
 	char_u **sh_tofree,
@@ -4369,7 +4369,7 @@ mch_call_shell_terminal(
     aco_save_T	aco;
     oparg_T	oa;		/* operator arguments */
 
-    if (build_argv(cmd, &argv, &tofree1, &tofree2) == FAIL)
+    if (unix_build_argv(cmd, &argv, &tofree1, &tofree2) == FAIL)
 	goto theend;
 
     init_job_options(&opt);
@@ -4546,7 +4546,7 @@ mch_call_shell_fork(
     if (options & SHELL_COOKED)
 	settmode(TMODE_COOK);		/* set to normal mode */
 
-    if (build_argv(cmd, &argv, &tofree1, &tofree2) == FAIL)
+    if (unix_build_argv(cmd, &argv, &tofree1, &tofree2) == FAIL)
 	goto error;
 
     /*
