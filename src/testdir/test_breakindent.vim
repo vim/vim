@@ -31,7 +31,6 @@ func s:close_windows(...)
   exe get(a:000, 0, '')
 endfunc
 
-if 0
 func Test_breakindent01()
   " simple breakindent test
   call s:test_windows('setl briopt=min:0')
@@ -615,7 +614,6 @@ func Test_breakindent16_vartabs()
   call s:compare_lines(expect, lines)
   call s:close_windows('set vts&')
 endfunc
-endif
 
 func Test_breakindent17_vartabs()
   if !has("vartabs")
