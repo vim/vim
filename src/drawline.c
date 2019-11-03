@@ -1175,6 +1175,7 @@ win_line(
 # endif
 		    p_extra = NULL;
 		    c_extra = ' ';
+		    c_final = NUL;
 		    n_extra = get_breakindent_win(wp,
 				       ml_get_buf(wp->w_buffer, lnum, FALSE));
 		    // Correct end of highlighted area for 'breakindent',
