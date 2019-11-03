@@ -142,6 +142,7 @@ func Test_popup_with_border_and_padding()
 	\ height: 3,
 	\ core_height: 1,
 	\ firstline: 1,
+	\ lastline: 1,
 	\ scrollbar: 0,
 	\ visible: 1}
   let winid = popup_create('hello border', #{line: 2, col: 3, border: []})",
@@ -186,6 +187,7 @@ func Test_popup_with_border_and_padding()
 	\ scrollbar: 0,
 	\ core_height: 1,
 	\ firstline: 1,
+	\ lastline: 1,
 	\ visible: 1}, popup_getpos(winid))
 
   call popup_clear()
@@ -384,6 +386,24 @@ func Test_popup_firstline()
   call popup_setoptions(winid, #{line: 3})
   call assert_equal(0, popup_getoptions(winid).firstline)
   call assert_equal(10, popup_getpos(winid).firstline)
+
+  " CTRL-D scrolls down half a page
+  let winid = popup_create(['xxx']->repeat(50), #{
+	\ maxheight: 8,
+	\ })
+  redraw
+  call assert_equal(1, popup_getpos(winid).firstline)
+  call win_execute(winid, "normal! \<C-D>")
+  call assert_equal(5, popup_getpos(winid).firstline)
+  call win_execute(winid, "normal! \<C-D>")
+  call assert_equal(9, popup_getpos(winid).firstline)
+  call win_execute(winid, "normal! \<C-U>")
+  call assert_equal(5, popup_getpos(winid).firstline)
+
+  call win_execute(winid, "normal! \<C-F>")
+  call assert_equal(11, popup_getpos(winid).firstline)
+  call win_execute(winid, "normal! \<C-B>")
+  call assert_equal(5, popup_getpos(winid).firstline)
 
   call popup_close(winid)
 endfunc
@@ -1795,6 +1815,7 @@ func Test_popup_scrollbar()
 	    \ minheight: 4,
 	    \ maxheight: 4,
 	    \ firstline: 1,
+	    \ lastline: 4,
 	    \ wrap: v:true,
 	    \ scrollbar: v:true,
 	    \ mapping: v:false,

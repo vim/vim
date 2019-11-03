@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Oct 20
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Nov 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -362,6 +362,7 @@ popup_getpos({id})					*popup_getpos()*
 		    core_height	height of the text box in screen cells
 		    firstline	line of the buffer at top (1 unless scrolled)
 				(not the value of the "firstline" property)
+		    lastline	line of the buffer at the bottom
 		    scrollbar	non-zero if a scrollbar is displayed
 		    visible	one if the popup is displayed, zero if hidden
 		Note that these are the actual screen positions.  They differ

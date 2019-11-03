@@ -1373,6 +1373,8 @@ popup_adjust_position(win_T *wp)
 	wp->w_height = wp->w_maxheight;
     if (wp->w_height > Rows - wp->w_winrow)
 	wp->w_height = Rows - wp->w_winrow;
+    if (wp->w_height != org_height)
+	win_comp_scroll(wp);
 
     if (center_vert)
     {
@@ -2500,6 +2502,7 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
 
 	dict_add_number(dict, "scrollbar", wp->w_has_scrollbar);
 	dict_add_number(dict, "firstline", wp->w_topline);
+	dict_add_number(dict, "lastline", wp->w_botline - 1);
 	dict_add_number(dict, "visible",
 		      win_valid(wp) && (wp->w_popup_flags & POPF_HIDDEN) == 0);
 
