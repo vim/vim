@@ -1173,6 +1173,7 @@ win_line(
 # endif
 		    p_extra = NULL;
 		    c_extra = ' ';
+		    c_final = NUL;
 		    n_extra = get_breakindent_win(wp,
 				       ml_get_buf(wp->w_buffer, lnum, FALSE));
 		    // Correct end of highlighted area for 'breakindent',
@@ -1647,9 +1648,8 @@ win_line(
 #ifdef FEAT_LINEBREAK
 	    int c0;
 #endif
+	    VIM_CLEAR(p_extra_free);
 
-	    if (p_extra_free != NULL)
-		VIM_CLEAR(p_extra_free);
 	    // Get a character from the line itself.
 	    c = *ptr;
 #ifdef FEAT_LINEBREAK

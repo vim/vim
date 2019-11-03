@@ -614,3 +614,44 @@ func Test_breakindent16_vartabs()
   call s:compare_lines(expect, lines)
   call s:close_windows('set vts&')
 endfunc
+
+func Test_breakindent17_vartabs()
+  if !has("vartabs")
+    return
+  endif
+  let s:input = ""
+  call s:test_windows('setl breakindent list listchars=tab:<-> showbreak=+++')
+  call setline(1, "\t" . repeat('a', 63))
+  vert resize 30
+  norm! 1gg$
+  redraw!
+  let lines = s:screen_lines(1, 30)
+  let expect = [
+	\ "<-->aaaaaaaaaaaaaaaaaaaaaaaaaa",
+	\ "    +++aaaaaaaaaaaaaaaaaaaaaaa",
+	\ "    +++aaaaaaaaaaaaaa         ",
+	\ ]
+  call s:compare_lines(expect, lines)
+  call s:close_windows('set breakindent& list& listchars& showbreak&')
+endfunc
+
+func Test_breakindent18_vartabs()
+  if !has("vartabs")
+    return
+  endif
+  let s:input = ""
+  call s:test_windows('setl breakindent list listchars=tab:<->')
+  call setline(1, "\t" . repeat('a', 63))
+  vert resize 30
+  norm! 1gg$
+  redraw!
+  let lines = s:screen_lines(1, 30)
+  let expect = [
+	\ "<-->aaaaaaaaaaaaaaaaaaaaaaaaaa",
+	\ "    aaaaaaaaaaaaaaaaaaaaaaaaaa",
+	\ "    aaaaaaaaaaa               ",
+	\ ]
+  call s:compare_lines(expect, lines)
+  call s:close_windows('set breakindent& list& listchars&')
+endfunc
+
