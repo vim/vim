@@ -2012,7 +2012,7 @@ nv_mousescroll(cmdarg_T *cap)
 	if (term_use_loop())
 	    // This window is a terminal window, send the mouse event there.
 	    // Set "typed" to FALSE to avoid an endless loop.
-	    send_keys_to_term(curbuf->b_term, cap->cmdchar, FALSE);
+	    send_keys_to_term(curbuf->b_term, cap->cmdchar, mod_mask, FALSE);
 	else
 # endif
 	if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
