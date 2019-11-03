@@ -135,15 +135,13 @@ script:
     fi
   - echo -en "travis_fold:end:build\\r\\033[0K"
   - set +o errexit
-  - echo -e "\\033[33;1mTesting Vim\\033[0m" && echo -en "travis_fold:start:test\\r\\033[0K"
   # Show Vim version and also if_xx versions.
   - |
     if [[ "${BUILD}" = "yes" ]]; then
       "${SRCDIR}"/vim --version
-      "${SRCDIR}"/vim --not-a-term -u NONE -S "${SRCDIR}"/testdir/if_ver-1.vim -c quit > /dev/null
-      "${SRCDIR}"/vim --not-a-term -u NONE -S "${SRCDIR}"/testdir/if_ver-2.vim -c quit > /dev/null
-      cat if_ver.txt
+      "${SRCDIR}"/vim --not-a-term -u NONE -esNX -V1 -S ci/if_ver.vim -c quit
     fi
+  - echo -e "\\033[33;1mTesting Vim\\033[0m" && echo -en "travis_fold:start:test\\r\\033[0K"
   - do_test make ${SHADOWOPT} ${TEST} && FOLD_MARKER=travis_fold
   - echo -en "${FOLD_MARKER}:end:test\\r\\033[0K"
 
