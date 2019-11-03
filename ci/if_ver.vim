@@ -2,27 +2,38 @@
 " For Ubuntu.
 
 if 1
-  echo "*** Interface versions ***"
+  echo "*** Interface versions ***\n"
 
-  const s:interfaces = #{
-        \ lua: #{name: 'Lua', cmd: 'lua print(_VERSION)'},
-        \ mzscheme: #{name: 'MzScheme', cmd: 'mzscheme (display (version))'},
-        \ perl: #{name: 'Perl', cmd: 'perl print $^V'},
-        \ python: #{name: 'Python 2', cmd: 'python print sys.version'},
-        \ python3: #{name: 'Python 3', cmd: 'python3 print(sys.version)'},
-        \ ruby: #{name: 'Ruby', cmd: 'ruby print RUBY_VERSION'},
-        \ tcl: #{name: 'Tcl', cmd: 'tcl puts [info patchlevel]'},
-        \ }
-
-  for s:lang in sort(keys(s:interfaces))
-    let s:item = s:interfaces[s:lang]
-    echo "\n" .. s:item.name .. ':'
-    if has(s:lang)
-      exec s:item.cmd
+  func s:print_ver(lang, ...)
+    if has(a:lang)
+      exec a:lang join(a:000)
     else
       echo 'N/A'
     endif
-  endfor
+    echo ''
+  endfunc
+  command -nargs=+ PrintVer call s:print_ver(<f-args>)
 
-  echo "\n"
+  echo 'Lua:'
+  PrintVer lua print(_VERSION)
+
+  echo 'MzScheme:'
+  PrintVer mzscheme (display (version))
+
+  echo 'Perl:'
+  PrintVer perl print $^V
+
+  echo 'Python 2:'
+  PrintVer python print sys.version
+
+  echo 'Python 3:'
+  PrintVer python3 print(sys.version)
+
+  echo 'Ruby:'
+  PrintVer ruby print RUBY_VERSION
+
+  echo 'Tcl:'
+  PrintVer tcl puts [info patchlevel]
+
+  delcommand PrintVer
 endif
