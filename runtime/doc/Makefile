@@ -324,8 +324,9 @@ all: tags vim.man evim.man vimdiff.man vimtutor.man xxd.man $(CONVERTED)
 # compiled and installed.  Supports multiple languages.
 vimtags: $(DOCS)
 	@if which $(VIMEXE) >/dev/null; then \
-		$(VIMEXE) --clean -eX -u doctags.vim >/dev/null; \
-		else echo "vim executable $(VIMEXE) not found"; fi
+	  $(VIMEXE) --clean -eX -u doctags.vim >/dev/null; \
+	  echo "help tags updated"; \
+	  else echo "vim executable $(VIMEXE) not found; help tags not updated"; fi
 
 # Use "doctags" to generate the tags file.  Only works for English!
 tags: doctags $(DOCS)
