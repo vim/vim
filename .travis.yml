@@ -9,7 +9,7 @@ anchors:
     - &small
       BUILD=yes TEST=test COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     - &normal
-      BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
+      BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     - &linux-huge
       BUILD=yes TEST="scripttests test_libvterm" COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
       "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
@@ -21,6 +21,8 @@ anchors:
     - &asan # ASAN build
       SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
       ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
+    - &shadowopt
+      SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow
 
   linux: &linux
     os: linux
@@ -191,11 +193,15 @@ matrix:
     - <<: *linux
       name: normal/clang
       compiler: clang
-      env: *normal
+      env:
+        - *normal
+        - *shadowopt
     - <<: *linux
       name: normal/gcc
       compiler: gcc
-      env: *normal
+      env:
+        - *normal
+        - *shadowopt
     - <<: *linux
       name: huge+coverage/clang
       compiler: clang
@@ -226,10 +232,10 @@ matrix:
         - TEST="-C src testgui"
       after_success: *coverage
     - <<: *linux
-      name: huge-vimtags/gcc
+      name: vimtags/gcc
       compiler: gcc
       env:
-        - *linux-huge
+        - *normal
         - TEST="-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
 
 # vim:set sts=2 sw=2 tw=0 et:
