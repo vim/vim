@@ -2227,7 +2227,7 @@ func Test_terminal_shell_option()
   elseif has('win32')
     " dir is a shell builtin command, should fail without a shell.
     term dir /b runtest.vim
-    call WaitForAssert({-> assert_match('job failed', term_getline(bufnr(), 1))})
+    call WaitForAssert({-> assert_match('job failed\|cannot access .*: No such file or directory', term_getline(bufnr(), 1))})
     bwipe!
 
     term ++shell dir /b runtest.vim
