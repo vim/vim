@@ -325,7 +325,9 @@ all: tags vim.man evim.man vimdiff.man vimtutor.man xxd.man $(CONVERTED)
 vimtags: $(DOCS)
 	@if which $(VIMEXE) >/dev/null; then \
 	  $(VIMEXE) --clean -eX -u doctags.vim >/dev/null; \
+	  EXIT_CODE=$$?; \
 	  echo "help tags updated"; \
+	  exit $$EXIT_CODE; \
 	  else echo "vim executable $(VIMEXE) not found; help tags not updated"; fi
 
 # Use "doctags" to generate the tags file.  Only works for English!
