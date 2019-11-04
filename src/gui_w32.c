@@ -4262,6 +4262,32 @@ _OnMouseWheel(
     if (mouse_scroll_lines == 0)
 	init_mouse_wheel();
 
+#ifdef FEAT_TEXT_PROP
+    {
+	win_T *wp = gui_mouse_window(FIND_POPUP);
+
+	if (wp != NULL && popup_is_popup(wp))
+	{
+	    cmdarg_T cap;
+	    oparg_T	oa;
+
+	    // Mouse hovers over popup window, scroll it if possible.
+	    mouse_row = wp->w_winrow;
+	    mouse_col = wp->w_wincol;
+	    vim_memset(&cap, 0, sizeof(cap));
+	    cap.arg = zDelta < 0 ? MSCR_UP : MSCR_DOWN;
+	    cap.cmdchar = zDelta < 0 ? K_MOUSEUP : K_MOUSEDOWN;
+	    clear_oparg(&oa);
+	    cap.oap = &oa;
+	    nv_mousescroll(&cap);
+	    update_screen(0);
+	    setcursor();
+	    out_flush();
+	    return;
+	}
+    }
+#endif
+
     mch_disable_flush();
     if (mouse_scroll_lines > 0
 	    && mouse_scroll_lines < (size > 2 ? size - 2 : 1))
