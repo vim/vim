@@ -846,21 +846,31 @@ ex_terminal(exarg_T *eap)
 	    term_start(NULL, argv, &opt, eap->forceit ? TERM_START_FORCEIT : 0);
 	vim_free(tofree1);
 	vim_free(tofree2);
+	goto theend;
 #else
+# ifdef MSWIN
+	long_u	    cmdlen = STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10;
+	char_u	    *newcmd;
+
+	newcmd = alloc(cmdlen);
+	if (newcmd == NULL)
+	    goto theend;
+	tofree = newcmd;
+	vim_snprintf((char *)newcmd, cmdlen, "%s %s %s", p_sh, p_shcf, cmd);
+	cmd = newcmd;
+# else
 	emsg(_("E279: Sorry, ++shell is not supported on this system"));
+	goto theend;
+# endif
 #endif
     }
-    else
-    {
-	argvar[0].v_type = VAR_STRING;
-	argvar[0].vval.v_string = cmd;
-	argvar[1].v_type = VAR_UNKNOWN;
-	term_start(argvar, NULL, &opt, eap->forceit ? TERM_START_FORCEIT : 0);
-    }
-
-    vim_free(tofree);
+    argvar[0].v_type = VAR_STRING;
+    argvar[0].vval.v_string = cmd;
+    argvar[1].v_type = VAR_UNKNOWN;
+    term_start(argvar, NULL, &opt, eap->forceit ? TERM_START_FORCEIT : 0);
 
 theend:
+    vim_free(tofree);
     vim_free(opt.jo_eof_chars);
 }
 
