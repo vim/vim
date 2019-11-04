@@ -79,7 +79,7 @@ get_short_pathname(char_u **fnamep, char_u **bufp, int *fnamelen)
     vim_free(wfname);
     vim_free(newbuf);
 
-    *fnamelen = l == 0 ? l : STRLEN(*bufp);
+    *fnamelen = l == 0 ? l : (int)STRLEN(*bufp);
     return OK;
 }
 
