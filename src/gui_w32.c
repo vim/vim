@@ -4234,59 +4234,57 @@ init_mouse_wheel(void)
 }
 
 
-/* Intellimouse wheel handler */
+/*
+ * Intellimouse wheel handler.
+ * Treat a mouse wheel event as if it were a scroll request.
+ */
     static void
 _OnMouseWheel(
     HWND hwnd,
     short zDelta)
 {
-/* Treat a mouse wheel event as if it were a scroll request */
     int i;
     int size;
     HWND hwndCtl;
+    win_T *wp;
 
-    if (curwin->w_scrollbars[SBAR_RIGHT].id != 0)
-    {
-	hwndCtl = curwin->w_scrollbars[SBAR_RIGHT].id;
-	size = curwin->w_scrollbars[SBAR_RIGHT].size;
-    }
-    else if (curwin->w_scrollbars[SBAR_LEFT].id != 0)
-    {
-	hwndCtl = curwin->w_scrollbars[SBAR_LEFT].id;
-	size = curwin->w_scrollbars[SBAR_LEFT].size;
-    }
-    else
-	return;
-
-    size = curwin->w_height;
     if (mouse_scroll_lines == 0)
 	init_mouse_wheel();
 
+    wp = gui_mouse_window(FIND_POPUP);
+
 #ifdef FEAT_TEXT_PROP
+    if (wp != NULL && popup_is_popup(wp))
     {
-	win_T *wp = gui_mouse_window(FIND_POPUP);
+	cmdarg_T cap;
+	oparg_T	oa;
 
-	if (wp != NULL && popup_is_popup(wp))
-	{
-	    cmdarg_T cap;
-	    oparg_T	oa;
-
-	    // Mouse hovers over popup window, scroll it if possible.
-	    mouse_row = wp->w_winrow;
-	    mouse_col = wp->w_wincol;
-	    vim_memset(&cap, 0, sizeof(cap));
-	    cap.arg = zDelta < 0 ? MSCR_UP : MSCR_DOWN;
-	    cap.cmdchar = zDelta < 0 ? K_MOUSEUP : K_MOUSEDOWN;
-	    clear_oparg(&oa);
-	    cap.oap = &oa;
-	    nv_mousescroll(&cap);
-	    update_screen(0);
-	    setcursor();
-	    out_flush();
-	    return;
-	}
+	// Mouse hovers over popup window, scroll it if possible.
+	mouse_row = wp->w_winrow;
+	mouse_col = wp->w_wincol;
+	vim_memset(&cap, 0, sizeof(cap));
+	cap.arg = zDelta < 0 ? MSCR_UP : MSCR_DOWN;
+	cap.cmdchar = zDelta < 0 ? K_MOUSEUP : K_MOUSEDOWN;
+	clear_oparg(&oa);
+	cap.oap = &oa;
+	nv_mousescroll(&cap);
+	update_screen(0);
+	setcursor();
+	out_flush();
+	return;
     }
 #endif
+
+    if (wp == NULL || !p_scf)
+	wp = curwin;
+
+    if (wp->w_scrollbars[SBAR_RIGHT].id != 0)
+	hwndCtl = wp->w_scrollbars[SBAR_RIGHT].id;
+    else if (wp->w_scrollbars[SBAR_LEFT].id != 0)
+	hwndCtl = wp->w_scrollbars[SBAR_LEFT].id;
+    else
+	return;
+    size = wp->w_height;
 
     mch_disable_flush();
     if (mouse_scroll_lines > 0

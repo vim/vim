@@ -2148,6 +2148,13 @@ static struct vimoption options[] =
     {"scrollbind",  "scb",  P_BOOL|P_VI_DEF,
 			    (char_u *)VAR_WIN, PV_SCBIND,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+    {"scrollfocus", "scf",  P_BOOL|P_VI_DEF,
+#if defined(MSWIN) && defined(FEAT_GUI)
+			    (char_u *)&p_scf, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"scrolljump",  "sj",   P_NUM|P_VI_DEF|P_VIM,
 			    (char_u *)&p_sj, PV_NONE,
 			    {(char_u *)1L, (char_u *)0L} SCTX_INIT},

@@ -6282,6 +6282,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	file.  This means that ":split | edit file" results in two windows
 	with scroll-binding, but ":split file" does not.
 
+			*'scrollfocus'* *'scf'* *'noscrollfocus'* *'noscf'*
+'scrollfocus' 'scf'	boolean  (default off)
+			global
+			{only for MS-Windows GUI}
+	When using the scroll wheel and this option is set, the window under
+	the mouse pointer is scrolled.  With this option off the current
+	window is scrolled.
+	Systems other than MS-Windows behave like this option is on.
+
 						*'scrolljump'* *'sj'*
 'scrolljump' 'sj'	number	(default 1)
 			global
