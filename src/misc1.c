@@ -985,6 +985,8 @@ prompt_for_number(int *mouse_used)
 	if (msg_row > 0)
 	    cmdline_row = msg_row - 1;
 	need_wait_return = FALSE;
+	msg_didany = FALSE;
+	msg_didout = FALSE;
     }
     else
 	cmdline_row = save_cmdline_row;
