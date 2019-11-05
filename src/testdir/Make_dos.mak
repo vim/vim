@@ -75,7 +75,7 @@ report:
 	$(VIMPROG) -u NONE $(NO_INITS) -S summarize.vim messages
 	@echo.
 	@echo Test results:
-	@type test_result.log
+	@cmd /c type test_result.log
 	@if exist test.log ( echo TEST FAILURE & exit /b 1 ) \
 		else ( echo ALL DONE )
 
