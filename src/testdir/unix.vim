@@ -9,5 +9,3 @@ if 1
   " where to ask about their own user settings.
   let g:tester_HOME = $HOME
 endif
-
-source setup.vim
