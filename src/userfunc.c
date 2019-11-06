@@ -2482,25 +2482,31 @@ ex_function(exarg_T *eap)
 	    }
 
 	    // Check for ":let v =<< [trim] EOF"
+	    //       and ":let [a, b] =<< [trim] EOF"
 	    arg = skipwhite(skiptowhite(p));
-	    arg = skipwhite(skiptowhite(arg));
-	    if (arg[0] == '=' && arg[1] == '<' && arg[2] =='<'
-		    && ((p[0] == 'l'
-			    && p[1] == 'e'
-			    && (!ASCII_ISALNUM(p[2])
-				|| (p[2] == 't' && !ASCII_ISALNUM(p[3]))))))
+	    if (*arg == '[')
+		arg = vim_strchr(arg, ']');
+	    if (arg != NULL)
 	    {
-		p = skipwhite(arg + 3);
-		if (STRNCMP(p, "trim", 4) == 0)
+		arg = skipwhite(skiptowhite(arg));
+		if ( arg[0] == '=' && arg[1] == '<' && arg[2] =='<'
+			&& ((p[0] == 'l'
+				&& p[1] == 'e'
+				&& (!ASCII_ISALNUM(p[2])
+				    || (p[2] == 't' && !ASCII_ISALNUM(p[3]))))))
 		{
-		    // Ignore leading white space.
-		    p = skipwhite(p + 4);
-		    heredoc_trimmed = vim_strnsave(theline,
+		    p = skipwhite(arg + 3);
+		    if (STRNCMP(p, "trim", 4) == 0)
+		    {
+			// Ignore leading white space.
+			p = skipwhite(p + 4);
+			heredoc_trimmed = vim_strnsave(theline,
 					  (int)(skipwhite(theline) - theline));
+		    }
+		    skip_until = vim_strnsave(p, (int)(skiptowhite(p) - p));
+		    do_concat = FALSE;
+		    is_heredoc = TRUE;
 		}
-		skip_until = vim_strnsave(p, (int)(skiptowhite(p) - p));
-		do_concat = FALSE;
-		is_heredoc = TRUE;
 	    }
 	}
 

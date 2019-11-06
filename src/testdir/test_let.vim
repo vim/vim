@@ -303,4 +303,12 @@ E
      END
   endif
   call assert_equal([], check)
+
+  " unpack assignment
+  let [a, b, c] =<< END
+     x
+     \y
+     z
+END
+  call assert_equal(['     x', '     \y', '     z'], [a, b, c])
 endfunc
