@@ -2166,6 +2166,44 @@ func Test_popupwin_filter_mode()
   delfunc MyPopupFilter
 endfunc
 
+func Test_popupwin_filter_mouse()
+  func MyPopupFilter(winid, c)
+    let g:got_mouse_col = v:mouse_col
+    let g:got_mouse_lnum = v:mouse_lnum
+    return 0
+  endfunc
+
+  let winid = popup_create(['short', 'long line that will wrap', 'short'], #{
+	\ line: 4,
+	\ col: 8,
+	\ maxwidth: 12,
+	\ filter: 'MyPopupFilter',
+	\ })
+  redraw
+  call test_setmouse(4, 8)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal(1, g:got_mouse_col)
+  call assert_equal(1, g:got_mouse_lnum)
+
+  call test_setmouse(5, 8)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal(1, g:got_mouse_col)
+  call assert_equal(2, g:got_mouse_lnum)
+
+  call test_setmouse(6, 8)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal(13, g:got_mouse_col)
+  call assert_equal(2, g:got_mouse_lnum)
+
+  call test_setmouse(7, 20)
+  call feedkeys("\<LeftMouse>", 'xt')
+  call assert_equal(13, g:got_mouse_col)
+  call assert_equal(3, g:got_mouse_lnum)
+
+  call popup_close(winid)
+  delfunc MyPopupFilter
+endfunc
+
 func Test_popupwin_with_buffer()
   call writefile(['some text', 'in a buffer'], 'XsomeFile')
   let buf = bufadd('XsomeFile')
