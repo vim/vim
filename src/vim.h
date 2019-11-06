@@ -632,6 +632,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define POPF_MAPPING	0x80	// mapping keys
 #define POPF_INFO	0x100	// used for info of popup menu
 #define POPF_INFO_MENU	0x200	// align info popup with popup menu
+#define POPF_POSINVERT	0x400	// vertical position can be inverted
 
 #ifdef FEAT_TEXT_PROP
 # define WIN_IS_POPUP(wp) ((wp)->w_popup_flags != 0)
