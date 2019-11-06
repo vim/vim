@@ -58,7 +58,6 @@ NEW_TESTS = \
 	test_arabic \
 	test_arglist \
 	test_assert \
-	test_assign \
 	test_autochdir \
 	test_autocmd \
 	test_autoload \
