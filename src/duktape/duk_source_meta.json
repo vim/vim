@@ -1,0 +1,1889 @@
+{
+    "comment": "Metadata for Duktape sources", 
+    "duk_version_string": "2.4.0", 
+    "type": "duk_source_meta", 
+    "line_map": [
+        {
+            "original_line": 1, 
+            "combined_line": 154, 
+            "original_file": "duk_replacements.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 163, 
+            "original_file": "duk_internal.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 200, 
+            "original_file": "duk_dblunion.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 624, 
+            "original_file": "duk_replacements.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 654, 
+            "original_file": "duk_jmpbuf.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 679, 
+            "original_file": "duk_exception.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 710, 
+            "original_file": "duk_forwdecl.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 845, 
+            "original_file": "duk_tval.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 1485, 
+            "original_file": "duk_builtins.h"
+        }, 
+        {
+            "original_line": 44, 
+            "combined_line": 2271, 
+            "original_file": "duk_internal.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 2273, 
+            "original_file": "duk_util.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 2980, 
+            "original_file": "duk_strings.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 3148, 
+            "original_file": "duk_js_bytecode.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 3631, 
+            "original_file": "duk_lexer.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 4070, 
+            "original_file": "duk_js_compiler.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 4298, 
+            "original_file": "duk_regexp.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 4383, 
+            "original_file": "duk_heaphdr.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 4681, 
+            "original_file": "duk_refcount.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 5407, 
+            "original_file": "duk_api_internal.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 5772, 
+            "original_file": "duk_hstring.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 6026, 
+            "original_file": "duk_hobject.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 7008, 
+            "original_file": "duk_hcompfunc.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 7282, 
+            "original_file": "duk_hnatfunc.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 7322, 
+            "original_file": "duk_hboundfunc.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 7360, 
+            "original_file": "duk_hbufobj.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 7488, 
+            "original_file": "duk_hthread.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 7897, 
+            "original_file": "duk_harray.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 7946, 
+            "original_file": "duk_henv.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 7992, 
+            "original_file": "duk_hbuffer.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 8329, 
+            "original_file": "duk_hproxy.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 8356, 
+            "original_file": "duk_heap.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 9083, 
+            "original_file": "duk_debugger.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 9235, 
+            "original_file": "duk_debug.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 9420, 
+            "original_file": "duk_error.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 9946, 
+            "original_file": "duk_unicode.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 10236, 
+            "original_file": "duk_json.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 10305, 
+            "original_file": "duk_js.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 10420, 
+            "original_file": "duk_numconv.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 10525, 
+            "original_file": "duk_bi_protos.h"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 10607, 
+            "original_file": "duk_selftest.h"
+        }, 
+        {
+            "original_line": 75, 
+            "combined_line": 10622, 
+            "original_file": "duk_internal.h"
+        }, 
+        {
+            "original_line": 10, 
+            "combined_line": 10624, 
+            "original_file": "duk_replacements.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 10697, 
+            "original_file": "duk_debug_macros.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 10788, 
+            "original_file": "duk_builtins.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 11644, 
+            "original_file": "duk_error_macros.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 11799, 
+            "original_file": "duk_unicode_support.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 12980, 
+            "original_file": "duk_util_misc.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 13163, 
+            "original_file": "duk_hobject_class.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 13292, 
+            "original_file": "duk_alloc_default.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 13326, 
+            "original_file": "duk_api_buffer.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 13399, 
+            "original_file": "duk_api_bytecode.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 14167, 
+            "original_file": "duk_api_call.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 14683, 
+            "original_file": "duk_api_codec.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 15609, 
+            "original_file": "duk_api_compile.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 15781, 
+            "original_file": "duk_api_debug.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 16042, 
+            "original_file": "duk_api_heap.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 16247, 
+            "original_file": "duk_api_inspect.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 16492, 
+            "original_file": "duk_api_memory.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 16572, 
+            "original_file": "duk_api_object.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 17622, 
+            "original_file": "duk_api_random.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 17631, 
+            "original_file": "duk_api_stack.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 24585, 
+            "original_file": "duk_api_string.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 24963, 
+            "original_file": "duk_api_time.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 25073, 
+            "original_file": "duk_bi_array.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 26730, 
+            "original_file": "duk_bi_boolean.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 26799, 
+            "original_file": "duk_bi_buffer.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 29735, 
+            "original_file": "duk_bi_date.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 31553, 
+            "original_file": "duk_bi_date_unix.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 31882, 
+            "original_file": "duk_bi_date_windows.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 32075, 
+            "original_file": "duk_bi_duktape.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 32233, 
+            "original_file": "duk_bi_encoding.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 32771, 
+            "original_file": "duk_bi_error.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 33163, 
+            "original_file": "duk_bi_function.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 33616, 
+            "original_file": "duk_bi_global.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 34347, 
+            "original_file": "duk_bi_json.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 37616, 
+            "original_file": "duk_bi_math.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 38134, 
+            "original_file": "duk_bi_number.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 38414, 
+            "original_file": "duk_bi_object.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 39217, 
+            "original_file": "duk_bi_performance.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 39248, 
+            "original_file": "duk_bi_pointer.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 39323, 
+            "original_file": "duk_bi_promise.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 39367, 
+            "original_file": "duk_bi_proxy.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 39463, 
+            "original_file": "duk_bi_reflect.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 39562, 
+            "original_file": "duk_bi_regexp.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 39788, 
+            "original_file": "duk_bi_string.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 41368, 
+            "original_file": "duk_bi_symbol.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 41538, 
+            "original_file": "duk_bi_thread.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 41864, 
+            "original_file": "duk_bi_thrower.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 41873, 
+            "original_file": "duk_debug_fixedbuffer.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 41942, 
+            "original_file": "duk_debug_vsnprintf.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 43042, 
+            "original_file": "duk_debugger.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 45956, 
+            "original_file": "duk_error_augment.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 46523, 
+            "original_file": "duk_error_longjmp.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 46626, 
+            "original_file": "duk_error_misc.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 46800, 
+            "original_file": "duk_error_throw.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 46962, 
+            "original_file": "duk_hbuffer_alloc.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 47094, 
+            "original_file": "duk_hbuffer_assert.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 47107, 
+            "original_file": "duk_hbuffer_ops.c"
+        }, 
+        {
+            "original_line": 2, 
+            "combined_line": 47186, 
+            "original_file": "duk_hbufobj_misc.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 47205, 
+            "original_file": "duk_heap_alloc.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 48430, 
+            "original_file": "duk_heap_finalize.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 48875, 
+            "original_file": "duk_heap_hashstring.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 48996, 
+            "original_file": "duk_heap_markandsweep.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 50478, 
+            "original_file": "duk_heap_memory.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 50843, 
+            "original_file": "duk_heap_misc.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 51030, 
+            "original_file": "duk_heap_refcount.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 51876, 
+            "original_file": "duk_heap_stringcache.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 52185, 
+            "original_file": "duk_heap_stringtable.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 53234, 
+            "original_file": "duk_heaphdr_assert.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 53312, 
+            "original_file": "duk_hobject_alloc.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 53583, 
+            "original_file": "duk_hobject_assert.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 53710, 
+            "original_file": "duk_hobject_enum.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 54419, 
+            "original_file": "duk_hobject_misc.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 54472, 
+            "original_file": "duk_hobject_pc2line.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 54716, 
+            "original_file": "duk_hobject_props.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 60927, 
+            "original_file": "duk_hstring_assert.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 60940, 
+            "original_file": "duk_hstring_misc.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 61136, 
+            "original_file": "duk_hthread_alloc.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 61195, 
+            "original_file": "duk_hthread_builtins.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 62081, 
+            "original_file": "duk_hthread_misc.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 62178, 
+            "original_file": "duk_hthread_stacks.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 62585, 
+            "original_file": "duk_js_arith.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 62722, 
+            "original_file": "duk_js_call.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 65658, 
+            "original_file": "duk_js_compiler.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 73765, 
+            "original_file": "duk_js_executor.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 79036, 
+            "original_file": "duk_js_ops.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 80494, 
+            "original_file": "duk_js_var.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 82287, 
+            "original_file": "duk_lexer.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 84748, 
+            "original_file": "duk_numconv.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 87041, 
+            "original_file": "duk_regexp_compiler.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 88332, 
+            "original_file": "duk_regexp_executor.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 89359, 
+            "original_file": "duk_selftest.c"
+        }, 
+        {
+            "original_line": 2, 
+            "combined_line": 90046, 
+            "original_file": "duk_tval.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 90197, 
+            "original_file": "duk_unicode_tables.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 96372, 
+            "original_file": "duk_util_bitdecoder.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 96538, 
+            "original_file": "duk_util_bitencoder.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 96581, 
+            "original_file": "duk_util_bufwriter.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 96959, 
+            "original_file": "duk_util_cast.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 97127, 
+            "original_file": "duk_util_double.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 97361, 
+            "original_file": "duk_util_hashbytes.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 97422, 
+            "original_file": "duk_util_memory.c"
+        }, 
+        {
+            "original_line": 1, 
+            "combined_line": 97458, 
+            "original_file": "duk_util_tinyrandom.c"
+        }
+    ], 
+    "duk_version": 20400, 
+    "git_branch": "master", 
+    "git_commit": "d4f2cff1c592d70f58bab8e1bd85705174c02a58", 
+    "builtin_strings_info": [
+        {
+            "plain": "Undefined", 
+            "base64": "VW5kZWZpbmVk", 
+            "define": "DUK_STRIDX_UC_UNDEFINED"
+        }, 
+        {
+            "plain": "Null", 
+            "base64": "TnVsbA==", 
+            "define": "DUK_STRIDX_UC_NULL"
+        }, 
+        {
+            "plain": "Symbol", 
+            "base64": "U3ltYm9s", 
+            "define": "DUK_STRIDX_UC_SYMBOL"
+        }, 
+        {
+            "plain": "Arguments", 
+            "base64": "QXJndW1lbnRz", 
+            "define": "DUK_STRIDX_UC_ARGUMENTS"
+        }, 
+        {
+            "plain": "Object", 
+            "base64": "T2JqZWN0", 
+            "define": "DUK_STRIDX_UC_OBJECT"
+        }, 
+        {
+            "plain": "Function", 
+            "base64": "RnVuY3Rpb24=", 
+            "define": "DUK_STRIDX_UC_FUNCTION"
+        }, 
+        {
+            "plain": "Array", 
+            "base64": "QXJyYXk=", 
+            "define": "DUK_STRIDX_ARRAY"
+        }, 
+        {
+            "plain": "String", 
+            "base64": "U3RyaW5n", 
+            "define": "DUK_STRIDX_UC_STRING"
+        }, 
+        {
+            "plain": "Boolean", 
+            "base64": "Qm9vbGVhbg==", 
+            "define": "DUK_STRIDX_UC_BOOLEAN"
+        }, 
+        {
+            "plain": "Number", 
+            "base64": "TnVtYmVy", 
+            "define": "DUK_STRIDX_UC_NUMBER"
+        }, 
+        {
+            "plain": "Date", 
+            "base64": "RGF0ZQ==", 
+            "define": "DUK_STRIDX_DATE"
+        }, 
+        {
+            "plain": "RegExp", 
+            "base64": "UmVnRXhw", 
+            "define": "DUK_STRIDX_REG_EXP"
+        }, 
+        {
+            "plain": "Error", 
+            "base64": "RXJyb3I=", 
+            "define": "DUK_STRIDX_UC_ERROR"
+        }, 
+        {
+            "plain": "Math", 
+            "base64": "TWF0aA==", 
+            "define": "DUK_STRIDX_MATH"
+        }, 
+        {
+            "plain": "JSON", 
+            "base64": "SlNPTg==", 
+            "define": "DUK_STRIDX_JSON"
+        }, 
+        {
+            "plain": "", 
+            "base64": "", 
+            "define": "DUK_STRIDX_EMPTY_STRING"
+        }, 
+        {
+            "plain": "ArrayBuffer", 
+            "base64": "QXJyYXlCdWZmZXI=", 
+            "define": "DUK_STRIDX_ARRAY_BUFFER"
+        }, 
+        {
+            "plain": "DataView", 
+            "base64": "RGF0YVZpZXc=", 
+            "define": "DUK_STRIDX_DATA_VIEW"
+        }, 
+        {
+            "plain": "Int8Array", 
+            "base64": "SW50OEFycmF5", 
+            "define": "DUK_STRIDX_INT8_ARRAY"
+        }, 
+        {
+            "plain": "Uint8Array", 
+            "base64": "VWludDhBcnJheQ==", 
+            "define": "DUK_STRIDX_UINT8_ARRAY"
+        }, 
+        {
+            "plain": "Uint8ClampedArray", 
+            "base64": "VWludDhDbGFtcGVkQXJyYXk=", 
+            "define": "DUK_STRIDX_UINT8_CLAMPED_ARRAY"
+        }, 
+        {
+            "plain": "Int16Array", 
+            "base64": "SW50MTZBcnJheQ==", 
+            "define": "DUK_STRIDX_INT16_ARRAY"
+        }, 
+        {
+            "plain": "Uint16Array", 
+            "base64": "VWludDE2QXJyYXk=", 
+            "define": "DUK_STRIDX_UINT16_ARRAY"
+        }, 
+        {
+            "plain": "Int32Array", 
+            "base64": "SW50MzJBcnJheQ==", 
+            "define": "DUK_STRIDX_INT32_ARRAY"
+        }, 
+        {
+            "plain": "Uint32Array", 
+            "base64": "VWludDMyQXJyYXk=", 
+            "define": "DUK_STRIDX_UINT32_ARRAY"
+        }, 
+        {
+            "plain": "Float32Array", 
+            "base64": "RmxvYXQzMkFycmF5", 
+            "define": "DUK_STRIDX_FLOAT32_ARRAY"
+        }, 
+        {
+            "plain": "Float64Array", 
+            "base64": "RmxvYXQ2NEFycmF5", 
+            "define": "DUK_STRIDX_FLOAT64_ARRAY"
+        }, 
+        {
+            "plain": "global", 
+            "base64": "Z2xvYmFs", 
+            "define": "DUK_STRIDX_GLOBAL"
+        }, 
+        {
+            "plain": "ObjEnv", 
+            "base64": "T2JqRW52", 
+            "define": "DUK_STRIDX_OBJ_ENV"
+        }, 
+        {
+            "plain": "DecEnv", 
+            "base64": "RGVjRW52", 
+            "define": "DUK_STRIDX_DEC_ENV"
+        }, 
+        {
+            "plain": "Buffer", 
+            "base64": "QnVmZmVy", 
+            "define": "DUK_STRIDX_UC_BUFFER"
+        }, 
+        {
+            "plain": "Pointer", 
+            "base64": "UG9pbnRlcg==", 
+            "define": "DUK_STRIDX_UC_POINTER"
+        }, 
+        {
+            "plain": "Thread", 
+            "base64": "VGhyZWFk", 
+            "define": "DUK_STRIDX_UC_THREAD"
+        }, 
+        {
+            "plain": "eval", 
+            "base64": "ZXZhbA==", 
+            "define": "DUK_STRIDX_EVAL"
+        }, 
+        {
+            "plain": "value", 
+            "base64": "dmFsdWU=", 
+            "define": "DUK_STRIDX_VALUE"
+        }, 
+        {
+            "plain": "writable", 
+            "base64": "d3JpdGFibGU=", 
+            "define": "DUK_STRIDX_WRITABLE"
+        }, 
+        {
+            "plain": "configurable", 
+            "base64": "Y29uZmlndXJhYmxl", 
+            "define": "DUK_STRIDX_CONFIGURABLE"
+        }, 
+        {
+            "plain": "enumerable", 
+            "base64": "ZW51bWVyYWJsZQ==", 
+            "define": "DUK_STRIDX_ENUMERABLE"
+        }, 
+        {
+            "plain": "join", 
+            "base64": "am9pbg==", 
+            "define": "DUK_STRIDX_JOIN"
+        }, 
+        {
+            "plain": "toLocaleString", 
+            "base64": "dG9Mb2NhbGVTdHJpbmc=", 
+            "define": "DUK_STRIDX_TO_LOCALE_STRING"
+        }, 
+        {
+            "plain": "valueOf", 
+            "base64": "dmFsdWVPZg==", 
+            "define": "DUK_STRIDX_VALUE_OF"
+        }, 
+        {
+            "plain": "toUTCString", 
+            "base64": "dG9VVENTdHJpbmc=", 
+            "define": "DUK_STRIDX_TO_UTC_STRING"
+        }, 
+        {
+            "plain": "toISOString", 
+            "base64": "dG9JU09TdHJpbmc=", 
+            "define": "DUK_STRIDX_TO_ISO_STRING"
+        }, 
+        {
+            "plain": "toGMTString", 
+            "base64": "dG9HTVRTdHJpbmc=", 
+            "define": "DUK_STRIDX_TO_GMT_STRING"
+        }, 
+        {
+            "plain": "source", 
+            "base64": "c291cmNl", 
+            "define": "DUK_STRIDX_SOURCE"
+        }, 
+        {
+            "plain": "ignoreCase", 
+            "base64": "aWdub3JlQ2FzZQ==", 
+            "define": "DUK_STRIDX_IGNORE_CASE"
+        }, 
+        {
+            "plain": "multiline", 
+            "base64": "bXVsdGlsaW5l", 
+            "define": "DUK_STRIDX_MULTILINE"
+        }, 
+        {
+            "plain": "lastIndex", 
+            "base64": "bGFzdEluZGV4", 
+            "define": "DUK_STRIDX_LAST_INDEX"
+        }, 
+        {
+            "plain": "flags", 
+            "base64": "ZmxhZ3M=", 
+            "define": "DUK_STRIDX_FLAGS"
+        }, 
+        {
+            "plain": "index", 
+            "base64": "aW5kZXg=", 
+            "define": "DUK_STRIDX_INDEX"
+        }, 
+        {
+            "plain": "prototype", 
+            "base64": "cHJvdG90eXBl", 
+            "define": "DUK_STRIDX_PROTOTYPE"
+        }, 
+        {
+            "plain": "constructor", 
+            "base64": "Y29uc3RydWN0b3I=", 
+            "define": "DUK_STRIDX_CONSTRUCTOR"
+        }, 
+        {
+            "plain": "message", 
+            "base64": "bWVzc2FnZQ==", 
+            "define": "DUK_STRIDX_MESSAGE"
+        }, 
+        {
+            "plain": "boolean", 
+            "base64": "Ym9vbGVhbg==", 
+            "define": "DUK_STRIDX_LC_BOOLEAN"
+        }, 
+        {
+            "plain": "number", 
+            "base64": "bnVtYmVy", 
+            "define": "DUK_STRIDX_LC_NUMBER"
+        }, 
+        {
+            "plain": "string", 
+            "base64": "c3RyaW5n", 
+            "define": "DUK_STRIDX_LC_STRING"
+        }, 
+        {
+            "plain": "symbol", 
+            "base64": "c3ltYm9s", 
+            "define": "DUK_STRIDX_LC_SYMBOL"
+        }, 
+        {
+            "plain": "object", 
+            "base64": "b2JqZWN0", 
+            "define": "DUK_STRIDX_LC_OBJECT"
+        }, 
+        {
+            "plain": "undefined", 
+            "base64": "dW5kZWZpbmVk", 
+            "define": "DUK_STRIDX_LC_UNDEFINED"
+        }, 
+        {
+            "plain": "NaN", 
+            "base64": "TmFO", 
+            "define": "DUK_STRIDX_NAN"
+        }, 
+        {
+            "plain": "Infinity", 
+            "base64": "SW5maW5pdHk=", 
+            "define": "DUK_STRIDX_INFINITY"
+        }, 
+        {
+            "plain": "-Infinity", 
+            "base64": "LUluZmluaXR5", 
+            "define": "DUK_STRIDX_MINUS_INFINITY"
+        }, 
+        {
+            "plain": "-0", 
+            "base64": "LTA=", 
+            "define": "DUK_STRIDX_MINUS_ZERO"
+        }, 
+        {
+            "plain": ",", 
+            "base64": "LA==", 
+            "define": "DUK_STRIDX_COMMA"
+        }, 
+        {
+            "plain": "\n    ", 
+            "base64": "CiAgICA=", 
+            "define": "DUK_STRIDX_NEWLINE_4SPACE"
+        }, 
+        {
+            "plain": "[...]", 
+            "base64": "Wy4uLl0=", 
+            "define": "DUK_STRIDX_BRACKETED_ELLIPSIS"
+        }, 
+        {
+            "plain": "Invalid Date", 
+            "base64": "SW52YWxpZCBEYXRl", 
+            "define": "DUK_STRIDX_INVALID_DATE"
+        }, 
+        {
+            "plain": "arguments", 
+            "base64": "YXJndW1lbnRz", 
+            "define": "DUK_STRIDX_LC_ARGUMENTS"
+        }, 
+        {
+            "plain": "callee", 
+            "base64": "Y2FsbGVl", 
+            "define": "DUK_STRIDX_CALLEE"
+        }, 
+        {
+            "plain": "caller", 
+            "base64": "Y2FsbGVy", 
+            "define": "DUK_STRIDX_CALLER"
+        }, 
+        {
+            "plain": "apply", 
+            "base64": "YXBwbHk=", 
+            "define": "DUK_STRIDX_APPLY"
+        }, 
+        {
+            "plain": "construct", 
+            "base64": "Y29uc3RydWN0", 
+            "define": "DUK_STRIDX_CONSTRUCT"
+        }, 
+        {
+            "plain": "deleteProperty", 
+            "base64": "ZGVsZXRlUHJvcGVydHk=", 
+            "define": "DUK_STRIDX_DELETE_PROPERTY"
+        }, 
+        {
+            "plain": "get", 
+            "base64": "Z2V0", 
+            "define": "DUK_STRIDX_GET"
+        }, 
+        {
+            "plain": "has", 
+            "base64": "aGFz", 
+            "define": "DUK_STRIDX_HAS"
+        }, 
+        {
+            "plain": "ownKeys", 
+            "base64": "b3duS2V5cw==", 
+            "define": "DUK_STRIDX_OWN_KEYS"
+        }, 
+        {
+            "plain": "\u0081Symbol.toPrimitive\u00ff", 
+            "base64": "gVN5bWJvbC50b1ByaW1pdGl2Zf8=", 
+            "define": "DUK_STRIDX_WELLKNOWN_SYMBOL_TO_PRIMITIVE"
+        }, 
+        {
+            "plain": "\u0081Symbol.hasInstance\u00ff", 
+            "base64": "gVN5bWJvbC5oYXNJbnN0YW5jZf8=", 
+            "define": "DUK_STRIDX_WELLKNOWN_SYMBOL_HAS_INSTANCE"
+        }, 
+        {
+            "plain": "\u0081Symbol.toStringTag\u00ff", 
+            "base64": "gVN5bWJvbC50b1N0cmluZ1RhZ/8=", 
+            "define": "DUK_STRIDX_WELLKNOWN_SYMBOL_TO_STRING_TAG"
+        }, 
+        {
+            "plain": "\u0081Symbol.isConcatSpreadable\u00ff", 
+            "base64": "gVN5bWJvbC5pc0NvbmNhdFNwcmVhZGFibGX/", 
+            "define": "DUK_STRIDX_WELLKNOWN_SYMBOL_IS_CONCAT_SPREADABLE"
+        }, 
+        {
+            "plain": "setPrototypeOf", 
+            "base64": "c2V0UHJvdG90eXBlT2Y=", 
+            "define": "DUK_STRIDX_SET_PROTOTYPE_OF"
+        }, 
+        {
+            "plain": "__proto__", 
+            "base64": "X19wcm90b19f", 
+            "define": "DUK_STRIDX___PROTO__"
+        }, 
+        {
+            "plain": "toString", 
+            "base64": "dG9TdHJpbmc=", 
+            "define": "DUK_STRIDX_TO_STRING"
+        }, 
+        {
+            "plain": "toJSON", 
+            "base64": "dG9KU09O", 
+            "define": "DUK_STRIDX_TO_JSON"
+        }, 
+        {
+            "plain": "type", 
+            "base64": "dHlwZQ==", 
+            "define": "DUK_STRIDX_TYPE"
+        }, 
+        {
+            "plain": "data", 
+            "base64": "ZGF0YQ==", 
+            "define": "DUK_STRIDX_DATA"
+        }, 
+        {
+            "plain": "length", 
+            "base64": "bGVuZ3Ro", 
+            "define": "DUK_STRIDX_LENGTH"
+        }, 
+        {
+            "plain": "set", 
+            "base64": "c2V0", 
+            "define": "DUK_STRIDX_SET"
+        }, 
+        {
+            "plain": "stack", 
+            "base64": "c3RhY2s=", 
+            "define": "DUK_STRIDX_STACK"
+        }, 
+        {
+            "plain": "pc", 
+            "base64": "cGM=", 
+            "define": "DUK_STRIDX_PC"
+        }, 
+        {
+            "plain": "lineNumber", 
+            "base64": "bGluZU51bWJlcg==", 
+            "define": "DUK_STRIDX_LINE_NUMBER"
+        }, 
+        {
+            "plain": "\u0082Tracedata", 
+            "base64": "glRyYWNlZGF0YQ==", 
+            "define": "DUK_STRIDX_INT_TRACEDATA"
+        }, 
+        {
+            "plain": "name", 
+            "base64": "bmFtZQ==", 
+            "define": "DUK_STRIDX_NAME"
+        }, 
+        {
+            "plain": "fileName", 
+            "base64": "ZmlsZU5hbWU=", 
+            "define": "DUK_STRIDX_FILE_NAME"
+        }, 
+        {
+            "plain": "pointer", 
+            "base64": "cG9pbnRlcg==", 
+            "define": "DUK_STRIDX_LC_POINTER"
+        }, 
+        {
+            "plain": "\u0082Target", 
+            "base64": "glRhcmdldA==", 
+            "define": "DUK_STRIDX_INT_TARGET"
+        }, 
+        {
+            "plain": "\u0082Next", 
+            "base64": "gk5leHQ=", 
+            "define": "DUK_STRIDX_INT_NEXT"
+        }, 
+        {
+            "plain": "\u0082Bytecode", 
+            "base64": "gkJ5dGVjb2Rl", 
+            "define": "DUK_STRIDX_INT_BYTECODE"
+        }, 
+        {
+            "plain": "\u0082Formals", 
+            "base64": "gkZvcm1hbHM=", 
+            "define": "DUK_STRIDX_INT_FORMALS"
+        }, 
+        {
+            "plain": "\u0082Varmap", 
+            "base64": "glZhcm1hcA==", 
+            "define": "DUK_STRIDX_INT_VARMAP"
+        }, 
+        {
+            "plain": "\u0082Source", 
+            "base64": "glNvdXJjZQ==", 
+            "define": "DUK_STRIDX_INT_SOURCE"
+        }, 
+        {
+            "plain": "\u0082Pc2line", 
+            "base64": "glBjMmxpbmU=", 
+            "define": "DUK_STRIDX_INT_PC2LINE"
+        }, 
+        {
+            "plain": "\u0082Map", 
+            "base64": "gk1hcA==", 
+            "define": "DUK_STRIDX_INT_MAP"
+        }, 
+        {
+            "plain": "\u0082Varenv", 
+            "base64": "glZhcmVudg==", 
+            "define": "DUK_STRIDX_INT_VARENV"
+        }, 
+        {
+            "plain": "\u0082Finalizer", 
+            "base64": "gkZpbmFsaXplcg==", 
+            "define": "DUK_STRIDX_INT_FINALIZER"
+        }, 
+        {
+            "plain": "\u0082Value", 
+            "base64": "glZhbHVl", 
+            "define": "DUK_STRIDX_INT_VALUE"
+        }, 
+        {
+            "plain": "compile", 
+            "base64": "Y29tcGlsZQ==", 
+            "define": "DUK_STRIDX_COMPILE"
+        }, 
+        {
+            "plain": "input", 
+            "base64": "aW5wdXQ=", 
+            "define": "DUK_STRIDX_INPUT"
+        }, 
+        {
+            "plain": "errCreate", 
+            "base64": "ZXJyQ3JlYXRl", 
+            "define": "DUK_STRIDX_ERR_CREATE"
+        }, 
+        {
+            "plain": "errThrow", 
+            "base64": "ZXJyVGhyb3c=", 
+            "define": "DUK_STRIDX_ERR_THROW"
+        }, 
+        {
+            "plain": "env", 
+            "base64": "ZW52", 
+            "define": "DUK_STRIDX_ENV"
+        }, 
+        {
+            "plain": "hex", 
+            "base64": "aGV4", 
+            "define": "DUK_STRIDX_HEX"
+        }, 
+        {
+            "plain": "base64", 
+            "base64": "YmFzZTY0", 
+            "define": "DUK_STRIDX_BASE64"
+        }, 
+        {
+            "plain": "jx", 
+            "base64": "ang=", 
+            "define": "DUK_STRIDX_JX"
+        }, 
+        {
+            "plain": "jc", 
+            "base64": "amM=", 
+            "define": "DUK_STRIDX_JC"
+        }, 
+        {
+            "plain": "{\"_undef\":true}", 
+            "base64": "eyJfdW5kZWYiOnRydWV9", 
+            "define": "DUK_STRIDX_JSON_EXT_UNDEFINED"
+        }, 
+        {
+            "plain": "{\"_nan\":true}", 
+            "base64": "eyJfbmFuIjp0cnVlfQ==", 
+            "define": "DUK_STRIDX_JSON_EXT_NAN"
+        }, 
+        {
+            "plain": "{\"_inf\":true}", 
+            "base64": "eyJfaW5mIjp0cnVlfQ==", 
+            "define": "DUK_STRIDX_JSON_EXT_POSINF"
+        }, 
+        {
+            "plain": "{\"_ninf\":true}", 
+            "base64": "eyJfbmluZiI6dHJ1ZX0=", 
+            "define": "DUK_STRIDX_JSON_EXT_NEGINF"
+        }, 
+        {
+            "plain": "{\"_func\":true}", 
+            "base64": "eyJfZnVuYyI6dHJ1ZX0=", 
+            "define": "DUK_STRIDX_JSON_EXT_FUNCTION1"
+        }, 
+        {
+            "plain": "{_func:true}", 
+            "base64": "e19mdW5jOnRydWV9", 
+            "define": "DUK_STRIDX_JSON_EXT_FUNCTION2"
+        }, 
+        {
+            "plain": "break", 
+            "base64": "YnJlYWs=", 
+            "define": "DUK_STRIDX_BREAK"
+        }, 
+        {
+            "plain": "case", 
+            "base64": "Y2FzZQ==", 
+            "define": "DUK_STRIDX_CASE"
+        }, 
+        {
+            "plain": "catch", 
+            "base64": "Y2F0Y2g=", 
+            "define": "DUK_STRIDX_CATCH"
+        }, 
+        {
+            "plain": "continue", 
+            "base64": "Y29udGludWU=", 
+            "define": "DUK_STRIDX_CONTINUE"
+        }, 
+        {
+            "plain": "debugger", 
+            "base64": "ZGVidWdnZXI=", 
+            "define": "DUK_STRIDX_DEBUGGER"
+        }, 
+        {
+            "plain": "default", 
+            "base64": "ZGVmYXVsdA==", 
+            "define": "DUK_STRIDX_DEFAULT"
+        }, 
+        {
+            "plain": "delete", 
+            "base64": "ZGVsZXRl", 
+            "define": "DUK_STRIDX_DELETE"
+        }, 
+        {
+            "plain": "do", 
+            "base64": "ZG8=", 
+            "define": "DUK_STRIDX_DO"
+        }, 
+        {
+            "plain": "else", 
+            "base64": "ZWxzZQ==", 
+            "define": "DUK_STRIDX_ELSE"
+        }, 
+        {
+            "plain": "finally", 
+            "base64": "ZmluYWxseQ==", 
+            "define": "DUK_STRIDX_FINALLY"
+        }, 
+        {
+            "plain": "for", 
+            "base64": "Zm9y", 
+            "define": "DUK_STRIDX_FOR"
+        }, 
+        {
+            "plain": "function", 
+            "base64": "ZnVuY3Rpb24=", 
+            "define": "DUK_STRIDX_LC_FUNCTION"
+        }, 
+        {
+            "plain": "if", 
+            "base64": "aWY=", 
+            "define": "DUK_STRIDX_IF"
+        }, 
+        {
+            "plain": "in", 
+            "base64": "aW4=", 
+            "define": "DUK_STRIDX_IN"
+        }, 
+        {
+            "plain": "instanceof", 
+            "base64": "aW5zdGFuY2VvZg==", 
+            "define": "DUK_STRIDX_INSTANCEOF"
+        }, 
+        {
+            "plain": "new", 
+            "base64": "bmV3", 
+            "define": "DUK_STRIDX_NEW"
+        }, 
+        {
+            "plain": "return", 
+            "base64": "cmV0dXJu", 
+            "define": "DUK_STRIDX_RETURN"
+        }, 
+        {
+            "plain": "switch", 
+            "base64": "c3dpdGNo", 
+            "define": "DUK_STRIDX_SWITCH"
+        }, 
+        {
+            "plain": "this", 
+            "base64": "dGhpcw==", 
+            "define": "DUK_STRIDX_THIS"
+        }, 
+        {
+            "plain": "throw", 
+            "base64": "dGhyb3c=", 
+            "define": "DUK_STRIDX_THROW"
+        }, 
+        {
+            "plain": "try", 
+            "base64": "dHJ5", 
+            "define": "DUK_STRIDX_TRY"
+        }, 
+        {
+            "plain": "typeof", 
+            "base64": "dHlwZW9m", 
+            "define": "DUK_STRIDX_TYPEOF"
+        }, 
+        {
+            "plain": "var", 
+            "base64": "dmFy", 
+            "define": "DUK_STRIDX_VAR"
+        }, 
+        {
+            "plain": "const", 
+            "base64": "Y29uc3Q=", 
+            "define": "DUK_STRIDX_CONST"
+        }, 
+        {
+            "plain": "void", 
+            "base64": "dm9pZA==", 
+            "define": "DUK_STRIDX_VOID"
+        }, 
+        {
+            "plain": "while", 
+            "base64": "d2hpbGU=", 
+            "define": "DUK_STRIDX_WHILE"
+        }, 
+        {
+            "plain": "with", 
+            "base64": "d2l0aA==", 
+            "define": "DUK_STRIDX_WITH"
+        }, 
+        {
+            "plain": "class", 
+            "base64": "Y2xhc3M=", 
+            "define": "DUK_STRIDX_CLASS"
+        }, 
+        {
+            "plain": "enum", 
+            "base64": "ZW51bQ==", 
+            "define": "DUK_STRIDX_ENUM"
+        }, 
+        {
+            "plain": "export", 
+            "base64": "ZXhwb3J0", 
+            "define": "DUK_STRIDX_EXPORT"
+        }, 
+        {
+            "plain": "extends", 
+            "base64": "ZXh0ZW5kcw==", 
+            "define": "DUK_STRIDX_EXTENDS"
+        }, 
+        {
+            "plain": "import", 
+            "base64": "aW1wb3J0", 
+            "define": "DUK_STRIDX_IMPORT"
+        }, 
+        {
+            "plain": "super", 
+            "base64": "c3VwZXI=", 
+            "define": "DUK_STRIDX_SUPER"
+        }, 
+        {
+            "plain": "null", 
+            "base64": "bnVsbA==", 
+            "define": "DUK_STRIDX_LC_NULL"
+        }, 
+        {
+            "plain": "true", 
+            "base64": "dHJ1ZQ==", 
+            "define": "DUK_STRIDX_TRUE"
+        }, 
+        {
+            "plain": "false", 
+            "base64": "ZmFsc2U=", 
+            "define": "DUK_STRIDX_FALSE"
+        }, 
+        {
+            "plain": "implements", 
+            "base64": "aW1wbGVtZW50cw==", 
+            "define": "DUK_STRIDX_IMPLEMENTS"
+        }, 
+        {
+            "plain": "interface", 
+            "base64": "aW50ZXJmYWNl", 
+            "define": "DUK_STRIDX_INTERFACE"
+        }, 
+        {
+            "plain": "let", 
+            "base64": "bGV0", 
+            "define": "DUK_STRIDX_LET"
+        }, 
+        {
+            "plain": "package", 
+            "base64": "cGFja2FnZQ==", 
+            "define": "DUK_STRIDX_PACKAGE"
+        }, 
+        {
+            "plain": "private", 
+            "base64": "cHJpdmF0ZQ==", 
+            "define": "DUK_STRIDX_PRIVATE"
+        }, 
+        {
+            "plain": "protected", 
+            "base64": "cHJvdGVjdGVk", 
+            "define": "DUK_STRIDX_PROTECTED"
+        }, 
+        {
+            "plain": "public", 
+            "base64": "cHVibGlj", 
+            "define": "DUK_STRIDX_PUBLIC"
+        }, 
+        {
+            "plain": "static", 
+            "base64": "c3RhdGlj", 
+            "define": "DUK_STRIDX_STATIC"
+        }, 
+        {
+            "plain": "yield", 
+            "base64": "eWllbGQ=", 
+            "define": "DUK_STRIDX_YIELD"
+        }
+    ], 
+    "builtin_strings_base64": [
+        "VW5kZWZpbmVk", 
+        "TnVsbA==", 
+        "U3ltYm9s", 
+        "QXJndW1lbnRz", 
+        "T2JqZWN0", 
+        "RnVuY3Rpb24=", 
+        "QXJyYXk=", 
+        "U3RyaW5n", 
+        "Qm9vbGVhbg==", 
+        "TnVtYmVy", 
+        "RGF0ZQ==", 
+        "UmVnRXhw", 
+        "RXJyb3I=", 
+        "TWF0aA==", 
+        "SlNPTg==", 
+        "", 
+        "QXJyYXlCdWZmZXI=", 
+        "RGF0YVZpZXc=", 
+        "SW50OEFycmF5", 
+        "VWludDhBcnJheQ==", 
+        "VWludDhDbGFtcGVkQXJyYXk=", 
+        "SW50MTZBcnJheQ==", 
+        "VWludDE2QXJyYXk=", 
+        "SW50MzJBcnJheQ==", 
+        "VWludDMyQXJyYXk=", 
+        "RmxvYXQzMkFycmF5", 
+        "RmxvYXQ2NEFycmF5", 
+        "Z2xvYmFs", 
+        "T2JqRW52", 
+        "RGVjRW52", 
+        "QnVmZmVy", 
+        "UG9pbnRlcg==", 
+        "VGhyZWFk", 
+        "ZXZhbA==", 
+        "dmFsdWU=", 
+        "d3JpdGFibGU=", 
+        "Y29uZmlndXJhYmxl", 
+        "ZW51bWVyYWJsZQ==", 
+        "am9pbg==", 
+        "dG9Mb2NhbGVTdHJpbmc=", 
+        "dmFsdWVPZg==", 
+        "dG9VVENTdHJpbmc=", 
+        "dG9JU09TdHJpbmc=", 
+        "dG9HTVRTdHJpbmc=", 
+        "c291cmNl", 
+        "aWdub3JlQ2FzZQ==", 
+        "bXVsdGlsaW5l", 
+        "bGFzdEluZGV4", 
+        "ZmxhZ3M=", 
+        "aW5kZXg=", 
+        "cHJvdG90eXBl", 
+        "Y29uc3RydWN0b3I=", 
+        "bWVzc2FnZQ==", 
+        "Ym9vbGVhbg==", 
+        "bnVtYmVy", 
+        "c3RyaW5n", 
+        "c3ltYm9s", 
+        "b2JqZWN0", 
+        "dW5kZWZpbmVk", 
+        "TmFO", 
+        "SW5maW5pdHk=", 
+        "LUluZmluaXR5", 
+        "LTA=", 
+        "LA==", 
+        "CiAgICA=", 
+        "Wy4uLl0=", 
+        "SW52YWxpZCBEYXRl", 
+        "YXJndW1lbnRz", 
+        "Y2FsbGVl", 
+        "Y2FsbGVy", 
+        "YXBwbHk=", 
+        "Y29uc3RydWN0", 
+        "ZGVsZXRlUHJvcGVydHk=", 
+        "Z2V0", 
+        "aGFz", 
+        "b3duS2V5cw==", 
+        "gVN5bWJvbC50b1ByaW1pdGl2Zf8=", 
+        "gVN5bWJvbC5oYXNJbnN0YW5jZf8=", 
+        "gVN5bWJvbC50b1N0cmluZ1RhZ/8=", 
+        "gVN5bWJvbC5pc0NvbmNhdFNwcmVhZGFibGX/", 
+        "c2V0UHJvdG90eXBlT2Y=", 
+        "X19wcm90b19f", 
+        "dG9TdHJpbmc=", 
+        "dG9KU09O", 
+        "dHlwZQ==", 
+        "ZGF0YQ==", 
+        "bGVuZ3Ro", 
+        "c2V0", 
+        "c3RhY2s=", 
+        "cGM=", 
+        "bGluZU51bWJlcg==", 
+        "glRyYWNlZGF0YQ==", 
+        "bmFtZQ==", 
+        "ZmlsZU5hbWU=", 
+        "cG9pbnRlcg==", 
+        "glRhcmdldA==", 
+        "gk5leHQ=", 
+        "gkJ5dGVjb2Rl", 
+        "gkZvcm1hbHM=", 
+        "glZhcm1hcA==", 
+        "glNvdXJjZQ==", 
+        "glBjMmxpbmU=", 
+        "gk1hcA==", 
+        "glZhcmVudg==", 
+        "gkZpbmFsaXplcg==", 
+        "glZhbHVl", 
+        "Y29tcGlsZQ==", 
+        "aW5wdXQ=", 
+        "ZXJyQ3JlYXRl", 
+        "ZXJyVGhyb3c=", 
+        "ZW52", 
+        "aGV4", 
+        "YmFzZTY0", 
+        "ang=", 
+        "amM=", 
+        "eyJfdW5kZWYiOnRydWV9", 
+        "eyJfbmFuIjp0cnVlfQ==", 
+        "eyJfaW5mIjp0cnVlfQ==", 
+        "eyJfbmluZiI6dHJ1ZX0=", 
+        "eyJfZnVuYyI6dHJ1ZX0=", 
+        "e19mdW5jOnRydWV9", 
+        "YnJlYWs=", 
+        "Y2FzZQ==", 
+        "Y2F0Y2g=", 
+        "Y29udGludWU=", 
+        "ZGVidWdnZXI=", 
+        "ZGVmYXVsdA==", 
+        "ZGVsZXRl", 
+        "ZG8=", 
+        "ZWxzZQ==", 
+        "ZmluYWxseQ==", 
+        "Zm9y", 
+        "ZnVuY3Rpb24=", 
+        "aWY=", 
+        "aW4=", 
+        "aW5zdGFuY2VvZg==", 
+        "bmV3", 
+        "cmV0dXJu", 
+        "c3dpdGNo", 
+        "dGhpcw==", 
+        "dGhyb3c=", 
+        "dHJ5", 
+        "dHlwZW9m", 
+        "dmFy", 
+        "Y29uc3Q=", 
+        "dm9pZA==", 
+        "d2hpbGU=", 
+        "d2l0aA==", 
+        "Y2xhc3M=", 
+        "ZW51bQ==", 
+        "ZXhwb3J0", 
+        "ZXh0ZW5kcw==", 
+        "aW1wb3J0", 
+        "c3VwZXI=", 
+        "bnVsbA==", 
+        "dHJ1ZQ==", 
+        "ZmFsc2U=", 
+        "aW1wbGVtZW50cw==", 
+        "aW50ZXJmYWNl", 
+        "bGV0", 
+        "cGFja2FnZQ==", 
+        "cHJpdmF0ZQ==", 
+        "cHJvdGVjdGVk", 
+        "cHVibGlj", 
+        "c3RhdGlj", 
+        "eWllbGQ="
+    ], 
+    "git_describe": "v2.4.0", 
+    "builtin_strings": [
+        "Undefined", 
+        "Null", 
+        "Symbol", 
+        "Arguments", 
+        "Object", 
+        "Function", 
+        "Array", 
+        "String", 
+        "Boolean", 
+        "Number", 
+        "Date", 
+        "RegExp", 
+        "Error", 
+        "Math", 
+        "JSON", 
+        "", 
+        "ArrayBuffer", 
+        "DataView", 
+        "Int8Array", 
+        "Uint8Array", 
+        "Uint8ClampedArray", 
+        "Int16Array", 
+        "Uint16Array", 
+        "Int32Array", 
+        "Uint32Array", 
+        "Float32Array", 
+        "Float64Array", 
+        "global", 
+        "ObjEnv", 
+        "DecEnv", 
+        "Buffer", 
+        "Pointer", 
+        "Thread", 
+        "eval", 
+        "value", 
+        "writable", 
+        "configurable", 
+        "enumerable", 
+        "join", 
+        "toLocaleString", 
+        "valueOf", 
+        "toUTCString", 
+        "toISOString", 
+        "toGMTString", 
+        "source", 
+        "ignoreCase", 
+        "multiline", 
+        "lastIndex", 
+        "flags", 
+        "index", 
+        "prototype", 
+        "constructor", 
+        "message", 
+        "boolean", 
+        "number", 
+        "string", 
+        "symbol", 
+        "object", 
+        "undefined", 
+        "NaN", 
+        "Infinity", 
+        "-Infinity", 
+        "-0", 
+        ",", 
+        "\n    ", 
+        "[...]", 
+        "Invalid Date", 
+        "arguments", 
+        "callee", 
+        "caller", 
+        "apply", 
+        "construct", 
+        "deleteProperty", 
+        "get", 
+        "has", 
+        "ownKeys", 
+        "\u0081Symbol.toPrimitive\u00ff", 
+        "\u0081Symbol.hasInstance\u00ff", 
+        "\u0081Symbol.toStringTag\u00ff", 
+        "\u0081Symbol.isConcatSpreadable\u00ff", 
+        "setPrototypeOf", 
+        "__proto__", 
+        "toString", 
+        "toJSON", 
+        "type", 
+        "data", 
+        "length", 
+        "set", 
+        "stack", 
+        "pc", 
+        "lineNumber", 
+        "\u0082Tracedata", 
+        "name", 
+        "fileName", 
+        "pointer", 
+        "\u0082Target", 
+        "\u0082Next", 
+        "\u0082Bytecode", 
+        "\u0082Formals", 
+        "\u0082Varmap", 
+        "\u0082Source", 
+        "\u0082Pc2line", 
+        "\u0082Map", 
+        "\u0082Varenv", 
+        "\u0082Finalizer", 
+        "\u0082Value", 
+        "compile", 
+        "input", 
+        "errCreate", 
+        "errThrow", 
+        "env", 
+        "hex", 
+        "base64", 
+        "jx", 
+        "jc", 
+        "{\"_undef\":true}", 
+        "{\"_nan\":true}", 
+        "{\"_inf\":true}", 
+        "{\"_ninf\":true}", 
+        "{\"_func\":true}", 
+        "{_func:true}", 
+        "break", 
+        "case", 
+        "catch", 
+        "continue", 
+        "debugger", 
+        "default", 
+        "delete", 
+        "do", 
+        "else", 
+        "finally", 
+        "for", 
+        "function", 
+        "if", 
+        "in", 
+        "instanceof", 
+        "new", 
+        "return", 
+        "switch", 
+        "this", 
+        "throw", 
+        "try", 
+        "typeof", 
+        "var", 
+        "const", 
+        "void", 
+        "while", 
+        "with", 
+        "class", 
+        "enum", 
+        "export", 
+        "extends", 
+        "import", 
+        "super", 
+        "null", 
+        "true", 
+        "false", 
+        "implements", 
+        "interface", 
+        "let", 
+        "package", 
+        "private", 
+        "protected", 
+        "public", 
+        "static", 
+        "yield"
+    ]
+}
