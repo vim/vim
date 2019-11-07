@@ -1937,7 +1937,7 @@ find_tags(
 	     */
 	    else if (state == TS_SKIP_BACK)
 	    {
-		search_info.curr_offset -= LSIZE * 2;
+		search_info.curr_offset -= lbuf_size * 2;
 		if (search_info.curr_offset < 0)
 		{
 		    search_info.curr_offset = 0;
@@ -1955,7 +1955,7 @@ find_tags(
 		/* Adjust the search file offset to the correct position */
 		search_info.curr_offset_used = search_info.curr_offset;
 		vim_fseek(fp, search_info.curr_offset, SEEK_SET);
-		eof = vim_fgets(lbuf, LSIZE, fp);
+		eof = vim_fgets(lbuf, lbuf_size, fp);
 		if (!eof && search_info.curr_offset != 0)
 		{
 		    /* The explicit cast is to work around a bug in gcc 3.4.2
@@ -1967,13 +1967,13 @@ find_tags(
 			vim_fseek(fp, search_info.low_offset, SEEK_SET);
 			search_info.curr_offset = search_info.low_offset;
 		    }
-		    eof = vim_fgets(lbuf, LSIZE, fp);
+		    eof = vim_fgets(lbuf, lbuf_size, fp);
 		}
 		/* skip empty and blank lines */
 		while (!eof && vim_isblankline(lbuf))
 		{
 		    search_info.curr_offset = vim_ftell(fp);
-		    eof = vim_fgets(lbuf, LSIZE, fp);
+		    eof = vim_fgets(lbuf, lbuf_size, fp);
 		}
 		if (eof)
 		{
@@ -1996,10 +1996,10 @@ find_tags(
 		{
 #ifdef FEAT_CSCOPE
 		    if (use_cscope)
-			eof = cs_fgets(lbuf, LSIZE);
+			eof = cs_fgets(lbuf, lbuf_size);
 		    else
 #endif
-			eof = vim_fgets(lbuf, LSIZE, fp);
+			eof = vim_fgets(lbuf, lbuf_size, fp);
 		} while (!eof && vim_isblankline(lbuf));
 
 		if (eof)
@@ -2230,28 +2230,21 @@ parse_line:
 	    // When the line is too long the NUL will not be in the
 	    // last-but-one byte (see vim_fgets()).
 	    // Has been reported for Mozilla JS with extremely long names.
-	    // In that case we can't parse it and we ignore the line.
-	    if (lbuf[LSIZE - 2] != NUL
+	    // In that case we need to increase lbuf_size.
+	    if (lbuf[lbuf_size - 2] != NUL
 #ifdef FEAT_CSCOPE
 					     && !use_cscope
 #endif
 					     )
 	    {
-		if (p_verbose >= 5)
-		{
-		    verbose_enter();
-		    msg(_("Ignoring long line in tags file"));
-		    verbose_leave();
-		}
-#ifdef FEAT_TAG_BINS
-		if (state != TS_LINEAR)
-		{
-		    // Avoid getting stuck.
-		    linear = TRUE;
-		    state = TS_LINEAR;
-		    vim_fseek(fp, search_info.low_offset, SEEK_SET);
-		}
-#endif
+		lbuf_size *= 2;
+		vim_free(lbuf);
+		lbuf = alloc(lbuf_size);
+		if (lbuf == NULL)
+		    goto findtag_end;
+		// this will try the same thing again, make sure the offset is
+		// different
+		search_info.curr_offset = 0;
 		continue;
 	    }
 
@@ -3367,6 +3360,8 @@ jumpto_tag(
 	    break;
 #endif
 	*pbuf_end++ = *str++;
+	if (pbuf_end - pbuf + 1 >= LSIZE)
+	    break;
     }
     *pbuf_end = NUL;
 
