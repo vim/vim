@@ -659,6 +659,8 @@ xmkmfpath
 TERM_TEST
 TERM_OBJ
 TERM_SRC
+ECMASCRIPT_OBJ
+ECMASCRIPT_SRC
 CHANNEL_OBJ
 CHANNEL_SRC
 NETBEANS_OBJ
@@ -811,6 +813,7 @@ enable_tclinterp
 with_tclsh
 enable_rubyinterp
 with_ruby_command
+enable_ecmascriptinterp
 enable_cscope
 enable_netbeans
 enable_channel
@@ -1486,6 +1489,7 @@ Optional Features:
   --disable-selinux	  Do not check for SELinux support.
   --disable-xsmp          Disable XSMP session management
   --disable-xsmp-interact Disable XSMP interaction
+  --enable-ecmascriptinterp=OPTS      Include ECMAScript interpreter.  default=no OPTS=no/yes
   --enable-luainterp=OPTS      Include Lua interpreter.  default=no OPTS=no/yes/dynamic
   --enable-mzschemeinterp      Include MzScheme interpreter.
   --enable-perlinterp=OPTS     Include Perl interpreter.  default=no OPTS=no/yes/dynamic
@@ -5265,6 +5269,38 @@ $as_echo "yes" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-ecmascriptinterp argument" >&5
+$as_echo_n "checking --enable-ecmascriptinterp argument... " >&6; }
+# Check whether --enable-ecmascriptinterp was given.
+if test "${enable_ecmascriptinterp+set}" = set; then :
+  enableval=$enable_ecmascriptinterp;
+else
+  enable_ecmascriptinterp="no"
+fi
+
+if test "$enable_ecmascriptinterp" = "yes"; then
+  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: cannot use ecmascriptinterp with tiny or small features" >&5
+$as_echo "cannot use ecmascriptinterp with tiny or small features" >&6; }
+    enable_ecmascriptinterp="no"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+  fi
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+if test "$enable_ecmascriptinterp" = "yes"; then
+  $as_echo "#define FEAT_ECMASCRIPT 1" >>confdefs.h
+
+  ECMASCRIPT_SRC="duktape/duktape.c"
+
+  ECMASCRIPT_OBJ="objects/duktape.o"
+
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-luainterp argument" >&5

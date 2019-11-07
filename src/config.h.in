@@ -329,6 +329,9 @@
 /* Define if you want huge features. */
 #undef FEAT_HUGE
 
+/* Define if you want to include the ECMAScript interpreter. */
+#undef FEAT_ECMASCRIPT
+
 /* Define if you want to include the Lua interpreter. */
 #undef FEAT_LUA
 

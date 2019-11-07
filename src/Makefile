@@ -481,6 +481,9 @@ CClink = $(CC)
 # Uncomment this when you do not want inter process communication.
 #CONF_OPT_CHANNEL = --disable-channel
 
+# ECMASCRIPT
+#CONF_OPT_ECMASCRIPT = --enable-ecmascriptinterp
+
 # TERMINAL - Terminal emulator support, :terminal command.  Requires the
 # channel feature. The default is enable for when using "huge" features.
 # Uncomment the first line when you want terminal emulator support for
@@ -1427,6 +1430,13 @@ XDIFF_INCL = \
 	xdiff/xtypes.h \
 	xdiff/xutils.h \
 
+ECMASCRIPT_DEPS = \
+	duktape/duk_config.h \
+	duktape/duktape.h \
+	duktape/duktape.c \
+
+ECMASCRIPT_SRC = duktape/*.c
+
 ### Command to create dependencies based on #include "..."
 ### prototype headers are ignored due to -DPROTO, system
 ### headers #include <...> are ignored if we use the -MM option, as
@@ -1616,6 +1626,7 @@ BASIC_SRC = \
 	hashtab.c \
 	highlight.c \
 	if_cscope.c \
+	if_ecmascript.c \
 	if_xcmdsrv.c \
 	indent.c \
 	insexpand.c \
@@ -1682,11 +1693,13 @@ SRC =	$(BASIC_SRC) \
 	$(PERL_SRC) \
 	$(PYTHON_SRC) $(PYTHON3_SRC) \
 	$(TCL_SRC) \
-	$(RUBY_SRC)
+	$(RUBY_SRC) \
+	$(ECMASCRIPT_SRC)
 
 EXTRA_SRC = hangulin.c if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
 	    if_python.c if_python3.c if_tcl.c if_ruby.c \
 	    gui_beval.c netbeans.c channel.c \
+	    if_ecmascript.c \
 	    $(GRESOURCE_SRC)
 
 # Unittest files
@@ -1758,6 +1771,7 @@ OBJ_COMMON = \
 	objects/highlight.o \
 	$(HANGULIN_OBJ) \
 	objects/if_cscope.o \
+	objects/if_ecmascript.o \
 	objects/if_xcmdsrv.o \
 	objects/indent.o \
 	objects/insexpand.o \
@@ -1820,7 +1834,8 @@ OBJ_COMMON = \
 	$(OS_EXTRA_OBJ) \
 	$(NETBEANS_OBJ) \
 	$(CHANNEL_OBJ) \
-	$(XDIFF_OBJS)
+	$(XDIFF_OBJS) \
+	$(ECMASCRIPT_OBJ)
 
 # The files included by tests are not in OBJ_COMMON.
 OBJ_MAIN = \
@@ -1912,6 +1927,7 @@ PRO_AUTO = \
 	hangulin.pro \
 	highlight.pro \
 	if_cscope.pro \
+	if_ecmascript.pro \
 	if_lua.pro \
 	if_mzsch.pro \
 	if_python.pro \
@@ -2024,6 +2040,7 @@ config auto/config.mk: auto/configure config.mk.in config.h.in
 		$(CONF_ARGS4) $(CONF_ARGS5) $(CONF_ARGS6) \
 		$(CONF_OPT_MZSCHEME) $(CONF_OPT_PLTHOME) \
 		$(CONF_OPT_LUA) $(CONF_OPT_LUA_PREFIX) \
+		$(CONF_OPT_ECMASCRIPT) \
 		$(CONF_OPT_SYSMOUSE) $(CONF_OPT_CANBERRA); \
 	fi
 
@@ -3418,6 +3435,9 @@ objects/term.o: term.c
 objects/terminal.o: terminal.c $(TERM_DEPS)
 	$(CCC) -o $@ terminal.c
 
+objects/if_ecmascript.o: if_ecmascript.c
+	$(CCC) -o $@ if_ecmascript.c
+
 objects/testing.o: testing.c
 	$(CCC) -o $@ testing.c
 
@@ -3508,6 +3528,11 @@ objects/xhistogram.o: xdiff/xhistogram.c $(XDIFF_INCL)
 
 objects/xpatience.o: xdiff/xpatience.c $(XDIFF_INCL)
 	$(CCCDIFF) -o $@ xdiff/xpatience.c
+
+CCCECMASCRIPT = $(CCC_NF) $(ALL_CFLAGS)
+
+objects/duktape.o: duktape/duktape.c
+	$(CCCECMASCRIPT) -o $@ duktape/duktape.c
 
 
 ###############################################################################
@@ -4070,6 +4095,14 @@ objects/hangulin.o: hangulin.c vim.h protodef.h auto/config.h feature.h os_unix.
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
+objects/if_ecmascript.o: if_ecmascript.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h duktape/duk_config.h duktape/duktape.h
+objects/duktape.o: vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h duktape/duk_config.h duktape/duktape.h
 objects/if_lua.o: if_lua.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \

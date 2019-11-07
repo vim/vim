@@ -2112,6 +2112,40 @@ if test "$enable_terminal" = "yes" -a "$enable_channel" = "yes"; then
   AC_SUBST(TERM_TEST)
 fi
 
+AC_MSG_CHECKING(--enable-ecmascriptinterp argument)
+AC_ARG_ENABLE(ecmascriptinterp,
+	[  --enable-ecmascriptinterp       Enable ecmascriptinterp support.],
+	, [enable_ecmascriptinterp="auto"])
+if test "$enable_ecmascriptinterp" = "yes" || test "$enable_ecmascriptinterp" = "auto" -a "x$features" = "xhuge" ; then
+  if test "x$features" = "xtiny" -o "x$features" = "xsmall"; then
+    AC_MSG_RESULT([cannot use ecmascriptinterp emulator with tiny or small features])
+    enable_ecmascriptinterp="no"
+  else
+    if test "$enable_ecmascriptinterp" = "auto"; then
+      enable_ecmascriptinterp="yes"
+      AC_MSG_RESULT(defaulting to yes)
+    else
+      AC_MSG_RESULT(yes)
+    fi
+  fi
+else
+  if test "$enable_ecmascriptinterp" = "auto"; then
+    enable_ecmascriptinterp="no"
+    AC_MSG_RESULT(defaulting to no)
+  else
+    AC_MSG_RESULT(no)
+  fi
+fi
+if test "$enable_ecmascriptinterp" = "yes"; then
+  AC_DEFINE(FEAT_ECMASCRIPT)
+  ECMASCRIPT_SRC="duktape/duktape.c"
+  AC_SUBST(ECMASCRIPT_SRC)
+  ECMASCRIPT_OBJ="objects/duktape.o"
+  AC_SUBST(ECMASCRIPT_OBJ)
+  ECMASCRIPT_TEST="test_duktape"
+  AC_SUBST(ECMASCRIPT_TEST)
+fi
+
 AC_MSG_CHECKING(--enable-autoservername argument)
 AC_ARG_ENABLE(autoservername,
 	[  --enable-autoservername Automatically define servername at vim startup.], ,

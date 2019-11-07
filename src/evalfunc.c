@@ -134,6 +134,9 @@ static void f_log10(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_LUA
 static void f_luaeval(typval_T *argvars, typval_T *rettv);
 #endif
+#ifdef FEAT_ECMASCRIPT
+/* static void f_ecmascripteval(typval_T *argvars, typval_T *rettv); */
+#endif
 static void f_maparg(typval_T *argvars, typval_T *rettv);
 static void f_mapcheck(typval_T *argvars, typval_T *rettv);
 static void f_match(typval_T *argvars, typval_T *rettv);
@@ -3577,6 +3580,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 #ifdef FEAT_TERMGUICOLORS
 	"termguicolors",
+#endif
+#if defined(FEAT_ECMASCRIPT)
+	"ecmascript",
 #endif
 #if defined(FEAT_TERMINAL) && !defined(MSWIN)
 	"terminal",

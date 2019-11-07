@@ -199,6 +199,7 @@ SRC_ALL =	\
 		src/proto/crypt.pro \
 		src/proto/crypt_zip.pro \
 		src/proto/debugger.pro \
+		src/proto/if_ecmascript.pro \
 		src/proto/dict.pro \
 		src/proto/diff.pro \
 		src/proto/digraph.pro \
@@ -363,7 +364,10 @@ SRC_ALL =	\
 		src/xdiff/xtypes.h \
 		src/xdiff/xutils.c \
 		src/xdiff/xutils.h \
-
+		src/duktape/duk_config.h \
+		src/duktape/duktape.h \
+		src/duktape/duktape.c \
+		src/if_ecmascript.c \
 
 # source files for Unix only
 SRC_UNIX =	\
