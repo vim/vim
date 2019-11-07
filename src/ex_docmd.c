@@ -75,6 +75,7 @@ static void	get_flags(exarg_T *eap);
 	|| !defined(FEAT_TCL) \
 	|| !defined(FEAT_RUBY) \
 	|| !defined(FEAT_LUA) \
+	|| !defined(FEAT_ECMASCRIPT) \
 	|| !defined(FEAT_MZSCHEME)
 # define HAVE_EX_SCRIPT_NI
 static void	ex_script_ni(exarg_T *eap);
@@ -172,6 +173,9 @@ static void	ex_popup(exarg_T *eap);
 #ifndef FEAT_PERSISTENT_UNDO
 # define ex_rundo		ex_ni
 # define ex_wundo		ex_ni
+#endif
+#ifndef FEAT_ECMASCRIPT
+# define ex_ecmascript		ex_script_ni
 #endif
 #ifndef FEAT_LUA
 # define ex_lua			ex_script_ni
@@ -2368,6 +2372,7 @@ do_one_cmd(
 	    case CMD_echoerr:
 	    case CMD_echomsg:
 	    case CMD_echon:
+	    case CMD_ecmascript:
 	    case CMD_execute:
 	    case CMD_filter:
 	    case CMD_help:
