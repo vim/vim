@@ -870,13 +870,13 @@ getcount:
 	 */
 	if (cp != NULL)
 	{
-#ifdef CURSOR_SHAPE
 	    if (repl)
 	    {
 		State = REPLACE;	/* pretend Replace mode */
+#ifdef CURSOR_SHAPE
 		ui_cursor_shape();	/* show different cursor shape */
-	    }
 #endif
+	    }
 	    if (lang && curbuf->b_p_iminsert == B_IMODE_LMAP)
 	    {
 		/* Allow mappings defined with ":lmap". */
@@ -913,9 +913,7 @@ getcount:
 	    }
 	    p_smd = save_smd;
 #endif
-#ifdef CURSOR_SHAPE
 	    State = NORMAL_BUSY;
-#endif
 #ifdef FEAT_CMDL_INFO
 	    need_flushbuf |= add_to_showcmd(*cp);
 #endif
@@ -5977,6 +5975,24 @@ nv_g_cmd(cmdarg_T *cap)
 	    curwin->w_valid &= ~VALID_WCOL;
 	}
 	curwin->w_set_curswant = TRUE;
+	break;
+
+    case 'M':
+	{
+	    char_u  *ptr = ml_get_curline();
+
+	    oap->motion_type = MCHAR;
+	    oap->inclusive = FALSE;
+	    if (has_mbyte)
+		i = mb_string2cells(ptr, (int)STRLEN(ptr));
+	    else
+		i = (int)STRLEN(ptr);
+	    if (cap->count0 > 0 && cap->count0 <= 100)
+		coladvance((colnr_T)(i * cap->count0 / 100));
+	    else
+		coladvance((colnr_T)(i / 2));
+	    curwin->w_set_curswant = TRUE;
+	}
 	break;
 
     case '_':

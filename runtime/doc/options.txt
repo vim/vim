@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Oct 26
+*options.txt*	For Vim version 8.1.  Last change: 2019 Nov 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3923,6 +3923,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     "8:SpecialKey,~:EndOfBuffer,@:NonText,
 				     d:Directory,e:ErrorMsg,i:IncSearch,
 				     l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,
+				     a:LineNrAbove,b:LineNrBelow,
 				     N:CursorLineNr,r:Question,s:StatusLine,
 				     S:StatusLineNC,c:VertSplit,t:Title,
 				     v:Visual,V:VisualNOS,w:WarningMsg,
@@ -3954,6 +3955,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-ModeMsg|	 M  Mode (e.g., "-- INSERT --")
 	|hl-LineNr|	 n  line number for ":number" and ":#" commands, and
 			    when 'number' or 'relativenumber' option is set.
+	|hl-LineNrAbove|   a  line number above the cursor for when the
+			    'relativenumber' option is set.
+	|hl-LineNrBelow|   b  line number below the cursor for when the
+			    'relativenumber' option is set.
 	|hl-CursorLineNr|  N like n for when 'cursorline' or 'relativenumber' is
 			    set.
 	|hl-Question|	 r  |hit-enter| prompt and yes/no questions
@@ -5191,12 +5196,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'mouse'* *E538*
 'mouse'			string	(default "", "a" for GUI, MS-DOS and Win32,
-						 set to "a" in |defaults.vim|)
+					set to "a" or "nvi" in |defaults.vim|)
 			global
-	Enable the use of the mouse.  Only works for certain terminals
-	(xterm, MS-DOS, Win32 |win32-mouse|, QNX pterm, *BSD console with
-	sysmouse and Linux console with gpm).  For using the mouse in the
-	GUI, see |gui-mouse|.
+	Enable the use of the mouse.  Works for most terminals (xterm, MS-DOS,
+	Win32 |win32-mouse|, QNX pterm, *BSD console with sysmouse and Linux
+	console with gpm).  For using the mouse in the GUI, see |gui-mouse|.
 	The mouse can be enabled for different modes:
 		n	Normal mode and Terminal modes
 		v	Visual mode
@@ -5207,7 +5211,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 		r	for |hit-enter| and |more-prompt| prompt
 	Normally you would enable the mouse in all five modes with: >
 		:set mouse=a
-<	When the mouse is not enabled, the GUI will still use the mouse for
+<	If your terminal can't overrule the mouse events going to the
+	application, use: >
+		:set mouse=nvi
+<	The you can press ":", select text for the system, and press Esc to go
+	back to Vim using the mouse events.
+	In |defaults.vim| "nvi" is used if the 'term' option is not matching
+	"xterm".
+
+	When the mouse is not enabled, the GUI will still use the mouse for
 	modeless selection.  This doesn't move the text cursor.
 
 	See |mouse-using|.  Also see |'clipboard'|.
@@ -6270,6 +6282,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	file.  This means that ":split | edit file" results in two windows
 	with scroll-binding, but ":split file" does not.
 
+			*'scrollfocus'* *'scf'* *'noscrollfocus'* *'noscf'*
+'scrollfocus' 'scf'	boolean  (default off)
+			global
+			{only for MS-Windows GUI}
+	When using the scroll wheel and this option is set, the window under
+	the mouse pointer is scrolled.  With this option off the current
+	window is scrolled.
+	Systems other than MS-Windows behave like this option is on.
+
 						*'scrolljump'* *'sj'*
 'scrolljump' 'sj'	number	(default 1)
 			global
@@ -6441,8 +6462,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	See |option-backslash| about including spaces and backslashes.
 	Environment variables are expanded |:set_env|.
 
-	If the name of the shell contains a space, you might need to enclose
-	it in quotes or escape the space.  Example with quotes: >
+	If the name of the shell contains a space, you need to enclose it in
+	quotes and escape the space.  Example: >
 		:set shell=\"c:\program\ files\unix\sh.exe\"\ -f
 <	Note the backslash before each quote (to avoid starting a comment) and
 	each space (to avoid ending the option value).  Also note that the

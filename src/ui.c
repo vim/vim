@@ -913,7 +913,7 @@ start_global_changes(void)
 
     if (clip_did_set_selection)
     {
-	clip_unnamed = FALSE;
+	clip_unnamed = 0;
 	clip_did_set_selection = FALSE;
     }
 }
@@ -941,7 +941,7 @@ end_global_changes(void)
     {
 	clip_did_set_selection = TRUE;
 	clip_unnamed = clip_unnamed_saved;
-	clip_unnamed_saved = FALSE;
+	clip_unnamed_saved = 0;
 	if (clipboard_needs_update)
 	{
 	    /* only store something in the clipboard,

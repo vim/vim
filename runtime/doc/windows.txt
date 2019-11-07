@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.1.  Last change: 2019 Oct 18
+*windows.txt*   For Vim version 8.1.  Last change: 2019 Oct 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -547,6 +547,10 @@ CTRL-W +	Increase current window height by N (default 1).
 :res[ize] [N]
 CTRL-W CTRL-_					*CTRL-W_CTRL-_* *CTRL-W__*
 CTRL-W _	Set current window height to N (default: highest possible).
+
+:{winnr}res[ize] [+-]N
+		Like `:resize` above, but apply the size to window {winnr}
+		instead of the current window.
 
 z{nr}<CR>	Set current window height to {nr}.
 

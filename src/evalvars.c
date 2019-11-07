@@ -143,6 +143,7 @@ static struct vimvar
     {VV_NAME("event",		 VAR_DICT), VV_RO},
     {VV_NAME("versionlong",	 VAR_NUMBER), VV_RO},
     {VV_NAME("echospace",	 VAR_NUMBER), VV_RO},
+    {VV_NAME("argv",		 VAR_LIST), VV_RO},
 };
 
 // shorthand
@@ -2083,6 +2084,27 @@ set_vim_var_dict(int idx, dict_T *val)
 	++val->dv_refcount;
 	dict_set_items_ro(val);
     }
+}
+
+/*
+ * Set the v:argv list.
+ */
+    void
+set_argv_var(char **argv, int argc)
+{
+    list_T	*l = list_alloc();
+    int		i;
+
+    if (l == NULL)
+	getout(1);
+    l->lv_lock = VAR_FIXED;
+    for (i = 0; i < argc; ++i)
+    {
+	if (list_append_string(l, (char_u *)argv[i], -1) == FAIL)
+	    getout(1);
+	l->lv_last->li_tv.v_lock = VAR_FIXED;
+    }
+    set_vim_var_list(VV_ARGV, l);
 }
 
 /*

@@ -1009,7 +1009,11 @@ common_init(mparm_T *paramp)
     TIME_MSG("inits 1");
 
 #ifdef FEAT_EVAL
-    set_lang_var();		/* set v:lang and v:ctype */
+    // set v:lang and v:ctype
+    set_lang_var();
+
+    // set v:argv
+    set_argv_var(paramp->argv, paramp->argc);
 #endif
 
 #ifdef FEAT_SIGNS

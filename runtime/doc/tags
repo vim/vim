@@ -5314,6 +5314,7 @@ arglist-quit	usr_07.txt	/*arglist-quit*
 arglistid()	eval.txt	/*arglistid()*
 argument-list	editing.txt	/*argument-list*
 argv()	eval.txt	/*argv()*
+argv-variable	eval.txt	/*argv-variable*
 as	motion.txt	/*as*
 asin()	eval.txt	/*asin()*
 asm.vim	syntax.txt	/*asm.vim*
@@ -6814,6 +6815,7 @@ gF	editing.txt	/*gF*
 gH	visual.txt	/*gH*
 gI	insert.txt	/*gI*
 gJ	change.txt	/*gJ*
+gM	motion.txt	/*gM*
 gN	visual.txt	/*gN*
 gP	change.txt	/*gP*
 gQ	intro.txt	/*gQ*
@@ -7099,6 +7101,8 @@ hl-Folded	syntax.txt	/*hl-Folded*
 hl-Ignore	syntax.txt	/*hl-Ignore*
 hl-IncSearch	syntax.txt	/*hl-IncSearch*
 hl-LineNr	syntax.txt	/*hl-LineNr*
+hl-LineNrAbove	syntax.txt	/*hl-LineNrAbove*
+hl-LineNrBelow	syntax.txt	/*hl-LineNrBelow*
 hl-MatchParen	syntax.txt	/*hl-MatchParen*
 hl-Menu	syntax.txt	/*hl-Menu*
 hl-ModeMsg	syntax.txt	/*hl-ModeMsg*
@@ -9395,6 +9399,7 @@ terminal-functions	usr_41.txt	/*terminal-functions*
 terminal-info	term.txt	/*terminal-info*
 terminal-job-index	index.txt	/*terminal-job-index*
 terminal-key-codes	term.txt	/*terminal-key-codes*
+terminal-mouse	term.txt	/*terminal-mouse*
 terminal-ms-windows	terminal.txt	/*terminal-ms-windows*
 terminal-options	term.txt	/*terminal-options*
 terminal-output-codes	term.txt	/*terminal-output-codes*
@@ -9588,6 +9593,7 @@ utf-8-typing	mbyte.txt	/*utf-8-typing*
 utf8	mbyte.txt	/*utf8*
 v	visual.txt	/*v*
 v:	eval.txt	/*v:*
+v:argv	eval.txt	/*v:argv*
 v:beval_bufnr	eval.txt	/*v:beval_bufnr*
 v:beval_col	eval.txt	/*v:beval_col*
 v:beval_lnum	eval.txt	/*v:beval_lnum*

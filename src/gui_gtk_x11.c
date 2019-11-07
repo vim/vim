@@ -2895,7 +2895,7 @@ drawarea_configure_event_cb(GtkWidget	      *widget,
      *
      * Naturally, configure events propagated to here like that are fallacious
      * and, as a matter of fact, they trigger a geometric collapse of
-     * gui.drawarea in fullscreen and miximized modes.
+     * gui.drawarea in fullscreen and maximized modes.
      *
      * To filter out such nuisance events, we are making use of the fact that
      * the field send_event of such GdkEventConfigures is set to FALSE in

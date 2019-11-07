@@ -751,8 +751,6 @@ win_line(
 	win_attr = wcr_attr;
 	area_highlighting = TRUE;
     }
-    if (vi_attr != 0 && win_attr != 0)
-	vi_attr = hl_combine_attr(win_attr, vi_attr);
 
 #ifdef FEAT_TEXT_PROP
     if (WIN_IS_POPUP(wp))
@@ -1127,6 +1125,16 @@ win_line(
 				  || wp->w_p_culopt_flags & CULOPT_LINE))
 			char_attr = hl_combine_attr(wcr_attr, HL_ATTR(HLF_CLN));
 #endif
+		      if (wp->w_p_rnu && lnum < wp->w_cursor.lnum
+						      && HL_ATTR(HLF_LNA) != 0)
+			  // Use LineNrAbove
+			  char_attr = hl_combine_attr(wcr_attr,
+							     HL_ATTR(HLF_LNA));
+		      if (wp->w_p_rnu && lnum > wp->w_cursor.lnum
+						      && HL_ATTR(HLF_LNB) != 0)
+			  // Use LineNrBelow
+			  char_attr = hl_combine_attr(wcr_attr,
+							     HL_ATTR(HLF_LNB));
 		    }
 		}
 	    }
@@ -1165,6 +1173,7 @@ win_line(
 # endif
 		    p_extra = NULL;
 		    c_extra = ' ';
+		    c_final = NUL;
 		    n_extra = get_breakindent_win(wp,
 				       ml_get_buf(wp->w_buffer, lnum, FALSE));
 		    // Correct end of highlighted area for 'breakindent',
@@ -1434,10 +1443,6 @@ win_line(
 			prev_syntax_attr = syntax_attr;
 		    }
 
-		    // combine syntax attribute with 'wincolor'
-		    if (syntax_attr != 0 && win_attr != 0)
-			syntax_attr = hl_combine_attr(win_attr, syntax_attr);
-
 		    if (did_emsg)
 		    {
 			wp->w_s->b_syn_error = TRUE;
@@ -1538,8 +1543,15 @@ win_line(
 #endif
 	    }
 	}
-	if (char_attr == 0)
-	    char_attr = win_attr;
+
+	// combine attribute with 'wincolor'
+	if (win_attr != 0)
+	{
+	    if (char_attr == 0)
+		char_attr = win_attr;
+	    else
+		char_attr = hl_combine_attr(win_attr, char_attr);
+	}
 
 	// Get the next character to put on the screen.
 
@@ -1636,9 +1648,8 @@ win_line(
 #ifdef FEAT_LINEBREAK
 	    int c0;
 #endif
+	    VIM_CLEAR(p_extra_free);
 
-	    if (p_extra_free != NULL)
-		VIM_CLEAR(p_extra_free);
 	    // Get a character from the line itself.
 	    c = *ptr;
 #ifdef FEAT_LINEBREAK
@@ -3130,4 +3141,3 @@ win_line(
     vim_free(p_extra_free);
     return row;
 }
-

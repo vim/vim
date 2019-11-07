@@ -31,7 +31,7 @@ static void gui_do_scrollbar(win_T *wp, int which, int enable);
 static void gui_update_horiz_scrollbar(int);
 static void gui_set_fg_color(char_u *name);
 static void gui_set_bg_color(char_u *name);
-static win_T *xy2win(int x, int y);
+static win_T *xy2win(int x, int y, mouse_find_T popup);
 
 #ifdef GUI_MAY_FORK
 static void gui_do_fork(void);
@@ -4852,7 +4852,7 @@ gui_mouse_focus(int x, int y)
 
 #ifdef FEAT_MOUSESHAPE
     /* Get window pointer, and update mouse shape as well. */
-    wp = xy2win(x, y);
+    wp = xy2win(x, y, IGNORE_POPUP);
 #endif
 
     /* Only handle this when 'mousefocus' set and ... */
@@ -4868,7 +4868,7 @@ gui_mouse_focus(int x, int y)
 	if (x < 0 || x > Columns * gui.char_width)
 	    return;
 #ifndef FEAT_MOUSESHAPE
-	wp = xy2win(x, y);
+	wp = xy2win(x, y, IGNORE_POPUP);
 #endif
 	if (wp == curwin || wp == NULL)
 	    return;	/* still in the same old window, or none at all */
@@ -4930,25 +4930,36 @@ gui_mouse_moved(int x, int y)
 }
 
 /*
+ * Get the window where the mouse pointer is on.
+ * Returns NULL if not found.
+ */
+    win_T *
+gui_mouse_window(mouse_find_T popup)
+{
+    int		x, y;
+
+    if (!(gui.in_use && (p_mousef || popup == FIND_POPUP)))
+	return NULL;
+    gui_mch_getmouse(&x, &y);
+
+    // Only use the mouse when it's on the Vim window
+    if (x >= 0 && x <= Columns * gui.char_width
+	    && y >= 0 && Y_2_ROW(y) >= tabline_height())
+	return xy2win(x, y, popup);
+    return NULL;
+}
+
+/*
  * Called when mouse should be moved to window with focus.
  */
     void
 gui_mouse_correct(void)
 {
-    int		x, y;
     win_T	*wp = NULL;
 
     need_mouse_correct = FALSE;
 
-    if (!(gui.in_use && p_mousef))
-	return;
-
-    gui_mch_getmouse(&x, &y);
-    /* Don't move the mouse when it's left or right of the Vim window */
-    if (x < 0 || x > Columns * gui.char_width)
-	return;
-    if (y >= 0 && Y_2_ROW(y) >= tabline_height())
-	wp = xy2win(x, y);
+    wp = gui_mouse_window(IGNORE_POPUP);
     if (wp != curwin && wp != NULL)	/* If in other than current window */
     {
 	validate_cline_row();
@@ -4963,7 +4974,7 @@ gui_mouse_correct(void)
  * As a side effect update the shape of the mouse pointer.
  */
     static win_T *
-xy2win(int x, int y)
+xy2win(int x, int y, mouse_find_T popup)
 {
     int		row;
     int		col;
@@ -4973,7 +4984,7 @@ xy2win(int x, int y)
     col = X_2_COL(x);
     if (row < 0 || col < 0)		/* before first window */
 	return NULL;
-    wp = mouse_find_win(&row, &col, FALSE);
+    wp = mouse_find_win(&row, &col, popup);
     if (wp == NULL)
 	return NULL;
 #ifdef FEAT_MOUSESHAPE

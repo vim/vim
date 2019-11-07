@@ -341,7 +341,7 @@ undo_allowed(void)
 }
 
 /*
- * Get the undolevle value for the current buffer.
+ * Get the undolevel value for the current buffer.
  */
     static long
 get_undolevel(void)

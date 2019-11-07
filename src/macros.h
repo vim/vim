@@ -335,7 +335,7 @@
 	} \
     } while (0)
 
-/* Wether a command index indicates a user command. */
+/* Whether a command index indicates a user command. */
 #define IS_USER_CMDIDX(idx) ((int)(idx) < 0)
 
 // Give an error in curwin is a popup window and evaluate to TRUE.

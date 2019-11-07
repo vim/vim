@@ -877,7 +877,7 @@ sig_alarm SIGDEFARG(sigarg)
 static JMP_BUF lc_jump_env;
 
 # ifdef SIGHASARG
-// Caught signal number, 0 when no was signal caught; used for mch_libcall().
+// Caught signal number, 0 when no signal was caught; used for mch_libcall().
 // Volatile because it is used in signal handlers.
 static volatile sig_atomic_t lc_signal;
 # endif
@@ -3067,7 +3067,7 @@ executable_file(char_u *name)
 	return 0;
 #ifdef VMS
     /* Like on Unix system file can have executable rights but not necessarily
-     * be an executable, but on Unix is not a default for an ordianry file to
+     * be an executable, but on Unix is not a default for an ordinary file to
      * have an executable flag - on VMS it is in most cases.
      * Therefore, this check does not have any sense - let keep us to the
      * conventions instead:
@@ -4299,10 +4299,10 @@ may_send_sigint(int c UNUSED, pid_t pid UNUSED, pid_t wpid UNUSED)
 # endif
 }
 
-#if !defined(USE_SYSTEM) || (defined(FEAT_GUI) && defined(FEAT_TERMINAL))
+#if !defined(USE_SYSTEM) || defined(FEAT_TERMINAL) || defined(PROTO)
 
-    static int
-build_argv(
+    int
+unix_build_argv(
 	char_u *cmd,
 	char ***argvp,
 	char_u **sh_tofree,
@@ -4369,7 +4369,7 @@ mch_call_shell_terminal(
     aco_save_T	aco;
     oparg_T	oa;		/* operator arguments */
 
-    if (build_argv(cmd, &argv, &tofree1, &tofree2) == FAIL)
+    if (unix_build_argv(cmd, &argv, &tofree1, &tofree2) == FAIL)
 	goto theend;
 
     init_job_options(&opt);
@@ -4546,7 +4546,7 @@ mch_call_shell_fork(
     if (options & SHELL_COOKED)
 	settmode(TMODE_COOK);		/* set to normal mode */
 
-    if (build_argv(cmd, &argv, &tofree1, &tofree2) == FAIL)
+    if (unix_build_argv(cmd, &argv, &tofree1, &tofree2) == FAIL)
 	goto error;
 
     /*

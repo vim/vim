@@ -1217,7 +1217,7 @@ textpos2screenpos(
 	    col -= rowoff * width;
 	}
 	col -= wp->w_leftcol;
-	if (col >= width)
+	if (col >= wp->w_width)
 	    col = -1;
 	if (col >= 0)
 	    coloff = col - scol + wp->w_wincol + 1;

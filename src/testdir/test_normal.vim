@@ -408,8 +408,7 @@ func Test_normal10_expand()
 
   if executable('echo')
     " Test expand(`...`) i.e. backticks command expansion.
-    " MS-Windows has a trailing space.
-    call assert_match('^abcde *$', expand('`echo abcde`'))
+    call assert_equal('abcde', expand('`echo abcde`'))
   endif
 
   " Test expand(`=...`) i.e. backticks expression expansion
@@ -1734,6 +1733,7 @@ fun! Test_normal33_g_cmd2()
   set wrap listchars= sbr=
   let lineA='abcdefghijklmnopqrstuvwxyz'
   let lineB='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  let lineC='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   $put =lineA
   $put =lineB
 
@@ -1767,9 +1767,30 @@ fun! Test_normal33_g_cmd2()
   call assert_equal(15, col('.'))
   call assert_equal('l', getreg(0))
 
+  norm! 2ggdd
+  $put =lineC
+
+  " Test for gM
+  norm! gMyl
+  call assert_equal(73, col('.'))
+  call assert_equal('0', getreg(0))
+  " Test for 20gM
+  norm! 20gMyl
+  call assert_equal(29, col('.'))
+  call assert_equal('S', getreg(0))
+  " Test for 60gM
+  norm! 60gMyl
+  call assert_equal(87, col('.'))
+  call assert_equal('E', getreg(0))
+
+  " Test for g Ctrl-G
+  set ff=unix
+  let a=execute(":norm! g\<c-g>")
+  call assert_match('Col 87 of 144; Line 2 of 2; Word 1 of 1; Byte 88 of 146', a)
+
   " Test for gI
   norm! gIfoo
-  call assert_equal(['', 'fooabcdefghijk   lmno0123456789AMNOPQRSTUVWXYZ'], getline(1,'$'))
+  call assert_equal(['', 'foo0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'], getline(1,'$'))
 
   " Test for gi
   wincmd c

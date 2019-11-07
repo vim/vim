@@ -703,6 +703,7 @@ ex_terminal(exarg_T *eap)
 {
     typval_T	argvar[2];
     jobopt_T	opt;
+    int		opt_shell = FALSE;
     char_u	*cmd;
     char_u	*tofree = NULL;
 
@@ -738,6 +739,8 @@ ex_terminal(exarg_T *eap)
 	    opt.jo_hidden = 1;
 	else if (OPTARG_HAS("norestore"))
 	    opt.jo_term_norestore = 1;
+	else if (OPTARG_HAS("shell"))
+	    opt_shell = TRUE;
 	else if (OPTARG_HAS("kill") && ep != NULL)
 	{
 	    opt.jo_set2 |= JO2_TERM_KILL;
@@ -831,13 +834,43 @@ ex_terminal(exarg_T *eap)
 	opt.jo_in_bot = eap->line2;
     }
 
+    if (opt_shell && tofree == NULL)
+    {
+#ifdef UNIX
+	char	**argv = NULL;
+	char_u	*tofree1 = NULL;
+	char_u	*tofree2 = NULL;
+
+	// :term ++shell command
+	if (unix_build_argv(cmd, &argv, &tofree1, &tofree2) == OK)
+	    term_start(NULL, argv, &opt, eap->forceit ? TERM_START_FORCEIT : 0);
+	vim_free(tofree1);
+	vim_free(tofree2);
+	goto theend;
+#else
+# ifdef MSWIN
+	long_u	    cmdlen = STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10;
+	char_u	    *newcmd;
+
+	newcmd = alloc(cmdlen);
+	if (newcmd == NULL)
+	    goto theend;
+	tofree = newcmd;
+	vim_snprintf((char *)newcmd, cmdlen, "%s %s %s", p_sh, p_shcf, cmd);
+	cmd = newcmd;
+# else
+	emsg(_("E279: Sorry, ++shell is not supported on this system"));
+	goto theend;
+# endif
+#endif
+    }
     argvar[0].v_type = VAR_STRING;
     argvar[0].vval.v_string = cmd;
     argvar[1].v_type = VAR_UNKNOWN;
     term_start(argvar, NULL, &opt, eap->forceit ? TERM_START_FORCEIT : 0);
-    vim_free(tofree);
 
 theend:
+    vim_free(tofree);
     vim_free(opt.jo_eof_chars);
 }
 
@@ -1226,11 +1259,12 @@ term_mouse_click(VTerm *vterm, int key)
 }
 
 /*
- * Convert typed key "c" into bytes to send to the job.
+ * Convert typed key "c" with modifiers "modmask" into bytes to send to the
+ * job.
  * Return the number of bytes in "buf".
  */
     static int
-term_convert_key(term_T *term, int c, char *buf)
+term_convert_key(term_T *term, int c, int modmask, char *buf)
 {
     VTerm	    *vterm = term->tl_vterm;
     VTermKey	    key = VTERM_KEY_NONE;
@@ -1375,11 +1409,11 @@ term_convert_key(term_T *term, int c, char *buf)
     }
 
     // add modifiers for the typed key
-    if (mod_mask & MOD_MASK_SHIFT)
+    if (modmask & MOD_MASK_SHIFT)
 	mod |= VTERM_MOD_SHIFT;
-    if (mod_mask & MOD_MASK_CTRL)
+    if (modmask & MOD_MASK_CTRL)
 	mod |= VTERM_MOD_CTRL;
-    if (mod_mask & (MOD_MASK_ALT | MOD_MASK_META))
+    if (modmask & (MOD_MASK_ALT | MOD_MASK_META))
 	mod |= VTERM_MOD_ALT;
 
     /*
@@ -1933,12 +1967,12 @@ term_vgetc()
 static int	mouse_was_outside = FALSE;
 
 /*
- * Send keys to terminal.
+ * Send key "c" with modifiers "modmask" to terminal.
  * Return FAIL when the key needs to be handled in Normal mode.
  * Return OK when the key was dropped or sent to the terminal.
  */
     int
-send_keys_to_term(term_T *term, int c, int typed)
+send_keys_to_term(term_T *term, int c, int modmask, int typed)
 {
     char	msg[KEY_BUF_LEN];
     size_t	len;
@@ -2005,10 +2039,10 @@ send_keys_to_term(term_T *term, int c, int typed)
     if (typed)
 	mouse_was_outside = FALSE;
 
-    /* Convert the typed key to a sequence of bytes for the job. */
-    len = term_convert_key(term, c, msg);
+    // Convert the typed key to a sequence of bytes for the job.
+    len = term_convert_key(term, c, modmask, msg);
     if (len > 0)
-	/* TODO: if FAIL is returned, stop? */
+	// TODO: if FAIL is returned, stop?
 	channel_send(term->tl_job->jv_channel, get_tty_part(term),
 						(char_u *)msg, (int)len, NULL);
 
@@ -2259,6 +2293,34 @@ term_win_entered()
 }
 
 /*
+ * vgetc() may not include CTRL in the key when modify_other_keys is set.
+ * Return the Ctrl-key value in that case.
+ */
+    static int
+raw_c_to_ctrl(int c)
+{
+    if ((mod_mask & MOD_MASK_CTRL)
+	    && ((c >= '`' && c <= 0x7f) || (c >= '@' && c <= '_')))
+	return c & 0x1f;
+    return c;
+}
+
+/*
+ * When modify_other_keys is set then do the reverse of raw_c_to_ctrl().
+ * May set "mod_mask".
+ */
+    static int
+ctrl_to_raw_c(int c)
+{
+    if (c < 0x20 && vterm_is_modify_other_keys(curbuf->b_term->tl_vterm))
+    {
+	mod_mask |= MOD_MASK_CTRL;
+	return c + '@';
+    }
+    return c;
+}
+
+/*
  * Wait for input and send it to the job.
  * When "blocking" is TRUE wait for a character to be typed.  Otherwise return
  * when there is no more typahead.
@@ -2312,24 +2374,18 @@ terminal_loop(int blocking)
 	update_cursor(curbuf->b_term, FALSE);
 	restore_cursor = TRUE;
 
-	c = term_vgetc();
+	raw_c = term_vgetc();
 	if (!term_use_loop_check(TRUE) || in_terminal_loop != curbuf->b_term)
 	{
 	    /* Job finished while waiting for a character.  Push back the
 	     * received character. */
-	    if (c != K_IGNORE)
-		vungetc(c);
+	    if (raw_c != K_IGNORE)
+		vungetc(raw_c);
 	    break;
 	}
-	if (c == K_IGNORE)
+	if (raw_c == K_IGNORE)
 	    continue;
-
-	// vgetc may not include CTRL in the key when modify_other_keys is set.
-	raw_c = c;
-	if ((mod_mask & MOD_MASK_CTRL)
-		&& ((c >= '`' && c <= 0x7f)
-		    || (c >= '@' && c <= '_')))
-	    c &= 0x1f;
+	c = raw_c_to_ctrl(raw_c);
 
 #ifdef UNIX
 	/*
@@ -2362,12 +2418,16 @@ terminal_loop(int blocking)
 		)
 	{
 	    int	    prev_c = c;
+	    int	    prev_raw_c = raw_c;
+	    int	    prev_mod_mask = mod_mask;
 
 #ifdef FEAT_CMDL_INFO
 	    if (add_to_showcmd(c))
 		out_flush();
 #endif
-	    c = term_vgetc();
+	    raw_c = term_vgetc();
+	    c = raw_c_to_ctrl(raw_c);
+
 #ifdef FEAT_CMDL_INFO
 	    clear_showcmd();
 #endif
@@ -2385,8 +2445,10 @@ terminal_loop(int blocking)
 		    ret = FAIL;
 		    goto theend;
 		}
-		/* Send both keys to the terminal. */
-		send_keys_to_term(curbuf->b_term, prev_c, TRUE);
+		// Send both keys to the terminal, first one here, second one
+		// below.
+		send_keys_to_term(curbuf->b_term, prev_raw_c, prev_mod_mask,
+									 TRUE);
 	    }
 	    else if (c == Ctrl_C)
 	    {
@@ -2397,12 +2459,12 @@ terminal_loop(int blocking)
 	    {
 		/* "CTRL-W .": send CTRL-W to the job */
 		/* "'termwinkey' .": send 'termwinkey' to the job */
-		c = termwinkey == 0 ? Ctrl_W : termwinkey;
+		raw_c = ctrl_to_raw_c(termwinkey == 0 ? Ctrl_W : termwinkey);
 	    }
 	    else if (c == Ctrl_BSL)
 	    {
 		/* "CTRL-W CTRL-\": send CTRL-\ to the job */
-		c = Ctrl_BSL;
+		raw_c = ctrl_to_raw_c(Ctrl_BSL);
 	    }
 	    else if (c == 'N')
 	    {
@@ -2430,20 +2492,20 @@ terminal_loop(int blocking)
 	    }
 	}
 # ifdef MSWIN
-	if (!enc_utf8 && has_mbyte && c >= 0x80)
+	if (!enc_utf8 && has_mbyte && raw_c >= 0x80)
 	{
 	    WCHAR   wc;
 	    char_u  mb[3];
 
-	    mb[0] = (unsigned)c >> 8;
-	    mb[1] = c;
+	    mb[0] = (unsigned)raw_c >> 8;
+	    mb[1] = raw_c;
 	    if (MultiByteToWideChar(GetACP(), 0, (char*)mb, 2, &wc, 1) > 0)
-		c = wc;
+		raw_c = wc;
 	}
 # endif
-	if (send_keys_to_term(curbuf->b_term, raw_c, TRUE) != OK)
+	if (send_keys_to_term(curbuf->b_term, raw_c, mod_mask, TRUE) != OK)
 	{
-	    if (c == K_MOUSEMOVE)
+	    if (raw_c == K_MOUSEMOVE)
 		/* We are sure to come back here, don't reset the cursor color
 		 * and shape to avoid flickering. */
 		restore_cursor = FALSE;
@@ -5545,7 +5607,7 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
 	    c = PTR2CHAR(msg);
 	    msg += MB_CPTR2LEN(msg);
 	}
-	send_keys_to_term(term, c, FALSE);
+	send_keys_to_term(term, c, 0, FALSE);
     }
 }
 
@@ -5811,7 +5873,8 @@ typedef int LPPROC_THREAD_ATTRIBUTE_LIST;
 typedef int SIZE_T;
 typedef int PSIZE_T;
 typedef int PVOID;
-typedef int WINAPI;
+typedef int BOOL;
+# define WINAPI
 #endif
 
 HRESULT (WINAPI *pCreatePseudoConsole)(COORD, HANDLE, HANDLE, DWORD, HPCON*);
@@ -6444,7 +6507,7 @@ failed:
 term_and_job_init(
 	term_T	    *term,
 	typval_T    *argvar,
-	char	    **argv UNUSED,
+	char	    **argv,
 	jobopt_T    *opt,
 	jobopt_T    *orig_opt)
 {

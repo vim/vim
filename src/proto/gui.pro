@@ -52,6 +52,7 @@ int gui_get_lightness(guicolor_T pixel);
 void gui_new_scrollbar_colors(void);
 void gui_focus_change(int in_focus);
 void gui_mouse_moved(int x, int y);
+win_T *gui_mouse_window(mouse_find_T popup);
 void gui_mouse_correct(void);
 void ex_gui(exarg_T *eap);
 int gui_find_bitmap(char_u *name, char_u *buffer, char *ext);

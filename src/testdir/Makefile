@@ -54,7 +54,7 @@ report:
 		then cp test.log test_result.log; \
 		else echo No failures reported > test_result.log; \
 		fi"
-	$(RUN_VIMTEST) $(NO_INITS) -S summarize.vim messages $(REDIR_TEST_TO_NULL)
+	$(VIMPROG) -u NONE $(NO_INITS) -S summarize.vim messages $(REDIR_TEST_TO_NULL)
 	@echo
 	@echo 'Test results:'
 	@cat test_result.log

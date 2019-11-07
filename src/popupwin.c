@@ -673,6 +673,16 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    wp->w_popup_flags &= ~POPF_DRAG;
     }
 
+    di = dict_find(dict, (char_u *)"posinvert", -1);
+    if (di != NULL)
+    {
+	nr = dict_get_number(dict, (char_u *)"posinvert");
+	if (nr)
+	    wp->w_popup_flags |= POPF_POSINVERT;
+	else
+	    wp->w_popup_flags &= ~POPF_POSINVERT;
+    }
+
     di = dict_find(dict, (char_u *)"resize", -1);
     if (di != NULL)
     {
@@ -1201,6 +1211,7 @@ popup_adjust_position(win_T *wp)
 	allow_adjust_left = FALSE;
 	maxwidth = wp->w_maxwidth;
     }
+    minwidth = wp->w_minwidth;
 
     // start at the desired first line
     if (wp->w_firstline > 0)
@@ -1270,18 +1281,19 @@ popup_adjust_position(win_T *wp)
 	    if (wp->w_maxwidth > 0 && wp->w_width > wp->w_maxwidth)
 		wp->w_width = wp->w_maxwidth;
 	}
-	// do not use the width of lines we're not going to show
-	if (wp->w_maxheight > 0
-		   && (wp->w_firstline >= 0
-			       ? lnum - wp->w_topline
-			       : wp->w_buffer->b_ml.ml_line_count - lnum)
-		       + 1 + wrapped > wp->w_maxheight)
-	    break;
 
 	if (wp->w_firstline < 0)
 	    --lnum;
 	else
 	    ++lnum;
+
+	// do not use the width of lines we're not going to show
+	if (wp->w_maxheight > 0
+		   && (wp->w_firstline >= 0
+			       ? lnum - wp->w_topline
+			       : wp->w_buffer->b_ml.ml_line_count - lnum)
+		       + wrapped >= wp->w_maxheight)
+	    break;
     }
 
     if (wp->w_firstline < 0)
@@ -1293,11 +1305,13 @@ popup_adjust_position(win_T *wp)
     {
 	++right_extra;
 	++extra_width;
-	if (used_maxwidth)
-	    maxwidth -= 2;  // try to show the scrollbar
+	// make space for the scrollbar if needed, when lines wrap and when
+	// applying minwidth
+	if (maxwidth + right_extra >= maxspace
+		&& (used_maxwidth || (minwidth > 0 && wp->w_width < minwidth)))
+	    maxwidth -= wp->w_popup_padding[1] + 1;
     }
 
-    minwidth = wp->w_minwidth;
     if (wp->w_popup_title != NULL && *wp->w_popup_title != NUL)
     {
 	int title_len = vim_strsize(wp->w_popup_title) + 2 - extra_width;
@@ -1369,6 +1383,8 @@ popup_adjust_position(win_T *wp)
 	wp->w_height = wp->w_maxheight;
     if (wp->w_height > Rows - wp->w_winrow)
 	wp->w_height = Rows - wp->w_winrow;
+    if (wp->w_height != org_height)
+	win_comp_scroll(wp);
 
     if (center_vert)
     {
@@ -1377,14 +1393,34 @@ popup_adjust_position(win_T *wp)
 	    wp->w_winrow = 0;
     }
     else if (wp->w_popup_pos == POPPOS_BOTRIGHT
-	    || wp->w_popup_pos == POPPOS_BOTLEFT)
+		|| wp->w_popup_pos == POPPOS_BOTLEFT)
     {
 	if ((wp->w_height + extra_height) <= wantline)
 	    // bottom aligned: may move down
 	    wp->w_winrow = wantline - (wp->w_height + extra_height);
+	else if (wantline * 2 >= Rows || !(wp->w_popup_flags & POPF_POSINVERT))
+	{
+	    // Bottom aligned but does not fit, and less space on the other
+	    // side or "posinvert" is off: reduce height.
+	    wp->w_winrow = 0;
+	    wp->w_height = wantline - extra_height;
+	}
 	else
-	    // Not enough space, make top aligned.
+	    // Not enough space and more space on the other side: make top
+	    // aligned.
 	    wp->w_winrow = (wantline < 0 ? 0 : wantline) + 1;
+    }
+    else if (wp->w_popup_pos == POPPOS_TOPRIGHT
+		|| wp->w_popup_pos == POPPOS_TOPLEFT)
+    {
+	if (wantline + (wp->w_height + extra_height) - 1 > Rows
+		&& wantline * 2 > Rows
+		&& (wp->w_popup_flags & POPF_POSINVERT))
+	    // top aligned and not enough space below but there is space above:
+	    // make bottom aligned
+	    wp->w_winrow = wantline - 2 - wp->w_height - extra_height;
+	else
+	    wp->w_winrow = wantline - 1;
     }
     if (wp->w_winrow >= Rows)
 	wp->w_winrow = Rows - 1;
@@ -1724,7 +1760,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     if (rettv != NULL)
 	rettv->vval.v_number = wp->w_id;
     wp->w_popup_pos = POPPOS_TOPLEFT;
-    wp->w_popup_flags = POPF_IS_POPUP | POPF_MAPPING;
+    wp->w_popup_flags = POPF_IS_POPUP | POPF_MAPPING | POPF_POSINVERT;
 
     if (buf != NULL)
     {
@@ -2496,6 +2532,7 @@ f_popup_getpos(typval_T *argvars, typval_T *rettv)
 
 	dict_add_number(dict, "scrollbar", wp->w_has_scrollbar);
 	dict_add_number(dict, "firstline", wp->w_topline);
+	dict_add_number(dict, "lastline", wp->w_botline - 1);
 	dict_add_number(dict, "visible",
 		      win_valid(wp) && (wp->w_popup_flags & POPF_HIDDEN) == 0);
 
@@ -2663,6 +2700,8 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "mapping",
 				      (wp->w_popup_flags & POPF_MAPPING) != 0);
 	dict_add_number(dict, "resize", (wp->w_popup_flags & POPF_RESIZE) != 0);
+	dict_add_number(dict, "posinvert",
+				    (wp->w_popup_flags & POPF_POSINVERT) != 0);
 	dict_add_number(dict, "cursorline",
 				   (wp->w_popup_flags & POPF_CURSORLINE) != 0);
 	dict_add_string(dict, "highlight", wp->w_p_wcr);
@@ -2823,12 +2862,31 @@ invoke_popup_filter(win_T *wp, int c)
 
     argv[2].v_type = VAR_UNKNOWN;
 
-    // NOTE: The callback might close the popup, thus make "wp" invalid.
+    if (is_mouse_key(c))
+    {
+	int		row = mouse_row - wp->w_winrow;
+	int		col = mouse_col - wp->w_wincol;
+	linenr_T	lnum;
+
+	if (row >= 0 && col >= 0)
+	{
+	    (void)mouse_comp_pos(wp, &row, &col, &lnum, NULL);
+	    set_vim_var_nr(VV_MOUSE_LNUM, lnum);
+	    set_vim_var_nr(VV_MOUSE_COL, col + 1);
+	}
+    }
+
+    // NOTE: The callback might close the popup and make "wp" invalid.
     call_callback(&wp->w_filter_cb, -1, &rettv, 2, argv);
     if (win_valid_popup(wp) && old_lnum != wp->w_cursor.lnum)
 	popup_highlight_curline(wp);
-
     res = tv_get_number(&rettv);
+
+    if (is_mouse_key(c))
+    {
+	set_vim_var_nr(VV_MOUSE_LNUM, 0);
+	set_vim_var_nr(VV_MOUSE_COL, 0);
+    }
     vim_free(argv[1].vval.v_string);
     clear_tv(&rettv);
     return res;
@@ -2852,8 +2910,6 @@ popup_do_filter(int c)
 	return FALSE;
     recursive = TRUE;
 
-    popup_reset_handled();
-
     if (c == K_LEFTMOUSE)
     {
 	int row = mouse_row;
@@ -2864,6 +2920,7 @@ popup_do_filter(int c)
 	    res = TRUE;
     }
 
+    popup_reset_handled();
     state = get_real_state();
     while (!res && (wp = find_next_popup(FALSE)) != NULL)
 	if (wp->w_filter_cb.cb_name != NULL
