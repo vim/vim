@@ -254,6 +254,7 @@ func Test_mksession_tcd_multiple_tabs()
   call assert_equal('Xtabdir3', fnamemodify(getcwd(1, 3), ':t'))
   call assert_equal('Xwindir3', fnamemodify(getcwd(2, 3), ':t'))
   only | tabonly
+  %bwipe
   exe 'cd ' . save_cwd
   call delete("Xtopdir", "rf")
 endfunc
@@ -622,6 +623,7 @@ endfunc
 
 " Test for changing directory to the session file directory
 func Test_mksession_sesdir()
+  let save_cwd = getcwd()
   call mkdir('Xproj')
   mksession! Xproj/Xtest_mks1.out
   set sessionoptions-=curdir
@@ -632,8 +634,9 @@ func Test_mksession_sesdir()
   call assert_equal('testdir', fnamemodify(getcwd(), ':t'))
   source Xproj/Xtest_mks2.out
   call assert_equal('Xproj', fnamemodify(getcwd(), ':t'))
-  cd ..
 
+  %bwipe
+  exe 'cd ' . fnameescape(save_cwd)
   set sessionoptions&
   call delete('Xproj', 'rf')
 endfunc
