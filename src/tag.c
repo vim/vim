@@ -2242,9 +2242,11 @@ parse_line:
 		lbuf = alloc(lbuf_size);
 		if (lbuf == NULL)
 		    goto findtag_end;
+#ifdef FEAT_TAG_BINS
 		// this will try the same thing again, make sure the offset is
 		// different
 		search_info.curr_offset = 0;
+#endif
 		continue;
 	    }
 
