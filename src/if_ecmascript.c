@@ -58,6 +58,13 @@ duk_ret_t vduk_vimcall_func(duk_context *ctx) {
     return retcount;
 }
 
+duk_ret_t vduk_vimcmd_func(duk_context *ctx) {
+    int r = do_cmdline_cmd((char_u*)duk_to_string(ctx, -1));
+    duk_pop(ctx);
+    duk_push_boolean(ctx, r == OK);
+    return 1;
+}
+
 duk_context *vduk_get_context() {
     static duk_context *ctx = NULL;
     if(ctx) return ctx;
@@ -67,6 +74,9 @@ duk_context *vduk_get_context() {
 
     duk_push_c_lightfunc(ctx, vduk_vimcall_func, 2, 2, 0);
     duk_put_prop_string(ctx, -2, "__vimcall");
+
+    duk_push_c_lightfunc(ctx, vduk_vimcmd_func, 1, 1, 0);
+    duk_put_prop_string(ctx, -2, "__vimcmd");
 
     duk_pop(ctx);
 
