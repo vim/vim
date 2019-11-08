@@ -13,6 +13,25 @@
 
 #include "duktape/duktape.h"
 
+static void vduk_pushtypval(duk_context *ctx, typval_T *tv) {
+    if (tv == NULL)
+    {
+        duk_push_null(ctx);
+        return;
+    }
+    switch (tv->v_type)
+    {
+        case VAR_STRING:
+	    duk_push_string(ctx, (const char*)tv->vval.v_string);
+            break;
+        case VAR_NUMBER:
+	    duk_push_int(ctx, tv->vval.v_number);
+            break;
+        default:
+            duk_push_null(ctx);
+    }
+}
+
 typval_T vduk_get_typval(duk_context *ctx, duk_idx_t idx) {
     typval_T tv;
     tv.v_lock = VAR_FIXED;
@@ -65,6 +84,14 @@ duk_ret_t vduk_vimcmd_func(duk_context *ctx) {
     return 1;
 }
 
+duk_ret_t vduk_vimeval_func(duk_context *ctx) {
+    typval_T *tv = eval_expr((char_u*)duk_to_string(ctx, -1), NULL);
+    duk_pop(ctx);
+    vduk_pushtypval(ctx, tv);
+    free_tv(tv);
+    return 1;
+}
+
 duk_context *vduk_get_context() {
     static duk_context *ctx = NULL;
     if(ctx) return ctx;
@@ -77,6 +104,9 @@ duk_context *vduk_get_context() {
 
     duk_push_c_lightfunc(ctx, vduk_vimcmd_func, 1, 1, 0);
     duk_put_prop_string(ctx, -2, "__vimcmd");
+
+    duk_push_c_lightfunc(ctx, vduk_vimeval_func, 1, 1, 0);
+    duk_put_prop_string(ctx, -2, "__vimeval");
 
     duk_pop(ctx);
 
