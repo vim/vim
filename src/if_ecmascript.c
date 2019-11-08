@@ -131,6 +131,5 @@ ex_ecmascript(exarg_T *eap)
     if (duk_peval_string(ctx, evalstr) != 0) {
 	semsg("ecmascript: %s", duk_safe_to_string(ctx, -1));
     }
-    duk_pop(ctx);
     if (script != NULL) vim_free(script);
 }
