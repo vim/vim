@@ -3427,6 +3427,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"lua",
 # endif
 #endif
+#ifdef FEAT_ECMASCRIPT
+	"ecmascript",
+#endif
 #ifdef FEAT_MENU
 	"menu",
 #endif
