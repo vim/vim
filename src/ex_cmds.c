@@ -4971,6 +4971,9 @@ prepare_tagpreview(
 		    popup_show(wp);
 		else
 		    popup_hide(wp);
+		// When the popup moves or resizes it may reveal part of
+		// another window.  TODO: can this be done more efficiently?
+		redraw_all_later(NOT_VALID);
 	    }
 	}
 	else
