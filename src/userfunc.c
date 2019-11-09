@@ -1588,7 +1588,8 @@ call_func(
 	    else if (fp != NULL)
 	    {
 		if (funcexe->argv_func != NULL)
-		    argcount = funcexe->argv_func(argcount, argvars,
+		    // postponed filling in the arguments, do it now
+		    argcount = funcexe->argv_func(argcount, argvars, argv_clear,
 							   fp->uf_args.ga_len);
 
 		if (funcexe->basetv != NULL)

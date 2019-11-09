@@ -405,6 +405,14 @@ func Test_sub_replace_10()
    call assert_equal('1aaa', substitute('123', '1\zs\|[23]', 'a', 'g'))
 endfunc
 
+func SubReplacer(text, submatches)
+  return a:text .. a:submatches[0] .. a:text
+endfunc
+
+func Test_substitute_partial()
+   call assert_equal('1foo2foo3', substitute('123', '2', function('SubReplacer', ['foo']), 'g'))
+endfunc
+
 " Tests for *sub-replace-special* and *sub-replace-expression* on :substitute.
 
 " Execute a list of :substitute command tests

@@ -1627,10 +1627,11 @@ typedef struct
 //
 // "argv_func", when not NULL, can be used to fill in arguments only when the
 // invoked function uses them.  It is called like this:
-//   new_argcount = argv_func(current_argcount, argv, called_func_argcount)
+//   new_argcount = argv_func(current_argcount, argv, partial_argcount,
+//							called_func_argcount)
 //
 typedef struct {
-    int		(* argv_func)(int, typval_T *, int);
+    int		(* argv_func)(int, typval_T *, int, int);
     linenr_T	firstline;	// first line of range
     linenr_T	lastline;	// last line of range
     int		*doesrange;	// if not NULL: return: function handled range
