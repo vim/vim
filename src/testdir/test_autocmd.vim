@@ -1731,7 +1731,7 @@ function s:Before_test_dirchanged()
 endfunc
 
 function s:After_test_dirchanged()
-  exe 'cd' s:dir_this
+  call chdir(s:dir_this)
   call delete(s:dir_foo, 'd')
   call delete(s:dir_bar, 'd')
   augroup test_dirchanged
@@ -1743,11 +1743,11 @@ function Test_dirchanged_global()
   call s:Before_test_dirchanged()
   autocmd test_dirchanged DirChanged global call add(s:li, "cd:")
   autocmd test_dirchanged DirChanged global call add(s:li, expand("<afile>"))
-  exe 'cd' s:dir_foo
+  call chdir(s:dir_foo)
   call assert_equal(["cd:", s:dir_foo], s:li)
-  exe 'cd' s:dir_foo
+  call chdir(s:dir_foo)
   call assert_equal(["cd:", s:dir_foo], s:li)
-  exe 'lcd' s:dir_bar
+  exe 'lcd ' .. fnameescape(s:dir_bar)
   call assert_equal(["cd:", s:dir_foo], s:li)
   call s:After_test_dirchanged()
 endfunc
@@ -1756,11 +1756,11 @@ function Test_dirchanged_local()
   call s:Before_test_dirchanged()
   autocmd test_dirchanged DirChanged window call add(s:li, "lcd:")
   autocmd test_dirchanged DirChanged window call add(s:li, expand("<afile>"))
-  exe 'cd' s:dir_foo
+  call chdir(s:dir_foo)
   call assert_equal([], s:li)
-  exe 'lcd' s:dir_bar
+  exe 'lcd ' .. fnameescape(s:dir_bar)
   call assert_equal(["lcd:", s:dir_bar], s:li)
-  exe 'lcd' s:dir_bar
+  exe 'lcd ' .. fnameescape(s:dir_bar)
   call assert_equal(["lcd:", s:dir_bar], s:li)
   call s:After_test_dirchanged()
 endfunc
@@ -1774,7 +1774,7 @@ function Test_dirchanged_auto()
   autocmd test_dirchanged DirChanged auto call add(s:li, "auto:")
   autocmd test_dirchanged DirChanged auto call add(s:li, expand("<afile>"))
   set acd
-  exe 'cd ..'
+  cd ..
   call assert_equal([], s:li)
   exe 'edit ' . s:dir_foo . '/Xfile'
   call assert_equal(s:dir_foo, getcwd())
