@@ -2015,12 +2015,18 @@ vim_regsub_both(
 		    call_func(s, -1, &rettv, 1, argv, &funcexe);
 		}
 		if (matchList.sl_list.lv_len > 0)
-		    /* fill_submatch_list() was called */
+		    // fill_submatch_list() was called
 		    clear_submatch_list(&matchList);
 
-		eval_result = tv_get_string_buf_chk(&rettv, buf);
-		if (eval_result != NULL)
-		    eval_result = vim_strsave(eval_result);
+		if (rettv.v_type == VAR_UNKNOWN)
+		    // something failed, no need to report another error
+		    eval_result = NULL;
+		else
+		{
+		    eval_result = tv_get_string_buf_chk(&rettv, buf);
+		    if (eval_result != NULL)
+			eval_result = vim_strsave(eval_result);
+		}
 		clear_tv(&rettv);
 	    }
 	    else

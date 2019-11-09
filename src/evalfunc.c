@@ -2527,6 +2527,12 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		list = argvars[arg_idx].vval.v_list;
 		if (list == NULL || list->lv_len == 0)
 		    arg_idx = 0;
+		else if (list->lv_len > MAX_FUNC_ARGS)
+		{
+		    emsg_funcname((char *)e_toomanyarg, name);
+		    vim_free(name);
+		    goto theend;
+		}
 	    }
 	}
 	if (dict_idx > 0 || arg_idx > 0 || arg_pt != NULL || is_funcref)
