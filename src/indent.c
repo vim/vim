@@ -887,7 +887,7 @@ get_breakindent_win(
 
     // indent minus the length of the showbreak string
     if (wp->w_p_brisbr)
-	bri -= vim_strsize(p_sbr);
+	bri -= vim_strsize(get_showbreak_value(wp));
 
     // Add offset for number column, if 'n' is in 'cpoptions'
     bri += win_col_off2(wp);
