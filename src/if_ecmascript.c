@@ -28,7 +28,7 @@ static void vduk_pushtypval(duk_context *ctx, typval_T *tv) {
 	    duk_push_int(ctx, tv->vval.v_number);
             break;
         default:
-            duk_push_null(ctx);
+            duk_push_undefined(ctx);
     }
 }
 
@@ -60,19 +60,8 @@ duk_ret_t vduk_vimcall_func(duk_context *ctx) {
     rettv.v_type = VAR_NUMBER;
     call_internal_func(name, argcount, argvars, &rettv);
     duk_pop_2(ctx);
-    duk_ret_t retcount = 0;
-    switch(rettv.v_type) {
-    case VAR_STRING:
-	duk_push_string(ctx, (const char*)rettv.vval.v_string);
-	retcount = 1;
-	break;
-    case VAR_NUMBER:
-	duk_push_int(ctx, rettv.vval.v_number);
-	retcount = 1;
-	break;
-    default:
-	break;
-    }
+    vduk_pushtypval(ctx, &rettv);
+    duk_ret_t retcount = 1;
     clear_tv(&rettv);
     return retcount;
 }
