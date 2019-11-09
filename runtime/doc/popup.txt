@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Nov 03
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Nov 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -186,6 +186,8 @@ popup_atcursor({what}, {options})			*popup_atcursor()*
 				\ moved: 'WORD',
 				\ })
 <		Use {options} to change the properties.
+		If "pos" is passed as "topleft" then the default for "line"
+		becomes "cursor+1".
 
 		Can also be used as a |method|: >
 			GetText()->popup_atcursor({})
@@ -362,7 +364,8 @@ popup_getpos({id})					*popup_getpos()*
 		    core_height	height of the text box in screen cells
 		    firstline	line of the buffer at top (1 unless scrolled)
 				(not the value of the "firstline" property)
-		    lastline	line of the buffer at the bottom
+		    lastline	line of the buffer at the bottom (updated when
+				the popup is redrawn)
 		    scrollbar	non-zero if a scrollbar is displayed
 		    visible	one if the popup is displayed, zero if hidden
 		Note that these are the actual screen positions.  They differ
@@ -566,6 +569,11 @@ The second argument of |popup_create()| is a dictionary with options:
 			Alternatively "center" can be used to position the
 			popup in the center of the Vim window, in which case
 			"line" and "col" are ignored.
+	posinvert	When FALSE the value of "pos" is always used.  When
+			TRUE (the default) and the popup does not fit
+			vertically and there is more space on the other side
+			then the popup is placed on the other side of the
+			position indicated by "line".
 	textprop	When present the popup is positioned next to a text
 			property with this name and will move when the text
 			property moves.  Use an empty string to remove.  See
@@ -686,6 +694,8 @@ The second argument of |popup_create()| is a dictionary with options:
 			- [{lnum}, {start}, {end}]: if the cursor moved away
 			  from line {lnum}, before column {start} or after
 			  {end}
+			- [0, 0, 0] do not close the popup when the cursor
+			  moves
 			The popup also closes if the cursor moves to another
 			line or to another window.
 	mousemoved	Like "moved" but referring to the mouse pointer
@@ -852,9 +862,9 @@ Some recommended key actions:
 	cursor keys	select another entry
 	Tab		accept current suggestion
 
-A mouse click arrives as <LeftMouse>.  The coordinates are in
-v:mouse_popup_col and v:mouse_popup_row.  The top-left screen cell of the
-popup is col 1, row 1 (not counting the border).
+A mouse click arrives as <LeftMouse>.  The coordinates are in |v:mouse_col|
+and |v:mouse_lnum|.  The top-left screen cell of the popup is col 1, row 1
+(not counting the border).
 
 Vim provides standard filters |popup_filter_menu()| and
 |popup_filter_yesno()|.

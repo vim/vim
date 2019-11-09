@@ -390,6 +390,25 @@ popup_add_timeout(win_T *wp, int time)
 }
 #endif
 
+    static poppos_T
+get_pos_entry(dict_T *d, int give_error)
+{
+    char_u  *str = dict_get_string(d, (char_u *)"pos", FALSE);
+    int	    nr;
+
+    if (str == NULL)
+	return POPPOS_NONE;
+
+    for (nr = 0; nr < (int)(sizeof(poppos_entries) / sizeof(poppos_entry_T));
+									  ++nr)
+	if (STRCMP(str, poppos_entries[nr].pp_name) == 0)
+	    return poppos_entries[nr].pp_val;
+
+    if (give_error)
+	semsg(_(e_invarg2), str);
+    return POPPOS_NONE;
+}
+
 /*
  * Shared between popup_create() and f_popup_move().
  */
@@ -420,20 +439,11 @@ apply_move_options(win_T *wp, dict_T *d)
     if (di != NULL)
 	wp->w_popup_fixed = dict_get_number(d, (char_u *)"fixed") != 0;
 
-    str = dict_get_string(d, (char_u *)"pos", FALSE);
-    if (str != NULL)
     {
-	for (nr = 0;
-		nr < (int)(sizeof(poppos_entries) / sizeof(poppos_entry_T));
-									  ++nr)
-	    if (STRCMP(str, poppos_entries[nr].pp_name) == 0)
-	    {
-		wp->w_popup_pos = poppos_entries[nr].pp_val;
-		nr = -1;
-		break;
-	    }
-	if (nr != -1)
-	    semsg(_(e_invarg2), str);
+	poppos_T ppt = get_pos_entry(d, TRUE);
+
+	if (ppt != POPPOS_NONE)
+	    wp->w_popup_pos = ppt;
     }
 
     str = dict_get_string(d, (char_u *)"textprop", FALSE);
@@ -512,6 +522,8 @@ handle_moved_argument(win_T *wp, dictitem_T *di, int mousemoved)
 	    else
 		wp->w_popup_lnum = nr;
 	    li = li->li_next;
+	    if (nr == 0)
+		wp->w_popup_curwin = NULL;
 	}
 
 	mincol = tv_get_number(&li->li_tv);
@@ -1634,14 +1646,27 @@ parse_completepopup(win_T *wp)
  * Keep at least "width" columns from the right of the screen.
  */
     void
-popup_set_wantpos_cursor(win_T *wp, int width)
+popup_set_wantpos_cursor(win_T *wp, int width, dict_T *d)
 {
+    poppos_T ppt = POPPOS_NONE;
+
+    if (d != NULL)
+	ppt = get_pos_entry(d, FALSE);
+
     setcursor_mayforce(TRUE);
-    wp->w_wantline = curwin->w_winrow + curwin->w_wrow;
-    if (wp->w_wantline == 0)  // cursor in first line
+    if (ppt == POPPOS_TOPRIGHT || ppt == POPPOS_TOPLEFT)
     {
-	wp->w_wantline = 2;
-	wp->w_popup_pos = POPPOS_TOPLEFT;
+	wp->w_wantline = curwin->w_winrow + curwin->w_wrow + 2;
+    }
+    else
+    {
+	wp->w_wantline = curwin->w_winrow + curwin->w_wrow;
+	if (wp->w_wantline == 0)  // cursor in first line
+	{
+	    wp->w_wantline = 2;
+	    wp->w_popup_pos = ppt == POPPOS_BOTRIGHT
+					    ? POPPOS_TOPRIGHT : POPPOS_TOPLEFT;
+	}
     }
 
     wp->w_wantcol = curwin->w_wincol + curwin->w_wcol + 1;
@@ -1651,6 +1676,7 @@ popup_set_wantpos_cursor(win_T *wp, int width)
 	if (wp->w_wantcol < 1)
 	    wp->w_wantcol = 1;
     }
+
     popup_adjust_position(wp);
 }
 
@@ -1834,7 +1860,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     }
     if (type == TYPE_ATCURSOR)
     {
-	popup_set_wantpos_cursor(wp, 0);
+	popup_set_wantpos_cursor(wp, 0, d);
 	set_moved_values(wp);
 	set_moved_columns(wp, FIND_STRING);
     }
@@ -1935,7 +1961,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	for (i = 0; i < 4; ++i)
 	    wp->w_popup_border[i] = 1;
 	parse_previewpopup(wp);
-	popup_set_wantpos_cursor(wp, wp->w_minwidth);
+	popup_set_wantpos_cursor(wp, wp->w_minwidth, d);
     }
 # ifdef FEAT_QUICKFIX
     if (type == TYPE_INFO)

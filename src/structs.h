@@ -2113,7 +2113,8 @@ typedef enum {
     POPPOS_TOPLEFT,
     POPPOS_BOTRIGHT,
     POPPOS_TOPRIGHT,
-    POPPOS_CENTER
+    POPPOS_CENTER,
+    POPPOS_NONE
 } poppos_T;
 
 typedef enum {
