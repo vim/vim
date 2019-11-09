@@ -1141,7 +1141,7 @@ win_line(
 
 #ifdef FEAT_LINEBREAK
 	    if (wp->w_p_brisbr && draw_state == WL_BRI - 1
-					     && n_extra == 0 && *p_sbr != NUL)
+			    && n_extra == 0 && *get_showbreak_value(wp) != NUL)
 		// draw indent after showbreak value
 		draw_state = WL_BRI;
 	    else if (wp->w_p_brisbr && draw_state == WL_SBR && n_extra == 0)
@@ -1187,6 +1187,8 @@ win_line(
 #if defined(FEAT_LINEBREAK) || defined(FEAT_DIFF)
 	    if (draw_state == WL_SBR - 1 && n_extra == 0)
 	    {
+		char_u *sbr;
+
 		draw_state = WL_SBR;
 # ifdef FEAT_DIFF
 		if (filler_todo > 0)
@@ -1212,16 +1214,17 @@ win_line(
 		}
 # endif
 # ifdef FEAT_LINEBREAK
-		if (*p_sbr != NUL && need_showbreak)
+		sbr = get_showbreak_value(wp);
+		if (*sbr != NUL && need_showbreak)
 		{
 		    // Draw 'showbreak' at the start of each broken line.
-		    p_extra = p_sbr;
+		    p_extra = sbr;
 		    c_extra = NUL;
 		    c_final = NUL;
-		    n_extra = (int)STRLEN(p_sbr);
+		    n_extra = (int)STRLEN(sbr);
 		    char_attr = HL_ATTR(HLF_AT);
 		    need_showbreak = FALSE;
-		    vcol_sbr = vcol + MB_CHARLEN(p_sbr);
+		    vcol_sbr = vcol + MB_CHARLEN(sbr);
 		    // Correct end of highlighted area for 'showbreak',
 		    // required when 'linebreak' is also set.
 		    if (tocol == vcol)
@@ -2011,10 +2014,12 @@ win_line(
 		    int tab_len = 0;
 		    long vcol_adjusted = vcol; // removed showbreak length
 #ifdef FEAT_LINEBREAK
+		    char_u *sbr = get_showbreak_value(wp);
+
 		    // only adjust the tab_len, when at the first column
 		    // after the showbreak value was drawn
-		    if (*p_sbr != NUL && vcol == vcol_sbr && wp->w_p_wrap)
-			vcol_adjusted = vcol - MB_CHARLEN(p_sbr);
+		    if (*sbr != NUL && vcol == vcol_sbr && wp->w_p_wrap)
+			vcol_adjusted = vcol - MB_CHARLEN(sbr);
 #endif
 		    // tab amount depends on current column
 #ifdef FEAT_VARTABS

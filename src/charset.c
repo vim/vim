@@ -936,7 +936,8 @@ lbr_chartabsize(
     colnr_T		col)
 {
 #ifdef FEAT_LINEBREAK
-    if (!curwin->w_p_lbr && *p_sbr == NUL && !curwin->w_p_bri)
+    if (!curwin->w_p_lbr && *get_showbreak_value(curwin) == NUL
+							   && !curwin->w_p_bri)
     {
 #endif
 	if (curwin->w_p_wrap)
@@ -991,11 +992,12 @@ win_lbr_chartabsize(
     char_u	*ps;
     int		tab_corr = (*s == TAB);
     int		n;
+    char_u	*sbr;
 
     /*
      * No 'linebreak', 'showbreak' and 'breakindent': return quickly.
      */
-    if (!wp->w_p_lbr && !wp->w_p_bri && *p_sbr == NUL)
+    if (!wp->w_p_lbr && !wp->w_p_bri && *get_showbreak_value(wp) == NUL)
 #endif
     {
 	if (wp->w_p_wrap)
@@ -1069,7 +1071,8 @@ win_lbr_chartabsize(
      * Set *headp to the size of what we add.
      */
     added = 0;
-    if ((*p_sbr != NUL || wp->w_p_bri) && wp->w_p_wrap && col != 0)
+    sbr = get_showbreak_value(wp);
+    if ((*sbr != NUL || wp->w_p_bri) && wp->w_p_wrap && col != 0)
     {
 	colnr_T sbrlen = 0;
 	int	numberwidth = win_col_off(wp);
@@ -1082,9 +1085,9 @@ win_lbr_chartabsize(
 	    numberextra = wp->w_width - (numberextra - win_col_off2(wp));
 	    if (col >= numberextra && numberextra > 0)
 		col %= numberextra;
-	    if (*p_sbr != NUL)
+	    if (*sbr != NUL)
 	    {
-		sbrlen = (colnr_T)MB_CHARLEN(p_sbr);
+		sbrlen = (colnr_T)MB_CHARLEN(sbr);
 		if (col >= sbrlen)
 		    col -= sbrlen;
 	    }
@@ -1098,7 +1101,7 @@ win_lbr_chartabsize(
 	if (col == 0 || col + size + sbrlen > (colnr_T)wp->w_width)
 	{
 	    added = 0;
-	    if (*p_sbr != NUL)
+	    if (*sbr != NUL)
 	    {
 		if (size + sbrlen + numberwidth > (colnr_T)wp->w_width)
 		{
@@ -1109,13 +1112,13 @@ win_lbr_chartabsize(
 
 		    if (width <= 0)
 			width = (colnr_T)1;
-		    added += ((size - prev_width) / width) * vim_strsize(p_sbr);
+		    added += ((size - prev_width) / width) * vim_strsize(sbr);
 		    if ((size - prev_width) % width)
 			// wrapped, add another length of 'sbr'
-			added += vim_strsize(p_sbr);
+			added += vim_strsize(sbr);
 		}
 		else
-		    added += vim_strsize(p_sbr);
+		    added += vim_strsize(sbr);
 	    }
 	    if (wp->w_p_bri)
 		added += get_breakindent_win(wp, line);
@@ -1242,7 +1245,7 @@ getvcol(
      */
     if ((!wp->w_p_list || lcs_tab1 != NUL)
 #ifdef FEAT_LINEBREAK
-	    && !wp->w_p_lbr && *p_sbr == NUL && !wp->w_p_bri
+	    && !wp->w_p_lbr && *get_showbreak_value(wp) == NUL && !wp->w_p_bri
 #endif
        )
     {

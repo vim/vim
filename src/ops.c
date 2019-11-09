@@ -3636,9 +3636,11 @@ cursor_pos_info(dict_T *dict)
 	    {
 #ifdef FEAT_LINEBREAK
 		char_u * saved_sbr = p_sbr;
+		char_u * saved_w_sbr = curwin->w_p_sbr;
 
 		/* Make 'sbr' empty for a moment to get the correct size. */
 		p_sbr = empty_option;
+		curwin->w_p_sbr = empty_option;
 #endif
 		oparg.is_VIsual = 1;
 		oparg.block_mode = TRUE;
@@ -3647,6 +3649,7 @@ cursor_pos_info(dict_T *dict)
 					  &oparg.start_vcol, &oparg.end_vcol);
 #ifdef FEAT_LINEBREAK
 		p_sbr = saved_sbr;
+		curwin->w_p_sbr = saved_w_sbr;
 #endif
 		if (curwin->w_curswant == MAXCOL)
 		    oparg.end_vcol = MAXCOL;

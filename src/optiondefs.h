@@ -209,6 +209,9 @@
 # define PV_CULOPT	OPT_WIN(WV_CULOPT)
 # define PV_CC		OPT_WIN(WV_CC)
 #endif
+#ifdef FEAT_LINEBREAK
+# define PV_SBR		OPT_BOTH(OPT_WIN(WV_SBR))
+#endif
 #ifdef FEAT_STL_OPT
 # define PV_STL		OPT_BOTH(OPT_WIN(WV_STL))
 #endif
@@ -2282,7 +2285,7 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"showbreak",   "sbr",  P_STRING|P_VI_DEF|P_RALL,
 #ifdef FEAT_LINEBREAK
-			    (char_u *)&p_sbr, PV_NONE,
+			    (char_u *)&p_sbr, PV_SBR,
 #else
 			    (char_u *)NULL, PV_NONE,
 #endif

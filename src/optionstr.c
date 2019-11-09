@@ -1440,12 +1440,12 @@ did_set_string_option(
 
 #ifdef FEAT_LINEBREAK
     // 'showbreak'
-    else if (varp == &p_sbr)
+    else if (gvarp == &p_sbr)
     {
-	for (s = p_sbr; *s; )
+	for (s = *varp; *s; )
 	{
 	    if (ptr2cells(s) != 1)
-		errmsg = N_("E595: contains unprintable or wide character");
+		errmsg = N_("E595: 'showbreak' contains unprintable or wide character");
 	    MB_PTR_ADV(s);
 	}
     }
