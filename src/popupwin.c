@@ -1102,6 +1102,7 @@ popup_adjust_position(win_T *wp)
     int		left_extra = wp->w_popup_border[3] + wp->w_popup_padding[3];
     int		extra_height = top_extra + bot_extra;
     int		extra_width = left_extra + right_extra;
+    int		w_height_before_limit;
     int		org_winrow = wp->w_winrow;
     int		org_wincol = wp->w_wincol;
     int		org_width = wp->w_width;
@@ -1399,6 +1400,7 @@ popup_adjust_position(win_T *wp)
 	wp->w_height = wp->w_minheight;
     if (wp->w_maxheight > 0 && wp->w_height > wp->w_maxheight)
 	wp->w_height = wp->w_maxheight;
+    w_height_before_limit = wp->w_height;
     if (wp->w_height > Rows - wp->w_winrow)
 	wp->w_height = Rows - wp->w_winrow;
     if (wp->w_height != org_height)
@@ -1434,9 +1436,17 @@ popup_adjust_position(win_T *wp)
 	if (wantline + (wp->w_height + extra_height) - 1 > Rows
 		&& wantline * 2 > Rows
 		&& (wp->w_popup_flags & POPF_POSINVERT))
+	{
 	    // top aligned and not enough space below but there is space above:
-	    // make bottom aligned
+	    // make bottom aligned and recompute the height
+	    wp->w_height = w_height_before_limit;
 	    wp->w_winrow = wantline - 2 - wp->w_height - extra_height;
+	    if (wp->w_winrow < 0)
+	    {
+		wp->w_height += wp->w_winrow;
+		wp->w_winrow = 0;
+	    }
+	}
 	else
 	    wp->w_winrow = wantline - 1;
     }

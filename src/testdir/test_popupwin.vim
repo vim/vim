@@ -389,9 +389,9 @@ func Test_popup_nospace()
 	      \ border: [],
 	      \ })
 	" cursor in a line in top half, using "topleft" with popup that
-	" doesn't fit and "posinvert" set: flips to below.
+	" doesn't fit and "posinvert" set: flips to above.
 	normal 8G44|r%
-	let winid1 = popup_create(['one', 'two', 'tee'], #{
+	let winid1 = popup_create(['one', 'two', 'tee', 'fou', 'fiv'], #{
 	      \ line: 'cursor+1',
 	      \ col: 'cursor',
 	      \ pos: 'topleft',
