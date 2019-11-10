@@ -844,6 +844,7 @@ ex_terminal(exarg_T *eap)
 	// :term ++shell command
 	if (unix_build_argv(cmd, &argv, &tofree1, &tofree2) == OK)
 	    term_start(NULL, argv, &opt, eap->forceit ? TERM_START_FORCEIT : 0);
+	vim_free(argv);
 	vim_free(tofree1);
 	vim_free(tofree2);
 	goto theend;
