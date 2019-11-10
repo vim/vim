@@ -846,6 +846,7 @@ ex_terminal(exarg_T *eap)
 	    term_start(NULL, argv, &opt, eap->forceit ? TERM_START_FORCEIT : 0);
 	vim_free(tofree1);
 	vim_free(tofree2);
+	vim_free(argv);
 	goto theend;
 #else
 # ifdef MSWIN
