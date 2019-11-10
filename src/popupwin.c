@@ -755,12 +755,18 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    {
 		str = tv_get_string(&li->li_tv);
 		if (*str != NUL)
+		{
+		    vim_free(wp->w_border_highlight[i]);
 		    wp->w_border_highlight[i] = vim_strsave(str);
+		}
 	    }
 	    if (list->lv_len == 1 && wp->w_border_highlight[0] != NULL)
 		for (i = 1; i < 4; ++i)
+		{
+		    vim_free(wp->w_border_highlight[i]);
 		    wp->w_border_highlight[i] =
 					vim_strsave(wp->w_border_highlight[0]);
+		}
 	}
     }
 
