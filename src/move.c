@@ -988,7 +988,9 @@ curs_columns(
 	/* long line wrapping, adjust curwin->w_wrow */
 	if (curwin->w_wcol >= curwin->w_width)
 	{
+#ifdef FEAT_LINEBREAK
 	    char_u *sbr;
+#endif
 
 	    /* this same formula is used in validate_cursor_col() */
 	    n = (curwin->w_wcol - curwin->w_width) / width + 1;
