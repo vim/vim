@@ -2591,7 +2591,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 						*'dip'* *'diffopt'*
-'diffopt' 'dip'		string	(default "internal,filler")
+'diffopt' 'dip'		string	(default "internal,filler,closeoff")
 			global
 			{not available when compiled without the |+diff|
 			feature}
@@ -2649,6 +2649,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 		vertical	Start diff mode with vertical splits (unless
 				explicitly specified otherwise).
+
+		closeoff	When a window is closed where 'diff' is set
+				and there is only one window remaining in the
+				same tab page with 'diff' set, execute
+				`:diffoff` in that window.  This undoes a
+				`:diffsplit` command.
 
 		hiddenoff	Do not use diff mode for a buffer when it
 				becomes hidden.
@@ -2933,6 +2939,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	won't work by default.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
+	NOTE: when this option is off then the |modifyOtherKeys| functionality
+	is disabled while in Insert mode to avoid ending Insert mode with any
+	key that has a modifier.
 
 						*'eventignore'* *'ei'*
 'eventignore' 'ei'	string	(default "")

@@ -846,7 +846,8 @@ static struct vimoption options[] =
 								     |P_NODUP,
 #ifdef FEAT_DIFF
 			    (char_u *)&p_dip, PV_NONE,
-			    {(char_u *)"internal,filler", (char_u *)NULL}
+			    {(char_u *)"internal,filler,closeoff",
+								(char_u *)NULL}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)"", (char_u *)NULL}

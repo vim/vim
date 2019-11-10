@@ -2438,6 +2438,9 @@ win_close(win_T *win, int free_buf)
     int		help_window = FALSE;
     tabpage_T   *prev_curtab = curtab;
     frame_T	*win_frame = win->w_frame->fr_parent;
+#ifdef FEAT_DIFF
+    int		had_diffmode = win->w_p_diff;
+#endif
 
     if (ERROR_IF_POPUP_WINDOW)
 	return FAIL;
@@ -2624,6 +2627,23 @@ win_close(win_T *win, int free_buf)
      * before it was opened. */
     if (help_window)
 	restore_snapshot(SNAP_HELP_IDX, close_curwin);
+
+#ifdef FEAT_DIFF
+    // If the window had 'diff' set and now there is only one window left in
+    // the tab page with 'diff' set, and "closeoff" is in 'diffopt', then
+    // execute ":diffoff!".
+    if (diffopt_closeoff() && had_diffmode && curtab == prev_curtab)
+    {
+	int	diffcount = 0;
+	win_T	*dwin;
+
+	FOR_ALL_WINDOWS(dwin)
+	    if (dwin->w_p_diff)
+		++diffcount;
+	if (diffcount == 1)
+	    do_cmdline_cmd((char_u *)"diffoff!");
+    }
+#endif
 
 #if defined(FEAT_GUI)
     /* When 'guioptions' includes 'L' or 'R' may have to remove scrollbars. */

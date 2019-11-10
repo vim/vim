@@ -35,8 +35,9 @@ static int diff_need_update = FALSE; // ex_diffupdate needs to be called
 #define DIFF_VERTICAL	0x080	// vertical splits
 #define DIFF_HIDDEN_OFF	0x100	// diffoff when hidden
 #define DIFF_INTERNAL	0x200	// use internal xdiff algorithm
+#define DIFF_CLOSE_OFF	0x400	// diffoff when closing window
 #define ALL_WHITE_DIFF (DIFF_IWHITE | DIFF_IWHITEALL | DIFF_IWHITEEOL)
-static int	diff_flags = DIFF_INTERNAL | DIFF_FILLER;
+static int	diff_flags = DIFF_INTERNAL | DIFF_FILLER | DIFF_CLOSE_OFF;
 
 static long diff_algorithm = 0;
 
@@ -1545,6 +1546,14 @@ ex_diffoff(exarg_T *eap)
     if (eap->forceit)
 	diff_buf_clear();
 
+    if (!diffwin)
+    {
+	diff_need_update = FALSE;
+	curtab->tp_diff_invalid = FALSE;
+	curtab->tp_diff_update = FALSE;
+	diff_clear(curtab);
+    }
+
     /* Remove "hor" from from 'scrollopt' if there are no diff windows left. */
     if (!diffwin && vim_strchr(p_sbo, 'h') != NULL)
 	do_cmdline_cmd((char_u *)"set sbo-=hor");
@@ -2222,6 +2231,11 @@ diffopt_changed(void)
 	    p += 9;
 	    diff_flags_new |= DIFF_HIDDEN_OFF;
 	}
+	else if (STRNCMP(p, "closeoff", 8) == 0)
+	{
+	    p += 8;
+	    diff_flags_new |= DIFF_CLOSE_OFF;
+	}
 	else if (STRNCMP(p, "indent-heuristic", 16) == 0)
 	{
 	    p += 16;
@@ -2307,6 +2321,15 @@ diffopt_horizontal(void)
 diffopt_hiddenoff(void)
 {
     return (diff_flags & DIFF_HIDDEN_OFF) != 0;
+}
+
+/*
+ * Return TRUE if 'diffopt' contains "closeoff".
+ */
+    int
+diffopt_closeoff(void)
+{
+    return (diff_flags & DIFF_CLOSE_OFF) != 0;
 }
 
 /*
