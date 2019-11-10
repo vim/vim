@@ -558,8 +558,8 @@ typedef struct
  */
 typedef struct expand
 {
-    int		xp_context;		// type of expansion
     char_u	*xp_pattern;		// start of item to expand
+    int		xp_context;		// type of expansion
     int		xp_pattern_len;		// bytes in xp_pattern before cursor
 #if defined(FEAT_EVAL)
     char_u	*xp_arg;		// completion function
@@ -572,9 +572,9 @@ typedef struct expand
 #endif
     int		xp_numfiles;		// number of files found by
 					// file name completion
+    int		xp_col;			// cursor position in line
     char_u	**xp_files;		// list of files
     char_u	*xp_line;		// text being completed
-    int		xp_col;			// cursor position in line
 } expand_T;
 
 /*
@@ -712,19 +712,19 @@ typedef struct memline
 
     memfile_T	*ml_mfp;	// pointer to associated memfile
 
+    infoptr_T	*ml_stack;	// stack of pointer blocks (array of IPTRs)
+    int		ml_stack_top;	// current top of ml_stack
+    int		ml_stack_size;	// total number of entries in ml_stack
+
 #define ML_EMPTY	1	// empty buffer
 #define ML_LINE_DIRTY	2	// cached line was changed and allocated
 #define ML_LOCKED_DIRTY	4	// ml_locked was changed
 #define ML_LOCKED_POS	8	// ml_locked needs positive block number
     int		ml_flags;
 
-    infoptr_T	*ml_stack;	// stack of pointer blocks (array of IPTRs)
-    int		ml_stack_top;	// current top of ml_stack
-    int		ml_stack_size;	// total number of entries in ml_stack
-
+    colnr_T	ml_line_len;	// length of the cached line, including NUL
     linenr_T	ml_line_lnum;	// line number of cached line, 0 if not valid
     char_u	*ml_line_ptr;	// pointer to cached line
-    colnr_T	ml_line_len;	// length of the cached line, including NUL
 
     bhdr_T	*ml_locked;	// block used by last ml_get
     linenr_T	ml_locked_low;	// first line in ml_locked
@@ -784,10 +784,10 @@ typedef struct sign_entry sign_entry_T;
 struct sign_entry
 {
     int		 se_id;		// unique identifier for each placed sign
-    linenr_T	 se_lnum;	// line number which has this sign
     int		 se_typenr;	// typenr of sign
-    signgroup_T	 *se_group;	// sign group
     int		 se_priority;	// priority for highlighting
+    linenr_T	 se_lnum;	// line number which has this sign
+    signgroup_T	 *se_group;	// sign group
     sign_entry_T *se_next;	// next entry in a list of signs
     sign_entry_T *se_prev;	// previous entry -- for easy reordering
 };
@@ -827,7 +827,7 @@ typedef struct arglist
 /*
  * For each argument remember the file name as it was given, and the buffer
  * number that contains the expanded file name (required for when ":cd" is
- * used.
+ * used).
  */
 typedef struct argentry
 {
@@ -2905,10 +2905,10 @@ struct matchitem
     int		id;	    // match ID
     int		priority;   // match priority
     char_u	*pattern;   // pattern to highlight
-    int		hlg_id;	    // highlight group ID
     regmmatch_T	match;	    // regexp program for pattern
     posmatch_T	pos;	    // position matches
     match_T	hl;	    // struct for doing the actual highlighting
+    int		hlg_id;	    // highlight group ID
 #ifdef FEAT_CONCEAL
     int		conceal_char; // cchar for Conceal highlighting
 #endif
@@ -3750,9 +3750,9 @@ typedef struct lval_S
     listitem_T	*ll_li;		// The list item or NULL.
     list_T	*ll_list;	// The list or NULL.
     int		ll_range;	// TRUE when a [i:j] range was used
+    int		ll_empty2;	// Second index is empty: [i:]
     long	ll_n1;		// First index for list
     long	ll_n2;		// Second index for list range
-    int		ll_empty2;	// Second index is empty: [i:]
     dict_T	*ll_dict;	// The Dictionary or NULL
     dictitem_T	*ll_di;		// The dictitem or NULL
     char_u	*ll_newkey;	// New key for Dict in alloc. mem or NULL.
