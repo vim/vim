@@ -2535,8 +2535,10 @@ win_update(win_T *wp)
 
 	// Make sure the rest of the screen is blank
 	// put '~'s on rows that aren't part of the file.
-	win_draw_end(wp, WIN_IS_POPUP(wp) ? ' ' : '~',
-				       ' ', FALSE, row, wp->w_height, HLF_EOB);
+	if (WIN_IS_POPUP(wp))
+	    win_draw_end(wp, ' ', ' ', FALSE, row, wp->w_height, HLF_AT);
+	else
+	    win_draw_end(wp, '~', ' ', FALSE, row, wp->w_height, HLF_EOB);
     }
 
 #ifdef SYN_TIME_LIMIT

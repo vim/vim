@@ -12,6 +12,7 @@ func Test_simple_popup()
 	call setline(1, range(1, 100))
 	hi PopupColor1 ctermbg=lightblue
 	hi PopupColor2 ctermbg=lightcyan
+	hi EndOfBuffer ctermbg=lightgrey
 	hi Comment ctermfg=red
 	call prop_type_add('comment', #{highlight: 'Comment'})
 	let winid = popup_create('hello there', #{line: 3, col: 11, minwidth: 20, highlight: 'PopupColor1'})
