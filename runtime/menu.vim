@@ -159,6 +159,9 @@ an 20.335 &Edit.-SEP1-				<Nop>
 vnoremenu 20.340 &Edit.Cu&t<Tab>"+x		"+x
 vnoremenu 20.350 &Edit.&Copy<Tab>"+y		"+y
 cnoremenu 20.350 &Edit.&Copy<Tab>"+y		<C-Y>
+if exists(':tlmenu')
+  tlnoremenu 20.350 &Edit.&Copy<Tab>"+y 	<C-W>:<C-Y><CR>
+endif
 nnoremenu 20.360 &Edit.&Paste<Tab>"+gP		"+gP
 cnoremenu	 &Edit.&Paste<Tab>"+gP		<C-R>+
 if exists(':tlmenu')
