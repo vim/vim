@@ -7,7 +7,7 @@
 # "hu" is at the end, because it takes a very long time.
 LANG = af am bg br ca cs cy da de el en eo es fr fo ga gd gl he hr id it 
        ku la lt lv mg mi ms nb nl nn ny pl pt ro ru rw sk sl sv sw
-       tet th tl tn uk yi zu hu
+       tet th tl tn tr uk yi zu hu
 
 # TODO:
 # Finnish doesn't work, the dictionary fi_FI.zip file contains hyphenation...

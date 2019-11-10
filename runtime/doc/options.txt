@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Nov 01
+*options.txt*	For Vim version 8.1.  Last change: 2019 Nov 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5247,6 +5247,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	mouse pointer is moved to the window with keyboard focus.  Off is the
 	default because it makes using the pull down menus a little goofy, as
 	a pointer transit may activate a window unintentionally.
+	MS-Windows: Also see 'scrollfocus' for what window is scrolled when
+	using the mouse scroll whel.
 
 			*'mousehide'* *'mh'* *'nomousehide'* *'nomh'*
 'mousehide' 'mh'	boolean	(default on)
@@ -6298,7 +6300,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	When using the scroll wheel and this option is set, the window under
 	the mouse pointer is scrolled.  With this option off the current
 	window is scrolled.
-	Systems other than MS-Windows behave like this option is on.
+	Systems other than MS-Windows always behave like this option is on.
 
 						*'scrolljump'* *'sj'*
 'scrolljump' 'sj'	number	(default 1)
@@ -6472,7 +6474,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Environment variables are expanded |:set_env|.
 
 	If the name of the shell contains a space, you need to enclose it in
-	quotes and escape the space.  Example: >
+	quotes and escape the space.  Example with quotes: >
 		:set shell=\"c:\program\ files\unix\sh.exe\"\ -f
 <	Note the backslash before each quote (to avoid starting a comment) and
 	each space (to avoid ending the option value).  Also note that the

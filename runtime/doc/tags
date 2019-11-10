@@ -663,7 +663,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'nosb'	options.txt	/*'nosb'*
 'nosc'	options.txt	/*'nosc'*
 'noscb'	options.txt	/*'noscb'*
+'noscf'	options.txt	/*'noscf'*
 'noscrollbind'	options.txt	/*'noscrollbind'*
+'noscrollfocus'	options.txt	/*'noscrollfocus'*
 'noscs'	options.txt	/*'noscs'*
 'nosecure'	options.txt	/*'nosecure'*
 'nosft'	options.txt	/*'nosft'*
@@ -843,10 +845,12 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'sbr'	options.txt	/*'sbr'*
 'sc'	options.txt	/*'sc'*
 'scb'	options.txt	/*'scb'*
+'scf'	options.txt	/*'scf'*
 'scl'	options.txt	/*'scl'*
 'scr'	options.txt	/*'scr'*
 'scroll'	options.txt	/*'scroll'*
 'scrollbind'	options.txt	/*'scrollbind'*
+'scrollfocus'	options.txt	/*'scrollfocus'*
 'scrolljump'	options.txt	/*'scrolljump'*
 'scrolloff'	options.txt	/*'scrolloff'*
 'scrollopt'	options.txt	/*'scrollopt'*
@@ -4044,6 +4048,7 @@ E275	textprop.txt	/*E275*
 E276	eval.txt	/*E276*
 E277	remote.txt	/*E277*
 E278	popup.txt	/*E278*
+E279	terminal.txt	/*E279*
 E28	syntax.txt	/*E28*
 E280	if_tcl.txt	/*E280*
 E282	starting.txt	/*E282*

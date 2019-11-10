@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 02
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,29 +38,13 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Termdebug:  Ctrl-W . doesn't work with modifyOtherKeys set.
-
-Cannot scroll popup window with mouse in GUI? (#5138)
-
-Add a way to make ":term cmd" run "cmd" in a shell, instead of executing it
-directly.  Perhaps ":term ++shell cmd". (issue #3340)
-
-Include netrw 166a?
-
-In a function these two lines are different:
-    let [a, b, c] =<< trim END      fails
-    let [a,b,c] =<< trim END        works
-issue #5051
-
-Make 'showbreak' global-local.
+Don't use javascriptreact but javascript.jsx?  #4830
+Although there is a good argument against using ".jsx".
 
 Update libvterm on github, rename termscreen.c back to screen.c.
 
-Graduate FEAT_TAG_BINS and make LSIZE for tags bigger.
 
 Popup windows:
-- When using "botleft" for "pos" and there is not enough space, positioning
-  goes below, but this must not happen if there is less space there. #5151
 - Use popup (or popup menu) for command line completion
 - Implement flip option
 - Make redrawing more efficient and avoid flicker:
@@ -143,7 +127,7 @@ Terminal emulator window:
   conversions.
 
 Error numbers available:
-E279, E290, E292, E362, E366, E450, E451, E452,
+E290, E292, E362, E366, E450, E451, E452,
 E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
 E654, E856, E857, E860, E861, E863, E889, E900
 
@@ -188,6 +172,13 @@ Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 ":bnext" in a help buffer is supposed to go to the next help buffer, but it
 goes to any buffer, and then :bnext skips help buffers, since they are
 unlisted. (#4478)
+
+When 'selection' is "exclusive" then using vi' on the second ' does not select
+anything. (#5183)
+Patch from Christian: 
+https://github.com/chrisbra/vim/commit/7482d1d389e7db97e247f8b509003e5ec27427a9
+When using exclusive selection and vi" that fails, cursor moves to the left.
+Cursor should not move. (#4024)
 
 Enable 'termbidi' if $VTE_VERSION >= 5703 ?
 
@@ -253,6 +244,16 @@ We could add the enable/disable sequences to t_ti/t_te or t_ks/t_ke.
 
 Check_external_diff() is used too often. (Daniel Hahler, #4800)
 
+Win32: after "[I" showing matches, scroll wheel messes up screen. (Tsakiridis,
+2007 Feb 18)
+Patch by Alex Dobrynin, 2007 Jun 3.  Also fixes other scroll wheel problems.
+
+Add a WindowScrolled event.  Trigger around the same time as CursorMoved.
+Can be used to update highlighting. #3127  #5181
+
+Patch for Template string: #4491.  New pull: #4634
+Have another look at the implementation: Is the code worth it?
+
 Incorrect formatting with autoindent. (Sebastian Gniazdowski, #4909)
 
 Patch to add the :bvimgrep command.  (Christian Brabandt, 2014 Nov 12)
@@ -310,6 +311,9 @@ Error drawing the number column when 'cursorline' is set. (#3893)
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
 
 Add an argument to expandcmd() to expand like ":next" does.
+
+When both "a" and "l" is in 'formatoptions' then auto-formatting also happens
+in a long line. #5189
 
 The quoting of the [command] argument of :terminal is not clearly documented.
 Give a few examples. (#4288)
@@ -449,9 +453,6 @@ Missing tests for:
 Redo only remembers the last change.  Could use "{count}g." to redo an older
 change.  How does the user know which change?  At least have a way to list
 them: ":repeats".  Add to history, like search history and command line history.
-
-When using exclusive selection and vi" that fails, cursor moves to the left.
-Cursor should not move. (#4024)
 
 Incsearch test fails when locale is "C". (Dominique Pelle, #3986)
 Also run all tests with C locale?
@@ -725,9 +726,6 @@ Column number is wrong when using 'linebreak' and 'wrap'. (Keith Smiley, 2018
 Jan 15, #2555)
 
 ":bufdo e" disabled syntax HL in windows other than the current. (BPJ)
-
-Patch for Template string: #4491.  New pull: #4634
-It's an awful lot of code for something that is just a bit nicer syntax.
 
 Check argument of systemlist(). (Pavlov)
 
@@ -2730,10 +2728,6 @@ patches by Mathias, see mail Feb 22)
 
 Win32: compiling with normal features and OLE fails.  Patch by Mathias
 Michaelis, 2006 Jun 4.
-
-Win32: after "[I" showing matches, scroll wheel messes up screen. (Tsakiridis,
-2007 Feb 18)
-Patch by Alex Dobrynin, 2007 Jun 3.  Also fixes other scroll wheel problems.
 
 Win32: using CTRL-S in Insert mode doesn't remove the "+" from the tab pages
 label.  (Tsakiridis, 2007 Feb 18)  Patch from Ian Kelling, 2008 Aug 6.

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Oct 29
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Nov 06
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1956,11 +1956,15 @@ v:mouse_winid	Window ID for a mouse click obtained with |getchar()|.
 
 					*v:mouse_lnum* *mouse_lnum-variable*
 v:mouse_lnum	Line number for a mouse click obtained with |getchar()|.
+		Also used for a click in a popup window when the filter is
+		invoked.
 		This is the text line number, not the screen line number.  The
 		value is zero when there was no mouse button click.
 
 					*v:mouse_col* *mouse_col-variable*
 v:mouse_col	Column number for a mouse click obtained with |getchar()|.
+		Also used for a click in a popup window when the filter is
+		invoked.
 		This is the screen column number, like with |virtcol()|.  The
 		value is zero when there was no mouse button click.
 

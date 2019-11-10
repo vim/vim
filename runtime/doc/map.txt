@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.1.  Last change: 2019 Oct 20
+*map.txt*       For Vim version 8.1.  Last change: 2019 Nov 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -357,6 +357,8 @@ Some commands work both in Insert mode and Command-line mode, some not:
 :imap  :inoremap  :iunmap  :imapclear	    yes		-	   -
 :cmap  :cnoremap  :cunmap  :cmapclear	     -	       yes	   -
 :lmap  :lnoremap  :lunmap  :lmapclear	    yes*       yes*	  yes*
+
+* If 'iminsert' is 1, see |language-mapping| below.
 
 The original Vi did not have separate mappings for
 Normal/Visual/Operator-pending mode and for Insert/Command-line mode.
@@ -834,12 +836,20 @@ In case the modifyOtherKeys mode causes problems you can disable it: >
       let &t_TI = ""
       let &t_TE = ""
 It does not take effect immediately.  To have this work without restarting Vim
-execute a shell command, e.g.: `!ls`
+execute a shell command, e.g.: `!ls`  Or put the lines in your |vimrc|.
+
+When modifyOtherKeys is enabled you can map <C-[> and <C-S-{>: >
+	imap <C-[> [[[
+	imap <C-S-{> {{{
+Without modifyOtherKeys <C-[> and <C-S-{> are indistinguishable from Esc.
 
 A known side effect effect is that in Insert mode the raw escape sequence is
 inserted after the CTRL-V key.  This can be used to check whether
 modifyOtherKeys is enabled: In Insert mode type CTRL-V CTRL-V, if you get
 one byte then modifyOtherKeys is off, if you get <1b>27;5;118~ then it is on.
+
+When the 'esckeys' option is off, then modifyOtherKeys will be disabled in
+Insert mode to avoid every key with a modifier causing Insert mode to end.
 
 
 1.12 MAPPING AN OPERATOR				*:map-operator*

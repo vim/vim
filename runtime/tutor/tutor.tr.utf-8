@@ -2,7 +2,7 @@
 =    V I M   T u t o r ' a   h o ş   g e l d i n i z !   -     Sürüm 1.7      =
 ===============================================================================
 
-  Vim, bu gibi bir eğitmen ile açıklanması gereken çok fazla komut barındıran,
+  Vim, böyle bir eğitmen ile açıklanması gereken çok fazla komut barındıran,
   oldukça kuvvetli bir metin düzenleyicidir. Bu eğitmen Vim'i çok amaçlı bir
   düzenleyici olarak kolaylıkla kullanabileceğiniz yeterli sayıda komutu
   açıklamak için tasarlanmıştır.
@@ -16,27 +16,28 @@
   çalıştırdıysanız zaten bir kopyasını almış oldunuz).
 
   Bu eğitmenin kullanarak öğretmek için tasarlandığını unutmamak önemlidir.
-  Bu şu anlama gelir; komutları öğrenmek için doğru bir şekilde çalıştırmanız
-  gerekir. Eğer sadece yazılanları okursanız komutları unutursunuz.
+  Bu şu anlama gelir; komutları öğrenmek için doğru bir şekilde çalıştırma-
+  nız gerekir. Eğer sadece yazılanları okursanız komutları unutursunuz.
 
-  Şimdi Caps-Lock düğmenizin basılı olmadığına emin olun ve Ders 1.1'in
+  Şimdi Caps Lock düğmenizin basılı olmadığına emin olun ve Ders 1.1'in
   ekranı tamamen doldurması için j düğmesine yeterli miktarda basın.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 1.1: İMLECİ HAREKET ETTİRMEK
 
-Çevirmen Notu: Tüm derslerde <ENTER> gördüğünüzde bu düğmeye basmanız gerekir.
+
+Çevirmen Notu: Tüm derslerde <ENTER> gördüğünüzde bu düğmeye basın. 
 
   ** İmleci hareket ettirmek için h,j,k,l düğmelerine basın. **
         ^
-        k		İpucu: h düğmesi soldadır ve sola doğru hareket eder.
-    < h	  l >		l düğmesi sağdadır ve sağa doğru hareket eder.
-        j		j düğmesi aşağı doğru bir oka benzer.
+        k		İpucu:  h düğmesi soldadır ve sola doğru hareket eder.
+    < h	  l >		    l düğmesi sağdadır ve sağa doğru hareket eder.
+        j		        j düğmesi aşağı doğru bir oka benzer.
         v
 
   1. İmleci kendinizi rahat hissedinceye dek ekranda dolaştırın.
 
-  2. j düğmesini kendisini yineleyinceye dek basılı tutun.
+  2. j düğmesine basın ve ekranın aşağıya kaydığını görün.
 
   3. Aşağı düğmesini kullanarak, Ders 1.2'ye geçin.
 
@@ -92,8 +93,8 @@
 
   1. İmleci aşağıda ---> ile imlenmiş İLK satıra götürün.
 
-  2. İlk satırı ikincisinin aynısı gibi yapmak için, imleci eklenmesi gereken
-     metinden sonraki ilk karakterin üzerine götürün.
+  2. İlk satırı ikincisinin aynısı gibi yapmak için, imleci eklenmesi
+     gereken metinden sonraki ilk karakterin üzerine götürün.
 
   3. i'ye basın ve gerekli eklemeleri yapın.
 
@@ -137,7 +138,7 @@
   !! NOT: Aşağıdaki adımları uygulamadan önce tüm bu bölümü iyice okuyun!
 
   1. Bu eğitmeni Ders 1.2'de yaptığınız gibi :q! yazarak kapatın. Veya başka
-       bir uçbirime erişiminiz varsa orada yapın.
+     bir uçbirime erişiminiz varsa orada yapın.
 
   2. Komut istemi ekranında şu komutu girin: vim tutor <ENTER>. 'vim', Vim
      düzenleyicisini açmak için kullanacağınız komut olup 'tutor' da
@@ -179,8 +180,8 @@
      i metin girin <ESC> imleçten önce girer
      A metin girin <ESC> satırdan sonra ekler
 
-  NOT: <ESC> düğmesine basmak sizi Normal kipe geri döndürür veya istenmeyen ve
-       yarım yazılmış bir komutu iptal eder.
+  NOT: <ESC> düğmesine basmak sizi Normal kipe geri döndürür veya istenmeyen
+       veya yarım yazılmış bir komutu iptal eder.
 
   Şimdi Ders 2 ile bu eğitmeni sürdürün.
 
@@ -207,7 +208,7 @@
   5. Tümce düzelene kadar adım 3 ve 4'ü tekrar edin ve Ders 2.2'ye geçin.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	Ders 2.2: DAHA FAZLA SİLME KOMUTU
+	Ders 2.2: DAHA FAZLA SİLME KOMUTLARI
 
 
   ** Satırı sonuna kadar silmek için d$ yazın. **
@@ -229,18 +230,18 @@
   5. Neler olduğunu anlamak için Ders 2.3'e gidin.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	Ders 2.3: İŞLETMENLER VE HAREKETLER
+	Ders 2.3: İŞLEÇLER VE HAREKETLER
 
 
-  Metin değiştiren birçok komut işletmenler ve eklerden oluşur. Bir d işletmeni
+  Metin değiştiren birçok komut işleçler ve eklerden oluşur. Bir d işleci
   içeren silme komutu için kullanılan biçim aşağıdaki gibidir:
 
     d hareket
 
   Burada:
 
-    d         - silme işletmenidir.
-    hareket   - işletmenin neyi işleteceğidir (aşağıda listelenmiştir).
+    d         - silme işlecidir.
+    hareket   - işlecin neyi işleteceğidir (aşağıda listelenmiştir).
 
   Hareketlerin kısa bir listesi için:
 
@@ -250,14 +251,14 @@
 
   Demeli ki, de komutunu girmek imleçten sözcüğün sonuna kadar siler.
 
-  NOT: Normal kipte hiçbir hareket olmadan yalnızca işletmeni girmek imleci
+  NOT: Normal kipte hiçbir hareket olmadan yalnızca işleci girmek imleci
        yukarıda belirtildiği gibi hareket ettirir.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 2.4: BİR HAREKET İLE BİRLİKTE SAYIM KULLANMAK
 
 
-  ** Bir hareketten önce sayı kullanmak o hareketi sayı kadar tekrarlatır. **
+  ** Bir hareketten önce sayı kullanmak o hareketi sayıca tekrarlatır. **
 
   1. İmleci aşağıda ---> ile imlenmiş satırın BAŞINA götürün.
 
@@ -277,9 +278,9 @@
 	Ders 2.5: BİR SAYIM KULLANARAK DAHA FAZLA SİLME İŞLEMİ
 
 
-  ** Bir işletmen ile birlikte sayı kullanmak işletmeni o kadar tekrarlatır. **
+  ** Bir işleç ile birlikte sayı kullanmak işleci o kadar tekrarlatır. **
 
-  Yukarıda sözü edilen silme işletmeni ve hareketinin arasına sayı ekleyerek
+  Yukarıda sözü edilen silme işleci ve hareketinin arasına sayı ekleyerek
   yapılan işlemi o sayı kadar tekrarlatabilirsiniz.
 
     d [sayı] hareket
@@ -302,7 +303,7 @@
 
   Bütün bir satır silme işlemi çok sık kullanıldığından dolayı, Vi
   tasarımcıları bir satırı tamamen silmek için iki d yazmanın daha kolay
-  olduğuna karar verdiler.
+  olduğuna karar vermişler.
 
   1. İmleci aşağıdaki tümceciğin ikinci satırına götürün.
 
@@ -324,7 +325,7 @@
 	Ders 2.7: GERİ AL KOMUTU
 
 
-  ** Son komutu geri almak için u, bütün bir satırı düzeltmek için U yazın. **
+  ** Komutu geri almak için u, bütün bir satırı düzeltmek için U yazın. **
 
   1. İmleci aşağıda ---> ile imlenmiş satırda ve ilk hatanın üzerine koyun.
 
@@ -359,12 +360,12 @@
 
   5. Normal kipte bir komut biçimi şöyledir:
 
-      işletmen [sayı] hareket
+      işleç [sayı] hareket
 
     burada:
-      işletmen - ne yapılacağı, silmek için d örneğinde olduğu gibi
+      işleç - ne yapılacağı, silmek için d örneğinde olduğu gibi
       [sayı] - komutun kaç kere tekrar edeceğini gösteren isteğe bağlı sayı
-      hareket - işletmenin nice davranacağı, w (sözcük), $ (satır sonu) gibi.
+      hareket - işlecin nice davranacağı, w (sözcük), $ (satır sonu) gibi
 
   6. Bir satırın başına gelmek için sıfır (0) kullanın.
 
@@ -399,7 +400,7 @@
 	Ders 3.2: DEĞİŞTİR KOMUTU
 
 
-  ** İmlecin altındaki karakteri başkası ile değiştirmek için rx kullanın. **
+  ** İmlecin altındaki karakteri başkası ile değiştirmek için rx yapın. **
 
   1. İmleci aşağıda ---> ile imlenmiş İLK satıra götürün.
 
@@ -417,10 +418,10 @@
   NOT: Unutmayın, ezberleyerek değil deneyerek öğrenin.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	Ders 3.3: DEĞİŞTİR İŞLETMENİ
+	Ders 3.3: DEĞİŞTİR İŞLECİ
 
 
-  ** Bir sözcüğü imleçten sözcük sonuna kadar değiştirmek için ce kullanın. **
+  ** Bir sözcüğü imleçten sözcük sonuna kadar değiştirmek için ce yapın. **
 
   1. İmleci aşağıda ---> ile imlenmiş İLK satıra götürün.
 
@@ -435,16 +436,16 @@
 ---> Bu sutar değiştir komutu ile değişneli gereken birkaç mözgüç içeriyor.
 ---> Bu satır değiştir komutu ile değişmesi gereken birkaç sözcük içeriyor.
 
-  ce'nin sadece sözcüğü değiştirmediğini, aynı zamanda sizi INSERT kipine
+  ce'nin sadece sözcüğü değiştirmediğini, aynı zamanda sizi EKLE kipine
   aldığına da dikkat edin.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 3.4: c'Yİ KULLANARAK DAHA FAZLA DEĞİŞTİRME
 
 
-  ** Değiştir işletmeni sil komutu ile aynı hareketlerle kullanılır. **
+  ** Değiştir işleci sil komutu ile aynı hareketlerle kullanılır. **
 
-  1. Değiştir işletmeni sil ile aynı yolla çalışır. Biçim şöyledir:
+  1. Değiştir işleci sil ile aynı yolla çalışır. Biçim şöyledir:
 
       c [sayı] hareket
 
@@ -472,7 +473,7 @@
   2. İmlecin altındaki karakteri değiştirmek için önce r ardından da
      yazmak istediğiniz karakteri yazın.
 
-  3. Değiştir işletmeni belirlenen nesneyi, imleçten hareketin sonuna kadar
+  3. Değiştir işleci belirlenen nesneyi, imleçten hareketin sonuna kadar
      değiştirme imkanı verir. Örneğin, bir sözcüğü imleçten sözcük sonuna
      kadar değiştirmek için cw, bir satırın tamamını değiştirmek içinse c$
      yazın.
@@ -526,8 +527,8 @@
 
 ---> "hatttaa" hatayı yazmanın doğru yolu değil; hatttaa bir hata.
 
-Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bunu devre
-     dışı bırakmak için 'wrapscan' seçeneğini sıfırlayın.
+Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bunu
+     devre dışı bırakmak için 'wrapscan' seçeneğini sıfırlayın.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 4.3: UYAN AYRAÇLAR ARAMASI
@@ -543,7 +544,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
   4. Uyan ilk parantezin üzerine geri dönmek için yine % yazın.
 
-  5. İmleci başka bir (), [] veya {} üzerine götürün ve % işletmeninin neler
+  5. İmleci başka bir (), [] veya {} üzerine götürün ve % işlecinin neler
      yaptığını gözlemleyin.
 
 ---> Bu içerisinde ( )'ler, ['ler ] ve {'ler } bulunan bir satırdır.
@@ -584,19 +585,19 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
      [sayı] G belirtilen satır numarasına gider.
      gg ilk satıra gider.
 
-  2. Bir sözcük öbeğinden önce / yazmak, İLERİ yönde o öbeği aratır.
-     Bir sözcük öbeğinden önce ? yazmak, GERİ yönde o öbeği aratır.
-     Bir aramadan sonra, aynı yöndeki bir sonraki karşılaşmayı bulmak için n,
+  2. Sözcük öbeğinden önce / yazmak, İLERİ yönde o öbeği aratır.
+     Sözcük öbeğinden önce ? yazmak, GERİ yönde o öbeği aratır.
+     Aramadan sonra, aynı yöndeki bir sonraki karşılaşmayı bulmak için n,
      veya zıt yöndekini bulmak için N yazın.
      <CTRL> O sizi eski konumlara, <CTRL> I daha yeni konumlara götürür.
 
   3. İmleç bir (), [], {} ayracı üzerindeyken % yazmak, uyan diğer eş
      ayracı bulur.
 
-  4. Bir satırdaki ilk 'eski'yi 'yeni' ile değiştirmek için :s/eski/yeni,
-     Bir satırdaki tüm 'eski'leri 'yeni' ile değiştirmek için :s/eski/yeni/g,
+  4. Satırdaki ilk 'eski'yi 'yeni' ile değiştirmek için :s/eski/yeni,
+     Satırdaki tüm 'eski'leri 'yeni' ile değiştirmek için :s/eski/yeni/g,
      İki satır arasındaki öbekleri değiştirmek için :#,#s/eski/yeni/g,
-     Bir dosyadaki tüm karşılaşmaları değiştirmek için :%s/eski/yeni/g yazın.
+     Dosyadaki tüm karşılaşmaları değiştirmek için :%s/eski/yeni/g yazın.
      Her seferinde onay sorması için :%s/eski/yeni/gc kullanın.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -617,8 +618,8 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
   NOT: Herhangi bir dış komutu bu yolla çalıştırmak mümkündür.
 
-  NOT: Tüm : komutlarından sonra <ENTER> düğmesine basılmalıdır. Bundan sonra
-       bunu her zaman anımsatmayacağız.
+  NOT: Tüm : komutlarından sonra <ENTER> düğmesine basılmalıdır. Bundan
+       sonra bunu her zaman anımsatmayacağız.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 5.2: DOSYA YAZMAYA DEVAM
@@ -641,11 +642,11 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
        kaydettiğiniz vimtutor'un gerçek bir kopyası olduğunu görürsünüz.
 
   5. Şimdi dosyayı şu komutları vererek silin:
-	Windows:                       :!del DENEME
-	Unix (macOS, Linux, Haiku):    :!rm DENEME
+	    Windows:                       :!del DENEME
+	    Unix (macOS, Linux, Haiku):    :!rm DENEME
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	Ders 5.3: YAZMAK İÇİN METİN SEÇME
+	Ders 5.3: YAZMA İÇİN METİN SEÇME
 
 
   ** Dosyanın bir bölümünü kaydetmek için, v hareket :w DOSYA_ADI yazın. **
@@ -671,14 +672,14 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
   1. İmleci bu satırın hemen bir üstüne koyun.
 
-  NOT: İkinci adımı gerçekleştirdikten sonra Ders 5.3'ün metnini göreceksiniz.
+  NOT: İkinci adımdan sonra Ders 5.3'ün metnini göreceksiniz.
        Sonrasında AŞAĞI düğmesi ile bu derse geri gelin.
 
   2. Şimdi :r DENEME komutunu kullanarak DENEME dosyasını bu dosyanın içine
      getirin. Getirdiğiniz dosya imlecin hemen altına yerleştirilir.
 
   3. Dosyanın getirildiğini doğrulamak için YUKARI düğmesini kullanarak
- 	Ders 5.3'ün iki adet kopyası olduğunu görün, özgün sürümü ve kopyası.
+ 	 Ders 5.3'ün iki adet kopyası olduğunu görün, özgün sürümü ve kopyası.
 
   NOT: Bu komutu kullanarak bir dış komutun çıktısını da dosyanın içine
        koyabilirsiniz. Örneğin :r :!ls yazmak ls komutunun vereceği çıktıyı
@@ -708,17 +709,17 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 	Ders 6.1: AÇ KOMUTU
 
 
-  ** İmlecin aşağısına bir satır açmak ve INSERT kipine geçmek için o yazın. **
+  ** İmlecin aşağısına satır açmak ve EKLE kipine geçmek için o yazın. **
 
   1. İmleci aşağıda ---> ile imlenmiş satıra götürün.
 
-  2. İmlecin aşağısına bir satır açmak ve INSERT kipine geçmek için o
+  2. İmlecin aşağısına bir satır açmak ve EKLE kipine geçmek için o
      (küçük harfle) yazın.
 
-  3. Şimdi herhangi bir metin girin ve INSERT kipinden çıkmak için <ESC>
+  3. Şimdi herhangi bir metin girin ve EKLE kipinden çıkmak için <ESC>
      düğmesine basın.
 
----> o yazdıktan sonra imleç INSERT kipinde açılan satırın üzerine gider. 
+---> o yazdıktan sonra imleç EKLE kipinde açılan satırın üzerine gider. 
 
   4. İmlecin üzerinde bir satır açmak için, yalnızca  büyük O yazın. Bunu
      aşağıdaki satırda deneyin.
@@ -729,15 +730,15 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 	Ders 6.2: EKLE KOMUTU
 
 
-  ** İmleçten sonra metin eklemek için a  yazın. **
+  ** İmleçten sonra metin eklemek için a yazın. **
 
   1. İmleci aşağıda ---> ile imlenmiş satıra götürün.
 
-  2. İmleç satı'nın sonuna gelinceye dek e düğmesine basın.
+  2. İmleç satırın sonuna gelinceye dek e düğmesine basın.
 
   3. İmleçten SONRA metin eklemek için a yazın.
 
-  4. Şimdi ilk satırı ikincisi gibi tamamlayın. INSERT kipinden çıkmak için
+  4. Şimdi ilk satırı ikincisi gibi tamamlayın. EKLE kipinden çıkmak için
      <ESC> düğmesine basın.
 
   5. e düğmesini kullanarak bir sonraki yarım sözcüğe gidin ve adım 3 ve 4'ü
@@ -758,7 +759,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   2. Şimdi R düğmesine basın ve ikinci satırdaki sayıyı ilk satırdaki xxx'in
      yerine yazın.
 
-  3. <ESC> düğmesine basarak REPLACE kipinden çıkın. Satırın geri kalanının
+  3. <ESC> düğmesine basarak DEĞİŞTİR kipinden çıkın. Satırın geri kalanının
      değişmediğini gözlemleyin.
 
   4. Kalan xxx'i de değiştirmek için adımları tekrarlayın.
@@ -769,11 +770,11 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 6.4: METİN KOPYALA VE YAPIŞTIR
 
-  ** y işletmenini kullanarak metin kopyalayın ve p kullanarak yapıştırın. **
+  ** y işlecini kullanarak metin kopyalayın ve p kullanarak yapıştırın. **
 
-  1. İmleci aşağıda ---> ile imlenmiş satıra getirin ve "a)"nın ardına koyun.
+  1. İmleci aşağıda ---> ile imlenmiş satıra getirin, "a)"nın ardına koyun.
 
-  2. v ile VISUAL kipine geçin ve imleci "ilk" sözcüğünün öncesine getirin.
+  2. v ile GÖRSEL kipe geçin ve imleci "ilk" sözcüğünün öncesine getirin.
 
   3. y düğmesine basarak seçili metni kopyalayın.
 
@@ -781,13 +782,13 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
   5. p düğmesine basarak metni yapıştırın. Akabinde <ESC> düğmesine basın.
 
-  6. VISUAL kipine geçerek "öge" sözcüğünü seçin, y ile kopyalayın, j$ ile
+  6. GÖRSEL kipe geçerek "öge" sözcüğünü seçin, y ile kopyalayın, j$ ile
      ikinci satırın sonuna gidin ve p ile sözcüğü yapıştırın.
 
 ---> a) Bu ilk öge
 ---> b)
 
-  NOT: y komutunu bir işletmen olarak da kullanabilirsiniz; yw komutu yalnızca
+  NOT: y komutunu bir işleç olarak da kullanabilirsiniz; yw komutu yalnızca
        bir sözcüğü kopyalar.
   
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -820,7 +821,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
 
   1. o komutu imlecin altında bir satır açar ve imleci bu açılmış satıra
-     INSERT kipinde yerleştirir.
+     EKLE kipinde yerleştirir.
      O komutu imlecin üzerinde bir satır açar.
 
   2. a komutu imleçten sonra metin girişine olanak verir.
@@ -828,9 +829,9 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
   3. e komutu imleci bir sözcüğün sonuna taşır.
 
-  4. y işletmeni metni kopyalar, p işletmeni yapıştırır.
+  4. y işleci metni kopyalar, p işleci yapıştırır.
 
-  5. R komutu REPLACE (DEĞİŞTİR) kipine girer ve <ESC>'ye basılana kadar kalır.
+  5. R komutu DEĞİŞTİR kipine girer ve <ESC>'ye basılana kadar kalır.
 
   6. ":set xxx" yazmak "xxx" seçeneğini ayarlar. Bazı seçenekler:
      'ic' 'ignorecase' BÜYÜK/küçük harf ayrımını arama yaparken kapatır.
@@ -846,7 +847,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
   ** Çevrimiçi yardım sistemini kullanın **
 
-  Vim geniş bir çeirimiçi yardım sistemine sahiptir. Başlamak için şu üçünü
+  Vim geniş bir çevrimiçi yardım sistemine sahiptir. Başlamak için şu üçünü
   deneyebilirsiniz:
     - (eğer varsa) <HELP> düğmesine basın
     - (eğer varsa) <F1> düğmesine basın
@@ -858,7 +859,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   Yardım penceresini kapatmak için :q yazıp <ENTER> düğmesine basın.
 
   ":help" komutuna değişken (argüman) vererek herhangi bir konu hakkında
-  yardım alabilirsini. Şunları deneyin (<ENTER> düğmesine basmayı unutmayın):
+  yardım alabilirsiniz. Şunları deneyin:
 
     :help w
     :help c_<CTRL> D
@@ -867,6 +868,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 7.2: BİR BAŞLANGIÇ BETİĞİ OLUŞTURUN
+
 
   ** Vim'in özelliklerine bakın **
 
@@ -892,17 +894,21 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 7.3: TAMAMLAMA
 
+
   ** <CTRL> D ve <TAB> ile komut istemi ekranında tamamlama **
 
-  1. :set nocp komutunu kullanarak Vim'in uyumlu kipte olmadığından emin olun.
+  1. :set nocp komutunu kullanarak Vim'in uyumlu kipte olmadığından
+     emin olun.
 
   2. Bulunduğunuz dizindeki dosyalara :!ls veya :!dir ile bakın.
 
   3. Bir komutun başlangıcını yazın, örneğin :e.
 
-  4. <CTRL> D'ye bastığınızda Vim size e ile başlayan komutları gösterecektir.
+  4. <CTRL> D'ye bastığınızda Vim size e ile başlayan komutları
+     gösterecektir.
 
-  5. d <TAB> kullandığınızda Vim komutu kendinden :edit olarak tamamlayacaktır.
+  5. d <TAB> kullandığınızda Vim komutu kendinden :edit olarak
+     tamamlayacaktır.
 
   6. Şimdi bir boşluk ekleyin ve var olan bir dosyanın baş harflerini yazın.
      Örneğin :edit DOS.
@@ -915,6 +921,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 7: ÖZET
+
 
   1. :help yazmak veya <F1> veya <HELP> düğmelerine basmak yardım
      penceresini açar.
@@ -933,10 +940,11 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  Burada Vim Eğitmeni tamamlanmış oldu. Eğitmendeki amaç Vim düzenleyicisi
+  Böylece Vim Eğitmeni tamamlanmış oldu. Eğitmendeki amaç Vim düzenleyicisi
   hakkında kısa bir bilgi vermek ve onu kolayca kullanmanızı sağlamaktı.
-  Vim'in tamamını öğretmek çok zordur zira Vim birçok komuta sahiptir. Bundan
-  sonra ":help user-manual" komutu ile kullanıcı kılavuzunu okumalısınız.
+  Vim'in tamamını öğretmek çok zordur zira Vim birçok komuta sahiptir.
+  Bundan sonra ":help user-manual" komutu ile kullanıcı kılavuzunu
+  okumalısınız.
 
   Daha fazla okuma ve çalışma için şu kitabı öneriyoruz:
 
@@ -962,7 +970,10 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
   Vim için değiştiren: Bram Moolenaar
 
-  Türkçe çeviri: Serkan "heartsmagic" Çalış (2005), adresimeyaz (at) yahoo com
-  2019 Güncelleme: Emir SARI, emirsari (at) gmail com
+  Türkçe çeviri:
+  Serkan "heartsmagic" Çalış (2005), adresimeyaz (at) yahoo (dot) com
+  
+  2019 Güncelleme:
+  Emir SARI, bitigchi (at) me (dot) com
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
