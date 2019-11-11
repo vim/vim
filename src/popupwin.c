@@ -2915,6 +2915,7 @@ invoke_popup_filter(win_T *wp, int c)
 	    (void)mouse_comp_pos(wp, &row, &col, &lnum, NULL);
 	    set_vim_var_nr(VV_MOUSE_LNUM, lnum);
 	    set_vim_var_nr(VV_MOUSE_COL, col + 1);
+	    set_vim_var_nr(VV_MOUSE_WINID, wp->w_id);
 	}
     }
 

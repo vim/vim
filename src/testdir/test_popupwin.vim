@@ -2207,6 +2207,7 @@ func Test_popupwin_filter_mouse()
   func MyPopupFilter(winid, c)
     let g:got_mouse_col = v:mouse_col
     let g:got_mouse_lnum = v:mouse_lnum
+    let g:got_mouse_winid = v:mouse_winid
     return 0
   endfunc
 
@@ -2221,6 +2222,7 @@ func Test_popupwin_filter_mouse()
   call feedkeys("\<LeftMouse>", 'xt')
   call assert_equal(1, g:got_mouse_col)
   call assert_equal(1, g:got_mouse_lnum)
+  call assert_equal(winid, g:got_mouse_winid)
 
   call test_setmouse(5, 8)
   call feedkeys("\<LeftMouse>", 'xt')
@@ -2236,6 +2238,7 @@ func Test_popupwin_filter_mouse()
   call feedkeys("\<LeftMouse>", 'xt')
   call assert_equal(13, g:got_mouse_col)
   call assert_equal(3, g:got_mouse_lnum)
+  call assert_equal(winid, g:got_mouse_winid)
 
   call popup_close(winid)
   delfunc MyPopupFilter

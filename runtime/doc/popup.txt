@@ -863,8 +863,9 @@ Some recommended key actions:
 	Tab		accept current suggestion
 
 A mouse click arrives as <LeftMouse>.  The coordinates are in |v:mouse_col|
-and |v:mouse_lnum|.  The top-left screen cell of the popup is col 1, row 1
-(not counting the border).
+and |v:mouse_lnum|.  |v:mouse_winid| holds the window ID, |v:mouse_win| is
+always zero.  The top-left screen cell of the popup is col 1, row 1 (not
+counting the border).
 
 Vim provides standard filters |popup_filter_menu()| and
 |popup_filter_yesno()|.
