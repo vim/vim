@@ -770,6 +770,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 6.4: METİN KOPYALA VE YAPIŞTIR
 
+
   ** y işlecini kullanarak metin kopyalayın ve p kullanarak yapıştırın. **
 
   1. İmleci aşağıda ---> ile imlenmiş satıra getirin, "a)"nın ardına koyun.
@@ -849,12 +850,13 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
   Vim geniş bir çevrimiçi yardım sistemine sahiptir. Başlamak için şu üçünü
   deneyebilirsiniz:
+
     - (eğer varsa) <HELP> düğmesine basın
     - (eğer varsa) <F1> düğmesine basın
     - :help yazın ve <ENTER> düğmesine basın
 
-  Yardım penceresindeki metinleri okuyarak yardım sisteminin nasıl çalıştığını
-  öğrenin. 
+  Yardım penceresindeki metinleri okuyarak yardım sisteminin nasıl
+  çalıştığını öğrenin. 
   Bir pencereden diğerine geçmek için <CTRL> W ikilisini kullanın.
   Yardım penceresini kapatmak için :q yazıp <ENTER> düğmesine basın.
 
@@ -902,7 +904,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
   2. Bulunduğunuz dizindeki dosyalara :!ls veya :!dir ile bakın.
 
-  3. Bir komutun başlangıcını yazın, örneğin :e.
+  3. Bir komutun baş kısmını yazın, örneğin :e.
 
   4. <CTRL> D'ye bastığınızda Vim size e ile başlayan komutları
      gösterecektir.

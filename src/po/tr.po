@@ -2830,7 +2830,7 @@ msgid "-t tag          edit file where tag is defined"
 msgstr "-t etiket       etiket tanımlanan dosyaları düzenle"
 
 msgid "-q [errorfile]  edit file with first error"
-msgstr "-q [hatalıd.]  hata içeren ilk dosyayı düzenle"
+msgstr "-q [hatalıd.]   hata içeren ilk dosyayı düzenle"
 
 msgid ""
 "\n"
@@ -2849,7 +2849,7 @@ msgid ""
 "   or:"
 msgstr ""
 "\n"
-"   veya:"
+"    veya:"
 
 msgid ""
 "\n"
@@ -2959,7 +2959,7 @@ msgid "-H\t\t\tStart in Hebrew mode"
 msgstr "-H\t\t\tİbranice kipinde başla"
 
 msgid "-T <terminal>\tSet terminal type to <terminal>"
-msgstr "-T <uçbirim>\t Uçbirim türünü <uçbirim>'e ayarla"
+msgstr "-T <uçbirim>\t\tUçbirim türünü <uçbirim>'e ayarla"
 
 msgid "--not-a-term\t\tSkip warning for input/output not being a terminal"
 msgstr "--not-a-term\t\tGirdi/Çıktının bir uçbirime olmadığı uyarısını atla"
@@ -2995,10 +2995,13 @@ msgid "--cmd <command>\tExecute <command> before loading any vimrc file"
 msgstr "--cmd <komut>\tHerhangi bir vimrc dosyası yüklemeden <komut> çalıştır"
 
 msgid "-c <command>\t\tExecute <command> after loading the first file"
-msgstr "-c <komut>\t\tİlk dosyayı açtıktan sonra <komut> komutunu çalıştır"
+msgstr "-c <komut>\t\tİlk dosyayı yükleyip <komut> komutunu çalıştır"
+
+msgid "-S <session>\t\tSource file <session> after loading the first file"
+msgstr "-S <oturum>\t\tİlk dosyayı yükleyip <oturum> dosyasını kaynak al"
 
 msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
-msgstr "-s <betikal>\tNormal kip komutlarını <betikal> dosyasından oku"
+msgstr "-s <betikal>\t\tNormal kip komutlarını <betikal> dosyasından oku"
 
 msgid "-w <scriptout>\tAppend all typed commands to file <scriptout>"
 msgstr "-w <betikçik>\tGirilen tüm komutları <betikçik> dosyasına iliştir"
@@ -3049,13 +3052,13 @@ msgid "--servername <name>\tSend to/become the Vim server <name>"
 msgstr "--servername <ad>\t<ad> Vim sunucusuna gönder veya sunucu ol"
 
 msgid "--startuptime <file>\tWrite startup timing messages to <file>"
-msgstr "--startuptime <dosya>\tBaşlangıç zamanlama iletilerini <dosya>'ya yaz"
+msgstr "--startuptime <dsy>\tBaşlangıç zamanlama iletilerini <dosya>'ya yaz"
 
 msgid "-i <viminfo>\t\tUse <viminfo> instead of .viminfo"
-msgstr "-i <viminfo>\t\t .viminfo yerine <viminfo> kullan"
+msgstr "-i <viminfo>\t\t.viminfo yerine <viminfo> kullan"
 
 msgid "--clean\t\t'nocompatible', Vim defaults, no plugins, no viminfo"
-msgstr "--clean\t\t'nocompatible', Vim öntanımlıları, eklenti yok, viminfo yok"
+msgstr "--clean\t\t'nocompatible', Vim öntanımlıları, eklenti-viminfo yok"
 
 msgid "-h  or  --help\tPrint Help (this message) and exit"
 msgstr "-h veya --help\tYardımı (bu iletiyi) yazdırır ve çıkar"
@@ -3761,7 +3764,7 @@ msgid "E354: Invalid register name: '%s'"
 msgstr "E354: Geçersiz yazmaç adı: '%s'"
 
 msgid "Messages maintainer: Bram Moolenaar <Bram@vim.org>"
-msgstr "İletileri Türkçeye çeviren: Emir SARI <bitigchi@me.com>"
+msgstr "Türkçeye çeviren: Emir SARI <bitigchi@me.com>"
 
 msgid "Interrupt: "
 msgstr "Yarıda kes: "
@@ -5282,7 +5285,7 @@ msgstr "Sözcük '%.*s', %s içinden çıkartıldı"
 
 #, c-format
 msgid "Word '%.*s' added to %s"
-msgstr "Sözcük '%.*s', %s bünyesine eklendi"
+msgstr "Sözcük '%.*s', %s dosyasına eklendi"
 
 msgid "E763: Word characters differ between spell files"
 msgstr "E763: Sözcük karakterleri yazım dosyaları arasında ayrımlı"
@@ -6010,7 +6013,7 @@ msgstr "E133: :return bir işlev içinde değil"
 
 #, c-format
 msgid "%s (%s, compiled %s)"
-msgstr "%s (%s, %s derlendi)"
+msgstr "%s (%s, %s tarihinde derlendi)"
 
 msgid ""
 "\n"
@@ -6174,7 +6177,7 @@ msgid "with Cocoa GUI."
 msgstr "(Cocoa grafik arabirim ile)."
 
 msgid "  Features included (+) or not (-):\n"
-msgstr " İçerilen özellikler (+), içerilmeyenler (-) ile gösterilir:\n"
+msgstr "İçerilen özellikler (+), içerilmeyenler (-) ile gösterilir:\n"
 
 msgid "   system vimrc file: \""
 msgstr "          sistem vimrc dosyası: \""
@@ -6291,10 +6294,10 @@ msgid "Become a registered Vim user!"
 msgstr "Kayıtlı bir Vim kullanıcısı olun!"
 
 msgid "type  :help sponsor<Enter>    for information "
-msgstr "bilgi için:            :help sponsor<Enter>   "
+msgstr "bilgi için             :help sponsor<Enter>   "
 
 msgid "type  :help register<Enter>   for information "
-msgstr "bilgi için:            :help register<Enter>  "
+msgstr "bilgi için             :help register<Enter>  "
 
 msgid "menu  Help->Sponsor/Register  for information    "
 msgstr "bilgi için: menü -> Yardım -> Sponsorluk/Kayıt   "
