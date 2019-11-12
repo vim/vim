@@ -81,7 +81,6 @@ void find_mps_values(int *initc, int *findc, int *backwards, int switchit);
 int briopt_check(win_T *wp);
 unsigned int get_bkc_value(buf_T *buf);
 char_u *get_showbreak_value(win_T *win);
-int signcolumn_on(win_T *wp);
 dict_T *get_winbuf_options(int bufopt);
 int fill_culopt_flags(char_u *val, win_T *wp);
 /* vim: set ft=c : */

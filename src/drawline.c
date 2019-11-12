@@ -671,7 +671,7 @@ win_line(
 #endif
 
 #ifdef FEAT_SIGNS
-    sign_present = buf_get_signattrs(wp->w_buffer, lnum, &sattr);
+    sign_present = buf_get_signattrs(wp, lnum, &sattr);
 #endif
 
 #ifdef LINE_ATTR

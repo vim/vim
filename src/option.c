@@ -7293,31 +7293,6 @@ get_showbreak_value(win_T *win)
 }
 #endif
 
-#if defined(FEAT_SIGNS) || defined(PROTO)
-/*
- * Return TRUE when window "wp" has a column to draw signs in.
- */
-     int
-signcolumn_on(win_T *wp)
-{
-    // If 'signcolumn' is set to 'number', signs are displayed in the 'number'
-    // column (if present). Otherwise signs are to be displayed in the sign
-    // column.
-    if (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u')
-	return wp->w_buffer->b_signlist != NULL && !wp->w_p_nu && !wp->w_p_rnu;
-
-    if (*wp->w_p_scl == 'n')
-	return FALSE;
-    if (*wp->w_p_scl == 'y')
-	return TRUE;
-    return (wp->w_buffer->b_signlist != NULL
-# ifdef FEAT_NETBEANS_INTG
-			|| wp->w_buffer->b_has_sign_column
-# endif
-		    );
-}
-#endif
-
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Get window or buffer local options.

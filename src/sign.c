@@ -467,10 +467,11 @@ buf_change_sign_type(
  * 'lnum', FALSE otherwise.
  */
     int
-buf_get_signattrs(buf_T *buf, linenr_T lnum, sign_attrs_T *sattr)
+buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr)
 {
     sign_entry_T	*sign;
     sign_T		*sp;
+    buf_T		*buf = wp->w_buffer;
 
     vim_memset(sattr, 0, sizeof(sign_attrs_T));
 
@@ -481,7 +482,12 @@ buf_get_signattrs(buf_T *buf, linenr_T lnum, sign_attrs_T *sattr)
 	    // for signs after the specified line number 'lnum'.
 	    break;
 
-	if (sign->se_lnum == lnum)
+	if (sign->se_lnum == lnum
+# ifdef FEAT_TEXT_PROP
+		&& sign_in_group(sign, (char_u *)"popupmenu")
+					  == (WIN_IS_POPUP(wp) ? TRUE : FALSE)
+# endif
+		)
 	{
 	    sattr->sat_typenr = sign->se_typenr;
 	    sp = find_sign_by_typenr(sign->se_typenr);
@@ -2631,6 +2637,42 @@ cleanup:
     vim_free(group);
 
     return retval;
+}
+
+    sign_entry_T *
+get_first_valid_sign(win_T *wp)
+{
+    sign_entry_T *sign = wp->w_buffer->b_signlist;
+
+# ifdef FEAT_TEXT_PROP
+    while (sign != NULL && sign_in_group(sign, (char_u *)"popupmenu")
+					  == (WIN_IS_POPUP(wp) ? FALSE : TRUE))
+	sign = sign->se_next;
+# endif
+    return sign;
+}
+
+/*
+ * Return TRUE when window "wp" has a column to draw signs in.
+ */
+     int
+signcolumn_on(win_T *wp)
+{
+    // If 'signcolumn' is set to 'number', signs are displayed in the 'number'
+    // column (if present). Otherwise signs are to be displayed in the sign
+    // column.
+    if (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u')
+	return get_first_valid_sign(wp) != NULL && !wp->w_p_nu && !wp->w_p_rnu;
+
+    if (*wp->w_p_scl == 'n')
+	return FALSE;
+    if (*wp->w_p_scl == 'y')
+	return TRUE;
+    return (get_first_valid_sign(wp) != NULL
+# ifdef FEAT_NETBEANS_INTG
+			|| wp->w_buffer->b_has_sign_column
+# endif
+		    );
 }
 
 /*

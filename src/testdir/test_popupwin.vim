@@ -2615,6 +2615,23 @@ func Test_popup_cursorline()
   call StopVimInTerminal(buf)
 
   call delete('XtestPopupCursorLine')
+
+  " ---------
+  " Use current buffer for popupmenu
+  " ---------
+  let lines =<< trim END
+    call setline(1, ['one', 'two', 'three'])
+    let winid = popup_create(bufnr('%'), #{
+	  \ cursorline : 1,
+	  \ })
+    call win_execute(winid, "2")
+  END
+  call writefile(lines, 'XtestPopupCursorLine')
+  let buf = RunVimInTerminal('-S XtestPopupCursorLine', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_cursorline_8', {})
+  call StopVimInTerminal(buf)
+
+  call delete('XtestPopupCursorLine')
 endfunc
 
 func Test_previewpopup()
