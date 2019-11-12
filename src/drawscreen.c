@@ -1398,7 +1398,11 @@ win_update(win_T *wp)
     int		i;
     long	j;
     static int	recursive = FALSE;	// being called recursively
-    int		old_botline = wp->w_botline;
+    linenr_T	old_botline = wp->w_botline;
+#ifdef FEAT_CONCEAL
+    int		old_wrow = wp->w_wrow;
+    int		old_wcol = wp->w_wcol;
+#endif
 #ifdef FEAT_FOLDING
     long	fold_count;
 #endif
@@ -2567,18 +2571,52 @@ win_update(win_T *wp)
 	wp->w_valid |= VALID_BOTLINE;
 	if (wp == curwin && wp->w_botline != old_botline && !recursive)
 	{
+	    win_T	*wwp;
+#if defined(FEAT_CONCEAL)
+	    linenr_T	old_topline = wp->w_topline;
+	    int		new_wcol = wp->w_wcol;
+#endif
 	    recursive = TRUE;
 	    curwin->w_valid &= ~VALID_TOPLINE;
 	    update_topline();	// may invalidate w_botline again
-	    if (must_redraw != 0)
+
+#if defined(FEAT_CONCEAL)
+	    if (old_wcol != new_wcol && (wp->w_valid & (VALID_WCOL|VALID_WROW))
+						    != (VALID_WCOL|VALID_WROW))
+	    {
+		// A win_line() call applied a fix to screen cursor column to
+		// accomodate concealment of cursor line, but in this call to
+		// update_topline() the cursor's row or column got invalidated.
+		// If they are left invalid, setcursor() will recompute them
+		// but there won't be any further win_line() call to re-fix the
+		// column and the cursor will end up misplaced.  So we call
+		// cursor validation now and reapply the fix again (or call
+		// win_line() to do it for us).
+		validate_cursor();
+		if (wp->w_wcol == old_wcol && wp->w_wrow == old_wrow
+			&& old_topline == wp->w_topline)
+		    wp->w_wcol = new_wcol;
+		else
+		    redrawWinline(wp, wp->w_cursor.lnum);
+	    }
+#endif
+	    // New redraw either due to updated topline or due to wcol fix.
+	    if (wp->w_redr_type != 0)
 	    {
 		// Don't update for changes in buffer again.
 		i = curbuf->b_mod_set;
 		curbuf->b_mod_set = FALSE;
+		j = curbuf->b_mod_xlines;
+		curbuf->b_mod_xlines = 0;
 		win_update(curwin);
-		must_redraw = 0;
 		curbuf->b_mod_set = i;
+		curbuf->b_mod_xlines = j;
 	    }
+	    // Other windows might have w_redr_type raised in update_topline().
+	    must_redraw = 0;
+	    FOR_ALL_WINDOWS(wwp)
+		if (wwp->w_redr_type > must_redraw)
+		    must_redraw = wwp->w_redr_type;
 	    recursive = FALSE;
 	}
     }
