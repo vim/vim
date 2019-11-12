@@ -4905,7 +4905,7 @@ msgid "in path ---\n"
 msgstr "yolda ---\n"
 
 msgid "  (Already listed)"
-msgstr " (Halihazırda listelenmiş)"
+msgstr " (Hâlihazırda listelenmiş)"
 
 msgid "  NOT FOUND"
 msgstr " BULUNAMADI"
@@ -5817,10 +5817,10 @@ msgid "Finished reading undo file %s"
 msgstr "%s geri al dosyasının okunması bitti"
 
 msgid "Already at oldest change"
-msgstr "Halihazırda en eski değişiklik üzerinde"
+msgstr "Hâlihazırda en eski değişiklik üzerinde"
 
 msgid "Already at newest change"
-msgstr "Halihazırda en yeni değişiklik üzerinde"
+msgstr "Hâlihazırda en yeni değişiklik üzerinde"
 
 #, c-format
 msgid "E830: Undo number %ld not found"
