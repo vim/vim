@@ -681,7 +681,7 @@ func Test_textprop_screenshot_various()
 	\ "call prop_type_add('background', {'highlight': 'BackgroundProp', 'combine': 0})",
 	\ "call prop_type_add('backgroundcomb', {'highlight': 'NumberProp', 'combine': 1})",
 	\ "eval 'backgroundcomb'->prop_type_change({'highlight': 'BackgroundProp'})",
-	\ "call prop_type_add('error', {'highlight': 'UnderlineProp', 'combine': 1})",
+	\ "call prop_type_add('error', {'highlight': 'UnderlineProp'})",
 	\ "call prop_add(1, 4, {'end_lnum': 3, 'end_col': 3, 'type': 'long'})",
 	\ "call prop_add(2, 9, {'length': 3, 'type': 'number'})",
 	\ "call prop_add(2, 24, {'length': 4, 'type': 'number'})",
