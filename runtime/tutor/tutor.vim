@@ -108,7 +108,7 @@ endif
 
 " The Turkish tutor is available in two encodings, guess which one to use
 if s:ext =~? '\.tr'
-  if &enc == "iso-8859-9"
+  if &enc == "iso-8859-9" || &enc == "cp1254"
     let s:ext = ".tr.iso9"
   endif
 endif
