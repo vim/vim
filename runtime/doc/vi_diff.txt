@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 Oct 12
+*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 Nov 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1322,6 +1322,11 @@ is not POSIX compliant, even when run in Vi compatibility mode.
 Set the $VIM_POSIX environment variable to have 'cpoptions' include the POSIX
 flags when Vim starts up.  This makes Vim run as POSIX as it can.  That's
 a bit different from being Vi compatible.
+
+You can find the Posix specification for Vi here:
+https://pubs.opengroup.org/onlinepubs/9699919799/utilities/vi.html
+And the related Ex specification:
+https://pubs.opengroup.org/onlinepubs/9699919799/utilities/ex.html
 
 This is where Vim does not behave as POSIX specifies and why:
 

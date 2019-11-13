@@ -1,6 +1,6 @@
-===============================================================================
-=    V I M   T u t o r ' a   h o ş   g e l d i n i z !   -     Sürüm 1.7      =
-===============================================================================
+================================================================================
+=     V I M   T u t o r ' a   h o ş   g e l d i n i z !    --    Sürüm 1.7     =
+================================================================================
 
   Vim, böyle bir eğitmen ile açıklanması gereken çok fazla komut barındıran,
   oldukça kuvvetli bir metin düzenleyicidir. Bu eğitmen Vim'i çok amaçlı bir
@@ -22,7 +22,7 @@
   Şimdi Caps Lock düğmenizin basılı olmadığına emin olun ve Ders 1.1'in
   ekranı tamamen doldurması için j düğmesine yeterli miktarda basın.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 1.1: İMLECİ HAREKET ETTİRMEK
 
 
@@ -47,7 +47,7 @@
   NOT: Ok düğmeleri de aynı işe yarar. Ancak hjkl düğmelerini kullanarak çok
        daha hızlı hareket edebilirsiniz. Gerçekten.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 1.2: VİM'DEN ÇIKIŞ
 
 
@@ -65,7 +65,7 @@
 
   5. İmleci Ders 1.3'e taşıyın.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 1.3: METİN DÜZENLEME - METİN SİLME
 
 
@@ -85,7 +85,7 @@
 
   NOT: Bu eğitmende ilerledikçe ezberlemeye çalışmayın, deneyerek öğrenin.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 1.4: METİN DÜZENLEME - METİN GİRME
 
 
@@ -106,7 +106,7 @@
 
   5. Artık yapabildiğinizi düşünüyorsanız bir sonraki bölüme geçin.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 1.5: METİN DÜZENLEME - METİN EKLEME
 
 
@@ -129,7 +129,7 @@
 
   5. Artık rahatça metin ekleyebildiğinizi düşünüyorsanız Ders 1.6'ya geçin.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 1.6: DOSYA DÜZENLEME
 
 
@@ -154,7 +154,7 @@
 
   6. Yukarıdaki adımları okuduktan ve anladıktan sonra YAPIN.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 1: ÖZET
 
 
@@ -185,7 +185,7 @@
 
   Şimdi Ders 2 ile bu eğitmeni sürdürün.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 2.1: SİLME KOMUTLARI
 
 
@@ -207,7 +207,7 @@
 
   5. Tümce düzelene kadar adım 3 ve 4'ü tekrar edin ve Ders 2.2'ye geçin.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 2.2: DAHA FAZLA SİLME KOMUTLARI
 
 
@@ -229,7 +229,7 @@
 
   5. Neler olduğunu anlamak için Ders 2.3'e gidin.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 2.3: İŞLEÇLER VE HAREKETLER
 
 
@@ -254,7 +254,7 @@
   NOT: Normal kipte hiçbir hareket olmadan yalnızca işleci girmek imleci
        yukarıda belirtildiği gibi hareket ettirir.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 2.4: BİR HAREKET İLE BİRLİKTE SAYIM KULLANMAK
 
 
@@ -274,7 +274,7 @@
 
   6. Ders 2.5'e geçin.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 2.5: BİR SAYIM KULLANARAK DAHA FAZLA SİLME İŞLEMİ
 
 
@@ -295,7 +295,7 @@
 
 ---> Bu ABC ÇDE satırdaki FGĞ HIİ JKLM NOÖ PRSŞT sözcükler UÜ VY temizlenmiştir.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 2.6: SATIRLARDA İŞLEM YAPMA
 
 
@@ -321,7 +321,7 @@
 ---> 6) Şeker tatlıdır
 ---> 7) Ve sen de öylesin
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 2.7: GERİ AL KOMUTU
 
 
@@ -346,7 +346,7 @@
 
   8. Bunlar son derece kullanışlı komutlardır. Şimdi Ders 2 Özete geçin.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 2: ÖZET
 
 
@@ -373,7 +373,7 @@
      Bir satırdaki tüm değişiklikleri geri almak için U (büyük U) yazın.
      Geri almaları geri almak için <CTRL> R kullanın.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 3.1: KOY KOMUTU
 
 
@@ -396,7 +396,7 @@
 ---> c) Akıl öğrenilir,
 ---> a) Güller kırmızıdır,
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 3.2: DEĞİŞTİR KOMUTU
 
 
@@ -417,7 +417,7 @@
 
   NOT: Unutmayın, ezberleyerek değil deneyerek öğrenin.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 3.3: DEĞİŞTİR İŞLECİ
 
 
@@ -439,7 +439,7 @@
   ce'nin sadece sözcüğü değiştirmediğini, aynı zamanda sizi EKLE kipine
   aldığına da dikkat edin.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 3.4: c'Yİ KULLANARAK DAHA FAZLA DEĞİŞTİRME
 
 
@@ -462,7 +462,7 @@
 ---> Bu satırın sonu düzeltilmek için c$ komutu kullanılarak yardıma ihtiyaç
      duyuyor.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 3: ÖZET
 
 
@@ -484,7 +484,7 @@
 
   Şimdi bir sonraki derse geçin.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 4.1: İMLEÇ KONUMU VE DOSYA DURUMU
 
 
@@ -508,7 +508,7 @@
 
   4. Yapabileceğinizi düşündüğünüzde, adım 1'den 3'e kadar yapın.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 4.2: ARAMA KOMUTU
 
 
@@ -530,7 +530,7 @@
 Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bunu
      devre dışı bırakmak için 'wrapscan' seçeneğini sıfırlayın.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 4.3: UYAN AYRAÇLAR ARAMASI
 
 
@@ -552,7 +552,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   NOT: Bu içerisinde eşi olmayan ayraçlar bulunan bir programın hatalarını
        ayıklamak için son derece yararlıdır.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 4.4: BUL/DEĞİŞTİR KOMUTU
 
 
@@ -576,7 +576,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
       :%s/eski/yeni/gc yazın. Bu tüm dosyadaki her oluşumu değiştirir ancak
       her birini değiştirmeden önce bize sorar.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 4: ÖZET
 
 
@@ -600,7 +600,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
      Dosyadaki tüm karşılaşmaları değiştirmek için :%s/eski/yeni/g yazın.
      Her seferinde onay sorması için :%s/eski/yeni/gc kullanın.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 5.1: BIR DIŞ KOMUT ÇALIŞTIRMAK
 
 
@@ -621,7 +621,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   NOT: Tüm : komutlarından sonra <ENTER> düğmesine basılmalıdır. Bundan
        sonra bunu her zaman anımsatmayacağız.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 5.2: DOSYA YAZMAYA DEVAM
 
 
@@ -645,7 +645,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 	    Windows:                       :!del DENEME
 	    Unix (macOS, Linux, Haiku):    :!rm DENEME
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 5.3: YAZMA İÇİN METİN SEÇME
 
 
@@ -664,7 +664,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   5. Vim seçilen satırları DENEME dosyasına yazacaktır. :!ls veya :!dir ile
      bakarak dosyayı görün. Henüz silmeyin; bir sonraki derste kullanacağız.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 5.4: DOSYALARI BİRLEŞTİRME VE BÖLÜM EKLEME
 
 
@@ -685,7 +685,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
        koyabilirsiniz. Örneğin :r :!ls yazmak ls komutunun vereceği çıktıyı
        dosyanın içinde hemen imlecin altındaki satıra koyar.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 5: ÖZET
 
 
@@ -705,7 +705,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   5. :r !dir veya !ls bu iki komutun (dosyaları listeleme) içeriklerini
      okur ve dosyanın içine yerleştirir.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 6.1: AÇ KOMUTU
 
 
@@ -726,7 +726,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
 ---> Bu satırın üzerine bir satır açmak için imleç bu satırdayken O  yazın.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 6.2: EKLE KOMUTU
 
 
@@ -747,7 +747,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 ---> Bu satı çalışabilirsiniz. Çalı met ekl
 ---> Bu satırda çalışabilirsiniz. Çalışırken metin eklemeyi kullanın.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 6.3: BİR BAŞKA DEĞİŞTİR KOMUTU
 
 
@@ -767,8 +767,9 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 ---> 123 sayısına xxx eklemek size yyy toplamını verir.
 ---> 123 sayısına 456 eklemek size 579 toplamını verir.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 6.4: METİN KOPYALA VE YAPIŞTIR
+
 
   ** y işlecini kullanarak metin kopyalayın ve p kullanarak yapıştırın. **
 
@@ -791,7 +792,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   NOT: y komutunu bir işleç olarak da kullanabilirsiniz; yw komutu yalnızca
        bir sözcüğü kopyalar.
   
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 6.4: SET KOMUTU
 
 
@@ -816,7 +817,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   NOT: Eğer yalnızca bir arama işlemi için BÜYÜK/küçük harf ayrımsız arama
        yapmak istiyorsanız /ignore\c komutunu kullanın.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	DERS 6 ÖZET
 
 
@@ -841,7 +842,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
   7. Bir ayarı kapatmak için "no" ekleyin, örneğin :set noic.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 7.1: YARDIM KAYNAKLARI
 
 
@@ -849,12 +850,13 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
   Vim geniş bir çevrimiçi yardım sistemine sahiptir. Başlamak için şu üçünü
   deneyebilirsiniz:
+
     - (eğer varsa) <HELP> düğmesine basın
     - (eğer varsa) <F1> düğmesine basın
     - :help yazın ve <ENTER> düğmesine basın
 
-  Yardım penceresindeki metinleri okuyarak yardım sisteminin nasıl çalıştığını
-  öğrenin. 
+  Yardım penceresindeki metinleri okuyarak yardım sisteminin nasıl
+  çalıştığını öğrenin. 
   Bir pencereden diğerine geçmek için <CTRL> W ikilisini kullanın.
   Yardım penceresini kapatmak için :q yazıp <ENTER> düğmesine basın.
 
@@ -866,7 +868,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
     :help insert-index
     :help user-manual
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 7.2: BİR BAŞLANGIÇ BETİĞİ OLUŞTURUN
 
 
@@ -891,7 +893,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   Tüm tercih ettiğiniz ayarları bu "vimrc" dosyasına ekleyebilirsiniz.
   Daha fazla bilgi için :help vimrc-intro yazın.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 7.3: TAMAMLAMA
 
 
@@ -902,7 +904,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
 
   2. Bulunduğunuz dizindeki dosyalara :!ls veya :!dir ile bakın.
 
-  3. Bir komutun başlangıcını yazın, örneğin :e.
+  3. Bir komutun baş kısmını yazın, örneğin :e.
 
   4. <CTRL> D'ye bastığınızda Vim size e ile başlayan komutları
      gösterecektir.
@@ -919,7 +921,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   NOT: Tamamlama birçok komut için çalışır. Yalnızca <CTRL> D ve <TAB>
        ikililerini deneyin. Özellikle :help için çok yararlıdır.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	Ders 7: ÖZET
 
 
@@ -938,7 +940,7 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   6. Bir : komutu girerken <CTRL> D'ye basarak olanaklı tamamlama
      seçeneklerini görebilirsiniz. <TAB>'a basarak tamamlamayı seçin.
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   Böylece Vim Eğitmeni tamamlanmış oldu. Eğitmendeki amaç Vim düzenleyicisi
   hakkında kısa bir bilgi vermek ve onu kolayca kullanmanızı sağlamaktı.
@@ -976,4 +978,4 @@ Not: Arama dosyanın sonuna ulaştığında dosyanın başından sürecektir. Bu
   2019 Güncelleme:
   Emir SARI, bitigchi (at) me (dot) com
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

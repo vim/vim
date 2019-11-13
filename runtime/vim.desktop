@@ -4,19 +4,22 @@
 # Translators: This is the Application Name used in the Vim desktop file
 Name[de]=Vim
 Name[eo]=Vim
+Name[ru]=Vim
 Name[tr]=Vim
 Name=Vim
 # Translators: This is the Generic Application Name used in the Vim desktop file
 GenericName[de]=Texteditor
 GenericName[eo]=Tekstoredaktilo
 GenericName[ja]=テキストエディタ
+GenericName[ru]=Текстовый редактор
 GenericName[tr]=Metin Düzenleyici
 GenericName=Text Editor
 # Translators: This is the comment used in the Vim desktop file
 Comment[de]=Textdateien bearbeiten
 Comment[eo]=Redakti tekstajn dosierojn
 Comment[ja]=テキストファイルを編集します
-Comment[tr]=Metin dosyaları düzenle
+Comment[ru]=Редактирование текстовых файлов
+Comment[tr]=Metin dosyaları düzenleyin
 Comment=Edit text files
 # The translations should come from the po file. Leave them here for now, they will
 # be overwritten by the po file when generating the desktop.file.
@@ -74,7 +77,6 @@ Comment[pl]=Edytuj pliki tekstowe
 Comment[pt]=Editar ficheiros de texto
 Comment[pt_BR]=Edite arquivos de texto
 Comment[ro]=Editare fişiere text
-Comment[ru]=Редактор текстовых файлов
 Comment[sk]=Úprava textových súborov
 Comment[sl]=Urejanje datotek z besedili
 Comment[sq]=Përpuno files teksti
@@ -97,11 +99,13 @@ Type=Application
 Keywords[de]=Text;Editor;
 Keywords[eo]=Teksto;redaktilo;
 Keywords[ja]=テキスト;エディタ;
+Keywords[ru]=текст;текстовый редактор
 Keywords[tr]=Metin;düzenleyici;
 Keywords=Text;editor;
 # Translators: This is the Icon file name. Do NOT translate
 Icon[de]=gvim
 Icon[eo]=gvim
+Icon[ru]=gvim
 Icon=gvim
 Categories=Utility;TextEditor;
 StartupNotify=false

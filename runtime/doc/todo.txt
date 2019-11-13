@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 10
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -37,6 +37,12 @@ browser use: https://github.com/vim/vim/issues/1234
 (replace 1234 with the issue/pull number)
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
+
+Add a function to fetch the mouse_lnum and mouse_col values?  Can be used in a
+mapping.  Remove setting v:mouse_lnum etc. from the popup filter, the values
+are wrong.
+
+Problem with cursor in wrong position: #5214
 
 Don't use javascriptreact but javascript.jsx?  #4830
 Although there is a good argument against using ".jsx".
