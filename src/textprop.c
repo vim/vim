@@ -749,6 +749,7 @@ prop_type_set(typval_T *argvars, int add)
 	    return;
 	STRCPY(prop->pt_name, name);
 	prop->pt_id = ++proptype_id;
+	prop->pt_flags = PT_FLAG_COMBINE;
 	htp = buf == NULL ? &global_proptypes : &buf->b_proptypes;
 	if (*htp == NULL)
 	{
