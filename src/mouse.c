@@ -2921,8 +2921,8 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
 
     if (popup != IGNORE_POPUP)
     {
-	popup_reset_handled();
-	while ((wp = find_next_popup(TRUE)) != NULL)
+	popup_reset_handled(POPUP_HANDLED_1);
+	while ((wp = find_next_popup(TRUE, POPUP_HANDLED_1)) != NULL)
 	{
 	    if (*rowp >= wp->w_winrow && *rowp < wp->w_winrow + popup_height(wp)
 		    && *colp >= wp->w_wincol

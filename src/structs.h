@@ -3015,6 +3015,7 @@ struct window_S
     pos_save_T	w_save_cursor;	    // backup of cursor pos and topline
 #ifdef FEAT_TEXT_PROP
     int		w_popup_flags;	    // POPF_ values
+    int		w_popup_handled;    // POPUP_HANDLE[0-9] flags
     char_u	*w_popup_title;
     poppos_T	w_popup_pos;
     int		w_popup_fixed;	    // do not shift popup to fit on screen

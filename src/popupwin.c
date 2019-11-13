@@ -2815,28 +2815,30 @@ error_if_popup_window()
 }
 
 /*
- * Reset all the POPF_HANDLED flags in global popup windows and popup windows
+ * Reset all the "handled_flag" flags in global popup windows and popup windows
  * in the current tab page.
+ * Each calling function should use a different flag, see the list at
+ * POPUP_HANDLED_1.  This won't work with recursive calls though.
  */
     void
-popup_reset_handled()
+popup_reset_handled(int handled_flag)
 {
     win_T *wp;
 
     for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
-	wp->w_popup_flags &= ~POPF_HANDLED;
+	wp->w_popup_handled &= ~handled_flag;
     for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
-	wp->w_popup_flags &= ~POPF_HANDLED;
+	wp->w_popup_handled &= ~handled_flag;
 }
 
 /*
- * Find the next visible popup where POPF_HANDLED is not set.
+ * Find the next visible popup where "handled_flag" is not set.
  * Must have called popup_reset_handled() first.
  * When "lowest" is TRUE find the popup with the lowest zindex, otherwise the
  * popup with the highest zindex.
  */
     win_T *
-find_next_popup(int lowest)
+find_next_popup(int lowest, int handled_flag)
 {
     win_T   *wp;
     win_T   *found_wp;
@@ -2845,24 +2847,26 @@ find_next_popup(int lowest)
     found_zindex = lowest ? INT_MAX : 0;
     found_wp = NULL;
     for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
-	if ((wp->w_popup_flags & (POPF_HANDLED|POPF_HIDDEN)) == 0
+	if ((wp->w_popup_handled & handled_flag) == 0
+		&& (wp->w_popup_flags & POPF_HIDDEN) == 0
 		&& (lowest ? wp->w_zindex < found_zindex
-			   : wp->w_zindex > found_zindex))
+		    : wp->w_zindex > found_zindex))
 	{
 	    found_zindex = wp->w_zindex;
 	    found_wp = wp;
 	}
     for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
-	if ((wp->w_popup_flags & (POPF_HANDLED|POPF_HIDDEN)) == 0
+	if ((wp->w_popup_handled & handled_flag) == 0
+		&& (wp->w_popup_flags & POPF_HIDDEN) == 0
 		&& (lowest ? wp->w_zindex < found_zindex
-			   : wp->w_zindex > found_zindex))
+		    : wp->w_zindex > found_zindex))
 	{
 	    found_zindex = wp->w_zindex;
 	    found_wp = wp;
 	}
 
     if (found_wp != NULL)
-	found_wp->w_popup_flags |= POPF_HANDLED;
+	found_wp->w_popup_handled |= handled_flag;
     return found_wp;
 }
 
@@ -2929,6 +2933,7 @@ invoke_popup_filter(win_T *wp, int c)
     {
 	set_vim_var_nr(VV_MOUSE_LNUM, 0);
 	set_vim_var_nr(VV_MOUSE_COL, 0);
+	set_vim_var_nr(VV_MOUSE_WINID, wp->w_id);
     }
     vim_free(argv[1].vval.v_string);
     clear_tv(&rettv);
@@ -2963,9 +2968,9 @@ popup_do_filter(int c)
 	    res = TRUE;
     }
 
-    popup_reset_handled();
+    popup_reset_handled(POPUP_HANDLED_2);
     state = get_real_state();
-    while (!res && (wp = find_next_popup(FALSE)) != NULL)
+    while (!res && (wp = find_next_popup(FALSE, POPUP_HANDLED_2)) != NULL)
 	if (wp->w_filter_cb.cb_name != NULL
 		&& (wp->w_filter_mode & state) != 0)
 	    res = invoke_popup_filter(wp, c);
@@ -3005,8 +3010,8 @@ popup_check_cursor_pos()
 {
     win_T *wp;
 
-    popup_reset_handled();
-    while ((wp = find_next_popup(TRUE)) != NULL)
+    popup_reset_handled(POPUP_HANDLED_3);
+    while ((wp = find_next_popup(TRUE, POPUP_HANDLED_3)) != NULL)
 	if (wp->w_popup_curwin != NULL
 		&& (curwin != wp->w_popup_curwin
 		    || curwin->w_cursor.lnum != wp->w_popup_lnum
@@ -3242,8 +3247,8 @@ may_update_popup_mask(int type)
     // Find the window with the lowest zindex that hasn't been handled yet,
     // so that the window with a higher zindex overwrites the value in
     // popup_mask.
-    popup_reset_handled();
-    while ((wp = find_next_popup(TRUE)) != NULL)
+    popup_reset_handled(POPUP_HANDLED_4);
+    while ((wp = find_next_popup(TRUE, POPUP_HANDLED_4)) != NULL)
     {
 	int width;
 	int height;
@@ -3383,8 +3388,8 @@ update_popups(void (*win_update)(win_T *wp))
     // Find the window with the lowest zindex that hasn't been updated yet,
     // so that the window with a higher zindex is drawn later, thus goes on
     // top.
-    popup_reset_handled();
-    while ((wp = find_next_popup(TRUE)) != NULL)
+    popup_reset_handled(POPUP_HANDLED_5);
+    while ((wp = find_next_popup(TRUE, POPUP_HANDLED_5)) != NULL)
     {
 	// This drawing uses the zindex of the popup window, so that it's on
 	// top of the text but doesn't draw when another popup with higher

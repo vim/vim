@@ -2949,4 +2949,38 @@ func Test_popupwin_cancel()
   call assert_equal({}, popup_getpos(win3))
 endfunc
 
+func Test_popupwin_filter_redraw()
+  " Create two popups with a filter that closes the popup when typing "0".
+  " Both popups should close, even though the redraw also calls
+  " popup_reset_handled()
+
+  func CloseFilter(winid, key)
+    if a:key == '0'
+      call popup_close(a:winid)
+      redraw
+    endif
+    return 0  " pass the key
+  endfunc
+
+  let id1 = popup_create('first one', #{
+	\ line: 1,
+	\ col: 1,
+	\ filter: 'CloseFilter',
+	\ })
+  let id2 = popup_create('second one', #{
+	\ line: 9,
+	\ col: 1,
+	\ filter: 'CloseFilter',
+	\ })
+  call assert_equal(1, popup_getpos(id1).line)
+  call assert_equal(9, popup_getpos(id2).line)
+
+  call feedkeys('0', 'xt')
+  call assert_equal({}, popup_getpos(id1))
+  call assert_equal({}, popup_getpos(id2))
+
+  call popup_clear()
+  delfunc CloseFilter
+endfunc
+
 " vim: shiftwidth=2 sts=2
