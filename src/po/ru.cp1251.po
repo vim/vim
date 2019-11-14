@@ -7480,7 +7480,7 @@ msgid "Edit text files"
 msgstr "Редактирование текстовых файлов"
 
 msgid "Text;editor;"
-msgstr "текст;текстовый редактор"
+msgstr "текст;текстовый редактор;"
 
 msgid "gvim"
 msgstr "gvim"
