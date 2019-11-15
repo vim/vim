@@ -1175,6 +1175,10 @@ curs_columns(
 	redraw_later(SOME_VALID);
 #endif
 
+    // Now w_leftcol corresponds to wrow, wcol and virtcol, no need
+    // to invalidate them just because of its change.
+    curwin->w_valid_leftcol = curwin->w_leftcol;
+
     curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
 }
 
