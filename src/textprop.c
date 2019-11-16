@@ -1075,10 +1075,13 @@ adjust_prop_columns(
 	}
 	else if (bytes_added <= 0 && (tmp_prop.tp_col > col + 1))
 	{
+	    int len_changed = FALSE;
+
 	    if (tmp_prop.tp_col + bytes_added < col + 1)
 	    {
 		tmp_prop.tp_len += (tmp_prop.tp_col - 1 - col) + bytes_added;
 		tmp_prop.tp_col = col + 1;
+		len_changed = TRUE;
 	    }
 	    else
 		tmp_prop.tp_col += bytes_added;
@@ -1086,7 +1089,7 @@ adjust_prop_columns(
 	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
 		u_savesub(lnum);
 	    dirty = TRUE;
-	    if (tmp_prop.tp_len <= 0)
+	    if (len_changed && tmp_prop.tp_len <= 0)
 		continue;  // drop this text property
 	}
 	else if (tmp_prop.tp_len > 0

@@ -650,6 +650,35 @@ func Test_prop_undo()
   call prop_type_delete('comment')
 endfunc
 
+func Test_prop_delete_text()
+  new
+  call prop_type_add('comment', {'highlight': 'Directory'})
+  call setline(1, ['oneone', 'twotwo', 'three'])
+
+  " zero length property
+  call prop_add(1, 3, {'type': 'comment'})
+  let expected = [{'col': 3, 'length': 0, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+
+  " delete one char moves the property
+  normal! x
+  let expected = [{'col': 2, 'length': 0, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+
+  " delete char of the property has no effect
+  normal! lx
+  let expected = [{'col': 2, 'length': 0, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+
+  " delete more chars moves property to first column, is not deleted
+  normal! 0xxxx
+  let expected = [{'col': 1, 'length': 0, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+
+  bwipe!
+  call prop_type_delete('comment')
+endfunc
+
 " screenshot test with textprop highlighting
 func Test_textprop_screenshot_various()
   CheckScreendump
