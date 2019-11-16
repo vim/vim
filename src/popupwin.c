@@ -1047,6 +1047,15 @@ popup_top_extra(win_T *wp)
 }
 
 /*
+ * Get the padding plus border at the left.
+ */
+    int
+popup_left_extra(win_T *wp)
+{
+    return wp->w_popup_border[3] + wp->w_popup_padding[3];
+}
+
+/*
  * Return the height of popup window "wp", including border and padding.
  */
     int
@@ -2908,33 +2917,12 @@ invoke_popup_filter(win_T *wp, int c)
 
     argv[2].v_type = VAR_UNKNOWN;
 
-    if (is_mouse_key(c))
-    {
-	int		row = mouse_row - wp->w_winrow;
-	int		col = mouse_col - wp->w_wincol;
-	linenr_T	lnum;
-
-	if (row >= 0 && col >= 0)
-	{
-	    (void)mouse_comp_pos(wp, &row, &col, &lnum, NULL);
-	    set_vim_var_nr(VV_MOUSE_LNUM, lnum);
-	    set_vim_var_nr(VV_MOUSE_COL, col + 1);
-	    set_vim_var_nr(VV_MOUSE_WINID, wp->w_id);
-	}
-    }
-
     // NOTE: The callback might close the popup and make "wp" invalid.
     call_callback(&wp->w_filter_cb, -1, &rettv, 2, argv);
     if (win_valid_popup(wp) && old_lnum != wp->w_cursor.lnum)
 	popup_highlight_curline(wp);
     res = tv_get_number(&rettv);
 
-    if (is_mouse_key(c))
-    {
-	set_vim_var_nr(VV_MOUSE_LNUM, 0);
-	set_vim_var_nr(VV_MOUSE_COL, 0);
-	set_vim_var_nr(VV_MOUSE_WINID, wp->w_id);
-    }
     vim_free(argv[1].vval.v_string);
     clear_tv(&rettv);
     return res;

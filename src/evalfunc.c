@@ -465,6 +465,7 @@ static funcentry_T global_functions[] =
     {"getline",		1, 2, FEARG_1,	  f_getline},
     {"getloclist",	1, 2, 0,	  f_getloclist},
     {"getmatches",	0, 1, 0,	  f_getmatches},
+    {"getmousepos",	0, 0, 0,	  f_getmousepos},
     {"getpid",		0, 0, 0,	  f_getpid},
     {"getpos",		1, 1, FEARG_1,	  f_getpos},
     {"getqflist",	0, 1, 0,	  f_getqflist},
