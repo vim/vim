@@ -7,6 +7,7 @@ void popup_set_firstline(win_T *wp);
 int popup_is_in_scrollbar(win_T *wp, int row, int col);
 void popup_handle_scrollbar_click(win_T *wp, int row, int col);
 int popup_top_extra(win_T *wp);
+int popup_left_extra(win_T *wp);
 int popup_height(win_T *wp);
 int popup_width(win_T *wp);
 int popup_extra_width(win_T *wp);
