@@ -744,6 +744,82 @@ func Test_term_mouse_double_click_to_create_tab()
   set mousetime&
 endfunc
 
+" Test double/triple/quadruple click in normal mode to visually select.
+func Test_term_mouse_multiple_clicks_to_visually_select()
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  call test_override('no_query_mouse', 1)
+  set mouse=a term=xterm
+  new
+
+  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+    let msg = 'ttymouse=' .. ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
+    call setline(1, ['foo [foo bar] foo', 'foo'])
+
+    " Double-click on word should visually select the word.
+    call MouseLeftClick(1, 2)
+    call assert_equal(0, getcharmod(), msg)
+    call MouseLeftRelease(1, 2)
+    call MouseLeftClick(1, 2)
+    call assert_equal(32, getcharmod(), msg) " double-click
+    call MouseLeftRelease(1, 2)
+    call assert_equal('v', mode(), msg)
+    norm! r1
+    call assert_equal(['111 [foo bar] foo', 'foo'], getline(1, '$'), msg)
+
+    " Double-click on opening square bracket should visually
+    " select the whole [foo bar].
+    call MouseLeftClick(1, 5)
+    call assert_equal(0, getcharmod(), msg)
+    call MouseLeftRelease(1, 5)
+    call MouseLeftClick(1, 5)
+    call assert_equal(32, getcharmod(), msg) " double-click
+    call MouseLeftRelease(1, 5)
+    call assert_equal('v', mode(), msg)
+    norm! r2
+    call assert_equal(['111 222222222 foo', 'foo'], getline(1, '$'), msg)
+
+    " Triple-click should visually select the whole line.
+    call MouseLeftClick(1, 3)
+    call assert_equal(0, getcharmod(), msg)
+    call MouseLeftRelease(1, 3)
+    call MouseLeftClick(1, 3)
+    call assert_equal(32, getcharmod(), msg) " double-click
+    call MouseLeftRelease(1, 3)
+    call MouseLeftClick(1, 3)
+    call assert_equal(64, getcharmod(), msg) " triple-click
+    call MouseLeftRelease(1, 3)
+    call assert_equal('V', mode(), msg)
+    norm! r3
+    call assert_equal(['33333333333333333', 'foo'], getline(1, '$'), msg)
+
+    " Quadruple-click should start visual block select.
+    call MouseLeftClick(1, 2)
+    call assert_equal(0, getcharmod(), msg)
+    call MouseLeftRelease(1, 2)
+    call MouseLeftClick(1, 2)
+    call assert_equal(32, getcharmod(), msg) " double-click
+    call MouseLeftRelease(1, 2)
+    call MouseLeftClick(1, 2)
+    call assert_equal(64, getcharmod(), msg) " triple-click
+    call MouseLeftRelease(1, 2)
+    call MouseLeftClick(1, 2)
+    call assert_equal(96, getcharmod(), msg) " quadruple-click
+    call MouseLeftRelease(1, 2)
+    call assert_equal("\<c-v>", mode(), msg)
+    norm! r4
+    call assert_equal(['34333333333333333', 'foo'], getline(1, '$'), msg)
+  endfor
+
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+  call test_override('no_query_mouse', 0)
+  bwipe!
+endfunc
+
 func Test_xterm_mouse_click_in_fold_columns()
   new
   let save_mouse = &mouse
