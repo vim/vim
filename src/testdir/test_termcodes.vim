@@ -674,7 +674,7 @@ func Test_term_mouse_drag_to_move_tab()
         \              'Tab page 2',
         \              '    Xtab1'], a, msg)
 
-    " Click elsewhere than so that click in next iteration is not
+    " Click elsewhere so that click in next iteration is not
     " interpreted as unwanted double-click.
     call MouseLeftClick(row, 11)
     call MouseLeftRelease(row, 11)
