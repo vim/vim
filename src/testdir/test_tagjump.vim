@@ -526,4 +526,28 @@ func Test_tselect()
   call delete('XTest_tselect')
 endfunc
 
+func Test_tagline()
+  call writefile([
+	\ 'provision	Xtest.py	/^    def provision(self, **kwargs):$/;"	m	line:1	language:Python class:Foo',
+	\ 'provision	Xtest.py	/^    def provision(self, **kwargs):$/;"	m	line:3	language:Python class:Bar',
+	\], 'Xtags')
+  call writefile([
+	\ '    def provision(self, **kwargs):',
+	\ '        pass',
+	\ '    def provision(self, **kwargs):',
+	\ '        pass',
+	\], 'Xtest.py')
+
+  set tags=Xtags
+
+  1tag provision
+  call assert_equal(line('.'), 1)
+  2tag provision
+  call assert_equal(line('.'), 3)
+
+  call delete('Xtags')
+  call delete('Xtest.py')
+  set tags&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

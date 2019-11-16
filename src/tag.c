@@ -35,6 +35,7 @@ typedef struct tag_pointers
     char_u	*tagkind_end;	// end of tagkind
     char_u	*user_data;	// user_data string
     char_u	*user_data_end;	// end of user_data
+    linenr_T	tagline;	// "line:" value
 } tagptrs_T;
 
 /*
@@ -3217,6 +3218,7 @@ parse_match(
 
     tagp->tagkind = NULL;
     tagp->user_data = NULL;
+    tagp->tagline = 0;
     tagp->command_end = NULL;
 
     if (retval == OK)
@@ -3237,6 +3239,8 @@ parse_match(
 			tagp->tagkind = p + 5;
 		    else if (STRNCMP(p, "user_data:", 10) == 0)
 			tagp->user_data = p + 10;
+		    else if (STRNCMP(p, "line:", 5) == 0)
+			tagp->tagline = atoi(p + 5);
 		    if (tagp->tagkind != NULL && tagp->user_data != NULL)
 			break;
 		    pc = vim_strchr(p, ':');
@@ -3537,7 +3541,11 @@ jumpto_tag(
 	    p_ic = FALSE;	/* don't ignore case now */
 	    p_scs = FALSE;
 	    save_lnum = curwin->w_cursor.lnum;
-	    curwin->w_cursor.lnum = 0;	/* start search before first line */
+	    // start search before line
+	    if (tagp.tagline > 0)
+		curwin->w_cursor.lnum = tagp.tagline - 1;
+	    else
+		curwin->w_cursor.lnum = 0;
 	    if (do_search(NULL, pbuf[0], pbuf + 1, (long)1,
 							 search_options, NULL))
 		retval = OK;
