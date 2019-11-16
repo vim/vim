@@ -772,6 +772,7 @@ diff_write(buf_T *buf, diffin_T *din)
 {
     int		r;
     char_u	*save_ff;
+    int		save_lockmarks;
 
     if (din->din_fname == NULL)
 	return diff_write_buffer(buf, din);
@@ -779,9 +780,14 @@ diff_write(buf_T *buf, diffin_T *din)
     // Always use 'fileformat' set to "unix".
     save_ff = buf->b_p_ff;
     buf->b_p_ff = vim_strsave((char_u *)FF_UNIX);
+    save_lockmarks = cmdmod.lockmarks;
+    // Writing the buffer is an implementation detail of performing the diff,
+    // so it shouldn't update the '[ and '] marks.
+    cmdmod.lockmarks = TRUE;
     r = buf_write(buf, din->din_fname, NULL,
 			(linenr_T)1, buf->b_ml.ml_line_count,
 			NULL, FALSE, FALSE, FALSE, TRUE);
+    cmdmod.lockmarks = save_lockmarks;
     free_string_option(buf->b_p_ff);
     buf->b_p_ff = save_ff;
     return r;
