@@ -674,8 +674,11 @@ func Test_term_mouse_drag_to_move_tab()
         \              'Tab page 2',
         \              '    Xtab1'], a, msg)
 
-    " brief sleep to avoid causing a double-click
-    sleep 20m
+    " Click elsewhere than so that click in next iteration is not
+    " interpreted as unwanted double-click.
+    call MouseLeftClick(row, 11)
+    call MouseLeftRelease(row, 11)
+
     %bwipe!
   endfor
 
@@ -693,23 +696,15 @@ func Test_term_mouse_double_click_to_create_tab()
   call test_override('no_query_mouse', 1)
   " Set 'mousetime' to a small value, so that double-click works but we don't
   " have to wait long to avoid a triple-click.
-  set mouse=a term=xterm mousetime=100
+  set mouse=a term=xterm mousetime=200
   let row = 1
   let col = 10
 
-  let round = 0
   for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
     e Xtab1
     tabnew Xtab2
-
-    if round > 0
-      " We need to sleep, or else the first MouseLeftClick() will be
-      " interpreted as a spurious triple-click.
-      sleep 100m
-    endif
-    let round += 1
 
     let a = split(execute(':tabs'), "\n")
     call assert_equal(['Tab page 1',
@@ -734,6 +729,11 @@ func Test_term_mouse_double_click_to_create_tab()
         \              'Tab page 3',
         \              '    Xtab2'], a, msg)
 
+    " Click elsewhere so that click in next iteration is not
+    " interpreted as unwanted double click.
+    call MouseLeftClick(row, col + 1)
+    call MouseLeftRelease(row, col + 1)
+
     %bwipe!
   endfor
 
@@ -750,7 +750,7 @@ func Test_term_mouse_multiple_clicks_to_visually_select()
   let save_term = &term
   let save_ttymouse = &ttymouse
   call test_override('no_query_mouse', 1)
-  set mouse=a term=xterm
+  set mouse=a term=xterm mousetime=200
   new
 
   for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
@@ -816,6 +816,7 @@ func Test_term_mouse_multiple_clicks_to_visually_select()
   let &mouse = save_mouse
   let &term = save_term
   let &ttymouse = save_ttymouse
+  set mousetime&
   call test_override('no_query_mouse', 0)
   bwipe!
 endfunc
