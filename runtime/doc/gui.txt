@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.1.  Last change: 2019 Nov 10
+*gui.txt*       For Vim version 8.1.  Last change: 2019 Nov 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -309,7 +309,7 @@ because the menu command will always be applied to the top window.
 
 If you are on the ':' line (or '/' or '?'), then clicking the left or right
 mouse button will position the cursor on the ':' line (if 'mouse' contains
-'c', 'a' or 'A').
+'c' or 'a').
 
 In any situation the middle mouse button may be clicked to paste the current
 selection.

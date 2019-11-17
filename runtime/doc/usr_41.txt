@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Sep 23
+*usr_41.txt*	For Vim version 8.1.  Last change: 2019 Nov 17
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -903,6 +903,7 @@ Interactive:					*interactive-functions*
 	confirm()		let the user make a choice
 	getchar()		get a character from the user
 	getcharmod()		get modifiers for the last typed character
+	getmousepos()		get last known mouse position
 	feedkeys()		put characters in the typeahead queue
 	input()			get a line from the user
 	inputlist()		let the user pick an entry from a list

@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Nov 11
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Nov 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -863,7 +863,7 @@ Some recommended key actions:
 	Tab		accept current suggestion
 
 A mouse click arrives as <LeftMouse>.  The coordinates can be obtained with
-|mousegetpos()|.
+|getmousepos()|.
 
 Vim provides standard filters |popup_filter_menu()| and
 |popup_filter_yesno()|.

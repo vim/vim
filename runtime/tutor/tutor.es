@@ -8,7 +8,7 @@
      aprender fácilmente a usar Vim como un editor de propósito general.
 
      El tiempo necesario para completar el tutor es aproximadamente de 25-30
-     minutos, dependiendo de cuanto tiempo se dedique a la experimentación.
+     minutos, dependiendo de cuánto tiempo se dedique a la experimentación.
 
      Los mandatos de estas lecciones modificarán el texto. Haga una copia de
      este fichero para practicar (con «vimtutor» esto ya es una copia).
@@ -98,7 +98,7 @@ NOTA: A medida que vaya avanzando en este tutor no intente memorizar,
 
   1. Mueva el cursor a la primera línea de abajo señalada con --->.
 
-  2. Para que la primera línea se igual a la segunda mueva el cursor bajo el
+  2. Para que la primera línea sea igual a la segunda, mueva el cursor bajo el
      primer carácter que sigue al texto que ha de ser insertado.
 
   3. Pulse  i  y escriba los caracteres a añadir.
@@ -109,7 +109,7 @@ NOTA: A medida que vaya avanzando en este tutor no intente memorizar,
 ---> Flta texto en esta .
 ---> Falta algo de texto en esta línea.
 
-  5. Cuando se sienta cómodo insertando texto pase al resumen que esta más
+  5. Cuando se sienta cómodo insertando texto pase al resumen que está más
      abajo.
 
 
@@ -224,8 +224,8 @@ NOTE: Para los aventureros, pulsando sólo el objeto estando en modo Normal
       3) El cielo es azul,
       4) Yo tengo un coche,
       5) Los relojes marcan la hora,
-      6) El azucar es dulce,
-      7) Y así eres tu.
+      6) El azúcar es dulce,
+      7) Y así eres tú.
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 		       Lección 2.5: EL MANDATO DESHACER
@@ -288,7 +288,7 @@ NOTE: Para los aventureros, pulsando sólo el objeto estando en modo Normal
 
   5. Repita los pasos 2 a 4 para poner todas las líneas en el orden correcto.
 
-     d) ¿Puedes aprenderla tu?
+     d) ¿Puedes aprenderla tú?
      b) Las violetas son azules,
      c) La inteligencia se aprende,
      a) Las rosas son rojas,
@@ -593,7 +593,7 @@ NOTA: El fichero recuperado se sitúa a partir de la posición del cursor.
 	  :!dir - muestra el contenido de un directorio.
 	  :!del NOMBRE_DE_FICHERO  -  borra el fichero NOMBRE_DE FICHERO.
 
-  2.  :#,#w NOMBRE_DE _FICHERO  guarda desde las líneas # hasta la # en el
+  2.  :#,#w NOMBRE_DE _FICHERO  guarda desde la línea # hasta la # en el
      fichero NOMBRE_DE_FICHERO.
 
   3.  :r NOMBRE_DE _FICHERO  recupera el fichero del disco NOMBRE_DE FICHERO

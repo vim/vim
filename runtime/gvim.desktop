@@ -100,7 +100,7 @@ Type=Application
 Keywords[de]=Text;Editor;
 Keywords[eo]=Teksto;redaktilo;
 Keywords[ja]=テキスト;エディタ;
-Keywords[ru]=текст;текстовый редактор
+Keywords[ru]=текст;текстовый редактор;
 Keywords[tr]=Metin;düzenleyici;
 Keywords=Text;editor;
 # Translators: This is the Icon file name. Do NOT translate

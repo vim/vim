@@ -5038,6 +5038,7 @@ TERM	starting.txt	/*TERM*
 TOhtml-encoding	syntax.txt	/*TOhtml-encoding*
 TOhtml-encoding-detect	syntax.txt	/*TOhtml-encoding-detect*
 TOhtml-performance	syntax.txt	/*TOhtml-performance*
+TOhtml-progress-color	syntax.txt	/*TOhtml-progress-color*
 TOhtml-uncopyable-text	syntax.txt	/*TOhtml-uncopyable-text*
 TOhtml-wrap-text	syntax.txt	/*TOhtml-wrap-text*
 TRUE	eval.txt	/*TRUE*
@@ -6648,6 +6649,7 @@ g:html_prevent_copy	syntax.txt	/*g:html_prevent_copy*
 g:html_start_line	syntax.txt	/*g:html_start_line*
 g:html_use_css	syntax.txt	/*g:html_use_css*
 g:html_use_encoding	syntax.txt	/*g:html_use_encoding*
+g:html_use_input_for_pc	syntax.txt	/*g:html_use_input_for_pc*
 g:html_use_xhtml	syntax.txt	/*g:html_use_xhtml*
 g:html_whole_filler	syntax.txt	/*g:html_whole_filler*
 g:netrw_altfile	pi_netrw.txt	/*g:netrw_altfile*
@@ -6873,6 +6875,7 @@ getlatestvimscripts-install	pi_getscript.txt	/*getlatestvimscripts-install*
 getline()	eval.txt	/*getline()*
 getloclist()	eval.txt	/*getloclist()*
 getmatches()	eval.txt	/*getmatches()*
+getmousepos()	eval.txt	/*getmousepos()*
 getpid()	eval.txt	/*getpid()*
 getpos()	eval.txt	/*getpos()*
 getqflist()	eval.txt	/*getqflist()*
@@ -7132,6 +7135,7 @@ hl-StatusLine	syntax.txt	/*hl-StatusLine*
 hl-StatusLineNC	syntax.txt	/*hl-StatusLineNC*
 hl-StatusLineTerm	syntax.txt	/*hl-StatusLineTerm*
 hl-StatusLineTermNC	syntax.txt	/*hl-StatusLineTermNC*
+hl-TOhtmlProgress	syntax.txt	/*hl-TOhtmlProgress*
 hl-TabLine	syntax.txt	/*hl-TabLine*
 hl-TabLineFill	syntax.txt	/*hl-TabLineFill*
 hl-TabLineSel	syntax.txt	/*hl-TabLineSel*

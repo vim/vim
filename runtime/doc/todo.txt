@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 13
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,16 +38,25 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Add a function to fetch the mouse_lnum and mouse_col values?  Can be used in a
-mapping.  Remove setting v:mouse_lnum etc. from the popup filter, the values
-are wrong.
+Patch #5232 from Andy Massimino to replace:
+    Patch to parse ":line" in tags file and use it for search. (Daniel Hahler,
+    #2546)  Fixes #1057.  Missing a test.
 
-Problem with cursor in wrong position: #5214
+Update files for javascriptreact and typescriptreact.
+Can we close #4830?
 
-Don't use javascriptreact but javascript.jsx?  #4830
-Although there is a good argument against using ".jsx".
+When 'selection' is "exclusive" then using vi' on the second ' does not select
+anything. (#5183)
+Patch from Christian: 
+https://github.com/chrisbra/vim/commit/7482d1d389e7db97e247f8b509003e5ec27427a9
+When using exclusive selection and vi" that fails, cursor moves to the left.
+Cursor should not move. (#4024)
 
-Update libvterm on github, rename termscreen.c back to screen.c.
+Patch: New value "uselast" for 'switchbuf'. (Lemonboy, 2017 Apr 23, #1652)
+
+Patch to remove FORTIFY_SOURCE also from CPPFLAGS. (Benedikt Morbach, #2786)
+
+Patch from Namsh to allow building with both XIM and hangulin. (2019 Aug 29)
 
 
 Popup windows:
@@ -65,9 +74,8 @@ Popup windows:
 
 Text properties:
 - Implement prop_find() issue #4970
-- Adjusting column/length when inserting text
 - Text properties spanning more than one line
-- See remakrs at top of src/textprop.c
+- See remarks at top of src/textprop.c
 
 'incsearch' with :s: 
 - Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
@@ -179,13 +187,6 @@ Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 goes to any buffer, and then :bnext skips help buffers, since they are
 unlisted. (#4478)
 
-When 'selection' is "exclusive" then using vi' on the second ' does not select
-anything. (#5183)
-Patch from Christian: 
-https://github.com/chrisbra/vim/commit/7482d1d389e7db97e247f8b509003e5ec27427a9
-When using exclusive selection and vi" that fails, cursor moves to the left.
-Cursor should not move. (#4024)
-
 Enable 'termbidi' if $VTE_VERSION >= 5703 ?
 
 Universal solution to detect if t_RS is working, using cursor position.
@@ -193,8 +194,6 @@ Koichi Iwamoto, #2126
 
 The :syntax cchar value can only be a single character.  It would be useful to
 support combining characters. (Charles Campbell)  Also #4687
-
-Patch: New value "uselast" for 'switchbuf'. (Lemonboy, 2017 Apr 23, #1652)
 
 Include Haiku port. (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 It can replace the BeOS code, which is likely not used anymore.
@@ -206,10 +205,6 @@ Problem showing a line if the number column width changes when using "o".
 
 When using :packadd for a replacement language plugin, it is loaded after the
 default one.  #4698
-
-Patch to remove FORTIFY_SOURCE also from CPPFLAGS. (Benedikt Morbach, #2786)
-
-Patch from Namsh to allow building with both XIM and hangulin. (2019 Aug 29)
 
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
@@ -682,9 +677,6 @@ is a match, remove entries for the buffer from marks, jumplist, etc.  To be
 used for git temp files.
 
 Cursor in wrong position when line wraps. (#2540)
-
-Patch to parse ":line" in tags file and use it for search. (Daniel Hahler,
-#2546)  Fixes #1057.  Missing a test.
 
 Setting 'columns' in a BufEnter autocommand causes a second tab width to
 behave strangely, as if there is a gap and a vertical window separator.

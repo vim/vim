@@ -1,4 +1,4 @@
-*motion.txt*    For Vim version 8.1.  Last change: 2019 Nov 04
+*motion.txt*    For Vim version 8.1.  Last change: 2019 Nov 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -964,6 +964,7 @@ These commands are not marks themselves, but jump to a mark:
 			- numbered marks '0 - '9
 			- last insert position '^
 			- last change position '.
+			- last affected text area '[ and ']
 			- the Visual area '< and '>
 			- line numbers in placed signs
 			- line numbers in quickfix positions

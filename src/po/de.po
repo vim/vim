@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-24 20:05+0200\n"
+"POT-Creation-Date: 2019-11-13 22:38+0100\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -3711,8 +3711,8 @@ msgid "E315: ml_get: invalid lnum: %ld"
 msgstr "E315: ml_get: unzulässige Zeilennummer: %ld"
 
 #, c-format
-msgid "E316: ml_get: cannot find line %ld"
-msgstr "E316: ml_get: kann Zeile %ld nicht finden"
+msgid "E316: ml_get: cannot find line %ld in buffer %d %s"
+msgstr "E316: ml_get: kann Zeile %ld in Puffer %d %s nicht finden"
 
 msgid "E317: pointer block id wrong 3"
 msgstr "E317: Zeiger Block id falsch 3"
@@ -3998,6 +3998,12 @@ msgstr "Beep!"
 
 msgid "E677: Error writing temp file"
 msgstr "E677: Fehler beim Schreiben einer temporären Datei"
+
+#, c-format
+msgid "%ld second ago"
+msgid_plural "%ld seconds ago"
+msgstr[0] "vor %ld Sekunde"
+msgstr[1] "vor %ld Sekunden"
 
 msgid "ERROR: "
 msgstr "FEHLER: "
@@ -4298,8 +4304,8 @@ msgstr "E527: Fehlendes Komma"
 msgid "E528: Must specify a ' value"
 msgstr "E528: Ein ' Wert muss angegeben werden"
 
-msgid "E595: contains unprintable or wide character"
-msgstr "E595: Enthält nicht-druckbare oder Multi-Byte Zeichen"
+msgid "E595: 'showbreak' contains unprintable or wide character"
+msgstr "E595: 'showbreak' enthält nicht-druckbare oder Multi-Byte Zeichen"
 
 msgid "E596: Invalid font(s)"
 msgstr "E596: Ungültige Schriftart(en)"
@@ -4553,8 +4559,7 @@ msgid "shell returned %d"
 msgstr "Shell gab %d zurück"
 
 msgid "E278: Cannot put a terminal buffer in a popup window"
-msgstr ""
-"E278: Terminal kann nicht in einem Popup-Fenster geöffnet werdent."
+msgstr "E278: Terminal kann nicht in einem Popup-Fenster geöffnet werdent."
 
 #, c-format
 msgid "E997: Tabpage not found: %d"
@@ -4859,10 +4864,10 @@ msgstr "E353: Register %s ist leer"
 
 msgid ""
 "\n"
-"--- Registers ---"
+"Type Name Content"
 msgstr ""
 "\n"
-"--- Register ---"
+"Typ Name Inhalt"
 
 msgid ""
 "E883: search pattern and expression register may not contain two or more "
@@ -5731,9 +5736,6 @@ msgstr "Tag-Datei %s wird durchsucht"
 msgid "E430: Tag file path truncated for %s\n"
 msgstr "E430: Tag-Dateipfad wurde abgeschnitten für %s\n"
 
-msgid "Ignoring long line in tags file"
-msgstr "Ignoriere zu lange Zeile in Tag-Datei"
-
 #, c-format
 msgid "E431: Format error in tags file \"%s\""
 msgstr "E431: Format Fehler in Tag-Datei \"%s\""
@@ -5748,6 +5750,9 @@ msgstr "E432: Tag-Datei ist nicht sortiert: %s"
 
 msgid "E433: No tags file"
 msgstr "E433: Keine Tag-Datei"
+
+msgid "Ignoring long line in tags file"
+msgstr "Ignoriere zu lange Zeile in Tag-Datei"
 
 msgid "E434: Can't find tag pattern"
 msgstr "E434: Kann Tag-Muster nicht finden"
@@ -5795,6 +5800,9 @@ msgstr "Kann Datei $VIMRUNTIME/rgb.txt nicht öffnen."
 #, c-format
 msgid "E181: Invalid attribute: %s"
 msgstr "E181: Ungültiges Attribut: %s"
+
+msgid "E279: Sorry, ++shell is not supported on this system"
+msgstr "E279: Schade, ++shell wird auf diesem System nicht unterstützt"
 
 #, c-format
 msgid "Kill job in \"%s\"?"
@@ -5992,12 +6000,6 @@ msgstr "Nichts zum Wiederherstellen"
 
 msgid "number changes  when               saved"
 msgstr "Nummer Änderung Wann               Gesichert"
-
-#, c-format
-msgid "%ld second ago"
-msgid_plural "%ld seconds ago"
-msgstr[0] "vor %ld Sekunde"
-msgstr[1] "vor %ld Sekunden"
 
 msgid "E790: undojoin is not allowed after undo"
 msgstr "E790: 'undojoin' ist nicht erlaubt nach 'undo'"
