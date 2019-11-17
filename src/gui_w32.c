@@ -7859,6 +7859,12 @@ initialise_toolbar(void)
 		    TOOLBAR_BUTTON_HEIGHT,
 		    sizeof(TBBUTTON)
 		    );
+
+    // Remove transparency from the toolbar to prevent the main window
+    // background colour showing through
+    SendMessage(s_toolbarhwnd, TB_SETSTYLE, 0,
+	SendMessage(s_toolbarhwnd, TB_GETSTYLE, 0, 0) & ~TBSTYLE_TRANSPARENT);
+
     s_toolbar_wndproc = SubclassWindow(s_toolbarhwnd, toolbar_wndproc);
 
     gui_mch_show_toolbar(vim_strchr(p_go, GO_TOOLBAR) != NULL);
