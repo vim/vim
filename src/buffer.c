@@ -2103,7 +2103,7 @@ buflist_new(
 	    if (emsg_silent == 0)
 	    {
 		out_flush();
-		ui_delay(3000L, TRUE);	/* make sure it is noticed */
+		ui_delay(3001L, TRUE);	// make sure it is noticed
 	    }
 	    top_file_num = 1;
 	}

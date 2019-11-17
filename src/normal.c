@@ -1169,8 +1169,8 @@ getcount:
 	cursor_on();
 	out_flush();
 	if (msg_scroll || emsg_on_display)
-	    ui_delay(1000L, TRUE);	/* wait at least one second */
-	ui_delay(3000L, FALSE);		/* wait up to three seconds */
+	    ui_delay(1003L, TRUE);	/* wait at least one second */
+	ui_delay(3003L, FALSE);		/* wait up to three seconds */
 	State = save_State;
 
 	msg_scroll = FALSE;

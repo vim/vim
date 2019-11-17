@@ -738,7 +738,7 @@ do_tag(
 		if (ic && !msg_scrolled && msg_silent == 0)
 		{
 		    out_flush();
-		    ui_delay(1000L, TRUE);
+		    ui_delay(1007L, TRUE);
 		}
 	    }
 
@@ -3599,7 +3599,7 @@ jumpto_tag(
 			if (!msg_scrolled && msg_silent == 0)
 			{
 			    out_flush();
-			    ui_delay(1000L, TRUE);
+			    ui_delay(1010L, TRUE);
 			}
 		    }
 		    retval = OK;

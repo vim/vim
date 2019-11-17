@@ -4191,7 +4191,7 @@ buf_check_timestamp(
 			if (!focus)
 #endif
 			    /* give the user some time to think about it */
-			    ui_delay(1000L, TRUE);
+			    ui_delay(1004L, TRUE);
 
 			/* don't redraw and erase the message */
 			redraw_cmdline = FALSE;

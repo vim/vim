@@ -2726,9 +2726,9 @@ showmatch(
 	     * available.
 	     */
 	    if (vim_strchr(p_cpo, CPO_SHOWMATCH) != NULL)
-		ui_delay(p_mat * 100L, TRUE);
+		ui_delay(p_mat * 100L + 8, TRUE);
 	    else if (!char_avail())
-		ui_delay(p_mat * 100L, FALSE);
+		ui_delay(p_mat * 100L + 9, FALSE);
 	    curwin->w_cursor = save_cursor;	/* restore cursor position */
 	    *so = save_so;
 	    *siso = save_siso;

@@ -279,7 +279,7 @@ gui_do_fork(void)
 	}
 
 	if (pipe_error)
-	    ui_delay(300L, TRUE);
+	    ui_delay(301L, TRUE);
 
 	/* When swapping screens we may need to go to the next line, e.g.,
 	 * after a hit-enter prompt and using ":gui". */

@@ -304,7 +304,7 @@ has_compl_option(int dict_opt)
 #ifdef FEAT_EVAL
 	    if (!get_vim_var_nr(VV_TESTING))
 #endif
-		ui_delay(2000L, FALSE);
+		ui_delay(2004L, FALSE);
 	}
 	return FALSE;
     }

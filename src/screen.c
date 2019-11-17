@@ -2406,7 +2406,7 @@ check_for_delay(int check_msg_scroll)
 	    && emsg_silent == 0)
     {
 	out_flush();
-	ui_delay(1000L, TRUE);
+	ui_delay(1006L, TRUE);
 	emsg_on_display = FALSE;
 	if (check_msg_scroll)
 	    msg_scroll = FALSE;

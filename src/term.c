@@ -1761,7 +1761,7 @@ report_default_term(char_u *term)
 	screen_start();	/* don't know where cursor is now */
 	out_flush();
 	if (!is_not_a_term())
-	    ui_delay(2000L, TRUE);
+	    ui_delay(2007L, TRUE);
     }
 }
 
@@ -2810,7 +2810,7 @@ term_get_winpos(int *x, int *y, varnumber_T timeout)
 	    *y = winpos_y;
 	    return OK;
 	}
-	ui_delay(10, FALSE);
+	ui_delay(10L, FALSE);
     }
     /* Do not reset "did_request_winpos", if we timed out the response might
      * still come later and we must consume it. */
