@@ -21,7 +21,7 @@ setl iskeyword=33,35-39,42-43,45-58,60-90,94,95,97-122,126
 
 let b:undo_ftplugin = 'setl lisp< comments< commentstring< define< iskeyword<'
 
-setl lispwords=case
+setl lispwords+=case
 setl lispwords+=define
 setl lispwords+=define-record-type
 setl lispwords+=define-syntax
