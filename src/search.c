@@ -4434,9 +4434,10 @@ current_quote(
 	    return FALSE;
 
 	vis_bef_curs = LT_POS(VIsual, curwin->w_cursor);
+	vis_empty = EQUAL_POS(VIsual, curwin->w_cursor);
 	if (*p_sel == 'e')
 	{
-	    if (!vis_bef_curs)
+	    if (!vis_bef_curs && !vis_empty)
 	    {
 		// VIsual needs to be the start of Visual selection.
 		pos_T t = curwin->w_cursor;
@@ -4447,8 +4448,8 @@ current_quote(
 		restore_vis_bef = TRUE;
 	    }
 	    dec_cursor();
+	    vis_empty = EQUAL_POS(VIsual, curwin->w_cursor);
 	}
-	vis_empty = EQUAL_POS(VIsual, curwin->w_cursor);
     }
 
     if (!vis_empty)
