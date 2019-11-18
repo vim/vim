@@ -671,7 +671,7 @@ win_line(
 #endif
 
 #ifdef FEAT_SIGNS
-    sign_present = buf_get_signattrs(wp->w_buffer, lnum, &sattr);
+    sign_present = buf_get_signattrs(wp, lnum, &sattr);
 #endif
 
 #ifdef LINE_ATTR
@@ -1141,7 +1141,7 @@ win_line(
 
 #ifdef FEAT_LINEBREAK
 	    if (wp->w_p_brisbr && draw_state == WL_BRI - 1
-					     && n_extra == 0 && *p_sbr != NUL)
+			    && n_extra == 0 && *get_showbreak_value(wp) != NUL)
 		// draw indent after showbreak value
 		draw_state = WL_BRI;
 	    else if (wp->w_p_brisbr && draw_state == WL_SBR && n_extra == 0)
@@ -1187,6 +1187,8 @@ win_line(
 #if defined(FEAT_LINEBREAK) || defined(FEAT_DIFF)
 	    if (draw_state == WL_SBR - 1 && n_extra == 0)
 	    {
+		char_u *sbr;
+
 		draw_state = WL_SBR;
 # ifdef FEAT_DIFF
 		if (filler_todo > 0)
@@ -1212,16 +1214,17 @@ win_line(
 		}
 # endif
 # ifdef FEAT_LINEBREAK
-		if (*p_sbr != NUL && need_showbreak)
+		sbr = get_showbreak_value(wp);
+		if (*sbr != NUL && need_showbreak)
 		{
 		    // Draw 'showbreak' at the start of each broken line.
-		    p_extra = p_sbr;
+		    p_extra = sbr;
 		    c_extra = NUL;
 		    c_final = NUL;
-		    n_extra = (int)STRLEN(p_sbr);
+		    n_extra = (int)STRLEN(sbr);
 		    char_attr = HL_ATTR(HLF_AT);
 		    need_showbreak = FALSE;
-		    vcol_sbr = vcol + MB_CHARLEN(p_sbr);
+		    vcol_sbr = vcol + MB_CHARLEN(sbr);
 		    // Correct end of highlighted area for 'showbreak',
 		    // required when 'linebreak' is also set.
 		    if (tocol == vcol)
@@ -1470,6 +1473,16 @@ win_line(
 # endif
 		}
 	    }
+# ifdef FEAT_TEXT_PROP
+	    // Combine text property highlight into syntax highlight.
+	    if (text_prop_type != NULL)
+	    {
+		if (text_prop_combine)
+		    syntax_attr = hl_combine_attr(syntax_attr, text_prop_attr);
+		else
+		    syntax_attr = text_prop_attr;
+	    }
+# endif
 #endif
 
 	    // Decide which of the highlight attributes to use.
@@ -1479,28 +1492,16 @@ win_line(
 	    {
 		char_attr = hl_combine_attr(line_attr, area_attr);
 # ifdef FEAT_SYN_HL
-		if (syntax_attr != 0)
-		    char_attr = hl_combine_attr(syntax_attr, char_attr);
+		char_attr = hl_combine_attr(syntax_attr, char_attr);
 # endif
 	    }
 	    else if (search_attr != 0)
 	    {
 		char_attr = hl_combine_attr(line_attr, search_attr);
 # ifdef FEAT_SYN_HL
-		if (syntax_attr != 0)
-		    char_attr = hl_combine_attr(syntax_attr, char_attr);
+		char_attr = hl_combine_attr(syntax_attr, char_attr);
 # endif
 	    }
-# ifdef FEAT_TEXT_PROP
-	    else if (text_prop_type != NULL)
-	    {
-		char_attr = hl_combine_attr(line_attr != 0
-						? line_attr
-						: syntax_attr != 0
-						    ? syntax_attr
-						    : win_attr, text_prop_attr);
-	    }
-# endif
 	    else if (line_attr != 0 && ((fromcol == -10 && tocol == MAXCOL)
 				|| vcol < fromcol || vcol_prev < fromcol_prev
 				|| vcol >= tocol))
@@ -1508,11 +1509,10 @@ win_line(
 		// Use line_attr when not in the Visual or 'incsearch' area
 		// (area_attr may be 0 when "noinvcur" is set).
 # ifdef FEAT_SYN_HL
-		if (syntax_attr != 0)
-		    char_attr = hl_combine_attr(syntax_attr, line_attr);
-		else
+		char_attr = hl_combine_attr(syntax_attr, line_attr);
+# else
+		char_attr = line_attr;
 # endif
-		    char_attr = line_attr;
 		attr_pri = FALSE;
 	    }
 #else
@@ -1524,22 +1524,10 @@ win_line(
 	    else
 	    {
 		attr_pri = FALSE;
-#ifdef FEAT_TEXT_PROP
-		if (text_prop_type != NULL)
-		{
-		    if (text_prop_combine)
-			char_attr = hl_combine_attr(
-						  syntax_attr, text_prop_attr);
-		    else
-			char_attr = hl_combine_attr(
-						  win_attr, text_prop_attr);
-		}
-		else
-#endif
 #ifdef FEAT_SYN_HL
-		    char_attr = syntax_attr;
+		char_attr = syntax_attr;
 #else
-		    char_attr = 0;
+		char_attr = 0;
 #endif
 	    }
 	}
@@ -2026,10 +2014,12 @@ win_line(
 		    int tab_len = 0;
 		    long vcol_adjusted = vcol; // removed showbreak length
 #ifdef FEAT_LINEBREAK
+		    char_u *sbr = get_showbreak_value(wp);
+
 		    // only adjust the tab_len, when at the first column
 		    // after the showbreak value was drawn
-		    if (*p_sbr != NUL && vcol == vcol_sbr && wp->w_p_wrap)
-			vcol_adjusted = vcol - MB_CHARLEN(p_sbr);
+		    if (*sbr != NUL && vcol == vcol_sbr && wp->w_p_wrap)
+			vcol_adjusted = vcol - MB_CHARLEN(sbr);
 #endif
 		    // tab amount depends on current column
 #ifdef FEAT_VARTABS

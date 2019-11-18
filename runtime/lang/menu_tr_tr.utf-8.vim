@@ -42,7 +42,7 @@ menutrans Open\ Tab\.\.\.<Tab>:tabnew	S&ekme\ Aç\.\.\.<Tab>:tabnew
 menutrans &New<Tab>:enew		        Yeni\ &Sekme<Tab>:enew
 menutrans &Close<Tab>:close		        Ka&pat<Tab>:close
 "--------------------
-menutrans &Save<Tab>:w			        Ka&ydet<Tab>:w
+menutrans &Save<Tab>:w			        Kayde&t<Tab>:w
 menutrans Save\ &As\.\.\.<Tab>:sav	    &Farklı Kaydet\.\.\.<Tab>:sav
 "--------------------
 menutrans Split\ &Diff\ With\.\.\.	    Ka&rşılaştır\.\.\.
@@ -84,7 +84,7 @@ menutrans &Keymap			    Düğme\ &Eşlem
 menutrans Select\ Fo&nt\.\.\.	Ya&zıtipi Seç\.\.\.
 ">>>----------------- Edit/Global settings
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!        Dizgi\ &Vurgulamasını\ Aç/Kapat<Tab>:set\ hls!
-menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		        BÜYÜK/küçük\ Harf\ &Duyarsız\ Aç/Kapat<Tab>:set\ ic!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		        BÜYÜK/küçük\ Harf\ &Duyarlı\ Aç/Kapat<Tab>:set\ ic!
 menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	Eş&leşen\ İkilileri\ Aç/Kapat<Tab>:set\ sm!
 menutrans &Context\ Lines				                    İ&mleçle\ Oynayan\ Satırlar
 menutrans &Virtual\ Edit				                    &Sanal\ Düzenleme
@@ -238,7 +238,7 @@ menutrans &Equal\ Size<Tab>^W=			&Eşit\ Boyut<Tab>^W=
 menutrans &Max\ Height<Tab>^W_			E&n\ Büyük\ Yükseklik<Tab>^W_
 menutrans M&in\ Height<Tab>^W1_			En\ Küçük\ Yüksekl&ik<Tab>^W1_
 menutrans Max\ &Width<Tab>^W\|			En\ Büyük\ Gen&işlik<Tab>^W\|
-menutrans Min\ Widt&h<Tab>^W1\|			En\ Küçük\ Geniş&lik<Tab>^W1\|
+menutrans Min\ Widt&h<Tab>^W1\|			En\ Küçük\ Genişli&k<Tab>^W1\|
 ">>>----------------- Window/Move To
 menutrans &Top<Tab>^WK					&Yukarı<Tab>^WK
 menutrans &Bottom<Tab>^WJ				&Aşağı<Tab>^WJ

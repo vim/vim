@@ -2769,7 +2769,7 @@ check_tty(mparm_T *parmp)
 	if (parmp->tty_fail && (!stdout_isatty || !input_isatty))
 	    exit(1);
 	if (scriptin[0] == NULL)
-	    ui_delay(2000L, TRUE);
+	    ui_delay(2005L, TRUE);
 	TIME_MSG("Warning delay");
     }
 }

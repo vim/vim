@@ -1157,6 +1157,7 @@ func Test_OptionSet_diffmode_close()
   call setline(1, ['buffer 2', 'line 2', 'line 3', 'line4'])
   call assert_fails(':diffthis', 'E788')
   call assert_equal(1, &diff)
+  set diffopt-=closeoff
   bw!
   call assert_fails(':diffoff!', 'E788')
   bw!
@@ -1731,7 +1732,7 @@ function s:Before_test_dirchanged()
 endfunc
 
 function s:After_test_dirchanged()
-  exe 'cd' s:dir_this
+  call chdir(s:dir_this)
   call delete(s:dir_foo, 'd')
   call delete(s:dir_bar, 'd')
   augroup test_dirchanged
@@ -1743,11 +1744,11 @@ function Test_dirchanged_global()
   call s:Before_test_dirchanged()
   autocmd test_dirchanged DirChanged global call add(s:li, "cd:")
   autocmd test_dirchanged DirChanged global call add(s:li, expand("<afile>"))
-  exe 'cd' s:dir_foo
+  call chdir(s:dir_foo)
   call assert_equal(["cd:", s:dir_foo], s:li)
-  exe 'cd' s:dir_foo
+  call chdir(s:dir_foo)
   call assert_equal(["cd:", s:dir_foo], s:li)
-  exe 'lcd' s:dir_bar
+  exe 'lcd ' .. fnameescape(s:dir_bar)
   call assert_equal(["cd:", s:dir_foo], s:li)
   call s:After_test_dirchanged()
 endfunc
@@ -1756,11 +1757,11 @@ function Test_dirchanged_local()
   call s:Before_test_dirchanged()
   autocmd test_dirchanged DirChanged window call add(s:li, "lcd:")
   autocmd test_dirchanged DirChanged window call add(s:li, expand("<afile>"))
-  exe 'cd' s:dir_foo
+  call chdir(s:dir_foo)
   call assert_equal([], s:li)
-  exe 'lcd' s:dir_bar
+  exe 'lcd ' .. fnameescape(s:dir_bar)
   call assert_equal(["lcd:", s:dir_bar], s:li)
-  exe 'lcd' s:dir_bar
+  exe 'lcd ' .. fnameescape(s:dir_bar)
   call assert_equal(["lcd:", s:dir_bar], s:li)
   call s:After_test_dirchanged()
 endfunc
@@ -1774,7 +1775,7 @@ function Test_dirchanged_auto()
   autocmd test_dirchanged DirChanged auto call add(s:li, "auto:")
   autocmd test_dirchanged DirChanged auto call add(s:li, expand("<afile>"))
   set acd
-  exe 'cd ..'
+  cd ..
   call assert_equal([], s:li)
   exe 'edit ' . s:dir_foo . '/Xfile'
   call assert_equal(s:dir_foo, getcwd())
@@ -2295,4 +2296,38 @@ func Test_autocmd_was_using_freed_memory()
   au WinEnter * quit
   split
   au! WinEnter
+endfunc
+
+func Test_BufWrite_lockmarks()
+  edit! Xtest
+  call setline(1, ['a', 'b', 'c', 'd'])
+
+  " :lockmarks preserves the marks
+  call SetChangeMarks(2, 3)
+  lockmarks write
+  call assert_equal([2, 3], [line("'["), line("']")])
+
+  " *WritePre autocmds get the correct line range, but lockmarks preserves the
+  " original values for the user
+  augroup lockmarks
+    au!
+    au BufWritePre,FilterWritePre * call assert_equal([1, 4], [line("'["), line("']")])
+    au FileWritePre * call assert_equal([3, 4], [line("'["), line("']")])
+  augroup END
+
+  lockmarks write
+  call assert_equal([2, 3], [line("'["), line("']")])
+
+  if executable('cat')
+    lockmarks %!cat
+    call assert_equal([2, 3], [line("'["), line("']")])
+  endif
+
+  lockmarks 3,4write Xtest2
+  call assert_equal([2, 3], [line("'["), line("']")])
+
+  au! lockmarks
+  augroup! lockmarks
+  call delete('Xtest')
+  call delete('Xtest2')
 endfunc

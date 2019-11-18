@@ -3,6 +3,7 @@ void func_init(void);
 hashtab_T *func_tbl_get(void);
 int get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate);
 char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, int no_autoload);
+void emsg_funcname(char *ermsg, char_u *name);
 int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, funcexe_T *funcexe);
 ufunc_T *find_func(char_u *name);
 void save_funccal(funccal_entry_T *entry);

@@ -465,6 +465,7 @@ static funcentry_T global_functions[] =
     {"getline",		1, 2, FEARG_1,	  f_getline},
     {"getloclist",	1, 2, 0,	  f_getloclist},
     {"getmatches",	0, 1, 0,	  f_getmatches},
+    {"getmousepos",	0, 0, 0,	  f_getmousepos},
     {"getpid",		0, 0, 0,	  f_getpid},
     {"getpos",		1, 1, FEARG_1,	  f_getpos},
     {"getqflist",	0, 1, 0,	  f_getqflist},
@@ -2527,6 +2528,12 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		list = argvars[arg_idx].vval.v_list;
 		if (list == NULL || list->lv_len == 0)
 		    arg_idx = 0;
+		else if (list->lv_len > MAX_FUNC_ARGS)
+		{
+		    emsg_funcname((char *)e_toomanyarg, name);
+		    vim_free(name);
+		    goto theend;
+		}
 	    }
 	}
 	if (dict_idx > 0 || arg_idx > 0 || arg_pt != NULL || is_funcref)

@@ -2822,6 +2822,7 @@ mouse_comp_pos(
     int		retval = FALSE;
     int		off;
     int		count;
+    char_u	*p;
 
 #ifdef FEAT_RIGHTLEFT
     if (win->w_p_rl)
@@ -2881,6 +2882,11 @@ mouse_comp_pos(
 	col += row * (win->w_width - off);
 	// add skip column (for long wrapping line)
 	col += win->w_skipcol;
+	// limit to text length plus one
+	p = ml_get_buf(win->w_buffer, lnum, FALSE);
+	count = STRLEN(p);
+	if (col > count)
+	    col = count;
     }
 
     if (!win->w_p_wrap)
@@ -2921,8 +2927,8 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
 
     if (popup != IGNORE_POPUP)
     {
-	popup_reset_handled();
-	while ((wp = find_next_popup(TRUE)) != NULL)
+	popup_reset_handled(POPUP_HANDLED_1);
+	while ((wp = find_next_popup(TRUE, POPUP_HANDLED_1)) != NULL)
 	{
 	    if (*rowp >= wp->w_winrow && *rowp < wp->w_winrow + popup_height(wp)
 		    && *colp >= wp->w_wincol
@@ -2999,5 +3005,63 @@ vcol2col(win_T *wp, linenr_T lnum, int vcol)
 	MB_PTR_ADV(ptr);
     }
     return (int)(ptr - line);
+}
+#endif
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+    void
+f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    dict_T	*d;
+    win_T	*wp;
+    int		row = mouse_row;
+    int		col = mouse_col;
+    varnumber_T winid = 0;
+    varnumber_T winrow = 0;
+    varnumber_T wincol = 0;
+    linenr_T	line = 0;
+    varnumber_T column = 0;
+
+    if (rettv_dict_alloc(rettv) != OK)
+	return;
+    d = rettv->vval.v_dict;
+
+    dict_add_number(d, "screenrow", (varnumber_T)mouse_row + 1);
+    dict_add_number(d, "screencol", (varnumber_T)mouse_col + 1);
+
+    wp = mouse_find_win(&row, &col, FIND_POPUP);
+    if (wp != NULL)
+    {
+	int	top_off = 0;
+	int	left_off = 0;
+	int	height = wp->w_height + wp->w_status_height;
+
+#ifdef FEAT_TEXT_PROP
+	if (WIN_IS_POPUP(wp))
+	{
+	    top_off = popup_top_extra(wp);
+	    left_off = popup_left_extra(wp);
+	    height = popup_height(wp);
+	}
+#endif
+	if (row < height)
+	{
+	    winid = wp->w_id;
+	    winrow = row + 1;
+	    wincol = col + 1;
+	    row -= top_off;
+	    col -= left_off;
+	    if (row >= 0 && row < wp->w_height && col >= 0 && col < wp->w_width)
+	    {
+		mouse_comp_pos(wp, &row, &col, &line, NULL);
+		column = col + 1;
+	    }
+	}
+    }
+    dict_add_number(d, "winid", winid);
+    dict_add_number(d, "winrow", winrow);
+    dict_add_number(d, "wincol", wincol);
+    dict_add_number(d, "line", (varnumber_T)line);
+    dict_add_number(d, "column", column);
 }
 #endif

@@ -650,6 +650,35 @@ func Test_prop_undo()
   call prop_type_delete('comment')
 endfunc
 
+func Test_prop_delete_text()
+  new
+  call prop_type_add('comment', {'highlight': 'Directory'})
+  call setline(1, ['oneone', 'twotwo', 'three'])
+
+  " zero length property
+  call prop_add(1, 3, {'type': 'comment'})
+  let expected = [{'col': 3, 'length': 0, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+
+  " delete one char moves the property
+  normal! x
+  let expected = [{'col': 2, 'length': 0, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+
+  " delete char of the property has no effect
+  normal! lx
+  let expected = [{'col': 2, 'length': 0, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+
+  " delete more chars moves property to first column, is not deleted
+  normal! 0xxxx
+  let expected = [{'col': 1, 'length': 0, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+
+  bwipe!
+  call prop_type_delete('comment')
+endfunc
+
 " screenshot test with textprop highlighting
 func Test_textprop_screenshot_various()
   CheckScreendump
@@ -678,9 +707,10 @@ func Test_textprop_screenshot_various()
 	\ "call prop_type_add('start', {'highlight': 'NumberProp', 'start_incl': 1})",
 	\ "call prop_type_add('end', {'highlight': 'NumberProp', 'end_incl': 1})",
 	\ "call prop_type_add('both', {'highlight': 'NumberProp', 'start_incl': 1, 'end_incl': 1})",
-	\ "call prop_type_add('background', {'highlight': 'NumberProp', 'combine': 1})",
-	\ "eval 'background'->prop_type_change({'highlight': 'BackgroundProp'})",
-	\ "call prop_type_add('error', {'highlight': 'UnderlineProp', 'combine': 1})",
+	\ "call prop_type_add('background', {'highlight': 'BackgroundProp', 'combine': 0})",
+	\ "call prop_type_add('backgroundcomb', {'highlight': 'NumberProp', 'combine': 1})",
+	\ "eval 'backgroundcomb'->prop_type_change({'highlight': 'BackgroundProp'})",
+	\ "call prop_type_add('error', {'highlight': 'UnderlineProp'})",
 	\ "call prop_add(1, 4, {'end_lnum': 3, 'end_col': 3, 'type': 'long'})",
 	\ "call prop_add(2, 9, {'length': 3, 'type': 'number'})",
 	\ "call prop_add(2, 24, {'length': 4, 'type': 'number'})",
@@ -688,7 +718,8 @@ func Test_textprop_screenshot_various()
 	\ "call prop_add(3, 7, {'length': 2, 'type': 'start'})",
 	\ "call prop_add(3, 11, {'length': 2, 'type': 'end'})",
 	\ "call prop_add(3, 15, {'length': 2, 'type': 'both'})",
-	\ "call prop_add(4, 12, {'length': 10, 'type': 'background'})",
+	\ "call prop_add(4, 6, {'length': 3, 'type': 'background'})",
+	\ "call prop_add(4, 12, {'length': 10, 'type': 'backgroundcomb'})",
 	\ "call prop_add(4, 17, {'length': 5, 'type': 'error'})",
 	\ "call prop_add(5, 7, {'length': 4, 'type': 'long'})",
 	\ "call prop_add(6, 1, {'length': 8, 'type': 'long'})",

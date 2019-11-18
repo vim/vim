@@ -35,6 +35,7 @@ typedef struct tag_pointers
     char_u	*tagkind_end;	// end of tagkind
     char_u	*user_data;	// user_data string
     char_u	*user_data_end;	// end of user_data
+    linenr_T	tagline;	// "line:" value
 } tagptrs_T;
 
 /*
@@ -737,7 +738,7 @@ do_tag(
 		if (ic && !msg_scrolled && msg_silent == 0)
 		{
 		    out_flush();
-		    ui_delay(1000L, TRUE);
+		    ui_delay(1007L, TRUE);
 		}
 	    }
 
@@ -1937,7 +1938,7 @@ find_tags(
 	     */
 	    else if (state == TS_SKIP_BACK)
 	    {
-		search_info.curr_offset -= LSIZE * 2;
+		search_info.curr_offset -= lbuf_size * 2;
 		if (search_info.curr_offset < 0)
 		{
 		    search_info.curr_offset = 0;
@@ -1955,7 +1956,7 @@ find_tags(
 		/* Adjust the search file offset to the correct position */
 		search_info.curr_offset_used = search_info.curr_offset;
 		vim_fseek(fp, search_info.curr_offset, SEEK_SET);
-		eof = vim_fgets(lbuf, LSIZE, fp);
+		eof = vim_fgets(lbuf, lbuf_size, fp);
 		if (!eof && search_info.curr_offset != 0)
 		{
 		    /* The explicit cast is to work around a bug in gcc 3.4.2
@@ -1967,13 +1968,13 @@ find_tags(
 			vim_fseek(fp, search_info.low_offset, SEEK_SET);
 			search_info.curr_offset = search_info.low_offset;
 		    }
-		    eof = vim_fgets(lbuf, LSIZE, fp);
+		    eof = vim_fgets(lbuf, lbuf_size, fp);
 		}
 		/* skip empty and blank lines */
 		while (!eof && vim_isblankline(lbuf))
 		{
 		    search_info.curr_offset = vim_ftell(fp);
-		    eof = vim_fgets(lbuf, LSIZE, fp);
+		    eof = vim_fgets(lbuf, lbuf_size, fp);
 		}
 		if (eof)
 		{
@@ -1996,10 +1997,10 @@ find_tags(
 		{
 #ifdef FEAT_CSCOPE
 		    if (use_cscope)
-			eof = cs_fgets(lbuf, LSIZE);
+			eof = cs_fgets(lbuf, lbuf_size);
 		    else
 #endif
-			eof = vim_fgets(lbuf, LSIZE, fp);
+			eof = vim_fgets(lbuf, lbuf_size, fp);
 		} while (!eof && vim_isblankline(lbuf));
 
 		if (eof)
@@ -2230,27 +2231,22 @@ parse_line:
 	    // When the line is too long the NUL will not be in the
 	    // last-but-one byte (see vim_fgets()).
 	    // Has been reported for Mozilla JS with extremely long names.
-	    // In that case we can't parse it and we ignore the line.
-	    if (lbuf[LSIZE - 2] != NUL
+	    // In that case we need to increase lbuf_size.
+	    if (lbuf[lbuf_size - 2] != NUL
 #ifdef FEAT_CSCOPE
 					     && !use_cscope
 #endif
 					     )
 	    {
-		if (p_verbose >= 5)
-		{
-		    verbose_enter();
-		    msg(_("Ignoring long line in tags file"));
-		    verbose_leave();
-		}
+		lbuf_size *= 2;
+		vim_free(lbuf);
+		lbuf = alloc(lbuf_size);
+		if (lbuf == NULL)
+		    goto findtag_end;
 #ifdef FEAT_TAG_BINS
-		if (state != TS_LINEAR)
-		{
-		    // Avoid getting stuck.
-		    linear = TRUE;
-		    state = TS_LINEAR;
-		    vim_fseek(fp, search_info.low_offset, SEEK_SET);
-		}
+		// this will try the same thing again, make sure the offset is
+		// different
+		search_info.curr_offset = 0;
 #endif
 		continue;
 	    }
@@ -3222,6 +3218,7 @@ parse_match(
 
     tagp->tagkind = NULL;
     tagp->user_data = NULL;
+    tagp->tagline = 0;
     tagp->command_end = NULL;
 
     if (retval == OK)
@@ -3242,6 +3239,8 @@ parse_match(
 			tagp->tagkind = p + 5;
 		    else if (STRNCMP(p, "user_data:", 10) == 0)
 			tagp->user_data = p + 10;
+		    else if (STRNCMP(p, "line:", 5) == 0)
+			tagp->tagline = atoi((char *)p + 5);
 		    if (tagp->tagkind != NULL && tagp->user_data != NULL)
 			break;
 		    pc = vim_strchr(p, ':');
@@ -3367,6 +3366,8 @@ jumpto_tag(
 	    break;
 #endif
 	*pbuf_end++ = *str++;
+	if (pbuf_end - pbuf + 1 >= LSIZE)
+	    break;
     }
     *pbuf_end = NUL;
 
@@ -3540,7 +3541,12 @@ jumpto_tag(
 	    p_ic = FALSE;	/* don't ignore case now */
 	    p_scs = FALSE;
 	    save_lnum = curwin->w_cursor.lnum;
-	    curwin->w_cursor.lnum = 0;	/* start search before first line */
+	    if (tagp.tagline > 0)
+		// start search before line from "line:" field
+		curwin->w_cursor.lnum = tagp.tagline - 1;
+	    else
+		// start search before first line
+		curwin->w_cursor.lnum = 0;
 	    if (do_search(NULL, pbuf[0], pbuf + 1, (long)1,
 							 search_options, NULL))
 		retval = OK;
@@ -3593,7 +3599,7 @@ jumpto_tag(
 			if (!msg_scrolled && msg_silent == 0)
 			{
 			    out_flush();
-			    ui_delay(1000L, TRUE);
+			    ui_delay(1010L, TRUE);
 			}
 		    }
 		    retval = OK;

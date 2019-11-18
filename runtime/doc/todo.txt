@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 02
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,29 +38,28 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Termdebug:  Ctrl-W . doesn't work with modifyOtherKeys set.
+Patch #5232 from Andy Massimino to replace:
+    Patch to parse ":line" in tags file and use it for search. (Daniel Hahler,
+    #2546)  Fixes #1057.  Missing a test.
 
-Cannot scroll popup window with mouse in GUI? (#5138)
+Update files for javascriptreact and typescriptreact.
+Can we close #4830?
 
-Add a way to make ":term cmd" run "cmd" in a shell, instead of executing it
-directly.  Perhaps ":term ++shell cmd". (issue #3340)
+When 'selection' is "exclusive" then using vi' on the second ' does not select
+anything. (#5183)
+Patch from Christian: 
+https://github.com/chrisbra/vim/commit/7482d1d389e7db97e247f8b509003e5ec27427a9
+When using exclusive selection and vi" that fails, cursor moves to the left.
+Cursor should not move. (#4024)
 
-Include netrw 166a?
+Patch: New value "uselast" for 'switchbuf'. (Lemonboy, 2017 Apr 23, #1652)
 
-In a function these two lines are different:
-    let [a, b, c] =<< trim END      fails
-    let [a,b,c] =<< trim END        works
-issue #5051
+Patch to remove FORTIFY_SOURCE also from CPPFLAGS. (Benedikt Morbach, #2786)
 
-Make 'showbreak' global-local.
+Patch from Namsh to allow building with both XIM and hangulin. (2019 Aug 29)
 
-Update libvterm on github, rename termscreen.c back to screen.c.
-
-Graduate FEAT_TAG_BINS and make LSIZE for tags bigger.
 
 Popup windows:
-- When using "botleft" for "pos" and there is not enough space, positioning
-  goes below, but this must not happen if there is less space there. #5151
 - Use popup (or popup menu) for command line completion
 - Implement flip option
 - Make redrawing more efficient and avoid flicker:
@@ -75,9 +74,8 @@ Popup windows:
 
 Text properties:
 - Implement prop_find() issue #4970
-- Adjusting column/length when inserting text
 - Text properties spanning more than one line
-- See remakrs at top of src/textprop.c
+- See remarks at top of src/textprop.c
 
 'incsearch' with :s: 
 - Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
@@ -143,7 +141,7 @@ Terminal emulator window:
   conversions.
 
 Error numbers available:
-E279, E290, E292, E362, E366, E450, E451, E452,
+E290, E292, E362, E366, E450, E451, E452,
 E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
 E654, E856, E857, E860, E861, E863, E889, E900
 
@@ -197,8 +195,6 @@ Koichi Iwamoto, #2126
 The :syntax cchar value can only be a single character.  It would be useful to
 support combining characters. (Charles Campbell)  Also #4687
 
-Patch: New value "uselast" for 'switchbuf'. (Lemonboy, 2017 Apr 23, #1652)
-
 Include Haiku port. (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 It can replace the BeOS code, which is likely not used anymore.
 Now on github: #1856.  Updated Oct 2017
@@ -209,10 +205,6 @@ Problem showing a line if the number column width changes when using "o".
 
 When using :packadd for a replacement language plugin, it is loaded after the
 default one.  #4698
-
-Patch to remove FORTIFY_SOURCE also from CPPFLAGS. (Benedikt Morbach, #2786)
-
-Patch from Namsh to allow building with both XIM and hangulin. (2019 Aug 29)
 
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
@@ -252,6 +244,16 @@ Also see issue #609.
 We could add the enable/disable sequences to t_ti/t_te or t_ks/t_ke.
 
 Check_external_diff() is used too often. (Daniel Hahler, #4800)
+
+Win32: after "[I" showing matches, scroll wheel messes up screen. (Tsakiridis,
+2007 Feb 18)
+Patch by Alex Dobrynin, 2007 Jun 3.  Also fixes other scroll wheel problems.
+
+Add a WindowScrolled event.  Trigger around the same time as CursorMoved.
+Can be used to update highlighting. #3127  #5181
+
+Patch for Template string: #4491.  New pull: #4634
+Have another look at the implementation: Is the code worth it?
 
 Incorrect formatting with autoindent. (Sebastian Gniazdowski, #4909)
 
@@ -310,6 +312,9 @@ Error drawing the number column when 'cursorline' is set. (#3893)
 Problem with :tlmenu: Detach item added with all modes?  Issue #3563.
 
 Add an argument to expandcmd() to expand like ":next" does.
+
+When both "a" and "l" is in 'formatoptions' then auto-formatting also happens
+in a long line. #5189
 
 The quoting of the [command] argument of :terminal is not clearly documented.
 Give a few examples. (#4288)
@@ -449,9 +454,6 @@ Missing tests for:
 Redo only remembers the last change.  Could use "{count}g." to redo an older
 change.  How does the user know which change?  At least have a way to list
 them: ":repeats".  Add to history, like search history and command line history.
-
-When using exclusive selection and vi" that fails, cursor moves to the left.
-Cursor should not move. (#4024)
 
 Incsearch test fails when locale is "C". (Dominique Pelle, #3986)
 Also run all tests with C locale?
@@ -676,9 +678,6 @@ used for git temp files.
 
 Cursor in wrong position when line wraps. (#2540)
 
-Patch to parse ":line" in tags file and use it for search. (Daniel Hahler,
-#2546)  Fixes #1057.  Missing a test.
-
 Setting 'columns' in a BufEnter autocommand causes a second tab width to
 behave strangely, as if there is a gap and a vertical window separator.
 (Michael Soyka, 2018 Sep 23, #3477)
@@ -725,9 +724,6 @@ Column number is wrong when using 'linebreak' and 'wrap'. (Keith Smiley, 2018
 Jan 15, #2555)
 
 ":bufdo e" disabled syntax HL in windows other than the current. (BPJ)
-
-Patch for Template string: #4491.  New pull: #4634
-It's an awful lot of code for something that is just a bit nicer syntax.
 
 Check argument of systemlist(). (Pavlov)
 
@@ -2730,10 +2726,6 @@ patches by Mathias, see mail Feb 22)
 
 Win32: compiling with normal features and OLE fails.  Patch by Mathias
 Michaelis, 2006 Jun 4.
-
-Win32: after "[I" showing matches, scroll wheel messes up screen. (Tsakiridis,
-2007 Feb 18)
-Patch by Alex Dobrynin, 2007 Jun 3.  Also fixes other scroll wheel problems.
 
 Win32: using CTRL-S in Insert mode doesn't remove the "+" from the tab pages
 label.  (Tsakiridis, 2007 Feb 18)  Patch from Ian Kelling, 2008 Aug 6.

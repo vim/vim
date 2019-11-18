@@ -911,11 +911,13 @@ EXTERN char_u	*p_su;		// 'suffixes'
 EXTERN char_u	*p_sws;		// 'swapsync'
 EXTERN char_u	*p_swb;		// 'switchbuf'
 EXTERN unsigned	swb_flags;
+// Keep in sync with p_swb_values in optionstr.c
 #define SWB_USEOPEN		0x001
 #define SWB_USETAB		0x002
 #define SWB_SPLIT		0x004
 #define SWB_NEWTAB		0x008
 #define SWB_VSPLIT		0x010
+#define SWB_USELAST		0x020
 EXTERN char_u	*p_syn;		// 'syntax'
 EXTERN long	p_ts;		// 'tabstop'
 EXTERN int	p_tbs;		// 'tagbsearch'
@@ -1270,6 +1272,9 @@ enum
     , WV_CUL
     , WV_CULOPT
     , WV_CC
+#endif
+#ifdef FEAT_LINEBREAK
+    , WV_SBR
 #endif
 #ifdef FEAT_STL_OPT
     , WV_STL

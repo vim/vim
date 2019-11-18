@@ -4456,7 +4456,7 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
  * 0: As usual.
  * 1: Windows 10 version 1809
  *      The bug causes unstable handling of ambiguous width character.
- * 2: Windows 10 version 1903
+ * 2: Windows 10 version 1903 & 1909
  *      Use the wrong result because each result is different.
  * 3: Windows 10 insider preview (current latest logic)
  */

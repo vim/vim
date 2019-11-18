@@ -1169,8 +1169,8 @@ getcount:
 	cursor_on();
 	out_flush();
 	if (msg_scroll || emsg_on_display)
-	    ui_delay(1000L, TRUE);	/* wait at least one second */
-	ui_delay(3000L, FALSE);		/* wait up to three seconds */
+	    ui_delay(1003L, TRUE);	/* wait at least one second */
+	ui_delay(3003L, FALSE);		/* wait up to three seconds */
 	State = save_State;
 
 	msg_scroll = FALSE;
@@ -1768,13 +1768,16 @@ clear_showcmd(void)
 	{
 # ifdef FEAT_LINEBREAK
 	    char_u *saved_sbr = p_sbr;
+	    char_u *saved_w_sbr = curwin->w_p_sbr;
 
 	    /* Make 'sbr' empty for a moment to get the correct size. */
 	    p_sbr = empty_option;
+	    curwin->w_p_sbr = empty_option;
 # endif
 	    getvcols(curwin, &curwin->w_cursor, &VIsual, &leftcol, &rightcol);
 # ifdef FEAT_LINEBREAK
 	    p_sbr = saved_sbr;
+	    curwin->w_p_sbr = saved_w_sbr;
 # endif
 	    sprintf((char *)showcmd_buf, "%ldx%ld", lines,
 					      (long)(rightcol - leftcol + 1));
@@ -2577,8 +2580,8 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 	validate_virtcol();
 	virtcol = curwin->w_virtcol;
 #if defined(FEAT_LINEBREAK)
-	if (virtcol > (colnr_T)width1 && *p_sbr != NUL)
-	    virtcol -= vim_strsize(p_sbr);
+	if (virtcol > (colnr_T)width1 && *get_showbreak_value(curwin) != NUL)
+	    virtcol -= vim_strsize(get_showbreak_value(curwin));
 #endif
 
 	if (virtcol > curwin->w_curswant

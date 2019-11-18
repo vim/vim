@@ -5167,6 +5167,11 @@ unset_global_local_option(char_u *name, void *from)
 	    clear_string_option(&buf->b_p_cm);
 	    break;
 #endif
+#ifdef FEAT_LINEBREAK
+	case PV_SBR:
+	    clear_string_option(&((win_T *)from)->w_p_sbr);
+	    break;
+#endif
 #ifdef FEAT_STL_OPT
 	case PV_STL:
 	    clear_string_option(&((win_T *)from)->w_p_stl);
@@ -5228,6 +5233,9 @@ get_varp_scope(struct vimoption *p, int opt_flags)
 #endif
 #if defined(FEAT_CRYPT)
 	    case PV_CM:	  return (char_u *)&(curbuf->b_p_cm);
+#endif
+#ifdef FEAT_LINEBREAK
+	    case PV_SBR:  return (char_u *)&(curwin->w_p_sbr);
 #endif
 #ifdef FEAT_STL_OPT
 	    case PV_STL:  return (char_u *)&(curwin->w_p_stl);
@@ -5314,6 +5322,10 @@ get_varp(struct vimoption *p)
 #if defined(FEAT_CRYPT)
 	case PV_CM:	return *curbuf->b_p_cm != NUL
 				    ? (char_u *)&(curbuf->b_p_cm) : p->var;
+#endif
+#ifdef FEAT_LINEBREAK
+	case PV_SBR:	return *curwin->w_p_sbr != NUL
+				    ? (char_u *)&(curwin->w_p_sbr) : p->var;
 #endif
 #ifdef FEAT_STL_OPT
 	case PV_STL:	return *curwin->w_p_stl != NUL
@@ -5581,6 +5593,9 @@ copy_winopt(winopt_T *from, winopt_T *to)
     to->wo_rl  = from->wo_rl;
     to->wo_rlc = vim_strsave(from->wo_rlc);
 #endif
+#ifdef FEAT_LINEBREAK
+    to->wo_sbr = vim_strsave(from->wo_sbr);
+#endif
 #ifdef FEAT_STL_OPT
     to->wo_stl = vim_strsave(from->wo_stl);
 #endif
@@ -5682,6 +5697,9 @@ check_winopt(winopt_T *wop UNUSED)
 #ifdef FEAT_RIGHTLEFT
     check_string_option(&wop->wo_rlc);
 #endif
+#ifdef FEAT_LINEBREAK
+    check_string_option(&wop->wo_sbr);
+#endif
 #ifdef FEAT_STL_OPT
     check_string_option(&wop->wo_stl);
 #endif
@@ -5727,6 +5745,9 @@ clear_winopt(winopt_T *wop UNUSED)
     clear_string_option(&wop->wo_wcr);
 #ifdef FEAT_RIGHTLEFT
     clear_string_option(&wop->wo_rlc);
+#endif
+#ifdef FEAT_LINEBREAK
+    clear_string_option(&wop->wo_sbr);
 #endif
 #ifdef FEAT_STL_OPT
     clear_string_option(&wop->wo_stl);
@@ -7257,28 +7278,18 @@ get_bkc_value(buf_T *buf)
     return buf->b_bkc_flags ? buf->b_bkc_flags : bkc_flags;
 }
 
-#if defined(FEAT_SIGNS) || defined(PROTO)
+#if defined(FEAT_LINEBREAK) || defined(PROTO)
 /*
- * Return TRUE when window "wp" has a column to draw signs in.
+ * Get the local or global value of 'showbreak'.
  */
-     int
-signcolumn_on(win_T *wp)
+    char_u *
+get_showbreak_value(win_T *win)
 {
-    // If 'signcolumn' is set to 'number', signs are displayed in the 'number'
-    // column (if present). Otherwise signs are to be displayed in the sign
-    // column.
-    if (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u')
-	return wp->w_buffer->b_signlist != NULL && !wp->w_p_nu && !wp->w_p_rnu;
-
-    if (*wp->w_p_scl == 'n')
-	return FALSE;
-    if (*wp->w_p_scl == 'y')
-	return TRUE;
-    return (wp->w_buffer->b_signlist != NULL
-# ifdef FEAT_NETBEANS_INTG
-			|| wp->w_buffer->b_has_sign_column
-# endif
-		    );
+    if (win->w_p_sbr == NULL || *win->w_p_sbr == NUL)
+	return p_sbr;
+    if (STRCMP(win->w_p_sbr, "NONE") == 0)
+	return empty_option;
+    return win->w_p_sbr;
 }
 #endif
 

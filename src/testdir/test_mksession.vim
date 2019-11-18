@@ -9,6 +9,29 @@ CheckFeature mksession
 source shared.vim
 source term_util.vim
 
+" Test for storing global and local argument list in a session file
+" This one must be done first.
+func Test__mksession_arglocal()
+  enew | only
+  n a b c
+  new
+  arglocal
+  mksession! Xtest_mks.out
+
+  %bwipe!
+  %argdelete
+  argglobal
+  source Xtest_mks.out
+  call assert_equal(2, winnr('$'))
+  call assert_equal(2, arglistid(1))
+  call assert_equal(0, arglistid(2))
+
+  %bwipe!
+  %argdelete
+  argglobal
+  call delete('Xtest_mks.out')
+endfunc
+
 func Test_mksession()
   tabnew
   let wrap_save = &wrap
@@ -253,8 +276,8 @@ func Test_mksession_tcd_multiple_tabs()
   call assert_equal('Xtabdir3', fnamemodify(getcwd(-1, 3), ':t'))
   call assert_equal('Xtabdir3', fnamemodify(getcwd(1, 3), ':t'))
   call assert_equal('Xwindir3', fnamemodify(getcwd(2, 3), ':t'))
-  only | tabonly
-  exe 'cd ' . save_cwd
+  %bwipe
+  call chdir(save_cwd)
   call delete("Xtopdir", "rf")
 endfunc
 
@@ -598,30 +621,9 @@ func Test_mksession_slash()
   set sessionoptions&
 endfunc
 
-" Test for storing global and local argument list in a session file
-func Test_mkseesion_arglocal()
-  enew | only
-  n a b c
-  new
-  arglocal
-  mksession! Xtest_mks.out
-
-  %bwipe!
-  %argdelete
-  argglobal
-  source Xtest_mks.out
-  call assert_equal(2, winnr('$'))
-  call assert_equal(2, arglistid(1))
-  call assert_equal(0, arglistid(2))
-
-  %bwipe!
-  %argdelete
-  argglobal
-  call delete('Xtest_mks.out')
-endfunc
-
 " Test for changing directory to the session file directory
 func Test_mksession_sesdir()
+  let save_cwd = getcwd()
   call mkdir('Xproj')
   mksession! Xproj/Xtest_mks1.out
   set sessionoptions-=curdir
@@ -632,7 +634,8 @@ func Test_mksession_sesdir()
   call assert_equal('testdir', fnamemodify(getcwd(), ':t'))
   source Xproj/Xtest_mks2.out
   call assert_equal('Xproj', fnamemodify(getcwd(), ':t'))
-  cd ..
+  call chdir(save_cwd)
+  %bwipe
 
   set sessionoptions&
   call delete('Xproj', 'rf')

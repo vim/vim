@@ -39,7 +39,8 @@ static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
     "localoptions", "options", "help", "blank", "globals", "slash", "unix",
     "sesdir", "curdir", "folds", "cursor", "tabpages", "terminal", NULL};
 #endif
-static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit", NULL};
+// Keep in sync with SWB_ flags in option.h
+static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit", "uselast", NULL};
 static char *(p_tc_values[]) = {"followic", "ignore", "match", "followscs", "smart", NULL};
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
 static char *(p_toolbar_values[]) = {"text", "icons", "tooltips", "horiz", NULL};
@@ -1440,12 +1441,12 @@ did_set_string_option(
 
 #ifdef FEAT_LINEBREAK
     // 'showbreak'
-    else if (varp == &p_sbr)
+    else if (gvarp == &p_sbr)
     {
-	for (s = p_sbr; *s; )
+	for (s = *varp; *s; )
 	{
 	    if (ptr2cells(s) != 1)
-		errmsg = N_("E595: contains unprintable or wide character");
+		errmsg = N_("E595: 'showbreak' contains unprintable or wide character");
 	    MB_PTR_ADV(s);
 	}
     }

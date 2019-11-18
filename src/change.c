@@ -58,7 +58,7 @@ change_warning(int col)
 		)
 	{
 	    out_flush();
-	    ui_delay(1000L, TRUE); // give the user time to think about it
+	    ui_delay(1002L, TRUE); // give the user time to think about it
 	}
 	curbuf->b_did_warn = TRUE;
 	redraw_cmdline = FALSE;	// don't redraw and erase the message
@@ -118,7 +118,7 @@ changed(void)
 	    if (need_wait_return && emsg_silent == 0)
 	    {
 		out_flush();
-		ui_delay(2000L, TRUE);
+		ui_delay(2002L, TRUE);
 		wait_return(TRUE);
 		msg_scroll = save_msg_scroll;
 	    }

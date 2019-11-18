@@ -988,6 +988,10 @@ curs_columns(
 	/* long line wrapping, adjust curwin->w_wrow */
 	if (curwin->w_wcol >= curwin->w_width)
 	{
+#ifdef FEAT_LINEBREAK
+	    char_u *sbr;
+#endif
+
 	    /* this same formula is used in validate_cursor_col() */
 	    n = (curwin->w_wcol - curwin->w_width) / width + 1;
 	    curwin->w_wcol -= n * width;
@@ -997,8 +1001,9 @@ curs_columns(
 	    /* When cursor wraps to first char of next line in Insert
 	     * mode, the 'showbreak' string isn't shown, backup to first
 	     * column */
-	    if (*p_sbr && *ml_get_cursor() == NUL
-		    && curwin->w_wcol == (int)vim_strsize(p_sbr))
+	    sbr = get_showbreak_value(curwin);
+	    if (*sbr && *ml_get_cursor() == NUL
+				    && curwin->w_wcol == (int)vim_strsize(sbr))
 		curwin->w_wcol = 0;
 #endif
 	}
@@ -1169,6 +1174,9 @@ curs_columns(
 	    && !pum_visible())
 	redraw_later(SOME_VALID);
 #endif
+
+    // now w_leftcol is valid, avoid check_cursor_moved() thinking otherwise
+    curwin->w_valid_leftcol = curwin->w_leftcol;
 
     curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
 }

@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 8.1.  Last change: 2019 Jun 10
+*tagsrch.txt*   For Vim version 8.1.  Last change: 2019 Nov 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -436,7 +436,7 @@ files here, it is only supported for backwards compatibility :-).
 
 Lines in Emacs tags files can be very long.  Vim only deals with lines of up
 to about 510 bytes.  To see whether lines are ignored set 'verbose' to 5 or
-higher.
+higher. Non-Emacs tags file lines can be any length.
 
 							*tags-option*
 The 'tags' option is a list of file names.  Each of these files is searched

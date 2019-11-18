@@ -325,7 +325,7 @@ static
 #endif
 HWND			s_hwnd = NULL;
 static HDC		s_hdc = NULL;
-static HBRUSH	s_brush = NULL;
+static HBRUSH		s_brush = NULL;
 
 #ifdef FEAT_TOOLBAR
 static HWND		s_toolbarhwnd = NULL;
@@ -1282,7 +1282,18 @@ vim_WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     void
 gui_mch_new_colors(void)
 {
-    /* nothing to do? */
+    HBRUSH prevBrush;
+
+    s_brush = CreateSolidBrush(gui.back_pixel);
+#ifdef SetClassLongPtr
+    prevBrush = (HBRUSH)SetClassLongPtr(
+				s_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)s_brush);
+#else
+    prevBrush = (HBRUSH)SetClassLong(
+				   s_hwnd, GCL_HBRBACKGROUND, (long_u)s_brush);
+#endif
+    InvalidateRect(s_hwnd, NULL, TRUE);
+    DeleteObject(prevBrush);
 }
 
 /*
@@ -7848,6 +7859,12 @@ initialise_toolbar(void)
 		    TOOLBAR_BUTTON_HEIGHT,
 		    sizeof(TBBUTTON)
 		    );
+
+    // Remove transparency from the toolbar to prevent the main window
+    // background colour showing through
+    SendMessage(s_toolbarhwnd, TB_SETSTYLE, 0,
+	SendMessage(s_toolbarhwnd, TB_GETSTYLE, 0, 0) & ~TBSTYLE_TRANSPARENT);
+
     s_toolbar_wndproc = SubclassWindow(s_toolbarhwnd, toolbar_wndproc);
 
     gui_mch_show_toolbar(vim_strchr(p_go, GO_TOOLBAR) != NULL);

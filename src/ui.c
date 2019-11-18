@@ -532,6 +532,9 @@ ui_char_avail(void)
     void
 ui_delay(long msec, int ignoreinput)
 {
+#ifdef FEAT_JOB_CHANNEL
+    ch_log(NULL, "ui_delay(%ld)", msec);
+#endif
 #ifdef FEAT_GUI
     if (gui.in_use && !ignoreinput)
 	gui_wait_for_chars(msec, typebuf.tb_change_cnt);

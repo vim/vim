@@ -3238,7 +3238,7 @@ oneleft(void)
 	    /* getviscol() is slow, skip it when 'showbreak' is empty,
 	     * 'breakindent' is not set and there are no multi-byte
 	     * characters */
-	    if ((*p_sbr == NUL && !curwin->w_p_bri
+	    if ((*get_showbreak_value(curwin) == NUL && !curwin->w_p_bri
 					     && !has_mbyte) || getviscol() < v)
 		break;
 	    ++width;
