@@ -3044,12 +3044,9 @@ qf_goto_win_with_qfl_file(int qf_fnum)
     static int
 qf_jump_to_usable_window(int qf_fnum, int newwin, int *opened_window)
 {
-    win_T	*usable_win_ptr = NULL;
-    int		usable_win;
+    win_T	*usable_wp = NULL;
+    int		usable_win = FALSE;
     qf_info_T	*ll_ref = NULL;
-    win_T	*win;
-
-    usable_win = 0;
 
     // If opening a new window, then don't use the location list referred by
     // the current window.  Otherwise two windows will refer to the same
@@ -3060,17 +3057,17 @@ qf_jump_to_usable_window(int qf_fnum, int newwin, int *opened_window)
     if (ll_ref != NULL)
     {
 	// Find a non-quickfix window with this location list
-	usable_win_ptr = qf_find_win_with_loclist(ll_ref);
-	if (usable_win_ptr != NULL)
-	    usable_win = 1;
+	usable_wp = qf_find_win_with_loclist(ll_ref);
+	if (usable_wp != NULL)
+	    usable_win = TRUE;
     }
 
     if (!usable_win)
     {
 	// Locate a window showing a normal buffer
-	win = qf_find_win_with_normal_buf();
+	win_T	*win = qf_find_win_with_normal_buf();
 	if (win != NULL)
-	    usable_win = 1;
+	    usable_win = TRUE;
     }
 
     // If no usable window is found and 'switchbuf' contains "usetab"
@@ -3089,7 +3086,7 @@ qf_jump_to_usable_window(int qf_fnum, int newwin, int *opened_window)
     else
     {
 	if (curwin->w_llist_ref != NULL)	// In a location window
-	    qf_goto_win_with_ll_file(usable_win_ptr, qf_fnum, ll_ref);
+	    qf_goto_win_with_ll_file(usable_wp, qf_fnum, ll_ref);
 	else					// In a quickfix window
 	    qf_goto_win_with_qfl_file(qf_fnum);
     }
@@ -3454,17 +3451,12 @@ theend:
 	qfl->qf_ptr = qf_ptr;
 	qfl->qf_index = qf_index;
     }
-    if (p_swb != old_swb)
+    if (p_swb != old_swb && p_swb == empty_option)
     {
 	// Restore old 'switchbuf' value, but not when an autocommand or
 	// modeline has changed the value.
-	if (p_swb == empty_option)
-	{
-	    p_swb = old_swb;
-	    swb_flags = old_swb_flags;
-	}
-	else
-	    free_string_option(old_swb);
+	p_swb = old_swb;
+	swb_flags = old_swb_flags;
     }
     decr_quickfix_busy();
 }
