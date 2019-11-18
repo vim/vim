@@ -3667,6 +3667,7 @@ func Test_vimgrep_autocmd_cd()
   call writefile(['b_L1_vim', 'b_L2_vim'], 'Xdir/b/f2.txt')
   call Xvimgrep_autocmd_cd('c')
   call Xvimgrep_autocmd_cd('l')
+  %bwipe
   call delete('Xdir', 'rf')
 endfunc
 
