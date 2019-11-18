@@ -775,7 +775,7 @@ msgstr "E98: Није могуће читање diff излаза"
 
 #: d:\viminfo\vim\src\diff.c:1655
 msgid "E959: Invalid diff format."
-msgstr "E534: Неисправан diff формат."
+msgstr "E959: Неисправан diff формат."
 
 #: d:\viminfo\vim\src\diff.c:2559
 msgid "E99: Current buffer is not in diff mode"
@@ -1741,9 +1741,9 @@ msgstr[2] "Још %d фајлова за уређивање. Желите да �
 #, c-format
 msgid "E173: %d more file to edit"
 msgid_plural "E173: %d more files to edit"
-msgstr[0] "E173: Још %ld фајл за уређивање"
-msgstr[1] "E173: Још %ld фајла за уређивање"
-msgstr[2] "E173: Још %ld фајлова за уређивање"
+msgstr[0] "E173: Још %d фајл за уређивање"
+msgstr[1] "E173: Још %d фајла за уређивање"
+msgstr[2] "E173: Још %d фајлова за уређивање"
 
 #: d:\viminfo\vim\src\ex_docmd.c:4779
 msgid "unknown"
@@ -4794,7 +4794,7 @@ msgstr "E315: ml_get: неисправан lnum: %ld"
 #: d:\viminfo\vim\src\memline.c:2668
 #, c-format
 msgid "E316: ml_get: cannot find line %ld in buffer %d %s"
-msgstr "E316: ml_get: линија %d у баферу %d не може да се пронађе %s"
+msgstr "E316: ml_get: линија %ld у баферу %d не може да се пронађе %s"
 
 #: d:\viminfo\vim\src\memline.c:3116
 msgid "E317: pointer block id wrong 3"
@@ -9584,130 +9584,21 @@ msgstr ""
 "C++ изворни код (*.cpp, *.hpp)\t*.cpp;*.hpp\n"
 "Vim фајлови (*.vim, _vimrc, _gvimrc)\t*.vim;_vimrc;_gvimrc\n"
 
-#~ msgid "1 buffer unloaded"
-#~ msgstr "1 бафер је уклоњен из меморије"
+msgid "GVim"
+msgstr "GVim"
 
-#~ msgid "1 buffer deleted"
-#~ msgstr "1 бафер је обрисан"
+msgid "Text Editor"
+msgstr "Текст Едитор"
 
-#~ msgid "1 buffer wiped out"
-#~ msgstr "1 бафер је очишћен"
+msgid "Edit text files"
+msgstr "Уређивање текст фајлова"
 
-#~ msgid "1 line --%d%%--"
-#~ msgstr "1 линија --%d%%--"
+msgid "Text;editor;"
+msgstr "Текст;едитор;"
 
-#~ msgid "1 line moved"
-#~ msgstr "1 линија премештена"
+msgid "gvim"
+msgstr "gvim"
 
-#~ msgid "1 match"
-#~ msgstr "1 подударање"
+msgid "Vim"
+msgstr "Vim"
 
-#~ msgid "1 substitution"
-#~ msgstr "1 замена"
-
-#~ msgid "%ld matches"
-#~ msgstr "%ld подударања"
-
-#~ msgid " on 1 line"
-#~ msgstr " у 1 линији"
-
-#~ msgid "1 more file to edit.  Quit anyway?"
-#~ msgstr "Још 1 фајл за уређивање. Ипак желите да напустите програм?"
-
-#~ msgid "E173: 1 more file to edit"
-#~ msgstr "E173: Још 1 фајл за уређивање"
-
-#~ msgid "E198: cmd_pchar beyond the command length"
-#~ msgstr "E198: cmd_pchar је иза дужине команде"
-
-#~ msgid "[fifo/socket]"
-#~ msgstr "[fifo/утичница]"
-
-#~ msgid "1 character"
-#~ msgstr "1 карактер"
-
-#~ msgid "Find string (use '\\\\' to find  a '\\')"
-#~ msgstr "Пронађи стринг (користите '\\\\' да пронађете '\\')"
-
-#~ msgid "Find & Replace (use '\\\\' to find  a '\\')"
-#~ msgstr "Пронађи & Замени (користите '\\\\' да пронађете '\\')"
-
-#~ msgid "Font1: %s"
-#~ msgstr "Фонт1: %s"
-
-#~ msgid "Font1 width: %ld"
-#~ msgstr "Фонт1 ширина: %ld"
-
-#~ msgid "-F\t\t\tStart in Farsi mode"
-#~ msgstr "-F\t\t\tПокрени у Фарси режиму"
-
-#~ msgid " (still running)"
-#~ msgstr " (још се извршава)"
-
-#~ msgid "1 more line"
-#~ msgstr "1 линија више"
-
-#~ msgid "%ld fewer lines"
-#~ msgstr "%ld линија мање"
-
-#~ msgid "E340: Line is becoming too long"
-#~ msgstr "E340: Линија постаје предугачка"
-
-#~ msgid "1 line %sed 1 time"
-#~ msgstr "1 линија %sрана 1 пут"
-
-#~ msgid "1 line %sed %d times"
-#~ msgstr "1 линија %sрана %d пута"
-
-#~ msgid "%ld lines %sed 1 time"
-#~ msgstr "%ld линија %sрано 1 пут"
-
-#~ msgid "1 line indented "
-#~ msgstr "1 линија увучена "
-
-#~ msgid "1 line changed"
-#~ msgstr "1 линија је промењена"
-
-#~ msgid "block of 1 line yanked%s"
-#~ msgstr "блок од 1 линије је тргнут%s"
-
-#~ msgid "1 line yanked%s"
-#~ msgstr "1 линија је тргнута%s"
-
-#~ msgid ""
-#~ "\n"
-#~ "--- Registers ---"
-#~ msgstr ""
-#~ "\n"
-#~ "--- Регистри ---"
-
-#~ msgid "Thanks for flying Vim"
-#~ msgstr "Хвала што летите са Vim"
-
-#~ msgid "E538: No mouse support"
-#~ msgstr "E538: Нема подршке за миша"
-
-#~ msgid "Could not load vim32.dll!"
-#~ msgstr "vim32.dll није могла да се учита!"
-
-#~ msgid "VIM Error"
-#~ msgstr "VIM Грешка"
-
-#~ msgid "Could not fix up function pointers to the DLL!"
-#~ msgstr "Показивачи на функције у DLL-у нису могли да се поправе!"
-
-#~ msgid "(NFA) COULD NOT OPEN %s !"
-#~ msgstr "(NFA) %s НЕ МОЖЕ ДА СЕ ОТВОРИ !"
-
-#~ msgid "Could not open temporary log file for writing "
-#~ msgstr "Привремени лог фајл није могао да се отвори за упис "
-
-#~ msgid "Conversion in %s not supported"
-#~ msgstr "Конверзија у %s није подржана"
-
-#~ msgid "E14: Invalid address"
-#~ msgstr "E14: Неважећа адреса"
-
-#~ msgid "E27: Farsi cannot be used: Not enabled at compile time\n"
-#~ msgstr ""
-#~ "E27: фарси не може да се користи: Није омогућен у време компилације\n"
