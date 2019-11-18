@@ -1771,6 +1771,11 @@ func Test_switchbuf()
 
   " If opening a file changes 'switchbuf', then the new value should be
   " retained.
+  call writefile(["vim: switchbuf=split"], 'Xqftestfile1')
+  enew | only
+  set switchbuf&vim
+  cexpr "Xqftestfile1:1:10"
+  call assert_equal('split', &switchbuf)
   call writefile(["vim: switchbuf=usetab"], 'Xqftestfile1')
   enew | only
   set switchbuf=useopen
