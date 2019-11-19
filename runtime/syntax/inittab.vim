@@ -3,7 +3,6 @@
 " Language: SysV-compatible init process control file `inittab'
 " Maintainer: David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
 " Last Change: 2002-09-13
-" URL: http://physics.muni.cz/~yeti/download/syntax/inittab.vim
 
 " Setup
 " quit when a syntax file was already loaded
