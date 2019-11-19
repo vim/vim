@@ -620,7 +620,8 @@ func s:test_xhelpgrep(cchar)
   call assert_true(&buftype == 'help')
   call assert_true(winnr() == 1)
   " See jump_to_help_window() for details
-  if winwidth(w2) != &columns && winwidth(w2) < 80
+  let w2_width = winwidth(w2)
+  if w2_width != &columns && w2_width < 80
     call assert_equal(['col', [['leaf', w3],
           \ ['row', [['leaf', w2], ['leaf', w1]]]]], winlayout())
   else
