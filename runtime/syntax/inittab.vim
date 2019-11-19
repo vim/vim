@@ -1,5 +1,4 @@
 " Vim syntax file
-" This is a GENERATED FILE. Please always refer to source file at the URI below.
 " Language: SysV-compatible init process control file `inittab'
 " Maintainer: David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
 " Last Change: 2002-09-13
