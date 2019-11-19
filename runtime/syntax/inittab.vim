@@ -2,7 +2,7 @@
 " Language: SysV-compatible init process control file `inittab'
 " Maintainer: Donovan Keohane <donovan.keohane@gmail.com>
 " Previous Maintainer: David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
-" Last Change: 2002-09-13
+" Last Change: 2019-11-19
 
 " Setup
 " quit when a syntax file was already loaded
