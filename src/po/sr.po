@@ -3673,7 +3673,7 @@ msgstr "E938: Дупли кључ у JSON: \"%s\""
 #: d:\viminfo\vim\src\list.c:18
 #, c-format
 msgid "E899: Argument of %s must be a List or Blob"
-msgstr "E686: Аргумент за %s мора бити Листа или Blob"
+msgstr "E899: Аргумент за %s мора бити Листа или Blob"
 
 #: d:\viminfo\vim\src\list.c:953
 #, c-format
@@ -9003,7 +9003,7 @@ msgstr "E979: Индекс Blob-а је ван опсега: %ld"
 
 #: d:\viminfo\vim\src\globals.h:1594
 msgid "E978: Invalid operation for Blob"
-msgstr "E78: Неисправна операција за Blob"
+msgstr "E978: Неисправна операција за Blob"
 
 #: d:\viminfo\vim\src\globals.h:1595
 #, c-format
