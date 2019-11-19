@@ -1,6 +1,7 @@
 " Vim syntax file
 " Language: SysV-compatible init process control file `inittab'
-" Maintainer: David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
+" Maintainer: Donovan Keohane <donovan.keohane@gmail.com>
+" Previous Maintainer: David Ne\v{c}as (Yeti) <yeti@physics.muni.cz>
 " Last Change: 2002-09-13
 
 " Setup
