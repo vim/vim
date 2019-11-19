@@ -921,14 +921,6 @@ static const struct
 };
 
 
-#ifdef _MSC_VER
-// The ToAscii bug destroys several registers.	Need to turn off optimization
-// or the GetConsoleKeyboardLayoutName hack will fail in non-debug versions
-# pragma warning(push)
-# pragma warning(disable: 4748)
-# pragma optimize("", off)
-#endif
-
 #if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
 # define UChar UnicodeChar
 #else
@@ -980,20 +972,6 @@ win32_kbd_patch_key(
 
     return s_iIsDead;
 }
-
-#ifdef _MSC_VER
-/* MUST switch optimization on again here, otherwise a call to
- * decode_key_event() may crash (e.g. when hitting caps-lock) */
-# pragma optimize("", on)
-# pragma warning(pop)
-
-# if (_MSC_VER < 1100)
-/* MUST turn off global optimisation for this next function, or
- * pressing ctrl-minus in insert mode crashes Vim when built with
- * VC4.1. -- negri. */
-#  pragma optimize("g", off)
-# endif
-#endif
 
 static BOOL g_fJustGotFocus = FALSE;
 
@@ -1119,10 +1097,6 @@ decode_key_event(
 
     return (*pch != NUL);
 }
-
-#ifdef _MSC_VER
-# pragma optimize("", on)
-#endif
 
 #endif /* FEAT_GUI_MSWIN */
 

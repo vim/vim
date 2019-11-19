@@ -1285,13 +1285,8 @@ gui_mch_new_colors(void)
     HBRUSH prevBrush;
 
     s_brush = CreateSolidBrush(gui.back_pixel);
-#ifdef SetClassLongPtr
     prevBrush = (HBRUSH)SetClassLongPtr(
 				s_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)s_brush);
-#else
-    prevBrush = (HBRUSH)SetClassLong(
-				   s_hwnd, GCL_HBRBACKGROUND, (long_u)s_brush);
-#endif
     InvalidateRect(s_hwnd, NULL, TRUE);
     DeleteObject(prevBrush);
 }
@@ -3422,11 +3417,7 @@ mch_set_mouse_shape(int shape)
 	    idc = IDC_ARROW;
 	else
 	    idc = mshape_idcs[shape];
-#ifdef SetClassLongPtr
-	SetClassLongPtr(s_textArea, GCLP_HCURSOR, (__int3264)(LONG_PTR)LoadCursor(NULL, idc));
-#else
-	SetClassLong(s_textArea, GCL_HCURSOR, (long_u)LoadCursor(NULL, idc));
-#endif
+	SetClassLongPtr(s_textArea, GCLP_HCURSOR, (LONG_PTR)LoadCursor(NULL, idc));
 	if (!p_mh)
 	{
 	    POINT mp;

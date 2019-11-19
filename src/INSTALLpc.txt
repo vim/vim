@@ -44,7 +44,7 @@ Contents:
 The currently recommended way (that means it has been verified to work) is
 using the "Visual Studio Community 2015" installation.  This includes the SDK
 needed to target Windows XP.  But not older Windows versions (95, 98), see
-|msvc-2008-express| below for that
+"OLDER VERSIONS" below for that.
 
 
 1. Microsoft Visual C++
@@ -62,12 +62,8 @@ under "Universal Windows App Development Tools"
 Visual Studio
 -------------
 
-Building with Visual Studio (VS 98, VS .NET, VS .NET 2003, VS 2005, VS 2008,
-VS2010, VS2012, VS2013 and VS2015) is straightforward. (These instructions
-should also work for VS 4 and VS 5.)
-
-Using VS C++ 2008 Express is recommended if you need the binary to run on
-Windows 95 or 97, see |msvc-2008-express| below.
+Building with Visual Studio (VS2010, VS2012, VS2013, VS2015, VS2017 and VS2019)
+is straightforward.
 
 To build Vim from the command line with MSVC, use Make_mvc.mak.
 Visual Studio installed a batch file called vcvars32.bat, which you must
@@ -82,33 +78,13 @@ nmake -f Make_mvc.mak PERL=C:\Perl PYTHON=C:\Python etc.
 Make_mvc.mak allows a Vim to be built with various different features and
 debug support.
 
-For compiling Gvim with IME support on far-east Windows, add IME=yes
+For compiling gVim with IME support on far-east Windows, add IME=yes
 to the parameters you pass to Make_mvc.mak.
 
 See the specific files for comments and options.
 
 These files have been supplied by George V. Reilly, Ben Singer, Ken Scott and
 Ron Aaron; they have been tested.
-
-
-Visual C++ 2008 Express Edition       *msvc-2008-express*
--------------------------------
-
-Visual C++ 2008 Express Edition can be downloaded for free from:
-    http://www.microsoft.com/express/downloads/
-This includes the IDE and the debugger.
-
-To set the environment execute the msvc2008.bat script.  You can then build
-Vim with Make_mvc.mak.
-
-For building 64 bit binaries you also need to install the SDK:
-"Microsoft Windows SDK for Windows 7 and .NET Framework 3.5 SP1"
-You don't need the examples and documentation.
-
-If you get an error that Win32.mak can't be found, you have to set the
-variable SDK_INCLUDE_DIR.  For example, on Windows 10, installation of MSVC
-puts include files in the following directory:
-    set SDK_INCLUDE_DIR=C:\Program Files\Microsoft SDKs\Windows\v6.0A\Include
 
 
 Visual C++ 2010 Express Edition       *msvc-2010-express*
@@ -162,6 +138,9 @@ compiler by using the "x64" option:
 The following Visual C++ team blog can serve as a reference page:
     http://blogs.msdn.com/b/vcblog/archive/2012/10/08/windows-xp-targeting-with-c-in-visual-studio-2012.aspx
 
+VC 2019 dropped support for targeting Windows XP.  If you want a binary that
+targeting Windows XP, use VC 2017 or earlier.
+
 
 Cross compile support for Windows on ARM64
 ------------------------------------------
@@ -178,10 +157,13 @@ The minimal supported version is Windows XP. Building with older compilers
 might still work, but these instructions might be outdated.
 
 If you need the executable to run on Windows 98 or ME, use the 2003 one
-|msvc-2003-toolkit|.
+|msvc-2003-toolkit| or |msvc-2005-express|, and use the source code before
+8.0.0029.
 
 Visual C++ Toolkit 2003				*msvc-2003-toolkit*
 -----------------------
+
+NOTE: this most likely does not work
 
 You could download the Microsoft Visual C++ Toolkit 2003 from
     http://msdn.microsoft.com/visualc/vctoolkit2003/
@@ -256,6 +238,8 @@ is also available through the Platform SDK, |ms-platform-sdk|.
 Visual C++ 2005 Express Edition       *msvc-2005-express*
 -------------------------------
 
+NOTE: this most likely does not work
+
 Visual C++ 2005 Express Edition can be downloaded for free from:
     http://msdn.microsoft.com/vstudio/express/visualC/default.aspx
 This includes the IDE and the debugger. You will also need
@@ -263,6 +247,28 @@ This includes the IDE and the debugger. You will also need
 
 Instructions for integrating the Platform SDK into VC Express:
     http://msdn.microsoft.com/vstudio/express/visualc/usingpsdk/default.aspx
+
+
+Visual C++ 2008 Express Edition       *msvc-2008-express*
+-------------------------------
+
+NOTE: this most likely does not work
+
+Visual C++ 2008 Express Edition can be downloaded for free from:
+    http://www.microsoft.com/express/downloads/
+This includes the IDE and the debugger.
+
+To set the environment execute the msvc2008.bat script.  You can then build
+Vim with Make_mvc.mak.
+
+For building 64 bit binaries you also need to install the SDK:
+"Microsoft Windows SDK for Windows 7 and .NET Framework 3.5 SP1"
+You don't need the examples and documentation.
+
+If you get an error that Win32.mak can't be found, you have to set the
+variable SDK_INCLUDE_DIR.  For example, on Windows 10, installation of MSVC
+puts include files in the following directory:
+    set SDK_INCLUDE_DIR=C:\Program Files\Microsoft SDKs\Windows\v6.0A\Include
 
 
 2. MSYS2 with MinGW
@@ -359,38 +365,36 @@ that.
 3. MinGW
 ========
 
-(written by Ron Aaron: <ronaharon@yahoo.com>)
+(written by Ron Aaron: <ronaharon@yahoo.com>, updated by Ken Takata, et al.)
 
-This is about how to produce a Win32 binary of gvim with MinGW.
+This is about how to produce a Win32 binary of gvim with MinGW from the normal
+Command Prompt window.  (To use MSYS2 console, see above.)
 
-First, you need to get the 'mingw32' compiler, which is free for the download
-at:
-
-    http://www.mingw.org/
-
-or you can use 'MinGW-w64' compiler.
+First, you need to get the 'MinGW-w64' compiler, which is free for the
+download at:
 
     http://mingw-w64.sourceforge.net/
 
 Or a compiler provided on msys2:
 
-    https://msys2.github.io/
+    https://www.msys2.org/
+
+The original 'mingw32' compiler is outdated, and may no longer work:
+
+    http://www.mingw.org/
 
 Once you have downloaded the compiler binaries, unpack them on your hard disk
-somewhere, and put them on your PATH.  If you are on Win95/98 you can edit
-your AUTOEXEC.BAT file with a line like:
-
-    set PATH=C:\MinGW\bin;%PATH%
-
-or on NT/2000/XP, go to the Control Panel, (Performance and Maintenance),
-System, Advanced, and edit the environment from there. If you use msys2
-compilers, set your installed paths (normally one of the following):
+somewhere, and put them on your PATH.  Go to the Control Panel, (Performance
+and Maintenance), System, Advanced, and edit the environment from there.  If
+you use the standalone MinGW-w64 compiler, the path may depends on your
+installation.  If you use msys2 compilers, set your installed paths (normally
+one of the following):
 
     C:\msys32\mingw32\bin   (32-bit msys2, targeting 32-bit builds)
     C:\msys64\mingw32\bin   (64-bit msys2, targeting 32-bit builds)
     C:\msys64\mingw64\bin   (64-bit msys2, targeting 64-bit builds)
 
-Test if gcc is on your path.  From a CMD (or COMMAND on '95/98) window:
+Test if gcc is on your path.  From a Command Prompt window:
 
     C:\> gcc --version
     gcc (GCC) 4.8.1
@@ -473,8 +477,7 @@ Now you have created the Windows binary from your Linux box!  Have fun...
 6. Building with Python support
 ===============================
 
-For building with MSVC 2008 the "Windows Installer" from www.python.org
-works fine.
+For building with MSVC the "Windows Installer" from www.python.org works fine.
 
 When building, you need to set the following variables at least:
 
@@ -534,8 +537,8 @@ You will end up with a Python-enabled, Win32 version. Enjoy!
 7. Building with Python3 support
 ================================
 
-For building with MSVC 2008 the "Windows Installer" from www.python.org
-works fine.  Python 3.6 is recommended.
+For building with MSVC the "Windows Installer" from www.python.org works fine.
+Python 3.6 is recommended.
 
 When building, you need to set the following variables at least:
 
@@ -569,7 +572,7 @@ libstdc++-6.dll.)
 
 
 8. Building with Racket or MzScheme support
-========================================
+===========================================
 
 1) Building with Racket support (newest)
 
