@@ -237,7 +237,7 @@ syn cluster nasmGrpPreProcs	contains=nasmMacroDef,@nasmGrpInMacros,@nasmGrpPreCo
 
 " Register Identifiers:
 "  Register operands:
-syn match   nasmGen08Register	"\<[A-D][HL]\>"
+syn match   nasmGen08Register	"\<\([A-D][HL]\|\(R\|R1\)[0-9]\([A-D]\|W\)\|\(DIL\|S\(I\|P\)L\|BPL\)\)\>"
 syn match   nasmGen16Register	"\<\([A-D]X\|[DS]I\|[BS]P\)\>"
 syn match   nasmGen32Register	"\<E\([A-D]X\|[DS]I\|[BS]P\)\>"
 syn match   nasmGen64Register	"\<R\([A-D]X\|[DS]I\|[BS]P\|[89]\|1[0-5]\|[89][WD]\|1[0-5][WD]\)\>"
