@@ -1192,6 +1192,14 @@ func RunTest_modifyOtherKeys(func)
   call feedkeys('a' .. a:func('X', 9) .. "\<Esc>", 'Lx!')
   call assert_equal("Ø", getline(1))
 
+  " Ctrl-6 is Ctrl-^
+  split aaa
+  edit bbb
+  call feedkeys(a:func('6', 5), 'Lx!')
+  call assert_equal("aaa", bufname())
+  bwipe aaa
+  bwipe bbb
+
   bwipe!
   set timeoutlen&
 endfunc
