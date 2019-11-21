@@ -3401,9 +3401,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_GUI_MSWIN
 	"gui_win32",
 #endif
-#ifdef FEAT_HANGULIN
-	"hangul_input",
-#endif
 #if defined(HAVE_ICONV_H) && defined(USE_ICONV)
 	"iconv",
 #endif

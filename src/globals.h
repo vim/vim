@@ -965,11 +965,6 @@ EXTERN guicolor_T	xim_bg_color INIT(= INVALCOLOR);
 # endif
 #endif
 
-#ifdef FEAT_HANGULIN
-EXTERN int		composing_hangul INIT(= 0);
-EXTERN char_u		composing_hangul_buffer[5];
-#endif
-
 /*
  * "State" is the main state of Vim.
  * There are other variables that modify the state:

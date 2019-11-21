@@ -2068,12 +2068,6 @@ add_to_input_buf(char_u *s, int len)
     if (inbufcount + len > INBUFLEN + MAX_KEY_CODE_LEN)
 	return;	    /* Shouldn't ever happen! */
 
-#ifdef FEAT_HANGULIN
-    if ((State & (INSERT|CMDLINE)) && hangul_input_state_get())
-	if ((len = hangul_input_process(s, len)) == 0)
-	    return;
-#endif
-
     while (len--)
 	inbuf[inbufcount++] = *s++;
 }
@@ -2099,32 +2093,6 @@ add_to_input_buf_csi(char_u *str, int len)
 	}
     }
 }
-
-#if defined(FEAT_HANGULIN) || defined(PROTO)
-    void
-push_raw_key(char_u *s, int len)
-{
-    char_u *tmpbuf;
-    char_u *inp = s;
-
-    /* use the conversion result if possible */
-    tmpbuf = hangul_string_convert(s, &len);
-    if (tmpbuf != NULL)
-	inp = tmpbuf;
-
-    for (; len--; inp++)
-    {
-	inbuf[inbufcount++] = *inp;
-	if (*inp == CSI)
-	{
-	    /* Turn CSI into K_CSI. */
-	    inbuf[inbufcount++] = KS_EXTRA;
-	    inbuf[inbufcount++] = (int)KE_CSI;
-	}
-    }
-    vim_free(tmpbuf);
-}
-#endif
 
 /* Remove everything from the input buffer.  Called when ^C is found */
     void

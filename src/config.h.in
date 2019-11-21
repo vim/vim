@@ -408,9 +408,6 @@
 /* Define if you want to include XIM support. */
 #undef FEAT_XIM
 
-/* Define if you want to include Hangul input support. */
-#undef FEAT_HANGULIN
-
 /* Define if you use GTK and want GNOME support. */
 #undef FEAT_GUI_GNOME
 
