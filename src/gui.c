@@ -4742,6 +4742,29 @@ gui_get_lightness(guicolor_T pixel)
 		   +  ((rgb	  & 0xff) * 114)) / 1000;
 }
 
+    char_u *
+gui_bg_default(void)
+{
+    if (gui_get_lightness(gui.back_pixel) < 127)
+	return (char_u *)"dark";
+    return (char_u *)"light";
+}
+
+/*
+ * Option initializations that can only be done after opening the GUI window.
+ */
+    void
+init_gui_options(void)
+{
+    /* Set the 'background' option according to the lightness of the
+     * background color, unless the user has set it already. */
+    if (!option_was_set((char_u *)"bg") && STRCMP(p_bg, gui_bg_default()) != 0)
+    {
+	set_option_value((char_u *)"bg", 0L, gui_bg_default(), 0);
+	highlight_changed();
+    }
+}
+
 #if defined(FEAT_GUI_X11) || defined(PROTO)
     void
 gui_new_scrollbar_colors(void)
