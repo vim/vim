@@ -4412,8 +4412,8 @@ find_prev_quote(
 current_quote(
     oparg_T	*oap,
     long	count,
-    int		include,	/* TRUE == include quote char */
-    int		quotechar)	/* Quote character */
+    int		include,	// TRUE == include quote char
+    int		quotechar)	// Quote character
 {
     char_u	*line = ml_get_curline();
     int		col_end;
@@ -4421,12 +4421,15 @@ current_quote(
     int		inclusive = FALSE;
     int		vis_empty = TRUE;	// Visual selection <= 1 char
     int		vis_bef_curs = FALSE;	// Visual starts before cursor
+    int		did_exclusive_adj = FALSE;  // adjusted pos for 'selection'
     int		inside_quotes = FALSE;	// Looks like "i'" done before
     int		selected_quote = FALSE;	// Has quote inside selection
     int		i;
     int		restore_vis_bef = FALSE; // restore VIsual on abort
 
-    /* Correct cursor when 'selection' is "exclusive". */
+    // When 'selection' is "exclusive" move the cursor to where it would be
+    // with 'selection' "inclusive", so that the logic is the same for both.
+    // The cursor then is moved forward after adjusting the area.
     if (VIsual_active)
     {
 	/* this only works within one line */
@@ -4437,6 +4440,17 @@ current_quote(
 	vis_empty = EQUAL_POS(VIsual, curwin->w_cursor);
 	if (*p_sel == 'e')
 	{
+	    if (vis_bef_curs)
+	    {
+		dec_cursor();
+		did_exclusive_adj = TRUE;
+	    }
+	    else if (!vis_empty)
+	    {
+		dec(&VIsual);
+		did_exclusive_adj = TRUE;
+	    }
+	    vis_empty = EQUAL_POS(VIsual, curwin->w_cursor);
 	    if (!vis_bef_curs && !vis_empty)
 	    {
 		// VIsual needs to be the start of Visual selection.
@@ -4447,8 +4461,6 @@ current_quote(
 		vis_bef_curs = TRUE;
 		restore_vis_bef = TRUE;
 	    }
-	    dec_cursor();
-	    vis_empty = EQUAL_POS(VIsual, curwin->w_cursor);
 	}
     }
 
@@ -4626,7 +4638,7 @@ current_quote(
     {
 	if (vis_empty || vis_bef_curs)
 	{
-	    /* decrement cursor when 'selection' is not exclusive */
+	    // decrement cursor when 'selection' is not exclusive
 	    if (*p_sel != 'e')
 		dec_cursor();
 	}
@@ -4663,7 +4675,8 @@ current_quote(
 abort_search:
     if (VIsual_active && *p_sel == 'e')
     {
-	inc_cursor();
+	if (did_exclusive_adj)
+	    inc_cursor();
 	if (restore_vis_bef)
 	{
 	    pos_T t = curwin->w_cursor;
