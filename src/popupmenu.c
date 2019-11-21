@@ -628,7 +628,7 @@ pum_redraw(void)
     void
 pum_position_info_popup(win_T *wp)
 {
-    int col = pum_col + pum_width + 1;
+    int col = pum_col + pum_width + pum_scrollbar + 1;
     int row = pum_row;
     int botpos = POPPOS_BOTLEFT;
 
@@ -745,7 +745,7 @@ pum_set_selected(int n, int repeat UNUSED)
 #if defined(FEAT_QUICKFIX)
 	/*
 	 * Show extra info in the preview window if there is something and
-	 * 'completeopt' contains "preview" or "popup".
+	 * 'completeopt' contains "preview" or "popup" or "popuphidden".
 	 * Skip this when tried twice already.
 	 * Skip this also when there is not much room.
 	 * NOTE: Be very careful not to sync undo!
