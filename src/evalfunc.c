@@ -2536,7 +2536,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		    arg_idx = 0;
 		else if (list->lv_len > MAX_FUNC_ARGS)
 		{
-		    emsg_funcname((char *)e_toomanyarg, name);
+		    emsg_funcname((char *)e_toomanyarg, s);
 		    vim_free(name);
 		    goto theend;
 		}
