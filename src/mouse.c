@@ -13,6 +13,22 @@
 
 #include "vim.h"
 
+#ifdef CHECK_DOUBLE_CLICK
+/*
+ * Return the duration from t1 to t2 in milliseconds.
+ */
+    static long
+time_diff_ms(struct timeval *t1, struct timeval *t2)
+{
+    // This handles wrapping of tv_usec correctly without any special case.
+    // Example of 2 pairs (tv_sec, tv_usec) with a duration of 5 ms:
+    //	   t1 = (1, 998000) t2 = (2, 3000) gives:
+    //	   (2 - 1) * 1000 + (3000 - 998000) / 1000 -> 5 ms.
+    return (t2->tv_sec - t1->tv_sec) * 1000
+	 + (t2->tv_usec - t1->tv_usec) / 1000;
+}
+#endif
+
 /*
  * Get class of a character for selection: same class means same word.
  * 0: blank
@@ -2713,14 +2729,7 @@ check_termcode_mouse(
 			timediff = p_mouset;
 		    }
 		    else
-		    {
-			timediff = (mouse_time.tv_usec
-				- orig_mouse_time.tv_usec) / 1000;
-			if (timediff < 0)
-			    --orig_mouse_time.tv_sec;
-			timediff += (mouse_time.tv_sec
-				- orig_mouse_time.tv_sec) * 1000;
-		    }
+			timediff = time_diff_ms(&orig_mouse_time, &mouse_time);
 		    orig_mouse_time = mouse_time;
 		    if (mouse_code == orig_mouse_code
 			    && timediff < p_mouset
