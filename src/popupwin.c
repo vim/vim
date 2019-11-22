@@ -2599,7 +2599,7 @@ f_popup_locate(typval_T *argvars, typval_T *rettv)
     win_T	*wp;
 
     wp = mouse_find_win(&row, &col, FIND_POPUP);
-    if (WIN_IS_POPUP(wp))
+    if (wp != NULL && WIN_IS_POPUP(wp))
 	rettv->vval.v_number = wp->w_id;
 }
 
