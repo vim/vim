@@ -2594,6 +2594,8 @@ handle_mapping(
 	{
 	    int save_vgetc_busy = vgetc_busy;
 	    int save_may_garbage_collect = may_garbage_collect;
+	    int was_screen_col = screen_cur_col;
+	    int was_screen_row = screen_cur_row;
 
 	    vgetc_busy = 0;
 	    may_garbage_collect = FALSE;
@@ -2601,6 +2603,11 @@ handle_mapping(
 	    save_m_keys = vim_strsave(mp->m_keys);
 	    save_m_str = vim_strsave(mp->m_str);
 	    map_str = eval_map_expr(save_m_str, NUL);
+
+	    // The mapping may do anything, but we expect it to take care of
+	    // redrawing.  Do put the cursor back where it was.
+	    windgoto(was_screen_row, was_screen_col);
+	    out_flush();
 
 	    vgetc_busy = save_vgetc_busy;
 	    may_garbage_collect = save_may_garbage_collect;
