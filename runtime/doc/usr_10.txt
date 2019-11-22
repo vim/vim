@@ -370,7 +370,8 @@ into "barfoo".
 was specified in this example.  This is different from ":substitute", which
 works on one line without a range.
    The command isn't perfect, since it also matches lines where "//" appears
-halfway a line, and the substitution will also take place before the "//".
+halfway through a line, and the substitution will also take place before the
+"//".
 
 Just like with ":substitute", any pattern can be used.  When you learn more
 complicated patterns later, you can use them here.
