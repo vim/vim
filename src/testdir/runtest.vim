@@ -343,8 +343,6 @@ let s:flaky_tests = [
       \ 'Test_reltime()',
       \ 'Test_server_crash()',
       \ 'Test_state()',
-      \ 'Test_term_mouse_double_click_to_create_tab()',
-      \ 'Test_term_mouse_multiple_clicks_to_visually_select()',
       \ 'Test_terminal_ansicolors_default()',
       \ 'Test_terminal_ansicolors_func()',
       \ 'Test_terminal_ansicolors_global()',
