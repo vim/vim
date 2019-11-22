@@ -1768,12 +1768,19 @@ vgetc(void)
 	    {
 		// A modifier was not used for a mapping, apply it to ASCII
 		// keys.  Shift would already have been applied.
-		if ((mod_mask & MOD_MASK_CTRL)
-			&& ((c >= '`' && c <= 0x7f)
-			    || (c >= '@' && c <= '_')))
+		if (mod_mask & MOD_MASK_CTRL)
 		{
-		    c &= 0x1f;
-		    mod_mask &= ~MOD_MASK_CTRL;
+		    if ((c >= '`' && c <= 0x7f) || (c >= '@' && c <= '_'))
+		    {
+			c &= 0x1f;
+			mod_mask &= ~MOD_MASK_CTRL;
+		    }
+		    else if (c == '6')
+		    {
+			// CTRL-6 is equivalent to CTRL-^
+			c = 0x1e;
+			mod_mask &= ~MOD_MASK_CTRL;
+		    }
 		}
 		if ((mod_mask & (MOD_MASK_META | MOD_MASK_ALT))
 			&& c >= 0 && c <= 127)

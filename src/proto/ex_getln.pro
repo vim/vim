@@ -2,6 +2,7 @@
 void cmdline_init(void);
 char_u *getcmdline(int firstc, long count, int indent, int do_concat);
 char_u *getcmdline_prompt(int firstc, char_u *prompt, int attr, int xp_context, char_u *xp_arg);
+int check_opt_wim(void);
 int text_locked(void);
 void text_locked_msg(void);
 char *get_text_locked_msg(void);
@@ -35,6 +36,7 @@ void f_getcmdtype(typval_T *argvars, typval_T *rettv);
 int get_cmdline_type(void);
 int get_cmdline_firstc(void);
 int get_list_range(char_u **str, int *num1, int *num2);
+char *check_cedit(void);
 char_u *script_get(exarg_T *eap, char_u *cmd);
 void get_user_input(typval_T *argvars, typval_T *rettv, int inputdialog, int secret);
 /* vim: set ft=c : */

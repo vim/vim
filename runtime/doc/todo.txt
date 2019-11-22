@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 17
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,23 +38,7 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch #5232 from Andy Massimino to replace:
-    Patch to parse ":line" in tags file and use it for search. (Daniel Hahler,
-    #2546)  Fixes #1057.  Missing a test.
-
-Update files for javascriptreact and typescriptreact.
-Can we close #4830?
-
-When 'selection' is "exclusive" then using vi' on the second ' does not select
-anything. (#5183)
-Patch from Christian: 
-https://github.com/chrisbra/vim/commit/7482d1d389e7db97e247f8b509003e5ec27427a9
-When using exclusive selection and vi" that fails, cursor moves to the left.
-Cursor should not move. (#4024)
-
-Patch: New value "uselast" for 'switchbuf'. (Lemonboy, 2017 Apr 23, #1652)
-
-Patch to remove FORTIFY_SOURCE also from CPPFLAGS. (Benedikt Morbach, #2786)
+Patch 2314 for vi' causes a new problem.  #5247
 
 Patch from Namsh to allow building with both XIM and hangulin. (2019 Aug 29)
 
@@ -199,6 +183,8 @@ Include Haiku port. (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 It can replace the BeOS code, which is likely not used anymore.
 Now on github: #1856.  Updated Oct 2017
 Got permission to include this under the Vim license.
+
+Result of synID() sometimes wrong in help files. (#5252)
 
 Problem showing a line if the number column width changes when using "o".
 (Mateusz Morusiewicz, #4245)

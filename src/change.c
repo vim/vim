@@ -868,6 +868,57 @@ unchanged(buf_T *buf, int ff, int always_inc_changedtick)
 }
 
 /*
+ * Save the current values of 'fileformat' and 'fileencoding', so that we know
+ * the file must be considered changed when the value is different.
+ */
+    void
+save_file_ff(buf_T *buf)
+{
+    buf->b_start_ffc = *buf->b_p_ff;
+    buf->b_start_eol = buf->b_p_eol;
+    buf->b_start_bomb = buf->b_p_bomb;
+
+    /* Only use free/alloc when necessary, they take time. */
+    if (buf->b_start_fenc == NULL
+			     || STRCMP(buf->b_start_fenc, buf->b_p_fenc) != 0)
+    {
+	vim_free(buf->b_start_fenc);
+	buf->b_start_fenc = vim_strsave(buf->b_p_fenc);
+    }
+}
+
+/*
+ * Return TRUE if 'fileformat' and/or 'fileencoding' has a different value
+ * from when editing started (save_file_ff() called).
+ * Also when 'endofline' was changed and 'binary' is set, or when 'bomb' was
+ * changed and 'binary' is not set.
+ * Also when 'endofline' was changed and 'fixeol' is not set.
+ * When "ignore_empty" is true don't consider a new, empty buffer to be
+ * changed.
+ */
+    int
+file_ff_differs(buf_T *buf, int ignore_empty)
+{
+    /* In a buffer that was never loaded the options are not valid. */
+    if (buf->b_flags & BF_NEVERLOADED)
+	return FALSE;
+    if (ignore_empty
+	    && (buf->b_flags & BF_NEW)
+	    && buf->b_ml.ml_line_count == 1
+	    && *ml_get_buf(buf, (linenr_T)1, FALSE) == NUL)
+	return FALSE;
+    if (buf->b_start_ffc != *buf->b_p_ff)
+	return TRUE;
+    if ((buf->b_p_bin || !buf->b_p_fixeol) && buf->b_start_eol != buf->b_p_eol)
+	return TRUE;
+    if (!buf->b_p_bin && buf->b_start_bomb != buf->b_p_bomb)
+	return TRUE;
+    if (buf->b_start_fenc == NULL)
+	return (*buf->b_p_fenc != NUL);
+    return (STRCMP(buf->b_start_fenc, buf->b_p_fenc) != 0);
+}
+
+/*
  * Insert string "p" at the cursor position.  Stops at a NUL byte.
  * Handles Replace mode and multi-byte characters.
  */

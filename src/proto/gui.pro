@@ -49,6 +49,8 @@ int gui_do_horiz_scroll(long_u leftcol, int compute_longest_lnum);
 void gui_check_colors(void);
 guicolor_T gui_get_color(char_u *name);
 int gui_get_lightness(guicolor_T pixel);
+char_u *gui_bg_default(void);
+void init_gui_options(void);
 void gui_new_scrollbar_colors(void);
 void gui_focus_change(int in_focus);
 void gui_mouse_moved(int x, int y);

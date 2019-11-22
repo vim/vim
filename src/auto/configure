@@ -629,8 +629,6 @@ MSGFMT
 INSTALL_TOOL_LANGS
 INSTALL_LANGS
 TAGPRG
-HANGULIN_OBJ
-HANGULIN_SRC
 GUI_X_LIBS
 GUITYPE
 GUI_LIB_LOC
@@ -820,7 +818,6 @@ enable_multibyte
 enable_rightleft
 enable_arabic
 enable_farsi
-enable_hangulinput
 enable_xim
 enable_fontset
 with_x
@@ -1502,7 +1499,6 @@ Optional Features:
   --disable-rightleft     Do not include Right-to-Left language support.
   --disable-arabic        Do not include Arabic language support.
   --disable-farsi         Deprecated.
-  --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
   --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon
@@ -7992,18 +7988,6 @@ if test "${enable_farsi+set}" = set; then :
 fi
 
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-hangulinput argument" >&5
-$as_echo_n "checking --enable-hangulinput argument... " >&6; }
-# Check whether --enable-hangulinput was given.
-if test "${enable_hangulinput+set}" = set; then :
-  enableval=$enable_hangulinput;
-else
-  enable_hangulinput="no"
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_hangulinput" >&5
-$as_echo "$enable_hangulinput" >&6; }
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-xim argument" >&5
 $as_echo_n "checking --enable-xim argument... " >&6; }
 # Check whether --enable-xim was given.
@@ -10496,8 +10480,7 @@ rm -f conftest*
   fi
   CPPFLAGS=$cppflags_save
 
-    if test "$enable_xim" = "auto" -a "$enable_hangulinput" != "yes" \
-		-a "x$GUITYPE" != "xNONE" ; then
+    if test "$enable_xim" = "auto" -a "x$GUITYPE" != "xNONE" ; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: X GUI selected; xim has been enabled" >&5
 $as_echo "X GUI selected; xim has been enabled" >&6; }
     enable_xim="yes"
@@ -10673,21 +10656,6 @@ $as_echo "no - using X11" >&6; }
     *)          CYGWIN=no; { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; };;
 esac
-
-if test "$enable_hangulinput" = "yes"; then
-  if test "x$GUITYPE" = "xNONE"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no GUI selected; hangul input has been disabled" >&5
-$as_echo "no GUI selected; hangul input has been disabled" >&6; }
-    enable_hangulinput=no
-  else
-    $as_echo "#define FEAT_HANGULIN 1" >>confdefs.h
-
-    HANGULIN_SRC=hangulin.c
-
-    HANGULIN_OBJ=objects/hangulin.o
-
-  fi
-fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether toupper is broken" >&5
@@ -12572,8 +12540,8 @@ for ac_func in fchdir fchown fchmod fsync getcwd getpseudotty \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \
-	strnicmp strpbrk strtol tgetent towlower towupper iswupper tzset \
-	usleep utime utimes mblen ftruncate unsetenv posix_openpt
+	strnicmp strpbrk strptime strtol tgetent towlower towupper iswupper \
+	tzset usleep utime utimes mblen ftruncate unsetenv posix_openpt
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

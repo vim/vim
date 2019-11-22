@@ -1169,13 +1169,13 @@ gui_update_cursor(
 	if (id > 0)
 	{
 	    cattr = syn_id2colors(id, &cfg, &cbg);
-#if defined(HAVE_INPUT_METHOD) || defined(FEAT_HANGULIN)
+#if defined(HAVE_INPUT_METHOD)
 	    {
 		static int iid;
 		guicolor_T fg, bg;
 
 		if (
-# if defined(FEAT_GUI_GTK) && defined(FEAT_XIM) && !defined(FEAT_HANGULIN)
+# if defined(FEAT_GUI_GTK) && defined(FEAT_XIM)
 			preedit_get_status()
 # else
 			im_get_status()
@@ -1260,35 +1260,14 @@ gui_update_cursor(
 	}
 
 	old_hl_mask = gui.highlight_mask;
-	if (shape->shape == SHAPE_BLOCK
-#ifdef FEAT_HANGULIN
-		|| composing_hangul
-#endif
-	   )
+	if (shape->shape == SHAPE_BLOCK)
 	{
 	    /*
 	     * Draw the text character with the cursor colors.	Use the
 	     * character attributes plus the cursor attributes.
 	     */
 	    gui.highlight_mask = (cattr | attr);
-#ifdef FEAT_HANGULIN
-	    if (composing_hangul)
-	    {
-		char_u *comp_buf;
-		int comp_len;
-
-		comp_buf = hangul_composing_buffer_get(&comp_len);
-		if (comp_buf)
-		{
-		    (void)gui_outstr_nowrap(comp_buf, comp_len,
-					    GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR,
-					    cfg, cbg, 0);
-		    vim_free(comp_buf);
-		}
-	    }
-	    else
-#endif
-		(void)gui_screenchar(LineOffset[gui.row] + gui.col,
+	    (void)gui_screenchar(LineOffset[gui.row] + gui.col,
 			GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR, cfg, cbg, 0);
 	}
 	else
@@ -2641,38 +2620,13 @@ gui_undraw_cursor(void)
 {
     if (gui.cursor_is_valid)
     {
-#ifdef FEAT_HANGULIN
-	if (composing_hangul
-		    && gui.col == gui.cursor_col && gui.row == gui.cursor_row)
-	{
-	    char_u *comp_buf;
-	    int comp_len;
-
-	    comp_buf = hangul_composing_buffer_get(&comp_len);
-	    if (comp_buf)
-	    {
-		(void)gui_outstr_nowrap(comp_buf, comp_len,
-					GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR,
-					gui.norm_pixel, gui.back_pixel, 0);
-		vim_free(comp_buf);
-	    }
-	}
-	else
-	{
-#endif
 	if (gui_redraw_block(gui.cursor_row, gui.cursor_col,
 			      gui.cursor_row, gui.cursor_col, GUI_MON_NOCLEAR)
 		&& gui.cursor_col > 0)
 	    (void)gui_redraw_block(gui.cursor_row, gui.cursor_col - 1,
 			 gui.cursor_row, gui.cursor_col - 1, GUI_MON_NOCLEAR);
-#ifdef FEAT_HANGULIN
-	    if (composing_hangul)
-		(void)gui_redraw_block(gui.cursor_row, gui.cursor_col + 1,
-			gui.cursor_row, gui.cursor_col + 1, GUI_MON_NOCLEAR);
-	}
-#endif
-	/* Cursor_is_valid is reset when the cursor is undrawn, also reset it
-	 * here in case it wasn't needed to undraw it. */
+	// Cursor_is_valid is reset when the cursor is undrawn, also reset it
+	// here in case it wasn't needed to undraw it.
 	gui.cursor_is_valid = FALSE;
     }
 }
@@ -4786,6 +4740,29 @@ gui_get_lightness(guicolor_T pixel)
     return  (int)(  (((rgb >> 16) & 0xff) * 299)
 		   + (((rgb >> 8) & 0xff) * 587)
 		   +  ((rgb	  & 0xff) * 114)) / 1000;
+}
+
+    char_u *
+gui_bg_default(void)
+{
+    if (gui_get_lightness(gui.back_pixel) < 127)
+	return (char_u *)"dark";
+    return (char_u *)"light";
+}
+
+/*
+ * Option initializations that can only be done after opening the GUI window.
+ */
+    void
+init_gui_options(void)
+{
+    /* Set the 'background' option according to the lightness of the
+     * background color, unless the user has set it already. */
+    if (!option_was_set((char_u *)"bg") && STRCMP(p_bg, gui_bg_default()) != 0)
+    {
+	set_option_value((char_u *)"bg", 0L, gui_bg_default(), 0);
+	highlight_changed();
+    }
 }
 
 #if defined(FEAT_GUI_X11) || defined(PROTO)

@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Nov 17
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Nov 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -488,7 +488,7 @@ as a key.
 To avoid having to put quotes around every key the #{} form can be used.  This
 does require the key to consist only of ASCII letters, digits, '-' and '_'.
 Example: >
-	let mydict = #{zero: 0, one_key: 1, two-key: 2, 333: 3}
+	:let mydict = #{zero: 0, one_key: 1, two-key: 2, 333: 3}
 Note that 333 here is the string "333".  Empty keys are not possible with #{}.
 
 A value can be any expression.  Using a Dictionary for a value creates a
@@ -2667,7 +2667,7 @@ remote_read({serverid} [, {timeout}])
 remote_send({server}, {string} [, {idvar}])
 				String	send key sequence
 remote_startserver({name})	none	become server {name}
-remove({list}, {idx} [, {end}])	any/List 
+remove({list}, {idx} [, {end}])	any/List
 					remove items {idx}-{end} from {list}
 remove({blob}, {idx} [, {end}])	Number/Blob
 					remove bytes {idx}-{end} from {blob}
@@ -2770,7 +2770,7 @@ strchars({expr} [, {skipcc}])	Number	character length of the String {expr}
 strcharpart({str}, {start} [, {len}])
 				String	{len} characters of {str} at {start}
 strdisplaywidth({expr} [, {col}]) Number display length of the String {expr}
-strftime({format} [, {time}])	String	time in specified format
+strftime({format} [, {time}])	String	format time with a specified format
 strgetchar({str}, {index})	Number	get char {index} from {str}
 stridx({haystack}, {needle} [, {start}])
 				Number	index of {needle} in {haystack}
@@ -2778,6 +2778,8 @@ string({expr})			String	String representation of {expr} value
 strlen({expr})			Number	length of the String {expr}
 strpart({str}, {start} [, {len}])
 				String	{len} characters of {str} at {start}
+strptime({format}, {timestring})
+				Number	Convert {timestring} to unix timestamp
 strridx({haystack}, {needle} [, {start}])
 				Number	last index of {needle} in {haystack}
 strtrans({expr})		String	translate string to make it printable
@@ -5634,7 +5636,7 @@ getwininfo([{winid}])					*getwininfo()*
 			terminal	1 if a terminal window
 					{only with the +terminal feature}
 			tabnr		tab page number
-			topline		first displayed buffer line 
+			topline		first displayed buffer line
 			variables	a reference to the dictionary with
 					window-local variables
 			width		window width
@@ -5652,7 +5654,7 @@ getwininfo([{winid}])					*getwininfo()*
 
 getwinpos([{timeout}])					*getwinpos()*
 		The result is a list with two numbers, the result of
-		getwinposx() and getwinposy() combined:
+		|getwinposx()| and |getwinposy()| combined:
 			[x-pos, y-pos]
 		{timeout} can be used to specify how long to wait in msec for
 		a response from the terminal.  When omitted 100 msec is used.
@@ -6614,7 +6616,7 @@ listener_remove({id})					*listener_remove()*
 
 localtime()						*localtime()*
 		Return the current time, measured as seconds since 1st Jan
-		1970.  See also |strftime()| and |getftime()|.
+		1970.  See also |strftime()|, |strptime()| and |getftime()|.
 
 
 log({expr})						*log()*
@@ -7103,9 +7105,9 @@ mkdir({name} [, {path} [, {prot}]])
 
 		There is no error if the directory already exists and the "p"
 		flag is passed (since patch 8.0.1708).  However, without the
-		"p" option the call will fail.  
+		"p" option the call will fail.
 
-		The function result is a Number, which is 1 if the call was 
+		The function result is a Number, which is 1 if the call was
 		successful or 0 if the directory creation failed or partly
 		failed.
 
@@ -9267,7 +9269,7 @@ strftime({format} [, {time}])				*strftime()*
 		{format} depends on your system, thus this is not portable!
 		See the manual page of the C function strftime() for the
 		format.  The maximum length of the result is 80 characters.
-		See also |localtime()| and |getftime()|.
+		See also |localtime()|, |getftime()| and |strptime()|.
 		The language can be changed with the |:language| command.
 		Examples: >
 		  :echo strftime("%c")		   Sun Apr 27 11:49:23 1997
@@ -9367,6 +9369,34 @@ strpart({src}, {start} [, {len}])			*strpart()*
 <
 		Can also be used as a |method|: >
 			GetText()->strpart(5)
+
+strptime({format}, {timestring})				*strptime()*
+		The result is a Number, which is a unix timestamp representing
+		the date and time in {timestring}, which is expected to match
+		the format specified in {format}.
+
+		The accepted {format} depends on your system, thus this is not
+		portable!  See the manual page of the C function strptime()
+		for the format.  Especially avoid "%c".  The value of $TZ also
+		matters.
+
+		If the {timestring} cannot be parsed with {format} zero is
+		returned.  If you do not know the format of {timestring} you
+		can try different {format} values until you get a non-zero
+		result.
+
+		See also |strftime()|.
+		Examples: >
+		  :echo strptime("%Y %b %d %X", "1997 Apr 27 11:49:23")
+<		  862156163 >
+		  :echo strftime("%c", strptime("%y%m%d %T", "970427 11:53:55"))
+<		  Sun Apr 27 11:53:55 1997 >
+		  :echo strftime("%c", strptime("%Y%m%d%H%M%S", "19970427115355") + 3600)
+<		  Sun Apr 27 12:53:55 1997
+
+		Not available on all systems.  To check use: >
+			:if exists("*strptime")
+
 
 strridx({haystack}, {needle} [, {start}])			*strridx()*
 		The result is a Number, which gives the byte index in

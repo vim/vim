@@ -2,7 +2,7 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2019 Sep 28
+# Last change:  2019 Nov 21
 #
 # This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
 # with MMS and MMK
@@ -70,13 +70,9 @@ CCVER = YES
 # VIM_RUBY   = YES
 
 # X Input Method.  For entering special languages like chinese and
-# Japanese. Please define just one: VIM_XIM or VIM_HANGULIN
+# Japanese.
 # If you don't need it really, leave it behind the comment.
 # VIM_XIM = YES
-
-# Internal Hangul input method. GUI only.
-# If you don't need it really, leave it behind the comment.
-# VIM_HANGULIN = YES
 
 # Allow any white space to separate the fields in a tags file
 # When not defined, only a TAB is allowed.
@@ -247,15 +243,6 @@ XIM_DEF = ,"FEAT_XIM"
 .ENDIF
 .ENDIF
 
-.IFDEF VIM_HANGULIN
-# HANGULIN related setup.
-.IFDEF GUI
-HANGULIN_DEF = ,"FEAT_HANGULIN"
-HANGULIN_SRC = hangulin.c
-HANGULIN_OBJ = hangulin.obj
-.ENDIF
-.ENDIF
-
 .IFDEF VIM_MZSCHEME
 # MZSCHEME related setup
 MZSCH_DEF = ,"FEAT_MZSCHEME"
@@ -287,7 +274,7 @@ VIMHOST = "''F$TRNLNM("SYS$NODE")'''F$TRNLNM("UCX$INET_HOST")'.''F$TRNLNM("UCX$I
 .SUFFIXES : .obj .c
 
 ALL_CFLAGS = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
- $(TCL_DEF)$(RUBY_DEF)$(XIM_DEF)$(HANGULIN_DEF)$(TAG_DEF)$(MZSCH_DEF) -
+ $(TCL_DEF)$(RUBY_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCH_DEF) -
  $(ICONV_DEF)) -
  $(CFLAGS)$(GUI_FLAG) -
  /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC)$(PERL_INC)$(PYTHON_INC) -
@@ -298,7 +285,7 @@ ALL_CFLAGS = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
 # as $(GUI_INC) - replaced with $(GUI_INC_VER)
 # Otherwise should not be any other difference.
 ALL_CFLAGS_VER = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
- $(TCL_DEF)$(RUBY_DEF)$(XIM_DEF)$(HANGULIN_DEF)$(TAG_DEF)$(MZSCH_DEF) - 
+ $(TCL_DEF)$(RUBY_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCH_DEF) - 
  $(ICONV_DEF)) -
  $(CFLAGS)$(GUI_FLAG) -
  /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC_VER)$(PERL_INC)$(PYTHON_INC) -
@@ -406,7 +393,6 @@ SRC = \
 	$(PYTHON_SRC) \
 	$(TCL_SRC) \
 	$(RUBY_SRC) \
-	$(HANGULIN_SRC) \
 	$(MZSCH_SRC) \
 	$(XDIFF_SRC)
 
@@ -510,7 +496,6 @@ OBJ = \
 	$(PYTHON_OBJ) \
 	$(TCL_OBJ) \
 	$(RUBY_OBJ) \
-	$(HANGULIN_OBJ) \
 	$(MZSCH_OBJ) \
 	$(XDIFF_OBJ)
 
@@ -1070,10 +1055,6 @@ gui_at_fs.obj : gui_at_fs.c vim.h [.auto]config.h feature.h os_unix.h \
 pty.obj : pty.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h
-hangulin.obj : hangulin.c vim.h [.auto]config.h feature.h os_unix.h \
- ascii.h keymap.h term.h macros.h structs.h regexp.h \
- gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
- globals.h
 if_perl.obj : [.auto]if_perl.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
