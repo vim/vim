@@ -197,6 +197,7 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
     exarg_T	ea;
     pos_T	save_cursor;
     int		use_last_pat;
+    int		retval = FALSE;
 
     *skiplen = 0;
     *patlen = ccline.cmdlen;
@@ -213,6 +214,7 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
     if (firstc != ':')
 	return FALSE;
 
+    ++emsg_off;
     vim_memset(&ea, 0, sizeof(ea));
     ea.line1 = 1;
     ea.line2 = 1;
@@ -224,13 +226,13 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 
     cmd = skip_range(ea.cmd, NULL);
     if (vim_strchr((char_u *)"sgvl", *cmd) == NULL)
-	return FALSE;
+	goto theend;
 
     // Skip over "substitute" to find the pattern separator.
     for (p = cmd; ASCII_ISALPHA(*p); ++p)
 	;
     if (*skipwhite(p) == NUL)
-	return FALSE;
+	goto theend;
 
     if (STRNCMP(cmd, "substitute", p - cmd) == 0
 	    || STRNCMP(cmd, "smagic", p - cmd) == 0
@@ -248,7 +250,7 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 	while (ASCII_ISALPHA(*(p = skipwhite(p))))
 	    ++p;
 	if (*p == NUL)
-	    return FALSE;
+	    goto theend;
     }
     else if (STRNCMP(cmd, "vimgrep", MAX(p - cmd, 3)) == 0
 	|| STRNCMP(cmd, "vimgrepadd", MAX(p - cmd, 8)) == 0
@@ -261,13 +263,13 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 	{
 	    p++;
 	    if (*skipwhite(p) == NUL)
-		return FALSE;
+		goto theend;
 	}
 	if (*cmd != 'g')
 	    delim_optional = TRUE;
     }
     else
-	return FALSE;
+	goto theend;
 
     p = skipwhite(p);
     delim = (delim_optional && vim_isIDc(*p)) ? ' ' : *p++;
@@ -276,7 +278,7 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
     use_last_pat = end == p && *end == delim;
 
     if (end == p && !use_last_pat)
-	return FALSE;
+	goto theend;
 
     // Don't do 'hlsearch' highlighting if the pattern matches everything.
     if (!use_last_pat)
@@ -288,7 +290,7 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 	empty = empty_pattern(p);
 	*end = c;
 	if (empty)
-	    return FALSE;
+	    goto theend;
     }
 
     // found a non-empty pattern or //
@@ -321,7 +323,10 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
     }
 
     curwin->w_cursor = save_cursor;
-    return TRUE;
+    retval = TRUE;
+theend:
+    --emsg_off;
+    return retval;
 }
 
     static void
