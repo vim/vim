@@ -4416,7 +4416,7 @@ qf_buf_add_line(buf_T *buf, linenr_T lnum, qfline_T *qfp, char_u *dirname)
 
     if (qfp->qf_module != NULL)
     {
-	STRCPY(IObuff, qfp->qf_module);
+	vim_strncpy(IObuff, qfp->qf_module, IOSIZE - 1);
 	len = (int)STRLEN(IObuff);
     }
     else if (qfp->qf_fnum != 0
@@ -4424,7 +4424,7 @@ qf_buf_add_line(buf_T *buf, linenr_T lnum, qfline_T *qfp, char_u *dirname)
 	    && errbuf->b_fname != NULL)
     {
 	if (qfp->qf_type == 1)	// :helpgrep
-	    STRCPY(IObuff, gettail(errbuf->b_fname));
+	    vim_strncpy(IObuff, gettail(errbuf->b_fname), IOSIZE - 1);
 	else
 	{
 	    // shorten the file name if not done already
@@ -4435,26 +4435,29 @@ qf_buf_add_line(buf_T *buf, linenr_T lnum, qfline_T *qfp, char_u *dirname)
 		    mch_dirname(dirname, MAXPATHL);
 		shorten_buf_fname(errbuf, dirname, FALSE);
 	    }
-	    STRCPY(IObuff, errbuf->b_fname);
+	    vim_strncpy(IObuff, errbuf->b_fname, IOSIZE - 1);
 	}
 	len = (int)STRLEN(IObuff);
     }
     else
 	len = 0;
-    IObuff[len++] = '|';
+
+    if (len < IOSIZE - 1)
+	IObuff[len++] = '|';
 
     if (qfp->qf_lnum > 0)
     {
-	sprintf((char *)IObuff + len, "%ld", qfp->qf_lnum);
+	vim_snprintf((char *)IObuff + len, IOSIZE - len, "%ld", qfp->qf_lnum);
 	len += (int)STRLEN(IObuff + len);
 
 	if (qfp->qf_col > 0)
 	{
-	    sprintf((char *)IObuff + len, " col %d", qfp->qf_col);
+	    vim_snprintf((char *)IObuff + len, IOSIZE - len,
+						       " col %d", qfp->qf_col);
 	    len += (int)STRLEN(IObuff + len);
 	}
 
-	sprintf((char *)IObuff + len, "%s",
+	vim_snprintf((char *)IObuff + len, IOSIZE - len, "%s",
 		(char *)qf_types(qfp->qf_type, qfp->qf_nr));
 	len += (int)STRLEN(IObuff + len);
     }
@@ -4463,8 +4466,11 @@ qf_buf_add_line(buf_T *buf, linenr_T lnum, qfline_T *qfp, char_u *dirname)
 	qf_fmt_text(qfp->qf_pattern, IObuff + len, IOSIZE - len);
 	len += (int)STRLEN(IObuff + len);
     }
-    IObuff[len++] = '|';
-    IObuff[len++] = ' ';
+    if (len < IOSIZE - 2)
+    {
+	IObuff[len++] = '|';
+	IObuff[len++] = ' ';
+    }
 
     // Remove newlines and leading whitespace from the text.
     // For an unrecognized line keep the indent, the compiler may

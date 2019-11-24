@@ -626,10 +626,15 @@ func s:test_xhelpgrep(cchar)
   let w3 = win_getid()
   call assert_true(&buftype == 'help')
   call assert_true(winnr() == 1)
-  call win_gotoid(w1)
-  call assert_equal(w3, win_getid(winnr('k')))
-  call win_gotoid(w2)
-  call assert_equal(w3, win_getid(winnr('k')))
+  " See jump_to_help_window() for details
+  let w2_width = winwidth(w2)
+  if w2_width != &columns && w2_width < 80
+    call assert_equal(['col', [['leaf', w3],
+          \ ['row', [['leaf', w2], ['leaf', w1]]]]], winlayout())
+  else
+    call assert_equal(['row', [['col', [['leaf', w3], ['leaf', w2]]],
+          \ ['leaf', w1]]] , winlayout())
+  endif
 
   new | only
   set buftype=help
