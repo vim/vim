@@ -85,6 +85,7 @@ static int cause_abort = FALSE;
  * until the throw point for error messages has been reached.  That is, during
  * cancellation of an expression evaluation after an aborting function call or
  * due to a parsing error, aborting() always returns the same value.
+ * "got_int" is also set by calling interrupt().
  */
     int
 aborting(void)

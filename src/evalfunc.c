@@ -114,6 +114,7 @@ static void f_inputlist(typval_T *argvars, typval_T *rettv);
 static void f_inputrestore(typval_T *argvars, typval_T *rettv);
 static void f_inputsave(typval_T *argvars, typval_T *rettv);
 static void f_inputsecret(typval_T *argvars, typval_T *rettv);
+static void f_interrupt(typval_T *argvars, typval_T *rettv);
 static void f_invert(typval_T *argvars, typval_T *rettv);
 static void f_islocked(typval_T *argvars, typval_T *rettv);
 #if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
@@ -509,6 +510,7 @@ static funcentry_T global_functions[] =
     {"inputsave",	0, 0, 0,	  f_inputsave},
     {"inputsecret",	1, 2, FEARG_1,	  f_inputsecret},
     {"insert",		2, 3, FEARG_1,	  f_insert},
+    {"interrupt",	0, 0, 0,	  f_interrupt},
     {"invert",		1, 1, FEARG_1,	  f_invert},
     {"isdirectory",	1, 1, FEARG_1,	  f_isdirectory},
 #if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
@@ -4149,6 +4151,15 @@ f_inputsecret(typval_T *argvars, typval_T *rettv)
     f_input(argvars, rettv);
     --cmdline_star;
     --inputsecret_flag;
+}
+
+/*
+ * "interrupt()" function
+ */
+    static void
+f_interrupt(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    got_int = TRUE;
 }
 
 /*
