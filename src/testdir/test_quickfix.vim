@@ -363,6 +363,13 @@ func XfileTests(cchar)
 	\ l[0].lnum == 222 && l[0].col == 77 && l[0].text ==# 'Line 222' &&
 	\ l[1].lnum == 333 && l[1].col == 88 && l[1].text ==# 'Line 333')
 
+  " Test for a file with a long line and without a newline at the end
+  let text = repeat('x', 1024)
+  let t = 'a.txt:18:' . text
+  call writefile([t], 'Xqftestfile1', 'b')
+  silent! Xfile Xqftestfile1
+  call assert_equal(text, g:Xgetlist()[0].text)
+
   call delete('Xqftestfile1')
 endfunc
 
@@ -619,15 +626,10 @@ func s:test_xhelpgrep(cchar)
   let w3 = win_getid()
   call assert_true(&buftype == 'help')
   call assert_true(winnr() == 1)
-  " See jump_to_help_window() for details
-  let w2_width = winwidth(w2)
-  if w2_width != &columns && w2_width < 80
-    call assert_equal(['col', [['leaf', w3],
-          \ ['row', [['leaf', w2], ['leaf', w1]]]]], winlayout())
-  else
-    call assert_equal(['row', [['col', [['leaf', w3], ['leaf', w2]]],
-          \ ['leaf', w1]]] , winlayout())
-  endif
+  call win_gotoid(w1)
+  call assert_equal(w3, win_getid(winnr('k')))
+  call win_gotoid(w2)
+  call assert_equal(w3, win_getid(winnr('k')))
 
   new | only
   set buftype=help
@@ -1133,6 +1135,10 @@ func Xinvalid_efm_Tests(cchar)
   set efm=%f:%l:%m,%f:%l:%m:%R
   call assert_fails('Xexpr "abc.txt:1:Hello world"', 'E377:')
 
+  " Invalid regular expression
+  set efm=%\\%%k
+  call assert_fails('Xexpr "abc.txt:1:Hello world"', 'E867:')
+
   set efm=
   call assert_fails('Xexpr "abc.txt:1:Hello world"', 'E378:')
 
@@ -1157,11 +1163,16 @@ func Test_efm2()
   set efm=%f:%s
   cexpr 'Xtestfile:Line search text'
   let l = getqflist()
-  call assert_equal(l[0].pattern, '^\VLine search text\$')
-  call assert_equal(l[0].lnum, 0)
+  call assert_equal('^\VLine search text\$', l[0].pattern)
+  call assert_equal(0, l[0].lnum)
 
   let l = split(execute('clist', ''), "\n")
   call assert_equal([' 1 Xtestfile:^\VLine search text\$:  '], l)
+
+  " Test for a long line
+  cexpr 'Xtestfile:' . repeat('a', 1026)
+  let l = getqflist()
+  call assert_equal('^\V' . repeat('a', 1019) . '\$', l[0].pattern)
 
   " Test for %P, %Q and %t format specifiers
   let lines =<< trim [DATA]
@@ -1200,6 +1211,14 @@ func Test_efm2()
   call delete('Xtestfile1')
   call delete('Xtestfile2')
   call delete('Xtestfile3')
+
+  " Test for %P, %Q with non-existing files
+  cexpr lines
+  let l = getqflist()
+  call assert_equal(14, len(l))
+  call assert_equal('[Xtestfile1]', l[0].text)
+  call assert_equal('[Xtestfile2]', l[6].text)
+  call assert_equal('[Xtestfile3]', l[9].text)
 
   " Tests for %E, %C and %Z format specifiers
   let lines =<< trim [DATA]
@@ -1242,19 +1261,20 @@ func Test_efm2()
       File "/usr/lib/python2.2/unittest.py", line 286, in
      failUnlessEqual
         raise self.failureException, \\
-    AssertionError: 34 != 33
+    W:AssertionError: 34 != 33
   
     --------------------------------------------------------------
     Ran 27 tests in 0.063s
   [DATA]
 
-  set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m
+  set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%t:%m
   cgetexpr lines
   let l = getqflist()
   call assert_equal(8, len(l))
   call assert_equal(89, l[4].lnum)
   call assert_equal(1, l[4].valid)
   call assert_equal('unittests/dbfacadeTest.py', bufname(l[4].bufnr))
+  call assert_equal('W', l[4].type)
 
   " Test for %o
   set efm=%f(%o):%l\ %m
@@ -1270,6 +1290,13 @@ func Test_efm2()
   cclose
   bd
   call delete("Xotestfile")
+
+  " Test for a long module name
+  cexpr 'Xtest(' . repeat('m', 1026) . '):15 message'
+  let l = getqflist()
+  call assert_equal(repeat('m', 1024), l[0].module)
+  call assert_equal(15, l[0].lnum)
+  call assert_equal('message', l[0].text)
 
   " The following sequence of commands used to crash Vim
   set efm=%W%m
