@@ -4452,7 +4452,7 @@ qf_buf_add_line(buf_T *buf, linenr_T lnum, qfline_T *qfp, char_u *dirname)
 
 	if (qfp->qf_col > 0)
 	{
-	    vim_snprintf((char *)IObuff + len, IOSIZE, " col %d", qfp->qf_col);
+	    vim_snprintf((char *)IObuff + len, IOSIZE - len, " col %d", qfp->qf_col);
 	    len += (int)STRLEN(IObuff + len);
 	}
 
