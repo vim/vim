@@ -4655,17 +4655,17 @@ msgstr "E554: Синтаксна грешка у %s{...}"
 
 #, c-format
 msgid "E888: (NFA regexp) cannot repeat %s"
-msgstr "E888: (NFA regexp) не може да се понови %s"
+msgstr "E888: (НКА регизраз) не може да се понови %s"
 
 msgid ""
 "E864: \\%#= can only be followed by 0, 1, or 2. The automatic engine will be "
 "used "
 msgstr ""
 "E864: Иза \\%#= може да следи једино 0, 1, или 2. Користиће се аутоматски "
-"енџин "
+"механизам "
 
 msgid "Switching to backtracking RE engine for pattern: "
-msgstr "Пребацивање на backtracking RE енџин за шаблон: "
+msgstr "Пребацивање на РИ механизам са погледом уназад за шаблон: "
 
 msgid "E65: Illegal back reference"
 msgstr "E65: Неважећа повратна референца"
@@ -4718,51 +4718,51 @@ msgid "E339: Pattern too long"
 msgstr "E339: Шаблон је предугачак"
 
 msgid "External submatches:\n"
-msgstr "Спољна подпоклапања:\n"
+msgstr "Спољна под-подударања:\n"
 
 msgid "E865: (NFA) Regexp end encountered prematurely"
-msgstr "E865: Крај (NFA) Regexp израза је достигнут прерано"
+msgstr "E865: (НКА) прерано је достигнут крај регизраза"
 
 #, c-format
 msgid "E866: (NFA regexp) Misplaced %c"
-msgstr "E866: (NFA regexp) %c је на погрешном месту"
+msgstr "E866: (НКА регизраз) %c је на погрешном месту"
 
 #, c-format
 msgid "E877: (NFA regexp) Invalid character class: %d"
-msgstr "E877: (NFA regexp) Неважећа карактер класа: %d"
+msgstr "E877: (НКА регизраз) Неважећа карактер класа: %d"
 
 #, c-format
 msgid "E867: (NFA) Unknown operator '\\z%c'"
-msgstr "E867: (NFA) Непознати оператор '\\z%c'"
+msgstr "E867: (НКА) Непознати оператор '\\z%c'"
 
 msgid "E951: \\% value too large"
 msgstr "E951: Вредност \\% је предугачка"
 
 #, c-format
 msgid "E867: (NFA) Unknown operator '\\%%%c'"
-msgstr "E867: (NFA) Непознати оператор '\\%%%c'"
+msgstr "E867: (НКА) Непознати оператор '\\%%%c'"
 
 msgid "E868: Error building NFA with equivalence class!"
-msgstr "E868: Грешка при грађењу NFA са класом еквиваленције!"
+msgstr "E868: Грешка при грађењу НКА са класом еквиваленције!"
 
 #, c-format
 msgid "E869: (NFA) Unknown operator '\\@%c'"
-msgstr "E869: (NFA) Непознати оператор '\\@%c'"
+msgstr "E869: (НКА) Непознати оператор '\\@%c'"
 
 msgid "E870: (NFA regexp) Error reading repetition limits"
-msgstr "E870: (NFA regexp) Грешка при читању граница понављања"
+msgstr "E870: (НКА регизраз) Грешка при читању граница понављања"
 
 msgid "E871: (NFA regexp) Can't have a multi follow a multi"
-msgstr "E871: (NFA regexp) Мулти не може следи иза мулти"
+msgstr "E871: (НКА регизраз) Мулти не може следи иза мулти"
 
 msgid "E872: (NFA regexp) Too many '('"
-msgstr "E872: (NFA regexp) Превише '('"
+msgstr "E872: (НКА регизраз) Превише '('"
 
 msgid "E879: (NFA regexp) Too many \\z("
-msgstr "E879: (NFA regexp) Превише \\z("
+msgstr "E879: (НКА регизраз) Превише \\z("
 
 msgid "E873: (NFA regexp) proper termination error"
-msgstr "E873: (NFA regexp) грешка правилне терминације"
+msgstr "E873: (НКА регизраз) грешка правилне терминације"
 
 msgid "Could not open temporary log file for writing, displaying on stderr... "
 msgstr ""
@@ -4770,21 +4770,21 @@ msgstr ""
 "stderr... "
 
 msgid "E874: (NFA) Could not pop the stack!"
-msgstr "E874: (NFA) Скидање са стека није успело!"
+msgstr "E874: (НКА) Скидање са стека није успело!"
 
 msgid ""
 "E875: (NFA regexp) (While converting from postfix to NFA), too many states "
 "left on stack"
 msgstr ""
-"E875: (NFA regexp) (Док је вршена конверзија из postfix у NFA), превише "
-"стања је остало на стеку"
+"E875: (НКА регизраз) (Док је вршена конверзија из постфикног облика у "
+"НКА), превише стања је остало на стеку"
 
 msgid "E876: (NFA regexp) Not enough space to store the whole NFA "
 msgstr ""
-"E876: (NFA regexp) Нема довољно простора да се ускладишти комплетан NFA "
+"E876: (НКА регизраз) Нема довољно простора да се ускладишти комплетан НКА "
 
 msgid "E878: (NFA) Could not allocate memory for branch traversal!"
-msgstr "E878: (NFA) Није могла да се алоцира меморија за обилазак грана!"
+msgstr "E878: (НКА) Није могла да се алоцира меморија за обилазак грана!"
 
 msgid "E748: No previously used register"
 msgstr "E748: Нема претходно коришћеног регистра"
