@@ -2161,12 +2161,6 @@ dnl Farsi language support has been removed, ignore --disable-farsi
 AC_ARG_ENABLE(farsi,
 	[  --disable-farsi         Deprecated.],,)
 
-AC_MSG_CHECKING(--enable-hangulinput argument)
-AC_ARG_ENABLE(hangulinput,
-	[  --enable-hangulinput    Include Hangul input support.], ,
-	[enable_hangulinput="no"])
-AC_MSG_RESULT($enable_hangulinput)
-
 AC_MSG_CHECKING(--enable-xim argument)
 AC_ARG_ENABLE(xim,
 	[  --enable-xim            Include XIM input support.],
@@ -3058,9 +3052,8 @@ if test -z "$SKIP_ATHENA" -o -z "$SKIP_NEXTAW" -o -z "$SKIP_MOTIF" -o -z "$SKIP_
   fi
   CPPFLAGS=$cppflags_save
 
-  dnl automatically enable XIM when hangul input isn't enabled
-  if test "$enable_xim" = "auto" -a "$enable_hangulinput" != "yes" \
-		-a "x$GUITYPE" != "xNONE" ; then
+  dnl automatically enable XIM in the GUI
+  if test "$enable_xim" = "auto" -a "x$GUITYPE" != "xNONE" ; then
     AC_MSG_RESULT(X GUI selected; xim has been enabled)
     enable_xim="yes"
   fi
@@ -3177,20 +3170,6 @@ case `uname` in
 
     *)          CYGWIN=no; AC_MSG_RESULT(no);;
 esac
-
-dnl Only really enable hangul input when GUI and XFONTSET are available
-if test "$enable_hangulinput" = "yes"; then
-  if test "x$GUITYPE" = "xNONE"; then
-    AC_MSG_RESULT(no GUI selected; hangul input has been disabled)
-    enable_hangulinput=no
-  else
-    AC_DEFINE(FEAT_HANGULIN)
-    HANGULIN_SRC=hangulin.c
-    AC_SUBST(HANGULIN_SRC)
-    HANGULIN_OBJ=objects/hangulin.o
-    AC_SUBST(HANGULIN_OBJ)
-  fi
-fi
 
 dnl Checks for libraries and include files.
 
@@ -3744,8 +3723,8 @@ AC_CHECK_FUNCS(fchdir fchown fchmod fsync getcwd getpseudotty \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \
-	strnicmp strpbrk strtol tgetent towlower towupper iswupper tzset \
-	usleep utime utimes mblen ftruncate unsetenv posix_openpt)
+	strnicmp strpbrk strptime strtol tgetent towlower towupper iswupper \
+	tzset usleep utime utimes mblen ftruncate unsetenv posix_openpt)
 AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_FSEEKO
 

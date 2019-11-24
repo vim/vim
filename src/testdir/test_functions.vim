@@ -181,9 +181,8 @@ func Test_str2nr()
 endfunc
 
 func Test_strftime()
-  if !exists('*strftime')
-    return
-  endif
+  CheckFunction strftime
+
   " Format of strftime() depends on system. We assume
   " that basic formats tested here are available and
   " identical on all systems which support strftime().
@@ -222,7 +221,28 @@ func Test_strftime()
   else
     unlet $TZ
   endif
+endfunc
 
+func Test_strptime()
+  CheckFunction strptime
+
+  if exists('$TZ')
+    let tz = $TZ
+  endif
+  let $TZ = 'UTC'
+
+  call assert_equal(1484653763, strptime('%Y-%m-%d %X', '2017-01-17 11:49:23'))
+
+  call assert_fails('call strptime()', 'E119:')
+  call assert_fails('call strptime("xxx")', 'E119:')
+  call assert_equal(0, strptime("%Y", ''))
+  call assert_equal(0, strptime("%Y", "xxx"))
+
+  if exists('tz')
+    let $TZ = tz
+  else
+    unlet $TZ
+  endif
 endfunc
 
 func Test_resolve_unix()

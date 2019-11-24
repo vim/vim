@@ -2822,7 +2822,6 @@ mouse_comp_pos(
     int		retval = FALSE;
     int		off;
     int		count;
-    char_u	*p;
 
 #ifdef FEAT_RIGHTLEFT
     if (win->w_p_rl)
@@ -2882,11 +2881,6 @@ mouse_comp_pos(
 	col += row * (win->w_width - off);
 	// add skip column (for long wrapping line)
 	col += win->w_skipcol;
-	// limit to text length plus one
-	p = ml_get_buf(win->w_buffer, lnum, FALSE);
-	count = STRLEN(p);
-	if (col > count)
-	    col = count;
     }
 
     if (!win->w_p_wrap)
@@ -3053,7 +3047,17 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	    col -= left_off;
 	    if (row >= 0 && row < wp->w_height && col >= 0 && col < wp->w_width)
 	    {
+		char_u	*p;
+		int	count;
+
 		mouse_comp_pos(wp, &row, &col, &line, NULL);
+
+		// limit to text length plus one
+		p = ml_get_buf(wp->w_buffer, line, FALSE);
+		count = (int)STRLEN(p);
+		if (col > count)
+		    col = count;
+
 		column = col + 1;
 	    }
 	}

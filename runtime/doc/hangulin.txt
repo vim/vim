@@ -1,112 +1,17 @@
-*hangulin.txt*  For Vim version 8.1.  Last change: 2015 Nov 24
+*hangulin.txt*  For Vim version 8.1.  Last change: 2019 Nov 21
 
 
 		  VIM REFERENCE MANUAL    by Chi-Deok Hwang and Sung-Hyun Nam
 
+						*hangul*
+Vim had built-in support for hangul, the Korean language, for users without
+XIM (X Input Method).  Since it didn't work well and was not maintained it was
+removed in Vim 8.1.2327.
 
-Introduction					*hangul*
-------------
-It is to input hangul, the Korean language, with Vim GUI version.
-If you have a XIM program, you can use another |+xim| feature.
-Basically, it is for anybody who has no XIM program.
+If you want this hangul input mehod you can go back to Vim 8.1.2326 or
+earlier.  If you think this code is still useful and want to maintain it, make
+a patch to add it back.  However, making it work with UTF-8 encoding would be
+best.
 
-Compile
--------
-Next is a basic option.  You can add any other configure option. >
-
-   ./configure --with-x --enable-multibyte --enable-hangulinput \
-            --disable-xim
-
-And you should check feature.h.  If |+hangul_input| feature is enabled
-by configure, you can select more options such as keyboard type, 2 bulsik
-or 3 bulsik.  You can find keywords like next in there. >
-
-	#define HANGUL_DEFAULT_KEYBOARD 2
-	#define ESC_CHG_TO_ENG_MODE
-	/* #define X_LOCALE */
-
-Environment variables
----------------------
-You should set LANG variable to Korean locale such as ko, ko_KR.eucKR
-or ko_KR.UTF-8.
-If you set LC_ALL variable, it should be set to Korean locale also.
-
-Vim resource
-------------
-You may want to set 'encoding' and 'fileencodings'.
-Next are examples: >
-
-	:set encoding=euc-kr
-	:set encoding=utf-8
-	:set fileencodings=ucs-bom,utf-8,cp949,euc-kr,latin1
-
-Keyboard
---------
-You can change keyboard type (2 bulsik or 3 bulsik) using VIM_KEYBOARD
-or HANGUL_KEYBOARD_TYPE environment variables.  For sh, just do (2 bulsik): >
-
-    export VIM_KEYBOARD="2"
-or >
-    export HANGUL_KEYBOARD_TYPE="2"
-
-If both are set, VIM_KEYBOARD has higher priority.
-
-Hangul Fonts
-------------
-If you use GTK version of gvim, you should set 'guifont' and 'guifontwide'.
-For example: >
-    set guifont=Courier\ 12
-    set guifontwide=NanumGothicCoding\ 12
-
-If you use Motif or Athena version of gvim, you should set 'guifontset' in
-your vimrc.  You can set fontset in the .Xdefaults file.
-
-$HOME/.gvimrc: >
-    set guifontset=english_font,hangul_font
-
-$HOME/.Xdefaults: >
-    Vim.font: english_font
-
-    ! Nexts are for hangul menu with Athena
-    *international: True
-    Vim*fontSet: english_font,hangul_font
-
-    ! Nexts are for hangul menu with Motif
-    *international: True
-    Vim*fontList: english_font;hangul_font:
-
-attention! the , (comma) or ; (semicolon)
-
-And there should be no ':set guifont'.  If it exists, then gvim ignores
-':set guifontset'.  It means Vim runs without fontset supporting.
-So, you can see only English.  Hangul does not be correctly displayed.
-
-After "fontset" feature is enabled, Vim does not allow using english
-font only in "font" setting for syntax.
-For example, if you use >
-   :set guifontset=eng_font,your_font
-in your .gvimrc, then you should do for syntax >
-   :hi Comment guifg=Cyan font=another_eng_font,another_your_font
-If you just do >
-   :hi Comment font=another_eng_font
-then you can see a error message.  Be careful!
-
-hangul_font width should be twice than english_font width.
-
-Unsupported Feature
--------------------
-We don't support Johab font.
-We don't support Hanja input.
-And We don't have any plan to support them.
-
-If you really need such features, you can use console version of Vim with a
-capable terminal emulator.
-
-Bug or Comment
---------------
-Send comments, patches and suggestions to:
-
-				    SungHyun Nam <goweol@gmail.com>
-				    Chi-Deok Hwang <...>
 
  vim:tw=78:ts=8:noet:ft=help:norl:

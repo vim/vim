@@ -37,7 +37,6 @@
 
 static void set_options_default(int opt_flags);
 static void set_string_default_esc(char *name, char_u *val, int escape);
-static char_u *term_bg_default(void);
 static char_u *option_expand(int opt_idx, char_u *val);
 static void didset_options(void);
 static void didset_options2(void);
@@ -800,40 +799,6 @@ set_init_2(void)
 }
 
 /*
- * Return "dark" or "light" depending on the kind of terminal.
- * This is just guessing!  Recognized are:
- * "linux"	    Linux console
- * "screen.linux"   Linux console with screen
- * "cygwin.*"	    Cygwin shell
- * "putty.*"	    Putty program
- * We also check the COLORFGBG environment variable, which is set by
- * rxvt and derivatives. This variable contains either two or three
- * values separated by semicolons; we want the last value in either
- * case. If this value is 0-6 or 8, our background is dark.
- */
-    static char_u *
-term_bg_default(void)
-{
-#if defined(MSWIN)
-    /* DOS console is nearly always black */
-    return (char_u *)"dark";
-#else
-    char_u	*p;
-
-    if (STRCMP(T_NAME, "linux") == 0
-	    || STRCMP(T_NAME, "screen.linux") == 0
-	    || STRNCMP(T_NAME, "cygwin", 6) == 0
-	    || STRNCMP(T_NAME, "putty", 5) == 0
-	    || ((p = mch_getenv((char_u *)"COLORFGBG")) != NULL
-		&& (p = vim_strrchr(p, ';')) != NULL
-		&& ((p[1] >= '0' && p[1] <= '6') || p[1] == '8')
-		&& p[2] == NUL))
-	return (char_u *)"dark";
-    return (char_u *)"light";
-#endif
-}
-
-/*
  * Initialize the options, part three: After reading the .vimrc
  */
     void
@@ -1053,31 +1018,6 @@ set_helplang_default(char_u *lang)
 	    p_hlg[2] = NUL;
 	}
 	options[idx].flags |= P_ALLOCED;
-    }
-}
-#endif
-
-#ifdef FEAT_GUI
-    static char_u *
-gui_bg_default(void)
-{
-    if (gui_get_lightness(gui.back_pixel) < 127)
-	return (char_u *)"dark";
-    return (char_u *)"light";
-}
-
-/*
- * Option initializations that can only be done after opening the GUI window.
- */
-    void
-init_gui_options(void)
-{
-    /* Set the 'background' option according to the lightness of the
-     * background color, unless the user has set it already. */
-    if (!option_was_set((char_u *)"bg") && STRCMP(p_bg, gui_bg_default()) != 0)
-    {
-	set_option_value((char_u *)"bg", 0L, gui_bg_default(), 0);
-	highlight_changed();
     }
 }
 #endif
@@ -2177,29 +2117,6 @@ string_to_key(char_u *arg, int multi_byte)
     return *arg;
 }
 
-#if defined(FEAT_CMDWIN) || defined(PROTO)
-/*
- * Check value of 'cedit' and set cedit_key.
- * Returns NULL if value is OK, error message otherwise.
- */
-    char *
-check_cedit(void)
-{
-    int n;
-
-    if (*p_cedit == NUL)
-	cedit_key = -1;
-    else
-    {
-	n = string_to_key(p_cedit, FALSE);
-	if (vim_isprintc(n))
-	    return e_invarg;
-	cedit_key = n;
-    }
-    return NULL;
-}
-#endif
-
 #ifdef FEAT_TITLE
 /*
  * When changing 'title', 'titlestring', 'icon' or 'iconstring', call
@@ -2507,99 +2424,6 @@ valid_name(char_u *val, char *allowed)
 	    return FALSE;
     return TRUE;
 }
-
-#if defined(FEAT_CLIPBOARD) || defined(PROTO)
-/*
- * Extract the items in the 'clipboard' option and set global values.
- * Return an error message or NULL for success.
- */
-    char *
-check_clipboard_option(void)
-{
-    int		new_unnamed = 0;
-    int		new_autoselect_star = FALSE;
-    int		new_autoselect_plus = FALSE;
-    int		new_autoselectml = FALSE;
-    int		new_html = FALSE;
-    regprog_T	*new_exclude_prog = NULL;
-    char	*errmsg = NULL;
-    char_u	*p;
-
-    for (p = p_cb; *p != NUL; )
-    {
-	if (STRNCMP(p, "unnamed", 7) == 0 && (p[7] == ',' || p[7] == NUL))
-	{
-	    new_unnamed |= CLIP_UNNAMED;
-	    p += 7;
-	}
-	else if (STRNCMP(p, "unnamedplus", 11) == 0
-					    && (p[11] == ',' || p[11] == NUL))
-	{
-	    new_unnamed |= CLIP_UNNAMED_PLUS;
-	    p += 11;
-	}
-	else if (STRNCMP(p, "autoselect", 10) == 0
-					    && (p[10] == ',' || p[10] == NUL))
-	{
-	    new_autoselect_star = TRUE;
-	    p += 10;
-	}
-	else if (STRNCMP(p, "autoselectplus", 14) == 0
-					    && (p[14] == ',' || p[14] == NUL))
-	{
-	    new_autoselect_plus = TRUE;
-	    p += 14;
-	}
-	else if (STRNCMP(p, "autoselectml", 12) == 0
-					    && (p[12] == ',' || p[12] == NUL))
-	{
-	    new_autoselectml = TRUE;
-	    p += 12;
-	}
-	else if (STRNCMP(p, "html", 4) == 0 && (p[4] == ',' || p[4] == NUL))
-	{
-	    new_html = TRUE;
-	    p += 4;
-	}
-	else if (STRNCMP(p, "exclude:", 8) == 0 && new_exclude_prog == NULL)
-	{
-	    p += 8;
-	    new_exclude_prog = vim_regcomp(p, RE_MAGIC);
-	    if (new_exclude_prog == NULL)
-		errmsg = e_invarg;
-	    break;
-	}
-	else
-	{
-	    errmsg = e_invarg;
-	    break;
-	}
-	if (*p == ',')
-	    ++p;
-    }
-    if (errmsg == NULL)
-    {
-	clip_unnamed = new_unnamed;
-	clip_autoselect_star = new_autoselect_star;
-	clip_autoselect_plus = new_autoselect_plus;
-	clip_autoselectml = new_autoselectml;
-	clip_html = new_html;
-	vim_regfree(clip_exclude_prog);
-	clip_exclude_prog = new_exclude_prog;
-#ifdef FEAT_GUI_GTK
-	if (gui.in_use)
-	{
-	    gui_gtk_set_selection_targets();
-	    gui_gtk_set_dnd_targets();
-	}
-#endif
-    }
-    else
-	vim_regfree(new_exclude_prog);
-
-    return errmsg;
-}
-#endif
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 /*
@@ -6983,60 +6807,6 @@ fill_breakat_flags(void)
 #endif
 
 /*
- * Read the 'wildmode' option, fill wim_flags[].
- */
-    int
-check_opt_wim(void)
-{
-    char_u	new_wim_flags[4];
-    char_u	*p;
-    int		i;
-    int		idx = 0;
-
-    for (i = 0; i < 4; ++i)
-	new_wim_flags[i] = 0;
-
-    for (p = p_wim; *p; ++p)
-    {
-	for (i = 0; ASCII_ISALPHA(p[i]); ++i)
-	    ;
-	if (p[i] != NUL && p[i] != ',' && p[i] != ':')
-	    return FAIL;
-	if (i == 7 && STRNCMP(p, "longest", 7) == 0)
-	    new_wim_flags[idx] |= WIM_LONGEST;
-	else if (i == 4 && STRNCMP(p, "full", 4) == 0)
-	    new_wim_flags[idx] |= WIM_FULL;
-	else if (i == 4 && STRNCMP(p, "list", 4) == 0)
-	    new_wim_flags[idx] |= WIM_LIST;
-	else if (i == 8 && STRNCMP(p, "lastused", 8) == 0)
-	    new_wim_flags[idx] |= WIM_BUFLASTUSED;
-	else
-	    return FAIL;
-	p += i;
-	if (*p == NUL)
-	    break;
-	if (*p == ',')
-	{
-	    if (idx == 3)
-		return FAIL;
-	    ++idx;
-	}
-    }
-
-    /* fill remaining entries with last flag */
-    while (idx < 3)
-    {
-	new_wim_flags[idx + 1] = new_wim_flags[idx];
-	++idx;
-    }
-
-    /* only when there are no errors, wim_flags[] is changed */
-    for (i = 0; i < 4; ++i)
-	wim_flags[i] = new_wim_flags[i];
-    return OK;
-}
-
-/*
  * Check if backspacing over something is allowed.
  */
     int
@@ -7054,57 +6824,6 @@ can_bs(
 	case '0':	return FALSE;
     }
     return vim_strchr(p_bs, what) != NULL;
-}
-
-/*
- * Save the current values of 'fileformat' and 'fileencoding', so that we know
- * the file must be considered changed when the value is different.
- */
-    void
-save_file_ff(buf_T *buf)
-{
-    buf->b_start_ffc = *buf->b_p_ff;
-    buf->b_start_eol = buf->b_p_eol;
-    buf->b_start_bomb = buf->b_p_bomb;
-
-    /* Only use free/alloc when necessary, they take time. */
-    if (buf->b_start_fenc == NULL
-			     || STRCMP(buf->b_start_fenc, buf->b_p_fenc) != 0)
-    {
-	vim_free(buf->b_start_fenc);
-	buf->b_start_fenc = vim_strsave(buf->b_p_fenc);
-    }
-}
-
-/*
- * Return TRUE if 'fileformat' and/or 'fileencoding' has a different value
- * from when editing started (save_file_ff() called).
- * Also when 'endofline' was changed and 'binary' is set, or when 'bomb' was
- * changed and 'binary' is not set.
- * Also when 'endofline' was changed and 'fixeol' is not set.
- * When "ignore_empty" is true don't consider a new, empty buffer to be
- * changed.
- */
-    int
-file_ff_differs(buf_T *buf, int ignore_empty)
-{
-    /* In a buffer that was never loaded the options are not valid. */
-    if (buf->b_flags & BF_NEVERLOADED)
-	return FALSE;
-    if (ignore_empty
-	    && (buf->b_flags & BF_NEW)
-	    && buf->b_ml.ml_line_count == 1
-	    && *ml_get_buf(buf, (linenr_T)1, FALSE) == NUL)
-	return FALSE;
-    if (buf->b_start_ffc != *buf->b_p_ff)
-	return TRUE;
-    if ((buf->b_p_bin || !buf->b_p_fixeol) && buf->b_start_eol != buf->b_p_eol)
-	return TRUE;
-    if (!buf->b_p_bin && buf->b_start_bomb != buf->b_p_bomb)
-	return TRUE;
-    if (buf->b_start_fenc == NULL)
-	return (*buf->b_p_fenc != NUL);
-    return (STRCMP(buf->b_start_fenc, buf->b_p_fenc) != 0);
 }
 
 /*
@@ -7126,148 +6845,6 @@ get_sidescrolloff_value(void)
 {
     return curwin->w_p_siso < 0 ? p_siso : curwin->w_p_siso;
 }
-
-/*
- * Check matchpairs option for "*initc".
- * If there is a match set "*initc" to the matching character and "*findc" to
- * the opposite character.  Set "*backwards" to the direction.
- * When "switchit" is TRUE swap the direction.
- */
-    void
-find_mps_values(
-    int	    *initc,
-    int	    *findc,
-    int	    *backwards,
-    int	    switchit)
-{
-    char_u	*ptr;
-
-    ptr = curbuf->b_p_mps;
-    while (*ptr != NUL)
-    {
-	if (has_mbyte)
-	{
-	    char_u *prev;
-
-	    if (mb_ptr2char(ptr) == *initc)
-	    {
-		if (switchit)
-		{
-		    *findc = *initc;
-		    *initc = mb_ptr2char(ptr + mb_ptr2len(ptr) + 1);
-		    *backwards = TRUE;
-		}
-		else
-		{
-		    *findc = mb_ptr2char(ptr + mb_ptr2len(ptr) + 1);
-		    *backwards = FALSE;
-		}
-		return;
-	    }
-	    prev = ptr;
-	    ptr += mb_ptr2len(ptr) + 1;
-	    if (mb_ptr2char(ptr) == *initc)
-	    {
-		if (switchit)
-		{
-		    *findc = *initc;
-		    *initc = mb_ptr2char(prev);
-		    *backwards = FALSE;
-		}
-		else
-		{
-		    *findc = mb_ptr2char(prev);
-		    *backwards = TRUE;
-		}
-		return;
-	    }
-	    ptr += mb_ptr2len(ptr);
-	}
-	else
-	{
-	    if (*ptr == *initc)
-	    {
-		if (switchit)
-		{
-		    *backwards = TRUE;
-		    *findc = *initc;
-		    *initc = ptr[2];
-		}
-		else
-		{
-		    *backwards = FALSE;
-		    *findc = ptr[2];
-		}
-		return;
-	    }
-	    ptr += 2;
-	    if (*ptr == *initc)
-	    {
-		if (switchit)
-		{
-		    *backwards = FALSE;
-		    *findc = *initc;
-		    *initc = ptr[-2];
-		}
-		else
-		{
-		    *backwards = TRUE;
-		    *findc =  ptr[-2];
-		}
-		return;
-	    }
-	    ++ptr;
-	}
-	if (*ptr == ',')
-	    ++ptr;
-    }
-}
-
-#if defined(FEAT_LINEBREAK) || defined(PROTO)
-/*
- * This is called when 'breakindentopt' is changed and when a window is
- * initialized.
- */
-    int
-briopt_check(win_T *wp)
-{
-    char_u	*p;
-    int		bri_shift = 0;
-    long	bri_min = 20;
-    int		bri_sbr = FALSE;
-
-    p = wp->w_p_briopt;
-    while (*p != NUL)
-    {
-	if (STRNCMP(p, "shift:", 6) == 0
-		 && ((p[6] == '-' && VIM_ISDIGIT(p[7])) || VIM_ISDIGIT(p[6])))
-	{
-	    p += 6;
-	    bri_shift = getdigits(&p);
-	}
-	else if (STRNCMP(p, "min:", 4) == 0 && VIM_ISDIGIT(p[4]))
-	{
-	    p += 4;
-	    bri_min = getdigits(&p);
-	}
-	else if (STRNCMP(p, "sbr", 3) == 0)
-	{
-	    p += 3;
-	    bri_sbr = TRUE;
-	}
-	if (*p != ',' && *p != NUL)
-	    return FAIL;
-	if (*p == ',')
-	    ++p;
-    }
-
-    wp->w_p_brishift = bri_shift;
-    wp->w_p_brimin   = bri_min;
-    wp->w_p_brisbr   = bri_sbr;
-
-    return OK;
-}
-#endif
 
 /*
  * Get the local or global value of 'backupcopy'.

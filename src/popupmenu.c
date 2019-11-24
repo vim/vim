@@ -628,7 +628,7 @@ pum_redraw(void)
     void
 pum_position_info_popup(win_T *wp)
 {
-    int col = pum_col + pum_width + 1;
+    int col = pum_col + pum_width + pum_scrollbar + 1;
     int row = pum_row;
     int botpos = POPPOS_BOTLEFT;
 
@@ -745,7 +745,7 @@ pum_set_selected(int n, int repeat UNUSED)
 #if defined(FEAT_QUICKFIX)
 	/*
 	 * Show extra info in the preview window if there is something and
-	 * 'completeopt' contains "preview" or "popup".
+	 * 'completeopt' contains "preview" or "popup" or "popuphidden".
 	 * Skip this when tried twice already.
 	 * Skip this also when there is not much room.
 	 * NOTE: Be very careful not to sync undo!
@@ -1209,42 +1209,46 @@ split_message(char_u *mesg, pumitem_T **array)
 	int	cells;
 
 	item = ((balpart_T *)ga.ga_data) + item_idx;
-	for (skip = 0; skip < item->bytelen; skip += thislen)
-	{
-	    if (split_long_items && item->cells >= BALLOON_MIN_WIDTH)
+	if (item->bytelen == 0)
+	    (*array)[line++].pum_text = vim_strsave((char_u *)"");
+	else
+	    for (skip = 0; skip < item->bytelen; skip += thislen)
 	    {
-		cells = item->indent * 2;
-		for (p = item->start + skip; p < item->start + item->bytelen;
+		if (split_long_items && item->cells >= BALLOON_MIN_WIDTH)
+		{
+		    cells = item->indent * 2;
+		    for (p = item->start + skip;
+			    p < item->start + item->bytelen;
 							    p += mb_ptr2len(p))
-		    if ((cells += ptr2cells(p)) > BALLOON_MIN_WIDTH)
+			if ((cells += ptr2cells(p)) > BALLOON_MIN_WIDTH)
+			    break;
+		    thislen = p - (item->start + skip);
+		}
+		else
+		    thislen = item->bytelen;
+
+		// put indent at the start
+		p = alloc(thislen + item->indent * 2 + 1);
+		if (p == NULL)
+		{
+		    for (line = 0; line <= height - 1; ++line)
+			vim_free((*array)[line].pum_text);
+		    vim_free(*array);
+		    goto failed;
+		}
+		for (ind = 0; ind < item->indent * 2; ++ind)
+		    p[ind] = ' ';
+
+		// exclude spaces at the end of the string
+		for (copylen = thislen; copylen > 0; --copylen)
+		    if (item->start[skip + copylen - 1] != ' ')
 			break;
-		thislen = p - (item->start + skip);
+
+		vim_strncpy(p + ind, item->start + skip, copylen);
+		(*array)[line].pum_text = p;
+		item->indent = 0;  /* wrapped line has no indent */
+		++line;
 	    }
-	    else
-		thislen = item->bytelen;
-
-	    // put indent at the start
-	    p = alloc(thislen + item->indent * 2 + 1);
-	    if (p == NULL)
-	    {
-		for (line = 0; line <= height - 1; ++line)
-		    vim_free((*array)[line].pum_text);
-		vim_free(*array);
-		goto failed;
-	    }
-	    for (ind = 0; ind < item->indent * 2; ++ind)
-		p[ind] = ' ';
-
-	    // exclude spaces at the end of the string
-	    for (copylen = thislen; copylen > 0; --copylen)
-		if (item->start[skip + copylen - 1] != ' ')
-		    break;
-
-	    vim_strncpy(p + ind, item->start + skip, copylen);
-	    (*array)[line].pum_text = p;
-	    item->indent = 0;  /* wrapped line has no indent */
-	    ++line;
-	}
     }
     ga_clear(&ga);
     return height;

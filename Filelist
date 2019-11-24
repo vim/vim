@@ -401,7 +401,6 @@ SRC_UNIX =	\
 		src/gui_xmebwp.h \
 		src/gui_x11.c \
 		src/gui_x11_pm.h \
-		src/hangulin.c \
 		src/if_xcmdsrv.c \
 		src/link.sh \
 		src/installman.sh \
@@ -421,7 +420,6 @@ SRC_UNIX =	\
 		src/proto/gui_motif.pro \
 		src/proto/gui_xmdlg.pro \
 		src/proto/gui_x11.pro \
-		src/proto/hangulin.pro \
 		src/proto/if_xcmdsrv.pro \
 		src/proto/os_unix.pro \
 		src/proto/pty.pro \

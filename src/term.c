@@ -2898,6 +2898,40 @@ term_bg_color(int n)
 	term_color(T_CSB, n);
 }
 
+/*
+ * Return "dark" or "light" depending on the kind of terminal.
+ * This is just guessing!  Recognized are:
+ * "linux"	    Linux console
+ * "screen.linux"   Linux console with screen
+ * "cygwin.*"	    Cygwin shell
+ * "putty.*"	    Putty program
+ * We also check the COLORFGBG environment variable, which is set by
+ * rxvt and derivatives. This variable contains either two or three
+ * values separated by semicolons; we want the last value in either
+ * case. If this value is 0-6 or 8, our background is dark.
+ */
+    char_u *
+term_bg_default(void)
+{
+#if defined(MSWIN)
+    /* DOS console is nearly always black */
+    return (char_u *)"dark";
+#else
+    char_u	*p;
+
+    if (STRCMP(T_NAME, "linux") == 0
+	    || STRCMP(T_NAME, "screen.linux") == 0
+	    || STRNCMP(T_NAME, "cygwin", 6) == 0
+	    || STRNCMP(T_NAME, "putty", 5) == 0
+	    || ((p = mch_getenv((char_u *)"COLORFGBG")) != NULL
+		&& (p = vim_strrchr(p, ';')) != NULL
+		&& ((p[1] >= '0' && p[1] <= '6') || p[1] == '8')
+		&& p[2] == NUL))
+	return (char_u *)"dark";
+    return (char_u *)"light";
+#endif
+}
+
 #if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
 
 #define RED(rgb)   (((long_u)(rgb) >> 16) & 0xFF)

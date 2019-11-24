@@ -965,11 +965,6 @@ EXTERN guicolor_T	xim_bg_color INIT(= INVALCOLOR);
 # endif
 #endif
 
-#ifdef FEAT_HANGULIN
-EXTERN int		composing_hangul INIT(= 0);
-EXTERN char_u		composing_hangul_buffer[5];
-#endif
-
 /*
  * "State" is the main state of Vim.
  * There are other variables that modify the state:
@@ -1254,7 +1249,6 @@ EXTERN int	km_stopsel INIT(= FALSE);
 EXTERN int	km_startsel INIT(= FALSE);
 
 #ifdef FEAT_CMDWIN
-EXTERN int	cedit_key INIT(= -1);	// key value of 'cedit' option
 EXTERN int	cmdwin_type INIT(= 0);	// type of cmdline window or 0
 EXTERN int	cmdwin_result INIT(= 0); // result of cmdline window or 0
 #endif
