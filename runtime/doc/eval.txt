@@ -7641,12 +7641,12 @@ range({expr} [, {max} [, {stride}]])				*range()*
 <
 							*rand()*
 rand([{expr}])
-		Return random Number generated from {expr}:
-		{expr} is need to initialize by |srand()|.
-		If {expr} is not specified, return random Number from internal
-		values initialized.
+		Return xorshift random Number generated from seed {expr}:
+		If {expr} is omitted, internal seed value is initialized and
+		used. {expr} can be initialized by |srand()|.
 
 		Examples: >
+			:echo rand()
 			:let r = srand()
 			:echo rand(r)
 <
@@ -9144,13 +9144,12 @@ sqrt({expr})						*sqrt()*
 
 
 srand([{expr}])						*srand()*
-		Return xorshift random generator. This return value is used for
-		|rand()| to get random Number.
-		- If {expr} is not given, return initialized seed values.
-		- If {expr} is negative value, return seed initialized with
-		  time(NULL).
-		- If {expr} is positive value, return seed values which x
-		  element is {expr}.
+		Initialize xorshift random seed:
+		This return seed value for |rand()|.
+		- If {expr} is not given, return seed values initialized by
+		  time(NULL) a.k.a. epoch time.
+		- If {expr} is given, return seed values which x element is
+		  {expr}.
 
 state([{what}])						*state()*
 		Return a string which contains characters indicating the

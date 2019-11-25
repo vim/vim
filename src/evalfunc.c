@@ -3932,79 +3932,6 @@ f_iconv(typval_T *argvars UNUSED, typval_T *rettv)
 }
 
 /*
- * "rand()" function
- */
-    static void
-f_rand(typval_T *argvars, typval_T *rettv)
-{
-    list_T	*l = NULL;
-    UINT32_TYPEDEF x, y, z, w, t;
-    static int static_seed_initialized = FALSE;
-    static UINT32_TYPEDEF xyzw[4] = {123456789, 362436069, 521288629, 88675123};
-
-#define SHUFFLE_XORSHIFT128 \
-	t = x ^ (x << 11); \
-	x = y; y = z; z = w; \
-	w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
-
-    if (argvars[0].v_type == VAR_UNKNOWN)
-    {
-	/* When argument is not given, return random number initialized
-	 * statically. */
-	if (!static_seed_initialized)
-	{
-	    xyzw[0] = (varnumber_T)time(NULL);
-	    static_seed_initialized = TRUE;
-	}
-
-	x = xyzw[0];
-	y = xyzw[1];
-	z = xyzw[2];
-	w = xyzw[3];
-	SHUFFLE_XORSHIFT128;
-	xyzw[0] = x;
-	xyzw[1] = y;
-	xyzw[2] = z;
-	xyzw[3] = w;
-    }
-    else if (argvars[0].v_type == VAR_LIST)
-    {
-	listitem_T	*lx, *ly, *lz, *lw;
-
-	l = argvars[0].vval.v_list;
-	if (list_len(l) != 4)
-	    goto theend;
-
-	lx = list_find(l, 0L);
-	ly = list_find(l, 1L);
-	lz = list_find(l, 2L);
-	lw = list_find(l, 3L);
-	if (lx->li_tv.v_type != VAR_NUMBER) goto theend;
-	if (ly->li_tv.v_type != VAR_NUMBER) goto theend;
-	if (lz->li_tv.v_type != VAR_NUMBER) goto theend;
-	if (lw->li_tv.v_type != VAR_NUMBER) goto theend;
-	x = (UINT32_TYPEDEF)lx->li_tv.vval.v_number;
-	y = (UINT32_TYPEDEF)ly->li_tv.vval.v_number;
-	z = (UINT32_TYPEDEF)lz->li_tv.vval.v_number;
-	w = (UINT32_TYPEDEF)lw->li_tv.vval.v_number;
-	SHUFFLE_XORSHIFT128;
-	lx->li_tv.vval.v_number = (varnumber_T)x;
-	ly->li_tv.vval.v_number = (varnumber_T)y;
-	lz->li_tv.vval.v_number = (varnumber_T)z;
-	lw->li_tv.vval.v_number = (varnumber_T)w;
-    }
-    else
-	goto theend;
-
-    rettv->v_type = VAR_NUMBER;
-    rettv->vval.v_number = (varnumber_T)w;
-    return;
-
-theend:
-    semsg(_(e_invarg2), tv_get_string(&argvars[0]));
-}
-
-/*
  * "index()" function
  */
     static void
@@ -5202,6 +5129,81 @@ f_pyxeval(typval_T *argvars, typval_T *rettv)
 # elif defined(FEAT_PYTHON3)
     f_py3eval(argvars, rettv);
 # endif
+}
+#endif
+
+#ifdef FEAT_FLOAT
+/*
+ * "rand()" function
+ */
+    static void
+f_rand(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l = NULL;
+    UINT32_T x, y, z, w, t;
+    static int	rand_seed_initialized = FALSE;
+    static UINT32_T xyzw[4] = {123456789, 362436069, 521288629, 88675123};
+
+#define SHUFFLE_XORSHIFT128 \
+	t = x ^ (x << 11); \
+	x = y; y = z; z = w; \
+	w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
+
+    if (argvars[0].v_type == VAR_UNKNOWN)
+    {
+	/* When argument is not given, return random number initialized
+	 * statically. */
+	if (!rand_seed_initialized)
+	{
+	    xyzw[0] = (varnumber_T)time(NULL);
+	    rand_seed_initialized = TRUE;
+	}
+
+	x = xyzw[0];
+	y = xyzw[1];
+	z = xyzw[2];
+	w = xyzw[3];
+	SHUFFLE_XORSHIFT128;
+	xyzw[0] = x;
+	xyzw[1] = y;
+	xyzw[2] = z;
+	xyzw[3] = w;
+    }
+    else if (argvars[0].v_type == VAR_LIST)
+    {
+	listitem_T	*lx, *ly, *lz, *lw;
+
+	l = argvars[0].vval.v_list;
+	if (list_len(l) != 4)
+	    goto theend;
+
+	lx = list_find(l, 0L);
+	ly = list_find(l, 1L);
+	lz = list_find(l, 2L);
+	lw = list_find(l, 3L);
+	if (lx->li_tv.v_type != VAR_NUMBER) goto theend;
+	if (ly->li_tv.v_type != VAR_NUMBER) goto theend;
+	if (lz->li_tv.v_type != VAR_NUMBER) goto theend;
+	if (lw->li_tv.v_type != VAR_NUMBER) goto theend;
+	x = (UINT32_T)lx->li_tv.vval.v_number;
+	y = (UINT32_T)ly->li_tv.vval.v_number;
+	z = (UINT32_T)lz->li_tv.vval.v_number;
+	w = (UINT32_T)lw->li_tv.vval.v_number;
+	SHUFFLE_XORSHIFT128;
+	lx->li_tv.vval.v_number = (varnumber_T)x;
+	ly->li_tv.vval.v_number = (varnumber_T)y;
+	lz->li_tv.vval.v_number = (varnumber_T)z;
+	lw->li_tv.vval.v_number = (varnumber_T)w;
+    }
+    else
+	goto theend;
+
+    rettv->v_type = VAR_NUMBER;
+    rettv->vval.v_number = (varnumber_T)w;
+    return;
+
+theend:
+    semsg(_(e_invarg2), tv_get_string(&argvars[0]));
 }
 #endif
 
@@ -6849,33 +6851,7 @@ f_sin(typval_T *argvars, typval_T *rettv)
     else
 	rettv->vval.v_float = 0.0;
 }
-#endif
 
-/*
- * "srand()" function
- */
-    static void
-f_srand(typval_T *argvars, typval_T *rettv)
-{
-    if (rettv_list_alloc(rettv) == FAIL)
-	return;
-    if (argvars[0].v_type == VAR_UNKNOWN)
-	list_append_number(rettv->vval.v_list, 123456789);
-    else
-    {
-	int error = FALSE;
-	UINT32_TYPEDEF x = (UINT32_TYPEDEF)tv_get_number_chk(&argvars[0], &error);
-	if (error)
-	    return;
-
-	list_append_number(rettv->vval.v_list, x);
-    }
-    list_append_number(rettv->vval.v_list, 362436069);
-    list_append_number(rettv->vval.v_list, 521288629);
-    list_append_number(rettv->vval.v_list, 88675123);
-}
-
-#ifdef FEAT_FLOAT
 /*
  * "sinh()" function
  */
@@ -7113,6 +7089,30 @@ f_sqrt(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_float = sqrt(f);
     else
 	rettv->vval.v_float = 0.0;
+}
+
+/*
+ * "srand()" function
+ */
+    static void
+f_srand(typval_T *argvars, typval_T *rettv)
+{
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    if (argvars[0].v_type == VAR_UNKNOWN)
+	list_append_number(rettv->vval.v_list, (varnumber_T)time(NULL));
+    else
+    {
+	int error = FALSE;
+	UINT32_T x = (UINT32_T)tv_get_number_chk(&argvars[0], &error);
+	if (error)
+	    return;
+
+	list_append_number(rettv->vval.v_list, x);
+    }
+    list_append_number(rettv->vval.v_list, 362436069);
+    list_append_number(rettv->vval.v_list, 521288629);
+    list_append_number(rettv->vval.v_list, 88675123);
 }
 
 /*
