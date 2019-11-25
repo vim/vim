@@ -9152,6 +9152,11 @@ srand([{expr}])						*srand()*
 		- If {expr} is given, return seed values which x element is
 		  {expr}.
 
+		Examples: >
+			:call srand()
+			:call srand(localtime())
+			:let r = srand()
+			:echo rand(r)
 state([{what}])						*state()*
 		Return a string which contains characters indicating the
 		current state.  Mostly useful in callbacks that want to do
