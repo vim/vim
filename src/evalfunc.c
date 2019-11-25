@@ -4005,21 +4005,6 @@ theend:
 }
 
 /*
- * "indent()" function
- */
-    static void
-f_indent(typval_T *argvars, typval_T *rettv)
-{
-    linenr_T	lnum;
-
-    lnum = tv_get_lnum(argvars);
-    if (lnum >= 1 && lnum <= curbuf->b_ml.ml_line_count)
-	rettv->vval.v_number = get_indent_lnum(lnum);
-    else
-	rettv->vval.v_number = -1;
-}
-
-/*
  * "index()" function
  */
     static void
