@@ -129,13 +129,6 @@
 
 // on some systems time.h should not be included together with sys/time.h
 #if !defined(HAVE_SYS_TIME_H) || defined(TIME_WITH_SYS_TIME)
-// Needed for strptime()
-# ifndef _XOPEN_SOURCE
-#  define _XOPEN_SOURCE
-# endif
-# ifndef __USE_XOPEN
-#  define __USE_XOPEN
-# endif
 # include <time.h>
 #endif
 #ifdef HAVE_SYS_TIME_H

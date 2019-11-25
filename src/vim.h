@@ -36,8 +36,18 @@
     Error: configure did not run properly.  Check auto/config.log.
 # endif
 
+# ifdef UNIX
+// Needed for strptime()
+#  ifndef _XOPEN_SOURCE
+#   define _XOPEN_SOURCE    600
+#  endif
+#  ifndef __USE_XOPEN
+#   define __USE_XOPEN
+#  endif
+# endif
+
 // for INT_MAX, LONG_MAX et al.
-#include <limits.h>
+# include <limits.h>
 
 /*
  * Cygwin may have fchdir() in a newer release, but in most versions it
