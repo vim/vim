@@ -87,7 +87,6 @@ static char_u	*replace_makeprg(exarg_T *eap, char_u *p, char_u **cmdlinep);
 static char_u	*repl_cmdline(exarg_T *eap, char_u *src, int srclen, char_u *repl, char_u **cmdlinep);
 static void	ex_highlight(exarg_T *eap);
 static void	ex_colorscheme(exarg_T *eap);
-static void	ex_quit(exarg_T *eap);
 static void	ex_cquit(exarg_T *eap);
 static void	ex_quit_all(exarg_T *eap);
 static void	ex_close(exarg_T *eap);
@@ -559,6 +558,27 @@ do_exmode(
 }
 
 /*
+ * Print the executed command for when 'verbose' is set.
+ * When "lnum" is 0 only print the command.
+ */
+    static void
+msg_verbose_cmd(linenr_T lnum, char_u *cmd)
+{
+    ++no_wait_return;
+    verbose_enter_scroll();
+
+    if (lnum == 0)
+	smsg(_("Executing: %s"), cmd);
+    else
+	smsg(_("line %ld: %s"), (long)lnum, cmd);
+    if (msg_silent == 0)
+	msg_puts("\n");   // don't overwrite this
+
+    verbose_leave_scroll();
+    --no_wait_return;
+}
+
+/*
  * Execute a simple command line.  Used for translated commands like "*".
  */
     int
@@ -944,18 +964,7 @@ do_cmdline(
 	}
 
 	if (p_verbose >= 15 && sourcing_name != NULL)
-	{
-	    ++no_wait_return;
-	    verbose_enter_scroll();
-
-	    smsg(_("line %ld: %s"),
-					   (long)sourcing_lnum, cmdline_copy);
-	    if (msg_silent == 0)
-		msg_puts("\n");   /* don't overwrite this */
-
-	    verbose_leave_scroll();
-	    --no_wait_return;
-	}
+	    msg_verbose_cmd(sourcing_lnum, cmdline_copy);
 
 	/*
 	 * 2. Execute one '|' separated command.
@@ -1665,6 +1674,9 @@ do_one_cmd(
     /* "#!anything" is handled like a comment. */
     if ((*cmdlinep)[0] == '#' && (*cmdlinep)[1] == '!')
 	goto doend;
+
+    if (p_verbose >= 16)
+	msg_verbose_cmd(0, *cmdlinep);
 
 /*
  * 1. Skip comment lines and leading white space and colons.
@@ -3587,7 +3599,7 @@ get_address(
 			curwin->w_cursor.col = 0;
 		    searchcmdlen = 0;
 		    flags = silent ? 0 : SEARCH_HIS | SEARCH_MSG;
-		    if (!do_search(NULL, c, cmd, 1L, flags, NULL, NULL))
+		    if (!do_search(NULL, c, cmd, 1L, flags, NULL))
 		    {
 			curwin->w_cursor = pos;
 			cmd = NULL;
@@ -3641,8 +3653,7 @@ get_address(
 		    pos.coladd = 0;
 		    if (searchit(curwin, curbuf, &pos, NULL,
 				*cmd == '?' ? BACKWARD : FORWARD,
-				(char_u *)"", 1L, SEARCH_MSG,
-					i, (linenr_T)0, NULL, NULL) != FAIL)
+				(char_u *)"", 1L, SEARCH_MSG, i, NULL) != FAIL)
 			lnum = pos.lnum;
 		    else
 		    {
@@ -4199,7 +4210,8 @@ expand_filename(
 		else /* n == 2 */
 		{
 		    expand_T	xpc;
-		    int		options = WILD_LIST_NOTFOUND|WILD_ADD_SLASH;
+		    int		options = WILD_LIST_NOTFOUND
+					       | WILD_NOERROR | WILD_ADD_SLASH;
 
 		    ExpandInit(&xpc);
 		    xpc.xp_context = EXPAND_FILES;
@@ -4805,9 +4817,9 @@ before_quit_autocmds(win_T *wp, int quit_all, int forceit)
 {
     apply_autocmds(EVENT_QUITPRE, NULL, NULL, FALSE, wp->w_buffer);
 
-    /* Bail out when autocommands closed the window.
-     * Refuse to quit when the buffer in the last window is being closed (can
-     * only happen in autocommands). */
+    // Bail out when autocommands closed the window.
+    // Refuse to quit when the buffer in the last window is being closed (can
+    // only happen in autocommands).
     if (!win_valid(wp)
 	    || curbuf_locked()
 	    || (wp->w_buffer->b_nwindows == 1 && wp->w_buffer->b_locked > 0))
@@ -4816,9 +4828,10 @@ before_quit_autocmds(win_T *wp, int quit_all, int forceit)
     if (quit_all || (check_more(FALSE, forceit) == OK && only_one_window()))
     {
 	apply_autocmds(EVENT_EXITPRE, NULL, NULL, FALSE, curbuf);
-	/* Refuse to quit when locked or when the buffer in the last window is
-	 * being closed (can only happen in autocommands). */
-	if (curbuf_locked()
+	// Refuse to quit when locked or when the window was closed or the
+	// buffer in the last window is being closed (can only happen in
+	// autocommands).
+	if (!win_valid(wp) || curbuf_locked()
 			  || (curbuf->b_nwindows == 1 && curbuf->b_locked > 0))
 	    return TRUE;
     }
@@ -4829,8 +4842,9 @@ before_quit_autocmds(win_T *wp, int quit_all, int forceit)
 /*
  * ":quit": quit current window, quit Vim if the last window is closed.
  * ":{nr}quit": quit window {nr}
+ * Also used when closing a terminal window that's the last one.
  */
-    static void
+    void
 ex_quit(exarg_T *eap)
 {
     win_T	*wp;
@@ -7335,7 +7349,7 @@ close_redir(void)
 
 #if (defined(FEAT_SESSION) || defined(FEAT_EVAL)) || defined(PROTO)
     int
-vim_mkdir_emsg(char_u *name, int prot)
+vim_mkdir_emsg(char_u *name, int prot UNUSED)
 {
     if (vim_mkdir(name, prot) != 0)
     {
@@ -7578,9 +7592,7 @@ ex_normal(exarg_T *eap)
 
     restore_current_state(&save_state);
     --ex_normal_busy;
-#ifdef FEAT_MOUSE
     setmouse();
-#endif
 #ifdef CURSOR_SHAPE
     ui_cursor_shape();		/* may show different cursor shape */
 #endif
@@ -8536,9 +8548,9 @@ ex_folddo(exarg_T *eap)
 {
     linenr_T	lnum;
 
-#ifdef FEAT_CLIPBOARD
+# ifdef FEAT_CLIPBOARD
     start_global_changes();
-#endif
+# endif
 
     /* First set the marks for all lines closed/open. */
     for (lnum = eap->line1; lnum <= eap->line2; ++lnum)
@@ -8548,9 +8560,9 @@ ex_folddo(exarg_T *eap)
     /* Execute the command on the marked lines. */
     global_exe(eap->arg);
     ml_clearmarked();	   /* clear rest of the marks */
-#ifdef FEAT_CLIPBOARD
+# ifdef FEAT_CLIPBOARD
     end_global_changes();
-#endif
+# endif
 }
 #endif
 
@@ -8568,7 +8580,7 @@ is_loclist_cmd(int cmdidx)
 }
 #endif
 
-# if defined(FEAT_TIMERS) || defined(PROTO)
+#if defined(FEAT_TIMERS) || defined(PROTO)
     int
 get_pressedreturn(void)
 {

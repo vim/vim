@@ -9,7 +9,7 @@ func Test_cd_up_and_down()
   let path = getcwd()
   cd ..
   call assert_notequal(path, getcwd())
-  exe 'cd ' . path
+  exe 'cd ' .. fnameescape(path)
   call assert_equal(path, getcwd())
 endfunc
 
@@ -20,7 +20,7 @@ func Test_cd_no_arg()
     cd
     call assert_equal($HOME, getcwd())
     call assert_notequal(path, getcwd())
-    exe 'cd ' . path
+    exe 'cd ' .. fnameescape(path)
     call assert_equal(path, getcwd())
   else
     " Test that cd without argument echoes cwd on non-Unix systems.
@@ -58,7 +58,7 @@ func Test_cd_with_cpo_chdir()
 
   " :cd should succeed when buffer has been written.
   w!
-  exe 'cd ' . path
+  exe 'cd ' .. fnameescape(path)
   call assert_equal(path, getcwd())
 
   call delete('Xfoo')
@@ -103,6 +103,6 @@ func Test_chdir_func()
   call assert_equal("", d)
 
   only | tabonly
-  exe 'cd ' . topdir
+  call chdir(topdir)
   call delete('Xdir', 'rf')
 endfunc

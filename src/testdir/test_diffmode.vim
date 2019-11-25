@@ -905,6 +905,42 @@ func Test_diff_with_cursorline()
   call delete('Xtest_diff_cursorline')
 endfunc
 
+func Test_diff_with_syntax()
+  CheckScreendump
+
+  let lines =<< trim END
+  	void doNothing() {
+	   int x = 0;
+	   char *s = "hello";
+	   return 5;
+	}
+  END
+  call writefile(lines, 'Xprogram1.c')
+  let lines =<< trim END
+  	void doSomething() {
+	   int x = 0;
+	   char *s = "there";
+	   return 5;
+	}
+  END
+  call writefile(lines, 'Xprogram2.c')
+
+  let lines =<< trim END
+  	edit Xprogram1.c
+	diffsplit Xprogram2.c
+  END
+  call writefile(lines, 'Xtest_diff_syntax')
+  let buf = RunVimInTerminal('-S Xtest_diff_syntax', {})
+
+  call VerifyScreenDump(buf, 'Test_diff_syntax_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_diff_syntax')
+  call delete('Xprogram1.c')
+  call delete('Xprogram2.c')
+endfunc
+
 func Test_diff_of_diff()
   CheckScreendump
   CheckFeature rightleft
@@ -927,4 +963,48 @@ func Test_diff_of_diff()
   " clean up
   call StopVimInTerminal(buf)
   call delete('Xtest_diff_diff')
+endfunc
+
+func CloseoffSetup()
+  enew
+  call setline(1, ['one', 'two', 'three'])
+  diffthis
+  new
+  call setline(1, ['one', 'tow', 'three'])
+  diffthis
+  call assert_equal(1, &diff)
+  only!
+endfunc
+
+func Test_diff_closeoff()
+  " "closeoff" included by default: last diff win gets 'diff' reset'
+  call CloseoffSetup()
+  call assert_equal(0, &diff)
+  enew!
+
+  " "closeoff" excluded: last diff win keeps 'diff' set'
+  set diffopt-=closeoff
+  call CloseoffSetup()
+  call assert_equal(1, &diff)
+  diffoff!
+  enew!
+endfunc
+
+func Test_diff_maintains_change_mark()
+  enew!
+  call setline(1, ['a', 'b', 'c', 'd'])
+  diffthis
+  new
+  call setline(1, ['a', 'b', 'c', 'e'])
+  " Set '[ and '] marks
+  2,3yank
+  call assert_equal([2, 3], [line("'["), line("']")])
+  " Verify they aren't affected by the implicit diff
+  diffthis
+  call assert_equal([2, 3], [line("'["), line("']")])
+  " Verify they aren't affected by an explicit diff
+  diffupdate
+  call assert_equal([2, 3], [line("'["), line("']")])
+  bwipe!
+  bwipe!
 endfunc

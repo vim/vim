@@ -804,9 +804,9 @@ ml_open_file(buf_T *buf)
 	}
     }
 
-    if (mfp->mf_fname == NULL)		/* Failed! */
+    if (*p_dir != NUL && mfp->mf_fname == NULL)
     {
-	need_wait_return = TRUE;	/* call wait_return later */
+	need_wait_return = TRUE;	// call wait_return later
 	++no_wait_return;
 	(void)semsg(_("E303: Unable to open swap file for \"%s\", recovery impossible"),
 		    buf_spname(buf) != NULL ? buf_spname(buf) : buf->b_fname);
@@ -2101,7 +2101,7 @@ static char	tz_cache[64];
     struct tm *
 vim_localtime(
     const time_t	*timep,		// timestamp for local representation
-    struct tm		*result)	// pointer to caller return buffer
+    struct tm		*result UNUSED)	// pointer to caller return buffer
 {
 #ifdef HAVE_LOCALTIME_R
 # ifdef HAVE_TZSET
@@ -2318,7 +2318,7 @@ swapfile_unchanged(char_u *fname)
 	ret = FALSE;
 
 #if defined(UNIX) || defined(MSWIN)
-    // process must known and not be running
+    // process must be known and not be running
     pid = char_to_long(b0.b0_pid);
     if (pid == 0L || mch_process_running(pid))
 	ret = FALSE;
@@ -2663,7 +2663,10 @@ errorret:
 		/* Avoid giving this message for a recursive call, may happen
 		 * when the GUI redraws part of the text. */
 		++recursive;
-		siemsg(_("E316: ml_get: cannot find line %ld"), lnum);
+		get_trans_bufname(buf);
+		shorten_dir(NameBuff);
+		siemsg(_("E316: ml_get: cannot find line %ld in buffer %d %s"),
+						  lnum, buf->b_fnum, NameBuff);
 		--recursive;
 	    }
 	    goto errorret;

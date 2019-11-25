@@ -1,5 +1,7 @@
 " Tests for window cmd (:wincmd, :split, :vsplit, :resize and etc...)
 
+so check.vim
+
 func Test_window_cmd_ls0_with_split()
   set ls=0
   set splitbelow
@@ -557,6 +559,33 @@ func Test_access_freed_mem()
   call assert_equal(&columns, winwidth(0))
 endfunc
 
+func Test_insert_cleared_on_switch_to_term()
+  CheckFeature terminal
+
+  set showmode
+  terminal
+  wincmd p
+
+  call feedkeys("i\<C-O>", 'ntx')
+  redraw
+
+  " The "-- (insert) --" indicator should be visible.
+  let chars = map(range(1, &columns), 'nr2char(screenchar(&lines, v:val))')
+  let str = trim(join(chars, ''))
+  call assert_equal('-- (insert) --', str)
+
+  call feedkeys("\<C-W>p", 'ntx')
+  redraw
+
+  " The "-- (insert) --" indicator should have been cleared.
+  let chars = map(range(1, &columns), 'nr2char(screenchar(&lines, v:val))')
+  let str = trim(join(chars, ''))
+  call assert_equal('', str)
+
+  set showmode&
+  %bw!
+endfunc
+
 func Test_visual_cleared_after_window_split()
   new | only!
   let smd_save = &showmode
@@ -855,6 +884,39 @@ func Test_winrestview()
   call assert_equal(view, winsaveview())
 
   bwipe!
+endfunc
+
+func Test_win_splitmove()
+  edit a
+  leftabove split b
+  leftabove vsplit c
+  leftabove split d
+  call assert_equal(0, win_splitmove(winnr(), winnr('l')))
+  call assert_equal(bufname(winbufnr(1)), 'c')
+  call assert_equal(bufname(winbufnr(2)), 'd')
+  call assert_equal(bufname(winbufnr(3)), 'b')
+  call assert_equal(bufname(winbufnr(4)), 'a')
+  call assert_equal(0, win_splitmove(winnr(), winnr('j'), {'vertical': 1}))
+  call assert_equal(0, win_splitmove(winnr(), winnr('j'), {'vertical': 1}))
+  call assert_equal(bufname(winbufnr(1)), 'c')
+  call assert_equal(bufname(winbufnr(2)), 'b')
+  call assert_equal(bufname(winbufnr(3)), 'd')
+  call assert_equal(bufname(winbufnr(4)), 'a')
+  call assert_equal(0, win_splitmove(winnr(), winnr('k'), {'vertical': 1}))
+  call assert_equal(bufname(winbufnr(1)), 'd')
+  call assert_equal(bufname(winbufnr(2)), 'c')
+  call assert_equal(bufname(winbufnr(3)), 'b')
+  call assert_equal(bufname(winbufnr(4)), 'a')
+  call assert_equal(0, win_splitmove(winnr(), winnr('j'), {'rightbelow': v:true}))
+  call assert_equal(bufname(winbufnr(1)), 'c')
+  call assert_equal(bufname(winbufnr(2)), 'b')
+  call assert_equal(bufname(winbufnr(3)), 'a')
+  call assert_equal(bufname(winbufnr(4)), 'd')
+  only | bd
+
+  call assert_fails('call win_splitmove(winnr(), 123)', 'E957:')
+  call assert_fails('call win_splitmove(123, winnr())', 'E957:')
+  call assert_fails('call win_splitmove(winnr(), winnr())', 'E957:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

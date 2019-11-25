@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.1.  Last change: 2019 Sep 04
+*various.txt*   For Vim version 8.1.  Last change: 2019 Oct 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -337,7 +337,7 @@ N  *+clientserver*	Unix and Win32: Remote invocation |clientserver|
 T  *+cmdline_compl*	command line completion |cmdline-completion|
 S  *+cmdline_hist*	command line history |cmdline-history|
 N  *+cmdline_info*	|'showcmd'| and |'ruler'|
-N  *+comments*		|'comments'| support
+T  *+comments*		|'comments'| support
 B  *+conceal*		"conceal" support, see |conceal| |:syn-conceal| etc.
 N  *+cryptv*		encryption support |encryption|
 B  *+cscope*		|cscope| support
@@ -389,7 +389,7 @@ m  *+lua/dyn*		|Lua| interface |/dyn|
 N  *+menu*		|:menu|
 N  *+mksession*		|:mksession|
 T  *+modify_fname*	|filename-modifiers|
-N  *+mouse*		Mouse handling |mouse-using|
+T  *+mouse*		Mouse handling |mouse-using|
 N  *+mouseshape*	|'mouseshape'|
 B  *+mouse_dec*		Unix only: Dec terminal mouse handling |dec-mouse|
 N  *+mouse_gpm*		Unix only: Linux console mouse handling |gpm-mouse|
@@ -575,6 +575,8 @@ N  *+X11*		Unix only: can restore window title |X11|
 			   |:marks|      - filter by text in the current file,
 					   or file name for other files
 			   |:oldfiles|   - filter by file name
+			   |:registers|  - filter by register contents
+					   (does not work multi-line)
 			   |:set|        - filter by variable name
 
 			Only normal messages are filtered, error messages are

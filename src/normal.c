@@ -14,32 +14,14 @@
 
 #include "vim.h"
 
-/*
- * The Visual area is remembered for reselection.
- */
-static int	resel_VIsual_mode = NUL;	/* 'v', 'V', or Ctrl-V */
-static linenr_T	resel_VIsual_line_count;	/* number of lines */
-static colnr_T	resel_VIsual_vcol;		/* nr of cols or end col */
-static int	VIsual_mode_orig = NUL;		/* saved Visual mode */
-
+static int	VIsual_mode_orig = NUL;		// saved Visual mode
 static int	restart_VIsual_select = 0;
 
 #ifdef FEAT_EVAL
 static void	set_vcount_ca(cmdarg_T *cap, int *set_prevcount);
 #endif
 static int	nv_compare(const void *s1, const void *s2);
-static void	op_colon(oparg_T *oap);
-static void	op_function(oparg_T *oap);
-#if defined(FEAT_MOUSE)
-static void	find_start_of_word(pos_T *);
-static void	find_end_of_word(pos_T *);
-static int	get_mouse_class(char_u *p);
-#endif
-static void	prep_redo(int regname, long, int, int, int, int, int);
-static void	clearop(oparg_T *oap);
-static void	clearopbeep(oparg_T *oap);
 static void	unshift_special(cmdarg_T *cap);
-static void	may_clear_cmdline(void);
 #ifdef FEAT_CMDL_INFO
 static void	del_from_showcmd(int);
 #endif
@@ -55,11 +37,6 @@ static void	nv_error(cmdarg_T *cap);
 static void	nv_help(cmdarg_T *cap);
 static void	nv_addsub(cmdarg_T *cap);
 static void	nv_page(cmdarg_T *cap);
-#ifdef FEAT_MOUSE
-static void	nv_mousescroll(cmdarg_T *cap);
-static void	nv_mouse(cmdarg_T *cap);
-#endif
-static void	nv_scroll_line(cmdarg_T *cap);
 static void	nv_zet(cmdarg_T *cap);
 #ifdef FEAT_GUI
 static void	nv_ver_scrollbar(cmdarg_T *cap);
@@ -88,7 +65,7 @@ static void	nv_end(cmdarg_T *cap);
 static void	nv_dollar(cmdarg_T *cap);
 static void	nv_search(cmdarg_T *cap);
 static void	nv_next(cmdarg_T *cap);
-static int	normal_search(cmdarg_T *cap, int dir, char_u *pat, int opt);
+static int	normal_search(cmdarg_T *cap, int dir, char_u *pat, int opt, int *wrapped);
 static void	nv_csearch(cmdarg_T *cap);
 static void	nv_brackets(cmdarg_T *cap);
 static void	nv_percent(cmdarg_T *cap);
@@ -128,7 +105,6 @@ static void	nv_wordcmd(cmdarg_T *cap);
 static void	nv_beginline(cmdarg_T *cap);
 static void	adjust_cursor(oparg_T *oap);
 static void	adjust_for_sel(cmdarg_T *cap);
-static int	unadjust_for_sel(void);
 static void	nv_select(cmdarg_T *cap);
 static void	nv_goto(cmdarg_T *cap);
 static void	nv_normal(cmdarg_T *cap);
@@ -152,7 +128,6 @@ static void	nv_nbcmd(cmdarg_T *cap);
 static void	nv_drop(cmdarg_T *cap);
 #endif
 static void	nv_cursorhold(cmdarg_T *cap);
-static void	get_op_vcol(oparg_T *oap, colnr_T col, int initial);
 
 static char *e_noident = N_("E349: No identifier under cursor");
 
@@ -328,7 +303,6 @@ static const struct nv_cmd
 
     /* pound sign */
     {POUND,	nv_ident,	0,			0},
-#ifdef FEAT_MOUSE
     {K_MOUSEUP, nv_mousescroll,	0,			MSCR_UP},
     {K_MOUSEDOWN, nv_mousescroll, 0,			MSCR_DOWN},
     {K_MOUSELEFT, nv_mousescroll, 0,			MSCR_LEFT},
@@ -351,7 +325,6 @@ static const struct nv_cmd
     {K_X2MOUSE, nv_mouse,	0,			0},
     {K_X2DRAG, nv_mouse,	0,			0},
     {K_X2RELEASE, nv_mouse,	0,			0},
-#endif
     {K_IGNORE,	nv_ignore,	NV_KEEPREG,		0},
     {K_NOP,	nv_nop,		0,			0},
     {K_INS,	nv_edit,	0,			0},
@@ -897,13 +870,13 @@ getcount:
 	 */
 	if (cp != NULL)
 	{
-#ifdef CURSOR_SHAPE
 	    if (repl)
 	    {
 		State = REPLACE;	/* pretend Replace mode */
+#ifdef CURSOR_SHAPE
 		ui_cursor_shape();	/* show different cursor shape */
-	    }
 #endif
+	    }
 	    if (lang && curbuf->b_p_iminsert == B_IMODE_LMAP)
 	    {
 		/* Allow mappings defined with ":lmap". */
@@ -940,9 +913,7 @@ getcount:
 	    }
 	    p_smd = save_smd;
 #endif
-#ifdef CURSOR_SHAPE
 	    State = NORMAL_BUSY;
-#endif
 #ifdef FEAT_CMDL_INFO
 	    need_flushbuf |= add_to_showcmd(*cp);
 #endif
@@ -1198,8 +1169,8 @@ getcount:
 	cursor_on();
 	out_flush();
 	if (msg_scroll || emsg_on_display)
-	    ui_delay(1000L, TRUE);	/* wait at least one second */
-	ui_delay(3000L, FALSE);		/* wait up to three seconds */
+	    ui_delay(1003L, TRUE);	/* wait at least one second */
+	ui_delay(3003L, FALSE);		/* wait up to three seconds */
 	State = save_State;
 
 	msg_scroll = FALSE;
@@ -1308,1903 +1279,6 @@ set_vcount_ca(cmdarg_T *cap, int *set_prevcount)
 #endif
 
 /*
- * Handle an operator after Visual mode or when the movement is finished.
- * "gui_yank" is true when yanking text for the clipboard.
- */
-    void
-do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
-{
-    oparg_T	*oap = cap->oap;
-    pos_T	old_cursor;
-    int		empty_region_error;
-    int		restart_edit_save;
-#ifdef FEAT_LINEBREAK
-    int		lbr_saved = curwin->w_p_lbr;
-#endif
-
-    /* The visual area is remembered for redo */
-    static int	    redo_VIsual_mode = NUL; /* 'v', 'V', or Ctrl-V */
-    static linenr_T redo_VIsual_line_count; /* number of lines */
-    static colnr_T  redo_VIsual_vcol;	    /* number of cols or end column */
-    static long	    redo_VIsual_count;	    /* count for Visual operator */
-    static int	    redo_VIsual_arg;	    /* extra argument */
-    int		    include_line_break = FALSE;
-
-#if defined(FEAT_CLIPBOARD)
-    /*
-     * Yank the visual area into the GUI selection register before we operate
-     * on it and lose it forever.
-     * Don't do it if a specific register was specified, so that ""x"*P works.
-     * This could call do_pending_operator() recursively, but that's OK
-     * because gui_yank will be TRUE for the nested call.
-     */
-    if ((clip_star.available || clip_plus.available)
-	    && oap->op_type != OP_NOP
-	    && !gui_yank
-	    && VIsual_active
-	    && !redo_VIsual_busy
-	    && oap->regname == 0)
-	clip_auto_select();
-#endif
-    old_cursor = curwin->w_cursor;
-
-    /*
-     * If an operation is pending, handle it...
-     */
-    if ((finish_op || VIsual_active) && oap->op_type != OP_NOP)
-    {
-	// Yank can be redone when 'y' is in 'cpoptions', but not when yanking
-	// for the clipboard.
-	int	redo_yank = vim_strchr(p_cpo, CPO_YANK) != NULL && !gui_yank;
-
-#ifdef FEAT_LINEBREAK
-	/* Avoid a problem with unwanted linebreaks in block mode. */
-	if (curwin->w_p_lbr)
-	    curwin->w_valid &= ~VALID_VIRTCOL;
-	curwin->w_p_lbr = FALSE;
-#endif
-	oap->is_VIsual = VIsual_active;
-	if (oap->motion_force == 'V')
-	    oap->motion_type = MLINE;
-	else if (oap->motion_force == 'v')
-	{
-	    /* If the motion was linewise, "inclusive" will not have been set.
-	     * Use "exclusive" to be consistent.  Makes "dvj" work nice. */
-	    if (oap->motion_type == MLINE)
-		oap->inclusive = FALSE;
-	    /* If the motion already was characterwise, toggle "inclusive" */
-	    else if (oap->motion_type == MCHAR)
-		oap->inclusive = !oap->inclusive;
-	    oap->motion_type = MCHAR;
-	}
-	else if (oap->motion_force == Ctrl_V)
-	{
-	    /* Change line- or characterwise motion into Visual block mode. */
-	    if (!VIsual_active)
-	    {
-		VIsual_active = TRUE;
-		VIsual = oap->start;
-	    }
-	    VIsual_mode = Ctrl_V;
-	    VIsual_select = FALSE;
-	    VIsual_reselect = FALSE;
-	}
-
-	/* Only redo yank when 'y' flag is in 'cpoptions'. */
-	/* Never redo "zf" (define fold). */
-	if ((redo_yank || oap->op_type != OP_YANK)
-		&& ((!VIsual_active || oap->motion_force)
-		    /* Also redo Operator-pending Visual mode mappings */
-		    || (VIsual_active && cap->cmdchar == ':'
-						 && oap->op_type != OP_COLON))
-		&& cap->cmdchar != 'D'
-#ifdef FEAT_FOLDING
-		&& oap->op_type != OP_FOLD
-		&& oap->op_type != OP_FOLDOPEN
-		&& oap->op_type != OP_FOLDOPENREC
-		&& oap->op_type != OP_FOLDCLOSE
-		&& oap->op_type != OP_FOLDCLOSEREC
-		&& oap->op_type != OP_FOLDDEL
-		&& oap->op_type != OP_FOLDDELREC
-#endif
-		)
-	{
-	    prep_redo(oap->regname, cap->count0,
-		    get_op_char(oap->op_type), get_extra_op_char(oap->op_type),
-		    oap->motion_force, cap->cmdchar, cap->nchar);
-	    if (cap->cmdchar == '/' || cap->cmdchar == '?') /* was a search */
-	    {
-		/*
-		 * If 'cpoptions' does not contain 'r', insert the search
-		 * pattern to really repeat the same command.
-		 */
-		if (vim_strchr(p_cpo, CPO_REDO) == NULL)
-		    AppendToRedobuffLit(cap->searchbuf, -1);
-		AppendToRedobuff(NL_STR);
-	    }
-	    else if (cap->cmdchar == ':')
-	    {
-		/* do_cmdline() has stored the first typed line in
-		 * "repeat_cmdline".  When several lines are typed repeating
-		 * won't be possible. */
-		if (repeat_cmdline == NULL)
-		    ResetRedobuff();
-		else
-		{
-		    AppendToRedobuffLit(repeat_cmdline, -1);
-		    AppendToRedobuff(NL_STR);
-		    VIM_CLEAR(repeat_cmdline);
-		}
-	    }
-	}
-
-	if (redo_VIsual_busy)
-	{
-	    /* Redo of an operation on a Visual area. Use the same size from
-	     * redo_VIsual_line_count and redo_VIsual_vcol. */
-	    oap->start = curwin->w_cursor;
-	    curwin->w_cursor.lnum += redo_VIsual_line_count - 1;
-	    if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
-		curwin->w_cursor.lnum = curbuf->b_ml.ml_line_count;
-	    VIsual_mode = redo_VIsual_mode;
-	    if (redo_VIsual_vcol == MAXCOL || VIsual_mode == 'v')
-	    {
-		if (VIsual_mode == 'v')
-		{
-		    if (redo_VIsual_line_count <= 1)
-		    {
-			validate_virtcol();
-			curwin->w_curswant =
-				     curwin->w_virtcol + redo_VIsual_vcol - 1;
-		    }
-		    else
-			curwin->w_curswant = redo_VIsual_vcol;
-		}
-		else
-		{
-		    curwin->w_curswant = MAXCOL;
-		}
-		coladvance(curwin->w_curswant);
-	    }
-	    cap->count0 = redo_VIsual_count;
-	    if (redo_VIsual_count != 0)
-		cap->count1 = redo_VIsual_count;
-	    else
-		cap->count1 = 1;
-	}
-	else if (VIsual_active)
-	{
-	    if (!gui_yank)
-	    {
-		/* Save the current VIsual area for '< and '> marks, and "gv" */
-		curbuf->b_visual.vi_start = VIsual;
-		curbuf->b_visual.vi_end = curwin->w_cursor;
-		curbuf->b_visual.vi_mode = VIsual_mode;
-		if (VIsual_mode_orig != NUL)
-		{
-		    curbuf->b_visual.vi_mode = VIsual_mode_orig;
-		    VIsual_mode_orig = NUL;
-		}
-		curbuf->b_visual.vi_curswant = curwin->w_curswant;
-# ifdef FEAT_EVAL
-		curbuf->b_visual_mode_eval = VIsual_mode;
-# endif
-	    }
-
-	    /* In Select mode, a linewise selection is operated upon like a
-	     * characterwise selection.
-	     * Special case: gH<Del> deletes the last line. */
-	    if (VIsual_select && VIsual_mode == 'V'
-					    && cap->oap->op_type != OP_DELETE)
-	    {
-		if (LT_POS(VIsual, curwin->w_cursor))
-		{
-		    VIsual.col = 0;
-		    curwin->w_cursor.col =
-			       (colnr_T)STRLEN(ml_get(curwin->w_cursor.lnum));
-		}
-		else
-		{
-		    curwin->w_cursor.col = 0;
-		    VIsual.col = (colnr_T)STRLEN(ml_get(VIsual.lnum));
-		}
-		VIsual_mode = 'v';
-	    }
-	    /* If 'selection' is "exclusive", backup one character for
-	     * charwise selections. */
-	    else if (VIsual_mode == 'v')
-		include_line_break = unadjust_for_sel();
-
-	    oap->start = VIsual;
-	    if (VIsual_mode == 'V')
-	    {
-		oap->start.col = 0;
-		oap->start.coladd = 0;
-	    }
-	}
-
-	/*
-	 * Set oap->start to the first position of the operated text, oap->end
-	 * to the end of the operated text.  w_cursor is equal to oap->start.
-	 */
-	if (LT_POS(oap->start, curwin->w_cursor))
-	{
-#ifdef FEAT_FOLDING
-	    /* Include folded lines completely. */
-	    if (!VIsual_active)
-	    {
-		if (hasFolding(oap->start.lnum, &oap->start.lnum, NULL))
-		    oap->start.col = 0;
-		if (hasFolding(curwin->w_cursor.lnum, NULL,
-						      &curwin->w_cursor.lnum))
-		    curwin->w_cursor.col = (colnr_T)STRLEN(ml_get_curline());
-	    }
-#endif
-	    oap->end = curwin->w_cursor;
-	    curwin->w_cursor = oap->start;
-
-	    /* w_virtcol may have been updated; if the cursor goes back to its
-	     * previous position w_virtcol becomes invalid and isn't updated
-	     * automatically. */
-	    curwin->w_valid &= ~VALID_VIRTCOL;
-	}
-	else
-	{
-#ifdef FEAT_FOLDING
-	    /* Include folded lines completely. */
-	    if (!VIsual_active && oap->motion_type == MLINE)
-	    {
-		if (hasFolding(curwin->w_cursor.lnum, &curwin->w_cursor.lnum,
-									NULL))
-		    curwin->w_cursor.col = 0;
-		if (hasFolding(oap->start.lnum, NULL, &oap->start.lnum))
-		    oap->start.col = (colnr_T)STRLEN(ml_get(oap->start.lnum));
-	    }
-#endif
-	    oap->end = oap->start;
-	    oap->start = curwin->w_cursor;
-	}
-
-	/* Just in case lines were deleted that make the position invalid. */
-	check_pos(curwin->w_buffer, &oap->end);
-	oap->line_count = oap->end.lnum - oap->start.lnum + 1;
-
-	/* Set "virtual_op" before resetting VIsual_active. */
-	virtual_op = virtual_active();
-
-	if (VIsual_active || redo_VIsual_busy)
-	{
-	    get_op_vcol(oap, redo_VIsual_vcol, TRUE);
-
-	    if (!redo_VIsual_busy && !gui_yank)
-	    {
-		/*
-		 * Prepare to reselect and redo Visual: this is based on the
-		 * size of the Visual text
-		 */
-		resel_VIsual_mode = VIsual_mode;
-		if (curwin->w_curswant == MAXCOL)
-		    resel_VIsual_vcol = MAXCOL;
-		else
-		{
-		    if (VIsual_mode != Ctrl_V)
-			getvvcol(curwin, &(oap->end),
-						  NULL, NULL, &oap->end_vcol);
-		    if (VIsual_mode == Ctrl_V || oap->line_count <= 1)
-		    {
-			if (VIsual_mode != Ctrl_V)
-			    getvvcol(curwin, &(oap->start),
-						&oap->start_vcol, NULL, NULL);
-			resel_VIsual_vcol = oap->end_vcol - oap->start_vcol + 1;
-		    }
-		    else
-			resel_VIsual_vcol = oap->end_vcol;
-		}
-		resel_VIsual_line_count = oap->line_count;
-	    }
-
-	    /* can't redo yank (unless 'y' is in 'cpoptions') and ":" */
-	    if ((redo_yank || oap->op_type != OP_YANK)
-		    && oap->op_type != OP_COLON
-#ifdef FEAT_FOLDING
-		    && oap->op_type != OP_FOLD
-		    && oap->op_type != OP_FOLDOPEN
-		    && oap->op_type != OP_FOLDOPENREC
-		    && oap->op_type != OP_FOLDCLOSE
-		    && oap->op_type != OP_FOLDCLOSEREC
-		    && oap->op_type != OP_FOLDDEL
-		    && oap->op_type != OP_FOLDDELREC
-#endif
-		    && oap->motion_force == NUL
-		    )
-	    {
-		/* Prepare for redoing.  Only use the nchar field for "r",
-		 * otherwise it might be the second char of the operator. */
-		if (cap->cmdchar == 'g' && (cap->nchar == 'n'
-							|| cap->nchar == 'N'))
-		    prep_redo(oap->regname, cap->count0,
-			    get_op_char(oap->op_type), get_extra_op_char(oap->op_type),
-			    oap->motion_force, cap->cmdchar, cap->nchar);
-		else if (cap->cmdchar != ':')
-		{
-		    int nchar = oap->op_type == OP_REPLACE ? cap->nchar : NUL;
-
-		    /* reverse what nv_replace() did */
-		    if (nchar == REPLACE_CR_NCHAR)
-			nchar = CAR;
-		    else if (nchar == REPLACE_NL_NCHAR)
-			nchar = NL;
-		    prep_redo(oap->regname, 0L, NUL, 'v',
-					get_op_char(oap->op_type),
-					get_extra_op_char(oap->op_type),
-					nchar);
-		}
-		if (!redo_VIsual_busy)
-		{
-		    redo_VIsual_mode = resel_VIsual_mode;
-		    redo_VIsual_vcol = resel_VIsual_vcol;
-		    redo_VIsual_line_count = resel_VIsual_line_count;
-		    redo_VIsual_count = cap->count0;
-		    redo_VIsual_arg = cap->arg;
-		}
-	    }
-
-	    /*
-	     * oap->inclusive defaults to TRUE.
-	     * If oap->end is on a NUL (empty line) oap->inclusive becomes
-	     * FALSE.  This makes "d}P" and "v}dP" work the same.
-	     */
-	    if (oap->motion_force == NUL || oap->motion_type == MLINE)
-		oap->inclusive = TRUE;
-	    if (VIsual_mode == 'V')
-		oap->motion_type = MLINE;
-	    else
-	    {
-		oap->motion_type = MCHAR;
-		if (VIsual_mode != Ctrl_V && *ml_get_pos(&(oap->end)) == NUL
-			&& (include_line_break || !virtual_op))
-		{
-		    oap->inclusive = FALSE;
-		    /* Try to include the newline, unless it's an operator
-		     * that works on lines only. */
-		    if (*p_sel != 'o'
-			    && !op_on_lines(oap->op_type)
-			    && oap->end.lnum < curbuf->b_ml.ml_line_count)
-		    {
-			++oap->end.lnum;
-			oap->end.col = 0;
-			oap->end.coladd = 0;
-			++oap->line_count;
-		    }
-		}
-	    }
-
-	    redo_VIsual_busy = FALSE;
-
-	    /*
-	     * Switch Visual off now, so screen updating does
-	     * not show inverted text when the screen is redrawn.
-	     * With OP_YANK and sometimes with OP_COLON and OP_FILTER there is
-	     * no screen redraw, so it is done here to remove the inverted
-	     * part.
-	     */
-	    if (!gui_yank)
-	    {
-		VIsual_active = FALSE;
-#ifdef FEAT_MOUSE
-		setmouse();
-		mouse_dragging = 0;
-#endif
-		may_clear_cmdline();
-		if ((oap->op_type == OP_YANK
-			    || oap->op_type == OP_COLON
-			    || oap->op_type == OP_FUNCTION
-			    || oap->op_type == OP_FILTER)
-			&& oap->motion_force == NUL)
-		{
-#ifdef FEAT_LINEBREAK
-		    /* make sure redrawing is correct */
-		    curwin->w_p_lbr = lbr_saved;
-#endif
-		    redraw_curbuf_later(INVERTED);
-		}
-	    }
-	}
-
-	/* Include the trailing byte of a multi-byte char. */
-	if (has_mbyte && oap->inclusive)
-	{
-	    int		l;
-
-	    l = (*mb_ptr2len)(ml_get_pos(&oap->end));
-	    if (l > 1)
-		oap->end.col += l - 1;
-	}
-	curwin->w_set_curswant = TRUE;
-
-	/*
-	 * oap->empty is set when start and end are the same.  The inclusive
-	 * flag affects this too, unless yanking and the end is on a NUL.
-	 */
-	oap->empty = (oap->motion_type == MCHAR
-		    && (!oap->inclusive
-			|| (oap->op_type == OP_YANK
-			    && gchar_pos(&oap->end) == NUL))
-		    && EQUAL_POS(oap->start, oap->end)
-		    && !(virtual_op && oap->start.coladd != oap->end.coladd));
-	/*
-	 * For delete, change and yank, it's an error to operate on an
-	 * empty region, when 'E' included in 'cpoptions' (Vi compatible).
-	 */
-	empty_region_error = (oap->empty
-				&& vim_strchr(p_cpo, CPO_EMPTYREGION) != NULL);
-
-	/* Force a redraw when operating on an empty Visual region, when
-	 * 'modifiable is off or creating a fold. */
-	if (oap->is_VIsual && (oap->empty || !curbuf->b_p_ma
-#ifdef FEAT_FOLDING
-		    || oap->op_type == OP_FOLD
-#endif
-		    ))
-	{
-#ifdef FEAT_LINEBREAK
-	    curwin->w_p_lbr = lbr_saved;
-#endif
-	    redraw_curbuf_later(INVERTED);
-	}
-
-	/*
-	 * If the end of an operator is in column one while oap->motion_type
-	 * is MCHAR and oap->inclusive is FALSE, we put op_end after the last
-	 * character in the previous line. If op_start is on or before the
-	 * first non-blank in the line, the operator becomes linewise
-	 * (strange, but that's the way vi does it).
-	 */
-	if (	   oap->motion_type == MCHAR
-		&& oap->inclusive == FALSE
-		&& !(cap->retval & CA_NO_ADJ_OP_END)
-		&& oap->end.col == 0
-		&& (!oap->is_VIsual || *p_sel == 'o')
-		&& !oap->block_mode
-		&& oap->line_count > 1)
-	{
-	    oap->end_adjusted = TRUE;	    /* remember that we did this */
-	    --oap->line_count;
-	    --oap->end.lnum;
-	    if (inindent(0))
-		oap->motion_type = MLINE;
-	    else
-	    {
-		oap->end.col = (colnr_T)STRLEN(ml_get(oap->end.lnum));
-		if (oap->end.col)
-		{
-		    --oap->end.col;
-		    oap->inclusive = TRUE;
-		}
-	    }
-	}
-	else
-	    oap->end_adjusted = FALSE;
-
-	switch (oap->op_type)
-	{
-	case OP_LSHIFT:
-	case OP_RSHIFT:
-	    op_shift(oap, TRUE, oap->is_VIsual ? (int)cap->count1 : 1);
-	    auto_format(FALSE, TRUE);
-	    break;
-
-	case OP_JOIN_NS:
-	case OP_JOIN:
-	    if (oap->line_count < 2)
-		oap->line_count = 2;
-	    if (curwin->w_cursor.lnum + oap->line_count - 1 >
-						   curbuf->b_ml.ml_line_count)
-		beep_flush();
-	    else
-	    {
-		(void)do_join(oap->line_count, oap->op_type == OP_JOIN,
-							    TRUE, TRUE, TRUE);
-		auto_format(FALSE, TRUE);
-	    }
-	    break;
-
-	case OP_DELETE:
-	    VIsual_reselect = FALSE;	    /* don't reselect now */
-	    if (empty_region_error)
-	    {
-		vim_beep(BO_OPER);
-		CancelRedo();
-	    }
-	    else
-	    {
-		(void)op_delete(oap);
-		if (oap->motion_type == MLINE && has_format_option(FO_AUTO))
-		    u_save_cursor();	    /* cursor line wasn't saved yet */
-		auto_format(FALSE, TRUE);
-	    }
-	    break;
-
-	case OP_YANK:
-	    if (empty_region_error)
-	    {
-		if (!gui_yank)
-		{
-		    vim_beep(BO_OPER);
-		    CancelRedo();
-		}
-	    }
-	    else
-	    {
-#ifdef FEAT_LINEBREAK
-		curwin->w_p_lbr = lbr_saved;
-#endif
-		(void)op_yank(oap, FALSE, !gui_yank);
-	    }
-	    check_cursor_col();
-	    break;
-
-	case OP_CHANGE:
-	    VIsual_reselect = FALSE;	    /* don't reselect now */
-	    if (empty_region_error)
-	    {
-		vim_beep(BO_OPER);
-		CancelRedo();
-	    }
-	    else
-	    {
-		/* This is a new edit command, not a restart.  Need to
-		 * remember it to make 'insertmode' work with mappings for
-		 * Visual mode.  But do this only once and not when typed and
-		 * 'insertmode' isn't set. */
-		if (p_im || !KeyTyped)
-		    restart_edit_save = restart_edit;
-		else
-		    restart_edit_save = 0;
-		restart_edit = 0;
-#ifdef FEAT_LINEBREAK
-		/* Restore linebreak, so that when the user edits it looks as
-		 * before. */
-		if (curwin->w_p_lbr != lbr_saved)
-		{
-		    curwin->w_p_lbr = lbr_saved;
-		    get_op_vcol(oap, redo_VIsual_mode, FALSE);
-		}
-#endif
-		/* Reset finish_op now, don't want it set inside edit(). */
-		finish_op = FALSE;
-		if (op_change(oap))	/* will call edit() */
-		    cap->retval |= CA_COMMAND_BUSY;
-		if (restart_edit == 0)
-		    restart_edit = restart_edit_save;
-	    }
-	    break;
-
-	case OP_FILTER:
-	    if (vim_strchr(p_cpo, CPO_FILTER) != NULL)
-		AppendToRedobuff((char_u *)"!\r");  /* use any last used !cmd */
-	    else
-		bangredo = TRUE;    /* do_bang() will put cmd in redo buffer */
-	    /* FALLTHROUGH */
-
-	case OP_INDENT:
-	case OP_COLON:
-
-#if defined(FEAT_LISP) || defined(FEAT_CINDENT)
-	    /*
-	     * If 'equalprg' is empty, do the indenting internally.
-	     */
-	    if (oap->op_type == OP_INDENT && *get_equalprg() == NUL)
-	    {
-# ifdef FEAT_LISP
-		if (curbuf->b_p_lisp)
-		{
-		    op_reindent(oap, get_lisp_indent);
-		    break;
-		}
-# endif
-# ifdef FEAT_CINDENT
-		op_reindent(oap,
-#  ifdef FEAT_EVAL
-			*curbuf->b_p_inde != NUL ? get_expr_indent :
-#  endif
-			    get_c_indent);
-		break;
-# endif
-	    }
-#endif
-
-	    op_colon(oap);
-	    break;
-
-	case OP_TILDE:
-	case OP_UPPER:
-	case OP_LOWER:
-	case OP_ROT13:
-	    if (empty_region_error)
-	    {
-		vim_beep(BO_OPER);
-		CancelRedo();
-	    }
-	    else
-		op_tilde(oap);
-	    check_cursor_col();
-	    break;
-
-	case OP_FORMAT:
-#if defined(FEAT_EVAL)
-	    if (*curbuf->b_p_fex != NUL)
-		op_formatexpr(oap);	/* use expression */
-	    else
-#endif
-		if (*p_fp != NUL || *curbuf->b_p_fp != NUL)
-		op_colon(oap);		/* use external command */
-	    else
-		op_format(oap, FALSE);	/* use internal function */
-	    break;
-
-	case OP_FORMAT2:
-	    op_format(oap, TRUE);	/* use internal function */
-	    break;
-
-	case OP_FUNCTION:
-#ifdef FEAT_LINEBREAK
-	    /* Restore linebreak, so that when the user edits it looks as
-	     * before. */
-	    curwin->w_p_lbr = lbr_saved;
-#endif
-	    op_function(oap);		/* call 'operatorfunc' */
-	    break;
-
-	case OP_INSERT:
-	case OP_APPEND:
-	    VIsual_reselect = FALSE;	/* don't reselect now */
-	    if (empty_region_error)
-	    {
-		vim_beep(BO_OPER);
-		CancelRedo();
-	    }
-	    else
-	    {
-		/* This is a new edit command, not a restart.  Need to
-		 * remember it to make 'insertmode' work with mappings for
-		 * Visual mode.  But do this only once. */
-		restart_edit_save = restart_edit;
-		restart_edit = 0;
-#ifdef FEAT_LINEBREAK
-		/* Restore linebreak, so that when the user edits it looks as
-		 * before. */
-		if (curwin->w_p_lbr != lbr_saved)
-		{
-		    curwin->w_p_lbr = lbr_saved;
-		    get_op_vcol(oap, redo_VIsual_mode, FALSE);
-		}
-#endif
-		op_insert(oap, cap->count1);
-#ifdef FEAT_LINEBREAK
-		/* Reset linebreak, so that formatting works correctly. */
-		curwin->w_p_lbr = FALSE;
-#endif
-
-		/* TODO: when inserting in several lines, should format all
-		 * the lines. */
-		auto_format(FALSE, TRUE);
-
-		if (restart_edit == 0)
-		    restart_edit = restart_edit_save;
-		else
-		    cap->retval |= CA_COMMAND_BUSY;
-	    }
-	    break;
-
-	case OP_REPLACE:
-	    VIsual_reselect = FALSE;	/* don't reselect now */
-	    if (empty_region_error)
-	    {
-		vim_beep(BO_OPER);
-		CancelRedo();
-	    }
-	    else
-	    {
-#ifdef FEAT_LINEBREAK
-		/* Restore linebreak, so that when the user edits it looks as
-		 * before. */
-		if (curwin->w_p_lbr != lbr_saved)
-		{
-		    curwin->w_p_lbr = lbr_saved;
-		    get_op_vcol(oap, redo_VIsual_mode, FALSE);
-		}
-#endif
-		op_replace(oap, cap->nchar);
-	    }
-	    break;
-
-#ifdef FEAT_FOLDING
-	case OP_FOLD:
-	    VIsual_reselect = FALSE;	/* don't reselect now */
-	    foldCreate(oap->start.lnum, oap->end.lnum);
-	    break;
-
-	case OP_FOLDOPEN:
-	case OP_FOLDOPENREC:
-	case OP_FOLDCLOSE:
-	case OP_FOLDCLOSEREC:
-	    VIsual_reselect = FALSE;	/* don't reselect now */
-	    opFoldRange(oap->start.lnum, oap->end.lnum,
-		    oap->op_type == OP_FOLDOPEN
-					    || oap->op_type == OP_FOLDOPENREC,
-		    oap->op_type == OP_FOLDOPENREC
-					  || oap->op_type == OP_FOLDCLOSEREC,
-					  oap->is_VIsual);
-	    break;
-
-	case OP_FOLDDEL:
-	case OP_FOLDDELREC:
-	    VIsual_reselect = FALSE;	/* don't reselect now */
-	    deleteFold(oap->start.lnum, oap->end.lnum,
-			       oap->op_type == OP_FOLDDELREC, oap->is_VIsual);
-	    break;
-#endif
-	case OP_NR_ADD:
-	case OP_NR_SUB:
-	    if (empty_region_error)
-	    {
-		vim_beep(BO_OPER);
-		CancelRedo();
-	    }
-	    else
-	    {
-		VIsual_active = TRUE;
-#ifdef FEAT_LINEBREAK
-		curwin->w_p_lbr = lbr_saved;
-#endif
-		op_addsub(oap, cap->count1, redo_VIsual_arg);
-		VIsual_active = FALSE;
-	    }
-	    check_cursor_col();
-	    break;
-	default:
-	    clearopbeep(oap);
-	}
-	virtual_op = MAYBE;
-	if (!gui_yank)
-	{
-	    /*
-	     * if 'sol' not set, go back to old column for some commands
-	     */
-	    if (!p_sol && oap->motion_type == MLINE && !oap->end_adjusted
-		    && (oap->op_type == OP_LSHIFT || oap->op_type == OP_RSHIFT
-						|| oap->op_type == OP_DELETE))
-	    {
-#ifdef FEAT_LINEBREAK
-		curwin->w_p_lbr = FALSE;
-#endif
-		coladvance(curwin->w_curswant = old_col);
-	    }
-	}
-	else
-	{
-	    curwin->w_cursor = old_cursor;
-	}
-	oap->block_mode = FALSE;
-	clearop(oap);
-	motion_force = NUL;
-    }
-#ifdef FEAT_LINEBREAK
-    curwin->w_p_lbr = lbr_saved;
-#endif
-}
-
-/*
- * Handle indent and format operators and visual mode ":".
- */
-    static void
-op_colon(oparg_T *oap)
-{
-    stuffcharReadbuff(':');
-    if (oap->is_VIsual)
-	stuffReadbuff((char_u *)"'<,'>");
-    else
-    {
-	/*
-	 * Make the range look nice, so it can be repeated.
-	 */
-	if (oap->start.lnum == curwin->w_cursor.lnum)
-	    stuffcharReadbuff('.');
-	else
-	    stuffnumReadbuff((long)oap->start.lnum);
-	if (oap->end.lnum != oap->start.lnum)
-	{
-	    stuffcharReadbuff(',');
-	    if (oap->end.lnum == curwin->w_cursor.lnum)
-		stuffcharReadbuff('.');
-	    else if (oap->end.lnum == curbuf->b_ml.ml_line_count)
-		stuffcharReadbuff('$');
-	    else if (oap->start.lnum == curwin->w_cursor.lnum)
-	    {
-		stuffReadbuff((char_u *)".+");
-		stuffnumReadbuff((long)oap->line_count - 1);
-	    }
-	    else
-		stuffnumReadbuff((long)oap->end.lnum);
-	}
-    }
-    if (oap->op_type != OP_COLON)
-	stuffReadbuff((char_u *)"!");
-    if (oap->op_type == OP_INDENT)
-    {
-#ifndef FEAT_CINDENT
-	if (*get_equalprg() == NUL)
-	    stuffReadbuff((char_u *)"indent");
-	else
-#endif
-	    stuffReadbuff(get_equalprg());
-	stuffReadbuff((char_u *)"\n");
-    }
-    else if (oap->op_type == OP_FORMAT)
-    {
-	if (*curbuf->b_p_fp != NUL)
-	    stuffReadbuff(curbuf->b_p_fp);
-	else if (*p_fp != NUL)
-	    stuffReadbuff(p_fp);
-	else
-	    stuffReadbuff((char_u *)"fmt");
-	stuffReadbuff((char_u *)"\n']");
-    }
-
-    /*
-     * do_cmdline() does the rest
-     */
-}
-
-/*
- * Handle the "g@" operator: call 'operatorfunc'.
- */
-    static void
-op_function(oparg_T *oap UNUSED)
-{
-#ifdef FEAT_EVAL
-    typval_T	argv[2];
-    int		save_virtual_op = virtual_op;
-
-    if (*p_opfunc == NUL)
-	emsg(_("E774: 'operatorfunc' is empty"));
-    else
-    {
-	/* Set '[ and '] marks to text to be operated on. */
-	curbuf->b_op_start = oap->start;
-	curbuf->b_op_end = oap->end;
-	if (oap->motion_type != MLINE && !oap->inclusive)
-	    /* Exclude the end position. */
-	    decl(&curbuf->b_op_end);
-
-	argv[0].v_type = VAR_STRING;
-	if (oap->block_mode)
-	    argv[0].vval.v_string = (char_u *)"block";
-	else if (oap->motion_type == MLINE)
-	    argv[0].vval.v_string = (char_u *)"line";
-	else
-	    argv[0].vval.v_string = (char_u *)"char";
-	argv[1].v_type = VAR_UNKNOWN;
-
-	/* Reset virtual_op so that 'virtualedit' can be changed in the
-	 * function. */
-	virtual_op = MAYBE;
-
-	(void)call_func_retnr(p_opfunc, 1, argv);
-
-	virtual_op = save_virtual_op;
-    }
-#else
-    emsg(_("E775: Eval feature not available"));
-#endif
-}
-
-#if defined(FEAT_MOUSE) || defined(PROTO)
-/*
- * Do the appropriate action for the current mouse click in the current mode.
- * Not used for Command-line mode.
- *
- * Normal and Visual Mode:
- * event	 modi-	position      visual	   change   action
- *		 fier	cursor			   window
- * left press	  -	yes	    end		    yes
- * left press	  C	yes	    end		    yes	    "^]" (2)
- * left press	  S	yes	end (popup: extend) yes	    "*" (2)
- * left drag	  -	yes	start if moved	    no
- * left relse	  -	yes	start if moved	    no
- * middle press	  -	yes	 if not active	    no	    put register
- * middle press	  -	yes	 if active	    no	    yank and put
- * right press	  -	yes	start or extend	    yes
- * right press	  S	yes	no change	    yes	    "#" (2)
- * right drag	  -	yes	extend		    no
- * right relse	  -	yes	extend		    no
- *
- * Insert or Replace Mode:
- * event	 modi-	position      visual	   change   action
- *		 fier	cursor			   window
- * left press	  -	yes	(cannot be active)  yes
- * left press	  C	yes	(cannot be active)  yes	    "CTRL-O^]" (2)
- * left press	  S	yes	(cannot be active)  yes	    "CTRL-O*" (2)
- * left drag	  -	yes	start or extend (1) no	    CTRL-O (1)
- * left relse	  -	yes	start or extend (1) no	    CTRL-O (1)
- * middle press	  -	no	(cannot be active)  no	    put register
- * right press	  -	yes	start or extend	    yes	    CTRL-O
- * right press	  S	yes	(cannot be active)  yes	    "CTRL-O#" (2)
- *
- * (1) only if mouse pointer moved since press
- * (2) only if click is in same buffer
- *
- * Return TRUE if start_arrow() should be called for edit mode.
- */
-    int
-do_mouse(
-    oparg_T	*oap,		/* operator argument, can be NULL */
-    int		c,		/* K_LEFTMOUSE, etc */
-    int		dir,		/* Direction to 'put' if necessary */
-    long	count,
-    int		fixindent)	/* PUT_FIXINDENT if fixing indent necessary */
-{
-    static int	do_always = FALSE;	/* ignore 'mouse' setting next time */
-    static int	got_click = FALSE;	/* got a click some time back */
-
-    int		which_button;	/* MOUSE_LEFT, _MIDDLE or _RIGHT */
-    int		is_click;	/* If FALSE it's a drag or release event */
-    int		is_drag;	/* If TRUE it's a drag event */
-    int		jump_flags = 0;	/* flags for jump_to_mouse() */
-    pos_T	start_visual;
-    int		moved;		/* Has cursor moved? */
-    int		in_status_line;	/* mouse in status line */
-    static int	in_tab_line = FALSE; /* mouse clicked in tab line */
-    int		in_sep_line;	/* mouse in vertical separator line */
-    int		c1, c2;
-#if defined(FEAT_FOLDING)
-    pos_T	save_cursor;
-#endif
-    win_T	*old_curwin = curwin;
-    static pos_T orig_cursor;
-    colnr_T	leftcol, rightcol;
-    pos_T	end_visual;
-    int		diff;
-    int		old_active = VIsual_active;
-    int		old_mode = VIsual_mode;
-    int		regname;
-
-#if defined(FEAT_FOLDING)
-    save_cursor = curwin->w_cursor;
-#endif
-
-    /*
-     * When GUI is active, always recognize mouse events, otherwise:
-     * - Ignore mouse event in normal mode if 'mouse' doesn't include 'n'.
-     * - Ignore mouse event in visual mode if 'mouse' doesn't include 'v'.
-     * - For command line and insert mode 'mouse' is checked before calling
-     *	 do_mouse().
-     */
-    if (do_always)
-	do_always = FALSE;
-    else
-#ifdef FEAT_GUI
-	if (!gui.in_use)
-#endif
-	{
-	    if (VIsual_active)
-	    {
-		if (!mouse_has(MOUSE_VISUAL))
-		    return FALSE;
-	    }
-	    else if (State == NORMAL && !mouse_has(MOUSE_NORMAL))
-		return FALSE;
-	}
-
-    for (;;)
-    {
-	which_button = get_mouse_button(KEY2TERMCAP1(c), &is_click, &is_drag);
-	if (is_drag)
-	{
-	    /* If the next character is the same mouse event then use that
-	     * one. Speeds up dragging the status line. */
-	    if (vpeekc() != NUL)
-	    {
-		int nc;
-		int save_mouse_row = mouse_row;
-		int save_mouse_col = mouse_col;
-
-		/* Need to get the character, peeking doesn't get the actual
-		 * one. */
-		nc = safe_vgetc();
-		if (c == nc)
-		    continue;
-		vungetc(nc);
-		mouse_row = save_mouse_row;
-		mouse_col = save_mouse_col;
-	    }
-	}
-	break;
-    }
-
-    if (c == K_MOUSEMOVE)
-    {
-	// Mouse moved without a button pressed.
-#ifdef FEAT_BEVAL_TERM
-	ui_may_remove_balloon();
-	if (p_bevalterm)
-	{
-	    profile_setlimit(p_bdlay, &bevalexpr_due);
-	    bevalexpr_due_set = TRUE;
-	}
-#endif
-#ifdef FEAT_TEXT_PROP
-	popup_handle_mouse_moved();
-#endif
-	return FALSE;
-    }
-
-#ifdef FEAT_MOUSESHAPE
-    /* May have stopped dragging the status or separator line.  The pointer is
-     * most likely still on the status or separator line. */
-    if (!is_drag && drag_status_line)
-    {
-	drag_status_line = FALSE;
-	update_mouseshape(SHAPE_IDX_STATUS);
-    }
-    if (!is_drag && drag_sep_line)
-    {
-	drag_sep_line = FALSE;
-	update_mouseshape(SHAPE_IDX_VSEP);
-    }
-#endif
-
-    /*
-     * Ignore drag and release events if we didn't get a click.
-     */
-    if (is_click)
-	got_click = TRUE;
-    else
-    {
-	if (!got_click)			/* didn't get click, ignore */
-	    return FALSE;
-	if (!is_drag)			/* release, reset got_click */
-	{
-	    got_click = FALSE;
-	    if (in_tab_line)
-	    {
-		in_tab_line = FALSE;
-		return FALSE;
-	    }
-	}
-    }
-
-    /*
-     * CTRL right mouse button does CTRL-T
-     */
-    if (is_click && (mod_mask & MOD_MASK_CTRL) && which_button == MOUSE_RIGHT)
-    {
-	if (State & INSERT)
-	    stuffcharReadbuff(Ctrl_O);
-	if (count > 1)
-	    stuffnumReadbuff(count);
-	stuffcharReadbuff(Ctrl_T);
-	got_click = FALSE;		/* ignore drag&release now */
-	return FALSE;
-    }
-
-    /*
-     * CTRL only works with left mouse button
-     */
-    if ((mod_mask & MOD_MASK_CTRL) && which_button != MOUSE_LEFT)
-	return FALSE;
-
-    /*
-     * When a modifier is down, ignore drag and release events, as well as
-     * multiple clicks and the middle mouse button.
-     * Accept shift-leftmouse drags when 'mousemodel' is "popup.*".
-     */
-    if ((mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL | MOD_MASK_ALT
-							     | MOD_MASK_META))
-	    && (!is_click
-		|| (mod_mask & MOD_MASK_MULTI_CLICK)
-		|| which_button == MOUSE_MIDDLE)
-	    && !((mod_mask & (MOD_MASK_SHIFT|MOD_MASK_ALT))
-		&& mouse_model_popup()
-		&& which_button == MOUSE_LEFT)
-	    && !((mod_mask & MOD_MASK_ALT)
-		&& !mouse_model_popup()
-		&& which_button == MOUSE_RIGHT)
-	    )
-	return FALSE;
-
-    /*
-     * If the button press was used as the movement command for an operator
-     * (eg "d<MOUSE>"), or it is the middle button that is held down, ignore
-     * drag/release events.
-     */
-    if (!is_click && which_button == MOUSE_MIDDLE)
-	return FALSE;
-
-    if (oap != NULL)
-	regname = oap->regname;
-    else
-	regname = 0;
-
-    /*
-     * Middle mouse button does a 'put' of the selected text
-     */
-    if (which_button == MOUSE_MIDDLE)
-    {
-	if (State == NORMAL)
-	{
-	    /*
-	     * If an operator was pending, we don't know what the user wanted
-	     * to do. Go back to normal mode: Clear the operator and beep().
-	     */
-	    if (oap != NULL && oap->op_type != OP_NOP)
-	    {
-		clearopbeep(oap);
-		return FALSE;
-	    }
-
-	    /*
-	     * If visual was active, yank the highlighted text and put it
-	     * before the mouse pointer position.
-	     * In Select mode replace the highlighted text with the clipboard.
-	     */
-	    if (VIsual_active)
-	    {
-		if (VIsual_select)
-		{
-		    stuffcharReadbuff(Ctrl_G);
-		    stuffReadbuff((char_u *)"\"+p");
-		}
-		else
-		{
-		    stuffcharReadbuff('y');
-		    stuffcharReadbuff(K_MIDDLEMOUSE);
-		}
-		do_always = TRUE;	/* ignore 'mouse' setting next time */
-		return FALSE;
-	    }
-	    /*
-	     * The rest is below jump_to_mouse()
-	     */
-	}
-
-	else if ((State & INSERT) == 0)
-	    return FALSE;
-
-	/*
-	 * Middle click in insert mode doesn't move the mouse, just insert the
-	 * contents of a register.  '.' register is special, can't insert that
-	 * with do_put().
-	 * Also paste at the cursor if the current mode isn't in 'mouse' (only
-	 * happens for the GUI).
-	 */
-	if ((State & INSERT) || !mouse_has(MOUSE_NORMAL))
-	{
-	    if (regname == '.')
-		insert_reg(regname, TRUE);
-	    else
-	    {
-#ifdef FEAT_CLIPBOARD
-		if (clip_star.available && regname == 0)
-		    regname = '*';
-#endif
-		if ((State & REPLACE_FLAG) && !yank_register_mline(regname))
-		    insert_reg(regname, TRUE);
-		else
-		{
-		    do_put(regname, BACKWARD, 1L, fixindent | PUT_CURSEND);
-
-		    /* Repeat it with CTRL-R CTRL-O r or CTRL-R CTRL-P r */
-		    AppendCharToRedobuff(Ctrl_R);
-		    AppendCharToRedobuff(fixindent ? Ctrl_P : Ctrl_O);
-		    AppendCharToRedobuff(regname == 0 ? '"' : regname);
-		}
-	    }
-	    return FALSE;
-	}
-    }
-
-    /* When dragging or button-up stay in the same window. */
-    if (!is_click)
-	jump_flags |= MOUSE_FOCUS | MOUSE_DID_MOVE;
-
-    start_visual.lnum = 0;
-
-    /* Check for clicking in the tab page line. */
-    if (mouse_row == 0 && firstwin->w_winrow > 0)
-    {
-	if (is_drag)
-	{
-	    if (in_tab_line)
-	    {
-		c1 = TabPageIdxs[mouse_col];
-		tabpage_move(c1 <= 0 ? 9999 : c1 < tabpage_index(curtab)
-								? c1 - 1 : c1);
-	    }
-	    return FALSE;
-	}
-
-	/* click in a tab selects that tab page */
-	if (is_click
-# ifdef FEAT_CMDWIN
-		&& cmdwin_type == 0
-# endif
-		&& mouse_col < Columns)
-	{
-	    in_tab_line = TRUE;
-	    c1 = TabPageIdxs[mouse_col];
-	    if (c1 >= 0)
-	    {
-		if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
-		{
-		    /* double click opens new page */
-		    end_visual_mode();
-		    tabpage_new();
-		    tabpage_move(c1 == 0 ? 9999 : c1 - 1);
-		}
-		else
-		{
-		    /* Go to specified tab page, or next one if not clicking
-		     * on a label. */
-		    goto_tabpage(c1);
-
-		    /* It's like clicking on the status line of a window. */
-		    if (curwin != old_curwin)
-			end_visual_mode();
-		}
-	    }
-	    else
-	    {
-		tabpage_T	*tp;
-
-		/* Close the current or specified tab page. */
-		if (c1 == -999)
-		    tp = curtab;
-		else
-		    tp = find_tabpage(-c1);
-		if (tp == curtab)
-		{
-		    if (first_tabpage->tp_next != NULL)
-			tabpage_close(FALSE);
-		}
-		else if (tp != NULL)
-		    tabpage_close_other(tp, FALSE);
-	    }
-	}
-	return TRUE;
-    }
-    else if (is_drag && in_tab_line)
-    {
-	c1 = TabPageIdxs[mouse_col];
-	tabpage_move(c1 <= 0 ? 9999 : c1 - 1);
-	return FALSE;
-    }
-
-    /*
-     * When 'mousemodel' is "popup" or "popup_setpos", translate mouse events:
-     * right button up   -> pop-up menu
-     * shift-left button -> right button
-     * alt-left button   -> alt-right button
-     */
-    if (mouse_model_popup())
-    {
-	if (which_button == MOUSE_RIGHT
-			    && !(mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL)))
-	{
-#if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) \
-	    || defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN) \
-	    || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_PHOTON) \
-	    || defined(FEAT_TERM_POPUP_MENU)
-# ifdef FEAT_GUI
-	    if (gui.in_use)
-	    {
-#  if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_GTK) \
-			  || defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC)
-		if (!is_click)
-		    /* Ignore right button release events, only shows the popup
-		     * menu on the button down event. */
-		    return FALSE;
-#  endif
-#  if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MSWIN)
-		if (is_click || is_drag)
-		    /* Ignore right button down and drag mouse events.  Windows
-		     * only shows the popup menu on the button up event. */
-		    return FALSE;
-#  endif
-	    }
-# endif
-# if defined(FEAT_GUI) && defined(FEAT_TERM_POPUP_MENU)
-	    else
-# endif
-# if defined(FEAT_TERM_POPUP_MENU)
-	    if (!is_click)
-		/* Ignore right button release events, only shows the popup
-		 * menu on the button down event. */
-		return FALSE;
-#endif
-
-	    jump_flags = 0;
-	    if (STRCMP(p_mousem, "popup_setpos") == 0)
-	    {
-		/* First set the cursor position before showing the popup
-		 * menu. */
-		if (VIsual_active)
-		{
-		    pos_T    m_pos;
-
-		    /*
-		     * set MOUSE_MAY_STOP_VIS if we are outside the
-		     * selection or the current window (might have false
-		     * negative here)
-		     */
-		    if (mouse_row < curwin->w_winrow
-			 || mouse_row
-				  > (curwin->w_winrow + curwin->w_height))
-			jump_flags = MOUSE_MAY_STOP_VIS;
-		    else if (get_fpos_of_mouse(&m_pos) != IN_BUFFER)
-			jump_flags = MOUSE_MAY_STOP_VIS;
-		    else
-		    {
-			if ((LT_POS(curwin->w_cursor, VIsual)
-				    && (LT_POS(m_pos, curwin->w_cursor)
-					|| LT_POS(VIsual, m_pos)))
-				|| (LT_POS(VIsual, curwin->w_cursor)
-				    && (LT_POS(m_pos, VIsual)
-				      || LT_POS(curwin->w_cursor, m_pos))))
-			{
-			    jump_flags = MOUSE_MAY_STOP_VIS;
-			}
-			else if (VIsual_mode == Ctrl_V)
-			{
-			    getvcols(curwin, &curwin->w_cursor, &VIsual,
-						     &leftcol, &rightcol);
-			    getvcol(curwin, &m_pos, NULL, &m_pos.col, NULL);
-			    if (m_pos.col < leftcol || m_pos.col > rightcol)
-				jump_flags = MOUSE_MAY_STOP_VIS;
-			}
-		    }
-		}
-		else
-		    jump_flags = MOUSE_MAY_STOP_VIS;
-	    }
-	    if (jump_flags)
-	    {
-		jump_flags = jump_to_mouse(jump_flags, NULL, which_button);
-		update_curbuf(VIsual_active ? INVERTED : VALID);
-		setcursor();
-		out_flush();    /* Update before showing popup menu */
-	    }
-# ifdef FEAT_MENU
-	    show_popupmenu();
-	    got_click = FALSE;	/* ignore release events */
-# endif
-	    return (jump_flags & CURSOR_MOVED) != 0;
-#else
-	    return FALSE;
-#endif
-	}
-	if (which_button == MOUSE_LEFT
-				&& (mod_mask & (MOD_MASK_SHIFT|MOD_MASK_ALT)))
-	{
-	    which_button = MOUSE_RIGHT;
-	    mod_mask &= ~MOD_MASK_SHIFT;
-	}
-    }
-
-    if ((State & (NORMAL | INSERT))
-			    && !(mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL)))
-    {
-	if (which_button == MOUSE_LEFT)
-	{
-	    if (is_click)
-	    {
-		/* stop Visual mode for a left click in a window, but not when
-		 * on a status line */
-		if (VIsual_active)
-		    jump_flags |= MOUSE_MAY_STOP_VIS;
-	    }
-	    else if (mouse_has(MOUSE_VISUAL))
-		jump_flags |= MOUSE_MAY_VIS;
-	}
-	else if (which_button == MOUSE_RIGHT)
-	{
-	    if (is_click && VIsual_active)
-	    {
-		/*
-		 * Remember the start and end of visual before moving the
-		 * cursor.
-		 */
-		if (LT_POS(curwin->w_cursor, VIsual))
-		{
-		    start_visual = curwin->w_cursor;
-		    end_visual = VIsual;
-		}
-		else
-		{
-		    start_visual = VIsual;
-		    end_visual = curwin->w_cursor;
-		}
-	    }
-	    jump_flags |= MOUSE_FOCUS;
-	    if (mouse_has(MOUSE_VISUAL))
-		jump_flags |= MOUSE_MAY_VIS;
-	}
-    }
-
-    /*
-     * If an operator is pending, ignore all drags and releases until the
-     * next mouse click.
-     */
-    if (!is_drag && oap != NULL && oap->op_type != OP_NOP)
-    {
-	got_click = FALSE;
-	oap->motion_type = MCHAR;
-    }
-
-    /* When releasing the button let jump_to_mouse() know. */
-    if (!is_click && !is_drag)
-	jump_flags |= MOUSE_RELEASED;
-
-    /*
-     * JUMP!
-     */
-    jump_flags = jump_to_mouse(jump_flags,
-			oap == NULL ? NULL : &(oap->inclusive), which_button);
-
-#ifdef FEAT_MENU
-    /* A click in the window toolbar has no side effects. */
-    if (jump_flags & MOUSE_WINBAR)
-	return FALSE;
-#endif
-    moved = (jump_flags & CURSOR_MOVED);
-    in_status_line = (jump_flags & IN_STATUS_LINE);
-    in_sep_line = (jump_flags & IN_SEP_LINE);
-
-#ifdef FEAT_NETBEANS_INTG
-    if (isNetbeansBuffer(curbuf)
-			    && !(jump_flags & (IN_STATUS_LINE | IN_SEP_LINE)))
-    {
-	int key = KEY2TERMCAP1(c);
-
-	if (key == (int)KE_LEFTRELEASE || key == (int)KE_MIDDLERELEASE
-					       || key == (int)KE_RIGHTRELEASE)
-	    netbeans_button_release(which_button);
-    }
-#endif
-
-    /* When jumping to another window, clear a pending operator.  That's a bit
-     * friendlier than beeping and not jumping to that window. */
-    if (curwin != old_curwin && oap != NULL && oap->op_type != OP_NOP)
-	clearop(oap);
-
-#ifdef FEAT_FOLDING
-    if (mod_mask == 0
-	    && !is_drag
-	    && (jump_flags & (MOUSE_FOLD_CLOSE | MOUSE_FOLD_OPEN))
-	    && which_button == MOUSE_LEFT)
-    {
-	/* open or close a fold at this line */
-	if (jump_flags & MOUSE_FOLD_OPEN)
-	    openFold(curwin->w_cursor.lnum, 1L);
-	else
-	    closeFold(curwin->w_cursor.lnum, 1L);
-	/* don't move the cursor if still in the same window */
-	if (curwin == old_curwin)
-	    curwin->w_cursor = save_cursor;
-    }
-#endif
-
-#if defined(FEAT_CLIPBOARD) && defined(FEAT_CMDWIN)
-    if ((jump_flags & IN_OTHER_WIN) && !VIsual_active && clip_star.available)
-    {
-	clip_modeless(which_button, is_click, is_drag);
-	return FALSE;
-    }
-#endif
-
-    /* Set global flag that we are extending the Visual area with mouse
-     * dragging; temporarily minimize 'scrolloff'. */
-    if (VIsual_active && is_drag && get_scrolloff_value())
-    {
-	/* In the very first line, allow scrolling one line */
-	if (mouse_row == 0)
-	    mouse_dragging = 2;
-	else
-	    mouse_dragging = 1;
-    }
-
-    /* When dragging the mouse above the window, scroll down. */
-    if (is_drag && mouse_row < 0 && !in_status_line)
-    {
-	scroll_redraw(FALSE, 1L);
-	mouse_row = 0;
-    }
-
-    if (start_visual.lnum)		/* right click in visual mode */
-    {
-       /* When ALT is pressed make Visual mode blockwise. */
-       if (mod_mask & MOD_MASK_ALT)
-	   VIsual_mode = Ctrl_V;
-
-	/*
-	 * In Visual-block mode, divide the area in four, pick up the corner
-	 * that is in the quarter that the cursor is in.
-	 */
-	if (VIsual_mode == Ctrl_V)
-	{
-	    getvcols(curwin, &start_visual, &end_visual, &leftcol, &rightcol);
-	    if (curwin->w_curswant > (leftcol + rightcol) / 2)
-		end_visual.col = leftcol;
-	    else
-		end_visual.col = rightcol;
-	    if (curwin->w_cursor.lnum >=
-				    (start_visual.lnum + end_visual.lnum) / 2)
-		end_visual.lnum = start_visual.lnum;
-
-	    /* move VIsual to the right column */
-	    start_visual = curwin->w_cursor;	    /* save the cursor pos */
-	    curwin->w_cursor = end_visual;
-	    coladvance(end_visual.col);
-	    VIsual = curwin->w_cursor;
-	    curwin->w_cursor = start_visual;	    /* restore the cursor */
-	}
-	else
-	{
-	    /*
-	     * If the click is before the start of visual, change the start.
-	     * If the click is after the end of visual, change the end.  If
-	     * the click is inside the visual, change the closest side.
-	     */
-	    if (LT_POS(curwin->w_cursor, start_visual))
-		VIsual = end_visual;
-	    else if (LT_POS(end_visual, curwin->w_cursor))
-		VIsual = start_visual;
-	    else
-	    {
-		/* In the same line, compare column number */
-		if (end_visual.lnum == start_visual.lnum)
-		{
-		    if (curwin->w_cursor.col - start_visual.col >
-				    end_visual.col - curwin->w_cursor.col)
-			VIsual = start_visual;
-		    else
-			VIsual = end_visual;
-		}
-
-		/* In different lines, compare line number */
-		else
-		{
-		    diff = (curwin->w_cursor.lnum - start_visual.lnum) -
-				(end_visual.lnum - curwin->w_cursor.lnum);
-
-		    if (diff > 0)		/* closest to end */
-			VIsual = start_visual;
-		    else if (diff < 0)	/* closest to start */
-			VIsual = end_visual;
-		    else			/* in the middle line */
-		    {
-			if (curwin->w_cursor.col <
-					(start_visual.col + end_visual.col) / 2)
-			    VIsual = end_visual;
-			else
-			    VIsual = start_visual;
-		    }
-		}
-	    }
-	}
-    }
-    /*
-     * If Visual mode started in insert mode, execute "CTRL-O"
-     */
-    else if ((State & INSERT) && VIsual_active)
-	stuffcharReadbuff(Ctrl_O);
-
-    /*
-     * Middle mouse click: Put text before cursor.
-     */
-    if (which_button == MOUSE_MIDDLE)
-    {
-#ifdef FEAT_CLIPBOARD
-	if (clip_star.available && regname == 0)
-	    regname = '*';
-#endif
-	if (yank_register_mline(regname))
-	{
-	    if (mouse_past_bottom)
-		dir = FORWARD;
-	}
-	else if (mouse_past_eol)
-	    dir = FORWARD;
-
-	if (fixindent)
-	{
-	    c1 = (dir == BACKWARD) ? '[' : ']';
-	    c2 = 'p';
-	}
-	else
-	{
-	    c1 = (dir == FORWARD) ? 'p' : 'P';
-	    c2 = NUL;
-	}
-	prep_redo(regname, count, NUL, c1, NUL, c2, NUL);
-
-	/*
-	 * Remember where the paste started, so in edit() Insstart can be set
-	 * to this position
-	 */
-	if (restart_edit != 0)
-	    where_paste_started = curwin->w_cursor;
-	do_put(regname, dir, count, fixindent | PUT_CURSEND);
-    }
-
-#if defined(FEAT_QUICKFIX)
-    /*
-     * Ctrl-Mouse click or double click in a quickfix window jumps to the
-     * error under the mouse pointer.
-     */
-    else if (((mod_mask & MOD_MASK_CTRL)
-		|| (mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
-	    && bt_quickfix(curbuf))
-    {
-	if (curwin->w_llist_ref == NULL)	/* quickfix window */
-	    do_cmdline_cmd((char_u *)".cc");
-	else					/* location list window */
-	    do_cmdline_cmd((char_u *)".ll");
-	got_click = FALSE;		/* ignore drag&release now */
-    }
-#endif
-
-    /*
-     * Ctrl-Mouse click (or double click in a help window) jumps to the tag
-     * under the mouse pointer.
-     */
-    else if ((mod_mask & MOD_MASK_CTRL) || (curbuf->b_help
-		     && (mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK))
-    {
-	if (State & INSERT)
-	    stuffcharReadbuff(Ctrl_O);
-	stuffcharReadbuff(Ctrl_RSB);
-	got_click = FALSE;		/* ignore drag&release now */
-    }
-
-    /*
-     * Shift-Mouse click searches for the next occurrence of the word under
-     * the mouse pointer
-     */
-    else if ((mod_mask & MOD_MASK_SHIFT))
-    {
-	if ((State & INSERT) || (VIsual_active && VIsual_select))
-	    stuffcharReadbuff(Ctrl_O);
-	if (which_button == MOUSE_LEFT)
-	    stuffcharReadbuff('*');
-	else	/* MOUSE_RIGHT */
-	    stuffcharReadbuff('#');
-    }
-
-    /* Handle double clicks, unless on status line */
-    else if (in_status_line)
-    {
-#ifdef FEAT_MOUSESHAPE
-	if ((is_drag || is_click) && !drag_status_line)
-	{
-	    drag_status_line = TRUE;
-	    update_mouseshape(-1);
-	}
-#endif
-    }
-    else if (in_sep_line)
-    {
-#ifdef FEAT_MOUSESHAPE
-	if ((is_drag || is_click) && !drag_sep_line)
-	{
-	    drag_sep_line = TRUE;
-	    update_mouseshape(-1);
-	}
-#endif
-    }
-    else if ((mod_mask & MOD_MASK_MULTI_CLICK) && (State & (NORMAL | INSERT))
-	     && mouse_has(MOUSE_VISUAL))
-    {
-	if (is_click || !VIsual_active)
-	{
-	    if (VIsual_active)
-		orig_cursor = VIsual;
-	    else
-	    {
-		check_visual_highlight();
-		VIsual = curwin->w_cursor;
-		orig_cursor = VIsual;
-		VIsual_active = TRUE;
-		VIsual_reselect = TRUE;
-		/* start Select mode if 'selectmode' contains "mouse" */
-		may_start_select('o');
-		setmouse();
-	    }
-	    if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
-	    {
-		/* Double click with ALT pressed makes it blockwise. */
-		if (mod_mask & MOD_MASK_ALT)
-		    VIsual_mode = Ctrl_V;
-		else
-		    VIsual_mode = 'v';
-	    }
-	    else if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_3CLICK)
-		VIsual_mode = 'V';
-	    else if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_4CLICK)
-		VIsual_mode = Ctrl_V;
-#ifdef FEAT_CLIPBOARD
-	    /* Make sure the clipboard gets updated.  Needed because start and
-	     * end may still be the same, and the selection needs to be owned */
-	    clip_star.vmode = NUL;
-#endif
-	}
-	/*
-	 * A double click selects a word or a block.
-	 */
-	if ((mod_mask & MOD_MASK_MULTI_CLICK) == MOD_MASK_2CLICK)
-	{
-	    pos_T	*pos = NULL;
-	    int		gc;
-
-	    if (is_click)
-	    {
-		/* If the character under the cursor (skipping white space) is
-		 * not a word character, try finding a match and select a (),
-		 * {}, [], #if/#endif, etc. block. */
-		end_visual = curwin->w_cursor;
-		while (gc = gchar_pos(&end_visual), VIM_ISWHITE(gc))
-		    inc(&end_visual);
-		if (oap != NULL)
-		    oap->motion_type = MCHAR;
-		if (oap != NULL
-			&& VIsual_mode == 'v'
-			&& !vim_iswordc(gchar_pos(&end_visual))
-			&& EQUAL_POS(curwin->w_cursor, VIsual)
-			&& (pos = findmatch(oap, NUL)) != NULL)
-		{
-		    curwin->w_cursor = *pos;
-		    if (oap->motion_type == MLINE)
-			VIsual_mode = 'V';
-		    else if (*p_sel == 'e')
-		    {
-			if (LT_POS(curwin->w_cursor, VIsual))
-			    ++VIsual.col;
-			else
-			    ++curwin->w_cursor.col;
-		    }
-		}
-	    }
-
-	    if (pos == NULL && (is_click || is_drag))
-	    {
-		/* When not found a match or when dragging: extend to include
-		 * a word. */
-		if (LT_POS(curwin->w_cursor, orig_cursor))
-		{
-		    find_start_of_word(&curwin->w_cursor);
-		    find_end_of_word(&VIsual);
-		}
-		else
-		{
-		    find_start_of_word(&VIsual);
-		    if (*p_sel == 'e' && *ml_get_cursor() != NUL)
-			curwin->w_cursor.col +=
-					 (*mb_ptr2len)(ml_get_cursor());
-		    find_end_of_word(&curwin->w_cursor);
-		}
-	    }
-	    curwin->w_set_curswant = TRUE;
-	}
-	if (is_click)
-	    redraw_curbuf_later(INVERTED);	/* update the inversion */
-    }
-    else if (VIsual_active && !old_active)
-    {
-	if (mod_mask & MOD_MASK_ALT)
-	    VIsual_mode = Ctrl_V;
-	else
-	    VIsual_mode = 'v';
-    }
-
-    /* If Visual mode changed show it later. */
-    if ((!VIsual_active && old_active && mode_displayed)
-	    || (VIsual_active && p_smd && msg_silent == 0
-				 && (!old_active || VIsual_mode != old_mode)))
-	redraw_cmdline = TRUE;
-
-    return moved;
-}
-
-/*
- * Move "pos" back to the start of the word it's in.
- */
-    static void
-find_start_of_word(pos_T *pos)
-{
-    char_u	*line;
-    int		cclass;
-    int		col;
-
-    line = ml_get(pos->lnum);
-    cclass = get_mouse_class(line + pos->col);
-
-    while (pos->col > 0)
-    {
-	col = pos->col - 1;
-	col -= (*mb_head_off)(line, line + col);
-	if (get_mouse_class(line + col) != cclass)
-	    break;
-	pos->col = col;
-    }
-}
-
-/*
- * Move "pos" forward to the end of the word it's in.
- * When 'selection' is "exclusive", the position is just after the word.
- */
-    static void
-find_end_of_word(pos_T *pos)
-{
-    char_u	*line;
-    int		cclass;
-    int		col;
-
-    line = ml_get(pos->lnum);
-    if (*p_sel == 'e' && pos->col > 0)
-    {
-	--pos->col;
-	pos->col -= (*mb_head_off)(line, line + pos->col);
-    }
-    cclass = get_mouse_class(line + pos->col);
-    while (line[pos->col] != NUL)
-    {
-	col = pos->col + (*mb_ptr2len)(line + pos->col);
-	if (get_mouse_class(line + col) != cclass)
-	{
-	    if (*p_sel == 'e')
-		pos->col = col;
-	    break;
-	}
-	pos->col = col;
-    }
-}
-
-/*
- * Get class of a character for selection: same class means same word.
- * 0: blank
- * 1: punctuation groups
- * 2: normal word character
- * >2: multi-byte word character.
- */
-    static int
-get_mouse_class(char_u *p)
-{
-    int		c;
-
-    if (has_mbyte && MB_BYTE2LEN(p[0]) > 1)
-	return mb_get_class(p);
-
-    c = *p;
-    if (c == ' ' || c == '\t')
-	return 0;
-
-    if (vim_iswordc(c))
-	return 2;
-
-    /*
-     * There are a few special cases where we want certain combinations of
-     * characters to be considered as a single word.  These are things like
-     * "->", "/ *", "*=", "+=", "&=", "<=", ">=", "!=" etc.  Otherwise, each
-     * character is in its own class.
-     */
-    if (c != NUL && vim_strchr((char_u *)"-+*/%<>&|^!=", c) != NULL)
-	return 1;
-    return c;
-}
-#endif /* FEAT_MOUSE */
-
-/*
  * Check if  highlighting for visual mode is possible, give a warning message
  * if not.
  */
@@ -3241,10 +1315,8 @@ end_visual_mode(void)
 #endif
 
     VIsual_active = FALSE;
-#ifdef FEAT_MOUSE
     setmouse();
     mouse_dragging = 0;
-#endif
 
     /* Save the current VIsual area for '< and '> marks, and "gv" */
     curbuf->b_visual.vi_mode = VIsual_mode;
@@ -3286,6 +1358,16 @@ reset_VIsual(void)
 	end_visual_mode();
 	redraw_curbuf_later(INVERTED);	/* delete the inversion later */
 	VIsual_reselect = FALSE;
+    }
+}
+
+    void
+restore_visual_mode(void)
+{
+    if (VIsual_mode_orig != NUL)
+    {
+	curbuf->b_visual.vi_mode = VIsual_mode_orig;
+	VIsual_mode_orig = NUL;
     }
 }
 
@@ -3530,7 +1612,7 @@ prep_redo_cmd(cmdarg_T *cap)
  * Prepare for redo of any command.
  * Note that only the last argument can be a multi-byte char.
  */
-    static void
+    void
 prep_redo(
     int	    regname,
     long    num,
@@ -3589,7 +1671,7 @@ checkclearopq(oparg_T *oap)
     return TRUE;
 }
 
-    static void
+    void
 clearop(oparg_T *oap)
 {
     oap->op_type = OP_NOP;
@@ -3598,7 +1680,7 @@ clearop(oparg_T *oap)
     oap->use_reg_one = FALSE;
 }
 
-    static void
+    void
 clearopbeep(oparg_T *oap)
 {
     clearop(oap);
@@ -3627,7 +1709,7 @@ unshift_special(cmdarg_T *cap)
  * If the mode is currently displayed clear the command line or update the
  * command displayed.
  */
-    static void
+    void
 may_clear_cmdline(void)
 {
     if (mode_displayed)
@@ -3686,13 +1768,16 @@ clear_showcmd(void)
 	{
 # ifdef FEAT_LINEBREAK
 	    char_u *saved_sbr = p_sbr;
+	    char_u *saved_w_sbr = curwin->w_p_sbr;
 
 	    /* Make 'sbr' empty for a moment to get the correct size. */
 	    p_sbr = empty_option;
+	    curwin->w_p_sbr = empty_option;
 # endif
 	    getvcols(curwin, &curwin->w_cursor, &VIsual, &leftcol, &rightcol);
 # ifdef FEAT_LINEBREAK
 	    p_sbr = saved_sbr;
+	    curwin->w_p_sbr = saved_w_sbr;
 # endif
 	    sprintf((char *)showcmd_buf, "%ldx%ld", lines,
 					      (long)(rightcol - leftcol + 1));
@@ -3761,14 +1846,13 @@ add_to_showcmd(int c)
     int		old_len;
     int		extra_len;
     int		overflow;
-#if defined(FEAT_MOUSE)
     int		i;
     static int	ignore[] =
     {
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 	K_VER_SCROLLBAR, K_HOR_SCROLLBAR,
 	K_LEFTMOUSE_NM, K_LEFTRELEASE_NM,
-# endif
+#endif
 	K_IGNORE, K_PS,
 	K_LEFTMOUSE, K_LEFTDRAG, K_LEFTRELEASE, K_MOUSEMOVE,
 	K_MIDDLEMOUSE, K_MIDDLEDRAG, K_MIDDLERELEASE,
@@ -3778,7 +1862,6 @@ add_to_showcmd(int c)
 	K_CURSORHOLD,
 	0
     };
-#endif
 
     if (!p_sc || msg_silent != 0)
 	return FALSE;
@@ -3789,13 +1872,11 @@ add_to_showcmd(int c)
 	showcmd_visual = FALSE;
     }
 
-#if defined(FEAT_MOUSE)
     /* Ignore keys that are scrollbar updates and mouse clicks */
     if (IS_SPECIAL(c))
 	for (i = 0; ignore[i] != 0; ++i)
 	    if (ignore[i] == c)
 		return FALSE;
-#endif
 
     p = transchar(c);
     if (*p == ' ')
@@ -4266,7 +2347,7 @@ find_decl(
     for (;;)
     {
 	t = searchit(curwin, curbuf, &curwin->w_cursor, NULL, FORWARD,
-		       pat, 1L, searchflags, RE_LAST, (linenr_T)0, NULL, NULL);
+					  pat, 1L, searchflags, RE_LAST, NULL);
 	if (curwin->w_cursor.lnum >= old_pos.lnum)
 	    t = FAIL;	/* match after start is failure too */
 
@@ -4297,7 +2378,6 @@ find_decl(
 	    }
 	    break;
 	}
-#ifdef FEAT_COMMENTS
 	if (get_leader_len(ml_get_curline(), NULL, FALSE, TRUE) > 0)
 	{
 	    /* Ignore this line, continue at start of next line. */
@@ -4305,7 +2385,6 @@ find_decl(
 	    curwin->w_cursor.col = 0;
 	    continue;
 	}
-#endif
 	valid = is_ident(ml_get_curline(), curwin->w_cursor.col);
 
 	/* If the current position is not a valid identifier and a previous
@@ -4413,17 +2492,18 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 	    n = ((linelen - width1 - 1) / width2 + 1) * width2 + width1;
 	else
 	    n = width1;
-	if (curwin->w_curswant > (colnr_T)n + 1)
-	    curwin->w_curswant -= ((curwin->w_curswant - n) / width2 + 1)
-								     * width2;
+	if (curwin->w_curswant >= (colnr_T)n)
+	    curwin->w_curswant = n - 1;
       }
 
       while (dist--)
       {
 	if (dir == BACKWARD)
 	{
-	    if ((long)curwin->w_curswant >= width2)
-		/* move back within line */
+	    if ((long)curwin->w_curswant >= width1)
+		// Move back within the line. This can give a negative value
+		// for w_curswant if width1 < width2 (with cpoptions+=n),
+		// which will get clipped to column 0.
 		curwin->w_curswant -= width2;
 	    else
 	    {
@@ -4471,6 +2551,12 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 		}
 		curwin->w_cursor.lnum++;
 		curwin->w_curswant %= width2;
+		// Check if the cursor has moved below the number display
+		// when width1 < width2 (with cpoptions+=n). Subtract width2
+		// to get a negative value for w_curswant, which will get
+		// clipped to column 0.
+		if (curwin->w_curswant >= width1)
+		    curwin->w_curswant -= width2;
 		linelen = linetabsize(ml_get_curline());
 	    }
 	}
@@ -4494,8 +2580,8 @@ nv_screengo(oparg_T *oap, int dir, long dist)
 	validate_virtcol();
 	virtcol = curwin->w_virtcol;
 #if defined(FEAT_LINEBREAK)
-	if (virtcol > (colnr_T)width1 && *p_sbr != NUL)
-	    virtcol -= vim_strsize(p_sbr);
+	if (virtcol > (colnr_T)width1 && *get_showbreak_value(curwin) != NUL)
+	    virtcol -= vim_strsize(get_showbreak_value(curwin));
 #endif
 
 	if (virtcol > curwin->w_curswant
@@ -4512,113 +2598,11 @@ nv_screengo(oparg_T *oap, int dir, long dist)
     return retval;
 }
 
-#ifdef FEAT_MOUSE
-/*
- * Mouse scroll wheel: Default action is to scroll three lines, or one page
- * when Shift or Ctrl is used.
- * K_MOUSEUP (cap->arg == 1) or K_MOUSEDOWN (cap->arg == 0) or
- * K_MOUSELEFT (cap->arg == -1) or K_MOUSERIGHT (cap->arg == -2)
- */
-    static void
-nv_mousescroll(cmdarg_T *cap)
-{
-    win_T *old_curwin = curwin, *wp;
-
-    if (mouse_row >= 0 && mouse_col >= 0)
-    {
-	int row, col;
-
-	row = mouse_row;
-	col = mouse_col;
-
-	/* find the window at the pointer coordinates */
-	wp = mouse_find_win(&row, &col, FIND_POPUP);
-	if (wp == NULL)
-	    return;
-#ifdef FEAT_TEXT_PROP
-	if (WIN_IS_POPUP(wp) && !wp->w_has_scrollbar)
-	    return;
-#endif
-	curwin = wp;
-	curbuf = curwin->w_buffer;
-    }
-
-    if (cap->arg == MSCR_UP || cap->arg == MSCR_DOWN)
-    {
-# ifdef FEAT_TERMINAL
-	if (term_use_loop())
-	    /* This window is a terminal window, send the mouse event there.
-	     * Set "typed" to FALSE to avoid an endless loop. */
-	    send_keys_to_term(curbuf->b_term, cap->cmdchar, FALSE);
-	else
-# endif
-	if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
-	{
-	    (void)onepage(cap->arg ? FORWARD : BACKWARD, 1L);
-	}
-	else
-	{
-	    // Don't scroll more than half the window height.
-	    if (curwin->w_height < 6)
-	    {
-		cap->count1 = curwin->w_height / 2;
-		if (cap->count1 == 0)
-		    cap->count1 = 1;
-	    }
-	    else
-		cap->count1 = 3;
-	    cap->count0 = cap->count1;
-	    nv_scroll_line(cap);
-	}
-#ifdef FEAT_TEXT_PROP
-	if (WIN_IS_POPUP(curwin))
-	    popup_set_firstline(curwin);
-#endif
-    }
-# ifdef FEAT_GUI
-    else
-    {
-	/* Horizontal scroll - only allowed when 'wrap' is disabled */
-	if (!curwin->w_p_wrap)
-	{
-	    int val, step = 6;
-
-	    if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
-		step = curwin->w_width;
-	    val = curwin->w_leftcol + (cap->arg == MSCR_RIGHT ? -step : +step);
-	    if (val < 0)
-		val = 0;
-
-	    gui_do_horiz_scroll(val, TRUE);
-	}
-    }
-# endif
-# ifdef FEAT_SYN_HL
-    if (curwin != old_curwin && curwin->w_p_cul)
-	redraw_for_cursorline(curwin);
-# endif
-
-    curwin->w_redr_status = TRUE;
-
-    curwin = old_curwin;
-    curbuf = curwin->w_buffer;
-}
-
-/*
- * Mouse clicks and drags.
- */
-    static void
-nv_mouse(cmdarg_T *cap)
-{
-    (void)do_mouse(cap->oap, cap->cmdchar, BACKWARD, cap->count1, 0);
-}
-#endif
-
 /*
  * Handle CTRL-E and CTRL-Y commands: scroll a line up or down.
  * cap->arg must be TRUE for CTRL-E.
  */
-    static void
+    void
 nv_scroll_line(cmdarg_T *cap)
 {
     if (!checkclearop(cap->oap))
@@ -5747,7 +3731,7 @@ nv_ident(cmdarg_T *cap)
 	init_history();
 	add_to_history(HIST_SEARCH, buf, TRUE, NUL);
 
-	(void)normal_search(cap, cmdchar == '*' ? '/' : '?', buf, 0);
+	(void)normal_search(cap, cmdchar == '*' ? '/' : '?', buf, 0, NULL);
     }
     else
     {
@@ -6001,8 +3985,7 @@ nv_right(cmdarg_T *cap)
 	    else
 	    {
 		if (has_mbyte)
-		    curwin->w_cursor.col +=
-					 (*mb_ptr2len)(ml_get_cursor());
+		    curwin->w_cursor.col += (*mb_ptr2len)(ml_get_cursor());
 		else
 		    ++curwin->w_cursor.col;
 	    }
@@ -6275,7 +4258,7 @@ nv_search(cmdarg_T *cap)
 
     (void)normal_search(cap, cap->cmdchar, cap->searchbuf,
 			(cap->arg || !EQUAL_POS(save_cursor, curwin->w_cursor))
-							   ? 0 : SEARCH_MARK);
+						      ? 0 : SEARCH_MARK, NULL);
 }
 
 /*
@@ -6285,16 +4268,17 @@ nv_search(cmdarg_T *cap)
     static void
 nv_next(cmdarg_T *cap)
 {
-    pos_T old = curwin->w_cursor;
-    int   i = normal_search(cap, 0, NULL, SEARCH_MARK | cap->arg);
+    pos_T   old = curwin->w_cursor;
+    int	    wrapped = FALSE;
+    int	    i = normal_search(cap, 0, NULL, SEARCH_MARK | cap->arg, &wrapped);
 
-    if (i == 1 && EQUAL_POS(old, curwin->w_cursor))
+    if (i == 1 && !wrapped && EQUAL_POS(old, curwin->w_cursor))
     {
 	/* Avoid getting stuck on the current cursor position, which can
 	 * happen when an offset is given and the cursor is on the last char
 	 * in the buffer: Repeat with count + 1. */
 	cap->count1 += 1;
-	(void)normal_search(cap, 0, NULL, SEARCH_MARK | cap->arg);
+	(void)normal_search(cap, 0, NULL, SEARCH_MARK | cap->arg, NULL);
 	cap->count1 -= 1;
     }
 }
@@ -6309,17 +4293,22 @@ normal_search(
     cmdarg_T	*cap,
     int		dir,
     char_u	*pat,
-    int		opt)		/* extra flags for do_search() */
+    int		opt,		// extra flags for do_search()
+    int		*wrapped)
 {
     int		i;
+    searchit_arg_T sia;
 
     cap->oap->motion_type = MCHAR;
     cap->oap->inclusive = FALSE;
     cap->oap->use_reg_one = TRUE;
     curwin->w_set_curswant = TRUE;
 
+    vim_memset(&sia, 0, sizeof(sia));
     i = do_search(cap->oap, dir, pat, cap->count1,
-		      opt | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG, NULL, NULL);
+			    opt | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG, &sia);
+    if (wrapped != NULL)
+	*wrapped = sia.sa_wrapped;
     if (i == 0)
 	clearop(cap->oap);
     else
@@ -6635,7 +4624,6 @@ nv_brackets(cmdarg_T *cap)
 	nv_cursormark(cap, cap->nchar == '\'', pos);
     }
 
-#ifdef FEAT_MOUSE
     /*
      * [ or ] followed by a middle mouse click: put selected text with
      * indent adjustment.  Any other button just does as usual.
@@ -6646,7 +4634,6 @@ nv_brackets(cmdarg_T *cap)
 		       (cap->cmdchar == ']') ? FORWARD : BACKWARD,
 		       cap->count1, PUT_FIXINDENT);
     }
-#endif /* FEAT_MOUSE */
 
 #ifdef FEAT_FOLDING
     /*
@@ -7381,8 +5368,8 @@ nv_optrans(cmdarg_T *cap)
 
     if (!checkclearopq(cap->oap))
     {
-	/* In Vi "2D" doesn't delete the next line.  Can't translate it
-	 * either, because "2." should also not use the count. */
+	// In Vi "2D" doesn't delete the next line.  Can't translate it
+	// either, because "2." should also not use the count.
 	if (cap->cmdchar == 'D' && vim_strchr(p_cpo, CPO_HASH) != NULL)
 	{
 	    cap->oap->start = curwin->w_cursor;
@@ -7572,9 +5559,7 @@ nv_visual(cmdarg_T *cap)
 	    if (!cap->arg)
 		/* start Select mode when 'selectmode' contains "cmd" */
 		may_start_select('c');
-#ifdef FEAT_MOUSE
 	    setmouse();
-#endif
 	    if (p_smd && msg_silent == 0)
 		redraw_cmdline = TRUE;	    /* show visual mode later */
 	    /*
@@ -7687,9 +5672,7 @@ n_start_visual_mode(int c)
     foldAdjustVisual();
 #endif
 
-#ifdef FEAT_MOUSE
     setmouse();
-#endif
 #ifdef FEAT_CONCEAL
     /* Check for redraw after changing the state. */
     conceal_check_cursor_line();
@@ -7854,9 +5837,7 @@ nv_g_cmd(cmdarg_T *cap)
 		VIsual_select = TRUE;
 	    else
 		may_start_select('c');
-#ifdef FEAT_MOUSE
 	    setmouse();
-#endif
 #ifdef FEAT_CLIPBOARD
 	    /* Make sure the clipboard gets updated.  Needed because start and
 	     * end are still the same, and the selection needs to be owned */
@@ -7997,6 +5978,24 @@ nv_g_cmd(cmdarg_T *cap)
 	    curwin->w_valid &= ~VALID_WCOL;
 	}
 	curwin->w_set_curswant = TRUE;
+	break;
+
+    case 'M':
+	{
+	    char_u  *ptr = ml_get_curline();
+
+	    oap->motion_type = MCHAR;
+	    oap->inclusive = FALSE;
+	    if (has_mbyte)
+		i = mb_string2cells(ptr, (int)STRLEN(ptr));
+	    else
+		i = (int)STRLEN(ptr);
+	    if (cap->count0 > 0 && cap->count0 <= 100)
+		coladvance((colnr_T)(i * cap->count0 / 100));
+	    else
+		coladvance((colnr_T)(i / 2));
+	    curwin->w_set_curswant = TRUE;
+	}
 	break;
 
     case '_':
@@ -8236,7 +6235,6 @@ nv_g_cmd(cmdarg_T *cap)
 	nv_gd(oap, cap->nchar, (int)cap->count0);
 	break;
 
-#ifdef FEAT_MOUSE
     /*
      * g<*Mouse> : <C-*mouse>
      */
@@ -8259,7 +6257,6 @@ nv_g_cmd(cmdarg_T *cap)
 	mod_mask = MOD_MASK_CTRL;
 	(void)do_mouse(oap, cap->nchar, BACKWARD, cap->count1, 0);
 	break;
-#endif
 
     case K_IGNORE:
 	break;
@@ -8353,10 +6350,8 @@ n_opencmd(cmdarg_T *cap)
 					       (cap->cmdchar == 'o' ? 1 : 0))
 		       ) == OK
 		&& open_line(cap->cmdchar == 'O' ? BACKWARD : FORWARD,
-#ifdef FEAT_COMMENTS
-		    has_format_option(FO_OPEN_COMS) ? OPENLINE_DO_COM :
-#endif
-		    0, 0) == OK)
+			 has_format_option(FO_OPEN_COMS) ? OPENLINE_DO_COM : 0,
+								      0) == OK)
 	{
 #ifdef FEAT_CONCEAL
 	    if (curwin->w_p_cole > 0 && oldline != curwin->w_cursor.lnum)
@@ -8735,7 +6730,7 @@ adjust_for_sel(cmdarg_T *cap)
  * Should check VIsual_mode before calling this.
  * Returns TRUE when backed up to the previous line.
  */
-    static int
+    int
 unadjust_for_sel(void)
 {
     pos_T	*pp;
@@ -9489,75 +7484,4 @@ nv_cursorhold(cmdarg_T *cap)
     apply_autocmds(EVENT_CURSORHOLD, NULL, NULL, FALSE, curbuf);
     did_cursorhold = TRUE;
     cap->retval |= CA_COMMAND_BUSY;	/* don't call edit() now */
-}
-
-/*
- * Calculate start/end virtual columns for operating in block mode.
- */
-    static void
-get_op_vcol(
-    oparg_T	*oap,
-    colnr_T	redo_VIsual_vcol,
-    int		initial)    /* when TRUE adjust position for 'selectmode' */
-{
-    colnr_T	    start, end;
-
-    if (VIsual_mode != Ctrl_V
-	    || (!initial && oap->end.col < curwin->w_width))
-	return;
-
-    oap->block_mode = TRUE;
-
-    /* prevent from moving onto a trail byte */
-    if (has_mbyte)
-	mb_adjustpos(curwin->w_buffer, &oap->end);
-
-    getvvcol(curwin, &(oap->start), &oap->start_vcol, NULL, &oap->end_vcol);
-
-    if (!redo_VIsual_busy)
-    {
-	getvvcol(curwin, &(oap->end), &start, NULL, &end);
-
-	if (start < oap->start_vcol)
-	    oap->start_vcol = start;
-	if (end > oap->end_vcol)
-	{
-	    if (initial && *p_sel == 'e' && start >= 1
-				    && start - 1 >= oap->end_vcol)
-		oap->end_vcol = start - 1;
-	    else
-		oap->end_vcol = end;
-	}
-    }
-
-    /* if '$' was used, get oap->end_vcol from longest line */
-    if (curwin->w_curswant == MAXCOL)
-    {
-	curwin->w_cursor.col = MAXCOL;
-	oap->end_vcol = 0;
-	for (curwin->w_cursor.lnum = oap->start.lnum;
-		curwin->w_cursor.lnum <= oap->end.lnum;
-					++curwin->w_cursor.lnum)
-	{
-	    getvvcol(curwin, &curwin->w_cursor, NULL, NULL, &end);
-	    if (end > oap->end_vcol)
-		oap->end_vcol = end;
-	}
-    }
-    else if (redo_VIsual_busy)
-	oap->end_vcol = oap->start_vcol + redo_VIsual_vcol - 1;
-    /*
-    * Correct oap->end.col and oap->start.col to be the
-    * upper-left and lower-right corner of the block area.
-    *
-    * (Actually, this does convert column positions into character
-    * positions)
-    */
-    curwin->w_cursor.lnum = oap->end.lnum;
-    coladvance(oap->end_vcol);
-    oap->end = curwin->w_cursor;
-
-    curwin->w_cursor = oap->start;
-    coladvance(oap->start_vcol);
-    oap->start = curwin->w_cursor;
 }

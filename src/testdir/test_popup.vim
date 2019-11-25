@@ -795,6 +795,12 @@ func Test_balloon_split()
         \ '  next = 123}',
         \ ], balloon_split(
         \ 'struct = 0x234 {long = 2343 "\\"some long string that will be wrapped in two\\"", next = 123}'))
+  call assert_equal([
+        \ 'Some comment',
+        \ '',
+        \ 'typedef this that;',
+        \ ], balloon_split(
+        \ "Some comment\n\ntypedef this that;"))
 endfunc
 
 func Test_popup_position()

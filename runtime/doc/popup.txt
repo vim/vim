@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.1.  Last change: 2019 Sep 04
+*popup.txt*  For Vim version 8.1.  Last change: 2019 Nov 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -137,9 +137,7 @@ Options can be set on the window with `setwinvar()`, e.g.: >
 	call setwinvar(winid, '&wrap', 0)
 And options can be set on the buffer with `setbufvar()`, e.g.: >
 	call setbufvar(winbufnr(winid), '&filetype', 'java')
-Note that this does not trigger autocommands.  Use `win_execute()` if you do
-need them.
-
+You can also use `win_execute()` with a ":setlocal" command.
 
 
 ==============================================================================
@@ -188,6 +186,8 @@ popup_atcursor({what}, {options})			*popup_atcursor()*
 				\ moved: 'WORD',
 				\ })
 <		Use {options} to change the properties.
+		If "pos" is passed as "topleft" then the default for "line"
+		becomes "cursor+1".
 
 		Can also be used as a |method|: >
 			GetText()->popup_atcursor({})
@@ -204,7 +204,7 @@ popup_beval({what}, {options})			*popup_beval()*
 			\ mousemoved: 'WORD',
 			\ })
 <		Use {options} to change the properties.
-		See |popup_beval_example| for an example use.
+		See |popup_beval_example| for an example.
 
 		Can also be used as a |method|: >
 			GetText()->popup_beval({})
@@ -307,14 +307,14 @@ popup_findinfo()					*popup_findinfo()*
 		Get the |window-ID| for the popup info window, as it used by
 		the popup menu.  See |complete-popup|.  The info popup is
 		hidden when not used, it can be deleted with |popup_clear()|
-		and |popup_close()|.
-		Return zero if there is none.
+		and |popup_close()|.  Use |popup_show()| to reposition it to
+		the item in the popup menu.
+		Returns zero if there is none.
 
 
 popup_findpreview()					*popup_findpreview()*
 		Get the |window-ID| for the popup preview window.
 		Return zero if there is none.
-
 
 
 popup_getoptions({id})					*popup_getoptions()*
@@ -363,7 +363,9 @@ popup_getpos({id})					*popup_getpos()*
 		    core_width	width of the text box in screen cells
 		    core_height	height of the text box in screen cells
 		    firstline	line of the buffer at top (1 unless scrolled)
-		    		(not the value of the "firstline" property)
+				(not the value of the "firstline" property)
+		    lastline	line of the buffer at the bottom (updated when
+				the popup is redrawn)
 		    scrollbar	non-zero if a scrollbar is displayed
 		    visible	one if the popup is displayed, zero if hidden
 		Note that these are the actual screen positions.  They differ
@@ -476,6 +478,8 @@ popup_notification({what}, {options})			 *popup_notification()*
 popup_show({id})						*popup_show()*
 		If {id} is a hidden popup, show it now.
 		For {id} see `popup_hide()`.
+		If {id} is the info popup it will be positioned next to the
+		current popup menu item.
 
 
 popup_setoptions({id}, {options})			*popup_setoptions()*
@@ -540,6 +544,10 @@ properties.  It is in one of four forms:
 			dictionary with a "col" entry, see below:
 			|popup-props|.
 
+If you want to create a new buffer yourself use |bufadd()| and pass the buffer
+number to popup_create().
+It is not possible to use the buffer of a terminal window. *E278*
+
 The second argument of |popup_create()| is a dictionary with options:
 	line		Screen line where to position the popup.  Can use a
 			number or "cursor", "cursor+1" or "cursor-1" to use
@@ -561,6 +569,11 @@ The second argument of |popup_create()| is a dictionary with options:
 			Alternatively "center" can be used to position the
 			popup in the center of the Vim window, in which case
 			"line" and "col" are ignored.
+	posinvert	When FALSE the value of "pos" is always used.  When
+			TRUE (the default) and the popup does not fit
+			vertically and there is more space on the other side
+			then the popup is placed on the other side of the
+			position indicated by "line".
 	textprop	When present the popup is positioned next to a text
 			property with this name and will move when the text
 			property moves.  Use an empty string to remove.  See
@@ -678,8 +691,15 @@ The second argument of |popup_create()| is a dictionary with options:
 			- "expr": if the cursor moved outside |<cexpr>|
 			- [{start}, {end}]: if the cursor moved before column
 			  {start} or after {end}
+			- [{lnum}, {start}, {end}]: if the cursor moved away
+			  from line {lnum}, before column {start} or after
+			  {end}
+			- [0, 0, 0] do not close the popup when the cursor
+			  moves
 			The popup also closes if the cursor moves to another
 			line or to another window.
+	mousemoved	Like "moved" but referring to the mouse pointer
+			position
 	cursorline	non-zero: Highlight the cursor line. Also scrolls the
 				  text to show this line (only works properly
 				  when 'wrap' is off).
@@ -742,22 +762,22 @@ is inserted or deleted.  The popup functions like a tooltip.
 These steps are needed to make this work:
 
 - Define a text property type, it defines the name. >
-  	call prop_type_add('popupMarker', {})
+	call prop_type_add('popupMarker', {})
 
 - Place a text property at the desired text: >
 	let lnum = {line of the text}
 	let col = {start column of the text}
 	let len = {length of the text}
 	let propId = {arbitrary but unique number}
-  	call prop_add(lnum, col, #{
+	call prop_add(lnum, col, #{
 		\ length: len,
 		\ type: 'popupMarker',
 		\ id: propId,
 		\ })
 
 - Create a popup: >
-  	let winid = popup_create('the text', #{
-		\ pos: 'botleft', 
+	let winid = popup_create('the text', #{
+		\ pos: 'botleft',
 		\ textprop: 'popupMarker',
 		\ textpropid: propId,
 		\ border: [],
@@ -797,7 +817,7 @@ Some hints:
   a click, as in the example above, helps for that.
 - If the text property is removed the popup is closed.  Use something like
   this: >
-  	call prop_remove(#{type: 'popupMarker', id: propId})
+	call prop_remove(#{type: 'popupMarker', id: propId})
 
 
 POPUP FILTER						*popup-filter*
@@ -842,9 +862,8 @@ Some recommended key actions:
 	cursor keys	select another entry
 	Tab		accept current suggestion
 
-A mouse click arrives as <LeftMouse>.  The coordinates are in
-v:mouse_popup_col and v:mouse_popup_row.  The top-left screen cell of the
-popup is col 1, row 1 (not counting the border).
+A mouse click arrives as <LeftMouse>.  The coordinates can be obtained with
+|getmousepos()|.
 
 Vim provides standard filters |popup_filter_menu()| and
 |popup_filter_yesno()|.

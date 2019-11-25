@@ -1,4 +1,4 @@
-*message.txt*   For Vim version 8.1.  Last change: 2019 Aug 23
+*message.txt*   For Vim version 8.1.  Last change: 2019 Oct 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -480,7 +480,7 @@ try to solve the memory shortage.  To stay on the safe side, exit Vim and
 start again.
 
 If this happens while Vim is still initializing, editing files is very
-unlikely to work, therefore Vim will exit with value 123. 
+unlikely to work, therefore Vim will exit with value 123.
 
 Buffers are only partly kept in memory, thus editing a very large file is
 unlikely to cause an out-of-memory situation.  Undo information is completely
@@ -582,7 +582,8 @@ allowed for the command that was used.
 Vim was not able to create a swap file.  You can still edit the file, but if
 Vim unexpectedly exits the changes will be lost.  And Vim may consume a lot of
 memory when editing a big file.  You may want to change the 'directory' option
-to avoid this error.  See |swap-file|.
+to avoid this error.  This error is not given when 'directory' is empty.  See
+|swap-file|.
 
 							*E140*  >
   Use ! to write partial buffer

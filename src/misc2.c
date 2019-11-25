@@ -119,10 +119,11 @@ getvpos(pos_T *pos, colnr_T wcol)
     static int
 coladvance2(
     pos_T	*pos,
-    int		addspaces,	/* change the text to achieve our goal? */
-    int		finetune,	/* change char offset for the exact column */
-    colnr_T	wcol)		/* column to move to */
+    int		addspaces,	// change the text to achieve our goal?
+    int		finetune,	// change char offset for the exact column
+    colnr_T	wcol_arg)	// column to move to (can be negative)
 {
+    colnr_T	wcol = wcol_arg;
     int		idx;
     char_u	*ptr;
     char_u	*line;
@@ -136,7 +137,7 @@ coladvance2(
     one_more = (State & INSERT)
 		    || restart_edit != NUL
 		    || (VIsual_active && *p_sel != 'o')
-		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL) ;
+		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL);
     line = ml_get_buf(curbuf, pos->lnum, FALSE);
 
     if (wcol >= MAXCOL)
@@ -206,6 +207,7 @@ coladvance2(
 
 	if (virtual_active()
 		&& addspaces
+		&& wcol >= 0
 		&& ((col != wcol && col != wcol + 1) || csize > 1))
 	{
 	    /* 'virtualedit' is set: The difference between wcol and col is
@@ -305,7 +307,7 @@ coladvance2(
     if (has_mbyte)
 	mb_adjustpos(curbuf, pos);
 
-    if (col < wcol)
+    if (wcol < 0 || col < wcol)
 	return FAIL;
     return OK;
 }
@@ -2491,44 +2493,6 @@ static struct key_name_entry
 
 #define KEY_NAMES_TABLE_LEN (sizeof(key_names_table) / sizeof(struct key_name_entry))
 
-#ifdef FEAT_MOUSE
-static struct mousetable
-{
-    int	    pseudo_code;	/* Code for pseudo mouse event */
-    int	    button;		/* Which mouse button is it? */
-    int	    is_click;		/* Is it a mouse button click event? */
-    int	    is_drag;		/* Is it a mouse drag event? */
-} mouse_table[] =
-{
-    {(int)KE_LEFTMOUSE,		MOUSE_LEFT,	TRUE,	FALSE},
-#ifdef FEAT_GUI
-    {(int)KE_LEFTMOUSE_NM,	MOUSE_LEFT,	TRUE,	FALSE},
-#endif
-    {(int)KE_LEFTDRAG,		MOUSE_LEFT,	FALSE,	TRUE},
-    {(int)KE_LEFTRELEASE,	MOUSE_LEFT,	FALSE,	FALSE},
-#ifdef FEAT_GUI
-    {(int)KE_LEFTRELEASE_NM,	MOUSE_LEFT,	FALSE,	FALSE},
-#endif
-    {(int)KE_MIDDLEMOUSE,	MOUSE_MIDDLE,	TRUE,	FALSE},
-    {(int)KE_MIDDLEDRAG,	MOUSE_MIDDLE,	FALSE,	TRUE},
-    {(int)KE_MIDDLERELEASE,	MOUSE_MIDDLE,	FALSE,	FALSE},
-    {(int)KE_RIGHTMOUSE,	MOUSE_RIGHT,	TRUE,	FALSE},
-    {(int)KE_RIGHTDRAG,		MOUSE_RIGHT,	FALSE,	TRUE},
-    {(int)KE_RIGHTRELEASE,	MOUSE_RIGHT,	FALSE,	FALSE},
-    {(int)KE_X1MOUSE,		MOUSE_X1,	TRUE,	FALSE},
-    {(int)KE_X1DRAG,		MOUSE_X1,	FALSE,	TRUE},
-    {(int)KE_X1RELEASE,		MOUSE_X1,	FALSE,	FALSE},
-    {(int)KE_X2MOUSE,		MOUSE_X2,	TRUE,	FALSE},
-    {(int)KE_X2DRAG,		MOUSE_X2,	FALSE,	TRUE},
-    {(int)KE_X2RELEASE,		MOUSE_X2,	FALSE,	FALSE},
-    /* DRAG without CLICK */
-    {(int)KE_MOUSEMOVE,		MOUSE_RELEASE,	FALSE,	TRUE},
-    /* RELEASE without CLICK */
-    {(int)KE_IGNORE,		MOUSE_RELEASE,	FALSE,	FALSE},
-    {0,				0,		0,	0},
-};
-#endif /* FEAT_MOUSE */
-
 /*
  * Return the modifier mask bit (MOD_MASK_*) which corresponds to the given
  * modifier name ('S' for Shift, 'C' for Ctrl etc).
@@ -2732,12 +2696,15 @@ trans_special(
     char_u	**srcp,
     char_u	*dst,
     int		keycode,    // prefer key code, e.g. K_DEL instead of DEL
-    int		in_string)  // TRUE when inside a double quoted string
+    int		in_string,  // TRUE when inside a double quoted string
+    int		simplify,	// simplify <C-H> and <A-x>
+    int		*did_simplify)  // found <C-H> or <A-x>
 {
     int		modifiers = 0;
     int		key;
 
-    key = find_special_key(srcp, &modifiers, keycode, FALSE, in_string);
+    key = find_special_key(srcp, &modifiers, keycode, FALSE, in_string,
+						       simplify, did_simplify);
     if (key == 0)
 	return 0;
 
@@ -2789,9 +2756,11 @@ special_to_buf(int key, int modifiers, int keycode, char_u *dst)
 find_special_key(
     char_u	**srcp,
     int		*modp,
-    int		keycode,     /* prefer key code, e.g. K_DEL instead of DEL */
-    int		keep_x_key,  /* don't translate xHome to Home key */
-    int		in_string)   /* TRUE in string, double quote is escaped */
+    int		keycode,	// prefer key code, e.g. K_DEL instead of DEL
+    int		keep_x_key,	// don't translate xHome to Home key
+    int		in_string,	// TRUE in string, double quote is escaped
+    int		simplify,	// simplify <C-H> and <A-x>
+    int		*did_simplify)  // found <C-H> or <A-x>
 {
     char_u	*last_dash;
     char_u	*end_of_name;
@@ -2871,7 +2840,8 @@ find_special_key(
 						 && VIM_ISDIGIT(last_dash[6]))
 	    {
 		/* <Char-123> or <Char-033> or <Char-0x33> */
-		vim_str2nr(last_dash + 6, NULL, &l, STR2NR_ALL, NULL, &n, 0, TRUE);
+		vim_str2nr(last_dash + 6, NULL, &l, STR2NR_ALL, NULL,
+								  &n, 0, TRUE);
 		if (l == 0)
 		{
 		    emsg(_(e_invarg));
@@ -2921,11 +2891,10 @@ find_special_key(
 			key = DEL;
 		}
 
-		/*
-		 * Normal Key with modifier: Try to make a single byte code.
-		 */
+		// Normal Key with modifier: Try to make a single byte code.
 		if (!IS_SPECIAL(key))
-		    key = extract_modifiers(key, &modifiers);
+		    key = extract_modifiers(key, &modifiers,
+						       simplify, did_simplify);
 
 		*modp = modifiers;
 		*srcp = end_of_name;
@@ -2939,26 +2908,37 @@ find_special_key(
 /*
  * Try to include modifiers in the key.
  * Changes "Shift-a" to 'A', "Alt-A" to 0xc0, etc.
+ * When "simplify" is FALSE don't do Ctrl and Alt.
+ * When "simplify" is TRUE and Ctrl or Alt is removed from modifiers set
+ * "did_simplify" when it's not NULL.
  */
     int
-extract_modifiers(int key, int *modp)
+extract_modifiers(int key, int *modp, int simplify, int *did_simplify)
 {
     int	modifiers = *modp;
 
 #ifdef MACOS_X
-    /* Command-key really special, no fancynest */
+    // Command-key really special, no fancynest
     if (!(modifiers & MOD_MASK_CMD))
 #endif
     if ((modifiers & MOD_MASK_SHIFT) && ASCII_ISALPHA(key))
     {
 	key = TOUPPER_ASC(key);
-	modifiers &= ~MOD_MASK_SHIFT;
+	// With <C-S-a> and <A-S-a> we keep the shift modifier.
+	// With <S-a> and <S-A> we don't keep the shift modifier.
+	if (simplify || modifiers == MOD_MASK_SHIFT)
+	    modifiers &= ~MOD_MASK_SHIFT;
     }
-    if ((modifiers & MOD_MASK_CTRL)
+
+    // <C-H> and <C-h> mean the same thing, always use "H"
+    if ((modifiers & MOD_MASK_CTRL) && ASCII_ISALPHA(key))
+	key = TOUPPER_ASC(key);
+
+    if (simplify && (modifiers & MOD_MASK_CTRL)
 #ifdef EBCDIC
-	    /* * TODO: EBCDIC Better use:
-	     * && (Ctrl_chr(key) || key == '?')
-	     * ???  */
+	    // TODO: EBCDIC Better use:
+	    // && (Ctrl_chr(key) || key == '?')
+	    // ???
 	    && strchr("?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_", key)
 						       != NULL
 #else
@@ -2971,16 +2951,21 @@ extract_modifiers(int key, int *modp)
 	/* <C-@> is <Nul> */
 	if (key == 0)
 	    key = K_ZERO;
+	if (did_simplify != NULL)
+	    *did_simplify = TRUE;
     }
+
 #ifdef MACOS_X
     /* Command-key really special, no fancynest */
     if (!(modifiers & MOD_MASK_CMD))
 #endif
-    if ((modifiers & MOD_MASK_ALT) && key < 0x80
+    if (simplify && (modifiers & MOD_MASK_ALT) && key < 0x80
 	    && !enc_dbcs)		// avoid creating a lead byte
     {
 	key |= 0x80;
 	modifiers &= ~MOD_MASK_ALT;	/* remove the META modifier */
+	if (did_simplify != NULL)
+	    *did_simplify = TRUE;
     }
 
     *modp = modifiers;
@@ -3049,66 +3034,6 @@ get_key_name(int i)
 	return NULL;
     return  key_names_table[i].name;
 }
-
-#if defined(FEAT_MOUSE) || defined(PROTO)
-/*
- * Look up the given mouse code to return the relevant information in the other
- * arguments.  Return which button is down or was released.
- */
-    int
-get_mouse_button(int code, int *is_click, int *is_drag)
-{
-    int	    i;
-
-    for (i = 0; mouse_table[i].pseudo_code; i++)
-	if (code == mouse_table[i].pseudo_code)
-	{
-	    *is_click = mouse_table[i].is_click;
-	    *is_drag = mouse_table[i].is_drag;
-	    return mouse_table[i].button;
-	}
-    return 0;	    /* Shouldn't get here */
-}
-
-/*
- * Return the appropriate pseudo mouse event token (KE_LEFTMOUSE etc) based on
- * the given information about which mouse button is down, and whether the
- * mouse was clicked, dragged or released.
- */
-    int
-get_pseudo_mouse_code(
-    int	    button,	/* eg MOUSE_LEFT */
-    int	    is_click,
-    int	    is_drag)
-{
-    int	    i;
-
-    for (i = 0; mouse_table[i].pseudo_code; i++)
-	if (button == mouse_table[i].button
-	    && is_click == mouse_table[i].is_click
-	    && is_drag == mouse_table[i].is_drag)
-	{
-#ifdef FEAT_GUI
-	    /* Trick: a non mappable left click and release has mouse_col -1
-	     * or added MOUSE_COLOFF.  Used for 'mousefocus' in
-	     * gui_mouse_moved() */
-	    if (mouse_col < 0 || mouse_col > MOUSE_COLOFF)
-	    {
-		if (mouse_col < 0)
-		    mouse_col = 0;
-		else
-		    mouse_col -= MOUSE_COLOFF;
-		if (mouse_table[i].pseudo_code == (int)KE_LEFTMOUSE)
-		    return (int)KE_LEFTMOUSE_NM;
-		if (mouse_table[i].pseudo_code == (int)KE_LEFTRELEASE)
-		    return (int)KE_LEFTRELEASE_NM;
-	    }
-#endif
-	    return mouse_table[i].pseudo_code;
-	}
-    return (int)KE_IGNORE;	    /* not recognized, ignore it */
-}
-#endif /* FEAT_MOUSE */
 
 /*
  * Return the current end-of-line type: EOL_DOS, EOL_UNIX or EOL_MAC.
@@ -3255,7 +3180,7 @@ call_shell(char_u *cmd, int opt)
 	{
 	    char_u *ecmd = cmd;
 
-	    if (*p_sxe != NUL && STRCMP(p_sxq, "(") == 0)
+	    if (*p_sxe != NUL && *p_sxq == '(')
 	    {
 		ecmd = vim_strsave_escaped_ext(cmd, p_sxe, '^', FALSE);
 		if (ecmd == NULL)
@@ -3266,11 +3191,11 @@ call_shell(char_u *cmd, int opt)
 	    {
 		STRCPY(ncmd, p_sxq);
 		STRCAT(ncmd, ecmd);
-		/* When 'shellxquote' is ( append ).
-		 * When 'shellxquote' is "( append )". */
-		STRCAT(ncmd, STRCMP(p_sxq, "(") == 0 ? (char_u *)")"
-			   : STRCMP(p_sxq, "\"(") == 0 ? (char_u *)")\""
-			   : p_sxq);
+		// When 'shellxquote' is ( append ).
+		// When 'shellxquote' is "( append )".
+		STRCAT(ncmd, *p_sxq == '(' ? (char_u *)")"
+		    : *p_sxq == '"' && *(p_sxq+1) == '(' ? (char_u *)")\""
+		    : p_sxq);
 		retval = mch_call_shell(ncmd, opt);
 		vim_free(ncmd);
 	    }
@@ -4349,82 +4274,6 @@ has_non_ascii(char_u *s)
 }
 #endif
 
-#if defined(MESSAGE_QUEUE) || defined(PROTO)
-# define MAX_REPEAT_PARSE 8
-
-/*
- * Process messages that have been queued for netbeans or clientserver.
- * Also check if any jobs have ended.
- * These functions can call arbitrary vimscript and should only be called when
- * it is safe to do so.
- */
-    void
-parse_queued_messages(void)
-{
-    int	    old_curwin_id = curwin->w_id;
-    int	    old_curbuf_fnum = curbuf->b_fnum;
-    int	    i;
-    int	    save_may_garbage_collect = may_garbage_collect;
-
-    // Do not handle messages while redrawing, because it may cause buffers to
-    // change or be wiped while they are being redrawn.
-    if (updating_screen)
-	return;
-
-    // may_garbage_collect is set in main_loop() to do garbage collection when
-    // blocking to wait on a character.  We don't want that while parsing
-    // messages, a callback may invoke vgetc() while lists and dicts are in use
-    // in the call stack.
-    may_garbage_collect = FALSE;
-
-    // Loop when a job ended, but don't keep looping forever.
-    for (i = 0; i < MAX_REPEAT_PARSE; ++i)
-    {
-	// For Win32 mch_breakcheck() does not check for input, do it here.
-# if defined(MSWIN) && defined(FEAT_JOB_CHANNEL)
-	channel_handle_events(FALSE);
-# endif
-
-# ifdef FEAT_NETBEANS_INTG
-	// Process the queued netbeans messages.
-	netbeans_parse_messages();
-# endif
-# ifdef FEAT_JOB_CHANNEL
-	// Write any buffer lines still to be written.
-	channel_write_any_lines();
-
-	// Process the messages queued on channels.
-	channel_parse_messages();
-# endif
-# if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
-	// Process the queued clientserver messages.
-	server_parse_messages();
-# endif
-# ifdef FEAT_JOB_CHANNEL
-	// Check if any jobs have ended.  If so, repeat the above to handle
-	// changes, e.g. stdin may have been closed.
-	if (job_check_ended())
-	    continue;
-# endif
-# ifdef FEAT_TERMINAL
-	free_unused_terminals();
-# endif
-# ifdef FEAT_SOUND_CANBERRA
-	if (has_sound_callback_in_queue())
-	    invoke_sound_callback();
-# endif
-	break;
-    }
-
-    may_garbage_collect = save_may_garbage_collect;
-
-    // If the current window or buffer changed we need to bail out of the
-    // waiting loop.  E.g. when a job exit callback closes the terminal window.
-    if (curwin->w_id != old_curwin_id || curbuf->b_fnum != old_curbuf_fnum)
-	ins_char_typebuf(K_IGNORE);
-}
-#endif
-
 #ifndef PROTO  /* proto is defined in vim.h */
 # ifdef ELAPSED_TIMEVAL
 /*
@@ -4601,3 +4450,22 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
 }
 # endif
 #endif
+
+/*
+ * Change the behavior of vterm.
+ * 0: As usual.
+ * 1: Windows 10 version 1809
+ *      The bug causes unstable handling of ambiguous width character.
+ * 2: Windows 10 version 1903 & 1909
+ *      Use the wrong result because each result is different.
+ * 3: Windows 10 insider preview (current latest logic)
+ */
+    int
+get_special_pty_type(void)
+{
+#ifdef MSWIN
+    return get_conpty_type();
+#else
+    return 0;
+#endif
+}

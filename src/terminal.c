@@ -109,6 +109,7 @@ struct terminal_S {
 #define TL_FINISH_OPEN	    'o'	/* ++open */
     char_u	*tl_opencmd;
     char_u	*tl_eof_chars;
+    char_u	*tl_api;	// prefix for terminal API function
 
     char_u	*tl_arg0_cmd;	// To format the status bar
 
@@ -641,6 +642,11 @@ term_start(
 	term->tl_kill = vim_strnsave(opt->jo_term_kill, p - opt->jo_term_kill);
     }
 
+    if (opt->jo_term_api != NULL)
+	term->tl_api = vim_strsave(opt->jo_term_api);
+    else
+	term->tl_api = vim_strsave((char_u *)"Tapi_");
+
     /* System dependent: setup the vterm and maybe start the job in it. */
     if (argv == NULL
 	    && argvar->v_type == VAR_STRING
@@ -684,6 +690,8 @@ term_start(
     }
 
     apply_autocmds(EVENT_TERMINALOPEN, NULL, NULL, FALSE, newbuf);
+    if (!opt->jo_hidden && !(flags & TERM_START_SYSTEM))
+	apply_autocmds(EVENT_TERMINALWINOPEN, NULL, NULL, FALSE, newbuf);
     return newbuf;
 }
 
@@ -695,6 +703,7 @@ ex_terminal(exarg_T *eap)
 {
     typval_T	argvar[2];
     jobopt_T	opt;
+    int		opt_shell = FALSE;
     char_u	*cmd;
     char_u	*tofree = NULL;
 
@@ -708,51 +717,68 @@ ex_terminal(exarg_T *eap)
 	cmd += 2;
 	p = skiptowhite(cmd);
 	ep = vim_strchr(cmd, '=');
-	if (ep != NULL && ep < p)
-	    p = ep;
+	if (ep != NULL)
+	{
+	    if (ep < p)
+		p = ep;
+	    else
+		ep = NULL;
+	}
 
-	if ((int)(p - cmd) == 5 && STRNICMP(cmd, "close", 5) == 0)
+# define OPTARG_HAS(name) ((int)(p - cmd) == sizeof(name) - 1 \
+				 && STRNICMP(cmd, name, sizeof(name) - 1) == 0)
+	if (OPTARG_HAS("close"))
 	    opt.jo_term_finish = 'c';
-	else if ((int)(p - cmd) == 7 && STRNICMP(cmd, "noclose", 7) == 0)
+	else if (OPTARG_HAS("noclose"))
 	    opt.jo_term_finish = 'n';
-	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "open", 4) == 0)
+	else if (OPTARG_HAS("open"))
 	    opt.jo_term_finish = 'o';
-	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "curwin", 6) == 0)
+	else if (OPTARG_HAS("curwin"))
 	    opt.jo_curwin = 1;
-	else if ((int)(p - cmd) == 6 && STRNICMP(cmd, "hidden", 6) == 0)
+	else if (OPTARG_HAS("hidden"))
 	    opt.jo_hidden = 1;
-	else if ((int)(p - cmd) == 9 && STRNICMP(cmd, "norestore", 9) == 0)
+	else if (OPTARG_HAS("norestore"))
 	    opt.jo_term_norestore = 1;
-	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "kill", 4) == 0
-		&& ep != NULL)
+	else if (OPTARG_HAS("shell"))
+	    opt_shell = TRUE;
+	else if (OPTARG_HAS("kill") && ep != NULL)
 	{
 	    opt.jo_set2 |= JO2_TERM_KILL;
 	    opt.jo_term_kill = ep + 1;
 	    p = skiptowhite(cmd);
 	}
-	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "rows", 4) == 0
-		&& ep != NULL && isdigit(ep[1]))
+	else if (OPTARG_HAS("api"))
+	{
+	    opt.jo_set2 |= JO2_TERM_API;
+	    if (ep != NULL)
+	    {
+		opt.jo_term_api = ep + 1;
+		p = skiptowhite(cmd);
+	    }
+	    else
+		opt.jo_term_api = NULL;
+	}
+	else if (OPTARG_HAS("rows") && ep != NULL && isdigit(ep[1]))
 	{
 	    opt.jo_set2 |= JO2_TERM_ROWS;
 	    opt.jo_term_rows = atoi((char *)ep + 1);
 	    p = skiptowhite(cmd);
 	}
-	else if ((int)(p - cmd) == 4 && STRNICMP(cmd, "cols", 4) == 0
-		&& ep != NULL && isdigit(ep[1]))
+	else if (OPTARG_HAS("cols") && ep != NULL && isdigit(ep[1]))
 	{
 	    opt.jo_set2 |= JO2_TERM_COLS;
 	    opt.jo_term_cols = atoi((char *)ep + 1);
 	    p = skiptowhite(cmd);
 	}
-	else if ((int)(p - cmd) == 3 && STRNICMP(cmd, "eof", 3) == 0
-								 && ep != NULL)
+	else if (OPTARG_HAS("eof") && ep != NULL)
 	{
 	    char_u *buf = NULL;
 	    char_u *keys;
 
 	    p = skiptowhite(cmd);
 	    *p = NUL;
-	    keys = replace_termcodes(ep + 1, &buf, TRUE, TRUE, TRUE);
+	    keys = replace_termcodes(ep + 1, &buf,
+		    REPTERM_FROM_PART | REPTERM_DO_LT | REPTERM_SPECIAL, NULL);
 	    opt.jo_set2 |= JO2_EOF_CHARS;
 	    opt.jo_eof_chars = vim_strsave(keys);
 	    vim_free(buf);
@@ -785,6 +811,7 @@ ex_terminal(exarg_T *eap)
 	    semsg(_("E181: Invalid attribute: %s"), cmd);
 	    goto theend;
 	}
+# undef OPTARG_HAS
 	cmd = skipwhite(p);
     }
     if (*cmd == NUL)
@@ -807,13 +834,44 @@ ex_terminal(exarg_T *eap)
 	opt.jo_in_bot = eap->line2;
     }
 
+    if (opt_shell && tofree == NULL)
+    {
+#ifdef UNIX
+	char	**argv = NULL;
+	char_u	*tofree1 = NULL;
+	char_u	*tofree2 = NULL;
+
+	// :term ++shell command
+	if (unix_build_argv(cmd, &argv, &tofree1, &tofree2) == OK)
+	    term_start(NULL, argv, &opt, eap->forceit ? TERM_START_FORCEIT : 0);
+	vim_free(argv);
+	vim_free(tofree1);
+	vim_free(tofree2);
+	goto theend;
+#else
+# ifdef MSWIN
+	long_u	    cmdlen = STRLEN(p_sh) + STRLEN(p_shcf) + STRLEN(cmd) + 10;
+	char_u	    *newcmd;
+
+	newcmd = alloc(cmdlen);
+	if (newcmd == NULL)
+	    goto theend;
+	tofree = newcmd;
+	vim_snprintf((char *)newcmd, cmdlen, "%s %s %s", p_sh, p_shcf, cmd);
+	cmd = newcmd;
+# else
+	emsg(_("E279: Sorry, ++shell is not supported on this system"));
+	goto theend;
+# endif
+#endif
+    }
     argvar[0].v_type = VAR_STRING;
     argvar[0].vval.v_string = cmd;
     argvar[1].v_type = VAR_UNKNOWN;
     term_start(argvar, NULL, &opt, eap->forceit ? TERM_START_FORCEIT : 0);
-    vim_free(tofree);
 
 theend:
+    vim_free(tofree);
     vim_free(opt.jo_eof_chars);
 }
 
@@ -875,7 +933,7 @@ free_scrollback(term_T *term)
 
 
 // Terminals that need to be freed soon.
-term_T	*terminals_to_free = NULL;
+static term_T	*terminals_to_free = NULL;
 
 /*
  * Free a terminal and everything it refers to.
@@ -933,6 +991,7 @@ free_unused_terminals()
 	free_scrollback(term);
 
 	term_free_vterm(term);
+	vim_free(term->tl_api);
 	vim_free(term->tl_title);
 #ifdef FEAT_SESSION
 	vim_free(term->tl_command);
@@ -957,7 +1016,7 @@ free_unused_terminals()
  * possible to do "1,5term vim -".
  */
     static ch_part_T
-get_tty_part(term_T *term)
+get_tty_part(term_T *term UNUSED)
 {
 #ifdef UNIX
     ch_part_T	parts[3] = {PART_IN, PART_OUT, PART_ERR};
@@ -1201,11 +1260,12 @@ term_mouse_click(VTerm *vterm, int key)
 }
 
 /*
- * Convert typed key "c" into bytes to send to the job.
+ * Convert typed key "c" with modifiers "modmask" into bytes to send to the
+ * job.
  * Return the number of bytes in "buf".
  */
     static int
-term_convert_key(term_T *term, int c, char *buf)
+term_convert_key(term_T *term, int c, int modmask, char *buf)
 {
     VTerm	    *vterm = term->tl_vterm;
     VTermKey	    key = VTERM_KEY_NONE;
@@ -1349,11 +1409,18 @@ term_convert_key(term_T *term, int c, char *buf)
 				break;
     }
 
+    // add modifiers for the typed key
+    if (modmask & MOD_MASK_SHIFT)
+	mod |= VTERM_MOD_SHIFT;
+    if (modmask & MOD_MASK_CTRL)
+	mod |= VTERM_MOD_CTRL;
+    if (modmask & (MOD_MASK_ALT | MOD_MASK_META))
+	mod |= VTERM_MOD_ALT;
+
     /*
      * Convert special keys to vterm keys:
      * - Write keys to vterm: vterm_keyboard_key()
      * - Write output to channel.
-     * TODO: use mod_mask
      */
     if (key != VTERM_KEY_NONE)
 	/* Special key, let vterm convert it. */
@@ -1464,7 +1531,7 @@ term_try_stop_job(buf_T *buf)
 	if (job->jv_status >= JOB_ENDED)
 	    return OK;
 
-	ui_delay(10L, FALSE);
+	ui_delay(10L, TRUE);
 	term_flush_messages();
     }
     return FAIL;
@@ -1880,27 +1947,33 @@ term_vgetc()
 {
     int c;
     int save_State = State;
+    int modify_other_keys =
+			  vterm_is_modify_other_keys(curbuf->b_term->tl_vterm);
 
     State = TERMINAL;
     got_int = FALSE;
 #ifdef MSWIN
     ctrl_break_was_pressed = FALSE;
 #endif
+    if (modify_other_keys)
+	++no_reduce_keys;
     c = vgetc();
     got_int = FALSE;
     State = save_State;
+    if (modify_other_keys)
+	--no_reduce_keys;
     return c;
 }
 
 static int	mouse_was_outside = FALSE;
 
 /*
- * Send keys to terminal.
+ * Send key "c" with modifiers "modmask" to terminal.
  * Return FAIL when the key needs to be handled in Normal mode.
  * Return OK when the key was dropped or sent to the terminal.
  */
     int
-send_keys_to_term(term_T *term, int c, int typed)
+send_keys_to_term(term_T *term, int c, int modmask, int typed)
 {
     char	msg[KEY_BUF_LEN];
     size_t	len;
@@ -1967,10 +2040,10 @@ send_keys_to_term(term_T *term, int c, int typed)
     if (typed)
 	mouse_was_outside = FALSE;
 
-    /* Convert the typed key to a sequence of bytes for the job. */
-    len = term_convert_key(term, c, msg);
+    // Convert the typed key to a sequence of bytes for the job.
+    len = term_convert_key(term, c, modmask, msg);
     if (len > 0)
-	/* TODO: if FAIL is returned, stop? */
+	// TODO: if FAIL is returned, stop?
 	channel_send(term->tl_job->jv_channel, get_tty_part(term),
 						(char_u *)msg, (int)len, NULL);
 
@@ -2221,6 +2294,34 @@ term_win_entered()
 }
 
 /*
+ * vgetc() may not include CTRL in the key when modify_other_keys is set.
+ * Return the Ctrl-key value in that case.
+ */
+    static int
+raw_c_to_ctrl(int c)
+{
+    if ((mod_mask & MOD_MASK_CTRL)
+	    && ((c >= '`' && c <= 0x7f) || (c >= '@' && c <= '_')))
+	return c & 0x1f;
+    return c;
+}
+
+/*
+ * When modify_other_keys is set then do the reverse of raw_c_to_ctrl().
+ * May set "mod_mask".
+ */
+    static int
+ctrl_to_raw_c(int c)
+{
+    if (c < 0x20 && vterm_is_modify_other_keys(curbuf->b_term->tl_vterm))
+    {
+	mod_mask |= MOD_MASK_CTRL;
+	return c + '@';
+    }
+    return c;
+}
+
+/*
  * Wait for input and send it to the job.
  * When "blocking" is TRUE wait for a character to be typed.  Otherwise return
  * when there is no more typahead.
@@ -2233,6 +2334,7 @@ term_win_entered()
 terminal_loop(int blocking)
 {
     int		c;
+    int		raw_c;
     int		termwinkey = 0;
     int		ret;
 #ifdef UNIX
@@ -2273,17 +2375,18 @@ terminal_loop(int blocking)
 	update_cursor(curbuf->b_term, FALSE);
 	restore_cursor = TRUE;
 
-	c = term_vgetc();
+	raw_c = term_vgetc();
 	if (!term_use_loop_check(TRUE) || in_terminal_loop != curbuf->b_term)
 	{
 	    /* Job finished while waiting for a character.  Push back the
 	     * received character. */
-	    if (c != K_IGNORE)
-		vungetc(c);
+	    if (raw_c != K_IGNORE)
+		vungetc(raw_c);
 	    break;
 	}
-	if (c == K_IGNORE)
+	if (raw_c == K_IGNORE)
 	    continue;
+	c = raw_c_to_ctrl(raw_c);
 
 #ifdef UNIX
 	/*
@@ -2316,12 +2419,16 @@ terminal_loop(int blocking)
 		)
 	{
 	    int	    prev_c = c;
+	    int	    prev_raw_c = raw_c;
+	    int	    prev_mod_mask = mod_mask;
 
 #ifdef FEAT_CMDL_INFO
 	    if (add_to_showcmd(c))
 		out_flush();
 #endif
-	    c = term_vgetc();
+	    raw_c = term_vgetc();
+	    c = raw_c_to_ctrl(raw_c);
+
 #ifdef FEAT_CMDL_INFO
 	    clear_showcmd();
 #endif
@@ -2339,8 +2446,10 @@ terminal_loop(int blocking)
 		    ret = FAIL;
 		    goto theend;
 		}
-		/* Send both keys to the terminal. */
-		send_keys_to_term(curbuf->b_term, prev_c, TRUE);
+		// Send both keys to the terminal, first one here, second one
+		// below.
+		send_keys_to_term(curbuf->b_term, prev_raw_c, prev_mod_mask,
+									 TRUE);
 	    }
 	    else if (c == Ctrl_C)
 	    {
@@ -2351,12 +2460,12 @@ terminal_loop(int blocking)
 	    {
 		/* "CTRL-W .": send CTRL-W to the job */
 		/* "'termwinkey' .": send 'termwinkey' to the job */
-		c = termwinkey == 0 ? Ctrl_W : termwinkey;
+		raw_c = ctrl_to_raw_c(termwinkey == 0 ? Ctrl_W : termwinkey);
 	    }
 	    else if (c == Ctrl_BSL)
 	    {
 		/* "CTRL-W CTRL-\": send CTRL-\ to the job */
-		c = Ctrl_BSL;
+		raw_c = ctrl_to_raw_c(Ctrl_BSL);
 	    }
 	    else if (c == 'N')
 	    {
@@ -2384,20 +2493,20 @@ terminal_loop(int blocking)
 	    }
 	}
 # ifdef MSWIN
-	if (!enc_utf8 && has_mbyte && c >= 0x80)
+	if (!enc_utf8 && has_mbyte && raw_c >= 0x80)
 	{
 	    WCHAR   wc;
 	    char_u  mb[3];
 
-	    mb[0] = (unsigned)c >> 8;
-	    mb[1] = c;
+	    mb[0] = (unsigned)raw_c >> 8;
+	    mb[1] = raw_c;
 	    if (MultiByteToWideChar(GetACP(), 0, (char*)mb, 2, &wc, 1) > 0)
-		c = wc;
+		raw_c = wc;
 	}
 # endif
-	if (send_keys_to_term(curbuf->b_term, c, TRUE) != OK)
+	if (send_keys_to_term(curbuf->b_term, raw_c, mod_mask, TRUE) != OK)
 	{
-	    if (c == K_MOUSEMOVE)
+	    if (raw_c == K_MOUSEMOVE)
 		/* We are sure to come back here, don't reset the cursor color
 		 * and shape to avoid flickering. */
 		restore_cursor = FALSE;
@@ -3029,6 +3138,16 @@ term_after_channel_closed(term_T *term)
 	    aco_save_T	aco;
 	    int		do_set_w_closing = term->tl_buffer->b_nwindows == 0;
 
+	    // If this is the last normal window: exit Vim.
+	    if (term->tl_buffer->b_nwindows > 0 && only_one_window())
+	    {
+		exarg_T ea;
+
+		vim_memset(&ea, 0, sizeof(ea));
+		ex_quit(&ea);
+		return TRUE;
+	    }
+
 	    // ++close or term_finish == "close"
 	    ch_log(NULL, "terminal job finished, closing window");
 	    aucmd_prepbuf(&aco, term->tl_buffer);
@@ -3347,6 +3466,8 @@ term_update_window(win_T *wp)
 	    newcols = MIN(newcols, twp->w_width);
 	}
     }
+    if (newrows == 99999 || newcols == 99999)
+	return; // safety exit
     newrows = rows == 0 ? newrows : minsize ? MAX(rows, newrows) : rows;
     newcols = cols == 0 ? newcols : minsize ? MAX(cols, newcols) : cols;
 
@@ -3768,6 +3889,15 @@ handle_drop_command(listitem_T *item)
 }
 
 /*
+ * Return TRUE if "func" starts with "pat" and "pat" isn't empty.
+ */
+    static int
+is_permitted_term_api(char_u *func, char_u *pat)
+{
+    return pat != NULL && *pat != NUL && STRNICMP(func, pat, STRLEN(pat)) == 0;
+}
+
+/*
  * Handles a function call from the job running in a terminal.
  * "item" is the function name, "item->li_next" has the arguments.
  */
@@ -3786,9 +3916,9 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
     }
     func = tv_get_string(&item->li_tv);
 
-    if (STRNCMP(func, "Tapi_", 5) != 0)
+    if (!is_permitted_term_api(func, term->tl_api))
     {
-	ch_log(channel, "Invalid function name: %s", func);
+	ch_log(channel, "Unpermitted function: %s", func);
 	return;
     }
 
@@ -4569,6 +4699,7 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
     }
 
     ga_clear(&ga_text);
+    ga_clear(&ga_cell);
     vim_free(prev_char);
 
     return max_cells;
@@ -4700,7 +4831,7 @@ term_load_dump(typval_T *argvars, typval_T *rettv, int do_diff)
 	    buf = curbuf;
 	    while (!(curbuf->b_ml.ml_flags & ML_EMPTY))
 		ml_delete((linenr_T)1, FALSE);
-	    ga_clear(&curbuf->b_term->tl_scrollback);
+	    free_scrollback(curbuf->b_term);
 	    redraw_later(NOT_VALID);
 	}
     }
@@ -5397,7 +5528,7 @@ f_term_scrape(typval_T *argvars, typval_T *rettv)
 	    attrs = cellattr->attrs;
 	    fg = cellattr->fg;
 	    bg = cellattr->bg;
-	    len = MB_PTR2LEN(p);
+	    len = mb_ptr2len(p);
 	    mch_memmove(mbs, p, len);
 	    mbs[len] = NUL;
 	    p += len;
@@ -5477,7 +5608,7 @@ f_term_sendkeys(typval_T *argvars, typval_T *rettv)
 	    c = PTR2CHAR(msg);
 	    msg += MB_CPTR2LEN(msg);
 	}
-	send_keys_to_term(term, c, FALSE);
+	send_keys_to_term(term, c, 0, FALSE);
     }
 }
 
@@ -5544,6 +5675,27 @@ f_term_setansicolors(typval_T *argvars, typval_T *rettv UNUSED)
 #endif
 
 /*
+ * "term_setapi(buf, api)" function
+ */
+    void
+f_term_setapi(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    buf_T	*buf = term_get_buf(argvars, "term_setapi()");
+    term_T	*term;
+    char_u	*api;
+
+    if (buf == NULL)
+	return;
+    term = buf->b_term;
+    vim_free(term->tl_api);
+    api = tv_get_string_chk(&argvars[1]);
+    if (api != NULL)
+	term->tl_api = vim_strsave(api);
+    else
+	term->tl_api = NULL;
+}
+
+/*
  * "term_setrestore(buf, command)" function
  */
     void
@@ -5606,7 +5758,7 @@ f_term_start(typval_T *argvars, typval_T *rettv)
 		    + JO2_TERM_COLS + JO2_TERM_ROWS + JO2_VERTICAL + JO2_CURWIN
 		    + JO2_CWD + JO2_ENV + JO2_EOF_CHARS
 		    + JO2_NORESTORE + JO2_TERM_KILL
-		    + JO2_ANSI_COLORS + JO2_TTY_TYPE) == FAIL)
+		    + JO2_ANSI_COLORS + JO2_TTY_TYPE + JO2_TERM_API) == FAIL)
 	return;
 
     buf = term_start(&argvars[0], NULL, &opt, 0);
@@ -5722,7 +5874,8 @@ typedef int LPPROC_THREAD_ATTRIBUTE_LIST;
 typedef int SIZE_T;
 typedef int PSIZE_T;
 typedef int PVOID;
-typedef int WINAPI;
+typedef int BOOL;
+# define WINAPI
 #endif
 
 HRESULT (WINAPI *pCreatePseudoConsole)(COORD, HANDLE, HANDLE, DWORD, HPCON*);
@@ -5787,7 +5940,7 @@ dyn_conpty_init(int verbose)
 conpty_term_and_job_init(
 	term_T	    *term,
 	typval_T    *argvar,
-	char	    **argv,
+	char	    **argv UNUSED,
 	jobopt_T    *opt,
 	jobopt_T    *orig_opt)
 {
@@ -6024,7 +6177,7 @@ conpty_term_report_winsize(term_T *term, int rows, int cols)
     pResizePseudoConsole(term->tl_conpty, consize);
 }
 
-    void
+    static void
 term_free_conpty(term_T *term)
 {
     if (term->tl_siex.lpAttributeList != NULL)
@@ -6139,7 +6292,7 @@ dyn_winpty_init(int verbose)
 winpty_term_and_job_init(
 	term_T	    *term,
 	typval_T    *argvar,
-	char	    **argv,
+	char	    **argv UNUSED,
 	jobopt_T    *opt,
 	jobopt_T    *orig_opt)
 {
@@ -6355,7 +6508,7 @@ failed:
 term_and_job_init(
 	term_T	    *term,
 	typval_T    *argvar,
-	char	    **argv UNUSED,
+	char	    **argv,
 	jobopt_T    *opt,
 	jobopt_T    *orig_opt)
 {

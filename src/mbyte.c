@@ -144,6 +144,7 @@ static int utf_ptr2cells_len(char_u *p, int size);
 static int dbcs_char2cells(int c);
 static int dbcs_ptr2cells_len(char_u *p, int size);
 static int dbcs_ptr2char(char_u *p);
+static int dbcs_head_off(char_u *base, char_u *p);
 
 /*
  * Lookup table to quickly get the length in bytes of a UTF-8 character from
@@ -3778,7 +3779,7 @@ latin_head_off(char_u *base UNUSED, char_u *p UNUSED)
     return 0;
 }
 
-    int
+    static int
 dbcs_head_off(char_u *base, char_u *p)
 {
     char_u	*q;
@@ -4251,10 +4252,6 @@ mb_unescape(char_u **pp)
     int
 mb_lefthalve(int row, int col)
 {
-#ifdef FEAT_HANGULIN
-    if (composing_hangul)
-	return TRUE;
-#endif
     return (*mb_off2cells)(LineOffset[row] + col,
 					LineOffset[row] + screen_Columns) > 1;
 }
@@ -5854,11 +5851,6 @@ xim_queue_key_press_event(GdkEventKey *event, int down)
     int
 im_get_status(void)
 {
-#  ifdef FEAT_HANGULIN
-    if (hangul_input_state_get())
-	return TRUE;
-#  endif
-
 #  ifdef FEAT_EVAL
     if (USE_IMSTATUSFUNC)
 	return call_imstatusfunc();

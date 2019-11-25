@@ -62,6 +62,31 @@ EXTERN int	Screen_mco INIT(= 0);		// value of p_mco used when
 EXTERN schar_T	*ScreenLines2 INIT(= NULL);
 
 /*
+ * Buffer for one screen line (characters and attributes).
+ */
+EXTERN schar_T	*current_ScreenLine INIT(= NULL);
+
+/*
+ * Last known cursor position.
+ * Positioning the cursor is reduced by remembering the last position.
+ * Mostly used by windgoto() and screen_char().
+ */
+EXTERN int	screen_cur_row INIT(= 0);
+EXTERN int	screen_cur_col INIT(= 0);
+
+#ifdef FEAT_SEARCH_EXTRA
+EXTERN match_T	screen_search_hl; // used for 'hlsearch' highlight matching
+#endif
+
+#ifdef FEAT_FOLDING
+EXTERN foldinfo_T win_foldinfo;	// info for 'foldcolumn'
+#endif
+
+// Flag that is set when drawing for a callback, not from the main command
+// loop.
+EXTERN int redrawing_for_callback INIT(= 0);
+
+/*
  * Indexes for tab page line:
  *	N > 0 for label of tab page N
  *	N == 0 for no label
@@ -74,7 +99,7 @@ EXTERN short	*TabPageIdxs INIT(= NULL);
 // Array with size Rows x Columns containing zindex of popups.
 EXTERN short	*popup_mask INIT(= NULL);
 EXTERN short	*popup_mask_next INIT(= NULL);
-// Array with flags for tansparent cells of current popup.
+// Array with flags for transparent cells of current popup.
 EXTERN char	*popup_transparent INIT(= NULL);
 
 // Flag set to TRUE when popup_mask needs to be updated.
@@ -368,7 +393,7 @@ EXTERN int include_link INIT(= 0);	// when 2 include "link" and "clear"
  * character just after the match in the last line.
  */
 EXTERN int	highlight_match INIT(= FALSE);	// show search match pos
-EXTERN linenr_T	search_match_lines;		// lines of of matched string
+EXTERN linenr_T	search_match_lines;		// lines of matched string
 EXTERN colnr_T	search_match_endcol;		// col nr of match end
 #ifdef FEAT_SEARCH_EXTRA
 EXTERN linenr_T	search_first_line INIT(= 0);	  // for :{FIRST},{last}s/pat
@@ -445,7 +470,6 @@ EXTERN bufref_T	au_new_curbuf INIT(= {NULL COMMA 0 COMMA 0});
 EXTERN buf_T	*au_pending_free_buf INIT(= NULL);
 EXTERN win_T	*au_pending_free_win INIT(= NULL);
 
-#ifdef FEAT_MOUSE
 /*
  * Mouse coordinates, set by check_termcode()
  */
@@ -455,15 +479,15 @@ EXTERN int	mouse_past_bottom INIT(= FALSE);// mouse below last line
 EXTERN int	mouse_past_eol INIT(= FALSE);	// mouse right of line
 EXTERN int	mouse_dragging INIT(= 0);	// extending Visual area with
 						// mouse dragging
-# if defined(FEAT_MOUSE_DEC)
+#if defined(FEAT_MOUSE_DEC)
 /*
  * When the DEC mouse has been pressed but not yet released we enable
  * automatic queries for the mouse position.
  */
 EXTERN int	WantQueryMouse INIT(= FALSE);
-# endif
+#endif
 
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 // When the window layout is about to be changed, need_mouse_correct is set,
 // so that gui_mouse_correct() is called afterwards, to correct the mouse
 // pointer when focus-follow-mouse is being used.
@@ -471,10 +495,10 @@ EXTERN int	need_mouse_correct INIT(= FALSE);
 
 // When double clicking, topline must be the same
 EXTERN linenr_T gui_prev_topline INIT(= 0);
-#  ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 EXTERN int	gui_prev_topfill INIT(= 0);
-#  endif
 # endif
+#endif
 
 # ifdef FEAT_MOUSESHAPE
 EXTERN int	drag_status_line INIT(= FALSE);	// dragging the status line
@@ -483,7 +507,6 @@ EXTERN int	postponed_mouseshape INIT(= FALSE); // postponed updating the
 EXTERN int	drag_sep_line INIT(= FALSE);	// dragging vert separator
 # endif
 
-#endif
 
 #ifdef FEAT_DIFF
 // Value set from 'diffopt'.
@@ -653,7 +676,7 @@ EXTERN buf_T	*curbuf INIT(= NULL);	// currently active buffer
 
 // Iterate through all the signs placed in a buffer
 #define FOR_ALL_SIGNS_IN_BUF(buf, sign) \
-	for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
+	for (sign = buf->b_signlist; sign != NULL; sign = sign->se_next)
 
 // Flag that is set when switching off 'swapfile'.  It means that all blocks
 // are to be loaded into memory.  Shouldn't be global...
@@ -753,13 +776,18 @@ EXTERN int	VIsual_mode INIT(= 'v');
 EXTERN int	redo_VIsual_busy INIT(= FALSE);
 				// TRUE when redoing Visual
 
-#ifdef FEAT_MOUSE
+/*
+ * The Visual area is remembered for reselection.
+ */
+EXTERN int	resel_VIsual_mode INIT(= NUL);	// 'v', 'V', or Ctrl-V
+EXTERN linenr_T	resel_VIsual_line_count;	// number of lines
+EXTERN colnr_T	resel_VIsual_vcol;		// nr of cols or end col
+
 /*
  * When pasting text with the middle mouse button in visual mode with
  * restart_edit set, remember where it started so we can set Insstart.
  */
 EXTERN pos_T	where_paste_started;
-#endif
 
 /*
  * This flag is used to make auto-indent work right on lines where only a
@@ -775,7 +803,6 @@ EXTERN int     did_ai INIT(= FALSE);
  */
 EXTERN colnr_T	ai_col INIT(= 0);
 
-#ifdef FEAT_COMMENTS
 /*
  * This is a character which will end a start-middle-end comment when typed as
  * the first character on a new line.  It is taken from the last character of
@@ -783,7 +810,6 @@ EXTERN colnr_T	ai_col INIT(= 0);
  * comment end in 'comments'.  It is only valid when did_ai is TRUE.
  */
 EXTERN int     end_comment_pending INIT(= NUL);
-#endif
 
 /*
  * This flag is set after a ":syncbind" to let the check_scrollbind() function
@@ -812,6 +838,8 @@ EXTERN int	can_si INIT(= FALSE);
  */
 EXTERN int	can_si_back INIT(= FALSE);
 #endif
+
+EXTERN int	old_indent INIT(= 0);	// for ^^D command in insert mode
 
 EXTERN pos_T	saved_cursor		// w_cursor before formatting text.
 #ifdef DO_INIT
@@ -937,11 +965,6 @@ EXTERN guicolor_T	xim_bg_color INIT(= INVALCOLOR);
 # endif
 #endif
 
-#ifdef FEAT_HANGULIN
-EXTERN int		composing_hangul INIT(= 0);
-EXTERN char_u		composing_hangul_buffer[5];
-#endif
-
 /*
  * "State" is the main state of Vim.
  * There are other variables that modify the state:
@@ -970,10 +993,16 @@ EXTERN int ex_no_reprint INIT(= FALSE); // no need to print after z or p
 EXTERN int reg_recording INIT(= 0);	// register for recording  or zero
 EXTERN int reg_executing INIT(= 0);	// register being executed or zero
 
+// Set when a modifyOtherKeys sequence was seen, then simplified mappings will
+// no longer be used.
+EXTERN int seenModifyOtherKeys INIT(= FALSE);
+
 EXTERN int no_mapping INIT(= FALSE);	// currently no mapping allowed
 EXTERN int no_zero_mapping INIT(= 0);	// mapping zero not allowed
 EXTERN int allow_keys INIT(= FALSE);	// allow key codes when no_mapping
 					// is set
+EXTERN int no_reduce_keys INIT(= FALSE);  // do not apply Ctrl, Shift and Alt
+					  // to the key
 EXTERN int no_u_sync INIT(= 0);		// Don't call u_sync()
 #ifdef FEAT_EVAL
 EXTERN int u_sync_once INIT(= 0);	// Call u_sync() once when evaluating
@@ -1220,7 +1249,6 @@ EXTERN int	km_stopsel INIT(= FALSE);
 EXTERN int	km_startsel INIT(= FALSE);
 
 #ifdef FEAT_CMDWIN
-EXTERN int	cedit_key INIT(= -1);	// key value of 'cedit' option
 EXTERN int	cmdwin_type INIT(= 0);	// type of cmdline window or 0
 EXTERN int	cmdwin_result INIT(= 0); // result of cmdline window or 0
 #endif
@@ -1702,4 +1730,10 @@ typedef int HINSTANCE;
 # endif
 EXTERN int ctrl_break_was_pressed INIT(= FALSE);
 EXTERN HINSTANCE g_hinst INIT(= NULL);
+#endif
+
+#if defined(FEAT_JOB_CHANNEL)
+EXTERN int did_repeated_msg INIT(= 0);
+# define REPEATED_MSG_LOOKING	    1
+# define REPEATED_MSG_SAFESTATE	    2
 #endif

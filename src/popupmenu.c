@@ -8,7 +8,7 @@
  */
 
 /*
- * popupmnu.c: Popup menu (PUM)
+ * popupmenu.c: Popup menu (PUM)
  */
 #include "vim.h"
 
@@ -622,33 +622,36 @@ pum_redraw(void)
 }
 
 #if defined(FEAT_TEXT_PROP) && defined(FEAT_QUICKFIX)
-    static void
-pum_position_info_popup(void)
+/*
+ * Position the info popup relative to the popup menu item.
+ */
+    void
+pum_position_info_popup(win_T *wp)
 {
-    int col = pum_col + pum_width + 1;
+    int col = pum_col + pum_width + pum_scrollbar + 1;
     int row = pum_row;
     int botpos = POPPOS_BOTLEFT;
 
-    curwin->w_popup_pos = POPPOS_TOPLEFT;
+    wp->w_popup_pos = POPPOS_TOPLEFT;
     if (Columns - col < 20 && Columns - col < pum_col)
     {
 	col = pum_col - 1;
-	curwin->w_popup_pos = POPPOS_TOPRIGHT;
+	wp->w_popup_pos = POPPOS_TOPRIGHT;
 	botpos = POPPOS_BOTRIGHT;
-	curwin->w_maxwidth = pum_col - 1;
+	wp->w_maxwidth = pum_col - 1;
     }
     else
-	curwin->w_maxwidth = Columns - col + 1;
-    curwin->w_maxwidth -= popup_extra_width(curwin);
+	wp->w_maxwidth = Columns - col + 1;
+    wp->w_maxwidth -= popup_extra_width(wp);
 
-    row -= popup_top_extra(curwin);
-    if (curwin->w_popup_flags & POPF_INFO_MENU)
+    row -= popup_top_extra(wp);
+    if (wp->w_popup_flags & POPF_INFO_MENU)
     {
 	if (pum_row < pum_win_row)
 	{
 	    // menu above cursor line, align with bottom
 	    row += pum_height;
-	    curwin->w_popup_pos = botpos;
+	    wp->w_popup_pos = botpos;
 	}
 	else
 	    // menu below cursor line, align with top
@@ -658,7 +661,7 @@ pum_position_info_popup(void)
 	// align with the selected item
 	row += pum_selected - pum_first + 1;
 
-    popup_set_wantpos_rowcol(curwin, row, col);
+    popup_set_wantpos_rowcol(wp, row, col);
 }
 #endif
 
@@ -742,7 +745,7 @@ pum_set_selected(int n, int repeat UNUSED)
 #if defined(FEAT_QUICKFIX)
 	/*
 	 * Show extra info in the preview window if there is something and
-	 * 'completeopt' contains "preview" or "popup".
+	 * 'completeopt' contains "preview" or "popup" or "popuphidden".
 	 * Skip this when tried twice already.
 	 * Skip this also when there is not much room.
 	 * NOTE: Be very careful not to sync undo!
@@ -756,15 +759,21 @@ pum_set_selected(int n, int repeat UNUSED)
 	    tabpage_T   *curtab_save = curtab;
 	    int		res = OK;
 # ifdef FEAT_TEXT_PROP
-	    int		use_popup = strstr((char *)p_cot, "popup") != NULL;
+	    use_popup_T	use_popup;
 # else
-#  define use_popup 0
+#  define use_popup POPUP_NONE
 # endif
 # ifdef FEAT_TEXT_PROP
 	    has_info = TRUE;
+	    if (strstr((char *)p_cot, "popuphidden") != NULL)
+		use_popup = USEPOPUP_HIDDEN;
+	    else if (strstr((char *)p_cot, "popup") != NULL)
+		use_popup = USEPOPUP_NORMAL;
+	    else
+		use_popup = USEPOPUP_NONE;
 # endif
-	    // Open a preview window.  3 lines by default.  Prefer
-	    // 'previewheight' if set and smaller.
+	    // Open a preview window and set "curwin" to it.
+	    // 3 lines by default, prefer 'previewheight' if set and smaller.
 	    g_do_tagpreview = 3;
 	    if (p_pvh > 0 && p_pvh < g_do_tagpreview)
 		g_do_tagpreview = p_pvh;
@@ -838,7 +847,7 @@ pum_set_selected(int n, int repeat UNUSED)
 
 		    /* Increase the height of the preview window to show the
 		     * text, but no more than 'previewheight' lines. */
-		    if (repeat == 0 && !use_popup)
+		    if (repeat == 0 && use_popup == USEPOPUP_NONE)
 		    {
 			if (lnum > p_pvh)
 			    lnum = p_pvh;
@@ -863,9 +872,9 @@ pum_set_selected(int n, int repeat UNUSED)
 		    curwin->w_cursor.lnum = curwin->w_topline;
 		    curwin->w_cursor.col = 0;
 # ifdef FEAT_TEXT_PROP
-		    if (use_popup)
+		    if (use_popup != USEPOPUP_NONE)
 		    {
-			pum_position_info_popup();
+			pum_position_info_popup(curwin);
 			if (win_valid(curwin_save))
 			    redraw_win_later(curwin_save, SOME_VALID);
 		    }
@@ -907,9 +916,16 @@ pum_set_selected(int n, int repeat UNUSED)
 
 			if (!resized && win_valid(curwin_save))
 			{
+# ifdef FEAT_TEXT_PROP
+			    win_T *wp = curwin;
+# endif
 			    ++no_u_sync;
 			    win_enter(curwin_save, TRUE);
 			    --no_u_sync;
+# ifdef FEAT_TEXT_PROP
+			    if (use_popup == USEPOPUP_HIDDEN && win_valid(wp))
+				popup_hide(wp);
+# endif
 			}
 
 			/* May need to update the screen again when there are
@@ -1114,7 +1130,7 @@ split_message(char_u *mesg, pumitem_T **array)
     int		item_idx;
     int		indent = 0;
     int		max_cells = 0;
-    int		max_height = Rows / 2 - 2;
+    int		max_height = Rows / 2 - 1;
     int		long_item_count = 0;
     int		split_long_items = FALSE;
 
@@ -1134,6 +1150,8 @@ split_message(char_u *mesg, pumitem_T **array)
 	{
 	    if (*p == '"')
 		quoted = !quoted;
+	    else if (*p == '\n')
+		break;
 	    else if (*p == '\\' && p[1] != NUL)
 		++p;
 	    else if (!quoted)
@@ -1151,9 +1169,11 @@ split_message(char_u *mesg, pumitem_T **array)
 		}
 	    }
 	    item->cells += ptr2cells(p);
-	    p += MB_PTR2LEN(p);
+	    p += mb_ptr2len(p);
 	}
 	item->bytelen = p - item->start;
+	if (*p == '\n')
+	    ++p;
 	if (item->cells > max_cells)
 	    max_cells = item->cells;
 	long_item_count += (item->cells - 1) / BALLOON_MIN_WIDTH;
@@ -1189,42 +1209,46 @@ split_message(char_u *mesg, pumitem_T **array)
 	int	cells;
 
 	item = ((balpart_T *)ga.ga_data) + item_idx;
-	for (skip = 0; skip < item->bytelen; skip += thislen)
-	{
-	    if (split_long_items && item->cells >= BALLOON_MIN_WIDTH)
+	if (item->bytelen == 0)
+	    (*array)[line++].pum_text = vim_strsave((char_u *)"");
+	else
+	    for (skip = 0; skip < item->bytelen; skip += thislen)
 	    {
-		cells = item->indent * 2;
-		for (p = item->start + skip; p < item->start + item->bytelen;
-							    p += MB_PTR2LEN(p))
-		    if ((cells += ptr2cells(p)) > BALLOON_MIN_WIDTH)
+		if (split_long_items && item->cells >= BALLOON_MIN_WIDTH)
+		{
+		    cells = item->indent * 2;
+		    for (p = item->start + skip;
+			    p < item->start + item->bytelen;
+							    p += mb_ptr2len(p))
+			if ((cells += ptr2cells(p)) > BALLOON_MIN_WIDTH)
+			    break;
+		    thislen = p - (item->start + skip);
+		}
+		else
+		    thislen = item->bytelen;
+
+		// put indent at the start
+		p = alloc(thislen + item->indent * 2 + 1);
+		if (p == NULL)
+		{
+		    for (line = 0; line <= height - 1; ++line)
+			vim_free((*array)[line].pum_text);
+		    vim_free(*array);
+		    goto failed;
+		}
+		for (ind = 0; ind < item->indent * 2; ++ind)
+		    p[ind] = ' ';
+
+		// exclude spaces at the end of the string
+		for (copylen = thislen; copylen > 0; --copylen)
+		    if (item->start[skip + copylen - 1] != ' ')
 			break;
-		thislen = p - (item->start + skip);
+
+		vim_strncpy(p + ind, item->start + skip, copylen);
+		(*array)[line].pum_text = p;
+		item->indent = 0;  /* wrapped line has no indent */
+		++line;
 	    }
-	    else
-		thislen = item->bytelen;
-
-	    // put indent at the start
-	    p = alloc(thislen + item->indent * 2 + 1);
-	    if (p == NULL)
-	    {
-		for (line = 0; line <= height - 1; ++line)
-		    vim_free((*array)[line].pum_text);
-		vim_free(*array);
-		goto failed;
-	    }
-	    for (ind = 0; ind < item->indent * 2; ++ind)
-		p[ind] = ' ';
-
-	    // exclude spaces at the end of the string
-	    for (copylen = thislen; copylen > 0; --copylen)
-		if (item->start[skip + copylen - 1] != ' ')
-		    break;
-
-	    vim_strncpy(p + ind, item->start + skip, copylen);
-	    (*array)[line].pum_text = p;
-	    item->indent = 0;  /* wrapped line has no indent */
-	    ++line;
-	}
     }
     ga_clear(&ga);
     return height;

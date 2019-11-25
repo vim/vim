@@ -52,7 +52,7 @@ static int typeahead_char = 0;		/* typeahead char that's not flushed */
  */
 static int	block_redo = FALSE;
 
-static int		KeyNoremap = 0;	    /* remapping flags */
+static int	KeyNoremap = 0;	    // remapping flags
 
 /*
  * Variables used by vgetorpeek() and flush_buffers().
@@ -933,6 +933,7 @@ ins_typebuf(
     init_typebuf();
     if (++typebuf.tb_change_cnt == 0)
 	typebuf.tb_change_cnt = 1;
+    state_no_longer_safe("ins_typebuf()");
 
     addlen = (int)STRLEN(str);
 
@@ -1295,11 +1296,11 @@ free_typebuf(void)
     if (typebuf.tb_buf == typebuf_init)
 	internal_error("Free typebuf 1");
     else
-	vim_free(typebuf.tb_buf);
+	VIM_CLEAR(typebuf.tb_buf);
     if (typebuf.tb_noremap == noremapbuf_init)
 	internal_error("Free typebuf 2");
     else
-	vim_free(typebuf.tb_noremap);
+	VIM_CLEAR(typebuf.tb_noremap);
 }
 
 /*
@@ -1324,10 +1325,8 @@ save_typebuf(void)
 
 static int old_char = -1;	/* character put back by vungetc() */
 static int old_mod_mask;	/* mod_mask for ungotten character */
-#ifdef FEAT_MOUSE
 static int old_mouse_row;	/* mouse_row related to old_char */
 static int old_mouse_col;	/* mouse_col related to old_char */
-#endif
 
 /*
  * Save all three kinds of typeahead, so that the user must type at a prompt.
@@ -1505,7 +1504,7 @@ before_blocking(void)
 }
 
 /*
- * updatescipt() is called when a character can be written into the script file
+ * updatescript() is called when a character can be written into the script file
  * or when we have waited some time for a character (c == 0)
  *
  * All the changed memfiles are synced if c == 0 or when the number of typed
@@ -1558,10 +1557,8 @@ vgetc(void)
 	c = old_char;
 	old_char = -1;
 	mod_mask = old_mod_mask;
-#ifdef FEAT_MOUSE
 	mouse_row = old_mouse_row;
 	mouse_col = old_mouse_col;
-#endif
     }
     else
     {
@@ -1767,6 +1764,32 @@ vgetc(void)
 		c = (*mb_ptr2char)(buf);
 	    }
 
+	    if (!no_reduce_keys)
+	    {
+		// A modifier was not used for a mapping, apply it to ASCII
+		// keys.  Shift would already have been applied.
+		if (mod_mask & MOD_MASK_CTRL)
+		{
+		    if ((c >= '`' && c <= 0x7f) || (c >= '@' && c <= '_'))
+		    {
+			c &= 0x1f;
+			mod_mask &= ~MOD_MASK_CTRL;
+		    }
+		    else if (c == '6')
+		    {
+			// CTRL-6 is equivalent to CTRL-^
+			c = 0x1e;
+			mod_mask &= ~MOD_MASK_CTRL;
+		    }
+		}
+		if ((mod_mask & (MOD_MASK_META | MOD_MASK_ALT))
+			&& c >= 0 && c <= 127)
+		{
+		    c += 0x80;
+		    mod_mask &= ~(MOD_MASK_META|MOD_MASK_ALT);
+		}
+	    }
+
 	    break;
 	}
     }
@@ -1779,18 +1802,28 @@ vgetc(void)
      */
     may_garbage_collect = FALSE;
 #endif
+
 #ifdef FEAT_BEVAL_TERM
     if (c != K_MOUSEMOVE && c != K_IGNORE && c != K_CURSORHOLD)
     {
-	/* Don't trigger 'balloonexpr' unless only the mouse was moved. */
+	// Don't trigger 'balloonexpr' unless only the mouse was moved.
 	bevalexpr_due_set = FALSE;
 	ui_remove_balloon();
     }
 #endif
 #ifdef FEAT_TEXT_PROP
     if (popup_do_filter(c))
+    {
+	if (c == Ctrl_C)
+	    got_int = FALSE;  // avoid looping
 	c = K_IGNORE;
+    }
 #endif
+
+    // Need to process the character before we know it's safe to do something
+    // else.
+    if (c != K_IGNORE)
+	state_no_longer_safe("key typed");
 
     return c;
 }
@@ -1901,12 +1934,246 @@ char_avail(void)
     return (retval != NUL);
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * "getchar()" function
+ */
+    void
+f_getchar(typval_T *argvars, typval_T *rettv)
+{
+    varnumber_T		n;
+    int			error = FALSE;
+
+#ifdef MESSAGE_QUEUE
+    // vpeekc() used to check for messages, but that caused problems, invoking
+    // a callback where it was not expected.  Some plugins use getchar(1) in a
+    // loop to await a message, therefore make sure we check for messages here.
+    parse_queued_messages();
+#endif
+
+    /* Position the cursor.  Needed after a message that ends in a space. */
+    windgoto(msg_row, msg_col);
+
+    ++no_mapping;
+    ++allow_keys;
+    for (;;)
+    {
+	if (argvars[0].v_type == VAR_UNKNOWN)
+	    /* getchar(): blocking wait. */
+	    n = plain_vgetc();
+	else if (tv_get_number_chk(&argvars[0], &error) == 1)
+	    /* getchar(1): only check if char avail */
+	    n = vpeekc_any();
+	else if (error || vpeekc_any() == NUL)
+	    /* illegal argument or getchar(0) and no char avail: return zero */
+	    n = 0;
+	else
+	    /* getchar(0) and char avail: return char */
+	    n = plain_vgetc();
+
+	if (n == K_IGNORE)
+	    continue;
+	break;
+    }
+    --no_mapping;
+    --allow_keys;
+
+    set_vim_var_nr(VV_MOUSE_WIN, 0);
+    set_vim_var_nr(VV_MOUSE_WINID, 0);
+    set_vim_var_nr(VV_MOUSE_LNUM, 0);
+    set_vim_var_nr(VV_MOUSE_COL, 0);
+
+    rettv->vval.v_number = n;
+    if (IS_SPECIAL(n) || mod_mask != 0)
+    {
+	char_u		temp[10];   /* modifier: 3, mbyte-char: 6, NUL: 1 */
+	int		i = 0;
+
+	/* Turn a special key into three bytes, plus modifier. */
+	if (mod_mask != 0)
+	{
+	    temp[i++] = K_SPECIAL;
+	    temp[i++] = KS_MODIFIER;
+	    temp[i++] = mod_mask;
+	}
+	if (IS_SPECIAL(n))
+	{
+	    temp[i++] = K_SPECIAL;
+	    temp[i++] = K_SECOND(n);
+	    temp[i++] = K_THIRD(n);
+	}
+	else if (has_mbyte)
+	    i += (*mb_char2bytes)(n, temp + i);
+	else
+	    temp[i++] = n;
+	temp[i++] = NUL;
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = vim_strsave(temp);
+
+	if (is_mouse_key(n))
+	{
+	    int		row = mouse_row;
+	    int		col = mouse_col;
+	    win_T	*win;
+	    linenr_T	lnum;
+	    win_T	*wp;
+	    int		winnr = 1;
+
+	    if (row >= 0 && col >= 0)
+	    {
+		/* Find the window at the mouse coordinates and compute the
+		 * text position. */
+		win = mouse_find_win(&row, &col, FIND_POPUP);
+		if (win == NULL)
+		    return;
+		(void)mouse_comp_pos(win, &row, &col, &lnum, NULL);
+#ifdef FEAT_TEXT_PROP
+		if (WIN_IS_POPUP(win))
+		    winnr = 0;
+		else
+#endif
+		    for (wp = firstwin; wp != win && wp != NULL;
+							       wp = wp->w_next)
+			++winnr;
+		set_vim_var_nr(VV_MOUSE_WIN, winnr);
+		set_vim_var_nr(VV_MOUSE_WINID, win->w_id);
+		set_vim_var_nr(VV_MOUSE_LNUM, lnum);
+		set_vim_var_nr(VV_MOUSE_COL, col + 1);
+	    }
+	}
+    }
+}
+
+/*
+ * "getcharmod()" function
+ */
+    void
+f_getcharmod(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->vval.v_number = mod_mask;
+}
+#endif // FEAT_EVAL
+
+#if defined(MESSAGE_QUEUE) || defined(PROTO)
+# define MAX_REPEAT_PARSE 8
+
+/*
+ * Process messages that have been queued for netbeans or clientserver.
+ * Also check if any jobs have ended.
+ * These functions can call arbitrary vimscript and should only be called when
+ * it is safe to do so.
+ */
+    void
+parse_queued_messages(void)
+{
+    int	    old_curwin_id;
+    int	    old_curbuf_fnum;
+    int	    i;
+    int	    save_may_garbage_collect = may_garbage_collect;
+    static int entered = 0;
+    int	    was_safe = get_was_safe_state();
+
+    // Do not handle messages while redrawing, because it may cause buffers to
+    // change or be wiped while they are being redrawn.
+    if (updating_screen)
+	return;
+
+    // If memory allocation fails during startup we'll exit but curbuf or
+    // curwin could be NULL.
+    if (curbuf == NULL || curwin == NULL)
+       return;
+
+    old_curbuf_fnum = curbuf->b_fnum;
+    old_curwin_id = curwin->w_id;
+
+    ++entered;
+
+    // may_garbage_collect is set in main_loop() to do garbage collection when
+    // blocking to wait on a character.  We don't want that while parsing
+    // messages, a callback may invoke vgetc() while lists and dicts are in use
+    // in the call stack.
+    may_garbage_collect = FALSE;
+
+    // Loop when a job ended, but don't keep looping forever.
+    for (i = 0; i < MAX_REPEAT_PARSE; ++i)
+    {
+	// For Win32 mch_breakcheck() does not check for input, do it here.
+# if defined(MSWIN) && defined(FEAT_JOB_CHANNEL)
+	channel_handle_events(FALSE);
+# endif
+
+# ifdef FEAT_NETBEANS_INTG
+	// Process the queued netbeans messages.
+	netbeans_parse_messages();
+# endif
+# ifdef FEAT_JOB_CHANNEL
+	// Write any buffer lines still to be written.
+	channel_write_any_lines();
+
+	// Process the messages queued on channels.
+	channel_parse_messages();
+# endif
+# if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
+	// Process the queued clientserver messages.
+	server_parse_messages();
+# endif
+# ifdef FEAT_JOB_CHANNEL
+	// Check if any jobs have ended.  If so, repeat the above to handle
+	// changes, e.g. stdin may have been closed.
+	if (job_check_ended())
+	    continue;
+# endif
+# ifdef FEAT_TERMINAL
+	free_unused_terminals();
+# endif
+# ifdef FEAT_SOUND_CANBERRA
+	if (has_sound_callback_in_queue())
+	    invoke_sound_callback();
+# endif
+	break;
+    }
+
+    // When not nested we'll go back to waiting for a typed character.  If it
+    // was safe before then this triggers a SafeStateAgain autocommand event.
+    if (entered == 1 && was_safe)
+	may_trigger_safestateagain();
+
+    may_garbage_collect = save_may_garbage_collect;
+
+    // If the current window or buffer changed we need to bail out of the
+    // waiting loop.  E.g. when a job exit callback closes the terminal window.
+    if (curwin->w_id != old_curwin_id || curbuf->b_fnum != old_curbuf_fnum)
+	ins_char_typebuf(K_IGNORE);
+
+    --entered;
+}
+#endif
+
+
 typedef enum {
     map_result_fail,    // failed, break loop
     map_result_get,     // get a character from typeahead
     map_result_retry,   // try to map again
     map_result_nomatch  // no matching mapping, get char
 } map_result_T;
+
+/*
+ * Check if the bytes at the start of the typeahead buffer are a character used
+ * in CTRL-X mode.  This includes the form with a CTRL modifier.
+ */
+    static int
+at_ctrl_x_key(void)
+{
+    char_u  *p = typebuf.tb_buf + typebuf.tb_off;
+    int	    c = *p;
+
+    if (typebuf.tb_len > 3
+	    && c == K_SPECIAL
+	    && p[1] == KS_MODIFIER
+	    && (p[2] & MOD_MASK_CTRL))
+	c = p[3] & 0x1f;
+    return vim_is_ctrl_x_key(c);
+}
 
 /*
  * Handle mappings in the typeahead buffer.
@@ -1959,7 +2226,7 @@ handle_mapping(
 	    && !(State == HITRETURN && (tb_c1 == CAR || tb_c1 == ' '))
 	    && State != ASKMORE
 	    && State != CONFIRM
-	    && !((ctrl_x_mode_not_default() && vim_is_ctrl_x_key(tb_c1))
+	    && !((ctrl_x_mode_not_default() && at_ctrl_x_key())
 		    || ((compl_cont_status & CONT_LOCAL)
 			&& (tb_c1 == Ctrl_N || tb_c1 == Ctrl_P))))
     {
@@ -2000,6 +2267,7 @@ handle_mapping(
 	    // Skip ":lmap" mappings if keys were mapped.
 	    if (mp->m_keys[0] == tb_c1
 		    && (mp->m_mode & local_State)
+		    && !(mp->m_simplified && seenModifyOtherKeys)
 		    && ((mp->m_mode & LANGMAP) == 0 || typebuf.tb_maplen == 0))
 	    {
 #ifdef FEAT_LANGMAP
@@ -2033,7 +2301,7 @@ handle_mapping(
 		    char_u *p2 = mb_unescape(&p1);
 
 		    if (has_mbyte && p2 != NULL
-					&& MB_BYTE2LEN(tb_c1) > MB_PTR2LEN(p2))
+					&& MB_BYTE2LEN(tb_c1) > mb_ptr2len(p2))
 			mlen = 0;
 		}
 
@@ -2326,6 +2594,8 @@ handle_mapping(
 	{
 	    int save_vgetc_busy = vgetc_busy;
 	    int save_may_garbage_collect = may_garbage_collect;
+	    int was_screen_col = screen_cur_col;
+	    int was_screen_row = screen_cur_row;
 
 	    vgetc_busy = 0;
 	    may_garbage_collect = FALSE;
@@ -2333,6 +2603,11 @@ handle_mapping(
 	    save_m_keys = vim_strsave(mp->m_keys);
 	    save_m_str = vim_strsave(mp->m_str);
 	    map_str = eval_map_expr(save_m_str, NUL);
+
+	    // The mapping may do anything, but we expect it to take care of
+	    // redrawing.  Do put the cursor back where it was.
+	    windgoto(was_screen_row, was_screen_col);
+	    out_flush();
 
 	    vgetc_busy = save_vgetc_busy;
 	    may_garbage_collect = save_may_garbage_collect;
@@ -2395,10 +2670,8 @@ vungetc(int c)
 {
     old_char = c;
     old_mod_mask = mod_mask;
-#ifdef FEAT_MOUSE
     old_mouse_row = mouse_row;
     old_mouse_col = mouse_col;
-#endif
 }
 
 /*
@@ -3016,7 +3289,6 @@ inchar(
 #endif
 	    )
     {
-
 #ifdef MESSAGE_QUEUE
 	parse_queued_messages();
 #endif

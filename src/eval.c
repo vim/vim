@@ -2617,7 +2617,9 @@ eval7(
 		else
 		{
 		    // decimal, hex or octal number
-		    vim_str2nr(*arg, NULL, &len, STR2NR_ALL, &n, NULL, 0, TRUE);
+		    vim_str2nr(*arg, NULL, &len, current_sctx.sc_version >= 4
+				  ? STR2NR_NO_OCT + STR2NR_QUOTE
+				  : STR2NR_ALL, &n, NULL, 0, TRUE);
 		    if (len == 0)
 		    {
 			semsg(_(e_invexpr2), *arg);
@@ -2912,9 +2914,17 @@ eval_lambda(
 		semsg(_(e_missingparen), "lambda");
 	}
 	clear_tv(rettv);
-	return FAIL;
+	ret = FAIL;
     }
-    return call_func_rettv(arg, rettv, evaluate, NULL, &base);
+    else
+	ret = call_func_rettv(arg, rettv, evaluate, NULL, &base);
+
+    // Clear the funcref afterwards, so that deleting it while
+    // evaluating the arguments is possible (see test55).
+    if (evaluate)
+	clear_tv(&base);
+
+    return ret;
 }
 
 /*
@@ -3516,7 +3526,8 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 			  break;
 
 			    /* Special key, e.g.: "\<C-W>" */
-		case '<': extra = trans_special(&p, name, TRUE, TRUE);
+		case '<': extra = trans_special(&p, name, TRUE, TRUE,
+								   TRUE, NULL);
 			  if (extra != 0)
 			  {
 			      name += extra;
@@ -6436,7 +6447,7 @@ do_string_sub(
 		if (zero_width == regmatch.startp[0])
 		{
 		    /* avoid getting stuck on a match with an empty string */
-		    i = MB_PTR2LEN(tail);
+		    i = mb_ptr2len(tail);
 		    mch_memmove((char_u *)ga.ga_data + ga.ga_len, tail,
 								   (size_t)i);
 		    ga.ga_len += i;

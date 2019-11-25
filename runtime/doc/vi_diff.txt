@@ -1,4 +1,4 @@
-*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 May 13
+*vi_diff.txt*   For Vim version 8.1.  Last change: 2019 Nov 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -63,6 +63,9 @@ sourceany		boolean	(default off)		*'sourceany'*
 w300			number	(default 23)		*'w300'*
 w1200			number	(default 23)		*'w1200'*
 w9600			number	(default 23)		*'w9600'*
+
+Vi did not allow for changing the termcap entries, you would have to exit Vi,
+edit the termcap entry and try again.  Vim has the |terminal-options|.
 
 ==============================================================================
 3. Limits						*limits*
@@ -703,7 +706,7 @@ first character).
 
 CTRL-A works like CTRL-@ but does not leave insert mode.
 
-CTRL-R {0-9a-z..} can be used to insert the contents of a register.
+CTRL-R {register} can be used to insert the contents of a register.
 
 When the 'smartindent' option is set, C programs will be better auto-indented.
 With 'cindent' even more.
@@ -1319,6 +1322,11 @@ is not POSIX compliant, even when run in Vi compatibility mode.
 Set the $VIM_POSIX environment variable to have 'cpoptions' include the POSIX
 flags when Vim starts up.  This makes Vim run as POSIX as it can.  That's
 a bit different from being Vi compatible.
+
+You can find the Posix specification for Vi here:
+https://pubs.opengroup.org/onlinepubs/9699919799/utilities/vi.html
+And the related Ex specification:
+https://pubs.opengroup.org/onlinepubs/9699919799/utilities/ex.html
 
 This is where Vim does not behave as POSIX specifies and why:
 

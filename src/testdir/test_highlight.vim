@@ -425,6 +425,7 @@ func Test_highlight_eol_with_cursorline_breakindent()
   let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
 
   call NewWindow('topleft 5', 10)
+  set showbreak=xxx
   setlocal breakindent breakindentopt=min:0,shift:1 showbreak=>
   call setline(1, ' ' . repeat('a', 9) . 'bcd')
   call matchadd('Search', '\n')
@@ -482,6 +483,7 @@ func Test_highlight_eol_with_cursorline_breakindent()
 
   call CloseWindow()
   set showbreak=
+  setlocal showbreak=
   exe hiCursorLine
 endfunc
 
@@ -595,8 +597,13 @@ func Test_wincolor()
 
   let lines =<< trim END
 	set cursorline cursorcolumn rnu
-	call setline(1, ["","1111111111","22222222222","3 here 3",""])
+	call setline(1, ["","1111111111","22222222222","3 here 3","","the cat is out of the bag"])
 	set wincolor=Pmenu
+	hi CatLine guifg=green ctermfg=green
+	hi Reverse gui=reverse cterm=reverse
+	syn match CatLine /^the.*/
+	call prop_type_add("foo", {"highlight": "Reverse", "combine": 1})
+	call prop_add(6, 12, {"type": "foo", "end_col": 15})
 	/here
   END
   call writefile(lines, 'Xtest_wincolor')
@@ -611,6 +618,31 @@ func Test_wincolor()
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
   call delete('Xtest_wincolor')
+endfunc
+
+func Test_colorcolumn()
+  CheckScreendump
+
+  " check that setting 'colorcolumn' when entering a buffer works
+  let lines =<< trim END
+	split
+	edit X
+	call setline(1, ["1111111111","22222222222","3333333333"])
+	set nomodified
+	set colorcolumn=3,9
+	set number cursorline cursorlineopt=number
+	wincmd w
+	buf X
+  END
+  call writefile(lines, 'Xtest_colorcolumn')
+  let buf = RunVimInTerminal('-S Xtest_colorcolumn', {'rows': 10})
+  call term_sendkeys(buf, ":\<CR>")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_colorcolumn_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_colorcolumn')
 endfunc
 
 " This test must come before the Test_cursorline test, as it appears this

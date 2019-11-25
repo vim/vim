@@ -186,6 +186,7 @@ static int win32_setattrs(char_u *name, int attrs);
 static int win32_set_archive(char_u *name);
 
 static int conpty_working = 0;
+static int conpty_type = 0;
 static int conpty_stable = 0;
 static void vtp_flag_init();
 
@@ -364,7 +365,7 @@ read_console_input(
 peek_console_input(
     HANDLE	    hInput,
     INPUT_RECORD    *lpBuffer,
-    DWORD	    nLength,
+    DWORD	    nLength UNUSED,
     LPDWORD	    lpEvents)
 {
     return read_console_input(hInput, lpBuffer, -1, lpEvents);
@@ -920,14 +921,6 @@ static const struct
 };
 
 
-#ifdef _MSC_VER
-// The ToAscii bug destroys several registers.	Need to turn off optimization
-// or the GetConsoleKeyboardLayoutName hack will fail in non-debug versions
-# pragma warning(push)
-# pragma warning(disable: 4748)
-# pragma optimize("", off)
-#endif
-
 #if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
 # define UChar UnicodeChar
 #else
@@ -980,20 +973,6 @@ win32_kbd_patch_key(
     return s_iIsDead;
 }
 
-#ifdef _MSC_VER
-/* MUST switch optimization on again here, otherwise a call to
- * decode_key_event() may crash (e.g. when hitting caps-lock) */
-# pragma optimize("", on)
-# pragma warning(pop)
-
-# if (_MSC_VER < 1100)
-/* MUST turn off global optimisation for this next function, or
- * pressing ctrl-minus in insert mode crashes Vim when built with
- * VC4.1. -- negri. */
-#  pragma optimize("g", off)
-# endif
-#endif
-
 static BOOL g_fJustGotFocus = FALSE;
 
 /*
@@ -1005,7 +984,7 @@ decode_key_event(
     WCHAR		*pch,
     WCHAR		*pch2,
     int			*pmodifiers,
-    BOOL		fDoPost)
+    BOOL		fDoPost UNUSED)
 {
     int i;
     const int nModifs = pker->dwControlKeyState & (SHIFT | ALT | CTRL);
@@ -1119,24 +1098,18 @@ decode_key_event(
     return (*pch != NUL);
 }
 
-#ifdef _MSC_VER
-# pragma optimize("", on)
-#endif
-
 #endif /* FEAT_GUI_MSWIN */
 
-
-#ifdef FEAT_MOUSE
 
 /*
  * For the GUI the mouse handling is in gui_w32.c.
  */
-# if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
+#if defined(FEAT_GUI_MSWIN) && !defined(VIMDLL)
     void
 mch_setmouse(int on UNUSED)
 {
 }
-# else
+#else
 static int g_fMouseAvail = FALSE;   /* mouse present */
 static int g_fMouseActive = FALSE;  /* mouse enabled */
 static int g_nMouseClick = -1;	    /* mouse status */
@@ -1151,10 +1124,10 @@ mch_setmouse(int on)
 {
     DWORD cmodein;
 
-#  ifdef VIMDLL
+# ifdef VIMDLL
     if (gui.in_use)
 	return;
-#  endif
+# endif
     if (!g_fMouseAvail)
 	return;
 
@@ -1170,7 +1143,7 @@ mch_setmouse(int on)
 }
 
 
-#if defined(FEAT_BEVAL_TERM) || defined(PROTO)
+# if defined(FEAT_BEVAL_TERM) || defined(PROTO)
 /*
  * Called when 'balloonevalterm' changed.
  */
@@ -1179,7 +1152,7 @@ mch_bevalterm_changed(void)
 {
     mch_setmouse(g_fMouseActive);
 }
-#endif
+# endif
 
 /*
  * Decode a MOUSE_EVENT.  If it's a valid event, return MOUSE_LEFT,
@@ -1217,9 +1190,9 @@ decode_mouse_event(
     static int s_xOldMouse = -1;
     static int s_yOldMouse = -1;
     static linenr_T s_old_topline = 0;
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
     static int s_old_topfill = 0;
-#endif
+# endif
     static int s_cClicks = 1;
     static BOOL s_fReleased = TRUE;
     static DWORD s_dwLastClickTime = 0;
@@ -1274,12 +1247,12 @@ decode_mouse_event(
 	/* If the last thing returned was MOUSE_RELEASE, ignore this */
 	if (s_fReleased)
 	{
-#ifdef FEAT_BEVAL_TERM
+# ifdef FEAT_BEVAL_TERM
 	    /* do return mouse move events when we want them */
 	    if (p_bevalterm)
 		nButton = MOUSE_DRAG;
 	    else
-#endif
+# endif
 		return FALSE;
 	}
 
@@ -1385,9 +1358,9 @@ decode_mouse_event(
 		    || s_yOldMouse != g_yMouse
 		    || s_nOldButton != nButton
 		    || s_old_topline != curwin->w_topline
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 		    || s_old_topfill != curwin->w_topfill
-#endif
+# endif
 		    || (int)(dwCurrentTime - s_dwLastClickTime) > p_mouset)
 	    {
 		s_cClicks = 1;
@@ -1438,16 +1411,15 @@ decode_mouse_event(
     s_xOldMouse = g_xMouse;
     s_yOldMouse = g_yMouse;
     s_old_topline = curwin->w_topline;
-#ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
     s_old_topfill = curwin->w_topfill;
-#endif
+# endif
     s_nOldMouseClick = g_nMouseClick;
 
     return TRUE;
 }
 
-# endif /* FEAT_GUI_MSWIN */
-#endif /* FEAT_MOUSE */
+#endif // FEAT_GUI_MSWIN
 
 
 #ifdef MCH_CURSOR_SHAPE
@@ -1546,10 +1518,7 @@ WaitForChar(long msec, int ignore_input)
 #endif
 	}
 
-	if (0
-#ifdef FEAT_MOUSE
-		|| g_nMouseClick != -1
-#endif
+	if (g_nMouseClick != -1
 #ifdef FEAT_CLIENTSERVER
 		|| (!ignore_input && input_available())
 #endif
@@ -1682,11 +1651,9 @@ WaitForChar(long msec, int ignore_input)
 		    shell_resized();
 		}
 	    }
-#ifdef FEAT_MOUSE
 	    else if (ir.EventType == MOUSE_EVENT
 		    && decode_mouse_event(&ir.Event.MouseEvent))
 		return TRUE;
-#endif
 	}
 	else if (msec == 0)
 	    break;
@@ -1759,10 +1726,8 @@ tgetch(int *pmodifiers, WCHAR *pch2)
 	(void)WaitForChar(-1L, FALSE);
 	if (input_available())
 	    return 0;
-# ifdef FEAT_MOUSE
 	if (g_nMouseClick != -1)
 	    return 0;
-# endif
 #endif
 	if (read_console_input(g_hConIn, &ir, 1, &cRecords) == 0)
 	{
@@ -1782,13 +1747,11 @@ tgetch(int *pmodifiers, WCHAR *pch2)
 	    handle_focus_event(ir);
 	else if (ir.EventType == WINDOW_BUFFER_SIZE_EVENT)
 	    shell_resized();
-#ifdef FEAT_MOUSE
 	else if (ir.EventType == MOUSE_EVENT)
 	{
 	    if (decode_mouse_event(&ir.Event.MouseEvent))
 		return 0;
 	}
-#endif
     }
 }
 #endif /* !FEAT_GUI_MSWIN */
@@ -1878,14 +1841,13 @@ mch_inchar(
 	    typeaheadlen = 0;
 	    break;
 	}
-#ifdef FEAT_MOUSE
 	if (g_nMouseClick != -1)
 	{
-# ifdef MCH_WRITE_DUMP
+#ifdef MCH_WRITE_DUMP
 	    if (fdDump)
 		fprintf(fdDump, "{%02x @ %d, %d}",
 			g_nMouseClick, g_xMouse, g_yMouse);
-# endif
+#endif
 	    typeahead[typeaheadlen++] = ESC + 128;
 	    typeahead[typeaheadlen++] = 'M';
 	    typeahead[typeaheadlen++] = g_nMouseClick;
@@ -1894,7 +1856,6 @@ mch_inchar(
 	    g_nMouseClick = -1;
 	}
 	else
-#endif
 	{
 	    WCHAR	ch2 = NUL;
 	    int		modifiers = 0;
@@ -1917,9 +1878,7 @@ mch_inchar(
 		got_int = TRUE;
 	    }
 
-#ifdef FEAT_MOUSE
 	    if (g_nMouseClick == -1)
-#endif
 	    {
 		int	n = 1;
 
@@ -2674,9 +2633,7 @@ mch_init_c(void)
 
     g_fWindInitCalled = TRUE;
 
-#ifdef FEAT_MOUSE
     g_fMouseAvail = GetSystemMetrics(SM_MOUSEPRESENT);
-#endif
 
 #ifdef FEAT_CLIPBOARD
     win_clip_init();
@@ -3608,10 +3565,8 @@ mch_settmode(int tmode)
     {
 	cmodein &= ~(ENABLE_LINE_INPUT | ENABLE_PROCESSED_INPUT |
 		     ENABLE_ECHO_INPUT);
-#ifdef FEAT_MOUSE
 	if (g_fMouseActive)
 	    cmodein |= ENABLE_MOUSE_INPUT;
-#endif
 	cmodeout &= ~(
 #ifdef FEAT_TERMGUICOLORS
 	    /* Do not turn off the ENABLE_PROCESSED_OUTPUT flag when using
@@ -4485,12 +4440,29 @@ mch_system_g(char *cmd, int options)
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
     static int
-mch_system_c(char *cmd, int options)
+mch_system_c(char *cmd, int options UNUSED)
 {
     int		ret;
     WCHAR	*wcmd;
+    char_u	*buf;
+    size_t	len;
 
-    wcmd = enc_to_utf16((char_u *)cmd, NULL);
+    // If the command starts and ends with double quotes, enclose the command
+    // in parentheses.
+    len = STRLEN(cmd);
+    if (len >= 2 && cmd[0] == '"' && cmd[len - 1] == '"')
+    {
+	len += 3;
+	buf = alloc(len);
+	if (buf == NULL)
+	    return -1;
+	vim_snprintf((char *)buf, len, "(%s)", cmd);
+	wcmd = enc_to_utf16(buf, NULL);
+	free(buf);
+    }
+    else
+	wcmd = enc_to_utf16((char_u *)cmd, NULL);
+
     if (wcmd == NULL)
 	return -1;
 
@@ -4656,12 +4628,14 @@ mch_call_shell(
     {
 	char_u	*cmdbase = cmd;
 
-	// Skip a leading quote and (.
-	while (*cmdbase == '"' || *cmdbase == '(')
-	    ++cmdbase;
+	if (cmdbase != NULL)
+	    // Skip a leading quote and (.
+	    while (*cmdbase == '"' || *cmdbase == '(')
+		++cmdbase;
 
 	// Check the command does not begin with "start "
-	if (STRNICMP(cmdbase, "start", 5) != 0 || !VIM_ISWHITE(cmdbase[5]))
+	if (cmdbase == NULL || STRNICMP(cmdbase, "start", 5) != 0
+						   || !VIM_ISWHITE(cmdbase[5]))
 	{
 	    // Use a terminal window to run the command in.
 	    x = mch_call_shell_terminal(cmd, options);
@@ -5481,12 +5455,10 @@ termcap_mode_start(void)
 #endif
 
     GetConsoleMode(g_hConIn, &cmodein);
-#ifdef FEAT_MOUSE
     if (g_fMouseActive)
 	cmodein |= ENABLE_MOUSE_INPUT;
     else
 	cmodein &= ~ENABLE_MOUSE_INPUT;
-#endif
     cmodein |= ENABLE_WINDOW_INPUT;
     SetConsoleMode(g_hConIn, cmodein);
 
@@ -5828,7 +5800,7 @@ delete_lines(unsigned cLines)
 
 
 /*
- * Set the cursor position
+ * Set the cursor position to (x,y) (1-based).
  */
     static void
 gotoxy(
@@ -5838,14 +5810,25 @@ gotoxy(
     if (x < 1 || x > (unsigned)Columns || y < 1 || y > (unsigned)Rows)
 	return;
 
-    /* external cursor coords are 1-based; internal are 0-based */
-    g_coord.X = x - 1;
-    g_coord.Y = y - 1;
-
     if (!USE_VTP)
+    {
+	// external cursor coords are 1-based; internal are 0-based
+	g_coord.X = x - 1;
+	g_coord.Y = y - 1;
 	SetConsoleCursorPosition(g_hConOut, g_coord);
+    }
     else
+    {
+	// Move the cursor to the left edge of the screen to prevent screen
+	// destruction.  Insider build bug.  Always enabled because it's cheap
+	// and avoids mistakes with recognizing the build.
+	vtp_printf("\033[%d;%dH", g_coord.Y + 1, 1);
+
 	vtp_printf("\033[%d;%dH", y, x);
+
+	g_coord.X = x - 1;
+	g_coord.Y = y - 1;
+    }
 }
 
 
@@ -6453,7 +6436,7 @@ mch_remove(char_u *name)
  * Check for an "interrupt signal": CTRL-break or CTRL-C.
  */
     void
-mch_breakcheck(int force)
+mch_breakcheck(int force UNUSED)
 {
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 # ifdef VIMDLL
@@ -7215,7 +7198,7 @@ fix_arg_enc(void)
 }
 
     int
-mch_setenv(char *var, char *value, int x)
+mch_setenv(char *var, char *value, int x UNUSED)
 {
     char_u	*envbuf;
     WCHAR	*p;
@@ -7249,9 +7232,30 @@ mch_setenv(char *var, char *value, int x)
 
 /*
  * Support for pseudo-console (ConPTY) was added in windows 10
- * version 1809 (October 2018 update).  However, that version is unstable.
+ * version 1809 (October 2018 update).
  */
 #define CONPTY_FIRST_SUPPORT_BUILD  MAKE_VER(10, 0, 17763)
+
+/*
+ * ConPTY differences between versions, need different logic.
+ * version 1903 (May 2019 update).
+ */
+#define CONPTY_1903_BUILD	    MAKE_VER(10, 0, 18362)
+
+/*
+ * version 1909 (November 2019 update).
+ */
+#define CONPTY_1909_BUILD	    MAKE_VER(10, 0, 18363)
+
+/*
+ * Confirm until this version.  Also the logic changes.
+ * insider preview.
+ */
+#define CONPTY_INSIDER_BUILD	    MAKE_VER(10, 0, 18995)
+
+/*
+ * Not stable now.
+ */
 #define CONPTY_STABLE_BUILD	    MAKE_VER(10, 0, 32767)  // T.B.D.
 
     static void
@@ -7281,6 +7285,14 @@ vtp_flag_init(void)
     if (ver >= CONPTY_STABLE_BUILD)
 	conpty_stable = 1;
 
+    if (ver <= CONPTY_INSIDER_BUILD)
+	conpty_type = 3;
+    if (ver <= CONPTY_1909_BUILD)
+	conpty_type = 2;
+    if (ver <= CONPTY_1903_BUILD)
+	conpty_type = 2;
+    if (ver < CONPTY_FIRST_SUPPORT_BUILD)
+	conpty_type = 1;
 }
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)
@@ -7500,6 +7512,12 @@ has_vtp_working(void)
 has_conpty_working(void)
 {
     return conpty_working;
+}
+
+    int
+get_conpty_type(void)
+{
+    return conpty_type;
 }
 
     int

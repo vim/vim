@@ -4,9 +4,20 @@
 
 #include "utf8.h"
 
+int vterm_is_modify_other_keys(VTerm *vt)
+{
+  return vt->state->mode.modify_other_keys;
+}
+
+
 void vterm_keyboard_unichar(VTerm *vt, uint32_t c, VTermModifier mod)
 {
   int needs_CSIu;
+
+  if (vt->state->mode.modify_other_keys && mod != 0) {
+    vterm_push_output_sprintf_ctrl(vt, C1_CSI, "27;%d;%d~", mod+1, c);
+    return;
+  }
 
   // The shift modifier is never important for Unicode characters
   // apart from Space

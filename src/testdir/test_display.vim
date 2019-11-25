@@ -103,3 +103,81 @@ func Test_scroll_without_region()
   call StopVimInTerminal(buf)
   call delete('Xtestscroll')
 endfunc
+
+func Test_display_listchars_precedes()
+  call NewWindow(10, 10)
+  " Need a physical line that wraps over the complete
+  " window size
+  call append(0, repeat('aaa aaa aa ', 10))
+  call append(1, repeat(['bbb bbb bbb bbb'], 2))
+  " remove blank trailing line
+  $d
+  set list nowrap
+  call cursor(1, 1)
+  " move to end of line and scroll 2 characters back
+  norm! $2zh
+  let lines=ScreenLines([1,4], winwidth(0)+1)
+  let expect = [
+        \ " aaa aa $ |",
+        \ "$         |",
+        \ "$         |",
+        \ "~         |",
+        \ ]
+  call assert_equal(expect, lines)
+  set list listchars+=precedes:< nowrap
+  call cursor(1, 1)
+  " move to end of line and scroll 2 characters back
+  norm! $2zh
+  let lines = ScreenLines([1,4], winwidth(0)+1)
+  let expect = [
+        \ "<aaa aa $ |",
+        \ "<         |",
+        \ "<         |",
+        \ "~         |",
+        \ ]
+  call assert_equal(expect, lines)
+  set wrap
+  call cursor(1, 1)
+  " the complete line should be displayed in the window
+  norm! $
+
+  let lines = ScreenLines([1,10], winwidth(0)+1)
+  let expect = [
+        \ "<aaa aaa a|",
+        \ "a aaa aaa |",
+        \ "aa aaa aaa|",
+        \ " aa aaa aa|",
+        \ "a aa aaa a|",
+        \ "aa aa aaa |",
+        \ "aaa aa aaa|",
+        \ " aaa aa aa|",
+        \ "a aaa aa a|",
+        \ "aa aaa aa |",
+        \ ]
+  call assert_equal(expect, lines)
+  set list& listchars& wrap&
+  bw!
+endfunc
+
+" Check that win_lines() works correctly with the number_only parameter=TRUE
+" should break early to optimize cost of drawing, but needs to make sure
+" that the number column is correctly highlighted.
+func Test_scroll_CursorLineNr_update()
+  CheckScreendump
+
+  let lines =<< trim END
+    hi CursorLineNr ctermfg=73 ctermbg=236
+    set nu rnu cursorline cursorlineopt=number
+    exe ":norm! o\<esc>110ia\<esc>"
+  END
+  let filename = 'Xdrawscreen'
+  call writefile(lines, filename)
+  let buf = RunVimInTerminal('-S '.filename, #{rows: 5, cols: 50})
+  call term_sendkeys(buf, "k")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_winline_rnu', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete(filename)
+endfunc

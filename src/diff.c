@@ -35,8 +35,9 @@ static int diff_need_update = FALSE; // ex_diffupdate needs to be called
 #define DIFF_VERTICAL	0x080	// vertical splits
 #define DIFF_HIDDEN_OFF	0x100	// diffoff when hidden
 #define DIFF_INTERNAL	0x200	// use internal xdiff algorithm
+#define DIFF_CLOSE_OFF	0x400	// diffoff when closing window
 #define ALL_WHITE_DIFF (DIFF_IWHITE | DIFF_IWHITEALL | DIFF_IWHITEEOL)
-static int	diff_flags = DIFF_INTERNAL | DIFF_FILLER;
+static int	diff_flags = DIFF_INTERNAL | DIFF_FILLER | DIFF_CLOSE_OFF;
 
 static long diff_algorithm = 0;
 
@@ -419,7 +420,7 @@ diff_mark_adjust_tp(
 			off = 0;
 			if (last < line2)
 			{
-			    /* 2. delete at end of of diff */
+			    /* 2. delete at end of diff */
 			    dp->df_count[idx] -= last - lnum_deleted + 1;
 			    if (dp->df_next != NULL
 				    && dp->df_next->df_lnum[idx] - 1 <= line2)
@@ -744,7 +745,7 @@ diff_write_buffer(buf_T *buf, diffin_T *din)
 		// xdiff doesn't support ignoring case, fold-case the text.
 		c = PTR2CHAR(s);
 		c = enc_utf8 ? utf_fold(c) : MB_TOLOWER(c);
-		orig_len = MB_PTR2LEN(s);
+		orig_len = mb_ptr2len(s);
 		if (mb_char2bytes(c, cbuf) != orig_len)
 		    // TODO: handle byte length difference
 		    mch_memmove(ptr + len, s, orig_len);
@@ -771,6 +772,7 @@ diff_write(buf_T *buf, diffin_T *din)
 {
     int		r;
     char_u	*save_ff;
+    int		save_lockmarks;
 
     if (din->din_fname == NULL)
 	return diff_write_buffer(buf, din);
@@ -778,9 +780,14 @@ diff_write(buf_T *buf, diffin_T *din)
     // Always use 'fileformat' set to "unix".
     save_ff = buf->b_p_ff;
     buf->b_p_ff = vim_strsave((char_u *)FF_UNIX);
+    save_lockmarks = cmdmod.lockmarks;
+    // Writing the buffer is an implementation detail of performing the diff,
+    // so it shouldn't update the '[ and '] marks.
+    cmdmod.lockmarks = TRUE;
     r = buf_write(buf, din->din_fname, NULL,
 			(linenr_T)1, buf->b_ml.ml_line_count,
 			NULL, FALSE, FALSE, FALSE, TRUE);
+    cmdmod.lockmarks = save_lockmarks;
     free_string_option(buf->b_p_ff);
     buf->b_p_ff = save_ff;
     return r;
@@ -1545,6 +1552,14 @@ ex_diffoff(exarg_T *eap)
     if (eap->forceit)
 	diff_buf_clear();
 
+    if (!diffwin)
+    {
+	diff_need_update = FALSE;
+	curtab->tp_diff_invalid = FALSE;
+	curtab->tp_diff_update = FALSE;
+	diff_clear(curtab);
+    }
+
     /* Remove "hor" from from 'scrollopt' if there are no diff windows left. */
     if (!diffwin && vim_strchr(p_sbo, 'h') != NULL)
 	do_cmdline_cmd((char_u *)"set sbo-=hor");
@@ -2222,6 +2237,11 @@ diffopt_changed(void)
 	    p += 9;
 	    diff_flags_new |= DIFF_HIDDEN_OFF;
 	}
+	else if (STRNCMP(p, "closeoff", 8) == 0)
+	{
+	    p += 8;
+	    diff_flags_new |= DIFF_CLOSE_OFF;
+	}
 	else if (STRNCMP(p, "indent-heuristic", 16) == 0)
 	{
 	    p += 16;
@@ -2307,6 +2327,15 @@ diffopt_horizontal(void)
 diffopt_hiddenoff(void)
 {
     return (diff_flags & DIFF_HIDDEN_OFF) != 0;
+}
+
+/*
+ * Return TRUE if 'diffopt' contains "closeoff".
+ */
+    int
+diffopt_closeoff(void)
+{
+    return (diff_flags & DIFF_CLOSE_OFF) != 0;
 }
 
 /*

@@ -206,7 +206,7 @@ crypt_whole_undofile(int method_nr)
 }
 
 /*
- * Get crypt method specifc length of the file header in bytes.
+ * Get crypt method specific length of the file header in bytes.
  */
     int
 crypt_get_header_len(int method_nr)

@@ -31,7 +31,7 @@ static void gui_do_scrollbar(win_T *wp, int which, int enable);
 static void gui_update_horiz_scrollbar(int);
 static void gui_set_fg_color(char_u *name);
 static void gui_set_bg_color(char_u *name);
-static win_T *xy2win(int x, int y);
+static win_T *xy2win(int x, int y, mouse_find_T popup);
 
 #ifdef GUI_MAY_FORK
 static void gui_do_fork(void);
@@ -279,7 +279,7 @@ gui_do_fork(void)
 	}
 
 	if (pipe_error)
-	    ui_delay(300L, TRUE);
+	    ui_delay(301L, TRUE);
 
 	/* When swapping screens we may need to go to the next line, e.g.,
 	 * after a hit-enter prompt and using ":gui". */
@@ -1169,13 +1169,13 @@ gui_update_cursor(
 	if (id > 0)
 	{
 	    cattr = syn_id2colors(id, &cfg, &cbg);
-#if defined(HAVE_INPUT_METHOD) || defined(FEAT_HANGULIN)
+#if defined(HAVE_INPUT_METHOD)
 	    {
 		static int iid;
 		guicolor_T fg, bg;
 
 		if (
-# if defined(FEAT_GUI_GTK) && defined(FEAT_XIM) && !defined(FEAT_HANGULIN)
+# if defined(FEAT_GUI_GTK) && defined(FEAT_XIM)
 			preedit_get_status()
 # else
 			im_get_status()
@@ -1260,35 +1260,14 @@ gui_update_cursor(
 	}
 
 	old_hl_mask = gui.highlight_mask;
-	if (shape->shape == SHAPE_BLOCK
-#ifdef FEAT_HANGULIN
-		|| composing_hangul
-#endif
-	   )
+	if (shape->shape == SHAPE_BLOCK)
 	{
 	    /*
 	     * Draw the text character with the cursor colors.	Use the
 	     * character attributes plus the cursor attributes.
 	     */
 	    gui.highlight_mask = (cattr | attr);
-#ifdef FEAT_HANGULIN
-	    if (composing_hangul)
-	    {
-		char_u *comp_buf;
-		int comp_len;
-
-		comp_buf = hangul_composing_buffer_get(&comp_len);
-		if (comp_buf)
-		{
-		    (void)gui_outstr_nowrap(comp_buf, comp_len,
-					    GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR,
-					    cfg, cbg, 0);
-		    vim_free(comp_buf);
-		}
-	    }
-	    else
-#endif
-		(void)gui_screenchar(LineOffset[gui.row] + gui.col,
+	    (void)gui_screenchar(LineOffset[gui.row] + gui.col,
 			GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR, cfg, cbg, 0);
 	}
 	else
@@ -2641,38 +2620,13 @@ gui_undraw_cursor(void)
 {
     if (gui.cursor_is_valid)
     {
-#ifdef FEAT_HANGULIN
-	if (composing_hangul
-		    && gui.col == gui.cursor_col && gui.row == gui.cursor_row)
-	{
-	    char_u *comp_buf;
-	    int comp_len;
-
-	    comp_buf = hangul_composing_buffer_get(&comp_len);
-	    if (comp_buf)
-	    {
-		(void)gui_outstr_nowrap(comp_buf, comp_len,
-					GUI_MON_IS_CURSOR | GUI_MON_NOCLEAR,
-					gui.norm_pixel, gui.back_pixel, 0);
-		vim_free(comp_buf);
-	    }
-	}
-	else
-	{
-#endif
 	if (gui_redraw_block(gui.cursor_row, gui.cursor_col,
 			      gui.cursor_row, gui.cursor_col, GUI_MON_NOCLEAR)
 		&& gui.cursor_col > 0)
 	    (void)gui_redraw_block(gui.cursor_row, gui.cursor_col - 1,
 			 gui.cursor_row, gui.cursor_col - 1, GUI_MON_NOCLEAR);
-#ifdef FEAT_HANGULIN
-	    if (composing_hangul)
-		(void)gui_redraw_block(gui.cursor_row, gui.cursor_col + 1,
-			gui.cursor_row, gui.cursor_col + 1, GUI_MON_NOCLEAR);
-	}
-#endif
-	/* Cursor_is_valid is reset when the cursor is undrawn, also reset it
-	 * here in case it wasn't needed to undraw it. */
+	// Cursor_is_valid is reset when the cursor is undrawn, also reset it
+	// here in case it wasn't needed to undraw it.
 	gui.cursor_is_valid = FALSE;
     }
 }
@@ -3425,6 +3379,10 @@ static int	prev_which_scrollbars[3];
     void
 gui_init_which_components(char_u *oldval UNUSED)
 {
+#ifdef FEAT_GUI_DARKTHEME
+    static int	prev_dark_theme = -1;
+    int		using_dark_theme = FALSE;
+#endif
 #ifdef FEAT_MENU
     static int	prev_menu_is_active = -1;
 #endif
@@ -3495,6 +3453,11 @@ gui_init_which_components(char_u *oldval UNUSED)
 	    case GO_BOT:
 		gui.which_scrollbars[SBAR_BOTTOM] = TRUE;
 		break;
+#ifdef FEAT_GUI_DARKTHEME
+	    case GO_DARKTHEME:
+		using_dark_theme = TRUE;
+		break;
+#endif
 #ifdef FEAT_MENU
 	    case GO_MENUS:
 		gui.menu_is_active = TRUE;
@@ -3527,6 +3490,14 @@ gui_init_which_components(char_u *oldval UNUSED)
     {
 	need_set_size = 0;
 	fix_size = FALSE;
+
+#ifdef FEAT_GUI_DARKTHEME
+	if (using_dark_theme != prev_dark_theme)
+	{
+	    gui_mch_set_dark_theme(using_dark_theme);
+	    prev_dark_theme = using_dark_theme;
+	}
+#endif
 
 #ifdef FEAT_GUI_TABLINE
 	/* Update the GUI tab line, it may appear or disappear.  This may
@@ -4771,6 +4742,29 @@ gui_get_lightness(guicolor_T pixel)
 		   +  ((rgb	  & 0xff) * 114)) / 1000;
 }
 
+    char_u *
+gui_bg_default(void)
+{
+    if (gui_get_lightness(gui.back_pixel) < 127)
+	return (char_u *)"dark";
+    return (char_u *)"light";
+}
+
+/*
+ * Option initializations that can only be done after opening the GUI window.
+ */
+    void
+init_gui_options(void)
+{
+    /* Set the 'background' option according to the lightness of the
+     * background color, unless the user has set it already. */
+    if (!option_was_set((char_u *)"bg") && STRCMP(p_bg, gui_bg_default()) != 0)
+    {
+	set_option_value((char_u *)"bg", 0L, gui_bg_default(), 0);
+	highlight_changed();
+    }
+}
+
 #if defined(FEAT_GUI_X11) || defined(PROTO)
     void
 gui_new_scrollbar_colors(void)
@@ -4835,7 +4829,7 @@ gui_mouse_focus(int x, int y)
 
 #ifdef FEAT_MOUSESHAPE
     /* Get window pointer, and update mouse shape as well. */
-    wp = xy2win(x, y);
+    wp = xy2win(x, y, IGNORE_POPUP);
 #endif
 
     /* Only handle this when 'mousefocus' set and ... */
@@ -4851,7 +4845,7 @@ gui_mouse_focus(int x, int y)
 	if (x < 0 || x > Columns * gui.char_width)
 	    return;
 #ifndef FEAT_MOUSESHAPE
-	wp = xy2win(x, y);
+	wp = xy2win(x, y, IGNORE_POPUP);
 #endif
 	if (wp == curwin || wp == NULL)
 	    return;	/* still in the same old window, or none at all */
@@ -4913,25 +4907,36 @@ gui_mouse_moved(int x, int y)
 }
 
 /*
+ * Get the window where the mouse pointer is on.
+ * Returns NULL if not found.
+ */
+    win_T *
+gui_mouse_window(mouse_find_T popup)
+{
+    int		x, y;
+
+    if (!(gui.in_use && (p_mousef || popup == FIND_POPUP)))
+	return NULL;
+    gui_mch_getmouse(&x, &y);
+
+    // Only use the mouse when it's on the Vim window
+    if (x >= 0 && x <= Columns * gui.char_width
+	    && y >= 0 && Y_2_ROW(y) >= tabline_height())
+	return xy2win(x, y, popup);
+    return NULL;
+}
+
+/*
  * Called when mouse should be moved to window with focus.
  */
     void
 gui_mouse_correct(void)
 {
-    int		x, y;
     win_T	*wp = NULL;
 
     need_mouse_correct = FALSE;
 
-    if (!(gui.in_use && p_mousef))
-	return;
-
-    gui_mch_getmouse(&x, &y);
-    /* Don't move the mouse when it's left or right of the Vim window */
-    if (x < 0 || x > Columns * gui.char_width)
-	return;
-    if (y >= 0 && Y_2_ROW(y) >= tabline_height())
-	wp = xy2win(x, y);
+    wp = gui_mouse_window(IGNORE_POPUP);
     if (wp != curwin && wp != NULL)	/* If in other than current window */
     {
 	validate_cline_row();
@@ -4946,7 +4951,7 @@ gui_mouse_correct(void)
  * As a side effect update the shape of the mouse pointer.
  */
     static win_T *
-xy2win(int x, int y)
+xy2win(int x, int y, mouse_find_T popup)
 {
     int		row;
     int		col;
@@ -4956,7 +4961,7 @@ xy2win(int x, int y)
     col = X_2_COL(x);
     if (row < 0 || col < 0)		/* before first window */
 	return NULL;
-    wp = mouse_find_win(&row, &col, FALSE);
+    wp = mouse_find_win(&row, &col, popup);
     if (wp == NULL)
 	return NULL;
 #ifdef FEAT_MOUSESHAPE
@@ -5366,7 +5371,7 @@ gui_do_findrepl(
 	i = msg_scroll;
 	if (down)
 	{
-	    (void)do_search(NULL, '/', ga.ga_data, 1L, searchflags, NULL, NULL);
+	    (void)do_search(NULL, '/', ga.ga_data, 1L, searchflags, NULL);
 	}
 	else
 	{
@@ -5374,7 +5379,7 @@ gui_do_findrepl(
 	     * direction */
 	    p = vim_strsave_escaped(ga.ga_data, (char_u *)"?");
 	    if (p != NULL)
-	        (void)do_search(NULL, '?', p, 1L, searchflags, NULL, NULL);
+	        (void)do_search(NULL, '?', p, 1L, searchflags, NULL);
 	    vim_free(p);
 	}
 

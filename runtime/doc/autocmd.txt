@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Jun 26
+*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Sep 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -268,7 +268,6 @@ Name			triggered by ~
 |BufCreate|		just after adding a buffer to the buffer list
 |BufDelete|		before deleting a buffer from the buffer list
 |BufWipeout|		before completely deleting a buffer
-|TerminalOpen|		after a terminal buffer was created
 
 |BufFilePre|		before changing the name of the current buffer
 |BufFilePost|		after changing the name of the current buffer
@@ -301,6 +300,10 @@ Name			triggered by ~
 |ExitPre|		when using a command that may make Vim exit
 |VimLeavePre|		before exiting Vim, before writing the viminfo file
 |VimLeave|		before exiting Vim, after writing the viminfo file
+
+	Terminal
+|TerminalOpen|		after a terminal buffer was created
+|TerminalWinOpen|	after a terminal buffer was created in a new window
 
 	Various
 |FileChangedShell|	Vim notices that a file changed since editing started
@@ -354,6 +357,10 @@ Name			triggered by ~
 |TextChangedP|		after a change was made to the text in Insert mode
 			when popup menu visible
 |TextYankPost|		after text has been yanked or deleted
+
+|SafeState|		nothing pending, going to wait for the user to type a
+			character
+|SafeStateAgain|	repeated SafeState
 
 |ColorSchemePre|	before loading a color scheme
 |ColorScheme|		after loading a color scheme
@@ -577,7 +584,7 @@ ColorScheme			After loading a color scheme. |:colorscheme|
 ColorSchemePre			Before loading a color scheme. |:colorscheme|
 				Useful to setup removing things added by a
 				color scheme, before another one is loaded.
-CompleteChanged 					*CompleteChanged*
+CompleteChanged						*CompleteChanged*
 				After each time the Insert mode completion
 				menu changed.  Not fired on popup menu hide,
 				use |CompleteDone| for that.  Never triggered
@@ -955,6 +962,32 @@ RemoteReply			When a reply from a Vim that functions as
 				Note that even if an autocommand is defined,
 				the reply should be read with |remote_read()|
 				to consume it.
+							*SafeState*
+SafeState			When nothing is pending, going to wait for the
+				user to type a character.
+				This will not be triggered when:
+				- an operator is pending
+				- a register was entered with "r
+				- halfway executing a command
+				- executing a mapping
+				- there is typeahead
+				- Insert mode completion is active
+				- Command line completion is active
+				You can use `mode()` to find out what state
+				Vim is in.  That may be:
+				- VIsual mode
+				- Normal mode
+				- Insert mode
+				- Command-line mode
+				Depending on what you want to do, you may also
+				check more with `state()`, e.g. whether the
+				screen was scrolled for messages.
+							*SafeStateAgain*
+SafeStateAgain			Like SafeState but after processing any
+				messages and invoking callbacks. This may be
+				triggered often, don't do something that takes
+				time.
+
 							*SessionLoadPost*
 SessionLoadPost			After loading the session file created using
 				the |:mksession| command.
@@ -1051,6 +1084,12 @@ TerminalOpen			Just after a terminal buffer was created, with
 				`:terminal` or |term_start()|. This event is
 				triggered even if the buffer is created
 				without a window, with the ++hidden option.
+							*TerminalWinOpen*
+TerminalWinOpen			Just after a terminal buffer was created, with
+				`:terminal` or |term_start()|. This event is
+				triggered only if the buffer is created
+				with a window.  Can be used to set window
+				local options for the terminal window.
 							*TermResponse*
 TermResponse			After the response to |t_RV| is received from
 				the terminal.  The value of |v:termresponse|
@@ -1087,8 +1126,8 @@ TextYankPost			After text has been yanked or deleted in the
 				current buffer.  The following values of
 				|v:event| can be used to determine the operation
 				that triggered this autocmd:
-				   operator    	The operation performed.
-				   regcontents 	Text that was stored in the
+				   operator	The operation performed.
+				   regcontents	Text that was stored in the
 						register, as a list of lines,
 						like with: >
 						getreg(r, 1, 1)
@@ -1124,7 +1163,7 @@ VimEnter			After doing all the startup stuff, including
 				   if v:vim_did_enter
 				     call s:init()
 				   else
- 	  			     au VimEnter * call s:init()
+				     au VimEnter * call s:init()
 				   endif
 <							*VimLeave*
 VimLeave			Before exiting Vim, just after writing the

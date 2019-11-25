@@ -1,7 +1,9 @@
 " tests for listener_add() and listener_remove()
 
-func s:StoreList(s, l)
+func s:StoreList(s, e, a, l)
   let s:start = a:s
+  let s:end = a:e
+  let s:added = a:a
   let s:text = getline(a:s)
   let s:list = a:l
 endfunc
@@ -19,7 +21,7 @@ func Test_listening()
   new
   call setline(1, ['one', 'two'])
   let s:list = []
-  let id = listener_add({b, s, e, a, l -> s:StoreList(s, l)})
+  let id = listener_add({b, s, e, a, l -> s:StoreList(s, e, a, l)})
   call setline(1, 'one one')
   call listener_flush()
   call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list)
@@ -65,6 +67,9 @@ func Test_listening()
   call bufnr()->listener_flush()
   call assert_equal([{'lnum': 3, 'end': 3, 'col': 1, 'added': 1},
 	\ {'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list)
+  call assert_equal(1, s:start)
+  call assert_equal(3, s:end)
+  call assert_equal(1, s:added)
 
   " an insert just above a previous change that was the last one does not get
   " merged

@@ -985,7 +985,9 @@ ex_loadview(exarg_T *eap)
     }
 }
 
-#if defined(FEAT_GUI) || defined(PROTO)
+# if defined(FEAT_GUI_GNOME) \
+	|| (defined(GUI_MAY_SPAWN) && defined(EXPERIMENTAL_GUI_CMD)) \
+	|| defined(PROTO)
 /*
  * Generate a script that can be used to restore the current editing session.
  * Save the value of v:this_session before running :mksession in order to make

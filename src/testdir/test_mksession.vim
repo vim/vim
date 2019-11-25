@@ -9,6 +9,29 @@ CheckFeature mksession
 source shared.vim
 source term_util.vim
 
+" Test for storing global and local argument list in a session file
+" This one must be done first.
+func Test__mksession_arglocal()
+  enew | only
+  n a b c
+  new
+  arglocal
+  mksession! Xtest_mks.out
+
+  %bwipe!
+  %argdelete
+  argglobal
+  source Xtest_mks.out
+  call assert_equal(2, winnr('$'))
+  call assert_equal(2, arglistid(1))
+  call assert_equal(0, arglistid(2))
+
+  %bwipe!
+  %argdelete
+  argglobal
+  call delete('Xtest_mks.out')
+endfunc
+
 func Test_mksession()
   tabnew
   let wrap_save = &wrap
@@ -154,13 +177,19 @@ func Test_mksession_rtp()
 endfunc
 
 func Test_mksession_arglist()
-  argdel *
+  %argdel
   next file1 file2 file3 file4
+  new
+  next | next
   mksession! Xtest_mks.out
   source Xtest_mks.out
   call assert_equal(['file1', 'file2', 'file3', 'file4'], argv())
+  call assert_equal(2, argidx())
+  wincmd w
+  call assert_equal(0, argidx())
 
   call delete('Xtest_mks.out')
+  enew | only
   argdel *
 endfunc
 
@@ -247,8 +276,8 @@ func Test_mksession_tcd_multiple_tabs()
   call assert_equal('Xtabdir3', fnamemodify(getcwd(-1, 3), ':t'))
   call assert_equal('Xtabdir3', fnamemodify(getcwd(1, 3), ':t'))
   call assert_equal('Xwindir3', fnamemodify(getcwd(2, 3), ':t'))
-  only | tabonly
-  exe 'cd ' . save_cwd
+  %bwipe
+  call chdir(save_cwd)
   call delete("Xtopdir", "rf")
 endfunc
 
@@ -536,6 +565,210 @@ func Test_mksession_quote_in_filename()
   call delete('Xtest_mks_quoted.out')
 endfunc
 
+" Test for storing global variables in a session file
+func Test_mksession_globals()
+  set sessionoptions+=globals
+
+  " create different global variables
+  let g:Global_string = "Sun is shining\r\n"
+  let g:Global_count = 100
+  let g:Global_pi = 3.14
+  let g:Global_neg_float = -2.68
+
+  mksession! Xtest_mks.out
+
+  unlet g:Global_string
+  unlet g:Global_count
+  unlet g:Global_pi
+  unlet g:Global_neg_float
+
+  source Xtest_mks.out
+  call assert_equal("Sun is shining\r\n", g:Global_string)
+  call assert_equal(100, g:Global_count)
+  call assert_equal(3.14, g:Global_pi)
+  call assert_equal(-2.68, g:Global_neg_float)
+
+  unlet g:Global_string
+  unlet g:Global_count
+  unlet g:Global_pi
+  unlet g:Global_neg_float
+  call delete('Xtest_mks.out')
+  set sessionoptions&
+endfunc
+
+" Test for changing backslash to forward slash in filenames
+func Test_mksession_slash()
+  if exists('+shellslash')
+    throw 'Skipped: cannot use backslash in file name'
+  endif
+  enew
+  %bwipe!
+  e a\\b\\c
+  mksession! Xtest_mks1.out
+  set sessionoptions+=slash
+  mksession! Xtest_mks2.out
+
+  %bwipe!
+  source Xtest_mks1.out
+  call assert_equal('a\b\c', bufname(''))
+  %bwipe!
+  source Xtest_mks2.out
+  call assert_equal('a/b/c', bufname(''))
+
+  %bwipe!
+  call delete('Xtest_mks1.out')
+  call delete('Xtest_mks2.out')
+  set sessionoptions&
+endfunc
+
+" Test for changing directory to the session file directory
+func Test_mksession_sesdir()
+  let save_cwd = getcwd()
+  call mkdir('Xproj')
+  mksession! Xproj/Xtest_mks1.out
+  set sessionoptions-=curdir
+  set sessionoptions+=sesdir
+  mksession! Xproj/Xtest_mks2.out
+
+  source Xproj/Xtest_mks1.out
+  call assert_equal('testdir', fnamemodify(getcwd(), ':t'))
+  source Xproj/Xtest_mks2.out
+  call assert_equal('Xproj', fnamemodify(getcwd(), ':t'))
+  call chdir(save_cwd)
+  %bwipe
+
+  set sessionoptions&
+  call delete('Xproj', 'rf')
+endfunc
+
+" Test for storing the 'lines' and 'columns' settings
+func Test_mksession_resize()
+  mksession! Xtest_mks1.out
+  set sessionoptions+=resize
+  mksession! Xtest_mks2.out
+
+  let lines = readfile('Xtest_mks1.out')
+  let found_resize = v:false
+  for line in lines
+    if line =~ '^set lines='
+      let found_resize = v:true
+      break
+    endif
+  endfor
+  call assert_false(found_resize)
+  let lines = readfile('Xtest_mks2.out')
+  let found_resize = v:false
+  for line in lines
+    if line =~ '^set lines='
+      let found_resize = v:true
+      break
+    endif
+  endfor
+  call assert_true(found_resize)
+
+  call delete('Xtest_mks1.out')
+  call delete('Xtest_mks2.out')
+  set sessionoptions&
+endfunc
+
+" Test for mksession with a named scratch buffer
+func Test_mksession_scratch()
+  enew | only
+  file Xscratch
+  set buftype=nofile
+  mksession! Xtest_mks.out
+  %bwipe
+  source Xtest_mks.out
+  call assert_equal('Xscratch', bufname(''))
+  call assert_equal('nofile', &buftype)
+  %bwipe
+  call delete('Xtest_mks.out')
+endfunc
+
+" Test for mksession with fold options
+func Test_mksession_foldopt()
+  set sessionoptions-=options
+  set sessionoptions+=folds
+  new
+  setlocal foldenable
+  setlocal foldmethod=expr
+  setlocal foldmarker=<<<,>>>
+  setlocal foldignore=%
+  setlocal foldlevel=2
+  setlocal foldminlines=10
+  setlocal foldnestmax=15
+  mksession! Xtest_mks.out
+  close
+  %bwipe
+
+  source Xtest_mks.out
+  call assert_true(&foldenable)
+  call assert_equal('expr', &foldmethod)
+  call assert_equal('<<<,>>>', &foldmarker)
+  call assert_equal('%', &foldignore)
+  call assert_equal(2, &foldlevel)
+  call assert_equal(10, &foldminlines)
+  call assert_equal(15, &foldnestmax)
+
+  close
+  %bwipe
+  set sessionoptions&
+endfunc
+
+" Test for mksession with window position
+func Test_mksession_winpos()
+  if !has('gui_running')
+    " Only applicable in GUI Vim
+    return
+  endif
+  set sessionoptions+=winpos
+  mksession! Xtest_mks.out
+  let found_winpos = v:false
+  let lines = readfile('Xtest_mks.out')
+  for line in lines
+    if line =~ '^winpos '
+      let found_winpos = v:true
+      break
+    endif
+  endfor
+  call assert_true(found_winpos)
+  call delete('Xtest_mks.out')
+  set sessionoptions&
+endfunc
+
+" Test for mksession with 'compatible' option
+func Test_mksession_compatible()
+  mksession! Xtest_mks1.out
+  set compatible
+  mksession! Xtest_mks2.out
+  set nocp
+
+  let test_success = v:false
+  let lines = readfile('Xtest_mks1.out')
+  for line in lines
+    if line =~ '^if &cp | set nocp | endif'
+      let test_success = v:true
+      break
+    endif
+  endfor
+  call assert_true(test_success)
+
+  let test_success = v:false
+  let lines = readfile('Xtest_mks2.out')
+  for line in lines
+    if line =~ '^if !&cp | set cp | endif'
+      let test_success = v:true
+      break
+    endif
+  endfor
+  call assert_true(test_success)
+
+  call delete('Xtest_mks1.out')
+  call delete('Xtest_mks2.out')
+  set compatible&
+  set sessionoptions&
+endfunc
+
 func s:ClearMappings()
   mapclear
   omapclear
@@ -577,6 +810,5 @@ func Test_mkvimrc()
   call s:ClearMappings()
   call delete('Xtestvimrc')
 endfunc
-
 
 " vim: shiftwidth=2 sts=2 expandtab

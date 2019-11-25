@@ -11,8 +11,8 @@ Getting the source to z/OS:
 
 First get the source code in one big tar file and ftp it a binary to z/OS. If
 the tar file is initially compressed with gzip (tar.gz) or bzip2 (tar.bz2)
-uncompress it on your PC, as this tools are (most likely) not available on the
-mainframe.
+uncompress it on your PC, as these tools are (most likely) not available on
+the mainframe.
 
 To reduce the size of the tar file you might compress it into a zip file. On
 z/OS Unix you might have the command "jar" from java to uncompress a zip. Use:
@@ -82,8 +82,8 @@ WARNING: This instruction was not tested with Vim 7.4 or later.
 
 There are two ways for building VIM with X11 support. The first way is simple
 and results in a big executable (~13 Mb), the second needs a few additional
-steps and results in a much smaller executable (~4.5 Mb). This examples assume
-you want Motif.
+steps and results in a much smaller executable (~4.5 Mb). These examples
+assume you want Motif.
 
   The easy way:
     $ export CC=cc

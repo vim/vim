@@ -64,8 +64,10 @@ extern int _stricoll(char *a, char *b);
 # include "arglist.pro"
 # include "autocmd.pro"
 # include "buffer.pro"
+# include "bufwrite.pro"
 # include "change.pro"
 # include "charset.pro"
+# include "cindent.pro"
 # include "cmdexpand.pro"
 # include "cmdhist.pro"
 # include "if_cscope.pro"
@@ -73,6 +75,8 @@ extern int _stricoll(char *a, char *b);
 # include "dict.pro"
 # include "diff.pro"
 # include "digraph.pro"
+# include "drawline.pro"
+# include "drawscreen.pro"
 # include "edit.pro"
 # include "eval.pro"
 # include "evalbuffer.pro"
@@ -89,9 +93,6 @@ extern int _stricoll(char *a, char *b);
 # include "findfile.pro"
 # include "fold.pro"
 # include "getchar.pro"
-# ifdef FEAT_HANGULIN
-#  include "hangulin.pro"
-# endif
 # include "hardcopy.pro"
 # include "hashtab.pro"
 # include "highlight.pro"
@@ -173,17 +174,20 @@ char_u *vim_strpbrk(char_u *s, char_u *charset);
 /* Use our own qsort(), don't define the prototype when not used. */
 void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void *, const void *));
 #endif
+# include "mouse.pro"
 # include "move.pro"
 # include "mbyte.pro"
 # include "normal.pro"
 # include "ops.pro"
 # include "option.pro"
-# include "popupmnu.pro"
+# include "optionstr.pro"
+# include "popupmenu.pro"
 # if defined(FEAT_PROFILE) || defined(FEAT_RELTIME)
 # include "profiler.pro"
 # endif
 # include "quickfix.pro"
 # include "regexp.pro"
+# include "register.pro"
 # include "scriptfile.pro"
 # include "screen.pro"
 # include "session.pro"
@@ -197,6 +201,7 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # include "sound.pro"
 # include "spell.pro"
 # include "spellfile.pro"
+# include "spellsuggest.pro"
 # include "syntax.pro"
 # include "tag.pro"
 # include "term.pro"

@@ -50,22 +50,6 @@ win_getid(typval_T *argvars)
     return 0;
 }
 
-    static int
-win_gotoid(typval_T *argvars)
-{
-    win_T	*wp;
-    tabpage_T   *tp;
-    int		id = tv_get_number(&argvars[0]);
-
-    FOR_ALL_TAB_WINDOWS(tp, wp)
-	    if (wp->w_id == id)
-	    {
-		goto_tabpage_win(tp, wp);
-		return 1;
-	    }
-    return 0;
-}
-
     static void
 win_id2tabwin(typval_T *argvars, list_T *list)
 {
@@ -671,12 +655,18 @@ f_win_execute(typval_T *argvars, typval_T *rettv)
 
     if (wp != NULL && tp != NULL)
     {
+	pos_T	curpos = wp->w_cursor;
+
 	if (switch_win_noblock(&save_curwin, &save_curtab, wp, tp, TRUE) == OK)
 	{
 	    check_cursor();
 	    execute_common(argvars, rettv, 1);
 	}
 	restore_win_noblock(save_curwin, save_curtab, TRUE);
+
+	// Update the status line if the cursor moved.
+	if (win_valid(wp) && !EQUAL_POS(curpos, wp->w_cursor))
+	    wp->w_redr_status = TRUE;
     }
 }
 
@@ -705,7 +695,24 @@ f_win_getid(typval_T *argvars, typval_T *rettv)
     void
 f_win_gotoid(typval_T *argvars, typval_T *rettv)
 {
-    rettv->vval.v_number = win_gotoid(argvars);
+    win_T	*wp;
+    tabpage_T   *tp;
+    int		id = tv_get_number(&argvars[0]);
+
+#ifdef FEAT_CMDWIN
+    if (cmdwin_type != 0)
+    {
+	emsg(_(e_cmdwin));
+	return;
+    }
+#endif
+    FOR_ALL_TAB_WINDOWS(tp, wp)
+	if (wp->w_id == id)
+	{
+	    goto_tabpage_win(tp, wp);
+	    rettv->vval.v_number = 1;
+	    return;
+	}
 }
 
 /*
@@ -741,6 +748,92 @@ f_win_screenpos(typval_T *argvars, typval_T *rettv)
     wp = find_win_by_nr_or_id(&argvars[0]);
     list_append_number(rettv->vval.v_list, wp == NULL ? 0 : wp->w_winrow + 1);
     list_append_number(rettv->vval.v_list, wp == NULL ? 0 : wp->w_wincol + 1);
+}
+
+/*
+ * Move the window wp into a new split of targetwin in a given direction
+ */
+    static void
+win_move_into_split(win_T *wp, win_T *targetwin, int size, int flags)
+{
+    int	    dir;
+    int	    height = wp->w_height;
+    win_T   *oldwin = curwin;
+
+    if (wp == targetwin)
+	return;
+
+    // Jump to the target window
+    if (curwin != targetwin)
+	win_goto(targetwin);
+
+    // Remove the old window and frame from the tree of frames
+    (void)winframe_remove(wp, &dir, NULL);
+    win_remove(wp, NULL);
+    last_status(FALSE);	    // may need to remove last status line
+    (void)win_comp_pos();   // recompute window positions
+
+    // Split a window on the desired side and put the old window there
+    (void)win_split_ins(size, flags, wp, dir);
+
+    // If splitting horizontally, try to preserve height
+    if (size == 0 && !(flags & WSP_VERT))
+    {
+	win_setheight_win(height, wp);
+	if (p_ea)
+	    win_equal(wp, TRUE, 'v');
+    }
+
+#if defined(FEAT_GUI)
+    // When 'guioptions' includes 'L' or 'R' may have to remove or add
+    // scrollbars.  Have to update them anyway.
+    gui_may_update_scrollbars();
+#endif
+
+    if (oldwin != curwin)
+	win_goto(oldwin);
+}
+
+/*
+ * "win_splitmove()" function
+ */
+    void
+f_win_splitmove(typval_T *argvars, typval_T *rettv)
+{
+    win_T   *wp;
+    win_T   *targetwin;
+    int     flags = 0, size = 0;
+
+    wp = find_win_by_nr_or_id(&argvars[0]);
+    targetwin = find_win_by_nr_or_id(&argvars[1]);
+
+    if (wp == NULL || targetwin == NULL || wp == targetwin)
+    {
+        emsg(_(e_invalwindow));
+	rettv->vval.v_number = -1;
+	return;
+    }
+
+    if (argvars[2].v_type != VAR_UNKNOWN)
+    {
+        dict_T      *d;
+        dictitem_T  *di;
+
+        if (argvars[2].v_type != VAR_DICT || argvars[2].vval.v_dict == NULL)
+        {
+            emsg(_(e_invarg));
+            return;
+        }
+
+        d = argvars[2].vval.v_dict;
+        if (dict_get_number(d, (char_u *)"vertical"))
+            flags |= WSP_VERT;
+        if ((di = dict_find(d, (char_u *)"rightbelow", -1)) != NULL)
+            flags |= tv_get_number(&di->di_tv) ? WSP_BELOW : WSP_ABOVE;
+        size = (int)dict_get_number(d, (char_u *)"size");
+    }
+
+    win_move_into_split(wp, targetwin, size, flags);
 }
 
 /*

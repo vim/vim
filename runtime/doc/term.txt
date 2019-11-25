@@ -1,4 +1,4 @@
-*term.txt*      For Vim version 8.1.  Last change: 2019 May 07
+*term.txt*      For Vim version 8.1.  Last change: 2019 Oct 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -80,14 +80,19 @@ can do this best in your .vimrc.  Example: >
 <
 						*raw-terminal-mode*
 For normal editing the terminal will be put into "raw" mode.  The strings
-defined with 't_ti' and 't_ks' will be sent to the terminal.  Normally this
-puts the terminal in a state where the termcap codes are valid and activates
-the cursor and function keys.  When Vim exits the terminal will be put back
-into the mode it was before Vim started.  The strings defined with 't_te' and
-'t_ke' will be sent to the terminal.  On the Amiga, with commands that execute
-an external command (e.g., "!!"), the terminal will be put into Normal mode
-for a moment.  This means that you can stop the output to the screen by
-hitting a printing key.  Output resumes when you hit <BS>.
+defined with 't_ti', 't_TI' and 't_ks' will be sent to the terminal.  Normally
+this puts the terminal in a state where the termcap codes are valid and
+activates the cursor and function keys.
+When Vim exits the terminal will be put back into the mode it was before Vim
+started.  The strings defined with 't_te', 't_TE' and 't_ke' will be sent to
+the terminal.  On the Amiga, with commands that execute an external command
+(e.g., "!!"), the terminal will be put into Normal mode for a moment.  This
+means that you can stop the output to the screen by hitting a printing key.
+Output resumes when you hit <BS>.
+
+Note: When 't_ti' is not empty, Vim assumes that it causes switching to the
+alternate screen.  This may slightly change what happens when executing a
+shell command or exiting Vim.  To avoid this use 't_TI' and 't_TE'.
 
 						*xterm-bracketed-paste*
 When the 't_BE' option is set then 't_BE' will be sent to the
@@ -297,8 +302,8 @@ OUTPUT CODES						*terminal-output-codes*
 	t_se	standout end					*t_se* *'t_se'*
 	t_so	standout mode					*t_so* *'t_so'*
 	t_sr	scroll reverse (backward)			*t_sr* *'t_sr'*
-	t_te	out of "termcap" mode				*t_te* *'t_te'*
-	t_ti	put terminal in "termcap" mode			*t_ti* *'t_ti'*
+	t_te	end of "termcap" mode				*t_te* *'t_te'*
+	t_ti	put terminal into "termcap" mode		*t_ti* *'t_ti'*
 	t_ts	set window title start (to status line)		*t_ts* *'t_ts'*
 	t_ue	underline end					*t_ue* *'t_ue'*
 	t_us	underline mode					*t_us* *'t_us'*
@@ -359,6 +364,8 @@ Added by Vim (there are no standard codes for these):
 	t_RT	restore window title from stack			*t_RT* *'t_RT'*
 	t_Si	save icon text to stack				*t_Si* *'t_Si'*
 	t_Ri	restore icon text from stack			*t_Ri* *'t_Ri'*
+	t_TE	end of "raw" mode				*t_TE* *'t_TE'*
+	t_TI	put terminal into "raw" mode 			*t_TI* *'t_TI'*
 
 Some codes have a start, middle and end part.  The start and end are defined
 by the termcap option, the middle part is text.
@@ -739,12 +746,21 @@ jump to tags).
 Whether the selection that is started with the mouse is in Visual mode or
 Select mode depends on whether "mouse" is included in the 'selectmode'
 option.
-
+							*terminal-mouse*
 In an xterm, with the currently active mode included in the 'mouse' option,
 normal mouse clicks are used by Vim, mouse clicks with the shift or ctrl key
 pressed go to the xterm.  With the currently active mode not included in
 'mouse' all mouse clicks go to the xterm.
 
+For terminals where it is not possible to have the mouse events be used by the
+terminal itself by using a modifier, a workaround is to not use mouse events
+for Vim in command-line mode: >
+	:set mouse=nvi
+Then to select text with the terminal, use ":" to go to command-line mode,
+select and copy the text to the system, then press Esc.
+
+Another way is to temporarily use ":sh" to run a shell, copy the text, then
+exit the shell.  'mouse' can remain set to "a" then.
 							*xterm-clipboard*
 In the Athena and Motif GUI versions, when running in a terminal and there is
 access to the X-server (DISPLAY is set), the copy and paste will behave like

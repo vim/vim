@@ -183,9 +183,11 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'csverb'	options.txt	/*'csverb'*
 'cuc'	options.txt	/*'cuc'*
 'cul'	options.txt	/*'cul'*
+'culopt'	options.txt	/*'culopt'*
 'cursorbind'	options.txt	/*'cursorbind'*
 'cursorcolumn'	options.txt	/*'cursorcolumn'*
 'cursorline'	options.txt	/*'cursorline'*
+'cursorlineopt'	options.txt	/*'cursorlineopt'*
 'cwh'	options.txt	/*'cwh'*
 'debug'	options.txt	/*'debug'*
 'deco'	options.txt	/*'deco'*
@@ -310,6 +312,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'go-a'	options.txt	/*'go-a'*
 'go-b'	options.txt	/*'go-b'*
 'go-c'	options.txt	/*'go-c'*
+'go-d'	options.txt	/*'go-d'*
 'go-e'	options.txt	/*'go-e'*
 'go-f'	options.txt	/*'go-f'*
 'go-g'	options.txt	/*'go-g'*
@@ -660,7 +663,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'nosb'	options.txt	/*'nosb'*
 'nosc'	options.txt	/*'nosc'*
 'noscb'	options.txt	/*'noscb'*
+'noscf'	options.txt	/*'noscf'*
 'noscrollbind'	options.txt	/*'noscrollbind'*
+'noscrollfocus'	options.txt	/*'noscrollfocus'*
 'noscs'	options.txt	/*'noscs'*
 'nosecure'	options.txt	/*'nosecure'*
 'nosft'	options.txt	/*'nosft'*
@@ -840,10 +845,12 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 'sbr'	options.txt	/*'sbr'*
 'sc'	options.txt	/*'sc'*
 'scb'	options.txt	/*'scb'*
+'scf'	options.txt	/*'scf'*
 'scl'	options.txt	/*'scl'*
 'scr'	options.txt	/*'scr'*
 'scroll'	options.txt	/*'scroll'*
 'scrollbind'	options.txt	/*'scrollbind'*
+'scrollfocus'	options.txt	/*'scrollfocus'*
 'scrolljump'	options.txt	/*'scrolljump'*
 'scrolloff'	options.txt	/*'scrolloff'*
 'scrollopt'	options.txt	/*'scrollopt'*
@@ -1013,6 +1020,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 't_Sb'	term.txt	/*'t_Sb'*
 't_Sf'	term.txt	/*'t_Sf'*
 't_Si'	term.txt	/*'t_Si'*
+'t_TE'	term.txt	/*'t_TE'*
+'t_TI'	term.txt	/*'t_TI'*
 't_Te'	term.txt	/*'t_Te'*
 't_Ts'	term.txt	/*'t_Ts'*
 't_VS'	term.txt	/*'t_VS'*
@@ -4038,6 +4047,8 @@ E274	eval.txt	/*E274*
 E275	textprop.txt	/*E275*
 E276	eval.txt	/*E276*
 E277	remote.txt	/*E277*
+E278	popup.txt	/*E278*
+E279	terminal.txt	/*E279*
 E28	syntax.txt	/*E28*
 E280	if_tcl.txt	/*E280*
 E282	starting.txt	/*E282*
@@ -5001,6 +5012,8 @@ S	change.txt	/*S*
 SHELL	starting.txt	/*SHELL*
 SQLGetType	ft_sql.txt	/*SQLGetType*
 SQLSetType	ft_sql.txt	/*SQLSetType*
+SafeState	autocmd.txt	/*SafeState*
+SafeStateAgain	autocmd.txt	/*SafeStateAgain*
 Select	visual.txt	/*Select*
 Select-mode	visual.txt	/*Select-mode*
 Select-mode-mapping	visual.txt	/*Select-mode-mapping*
@@ -5025,6 +5038,7 @@ TERM	starting.txt	/*TERM*
 TOhtml-encoding	syntax.txt	/*TOhtml-encoding*
 TOhtml-encoding-detect	syntax.txt	/*TOhtml-encoding-detect*
 TOhtml-performance	syntax.txt	/*TOhtml-performance*
+TOhtml-progress-color	syntax.txt	/*TOhtml-progress-color*
 TOhtml-uncopyable-text	syntax.txt	/*TOhtml-uncopyable-text*
 TOhtml-wrap-text	syntax.txt	/*TOhtml-wrap-text*
 TRUE	eval.txt	/*TRUE*
@@ -5042,6 +5056,7 @@ Terminal-Job	terminal.txt	/*Terminal-Job*
 Terminal-Normal	terminal.txt	/*Terminal-Normal*
 Terminal-mode	terminal.txt	/*Terminal-mode*
 TerminalOpen	autocmd.txt	/*TerminalOpen*
+TerminalWinOpen	autocmd.txt	/*TerminalWinOpen*
 TextChanged	autocmd.txt	/*TextChanged*
 TextChangedI	autocmd.txt	/*TextChangedI*
 TextChangedP	autocmd.txt	/*TextChangedP*
@@ -5305,6 +5320,7 @@ arglist-quit	usr_07.txt	/*arglist-quit*
 arglistid()	eval.txt	/*arglistid()*
 argument-list	editing.txt	/*argument-list*
 argv()	eval.txt	/*argv()*
+argv-variable	eval.txt	/*argv-variable*
 as	motion.txt	/*as*
 asin()	eval.txt	/*asin()*
 asm.vim	syntax.txt	/*asm.vim*
@@ -5782,8 +5798,10 @@ compl-vim	insert.txt	/*compl-vim*
 compl-whole-line	insert.txt	/*compl-whole-line*
 complete()	eval.txt	/*complete()*
 complete-functions	insert.txt	/*complete-functions*
+complete-item-kind	insert.txt	/*complete-item-kind*
 complete-items	insert.txt	/*complete-items*
 complete-popup	insert.txt	/*complete-popup*
+complete-popuphidden	insert.txt	/*complete-popuphidden*
 complete_CTRL-E	insert.txt	/*complete_CTRL-E*
 complete_CTRL-Y	insert.txt	/*complete_CTRL-Y*
 complete_add()	eval.txt	/*complete_add()*
@@ -5943,6 +5961,7 @@ daB	motion.txt	/*daB*
 daW	motion.txt	/*daW*
 dab	motion.txt	/*dab*
 dap	motion.txt	/*dap*
+dart.vim	syntax.txt	/*dart.vim*
 das	motion.txt	/*das*
 date-functions	usr_41.txt	/*date-functions*
 dav	pi_netrw.txt	/*dav*
@@ -6394,6 +6413,7 @@ ft-csh-syntax	syntax.txt	/*ft-csh-syntax*
 ft-css-omni	insert.txt	/*ft-css-omni*
 ft-cweb-syntax	syntax.txt	/*ft-cweb-syntax*
 ft-cynlib-syntax	syntax.txt	/*ft-cynlib-syntax*
+ft-dart-syntax	syntax.txt	/*ft-dart-syntax*
 ft-dash-syntax	syntax.txt	/*ft-dash-syntax*
 ft-desktop-syntax	syntax.txt	/*ft-desktop-syntax*
 ft-dircolors-syntax	syntax.txt	/*ft-dircolors-syntax*
@@ -6423,6 +6443,7 @@ ft-ia64-syntax	syntax.txt	/*ft-ia64-syntax*
 ft-inform-syntax	syntax.txt	/*ft-inform-syntax*
 ft-java-syntax	syntax.txt	/*ft-java-syntax*
 ft-javascript-omni	insert.txt	/*ft-javascript-omni*
+ft-json-syntax	syntax.txt	/*ft-json-syntax*
 ft-ksh-syntax	syntax.txt	/*ft-ksh-syntax*
 ft-lace-syntax	syntax.txt	/*ft-lace-syntax*
 ft-lex-syntax	syntax.txt	/*ft-lex-syntax*
@@ -6628,6 +6649,7 @@ g:html_prevent_copy	syntax.txt	/*g:html_prevent_copy*
 g:html_start_line	syntax.txt	/*g:html_start_line*
 g:html_use_css	syntax.txt	/*g:html_use_css*
 g:html_use_encoding	syntax.txt	/*g:html_use_encoding*
+g:html_use_input_for_pc	syntax.txt	/*g:html_use_input_for_pc*
 g:html_use_xhtml	syntax.txt	/*g:html_use_xhtml*
 g:html_whole_filler	syntax.txt	/*g:html_whole_filler*
 g:netrw_altfile	pi_netrw.txt	/*g:netrw_altfile*
@@ -6800,6 +6822,7 @@ gF	editing.txt	/*gF*
 gH	visual.txt	/*gH*
 gI	insert.txt	/*gI*
 gJ	change.txt	/*gJ*
+gM	motion.txt	/*gM*
 gN	visual.txt	/*gN*
 gP	change.txt	/*gP*
 gQ	intro.txt	/*gQ*
@@ -6852,6 +6875,7 @@ getlatestvimscripts-install	pi_getscript.txt	/*getlatestvimscripts-install*
 getline()	eval.txt	/*getline()*
 getloclist()	eval.txt	/*getloclist()*
 getmatches()	eval.txt	/*getmatches()*
+getmousepos()	eval.txt	/*getmousepos()*
 getpid()	eval.txt	/*getpid()*
 getpos()	eval.txt	/*getpos()*
 getqflist()	eval.txt	/*getqflist()*
@@ -7085,6 +7109,8 @@ hl-Folded	syntax.txt	/*hl-Folded*
 hl-Ignore	syntax.txt	/*hl-Ignore*
 hl-IncSearch	syntax.txt	/*hl-IncSearch*
 hl-LineNr	syntax.txt	/*hl-LineNr*
+hl-LineNrAbove	syntax.txt	/*hl-LineNrAbove*
+hl-LineNrBelow	syntax.txt	/*hl-LineNrBelow*
 hl-MatchParen	syntax.txt	/*hl-MatchParen*
 hl-Menu	syntax.txt	/*hl-Menu*
 hl-ModeMsg	syntax.txt	/*hl-ModeMsg*
@@ -7109,6 +7135,7 @@ hl-StatusLine	syntax.txt	/*hl-StatusLine*
 hl-StatusLineNC	syntax.txt	/*hl-StatusLineNC*
 hl-StatusLineTerm	syntax.txt	/*hl-StatusLineTerm*
 hl-StatusLineTermNC	syntax.txt	/*hl-StatusLineTermNC*
+hl-TOhtmlProgress	syntax.txt	/*hl-TOhtmlProgress*
 hl-TabLine	syntax.txt	/*hl-TabLine*
 hl-TabLineFill	syntax.txt	/*hl-TabLineFill*
 hl-TabLineSel	syntax.txt	/*hl-TabLineSel*
@@ -7287,6 +7314,7 @@ if_ruby.txt	if_ruby.txt	/*if_ruby.txt*
 if_sniff.txt	if_sniff.txt	/*if_sniff.txt*
 if_tcl.txt	if_tcl.txt	/*if_tcl.txt*
 ignore-errors	eval.txt	/*ignore-errors*
+ignore-timestamp	editing.txt	/*ignore-timestamp*
 improved-autocmds-5.4	version5.txt	/*improved-autocmds-5.4*
 improved-quickfix	version5.txt	/*improved-quickfix*
 improved-sessions	version5.txt	/*improved-sessions*
@@ -7409,6 +7437,7 @@ join()	eval.txt	/*join()*
 js_decode()	eval.txt	/*js_decode()*
 js_encode()	eval.txt	/*js_encode()*
 jsbterm-mouse	options.txt	/*jsbterm-mouse*
+json.vim	syntax.txt	/*json.vim*
 json_decode()	eval.txt	/*json_decode()*
 json_encode()	eval.txt	/*json_encode()*
 jtags	tagsrch.txt	/*jtags*
@@ -7683,6 +7712,7 @@ modeless-selection	gui.txt	/*modeless-selection*
 modeline	options.txt	/*modeline*
 modeline-local	options.txt	/*modeline-local*
 modeline-version	options.txt	/*modeline-version*
+modifyOtherKeys	map.txt	/*modifyOtherKeys*
 moo.vim	syntax.txt	/*moo.vim*
 more-compatible	version5.txt	/*more-compatible*
 more-prompt	message.txt	/*more-prompt*
@@ -8078,7 +8108,6 @@ new-vimgrep	version7.txt	/*new-vimgrep*
 new-virtedit	version6.txt	/*new-virtedit*
 news	intro.txt	/*news*
 nextnonblank()	eval.txt	/*nextnonblank()*
-nice	todo.txt	/*nice*
 no-eval-feature	eval.txt	/*no-eval-feature*
 no-type-checking	eval.txt	/*no-type-checking*
 no_buffers_menu	gui.txt	/*no_buffers_menu*
@@ -8644,6 +8673,7 @@ scriptversion	eval.txt	/*scriptversion*
 scriptversion-1	eval.txt	/*scriptversion-1*
 scriptversion-2	eval.txt	/*scriptversion-2*
 scriptversion-3	eval.txt	/*scriptversion-3*
+scriptversion-4	eval.txt	/*scriptversion-4*
 scroll-binding	scroll.txt	/*scroll-binding*
 scroll-cursor	scroll.txt	/*scroll-cursor*
 scroll-down	scroll.txt	/*scroll-down*
@@ -8923,6 +8953,7 @@ starting.txt	starting.txt	/*starting.txt*
 startup	starting.txt	/*startup*
 startup-options	starting.txt	/*startup-options*
 startup-terminal	term.txt	/*startup-terminal*
+state()	eval.txt	/*state()*
 static-tag	tagsrch.txt	/*static-tag*
 status-line	windows.txt	/*status-line*
 statusmsg-variable	eval.txt	/*statusmsg-variable*
@@ -9093,6 +9124,8 @@ t_ST	term.txt	/*t_ST*
 t_Sb	term.txt	/*t_Sb*
 t_Sf	term.txt	/*t_Sf*
 t_Si	term.txt	/*t_Si*
+t_TE	term.txt	/*t_TE*
+t_TI	term.txt	/*t_TI*
 t_Te	term.txt	/*t_Te*
 t_Ts	term.txt	/*t_Ts*
 t_VS	term.txt	/*t_VS*
@@ -9333,6 +9366,7 @@ term_list()	terminal.txt	/*term_list()*
 term_scrape()	terminal.txt	/*term_scrape()*
 term_sendkeys()	terminal.txt	/*term_sendkeys()*
 term_setansicolors()	terminal.txt	/*term_setansicolors()*
+term_setapi()	terminal.txt	/*term_setapi()*
 term_setkill()	terminal.txt	/*term_setkill()*
 term_setrestore()	terminal.txt	/*term_setrestore()*
 term_setsize()	terminal.txt	/*term_setsize()*
@@ -9360,6 +9394,7 @@ termdebug_wide	terminal.txt	/*termdebug_wide*
 terminal	terminal.txt	/*terminal*
 terminal-api	terminal.txt	/*terminal-api*
 terminal-client-server	terminal.txt	/*terminal-client-server*
+terminal-close	terminal.txt	/*terminal-close*
 terminal-colors	os_unix.txt	/*terminal-colors*
 terminal-communication	terminal.txt	/*terminal-communication*
 terminal-cursor-style	terminal.txt	/*terminal-cursor-style*
@@ -9373,6 +9408,7 @@ terminal-functions	usr_41.txt	/*terminal-functions*
 terminal-info	term.txt	/*terminal-info*
 terminal-job-index	index.txt	/*terminal-job-index*
 terminal-key-codes	term.txt	/*terminal-key-codes*
+terminal-mouse	term.txt	/*terminal-mouse*
 terminal-ms-windows	terminal.txt	/*terminal-ms-windows*
 terminal-options	term.txt	/*terminal-options*
 terminal-output-codes	term.txt	/*terminal-output-codes*
@@ -9566,6 +9602,7 @@ utf-8-typing	mbyte.txt	/*utf-8-typing*
 utf8	mbyte.txt	/*utf8*
 v	visual.txt	/*v*
 v:	eval.txt	/*v:*
+v:argv	eval.txt	/*v:argv*
 v:beval_bufnr	eval.txt	/*v:beval_bufnr*
 v:beval_col	eval.txt	/*v:beval_col*
 v:beval_lnum	eval.txt	/*v:beval_lnum*
@@ -9968,6 +10005,7 @@ win_gotoid()	eval.txt	/*win_gotoid()*
 win_id2tabwin()	eval.txt	/*win_id2tabwin()*
 win_id2win()	eval.txt	/*win_id2win()*
 win_screenpos()	eval.txt	/*win_screenpos()*
+win_splitmove()	eval.txt	/*win_splitmove()*
 winbufnr()	eval.txt	/*winbufnr()*
 wincol()	eval.txt	/*wincol()*
 window	windows.txt	/*window*
@@ -10153,6 +10191,7 @@ zz	scroll.txt	/*zz*
 {move-around}	visual.txt	/*{move-around}*
 {offset}	pattern.txt	/*{offset}*
 {pat}	autocmd.txt	/*{pat}*
+{register}	change.txt	/*{register}*
 {rhs}	map.txt	/*{rhs}*
 {subject}	helphelp.txt	/*{subject}*
 {}	intro.txt	/*{}*

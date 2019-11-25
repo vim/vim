@@ -480,9 +480,9 @@ probably contains your vimrc file and other runtime files that you created, so
 be careful.
 
 Else, if you installed Vim with the zip archives, the preferred way is to use
-the "uninstal" program (note the missing l at the end).  You can find it in
-the same directory as the "install" program, e.g., "c:\vim\vim61".  This
-should also work from the usual "install/remove software" page.
+the "uninstall" program.  You can find it in the same directory as the
+"install" program, e.g., "c:\vim\vim61".  This should also work from the usual
+"install/remove software" page.
    However, this only removes the registry entries for Vim.  You have to
 delete the files yourself.  Simply select the directory "vim\vim61" and delete
 it recursively.  There should be no files there that you changed, but you

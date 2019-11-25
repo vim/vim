@@ -1358,7 +1358,12 @@ free_scriptnames(void)
     int			i;
 
     for (i = script_items.ga_len; i > 0; --i)
+    {
 	vim_free(SCRIPT_ITEM(i).sn_name);
+#  ifdef FEAT_PROFILE
+	ga_clear(&SCRIPT_ITEM(i).sn_prl_ga);
+#  endif
+    }
     ga_clear(&script_items);
 }
 
@@ -1659,7 +1664,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
     nr = getdigits(&eap->arg);
     if (nr == 0 || *eap->arg != NUL)
 	emsg(_(e_invarg));
-    else if (nr > 3)
+    else if (nr > 4)
 	semsg(_("E999: scriptversion not supported: %d"), nr);
     else
 	current_sctx.sc_version = nr;

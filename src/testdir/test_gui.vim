@@ -643,6 +643,15 @@ func Test_set_guioptions()
       call assert_equal('aegi', &guioptions)
     endif
 
+    if has('gui_gtk3')
+      set guioptions+=d
+      exec 'sleep' . duration
+      call assert_equal('aegid', &guioptions)
+      set guioptions-=d
+      exec 'sleep' . duration
+      call assert_equal('aegi', &guioptions)
+    endif
+
     " Restore GUI ornaments to the default state.
     set guioptions+=m
     exec 'sleep' . duration

@@ -880,6 +880,7 @@ free_buffer(buf_T *buf)
     /* b:changedtick uses an item in buf_T, remove it now */
     dictitem_remove(buf->b_vars, (dictitem_T *)&buf->b_ct_di);
     unref_var_dict(buf->b_vars);
+    remove_listeners(buf);
 #endif
 #ifdef FEAT_LUA
     lua_buffer_free(buf);
@@ -908,6 +909,7 @@ free_buffer(buf_T *buf)
 #ifdef FEAT_JOB_CHANNEL
     vim_free(buf->b_prompt_text);
     free_callback(&buf->b_prompt_callback);
+    free_callback(&buf->b_prompt_interrupt);
 #endif
 
     buf_hashtab_remove(buf);
@@ -1738,21 +1740,21 @@ set_curbuf(buf_T *buf, int action)
     static void
 enter_buffer(buf_T *buf)
 {
-    /* Copy buffer and window local option values.  Not for a help buffer. */
+    // Get the buffer in the current window.
+    curwin->w_buffer = buf;
+    curbuf = buf;
+    ++curbuf->b_nwindows;
+
+    // Copy buffer and window local option values.  Not for a help buffer.
     buf_copy_options(buf, BCO_ENTER | BCO_NOHELP);
     if (!buf->b_help)
 	get_winopts(buf);
 #ifdef FEAT_FOLDING
     else
-	/* Remove all folds in the window. */
+	// Remove all folds in the window.
 	clearFolding(curwin);
-    foldUpdateAll(curwin);	/* update folds (later). */
+    foldUpdateAll(curwin);	// update folds (later).
 #endif
-
-    /* Get the buffer in the current window. */
-    curwin->w_buffer = buf;
-    curbuf = buf;
-    ++curbuf->b_nwindows;
 
 #ifdef FEAT_DIFF
     if (curwin->w_p_diff)
@@ -2101,7 +2103,7 @@ buflist_new(
 	    if (emsg_silent == 0)
 	    {
 		out_flush();
-		ui_delay(3000L, TRUE);	/* make sure it is noticed */
+		ui_delay(3001L, TRUE);	// make sure it is noticed
 	    }
 	    top_file_num = 1;
 	}
@@ -2226,9 +2228,7 @@ free_buf_options(
     keymap_clear(&buf->b_kmap_ga);
     ga_clear(&buf->b_kmap_ga);
 #endif
-#ifdef FEAT_COMMENTS
     clear_string_option(&buf->b_p_com);
-#endif
 #ifdef FEAT_FOLDING
     clear_string_option(&buf->b_p_cms);
 #endif
@@ -2601,6 +2601,13 @@ buflist_findpat(
     return match;
 }
 
+#ifdef FEAT_VIMINFO
+typedef struct {
+    buf_T   *buf;
+    char_u  *match;
+} bufmatch_T;
+#endif
+
 /*
  * Find all buffer names that match.
  * For command line expansion of ":buf" and ":sbuf".
@@ -2619,6 +2626,9 @@ ExpandBufnames(
     char_u	*p;
     int		attempt;
     char_u	*patc;
+#ifdef FEAT_VIMINFO
+    bufmatch_T	*matches = NULL;
+#endif
 
     *num_file = 0;		    /* return values in case of FAIL */
     *file = NULL;
@@ -2675,7 +2685,16 @@ ExpandBufnames(
 			    p = home_replace_save(buf, p);
 			else
 			    p = vim_strsave(p);
-			(*file)[count++] = p;
+#ifdef FEAT_VIMINFO
+			if (matches != NULL)
+			{
+			    matches[count].buf = buf;
+			    matches[count].match = p;
+			    count++;
+			}
+			else
+#endif
+			    (*file)[count++] = p;
 		    }
 		}
 	    }
@@ -2691,6 +2710,10 @@ ExpandBufnames(
 			vim_free(patc);
 		    return FAIL;
 		}
+#ifdef FEAT_VIMINFO
+		if (options & WILD_BUFLASTUSED)
+		    matches = ALLOC_MULT(bufmatch_T, count);
+#endif
 	    }
 	}
 	vim_regfree(regmatch.regprog);
@@ -2700,6 +2723,28 @@ ExpandBufnames(
 
     if (patc != pat)
 	vim_free(patc);
+
+#ifdef FEAT_VIMINFO
+    if (matches != NULL)
+    {
+	int i;
+	if (count > 1)
+	    qsort(matches, count, sizeof(bufmatch_T), buf_compare);
+	// if the current buffer is first in the list, place it at the end
+	if (matches[0].buf == curbuf)
+	{
+	    for (i = 1; i < count; i++)
+		(*file)[i-1] = matches[i].match;
+	    (*file)[count-1] = matches[0].match;
+	}
+	else
+	{
+	    for (i = 0; i < count; i++)
+		(*file)[i] = matches[i].match;
+	}
+	vim_free(matches);
+    }
+#endif
 
     *num_file = count;
     return (count == 0 ? FAIL : OK);
@@ -2980,9 +3025,7 @@ get_winopts(buf_T *buf)
     if (p_fdls >= 0)
 	curwin->w_p_fdl = p_fdls;
 #endif
-#ifdef FEAT_SYN_HL
-    check_colorcolumn(curwin);
-#endif
+    after_copy_winopt(curwin);
 }
 
 /*
@@ -3018,7 +3061,7 @@ buflist_findlnum(buf_T *buf)
     void
 buflist_list(exarg_T *eap)
 {
-    buf_T	*buf;
+    buf_T	*buf = firstbuf;
     int		len;
     int		i;
     int		ro_char;
@@ -3028,7 +3071,33 @@ buflist_list(exarg_T *eap)
     int		job_none_open;
 #endif
 
+#ifdef FEAT_VIMINFO
+    garray_T	buflist;
+    buf_T	**buflist_data = NULL, **p;
+
+    if (vim_strchr(eap->arg, 't'))
+    {
+	ga_init2(&buflist, sizeof(buf_T *), 50);
+	for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+	{
+	    if (ga_grow(&buflist, 1) == OK)
+		((buf_T **)buflist.ga_data)[buflist.ga_len++] = buf;
+	}
+
+	qsort(buflist.ga_data, (size_t)buflist.ga_len,
+		sizeof(buf_T *), buf_compare);
+
+	buflist_data = (buf_T **)buflist.ga_data;
+	buf = *buflist_data;
+    }
+    p = buflist_data;
+
+    for (; buf != NULL && !got_int; buf = buflist_data != NULL
+	    ? (++p < buflist_data + buflist.ga_len ? *p : NULL)
+	    : buf->b_next)
+#else
     for (buf = firstbuf; buf != NULL && !got_int; buf = buf->b_next)
+#endif
     {
 #ifdef FEAT_TERMINAL
 	job_running = term_job_running(buf->b_term);
@@ -3102,13 +3171,23 @@ buflist_list(exarg_T *eap)
 	do
 	    IObuff[len++] = ' ';
 	while (--i > 0 && len < IOSIZE - 18);
-	vim_snprintf((char *)IObuff + len, (size_t)(IOSIZE - len),
-		_("line %ld"), buf == curbuf ? curwin->w_cursor.lnum
+#ifdef FEAT_VIMINFO
+	if (vim_strchr(eap->arg, 't') && buf->b_last_used)
+	    add_time(IObuff + len, (size_t)(IOSIZE - len), buf->b_last_used);
+	else
+#endif
+	    vim_snprintf((char *)IObuff + len, (size_t)(IOSIZE - len),
+		    _("line %ld"), buf == curbuf ? curwin->w_cursor.lnum
 					       : (long)buflist_findlnum(buf));
 	msg_outtrans(IObuff);
 	out_flush();	    /* output one line at a time */
 	ui_breakcheck();
     }
+
+#ifdef FEAT_VIMINFO
+    if (buflist_data)
+	ga_clear(&buflist);
+#endif
 }
 
 /*
@@ -4873,7 +4952,7 @@ fix_fname(char_u  *fname)
  * When resolving a link both "*sfname" and "*ffname" will point to the same
  * allocated memory.
  * The "*ffname" and "*sfname" pointer values on call will not be freed.
- * Note that the resulting "*ffname" pointer should be considered not allocaed.
+ * Note that the resulting "*ffname" pointer should be considered not allocated.
  */
     void
 fname_expand(

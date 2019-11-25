@@ -325,7 +325,7 @@ static
 #endif
 HWND			s_hwnd = NULL;
 static HDC		s_hdc = NULL;
-static HBRUSH	s_brush = NULL;
+static HBRUSH		s_brush = NULL;
 
 #ifdef FEAT_TOOLBAR
 static HWND		s_toolbarhwnd = NULL;
@@ -850,7 +850,7 @@ _OnSysChar(
 	modifiers &= ~MOD_MASK_SHIFT;
 
     /* Interpret the ALT key as making the key META, include SHIFT, etc. */
-    ch = extract_modifiers(ch, &modifiers);
+    ch = extract_modifiers(ch, &modifiers, TRUE, NULL);
     if (ch == CSI)
 	ch = K_CSI;
 
@@ -1282,7 +1282,13 @@ vim_WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
     void
 gui_mch_new_colors(void)
 {
-    /* nothing to do? */
+    HBRUSH prevBrush;
+
+    s_brush = CreateSolidBrush(gui.back_pixel);
+    prevBrush = (HBRUSH)SetClassLongPtr(
+				s_hwnd, GCLP_HBRBACKGROUND, (LONG_PTR)s_brush);
+    InvalidateRect(s_hwnd, NULL, TRUE);
+    DeleteObject(prevBrush);
 }
 
 /*
@@ -2610,7 +2616,9 @@ ex_simalt(exarg_T *eap)
 	key_name[1] = KS_EXTRA;
 	key_name[2] = KE_NOP;
 	key_name[3] = NUL;
+#if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
 	typebuf_was_filled = TRUE;
+#endif
 	(void)ins_typebuf(key_name, REMAP_NONE, 0, TRUE, FALSE);
     }
 }
@@ -3409,11 +3417,7 @@ mch_set_mouse_shape(int shape)
 	    idc = IDC_ARROW;
 	else
 	    idc = mshape_idcs[shape];
-#ifdef SetClassLongPtr
-	SetClassLongPtr(s_textArea, GCLP_HCURSOR, (__int3264)(LONG_PTR)LoadCursor(NULL, idc));
-#else
-	SetClassLong(s_textArea, GCL_HCURSOR, (long_u)LoadCursor(NULL, idc));
-#endif
+	SetClassLongPtr(s_textArea, GCLP_HCURSOR, (LONG_PTR)LoadCursor(NULL, idc));
 	if (!p_mh)
 	{
 	    POINT mp;
@@ -4232,33 +4236,57 @@ init_mouse_wheel(void)
 }
 
 
-/* Intellimouse wheel handler */
+/*
+ * Intellimouse wheel handler.
+ * Treat a mouse wheel event as if it were a scroll request.
+ */
     static void
 _OnMouseWheel(
     HWND hwnd,
     short zDelta)
 {
-/* Treat a mouse wheel event as if it were a scroll request */
     int i;
     int size;
     HWND hwndCtl;
+    win_T *wp;
 
-    if (curwin->w_scrollbars[SBAR_RIGHT].id != 0)
-    {
-	hwndCtl = curwin->w_scrollbars[SBAR_RIGHT].id;
-	size = curwin->w_scrollbars[SBAR_RIGHT].size;
-    }
-    else if (curwin->w_scrollbars[SBAR_LEFT].id != 0)
-    {
-	hwndCtl = curwin->w_scrollbars[SBAR_LEFT].id;
-	size = curwin->w_scrollbars[SBAR_LEFT].size;
-    }
-    else
-	return;
-
-    size = curwin->w_height;
     if (mouse_scroll_lines == 0)
 	init_mouse_wheel();
+
+    wp = gui_mouse_window(FIND_POPUP);
+
+#ifdef FEAT_TEXT_PROP
+    if (wp != NULL && popup_is_popup(wp))
+    {
+	cmdarg_T cap;
+	oparg_T	oa;
+
+	// Mouse hovers over popup window, scroll it if possible.
+	mouse_row = wp->w_winrow;
+	mouse_col = wp->w_wincol;
+	vim_memset(&cap, 0, sizeof(cap));
+	cap.arg = zDelta < 0 ? MSCR_UP : MSCR_DOWN;
+	cap.cmdchar = zDelta < 0 ? K_MOUSEUP : K_MOUSEDOWN;
+	clear_oparg(&oa);
+	cap.oap = &oa;
+	nv_mousescroll(&cap);
+	update_screen(0);
+	setcursor();
+	out_flush();
+	return;
+    }
+#endif
+
+    if (wp == NULL || !p_scf)
+	wp = curwin;
+
+    if (wp->w_scrollbars[SBAR_RIGHT].id != 0)
+	hwndCtl = wp->w_scrollbars[SBAR_RIGHT].id;
+    else if (wp->w_scrollbars[SBAR_LEFT].id != 0)
+	hwndCtl = wp->w_scrollbars[SBAR_LEFT].id;
+    else
+	return;
+    size = wp->w_height;
 
     mch_disable_flush();
     if (mouse_scroll_lines > 0
@@ -6720,7 +6748,7 @@ gui_mch_dialog(
     char_u	*buttons,
     int		 dfltbutton,
     char_u	*textfield,
-    int		ex_cmd)
+    int		ex_cmd UNUSED)
 {
     WORD	*p, *pdlgtemplate, *pnumitems;
     DWORD	*dwp;
@@ -7822,6 +7850,12 @@ initialise_toolbar(void)
 		    TOOLBAR_BUTTON_HEIGHT,
 		    sizeof(TBBUTTON)
 		    );
+
+    // Remove transparency from the toolbar to prevent the main window
+    // background colour showing through
+    SendMessage(s_toolbarhwnd, TB_SETSTYLE, 0,
+	SendMessage(s_toolbarhwnd, TB_GETSTYLE, 0, 0) & ~TBSTYLE_TRANSPARENT);
+
     s_toolbar_wndproc = SubclassWindow(s_toolbarhwnd, toolbar_wndproc);
 
     gui_mch_show_toolbar(vim_strchr(p_go, GO_TOOLBAR) != NULL);
@@ -8517,7 +8551,7 @@ gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
 
     BalloonEval *
 gui_mch_create_beval_area(
-    void	*target,	/* ignored, always use s_textArea */
+    void	*target UNUSED,	/* ignored, always use s_textArea */
     char_u	*mesg,
     void	(*mesgCB)(BalloonEval *, int),
     void	*clientData)

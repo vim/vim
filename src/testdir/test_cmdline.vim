@@ -1,5 +1,8 @@
 " Tests for editing the command line.
 
+source check.vim
+source screendump.vim
+
 func Test_complete_tab()
   call writefile(['testfile'], 'Xtestfile')
   call feedkeys(":e Xtest\t\r", "tx")
@@ -687,6 +690,26 @@ func Test_verbosefile()
   call delete('Xlog')
 endfunc
 
+func Test_verbose_option()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    command DoSomething echo 'hello' |set ts=4 |let v = '123' |echo v
+    call feedkeys("\r", 't') " for the hit-enter prompt
+    set verbose=20
+  [SCRIPT]
+  call writefile(lines, 'XTest_verbose')
+
+  let buf = RunVimInTerminal('-S XTest_verbose', {'rows': 12})
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, ":DoSomething\<CR>")
+  call VerifyScreenDump(buf, 'Test_verbose_option_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XTest_verbose')
+endfunc
+
 func Test_setcmdpos()
   func InsertTextAtPos(text, pos)
     call assert_equal(0, setcmdpos(a:pos))
@@ -733,4 +756,89 @@ func Test_cmdline_overstrike()
   call assert_equal('"テabキcdエディタ', @:)
 
   let &encoding = encoding_save
+endfunc
+
+func Test_cmdwin_bug()
+  let winid = win_getid()
+  sp
+  try
+    call feedkeys("q::call win_gotoid(" .. winid .. ")\<CR>:q\<CR>", 'x!')
+  catch /^Vim\%((\a\+)\)\=:E11/
+  endtry
+  bw!
+endfunc
+
+func Test_cmdwin_restore()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    call setline(1, range(30))
+    2split
+  [SCRIPT]
+  call writefile(lines, 'XTest_restore')
+
+  let buf = RunVimInTerminal('-S XTest_restore', {'rows': 12})
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, "q:")
+  call VerifyScreenDump(buf, 'Test_cmdwin_restore_1', {})
+
+  " normal restore
+  call term_sendkeys(buf, ":q\<CR>")
+  call VerifyScreenDump(buf, 'Test_cmdwin_restore_2', {})
+
+  " restore after setting 'lines' with one window
+  call term_sendkeys(buf, ":close\<CR>")
+  call term_sendkeys(buf, "q:")
+  call term_sendkeys(buf, ":set lines=18\<CR>")
+  call term_sendkeys(buf, ":q\<CR>")
+  call VerifyScreenDump(buf, 'Test_cmdwin_restore_3', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XTest_restore')
+endfunc
+
+func Test_buffers_lastused()
+  " check that buffers are sorted by time when wildmode has lastused
+  call test_settime(1550020000)	  " middle
+  edit bufa
+  enew
+  call test_settime(1550030000)	  " newest
+  edit bufb
+  enew
+  call test_settime(1550010000)	  " oldest
+  edit bufc
+  enew
+  call test_settime(0)
+  enew
+
+  call assert_equal(['bufa', 'bufb', 'bufc'],
+	\ getcompletion('', 'buffer'))
+
+  let save_wildmode = &wildmode
+  set wildmode=full:lastused
+
+  let cap = "\<c-r>=execute('let X=getcmdline()')\<cr>"
+  call feedkeys(":b \<tab>" .. cap .. "\<esc>", 'xt')
+  call assert_equal('b bufb', X)
+  call feedkeys(":b \<tab>\<tab>" .. cap .. "\<esc>", 'xt')
+  call assert_equal('b bufa', X)
+  call feedkeys(":b \<tab>\<tab>\<tab>" .. cap .. "\<esc>", 'xt')
+  call assert_equal('b bufc', X)
+  enew
+
+  edit other
+  call feedkeys(":b \<tab>" .. cap .. "\<esc>", 'xt')
+  call assert_equal('b bufb', X)
+  call feedkeys(":b \<tab>\<tab>" .. cap .. "\<esc>", 'xt')
+  call assert_equal('b bufa', X)
+  call feedkeys(":b \<tab>\<tab>\<tab>" .. cap .. "\<esc>", 'xt')
+  call assert_equal('b bufc', X)
+  enew
+
+  let &wildmode = save_wildmode
+
+  bwipeout bufa
+  bwipeout bufb
+  bwipeout bufc
 endfunc

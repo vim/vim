@@ -15,7 +15,7 @@
  * The parts that are not used in Vim have been deleted.
  * See the "screen" sources for the complete stuff.
  *
- * This specific version is distibuted under the Vim license (attribution by
+ * This specific version is distributed under the Vim license (attribution by
  * Juergen Weigert), the GPL applies to the original version, see the
  * copyright notice below.
  */
@@ -347,7 +347,7 @@ mch_openpty(char **ttyn)
 #define PTY_DONE
 
 #ifdef _IBMR2
-int aixhack = -1;
+static int aixhack = -1;
 #endif
 
     int

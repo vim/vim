@@ -1,6 +1,7 @@
 " Tests for various functions.
 source shared.vim
 source check.vim
+source term_util.vim
 
 " Must be done first, since the alternate buffer must be unset.
 func Test_00_bufexists()
@@ -157,6 +158,13 @@ func Test_str2nr()
   call assert_equal(11259375, str2nr('0XABCDEF', 16))
   call assert_equal(-11259375, str2nr('-0xABCDEF', 16))
 
+  call assert_equal(1, str2nr("1'000'000", 10, 0))
+  call assert_equal(256, str2nr("1'0000'0000", 2, 1))
+  call assert_equal(262144, str2nr("1'000'000", 8, 1))
+  call assert_equal(1000000, str2nr("1'000'000", 10, 1))
+  call assert_equal(1000, str2nr("1'000''000", 10, 1))
+  call assert_equal(65536, str2nr("1'00'00", 16, 1))
+
   call assert_equal(0, str2nr('0x10'))
   call assert_equal(0, str2nr('0b10'))
   call assert_equal(1, str2nr('12', 2))
@@ -173,9 +181,8 @@ func Test_str2nr()
 endfunc
 
 func Test_strftime()
-  if !exists('*strftime')
-    return
-  endif
+  CheckFunction strftime
+
   " Format of strftime() depends on system. We assume
   " that basic formats tested here are available and
   " identical on all systems which support strftime().
@@ -214,7 +221,28 @@ func Test_strftime()
   else
     unlet $TZ
   endif
+endfunc
 
+func Test_strptime()
+  CheckFunction strptime
+
+  if exists('$TZ')
+    let tz = $TZ
+  endif
+  let $TZ = 'UTC'
+
+  call assert_equal(1484653763, strptime('%Y-%m-%d %X', '2017-01-17 11:49:23'))
+
+  call assert_fails('call strptime()', 'E119:')
+  call assert_fails('call strptime("xxx")', 'E119:')
+  call assert_equal(0, strptime("%Y", ''))
+  call assert_equal(0, strptime("%Y", "xxx"))
+
+  if exists('tz')
+    let $TZ = tz
+  else
+    unlet $TZ
+  endif
 endfunc
 
 func Test_resolve_unix()
@@ -1323,6 +1351,7 @@ func Test_getchar()
   call feedkeys('a', '')
   call assert_equal(char2nr('a'), getchar())
 
+  call setline(1, 'xxxx')
   call test_setmouse(1, 3)
   let v:mouse_win = 9
   let v:mouse_winid = 9
@@ -1334,6 +1363,7 @@ func Test_getchar()
   call assert_equal(win_getid(1), v:mouse_winid)
   call assert_equal(1, v:mouse_lnum)
   call assert_equal(3, v:mouse_col)
+  enew!
 endfunc
 
 func Test_libcall_libcallnr()
@@ -1651,4 +1681,64 @@ func Test_bufadd_bufload()
   bwipe XotherName
   call assert_equal(0, bufexists('someName'))
   call delete('XotherName')
+endfunc
+
+func Test_state()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+	call setline(1, ['one', 'two', 'three'])
+	map ;; gg
+	set complete=.
+	func RunTimer()
+	  call timer_start(10, {id -> execute('let g:state = state()') .. execute('let g:mode = mode()')})
+	endfunc
+	au Filetype foobar let g:state = state()|let g:mode = mode()
+  END
+  call writefile(lines, 'XState')
+  let buf = RunVimInTerminal('-S XState', #{rows: 6})
+
+  " Using a ":" command Vim is busy, thus "S" is returned
+  call term_sendkeys(buf, ":echo 'state: ' .. state() .. '; mode: ' .. mode()\<CR>")
+  call WaitForAssert({-> assert_match('state: S; mode: n', term_getline(buf, 6))}, 1000)
+  call term_sendkeys(buf, ":\<CR>")
+
+  " Using a timer callback
+  call term_sendkeys(buf, ":call RunTimer()\<CR>")
+  call term_wait(buf, 50)
+  let getstate = ":echo 'state: ' .. g:state .. '; mode: ' .. g:mode\<CR>"
+  call term_sendkeys(buf, getstate)
+  call WaitForAssert({-> assert_match('state: c; mode: n', term_getline(buf, 6))}, 1000)
+
+  " Halfway a mapping
+  call term_sendkeys(buf, ":call RunTimer()\<CR>;")
+  call term_wait(buf, 50)
+  call term_sendkeys(buf, ";")
+  call term_sendkeys(buf, getstate)
+  call WaitForAssert({-> assert_match('state: mSc; mode: n', term_getline(buf, 6))}, 1000)
+
+  " Insert mode completion (bit slower on Mac)
+  call term_sendkeys(buf, ":call RunTimer()\<CR>Got\<C-N>")
+  call term_wait(buf, 200)
+  call term_sendkeys(buf, "\<Esc>")
+  call term_sendkeys(buf, getstate)
+  call WaitForAssert({-> assert_match('state: aSc; mode: i', term_getline(buf, 6))}, 1000)
+
+  " Autocommand executing
+  call term_sendkeys(buf, ":set filetype=foobar\<CR>")
+  call term_wait(buf, 50)
+  call term_sendkeys(buf, getstate)
+  call WaitForAssert({-> assert_match('state: xS; mode: n', term_getline(buf, 6))}, 1000)
+
+  " Todo: "w" - waiting for ch_evalexpr()
+
+  " messages scrolled
+  call term_sendkeys(buf, ":call RunTimer()\<CR>:echo \"one\\ntwo\\nthree\"\<CR>")
+  call term_wait(buf, 50)
+  call term_sendkeys(buf, "\<CR>")
+  call term_sendkeys(buf, getstate)
+  call WaitForAssert({-> assert_match('state: Scs; mode: r', term_getline(buf, 6))}, 1000)
+
+  call StopVimInTerminal(buf)
+  call delete('XState')
 endfunc

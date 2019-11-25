@@ -155,6 +155,8 @@ static struct event_name
     {"QuickFixCmdPre",	EVENT_QUICKFIXCMDPRE},
     {"QuitPre",		EVENT_QUITPRE},
     {"RemoteReply",	EVENT_REMOTEREPLY},
+    {"SafeState",	EVENT_SAFESTATE},
+    {"SafeStateAgain",	EVENT_SAFESTATEAGAIN},
     {"SessionLoadPost",	EVENT_SESSIONLOADPOST},
     {"ShellCmdPost",	EVENT_SHELLCMDPOST},
     {"ShellFilterPost",	EVENT_SHELLFILTERPOST},
@@ -172,6 +174,7 @@ static struct event_name
     {"TabLeave",	EVENT_TABLEAVE},
     {"TermChanged",	EVENT_TERMCHANGED},
     {"TerminalOpen",	EVENT_TERMINALOPEN},
+    {"TerminalWinOpen", EVENT_TERMINALWINOPEN},
     {"TermResponse",	EVENT_TERMRESPONSE},
     {"TextChanged",	EVENT_TEXTCHANGED},
     {"TextChangedI",	EVENT_TEXTCHANGEDI},
@@ -1581,8 +1584,8 @@ win_found:
 	    curbuf = curwin->w_buffer;
 	    if (win_valid(aco->save_prevwin))
 		prevwin = aco->save_prevwin;
-	    // In case the autocommand move the cursor to a position that that
-	    // not exist in curbuf.
+	    // In case the autocommand moves the cursor to a position that
+	    // does not exist in curbuf.
 	    check_cursor();
 	}
     }

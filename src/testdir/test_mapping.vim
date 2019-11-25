@@ -2,6 +2,7 @@
 
 source shared.vim
 source check.vim
+source screendump.vim
 
 func Test_abbreviation()
   " abbreviation with 0x80 should work
@@ -441,4 +442,53 @@ func Test_error_in_map_expr()
 
   call delete('Xtest.vim')
   exe buf .. 'bwipe!'
+endfunc
+
+func Test_list_mappings()
+  " Remove default mappings
+  imapclear
+
+  inoremap <C-M> CtrlM
+  inoremap <A-S> AltS
+  inoremap <S-/> ShiftSlash
+  call assert_equal([
+	\ 'i  <S-/>       * ShiftSlash',
+	\ 'i  <M-S>       * AltS',
+	\ 'i  <C-M>       * CtrlM',
+	\], execute('imap')->trim()->split("\n"))
+  iunmap <C-M>
+  iunmap <A-S>
+  call assert_equal(['i  <S-/>       * ShiftSlash'], execute('imap')->trim()->split("\n"))
+  iunmap <S-/>
+  call assert_equal(['No mapping found'], execute('imap')->trim()->split("\n"))
+endfunc
+
+func Test_expr_map_restore_cursor()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, ['one', 'two', 'three'])
+      2
+      set ls=2
+      hi! link StatusLine ErrorMsg
+      noremap <expr> <C-B> Func()
+      func Func()
+	  let g:on = !get(g:, 'on', 0)
+	  redraws
+	  return ''
+      endfunc
+      func Status()
+	  return get(g:, 'on', 0) ? '[on]' : ''
+      endfunc
+      set stl=%{Status()}
+  END
+  call writefile(lines, 'XtestExprMap')
+  let buf = RunVimInTerminal('-S XtestExprMap', #{rows: 10})
+  call term_wait(buf)
+  call term_sendkeys(buf, "\<C-B>")
+  call VerifyScreenDump(buf, 'Test_map_expr_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestExprMap')
 endfunc

@@ -595,6 +595,10 @@ If you do not like the default folding, use an autocommand to add your desired
 folding style instead.  For example: >
         autocmd FileType man setlocal foldmethod=indent foldenable
 
+If you would like :Man {number} {name} to behave like man {number} {name} by
+not running man {name} if no page is found, then use this: >
+	let g:ft_man_no_sect_fallback = 1
+
 You may also want to set 'keywordprg' to make the |K| command open a manual
 page in a Vim window: >
 	set keywordprg=:Man

@@ -58,7 +58,6 @@ NEW_TESTS = \
 	test_arabic \
 	test_arglist \
 	test_assert \
-	test_assign \
 	test_autochdir \
 	test_autocmd \
 	test_autoload \
@@ -155,6 +154,7 @@ NEW_TESTS = \
 	test_increment \
 	test_increment_dbcs \
 	test_ins_complete \
+	test_interrupt \
 	test_job_fails \
 	test_join \
 	test_json \
@@ -268,6 +268,7 @@ NEW_TESTS = \
 	test_textprop \
 	test_timers \
 	test_true_false \
+	test_trycatch \
 	test_undo \
 	test_unlet \
 	test_user_func \
@@ -362,6 +363,7 @@ NEW_TESTS_RES = \
 	test_increment.res \
 	test_increment_dbcs.res \
 	test_ins_complete.res \
+	test_interrupt.res \
 	test_job_fails.res \
 	test_json.res \
 	test_jumplist.res \
@@ -376,6 +378,7 @@ NEW_TESTS_RES = \
 	test_makeencoding.res \
 	test_man.res \
 	test_maparg.res \
+	test_mapping.res \
 	test_marks.res \
 	test_matchadd_conceal.res \
 	test_memory_usage.res \
@@ -434,6 +437,7 @@ NEW_TESTS_RES = \
 	test_textformat.res \
 	test_textobjects.res \
 	test_textprop.res \
+	test_trycatch.res \
 	test_undo.res \
 	test_user_func.res \
 	test_usercommands.res \

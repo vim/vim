@@ -350,7 +350,7 @@ func Test_undofile_truncated()
   endfor
 
   bwipe!
-"  call delete('Xundofile')
+  call delete('Xundofile')
 endfunc
 
 " Test for undo working properly when executing commands from a register.
@@ -458,7 +458,7 @@ funct Test_undofile()
   " Test undofile() with 'undodir' set to a non-existing directory.
   call assert_equal('', 'Xundofoo'->undofile())
 
-  if isdirectory('/tmp')
+  if !has('win32') && isdirectory('/tmp')
     set undodir=/tmp
     if has('osx')
       call assert_equal('/tmp/%private%tmp%file', undofile('///tmp/file'))

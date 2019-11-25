@@ -25,544 +25,6 @@
 static garray_T	ga_users;
 
 /*
- * Count the size (in window cells) of the indent in the current line.
- */
-    int
-get_indent(void)
-{
-#ifdef FEAT_VARTABS
-    return get_indent_str_vtab(ml_get_curline(), (int)curbuf->b_p_ts,
-						 curbuf->b_p_vts_array, FALSE);
-#else
-    return get_indent_str(ml_get_curline(), (int)curbuf->b_p_ts, FALSE);
-#endif
-}
-
-/*
- * Count the size (in window cells) of the indent in line "lnum".
- */
-    int
-get_indent_lnum(linenr_T lnum)
-{
-#ifdef FEAT_VARTABS
-    return get_indent_str_vtab(ml_get(lnum), (int)curbuf->b_p_ts,
-						 curbuf->b_p_vts_array, FALSE);
-#else
-    return get_indent_str(ml_get(lnum), (int)curbuf->b_p_ts, FALSE);
-#endif
-}
-
-#if defined(FEAT_FOLDING) || defined(PROTO)
-/*
- * Count the size (in window cells) of the indent in line "lnum" of buffer
- * "buf".
- */
-    int
-get_indent_buf(buf_T *buf, linenr_T lnum)
-{
-#ifdef FEAT_VARTABS
-    return get_indent_str_vtab(ml_get_buf(buf, lnum, FALSE),
-			       (int)curbuf->b_p_ts, buf->b_p_vts_array, FALSE);
-#else
-    return get_indent_str(ml_get_buf(buf, lnum, FALSE), (int)buf->b_p_ts, FALSE);
-#endif
-}
-#endif
-
-/*
- * count the size (in window cells) of the indent in line "ptr", with
- * 'tabstop' at "ts"
- */
-    int
-get_indent_str(
-    char_u	*ptr,
-    int		ts,
-    int		list) /* if TRUE, count only screen size for tabs */
-{
-    int		count = 0;
-
-    for ( ; *ptr; ++ptr)
-    {
-	if (*ptr == TAB)
-	{
-	    if (!list || lcs_tab1)    /* count a tab for what it is worth */
-		count += ts - (count % ts);
-	    else
-		/* In list mode, when tab is not set, count screen char width
-		 * for Tab, displays: ^I */
-		count += ptr2cells(ptr);
-	}
-	else if (*ptr == ' ')
-	    ++count;		/* count a space for one */
-	else
-	    break;
-    }
-    return count;
-}
-
-#ifdef FEAT_VARTABS
-/*
- * Count the size (in window cells) of the indent in line "ptr", using
- * variable tabstops.
- * if "list" is TRUE, count only screen size for tabs.
- */
-    int
-get_indent_str_vtab(char_u *ptr, int ts, int *vts, int list)
-{
-    int		count = 0;
-
-    for ( ; *ptr; ++ptr)
-    {
-	if (*ptr == TAB)    /* count a tab for what it is worth */
-	{
-	    if (!list || lcs_tab1)
-		count += tabstop_padding(count, ts, vts);
-	    else
-		/* In list mode, when tab is not set, count screen char width
-		 * for Tab, displays: ^I */
-		count += ptr2cells(ptr);
-	}
-	else if (*ptr == ' ')
-	    ++count;		/* count a space for one */
-	else
-	    break;
-    }
-    return count;
-}
-#endif
-
-/*
- * Set the indent of the current line.
- * Leaves the cursor on the first non-blank in the line.
- * Caller must take care of undo.
- * "flags":
- *	SIN_CHANGED:	call changed_bytes() if the line was changed.
- *	SIN_INSERT:	insert the indent in front of the line.
- *	SIN_UNDO:	save line for undo before changing it.
- * Returns TRUE if the line was changed.
- */
-    int
-set_indent(
-    int		size,		    /* measured in spaces */
-    int		flags)
-{
-    char_u	*p;
-    char_u	*newline;
-    char_u	*oldline;
-    char_u	*s;
-    int		todo;
-    int		ind_len;	    /* measured in characters */
-    int		line_len;
-    int		doit = FALSE;
-    int		ind_done = 0;	    /* measured in spaces */
-#ifdef FEAT_VARTABS
-    int		ind_col = 0;
-#endif
-    int		tab_pad;
-    int		retval = FALSE;
-    int		orig_char_len = -1; /* number of initial whitespace chars when
-				       'et' and 'pi' are both set */
-
-    /*
-     * First check if there is anything to do and compute the number of
-     * characters needed for the indent.
-     */
-    todo = size;
-    ind_len = 0;
-    p = oldline = ml_get_curline();
-
-    /* Calculate the buffer size for the new indent, and check to see if it
-     * isn't already set */
-
-    /* if 'expandtab' isn't set: use TABs; if both 'expandtab' and
-     * 'preserveindent' are set count the number of characters at the
-     * beginning of the line to be copied */
-    if (!curbuf->b_p_et || (!(flags & SIN_INSERT) && curbuf->b_p_pi))
-    {
-	/* If 'preserveindent' is set then reuse as much as possible of
-	 * the existing indent structure for the new indent */
-	if (!(flags & SIN_INSERT) && curbuf->b_p_pi)
-	{
-	    ind_done = 0;
-
-	    /* count as many characters as we can use */
-	    while (todo > 0 && VIM_ISWHITE(*p))
-	    {
-		if (*p == TAB)
-		{
-#ifdef FEAT_VARTABS
-		    tab_pad = tabstop_padding(ind_done, curbuf->b_p_ts,
-							curbuf->b_p_vts_array);
-#else
-		    tab_pad = (int)curbuf->b_p_ts
-					   - (ind_done % (int)curbuf->b_p_ts);
-#endif
-		    /* stop if this tab will overshoot the target */
-		    if (todo < tab_pad)
-			break;
-		    todo -= tab_pad;
-		    ++ind_len;
-		    ind_done += tab_pad;
-		}
-		else
-		{
-		    --todo;
-		    ++ind_len;
-		    ++ind_done;
-		}
-		++p;
-	    }
-
-#ifdef FEAT_VARTABS
-	    /* These diverge from this point. */
-	    ind_col = ind_done;
-#endif
-	    /* Set initial number of whitespace chars to copy if we are
-	     * preserving indent but expandtab is set */
-	    if (curbuf->b_p_et)
-		orig_char_len = ind_len;
-
-	    /* Fill to next tabstop with a tab, if possible */
-#ifdef FEAT_VARTABS
-	    tab_pad = tabstop_padding(ind_done, curbuf->b_p_ts,
-						curbuf->b_p_vts_array);
-#else
-	    tab_pad = (int)curbuf->b_p_ts - (ind_done % (int)curbuf->b_p_ts);
-#endif
-	    if (todo >= tab_pad && orig_char_len == -1)
-	    {
-		doit = TRUE;
-		todo -= tab_pad;
-		++ind_len;
-		/* ind_done += tab_pad; */
-#ifdef FEAT_VARTABS
-		ind_col += tab_pad;
-#endif
-	    }
-	}
-
-	/* count tabs required for indent */
-#ifdef FEAT_VARTABS
-	for (;;)
-	{
-	    tab_pad = tabstop_padding(ind_col, curbuf->b_p_ts,
-							curbuf->b_p_vts_array);
-	    if (todo < tab_pad)
-		break;
-	    if (*p != TAB)
-		doit = TRUE;
-	    else
-		++p;
-	    todo -= tab_pad;
-	    ++ind_len;
-	    ind_col += tab_pad;
-	}
-#else
-	while (todo >= (int)curbuf->b_p_ts)
-	{
-	    if (*p != TAB)
-		doit = TRUE;
-	    else
-		++p;
-	    todo -= (int)curbuf->b_p_ts;
-	    ++ind_len;
-	    /* ind_done += (int)curbuf->b_p_ts; */
-	}
-#endif
-    }
-    /* count spaces required for indent */
-    while (todo > 0)
-    {
-	if (*p != ' ')
-	    doit = TRUE;
-	else
-	    ++p;
-	--todo;
-	++ind_len;
-	/* ++ind_done; */
-    }
-
-    /* Return if the indent is OK already. */
-    if (!doit && !VIM_ISWHITE(*p) && !(flags & SIN_INSERT))
-	return FALSE;
-
-    /* Allocate memory for the new line. */
-    if (flags & SIN_INSERT)
-	p = oldline;
-    else
-	p = skipwhite(p);
-    line_len = (int)STRLEN(p) + 1;
-
-    /* If 'preserveindent' and 'expandtab' are both set keep the original
-     * characters and allocate accordingly.  We will fill the rest with spaces
-     * after the if (!curbuf->b_p_et) below. */
-    if (orig_char_len != -1)
-    {
-	newline = alloc(orig_char_len + size - ind_done + line_len);
-	if (newline == NULL)
-	    return FALSE;
-	todo = size - ind_done;
-	ind_len = orig_char_len + todo;    /* Set total length of indent in
-					    * characters, which may have been
-					    * undercounted until now  */
-	p = oldline;
-	s = newline;
-	while (orig_char_len > 0)
-	{
-	    *s++ = *p++;
-	    orig_char_len--;
-	}
-
-	/* Skip over any additional white space (useful when newindent is less
-	 * than old) */
-	while (VIM_ISWHITE(*p))
-	    ++p;
-
-    }
-    else
-    {
-	todo = size;
-	newline = alloc(ind_len + line_len);
-	if (newline == NULL)
-	    return FALSE;
-	s = newline;
-    }
-
-    /* Put the characters in the new line. */
-    /* if 'expandtab' isn't set: use TABs */
-    if (!curbuf->b_p_et)
-    {
-	/* If 'preserveindent' is set then reuse as much as possible of
-	 * the existing indent structure for the new indent */
-	if (!(flags & SIN_INSERT) && curbuf->b_p_pi)
-	{
-	    p = oldline;
-	    ind_done = 0;
-
-	    while (todo > 0 && VIM_ISWHITE(*p))
-	    {
-		if (*p == TAB)
-		{
-#ifdef FEAT_VARTABS
-		    tab_pad = tabstop_padding(ind_done, curbuf->b_p_ts,
-							curbuf->b_p_vts_array);
-#else
-		    tab_pad = (int)curbuf->b_p_ts
-					   - (ind_done % (int)curbuf->b_p_ts);
-#endif
-		    /* stop if this tab will overshoot the target */
-		    if (todo < tab_pad)
-			break;
-		    todo -= tab_pad;
-		    ind_done += tab_pad;
-		}
-		else
-		{
-		    --todo;
-		    ++ind_done;
-		}
-		*s++ = *p++;
-	    }
-
-	    /* Fill to next tabstop with a tab, if possible */
-#ifdef FEAT_VARTABS
-	    tab_pad = tabstop_padding(ind_done, curbuf->b_p_ts,
-						curbuf->b_p_vts_array);
-#else
-	    tab_pad = (int)curbuf->b_p_ts - (ind_done % (int)curbuf->b_p_ts);
-#endif
-	    if (todo >= tab_pad)
-	    {
-		*s++ = TAB;
-		todo -= tab_pad;
-#ifdef FEAT_VARTABS
-		ind_done += tab_pad;
-#endif
-	    }
-
-	    p = skipwhite(p);
-	}
-
-#ifdef FEAT_VARTABS
-	for (;;)
-	{
-	    tab_pad = tabstop_padding(ind_done, curbuf->b_p_ts,
-							curbuf->b_p_vts_array);
-	    if (todo < tab_pad)
-		break;
-	    *s++ = TAB;
-	    todo -= tab_pad;
-	    ind_done += tab_pad;
-	}
-#else
-	while (todo >= (int)curbuf->b_p_ts)
-	{
-	    *s++ = TAB;
-	    todo -= (int)curbuf->b_p_ts;
-	}
-#endif
-    }
-    while (todo > 0)
-    {
-	*s++ = ' ';
-	--todo;
-    }
-    mch_memmove(s, p, (size_t)line_len);
-
-    // Replace the line (unless undo fails).
-    if (!(flags & SIN_UNDO) || u_savesub(curwin->w_cursor.lnum) == OK)
-    {
-	ml_replace(curwin->w_cursor.lnum, newline, FALSE);
-	if (flags & SIN_CHANGED)
-	    changed_bytes(curwin->w_cursor.lnum, 0);
-
-	// Correct saved cursor position if it is in this line.
-	if (saved_cursor.lnum == curwin->w_cursor.lnum)
-	{
-	    if (saved_cursor.col >= (colnr_T)(p - oldline))
-		// cursor was after the indent, adjust for the number of
-		// bytes added/removed
-		saved_cursor.col += ind_len - (colnr_T)(p - oldline);
-	    else if (saved_cursor.col >= (colnr_T)(s - newline))
-		// cursor was in the indent, and is now after it, put it back
-		// at the start of the indent (replacing spaces with TAB)
-		saved_cursor.col = (colnr_T)(s - newline);
-	}
-#ifdef FEAT_TEXT_PROP
-	{
-	    int added = ind_len - (colnr_T)(p - oldline);
-
-	    // When increasing indent this behaves like spaces were inserted at
-	    // the old indent, when decreasing indent it behaves like spaces
-	    // were deleted at the new indent.
-	    adjust_prop_columns(curwin->w_cursor.lnum,
-		 (colnr_T)(added > 0 ? (p - oldline) : ind_len), added, 0);
-	}
-#endif
-	retval = TRUE;
-    }
-    else
-	vim_free(newline);
-
-    curwin->w_cursor.col = ind_len;
-    return retval;
-}
-
-/*
- * Return the indent of the current line after a number.  Return -1 if no
- * number was found.  Used for 'n' in 'formatoptions': numbered list.
- * Since a pattern is used it can actually handle more than numbers.
- */
-    int
-get_number_indent(linenr_T lnum)
-{
-    colnr_T	col;
-    pos_T	pos;
-
-    regmatch_T	regmatch;
-    int		lead_len = 0;	/* length of comment leader */
-
-    if (lnum > curbuf->b_ml.ml_line_count)
-	return -1;
-    pos.lnum = 0;
-
-#ifdef FEAT_COMMENTS
-    /* In format_lines() (i.e. not insert mode), fo+=q is needed too...  */
-    if ((State & INSERT) || has_format_option(FO_Q_COMS))
-	lead_len = get_leader_len(ml_get(lnum), NULL, FALSE, TRUE);
-#endif
-    regmatch.regprog = vim_regcomp(curbuf->b_p_flp, RE_MAGIC);
-    if (regmatch.regprog != NULL)
-    {
-	regmatch.rm_ic = FALSE;
-
-	/* vim_regexec() expects a pointer to a line.  This lets us
-	 * start matching for the flp beyond any comment leader...  */
-	if (vim_regexec(&regmatch, ml_get(lnum) + lead_len, (colnr_T)0))
-	{
-	    pos.lnum = lnum;
-	    pos.col = (colnr_T)(*regmatch.endp - ml_get(lnum));
-	    pos.coladd = 0;
-	}
-	vim_regfree(regmatch.regprog);
-    }
-
-    if (pos.lnum == 0 || *ml_get_pos(&pos) == NUL)
-	return -1;
-    getvcol(curwin, &pos, &col, NULL, NULL);
-    return (int)col;
-}
-
-#if defined(FEAT_LINEBREAK) || defined(PROTO)
-/*
- * Return appropriate space number for breakindent, taking influencing
- * parameters into account. Window must be specified, since it is not
- * necessarily always the current one.
- */
-    int
-get_breakindent_win(
-    win_T	*wp,
-    char_u	*line) /* start of the line */
-{
-    static int	    prev_indent = 0;  /* cached indent value */
-    static long	    prev_ts     = 0L; /* cached tabstop value */
-    static char_u   *prev_line = NULL; /* cached pointer to line */
-    static varnumber_T prev_tick = 0;   /* changedtick of cached value */
-#ifdef FEAT_VARTABS
-    static int      *prev_vts = NULL;    /* cached vartabs values */
-#endif
-    int		    bri = 0;
-    /* window width minus window margin space, i.e. what rests for text */
-    const int	    eff_wwidth = wp->w_width
-			    - ((wp->w_p_nu || wp->w_p_rnu)
-				&& (vim_strchr(p_cpo, CPO_NUMCOL) == NULL)
-						? number_width(wp) + 1 : 0);
-
-    /* used cached indent, unless pointer or 'tabstop' changed */
-    if (prev_line != line || prev_ts != wp->w_buffer->b_p_ts
-	    || prev_tick != CHANGEDTICK(wp->w_buffer)
-#ifdef FEAT_VARTABS
-	    || prev_vts != wp->w_buffer->b_p_vts_array
-#endif
-	)
-    {
-	prev_line = line;
-	prev_ts = wp->w_buffer->b_p_ts;
-	prev_tick = CHANGEDTICK(wp->w_buffer);
-#ifdef FEAT_VARTABS
-	prev_vts = wp->w_buffer->b_p_vts_array;
-	prev_indent = get_indent_str_vtab(line,
-				     (int)wp->w_buffer->b_p_ts,
-				    wp->w_buffer->b_p_vts_array, wp->w_p_list);
-#else
-	prev_indent = get_indent_str(line,
-				     (int)wp->w_buffer->b_p_ts, wp->w_p_list);
-#endif
-    }
-    bri = prev_indent + wp->w_p_brishift;
-
-    /* indent minus the length of the showbreak string */
-    if (wp->w_p_brisbr)
-	bri -= vim_strsize(p_sbr);
-
-    /* Add offset for number column, if 'n' is in 'cpoptions' */
-    bri += win_col_off2(wp);
-
-    /* never indent past left window margin */
-    if (bri < 0)
-	bri = 0;
-    /* always leave at least bri_min characters on the left,
-     * if text width is sufficient */
-    else if (bri > eff_wwidth - wp->w_p_brimin)
-	bri = (eff_wwidth - wp->w_p_brimin < 0)
-			    ? 0 : eff_wwidth - wp->w_p_brimin;
-
-    return bri;
-}
-#endif
-
-#if defined(FEAT_COMMENTS) || defined(PROTO)
-/*
  * get_leader_len() returns the length in bytes of the prefix of the given
  * string which introduces a comment.  If this string is not a comment then
  * 0 is returned.
@@ -862,7 +324,6 @@ get_last_leader_offset(char_u *line, char_u **flags)
     }
     return result;
 }
-#endif
 
 /*
  * Return the number of window lines occupied by buffer line "lnum".
@@ -1079,26 +540,6 @@ pchar_cursor(int c)
 }
 
 /*
- * When extra == 0: Return TRUE if the cursor is before or on the first
- *		    non-blank in the line.
- * When extra == 1: Return TRUE if the cursor is before the first non-blank in
- *		    the line.
- */
-    int
-inindent(int extra)
-{
-    char_u	*ptr;
-    colnr_T	col;
-
-    for (col = 0, ptr = ml_get_curline(); VIM_ISWHITE(*ptr); ++col)
-	++ptr;
-    if (col >= curwin->w_cursor.col + extra)
-	return TRUE;
-    else
-	return FALSE;
-}
-
-/*
  * Skip to next part of an option argument: Skip space and comma.
  */
     char_u *
@@ -1148,14 +589,12 @@ ask_yesno(char_u *str, int direct)
 	settmode(TMODE_RAW);
     ++no_wait_return;
 #ifdef USE_ON_FLY_SCROLL
-    dont_scroll = TRUE;		/* disallow scrolling here */
+    dont_scroll = TRUE;		// disallow scrolling here
 #endif
-    State = CONFIRM;		/* mouse behaves like with :confirm */
-#ifdef FEAT_MOUSE
-    setmouse();			/* disables mouse for xterm */
-#endif
+    State = CONFIRM;		// mouse behaves like with :confirm
+    setmouse();			// disables mouse for xterm
     ++no_mapping;
-    ++allow_keys;		/* no mapping here, but recognize keys */
+    ++allow_keys;		// no mapping here, but recognize keys
 
     while (r != 'y' && r != 'n')
     {
@@ -1172,46 +611,152 @@ ask_yesno(char_u *str, int direct)
     }
     --no_wait_return;
     State = save_State;
-#ifdef FEAT_MOUSE
     setmouse();
-#endif
     --no_mapping;
     --allow_keys;
 
     return r;
 }
 
-#if defined(FEAT_MOUSE) || defined(PROTO)
+#if defined(FEAT_EVAL) || defined(PROTO)
+
 /*
- * Return TRUE if "c" is a mouse key.
+ * "mode()" function
  */
-    int
-is_mouse_key(int c)
+    void
+f_mode(typval_T *argvars, typval_T *rettv)
 {
-    return c == K_LEFTMOUSE
-	|| c == K_LEFTMOUSE_NM
-	|| c == K_LEFTDRAG
-	|| c == K_LEFTRELEASE
-	|| c == K_LEFTRELEASE_NM
-	|| c == K_MOUSEMOVE
-	|| c == K_MIDDLEMOUSE
-	|| c == K_MIDDLEDRAG
-	|| c == K_MIDDLERELEASE
-	|| c == K_RIGHTMOUSE
-	|| c == K_RIGHTDRAG
-	|| c == K_RIGHTRELEASE
-	|| c == K_MOUSEDOWN
-	|| c == K_MOUSEUP
-	|| c == K_MOUSELEFT
-	|| c == K_MOUSERIGHT
-	|| c == K_X1MOUSE
-	|| c == K_X1DRAG
-	|| c == K_X1RELEASE
-	|| c == K_X2MOUSE
-	|| c == K_X2DRAG
-	|| c == K_X2RELEASE;
-}
+    char_u	buf[4];
+
+    vim_memset(buf, 0, sizeof(buf));
+
+    if (time_for_testing == 93784)
+    {
+	/* Testing the two-character code. */
+	buf[0] = 'x';
+	buf[1] = '!';
+    }
+#ifdef FEAT_TERMINAL
+    else if (term_use_loop())
+	buf[0] = 't';
 #endif
+    else if (VIsual_active)
+    {
+	if (VIsual_select)
+	    buf[0] = VIsual_mode + 's' - 'v';
+	else
+	    buf[0] = VIsual_mode;
+    }
+    else if (State == HITRETURN || State == ASKMORE || State == SETWSIZE
+		|| State == CONFIRM)
+    {
+	buf[0] = 'r';
+	if (State == ASKMORE)
+	    buf[1] = 'm';
+	else if (State == CONFIRM)
+	    buf[1] = '?';
+    }
+    else if (State == EXTERNCMD)
+	buf[0] = '!';
+    else if (State & INSERT)
+    {
+	if (State & VREPLACE_FLAG)
+	{
+	    buf[0] = 'R';
+	    buf[1] = 'v';
+	}
+	else
+	{
+	    if (State & REPLACE_FLAG)
+		buf[0] = 'R';
+	    else
+		buf[0] = 'i';
+	    if (ins_compl_active())
+		buf[1] = 'c';
+	    else if (ctrl_x_mode_not_defined_yet())
+		buf[1] = 'x';
+	}
+    }
+    else if ((State & CMDLINE) || exmode_active)
+    {
+	buf[0] = 'c';
+	if (exmode_active == EXMODE_VIM)
+	    buf[1] = 'v';
+	else if (exmode_active == EXMODE_NORMAL)
+	    buf[1] = 'e';
+    }
+    else
+    {
+	buf[0] = 'n';
+	if (finish_op)
+	{
+	    buf[1] = 'o';
+	    // to be able to detect force-linewise/blockwise/characterwise operations
+	    buf[2] = motion_force;
+	}
+	else if (restart_edit == 'I' || restart_edit == 'R'
+							|| restart_edit == 'V')
+	{
+	    buf[1] = 'i';
+	    buf[2] = restart_edit;
+	}
+    }
+
+    /* Clear out the minor mode when the argument is not a non-zero number or
+     * non-empty string.  */
+    if (!non_zero_arg(&argvars[0]))
+	buf[1] = NUL;
+
+    rettv->vval.v_string = vim_strsave(buf);
+    rettv->v_type = VAR_STRING;
+}
+
+    static void
+may_add_state_char(garray_T *gap, char_u *include, int c)
+{
+    if (include == NULL || vim_strchr(include, c) != NULL)
+	ga_append(gap, c);
+}
+
+/*
+ * "state()" function
+ */
+    void
+f_state(typval_T *argvars, typval_T *rettv)
+{
+    garray_T	ga;
+    char_u	*include = NULL;
+    int		i;
+
+    ga_init2(&ga, 1, 20);
+    if (argvars[0].v_type != VAR_UNKNOWN)
+	include = tv_get_string(&argvars[0]);
+
+    if (!(stuff_empty() && typebuf.tb_len == 0 && scriptin[curscript] == NULL))
+	may_add_state_char(&ga, include, 'm');
+    if (op_pending())
+	may_add_state_char(&ga, include, 'o');
+    if (autocmd_busy)
+	may_add_state_char(&ga, include, 'x');
+    if (ins_compl_active())
+	may_add_state_char(&ga, include, 'a');
+
+# ifdef FEAT_JOB_CHANNEL
+    if (channel_in_blocking_wait())
+	may_add_state_char(&ga, include, 'w');
+# endif
+    if (!get_was_safe_state())
+	may_add_state_char(&ga, include, 'S');
+    for (i = 0; i < get_callback_depth() && i < 3; ++i)
+	may_add_state_char(&ga, include, 'c');
+    if (msg_scrolled > 0)
+	may_add_state_char(&ga, include, 's');
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = ga.ga_data;
+}
+
+#endif // FEAT_EVAL
 
 /*
  * Get a key stroke directly from the user.
@@ -1302,9 +847,7 @@ get_keystroke(void)
 	    n = TO_SPECIAL(buf[1], buf[2]);
 	    if (buf[1] == KS_MODIFIER
 		    || n == K_IGNORE
-#ifdef FEAT_MOUSE
 		    || (is_mouse_key(n) && n != K_LEFTMOUSE)
-#endif
 #ifdef FEAT_GUI
 		    || n == K_VER_SCROLLBAR
 		    || n == K_HOR_SCROLLBAR
@@ -1384,14 +927,12 @@ get_number(
 	    }
 	    n /= 10;
 	}
-#ifdef FEAT_MOUSE
 	else if (mouse_used != NULL && c == K_LEFTMOUSE)
 	{
 	    *mouse_used = TRUE;
 	    n = mouse_row + 1;
 	    break;
 	}
-#endif
 	else if (n == 0 && c == ':' && colon)
 	{
 	    stuffcharReadbuff(':');
@@ -1434,10 +975,8 @@ prompt_for_number(int *mouse_used)
     cmdline_row = 0;
     save_State = State;
     State = CMDLINE;
-#ifdef FEAT_MOUSE
     // May show different mouse shape.
     setmouse();
-#endif
 
     i = get_number(TRUE, mouse_used);
     if (KeyTyped)
@@ -1452,10 +991,8 @@ prompt_for_number(int *mouse_used)
     else
 	cmdline_row = save_cmdline_row;
     State = save_State;
-#ifdef FEAT_MOUSE
     // May need to restore mouse shape.
     setmouse();
-#endif
 
     return i;
 }
@@ -2761,7 +2298,7 @@ done:
 
 # if defined(FEAT_EVAL) || defined(PROTO)
 
-    void
+    static void
 get_cmd_output_as_rettv(
     typval_T	*argvars,
     typval_T	*rettv,
@@ -3040,4 +2577,35 @@ path_with_url(char_u *fname)
     for (p = fname; isalpha(*p); ++p)
 	;
     return path_is_url(p);
+}
+
+/*
+ * Put timestamp "tt" in "buf[buflen]" in a nice format.
+ */
+    void
+add_time(char_u *buf, size_t buflen, time_t tt)
+{
+#ifdef HAVE_STRFTIME
+    struct tm	tmval;
+    struct tm	*curtime;
+
+    if (vim_time() - tt >= 100)
+    {
+	curtime = vim_localtime(&tt, &tmval);
+	if (vim_time() - tt < (60L * 60L * 12L))
+	    /* within 12 hours */
+	    (void)strftime((char *)buf, buflen, "%H:%M:%S", curtime);
+	else
+	    /* longer ago */
+	    (void)strftime((char *)buf, buflen, "%Y/%m/%d %H:%M:%S", curtime);
+    }
+    else
+#endif
+    {
+	long seconds = (long)(vim_time() - tt);
+
+	vim_snprintf((char *)buf, buflen,
+		NGETTEXT("%ld second ago", "%ld seconds ago", seconds),
+		seconds);
+    }
 }

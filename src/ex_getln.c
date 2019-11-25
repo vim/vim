@@ -52,6 +52,8 @@ static int	ccheck_abbr(int);
 
 #ifdef FEAT_CMDWIN
 static int	open_cmdwin(void);
+
+static int	cedit_key INIT(= -1);	// key value of 'cedit' option
 #endif
 
 
@@ -136,11 +138,11 @@ restore_viewstate(viewstate_T *vs)
 // Struct to store the state of 'incsearch' highlighting.
 typedef struct {
     pos_T	search_start;	// where 'incsearch' starts searching
-    pos_T       save_cursor;
+    pos_T	save_cursor;
     viewstate_T	init_viewstate;
     viewstate_T	old_viewstate;
-    pos_T       match_start;
-    pos_T       match_end;
+    pos_T	match_start;
+    pos_T	match_end;
     int		did_incsearch;
     int		incsearch_postponed;
     int		magic_save;
@@ -195,6 +197,7 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
     exarg_T	ea;
     pos_T	save_cursor;
     int		use_last_pat;
+    int		retval = FALSE;
 
     *skiplen = 0;
     *patlen = ccline.cmdlen;
@@ -211,6 +214,7 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
     if (firstc != ':')
 	return FALSE;
 
+    ++emsg_off;
     vim_memset(&ea, 0, sizeof(ea));
     ea.line1 = 1;
     ea.line2 = 1;
@@ -222,13 +226,13 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 
     cmd = skip_range(ea.cmd, NULL);
     if (vim_strchr((char_u *)"sgvl", *cmd) == NULL)
-	return FALSE;
+	goto theend;
 
     // Skip over "substitute" to find the pattern separator.
     for (p = cmd; ASCII_ISALPHA(*p); ++p)
 	;
     if (*skipwhite(p) == NUL)
-	return FALSE;
+	goto theend;
 
     if (STRNCMP(cmd, "substitute", p - cmd) == 0
 	    || STRNCMP(cmd, "smagic", p - cmd) == 0
@@ -246,7 +250,7 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 	while (ASCII_ISALPHA(*(p = skipwhite(p))))
 	    ++p;
 	if (*p == NUL)
-	    return FALSE;
+	    goto theend;
     }
     else if (STRNCMP(cmd, "vimgrep", MAX(p - cmd, 3)) == 0
 	|| STRNCMP(cmd, "vimgrepadd", MAX(p - cmd, 8)) == 0
@@ -259,13 +263,13 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 	{
 	    p++;
 	    if (*skipwhite(p) == NUL)
-		return FALSE;
+		goto theend;
 	}
 	if (*cmd != 'g')
 	    delim_optional = TRUE;
     }
     else
-	return FALSE;
+	goto theend;
 
     p = skipwhite(p);
     delim = (delim_optional && vim_isIDc(*p)) ? ' ' : *p++;
@@ -274,7 +278,7 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
     use_last_pat = end == p && *end == delim;
 
     if (end == p && !use_last_pat)
-	return FALSE;
+	goto theend;
 
     // Don't do 'hlsearch' highlighting if the pattern matches everything.
     if (!use_last_pat)
@@ -286,7 +290,7 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 	empty = empty_pattern(p);
 	*end = c;
 	if (empty)
-	    return FALSE;
+	    goto theend;
     }
 
     // found a non-empty pattern or //
@@ -319,7 +323,10 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
     }
 
     curwin->w_cursor = save_cursor;
-    return TRUE;
+    retval = TRUE;
+theend:
+    --emsg_off;
+    return retval;
 }
 
     static void
@@ -373,6 +380,7 @@ may_do_incsearch_highlighting(
     pos_T	end_pos;
 #ifdef FEAT_RELTIME
     proftime_T	tm;
+    searchit_arg_T sia;
 #endif
     int		next_char;
     int		use_last_pat;
@@ -445,12 +453,16 @@ may_do_incsearch_highlighting(
 	if (search_first_line != 0)
 	    search_flags += SEARCH_START;
 	ccline.cmdbuff[skiplen + patlen] = NUL;
+#ifdef FEAT_RELTIME
+	vim_memset(&sia, 0, sizeof(sia));
+	sia.sa_tm = &tm;
+#endif
 	found = do_search(NULL, firstc == ':' ? '/' : firstc,
 				 ccline.cmdbuff + skiplen, count, search_flags,
 #ifdef FEAT_RELTIME
-		&tm, NULL
+		&sia
 #else
-		NULL, NULL
+		NULL
 #endif
 		);
 	ccline.cmdbuff[skiplen + patlen] = next_char;
@@ -520,6 +532,7 @@ may_do_incsearch_highlighting(
 	curwin->w_redr_status = TRUE;
 
     update_screen(SOME_VALID);
+    highlight_match = FALSE;
     restore_last_search_pattern();
 
     // Leave it at the end to make CTRL-R CTRL-W work.  But not when beyond the
@@ -597,8 +610,7 @@ may_adjust_incsearch_highlighting(
     pat[patlen] = NUL;
     i = searchit(curwin, curbuf, &t, NULL,
 		 c == Ctrl_G ? FORWARD : BACKWARD,
-		 pat, count, search_flags,
-		 RE_SEARCH, 0, NULL, NULL);
+		 pat, count, search_flags, RE_SEARCH, NULL);
     --emsg_off;
     pat[patlen] = save;
     if (i)
@@ -638,6 +650,7 @@ may_adjust_incsearch_highlighting(
 	highlight_match = TRUE;
 	save_viewstate(&is_state->old_viewstate);
 	update_screen(NOT_VALID);
+	highlight_match = FALSE;
 	redrawcmdline();
 	curwin->w_cursor = is_state->match_end;
     }
@@ -795,11 +808,9 @@ getcmdline_int(
     int		save_msg_scroll = msg_scroll;
     int		save_State = State;	/* remember State when called */
     int		some_key_typed = FALSE;	/* one of the keys was typed */
-#ifdef FEAT_MOUSE
     /* mouse drag and release events are ignored, unless they are
      * preceded with a mouse down event */
     int		ignore_drag_release = TRUE;
-#endif
 #ifdef FEAT_EVAL
     int		break_ctrl_c = FALSE;
 #endif
@@ -924,9 +935,7 @@ getcmdline_int(
 	im_set_active(TRUE);
 #endif
 
-#ifdef FEAT_MOUSE
     setmouse();
-#endif
 #ifdef CURSOR_SHAPE
     ui_cursor_shape();		/* may show different cursor shape */
 #endif
@@ -970,6 +979,9 @@ getcmdline_int(
 	did_emsg = FALSE;	/* There can't really be a reason why an error
 				   that occurs while typing a command should
 				   cause the command not to be executed. */
+
+	// Trigger SafeState if nothing is pending.
+	may_trigger_safestate(xpc.xp_numfiles <= 0);
 
 	cursorcmd();		/* set the cursor on the right spot */
 
@@ -1402,6 +1414,9 @@ getcmdline_int(
 	 */
 	if ((c == p_wc && !gotesc && KeyTyped) || c == p_wcm)
 	{
+	    int options = WILD_NO_BEEP;
+	    if (wim_flags[wim_index] & WIM_BUFLASTUSED)
+		options |= WILD_BUFLASTUSED;
 	    if (xpc.xp_numfiles > 0)   /* typed p_wc at least twice */
 	    {
 		/* if 'wildmode' contains "list" may still need to list */
@@ -1414,10 +1429,10 @@ getcmdline_int(
 		    did_wild_list = TRUE;
 		}
 		if (wim_flags[wim_index] & WIM_LONGEST)
-		    res = nextwild(&xpc, WILD_LONGEST, WILD_NO_BEEP,
+		    res = nextwild(&xpc, WILD_LONGEST, options,
 							       firstc != '@');
 		else if (wim_flags[wim_index] & WIM_FULL)
-		    res = nextwild(&xpc, WILD_NEXT, WILD_NO_BEEP,
+		    res = nextwild(&xpc, WILD_NEXT, options,
 							       firstc != '@');
 		else
 		    res = OK;	    /* don't insert 'wildchar' now */
@@ -1429,10 +1444,10 @@ getcmdline_int(
 		/* if 'wildmode' first contains "longest", get longest
 		 * common part */
 		if (wim_flags[0] & WIM_LONGEST)
-		    res = nextwild(&xpc, WILD_LONGEST, WILD_NO_BEEP,
+		    res = nextwild(&xpc, WILD_LONGEST, options,
 							       firstc != '@');
 		else
-		    res = nextwild(&xpc, WILD_EXPAND_KEEP, WILD_NO_BEEP,
+		    res = nextwild(&xpc, WILD_EXPAND_KEEP, options,
 							       firstc != '@');
 
 		/* if interrupted while completing, behave like it failed */
@@ -1483,10 +1498,10 @@ getcmdline_int(
 			redrawcmd();
 			did_wild_list = TRUE;
 			if (wim_flags[wim_index] & WIM_LONGEST)
-			    nextwild(&xpc, WILD_LONGEST, WILD_NO_BEEP,
+			    nextwild(&xpc, WILD_LONGEST, options,
 							       firstc != '@');
 			else if (wim_flags[wim_index] & WIM_FULL)
-			    nextwild(&xpc, WILD_NEXT, WILD_NO_BEEP,
+			    nextwild(&xpc, WILD_NEXT, options,
 							       firstc != '@');
 		    }
 		    else
@@ -1855,7 +1870,6 @@ getcmdline_int(
 	    break;
 #endif
 
-#ifdef FEAT_MOUSE
 	case K_MIDDLEDRAG:
 	case K_MIDDLERELEASE:
 		goto cmdline_not_changed;	/* Ignore mouse */
@@ -1959,8 +1973,6 @@ getcmdline_int(
 	case K_X2RELEASE:
 	case K_MOUSEMOVE:
 		goto cmdline_not_changed;
-
-#endif	/* FEAT_MOUSE */
 
 #ifdef FEAT_GUI
 	case K_LEFTMOUSE_NM:	/* mousefocus click, ignored */
@@ -2194,9 +2206,7 @@ getcmdline_int(
 
 	case Ctrl_V:
 	case Ctrl_Q:
-#ifdef FEAT_MOUSE
 		ignore_drag_release = TRUE;
-#endif
 		putcmdline('^', TRUE);
 		c = get_literal();	    /* get next (two) character(s) */
 		do_abbr = FALSE;	    /* don't do abbreviation now */
@@ -2212,13 +2222,11 @@ getcmdline_int(
 
 #ifdef FEAT_DIGRAPHS
 	case Ctrl_K:
-#ifdef FEAT_MOUSE
 		ignore_drag_release = TRUE;
-#endif
 		putcmdline('?', TRUE);
-#ifdef USE_ON_FLY_SCROLL
+# ifdef USE_ON_FLY_SCROLL
 		dont_scroll = TRUE;	    /* disallow scrolling here */
-#endif
+# endif
 		c = get_digraph(TRUE);
 		extra_char = NUL;
 		if (c != NUL)
@@ -2226,7 +2234,7 @@ getcmdline_int(
 
 		redrawcmd();
 		goto cmdline_not_changed;
-#endif /* FEAT_DIGRAPHS */
+#endif // FEAT_DIGRAPHS
 
 #ifdef FEAT_RIGHTLEFT
 	case Ctrl__:	    /* CTRL-_: switch language mode */
@@ -2386,9 +2394,7 @@ returncmd:
 	im_save_status(b_im_ptr);
     im_set_active(FALSE);
 #endif
-#ifdef FEAT_MOUSE
     setmouse();
-#endif
 #ifdef CURSOR_SHAPE
     ui_cursor_shape();		/* may show different cursor shape */
 #endif
@@ -2459,6 +2465,60 @@ getcmdline_prompt(
     return s;
 }
 #endif
+
+/*
+ * Read the 'wildmode' option, fill wim_flags[].
+ */
+    int
+check_opt_wim(void)
+{
+    char_u	new_wim_flags[4];
+    char_u	*p;
+    int		i;
+    int		idx = 0;
+
+    for (i = 0; i < 4; ++i)
+	new_wim_flags[i] = 0;
+
+    for (p = p_wim; *p; ++p)
+    {
+	for (i = 0; ASCII_ISALPHA(p[i]); ++i)
+	    ;
+	if (p[i] != NUL && p[i] != ',' && p[i] != ':')
+	    return FAIL;
+	if (i == 7 && STRNCMP(p, "longest", 7) == 0)
+	    new_wim_flags[idx] |= WIM_LONGEST;
+	else if (i == 4 && STRNCMP(p, "full", 4) == 0)
+	    new_wim_flags[idx] |= WIM_FULL;
+	else if (i == 4 && STRNCMP(p, "list", 4) == 0)
+	    new_wim_flags[idx] |= WIM_LIST;
+	else if (i == 8 && STRNCMP(p, "lastused", 8) == 0)
+	    new_wim_flags[idx] |= WIM_BUFLASTUSED;
+	else
+	    return FAIL;
+	p += i;
+	if (*p == NUL)
+	    break;
+	if (*p == ',')
+	{
+	    if (idx == 3)
+		return FAIL;
+	    ++idx;
+	}
+    }
+
+    /* fill remaining entries with last flag */
+    while (idx < 3)
+    {
+	new_wim_flags[idx + 1] = new_wim_flags[idx];
+	++idx;
+    }
+
+    /* only when there are no errors, wim_flags[] is changed */
+    for (i = 0; i < 4; ++i)
+	wim_flags[i] = new_wim_flags[i];
+    return OK;
+}
 
 /*
  * Return TRUE when the text must not be changed and we can't switch to
@@ -2782,7 +2842,7 @@ redraw:
 		    }
 		    else
 		    {
-			len = MB_PTR2LEN(p);
+			len = mb_ptr2len(p);
 			msg_outtrans_len(p, len);
 			vcol += ptr2cells(p);
 			p += len;
@@ -3755,7 +3815,7 @@ ccheck_abbr(int c)
  * Returns the result in allocated memory.
  */
     char_u *
-vim_strsave_fnameescape(char_u *fname, int shell)
+vim_strsave_fnameescape(char_u *fname, int shell UNUSED)
 {
     char_u	*p;
 #ifdef BACKSLASH_IN_FILENAME
@@ -4029,6 +4089,27 @@ get_list_range(char_u **str, int *num1, int *num2)
 
 #if defined(FEAT_CMDWIN) || defined(PROTO)
 /*
+ * Check value of 'cedit' and set cedit_key.
+ * Returns NULL if value is OK, error message otherwise.
+ */
+    char *
+check_cedit(void)
+{
+    int n;
+
+    if (*p_cedit == NUL)
+	cedit_key = -1;
+    else
+    {
+	n = string_to_key(p_cedit, FALSE);
+	if (vim_isprintc(n))
+	    return e_invarg;
+	cedit_key = n;
+    }
+    return NULL;
+}
+
+/*
  * Open a window on the current command line and history.  Allow editing in
  * the window.  Returns when the window is closed.
  * Returns:
@@ -4153,13 +4234,14 @@ open_cmdwin(void)
     invalidate_botline();
     redraw_later(SOME_VALID);
 
-    /* No Ex mode here! */
+    // No Ex mode here!
     exmode_active = 0;
 
     State = NORMAL;
-# ifdef FEAT_MOUSE
     setmouse();
-# endif
+
+    // Reset here so it can be set by a CmdWinEnter autocommand.
+    cmdwin_result = 0;
 
     // Trigger CmdwinEnter autocommands.
     trigger_cmd_autocmd(cmdwin_type, EVENT_CMDWINENTER);
@@ -4172,7 +4254,6 @@ open_cmdwin(void)
     /*
      * Call the main loop until <CR> or CTRL-C is typed.
      */
-    cmdwin_result = 0;
     main_loop(TRUE, FALSE);
 
     RedrawingDisabled = i;
@@ -4287,9 +4368,7 @@ open_cmdwin(void)
 # endif
 
     State = save_State;
-# ifdef FEAT_MOUSE
     setmouse();
-# endif
 
     return cmdwin_result;
 }

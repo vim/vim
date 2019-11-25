@@ -600,6 +600,42 @@ static struct
     {"", NULL},
 };
 
+# if PY_VERSION_HEX >= 0x030800f0
+    static inline void
+py3__Py_DECREF(const char *filename UNUSED, int lineno UNUSED, PyObject *op)
+{
+    _Py_DEC_REFTOTAL;
+    if (--op->ob_refcnt != 0)
+    {
+#  ifdef Py_REF_DEBUG
+	if (op->ob_refcnt < 0)
+	{
+	    _Py_NegativeRefcount(filename, lineno, op);
+	}
+#  endif
+    }
+    else
+    {
+	_Py_Dealloc(op);
+    }
+}
+
+#  undef Py_DECREF
+#  define Py_DECREF(op) py3__Py_DECREF(__FILE__, __LINE__, _PyObject_CAST(op))
+
+    static inline void
+py3__Py_XDECREF(PyObject *op)
+{
+    if (op != NULL)
+    {
+	Py_DECREF(op);
+    }
+}
+
+#  undef Py_XDECREF
+#  define Py_XDECREF(op) py3__Py_XDECREF(_PyObject_CAST(op))
+# endif
+
 /*
  * Free python.dll
  */

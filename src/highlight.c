@@ -161,8 +161,8 @@ static char *(highlight_init_light[]) = {
 	 "Directory term=bold ctermfg=DarkBlue guifg=Blue"),
     CENT("LineNr term=underline ctermfg=Brown",
 	 "LineNr term=underline ctermfg=Brown guifg=Brown"),
-    CENT("CursorLineNr term=bold ctermfg=Brown",
-	 "CursorLineNr term=bold ctermfg=Brown gui=bold guifg=Brown"),
+    CENT("CursorLineNr term=bold cterm=underline ctermfg=Brown",
+	 "CursorLineNr term=bold cterm=underline ctermfg=Brown gui=bold guifg=Brown"),
     CENT("MoreMsg term=bold ctermfg=DarkGreen",
 	 "MoreMsg term=bold ctermfg=DarkGreen gui=bold guifg=SeaGreen"),
     CENT("Question term=standout ctermfg=DarkGreen",
@@ -252,8 +252,8 @@ static char *(highlight_init_dark[]) = {
 	 "Directory term=bold ctermfg=LightCyan guifg=Cyan"),
     CENT("LineNr term=underline ctermfg=Yellow",
 	 "LineNr term=underline ctermfg=Yellow guifg=Yellow"),
-    CENT("CursorLineNr term=bold ctermfg=Yellow",
-	 "CursorLineNr term=bold ctermfg=Yellow gui=bold guifg=Yellow"),
+    CENT("CursorLineNr term=bold cterm=underline ctermfg=Yellow",
+	 "CursorLineNr term=bold cterm=underline ctermfg=Yellow gui=bold guifg=Yellow"),
     CENT("MoreMsg term=bold ctermfg=LightGreen",
 	 "MoreMsg term=bold ctermfg=LightGreen gui=bold guifg=SeaGreen"),
     CENT("Question term=standout ctermfg=LightGreen",
@@ -1417,7 +1417,8 @@ do_highlight(
 		 */
 		for (p = arg, off = 0; off < 100 - 6 && *p; )
 		{
-		    len = trans_special(&p, buf + off, FALSE, FALSE);
+		    len = trans_special(&p, buf + off, FALSE, FALSE,
+								   TRUE, NULL);
 		    if (len > 0)	    // recognized special char
 			off += len;
 		    else		    // copy as normal char
@@ -3681,7 +3682,8 @@ match_add(
 	return -1;
     if (id < -1 || id == 0)
     {
-	semsg(_("E799: Invalid ID: %d (must be greater than or equal to 1)"), id);
+	semsg(_("E799: Invalid ID: %d (must be greater than or equal to 1)"),
+									   id);
 	return -1;
     }
     if (id != -1)
@@ -4345,7 +4347,7 @@ prepare_search_hl_line(
  * After end, check for start/end of next match.
  * When another match, have to check for start again.
  * Watch out for matching an empty string!
- * Return the udpated search_attr.
+ * Return the updated search_attr.
  */
     int
 update_search_hl(
@@ -4392,7 +4394,7 @@ update_search_hl(
 		    && col >= shl->startcol
 		    && col < shl->endcol)
 	    {
-		int next_col = col + MB_PTR2LEN(*line + col);
+		int next_col = col + mb_ptr2len(*line + col);
 
 		if (shl->endcol < next_col)
 		    shl->endcol = next_col;

@@ -171,14 +171,14 @@ you can.
 		path			    {path}\gvim.exe
    HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\vim 5.6
 		DisplayName		    Vim 5.6: Edit with Vim popup menu entry
-		UninstallString		    {path}\uninstal.exe
+		UninstallString		    {path}\uninstall.exe
 
    Replace {path} with the path that leads to the executable.
    Don't type {default}, this is the value for the key itself.
 
 To remove "Edit with Vim" from the popup menu, just remove the registry
-entries mentioned above.  The "uninstal.exe" program can do this for you.  You
-can also use the entry in the Windows standard "Add/Remove Programs" list.
+entries mentioned above.  The "uninstall.exe" program can do this for you.
+You can also use the entry in the Windows standard "Add/Remove Programs" list.
 
 If you notice that this entry overrules other file type associations, set
 those associations again by hand (using Windows Explorer, see above).  This

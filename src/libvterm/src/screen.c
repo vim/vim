@@ -75,6 +75,8 @@ static ScreenCell *getcell(const VTermScreen *screen, int row, int col)
     return NULL;
   if(col < 0 || col >= screen->cols)
     return NULL;
+  if (screen->buffer == NULL)
+    return NULL;
   return screen->buffer + (screen->cols * row) + col;
 }
 
@@ -770,11 +772,28 @@ int vterm_screen_get_cell(const VTermScreen *screen, VTermPos pos, VTermScreenCe
   cell->fg = intcell->pen.fg;
   cell->bg = intcell->pen.bg;
 
-  if(pos.col < (screen->cols - 1) &&
-     getcell(screen, pos.row, pos.col + 1)->chars[0] == (uint32_t)-1)
-    cell->width = 2;
-  else
-    cell->width = 1;
+  if(vterm_get_special_pty_type() == 2) {
+    /* Get correct cell width from cell information contained in line buffer */
+    if(pos.col < (screen->cols - 1) &&
+       getcell(screen, pos.row, pos.col + 1)->chars[0] == (uint32_t)-1) {
+      if(getcell(screen, pos.row, pos.col)->chars[0] == 0x20) {
+        getcell(screen, pos.row, pos.col)->chars[0] = 0;
+        cell->width = 2;
+      } else if(getcell(screen, pos.row, pos.col)->chars[0] == 0) {
+        getcell(screen, pos.row, pos.col + 1)->chars[0] = 0;
+        cell->width = 1;
+      } else {
+        cell->width = 2;
+      }
+    } else
+      cell->width = 1;
+  } else {
+    if(pos.col < (screen->cols - 1) &&
+       getcell(screen, pos.row, pos.col + 1)->chars[0] == (uint32_t)-1)
+      cell->width = 2;
+    else
+      cell->width = 1;
+  }
 
   return 1;
 }
