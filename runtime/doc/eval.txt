@@ -2648,7 +2648,7 @@ pumvisible()			Number	whether popup menu is visible
 pyeval({expr})			any	evaluate |Python| expression
 py3eval({expr})			any	evaluate |python3| expression
 pyxeval({expr})			any	evaluate |python_x| expression
-rand([{expr}])			Number	get random number generated from {expr}
+rand([{expr}])			Number	get pseudo-random number generated
 range({expr} [, {max} [, {stride}]])
 				List	items from {expr} to {max}
 readdir({dir} [, {expr}])	List	file names in {dir} selected by {expr}
@@ -7641,7 +7641,8 @@ range({expr} [, {max} [, {stride}]])				*range()*
 <
 							*rand()*
 rand([{expr}])
-		Return xorshift random Number generated from seed {expr}:
+		Return xorshift pseudo-random Number generated from seed
+		{expr}:
 		If {expr} is omitted, internal seed value is initialized and
 		used. {expr} can be initialized by |srand()|.
 
