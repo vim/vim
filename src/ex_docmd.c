@@ -2359,6 +2359,7 @@ do_one_cmd(
 	    case CMD_browse:
 	    case CMD_call:
 	    case CMD_confirm:
+	    case CMD_const:
 	    case CMD_delfunction:
 	    case CMD_djump:
 	    case CMD_dlist:

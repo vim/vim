@@ -184,6 +184,7 @@ func Test_expr_completion()
   endif
   for cmd in [
 	\ 'let a = ',
+	\ 'const a = ',
 	\ 'if',
 	\ 'elseif',
 	\ 'while',

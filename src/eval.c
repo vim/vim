@@ -1521,7 +1521,7 @@ set_context_for_expression(
     int		c;
     char_u	*p;
 
-    if (cmdidx == CMD_let)
+    if (cmdidx == CMD_let || cmdidx == CMD_const)
     {
 	xp->xp_context = EXPAND_USER_VARS;
 	if (vim_strpbrk(arg, (char_u *)"\"'+-*/%.=!?~|&$([<>,#") == NULL)
