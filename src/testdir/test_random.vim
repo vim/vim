@@ -11,9 +11,15 @@ func Test_Rand()
 
   call test_settime(12341234)
   let s = srand()
-  call assert_equal(s, srand())
-  call test_settime(12341235)
-  call assert_notequal(s, srand())
+  if filereadable('/dev/urandom')
+    " using /dev/urandom
+    call assert_notequal(s, srand())
+  else
+    " using time()
+    call assert_equal(s, srand())
+    call test_settime(12341235)
+    call assert_notequal(s, srand())
+  endif
 
   call srand()
   let v = rand()
@@ -25,4 +31,6 @@ func Test_Rand()
   call assert_fails('echo rand([1, [2], 3, 4])', 'E475:')
   call assert_fails('echo rand([1, 2, [3], 4])', 'E475:')
   call assert_fails('echo rand([1, 2, 3, [4]])', 'E475:')
+
+  call test_settime(0)
 endfunc

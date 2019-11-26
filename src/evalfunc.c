@@ -7095,10 +7095,45 @@ f_sqrt(typval_T *argvars, typval_T *rettv)
     static void
 f_srand(typval_T *argvars, typval_T *rettv)
 {
+    static int dev_urandom_state = -1;  // FAIL or OK once tried
+
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
     if (argvars[0].v_type == VAR_UNKNOWN)
-	list_append_number(rettv->vval.v_list, (varnumber_T)vim_time());
+    {
+	if (dev_urandom_state != FAIL)
+	{
+	    int  fd = open("/dev/urandom", O_RDONLY);
+	    struct {
+		union {
+		    UINT32_T number;
+		    char     bytes[sizeof(UINT32_T)];
+		} cont;
+	    } buf;
+
+	    // Attempt reading /dev/urandom.
+	    if (fd == -1)
+		dev_urandom_state = FAIL;
+	    else
+	    {
+		buf.cont.number = 0;
+		if (read(fd, buf.cont.bytes, sizeof(UINT32_T))
+							   != sizeof(UINT32_T))
+		    dev_urandom_state = FAIL;
+		else
+		{
+		    dev_urandom_state = OK;
+		    list_append_number(rettv->vval.v_list,
+						 (varnumber_T)buf.cont.number);
+		}
+		close(fd);
+	    }
+
+	}
+	if (dev_urandom_state != OK)
+	    // Reading /dev/urandom doesn't work, fall back to time().
+	    list_append_number(rettv->vval.v_list, (varnumber_T)vim_time());
+    }
     else
     {
 	int	    error = FALSE;
@@ -7107,7 +7142,7 @@ f_srand(typval_T *argvars, typval_T *rettv)
 	if (error)
 	    return;
 
-	list_append_number(rettv->vval.v_list, x);
+	list_append_number(rettv->vval.v_list, (varnumber_T)x);
     }
     list_append_number(rettv->vval.v_list, 362436069);
     list_append_number(rettv->vval.v_list, 521288629);
