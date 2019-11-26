@@ -1046,12 +1046,12 @@ file for now, e.g.: >
 
 The test will then fail, giving you the command to compare the reference dump
 and the failed dump, e.g.: >
-	call term_dumpdiff("Test_func.dump.failed", "dumps/Test_func.dump")
+	call term_dumpdiff("failed/Test_func.dump", "dumps/Test_func.dump")
 
 Use this command in Vim, with the current directory set to src/testdir.
 Once you are satisfied with the test, move the failed dump in place of the
 reference: >
-	:!mv Test_func.dump.failed dumps/Test_func.dump
+	:!mv failed/Test_func.dump dumps/Test_func.dump
 
 
 Creating a screen dump ~

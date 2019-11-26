@@ -918,8 +918,8 @@ fun! netrw#Explore(indx,dosplit,style,...)
       NetrwKeepj call netrw#ErrorMsg(s:WARNING,"using Nexplore or <s-down> improperly; see help for netrw-starstar",40)
       if has("clipboard")
 "       call Decho("(netrw#Explore) restore @* and @+",'~'.expand("<slnum>"))
-       sil! let @* = keepregstar
-       sil! let @+ = keepregplus
+       if @* != keepregstar | sil! let @* = keepregstar | endif
+       if @+ != keepregplus | sil! let @+ = keepregplus | endif
       endif
       sil! let @/ = keepregslash
 "      call Dret("netrw#Explore")
@@ -944,8 +944,8 @@ fun! netrw#Explore(indx,dosplit,style,...)
       NetrwKeepj call netrw#ErrorMsg(s:WARNING,"using Pexplore or <s-up> improperly; see help for netrw-starstar",41)
       if has("clipboard")
 "       call Decho("(netrw#Explore) restore @* and @+",'~'.expand("<slnum>"))
-       sil! let @* = keepregstar
-       sil! let @+ = keepregplus
+       if @* != keepregstar | sil! let @* = keepregstar | endif
+       if @+ != keepregplus | sil! let @+ = keepregplus | endif
       endif
       sil! let @/ = keepregslash
 "      call Dret("netrw#Explore")
@@ -1000,8 +1000,8 @@ fun! netrw#Explore(indx,dosplit,style,...)
        if &hls | let keepregslash= s:ExplorePatHls(pattern) | endif
        if has("clipboard")
 "        call Decho("(netrw#Explore) restore @* and @+",'~'.expand("<slnum>"))
-	sil! let @* = keepregstar
-	sil! let @+ = keepregplus
+        if @* != keepregstar | sil! let @* = keepregstar | endif
+        if @+ != keepregplus | sil! let @+ = keepregplus | endif
        endif
        sil! let @/ = keepregslash
 "       call Dret("netrw#Explore : no files matched pattern")
@@ -1037,8 +1037,8 @@ fun! netrw#Explore(indx,dosplit,style,...)
       keepalt NetrwKeepj call netrw#ErrorMsg(s:WARNING,"no files matched",42)
       if has("clipboard")
 "       call Decho("(netrw#Explore) restore @* and @+",'~'.expand("<slnum>"))
-       sil! let @* = keepregstar
-       sil! let @+ = keepregplus
+        if @* != keepregstar | sil! let @* = keepregstar | endif
+        if @+ != keepregplus | sil! let @+ = keepregplus | endif
       endif
       sil! let @/ = keepregslash
 "      call Dret("netrw#Explore : no files matched")
@@ -1086,8 +1086,8 @@ fun! netrw#Explore(indx,dosplit,style,...)
     endif
     if has("clipboard")
 "     call Decho("(netrw#Explore) restore @* and @+",'~'.expand("<slnum>"))
-     sil! let @* = keepregstar
-     sil! let @+ = keepregplus
+      if @* != keepregstar | sil! let @* = keepregstar | endif
+      if @+ != keepregplus | sil! let @+ = keepregplus | endif
     endif
     sil! let @/ = keepregslash
 "    call Dret("netrw#Explore : missing +path_extra")
@@ -1160,8 +1160,8 @@ fun! netrw#Explore(indx,dosplit,style,...)
   let s:netrw_events= 2
   if has("clipboard")
 "   call Decho("(netrw#Explore) restore @* and @+",'~'.expand("<slnum>"))
-   sil! let @* = keepregstar
-   sil! let @+ = keepregplus
+   if @* != keepregstar | sil! let @* = keepregstar | endif
+   if @+ != keepregplus | sil! let @+ = keepregplus | endif
   endif
   sil! let @/ = keepregslash
 "  call Dret("netrw#Explore : @/<".@/.">")
@@ -9602,8 +9602,8 @@ fun! s:NetrwWideListing()
    endwhile
    if has("clipboard")
 "    call Decho("(s:NetrwWideListing) restore @* and @+",'~'.expand("<slnum>"))
-    sil! let @*= keepregstar
-    sil! let @+= keepregplus
+    if @* != keepregstar | sil! let @* = keepregstar | endif
+    if @+ != keepregplus | sil! let @+ = keepregplus | endif
    endif
    exe "sil! NetrwKeepj ".w:netrw_bannercnt.',$s/\s\+$//e'
    NetrwKeepj call histdel("/",-1)

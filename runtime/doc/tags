@@ -5557,6 +5557,8 @@ c_CTRL-R_CTRL-O	cmdline.txt	/*c_CTRL-R_CTRL-O*
 c_CTRL-R_CTRL-P	cmdline.txt	/*c_CTRL-R_CTRL-P*
 c_CTRL-R_CTRL-R	cmdline.txt	/*c_CTRL-R_CTRL-R*
 c_CTRL-R_CTRL-W	cmdline.txt	/*c_CTRL-R_CTRL-W*
+c_CTRL-SHIFT-Q	cmdline.txt	/*c_CTRL-SHIFT-Q*
+c_CTRL-SHIFT-V	cmdline.txt	/*c_CTRL-SHIFT-V*
 c_CTRL-T	cmdline.txt	/*c_CTRL-T*
 c_CTRL-U	cmdline.txt	/*c_CTRL-U*
 c_CTRL-V	cmdline.txt	/*c_CTRL-V*
@@ -7253,6 +7255,7 @@ i_CTRL-R_=	insert.txt	/*i_CTRL-R_=*
 i_CTRL-R_CTRL-O	insert.txt	/*i_CTRL-R_CTRL-O*
 i_CTRL-R_CTRL-P	insert.txt	/*i_CTRL-R_CTRL-P*
 i_CTRL-R_CTRL-R	insert.txt	/*i_CTRL-R_CTRL-R*
+i_CTRL-SHIFT-V	insert.txt	/*i_CTRL-SHIFT-V*
 i_CTRL-T	insert.txt	/*i_CTRL-T*
 i_CTRL-U	insert.txt	/*i_CTRL-U*
 i_CTRL-V	insert.txt	/*i_CTRL-V*
@@ -7382,6 +7385,7 @@ interfaces-5.2	version5.txt	/*interfaces-5.2*
 internal-variables	eval.txt	/*internal-variables*
 internal-wordlist	spell.txt	/*internal-wordlist*
 internet	intro.txt	/*internet*
+interrupt()	eval.txt	/*interrupt()*
 intro	intro.txt	/*intro*
 intro.txt	intro.txt	/*intro.txt*
 inverse	syntax.txt	/*inverse*
@@ -8517,6 +8521,7 @@ quotestar	gui.txt	/*quotestar*
 quote~	change.txt	/*quote~*
 r	change.txt	/*r*
 r.vim	syntax.txt	/*r.vim*
+rand()	eval.txt	/*rand()*
 range()	eval.txt	/*range()*
 raw-terminal-mode	term.txt	/*raw-terminal-mode*
 rcp	pi_netrw.txt	/*rcp*
@@ -8938,6 +8943,7 @@ sqlj	ft_sql.txt	/*sqlj*
 sqlserver	ft_sql.txt	/*sqlserver*
 sqlsettype	ft_sql.txt	/*sqlsettype*
 sqrt()	eval.txt	/*sqrt()*
+srand()	eval.txt	/*srand()*
 sscanf	eval.txt	/*sscanf*
 standard-plugin	usr_05.txt	/*standard-plugin*
 standard-plugin-list	help.txt	/*standard-plugin-list*
@@ -8957,6 +8963,7 @@ state()	eval.txt	/*state()*
 static-tag	tagsrch.txt	/*static-tag*
 status-line	windows.txt	/*status-line*
 statusmsg-variable	eval.txt	/*statusmsg-variable*
+stl-%{	options.txt	/*stl-%{*
 str2float()	eval.txt	/*str2float()*
 str2list()	eval.txt	/*str2list()*
 str2nr()	eval.txt	/*str2nr()*
@@ -8977,6 +8984,7 @@ string-match	eval.txt	/*string-match*
 strlen()	eval.txt	/*strlen()*
 strpart()	eval.txt	/*strpart()*
 strpbrk()	eval.txt	/*strpbrk()*
+strptime()	eval.txt	/*strptime()*
 strrchr()	eval.txt	/*strrchr()*
 strridx()	eval.txt	/*strridx()*
 strspn()	eval.txt	/*strspn()*

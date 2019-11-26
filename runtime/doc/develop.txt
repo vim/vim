@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 8.1.  Last change: 2019 Aug 05
+*develop.txt*   For Vim version 8.1.  Last change: 2019 Nov 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -195,10 +195,14 @@ problems for existing patches.  Only use them for new and changed code.
 
 Comments ~
 
-Traditionally Vim uses /* comments */.  We intend to keep it that way,
-especially for file and function headers.  For new code or lines of code that
-change, it is allowed to use // comments.  Especially when it comes after
-code:
+Traditionally Vim uses /* comments */.  We intend to keep it that way
+for file and function headers and larger blocks of code, E.g.:
+	/*
+	 * The "foo" argument does something useful.
+	 * Return OK or FAIL.
+	 */
+For new code or lines of code that change, it is preferred to use // comments.
+Especially when it comes after code:
 	int some_var;  // single line comment useful here
 
 Enums ~

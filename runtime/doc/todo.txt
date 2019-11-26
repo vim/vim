@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 19
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,10 +38,7 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch 2314 for vi' causes a new problem.  #5247
-
-Patch from Namsh to allow building with both XIM and hangulin. (2019 Aug 29)
-
+For rand() use http://prng.di.unimi.it/xoshiro128starstar.c ?
 
 Popup windows:
 - Use popup (or popup menu) for command line completion
@@ -49,7 +46,7 @@ Popup windows:
 - Make redrawing more efficient and avoid flicker:
     - put popup menu also in popup_mask?
 - Any other commands to disable in a popup window?
-  Use ERROR_IF_POPUP_WINDOW for more commands.
+  Use ERROR_IF_POPUP_WINDOW for these.
 - Figure out the size and position better.
     if wrapping splits a double-wide character
     if wrapping inserts indent
@@ -62,8 +59,6 @@ Text properties:
 - See remarks at top of src/textprop.c
 
 'incsearch' with :s: 
-- Get E20 when using command history to get "'<,'>s/a/b" and no Visual area
-  was set. (issue #3837)
 - :s/foo  using CTRL-G moves to another line, should not happen, or use the
   correct line (it uses the last but one line) (Lifepillar, Aug 18, #3345)
 - :s@pat/tern@ doesn't include "/" in the pattern. (Takahiro Yoshihara, #3637)
@@ -137,20 +132,14 @@ Motif: Build on Ubuntu can't enter any text in dialog text fields.
 Patch to properly break CJK lines: Anton Kochkov, #3875
 Flag in 'formatoptions' is not used in the tests.
 
-Remove check for cmd_silent when calling search_stat()? (Gary Johnson)
-
 undo result wrong: Masato Nishihata, #4798
 
 Undo puts cursor in wrong line after "cG<Esc>" undo.
 
 Sound: support on Mac?  Or does libcanberra work there?
 
-Patch to user manual: #5098.  Comments by DC Slagel:
-- semicolon use should be OK.
-- Keep capital after colon.
-
-Patch to fix session file when using multiple tabs. (Jason Franklin, 2019 May
-20)
+Patch to fix session file when using multiple tab pages. (Jason Franklin, 2019
+May 20)
 Also put :argadd commands at the start for all buffers, so that their order
 remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 Also #4994: window-local options not always restored, related to using :badd.
@@ -198,14 +187,8 @@ with packages under "start". (xtal8, #1994)
 Modeless selection doesn't work in gvim. (#4783)
 Caused by patch 8.1.1534.
 
-Patch to add random number generator. (Hong Xu, 2010 Nov 8, update Nov 10)
-Alternative from Christian Brabandt. (2010 Sep 19)
-New one from Yasuhiro Matsumoto, #1277.
-
 Visual highlight not removed when 'dipslay' is "lastline" and line doesn't
 fit. (Kevin Lawler, #4457)
-
-Patch to add interrupt(). (Yasuhiro Matsumoto, #2834)
 
 Patch to add per-tabpage and per-window previous directory: "lcd -" and "tcd
 -". (Yegappan Lakshmanan, #4362)
@@ -239,7 +222,7 @@ Add a WindowScrolled event.  Trigger around the same time as CursorMoved.
 Can be used to update highlighting. #3127  #5181
 
 Patch for Template string: #4491.  New pull: #4634
-Have another look at the implementation: Is the code worth it?
+Implementation is too inefficient, avoid using lambda.
 
 Incorrect formatting with autoindent. (Sebastian Gniazdowski, #4909)
 
@@ -558,9 +541,6 @@ terminal title changes. (Josh Triplett, 2018 Sep 9, #3418)
 How would we know that the status line needs to be updated?
 
 Adjust windows installer explanation of behavior. (scootergrisen, #3310)
-
-Set g:actual_curbuf when evaluating 'statusline', not just with an expression.
-(Daniel Hahler, 2018 Aug 8, #3299)
 
 Update for xim-input-style help (Tony Mechelynck, 2019 Jan 10).
 Feedback from someone who uses this?
