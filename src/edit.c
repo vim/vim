@@ -3906,6 +3906,7 @@ ins_reg(void)
      * deleted when ESC is hit.
      */
     ++no_mapping;
+    ++allow_keys;
     regname = plain_vgetc();
     LANGMAP_ADJUST(regname, TRUE);
     if (regname == Ctrl_R || regname == Ctrl_O || regname == Ctrl_P)
@@ -3919,6 +3920,7 @@ ins_reg(void)
 	LANGMAP_ADJUST(regname, TRUE);
     }
     --no_mapping;
+    --allow_keys;
 
 #ifdef FEAT_EVAL
     /* Don't call u_sync() while typing the expression or giving an error
@@ -4010,8 +4012,10 @@ ins_ctrl_g(void)
      * deleted when ESC is hit.
      */
     ++no_mapping;
+    ++allow_keys;
     c = plain_vgetc();
     --no_mapping;
+    --allow_keys;
     switch (c)
     {
 	/* CTRL-G k and CTRL-G <Up>: cursor up to Insstart.col */

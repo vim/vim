@@ -1209,6 +1209,27 @@ func Test_modifyOtherKeys_basic()
   call RunTest_modifyOtherKeys(function('GetEscCodeCSIu'))
 endfunc
 
+func Test_modifyOtherKeys_no_mapping()
+  set timeoutlen=10
+
+  let @a = 'aaa'
+  call feedkeys(":let x = '" .. GetEscCodeCSI27('R', 5) .. GetEscCodeCSI27('R', 5) .. "a'\<CR>", 'Lx!')
+  call assert_equal("let x = 'aaa'", @:)
+
+  new
+  call feedkeys("a" .. GetEscCodeCSI27('R', 5) .. GetEscCodeCSI27('R', 5) .. "a\<Esc>", 'Lx!')
+  call assert_equal("aaa", getline(1))
+  bwipe!
+
+  new
+  call feedkeys("axx\<CR>yy" .. GetEscCodeCSI27('G', 5) .. GetEscCodeCSI27('K', 5) .. "a\<Esc>", 'Lx!')
+  call assert_equal("axx", getline(1))
+  call assert_equal("yy", getline(2))
+  bwipe!
+
+  set timeoutlen&
+endfunc
+
 func RunTest_mapping_shift(key, func)
   call setline(1, '')
   if a:key == '|'
