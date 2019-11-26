@@ -1230,8 +1230,7 @@ win_line(
 		    if (tocol == vcol)
 			tocol += n_extra;
 		    // combine 'showbreak' with 'wincolor'
-		    if (win_attr != 0)
-			char_attr = hl_combine_attr(win_attr, char_attr);
+		    char_attr = hl_combine_attr(win_attr, char_attr);
 #  ifdef FEAT_SYN_HL
 		    // combine 'showbreak' with 'cursorline'
 		    if (cul_attr != 0)
@@ -1616,6 +1615,8 @@ win_line(
 			if (cul_attr)
 			    multi_attr = hl_combine_attr(multi_attr, cul_attr);
 #endif
+			multi_attr = hl_combine_attr(win_attr, multi_attr);
+
 			// put the pointer back to output the double-width
 			// character at the start of the next line.
 			++n_extra;
@@ -1790,7 +1791,7 @@ win_line(
 		    mb_c = c;
 		    mb_utf8 = FALSE;
 		    mb_l = 1;
-		    multi_attr = HL_ATTR(HLF_AT);
+		    multi_attr = hl_combine_attr(win_attr, HL_ATTR(HLF_AT));
 		    // Put pointer back so that the character will be
 		    // displayed at the start of the next line.
 		    --ptr;
