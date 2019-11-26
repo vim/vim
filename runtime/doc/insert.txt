@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.1.  Last change: 2019 Oct 20
+*insert.txt*    For Vim version 8.1.  Last change: 2019 Nov 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -196,6 +196,13 @@ CTRL-V		Insert next non-digit literally.  For special keys, the
 		mapping.
 		Note: When CTRL-V is mapped (e.g., to paste text) you can
 		often use CTRL-Q instead |i_CTRL-Q|.
+		When |modifyOtherKeys| is enabled then special Escape sequence
+		is converted back to what it was without |modifyOtherKeys|,
+		unless the Shift key is also pressed.
+
+						*i_CTRL-SHIFT-V*
+CTRL-SHIFT-V	Works just like CTRL-V, unless |modifyOtherKeys| is active,
+		then it inserts the Escape sequence for a key with modifiers.
 
 						*i_CTRL-Q*
 CTRL-Q		Same as CTRL-V.

@@ -1531,6 +1531,7 @@ ins_ctrl_v(void)
 {
     int		c;
     int		did_putchar = FALSE;
+    int		prev_mod_mask = mod_mask;
 
     /* may need to redraw when no more chars available now */
     ins_redraw(FALSE);
@@ -1554,11 +1555,70 @@ ins_ctrl_v(void)
 #ifdef FEAT_CMDL_INFO
     clear_showcmd();
 #endif
+
+    if ((c == ESC || c == CSI) && !(prev_mod_mask & MOD_MASK_SHIFT))
+	// Using CTRL-V: Change any modifyOtherKeys ESC sequence to a normal
+	// key.  Don't do this for CTRL-SHIFT-V.
+	c = decodeModifyOtherKeys(c);
+
     insert_special(c, FALSE, TRUE);
 #ifdef FEAT_RIGHTLEFT
     revins_chars++;
     revins_legal++;
 #endif
+}
+
+/*
+ * After getting an ESC or CSI for a literal key: If the typeahead buffer
+ * contains a modifyOtherKeys sequence then decode it and return the result.
+ * Otherwise return "c".
+ * Note that this doesn't wait for characters, they must be in the typeahead
+ * buffer already.
+ */
+    int
+decodeModifyOtherKeys(int c)
+{
+    char_u  *p = typebuf.tb_buf + typebuf.tb_off;
+    int	    idx;
+    int	    form = 0;
+    int	    argidx = 0;
+    int	    arg[2] = {0, 0};
+
+    // Recognize:
+    // form 0: {lead}{key};{modifier}u
+    // form 1: {lead}27;{modifier};{key}~
+    if ((c == CSI || (c == ESC && *p == '[')) && typebuf.tb_len >= 4)
+    {
+	idx = (*p == '[');
+	if (p[idx] == '2' && p[idx + 1] == '7' && p[idx + 2] == ';')
+	{
+	    form = 1;
+	    idx += 3;
+	}
+	while (idx < typebuf.tb_len && argidx < 2)
+	{
+	    if (p[idx] == ';')
+		++argidx;
+	    else if (VIM_ISDIGIT(p[idx]))
+		arg[argidx] = arg[argidx] * 10 + (p[idx] - '0');
+	    else
+		break;
+	    ++idx;
+	}
+	if (idx < typebuf.tb_len
+		&& p[idx] == (form == 1 ? '~' : 'u')
+		&& argidx == 1)
+	{
+	    // Match, consume the code.
+	    typebuf.tb_off += idx + 1;
+	    typebuf.tb_len -= idx + 1;
+
+	    mod_mask = decode_modifiers(arg[!form]);
+	    c = merge_modifyOtherKeys(arg[form]);
+	}
+    }
+
+    return c;
 }
 
 /*

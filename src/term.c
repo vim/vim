@@ -4277,7 +4277,7 @@ put_string_in_typebuf(
 /*
  * Decode a modifier number as xterm provides it into MOD_MASK bits.
  */
-    static int
+    int
 decode_modifiers(int n)
 {
     int	    code = n - 1;
