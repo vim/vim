@@ -1,0 +1,9 @@
+freebsd_12_task:
+  freebsd_instance:
+    image: freebsd-12-1-release-amd64
+  install_script:
+    pkg install -y gettext gmake
+  build_script:
+    - gmake
+  test_script:
+    - gmake test
