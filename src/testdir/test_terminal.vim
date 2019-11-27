@@ -870,6 +870,7 @@ func Test_terminal_wqall()
 endfunc
 
 func Test_terminal_composing_unicode()
+  CheckNotBSD
   let save_enc = &encoding
   set encoding=utf-8
 
