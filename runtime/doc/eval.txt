@@ -7641,9 +7641,9 @@ range({expr} [, {max} [, {stride}]])				*range()*
 <
 
 rand([{expr}])						*rand()*
-		Return a pseudo-random Number generated with an xorshift
-		algorithm using seed {expr}.  The returned number is 32 bits,
-		also on 64 bits systems, for consistency.
+		Return a pseudo-random Number generated with an
+		xoroshiro128** algorithm using seed {expr}.  The returned number
+		is 32 bits, also on 64 bits systems, for consistency.
 		{expr} can be initialized by |srand()| and will be updated by
 		rand().  If {expr} is omitted, an internal seed value is used
 		and updated.
