@@ -5145,7 +5145,7 @@ f_rand(typval_T *argvars, typval_T *rettv)
 
 #define ROTL(x, k) ((x << k) | (x >> (32 - k)))
 
-#define SHUFFLE_XOROSHIRO128STARSTAR \
+#define SHUFFLE_XOSHIRO128STARSTAR \
     result = ROTL(y * 5, 7) * 9; \
     t = y << 9; \
     z ^= x; w ^= y; y ^= z, x ^= w; \
@@ -5185,7 +5185,7 @@ f_rand(typval_T *argvars, typval_T *rettv)
 	y = xyzw[1];
 	z = xyzw[2];
 	w = xyzw[3];
-	SHUFFLE_XOROSHIRO128STARSTAR;
+	SHUFFLE_XOSHIRO128STARSTAR;
 	xyzw[0] = x;
 	xyzw[1] = y;
 	xyzw[2] = z;
@@ -5211,7 +5211,7 @@ f_rand(typval_T *argvars, typval_T *rettv)
 	y = (UINT32_T)ly->li_tv.vval.v_number;
 	z = (UINT32_T)lz->li_tv.vval.v_number;
 	w = (UINT32_T)lw->li_tv.vval.v_number;
-	SHUFFLE_XOROSHIRO128STARSTAR;
+	SHUFFLE_XOSHIRO128STARSTAR;
 	lx->li_tv.vval.v_number = (varnumber_T)x;
 	ly->li_tv.vval.v_number = (varnumber_T)y;
 	lz->li_tv.vval.v_number = (varnumber_T)z;
