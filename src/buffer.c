@@ -3979,6 +3979,8 @@ build_stl_str_hl(
 #ifdef FEAT_EVAL
     win_T	*save_curwin;
     buf_T	*save_curbuf;
+    int		save_VIsual_active;
+    int		save_VIsual_select;
 #endif
     int		empty_line;
     colnr_T	virtcol;
@@ -4366,6 +4368,12 @@ build_stl_str_hl(
 	    vim_snprintf((char *)win_tmp, sizeof(win_tmp), "%d", curwin->w_id);
 	    set_internal_string_var((char_u *)"g:actual_curwin", win_tmp);
 
+	    save_VIsual_active = VIsual_active;
+	    save_VIsual_select = VIsual_select;
+	    if (wp != curwin) {
+		VIsual_active = FALSE;
+		VIsual_select = FALSE;
+	    }
 	    save_curbuf = curbuf;
 	    save_curwin = curwin;
 	    curwin = wp;
@@ -4375,6 +4383,8 @@ build_stl_str_hl(
 
 	    curwin = save_curwin;
 	    curbuf = save_curbuf;
+	    VIsual_active = save_VIsual_active;
+	    VIsual_select = save_VIsual_select;
 	    do_unlet((char_u *)"g:actual_curbuf", TRUE);
 	    do_unlet((char_u *)"g:actual_curwin", TRUE);
 
