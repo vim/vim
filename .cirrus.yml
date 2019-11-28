@@ -1,9 +1,16 @@
+env:
+  #CIRRUS_CLONE_DEPTH: 1
+  FEATURES: huge
+
 freebsd_12_task:
   freebsd_instance:
     image: freebsd-12-1-release-amd64
   install_script:
-    pkg install -y gettext gmake
+    pkg install -y gettext
   build_script:
-    - gmake
+    - NPROC=$(getconf _NPROCESSORS_ONLN)
+    - ./configure --with-features=${FEATURES}
+    - make -j${NPROC}
+    - src/vim --version
   test_script:
-    - gmake test
+    - make test
