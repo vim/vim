@@ -1204,8 +1204,8 @@ func Test_normal23_K()
     return
   endif
 
-  if has('mac')
-    " In MacOS, the option for specifying a pager is different
+  if has('mac') || has('bsd')
+    " In MacOS and BSD, the option for specifying a pager is different
     set keywordprg=man\ -P\ cat
   else
     set keywordprg=man\ --pager=cat
