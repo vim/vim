@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.1.  Last change: 2019 Nov 25
+*eval.txt*	For Vim version 8.1.  Last change: 2019 Nov 28
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7641,7 +7641,7 @@ range({expr} [, {max} [, {stride}]])				*range()*
 <
 
 rand([{expr}])						*rand()*
-		Return a pseudo-random Number generated with an xorshift
+		Return a pseudo-random Number generated with an xoshiro128**
 		algorithm using seed {expr}.  The returned number is 32 bits,
 		also on 64 bits systems, for consistency.
 		{expr} can be initialized by |srand()| and will be updated by
@@ -9150,11 +9150,11 @@ sqrt({expr})						*sqrt()*
 srand([{expr}])						*srand()*
 		Initialize seed used by |rand()|:
 		- If {expr} is not given, seed values are initialized by
-		  time(NULL) a.k.a. epoch time.  This only has second
-		  accuracy.
-		- If {expr} is given, return seed values which x element is
-		  {expr}.  This is useful for testing or when a predictable
-		  sequence is expected.
+		  reading from /dev/urandom, if possible, or using time(NULL)
+		  a.k.a. epoch time otherwise; this only has second accuracy.
+		- If {expr} is given it must be a Number.  It is used to
+		  initialize the seed values.  This is useful for testing or
+		  when a predictable sequence is intended.
 
 		Examples: >
 			:let seed = srand()
