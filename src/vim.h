@@ -36,7 +36,7 @@
     Error: configure did not run properly.  Check auto/config.log.
 # endif
 
-# if defined(UNIX) && !defined(MACOS_X)
+# if defined(__gnu_linux__) || defined(__CYGWIN__)
 // Needed for strptime().  Needs to be done early, since header files can
 // include other header files and end up including time.h, where these symbols
 // matter for Vim.
