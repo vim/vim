@@ -1,5 +1,5 @@
 env:
-  #CIRRUS_CLONE_DEPTH: 1
+  CIRRUS_CLONE_DEPTH: 3
   FEATURES: huge
 
 freebsd_12_task:
@@ -13,4 +13,5 @@ freebsd_12_task:
     - make -j${NPROC}
     - src/vim --version
   test_script:
-    - make test
+    # Runtime Indent tests do not work, run only the normal test suite
+    - cd src && make test

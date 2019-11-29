@@ -8,6 +8,7 @@ SRC_ALL =	\
 		.hgignore \
 		.lgtm.yml \
 		.travis.yml \
+		.cirrus.yml \
 		appveyor.yml \
 		ci/appveyor.bat \
 		src/Make_all.mak \
