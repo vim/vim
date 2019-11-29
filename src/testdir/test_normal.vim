@@ -1204,7 +1204,8 @@ func Test_normal23_K()
     return
   endif
 
-  if has('mac') || has('bsd')
+  let mac_or_bsd = has('mac') || has('bsd')
+  if mac_or_bsd
     " In MacOS and BSD, the option for specifying a pager is different
     set keywordprg=man\ -P\ cat
   else
@@ -1213,7 +1214,7 @@ func Test_normal23_K()
   " Test for using man
   2
   let a = execute('unsilent norm! K')
-  if has('mac')
+  if mac_or_bsd
     call assert_match("man -P cat 'man'", a)
   else
     call assert_match("man --pager=cat 'man'", a)
