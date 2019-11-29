@@ -3355,7 +3355,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_SEARCHPATH
 	"file_in_path",
 #endif
-#ifdef FEAT_FILTERPIPE
+#if defined(FEAT_FILTERPIPE) && !defined(VIMDLL)
 	"filterpipe",
 #endif
 #ifdef FEAT_FIND_ID
@@ -3818,6 +3818,10 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_CLIPBOARD
 	else if (STRICMP(name, "clipboard_working") == 0)
 	    n = clip_star.available;
+#endif
+#ifdef VIMDLL
+	else if (STRICMP(name, "filterpipe") == 0)
+	    n = gui.in_use || gui.starting;
 #endif
     }
 

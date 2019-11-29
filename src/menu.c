@@ -685,7 +685,11 @@ add_menu_path(
 	    if (	addtearoff
 		    && *next_name
 		    && vim_strchr(p_go, GO_TEAROFF) != NULL
-		    && menu_is_menubar(name))
+		    && menu_is_menubar(name)
+#  ifdef VIMDLL
+		    && (gui.in_use || gui.starting)
+#  endif
+		    )
 	    {
 		char_u		*tearpath;
 

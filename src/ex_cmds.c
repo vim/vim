@@ -1068,6 +1068,9 @@ do_filter(
     pos_T	orig_start = curbuf->b_op_start;
     pos_T	orig_end = curbuf->b_op_end;
     int		save_lockmarks = cmdmod.lockmarks;
+#ifdef FEAT_FILTERPIPE
+    int		stmp = p_stmp;
+#endif
 
     if (*cmd == NUL)	    /* no filter command */
 	return;
@@ -1100,20 +1103,25 @@ do_filter(
 	shell_flags |= SHELL_DOOUT;
 
 #ifdef FEAT_FILTERPIPE
-    if (!do_in && do_out && !p_stmp)
+# ifdef VIMDLL
+    if (!gui.in_use && !gui.starting)
+	stmp = 1;   // Console mode doesn't support filterpipe.
+# endif
+
+    if (!do_in && do_out && !stmp)
     {
 	/* Use a pipe to fetch stdout of the command, do not use a temp file. */
 	shell_flags |= SHELL_READ;
 	curwin->w_cursor.lnum = line2;
     }
-    else if (do_in && !do_out && !p_stmp)
+    else if (do_in && !do_out && !stmp)
     {
 	/* Use a pipe to write stdin of the command, do not use a temp file. */
 	shell_flags |= SHELL_WRITE;
 	curbuf->b_op_start.lnum = line1;
 	curbuf->b_op_end.lnum = line2;
     }
-    else if (do_in && do_out && !p_stmp)
+    else if (do_in && do_out && !stmp)
     {
 	/* Use a pipe to write stdin and fetch stdout of the command, do not
 	 * use a temp file. */

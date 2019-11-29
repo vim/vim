@@ -177,6 +177,11 @@ void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void 
 # include "mouse.pro"
 # include "move.pro"
 # include "mbyte.pro"
+# ifdef VIMDLL
+// Function name differs when VIMDLL is defined
+int mbyte_im_get_status(void);
+void mbyte_im_set_active(int active_arg);
+# endif
 # include "normal.pro"
 # include "ops.pro"
 # include "option.pro"
