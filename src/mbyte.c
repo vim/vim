@@ -4789,7 +4789,8 @@ iconv_end(void)
 # define USE_IMSTATUSFUNC (*p_imsf != NUL)
 #endif
 
-#if defined(FEAT_EVAL) && (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM))
+#if defined(FEAT_EVAL) && \
+    (defined(FEAT_XIM) || defined(IME_WITHOUT_XIM) || defined(VIMDLL))
     static void
 call_imactivatefunc(int active)
 {
@@ -6454,11 +6455,15 @@ xim_get_status_area_height(void)
 
 #else /* !defined(FEAT_XIM) */
 
-# ifdef IME_WITHOUT_XIM
+# if defined(IME_WITHOUT_XIM) || defined(VIMDLL)
 static int im_was_set_active = FALSE;
 
     int
+#  ifdef VIMDLL
+mbyte_im_get_status(void)
+#  else
 im_get_status(void)
+#  endif
 {
 #  if defined(FEAT_EVAL)
     if (USE_IMSTATUSFUNC)
@@ -6468,7 +6473,11 @@ im_get_status(void)
 }
 
     void
+#  ifdef VIMDLL
+mbyte_im_set_active(int active_arg)
+#  else
 im_set_active(int active_arg)
+#  endif
 {
 #  if defined(FEAT_EVAL)
     int	    active = !p_imdisable && active_arg;
@@ -6481,7 +6490,7 @@ im_set_active(int active_arg)
 #  endif
 }
 
-#  ifdef FEAT_GUI
+#  if defined(FEAT_GUI) && !defined(VIMDLL)
     void
 im_set_position(int row UNUSED, int col UNUSED)
 {
