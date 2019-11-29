@@ -52,16 +52,10 @@ all install uninstall tools config configure reconfig proto depend lint tags typ
 # Executable used for running the indent tests.
 VIM_FOR_INDENTTEST = ../../src/vim
 
-# this runs the indent tests, errors won't be caught,
-# so that the resulting diff will be shown. However, since
-# diff returns with an exit code !=0 if a difference is found,
-# it will abort on the first difference found and only show
-# the first diff
 indenttest:
 	cd runtime/indent && \
 		$(MAKE) clean && \
-		$(MAKE) test VIM="$(VIM_FOR_INDENTTEST)" || true; \
-		for i in testdir/*.fail; do diff -Nu $${i%.fail}.ok $$i ; done
+		$(MAKE) test VIM="$(VIM_FOR_INDENTTEST)"
 		
 
 #########################################################################
