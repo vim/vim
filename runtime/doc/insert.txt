@@ -1147,7 +1147,7 @@ properties can be changed with |popup_setoptions()|.
 
 						*complete-popuphidden*
 If the information for the popup is obtained asynchronously, use "popuphidden"
-in 'completeopt'.  The info popup will then be initally hidden and
+in 'completeopt'.  The info popup will then be initially hidden and
 |popup_show()| must be called once it has been filled with the info.  This can
 be done with a |CompleteChanged| autocommand, something like this: >
 	set completeopt+=popuphidden

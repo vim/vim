@@ -129,7 +129,7 @@ fun! getscript#GetLatestVimScripts()
 " insure that wget is executable
   if executable(g:GetLatestVimScripts_wget) != 1
    echoerr "GetLatestVimScripts needs ".g:GetLatestVimScripts_wget." which apparently is not available on your system"
-"   call Dret("GetLatestVimScripts : wget not executable/availble")
+"   call Dret("GetLatestVimScripts : wget not executable/available")
    return
   endif
 

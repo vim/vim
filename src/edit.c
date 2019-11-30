@@ -4807,7 +4807,7 @@ ins_bs(
 	}
 
 	/*
-	 * Delete upto starting point, start of line or previous word.
+	 * Delete up to starting point, start of line or previous word.
 	 */
 	else
 	{

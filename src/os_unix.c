@@ -6257,7 +6257,7 @@ select_eintr:
 		maxfd = ConnectionNumber(xterm_dpy);
 
 	    /* An event may have already been read but not handled.  In
-	     * particulary, XFlush may cause this. */
+	     * particularly, XFlush may cause this. */
 	    xterm_update();
 	}
 # endif

@@ -2585,7 +2585,7 @@ win_update(win_T *wp)
 						    != (VALID_WCOL|VALID_WROW))
 	    {
 		// A win_line() call applied a fix to screen cursor column to
-		// accomodate concealment of cursor line, but in this call to
+		// accommodate concealment of cursor line, but in this call to
 		// update_topline() the cursor's row or column got invalidated.
 		// If they are left invalid, setcursor() will recompute them
 		// but there won't be any further win_line() call to re-fix the

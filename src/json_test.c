@@ -23,7 +23,7 @@
 
 #if defined(FEAT_EVAL)
 /*
- * Test json_find_end() with imcomplete items.
+ * Test json_find_end() with incomplete items.
  */
     static void
 test_decode_find_end(void)

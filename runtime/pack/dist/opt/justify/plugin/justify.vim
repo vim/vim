@@ -31,7 +31,7 @@
 " An argument of '' is accepted, should the user  like  to  specify  all
 " arguments.
 "
-" To aid user defined commands, negative  values  are  accepted  aswell.
+" To aid user defined commands, negative  values  are  accepted  as well.
 " Using a negative value specifies the default behaviour: any length  of
 " space runs will be used to justify the text.
 

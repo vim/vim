@@ -2863,7 +2863,7 @@ findsent(int dir, long count)
     while (count--)
     {
 	/*
-	 * if on an empty line, skip upto a non-empty line
+	 * if on an empty line, skip up to a non-empty line
 	 */
 	if (gchar_pos(&pos) == NUL)
 	{

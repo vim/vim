@@ -17,7 +17,7 @@ endif
 runtime! syntax/c.vim
 unlet b:current_syntax
 
-" Ch extentions
+" Ch extensions
 
 syn keyword	chStatement	new delete this foreach
 syn keyword	chAccess	public private

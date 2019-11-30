@@ -19,7 +19,7 @@ syn case ignore
 
 
 
-" Vim search and movement commands on identifers
+" Vim search and movement commands on identifiers
 "  Comments at start of a line inside which to skip search for indentifiers
 setlocal comments=:;
 "  Identifier Keyword characters (defines \k)

@@ -3,7 +3,7 @@
 " Errors are appended to the test.log file.
 "
 " To execute only specific test functions, add a second argument.  It will be
-" matched against the names of the Test_ funtion.  E.g.:
+" matched against the names of the Test_ function.  E.g.:
 "	../vim -u NONE -S runtest.vim test_channel.vim open_delay
 " The output can be found in the "messages" file.
 "

@@ -3378,7 +3378,7 @@ highlight_changed(void)
 	     * bold-underlined.
 	     */
 	    attr = 0;
-	    for ( ; *p && *p != ','; ++p)	    // parse upto comma
+	    for ( ; *p && *p != ','; ++p)	    // parse up to comma
 	    {
 		if (VIM_ISWHITE(*p))		    // ignore white space
 		    continue;

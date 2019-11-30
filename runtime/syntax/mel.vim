@@ -15,7 +15,7 @@ if exists("mel_space_errors")
   sy match	melSpaceError	" \+\t"me=e-1
 endif
 
-" A bunch of usefull MEL keyworks
+" A bunch of useful MEL keyworks
 sy keyword	melBoolean	true false yes no on off
 
 sy keyword	melFunction	proc

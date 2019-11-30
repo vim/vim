@@ -496,15 +496,15 @@ if postscr_level == 2 || postscr_level == 3
 " Page duplexing operators
   syn keyword postscrL2Operator   duplexmode firstside newsheet setduplexmode settumble tumble
 
-" Device compatability operators
+" Device compatibility operators
   syn keyword postscrL2Operator   devdismount devformat devmount devstatus
   syn keyword postscrL2Repeat     devforall
 
-" Imagesetter compatability operators
+" Imagesetter compatibility operators
   syn keyword postscrL2Operator   accuratescreens checkscreen pagemargin pageparams setaccuratescreens setpage
   syn keyword postscrL2Operator   setpagemargin setpageparams
 
-" Misc compatability operators
+" Misc compatibility operators
   syn keyword postscrL2Operator   appletalktype buildtime byteorder checkpassword defaulttimeouts diskonline
   syn keyword postscrL2Operator   diskstatus manualfeed manualfeedtimeout margins mirrorprint pagecount
   syn keyword postscrL2Operator   pagestackorder printername processcolors sethardwareiomode setjobtimeout

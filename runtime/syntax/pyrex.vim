@@ -13,7 +13,7 @@ endif
 runtime! syntax/python.vim
 unlet b:current_syntax
 
-" Pyrex extentions
+" Pyrex extensions
 syn keyword pyrexStatement      cdef typedef ctypedef sizeof
 syn keyword pyrexType		int long short float double char object void
 syn keyword pyrexType		signed unsigned

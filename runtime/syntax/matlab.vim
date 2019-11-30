@@ -53,7 +53,7 @@ syn match matlabFloat		"\<\d\+\(\.\d*\)\=\([edED][-+]\=\d\+\)\=[ij]\=\>"
 " floating point number, starting with a dot, optional exponent
 syn match matlabFloat		"\.\d\+\([edED][-+]\=\d\+\)\=[ij]\=\>"
 
-" Transpose character and delimiters: Either use just [...] or (...) aswell
+" Transpose character and delimiters: Either use just [...] or (...) as well
 syn match matlabDelimiter		"[][]"
 "syn match matlabDelimiter		"[][()]"
 syn match matlabTransposeOperator	"[])a-zA-Z0-9.]'"lc=1
