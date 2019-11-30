@@ -182,7 +182,7 @@ get_sign_display_info(
 }
 #endif
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 static textprop_T	*current_text_props = NULL;
 static buf_T		*current_buf = NULL;
 
@@ -297,7 +297,7 @@ win_line(
     int		*color_cols = NULL;	// pointer to according columns array
 #endif
     int		eol_hl_off = 0;		// 1 if highlighted char after EOL
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     int		text_prop_count;
     int		text_prop_next = 0;	// next text property to use
     textprop_T	*text_props = NULL;
@@ -752,7 +752,7 @@ win_line(
 	area_highlighting = TRUE;
     }
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     if (WIN_IS_POPUP(wp))
 	screen_line_flags |= SLF_POPUP;
 #endif
@@ -924,7 +924,7 @@ win_line(
     }
 #endif
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     {
 	char_u *prop_start;
 
@@ -1347,7 +1347,7 @@ win_line(
 	    }
 #endif
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	    if (text_props != NULL)
 	    {
 		int pi;
@@ -1472,7 +1472,7 @@ win_line(
 # endif
 		}
 	    }
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
 	    // Combine text property highlight into syntax highlight.
 	    if (text_prop_type != NULL)
 	    {
@@ -3124,7 +3124,7 @@ win_line(
 	cap_col = 0;
     }
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     vim_free(text_props);
     vim_free(text_prop_idxs);
 #endif

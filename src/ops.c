@@ -828,7 +828,7 @@ op_delete(oparg_T *oap)
 	    /* replace the line */
 	    ml_replace(lnum, newp, FALSE);
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	    if (curbuf->b_has_textprop && n != 0)
 		adjust_prop_columns(lnum, bd.textcol, -n, 0);
 #endif
@@ -1948,7 +1948,7 @@ do_join(
     int		remove_comments = (use_formatoptions == TRUE)
 				  && has_format_option(FO_REMOVE_COMS);
     int		prev_was_comment;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     textprop_T	**prop_lines = NULL;
     int		*prop_lengths = NULL;
 #endif
@@ -2072,7 +2072,7 @@ do_join(
     cend = newp + sumsize;
     *cend = 0;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // We need to move properties of the lines that are going to be deleted to
     // the new long one.
     if (curbuf->b_has_textprop && !text_prop_frozen)
@@ -2114,7 +2114,7 @@ do_join(
 			 (long)(cend - newp - spaces_removed), spaces_removed);
 	if (t == 0)
 	    break;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (prop_lines != NULL)
 	    adjust_props_for_join(curwin->w_cursor.lnum + t,
 				      prop_lines + t - 1, prop_lengths + t - 1,
@@ -2129,7 +2129,7 @@ do_join(
 	currsize = (int)STRLEN(curr);
     }
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     if (prop_lines != NULL)
 	join_prop_lines(curwin->w_cursor.lnum, newp,
 					      prop_lines, prop_lengths, count);

@@ -3366,7 +3366,7 @@ shorten_fnames(int force)
     }
     status_redraw_all();
     redraw_tabline = TRUE;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     popup_update_preview_title();
 #endif
 }

@@ -3890,7 +3890,7 @@ garbage_collect(int testing)
     if (aucmd_win != NULL)
 	abort = abort || set_ref_in_item(&aucmd_win->w_winvar.di_tv, copyID,
 								  NULL, NULL);
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
 	abort = abort || set_ref_in_item(&wp->w_winvar.di_tv, copyID,
 								  NULL, NULL);
@@ -3954,7 +3954,7 @@ garbage_collect(int testing)
     abort = abort || set_ref_in_term(copyID);
 #endif
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     abort = abort || set_ref_in_popups(copyID);
 #endif
 

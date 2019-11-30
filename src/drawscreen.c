@@ -149,7 +149,7 @@ update_screen(int type_arg)
     }
     updating_screen = TRUE;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // Update popup_mask if needed.  This may set w_redraw_top and w_redraw_bot
     // in some windows.
     may_update_popup_mask(type);
@@ -335,7 +335,7 @@ update_screen(int type_arg)
     FOR_ALL_WINDOWS(wp)
 	wp->w_buffer->b_mod_set = FALSE;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // Display popup windows on top of the windows and command line.
     update_popups(win_update);
 #endif
@@ -2476,7 +2476,7 @@ win_update(win_T *wp)
 	    wp->w_filler_rows = wp->w_height - srow;
 	}
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	else if (WIN_IS_POPUP(wp))
 	{
 	    // popup line that doesn't fit is left as-is
@@ -2647,7 +2647,7 @@ update_prepare(void)
 #ifdef FEAT_SEARCH_EXTRA
     start_search_hl();
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // Update popup_mask if needed.
     may_update_popup_mask(must_redraw);
 #endif
@@ -2763,7 +2763,7 @@ updateWindow(win_T *wp)
 	    )
 	win_redr_status(wp, FALSE);
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // Display popup windows on top of everything.
     update_popups(win_update);
 #endif

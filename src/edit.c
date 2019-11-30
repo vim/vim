@@ -1417,7 +1417,7 @@ ins_redraw(int ready)	    // not busy with something
     /* Trigger CursorMoved if the cursor moved.  Not when the popup menu is
      * visible, the command might delete it. */
     if (ready && (has_cursormovedI()
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
 		|| popup_visible
 # endif
 # if defined(FEAT_CONCEAL)
@@ -1442,7 +1442,7 @@ ins_redraw(int ready)	    // not busy with something
 	    update_curswant();
 	    ins_apply_autocmds(EVENT_CURSORMOVEDI);
 	}
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (popup_visible)
 	    popup_check_cursor_pos();
 #endif
@@ -3775,7 +3775,7 @@ replace_do_bs(int limit_col)
     cc = replace_pop();
     if (cc > 0)
     {
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	size_t	len_before = 0;  // init to shut up GCC
 
 	if (curbuf->b_has_textprop)
@@ -3835,7 +3835,7 @@ replace_do_bs(int limit_col)
 	// mark the buffer as changed and prepare for displaying
 	changed_bytes(curwin->w_cursor.lnum, curwin->w_cursor.col);
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (curbuf->b_has_textprop)
 	{
 	    size_t len_now = STRLEN(ml_get_curline());
@@ -5609,7 +5609,7 @@ ins_tab(void)
 		if ((State & REPLACE_FLAG) && !(State & VREPLACE_FLAG))
 		    for (temp = i; --temp >= 0; )
 			replace_join(repl_off);
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 		curbuf->b_ml.ml_line_len -= i;
 #endif
 	    }

@@ -3678,7 +3678,7 @@ jumpto_tag(
 	    win_close(curwin, FALSE);
 	    postponed_split = 0;
 	}
-#if defined(FEAT_QUICKFIX) && defined(FEAT_TEXT_PROP)
+#if defined(FEAT_QUICKFIX) && defined(FEAT_PROP_POPUP)
 	else if (WIN_IS_POPUP(curwin))
 	{
 	    win_T   *wp = curwin;
@@ -3689,7 +3689,7 @@ jumpto_tag(
 	}
 #endif
     }
-#if defined(FEAT_QUICKFIX) && defined(FEAT_TEXT_PROP)
+#if defined(FEAT_QUICKFIX) && defined(FEAT_PROP_POPUP)
     if (WIN_IS_POPUP(curwin))
 	// something went wrong, still in popup, but it can't have focus
 	win_enter(firstwin, TRUE);

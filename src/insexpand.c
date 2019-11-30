@@ -1811,7 +1811,7 @@ ins_compl_prep(int c)
 	    || c == K_MOUSELEFT || c == K_MOUSERIGHT)
 	return retval;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // Ignore mouse events in a popup window
     if (is_mouse_key(c))
     {

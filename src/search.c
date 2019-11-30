@@ -5724,7 +5724,7 @@ search_line:
 		    redraw_later(VALID);
 		    win_enter(curwin_save, TRUE);
 		}
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
 		else if (WIN_IS_POPUP(curwin))
 		    // can't keep focus in popup window
 		    win_enter(firstwin, TRUE);

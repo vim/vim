@@ -861,7 +861,7 @@ buf_freeall(buf_T *buf, int flags)
 #ifdef FEAT_SYN_HL
     syntax_clear(&buf->b_s);	    // reset syntax info
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     clear_buf_prop_types(buf);
 #endif
     buf->b_flags &= ~BF_READERR;    // a read error is no longer relevant
@@ -5522,7 +5522,7 @@ buf_spname(buf_T *buf)
 	if (bt_prompt(buf))
 	    return (char_u *)_("[Prompt]");
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (bt_popup(buf))
 	    return (char_u *)_("[Popup]");
 #endif

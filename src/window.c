@@ -1426,7 +1426,7 @@ win_init_some(win_T *newp, win_T *oldp)
     int
 win_valid_popup(win_T *win UNUSED)
 {
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     win_T	*wp;
 
     for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
@@ -1473,7 +1473,7 @@ win_valid_any_tab(win_T *win)
 	    if (wp == win)
 		return TRUE;
 	}
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
 	    if (wp == win)
 		return TRUE;
@@ -2525,7 +2525,7 @@ win_close(win_T *win, int free_buf)
 	out_flush();
 #endif
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     if (popup_win_closed(win) && !win_valid(win))
 	return FAIL;
 #endif
@@ -2761,7 +2761,7 @@ win_free_all(void)
 	(void)win_free_mem(aucmd_win, &dummy, NULL);
 	aucmd_win = NULL;
     }
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
     close_all_popups();
 # endif
 
@@ -3778,7 +3778,7 @@ free_tabpage(tabpage_T *tp)
 # ifdef FEAT_DIFF
     diff_clear(tp);
 # endif
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
     while (tp->tp_first_popupwin != NULL)
 	popup_close_tabpage(tp, tp->tp_first_popupwin->w_id);
 #endif
@@ -4686,7 +4686,7 @@ win_enter_ext(
 
     /* set window height to desired minimal value */
     if (curwin->w_height < p_wh && !curwin->w_p_wfh
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	    && !popup_is_popup(curwin)
 #endif
 	    )
@@ -4952,7 +4952,7 @@ win_free(
 #ifdef FEAT_MENU
     remove_winbar(wp);
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     free_callback(&wp->w_close_cb);
     free_callback(&wp->w_filter_cb);
     for (i = 0; i < 4; ++i)
@@ -4991,7 +4991,7 @@ win_unlisted(win_T *wp)
     return wp == aucmd_win || WIN_IS_POPUP(wp);
 }
 
-#if defined(FEAT_TEXT_PROP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*
  * Free a popup window.  This does not take the window out of the window list
  * and assumes there is only one toplevel frame, no split.
