@@ -761,7 +761,7 @@ pum_set_selected(int n, int repeat UNUSED)
 # ifdef FEAT_TEXT_PROP
 	    use_popup_T	use_popup;
 # else
-#  define use_popup POPUP_NONE
+#  define use_popup USEPOPUP_NONE
 # endif
 # ifdef FEAT_TEXT_PROP
 	    has_info = TRUE;
