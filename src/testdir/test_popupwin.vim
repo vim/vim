@@ -3053,4 +3053,62 @@ func Test_popupwin_filter_redraw()
   delfunc CloseFilter
 endfunc
 
+func Test_popupwin_double_width()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, 'x你好世界你好世你好世界你好')
+    call setline(2, '你好世界你好世你好世界你好')
+    call setline(3, 'x你好世界你好世你好世界你好')
+    call popup_create('你好，世界 - 你好，世界xxxxx', #{line: 1, col: 3, maxwidth: 14})
+  END
+  call writefile(lines, 'XtestPopupWide')
+
+  let buf = RunVimInTerminal('-S XtestPopupWide', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_doublewidth_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupWide')
+endfunc
+
+func Test_popupwin_sign()
+  CheckScreendump
+
+  let lines =<< trim END
+    call setline(1, range(10))
+    call sign_define('Current', {
+	    \ 'text': '>>',
+	    \ 'texthl': 'WarningMsg',
+	    \ 'linehl': 'Error',
+	    \ })
+    call sign_define('Other', {
+	    \ 'text': '#!',
+	    \ 'texthl': 'Error',
+	    \ 'linehl': 'Search',
+	    \ })
+    let winid = popup_create(['hello', 'bright', 'world'], {
+	    \ 'minwidth': 20,
+	    \ })
+    call setwinvar(winid, "&signcolumn", "yes")
+    let winbufnr = winbufnr(winid)
+
+    " add sign to current buffer, shows
+    call sign_place(1, 'Selected', 'Current', bufnr('%'), {'lnum': 1})
+    " add sign to current buffer, does not show
+    call sign_place(2, 'PopUpSelected', 'Other', bufnr('%'), {'lnum': 2})
+
+    " add sign to popup buffer, shows
+    call sign_place(3, 'PopUpSelected', 'Other', winbufnr, {'lnum': 1})
+    " add sign to popup buffer, does not show
+    call sign_place(4, 'Selected', 'Current', winbufnr, {'lnum': 2})
+  END
+  call writefile(lines, 'XtestPopupSign')
+
+  let buf = RunVimInTerminal('-S XtestPopupSign', #{rows: 10})
+  call VerifyScreenDump(buf, 'Test_popupwin_sign_1', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestPopupSign')
+endfunc
+
 " vim: shiftwidth=2 sts=2
