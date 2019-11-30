@@ -73,6 +73,10 @@ other plugins using signs.
 
 The group name "popupmenu" is used by popup windows where 'cursorline' is set.
 
+To place a sign in a popup window the group name must start with "PopUp".
+Other signs will not show in a popup window.  The group name "PopUpMenu" is
+used by popup windows where 'cursorline' is set.
+
 							*sign-priority*
 Each placed sign is assigned a priority value. When multiple signs are placed
 on the same line, the attributes of the sign with the highest priority is used
