@@ -216,7 +216,7 @@ void mbyte_im_set_active(int active_arg);
 # if defined(HAVE_TGETENT) && (defined(AMIGA) || defined(VMS))
 #  include "termlib.pro"
 # endif
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
 #  include "popupwin.pro"
 #  include "textprop.pro"
 # endif
@@ -257,7 +257,7 @@ void mbyte_im_set_active(int active_arg);
 # ifndef FEAT_BEVAL
 #  define BalloonEval int
 # endif
-# if defined(FEAT_BEVAL) || defined(FEAT_TEXT_PROP)
+# if defined(FEAT_BEVAL) || defined(FEAT_PROP_POPUP)
 #  include "beval.pro"
 # endif
 

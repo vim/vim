@@ -1148,7 +1148,7 @@ free_all_mem(void)
     /* Clear cmdline history. */
     p_hi = 0;
     init_history();
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
     clear_global_prop_types();
 # endif
 

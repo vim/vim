@@ -1604,7 +1604,7 @@ vgetc(void)
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 		    || im_is_preediting()
 #endif
-#if defined(FEAT_TEXT_PROP)
+#if defined(FEAT_PROP_POPUP)
 		    || popup_no_mapping()
 #endif
 		    )
@@ -1822,7 +1822,7 @@ vgetc(void)
 	ui_remove_balloon();
     }
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     if (popup_do_filter(c))
     {
 	if (c == Ctrl_C)
@@ -2038,7 +2038,7 @@ f_getchar(typval_T *argvars, typval_T *rettv)
 		if (win == NULL)
 		    return;
 		(void)mouse_comp_pos(win, &row, &col, &lnum, NULL);
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 		if (WIN_IS_POPUP(win))
 		    winnr = 0;
 		else
@@ -2851,7 +2851,7 @@ vgetorpeek(int advance)
 /*
  * get a character: 2. from the typeahead buffer
  */
-			c = typebuf.tb_buf[typebuf.tb_off] & 255;
+			c = typebuf.tb_buf[typebuf.tb_off];
 			if (advance)	/* remove chars from tb_buf */
 			{
 			    cmd_silent = (typebuf.tb_silent > 0);

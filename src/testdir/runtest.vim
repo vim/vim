@@ -177,7 +177,7 @@ func RunTheTest(test)
   au SwapExists * call HandleSwapExists()
 
   " Close any stray popup windows
-  if has('textprop')
+  if has('popupwin')
     call popup_clear()
   endif
 

@@ -2705,7 +2705,7 @@ ml_line_alloced(void)
     return (curbuf->b_ml.ml_flags & ML_LINE_DIRTY);
 }
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     static void
 add_text_props_for_append(
 	    buf_T	*buf,
@@ -2789,7 +2789,7 @@ ml_append_int(
     DATA_BL	*dp;
     PTR_BL	*pp;
     infoptr_T	*ip;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     char_u	*tofree = NULL;
 #endif
     int		ret = FAIL;
@@ -2803,7 +2803,7 @@ ml_append_int(
     if (len == 0)
 	len = (colnr_T)STRLEN(line) + 1;	// space needed for the text
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     if (curbuf->b_has_textprop && lnum > 0)
 	// Add text properties that continue from the previous line.
 	add_text_props_for_append(buf, lnum, &line, &len, &tofree);
@@ -3280,7 +3280,7 @@ ml_append_int(
     ret = OK;
 
 theend:
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     vim_free(tofree);
 #endif
     return ret;
@@ -3409,7 +3409,7 @@ ml_replace_len(
     if (copy)
     {
 	// copy the line to allocated memory
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (has_props)
 	    line = vim_memsave(line, len);
 	else
@@ -3432,14 +3432,14 @@ ml_replace_len(
 	ml_flush_line(curbuf);
 	curbuf->b_ml.ml_flags &= ~ML_LINE_DIRTY;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (curbuf->b_has_textprop && !has_props)
 	    // Need to fetch the old line to copy over any text properties.
 	    ml_get_buf(curbuf, lnum, TRUE);
 #endif
     }
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     if (curbuf->b_has_textprop && !has_props)
     {
 	size_t	oldtextlen = STRLEN(curbuf->b_ml.ml_line_ptr) + 1;
@@ -3475,7 +3475,7 @@ ml_replace_len(
     return OK;
 }
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 /*
  * Adjust text properties in line "lnum" for a deleted line.
  * When "above" is true this is the line above the deleted line.
@@ -3614,7 +3614,7 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
     long	line_size;
     int		i;
     int		ret = FAIL;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     char_u	*textprop_save = NULL;
     int		textprop_save_len;
 #endif
@@ -3671,7 +3671,7 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
     if (netbeans_active())
 	netbeans_removed(buf, lnum, 0, (long)line_size);
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // If there are text properties, make a copy, so that we can update
     // properties in preceding and following lines.
     if (buf->b_has_textprop)
@@ -3772,7 +3772,7 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
     ret = OK;
 
 theend:
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     if (textprop_save != NULL)
     {
 	// Adjust text properties in the line above and below.
@@ -5559,7 +5559,7 @@ ml_updatechunk(
 		    end_idx = count - 1;
 		    linecnt += rest;
 		}
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 		if (buf->b_has_textprop)
 		{
 		    int i;
@@ -5768,7 +5768,7 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 		idx++;
 	    }
 	}
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (buf->b_has_textprop)
 	{
 	    int i;

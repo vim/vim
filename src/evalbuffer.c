@@ -565,7 +565,7 @@ get_buffer_info(buf_T *buf)
 	dict_add_list(dict, "windows", windows);
     }
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // List of popup windows displaying this buffer
     windows = list_alloc();
     if (windows != NULL)

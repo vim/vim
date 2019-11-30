@@ -368,7 +368,7 @@ static void	ex_folddo(exarg_T *eap);
 #if !defined(FEAT_X11) || !defined(FEAT_XCLIPBOARD)
 # define ex_xrestore		ex_ni
 #endif
-#if !defined(FEAT_TEXT_PROP)
+#if !defined(FEAT_PROP_POPUP)
 # define ex_popupclear		ex_ni
 #endif
 
@@ -5013,7 +5013,7 @@ ex_pclose(exarg_T *eap)
 	    ex_win_close(eap->forceit, win, NULL);
 	    return;
 	}
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
     // Also when 'previewpopup' is empty, it might have been cleared.
     popup_close_preview();
 # endif
@@ -7812,7 +7812,7 @@ ex_pedit(exarg_T *eap)
 	redraw_later(VALID);
 	win_enter(curwin_save, TRUE);
     }
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
     else if (WIN_IS_POPUP(curwin))
     {
 	// can't keep focus in popup window

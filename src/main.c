@@ -1283,7 +1283,7 @@ main_loop(
 	    /* Trigger CursorMoved if the cursor moved. */
 	    if (!finish_op && (
 			has_cursormoved()
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 			|| popup_visible
 #endif
 #ifdef FEAT_CONCEAL
@@ -1295,7 +1295,7 @@ main_loop(
 		if (has_cursormoved())
 		    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL,
 							       FALSE, curbuf);
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 		if (popup_visible)
 		    popup_check_cursor_pos();
 #endif

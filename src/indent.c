@@ -773,7 +773,7 @@ set_indent(
 		// at the start of the indent (replacing spaces with TAB)
 		saved_cursor.col = (colnr_T)(s - newline);
 	}
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	{
 	    int added = ind_len - (colnr_T)(p - oldline);
 

@@ -1,7 +1,7 @@
 " Tests for popup windows
 
 source check.vim
-CheckFeature textprop
+CheckFeature popupwin
 
 source screendump.vim
 

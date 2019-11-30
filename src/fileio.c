@@ -1078,7 +1078,7 @@ retry:
 	 * We allocate as much space for the file as we can get, plus
 	 * space for the old line plus room for one terminating NUL.
 	 * The amount is limited by the fact that read() only can read
-	 * upto max_unsigned characters (and other things).
+	 * up to max_unsigned characters (and other things).
 	 */
 	if (!skip_read)
 	{
@@ -3366,7 +3366,7 @@ shorten_fnames(int force)
     }
     status_redraw_all();
     redraw_tabline = TRUE;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     popup_update_preview_title();
 #endif
 }

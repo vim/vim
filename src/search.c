@@ -2863,7 +2863,7 @@ findsent(int dir, long count)
     while (count--)
     {
 	/*
-	 * if on an empty line, skip upto a non-empty line
+	 * if on an empty line, skip up to a non-empty line
 	 */
 	if (gchar_pos(&pos) == NUL)
 	{
@@ -5724,7 +5724,7 @@ search_line:
 		    redraw_later(VALID);
 		    win_enter(curwin_save, TRUE);
 		}
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
 		else if (WIN_IS_POPUP(curwin))
 		    // can't keep focus in popup window
 		    win_enter(firstwin, TRUE);

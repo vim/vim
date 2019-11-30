@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_TEXT_PROP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
 
 typedef struct {
     char	*pp_name;
@@ -3864,4 +3864,4 @@ popup_update_preview_title(void)
 	popup_set_title(wp);
 }
 
-#endif // FEAT_TEXT_PROP
+#endif // FEAT_PROP_POPUP

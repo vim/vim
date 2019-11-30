@@ -584,7 +584,7 @@ static funcentry_T global_functions[] =
 #ifdef FEAT_PERL
     {"perleval",	1, 1, FEARG_1,	  f_perleval},
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     {"popup_atcursor",	2, 2, FEARG_1,	  f_popup_atcursor},
     {"popup_beval",	2, 2, FEARG_1,	  f_popup_beval},
     {"popup_clear",	0, 0, 0,	  f_popup_clear},
@@ -616,7 +616,7 @@ static funcentry_T global_functions[] =
     {"prompt_setinterrupt", 2, 2, FEARG_1, f_prompt_setinterrupt},
     {"prompt_setprompt", 2, 2, FEARG_1,	   f_prompt_setprompt},
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     {"prop_add",	3, 3, FEARG_1,	  f_prop_add},
     {"prop_clear",	1, 3, FEARG_1,	  f_prop_clear},
     {"prop_list",	1, 2, FEARG_1,	  f_prop_list},
@@ -3532,6 +3532,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"pythonx",
 # endif
 #endif
+#ifdef FEAT_PROP_POPUP
+	"popupwin",
+#endif
 #ifdef FEAT_POSTSCRIPT
 	"postscript",
 #endif
@@ -3608,7 +3611,7 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef FEAT_TEXTOBJ
 	"textobjects",
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	"textprop",
 #endif
 #ifdef HAVE_TGETENT

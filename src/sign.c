@@ -496,7 +496,7 @@ buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr)
 	    break;
 
 	if (sign->se_lnum == lnum
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
 		&& sign_group_for_window(sign, wp)
 # endif
 		)
@@ -2656,7 +2656,7 @@ get_first_valid_sign(win_T *wp)
 {
     sign_entry_T *sign = wp->w_buffer->b_signlist;
 
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
     while (sign != NULL && !sign_group_for_window(sign, wp))
 	sign = sign->se_next;
 # endif

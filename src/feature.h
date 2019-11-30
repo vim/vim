@@ -1151,10 +1151,10 @@
 #endif
 
 /*
- * +textprop		Text properties and popup windows
+ * +textprop and +popupwin	Text PROPerties and POPUP windows
  */
 #if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
-# define FEAT_TEXT_PROP
+# define FEAT_PROP_POPUP
 #endif
 
 #if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)
@@ -1167,7 +1167,7 @@
  * +signs		Allow signs to be displayed to the left of text lines.
  *			Adds the ":sign" command.
  */
-#if defined(FEAT_BIG) || defined(FEAT_NETBEANS_INTG) || defined(FEAT_TEXT_PROP)
+#if defined(FEAT_BIG) || defined(FEAT_NETBEANS_INTG) || defined(FEAT_PROP_POPUP)
 # define FEAT_SIGNS
 # if ((defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) \
 		&& defined(HAVE_X11_XPM_H)) \

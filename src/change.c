@@ -698,7 +698,7 @@ changed_bytes(linenr_T lnum, colnr_T col)
     static void
 inserted_bytes(linenr_T lnum, colnr_T col, int added UNUSED)
 {
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     if (curbuf->b_has_textprop && added != 0)
 	adjust_prop_columns(lnum, col, added, 0);
 #endif
@@ -1289,7 +1289,7 @@ del_bytes(
     mch_memmove(newp + col, oldp + col + count, (size_t)movelen);
     if (alloc_newp)
 	ml_replace(lnum, newp, FALSE);
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     else
     {
 	// Also move any following text properties.
@@ -2075,7 +2075,7 @@ open_line(
 	    )
 	    mark_adjust(curwin->w_cursor.lnum + 1, (linenr_T)MAXLNUM, 1L, 0L);
 	did_append = TRUE;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if ((State & INSERT) && !(State & VREPLACE_FLAG))
 	    // properties after the split move to the next line
 	    adjust_props_for_split(curwin->w_cursor.lnum, curwin->w_cursor.lnum,
