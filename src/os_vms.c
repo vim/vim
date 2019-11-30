@@ -382,7 +382,7 @@ vms_wproc(char *name, int val)
     if (vms_match_num == 0) {
 	/* first time through, setup some things */
 	if (NULL == vms_fmatch) {
-	    vms_fmatch = ALLOC_MULT(char *, EXPL_ALLOC_INC);
+	    vms_fmatch = ALLOC_MULT(char_u *, EXPL_ALLOC_INC);
 	    if (!vms_fmatch)
 		return 0;
 	    vms_match_alloced = EXPL_ALLOC_INC;
@@ -443,7 +443,7 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
     *num_file = 0;			/* default: no files found	*/
     files_alloced = EXPL_ALLOC_INC;
     files_free = EXPL_ALLOC_INC;
-    *file = ALLOC_MULT(char_u **, files_alloced);
+    *file = ALLOC_MULT(char_u *, files_alloced);
     if (*file == NULL)
     {
 	*num_file = 0;

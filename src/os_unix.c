@@ -1671,7 +1671,7 @@ ex_xrestore(exarg_T *eap)
         xterm_display_allocated = TRUE;
     }
     smsg(_("restoring display %s"), xterm_display == NULL
-			      ? (char *)mch_getenv("DISPLAY") : xterm_display);
+		    ? (char *)mch_getenv((char_u *)"DISPLAY") : xterm_display);
 
     clear_xterm_clip();
     x11_window = 0;
@@ -6257,7 +6257,7 @@ select_eintr:
 		maxfd = ConnectionNumber(xterm_dpy);
 
 	    /* An event may have already been read but not handled.  In
-	     * particulary, XFlush may cause this. */
+	     * particularly, XFlush may cause this. */
 	    xterm_update();
 	}
 # endif
