@@ -1,20 +1,18 @@
-/* this ALWAYS GENERATED file contains the definitions for the interfaces */
+// this ALWAYS GENERATED file contains the definitions for the interfaces
 
 
-/* File created by MIDL compiler version 3.01.75 */
-/* at Wed Jun 06 18:20:37 2001
- */
-/* Compiler settings for .\if_ole.idl:
-    Os (OptLev=s), W1, Zp8, env=Win32, ms_ext, c_ext
-    error checks: none
-*/
+// File created by MIDL compiler version 3.01.75
+// at Wed Jun 06 18:20:37 2001
+// Compiler settings for .\if_ole.idl:
+//  Os (OptLev=s), W1, Zp8, env=Win32, ms_ext, c_ext
+//  error checks: none
 //@@MIDL_FILE_HEADING(  )
 #include "rpc.h"
 #include "rpcndr.h"
 #ifndef COM_NO_WINDOWS_H
 #include "windows.h"
 #include "ole2.h"
-#endif /*COM_NO_WINDOWS_H*/
+#endif //COM_NO_WINDOWS_H
 
 #ifndef __if_ole_h__
 #define __if_ole_h__
@@ -23,12 +21,12 @@
 extern "C"{
 #endif
 
-/* Forward Declarations */
+// Forward Declarations
 
 #ifndef __IVim_FWD_DEFINED__
 #define __IVim_FWD_DEFINED__
 typedef interface IVim IVim;
-#endif	/* __IVim_FWD_DEFINED__ */
+#endif	// __IVim_FWD_DEFINED__
 
 
 #ifndef __Vim_FWD_DEFINED__
@@ -38,12 +36,12 @@ typedef interface IVim IVim;
 typedef class Vim Vim;
 #else
 typedef struct Vim Vim;
-#endif /* __cplusplus */
+#endif // __cplusplus
 
-#endif	/* __Vim_FWD_DEFINED__ */
+#endif	// __Vim_FWD_DEFINED__
 
 
-/* header files for imported files */
+// header files for imported files
 #include "oaidl.h"
 
 #ifndef __MIDL_user_allocate_free_DEFINED__
@@ -55,12 +53,12 @@ typedef struct Vim Vim;
 #ifndef __IVim_INTERFACE_DEFINED__
 #define __IVim_INTERFACE_DEFINED__
 
-/****************************************
- * Generated header for interface: IVim
- * at Wed Jun 06 18:20:37 2001
- * using MIDL 3.01.75
- ****************************************/
-/* [oleautomation][dual][unique][helpstring][uuid][object] */
+//***************************************
+// Generated header for interface: IVim
+// at Wed Jun 06 18:20:37 2001
+// using MIDL 3.01.75
+//**************************************
+// [oleautomation][dual][unique][helpstring][uuid][object]
 
 
 
@@ -86,7 +84,7 @@ EXTERN_C const IID IID_IVim;
 
     };
 
-#else	/* C style interface */
+#else	// C style interface
 
     typedef struct IVimVtbl
     {
@@ -194,10 +192,10 @@ EXTERN_C const IID IID_IVim;
 #define IVim_GetHwnd(This,result)	\
     (This)->lpVtbl -> GetHwnd(This,result)
 
-#endif /* COBJMACROS */
+#endif // COBJMACROS
 
 
-#endif	/* C style interface */
+#endif	// C style interface
 
 
 
@@ -250,19 +248,19 @@ void __RPC_STUB IVim_GetHwnd_Stub(
 
 
 
-#endif	/* __IVim_INTERFACE_DEFINED__ */
+#endif	// __IVim_INTERFACE_DEFINED__
 
 
 
 #ifndef __Vim_LIBRARY_DEFINED__
 #define __Vim_LIBRARY_DEFINED__
 
-/****************************************
- * Generated header for library: Vim
- * at Wed Jun 06 18:20:37 2001
- * using MIDL 3.01.75
- ****************************************/
-/* [version][helpstring][uuid] */
+//***************************************
+// Generated header for library: Vim
+// at Wed Jun 06 18:20:37 2001
+// using MIDL 3.01.75
+//**************************************
+// [version][helpstring][uuid]
 
 
 
@@ -274,16 +272,16 @@ EXTERN_C const CLSID CLSID_Vim;
 class DECLSPEC_UUID("0F0BFAE1-4C90-11d1-82D7-0004AC368519")
 Vim;
 #endif
-#endif /* __Vim_LIBRARY_DEFINED__ */
+#endif // __Vim_LIBRARY_DEFINED__
 
-/* Additional Prototypes for ALL interfaces */
+// Additional Prototypes for ALL interfaces
 
 unsigned long		  __RPC_USER  BSTR_UserSize(	 unsigned long __RPC_FAR *, unsigned long	     , BSTR __RPC_FAR * );
 unsigned char __RPC_FAR * __RPC_USER  BSTR_UserMarshal(  unsigned long __RPC_FAR *, unsigned char __RPC_FAR *, BSTR __RPC_FAR * );
 unsigned char __RPC_FAR * __RPC_USER  BSTR_UserUnmarshal(unsigned long __RPC_FAR *, unsigned char __RPC_FAR *, BSTR __RPC_FAR * );
 void			  __RPC_USER  BSTR_UserFree(	 unsigned long __RPC_FAR *, BSTR __RPC_FAR * );
 
-/* end of Additional Prototypes */
+// end of Additional Prototypes
 
 #ifdef __cplusplus
 }

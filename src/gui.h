@@ -17,7 +17,7 @@
 #endif
 
 #ifdef FEAT_GUI_GTK
-# ifdef VMS /* undef MIN and MAX because Intrinsic.h redefines them anyway */
+# ifdef VMS // undef MIN and MAX because Intrinsic.h redefines them anyway
 #  ifdef MAX
 #   undef MAX
 #  endif
@@ -113,48 +113,48 @@
 # define Y_2_ROW(y)	(((y) - gui.border_offset) / gui.char_height)
 #endif
 
-/* Indices for arrays of scrollbars */
+// Indices for arrays of scrollbars
 #define SBAR_NONE	    -1
 #define SBAR_LEFT	    0
 #define SBAR_RIGHT	    1
 #define SBAR_BOTTOM	    2
 
-/* Orientations for scrollbars */
+// Orientations for scrollbars
 #define SBAR_VERT	    0
 #define SBAR_HORIZ	    1
 
-/* Default size of scrollbar */
+// Default size of scrollbar
 #define SB_DEFAULT_WIDTH    16
 
-/* Default height of the menu bar */
-#define MENU_DEFAULT_HEIGHT 1		/* figure it out at runtime */
+// Default height of the menu bar
+#define MENU_DEFAULT_HEIGHT 1		// figure it out at runtime
 
-/* Flags for gui_mch_outstr_nowrap() */
-#define GUI_MON_WRAP_CURSOR	0x01	/* wrap cursor at end of line */
-#define GUI_MON_INVERT		0x02	/* invert the characters */
-#define GUI_MON_IS_CURSOR	0x04	/* drawing cursor */
-#define GUI_MON_TRS_CURSOR	0x08	/* drawing transparent cursor */
-#define GUI_MON_NOCLEAR		0x10	/* don't clear selection */
+// Flags for gui_mch_outstr_nowrap()
+#define GUI_MON_WRAP_CURSOR	0x01	// wrap cursor at end of line
+#define GUI_MON_INVERT		0x02	// invert the characters
+#define GUI_MON_IS_CURSOR	0x04	// drawing cursor
+#define GUI_MON_TRS_CURSOR	0x08	// drawing transparent cursor
+#define GUI_MON_NOCLEAR		0x10	// don't clear selection
 
-/* Flags for gui_mch_draw_string() */
-#define DRAW_TRANSP		0x01	/* draw with transparent bg */
-#define DRAW_BOLD		0x02	/* draw bold text */
-#define DRAW_UNDERL		0x04	/* draw underline text */
-#define DRAW_UNDERC		0x08	/* draw undercurl text */
+// Flags for gui_mch_draw_string()
+#define DRAW_TRANSP		0x01	// draw with transparent bg
+#define DRAW_BOLD		0x02	// draw bold text
+#define DRAW_UNDERL		0x04	// draw underline text
+#define DRAW_UNDERC		0x08	// draw undercurl text
 #if defined(FEAT_GUI_GTK)
-# define DRAW_ITALIC		0x10	/* draw italic text */
+# define DRAW_ITALIC		0x10	// draw italic text
 #endif
-#define DRAW_CURSOR		0x20	/* drawing block cursor (win32) */
-#define DRAW_STRIKE		0x40	/* strikethrough */
+#define DRAW_CURSOR		0x20	// drawing block cursor (win32)
+#define DRAW_STRIKE		0x40	// strikethrough
 
-/* For our own tearoff menu item */
+// For our own tearoff menu item
 #define TEAR_STRING		"-->Detach"
-#define TEAR_LEN		(9)	/* length of above string */
+#define TEAR_LEN		(9)	// length of above string
 
-/* for the toolbar */
+// for the toolbar
 #define TOOLBAR_BUTTON_HEIGHT	18
 #define TOOLBAR_BUTTON_WIDTH	18
-#define TOOLBAR_BORDER_HEIGHT	12  /* room above+below buttons for MSWindows */
+#define TOOLBAR_BORDER_HEIGHT	12  // room above+below buttons for MSWindows
 
 #ifdef FEAT_GUI_MSWIN
 # define TABLINE_HEIGHT 22
@@ -164,62 +164,62 @@
 #endif
 
 #if defined(NO_CONSOLE) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_X11)
-# define NO_CONSOLE_INPUT	/* use no_console_input() to check if there
-				   is no console input possible */
+# define NO_CONSOLE_INPUT	// use no_console_input() to check if there
+				// is no console input possible
 #endif
 
 typedef struct GuiScrollbar
 {
-    long	ident;		/* Unique identifier for each scrollbar */
-    win_T	*wp;		/* Scrollbar's window, NULL for bottom */
-    int		type;		/* one of SBAR_{LEFT,RIGHT,BOTTOM} */
-    long	value;		/* Represents top line number visible */
+    long	ident;		// Unique identifier for each scrollbar
+    win_T	*wp;		// Scrollbar's window, NULL for bottom
+    int		type;		// one of SBAR_{LEFT,RIGHT,BOTTOM}
+    long	value;		// Represents top line number visible
 #ifdef FEAT_GUI_ATHENA
-    int		pixval;		/* pixel count of value */
+    int		pixval;		// pixel count of value
 #endif
-    long	size;		/* Size of scrollbar thumb */
-    long	max;		/* Number of lines in buffer */
+    long	size;		// Size of scrollbar thumb
+    long	max;		// Number of lines in buffer
 
-    /* Values measured in characters: */
-    int		top;		/* Top of scroll bar (chars from row 0) */
-    int		height;		/* Current height of scroll bar in rows */
-    int		width;		/* Current width of scroll bar in cols */
-    int		status_height;	/* Height of status line */
+    // Values measured in characters:
+    int		top;		// Top of scroll bar (chars from row 0)
+    int		height;		// Current height of scroll bar in rows
+    int		width;		// Current width of scroll bar in cols
+    int		status_height;	// Height of status line
 #ifdef FEAT_GUI_X11
-    Widget	id;		/* Id of real scroll bar */
+    Widget	id;		// Id of real scroll bar
 #endif
 #ifdef FEAT_GUI_GTK
-    GtkWidget *id;		/* Id of real scroll bar */
-    unsigned long handler_id;   /* Id of "value_changed" signal handler */
+    GtkWidget *id;		// Id of real scroll bar
+    unsigned long handler_id;   // Id of "value_changed" signal handler
 #endif
 
 #ifdef FEAT_GUI_MSWIN
-    HWND	id;		/* Id of real scroll bar */
-    int		scroll_shift;	/* The scrollbar stuff can handle only up to
-				   32767 lines.  When the file is longer,
-				   scroll_shift is set to the number of shifts
-				   to reduce the count.  */
+    HWND	id;		// Id of real scroll bar
+    int		scroll_shift;	// The scrollbar stuff can handle only up to
+				// 32767 lines.  When the file is longer,
+				// scroll_shift is set to the number of shifts
+				// to reduce the count.
 #endif
 #ifdef FEAT_GUI_MAC
-    ControlHandle id;		/* A handle to the scrollbar */
+    ControlHandle id;		// A handle to the scrollbar
 #endif
 #ifdef FEAT_GUI_PHOTON
     PtWidget_t	*id;
 #endif
 } scrollbar_T;
 
-typedef long	    guicolor_T;	/* handle for a GUI color; for X11 this should
-				   be "Pixel", but that's an unsigned and we
-				   need a signed value */
-#define INVALCOLOR (guicolor_T)-11111	/* number for invalid color; on 32 bit
-				   displays there is a tiny chance this is an
-				   actual color */
-#define CTERMCOLOR (guicolor_T)-11110	/* only used for cterm.bg_rgb and
-					   cterm.fg_rgb: use cterm color */
+typedef long	    guicolor_T;	// handle for a GUI color; for X11 this should
+				// be "Pixel", but that's an unsigned and we
+				// need a signed value
+#define INVALCOLOR (guicolor_T)-11111	// number for invalid color; on 32 bit
+				   // displays there is a tiny chance this is an
+				   // actual color
+#define CTERMCOLOR (guicolor_T)-11110	// only used for cterm.bg_rgb and
+					// cterm.fg_rgb: use cterm color
 
 #ifdef FEAT_GUI_GTK
-  typedef PangoFontDescription	*GuiFont;       /* handle for a GUI font */
-  typedef PangoFontDescription  *GuiFontset;    /* handle for a GUI fontset */
+  typedef PangoFontDescription	*GuiFont;       // handle for a GUI font
+  typedef PangoFontDescription  *GuiFontset;    // handle for a GUI fontset
 # define NOFONT		(GuiFont)NULL
 # define NOFONTSET	(GuiFontset)NULL
 #else
@@ -230,13 +230,13 @@ typedef long	    guicolor_T;	/* handle for a GUI color; for X11 this should
 #  define NOFONTSET	(GuiFontset)NULL
 # else
 #  ifdef FEAT_GUI_X11
-  typedef XFontStruct	*GuiFont;	/* handle for a GUI font */
-  typedef XFontSet	GuiFontset;	/* handle for a GUI fontset */
+  typedef XFontStruct	*GuiFont;	// handle for a GUI font
+  typedef XFontSet	GuiFontset;	// handle for a GUI fontset
 #   define NOFONT	(GuiFont)0
 #   define NOFONTSET	(GuiFontset)0
 #  else
-  typedef long_u	GuiFont;	/* handle for a GUI font */
-  typedef long_u	GuiFontset;	/* handle for a GUI fontset */
+  typedef long_u	GuiFont;	// handle for a GUI font
+  typedef long_u	GuiFontset;	// handle for a GUI fontset
 #   define NOFONT	(GuiFont)0
 #   define NOFONTSET	(GuiFontset)0
 #  endif
@@ -255,174 +255,174 @@ typedef long	    guicolor_T;	/* handle for a GUI color; for X11 this should
 
 typedef struct Gui
 {
-    int		in_focus;	    /* Vim has input focus */
-    int		in_use;		    /* Is the GUI being used? */
-    int		starting;	    /* GUI will start in a little while */
-    int		shell_created;	    /* Has the shell been created yet? */
-    int		dying;		    /* Is vim dying? Then output to terminal */
-    int		dofork;		    /* Use fork() when GUI is starting */
+    int		in_focus;	    // Vim has input focus
+    int		in_use;		    // Is the GUI being used?
+    int		starting;	    // GUI will start in a little while
+    int		shell_created;	    // Has the shell been created yet?
+    int		dying;		    // Is vim dying? Then output to terminal
+    int		dofork;		    // Use fork() when GUI is starting
 #ifdef GUI_MAY_SPAWN
-    int		dospawn;	    /* Use spawn() when GUI is starting */
+    int		dospawn;	    // Use spawn() when GUI is starting
 #endif
-    int		dragged_sb;	    /* Which scrollbar being dragged, if any? */
-    win_T	*dragged_wp;	    /* Which WIN's sb being dragged, if any? */
-    int		pointer_hidden;	    /* Is the mouse pointer hidden? */
-    int		col;		    /* Current cursor column in GUI display */
-    int		row;		    /* Current cursor row in GUI display */
-    int		cursor_col;	    /* Physical cursor column in GUI display */
-    int		cursor_row;	    /* Physical cursor row in GUI display */
-    char	cursor_is_valid;    /* There is a cursor at cursor_row/col */
-    int		num_cols;	    /* Number of columns */
-    int		num_rows;	    /* Number of rows */
-    int		scroll_region_top;  /* Top (first) line of scroll region */
-    int		scroll_region_bot;  /* Bottom (last) line of scroll region */
-    int		scroll_region_left;  /* Left (first) column of scroll region */
-    int		scroll_region_right;  /* Right (last) col. of scroll region */
-    int		highlight_mask;	    /* Highlight attribute mask */
-    int		scrollbar_width;    /* Width of vertical scrollbars */
-    int		scrollbar_height;   /* Height of horizontal scrollbar */
-    int		left_sbar_x;	    /* Calculated x coord for left scrollbar */
-    int		right_sbar_x;	    /* Calculated x coord for right scrollbar */
+    int		dragged_sb;	    // Which scrollbar being dragged, if any?
+    win_T	*dragged_wp;	    // Which WIN's sb being dragged, if any?
+    int		pointer_hidden;	    // Is the mouse pointer hidden?
+    int		col;		    // Current cursor column in GUI display
+    int		row;		    // Current cursor row in GUI display
+    int		cursor_col;	    // Physical cursor column in GUI display
+    int		cursor_row;	    // Physical cursor row in GUI display
+    char	cursor_is_valid;    // There is a cursor at cursor_row/col
+    int		num_cols;	    // Number of columns
+    int		num_rows;	    // Number of rows
+    int		scroll_region_top;  // Top (first) line of scroll region
+    int		scroll_region_bot;  // Bottom (last) line of scroll region
+    int		scroll_region_left;  // Left (first) column of scroll region
+    int		scroll_region_right;  // Right (last) col. of scroll region
+    int		highlight_mask;	    // Highlight attribute mask
+    int		scrollbar_width;    // Width of vertical scrollbars
+    int		scrollbar_height;   // Height of horizontal scrollbar
+    int		left_sbar_x;	    // Calculated x coord for left scrollbar
+    int		right_sbar_x;	    // Calculated x coord for right scrollbar
 
 #ifdef FEAT_MENU
 # ifndef FEAT_GUI_GTK
-    int		menu_height;	    /* Height of the menu bar */
-    int		menu_width;	    /* Width of the menu bar */
+    int		menu_height;	    // Height of the menu bar
+    int		menu_width;	    // Width of the menu bar
 # endif
-    char	menu_is_active;	    /* TRUE if menu is present */
+    char	menu_is_active;	    // TRUE if menu is present
 # ifdef FEAT_GUI_ATHENA
-    char	menu_height_fixed;  /* TRUE if menu height fixed */
+    char	menu_height_fixed;  // TRUE if menu height fixed
 # endif
 #endif
 
-    scrollbar_T bottom_sbar;	    /* Bottom scrollbar */
-    int		which_scrollbars[3];/* Which scrollbar boxes are active? */
-    int		prev_wrap;	    /* For updating the horizontal scrollbar */
-    int		char_width;	    /* Width of char cell in pixels */
-    int		char_height;	    /* Height of char cell in pixels, includes
-				       'linespace' */
-    int		char_ascent;	    /* Ascent of char in pixels */
-    int		border_width;	    /* Width of our border around text area */
-    int		border_offset;	    /* Total pixel offset for all borders */
+    scrollbar_T bottom_sbar;	    // Bottom scrollbar
+    int		which_scrollbars[3];// Which scrollbar boxes are active?
+    int		prev_wrap;	    // For updating the horizontal scrollbar
+    int		char_width;	    // Width of char cell in pixels
+    int		char_height;	    // Height of char cell in pixels, includes
+				    // 'linespace'
+    int		char_ascent;	    // Ascent of char in pixels
+    int		border_width;	    // Width of our border around text area
+    int		border_offset;	    // Total pixel offset for all borders
 
-    GuiFont	norm_font;	    /* Normal font */
+    GuiFont	norm_font;	    // Normal font
 #ifndef FEAT_GUI_GTK
-    GuiFont	bold_font;	    /* Bold font */
-    GuiFont	ital_font;	    /* Italic font */
-    GuiFont	boldital_font;	    /* Bold-Italic font */
+    GuiFont	bold_font;	    // Bold font
+    GuiFont	ital_font;	    // Italic font
+    GuiFont	boldital_font;	    // Bold-Italic font
 #else
-    int		font_can_bold;	    /* Whether norm_font supports bold weight.
-				     * The styled font variants are not used. */
+    int		font_can_bold;	    // Whether norm_font supports bold weight.
+				    // The styled font variants are not used.
 #endif
 
 #if defined(FEAT_MENU) && !defined(FEAT_GUI_GTK)
 # ifdef FONTSET_ALWAYS
-    GuiFontset	menu_fontset;	    /* set of fonts for multi-byte chars */
+    GuiFontset	menu_fontset;	    // set of fonts for multi-byte chars
 # else
-    GuiFont	menu_font;	    /* menu item font */
+    GuiFont	menu_font;	    // menu item font
 # endif
 #endif
-    GuiFont	wide_font;	    /* Normal 'guifontwide' font */
+    GuiFont	wide_font;	    // Normal 'guifontwide' font
 #ifndef FEAT_GUI_GTK
-    GuiFont	wide_bold_font;	    /* Bold 'guifontwide' font */
-    GuiFont	wide_ital_font;	    /* Italic 'guifontwide' font */
-    GuiFont	wide_boldital_font; /* Bold-Italic 'guifontwide' font */
+    GuiFont	wide_bold_font;	    // Bold 'guifontwide' font
+    GuiFont	wide_ital_font;	    // Italic 'guifontwide' font
+    GuiFont	wide_boldital_font; // Bold-Italic 'guifontwide' font
 #endif
 #ifdef FEAT_XFONTSET
-    GuiFontset	fontset;	    /* set of fonts for multi-byte chars */
+    GuiFontset	fontset;	    // set of fonts for multi-byte chars
 #endif
-    guicolor_T	back_pixel;	    /* Color of background */
-    guicolor_T	norm_pixel;	    /* Color of normal text */
-    guicolor_T	def_back_pixel;	    /* default Color of background */
-    guicolor_T	def_norm_pixel;	    /* default Color of normal text */
+    guicolor_T	back_pixel;	    // Color of background
+    guicolor_T	norm_pixel;	    // Color of normal text
+    guicolor_T	def_back_pixel;	    // default Color of background
+    guicolor_T	def_norm_pixel;	    // default Color of normal text
 
 #ifdef FEAT_GUI_X11
-    char	*rsrc_menu_fg_name;	/* Color of menu & dialog foreground */
-    guicolor_T	menu_fg_pixel;		/* Same in Pixel format */
-    char	*rsrc_menu_bg_name;	/* Color of menu & dialog background */
-    guicolor_T	menu_bg_pixel;		/* Same in Pixel format */
-    char	*rsrc_scroll_fg_name;	/* Color of scrollbar foreground */
-    guicolor_T	scroll_fg_pixel;	/* Same in Pixel format */
-    char	*rsrc_scroll_bg_name;	/* Color of scrollbar background */
-    guicolor_T	scroll_bg_pixel;	/* Same in Pixel format */
+    char	*rsrc_menu_fg_name;	// Color of menu & dialog foreground
+    guicolor_T	menu_fg_pixel;		// Same in Pixel format
+    char	*rsrc_menu_bg_name;	// Color of menu & dialog background
+    guicolor_T	menu_bg_pixel;		// Same in Pixel format
+    char	*rsrc_scroll_fg_name;	// Color of scrollbar foreground
+    guicolor_T	scroll_fg_pixel;	// Same in Pixel format
+    char	*rsrc_scroll_bg_name;	// Color of scrollbar background
+    guicolor_T	scroll_bg_pixel;	// Same in Pixel format
 
 # ifdef FEAT_GUI_MOTIF
-    guicolor_T	menu_def_fg_pixel;  /* Default menu foreground */
-    guicolor_T	menu_def_bg_pixel;  /* Default menu background */
-    guicolor_T	scroll_def_fg_pixel;  /* Default scrollbar foreground */
-    guicolor_T	scroll_def_bg_pixel;  /* Default scrollbar background */
+    guicolor_T	menu_def_fg_pixel;  // Default menu foreground
+    guicolor_T	menu_def_bg_pixel;  // Default menu background
+    guicolor_T	scroll_def_fg_pixel;  // Default scrollbar foreground
+    guicolor_T	scroll_def_bg_pixel;  // Default scrollbar background
 # endif
-    Display	*dpy;		    /* X display */
-    Window	wid;		    /* Window id of text area */
-    int		visibility;	    /* Is shell partially/fully obscured? */
+    Display	*dpy;		    // X display
+    Window	wid;		    // Window id of text area
+    int		visibility;	    // Is shell partially/fully obscured?
     GC		text_gc;
     GC		back_gc;
     GC		invert_gc;
-    Cursor	blank_pointer;	    /* Blank pointer */
+    Cursor	blank_pointer;	    // Blank pointer
 
-    /* X Resources */
-    char_u	*rsrc_font_name;    /* Resource font name, used if 'guifont'
-				       not set */
-    char_u	*rsrc_bold_font_name; /* Resource bold font name */
-    char_u	*rsrc_ital_font_name; /* Resource italic font name */
-    char_u	*rsrc_boldital_font_name;  /* Resource bold-italic font name */
-    char_u	*rsrc_menu_font_name;    /* Resource menu Font name */
-    Bool	rsrc_rev_video;	    /* Use reverse video? */
+    // X Resources
+    char_u	*rsrc_font_name;    // Resource font name, used if 'guifont'
+				    // not set
+    char_u	*rsrc_bold_font_name; // Resource bold font name
+    char_u	*rsrc_ital_font_name; // Resource italic font name
+    char_u	*rsrc_boldital_font_name;  // Resource bold-italic font name
+    char_u	*rsrc_menu_font_name;    // Resource menu Font name
+    Bool	rsrc_rev_video;	    // Use reverse video?
 
-    char_u	*geom;		    /* Geometry, eg "80x24" */
-    Bool	color_approx;	    /* Some color was approximated */
+    char_u	*geom;		    // Geometry, eg "80x24"
+    Bool	color_approx;	    // Some color was approximated
 #endif
 
 #ifdef FEAT_GUI_GTK
 # ifndef USE_GTK3
-    int		visibility;	    /* Is shell partially/fully obscured? */
+    int		visibility;	    // Is shell partially/fully obscured?
 # endif
-    GdkCursor	*blank_pointer;	    /* Blank pointer */
+    GdkCursor	*blank_pointer;	    // Blank pointer
 
-    /* X Resources */
-    char_u	*geom;		    /* Geometry, eg "80x24" */
+    // X Resources
+    char_u	*geom;		    // Geometry, eg "80x24"
 
-    GtkWidget	*mainwin;	    /* top level GTK window */
-    GtkWidget	*formwin;	    /* manages all the windows below */
-    GtkWidget	*drawarea;	    /* the "text" area */
+    GtkWidget	*mainwin;	    // top level GTK window
+    GtkWidget	*formwin;	    // manages all the windows below
+    GtkWidget	*drawarea;	    // the "text" area
 # ifdef FEAT_MENU
-    GtkWidget	*menubar;	    /* menubar */
+    GtkWidget	*menubar;	    // menubar
 # endif
 # ifdef FEAT_TOOLBAR
-    GtkWidget	*toolbar;	    /* toolbar */
+    GtkWidget	*toolbar;	    // toolbar
 # endif
 # ifdef FEAT_GUI_GNOME
-    GtkWidget	*menubar_h;	    /* menubar handle */
-    GtkWidget	*toolbar_h;	    /* toolbar handle */
+    GtkWidget	*menubar_h;	    // menubar handle
+    GtkWidget	*toolbar_h;	    // toolbar handle
 # endif
 # ifdef USE_GTK3
-    GdkRGBA	*fgcolor;	    /* GDK-styled foreground color */
-    GdkRGBA	*bgcolor;	    /* GDK-styled background color */
-    GdkRGBA	*spcolor;	    /* GDK-styled special color */
+    GdkRGBA	*fgcolor;	    // GDK-styled foreground color
+    GdkRGBA	*bgcolor;	    // GDK-styled background color
+    GdkRGBA	*spcolor;	    // GDK-styled special color
 # else
-    GdkColor	*fgcolor;	    /* GDK-styled foreground color */
-    GdkColor	*bgcolor;	    /* GDK-styled background color */
-    GdkColor	*spcolor;	    /* GDK-styled special color */
+    GdkColor	*fgcolor;	    // GDK-styled foreground color
+    GdkColor	*bgcolor;	    // GDK-styled background color
+    GdkColor	*spcolor;	    // GDK-styled special color
 # endif
 # ifdef USE_GTK3
-    cairo_surface_t *surface;       /* drawarea surface */
-    gboolean	     by_signal;     /* cause of draw operation */
+    cairo_surface_t *surface;       // drawarea surface
+    gboolean	     by_signal;     // cause of draw operation
 # else
-    GdkGC	*text_gc;	    /* cached GC for normal text */
+    GdkGC	*text_gc;	    // cached GC for normal text
 # endif
-    PangoContext     *text_context; /* the context used for all text */
-    PangoFont	     *ascii_font;   /* cached font for ASCII strings */
-    PangoGlyphString *ascii_glyphs; /* cached code point -> glyph map */
+    PangoContext     *text_context; // the context used for all text
+    PangoFont	     *ascii_font;   // cached font for ASCII strings
+    PangoGlyphString *ascii_glyphs; // cached code point -> glyph map
 # ifdef FEAT_GUI_TABLINE
-    GtkWidget	*tabline;	    /* tab pages line handle */
+    GtkWidget	*tabline;	    // tab pages line handle
 # endif
 
     GtkAccelGroup *accel_group;
-    GtkWidget	*filedlg;	    /* file selection dialog */
-    char_u	*browse_fname;	    /* file name from filedlg */
+    GtkWidget	*filedlg;	    // file selection dialog
+    char_u	*browse_fname;	    // file name from filedlg
 
     guint32	event_time;
-#endif	/* FEAT_GUI_GTK */
+#endif	// FEAT_GUI_GTK
 
 #if defined(FEAT_GUI_TABLINE) \
 	&& (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
@@ -431,43 +431,43 @@ typedef struct Gui
 #endif
 
 #ifdef FEAT_FOOTER
-    int		footer_height;	    /* height of the message footer */
+    int		footer_height;	    // height of the message footer
 #endif
 
 #if defined(FEAT_TOOLBAR) \
 	&& (defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MOTIF))
-    int		toolbar_height;	    /* height of the toolbar */
+    int		toolbar_height;	    // height of the toolbar
 #endif
 
 #ifdef FEAT_BEVAL_TIP
-    /* Tooltip properties; also used for balloon evaluation */
-    char_u	*rsrc_tooltip_font_name; /* tooltip font name */
-    char	*rsrc_tooltip_fg_name;	/* tooltip foreground color name */
-    char	*rsrc_tooltip_bg_name;	/* tooltip background color name */
-    guicolor_T	tooltip_fg_pixel;	/* tooltip foreground color */
-    guicolor_T	tooltip_bg_pixel;	/* tooltip background color */
-    XFontSet	tooltip_fontset;	/* tooltip fontset */
+    // Tooltip properties; also used for balloon evaluation
+    char_u	*rsrc_tooltip_font_name; // tooltip font name
+    char	*rsrc_tooltip_fg_name;	// tooltip foreground color name
+    char	*rsrc_tooltip_bg_name;	// tooltip background color name
+    guicolor_T	tooltip_fg_pixel;	// tooltip foreground color
+    guicolor_T	tooltip_bg_pixel;	// tooltip background color
+    XFontSet	tooltip_fontset;	// tooltip fontset
 #endif
 
 #ifdef FEAT_GUI_MSWIN
-    GuiFont	currFont;	    /* Current font */
-    guicolor_T	currFgColor;	    /* Current foreground text color */
-    guicolor_T	currBgColor;	    /* Current background text color */
-    guicolor_T	currSpColor;	    /* Current special text color */
+    GuiFont	currFont;	    // Current font
+    guicolor_T	currFgColor;	    // Current foreground text color
+    guicolor_T	currBgColor;	    // Current background text color
+    guicolor_T	currSpColor;	    // Current special text color
 #endif
 
 #ifdef FEAT_GUI_MAC
     WindowPtr	VimWindow;
-    MenuHandle	MacOSHelpMenu;	    /* Help menu provided by the MacOS */
-    int		MacOSHelpItems;	    /* Nr of help-items supplied by MacOS */
-    WindowPtr	wid;		    /* Window id of text area */
-    int		visibility;	    /* Is window partially/fully obscured? */
+    MenuHandle	MacOSHelpMenu;	    // Help menu provided by the MacOS
+    int		MacOSHelpItems;	    // Nr of help-items supplied by MacOS
+    WindowPtr	wid;		    // Window id of text area
+    int		visibility;	    // Is window partially/fully obscured?
 #endif
 
 #ifdef FEAT_GUI_PHOTON
-    PtWidget_t	*vimWindow;		/* PtWindow */
-    PtWidget_t	*vimTextArea;		/* PtRaw */
-    PtWidget_t	*vimContainer;		/* PtPanel */
+    PtWidget_t	*vimWindow;		// PtWindow
+    PtWidget_t	*vimTextArea;		// PtRaw
+    PtWidget_t	*vimContainer;		// PtPanel
 # if defined(FEAT_MENU) || defined(FEAT_TOOLBAR)
     PtWidget_t	*vimToolBarGroup;
 # endif
@@ -487,10 +487,9 @@ typedef struct Gui
 #endif
 } gui_T;
 
-extern gui_T gui;			/* this is defined in gui.c */
+extern gui_T gui;			// this is defined in gui.c
 
-/* definitions of available window positionings for gui_*_position_in_parent()
- */
+// definitions of available window positionings for gui_*_position_in_parent()
 typedef enum
 {
     VW_POS_MOUSE,
@@ -503,15 +502,15 @@ typedef enum
  * Flags used to distinguish the different contexts in which the
  * find/replace callback may be called.
  */
-# define FRD_FINDNEXT	1	/* Find next in find dialog */
-# define FRD_R_FINDNEXT	2	/* Find next in repl dialog */
-# define FRD_REPLACE	3	/* Replace once */
-# define FRD_REPLACEALL	4	/* Replace remaining matches */
-# define FRD_UNDO	5	/* Undo replaced text */
-# define FRD_TYPE_MASK   7	/* Mask for the callback type */
-/* Flags which change the way searching is done. */
-# define FRD_WHOLE_WORD	0x08	/* match whole word only */
-# define FRD_MATCH_CASE	0x10	/* match case */
+# define FRD_FINDNEXT	1	// Find next in find dialog
+# define FRD_R_FINDNEXT	2	// Find next in repl dialog
+# define FRD_REPLACE	3	// Replace once
+# define FRD_REPLACEALL	4	// Replace remaining matches
+# define FRD_UNDO	5	// Undo replaced text
+# define FRD_TYPE_MASK   7	// Mask for the callback type
+// Flags which change the way searching is done.
+# define FRD_WHOLE_WORD	0x08	// match whole word only
+# define FRD_MATCH_CASE	0x10	// match case
 #endif
 
 #ifdef FEAT_GUI_GTK
@@ -555,7 +554,7 @@ typedef enum
 # define CONVERT_TO_UTF8_FREE(String) ((String) = (char_u *)NULL)
 # define CONVERT_FROM_UTF8(String) (String)
 # define CONVERT_FROM_UTF8_FREE(String) ((String) = (char_u *)NULL)
-#endif /* FEAT_GUI_GTK */
+#endif // FEAT_GUI_GTK
 
 #ifdef FEAT_GUI_GTK
 /*
@@ -581,7 +580,7 @@ typedef enum
 # else
 #  define FUNC2GENERIC(func) G_CALLBACK(func)
 # endif
-#endif /* FEAT_GUI_GTK */
+#endif // FEAT_GUI_GTK
 
 #if defined(UNIX) && !defined(FEAT_GUI_MAC)
 # define GUI_MAY_FORK

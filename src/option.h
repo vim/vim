@@ -197,7 +197,7 @@
 #define CPO_MINUS	'-'	// "9-" fails at and before line 9
 #define CPO_SPECI	'<'	// don't recognize <> in mappings
 #define CPO_REGAPPEND	'>'	// insert NL when appending to a register
-/* POSIX flags */
+// POSIX flags
 #define CPO_HASH	'#'	// "D", "o" and "O" do not use a count
 #define CPO_PARA	'{'	// "{" is also a paragraph boundary
 #define CPO_TSIZE	'|'	// $LINES and $COLUMNS overrule term size
@@ -207,7 +207,7 @@
 #define CPO_CHDIR	'.'	// don't chdir if buffer is modified
 #define CPO_SCOLON	';'	// using "," and ";" will skip over char if
 				// cursor would not move
-/* default values for Vim, Vi and POSIX */
+// default values for Vim, Vi and POSIX
 #define CPO_VIM		"aABceFs"
 #define CPO_VI		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>;"
 #define CPO_ALL		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>#{|&/\\.;"

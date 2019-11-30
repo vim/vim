@@ -7,27 +7,27 @@
  */
 
 #ifdef GLOBAL_IME
-#ifndef _INC_GLOBAL_IME
-#define _INC_GLOBAL_IME
+# ifndef _INC_GLOBAL_IME
+#  define _INC_GLOBAL_IME
 
-#ifdef __cplusplus
+#  ifdef __cplusplus
 extern "C" {
-#endif /* __cplusplus */
+#  endif
     void global_ime_init(ATOM, HWND);
     void global_ime_end(void);
     LRESULT WINAPI global_ime_DefWindowProc(HWND, UINT, WPARAM, LPARAM);
     BOOL WINAPI global_ime_TranslateMessage(CONST MSG *);
     void WINAPI global_ime_set_position(POINT*);
     void WINAPI global_ime_set_font(LOGFONT*);
-#if 0
+#  if 0
     void WINAPI global_ime_status_evacuate(void);
     void WINAPI global_ime_status_restore(void);
-#endif
+#  endif
     void WINAPI global_ime_set_status(int status);
     int WINAPI global_ime_get_status(void);
-#ifdef __cplusplus
+#  ifdef __cplusplus
 }
-#endif /* __cplusplus */
+#  endif
 
-#endif /* _INC_GLOBAL_IME */
-#endif /* GLOBAL_IME */
+# endif // _INC_GLOBAL_IME
+#endif // GLOBAL_IME

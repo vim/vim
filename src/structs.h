@@ -1105,7 +1105,7 @@ typedef struct
     int		tb_change_cnt;	// nr of time tb_buf was changed; never zero
 } typebuf_T;
 
-/* Struct to hold the saved typeahead for save_typeahead(). */
+// Struct to hold the saved typeahead for save_typeahead().
 typedef struct
 {
     typebuf_T		save_typebuf;
@@ -1200,7 +1200,8 @@ struct stl_hlrec
  * Syntax items - usually buffer-specific.
  */
 
-/* Item for a hashtable.  "hi_key" can be one of three values:
+/*
+ * Item for a hashtable.  "hi_key" can be one of three values:
  * NULL:	   Never been used
  * HI_KEY_REMOVED: Entry was removed
  * Otherwise:	   Used item, pointer to the actual key; this usually is
@@ -1505,7 +1506,9 @@ typedef struct
 #define VAR_SHORT_LEN	20	// short variable name length
 #define FIXVAR_CNT	12	// number of fixed variables
 
-/* structure to hold info for a function that is currently being executed. */
+/*
+ * structure to hold info for a function that is currently being executed.
+ */
 struct funccall_S
 {
     ufunc_T	*func;		// function being called
@@ -1555,14 +1558,16 @@ struct funccal_entry {
     funccal_entry_T *next;
 };
 
-/* From user function to hashitem and back. */
+// From user function to hashitem and back.
 #define UF2HIKEY(fp) ((fp)->uf_name)
 #define HIKEY2UF(p)  ((ufunc_T *)((p) - offsetof(ufunc_T, uf_name)))
 #define HI2UF(hi)     HIKEY2UF((hi)->hi_key)
 
-/* Growarray to store info about already sourced scripts.
+/*
+ * Growarray to store info about already sourced scripts.
  * For Unix also store the dev/ino, so that we don't have to stat() each
- * script when going through the list. */
+ * script when going through the list.
+ */
 typedef struct scriptitem_S
 {
     char_u	*sn_name;
@@ -1593,7 +1598,9 @@ typedef struct scriptitem_S
 } scriptitem_T;
 
 # ifdef FEAT_PROFILE
-/* Struct used in sn_prl_ga for every line of a script. */
+/*
+ * Struct used in sn_prl_ga for every line of a script.
+ */
 typedef struct sn_prl_S
 {
     int		snp_count;	// nr of times line was executed
@@ -3370,7 +3377,7 @@ typedef struct cmdarg_S
 /*
  * struct to store values from 'guicursor' and 'mouseshape'
  */
-/* Indexes in shape_table[] */
+// Indexes in shape_table[]
 #define SHAPE_IDX_N	0	// Normal mode
 #define SHAPE_IDX_V	1	// Visual mode
 #define SHAPE_IDX_I	2	// Insert mode

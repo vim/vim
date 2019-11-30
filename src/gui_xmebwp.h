@@ -53,13 +53,13 @@ extern XmEnhancedButtonClassRec xmEnhancedButtonClassRec;
  */
 typedef struct _XmEnhancedButtonPart
 {
-    /* public resources */
+    // public resources
     String pixmap_data;
     String pixmap_file;
     Dimension spacing;
     int label_location;
 
-    /* private resources */
+    // private resources
     int pixmap_depth;
     Dimension pixmap_width;
     Dimension pixmap_height;

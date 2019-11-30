@@ -84,7 +84,7 @@ static char **(built_in_pixmaps[]) =
     tb_exit_xpm
 };
 
-/* Indices for named colors */
+// Indices for named colors
 #define BACKGROUND	0
 #define FOREGROUND	1
 #define BOTTOM_SHADOW	2

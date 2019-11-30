@@ -33,29 +33,29 @@ typedef struct {
     int     (*func)(exarg_T *eap);
     char *  help;
     char *  usage;
-    int	    cansplit;		/* if supports splitting window */
+    int	    cansplit;		// if supports splitting window
 } cscmd_T;
 
 typedef struct csi {
-    char *	    fname;	/* cscope db name */
-    char *	    ppath;	/* path to prepend (the -P option) */
-    char *	    flags;	/* additional cscope flags/options (e.g, -p2) */
+    char *	    fname;	// cscope db name
+    char *	    ppath;	// path to prepend (the -P option)
+    char *	    flags;	// additional cscope flags/options (e.g, -p2)
 #if defined(UNIX)
-    pid_t	    pid;	/* PID of the connected cscope process. */
-    dev_t	    st_dev;	/* ID of dev containing cscope db */
-    ino_t	    st_ino;	/* inode number of cscope db */
+    pid_t	    pid;	// PID of the connected cscope process.
+    dev_t	    st_dev;	// ID of dev containing cscope db
+    ino_t	    st_ino;	// inode number of cscope db
 #else
 # if defined(MSWIN)
-    DWORD	    pid;	/* PID of the connected cscope process. */
-    HANDLE	    hProc;	/* cscope process handle */
-    DWORD	    nVolume;	/* Volume serial number, instead of st_dev */
-    DWORD	    nIndexHigh;	/* st_ino has no meaning in the Windows */
+    DWORD	    pid;	// PID of the connected cscope process.
+    HANDLE	    hProc;	// cscope process handle
+    DWORD	    nVolume;	// Volume serial number, instead of st_dev
+    DWORD	    nIndexHigh;	// st_ino has no meaning in the Windows
     DWORD	    nIndexLow;
 # endif
 #endif
 
-    FILE *	    fr_fp;	/* from cscope: FILE. */
-    FILE *	    to_fp;	/* to cscope: FILE. */
+    FILE *	    fr_fp;	// from cscope: FILE.
+    FILE *	    to_fp;	// to cscope: FILE.
 } csinfo_T;
 
 typedef enum { Add, Find, Help, Kill, Reset, Show } csid_e;
@@ -68,6 +68,4 @@ typedef enum {
 } mcmd_e;
 
 
-#endif	/* FEAT_CSCOPE */
-
-/* the end */
+#endif	// FEAT_CSCOPE
