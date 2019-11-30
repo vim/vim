@@ -404,12 +404,17 @@ vms_wproc(char *name, int val)
 	    return 1;
     }
     if (--vms_match_free == 0) {
+	char_u **old_vms_fmatch = vms_fmatch;
+
 	/* add more space to store matches */
 	vms_match_alloced += EXPL_ALLOC_INC;
-	vms_fmatch = vim_realloc(vms_fmatch,
+	vms_fmatch = vim_realloc(old_vms_fmatch,
 		sizeof(char **) * vms_match_alloced);
 	if (!vms_fmatch)
+	{
+	    vim_free(old_vms_fmatch);
 	    return 0;
+	}
 	vms_match_free = EXPL_ALLOC_INC;
     }
     vms_fmatch[vms_match_num] = vim_strsave((char_u *)name);
@@ -489,10 +494,13 @@ mch_expand_wildcards(int num_pat, char_u **pat, int *num_file, char_u ***file, i
 	    /* allocate memory for pointers */
 	    if (--files_free < 1)
 	    {
+		char_u **old_file = *file;
+
 		files_alloced += EXPL_ALLOC_INC;
-		*file = vim_realloc(*file, sizeof(char_u **) * files_alloced);
+		*file = vim_realloc(old_file, sizeof(char_u **) * files_alloced);
 		if (*file == NULL)
 		{
+		    vim_free(old_file);
 		    *file = (char_u **)"";
 		    *num_file = 0;
 		    return(FAIL);
