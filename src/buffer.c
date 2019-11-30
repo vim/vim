@@ -3979,6 +3979,7 @@ build_stl_str_hl(
 #ifdef FEAT_EVAL
     win_T	*save_curwin;
     buf_T	*save_curbuf;
+    int		save_VIsual_active;
 #endif
     int		empty_line;
     colnr_T	virtcol;
@@ -4368,13 +4369,18 @@ build_stl_str_hl(
 
 	    save_curbuf = curbuf;
 	    save_curwin = curwin;
+	    save_VIsual_active = VIsual_active;
 	    curwin = wp;
 	    curbuf = wp->w_buffer;
+	    // Visual mode is only valid in the current window.
+	    if (curwin != save_curwin)
+		VIsual_active = FALSE;
 
 	    str = eval_to_string_safe(p, &t, use_sandbox);
 
 	    curwin = save_curwin;
 	    curbuf = save_curbuf;
+	    VIsual_active = save_VIsual_active;
 	    do_unlet((char_u *)"g:actual_curbuf", TRUE);
 	    do_unlet((char_u *)"g:actual_curwin", TRUE);
 
