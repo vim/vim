@@ -1827,7 +1827,7 @@ func Test_terminal_out_err()
   call delete(outfile)
 endfunc
 
-func Test_terminwinscroll()
+func Test_termwinscroll()
   CheckUnix
 
   " Let the terminal output more than 'termwinscroll' lines, some at the start
