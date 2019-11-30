@@ -44,9 +44,6 @@
 #  ifndef _XOPEN_SOURCE
 #   define _XOPEN_SOURCE    700
 #  endif
-#  ifndef __USE_XOPEN
-#   define __USE_XOPEN
-#  endif
 # endif
 
 // for INT_MAX, LONG_MAX et al.
