@@ -878,7 +878,7 @@ save_file_ff(buf_T *buf)
     buf->b_start_eol = buf->b_p_eol;
     buf->b_start_bomb = buf->b_p_bomb;
 
-    /* Only use free/alloc when necessary, they take time. */
+    // Only use free/alloc when necessary, they take time.
     if (buf->b_start_fenc == NULL
 			     || STRCMP(buf->b_start_fenc, buf->b_p_fenc) != 0)
     {
@@ -899,7 +899,7 @@ save_file_ff(buf_T *buf)
     int
 file_ff_differs(buf_T *buf, int ignore_empty)
 {
-    /* In a buffer that was never loaded the options are not valid. */
+    // In a buffer that was never loaded the options are not valid.
     if (buf->b_flags & BF_NEVERLOADED)
 	return FALSE;
     if (ignore_empty
@@ -1371,7 +1371,7 @@ open_line(
 
     // make a copy of the current line so we can mess with it
     saved_line = vim_strsave(ml_get_curline());
-    if (saved_line == NULL)	    /* out of memory! */
+    if (saved_line == NULL)	    // out of memory!
 	return FALSE;
 
     if (State & VREPLACE_FLAG)
@@ -1646,7 +1646,7 @@ open_line(
 		}
 
 		// Isolate the strings of the middle and end leader.
-		while (*p && p[-1] != ':')	/* find end of middle flags */
+		while (*p && p[-1] != ':')	// find end of middle flags
 		{
 		    if (*p == COM_BLANK)
 			require_blank = TRUE;
@@ -2008,7 +2008,7 @@ open_line(
 	// When in REPLACE mode, put the deleted blanks on the replace stack,
 	// preceded by a NUL, so they can be put back when a BS is entered.
 	if (REPLACE_NORMAL(State))
-	    replace_push(NUL);	    /* end of extra blanks */
+	    replace_push(NUL);	    // end of extra blanks
 	if (curbuf->b_p_ai || (flags & OPENLINE_DELSPACES))
 	{
 	    while ((*p_extra == ' ' || *p_extra == '\t')
@@ -2090,7 +2090,7 @@ open_line(
 	{
 	    // In case we NL to a new line, BS to the previous one, and NL
 	    // again, we don't want to save the new line for undo twice.
-	    (void)u_save_cursor();		    /* errors are ignored! */
+	    (void)u_save_cursor();		    // errors are ignored!
 	    vr_lines_changed++;
 	}
 	ml_replace(curwin->w_cursor.lnum, p_extra, TRUE);
