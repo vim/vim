@@ -4898,7 +4898,7 @@ gui_mouse_moved(int x, int y)
     // apply 'mousefocus' and pointer shape
     gui_mouse_focus(x, y);
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     if (popup_visible)
 	// Generate a mouse-moved event, so that the popup can perhaps be
 	// closed, just like in the terminal.
@@ -5152,7 +5152,7 @@ gui_update_screen(void)
 
     /* Trigger CursorMoved if the cursor moved. */
     if (!finish_op && (has_cursormoved()
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_POPUPWIN
 		|| popup_visible
 # endif
 # ifdef FEAT_CONCEAL
@@ -5162,7 +5162,7 @@ gui_update_screen(void)
     {
 	if (has_cursormoved())
 	    apply_autocmds(EVENT_CURSORMOVED, NULL, NULL, FALSE, curbuf);
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
 	if (popup_visible)
 	    popup_check_cursor_pos();
 #endif

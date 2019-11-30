@@ -584,7 +584,7 @@ static funcentry_T global_functions[] =
 #ifdef FEAT_PERL
     {"perleval",	1, 1, FEARG_1,	  f_perleval},
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     {"popup_atcursor",	2, 2, FEARG_1,	  f_popup_atcursor},
     {"popup_beval",	2, 2, FEARG_1,	  f_popup_beval},
     {"popup_clear",	0, 0, 0,	  f_popup_clear},

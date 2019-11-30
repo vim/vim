@@ -13,7 +13,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_TEXT_PROP) || defined(PROTO)
+#if defined(FEAT_POPUPWIN) || defined(PROTO)
 
 typedef struct {
     char	*pp_name;
@@ -416,7 +416,9 @@ get_pos_entry(dict_T *d, int give_error)
 apply_move_options(win_T *wp, dict_T *d)
 {
     int		nr;
+#ifdef FEAT_TEXT_PROP
     char_u	*str;
+#endif
     dictitem_T	*di;
 
     if ((nr = dict_get_number_def(d, (char_u *)"minwidth", -1)) >= 0)
@@ -446,6 +448,7 @@ apply_move_options(win_T *wp, dict_T *d)
 	    wp->w_popup_pos = ppt;
     }
 
+#ifdef FEAT_TEXT_PROP
     str = dict_get_string(d, (char_u *)"textprop", FALSE);
     if (str != NULL)
     {
@@ -474,6 +477,7 @@ apply_move_options(win_T *wp, dict_T *d)
     di = dict_find(d, (char_u *)"textpropid", -1);
     if (di != NULL)
 	wp->w_popup_prop_id = dict_get_number(d, (char_u *)"textpropid");
+#endif
 }
 
     static void
@@ -972,7 +976,9 @@ add_popup_strings(buf_T *buf, list_T *l)
 add_popup_dicts(buf_T *buf, list_T *l)
 {
     listitem_T  *li;
+#ifdef FEAT_TEXT_PROP
     listitem_T  *pli;
+#endif
     linenr_T    lnum = 0;
     char_u	*p;
     dict_T	*dict;
@@ -992,6 +998,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
 			       p == NULL ? (char_u *)"" : p, (colnr_T)0, TRUE);
     }
 
+#ifdef FEAT_TEXT_PROP
     // add the text properties
     lnum = 1;
     for (li = l->lv_first; li != NULL; li = li->li_next, ++lnum)
@@ -1029,6 +1036,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
 	    }
 	}
     }
+#endif
 }
 
 /*
@@ -1143,6 +1151,7 @@ popup_adjust_position(win_T *wp)
 	int	    screen_ccol;
 	int	    screen_ecol;
 
+# ifdef FEAT_TEXT_PROP
 	// Popup window is positioned relative to a text property.
 	if (find_visible_prop(prop_win,
 				wp->w_popup_prop_type, wp->w_popup_prop_id,
@@ -1159,6 +1168,7 @@ popup_adjust_position(win_T *wp)
 	    }
 	    return;
 	}
+# endif
 
 	// Compute the desired position from the position of the text
 	// property.  Use "wantline" and "wantcol" as offsets.
@@ -2732,6 +2742,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	dict_add_number(dict, "scrollbar", wp->w_want_scrollbar);
 	dict_add_number(dict, "zindex", wp->w_zindex);
 	dict_add_number(dict, "fixed", wp->w_popup_fixed);
+# ifdef FEAT_TEXT_PROP
 	if (wp->w_popup_prop_type && win_valid(wp->w_popup_prop_win))
 	{
 	    proptype_T *pt = text_prop_type_by_id(
@@ -2743,6 +2754,7 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	    dict_add_number(dict, "textpropwin", wp->w_popup_prop_win->w_id);
 	    dict_add_number(dict, "textpropid", wp->w_popup_prop_id);
 	}
+# endif
 	dict_add_string(dict, "title", wp->w_popup_title);
 	dict_add_number(dict, "wrap", wp->w_p_wrap);
 	dict_add_number(dict, "drag", (wp->w_popup_flags & POPF_DRAG) != 0);
@@ -3134,6 +3146,7 @@ update_popup_transparent(win_T *wp, int val)
     static int
 check_popup_unhidden(win_T *wp)
 {
+#ifdef FEAT_TEXT_PROP
     if (wp->w_popup_prop_type > 0 && win_valid(wp->w_popup_prop_win))
     {
 	textprop_T  prop;
@@ -3149,6 +3162,7 @@ check_popup_unhidden(win_T *wp)
 	    return TRUE;
 	}
     }
+#endif
     return FALSE;
 }
 

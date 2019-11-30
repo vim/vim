@@ -3678,7 +3678,7 @@ jumpto_tag(
 	    win_close(curwin, FALSE);
 	    postponed_split = 0;
 	}
-#if defined(FEAT_QUICKFIX) && defined(FEAT_TEXT_PROP)
+#if defined(FEAT_QUICKFIX) && defined(FEAT_POPUPWIN)
 	else if (WIN_IS_POPUP(curwin))
 	{
 	    win_T   *wp = curwin;

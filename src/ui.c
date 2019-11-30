@@ -1079,7 +1079,7 @@ clip_compare_pos(
 clip_start_selection(int col, int row, int repeated_click)
 {
     Clipboard_T	*cb = &clip_star;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     win_T	*wp;
     int		row_cp = row;
     int		col_cp = col;
@@ -1103,7 +1103,7 @@ clip_start_selection(int col, int row, int repeated_click)
     cb->end	    = cb->start;
     cb->origin_row  = (short_u)cb->start.lnum;
     cb->state	    = SELECT_IN_PROGRESS;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     if (wp != NULL && WIN_IS_POPUP(wp))
     {
 	// Click in a popup window restricts selection to that window,
@@ -1455,7 +1455,7 @@ clip_invert_area(
     int		invert = FALSE;
     int		max_col;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     max_col = cbd->max_col - 1;
 #else
     max_col = Columns - 1;
@@ -1526,7 +1526,7 @@ clip_invert_rectangle(
     int		height = height_arg;
     int		width = width_arg;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     // this goes on top of all popup windows
     screen_zindex = CLIP_ZINDEX;
 
@@ -1551,7 +1551,7 @@ clip_invert_rectangle(
     else
 #endif
 	screen_draw_rectangle(row, col, height, width, invert);
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     screen_zindex = 0;
 #endif
 }
@@ -1594,7 +1594,7 @@ clip_copy_modeless_selection(int both UNUSED)
     {
 	row = col1; col1 = col2; col2 = row;
     }
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     if (col1 < clip_star.min_col)
 	col1 = clip_star.min_col;
     if (col2 > clip_star.max_col)
@@ -1629,7 +1629,7 @@ clip_copy_modeless_selection(int both UNUSED)
 	if (row == row1)
 	    start_col = col1;
 	else
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
 	    start_col = clip_star.min_col;
 #else
 	    start_col = 0;
@@ -1638,7 +1638,7 @@ clip_copy_modeless_selection(int both UNUSED)
 	if (row == row2)
 	    end_col = col2;
 	else
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
 	    end_col = clip_star.max_col;
 #else
 	    end_col = Columns;
@@ -1648,7 +1648,7 @@ clip_copy_modeless_selection(int both UNUSED)
 
 	/* See if we need to nuke some trailing whitespace */
 	if (end_col >=
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
 		clip_star.max_col
 #else
 		Columns
@@ -1814,7 +1814,7 @@ clip_get_line_end(Clipboard_T *cbd UNUSED, int row)
     if (row >= screen_Rows || ScreenLines == NULL)
 	return 0;
     for (i =
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
 	    cbd->max_col;
 #else
 	    screen_Columns;

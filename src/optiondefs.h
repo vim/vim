@@ -688,7 +688,7 @@ static struct vimoption options[] =
 			    {(char_u *)"menu,preview", (char_u *)0L}
 			    SCTX_INIT},
     {"completepopup", "cpp", P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
-#if defined(FEAT_TEXT_PROP) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_POPUPWIN) && defined(FEAT_QUICKFIX)
 			    (char_u *)&p_cpp, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
 #else
@@ -1897,7 +1897,7 @@ static struct vimoption options[] =
 #endif
 			    {(char_u *)12L, (char_u *)0L} SCTX_INIT},
     {"previewpopup", "pvp", P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
 			    (char_u *)&p_pvp, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
 #else

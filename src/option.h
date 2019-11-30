@@ -567,7 +567,7 @@ EXTERN char_u	*p_fp;		// 'formatprg'
 EXTERN int	p_fs;		// 'fsync'
 #endif
 EXTERN int	p_gd;		// 'gdefault'
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
 # ifdef FEAT_QUICKFIX
 EXTERN char_u	*p_cpp;		// 'completepopup'
 # endif

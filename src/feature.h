@@ -1151,17 +1151,23 @@
 #endif
 
 /*
- * +textprop		Text properties and popup windows
+ * +textprop		Text properties
  */
-#if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
-# define FEAT_TEXT_PROP
-#endif
+//#if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
+//# define FEAT_TEXT_PROP
+//#endif
 
 #if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)
 // Can limit syntax highlight time to 'redrawtime'.
 # define SYN_TIME_LIMIT 1
 #endif
 
+/*
+ * +popupwin		Popup windows
+ */
+#if defined(FEAT_EVAL) && defined(FEAT_SYN_HL) && defined(FEAT_TEXT_PROP)
+# define FEAT_POPUPWIN
+#endif
 
 /*
  * +signs		Allow signs to be displayed to the left of text lines.

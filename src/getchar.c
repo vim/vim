@@ -1604,7 +1604,7 @@ vgetc(void)
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
 		    || im_is_preediting()
 #endif
-#if defined(FEAT_TEXT_PROP)
+#if defined(FEAT_POPUPWIN)
 		    || popup_no_mapping()
 #endif
 		    )
@@ -1822,7 +1822,7 @@ vgetc(void)
 	ui_remove_balloon();
     }
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     if (popup_do_filter(c))
     {
 	if (c == Ctrl_C)

@@ -3016,7 +3016,7 @@ do_ecmd(
 #ifdef FEAT_TITLE
 	maketitle();
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
 	if (WIN_IS_POPUP(curwin) && curwin->w_p_pvw && retval != FAIL)
 	    popup_set_title(curwin);
 #endif
@@ -4993,7 +4993,7 @@ prepare_tagpreview(
      */
     if (!curwin->w_p_pvw)
     {
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_POPUPWIN
 	if (use_previewpopup && *p_pvp != NUL)
 	{
 	    wp = popup_find_preview_window();
@@ -5028,7 +5028,7 @@ prepare_tagpreview(
 	    /*
 	     * There is no preview window open yet.  Create one.
 	     */
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_POPUPWIN
 	    if ((use_previewpopup && *p_pvp != NUL)
 						 || use_popup != USEPOPUP_NONE)
 		return popup_create_preview_window(use_popup != USEPOPUP_NONE);

@@ -4255,7 +4255,7 @@ _OnMouseWheel(
 
     wp = gui_mouse_window(FIND_POPUP);
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     if (wp != NULL && popup_is_popup(wp))
     {
 	cmdarg_T cap;

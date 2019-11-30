@@ -653,7 +653,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define POPUP_HANDLED_4	    0x08    // used by may_update_popup_mask()
 #define POPUP_HANDLED_5	    0x10    // used by update_popups()
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
 # define WIN_IS_POPUP(wp) ((wp)->w_popup_flags != 0)
 #else
 # define WIN_IS_POPUP(wp) 0
@@ -2072,7 +2072,7 @@ typedef struct
     short_u	origin_end_col;
     short_u	word_start_col;
     short_u	word_end_col;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     // limits for selection inside a popup window
     short_u	min_col;
     short_u	max_col;

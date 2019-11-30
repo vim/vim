@@ -5013,7 +5013,7 @@ ex_pclose(exarg_T *eap)
 	    ex_win_close(eap->forceit, win, NULL);
 	    return;
 	}
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_POPUPWIN
     // Also when 'previewpopup' is empty, it might have been cleared.
     popup_close_preview();
 # endif

@@ -2112,7 +2112,7 @@ typedef struct {
 //  # define CRYPT_NOT_INPLACE 1
 #endif
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
 typedef enum {
     POPPOS_BOTLEFT,
     POPPOS_TOPLEFT,
@@ -2761,7 +2761,7 @@ struct tabpage_S
     win_T	    *tp_prevwin;    // previous window in this Tab page
     win_T	    *tp_firstwin;   // first window in this Tab page
     win_T	    *tp_lastwin;    // last window in this Tab page
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     win_T	    *tp_first_popupwin; // first popup window in this Tab page
 #endif
     long	    tp_old_Rows;    // Rows when Tab page was left
@@ -3013,7 +3013,7 @@ struct window_S
     int		w_width;	    // Width of window, excluding separation.
     int		w_vsep_width;	    // Number of separator columns (0 or 1).
     pos_save_T	w_save_cursor;	    // backup of cursor pos and topline
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     int		w_popup_flags;	    // POPF_ values
     int		w_popup_handled;    // POPUP_HANDLE[0-9] flags
     char_u	*w_popup_title;

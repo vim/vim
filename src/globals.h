@@ -95,7 +95,7 @@ EXTERN int redrawing_for_callback INIT(= 0);
  */
 EXTERN short	*TabPageIdxs INIT(= NULL);
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
 // Array with size Rows x Columns containing zindex of popups.
 EXTERN short	*popup_mask INIT(= NULL);
 EXTERN short	*popup_mask_next INIT(= NULL);
@@ -640,13 +640,15 @@ EXTERN win_T	*curwin;	// currently active window
 EXTERN win_T	*aucmd_win;	// window used in aucmd_prepbuf()
 EXTERN int	aucmd_win_used INIT(= FALSE);	// aucmd_win is being used
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
 EXTERN win_T    *first_popupwin;		// first global popup window
 EXTERN win_T	*popup_dragwin INIT(= NULL);	// popup window being dragged
 
 // Set to TRUE if there is any visible popup window.
 EXTERN int	popup_visible INIT(= FALSE);
+#endif
 
+#ifdef FEAT_TEXT_PROP
 EXTERN int	text_prop_frozen INIT(= 0);
 #endif
 

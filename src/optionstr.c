@@ -2220,7 +2220,7 @@ did_set_string_option(
     }
 #endif
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     // 'previewpopup'
     else if (varp == &p_pvp)
     {

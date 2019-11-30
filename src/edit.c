@@ -1417,7 +1417,7 @@ ins_redraw(int ready)	    // not busy with something
     /* Trigger CursorMoved if the cursor moved.  Not when the popup menu is
      * visible, the command might delete it. */
     if (ready && (has_cursormovedI()
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_POPUPWIN
 		|| popup_visible
 # endif
 # if defined(FEAT_CONCEAL)
@@ -1442,7 +1442,7 @@ ins_redraw(int ready)	    // not busy with something
 	    update_curswant();
 	    ins_apply_autocmds(EVENT_CURSORMOVEDI);
 	}
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
 	if (popup_visible)
 	    popup_check_cursor_pos();
 #endif

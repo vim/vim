@@ -103,7 +103,7 @@ win_id2wp_tp(int id, tabpage_T **tpp)
 		*tpp = tp;
 	    return wp;
 	}
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
     // popup windows are in separate lists
      FOR_ALL_TABPAGES(tp)
 	 for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
@@ -181,7 +181,7 @@ find_win_by_nr(
     }
     if (nr >= LOWEST_WIN_ID)
     {
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_POPUPWIN
 	// check tab-local popup windows
 	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
 	    if (wp->w_id == nr)
