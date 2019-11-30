@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 26
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,8 +38,6 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-For rand() use http://prng.di.unimi.it/xoshiro128starstar.c ?
-
 Popup windows:
 - Use popup (or popup menu) for command line completion
 - Implement flip option
@@ -47,11 +45,7 @@ Popup windows:
     - put popup menu also in popup_mask?
 - Any other commands to disable in a popup window?
   Use ERROR_IF_POPUP_WINDOW for these.
-- Figure out the size and position better.
-    if wrapping splits a double-wide character
-    if wrapping inserts indent
-- When drawing on top half a double-wide character, display ">" or "<" in the
-  incomplete cell.
+- Figure out the size and position better if wrapping inserts indent
 
 Text properties:
 - Implement prop_find() issue #4970

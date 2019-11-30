@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 8.1.  Last change: 2019 Nov 12
+*sign.txt*      For Vim version 8.1.  Last change: 2019 Nov 30
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -70,8 +70,6 @@ used, then the sign is placed in the global group. Otherwise the sign is
 placed in the named group. The sign identifier is unique within a group. The
 sign group allows Vim plugins to use unique signs without interfering with
 other plugins using signs.
-
-The group name "popupmenu" is used by popup windows where 'cursorline' is set.
 
 To place a sign in a popup window the group name must start with "PopUp".
 Other signs will not show in a popup window.  The group name "PopUpMenu" is
