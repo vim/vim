@@ -77,8 +77,8 @@
  * errors disappear.  They do not need to be correct.
  */
 #ifdef PROTO
-#define WINAPI
-#define WINBASEAPI
+# define WINAPI
+# define WINBASEAPI
 typedef int BOOL;
 typedef int CALLBACK;
 typedef int COLORREF;
@@ -211,16 +211,16 @@ mch_exit_g(int r)
 	WSACleanup();
     }
 # endif
-#ifdef DYNAMIC_GETTEXT
+# ifdef DYNAMIC_GETTEXT
     dyn_libintl_end();
-#endif
+# endif
 
     if (gui.in_use)
 	gui_exit(r);
 
-#ifdef EXITFREE
+# ifdef EXITFREE
     free_all_mem();
-#endif
+# endif
 
     exit(r);
 }
@@ -309,12 +309,12 @@ mch_settitle(
     void
 mch_restore_title(int which UNUSED)
 {
-#if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
-# ifdef VIMDLL
+# if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+#  ifdef VIMDLL
     if (!gui.in_use)
-# endif
+#  endif
 	SetConsoleTitle(g_szOrigTitle);
-#endif
+# endif
 }
 
 
@@ -663,11 +663,11 @@ mch_has_wildcard(char_u *p)
     for ( ; *p; MB_PTR_ADV(p))
     {
 	if (vim_strchr((char_u *)
-#  ifdef VIM_BACKTICK
+#ifdef VIM_BACKTICK
 				    "?*$[`"
-#  else
+#else
 				    "?*$["
-#  endif
+#endif
 						, *p) != NULL
 		|| (*p == '~' && p[1] != NUL))
 	    return TRUE;
@@ -854,10 +854,10 @@ mch_libcall(
     // If the handle is valid, try to get the function address.
     if (hinstLib != NULL)
     {
-#ifdef HAVE_TRY_EXCEPT
+# ifdef HAVE_TRY_EXCEPT
 	__try
 	{
-#endif
+# endif
 	if (argstring != NULL)
 	{
 	    /* Call with string argument */
@@ -895,7 +895,7 @@ mch_libcall(
 		mch_memmove(*string_result, retval_str, len);
 	}
 
-#ifdef HAVE_TRY_EXCEPT
+# ifdef HAVE_TRY_EXCEPT
 	}
 	__except(EXCEPTION_EXECUTE_HANDLER)
 	{
@@ -903,7 +903,7 @@ mch_libcall(
 		RESETSTKOFLW();
 	    fRunTimeLinkSuccess = 0;
 	}
-#endif
+# endif
 
 	// Free the DLL module.
 	(void)FreeLibrary(hinstLib);
@@ -925,7 +925,7 @@ mch_libcall(
     void
 DumpPutS(const char *psz UNUSED)
 {
-# ifdef MCH_WRITE_DUMP
+#ifdef MCH_WRITE_DUMP
     if (fdDump)
     {
 	fputs(psz, fdDump);
@@ -933,7 +933,7 @@ DumpPutS(const char *psz UNUSED)
 	    fputc('\n', fdDump);
 	fflush(fdDump);
     }
-# endif
+#endif
 }
 
 #ifdef _DEBUG
@@ -1032,10 +1032,10 @@ static int		*bUserAbort = NULL;
 static char_u		*prt_name = NULL;
 
 /* Defines which are also in vim.rc. */
-#define IDC_BOX1		400
-#define IDC_PRINTTEXT1		401
-#define IDC_PRINTTEXT2		402
-#define IDC_PROGRESS		403
+# define IDC_BOX1		400
+# define IDC_PRINTTEXT1		401
+# define IDC_PRINTTEXT2		402
+# define IDC_PROGRESS		403
 
     static BOOL
 vimSetDlgItemText(HWND hDlg, int nIDDlgItem, char_u *s)
@@ -1068,11 +1068,11 @@ swap_me(COLORREF colorref)
 }
 
 /* Attempt to make this work for old and new compilers */
-#if !defined(_WIN64) && (!defined(_MSC_VER) || _MSC_VER < 1300)
-# define PDP_RETVAL BOOL
-#else
-# define PDP_RETVAL INT_PTR
-#endif
+# if !defined(_WIN64) && (!defined(_MSC_VER) || _MSC_VER < 1300)
+#  define PDP_RETVAL BOOL
+# else
+#  define PDP_RETVAL INT_PTR
+# endif
 
     static PDP_RETVAL CALLBACK
 PrintDlgProc(
@@ -1081,15 +1081,15 @@ PrintDlgProc(
 	WPARAM wParam UNUSED,
 	LPARAM lParam UNUSED)
 {
-#ifdef FEAT_GETTEXT
+# ifdef FEAT_GETTEXT
     NONCLIENTMETRICS nm;
     static HFONT hfont;
-#endif
+# endif
 
     switch (message)
     {
 	case WM_INITDIALOG:
-#ifdef FEAT_GETTEXT
+# ifdef FEAT_GETTEXT
 	    nm.cbSize = sizeof(NONCLIENTMETRICS);
 	    if (SystemParametersInfo(
 			SPI_GETNONCLIENTMETRICS,
@@ -1113,7 +1113,7 @@ PrintDlgProc(
 		if (GetDlgItemText(hDlg,IDCANCEL, buff, sizeof(buff)))
 		    vimSetDlgItemText(hDlg,IDCANCEL, (char_u *)_(buff));
 	    }
-#endif
+# endif
 	    SetWindowText(hDlg, (LPCSTR)szAppName);
 	    if (prt_name != NULL)
 	    {
@@ -1121,12 +1121,12 @@ PrintDlgProc(
 		VIM_CLEAR(prt_name);
 	    }
 	    EnableMenuItem(GetSystemMenu(hDlg, FALSE), SC_CLOSE, MF_GRAYED);
-#if !defined(FEAT_GUI) || defined(VIMDLL)
-# ifdef VIMDLL
+# if !defined(FEAT_GUI) || defined(VIMDLL)
+#  ifdef VIMDLL
 	    if (!gui.in_use)
-# endif
+#  endif
 		BringWindowToTop(s_hwnd);
-#endif
+# endif
 	    return TRUE;
 
 	case WM_COMMAND:
@@ -1134,9 +1134,9 @@ PrintDlgProc(
 	    EnableWindow(GetParent(hDlg), TRUE);
 	    DestroyWindow(hDlg);
 	    hDlgPrint = NULL;
-#ifdef FEAT_GETTEXT
+# ifdef FEAT_GETTEXT
 	    DeleteObject(hfont);
-#endif
+# endif
 	    return TRUE;
     }
     return FALSE;
@@ -1158,7 +1158,7 @@ AbortProc(HDC hdcPrn UNUSED, int iCode UNUSED)
     return !*bUserAbort;
 }
 
-#if !defined(FEAT_GUI) || defined(VIMDLL)
+# if !defined(FEAT_GUI) || defined(VIMDLL)
 
     static UINT_PTR CALLBACK
 PrintHookProc(
@@ -1212,7 +1212,7 @@ PrintHookProc(
 
     return FALSE;
 }
-#endif
+# endif
 
     void
 mch_print_cleanup(void)
@@ -1352,12 +1352,12 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
     bUserAbort = &(psettings->user_abort);
     vim_memset(&prt_dlg, 0, sizeof(PRINTDLGW));
     prt_dlg.lStructSize = sizeof(PRINTDLGW);
-#if !defined(FEAT_GUI) || defined(VIMDLL)
-# ifdef VIMDLL
+# if !defined(FEAT_GUI) || defined(VIMDLL)
+#  ifdef VIMDLL
     if (!gui.in_use)
-# endif
+#  endif
 	GetConsoleHwnd();	    /* get value of s_hwnd */
-#endif
+# endif
     prt_dlg.hwndOwner = s_hwnd;
     prt_dlg.Flags = PD_NOPAGENUMS | PD_NOSELECTION | PD_RETURNDC;
     if (!forceit)
@@ -1365,10 +1365,10 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	prt_dlg.hDevMode = stored_dm;
 	prt_dlg.hDevNames = stored_devn;
 	prt_dlg.lCustData = stored_nCopies; // work around bug in print dialog
-#if !defined(FEAT_GUI) || defined(VIMDLL)
-# ifdef VIMDLL
+# if !defined(FEAT_GUI) || defined(VIMDLL)
+#  ifdef VIMDLL
 	if (!gui.in_use)
-# endif
+#  endif
 	{
 	    /*
 	     * Use hook to prevent console window being sent to back
@@ -1376,7 +1376,7 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
 	    prt_dlg.lpfnPrintHook = PrintHookProc;
 	    prt_dlg.Flags |= PD_ENABLEPRINTHOOK;
 	}
-#endif
+# endif
 	prt_dlg.Flags |= stored_nFlags;
     }
 
@@ -1385,13 +1385,13 @@ mch_print_init(prt_settings_T *psettings, char_u *jobname, int forceit)
      * never show dialog if we are running over telnet
      */
     if (forceit
-#if !defined(FEAT_GUI) || defined(VIMDLL)
-# ifdef VIMDLL
+# if !defined(FEAT_GUI) || defined(VIMDLL)
+#  ifdef VIMDLL
 	    || (!gui.in_use && !term_console)
-# else
+#  else
 	    || !term_console
+#  endif
 # endif
-#endif
 	    )
     {
 	prt_dlg.Flags |= PD_RETURNDEFAULT;
@@ -1581,13 +1581,13 @@ mch_print_begin(prt_settings_T *psettings)
 	vim_free(wp);
     }
 
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
     /* Give focus back to main window (when using MDI). */
-# ifdef VIMDLL
+#  ifdef VIMDLL
     if (gui.in_use)
-# endif
+#  endif
 	SetFocus(s_hwnd);
-#endif
+# endif
 
     return (ret > 0);
 }
@@ -1929,17 +1929,17 @@ win32_set_foreground(void)
  */
 HWND message_window = 0;	    /* window that's handling messages */
 
-#define VIM_CLASSNAME      "VIM_MESSAGES"
-#define VIM_CLASSNAME_LEN  (sizeof(VIM_CLASSNAME) - 1)
+# define VIM_CLASSNAME      "VIM_MESSAGES"
+# define VIM_CLASSNAME_LEN  (sizeof(VIM_CLASSNAME) - 1)
 
 /* Communication is via WM_COPYDATA messages. The message type is send in
  * the dwData parameter. Types are defined here. */
-#define COPYDATA_KEYS		0
-#define COPYDATA_REPLY		1
-#define COPYDATA_EXPR		10
-#define COPYDATA_RESULT		11
-#define COPYDATA_ERROR_RESULT	12
-#define COPYDATA_ENCODING	20
+# define COPYDATA_KEYS		0
+# define COPYDATA_REPLY		1
+# define COPYDATA_EXPR		10
+# define COPYDATA_RESULT	11
+# define COPYDATA_ERROR_RESULT	12
+# define COPYDATA_ENCODING	20
 
 /* This is a structure containing a server HWND and its name. */
 struct server_id
@@ -2116,12 +2116,12 @@ Messaging_WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     {
 	/* When the message window is activated (brought to the foreground),
 	 * this actually applies to the text window. */
-#if !defined(FEAT_GUI) || defined(VIMDLL)
-# ifdef VIMDLL
+# if !defined(FEAT_GUI) || defined(VIMDLL)
+#  ifdef VIMDLL
 	if (!gui.in_use)
-# endif
+#  endif
 	    GetConsoleHwnd();	    /* get value of s_hwnd */
-#endif
+# endif
 	if (s_hwnd != 0)
 	{
 	    SetForegroundWindow(s_hwnd);
@@ -2323,17 +2323,17 @@ serverSetName(char_u *name)
     {
 	/* Remember the name */
 	serverName = ok_name;
-#ifdef FEAT_TITLE
+# ifdef FEAT_TITLE
 	need_maketitle = TRUE;	/* update Vim window title later */
-#endif
+# endif
 
 	/* Update the message window title */
 	SetWindowText(message_window, (LPCSTR)ok_name);
 
-#ifdef FEAT_EVAL
+# ifdef FEAT_EVAL
 	/* Set the servername variable */
 	set_vim_var_string(VV_SEND_SERVER, serverName, -1);
-#endif
+# endif
     }
 }
 
@@ -2473,8 +2473,8 @@ typedef struct
 
 static garray_T reply_list = {0, 0, sizeof(reply_T), 5, 0};
 
-#define REPLY_ITEM(i) ((reply_T *)(reply_list.ga_data) + (i))
-#define REPLY_COUNT (reply_list.ga_len)
+# define REPLY_ITEM(i) ((reply_T *)(reply_list.ga_data) + (i))
+# define REPLY_COUNT (reply_list.ga_len)
 
 /* Flag which is used to wait for a reply */
 static int reply_received = 0;
@@ -2574,10 +2574,10 @@ serverGetReply(HWND server, int *expr_res, int remove, int wait, int timeout)
 	/* Loop until we receive a reply */
 	while (reply_received == 0)
 	{
-#ifdef FEAT_TIMERS
+# ifdef FEAT_TIMERS
 	    /* TODO: use the return value to decide how long to wait. */
 	    check_due_timer();
-#endif
+# endif
 	    time(&now);
 	    if (timeout > 0 && (now - start) >= timeout)
 		break;
@@ -2645,9 +2645,9 @@ charset_pairs[] =
     {"RUSSIAN",		RUSSIAN_CHARSET},
     {"THAI",		THAI_CHARSET},
     {"TURKISH",		TURKISH_CHARSET},
-#ifdef VIETNAMESE_CHARSET
+# ifdef VIETNAMESE_CHARSET
     {"VIETNAMESE",	VIETNAMESE_CHARSET},
-#endif
+# endif
     {NULL,		0}
 };
 
@@ -2659,21 +2659,21 @@ struct quality_pair
 
 static struct quality_pair
 quality_pairs[] = {
-#ifdef CLEARTYPE_QUALITY
+# ifdef CLEARTYPE_QUALITY
     {"CLEARTYPE",	CLEARTYPE_QUALITY},
-#endif
-#ifdef ANTIALIASED_QUALITY
+# endif
+# ifdef ANTIALIASED_QUALITY
     {"ANTIALIASED",	ANTIALIASED_QUALITY},
-#endif
-#ifdef NONANTIALIASED_QUALITY
+# endif
+# ifdef NONANTIALIASED_QUALITY
     {"NONANTIALIASED",	NONANTIALIASED_QUALITY},
-#endif
-#ifdef PROOF_QUALITY
+# endif
+# ifdef PROOF_QUALITY
     {"PROOF",		PROOF_QUALITY},
-#endif
-#ifdef DRAFT_QUALITY
+# endif
+# ifdef DRAFT_QUALITY
     {"DRAFT",		DRAFT_QUALITY},
-#endif
+# endif
     {"DEFAULT",		DEFAULT_QUALITY},
     {NULL,		0}
 };
@@ -2799,11 +2799,11 @@ font_enumproc(
 
     LOGFONTW *lf = (LOGFONTW *)(lparam);
 
-#ifndef FEAT_PROPORTIONAL_FONTS
+# ifndef FEAT_PROPORTIONAL_FONTS
     /* Ignore non-monospace fonts without further ado */
     if ((ntm->tmPitchAndFamily & 1) != 0)
 	return 1;
-#endif
+# endif
 
     /* Remember this LOGFONTW as a "possible" */
     *lf = elf->elfLogFont;
@@ -2895,7 +2895,7 @@ get_logfont(
 
     if (wcscmp(wname, L"*") == 0)
     {
-#if defined(FEAT_GUI_MSWIN)
+# if defined(FEAT_GUI_MSWIN)
 	CHOOSEFONTW	cf;
 	/* if name is "*", bring up std font dialog: */
 	vim_memset(&cf, 0, sizeof(cf));
@@ -2908,7 +2908,7 @@ get_logfont(
 	cf.nFontType = 0 ; //REGULAR_FONTTYPE;
 	if (ChooseFontW(&cf))
 	    ret = OK;
-#endif
+# endif
 	goto theend;
     }
 

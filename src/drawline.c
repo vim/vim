@@ -1940,11 +1940,11 @@ win_line(
 		    c_final = NUL;
 		    if (VIM_ISWHITE(c))
 		    {
-#ifdef FEAT_CONCEAL
+# ifdef FEAT_CONCEAL
 			if (c == TAB)
 			    // See "Tab alignment" below.
 			    FIX_FOR_BOGUSCOLS;
-#endif
+# endif
 			if (!wp->w_p_list)
 			    c = ' ';
 		    }
