@@ -279,6 +279,8 @@ endfunc
 
 " Test the '-q [errorfile]' argument.
 func Test_q_arg()
+  CheckFeature quickfix
+
   let source_file = has('win32') ? '..\memfile.c' : '../memfile.c'
   let after =<< trim [CODE]
     call writefile([&errorfile, string(getpos("."))], "Xtestout")
@@ -458,14 +460,16 @@ func Test_invalid_args()
   call assert_equal('Too many edit arguments: "xxx"', out[1])
   call assert_equal('More info with: "vim -h"',       out[2])
 
-  " Detect invalid repeated arguments '-t foo -t foo", '-q foo -q foo'.
-  for opt in ['-t', '-q']
-    let out = split(system(GetVimCommand() .. repeat(' ' .. opt .. ' foo', 2)), "\n")
-    call assert_equal(1, v:shell_error)
-    call assert_match('^VIM - Vi IMproved .* (.*)$',              out[0])
-    call assert_equal('Too many edit arguments: "' .. opt .. '"', out[1])
-    call assert_equal('More info with: "vim -h"',                 out[2])
-  endfor
+  if has('quickfix')
+    " Detect invalid repeated arguments '-t foo -t foo", '-q foo -q foo'.
+    for opt in ['-t', '-q']
+      let out = split(system(GetVimCommand() .. repeat(' ' .. opt .. ' foo', 2)), "\n")
+      call assert_equal(1, v:shell_error)
+      call assert_match('^VIM - Vi IMproved .* (.*)$',              out[0])
+      call assert_equal('Too many edit arguments: "' .. opt .. '"', out[1])
+      call assert_equal('More info with: "vim -h"',                 out[2])
+    endfor
+  endif
 
   for opt in [' -cq', ' --cmd q', ' +', ' -S foo']
     let out = split(system(GetVimCommand() .. repeat(opt, 11)), "\n")

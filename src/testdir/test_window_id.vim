@@ -1,4 +1,5 @@
 " Test using the window ID.
+source check.vim
 
 func Test_win_getid()
   edit one
@@ -94,6 +95,8 @@ func Test_win_getid()
 endfunc
 
 func Test_win_getid_curtab()
+  CheckFeature quickfix
+
   tabedit X
   tabfirst
   copen

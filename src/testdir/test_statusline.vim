@@ -7,6 +7,7 @@
 "   %X
 
 source view_util.vim
+source check.vim
 
 func s:get_statusline()
   return ScreenLines(&lines - 1, &columns)[0]
@@ -60,6 +61,8 @@ func Test_statusline_will_be_disabled_with_error()
 endfunc
 
 func Test_statusline()
+  CheckFeature quickfix
+
   new Xstatusline
   only
   set laststatus=2

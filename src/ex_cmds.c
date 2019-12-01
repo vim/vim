@@ -3016,7 +3016,7 @@ do_ecmd(
 #ifdef FEAT_TITLE
 	maketitle();
 #endif
-#ifdef FEAT_PROP_POPUP
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
 	if (WIN_IS_POPUP(curwin) && curwin->w_p_pvw && retval != FAIL)
 	    popup_set_title(curwin);
 #endif

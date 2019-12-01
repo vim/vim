@@ -621,7 +621,7 @@ pum_redraw(void)
 #endif
 }
 
-#if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
+#if (defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)) || defined(PROTO)
 /*
  * Position the info popup relative to the popup menu item.
  */
@@ -683,7 +683,7 @@ pum_set_selected(int n, int repeat UNUSED)
 #ifdef FEAT_QUICKFIX
     int	    prev_selected = pum_selected;
 #endif
-#ifdef FEAT_PROP_POPUP
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
     int	    has_info = FALSE;
 #endif
 

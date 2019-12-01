@@ -1,8 +1,11 @@
 " Tests for tabpage
 
 source screendump.vim
+source check.vim
 
 function Test_tabpage()
+  CheckFeature quickfix
+
   bw!
   " Simple test for opening and closing a tab page
   tabnew
@@ -220,6 +223,8 @@ function Test_tabpage_with_autocmd()
 endfunction
 
 function Test_tabpage_with_tab_modifier()
+  CheckFeature quickfix
+
   for n in range(4)
     tabedit
   endfor

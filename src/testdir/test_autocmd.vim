@@ -1713,10 +1713,12 @@ func Test_nocatch_wipe_all_buffers()
 endfunc
 
 func Test_nocatch_wipe_dummy_buffer()
-  " Nasty autocommand: wipe buffer on any event.
-  au * x bwipe
-  call assert_fails('lv½ /x', 'E480')
-  au!
+  if has('quickfix')
+    " Nasty autocommand: wipe buffer on any event.
+    au * x bwipe
+    call assert_fails('lv½ /x', 'E480')
+    au!
+  endif
 endfunc
 
 function s:Before_test_dirchanged()
@@ -2291,6 +2293,8 @@ func Test_autocmd_CmdWinEnter()
 endfunc
 
 func Test_autocmd_was_using_freed_memory()
+  CheckFeature quickfix
+
   pedit xx
   n x
   au WinEnter * quit

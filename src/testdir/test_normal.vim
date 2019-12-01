@@ -1,6 +1,7 @@
 " Test for various Normal mode commands
 
 source shared.vim
+source check.vim
 
 func Setup_NewWindow()
   10new
@@ -1240,6 +1241,8 @@ func Test_normal24_rot13()
 endfunc
 
 func Test_normal25_tag()
+  CheckFeature quickfix
+
   " Testing for CTRL-] g CTRL-] g]
   " CTRL-W g] CTRL-W CTRL-] CTRL-W g CTRL-]
   h

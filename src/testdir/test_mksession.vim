@@ -355,6 +355,8 @@ endfunc
 if has('terminal')
 
 func Test_mksession_terminal_shell()
+  CheckFeature quickfix
+
   terminal
   mksession! Xtest_mks.out
   let lines = readfile('Xtest_mks.out')
@@ -436,6 +438,8 @@ func Test_mksession_terminal_no_ssop()
 endfunc
 
 func Test_mksession_terminal_restore_other()
+  CheckFeature quickfix
+
   terminal
   eval bufnr('%')->term_setrestore('other')
   mksession! Xtest_mks.out

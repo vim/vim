@@ -722,6 +722,8 @@ func Test_scrollbars()
 endfunc
 
 func Test_menu()
+  CheckFeature quickfix
+
   " Check Help menu exists
   let help_menu = execute('menu Help')
   call assert_match('Overview', help_menu)
