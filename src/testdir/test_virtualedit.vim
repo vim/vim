@@ -81,6 +81,7 @@ func Test_edit_change()
   normal Cx
   call assert_equal('x', getline(1))
   bwipe!
+  set virtualedit=
 endfunc
 
 " Test for pasting before and after a tab character
@@ -121,4 +122,5 @@ func Test_paste_in_tab()
   call assert_equal([0, 1, 12, 0 ,12], getcurpos())
 
   bwipe!
+  set virtualedit=
 endfunc
