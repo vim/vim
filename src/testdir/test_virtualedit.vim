@@ -115,11 +115,32 @@ func Test_paste_in_tab()
   normal gp
   call assert_equal("a\txyzb", getline(1))
   call assert_equal([0, 1, 6, 0, 12], getcurpos())
+
   call setline(1, "a\tb")
-  call cursor(1, 2, 6)
+  call cursor(1, 2, 0)
   normal gP
-  call assert_equal("a      xyz b", getline(1))
-  call assert_equal([0, 1, 12, 0 ,12], getcurpos())
+  call assert_equal("axyz\tb", getline(1))
+  call assert_equal([0, 1, 5, 0, 5], getcurpos())
+
+  let @r = 'xyz'
+  call setline(1, "a\tb")
+  call cursor(1, 2, 2)
+  normal "rgp
+  call assert_equal("a   xyz    b", getline(1))
+
+  bwipe!
+  set virtualedit=
+endfunc
+
+" Test for yanking a few spaces within a tab to a register
+func Test_yank_in_tab()
+  new
+  let @r = ''
+  call setline(1, "a\tb")
+  set virtualedit=all
+  call cursor(1, 2, 2)
+  normal "ry5l
+  call assert_equal('     ', @r)
 
   bwipe!
   set virtualedit=
