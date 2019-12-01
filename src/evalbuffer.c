@@ -825,7 +825,7 @@ switch_buffer(bufref_T *save_curbuf, buf_T *buf)
 restore_buffer(bufref_T *save_curbuf)
 {
     unblock_autocmds();
-    /* Check for valid buffer, just in case. */
+    // Check for valid buffer, just in case.
     if (bufref_valid(save_curbuf))
     {
 	--curbuf->b_nwindows;

@@ -15,10 +15,10 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-/* List head for garbage collection. Although there can be a reference loop
- * from partial to dict to partial, we don't need to keep track of the partial,
- * since it will get freed when the dict is unused and gets freed. */
-static dict_T		*first_dict = NULL;	/* list of all dicts */
+// List head for garbage collection. Although there can be a reference loop
+// from partial to dict to partial, we don't need to keep track of the partial,
+// since it will get freed when the dict is unused and gets freed.
+static dict_T		*first_dict = NULL;
 
 /*
  * Allocate an empty header for a dictionary.
@@ -31,7 +31,7 @@ dict_alloc(void)
     d = ALLOC_CLEAR_ONE(dict_T);
     if (d != NULL)
     {
-	/* Add the dict to the list of dicts for garbage collection. */
+	// Add the dict to the list of dicts for garbage collection.
 	if (first_dict != NULL)
 	    first_dict->dv_used_prev = d;
 	d->dv_used_next = first_dict;
@@ -109,15 +109,15 @@ dict_free_contents(dict_T *d)
     hashitem_T	*hi;
     dictitem_T	*di;
 
-    /* Lock the hashtab, we don't want it to resize while freeing items. */
+    // Lock the hashtab, we don't want it to resize while freeing items.
     hash_lock(&d->dv_hashtab);
     todo = (int)d->dv_hashtab.ht_used;
     for (hi = d->dv_hashtab.ht_array; todo > 0; ++hi)
     {
 	if (!HASHITEM_EMPTY(hi))
 	{
-	    /* Remove the item before deleting it, just in case there is
-	     * something recursive causing trouble. */
+	    // Remove the item before deleting it, just in case there is
+	    // something recursive causing trouble.
 	    di = HI2DI(hi);
 	    hash_remove(&d->dv_hashtab, hi);
 	    dictitem_free(di);
@@ -125,14 +125,14 @@ dict_free_contents(dict_T *d)
 	}
     }
 
-    /* The hashtab is still locked, it has to be re-initialized anyway */
+    // The hashtab is still locked, it has to be re-initialized anyway
     hash_clear(&d->dv_hashtab);
 }
 
     static void
 dict_free_dict(dict_T *d)
 {
-    /* Remove the dict from the list of dicts for garbage collection. */
+    // Remove the dict from the list of dicts for garbage collection.
     if (d->dv_used_prev == NULL)
 	first_dict = d->dv_used_next;
     else
@@ -176,9 +176,9 @@ dict_free_nonref(int copyID)
     for (dd = first_dict; dd != NULL; dd = dd->dv_used_next)
 	if ((dd->dv_copyID & COPYID_MASK) != (copyID & COPYID_MASK))
 	{
-	    /* Free the Dictionary and ordinary items it contains, but don't
-	     * recurse into Lists and Dictionaries, they will be in the list
-	     * of dicts or list of lists. */
+	    // Free the Dictionary and ordinary items it contains, but don't
+	    // recurse into Lists and Dictionaries, they will be in the list
+	    // of dicts or list of lists.
 	    dict_free_contents(dd);
 	    did_free = TRUE;
 	}
@@ -577,7 +577,7 @@ dict_find(dict_T *d, char_u *key, int len)
     }
     else
     {
-	/* Avoid a malloc/free by using buf[]. */
+	// Avoid a malloc/free by using buf[].
 	vim_strncpy(buf, key, len);
 	akey = buf;
     }
@@ -764,7 +764,7 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
      */
     if (*start != '}')
     {
-	if (eval1(&start, &tv, FALSE) == FAIL)	/* recursive! */
+	if (eval1(&start, &tv, FALSE) == FAIL)	// recursive!
 	    return FAIL;
 	if (*start == '}')
 	    return NOTDONE;
@@ -798,14 +798,14 @@ dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
 	    key = tv_get_string_buf_chk(&tvkey, buf);
 	    if (key == NULL)
 	    {
-		/* "key" is NULL when tv_get_string_buf_chk() gave an errmsg */
+		// "key" is NULL when tv_get_string_buf_chk() gave an errmsg
 		clear_tv(&tvkey);
 		goto failret;
 	    }
 	}
 
 	*arg = skipwhite(*arg + 1);
-	if (eval1(arg, &tv, evaluate) == FAIL)	/* recursive! */
+	if (eval1(arg, &tv, evaluate) == FAIL)	// recursive!
 	{
 	    if (evaluate)
 		clear_tv(&tvkey);
@@ -881,8 +881,8 @@ dict_extend(dict_T *d1, dict_T *d2, char_u *action)
 	    di1 = dict_find(d1, hi2->hi_key, -1);
 	    if (d1->dv_scope != 0)
 	    {
-		/* Disallow replacing a builtin function in l: and g:.
-		 * Check the key to be valid when adding to any scope. */
+		// Disallow replacing a builtin function in l: and g:.
+		// Check the key to be valid when adding to any scope.
 		if (d1->dv_scope == VAR_DEF_SCOPE
 			&& HI2DI(hi2)->di_tv.v_type == VAR_FUNC
 			&& var_check_func_name(hi2->hi_key, di1 == NULL))
@@ -929,8 +929,8 @@ dict_lookup(hashitem_T *hi)
 dict_equal(
     dict_T	*d1,
     dict_T	*d2,
-    int		ic,	/* ignore case for strings */
-    int		recursive) /* TRUE when used recursively */
+    int		ic,	    // ignore case for strings
+    int		recursive)  // TRUE when used recursively
 {
     hashitem_T	*hi;
     dictitem_T	*item2;
@@ -1004,19 +1004,19 @@ dict_list(typval_T *argvars, typval_T *rettv, int what)
 
 	    if (what == 0)
 	    {
-		/* keys() */
+		// keys()
 		li->li_tv.v_type = VAR_STRING;
 		li->li_tv.v_lock = 0;
 		li->li_tv.vval.v_string = vim_strsave(di->di_key);
 	    }
 	    else if (what == 1)
 	    {
-		/* values() */
+		// values()
 		copy_tv(&di->di_tv, &li->li_tv);
 	    }
 	    else
 	    {
-		/* items() */
+		// items()
 		l2 = list_alloc();
 		li->li_tv.v_type = VAR_LIST;
 		li->li_tv.v_lock = 0;
@@ -1079,7 +1079,7 @@ dict_set_items_ro(dict_T *di)
     int		todo = (int)di->dv_hashtab.ht_used;
     hashitem_T	*hi;
 
-    /* Set readonly */
+    // Set readonly
     for (hi = di->dv_hashtab.ht_array; todo > 0 ; ++hi)
     {
 	if (HASHITEM_EMPTY(hi))
@@ -1139,4 +1139,4 @@ dict_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
     }
 }
 
-#endif /* defined(FEAT_EVAL) */
+#endif // defined(FEAT_EVAL)
