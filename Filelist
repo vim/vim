@@ -285,9 +285,6 @@ SRC_ALL =	\
 		src/libvterm/README \
 		src/libvterm/tbl2inc_c.pl \
 		src/libvterm/vterm.pc.in \
-		src/libvterm/bin/unterm.c \
-		src/libvterm/bin/vterm-ctrl.c \
-		src/libvterm/bin/vterm-dump.c \
 		src/libvterm/doc/URLs \
 		src/libvterm/doc/seqs.txt \
 		src/libvterm/include/vterm.h \
