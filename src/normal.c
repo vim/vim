@@ -1099,9 +1099,10 @@ getcount:
 	old_mapped_len = typebuf_maplen();
 
     /*
-     * If an operation is pending, handle it...
+     * If an operation is pending, handle it.  But not for K_IGNORE.
      */
-    do_pending_operator(&ca, old_col, FALSE);
+    if (ca.cmdchar != K_IGNORE)
+	do_pending_operator(&ca, old_col, FALSE);
 
     /*
      * Wait for a moment when a message is displayed that will be overwritten
