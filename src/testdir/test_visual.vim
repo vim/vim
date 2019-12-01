@@ -428,3 +428,18 @@ func Test_Visual_Block()
 
   close!
 endfunc
+
+" Test for 'p'ut in visual block mode
+func Test_visual_block_put()
+  enew
+
+  call append(0, ['One', 'Two', 'Three'])
+  normal gg
+  yank
+  call feedkeys("jl\<C-V>ljp", 'xt')
+  call assert_equal(['One', 'T', 'Tee', 'One', ''], getline(1, '$'))
+
+  enew!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
