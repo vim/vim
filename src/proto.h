@@ -113,52 +113,52 @@ extern int _stricoll(char *a, char *b);
 #  include "arabic.pro"
 # endif
 # ifdef FEAT_VIMINFO
-# include "viminfo.pro"
+#  include "viminfo.pro"
 # endif
 
 // These prototypes cannot be produced automatically.
 int smsg(const char *, ...)
-#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 1, 0)))
-#endif
+# endif
     ;
 
 int smsg_attr(int, const char *, ...)
-#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 2, 3)))
-#endif
+# endif
     ;
 
 int smsg_attr_keep(int, const char *, ...)
-#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 2, 3)))
-#endif
+# endif
     ;
 
 // These prototypes cannot be produced automatically.
 int semsg(const char *, ...)
-#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 1, 0)))
-#endif
+# endif
     ;
 
 // These prototypes cannot be produced automatically.
 void siemsg(const char *, ...)
-#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 1, 0)))
-#endif
+# endif
     ;
 
 int vim_snprintf_add(char *, size_t, const char *, ...)
-#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 3, 4)))
-#endif
+# endif
     ;
 
 int vim_snprintf(char *, size_t, const char *, ...)
-#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+# ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 3, 4)))
-#endif
+# endif
     ;
 
 int vim_vsnprintf(char *str, size_t str_m, const char *fmt, va_list ap);
@@ -167,13 +167,13 @@ int vim_vsnprintf_typval(char *str, size_t str_m, const char *fmt, va_list ap, t
 # include "message.pro"
 # include "misc1.pro"
 # include "misc2.pro"
-#ifndef HAVE_STRPBRK	    // not generated automatically from misc2.c
+# ifndef HAVE_STRPBRK	    // not generated automatically from misc2.c
 char_u *vim_strpbrk(char_u *s, char_u *charset);
-#endif
-#ifndef HAVE_QSORT
+# endif
+# ifndef HAVE_QSORT
 // Use our own qsort(), don't define the prototype when not used.
 void qsort(void *base, size_t elm_count, size_t elm_size, int (*cmp)(const void *, const void *));
-#endif
+# endif
 # include "mouse.pro"
 # include "move.pro"
 # include "mbyte.pro"
@@ -188,7 +188,7 @@ void mbyte_im_set_active(int active_arg);
 # include "optionstr.pro"
 # include "popupmenu.pro"
 # if defined(FEAT_PROFILE) || defined(FEAT_RELTIME)
-# include "profiler.pro"
+#  include "profiler.pro"
 # endif
 # include "quickfix.pro"
 # include "regexp.pro"
@@ -269,9 +269,9 @@ void mbyte_im_set_active(int active_arg);
 
 // Not generated automatically, to add extra attribute.
 void ch_log(channel_T *ch, const char *fmt, ...)
-#ifdef USE_PRINTF_FORMAT_ATTRIBUTE
+#  ifdef USE_PRINTF_FORMAT_ATTRIBUTE
     __attribute__((format(printf, 2, 3)))
-#endif
+#  endif
     ;
 
 # endif
@@ -332,20 +332,20 @@ extern char *vim_SelFile(Widget toplevel, char *prompt, char *init_path, int (*s
  * not included here for the perl files.  Use a dummy define for CV for the
  * other files.
  */
-#if defined(FEAT_PERL) && !defined(IN_PERL_FILE)
-# define CV void
-# include "if_perl.pro"
-# include "if_perlsfio.pro"
-#endif
+# if defined(FEAT_PERL) && !defined(IN_PERL_FILE)
+#  define CV void
+#  include "if_perl.pro"
+#  include "if_perlsfio.pro"
+# endif
 
-#ifdef MACOS_CONVERT
-# include "os_mac_conv.pro"
-#endif
-#if defined(MACOS_X_DARWIN) && defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
+# ifdef MACOS_CONVERT
+#  include "os_mac_conv.pro"
+# endif
+# if defined(MACOS_X_DARWIN) && defined(FEAT_CLIPBOARD) && !defined(FEAT_GUI)
 // functions in os_macosx.m
 void clip_mch_lose_selection(Clipboard_T *cbd);
 int clip_mch_own_selection(Clipboard_T *cbd);
 void clip_mch_request_selection(Clipboard_T *cbd);
 void clip_mch_set_selection(Clipboard_T *cbd);
-#endif
+# endif
 #endif // !PROTO && !NOPROTO

@@ -94,7 +94,7 @@ FILE* fdDump = NULL;
  * errors disappear.  They do not need to be correct.
  */
 #ifdef PROTO
-#define WINAPI
+# define WINAPI
 typedef char * LPCSTR;
 typedef char * LPWSTR;
 typedef int ACCESS_MASK;
@@ -257,7 +257,7 @@ static BOOL has_csbiex = FALSE;
  * Get version number including build number
  */
 typedef BOOL (WINAPI *PfnRtlGetVersion)(LPOSVERSIONINFOW);
-# define MAKE_VER(major, minor, build) \
+#define MAKE_VER(major, minor, build) \
     (((major) << 24) | ((minor) << 16) | (build))
 
     static DWORD
@@ -641,14 +641,14 @@ dyn_libintl_init(void)
 	return 1;
     // Load gettext library (libintl.dll and other names).
     hLibintlDLL = vimLoadLib(GETTEXT_DLL);
-#ifdef GETTEXT_DLL_ALT1
+# ifdef GETTEXT_DLL_ALT1
     if (!hLibintlDLL)
 	hLibintlDLL = vimLoadLib(GETTEXT_DLL_ALT1);
-#endif
-#ifdef GETTEXT_DLL_ALT2
+# endif
+# ifdef GETTEXT_DLL_ALT2
     if (!hLibintlDLL)
 	hLibintlDLL = vimLoadLib(GETTEXT_DLL_ALT2);
-#endif
+# endif
     if (!hLibintlDLL)
     {
 	if (p_verbose > 0)
@@ -837,10 +837,10 @@ PlatformId(void)
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 
-#define SHIFT  (SHIFT_PRESSED)
-#define CTRL   (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED)
-#define ALT    (RIGHT_ALT_PRESSED  | LEFT_ALT_PRESSED)
-#define ALT_GR (RIGHT_ALT_PRESSED  | LEFT_CTRL_PRESSED)
+# define SHIFT  (SHIFT_PRESSED)
+# define CTRL   (RIGHT_CTRL_PRESSED | LEFT_CTRL_PRESSED)
+# define ALT    (RIGHT_ALT_PRESSED  | LEFT_ALT_PRESSED)
+# define ALT_GR (RIGHT_ALT_PRESSED  | LEFT_CTRL_PRESSED)
 
 
 /* When uChar.AsciiChar is 0, then we need to look at wVirtualKeyCode.
@@ -891,7 +891,7 @@ static const struct
 
     { VK_SNAPSHOT,TRUE,	0,	0,	0,	    'r', }, // PrtScrn
 
-#if 0
+# if 0
     // Most people don't have F13-F20, but what the hell...
     { VK_F13,	TRUE,	'\332',	'\333',	'\334',	    '\335', },
     { VK_F14,	TRUE,	'\336',	'\337',	'\340',	    '\341', },
@@ -901,7 +901,7 @@ static const struct
     { VK_F18,	TRUE,	'\356',	'\357',	'\360',	    '\361', },
     { VK_F19,	TRUE,	'\362',	'\363',	'\364',	    '\365', },
     { VK_F20,	TRUE,	'\366',	'\367',	'\370',	    '\371', },
-#endif
+# endif
     { VK_ADD,	TRUE,   'N',    'N',    'N',	'N',	}, // keyp '+'
     { VK_SUBTRACT, TRUE,'J',	'J',    'J',	'J',	}, // keyp '-'
  // { VK_DIVIDE,   TRUE,'N',	'N',    'N',	'N',	}, // keyp '/'
@@ -921,11 +921,11 @@ static const struct
 };
 
 
-#if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
-# define UChar UnicodeChar
-#else
-# define UChar uChar.UnicodeChar
-#endif
+# if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
+#  define UChar UnicodeChar
+# else
+#  define UChar uChar.UnicodeChar
+# endif
 
 /* The return code indicates key code size. */
     static int
@@ -1489,9 +1489,9 @@ WaitForChar(long msec, int ignore_input)
     INPUT_RECORD    ir;
     DWORD	    cRecords;
     WCHAR	    ch, ch2;
-#ifdef FEAT_TIMERS
+# ifdef FEAT_TIMERS
     int		    tb_change_cnt = typebuf.tb_change_cnt;
-#endif
+# endif
 
     if (msec > 0)
 	/* Wait until the specified time has elapsed. */
@@ -1507,21 +1507,21 @@ WaitForChar(long msec, int ignore_input)
 	// Only process messages when waiting.
 	if (msec != 0)
 	{
-#ifdef MESSAGE_QUEUE
+# ifdef MESSAGE_QUEUE
 	    parse_queued_messages();
-#endif
-#ifdef FEAT_MZSCHEME
+# endif
+# ifdef FEAT_MZSCHEME
 	    mzvim_check_threads();
-#endif
-#ifdef FEAT_CLIENTSERVER
+# endif
+# ifdef FEAT_CLIENTSERVER
 	    serverProcessPendingMessages();
-#endif
+# endif
 	}
 
 	if (g_nMouseClick != -1
-#ifdef FEAT_CLIENTSERVER
+# ifdef FEAT_CLIENTSERVER
 		|| (!ignore_input && input_available())
-#endif
+# endif
 	   )
 	    return TRUE;
 
@@ -1537,7 +1537,7 @@ WaitForChar(long msec, int ignore_input)
 	{
 	    DWORD dwWaitTime = dwEndTime - dwNow;
 
-#ifdef FEAT_JOB_CHANNEL
+# ifdef FEAT_JOB_CHANNEL
 	    /* Check channel while waiting for input. */
 	    if (dwWaitTime > 100)
 	    {
@@ -1547,19 +1547,19 @@ WaitForChar(long msec, int ignore_input)
 		if (channel_any_readahead())
 		    dwWaitTime = 10;
 	    }
-#endif
-#ifdef FEAT_BEVAL_GUI
+# endif
+# ifdef FEAT_BEVAL_GUI
 	    if (p_beval && dwWaitTime > 100)
 		/* The 'balloonexpr' may indirectly invoke a callback while
 		 * waiting for a character, need to check often. */
 		dwWaitTime = 100;
-#endif
-#ifdef FEAT_MZSCHEME
+# endif
+# ifdef FEAT_MZSCHEME
 	    if (mzthreads_allowed() && p_mzq > 0
 				    && (msec < 0 || (long)dwWaitTime > p_mzq))
 		dwWaitTime = p_mzq; /* don't wait longer than 'mzquantum' */
-#endif
-#ifdef FEAT_TIMERS
+# endif
+# ifdef FEAT_TIMERS
 	    // When waiting very briefly don't trigger timers.
 	    if (dwWaitTime > 10)
 	    {
@@ -1576,17 +1576,17 @@ WaitForChar(long msec, int ignore_input)
 		if (due_time > 0 && dwWaitTime > (DWORD)due_time)
 		    dwWaitTime = due_time;
 	    }
-#endif
+# endif
 	    if (
-#ifdef FEAT_CLIENTSERVER
+# ifdef FEAT_CLIENTSERVER
 		    // Wait for either an event on the console input or a
 		    // message in the client-server window.
 		    msg_wait_for_multiple_objects(1, &g_hConIn, FALSE,
 				  dwWaitTime, QS_SENDMESSAGE) != WAIT_OBJECT_0
-#else
+# else
 		    wait_for_single_object(g_hConIn, dwWaitTime)
 							      != WAIT_OBJECT_0
-#endif
+# endif
 		    )
 		continue;
 	}
@@ -1594,7 +1594,7 @@ WaitForChar(long msec, int ignore_input)
 	cRecords = 0;
 	peek_console_input(g_hConIn, &ir, 1, &cRecords);
 
-#ifdef FEAT_MBYTE_IME
+# ifdef FEAT_MBYTE_IME
 	if (State & CMDLINE && msg_row == Rows - 1)
 	{
 	    CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -1611,13 +1611,13 @@ WaitForChar(long msec, int ignore_input)
 		}
 	    }
 	}
-#endif
+# endif
 
 	if (cRecords > 0)
 	{
 	    if (ir.EventType == KEY_EVENT && ir.Event.KeyEvent.bKeyDown)
 	    {
-#ifdef FEAT_MBYTE_IME
+# ifdef FEAT_MBYTE_IME
 		/* Windows IME sends two '\n's with only one 'ENTER'.  First:
 		 * wVirtualKeyCode == 13. second: wVirtualKeyCode == 0 */
 		if (ir.Event.KeyEvent.UChar == 0
@@ -1626,7 +1626,7 @@ WaitForChar(long msec, int ignore_input)
 		    read_console_input(g_hConIn, &ir, 1, &cRecords);
 		    continue;
 		}
-#endif
+# endif
 		if (decode_key_event(&ir.Event.KeyEvent, &ch, &ch2,
 								 NULL, FALSE))
 		    return TRUE;
@@ -1641,7 +1641,7 @@ WaitForChar(long msec, int ignore_input)
 		COORD dwSize = ir.Event.WindowBufferSizeEvent.dwSize;
 
 		// Only call shell_resized() when the size actually change to
-		// avoid the screen is cleard.
+		// avoid the screen is cleared.
 		if (dwSize.X != Columns || dwSize.Y != Rows)
 		{
 		    CONSOLE_SCREEN_BUFFER_INFO csbi;
@@ -1659,11 +1659,11 @@ WaitForChar(long msec, int ignore_input)
 	    break;
     }
 
-#ifdef FEAT_CLIENTSERVER
+# ifdef FEAT_CLIENTSERVER
     /* Something might have been received while we were waiting. */
     if (input_available())
 	return TRUE;
-#endif
+# endif
 
     return FALSE;
 }
@@ -1722,13 +1722,13 @@ tgetch(int *pmodifiers, WCHAR *pch2)
 	INPUT_RECORD ir;
 	DWORD cRecords = 0;
 
-#ifdef FEAT_CLIENTSERVER
+# ifdef FEAT_CLIENTSERVER
 	(void)WaitForChar(-1L, FALSE);
 	if (input_available())
 	    return 0;
 	if (g_nMouseClick != -1)
 	    return 0;
-#endif
+# endif
 	if (read_console_input(g_hConIn, &ir, 1, &cRecords) == 0)
 	{
 	    if (did_create_conin)
@@ -1776,7 +1776,7 @@ mch_inchar(
 
     int		len;
     int		c;
-#define TYPEAHEADLEN 20
+# define TYPEAHEADLEN 20
     static char_u   typeahead[TYPEAHEADLEN];	/* previously typed bytes. */
     static int	    typeaheadlen = 0;
 
@@ -1823,10 +1823,10 @@ mch_inchar(
     /* we will get at least one key. Get more if they are available. */
     g_fCBrkPressed = FALSE;
 
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
     if (fdDump)
 	fputc('[', fdDump);
-#endif
+# endif
 
     /* Keep looping until there is something in the typeahead buffer and more
      * to get and still room in the buffer (up to two bytes for a char and
@@ -1843,11 +1843,11 @@ mch_inchar(
 	}
 	if (g_nMouseClick != -1)
 	{
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
 	    if (fdDump)
 		fprintf(fdDump, "{%02x @ %d, %d}",
 			g_nMouseClick, g_xMouse, g_yMouse);
-#endif
+# endif
 	    typeahead[typeaheadlen++] = ESC + 128;
 	    typeahead[typeaheadlen++] = 'M';
 	    typeahead[typeaheadlen++] = g_nMouseClick;
@@ -1872,9 +1872,9 @@ mch_inchar(
 
 	    if (c == Ctrl_C && ctrl_c_interrupts)
 	    {
-#if defined(FEAT_CLIENTSERVER)
+# if defined(FEAT_CLIENTSERVER)
 		trash_input_buf();
-#endif
+# endif
 		got_int = TRUE;
 	    }
 
@@ -1960,21 +1960,21 @@ mch_inchar(
 
 		typeaheadlen += n;
 
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
 		if (fdDump)
 		    fputc(c, fdDump);
-#endif
+# endif
 	    }
 	}
     }
 
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
     if (fdDump)
     {
 	fputs("]\n", fdDump);
 	fflush(fdDump);
     }
-#endif
+# endif
 
 theend:
     /* Move typeahead to "buf", as much as fits. */
@@ -2088,9 +2088,9 @@ bad_param_handler(const wchar_t *expression,
     static void
 mch_init_g(void)
 {
-#ifndef __MINGW32__
+# ifndef __MINGW32__
     extern int _fmode;
-#endif
+# endif
 
     /* Silently handle invalid parameters to CRT functions */
     SET_INVALID_PARAM_HANDLER;
@@ -2145,9 +2145,9 @@ mch_init_g(void)
     if (!executable_exists("findstr.exe", NULL, TRUE))
 	set_option_value((char_u *)"grepprg", 0, (char_u *)"grep -n", 0);
 
-#ifdef FEAT_CLIPBOARD
+# ifdef FEAT_CLIPBOARD
     win_clip_init();
-#endif
+# endif
 
     vtp_flag_init();
 }
@@ -2157,8 +2157,8 @@ mch_init_g(void)
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 
-#define SRWIDTH(sr) ((sr).Right - (sr).Left + 1)
-#define SRHEIGHT(sr) ((sr).Bottom - (sr).Top + 1)
+# define SRWIDTH(sr) ((sr).Right - (sr).Left + 1)
+# define SRHEIGHT(sr) ((sr).Bottom - (sr).Top + 1)
 
 /*
  * ClearConsoleBuffer()
@@ -2429,14 +2429,14 @@ RestoreConsoleBuffer(
     return TRUE;
 }
 
-#define FEAT_RESTORE_ORIG_SCREEN
-#ifdef FEAT_RESTORE_ORIG_SCREEN
+# define FEAT_RESTORE_ORIG_SCREEN
+# ifdef FEAT_RESTORE_ORIG_SCREEN
 static ConsoleBuffer g_cbOrig = { 0 };
-#endif
+# endif
 static ConsoleBuffer g_cbNonTermcap = { 0 };
 static ConsoleBuffer g_cbTermcap = { 0 };
 
-#ifdef FEAT_TITLE
+# ifdef FEAT_TITLE
 char g_szOrigTitle[256] = { 0 };
 HWND g_hWnd = NULL;	/* also used in os_mswin.c */
 static HICON g_hOrigIconSmall = NULL;
@@ -2445,12 +2445,12 @@ static HICON g_hVimIcon = NULL;
 static BOOL g_fCanChangeIcon = FALSE;
 
 /* ICON* are not defined in VC++ 4.0 */
-#ifndef ICON_SMALL
-#define ICON_SMALL 0
-#endif
-#ifndef ICON_BIG
-#define ICON_BIG 1
-#endif
+#  ifndef ICON_SMALL
+#   define ICON_SMALL 0
+#  endif
+#  ifndef ICON_BIG
+#   define ICON_BIG 1
+#  endif
 /*
  * GetConsoleIcon()
  * Description:
@@ -2542,7 +2542,7 @@ SaveConsoleTitleAndIcon(void)
     if (g_hVimIcon != NULL)
 	g_fCanChangeIcon = TRUE;
 }
-#endif
+# endif
 
 static int g_fWindInitCalled = FALSE;
 static int g_fTermcapMode = FALSE;
@@ -2556,12 +2556,12 @@ static DWORD g_cmodeout = 0;
     static void
 mch_init_c(void)
 {
-#ifndef FEAT_RESTORE_ORIG_SCREEN
+# ifndef FEAT_RESTORE_ORIG_SCREEN
     CONSOLE_SCREEN_BUFFER_INFO csbi;
-#endif
-#ifndef __MINGW32__
+# endif
+# ifndef __MINGW32__
     extern int _fmode;
-#endif
+# endif
 
     /* Silently handle invalid parameters to CRT functions */
     SET_INVALID_PARAM_HANDLER;
@@ -2580,15 +2580,15 @@ mch_init_c(void)
 	create_conin();
     g_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
-#ifdef FEAT_RESTORE_ORIG_SCREEN
+# ifdef FEAT_RESTORE_ORIG_SCREEN
     /* Save the initial console buffer for later restoration */
     SaveConsoleBuffer(&g_cbOrig);
     g_attrCurrent = g_attrDefault = g_cbOrig.Info.wAttributes;
-#else
+# else
     /* Get current text attributes */
     GetConsoleScreenBufferInfo(g_hConOut, &csbi);
     g_attrCurrent = g_attrDefault = csbi.wAttributes;
-#endif
+# endif
     if (cterm_normal_fg_color == 0)
 	cterm_normal_fg_color = (g_attrCurrent & 0xf) + 1;
     if (cterm_normal_bg_color == 0)
@@ -2605,7 +2605,7 @@ mch_init_c(void)
     GetConsoleMode(g_hConIn,  &g_cmodein);
     GetConsoleMode(g_hConOut, &g_cmodeout);
 
-#ifdef FEAT_TITLE
+# ifdef FEAT_TITLE
     SaveConsoleTitleAndIcon();
     /*
      * Set both the small and big icons of the console window to Vim's icon.
@@ -2614,11 +2614,11 @@ mch_init_c(void)
      */
     if (g_fCanChangeIcon)
 	SetConsoleIcon(g_hWnd, g_hVimIcon, g_hVimIcon);
-#endif
+# endif
 
     ui_get_shellsize();
 
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
     fdDump = fopen("dump", "wt");
 
     if (fdDump)
@@ -2629,15 +2629,15 @@ mch_init_c(void)
 	fputs(ctime(&t), fdDump);
 	fflush(fdDump);
     }
-#endif
+# endif
 
     g_fWindInitCalled = TRUE;
 
     g_fMouseAvail = GetSystemMetrics(SM_MOUSEPRESENT);
 
-#ifdef FEAT_CLIPBOARD
+# ifdef FEAT_CLIPBOARD
     win_clip_init();
-#endif
+# endif
 
     vtp_flag_init();
     vtp_init();
@@ -2663,7 +2663,7 @@ mch_exit_c(int r)
 
     if (g_fWindInitCalled)
     {
-#ifdef FEAT_TITLE
+# ifdef FEAT_TITLE
 	mch_restore_title(SAVE_RESTORE_BOTH);
 	/*
 	 * Restore both the small and big icons of the console window to
@@ -2672,9 +2672,9 @@ mch_exit_c(int r)
 	 */
 	if (g_fCanChangeIcon && !g_fForceExit)
 	    SetConsoleIcon(g_hWnd, g_hOrigIconSmall, g_hOrigIcon);
-#endif
+# endif
 
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
 	if (fdDump)
 	{
 	    time_t t;
@@ -2684,16 +2684,16 @@ mch_exit_c(int r)
 	    fclose(fdDump);
 	}
 	fdDump = NULL;
-#endif
+# endif
     }
 
     SetConsoleCursorInfo(g_hConOut, &g_cci);
     SetConsoleMode(g_hConIn,  g_cmodein);
     SetConsoleMode(g_hConOut, g_cmodeout);
 
-#ifdef DYNAMIC_GETTEXT
+# ifdef DYNAMIC_GETTEXT
     dyn_libintl_end();
-#endif
+# endif
 
     exit(r);
 }
@@ -3104,7 +3104,7 @@ mch_is_linked(char_u *fname)
 /*
  * Get the by-handle-file-information for "fname".
  * Returns FILEINFO_OK when OK.
- * returns FILEINFO_ENC_FAIL when enc_to_utf16() failed.
+ * Returns FILEINFO_ENC_FAIL when enc_to_utf16() failed.
  * Returns FILEINFO_READ_FAIL when CreateFile() failed.
  * Returns FILEINFO_INFO_FAIL when GetFileInformationByHandle() failed.
  */
@@ -3531,9 +3531,9 @@ handler_routine(
 		     : dwCtrlType == CTRL_LOGOFF_EVENT
 			 ? _("logoff")
 			 : _("shutdown")));
-#ifdef DEBUG
+# ifdef DEBUG
 	OutputDebugString(IObuff);
-#endif
+# endif
 
 	preserve_exit();	/* output IObuff, preserve files and exit */
 
@@ -3568,13 +3568,13 @@ mch_settmode(int tmode)
 	if (g_fMouseActive)
 	    cmodein |= ENABLE_MOUSE_INPUT;
 	cmodeout &= ~(
-#ifdef FEAT_TERMGUICOLORS
+# ifdef FEAT_TERMGUICOLORS
 	    /* Do not turn off the ENABLE_PROCESSED_OUTPUT flag when using
 	     * VTP. */
 	    ((vtp_working) ? 0 : ENABLE_PROCESSED_OUTPUT) |
-#else
+# else
 	    ENABLE_PROCESSED_OUTPUT |
-#endif
+# endif
 	    ENABLE_WRAP_AT_EOL_OUTPUT);
 	bEnableHandler = TRUE;
     }
@@ -3589,7 +3589,7 @@ mch_settmode(int tmode)
     SetConsoleMode(g_hConOut, cmodeout);
     SetConsoleCtrlHandler(handler_routine, bEnableHandler);
 
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
     if (fdDump)
     {
 	fprintf(fdDump, "mch_settmode(%s, in = %x, out = %x)\n",
@@ -3598,7 +3598,7 @@ mch_settmode(int tmode)
 		cmodein, cmodeout);
 	fflush(fdDump);
     }
-#endif
+# endif
 }
 
 
@@ -3649,14 +3649,14 @@ ResizeConBuf(
 {
     if (!SetConsoleScreenBufferSize(hConsole, coordScreen))
     {
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
 	if (fdDump)
 	{
 	    fprintf(fdDump, "SetConsoleScreenBufferSize failed: %lx\n",
 		    GetLastError());
 	    fflush(fdDump);
 	}
-#endif
+# endif
     }
 }
 
@@ -3670,14 +3670,14 @@ ResizeWindow(
 {
     if (!SetConsoleWindowInfo(hConsole, TRUE, &srWindowRect))
     {
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
 	if (fdDump)
 	{
 	    fprintf(fdDump, "SetConsoleWindowInfo failed: %lx\n",
 		    GetLastError());
 	    fflush(fdDump);
 	}
-#endif
+# endif
     }
 }
 
@@ -3696,13 +3696,13 @@ ResizeConBufAndWindow(
     COORD	    cursor;
     static int	    resized = FALSE;
 
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
     if (fdDump)
     {
 	fprintf(fdDump, "ResizeConBufAndWindow(%d, %d)\n", xSize, ySize);
 	fflush(fdDump);
     }
-#endif
+# endif
 
     /* get the largest size we can size the console window to */
     coordScreen = GetLargestConsoleWindowSize(hConsole);
@@ -3923,7 +3923,7 @@ mch_system_classic(char *cmd, int options)
 
     /* Wait for the command to terminate before continuing */
     {
-#ifdef FEAT_GUI
+# ifdef FEAT_GUI
 	int	    delay = 1;
 
 	/* Keep updating the window while waiting for the shell to finish. */
@@ -3947,9 +3947,9 @@ mch_system_classic(char *cmd, int options)
 	    if (delay < 50)
 		delay += 10;
 	}
-#else
+# else
 	WaitForSingleObject(pi.hProcess, INFINITE);
-#endif
+# endif
 
 	/* Get the command exit code */
 	GetExitCodeProcess(pi.hProcess, &ret);
@@ -5450,9 +5450,9 @@ termcap_mode_start(void)
 	ResizeConBufAndWindow(g_hConOut, Columns, Rows);
     }
 
-#ifdef FEAT_TITLE
+# ifdef FEAT_TITLE
     resettitle();
-#endif
+# endif
 
     GetConsoleMode(g_hConIn, &cmodein);
     if (g_fMouseActive)
@@ -5487,11 +5487,11 @@ termcap_mode_end(void)
     cmodein &= ~(ENABLE_MOUSE_INPUT | ENABLE_WINDOW_INPUT);
     SetConsoleMode(g_hConIn, cmodein);
 
-#ifdef FEAT_RESTORE_ORIG_SCREEN
+# ifdef FEAT_RESTORE_ORIG_SCREEN
     cb = exiting ? &g_cbOrig : &g_cbNonTermcap;
-#else
+# else
     cb = &g_cbNonTermcap;
-#endif
+# endif
     RestoreConsoleBuffer(cb, p_rs);
     reset_console_color_rgb();
     SetConsoleCursorInfo(g_hConOut, &g_cci);
@@ -5921,9 +5921,9 @@ mch_set_normal_colors(void)
     cterm_normal_fg_color = (g_attrDefault & 0xf) + 1;
     cterm_normal_bg_color = ((g_attrDefault >> 4) & 0xf) + 1;
     if (
-#ifdef FEAT_TERMGUICOLORS
+# ifdef FEAT_TERMGUICOLORS
 	!p_tgc &&
-#endif
+# endif
 	T_ME[0] == ESC && T_ME[1] == '|')
     {
 	p = T_ME + 2;
@@ -5934,10 +5934,10 @@ mch_set_normal_colors(void)
 	    cterm_normal_bg_color = ((n >> 4) & 0xf) + 1;
 	}
     }
-#ifdef FEAT_TERMGUICOLORS
+# ifdef FEAT_TERMGUICOLORS
     cterm_normal_fg_gui_color = INVALCOLOR;
     cterm_normal_bg_gui_color = INVALCOLOR;
-#endif
+# endif
 }
 
 
@@ -5975,9 +5975,9 @@ visual_bell(void)
 cursor_visible(BOOL fVisible)
 {
     s_cursor_visible = fVisible;
-#ifdef MCH_CURSOR_SHAPE
+# ifdef MCH_CURSOR_SHAPE
     mch_update_cursor();
-#endif
+# endif
 }
 
 
@@ -6096,14 +6096,14 @@ mch_write(
 	    DWORD nWritten;
 
 	    nWritten = write_chars(s, prefix);
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
 	    if (fdDump)
 	    {
 		fputc('>', fdDump);
 		fwrite(s, sizeof(char_u), nWritten, fdDump);
 		fputs("<\n", fdDump);
 	    }
-#endif
+# endif
 	    len -= (nWritten - 1);
 	    s += nWritten;
 	}
@@ -6119,20 +6119,20 @@ mch_write(
 	    {
 		gotoxy(g_srScrollRegion.Left + 1, g_coord.Y + 2);
 	    }
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
 	    if (fdDump)
 		fputs("\\n\n", fdDump);
-#endif
+# endif
 	    s++;
 	}
 	else if (s[0] == '\r')
 	{
 	    /* \r, carriage return: go to beginning of line */
 	    gotoxy(g_srScrollRegion.Left+1, g_coord.Y + 1);
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
 	    if (fdDump)
 		fputs("\\r\n", fdDump);
-#endif
+# endif
 	    s++;
 	}
 	else if (s[0] == '\b')
@@ -6146,27 +6146,27 @@ mch_write(
 		g_coord.Y--;
 	    }
 	    gotoxy(g_coord.X + 1, g_coord.Y + 1);
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
 	    if (fdDump)
 		fputs("\\b\n", fdDump);
-#endif
+# endif
 	    s++;
 	}
 	else if (s[0] == '\a')
 	{
 	    /* \a, bell */
 	    MessageBeep(0xFFFFFFFF);
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
 	    if (fdDump)
 		fputs("\\a\n", fdDump);
-#endif
+# endif
 	    s++;
 	}
 	else if (s[0] == ESC && len >= 3-1 && s[1] == '|')
 	{
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
 	    char_u  *old_s = s;
-#endif
+# endif
 	    char_u  *p;
 	    int	    arg1 = 0, arg2 = 0, argc = 0, args[16];
 
@@ -6321,14 +6321,14 @@ mch_write(
 		len -= 2;
 	    }
 
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
 	    if (fdDump)
 	    {
 		fputs("ESC | ", fdDump);
 		fwrite(old_s + 2, sizeof(char_u), s - old_s - 2, fdDump);
 		fputc('\n', fdDump);
 	    }
-#endif
+# endif
 	}
 	else
 	{
@@ -6336,24 +6336,24 @@ mch_write(
 	    DWORD nWritten;
 
 	    nWritten = write_chars(s, 1);
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
 	    if (fdDump)
 	    {
 		fputc('>', fdDump);
 		fwrite(s, sizeof(char_u), nWritten, fdDump);
 		fputs("<\n", fdDump);
 	    }
-#endif
+# endif
 
 	    len -= (nWritten - 1);
 	    s += nWritten;
 	}
     }
 
-#ifdef MCH_WRITE_DUMP
+# ifdef MCH_WRITE_DUMP
     if (fdDump)
 	fflush(fdDump);
-#endif
+# endif
 }
 
 #endif /* FEAT_GUI_MSWIN */
@@ -7135,7 +7135,7 @@ fix_arg_enc(void)
 	{
 	    int literal = used_file_literal;
 
-# ifdef FEAT_DIFF
+#ifdef FEAT_DIFF
 	    /* When using diff mode may need to concatenate file name to
 	     * directory name.  Just like it's done in main(). */
 	    if (used_file_diff_mode && mch_isdir(str) && GARGCOUNT > 0
@@ -7150,7 +7150,7 @@ fix_arg_enc(void)
 		    str = r;
 		}
 	    }
-# endif
+#endif
 	    /* Re-use the old buffer by renaming it.  When not using literal
 	     * names it's done by alist_expand() below. */
 	    if (used_file_literal)
