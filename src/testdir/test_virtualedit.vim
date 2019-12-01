@@ -92,7 +92,12 @@ func Test_paste_in_tab()
   call append(0, "a\tb")
   call cursor(1, 2, 6)
   normal p
-  call assert_equal("a\txyzb", getline(1))
+  " Behavior is different when 'vartabstop' is not supported.
+  if has('vartabs')
+    call assert_equal("a\txyzb", getline(1))
+  else
+    call assert_equal("a       xyzb", getline(1))
+  endif
   call setline(1, "a\tb")
   call cursor(1, 2)
   normal P
