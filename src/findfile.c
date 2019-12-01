@@ -968,7 +968,7 @@ vim_findfile(void *search_ctx_arg)
 		    {
 			if (!path_with_url(stackp->ffs_filearray[i])
 				      && !mch_isdir(stackp->ffs_filearray[i]))
-			    continue;   /* not a directory */
+			    continue;   // not a directory
 
 			// prepare the filename to be checked for existence
 			// below
@@ -2690,7 +2690,7 @@ simplify_filename(char_u *filename)
 		char_u		saved_char;
 		stat_T		st;
 
-		/* Don't strip for an erroneous file name. */
+		// Don't strip for an erroneous file name.
 		if (!stripping_disabled)
 		{
 		    // If the preceding component does not exist in the file
@@ -2827,7 +2827,7 @@ f_simplify(typval_T *argvars, typval_T *rettv)
 
     p = tv_get_string(&argvars[0]);
     rettv->vval.v_string = vim_strsave(p);
-    simplify_filename(rettv->vval.v_string);	/* simplify in place */
+    simplify_filename(rettv->vval.v_string);	// simplify in place
     rettv->v_type = VAR_STRING;
 }
 #endif // FEAT_EVAL

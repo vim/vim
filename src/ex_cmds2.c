@@ -89,7 +89,7 @@ create_timer(long msec, int repeat)
     if (timer == NULL)
 	return NULL;
     if (++last_timer_id <= prev_id)
-	/* Overflow!  Might cause duplicates... */
+	// Overflow!  Might cause duplicates...
 	last_timer_id = 0;
     timer->tr_id = last_timer_id;
     insert_timer(timer);
@@ -135,7 +135,7 @@ check_due_timer(void)
     int		need_update_screen = FALSE;
     long	current_id = last_timer_id;
 
-    /* Don't run any timers while exiting or dealing with an error. */
+    // Don't run any timers while exiting or dealing with an error.
     if (exiting || aborting())
 	return next_due;
 
@@ -149,8 +149,8 @@ check_due_timer(void)
 	this_due = proftime_time_left(&timer->tr_due, &now);
 	if (this_due <= 1)
 	{
-	    /* Save and restore a lot of flags, because the timer fires while
-	     * waiting for a character, which might be halfway a command. */
+	    // Save and restore a lot of flags, because the timer fires while
+	    // waiting for a character, which might be halfway a command.
 	    int save_timer_busy = timer_busy;
 	    int save_vgetc_busy = vgetc_busy;
 	    int save_did_emsg = did_emsg;
@@ -163,8 +163,8 @@ check_due_timer(void)
 	    except_T *save_current_exception = current_exception;
 	    vimvars_save_T vvsave;
 
-	    /* Create a scope for running the timer callback, ignoring most of
-	     * the current scope, such as being inside a try/catch. */
+	    // Create a scope for running the timer callback, ignoring most of
+	    // the current scope, such as being inside a try/catch.
 	    timer_busy = timer_busy > 0 || vgetc_busy > 0;
 	    vgetc_busy = 0;
 	    called_emsg = FALSE;
@@ -200,8 +200,8 @@ check_due_timer(void)
 	    set_pressedreturn(save_ex_pressedreturn);
 	    may_garbage_collect = save_may_garbage_collect;
 
-	    /* Only fire the timer again if it repeats and stop_timer() wasn't
-	     * called while inside the callback (tr_id == -1). */
+	    // Only fire the timer again if it repeats and stop_timer() wasn't
+	    // called while inside the callback (tr_id == -1).
 	    if (timer->tr_repeat != 0 && timer->tr_id != -1
 		    && timer->tr_emsg_count < 3)
 	    {
@@ -250,7 +250,7 @@ check_due_timer(void)
     }
 #endif
 #ifdef FEAT_TERMINAL
-    /* Some terminal windows may need their buffer updated. */
+    // Some terminal windows may need their buffer updated.
     next_due = term_check_timers(next_due, &now);
 #endif
 
@@ -282,7 +282,7 @@ find_timer(long id)
 stop_timer(timer_T *timer)
 {
     if (timer->tr_firing)
-	/* Free the timer after the callback returns. */
+	// Free the timer after the callback returns.
 	timer->tr_id = -1;
     else
     {
@@ -520,7 +520,7 @@ autowrite(buf_T *buf, int forceit)
 
     if (!(p_aw || p_awa) || !p_write
 #ifdef FEAT_QUICKFIX
-	    /* never autowrite a "nofile" or "nowrite" buffer */
+	    // never autowrite a "nofile" or "nowrite" buffer
 	    || bt_dontwrite(buf)
 #endif
 	    || (!forceit && buf->b_p_ro) || buf->b_ffname == NULL)
@@ -528,8 +528,8 @@ autowrite(buf_T *buf, int forceit)
     set_bufref(&bufref, buf);
     r = buf_write_all(buf, forceit);
 
-    /* Writing may succeed but the buffer still changed, e.g., when there is a
-     * conversion error.  We do want to return FAIL then. */
+    // Writing may succeed but the buffer still changed, e.g., when there is a
+    // conversion error.  We do want to return FAIL then.
     if (bufref_valid(&bufref) && bufIsChanged(buf))
 	r = FAIL;
     return r;
@@ -554,7 +554,7 @@ autowrite_all(void)
 
 	    (void)buf_write_all(buf, FALSE);
 
-	    /* an autocommand may have deleted the buffer */
+	    // an autocommand may have deleted the buffer
 	    if (!bufref_valid(&bufref))
 		buf = firstbuf;
 	}
@@ -593,13 +593,13 @@ check_changed(buf_T *buf, int flags)
 					))
 			++count;
 	    if (!bufref_valid(&bufref))
-		/* Autocommand deleted buffer, oops!  It's not changed now. */
+		// Autocommand deleted buffer, oops!  It's not changed now.
 		return FALSE;
 
 	    dialog_changed(buf, count > 1);
 
 	    if (!bufref_valid(&bufref))
-		/* Autocommand deleted buffer, oops!  It's not changed now. */
+		// Autocommand deleted buffer, oops!  It's not changed now.
 		return FALSE;
 	    return bufIsChanged(buf);
 	}
@@ -645,7 +645,7 @@ browse_save_fname(buf_T *buf)
     void
 dialog_changed(
     buf_T	*buf,
-    int		checkall)	/* may abandon all changed buffers */
+    int		checkall)	// may abandon all changed buffers
 {
     char_u	buff[DIALOG_MSG_SIZE];
     int		ret;
@@ -665,12 +665,12 @@ dialog_changed(
     if (ret == VIM_YES)
     {
 #ifdef FEAT_BROWSE
-	/* May get file name, when there is none */
+	// May get file name, when there is none
 	browse_save_fname(buf);
 #endif
 	if (buf->b_fname != NULL && check_overwrite(&ea, buf,
 				    buf->b_fname, buf->b_ffname, FALSE) == OK)
-	    /* didn't hit Cancel */
+	    // didn't hit Cancel
 	    (void)buf_write_all(buf, FALSE);
     }
     else if (ret == VIM_NO)
@@ -698,15 +698,15 @@ dialog_changed(
 
 		set_bufref(&bufref, buf2);
 #ifdef FEAT_BROWSE
-		/* May get file name, when there is none */
+		// May get file name, when there is none
 		browse_save_fname(buf2);
 #endif
 		if (buf2->b_fname != NULL && check_overwrite(&ea, buf2,
 				  buf2->b_fname, buf2->b_ffname, FALSE) == OK)
-		    /* didn't hit Cancel */
+		    // didn't hit Cancel
 		    (void)buf_write_all(buf2, FALSE);
 
-		/* an autocommand may have deleted the buffer */
+		// an autocommand may have deleted the buffer
 		if (!bufref_valid(&bufref))
 		    buf2 = firstbuf;
 	    }
@@ -760,7 +760,7 @@ add_bufnum(int *bufnrs, int *bufnump, int nr)
  */
     int
 check_changed_any(
-    int		hidden,		/* Only check hidden buffers */
+    int		hidden,		// Only check hidden buffers
     int		unload)
 {
     int		ret = FALSE;
@@ -773,7 +773,7 @@ check_changed_any(
     tabpage_T   *tp;
     win_T	*wp;
 
-    /* Make a list of all buffers, with the most important ones first. */
+    // Make a list of all buffers, with the most important ones first.
     FOR_ALL_BUFFERS(buf)
 	++bufcount;
 
@@ -784,21 +784,21 @@ check_changed_any(
     if (bufnrs == NULL)
 	return FALSE;
 
-    /* curbuf */
+    // curbuf
     bufnrs[bufnum++] = curbuf->b_fnum;
 
-    /* buffers in current tab */
+    // buffers in current tab
     FOR_ALL_WINDOWS(wp)
 	if (wp->w_buffer != curbuf)
 	    add_bufnum(bufnrs, &bufnum, wp->w_buffer->b_fnum);
 
-    /* buffers in other tabs */
+    // buffers in other tabs
     FOR_ALL_TABPAGES(tp)
 	if (tp != curtab)
 	    for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
 		add_bufnum(bufnrs, &bufnum, wp->w_buffer->b_fnum);
 
-    /* any other buffer */
+    // any other buffer
     FOR_ALL_BUFFERS(buf)
 	add_bufnum(bufnrs, &bufnum, buf->b_fnum);
 
@@ -820,19 +820,19 @@ check_changed_any(
 	    }
 	    else
 #endif
-	    /* Try auto-writing the buffer.  If this fails but the buffer no
-	     * longer exists it's not changed, that's OK. */
+	    // Try auto-writing the buffer.  If this fails but the buffer no
+	    // longer exists it's not changed, that's OK.
 	    if (check_changed(buf, (p_awa ? CCGD_AW : 0)
 				 | CCGD_MULTWIN
 				 | CCGD_ALLBUF) && bufref_valid(&bufref))
-		break;	    /* didn't save - still changes */
+		break;	    // didn't save - still changes
 	}
     }
 
     if (i >= bufnum)
 	goto theend;
 
-    /* Get here if "buf" cannot be abandoned. */
+    // Get here if "buf" cannot be abandoned.
     ret = TRUE;
     exiting = FALSE;
 #if defined(FEAT_GUI_DIALOG) || defined(FEAT_CON_DIALOG)
@@ -842,10 +842,10 @@ check_changed_any(
     if (!(p_confirm || cmdmod.confirm))
 #endif
     {
-	/* There must be a wait_return for this message, do_buffer()
-	 * may cause a redraw.  But wait_return() is a no-op when vgetc()
-	 * is busy (Quit used from window menu), then make sure we don't
-	 * cause a scroll up. */
+	// There must be a wait_return for this message, do_buffer()
+	// may cause a redraw.  But wait_return() is a no-op when vgetc()
+	// is busy (Quit used from window menu), then make sure we don't
+	// cause a scroll up.
 	if (vgetc_busy > 0)
 	{
 	    msg_row = cmdline_row;
@@ -869,7 +869,7 @@ check_changed_any(
 	}
     }
 
-    /* Try to find a window that contains the buffer. */
+    // Try to find a window that contains the buffer.
     if (buf != curbuf)
 	FOR_ALL_TAB_WINDOWS(tp, wp)
 	    if (wp->w_buffer == buf)
@@ -887,7 +887,7 @@ check_changed_any(
 	    }
 buf_found:
 
-    /* Open the changed buffer in the current window. */
+    // Open the changed buffer in the current window.
     if (buf != curbuf)
 	set_curbuf(buf, unload ? DOBUF_UNLOAD : DOBUF_GOTO);
 
@@ -965,8 +965,8 @@ ex_listdo(exarg_T *eap)
 #if defined(FEAT_SYN_HL)
     if (eap->cmdidx != CMD_windo && eap->cmdidx != CMD_tabdo)
     {
-	/* Don't do syntax HL autocommands.  Skipping the syntax file is a
-	 * great speed improvement. */
+	// Don't do syntax HL autocommands.  Skipping the syntax file is a
+	// great speed improvement.
 	save_ei = au_event_disable(",Syntax");
 
 	for (buf = firstbuf; buf != NULL; buf = buf->b_next)
@@ -986,7 +986,7 @@ ex_listdo(exarg_T *eap)
 				    | CCGD_EXCMD))
     {
 	i = 0;
-	/* start at the eap->line1 argument/window/buffer */
+	// start at the eap->line1 argument/window/buffer
 	wp = firstwin;
 	tp = first_tabpage;
 	switch (eap->cmdidx)
@@ -1005,10 +1005,10 @@ ex_listdo(exarg_T *eap)
 	    default:
 		break;
 	}
-	/* set pcmark now */
+	// set pcmark now
 	if (eap->cmdidx == CMD_bufdo)
 	{
-	    /* Advance to the first listed buffer after "eap->line1". */
+	    // Advance to the first listed buffer after "eap->line1".
 	    for (buf = firstbuf; buf != NULL && (buf->b_fnum < eap->line1
 					  || !buf->b_p_bl); buf = buf->b_next)
 		if (buf->b_fnum > eap->line2)
@@ -1033,28 +1033,28 @@ ex_listdo(exarg_T *eap)
 		buf = curbuf;
 		i = eap->line1 - 1;
 		if (eap->addr_count <= 0)
-		    /* default is all the quickfix/location list entries */
+		    // default is all the quickfix/location list entries
 		    eap->line2 = qf_size;
 	    }
 	}
 #endif
 	else
 	    setpcmark();
-	listcmd_busy = TRUE;	    /* avoids setting pcmark below */
+	listcmd_busy = TRUE;	    // avoids setting pcmark below
 
 	while (!got_int && buf != NULL)
 	{
 	    if (eap->cmdidx == CMD_argdo)
 	    {
-		/* go to argument "i" */
+		// go to argument "i"
 		if (i == ARGCOUNT)
 		    break;
-		/* Don't call do_argfile() when already there, it will try
-		 * reloading the file. */
+		// Don't call do_argfile() when already there, it will try
+		// reloading the file.
 		if (curwin->w_arg_idx != i || !editing_arg_idx(curwin))
 		{
-		    /* Clear 'shm' to avoid that the file message overwrites
-		     * any output from the command. */
+		    // Clear 'shm' to avoid that the file message overwrites
+		    // any output from the command.
 		    p_shm_save = vim_strsave(p_shm);
 		    set_option_value((char_u *)"shm", 0L, (char_u *)"", 0);
 		    do_argfile(eap, i);
@@ -1066,17 +1066,17 @@ ex_listdo(exarg_T *eap)
 	    }
 	    else if (eap->cmdidx == CMD_windo)
 	    {
-		/* go to window "wp" */
+		// go to window "wp"
 		if (!win_valid(wp))
 		    break;
 		win_goto(wp);
 		if (curwin != wp)
-		    break;  /* something must be wrong */
+		    break;  // something must be wrong
 		wp = curwin->w_next;
 	    }
 	    else if (eap->cmdidx == CMD_tabdo)
 	    {
-		/* go to window "tp" */
+		// go to window "tp"
 		if (!valid_tabpage(tp))
 		    break;
 		goto_tabpage_tp(tp, TRUE, TRUE);
@@ -1084,8 +1084,8 @@ ex_listdo(exarg_T *eap)
 	    }
 	    else if (eap->cmdidx == CMD_bufdo)
 	    {
-		/* Remember the number of the next listed buffer, in case
-		 * ":bwipe" is used or autocommands do something strange. */
+		// Remember the number of the next listed buffer, in case
+		// ":bwipe" is used or autocommands do something strange.
 		next_fnum = -1;
 		for (buf = curbuf->b_next; buf != NULL; buf = buf->b_next)
 		    if (buf->b_p_bl)
@@ -1097,31 +1097,31 @@ ex_listdo(exarg_T *eap)
 
 	    ++i;
 
-	    /* execute the command */
+	    // execute the command
 	    do_cmdline(eap->arg, eap->getline, eap->cookie,
 						DOCMD_VERBOSE + DOCMD_NOWAIT);
 
 	    if (eap->cmdidx == CMD_bufdo)
 	    {
-		/* Done? */
+		// Done?
 		if (next_fnum < 0 || next_fnum > eap->line2)
 		    break;
-		/* Check if the buffer still exists. */
+		// Check if the buffer still exists.
 		FOR_ALL_BUFFERS(buf)
 		    if (buf->b_fnum == next_fnum)
 			break;
 		if (buf == NULL)
 		    break;
 
-		/* Go to the next buffer.  Clear 'shm' to avoid that the file
-		 * message overwrites any output from the command. */
+		// Go to the next buffer.  Clear 'shm' to avoid that the file
+		// message overwrites any output from the command.
 		p_shm_save = vim_strsave(p_shm);
 		set_option_value((char_u *)"shm", 0L, (char_u *)"", 0);
 		goto_buffer(eap, DOBUF_FIRST, FORWARD, next_fnum);
 		set_option_value((char_u *)"shm", 0L, p_shm_save, 0);
 		vim_free(p_shm_save);
 
-		/* If autocommands took us elsewhere, quit here. */
+		// If autocommands took us elsewhere, quit here.
 		if (curbuf->b_fnum != next_fnum)
 		    break;
 	    }
@@ -1137,7 +1137,7 @@ ex_listdo(exarg_T *eap)
 
 		ex_cnext(eap);
 
-		/* If jumping to the next quickfix entry fails, quit here */
+		// If jumping to the next quickfix entry fails, quit here
 		if (qf_get_cur_idx(eap) == qf_idx)
 		    break;
 	    }
@@ -1145,9 +1145,9 @@ ex_listdo(exarg_T *eap)
 
 	    if (eap->cmdidx == CMD_windo)
 	    {
-		validate_cursor();	/* cursor may have moved */
+		validate_cursor();	// cursor may have moved
 
-		/* required when 'scrollbind' has been set */
+		// required when 'scrollbind' has been set
 		if (curwin->w_p_scb)
 		    do_check_scrollbind(TRUE);
 	    }
@@ -1213,9 +1213,9 @@ ex_compiler(exarg_T *eap)
 
     if (*eap->arg == NUL)
     {
-	/* List all compiler scripts. */
+	// List all compiler scripts.
 	do_cmdline_cmd((char_u *)"echo globpath(&rtp, 'compiler/*.vim')");
-					/* ) keep the indenter happy... */
+					// ) keep the indenter happy...
     }
     else
     {
@@ -1224,18 +1224,18 @@ ex_compiler(exarg_T *eap)
 	{
 	    if (eap->forceit)
 	    {
-		/* ":compiler! {name}" sets global options */
+		// ":compiler! {name}" sets global options
 		do_cmdline_cmd((char_u *)
 				   "command -nargs=* CompilerSet set <args>");
 	    }
 	    else
 	    {
-		/* ":compiler! {name}" sets local options.
-		 * To remain backwards compatible "current_compiler" is always
-		 * used.  A user's compiler plugin may set it, the distributed
-		 * plugin will then skip the settings.  Afterwards set
-		 * "b:current_compiler" and restore "current_compiler".
-		 * Explicitly prepend "g:" to make it work in a function. */
+		// ":compiler! {name}" sets local options.
+		// To remain backwards compatible "current_compiler" is always
+		// used.  A user's compiler plugin may set it, the distributed
+		// plugin will then skip the settings.  Afterwards set
+		// "b:current_compiler" and restore "current_compiler".
+		// Explicitly prepend "g:" to make it work in a function.
 		old_cur_comp = get_var_value((char_u *)"g:current_compiler");
 		if (old_cur_comp != NULL)
 		    old_cur_comp = vim_strsave(old_cur_comp);
@@ -1252,12 +1252,12 @@ ex_compiler(exarg_T *eap)
 
 	    do_cmdline_cmd((char_u *)":delcommand CompilerSet");
 
-	    /* Set "b:current_compiler" from "current_compiler". */
+	    // Set "b:current_compiler" from "current_compiler".
 	    p = get_var_value((char_u *)"g:current_compiler");
 	    if (p != NULL)
 		set_internal_string_var((char_u *)"b:current_compiler", p);
 
-	    /* Restore "current_compiler" for ":compiler {name}". */
+	    // Restore "current_compiler" for ":compiler {name}".
 	    if (!eap->forceit)
 	    {
 		if (old_cur_comp != NULL)
@@ -1322,7 +1322,7 @@ requires_py_version(char_u *filename)
 		break;
 	    if (i == 0 && IObuff[0] == '#' && IObuff[1] == '!')
 	    {
-		/* Check shebang. */
+		// Check shebang.
 		if (strstr((char *)IObuff + 2, "python2") != NULL)
 		{
 		    requires_py_version = 2;
@@ -1367,7 +1367,7 @@ source_pyx_file(exarg_T *eap, char_u *fname)
     if (v == 0)
     {
 # if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
-	/* user didn't choose a preference, 'pyx' is used */
+	// user didn't choose a preference, 'pyx' is used
 	v = p_pyx;
 # elif defined(FEAT_PYTHON)
 	v = 2;
@@ -1472,12 +1472,12 @@ ex_checktime(exarg_T *eap)
     int		save_no_check_timestamps = no_check_timestamps;
 
     no_check_timestamps = 0;
-    if (eap->addr_count == 0)	/* default is all buffers */
+    if (eap->addr_count == 0)	// default is all buffers
 	check_timestamps(FALSE);
     else
     {
 	buf = buflist_findnr((int)eap->line2);
-	if (buf != NULL)	/* cannot happen? */
+	if (buf != NULL)	// cannot happen?
 	    (void)buf_check_timestamp(buf, FALSE);
     }
     no_check_timestamps = save_no_check_timestamps;
@@ -1491,7 +1491,7 @@ get_locale_val(int what)
 {
     char_u	*loc;
 
-    /* Obtain the locale value from the libraries. */
+    // Obtain the locale value from the libraries.
     loc = (char_u *)setlocale(what, NULL);
 
 # ifdef MSWIN
@@ -1499,13 +1499,13 @@ get_locale_val(int what)
     {
 	char_u	*p;
 
-	/* setocale() returns something like "LC_COLLATE=<name>;LC_..." when
-	 * one of the values (e.g., LC_CTYPE) differs. */
+	// setocale() returns something like "LC_COLLATE=<name>;LC_..." when
+	// one of the values (e.g., LC_CTYPE) differs.
 	p = vim_strchr(loc, '=');
 	if (p != NULL)
 	{
 	    loc = ++p;
-	    while (*p != NUL)	/* remove trailing newline */
+	    while (*p != NUL)	// remove trailing newline
 	    {
 		if (*p < ' ' || *p == ';')
 		{
@@ -1585,10 +1585,10 @@ get_mess_lang(void)
 #  if defined(LC_MESSAGES)
     p = get_locale_val(LC_MESSAGES);
 #  else
-    /* This is necessary for Win32, where LC_MESSAGES is not defined and $LANG
-     * may be set to the LCID number.  LC_COLLATE is the best guess, LC_TIME
-     * and LC_MONETARY may be set differently for a Japanese working in the
-     * US. */
+    // This is necessary for Win32, where LC_MESSAGES is not defined and $LANG
+    // may be set to the LCID number.  LC_COLLATE is the best guess, LC_TIME
+    // and LC_MONETARY may be set differently for a Japanese working in the
+    // US.
     p = get_locale_val(LC_COLLATE);
 #  endif
 # else
@@ -1607,7 +1607,7 @@ get_mess_lang(void)
 }
 #endif
 
-/* Complicated #if; matches with where get_mess_env() is used below. */
+// Complicated #if; matches with where get_mess_env() is used below.
 #if (defined(FEAT_EVAL) && !((defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
 	    && defined(LC_MESSAGES))) \
 	|| ((defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
@@ -1628,7 +1628,7 @@ get_mess_env(void)
 	{
 	    p = mch_getenv((char_u *)"LANG");
 	    if (p != NULL && VIM_ISDIGIT(*p))
-		p = NULL;		/* ignore something like "1043" */
+		p = NULL;		// ignore something like "1043"
 # ifdef HAVE_GET_LOCALE_VAL
 	    if (p == NULL || *p == NUL)
 		p = get_locale_val(LC_CTYPE);
@@ -1653,13 +1653,13 @@ set_lang_var(void)
 # ifdef HAVE_GET_LOCALE_VAL
     loc = get_locale_val(LC_CTYPE);
 # else
-    /* setlocale() not supported: use the default value */
+    // setlocale() not supported: use the default value
     loc = (char_u *)"C";
 # endif
     set_vim_var_string(VV_CTYPE, loc, -1);
 
-    /* When LC_MESSAGES isn't defined use the value from $LC_MESSAGES, fall
-     * back to LC_CTYPE if it's empty. */
+    // When LC_MESSAGES isn't defined use the value from $LC_MESSAGES, fall
+    // back to LC_CTYPE if it's empty.
 # if defined(HAVE_GET_LOCALE_VAL) && defined(LC_MESSAGES)
     loc = get_locale_val(LC_MESSAGES);
 # else
@@ -1694,9 +1694,9 @@ ex_language(exarg_T *eap)
 
     name = eap->arg;
 
-    /* Check for "messages {name}", "ctype {name}" or "time {name}" argument.
-     * Allow abbreviation, but require at least 3 characters to avoid
-     * confusion with a two letter language name "me" or "ct". */
+    // Check for "messages {name}", "ctype {name}" or "time {name}" argument.
+    // Allow abbreviation, but require at least 3 characters to avoid
+    // confusion with a two letter language name "me" or "ct".
     p = skiptowhite(eap->arg);
     if ((*p == NUL || VIM_ISWHITE(*p)) && p - eap->arg >= 3)
     {
@@ -1742,7 +1742,7 @@ ex_language(exarg_T *eap)
 	{
 	    loc = setlocale(what, (char *)name);
 #if defined(FEAT_FLOAT) && defined(LC_NUMERIC)
-	    /* Make sure strtod() uses a decimal point, not a comma. */
+	    // Make sure strtod() uses a decimal point, not a comma.
 	    setlocale(LC_NUMERIC, "C");
 #endif
 	}
@@ -1751,31 +1751,31 @@ ex_language(exarg_T *eap)
 	else
 	{
 #ifdef HAVE_NL_MSG_CAT_CNTR
-	    /* Need to do this for GNU gettext, otherwise cached translations
-	     * will be used again. */
+	    // Need to do this for GNU gettext, otherwise cached translations
+	    // will be used again.
 	    extern int _nl_msg_cat_cntr;
 
 	    ++_nl_msg_cat_cntr;
 #endif
-	    /* Reset $LC_ALL, otherwise it would overrule everything. */
+	    // Reset $LC_ALL, otherwise it would overrule everything.
 	    vim_setenv((char_u *)"LC_ALL", (char_u *)"");
 
 	    if (what != LC_TIME)
 	    {
-		/* Tell gettext() what to translate to.  It apparently doesn't
-		 * use the currently effective locale.  Also do this when
-		 * FEAT_GETTEXT isn't defined, so that shell commands use this
-		 * value. */
+		// Tell gettext() what to translate to.  It apparently doesn't
+		// use the currently effective locale.  Also do this when
+		// FEAT_GETTEXT isn't defined, so that shell commands use this
+		// value.
 		if (what == LC_ALL)
 		{
 		    vim_setenv((char_u *)"LANG", name);
 
-		    /* Clear $LANGUAGE because GNU gettext uses it. */
+		    // Clear $LANGUAGE because GNU gettext uses it.
 		    vim_setenv((char_u *)"LANGUAGE", (char_u *)"");
 # ifdef MSWIN
-		    /* Apparently MS-Windows printf() may cause a crash when
-		     * we give it 8-bit text while it's expecting text in the
-		     * current locale.  This call avoids that. */
+		    // Apparently MS-Windows printf() may cause a crash when
+		    // we give it 8-bit text while it's expecting text in the
+		    // current locale.  This call avoids that.
 		    setlocale(LC_CTYPE, "C");
 # endif
 		}
@@ -1795,7 +1795,7 @@ ex_language(exarg_T *eap)
 	    }
 
 # ifdef FEAT_EVAL
-	    /* Set v:lang, v:lc_time and v:ctype to the final result. */
+	    // Set v:lang, v:lc_time and v:ctype to the final result.
 	    set_lang_var();
 # endif
 # ifdef FEAT_TITLE
@@ -1805,7 +1805,7 @@ ex_language(exarg_T *eap)
     }
 }
 
-static char_u	**locales = NULL;	/* Array of all available locales */
+static char_u	**locales = NULL;	// Array of all available locales
 
 # ifndef MSWIN
 static int	did_init_locales = FALSE;
@@ -1820,16 +1820,16 @@ find_locales(void)
     garray_T	locales_ga;
     char_u	*loc;
 
-    /* Find all available locales by running command "locale -a".  If this
-     * doesn't work we won't have completion. */
+    // Find all available locales by running command "locale -a".  If this
+    // doesn't work we won't have completion.
     char_u *locale_a = get_cmd_output((char_u *)"locale -a",
 						    NULL, SHELL_SILENT, NULL);
     if (locale_a == NULL)
 	return NULL;
     ga_init2(&locales_ga, sizeof(char_u *), 20);
 
-    /* Transform locale_a string where each locale is separated by "\n"
-     * into an array of locale strings. */
+    // Transform locale_a string where each locale is separated by "\n"
+    // into an array of locale strings.
     loc = (char_u *)strtok((char *)locale_a, "\n");
 
     while (loc != NULL)
