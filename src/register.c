@@ -1668,21 +1668,19 @@ do_put(
     {
 	if (gchar_cursor() == TAB)
 	{
+	    int viscol = getviscol();
+	    int ts = curbuf->b_p_ts;
+
 	    // Don't need to insert spaces when "p" on the last position of a
 	    // tab or "P" on the first position.
+	    if (dir == FORWARD ?
 #ifdef FEAT_VARTABS
-	    int viscol = getviscol();
-	    if (dir == FORWARD
-		    ? tabstop_padding(viscol, curbuf->b_p_ts,
-						    curbuf->b_p_vts_array) != 1
+		    tabstop_padding(viscol, ts, curbuf->b_p_vts_array) != 1
+#else
+		    ts - (viscol % ts) != 1
+#endif
 		    : curwin->w_cursor.coladd > 0)
 		coladvance_force(viscol);
-#else
-	    if (dir == FORWARD
-		    ? (int)curwin->w_cursor.coladd < curbuf->b_p_ts - 1
-						: curwin->w_cursor.coladd > 0)
-		coladvance_force(getviscol());
-#endif
 	    else
 		curwin->w_cursor.coladd = 0;
 	}
