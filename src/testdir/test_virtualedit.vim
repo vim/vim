@@ -209,3 +209,5 @@ func Test_yank_in_tab()
   bwipe!
   set virtualedit=
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

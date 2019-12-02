@@ -175,7 +175,7 @@ func Test_mark_error()
   call assert_fails('mark _', 'E191:')
 endfunc
 
-" Test for :lockamarks when pasting content
+" Test for :lockmarks when pasting content
 func Test_lockmarks_with_put()
   new
   call append(0, repeat(['sky is blue'], 4))
@@ -189,3 +189,5 @@ func Test_lockmarks_with_put()
 
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
