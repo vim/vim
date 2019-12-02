@@ -7414,34 +7414,14 @@ set_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
     DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
-    int id;
-    guicolor_T fg = INVALCOLOR;
-    guicolor_T bg = INVALCOLOR;
-    int ctermfg;
-    int ctermbg;
+    guicolor_T	fg, bg;
+    int		ctermfg, ctermbg;
 
     if (!USE_VTP)
 	return;
 
-    id = syn_name2id((char_u *)"Normal");
-    if (id > 0 && p_tgc)
-	syn_id2colors(id, &fg, &bg);
-    if (fg == INVALCOLOR)
-    {
-	ctermfg = -1;
-	if (id > 0)
-	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
-	fg = ctermfg != -1 ? ctermtoxterm(ctermfg) : default_console_color_fg;
-	cterm_normal_fg_gui_color = fg;
-    }
-    if (bg == INVALCOLOR)
-    {
-	ctermbg = -1;
-	if (id > 0)
-	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
-	bg = ctermbg != -1 ? ctermtoxterm(ctermbg) : default_console_color_bg;
-	cterm_normal_bg_gui_color = bg;
-    }
+    get_default_console_color(&ctermfg, &ctermbg, &fg, &bg);
+
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
 
@@ -7458,6 +7438,51 @@ set_console_color_rgb(void)
 	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
+
+# if defined(FEAT_TERMGUICOLORS) || defined(PROTO)
+    void
+get_default_console_color(
+    int *cterm_fg,
+    int *cterm_bg,
+    guicolor_T *gui_fg,
+    guicolor_T *gui_bg)
+{
+    int id;
+    guicolor_T guifg = INVALCOLOR;
+    guicolor_T guibg = INVALCOLOR;
+    int ctermfg = 0;
+    int ctermbg = 0;
+
+    id = syn_name2id((char_u *)"Normal");
+    if (id > 0 && p_tgc)
+	syn_id2colors(id, &guifg, &guibg);
+    if (guifg == INVALCOLOR)
+    {
+	ctermfg = -1;
+	if (id > 0)
+	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
+	guifg = ctermfg != -1 ? ctermtoxterm(ctermfg)
+						    : default_console_color_fg;
+	cterm_normal_fg_gui_color = guifg;
+	ctermfg = ctermfg < 0 ? 0 : ctermfg;
+    }
+    if (guibg == INVALCOLOR)
+    {
+	ctermbg = -1;
+	if (id > 0)
+	    syn_id2cterm_bg(id, &ctermfg, &ctermbg);
+	guibg = ctermbg != -1 ? ctermtoxterm(ctermbg)
+						    : default_console_color_bg;
+	cterm_normal_bg_gui_color = guibg;
+	ctermbg = ctermbg < 0 ? 0 : ctermbg;
+    }
+
+    *cterm_fg = ctermfg;
+    *cterm_bg = ctermbg;
+    *gui_fg = guifg;
+    *gui_bg = guibg;
+}
+# endif
 
     static void
 reset_console_color_rgb(void)
