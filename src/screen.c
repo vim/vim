@@ -1777,6 +1777,33 @@ screen_start_highlight(int attr)
 		else
 		    attr = aep->ae_attr;
 	    }
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+	    if (use_vtp())
+	    {
+		guicolor_T defguifg, defguibg;
+		int defctermfg, defctermbg;
+
+		/* If FG and BG are unset, the color is undefined when
+		 * BOLD+INVERSE. Use Normal as the default value. */
+		get_default_console_color(&defctermfg, &defctermbg, &defguifg,
+								    &defguibg);
+
+		if (p_tgc)
+		{
+		    if (aep == NULL || COLOR_INVALID(aep->ae_u.cterm.fg_rgb))
+			term_fg_rgb_color(defguifg);
+		    if (aep == NULL || COLOR_INVALID(aep->ae_u.cterm.bg_rgb))
+			term_bg_rgb_color(defguibg);
+		}
+		else if (t_colors >= 256)
+		{
+		    if (aep == NULL || aep->ae_u.cterm.fg_color == 0)
+			term_fg_color(defctermfg);
+		    if (aep == NULL || aep->ae_u.cterm.bg_color == 0)
+			term_bg_color(defctermbg);
+		}
+	    }
+#endif
 	    if ((attr & HL_BOLD) && *T_MD != NUL)	/* bold */
 		out_str(T_MD);
 	    else if (aep != NULL && cterm_normal_fg_bold && (
