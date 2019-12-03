@@ -1190,6 +1190,11 @@ normal_end:
 
     msg_nowait = FALSE;
 
+#ifdef FEAT_EVAL
+    if (finish_op)
+	set_reg_var(0);
+#endif
+
     // Reset finish_op, in case it was set
 #ifdef CURSOR_SHAPE
     c = finish_op;
