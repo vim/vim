@@ -2252,7 +2252,7 @@ test_libvterm:
 test1 \
 	test_eval \
 	test39 \
-	test42 test44 test48 test49 \
+	test42 test44 test49 \
 	test52 test59 \
 	test64 test69 \
 	test70 test72 \
