@@ -276,8 +276,7 @@ func Test_yank_block()
   new
   set virtualedit=block
   call append(0, repeat(['this is a test'], 3))
-  normal gg^2w
-  call feedkeys("\<C-V>3jy", 'xt')
+  exe "normal gg^2w\<C-V>3jy"
   call assert_equal("a\na\na\n ", @")
   bwipe!
   set virtualedit=
