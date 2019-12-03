@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Nov 30
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Dec 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -147,6 +147,9 @@ Should do current file first and not split it up when more results are found.
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
 
+Instead of using a syntax error, use #error to fail early when something is
+wrong.  E.g. in vim.h "Error:", and blowfish.c "error!". (#5299)
+
 ":helptags ALL" should skip directories where "tags" cannot be written.
 (Matěj Cepl, #5026)
 
@@ -197,6 +200,17 @@ Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 Patch to configure BUILD_DATE for reproducible builds. (James McCoy, #513)
 
 Patch to add MODIFIED_BY to MSVC build file. (Chen Lei, 2016 Nov 24, #1275)
+
+Patch to support "0o" for octal numbers. (Ken Takata, #5304)
+
+":cexpr" sees a | in the expression as the start of the next command.  Should
+remove the "BAR" flag from the command and let the command search for the next
+command after parsing the expression.
+
+When getting a focus event halfway a mapping this aborts the mapping.  E.g.
+when "qq" is mapped and after the first "q" the mouse is moved outside of the
+gvim window (with focus follows mouse), then the K_FOCUSLOST key is put in the
+input buffer. (#5302)
 
 xterm should be able to pass focus changes to Vim, so that Vim can check for
 buffers that changed.  Perhaps in misc.c, function selectwindow().
@@ -261,6 +275,9 @@ Also see #737: langmap not applied to replaying recording.
 
 Would be nice to set tab-local values for 'diffexpr' and 'diffopt'.  Use
 t:diffexpr_option t:diffopt_option? (#4782)
+
+v:register isn't reset early enough, may be used by next command.
+(Andy Massimino, #5294, possible fix in #5305)
 
 Internal diff doesn't handle binary file like external diff does. (Mike
 Williams, 2018 Oct 30)

@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.1.  Last change: 2019 Nov 30
+*version8.txt*  For Vim version 8.1.  Last change: 2019 Dec 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -953,7 +953,7 @@ Problem:    A script cannot detect whether 'hlsearch' highlighting is actually
 Solution:   Add the "v:hlsearch" variable. (ZyX)
 Files:	    src/eval.c, src/ex_docmd.c,
 	    src/option.c, src/screen.c, src/search.c, src/tag.c, src/vim.h,
-	    src/testdir/test101.in, src/testdir/test101.ok, 
+	    src/testdir/test101.in, src/testdir/test101.ok,
 	    src/testdir/Make_amiga.mak, src/testdir/Make_dos.mak,
 	    src/testdir/Make_ming.mak, src/testdir/Make_os2.mak,
 	    src/testdir/Make_vms.mms, src/testdir/Makefile
@@ -1714,7 +1714,7 @@ Files:	    src/ex_cmds.c
 
 Patch 7.4.210
 Problem:    Visual block mode plus virtual edit doesn't work well with tabs.
-	    (Liang Li) 
+	    (Liang Li)
 Solution:   Take coladd into account. (Christian Brabandt)
 Files:	    src/ops.c, src/testdir/test39.in, src/testdir/test39.ok
 
@@ -3930,7 +3930,7 @@ Solution:   Don't add one when this would overflow. (Hirohito Higashi)
 Files:	    src/eval.c
 
 Patch 7.4.579
-Problem:    Wrong cursor positioning when 'linebreak' is set and lines wrap. 
+Problem:    Wrong cursor positioning when 'linebreak' is set and lines wrap.
 Solution:   Fix it. (Christian Brabandt)
 Files:	    src/charset.c, src/screen.c
 
@@ -3967,7 +3967,7 @@ Files:	    src/ex_cmds.h, src/testdir/test_command_count.in,
 	    src/testdir/test_command_count.ok
 
 Patch 7.4.586
-Problem:    Parallel building of the documentation html files is not reliable. 
+Problem:    Parallel building of the documentation html files is not reliable.
 Solution:   Remove a cyclic dependency. (Reiner Herrmann)
 Files:	    runtime/doc/Makefile
 
@@ -6470,7 +6470,7 @@ Files:      src/os_unix.c
 
 Patch 7.4.1008
 Problem:    The OS/2 code pollutes the source while nobody uses it these days.
-Solution:   Drop the support for OS/2. 
+Solution:   Drop the support for OS/2.
 Files:      src/feature.h, src/globals.h, src/macros.h, src/option.h,
             src/os_unix.c, src/os_unix.h, src/proto/os_unix.pro, src/vim.h,
             src/digraph.c, src/eval.c, src/ex_cmds.c, src/ex_docmd.c,
@@ -15402,7 +15402,7 @@ Files:      src/screen.c, src/testdir/Make_all.mak, src/Makefile,
             src/testdir/test_display.vim
 
 Patch 8.0.0127
-Problem:    Cancelling completion still inserts text when formatting is done 
+Problem:    Cancelling completion still inserts text when formatting is done
             for 'textwidth'. (lacygoill)
 Solution:   Don't format when CTRL-E was typed. (Hirohito Higashi,
             closes #1312)
@@ -16957,7 +16957,7 @@ Files:      src/gen_opt_test.vim
 Patch 8.0.0387
 Problem:    compiler warnings
 Solution:   Add type casts. (Christian Brabandt)
-Files:      src/channel.c, src/memline.c, 
+Files:      src/channel.c, src/memline.c
 
 Patch 8.0.0388
 Problem:    filtering lines through "cat", without changing the line count,
@@ -17669,7 +17669,7 @@ Files:      src/testdir/test_autocmd.vim
 
 Patch 8.0.0499
 Problem:    taglist() does not prioritize tags for a buffer.
-Solution:   Add an optional buffer argument. (Duncan McDougall, closes #1194) 
+Solution:   Add an optional buffer argument. (Duncan McDougall, closes #1194)
 Files:      runtime/doc/eval.txt, src/evalfunc.c, src/proto/tag.pro,
             src/Makefile, src/tag.c, src/testdir/test_alot.vim,
             src/testdir/test_taglist.vim
@@ -19966,7 +19966,7 @@ Files:      src/normal.c
 
 Patch 8.0.0875
 Problem:    Crash with weird command sequence. (Dominique Pelle)
-Solution:   Use vim_snprintf() instead of STRCPY(). 
+Solution:   Use vim_snprintf() instead of STRCPY().
 Files:      src/misc1.c
 
 Patch 8.0.0876
@@ -21134,7 +21134,7 @@ Problem:    term_start() does not take callbacks. When using two terminals
             returns the wrong pty.
 Solution:   Support "callback", "out_cb" and "err_cb".  Fix terminal without a
             window. Fix reading from multiple channels.
-Files:      src/terminal.c, src/proto/terminal.pro, src/channel.c, 
+Files:      src/terminal.c, src/proto/terminal.pro, src/channel.c
 
 Patch 8.0.1077
 Problem:    No debugger making use of the terminal window.
@@ -25807,8 +25807,8 @@ VERSION 8.2 IS NOT RELEASED YET!  THIS SECTION WILL CHANGE.
 
 This section is about improvements made between version 8.1 and 8.2.
 
-This release has hundreds of bug fixes, there are a few new features and there
-are many minor improvements.
+This release has hundreds of bug fixes, there are sevearl new features and
+there are many minor improvements.
 
 
 Popup windows					*new-popup-window*
@@ -25819,7 +25819,7 @@ be for a simple message such as "Build finished successfully", showing a
 function prototype while editing a function call, a flexible popup menu and
 many other purposes.
 
-Popup windows are very flexibley: they can be positioned relative to text, an
+Popup windows are very flexible: they can be positioned relative to text, an
 absolute position or just in the middle of the screen.  The size can be fixed
 or adjust to the text.  A "zindex" value specifies what popup window goes on
 top of others.
@@ -25840,21 +25840,41 @@ to dynamically update highligting, mark errors and the like.
 Vim script improvements				*new-vimscript-8.2*
 -----------------------
 
-Functions can now be called in a chain, using "->". E.g.: >
+Functions can now be called in a chain, using "->": >
 	mylist->filter(filterexpr)->map(mapexpr)->sort()->join()
-The new `:eval` command can be used when there is no result.
+The new `:eval` command can be used if the chain has no result.
 
 The `:scriptversion` command was added to allow for changes that are not
-backwards compatible. E.g. to only use ".." for string concatenation.
+backwards compatible. E.g. to only use ".." for string concatenation, so that
+"." can be used to access a dictionary member consistently.
 
-`:const` was added to allow for declaring a variable that cannot change. >
+`:const` was added to allow for declaring a variable that cannot change: >
 	const TIMER_DELAY = 400
+
+A heredoc-style assignment was added to easily assign a list of lines to a
+variable without quoting or line continuation: >
+	let lines =<< trim END
+	   line one
+	   line two
+	END
 
 The |Blob| type was added. This makes it easy to deal with binary data.
 
+The /= and %= assignment operators were added.
+
 A Dictionary can be defined with #{} where the keys are used literally.  This
-avoids having to use quotes.  E.g.:  >
+avoids having to use quotes:  >
 	let options = #{width: 30, height: 24}
+
+
+Other improvements					*new-other-8.2*
+------------------
+
+- When 'incsearch' is set it also applies to `:substitute`.
+- |modifyOtherKeys| was added to allow mapping more key combinations.
+- ConPTY support was added for Windows 10, supports full color in the terminal.
+- The windows installer supports translations, silent install and looks
+  better.
 
 
 Changed							*changed-8.2*
@@ -25862,6 +25882,26 @@ Changed							*changed-8.2*
 
 The xdiff library was included to avoid the need for an external diff program
 and to make updating diffs much faster.
+
+The code is using a few more modern C features, such as // comments.
+
+Support for old compilers has been dropped: Borland C++, MSVC 2008.
+
+Hangul input support was removed, it actually didn't work.
+
+The FEAT_TAG_OLDSTATIC code was removed, it slowed down tag searches.
+The FEAT_TAG_ANYWHITE code was removed, is was not enabled in any build.
+The UNICODE16 code was removed, it was not useful.
+Workshop support was removed, nobody was using it.
+The Aap build files were removed, they were outdated.
+Farsi support was removed, it was outdated and unused.
+
+VIMDLL was re-implemented, this shares the common parts between vim and gvim
+to reduce the total install size.
+
+The following features are now included in all versions: |+multi_byte|,
+|+virtualedit|, |+vreplace|, |+localmap|, |+cmdline_hist|, |+cmdline_compl|,
+|+insert_expand|, |+modify_fname|, |+comments|
 
 
 Added							*added-8.2*
@@ -25932,21 +25972,24 @@ Added autocommands:
 	|TerminalWinOpen|
 
 Added commands:
+    Jumping to errors relative to the cursor position:
 	`:cabove`
 	`:cafter`
 	`:cbefore`
 	`:cbelow`
-	`:const`
-	`:eval`
 	`:labove`
 	`:lbefore`
 	`:lbelow`
 	`:lafter`
+    Tab-local directory:
+	`:tcd`
+	`:tchdir`
+    Others:
+	`:const`
+	`:eval`
 	`:redrawtabline`
 	`:scriptversion`
 	`:spellrare`
-	`:tcd`
-	`:tchdir`
 	`:tlmenu`
 	`:tlnoremenu`
 	`:tlunmenu`
@@ -29600,7 +29643,7 @@ Files:	    src/testdir/test_gn.vim, src/search.c, src/proto/search.pro,
             src/normal.c
 
 Patch 8.1.0630
-Problem:   "wincmd p" does not work after using an autocmd window. 
+Problem:   "wincmd p" does not work after using an autocmd window.
 Solution:   Store "prevwin" in aco_save_T. (Christian Brabandt, closes #3690)
 Files:	    src/fileio.c, src/structs.h, src/testdir/test_window_cmd.vim
 
@@ -34494,8 +34537,8 @@ Files:	    src/popupwin.c, src/globals.h, src/eval.c, src/screen.c,
 
 Patch 8.1.1401
 Problem:    Misspelled mkspellmem as makespellmem.
-Solution:   Drop duplicate help entry, fix test. (Naruhiko Nishino, Ken
-            Takata, closes #4437)
+Solution:   Drop duplicate help entry, fix test. (Naruhiko Nishino, Yasuhiro
+            Matsumoto, closes #4437)
 Files:	    runtime/doc/options.txt, src/testdir/test_modeline.vim
 
 Patch 8.1.1402
@@ -34541,7 +34584,7 @@ Files:	    src/textprop.c, src/proto/textprop.pro, src/popupwin.c,
             runtime/doc/popup.txt
 
 Patch 8.1.1408
-Problem:    PFL_HIDDEN conflicts with system header file.
+Problem:    PFL_HIDDEN conflicts with system header file. (Ken Takata)
 Solution:   Rename to POPF_HIDDEN.
 Files:	    src/popupwin.c, src/screen.c, src/vim.h
 
@@ -34709,7 +34752,7 @@ Files:	    src/buffer.c, src/popupwin.c, src/testdir/test_popupwin.vim,
 
 Patch 8.1.1432 (after 8.1.1429)
 Problem:    Can't build with eval feature.
-Solution:   Add missing rename. 
+Solution:   Add missing rename.
 Files:	    src/evalfunc.c
 
 Patch 8.1.1433
@@ -34732,7 +34775,7 @@ Files:	    src/testdir/test_memory_usage.vim
 
 Patch 8.1.1436
 Problem:    Writefile test fails when run under /tmp.
-Solution:   Adjust 'backupskip. (Kenta Sato, closes #4462)
+Solution:   Adjust 'backupskip'. (Kenta Sato, closes #4462)
 Files:	    src/testdir/test_writefile.vim
 
 Patch 8.1.1437
@@ -34817,7 +34860,7 @@ Files:	    src/screen.c, src/testdir/test_popupwin.vim,
 Patch 8.1.1449
 Problem:    Popup text truncated at end of screen.
 Solution:   Move popup left if needed.  Add the "fixed" property to disable
-            that. (Ben Jackson , closes #4466)
+            that. (Ben Jackson, closes #4466)
 Files:	    runtime/doc/popup.txt, src/popupwin.c, src/structs.h,
             src/testdir/test_popupwin.vim
 
@@ -34941,7 +34984,7 @@ Solution:   Add a simple test.  Also include the missing part of 8.1.1464.
 Files:	    src/term.c, src/testdir/test_termcodes.vim
 
 Patch 8.1.1470
-Problem:    New Unicode character U32FF missing from double-width table.
+Problem:    New Unicode character U+32FF missing from double-width table.
 Solution:   Add the character.
 Files:	    src/mbyte.c
 
@@ -34957,7 +35000,7 @@ Files:	    src/testdir/test_termcodes.vim
 
 Patch 8.1.1473
 Problem:    New resolve() implementation causes problem for plugins.
-Solution:   Only resolve a resparse point after checking it is needed. (Ken
+Solution:   Only resolve a reparse point after checking it is needed. (Ken
             Takata, closes #4492)
 Files:	    src/os_mswin.c, src/testdir/test_functions.vim
 
@@ -34996,7 +35039,7 @@ Files:	    src/testdir/Makefile
 
 Patch 8.1.1480
 Problem:    Desktop file check doesn't run on CI.
-Solution:   Install the desktip-file-utils packages. (Christian Brabandt,
+Solution:   Install the desktop-file-utils packages. (Christian Brabandt,
             closes #4498)
 Files:	    .travis.yml
 
@@ -35167,7 +35210,7 @@ Files:	    src/testdir/test_sound.vim
 
 Patch 8.1.1509
 Problem:    Cmdline_row can become negative, causing a crash.
-Solution:   Make sure cmdline_row does not become negagive. (closes #4102)
+Solution:   Make sure cmdline_row does not become negative. (closes #4102)
 Files:	    src/misc1.c
 
 Patch 8.1.1510
@@ -35248,7 +35291,7 @@ Files:	    src/window.c, src/testdir/test_popupwin.vim
 Patch 8.1.1522
 Problem:    Popup_notification() not implemented yet.
 Solution:   Implement it.
-Files:	    src/popupwin.c, src/proto/popupwin.pro, src/evalfunc.c, 
+Files:	    src/popupwin.c, src/proto/popupwin.pro, src/evalfunc.c,
             src/structs.h, src/testdir/test_popupwin.vim,
             runtime/doc/popup.txt
             src/testdir/dumps/Test_popupwin_notify_01.dump,
@@ -35355,7 +35398,7 @@ Files:	    src/os_macosx.m
 
 Patch 8.1.1534
 Problem:    Modeless selection in popup window selects too much.
-Solution:   Restrict the selection to insde of the popup window.
+Solution:   Restrict the selection to inside of the popup window.
 Files:	    src/vim.h, src/ui.c, src/testdir/test_popupwin.vim,
             src/testdir/dumps/Test_popupwin_select_01.dump,
             src/testdir/dumps/Test_popupwin_select_02.dump
@@ -35641,8 +35684,8 @@ Solution:   Add #ifdef.
 Files:	    src/screen.c
 
 Patch 8.1.1573 (after 8.1.1571)
-Problem:    Textprop test fails if screenhots do not work.
-Solution:   Add check for screenhots working.
+Problem:    Textprop test fails if screenshots do not work.
+Solution:   Add check for screenshots working.
 Files:	    src/testdir/test_textprop.vim
 
 Patch 8.1.1574
@@ -35697,7 +35740,7 @@ Files:	    runtime/doc/popup.txt, src/popupwin.c, src/screen.c,
 
 Patch 8.1.1581
 Problem:    Shared functions for testing are disorganised.
-Solution:   Group finctions in script files. (Ozaki Kiichi, closes #4573)
+Solution:   Group functions in script files. (Ozaki Kiichi, closes #4573)
 Files:	    Filelist, src/testdir/screendump.vim, src/testdir/shared.vim,
             src/testdir/term_util.vim, src/testdir/test_mksession.vim,
             src/testdir/test_suspend.vim, src/testdir/test_terminal.vim,
@@ -35742,7 +35785,7 @@ Files:	    runtime/doc/popup.txt, src/popupwin.c
 
 Patch 8.1.1587
 Problem:    Redraw problem when sign icons in the number column.
-Solution:   Clear and redraw when changing related options.  Right aligh the
+Solution:   Clear and redraw when changing related options.  Right align the
             sign icon in the GUI. (Yegappan Lakshmanan, closes #4578)
 Files:	    src/gui.c, src/option.c
 
@@ -35794,12 +35837,12 @@ Files:	    runtime/scripts.vim, src/testdir/test_filetype.vim
 
 Patch 8.1.1594
 Problem:    May still start file dialog while exiting.
-Solution:   Ignore the "browse" modifier in another place when exiiting.
+Solution:   Ignore the "browse" modifier in another place when exiting.
             (Ozaki Kiichi, closes #4582)
 Files:	    src/ex_cmds.c
 
 Patch 8.1.1595
-Problem:    MS-Windows with VIMDLL: colors wrong in the GUI.
+Problem:    MS-Windows with VIMDLL: colors wrong in console.
 Solution:   Do not set the terminal colors when not using the GUI. (Ken
             Takata, closes #4588)
 Files:	    src/syntax.c
@@ -35931,7 +35974,7 @@ Files:	    runtime/doc/options.txt, src/option.c, src/screen.c,
 Patch 8.1.1615
 Problem:    Crash when passing buffer number to popup_create(). (Yasuhiro
             Matsumoto)
-Solution:   Initialze the window properly.
+Solution:   Initialize the window properly.
 Files:	    src/popupwin.c, src/testdir/test_popupwin.vim
 
 Patch 8.1.1616
@@ -35991,7 +36034,7 @@ Problem:    When testing in the GUI may try to run gvim in a terminal.
 Solution:   Add the -v argument. (Yee Cheng Chin, closes #4605)  Don't skip
             tests that work now.
 Files:	    src/testdir/shared.vim, src/testdir/term_util.vim,
-            src/testdir/test_mapping.vim, src/testdir/test_timers.vim 
+            src/testdir/test_mapping.vim, src/testdir/test_timers.vim
 
 Patch 8.1.1625
 Problem:    Script line numbers are not exactly right.
@@ -36013,7 +36056,7 @@ Files:	    src/structs.h
 
 Patch 8.1.1628
 Problem:    Popup window functions not in list of functions.
-Solution:   Add popup window functins to the list of functions.  Reorganise
+Solution:   Add popup window functions to the list of functions.  Reorganise
             the popup window help.
 Files:	    runtime/doc/eval.txt, runtime/doc/popup.txt,
             runtime/doc/usr_41.txt
@@ -36130,7 +36173,7 @@ Solution:   Adjust im_get_status(). (closes #4628)
 Files:	    src/hangulin.c, src/mbyte.c
 
 Patch 8.1.1648
-Problem:    MS-Windows: build error with normal feaures.
+Problem:    MS-Windows: build error with normal features.
 Solution:   Adjust #ifdef for find_word_under_cursor().
 Files:	    src/beval.c, src/proto/beval.pro
 
@@ -36330,7 +36373,7 @@ Files:	    runtime/doc/eval.txt, runtime/doc/usr_41.txt, src/evalfunc.c,
 
 Patch 8.1.1683
 Problem:    Dictionary with string keys is longer than needed.
-Solution:   Use *{key: val} for literaly keys.
+Solution:   Use *{key: val} for literal keys.
 Files:	    runtime/doc/eval.txt, src/eval.c, src/dict.c, src/proto/dict.pro,
             src/testdir/test_listdict.vim, src/testdir/test_popupwin.vim,
             src/testdir/dumps/Test_popupwin_07.dump,
@@ -36359,7 +36402,8 @@ Solution:   Add profiler.pro
 Files:	    Filelist
 
 Patch 8.1.1686
-Problem:    "*" of "*{" is recognized as multipy operator. (Yasuhiro Matsumoto)
+Problem:    "*" of "*{" is recognized as multiply operator. (Yasuhiro
+            Matsumoto)
 Solution:   Check for the "{".
 Files:	    src/eval.c, src/testdir/test_listdict.vim
 
@@ -36463,7 +36507,7 @@ Files:	    src/globals.h, src/highlight.c, src/proto/highlight.pro,
             src/structs.h, src/syntax.c
 
 Patch 8.1.1700
-Problem:    Listener callback called for the wrong buffer. 
+Problem:    Listener callback called for the wrong buffer.
 Solution:   Invoke listeners before calling ml_append_int().
 Files:	    src/memline.c
 
@@ -36723,7 +36767,7 @@ Files:	    src/evalfunc.c, src/os_unix.c, src/testdir/test_functions.vim
 
 Patch 8.1.1741
 Problem:    Cleared/added match highlighting not updated in other window.
-            (Andi Massimino)
+            (Andy Massimino)
 Solution:   Mark the right window for refresh.
 Files:	    src/highlight.c, src/testdir/test_match.vim,
             src/testdir/dumps/Test_matchclear_1.dump,
@@ -36918,7 +36962,7 @@ Files:	    src/testdir/test_ins_complete.vim
 
 Patch 8.1.1775
 Problem:    Error message may be empty in filetype test.
-Solution:   Use v:exception instead. (Daniel Hahler, closs #4744)
+Solution:   Use v:exception instead. (Daniel Hahler, closes #4744)
 Files:	    src/testdir/test_filetype.vim
 
 Patch 8.1.1776
@@ -36987,7 +37031,7 @@ Files:	    src/ui.c, src/popupwin.c, src/proto/popupwin.pro
 
 Patch 8.1.1787
 Problem:    Cannot resize a popup window.
-Solution:   Allow for resizing by dragging the lower right corncer.
+Solution:   Allow for resizing by dragging the lower right corner.
 Files:	    runtime/doc/popup.txt, src/popupwin.c, src/structs.h, src/vim.h,
             src/ui.c src/testdir/test_popupwin.vim,
             src/testdir/dumps/Test_popupwin_drag_01.dump,
@@ -37151,7 +37195,7 @@ Files:	    src/screen.c, src/testdir/test_popupwin.vim,
             src/testdir/dumps/Test_popupwin_21.dump
 
 Patch 8.1.1812
-Problem:    Reading a truncted undo file hangs Vim.
+Problem:    Reading a truncated undo file hangs Vim.
 Solution:   Check for reading EOF. (closes #4769)
 Files:	    src/undo.c, src/testdir/test_undo.vim
 
@@ -37619,7 +37663,7 @@ Files:	    src/edit.c, src/popupmnu.c, src/insexpand.c
 
 Patch 8.1.1885
 Problem:    Comments in libvterm are inconsistent.
-Solution:   Use // comments.  Als update the table of combining characters.
+Solution:   Use // comments.  Also update the table of combining characters.
 Files:	    src/libvterm/bin/unterm.c, src/libvterm/bin/vterm-ctrl.c,
             src/libvterm/bin/vterm-dump.c, src/libvterm/include/vterm.h,
             src/libvterm/include/vterm_keycodes.h,
@@ -37936,7 +37980,7 @@ Files:	    runtime/doc/eval.txt, src/evalfunc.c,
 
 Patch 8.1.1926
 Problem:    Cursorline not redrawn when putting a line above the cursor.
-Solution:   Redraw when the curor line is below a change. (closes #4862)
+Solution:   Redraw when the cursor line is below a change. (closes #4862)
 Files:	    src/change.c
 
 Patch 8.1.1927
@@ -37949,7 +37993,7 @@ Files:	    Filelist, src/Make_cyg_ming.mak, src/Make_morph.mak,
 
 Patch 8.1.1928
 Problem:    Popup windows don't move with the text when making changes.
-Solution:   Add the 'textprop" property to the popup window options, position
+Solution:   Add the 'textprop' property to the popup window options, position
             the popup relative to a text property. (closes #4560)
             No tests yet.
 Files:	    runtime/doc/popup.txt, src/textprop.c, src/proto/textprop.pro,
@@ -38572,7 +38616,7 @@ Files:	    src/main.c, src/message.c, src/normal.c
 Patch 8.1.2019
 Problem:    'cursorline' always highlights the whole line.
 Solution:   Add 'cursorlineopt' to specify what is highlighted.
-            (closes #4693)
+            (Ozaki Kiichi, closes #4693)
 Files:	    runtime/doc/options.txt, runtime/doc/quickref.txt,
             runtime/doc/syntax.txt, runtime/optwin.vim, src/option.c,
             src/option.h, src/screen.c, src/structs.h,
@@ -38771,7 +38815,7 @@ Files:	    Filelist, src/Make_cyg_ming.mak, src/Make_morph.mak,
 Patch 8.1.2046
 Problem:    SafeState may be triggered at the wrong moment.
 Solution:   Move it up higher to after where messages are processed.  Add a
-            SafeStateAgain event to tigger there.
+            SafeStateAgain event to trigger there.
 Files:	    runtime/doc/autocmd.txt, src/main.c, src/proto/main.pro,
             src/getchar.c, src/channel.c, src/autocmd.c, src/vim.h
 
@@ -38854,7 +38898,7 @@ Files:	    src/normal.c
 Patch 8.1.2060
 Problem:    "precedes" in 'listchars' not used properly.
 Solution:   Correctly handle the "precedes" char in list mode for long lines.
-            (Christian Brabandt, closes #4953)
+            (Zach Wegner, Christian Brabandt, closes #4953)
 Files:	    runtime/doc/options.txt, src/drawline.c,
             src/testdir/test_display.vim, src/testdir/view_util.vim
 
@@ -39258,7 +39302,7 @@ Files:	    src/search.c, src/structs.h, src/testdir/test_viminfo.vim,
 
 Patch 8.1.2127
 Problem:    The indent.c file is a bit big.
-Solution:   Move C-indent code a a new cindent.c file.  Move other
+Solution:   Move C-indent code to a new cindent.c file.  Move other
             indent-related code to indent.c. (Yegappan Lakshmanan,
             closes #5031)
 Files:	    Filelist, src/Make_cyg_ming.mak, src/Make_morph.mak,
@@ -39552,7 +39596,7 @@ Files:	    src/term.c, src/testdir/test_termcodes.vim
 
 Patch 8.1.2175
 Problem:    Meson files are not recognized.
-Solution:   Add the meson filetype. (Liam Beguin , Nirbheek Chauhan,
+Solution:   Add the meson filetype. (Liam Beguin, Nirbheek Chauhan,
             closes #5056)  Also recognize hollywood.
 Files:	    runtime/filetype.vim, src/testdir/test_filetype.vim
 
@@ -39827,7 +39871,7 @@ Files:	    src/quickfix.c, src/testdir/test_quickfix.vim
 
 Patch 8.1.2221
 Problem:    Cannot filter :disp output.
-Solution:   Support filtereing :disp output. (Andi Massimino, closes #5117)
+Solution:   Support filtering :disp output. (Andy Massimino, closes #5117)
 Files:	    runtime/doc/various.txt, src/register.c,
             src/testdir/test_filter_cmd.vim
 
@@ -39849,7 +39893,7 @@ Files:	    src/os_amiga.c, src/proto/os_amiga.pro
 Patch 8.1.2225
 Problem:    The "last used" info of a buffer is under used.
 Solution:   Add "lastused" to getbufinfo(). List buffers sorted by last-used
-            field. (Andi Massimino, closes #4722)
+            field. (Andy Massimino, closes #4722)
 Files:	    runtime/doc/eval.txt, runtime/doc/options.txt,
             runtime/doc/windows.txt, src/buffer.c, src/evalbuffer.c,
             src/ex_getln.c, src/misc1.c, src/option.c, src/option.h,
@@ -39929,7 +39973,7 @@ Solution:   Adjust position if needed. (Christian Brabandt, closes #5139)
 Files:	    src/ex_cmds.c, src/testdir/test_substitute.vim
 
 Patch 8.1.2237
-Problem:    Mode() result after usign "r" depends on whether CURSOR_SHAPE is
+Problem:    Mode() result after using "r" depends on whether CURSOR_SHAPE is
             defined. (Christian Brabandt)
 Solution:   Move the #ifdef to only skip ui_cursor_shape().
 Files:	    src/normal.c
@@ -40286,7 +40330,7 @@ Solution:   Do not add a trailing space.
 Files:	    src/ops.c, src/testdir/test_join.vim
 
 Patch 8.1.2294
-Problem:    Cursor position wrong when characters are concealed and asearch
+Problem:    Cursor position wrong when characters are concealed and a search
             causes a scroll.
 Solution:   Fix the cursor column in a concealed line after window scroll.
             (closes #5215, closes #5012)
@@ -40450,7 +40494,7 @@ Files:	    src/testdir/test_quickfix.vim
 
 Patch 8.1.2323
 Problem:    Old MSVC version no longer tested.
-Solution:   Drop support for MSCV 2008 and older. (Ken Takata, closes #5248)
+Solution:   Drop support for MSVC 2008 and older. (Ken Takata, closes #5248)
 Files:	    src/INSTALLpc.txt, src/Make_mvc.mak, src/gui_w32.c, src/os_win32.c
 
 Patch 8.1.2324
@@ -40466,7 +40510,7 @@ Files:	    src/popupmenu.c, src/testdir/test_popup.vim
 
 Patch 8.1.2326
 Problem:    Cannot parse a date/time string.
-Solution:   Add strptime(). (Stephen Wall, closes #)
+Solution:   Add strptime(). (Stephen Wall, closes #5250)
 Files:	    runtime/doc/eval.txt, runtime/doc/usr_41.txt, src/auto/configure,
             src/config.h.in, src/configure.ac, src/evalfunc.c, src/os_unix.h,
             src/testdir/test_functions.vim
@@ -40539,7 +40583,7 @@ Solution:   Correct time computation. (Dominique Pelle, closes #5259)
 Files:	    src/mouse.c, src/testdir/runtest.vim
 
 Patch 8.1.2338
-Problem:    Using Visual mark sith :s gives E20 if not set.
+Problem:    Using Visual mark with :s gives E20 if not set.
 Solution:   Ignore errors when handling 'incsearch'. (closes #3837)
 Files:	    src/ex_getln.c, src/testdir/test_search.vim,
             src/testdir/dumps/Test_incsearch_substitute_14.dump
@@ -40644,7 +40688,7 @@ Files:	    .cirrus.yml, README.md
 
 Patch 8.1.2355
 Problem:    Test with "man" fails on FreeBSD.
-Solution:   Use "-P" instead of "--pager". 
+Solution:   Use "-P" instead of "--pager".
 Files:	    src/testdir/test_normal.vim
 
 Patch 8.1.2356

@@ -24,7 +24,7 @@ Displaying text in a floating window.	*popup* *popup-window* *popupwin*
 4. Examples			|popup-examples|
 
 
-{not available if the |+textprop| feature was disabled at compile time}
+{not available if the |+popupwin| feature was disabled at compile time}
 
 ==============================================================================
 1. Introduction						*popup-intro*

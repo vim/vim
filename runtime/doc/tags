@@ -1353,6 +1353,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +perl	various.txt	/*+perl*
 +perl/dyn	various.txt	/*+perl\/dyn*
 +persistent_undo	various.txt	/*+persistent_undo*
++popupwin	various.txt	/*+popupwin*
 +postscript	various.txt	/*+postscript*
 +printer	various.txt	/*+printer*
 +profile	various.txt	/*+profile*
@@ -8082,6 +8083,7 @@ new-onemore	version7.txt	/*new-onemore*
 new-operator-mod	version6.txt	/*new-operator-mod*
 new-options-5.2	version5.txt	/*new-options-5.2*
 new-options-5.4	version5.txt	/*new-options-5.4*
+new-other-8.2	version8.txt	/*new-other-8.2*
 new-perl-python	version5.txt	/*new-perl-python*
 new-persistent-undo	version7.txt	/*new-persistent-undo*
 new-plugins	version6.txt	/*new-plugins*
