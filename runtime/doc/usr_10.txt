@@ -64,6 +64,7 @@ execute the following commands:
 	a"<Esc>			Append the character double quotation mark (")
 				to the end of the line.
 	j			Go to the next line.
+	^			Move back to the beginning of the line.
 	q			Stop recording the macro.
 
 Now that you have done the work once, you can repeat the change by typing the
