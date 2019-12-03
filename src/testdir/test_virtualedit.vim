@@ -214,8 +214,9 @@ endfunc
 " Repeating CTRL-N fixes it. (Mary Ellen Foster)
 func Test_ve_completion()
   new
+  set completeopt&vim
   set virtualedit=all
-  exe "normal ikeyword keyw\<ESC>C\<C-N>"
+  exe "normal ikeyword keyw\<Esc>C\<C-N>"
   call assert_equal('keyword keyword', getline(1))
   bwipe!
   set virtualedit=
