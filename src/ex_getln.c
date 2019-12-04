@@ -1361,7 +1361,8 @@ getcmdline_int(
 #ifdef FEAT_CMDWIN
 	if (c == cedit_key || c == K_CMDWIN)
 	{
-	    if (ex_normal_busy == 0 && got_int == FALSE)
+	    // TODO: why is ex_normal_busy checked here?
+	    if ((c == K_CMDWIN || ex_normal_busy == 0) && got_int == FALSE)
 	    {
 		/*
 		 * Open a window to edit the command line (and history).

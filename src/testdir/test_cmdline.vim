@@ -843,3 +843,8 @@ func Test_buffers_lastused()
   bwipeout bufb
   bwipeout bufc
 endfunc
+
+func Test_cmdwin_feedkeys()
+  " This should not generate E488
+  call feedkeys("q:\<CR>", 'x')
+endfunc
