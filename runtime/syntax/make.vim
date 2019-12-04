@@ -3,7 +3,7 @@
 " Maintainer:	Roland Hieber <rohieb+vim-iR0jGdkV@rohieb.name>
 " Previous Maintainer:	Claudio Fleiner <claudio@fleiner.com>
 " URL:		https://github.com/vim/vim/syntax/make.vim
-" Last Change:	2019 Apr 02
+" Last Change:	2019 Dec 04
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
