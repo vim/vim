@@ -24,7 +24,7 @@
 #   define NT
 # endif
 # ifndef DYNAMIC_RUBY
-#  define IMPORT /* For static dll usage __declspec(dllimport) */
+#  define IMPORT // For static dll usage __declspec(dllimport)
 #  define RUBYEXTERN __declspec(dllimport)
 # endif
 #endif
@@ -87,23 +87,23 @@
 #endif
 
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19
-/* Ruby 1.9 defines a number of static functions which use rb_num2long and
- * rb_int2big */
+// Ruby 1.9 defines a number of static functions which use rb_num2long and
+// rb_int2big
 # define rb_num2long rb_num2long_stub
 # define rb_int2big rb_int2big_stub
 #endif
 
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 19 \
 	&& VIM_SIZEOF_INT < VIM_SIZEOF_LONG
-/* Ruby 1.9 defines a number of static functions which use rb_fix2int and
- * rb_num2int if VIM_SIZEOF_INT < VIM_SIZEOF_LONG (64bit) */
+// Ruby 1.9 defines a number of static functions which use rb_fix2int and
+// rb_num2int if VIM_SIZEOF_INT < VIM_SIZEOF_LONG (64bit)
 # define rb_fix2int rb_fix2int_stub
 # define rb_num2int rb_num2int_stub
 #endif
 
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER == 21
-/* Ruby 2.1 adds new GC called RGenGC and RARRAY_PTR uses
- * rb_gc_writebarrier_unprotect_promoted if USE_RGENGC  */
+// Ruby 2.1 adds new GC called RGenGC and RARRAY_PTR uses
+// rb_gc_writebarrier_unprotect_promoted if USE_RGENGC
 # define rb_gc_writebarrier_unprotect_promoted rb_gc_writebarrier_unprotect_promoted_stub
 #endif
 #if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER >= 22
@@ -126,7 +126,7 @@
 #undef EXTERN
 #undef _
 
-/* T_DATA defined both by Ruby and Mac header files, hack around it... */
+// T_DATA defined both by Ruby and Mac header files, hack around it...
 #if defined(MACOS_X)
 # define __OPENTRANSPORT__
 # define __OPENTRANSPORTPROTOCOL__
@@ -189,7 +189,7 @@
 #endif
 
 #if defined(PROTO) && !defined(FEAT_RUBY)
-/* Define these to be able to generate the function prototypes. */
+// Define these to be able to generate the function prototypes.
 # define VALUE int
 # define RUBY_DATA_FUNC int
 #endif
@@ -218,7 +218,7 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 
 #if defined(DYNAMIC_RUBY) || defined(PROTO)
 # if defined(PROTO) && !defined(HINSTANCE)
-#  define HINSTANCE int		/* for generating prototypes */
+#  define HINSTANCE int		// for generating prototypes
 # endif
 
 /*
@@ -273,7 +273,7 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 # undef rb_intern
 # define rb_intern			dll_rb_intern
 
-# if VIM_SIZEOF_INT < VIM_SIZEOF_LONG /* 64 bits only */
+# if VIM_SIZEOF_INT < VIM_SIZEOF_LONG // 64 bits only
 #  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER <= 18
 #   define rb_fix2int			dll_rb_fix2int
 #   define rb_num2int			dll_rb_num2int
@@ -300,10 +300,10 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 # undef rb_str_new
 # define rb_str_new			dll_rb_str_new
 # ifdef rb_str_new2
-/* Ruby may #define rb_str_new2 to use rb_str_new_cstr. */
+// Ruby may #define rb_str_new2 to use rb_str_new_cstr.
 #  define need_rb_str_new_cstr 1
-/* Ruby's headers #define rb_str_new_cstr to make use of GCC's
- * __builtin_constant_p extension. */
+// Ruby's headers #define rb_str_new_cstr to make use of GCC's
+// __builtin_constant_p extension.
 #  undef rb_str_new_cstr
 #  define rb_str_new_cstr		dll_rb_str_new_cstr
 # else
@@ -420,7 +420,7 @@ static VALUE (*dll_rb_hash_new) (void);
 static VALUE (*dll_rb_inspect) (VALUE);
 static VALUE (*dll_rb_int2inum) (long);
 static ID (*dll_rb_intern) (const char*);
-# if VIM_SIZEOF_INT < VIM_SIZEOF_LONG /* 64 bits only */
+# if VIM_SIZEOF_INT < VIM_SIZEOF_LONG // 64 bits only
 static long (*dll_rb_fix2int) (VALUE);
 static long (*dll_rb_num2int) (VALUE);
 static unsigned long (*dll_rb_num2uint) (VALUE);
@@ -445,7 +445,7 @@ static VALUE (*dll_rb_str_cat) (VALUE, const char*, long);
 static VALUE (*dll_rb_str_concat) (VALUE, VALUE);
 static VALUE (*dll_rb_str_new) (const char*, long);
 # ifdef need_rb_str_new_cstr
-/* Ruby may #define rb_str_new2 to use rb_str_new_cstr. */
+// Ruby may #define rb_str_new2 to use rb_str_new_cstr.
 static VALUE (*dll_rb_str_new_cstr) (const char*);
 # else
 static VALUE (*dll_rb_str_new2) (const char*);
@@ -560,7 +560,7 @@ rb_num2ulong(VALUE x)
 #  endif
 # endif
 
-   /* Do not generate a prototype here, VALUE isn't always defined. */
+   // Do not generate a prototype here, VALUE isn't always defined.
 # if defined(USE_RGENGC) && USE_RGENGC && !defined(PROTO)
 #  if defined(DYNAMIC_RUBY_VER) && DYNAMIC_RUBY_VER == 21
     void
@@ -585,7 +585,7 @@ rb_ary_detransient_stub(VALUE x)
 }
 # endif
 
-static HINSTANCE hinstRuby = NULL; /* Instance of ruby.dll */
+static HINSTANCE hinstRuby = NULL; // Instance of ruby.dll
 
 /*
  * Table of name to function pointer of ruby.
@@ -653,7 +653,7 @@ static struct
     {"rb_inspect", (RUBY_PROC*)&dll_rb_inspect},
     {"rb_int2inum", (RUBY_PROC*)&dll_rb_int2inum},
     {"rb_intern", (RUBY_PROC*)&dll_rb_intern},
-# if VIM_SIZEOF_INT < VIM_SIZEOF_LONG /* 64 bits only */
+# if VIM_SIZEOF_INT < VIM_SIZEOF_LONG // 64 bits only
     {"rb_fix2int", (RUBY_PROC*)&dll_rb_fix2int},
     {"rb_num2int", (RUBY_PROC*)&dll_rb_num2int},
     {"rb_num2uint", (RUBY_PROC*)&dll_rb_num2uint},
@@ -800,7 +800,7 @@ ruby_enabled(int verbose)
 {
     return ruby_runtime_link_init((char *)p_rubydll, verbose) == OK;
 }
-#endif /* defined(DYNAMIC_RUBY) || defined(PROTO) */
+#endif // defined(DYNAMIC_RUBY) || defined(PROTO)
 
     void
 ruby_end(void)
@@ -918,7 +918,7 @@ ex_rubydo(exarg_T *eap)
 		ml_replace(i, (char_u *) StringValuePtr(line), 1);
 		changed();
 #ifdef SYNTAX_HL
-		syn_changed(i); /* recompute syntax hl. for this line */
+		syn_changed(i); // recompute syntax hl. for this line
 #endif
 	    }
 	}
@@ -978,7 +978,7 @@ ensure_ruby_initialized(void)
 	{
 #endif
 #ifdef MSWIN
-	    /* suggested by Ariya Mizutani */
+	    // suggested by Ariya Mizutani
 	    int argc = 1;
 	    char *argv[] = {"gvim.exe"};
 	    char **argvp = argv;
@@ -1112,7 +1112,7 @@ vim_message(VALUE self UNUSED, VALUE str)
     str = rb_obj_as_string(str);
     if (RSTRING_LEN(str) > 0)
     {
-	/* Only do this when the string isn't empty, alloc(0) causes trouble. */
+	// Only do this when the string isn't empty, alloc(0) causes trouble.
 	buff = ALLOCA_N(char, RSTRING_LEN(str) + 1);
 	strcpy(buff, RSTRING_PTR(str));
 	p = strchr(buff, '\n');
@@ -1211,7 +1211,7 @@ vim_to_ruby(typval_T *tv)
 	result = rb_str_new(tv->vval.v_blob->bv_ga.ga_data,
 		tv->vval.v_blob->bv_ga.ga_len);
     }
-    /* else return Qnil; */
+    // else return Qnil;
 
     return result;
 }
@@ -1319,8 +1319,8 @@ buffer_s_count(void)
 
     FOR_ALL_BUFFERS(b)
     {
-	/*  Deleted buffers should not be counted
-	 *    SegPhault - 01/07/05 */
+	//  Deleted buffers should not be counted
+	//    SegPhault - 01/07/05
 	if (b->b_p_bl)
 	    n++;
     }
@@ -1336,8 +1336,8 @@ buffer_s_aref(VALUE self UNUSED, VALUE num)
 
     FOR_ALL_BUFFERS(b)
     {
-	/*  Deleted buffers should not be counted
-	 *    SegPhault - 01/07/05 */
+	//  Deleted buffers should not be counted
+	//    SegPhault - 01/07/05
 	if (!b->b_p_bl)
 	    continue;
 
@@ -1388,7 +1388,7 @@ buffer_aref(VALUE self, VALUE num)
 
     if (buf != NULL)
 	return get_buffer_line(buf, (linenr_T)NUM2LONG(num));
-    return Qnil; /* For stop warning */
+    return Qnil; // For stop warning
 }
 
     static VALUE
@@ -1399,7 +1399,7 @@ set_buffer_line(buf_T *buf, linenr_T n, VALUE str)
 
     if (n > 0 && n <= buf->b_ml.ml_line_count && line != NULL)
     {
-	/* set curwin/curbuf for "buf" and save some things */
+	// set curwin/curbuf for "buf" and save some things
 	aucmd_prepbuf(&aco, buf);
 
 	if (u_savesub(n) == OK)
@@ -1407,13 +1407,13 @@ set_buffer_line(buf_T *buf, linenr_T n, VALUE str)
 	    ml_replace(n, (char_u *)line, TRUE);
 	    changed();
 #ifdef SYNTAX_HL
-	    syn_changed(n); /* recompute syntax hl. for this line */
+	    syn_changed(n); // recompute syntax hl. for this line
 #endif
 	}
 
-	/* restore curwin/curbuf and a few other things */
+	// restore curwin/curbuf and a few other things
 	aucmd_restbuf(&aco);
-	/* Careful: autocommands may have made "buf" invalid! */
+	// Careful: autocommands may have made "buf" invalid!
 
 	update_curbuf(NOT_VALID);
     }
@@ -1443,23 +1443,23 @@ buffer_delete(VALUE self, VALUE num)
 
     if (n > 0 && n <= buf->b_ml.ml_line_count)
     {
-	/* set curwin/curbuf for "buf" and save some things */
+	// set curwin/curbuf for "buf" and save some things
 	aucmd_prepbuf(&aco, buf);
 
 	if (u_savedel(n, 1) == OK)
 	{
 	    ml_delete(n, 0);
 
-	    /* Changes to non-active buffers should properly refresh
-	     *   SegPhault - 01/09/05 */
+	    // Changes to non-active buffers should properly refresh
+	    //   SegPhault - 01/09/05
 	    deleted_lines_mark(n, 1L);
 
 	    changed();
 	}
 
-	/* restore curwin/curbuf and a few other things */
+	// restore curwin/curbuf and a few other things
 	aucmd_restbuf(&aco);
-	/* Careful: autocommands may have made "buf" invalid! */
+	// Careful: autocommands may have made "buf" invalid!
 
 	update_curbuf(NOT_VALID);
     }
@@ -1484,23 +1484,23 @@ buffer_append(VALUE self, VALUE num, VALUE str)
     }
     else if (n >= 0 && n <= buf->b_ml.ml_line_count)
     {
-	/* set curwin/curbuf for "buf" and save some things */
+	// set curwin/curbuf for "buf" and save some things
 	aucmd_prepbuf(&aco, buf);
 
 	if (u_inssub(n + 1) == OK)
 	{
 	    ml_append(n, (char_u *) line, (colnr_T) 0, FALSE);
 
-	    /*  Changes to non-active buffers should properly refresh screen
-	     *    SegPhault - 12/20/04 */
+	    //  Changes to non-active buffers should properly refresh screen
+	    //    SegPhault - 12/20/04
 	    appended_lines_mark(n, 1L);
 
 	    changed();
 	}
 
-	/* restore curwin/curbuf and a few other things */
+	// restore curwin/curbuf and a few other things
 	aucmd_restbuf(&aco);
-	/* Careful: autocommands may have made "buf" invalid! */
+	// Careful: autocommands may have made "buf" invalid!
 
 	update_curbuf(NOT_VALID);
     }
@@ -1684,7 +1684,7 @@ window_set_cursor(VALUE self, VALUE pos)
     win->w_cursor.lnum = NUM2LONG(lnum);
     win->w_cursor.col = NUM2UINT(col);
     win->w_set_curswant = TRUE;
-    check_cursor();		    /* put cursor on an existing line */
+    check_cursor();		    // put cursor on an existing line
     update_screen(NOT_VALID);
     return Qnil;
 }
@@ -1739,8 +1739,8 @@ ruby_vim_init(void)
     objtbl = rb_hash_new();
     rb_global_variable(&objtbl);
 
-    /* The Vim module used to be called "VIM", but "Vim" is better.  Make an
-     * alias "VIM" for backwards compatibility. */
+    // The Vim module used to be called "VIM", but "Vim" is better.  Make an
+    // alias "VIM" for backwards compatibility.
     mVIM = rb_define_module("Vim");
     rb_define_const(rb_cObject, "VIM", mVIM);
     rb_define_const(mVIM, "VERSION_MAJOR", INT2NUM(VIM_VERSION_MAJOR));
@@ -1775,8 +1775,8 @@ ruby_vim_init(void)
     rb_define_method(cBuffer, "delete", buffer_delete, 1);
     rb_define_method(cBuffer, "append", buffer_append, 2);
 
-    /* Added line manipulation functions
-     *   SegPhault - 03/07/05 */
+    // Added line manipulation functions
+    //   SegPhault - 03/07/05
     rb_define_method(cBuffer, "line_number", current_line_number, 0);
     rb_define_method(cBuffer, "line", line_s_current, 0);
     rb_define_method(cBuffer, "line=", set_current_line, 1);
@@ -1801,7 +1801,7 @@ ruby_vim_init(void)
     void
 vim_ruby_init(void *stack_start)
 {
-    /* should get machine stack start address early in main function */
+    // should get machine stack start address early in main function
     ruby_stack_start = stack_start;
 }
 
