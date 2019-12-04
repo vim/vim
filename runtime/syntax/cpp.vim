@@ -53,6 +53,15 @@ if !exists("cpp_no_cpp14")
   syn case match
 endif
 
+" C++ 20 extensions
+if !exists("cpp_no_cpp20")
+  syn keyword cppStatement	co_await co_return co_yield requires
+  syn keyword cppStorageClass	consteval constinit
+  syn keyword cppStructure	concept
+  syn keyword cppType		char8_t
+  syn keyword cppModule		import module export
+endif
+
 " The minimum and maximum operators in GNU C++
 syn match cppMinMax "[<>]?"
 
@@ -71,6 +80,7 @@ hi def link cppConstant		Constant
 hi def link cppRawStringDelimiter	Delimiter
 hi def link cppRawString		String
 hi def link cppNumber		Number
+hi def link cppModule		Include
 
 let b:current_syntax = "cpp"
 
