@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.1.  Last change: 2019 Dec 03
+*version8.txt*  For Vim version 8.1.  Last change: 2019 Dec 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25807,7 +25807,7 @@ VERSION 8.2 IS NOT RELEASED YET!  THIS SECTION WILL CHANGE.
 
 This section is about improvements made between version 8.1 and 8.2.
 
-This release has hundreds of bug fixes, there are sevearl new features and
+This release has hundreds of bug fixes, there are several new features and
 there are many minor improvements.
 
 
@@ -25823,6 +25823,9 @@ Popup windows are very flexible: they can be positioned relative to text, an
 absolute position or just in the middle of the screen.  The size can be fixed
 or adjust to the text.  A "zindex" value specifies what popup window goes on
 top of others.
+
+The new 'wincolor' option allows for setting the color for the whole popup
+window.  This also works for normal windows.
 
 
 Text properties					*new-text-properties*
@@ -25862,8 +25865,8 @@ The |Blob| type was added. This makes it easy to deal with binary data.
 
 The /= and %= assignment operators were added.
 
-A Dictionary can be defined with #{} where the keys are used literally.  This
-avoids having to use quotes:  >
+A Dictionary can be defined with literal keys using #{}.  This avoids having
+to use quotes:  >
 	let options = #{width: 30, height: 24}
 
 
