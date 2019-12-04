@@ -20,7 +20,7 @@ syn match makeNextLine	"\\\n\s*"
 
 " some directives
 syn match makePreCondit	"^ *\(ifn\=\(eq\|def\)\>\|else\(\s\+ifn\=\(eq\|def\)\)\=\>\|endif\>\)"
-syn match makeInclude	"^ *[-s]\=include"
+syn match makeInclude	"^ *[-s]\=include\s.*$"
 syn match makeStatement	"^ *vpath"
 syn match makeExport    "^ *\(export\|unexport\)\>"
 syn match makeOverride	"^ *override"
@@ -32,7 +32,7 @@ syn region makeDefine start="^\s*define\s" end="^\s*endef\s*\(#.*\)\?$" contains
 
 " Microsoft Makefile specials
 syn case ignore
-syn match makeInclude	"^!\s*include"
+syn match makeInclude	"^!\s*include\s.*$"
 syn match makePreCondit "^!\s*\(cmdswitches\|error\|message\|include\|if\|ifdef\|ifndef\|else\|else\s*if\|else\s*ifdef\|else\s*ifndef\|endif\|undef\)\>"
 syn case match
 
