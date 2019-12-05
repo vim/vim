@@ -24,7 +24,7 @@ syn keyword objcUsefulTerm nil Nil NO YES
 
 " Preprocessor Directives
 syn region objcImported display contained start=+"+ skip=+\\\\\|\\"+ end=+"+
-syn match objcImported display contained "\(<\h[-a-zA-Z0-9_/]*\.h>\|<[a-z0-9]\+>\)"
+syn match objcImported display contained "\(<\h[-+a-zA-Z0-9_/]*\.h>\|<[a-z0-9]\+>\)"
 syn match objcImport display "^\s*\(%:\|#\)\s*import\>\s*["<]" contains=objcImported
 
 " ObjC Compiler Directives
