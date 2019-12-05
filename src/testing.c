@@ -813,8 +813,8 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
     void
 f_test_garbagecollect_now(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
-    /* This is dangerous, any Lists and Dicts used internally may be freed
-     * while still in use. */
+    // This is dangerous, any Lists and Dicts used internally may be freed
+    // while still in use.
     garbage_collect(TRUE);
 }
 
