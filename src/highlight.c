@@ -559,10 +559,12 @@ lookup_color(int idx, int foreground, int *boldp)
     {
 	// t_Co is 8: use the 8 colors table
 #if defined(__QNXNTO__)
-	color = color_numbers_8_qansi[idx];
-#else
-	color = color_numbers_8[idx];
+	// On qnx, the 8 & 16 color arrays are the same
+	if (STRNCMP(T_NAME, "qansi", 5) == 0)
+	    color = color_numbers_16[idx];
+	else
 #endif
+	    color = color_numbers_8[idx];
 	if (foreground)
 	{
 	    // set/reset bold attribute to get light foreground
@@ -1135,13 +1137,6 @@ do_highlight(
 	    else
 	    {
 		int bold = MAYBE;
-
-#if defined(__QNXNTO__)
-		static int *color_numbers_8_qansi = color_numbers_8;
-		// On qnx, the 8 & 16 color arrays are the same
-		if (STRNCMP(T_NAME, "qansi", 5) == 0)
-		    color_numbers_8_qansi = color_numbers_16;
-#endif
 
 		// reduce calls to STRICMP a bit, it can be slow
 		off = TOUPPER_ASC(*arg);
@@ -3378,7 +3373,7 @@ highlight_changed(void)
 	     * bold-underlined.
 	     */
 	    attr = 0;
-	    for ( ; *p && *p != ','; ++p)	    // parse upto comma
+	    for ( ; *p && *p != ','; ++p)	    // parse up to comma
 	    {
 		if (VIM_ISWHITE(*p))		    // ignore white space
 		    continue;
