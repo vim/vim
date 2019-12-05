@@ -848,3 +848,26 @@ func Test_cmdwin_feedkeys()
   " This should not generate E488
   call feedkeys("q:\<CR>", 'x')
 endfunc
+
+" Tests for the issues fixed in 7.4.441.
+" When 'cedit' is set to Ctrl-C, opening the command window hangs Vim
+func Test_cmdwin_cedit()
+  exe "set cedit=\<C-c>"
+  normal! :
+  call assert_equal(1, winnr('$'))
+
+  let g:cmd_wintype = ''
+  func CmdWinType()
+      let g:cmd_wintype = getcmdwintype()
+      return ''
+  endfunc
+
+  call feedkeys("\<C-c>a\<C-R>=CmdWinType()\<CR>\<CR>")
+  echo input('')
+  call assert_equal('@', g:cmd_wintype)
+
+  set cedit&vim
+  delfunc CmdWinType
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
