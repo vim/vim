@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Dec 03
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Dec 05
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -180,6 +180,8 @@ default one.  #4698
 
 When using :packadd files under "later" are not used, which is inconsistent
 with packages under "start". (xtal8, #1994)
+
+Patch to add new motion ]( and ]{.  (Yasuhiro Matsumoto, #5320)
 
 Modeless selection doesn't work in gvim. (#4783)
 Caused by patch 8.1.1534.

@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.1.  Last change: 2019 Dec 04
+*version8.txt*  For Vim version 8.1.  Last change: 2019 Dec 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -35845,7 +35845,7 @@ Solution:   Ignore the "browse" modifier in another place when exiting.
 Files:	    src/ex_cmds.c
 
 Patch 8.1.1595
-Problem:    MS-Windows with VIMDLL: colors wrong in console.
+Problem:    MS-Windows with VIMDLL: colors wrong in the GUI.
 Solution:   Do not set the terminal colors when not using the GUI. (Ken
             Takata, closes #4588)
 Files:	    src/syntax.c
@@ -40740,6 +40740,196 @@ Patch 8.1.2363
 Problem:    ml_get error when accessing Visual area in 'statusline'.
 Solution:   Disable Visual mode when using another window. (closes #5278)
 Files:	    src/testdir/test_statusline.vim, src/buffer.c
+
+Patch 8.1.2364
+Problem:    Termwinscroll test is flaky on FreeBSD.
+Solution:   Add to list of flaky tests.  Rename function.
+Files:	    src/testdir/runtest.vim, src/testdir/test_terminal.vim
+
+Patch 8.1.2365
+Problem:    Missing tests for recent popupwin changes.
+Solution:   Add test cases.
+Files:	    src/testdir/test_popupwin.vim
+
+Patch 8.1.2366
+Problem:    Using old C style comments.
+Solution:   Use // comments where appropriate.
+Files:	    src/ascii.h, src/beval.h, src/dosinst.h, src/feature.h,
+            src/glbl_ime.h, src/globals.h, src/gui_at_sb.h, src/gui_gtk_f.h,
+            src/gui_gtk_vms.h, src/gui.h, src/gui_x11_pm.h, src/gui_xmebwp.h,
+            src/if_cscope.h, src/if_mzsch.h, src/if_ole.h, src/if_py_both.h,
+            src/iscygpty.h, src/keymap.h, src/macros.h, src/nbdebug.h,
+            src/option.h, src/os_amiga.h, src/os_beos.h, src/os_dos.h,
+            src/os_mac.h, src/os_qnx.h, src/os_unix.h, src/os_unixx.h,
+            src/os_vms_conf.h, src/os_win32.h, src/proto.h, src/regexp.h,
+            src/spell.h, src/structs.h, src/term.h, src/version.h, src/vimio.h
+ 
+Patch 8.1.2367
+Problem:    Registers are not sufficiently tested.
+Solution:   Add a few more test cases. (Yegappan Lakshmanan, closes #5288)
+Files:	    src/testdir/test_registers.vim
+
+Patch 8.1.2368
+Problem:    Using old C style comments.
+Solution:   Use // comments where appropriate.
+Files:	    src/autocmd.c, src/beval.c, src/blob.c, src/blowfish.c,
+            src/buffer.c, src/change.c, src/channel.c, src/charset.c,
+            src/cindent.c, src/crypt.c, src/crypt_zip.c
+
+Patch 8.1.2369
+Problem:    Cannot build with quickfix and without text properties.
+Solution:   Fix typo. (Naruhiko Nishino)
+Files:	    src/popupmenu.c
+
+Patch 8.1.2370
+Problem:    Build problems on VMS.
+Solution:   Adjust the build file. (Zoltan Arpadffy)
+Files:	    src/Make_vms.mms, src/os_unix.c, src/os_vms.c
+
+Patch 8.1.2371
+Problem:    FEAT_TEXT_PROP is a confusing name.
+Solution:   Use FEAT_PROP_POPUP. (Naruhiko Nishino, closes #5291)
+Files:	    runtime/doc/popup.txt, src/beval.c, src/buffer.c, src/change.c,
+            src/drawline.c, src/drawscreen.c, src/edit.c, src/eval.c,
+            src/evalbuffer.c, src/evalfunc.c, src/evalwindow.c, src/ex_cmds.c,
+            src/ex_docmd.c, src/feature.h, src/fileio.c, src/getchar.c,
+            src/globals.h, src/gui.c, src/gui_w32.c, src/indent.c,
+            src/insexpand.c, src/macros.h, src/main.c, src/memline.c,
+            src/misc2.c, src/mouse.c, src/move.c, src/ops.c, src/option.h,
+            src/optiondefs.h, src/optionstr.c, src/popupmenu.c,
+            src/popupwin.c, src/proto.h, src/screen.c, src/search.c,
+            src/sign.c, src/structs.h, src/tag.c, src/testdir/runtest.vim,
+            src/testdir/test_execute_func.vim, src/testdir/test_popupwin.vim,
+            src/testdir/test_popupwin_textprop.vim, src/textprop.c, src/ui.c,
+            src/version.c, src/vim.h, src/window.c
+
+Patch 8.1.2372
+Problem:    VMS: failing realloc leaks memory. (Chakshu Gupta)
+Solution:   Free the memory. (partly fixes #5292)
+Files:	    src/os_vms.c
+
+Patch 8.1.2373
+Problem:    Cannot build with +popupwin but without +quickfix. (John Marriott)
+Solution:   Adjust #ifdefs.
+Files:	    src/ex_cmds.c, src/popupmenu.c, src/popupwin.c, src/fileio.c,
+            src/testdir/test_compiler.vim, src/testdir/test_tagjump.vim,
+            src/testdir/test86.in, src/testdir/test87.in,
+            src/testdir/test_autocmd.vim, src/testdir/test_bufwintabinfo.vim,
+            src/testdir/test_channel.vim, src/testdir/test_edit.vim,
+            src/testdir/test_execute_func.vim,
+            src/testdir/test_filter_cmd.vim, src/testdir/test_gui.vim,
+            src/testdir/test_makeencoding.vim, src/testdir/test_mksession.vim,
+            src/testdir/test_normal.vim, src/testdir/test_popup.vim,
+            src/testdir/test_popupwin.vim, src/testdir/test_preview.vim,
+            src/testdir/test_startup.vim, src/testdir/test_statusline.vim,
+            src/testdir/test_tabpage.vim, src/testdir/test_window_cmd.vim,
+            src/testdir/test_window_id.vim
+
+Patch 8.1.2374
+Problem:    Unused parts of libvterm are included.
+Solution:   Delete the unused files.
+Files:	    Filelist, src/libvterm/bin/vterm-ctrl.c,
+            src/libvterm/bin/unterm.c, src/libvterm/bin/vterm-dump.c
+
+Patch 8.1.2375
+Problem:    No sufficient testing for registers.
+Solution:   Add more test cases. (Yegappan Lakshmanan, closes #5296)
+            Fix that "p" on last virtual column of tab inserts spaces.
+Files:	    src/register.c, src/testdir/test_registers.vim,
+            src/testdir/test_virtualedit.vim, src/testdir/test_visual.vim
+
+Patch 8.1.2376
+Problem:    Preprocessor indents are incorrect.
+Solution:   Fix the indents. (Ken Takata, closes #5298)
+Files:	    src/drawline.c, src/gui_w32.c src/os_mswin.c src/os_win32.c
+            src/proto.h
+
+Patch 8.1.2377
+Problem:    GUI: when losing focus a pending operator is executed.
+Solution:   Do not execute an operator when getting K_IGNORE. (closes #5300)
+Files:	    src/normal.c
+
+Patch 8.1.2378
+Problem:    Using old C style comments.
+Solution:   Use // comments where appropriate.
+Files:	    src/dict.c, src/diff.c, src/digraph.c, src/dosinst.c, src/edit.c,
+            src/eval.c, src/evalbuffer.c, src/evalfunc.c
+
+Patch 8.1.2379
+Problem:    Using old C style comments.
+Solution:   Use // comments where appropriate.
+Files:	    src/ex_cmds.c, src/ex_cmds2.c, src/ex_docmd.c, src/ex_eval.c,
+            src/ex_getln.c, src/fileio.c, src/filepath.c, src/findfile.c,
+            src/fold.c
+
+Patch 8.1.2380
+Problem:    Using old C style comments.
+Solution:   Use // comments where appropriate.
+Files:	    src/getchar.c, src/gui.c, src/gui_at_fs.c, src/gui_at_sb.c,
+            src/gui_athena.c, src/gui_beval.c, src/gui_gtk.c, src/gui_gtk_f.c,
+            src/gui_gtk_x11.c
+
+Patch 8.1.2381
+Problem:    Not all register related code is covered by tests.
+Solution:   Add more test cases. (Yegappan Lakshmanan, closes #5301)
+Files:	    src/testdir/test_marks.vim, src/testdir/test_registers.vim,
+            src/testdir/test_virtualedit.vim
+
+Patch 8.1.2382
+Problem:    MS-Windows: When using VTP bold+inverse doesn't work.
+Solution:   Compare with the default colors. (Nobuhiro Takasaki, closes #5303)
+Files:	    src/os_win32.c, src/proto/os_win32.pro, src/screen.c
+
+Patch 8.1.2383
+Problem:    Using old C style comments.
+Solution:   Use // comments where appropriate.
+Files:	    src/gui_mac.c, src/gui_motif.c, src/gui_photon.c, src/gui_w32.c,
+            src/gui_x11.c, src/gui_xmdlg.c, src/gui_xmebw.c
+
+Patch 8.1.2384
+Problem:    Test 48 is old style.
+Solution:   Merge test cases into new style test. (Yegappan Lakshmanan,
+            closes #5307)
+Files:	    src/Makefile, src/testdir/Make_all.mak, src/testdir/Make_vms.mms,
+            src/testdir/test48.in, src/testdir/test48.ok,
+            src/testdir/test_virtualedit.vim
+
+Patch 8.1.2385
+Problem:    Opening cmdline window with feedkeys() does not work. (Yegappan
+            Lakshmanan)
+Solution:   Recognize K_CMDWIN also when ex_normal_busy is set.
+Files:	    src/ex_getln.c, src/testdir/test_cmdline.vim
+
+Patch 8.1.2386
+Problem:    'wincolor' is not used for 'listchars'.
+Solution:   Combine the colors. (closes #5308)
+Files:	    src/drawline.c, src/testdir/test_highlight.vim,
+            src/testdir/dumps/Test_wincolor_lcs.dump
+
+Patch 8.1.2387
+Problem:    Using old C style comments.
+Solution:   Use // comments where appropriate.
+Files:	    src/hardcopy.c, src/hashtab.c, src/if_cscope.c, src/if_lua.c,
+            src/if_mzsch.c, src/if_perlsfio.c, src/if_python.c,
+            src/if_python3.c, src/if_ruby.c, src/if_tcl.c, src/if_xcmdsrv.c
+
+Patch 8.1.2388
+Problem:    Using old C style comments.
+Solution:   Use // comments where appropriate.
+Files:	    src/json.c, src/json_test.c, src/kword_test.c, src/list.c,
+            src/main.c, src/mark.c, src/mbyte.c, src/memfile.c,
+            src/memfile_test.c, src/memline.c, src/menu.c
+
+Patch 8.1.2389
+Problem:    Using old C style comments.
+Solution:   Use // comments where appropriate.
+Files:	    src/libvterm/src/screen.c, src/libvterm/src/unicode.c,
+            src/libvterm/src/vterm.c, src/libvterm/t/harness.c,
+            src/libvterm/include/vterm.h, src/xdiff/xdiffi.c,
+            src/xdiff/xemit.c, src/xdiff/xhistogram.c, src/xdiff/xpatience.c,
+            src/xdiff/xutils.c, src/xdiff/xdiff.h, src/xdiff/xdiffi.h,
+            src/xdiff/xemit.h, src/xdiff/xinclude.h, src/xdiff/xmacros.h,
+            src/xdiff/xprepare.h, src/xdiff/xtypes.h, src/xdiff/xutils.h
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:
