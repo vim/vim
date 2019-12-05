@@ -20,7 +20,6 @@ SCRIPTS_ALL = \
 	test69.out \
 	test70.out \
 	test88.out \
-	test94.out \
 	test95.out \
 	test99.out \
 	test_eval.out
