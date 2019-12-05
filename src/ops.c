@@ -4089,7 +4089,13 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    // If the motion already was characterwise, toggle "inclusive"
 	    else if (oap->motion_type == MCHAR)
 		oap->inclusive = !oap->inclusive;
+
 	    oap->motion_type = MCHAR;
+	    if (oap->vv > 1)
+	    {
+		oap->is_VIsual = 0;
+		oap->inclusive = FALSE;
+	    }
 	}
 	else if (oap->motion_force == Ctrl_V)
 	{
@@ -4768,6 +4774,11 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	oap->block_mode = FALSE;
 	clearop(oap);
 	motion_force = NUL;
+    }
+    else
+    {
+	if (oap->motion_force == 'v')
+	    ++oap->vv;
     }
 #ifdef FEAT_LINEBREAK
     curwin->w_p_lbr = lbr_saved;

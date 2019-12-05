@@ -2731,3 +2731,43 @@ func Test_normal_yank_with_excmd()
   call assert_equal('f', @a)
   close!
 endfunc
+
+" Test for '[(', '[{', '])', ']}', 'vv[(' and 'vv]{'
+func Test_various_motions()
+  let text = ['{foo(x, y, bar(), baz());}']
+  new
+
+  call setline(1, text)
+  exe "norm! gg0/, bar\<cr>d[("
+  call assert_equal('{foo, bar(), baz());}', getline('.'))
+
+  call setline(1, text)
+  exe "norm! gg0/, bar\<cr>d[{"
+  call assert_equal(', bar(), baz());}', getline('.'))
+
+  call setline(1, text)
+  exe "norm! gg0/, bar\<cr>d])"
+  call assert_equal('{foo(x, y);}', getline('.'))
+
+  call setline(1, text)
+  exe "norm! gg0/, bar\<cr>d]}"
+  call assert_equal('{foo(x, y}', getline('.'))
+
+  call setline(1, text)
+  exe "norm! gg0/bar\<cr>d[("
+  call assert_equal('{foobar(), baz());}', getline('.'))
+
+  call setline(1, text)
+  exe "norm! gg0/bar\<cr>d[{"
+  call assert_equal('bar(), baz());}', getline('.'))
+
+  call setline(1, text)
+  exe "norm! gg0/bar\<cr>dvv[("
+  call assert_equal('{foo(bar(), baz());}', getline('.'))
+
+  call setline(1, text)
+  exe "norm! gg0/bar\<cr>dvv[{"
+  call assert_equal('{bar(), baz());}', getline('.'))
+
+  bw!
+endfunc

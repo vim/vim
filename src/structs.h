@@ -3462,6 +3462,7 @@ typedef struct oparg_S
     int		regname;	// register to use for the operator
     int		motion_type;	// type of the current cursor motion
     int		motion_force;	// force motion type: 'v', 'V' or CTRL-V
+    int		vv;		// count of 'v'
     int		use_reg_one;	// TRUE if delete uses reg 1 even when not
 				// linewise
     int		inclusive;	// TRUE if char motion is inclusive (only

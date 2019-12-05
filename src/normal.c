@@ -1679,6 +1679,7 @@ clearop(oparg_T *oap)
     oap->regname = 0;
     oap->motion_force = NUL;
     oap->use_reg_one = FALSE;
+    oap->vv = 0;
 }
 
     void
@@ -4483,6 +4484,9 @@ nv_brackets(cmdarg_T *cap)
 	    curwin->w_cursor = *pos;
 	    new_pos = *pos;
 	}
+	/* Go forward one character when vv. */
+	if (cap->oap != NULL && cap->oap->vv > 1)
+	    ++pos->col;
 	curwin->w_cursor = old_pos;
 
 	/*
