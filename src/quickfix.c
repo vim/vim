@@ -7880,7 +7880,7 @@ ex_helpgrep(exarg_T *eap)
 	    curwin->w_llist = qi;
     }
 }
-#endif /* FEAT_QUICKFIX */
+#endif // FEAT_QUICKFIX
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 # ifdef FEAT_QUICKFIX
