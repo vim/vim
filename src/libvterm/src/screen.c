@@ -773,7 +773,7 @@ int vterm_screen_get_cell(const VTermScreen *screen, VTermPos pos, VTermScreenCe
   cell->bg = intcell->pen.bg;
 
   if(vterm_get_special_pty_type() == 2) {
-    /* Get correct cell width from cell information contained in line buffer */
+    // Get correct cell width from cell information contained in line buffer
     if(pos.col < (screen->cols - 1) &&
        getcell(screen, pos.row, pos.col + 1)->chars[0] == (uint32_t)-1) {
       if(getcell(screen, pos.row, pos.col)->chars[0] == 0x20) {
@@ -798,8 +798,10 @@ int vterm_screen_get_cell(const VTermScreen *screen, VTermPos pos, VTermScreenCe
   return 1;
 }
 
-// Copy external to internal representation of a screen cell
-/* static because it's only used internally for sb_popline during resize */
+/*
+ * Copy external to internal representation of a screen cell
+ * static because it's only used internally for sb_popline during resize
+ */
 static int vterm_screen_set_cell(VTermScreen *screen, VTermPos pos, const VTermScreenCell *cell)
 {
   ScreenCell *intcell = getcell(screen, pos.row, pos.col);
