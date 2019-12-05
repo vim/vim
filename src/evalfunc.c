@@ -7259,7 +7259,7 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
     switch (base)
     {
 	case 2: what |= STR2NR_BIN + STR2NR_FORCE; break;
-	case 8: what |= STR2NR_OCT + STR2NR_FORCE; break;
+	case 8: what |= STR2NR_OCT + STR2NR_OOCT + STR2NR_FORCE; break;
 	case 16: what |= STR2NR_HEX + STR2NR_FORCE; break;
     }
     vim_str2nr(p, NULL, NULL, what, &n, NULL, 0, FALSE);
