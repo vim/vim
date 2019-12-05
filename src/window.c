@@ -1426,7 +1426,7 @@ win_init_some(win_T *newp, win_T *oldp)
     int
 win_valid_popup(win_T *win UNUSED)
 {
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     win_T	*wp;
 
     for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
@@ -1473,7 +1473,7 @@ win_valid_any_tab(win_T *win)
 	    if (wp == win)
 		return TRUE;
 	}
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
 	    if (wp == win)
 		return TRUE;
@@ -2438,6 +2438,9 @@ win_close(win_T *win, int free_buf)
     int		help_window = FALSE;
     tabpage_T   *prev_curtab = curtab;
     frame_T	*win_frame = win->w_frame->fr_parent;
+#ifdef FEAT_DIFF
+    int		had_diffmode = win->w_p_diff;
+#endif
 
     if (ERROR_IF_POPUP_WINDOW)
 	return FAIL;
@@ -2522,7 +2525,7 @@ win_close(win_T *win, int free_buf)
 	out_flush();
 #endif
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     if (popup_win_closed(win) && !win_valid(win))
 	return FAIL;
 #endif
@@ -2624,6 +2627,23 @@ win_close(win_T *win, int free_buf)
      * before it was opened. */
     if (help_window)
 	restore_snapshot(SNAP_HELP_IDX, close_curwin);
+
+#ifdef FEAT_DIFF
+    // If the window had 'diff' set and now there is only one window left in
+    // the tab page with 'diff' set, and "closeoff" is in 'diffopt', then
+    // execute ":diffoff!".
+    if (diffopt_closeoff() && had_diffmode && curtab == prev_curtab)
+    {
+	int	diffcount = 0;
+	win_T	*dwin;
+
+	FOR_ALL_WINDOWS(dwin)
+	    if (dwin->w_p_diff)
+		++diffcount;
+	if (diffcount == 1)
+	    do_cmdline_cmd((char_u *)"diffoff!");
+    }
+#endif
 
 #if defined(FEAT_GUI)
     /* When 'guioptions' includes 'L' or 'R' may have to remove scrollbars. */
@@ -2741,7 +2761,7 @@ win_free_all(void)
 	(void)win_free_mem(aucmd_win, &dummy, NULL);
 	aucmd_win = NULL;
     }
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
     close_all_popups();
 # endif
 
@@ -3758,7 +3778,7 @@ free_tabpage(tabpage_T *tp)
 # ifdef FEAT_DIFF
     diff_clear(tp);
 # endif
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
     while (tp->tp_first_popupwin != NULL)
 	popup_close_tabpage(tp, tp->tp_first_popupwin->w_id);
 #endif
@@ -4641,6 +4661,7 @@ win_enter_ext(
 #ifdef FEAT_JOB_CHANNEL
     entering_window(curwin);
 #endif
+    // Careful: autocommands may close the window and make "wp" invalid
     if (trigger_new_autocmds)
 	apply_autocmds(EVENT_WINNEW, NULL, NULL, FALSE, curbuf);
     if (trigger_enter_autocmds)
@@ -4654,13 +4675,18 @@ win_enter_ext(
     maketitle();
 #endif
     curwin->w_redr_status = TRUE;
+#ifdef FEAT_TERMINAL
+    if (bt_terminal(curwin->w_buffer))
+	// terminal is likely in another mode
+	redraw_mode = TRUE;
+#endif
     redraw_tabline = TRUE;
     if (restart_edit)
 	redraw_later(VALID);	/* causes status line redraw */
 
     /* set window height to desired minimal value */
     if (curwin->w_height < p_wh && !curwin->w_p_wfh
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	    && !popup_is_popup(curwin)
 #endif
 	    )
@@ -4926,7 +4952,7 @@ win_free(
 #ifdef FEAT_MENU
     remove_winbar(wp);
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     free_callback(&wp->w_close_cb);
     free_callback(&wp->w_filter_cb);
     for (i = 0; i < 4; ++i)
@@ -4965,7 +4991,7 @@ win_unlisted(win_T *wp)
     return wp == aucmd_win || WIN_IS_POPUP(wp);
 }
 
-#if defined(FEAT_TEXT_PROP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*
  * Free a popup window.  This does not take the window out of the window list
  * and assumes there is only one toplevel frame, no split.
@@ -5171,17 +5197,23 @@ win_size_save(garray_T *gap)
     win_T	*wp;
 
     ga_init2(gap, (int)sizeof(int), 1);
-    if (ga_grow(gap, win_count() * 2) == OK)
+    if (ga_grow(gap, win_count() * 2 + 1) == OK)
+    {
+	// first entry is value of 'lines'
+	((int *)gap->ga_data)[gap->ga_len++] = Rows;
+
 	FOR_ALL_WINDOWS(wp)
 	{
 	    ((int *)gap->ga_data)[gap->ga_len++] =
 					       wp->w_width + wp->w_vsep_width;
 	    ((int *)gap->ga_data)[gap->ga_len++] = wp->w_height;
 	}
+    }
 }
 
 /*
- * Restore window sizes, but only if the number of windows is still the same.
+ * Restore window sizes, but only if the number of windows is still the same
+ * and 'lines' didn't change.
  * Does not free the growarray.
  */
     void
@@ -5190,13 +5222,14 @@ win_size_restore(garray_T *gap)
     win_T	*wp;
     int		i, j;
 
-    if (win_count() * 2 == gap->ga_len)
+    if (win_count() * 2 + 1 == gap->ga_len
+	    && ((int *)gap->ga_data)[0] == Rows)
     {
 	/* The order matters, because frames contain other frames, but it's
 	 * difficult to get right. The easy way out is to do it twice. */
 	for (j = 0; j < 2; ++j)
 	{
-	    i = 0;
+	    i = 1;
 	    FOR_ALL_WINDOWS(wp)
 	    {
 		frame_setwidth(wp->w_frame, ((int *)gap->ga_data)[i++]);
@@ -5719,8 +5752,6 @@ win_setminwidth(void)
     }
 }
 
-#if defined(FEAT_MOUSE) || defined(PROTO)
-
 /*
  * Status line of dragwin is dragged "offset" lines down (negative is up).
  */
@@ -5952,7 +5983,6 @@ win_drag_vsep_line(win_T *dragwin, int offset)
     (void)win_comp_pos();
     redraw_all_later(NOT_VALID);
 }
-#endif /* FEAT_MOUSE */
 
 #define FRACTION_MULT	16384L
 
@@ -6371,7 +6401,7 @@ min_rows(void)
 }
 
 /*
- * Return TRUE if there is only one window (in the current tab page), not
+ * Return TRUE if there is only one window and only one tab page, not
  * counting a help or preview window, unless it is the current window.
  * Does not count unlisted windows.
  */

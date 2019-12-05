@@ -30,26 +30,56 @@
 get_short_pathname(char_u **fnamep, char_u **bufp, int *fnamelen)
 {
     int		l, len;
-    char_u	*newbuf;
+    WCHAR	*newbuf;
+    WCHAR	*wfname;
 
-    len = *fnamelen;
-    l = GetShortPathName((LPSTR)*fnamep, (LPSTR)*fnamep, len);
+    len = MAXPATHL;
+    newbuf = malloc(len * sizeof(*newbuf));
+    if (newbuf == NULL)
+	return FAIL;
+
+    wfname = enc_to_utf16(*fnamep, NULL);
+    if (wfname == NULL)
+    {
+	vim_free(newbuf);
+	return FAIL;
+    }
+
+    l = GetShortPathNameW(wfname, newbuf, len);
     if (l > len - 1)
     {
 	// If that doesn't work (not enough space), then save the string
 	// and try again with a new buffer big enough.
-	newbuf = vim_strnsave(*fnamep, l);
+	WCHAR *newbuf_t = newbuf;
+	newbuf = vim_realloc(newbuf, (l + 1) * sizeof(*newbuf));
 	if (newbuf == NULL)
+	{
+	    vim_free(wfname);
+	    vim_free(newbuf_t);
 	    return FAIL;
-
-	vim_free(*bufp);
-	*fnamep = *bufp = newbuf;
-
+	}
 	// Really should always succeed, as the buffer is big enough.
-	l = GetShortPathName((LPSTR)*fnamep, (LPSTR)*fnamep, l+1);
+	l = GetShortPathNameW(wfname, newbuf, l+1);
     }
+    if (l != 0)
+    {
+	char_u *p = utf16_to_enc(newbuf, NULL);
+	if (p != NULL)
+	{
+	    vim_free(*bufp);
+	    *fnamep = *bufp = p;
+	}
+	else
+	{
+	    vim_free(wfname);
+	    vim_free(newbuf);
+	    return FAIL;
+	}
+    }
+    vim_free(wfname);
+    vim_free(newbuf);
 
-    *fnamelen = l;
+    *fnamelen = l == 0 ? l : (int)STRLEN(*bufp);
     return OK;
 }
 
@@ -132,7 +162,7 @@ shortpath_for_invalid_fname(
 	 * path with the remaining path at the tail.
 	 */
 
-	/* Compute the length of the new path. */
+	// Compute the length of the new path.
 	sfx_len = (int)(save_endp - endp) + 1;
 	new_len = len + sfx_len;
 
@@ -563,7 +593,11 @@ repeat:
 	}
 	else				// :r
 	{
-	    if (s > tail)	// remove one extension
+	    char_u *limit = *fnamep;
+
+	    if (limit < tail)
+		limit = tail;
+	    if (s > limit)	// remove one extension
 		*fnamelen = (int)(s - *fnamep);
 	}
 	*usedlen += 2;
@@ -2333,7 +2367,7 @@ fullpathcmp(
     r2 = mch_stat((char *)s2, &st2);
     if (r1 != 0 && r2 != 0)
     {
-	/* if mch_stat() doesn't work, may compare the names */
+	// if mch_stat() doesn't work, may compare the names
 	if (checkname)
 	{
 	    if (fnamecmp(exp1, s2) == 0)
@@ -2613,9 +2647,9 @@ vim_fnamencmp(char_u *x, char_u *y, size_t len)
 		&& !(cx == '/' && cy == '\\')
 		&& !(cx == '\\' && cy == '/')))
 	    break;
-	len -= MB_PTR2LEN(px);
-	px += MB_PTR2LEN(px);
-	py += MB_PTR2LEN(py);
+	len -= mb_ptr2len(px);
+	px += mb_ptr2len(px);
+	py += mb_ptr2len(py);
     }
     if (len == 0)
 	return 0;
@@ -3655,7 +3689,7 @@ gen_expand_wildcards(
     void
 addfile(
     garray_T	*gap,
-    char_u	*f,	/* filename */
+    char_u	*f,	// filename
     int		flags)
 {
     char_u	*p;
@@ -3769,14 +3803,14 @@ pathcmp(const char *p, const char *q, int maxlen)
 		    : c1 - c2;  // no match
 	}
 
-	i += MB_PTR2LEN((char_u *)p + i);
-	j += MB_PTR2LEN((char_u *)q + j);
+	i += mb_ptr2len((char_u *)p + i);
+	j += mb_ptr2len((char_u *)q + j);
     }
     if (s == NULL)	// "i" or "j" ran into "maxlen"
 	return 0;
 
     c1 = PTR2CHAR((char_u *)s + i);
-    c2 = PTR2CHAR((char_u *)s + i + MB_PTR2LEN((char_u *)s + i));
+    c2 = PTR2CHAR((char_u *)s + i + mb_ptr2len((char_u *)s + i));
     // ignore a trailing slash, but not "//" or ":/"
     if (c2 == NUL
 	    && i > 0

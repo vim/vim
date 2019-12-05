@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 Sep 26
+*terminal.txt*	For Vim version 8.1.  Last change: 2019 Nov 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -193,6 +193,7 @@ Command syntax ~
 			Supported [options] are:
 			++close		The terminal window will close
 					automatically when the job terminates.
+					|terminal-close|
 			++noclose	The terminal window will NOT close
 					automatically when the job terminates.
 			++open		When the job terminates and no window
@@ -209,6 +210,10 @@ Command syntax ~
 					no window will be used.
 			++norestore	Do not include this terminal window
 					in a session file.
+			++shell		Instead of executing {command}
+					directly, use a shell, like with
+					`:!command` 		*E279*
+					{only works on Unix currently}
 			++kill={how}	When trying to close the terminal
 					window kill the job with {how}.  See
 					|term_setkill()| for the values.
@@ -266,6 +271,12 @@ You can use `CTRL-W :hide` to close the terminal window and make the buffer
 hidden, the job keeps running.  The `:buffer` command can be used to turn the
 current window into a terminal window.  If there are unsaved changes this
 fails, use ! to force, as usual.
+
+							*terminal-close*
+When the terminal window is closed, e.g. when the shell exits and "++close"
+argument was used, and this is the last normal Vim window, then Vim will exit.
+This is like using |:quit| in a normal window. Help and preview windows are
+not counted.
 
 To have a background job run without a window, and open the window when it's
 done, use options like this: >
@@ -496,7 +507,7 @@ term_dumpload({filename} [, {options}])
 		For {options} see |term_dumpdiff()|.
 
 		Can also be used as a |method|: >
-			GetFilename()-> term_dumpload()
+			GetFilename()->term_dumpload()
 <
 							*term_dumpwrite()*
 term_dumpwrite({buf}, {filename} [, {options}])
@@ -514,7 +525,7 @@ term_dumpwrite({buf}, {filename} [, {options}])
 
 		Can also be used as a |method|, the base is used for the file
 		name: >
-			GetFilename()-> term_dumpwrite(bufnr)
+			GetFilename()->term_dumpwrite(bufnr)
 
 term_getaltscreen({buf})				*term_getaltscreen()*
 		Returns 1 if the terminal of {buf} is using the alternate
@@ -863,8 +874,6 @@ term_start({cmd} [, {options}])			*term_start()*
 		Can also be used as a |method|: >
 			GetCommand()->term_start()
 
-<		{only available when compiled with the |+terminal| feature}
-
 
 term_wait({buf} [, {time}])					*term_wait()*
 		Wait for pending updates of {buf} to be handled.
@@ -1037,12 +1046,12 @@ file for now, e.g.: >
 
 The test will then fail, giving you the command to compare the reference dump
 and the failed dump, e.g.: >
-	call term_dumpdiff("Test_func.dump.failed", "dumps/Test_func.dump")
+	call term_dumpdiff("failed/Test_func.dump", "dumps/Test_func.dump")
 
 Use this command in Vim, with the current directory set to src/testdir.
 Once you are satisfied with the test, move the failed dump in place of the
 reference: >
-	:!mv Test_func.dump.failed dumps/Test_func.dump
+	:!mv failed/Test_func.dump dumps/Test_func.dump
 
 
 Creating a screen dump ~
@@ -1168,8 +1177,12 @@ Example session ~
 							*termdebug-example*
 Start in the Vim "src" directory and build Vim: >
 	% make
+Make sure that debug symbols are present, usually that means that $CFLAGS
+includes "-g".
+
 Start Vim: >
 	% ./vim
+
 Load the termdebug plugin and start debugging Vim: >
 	:packadd termdebug
 	:Termdebug vim
@@ -1243,7 +1256,7 @@ gdb:
 
  *:Break*	set a breakpoint at the cursor position
  :Break {position}
- 		set a breakpoint at the specified position
+		set a breakpoint at the specified position
  *:Clear*	delete the breakpoint at the cursor position
 
  *:Step*	execute the gdb "step" command

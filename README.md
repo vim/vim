@@ -1,12 +1,14 @@
 ![Vim Logo](https://github.com/vim/vim/blob/master/runtime/vimlogo.gif)
 
-[![Build Status](https://travis-ci.org/vim/vim.svg?branch=master)](https://travis-ci.org/vim/vim)
+[![Travis Build Status](https://travis-ci.org/vim/vim.svg?branch=master)](https://travis-ci.org/vim/vim)
 [![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim)
+[![Cirrus Build Status](https://api.cirrus-ci.com/github/vim/vim.svg)](https://cirrus-ci.com/github/vim/vim)
 [![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master)
 [![Coverity Scan](https://scan.coverity.com/projects/241/badge.svg)](https://scan.coverity.com/projects/vim)
 [![Language Grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/vim/vim.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/vim/vim/context:cpp)
 [![Debian CI](https://badges.debian.net/badges/debian/testing/vim/version.svg)](https://buildd.debian.org/vim)
 [![Packages](https://repology.org/badge/tiny-repos/vim.svg)](https://repology.org/metapackage/vim)
+For translations of this README see the end.
 
 
 ## What is Vim? ##
@@ -28,7 +30,6 @@ Vim runs under MS-Windows (NT, 2000, XP, Vista, 7, 8, 10), Macintosh, VMS and
 almost all flavours of UNIX.  Porting to other systems should not be very
 difficult.  Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me, Amiga
 DOS, Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
-
 
 ## Distribution ##
 
@@ -141,3 +142,8 @@ Send any other comments, patches, flowers and suggestions to:
 
 
 This is `README.md` for version 8.1 of Vim: Vi IMproved.
+
+
+## Translations of this README ##
+
+[Korean](https://github.com/cjw1359/opensource/blob/master/Vim/README_ko.md)

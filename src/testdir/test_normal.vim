@@ -1,6 +1,7 @@
 " Test for various Normal mode commands
 
 source shared.vim
+source check.vim
 
 func Setup_NewWindow()
   10new
@@ -408,8 +409,7 @@ func Test_normal10_expand()
 
   if executable('echo')
     " Test expand(`...`) i.e. backticks command expansion.
-    " MS-Windows has a trailing space.
-    call assert_match('^abcde *$', expand('`echo abcde`'))
+    call assert_equal('abcde', expand('`echo abcde`'))
   endif
 
   " Test expand(`=...`) i.e. backticks expression expansion
@@ -1205,8 +1205,9 @@ func Test_normal23_K()
     return
   endif
 
-  if has('mac')
-    " In MacOS, the option for specifying a pager is different
+  let not_gnu_man = has('mac') || has('bsd')
+  if not_gnu_man
+    " In MacOS and BSD, the option for specifying a pager is different
     set keywordprg=man\ -P\ cat
   else
     set keywordprg=man\ --pager=cat
@@ -1214,7 +1215,7 @@ func Test_normal23_K()
   " Test for using man
   2
   let a = execute('unsilent norm! K')
-  if has('mac')
+  if not_gnu_man
     call assert_match("man -P cat 'man'", a)
   else
     call assert_match("man --pager=cat 'man'", a)
@@ -1240,6 +1241,8 @@ func Test_normal24_rot13()
 endfunc
 
 func Test_normal25_tag()
+  CheckFeature quickfix
+
   " Testing for CTRL-] g CTRL-] g]
   " CTRL-W g] CTRL-W CTRL-] CTRL-W g CTRL-]
   h
@@ -1734,6 +1737,7 @@ fun! Test_normal33_g_cmd2()
   set wrap listchars= sbr=
   let lineA='abcdefghijklmnopqrstuvwxyz'
   let lineB='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  let lineC='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   $put =lineA
   $put =lineB
 
@@ -1767,9 +1771,30 @@ fun! Test_normal33_g_cmd2()
   call assert_equal(15, col('.'))
   call assert_equal('l', getreg(0))
 
+  norm! 2ggdd
+  $put =lineC
+
+  " Test for gM
+  norm! gMyl
+  call assert_equal(73, col('.'))
+  call assert_equal('0', getreg(0))
+  " Test for 20gM
+  norm! 20gMyl
+  call assert_equal(29, col('.'))
+  call assert_equal('S', getreg(0))
+  " Test for 60gM
+  norm! 60gMyl
+  call assert_equal(87, col('.'))
+  call assert_equal('E', getreg(0))
+
+  " Test for g Ctrl-G
+  set ff=unix
+  let a=execute(":norm! g\<c-g>")
+  call assert_match('Col 87 of 144; Line 2 of 2; Word 1 of 1; Byte 88 of 146', a)
+
   " Test for gI
   norm! gIfoo
-  call assert_equal(['', 'fooabcdefghijk   lmno0123456789AMNOPQRSTUVWXYZ'], getline(1,'$'))
+  call assert_equal(['', 'foo0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz01234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'], getline(1,'$'))
 
   " Test for gi
   wincmd c
@@ -2654,4 +2679,29 @@ func Test_normal_gk()
   call assert_equal(95, virtcol('.'))
   bw!
   bw!
+
+  " needs 80 column new window
+  new
+  vert 80new
+  set number
+  set numberwidth=10
+  set cpoptions+=n
+  put =[repeat('0',90), repeat('1',90)]
+  norm! 075l
+  call assert_equal(76, col('.'))
+  norm! gk
+  call assert_equal(1, col('.'))
+  norm! gk
+  call assert_equal(76, col('.'))
+  norm! gk
+  call assert_equal(1, col('.'))
+  norm! gj
+  call assert_equal(76, col('.'))
+  norm! gj
+  call assert_equal(1, col('.'))
+  norm! gj
+  call assert_equal(76, col('.'))
+  bw!
+  bw!
+  set cpoptions& number& numberwidth&
 endfunc

@@ -629,8 +629,6 @@ MSGFMT
 INSTALL_TOOL_LANGS
 INSTALL_LANGS
 TAGPRG
-HANGULIN_OBJ
-HANGULIN_SRC
 GUI_X_LIBS
 GUITYPE
 GUI_LIB_LOC
@@ -656,6 +654,7 @@ X_PRE_LIBS
 X_CFLAGS
 XMKMF
 xmkmfpath
+TERM_TEST
 TERM_OBJ
 TERM_SRC
 CHANNEL_OBJ
@@ -819,7 +818,6 @@ enable_multibyte
 enable_rightleft
 enable_arabic
 enable_farsi
-enable_hangulinput
 enable_xim
 enable_fontset
 with_x
@@ -1501,7 +1499,6 @@ Optional Features:
   --disable-rightleft     Do not include Right-to-Left language support.
   --disable-arabic        Do not include Arabic language support.
   --disable-farsi         Deprecated.
-  --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
   --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon
@@ -7907,9 +7904,11 @@ fi
 if test "$enable_terminal" = "yes" -a "$enable_channel" = "yes"; then
   $as_echo "#define FEAT_TERMINAL 1" >>confdefs.h
 
-  TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/termscreen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
+  TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/creen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
 
-  TERM_OBJ="objects/encoding.o objects/keyboard.o objects/termmouse.o objects/parser.o objects/pen.o objects/termscreen.o objects/state.o objects/unicode.o objects/vterm.o"
+  TERM_OBJ="objects/vterm_encoding.o objects/vterm_keyboard.o objects/vterm_mouse.o objects/vterm_parser.o objects/vterm_pen.o objects/vterm_screen.o objects/vterm_state.o objects/vterm_unicode.o objects/vterm_vterm.o"
+
+  TERM_TEST="test_libvterm"
 
 fi
 
@@ -7988,18 +7987,6 @@ if test "${enable_farsi+set}" = set; then :
   enableval=$enable_farsi;
 fi
 
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-hangulinput argument" >&5
-$as_echo_n "checking --enable-hangulinput argument... " >&6; }
-# Check whether --enable-hangulinput was given.
-if test "${enable_hangulinput+set}" = set; then :
-  enableval=$enable_hangulinput;
-else
-  enable_hangulinput="no"
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_hangulinput" >&5
-$as_echo "$enable_hangulinput" >&6; }
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-xim argument" >&5
 $as_echo_n "checking --enable-xim argument... " >&6; }
@@ -10493,8 +10480,7 @@ rm -f conftest*
   fi
   CPPFLAGS=$cppflags_save
 
-    if test "$enable_xim" = "auto" -a "$enable_hangulinput" != "yes" \
-		-a "x$GUITYPE" != "xNONE" ; then
+    if test "$enable_xim" = "auto" -a "x$GUITYPE" != "xNONE" ; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: X GUI selected; xim has been enabled" >&5
 $as_echo "X GUI selected; xim has been enabled" >&6; }
     enable_xim="yes"
@@ -10670,21 +10656,6 @@ $as_echo "no - using X11" >&6; }
     *)          CYGWIN=no; { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; };;
 esac
-
-if test "$enable_hangulinput" = "yes"; then
-  if test "x$GUITYPE" = "xNONE"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no GUI selected; hangul input has been disabled" >&5
-$as_echo "no GUI selected; hangul input has been disabled" >&6; }
-    enable_hangulinput=no
-  else
-    $as_echo "#define FEAT_HANGULIN 1" >>confdefs.h
-
-    HANGULIN_SRC=hangulin.c
-
-    HANGULIN_OBJ=objects/hangulin.o
-
-  fi
-fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether toupper is broken" >&5
@@ -12569,8 +12540,8 @@ for ac_func in fchdir fchown fchmod fsync getcwd getpseudotty \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \
-	strnicmp strpbrk strtol tgetent towlower towupper iswupper tzset \
-	usleep utime utimes mblen ftruncate unsetenv posix_openpt
+	strnicmp strpbrk strptime strtol tgetent towlower towupper iswupper \
+	tzset usleep utime utimes mblen ftruncate unsetenv posix_openpt
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -12986,8 +12957,8 @@ if ac_fn_c_try_link "$LINENO"; then :
 $as_echo "yes" >&6; }; $as_echo "#define HAVE_CANBERRA 1" >>confdefs.h
 
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }; CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no; try installing libcanberra-dev" >&5
+$as_echo "no; try installing libcanberra-dev" >&6; }; CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS"
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
@@ -14804,6 +14775,7 @@ $as_echo "no" >&6; }
 $as_echo_n "checking whether we need -D_FORTIFY_SOURCE=1... " >&6; }
   if test "$gccmajor" -gt "3"; then
     CFLAGS=`echo "$CFLAGS" | sed -e 's/ *-Wp,-D_FORTIFY_SOURCE=.//g' -e 's/ *-D_FORTIFY_SOURCE=.//g' -e 's/ *-U_FORTIFY_SOURCE//g' -e 's/$/ -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1/'`
+    CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's/ *-Wp,-D_FORTIFY_SOURCE=.//g' -e 's/ *-D_FORTIFY_SOURCE=.//g' -e 's/ *-U_FORTIFY_SOURCE//g'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
   else

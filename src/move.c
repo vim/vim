@@ -190,9 +190,7 @@ update_topline(void)
     int		check_topline = FALSE;
     int		check_botline = FALSE;
     long        *so_ptr = curwin->w_p_so >= 0 ? &curwin->w_p_so : &p_so;
-#ifdef FEAT_MOUSE
     int		save_so = *so_ptr;
-#endif
 
     /* If there is no valid screen and when the window height is zero just use
      * the cursor line. */
@@ -209,11 +207,9 @@ update_topline(void)
     if (curwin->w_valid & VALID_TOPLINE)
 	return;
 
-#ifdef FEAT_MOUSE
     /* When dragging with the mouse, don't scroll that quickly */
     if (mouse_dragging > 0)
 	*so_ptr = mouse_dragging - 1;
-#endif
 
     old_topline = curwin->w_topline;
 #ifdef FEAT_DIFF
@@ -418,9 +414,7 @@ update_topline(void)
 	    validate_cursor();
     }
 
-#ifdef FEAT_MOUSE
     *so_ptr = save_so;
-#endif
 }
 
 /*
@@ -994,6 +988,10 @@ curs_columns(
 	/* long line wrapping, adjust curwin->w_wrow */
 	if (curwin->w_wcol >= curwin->w_width)
 	{
+#ifdef FEAT_LINEBREAK
+	    char_u *sbr;
+#endif
+
 	    /* this same formula is used in validate_cursor_col() */
 	    n = (curwin->w_wcol - curwin->w_width) / width + 1;
 	    curwin->w_wcol -= n * width;
@@ -1003,8 +1001,9 @@ curs_columns(
 	    /* When cursor wraps to first char of next line in Insert
 	     * mode, the 'showbreak' string isn't shown, backup to first
 	     * column */
-	    if (*p_sbr && *ml_get_cursor() == NUL
-		    && curwin->w_wcol == (int)vim_strsize(p_sbr))
+	    sbr = get_showbreak_value(curwin);
+	    if (*sbr && *ml_get_cursor() == NUL
+				    && curwin->w_wcol == (int)vim_strsize(sbr))
 		curwin->w_wcol = 0;
 #endif
 	}
@@ -1176,10 +1175,13 @@ curs_columns(
 	redraw_later(SOME_VALID);
 #endif
 
+    // now w_leftcol is valid, avoid check_cursor_moved() thinking otherwise
+    curwin->w_valid_leftcol = curwin->w_leftcol;
+
     curwin->w_valid |= VALID_WCOL|VALID_WROW|VALID_VIRTCOL;
 }
 
-#if (defined(FEAT_EVAL) || defined(FEAT_TEXT_PROP)) || defined(PROTO)
+#if (defined(FEAT_EVAL) || defined(FEAT_PROP_POPUP)) || defined(PROTO)
 /*
  * Compute the screen position of text character at "pos" in window "wp"
  * The resulting values are one-based, zero when character is not visible.
@@ -1223,7 +1225,7 @@ textpos2screenpos(
 	    col -= rowoff * width;
 	}
 	col -= wp->w_leftcol;
-	if (col >= width)
+	if (col >= wp->w_width)
 	    col = -1;
 	if (col >= 0)
 	    coloff = col - scol + wp->w_wincol + 1;
@@ -1751,10 +1753,8 @@ scroll_cursor_top(int min_scroll, int always)
     linenr_T	new_topline;
     int		off = get_scrolloff_value();
 
-#ifdef FEAT_MOUSE
     if (mouse_dragging > 0)
 	off = mouse_dragging - 1;
-#endif
 
     /*
      * Decrease topline until:
@@ -2004,11 +2004,7 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 	/* Stop when scrolled nothing or at least "min_scroll", found "extra"
 	 * context for 'scrolloff' and counted all lines below the window. */
 	if ((((scrolled <= 0 || scrolled >= min_scroll)
-			&& extra >= (
-#ifdef FEAT_MOUSE
-			    mouse_dragging > 0 ? mouse_dragging - 1 :
-#endif
-			    so))
+		    && extra >= (mouse_dragging > 0 ? mouse_dragging - 1 : so))
 		    || boff.lnum + 1 > curbuf->b_ml.ml_line_count)
 		&& loff.lnum <= curwin->w_botline
 #ifdef FEAT_DIFF
@@ -2050,11 +2046,8 @@ scroll_cursor_bot(int min_scroll, int set_topbot)
 	    used += boff.height;
 	    if (used > curwin->w_height)
 		break;
-	    if (extra < (
-#ifdef FEAT_MOUSE
-			mouse_dragging > 0 ? mouse_dragging - 1 :
-#endif
-			so) || scrolled < min_scroll)
+	    if (extra < ( mouse_dragging > 0 ? mouse_dragging - 1 : so)
+		    || scrolled < min_scroll)
 	    {
 		extra += boff.height;
 		if (boff.lnum >= curwin->w_botline
@@ -2230,13 +2223,11 @@ cursor_correct(void)
      */
     above_wanted = so;
     below_wanted = so;
-#ifdef FEAT_MOUSE
     if (mouse_dragging > 0)
     {
 	above_wanted = mouse_dragging - 1;
 	below_wanted = mouse_dragging - 1;
     }
-#endif
     if (curwin->w_topline == 1)
     {
 	above_wanted = 0;
@@ -2246,10 +2237,7 @@ cursor_correct(void)
     }
     validate_botline();
     if (curwin->w_botline == curbuf->b_ml.ml_line_count + 1
-#ifdef FEAT_MOUSE
-	    && mouse_dragging == 0
-#endif
-	    )
+	    && mouse_dragging == 0)
     {
 	below_wanted = 0;
 	max_off = (curwin->w_height - 1) / 2;

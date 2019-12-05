@@ -532,6 +532,9 @@ ui_char_avail(void)
     void
 ui_delay(long msec, int ignoreinput)
 {
+#ifdef FEAT_JOB_CHANNEL
+    ch_log(NULL, "ui_delay(%ld)", msec);
+#endif
 #ifdef FEAT_GUI
     if (gui.in_use && !ignoreinput)
 	gui_wait_for_chars(msec, typebuf.tb_change_cnt);
@@ -913,7 +916,7 @@ start_global_changes(void)
 
     if (clip_did_set_selection)
     {
-	clip_unnamed = FALSE;
+	clip_unnamed = 0;
 	clip_did_set_selection = FALSE;
     }
 }
@@ -941,7 +944,7 @@ end_global_changes(void)
     {
 	clip_did_set_selection = TRUE;
 	clip_unnamed = clip_unnamed_saved;
-	clip_unnamed_saved = FALSE;
+	clip_unnamed_saved = 0;
 	if (clipboard_needs_update)
 	{
 	    /* only store something in the clipboard,
@@ -1076,7 +1079,7 @@ clip_compare_pos(
 clip_start_selection(int col, int row, int repeated_click)
 {
     Clipboard_T	*cb = &clip_star;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     win_T	*wp;
     int		row_cp = row;
     int		col_cp = col;
@@ -1100,7 +1103,7 @@ clip_start_selection(int col, int row, int repeated_click)
     cb->end	    = cb->start;
     cb->origin_row  = (short_u)cb->start.lnum;
     cb->state	    = SELECT_IN_PROGRESS;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     if (wp != NULL && WIN_IS_POPUP(wp))
     {
 	// Click in a popup window restricts selection to that window,
@@ -1452,7 +1455,7 @@ clip_invert_area(
     int		invert = FALSE;
     int		max_col;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     max_col = cbd->max_col - 1;
 #else
     max_col = Columns - 1;
@@ -1523,7 +1526,7 @@ clip_invert_rectangle(
     int		height = height_arg;
     int		width = width_arg;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // this goes on top of all popup windows
     screen_zindex = CLIP_ZINDEX;
 
@@ -1548,7 +1551,7 @@ clip_invert_rectangle(
     else
 #endif
 	screen_draw_rectangle(row, col, height, width, invert);
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     screen_zindex = 0;
 #endif
 }
@@ -1591,7 +1594,7 @@ clip_copy_modeless_selection(int both UNUSED)
     {
 	row = col1; col1 = col2; col2 = row;
     }
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     if (col1 < clip_star.min_col)
 	col1 = clip_star.min_col;
     if (col2 > clip_star.max_col)
@@ -1626,7 +1629,7 @@ clip_copy_modeless_selection(int both UNUSED)
 	if (row == row1)
 	    start_col = col1;
 	else
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	    start_col = clip_star.min_col;
 #else
 	    start_col = 0;
@@ -1635,7 +1638,7 @@ clip_copy_modeless_selection(int both UNUSED)
 	if (row == row2)
 	    end_col = col2;
 	else
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	    end_col = clip_star.max_col;
 #else
 	    end_col = Columns;
@@ -1645,7 +1648,7 @@ clip_copy_modeless_selection(int both UNUSED)
 
 	/* See if we need to nuke some trailing whitespace */
 	if (end_col >=
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 		clip_star.max_col
 #else
 		Columns
@@ -1811,7 +1814,7 @@ clip_get_line_end(Clipboard_T *cbd UNUSED, int row)
     if (row >= screen_Rows || ScreenLines == NULL)
 	return 0;
     for (i =
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	    cbd->max_col;
 #else
 	    screen_Columns;
@@ -1941,7 +1944,98 @@ clip_gen_owner_exists(Clipboard_T *cbd UNUSED)
 }
 #endif
 
-#endif /* FEAT_CLIPBOARD */
+/*
+ * Extract the items in the 'clipboard' option and set global values.
+ * Return an error message or NULL for success.
+ */
+    char *
+check_clipboard_option(void)
+{
+    int		new_unnamed = 0;
+    int		new_autoselect_star = FALSE;
+    int		new_autoselect_plus = FALSE;
+    int		new_autoselectml = FALSE;
+    int		new_html = FALSE;
+    regprog_T	*new_exclude_prog = NULL;
+    char	*errmsg = NULL;
+    char_u	*p;
+
+    for (p = p_cb; *p != NUL; )
+    {
+	if (STRNCMP(p, "unnamed", 7) == 0 && (p[7] == ',' || p[7] == NUL))
+	{
+	    new_unnamed |= CLIP_UNNAMED;
+	    p += 7;
+	}
+	else if (STRNCMP(p, "unnamedplus", 11) == 0
+					    && (p[11] == ',' || p[11] == NUL))
+	{
+	    new_unnamed |= CLIP_UNNAMED_PLUS;
+	    p += 11;
+	}
+	else if (STRNCMP(p, "autoselect", 10) == 0
+					    && (p[10] == ',' || p[10] == NUL))
+	{
+	    new_autoselect_star = TRUE;
+	    p += 10;
+	}
+	else if (STRNCMP(p, "autoselectplus", 14) == 0
+					    && (p[14] == ',' || p[14] == NUL))
+	{
+	    new_autoselect_plus = TRUE;
+	    p += 14;
+	}
+	else if (STRNCMP(p, "autoselectml", 12) == 0
+					    && (p[12] == ',' || p[12] == NUL))
+	{
+	    new_autoselectml = TRUE;
+	    p += 12;
+	}
+	else if (STRNCMP(p, "html", 4) == 0 && (p[4] == ',' || p[4] == NUL))
+	{
+	    new_html = TRUE;
+	    p += 4;
+	}
+	else if (STRNCMP(p, "exclude:", 8) == 0 && new_exclude_prog == NULL)
+	{
+	    p += 8;
+	    new_exclude_prog = vim_regcomp(p, RE_MAGIC);
+	    if (new_exclude_prog == NULL)
+		errmsg = e_invarg;
+	    break;
+	}
+	else
+	{
+	    errmsg = e_invarg;
+	    break;
+	}
+	if (*p == ',')
+	    ++p;
+    }
+    if (errmsg == NULL)
+    {
+	clip_unnamed = new_unnamed;
+	clip_autoselect_star = new_autoselect_star;
+	clip_autoselect_plus = new_autoselect_plus;
+	clip_autoselectml = new_autoselectml;
+	clip_html = new_html;
+	vim_regfree(clip_exclude_prog);
+	clip_exclude_prog = new_exclude_prog;
+#ifdef FEAT_GUI_GTK
+	if (gui.in_use)
+	{
+	    gui_gtk_set_selection_targets();
+	    gui_gtk_set_dnd_targets();
+	}
+#endif
+    }
+    else
+	vim_regfree(new_exclude_prog);
+
+    return errmsg;
+}
+
+#endif // FEAT_CLIPBOARD
 
 /*****************************************************************************
  * Functions that handle the input buffer.
@@ -2065,12 +2159,6 @@ add_to_input_buf(char_u *s, int len)
     if (inbufcount + len > INBUFLEN + MAX_KEY_CODE_LEN)
 	return;	    /* Shouldn't ever happen! */
 
-#ifdef FEAT_HANGULIN
-    if ((State & (INSERT|CMDLINE)) && hangul_input_state_get())
-	if ((len = hangul_input_process(s, len)) == 0)
-	    return;
-#endif
-
     while (len--)
 	inbuf[inbufcount++] = *s++;
 }
@@ -2096,32 +2184,6 @@ add_to_input_buf_csi(char_u *str, int len)
 	}
     }
 }
-
-#if defined(FEAT_HANGULIN) || defined(PROTO)
-    void
-push_raw_key(char_u *s, int len)
-{
-    char_u *tmpbuf;
-    char_u *inp = s;
-
-    /* use the conversion result if possible */
-    tmpbuf = hangul_string_convert(s, &len);
-    if (tmpbuf != NULL)
-	inp = tmpbuf;
-
-    for (; len--; inp++)
-    {
-	inbuf[inbufcount++] = *inp;
-	if (*inp == CSI)
-	{
-	    /* Turn CSI into K_CSI. */
-	    inbuf[inbufcount++] = KS_EXTRA;
-	    inbuf[inbufcount++] = (int)KE_CSI;
-	}
-    }
-    vim_free(tmpbuf);
-}
-#endif
 
 /* Remove everything from the input buffer.  Called when ^C is found */
     void

@@ -206,14 +206,15 @@ op_shift(oparg_T *oap, int curs_top, int amount)
 	msg((char *)IObuff);
     }
 
-    /*
-     * Set "'[" and "']" marks.
-     */
-    curbuf->b_op_start = oap->start;
-    curbuf->b_op_end.lnum = oap->end.lnum;
-    curbuf->b_op_end.col = (colnr_T)STRLEN(ml_get(oap->end.lnum));
-    if (curbuf->b_op_end.col > 0)
-	--curbuf->b_op_end.col;
+    if (!cmdmod.lockmarks)
+    {
+	// Set "'[" and "']" marks.
+	curbuf->b_op_start = oap->start;
+	curbuf->b_op_end.lnum = oap->end.lnum;
+	curbuf->b_op_end.col = (colnr_T)STRLEN(ml_get(oap->end.lnum));
+	if (curbuf->b_op_end.col > 0)
+	    --curbuf->b_op_end.col;
+    }
 }
 
 /*
@@ -590,90 +591,6 @@ block_insert(
     State = oldstate;
 }
 
-#if defined(FEAT_LISP) || defined(FEAT_CINDENT) || defined(PROTO)
-/*
- * op_reindent - handle reindenting a block of lines.
- */
-    static void
-op_reindent(oparg_T *oap, int (*how)(void))
-{
-    long	i;
-    char_u	*l;
-    int		amount;
-    linenr_T	first_changed = 0;
-    linenr_T	last_changed = 0;
-    linenr_T	start_lnum = curwin->w_cursor.lnum;
-
-    /* Don't even try when 'modifiable' is off. */
-    if (!curbuf->b_p_ma)
-    {
-	emsg(_(e_modifiable));
-	return;
-    }
-
-    for (i = oap->line_count; --i >= 0 && !got_int; )
-    {
-	/* it's a slow thing to do, so give feedback so there's no worry that
-	 * the computer's just hung. */
-
-	if (i > 1
-		&& (i % 50 == 0 || i == oap->line_count - 1)
-		&& oap->line_count > p_report)
-	    smsg(_("%ld lines to indent... "), i);
-
-	/*
-	 * Be vi-compatible: For lisp indenting the first line is not
-	 * indented, unless there is only one line.
-	 */
-#ifdef FEAT_LISP
-	if (i != oap->line_count - 1 || oap->line_count == 1
-						    || how != get_lisp_indent)
-#endif
-	{
-	    l = skipwhite(ml_get_curline());
-	    if (*l == NUL)		    /* empty or blank line */
-		amount = 0;
-	    else
-		amount = how();		    /* get the indent for this line */
-
-	    if (amount >= 0 && set_indent(amount, SIN_UNDO))
-	    {
-		/* did change the indent, call changed_lines() later */
-		if (first_changed == 0)
-		    first_changed = curwin->w_cursor.lnum;
-		last_changed = curwin->w_cursor.lnum;
-	    }
-	}
-	++curwin->w_cursor.lnum;
-	curwin->w_cursor.col = 0;  /* make sure it's valid */
-    }
-
-    /* put cursor on first non-blank of indented line */
-    curwin->w_cursor.lnum = start_lnum;
-    beginline(BL_SOL | BL_FIX);
-
-    /* Mark changed lines so that they will be redrawn.  When Visual
-     * highlighting was present, need to continue until the last line.  When
-     * there is no change still need to remove the Visual highlighting. */
-    if (last_changed != 0)
-	changed_lines(first_changed, 0,
-		oap->is_VIsual ? start_lnum + oap->line_count :
-		last_changed + 1, 0L);
-    else if (oap->is_VIsual)
-	redraw_curbuf_later(INVERTED);
-
-    if (oap->line_count > p_report)
-    {
-	i = oap->line_count - (i + 1);
-	smsg(NGETTEXT("%ld line indented ",
-						 "%ld lines indented ", i), i);
-    }
-    /* set '[ and '] marks */
-    curbuf->b_op_start = oap->start;
-    curbuf->b_op_end = oap->end;
-}
-#endif /* defined(FEAT_LISP) || defined(FEAT_CINDENT) */
-
 /*
  * Stuff a string into the typeahead buffer, such that edit() will insert it
  * literally ("literally" TRUE) or interpret is as typed characters.
@@ -911,7 +828,7 @@ op_delete(oparg_T *oap)
 	    /* replace the line */
 	    ml_replace(lnum, newp, FALSE);
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	    if (curbuf->b_has_textprop && n != 0)
 		adjust_prop_columns(lnum, bd.textcol, -n, 0);
 #endif
@@ -996,6 +913,8 @@ op_delete(oparg_T *oap)
 		oap->end = curwin->w_cursor;
 		curwin->w_cursor = oap->start;
 	    }
+	    if (has_mbyte)
+		mb_adjust_opend(oap);
 	}
 
 	if (oap->line_count == 1)	/* delete characters within one line */
@@ -1063,14 +982,17 @@ op_delete(oparg_T *oap)
     msgmore(curbuf->b_ml.ml_line_count - old_lcount);
 
 setmarks:
-    if (oap->block_mode)
+    if (!cmdmod.lockmarks)
     {
-	curbuf->b_op_end.lnum = oap->end.lnum;
-	curbuf->b_op_end.col = oap->start.col;
+	if (oap->block_mode)
+	{
+	    curbuf->b_op_end.lnum = oap->end.lnum;
+	    curbuf->b_op_end.col = oap->start.col;
+	}
+	else
+	    curbuf->b_op_end = oap->start;
+	curbuf->b_op_start = oap->start;
     }
-    else
-	curbuf->b_op_end = oap->start;
-    curbuf->b_op_start = oap->start;
 
     return OK;
 }
@@ -1334,9 +1256,12 @@ op_replace(oparg_T *oap, int c)
     check_cursor();
     changed_lines(oap->start.lnum, oap->start.col, oap->end.lnum + 1, 0L);
 
-    /* Set "'[" and "']" marks. */
-    curbuf->b_op_start = oap->start;
-    curbuf->b_op_end = oap->end;
+    if (!cmdmod.lockmarks)
+    {
+	/* Set "'[" and "']" marks. */
+	curbuf->b_op_start = oap->start;
+	curbuf->b_op_end = oap->end;
+    }
 
     return OK;
 }
@@ -1444,11 +1369,12 @@ op_tilde(oparg_T *oap)
 	/* No change: need to remove the Visual selection */
 	redraw_curbuf_later(INVERTED);
 
-    /*
-     * Set '[ and '] marks.
-     */
-    curbuf->b_op_start = oap->start;
-    curbuf->b_op_end = oap->end;
+    if (!cmdmod.lockmarks)
+    {
+	// Set '[ and '] marks.
+	curbuf->b_op_start = oap->start;
+	curbuf->b_op_end = oap->end;
+    }
 
     if (oap->line_count > p_report)
 	smsg(NGETTEXT("%ld line changed", "%ld lines changed",
@@ -1917,29 +1843,6 @@ adjust_cursor_eol(void)
     }
 }
 
-#if defined(FEAT_SMARTINDENT) || defined(FEAT_CINDENT) || defined(PROTO)
-/*
- * Return TRUE if lines starting with '#' should be left aligned.
- */
-    int
-preprocs_left(void)
-{
-    return
-# ifdef FEAT_SMARTINDENT
-#  ifdef FEAT_CINDENT
-	(curbuf->b_p_si && !curbuf->b_p_cin) ||
-#  else
-	curbuf->b_p_si
-#  endif
-# endif
-# ifdef FEAT_CINDENT
-	(curbuf->b_p_cin && in_cinkeys('#', ' ', TRUE)
-					   && curbuf->b_ind_hash_comment == 0)
-# endif
-	;
-}
-#endif
-
 /*
  * If "process" is TRUE and the line begins with a comment leader (possibly
  * after some white space), return a pointer to the text after it. Put a boolean
@@ -2045,7 +1948,7 @@ do_join(
     int		remove_comments = (use_formatoptions == TRUE)
 				  && has_format_option(FO_REMOVE_COMS);
     int		prev_was_comment;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     textprop_T	**prop_lines = NULL;
     int		*prop_lengths = NULL;
 #endif
@@ -2078,7 +1981,7 @@ do_join(
     for (t = 0; t < count; ++t)
     {
 	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t));
-	if (t == 0 && setmark)
+	if (t == 0 && setmark && !cmdmod.lockmarks)
 	{
 	    /* Set the '[ mark. */
 	    curwin->w_buffer->b_op_start.lnum = curwin->w_cursor.lnum;
@@ -2104,7 +2007,8 @@ do_join(
 	if (insert_space && t > 0)
 	{
 	    curr = skipwhite(curr);
-	    if (*curr != ')' && currsize != 0 && endcurr1 != TAB
+	    if (*curr != NUL && *curr != ')'
+		    && currsize != 0 && endcurr1 != TAB
 		    && (!has_format_option(FO_MBYTE_JOIN)
 			|| (mb_ptr2char(curr) < 0x100 && endcurr1 < 0x100))
 		    && (!has_format_option(FO_MBYTE_JOIN2)
@@ -2171,7 +2075,7 @@ do_join(
     cend = newp + sumsize;
     *cend = 0;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // We need to move properties of the lines that are going to be deleted to
     // the new long one.
     if (curbuf->b_has_textprop && !text_prop_frozen)
@@ -2213,7 +2117,7 @@ do_join(
 			 (long)(cend - newp - spaces_removed), spaces_removed);
 	if (t == 0)
 	    break;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (prop_lines != NULL)
 	    adjust_props_for_join(curwin->w_cursor.lnum + t,
 				      prop_lines + t - 1, prop_lengths + t - 1,
@@ -2228,7 +2132,7 @@ do_join(
 	currsize = (int)STRLEN(curr);
     }
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     if (prop_lines != NULL)
 	join_prop_lines(curwin->w_cursor.lnum, newp,
 					      prop_lines, prop_lengths, count);
@@ -2236,7 +2140,7 @@ do_join(
 #endif
 	ml_replace(curwin->w_cursor.lnum, newp, FALSE);
 
-    if (setmark)
+    if (setmark && !cmdmod.lockmarks)
     {
 	/* Set the '] mark. */
 	curwin->w_buffer->b_op_end.lnum = curwin->w_cursor.lnum;
@@ -2375,8 +2279,9 @@ op_format(
 	/* When there is no change: need to remove the Visual selection */
 	redraw_curbuf_later(INVERTED);
 
-    /* Set '[ mark at the start of the formatted area */
-    curbuf->b_op_start = oap->start;
+    if (!cmdmod.lockmarks)
+	/* Set '[ mark at the start of the formatted area */
+	curbuf->b_op_start = oap->start;
 
     /* For "gw" remember the cursor position and put it back below (adjusted
      * for joined and split lines). */
@@ -2396,8 +2301,9 @@ op_format(
     old_line_count = curbuf->b_ml.ml_line_count - old_line_count;
     msgmore(old_line_count);
 
-    /* put '] mark on the end of the formatted area */
-    curbuf->b_op_end = curwin->w_cursor;
+    if (!cmdmod.lockmarks)
+	/* put '] mark on the end of the formatted area */
+	curbuf->b_op_end = curwin->w_cursor;
 
     if (keep_cursor)
     {
@@ -3091,7 +2997,7 @@ op_addsub(
 
 	/* Set '[ mark if something changed. Keep the last end
 	 * position from do_addsub(). */
-	if (change_cnt > 0)
+	if (change_cnt > 0 && !cmdmod.lockmarks)
 	    curbuf->b_op_start = startpos;
 
 	if (change_cnt > p_report)
@@ -3226,7 +3132,7 @@ do_addsub(
 	    while (ptr[col] != NUL
 		    && !vim_isdigit(ptr[col])
 		    && !(doalp && ASCII_ISALPHA(ptr[col])))
-		col += MB_PTR2LEN(ptr + col);
+		col += mb_ptr2len(ptr + col);
 
 	    while (col > 0
 		    && vim_isdigit(ptr[col - 1])
@@ -3245,7 +3151,7 @@ do_addsub(
 		&& !vim_isdigit(ptr[col])
 		&& !(doalp && ASCII_ISALPHA(ptr[col])))
 	{
-	    int mb_len = MB_PTR2LEN(ptr + col);
+	    int mb_len = mb_ptr2len(ptr + col);
 
 	    col += mb_len;
 	    length -= mb_len;
@@ -3491,7 +3397,7 @@ do_addsub(
 	    --curwin->w_cursor.col;
     }
 
-    if (did_change)
+    if (did_change && !cmdmod.lockmarks)
     {
 	/* set the '[ and '] marks */
 	curbuf->b_op_start = startpos;
@@ -3744,9 +3650,11 @@ cursor_pos_info(dict_T *dict)
 	    {
 #ifdef FEAT_LINEBREAK
 		char_u * saved_sbr = p_sbr;
+		char_u * saved_w_sbr = curwin->w_p_sbr;
 
 		/* Make 'sbr' empty for a moment to get the correct size. */
 		p_sbr = empty_option;
+		curwin->w_p_sbr = empty_option;
 #endif
 		oparg.is_VIsual = 1;
 		oparg.block_mode = TRUE;
@@ -3755,6 +3663,7 @@ cursor_pos_info(dict_T *dict)
 					  &oparg.start_vcol, &oparg.end_vcol);
 #ifdef FEAT_LINEBREAK
 		p_sbr = saved_sbr;
+		curwin->w_p_sbr = saved_w_sbr;
 #endif
 		if (curwin->w_curswant == MAXCOL)
 		    oparg.end_vcol = MAXCOL;
@@ -4009,6 +3918,8 @@ op_function(oparg_T *oap UNUSED)
 #ifdef FEAT_EVAL
     typval_T	argv[2];
     int		save_virtual_op = virtual_op;
+    pos_T	orig_start = curbuf->b_op_start;
+    pos_T	orig_end = curbuf->b_op_end;
 
     if (*p_opfunc == NUL)
 	emsg(_("E774: 'operatorfunc' is empty"));
@@ -4037,6 +3948,11 @@ op_function(oparg_T *oap UNUSED)
 	(void)call_func_retnr(p_opfunc, 1, argv);
 
 	virtual_op = save_virtual_op;
+	if (cmdmod.lockmarks)
+	{
+	    curbuf->b_op_start = orig_start;
+	    curbuf->b_op_end = orig_end;
+	}
     }
 #else
     emsg(_("E775: Eval feature not available"));
@@ -4479,10 +4395,8 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    if (!gui_yank)
 	    {
 		VIsual_active = FALSE;
-#ifdef FEAT_MOUSE
 		setmouse();
 		mouse_dragging = 0;
-#endif
 		may_clear_cmdline();
 		if ((oap->op_type == OP_YANK
 			    || oap->op_type == OP_COLON

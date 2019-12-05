@@ -1548,6 +1548,7 @@ endfunc
 
 func Test_write_to_deleted_buffer()
   CheckExecutable echo
+  CheckFeature quickfix
 
   let job = job_start('echo hello', {'out_io': 'buffer', 'out_name': 'test_buffer', 'out_msg': 0})
   let bufnr = bufnr('test_buffer')

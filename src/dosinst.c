@@ -23,7 +23,7 @@
 #define GVIMEXT64_PATH	    "GvimExt64\\gvimext.dll"
 #define GVIMEXT32_PATH	    "GvimExt32\\gvimext.dll"
 
-/* Macro to do an error check I was typing over and over */
+// Macro to do an error check I was typing over and over
 #define CHECK_REG_ERROR(code) \
     do { \
 	if (code != ERROR_SUCCESS) \
@@ -33,31 +33,31 @@
 	} \
     } while (0)
 
-int	has_vim = 0;		/* installable vim.exe exists */
-int	has_gvim = 0;		/* installable gvim.exe exists */
+int	has_vim = 0;		// installable vim.exe exists
+int	has_gvim = 0;		// installable gvim.exe exists
 
-char	oldvimrc[BUFSIZE];	/* name of existing vimrc file */
-char	vimrc[BUFSIZE];		/* name of vimrc file to create */
+char	oldvimrc[BUFSIZE];	// name of existing vimrc file
+char	vimrc[BUFSIZE];		// name of vimrc file to create
 
-char	*default_bat_dir = NULL;  /* when not NULL, use this as the default
-				     directory to write .bat files in */
-char	*default_vim_dir = NULL;  /* when not NULL, use this as the default
-				     install dir for NSIS */
+char	*default_bat_dir = NULL;  // when not NULL, use this as the default
+				  // directory to write .bat files in
+char	*default_vim_dir = NULL;  // when not NULL, use this as the default
+				  // install dir for NSIS
 
 /*
  * Structure used for each choice the user can make.
  */
 struct choice
 {
-    int	    active;			/* non-zero when choice is active */
-    char    *text;			/* text displayed for this choice */
-    void    (*changefunc)(int idx);	/* function to change this choice */
-    int	    arg;			/* argument for function */
-    void    (*installfunc)(int idx);	/* function to install this choice */
+    int	    active;			// non-zero when choice is active
+    char    *text;			// text displayed for this choice
+    void    (*changefunc)(int idx);	// function to change this choice
+    int	    arg;			// argument for function
+    void    (*installfunc)(int idx);	// function to install this choice
 };
 
-struct choice	choices[30];		/* choices the user can make */
-int		choice_count = 0;	/* number of choices available */
+struct choice	choices[30];		// choices the user can make
+int		choice_count = 0;	// number of choices available
 
 #define TABLE_SIZE(s)	(int)(sizeof(s) / sizeof(*s))
 
@@ -123,13 +123,13 @@ static char *(vimfiles_dir_choices[]) =
     "In your HOME directory",
 };
 
-/* non-zero when selected to install the popup menu entry. */
+// non-zero when selected to install the popup menu entry.
 static int	install_popup = 0;
 
-/* non-zero when selected to install the "Open with" entry. */
+// non-zero when selected to install the "Open with" entry.
 static int	install_openwith = 0;
 
-/* non-zero when need to add an uninstall entry in the registry */
+// non-zero when need to add an uninstall entry in the registry
 static int	need_uninstall_entry = 0;
 
 /*
@@ -191,7 +191,7 @@ check_unpack(void)
     FILE	*fd;
     struct stat	st;
 
-    /* check for presence of the correct version number in installdir[] */
+    // check for presence of the correct version number in installdir[]
     runtimeidx = strlen(installdir) - strlen(VIM_VERSION_NODOT);
     if (runtimeidx <= 0
 	    || stricmp(installdir + runtimeidx, VIM_VERSION_NODOT) != 0
@@ -204,8 +204,8 @@ check_unpack(void)
 	myexit(1);
     }
 
-    /* check if filetype.vim is present, which means the runtime archive has
-     * been unpacked  */
+    // check if filetype.vim is present, which means the runtime archive has
+    // been unpacked
     sprintf(buf, "%s\\filetype.vim", installdir);
     if (stat(buf, &st) < 0)
     {
@@ -216,7 +216,7 @@ check_unpack(void)
 	myexit(1);
     }
 
-    /* Check if vim.exe or gvim.exe is in the current directory. */
+    // Check if vim.exe or gvim.exe is in the current directory.
     if ((fd = fopen("gvim.exe", "r")) != NULL)
     {
 	fclose(fd);
@@ -251,32 +251,32 @@ pathcmp(char *p, int plen, char *q, int qlen)
 	qlen = strlen(q);
     for (i = 0; ; ++i)
     {
-	/* End of "p": check if "q" also ends or just has a slash. */
+	// End of "p": check if "q" also ends or just has a slash.
 	if (i == plen)
 	{
-	    if (i == qlen)  /* match */
+	    if (i == qlen)  // match
 		return 0;
 	    if (i == qlen - 1 && (q[i] == '\\' || q[i] == '/'))
-		return 0;   /* match with trailing slash */
-	    return 1;	    /* no match */
+		return 0;   // match with trailing slash
+	    return 1;	    // no match
 	}
 
-	/* End of "q": check if "p" also ends or just has a slash. */
+	// End of "q": check if "p" also ends or just has a slash.
 	if (i == qlen)
 	{
-	    if (i == plen)  /* match */
+	    if (i == plen)  // match
 		return 0;
 	    if (i == plen - 1 && (p[i] == '\\' || p[i] == '/'))
-		return 0;   /* match with trailing slash */
-	    return 1;	    /* no match */
+		return 0;   // match with trailing slash
+	    return 1;	    // no match
 	}
 
 	if (!(mytoupper(p[i]) == mytoupper(q[i])
 		|| ((p[i] == '/' || p[i] == '\\')
 		    && (q[i] == '/' || q[i] == '\\'))))
-	    return 1;	    /* no match */
+	    return 1;	    // no match
     }
-    /*NOTREACHED*/
+    //NOTREACHED
 }
 
 /*
@@ -308,7 +308,7 @@ findoldfile(char **destination)
 
     tmpname = alloc(strlen(cp) + 1);
     strcpy(tmpname, cp);
-    tmpname[strlen(tmpname) - 1] = 'x';	/* .exe -> .exx */
+    tmpname[strlen(tmpname) - 1] = 'x';	// .exe -> .exx
 
     if (access(tmpname, 0) == 0)
     {
@@ -347,7 +347,7 @@ find_bat_exe(int check_bat_only)
 {
     int		i;
 
-    /* avoid looking in the "installdir" by chdir to system root */
+    // avoid looking in the "installdir" by chdir to system root
     mch_chdir(sysdrive);
     mch_chdir("\\");
 
@@ -386,7 +386,7 @@ get_vim_env(void)
     FILE	*fd;
     char	fname[BUFSIZE];
 
-    /* First get $VIMRUNTIME.  If it's set, remove the tail. */
+    // First get $VIMRUNTIME.  If it's set, remove the tail.
     vim = getenv("VIMRUNTIME");
     if (vim != NULL && *vim != 0 && strlen(vim) < sizeof(buf))
     {
@@ -399,18 +399,18 @@ get_vim_env(void)
 	vim = getenv("VIM");
 	if (vim == NULL || *vim == 0)
 	{
-	    /* Use the directory from an old uninstall entry. */
+	    // Use the directory from an old uninstall entry.
 	    if (default_vim_dir != NULL)
 		vim = default_vim_dir;
 	    else
-		/* Let NSIS know there is no default, it should use
-		 * $PROGRAMFILES. */
+		// Let NSIS know there is no default, it should use
+		// $PROGRAMFILES.
 		vim = "";
 	}
     }
 
-    /* NSIS also uses GetTempPath(), thus we should get the same directory
-     * name as where NSIS will look for vimini.ini. */
+    // NSIS also uses GetTempPath(), thus we should get the same directory
+    // name as where NSIS will look for vimini.ini.
     GetTempPath(sizeof(fname) - 12, fname);
     add_pathsep(fname);
     strcat(fname, "vimini.ini");
@@ -418,8 +418,8 @@ get_vim_env(void)
     fd = fopen(fname, "w");
     if (fd != NULL)
     {
-	/* Make it look like an .ini file, so that NSIS can read it with a
-	 * ReadINIStr command. */
+	// Make it look like an .ini file, so that NSIS can read it with a
+	// ReadINIStr command.
 	fprintf(fd, "[vimini]\n");
 	fprintf(fd, "dir=\"%s\"\n", vim);
 	fclose(fd);
@@ -437,7 +437,7 @@ static int num_windows;
  * Callback used for EnumWindows():
  * Count the window if the title looks like it is for the uninstaller.
  */
-/*ARGSUSED*/
+//ARGSUSED
     static BOOL CALLBACK
 window_cb(HWND hwnd, LPARAM lparam)
 {
@@ -469,7 +469,7 @@ run_silent_uninstall(char *uninst_exe)
     if (!GetTempPath(sizeof(temp_dir), temp_dir))
 	return FAIL;
 
-    /* Copy the uninstaller to a temporary exe. */
+    // Copy the uninstaller to a temporary exe.
     tick = GetTickCount();
     for (i = 0; ; i++)
     {
@@ -483,7 +483,7 @@ run_silent_uninstall(char *uninst_exe)
 	    return FAIL;
     }
 
-    /* Run the copied uninstaller silently. */
+    // Run the copied uninstaller silently.
     if (strchr(temp_uninst, ' ') != NULL)
 	sprintf(buf, "\"%s\" /S _?=%s", temp_uninst, vimrt_dir);
     else
@@ -531,12 +531,12 @@ uninstall_check(int skip_question)
 
 	if (strncmp("Vim", subkey_name_buff, 3) == 0)
 	{
-	    /* Open the key named Vim* */
+	    // Open the key named Vim*
 	    code = RegOpenKeyEx(key_handle, subkey_name_buff, 0,
 			   KEY_WOW64_64KEY | KEY_READ, &uninstall_key_handle);
 	    CHECK_REG_ERROR(code);
 
-	    /* get the DisplayName out of it to show the user */
+	    // get the DisplayName out of it to show the user
 	    local_bufsize = sizeof(temp_string_buffer);
 	    code = RegQueryValueEx(uninstall_key_handle, "displayname", 0,
 		    &value_type, (LPBYTE)temp_string_buffer,
@@ -569,13 +569,13 @@ uninstall_check(int skip_question)
 		printf("\nDo you want to uninstall \"%s\" now?\n(y)es/(n)o)  ", temp_string_buffer);
 	    fflush(stdout);
 
-	    /* get the UninstallString */
+	    // get the UninstallString
 	    local_bufsize = sizeof(temp_string_buffer);
 	    code = RegQueryValueEx(uninstall_key_handle, "uninstallstring", 0,
 		    &value_type, (LPBYTE)temp_string_buffer, &local_bufsize);
 	    CHECK_REG_ERROR(code);
 
-	    /* Remember the directory, it is used as the default for NSIS. */
+	    // Remember the directory, it is used as the default for NSIS.
 	    default_vim_dir = alloc(strlen(temp_string_buffer) + 1);
 	    strcpy(default_vim_dir, temp_string_buffer);
 	    remove_tail(default_vim_dir);
@@ -598,25 +598,25 @@ uninstall_check(int skip_question)
 		{
 		    case 'y':
 		    case 'Y':
-			/* save the number of uninstall keys so we can know if
-			 * it changed */
+			// save the number of uninstall keys so we can know if
+			// it changed
 			RegQueryInfoKey(key_handle, NULL, NULL, NULL,
 					     &orig_num_keys, NULL, NULL, NULL,
 						      NULL, NULL, NULL, NULL);
 
-			/* Find existing .bat files before deleting them. */
+			// Find existing .bat files before deleting them.
 			find_bat_exe(TRUE);
 
 			if (allow_silent)
 			{
 			    if (run_silent_uninstall(temp_string_buffer)
 								    == FAIL)
-				allow_silent = 0; /* Retry with non silent. */
+				allow_silent = 0; // Retry with non silent.
 			}
 			if (!allow_silent)
 			{
-			    /* Execute the uninstall program.  Put it in double
-			     * quotes if there is an embedded space. */
+			    // Execute the uninstall program.  Put it in double
+			    // quotes if there is an embedded space.
 			    {
 				char buf[BUFSIZE];
 
@@ -627,18 +627,18 @@ uninstall_check(int skip_question)
 				run_command(buf);
 			    }
 
-			    /* Count the number of windows with a title that match
-			     * the installer, so that we can check when it's done.
-			     * The uninstaller copies itself, executes the copy
-			     * and exits, thus we can't wait for the process to
-			     * finish. */
-			    sleep(1);  /* wait for uninstaller to start up */
+			    // Count the number of windows with a title that
+			    // match the installer, so that we can check when
+			    // it's done.  The uninstaller copies itself,
+			    // executes the copy and exits, thus we can't wait
+			    // for the process to finish.
+			    sleep(1);  // wait for uninstaller to start up
 			    num_windows = 0;
 			    EnumWindows(window_cb, 0);
 			    if (num_windows == 0)
 			    {
-				/* Did not find the uninstaller, ask user to press
-				 * Enter when done. Just in case. */
+				// Did not find the uninstaller, ask user to
+				// press Enter when done. Just in case.
 				printf("Press Enter when the uninstaller is finished\n");
 				rewind(stdin);
 				(void)getchar();
@@ -650,7 +650,8 @@ uninstall_check(int skip_question)
 				{
 				    printf(".");
 				    fflush(stdout);
-				    sleep(1);  /* wait for the uninstaller to finish */
+				    sleep(1);	// wait for the uninstaller to
+						// finish
 				    num_windows = 0;
 				    EnumWindows(window_cb, 0);
 				} while (num_windows > 0);
@@ -658,10 +659,10 @@ uninstall_check(int skip_question)
 			}
 			printf("\nDone!\n");
 
-			/* Check if an uninstall reg key was deleted.
-			 * if it was, we want to decrement key_index.
-			 * if we don't do this, we will skip the key
-			 * immediately after any key that we delete.  */
+			// Check if an uninstall reg key was deleted.
+			// if it was, we want to decrement key_index.
+			// if we don't do this, we will skip the key
+			// immediately after any key that we delete.
 			RegQueryInfoKey(key_handle, NULL, NULL, NULL,
 					      &new_num_keys, NULL, NULL, NULL,
 						      NULL, NULL, NULL, NULL);
@@ -673,11 +674,11 @@ uninstall_check(int skip_question)
 
 		    case 'n':
 		    case 'N':
-			/* Do not uninstall */
+			// Do not uninstall
 			input = 'n';
 			break;
 
-		    default: /* just drop through and redo the loop */
+		    default: // just drop through and redo the loop
 			break;
 		}
 
@@ -705,7 +706,7 @@ inspect_system(void)
     int		i;
     int		foundone;
 
-    /* This may take a little while, let the user know what we're doing. */
+    // This may take a little while, let the user know what we're doing.
     printf("Inspecting system...\n");
 
     /*
@@ -785,7 +786,7 @@ inspect_system(void)
     strcpy(oldvimrc + runtimeidx, "_vimrc");
     if ((fd = fopen(oldvimrc, "r")) == NULL)
     {
-	strcpy(oldvimrc + runtimeidx, "vimrc~1"); /* short version of .vimrc */
+	strcpy(oldvimrc + runtimeidx, "vimrc~1"); // short version of .vimrc
 	if ((fd = fopen(oldvimrc, "r")) == NULL)
 	{
 	    strcpy(oldvimrc + runtimeidx, ".vimrc");
@@ -814,9 +815,8 @@ add_dummy_choice(void)
     ++choice_count;
 }
 
-/***********************************************
- * stuff for creating the batch files.
- */
+////////////////////////////////////////////////
+// stuff for creating the batch files.
 
 /*
  * Install the vim.bat, gvim.bat, etc. files.
@@ -844,7 +844,8 @@ install_bat_choice(int idx)
 	    fprintf(fd, "\n");
 	    fprintf(fd, "setlocal\n");
 
-	    /* Don't use double quotes for the "set" argument, also when it
+	    /*
+	     * Don't use double quotes for the "set" argument, also when it
 	     * contains a space.  The quotes would be included in the value
 	     * for MSDOS and NT.
 	     * The order of preference is:
@@ -858,7 +859,7 @@ install_bat_choice(int idx)
 	    fprintf(fd, "if exist \"%%VIMRUNTIME%%\\%s\" set VIM_EXE_DIR=%%VIMRUNTIME%%\n", exename);
 	    fprintf(fd, "\n");
 
-	    /* Give an error message when the executable could not be found. */
+	    // Give an error message when the executable could not be found.
 	    fprintf(fd, "if exist \"%%VIM_EXE_DIR%%\\%s\" goto havevim\n",
 								     exename);
 	    fprintf(fd, "echo \"%%VIM_EXE_DIR%%\\%s\" not found\n", exename);
@@ -890,15 +891,15 @@ install_bat_choice(int idx)
 	    fprintf(fd, "if .%%OS%%==.Windows_NT goto ntaction\n");
 	    fprintf(fd, "\n");
 
-	    /* For gvim.exe use "start" to avoid that the console window stays
-	     * open. */
+	    // For gvim.exe use "start" to avoid that the console window stays
+	    // open.
 	    if (*exename == 'g')
 	    {
 		fprintf(fd, "if .%%VIMNOFORK%%==.1 goto nofork\n");
 		fprintf(fd, "start ");
 	    }
 
-	    /* Always use quotes, $VIM or $VIMRUNTIME might have a space. */
+	    // Always use quotes, $VIM or $VIMRUNTIME might have a space.
 	    fprintf(fd, "\"%%VIM_EXE_DIR%%\\%s\" %s %%VIMARGS%%\n",
 							     exename, vimarg);
 	    fprintf(fd, "goto eof\n");
@@ -908,7 +909,7 @@ install_bat_choice(int idx)
 	    {
 		fprintf(fd, ":nofork\n");
 		fprintf(fd, "start /w ");
-		/* Always use quotes, $VIM or $VIMRUNTIME might have a space. */
+		// Always use quotes, $VIM or $VIMRUNTIME might have a space.
 		fprintf(fd, "\"%%VIM_EXE_DIR%%\\%s\" %s %%VIMARGS%%\n",
 							     exename, vimarg);
 		fprintf(fd, "goto eof\n");
@@ -918,15 +919,15 @@ install_bat_choice(int idx)
 	    fprintf(fd, ":ntaction\n");
 	    fprintf(fd, "rem for WinNT we can use %%*\n");
 
-	    /* For gvim.exe use "start /b" to avoid that the console window
-	     * stays open. */
+	    // For gvim.exe use "start /b" to avoid that the console window
+	    // stays open.
 	    if (*exename == 'g')
 	    {
 		fprintf(fd, "if .%%VIMNOFORK%%==.1 goto noforknt\n");
 		fprintf(fd, "start \"dummy\" /b ");
 	    }
 
-	    /* Always use quotes, $VIM or $VIMRUNTIME might have a space. */
+	    // Always use quotes, $VIM or $VIMRUNTIME might have a space.
 	    fprintf(fd, "\"%%VIM_EXE_DIR%%\\%s\" %s %%*\n", exename, vimarg);
 	    fprintf(fd, "goto eof\n");
 	    fprintf(fd, "\n");
@@ -935,7 +936,7 @@ install_bat_choice(int idx)
 	    {
 		fprintf(fd, ":noforknt\n");
 		fprintf(fd, "start \"dummy\" /b /wait ");
-		/* Always use quotes, $VIM or $VIMRUNTIME might have a space. */
+		// Always use quotes, $VIM or $VIMRUNTIME might have a space.
 		fprintf(fd, "\"%%VIM_EXE_DIR%%\\%s\" %s %%*\n",
 							     exename, vimarg);
 	    }
@@ -1064,15 +1065,15 @@ change_bat_choice(int idx)
 
     if (n == count)
     {
-	/* Selected last item, don't create bat file. */
+	// Selected last item, don't create bat file.
 	*batpath = NUL;
 	if (choices[idx].arg != 0)
 	    alloc_text(idx, "    Do NOT create %s", name);
     }
     else
     {
-	/* Selected one of the paths.  For the first item only keep the path,
-	 * for the others append the batch file name. */
+	// Selected one of the paths.  For the first item only keep the path,
+	// for the others append the batch file name.
 	strcpy(batpath, names[n]);
 	add_pathsep(batpath);
 	if (choices[idx].arg != 0)
@@ -1092,7 +1093,7 @@ change_main_bat_choice(int idx)
 {
     int		i;
 
-    /* let the user select a default directory or NONE */
+    // let the user select a default directory or NONE
     change_bat_choice(idx);
 
     if (targets[0].batpath[0] != NUL)
@@ -1100,11 +1101,11 @@ change_main_bat_choice(int idx)
     else
 	choices[idx].text = bat_text_no;
 
-    /* update the individual batch file selections */
+    // update the individual batch file selections
     for (i = 1; i < TARGET_COUNT; ++i)
     {
-	/* Only make it active when the first item has a path and the vim.exe
-	 * or gvim.exe exists (there is a changefunc then). */
+	// Only make it active when the first item has a path and the vim.exe
+	// or gvim.exe exists (there is a changefunc then).
 	if (targets[0].batpath[0] != NUL
 		&& choices[idx + i].changefunc != NULL)
 	{
@@ -1135,10 +1136,10 @@ init_bat_choice(int target)
     choices[choice_count].arg = target;
     choices[choice_count].installfunc = install_bat_choice;
     choices[choice_count].active = 1;
-    choices[choice_count].text = NULL;	/* will be set below */
+    choices[choice_count].text = NULL;	// will be set below
     if (oldbat != NULL)
     {
-	/* A [g]vim.bat exists: Only choice is to overwrite it or not. */
+	// A [g]vim.bat exists: Only choice is to overwrite it or not.
 	choices[choice_count].changefunc = toggle_bat_choice;
 	*batpath = NUL;
 	toggle_bat_choice(choice_count);
@@ -1146,19 +1147,19 @@ init_bat_choice(int target)
     else
     {
 	if (default_bat_dir != NULL)
-	    /* Prefer using the same path as an existing .bat file. */
+	    // Prefer using the same path as an existing .bat file.
 	    strcpy(batpath, default_bat_dir);
 	else
 	{
-	    /* No [g]vim.bat exists: Write it to a directory in $PATH.  Use
-	     * $WINDIR by default, if it's empty the first item in $PATH. */
+	    // No [g]vim.bat exists: Write it to a directory in $PATH.  Use
+	    // $WINDIR by default, if it's empty the first item in $PATH.
 	    p = getenv("WINDIR");
 	    if (p != NULL && *p != NUL)
 		strcpy(batpath, p);
 	    else
 	    {
 		p = getenv("PATH");
-		if (p == NULL || *p == NUL)		/* "cannot happen" */
+		if (p == NULL || *p == NUL)		// "cannot happen"
 		    strcpy(batpath, "C:/Windows");
 		else
 		{
@@ -1186,8 +1187,8 @@ init_bat_choices(void)
 {
     int		i;
 
-    /* The first item is used to switch installing batch files on/off and
-     * setting the default path. */
+    // The first item is used to switch installing batch files on/off and
+    // setting the default path.
     choices[choice_count].text = bat_text_yes;
     choices[choice_count].changefunc = change_main_bat_choice;
     choices[choice_count].installfunc = NULL;
@@ -1195,8 +1196,8 @@ init_bat_choices(void)
     choices[choice_count].arg = 0;
     ++choice_count;
 
-    /* Add items for each batch file target.  Only used when not disabled by
-     * the first item.  When a .exe exists, don't offer to create a .bat. */
+    // Add items for each batch file target.  Only used when not disabled by
+    // the first item.  When a .exe exists, don't offer to create a .bat.
     for (i = 1; i < TARGET_COUNT; ++i)
 	if (targets[i].oldexe == NULL
 		&& (targets[i].exenamearg[0] == 'g' ? has_gvim : has_vim))
@@ -1214,8 +1215,8 @@ install_vimrc(int idx)
     FILE	*fd, *tfd;
     char	*fname;
 
-    /* If an old vimrc file exists, overwrite it.
-     * Otherwise create a new one. */
+    // If an old vimrc file exists, overwrite it.
+    // Otherwise create a new one.
     if (*oldvimrc != NUL)
 	fname = oldvimrc;
     else
@@ -1275,7 +1276,7 @@ install_vimrc(int idx)
     }
     if ((tfd = fopen("diff.exe", "r")) != NULL)
     {
-	/* Use the diff.exe that comes with the self-extracting gvim.exe. */
+	// Use the diff.exe that comes with the self-extracting gvim.exe.
 	fclose(tfd);
 	fprintf(fd, "\n");
 	fprintf(fd, "\" Use the internal diff if available.\n");
@@ -1287,8 +1288,8 @@ install_vimrc(int idx)
 	fprintf(fd, "  let opt = '-a --binary '\n");
 	fprintf(fd, "  if &diffopt =~ 'icase' | let opt = opt . '-i ' | endif\n");
 	fprintf(fd, "  if &diffopt =~ 'iwhite' | let opt = opt . '-b ' | endif\n");
-	/* Use quotes only when needed, they may cause trouble.
-	 * Always escape "!". */
+	// Use quotes only when needed, they may cause trouble.
+	// Always escape "!".
 	fprintf(fd, "  let arg1 = v:fname_in\n");
 	fprintf(fd, "  if arg1 =~ ' ' | let arg1 = '\"' . arg1 . '\"' | endif\n");
 	fprintf(fd, "  let arg1 = substitute(arg1, '!', '\\!', 'g')\n");
@@ -1299,13 +1300,13 @@ install_vimrc(int idx)
 	fprintf(fd, "  if arg3 =~ ' ' | let arg3 = '\"' . arg3 . '\"' | endif\n");
 	fprintf(fd, "  let arg3 = substitute(arg3, '!', '\\!', 'g')\n");
 
-	/* If the path has a space:  When using cmd.exe (Win NT/2000/XP) put
-	 * quotes around the diff command and rely on the default value of
-	 * shellxquote to solve the quoting problem for the whole command.
-	 *
-	 * Otherwise put a double quote just before the space and at the
-	 * end of the command.  Putting quotes around the whole thing
-	 * doesn't work on Win 95/98/ME.  This is mostly guessed! */
+	// If the path has a space:  When using cmd.exe (Win NT/2000/XP) put
+	// quotes around the diff command and rely on the default value of
+	// shellxquote to solve the quoting problem for the whole command.
+	//
+	// Otherwise put a double quote just before the space and at the
+	// end of the command.  Putting quotes around the whole thing
+	// doesn't work on Win 95/98/ME.  This is mostly guessed!
 	fprintf(fd, "  if $VIMRUNTIME =~ ' '\n");
 	fprintf(fd, "    if &sh =~ '\\<cmd'\n");
 	fprintf(fd, "      if empty(&shellxquote)\n");
@@ -1336,7 +1337,7 @@ change_vimrc_choice(int idx)
 {
     if (choices[idx].installfunc != NULL)
     {
-	/* Switch to NOT change or create a vimrc file. */
+	// Switch to NOT change or create a vimrc file.
 	if (*oldvimrc != NUL)
 	    alloc_text(idx, "Do NOT change startup file %s", oldvimrc);
 	else
@@ -1348,7 +1349,7 @@ change_vimrc_choice(int idx)
     }
     else
     {
-	/* Switch to change or create a vimrc file. */
+	// Switch to change or create a vimrc file.
 	if (*oldvimrc != NUL)
 	    alloc_text(idx, "Overwrite startup file %s with:", oldvimrc);
 	else
@@ -1393,11 +1394,11 @@ change_mouse_choice(int idx)
     static void
 init_vimrc_choices(void)
 {
-    /* set path for a new _vimrc file (also when not used) */
+    // set path for a new _vimrc file (also when not used)
     strcpy(vimrc, installdir);
     strcpy(vimrc + runtimeidx, "_vimrc");
 
-    /* Set opposite value and then toggle it by calling change_vimrc_choice() */
+    // Set opposite value and then toggle it by calling change_vimrc_choice()
     if (*oldvimrc == NUL)
 	choices[choice_count].installfunc = NULL;
     else
@@ -1408,21 +1409,21 @@ init_vimrc_choices(void)
     choices[choice_count].active = 1;
     ++choice_count;
 
-    /* default way to run Vim */
+    // default way to run Vim
     alloc_text(choice_count, compat_text, compat_choices[compat_choice]);
     choices[choice_count].changefunc = change_run_choice;
     choices[choice_count].installfunc = NULL;
     choices[choice_count].active = (*oldvimrc == NUL);
     ++choice_count;
 
-    /* Whether to remap keys */
+    // Whether to remap keys
     alloc_text(choice_count, remap_text , remap_choices[remap_choice]);
     choices[choice_count].changefunc = change_remap_choice;
     choices[choice_count].installfunc = NULL;
     choices[choice_count].active = (*oldvimrc == NUL);
     ++choice_count;
 
-    /* default way to use the mouse */
+    // default way to use the mouse
     alloc_text(choice_count, mouse_text, mouse_choices[mouse_choice]);
     choices[choice_count].changefunc = change_mouse_choice;
     choices[choice_count].installfunc = NULL;
@@ -1608,7 +1609,7 @@ register_uninstall(
  * - to add Vim to the "Open with..." list
  * - to uninstall Vim
  */
-/*ARGSUSED*/
+//ARGSUSED
     static int
 install_registry(void)
 {
@@ -1684,7 +1685,7 @@ install_registry(void)
 #endif
 	    );
 
-    /* For the NSIS installer use the generated uninstaller. */
+    // For the NSIS installer use the generated uninstaller.
     if (interactive)
 	sprintf(uninstall_string, "%s\\uninstall.exe", installdir);
     else
@@ -1737,7 +1738,7 @@ init_popup_choice(void)
 	choices[choice_count].changefunc = change_popup_choice;
 	choices[choice_count].installfunc = NULL;
 	choices[choice_count].active = 1;
-	change_popup_choice(choice_count);  /* set the text */
+	change_popup_choice(choice_count);  // set the text
 	++choice_count;
     }
     else
@@ -1771,15 +1772,14 @@ init_openwith_choice(void)
 	choices[choice_count].changefunc = change_openwith_choice;
 	choices[choice_count].installfunc = NULL;
 	choices[choice_count].active = 1;
-	change_openwith_choice(choice_count);  /* set the text */
+	change_openwith_choice(choice_count);  // set the text
 	++choice_count;
     }
     else
 	add_dummy_choice();
 }
 
-/* create_shortcut
- *
+/*
  * Create a shell link.
  *
  * returns 0 on failure, non-zero on successful completion.
@@ -1800,7 +1800,7 @@ create_shortcut(
     HRESULT	    hres;
     IPersistFile	    *persistfile_ptr;
 
-    /* Initialize COM library */
+    // Initialize COM library
     hres = CoInitialize(NULL);
     if (!SUCCEEDED(hres))
     {
@@ -1808,18 +1808,18 @@ create_shortcut(
 	return FAIL;
     }
 
-    /* Instantiate a COM object for the ShellLink, store a pointer to it
-     * in shelllink_ptr.  */
+    // Instantiate a COM object for the ShellLink, store a pointer to it
+    // in shelllink_ptr.
     hres = CoCreateInstance(&CLSID_ShellLink,
 			   NULL,
 			   CLSCTX_INPROC_SERVER,
 			   &IID_IShellLink,
 			   (void **) &shelllink_ptr);
 
-    if (SUCCEEDED(hres)) /* If the instantiation was successful... */
+    if (SUCCEEDED(hres)) // If the instantiation was successful...
     {
-	/* ...Then build a PersistFile interface for the ShellLink so we can
-	 * save it as a file after we build it.  */
+	// ...Then build a PersistFile interface for the ShellLink so we can
+	// save it as a file after we build it.
 	hres = shelllink_ptr->lpVtbl->QueryInterface(shelllink_ptr,
 		&IID_IPersistFile, (void **) &persistfile_ptr);
 
@@ -1827,12 +1827,11 @@ create_shortcut(
 	{
 	    wchar_t wsz[BUFSIZE];
 
-	    /* translate the (possibly) multibyte shortcut filename to windows
-	     * Unicode so it can be used as a file name.
-	     */
+	    // translate the (possibly) multibyte shortcut filename to windows
+	    // Unicode so it can be used as a file name.
 	    MultiByteToWideChar(CP_ACP, 0, shortcut_name, -1, wsz, sizeof(wsz)/sizeof(wsz[0]));
 
-	    /* set the attributes */
+	    // set the attributes
 	    shelllink_ptr->lpVtbl->SetPath(shelllink_ptr, shortcut_target);
 	    shelllink_ptr->lpVtbl->SetWorkingDirectory(shelllink_ptr,
 								  workingdir);
@@ -1840,7 +1839,7 @@ create_shortcut(
 						    iconfile_path, iconindex);
 	    shelllink_ptr->lpVtbl->SetArguments(shelllink_ptr, shortcut_args);
 
-	    /* save the shortcut to a file and return the PersistFile object*/
+	    // save the shortcut to a file and return the PersistFile object
 	    persistfile_ptr->lpVtbl->Save(persistfile_ptr, wsz, 1);
 	    persistfile_ptr->lpVtbl->Release(persistfile_ptr);
 	}
@@ -1850,7 +1849,7 @@ create_shortcut(
 	    return FAIL;
 	}
 
-	/* Return the ShellLink object */
+	// Return the ShellLink object
 	shelllink_ptr->lpVtbl->Release(shelllink_ptr);
     }
     else
@@ -1882,11 +1881,11 @@ build_link_name(
 	return FAIL;
     }
 
-    /* Make sure the directory exists (create Start Menu\Programs\Vim).
-     * Ignore errors if it already exists. */
+    // Make sure the directory exists (create Start Menu\Programs\Vim).
+    // Ignore errors if it already exists.
     vim_mkdir(shell_folder_path, 0755);
 
-    /* build the path to the shortcut and the path to gvim.exe */
+    // build the path to the shortcut and the path to gvim.exe
     sprintf(link_path, "%s\\%s.lnk", shell_folder_path, link_name);
 
     return OK;
@@ -1894,8 +1893,8 @@ build_link_name(
 
     static int
 build_shortcut(
-	const char *name,	/* Name of the shortcut */
-	const char *exename,	/* Name of the executable (e.g., vim.exe) */
+	const char *name,	// Name of the shortcut
+	const char *exename,	// Name of the executable (e.g., vim.exe)
 	const char *args,
 	const char *shell_folder,
 	const char *workingdir)
@@ -1913,7 +1912,7 @@ build_shortcut(
 	return FAIL;
     }
 
-    /* Create the shortcut: */
+    // Create the shortcut:
     return create_shortcut(link_name, executable_path, 0,
 					   executable_path, args, workingdir);
 }
@@ -1965,8 +1964,8 @@ install_start_menu(int idx)
 		interactive ? "uninstall.exe" : "uninstall-gui.exe", "",
 					   VIM_STARTMENU, installdir) == FAIL)
 	return;
-    /* For Windows NT the working dir of the vimtutor.bat must be right,
-     * otherwise gvim.exe won't be found and using gvimbat doesn't work. */
+    // For Windows NT the working dir of the vimtutor.bat must be right,
+    // otherwise gvim.exe won't be found and using gvimbat doesn't work.
     if (build_shortcut("Vim tutor", "vimtutor.bat", "",
 					   VIM_STARTMENU, installdir) == FAIL)
 	return;
@@ -1976,7 +1975,7 @@ install_start_menu(int idx)
     {
 	char	shell_folder_path[BUFSIZE];
 
-	/* Creating the URL shortcut works a bit differently... */
+	// Creating the URL shortcut works a bit differently...
 	if (get_shell_folder_path(shell_folder_path, VIM_STARTMENU) == FAIL)
 	{
 	    printf("Finding the path of the Start menu failed\n");
@@ -2020,7 +2019,7 @@ toggle_startmenu_choice(int idx)
     void
 install_shortcut_gvim(int idx)
 {
-    /* Create shortcut(s) on the desktop */
+    // Create shortcut(s) on the desktop
     if (choices[idx].arg)
     {
 	(void)build_shortcut(icon_names[0], "gvim.exe",
@@ -2077,11 +2076,11 @@ toggle_shortcut_choice(int idx)
     static void
 init_startmenu_choice(void)
 {
-    /* Start menu */
+    // Start menu
     choices[choice_count].changefunc = toggle_startmenu_choice;
     choices[choice_count].installfunc = NULL;
     choices[choice_count].active = 1;
-    toggle_startmenu_choice(choice_count);	/* set the text */
+    toggle_startmenu_choice(choice_count);	// set the text
     ++choice_count;
 }
 
@@ -2091,7 +2090,7 @@ init_startmenu_choice(void)
     static void
 init_shortcut_choices(void)
 {
-    /* Shortcut to gvim */
+    // Shortcut to gvim
     choices[choice_count].text = NULL;
     choices[choice_count].arg = 0;
     choices[choice_count].active = has_gvim;
@@ -2100,7 +2099,7 @@ init_shortcut_choices(void)
     toggle_shortcut_choice(choice_count);
     ++choice_count;
 
-    /* Shortcut to evim */
+    // Shortcut to evim
     choices[choice_count].text = NULL;
     choices[choice_count].arg = 0;
     choices[choice_count].active = has_gvim;
@@ -2109,7 +2108,7 @@ init_shortcut_choices(void)
     toggle_shortcut_choice(choice_count);
     ++choice_count;
 
-    /* Shortcut to gview */
+    // Shortcut to gview
     choices[choice_count].text = NULL;
     choices[choice_count].arg = 0;
     choices[choice_count].active = has_gvim;
@@ -2145,7 +2144,7 @@ dir_remove_last(const char *path, char to[MAX_PATH])
     long last_char_to_copy;
     long path_length = strlen(path);
 
-    /* skip the last character just in case it is a '\\' */
+    // skip the last character just in case it is a '\\'
     last_char_to_copy = path_length - 2;
     c = path[last_char_to_copy];
 
@@ -2264,7 +2263,7 @@ change_directories_choice(int idx)
 {
     int	    choice_count = TABLE_SIZE(vimfiles_dir_choices);
 
-    /* Don't offer the $HOME choice if $HOME isn't set. */
+    // Don't offer the $HOME choice if $HOME isn't set.
     if (homedir == NULL)
 	--choice_count;
     choices[idx].arg = get_choice(vimfiles_dir_choices, choice_count);
@@ -2274,7 +2273,7 @@ change_directories_choice(int idx)
 /*
  * Create the plugin directories...
  */
-/*ARGSUSED*/
+//ARGSUSED
     static void
 install_vimfilesdir(int idx)
 {
@@ -2285,18 +2284,18 @@ install_vimfilesdir(int idx)
     char vimfiles_path[MAX_PATH + 9];
     char tmp_dirname[BUFSIZE];
 
-    /* switch on the location that the user wants the plugin directories
-     * built in */
+    // switch on the location that the user wants the plugin directories
+    // built in
     switch (vimfiles_dir_choice)
     {
 	case vimfiles_dir_vim:
 	{
-	    /* Go to the %VIM% directory - check env first, then go one dir
-	     *	   below installdir if there is no %VIM% environment variable.
-	     *	   The accuracy of $VIM is checked in inspect_system(), so we
-	     *	   can be sure it is ok to use here. */
+	    // Go to the %VIM% directory - check env first, then go one dir
+	    //	   below installdir if there is no %VIM% environment variable.
+	    //	   The accuracy of $VIM is checked in inspect_system(), so we
+	    //	   can be sure it is ok to use here.
 	    p = getenv("VIM");
-	    if (p == NULL) /* No $VIM in path */
+	    if (p == NULL) // No $VIM in path
 		dir_remove_last(installdir, vimdir_path);
 	    else
 		strcpy(vimdir_path, p);
@@ -2321,8 +2320,8 @@ install_vimfilesdir(int idx)
 	}
     }
 
-    /* Now, just create the directory.	If it already exists, it will fail
-     * silently.  */
+    // Now, just create the directory.	If it already exists, it will fail
+    // silently.
     sprintf(vimfiles_path, "%s\\vimfiles", vimdir_path);
     vim_mkdir(vimfiles_path, 0755);
 
@@ -2386,25 +2385,25 @@ init_directories_choice(void)
     static void
 setup_choices(void)
 {
-    /* install the batch files */
+    // install the batch files
     init_bat_choices();
 
-    /* (over) write _vimrc file */
+    // (over) write _vimrc file
     init_vimrc_choices();
 
-    /* Whether to add Vim to the popup menu */
+    // Whether to add Vim to the popup menu
     init_popup_choice();
 
-    /* Whether to add Vim to the "Open With..." menu */
+    // Whether to add Vim to the "Open With..." menu
     init_openwith_choice();
 
-    /* Whether to add Vim to the Start Menu. */
+    // Whether to add Vim to the Start Menu.
     init_startmenu_choice();
 
-    /* Whether to add shortcuts to the Desktop. */
+    // Whether to add shortcuts to the Desktop.
     init_shortcut_choices();
 
-    /* Whether to create the runtime directories. */
+    // Whether to create the runtime directories.
     init_directories_choice();
 }
 
@@ -2473,9 +2472,8 @@ command_line_setup_choices(int argc, char **argv)
 	}
 	else if (strcmp(argv[i], "-create-vimrc") == 0)
 	{
-	    /* Setup default vimrc choices.  If there is already a _vimrc file,
-	     * it will NOT be overwritten.
-	     */
+	    // Setup default vimrc choices.  If there is already a _vimrc file,
+	    // it will NOT be overwritten.
 	    init_vimrc_choices();
 	}
 	else if (strcmp(argv[i], "-vimrc-remap") == 0)
@@ -2554,15 +2552,15 @@ command_line_setup_choices(int argc, char **argv)
 		    print_cmd_line_help();
 		}
 	    }
-	    else /* No choice specified, default to vim directory */
+	    else // No choice specified, default to vim directory
 		vimfiles_dir_choice = (int)vimfiles_dir_vim;
 	    choices[choice_count - 1].arg = vimfiles_dir_choice;
 	}
 	else if (strcmp(argv[i], "-register-OLE") == 0)
 	{
-	    /* This is always done when gvim is found */
+	    // This is always done when gvim is found
 	}
-	else /* Unknown switch */
+	else // Unknown switch
 	{
 	    printf("Got unknown argument argv[%d] = %s\n", i, argv[i]);
 	    print_cmd_line_help();
@@ -2707,19 +2705,19 @@ install(void)
 {
     int		i;
 
-    /* Install the selected choices. */
+    // Install the selected choices.
     for (i = 0; i < choice_count; ++i)
 	if (choices[i].installfunc != NULL && choices[i].active)
 	    (choices[i].installfunc)(i);
 
-    /* Add some entries to the registry, if needed. */
+    // Add some entries to the registry, if needed.
     if (install_popup
 	    || install_openwith
 	    || (need_uninstall_entry && interactive)
 	    || !interactive)
 	install_registry();
 
-    /* Register gvim with OLE. */
+    // Register gvim with OLE.
     if (has_gvim)
 	install_OLE_register();
 }
@@ -2754,21 +2752,21 @@ main(int argc, char **argv)
     else
 	interactive = 1;
 
-    /* Initialize this program. */
+    // Initialize this program.
     do_inits(argv);
     init_homedir();
 
     if (argc > 1 && strcmp(argv[1], "-uninstall-check") == 0)
     {
-	/* Only check for already installed Vims.  Used by NSIS installer. */
+	// Only check for already installed Vims.  Used by NSIS installer.
 	i = uninstall_check(1);
 
-	/* Find the value of $VIM, because NSIS isn't able to do this by
-	 * itself. */
+	// Find the value of $VIM, because NSIS isn't able to do this by
+	// itself.
 	get_vim_env();
 
-	/* When nothing found exit quietly.  If something found wait for
-	 * a little while, so that the user can read the messages. */
+	// When nothing found exit quietly.  If something found wait for
+	// a little while, so that the user can read the messages.
 	if (i && _isatty(1))
 	    sleep(3);
 	exit(0);
@@ -2777,22 +2775,22 @@ main(int argc, char **argv)
     printf("This program sets up the installation of Vim "
 						   VIM_VERSION_MEDIUM "\n\n");
 
-    /* Check if the user unpacked the archives properly. */
+    // Check if the user unpacked the archives properly.
     check_unpack();
 
-    /* Check for already installed Vims. */
+    // Check for already installed Vims.
     if (interactive)
 	uninstall_check(0);
 
-    /* Find out information about the system. */
+    // Find out information about the system.
     inspect_system();
 
     if (interactive)
     {
-	/* Setup all the choices. */
+	// Setup all the choices.
 	setup_choices();
 
-	/* Let the user change choices and finally install (or quit). */
+	// Let the user change choices and finally install (or quit).
 	for (;;)
 	{
 	    request_choice();
@@ -2801,7 +2799,7 @@ main(int argc, char **argv)
 	    {
 		if (isdigit(buf[0]))
 		{
-		    /* Change a choice. */
+		    // Change a choice.
 		    i = atoi(buf);
 		    if (i > 0 && i <= choice_count && choices[i - 1].active)
 			(choices[i - 1].changefunc)(i - 1);
@@ -2810,19 +2808,19 @@ main(int argc, char **argv)
 		}
 		else if (buf[0] == 'h' || buf[0] == 'H')
 		{
-		    /* Help */
+		    // Help
 		    show_help();
 		}
 		else if (buf[0] == 'd' || buf[0] == 'D')
 		{
-		    /* Install! */
+		    // Install!
 		    install();
 		    printf("\nThat finishes the installation.  Happy Vimming!\n");
 		    break;
 		}
 		else if (buf[0] == 'q' || buf[0] == 'Q')
 		{
-		    /* Quit */
+		    // Quit
 		    printf("\nExiting without anything done\n");
 		    break;
 		}
@@ -2841,8 +2839,8 @@ main(int argc, char **argv)
 	command_line_setup_choices(argc, argv);
 	install();
 
-	/* Avoid that the user has to hit Enter, just wait a little bit to
-	 * allow reading the messages. */
+	// Avoid that the user has to hit Enter, just wait a little bit to
+	// allow reading the messages.
 	sleep(2);
     }
 

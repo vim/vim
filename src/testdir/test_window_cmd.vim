@@ -1,5 +1,7 @@
 " Tests for window cmd (:wincmd, :split, :vsplit, :resize and etc...)
 
+so check.vim
+
 func Test_window_cmd_ls0_with_split()
   set ls=0
   set splitbelow
@@ -173,6 +175,8 @@ func Test_window_split_edit_bufnr()
 endfunc
 
 func Test_window_preview()
+  CheckFeature quickfix
+
   " Open a preview window
   pedit Xa
   call assert_equal(2, winnr('$'))
@@ -191,6 +195,8 @@ func Test_window_preview()
 endfunc
 
 func Test_window_preview_from_help()
+  CheckFeature quickfix
+
   filetype on
   call writefile(['/* some C code */'], 'Xpreview.c')
   help
@@ -436,6 +442,8 @@ func Test_equalalways_on_close()
 endfunc
 
 func Test_win_screenpos()
+  CheckFeature quickfix
+
   call assert_equal(1, winnr('$'))
   split
   vsplit
@@ -449,6 +457,8 @@ func Test_win_screenpos()
 endfunc
 
 func Test_window_jump_tag()
+  CheckFeature quickfix
+
   help
   /iccf
   call assert_match('^|iccf|',  getline('.'))
@@ -555,6 +565,33 @@ func Test_access_freed_mem()
   au!
   bwipe xxx
   call assert_equal(&columns, winwidth(0))
+endfunc
+
+func Test_insert_cleared_on_switch_to_term()
+  CheckFeature terminal
+
+  set showmode
+  terminal
+  wincmd p
+
+  call feedkeys("i\<C-O>", 'ntx')
+  redraw
+
+  " The "-- (insert) --" indicator should be visible.
+  let chars = map(range(1, &columns), 'nr2char(screenchar(&lines, v:val))')
+  let str = trim(join(chars, ''))
+  call assert_equal('-- (insert) --', str)
+
+  call feedkeys("\<C-W>p", 'ntx')
+  redraw
+
+  " The "-- (insert) --" indicator should have been cleared.
+  let chars = map(range(1, &columns), 'nr2char(screenchar(&lines, v:val))')
+  let str = trim(join(chars, ''))
+  call assert_equal('', str)
+
+  set showmode&
+  %bw!
 endfunc
 
 func Test_visual_cleared_after_window_split()
@@ -858,6 +895,8 @@ func Test_winrestview()
 endfunc
 
 func Test_win_splitmove()
+  CheckFeature quickfix
+
   edit a
   leftabove split b
   leftabove vsplit c

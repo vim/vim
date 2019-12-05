@@ -54,7 +54,7 @@ report:
 		then cp test.log test_result.log; \
 		else echo No failures reported > test_result.log; \
 		fi"
-	$(RUN_VIMTEST) $(NO_INITS) -S summarize.vim messages $(REDIR_TEST_TO_NULL)
+	$(VIMPROG) -u NONE $(NO_INITS) -S summarize.vim messages $(REDIR_TEST_TO_NULL)
 	@echo
 	@echo 'Test results:'
 	@cat test_result.log
@@ -73,8 +73,8 @@ $(SCRIPTS) $(SCRIPTS_GUI) $(NEW_TESTS_RES): $(SCRIPTS_FIRST)
 # 	make test_largefile
 $(NEW_TESTS):
 	rm -f $@.res test.log messages
-	$(MAKE) -f Makefile $@.res
-	cat messages
+	@MAKEFLAGS=--no-print-directory $(MAKE) -f Makefile $@.res
+	@cat messages
 	@if test -f test.log; then \
 		exit 1; \
 	fi

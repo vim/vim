@@ -1,17 +1,10 @@
-*textprop.txt*  For Vim version 8.1.  Last change: 2019 Sep 04
+*textprop.txt*  For Vim version 8.1.  Last change: 2019 Nov 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
 Displaying text with properties attached.	*textprop* *text-properties*
-
-THIS IS UNDER DEVELOPMENT - ANYTHING MAY STILL CHANGE  *E967*
-
-What is not working yet:
-- Adjusting column/length when inserting text
-- Text properties spanning more than one line
-- prop_find()
 
 
 1. Introduction			|text-prop-intro|
@@ -55,8 +48,8 @@ Property Types ~
 A text property normally has the name of a property type, which defines 
 how to highlight the text.  The property type can have these entries:
 	"highlight"	name of the highlight group to use
-	"combine"	when TRUE the text property highlighting is combined
-			with any syntax highlighting, when omitted or FALSE the
+	"combine"	when omitted or TRUE the text property highlighting is
+			combined with any syntax highlighting; when FALSE the
 			text property highlighting replaces the syntax
 			highlighting
 	"priority"	when properties overlap, the one with the highest
@@ -93,6 +86,12 @@ and/or ends with a specific character, such as the quote surrounding a string.
 
 Nevertheless, when text is inserted or deleted the text may need to be parsed
 and the text properties updated.  But this can be done asynchronously.
+
+
+Internal error *E967*
+
+If you see E967, please report the bug.  You can do this at Github:
+https://github.com/vim/vim/issues/new
 
 ==============================================================================
 2. Functions						*text-prop-functions*

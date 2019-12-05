@@ -1,0 +1,17 @@
+env:
+  CIRRUS_CLONE_DEPTH: 3
+  FEATURES: huge
+
+freebsd_12_task:
+  freebsd_instance:
+    image: freebsd-12-1-release-amd64
+  install_script:
+    pkg install -y gettext
+  build_script:
+    - NPROC=$(getconf _NPROCESSORS_ONLN)
+    - ./configure --with-features=${FEATURES}
+    - make -j${NPROC}
+    - src/vim --version
+  test_script:
+    # Runtime Indent tests do not work, run only the normal test suite
+    - cd src && make test

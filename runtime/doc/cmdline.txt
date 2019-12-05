@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.1.  Last change: 2019 Sep 27
+*cmdline.txt*   For Vim version 8.1.  Last change: 2019 Nov 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -77,9 +77,16 @@ CTRL-V		Insert next non-digit literally.  Up to three digits form the
 		way as in Insert mode (see above, |i_CTRL-V|).
 		Note: Under Windows CTRL-V is often mapped to paste text.
 		Use CTRL-Q instead then.
+		When |modifyOtherKeys| is enabled then special Escape sequence
+		is converted back to what it was without |modifyOtherKeys|,
+		unless the Shift key is also pressed.
 							*c_CTRL-Q*
 CTRL-Q		Same as CTRL-V.  But with some terminals it is used for
 		control flow, it doesn't work then.
+
+CTRL-SHIFT-V				*c_CTRL-SHIFT-V* *c_CTRL-SHIFT-Q*
+CTRL-SHIFT-Q	Works just like CTRL-V, unless |modifyOtherKeys| is active,
+		then it inserts the Escape sequence for a key with modifiers.
 
 							*c_<Left>* *c_Left*
 <Left>		cursor left

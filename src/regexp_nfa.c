@@ -3213,7 +3213,7 @@ post2nfa(int *postfix, int *end, int nfa_calc_size)
 
     if (nfa_calc_size == FALSE)
     {
-	// Allocate space for the stack. Max states on the stack: "nstate'.
+	// Allocate space for the stack. Max states on the stack: "nstate".
 	stack = ALLOC_MULT(Frag_T, nstate + 1);
 	if (stack == NULL)
 	    return NULL;

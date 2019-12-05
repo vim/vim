@@ -504,11 +504,8 @@ CClink = $(CC)
 # XIM - X Input Method.  Special character input support for X11 (Chinese,
 # Japanese, special symbols, etc).  Also needed for dead-key support.
 # When omitted it's automatically enabled for the X-windows GUI.
-# HANGUL - Input Hangul (Korean) language using internal routines.
-# Uncomment one of these when you want to input a multibyte language.
 #CONF_OPT_INPUT = --enable-xim
 #CONF_OPT_INPUT = --disable-xim
-#CONF_OPT_INPUT = --enable-hangulinput
 
 # FONTSET - X fontset support for output of languages with many characters.
 # Uncomment this when you want to output a multibyte language.
@@ -1488,7 +1485,7 @@ LINT_CFLAGS = -DLINT -I. $(PRE_DEFS) $(POST_DEFS) \
 	      $(PYTHON3_CFLAGS) $(TCL_CFLAGS) $(VTERM_CFLAGS) \
 	      -Dinline= -D__extension__= -Dalloca=alloca
 
-LINT_EXTRA = -DHANGUL_INPUT -D"__attribute__(x)="
+LINT_EXTRA = -D"__attribute__(x)="
 
 DEPEND_CFLAGS = -DPROTO -DDEPEND -DFEAT_GUI $(LINT_CFLAGS)
 
@@ -1585,6 +1582,7 @@ BASIC_SRC = \
 	buffer.c \
 	change.c \
 	charset.c \
+	cindent.c \
 	cmdexpand.c \
 	cmdhist.c \
 	crypt.c \
@@ -1675,7 +1673,6 @@ SRC =	$(BASIC_SRC) \
 	$(GUI_SRC) \
 	$(TERM_SRC) \
 	$(XDIFF_SRC) \
-	$(HANGULIN_SRC) \
 	$(LUA_SRC) \
 	$(MZSCHEME_SRC) \
 	$(PERL_SRC) \
@@ -1683,7 +1680,7 @@ SRC =	$(BASIC_SRC) \
 	$(TCL_SRC) \
 	$(RUBY_SRC)
 
-EXTRA_SRC = hangulin.c if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
+EXTRA_SRC = if_lua.c if_mzsch.c auto/if_perl.c if_perlsfio.c \
 	    if_python.c if_python3.c if_tcl.c if_ruby.c \
 	    gui_beval.c netbeans.c channel.c \
 	    $(GRESOURCE_SRC)
@@ -1709,7 +1706,7 @@ ALL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) \
 # Which files to check with lint.  Select one of these three lines.  ALL_SRC
 # checks more, but may not work well for checking a GUI that wasn't configured.
 # The perl sources also don't work well with lint.
-LINT_SRC = $(BASIC_SRC) $(GUI_SRC) $(HANGULIN_SRC) \
+LINT_SRC = $(BASIC_SRC) $(GUI_SRC) \
 	   $(PYTHON_SRC) $(PYTHON3_SRC) $(TCL_SRC) \
 	   $(NETBEANS_SRC) $(CHANNEL_SRC) $(TERM_SRC)
 #LINT_SRC = $(SRC)
@@ -1725,6 +1722,7 @@ OBJ_COMMON = \
 	objects/change.o \
 	objects/blob.o \
 	objects/blowfish.o \
+	objects/cindent.o \
 	objects/cmdexpand.o \
 	objects/cmdhist.o \
 	objects/crypt.o \
@@ -1754,7 +1752,6 @@ OBJ_COMMON = \
 	objects/hardcopy.o \
 	objects/hashtab.o \
 	objects/highlight.o \
-	$(HANGULIN_OBJ) \
 	objects/if_cscope.o \
 	objects/if_xcmdsrv.o \
 	objects/indent.o \
@@ -1878,6 +1875,7 @@ PRO_AUTO = \
 	buffer.pro \
 	change.pro \
 	charset.pro \
+	cindent.pro \
 	cmdexpand.pro \
 	cmdhist.pro \
 	crypt.pro \
@@ -1906,7 +1904,6 @@ PRO_AUTO = \
 	getchar.pro \
 	hardcopy.pro \
 	hashtab.pro \
-	hangulin.pro \
 	highlight.pro \
 	if_cscope.pro \
 	if_lua.pro \
@@ -2190,7 +2187,7 @@ types.vim: $(TAGS_FILES)
 #
 # Execute the test scripts and the unittests.
 # Do the scripttests first, so that the summary shows last.
-test check: unittests test_libvterm scripttests
+test check: unittests $(TERM_TEST) scripttests
 
 # Execute the test scripts.  Run these after compiling Vim, before installing.
 # This doesn't depend on $(VIMTARGET), because that won't work when configure
@@ -2255,7 +2252,7 @@ test_libvterm:
 test1 \
 	test_eval \
 	test39 \
-	test42 test44 test48 test49 \
+	test42 test44 test49 \
 	test52 test59 \
 	test64 test69 \
 	test70 test72 \
@@ -2857,6 +2854,7 @@ clean celan: testclean
 	-rm -f runtime pixmaps
 	-rm -rf $(APPDIR)
 	-rm -rf mzscheme_base.c
+	-rm -rf libvterm/.libs libterm/t/.libs libvterm/src/*.o libvterm/src/*.lo libvterm/t/*.o libvterm/t/*.lo libvterm/t/harness libvterm/libvterm.la
 	if test -d $(PODIR); then \
 		cd $(PODIR); $(MAKE) prefix=$(DESTDIR)$(prefix) clean; \
 	fi
@@ -3081,6 +3079,9 @@ objects/change.o: change.c
 objects/charset.o: charset.c
 	$(CCC) -o $@ charset.c
 
+objects/cindent.o: cindent.c
+	$(CCC) -o $@ cindent.c
+
 objects/cmdexpand.o: cmdexpand.c
 	$(CCC) -o $@ cmdexpand.c
 
@@ -3212,9 +3213,6 @@ objects/gui_photon.o: gui_photon.c
 
 objects/gui_mac.o: gui_mac.c
 	$(CCC) -o $@ gui_mac.c
-
-objects/hangulin.o: hangulin.c
-	$(CCC) -o $@ hangulin.c
 
 objects/highlight.o: highlight.c
 	$(CCC) -o $@ highlight.c
@@ -3447,36 +3445,39 @@ objects/channel.o: channel.c
 Makefile:
 	@echo The name of the makefile MUST be "Makefile" (with capital M)!!!!
 
+# Build rules for libvterm.  Putting them here allows for adding compilation
+# options specific for Vim.  Since the .o files go into objects/ we do need to
+# prefix vterm_ to avoid name clashes.
 CCCTERM = $(CCC_NF) $(VTERM_CFLAGS) $(ALL_CFLAGS) -DINLINE="" \
 	  -DVSNPRINTF=vim_vsnprintf \
 	  -DIS_COMBINING_FUNCTION=utf_iscomposing_uint \
 	  -DWCWIDTH_FUNCTION=utf_uint2cells
 
-objects/encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
+objects/vterm_encoding.o: libvterm/src/encoding.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/encoding.c
 
-objects/keyboard.o: libvterm/src/keyboard.c $(TERM_DEPS)
+objects/vterm_keyboard.o: libvterm/src/keyboard.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/keyboard.c
 
-objects/termmouse.o: libvterm/src/termmouse.c $(TERM_DEPS)
-	$(CCCTERM) -o $@ libvterm/src/termmouse.c
+objects/vterm_mouse.o: libvterm/src/mouse.c $(TERM_DEPS)
+	$(CCCTERM) -o $@ libvterm/src/mouse.c
 
-objects/parser.o: libvterm/src/parser.c $(TERM_DEPS)
+objects/vterm_parser.o: libvterm/src/parser.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/parser.c
 
-objects/pen.o: libvterm/src/pen.c $(TERM_DEPS)
+objects/vterm_pen.o: libvterm/src/pen.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/pen.c
 
-objects/termscreen.o: libvterm/src/termscreen.c $(TERM_DEPS)
-	$(CCCTERM) -o $@ libvterm/src/termscreen.c
+objects/vterm_screen.o: libvterm/src/screen.c $(TERM_DEPS)
+	$(CCCTERM) -o $@ libvterm/src/screen.c
 
-objects/state.o: libvterm/src/state.c $(TERM_DEPS)
+objects/vterm_state.o: libvterm/src/state.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/state.c
 
-objects/unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
+objects/vterm_unicode.o: libvterm/src/unicode.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/unicode.c
 
-objects/vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
+objects/vterm_vterm.o: libvterm/src/vterm.c $(TERM_DEPS)
 	$(CCCTERM) -o $@ libvterm/src/vterm.c
 
 CCCDIFF = $(CCC_NF) $(ALL_CFLAGS)
@@ -3618,6 +3619,10 @@ objects/change.o: change.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h version.h
 objects/charset.o: charset.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/cindent.o: cindent.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
@@ -4052,10 +4057,6 @@ objects/message_test.o: message_test.c main.c vim.h protodef.h auto/config.h \
  feature.h os_unix.h auto/osdef.h ascii.h keymap.h term.h macros.h \
  option.h beval.h proto/gui_beval.pro structs.h regexp.h gui.h alloc.h \
  ex_cmds.h spell.h proto.h globals.h message.c
-objects/hangulin.o: hangulin.c vim.h protodef.h auto/config.h feature.h os_unix.h \
- auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
- proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h
 objects/if_lua.o: if_lua.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
@@ -4101,27 +4102,27 @@ objects/channel.o: channel.c vim.h protodef.h auto/config.h feature.h os_unix.h 
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/gui_gtk_gresources.o: auto/gui_gtk_gresources.c
-objects/encoding.o: libvterm/src/encoding.c libvterm/src/vterm_internal.h \
+objects/vterm_encoding.o: libvterm/src/encoding.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/encoding/DECdrawing.inc libvterm/src/encoding/uk.inc
-objects/keyboard.o: libvterm/src/keyboard.c libvterm/src/vterm_internal.h \
+objects/vterm_keyboard.o: libvterm/src/keyboard.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/utf8.h
-objects/termmouse.o: libvterm/src/termmouse.c libvterm/src/vterm_internal.h \
+objects/vterm_mouse.o: libvterm/src/mouse.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/utf8.h
-objects/parser.o: libvterm/src/parser.c libvterm/src/vterm_internal.h \
+objects/vterm_parser.o: libvterm/src/parser.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/pen.o: libvterm/src/pen.c libvterm/src/vterm_internal.h \
+objects/vterm_pen.o: libvterm/src/pen.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/state.o: libvterm/src/state.c libvterm/src/vterm_internal.h \
+objects/vterm_state.o: libvterm/src/state.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/termscreen.o: libvterm/src/termscreen.c libvterm/src/vterm_internal.h \
+objects/vterm_screen.o: libvterm/src/screen.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/rect.h libvterm/src/utf8.h
-objects/unicode.o: libvterm/src/unicode.c libvterm/src/vterm_internal.h \
+objects/vterm_unicode.o: libvterm/src/unicode.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/vterm.o: libvterm/src/vterm.c libvterm/src/vterm_internal.h \
+objects/vterm_vterm.o: libvterm/src/vterm.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/utf8.h
 objects/xdiffi.o: xdiff/xdiffi.c xdiff/xinclude.h auto/config.h \

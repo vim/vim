@@ -964,3 +964,47 @@ func Test_diff_of_diff()
   call StopVimInTerminal(buf)
   call delete('Xtest_diff_diff')
 endfunc
+
+func CloseoffSetup()
+  enew
+  call setline(1, ['one', 'two', 'three'])
+  diffthis
+  new
+  call setline(1, ['one', 'tow', 'three'])
+  diffthis
+  call assert_equal(1, &diff)
+  only!
+endfunc
+
+func Test_diff_closeoff()
+  " "closeoff" included by default: last diff win gets 'diff' reset'
+  call CloseoffSetup()
+  call assert_equal(0, &diff)
+  enew!
+
+  " "closeoff" excluded: last diff win keeps 'diff' set'
+  set diffopt-=closeoff
+  call CloseoffSetup()
+  call assert_equal(1, &diff)
+  diffoff!
+  enew!
+endfunc
+
+func Test_diff_maintains_change_mark()
+  enew!
+  call setline(1, ['a', 'b', 'c', 'd'])
+  diffthis
+  new
+  call setline(1, ['a', 'b', 'c', 'e'])
+  " Set '[ and '] marks
+  2,3yank
+  call assert_equal([2, 3], [line("'["), line("']")])
+  " Verify they aren't affected by the implicit diff
+  diffthis
+  call assert_equal([2, 3], [line("'["), line("']")])
+  " Verify they aren't affected by an explicit diff
+  diffupdate
+  call assert_equal([2, 3], [line("'["), line("']")])
+  bwipe!
+  bwipe!
+endfunc

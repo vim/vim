@@ -1,4 +1,4 @@
-*usr_10.txt*	For Vim version 8.1.  Last change: 2006 Nov 05
+*usr_10.txt*	For Vim version 8.1.  Last change: 2019 Nov 22
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -370,7 +370,8 @@ into "barfoo".
 was specified in this example.  This is different from ":substitute", which
 works on one line without a range.
    The command isn't perfect, since it also matches lines where "//" appears
-halfway a line, and the substitution will also take place before the "//".
+halfway through a line, and the substitution will also take place before the
+"//".
 
 Just like with ":substitute", any pattern can be used.  When you learn more
 complicated patterns later, you can use them here.
@@ -634,8 +635,8 @@ using it.  To check the current value of 'textwidth': >
 	:set textwidth
 
 Now lines will be broken to take only up to 72 characters.  But when you
-insert text halfway a line, or when you delete a few words, the lines will get
-too long or too short.  Vim doesn't automatically reformat the text.
+insert text halfway through a line, or when you delete a few words, the lines
+will get too long or too short.  Vim doesn't automatically reformat the text.
    To tell Vim to format the current paragraph: >
 
 	gqap

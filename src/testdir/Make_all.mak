@@ -16,7 +16,6 @@ SCRIPTS_ALL = \
 	test39.out \
 	test42.out \
 	test44.out \
-	test48.out \
 	test64.out \
 	test69.out \
 	test70.out \
@@ -58,7 +57,6 @@ NEW_TESTS = \
 	test_arabic \
 	test_arglist \
 	test_assert \
-	test_assign \
 	test_autochdir \
 	test_autocmd \
 	test_autoload \
@@ -156,6 +154,7 @@ NEW_TESTS = \
 	test_increment \
 	test_increment_dbcs \
 	test_ins_complete \
+	test_interrupt \
 	test_job_fails \
 	test_join \
 	test_json \
@@ -212,6 +211,7 @@ NEW_TESTS = \
 	test_pyx3 \
 	test_quickfix \
 	test_quotestar \
+	test_random \
 	test_recover \
 	test_regex_char_classes \
 	test_regexp_latin \
@@ -268,6 +268,7 @@ NEW_TESTS = \
 	test_textprop \
 	test_timers \
 	test_true_false \
+	test_trycatch \
 	test_undo \
 	test_unlet \
 	test_user_func \
@@ -363,6 +364,7 @@ NEW_TESTS_RES = \
 	test_increment.res \
 	test_increment_dbcs.res \
 	test_ins_complete.res \
+	test_interrupt.res \
 	test_job_fails.res \
 	test_json.res \
 	test_jumplist.res \
@@ -377,6 +379,7 @@ NEW_TESTS_RES = \
 	test_makeencoding.res \
 	test_man.res \
 	test_maparg.res \
+	test_mapping.res \
 	test_marks.res \
 	test_matchadd_conceal.res \
 	test_memory_usage.res \
@@ -402,6 +405,7 @@ NEW_TESTS_RES = \
 	test_pyx3.res \
 	test_quickfix.res \
 	test_quotestar.res \
+	test_random.res \
 	test_regex_char_classes.res \
 	test_registers.res \
 	test_restricted.res \
@@ -434,6 +438,7 @@ NEW_TESTS_RES = \
 	test_textformat.res \
 	test_textobjects.res \
 	test_textprop.res \
+	test_trycatch.res \
 	test_undo.res \
 	test_user_func.res \
 	test_usercommands.res \

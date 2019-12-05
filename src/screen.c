@@ -108,7 +108,7 @@ get_wcr_attr(win_T *wp)
 
     if (*wp->w_p_wcr != NUL)
 	wcr_attr = syn_name2attr(wp->w_p_wcr);
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     else if (WIN_IS_POPUP(wp))
     {
 	if (wp->w_popup_flags & POPF_INFO)
@@ -348,7 +348,7 @@ screen_get_current_line_off()
 }
 #endif
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 /*
  * Return TRUE if this position has a higher level popup or this cell is
  * transparent in the current popup.
@@ -460,6 +460,18 @@ screen_line(
     }
 #endif /* FEAT_RIGHTLEFT */
 
+#ifdef FEAT_PROP_POPUP
+    // First char of a popup window may go on top of the right half of a
+    // double-wide character. Clear the left half to avoid it getting the popup
+    // window background color.
+    if (coloff > 0 && ScreenLines[off_to] == 0)
+    {
+	ScreenLines[off_to - 1] = ' ';
+	ScreenLinesUC[off_to - 1] = 0;
+	screen_char(off_to - 1, row, col + coloff - 1);
+    }
+#endif
+
     redraw_next = char_needs_redraw(off_from, off_to, endcol - col);
 
     while (col < endcol)
@@ -487,7 +499,7 @@ screen_line(
 		redraw_this = TRUE;
 	}
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (blocked_by_popup(row, col + coloff))
 	    redraw_this = FALSE;
 #endif
@@ -732,7 +744,7 @@ screen_line(
     }
 
     if (clear_width > 0
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	    && !(flags & SLF_POPUP)  // no separator for popup window
 #endif
 	    )
@@ -741,7 +753,7 @@ screen_line(
 	// right of the window contents.  But not on top of a popup window.
 	if (coloff + col < Columns)
 	{
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	    if (!blocked_by_popup(row, col + coloff))
 #endif
 	    {
@@ -1574,7 +1586,7 @@ screen_puts_len(
 		|| exmode_active;
 
 	if ((need_redraw || force_redraw_this)
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 		&& !blocked_by_popup(row, col)
 #endif
 	   )
@@ -1765,6 +1777,33 @@ screen_start_highlight(int attr)
 		else
 		    attr = aep->ae_attr;
 	    }
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+	    if (use_vtp())
+	    {
+		guicolor_T  defguifg, defguibg;
+		int	    defctermfg, defctermbg;
+
+		// If FG and BG are unset, the color is undefined when
+		// BOLD+INVERSE. Use Normal as the default value.
+		get_default_console_color(&defctermfg, &defctermbg, &defguifg,
+								    &defguibg);
+
+		if (p_tgc)
+		{
+		    if (aep == NULL || COLOR_INVALID(aep->ae_u.cterm.fg_rgb))
+			term_fg_rgb_color(defguifg);
+		    if (aep == NULL || COLOR_INVALID(aep->ae_u.cterm.bg_rgb))
+			term_bg_rgb_color(defguibg);
+		}
+		else if (t_colors >= 256)
+		{
+		    if (aep == NULL || aep->ae_u.cterm.fg_color == 0)
+			term_fg_color(defctermfg);
+		    if (aep == NULL || aep->ae_u.cterm.bg_color == 0)
+			term_bg_color(defctermbg);
+		}
+	    }
+#endif
 	    if ((attr & HL_BOLD) && *T_MD != NUL)	/* bold */
 		out_str(T_MD);
 	    else if (aep != NULL && cterm_normal_fg_bold && (
@@ -2019,12 +2058,12 @@ screen_char(unsigned off, int row, int col)
     // Skip if under the popup menu.
     // Popup windows with zindex higher than POPUPMENU_ZINDEX go on top.
     if (pum_under_menu(row, col)
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	    && screen_zindex <= POPUPMENU_ZINDEX
 #endif
 	    )
 	return;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     if (blocked_by_popup(row, col))
 	return;
 #endif
@@ -2326,7 +2365,7 @@ screen_fill(
 		    || force_next
 #endif
 		    )
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 		    // Skip if under a(nother) popup.
 		    && !blocked_by_popup(row, col)
 #endif
@@ -2406,7 +2445,7 @@ check_for_delay(int check_msg_scroll)
 	    && emsg_silent == 0)
     {
 	out_flush();
-	ui_delay(1000L, TRUE);
+	ui_delay(1006L, TRUE);
 	emsg_on_display = FALSE;
 	if (check_msg_scroll)
 	    msg_scroll = FALSE;
@@ -2467,7 +2506,7 @@ screenalloc(int doclear)
     unsigned	    *new_LineOffset;
     char_u	    *new_LineWraps;
     short	    *new_TabPageIdxs;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     short	    *new_popup_mask;
     short	    *new_popup_mask_next;
     char	    *new_popup_transparent;
@@ -2528,7 +2567,7 @@ retry:
 	win_free_lsize(wp);
     if (aucmd_win != NULL)
 	win_free_lsize(aucmd_win);
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // global popup windows
     for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
 	win_free_lsize(wp);
@@ -2553,7 +2592,7 @@ retry:
     new_LineOffset = LALLOC_MULT(unsigned, Rows);
     new_LineWraps = LALLOC_MULT(char_u, Rows);
     new_TabPageIdxs = LALLOC_MULT(short, Columns);
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     new_popup_mask = LALLOC_MULT(short, Rows * Columns);
     new_popup_mask_next = LALLOC_MULT(short, Rows * Columns);
     new_popup_transparent = LALLOC_MULT(char, Rows * Columns);
@@ -2570,7 +2609,7 @@ retry:
     if (aucmd_win != NULL && aucmd_win->w_lines == NULL
 					&& win_alloc_lines(aucmd_win) == FAIL)
 	outofmem = TRUE;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // global popup windows
     for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
 	if (win_alloc_lines(wp) == FAIL)
@@ -2600,7 +2639,7 @@ give_up:
 	    || new_LineOffset == NULL
 	    || new_LineWraps == NULL
 	    || new_TabPageIdxs == NULL
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	    || new_popup_mask == NULL
 	    || new_popup_mask_next == NULL
 	    || new_popup_transparent == NULL
@@ -2625,7 +2664,7 @@ give_up:
 	VIM_CLEAR(new_LineOffset);
 	VIM_CLEAR(new_LineWraps);
 	VIM_CLEAR(new_TabPageIdxs);
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	VIM_CLEAR(new_popup_mask);
 	VIM_CLEAR(new_popup_mask_next);
 	VIM_CLEAR(new_popup_transparent);
@@ -2703,7 +2742,7 @@ give_up:
 	/* Use the last line of the screen for the current line. */
 	current_ScreenLine = new_ScreenLines + Rows * Columns;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	vim_memset(new_popup_mask, 0, Rows * Columns * sizeof(short));
 	vim_memset(new_popup_transparent, 0, Rows * Columns * sizeof(char));
 #endif
@@ -2722,7 +2761,7 @@ give_up:
     LineOffset = new_LineOffset;
     LineWraps = new_LineWraps;
     TabPageIdxs = new_TabPageIdxs;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     popup_mask = new_popup_mask;
     popup_mask_next = new_popup_mask_next;
     popup_transparent = new_popup_transparent;
@@ -2791,7 +2830,7 @@ free_screenlines(void)
     VIM_CLEAR(LineOffset);
     VIM_CLEAR(LineWraps);
     VIM_CLEAR(TabPageIdxs);
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     VIM_CLEAR(popup_mask);
     VIM_CLEAR(popup_mask_next);
     VIM_CLEAR(popup_transparent);
@@ -2936,7 +2975,7 @@ can_clear(char_u *p)
 		|| cterm_normal_bg_color == 0
 #endif
 		|| *T_UT != NUL)
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	    && !(p == T_CE && popup_visible)
 #endif
 	    );
@@ -3400,7 +3439,7 @@ win_do_lines(
 	return FAIL;
     }
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // this doesn't work when there are popups visible
     if (popup_visible)
 	return FAIL;
@@ -3532,7 +3571,7 @@ screen_ins_lines(
 	     || (clip_star.state != SELECT_CLEARED
 						 && redrawing_for_callback > 0)
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	     || popup_visible
 #endif
 	     )
@@ -4040,19 +4079,6 @@ showmode(void)
 # else
 		msg_puts_attr(" XIM", attr);
 # endif
-#endif
-#if defined(FEAT_HANGULIN) && defined(FEAT_GUI)
-	    if (gui.in_use)
-	    {
-		if (hangul_input_state_get())
-		{
-		    /* HANGUL */
-		    if (enc_utf8)
-			msg_puts_attr(" \355\225\234\352\270\200", attr);
-		    else
-			msg_puts_attr(" \307\321\261\333", attr);
-		}
-	    }
 #endif
 	    /* CTRL-X in Insert mode */
 	    if (edit_submode != NULL && !shortmess(SHM_COMPLETIONMENU))
@@ -4615,7 +4641,7 @@ number_width(win_T *wp)
 # ifdef FEAT_SIGNS
     // If 'signcolumn' is set to 'number' and there is a sign to display, then
     // the minimal width for the number column is 2.
-    if (n < 2 && (wp->w_buffer->b_signlist != NULL)
+    if (n < 2 && get_first_valid_sign(wp) != NULL
 	    && (*wp->w_p_scl == 'n' && *(wp->w_p_scl + 1) == 'u'))
 	n = 2;
 # endif

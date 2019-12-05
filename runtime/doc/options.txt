@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.1.  Last change: 2019 Sep 26
+*options.txt*	For Vim version 8.1.  Last change: 2019 Nov 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -856,7 +856,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set background&
 <	Vim will guess the value.  In the GUI this should work correctly,
 	in other cases Vim might not be able to guess the right value.
-	If the GUI supports a dark them, you can use the "d" flag in
+	If the GUI supports a dark theme, you can use the "d" flag in
 	'guioptions', see 'go-d'.
 
 	When the |t_RB| option is set, Vim will use it to request the background
@@ -1195,7 +1195,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    (mostly used in |Normal-mode| or |Cmdline-mode|).
 	esc	    hitting <Esc> in |Normal-mode|.
 	ex	    In |Visual-mode|, hitting |Q| results in an error.
-	hangul	    Error occurred when using hangul input.
+	hangul	    Ignored.
 	insertmode  Pressing <Esc> in 'insertmode'.
 	lang	    Calling the beep module for Lua/Mzscheme/TCL.
 	mess	    No output available for |g<|.
@@ -1877,7 +1877,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'completeslash'* *'csl'*
 'completeslash' 'csl'	string	(default: "")
 			local to buffer
-			{not in Vi}  {only for MS-Windows}
+			{only for MS-Windows}
 	When this option is set it overrules 'shellslash' for completion:
 	- When this option is set to "slash", a forward slash is used for path
 	  completion in insert mode. This is useful when editing HTML tag, or
@@ -1917,7 +1917,14 @@ A jump table for the options with a short description can be found at |Q_op|.
 		    completion in a popup window.  Only works in combination
 		    with "menu" or "menuone".  Overrides "preview".
 		    See |'completepopup'| for specifying properties.
-		    {only works when compiled with the +textprop feature}
+		    {only works when compiled with the |+textprop| feature}
+
+	   popuphidden
+		    Just like "popup" but initially hide the popup.  Use a
+		    |CompleteChanged| autocommand to fetch the info and call
+		    |popup_show()| once the popup has been filled.
+		    See the example at |complete-popuphidden|.
+		    {only works when compiled with the |+textprop| feature}
 
 	   noinsert Do not insert any text for a match until the user selects
 		    a match from the menu. Only works in combination with
@@ -2470,7 +2477,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'cursorlineopt'* *'culopt'*
 'cursorlineopt' 'culopt' string (default: "number,line")
 			local to window
-			{not in Vi}
 			{not available when compiled without the |+syntax|
 			feature}
 	Comma separated list of settings for how 'cursorline' is displayed.
@@ -2585,7 +2591,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 						*'dip'* *'diffopt'*
-'diffopt' 'dip'		string	(default "internal,filler")
+'diffopt' 'dip'		string	(default "internal,filler,closeoff")
 			global
 			{not available when compiled without the |+diff|
 			feature}
@@ -2644,6 +2650,12 @@ A jump table for the options with a short description can be found at |Q_op|.
 		vertical	Start diff mode with vertical splits (unless
 				explicitly specified otherwise).
 
+		closeoff	When a window is closed where 'diff' is set
+				and there is only one window remaining in the
+				same tab page with 'diff' set, execute
+				`:diffoff` in that window.  This undoes a
+				`:diffsplit` command.
+
 		hiddenoff	Do not use diff mode for a buffer when it
 				becomes hidden.
 
@@ -2694,7 +2706,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	- The swap file will be created in the first directory where this is
 	  possible.
 	- Empty means that no swap file will be used (recovery is
-	  impossible!).
+	  impossible!) and no |E303| error will be given.
 	- A directory "." means to put the swap file in the same directory as
 	  the edited file.  On Unix, a dot is prepended to the file name, so
 	  it doesn't show in a directory listing.  On MS-Windows the "hidden"
@@ -2927,6 +2939,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	won't work by default.
 	NOTE: This option is set to the Vi default value when 'compatible' is
 	set and to the Vim default value when 'compatible' is reset.
+	NOTE: when this option is off then the |modifyOtherKeys| functionality
+	is disabled while in Insert mode to avoid ending Insert mode with any
+	key that has a modifier.
 
 						*'eventignore'* *'ei'*
 'eventignore' 'ei'	string	(default "")
@@ -3917,6 +3932,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 				     "8:SpecialKey,~:EndOfBuffer,@:NonText,
 				     d:Directory,e:ErrorMsg,i:IncSearch,
 				     l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,
+				     a:LineNrAbove,b:LineNrBelow,
 				     N:CursorLineNr,r:Question,s:StatusLine,
 				     S:StatusLineNC,c:VertSplit,t:Title,
 				     v:Visual,V:VisualNOS,w:WarningMsg,
@@ -3948,6 +3964,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	|hl-ModeMsg|	 M  Mode (e.g., "-- INSERT --")
 	|hl-LineNr|	 n  line number for ":number" and ":#" commands, and
 			    when 'number' or 'relativenumber' option is set.
+	|hl-LineNrAbove|   a  line number above the cursor for when the
+			    'relativenumber' option is set.
+	|hl-LineNrBelow|   b  line number below the cursor for when the
+			    'relativenumber' option is set.
 	|hl-CursorLineNr|  N like n for when 'cursorline' or 'relativenumber' is
 			    set.
 	|hl-Question|	 r  |hit-enter| prompt and yes/no questions
@@ -5185,12 +5205,11 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'mouse'* *E538*
 'mouse'			string	(default "", "a" for GUI, MS-DOS and Win32,
-						 set to "a" in |defaults.vim|)
+					set to "a" or "nvi" in |defaults.vim|)
 			global
-	Enable the use of the mouse.  Only works for certain terminals
-	(xterm, MS-DOS, Win32 |win32-mouse|, QNX pterm, *BSD console with
-	sysmouse and Linux console with gpm).  For using the mouse in the
-	GUI, see |gui-mouse|.
+	Enable the use of the mouse.  Works for most terminals (xterm, MS-DOS,
+	Win32 |win32-mouse|, QNX pterm, *BSD console with sysmouse and Linux
+	console with gpm).  For using the mouse in the GUI, see |gui-mouse|.
 	The mouse can be enabled for different modes:
 		n	Normal mode and Terminal modes
 		v	Visual mode
@@ -5201,7 +5220,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 		r	for |hit-enter| and |more-prompt| prompt
 	Normally you would enable the mouse in all five modes with: >
 		:set mouse=a
-<	When the mouse is not enabled, the GUI will still use the mouse for
+<	If your terminal can't overrule the mouse events going to the
+	application, use: >
+		:set mouse=nvi
+<	The you can press ":", select text for the system, and press Esc to go
+	back to Vim using the mouse events.
+	In |defaults.vim| "nvi" is used if the 'term' option is not matching
+	"xterm".
+
+	When the mouse is not enabled, the GUI will still use the mouse for
 	modeless selection.  This doesn't move the text cursor.
 
 	See |mouse-using|.  Also see |'clipboard'|.
@@ -5220,6 +5247,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	mouse pointer is moved to the window with keyboard focus.  Off is the
 	default because it makes using the pull down menus a little goofy, as
 	a pointer transit may activate a window unintentionally.
+	MS-Windows: Also see 'scrollfocus' for what window is scrolled when
+	using the mouse scroll whel.
 
 			*'mousehide'* *'mh'* *'nomousehide'* *'nomh'*
 'mousehide' 'mh'	boolean	(default on)
@@ -6264,6 +6293,15 @@ A jump table for the options with a short description can be found at |Q_op|.
 	file.  This means that ":split | edit file" results in two windows
 	with scroll-binding, but ":split file" does not.
 
+			*'scrollfocus'* *'scf'* *'noscrollfocus'* *'noscf'*
+'scrollfocus' 'scf'	boolean  (default off)
+			global
+			{only for MS-Windows GUI}
+	When using the scroll wheel and this option is set, the window under
+	the mouse pointer is scrolled.  With this option off the current
+	window is scrolled.
+	Systems other than MS-Windows always behave like this option is on.
+
 						*'scrolljump'* *'sj'*
 'scrolljump' 'sj'	number	(default 1)
 			global
@@ -6435,8 +6473,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	See |option-backslash| about including spaces and backslashes.
 	Environment variables are expanded |:set_env|.
 
-	If the name of the shell contains a space, you might need to enclose
-	it in quotes or escape the space.  Example with quotes: >
+	If the name of the shell contains a space, you need to enclose it in
+	quotes and escape the space.  Example with quotes: >
 		:set shell=\"c:\program\ files\unix\sh.exe\"\ -f
 <	Note the backslash before each quote (to avoid starting a comment) and
 	each space (to avoid ending the option value).  Also note that the
@@ -6491,10 +6529,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	For Unix the default it "| tee".  The stdout of the compiler is saved
 	in a file and echoed to the screen.  If the 'shell' option is "csh" or
 	"tcsh" after initializations, the default becomes "|& tee".  If the
-	'shell' option is "sh", "ksh", "mksh", "pdksh", "zsh" or "bash" the
-	default becomes "2>&1| tee".  This means that stderr is also included.
-	Before using the 'shell' option a path is removed, thus "/bin/sh" uses
-	"sh".
+	'shell' option is "sh", "ksh", "mksh", "pdksh", "zsh", "zsh-beta",
+	"bash" or "fish" the default becomes "2>&1| tee".  This means that
+	stderr is also included.  Before using the 'shell' option a path is
+	removed, thus "/bin/sh" uses "sh".
 	The initialization of this option is done after reading the ".vimrc"
 	and the other initializations, so that when the 'shell' option is set
 	there, the 'shellpipe' option changes automatically, unless it was
@@ -6534,13 +6572,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The name of the temporary file can be represented by "%s" if necessary
 	(the file name is appended automatically if no %s appears in the value
 	of this option).
-	The default is ">".  For Unix, if the 'shell' option is "csh", "tcsh"
-	or "zsh" during initializations, the default becomes ">&".  If the
-	'shell' option is "sh", "ksh" or "bash" the default becomes
-	">%s 2>&1".  This means that stderr is also included.
-	For Win32, the Unix checks are done and additionally "cmd" is checked
-	for, which makes the default ">%s 2>&1".  Also, the same names with
-	".exe" appended are checked for.
+	The default is ">".  For Unix, if the 'shell' option is "csh" or
+	"tcsh" during initializations, the default becomes ">&".  If the
+	'shell' option is "sh", "ksh", "mksh", "pdksh", "zsh", "zsh-beta",
+	"bash" or "fish", the default becomes ">%s 2>&1".  This means that
+	stderr is also included.  For Win32, the Unix checks are done and
+	additionally "cmd" is checked for, which makes the default ">%s 2>&1".
+	Also, the same names with ".exe" appended are checked for.
 	The initialization of this option is done after reading the ".vimrc"
 	and the other initializations, so that when the 'shell' option is set
 	there, the 'shellredir' option changes automatically unless it was
@@ -6720,7 +6758,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'showbreak'* *'sbr'* *E595*
 'showbreak' 'sbr'	string	(default "")
-			global
+			global or local to window |global-local|
 			{not available when compiled without the |+linebreak|
 			feature}
 	String to put at the start of lines that have been wrapped.  Useful
@@ -6737,7 +6775,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that tabs after the showbreak will be displayed differently.
 	If you want the 'showbreak' to appear in between line numbers, add the
 	"n" flag to 'cpoptions'.
-
+	A window-local value overrules a global value.  If the global value is
+	set and you want no value in the current window use NONE: >
+		:setlocal showbreak=NONE
+<
 				     *'showcmd'* *'sc'* *'noshowcmd'* *'nosc'*
 'showcmd' 'sc'		boolean	(Vim default: on, off for Unix,
 				       Vi default: off, set in |defaults.vim|)
@@ -7213,7 +7254,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	{ NF  Evaluate expression between '%{' and '}' and substitute result.
 	      Note that there is no '%' before the closing '}'.  The
 	      expression cannot contain a '}' character, call a function to
-	      work around that.
+	      work around that.  See |stl-%{| below.
 	( -   Start of item group.  Can be used for setting the width and
 	      alignment of a section.  Must be followed by %) somewhere.
 	) -   End of item group.  No width fields allowed.
@@ -7247,13 +7288,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 		:set statusline=...%(\ [%M%R%H]%)...
 <	Beware that an expression is evaluated each and every time the status
 	line is displayed.
-					*g:actual_curbuf* *g:actual_curwin*
-	The current buffer and current window will be set temporarily to that
-	of the window (and buffer) whose statusline is currently being drawn.
-	The expression will evaluate in this context.  The variable
-	"g:actual_curbuf" is set to the `bufnr()` number of the real current
-	buffer and "g:actual_curwin" to the |window-ID| of the real current
-	window.  These values are strings.
+				*stl-%{* *g:actual_curbuf* *g:actual_curwin*
+	While evaluationg %{} the current buffer and current window will be
+	set temporarily to that of the window (and buffer) whose statusline is
+	currently being drawn.  The expression will evaluate in this context.
+	The variable "g:actual_curbuf" is set to the `bufnr()` number of the
+	real current buffer and "g:actual_curwin" to the |window-ID| of the
+	real current window.  These values are strings.
 
 	The 'statusline' option will be evaluated in the |sandbox| if set from
 	a modeline, see |sandbox-option|.
@@ -7375,6 +7416,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	   vsplit	Just like "split" but split vertically.
 	   newtab	Like "split", but open a new tab page.  Overrules
 			"split" when both are present.
+	   uselast	If included, jump to the previously used window when
+			jumping to errors with |quickfix| commands.
 
 						*'synmaxcol'* *'smc'*
 'synmaxcol' 'smc'	number	(default 3000)
@@ -8682,6 +8725,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 			complete first match.
 	"list:longest"	When more than one match, list all matches and
 			complete till longest common string.
+	"list:lastused" When more than one buffer matches, sort buffers
+			by time last used (other than the current buffer).
 	When there is only a single match, it is fully completed in all cases.
 
 	Examples: >
@@ -8905,6 +8950,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	fail (and make sure not to exit Vim until the write was successful).
 	See |backup-table| for another explanation.
 	When the 'backupskip' pattern matches, a backup is not made anyway.
+	Depending on 'backupcopy' the backup is a new file or the original
+	file renamed (and a new file is written).
 	NOTE: This option is set to the default value when 'compatible' is
 	set.
 

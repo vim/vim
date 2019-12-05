@@ -35,6 +35,7 @@ LANGUAGES = \
 		sk.cp1250 \
 		sr \
 		sv \
+		tr \
 		uk \
 		uk.cp1251 \
 		vi \
@@ -78,6 +79,7 @@ POFILES = \
 		sk.cp1250.po \
 		sr.po \
 		sv.po \
+		tr.po \
 		uk.po \
 		uk.cp1251.po \
 		vi.po \
@@ -114,6 +116,7 @@ MOFILES = \
 		sk.mo \
 		sr.mo \
 		sv.mo \
+		tr.mo \
 		uk.mo \
 		vi.mo \
 		zh_CN.UTF-8.mo \
@@ -167,6 +170,7 @@ CHECKFILES = \
 		sk.cp1250.ck \
 		sr.ck \
 		sv.ck \
+		tr.ck \
 		uk.ck \
 		uk.cp1251.ck \
 		vi.ck \

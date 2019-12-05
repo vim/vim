@@ -1,6 +1,7 @@
 " Tests for popup windows for text properties
 
 source check.vim
+CheckFeature popupwin
 CheckFeature textprop
 
 source screendump.vim
@@ -13,10 +14,11 @@ func Test_textprop_popup()
 	50
 	normal zz
 	set scrolloff=0
-	call prop_type_add('popupMarker', #{highlight: 'DiffAdd'})
+	call prop_type_add('popupMarker', #{highlight: 'DiffAdd', bufnr: bufnr('%')})
 	call prop_add(50, 11, #{
 		\ length: 7,
 		\ type: 'popupMarker',
+		\ bufnr: bufnr('%'),
 		\ })
 	let winid = popup_create('the text', #{
 	      \ pos: 'botleft', 
@@ -68,6 +70,7 @@ func Test_textprop_popup_corners()
 	let winid = popup_create('bottom left', #{
 	      \ pos: 'botleft', 
 	      \ textprop: 'popupMarker',
+	      \ textpropwin: win_getid(),
 	      \ padding: [0,1,0,1],
 	      \ })
 	let winid = popup_create('bottom right', #{

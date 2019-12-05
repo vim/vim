@@ -650,11 +650,41 @@ func Test_prop_undo()
   call prop_type_delete('comment')
 endfunc
 
+func Test_prop_delete_text()
+  new
+  call prop_type_add('comment', {'highlight': 'Directory'})
+  call setline(1, ['oneone', 'twotwo', 'three'])
+
+  " zero length property
+  call prop_add(1, 3, {'type': 'comment'})
+  let expected = [{'col': 3, 'length': 0, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+
+  " delete one char moves the property
+  normal! x
+  let expected = [{'col': 2, 'length': 0, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+
+  " delete char of the property has no effect
+  normal! lx
+  let expected = [{'col': 2, 'length': 0, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+
+  " delete more chars moves property to first column, is not deleted
+  normal! 0xxxx
+  let expected = [{'col': 1, 'length': 0, 'id': 0, 'type': 'comment', 'start': 1, 'end': 1} ]
+  call assert_equal(expected, prop_list(1))
+
+  bwipe!
+  call prop_type_delete('comment')
+endfunc
+
 " screenshot test with textprop highlighting
 func Test_textprop_screenshot_various()
+  CheckScreendump
   " The Vim running in the terminal needs to use utf-8.
-  if !CanRunVimInTerminal() || g:orig_encoding != 'utf-8'
-    throw 'Skipped: cannot make screendumps or not using utf-8'
+  if g:orig_encoding != 'utf-8'
+    throw 'Skipped: not using utf-8'
   endif
   call writefile([
 	\ "call setline(1, ["
@@ -677,9 +707,10 @@ func Test_textprop_screenshot_various()
 	\ "call prop_type_add('start', {'highlight': 'NumberProp', 'start_incl': 1})",
 	\ "call prop_type_add('end', {'highlight': 'NumberProp', 'end_incl': 1})",
 	\ "call prop_type_add('both', {'highlight': 'NumberProp', 'start_incl': 1, 'end_incl': 1})",
-	\ "call prop_type_add('background', {'highlight': 'NumberProp', 'combine': 1})",
-	\ "eval 'background'->prop_type_change({'highlight': 'BackgroundProp'})",
-	\ "call prop_type_add('error', {'highlight': 'UnderlineProp', 'combine': 1})",
+	\ "call prop_type_add('background', {'highlight': 'BackgroundProp', 'combine': 0})",
+	\ "call prop_type_add('backgroundcomb', {'highlight': 'NumberProp', 'combine': 1})",
+	\ "eval 'backgroundcomb'->prop_type_change({'highlight': 'BackgroundProp'})",
+	\ "call prop_type_add('error', {'highlight': 'UnderlineProp'})",
 	\ "call prop_add(1, 4, {'end_lnum': 3, 'end_col': 3, 'type': 'long'})",
 	\ "call prop_add(2, 9, {'length': 3, 'type': 'number'})",
 	\ "call prop_add(2, 24, {'length': 4, 'type': 'number'})",
@@ -687,7 +718,8 @@ func Test_textprop_screenshot_various()
 	\ "call prop_add(3, 7, {'length': 2, 'type': 'start'})",
 	\ "call prop_add(3, 11, {'length': 2, 'type': 'end'})",
 	\ "call prop_add(3, 15, {'length': 2, 'type': 'both'})",
-	\ "call prop_add(4, 12, {'length': 10, 'type': 'background'})",
+	\ "call prop_add(4, 6, {'length': 3, 'type': 'background'})",
+	\ "call prop_add(4, 12, {'length': 10, 'type': 'backgroundcomb'})",
 	\ "call prop_add(4, 17, {'length': 5, 'type': 'error'})",
 	\ "call prop_add(5, 7, {'length': 4, 'type': 'long'})",
 	\ "call prop_add(6, 1, {'length': 8, 'type': 'long'})",
@@ -750,9 +782,7 @@ endfunc
 
 " screenshot test with Visual block mode operations
 func Test_textprop_screenshot_visual()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   " Delete two columns while text props are three chars wide.
   call RunTestVisualBlock(2, '01')
@@ -762,9 +792,7 @@ func Test_textprop_screenshot_visual()
 endfunc
 
 func Test_textprop_after_tab()
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckScreendump
 
   let lines =<< trim END
        call setline(1, [
@@ -783,6 +811,28 @@ func Test_textprop_after_tab()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPropTab')
+endfunc
+
+func Test_textprop_with_syntax()
+  CheckScreendump
+
+  let lines =<< trim END
+       call setline(1, [
+             \ "(abc)",
+             \ ])
+       syn match csParens "[()]" display
+       hi! link csParens MatchParen
+
+       call prop_type_add('TPTitle', #{ highlight: 'Title' })
+       call prop_add(1, 2, #{type: 'TPTitle', end_col: 5})
+  END
+  call writefile(lines, 'XtestPropSyn')
+  let buf = RunVimInTerminal('-S XtestPropSyn', {'rows': 6})
+  call VerifyScreenDump(buf, 'Test_textprop_syn_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestPropSyn')
 endfunc
 
 " Adding a text property to a new buffer should not fail
@@ -846,4 +896,32 @@ func Test_textprop_in_unloaded_buf()
   bwipe! Xbbb
   cal delete('Xaaa')
   cal delete('Xbbb')
+endfunc
+
+func Test_proptype_substitute2()
+  new
+  " text_prop.vim
+  call setline(1, [
+        \ 'The   num  123 is smaller than 4567.',
+        \ '123 The number 123 is smaller than 4567.',
+        \ '123 The number 123 is smaller than 4567.'])
+
+  call prop_type_add('number', {'highlight': 'ErrorMsg'})
+
+  call prop_add(1, 12, {'length': 3, 'type': 'number'})
+  call prop_add(2, 1, {'length': 3, 'type': 'number'})
+  call prop_add(3, 36, {'length': 4, 'type': 'number'})
+  set ul&
+  let expected = [{'id': 0, 'col': 13, 'end': 1, 'type': 'number', 'length': 3, 'start': 1}, 
+        \ {'id': 0, 'col': 1, 'end': 1, 'type': 'number', 'length': 3, 'start': 1}, 
+        \ {'id': 0, 'col': 50, 'end': 1, 'type': 'number', 'length': 4, 'start': 1}]
+  " Add some text in between
+  %s/\s\+/   /g
+  call assert_equal(expected, prop_list(1) + prop_list(2) + prop_list(3)) 
+
+  " remove some text
+  :1s/[a-z]\{3\}//g
+  let expected = [{'id': 0, 'col': 10, 'end': 1, 'type': 'number', 'length': 3, 'start': 1}]
+  call assert_equal(expected, prop_list(1))
+  bwipe!
 endfunc

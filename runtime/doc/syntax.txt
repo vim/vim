@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.1.  Last change: 2019 Sep 19
+*syntax.txt*	For Vim version 8.1.  Last change: 2019 Nov 29
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -60,8 +60,8 @@ If the VIM environment variable is not set, Vim will try to find
 the path in another way (see |$VIMRUNTIME|).  Usually this works just
 fine.  If it doesn't, try setting the VIM environment variable to the
 directory where the Vim stuff is located.  For example, if your syntax files
-are in the "/usr/vim/vim50/syntax" directory, set $VIMRUNTIME to
-"/usr/vim/vim50".  You must do this in the shell, before starting Vim.
+are in the "/usr/vim/vim81/syntax" directory, set $VIMRUNTIME to
+"/usr/vim/vim81".  You must do this in the shell, before starting Vim.
 This command also sources the |menu.vim| script when the GUI is running or
 will start soon.  See |'go-M'| about avoiding that.
 
@@ -476,6 +476,16 @@ conversion. See |-E| and |-s-ex| for details. It is probably best to create a
 script to replace all the -c commands and use it with the -u flag instead of
 specifying each command separately.
 
+				    *hl-TOhtmlProgress* *TOhtml-progress-color*
+When displayed, the progress bar will show colored boxes along the statusline
+as the HTML conversion proceeds. By default, the background color as the
+current "DiffDelete" highlight group is used. If "DiffDelete" and "StatusLine"
+have the same background color, TOhtml will automatically adjust the color to
+differ. If you do not like the automatically selected colors, you can define
+your own highlight colors for the progress bar. Example: >
+
+	hi TOhtmlProgress guifg=#c0ffee ctermbg=7
+<
 							 *g:html_number_lines*
 Default: current 'number' setting.
 When 0, buffer text is displayed in the generated HTML without line numbering.
@@ -507,8 +517,8 @@ For example: >
 <
 							      *g:html_use_css*
 Default: 1.
-When 1, generate valid HTML 4.01 markup with CSS1 styling, supported in all
-modern browsers and most old browsers.
+When 1, generate valid HTML 5 markup with CSS styling, supported in all modern
+browsers and many old browsers.
 When 0, generate <font> tags and similar outdated markup. This is not
 recommended but it may work better in really old browsers, email clients,
 forum posts, and similar situations where basic CSS support is unavailable.
@@ -580,23 +590,43 @@ affected in this way as follows:
 Example, to make the fold column and line numbers uncopyable: >
 	:let g:html_prevent_copy = "fn"
 <
-This feature is currently implemented by inserting read-only <input> elements
-into the markup to contain the uncopyable areas. This does not work well in
-all cases. When pasting to some applications which understand HTML, the
-<input> elements also get pasted. But plain-text paste destinations should
-always work.
+The method used to prevent copying in the generated page depends on the value
+of |g:html_use_input_for_pc|.
+
+						    *g:html_use_input_for_pc*
+Default: "fallback"
+If |g:html_prevent_copy| is non-empty, then:
+
+When "all", read-only <input> elements are used in place of normal text for
+uncopyable regions. In some browsers, especially older browsers, after
+selecting an entire page and copying the selection, the <input> tags are not
+pasted with the page text. If |g:html_no_invalid| is 0, the <input> tags have
+invalid type; this works in more browsers, but the page will not validate.
+Note: this method does NOT work in recent versions of Chrome and equivalent
+browsers; the <input> tags get pasted with the text.
+
+When "fallback" (default value), the same <input> elements are generated for
+older browsers, but newer browsers (detected by CSS feature query) hide the
+<input> elements and instead use generated content in an ::before pseudoelement
+to display the uncopyable text. This method should work with the largest
+number of browsers, both old and new.
+
+When "none", the <input> elements are not generated at all. Only the
+generated-content method is used. This means that old browsers, notably
+Internet Explorer, will either copy the text intended not to be copyable, or
+the non-copyable text may not appear at all. However, this is the most
+standards-based method, and there will be much less markup.
 
 							   *g:html_no_invalid*
 Default: 0.
-When 0, if |g:html_prevent_copy| is non-empty, an invalid attribute is
-intentionally inserted into the <input> element for the uncopyable areas. This
-increases the number of applications you can paste to without also pasting the
-<input> elements. Specifically, Microsoft Word will not paste the <input>
-elements if they contain this invalid attribute.
-When 1, no invalid markup is ever intentionally inserted, and the generated
-page should validate. However, be careful pasting into Microsoft Word when
-|g:html_prevent_copy| is non-empty; it can be hard to get rid of the <input>
-elements which get pasted.
+When 0, if |g:html_prevent_copy| is non-empty and |g:html_use_input_for_pc| is
+not "none", an invalid attribute is intentionally inserted into the <input>
+element for the uncopyable areas. This prevents pasting the <input> elements
+in some applications. Specifically, some versions of Microsoft Word will not
+paste the <input> elements if they contain this invalid attribute. When 1, no
+invalid markup is inserted, and the generated page should validate. However,
+<input> elements may be pasted into some applications and can be difficult to
+remove afterward.
 
 							 *g:html_hover_unfold*
 Default: 0.
@@ -936,10 +966,12 @@ Basic.
 C							*c.vim* *ft-c-syntax*
 
 A few things in C highlighting are optional.  To enable them assign any value
-to the respective variable.  Example: >
+(including zero) to the respective variable.  Example: >
 	:let c_comment_strings = 1
-To disable them use ":unlet".  Example: >
+	:let c_no_bracket_error = 0
+To disable them use `:unlet`.  Example: >
 	:unlet c_comment_strings
+Setting the value to zero doesn't work!
 
 An alternative is to switch to the C++ highlighting: >
 	:set filetype=cpp
@@ -955,8 +987,8 @@ Variable		Highlight ~
 				except { and } in first column
 				Default is to highlight them, otherwise you
 				can't spot a missing ")".
-*c_curly_error*		highlight a missing }; this forces syncing from the
-			start of the file, can be slow
+*c_curly_error*		highlight a missing } by finding all pairs; this
+			forces syncing from the start of the file, can be slow
 *c_no_ansi*		don't do standard ANSI types and constants
 *c_ansi_typedefs*		 ... but do standard ANSI types
 *c_ansi_constants*	 ... but do standard ANSI constants
@@ -1156,6 +1188,26 @@ Files matching "*.w" could be Progress or cweb.  If the automatic detection
 doesn't work for you, or you don't edit Progress at all, use this in your
 startup vimrc: >
    :let filetype_w = "cweb"
+
+
+DART						*dart.vim* *ft-dart-syntax*
+
+Dart is an object-oriented, typed, class defined, garbage collected language
+used for developing mobile, desktop, web, and back-end applications.  Dart uses
+a C-like syntax derived from C, Java, and JavaScript, with features adopted
+from Smalltalk, Python, Ruby, and others.
+
+More information about the language and its development environment at the
+official Dart language website at https://dart.dev
+
+dart.vim syntax detects and highlights Dart statements, reserved words,
+type declarations, storage classes, conditionals, loops, interpolated values,
+and comments.  There is no support idioms from Flutter or any other Dart
+framework.
+
+Changes, fixes?  Submit an issue or pull request via:
+
+https://github.com/pr3d4t0r/dart-vim-syntax/
 
 
 DESKTOP					   *desktop.vim* *ft-desktop-syntax*
@@ -2721,10 +2773,10 @@ To set a user-defined list of code block syntax highlighting: >
 To assign multiple code block types to a single syntax, define
 `rst_syntax_code_list` as a mapping: >
 	let rst_syntax_code_list = {
-		\ 'cpp' = ['cpp', 'c++'],
-                \ 'bash' = ['bash', 'sh'],
+		\ 'cpp': ['cpp', 'c++'],
+		\ 'bash': ['bash', 'sh'],
 		...
-	}
+	\ }
 
 To use color highlighting for emphasis text: >
 	let rst_use_emphasis_colors = 1
@@ -5051,6 +5103,12 @@ IncSearch	'incsearch' highlighting; also used for the text replaced with
 							*hl-LineNr*
 LineNr		Line number for ":number" and ":#" commands, and when 'number'
 		or 'relativenumber' option is set.
+							*hl-LineNrAbove*
+LineNrAbove	Line number for when the 'relativenumber'
+		option is set, above the cursor line.
+							*hl-LineNrBelow*
+LineNrBelow	Line number for when the 'relativenumber'
+		option is set, below the cursor line.
 							*hl-CursorLineNr*
 CursorLineNr	Like LineNr when 'cursorline' is set and 'cursorlineopt' is
 		set to "number" or "both", or 'relativenumber' is set, for

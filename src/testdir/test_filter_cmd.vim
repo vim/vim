@@ -1,5 +1,7 @@
 " Test the :filter command modifier
 
+source check.vim
+
 func Test_filter()
   edit Xdoesnotmatch
   edit Xwillmatch
@@ -89,6 +91,8 @@ func Test_filter_cmd_with_filter()
 endfunction
 
 func Test_filter_commands()
+  CheckFeature quickfix
+
   let g:test_filter_a = 1
   let b:test_filter_b = 2
   let test_filter_c = 3
@@ -144,4 +148,31 @@ func Test_filter_commands()
   bwipe! file.c
   bwipe! file.h
   bwipe! file.hs
+endfunc
+
+func Test_filter_display()
+  edit Xdoesnotmatch
+  let @a = '!!willmatch'
+  let @b = '!!doesnotmatch'
+  let @c = "oneline\ntwoline\nwillmatch\n"
+  let @/ = '!!doesnotmatch'
+  call feedkeys(":echo '!!doesnotmatch:'\<CR>", 'ntx')
+  let lines = map(split(execute('filter /willmatch/ display'), "\n"), 'v:val[5:6]')
+
+  call assert_true(index(lines, '"a') >= 0)
+  call assert_false(index(lines, '"b') >= 0)
+  call assert_true(index(lines, '"c') >= 0)
+  call assert_false(index(lines, '"/') >= 0)
+  call assert_false(index(lines, '":') >= 0)
+  call assert_false(index(lines, '"%') >= 0)
+
+  let lines = map(split(execute('filter /doesnotmatch/ display'), "\n"), 'v:val[5:6]')
+  call assert_true(index(lines, '"a') < 0)
+  call assert_false(index(lines, '"b') < 0)
+  call assert_true(index(lines, '"c') < 0)
+  call assert_false(index(lines, '"/') < 0)
+  call assert_false(index(lines, '":') < 0)
+  call assert_false(index(lines, '"%') < 0)
+
+  bwipe!
 endfunc

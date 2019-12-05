@@ -683,6 +683,8 @@ buf_write(
     context_sha256_T sha_ctx;
 #endif
     unsigned int    bkc = get_bkc_value(buf);
+    pos_T	    orig_start = buf->b_op_start;
+    pos_T	    orig_end = buf->b_op_end;
 
     if (fname == NULL || *fname == NUL)	// safety check
 	return FAIL;
@@ -875,6 +877,13 @@ buf_write(
 #endif
 				       )
 	{
+	    if (buf != NULL && cmdmod.lockmarks)
+	    {
+		// restore the original '[ and '] positions
+		buf->b_op_start = orig_start;
+		buf->b_op_end = orig_end;
+	    }
+
 	    --no_wait_return;
 	    msg_scroll = msg_save;
 	    if (nofile_err)
@@ -950,6 +959,13 @@ buf_write(
 	    fname = buf->b_ffname;
 	if (buf_fname_s)
 	    fname = buf->b_sfname;
+    }
+
+    if (cmdmod.lockmarks)
+    {
+	// restore the original '[ and '] positions
+	buf->b_op_start = orig_start;
+	buf->b_op_end = orig_end;
     }
 
 #ifdef FEAT_NETBEANS_INTG

@@ -68,6 +68,23 @@ func Test_terminal_basic()
   unlet g:job
 endfunc
 
+func Test_terminal_TerminalWinOpen()
+  au TerminalWinOpen * let b:done = 'yes'
+  let buf = Run_shell_in_terminal({})
+  call assert_equal('yes', b:done)
+  call StopShellInTerminal(buf)
+  " closing window wipes out the terminal buffer with the finished job
+  close
+
+  if has("unix")
+    terminal ++hidden ++open sleep 1
+    sleep 1
+    call assert_fails("echo b:done", 'E121:')
+  endif
+
+  au! TerminalWinOpen
+endfunc
+
 func Test_terminal_make_change()
   let buf = Run_shell_in_terminal({})
   call StopShellInTerminal(buf)
@@ -546,11 +563,14 @@ func Test_terminal_finish_open_close()
 endfunc
 
 func Test_terminal_cwd()
-  if !executable('pwd')
-    return
+  if has('win32')
+    let cmd = 'cmd /c cd'
+  else
+    CheckExecutable pwd
+    let cmd = 'pwd'
   endif
   call mkdir('Xdir')
-  let buf = term_start('pwd', {'cwd': 'Xdir'})
+  let buf = term_start(cmd, {'cwd': 'Xdir'})
   call WaitForAssert({-> assert_equal('Xdir', fnamemodify(getline(1), ":t"))})
 
   exe buf . 'bwipe'
@@ -570,7 +590,7 @@ func Test_terminal_cwd_failure()
 
   " Case 3: Directory exists but is not accessible.
   " Skip this for root, it will be accessible anyway.
-  if $USER != 'root'
+  if !IsRoot()
     call mkdir('XdirNoAccess', '', '0600')
     " return early if the directory permissions could not be set properly
     if getfperm('XdirNoAccess')[2] == 'x'
@@ -850,6 +870,7 @@ func Test_terminal_wqall()
 endfunc
 
 func Test_terminal_composing_unicode()
+  CheckNotBSD
   let save_enc = &encoding
   set encoding=utf-8
 
@@ -1051,6 +1072,32 @@ func Test_terminal_qall_prompt()
   quit
 endfunc
 
+" Run Vim in a terminal, then start a terminal window with a shell and check
+" that Vim exits if it is closed.
+func Test_terminal_exit()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+     let winid = win_getid()
+     help
+     term
+     let termid = win_getid()
+     call win_gotoid(winid)
+     close
+     call win_gotoid(termid)
+  END
+  call writefile(lines, 'XtermExit')
+  let buf = RunVimInTerminal('-S XtermExit', #{rows: 10})
+  let job = term_getjob(buf)
+  call WaitForAssert({-> assert_equal("run", job_status(job))})
+
+  " quit the shell, it will make Vim exit
+  call term_sendkeys(buf, "exit\<CR>")
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+
+  call delete('XtermExit')
+endfunc
+
 func Test_terminal_open_autocmd()
   augroup repro
     au!
@@ -1138,6 +1185,20 @@ func Test_terminal_dumpload()
   call assert_fails("call term_dumpload('dumps/Test_popup_command_01.dump', {'bufnr': closedbuf})", 'E475:')
 
   quit
+endfunc
+
+func Test_terminal_dumpload_dump()
+  CheckRunVimInTerminal
+
+  let lines =<< trim END
+     call term_dumpload('dumps/Test_popupwin_22.dump', #{term_rows: 12})
+  END
+  call writefile(lines, 'XtermDumpload')
+  let buf = RunVimInTerminal('-S XtermDumpload', #{rows: 15})
+  call VerifyScreenDump(buf, 'Test_terminal_dumpload', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtermDumpload')
 endfunc
 
 func Test_terminal_dumpdiff()
@@ -1353,7 +1414,6 @@ endfunc
 func Test_terminal_api_call()
   CheckRunVimInTerminal
 
-call ch_logfile('logfile', 'w')
   unlet! g:called_bufnum
   unlet! g:called_arg
 
@@ -1767,7 +1827,7 @@ func Test_terminal_out_err()
   call delete(outfile)
 endfunc
 
-func Test_terminwinscroll()
+func Test_termwinscroll()
   CheckUnix
 
   " Let the terminal output more than 'termwinscroll' lines, some at the start
@@ -1907,6 +1967,33 @@ func Test_terminal_switch_mode()
   bwipe!
 endfunc
 
+func Test_terminal_normal_mode()
+  CheckRunVimInTerminal
+
+  " Run Vim in a terminal and open a terminal window to run Vim in.
+  let lines =<< trim END
+    call setline(1, range(11111, 11122))
+    3
+  END
+  call writefile(lines, 'XtermNormal')
+  let buf = RunVimInTerminal('-S XtermNormal', {'rows': 8})
+  call term_wait(buf)
+
+  call term_sendkeys(buf, "\<C-W>N")
+  call term_sendkeys(buf, ":set number cursorline culopt=both\r")
+  call VerifyScreenDump(buf, 'Test_terminal_normal_1', {})
+
+  call term_sendkeys(buf, ":set culopt=number\r")
+  call VerifyScreenDump(buf, 'Test_terminal_normal_2', {})
+
+  call term_sendkeys(buf, ":set culopt=line\r")
+  call VerifyScreenDump(buf, 'Test_terminal_normal_3', {})
+
+  call term_sendkeys(buf, "a:q!\<CR>:q\<CR>:q\<CR>")
+  call StopVimInTerminal(buf)
+  call delete('XtermNormal')
+endfunc
+
 func Test_terminal_hidden_and_close()
   CheckUnix
 
@@ -1948,7 +2035,13 @@ func Test_terminal_does_not_truncate_last_newlines()
 endfunc
 
 func Test_terminal_no_job()
-  let term = term_start('false', {'term_finish': 'close'})
+  if has('win32')
+    let cmd = 'cmd /c ""'
+  else
+    CheckExecutable false
+    let cmd = 'false'
+  endif
+  let term = term_start(cmd, {'term_finish': 'close'})
   call WaitForAssert({-> assert_equal(v:null, term_getjob(term)) })
 endfunc
 
@@ -2120,6 +2213,32 @@ func Test_terminal_altscreen()
   call term_sendkeys(buf, "exit\r")
   exe buf . "bwipe!"
   call delete('Xtext')
+endfunc
+
+func Test_terminal_shell_option()
+  if has('unix')
+    " exec is a shell builtin command, should fail without a shell.
+    term exec ls runtest.vim
+    call WaitForAssert({-> assert_match('job failed', term_getline(bufnr(), 1))})
+    bwipe!
+
+    term ++shell exec ls runtest.vim
+    call WaitForAssert({-> assert_match('runtest.vim', term_getline(bufnr(), 1))})
+    bwipe!
+  elseif has('win32')
+    " dir is a shell builtin command, should fail without a shell.
+    try
+      term dir /b runtest.vim
+      call WaitForAssert({-> assert_match('job failed\|cannot access .*: No such file or directory', term_getline(bufnr(), 1))})
+    catch /CreateProcess/
+      " ignore
+    endtry
+    bwipe!
+
+    term ++shell dir /b runtest.vim
+    call WaitForAssert({-> assert_match('runtest.vim', term_getline(bufnr(), 1))})
+    bwipe!
+  endif
 endfunc
 
 func Test_terminal_setapi_and_call()

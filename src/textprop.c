@@ -12,13 +12,12 @@
  *
  * TODO:
  * - Adjust text property column and length when text is inserted/deleted.
- *   -> :substitute with multiple matches, issue #4427
  *   -> a :substitute with a multi-line match
  *   -> search for changed_bytes() from misc1.c
  *   -> search for mark_col_adjust()
  * - Perhaps we only need TP_FLAG_CONT_NEXT and can drop TP_FLAG_CONT_PREV?
- * - Add an arrray for global_proptypes, to quickly lookup a prop type by ID
- * - Add an arrray for b_proptypes, to quickly lookup a prop type by ID
+ * - Add an array for global_proptypes, to quickly lookup a prop type by ID
+ * - Add an array for b_proptypes, to quickly lookup a prop type by ID
  * - Checking the text length to detect text properties is slow.  Use a flag in
  *   the index, like DB_MARKED?
  * - Also test line2byte() with many lines, so that ml_updatechunk() is taken
@@ -29,7 +28,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_TEXT_PROP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
 
 /*
  * In a hashtable item "hi_key" points to "pt_name" in a proptype_T.
@@ -126,7 +125,7 @@ lookup_prop_type(char_u *name, buf_T *buf)
  * When the argument is not used or "bufnr" is not present then "buf" is
  * unchanged.
  * If "bufnr" is valid or not present return OK.
- * When "arg" is not a dict or "bufnr" is invalide return FAIL.
+ * When "arg" is not a dict or "bufnr" is invalid return FAIL.
  */
     static int
 get_bufnr_from_arg(typval_T *arg, buf_T **buf)
@@ -750,6 +749,7 @@ prop_type_set(typval_T *argvars, int add)
 	    return;
 	STRCPY(prop->pt_name, name);
 	prop->pt_id = ++proptype_id;
+	prop->pt_flags = PT_FLAG_COMBINE;
 	htp = buf == NULL ? &global_proptypes : &buf->b_proptypes;
 	if (*htp == NULL)
 	{
@@ -1067,13 +1067,7 @@ adjust_prop_columns(
 	if (bytes_added > 0
 		&& (tmp_prop.tp_col >= col + (start_incl ? 2 : 1)))
 	{
-	    if (tmp_prop.tp_col < col + (start_incl ? 2 : 1))
-	    {
-		tmp_prop.tp_len += (tmp_prop.tp_col - 1 - col) + bytes_added;
-		tmp_prop.tp_col = col + 1;
-	    }
-	    else
-		tmp_prop.tp_col += bytes_added;
+	    tmp_prop.tp_col += bytes_added;
 	    // Save for undo if requested and not done yet.
 	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
 		u_savesub(lnum);
@@ -1081,10 +1075,13 @@ adjust_prop_columns(
 	}
 	else if (bytes_added <= 0 && (tmp_prop.tp_col > col + 1))
 	{
+	    int len_changed = FALSE;
+
 	    if (tmp_prop.tp_col + bytes_added < col + 1)
 	    {
 		tmp_prop.tp_len += (tmp_prop.tp_col - 1 - col) + bytes_added;
 		tmp_prop.tp_col = col + 1;
+		len_changed = TRUE;
 	    }
 	    else
 		tmp_prop.tp_col += bytes_added;
@@ -1092,7 +1089,7 @@ adjust_prop_columns(
 	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
 		u_savesub(lnum);
 	    dirty = TRUE;
-	    if (tmp_prop.tp_len <= 0)
+	    if (len_changed && tmp_prop.tp_len <= 0)
 		continue;  // drop this text property
 	}
 	else if (tmp_prop.tp_len > 0
@@ -1312,4 +1309,4 @@ join_prop_lines(
     vim_free(prop_lengths);
 }
 
-#endif // FEAT_TEXT_PROP
+#endif // FEAT_PROP_POPUP

@@ -1,9 +1,12 @@
 " Test the :compiler command
 
+source check.vim
+
 func Test_compiler()
   if !executable('perl')
     return
   endif
+  CheckFeature quickfix
 
   " $LANG changes the output of Perl.
   if $LANG != ''
@@ -38,10 +41,11 @@ func Test_compiler()
 endfunc
 
 func Test_compiler_without_arg()
-  let a=split(execute('compiler'))
-  call assert_match('^.*runtime/compiler/ant.vim$',   a[0])
-  call assert_match('^.*runtime/compiler/bcc.vim$',   a[1])
-  call assert_match('^.*runtime/compiler/xmlwf.vim$', a[-1])
+  let runtime = substitute($VIMRUNTIME, '\\', '/', 'g')
+  let a = split(execute('compiler'))
+  call assert_match(runtime .. '/compiler/ant.vim$',   a[0])
+  call assert_match(runtime .. '/compiler/bcc.vim$',   a[1])
+  call assert_match(runtime .. '/compiler/xmlwf.vim$', a[-1])
 endfunc
 
 func Test_compiler_completion()

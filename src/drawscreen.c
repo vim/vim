@@ -149,7 +149,7 @@ update_screen(int type_arg)
     }
     updating_screen = TRUE;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // Update popup_mask if needed.  This may set w_redraw_top and w_redraw_bot
     // in some windows.
     may_update_popup_mask(type);
@@ -335,7 +335,7 @@ update_screen(int type_arg)
     FOR_ALL_WINDOWS(wp)
 	wp->w_buffer->b_mod_set = FALSE;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // Display popup windows on top of the windows and command line.
     update_popups(win_update);
 #endif
@@ -1398,7 +1398,11 @@ win_update(win_T *wp)
     int		i;
     long	j;
     static int	recursive = FALSE;	// being called recursively
-    int		old_botline = wp->w_botline;
+    linenr_T	old_botline = wp->w_botline;
+#ifdef FEAT_CONCEAL
+    int		old_wrow = wp->w_wrow;
+    int		old_wcol = wp->w_wcol;
+#endif
 #ifdef FEAT_FOLDING
     long	fold_count;
 #endif
@@ -2124,7 +2128,12 @@ win_update(win_T *wp)
 				|| (wp->w_match_head != NULL
 						    && buf->b_mod_xlines != 0)
 #endif
-				)))))
+				))))
+#ifdef FEAT_SYN_HL
+		|| (wp->w_p_cul && (lnum == wp->w_cursor.lnum
+					     || lnum == wp->w_last_cursorline))
+#endif
+				)
 	{
 #ifdef FEAT_SEARCH_EXTRA
 	    if (lnum == mod_top)
@@ -2467,7 +2476,7 @@ win_update(win_T *wp)
 	    wp->w_filler_rows = wp->w_height - srow;
 	}
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	else if (WIN_IS_POPUP(wp))
 	{
 	    // popup line that doesn't fit is left as-is
@@ -2530,8 +2539,10 @@ win_update(win_T *wp)
 
 	// Make sure the rest of the screen is blank
 	// put '~'s on rows that aren't part of the file.
-	win_draw_end(wp, WIN_IS_POPUP(wp) ? ' ' : '~',
-				       ' ', FALSE, row, wp->w_height, HLF_EOB);
+	if (WIN_IS_POPUP(wp))
+	    win_draw_end(wp, ' ', ' ', FALSE, row, wp->w_height, HLF_AT);
+	else
+	    win_draw_end(wp, '~', ' ', FALSE, row, wp->w_height, HLF_EOB);
     }
 
 #ifdef SYN_TIME_LIMIT
@@ -2560,18 +2571,52 @@ win_update(win_T *wp)
 	wp->w_valid |= VALID_BOTLINE;
 	if (wp == curwin && wp->w_botline != old_botline && !recursive)
 	{
+	    win_T	*wwp;
+#if defined(FEAT_CONCEAL)
+	    linenr_T	old_topline = wp->w_topline;
+	    int		new_wcol = wp->w_wcol;
+#endif
 	    recursive = TRUE;
 	    curwin->w_valid &= ~VALID_TOPLINE;
 	    update_topline();	// may invalidate w_botline again
-	    if (must_redraw != 0)
+
+#if defined(FEAT_CONCEAL)
+	    if (old_wcol != new_wcol && (wp->w_valid & (VALID_WCOL|VALID_WROW))
+						    != (VALID_WCOL|VALID_WROW))
+	    {
+		// A win_line() call applied a fix to screen cursor column to
+		// accommodate concealment of cursor line, but in this call to
+		// update_topline() the cursor's row or column got invalidated.
+		// If they are left invalid, setcursor() will recompute them
+		// but there won't be any further win_line() call to re-fix the
+		// column and the cursor will end up misplaced.  So we call
+		// cursor validation now and reapply the fix again (or call
+		// win_line() to do it for us).
+		validate_cursor();
+		if (wp->w_wcol == old_wcol && wp->w_wrow == old_wrow
+					       && old_topline == wp->w_topline)
+		    wp->w_wcol = new_wcol;
+		else
+		    redrawWinline(wp, wp->w_cursor.lnum);
+	    }
+#endif
+	    // New redraw either due to updated topline or due to wcol fix.
+	    if (wp->w_redr_type != 0)
 	    {
 		// Don't update for changes in buffer again.
 		i = curbuf->b_mod_set;
 		curbuf->b_mod_set = FALSE;
+		j = curbuf->b_mod_xlines;
+		curbuf->b_mod_xlines = 0;
 		win_update(curwin);
-		must_redraw = 0;
 		curbuf->b_mod_set = i;
+		curbuf->b_mod_xlines = j;
 	    }
+	    // Other windows might have w_redr_type raised in update_topline().
+	    must_redraw = 0;
+	    FOR_ALL_WINDOWS(wwp)
+		if (wwp->w_redr_type > must_redraw)
+		    must_redraw = wwp->w_redr_type;
 	    recursive = FALSE;
 	}
     }
@@ -2602,7 +2647,7 @@ update_prepare(void)
 #ifdef FEAT_SEARCH_EXTRA
     start_search_hl();
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // Update popup_mask if needed.
     may_update_popup_mask(must_redraw);
 #endif
@@ -2718,7 +2763,7 @@ updateWindow(win_T *wp)
 	    )
 	win_redr_status(wp, FALSE);
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // Display popup windows on top of everything.
     update_popups(win_update);
 #endif

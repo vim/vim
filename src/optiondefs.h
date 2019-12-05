@@ -209,6 +209,9 @@
 # define PV_CULOPT	OPT_WIN(WV_CULOPT)
 # define PV_CC		OPT_WIN(WV_CC)
 #endif
+#ifdef FEAT_LINEBREAK
+# define PV_SBR		OPT_BOTH(OPT_WIN(WV_SBR))
+#endif
 #ifdef FEAT_STL_OPT
 # define PV_STL		OPT_BOTH(OPT_WIN(WV_STL))
 #endif
@@ -289,7 +292,7 @@ struct vimoption
 # define ISP_LATIN1 (char_u *)"@,161-255"
 #endif
 
-# define HIGHLIGHT_INIT "8:SpecialKey,~:EndOfBuffer,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,N:CursorLineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,-:Conceal,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb,*:TabLine,#:TabLineSel,_:TabLineFill,!:CursorColumn,.:CursorLine,o:ColorColumn,q:QuickFixLine,z:StatusLineTerm,Z:StatusLineTermNC"
+# define HIGHLIGHT_INIT "8:SpecialKey,~:EndOfBuffer,@:NonText,d:Directory,e:ErrorMsg,i:IncSearch,l:Search,m:MoreMsg,M:ModeMsg,n:LineNr,a:LineNrAbove,b:LineNrBelow,N:CursorLineNr,r:Question,s:StatusLine,S:StatusLineNC,c:VertSplit,t:Title,v:Visual,V:VisualNOS,w:WarningMsg,W:WildMenu,f:Folded,F:FoldColumn,A:DiffAdd,C:DiffChange,D:DiffDelete,T:DiffText,>:SignColumn,-:Conceal,B:SpellBad,P:SpellCap,R:SpellRare,L:SpellLocal,+:Pmenu,=:PmenuSel,x:PmenuSbar,X:PmenuThumb,*:TabLine,#:TabLineSel,_:TabLineFill,!:CursorColumn,.:CursorLine,o:ColorColumn,q:QuickFixLine,z:StatusLineTerm,Z:StatusLineTermNC"
 
 // Default python version for pyx* commands
 #if defined(FEAT_PYTHON) && defined(FEAT_PYTHON3)
@@ -685,7 +688,7 @@ static struct vimoption options[] =
 			    {(char_u *)"menu,preview", (char_u *)0L}
 			    SCTX_INIT},
     {"completepopup", "cpp", P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
-#if defined(FEAT_TEXT_PROP) && defined(FEAT_QUICKFIX)
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_QUICKFIX)
 			    (char_u *)&p_cpp, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
 #else
@@ -843,7 +846,8 @@ static struct vimoption options[] =
 								     |P_NODUP,
 #ifdef FEAT_DIFF
 			    (char_u *)&p_dip, PV_NONE,
-			    {(char_u *)"internal,filler", (char_u *)NULL}
+			    {(char_u *)"internal,filler,closeoff",
+								(char_u *)NULL}
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)"", (char_u *)NULL}
@@ -1893,7 +1897,7 @@ static struct vimoption options[] =
 #endif
 			    {(char_u *)12L, (char_u *)0L} SCTX_INIT},
     {"previewpopup", "pvp", P_STRING|P_VI_DEF|P_COMMA|P_NODUP,
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 			    (char_u *)&p_pvp, PV_NONE,
 			    {(char_u *)"", (char_u *)0L}
 #else
@@ -2148,6 +2152,13 @@ static struct vimoption options[] =
     {"scrollbind",  "scb",  P_BOOL|P_VI_DEF,
 			    (char_u *)VAR_WIN, PV_SCBIND,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+    {"scrollfocus", "scf",  P_BOOL|P_VI_DEF,
+#if defined(MSWIN) && defined(FEAT_GUI)
+			    (char_u *)&p_scf, PV_NONE,
+#else
+			    (char_u *)NULL, PV_NONE,
+#endif
+			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"scrolljump",  "sj",   P_NUM|P_VI_DEF|P_VIM,
 			    (char_u *)&p_sj, PV_NONE,
 			    {(char_u *)1L, (char_u *)0L} SCTX_INIT},
@@ -2275,7 +2286,7 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"showbreak",   "sbr",  P_STRING|P_VI_DEF|P_RALL,
 #ifdef FEAT_LINEBREAK
-			    (char_u *)&p_sbr, PV_NONE,
+			    (char_u *)&p_sbr, PV_SBR,
 #else
 			    (char_u *)NULL, PV_NONE,
 #endif
@@ -2655,7 +2666,7 @@ static struct vimoption options[] =
 			    (char_u *)&p_tf, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
     {"ttymouse",    "ttym", P_STRING|P_NODEFAULT|P_NO_MKRC|P_VI_DEF,
-#if defined(FEAT_MOUSE) && (defined(UNIX) || defined(VMS))
+#if defined(UNIX) || defined(VMS)
 			    (char_u *)&p_ttym, PV_NONE,
 #else
 			    (char_u *)NULL, PV_NONE,
@@ -2969,7 +2980,9 @@ static struct vimoption options[] =
     p_term("t_ST", T_CST)
     p_term("t_Te", T_STE)
     p_term("t_te", T_TE)
+    p_term("t_TE", T_CTE)
     p_term("t_ti", T_TI)
+    p_term("t_TI", T_CTI)
     p_term("t_Ts", T_STS)
     p_term("t_ts", T_TS)
     p_term("t_u7", T_U7)

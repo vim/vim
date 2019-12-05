@@ -2,9 +2,9 @@
 # Makefile for Vim on OpenVMS
 #
 # Maintainer:   Zoltan Arpadffy <arpadffy@polarhome.com>
-# Last change:  2019 Sep 28
+# Last change:  2019 Nov 30
 #
-# This has script been tested on VMS 6.2 to 8.2 on DEC Alpha, VAX and IA64
+# This script has been tested on VMS 6.2 to 8.4 on DEC Alpha, VAX and IA64
 # with MMS and MMK
 #
 # The following could be built:
@@ -70,13 +70,9 @@ CCVER = YES
 # VIM_RUBY   = YES
 
 # X Input Method.  For entering special languages like chinese and
-# Japanese. Please define just one: VIM_XIM or VIM_HANGULIN
+# Japanese.
 # If you don't need it really, leave it behind the comment.
 # VIM_XIM = YES
-
-# Internal Hangul input method. GUI only.
-# If you don't need it really, leave it behind the comment.
-# VIM_HANGULIN = YES
 
 # Allow any white space to separate the fields in a tags file
 # When not defined, only a TAB is allowed.
@@ -247,15 +243,6 @@ XIM_DEF = ,"FEAT_XIM"
 .ENDIF
 .ENDIF
 
-.IFDEF VIM_HANGULIN
-# HANGULIN related setup.
-.IFDEF GUI
-HANGULIN_DEF = ,"FEAT_HANGULIN"
-HANGULIN_SRC = hangulin.c
-HANGULIN_OBJ = hangulin.obj
-.ENDIF
-.ENDIF
-
 .IFDEF VIM_MZSCHEME
 # MZSCHEME related setup
 MZSCH_DEF = ,"FEAT_MZSCHEME"
@@ -287,7 +274,7 @@ VIMHOST = "''F$TRNLNM("SYS$NODE")'''F$TRNLNM("UCX$INET_HOST")'.''F$TRNLNM("UCX$I
 .SUFFIXES : .obj .c
 
 ALL_CFLAGS = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
- $(TCL_DEF)$(RUBY_DEF)$(XIM_DEF)$(HANGULIN_DEF)$(TAG_DEF)$(MZSCH_DEF) -
+ $(TCL_DEF)$(RUBY_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCH_DEF) -
  $(ICONV_DEF)) -
  $(CFLAGS)$(GUI_FLAG) -
  /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC)$(PERL_INC)$(PYTHON_INC) -
@@ -298,7 +285,7 @@ ALL_CFLAGS = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
 # as $(GUI_INC) - replaced with $(GUI_INC_VER)
 # Otherwise should not be any other difference.
 ALL_CFLAGS_VER = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
- $(TCL_DEF)$(RUBY_DEF)$(XIM_DEF)$(HANGULIN_DEF)$(TAG_DEF)$(MZSCH_DEF) - 
+ $(TCL_DEF)$(RUBY_DEF)$(XIM_DEF)$(TAG_DEF)$(MZSCH_DEF) - 
  $(ICONV_DEF)) -
  $(CFLAGS)$(GUI_FLAG) -
  /include=($(C_INC)$(GUI_INC_DIR)$(GUI_INC_VER)$(PERL_INC)$(PYTHON_INC) -
@@ -318,6 +305,7 @@ SRC = \
 	bufwrite.c \
 	change.c \
 	charset.c \
+	cindent.c \
 	cmdexpand.c \
 	cmdhist.c \
 	crypt.c \
@@ -405,7 +393,6 @@ SRC = \
 	$(PYTHON_SRC) \
 	$(TCL_SRC) \
 	$(RUBY_SRC) \
-	$(HANGULIN_SRC) \
 	$(MZSCH_SRC) \
 	$(XDIFF_SRC)
 
@@ -420,6 +407,7 @@ OBJ = \
 	bufwrite.obj \
 	change.obj \
 	charset.obj \
+	cindent.obj \
 	cmdexpand.obj \
 	cmdhist.obj \
 	crypt.obj \
@@ -508,7 +496,6 @@ OBJ = \
 	$(PYTHON_OBJ) \
 	$(TCL_OBJ) \
 	$(RUBY_OBJ) \
-	$(HANGULIN_OBJ) \
 	$(MZSCH_OBJ) \
 	$(XDIFF_OBJ)
 
@@ -534,7 +521,9 @@ clean :
 
 # Link the target
 $(TARGET) : $(OBJ)
-	$(LD_DEF) $(LDFLAGS) /exe=$(TARGET) $+ $(ALL_LIBS)
+#     make an OPT file - as the obj file list is too long for one command line
+	-@ DIRECTORY *.OBJ. /BRIEF/COLUMNS=1/NOHEADING/NOTRAILING /SELECT=FILE=(NONODE,NODEVICE,NODIRECTORY,NOVERSION)/OUTPUT=ALL_OBJS_LIST.OPT
+	$(LD_DEF) $(LDFLAGS) /exe=$(TARGET) ALL_OBJS_LIST.OPT/OPT $(ALL_LIBS)
 
 .c.obj :
 	$(CC_DEF) $(ALL_CFLAGS) $<
@@ -549,7 +538,7 @@ pathdef.c : check_ccver $(CONFIG_H)
 	-@ write pd "char_u *default_vim_dir = (char_u *)"$(VIMLOC)";"
 	-@ write pd "char_u *default_vimruntime_dir = (char_u *)"$(VIMRUN)";"
 	-@ write pd "char_u *all_cflags = (char_u *)""$(CC_DEF)$(ALL_CFLAGS_VER)"";"
-	-@ write pd "char_u *all_lflags = (char_u *)""$(LD_DEF)$(LDFLAGS) /exe=$(TARGET) *.OBJ $(ALL_LIBS)"";"
+	-@ write pd "char_u *all_lflags = (char_u *)""$(LD_DEF)$(LDFLAGS) /exe=$(TARGET) ALL_OBJS_LIST.OPT/OPT $(ALL_LIBS)"";"
 	-@ write pd "char_u *compiler_version = (char_u *) ""''CC_VER'"";"
 	-@ write pd "char_u *compiled_user = (char_u *) "$(VIMUSER)";"
 	-@ write pd "char_u *compiled_sys  = (char_u *) "$(VIMHOST)";"
@@ -557,8 +546,7 @@ pathdef.c : check_ccver $(CONFIG_H)
 	-@ close pd
 
 if_perl.c : if_perl.xs
-	-@ $(PERL) PERL_ROOT:[LIB.ExtUtils]xsubpp -prototypes -typemap -
- PERL_ROOT:[LIB.ExtUtils]typemap if_perl.xs >> $@
+	-@ $(PERL) PERL_ROOT:[LIB.ExtUtils]xsubpp -prototypes -typemap - PERL_ROOT:[LIB.ExtUtils]typemap if_perl.xs >> $@
 
 make_vms.mms :
 	-@ write sys$output "The name of the makefile MUST be <MAKE_VMS.MMS> !!!"
@@ -697,6 +685,10 @@ change.obj : change.c vim.h [.auto]config.h feature.h os_unix.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h version.h
 charset.obj : charset.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h
+cindent.obj : cindent.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h
@@ -841,7 +833,7 @@ main.obj : main.c vim.h [.auto]config.h feature.h os_unix.h   \
  arabic.c
 map.obj : map.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
- [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h \
+ [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h
 mark.obj : mark.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h
@@ -1064,10 +1056,6 @@ gui_at_fs.obj : gui_at_fs.c vim.h [.auto]config.h feature.h os_unix.h \
 pty.obj : pty.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h
-hangulin.obj : hangulin.c vim.h [.auto]config.h feature.h os_unix.h \
- ascii.h keymap.h term.h macros.h structs.h regexp.h \
- gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
- globals.h
 if_perl.obj : [.auto]if_perl.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \

@@ -2621,7 +2621,7 @@ spell_iswordp(
 
     if (has_mbyte)
     {
-	l = MB_PTR2LEN(p);
+	l = mb_ptr2len(p);
 	s = p;
 	if (l == 1)
 	{
@@ -2861,7 +2861,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
     curwin->w_cursor.lnum = 0;
     while (!got_int)
     {
-	if (do_search(NULL, '/', frompat, 1L, SEARCH_KEEP, NULL, NULL) == 0
+	if (do_search(NULL, '/', frompat, 1L, SEARCH_KEEP, NULL) == 0
 						   || u_save_cursor() == FAIL)
 	    break;
 
@@ -4367,7 +4367,7 @@ compile_cap_prog(synblock_T *synblock)
     regprog_T   *rp = synblock->b_cap_prog;
     char_u	*re;
 
-    if (*synblock->b_p_spc == NUL)
+    if (synblock->b_p_spc == NULL || *synblock->b_p_spc == NUL)
 	synblock->b_cap_prog = NULL;
     else
     {

@@ -4,9 +4,11 @@
 # source files for all source archives
 SRC_ALL =	\
 		.gitignore \
+		.gitattributes \
 		.hgignore \
 		.lgtm.yml \
 		.travis.yml \
+		.cirrus.yml \
 		appveyor.yml \
 		ci/appveyor.bat \
 		src/Make_all.mak \
@@ -25,6 +27,7 @@ SRC_ALL =	\
 		src/change.c \
 		src/channel.c \
 		src/charset.c \
+		src/cindent.c \
 		src/cmdexpand.c \
 		src/cmdhist.c \
 		src/crypt.c \
@@ -191,6 +194,7 @@ SRC_ALL =	\
 		src/proto/change.pro \
 		src/proto/channel.pro \
 		src/proto/charset.pro \
+		src/proto/cindent.pro \
 		src/proto/cmdexpand.pro \
 		src/proto/cmdhist.pro \
 		src/proto/crypt.pro \
@@ -281,9 +285,6 @@ SRC_ALL =	\
 		src/libvterm/README \
 		src/libvterm/tbl2inc_c.pl \
 		src/libvterm/vterm.pc.in \
-		src/libvterm/bin/unterm.c \
-		src/libvterm/bin/vterm-ctrl.c \
-		src/libvterm/bin/vterm-dump.c \
 		src/libvterm/doc/URLs \
 		src/libvterm/doc/seqs.txt \
 		src/libvterm/include/vterm.h \
@@ -294,11 +295,11 @@ SRC_ALL =	\
 		src/libvterm/src/encoding/uk.inc \
 		src/libvterm/src/encoding/uk.tbl \
 		src/libvterm/src/keyboard.c \
-		src/libvterm/src/termmouse.c \
+		src/libvterm/src/mouse.c \
 		src/libvterm/src/parser.c \
 		src/libvterm/src/pen.c \
 		src/libvterm/src/rect.h \
-		src/libvterm/src/termscreen.c \
+		src/libvterm/src/screen.c \
 		src/libvterm/src/state.c \
 		src/libvterm/src/unicode.c \
 		src/libvterm/src/utf8.h \
@@ -398,7 +399,6 @@ SRC_UNIX =	\
 		src/gui_xmebwp.h \
 		src/gui_x11.c \
 		src/gui_x11_pm.h \
-		src/hangulin.c \
 		src/if_xcmdsrv.c \
 		src/link.sh \
 		src/installman.sh \
@@ -418,7 +418,6 @@ SRC_UNIX =	\
 		src/proto/gui_motif.pro \
 		src/proto/gui_xmdlg.pro \
 		src/proto/gui_x11.pro \
-		src/proto/hangulin.pro \
 		src/proto/if_xcmdsrv.pro \
 		src/proto/os_unix.pro \
 		src/proto/pty.pro \
@@ -660,6 +659,7 @@ RT_ALL =	\
 		runtime/doc/*.txt \
 		runtime/doc/Makefile \
 		runtime/doc/doctags.c \
+		runtime/doc/doctags.vim \
 		runtime/doc/test_urls.vim \
 		runtime/doc/vim.1 \
 		runtime/doc/evim.1 \

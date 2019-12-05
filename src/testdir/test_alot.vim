@@ -1,7 +1,6 @@
 " A series of tests that can run in one Vim invocation.
 " This makes testing go faster, since Vim doesn't need to restart.
 
-source test_assign.vim
 source test_backup.vim
 source test_behave.vim
 source test_bufline.vim
@@ -38,7 +37,6 @@ source test_join.vim
 source test_jumps.vim
 source test_lambda.vim
 source test_lispwords.vim
-source test_mapping.vim
 source test_match.vim
 source test_menu.vim
 source test_messages.vim

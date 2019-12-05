@@ -46,11 +46,11 @@
  */
 #if !defined(FEAT_TINY) && !defined(FEAT_SMALL) && !defined(FEAT_NORMAL) \
 	&& !defined(FEAT_BIG) && !defined(FEAT_HUGE)
-/* #define FEAT_TINY */
-/* #define FEAT_SMALL */
-/* #define FEAT_NORMAL */
-/* #define FEAT_BIG */
-/* #define FEAT_HUGE */
+// #define FEAT_TINY
+// #define FEAT_SMALL
+// #define FEAT_NORMAL
+// #define FEAT_BIG
+// #define FEAT_HUGE
 #endif
 
 /*
@@ -153,7 +153,7 @@
  */
 #ifdef FEAT_NORMAL
 # define FEAT_DIGRAPHS
-/* #define OLD_DIGRAPHS */
+// #define OLD_DIGRAPHS
 #endif
 
 /*
@@ -174,7 +174,7 @@
 #endif
 
 #ifdef FEAT_NORMAL
-# define VIM_BACKTICK		/* internal backtick expansion */
+# define VIM_BACKTICK		// internal backtick expansion
 #endif
 
 /*
@@ -217,7 +217,7 @@
  * +find_in_path	"[I" ":isearch" "^W^I", ":checkpath", etc.
  */
 #ifdef FEAT_NORMAL
-# ifdef FEAT_SEARCHPATH	/* FEAT_SEARCHPATH is required */
+# ifdef FEAT_SEARCHPATH	// FEAT_SEARCHPATH is required
 #  define FEAT_FIND_ID
 # endif
 #endif
@@ -378,7 +378,7 @@
 #ifdef FEAT_NORMAL
 # define FEAT_STL_OPT
 # ifndef FEAT_CMDL_INFO
-#  define FEAT_CMDL_INFO	/* 'ruler' is required for 'statusline' */
+#  define FEAT_CMDL_INFO	// 'ruler' is required for 'statusline'
 # endif
 #endif
 
@@ -409,8 +409,8 @@
  */
 #ifdef FEAT_NORMAL
 # define FEAT_VIMINFO
-/* #define VIMINFO_FILE	"$HOME/foo/.viminfo" */
-/* #define VIMINFO_FILE2 "~/bar/.viminfo" */
+// #define VIMINFO_FILE	"$HOME/foo/.viminfo"
+// #define VIMINFO_FILE2 "~/bar/.viminfo"
 #endif
 
 /*
@@ -427,18 +427,6 @@
  */
 #if defined(FEAT_BIG) && defined(FEAT_SYN_HL)
 # define FEAT_CONCEAL
-#endif
-
-/*
- * +textprop		Text properties and popup windows
- */
-#if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
-# define FEAT_TEXT_PROP
-#endif
-
-#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)
-// Can limit syntax highlight time to 'redrawtime'.
-# define SYN_TIME_LIMIT 1
 #endif
 
 /*
@@ -466,14 +454,14 @@
  *			(used only with NO_BUILTIN_TCAPS not defined).
  */
 #ifdef HAVE_TGETENT
-/* #define NO_BUILTIN_TCAPS */
+// #define NO_BUILTIN_TCAPS
 #endif
 
 #if !defined(NO_BUILTIN_TCAPS)
 # ifdef FEAT_BIG
 #  define ALL_BUILTIN_TCAPS
 # else
-#  define SOME_BUILTIN_TCAPS		/* default */
+#  define SOME_BUILTIN_TCAPS		// default
 # endif
 #endif
 
@@ -529,10 +517,10 @@
  *			IME can be used to input chars.  Not tested much!
  */
 #if defined(FEAT_GUI_MSWIN) && !defined(FEAT_MBYTE_IME)
-/* #define FEAT_MBYTE_IME */
+// #define FEAT_MBYTE_IME
 # endif
 
-/* Use iconv() when it's available. */
+// Use iconv() when it's available.
 #if (defined(HAVE_ICONV_H) && defined(HAVE_ICONV)) || defined(DYNAMIC_ICONV)
 # define USE_ICONV
 #endif
@@ -540,30 +528,19 @@
 /*
  * +xim			X Input Method.  For entering special languages like
  *			chinese and Japanese.
- * +hangul_input	Internal Hangul input method.  Must be included
- *			through configure: "--enable-hangulin"
- * Both are for Unix and VMS only.
+ *			this is for Unix and VMS only.
  */
 #ifndef FEAT_XIM
-/* #define FEAT_XIM */
+// #define FEAT_XIM
 #endif
 
 #if defined(FEAT_XIM) && defined(FEAT_GUI_GTK)
-# define USE_XIM 1		/* needed for GTK include files */
+# define USE_XIM 1		// needed for GTK include files
 #endif
 
-#ifdef FEAT_HANGULIN
-# define HANGUL_DEFAULT_KEYBOARD 2	/* 2 or 3 bulsik keyboard */
-# define ESC_CHG_TO_ENG_MODE		/* if defined, when ESC pressed,
-					 * turn to english mode
-					 */
-# if defined(FEAT_XIM) && !defined(LINT)
-	Error: You should select only ONE of XIM and HANGUL INPUT
-# endif
-#endif
-#if defined(FEAT_HANGULIN) || defined(FEAT_XIM)
-/* # define X_LOCALE */			/* for OS with incomplete locale
-					   support, like old linux versions. */
+#if defined(FEAT_XIM)
+// # define X_LOCALE			// for OS with incomplete locale
+					// support, like old linux versions.
 #endif
 
 /*
@@ -573,14 +550,14 @@
 # if defined(HAVE_X11) && !defined(FEAT_GUI_GTK)
 #  define FEAT_XFONTSET
 # else
-/* #  define FEAT_XFONTSET */
+// #  define FEAT_XFONTSET
 # endif
 #endif
 
 /*
  * +libcall		libcall() function
  */
-/* Using dlopen() also requires dlsym() to be available. */
+// Using dlopen() also requires dlsym() to be available.
 #if defined(HAVE_DLOPEN) && defined(HAVE_DLSYM)
 # define USE_DLOPEN
 #endif
@@ -616,7 +593,7 @@
 # define FEAT_SOUND_CANBERRA
 #endif
 
-/* There are two ways to use XPM. */
+// There are two ways to use XPM.
 #if (defined(HAVE_XM_XPMP_H) && defined(FEAT_GUI_MOTIF)) \
 		|| defined(HAVE_X11_XPM_H)
 # define HAVE_XPM 1
@@ -701,7 +678,7 @@
 #if !defined(FEAT_GUI_DIALOG) && (defined(FEAT_GUI_MOTIF) \
 	|| defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_GTK) \
 	|| defined(FEAT_GUI_MSWIN))
-/* need a dialog to show error messages when starting from the desktop */
+// need a dialog to show error messages when starting from the desktop
 # define FEAT_GUI_DIALOG
 #endif
 #if defined(FEAT_GUI_DIALOG) && \
@@ -721,7 +698,7 @@
 # define FEAT_TERMGUICOLORS
 #endif
 
-/* Mac specific thing: Codewarrior interface. */
+// Mac specific thing: Codewarrior interface.
 #ifdef FEAT_GUI_MAC
 # define FEAT_CW_EDITOR
 #endif
@@ -758,12 +735,12 @@
  *			be set to save the screen when starting Vim and
  *			restoring it when exiting.
  */
-/* #define FEAT_XTERM_SAVE */
+// #define FEAT_XTERM_SAVE
 
 /*
  * DEBUG		Output a lot of debugging garbage.
  */
-/* #define DEBUG */
+// #define DEBUG
 
 /*
  * STARTUPTIME		Time the startup process.  Writes a file with
@@ -778,22 +755,22 @@
 /*
  * MEM_PROFILE		Debugging of memory allocation and freeing.
  */
-/* #define MEM_PROFILE */
+// #define MEM_PROFILE
 
 /*
  * VIMRC_FILE		Name of the .vimrc file in current dir.
  */
-/* #define VIMRC_FILE	".vimrc" */
+// #define VIMRC_FILE	".vimrc"
 
 /*
  * EXRC_FILE		Name of the .exrc file in current dir.
  */
-/* #define EXRC_FILE	".exrc" */
+// #define EXRC_FILE	".exrc"
 
 /*
  * GVIMRC_FILE		Name of the .gvimrc file in current dir.
  */
-/* #define GVIMRC_FILE	".gvimrc" */
+// #define GVIMRC_FILE	".gvimrc"
 
 /*
  * SESSION_FILE		Name of the default ":mksession" file.
@@ -805,49 +782,49 @@
  * USR_VIMRC_FILE2	Name of alternate user .vimrc file.
  * USR_VIMRC_FILE3	Name of alternate user .vimrc file.
  */
-/* #define USR_VIMRC_FILE	"~/foo/.vimrc" */
-/* #define USR_VIMRC_FILE2	"~/bar/.vimrc" */
-/* #define USR_VIMRC_FILE3	"$VIM/.vimrc" */
+// #define USR_VIMRC_FILE	"~/foo/.vimrc"
+// #define USR_VIMRC_FILE2	"~/bar/.vimrc"
+// #define USR_VIMRC_FILE3	"$VIM/.vimrc"
 
 /*
  * VIM_DEFAULTS_FILE	Name of the defaults.vim script file
  */
-/* #define VIM_DEFAULTS_FILE	"$VIMRUNTIME/defaults.vim" */
+// #define VIM_DEFAULTS_FILE	"$VIMRUNTIME/defaults.vim"
 
 /*
  * EVIM_FILE		Name of the evim.vim script file
  */
-/* #define EVIM_FILE		"$VIMRUNTIME/evim.vim" */
+// #define EVIM_FILE		"$VIMRUNTIME/evim.vim"
 
 /*
  * USR_EXRC_FILE	Name of the user .exrc file.
  * USR_EXRC_FILE2	Name of the alternate user .exrc file.
  */
-/* #define USR_EXRC_FILE	"~/foo/.exrc" */
-/* #define USR_EXRC_FILE2	"~/bar/.exrc" */
+// #define USR_EXRC_FILE	"~/foo/.exrc"
+// #define USR_EXRC_FILE2	"~/bar/.exrc"
 
 /*
  * USR_GVIMRC_FILE	Name of the user .gvimrc file.
  * USR_GVIMRC_FILE2	Name of the alternate user .gvimrc file.
  */
-/* #define USR_GVIMRC_FILE	"~/foo/.gvimrc" */
-/* #define USR_GVIMRC_FILE2	"~/bar/.gvimrc" */
-/* #define USR_GVIMRC_FILE3	"$VIM/.gvimrc" */
+// #define USR_GVIMRC_FILE	"~/foo/.gvimrc"
+// #define USR_GVIMRC_FILE2	"~/bar/.gvimrc"
+// #define USR_GVIMRC_FILE3	"$VIM/.gvimrc"
 
 /*
  * SYS_VIMRC_FILE	Name of the system-wide .vimrc file.
  */
-/* #define SYS_VIMRC_FILE	"/etc/vimrc" */
+// #define SYS_VIMRC_FILE	"/etc/vimrc"
 
 /*
  * SYS_GVIMRC_FILE	Name of the system-wide .gvimrc file.
  */
-/* #define SYS_GVIMRC_FILE	"/etc/gvimrc" */
+// #define SYS_GVIMRC_FILE	"/etc/gvimrc"
 
 /*
  * DFLT_HELPFILE	Name of the help file.
  */
-/* # define DFLT_HELPFILE	"$VIMRUNTIME/doc/help.txt.gz" */
+// # define DFLT_HELPFILE	"$VIMRUNTIME/doc/help.txt.gz"
 
 /*
  * File names for:
@@ -858,17 +835,17 @@
  * FTPLUGOF_FILE	switch off loading settings files
  * INDOFF_FILE		switch off loading indent files
  */
-/* # define FILETYPE_FILE	"filetype.vim" */
-/* # define FTPLUGIN_FILE	"ftplugin.vim" */
-/* # define INDENT_FILE		"indent.vim" */
-/* # define FTOFF_FILE		"ftoff.vim" */
-/* # define FTPLUGOF_FILE	"ftplugof.vim" */
-/* # define INDOFF_FILE		"indoff.vim" */
+// # define FILETYPE_FILE	"filetype.vim"
+// # define FTPLUGIN_FILE	"ftplugin.vim"
+// # define INDENT_FILE		"indent.vim"
+// # define FTOFF_FILE		"ftoff.vim"
+// # define FTPLUGOF_FILE	"ftplugof.vim"
+// # define INDOFF_FILE		"indoff.vim"
 
 /*
  * SYS_MENU_FILE	Name of the default menu.vim file.
  */
-/* # define SYS_MENU_FILE	"$VIMRUNTIME/menu.vim" */
+// # define SYS_MENU_FILE	"$VIMRUNTIME/menu.vim"
 
 /*
  * SYS_OPTWIN_FILE	Name of the default optwin.vim file.
@@ -880,7 +857,7 @@
 /*
  * SYNTAX_FNAME		Name of a syntax file, where %s is the syntax name.
  */
-/* #define SYNTAX_FNAME	"/foo/%s.vim" */
+// #define SYNTAX_FNAME	"/foo/%s.vim"
 
 /*
  * RUNTIME_DIRNAME	Generic name for the directory of the runtime files.
@@ -896,7 +873,7 @@
  *			string concatenation.
  *			Also set by "--with-global-runtime" configure argument.
  */
-/* #define RUNTIME_GLOBAL "/etc/vim" */
+// #define RUNTIME_GLOBAL "/etc/vim"
 
 /*
  * RUNTIME_GLOBAL_AFTER	Comma-separated list of directory names for global Vim
@@ -905,14 +882,14 @@
  *			string concatenation.
  *			Also set by "--with-global-runtime" configure argument.
  */
-/* #define RUNTIME_GLOBAL_AFTER "/etc/vim/after" */
+// #define RUNTIME_GLOBAL_AFTER "/etc/vim/after"
 
 /*
  * MODIFIED_BY		Name of who modified Vim.  Required when distributing
  *			a modified version of Vim.
  *			Also from the "--with-modified-by" configure argument.
  */
-/* #define MODIFIED_BY "John Doe" */
+// #define MODIFIED_BY "John Doe"
 
 /*
  * Machine dependent:
@@ -924,7 +901,7 @@
  * +system		Use system() instead of fork/exec for starting a
  *			shell.  Doesn't work for the GUI!
  */
-/* #define USE_SYSTEM */
+// #define USE_SYSTEM
 
 /*
  * +X11			Unix only.  Include code for xterm title saving and X
@@ -964,12 +941,12 @@
  *			console mouse handling.
  * +mouse_urxvt		Unix only: Include code for for urxvt mosue handling.
  * +mouse		Any mouse support (any of the above enabled).
+ *			Always included, since either FEAT_MOUSE_XTERM or
+ *			DOS_MOUSE is defined.
  */
-/* OS/2 and Amiga console have no mouse support */
-#if !defined(AMIGA)
-# ifdef FEAT_NORMAL
-#  define FEAT_MOUSE_XTERM
-# endif
+// OS/2 and Amiga console have no mouse support
+#if defined(UNIX) || defined(VMS)
+# define FEAT_MOUSE_XTERM
 # ifdef FEAT_BIG
 #  define FEAT_MOUSE_NET
 # endif
@@ -979,12 +956,12 @@
 # ifdef FEAT_BIG
 #  define FEAT_MOUSE_URXVT
 # endif
-# if defined(FEAT_NORMAL) && defined(MSWIN)
-#  define DOS_MOUSE
-# endif
-# if defined(FEAT_NORMAL) && defined(__QNX__)
-#  define FEAT_MOUSE_PTERM
-# endif
+#endif
+#if defined(MSWIN)
+# define DOS_MOUSE
+#endif
+#if defined(__QNX__)
+# define FEAT_MOUSE_PTERM
 #endif
 
 /*
@@ -1002,26 +979,9 @@
 # define FEAT_SYSMOUSE
 #endif
 
-/* urxvt is a small variation of mouse_xterm, and shares its code */
+// urxvt is a small variation of mouse_xterm, and shares its code
 #if defined(FEAT_MOUSE_URXVT) && !defined(FEAT_MOUSE_XTERM)
 # define FEAT_MOUSE_XTERM
-#endif
-
-/* Define FEAT_MOUSE when any of the above is defined or FEAT_GUI. */
-#if !defined(FEAT_MOUSE_TTY) \
-	&& (defined(FEAT_MOUSE_XTERM) \
-	    || defined(FEAT_MOUSE_NET) \
-	    || defined(FEAT_MOUSE_DEC) \
-	    || defined(DOS_MOUSE) \
-	    || defined(FEAT_MOUSE_GPM) \
-	    || defined(FEAT_MOUSE_JSB) \
-	    || defined(FEAT_MOUSE_PTERM) \
-	    || defined(FEAT_SYSMOUSE) \
-	    || defined(FEAT_MOUSE_URXVT))
-# define FEAT_MOUSE_TTY		/* include non-GUI mouse support */
-#endif
-#if !defined(FEAT_MOUSE) && (defined(FEAT_MOUSE_TTY) || defined(FEAT_GUI))
-# define FEAT_MOUSE		/* include generic mouse support */
 #endif
 
 /*
@@ -1057,7 +1017,7 @@
 #endif
 
 #if defined(FEAT_GUI_MSWIN) && defined(FEAT_SMALL)
-# define MSWIN_FIND_REPLACE	/* include code for find/replace dialog */
+# define MSWIN_FIND_REPLACE	// include code for find/replace dialog
 # define MSWIN_FR_BUFSIZE 256
 #endif
 
@@ -1080,11 +1040,11 @@
  */
 #if defined(FEAT_CLIENTSERVER) && !defined(FEAT_AUTOSERVERNAME)
 # ifdef MSWIN
-    /* Always enabled on MS-Windows. */
+    // Always enabled on MS-Windows.
 #  define FEAT_AUTOSERVERNAME
 # else
-    /* Enable here if you don't use configure. */
-/* # define FEAT_AUTOSERVERNAME */
+    // Enable here if you don't use configure.
+// # define FEAT_AUTOSERVERNAME
 # endif
 #endif
 
@@ -1093,7 +1053,7 @@
  *			to check if mouse dragging can be used and if term
  *			codes can be obtained.
  */
-#if (defined(FEAT_NORMAL) || defined(FEAT_MOUSE)) && defined(HAVE_TGETENT)
+#if defined(HAVE_TGETENT)
 # define FEAT_TERMRESPONSE
 #endif
 
@@ -1113,8 +1073,8 @@
 # endif
 #endif
 
-/* GUI and some consoles can change the shape of the cursor.  The code is also
- * needed for the 'mouseshape' and 'concealcursor' options. */
+// GUI and some consoles can change the shape of the cursor.  The code is also
+// needed for the 'mouseshape' and 'concealcursor' options.
 #if defined(FEAT_GUI) \
 	    || defined(MCH_CURSOR_SHAPE) \
 	    || defined(FEAT_MOUSESHAPE) \
@@ -1136,10 +1096,6 @@
 # define FEAT_ARP
 #endif
 
-/*
- * +GUI_Athena		To compile Vim with or without the GUI (gvim) you have
- * +GUI_Motif		to edit the Makefile.
- */
 
 /*
  * +ole			Win32 OLE automation: Use Makefile.ovc.
@@ -1155,6 +1111,8 @@
  * +tcl			TCL interface: "--enable-tclinterp"
  * +netbeans_intg	Netbeans integration
  * +channel		Inter process communication
+ * +GUI_Athena		Athena GUI
+ * +GUI_Motif		Motif GUI
  */
 
 /*
@@ -1187,12 +1145,29 @@
 #if defined(FEAT_TERMINAL) && !defined(CURSOR_SHAPE)
 # define CURSOR_SHAPE
 #endif
+#if defined(FEAT_TERMINAL) && !defined(FEAT_SYN_HL)
+// simplify the code a bit by enabling +syntax when +terminal is enabled
+# define FEAT_SYN_HL
+#endif
+
+/*
+ * +textprop and +popupwin	Text PROPerties and POPUP windows
+ */
+#if defined(FEAT_EVAL) && defined(FEAT_SYN_HL)
+# define FEAT_PROP_POPUP
+#endif
+
+#if defined(FEAT_SYN_HL) && defined(FEAT_RELTIME)
+// Can limit syntax highlight time to 'redrawtime'.
+# define SYN_TIME_LIMIT 1
+#endif
+
 
 /*
  * +signs		Allow signs to be displayed to the left of text lines.
  *			Adds the ":sign" command.
  */
-#if defined(FEAT_BIG) || defined(FEAT_NETBEANS_INTG) || defined(FEAT_TEXT_PROP)
+#if defined(FEAT_BIG) || defined(FEAT_NETBEANS_INTG) || defined(FEAT_PROP_POPUP)
 # define FEAT_SIGNS
 # if ((defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)) \
 		&& defined(HAVE_X11_XPM_H)) \
@@ -1220,7 +1195,7 @@
 #endif
 
 #if defined(FEAT_BEVAL_GUI) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
-# define FEAT_BEVAL_TIP		/* balloon eval used for toolbar tooltip */
+# define FEAT_BEVAL_TIP		// balloon eval used for toolbar tooltip
 #endif
 
 /*
@@ -1236,7 +1211,7 @@
 # define FEAT_BEVAL
 #endif
 
-/* both Motif and Athena are X11 and share some code */
+// both Motif and Athena are X11 and share some code
 #if defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA)
 # define FEAT_GUI_X11
 #endif

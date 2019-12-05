@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.1.  Last change: 2019 Sep 27
+*insert.txt*    For Vim version 8.1.  Last change: 2019 Nov 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -196,6 +196,13 @@ CTRL-V		Insert next non-digit literally.  For special keys, the
 		mapping.
 		Note: When CTRL-V is mapped (e.g., to paste text) you can
 		often use CTRL-Q instead |i_CTRL-Q|.
+		When |modifyOtherKeys| is enabled then special Escape sequence
+		is converted back to what it was without |modifyOtherKeys|,
+		unless the Shift key is also pressed.
+
+						*i_CTRL-SHIFT-V*
+CTRL-SHIFT-V	Works just like CTRL-V, unless |modifyOtherKeys| is active,
+		then it inserts the Escape sequence for a key with modifiers.
 
 						*i_CTRL-Q*
 CTRL-Q		Same as CTRL-V.
@@ -1138,6 +1145,27 @@ below the text, and the bottom of the menu otherwise.
 After the info popup is created it can be found with |popup_findinfo()| and
 properties can be changed with |popup_setoptions()|.
 
+						*complete-popuphidden*
+If the information for the popup is obtained asynchronously, use "popuphidden"
+in 'completeopt'.  The info popup will then be initially hidden and
+|popup_show()| must be called once it has been filled with the info.  This can
+be done with a |CompleteChanged| autocommand, something like this: >
+	set completeopt+=popuphidden
+	au CompleteChanged * call UpdateCompleteInfo()
+	func UpdateCompleteInfo()
+	  " Cancel any pending info fetch
+	  let item = v:event.completed_item
+	  " Start fetching info for the item then call ShowCompleteInfo(info)
+	endfunc
+	func ShowCompleteInfo(info)
+	  let id = popup_findinfo()
+	  if id
+	    call popup_settext(id, 'async info: ' .. a:info)
+	    call popup_show(id)
+	  endif
+	endfunc
+
+<						*complete-item-kind*
 The "kind" item uses a single letter to indicate the kind of completion.  This
 may be used to show the completion differently (different color or icon).
 Currently these types can be used:

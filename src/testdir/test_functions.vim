@@ -181,9 +181,8 @@ func Test_str2nr()
 endfunc
 
 func Test_strftime()
-  if !exists('*strftime')
-    return
-  endif
+  CheckFunction strftime
+
   " Format of strftime() depends on system. We assume
   " that basic formats tested here are available and
   " identical on all systems which support strftime().
@@ -222,7 +221,28 @@ func Test_strftime()
   else
     unlet $TZ
   endif
+endfunc
 
+func Test_strptime()
+  CheckFunction strptime
+
+  if exists('$TZ')
+    let tz = $TZ
+  endif
+  let $TZ = 'UTC'
+
+  call assert_equal(1484653763, strptime('%Y-%m-%d %X', '2017-01-17 11:49:23'))
+
+  call assert_fails('call strptime()', 'E119:')
+  call assert_fails('call strptime("xxx")', 'E119:')
+  call assert_equal(0, strptime("%Y", ''))
+  call assert_equal(0, strptime("%Y", "xxx"))
+
+  if exists('tz')
+    let $TZ = tz
+  else
+    unlet $TZ
+  endif
 endfunc
 
 func Test_resolve_unix()
@@ -1331,6 +1351,7 @@ func Test_getchar()
   call feedkeys('a', '')
   call assert_equal(char2nr('a'), getchar())
 
+  call setline(1, 'xxxx')
   call test_setmouse(1, 3)
   let v:mouse_win = 9
   let v:mouse_winid = 9
@@ -1342,6 +1363,7 @@ func Test_getchar()
   call assert_equal(win_getid(1), v:mouse_winid)
   call assert_equal(1, v:mouse_lnum)
   call assert_equal(3, v:mouse_col)
+  enew!
 endfunc
 
 func Test_libcall_libcallnr()

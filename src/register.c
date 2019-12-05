@@ -352,7 +352,6 @@ free_register(void *reg)
 }
 #endif
 
-#if defined(FEAT_MOUSE) || defined(PROTO)
 /*
  * return TRUE if the current yank register has type MLINE
  */
@@ -366,7 +365,6 @@ yank_register_mline(int regname)
     get_yank_register(regname, FALSE);
     return (y_current->y_type == MLINE);
 }
-#endif
 
 /*
  * Start or stop recording into a yank register.
@@ -901,8 +899,8 @@ adjust_clip_reg(int *rp)
 	    *rp = ((clip_unnamed & CLIP_UNNAMED_PLUS) && clip_plus.available)
 								  ? '+' : '*';
 	else
-	    *rp = ((clip_unnamed_saved & CLIP_UNNAMED_PLUS) && clip_plus.available)
-								  ? '+' : '*';
+	    *rp = ((clip_unnamed_saved & CLIP_UNNAMED_PLUS)
+					   && clip_plus.available) ? '+' : '*';
     }
     if (!clip_star.available && *rp == '*')
 	*rp = 0;
@@ -1290,7 +1288,7 @@ op_yank(oparg_T *oap, int deleting, int mess)
 		&& !oap->block_mode
 		&& yanklines == 1)
 	    yanklines = 0;
-	// Some versions of Vi use ">=" here, some don't... 
+	// Some versions of Vi use ">=" here, some don't...
 	if (yanklines > p_report)
 	{
 	    char namebuf[100];
@@ -1318,13 +1316,16 @@ op_yank(oparg_T *oap, int deleting, int mess)
 	}
     }
 
-    // Set "'[" and "']" marks.
-    curbuf->b_op_start = oap->start;
-    curbuf->b_op_end = oap->end;
-    if (yanktype == MLINE && !oap->block_mode)
+    if (!cmdmod.lockmarks)
     {
-	curbuf->b_op_start.col = 0;
-	curbuf->b_op_end.col = MAXCOL;
+	// Set "'[" and "']" marks.
+	curbuf->b_op_start = oap->start;
+	curbuf->b_op_end = oap->end;
+	if (yanktype == MLINE && !oap->block_mode)
+	{
+	    curbuf->b_op_start.col = 0;
+	    curbuf->b_op_end.col = MAXCOL;
+	}
     }
 
 #ifdef FEAT_CLIPBOARD
@@ -1476,6 +1477,8 @@ do_put(
     char_u	*insert_string = NULL;
     int		allocated = FALSE;
     long	cnt;
+    pos_T	orig_start = curbuf->b_op_start;
+    pos_T	orig_end = curbuf->b_op_end;
 
 #ifdef FEAT_CLIPBOARD
     // Adjust register name for "unnamed" in 'clipboard'.
@@ -1665,21 +1668,19 @@ do_put(
     {
 	if (gchar_cursor() == TAB)
 	{
+	    int viscol = getviscol();
+	    int ts = curbuf->b_p_ts;
+
 	    // Don't need to insert spaces when "p" on the last position of a
 	    // tab or "P" on the first position.
+	    if (dir == FORWARD ?
 #ifdef FEAT_VARTABS
-	    int viscol = getviscol();
-	    if (dir == FORWARD
-		    ? tabstop_padding(viscol, curbuf->b_p_ts,
-						    curbuf->b_p_vts_array) != 1
+		    tabstop_padding(viscol, ts, curbuf->b_p_vts_array) != 1
+#else
+		    ts - (viscol % ts) != 1
+#endif
 		    : curwin->w_cursor.coladd > 0)
 		coladvance_force(viscol);
-#else
-	    if (dir == FORWARD
-		    ? (int)curwin->w_cursor.coladd < curbuf->b_p_ts - 1
-						: curwin->w_cursor.coladd > 0)
-		coladvance_force(getviscol());
-#endif
 	    else
 		curwin->w_cursor.coladd = 0;
 	}
@@ -2102,6 +2103,11 @@ error:
     curwin->w_set_curswant = TRUE;
 
 end:
+    if (cmdmod.lockmarks)
+    {
+	curbuf->b_op_start = orig_start;
+	curbuf->b_op_end = orig_end;
+    }
     if (allocated)
 	vim_free(insert_string);
     if (regname == '=')
@@ -2163,16 +2169,23 @@ ex_display(exarg_T *eap)
     int		attr;
     char_u	*arg = eap->arg;
     int		clen;
+    int		type;
 
     if (arg != NULL && *arg == NUL)
 	arg = NULL;
     attr = HL_ATTR(HLF_8);
 
     // Highlight title
-    msg_puts_title(_("\n--- Registers ---"));
+    msg_puts_title(_("\nType Name Content"));
     for (i = -1; i < NUM_REGISTERS && !got_int; ++i)
     {
 	name = get_register_name(i);
+	switch (get_reg_type(name, NULL))
+	{
+	    case MLINE: type = 'l'; break;
+	    case MCHAR: type = 'c'; break;
+	    default:	type = 'b'; break;
+	}
 	if (arg != NULL && vim_strchr(arg, name) == NULL
 #ifdef ONE_CLIPBOARD
 	    // Star register and plus register contain the same thing.
@@ -2208,54 +2221,68 @@ ex_display(exarg_T *eap)
 
 	if (yb->y_array != NULL)
 	{
-	    msg_putchar('\n');
-	    msg_putchar('"');
-	    msg_putchar(name);
-	    msg_puts("   ");
+	    int do_show = FALSE;
 
-	    n = (int)Columns - 6;
-	    for (j = 0; j < yb->y_size && n > 1; ++j)
+	    for (j = 0; !do_show && j < yb->y_size; ++j)
+		do_show = !message_filtered(yb->y_array[j]);
+
+	    if (do_show || yb->y_size == 0)
 	    {
-		if (j)
+		msg_putchar('\n');
+		msg_puts("  ");
+		msg_putchar(type);
+		msg_puts("  ");
+		msg_putchar('"');
+		msg_putchar(name);
+		msg_puts("   ");
+
+		n = (int)Columns - 11;
+		for (j = 0; j < yb->y_size && n > 1; ++j)
 		{
+		    if (j)
+		    {
+			msg_puts_attr("^J", attr);
+			n -= 2;
+		    }
+		    for (p = yb->y_array[j]; *p && (n -= ptr2cells(p)) >= 0;
+									   ++p)
+		    {
+			clen = (*mb_ptr2len)(p);
+			msg_outtrans_len(p, clen);
+			p += clen - 1;
+		    }
+		}
+		if (n > 1 && yb->y_type == MLINE)
 		    msg_puts_attr("^J", attr);
-		    n -= 2;
-		}
-		for (p = yb->y_array[j]; *p && (n -= ptr2cells(p)) >= 0; ++p)
-		{
-		    clen = (*mb_ptr2len)(p);
-		    msg_outtrans_len(p, clen);
-		    p += clen - 1;
-		}
+		out_flush();		    // show one line at a time
 	    }
-	    if (n > 1 && yb->y_type == MLINE)
-		msg_puts_attr("^J", attr);
-	    out_flush();		    // show one line at a time
+	    ui_breakcheck();
 	}
-	ui_breakcheck();
     }
 
     // display last inserted text
     if ((p = get_last_insert()) != NULL
-		 && (arg == NULL || vim_strchr(arg, '.') != NULL) && !got_int)
+		  && (arg == NULL || vim_strchr(arg, '.') != NULL) && !got_int
+						      && !message_filtered(p))
     {
-	msg_puts("\n\".   ");
+	msg_puts("\n  c  \".   ");
 	dis_msg(p, TRUE);
     }
 
     // display last command line
     if (last_cmdline != NULL && (arg == NULL || vim_strchr(arg, ':') != NULL)
-								  && !got_int)
+			       && !got_int && !message_filtered(last_cmdline))
     {
-	msg_puts("\n\":   ");
+	msg_puts("\n  c  \":   ");
 	dis_msg(last_cmdline, FALSE);
     }
 
     // display current file name
     if (curbuf->b_fname != NULL
-	    && (arg == NULL || vim_strchr(arg, '%') != NULL) && !got_int)
+	    && (arg == NULL || vim_strchr(arg, '%') != NULL) && !got_int
+					&& !message_filtered(curbuf->b_fname))
     {
-	msg_puts("\n\"%   ");
+	msg_puts("\n  c  \"%   ");
 	dis_msg(curbuf->b_fname, FALSE);
     }
 
@@ -2265,27 +2292,29 @@ ex_display(exarg_T *eap)
 	char_u	    *fname;
 	linenr_T    dummy;
 
-	if (buflist_name_nr(0, &fname, &dummy) != FAIL)
+	if (buflist_name_nr(0, &fname, &dummy) != FAIL
+						  && !message_filtered(fname))
 	{
-	    msg_puts("\n\"#   ");
+	    msg_puts("\n  c  \"#   ");
 	    dis_msg(fname, FALSE);
 	}
     }
 
     // display last search pattern
     if (last_search_pat() != NULL
-		 && (arg == NULL || vim_strchr(arg, '/') != NULL) && !got_int)
+		 && (arg == NULL || vim_strchr(arg, '/') != NULL) && !got_int
+				      && !message_filtered(last_search_pat()))
     {
-	msg_puts("\n\"/   ");
+	msg_puts("\n  c  \"/   ");
 	dis_msg(last_search_pat(), FALSE);
     }
 
 #ifdef FEAT_EVAL
     // display last used expression
     if (expr_line != NULL && (arg == NULL || vim_strchr(arg, '=') != NULL)
-								  && !got_int)
+				  && !got_int && !message_filtered(expr_line))
     {
-	msg_puts("\n\"=   ");
+	msg_puts("\n  c  \"=   ");
 	dis_msg(expr_line, FALSE);
     }
 #endif
@@ -2517,7 +2546,6 @@ dnd_yank_drag_data(char_u *str, long len)
 #endif
 
 
-#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Return the type of a register.
  * Used for getregtype()
@@ -2562,6 +2590,7 @@ get_reg_type(int regname, long *reglen)
     return MAUTO;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * When "flags" has GREG_LIST return a list with text "s".
  * Otherwise just return "s".

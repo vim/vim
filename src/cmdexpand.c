@@ -1508,6 +1508,7 @@ set_one_cmd_context(
 	    break;
 #endif
 #ifdef FEAT_EVAL
+	case CMD_const:
 	case CMD_let:
 	case CMD_if:
 	case CMD_elseif:
@@ -1976,6 +1977,8 @@ ExpandFromContext(
 	flags |= EW_KEEPALL;
     if (options & WILD_SILENT)
 	flags |= EW_SILENT;
+    if (options & WILD_NOERROR)
+	flags |= EW_NOERROR;
     if (options & WILD_ALLLINKS)
 	flags |= EW_ALLLINKS;
 

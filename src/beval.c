@@ -10,7 +10,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_BEVAL) || defined(FEAT_TEXT_PROP) || defined(PROTO)
+#if defined(FEAT_BEVAL) || defined(FEAT_PROP_POPUP) || defined(PROTO)
 /*
  * Find text under the mouse position "row" / "col".
  * If "getword" is TRUE the returned text in "*textp" is not the whole line but
@@ -92,7 +92,7 @@ find_word_under_cursor(
 			lbuf = ml_get_buf(curwin->w_buffer, VIsual.lnum, FALSE);
 			len = epos->col - spos->col;
 			if (*p_sel != 'e')
-			    len += MB_PTR2LEN(lbuf + epos->col);
+			    len += mb_ptr2len(lbuf + epos->col);
 			lbuf = vim_strnsave(lbuf + spos->col, len);
 			lnum = spos->lnum;
 			col = spos->col;
@@ -239,13 +239,13 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 #endif
     static int	recursive = FALSE;
 
-    /* Don't do anything when 'ballooneval' is off, messages scrolled the
-     * windows up or we have no beval area. */
+    // Don't do anything when 'ballooneval' is off, messages scrolled the
+    // windows up or we have no beval area.
     if (!can_use_beval() || beval == NULL)
 	return;
 
-    /* Don't do this recursively.  Happens when the expression evaluation
-     * takes a long time and invokes something that checks for CTRL-C typed. */
+    // Don't do this recursively.  Happens when the expression evaluation
+    // takes a long time and invokes something that checks for CTRL-C typed.
     if (recursive)
 	return;
     recursive = TRUE;
@@ -257,7 +257,7 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 						    : wp->w_buffer->b_p_bexpr;
 	if (*bexpr != NUL)
 	{
-	    /* Convert window pointer to number. */
+	    // Convert window pointer to number.
 	    for (cw = firstwin; cw != wp; cw = cw->w_next)
 		++winnr;
 
@@ -285,9 +285,9 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 	    vim_free(result);
 	    result = eval_to_string(bexpr, NULL, TRUE);
 
-	    /* Remove one trailing newline, it is added when the result was a
-	     * list and it's hardly ever useful.  If the user really wants a
-	     * trailing newline he can add two and one remains. */
+	    // Remove one trailing newline, it is added when the result was a
+	    // list and it's hardly ever useful.  If the user really wants a
+	    // trailing newline he can add two and one remains.
 	    if (result != NULL)
 	    {
 		len = STRLEN(result);
@@ -322,4 +322,3 @@ general_beval_cb(BalloonEval *beval, int state UNUSED)
 }
 
 #endif
-

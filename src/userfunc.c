@@ -8,7 +8,7 @@
  */
 
 /*
- * eval.c: User defined function support
+ * userfunc.c: User defined function support
  */
 
 #include "vim.h"
@@ -408,7 +408,7 @@ deref_func_name(char_u *name, int *lenp, partial_T **partialp, int no_autoload)
  * Give an error message with a function name.  Handle <SNR> things.
  * "ermsg" is to be passed without translation, use N_() instead of _().
  */
-    static void
+    void
 emsg_funcname(char *ermsg, char_u *name)
 {
     char_u	*p;
@@ -1537,7 +1537,14 @@ call_func(
 	if (error == ERROR_NONE && partial->pt_argc > 0)
 	{
 	    for (argv_clear = 0; argv_clear < partial->pt_argc; ++argv_clear)
+	    {
+		if (argv_clear + argcount_in >= MAX_FUNC_ARGS)
+		{
+		    error = ERROR_TOOMANY;
+		    goto theend;
+		}
 		copy_tv(&partial->pt_argv[argv_clear], &argv[argv_clear]);
+	    }
 	    for (i = 0; i < argcount_in; ++i)
 		argv[i + argv_clear] = argvars_in[i];
 	    argvars = argv;
@@ -1588,7 +1595,8 @@ call_func(
 	    else if (fp != NULL)
 	    {
 		if (funcexe->argv_func != NULL)
-		    argcount = funcexe->argv_func(argcount, argvars,
+		    // postponed filling in the arguments, do it now
+		    argcount = funcexe->argv_func(argcount, argvars, argv_clear,
 							   fp->uf_args.ga_len);
 
 		if (funcexe->basetv != NULL)
@@ -1671,6 +1679,7 @@ call_func(
     if (error == ERROR_NONE)
 	ret = OK;
 
+theend:
     /*
      * Report an error unless the argument evaluation or function call has been
      * cancelled due to an aborting error, an interrupt, or an exception.
@@ -2482,25 +2491,31 @@ ex_function(exarg_T *eap)
 	    }
 
 	    // Check for ":let v =<< [trim] EOF"
+	    //       and ":let [a, b] =<< [trim] EOF"
 	    arg = skipwhite(skiptowhite(p));
-	    arg = skipwhite(skiptowhite(arg));
-	    if (arg[0] == '=' && arg[1] == '<' && arg[2] =='<'
-		    && ((p[0] == 'l'
-			    && p[1] == 'e'
-			    && (!ASCII_ISALNUM(p[2])
-				|| (p[2] == 't' && !ASCII_ISALNUM(p[3]))))))
+	    if (*arg == '[')
+		arg = vim_strchr(arg, ']');
+	    if (arg != NULL)
 	    {
-		p = skipwhite(arg + 3);
-		if (STRNCMP(p, "trim", 4) == 0)
+		arg = skipwhite(skiptowhite(arg));
+		if ( arg[0] == '=' && arg[1] == '<' && arg[2] =='<'
+			&& ((p[0] == 'l'
+				&& p[1] == 'e'
+				&& (!ASCII_ISALNUM(p[2])
+				    || (p[2] == 't' && !ASCII_ISALNUM(p[3]))))))
 		{
-		    // Ignore leading white space.
-		    p = skipwhite(p + 4);
-		    heredoc_trimmed = vim_strnsave(theline,
+		    p = skipwhite(arg + 3);
+		    if (STRNCMP(p, "trim", 4) == 0)
+		    {
+			// Ignore leading white space.
+			p = skipwhite(p + 4);
+			heredoc_trimmed = vim_strnsave(theline,
 					  (int)(skipwhite(theline) - theline));
+		    }
+		    skip_until = vim_strnsave(p, (int)(skiptowhite(p) - p));
+		    do_concat = FALSE;
+		    is_heredoc = TRUE;
 		}
-		skip_until = vim_strnsave(p, (int)(skiptowhite(p) - p));
-		do_concat = FALSE;
-		is_heredoc = TRUE;
 	    }
 	}
 
