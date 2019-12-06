@@ -744,11 +744,6 @@ endfunc
 func Test_visual_block_mode()
   new
   call append(0, '')
-
-  " This only works when 'encoding' is "latin1", don't depend on the
-  " environment
-  set enc=latin1
-
   call setline(1, ['abcdefghijklm', 'abcdefghijklm', 'abcdefghijklm',
         \ 'abcdefghijklm', 'abcdefghijklm'])
   call cursor(1, 1)
@@ -763,16 +758,19 @@ func Test_visual_block_mode()
   exe "normal Gllll\<C-V>kkklllrq"
   " Test block-change
   exe "normal G$khhh\<C-V>hhkkcmno"
-
   call assert_equal(['axyzbcdefghijklm',
         \ 'axyzqqqq   mno	      ghijklm',
         \ 'axyzqqqqef mno        ghijklm',
         \ 'axyzqqqqefgmnoklm',
         \ 'abcdqqqqijklm'], getline(1, 5))
 
-  " Test block-insert using cursor keys for movement
-  call deletebufline('', 1, '$')
-  call setline(1, ['aaaaaa', 'bbbbbb', 'cccccc', 'dddddd'])
+  bwipe!
+endfunc
+
+" Test block-insert using cursor keys for movement
+func Test_visual_block_insert_cursor_keys()
+  new
+  call append(0, ['aaaaaa', 'bbbbbb', 'cccccc', 'dddddd'])
   call cursor(1, 1)
 
   exe "norm! l\<C-V>jjjlllI\<Right>\<Right>  \<Esc>"
@@ -785,9 +783,13 @@ func Test_visual_block_mode()
   exe "norm! \<C-V>jjjI<>\<Left>p\<Esc>"
   call assert_equal(['<p>xaaa', '<p>bbbb', '<p>cccc', '<p>dddd'],
         \ getline(1, 4))
+  bwipe!
+endfunc
 
+func Test_visual_block_create()
+  new
+  call append(0, '')
   " Test for Visual block was created with the last <C-v>$
-  call deletebufline('', 1, '$')
   call setline(1, ['A23', '4567'])
   call cursor(1, 1)
   exe "norm! l\<C-V>j$Aab\<Esc>"
@@ -806,12 +808,15 @@ func Test_visual_block_mode()
   call cursor(1, 1)
   exe "norm! l\<C-V>j$hhAab\<Esc>"
   call assert_equal(['C23ab', '456ab7'], getline(1, 2))
+  bwipe!
+endfunc
 
-  " Test for Visual block insert when virtualedit=all and utf-8 encoding
+" Test for Visual block insert when virtualedit=all and utf-8 encoding
+func Test_virtualedit_visual_block()
   set ve=all enc=utf-8
-
-  call deletebufline('', 1, '$')
-  call setline(1, ["\t\tline1", "\t\tline2", "\t\tline3"])
+  %bwipe!
+  new
+  call append(0, ["\t\tline1", "\t\tline2", "\t\tline3"])
   call cursor(1, 1)
   exe "norm! 07l\<C-V>jjIx\<Esc>"
   call assert_equal(["       x \tline1",
@@ -824,7 +829,11 @@ func Test_visual_block_mode()
         \ '       x     x   line2',
         \ '       x     x   line3'], getline(1, 3))
   set ve=
+  bwipe!
+endfunc
 
+" Test for changing case
+func Test_visual_change_case()
   " This test uses UTF-8 characters. So change the 'encoding' to utf-8 and
   " wipe out all the buffers
   set encoding=utf-8
@@ -844,9 +853,12 @@ func Test_visual_block_mode()
   call assert_equal(['the YOUTUSSEUU end', '- yOUSSTUSSEXu -',
         \ 'THE YOUTUSSEUU END', '111THE YOUTUSSEUU END', 'BLAH DI', 'DOH DUT',
         \ '222the yoUTUSSEUU END', '333THE YOUTUßeuu end'], getline(2, '$'))
+  bwipe!
+endfunc
 
-  " Visual replace using Enter or NL
-  call deletebufline('', 1, '$')
+" Test for Visual replace using Enter or NL
+func Test_visual_replace_crnl()
+  new
   exe "normal G3o123456789\e2k05l\<C-V>2jr\r"
   exe "normal G3o98765\e2k02l\<C-V>2jr\<C-V>\r\n"
   exe "normal G3o123456789\e2k05l\<C-V>2jr\n"
@@ -854,18 +866,24 @@ func Test_visual_block_mode()
   call assert_equal(['12345', '789', '12345', '789', '12345', '789', "98\r65",
         \ "98\r65", "98\r65", '12345', '789', '12345', '789', '12345', '789',
         \ "98\n65", "98\n65", "98\n65"], getline(2, '$'))
+  bwipe!
+endfunc
 
+func Test_ve_block_curpos()
+  new
   " Test cursor position. When ve=block and Visual block mode and $gj
-  call deletebufline('', 1, '$')
   call append(0, ['12345', '789'])
   call cursor(1, 3)
   set virtualedit=block
   exe "norm! \<C-V>$gj\<Esc>"
   call assert_equal([0, 2, 4, 0], getpos("'>"))
   set virtualedit=
+  bwipe!
+endfunc
 
-  " block_insert when replacing spaces in front of the block with tabs
-  call deletebufline('', 1, '$')
+" Test for block_insert when replacing spaces in front of the a with tabs
+func Test_block_insert_replace_tabs()
+  new
   set ts=8 sts=4 sw=4
   call append(0, ["#define BO_ALL\t    0x0001",
         \ "#define BO_BS\t    0x0002",
@@ -877,10 +895,7 @@ func Test_visual_block_mode()
         \ "#define BO_BS\t    \t0x0002",
         \ "#define BO_CRSR\t    \t0x0004", ''], getline(1, '$'))
   set ts& sts& sw&
-
   bwipe!
-  set encoding&vim
-  set virtualedit&vim
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
