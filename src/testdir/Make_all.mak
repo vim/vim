@@ -13,7 +13,6 @@ SCRIPTS_FIRST = \
 
 # Tests that run on all systems.
 SCRIPTS_ALL = \
-	test39.out \
 	test42.out \
 	test44.out \
 	test64.out \
