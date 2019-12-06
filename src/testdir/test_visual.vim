@@ -1,4 +1,4 @@
-" Tests for various Visual mode.
+" Tests for various Visual modes.
 
 func Test_block_shift_multibyte()
   " Uses double-wide character.
@@ -738,6 +738,149 @@ func Test_select_mode_gv()
 
   set selection&vim
   bwipe!
+endfunc
+
+" Tests for the visual block mode commands
+func Test_visual_block_mode()
+  new
+  call append(0, '')
+
+  " This only works when 'encoding' is "latin1", don't depend on the
+  " environment
+  set enc=latin1
+
+  call setline(1, ['abcdefghijklm', 'abcdefghijklm', 'abcdefghijklm',
+        \ 'abcdefghijklm', 'abcdefghijklm'])
+  call cursor(1, 1)
+
+  " Test shift-right of a block
+  exe "normal jllll\<C-V>jj>wll\<C-V>jlll>"
+  " Test shift-left of a block
+  exe "normal G$hhhh\<C-V>kk<"
+  " Test block-insert
+  exe "normal Gkl\<C-V>kkkIxyz"
+  " Test block-replace
+  exe "normal Gllll\<C-V>kkklllrq"
+  " Test block-change
+  exe "normal G$khhh\<C-V>hhkkcmno"
+
+  call assert_equal(['axyzbcdefghijklm',
+        \ 'axyzqqqq   mno	      ghijklm',
+        \ 'axyzqqqqef mno        ghijklm',
+        \ 'axyzqqqqefgmnoklm',
+        \ 'abcdqqqqijklm'], getline(1, 5))
+
+  " Test block-insert using cursor keys for movement
+  call deletebufline('', 1, '$')
+  call setline(1, ['aaaaaa', 'bbbbbb', 'cccccc', 'dddddd'])
+  call cursor(1, 1)
+
+  exe "norm! l\<C-V>jjjlllI\<Right>\<Right>  \<Esc>"
+  call assert_equal(['aaa  aaa', 'bbb  bbb', 'ccc  ccc', 'ddd  ddd'],
+        \ getline(1, 4))
+
+  call deletebufline('', 1, '$')
+  call setline(1, ['xaaa', 'bbbb', 'cccc', 'dddd'])
+  call cursor(1, 1)
+  exe "norm! \<C-V>jjjI<>\<Left>p\<Esc>"
+  call assert_equal(['<p>xaaa', '<p>bbbb', '<p>cccc', '<p>dddd'],
+        \ getline(1, 4))
+
+  " Test for Visual block was created with the last <C-v>$
+  call deletebufline('', 1, '$')
+  call setline(1, ['A23', '4567'])
+  call cursor(1, 1)
+  exe "norm! l\<C-V>j$Aab\<Esc>"
+  call assert_equal(['A23ab', '4567ab'], getline(1, 2))
+
+  " Test for Visual block was created with the middle <C-v>$ (1)
+  call deletebufline('', 1, '$')
+  call setline(1, ['B23', '4567'])
+  call cursor(1, 1)
+  exe "norm! l\<C-V>j$hAab\<Esc>"
+  call assert_equal(['B23 ab', '4567ab'], getline(1, 2))
+
+  " Test for Visual block was created with the middle <C-v>$ (2)
+  call deletebufline('', 1, '$')
+  call setline(1, ['C23', '4567'])
+  call cursor(1, 1)
+  exe "norm! l\<C-V>j$hhAab\<Esc>"
+  call assert_equal(['C23ab', '456ab7'], getline(1, 2))
+
+  " Test for Visual block insert when virtualedit=all and utf-8 encoding
+  set ve=all enc=utf-8
+
+  call deletebufline('', 1, '$')
+  call setline(1, ["\t\tline1", "\t\tline2", "\t\tline3"])
+  call cursor(1, 1)
+  exe "norm! 07l\<C-V>jjIx\<Esc>"
+  call assert_equal(["       x \tline1",
+        \ "       x \tline2",
+        \ "       x \tline3"], getline(1, 3))
+
+  " Test for Visual block append when virtualedit=all
+  exe "norm! 012l\<C-v>jjAx\<Esc>"
+  call assert_equal(['       x     x   line1',
+        \ '       x     x   line2',
+        \ '       x     x   line3'], getline(1, 3))
+  set ve=
+
+  " This test uses UTF-8 characters. So change the 'encoding' to utf-8 and
+  " wipe out all the buffers
+  set encoding=utf-8
+  %bwipe!
+  " gUe must uppercase a whole word, also when ß changes to SS
+  exe "normal Gothe youtußeuu end\<Esc>Ypk0wgUe\r"
+  " gUfx must uppercase until x, inclusive.
+  exe "normal O- youßtußexu -\<Esc>0fogUfx\r"
+  " VU must uppercase a whole line
+  exe "normal YpkVU\r"
+  " same, when it's the last line in the buffer
+  exe "normal YPGi111\<Esc>VUddP\r"
+  " Uppercase two lines
+  exe "normal Oblah di\rdoh dut\<Esc>VkUj\r"
+  " Uppercase part of two lines
+  exe "normal ddppi333\<Esc>k0i222\<Esc>fyllvjfuUk"
+  call assert_equal(['the YOUTUSSEUU end', '- yOUSSTUSSEXu -',
+        \ 'THE YOUTUSSEUU END', '111THE YOUTUSSEUU END', 'BLAH DI', 'DOH DUT',
+        \ '222the yoUTUSSEUU END', '333THE YOUTUßeuu end'], getline(2, '$'))
+
+  " Visual replace using Enter or NL
+  call deletebufline('', 1, '$')
+  exe "normal G3o123456789\e2k05l\<C-V>2jr\r"
+  exe "normal G3o98765\e2k02l\<C-V>2jr\<C-V>\r\n"
+  exe "normal G3o123456789\e2k05l\<C-V>2jr\n"
+  exe "normal G3o98765\e2k02l\<C-V>2jr\<C-V>\n"
+  call assert_equal(['12345', '789', '12345', '789', '12345', '789', "98\r65",
+        \ "98\r65", "98\r65", '12345', '789', '12345', '789', '12345', '789',
+        \ "98\n65", "98\n65", "98\n65"], getline(2, '$'))
+
+  " Test cursor position. When ve=block and Visual block mode and $gj
+  call deletebufline('', 1, '$')
+  call append(0, ['12345', '789'])
+  call cursor(1, 3)
+  set virtualedit=block
+  exe "norm! \<C-V>$gj\<Esc>"
+  call assert_equal([0, 2, 4, 0], getpos("'>"))
+  set virtualedit=
+
+  " block_insert when replacing spaces in front of the block with tabs
+  call deletebufline('', 1, '$')
+  set ts=8 sts=4 sw=4
+  call append(0, ["#define BO_ALL\t    0x0001",
+        \ "#define BO_BS\t    0x0002",
+        \ "#define BO_CRSR\t    0x0004"])
+  call cursor(1, 1)
+  exe "norm! f0\<C-V>2jI\<tab>\<esc>"
+  call assert_equal([
+        \ "#define BO_ALL\t\t0x0001",
+        \ "#define BO_BS\t    \t0x0002",
+        \ "#define BO_CRSR\t    \t0x0004", ''], getline(1, '$'))
+  set ts& sts& sw&
+
+  bwipe!
+  set encoding&vim
+  set virtualedit&vim
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
