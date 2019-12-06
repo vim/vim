@@ -661,7 +661,13 @@ pum_position_info_popup(win_T *wp)
 	// align with the selected item
 	row += pum_selected - pum_first + 1;
 
-    popup_set_wantpos_rowcol(wp, row, col);
+    wp->w_popup_flags &= ~POPF_HIDDEN;
+    if (wp->w_maxwidth < 10)
+	// The popup is not going to fit or will overlap with the cursor
+	// position, hide the popup.
+	wp->w_popup_flags |= POPF_HIDDEN;
+    else
+	popup_set_wantpos_rowcol(wp, row, col);
 }
 #endif
 
