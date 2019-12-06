@@ -811,10 +811,9 @@ func Test_visual_block_create()
   bwipe!
 endfunc
 
-" Test for Visual block insert when virtualedit=all and utf-8 encoding
+" Test for Visual block insert when virtualedit=all
 func Test_virtualedit_visual_block()
-  set ve=all enc=utf-8
-  %bwipe!
+  set ve=all
   new
   call append(0, ["\t\tline1", "\t\tline2", "\t\tline3"])
   call cursor(1, 1)
@@ -834,10 +833,7 @@ endfunc
 
 " Test for changing case
 func Test_visual_change_case()
-  " This test uses UTF-8 characters. So change the 'encoding' to utf-8 and
-  " wipe out all the buffers
-  set encoding=utf-8
-  %bwipe!
+  new
   " gUe must uppercase a whole word, also when ß changes to SS
   exe "normal Gothe youtußeuu end\<Esc>Ypk0wgUe\r"
   " gUfx must uppercase until x, inclusive.
