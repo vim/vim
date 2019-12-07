@@ -1,4 +1,5 @@
 source view_util.vim
+source check.vim
 
 let s:imactivatefunc_called = 0
 let s:imstatusfunc_called = 0
@@ -31,7 +32,12 @@ func Test_iminsert2()
   call assert_equal(expected, s:imstatusfunc_called)
 endfunc
 
-func Test_imgetstatus()
+func Test_getimstatus()
+  if has('win32')
+    CheckFeature multi_byte_ime
+  elseif !has('gui_mac')
+    CheckFeature xim
+  endif
   if has('gui_running')
     if !has('win32')
       throw 'Skipped: running in the GUI, only works on MS-Windows'
