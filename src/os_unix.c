@@ -1963,6 +1963,10 @@ get_x11_thing(
 	    retval = TRUE;
 	    if (!test_only)
 	    {
+		if (get_title)
+		    vim_free(oldtitle);
+		else
+		    vim_free(oldicon);
 		if (text_prop.encoding == XA_STRING && !has_mbyte)
 		{
 		    if (get_title)

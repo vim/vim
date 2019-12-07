@@ -2106,6 +2106,8 @@ tgetent_error(char_u *tbuf, char_u *term)
 {
     int	    i;
 
+    // Note: Valgrind may report a leak here, because the library keeps one
+    // buffer around that we can't ever free.
     i = TGETENT(tbuf, term);
     if (i < 0		    // -1 is always an error
 # ifdef TGETENT_ZERO_ERR

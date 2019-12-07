@@ -2872,9 +2872,9 @@ write_reg_contents_ex(
 	p = vim_strnsave(str, (int)len);
 	if (p == NULL)
 	    return;
-	if (must_append)
+	if (must_append && expr_line != NULL)
 	{
-	    s = concat_str(get_expr_line_src(), p);
+	    s = concat_str(expr_line, p);
 	    vim_free(p);
 	    p = s;
 	}
