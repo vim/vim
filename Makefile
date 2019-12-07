@@ -95,9 +95,9 @@ MINOR = 1
 #   runtime/doc/*.txt and make nsis/gvim_version.nsh.
 #   For a minor/major version: src/GvimExt/GvimExt.reg, src/vim.def,
 #   src/gvim.exe.mnf.
-# - Compile Vim with GTK, Perl, Python, Python3, TCL, Ruby, MZscheme, Lua (if
-#   you can make it all work), Cscope and "huge" features.  Exclude workshop
-#   and SNiFF.
+# - Compile Vim with GTK, Perl, Python, Python3, TCL, Ruby, Lua, Cscope and
+#   "huge" features.  Add MZscheme if you can make it work.
+#   Use "make reconfig" after selecting the configure arguments.
 # - With these features: "make proto" (requires cproto and Motif installed;
 #   ignore warnings for missing include files, fix problems for syntax errors).
 # - With these features: "make depend" (works best with gcc).
@@ -106,9 +106,6 @@ MINOR = 1
 # - If you have valgrind, enable it in src/testdir/Makefile and run "make
 #   test".  Enable EXITFREE, disable GUI, scheme and tcl to avoid false alarms.
 #   Check the valgrind output.
-# - If you have the efence library, enable it in "src/Makefile" and run "make
-#   test".  Disable Python and Ruby to avoid trouble with threads (efence is
-#   not threadsafe).
 # - Adjust the date and other info in src/version.h.
 # - Correct included_patches[] in src/version.c.
 # - Check for missing entries in runtime/makemenu.vim (with checkmenu script).
