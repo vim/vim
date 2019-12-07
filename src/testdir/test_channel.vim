@@ -1860,7 +1860,8 @@ func Test_job_exitval_and_termsig()
   " Terminate job by signal
   let cmd = ['sleep', '10']
   let job = job_start(cmd)
-  sleep 10m
+  " 10m usually works but 50m is needed when running Valgrind
+  sleep 50m
   call job_stop(job)
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
   let info = job_info(job)
