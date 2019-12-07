@@ -1,4 +1,4 @@
-*pattern.txt*   For Vim version 8.1.  Last change: 2019 May 05
+*pattern.txt*   For Vim version 8.1.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -78,7 +78,7 @@ N			Repeat the latest "/" or "?" [count] times in
 				4. the first non-blank word after the cursor,
 				   in the current line
 			Only whole keywords are searched for, like with the
-			command "/\<keyword\>".  |exclusive| 
+			command "/\<keyword\>".  |exclusive|
 			'ignorecase' is used, 'smartcase' is not.
 
 							*#*

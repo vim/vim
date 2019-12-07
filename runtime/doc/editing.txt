@@ -1,4 +1,4 @@
-*editing.txt*   For Vim version 8.1.  Last change: 2019 Sep 27
+*editing.txt*   For Vim version 8.1.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1452,7 +1452,7 @@ Do this before writing the file.  When reading an encrypted file it will be
 set automatically to the method used when that file was written.  You can
 change 'cryptmethod' before writing that file to change the method.
 
-To set the default method, used for new files, use this in your |vimrc| 
+To set the default method, used for new files, use this in your |vimrc|
 file: >
 	set cm=blowfish2
 Using "blowfish2" is highly recommended.  Only use another method if you

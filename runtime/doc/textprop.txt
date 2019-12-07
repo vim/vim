@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.1.  Last change: 2019 Nov 12
+*textprop.txt*  For Vim version 8.1.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -45,7 +45,7 @@ A text property has these fields:
 
 Property Types ~
 							*E971*
-A text property normally has the name of a property type, which defines 
+A text property normally has the name of a property type, which defines
 how to highlight the text.  The property type can have these entries:
 	"highlight"	name of the highlight group to use
 	"combine"	when omitted or TRUE the text property highlighting is

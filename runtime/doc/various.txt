@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.1.  Last change: 2019 Dec 01
+*various.txt*   For Vim version 8.1.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -53,7 +53,7 @@ ga			Print the ascii value of the character under the
 			When the character is a non-standard ASCII character,
 			but printable according to the 'isprint' option, the
 			non-printable version is also given.
-			
+
 			When the character is larger than 127, the <M-x> form
 			is also printed.  For example:
 				<~A>  <M-^A>  129,  Hex 81,  Octal 201 ~
@@ -518,11 +518,11 @@ N  *+X11*		Unix only: can restore window title |X11|
 			optional.
 :redi[r] @{a-z}>>	Append messages to register {a-z}.
 
-:redi[r] @*>		
+:redi[r] @*>
 :redi[r] @+>		Redirect messages to the selection or clipboard. For
 			backward compatibility, the ">" after the register
 			name can be omitted. See |quotestar| and |quoteplus|.
-:redi[r] @*>>		
+:redi[r] @*>>
 :redi[r] @+>>		Append messages to the selection or clipboard.
 
 :redi[r] @">		Redirect messages to the unnamed register. For
@@ -715,7 +715,7 @@ K			Run a program to lookup the keyword under the
 			after the X server restarts, e.g. when running Vim for
 			long time inside screen/tmux and connecting from
 			different machines.
-			[display] should be in the format of the $DISPLAY 
+			[display] should be in the format of the $DISPLAY
 			environment variable (e.g. "localhost:10.0")
 			If [display] is	omitted, then it reinitializes the
 			connection to the X11 server using the same value as
@@ -723,7 +723,7 @@ K			Run a program to lookup the keyword under the
 			If the value was never specified, then it uses the
 			value of $DISPLAY environment variable as it was when
 			Vim was started.
-			{only available when compiled with the |+clipboard| 
+			{only available when compiled with the |+clipboard|
 			feature}
 
 							*g_CTRL-A*

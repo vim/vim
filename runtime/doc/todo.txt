@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Dec 05
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -52,7 +52,7 @@ Text properties:
 - Text properties spanning more than one line
 - See remarks at top of src/textprop.c
 
-'incsearch' with :s: 
+'incsearch' with :s:
 - :s/foo  using CTRL-G moves to another line, should not happen, or use the
   correct line (it uses the last but one line) (Lifepillar, Aug 18, #3345)
 - :s@pat/tern@ doesn't include "/" in the pattern. (Takahiro Yoshihara, #3637)
@@ -137,10 +137,11 @@ May 20)
 Also put :argadd commands at the start for all buffers, so that their order
 remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 Also #4994: window-local options not always restored, related to using :badd.
+Also #5326: netrw buffers are not restored.
 
 Completion mixes results from the current buffer with tags and other files.
-Happens when typing CTRL-N while still search for results.  E.g., type "b_" in
-terminal.c and then CTRL-N twice.
+Happens when typing CTRL-N while still searching for results.  E.g., type "b_"
+in terminal.c and then CTRL-N twice.
 Should do current file first and not split it up when more results are found.
 (Also #1890)
 
@@ -204,10 +205,6 @@ Patch to configure BUILD_DATE for reproducible builds. (James McCoy, #513)
 Patch to add MODIFIED_BY to MSVC build file. (Chen Lei, 2016 Nov 24, #1275)
 
 Patch to support "0o" for octal numbers. (Ken Takata, #5304)
-
-":cexpr" sees a | in the expression as the start of the next command.  Should
-remove the "BAR" flag from the command and let the command search for the next
-command after parsing the expression.
 
 When getting a focus event halfway a mapping this aborts the mapping.  E.g.
 when "qq" is mapped and after the first "q" the mouse is moved outside of the
@@ -333,7 +330,7 @@ Include a few color schemes, based on popularity:
 http://www.vim.org/scripts/script_search_results.php?keywords=&script_type=color+scheme&order_by=rating&direction=descending&search=search
 http://vimawesome.com/?q=tag:color-scheme
 Use names that indicate their appearance (Christian Brabandt, 2017 Aug 3)
-- monokai - Xia Crusoe (2017 Aug 4) 
+- monokai - Xia Crusoe (2017 Aug 4)
 - seoul256 - Christian Brabandt (2017 Aug 3)
 - gruvbox -  Christian Brabandt (2017 Aug 3) (simplified version from
       Lifepillar, 2018 Jan 22, #2573)
@@ -643,9 +640,9 @@ Patch to list user digraphs. (Christian Brabandt, 2012 Apr 14)
 Patch to add digraph() function. (Christian Brabandt, 2013 Aug 22, update Aug
 24)
 
-Try out background make plugin: 
+Try out background make plugin:
   https://github.com/AndrewVos/vim-make-background
-or asyncmake: 
+or asyncmake:
   https://github.com/yegappan/asyncmake
 
 Add a ModeChanged autocommand that has an argument indicating the old and new
@@ -2511,7 +2508,7 @@ Works OK when 'cmdheight' is 2.
 Patch by Christian Brabandt, 2013 May 31.
 
 The utf class table is missing some entries:
-	0x2212, minus sign 
+	0x2212, minus sign
 	0x2217, star
 	0x2500, bar
 	0x26ab, circle
@@ -2784,7 +2781,7 @@ Ruby completion is insecure.  Can this be fixed?
 
 When 'backupskip' is set from $TEMP special characters need to be escaped.
 (patch by Grembowietz, 2007 Feb 26, not quite right)
-Another problem is that file_pat_to_reg_pat() doesn't recognize "\\", so "\\(" 
+Another problem is that file_pat_to_reg_pat() doesn't recognize "\\", so "\\("
 will be seen as a path separator plus "\(".
 
 gvim d:\path\path\(FILE).xml should not remove the \ before the (.
@@ -3951,7 +3948,7 @@ Tab pages:
 
 Spell checking:
 -   Support more regions? Caolan McNamara argues it's needed for es_XX.
-    https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=219777    
+    https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=219777
 -   Unicode defines another quote character: 0x2019.  Use it as an equivalent
     of a single quote, thus use it as a word character like a quote and match
     with words, replacing the curly quote with a single quote.

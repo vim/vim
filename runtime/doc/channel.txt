@@ -1,4 +1,4 @@
-*channel.txt*      For Vim version 8.1.  Last change: 2019 Sep 11
+*channel.txt*      For Vim version 8.1.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -223,7 +223,7 @@ ch_open() fails quickly.  On MS-Windows "waittime" applies.
 *E898* *E901* *E902*
 
 If there is an error reading or writing a channel it will be closed.
-*E630* *E631* 
+*E630* *E631*
 
 ==============================================================================
 4. Using a JSON or JS channel					*channel-use*
@@ -752,7 +752,7 @@ handle that separately, add an "err_cb" handler: >
 
 If you want to handle both stderr and stdout with one handler use the
 "callback" option: >
-    let job = job_start(command, {"callback": "MyHandler"}) 
+    let job = job_start(command, {"callback": "MyHandler"})
 
 Depending on the system, starting a job can put Vim in the background, the
 started job gets the focus.  To avoid that, use the `foreground()` function.

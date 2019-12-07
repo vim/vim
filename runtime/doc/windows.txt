@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.1.  Last change: 2019 Oct 27
+*windows.txt*   For Vim version 8.1.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -146,7 +146,7 @@ CTRL-W CTRL-S						*CTRL-W_CTRL-S*
 :[N]sp[lit] [++opt] [+cmd] [file]			*:sp* *:split*
 		Split current window in two.  The result is two viewports on
 		the same file.
-		
+
 		Make the new window N high (default is to use half the height
 		of the current window).  Reduces the current window height to
 		create room (and others, if the 'equalalways' option is set,
@@ -294,14 +294,14 @@ CTRL-W CTRL-Q						*CTRL-W_CTRL-Q*
 
 		When quitting the last window (not counting a help window),
 		exit Vim.
-		
+
 		When 'hidden' is set, and there is only one window for the
 		current buffer, it becomes hidden.  When 'hidden' is not set,
 		and there is only one window for the current buffer, and the
 		buffer was changed, the command fails.
-		
+
 		(Note: CTRL-Q does not work on all terminals).
-		
+
 		If [count] is greater than the last window number the last
 		window will be closed: >
 		    :1quit  " quit the first window
@@ -334,7 +334,7 @@ CTRL-W c					*CTRL-W_c* *:clo* *:close*
 		When the 'hidden' option is set, or when the buffer was
 		changed and the [!] is used, the buffer becomes hidden (unless
 		there is another window editing it).
-		
+
 		When there is only one window in the current tab page and
 		there is another tab page, this closes the current tab page.
 		|tab-page|.
@@ -357,12 +357,12 @@ CTRL-W CTRL-C						*CTRL-W_CTRL-C*
 		Without {count}: Quit the current window, unless it is the
 		last window on the screen.
 		If {count} is given quit the {count} window.
-		
+
 		The buffer becomes hidden (unless there is another window
 		editing it or 'bufhidden' is "unload", "delete" or "wipe").
 		If the window is the last one in the current tab page the tab
-		page is closed.  |tab-page| 
-		
+		page is closed.  |tab-page|
+
 		The value of 'hidden' is irrelevant for this command.  Changes
 		to the buffer are not written and won't get lost, so this is a
 		"safe" command.
@@ -380,10 +380,10 @@ CTRL-W o						*CTRL-W_o* *E445*
 CTRL-W CTRL-O					*CTRL-W_CTRL-O* *:on* *:only*
 		Make the current window the only one on the screen.  All other
 		windows are closed.  For {count} see |:quit| command.
-		
+
 		When the 'hidden' option is set, all buffers in closed windows
 		become hidden.
-		
+
 		When 'hidden' is not set, and the 'autowrite' option is set,
 		modified buffers are written.  Otherwise, windows that have
 		buffers that are modified are not removed, unless the [!] is

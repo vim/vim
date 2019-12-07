@@ -1,4 +1,4 @@
-*if_mzsch.txt*  For Vim version 8.1.  Last change: 2019 Jul 21
+*if_mzsch.txt*  For Vim version 8.1.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Sergey Khorev
@@ -87,7 +87,7 @@ To avoid clashes with MzScheme, consider using prefix when requiring module,
 e.g.: >
 	:mzscheme (require (prefix vim- vimext))
 <
-All the examples below assume this naming scheme. 
+All the examples below assume this naming scheme.
 
 							*mzscheme-sandbox*
 When executed in the |sandbox|, access to some filesystem and Vim interface

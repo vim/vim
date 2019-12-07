@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.1.  Last change: 2019 Sep 20
+*repeat.txt*    For Vim version 8.1.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -79,7 +79,7 @@ The default for [range] is the whole buffer (1,$).  Use "CTRL-C" to interrupt
 the command.  If an error message is given for a line, the command for that
 line is aborted and the global command continues with the next marked or
 unmarked line.
-								*E147* 
+								*E147*
 When the command is used recursively, it only works on one line.  Giving a
 range is then not allowed. This is useful to find all lines that match a
 pattern and do not match another pattern: >
@@ -193,7 +193,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			Read Ex commands from {file} in each directory given
 			by 'runtimepath' and/or 'packpath'.  There is no error
 			for non-existing files.
-			
+
 			Example: >
 				:runtime syntax/c.vim
 
@@ -268,7 +268,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 						*:packl* *:packloadall*
 :packl[oadall][!]	Load all packages in the "start" directory under each
 			entry in 'packpath'.
-			
+
 			First all the directories found are added to
 			'runtimepath', then the plugins found in the
 			directories are sourced.  This allows for a plugin to
@@ -547,7 +547,7 @@ When Vim starts up, after processing your .vimrc, it scans all directories in
 directories are added to 'runtimepath'.  Then all the plugins are loaded.
 See |packload-two-steps| for how these two steps can be useful.
 
-In the example Vim will find "pack/foo/start/foobar/plugin/foo.vim" and adds 
+In the example Vim will find "pack/foo/start/foobar/plugin/foo.vim" and adds
 "~/.vim/pack/foo/start/foobar" to 'runtimepath'.
 
 If the "foobar" plugin kicks in and sets the 'filetype' to "some", Vim will

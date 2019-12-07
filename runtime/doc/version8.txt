@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.1.  Last change: 2019 Dec 05
+*version8.txt*  For Vim version 8.1.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -40763,7 +40763,7 @@ Files:	    src/ascii.h, src/beval.h, src/dosinst.h, src/feature.h,
             src/os_mac.h, src/os_qnx.h, src/os_unix.h, src/os_unixx.h,
             src/os_vms_conf.h, src/os_win32.h, src/proto.h, src/regexp.h,
             src/spell.h, src/structs.h, src/term.h, src/version.h, src/vimio.h
- 
+
 Patch 8.1.2367
 Problem:    Registers are not sufficiently tested.
 Solution:   Add a few more test cases. (Yegappan Lakshmanan, closes #5288)
@@ -40841,8 +40841,8 @@ Files:	    src/register.c, src/testdir/test_registers.vim,
 Patch 8.1.2376
 Problem:    Preprocessor indents are incorrect.
 Solution:   Fix the indents. (Ken Takata, closes #5298)
-Files:	    src/drawline.c, src/gui_w32.c src/os_mswin.c src/os_win32.c
-            src/proto.h
+Files:	    src/drawline.c, src/gui_w32.c, src/os_mswin.c, src/os_win32.c,
+	    src/proto.h
 
 Patch 8.1.2377
 Problem:    GUI: when losing focus a pending operator is executed.
@@ -40930,6 +40930,77 @@ Files:	    src/libvterm/src/screen.c, src/libvterm/src/unicode.c,
             src/xdiff/xutils.c, src/xdiff/xdiff.h, src/xdiff/xdiffi.h,
             src/xdiff/xemit.h, src/xdiff/xinclude.h, src/xdiff/xmacros.h,
             src/xdiff/xprepare.h, src/xdiff/xtypes.h, src/xdiff/xutils.h
+
+Patch 8.1.2390
+Problem:    Test94 is old style, fix 7.4.441 not tested.
+Solution:   Turn test94 into a new style test.  Add tests for the fix in patch
+            7.4.441. (Yegappan Lakshmanan, closes #5316)
+Files:	    src/Makefile, src/testdir/Make_all.mak, src/testdir/Make_vms.mms,
+            src/testdir/test94.in, src/testdir/test94.ok,
+            src/testdir/test_cmdline.vim, src/testdir/test_visual.vim
+
+Patch 8.1.2391
+Problem:    Cannot build when __QNXNTO__ is defined. (Ian Wayne Larson)
+Solution:   Move the check for "qansi". (Ken Takata, closes #5317)
+Files:	    src/highlight.c
+
+Patch 8.1.2392
+Problem:    Using old C style comments.
+Solution:   Use // comments where appropriate.
+Files:	    src/nbdebug.c, src/netbeans.c, src/normal.c, src/ops.c,
+            src/option.c
+
+Patch 8.1.2393
+Problem:    Using old C style comments.
+Solution:   Use // comments where appropriate.
+Files:	    src/os_amiga.c, src/os_beos.c, src/os_mac_conv.c, src/os_mswin.c,
+            src/os_qnx.c, src/os_unix.c, src/os_vms.c, src/os_win32.c
+
+Patch 8.1.2394
+Problem:    Using old C style comments.
+Solution:   Use // comments where appropriate.
+Files:	    src/popupmenu.c, src/pty.c, src/quickfix.c, src/regexp.c,
+            src/regexp_nfa.c, src/screen.c, src/search.c, src/sha256.c,
+            src/sign.c
+
+Patch 8.1.2395
+Problem:    Using old C style comments.
+Solution:   Use // comments where appropriate.
+Files:	    src/spell.c, src/spellfile.c, src/syntax.c, src/tag.c, src/term.c,
+            src/terminal.c, src/termlib.c, src/testing.c
+
+Patch 8.1.2396
+Problem:    Using old C style comments.
+Solution:   Use // comments where appropriate.
+Files:	    src/ui.c, src/undo.c, src/uninstall.c, src/usercmd.c,
+            src/userfunc.c, src/winclip.c, src/window.c, src/xpm_w32.c
+
+Patch 8.1.2397
+Problem:    Should not define __USE_XOPEN. _XOPEN_SOURCE is not needed for
+            Android.
+Solution:   Remove __USE_XOPEN and adjust #ifdefs. (Ozaki Kiichi,
+            closes #5322)
+Files:	    src/vim.h
+
+Patch 8.1.2398
+Problem:    strptime() test fails on Japanese Mac.
+Solution:   Use %T instead of %X.
+Files:	    src/testdir/test_functions.vim
+
+Patch 8.1.2399
+Problem:    Info popup on top of cursor if it doesn't fit.
+Solution:   Hide the popup if it doesn't fit.
+Files:	    src/popupmenu.c, src/testdir/test_popupwin.vim,
+            src/testdir/dumps/Test_popupwin_infopopup_wide_1.dump
+
+Patch 8.1.2400
+Problem:    Test39 is old style.
+Solution:   Convert the test cases into new style. (Yegappan Lakshmanan,
+            closes #5324)
+Files:	    src/Makefile, src/testdir/Make_all.mak, src/testdir/Make_vms.mms,
+            src/testdir/test39.in, src/testdir/test39.ok,
+            src/testdir/test_blockedit.vim, src/testdir/test_visual.vim
+
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

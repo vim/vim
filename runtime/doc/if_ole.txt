@@ -1,4 +1,4 @@
-*if_ole.txt*    For Vim version 8.1.  Last change: 2019 May 05
+*if_ole.txt*    For Vim version 8.1.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Paul Moore
@@ -39,7 +39,7 @@ instance), code similar to the following should be used:
 	$vim = new Win32::OLE 'Vim.Application';
 
 [C#] >
-        // Add a reference to Vim in your project. 
+        // Add a reference to Vim in your project.
         // Choose the COM tab.
         // Select "Vim Ole Interface 1.1 Type Library"
 	Vim.Vim vimobj = new Vim.Vim();
