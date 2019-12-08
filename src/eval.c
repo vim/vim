@@ -2902,7 +2902,7 @@ eval_lambda(
     rettv->v_type = VAR_UNKNOWN;
 
     ret = get_lambda_tv(arg, rettv, evaluate);
-    if (ret == NOTDONE)
+    if (ret != OK)
 	return FAIL;
     else if (**arg != '(')
     {
