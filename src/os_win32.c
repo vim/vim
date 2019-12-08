@@ -4173,7 +4173,6 @@ mch_system_piped(char *cmd, int options)
     int		ta_len = 0;		// valid bytes in ta_buf[]
 
     DWORD	i;
-    int		c;
     int		noread_cnt = 0;
     garray_T	ga;
     int		delay = 1;
