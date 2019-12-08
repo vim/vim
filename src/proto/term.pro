@@ -77,4 +77,5 @@ void swap_tcap(void);
 guicolor_T gui_get_color_cmn(char_u *name);
 guicolor_T gui_get_rgb_color_cmn(int r, int g, int b);
 void cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx);
+void term_replace_bs_del_keycode(char_u *ta_buf, int ta_len, int len);
 /* vim: set ft=c : */
