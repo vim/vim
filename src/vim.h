@@ -36,16 +36,13 @@
     Error: configure did not run properly.  Check auto/config.log.
 # endif
 
-# if defined(__gnu_linux__) || defined(__CYGWIN__)
+# if (defined(__linux__) && !defined(__ANDROID__)) || defined(__CYGWIN__)
 // Needed for strptime().  Needs to be done early, since header files can
 // include other header files and end up including time.h, where these symbols
 // matter for Vim.
 // 700 is needed for mkdtemp().
 #  ifndef _XOPEN_SOURCE
 #   define _XOPEN_SOURCE    700
-#  endif
-#  ifndef __USE_XOPEN
-#   define __USE_XOPEN
 #  endif
 # endif
 

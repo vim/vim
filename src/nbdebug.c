@@ -30,7 +30,7 @@
 #include "vim.h"
 
 FILE		*nb_debug = NULL;
-u_int		 nb_dlevel = 0;		/* nb_debug verbosity level */
+u_int		 nb_dlevel = 0;		// nb_debug verbosity level
 
 void		 nbdb(char *, ...);
 
@@ -46,19 +46,19 @@ static int	 errorHandler(Display *, XErrorEvent *);
  *		    from a background process this is the only way to debug
  *		    startup problems.
  */
-
-void nbdebug_wait(
-	u_int		 wait_flags,	/* tells what to do */
-	char		*wait_var,	/* wait environment variable */
-	u_int		 wait_secs)	/* how many seconds to wait */
+	void
+nbdebug_wait(
+	u_int		 wait_flags,	// tells what to do
+	char		*wait_var,	// wait environment variable
+	u_int		 wait_secs)	// how many seconds to wait
 {
 
-	init_homedir();			/* not inited yet */
+	init_homedir();			// not inited yet
 #ifdef USE_WDDUMP
 	WDDump(0, 0, 0);
 #endif
 
-	/* for debugging purposes only */
+	// for debugging purposes only
 	if (wait_flags & WT_ENV && wait_var && getenv(wait_var) != NULL) {
 		sleep(atoi(getenv(wait_var)));
 	} else if (wait_flags & WT_WAIT && lookup("~/.gvimwait")) {
@@ -69,16 +69,15 @@ void nbdebug_wait(
 			;
 		}
 	}
-}    /* end nbdebug_wait */
+}
 
-
-void
+	void
 nbdebug_log_init(
-	char		*log_var,	/* env var with log file */
-	char		*level_var)	/* env var with nb_debug level */
+	char		*log_var,	// env var with log file
+	char		*level_var)	// env var with nb_debug level
 {
-	char		*file;		/* possible nb_debug output file */
-	char		*cp;		/* nb_dlevel pointer */
+	char		*file;		// possible nb_debug output file
+	char		*cp;		// nb_dlevel pointer
 
 	if (log_var && (file = getenv(log_var)) != NULL)
 	{
@@ -90,20 +89,17 @@ nbdebug_log_init(
 		if (level_var && (cp = getenv(level_var)) != NULL) {
 			nb_dlevel = strtoul(cp, NULL, 0);
 		} else {
-			nb_dlevel = NB_TRACE;	/* default level */
+			nb_dlevel = NB_TRACE;	// default level
 		}
 #ifdef USE_NB_ERRORHANDLER
 		XSetErrorHandler(errorHandler);
 #endif
 	}
 
-}    /* end nbdebug_log_init */
+}
 
-
-void
-nbdbg(
-	char		*fmt,
-	...)
+	void
+nbdbg(char *fmt, ...)
 {
 	va_list		 ap;
 
@@ -114,12 +110,10 @@ nbdbg(
 		fflush(nb_debug);
 	}
 
-}    /* end nbdbg */
+}
 
-
-static int
-lookup(
-	char		*file)
+	static int
+lookup(char *file)
 {
 	char		 buf[BUFSIZ];
 
@@ -131,10 +125,10 @@ lookup(
 		(access(buf, 0) == 0);
 #endif
 
-}    /* end lookup */
+}
 
 #ifdef USE_NB_ERRORHANDLER
-static int
+	static int
 errorHandler(
 	Display		*dpy,
 	XErrorEvent	*err)
@@ -160,4 +154,4 @@ errorHandler(
 #endif
 
 
-#endif /* NBDEBUG */
+#endif // NBDEBUG

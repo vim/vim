@@ -701,8 +701,8 @@ buf_signcount(buf_T *buf, linenr_T lnum)
 
     return count;
 }
-#  endif /* FEAT_SIGN_ICONS */
-# endif /* FEAT_NETBEANS_INTG */
+#  endif // FEAT_SIGN_ICONS
+# endif // FEAT_NETBEANS_INTG
 
 /*
  * Delete signs in group 'group' in buffer "buf". If 'group' is '*', then
@@ -2744,4 +2744,4 @@ f_sign_unplacelist(typval_T *argvars, typval_T *rettv)
     }
 }
 
-#endif /* FEAT_SIGNS */
+#endif // FEAT_SIGNS

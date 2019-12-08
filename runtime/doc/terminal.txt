@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 Nov 03
+*terminal.txt*	For Vim version 8.1.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -72,7 +72,7 @@ CTRL-W can be used to navigate between windows and other CTRL-W commands, e.g.:
 	CTRL-W :	enter an Ex command
 See |CTRL-W| for more commands.
 
-Special in the terminal window:			*t_CTRL-W_.*  *t_CTRL-W_N* 
+Special in the terminal window:			*t_CTRL-W_.*  *t_CTRL-W_N*
 	CTRL-W .	send a CTRL-W to the job in the terminal
 	CTRL-W CTRL-\	send a CTRL-\ to the job in the terminal
 	CTRL-W N	go to Terminal-Normal mode, see |Terminal-mode|
@@ -926,7 +926,7 @@ Currently supported commands:
 
 		Call a user defined function with {argument}.
 		The function is called with two arguments: the buffer number
-		of the terminal and {argument}, the decoded JSON argument. 
+		of the terminal and {argument}, the decoded JSON argument.
 		By default, the function name must start with "Tapi_" to avoid
 		accidentally calling a function not meant to be used for the
 		terminal API.  This can be changed with |term_setapi()|.
@@ -1140,7 +1140,7 @@ program window	A terminal window for the executed program.  When "run" is
 
 The current window is used to show the source code.  When gdb pauses the
 source file location will be displayed, if possible.  A sign is used to
-highlight the current position, using highlight group debugPC.	 
+highlight the current position, using highlight group debugPC.
 
 If the buffer in the current window is modified, another window will be opened
 to display the current gdb position.  You can use `:Winbar` to add a window
@@ -1197,7 +1197,7 @@ Put focus on the gdb window and type: >
 	run
 Vim will start running in the program window. Put focus there and type: >
 	:help gui
-Gdb will run into the ex_help breakpoint.  The source window now shows the 
+Gdb will run into the ex_help breakpoint.  The source window now shows the
 ex_cmds.c file.  A red "1 " marker will appear in the signcolumn where the
 breakpoint was set.  The line where the debugger stopped is highlighted.  You
 can now step through the program.  Let's use the mouse: click on the "Next"

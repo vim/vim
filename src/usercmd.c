@@ -392,7 +392,7 @@ uc_list(char_u *name, size_t name_len)
     long	a;
     garray_T	*gap;
 
-    /* In cmdwin, the alternative buffer should be used. */
+    // In cmdwin, the alternative buffer should be used.
     gap =
 #ifdef FEAT_CMDWIN
 	(cmdwin_type != 0 && get_cmdline_type() == NUL) ?

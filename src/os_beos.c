@@ -21,7 +21,7 @@
 
 #if USE_THREAD_FOR_INPUT_WITH_TIMEOUT
 
-#ifdef PROTO	    /* making prototypes on Unix */
+#ifdef PROTO	    // making prototypes on Unix
 #define sem_id int
 #define thread_id int
 #endif
@@ -32,7 +32,7 @@ sem_id character_present;
 sem_id character_wanted;
 thread_id read_thread_id;
 
-#define TRY_ABORT	0	/* This code does not work so turn it off. */
+#define TRY_ABORT	0	// This code does not work so turn it off.
 
 #if TRY_ABORT
     static void
@@ -89,7 +89,7 @@ beos_select(int nbits,
     bigtime_t tmo;
 
     if (nbits == 0) {
-	/* select is purely being used for delay */
+	// select is purely being used for delay
 	snooze(timeout->tv_sec * 1e6 + timeout->tv_usec);
 	return 0;
     }
@@ -140,10 +140,10 @@ beos_select(int nbits,
 	    resume_thread(read_thread_id);
 	}
 
-	/* timeout == NULL means "indefinitely" */
+	// timeout == NULL means "indefinitely"
 	if (timeout) {
 	    tmo = timeout->tv_sec * 1e6 + timeout->tv_usec;
-	    /* 0 means "don't wait, which is impossible to do exactly. */
+	    // 0 means "don't wait, which is impossible to do exactly.
 	    if (tmo == 0)
 		tmo = 1.0;
 	}
