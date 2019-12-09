@@ -1082,6 +1082,13 @@ endif
 	$(MAKE) -C xxd -f Make_ming.mak clean
 	$(MAKE) -C tee clean
 
+# Run vim script to generate the Ex command lookup table.
+# This only needs to be run when a command name has been added or changed.
+# If this fails because you don't have Vim yet, first build and install Vim
+# without changes.
+cmdidxs: ex_cmds.h
+	vim --clean -X -u create_cmdidxs.vim
+
 ###########################################################################
 INCL =	vim.h alloc.h ascii.h ex_cmds.h feature.h globals.h \
 	keymap.h macros.h option.h os_dos.h os_win32.h proto.h regexp.h \
@@ -1127,6 +1134,8 @@ endif
 
 $(OUTDIR):
 	$(MKDIR) $(OUTDIR)
+
+$(OUTDIR)/ex_docmd.o: ex_docmd.c $(INCL) ex_cmdidxs.h
 
 $(OUTDIR)/gui_dwrite.o:	gui_dwrite.cpp gui_dwrite.h
 	$(CC) -c $(CFLAGS) $(CXXFLAGS) gui_dwrite.cpp -o $@
