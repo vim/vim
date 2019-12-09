@@ -5008,7 +5008,7 @@ f_inputlist(typval_T *argvars, typval_T *rettv)
 
     l = argvars[0].vval.v_list;
     range_list_materialize(l);
-    FOR_ALL_LIST_ITEMS(argvars[0].vval.v_list, li)
+    FOR_ALL_LIST_ITEMS(l, li)
     {
 	msg_puts((char *)tv_get_string(&li->li_tv));
 	msg_putchar('\n');
@@ -7317,7 +7317,7 @@ f_setreg(typval_T *argvars, typval_T *rettv)
 	if (ll != NULL)
 	{
 	    range_list_materialize(ll);
-	    for (li = ll->lv_first; li != NULL; li = li->li_next)
+	    FOR_ALL_LIST_ITEMS(ll, li)
 	    {
 		strval = tv_get_string_buf_chk(&li->li_tv, buf);
 		if (strval == NULL)

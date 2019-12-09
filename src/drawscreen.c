@@ -963,7 +963,7 @@ redraw_win_toolbar(win_T *wp)
     int		button_attr = syn_name2attr((char_u *)"ToolbarButton");
 
     vim_free(wp->w_winbar_items);
-    for (menu = wp->w_winbar->children; menu != NULL; menu = menu->next)
+    FOR_ALL_CHILD_MENUS(wp->w_winbar, menu)
 	++item_count;
     wp->w_winbar_items = ALLOC_CLEAR_MULT(winbar_item_T, item_count + 1);
 

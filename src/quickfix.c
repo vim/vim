@@ -6276,7 +6276,7 @@ wipe_dummy_buffer(buf_T *buf, char_u *dirname_start)
 	win_T	    *wp;
 
 	if (firstwin->w_next != NULL)
-	    for (wp = firstwin; wp != NULL; wp = wp->w_next)
+	    FOR_ALL_WINDOWS(wp)
 		if (wp->w_buffer == buf)
 		{
 		    if (win_close(wp, FALSE) == OK)

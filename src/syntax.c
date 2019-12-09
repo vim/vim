@@ -256,6 +256,9 @@ static reg_extmatch_T *next_match_extmatch = NULL;
 #define INVALID_STATE(ssp)  ((ssp)->ga_itemsize == 0)
 #define VALID_STATE(ssp)    ((ssp)->ga_itemsize != 0)
 
+#define FOR_ALL_SYNSTATES(sb, sst) \
+    for ((sst) = (sb)->b_sst_first; (sst) != NULL; (sst) = (sst)->sst_next)
+
 /*
  * The current state (within the line) of the recognition engine.
  * When current_state.ga_itemsize is 0 the current state is invalid.
@@ -438,7 +441,7 @@ syntax_start(win_T *wp, linenr_T lnum)
     if (INVALID_STATE(&current_state) && syn_block->b_sst_array != NULL)
     {
 	// Find last valid saved state before start_lnum.
-	for (p = syn_block->b_sst_first; p != NULL; p = p->sst_next)
+	FOR_ALL_SYNSTATES(syn_block, p)
 	{
 	    if (p->sst_lnum > lnum)
 		break;
@@ -1044,7 +1047,7 @@ syn_stack_free_block(synblock_T *block)
 
     if (block->b_sst_array != NULL)
     {
-	for (p = block->b_sst_first; p != NULL; p = p->sst_next)
+	FOR_ALL_SYNSTATES(block, p)
 	    clear_syn_state(p);
 	VIM_CLEAR(block->b_sst_array);
 	block->b_sst_first = NULL;
@@ -1353,7 +1356,7 @@ store_current_state(void)
 	    else
 	    {
 		// find the entry just before this one to adjust sst_next
-		for (p = syn_block->b_sst_first; p != NULL; p = p->sst_next)
+		FOR_ALL_SYNSTATES(syn_block, p)
 		    if (p->sst_next == sp)
 			break;
 		if (p != NULL)	// just in case

@@ -311,7 +311,7 @@ show_autocmd(AutoPat *ap, event_T event)
     msg_col = 4;
     msg_outtrans(ap->pat);
 
-    for (ac = ap->cmds; ac != NULL; ac = ac->next)
+    FOR_ALL_AUTOPAT_CMDS(ap, ac)
     {
 	if (ac->cmd != NULL)		// skip removed commands
 	{
@@ -356,7 +356,7 @@ au_remove_cmds(AutoPat *ap)
 {
     AutoCmd *ac;
 
-    for (ac = ap->cmds; ac != NULL; ac = ac->next)
+    FOR_ALL_AUTOPAT_CMDS(ap, ac)
 	VIM_CLEAR(ac->cmd);
     au_need_clean = TRUE;
 }

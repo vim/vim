@@ -954,7 +954,7 @@ gui_mch_new_menu_font(void)
 	vimmenu_T *mp;
 	int max_height = 9999;
 
-	for (mp = root_menu; mp != NULL; mp = mp->next)
+	FOR_ALL_MENUS(mp)
 	{
 	    if (menu_is_menubar(mp->dname))
 	    {
@@ -1280,7 +1280,7 @@ gui_mch_show_toolbar(int showit)
 		vimmenu_T   *toolbar;
 		vimmenu_T   *cur;
 
-		for (toolbar = root_menu; toolbar; toolbar = toolbar->next)
+		FOR_ALL_MENUS(toolbar)
 		    if (menu_is_toolbar(toolbar->dname))
 			break;
 		// Assumption: toolbar is NULL if there is no toolbar,
@@ -1632,7 +1632,7 @@ gui_athena_popup_callback(
     {
 	vimmenu_T *i;
 
-	for (i = menu->parent->children; i != NULL; i = i->next)
+	FOR_ALL_CHILD_MENUS(menu->parent, i)
 	{
 	    if (i->submenu_id != NULL && XtIsManaged(i->submenu_id))
 		XtPopdown(i->submenu_id);

@@ -20,6 +20,9 @@ static char *e_listblobarg = N_("E899: Argument of %s must be a List or Blob");
 // List heads for garbage collection.
 static list_T		*first_list = NULL;	// list of all lists
 
+#define FOR_ALL_WATCHERS(l, lw) \
+    for ((lw) = (l)->lv_watch; (lw) != NULL; (lw) = (lw)->lw_next)
+
 static void list_free_item(list_T *l, listitem_T *item);
 
 /*
@@ -42,7 +45,7 @@ list_rem_watch(list_T *l, listwatch_T *lwrem)
     listwatch_T	*lw, **lwp;
 
     lwp = &l->lv_watch;
-    for (lw = l->lv_watch; lw != NULL; lw = lw->lw_next)
+    FOR_ALL_WATCHERS(l, lw)
     {
 	if (lw == lwrem)
 	{
@@ -62,7 +65,7 @@ list_fix_watch(list_T *l, listitem_T *item)
 {
     listwatch_T	*lw;
 
-    for (lw = l->lv_watch; lw != NULL; lw = lw->lw_next)
+    FOR_ALL_WATCHERS(l, lw)
 	if (lw->lw_item == item)
 	    lw->lw_item = item->li_next;
 }

@@ -517,6 +517,14 @@ EXTERN bufref_T	au_new_curbuf INIT3(NULL, 0, 0);
 EXTERN buf_T	*au_pending_free_buf INIT(= NULL);
 EXTERN win_T	*au_pending_free_win INIT(= NULL);
 
+// Macro to loop over all the patterns for an autocmd event
+#define FOR_ALL_AUTOCMD_PATTERNS(event, ap) \
+    for ((ap) = first_autopat[(int)(event)]; (ap) != NULL; (ap) = (ap)->next)
+
+// Macro to iterate through all the commands registered for an autocmd pattern
+#define FOR_ALL_AUTOPAT_CMDS(ap, ac) \
+    for ((ac) = (ap)->cmds; (ac) != NULL; (ac) = (ac)->next)
+
 /*
  * Mouse coordinates, set by check_termcode()
  */
@@ -574,6 +582,10 @@ EXTERN vimmenu_T	*root_menu INIT(= NULL);
  * overruling of menus that the user already defined.
  */
 EXTERN int	sys_menu INIT(= FALSE);
+
+#define FOR_ALL_MENUS(m) for ((m) = root_menu; (m) != NULL; (m) = (m)->next)
+#define FOR_ALL_CHILD_MENUS(p, c) \
+    for ((c) = (p)->children; (c) != NULL; (c) = (c)->next)
 #endif
 
 #ifdef FEAT_GUI
@@ -724,7 +736,10 @@ EXTERN buf_T	*firstbuf INIT(= NULL);	// first buffer
 EXTERN buf_T	*lastbuf INIT(= NULL);	// last buffer
 EXTERN buf_T	*curbuf INIT(= NULL);	// currently active buffer
 
-#define FOR_ALL_BUFFERS(buf) for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+#define FOR_ALL_BUFFERS(buf) \
+    for ((buf) = firstbuf; (buf) != NULL; (buf) = (buf)->b_next)
+#define FOR_ALL_BUFS_FROM_LAST(buf) \
+    for ((buf) = lastbuf; (buf) != NULL; (buf) = (buf)->b_prev)
 
 #define FOR_ALL_BUF_WININFO(buf, wip) \
     for ((wip) = (buf)->b_wininfo; (wip) != NULL; (wip) = (wip)->wi_next)
@@ -1484,7 +1499,7 @@ EXTERN disptick_T	display_tick INIT(= 0);
 EXTERN linenr_T		spell_redraw_lnum INIT(= 0);
 
 #define FOR_ALL_SPELL_LANGS(slang) \
-    for ((slang) = first_lang; (slang) != NULL; (slang) = slang->sl_next)
+    for ((slang) = first_lang; (slang) != NULL; (slang) = (slang)->sl_next)
 #endif
 
 #ifdef FEAT_CONCEAL
@@ -1837,6 +1852,16 @@ EXTERN HINSTANCE g_hinst INIT(= NULL);
 EXTERN int did_repeated_msg INIT(= 0);
 # define REPEATED_MSG_LOOKING	    1
 # define REPEATED_MSG_SAFESTATE	    2
+
+#define FOR_ALL_CHANNELS(ch) \
+    for ((ch) = first_channel; (ch) != NULL; (ch) = (ch)->ch_next)
+#define FOR_ALL_JOBS(job) \
+    for ((job) = first_job; (job) != NULL; (job) = (job)->jv_next)
+#endif
+
+#if defined(FEAT_DIFF)
+#define FOR_ALL_DIFFBLOCKS_IN_TAB(tp, dp) \
+    for ((dp) = (tp)->tp_first_diff; (dp) != NULL; (dp) = (dp)->df_next)
 #endif
 
 #define FOR_ALL_LIST_ITEMS(l, li) \

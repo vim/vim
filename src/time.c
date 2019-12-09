@@ -21,6 +21,9 @@
 static char	tz_cache[64];
 #endif
 
+#define FOR_ALL_TIMERS(t) \
+    for ((t) = first_timer; (t) != NULL; (t) = (t)->tr_next)
+
 /*
  * Call either localtime(3) or localtime_r(3) from POSIX libc time.h, with the
  * latter version preferred for reentrancy.
@@ -583,7 +586,7 @@ find_timer(long id)
 
     if (id >= 0)
     {
-	for (timer = first_timer; timer != NULL; timer = timer->tr_next)
+	FOR_ALL_TIMERS(timer)
 	    if (timer->tr_id == id)
 		return timer;
     }
@@ -659,7 +662,7 @@ add_timer_info_all(typval_T *rettv)
 {
     timer_T *timer;
 
-    for (timer = first_timer; timer != NULL; timer = timer->tr_next)
+    FOR_ALL_TIMERS(timer)
 	if (timer->tr_id != -1)
 	    add_timer_info(rettv, timer);
 }
