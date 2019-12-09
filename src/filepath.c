@@ -1917,7 +1917,7 @@ f_writefile(typval_T *argvars, typval_T *rettv)
 	if (list == NULL)
 	    return;
 	range_list_materialize(list);
-	for (li = list->lv_first; li != NULL; li = li->li_next)
+	FOR_ALL_LIST_ITEMS(list, li)
 	    if (tv_get_string_chk(&li->li_tv) == NULL)
 		return;
     }

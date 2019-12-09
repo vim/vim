@@ -1857,7 +1857,7 @@ diff_check(win_T *wp, linenr_T lnum)
 #endif
 
     // search for a change that includes "lnum" in the list of diffblocks.
-    for (dp = curtab->tp_first_diff; dp != NULL; dp = dp->df_next)
+    FOR_ALL_DIFFBLOCKS_IN_TAB(curtab, dp)
 	if (lnum <= dp->df_lnum[idx] + dp->df_count[idx])
 	    break;
     if (dp == NULL || lnum < dp->df_lnum[idx])
@@ -2069,7 +2069,7 @@ diff_set_topline(win_T *fromwin, win_T *towin)
     towin->w_topfill = 0;
 
     // search for a change that includes "lnum" in the list of diffblocks.
-    for (dp = curtab->tp_first_diff; dp != NULL; dp = dp->df_next)
+    FOR_ALL_DIFFBLOCKS_IN_TAB(curtab, dp)
 	if (lnum <= dp->df_lnum[fromidx] + dp->df_count[fromidx])
 	    break;
     if (dp == NULL)
@@ -2374,7 +2374,7 @@ diff_find_change(
     }
 
     // search for a change that includes "lnum" in the list of diffblocks.
-    for (dp = curtab->tp_first_diff; dp != NULL; dp = dp->df_next)
+    FOR_ALL_DIFFBLOCKS_IN_TAB(curtab, dp)
 	if (lnum <= dp->df_lnum[idx] + dp->df_count[idx])
 	    break;
     if (dp == NULL || diff_check_sanity(curtab, dp) == FAIL)
@@ -2508,7 +2508,7 @@ diff_infold(win_T *wp, linenr_T lnum)
     if (curtab->tp_first_diff == NULL)
 	return TRUE;
 
-    for (dp = curtab->tp_first_diff; dp != NULL; dp = dp->df_next)
+    FOR_ALL_DIFFBLOCKS_IN_TAB(curtab, dp)
     {
 	// If this change is below the line there can't be any further match.
 	if (dp->df_lnum[idx] - diff_context > lnum)
@@ -3001,7 +3001,7 @@ diff_get_corresponding_line_int(
     if (curtab->tp_first_diff == NULL)		// no diffs today
 	return lnum1;
 
-    for (dp = curtab->tp_first_diff; dp != NULL; dp = dp->df_next)
+    FOR_ALL_DIFFBLOCKS_IN_TAB(curtab, dp)
     {
 	if (dp->df_lnum[idx1] > lnum1)
 	    return lnum1 - baseline;
@@ -3070,7 +3070,7 @@ diff_lnum_win(linenr_T lnum, win_T *wp)
 	ex_diffupdate(NULL);		// update after a big change
 
     // search for a change that includes "lnum" in the list of diffblocks.
-    for (dp = curtab->tp_first_diff; dp != NULL; dp = dp->df_next)
+    FOR_ALL_DIFFBLOCKS_IN_TAB(curtab, dp)
 	if (lnum <= dp->df_lnum[idx] + dp->df_count[idx])
 	    break;
 

@@ -2649,8 +2649,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		    if (lv_len > 0)
 		    {
 			range_list_materialize(list);
-			for (li = list->lv_first; li != NULL;
-							 li = li->li_next)
+			FOR_ALL_LIST_ITEMS(list, li)
 			    copy_tv(&li->li_tv, &pt->pt_argv[i++]);
 		    }
 		}
@@ -4154,7 +4153,7 @@ f_inputlist(typval_T *argvars, typval_T *rettv)
 
     l = argvars[0].vval.v_list;
     range_list_materialize(l);
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(argvars[0].vval.v_list, li)
     {
 	msg_puts((char *)tv_get_string(&li->li_tv));
 	msg_putchar('\n');

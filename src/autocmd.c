@@ -307,7 +307,7 @@ show_autocmd(AutoPat *ap, event_T event)
     msg_col = 4;
     msg_outtrans(ap->pat);
 
-    for (ac = ap->cmds; ac != NULL; ac = ac->next)
+    FOR_ALL_AUTOPAT_CMDS(ap, ac)
     {
 	if (ac->cmd != NULL)		// skip removed commands
 	{
@@ -352,7 +352,7 @@ au_remove_cmds(AutoPat *ap)
 {
     AutoCmd *ac;
 
-    for (ac = ap->cmds; ac != NULL; ac = ac->next)
+    FOR_ALL_AUTOPAT_CMDS(ap, ac)
 	VIM_CLEAR(ac->cmd);
     au_need_clean = TRUE;
 }
@@ -456,7 +456,7 @@ aubuflocal_remove(buf_T *buf)
     for (event = (event_T)0; (int)event < (int)NUM_EVENTS;
 					    event = (event_T)((int)event + 1))
 	// loop over all autocommand patterns
-	for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
+	FOR_ALL_AUTOCMD_PATTERNS(event, ap)
 	    if (ap->buflocal_nr == buf->b_fnum)
 	    {
 		au_remove_pat(ap);
@@ -519,7 +519,7 @@ au_del_group(char_u *name)
 	for (event = (event_T)0; (int)event < (int)NUM_EVENTS;
 					    event = (event_T)((int)event + 1))
 	{
-	    for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
+	    FOR_ALL_AUTOCMD_PATTERNS(event, ap)
 		if (ap->group == i && ap->pat != NULL)
 		{
 		    give_warning((char_u *)_("W19: Deleting augroup that is still in use"), TRUE);
@@ -1041,7 +1041,7 @@ do_autocmd_event(
      */
     if (*pat == NUL)
     {
-	for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
+	FOR_ALL_AUTOCMD_PATTERNS(event, ap)
 	{
 	    if (forceit)  // delete the AutoPat, if it's in the current group
 	    {
@@ -2400,7 +2400,7 @@ has_autocmd(event_T event, char_u *sfname, buf_T *buf)
     forward_slash(fname);
 #endif
 
-    for (ap = first_autopat[(int)event]; ap != NULL; ap = ap->next)
+    FOR_ALL_AUTOCMD_PATTERNS(event, ap)
 	if (ap->pat != NULL && ap->cmds != NULL
 	      && (ap->buflocal_nr == 0
 		? match_file_pat(NULL, &ap->reg_prog,

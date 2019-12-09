@@ -835,8 +835,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    listitem_T *li;
 
 	    ok = TRUE;
-	    for (li = di->di_tv.vval.v_list->lv_first; li != NULL;
-							      li = li->li_next)
+	    FOR_ALL_LIST_ITEMS(di->di_tv.vval.v_list, li)
 	    {
 		if (li->li_tv.v_type != VAR_LIST
 			|| li->li_tv.vval.v_list == NULL
@@ -967,7 +966,7 @@ add_popup_strings(buf_T *buf, list_T *l)
     linenr_T    lnum = 0;
     char_u	*p;
 
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(l, li)
 	if (li->li_tv.v_type == VAR_STRING)
 	{
 	    p = li->li_tv.vval.v_string;
@@ -989,7 +988,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
     dict_T	*dict;
 
     // first add the text lines
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(l, li)
     {
 	if (li->li_tv.v_type != VAR_DICT)
 	{
@@ -1022,7 +1021,7 @@ add_popup_dicts(buf_T *buf, list_T *l)
 	    plist = di->di_tv.vval.v_list;
 	    if (plist != NULL)
 	    {
-		for (pli = plist->lv_first; pli != NULL; pli = pli->li_next)
+		FOR_ALL_LIST_ITEMS(plist, pli)
 		{
 		    if (pli->li_tv.v_type != VAR_DICT)
 		    {
@@ -2804,12 +2803,12 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 	{
 	    win_T *twp;
 
-	     for (twp = tp->tp_first_popupwin; twp != NULL; twp = twp->w_next)
-		 if (twp->w_id == id)
-		     break;
-	     if (twp != NULL)
-		 break;
-	     ++i;
+	    FOR_ALL_POPUPWINS_IN_TAB(tp, twp)
+		if (twp->w_id == id)
+		    break;
+	    if (twp != NULL)
+		break;
+	    ++i;
 	}
 	if (tp == NULL)
 	    i = -1;  // must be global
@@ -2895,9 +2894,9 @@ popup_reset_handled(int handled_flag)
 {
     win_T *wp;
 
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS(wp)
 	wp->w_popup_handled &= ~handled_flag;
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
 	wp->w_popup_handled &= ~handled_flag;
 }
 
@@ -2916,7 +2915,7 @@ find_next_popup(int lowest, int handled_flag)
 
     found_zindex = lowest ? INT_MAX : 0;
     found_wp = NULL;
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS(wp)
 	if ((wp->w_popup_handled & handled_flag) == 0
 		&& (wp->w_popup_flags & POPF_HIDDEN) == 0
 		&& (lowest ? wp->w_zindex < found_zindex
@@ -2925,7 +2924,7 @@ find_next_popup(int lowest, int handled_flag)
 	    found_zindex = wp->w_zindex;
 	    found_wp = wp;
 	}
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
 	if ((wp->w_popup_handled & handled_flag) == 0
 		&& (wp->w_popup_flags & POPF_HIDDEN) == 0
 		&& (lowest ? wp->w_zindex < found_zindex
@@ -3098,7 +3097,7 @@ popup_update_mask(win_T *wp, int width, int height)
 	return;
     cells = wp->w_popup_mask_cells;
 
-    for (lio = wp->w_popup_mask->lv_first; lio != NULL; lio = lio->li_next)
+    FOR_ALL_LIST_ITEMS(wp->w_popup_mask, lio)
     {
 	int cols, cole;
 	int lines, linee;
@@ -3156,7 +3155,7 @@ update_popup_transparent(win_T *wp, int val)
 	int		lines, linee;
 	int		col, line;
 
-	for (lio = wp->w_popup_mask->lv_first; lio != NULL; lio = lio->li_next)
+	FOR_ALL_LIST_ITEMS(wp->w_popup_mask, lio)
 	{
 	    li = lio->li_tv.vval.v_list->lv_first;
 	    cols = tv_get_number(&li->li_tv);
@@ -3266,12 +3265,12 @@ may_update_popup_mask(int type)
 
     // Check if any popup window buffer has changed and if any popup connected
     // to a text property has become visible.
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS(wp)
 	if (wp->w_popup_flags & POPF_HIDDEN)
 	    popup_mask_refresh |= check_popup_unhidden(wp);
 	else if (popup_need_position_adjust(wp))
 	    popup_mask_refresh = TRUE;
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
 	if (wp->w_popup_flags & POPF_HIDDEN)
 	    popup_mask_refresh |= check_popup_unhidden(wp);
 	else if (popup_need_position_adjust(wp))
@@ -3774,7 +3773,7 @@ popup_find_preview_window(void)
     win_T *wp;
 
     // Preview window popup is always local to tab page.
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
 	if (wp->w_p_pvw)
 	    return wp;
     return NULL;
@@ -3790,7 +3789,7 @@ popup_find_info_window(void)
     win_T *wp;
 
     // info window popup is always local to tab page.
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
 	if (wp->w_popup_flags & POPF_INFO)
 	    return wp;
     return NULL;

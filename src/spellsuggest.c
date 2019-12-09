@@ -887,7 +887,7 @@ spell_suggest_expr(suginfo_T *su, char_u *expr)
     if (list != NULL)
     {
 	// Loop over the items in the list.
-	for (li = list->lv_first; li != NULL; li = li->li_next)
+	FOR_ALL_LIST_ITEMS(list, li)
 	    if (li->li_tv.v_type == VAR_LIST)
 	    {
 		// Get the word and the score from the items.

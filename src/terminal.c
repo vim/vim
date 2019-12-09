@@ -181,6 +181,9 @@ static BOOL has_conpty = FALSE;
 #define MAX_ROW 999999	    // used for tl_dirty_row_end to update all rows
 #define KEY_BUF_LEN 200
 
+#define FOR_ALL_TERMS(term)	\
+    for ((term) = first_term; (term) != NULL; (term) = (term)->tl_next)
+
 /*
  * Functions with separate implementation for MS-Windows and Unix-like systems.
  */
@@ -611,8 +614,7 @@ term_start(
 	listitem_T	*item;
 
 	ga_init2(&ga, 1, 100);
-	for (item = argvar->vval.v_list->lv_first;
-					item != NULL; item = item->li_next)
+	FOR_ALL_LIST_ITEMS(argvar->vval.v_list, item)
 	{
 	    char_u *s = tv_get_string_chk(&item->li_tv);
 	    char_u *p;
@@ -1849,7 +1851,7 @@ term_check_timers(int next_due_arg, proftime_T *now)
     term_T  *term;
     int	    next_due = next_due_arg;
 
-    for (term = first_term; term != NULL; term = term->tl_next)
+    FOR_ALL_TERMS(term)
     {
 	if (term->tl_timer_set && !term->tl_normal_mode)
 	{
@@ -2127,7 +2129,7 @@ term_paste_register(int prev_c UNUSED)
     if (l != NULL)
     {
 	type = get_reg_type(c, &reglen);
-	for (item = l->lv_first; item != NULL; item = item->li_next)
+	FOR_ALL_LIST_ITEMS(l, item)
 	{
 	    char_u *s = tv_get_string(&item->li_tv);
 #ifdef MSWIN
@@ -5591,7 +5593,7 @@ f_term_list(typval_T *argvars UNUSED, typval_T *rettv)
 	return;
 
     l = rettv->vval.v_list;
-    for (tp = first_term; tp != NULL; tp = tp->tl_next)
+    FOR_ALL_TERMS(tp)
 	if (tp != NULL && tp->tl_buffer != NULL)
 	    if (list_append_number(l,
 				   (varnumber_T)tp->tl_buffer->b_fnum) == FAIL)
@@ -5968,7 +5970,7 @@ term_send_eof(channel_T *ch)
 {
     term_T	*term;
 
-    for (term = first_term; term != NULL; term = term->tl_next)
+    FOR_ALL_TERMS(term)
 	if (term->tl_job == ch->ch_job)
 	{
 	    if (term->tl_eof_chars != NULL)

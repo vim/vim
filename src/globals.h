@@ -510,6 +510,14 @@ EXTERN bufref_T	au_new_curbuf INIT3(NULL, 0, 0);
 EXTERN buf_T	*au_pending_free_buf INIT(= NULL);
 EXTERN win_T	*au_pending_free_win INIT(= NULL);
 
+// Macro to loop over all the patterns for an autocmd event
+#define FOR_ALL_AUTOCMD_PATTERNS(event, ap) \
+    for ((ap) = first_autopat[(int)(event)]; (ap) != NULL; (ap) = (ap)->next)
+
+// Macro to iterate through all the commands registered for an autocmd pattern
+#define FOR_ALL_AUTOPAT_CMDS(ap, ac) \
+    for ((ac) = (ap)->cmds; (ac) != NULL; (ac) = (ac)->next)
+
 /*
  * Mouse coordinates, set by check_termcode()
  */
@@ -674,6 +682,11 @@ EXTERN win_T	*prevwin INIT(= NULL);	// previous window
 	for ((wp) = ((tp) == curtab) \
 		? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
 
+#define FOR_ALL_POPUPWINS(wp) \
+    for ((wp) = first_popupwin; (wp) != NULL; (wp) = (wp)->w_next)
+#define FOR_ALL_POPUPWINS_IN_TAB(tp, wp) \
+    for ((wp) = (tp)->tp_first_popupwin; (wp) != NULL; (wp) = (wp)->w_next)
+
 
 EXTERN win_T	*curwin;	// currently active window
 
@@ -713,6 +726,9 @@ EXTERN buf_T	*lastbuf INIT(= NULL);	// last buffer
 EXTERN buf_T	*curbuf INIT(= NULL);	// currently active buffer
 
 #define FOR_ALL_BUFFERS(buf) for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+
+#define FOR_ALL_BUF_WININFO(buf, wip) \
+    for ((wip) = (buf)->b_wininfo; (wip) != NULL; (wip) = (wip)->wi_next)
 
 // Iterate through all the signs placed in a buffer
 #define FOR_ALL_SIGNS_IN_BUF(buf, sign) \
@@ -1463,6 +1479,9 @@ EXTERN disptick_T	display_tick INIT(= 0);
 // Line in which spell checking wasn't highlighted because it touched the
 // cursor position in Insert mode.
 EXTERN linenr_T		spell_redraw_lnum INIT(= 0);
+
+#define FOR_ALL_SPELL_LANGS(slang) \
+    for ((slang) = first_lang; (slang) != NULL; (slang) = slang->sl_next)
 #endif
 
 #ifdef FEAT_CONCEAL
@@ -1814,4 +1833,17 @@ EXTERN HINSTANCE g_hinst INIT(= NULL);
 EXTERN int did_repeated_msg INIT(= 0);
 # define REPEATED_MSG_LOOKING	    1
 # define REPEATED_MSG_SAFESTATE	    2
+
+#define FOR_ALL_CHANNELS(ch) \
+    for ((ch) = first_channel; (ch) != NULL; (ch) = (ch)->ch_next)
+#define FOR_ALL_JOBS(job) \
+    for ((job) = first_job; (job) != NULL; (job) = (job)->jv_next)
 #endif
+
+#if defined(FEAT_DIFF)
+#define FOR_ALL_DIFFBLOCKS_IN_TAB(tp, dp) \
+    for ((dp) = (tp)->tp_first_diff; (dp) != NULL; (dp) = (dp)->df_next)
+#endif
+
+#define FOR_ALL_LIST_ITEMS(l, li) \
+    for ((li) = (l)->lv_first; (li) != NULL; (li) = (li)->li_next)

@@ -786,7 +786,7 @@ VimToPython(typval_T *our_tv, int depth, PyObject *lookup_dict)
 	}
 
 	range_list_materialize(list);
-	for (curr = list->lv_first; curr != NULL; curr = curr->li_next)
+	FOR_ALL_LIST_ITEMS(list, curr)
 	{
 	    if (!(newObj = VimToPython(&curr->li_tv, depth + 1, lookup_dict)))
 	    {
@@ -3035,7 +3035,7 @@ FunctionConstructor(PyTypeObject *subtype, PyObject *args, PyObject *kwargs)
 		    return NULL;
 		}
 		curtv = argv;
-		for (li = argslist->lv_first; li != NULL; li = li->li_next)
+		FOR_ALL_LIST_ITEMS(argslist, li)
 		    copy_tv(&li->li_tv, curtv++);
 	    }
 	    list_unref(argslist);
