@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.1.  Last change: 2019 Dec 08
+*version8.txt*  For Vim version 8.1.  Last change: 2019 Dec 09
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25831,14 +25831,14 @@ window.  This also works for normal windows.
 Text properties					*new-text-properties*
 ---------------
 
-Text properties give a plugin author flexibility what to highlight.  This can
-be used with an external asynchronous parser to do syntax highlighting.  Or
-to highlight text in a popup window.  The text properties stick with the text
-when characters are deleted or inserted, which makes them also useful as text
-markers. See |text-properties|.
+Text properties give a plugin author flexibility about what to highlight.
+This can be used with an external asynchronous parser to do syntax
+highlighting.  Or to highlight text in a popup window.  The text properties
+stick with the text when characters are deleted or inserted, which makes them
+also useful as text markers. See |text-properties|.
 
 The listener functions have been added to report text changes to a server so
-that it can dynamically update highligting, mark syntax errors and the like.
+that it can dynamically update highlighting, mark syntax errors and the like.
 See |listener_add()|.
 
 
@@ -39746,7 +39746,7 @@ Files:	    src/testdir/test_exit.vim, src/ex_docmd.c
 
 Patch 8.1.2198
 Problem:    Crash when using :center in autocommand.
-Solution:   Bail out early for an empty line. (Dominique pelle, closes #5095)
+Solution:   Bail out early for an empty line. (Dominique Pelle, closes #5095)
 Files:	    src/ex_cmds.c, src/testdir/test_textformat.vim
 
 Patch 8.1.2199
@@ -40610,7 +40610,7 @@ Solution:   Make sure long line does not overflow IObuff. (Dominique Pelle,
 Files:	    src/quickfix.c, src/testdir/test_quickfix.vim
 
 Patch 8.1.2341
-Problem:    Not so easy to interrupt a script programatically.
+Problem:    Not so easy to interrupt a script programmatically.
 Solution:   Add the interrupt() function. (Yasuhiro Matsumoto, closes #2834)
 Files:	    runtime/doc/eval.txt, src/evalfunc.c, src/ex_eval.c,
             src/testdir/Make_all.mak, src/testdir/test_interrupt.vim
@@ -41039,7 +41039,7 @@ Solution:   Free the old title.  Don't copy expr_line.
 Files:	    src/term.c, src/os_unix.c, src/register.c
 
 Patch 8.1.2407
-Problem:    proto file and dependenciess outdated.
+Problem:    proto file and dependencies outdated.
 Solution:   Update proto files and dependencies.
 Files:	    src/Makefile, src/proto/bufwrite.pro, src/proto/cmdhist.pro,
             src/proto/optionstr.pro, src/proto/popupwin.pro,

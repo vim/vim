@@ -41,7 +41,6 @@ Copyright: (c) 2004-2015 by Charles E. Campbell	*logiPat-copyright*
 		is performed and echoed onto the display.
 
 	:LogiPatFlags {search flags}			*LogiPat-flags*
-		:LogiPatFlags {search flags}
 		LogiPat uses the |search()| command.  The flags
 		passed to that call to search() may be specified
 		by the :LogiPatFlags command.
@@ -105,7 +104,7 @@ Copyright: (c) 2004-2015 by Charles E. Campbell	*logiPat-copyright*
 
 
 ==============================================================================
-3. LogiPat History					*logiPat-history*
+5. LogiPat History					*logiPat-history*
 
 	v4 Jun 22, 2015 * LogiPat has been picked up by Bram M for standard
 			  plugin distribution; hence the name change
