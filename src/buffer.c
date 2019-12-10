@@ -2093,6 +2093,25 @@ buflist_new(
 	    // buffer number grows rapidly.
 	    --buf_reuse.ga_len;
 	    buf->b_fnum = ((int *)buf_reuse.ga_data)[buf_reuse.ga_len];
+
+	    // Move buffer to the right place in the buffer list.
+	    while (buf->b_prev != NULL && buf->b_fnum < buf->b_prev->b_fnum)
+	    {
+		buf_T	*prev = buf->b_prev;
+
+		prev->b_next = buf->b_next;
+		if (prev->b_next != NULL)
+		    prev->b_next->b_prev = prev;
+		buf->b_next = prev;
+		buf->b_prev = prev->b_prev;
+		if (buf->b_prev != NULL)
+		    buf->b_prev->b_next = buf;
+		prev->b_prev = buf;
+		if (lastbuf == buf)
+		    lastbuf = prev;
+		if (firstbuf == prev)
+		    firstbuf = buf;
+	    }
 	}
 	else
 	    buf->b_fnum = top_file_num++;
