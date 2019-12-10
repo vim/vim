@@ -2792,6 +2792,15 @@ static struct vimoption options[] =
     {"visualbell",  "vb",   P_BOOL|P_VI_DEF,
 			    (char_u *)&p_vb, PV_NONE,
 			    {(char_u *)FALSE, (char_u *)0L} SCTX_INIT},
+    {"vtp",	    "vtp",  P_NUM|P_VI_DEF,
+#ifdef FEAT_VTP
+			    (char_u *)&p_vtp, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"w300",	    NULL,   P_NUM|P_VI_DEF,
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)0L, (char_u *)0L} SCTX_INIT},

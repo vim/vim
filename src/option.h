@@ -1031,6 +1031,7 @@ char_u	*p_vfile = (char_u *)""; // used before options are initialized
 #else
 extern char_u	*p_vfile;	// 'verbosefile'
 #endif
+EXTERN long	p_vtp;		// 'vtp'
 EXTERN int	p_warn;		// 'warn'
 EXTERN char_u	*p_wop;		// 'wildoptions'
 EXTERN long	p_window;	// 'window'

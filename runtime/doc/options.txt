@@ -8566,6 +8566,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Does not work on the Amiga, you always get a screen flash.
 	Also see 'errorbells'.
 
+						*'vtp'*
+'vtp'			number
+			global
+	If VTP is available in the system, 1 is assined, otherwise 0 is
+	assigned. While it is 0, VTP is suppressed. if VTP is not available in
+	the system, VTP will no start even if it is set to 1.
+
 						*'warn'* *'nowarn'*
 'warn'			boolean	(default on)
 			global

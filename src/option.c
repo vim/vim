@@ -3500,6 +3500,36 @@ set_num_option(
 #endif
     }
 
+#ifdef FEAT_TERMGUICOLORS
+    // 'vtp'
+    else if (pp == &p_vtp)
+    {
+# ifdef FEAT_VTP
+	if (
+#  ifdef VIMDLL
+	    !gui.in_use && !gui.starting &&
+#  endif
+	    !has_vtp_working())
+	    p_tgc = 0;
+	if (is_term_win32())
+	    swap_tcap();
+# endif
+# ifdef FEAT_GUI
+	if (!gui.in_use && !gui.starting)
+# endif
+	    highlight_gui_started();
+# ifdef FEAT_VTP
+	// reset t_Co
+	if (is_term_win32())
+	{
+	    control_console_color_rgb();
+	    set_termname(T_NAME);
+	    init_highlight(TRUE, FALSE);
+	}
+# endif
+    }
+#endif
+
     /*
      * Check the bounds for numeric options here
      */

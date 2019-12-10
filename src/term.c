@@ -6142,6 +6142,9 @@ swap_tcap(void)
     else
 	mode = CMODEINDEX;
 
+    if (!p_vtp)
+	mode = CMODEINDEX;
+
     for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
     {
 	bt = find_first_tcap(DEFAULT_TERM, ks->code);

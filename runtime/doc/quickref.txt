@@ -977,6 +977,7 @@ Short explanation of each option:		*option-list*
 'viminfofile'	  'vif'	    file name used for the viminfo file
 'virtualedit'	  've'	    when to use virtual editing
 'visualbell'	  'vb'	    use visual bell instead of beeping
+'vtp'			    explicitly turn off vtp
 'warn'			    warn for shell command when buffer was changed
 'weirdinvert'	  'wiv'	    for terminals that have weird inversion method
 'whichwrap'	  'ww'	    allow specified keys to cross line boundaries
