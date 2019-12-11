@@ -3502,7 +3502,7 @@ set_num_option(
 
 #ifdef FEAT_TERMGUICOLORS
     // 'vtp'
-    else if (pp == &p_vtp)
+    else if (pp == &p_fvtp)
     {
 # ifdef FEAT_VTP
 	if (

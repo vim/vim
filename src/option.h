@@ -544,6 +544,7 @@ EXTERN int	p_fixeol;	// 'fixendofline'
 EXTERN char_u	*p_fcl;		// 'foldclose'
 EXTERN long	p_fdls;		// 'foldlevelstart'
 EXTERN char_u	*p_fdo;		// 'foldopen'
+EXTERN long	p_fvtp;		// 'forcevtp'
 EXTERN unsigned	fdo_flags;
 # define FDO_ALL		0x001
 # define FDO_BLOCK		0x002
@@ -1031,7 +1032,6 @@ char_u	*p_vfile = (char_u *)""; // used before options are initialized
 #else
 extern char_u	*p_vfile;	// 'verbosefile'
 #endif
-EXTERN long	p_vtp;		// 'vtp'
 EXTERN int	p_warn;		// 'warn'
 EXTERN char_u	*p_wop;		// 'wildoptions'
 EXTERN long	p_window;	// 'window'

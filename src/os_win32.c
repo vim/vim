@@ -210,7 +210,7 @@ static int default_console_color_fg = 0xc0c0c0; // white
 # endif
 
 # ifdef FEAT_TERMGUICOLORS
-#  define USE_VTP		(vtp_working && is_term_win32() && (p_tgc || (!p_tgc && t_colors >= 256)) && p_vtp)
+#  define USE_VTP		(has_vtp_working() && is_term_win32() && (p_tgc || (!p_tgc && t_colors >= 256)))
 # else
 #  define USE_VTP		0
 # endif
@@ -7276,7 +7276,7 @@ vtp_flag_init(void)
 	mode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 	if (SetConsoleMode(out, mode) == 0)
 	    vtp_working = 0;
-	set_option_value((char_u *)"vtp", vtp_working, NULL, 0L);
+	set_option_value((char_u *)"forcevtp", vtp_working, NULL, 0L);
     }
 #endif
 
@@ -7528,7 +7528,7 @@ is_term_win32(void)
     int
 has_vtp_working(void)
 {
-    return vtp_working && p_vtp;
+    return p_fvtp == 1 || (vtp_working && p_fvtp);
 }
 
 #endif
