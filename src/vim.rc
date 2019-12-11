@@ -94,7 +94,7 @@ BEGIN
     BEGIN
 	VALUE "CompanyName",		"Vim Developers\0"
 	VALUE "FileDescription",	"Vi Improved - A Text Editor\0"
-	VALUE "FileVersion",		VIM_VERSION_MAJOR_STR ", " VIM_VERSION_MINOR_STR ", " VIM_VERSION_PATCHLEVEL_STR  "\0"
+	VALUE "FileVersion",		VIM_VERSION_MAJOR_STR "." VIM_VERSION_MINOR_STR "." VIM_VERSION_PATCHLEVEL_STR "\0"
 	VALUE "InternalName",		"VIM\0"
 	VALUE "LegalCopyright",		"Copyright \251 1996\0"
 	VALUE "LegalTrademarks",	"Vim\0"
@@ -106,7 +106,7 @@ BEGIN
 	VALUE "OriginalFilename",	"vim.exe\0"
 #endif
 	VALUE "ProductName",		"Vim\0"
-	VALUE "ProductVersion",		VIM_VERSION_MAJOR_STR ", " VIM_VERSION_MINOR_STR ", " VIM_VERSION_PATCHLEVEL_STR "\0"
+	VALUE "ProductVersion",		VIM_VERSION_MAJOR_STR "." VIM_VERSION_MINOR_STR "." VIM_VERSION_PATCHLEVEL_STR "\0"
     END
   END
   BLOCK "VarFileInfo"
