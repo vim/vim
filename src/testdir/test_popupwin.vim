@@ -891,6 +891,10 @@ func Test_win_execute_closing_curwin()
   let winid = popup_create('some text', {})
   call assert_fails('call win_execute(winid, winnr() .. "close")', 'E994')
   call popup_clear()
+
+  let winid = popup_create('some text', {})
+  call assert_fails('call win_execute(winid, printf("normal! :\<C-u>call popup_close(%d)\<CR>", winid))', 'E994')
+  call popup_clear()
 endfunc
 
 func Test_win_execute_not_allowed()

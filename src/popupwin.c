@@ -2333,6 +2333,9 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
     int		id = (int)tv_get_number(argvars);
     win_T	*wp = find_popup_win(id);
 
+    if (ERROR_IF_POPUP_WINDOW)
+	return;
+
     if (wp != NULL)
 	popup_close_and_callback(wp, &argvars[1]);
 }
