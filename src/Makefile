@@ -1702,8 +1702,8 @@ UNITTEST_TARGETS = $(JSON_TEST_TARGET) $(KWORD_TEST_TARGET) $(MEMFILE_TEST_TARGE
 RUN_UNITTESTS = run_json_test run_kword_test run_memfile_test run_message_test
 
 # All sources, also the ones that are not configured
-ALL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) \
-	  $(EXTRA_SRC) $(TERM_SRC) $(XDIFF_SRC)
+ALL_LOCAL_SRC = $(BASIC_SRC) $(ALL_GUI_SRC) $(UNITTEST_SRC) $(EXTRA_SRC)
+ALL_SRC = $(ALL_LOCAL_SRC) $(TERM_SRC) $(XDIFF_SRC)
 
 # Which files to check with lint.  Select one of these three lines.  ALL_SRC
 # checks more, but may not work well for checking a GUI that wasn't configured.
@@ -2971,7 +2971,13 @@ depend:
 	-@rm -f Makefile~
 	cp Makefile Makefile~
 	sed -e '/\#\#\# Dependencies/q' < Makefile > tmp_make
-	-for i in $(ALL_SRC); do echo $$i; \
+	-for i in $(ALL_LOCAL_SRC); do echo $$i; \
+		$(CPP_DEPEND) $$i | \
+		sed -e 's+^\([^ ]*\.o\)+objects/\1+' >> tmp_make; done
+	-for i in $(TERM_SRC); do echo $$i; \
+		$(CPP_DEPEND) $$i | \
+		sed -e 's+^\([^ ]*\.o\)+objects/vterm_\1+' >> tmp_make; done
+	-for i in $(XDIFF_SRC); do echo $$i; \
 		$(CPP_DEPEND) $$i | \
 		sed -e 's+^\([^ ]*\.o\)+objects/\1+' -e 's+xdiff/\.\./++g' >> tmp_make; done
 	mv tmp_make Makefile
@@ -3654,7 +3660,7 @@ objects/dict.o: dict.c vim.h protodef.h auto/config.h feature.h os_unix.h \
 objects/diff.o: diff.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
- proto.h globals.h xdiff/xdiff.h vim.h
+ proto.h globals.h xdiff/xdiff.h xdiff/../vim.h
 objects/digraph.o: digraph.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
@@ -4103,27 +4109,27 @@ objects/channel.o: channel.c vim.h protodef.h auto/config.h feature.h os_unix.h 
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/gui_gtk_gresources.o: auto/gui_gtk_gresources.c
-objects/encoding.o: libvterm/src/encoding.c libvterm/src/vterm_internal.h \
+objects/vterm_encoding.o: libvterm/src/encoding.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/encoding/DECdrawing.inc libvterm/src/encoding/uk.inc
-objects/keyboard.o: libvterm/src/keyboard.c libvterm/src/vterm_internal.h \
+objects/vterm_keyboard.o: libvterm/src/keyboard.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/utf8.h
-objects/mouse.o: libvterm/src/mouse.c libvterm/src/vterm_internal.h \
+objects/vterm_mouse.o: libvterm/src/mouse.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/utf8.h
-objects/parser.o: libvterm/src/parser.c libvterm/src/vterm_internal.h \
+objects/vterm_parser.o: libvterm/src/parser.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/pen.o: libvterm/src/pen.c libvterm/src/vterm_internal.h \
+objects/vterm_pen.o: libvterm/src/pen.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/screen.o: libvterm/src/screen.c libvterm/src/vterm_internal.h \
+objects/vterm_screen.o: libvterm/src/screen.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/rect.h libvterm/src/utf8.h
-objects/state.o: libvterm/src/state.c libvterm/src/vterm_internal.h \
+objects/vterm_state.o: libvterm/src/state.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/unicode.o: libvterm/src/unicode.c libvterm/src/vterm_internal.h \
+objects/vterm_unicode.o: libvterm/src/unicode.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h
-objects/vterm.o: libvterm/src/vterm.c libvterm/src/vterm_internal.h \
+objects/vterm_vterm.o: libvterm/src/vterm.c libvterm/src/vterm_internal.h \
  libvterm/include/vterm.h libvterm/include/vterm_keycodes.h \
  libvterm/src/utf8.h
 objects/xdiffi.o: xdiff/xdiffi.c xdiff/xinclude.h auto/config.h \
