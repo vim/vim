@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.1.  Last change: 2019 Dec 08
+*todo.txt*      For Vim version 8.1.  Last change: 2019 Dec 11
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -120,6 +120,8 @@ E654, E856, E857, E860, E861, E863, E889, E900
 
 Patch to move duplicated code to a function. (Yegappan Lakshmanan, #5330)
 
+Patch to use more FOR_ALL_ macros and use them. (Yegappan Lakshmanan, #5339)
+
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif? Now test_gui crashes in submenu_change().
 Athena is OK.
@@ -127,6 +129,9 @@ Motif: Build on Ubuntu can't enter any text in dialog text fields.
 
 Patch to properly break CJK lines: Anton Kochkov, #3875
 Flag in 'formatoptions' is not used in the tests.
+
+Patch to add 'vtp' option. (#5344)
+Needs better docs.  Is there a better name?
 
 undo result wrong: Masato Nishihata, #4798
 

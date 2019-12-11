@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Sep 16
+*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Dec 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -387,6 +387,8 @@ BufAdd or BufCreate		Just after creating a new buffer which is
 				to the buffer list.
 				Also used just after a buffer in the buffer
 				list has been renamed.
+				Not triggered for the initial buffers created
+				during startup.
 				The BufCreate event is for historic reasons.
 				NOTE: When this autocommand is executed, the
 				current buffer "%" may be different from the
