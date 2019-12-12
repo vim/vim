@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.1.  Last change: 2019 Dec 11
+*version8.txt*  For Vim version 8.2.  Last change: 2019 Dec 12
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25802,8 +25802,6 @@ Files:      src/terminal.c
 
 ==============================================================================
 VERSION 8.2				*version-8.2* *version8.2* *vim-8.2*
-
-VERSION 8.2 IS NOT RELEASED YET!  THIS SECTION WILL CHANGE.
 
 This section is about improvements made between version 8.1 and 8.2.
 

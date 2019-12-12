@@ -1,4 +1,4 @@
-*usr_toc.txt*	For Vim version 8.1.  Last change: 2019 May 24
+*usr_toc.txt*	For Vim version 8.2.  Last change: 2019 May 24
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
