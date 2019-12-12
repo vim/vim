@@ -864,6 +864,15 @@ static struct vimoption options[] =
 							    |P_NODUP|P_SECURE,
 			    (char_u *)&p_dir, PV_NONE,
 			    {(char_u *)DFLT_DIR, (char_u *)0L} SCTX_INIT},
+    {"disablevtp",  "dvtp", P_BOOL|P_VI_DEF,
+#ifdef FEAT_VTP
+			    (char_u *)&p_dvtp, PV_NONE,
+			    {(char_u *)FALSE, (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)0L, (char_u *)0L}
+#endif
+			    SCTX_INIT},
     {"display",	    "dy",   P_STRING|P_VI_DEF|P_ONECOMMA|P_RALL|P_NODUP,
 			    (char_u *)&p_dy, PV_NONE,
 			    {(char_u *)"", (char_u *)0L} SCTX_INIT},
@@ -1084,15 +1093,6 @@ static struct vimoption options[] =
 #else
 			    (char_u *)NULL, PV_NONE,
 			    {(char_u *)NULL, (char_u *)0L}
-#endif
-			    SCTX_INIT},
-    {"forcevtp",    "fvtp", P_NUM|P_VI_DEF,
-#ifdef FEAT_VTP
-			    (char_u *)&p_fvtp, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
-#else
-			    (char_u *)NULL, PV_NONE,
-			    {(char_u *)0L, (char_u *)0L}
 #endif
 			    SCTX_INIT},
     {"formatexpr", "fex",   P_STRING|P_ALLOCED|P_VI_DEF|P_VIM|P_MLE,

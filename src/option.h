@@ -510,6 +510,7 @@ EXTERN char_u	*p_dict;	// 'dictionary'
 EXTERN int	p_dg;		// 'digraph'
 #endif
 EXTERN char_u	*p_dir;		// 'directory'
+EXTERN int	p_dvtp;		// 'disablevtp'
 EXTERN char_u	*p_dy;		// 'display'
 EXTERN unsigned	dy_flags;
 #define DY_LASTLINE		0x001
@@ -544,7 +545,6 @@ EXTERN int	p_fixeol;	// 'fixendofline'
 EXTERN char_u	*p_fcl;		// 'foldclose'
 EXTERN long	p_fdls;		// 'foldlevelstart'
 EXTERN char_u	*p_fdo;		// 'foldopen'
-EXTERN long	p_fvtp;		// 'forcevtp'
 EXTERN unsigned	fdo_flags;
 # define FDO_ALL		0x001
 # define FDO_BLOCK		0x002

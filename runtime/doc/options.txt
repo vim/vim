@@ -2747,6 +2747,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
+					*'disablevtp'* *'dvtp'*
+'disablevtp' 'dvtp'	boolean (default off)
+			global
+			{not available when compiled without the |+vtp|
+			feature}
+	When off, VTP (Virtual Terminal Processing) is automatically used when
+	Vim detects that it is available. (It is available on win32 console on
+	Windows 10 version 1703 or later.)
+	When on, stop using VTP even Vim detects that it is available.  If you
+	are using a 3rd party terminal application which doesn't support VTP,
+	turn this option on.
+
 					*'display'* *'dy'*
 'display' 'dy'		string	(default "", set to "truncate" in
 							       |defaults.vim|)
@@ -3435,16 +3447,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	It is not allowed to change text or jump to another window while
 	evaluating 'foldtext' |textlock|.
-
-						*'forcevtp'* *'fvtp'*
-'forcevtp'		number
-			global
-			{not available when compiled without the |+vtp|
-			feature}
-	Set to 1 if the system determines that it supports VTP, 0 otherwise.
-	Because this decision is not always correct, this switch forces
-	internal opration. On terminals that do not clearly support VTP, the
-	display will be corrupted.
 
 						*'formatexpr'* *'fex'*
 'formatexpr' 'fex'	string (default "")

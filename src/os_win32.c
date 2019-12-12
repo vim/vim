@@ -7280,7 +7280,6 @@ vtp_flag_init(void)
 	mode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 	if (SetConsoleMode(out, mode) == 0)
 	    vtp_working = 0;
-	set_option_value((char_u *)"forcevtp", vtp_working, NULL, 0L);
     }
 #endif
 
@@ -7532,7 +7531,7 @@ is_term_win32(void)
     int
 has_vtp_working(void)
 {
-    return p_fvtp == 1 || (vtp_working && p_fvtp);
+    return vtp_working && !p_dvtp;
 }
 
 #endif
