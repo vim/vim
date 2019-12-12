@@ -891,6 +891,10 @@ func Test_win_execute_closing_curwin()
   let winid = popup_create('some text', {})
   call assert_fails('call win_execute(winid, winnr() .. "close")', 'E994')
   call popup_clear()
+
+  let winid = popup_create('some text', {})
+  call assert_fails('call win_execute(winid, printf("normal! :\<C-u>call popup_close(%d)\<CR>", winid))', 'E994')
+  call popup_clear()
 endfunc
 
 func Test_win_execute_not_allowed()
@@ -3166,6 +3170,23 @@ func Test_popupwin_sign()
 
   call StopVimInTerminal(buf)
   call delete('XtestPopupSign')
+endfunc
+
+func Test_popupwin_bufnr()
+  let popwin = popup_create(['blah'], #{})
+  let popbuf = winbufnr(popwin)
+  split asdfasdf
+  let newbuf = bufnr()
+  call assert_true(newbuf > popbuf, 'New buffer number is higher')
+  call assert_equal(newbuf, bufnr('$'))
+  call popup_clear()
+  let popwin = popup_create(['blah'], #{})
+  " reuses previous buffer number
+  call assert_equal(popbuf, winbufnr(popwin))
+  call assert_equal(newbuf, bufnr('$'))
+
+  call popup_clear()
+  bwipe!
 endfunc
 
 " vim: shiftwidth=2 sts=2

@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 8.1.  Last change: 2019 Nov 07
+*tagsrch.txt*   For Vim version 8.2.  Last change: 2019 Nov 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

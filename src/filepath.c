@@ -8,7 +8,7 @@
  */
 
 /*
- * filepath.c: dealing with file names ant paths.
+ * filepath.c: dealing with file names and paths.
  */
 
 #include "vim.h"

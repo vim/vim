@@ -220,4 +220,4 @@ If you would like to help making Vim better, see the
 file.
 
 
-This is `README.md` for version 8.1 of the Vim source code.
+This is `README.md` for version 8.2 of the Vim source code.

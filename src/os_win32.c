@@ -1641,15 +1641,19 @@ WaitForChar(long msec, int ignore_input)
 	    {
 		COORD dwSize = ir.Event.WindowBufferSizeEvent.dwSize;
 
-		// Only call shell_resized() when the size actually change to
+		// Only call shell_resized() when the size actually changed to
 		// avoid the screen is cleared.
 		if (dwSize.X != Columns || dwSize.Y != Rows)
 		{
 		    CONSOLE_SCREEN_BUFFER_INFO csbi;
 		    GetConsoleScreenBufferInfo(g_hConOut, &csbi);
+		    dwSize.X = csbi.srWindow.Right - csbi.srWindow.Left + 1;
 		    dwSize.Y = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
-		    ResizeConBuf(g_hConOut, dwSize);
-		    shell_resized();
+		    if (dwSize.X != Columns || dwSize.Y != Rows)
+		    {
+			ResizeConBuf(g_hConOut, dwSize);
+			shell_resized();
+		    }
 		}
 	    }
 	    else if (ir.EventType == MOUSE_EVENT

@@ -1,4 +1,4 @@
-*helphelp.txt*	For Vim version 8.1.  Last change: 2019 Oct 18
+*helphelp.txt*	For Vim version 8.2.  Last change: 2019 Oct 18
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

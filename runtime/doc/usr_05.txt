@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 8.1.  Last change: 2019 May 23
+*usr_05.txt*	For Vim version 8.2.  Last change: 2019 May 23
 
 		     VIM USER MANUAL - by Bram Moolenaar
 

@@ -3412,13 +3412,12 @@ addr_error(cmd_addr_T addr_type)
 get_address(
     exarg_T	*eap UNUSED,
     char_u	**ptr,
-    cmd_addr_T	addr_type_arg,
+    cmd_addr_T	addr_type,
     int		skip,		// only skip the address, don't use it
     int		silent,		// no errors or side effects
     int		to_other_file,  // flag: may jump to other file
     int		address_count UNUSED) // 1 for first address, >1 after comma
 {
-    cmd_addr_T	addr_type = addr_type_arg;
     int		c;
     int		i;
     long	n;

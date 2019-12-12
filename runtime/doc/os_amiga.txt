@@ -1,4 +1,4 @@
-*os_amiga.txt*  For Vim version 8.1.  Last change: 2010 Aug 14
+*os_amiga.txt*  For Vim version 8.2.  Last change: 2010 Aug 14
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

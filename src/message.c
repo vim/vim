@@ -2080,7 +2080,7 @@ msg_puts_display(
 		      || (has_mbyte && (*mb_ptr2cells)(s) > 1 && msg_col <= 2))
 		    :
 #endif
-		      (msg_col + t_col >= Columns - 1
+		      ((*s != '\r' && msg_col + t_col >= Columns - 1)
 		       || (*s == TAB && msg_col + t_col >= ((Columns - 1) & ~7))
 		       || (has_mbyte && (*mb_ptr2cells)(s) > 1
 					 && msg_col + t_col >= Columns - 2)))))

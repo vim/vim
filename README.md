@@ -141,7 +141,7 @@ Send any other comments, patches, flowers and suggestions to:
 	Bram Moolenaar <Bram@vim.org>
 
 
-This is `README.md` for version 8.1 of Vim: Vi IMproved.
+This is `README.md` for version 8.2 of Vim: Vi IMproved.
 
 
 ## Translations of this README ##

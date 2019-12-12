@@ -1,4 +1,4 @@
-*pi_getscript.txt*  For Vim version 8.1.  Last change: 2017 Aug 01
+*pi_getscript.txt*  For Vim version 8.2.  Last change: 2017 Aug 01
 >
 		GETSCRIPT REFERENCE MANUAL  by Charles E. Campbell
 <
