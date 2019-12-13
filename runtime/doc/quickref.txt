@@ -681,6 +681,7 @@ Short explanation of each option:		*option-list*
 'diffopt'	  'dip'     options for using diff mode
 'digraph'	  'dg'	    enable the entering of digraphs in Insert mode
 'directory'	  'dir'     list of directory names for the swap file
+'disablevtp'	  'dvtp'    explicitly stop VTP
 'display'	  'dy'	    list of flags for how to display text
 'eadirection'	  'ead'     in which direction 'equalalways' works
 'edcompatible'	  'ed'	    toggle flags of ":substitute" command
@@ -718,7 +719,6 @@ Short explanation of each option:		*option-list*
 'foldnestmax'	  'fdn'     maximum fold depth
 'foldopen'	  'fdo'     for which commands a fold will be opened
 'foldtext'	  'fdt'     expression used to display for a closed fold
-'forcevtp'	  'fvtp'    force state of vtp flag
 'formatexpr'	  'fex'     expression used with "gq" command
 'formatlistpat'   'flp'     pattern used to recognize a list header
 'formatoptions'   'fo'	    how automatic formatting is to be done
