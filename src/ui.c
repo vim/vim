@@ -2356,9 +2356,9 @@ fill_input_buf(int exit_on_error UNUSED)
 	    ++inbufcount;
 	}
     }
-#endif // UNIX or VMS
+#endif // UNIX || VMS || MACOS_X
 }
-#endif // defined(UNIX) || defined(FEAT_GUI) || defined(VMS)
+#endif // USE_INPUT_BUF
 
 /*
  * Exit because of an input read error.
