@@ -72,6 +72,7 @@ void set_alist_count(void);
 void fix_arg_enc(void);
 int mch_setenv(char *var, char *value, int x);
 void get_default_console_color(int *cterm_fg, int *cterm_bg, guicolor_T *gui_fg, guicolor_T *gui_bg);
+void csbi_color2rgb(int nr, char_u *r, char_u *g, char_u *n, char_u *ansi_idx);
 void control_console_color_rgb(void);
 int use_vtp(void);
 int is_term_win32(void);

@@ -2537,6 +2537,14 @@ static struct vimoption options[] =
 			    {(char_u *)FALSE, (char_u *)FALSE}
 #endif
 			    SCTX_INIT},
+    {"termwincolors", "twc", P_STRING|P_ALLOCED|P_VI_DEF,
+#ifdef FEAT_TERMINAL
+			    (char_u *)&p_twc, PV_NONE,
+			    {(char_u *)"ansi", (char_u *)0L} SCTX_INIT},
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)0L}
+#endif
     {"termwinkey", "twk",   P_STRING|P_ALLOCED|P_RWIN|P_VI_DEF,
 #ifdef FEAT_TERMINAL
 			    (char_u *)VAR_WIN, PV_TWK,

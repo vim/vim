@@ -87,6 +87,13 @@ static char *(p_scl_values[]) = {"yes", "no", "auto", "number", NULL};
 #if defined(MSWIN) && defined(FEAT_TERMINAL)
 static char *(p_twt_values[]) = {"winpty", "conpty", "", NULL};
 #endif
+#ifdef FEAT_TERMINAL
+static char *(p_twc_values[]) = {"ansi", "crt", "lcd", "xterm", "app",
+# ifdef MSWIN
+				"con",
+# endif
+				NULL};
+#endif
 
 static int check_opt_strings(char_u *val, char **values, int list);
 static int opt_strings_flags(char_u *val, char **values, unsigned *flagp, int list);
@@ -2235,6 +2242,15 @@ did_set_string_option(
 	    errmsg = e_invarg;
     }
 # endif
+#endif
+
+#ifdef FEAT_TERMINAL
+    // 'termwincolors'
+    else if (varp == &p_twc)
+    {
+	if (check_opt_strings(p_twc, p_twc_values, TRUE) != OK)
+	    errmsg = e_invarg;
+    }
 #endif
 
     // Options that are a list of flags.

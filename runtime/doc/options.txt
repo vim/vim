@@ -7744,6 +7744,21 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Note that the "cterm" attributes are still used, not the "gui" ones.
 	NOTE: This option is reset when 'compatible' is set.
 
+						*'termwincolors'* *'twc'*
+'termwincolors' 'twc'	string  (default "ansi")
+			global
+			{not available when compiled without the |+terminal|
+			feature}
+	Select the color set to use in the terminal window.  Because it is set
+	when the window is created, it cannot be changed dynamically.
+	Possible values are:
+	    "ansi"	Vim used historically.
+	    "crt"	in Windows XP.
+	    "con"	obtained from Windows API.
+	    "lcd"	in Windows 10, called 'Campbell theme'.
+	    "xterm"	with xterm.
+	    "app"	macOS Terminal.app.
+
 						*'termwinkey'* *'twk'*
 'termwinkey' 'twk'	string	(default "")
 			local to window

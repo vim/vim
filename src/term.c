@@ -6425,6 +6425,92 @@ static char_u ansi_table[16][4] = {
   {255, 255, 255, 16}, // white
 };
 
+# ifdef FEAT_TERMINAL
+// Color in newly installed Windows 10
+static char_u lcd_color_table[16][4] = {
+  { 12,  12,  12,  1}, // black
+  {197,  15,  31,  2}, // dark red
+  { 19, 161,  14,  3}, // dark green
+  {193, 156,   0,  4}, // dark yellow
+  {  0,  55, 218,  5}, // dark blue
+  {136,  23, 152,  6}, // dark magenta
+  { 58, 150, 221,  7}, // dark cyan
+  {204, 204, 204,  8}, // light grey
+
+  {128, 128, 128,  9}, // dark grey
+  {231,  72,  86, 10}, // light red
+  { 22, 198,  12, 11}, // light green
+  {249, 241, 165, 12}, // yellow
+  { 59, 120, 255, 13}, // light blue
+  {180,   0, 158, 14}, // light magenta
+  { 97, 214, 214, 15}, // light cyan
+  {242, 242, 242, 16}, // white
+};
+
+// Colors used in non-VTP Windows terminals
+static char_u crt_color_table[16][4] = {
+  {  0,   0,   0,  1}, // black
+  {128,   0,   0,  2}, // dark red
+  {  0, 128,   0,  3}, // dark green
+  {128, 128,   0,  4}, // dark yellow
+  {  0,   0, 128,  5}, // dark blue
+  {128,   0, 128,  6}, // dark magenta
+  {  0, 128, 128,  7}, // dark cyan
+  {192, 192, 192,  8}, // light grey
+
+  {128, 128, 128,  9}, // dark grey
+  {255,   0,   0, 10}, // light red
+  {  0, 255,   0, 11}, // light green
+  {255, 255,   0, 12}, // yellow
+  {  0,   0, 255, 13}, // light blue
+  {255,   0, 255, 14}, // light magenta
+  {  0, 255, 255, 15}, // light cyan
+  {255, 255, 255, 16}, // white
+};
+
+// Standard terminal xterm color
+static char_u xterm_color_table[16][4] = {
+  {  0,   0,   0,  1}, // black
+  {205,   0,   0,  2}, // dark red
+  {  0, 205,   0,  3}, // dark green
+  {205, 205,   0,  4}, // dark yellow
+  {  0,   0, 238,  5}, // dark blue
+  {205,   0, 205,  6}, // dark magenta
+  {  0, 205, 205,  7}, // dark cyan
+  {229, 229, 229,  8}, // light grey
+
+  {127, 127, 127,  9}, // dark grey
+  {255,   0,   0, 10}, // light red
+  {  0, 255,   0, 11}, // light green
+  {255, 255,   0, 12}, // yellow
+  { 92,  92, 255, 13}, // light blue
+  {255,   0, 255, 14}, // light magenta
+  {  0, 255, 255, 15}, // light cyan
+  {255, 255, 255, 16}, // white
+};
+
+// macOS standard terminal Terminal.app color
+static char_u app_color_table[16][4] = {
+  {  0,   0,   0,  1}, // black
+  {194,  54,  33,  2}, // dark red
+  { 37, 188,  36,  3}, // dark green
+  {173, 173,  39,  4}, // dark yellow
+  { 73,  46, 225,  5}, // dark blue
+  {211,  56, 211,  6}, // dark magenta
+  { 51, 187, 200,  7}, // dark cyan
+  {203, 204, 205,  8}, // light grey
+
+  {129, 131, 131,  9}, // dark grey
+  {252,  57,  31, 10}, // light red
+  { 49, 231,  34, 11}, // light green
+  {234, 236,  35, 12}, // yellow
+  { 88,  51, 255, 13}, // light blue
+  {249,  53, 248, 14}, // light magenta
+  { 20, 240, 240, 15}, // light cyan
+  {235, 235, 235, 16}, // white
+};
+# endif
+
     void
 cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 {
@@ -6436,6 +6522,40 @@ cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 	*g = ansi_table[nr][1];
 	*b = ansi_table[nr][2];
 	*ansi_idx = ansi_table[nr][3];
+# ifdef FEAT_TERMINAL
+	if (STRICMP(p_twc, "crt") == 0)
+	{
+	    *r = crt_color_table[nr][0];
+	    *g = crt_color_table[nr][1];
+	    *b = crt_color_table[nr][2];
+	    *ansi_idx = crt_color_table[nr][3];
+	}
+	else if (STRICMP(p_twc, "lcd") == 0)
+	{
+	    *r = lcd_color_table[nr][0];
+	    *g = lcd_color_table[nr][1];
+	    *b = lcd_color_table[nr][2];
+	    *ansi_idx = lcd_color_table[nr][3];
+	}
+	else if (STRICMP(p_twc, "xterm") == 0)
+	{
+	    *r = xterm_color_table[nr][0];
+	    *g = xterm_color_table[nr][1];
+	    *b = xterm_color_table[nr][2];
+	    *ansi_idx = xterm_color_table[nr][3];
+	}
+	else if (STRICMP(p_twc, "app") == 0)
+	{
+	    *r = app_color_table[nr][0];
+	    *g = app_color_table[nr][1];
+	    *b = app_color_table[nr][2];
+	    *ansi_idx = app_color_table[nr][3];
+	}
+#  if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+	else if (STRICMP(p_twc, "con") == 0)
+	    csbi_color2rgb(nr, r, g, b, ansi_idx);
+#  endif
+# endif
     }
     else if (nr < 232)
     {

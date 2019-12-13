@@ -7401,6 +7401,30 @@ vtp_sgr_bulks(
 }
 
 # ifdef FEAT_TERMGUICOLORS
+    void
+csbi_color2rgb(
+    int nr,
+    char_u *r,
+    char_u *g,
+    char_u *b,
+    char_u *ansi_idx)
+{
+#  ifdef VIMDLL
+    if (!gui.in_use)
+#  endif
+	if (nr < 16 && USE_VTP & has_csbiex)
+	{
+	    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+
+	    csbi.cbSize = sizeof(csbi);
+	    pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+	    *r = (char_u)GetRValue(csbi.ColorTable[nr]);
+	    *g = (char_u)GetGValue(csbi.ColorTable[nr]);
+	    *b = (char_u)GetBValue(csbi.ColorTable[nr]);
+	    *ansi_idx = nr + 1;
+	}
+}
+
     static int
 ctermtoxterm(
     int cterm)
@@ -7408,6 +7432,10 @@ ctermtoxterm(
     char_u r, g, b, idx;
 
     cterm_color2rgb(cterm, &r, &g, &b, &idx);
+
+    // Overwrite only values with cterm < 16
+    csbi_color2rgb(cterm, &r, &g, &b, &idx);
+
     return (((int)r << 16) | ((int)g << 8) | (int)b);
 }
 # endif

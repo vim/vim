@@ -944,6 +944,7 @@ EXTERN int	p_tgc;		// 'termguicolors'
 #endif
 #ifdef FEAT_TERMINAL
 EXTERN long	p_twsl;		// 'termwinscroll'
+EXTERN char_u	*p_twc;		// 'termwincolors'
 #endif
 #if defined(MSWIN) && defined(FEAT_TERMINAL)
 EXTERN char_u	*p_twt;		// 'termwintype'

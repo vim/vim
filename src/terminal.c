@@ -3805,6 +3805,24 @@ init_vterm_ansi_colors(VTerm *vterm)
 }
 #endif
 
+#if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+    static void
+init_vterm_twc_colors(VTerm *vterm)
+{
+    int	    index = 0;
+    long_u  rgb[16];
+    char_u  r, g, b, idx;
+
+    for (; index < 16; index++)
+    {
+	cterm_color2rgb(index, &r, &g, &b, &idx);
+	rgb[index] = (r << 16) | (g << 8) | b;
+    }
+
+    set_vterm_palette(vterm, rgb);
+}
+#endif
+
 /*
  * Handles a "drop" command from the job in the terminal.
  * "item" is the file name, "item->li_next" may have options.
@@ -6099,7 +6117,12 @@ conpty_term_and_job_init(
     if (opt->jo_set2 & JO2_ANSI_COLORS)
 	set_vterm_palette(term->tl_vterm, opt->jo_ansi_colors);
     else
-	init_vterm_ansi_colors(term->tl_vterm);
+# ifdef FEAT_VTP
+	if (use_vtp())
+	    init_vterm_twc_colors(term->tl_vterm);
+	else
+# endif
+	    init_vterm_ansi_colors(term->tl_vterm);
 #endif
 
     channel_set_job(channel, job, opt);
@@ -6429,7 +6452,12 @@ winpty_term_and_job_init(
     if (opt->jo_set2 & JO2_ANSI_COLORS)
 	set_vterm_palette(term->tl_vterm, opt->jo_ansi_colors);
     else
-	init_vterm_ansi_colors(term->tl_vterm);
+# ifdef FEAT_VTP
+	if (use_vtp())
+	    init_vterm_twc_colors(term->tl_vterm);
+	else
+# endif
+	    init_vterm_ansi_colors(term->tl_vterm);
 #endif
 
     channel_set_job(channel, job, opt);
@@ -6688,7 +6716,7 @@ term_and_job_init(
     if (opt->jo_set2 & JO2_ANSI_COLORS)
 	set_vterm_palette(term->tl_vterm, opt->jo_ansi_colors);
     else
-	init_vterm_ansi_colors(term->tl_vterm);
+	init_vterm_twc_colors(term->tl_vterm);
 #endif
 
     // This may change a string in "argvar".

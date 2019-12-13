@@ -936,6 +936,7 @@ Short explanation of each option:		*option-list*
 'termbidi'	  'tbidi'   terminal takes care of bi-directionality
 'termencoding'	  'tenc'    character encoding used by the terminal
 'termguicolors'	  'tgc'     use GUI colors for the terminal
+'termwincolors'	  'twc'	    switch terminal color using 24-bit color
 'termwinkey'	  'twk'	    key that precedes a Vim command in a terminal
 'termwinscroll'   'twsl'    max number of scrollback lines in a terminal window
 'termwinsize'	  'tws'	    size of a terminal window
