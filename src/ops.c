@@ -4233,7 +4233,8 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    {
 		if (hasFolding(oap->start.lnum, &oap->start.lnum, NULL))
 		    oap->start.col = 0;
-		if ((curwin->w_cursor.col > 0 || oap->inclusive)
+		if ((curwin->w_cursor.col > 0 || oap->inclusive
+						  || oap->motion_type == MLINE)
 			&& hasFolding(curwin->w_cursor.lnum, NULL,
 						      &curwin->w_cursor.lnum))
 		    curwin->w_cursor.col = (colnr_T)STRLEN(ml_get_curline());
