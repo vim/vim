@@ -180,6 +180,7 @@ pum_display(
 	    // pum below "pum_win_row"
 
 	    // Leave two lines of context if possible
+	    validate_cheight();
 	    if (curwin->w_cline_row
 				+ curwin->w_cline_height - curwin->w_wrow >= 3)
 		context_lines = 3;
