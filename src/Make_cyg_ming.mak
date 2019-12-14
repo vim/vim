@@ -1022,10 +1022,10 @@ all: $(MAIN_TARGET) vimrun.exe xxd/xxd.exe tee/tee.exe install.exe uninstall.exe
 vimrun.exe: vimrun.c
 	$(CC) $(CFLAGS) -o vimrun.exe vimrun.c $(LIB)
 
-install.exe: dosinst.c
+install.exe: dosinst.c dosinst.h version.h
 	$(CC) $(CFLAGS) -o install.exe dosinst.c $(LIB) -lole32 -luuid
 
-uninstall.exe: uninstall.c
+uninstall.exe: uninstall.c dosinst.h version.h
 	$(CC) $(CFLAGS) -o uninstall.exe uninstall.c $(LIB) -lole32
 
 ifeq ($(VIMDLL),yes)
@@ -1136,7 +1136,27 @@ endif
 $(OUTDIR):
 	$(MKDIR) $(OUTDIR)
 
+$(OUTDIR)/buffer.o: buffer.c $(INCL) version.h
+
+$(OUTDIR)/evalfunc.o: evalfunc.c $(INCL) version.h
+
+$(OUTDIR)/evalvars.o: evalvars.c $(INCL) version.h
+
+$(OUTDIR)/ex_cmds.o: ex_cmds.c $(INCL) version.h
+
+$(OUTDIR)/ex_cmds2.o: ex_cmds2.c $(INCL) version.h
+
 $(OUTDIR)/ex_docmd.o: ex_docmd.c $(INCL) ex_cmdidxs.h
+
+$(OUTDIR)/hardcopy.o: hardcopy.c $(INCL) version.h
+
+$(OUTDIR)/misc1.o: misc1.c $(INCL) version.h
+
+$(OUTDIR)/netbeans.o: netbeans.c $(INCL) version.h
+
+$(OUTDIR)/version.o: version.c $(INCL) version.h
+
+$(OUTDIR)/viminfo.o: viminfo.c $(INCL) version.h
 
 $(OUTDIR)/gui_dwrite.o:	gui_dwrite.cpp gui_dwrite.h
 	$(CC) -c $(CFLAGS) $(CXXFLAGS) gui_dwrite.cpp -o $@
@@ -1150,7 +1170,7 @@ $(OUTDIR)/beval.o:	beval.c $(INCL) $(GUI_INCL)
 $(OUTDIR)/gui_beval.o:	gui_beval.c $(INCL) $(GUI_INCL)
 	$(CC) -c $(CFLAGS) gui_beval.c -o $@
 
-$(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL) $(GUI_INCL)
+$(OUTDIR)/gui_w32.o:	gui_w32.c $(INCL) $(GUI_INCL) version.h
 	$(CC) -c $(CFLAGS) gui_w32.c -o $@
 
 $(OUTDIR)/if_cscope.o:	if_cscope.c $(INCL) if_cscope.h
@@ -1174,7 +1194,7 @@ $(OUTDIR)/if_perl.o:	auto/if_perl.c $(INCL)
 	$(CC) -c $(CFLAGS) auto/if_perl.c -o $@
 
 
-$(OUTDIR)/if_ruby.o:	if_ruby.c $(INCL)
+$(OUTDIR)/if_ruby.o:	if_ruby.c $(INCL) version.h
 ifeq (16, $(RUBY))
 	$(CC) $(CFLAGS) -U_WIN32 -c -o $@ if_ruby.c
 endif
