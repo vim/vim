@@ -617,3 +617,8 @@ func Test_visualbell()
   set novisualbell
   set belloff=all
 endfunc
+
+func Test_set_termwincolors()
+  set termwincolors=ansi
+  call assert_equal('ansi', &termwincolors)
+endfunc
