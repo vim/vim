@@ -1185,7 +1185,7 @@ free_all_mem(void)
 
 	set_bufref(&bufref, buf);
 	nextbuf = buf->b_next;
-	close_buffer(NULL, buf, DOBUF_WIPE, FALSE);
+	close_buffer(NULL, buf, DOBUF_WIPE, FALSE, FALSE);
 	if (bufref_valid(&bufref))
 	    buf = nextbuf;	/* didn't work, try next one */
 	else

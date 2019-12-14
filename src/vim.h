@@ -2458,9 +2458,10 @@ typedef enum {
 #define VIF_GET_OLDFILES	8	// load v:oldfiles
 
 // flags for buf_freeall()
-#define BFA_DEL		1	// buffer is going to be deleted
-#define BFA_WIPE	2	// buffer is going to be wiped out
-#define BFA_KEEP_UNDO	4	// do not free undo information
+#define BFA_DEL		 1	// buffer is going to be deleted
+#define BFA_WIPE	 2	// buffer is going to be wiped out
+#define BFA_KEEP_UNDO	 4	// do not free undo information
+#define BFA_IGNORE_ABORT 8	// do not abort for aborting()
 
 // direction for nv_mousescroll() and ins_mousescroll()
 #define MSCR_DOWN	0	// DOWN must be FALSE

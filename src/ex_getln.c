@@ -4372,7 +4372,7 @@ open_cmdwin(void)
 	// win_close() may have already wiped the buffer when 'bh' is
 	// set to 'wipe'
 	if (bufref_valid(&bufref))
-	    close_buffer(NULL, bufref.br_buf, DOBUF_WIPE, FALSE);
+	    close_buffer(NULL, bufref.br_buf, DOBUF_WIPE, FALSE, FALSE);
 
 	// Restore window sizes.
 	win_size_restore(&winsizes);
