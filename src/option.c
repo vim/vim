@@ -3045,8 +3045,8 @@ set_bool_option(
     // 'trywinterm'
     else if ((int *)varp == &p_trywt)
     {
-	set_vtp_working(p_trywt);
 # ifdef FEAT_VTP
+	set_vtp_working(p_trywt);
 	if (
 #  ifdef VIMDLL
 	    !gui.in_use && !gui.starting &&
