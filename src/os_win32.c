@@ -192,6 +192,7 @@ static void vtp_flag_init();
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 static int vtp_working = 0;
+static int vtp_override = -1;
 static void vtp_init();
 static void vtp_exit();
 static int vtp_printf(char *format, ...);
@@ -7531,7 +7532,20 @@ is_term_win32(void)
     int
 has_vtp_working(void)
 {
-    return vtp_working && !p_dvtp;
+    return vtp_override != -1 ? vtp_override : vtp_working;
+}
+
+    void
+set_vtp_working(
+    BOOL override)
+{
+    vtp_override = override;
+}
+
+    int
+vtp_force_disabled(void)
+{
+    return vtp_override == FALSE;
 }
 
 #endif

@@ -3042,9 +3042,10 @@ set_bool_option(
 #endif
 
 #ifdef FEAT_TERMGUICOLORS
-    // 'vtp'
-    else if ((int *)varp == &p_dvtp)
+    // 'trywinterm'
+    else if ((int *)varp == &p_trywt)
     {
+	set_vtp_working(p_trywt);
 # ifdef FEAT_VTP
 	if (
 #  ifdef VIMDLL

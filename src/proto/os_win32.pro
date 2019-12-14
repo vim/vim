@@ -76,6 +76,8 @@ void control_console_color_rgb(void);
 int use_vtp(void);
 int is_term_win32(void);
 int has_vtp_working(void);
+void set_vtp_working(BOOL override);
+int vtp_force_disabled(void);
 int has_conpty_working(void);
 int get_conpty_type(void);
 int is_conpty_stable(void);

@@ -510,7 +510,6 @@ EXTERN char_u	*p_dict;	// 'dictionary'
 EXTERN int	p_dg;		// 'digraph'
 #endif
 EXTERN char_u	*p_dir;		// 'directory'
-EXTERN int	p_dvtp;		// 'disablevtp'
 EXTERN char_u	*p_dy;		// 'display'
 EXTERN unsigned	dy_flags;
 #define DY_LASTLINE		0x001
@@ -963,6 +962,7 @@ EXTERN char_u	*p_titleold;	// 'titleold'
 EXTERN char_u	*p_titlestring;	// 'titlestring'
 #endif
 EXTERN char_u	*p_tsr;		// 'thesaurus'
+EXTERN int	p_trywt;	// 'trywinterm'
 EXTERN int	p_ttimeout;	// 'ttimeout'
 EXTERN long	p_ttm;		// 'ttimeoutlen'
 EXTERN int	p_tbi;		// 'ttybuiltin'

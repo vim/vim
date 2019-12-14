@@ -681,7 +681,6 @@ Short explanation of each option:		*option-list*
 'diffopt'	  'dip'     options for using diff mode
 'digraph'	  'dg'	    enable the entering of digraphs in Insert mode
 'directory'	  'dir'     list of directory names for the swap file
-'disablevtp'	  'dvtp'    explicitly stop VTP
 'display'	  'dy'	    list of flags for how to display text
 'eadirection'	  'ead'     in which direction 'equalalways' works
 'edcompatible'	  'ed'	    toggle flags of ":substitute" command
@@ -955,6 +954,7 @@ Short explanation of each option:		*option-list*
 'titlestring'		    string to use for the Vim window title
 'toolbar'	  'tb'	    GUI: which items to show in the toolbar
 'toolbariconsize' 'tbis'    size of the toolbar icons (for GTK 2 only)
+'trywinterm'	  'trywt'   try using VTP
 'ttimeout'		    time out on mappings
 'ttimeoutlen'	  'ttm'     time out time for key codes in milliseconds
 'ttybuiltin'	  'tbi'     use built-in termcap before external termcap

@@ -6142,8 +6142,10 @@ swap_tcap(void)
     else
 	mode = CMODEINDEX;
 
-    if (p_dvtp)
+#  ifdef FEAT_VTP
+    if (vtp_force_disabled())
 	mode = CMODEINDEX;
+#  endif
 
     for (ks = ks_tbl; ks->code != (int)KS_NAME; ks++)
     {

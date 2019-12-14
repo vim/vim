@@ -2747,18 +2747,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
-					*'disablevtp'* *'dvtp'*
-'disablevtp' 'dvtp'	boolean (default off)
-			global
-			{not available when compiled without the |+vtp|
-			feature}
-	When off, VTP (Virtual Terminal Processing) is automatically used when
-	Vim detects that it is available. (It is available on win32 console on
-	Windows 10 version 1703 or later.)
-	When on, stop using VTP even Vim detects that it is available.  If you
-	are using a 3rd party terminal application which doesn't support VTP,
-	turn this option on.
-
 					*'display'* *'dy'*
 'display' 'dy'		string	(default "", set to "truncate" in
 							       |defaults.vim|)
@@ -8082,6 +8070,18 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 	If 'toolbariconsize' is empty, the global default size as determined
 	by user preferences or the current theme is used.
+
+					*'trywinterm'* *'trywt'*
+'trywinterm' 'trywt'	boolean (default on)
+			global
+			{not available when compiled without the |+vtp|
+			feature}
+	When on, VTP (Virtual Terminal Processing) is automatically used when
+	Vim detects that it is available. (It is available on win32 console on
+	Windows 10 version 1703 or later.)
+	When off, stop using VTP even Vim detects that it is available.  If
+	you are using a 3rd party terminal application which doesn't support
+	VTP, turn this option off.
 
 			     *'ttybuiltin'* *'tbi'* *'nottybuiltin'* *'notbi'*
 'ttybuiltin' 'tbi'	boolean	(default on)
