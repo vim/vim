@@ -2866,11 +2866,6 @@ check_for_cryptkey(
 }
 #endif  // FEAT_CRYPT
 
-#if defined(VMS) && !defined(MIN)
-// Older DECC compiler for VAX doesn't define MIN()
-# define MIN(a, b) ((a) < (b) ? (a) : (b))
-#endif
-
 /*
  * Return TRUE if a file appears to be read-only from the file permissions.
  */
