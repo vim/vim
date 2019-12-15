@@ -2258,7 +2258,7 @@ test1 \
 	test69 \
 	test70 \
 	test86 test87 \
-	test95 test99:
+	test99:
 	cd testdir; rm -f $@.out; $(MAKE) -f Makefile $@.out VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 # Run individual NEW style test.
