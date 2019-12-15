@@ -466,14 +466,12 @@ func Test_undo_redo_noop()
   message clear
   undo
   let messages = split(execute('message'), "\n")
-  call assert_equal(['Messages maintainer: Bram Moolenaar <Bram@vim.org>',
-        \            'Already at oldest change'], messages)
+  call assert_equal('Already at oldest change', messages[-1])
 
   message clear
   redo
   let messages = split(execute('message'), "\n")
-  call assert_equal(['Messages maintainer: Bram Moolenaar <Bram@vim.org>',
-        \            'Already at newest change'], messages)
+  call assert_equal('Already at newest change', messages[-1])
 
   bwipe!
 endfunc
