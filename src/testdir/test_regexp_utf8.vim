@@ -339,6 +339,7 @@ func Test_multibyte_chars()
       endif
     endfor
   endfor
+  set regexpengine&
 endfunc
 
 " check that 'ambiwidth' does not change the meaning of \p
@@ -351,6 +352,7 @@ func Test_ambiwidth()
   call assert_equal(0, match("\u00EC", '\p'))
   set regexpengine=2 ambiwidth=double
   call assert_equal(0, match("\u00EC", '\p'))
+  set regexpengine& ambiwidth&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
