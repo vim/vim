@@ -249,6 +249,26 @@ func Test_undojoin_redo()
   bwipe!
 endfunc
 
+" undojoin not allowed after undo
+func Test_undojoin_after_undo()
+  new
+  call feedkeys("ixx\<Esc>u", 'xt')
+  call assert_fails(':undojoin', 'E790:')
+  bwipe!
+endfunc
+
+" undojoin is a noop when no change yet, or when 'undolevels' is negative
+func Test_undojoin_noop()
+  new
+  call feedkeys(":undojoin\<CR>", 'xt')
+  call assert_equal([''], getline(1, '$'))
+  setlocal undolevels=-1
+  call feedkeys("ixx\<Esc>u", 'xt')
+  call feedkeys(":undojoin\<CR>", 'xt')
+  call assert_equal(['xx'], getline(1, '$'))
+  bwipe!
+endfunc
+
 func Test_undo_write()
   call delete('Xtest')
   split Xtest
@@ -335,7 +355,14 @@ func Test_undofile_earlier()
   call delete('Xundofile')
 endfunc
 
-" Check that reading a truncted undo file doesn't hang.
+func Test_wundo_errors()
+  new
+  call setline(1, 'hello')
+  call assert_fails('wundo! Xdoesnotexist/Xundofile', 'E828:')
+  bwipe!
+endfunc
+
+" Check that reading a truncated undo file doesn't hang.
 func Test_undofile_truncated()
   new
   call setline(1, 'hello')
@@ -350,6 +377,15 @@ func Test_undofile_truncated()
   endfor
 
   bwipe!
+  call delete('Xundofile')
+endfunc
+
+func Test_rundo_errors()
+  call assert_fails('rundo XfileDoesNotExist', 'E822:')
+
+  call writefile(['abc'], 'Xundofile')
+  call assert_fails('rundo Xundofile', 'E823:')
+
   call delete('Xundofile')
 endfunc
 
@@ -418,6 +454,24 @@ func Test_undo_0()
   let d = undotree()
   call assert_equal('1', getline(1))
   call assert_equal(1, d.seq_cur)
+
+  bwipe!
+endfunc
+
+" undo or redo are noop if there is nothing to undo or redo
+func Test_undo_redo_noop()
+  new
+  call assert_fails('undo 2', 'E830:')
+
+  message clear
+  undo
+  let messages = split(execute('message'), "\n")
+  call assert_equal('Already at oldest change', messages[-1])
+
+  message clear
+  redo
+  let messages = split(execute('message'), "\n")
+  call assert_equal('Already at newest change', messages[-1])
 
   bwipe!
 endfunc
