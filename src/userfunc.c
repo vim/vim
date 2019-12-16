@@ -3234,7 +3234,7 @@ do_return(
     void	*rettv)
 {
     int		idx;
-    struct condstack *cstack = eap->cstack;
+    cstack_T	*cstack = eap->cstack;
 
     if (reanimate)
 	// Undo the return.
