@@ -75,9 +75,8 @@ VIMPROG = <->vim.exe
 
 SCRIPT = test1.out \
        test42.out test44.out test49.out \
-       test69.out \
        test77a.out \
-       test95.out test99.out \
+       test99.out \
        test_eval.out
 
 # Known problems:
