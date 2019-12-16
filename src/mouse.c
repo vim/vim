@@ -1630,7 +1630,8 @@ retnomove:
 	{
 	    on_sep_line = 0;
 	    in_popup_win = TRUE;
-	    if (which_button == MOUSE_LEFT && popup_close_if_on_X(wp, row, col))
+	    if (which_button == MOUSE_LEFT && (popup_close_if_on_X(wp, row, col)
+					       || popup_close_if_mouse_click(wp, row, col)))
 	    {
 		return IN_UNKNOWN;
 	    }

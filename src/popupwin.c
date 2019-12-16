@@ -207,6 +207,27 @@ popup_close_if_on_X(win_T *wp, int row, int col)
     return FALSE;
 }
 
+
+/*
+ * Return TRUE and close the popup if "row"/"col" is inside
+ * popup area but not on popup border and w_popup_close is POPCLOSE_CLICK.
+ * The values are relative to the top-left corner.
+ * Caller should check the left mouse button was clicked.
+ * Return TRUE if the popup was closed.
+ */
+    int
+popup_close_if_mouse_click(win_T *wp, int row, int col)
+{
+    if (wp->w_popup_close == POPCLOSE_CLICK
+	    && !popup_on_border(wp, row, col)
+	    && row < popup_height(wp) && col < popup_width(wp) - 1)
+    {
+	popup_close_for_mouse_click(wp);
+	return TRUE;
+    }
+    return FALSE;
+}
+
 // Values set when dragging a popup window starts.
 static int drag_start_row;
 static int drag_start_col;
@@ -2960,7 +2981,8 @@ popup_do_filter(int c)
 	int col = mouse_col;
 
 	wp = mouse_find_win(&row, &col, FIND_POPUP);
-	if (wp != NULL && popup_close_if_on_X(wp, row, col))
+	if (wp != NULL && (popup_close_if_on_X(wp, row, col) ||
+			   popup_close_if_mouse_click(wp, row, col)))
 	    res = TRUE;
     }
 
