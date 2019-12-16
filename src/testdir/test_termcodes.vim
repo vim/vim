@@ -228,7 +228,7 @@ func Test_xterm_mouse_right_click_extends_visual()
       call MouseRightClick(2, 2)
       call MouseRightRelease(2, 2)
 
-      " Right click extends bottom bottom right of visual area.
+      " Right click extends bottom right of visual area.
       call MouseRightClick(6, 6)
       call MouseRightRelease(6, 6)
       norm! r1gv
@@ -397,7 +397,7 @@ func Test_1xterm_mouse_wheel()
 endfunc
 
 " Test that dragging beyond the window (at the bottom and at the top)
-" scrolls window content by the number of of lines beyond the window.
+" scrolls window content by the number of lines beyond the window.
 func Test_term_mouse_drag_beyond_window()
   let save_mouse = &mouse
   let save_term = &term
@@ -1265,7 +1265,7 @@ func RunTest_modifyOtherKeys(func)
   new
   set timeoutlen=10
 
-  " Shift-X is send as 'X' with the shift modifier
+  " Shift-X is sent as 'X' with the shift modifier
   call feedkeys('a' .. a:func('X', 2) .. "\<Esc>", 'Lx!')
   call assert_equal('X', getline(1))
 
