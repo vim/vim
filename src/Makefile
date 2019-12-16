@@ -2255,7 +2255,6 @@ test1 \
 	test_eval \
 	test42 test44 test49 \
 	test52 test59 \
-	test69 \
 	test70 \
 	test86 test87 \
 	test99:
