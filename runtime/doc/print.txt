@@ -1,4 +1,4 @@
-*print.txt*     For Vim version 8.2.  Last change: 2019 May 05
+*print.txt*     For Vim version 8.2.  Last change: 2019 Dec 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -94,7 +94,7 @@ If the option is empty, then vim will use the system default printer for
 
 							*penc-option* *E620*
 'printencoding' 'penc'	String	(default empty, except for:
-					Windows, OS/2: cp1252,
+					MS-Windows: cp1252,
 					Macintosh: mac-roman,
 					VMS: dec-mcs,
 					HPUX: hp-roman8,
@@ -124,7 +124,7 @@ cannot be converted will be replaced with upside down question marks.
 Four print character encoding files are provided to support default Mac, VMS,
 HPUX, and EBCDIC character encodings and are used by default on these
 platforms.  Code page 1252 print character encoding is used by default on
-Windows and OS/2 platforms.
+MS-Windows platform.
 
 							*pexpr-option*
 'printexpr' 'pexpr'	String	(default: see below)
@@ -142,8 +142,8 @@ the file: >
     system('lpr' . (&printdevice == '' ? '' : ' -P' . &printdevice)
 	. ' ' . v:fname_in) . delete(v:fname_in) + v:shell_error
 
-On MS-Dos, MS-Windows and OS/2 machines the default is to copy the file to the
-currently specified printdevice: >
+On MS-Windows machines the default is to copy the file to the currently
+specified printdevice: >
 
     system('copy' . ' ' . v:fname_in . (&printdevice == ''
 		? ' LPT1:' : (' \"' . &printdevice . '\"')))
@@ -621,7 +621,7 @@ OpenVMS
 
     http://wwwthep.physik.uni-mainz.de/~plass/gv/
 
-Windows and OS/2
+MS-Windows
 
 - GSview.  Obtainable from:
 
@@ -636,7 +636,7 @@ DOS
 
 Linux
 
-- GSview.  Linux version of the popular Windows and OS/2 previewer.
+- GSview.  Linux version of the popular MS-Windows.
   Obtainable from:
 
     http://www.cs.wisc.edu/~ghost/gsview/

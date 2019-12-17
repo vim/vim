@@ -944,7 +944,7 @@
  *			Always included, since either FEAT_MOUSE_XTERM or
  *			DOS_MOUSE is defined.
  */
-// OS/2 and Amiga console have no mouse support
+// Amiga console has no mouse support
 #if defined(UNIX) || defined(VMS)
 # define FEAT_MOUSE_XTERM
 # ifdef FEAT_BIG

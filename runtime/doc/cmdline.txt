@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.2.  Last change: 2019 Nov 26
+*cmdline.txt*   For Vim version 8.2.  Last change: 2019 Dec 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -75,7 +75,7 @@ CTRL-V		Insert next non-digit literally.  Up to three digits form the
 		decimal value of a single byte.  The non-digit and the three
 		digits are not considered for mapping.  This works the same
 		way as in Insert mode (see above, |i_CTRL-V|).
-		Note: Under Windows CTRL-V is often mapped to paste text.
+		Note: Under MS-Windows CTRL-V is often mapped to paste text.
 		Use CTRL-Q instead then.
 		When |modifyOtherKeys| is enabled then special Escape sequence
 		is converted back to what it was without |modifyOtherKeys|,
@@ -943,9 +943,9 @@ These modifiers can be given, in this order:
 		separator is removed.  Thus ":p:h" on a directory name results
 		on the directory name itself (without trailing slash).
 		When the file name is an absolute path (starts with "/" for
-		Unix; "x:\" for MS-DOS, WIN32, OS/2; "drive:" for Amiga), that
-		part is not removed.  When there is no head (path is relative
-		to current directory) the result is empty.
+		Unix; "x:\" for WIN32; "drive:" for Amiga), that part is not
+		removed.  When there is no head (path is relative to current
+		directory) the result is empty.
 	:t	Tail of the file name (last component of the name).  Must
 		precede any :r or :e.
 	:r	Root of the file name (the last extension removed).  When
@@ -1042,12 +1042,12 @@ option contains "sh", this is done twice, to avoid the shell trying to expand
 the "!".
 
 							*filename-backslash*
-For filesystems that use a backslash as directory separator (MS-DOS, Windows,
-OS/2), it's a bit difficult to recognize a backslash that is used to escape
-the special meaning of the next character.  The general rule is: If the
-backslash is followed by a normal file name character, it does not have a
-special meaning.  Therefore "\file\foo" is a valid file name, you don't have
-to type the backslash twice.
+For filesystems that use a backslash as directory separator (MS-Windows), it's
+a bit difficult to recognize a backslash that is used to escape the special
+meaning of the next character.  The general rule is: If the backslash is
+followed by a normal file name character, it does not have a special meaning.
+Therefore "\file\foo" is a valid file name, you don't have to type the
+backslash twice.
 
 An exception is the '$' sign.  It is a valid character in a file name.  But
 to avoid a file name like "$home" to be interpreted as an environment variable,

@@ -1,4 +1,4 @@
-*usr_41.txt*	For Vim version 8.2.  Last change: 2019 Nov 21
+*usr_41.txt*	For Vim version 8.2.  Last change: 2019 Dec 17
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -1699,8 +1699,8 @@ Here is a summary of items that apply to Vim scripts.  They are also mentioned
 elsewhere, but form a nice checklist.
 
 The end-of-line character depends on the system.  For Unix a single <NL>
-character is used.  For MS-DOS, Windows, OS/2 and the like, <CR><LF> is used.
-This is important when using mappings that end in a <CR>.  See |:source_crnl|.
+character is used.  For MS-Windows and the like, <CR><LF> is used.  This is
+important when using mappings that end in a <CR>.  See |:source_crnl|.
 
 
 WHITE SPACE
@@ -1885,7 +1885,7 @@ First of all you must choose a name for your plugin.  The features provided
 by the plugin should be clear from its name.  And it should be unlikely that
 someone else writes a plugin with the same name but which does something
 different.  And please limit the name to 8 characters, to avoid problems on
-old Windows systems.
+old MS-Windows systems.
 
 A script that corrects typing mistakes could be called "typecorr.vim".  We
 will use it here as an example.
