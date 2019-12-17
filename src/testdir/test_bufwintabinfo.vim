@@ -155,12 +155,12 @@ function Test_getbufinfo_lastused()
   call test_settime(0)
 endfunc
 
-func Test_buflines()
+func Test_getbufinfo_lines()
   new Xfoo
   call setline(1, ['a', 'bc', 'd'])
   let bn = bufnr('%')
   hide
-  call assert_equal(3, buflines(bn))
+  call assert_equal(3, getbufinfo(bn)[0]["lines"])
   edit Xfoo
   bw!
 endfunction
