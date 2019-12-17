@@ -427,3 +427,14 @@ int i = 7 /* foo *// 3
   call assert_equal(expected, getline(1, '$'))
   close!
 endfunc
+
+func Test_join_lines()
+  new
+  call setline(1, ['a', 'b', '', 'c', 'd'])
+  %join
+  call assert_equal('a b c d', getline(1))
+  call setline(1, ['a', 'b', '', 'c', 'd'])
+  normal 5J
+  call assert_equal('a b c d', getline(1))
+  bwipe!
+endfunc
