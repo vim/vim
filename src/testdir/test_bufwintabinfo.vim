@@ -154,3 +154,13 @@ function Test_getbufinfo_lastused()
   call assert_equal(getbufinfo('Xtestfile2')[0].lastused, 7654321)
   call test_settime(0)
 endfunc
+
+func Test_getbufinfo_lines()
+  new Xfoo
+  call setline(1, ['a', 'bc', 'd'])
+  let bn = bufnr('%')
+  hide
+  call assert_equal(3, getbufinfo(bn)[0]["linecount"])
+  edit Xfoo
+  bw!
+endfunc
