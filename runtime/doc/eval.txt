@@ -9753,7 +9753,7 @@ system({expr} [, {input}])				*system()* *E677*
 		The command executed is constructed using several options:
 	'shell' 'shellcmdflag' 'shellxquote' {expr} 'shellredir' {tmp} 'shellxquote'
 		({tmp} is an automatically generated file name).
-		For Unix and OS/2 braces are put around {expr} to allow for
+		For Unix, braces are put around {expr} to allow for
 		concatenated commands.
 
 		The command will be executed in "cooked" mode, so that a

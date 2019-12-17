@@ -784,8 +784,6 @@ accordingly.  Vim proceeds in this order:
 
 	Places for your personal initializations:
 		Unix		$HOME/.vimrc or $HOME/.vim/vimrc
-		OS/2		$HOME/.vimrc, $HOME/vimfiles/vimrc
-				or $VIM/.vimrc (or _vimrc)
 		MS-Windows	$HOME/_vimrc, $HOME/vimfiles/vimrc
 				or $VIM/_vimrc
 		Amiga		s:.vimrc, home:.vimrc, home:vimfiles:vimrc
@@ -811,7 +809,7 @@ accordingly.  Vim proceeds in this order:
      a. If vim was started as |evim| or |eview| or with the |-y| argument, the
 	script $VIMRUNTIME/evim.vim will be loaded.
 							*system-vimrc*
-     b. For Unix, MS-DOS, MS-Windows, OS/2, VMS, Macintosh, RISC-OS and Amiga
+     b. For Unix, MS-Windows, VMS, Macintosh, RISC-OS and Amiga
 	the system vimrc file is read for initializations.  The path of this
 	file is shown with the ":version" command.  Mostly it's "$VIM/vimrc".
 	Note that this file is ALWAYS read in 'compatible' mode, since the
@@ -827,22 +825,22 @@ accordingly.  Vim proceeds in this order:
 	I   The environment variable VIMINIT (see also |compatible-default|) (*)
 	    The value of $VIMINIT is used as an Ex command line.
 	II  The user vimrc file(s):
-		    "$HOME/.vimrc"	   (for Unix and OS/2) (*)
-		    "$HOME/.vim/vimrc"	   (for Unix and OS/2) (*)
+		    "$HOME/.vimrc"	   (for Unix) (*)
+		    "$HOME/.vim/vimrc"	   (for Unix) (*)
 		    "s:.vimrc"		   (for Amiga) (*)
 		    "home:.vimrc"	   (for Amiga) (*)
 		    "home:vimfiles:vimrc"  (for Amiga) (*)
-		    "$VIM/.vimrc"	   (for OS/2 and Amiga) (*)
-		    "$HOME/_vimrc"	   (for MS-DOS and Win32) (*)
-		    "$HOME/vimfiles/vimrc" (for MS-DOS and Win32) (*)
-		    "$VIM/_vimrc"	   (for MS-DOS and Win32) (*)
-		Note: For Unix, OS/2 and Amiga, when ".vimrc" does not exist,
+		    "$VIM/.vimrc"	   (for Amiga) (*)
+		    "$HOME/_vimrc"	   (for Win32) (*)
+		    "$HOME/vimfiles/vimrc" (for Win32) (*)
+		    "$VIM/_vimrc"	   (for Win32) (*)
+		Note: For Unix and Amiga, when ".vimrc" does not exist,
 		"_vimrc" is also tried, in case an MS-DOS compatible file
-		system is used.  For MS-DOS and Win32 ".vimrc" is checked
-		after "_vimrc", in case long file names are used.
-		Note: For MS-DOS and Win32, "$HOME" is checked first.  If no
-		"_vimrc" or ".vimrc" is found there, "$VIM" is tried.
-		See |$VIM| for when $VIM is not set.
+		system is used.  For MS-Windows ".vimrc" is checked after
+		"_vimrc", in case long file names are used.
+		Note: For Win32, "$HOME" is checked first.  If no "_vimrc" or
+		".vimrc" is found there, "$VIM" is tried.  See |$VIM| for when
+		$VIM is not set.
 	III The environment variable EXINIT.
 	    The value of $EXINIT is used as an Ex command line.
 	IV  The user exrc file(s).  Same as for the user vimrc file, but with
@@ -855,12 +853,12 @@ accordingly.  Vim proceeds in this order:
      d. If the 'exrc' option is on (which is NOT the default), the current
 	directory is searched for three files.  The first that exists is used,
 	the others are ignored.
-	-  The file ".vimrc" (for Unix, Amiga and OS/2) (*)
-		    "_vimrc" (for MS-DOS and Win32) (*)
-	-  The file "_vimrc" (for Unix, Amiga and OS/2) (*)
-		    ".vimrc" (for MS-DOS and Win32) (*)
-	-  The file ".exrc"  (for Unix, Amiga and OS/2)
-		    "_exrc"  (for MS-DOS and Win32)
+	-  The file ".vimrc" (for Unix, Amiga) (*)
+		    "_vimrc" (for Win32) (*)
+	-  The file "_vimrc" (for Unix, Amiga) (*)
+		    ".vimrc" (for Win32) (*)
+	-  The file ".exrc"  (for Unix, Amiga)
+		    "_exrc"  (for Win32)
 
      (*) Using this file or environment variable will cause 'compatible' to be
 	 off by default.  See |compatible-default|.
@@ -948,9 +946,9 @@ Some hints on using initializations ~
 Standard setup:
 Create a vimrc file to set the default settings and mappings for all your edit
 sessions.  Put it in a place so that it will be found by 3b:
-	~/.vimrc	(Unix and OS/2)
+	~/.vimrc	(Unix)
 	s:.vimrc	(Amiga)
-	$VIM\_vimrc	(MS-DOS and Win32)
+	$VIM\_vimrc	(Win32)
 Note that creating a vimrc file will cause the 'compatible' option to be off
 by default.  See |compatible-default|.
 
@@ -990,10 +988,9 @@ version 5.0) are not recognized.
 
 MS-DOS line separators ~
 
-On MS-DOS-like systems (MS-DOS itself, Win32, and OS/2), Vim assumes that all
-the vimrc files have <CR> <NL> pairs as line separators.  This will give
-problems if you have a file with only <NL>s and have a line like
-":map xx yy^M".  The trailing ^M will be ignored.
+On MS-Windows, Vim assumes that all the vimrc files have <CR> <NL> pairs as
+line separators.  This will give problems if you have a file with only <NL>s
+and have a line like ":map xx yy^M".  The trailing ^M will be ignored.
 
 
 Vi compatible default value ~
@@ -1145,11 +1142,11 @@ will try to get the value for $VIM in this order:
    problem).  The file name ("help.txt" or any other) is removed.  Then
    trailing directory names are removed, in this order: "doc", "runtime" and
    "vim{version}" (e.g., "vim54").
-3. For MSDOS, Win32 and OS/2 Vim tries to use the directory name of the
-   executable.  If it ends in "/src", this is removed.  This is useful if you
-   unpacked the .zip file in some directory, and adjusted the search path to
-   find the vim executable.  Trailing directory names are removed, in this
-   order: "runtime" and "vim{version}" (e.g., "vim54").
+3. For Win32 Vim tries to use the directory name of the executable.  If it
+   ends in "/src", this is removed.  This is useful if you unpacked the .zip
+   file in some directory, and adjusted the search path to find the vim
+   executable.  Trailing directory names are removed, in this order: "runtime"
+   and "vim{version}" (e.g., "vim54").
 4. For Unix the compile-time defined installation directory is used (see the
    output of ":version").
 
@@ -1573,11 +1570,10 @@ remembered.
 
 VIMINFO FILE NAME					*viminfo-file-name*
 
-- The default name of the viminfo file is "$HOME/.viminfo" for Unix and OS/2,
-  "s:.viminfo" for Amiga, "$HOME\_viminfo" for MS-DOS and Win32.  For the last
-  two, when $HOME is not set, "$VIM\_viminfo" is used.  When $VIM is also not
-  set, "c:\_viminfo" is used.  For OS/2 "$VIM/.viminfo" is used when $HOME is
-  not set and $VIM is set.
+- The default name of the viminfo file is "$HOME/.viminfo" for Unix,
+  "s:.viminfo" for Amiga, "$HOME\_viminfo" for Win32.  For the last two, when
+  $HOME is not set, "$VIM\_viminfo" is used.  When $VIM is also not set,
+  "c:\_viminfo" is used.
 - The 'n' flag in the 'viminfo' option can be used to specify another viminfo
   file name |'viminfo'|.
 - The "-i" Vim argument can be used to set another file name, |-i|.  When the
