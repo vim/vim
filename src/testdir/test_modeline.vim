@@ -82,7 +82,7 @@ func Test_modeline_version()
   let modeline = &modeline
   set modeline
 
-  " Test with vim:{vers}: (version {vers} or later)
+  " Test with vim:{vers}: (version {vers} or later).
   call writefile(['// vim' .. v:version .. ': ts=2:'], 'Xmodeline_version')
   edit Xmodeline_version
   call assert_equal(2, &ts)
@@ -98,7 +98,7 @@ func Test_modeline_version()
   call assert_equal(8, &ts)
   bw!
 
-  " Test with vim>{vers}: (version after {vers})
+  " Test with vim>{vers}: (version after {vers}).
   call writefile(['// vim>' .. v:version .. ': ts=2:'], 'Xmodeline_version')
   edit Xmodeline_version
   call assert_equal(8, &ts)
@@ -114,7 +114,7 @@ func Test_modeline_version()
   call assert_equal(8, &ts)
   bwipe!
 
-  " Test with vim<{vers}: (version before {vers})
+  " Test with vim<{vers}: (version before {vers}).
   call writefile(['// vim<' .. v:version .. ': ts=2:'], 'Xmodeline_version')
   edit Xmodeline_version
   call assert_equal(8, &ts)
@@ -130,7 +130,7 @@ func Test_modeline_version()
   call assert_equal(2, &ts)
   bwipe!
 
-  " Test with vim={vers}: (version {vers} only)
+  " Test with vim={vers}: (version {vers} only).
   call writefile(['// vim=' .. v:version .. ': ts=2:'], 'Xmodeline_version')
   edit Xmodeline_version
   call assert_equal(2, &ts)
@@ -279,4 +279,3 @@ func Test_modeline_fails_modelineexpr()
   call s:modeline_fails('tabline', 'tabline=Something()', 'E992:')
   call s:modeline_fails('titlestring', 'titlestring=Something()', 'E992:')
 endfunc
-
