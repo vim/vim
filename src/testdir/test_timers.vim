@@ -19,10 +19,16 @@ func Test_timer_oneshot()
   let timer = timer_start(50, 'MyHandler')
   let slept = WaitFor('g:val == 1')
   call assert_equal(1, g:val)
-  if has('reltime')
-    call assert_inrange(49, 100, slept)
+  if has('mac')
+    " Mac on Travis can be slow.
+    let limit = 160
   else
-    call assert_inrange(20, 100, slept)
+    let limit = 100
+  endif
+  if has('reltime')
+    call assert_inrange(49, limit, slept)
+  else
+    call assert_inrange(20, limit, slept)
   endif
 endfunc
 
@@ -32,7 +38,12 @@ func Test_timer_repeat_three()
   let slept = WaitFor('g:val == 3')
   call assert_equal(3, g:val)
   if has('reltime')
-    call assert_inrange(149, 250, slept)
+    if has('mac')
+      " Mac on Travis can be slow.
+      call assert_inrange(149, 400, slept)
+    else
+      call assert_inrange(149, 250, slept)
+    endif
   else
     call assert_inrange(80, 200, slept)
   endif
@@ -43,7 +54,12 @@ func Test_timer_repeat_many()
   let timer = timer_start(50, 'MyHandler', {'repeat': -1})
   sleep 200m
   call timer_stop(timer)
-  call assert_inrange(2, 5, g:val)
+  " Mac on Travis can be slow.
+  if has('mac')
+    call assert_inrange(1, 5, g:val)
+  else
+    call assert_inrange(2, 5, g:val)
+  endif
 endfunc
 
 func Test_timer_with_partial_callback()
@@ -124,7 +140,7 @@ func Test_timer_paused()
   if has('reltime')
     if has('mac')
       " The travis Mac machines appear to be very busy.
-      call assert_inrange(0, 50, slept)
+      call assert_inrange(0, 90, slept)
     else
       call assert_inrange(0, 30, slept)
     endif
