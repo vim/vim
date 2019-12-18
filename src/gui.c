@@ -3108,7 +3108,11 @@ button_set:
     if (clip_star.state == SELECT_IN_PROGRESS)
     {
 	clip_process_selection(button, X_2_COL(x), Y_2_ROW(y), repeated_click);
-	return;
+
+	// A release event may still need to be sent if the position is equal.
+	row = gui_xy2colrow(x, y, &col);
+	if (button != MOUSE_RELEASE || row != prev_row || col != prev_col)
+	    return;
     }
 
     // Determine which mouse settings to look for based on the current mode
