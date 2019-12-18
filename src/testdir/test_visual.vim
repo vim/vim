@@ -1,4 +1,4 @@
-" Tests for various Visual mode.
+" Tests for various Visual modes.
 
 func Test_block_shift_multibyte()
   " Uses double-wide character.
@@ -428,3 +428,470 @@ func Test_Visual_Block()
 
   close!
 endfunc
+
+" Test for 'p'ut in visual block mode
+func Test_visual_block_put()
+  enew
+
+  call append(0, ['One', 'Two', 'Three'])
+  normal gg
+  yank
+  call feedkeys("jl\<C-V>ljp", 'xt')
+  call assert_equal(['One', 'T', 'Tee', 'One', ''], getline(1, '$'))
+
+  enew!
+endfunc
+
+" Visual modes (v V CTRL-V) followed by an operator; count; repeating
+func Test_visual_mode_op()
+  new
+  call append(0, '')
+
+  call setline(1, 'apple banana cherry')
+  call cursor(1, 1)
+  normal lvld.l3vd.
+  call assert_equal('a y', getline(1))
+
+  call setline(1, ['line 1 line 1', 'line 2 line 2', 'line 3 line 3',
+        \ 'line 4 line 4', 'line 5 line 5', 'line 6 line 6'])
+  call cursor(1, 1)
+  exe "normal Vcnewline\<Esc>j.j2Vd."
+  call assert_equal(['newline', 'newline'], getline(1, '$'))
+
+  call deletebufline('', 1, '$')
+  call setline(1, ['xxxxxxxxxxxxx', 'xxxxxxxxxxxxx', 'xxxxxxxxxxxxx',
+        \ 'xxxxxxxxxxxxx'])
+  exe "normal \<C-V>jlc  \<Esc>l.l2\<C-V>c----\<Esc>l."
+  call assert_equal(['    --------x',
+        \ '    --------x',
+        \ 'xxxx--------x',
+        \ 'xxxx--------x'], getline(1, '$'))
+
+  bwipe!
+endfunc
+
+" Visual mode maps (movement and text object)
+" Visual mode maps; count; repeating
+"   - Simple
+"   - With an Ex command (custom text object)
+func Test_visual_mode_maps()
+  new
+  call append(0, '')
+
+  func SelectInCaps()
+    let [line1, col1] = searchpos('\u', 'bcnW')
+    let [line2, col2] = searchpos('.\u', 'nW')
+    call setpos("'<", [0, line1, col1, 0])
+    call setpos("'>", [0, line2, col2, 0])
+    normal! gv
+  endfunction
+
+  vnoremap W /\u/s-1<CR>
+  vnoremap iW :<C-U>call SelectInCaps()<CR>
+
+  call setline(1, 'KiwiRaspberryDateWatermelonPeach')
+  call cursor(1, 1)
+  exe "normal vWcNo\<Esc>l.fD2vd."
+  call assert_equal('NoNoberryach', getline(1))
+
+  call setline(1, 'JambuRambutanBananaTangerineMango')
+  call cursor(1, 1)
+  exe "normal llviWc-\<Esc>l.l2vdl."
+  call assert_equal('--ago', getline(1))
+
+  vunmap W
+  vunmap iW
+  bwipe!
+  delfunc SelectInCaps
+endfunc
+
+" Operator-pending mode maps (movement and text object)
+"   - Simple
+"   - With Ex command moving the cursor
+"   - With Ex command and Visual selection (custom text object)
+func Test_visual_oper_pending_mode_maps()
+  new
+  call append(0, '')
+
+  func MoveToCap()
+    call search('\u', 'W')
+  endfunction
+
+  func SelectInCaps()
+    let [line1, col1] = searchpos('\u', 'bcnW')
+    let [line2, col2] = searchpos('.\u', 'nW')
+    call setpos("'<", [0, line1, col1, 0])
+    call setpos("'>", [0, line2, col2, 0])
+    normal! gv
+  endfunction
+
+  onoremap W /\u/<CR>
+  onoremap <Leader>W :<C-U>call MoveToCap()<CR>
+  onoremap iW :<C-U>call SelectInCaps()<CR>
+
+  call setline(1, 'PineappleQuinceLoganberryOrangeGrapefruitKiwiZ')
+  call cursor(1, 1)
+  exe "normal cW-\<Esc>l.l2.l."
+  call assert_equal('----Z', getline(1))
+
+  call setline(1, 'JuniperDurianZ')
+  call cursor(1, 1)
+  exe "normal g?\WfD."
+  call assert_equal('WhavcreQhevnaZ', getline(1))
+
+  call setline(1, 'LemonNectarineZ')
+  call cursor(1, 1)
+  exe "normal yiWPlciWNew\<Esc>fr."
+  call assert_equal('LemonNewNewZ', getline(1))
+
+  ounmap W
+  ounmap <Leader>W
+  ounmap iW
+  bwipe!
+  delfunc MoveToCap
+  delfunc SelectInCaps
+endfunc
+
+" Patch 7.3.879: Properly abort Operator-pending mode for "dv:<Esc>" etc.
+func Test_op_pend_mode_abort()
+  new
+  call append(0, '')
+
+  call setline(1, ['zzzz', 'zzzz'])
+  call cursor(1, 1)
+
+  exe "normal dV:\<CR>dv:\<CR>"
+  call assert_equal(['zzz'], getline(1, 2))
+  set nomodifiable
+  call assert_fails('exe "normal d:\<CR>"', 'E21:')
+  set modifiable
+  call feedkeys("dv:\<Esc>dV:\<Esc>", 'xt')
+  call assert_equal(['zzz'], getline(1, 2))
+  set nomodifiable
+  let v:errmsg = ''
+  call feedkeys("d:\<Esc>", 'xt')
+  call assert_true(v:errmsg !~# '^E21:')
+  set modifiable
+
+  bwipe!
+endfunc
+
+func Test_characterwise_visual_mode()
+  new
+
+  " characterwise visual mode: replace last line
+  $put ='a'
+  let @" = 'x'
+  normal v$p
+  call assert_equal('x', getline('$'))
+
+  " characterwise visual mode: delete middle line
+  call deletebufline('', 1, '$')
+  call append('$', ['a', 'b', 'c'])
+  normal G
+  normal kkv$d
+  call assert_equal(['', 'b', 'c'], getline(1, '$'))
+
+  " characterwise visual mode: delete middle two lines
+  call deletebufline('', 1, '$')
+  call append('$', ['a', 'b', 'c'])
+  normal Gkkvj$d
+  call assert_equal(['', 'c'], getline(1, '$'))
+
+  " characterwise visual mode: delete last line
+  call deletebufline('', 1, '$')
+  call append('$', ['a', 'b', 'c'])
+  normal Gv$d
+  call assert_equal(['', 'a', 'b', ''], getline(1, '$'))
+
+  " characterwise visual mode: delete last two lines
+  call deletebufline('', 1, '$')
+  call append('$', ['a', 'b', 'c'])
+  normal Gkvj$d
+  call assert_equal(['', 'a', ''], getline(1, '$'))
+
+  bwipe!
+endfunc
+
+func Test_characterwise_select_mode()
+  new
+
+  " Select mode maps
+  snoremap <lt>End> <End>
+  snoremap <lt>Down> <Down>
+  snoremap <lt>Del> <Del>
+
+  " characterwise select mode: delete middle line
+  call deletebufline('', 1, '$')
+  call append('$', ['a', 'b', 'c'])
+  exe "normal Gkkgh\<End>\<Del>"
+  call assert_equal(['', 'b', 'c'], getline(1, '$'))
+
+  " characterwise select mode: delete middle two lines
+  call deletebufline('', 1, '$')
+  call append('$', ['a', 'b', 'c'])
+  exe "normal Gkkgh\<Down>\<End>\<Del>"
+  call assert_equal(['', 'c'], getline(1, '$'))
+
+  " characterwise select mode: delete last line
+  call deletebufline('', 1, '$')
+  call append('$', ['a', 'b', 'c'])
+  exe "normal Ggh\<End>\<Del>"
+  call assert_equal(['', 'a', 'b', ''], getline(1, '$'))
+
+  " characterwise select mode: delete last two lines
+  call deletebufline('', 1, '$')
+  call append('$', ['a', 'b', 'c'])
+  exe "normal Gkgh\<Down>\<End>\<Del>"
+  call assert_equal(['', 'a', ''], getline(1, '$'))
+
+  sunmap <lt>End>
+  sunmap <lt>Down>
+  sunmap <lt>Del>
+  bwipe!
+endfunc
+
+func Test_linewise_select_mode()
+  new
+
+  " linewise select mode: delete middle line
+  call append('$', ['a', 'b', 'c'])
+  exe "normal GkkgH\<Del>"
+  call assert_equal(['', 'b', 'c'], getline(1, '$'))
+
+
+  " linewise select mode: delete middle two lines
+  call deletebufline('', 1, '$')
+  call append('$', ['a', 'b', 'c'])
+  exe "normal GkkgH\<Down>\<Del>"
+  call assert_equal(['', 'c'], getline(1, '$'))
+
+  " linewise select mode: delete last line
+  call deletebufline('', 1, '$')
+  call append('$', ['a', 'b', 'c'])
+  exe "normal GgH\<Del>"
+  call assert_equal(['', 'a', 'b'], getline(1, '$'))
+
+  " linewise select mode: delete last two lines
+  call deletebufline('', 1, '$')
+  call append('$', ['a', 'b', 'c'])
+  exe "normal GkgH\<Down>\<Del>"
+  call assert_equal(['', 'a'], getline(1, '$'))
+
+  bwipe!
+endfunc
+
+func Test_visual_mode_put()
+  new
+
+  " v_p: replace last character with line register at middle line
+  call append('$', ['aaa', 'bbb', 'ccc'])
+  normal G
+  -2yank
+  normal k$vp
+  call assert_equal(['', 'aaa', 'bb', 'aaa', '', 'ccc'], getline(1, '$'))
+
+  " v_p: replace last character with line register at middle line selecting
+  " newline
+  call deletebufline('', 1, '$')
+  call append('$', ['aaa', 'bbb', 'ccc'])
+  normal G
+  -2yank
+  normal k$v$p
+  call assert_equal(['', 'aaa', 'bb', 'aaa', 'ccc'], getline(1, '$'))
+
+  " v_p: replace last character with line register at last line
+  call deletebufline('', 1, '$')
+  call append('$', ['aaa', 'bbb', 'ccc'])
+  normal G
+  -2yank
+  normal $vp
+  call assert_equal(['', 'aaa', 'bbb', 'cc', 'aaa', ''], getline(1, '$'))
+
+  " v_p: replace last character with line register at last line selecting
+  " newline
+  call deletebufline('', 1, '$')
+  call append('$', ['aaa', 'bbb', 'ccc'])
+  normal G
+  -2yank
+  normal $v$p
+  call assert_equal(['', 'aaa', 'bbb', 'cc', 'aaa', ''], getline(1, '$'))
+
+  bwipe!
+endfunc
+
+func Test_select_mode_gv()
+  new
+
+  " gv in exclusive select mode after operation
+  call append('$', ['zzz ', 'Ã¤Ã '])
+  set selection=exclusive
+  normal Gkv3lyjv3lpgvcxxx
+  call assert_equal(['', 'zzz ', 'xxx '], getline(1, '$'))
+
+  " gv in exclusive select mode without operation
+  call deletebufline('', 1, '$')
+  call append('$', 'zzz ')
+  set selection=exclusive
+  exe "normal G0v3l\<Esc>gvcxxx"
+  call assert_equal(['', 'xxx '], getline(1, '$'))
+
+  set selection&vim
+  bwipe!
+endfunc
+
+" Tests for the visual block mode commands
+func Test_visual_block_mode()
+  new
+  call append(0, '')
+  call setline(1, ['abcdefghijklm', 'abcdefghijklm', 'abcdefghijklm',
+        \ 'abcdefghijklm', 'abcdefghijklm'])
+  call cursor(1, 1)
+
+  " Test shift-right of a block
+  exe "normal jllll\<C-V>jj>wll\<C-V>jlll>"
+  " Test shift-left of a block
+  exe "normal G$hhhh\<C-V>kk<"
+  " Test block-insert
+  exe "normal Gkl\<C-V>kkkIxyz"
+  " Test block-replace
+  exe "normal Gllll\<C-V>kkklllrq"
+  " Test block-change
+  exe "normal G$khhh\<C-V>hhkkcmno"
+  call assert_equal(['axyzbcdefghijklm',
+        \ 'axyzqqqq   mno	      ghijklm',
+        \ 'axyzqqqqef mno        ghijklm',
+        \ 'axyzqqqqefgmnoklm',
+        \ 'abcdqqqqijklm'], getline(1, 5))
+
+  bwipe!
+endfunc
+
+" Test block-insert using cursor keys for movement
+func Test_visual_block_insert_cursor_keys()
+  new
+  call append(0, ['aaaaaa', 'bbbbbb', 'cccccc', 'dddddd'])
+  call cursor(1, 1)
+
+  exe "norm! l\<C-V>jjjlllI\<Right>\<Right>  \<Esc>"
+  call assert_equal(['aaa  aaa', 'bbb  bbb', 'ccc  ccc', 'ddd  ddd'],
+        \ getline(1, 4))
+
+  call deletebufline('', 1, '$')
+  call setline(1, ['xaaa', 'bbbb', 'cccc', 'dddd'])
+  call cursor(1, 1)
+  exe "norm! \<C-V>jjjI<>\<Left>p\<Esc>"
+  call assert_equal(['<p>xaaa', '<p>bbbb', '<p>cccc', '<p>dddd'],
+        \ getline(1, 4))
+  bwipe!
+endfunc
+
+func Test_visual_block_create()
+  new
+  call append(0, '')
+  " Test for Visual block was created with the last <C-v>$
+  call setline(1, ['A23', '4567'])
+  call cursor(1, 1)
+  exe "norm! l\<C-V>j$Aab\<Esc>"
+  call assert_equal(['A23ab', '4567ab'], getline(1, 2))
+
+  " Test for Visual block was created with the middle <C-v>$ (1)
+  call deletebufline('', 1, '$')
+  call setline(1, ['B23', '4567'])
+  call cursor(1, 1)
+  exe "norm! l\<C-V>j$hAab\<Esc>"
+  call assert_equal(['B23 ab', '4567ab'], getline(1, 2))
+
+  " Test for Visual block was created with the middle <C-v>$ (2)
+  call deletebufline('', 1, '$')
+  call setline(1, ['C23', '4567'])
+  call cursor(1, 1)
+  exe "norm! l\<C-V>j$hhAab\<Esc>"
+  call assert_equal(['C23ab', '456ab7'], getline(1, 2))
+  bwipe!
+endfunc
+
+" Test for Visual block insert when virtualedit=all
+func Test_virtualedit_visual_block()
+  set ve=all
+  new
+  call append(0, ["\t\tline1", "\t\tline2", "\t\tline3"])
+  call cursor(1, 1)
+  exe "norm! 07l\<C-V>jjIx\<Esc>"
+  call assert_equal(["       x \tline1",
+        \ "       x \tline2",
+        \ "       x \tline3"], getline(1, 3))
+
+  " Test for Visual block append when virtualedit=all
+  exe "norm! 012l\<C-v>jjAx\<Esc>"
+  call assert_equal(['       x     x   line1',
+        \ '       x     x   line2',
+        \ '       x     x   line3'], getline(1, 3))
+  set ve=
+  bwipe!
+endfunc
+
+" Test for changing case
+func Test_visual_change_case()
+  new
+  " gUe must uppercase a whole word, also when ß changes to SS
+  exe "normal Gothe youtußeuu end\<Esc>Ypk0wgUe\r"
+  " gUfx must uppercase until x, inclusive.
+  exe "normal O- youßtußexu -\<Esc>0fogUfx\r"
+  " VU must uppercase a whole line
+  exe "normal YpkVU\r"
+  " same, when it's the last line in the buffer
+  exe "normal YPGi111\<Esc>VUddP\r"
+  " Uppercase two lines
+  exe "normal Oblah di\rdoh dut\<Esc>VkUj\r"
+  " Uppercase part of two lines
+  exe "normal ddppi333\<Esc>k0i222\<Esc>fyllvjfuUk"
+  call assert_equal(['the YOUTUSSEUU end', '- yOUSSTUSSEXu -',
+        \ 'THE YOUTUSSEUU END', '111THE YOUTUSSEUU END', 'BLAH DI', 'DOH DUT',
+        \ '222the yoUTUSSEUU END', '333THE YOUTUßeuu end'], getline(2, '$'))
+  bwipe!
+endfunc
+
+" Test for Visual replace using Enter or NL
+func Test_visual_replace_crnl()
+  new
+  exe "normal G3o123456789\e2k05l\<C-V>2jr\r"
+  exe "normal G3o98765\e2k02l\<C-V>2jr\<C-V>\r\n"
+  exe "normal G3o123456789\e2k05l\<C-V>2jr\n"
+  exe "normal G3o98765\e2k02l\<C-V>2jr\<C-V>\n"
+  call assert_equal(['12345', '789', '12345', '789', '12345', '789', "98\r65",
+        \ "98\r65", "98\r65", '12345', '789', '12345', '789', '12345', '789',
+        \ "98\n65", "98\n65", "98\n65"], getline(2, '$'))
+  bwipe!
+endfunc
+
+func Test_ve_block_curpos()
+  new
+  " Test cursor position. When ve=block and Visual block mode and $gj
+  call append(0, ['12345', '789'])
+  call cursor(1, 3)
+  set virtualedit=block
+  exe "norm! \<C-V>$gj\<Esc>"
+  call assert_equal([0, 2, 4, 0], getpos("'>"))
+  set virtualedit=
+  bwipe!
+endfunc
+
+" Test for block_insert when replacing spaces in front of the a with tabs
+func Test_block_insert_replace_tabs()
+  new
+  set ts=8 sts=4 sw=4
+  call append(0, ["#define BO_ALL\t    0x0001",
+        \ "#define BO_BS\t    0x0002",
+        \ "#define BO_CRSR\t    0x0004"])
+  call cursor(1, 1)
+  exe "norm! f0\<C-V>2jI\<tab>\<esc>"
+  call assert_equal([
+        \ "#define BO_ALL\t\t0x0001",
+        \ "#define BO_BS\t    \t0x0002",
+        \ "#define BO_CRSR\t    \t0x0004", ''], getline(1, '$'))
+  set ts& sts& sw&
+  bwipe!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Vim\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-11-13 22:38+0100\n"
+"POT-Creation-Date: 2019-12-02 17:17+0100\n"
 "PO-Revision-Date: 2008-05-24 17:26+0200\n"
 "Last-Translator: Christian Brabandt <cb@256bit.org>\n"
 "Language-Team: German\n"
@@ -2130,9 +2130,6 @@ msgstr "Stil:"
 
 msgid "Size:"
 msgstr "Größe:"
-
-msgid "E256: Hangul automata ERROR"
-msgstr "E256: Hangul-Automat Fehler"
 
 msgid "E550: Missing colon"
 msgstr "E550: Fehlender Doppelpunkt"
@@ -4559,7 +4556,7 @@ msgid "shell returned %d"
 msgstr "Shell gab %d zurück"
 
 msgid "E278: Cannot put a terminal buffer in a popup window"
-msgstr "E278: Terminal kann nicht in einem Popup-Fenster geöffnet werdent."
+msgstr "E278: Terminal kann nicht in einem Popup-Fenster geöffnet werden."
 
 #, c-format
 msgid "E997: Tabpage not found: %d"

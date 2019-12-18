@@ -30,53 +30,52 @@
  */
 
 typedef struct {
-    char    *name;	/* encryption name as used in 'cryptmethod' */
-    char    *magic;	/* magic bytes stored in file header */
-    int	    salt_len;	/* length of salt, or 0 when not using salt */
-    int	    seed_len;	/* length of seed, or 0 when not using salt */
+    char    *name;	// encryption name as used in 'cryptmethod'
+    char    *magic;	// magic bytes stored in file header
+    int	    salt_len;	// length of salt, or 0 when not using salt
+    int	    seed_len;	// length of seed, or 0 when not using salt
 #ifdef CRYPT_NOT_INPLACE
-    int	    works_inplace; /* encryption/decryption can be done in-place */
+    int	    works_inplace; // encryption/decryption can be done in-place
 #endif
-    int	    whole_undofile; /* whole undo file is encrypted */
+    int	    whole_undofile; // whole undo file is encrypted
 
-    /* Optional function pointer for a self-test. */
+    // Optional function pointer for a self-test.
     int (* self_test_fn)();
 
     // Function pointer for initializing encryption/decryption.
     int (* init_fn)(cryptstate_T *state, char_u *key,
 		      char_u *salt, int salt_len, char_u *seed, int seed_len);
 
-    /* Function pointers for encoding/decoding from one buffer into another.
-     * Optional, however, these or the _buffer ones should be configured. */
+    // Function pointers for encoding/decoding from one buffer into another.
+    // Optional, however, these or the _buffer ones should be configured.
     void (*encode_fn)(cryptstate_T *state, char_u *from, size_t len,
 								  char_u *to);
     void (*decode_fn)(cryptstate_T *state, char_u *from, size_t len,
 								  char_u *to);
 
-    /* Function pointers for encoding and decoding, can buffer data if needed.
-     * Optional (however, these or the above should be configured). */
+    // Function pointers for encoding and decoding, can buffer data if needed.
+    // Optional (however, these or the above should be configured).
     long (*encode_buffer_fn)(cryptstate_T *state, char_u *from, size_t len,
 							     char_u **newptr);
     long (*decode_buffer_fn)(cryptstate_T *state, char_u *from, size_t len,
 							     char_u **newptr);
 
-    /* Function pointers for in-place encoding and decoding, used for
-     * crypt_*_inplace(). "from" and "to" arguments will be equal.
-     * These may be the same as decode_fn and encode_fn above, however an
-     * algorithm may implement them in a way that is not interchangeable with
-     * the crypt_(en|de)code() interface (for example because it wishes to add
-     * padding to files).
-     * This method is used for swap and undo files which have a rigid format.
-     */
+    // Function pointers for in-place encoding and decoding, used for
+    // crypt_*_inplace(). "from" and "to" arguments will be equal.
+    // These may be the same as decode_fn and encode_fn above, however an
+    // algorithm may implement them in a way that is not interchangeable with
+    // the crypt_(en|de)code() interface (for example because it wishes to add
+    // padding to files).
+    // This method is used for swap and undo files which have a rigid format.
     void (*encode_inplace_fn)(cryptstate_T *state, char_u *p1, size_t len,
 								  char_u *p2);
     void (*decode_inplace_fn)(cryptstate_T *state, char_u *p1, size_t len,
 								  char_u *p2);
 } cryptmethod_T;
 
-/* index is method_nr of cryptstate_T, CRYPT_M_* */
+// index is method_nr of cryptstate_T, CRYPT_M_*
 static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
-    /* PK_Zip; very weak */
+    // PK_Zip; very weak
     {
 	"zip",
 	"VimCrypt~01!",
@@ -93,7 +92,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	crypt_zip_encode, crypt_zip_decode,
     },
 
-    /* Blowfish/CFB + SHA-256 custom key derivation; implementation issues. */
+    // Blowfish/CFB + SHA-256 custom key derivation; implementation issues.
     {
 	"blowfish",
 	"VimCrypt~02!",
@@ -110,7 +109,7 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	crypt_blowfish_encode, crypt_blowfish_decode,
     },
 
-    /* Blowfish/CFB + SHA-256 custom key derivation; fixed. */
+    // Blowfish/CFB + SHA-256 custom key derivation; fixed.
     {
 	"blowfish2",
 	"VimCrypt~03!",
@@ -127,11 +126,11 @@ static cryptmethod_T cryptmethods[CRYPT_M_COUNT] = {
 	crypt_blowfish_encode, crypt_blowfish_decode,
     },
 
-    /* NOTE: when adding a new method, use some random bytes for the magic key,
-     * to avoid that a text file is recognized as encrypted. */
+    // NOTE: when adding a new method, use some random bytes for the magic key,
+    // to avoid that a text file is recognized as encrypted.
 };
 
-#define CRYPT_MAGIC_LEN	12	/* cannot change */
+#define CRYPT_MAGIC_LEN	12	// cannot change
 static char	crypt_magic_head[] = "VimCrypt~";
 
 /*
@@ -363,9 +362,9 @@ crypt_create_for_writing(
 	if (seed_len > 0)
 	    seed = *header + CRYPT_MAGIC_LEN + salt_len;
 
-	/* TODO: Should this be crypt method specific? (Probably not worth
-	 * it).  sha2_seed is pretty bad for large amounts of entropy, so make
-	 * that into something which is suitable for anything. */
+	// TODO: Should this be crypt method specific? (Probably not worth
+	// it).  sha2_seed is pretty bad for large amounts of entropy, so make
+	// that into something which is suitable for anything.
 	sha2_seed(salt, salt_len, seed, seed_len);
     }
 
@@ -401,10 +400,10 @@ crypt_encode_alloc(
     cryptmethod_T *method = &cryptmethods[state->method_nr];
 
     if (method->encode_buffer_fn != NULL)
-	/* Has buffer function, pass through. */
+	// Has buffer function, pass through.
 	return method->encode_buffer_fn(state, from, len, newptr);
     if (len == 0)
-	/* Not buffering, just return EOF. */
+	// Not buffering, just return EOF.
 	return (long)len;
 
     *newptr = alloc(len);
@@ -429,11 +428,11 @@ crypt_decode_alloc(
     cryptmethod_T *method = &cryptmethods[state->method_nr];
 
     if (method->decode_buffer_fn != NULL)
-	/* Has buffer function, pass through. */
+	// Has buffer function, pass through.
 	return method->decode_buffer_fn(state, ptr, len, newptr);
 
     if (len == 0)
-	/* Not buffering, just return EOF. */
+	// Not buffering, just return EOF.
 	return len;
 
     *newptr = alloc(len);
@@ -542,7 +541,7 @@ crypt_check_current_method(void)
     char_u *
 crypt_get_key(
     int		store,
-    int		twice)	    /* Ask for the key twice. */
+    int		twice)	    // Ask for the key twice.
 {
     char_u	*p1, *p2 = NULL;
     int		round;
@@ -568,7 +567,7 @@ crypt_get_key(
 		crypt_free_key(p1);
 		crypt_free_key(p2);
 		p2 = NULL;
-		round = -1;		/* do it again */
+		round = -1;		// do it again
 		continue;
 	    }
 
@@ -583,7 +582,7 @@ crypt_get_key(
 	p2 = p1;
     }
 
-    /* since the user typed this, no need to wait for return */
+    // since the user typed this, no need to wait for return
     if (msg_didout)
 	msg_putchar('\n');
     need_wait_return = FALSE;
@@ -611,4 +610,4 @@ crypt_append_msg(
     }
 }
 
-#endif /* FEAT_CRYPT */
+#endif // FEAT_CRYPT

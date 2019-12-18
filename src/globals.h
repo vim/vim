@@ -95,7 +95,7 @@ EXTERN int redrawing_for_callback INIT(= 0);
  */
 EXTERN short	*TabPageIdxs INIT(= NULL);
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 // Array with size Rows x Columns containing zindex of popups.
 EXTERN short	*popup_mask INIT(= NULL);
 EXTERN short	*popup_mask_next INIT(= NULL);
@@ -640,7 +640,7 @@ EXTERN win_T	*curwin;	// currently active window
 EXTERN win_T	*aucmd_win;	// window used in aucmd_prepbuf()
 EXTERN int	aucmd_win_used INIT(= FALSE);	// aucmd_win is being used
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 EXTERN win_T    *first_popupwin;		// first global popup window
 EXTERN win_T	*popup_dragwin INIT(= NULL);	// popup window being dragged
 
@@ -853,9 +853,9 @@ EXTERN pos_T	saved_cursor		// w_cursor before formatting text.
 EXTERN pos_T	Insstart;		// This is where the latest
 					// insert/append mode started.
 
-/* This is where the latest insert/append mode started. In contrast to
- * Insstart, this won't be reset by certain keys and is needed for
- * op_insert(), to detect correctly where inserting by the user started. */
+// This is where the latest insert/append mode started. In contrast to
+// Insstart, this won't be reset by certain keys and is needed for
+// op_insert(), to detect correctly where inserting by the user started.
 EXTERN pos_T	Insstart_orig;
 
 /*
@@ -865,7 +865,7 @@ EXTERN int	orig_line_count INIT(= 0);  // Line count when "gR" started
 EXTERN int	vr_lines_changed INIT(= 0); // #Lines changed by "gR" so far
 
 #if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
-/* argument to SETJMP() for handling X IO errors */
+// argument to SETJMP() for handling X IO errors
 EXTERN JMP_BUF x_jump_env;
 #endif
 
@@ -1404,7 +1404,7 @@ EXTERN int	term_is_xterm INIT(= FALSE);	// xterm-like 'term'
 #ifdef BACKSLASH_IN_FILENAME
 EXTERN char	psepc INIT(= '\\');	// normal path separator character
 EXTERN char	psepcN INIT(= '/');	// abnormal path separator character
-/* normal path separator string */
+// normal path separator string
 EXTERN char	pseps[2] INIT(= {'\\' COMMA 0});
 #endif
 

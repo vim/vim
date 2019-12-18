@@ -1455,7 +1455,7 @@ msg_home_replace_attr(char_u *fname, int attr)
 
 /*
  * Output 'len' characters in 'str' (including NULs) with translation
- * if 'len' is -1, output upto a NUL character.
+ * if 'len' is -1, output up to a NUL character.
  * Use attributes 'attr'.
  * Return the number of characters it takes on the screen.
  */
@@ -1599,7 +1599,7 @@ msg_make(char_u *arg)
 #endif
 
 /*
- * Output the string 'str' upto a NUL character.
+ * Output the string 'str' up to a NUL character.
  * Return the number of characters it takes on the screen.
  *
  * If K_SPECIAL is encountered, then it is taken in conjunction with the
@@ -2080,7 +2080,7 @@ msg_puts_display(
 		      || (has_mbyte && (*mb_ptr2cells)(s) > 1 && msg_col <= 2))
 		    :
 #endif
-		      (msg_col + t_col >= Columns - 1
+		      ((*s != '\r' && msg_col + t_col >= Columns - 1)
 		       || (*s == TAB && msg_col + t_col >= ((Columns - 1) & ~7))
 		       || (has_mbyte && (*mb_ptr2cells)(s) > 1
 					 && msg_col + t_col >= Columns - 2)))))

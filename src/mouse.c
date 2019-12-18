@@ -291,7 +291,7 @@ do_mouse(
 	    bevalexpr_due_set = TRUE;
 	}
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	popup_handle_mouse_moved();
 #endif
 	return FALSE;
@@ -1104,7 +1104,7 @@ ins_mousescroll(int dir)
 			(long)(curwin->w_botline - curwin->w_topline));
 	    else
 		scroll_redraw(dir, 3L);
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
 	if (WIN_IS_POPUP(curwin))
 	    popup_set_firstline(curwin);
 # endif
@@ -1500,7 +1500,7 @@ jump_to_mouse(
 #ifdef FEAT_MENU
     static int  in_winbar = FALSE;
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     static int   in_popup_win = FALSE;
     static win_T *click_in_popup_win = NULL;
 #endif
@@ -1530,7 +1530,7 @@ jump_to_mouse(
 	    flags &= ~(MOUSE_FOCUS | MOUSE_DID_MOVE);
 	dragwin = NULL;
 	did_drag = FALSE;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (click_in_popup_win != NULL && popup_dragwin == NULL)
 	    popup_close_for_mouse_click(click_in_popup_win);
 
@@ -1575,7 +1575,7 @@ retnomove:
 	if (cmdwin_type != 0 && row < curwin->w_winrow)
 	    return IN_OTHER_WIN;
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	// Continue a modeless selection in a popup window or dragging it.
 	if (in_popup_win)
 	{
@@ -1623,7 +1623,7 @@ retnomove:
 	    return IN_UNKNOWN;
 	dragwin = NULL;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	// Click in a popup window may start dragging or modeless selection,
 	// but not much else.
 	if (WIN_IS_POPUP(wp))
@@ -1824,7 +1824,7 @@ retnomove:
 	if (cmdwin_type != 0 && row < curwin->w_winrow)
 	    return IN_OTHER_WIN;
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (in_popup_win)
 	{
 	    if (popup_dragwin != NULL)
@@ -2014,7 +2014,7 @@ nv_mousescroll(cmdarg_T *cap)
 	wp = mouse_find_win(&row, &col, FIND_POPUP);
 	if (wp == NULL)
 	    return;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (WIN_IS_POPUP(wp) && !wp->w_has_scrollbar)
 	    return;
 #endif
@@ -2049,7 +2049,7 @@ nv_mousescroll(cmdarg_T *cap)
 	    cap->count0 = cap->count1;
 	    nv_scroll_line(cap);
 	}
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (WIN_IS_POPUP(curwin))
 	    popup_set_firstline(curwin);
 #endif
@@ -2925,7 +2925,7 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
     frame_T	*fp;
     win_T	*wp;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     win_T	*pwp = NULL;
 
     if (popup != IGNORE_POPUP)
@@ -2987,7 +2987,7 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
     return NULL;
 }
 
-#if defined(NEED_VCOL2COL) || defined(FEAT_BEVAL) || defined(FEAT_TEXT_PROP) \
+#if defined(NEED_VCOL2COL) || defined(FEAT_BEVAL) || defined(FEAT_PROP_POPUP) \
 	|| defined(PROTO)
 /*
  * Convert a virtual (screen) column to a character column.
@@ -3039,7 +3039,7 @@ f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 	int	left_off = 0;
 	int	height = wp->w_height + wp->w_status_height;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (WIN_IS_POPUP(wp))
 	{
 	    top_off = popup_top_extra(wp);

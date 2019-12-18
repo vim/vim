@@ -232,14 +232,14 @@ typedef struct AutoPatCmd
     struct AutoPatCmd   *next;	// chain of active apc-s for auto-invalidation
 } AutoPatCmd;
 
-static AutoPatCmd *active_apc_list = NULL; /* stack of active autocommands */
+static AutoPatCmd *active_apc_list = NULL; // stack of active autocommands
 
 /*
  * augroups stores a list of autocmd group names.
  */
 static garray_T augroups = {0, 0, sizeof(char_u *), 10, NULL};
 #define AUGROUP_NAME(i) (((char_u **)augroups.ga_data)[i])
-/* use get_deleted_augroup() to get this */
+// use get_deleted_augroup() to get this
 static char_u *deleted_augroup = NULL;
 
 /*
@@ -247,7 +247,7 @@ static char_u *deleted_augroup = NULL;
  */
 static int current_augroup = AUGROUP_DEFAULT;
 
-static int au_need_clean = FALSE;   /* need to delete marked patterns */
+static int au_need_clean = FALSE;   // need to delete marked patterns
 
 static char_u *event_nr2name(event_T event);
 static int au_get_grouparg(char_u **argp);
@@ -258,7 +258,7 @@ static int au_find_group(char_u *name);
 
 static event_T	last_event;
 static int	last_group;
-static int	autocmd_blocked = 0;	/* block all autocmds */
+static int	autocmd_blocked = 0;	// block all autocmds
 
     static char_u *
 get_deleted_augroup(void)
@@ -783,7 +783,7 @@ au_event_restore(char_u *old_ei)
 	vim_free(old_ei);
     }
 }
-# endif  /* FEAT_SYN_HL */
+# endif  // FEAT_SYN_HL
 
 /*
  * do_autocmd() -- implements the :autocmd command.  Can be used in the
@@ -1027,7 +1027,7 @@ do_autocmd_event(
     int		patlen;
     int		is_buflocal;
     int		buflocal_nr;
-    char_u	buflocal_pat[25];	/* for "<buffer=X>" */
+    char_u	buflocal_pat[25];	// for "<buffer=X>"
 
     if (group == AUGROUP_ALL)
 	findgroup = current_augroup;
@@ -1120,7 +1120,8 @@ do_autocmd_event(
 	{
 	    if (ap->pat != NULL)
 	    {
-		/* Accept a pattern when:
+		/*
+		 * Accept a pattern when:
 		 * - a group was specified and it's that group, or a group was
 		 *   not specified and it's the current group, or a group was
 		 *   not specified and we are listing
@@ -1177,7 +1178,7 @@ do_autocmd_event(
 	     */
 	    if (ap == NULL)
 	    {
-		/* refuse to add buffer-local ap if buffer number is invalid */
+		// refuse to add buffer-local ap if buffer number is invalid
 		if (is_buflocal && (buflocal_nr == 0
 				      || buflist_findnr(buflocal_nr) == NULL))
 		{

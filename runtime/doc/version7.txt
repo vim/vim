@@ -1,4 +1,4 @@
-*version7.txt*  For Vim version 8.1.  Last change: 2016 Jul 17
+*version7.txt*  For Vim version 8.2.  Last change: 2016 Jul 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

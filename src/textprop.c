@@ -28,7 +28,7 @@
 
 #include "vim.h"
 
-#if defined(FEAT_TEXT_PROP) || defined(PROTO)
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
 
 /*
  * In a hashtable item "hi_key" points to "pt_name" in a proptype_T.
@@ -1309,4 +1309,4 @@ join_prop_lines(
     vim_free(prop_lengths);
 }
 
-#endif // FEAT_TEXT_PROP
+#endif // FEAT_PROP_POPUP

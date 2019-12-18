@@ -1,4 +1,4 @@
-*ft_sql.txt*	For Vim version 8.1.  Last change: 2013 May 15
+*ft_sql.txt*	For Vim version 8.2.  Last change: 2019 Dec 07
 
 by David Fishburn
 
@@ -342,8 +342,8 @@ The defaults static maps are: >
     imap <buffer> <C-C>T <C-\><C-O>:call sqlcomplete#Map('sqlType')<CR><C-X><C-O>
     imap <buffer> <C-C>s <C-\><C-O>:call sqlcomplete#Map('sqlStatement')<CR><C-X><C-O>
 
-The use of "<C-C>" can be user chosen by using the following in your |.vimrc| as it 
-may not work properly on all platforms: >
+The use of "<C-C>" can be user chosen by using the following in your |.vimrc|
+as it may not work properly on all platforms: >
     let g:ftplugin_sql_omni_key = '<C-C>'
 >
 The static maps (which are based on the syntax highlight groups) follow this
@@ -522,7 +522,7 @@ The SQL completion plugin can also display a list of columns for particular
 tables.  The column completion is trigger via <C-C>c.
 
 NOTE: The following example uses <Right> to trigger a column list while
-      the popup window is active.  
+      the popup window is active.
 
 Example of using column completion:
      - Press <C-C>t again to display the list of tables.

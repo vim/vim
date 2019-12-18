@@ -1628,9 +1628,9 @@ get_baseclass_amount(int col)
  * Ignore a '{' that is in a comment, makes indenting the next three lines
  * work.
  */
-/* foo()    */
-/* {	    */
-/* }	    */
+// foo()
+// {
+// }
 
     static pos_T *
 find_start_brace(void)	    // XXX

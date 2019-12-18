@@ -1,6 +1,7 @@
 " test execute()
 
 source view_util.vim
+source check.vim
 
 func NestedEval()
   let nested = execute('echo "nested\nlines"')
@@ -90,7 +91,7 @@ func Test_win_execute()
   let line = win_execute(otherwin, 'echo getline(1)')
   call assert_match('the new window', line)
 
-  if has('textprop')
+  if has('popupwin')
     let popupwin = popup_create('the popup win', {'line': 2, 'col': 3})
     redraw
     let line = 'echo getline(1)'->win_execute(popupwin)
@@ -104,6 +105,8 @@ func Test_win_execute()
 endfunc
 
 func Test_win_execute_update_ruler()
+  CheckFeature quickfix
+
   enew
   call setline(1, range(500))
   20

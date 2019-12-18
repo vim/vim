@@ -7,6 +7,24 @@ func Test_modeline_invalid()
   set modeline
   call assert_fails('split Xmodeline', 'E518:')
 
+  " Missing end colon (ignored).
+  call writefile(['// vim: set ts=2'], 'Xmodeline')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  " Missing colon at beginning (ignored).
+  call writefile(['// vim set ts=2:'], 'Xmodeline')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  " Missing space after vim (ignored).
+  call writefile(['// vim:ts=2:'], 'Xmodeline')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
   let &modeline = modeline
   bwipe!
   call delete('Xmodeline')
@@ -58,6 +76,97 @@ func Test_modeline_keymap()
   call delete('Xmodeline_keymap')
   let &modeline = modeline
   set keymap= iminsert=0 imsearch=-1
+endfunc
+
+func Test_modeline_version()
+  let modeline = &modeline
+  set modeline
+
+  " Test with vim:{vers}: (version {vers} or later).
+  call writefile(['// vim' .. v:version .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(2, &ts)
+  bwipe!
+
+  call writefile(['// vim' .. (v:version - 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(2, &ts)
+  bwipe!
+
+  call writefile(['// vim' .. (v:version + 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bw!
+
+  " Test with vim>{vers}: (version after {vers}).
+  call writefile(['// vim>' .. v:version .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  call writefile(['// vim>' .. (v:version - 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(2, &ts)
+  bwipe!
+
+  call writefile(['// vim>' .. (v:version + 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  " Test with vim<{vers}: (version before {vers}).
+  call writefile(['// vim<' .. v:version .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  call writefile(['// vim<' .. (v:version - 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  call writefile(['// vim<' .. (v:version + 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(2, &ts)
+  bwipe!
+
+  " Test with vim={vers}: (version {vers} only).
+  call writefile(['// vim=' .. v:version .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(2, &ts)
+  bwipe!
+
+  call writefile(['// vim=' .. (v:version - 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  call writefile(['// vim=' .. (v:version + 100) .. ': ts=2:'], 'Xmodeline_version')
+  edit Xmodeline_version
+  call assert_equal(8, &ts)
+  bwipe!
+
+  let &modeline = modeline
+  call delete('Xmodeline_version')
+endfunc
+
+func Test_modeline_colon()
+  let modeline = &modeline
+  set modeline
+
+  call writefile(['// vim: set showbreak=\: ts=2: sw=2'], 'Xmodeline_colon')
+  edit Xmodeline_colon
+
+  " backlash colon should become colon.
+  call assert_equal(':', &showbreak)
+
+  " 'ts' should be set.
+  " 'sw' should be ignored because it is after the end colon.
+  call assert_equal(2, &ts)
+  call assert_equal(8, &sw)
+
+  let &modeline = modeline
+  call delete('Xmodeline_colon')
 endfunc
 
 func s:modeline_fails(what, text, error)

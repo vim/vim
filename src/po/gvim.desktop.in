@@ -10,7 +10,6 @@ Comment=Edit text files
 # The translations should come from the po file. Leave them here for now, they will
 # be overwritten by the po file when generating the desktop.file!
 GenericName[da]=Teksteditor
-GenericName[fr]=Éditeur de texte
 GenericName[pl]=Edytor tekstu
 GenericName[is]=Ritvinnsluforrit
 Comment[af]=Redigeer tekslêers
@@ -33,7 +32,6 @@ Comment[et]=Redigeeri tekstifaile
 Comment[eu]=Editatu testu-fitxategiak
 Comment[fa]=ویرایش پرونده‌های متنی
 Comment[fi]=Muokkaa tekstitiedostoja
-Comment[fr]=Éditer des fichiers textes
 Comment[ga]=Eagar comhad Téacs
 Comment[gu]=લખાણ ફાઇલોમાં ફેરફાર કરો
 Comment[he]=ערוך קבצי טקסט

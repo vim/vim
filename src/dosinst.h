@@ -10,7 +10,7 @@
  * dosinst.h: Common code for dosinst.c and uninstall.c
  */
 
-/* Visual Studio 2005 has 'deprecated' many of the standard CRT functions */
+// Visual Studio 2005 has 'deprecated' many of the standard CRT functions
 #if _MSC_VER >= 1400
 # define _CRT_SECURE_NO_DEPRECATE
 # define _CRT_NONSTDC_NO_DEPRECATE
@@ -33,7 +33,7 @@
 #endif
 
 #ifdef UNIX_LINT
-/* Running lint on Unix: Some things are missing. */
+// Running lint on Unix: Some things are missing.
 char *searchpath(char *name);
 #endif
 
@@ -52,10 +52,10 @@ char *searchpath(char *name);
 
 #define sleep(n) Sleep((n) * 1000)
 
-/* ---------------------------------------- */
+// ----------------------------------------
 
 
-#define BUFSIZE (MAX_PATH*2)		/* long enough to hold a file name path */
+#define BUFSIZE (MAX_PATH*2)		// long enough to hold a file name path
 #define NUL 0
 
 #define FAIL 0
@@ -81,7 +81,7 @@ char *searchpath(char *name);
 
 #define VIM_STARTMENU "Programs\\Vim " VIM_VERSION_SHORT
 
-int	interactive;		/* non-zero when running interactively */
+int	interactive;		// non-zero when running interactively
 
 /*
  * Call malloc() and exit when out of memory.
@@ -116,7 +116,7 @@ myexit(int n)
 {
     if (!interactive)
     {
-	/* Present a prompt, otherwise error messages can't be read. */
+	// Present a prompt, otherwise error messages can't be read.
 	printf("Press Enter to continue\n");
 	rewind(stdin);
 	(void)getchar();
@@ -152,8 +152,8 @@ searchpath(char *name)
     static char widename[2 * BUFSIZE];
     static char location[2 * BUFSIZE + 2];
 
-    /* There appears to be a bug in FindExecutableA() on Windows NT.
-     * Use FindExecutableW() instead... */
+    // There appears to be a bug in FindExecutableA() on Windows NT.
+    // Use FindExecutableW() instead...
     MultiByteToWideChar(CP_ACP, 0, (LPCTSTR)name, -1,
 	    (LPWSTR)widename, BUFSIZE);
     if (FindExecutableW((LPCWSTR)widename, (LPCWSTR)"",
@@ -206,8 +206,8 @@ get_shell_folder_path(
      * The resulting executable worked on Windows 95, Millennium Edition, and
      * 2000 Professional.  But it was changed after testing...
      */
-    LPITEMIDLIST    pidl = 0; /* Pointer to an Item ID list allocated below */
-    LPMALLOC	    pMalloc;  /* Pointer to an IMalloc interface */
+    LPITEMIDLIST    pidl = 0; // Pointer to an Item ID list allocated below
+    LPMALLOC	    pMalloc;  // Pointer to an IMalloc interface
     int		    csidl;
     int		    alt_csidl = -1;
     static int	    desktop_csidl = -1;
@@ -234,7 +234,7 @@ get_shell_folder_path(
 	return FAIL;
     }
 
-    /* Did this stuff before, use the same ID again. */
+    // Did this stuff before, use the same ID again.
     if (*pcsidl >= 0)
     {
 	csidl = *pcsidl;
@@ -242,7 +242,7 @@ get_shell_folder_path(
     }
 
 retry:
-    /* Initialize pointer to IMalloc interface */
+    // Initialize pointer to IMalloc interface
     if (NOERROR != SHGetMalloc(&pMalloc))
     {
 	printf("\nERROR getting interface for shell_folder_name: \"%s\"\n\n",
@@ -250,7 +250,7 @@ retry:
 	return FAIL;
     }
 
-    /* Get an ITEMIDLIST corresponding to the folder code */
+    // Get an ITEMIDLIST corresponding to the folder code
     if (NOERROR != SHGetSpecialFolderLocation(0, csidl, &pidl))
     {
 	if (alt_csidl < 0 || NOERROR != SHGetSpecialFolderLocation(0,
@@ -264,20 +264,20 @@ retry:
 	alt_csidl = -1;
     }
 
-    /* Translate that ITEMIDLIST to a string */
+    // Translate that ITEMIDLIST to a string
     r = SHGetPathFromIDList(pidl, shell_folder_path);
 
-    /* Free the data associated with pidl */
+    // Free the data associated with pidl
     pMalloc->lpVtbl->Free(pMalloc, pidl);
-    /* Release the IMalloc interface */
+    // Release the IMalloc interface
     pMalloc->lpVtbl->Release(pMalloc);
 
     if (!r)
     {
 	if (alt_csidl >= 0)
 	{
-	    /* We probably get here for Windows 95: the "all users"
-	     * desktop/start menu entry doesn't exist. */
+	    // We probably get here for Windows 95: the "all users"
+	    // desktop/start menu entry doesn't exist.
 	    csidl = alt_csidl;
 	    alt_csidl = -1;
 	    goto retry;
@@ -287,9 +287,9 @@ retry:
 	return FAIL;
     }
 
-    /* If there is an alternative: verify we can write in this directory.
-     * This should cause a retry when the "all users" directory exists but we
-     * are a normal user and can't write there. */
+    // If there is an alternative: verify we can write in this directory.
+    // This should cause a retry when the "all users" directory exists but we
+    // are a normal user and can't write there.
     if (alt_csidl >= 0)
     {
 	char tbuf[BUFSIZE];
@@ -329,16 +329,16 @@ retry:
 
 struct
 {
-    char	*name;		/* Vim exe name (without .exe) */
-    char	*batname;	/* batch file name */
-    char	*lnkname;	/* shortcut file name */
-    char	*exename;	/* exe file name */
-    char	*exenamearg;	/* exe file name when using exearg */
-    char	*exearg;	/* argument for vim.exe or gvim.exe */
-    char	*oldbat;	/* path to existing xxx.bat or NULL */
-    char	*oldexe;	/* path to existing xxx.exe or NULL */
-    char	batpath[BUFSIZE];  /* path of batch file to create; not
-				      created when it's empty */
+    char	*name;		// Vim exe name (without .exe)
+    char	*batname;	// batch file name
+    char	*lnkname;	// shortcut file name
+    char	*exename;	// exe file name
+    char	*exenamearg;	// exe file name when using exearg
+    char	*exearg;	// argument for vim.exe or gvim.exe
+    char	*oldbat;	// path to existing xxx.bat or NULL
+    char	*oldexe;	// path to existing xxx.exe or NULL
+    char	batpath[BUFSIZE];  // path of batch file to create; not
+				   // created when it's empty
 } targets[TARGET_COUNT] =
 {
     {"all",	"batch files"},
@@ -382,17 +382,16 @@ run_command(char *cmd)
     char	cmd_buf[BUFSIZE * 2 + 35];
     char	*p;
 
-    /* On WinNT, 'start' is a shell built-in for cmd.exe rather than an
-     * executable (start.exe) like in Win9x. */
+    // On WinNT, 'start' is a shell built-in for cmd.exe rather than an
+    // executable (start.exe) like in Win9x.
     cmd_path = searchpath_save("cmd.exe");
     if (cmd_path != NULL)
     {
-	/* There is a cmd.exe, so this might be Windows NT.  If it is,
-	 * we need to call cmd.exe explicitly.  If it is a later OS,
-	 * calling cmd.exe won't hurt if it is present.
-	 * Also, "start" on NT expects a window title argument.
-	 */
-	/* Replace the slashes with backslashes. */
+	// There is a cmd.exe, so this might be Windows NT.  If it is,
+	// we need to call cmd.exe explicitly.  If it is a later OS,
+	// calling cmd.exe won't hurt if it is present.
+	// Also, "start" on NT expects a window title argument.
+	// Replace the slashes with backslashes.
 	while ((p = strchr(cmd_path, '/')) != NULL)
 	    *p = '\\';
 	sprintf(cmd_buf, "%s /c start \"vimcmd\" /wait %s", cmd_path, cmd);
@@ -400,7 +399,7 @@ run_command(char *cmd)
     }
     else
     {
-	/* No cmd.exe, just make the call and let the system handle it. */
+	// No cmd.exe, just make the call and let the system handle it.
 	sprintf(cmd_buf, "start /w %s", cmd);
     }
     system(cmd_buf);
@@ -422,7 +421,6 @@ add_pathsep(char *name)
 /*
  * The normal chdir() does not change the default drive.  This one does.
  */
-/*ARGSUSED*/
     int
 change_drive(int drive)
 {
@@ -438,17 +436,17 @@ change_drive(int drive)
     int
 mch_chdir(char *path)
 {
-    if (path[0] == NUL)		/* just checking... */
+    if (path[0] == NUL)		// just checking...
 	return 0;
-    if (path[1] == ':')		/* has a drive name */
+    if (path[1] == ':')		// has a drive name
     {
 	if (change_drive(mytoupper(path[0]) - 'A' + 1))
-	    return -1;		/* invalid drive name */
+	    return -1;		// invalid drive name
 	path += 2;
     }
-    if (*path == NUL)		/* drive name only */
+    if (*path == NUL)		// drive name only
 	return 0;
-    return chdir(path);		/* let the normal chdir() do the rest */
+    return chdir(path);		// let the normal chdir() do the rest
 }
 
 /*
@@ -457,8 +455,8 @@ mch_chdir(char *path)
     static char *
 my_fullpath(char *buf, char *fname, int len)
 {
-    /* Only GetModuleFileName() will get the long file name path.
-     * GetFullPathName() may still use the short (FAT) name. */
+    // Only GetModuleFileName() will get the long file name path.
+    // GetFullPathName() may still use the short (FAT) name.
     DWORD len_read = GetModuleFileName(NULL, buf, (size_t)len);
 
     return (len_read > 0 && len_read < (DWORD)len) ? buf : NULL;
@@ -482,11 +480,11 @@ remove_tail(char *path)
 }
 
 
-char	installdir[MAX_PATH-9];	/* top of the installation dir, where the
-				   install.exe is located, E.g.:
-				   "c:\vim\vim60" */
-int	runtimeidx;		/* index in installdir[] where "vim60" starts */
-char	*sysdrive;		/* system drive or "c:\" */
+char	installdir[MAX_PATH-9];	// top of the installation dir, where the
+				// install.exe is located, E.g.:
+				// "c:\vim\vim60"
+int	runtimeidx;		// index in installdir[] where "vim60" starts
+char	*sysdrive;		// system drive or "c:\"
 
 /*
  * Setup for using this program.
@@ -495,20 +493,20 @@ char	*sysdrive;		/* system drive or "c:\" */
     static void
 do_inits(char **argv)
 {
-    /* Find out the full path of our executable. */
+    // Find out the full path of our executable.
     if (my_fullpath(installdir, argv[0], sizeof(installdir)) == NULL)
     {
 	printf("ERROR: Cannot get name of executable\n");
 	myexit(1);
     }
-    /* remove the tail, the executable name "install.exe" */
+    // remove the tail, the executable name "install.exe"
     remove_tail(installdir);
 
-    /* change to the installdir */
+    // change to the installdir
     mch_chdir(installdir);
 
-    /* Find the system drive.  Only used for searching the Vim executable, not
-     * very important. */
+    // Find the system drive.  Only used for searching the Vim executable, not
+    // very important.
     sysdrive = getenv("SYSTEMDRIVE");
     if (sysdrive == NULL || *sysdrive == NUL)
 	sysdrive = "C:\\";

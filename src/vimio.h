@@ -7,13 +7,13 @@
  * See README.txt for an overview of the Vim source code.
  */
 
-/* Visual Studio 2005 has 'deprecated' many of the standard CRT functions */
+// Visual Studio 2005 has 'deprecated' many of the standard CRT functions
 #if _MSC_VER >= 1400
 # define _CRT_SECURE_NO_DEPRECATE
 # define _CRT_NONSTDC_NO_DEPRECATE
 #endif
 
-/* cproto fails on missing include files */
+// cproto fails on missing include files
 #ifndef PROTO
 # include <io.h>
 #endif

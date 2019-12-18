@@ -175,6 +175,8 @@ func Test_window_split_edit_bufnr()
 endfunc
 
 func Test_window_preview()
+  CheckFeature quickfix
+
   " Open a preview window
   pedit Xa
   call assert_equal(2, winnr('$'))
@@ -193,6 +195,8 @@ func Test_window_preview()
 endfunc
 
 func Test_window_preview_from_help()
+  CheckFeature quickfix
+
   filetype on
   call writefile(['/* some C code */'], 'Xpreview.c')
   help
@@ -438,6 +442,8 @@ func Test_equalalways_on_close()
 endfunc
 
 func Test_win_screenpos()
+  CheckFeature quickfix
+
   call assert_equal(1, winnr('$'))
   split
   vsplit
@@ -451,6 +457,8 @@ func Test_win_screenpos()
 endfunc
 
 func Test_window_jump_tag()
+  CheckFeature quickfix
+
   help
   /iccf
   call assert_match('^|iccf|',  getline('.'))
@@ -887,6 +895,8 @@ func Test_winrestview()
 endfunc
 
 func Test_win_splitmove()
+  CheckFeature quickfix
+
   edit a
   leftabove split b
   leftabove vsplit c

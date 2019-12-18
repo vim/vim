@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 8.1.  Last change: 2019 Aug 01
+*indent.txt*    For Vim version 8.2.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -532,7 +532,7 @@ The examples below assume a 'shiftwidth' of 4.
 <
 			*javascript-cinoptions* *javascript-indenting* *cino-J*
 	JN    Indent JavaScript object declarations correctly by not confusing
-	      them with labels.  The value 'N' is currently unused but must be 
+	      them with labels.  The value 'N' is currently unused but must be
 	      non-zero (e.g. 'J1').  If you enable this you probably also want
 	      to set |cino-j|. >
 
@@ -541,7 +541,7 @@ The examples below assume a 'shiftwidth' of 4.
 			that: this,
 			some: ok,
 		    },
-		    "bar":{ 
+		    "bar":{
 			a : 2,
 			b: "123abc",
 			x: 4,
@@ -812,6 +812,16 @@ Detail:
       <!-- --> : -1
 
 
+MATLAB			*ft-matlab-indent* *matlab-indent* *matlab-indenting*
+
+The setting Function indenting format in MATLAB Editor/Debugger Language
+Preferences corresponds to: >
+    :let g:MATLAB_function_indent = {0, 1 or 2 (default)}
+
+Where 0 is for Classic, 1 for Indent nested functions and 2 for Indent all
+functions.
+
+
 PHP				*ft-php-indent* *php-indent* *php-indenting*
 
 NOTE:	PHP files will be indented correctly only if PHP |syntax| is active.
@@ -885,7 +895,7 @@ To automatically remove '\r' characters when the 'fileformat' is set to Unix: >
 							*PHP_BracesAtCodeLevel*
 To indent braces at the same level than the code they contain: >
     :let g:PHP_BracesAtCodeLevel = 1
-    
+
 This will give the following result: >
     if ($foo)
 	{

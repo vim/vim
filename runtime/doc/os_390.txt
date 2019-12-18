@@ -1,4 +1,4 @@
-*os_390.txt*    For Vim version 8.1.  Last change: 2016 Feb 27
+*os_390.txt*    For Vim version 8.2.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL	  by Ralf Schandl
@@ -93,7 +93,7 @@ There is no solution for this yet.
 
 - No glib/gtk support.  I have not been able to successfully compile glib on
   z/OS UNIX.  This means you'll have to live without the pretty gtk toolbar.
- 
+
 Disabled at compile time:
     - Multibyte support         (|multibyte|)
     - Right-to-left mode        (|rileft|)

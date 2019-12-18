@@ -1353,6 +1353,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +perl	various.txt	/*+perl*
 +perl/dyn	various.txt	/*+perl\/dyn*
 +persistent_undo	various.txt	/*+persistent_undo*
++popupwin	various.txt	/*+popupwin*
 +postscript	various.txt	/*+postscript*
 +printer	various.txt	/*+printer*
 +profile	various.txt	/*+profile*
@@ -4866,6 +4867,7 @@ InsertChange	autocmd.txt	/*InsertChange*
 InsertCharPre	autocmd.txt	/*InsertCharPre*
 InsertEnter	autocmd.txt	/*InsertEnter*
 InsertLeave	autocmd.txt	/*InsertLeave*
+Integer	eval.txt	/*Integer*
 J	change.txt	/*J*
 Japanese	mbyte.txt	/*Japanese*
 Job	eval.txt	/*Job*
@@ -5285,6 +5287,7 @@ added-7.2	version7.txt	/*added-7.2*
 added-7.3	version7.txt	/*added-7.3*
 added-7.4	version7.txt	/*added-7.4*
 added-8.1	version8.txt	/*added-8.1*
+added-8.2	version8.txt	/*added-8.2*
 added-BeOS	version5.txt	/*added-BeOS*
 added-Mac	version5.txt	/*added-Mac*
 added-VMS	version5.txt	/*added-VMS*
@@ -5557,6 +5560,8 @@ c_CTRL-R_CTRL-O	cmdline.txt	/*c_CTRL-R_CTRL-O*
 c_CTRL-R_CTRL-P	cmdline.txt	/*c_CTRL-R_CTRL-P*
 c_CTRL-R_CTRL-R	cmdline.txt	/*c_CTRL-R_CTRL-R*
 c_CTRL-R_CTRL-W	cmdline.txt	/*c_CTRL-R_CTRL-W*
+c_CTRL-SHIFT-Q	cmdline.txt	/*c_CTRL-SHIFT-Q*
+c_CTRL-SHIFT-V	cmdline.txt	/*c_CTRL-SHIFT-V*
 c_CTRL-T	cmdline.txt	/*c_CTRL-T*
 c_CTRL-U	cmdline.txt	/*c_CTRL-U*
 c_CTRL-V	cmdline.txt	/*c_CTRL-V*
@@ -5649,6 +5654,7 @@ changed-7.2	version7.txt	/*changed-7.2*
 changed-7.3	version7.txt	/*changed-7.3*
 changed-7.4	version7.txt	/*changed-7.4*
 changed-8.1	version8.txt	/*changed-8.1*
+changed-8.2	version8.txt	/*changed-8.2*
 changelist	motion.txt	/*changelist*
 changelog.vim	syntax.txt	/*changelog.vim*
 changenr()	eval.txt	/*changenr()*
@@ -6459,6 +6465,7 @@ ft-man-plugin	filetype.txt	/*ft-man-plugin*
 ft-maple-syntax	syntax.txt	/*ft-maple-syntax*
 ft-masm-syntax	syntax.txt	/*ft-masm-syntax*
 ft-mathematica-syntax	syntax.txt	/*ft-mathematica-syntax*
+ft-matlab-indent	indent.txt	/*ft-matlab-indent*
 ft-mma-syntax	syntax.txt	/*ft-mma-syntax*
 ft-moo-syntax	syntax.txt	/*ft-moo-syntax*
 ft-msql-syntax	syntax.txt	/*ft-msql-syntax*
@@ -7253,6 +7260,7 @@ i_CTRL-R_=	insert.txt	/*i_CTRL-R_=*
 i_CTRL-R_CTRL-O	insert.txt	/*i_CTRL-R_CTRL-O*
 i_CTRL-R_CTRL-P	insert.txt	/*i_CTRL-R_CTRL-P*
 i_CTRL-R_CTRL-R	insert.txt	/*i_CTRL-R_CTRL-R*
+i_CTRL-SHIFT-V	insert.txt	/*i_CTRL-SHIFT-V*
 i_CTRL-T	insert.txt	/*i_CTRL-T*
 i_CTRL-U	insert.txt	/*i_CTRL-U*
 i_CTRL-V	insert.txt	/*i_CTRL-V*
@@ -7382,6 +7390,7 @@ interfaces-5.2	version5.txt	/*interfaces-5.2*
 internal-variables	eval.txt	/*internal-variables*
 internal-wordlist	spell.txt	/*internal-wordlist*
 internet	intro.txt	/*internet*
+interrupt()	eval.txt	/*interrupt()*
 intro	intro.txt	/*intro*
 intro.txt	intro.txt	/*intro.txt*
 inverse	syntax.txt	/*inverse*
@@ -7667,6 +7676,8 @@ matchlist()	eval.txt	/*matchlist()*
 matchparen	pi_paren.txt	/*matchparen*
 matchstr()	eval.txt	/*matchstr()*
 matchstrpos()	eval.txt	/*matchstrpos()*
+matlab-indent	indent.txt	/*matlab-indent*
+matlab-indenting	indent.txt	/*matlab-indenting*
 max()	eval.txt	/*max()*
 mbyte-IME	mbyte.txt	/*mbyte-IME*
 mbyte-XIM	mbyte.txt	/*mbyte-XIM*
@@ -8076,9 +8087,11 @@ new-onemore	version7.txt	/*new-onemore*
 new-operator-mod	version6.txt	/*new-operator-mod*
 new-options-5.2	version5.txt	/*new-options-5.2*
 new-options-5.4	version5.txt	/*new-options-5.4*
+new-other-8.2	version8.txt	/*new-other-8.2*
 new-perl-python	version5.txt	/*new-perl-python*
 new-persistent-undo	version7.txt	/*new-persistent-undo*
 new-plugins	version6.txt	/*new-plugins*
+new-popup-window	version8.txt	/*new-popup-window*
 new-posix	version7.txt	/*new-posix*
 new-print-multi-byte	version7.txt	/*new-print-multi-byte*
 new-printing	version6.txt	/*new-printing*
@@ -8095,6 +8108,7 @@ new-spell	version7.txt	/*new-spell*
 new-style-testing	testing.txt	/*new-style-testing*
 new-tab-pages	version7.txt	/*new-tab-pages*
 new-terminal-window	version8.txt	/*new-terminal-window*
+new-text-properties	version8.txt	/*new-text-properties*
 new-undo-branches	version7.txt	/*new-undo-branches*
 new-unlisted-buffers	version6.txt	/*new-unlisted-buffers*
 new-user-defined	version5.txt	/*new-user-defined*
@@ -8105,6 +8119,7 @@ new-vim-script	version7.txt	/*new-vim-script*
 new-vim-script-8	version8.txt	/*new-vim-script-8*
 new-vim-server	version6.txt	/*new-vim-server*
 new-vimgrep	version7.txt	/*new-vimgrep*
+new-vimscript-8.2	version8.txt	/*new-vimscript-8.2*
 new-virtedit	version6.txt	/*new-virtedit*
 news	intro.txt	/*news*
 nextnonblank()	eval.txt	/*nextnonblank()*
@@ -8328,6 +8343,7 @@ popup_settext()	popup.txt	/*popup_settext()*
 popup_show()	popup.txt	/*popup_show()*
 popupmenu-completion	insert.txt	/*popupmenu-completion*
 popupmenu-keys	insert.txt	/*popupmenu-keys*
+popupwin	popup.txt	/*popupwin*
 ports-5.2	version5.txt	/*ports-5.2*
 ports-6	version6.txt	/*ports-6*
 posix	vi_diff.txt	/*posix*
@@ -8517,6 +8533,7 @@ quotestar	gui.txt	/*quotestar*
 quote~	change.txt	/*quote~*
 r	change.txt	/*r*
 r.vim	syntax.txt	/*r.vim*
+rand()	eval.txt	/*rand()*
 range()	eval.txt	/*range()*
 raw-terminal-mode	term.txt	/*raw-terminal-mode*
 rcp	pi_netrw.txt	/*rcp*
@@ -8938,6 +8955,7 @@ sqlj	ft_sql.txt	/*sqlj*
 sqlserver	ft_sql.txt	/*sqlserver*
 sqlsettype	ft_sql.txt	/*sqlsettype*
 sqrt()	eval.txt	/*sqrt()*
+srand()	eval.txt	/*srand()*
 sscanf	eval.txt	/*sscanf*
 standard-plugin	usr_05.txt	/*standard-plugin*
 standard-plugin-list	help.txt	/*standard-plugin-list*
@@ -8957,6 +8975,7 @@ state()	eval.txt	/*state()*
 static-tag	tagsrch.txt	/*static-tag*
 status-line	windows.txt	/*status-line*
 statusmsg-variable	eval.txt	/*statusmsg-variable*
+stl-%{	options.txt	/*stl-%{*
 str2float()	eval.txt	/*str2float()*
 str2list()	eval.txt	/*str2list()*
 str2nr()	eval.txt	/*str2nr()*
@@ -8977,6 +8996,7 @@ string-match	eval.txt	/*string-match*
 strlen()	eval.txt	/*strlen()*
 strpart()	eval.txt	/*strpart()*
 strpbrk()	eval.txt	/*strpbrk()*
+strptime()	eval.txt	/*strptime()*
 strrchr()	eval.txt	/*strrchr()*
 strridx()	eval.txt	/*strridx()*
 strspn()	eval.txt	/*strspn()*
@@ -9839,6 +9859,7 @@ version-7.3	version7.txt	/*version-7.3*
 version-7.4	version7.txt	/*version-7.4*
 version-8.0	version8.txt	/*version-8.0*
 version-8.1	version8.txt	/*version-8.1*
+version-8.2	version8.txt	/*version-8.2*
 version-variable	eval.txt	/*version-variable*
 version4.txt	version4.txt	/*version4.txt*
 version5.txt	version5.txt	/*version5.txt*
@@ -9851,6 +9872,7 @@ version7.4	version7.txt	/*version7.4*
 version7.txt	version7.txt	/*version7.txt*
 version8.0	version8.txt	/*version8.0*
 version8.1	version8.txt	/*version8.1*
+version8.2	version8.txt	/*version8.2*
 version8.txt	version8.txt	/*version8.txt*
 versionlong-variable	eval.txt	/*versionlong-variable*
 vi	intro.txt	/*vi*
@@ -9866,6 +9888,7 @@ views-sessions	starting.txt	/*views-sessions*
 vim-7.4	version7.txt	/*vim-7.4*
 vim-8	version8.txt	/*vim-8*
 vim-8.1	version8.txt	/*vim-8.1*
+vim-8.2	version8.txt	/*vim-8.2*
 vim-additions	vi_diff.txt	/*vim-additions*
 vim-announce	intro.txt	/*vim-announce*
 vim-arguments	starting.txt	/*vim-arguments*

@@ -1209,6 +1209,27 @@ func Test_modifyOtherKeys_basic()
   call RunTest_modifyOtherKeys(function('GetEscCodeCSIu'))
 endfunc
 
+func Test_modifyOtherKeys_no_mapping()
+  set timeoutlen=10
+
+  let @a = 'aaa'
+  call feedkeys(":let x = '" .. GetEscCodeCSI27('R', 5) .. GetEscCodeCSI27('R', 5) .. "a'\<CR>", 'Lx!')
+  call assert_equal("let x = 'aaa'", @:)
+
+  new
+  call feedkeys("a" .. GetEscCodeCSI27('R', 5) .. GetEscCodeCSI27('R', 5) .. "a\<Esc>", 'Lx!')
+  call assert_equal("aaa", getline(1))
+  bwipe!
+
+  new
+  call feedkeys("axx\<CR>yy" .. GetEscCodeCSI27('G', 5) .. GetEscCodeCSI27('K', 5) .. "a\<Esc>", 'Lx!')
+  call assert_equal("axx", getline(1))
+  call assert_equal("yy", getline(2))
+  bwipe!
+
+  set timeoutlen&
+endfunc
+
 func RunTest_mapping_shift(key, func)
   call setline(1, '')
   if a:key == '|'
@@ -1327,4 +1348,49 @@ endfunc
 func Test_mapping_works_with_shift_ctrl_alt()
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'C-S-A', 8)
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'C-S-A', 8)
+endfunc
+
+func Test_insert_literal()
+  set timeoutlen=10
+  new
+  " CTRL-V CTRL-X inserts a ^X
+  call feedkeys('a' .. GetEscCodeCSIu('V', '5') .. GetEscCodeCSIu('X', '5') .. "\<Esc>", 'Lx!')
+  call assert_equal("\<C-X>", getline(1))
+
+  call setline(1, '')
+  call feedkeys('a' .. GetEscCodeCSI27('V', '5') .. GetEscCodeCSI27('X', '5') .. "\<Esc>", 'Lx!')
+  call assert_equal("\<C-X>", getline(1))
+
+  " CTRL-SHIFT-V CTRL-X inserts escape sequencd
+  call setline(1, '')
+  call feedkeys('a' .. GetEscCodeCSIu('V', '6') .. GetEscCodeCSIu('X', '5') .. "\<Esc>", 'Lx!')
+  call assert_equal("\<Esc>[88;5u", getline(1))
+
+  call setline(1, '')
+  call feedkeys('a' .. GetEscCodeCSI27('V', '6') .. GetEscCodeCSI27('X', '5') .. "\<Esc>", 'Lx!')
+  call assert_equal("\<Esc>[27;5;88~", getline(1))
+
+  bwipe!
+  set timeoutlen&
+endfunc
+
+func Test_cmdline_literal()
+  set timeoutlen=10
+
+  " CTRL-V CTRL-Y inserts a ^Y
+  call feedkeys(':' .. GetEscCodeCSIu('V', '5') .. GetEscCodeCSIu('Y', '5') .. "\<C-B>\"\<CR>", 'Lx!')
+  call assert_equal("\"\<C-Y>", @:)
+
+  call feedkeys(':' .. GetEscCodeCSI27('V', '5') .. GetEscCodeCSI27('Y', '5') .. "\<C-B>\"\<CR>", 'Lx!')
+  call assert_equal("\"\<C-Y>", @:)
+
+  " CTRL-SHIFT-V CTRL-Y inserts escape sequencd
+  call feedkeys(':' .. GetEscCodeCSIu('V', '6') .. GetEscCodeCSIu('Y', '5') .. "\<C-B>\"\<CR>", 'Lx!')
+  call assert_equal("\"\<Esc>[89;5u", @:)
+
+  call setline(1, '')
+  call feedkeys(':' .. GetEscCodeCSI27('V', '6') .. GetEscCodeCSI27('Y', '5') .. "\<C-B>\"\<CR>", 'Lx!')
+  call assert_equal("\"\<Esc>[27;5;89~", @:)
+
+  set timeoutlen&
 endfunc

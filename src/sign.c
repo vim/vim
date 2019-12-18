@@ -138,7 +138,20 @@ sign_in_group(sign_entry_T *sign, char_u *group)
     return ((group != NULL && STRCMP(group, "*") == 0)
 	    || (group == NULL && sign->se_group == NULL)
 	    || (group != NULL && sign->se_group != NULL
-				 && STRCMP(group, sign->se_group->sg_name) == 0));
+			      && STRCMP(group, sign->se_group->sg_name) == 0));
+}
+
+/*
+ * Return TRUE if "sign" is to be displayed in window "wp".
+ * If the group name starts with "PopUp" it only shows in a popup window.
+ */
+    static int
+sign_group_for_window(sign_entry_T *sign, win_T *wp)
+{
+    int for_popup = sign->se_group != NULL
+			&& STRNCMP("PopUp", sign->se_group->sg_name, 5) == 0;
+
+    return WIN_IS_POPUP(wp) ? for_popup : !for_popup;
 }
 
 /*
@@ -483,9 +496,8 @@ buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr)
 	    break;
 
 	if (sign->se_lnum == lnum
-# ifdef FEAT_TEXT_PROP
-		&& sign_in_group(sign, (char_u *)"popupmenu")
-					  == (WIN_IS_POPUP(wp) ? TRUE : FALSE)
+# ifdef FEAT_PROP_POPUP
+		&& sign_group_for_window(sign, wp)
 # endif
 		)
 	{
@@ -689,8 +701,8 @@ buf_signcount(buf_T *buf, linenr_T lnum)
 
     return count;
 }
-#  endif /* FEAT_SIGN_ICONS */
-# endif /* FEAT_NETBEANS_INTG */
+#  endif // FEAT_SIGN_ICONS
+# endif // FEAT_NETBEANS_INTG
 
 /*
  * Delete signs in group 'group' in buffer "buf". If 'group' is '*', then
@@ -2644,9 +2656,8 @@ get_first_valid_sign(win_T *wp)
 {
     sign_entry_T *sign = wp->w_buffer->b_signlist;
 
-# ifdef FEAT_TEXT_PROP
-    while (sign != NULL && sign_in_group(sign, (char_u *)"popupmenu")
-					  == (WIN_IS_POPUP(wp) ? FALSE : TRUE))
+# ifdef FEAT_PROP_POPUP
+    while (sign != NULL && !sign_group_for_window(sign, wp))
 	sign = sign->se_next;
 # endif
     return sign;
@@ -2733,4 +2744,4 @@ f_sign_unplacelist(typval_T *argvars, typval_T *rettv)
     }
 }
 
-#endif /* FEAT_SIGNS */
+#endif // FEAT_SIGNS

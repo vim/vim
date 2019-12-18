@@ -8,8 +8,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
+<<<<<<< HEAD
 "POT-Creation-Date: 2019-12-18 15:29+0300\n"
 "PO-Revision-Date: 2019-12-18 16:19+0300\n"
+=======
+"POT-Creation-Date: 2019-11-12 13:17+0300\n"
+"PO-Revision-Date: 2019-12-01 19:58+0300\n"
+>>>>>>> upstream/master
 "Last-Translator: Emir SARI <bitigchi@me.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "Language: tr\n"
@@ -774,12 +779,15 @@ msgstr ""
 msgid "E100: No other buffer in diff mode"
 msgstr "E100: Karşılaştırma kipinde başka hiçbir arabellek yok"
 
+<<<<<<< HEAD
 #: diff.c:2619
 msgid "E101: More than two buffers in diff mode, don't know which one to use"
 msgstr "E101: Karşılaştırma kipinde ikiden fazla arabellek var, hangisinin "
 "kullanılacağı belli değil"
 
 #: diff.c:2642
+=======
+>>>>>>> upstream/master
 #, c-format
 msgid "E102: Can't find buffer \"%s\""
 msgstr "E102: Arabellek \"%s\" bulunamıyor"
@@ -1480,7 +1488,12 @@ msgstr "E144: :z için sayısal olmayan değişken"
 
 #: ex_cmds.c:3505
 msgid "E145: Shell commands and some functionality not allowed in rvim"
+<<<<<<< HEAD
 msgstr "E145: rvim içinde kabuk komutları ve bazı işlevselliğe izin verilmez"
+=======
+msgstr ""
+"E145: rvim içinde kabuk komutları ve bazı işlevselliğe izin verilmez"
+>>>>>>> upstream/master
 
 #: ex_cmds.c:3620
 msgid "E146: Regular expressions can't be delimited by letters"
@@ -1700,12 +1713,15 @@ msgstr ""
 "DAHİLİ: EX_DFLALL; ADDR_NONE, ADDR_UNSIGNED veya ADDR_QUICKFIX ile birlikte "
 "kullanılamıyor"
 
+<<<<<<< HEAD
 #: ex_docmd.c:3186
 msgid "E943: Command table needs to be updated, run 'make cmdidxs'"
 msgstr ""
 "E943: Komut tablosunun güncellenmesi gerekiyor, 'make cmdidxs' çalıştırın"
 
 #: ex_docmd.c:3788
+=======
+>>>>>>> upstream/master
 msgid "E319: Sorry, the command is not available in this version"
 msgstr "E319: Üzgünüm, komut bu sürümde mevcut değil"
 
@@ -3663,11 +3679,14 @@ msgstr "Sonrasında değişken eksik:"
 msgid "Garbage after option argument"
 msgstr "Seçenek değişkeninden sonra anlamsız veri"
 
+<<<<<<< HEAD
 #: main.c:79
 msgid "Too many \"+command\", \"-c command\" or \"--cmd command\" arguments"
 msgstr "Çok fazla \"+komut\", \"-c komut\" veya \"--cmd komut\" değişkeni"
 
 #: main.c:81
+=======
+>>>>>>> upstream/master
 msgid "Invalid argument for"
 msgstr "Şunun için geçersiz değişken:"
 
@@ -3778,8 +3797,13 @@ msgid ""
 "Where case is ignored prepend / to make flag upper case"
 msgstr ""
 "\n"
+<<<<<<< HEAD
 "BÜYÜK/küçük harfin yoksayıldığı yerde bayrağı BÜYÜK harfli yapmak için "
 "başına / koyun"
+=======
+"BÜYÜK/küçük harfin yoksayıldığı yerde bayrağı BÜYÜK harfli yapmak "
+"için başına / koyun"
+>>>>>>> upstream/master
 
 #: main.c:3484
 msgid ""
@@ -4467,8 +4491,13 @@ msgid ""
 "If you wrote the text file after changing the crypt key press enter"
 msgstr ""
 "\n"
+<<<<<<< HEAD
 "Metin dosyasını şifreleme anahtarını değiştirdikten sonra yazdıysanız "
 "Enter'a basın"
+=======
+"Metin dosyasını şifreleme anahtarını değiştirdikten sonra yazdıysanız Enter'a "
+"basın"
+>>>>>>> upstream/master
 
 #: memline.c:1412
 msgid ""
@@ -4566,12 +4595,15 @@ msgstr ""
 "Bu .swp dosyasını silmeniz iyi olur.\n"
 "\n"
 
+<<<<<<< HEAD
 #: memline.c:1699
 msgid "Using crypt key from swap file for the text file.\n"
 msgstr "Metin dosyası için takas dosyasındaki şifreleme anahtarı kullanılıyor.\n"
 
 #. use msg() to start the scrolling properly
 #: memline.c:1781
+=======
+>>>>>>> upstream/master
 msgid "Swap files found:"
 msgstr "Takas dosyası bulundu:"
 
@@ -6152,6 +6184,7 @@ msgstr[1] "%ld satır kopyalandı%s"
 msgid "E353: Nothing in register %s"
 msgstr "E353: Yazmaç %s boş"
 
+<<<<<<< HEAD
 #. Highlight title
 #: register.c:2179
 msgid ""
@@ -6162,6 +6195,8 @@ msgstr ""
 "Tür Ad İçerik"
 
 #: register.c:2801
+=======
+>>>>>>> upstream/master
 msgid ""
 "E883: search pattern and expression register may not contain two or more "
 "lines"
@@ -8484,12 +8519,15 @@ msgstr "E370: %s kitaplığı yüklenemedi"
 msgid "Sorry, this command is disabled: the Perl library could not be loaded."
 msgstr "Üzgünüm, bu komut etkin değil: Perl kitaplığı yüklenemedi."
 
+<<<<<<< HEAD
 #: if_perl.xs:974
 msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
 msgstr "E299: Güvenli modül olmadan kum havuzu içerisinde Perl değerlendirmesine "
 "izin verilmiyor"
 
 #: GvimExt/gvimext.cpp:673
+=======
+>>>>>>> upstream/master
 msgid "Edit with &multiple Vims"
 msgstr "Birden &fazla Vim ile düzenle"
 
@@ -8517,11 +8555,14 @@ msgstr "Mevcut Vim ile düzenle - "
 msgid "Edits the selected file(s) with Vim"
 msgstr "Seçili dosyaları Vim ile düzenler"
 
+<<<<<<< HEAD
 #: GvimExt/gvimext.cpp:979 GvimExt/gvimext.cpp:1069
 msgid "Error creating process: Check if gvim is in your path!"
 msgstr "İşlem oluşturulurken hata: gvim'in yol üzerinde olduğundan emin olun!"
 
 #: GvimExt/gvimext.cpp:980 GvimExt/gvimext.cpp:994 GvimExt/gvimext.cpp:1070
+=======
+>>>>>>> upstream/master
 msgid "gvimext.dll error"
 msgstr "gvimext.dll hatası"
 

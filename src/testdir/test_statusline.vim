@@ -7,6 +7,7 @@
 "   %X
 
 source view_util.vim
+source check.vim
 
 func s:get_statusline()
   return ScreenLines(&lines - 1, &columns)[0]
@@ -60,6 +61,8 @@ func Test_statusline_will_be_disabled_with_error()
 endfunc
 
 func Test_statusline()
+  CheckFeature quickfix
+
   new Xstatusline
   only
   set laststatus=2
@@ -367,4 +370,26 @@ func Test_statusline()
   set statusline&
   set laststatus&
   set splitbelow&
+endfunc
+
+func Test_statusline_visual()
+  func CallWordcount()
+    call wordcount()
+  endfunc
+  new x1
+  setl statusline=count=%{CallWordcount()}
+  " buffer must not be empty
+  call setline(1, 'hello')
+
+  " window with more lines than x1
+  new x2
+  call setline(1, range(10))
+  $
+  " Visual mode in line below liast line in x1 should not give ml_get error
+  call feedkeys("\<C-V>", "xt")
+  redraw
+
+  delfunc CallWordcount
+  bwipe! x1
+  bwipe! x2
 endfunc

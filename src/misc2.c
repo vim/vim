@@ -1148,7 +1148,7 @@ free_all_mem(void)
     /* Clear cmdline history. */
     p_hi = 0;
     init_history();
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
     clear_global_prop_types();
 # endif
 
@@ -1185,7 +1185,7 @@ free_all_mem(void)
 
 	set_bufref(&bufref, buf);
 	nextbuf = buf->b_next;
-	close_buffer(NULL, buf, DOBUF_WIPE, FALSE);
+	close_buffer(NULL, buf, DOBUF_WIPE, FALSE, FALSE);
 	if (bufref_valid(&bufref))
 	    buf = nextbuf;	/* didn't work, try next one */
 	else

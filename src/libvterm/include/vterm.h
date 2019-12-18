@@ -216,14 +216,13 @@ void vterm_mouse_button(VTerm *vt, int button, int pressed, VTermModifier mod);
 // Parser layer
 // ------------
 
-/* Flag to indicate non-final subparameters in a single CSI parameter.
- * Consider
- *   CSI 1;2:3:4;5a
- * 1 4 and 5 are final.
- * 2 and 3 are non-final and will have this bit set
- *
- * Don't confuse this with the final byte of the CSI escape; 'a' in this case.
- */
+// Flag to indicate non-final subparameters in a single CSI parameter.
+// Consider
+//   CSI 1;2:3:4;5a
+// 1 4 and 5 are final.
+// 2 and 3 are non-final and will have this bit set
+//
+// Don't confuse this with the final byte of the CSI escape; 'a' in this case.
 #define CSI_ARG_FLAG_MORE (1U<<31)
 #define CSI_ARG_MASK      (~(1U<<31))
 
@@ -357,7 +356,7 @@ VTermScreen *vterm_obtain_screen(VTerm *vt);
 void  vterm_screen_set_callbacks(VTermScreen *screen, const VTermScreenCallbacks *callbacks, void *user);
 void *vterm_screen_get_cbdata(VTermScreen *screen);
 
-/* Only invokes control, csi, osc, dcs */
+// Only invokes control, csi, osc, dcs
 void  vterm_screen_set_unrecognised_fallbacks(VTermScreen *screen, const VTermParserCallbacks *fallbacks, void *user);
 void *vterm_screen_get_unrecognised_fbdata(VTermScreen *screen);
 

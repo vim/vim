@@ -1548,6 +1548,7 @@ endfunc
 
 func Test_write_to_deleted_buffer()
   CheckExecutable echo
+  CheckFeature quickfix
 
   let job = job_start('echo hello', {'out_io': 'buffer', 'out_name': 'test_buffer', 'out_msg': 0})
   let bufnr = bufnr('test_buffer')
@@ -1859,7 +1860,8 @@ func Test_job_exitval_and_termsig()
   " Terminate job by signal
   let cmd = ['sleep', '10']
   let job = job_start(cmd)
-  sleep 10m
+  " 10m usually works but 50m is needed when running Valgrind
+  sleep 50m
   call job_stop(job)
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
   let info = job_info(job)

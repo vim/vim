@@ -3,7 +3,7 @@
 " Errors are appended to the test.log file.
 "
 " To execute only specific test functions, add a second argument.  It will be
-" matched against the names of the Test_ funtion.  E.g.:
+" matched against the names of the Test_ function.  E.g.:
 "	../vim -u NONE -S runtest.vim test_channel.vim open_delay
 " The output can be found in the "messages" file.
 "
@@ -177,7 +177,7 @@ func RunTheTest(test)
   au SwapExists * call HandleSwapExists()
 
   " Close any stray popup windows
-  if has('textprop')
+  if has('popupwin')
     call popup_clear()
   endif
 
@@ -365,6 +365,7 @@ let s:flaky_tests = [
       \ 'Test_terminal_wall()',
       \ 'Test_terminal_wipe_buffer()',
       \ 'Test_terminal_wqall()',
+      \ 'Test_termwinscroll()',
       \ 'Test_timer_oneshot()',
       \ 'Test_timer_paused()',
       \ 'Test_timer_repeat_many()',

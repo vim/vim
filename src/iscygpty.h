@@ -38,4 +38,4 @@ int is_cygpty_used(void);
 #define is_cygpty_used()	0
 #endif
 
-#endif /* _ISCYGPTY_H */
+#endif // _ISCYGPTY_H

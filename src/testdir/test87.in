@@ -3,7 +3,7 @@ Tests for various python features.     vim: set ft=vim :
 STARTTEST
 :so small.vim
 :set noswapfile
-:if !has('python3') | e! test.ok | wq! test.out | endif
+:if !has('python3') || !has('quickfix') | e! test.ok | wq! test.out | endif
 :lang C
 :fun Test()
 :py3 import vim

@@ -328,4 +328,4 @@ blob_remove(typval_T *argvars, typval_T *rettv)
     }
 }
 
-#endif /* defined(FEAT_EVAL) */
+#endif // defined(FEAT_EVAL)

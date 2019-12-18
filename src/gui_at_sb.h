@@ -1,8 +1,8 @@
-/* vi:set ts=8 sts=4 sw=4 noet: */
-/* MODIFIED ATHENA SCROLLBAR (USING ARROWHEADS AT ENDS OF TRAVEL) */
-/* Modifications Copyright 1992 by Mitch Trachtenberg		  */
-/* Rights, permissions, and disclaimer of warranty are as in the  */
-/* DEC and MIT notice below.  See usage warning in .c file.	  */
+// vi:set ts=8 sts=4 sw=4 noet:
+// MODIFIED ATHENA SCROLLBAR (USING ARROWHEADS AT ENDS OF TRAVEL)
+// Modifications Copyright 1992 by Mitch Trachtenberg
+// Rights, permissions, and disclaimer of warranty are as in the
+// DEC and MIT notice below.  See usage warning in .c file.
 /*
  * $XConsortium: ScrollbarP.h,v 1.3 94/04/17 20:12:42 jim Exp $
  */
@@ -98,33 +98,33 @@ extern void vim_XawScrollbarSetThumb(Widget, double, double, double);
 
 typedef struct
 {
-     /* public */
-    Pixel	  foreground;	/* thumb foreground color */
-    XtOrientation orientation;	/* horizontal or vertical */
-    XtCallbackList scrollProc;	/* proportional scroll */
-    XtCallbackList thumbProc;	/* jump (to position) scroll */
-    XtCallbackList jumpProc;	/* same as thumbProc but pass data by ref */
-    Pixmap	  thumb;	/* thumb color */
-    float	  top;		/* What percent is above the win's top */
-    float	  shown;	/* What percent is shown in the win */
-    float	  max;		/* Maximum value for top */
-    Dimension	  length;	/* either height or width */
-    Dimension	  thickness;	/* either width or height */
-    Dimension	  min_thumb;	/* minimum size for the thumb. */
+     // public
+    Pixel	  foreground;	// thumb foreground color
+    XtOrientation orientation;	// horizontal or vertical
+    XtCallbackList scrollProc;	// proportional scroll
+    XtCallbackList thumbProc;	// jump (to position) scroll
+    XtCallbackList jumpProc;	// same as thumbProc but pass data by ref
+    Pixmap	  thumb;	// thumb color
+    float	  top;		// What percent is above the win's top
+    float	  shown;	// What percent is shown in the win
+    float	  max;		// Maximum value for top
+    Dimension	  length;	// either height or width
+    Dimension	  thickness;	// either width or height
+    Dimension	  min_thumb;	// minimum size for the thumb.
 
-     /* private */
-    XtIntervalId  timer_id;	/* autorepeat timer; remove on destruction */
-    char	  scroll_mode;	/* see below */
-    float	  scroll_off;	/* offset from event to top of thumb */
-    GC		  gc;		/* a (shared) gc */
-    Position	  topLoc;	/* Pixel that corresponds to top */
-    Dimension	  shownLength;	/* Num pixels corresponding to shown */
+     // private
+    XtIntervalId  timer_id;	// autorepeat timer; remove on destruction
+    char	  scroll_mode;	// see below
+    float	  scroll_off;	// offset from event to top of thumb
+    GC		  gc;		// a (shared) gc
+    Position	  topLoc;	// Pixel that corresponds to top
+    Dimension	  shownLength;	// Num pixels corresponding to shown
 
-    /* From 3d widget */
+    // From 3d widget
     Dimension	shadow_width;
     Pixel	top_shadow_pixel;
     Pixel	bot_shadow_pixel;
-    Bool	limit_thumb;	/* limit thumb to inside scrollbar */
+    Bool	limit_thumb;	// limit thumb to inside scrollbar
     int		top_shadow_contrast;
     int		bot_shadow_contrast;
     GC		top_shadow_GC;
@@ -158,4 +158,4 @@ typedef struct _ScrollbarClassRec {
 
 extern ScrollbarClassRec vim_scrollbarClassRec;
 
-#endif /* _Scrollbar_h */
+#endif // _Scrollbar_h

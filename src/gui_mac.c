@@ -28,25 +28,26 @@
  *
  */
 
-/* TODO (Jussi)
+/*
+ * TODO (Jussi)
  *   * Clipboard does not work (at least some cases)
  *   * ATSU font rendering has some problems
  *   * Investigate and remove dead code (there is still lots of that)
  */
 
-#include <Devices.h> /* included first to avoid CR problems */
+#include <Devices.h> // included first to avoid CR problems
 #include "vim.h"
 
 #define USE_CARBONIZED
-#define USE_AEVENT		/* Enable AEVENT */
-#undef USE_OFFSETED_WINDOW	/* Debugging feature: start Vim window OFFSETed */
+#define USE_AEVENT		// Enable AEVENT
+#undef USE_OFFSETED_WINDOW	// Debugging feature: start Vim window OFFSETed
 
-/* Compile as CodeWarrior External Editor */
+// Compile as CodeWarrior External Editor
 #if defined(FEAT_CW_EDITOR) && !defined(USE_AEVENT)
-# define USE_AEVENT /* Need Apple Event Support */
+# define USE_AEVENT // Need Apple Event Support
 #endif
 
-/* Vim's Scrap flavor. */
+// Vim's Scrap flavor.
 #define VIMSCRAPFLAVOR 'VIM!'
 #define SCRAPTEXTFLAVOR kScrapFlavorTypeUnicode
 
@@ -58,7 +59,7 @@ SInt32 gMacSystemVersion;
 
 static int im_is_active = FALSE;
 # if 0
-    /* TODO: Implement me! */
+    // TODO: Implement me!
 static int im_start_row = 0;
 static int im_start_col = 0;
 # endif
@@ -86,7 +87,7 @@ static pascal OSStatus gui_mac_unicode_key_event(
 #endif
 
 
-/* Include some file. TODO: move into os_mac.h */
+// Include some file. TODO: move into os_mac.h
 #include <Menus.h>
 #include <Resources.h>
 #include <Processes.h>
@@ -97,13 +98,13 @@ static pascal OSStatus gui_mac_unicode_key_event(
 # include <Gestalt.h>
 #if UNIVERSAL_INTERFACES_VERSION >= 0x0330
 # include <ControlDefinitions.h>
-# include <Navigation.h>  /* Navigation only part of ?? */
+# include <Navigation.h>  // Navigation only part of ??
 #endif
 
-/* Help Manager (balloon.h, HM prefixed functions) are not supported
- * under Carbon (Jussi) */
+// Help Manager (balloon.h, HM prefixed functions) are not supported
+// under Carbon (Jussi)
 #  if 0
-/* New Help Interface for Mac, not implemented yet.*/
+// New Help Interface for Mac, not implemented yet.
 #    include <MacHelp.h>
 #  endif
 
@@ -112,7 +113,7 @@ static pascal OSStatus gui_mac_unicode_key_event(
  * headers? (Jussi)
  */
 #define kNothing 0
-#define kCreateEmpty 2 /*1*/
+#define kCreateEmpty 2 //1
 #define kCreateRect 2
 #define kDestroy 3
 
@@ -123,34 +124,33 @@ static pascal OSStatus gui_mac_unicode_key_event(
 #define botRight(r)	(((Point*)&(r))[1])
 
 
-/* Time of last mouse click, to detect double-click */
+// Time of last mouse click, to detect double-click
 static long lastMouseTick = 0;
 
-/* ??? */
+// ???
 static RgnHandle cursorRgn;
 static RgnHandle dragRgn;
 static Rect dragRect;
 static short dragRectEnbl;
 static short dragRectControl;
 
-/* This variable is set when waiting for an event, which is the only moment
- * scrollbar dragging can be done directly.  It's not allowed while commands
- * are executed, because it may move the cursor and that may cause unexpected
- * problems (e.g., while ":s" is working).
- */
+// This variable is set when waiting for an event, which is the only moment
+// scrollbar dragging can be done directly.  It's not allowed while commands
+// are executed, because it may move the cursor and that may cause unexpected
+// problems (e.g., while ":s" is working).
 static int allow_scrollbar = FALSE;
 
-/* Last mouse click caused contextual menu, (to provide proper release) */
+// Last mouse click caused contextual menu, (to provide proper release)
 static short clickIsPopup;
 
-/* Feedback Action for Scrollbar */
+// Feedback Action for Scrollbar
 ControlActionUPP gScrollAction;
 ControlActionUPP gScrollDrag;
 
-/* Keeping track of which scrollbar is being dragged */
+// Keeping track of which scrollbar is being dragged
 static ControlHandle dragged_sb = NULL;
 
-/* Vector of char_u --> control index for hotkeys in dialogs */
+// Vector of char_u --> control index for hotkeys in dialogs
 static short *gDialogHotKeys;
 
 static struct
@@ -170,23 +170,23 @@ Boolean	    gIsFontFallbackSet;
 UInt32      useAntialias_cached = 0x0;
 #endif
 
-/* Colors Macros */
+// Colors Macros
 #define RGB(r,g,b)	((r) << 16) + ((g) << 8) + (b)
 #define Red(c)		((c & 0x00FF0000) >> 16)
 #define Green(c)	((c & 0x0000FF00) >>  8)
 #define Blue(c)		((c & 0x000000FF) >>  0)
 
-/* Key mapping */
+// Key mapping
 
-#define vk_Esc		0x35	/* -> 1B */
+#define vk_Esc		0x35	// -> 1B
 
-#define vk_F1		0x7A	/* -> 10 */
-#define vk_F2		0x78  /*0x63*/
-#define vk_F3		0x63  /*0x76*/
-#define vk_F4		0x76  /*0x60*/
-#define vk_F5		0x60  /*0x61*/
-#define vk_F6		0x61  /*0x62*/
-#define vk_F7		0x62  /*0x63*/  /*?*/
+#define vk_F1		0x7A	// -> 10
+#define vk_F2		0x78  //0x63
+#define vk_F3		0x63  //0x76
+#define vk_F4		0x76  //0x60
+#define vk_F5		0x60  //0x61
+#define vk_F6		0x61  //0x62
+#define vk_F7		0x62  //0x63 ?
 #define vk_F8		0x64
 #define vk_F9		0x65
 #define vk_F10		0x6D
@@ -196,26 +196,26 @@ UInt32      useAntialias_cached = 0x0;
 #define vk_F14		0x6B
 #define vk_F15		0x71
 
-#define vk_Clr		0x47	/* -> 1B (ESC) */
-#define vk_Enter	0x4C	/* -> 03 */
+#define vk_Clr		0x47	// -> 1B (ESC)
+#define vk_Enter	0x4C	// -> 03
 
-#define vk_Space	0x31	/* -> 20 */
-#define vk_Tab		0x30	/* -> 09 */
-#define vk_Return	0x24	/* -> 0D */
-/* This is wrong for OSX, what is it for? */
-#define vk_Delete	0X08	/* -> 08 BackSpace */
+#define vk_Space	0x31	// -> 20
+#define vk_Tab		0x30	// -> 09
+#define vk_Return	0x24	// -> 0D
+// This is wrong for OSX, what is it for?
+#define vk_Delete	0X08	// -> 08 BackSpace
 
-#define vk_Help		0x72	/* -> 05 */
-#define vk_Home		0x73	/* -> 01 */
-#define	vk_PageUp	0x74	/* -> 0D */
-#define vk_FwdDelete	0x75	/* -> 7F */
-#define	vk_End		0x77	/* -> 04 */
-#define vk_PageDown	0x79	/* -> 0C */
+#define vk_Help		0x72	// -> 05
+#define vk_Home		0x73	// -> 01
+#define	vk_PageUp	0x74	// -> 0D
+#define vk_FwdDelete	0x75	// -> 7F
+#define	vk_End		0x77	// -> 04
+#define vk_PageDown	0x79	// -> 0C
 
-#define vk_Up		0x7E	/* -> 1E */
-#define vk_Down		0x7D	/* -> 1F */
-#define	vk_Left		0x7B	/* -> 1C */
-#define vk_Right	0x7C	/* -> 1D */
+#define vk_Up		0x7E	// -> 1E
+#define vk_Down		0x7D	// -> 1F
+#define	vk_Left		0x7B	// -> 1C
+#define vk_Right	0x7C	// -> 1D
 
 #define vk_Undo		vk_F1
 #define vk_Cut		vk_F2
@@ -258,22 +258,22 @@ static struct
     {vk_F14,		'F', '4'},
     {vk_F15,		'F', '5'},
 
-/*  {XK_Help,		'%', '1'}, */
-/*  {XK_Undo,		'&', '8'}, */
-/*  {XK_BackSpace,	'k', 'b'}, */
-/*  {vk_Delete,		'k', 'b'}, */
+//  {XK_Help,		'%', '1'},
+//  {XK_Undo,		'&', '8'},
+//  {XK_BackSpace,	'k', 'b'},
+//  {vk_Delete,		'k', 'b'},
     {vk_Insert,		'k', 'I'},
     {vk_FwdDelete,	'k', 'D'},
     {vk_Home,		'k', 'h'},
     {vk_End,		'@', '7'},
-/*  {XK_Prior,		'k', 'P'}, */
-/*  {XK_Next,		'k', 'N'}, */
-/*  {XK_Print,		'%', '9'}, */
+//  {XK_Prior,		'k', 'P'},
+//  {XK_Next,		'k', 'N'},
+//  {XK_Print,		'%', '9'},
 
     {vk_PageUp,		'k', 'P'},
     {vk_PageDown,	'k', 'N'},
 
-    /* End of list marker: */
+    // End of list marker:
     {(KeySym)0,		0, 0}
 };
 
@@ -321,7 +321,7 @@ C2Pascal_save(char_u *Cstring)
 
     len = STRLEN(Cstring);
 
-    if (len > 255) /* Truncate if necessary */
+    if (len > 255) // Truncate if necessary
 	len = 255;
 
     PascalString = alloc(len + 1);
@@ -351,7 +351,7 @@ C2Pascal_save_and_remove_backslash(char_u *Cstring)
 
     len = STRLEN(Cstring);
 
-    if (len > 255) /* Truncate if necessary */
+    if (len > 255) // Truncate if necessary
 	len = 255;
 
     PascalString = alloc(len + 1);
@@ -387,8 +387,8 @@ EventModifiers2VimMouseModifiers(EventModifiers macModifiers)
     if (macModifiers & (optionKey | rightOptionKey))
 	vimModifiers |= MOUSE_ALT;
 #if 0
-    /* Not yet supported */
-    if (macModifiers & (cmdKey)) /* There's no rightCmdKey */
+    // Not yet supported
+    if (macModifiers & (cmdKey)) // There's no rightCmdKey
 	vimModifiers |= MOUSE_CMD;
 #endif
     return (vimModifiers);
@@ -410,13 +410,14 @@ EventModifiers2VimModifiers(EventModifiers macModifiers)
     if (macModifiers & (optionKey | rightOptionKey))
 	vimModifiers |= MOD_MASK_ALT;
 #ifdef USE_CMD_KEY
-    if (macModifiers & (cmdKey)) /* There's no rightCmdKey */
+    if (macModifiers & (cmdKey)) // There's no rightCmdKey
 	vimModifiers |= MOD_MASK_CMD;
 #endif
     return (vimModifiers);
 }
 
-/* Convert a string representing a point size into pixels. The string should
+/*
+ * Convert a string representing a point size into pixels. The string should
  * be a positive decimal number, with an optional decimal point (eg, "12", or
  * "10.5"). The pixel value is returned, and a pointer to the next unconverted
  * character is stored in *end. The flag "vertical" says whether this
@@ -435,7 +436,7 @@ points_to_pixels(char_u *str, char_u **end, int vertical)
     {
 	if (*str == '.' && divisor == 0)
 	{
-	    /* Start keeping a divisor, for later */
+	    // Start keeping a divisor, for later
 	    divisor = 1;
 	    continue;
 	}
@@ -479,8 +480,8 @@ menu_title_removing_mnemonic(vimmenu_T *menu)
 
     if (name)
     {
-	/* Simple mnemonic-removal algorithm, assumes single parenthesized
-	 * mnemonic character towards the end of the menu text */
+	// Simple mnemonic-removal algorithm, assumes single parenthesized
+	// mnemonic character towards the end of the menu text
 	mnemonicStart = CFStringFind(name, CFSTR("("), kCFCompareBackwards);
 	displayLen = CFStringGetLength(name);
 
@@ -530,33 +531,33 @@ new_fnames_from_AEDesc(AEDesc *theList, long *numFiles, OSErr *error)
     AEKeyword	dummyKeyword;
     DescType	dummyType;
 
-    /* Get number of files in list */
+    // Get number of files in list
     *error = AECountItems(theList, numFiles);
     if (*error)
 	return fnames;
 
-    /* Allocate the pointer list */
+    // Allocate the pointer list
     fnames = ALLOC_MULT(char_u *, *numFiles);
 
-    /* Empty out the list */
+    // Empty out the list
     for (fileCount = 0; fileCount < *numFiles; fileCount++)
 	fnames[fileCount] = NULL;
 
-    /* Scan the list of FSSpec */
+    // Scan the list of FSSpec
     for (fileCount = 1; fileCount <= *numFiles; fileCount++)
     {
-	/* Get the alias for the nth file, convert to an FSSpec */
+	// Get the alias for the nth file, convert to an FSSpec
 	newError = AEGetNthPtr(theList, fileCount, typeFSS,
 				&dummyKeyword, &dummyType,
 				(Ptr) &fileToOpen, sizeof(FSSpec), &actualSize);
 	if (newError)
 	{
-	    /* Caller is able to clean up */
-	    /* TODO: Should be clean up or not? For safety. */
+	    // Caller is able to clean up
+	    // TODO: Should be clean up or not? For safety.
 	    return fnames;
 	}
 
-	/* Convert the FSSpec to a pathname */
+	// Convert the FSSpec to a pathname
 	fnames[fileCount - 1] = FullPathFromFSSpec_save(fileToOpen);
     }
 
@@ -595,7 +596,7 @@ new_fnames_from_AEDesc(AEDesc *theList, long *numFiles, OSErr *error)
  */
 
 typedef struct WindowSearch WindowSearch;
-struct WindowSearch /* for handling class 'KAHL', event 'SRCH', keyDirectObject typeChar*/
+struct WindowSearch // for handling class 'KAHL', event 'SRCH', keyDirectObject typeChar
 {
     FSSpec theFile; // identifies the file
     long *theDate; // where to put the modification date/time
@@ -668,7 +669,7 @@ Handle_KAHL_SRCH_AE(
  */
 
 typedef struct ModificationInfo ModificationInfo;
-struct ModificationInfo /* for replying to class 'KAHL', event 'MOD ', keyDirectObject typeAEList*/
+struct ModificationInfo // for replying to class 'KAHL', event 'MOD ', keyDirectObject typeAEList
 {
     FSSpec theFile; // identifies the file
     long theDate; // the date/time the file was last modified
@@ -693,11 +694,11 @@ Handle_KAHL_MOD_AE(
     if (error)
 	return error;
 
-    /* Send the reply */
-/*  replyObject.descriptorType = typeNull;
-    replyObject.dataHandle     = nil;*/
+    // Send the reply
+//  replyObject.descriptorType = typeNull;
+// replyObject.dataHandle     = nil;
 
-/* AECreateDesc(typeChar, (Ptr)&title[1], title[0], &data) */
+// AECreateDesc(typeChar, (Ptr)&title[1], title[0], &data)
     error = AECreateList(nil, 0, false, &replyList);
     if (error)
 	return error;
@@ -705,22 +706,21 @@ Handle_KAHL_MOD_AE(
 #if 0
     error = AECountItems(&replyList, &numFiles);
 
-    /* AEPutKeyDesc(&replyList, keyAEPnject, &aDesc)
-     * AEPutKeyPtr(&replyList, keyAEPosition, typeChar, (Ptr)&theType,
-     * sizeof(DescType))
-     */
+    // AEPutKeyDesc(&replyList, keyAEPnject, &aDesc)
+    // AEPutKeyPtr(&replyList, keyAEPosition, typeChar, (Ptr)&theType,
+    // sizeof(DescType))
 
-    /* AEPutDesc */
+    // AEPutDesc
 #endif
 
     numFiles = 0;
     FOR_ALL_BUFFERS(buf)
 	if (buf->b_ml.ml_mfp != NULL)
 	{
-	    /* Add this file to the list */
+	    // Add this file to the list
 	    theFile.theFile = buf->b_FSSpec;
 	    theFile.theDate = buf->b_mtime;
-/*	    theFile.theDate = time(NULL) & (time_t) 0xFFFFFFF0; */
+//	    theFile.theDate = time(NULL) & (time_t) 0xFFFFFFF0;
 	    error = AEPutPtr(&replyList, numFiles, typeChar, (Ptr) &theFile, sizeof(theFile));
 	};
 
@@ -728,7 +728,7 @@ Handle_KAHL_MOD_AE(
     error = AECountItems(&replyList, &numFiles);
 #endif
 
-    /* We can add data only if something to reply */
+    // We can add data only if something to reply
     error = AEPutParamDesc(theReply, keyDirectObject, &replyList);
 
     if (replyList.dataHandle)
@@ -764,12 +764,12 @@ Handle_KAHL_MOD_AE(
  */
 
 typedef struct CW_GetText CW_GetText;
-struct CW_GetText /* for handling class 'KAHL', event 'GTTX', keyDirectObject typeChar*/
+struct CW_GetText // for handling class 'KAHL', event 'GTTX', keyDirectObject typeChar
 {
-    FSSpec theFile; /* identifies the file */
-    Handle theText; /* the location where you return the text (must be resized properly) */
-    long *unused;   /* 0 (not used) */
-    long *theDate;  /* where to put the modification date/time */
+    FSSpec theFile; // identifies the file
+    Handle theText; // the location where you return the text (must be resized properly)
+    long *unused;   // 0 (not used)
+    long *theDate;  // where to put the modification date/time
 };
 
     pascal OSErr
@@ -806,19 +806,19 @@ Handle_KAHL_GTTX_AE(
 
     if (foundFile)
     {
-	BufferSize = 0; /* GetHandleSize(GetTextData.theText); */
+	BufferSize = 0; // GetHandleSize(GetTextData.theText);
 	for (lineno = 0; lineno <= buf->b_ml.ml_line_count; lineno++)
 	{
-	    /* Must use the right buffer */
+	    // Must use the right buffer
 	    line = ml_get_buf(buf, (linenr_T) lineno, FALSE);
 	    linesize = STRLEN(line) + 1;
 	    lineStart = BufferSize;
 	    BufferSize += linesize;
-	    /* Resize handle to linesize+1 to include the linefeed */
+	    // Resize handle to linesize+1 to include the linefeed
 	    SetHandleSize(GetTextData.theText, BufferSize);
 	    if (GetHandleSize(GetTextData.theText) != BufferSize)
 	    {
-		break; /* Simple handling for now */
+		break; // Simple handling for now
 	    }
 	    else
 	    {
@@ -838,7 +838,7 @@ Handle_KAHL_GTTX_AE(
 	if (foundFile == false)
 	    *GetTextData.theDate = fnfErr;
 	else
-/*	    *GetTextData.theDate = time(NULL) & (time_t) 0xFFFFFFF0;*/
+//	    *GetTextData.theDate = time(NULL) & (time_t) 0xFFFFFFF0;
 	    *GetTextData.theDate = buf->b_mtime;
     }
 
@@ -851,7 +851,9 @@ Handle_KAHL_GTTX_AE(
  *
  */
 
-/* Taken from MoreAppleEvents:ProcessHelpers*/
+/*
+ * Taken from MoreAppleEvents:ProcessHelpers
+ */
     pascal	OSErr
 FindProcessBySignature(
 	const OSType		targetType,
@@ -915,7 +917,7 @@ Send_KAHL_MOD_AE(buf_T *buf)
 
 	AEDisposeDesc(&targetAppDesc);
 
-	/* Add the parms */
+	// Add the parms
 	ModData.theFile = buf->b_FSSpec;
 	ModData.theDate = buf->b_mtime;
 
@@ -931,12 +933,12 @@ Send_KAHL_MOD_AE(buf_T *buf)
 	    anErr = AESend(&theEvent, &theReply, sendMode, kAENormalPriority, kNoTimeOut, idleProcUPP, nil);
 	if (anErr == noErr  &&  sendMode == kAEWaitReply)
 	{
-/*	    anErr =  AEHGetHandlerError(&theReply);*/
+//	    anErr =  AEHGetHandlerError(&theReply);
 	}
 	(void) AEDisposeDesc(&theReply);
     }
 }
-#endif /* FEAT_CW_EDITOR */
+#endif // FEAT_CW_EDITOR
 
 /*
  * ------------------------------------------------------------
@@ -957,13 +959,13 @@ HandleUnusedParms(const AppleEvent *theAEvent)
     DescType	dummyType;
     AEKeyword	missedKeyword;
 
-    /* Get the "missed keyword" attribute from the AppleEvent. */
+    // Get the "missed keyword" attribute from the AppleEvent.
     error = AEGetAttributePtr(theAEvent, keyMissedKeywordAttr,
 			      typeKeyword, &dummyType,
 			      (Ptr)&missedKeyword, sizeof(missedKeyword),
 			      &actualSize);
 
-    /* If the descriptor isn't found, then we got the required parameters. */
+    // If the descriptor isn't found, then we got the required parameters.
     if (error == errAEDescNotFound)
     {
 	error = noErr;
@@ -971,7 +973,7 @@ HandleUnusedParms(const AppleEvent *theAEvent)
     else
     {
 #if 0
-	/* Why is this removed? */
+	// Why is this removed?
 	error = errAEEventNotHandled;
 #endif
     }
@@ -988,7 +990,7 @@ HandleUnusedParms(const AppleEvent *theAEvent)
  */
 
 typedef struct SelectionRange SelectionRange;
-struct SelectionRange /* for handling kCoreClassEvent:kOpenDocuments:keyAEPosition typeChar */
+struct SelectionRange // for handling kCoreClassEvent:kOpenDocuments:keyAEPosition typeChar
 {
     short unused1; // 0 (not used)
     short lineNum; // line to select (<0 to specify range)
@@ -1005,30 +1007,30 @@ static SelectionRange drop_thePosition;
     static void
 drop_callback(void *cookie UNUSED)
 {
-    /* TODO: Handle the goto/select line more cleanly */
+    // TODO: Handle the goto/select line more cleanly
     if ((drop_numFiles == 1) & (drop_gotPosition))
     {
 	if (drop_thePosition.lineNum >= 0)
 	{
 	    lnum = drop_thePosition.lineNum + 1;
-	/*  oap->motion_type = MLINE;
-	    setpcmark();*/
+	//  oap->motion_type = MLINE;
+	// setpcmark();
 	    if (lnum < 1L)
 		lnum = 1L;
 	    else if (lnum > curbuf->b_ml.ml_line_count)
 		lnum = curbuf->b_ml.ml_line_count;
 	    curwin->w_cursor.lnum = lnum;
 	    curwin->w_cursor.col = 0;
-	/*  beginline(BL_SOL | BL_FIX);*/
+	//  beginline(BL_SOL | BL_FIX);
 	}
 	else
 	    goto_byte(drop_thePosition.startRange + 1);
     }
 
-    /* Update the screen display */
+    // Update the screen display
     update_screen(NOT_VALID);
 
-    /* Select the text if possible */
+    // Select the text if possible
     if (drop_gotPosition)
     {
 	VIsual_active = TRUE;
@@ -1047,14 +1049,14 @@ drop_callback(void *cookie UNUSED)
     }
 }
 
-/* The IDE uses the optional keyAEPosition parameter to tell the ed-
-   itor the selection range. If lineNum is zero or greater, scroll the text
-   to the specified line. If lineNum is less than zero, use the values in
-   startRange and endRange to select the specified characters. Scroll
-   the text to display the selection. If lineNum, startRange, and
-   endRange are all negative, there is no selection range specified.
+/*
+ * The IDE uses the optional keyAEPosition parameter to tell the ed-
+ * itor the selection range. If lineNum is zero or greater, scroll the text
+ * to the specified line. If lineNum is less than zero, use the values in
+ * startRange and endRange to select the specified characters. Scroll
+ * the text to display the selection. If lineNum, startRange, and
+ * endRange are all negative, there is no selection range specified.
  */
-
     pascal OSErr
 HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
 {
@@ -1076,7 +1078,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     short	gotPosition = false;
     long	lnum;
 
-    /* the direct object parameter is the list of aliases to files (one or more) */
+    // the direct object parameter is the list of aliases to files (one or more)
     error = AEGetParamDesc(theAEvent, keyDirectObject, typeAEList, &theList);
     if (error)
 	return error;
@@ -1111,7 +1113,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
 
     if (error)
     {
-      /* TODO: empty fnames[] first */
+      // TODO: empty fnames[] first
       vim_free(fnames);
       return (error);
     }
@@ -1122,7 +1124,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
 	char_u *p;
 	int fnum = -1;
 
-	/* these are the initial files dropped on the Vim icon */
+	// these are the initial files dropped on the Vim icon
 	for (i = 0 ; i < numFiles; i++)
 	{
 	    if (ga_grow(&global_alist.al_ga, 1) == FAIL
@@ -1134,8 +1136,8 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
 		fnum = GARGLIST[GARGCOUNT - 1].ae_fnum;
 	}
 
-	/* If the file name was already in the buffer list we need to switch
-	 * to it. */
+	// If the file name was already in the buffer list we need to switch
+	// to it.
 	if (curbuf->b_fnum != fnum)
 	{
 	    char_u cmd[30];
@@ -1144,7 +1146,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
 	    do_cmdline_cmd(cmd);
 	}
 
-	/* Change directory to the location of the first file. */
+	// Change directory to the location of the first file.
 	if (GARGCOUNT > 0
 		      && vim_chdirfile(alist_name(&GARGLIST[0]), "drop") == OK)
 	    shorten_fnames(TRUE);
@@ -1152,7 +1154,7 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
 	goto finished;
     }
 
-    /* Handle the drop, :edit to get to the file */
+    // Handle the drop, :edit to get to the file
     drop_numFiles = numFiles;
     drop_gotPosition = gotPosition;
     drop_thePosition = thePosition;
@@ -1161,11 +1163,11 @@ HandleODocAE(const AppleEvent *theAEvent, AppleEvent *theReply, long refCon)
     setcursor();
     out_flush();
 
-    /* Fake mouse event to wake from stall */
+    // Fake mouse event to wake from stall
     PostEvent(mouseUp, 0);
 
 finished:
-    AEDisposeDesc(&theList); /* dispose what we allocated */
+    AEDisposeDesc(&theList); // dispose what we allocated
 
     error = HandleUnusedParms(theAEvent);
     return error;
@@ -1174,7 +1176,6 @@ finished:
 /*
  *
  */
-
     pascal OSErr
 Handle_aevt_oapp_AE(
 	const AppleEvent    *theAEvent,
@@ -1190,7 +1191,6 @@ Handle_aevt_oapp_AE(
 /*
  *
  */
-
     pascal OSErr
 Handle_aevt_quit_AE(
 	const AppleEvent    *theAEvent,
@@ -1203,7 +1203,7 @@ Handle_aevt_quit_AE(
     if (error)
 	return error;
 
-    /* Need to fake a :confirm qa */
+    // Need to fake a :confirm qa
     do_cmdline_cmd((char_u *)"confirm qa");
 
     return error;
@@ -1212,7 +1212,6 @@ Handle_aevt_quit_AE(
 /*
  *
  */
-
     pascal OSErr
 Handle_aevt_pdoc_AE(
 	const AppleEvent    *theAEvent,
@@ -1253,30 +1252,31 @@ InstallAEHandlers(void)
 {
     OSErr   error;
 
-    /* install open application handler */
+    // install open application handler
     error = AEInstallEventHandler(kCoreEventClass, kAEOpenApplication,
 		    NewAEEventHandlerUPP(Handle_aevt_oapp_AE), 0, false);
     if (error)
 	return error;
 
-    /* install quit application handler */
+    // install quit application handler
     error = AEInstallEventHandler(kCoreEventClass, kAEQuitApplication,
 		    NewAEEventHandlerUPP(Handle_aevt_quit_AE), 0, false);
     if (error)
 	return error;
 
-    /* install open document handler */
+    // install open document handler
     error = AEInstallEventHandler(kCoreEventClass, kAEOpenDocuments,
 		    NewAEEventHandlerUPP(HandleODocAE), 0, false);
     if (error)
 	return error;
 
-    /* install print document handler */
+    // install print document handler
     error = AEInstallEventHandler(kCoreEventClass, kAEPrintDocuments,
 		    NewAEEventHandlerUPP(Handle_aevt_pdoc_AE), 0, false);
 
-/* Install Core Suite */
-/*  error = AEInstallEventHandler(kAECoreSuite, kAEClone,
+// Install Core Suite
+#if 0
+    error = AEInstallEventHandler(kAECoreSuite, kAEClone,
 		    NewAEEventHandlerUPP(Handle_unknown_AE), nil, false);
 
     error = AEInstallEventHandler(kAECoreSuite, kAEClose,
@@ -1314,7 +1314,7 @@ InstallAEHandlers(void)
 
     error = AEInstallEventHandler(kAECoreSuite, kAESetData,
 		    NewAEEventHandlerUPP(Handle_unknown_AE), nil, false);
-*/
+#endif
 
 #ifdef FEAT_CW_EDITOR
     /*
@@ -1335,7 +1335,7 @@ InstallAEHandlers(void)
     return error;
 
 }
-#endif /* USE_AEVENT */
+#endif // USE_AEVENT
 
 
 /*
@@ -1361,7 +1361,7 @@ FontPanelHandler(
 	FMFontSize newSize;
 	FMFontStyle newStyle;
 
-	/* Retrieve the font family ID number. */
+	// Retrieve the font family ID number.
 	status = GetEventParameter(inEvent, kEventParamFMFontFamily,
 		/*inDesiredType=*/typeFMFontFamily, /*outActualType=*/NULL,
 		/*inBufferSize=*/sizeof(FMFontFamily), /*outActualSize=*/NULL,
@@ -1369,13 +1369,13 @@ FontPanelHandler(
 	if (status == noErr)
 	    gFontPanelInfo.family = newFamily;
 
-	/* Retrieve the font size. */
+	// Retrieve the font size.
 	status = GetEventParameter(inEvent, kEventParamFMFontSize,
 		typeFMFontSize, NULL, sizeof(FMFontSize), NULL, &newSize);
 	if (status == noErr)
 	    gFontPanelInfo.size = newSize;
 
-	/* Retrieve the font style (bold, etc.).  Currently unused. */
+	// Retrieve the font style (bold, etc.).  Currently unused.
 	status = GetEventParameter(inEvent, kEventParamFMFontStyle,
 		typeFMFontStyle, NULL, sizeof(FMFontStyle), NULL, &newStyle);
 	if (status == noErr)
@@ -1390,7 +1390,7 @@ InstallFontPanelHandler(void)
 {
     EventTypeSpec eventTypes[2];
     EventHandlerUPP handlerUPP;
-    /* EventHandlerRef handlerRef; */
+    // EventHandlerRef handlerRef;
 
     eventTypes[0].eventClass = kEventClassFont;
     eventTypes[0].eventKind  = kEventFontSelection;
@@ -1422,20 +1422,20 @@ GetFontPanelSelection(char_u *outName)
 
     if (FMGetFontFamilyName(gFontPanelInfo.family, buf) == noErr)
     {
-	/* Canonicalize localized font names */
+	// Canonicalize localized font names
 	if (FMGetFontFromFontFamilyInstance(gFontPanelInfo.family,
 		    gFontPanelInfo.style, &fid, NULL) != noErr)
 	    return;
 
-	/* Request font name with Mac encoding (otherwise we could
-	 * get an unwanted utf-16 name) */
+	// Request font name with Mac encoding (otherwise we could
+	// get an unwanted utf-16 name)
 	if (ATSUFindFontName(fid, kFontFullName, kFontMacintoshPlatform,
 		    kFontNoScriptCode, kFontNoLanguageCode,
 		    255, (char *)outName, &fontNameLen, NULL) != noErr)
 	    return;
 
-	/* Only encode font size, because style (bold, italic, etc) is
-	 * already part of the font full name */
+	// Only encode font size, because style (bold, italic, etc) is
+	// already part of the font full name
 	vim_snprintf((char *)styleString, FONT_STYLE_BUFFER_SIZE, ":h%d",
 		gFontPanelInfo.size/*,
 		((gFontPanelInfo.style & bold)!=0 ? ":b" : ""),
@@ -1463,23 +1463,22 @@ GetFontPanelSelection(char_u *outName)
  *
  *  Returns the index inside the menu where
  */
-    short /* Should we return MenuItemIndex? */
+    short // Should we return MenuItemIndex?
 gui_mac_get_menu_item_index(vimmenu_T *pMenu)
 {
     short	index;
     short	itemIndex = -1;
     vimmenu_T	*pBrother;
 
-    /* Only menu without parent are the:
-     * -menu in the menubar
-     * -popup menu
-     * -toolbar (guess)
-     *
-     * Which are not items anyway.
-     */
+    // Only menu without parent are the:
+    // -menu in the menubar
+    // -popup menu
+    // -toolbar (guess)
+    //
+    // Which are not items anyway.
     if (pMenu->parent)
     {
-	/* Start from the Oldest Brother */
+	// Start from the Oldest Brother
 	pBrother = pMenu->parent->children;
 	index = 1;
 	while ((pBrother) && (itemIndex == -1))
@@ -1501,13 +1500,12 @@ gui_mac_get_vim_menu(short menuID, short itemIndex, vimmenu_T *pMenu)
     vimmenu_T	*pElder = pMenu->parent;
 
 
-    /* Only menu without parent are the:
-     * -menu in the menubar
-     * -popup menu
-     * -toolbar (guess)
-     *
-     * Which are not items anyway.
-     */
+    // Only menu without parent are the:
+    // -menu in the menubar
+    // -popup menu
+    // -toolbar (guess)
+    //
+    // Which are not items anyway.
 
     if ((pElder) && (pElder->submenu_id == menuID))
     {
@@ -1554,12 +1552,12 @@ gui_mac_drag_thumb(ControlHandle theControl, short partCode)
     if (sb == NULL)
 	return;
 
-    /* Need to find value by diff between Old Poss New Pos */
+    // Need to find value by diff between Old Poss New Pos
     value = GetControl32BitValue(theControlToUse);
     dragging = (partCode != 0);
 
-    /* When "allow_scrollbar" is FALSE still need to remember the new
-     * position, but don't actually scroll by setting "dont_scroll". */
+    // When "allow_scrollbar" is FALSE still need to remember the new
+    // position, but don't actually scroll by setting "dont_scroll".
     dont_scroll = !allow_scrollbar;
     gui_drag_scrollbar(sb, value, dragging);
     dont_scroll = dont_scroll_save;
@@ -1569,7 +1567,7 @@ gui_mac_drag_thumb(ControlHandle theControl, short partCode)
     void
 gui_mac_scroll_action(ControlHandle theControl, short partCode)
 {
-    /* TODO: have live support */
+    // TODO: have live support
     scrollbar_T *sb, *sb_info;
     long	data;
     long	value;
@@ -1582,7 +1580,7 @@ gui_mac_scroll_action(ControlHandle theControl, short partCode)
     if (sb == NULL)
 	return;
 
-    if (sb->wp != NULL)		/* Left or right scrollbar */
+    if (sb->wp != NULL)		// Left or right scrollbar
     {
 	/*
 	 * Careful: need to get scrollbar info out of first (left) scrollbar
@@ -1592,11 +1590,11 @@ gui_mac_scroll_action(ControlHandle theControl, short partCode)
 	sb_info = &sb->wp->w_scrollbars[0];
 
 	if (sb_info->size > 5)
-	    page = sb_info->size - 2;	/* use two lines of context */
+	    page = sb_info->size - 2;	// use two lines of context
 	else
 	    page = sb_info->size;
     }
-    else			/* Bottom scrollbar */
+    else			// Bottom scrollbar
     {
 	sb_info = sb;
 	page = curwin->w_width - 5;
@@ -1612,13 +1610,13 @@ gui_mac_scroll_action(ControlHandle theControl, short partCode)
     }
 
     value = sb_info->value + data;
-/*  if (value > sb_info->max)
-	value = sb_info->max;
-    else if (value < 0)
-	value = 0;*/
+//  if (value > sb_info->max)
+//      value = sb_info->max;
+//  else if (value < 0)
+//	value = 0;
 
-    /* When "allow_scrollbar" is FALSE still need to remember the new
-     * position, but don't actually scroll by setting "dont_scroll". */
+    // When "allow_scrollbar" is FALSE still need to remember the new
+    // position, but don't actually scroll by setting "dont_scroll".
     dont_scroll = !allow_scrollbar;
     gui_drag_scrollbar(sb, value, dragging);
     dont_scroll = dont_scroll_save;
@@ -1626,7 +1624,8 @@ gui_mac_scroll_action(ControlHandle theControl, short partCode)
     out_flush();
     gui_mch_set_scrollbar_thumb(sb, value, sb_info->size, sb_info->max);
 
-/*  if (sb_info->wp != NULL)
+#if 0
+    if (sb_info->wp != NULL)
     {
 	win_T	*wp;
 	int	sb_num;
@@ -1642,7 +1641,8 @@ gui_mac_scroll_action(ControlHandle theControl, short partCode)
 	    gui_do_scroll();
 	    gui_mch_set_scrollbar_thumb(sb, value, sb_info->size, sb_info->max);
 	}
-    }*/
+    }
+#endif
 }
 
 /*
@@ -1676,7 +1676,7 @@ gui_mac_doInContentClick(EventRecord *theEvent, WindowPtr whichWindow)
 
     if (theControl != NUL)
     {
-	/* We hit a scrollbar */
+	// We hit a scrollbar
 
 	if (thePortion != kControlIndicatorPart)
 	{
@@ -1692,24 +1692,24 @@ gui_mac_doInContentClick(EventRecord *theEvent, WindowPtr whichWindow)
 #else
 	    TrackControl(theControl, thePoint, NULL);
 #endif
-	    /* pass 0 as the part to tell gui_mac_drag_thumb, that the mouse
-	     * button has been released */
-	    gui_mac_drag_thumb(theControl, 0); /* Should it be thePortion ? (Dany) */
+	    // pass 0 as the part to tell gui_mac_drag_thumb, that the mouse
+	    // button has been released
+	    gui_mac_drag_thumb(theControl, 0); // Should it be thePortion ? (Dany)
 	    dragged_sb = NULL;
 	}
     }
     else
     {
-	/* We are inside the contents */
+	// We are inside the contents
 
-	/* Convert the CTRL, OPTION, SHIFT and CMD key */
+	// Convert the CTRL, OPTION, SHIFT and CMD key
 	vimModifiers = EventModifiers2VimMouseModifiers(theEvent->modifiers);
 
-	/* Defaults to MOUSE_LEFT as there's only one mouse button */
+	// Defaults to MOUSE_LEFT as there's only one mouse button
 	vimMouseButton = MOUSE_LEFT;
 
-	/* Convert the CTRL_MOUSE_LEFT to MOUSE_RIGHT */
-	/* TODO: NEEDED? */
+	// Convert the CTRL_MOUSE_LEFT to MOUSE_RIGHT
+	// TODO: NEEDED?
 	clickIsPopup = FALSE;
 
 	if (mouse_model_popup() && IsShowContextualMenuClick(theEvent))
@@ -1719,20 +1719,18 @@ gui_mac_doInContentClick(EventRecord *theEvent, WindowPtr whichWindow)
 	    clickIsPopup = TRUE;
 	}
 
-	/* Is it a double click ? */
+	// Is it a double click ?
 	dblClick = ((theEvent->when - lastMouseTick) < GetDblTime());
 
-	/* Send the mouse click to Vim */
+	// Send the mouse click to Vim
 	gui_send_mouse_event(vimMouseButton, thePoint.h,
 					  thePoint.v, dblClick, vimModifiers);
 
-	/* Create the rectangle around the cursor to detect
-	 * the mouse dragging
-	 */
+	// Create the rectangle around the cursor to detect
+	// the mouse dragging
 #if 0
-	/* TODO: Do we need to this even for the contextual menu?
-	 * It may be require for popup_setpos, but for popup?
-	 */
+	// TODO: Do we need to this even for the contextual menu?
+	// It may be require for popup_setpos, but for popup?
 	if (vimMouseButton == MOUSE_LEFT)
 #endif
 	{
@@ -1756,7 +1754,7 @@ gui_mac_doInDragClick(Point where, WindowPtr whichWindow)
     Rect	movingLimits;
     Rect	*movingLimitsPtr = &movingLimits;
 
-    /* TODO: may try to prevent move outside screen? */
+    // TODO: may try to prevent move outside screen?
     movingLimitsPtr = GetRegionBounds(GetGrayRgn(), &movingLimits);
     DragWindow(whichWindow, where, movingLimitsPtr);
 }
@@ -1777,8 +1775,8 @@ gui_mac_doInGrowClick(Point where, WindowPtr whichWindow)
 
     resizeLimitsPtr = GetRegionBounds(GetGrayRgn(), &resizeLimits);
 
-    /* Set the minimum size */
-    /* TODO: Should this come from Vim? */
+    // Set the minimum size
+    // TODO: Should this come from Vim?
     resizeLimits.top = 100;
     resizeLimits.left = 100;
 
@@ -1800,13 +1798,13 @@ gui_mac_doInZoomClick(EventRecord *theEvent, WindowPtr whichWindow)
     Point	p;
     short	thePart;
 
-    /* ideal width is current */
+    // ideal width is current
     p.h = Columns * gui.char_width + 2 * gui.border_offset;
     if (gui.which_scrollbars[SBAR_LEFT])
 	p.h += gui.scrollbar_width;
     if (gui.which_scrollbars[SBAR_RIGHT])
 	p.h += gui.scrollbar_width;
-    /* ideal height is as high as we can get */
+    // ideal height is as high as we can get
     p.v = 15 * 1024;
 
     thePart = IsWindowInStandardState(whichWindow, &p, &r)
@@ -1815,9 +1813,9 @@ gui_mac_doInZoomClick(EventRecord *theEvent, WindowPtr whichWindow)
     if (!TrackBox(whichWindow, theEvent->where, thePart))
 	return;
 
-    /* use returned width */
+    // use returned width
     p.h = r.right - r.left;
-    /* adjust returned height */
+    // adjust returned height
     p.v = r.bottom - r.top - 2 * gui.border_offset;
     if (gui.which_scrollbars[SBAR_BOTTOM])
 	p.v -= gui.scrollbar_height;
@@ -1861,46 +1859,42 @@ gui_mac_doUpdateEvent(EventRecord *event)
     if (updateRgn == NULL)
 	return;
 
-    /* This could be done by the caller as we
-     * don't require anything else out of the event
-     */
+    // This could be done by the caller as we
+    // don't require anything else out of the event
     whichWindow = (WindowPtr) event->message;
 
-    /* Save Current Port */
+    // Save Current Port
     GetPort(&savePort);
 
-    /* Select the Window's Port */
+    // Select the Window's Port
     SetPortWindowPort(whichWindow);
 
-    /* Let's update the window */
+    // Let's update the window
       BeginUpdate(whichWindow);
-	/* Redraw the biggest rectangle covering the area
-	 * to be updated.
-	 */
+	// Redraw the biggest rectangle covering the area
+	// to be updated.
 	GetPortVisibleRegion(GetWindowPort(whichWindow), updateRgn);
 # if 0
-	/* Would be more appropriate to use the following but doesn't
-	 * seem to work under MacOS X (Dany)
-	 */
+	// Would be more appropriate to use the following but doesn't
+	// seem to work under MacOS X (Dany)
 	GetWindowRegion(whichWindow, kWindowUpdateRgn, updateRgn);
 # endif
 
-	/* Use the HLock useless in Carbon? Is it harmful?*/
+	// Use the HLock useless in Carbon? Is it harmful?
 	HLock((Handle) updateRgn);
 
 	  updateRectPtr = GetRegionBounds(updateRgn, &updateRect);
 # if 0
-	  /* Code from original Carbon Port (using GetWindowRegion.
-	   * I believe the UpdateRgn is already in local (Dany)
-	   */
-	  GlobalToLocal(&topLeft(updateRect)); /* preCarbon? */
+	  // Code from original Carbon Port (using GetWindowRegion.
+	  // I believe the UpdateRgn is already in local (Dany)
+	  GlobalToLocal(&topLeft(updateRect)); // preCarbon?
 	  GlobalToLocal(&botRight(updateRect));
 # endif
-	  /* Update the content (i.e. the text) */
+	  // Update the content (i.e. the text)
 	  gui_redraw(updateRectPtr->left, updateRectPtr->top,
 		      updateRectPtr->right - updateRectPtr->left,
 		      updateRectPtr->bottom   - updateRectPtr->top);
-	  /* Clear the border areas if needed */
+	  // Clear the border areas if needed
 	  gui_mch_set_bg_color(gui.back_pixel);
 	  if (updateRectPtr->left < FILL_X(0))
 	  {
@@ -1927,11 +1921,11 @@ gui_mac_doUpdateEvent(EventRecord *event)
 	HUnlock((Handle) updateRgn);
 	DisposeRgn(updateRgn);
 
-	/* Update scrollbars */
+	// Update scrollbars
 	DrawControls(whichWindow);
 
-	/* Update the GrowBox */
-	/* Taken from FAQ 33-27 */
+	// Update the GrowBox
+	// Taken from FAQ 33-27
 	saveRgn = NewRgn();
 	GetWindowBounds(whichWindow, kWindowGrowRgn, &growRect);
 	GetClip(saveRgn);
@@ -1941,7 +1935,7 @@ gui_mac_doUpdateEvent(EventRecord *event)
 	DisposeRgn(saveRgn);
       EndUpdate(whichWindow);
 
-    /* Restore original Port */
+    // Restore original Port
     SetPort(savePort);
 }
 
@@ -1955,7 +1949,7 @@ gui_mac_doActivateEvent(EventRecord *event)
     WindowPtr	whichWindow;
 
     whichWindow = (WindowPtr) event->message;
-    /* Dim scrollbars */
+    // Dim scrollbars
     if (whichWindow == gui.VimWindow)
     {
 	ControlRef rootControl;
@@ -1966,7 +1960,7 @@ gui_mac_doActivateEvent(EventRecord *event)
 	    DeactivateControl(rootControl);
     }
 
-    /* Activate */
+    // Activate
     gui_focus_change((event->modifiers) & activeFlag);
 }
 
@@ -1978,20 +1972,18 @@ gui_mac_doActivateEvent(EventRecord *event)
     void
 gui_mac_doSuspendEvent(EventRecord *event)
 {
-    /* The frontmost application just changed */
+    // The frontmost application just changed
 
-    /* NOTE: the suspend may happen before the deactivate
-     *       seen on MacOS X
-     */
+    // NOTE: the suspend may happen before the deactivate
+    //       seen on MacOS X
 
-    /* May not need to change focus as the window will
-     * get an activate/deactivate event
-     */
+    // May not need to change focus as the window will
+    // get an activate/deactivate event
     if (event->message & 1)
-	/* Resume */
+	// Resume
 	gui_focus_change(TRUE);
     else
-	/* Suspend */
+	// Suspend
 	gui_focus_change(FALSE);
 }
 
@@ -2068,8 +2060,8 @@ OSStatus gui_mac_update_input_area(
     return eventNotHandledErr;
 }
 
-static int dialog_busy = FALSE;	    /* TRUE when gui_mch_dialog() wants the
-				       keys */
+static int dialog_busy = FALSE;	    // TRUE when gui_mch_dialog() wants the
+				    // keys
 
 # define INLINE_KEY_BUFFER_SIZE 80
     static pascal OSStatus
@@ -2077,7 +2069,7 @@ gui_mac_unicode_key_event(
 	EventHandlerCallRef nextHandler,
 	EventRef	    theEvent)
 {
-    /* Multibyte-friendly key event handler */
+    // Multibyte-friendly key event handler
     OSStatus	err = -1;
     UInt32	actualSize;
     UniChar	*text;
@@ -2093,11 +2085,11 @@ gui_mac_unicode_key_event(
     int		i;
     EventRef	keyEvent;
 
-    /* Mask the mouse (as per user setting) */
+    // Mask the mouse (as per user setting)
     if (p_mh)
 	ObscureCursor();
 
-    /* Don't use the keys when the dialog wants them. */
+    // Don't use the keys when the dialog wants them.
     if (dialog_busy)
 	return eventNotHandledErr;
 
@@ -2131,13 +2123,13 @@ gui_mac_unicode_key_event(
 
 #ifndef USE_CMD_KEY
     if (modifiers & cmdKey)
-	goto done;  /* Let system handle Cmd+... */
+	goto done;  // Let system handle Cmd+...
 #endif
 
     key_char = charcode;
     vimModifiers = EventModifiers2VimModifiers(modifiers);
 
-    /* Find the special key (eg., for cursor keys) */
+    // Find the special key (eg., for cursor keys)
     if (actualSize <= sizeof(UniChar) &&
 	    ((text[0] < 0x20) || (text[0] == 0x7f)))
     {
@@ -2153,30 +2145,30 @@ gui_mac_unicode_key_event(
 	    }
     }
 
-    /* Intercept CMD-. and CTRL-c */
+    // Intercept CMD-. and CTRL-c
     if (((modifiers & controlKey) && key_char == 'c') ||
 	    ((modifiers & cmdKey) && key_char == '.'))
 	got_int = TRUE;
 
     if (!isSpecial)
     {
-	/* remove SHIFT for keys that are already shifted, e.g.,
-	 * '(' and '*' */
+	// remove SHIFT for keys that are already shifted, e.g.,
+	// '(' and '*'
 	if (key_char < 0x100 && !isalpha(key_char) && isprint(key_char))
 	    vimModifiers &= ~MOD_MASK_SHIFT;
 
-	/* remove CTRL from keys that already have it */
+	// remove CTRL from keys that already have it
 	if (key_char < 0x20)
 	    vimModifiers &= ~MOD_MASK_CTRL;
 
-	/* don't process unicode characters here */
+	// don't process unicode characters here
 	if (!IS_SPECIAL(key_char))
 	{
-	    /* Following code to simplify and consolidate vimModifiers
-	     * taken liberally from gui_w48.c */
+	    // Following code to simplify and consolidate vimModifiers
+	    // taken liberally from gui_w48.c
 	    key_char = simplify_key(key_char, (int *)&vimModifiers);
 
-	    /* Interpret META, include SHIFT, etc. */
+	    // Interpret META, include SHIFT, etc.
 	    key_char = extract_modifiers(key_char, (int *)&vimModifiers,
 		    TRUE, NULL);
 	    if (key_char == CSI)
@@ -2206,7 +2198,7 @@ gui_mac_unicode_key_event(
 	to = mac_utf16_to_enc(text, actualSize, &encLen);
 	if (to)
 	{
-	    /* This is basically add_to_input_buf_csi() */
+	    // This is basically add_to_input_buf_csi()
 	    for (i = 0; i < encLen && len < (INLINE_KEY_BUFFER_SIZE-1); ++i)
 	    {
 		result[len++] = to[i];
@@ -2227,8 +2219,8 @@ done:
     vim_free(text);
     if (err == noErr)
     {
-	/* Fake event to wake up WNE (required to get
-	 * key repeat working */
+	// Fake event to wake up WNE (required to get
+	// key repeat working
 	PostEvent(keyUp, 0);
 	return noErr;
     }
@@ -2239,7 +2231,7 @@ done:
     void
 gui_mac_doKeyEvent(EventRecord *theEvent)
 {
-    /* TODO: add support for COMMAND KEY */
+    // TODO: add support for COMMAND KEY
     long		menu;
     unsigned char	string[20];
     short		num, i;
@@ -2249,16 +2241,16 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
     int			modifiers;
     int			simplify = FALSE;
 
-    /* Mask the mouse (as per user setting) */
+    // Mask the mouse (as per user setting)
     if (p_mh)
 	ObscureCursor();
 
-    /* Get the key code and its ASCII representation */
+    // Get the key code and its ASCII representation
     key_sym = ((theEvent->message & keyCodeMask) >> 8);
     key_char = theEvent->message & charCodeMask;
     num = 1;
 
-    /* Intercept CTRL-C */
+    // Intercept CTRL-C
     if (theEvent->modifiers & controlKey)
     {
 	if (key_char == Ctrl_C && ctrl_c_interrupts)
@@ -2266,7 +2258,7 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
 	else if ((theEvent->modifiers & ~(controlKey|shiftKey)) == 0
 		&& (key_char == '2' || key_char == '6'))
 	{
-	    /* CTRL-^ and CTRL-@ don't work in the normal way. */
+	    // CTRL-^ and CTRL-@ don't work in the normal way.
 	    if (key_char == '2')
 		key_char = Ctrl_AT;
 	    else
@@ -2275,16 +2267,16 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
 	}
     }
 
-    /* Intercept CMD-. */
+    // Intercept CMD-.
     if (theEvent->modifiers & cmdKey)
 	if (key_char == '.')
 	    got_int = TRUE;
 
-    /* Handle command key as per menu */
-    /* TODO: should override be allowed? Require YAO or could use 'winaltkey' */
+    // Handle command key as per menu
+    // TODO: should override be allowed? Require YAO or could use 'winaltkey'
     if (theEvent->modifiers & cmdKey)
-	/* Only accept CMD alone or with CAPLOCKS and the mouse button.
-	 * Why the mouse button? */
+	// Only accept CMD alone or with CAPLOCKS and the mouse button.
+	// Why the mouse button?
 	if ((theEvent->modifiers & (~(cmdKey | btnState | alphaLock))) == 0)
 	{
 	    menu = MenuKey(key_char);
@@ -2295,23 +2287,23 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
 	    }
 	}
 
-    /* Convert the modifiers */
+    // Convert the modifiers
     modifiers = EventModifiers2VimModifiers(theEvent->modifiers);
 
 
-    /* Handle special keys. */
+    // Handle special keys.
 #if 0
-    /* Why has this been removed? */
+    // Why has this been removed?
     if	(!(theEvent->modifiers & (cmdKey | controlKey | rightControlKey)))
 #endif
     {
-	/* Find the special key (for non-printable keyt_char) */
+	// Find the special key (for non-printable keyt_char)
 	if  ((key_char < 0x20) || (key_char == 0x7f))
 	    for (i = 0; special_keys[i].key_sym != (KeySym)0; i++)
 		if (special_keys[i].key_sym == key_sym)
 		{
 # if 0
-		    /* We currently don't have not so special key */
+		    // We currently don't have not so special key
 		    if (special_keys[i].vim_code1 == NUL)
 			key_char = special_keys[i].vim_code0;
 		    else
@@ -2323,12 +2315,12 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
 		}
     }
 
-    /* For some keys the modifier is included in the char itself. */
+    // For some keys the modifier is included in the char itself.
     if (simplify || key_char == TAB || key_char == ' ')
 	key_char = simplify_key(key_char, &modifiers);
 
-    /* Add the modifier to the input bu if needed */
-    /* Do not want SHIFT-A or CTRL-A with modifier */
+    // Add the modifier to the input bu if needed
+    // Do not want SHIFT-A or CTRL-A with modifier
     if (!IS_SPECIAL(key_char)
 	    && key_sym != vk_Space
 	    && key_sym != vk_Tab
@@ -2337,7 +2329,7 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
 	    && key_sym != vk_Esc)
     {
 #if 1
-    /* Clear modifiers when only one modifier is set */
+    // Clear modifiers when only one modifier is set
 	if ((modifiers == MOD_MASK_SHIFT)
 		|| (modifiers == MOD_MASK_CTRL)
 		|| (modifiers == MOD_MASK_ALT))
@@ -2366,8 +2358,8 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
 	}
 	else
 	{
-	    /* Convert characters when needed (e.g., from MacRoman to latin1).
-	     * This doesn't work for the NUL byte. */
+	    // Convert characters when needed (e.g., from MacRoman to latin1).
+	    // This doesn't work for the NUL byte.
 	    if (input_conv.vc_type != CONV_NONE && key_char > 0)
 	    {
 		char_u	from[2], *to;
@@ -2400,7 +2392,7 @@ gui_mac_doKeyEvent(EventRecord *theEvent)
 
 	if (len == 1 && string[0] == CSI)
 	{
-	    /* Turn CSI into K_CSI. */
+	    // Turn CSI into K_CSI.
 	    string[ len++ ] = KS_EXTRA;
 	    string[ len++ ] = KE_CSI;
 	}
@@ -2421,8 +2413,8 @@ gui_mac_doMouseDownEvent(EventRecord *theEvent)
     thePart = FindWindow(theEvent->where, &whichWindow);
 
 #ifdef FEAT_GUI_TABLINE
-    /* prevent that the vim window size changes if it's activated by a
-       click into the tab pane */
+    // prevent that the vim window size changes if it's activated by a
+    // click into the tab pane
     if (whichWindow == drawer)
 	return;
 #endif
@@ -2430,7 +2422,7 @@ gui_mac_doMouseDownEvent(EventRecord *theEvent)
     switch (thePart)
     {
 	case (inDesk):
-	    /* TODO: what to do? */
+	    // TODO: what to do?
 	    break;
 
 	case (inMenuBar):
@@ -2482,7 +2474,7 @@ gui_mac_doMouseMovedEvent(EventRecord *event)
 	    gui_send_mouse_event(MOUSE_DRAG, thePoint.h,
 					     thePoint.v, FALSE, vimModifiers);
 
-    /* Reset the region from which we move in and out */
+    // Reset the region from which we move in and out
     SetRect(&dragRect, FILL_X(X_2_COL(thePoint.h)),
 			FILL_Y(Y_2_ROW(thePoint.v)),
 			FILL_X(X_2_COL(thePoint.h)+1),
@@ -2502,8 +2494,8 @@ gui_mac_doMouseUpEvent(EventRecord *theEvent)
     Point   thePoint;
     int_u   vimModifiers;
 
-    /* TODO: Properly convert the Contextual menu mouse-up */
-    /*       Potential source of the double menu */
+    // TODO: Properly convert the Contextual menu mouse-up
+    //       Potential source of the double menu
     lastMouseTick = theEvent->when;
     dragRectEnbl = FALSE;
     dragRectControl = kCreateEmpty;
@@ -2533,7 +2525,7 @@ gui_mac_mouse_wheel(EventHandlerCallRef nextHandler, EventRef theEvent,
     if (noErr == GetEventParameter(theEvent, kEventParamMouseWheelAxis,
 			  typeMouseWheelAxis, NULL, sizeof(axis), NULL, &axis)
 	    && axis != kEventMouseWheelAxisY)
-	goto bail; /* Vim only does up-down scrolling */
+	goto bail; // Vim only does up-down scrolling
 
     if (noErr != GetEventParameter(theEvent, kEventParamMouseWheelDelta,
 			      typeSInt32, NULL, sizeof(SInt32), NULL, &delta))
@@ -2562,7 +2554,7 @@ gui_mac_mouse_wheel(EventHandlerCallRef nextHandler, EventRef theEvent,
     gui_send_mouse_event((delta > 0) ? MOUSE_4 : MOUSE_5,
 					    point.h, point.v, FALSE, vim_mod);
 
-    /* post a bogus event to wake up WaitNextEvent */
+    // post a bogus event to wake up WaitNextEvent
     PostEvent(keyUp, 0);
 
     return noErr;
@@ -2578,7 +2570,7 @@ bail:
      void
 gui_mch_mousehide(int hide)
 {
-    /* TODO */
+    // TODO
 }
 
 #if 0
@@ -2605,14 +2597,14 @@ gui_mac_handle_contextual_menu(EventRecord *event)
 
     if (CntxType == kCMMenuItemSelected)
     {
-	/* Handle the menu CntxMenuID, CntxMenuItem */
-	/* The submenu can be handle directly by gui_mac_handle_menu */
-	/* But what about the current menu, is the many changed by ContextualMenuSelect */
+	// Handle the menu CntxMenuID, CntxMenuItem
+	// The submenu can be handle directly by gui_mac_handle_menu
+	// But what about the current menu, is the many changed by ContextualMenuSelect
 	gui_mac_handle_menu((CntxMenuID << 16) + CntxMenuItem);
     }
     else if (CntxMenuID == kCMShowHelpSelected)
     {
-	/* Should come up with the help */
+	// Should come up with the help
     }
 
 }
@@ -2628,10 +2620,10 @@ gui_mac_handle_menu(long menuChoice)
     short	item = LoWord(menuChoice);
     vimmenu_T	*theVimMenu = root_menu;
 
-    if (menu == 256)  /* TODO: use constant or gui.xyz */
+    if (menu == 256)  // TODO: use constant or gui.xyz
     {
 	if (item == 1)
-	    gui_mch_beep(); /* TODO: Popup dialog or do :intro */
+	    gui_mch_beep(); // TODO: Popup dialog or do :intro
     }
     else if (item != 0)
     {
@@ -2652,7 +2644,7 @@ gui_mac_handle_event(EventRecord *event)
 {
     OSErr	error;
 
-    /* Handle contextual menu right now (if needed) */
+    // Handle contextual menu right now (if needed)
     if (IsShowContextualMenuClick(event))
     {
 # if 0
@@ -2663,7 +2655,7 @@ gui_mac_handle_event(EventRecord *event)
 	return;
     }
 
-    /* Handle normal event */
+    // Handle normal event
     switch (event->what)
     {
 #ifndef USE_CARBONKEYHANDLER
@@ -2673,7 +2665,7 @@ gui_mac_handle_event(EventRecord *event)
 	    break;
 #endif
 	case (keyUp):
-	    /* We don't care about when the key is released */
+	    // We don't care about when the key is released
 	    break;
 
 	case (mouseDown):
@@ -2689,7 +2681,7 @@ gui_mac_handle_event(EventRecord *event)
 	    break;
 
 	case (diskEvt):
-	    /* We don't need special handling for disk insertion */
+	    // We don't need special handling for disk insertion
 	    break;
 
 	case (activateEvt):
@@ -2699,10 +2691,10 @@ gui_mac_handle_event(EventRecord *event)
 	case (osEvt):
 	    switch ((event->message >> 24) & 0xFF)
 	    {
-		case (0xFA): /* mouseMovedMessage */
+		case (0xFA): // mouseMovedMessage
 		    gui_mac_doMouseMovedEvent(event);
 		    break;
-		case (0x01): /* suspendResumeMessage */
+		case (0x01): // suspendResumeMessage
 		    gui_mac_doSuspendEvent(event);
 		    break;
 	    }
@@ -2710,8 +2702,8 @@ gui_mac_handle_event(EventRecord *event)
 
 #ifdef USE_AEVENT
 	case (kHighLevelEvent):
-	    /* Someone's talking to us, through AppleEvents */
-	    error = AEProcessAppleEvent(event); /* TODO: Error Handling */
+	    // Someone's talking to us, through AppleEvents
+	    error = AEProcessAppleEvent(event); // TODO: Error Handling
 	    break;
 #endif
     }
@@ -2749,7 +2741,7 @@ gui_mac_find_font(char_u *font_name)
     pFontName[0] = STRLEN(font_name);
     *p = c;
 
-    /* Get the font name, minus the style suffix (:h, etc) */
+    // Get the font name, minus the style suffix (:h, etc)
     char_u fontName[256];
     char_u *styleStart = vim_strchr(font_name, ':');
     size_t fontNameLen = styleStart ? styleStart - font_name : STRLEN(fontName);
@@ -2795,7 +2787,7 @@ gui_mac_find_font(char_u *font_name)
     }
 
 #else
-    /* name = C2Pascal_save(menu->dname); */
+    // name = C2Pascal_save(menu->dname);
     fontNamePtr = C2Pascal_save_and_remove_backslash(font_name);
 
     GetFNum(fontNamePtr, &font_id);
@@ -2804,7 +2796,7 @@ gui_mac_find_font(char_u *font_name)
 
     if (font_id == 0)
     {
-	/* Oups, the system font was it the one the user want */
+	// Oups, the system font was it the one the user want
 
 	if (FMGetFontFamilyName(systemFont, systemFontname) != noErr)
 	    return NOFONT;
@@ -2814,7 +2806,7 @@ gui_mac_find_font(char_u *font_name)
     if (*p == ':')
     {
 	p++;
-	/* Set the values found after ':' */
+	// Set the values found after ':'
 	while (*p)
 	{
 	    switch (*p++)
@@ -2832,7 +2824,7 @@ gui_mac_find_font(char_u *font_name)
     }
 
     if (size < 1)
-	size = 1;   /* Avoid having a size of 0 with system font */
+	size = 1;   // Avoid having a size of 0 with system font
 
     font = (size << 16) + ((long) font_id & 0xFFFF);
 
@@ -2853,7 +2845,7 @@ gui_mac_find_font(char_u *font_name)
     void
 gui_mch_prepare(int *argc, char **argv)
 {
-    /* TODO: Move most of this stuff toward gui_mch_init */
+    // TODO: Move most of this stuff toward gui_mch_init
 #ifdef USE_EXE_NAME
     FSSpec	applDir;
 # ifndef USE_FIND_BUNDLE_PATH
@@ -2875,7 +2867,7 @@ gui_mch_prepare(int *argc, char **argv)
     (void) InstallAEHandlers();
 #endif
 
-    pomme = NewMenu(256, "\p\024"); /* 0x14= = Apple Menu */
+    pomme = NewMenu(256, "\p\024"); // 0x14= = Apple Menu
 
     AppendMenu(pomme, "\pAbout VIM");
 
@@ -2901,7 +2893,7 @@ gui_mch_prepare(int *argc, char **argv)
     gui.char_ascent = 6;
     gui.num_rows = 24;
     gui.num_cols = 80;
-    gui.in_focus = TRUE; /* For the moment -> syn. of front application */
+    gui.in_focus = TRUE; // For the moment -> syn. of front application
 
     gScrollAction = NewControlActionUPP(gui_mac_scroll_action);
     gScrollDrag   = NewControlActionUPP(gui_mac_drag_thumb);
@@ -2914,21 +2906,20 @@ gui_mch_prepare(int *argc, char **argv)
 #ifdef USE_EXE_NAME
 # ifndef USE_FIND_BUNDLE_PATH
     HGetVol(volName, &applVRefNum, &applDirID);
-    /* TN2015: mention a possible bad VRefNum */
+    // TN2015: mention a possible bad VRefNum
     FSMakeFSSpec(applVRefNum, applDirID, "\p", &applDir);
 # else
-    /* OSErr GetApplicationBundleFSSpec(FSSpecPtr theFSSpecPtr)
-     * of TN2015
-     */
+    // OSErr GetApplicationBundleFSSpec(FSSpecPtr theFSSpecPtr)
+    // of TN2015
     (void)GetCurrentProcess(&psn);
-    /* if (err != noErr) return err; */
+    // if (err != noErr) return err;
 
     (void)GetProcessBundleLocation(&psn, &applFSRef);
-    /* if (err != noErr) return err; */
+    // if (err != noErr) return err;
 
     (void)FSGetCatalogInfo(&applFSRef, kFSCatInfoNone, NULL, NULL, &applDir, NULL);
 
-    /* This technic return NIL when we disallow_gui */
+    // This technic return NIL when we disallow_gui
 # endif
     exe_name = FullPathFromFSSpec_save(applDir);
 #endif
@@ -2942,10 +2933,9 @@ gui_mch_prepare(int *argc, char **argv)
     int
 gui_mch_init_check(void)
 {
-    /* TODO: For MacOS X find a way to return FAIL, if the user logged in
-     * using the >console
-     */
-    if (disallow_gui) /* see main.c for reason to disallow */
+    // TODO: For MacOS X find a way to return FAIL, if the user logged in
+    // using the >console
+    if (disallow_gui) // see main.c for reason to disallow
 	return FAIL;
     return OK;
 }
@@ -2960,7 +2950,7 @@ receiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag)
     int		count;
     int		i, j;
 
-    /* Get drop position, modifiers and count of items */
+    // Get drop position, modifiers and count of items
     {
 	Point	point;
 	SInt16	mouseUpModifiers;
@@ -2980,7 +2970,7 @@ receiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag)
     if (fnames == NULL)
 	return dragNotAcceptedErr;
 
-    /* Get file names dropped */
+    // Get file names dropped
     for (i = j = 0; i < count; ++i)
     {
 	DragItemRef	item;
@@ -3003,7 +2993,7 @@ receiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag)
 
     gui_handle_drop(x, y, modifiers, fnames, count);
 
-    /* Fake mouse event to wake from stall */
+    // Fake mouse event to wake from stall
     PostEvent(mouseUp, 0);
 
     return noErr;
@@ -3016,7 +3006,7 @@ receiveHandler(WindowRef theWindow, void *handlerRefCon, DragRef theDrag)
     int
 gui_mch_init(void)
 {
-    /* TODO: Move most of this stuff toward gui_mch_init */
+    // TODO: Move most of this stuff toward gui_mch_init
     Rect	    windRect;
     MenuHandle	    pomme;
     EventHandlerRef mouseWheelHandlerRef;
@@ -3024,7 +3014,7 @@ gui_mch_init(void)
     ControlRef	    rootControl;
 
     if (Gestalt(gestaltSystemVersion, &gMacSystemVersion) != noErr)
-	gMacSystemVersion = 0x1000; /* TODO: Default to minimum sensible value */
+	gMacSystemVersion = 0x1000; // TODO: Default to minimum sensible value
 
 #if 1
     InitCursor();
@@ -3035,7 +3025,7 @@ gui_mch_init(void)
     (void) InstallAEHandlers();
 #endif
 
-    pomme = NewMenu(256, "\p\024"); /* 0x14= = Apple Menu */
+    pomme = NewMenu(256, "\p\024"); // 0x14= = Apple Menu
 
     AppendMenu(pomme, "\pAbout VIM");
 
@@ -3063,12 +3053,12 @@ gui_mch_init(void)
     gui.char_ascent = 6;
     gui.num_rows = 24;
     gui.num_cols = 80;
-    gui.in_focus = TRUE; /* For the moment -> syn. of front application */
+    gui.in_focus = TRUE; // For the moment -> syn. of front application
 
     gScrollAction = NewControlActionUPP(gui_mac_scroll_action);
     gScrollDrag   = NewControlActionUPP(gui_mac_drag_thumb);
 
-    /* Install Carbon event callbacks. */
+    // Install Carbon event callbacks.
     (void)InstallFontPanelHandler();
 
     dragRectEnbl = FALSE;
@@ -3076,16 +3066,16 @@ gui_mch_init(void)
     dragRectControl = kCreateEmpty;
     cursorRgn = NewRgn();
 #endif
-    /* Display any pending error messages */
+    // Display any pending error messages
     display_errors();
 
-    /* Get background/foreground colors from system */
-    /* TODO: do the appropriate call to get real defaults */
+    // Get background/foreground colors from system
+    // TODO: do the appropriate call to get real defaults
     gui.norm_pixel = 0x00000000;
     gui.back_pixel = 0x00FFFFFF;
 
-    /* Get the colors from the "Normal" group (set in syntax.c or in a vimrc
-     * file). */
+    // Get the colors from the "Normal" group (set in syntax.c or in a vimrc
+    // file).
     set_normal_colors();
 
     /*
@@ -3096,8 +3086,8 @@ gui_mch_init(void)
     gui.def_norm_pixel = gui.norm_pixel;
     gui.def_back_pixel = gui.back_pixel;
 
-    /* Get the colors for the highlight groups (gui_check_colors() might have
-     * changed them) */
+    // Get the colors for the highlight groups (gui_check_colors() might have
+    // changed them)
     highlight_gui_started();
 
     /*
@@ -3106,11 +3096,11 @@ gui_mch_init(void)
 #ifdef FEAT_MENU
     gui.menu_height = 0;
 #endif
-    gui.scrollbar_height = gui.scrollbar_width = 15; /* cheat 1 overlap */
+    gui.scrollbar_height = gui.scrollbar_width = 15; // cheat 1 overlap
     gui.border_offset = gui.border_width = 2;
 
-    /* If Quartz-style text anti aliasing is available (see
-       gui_mch_draw_string() below), enable it for all font sizes. */
+    // If Quartz-style text anti aliasing is available (see
+    // gui_mch_draw_string() below), enable it for all font sizes.
     vim_setenv((char_u *)"QDTEXT_MINSIZE", (char_u *)"1");
 
     eventTypeSpec.eventClass = kEventClassMouse;
@@ -3128,10 +3118,10 @@ gui_mch_init(void)
     InterfaceTypeList supportedServices = { kUnicodeDocument };
     NewTSMDocument(1, supportedServices, &gTSMDocument, 0);
 
-    /* We don't support inline input yet, use input window by default */
+    // We don't support inline input yet, use input window by default
     UseInputWindow(gTSMDocument, TRUE);
 
-    /* Should we activate the document by default? */
+    // Should we activate the document by default?
     // ActivateTSMDocument(gTSMDocument);
 
     EventTypeSpec textEventTypes[] = {
@@ -3155,8 +3145,8 @@ gui_mch_init(void)
 	{ kEventClassWindow, kEventWindowDeactivated },
     };
 
-    /* Install window event handler to support TSMDocument activate and
-     * deactivate */
+    // Install window event handler to support TSMDocument activate and
+    // deactivate
     winEventHandlerUPP = NewEventHandlerUPP(gui_mac_handle_window_activate);
     if (noErr != InstallWindowEventHandler(gui.VimWindow,
 					   winEventHandlerUPP,
@@ -3175,7 +3165,7 @@ gui_mch_init(void)
     initialise_tabline();
 #endif
 
-    /* TODO: Load bitmap if using TOOLBAR */
+    // TODO: Load bitmap if using TOOLBAR
     return OK;
 }
 
@@ -3185,10 +3175,9 @@ gui_mch_init(void)
     void
 gui_mch_new_colors(void)
 {
-    /* TODO:
-     * This proc is called when Normal is set to a value
-     * so what must be done? I don't know
-     */
+    // TODO:
+    // This proc is called when Normal is set to a value
+    // so what must be done? I don't know
 }
 
 /*
@@ -3229,7 +3218,7 @@ gui_mac_dispose_atsui_style(void)
     void
 gui_mch_exit(int rc)
 {
-    /* TODO: find out all what is missing here? */
+    // TODO: find out all what is missing here?
     DisposeRgn(cursorRgn);
 
 #ifdef USE_CARBONKEYHANDLER
@@ -3250,7 +3239,7 @@ gui_mch_exit(int rc)
     DeleteTSMDocument(gTSMDocument);
 #endif
 
-    /* Exit to shell? */
+    // Exit to shell?
     exit(rc);
 }
 
@@ -3260,11 +3249,11 @@ gui_mch_exit(int rc)
     int
 gui_mch_get_winpos(int *x, int *y)
 {
-    /* TODO */
+    // TODO
     Rect	bounds;
     OSStatus	status;
 
-    /* Carbon >= 1.0.2, MacOS >= 8.5 */
+    // Carbon >= 1.0.2, MacOS >= 8.5
     status = GetWindowBounds(gui.VimWindow, kWindowStructureRgn, &bounds);
 
     if (status != noErr)
@@ -3281,9 +3270,8 @@ gui_mch_get_winpos(int *x, int *y)
     void
 gui_mch_set_winpos(int x, int y)
 {
-    /* TODO:  Should make sure the window is move within range
-     *	      e.g.: y > ~16 [Menu bar], x > 0, x < screen width
-     */
+    // TODO:  Should make sure the window is move within range
+    //	      e.g.: y > ~16 [Menu bar], x > 0, x < screen width
     MoveWindowStructure(gui.VimWindow, x, y);
 }
 
@@ -3304,9 +3292,9 @@ gui_mch_set_shellsize(
     {
 	VimPort = GetWindowPort(gui.VimWindow);
 	GetPortBounds(VimPort, &VimBound);
-	VimBound.left = -gui.scrollbar_width; /* + 1;*/
+	VimBound.left = -gui.scrollbar_width; // + 1;
 	SetPortBounds(VimPort, &VimBound);
-    /*	GetWindowBounds(gui.VimWindow, kWindowGlobalPortRgn, &winPortRect); ??*/
+    //	GetWindowBounds(gui.VimWindow, kWindowGlobalPortRgn, &winPortRect); ??
     }
     else
     {
@@ -3351,13 +3339,13 @@ gui_mac_select_font(char_u *font_name)
     OSStatus		    status;
     FontSelectionQDStyle    curr_font;
 
-    /* Initialize the Font Panel with the current font. */
+    // Initialize the Font Panel with the current font.
     curr_font.instance.fontFamily = gui.norm_font & 0xFFFF;
     curr_font.size = (gui.norm_font >> 16);
-    /* TODO: set fontStyle once styles are supported in gui_mac_find_font() */
+    // TODO: set fontStyle once styles are supported in gui_mac_find_font()
     curr_font.instance.fontStyle = 0;
     curr_font.hasColor = false;
-    curr_font.version = 0; /* version number of the style structure */
+    curr_font.version = 0; // version number of the style structure
     status = SetFontInfoForSelection(kFontSelectionQDType,
 	    /*numStyles=*/1, &curr_font, /*eventTarget=*/NULL);
 
@@ -3365,7 +3353,7 @@ gui_mac_select_font(char_u *font_name)
     gFontPanelInfo.style = curr_font.instance.fontStyle;
     gFontPanelInfo.size = curr_font.size;
 
-    /* Pop up the Font Panel. */
+    // Pop up the Font Panel.
     status = FPShowHideFontPanel();
     if (status == noErr)
     {
@@ -3412,7 +3400,7 @@ gui_mac_create_atsui_style(void)
     int
 gui_mch_init_font(char_u *font_name, int fontset)
 {
-    /* TODO: Add support for bold italic underline proportional etc... */
+    // TODO: Add support for bold italic underline proportional etc...
     Str255	suggestedFont = "\pMonaco";
     int		suggestedSize = 10;
     FontInfo	font_info;
@@ -3426,12 +3414,12 @@ gui_mch_init_font(char_u *font_name, int fontset)
 
     if (font_name == NULL)
     {
-	/* First try to get the suggested font */
+	// First try to get the suggested font
 	GetFNum(suggestedFont, &font_id);
 
 	if (font_id == 0)
 	{
-	    /* Then pickup the standard application font */
+	    // Then pickup the standard application font
 	    font_id = GetAppFont();
 	    STRCPY(used_font_name, "default");
 	}
@@ -3447,14 +3435,14 @@ gui_mch_init_font(char_u *font_name, int fontset)
 	if (font == NOFONT)
 	    return FAIL;
 
-	/* Set guifont to the name of the selected font. */
+	// Set guifont to the name of the selected font.
 	new_p_guifont = alloc(STRLEN(used_font_name) + 1);
 	if (new_p_guifont != NULL)
 	{
 	    STRCPY(new_p_guifont, used_font_name);
 	    vim_free(p_guifont);
 	    p_guifont = new_p_guifont;
-	    /* Replace spaces in the font name with underscores. */
+	    // Replace spaces in the font name with underscores.
 	    for ( ; *new_p_guifont; ++new_p_guifont)
 	    {
 		if (*new_p_guifont == ' ')
@@ -3587,8 +3575,8 @@ gui_mac_set_font_attributes(GuiFont font)
 
 	if (has_mbyte)
 	{
-	    /* FIXME: we should use a more mbyte sensitive way to support
-	     * wide font drawing */
+	    // FIXME: we should use a more mbyte sensitive way to support
+	    // wide font drawing
 	    fontWidth = Long2Fix(gui.char_width * 2);
 
 	    if (ATSUSetAttributes(gWideFontStyle,
@@ -3615,7 +3603,7 @@ gui_mch_set_font(GuiFont font)
 
     if (p_macatsui && gFontStyle)
     {
-	/* Avoid setting same font again */
+	// Avoid setting same font again
 	if (ATSUGetAttribute(gFontStyle, kATSUMaxATSUITagValue + 1,
 		    sizeof(font), &currFont, &actualFontByteCount) == noErr
 		&& actualFontByteCount == (sizeof font))
@@ -3629,14 +3617,14 @@ gui_mch_set_font(GuiFont font)
 
     if (p_macatsui && !gIsFontFallbackSet)
     {
-	/* Setup automatic font substitution. The user's guifontwide
-	 * is tried first, then the system tries other fonts. */
-/*
+	// Setup automatic font substitution. The user's guifontwide
+	// is tried first, then the system tries other fonts.
+#if 0
 	ATSUAttributeTag fallbackTags[] = { kATSULineFontFallbacksTag };
 	ByteCount fallbackSizes[] = { sizeof(ATSUFontFallbacks) };
 	ATSUCreateFontFallbacks(&gFontFallbacks);
 	ATSUSetObjFontFallbacks(gFontFallbacks, );
-*/
+#endif
 	if (gui.wide_font)
 	{
 	    ATSUFontID fallbackFonts;
@@ -3652,9 +3640,7 @@ gui_mch_set_font(GuiFont font)
 				     &fallbackFonts,
 				     kATSUSequentialFallbacksPreferred);
 	    }
-/*
-	ATSUAttributeValuePtr fallbackValues[] = { };
-*/
+//	ATSUAttributeValuePtr fallbackValues[] = { };
 	}
     }
 #endif
@@ -3684,8 +3670,7 @@ gui_mch_free_font(GuiFont font)
     guicolor_T
 gui_mch_get_color(char_u *name)
 {
-    /* TODO: Add support for the new named color of MacOS 8
-     */
+    // TODO: Add support for the new named color of MacOS 8
     RGBColor	MacColor;
 
     if (STRICMP(name, "hilite") == 0)
@@ -3786,7 +3771,7 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
      */
     if (gMacSystemVersion >= 0x1020)
     {
-	/* Quartz antialiasing is available only in OS 10.2 and later. */
+	// Quartz antialiasing is available only in OS 10.2 and later.
 	UInt32 qd_flags = (p_antialias ?
 			     kQDUseCGTextRendering | kQDUseCGTextMetrics : 0);
 	QDSwapTextFlags(qd_flags);
@@ -3808,10 +3793,10 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
 
 	rc.left = FILL_X(col);
 	rc.top = FILL_Y(row);
-	/* Multibyte computation taken from gui_w32.c */
+	// Multibyte computation taken from gui_w32.c
 	if (has_mbyte)
 	{
-	    /* Compute the length in display cells. */
+	    // Compute the length in display cells.
 	    rc.right = FILL_X(col + mb_string2cells(s, len));
 	}
 	else
@@ -3831,7 +3816,7 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
 	    face |= underline;
 	TextFace(face);
 
-	/* Quartz antialiasing works only in srcOr transfer mode. */
+	// Quartz antialiasing works only in srcOr transfer mode.
 	TextMode(srcOr);
 
 	MoveTo(TEXT_X(col), TEXT_Y(row));
@@ -3839,11 +3824,11 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
     }
     else
     {
-	/* Use old-style, non-antialiased QuickDraw text rendering. */
+	// Use old-style, non-antialiased QuickDraw text rendering.
 	TextMode(srcCopy);
 	TextFace(normal);
 
-    /*  SelectFont(hdc, gui.currFont); */
+    //  SelectFont(hdc, gui.currFont);
 
 	if (flags & DRAW_TRANSP)
 	    TextMode(srcOr);
@@ -3881,13 +3866,13 @@ draw_string_QD(int row, int col, char_u *s, int len, int flags)
     static void
 draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 {
-    /* ATSUI requires utf-16 strings */
+    // ATSUI requires utf-16 strings
     UniCharCount utf16_len;
     UniChar *tofree = mac_enc_to_utf16(s, len, (size_t *)&utf16_len);
     utf16_len /= sizeof(UniChar);
 
-    /* - ATSUI automatically antialiases text (Someone)
-     * - for some reason it does not work... (Jussi) */
+    // - ATSUI automatically antialiases text (Someone)
+    // - for some reason it does not work... (Jussi)
 #ifdef MAC_ATSUI_DEBUG
     fprintf(stderr, "row = %d, col = %d, len = %d: '%c'\n",
 	    row, col, len, len == 1 ? s[0] : ' ');
@@ -3907,10 +3892,10 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 
 	rc.left = FILL_X(col);
 	rc.top = FILL_Y(row);
-	/* Multibyte computation taken from gui_w32.c */
+	// Multibyte computation taken from gui_w32.c
 	if (has_mbyte)
 	{
-	    /* Compute the length in display cells. */
+	    // Compute the length in display cells.
 	    rc.right = FILL_X(col + mb_string2cells(s, len));
 	}
 	else
@@ -3924,7 +3909,7 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 	TextMode(srcCopy);
 	TextFace(normal);
 
-	/*  SelectFont(hdc, gui.currFont); */
+	//  SelectFont(hdc, gui.currFont);
 	if (flags & DRAW_TRANSP)
 	    TextMode(srcOr);
 
@@ -3975,14 +3960,14 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 	       ATSUSetRunStyle(textLayout, gFontStyle,
 	       kATSUFromTextBeginning, kATSUToTextEnd); */
 
-	    /* Compute the length in display cells. */
+	    // Compute the length in display cells.
 	    for (n = 0; n < len; n += MB_BYTE2LEN(s[n]))
 	    {
 		width_in_cell = (*mb_ptr2cells)(s + n);
 
-		/* probably we are switching from single byte character
-		 * to multibyte characters (which requires more than one
-		 * cell to draw) */
+		// probably we are switching from single byte character
+		// to multibyte characters (which requires more than one
+		// cell to draw)
 		if (width_in_cell != last_width_in_cell)
 		{
 #ifdef MAC_ATSUI_DEBUG
@@ -4007,7 +3992,7 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 		fprintf(stderr, "\tn = %2d, (%d-%d), offset = %d, yet_to_draw = %d\n",
 			n, last_width_in_cell, width_in_cell, offset, yet_to_draw);
 #endif
-		/* finish the rest style */
+		// finish the rest style
 		textStyle = width_in_cell > 1 ? gWideFontStyle : gFontStyle;
 		ATSUSetRunStyle(textLayout, textStyle, offset, kATSUToTextEnd);
 	    }
@@ -4039,7 +4024,7 @@ draw_string_ATSUI(int row, int col, char_u *s, int len, int flags)
 	    }
 	}
 
-	/* drawing is done, now reset bold to normal */
+	// drawing is done, now reset bold to normal
 	if (gFontStyle && flags & DRAW_BOLD)
 	{
 	    Boolean attValue = false;
@@ -4065,10 +4050,10 @@ gui_mch_draw_string(int row, int col, char_u *s, int len, int flags)
 {
 #if defined(USE_ATSUI_DRAWING)
     if (p_macatsui == 0 && p_macatsui_last != 0)
-	/* switch from macatsui to nomacatsui */
+	// switch from macatsui to nomacatsui
 	gui_mac_dispose_atsui_style();
     else if (p_macatsui != 0 && p_macatsui_last == 0)
-	/* switch from nomacatsui to macatsui */
+	// switch from nomacatsui to macatsui
 	gui_mac_create_atsui_style();
 
     if (p_macatsui)
@@ -4096,13 +4081,13 @@ gui_mch_haskey(char_u *name)
     void
 gui_mch_beep(void)
 {
-    SysBeep(1); /* Should this be 0? (????) */
+    SysBeep(1); // Should this be 0? (????)
 }
 
     void
 gui_mch_flash(int msec)
 {
-    /* Do a visual beep by reversing the foreground and background colors */
+    // Do a visual beep by reversing the foreground and background colors
     Rect    rc;
 
     /*
@@ -4114,7 +4099,7 @@ gui_mch_flash(int msec)
     rc.bottom = gui.num_rows * gui.char_height;
     InvertRect(&rc);
 
-    ui_delay((long)msec, TRUE);		/* wait for some msec */
+    ui_delay((long)msec, TRUE);		// wait for some msec
 
     InvertRect(&rc);
 }
@@ -4143,10 +4128,9 @@ gui_mch_invert_rectangle(int r, int c, int nr, int nc)
     void
 gui_mch_iconify(void)
 {
-    /* TODO: find out what could replace iconify
-     *	     -window shade?
-     *	     -hide application?
-     */
+    // TODO: find out what could replace iconify
+    //	     -window shade?
+    //	     -hide application?
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
@@ -4156,7 +4140,7 @@ gui_mch_iconify(void)
     void
 gui_mch_set_foreground(void)
 {
-    /* TODO */
+    // TODO
 }
 #endif
 
@@ -4192,7 +4176,7 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
     Rect rc;
 
 #ifdef FEAT_RIGHTLEFT
-    /* vertical line should be on the right of current point */
+    // vertical line should be on the right of current point
     if (CURSOR_BAR_RIGHT)
 	rc.left = FILL_X(gui.col + 1) - w;
     else
@@ -4219,14 +4203,13 @@ gui_mch_draw_part_cursor(int w, int h, guicolor_T color)
     void
 gui_mch_update(void)
 {
-    /* TODO: find what to do
-     *	     maybe call gui_mch_wait_for_chars (0)
-     *	     more like look at EventQueue then
-     *	     call heart of gui_mch_wait_for_chars;
-     *
-     *	if (eventther)
-     *	    gui_mac_handle_event(&event);
-     */
+    // TODO: find what to do
+    //	     maybe call gui_mch_wait_for_chars (0)
+    //	     more like look at EventQueue then
+    //	     call heart of gui_mch_wait_for_chars;
+    //
+    //	if (eventther)
+    //	    gui_mac_handle_event(&event);
     EventRecord theEvent;
 
     if (EventAvail(everyEvent, &theEvent))
@@ -4266,13 +4249,12 @@ gui_mch_wait_for_chars(int wtime)
     long	currentTick;
     long	sleeppyTick;
 
-    /* If we are providing life feedback with the scrollbar,
-     * we don't want to try to wait for an event, or else
-     * there won't be any life feedback.
-     */
+    // If we are providing life feedback with the scrollbar,
+    // we don't want to try to wait for an event, or else
+    // there won't be any life feedback.
     if (dragged_sb != NULL)
 	return FAIL;
-	/* TODO: Check if FAIL is the proper return code */
+	// TODO: Check if FAIL is the proper return code
 
     entryTick = TickCount();
 
@@ -4280,12 +4262,15 @@ gui_mch_wait_for_chars(int wtime)
 
     do
     {
-/*	if (dragRectControl == kCreateEmpty)
+#if 0
+	if (dragRectControl == kCreateEmpty)
 	{
 	    dragRgn = NULL;
 	    dragRectControl = kNothing;
 	}
-	else*/ if (dragRectControl == kCreateRect)
+	else
+#endif
+	if (dragRectControl == kCreateRect)
 	{
 	    dragRgn = cursorRgn;
 	    RectRgn(dragRgn, &dragRect);
@@ -4297,7 +4282,7 @@ gui_mch_wait_for_chars(int wtime)
 	 * event arrives.  No need to check for input_buf_full because we are
 	 * returning as soon as it contains a single char.
 	 */
-	/* TODO: reduce wtime accordingly???  */
+	// TODO: reduce wtime accordingly???
 	if (wtime > -1)
 	    sleeppyTick = 60 * wtime / 1000;
 	else
@@ -4324,11 +4309,13 @@ gui_mch_wait_for_chars(int wtime)
  * Output routines.
  */
 
-/* Flush any output to the screen */
+/*
+ * Flush any output to the screen
+ */
     void
 gui_mch_flush(void)
 {
-    /* TODO: Is anything needed here? */
+    // TODO: Is anything needed here?
 }
 
 /*
@@ -4368,9 +4355,8 @@ gui_mch_clear_all(void)
 
     gui_mch_set_bg_color(gui.back_pixel);
     EraseRect(&rc);
-/*  gui_mch_set_fg_color(gui.norm_pixel);
-    FrameRect(&rc);
-*/
+//  gui_mch_set_fg_color(gui.norm_pixel);
+//    FrameRect(&rc);
 }
 
 /*
@@ -4382,7 +4368,7 @@ gui_mch_delete_lines(int row, int num_lines)
 {
     Rect	rc;
 
-    /* changed without checking! */
+    // changed without checking!
     rc.left = FILL_X(gui.scroll_region_left);
     rc.right = FILL_X(gui.scroll_region_right + 1);
     rc.top = FILL_Y(row);
@@ -4414,7 +4400,7 @@ gui_mch_insert_lines(int row, int num_lines)
 
     ScrollRect(&rc, 0, gui.char_height * num_lines, (RgnHandle) nil);
 
-    /* Update gui.cursor_row if the cursor scrolled or copied over */
+    // Update gui.cursor_row if the cursor scrolled or copied over
     if (gui.cursor_row >= gui.row
 	    && gui.cursor_col >= gui.scroll_region_left
 	    && gui.cursor_col <= gui.scroll_region_right)
@@ -4474,10 +4460,10 @@ clip_mch_request_selection(Clipboard_T *cbd)
 
     ReserveMem(scrapSize);
 
-    /* In CARBON we don't need a Handle, a pointer is good */
+    // In CARBON we don't need a Handle, a pointer is good
     textOfClip = NewHandle(scrapSize);
 
-    /* tempclip = alloc(scrapSize+1); */
+    // tempclip = alloc(scrapSize+1);
     HLock(textOfClip);
     error = GetScrapFlavorData(scrap,
 	    flavor ? VIMSCRAPFLAVOR : SCRAPTEXTFLAVOR,
@@ -4495,7 +4481,7 @@ clip_mch_request_selection(Clipboard_T *cbd)
 
 #ifdef MACOS_CONVERT
     {
-	/* Convert from utf-16 (clipboard) */
+	// Convert from utf-16 (clipboard)
 	size_t encLen = 0;
 	char_u *to = mac_utf16_to_enc((UniChar *)tempclip, scrapSize, &encLen);
 
@@ -4601,7 +4587,7 @@ gui_mch_set_text_area_pos(int x, int y, int w, int h)
 {
     Rect	VimBound;
 
-/*  HideWindow(gui.VimWindow); */
+//  HideWindow(gui.VimWindow);
     GetWindowBounds(gui.VimWindow, kWindowGlobalPortRgn, &VimBound);
 
     if (gui.which_scrollbars[SBAR_LEFT])
@@ -4647,33 +4633,33 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
      *       Carbon Help suggest to use only id between 1 and 235
      */
     static long	 next_avail_id = 128;
-    long	 menu_after_me = 0; /* Default to the end */
+    long	 menu_after_me = 0; // Default to the end
     CFStringRef name;
     short	 index;
     vimmenu_T	*parent = menu->parent;
     vimmenu_T	*brother = menu->next;
 
-    /* Cannot add a menu if ... */
+    // Cannot add a menu if ...
     if ((parent != NULL && parent->submenu_id == 0))
 	return;
 
-    /* menu ID greater than 1024 are reserved for ??? */
+    // menu ID greater than 1024 are reserved for ???
     if (next_avail_id == 1024)
 	return;
 
-    /* My brother could be the PopUp, find my real brother */
+    // My brother could be the PopUp, find my real brother
     while ((brother != NULL) && (!menu_is_menubar(brother->name)))
 	brother = brother->next;
 
-    /*  Find where to insert the menu (for MenuBar) */
+    //  Find where to insert the menu (for MenuBar)
     if ((parent == NULL) && (brother != NULL))
 	menu_after_me = brother->submenu_id;
 
-    /* If the menu is not part of the menubar (and its submenus), add it 'nowhere' */
+    // If the menu is not part of the menubar (and its submenus), add it 'nowhere'
     if (!menu_is_menubar(menu->name))
 	menu_after_me = hierMenu;
 
-    /* Convert the name */
+    // Convert the name
 #ifdef MACOS_CONVERT
     name = menu_title_removing_mnemonic(menu);
 #else
@@ -4682,12 +4668,11 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
     if (name == NULL)
 	return;
 
-    /* Create the menu unless it's the help menu */
+    // Create the menu unless it's the help menu
     {
-	/* Carbon suggest use of
-	 * OSStatus CreateNewMenu(MenuID, MenuAttributes, MenuRef *);
-	 * OSStatus SetMenuTitle(MenuRef, ConstStr255Param title);
-	 */
+	// Carbon suggest use of
+	// OSStatus CreateNewMenu(MenuID, MenuAttributes, MenuRef *);
+	// OSStatus SetMenuTitle(MenuRef, ConstStr255Param title);
 	menu->submenu_id = next_avail_id;
 	if (CreateNewMenu(menu->submenu_id, 0, (MenuRef *)&menu->submenu_handle) == noErr)
 	    SetMenuTitleWithCFString((MenuRef)menu->submenu_handle, name);
@@ -4696,29 +4681,27 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
 
     if (parent == NULL)
     {
-	/* Adding a menu to the menubar, or in the no mans land (for PopUp) */
+	// Adding a menu to the menubar, or in the no mans land (for PopUp)
 
-	/* TODO: Verify if we could only Insert Menu if really part of the
-	 * menubar The Inserted menu are scanned or the Command-key combos
-	 */
+	// TODO: Verify if we could only Insert Menu if really part of the
+	// menubar The Inserted menu are scanned or the Command-key combos
 
-	/* Insert the menu */
-	InsertMenu(menu->submenu_handle, menu_after_me); /* insert before */
+	// Insert the menu
+	InsertMenu(menu->submenu_handle, menu_after_me); // insert before
 #if 1
-	/* Vim should normally update it. TODO: verify */
+	// Vim should normally update it. TODO: verify
 	DrawMenuBar();
 #endif
     }
     else
     {
-	/* Adding as a submenu */
+	// Adding as a submenu
 
 	index = gui_mac_get_menu_item_index(menu);
 
-	/* Call InsertMenuItem followed by SetMenuItemText
-	 * to avoid special character recognition by InsertMenuItem
-	 */
-	InsertMenuItem(parent->submenu_handle, "\p ", idx); /* afterItem */
+	// Call InsertMenuItem followed by SetMenuItemText
+	// to avoid special character recognition by InsertMenuItem
+	InsertMenuItem(parent->submenu_handle, "\p ", idx); // afterItem
 	SetMenuItemTextWithCFString(parent->submenu_handle, idx+1, name);
 	SetItemCmd(parent->submenu_handle, idx+1, 0x1B);
 	SetItemMark(parent->submenu_handle, idx+1, menu->submenu_id);
@@ -4728,7 +4711,7 @@ gui_mch_add_menu(vimmenu_T *menu, int idx)
     CFRelease(name);
 
 #if 0
-    /* Done by Vim later on */
+    // Done by Vim later on
     DrawMenuBar();
 #endif
 }
@@ -4743,31 +4726,30 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
     vimmenu_T	*parent = menu->parent;
     int		menu_inserted;
 
-    /* Cannot add item, if the menu have not been created */
+    // Cannot add item, if the menu have not been created
     if (parent->submenu_id == 0)
 	return;
 
-    /* Could call SetMenuRefCon [CARBON] to associate with the Menu,
-       for older OS call GetMenuItemData (menu, item, isCommandID?, data) */
+    // Could call SetMenuRefCon [CARBON] to associate with the Menu,
+    // for older OS call GetMenuItemData (menu, item, isCommandID?, data)
 
-    /* Convert the name */
+    // Convert the name
 #ifdef MACOS_CONVERT
     name = menu_title_removing_mnemonic(menu);
 #else
     name = C2Pascal_save(menu->dname);
 #endif
 
-    /* Where are just a menu item, so no handle, no id */
+    // Where are just a menu item, so no handle, no id
     menu->submenu_id = 0;
     menu->submenu_handle = NULL;
 
     menu_inserted = 0;
     if (menu->actext)
     {
-	/* If the accelerator text for the menu item looks like it describes
-	 * a command key (e.g., "<D-S-t>" or "<C-7>"), display it as the
-	 * item's command equivalent.
-	 */
+	// If the accelerator text for the menu item looks like it describes
+	// a command key (e.g., "<D-S-t>" or "<C-7>"), display it as the
+	// item's command equivalent.
 	int	    key = 0;
 	int	    modifiers = 0;
 	char_u	    *p_actext;
@@ -4776,39 +4758,36 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	key = find_special_key(&p_actext, &modifiers, FALSE, FALSE, FALSE,
 								   TRUE, NULL);
 	if (*p_actext != 0)
-	    key = 0; /* error: trailing text */
-	/* find_special_key() returns a keycode with as many of the
-	 * specified modifiers as appropriate already applied (e.g., for
-	 * "<D-C-x>" it returns Ctrl-X as the keycode and MOD_MASK_CMD
-	 * as the only modifier).  Since we want to display all of the
-	 * modifiers, we need to convert the keycode back to a printable
-	 * character plus modifiers.
-	 * TODO: Write an alternative find_special_key() that doesn't
-	 * apply modifiers.
-	 */
+	    key = 0; // error: trailing text
+	// find_special_key() returns a keycode with as many of the
+	// specified modifiers as appropriate already applied (e.g., for
+	// "<D-C-x>" it returns Ctrl-X as the keycode and MOD_MASK_CMD
+	// as the only modifier).  Since we want to display all of the
+	// modifiers, we need to convert the keycode back to a printable
+	// character plus modifiers.
+	// TODO: Write an alternative find_special_key() that doesn't
+	// apply modifiers.
 	if (key > 0 && key < 32)
 	{
-	    /* Convert a control key to an uppercase letter.  Note that
-	     * by this point it is no longer possible to distinguish
-	     * between, e.g., Ctrl-S and Ctrl-Shift-S.
-	     */
+	    // Convert a control key to an uppercase letter.  Note that
+	    // by this point it is no longer possible to distinguish
+	    // between, e.g., Ctrl-S and Ctrl-Shift-S.
 	    modifiers |= MOD_MASK_CTRL;
 	    key += '@';
 	}
-	/* If the keycode is an uppercase letter, set the Shift modifier.
-	 * If it is a lowercase letter, don't set the modifier, but convert
-	 * the letter to uppercase for display in the menu.
-	 */
+	// If the keycode is an uppercase letter, set the Shift modifier.
+	// If it is a lowercase letter, don't set the modifier, but convert
+	// the letter to uppercase for display in the menu.
 	else if (key >= 'A' && key <= 'Z')
 	    modifiers |= MOD_MASK_SHIFT;
 	else if (key >= 'a' && key <= 'z')
 	    key += 'A' - 'a';
-	/* Note: keycodes below 0x22 are reserved by Apple. */
+	// Note: keycodes below 0x22 are reserved by Apple.
 	if (key >= 0x22 && vim_isprintc_strict(key))
 	{
 	    int		valid = 1;
 	    char_u      mac_mods = kMenuNoModifiers;
-	    /* Convert Vim modifier codes to Menu Manager equivalents. */
+	    // Convert Vim modifier codes to Menu Manager equivalents.
 	    if (modifiers & MOD_MASK_SHIFT)
 		mac_mods |= kMenuShiftModifier;
 	    if (modifiers & MOD_MASK_CTRL)
@@ -4816,30 +4795,29 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
 	    if (!(modifiers & MOD_MASK_CMD))
 		mac_mods |= kMenuNoCommandModifier;
 	    if (modifiers & MOD_MASK_ALT || modifiers & MOD_MASK_MULTI_CLICK)
-		valid = 0; /* TODO: will Alt someday map to Option? */
+		valid = 0; // TODO: will Alt someday map to Option?
 	    if (valid)
 	    {
 		char_u	    item_txt[10];
-		/* Insert the menu item after idx, with its command key. */
+		// Insert the menu item after idx, with its command key.
 		item_txt[0] = 3; item_txt[1] = ' '; item_txt[2] = '/';
 		item_txt[3] = key;
 		InsertMenuItem(parent->submenu_handle, item_txt, idx);
-		/* Set the modifier keys. */
+		// Set the modifier keys.
 		SetMenuItemModifiers(parent->submenu_handle, idx+1, mac_mods);
 		menu_inserted = 1;
 	    }
 	}
     }
-    /* Call InsertMenuItem followed by SetMenuItemText
-     * to avoid special character recognition by InsertMenuItem
-     */
+    // Call InsertMenuItem followed by SetMenuItemText
+    // to avoid special character recognition by InsertMenuItem
     if (!menu_inserted)
-	InsertMenuItem(parent->submenu_handle, "\p ", idx); /* afterItem */
-    /* Set the menu item name. */
+	InsertMenuItem(parent->submenu_handle, "\p ", idx); // afterItem
+    // Set the menu item name.
     SetMenuItemTextWithCFString(parent->submenu_handle, idx+1, name);
 
 #if 0
-    /* Called by Vim */
+    // Called by Vim
     DrawMenuBar();
 #endif
 
@@ -4849,7 +4827,7 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx)
     void
 gui_mch_toggle_tearoffs(int enable)
 {
-    /* no tearoff menus */
+    // no tearoff menus
 }
 
 /*
@@ -4865,10 +4843,10 @@ gui_mch_destroy_menu(vimmenu_T *menu)
       if (menu->parent)
       {
 	{
-	    /* For now just don't delete help menu items. (Huh? Dany) */
+	    // For now just don't delete help menu items. (Huh? Dany)
 	    DeleteMenuItem(menu->parent->submenu_handle, index);
 
-	    /* Delete the Menu if it was a hierarchical Menu */
+	    // Delete the Menu if it was a hierarchical Menu
 	    if (menu->submenu_id != 0)
 	    {
 		DeleteMenu(menu->submenu_id);
@@ -4890,7 +4868,7 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 	    DisposeMenu(menu->submenu_handle);
 	}
     }
-    /* Shouldn't this be already done by Vim. TODO: Check */
+    // Shouldn't this be already done by Vim. TODO: Check
     DrawMenuBar();
 }
 
@@ -4900,7 +4878,7 @@ gui_mch_destroy_menu(vimmenu_T *menu)
     void
 gui_mch_menu_grey(vimmenu_T *menu, int grey)
 {
-    /* TODO: Check if menu really exists */
+    // TODO: Check if menu really exists
     short index = gui_mac_get_menu_item_index(menu);
 /*
     index = menu->index;
@@ -4929,7 +4907,7 @@ gui_mch_menu_grey(vimmenu_T *menu, int grey)
     void
 gui_mch_menu_hidden(vimmenu_T *menu, int hidden)
 {
-    /* There's no hidden mode on MacOS */
+    // There's no hidden mode on MacOS
     gui_mch_menu_grey(menu, hidden);
 }
 
@@ -4988,7 +4966,8 @@ gui_mch_set_scrollbar_pos(
 	int h)
 {
     gui_mch_set_bg_color(gui.back_pixel);
-/*  if (gui.which_scrollbars[SBAR_LEFT])
+#if 0
+  if (gui.which_scrollbars[SBAR_LEFT])
     {
 	MoveControl(sb->id, x-16, y);
 	SizeControl(sb->id, w + 1, h);
@@ -4997,7 +4976,8 @@ gui_mch_set_scrollbar_pos(
     {
 	MoveControl(sb->id, x, y);
 	SizeControl(sb->id, w + 1, h);
-    }*/
+    }
+#endif
     if (sb == &gui.bottom_sbar)
 	h += 1;
     else
@@ -5016,7 +4996,7 @@ gui_mch_set_scrollbar_pos(
     void
 gui_mch_create_scrollbar(
 	scrollbar_T *sb,
-	int orient)	/* SBAR_VERT or SBAR_HORIZ */
+	int orient)	// SBAR_VERT or SBAR_HORIZ
 {
     Rect bounds;
 
@@ -5029,9 +5009,9 @@ gui_mch_create_scrollbar(
 			 &bounds,
 			 "\pScrollBar",
 			 TRUE,
-			 0, /* current*/
-			 0, /* top */
-			 0, /* bottom */
+			 0, // current
+			 0, // top
+			 0, // bottom
 			 kControlScrollBarLiveProc,
 			 (long) sb->ident);
 #ifdef DEBUG_MAC_SB
@@ -5072,10 +5052,12 @@ gui_mch_is_blink_off(void)
     void
 gui_mch_set_blinking(long wait, long on, long off)
 {
-    /* TODO: TODO: TODO: TODO: */
-/*    blink_waittime = wait;
+#if 0
+    // TODO: TODO: TODO: TODO:
+    blink_waittime = wait;
     blink_ontime = on;
-    blink_offtime = off;*/
+    blink_offtime = off;
+#endif
 }
 
 /*
@@ -5086,11 +5068,13 @@ gui_mch_stop_blink(int may_call_gui_update_cursor)
 {
     if (may_call_gui_update_cursor)
 	gui_update_cursor(TRUE, FALSE);
-    /* TODO: TODO: TODO: TODO: */
-/*    gui_w32_rm_blink_timer();
+#if 0
+    // TODO: TODO: TODO: TODO:
+    gui_w32_rm_blink_timer();
     if (blink_state == BLINK_OFF)
     gui_update_cursor(TRUE, FALSE);
-    blink_state = BLINK_NONE;*/
+    blink_state = BLINK_NONE;
+#endif
 }
 
 /*
@@ -5101,17 +5085,19 @@ gui_mch_stop_blink(int may_call_gui_update_cursor)
 gui_mch_start_blink(void)
 {
     gui_update_cursor(TRUE, FALSE);
-    /* TODO: TODO: TODO: TODO: */
-/*    gui_w32_rm_blink_timer(); */
+    // TODO: TODO: TODO: TODO:
+//    gui_w32_rm_blink_timer();
 
-    /* Only switch blinking on if none of the times is zero */
-/*    if (blink_waittime && blink_ontime && blink_offtime)
+    // Only switch blinking on if none of the times is zero
+#if 0
+    if (blink_waittime && blink_ontime && blink_offtime)
     {
     blink_timer = SetTimer(NULL, 0, (UINT)blink_waittime,
 			    (TIMERPROC)_OnBlinkTimer);
     blink_state = BLINK_ON;
     gui_update_cursor(TRUE, FALSE);
-    }*/
+    }
+#endif
 }
 
 /*
@@ -5153,7 +5139,7 @@ gui_mch_browse(
     char_u *initdir,
     char_u *filter)
 {
-    /* TODO: Add Ammon's safety check (Dany) */
+    // TODO: Add Ammon's safety check (Dany)
     NavReplyRecord	reply;
     char_u		*fname = NULL;
     char_u		**fnames = NULL;
@@ -5161,33 +5147,32 @@ gui_mch_browse(
     NavDialogOptions	navOptions;
     OSErr		error;
 
-    /* Get Navigation Service Defaults value */
+    // Get Navigation Service Defaults value
     NavGetDefaultDialogOptions(&navOptions);
 
 
-    /* TODO: If we get a :browse args, set the Multiple bit. */
+    // TODO: If we get a :browse args, set the Multiple bit.
     navOptions.dialogOptionFlags =  kNavAllowInvisibleFiles
 				 |  kNavDontAutoTranslate
 				 |  kNavDontAddTranslateItems
-			    /*	 |  kNavAllowMultipleFiles */
+			    //	 |  kNavAllowMultipleFiles
 				 |  kNavAllowStationery;
 
     (void) C2PascalString(title,   &navOptions.message);
     (void) C2PascalString(dflt,    &navOptions.savedFileName);
-    /* Could set clientName?
-     *		 windowTitle? (there's no title bar?)
-     */
+    // Could set clientName?
+    //		 windowTitle? (there's no title bar?)
 
     if (saving)
     {
-	/* Change first parm AEDesc (typeFSS) *defaultLocation to match dflt */
+	// Change first parm AEDesc (typeFSS) *defaultLocation to match dflt
 	NavPutFile(NULL, &reply, &navOptions, NULL, 'TEXT', 'VIM!', NULL);
 	if (!reply.validRecord)
 	    return NULL;
     }
     else
     {
-	/* Change first parm AEDesc (typeFSS) *defaultLocation to match dflt */
+	// Change first parm AEDesc (typeFSS) *defaultLocation to match dflt
 	NavGetFile(NULL, &reply, &navOptions, NULL, NULL, NULL, NULL, NULL);
 	if (!reply.validRecord)
 	    return NULL;
@@ -5203,10 +5188,10 @@ gui_mch_browse(
 	vim_free(fnames);
     }
 
-    /* TODO: Shorten the file name if possible */
+    // TODO: Shorten the file name if possible
     return fname;
 }
-#endif /* FEAT_BROWSE */
+#endif // FEAT_BROWSE
 
 #ifdef FEAT_GUI_DIALOG
 /*
@@ -5233,9 +5218,9 @@ gui_mch_browse(
 typedef struct
 {
     short   idx;
-    short   width;	/* Size of the text in pixel */
+    short   width;	// Size of the text in pixel
     Rect    box;
-} vgmDlgItm; /* Vim Gui_Mac.c Dialog Item */
+} vgmDlgItm; // Vim Gui_Mac.c Dialog Item
 
 #define MoveRectTo(r,x,y) OffsetRect(r,x-r->left,y-r->top)
 
@@ -5247,8 +5232,8 @@ macMoveDialogItem(
     short	Y,
     Rect	*inBox)
 {
-#if 0 /* USE_CARBONIZED */
-    /* Untested */
+#if 0 // USE_CARBONIZED
+    // Untested
     MoveDialogItem(theDialog, itemNumber, X, Y);
     if (inBox != nil)
 	GetDialogItem(theDialog, itemNumber, &itemType, &itemHandle, inBox);
@@ -5264,9 +5249,9 @@ macMoveDialogItem(
     GetDialogItem(theDialog, itemNumber, &itemType, &itemHandle, itemBox);
     OffsetRect(itemBox, -itemBox->left, -itemBox->top);
     OffsetRect(itemBox, X, Y);
-    /* To move a control (like a button) we need to call both
-     * MoveControl and SetDialogItem. FAQ 6-18 */
-    if (1) /*(itemType & kControlDialogItem) */
+    // To move a control (like a button) we need to call both
+    // MoveControl and SetDialogItem. FAQ 6-18
+    if (1) //(itemType & kControlDialogItem)
 	MoveControl((ControlRef) itemHandle, X, Y);
     SetDialogItem(theDialog, itemNumber, itemType, itemHandle, itemBox);
 #endif
@@ -5285,25 +5270,25 @@ macSizeDialogItem(
 
     GetDialogItem(theDialog, itemNumber, &itemType, &itemHandle, &itemBox);
 
-    /* When width or height is zero do not change it */
+    // When width or height is zero do not change it
     if (width  == 0)
 	width  = itemBox.right  - itemBox.left;
     if (height == 0)
 	height = itemBox.bottom - itemBox.top;
 
-#if 0 /* USE_CARBONIZED */
-    SizeDialogItem(theDialog, itemNumber, width, height); /* Untested */
+#if 0 // USE_CARBONIZED
+    SizeDialogItem(theDialog, itemNumber, width, height); // Untested
 #else
-    /* Resize the bounding box */
+    // Resize the bounding box
     itemBox.right  = itemBox.left + width;
     itemBox.bottom = itemBox.top  + height;
 
-    /* To resize a control (like a button) we need to call both
-     * SizeControl and SetDialogItem. (deducted from FAQ 6-18) */
+    // To resize a control (like a button) we need to call both
+    // SizeControl and SetDialogItem. (deducted from FAQ 6-18)
     if (itemType & kControlDialogItem)
 	SizeControl((ControlRef) itemHandle, width, height);
 
-    /* Configure back the item */
+    // Configure back the item
     SetDialogItem(theDialog, itemNumber, itemType, itemHandle, &itemBox);
 #endif
 }
@@ -5327,7 +5312,8 @@ macSetDialogItemText(
 }
 
 
-/* ModalDialog() handler for message dialogs that have hotkey accelerators.
+/*
+ * ModalDialog() handler for message dialogs that have hotkey accelerators.
  * Expects a mapping of hotkey char to control index in gDialogHotKeys;
  * setting gDialogHotKeys to NULL disables any hotkey handling.
  */
@@ -5350,26 +5336,26 @@ DialogHotkeyFilterProc (
 #endif
 	    *itemHit = gDialogHotKeys[keyHit];
 
-	    /* When handing off to StdFilterProc, pretend that the user
-	     * clicked the control manually. Note that this is also supposed
-	     * to cause the button to hilite briefly (to give some user
-	     * feedback), but this seems not to actually work (or it's too
-	     * fast to be seen).
-	     */
+	    // When handing off to StdFilterProc, pretend that the user
+	    // clicked the control manually. Note that this is also supposed
+	    // to cause the button to hilite briefly (to give some user
+	    // feedback), but this seems not to actually work (or it's too
+	    // fast to be seen).
 	    event->what = kEventControlSimulateHit;
 
-	    return true; /* we took care of it */
+	    return true; // we took care of it
 	}
 
-	/* Defer to the OS's standard behavior for this event.
-	 * This ensures that Enter will still activate the default button. */
+	// Defer to the OS's standard behavior for this event.
+	// This ensures that Enter will still activate the default button.
 	return StdFilterProc(theDialog, event, itemHit);
     }
-    return false;      /* Let ModalDialog deal with it */
+    return false;      // Let ModalDialog deal with it
 }
 
 
-/* TODO: There have been some crashes with dialogs, check your inbox
+/*
+ * TODO: There have been some crashes with dialogs, check your inbox
  * (Jussi)
  */
     int
@@ -5390,12 +5376,12 @@ gui_mch_dialog(
     Handle	iconHandle;
     DialogPtr	theDialog;
     char_u	len;
-    char_u	PascalTitle[256];	/* place holder for the title */
+    char_u	PascalTitle[256];	// place holder for the title
     char_u	name[256];
     GrafPtr	oldPort;
     short	itemHit;
     char_u	*buttonChar;
-    short	hotKeys[256];		/* map of hotkey -> control ID */
+    short	hotKeys[256];		// map of hotkey -> control ID
     char_u	aHotKey;
     Rect	box;
     short	button;
@@ -5403,14 +5389,14 @@ gui_mch_dialog(
     short	itemType;
     short	useIcon;
     short	width;
-    short	totalButtonWidth = 0;   /* the width of all buttons together
-					   including spacing */
+    short	totalButtonWidth = 0;   // the width of all buttons together
+					// including spacing
     short	widestButton = 0;
-    short	dfltButtonEdge     = 20;  /* gut feeling */
-    short	dfltElementSpacing = 13;  /* from IM:V.2-29 */
-    short       dfltIconSideSpace  = 23;  /* from IM:V.2-29 */
-    short	maximumWidth       = 400; /* gut feeling */
-    short	maxButtonWidth	   = 175; /* gut feeling */
+    short	dfltButtonEdge     = 20;  // gut feeling
+    short	dfltElementSpacing = 13;  // from IM:V.2-29
+    short       dfltIconSideSpace  = 23;  // from IM:V.2-29
+    short	maximumWidth       = 400; // gut feeling
+    short	maxButtonWidth	   = 175; // gut feeling
 
     short	vertical;
     short	dialogHeight;
@@ -5426,51 +5412,50 @@ gui_mch_dialog(
 
     ModalFilterUPP dialogUPP;
 
-    /* Check 'v' flag in 'guioptions': vertical button placement. */
+    // Check 'v' flag in 'guioptions': vertical button placement.
     vertical = (vim_strchr(p_go, GO_VERTICAL) != NULL);
 
-    /* Create a new Dialog Box from template. */
+    // Create a new Dialog Box from template.
     theDialog = GetNewDialog(129, nil, (WindowRef) -1);
 
-    /* Get the WindowRef */
+    // Get the WindowRef
     theWindow = GetDialogWindow(theDialog);
 
-    /* Hide the window.
-     * 1. to avoid seeing slow drawing
-     * 2. to prevent a problem seen while moving dialog item
-     *    within a visible window. (non-Carbon MacOS 9)
-     * Could be avoided by changing the resource.
-     */
+    // Hide the window.
+    // 1. to avoid seeing slow drawing
+    // 2. to prevent a problem seen while moving dialog item
+    //    within a visible window. (non-Carbon MacOS 9)
+    // Could be avoided by changing the resource.
     HideWindow(theWindow);
 
-    /* Change the graphical port to the dialog,
-     * so we can measure the text with the proper font */
+    // Change the graphical port to the dialog,
+    // so we can measure the text with the proper font
     GetPort(&oldPort);
     SetPortDialogPort(theDialog);
 
-    /* Get the info about the default text,
-     * used to calculate the height of the message
-     * and of the  text field */
+    // Get the info about the default text,
+    // used to calculate the height of the message
+    // and of the  text field
     GetFontInfo(&textFontInfo);
 
-    /*	Set the dialog title */
+    //	Set the dialog title
     if (title != NULL)
     {
 	(void) C2PascalString(title, &PascalTitle);
 	SetWTitle(theWindow, PascalTitle);
     }
 
-    /* Creates the buttons and add them to the Dialog Box. */
+    // Creates the buttons and add them to the Dialog Box.
     buttonDITL = GetResource('DITL', 130);
     buttonChar = buttons;
     button = 0;
 
-    /* initialize the hotkey mapping */
+    // initialize the hotkey mapping
     vim_memset(hotKeys, 0, sizeof(hotKeys));
 
     for (;*buttonChar != 0;)
     {
-	/* Get the name of the button */
+	// Get the name of the button
 	button++;
 	len = 0;
 	for (;((*buttonChar != DLG_BUTTON_SEP) && (*buttonChar != 0) && (len < 255)); buttonChar++)
@@ -5493,16 +5478,16 @@ gui_mch_dialog(
 	  buttonChar++;
 	name[0] = len;
 
-	/* Add the button */
-	AppendDITL(theDialog, buttonDITL, overlayDITL); /* appendDITLRight); */
+	// Add the button
+	AppendDITL(theDialog, buttonDITL, overlayDITL); // appendDITLRight);
 
-	/* Change the button's name */
+	// Change the button's name
 	macSetDialogItemText(theDialog, button, name);
 
-	/* Resize the button to fit its name */
+	// Resize the button to fit its name
 	width = StringWidth(name) + 2 * dfltButtonEdge;
-	/* Limit the size of any button to an acceptable value. */
-	/* TODO: Should be based on the message width */
+	// Limit the size of any button to an acceptable value.
+	// TODO: Should be based on the message width
 	if (width > maxButtonWidth)
 	    width = maxButtonWidth;
 	macSizeDialogItem(theDialog, button, width, 0);
@@ -5515,7 +5500,7 @@ gui_mch_dialog(
     ReleaseResource(buttonDITL);
     lastButton = button;
 
-    /* Add the icon to the Dialog Box. */
+    // Add the icon to the Dialog Box.
     iconItm.idx = lastButton + 1;
     iconDITL = GetResource('DITL', 131);
     switch (type)
@@ -5530,11 +5515,11 @@ gui_mch_dialog(
     AppendDITL(theDialog, iconDITL, overlayDITL);
     ReleaseResource(iconDITL);
     GetDialogItem(theDialog, iconItm.idx, &itemType, &itemHandle, &box);
-    /* TODO: Should the item be freed? */
+    // TODO: Should the item be freed?
     iconHandle = GetIcon(useIcon);
     SetDialogItem(theDialog, iconItm.idx, itemType, iconHandle, &box);
 
-    /* Add the message to the Dialog box. */
+    // Add the message to the Dialog box.
     messageItm.idx = lastButton + 2;
     messageDITL = GetResource('DITL', 132);
     AppendDITL(theDialog, messageDITL, overlayDITL);
@@ -5544,62 +5529,62 @@ gui_mch_dialog(
     SetDialogItemText(itemHandle, name);
     messageItm.width = StringWidth(name);
 
-    /* Add the input box if needed */
+    // Add the input box if needed
     if (textfield != NULL)
     {
-	/* Cheat for now reuse the message and convert to text edit */
+	// Cheat for now reuse the message and convert to text edit
 	inputItm.idx = lastButton + 3;
 	inputDITL = GetResource('DITL', 132);
 	AppendDITL(theDialog, inputDITL, overlayDITL);
 	ReleaseResource(inputDITL);
 	GetDialogItem(theDialog, inputItm.idx, &itemType, &itemHandle, &box);
-/*	  SetDialogItem(theDialog, inputItm.idx, kEditTextDialogItem, itemHandle, &box);*/
+//	  SetDialogItem(theDialog, inputItm.idx, kEditTextDialogItem, itemHandle, &box);
 	(void) C2PascalString(textfield, &name);
 	SetDialogItemText(itemHandle, name);
 	inputItm.width = StringWidth(name);
 
-	/* Hotkeys don't make sense if there's a text field */
+	// Hotkeys don't make sense if there's a text field
 	gDialogHotKeys = NULL;
     }
     else
-	/* Install hotkey table */
+	// Install hotkey table
 	gDialogHotKeys = (short *)&hotKeys;
 
-    /* Set the <ENTER> and <ESC> button. */
+    // Set the <ENTER> and <ESC> button.
     SetDialogDefaultItem(theDialog, dfltbutton);
     SetDialogCancelItem(theDialog, 0);
 
-    /* Reposition element */
+    // Reposition element
 
-    /* Check if we need to force vertical */
+    // Check if we need to force vertical
     if (totalButtonWidth > maximumWidth)
 	vertical = TRUE;
 
-    /* Place icon */
+    // Place icon
     macMoveDialogItem(theDialog, iconItm.idx, dfltIconSideSpace, dfltElementSpacing, &box);
     iconItm.box.right = box.right;
     iconItm.box.bottom = box.bottom;
 
-    /* Place Message */
+    // Place Message
     messageItm.box.left = iconItm.box.right + dfltIconSideSpace;
     macSizeDialogItem(theDialog, messageItm.idx, 0,  messageLines * (textFontInfo.ascent + textFontInfo.descent));
     macMoveDialogItem(theDialog, messageItm.idx, messageItm.box.left, dfltElementSpacing, &messageItm.box);
 
-    /* Place Input */
+    // Place Input
     if (textfield != NULL)
     {
 	inputItm.box.left = messageItm.box.left;
 	inputItm.box.top  = messageItm.box.bottom + dfltElementSpacing;
 	macSizeDialogItem(theDialog, inputItm.idx, 0, textFontInfo.ascent + textFontInfo.descent);
 	macMoveDialogItem(theDialog, inputItm.idx, inputItm.box.left, inputItm.box.top, &inputItm.box);
-	/* Convert the static text into a text edit.
-	 * For some reason this change need to be done last (Dany) */
+	// Convert the static text into a text edit.
+	// For some reason this change need to be done last (Dany)
 	GetDialogItem(theDialog, inputItm.idx, &itemType, &itemHandle, &inputItm.box);
 	SetDialogItem(theDialog, inputItm.idx, kEditTextDialogItem, itemHandle, &inputItm.box);
 	SelectDialogItemText(theDialog, inputItm.idx, 0, 32767);
     }
 
-    /* Place Button */
+    // Place Button
     if (textfield != NULL)
     {
 	buttonItm.box.left = inputItm.box.left;
@@ -5615,47 +5600,47 @@ gui_mch_dialog(
     {
 
 	macMoveDialogItem(theDialog, button, buttonItm.box.left, buttonItm.box.top, &box);
-	/* With vertical, it's better to have all buttons the same length */
+	// With vertical, it's better to have all buttons the same length
 	if (vertical)
 	{
 	    macSizeDialogItem(theDialog, button, widestButton, 0);
 	    GetDialogItem(theDialog, button, &itemType, &itemHandle, &box);
 	}
-	/* Calculate position of next button */
+	// Calculate position of next button
 	if (vertical)
 	    buttonItm.box.top  = box.bottom + dfltElementSpacing;
 	else
 	    buttonItm.box.left  = box.right + dfltElementSpacing;
     }
 
-    /* Resize the dialog box */
+    // Resize the dialog box
     dialogHeight = box.bottom + dfltElementSpacing;
     SizeWindow(theWindow, maximumWidth, dialogHeight, TRUE);
 
-    /* Magic resize */
+    // Magic resize
     AutoSizeDialog(theDialog);
-    /* Need a horizontal resize anyway so not that useful */
+    // Need a horizontal resize anyway so not that useful
 
-    /* Display it */
+    // Display it
     ShowWindow(theWindow);
-/*  BringToFront(theWindow); */
+//  BringToFront(theWindow);
     SelectWindow(theWindow);
 
-/*  DrawDialog(theDialog); */
+//  DrawDialog(theDialog);
 #if 0
     GetPort(&oldPort);
     SetPortDialogPort(theDialog);
 #endif
 
 #ifdef USE_CARBONKEYHANDLER
-    /* Avoid that we use key events for the main window. */
+    // Avoid that we use key events for the main window.
     dialog_busy = TRUE;
 #endif
 
-    /* Prepare the shortcut-handling filterProc for handing to the dialog */
+    // Prepare the shortcut-handling filterProc for handing to the dialog
     dialogUPP = NewModalFilterUPP(DialogHotkeyFilterProc);
 
-    /* Hang until one of the button is hit */
+    // Hang until one of the button is hit
     do
 	ModalDialog(dialogUPP, &itemHit);
     while ((itemHit < 1) || (itemHit > lastButton));
@@ -5664,26 +5649,26 @@ gui_mch_dialog(
     dialog_busy = FALSE;
 #endif
 
-    /* Copy back the text entered by the user into the param */
+    // Copy back the text entered by the user into the param
     if (textfield != NULL)
     {
 	GetDialogItem(theDialog, inputItm.idx, &itemType, &itemHandle, &box);
 	GetDialogItemText(itemHandle, (char_u *) &name);
 #if IOSIZE < 256
-	/* Truncate the name to IOSIZE if needed */
+	// Truncate the name to IOSIZE if needed
 	if (name[0] > IOSIZE)
 	    name[0] = IOSIZE - 1;
 #endif
 	vim_strncpy(textfield, &name[1], name[0]);
     }
 
-    /* Restore the original graphical port */
+    // Restore the original graphical port
     SetPort(oldPort);
 
-    /* Free the modal filterProc */
+    // Free the modal filterProc
     DisposeRoutineDescriptor(dialogUPP);
 
-    /* Get ride of the dialog (free memory) */
+    // Get ride of the dialog (free memory)
     DisposeDialog(theDialog);
 
     return itemHit;
@@ -5696,7 +5681,7 @@ gui_mch_dialog(
  * AutoSizeDialog():	    Magic resize of dialog based on text length
  */
 }
-#endif /* FEAT_DIALOG_GUI */
+#endif // FEAT_DIALOG_GUI
 
 /*
  * Display the saved error message(s).
@@ -5711,7 +5696,7 @@ display_errors(void)
     if (error_ga.ga_data == NULL)
 	return;
 
-    /* avoid putting up a message box with blanks only */
+    // avoid putting up a message box with blanks only
     for (p = (char *)error_ga.ga_data; *p; ++p)
 	if (!isspace(*p))
 	{
@@ -5724,10 +5709,9 @@ display_errors(void)
 	    ParamText(pError, nil, nil, nil);
 	    Alert(128, nil);
 	    break;
-	    /* TODO: handled message longer than 256 chars
-	     *	 use auto-sizeable alert
-	     *	 or dialog with scrollbars (TextEdit zone)
-	     */
+	    // TODO: handled message longer than 256 chars
+	    //	 use auto-sizeable alert
+	    //	 or dialog with scrollbars (TextEdit zone)
 	}
     ga_clear(&error_ga);
 }
@@ -5750,9 +5734,9 @@ gui_mch_getmouse(int *x, int *y)
     void
 gui_mch_setmouse(int x, int y)
 {
-    /* TODO */
+    // TODO
 #if 0
-    /* From FAQ 3-11 */
+    // From FAQ 3-11
 
     CursorDevicePtr myMouse;
     Point	    where;
@@ -5760,7 +5744,7 @@ gui_mch_setmouse(int x, int y)
     if (   NGetTrapAddress(_CursorDeviceDispatch, ToolTrap)
 	!= NGetTrapAddress(_Unimplemented,   ToolTrap))
     {
-	/* New way */
+	// New way
 
 	/*
 	 * Get first device with one button.
@@ -5773,7 +5757,7 @@ gui_mch_setmouse(int x, int y)
 
 	do
 	{
-	    /* Get the next cursor device */
+	    // Get the next cursor device
 	    CursorDeviceNextDevice(&myMouse);
 	}
 	while ((myMouse != nil) && (myMouse->cntButtons != 1));
@@ -5782,7 +5766,7 @@ gui_mch_setmouse(int x, int y)
     }
     else
     {
-	/* Old way */
+	// Old way
 	where.h = x;
 	where.v = y;
 
@@ -5811,16 +5795,16 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
     Str255	HelpName = "";
     GrafPtr	savePort;
 
-    /* Save Current Port: On MacOS X we seem to lose the port */
-    GetPort(&savePort); /*OSX*/
+    // Save Current Port: On MacOS X we seem to lose the port
+    GetPort(&savePort); //OSX
 
     GetMouse(&where);
-    LocalToGlobal(&where); /*OSX*/
+    LocalToGlobal(&where); //OSX
     CntxMenu = menu->submenu_handle;
 
-    /* TODO: Get the text selection from Vim */
+    // TODO: Get the text selection from Vim
 
-    /* Call to Handle Popup */
+    // Call to Handle Popup
     status = ContextualMenuSelect(CntxMenu, where, false, kCMHelpItemRemoveHelp,
 		       HelpName, NULL, &CntxType, &CntxMenuID, &CntxMenuItem);
 
@@ -5828,24 +5812,24 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
     {
 	if (CntxType == kCMMenuItemSelected)
 	{
-	    /* Handle the menu CntxMenuID, CntxMenuItem */
-	    /* The submenu can be handle directly by gui_mac_handle_menu */
-	    /* But what about the current menu, is the menu changed by
-	     * ContextualMenuSelect */
+	    // Handle the menu CntxMenuID, CntxMenuItem
+	    // The submenu can be handle directly by gui_mac_handle_menu
+	    // But what about the current menu, is the menu changed by
+	    // ContextualMenuSelect
 	    gui_mac_handle_menu((CntxMenuID << 16) + CntxMenuItem);
 	}
 	else if (CntxMenuID == kCMShowHelpSelected)
 	{
-	    /* Should come up with the help */
+	    // Should come up with the help
 	}
     }
 
-    /* Restore original Port */
-    SetPort(savePort); /*OSX*/
+    // Restore original Port
+    SetPort(savePort); //OSX
 }
 
 #if defined(FEAT_CW_EDITOR) || defined(PROTO)
-/* TODO: Is it need for MACOS_X? (Dany) */
+// TODO: Is it need for MACOS_X? (Dany)
     void
 mch_post_buffer_write(buf_T *buf)
 {
@@ -5862,9 +5846,8 @@ mch_post_buffer_write(buf_T *buf)
     void
 gui_mch_settitle(char_u *title, char_u *icon)
 {
-    /* TODO: Get vim to make sure maxlen (from p_titlelen) is smaller
-     *       that 256. Even better get it to fit nicely in the titlebar.
-     */
+    // TODO: Get vim to make sure maxlen (from p_titlelen) is smaller
+    //       that 256. Even better get it to fit nicely in the titlebar.
 #ifdef MACOS_CONVERT
     CFStringRef windowTitle;
     size_t	windowTitleLen;
@@ -5872,7 +5855,7 @@ gui_mch_settitle(char_u *title, char_u *icon)
     char_u   *pascalTitle;
 #endif
 
-    if (title == NULL)		/* nothing to do */
+    if (title == NULL)		// nothing to do
 	return;
 
 #ifdef MACOS_CONVERT
@@ -5925,7 +5908,7 @@ C2PascalString(char_u *CString, Str255 *PascalString)
     int
 GetFSSpecFromPath(char_u *file, FSSpec *fileFSSpec)
 {
-    /* From FAQ 8-12 */
+    // From FAQ 8-12
     Str255      filePascal;
     CInfoPBRec	myCPB;
     OSErr	err;
@@ -5939,10 +5922,10 @@ GetFSSpecFromPath(char_u *file, FSSpec *fileFSSpec)
 
     err= PBGetCatInfo(&myCPB, false);
 
-    /*    vRefNum, dirID, name */
+    //    vRefNum, dirID, name
     FSMakeFSSpec(0, 0, filePascal, fileFSSpec);
 
-    /* TODO: Use an error code mechanism */
+    // TODO: Use an error code mechanism
     return 0;
 }
 
@@ -5976,36 +5959,36 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 #endif
 
 #ifdef USE_UNIXFILENAME
-    /* Get the default volume */
-    /* TODO: Remove as this only work if Vim is on the Boot Volume*/
+    // Get the default volume
+    // TODO: Remove as this only work if Vim is on the Boot Volume
     error=HGetVol(NULL, &dfltVol_vRefNum, &dfltVol_dirID);
 
     if (error)
       return NULL;
 #endif
 
-    /* Start filling fname with file.name  */
+    // Start filling fname with file.name
     vim_strncpy(filenamePtr, &file.name[1], file.name[0]);
 
-    /* Get the info about the file specified in FSSpec */
+    // Get the info about the file specified in FSSpec
     theCPB.dirInfo.ioFDirIndex = 0;
     theCPB.dirInfo.ioNamePtr   = file.name;
     theCPB.dirInfo.ioVRefNum   = file.vRefNum;
-    /*theCPB.hFileInfo.ioDirID   = 0;*/
+    //theCPB.hFileInfo.ioDirID   = 0;
     theCPB.dirInfo.ioDrDirID   = file.parID;
 
-    /* As ioFDirIndex = 0, get the info of ioNamePtr,
-       which is relative to ioVrefNum, ioDirID */
+    // As ioFDirIndex = 0, get the info of ioNamePtr,
+    // which is relative to ioVrefNum, ioDirID
     error = PBGetCatInfo(&theCPB, false);
 
-    /* If we are called for a new file we expect fnfErr */
+    // If we are called for a new file we expect fnfErr
     if ((error) && (error != fnfErr))
       return NULL;
 
-    /* Check if it's a file or folder       */
-    /* default to file if file don't exist  */
+    // Check if it's a file or folder
+    // default to file if file don't exist
     if (((theCPB.hFileInfo.ioFlAttrib & ioDirMask) == 0) || (error))
-      folder = 0; /* It's not a folder */
+      folder = 0; // It's not a folder
     else
       folder = 1;
 
@@ -6016,12 +5999,12 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
      */
     if (error == fnfErr)
     {
-	/* If the file to be saved does not already exist, it isn't possible
-	   to convert its FSSpec into an FSRef.  But we can construct an
-	   FSSpec for the file's parent folder (since we have its volume and
-	   directory IDs), and since that folder does exist, we can convert
-	   that FSSpec into an FSRef, convert the FSRef in turn into a path,
-	   and, finally, append the filename. */
+	// If the file to be saved does not already exist, it isn't possible
+	// to convert its FSSpec into an FSRef.  But we can construct an
+	// FSSpec for the file's parent folder (since we have its volume and
+	// directory IDs), and since that folder does exist, we can convert
+	// that FSSpec into an FSRef, convert the FSRef in turn into a path,
+	// and, finally, append the filename.
 	FSSpec dirSpec;
 	FSRef dirRef;
 	Str255 emptyFilename = "\p";
@@ -6043,8 +6026,8 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
     }
     else
     {
-	/* If the file to be saved already exists, we can get its full path
-	   by converting its FSSpec into an FSRef. */
+	// If the file to be saved already exists, we can get its full path
+	// by converting its FSSpec into an FSRef.
 	error=FSpMakeFSRef(&file, &refFile);
 	if (error)
 	    return NULL;
@@ -6054,18 +6037,18 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 	    return NULL;
     }
 
-    /* Add a slash at the end if needed */
+    // Add a slash at the end if needed
     if (folder)
 	STRCAT(path, "/");
 
     return (vim_strsave(path));
 #else
-    /* TODO: Get rid of all USE_UNIXFILENAME below */
-    /* Set ioNamePtr, it's the same area which is always reused. */
+    // TODO: Get rid of all USE_UNIXFILENAME below
+    // Set ioNamePtr, it's the same area which is always reused.
     theCPB.dirInfo.ioNamePtr = directoryName;
 
-    /* Trick for first entry, set ioDrParID to the first value
-     * we want for ioDrDirID*/
+    // Trick for first entry, set ioDrParID to the first value
+    // we want for ioDrDirID
     theCPB.dirInfo.ioDrParID = file.parID;
     theCPB.dirInfo.ioDrDirID = file.parID;
 
@@ -6073,53 +6056,53 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
     do
     {
 	theCPB.dirInfo.ioFDirIndex = -1;
-     /* theCPB.dirInfo.ioNamePtr   = directoryName; Already done above. */
+     // theCPB.dirInfo.ioNamePtr   = directoryName; Already done above.
 	theCPB.dirInfo.ioVRefNum   = file.vRefNum;
-     /* theCPB.dirInfo.ioDirID     = irrelevant when ioFDirIndex = -1 */
+     // theCPB.dirInfo.ioDirID     = irrelevant when ioFDirIndex = -1
 	theCPB.dirInfo.ioDrDirID   = theCPB.dirInfo.ioDrParID;
 
-	/* As ioFDirIndex = -1, get the info of ioDrDirID, */
-	/*  *ioNamePtr[0 TO 31] will be updated		   */
+	// As ioFDirIndex = -1, get the info of ioDrDirID,
+	//  *ioNamePtr[0 TO 31] will be updated
 	error = PBGetCatInfo(&theCPB,false);
 
 	if (error)
 	  return NULL;
 
-	/* Put the new directoryName in front of the current fname */
+	// Put the new directoryName in front of the current fname
 	STRCPY(temporaryPtr, filenamePtr);
 	vim_strncpy(filenamePtr, &directoryName[1], directoryName[0]);
 	STRCAT(filenamePtr, ":");
 	STRCAT(filenamePtr, temporaryPtr);
     }
-#if 1 /* def USE_UNIXFILENAME */
-    while ((theCPB.dirInfo.ioDrParID != fsRtDirID) /* && */
-	 /*  (theCPB.dirInfo.ioDrDirID != fsRtDirID)*/);
+#if 1 // def USE_UNIXFILENAME
+    while ((theCPB.dirInfo.ioDrParID != fsRtDirID)
+	 /* && (theCPB.dirInfo.ioDrDirID != fsRtDirID)*/);
 #else
     while (theCPB.dirInfo.ioDrDirID != fsRtDirID);
 #endif
 
-    /* Get the information about the volume on which the file reside */
+    // Get the information about the volume on which the file reside
     theCPB.dirInfo.ioFDirIndex = -1;
- /* theCPB.dirInfo.ioNamePtr   = directoryName; Already done above. */
+ // theCPB.dirInfo.ioNamePtr   = directoryName; Already done above.
     theCPB.dirInfo.ioVRefNum   = file.vRefNum;
- /* theCPB.dirInfo.ioDirID     = irrelevant when ioFDirIndex = -1 */
+ // theCPB.dirInfo.ioDirID     = irrelevant when ioFDirIndex = -1
     theCPB.dirInfo.ioDrDirID   = theCPB.dirInfo.ioDrParID;
 
-    /* As ioFDirIndex = -1, get the info of ioDrDirID, */
-    /*	*ioNamePtr[0 TO 31] will be updated	       */
+    // As ioFDirIndex = -1, get the info of ioDrDirID,
+    //	*ioNamePtr[0 TO 31] will be updated
     error = PBGetCatInfo(&theCPB,false);
 
     if (error)
       return NULL;
 
-    /* For MacOS Classic always add the volume name	     */
-    /* For MacOS X add the volume name preceded by "Volumes" */
-    /*	when we are not referring to the boot volume	     */
+    // For MacOS Classic always add the volume name
+    // For MacOS X add the volume name preceded by "Volumes"
+    //	when we are not referring to the boot volume
 #ifdef USE_UNIXFILENAME
     if (file.vRefNum != dfltVol_vRefNum)
 #endif
     {
-	/* Add the volume name */
+	// Add the volume name
 	STRCPY(temporaryPtr, filenamePtr);
 	vim_strncpy(filenamePtr, &directoryName[1], directoryName[0]);
 	STRCAT(filenamePtr, ":");
@@ -6127,20 +6110,20 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 
 #ifdef USE_UNIXFILENAME
 	STRCPY(temporaryPtr, filenamePtr);
-	filenamePtr[0] = 0; /* NULL terminate the string */
+	filenamePtr[0] = 0; // NULL terminate the string
 	STRCAT(filenamePtr, "Volumes:");
 	STRCAT(filenamePtr, temporaryPtr);
 #endif
     }
 
-    /* Append final path separator if it's a folder */
+    // Append final path separator if it's a folder
     if (folder)
 	STRCAT(fname, ":");
 
-    /* As we use Unix File Name for MacOS X convert it */
+    // As we use Unix File Name for MacOS X convert it
 #ifdef USE_UNIXFILENAME
-    /* Need to insert leading / */
-    /* TODO: get the above code to use directly the / */
+    // Need to insert leading /
+    // TODO: get the above code to use directly the /
     STRCPY(&temporaryPtr[1], filenamePtr);
     temporaryPtr[0] = '/';
     STRCPY(filenamePtr, temporaryPtr);
@@ -6168,7 +6151,7 @@ char_u *FullPathFromFSSpec_save(FSSpec file)
 im_set_position(int row, int col)
 {
 # if 0
-    /* TODO: Implement me! */
+    // TODO: Implement me!
     im_start_row = row;
     im_start_col = col;
 # endif
@@ -6197,7 +6180,7 @@ im_on_window_switch(int active)
     {
 	im_initialized = 1;
 
-	/* save default TSM component (should be U.S.) to default */
+	// save default TSM component (should be U.S.) to default
 	GetDefaultInputMethodOfClass(&gTSCDefault, &gTSLDefault,
 				     kKeyboardInputMethodClass);
     }
@@ -6250,7 +6233,7 @@ im_set_active(int active)
     {
 	im_initialized = 1;
 
-	/* save default TSM component (should be U.S.) to default */
+	// save default TSM component (should be U.S.) to default
 	GetDefaultInputMethodOfClass(&gTSCDefault, &gTSLDefault,
 				     kKeyboardInputMethodClass);
     }
@@ -6282,8 +6265,8 @@ im_set_active(int active)
 	    GetDefaultInputMethodOfClass(&gTSCInsert, slptr,
 					 kKeyboardInputMethodClass);
 
-	/* restore to default when switch to normal mode, so than we could
-	 * enter commands easier */
+	// restore to default when switch to normal mode, so than we could
+	// enter commands easier
 	SetDefaultInputMethodOfClass(gTSCDefault, &gTSLDefault,
 				     kKeyboardInputMethodClass);
 	SetTextServiceLanguage(&gTSLDefault);

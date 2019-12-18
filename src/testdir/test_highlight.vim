@@ -519,7 +519,7 @@ func Test_termguicolors()
   if !exists('+termguicolors')
     return
   endif
-  if has('vtp') && !has('vcon')
+  if has('vtp') && !has('vcon') && !has('gui_running')
     " Win32: 'guicolors' doesn't work without virtual console.
     call assert_fails('set termguicolors', 'E954:')
     return
@@ -618,6 +618,28 @@ func Test_wincolor()
   call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
   call delete('Xtest_wincolor')
+endfunc
+
+func Test_wincolor_listchars()
+  CheckScreendump
+
+  let lines =<< trim END
+	call setline(1, ["one","\t\tsome random text enough long to show 'extends' and 'precedes' includingnbsps, preceding tabs and trailing spaces    ","three"])
+	set wincolor=Todo
+	set nowrap cole=1 cocu+=n
+	set list lcs=eol:$,tab:>-,space:.,trail:_,extends:>,precedes:<,conceal:*,nbsp:#
+	call matchadd('Conceal', 'text')
+	normal 2G5zl
+  END
+  call writefile(lines, 'Xtest_wincolorlcs')
+  let buf = RunVimInTerminal('-S Xtest_wincolorlcs', {'rows': 8})
+
+  call VerifyScreenDump(buf, 'Test_wincolor_lcs', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+  call delete('Xtest_wincolorlcs')
 endfunc
 
 func Test_colorcolumn()

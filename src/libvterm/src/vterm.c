@@ -10,9 +10,9 @@
 
 #include "utf8.h"
 
-/*****************
- * API functions *
- *****************/
+///////////////////
+// API functions //
+///////////////////
 
 static void *default_malloc(size_t size, void *allocdata UNUSED)
 {

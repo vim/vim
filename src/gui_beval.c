@@ -12,7 +12,7 @@
 
 #if defined(FEAT_BEVAL_GUI) || defined(PROTO)
 
-/* on Win32 only get_beval_info() is required */
+// on Win32 only get_beval_info() is required
 #if !defined(FEAT_GUI_MSWIN) || defined(PROTO)
 
 #ifdef FEAT_GUI_GTK
@@ -32,7 +32,7 @@
 #  include <Xm/AtomMgr.h>
 #  include <Xm/Protocols.h>
 # else
-   /* Assume Athena */
+   // Assume Athena
 #  include <X11/Shell.h>
 #  ifdef FEAT_GUI_NEXTAW
 #   include <X11/neXtaw/Label.h>
@@ -95,7 +95,7 @@ gui_mch_create_beval_area(
     void	*clientData)
 {
 #ifndef FEAT_GUI_GTK
-    char	*display_name;	    /* get from gui.dpy */
+    char	*display_name;	    // get from gui.dpy
     int		screen_num;
     char	*p;
 #endif
@@ -157,7 +157,7 @@ gui_mch_destroy_beval_area(BalloonEval *beval)
 {
     cancelBalloon(beval);
     removeEventHandler(beval);
-    /* Children will automatically be destroyed */
+    // Children will automatically be destroyed
 # ifdef FEAT_GUI_GTK
     gtk_widget_destroy(beval->balloonShell);
 # else
@@ -198,7 +198,7 @@ gui_mch_currently_showing_beval(void)
     return current_beval;
 }
 #endif
-#endif /* !FEAT_GUI_MSWIN */
+#endif // !FEAT_GUI_MSWIN
 
 #if defined(FEAT_NETBEANS_INTG) || defined(FEAT_EVAL) || defined(PROTO)
 # if !defined(FEAT_GUI_MSWIN) || defined(PROTO)
@@ -216,8 +216,8 @@ gui_mch_post_balloon(BalloonEval *beval, char_u *mesg)
     else
 	undrawBalloon(beval);
 }
-# endif /* !FEAT_GUI_MSWIN */
-#endif /* FEAT_NETBEANS_INTG || PROTO */
+# endif // !FEAT_GUI_MSWIN
+#endif // FEAT_NETBEANS_INTG || PROTO
 
 #if !defined(FEAT_GUI_MSWIN) || defined(PROTO)
 #if defined(FEAT_BEVAL_TIP) || defined(PROTO)
@@ -344,7 +344,7 @@ target_event_cb(GtkWidget *widget, GdkEvent *event, gpointer data)
 	    break;
     }
 
-    return FALSE; /* continue emission */
+    return FALSE; // continue emission
 }
 
     static gint
@@ -364,7 +364,7 @@ mainwin_event_cb(GtkWidget *widget UNUSED, GdkEvent *event, gpointer data)
 	    break;
     }
 
-    return FALSE; /* continue emission */
+    return FALSE; // continue emission
 }
 
     static void
@@ -383,7 +383,7 @@ pointer_event(BalloonEval *beval, int x, int y, unsigned state)
 	beval->state = state;
 	cancelBalloon(beval);
 
-	/* Mouse buttons are pressed - no balloon now */
+	// Mouse buttons are pressed - no balloon now
 	if (!(state & ((int)GDK_BUTTON1_MASK | (int)GDK_BUTTON2_MASK
 						    | (int)GDK_BUTTON3_MASK)))
 	{
@@ -431,8 +431,8 @@ key_event(BalloonEval *beval, unsigned keyval, int is_keypress)
 						 ? (int)GDK_CONTROL_MASK : 0);
 		break;
 	    default:
-		/* Don't do this for key release, we apparently get these with
-		 * focus changes in some GTK version. */
+		// Don't do this for key release, we apparently get these with
+		// focus changes in some GTK version.
 		if (is_keypress)
 		    cancelBalloon(beval);
 		break;
@@ -455,7 +455,7 @@ timeout_cb(gpointer data)
      */
     requestBalloon(beval);
 
-    return FALSE; /* don't call me again */
+    return FALSE; // don't call me again
 }
 
 # if GTK_CHECK_VERSION(3,0,0)
@@ -499,11 +499,11 @@ balloon_expose_event_cb(GtkWidget *widget,
 		       &event->area, widget, "tooltip",
 		       0, 0, -1, -1);
 
-    return FALSE; /* continue emission */
+    return FALSE; // continue emission
 }
-# endif /* !GTK_CHECK_VERSION(3,0,0) */
+# endif // !GTK_CHECK_VERSION(3,0,0)
 
-#else /* !FEAT_GUI_GTK */
+#else // !FEAT_GUI_GTK
 
     static void
 addEventHandler(Widget target, BalloonEval *beval)
@@ -551,8 +551,8 @@ pointerEventEH(
     static void
 pointerEvent(BalloonEval *beval, XEvent *event)
 {
-    Position	distance;	    /* a measure of how much the pointer moved */
-    Position	delta;		    /* used to compute distance */
+    Position	distance;	    // a measure of how much the pointer moved
+    Position	delta;		    // used to compute distance
 
     switch (event->type)
     {
@@ -575,7 +575,7 @@ pointerEvent(BalloonEval *beval, XEvent *event)
 		beval->state = event->xmotion.state;
 		if (beval->state & (Button1Mask|Button2Mask|Button3Mask))
 		{
-		    /* Mouse buttons are pressed - no balloon now */
+		    // Mouse buttons are pressed - no balloon now
 		    cancelBalloon(beval);
 		}
 		else if (beval->state & (Mod1Mask|Mod2Mask|Mod3Mask))
@@ -663,9 +663,9 @@ pointerEvent(BalloonEval *beval, XEvent *event)
 	    break;
 
 	case LeaveNotify:
-		/* Ignore LeaveNotify events that are not "normal".
-		 * Apparently we also get it when somebody else grabs focus.
-		 * Happens for me every two seconds (some clipboard tool?) */
+		// Ignore LeaveNotify events that are not "normal".
+		// Apparently we also get it when somebody else grabs focus.
+		// Happens for me every two seconds (some clipboard tool?)
 		if (event->xcrossing.mode == NotifyNormal)
 		    cancelBalloon(beval);
 		break;
@@ -694,14 +694,14 @@ timerRoutine(XtPointer dx, XtIntervalId *id UNUSED)
     requestBalloon(beval);
 }
 
-#endif /* !FEAT_GUI_GTK */
+#endif // !FEAT_GUI_GTK
 
     static void
 requestBalloon(BalloonEval *beval)
 {
     if (beval->showState != ShS_PENDING)
     {
-	/* Determine the beval to display */
+	// Determine the beval to display
 	if (beval->msgCB != NULL)
 	{
 	    beval->showState = ShS_PENDING;
@@ -733,7 +733,7 @@ set_printable_label_text(GtkLabel *label, char_u *text)
     int		    uc;
     PangoAttrList   *attr_list;
 
-    /* Convert to UTF-8 if it isn't already */
+    // Convert to UTF-8 if it isn't already
     if (output_conv.vc_type != CONV_NONE)
     {
 	convbuf = string_convert(&output_conv, text, NULL);
@@ -741,14 +741,14 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 	    text = convbuf;
     }
 
-    /* First let's see how much we need to allocate */
+    // First let's see how much we need to allocate
     len = 0;
     for (p = text; *p != NUL; p += charlen)
     {
-	if ((*p & 0x80) == 0)	/* be quick for ASCII */
+	if ((*p & 0x80) == 0)	// be quick for ASCII
 	{
 	    charlen = 1;
-	    len += IS_NONPRINTABLE(*p) ? 2 : 1;	/* nonprintable: ^X */
+	    len += IS_NONPRINTABLE(*p) ? 2 : 1;	// nonprintable: ^X
 	}
 	else
 	{
@@ -756,14 +756,14 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 	    uc = utf_ptr2char(p);
 
 	    if (charlen != utf_char2len(uc))
-		charlen = 1; /* reject overlong sequences */
+		charlen = 1; // reject overlong sequences
 
-	    if (charlen == 1 || uc < 0xa0)	/* illegal byte or    */
-		len += 4;			/* control char: <xx> */
+	    if (charlen == 1 || uc < 0xa0)	// illegal byte or
+		len += 4;			// control char: <xx>
 	    else if (!utf_printable(uc))
-		/* Note: we assume here that utf_printable() doesn't
-		 * care about characters outside the BMP. */
-		len += 6;			/* nonprintable: <xxxx> */
+		// Note: we assume here that utf_printable() doesn't
+		// care about characters outside the BMP.
+		len += 6;			// nonprintable: <xxxx>
 	    else
 		len += charlen;
 	}
@@ -772,7 +772,7 @@ set_printable_label_text(GtkLabel *label, char_u *text)
     attr_list = pango_attr_list_new();
     buf = alloc(len + 1);
 
-    /* Now go for the real work */
+    // Now go for the real work
     if (buf != NULL)
     {
 	attrentry_T	*aep;
@@ -787,7 +787,7 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 	GdkColor	color = { 0, 0, 0, 0 };
 #endif
 
-	/* Look up the RGB values of the SpecialKey foreground color. */
+	// Look up the RGB values of the SpecialKey foreground color.
 	aep = syn_gui_attr2entry(HL_ATTR(HLF_8));
 	pixel = (aep != NULL) ? aep->ae_u.gui.fg_color : INVALCOLOR;
 	if (pixel != INVALCOLOR)
@@ -807,7 +807,7 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 	p = text;
 	while (*p != NUL)
 	{
-	    /* Be quick for ASCII */
+	    // Be quick for ASCII
 	    if ((*p & 0x80) == 0 && !IS_NONPRINTABLE(*p))
 	    {
 		*pdest++ = *p++;
@@ -818,29 +818,29 @@ set_printable_label_text(GtkLabel *label, char_u *text)
 		uc = utf_ptr2char(p);
 
 		if (charlen != utf_char2len(uc))
-		    charlen = 1; /* reject overlong sequences */
+		    charlen = 1; // reject overlong sequences
 
 		if (charlen == 1 || uc < 0xa0 || !utf_printable(uc))
 		{
 		    int	outlen;
 
-		    /* Careful: we can't just use transchar_byte() here,
-		     * since 'encoding' is not necessarily set to "utf-8". */
+		    // Careful: we can't just use transchar_byte() here,
+		    // since 'encoding' is not necessarily set to "utf-8".
 		    if (*p & 0x80 && charlen == 1)
 		    {
-			transchar_hex(pdest, *p);	/* <xx> */
+			transchar_hex(pdest, *p);	// <xx>
 			outlen = 4;
 		    }
 		    else if (uc >= 0x80)
 		    {
-			/* Note: we assume here that utf_printable() doesn't
-			 * care about characters outside the BMP. */
-			transchar_hex(pdest, uc);	/* <xx> or <xxxx> */
+			// Note: we assume here that utf_printable() doesn't
+			// care about characters outside the BMP.
+			transchar_hex(pdest, uc);	// <xx> or <xxxx>
 			outlen = (uc < 0x100) ? 4 : 6;
 		    }
 		    else
 		    {
-			transchar_nonprint(pdest, *p);	/* ^X */
+			transchar_nonprint(pdest, *p);	// ^X
 			outlen = 2;
 		    }
 		    if (pixel != INVALCOLOR)
@@ -940,36 +940,36 @@ drawBalloon(BalloonEval *beval)
 	pango_layout_set_wrap(layout, PANGO_WRAP_WORD);
 # endif
 	pango_layout_set_width(layout,
-		/* try to come up with some reasonable width */
+		// try to come up with some reasonable width
 		PANGO_SCALE * CLAMP(gui.num_cols * gui.char_width,
 				    screen_w / 2,
 				    MAX(20, screen_w - 20)));
 
-	/* Calculate the balloon's width and height. */
+	// Calculate the balloon's width and height.
 # if GTK_CHECK_VERSION(3,0,0)
 	gtk_widget_get_preferred_size(beval->balloonShell, &requisition, NULL);
 # else
 	gtk_widget_size_request(beval->balloonShell, &requisition);
 # endif
 
-	/* Compute position of the balloon area */
+	// Compute position of the balloon area
 	gdk_window_get_origin(gtk_widget_get_window(beval->target), &x, &y);
 	x += beval->x;
 	y += beval->y;
 
-	/* Get out of the way of the mouse pointer */
+	// Get out of the way of the mouse pointer
 	if (x + x_offset + requisition.width > screen_x + screen_w)
 	    y_offset += 15;
 	if (y + y_offset + requisition.height > screen_y + screen_h)
 	    y_offset = -requisition.height - EVAL_OFFSET_Y;
 
-	/* Sanitize values */
+	// Sanitize values
 	x = CLAMP(x + x_offset, 0,
 			    MAX(0, screen_x + screen_w - requisition.width));
 	y = CLAMP(y + y_offset, 0,
 			    MAX(0, screen_y + screen_h - requisition.height));
 
-	/* Show the balloon */
+	// Show the balloon
 # if GTK_CHECK_VERSION(3,0,0)
 	gtk_window_move(GTK_WINDOW(beval->balloonShell), x, y);
 # else
@@ -1048,7 +1048,7 @@ createBalloonEvalWindow(BalloonEval *beval)
     gtk_container_add(GTK_CONTAINER(beval->balloonShell), beval->balloonLabel);
 }
 
-#else /* !FEAT_GUI_GTK */
+#else // !FEAT_GUI_GTK
 
 /*
  * Draw a balloon.
@@ -1063,15 +1063,15 @@ drawBalloon(BalloonEval *beval)
 
     if (beval->msg != NULL)
     {
-	/* Show the Balloon */
+	// Show the Balloon
 
-	/* Calculate the label's width and height */
+	// Calculate the label's width and height
 #ifdef FEAT_GUI_MOTIF
 	XmString s;
 
-	/* For the callback function we parse NL characters to create a
-	 * multi-line label.  This doesn't work for all languages, but
-	 * XmStringCreateLocalized() doesn't do multi-line labels... */
+	// For the callback function we parse NL characters to create a
+	// multi-line label.  This doesn't work for all languages, but
+	// XmStringCreateLocalized() doesn't do multi-line labels...
 	if (beval->msgCB != NULL)
 	    s = XmStringCreateLtoR((char *)beval->msg, XmFONTLIST_DEFAULT_TAG);
 	else
@@ -1092,8 +1092,8 @@ drawBalloon(BalloonEval *beval)
 	h += gui.border_offset << 1;
 	XtVaSetValues(beval->balloonLabel, XmNlabelString, s, NULL);
 	XmStringFree(s);
-#else /* Athena */
-	/* Assume XtNinternational == True */
+#else // Athena
+	// Assume XtNinternational == True
 	XFontSet	fset;
 	XFontSetExtents *ext;
 
@@ -1108,7 +1108,7 @@ drawBalloon(BalloonEval *beval)
 	XtVaSetValues(beval->balloonLabel, XtNlabel, beval->msg, NULL);
 #endif
 
-	/* Compute position of the balloon area */
+	// Compute position of the balloon area
 	tx = beval->x_root + EVAL_OFFSET_X;
 	ty = beval->y_root + EVAL_OFFSET_Y;
 	if ((tx + w) > beval->screen_width)
@@ -1121,13 +1121,13 @@ drawBalloon(BalloonEval *beval)
 		XmNy, ty,
 		NULL);
 #else
-	/* Athena */
+	// Athena
 	XtVaSetValues(beval->balloonShell,
 		XtNx, tx,
 		XtNy, ty,
 		NULL);
 #endif
-	/* Set tooltip colors */
+	// Set tooltip colors
 	{
 	    Arg args[2];
 
@@ -1136,7 +1136,7 @@ drawBalloon(BalloonEval *beval)
 	    args[0].value = gui.tooltip_bg_pixel;
 	    args[1].name = XmNforeground;
 	    args[1].value = gui.tooltip_fg_pixel;
-#else /* Athena */
+#else // Athena
 	    args[0].name = XtNbackground;
 	    args[0].value = gui.tooltip_bg_pixel;
 	    args[1].name = XtNforeground;
@@ -1194,7 +1194,7 @@ createBalloonEvalWindow(BalloonEval *beval)
     beval->balloonShell = XtAppCreateShell("balloonEval", "BalloonEval",
 		    overrideShellWidgetClass, gui.dpy, args, n);
 #else
-    /* Athena */
+    // Athena
     XtSetArg(args[n], XtNallowShellResize, True); n++;
     beval->balloonShell = XtAppCreateShell("balloonEval", "BalloonEval",
 		    overrideShellWidgetClass, gui.dpy, args, n);
@@ -1213,7 +1213,7 @@ createBalloonEvalWindow(BalloonEval *beval)
 	beval->balloonLabel = XtCreateManagedWidget("balloonLabel",
 			xmLabelWidgetClass, beval->balloonShell, args, n);
     }
-#else /* FEAT_GUI_ATHENA */
+#else // FEAT_GUI_ATHENA
     XtSetArg(args[n], XtNforeground, gui.tooltip_fg_pixel); n++;
     XtSetArg(args[n], XtNbackground, gui.tooltip_bg_pixel); n++;
     XtSetArg(args[n], XtNinternational, True); n++;
@@ -1223,7 +1223,7 @@ createBalloonEvalWindow(BalloonEval *beval)
 #endif
 }
 
-#endif /* !FEAT_GUI_GTK */
-#endif /* !FEAT_GUI_MSWIN */
+#endif // !FEAT_GUI_GTK
+#endif // !FEAT_GUI_MSWIN
 
-#endif /* FEAT_BEVAL_GUI */
+#endif // FEAT_BEVAL_GUI
