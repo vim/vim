@@ -97,6 +97,7 @@ NEW_TESTS = \
 	test_ex_equal \
 	test_ex_undo \
 	test_ex_z \
+	test_ex_mode \
 	test_excmd \
 	test_exec_while_if \
 	test_execute_func \
