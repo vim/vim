@@ -482,6 +482,10 @@ func Test_cmdline_remove_char()
 endfunc
 
 func Test_cmdline_keymap_ctrl_hat()
+  if !has('keymap')
+    return
+  endif
+
   set keymap=esperanto
   call feedkeys(":\"Jxauxdo \<C-^>Jxauxdo \<C-^>Jxauxdo\<CR>", 'tx')
   call assert_equal('"Jxauxdo Ĵaŭdo Jxauxdo', @:)
