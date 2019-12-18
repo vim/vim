@@ -1,4 +1,4 @@
-*usr_22.txt*	For Vim version 8.1.  Last change: 2019 Dec 07
+*usr_22.txt*	For Vim version 8.2.  Last change: 2019 Dec 07
 
 		     VIM USER MANUAL - by Bram Moolenaar
 

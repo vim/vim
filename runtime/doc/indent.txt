@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 8.1.  Last change: 2019 Dec 07
+*indent.txt*    For Vim version 8.2.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -810,6 +810,16 @@ Detail:
       <style>  : {customizable}	    if first line of block
 	       : GetCSSIndent()	    else
       <!-- --> : -1
+
+
+MATLAB			*ft-matlab-indent* *matlab-indent* *matlab-indenting*
+
+The setting Function indenting format in MATLAB Editor/Debugger Language
+Preferences corresponds to: >
+    :let g:MATLAB_function_indent = {0, 1 or 2 (default)}
+
+Where 0 is for Classic, 1 for Indent nested functions and 2 for Indent all
+functions.
 
 
 PHP				*ft-php-indent* *php-indent* *php-indenting*

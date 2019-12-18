@@ -2939,10 +2939,10 @@ create_windows(mparm_T *parmp UNUSED)
     }
 }
 
-    /*
-     * If opened more than one window, start editing files in the other
-     * windows.  make_windows() has already opened the windows.
-     */
+/*
+ * If opened more than one window, start editing files in the other
+ * windows.  make_windows() has already opened the windows.
+ */
     static void
 edit_buffers(
     mparm_T	*parmp,

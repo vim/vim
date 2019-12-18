@@ -2742,7 +2742,7 @@ do_ecmd(
 		// oldwin->w_buffer to NULL.
 		u_sync(FALSE);
 		close_buffer(oldwin, curbuf,
-			       (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD, FALSE);
+			 (flags & ECMD_HIDE) ? 0 : DOBUF_UNLOAD, FALSE, FALSE);
 
 		the_curwin->w_closing = FALSE;
 		--buf->b_locked;

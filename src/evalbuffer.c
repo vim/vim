@@ -545,6 +545,7 @@ get_buffer_info(buf_T *buf)
     dict_add_string(dict, "name", buf->b_ffname);
     dict_add_number(dict, "lnum", buf == curbuf ? curwin->w_cursor.lnum
 						     : buflist_findlnum(buf));
+    dict_add_number(dict, "linecount", buf->b_ml.ml_line_count);
     dict_add_number(dict, "loaded", buf->b_ml.ml_mfp != NULL);
     dict_add_number(dict, "listed", buf->b_p_bl);
     dict_add_number(dict, "changed", bufIsChanged(buf));

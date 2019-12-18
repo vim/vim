@@ -1925,7 +1925,7 @@ wipe_qf_buffer(qf_info_T *qi)
 	{
 	    // If the quickfix buffer is not loaded in any window, then
 	    // wipe the buffer.
-	    close_buffer(NULL, qfbuf, DOBUF_WIPE, FALSE);
+	    close_buffer(NULL, qfbuf, DOBUF_WIPE, FALSE, FALSE);
 	    qi->qf_bufnr = INVALID_QFBUFNR;
 	}
     }
@@ -6311,7 +6311,7 @@ unload_dummy_buffer(buf_T *buf, char_u *dirname_start)
 {
     if (curbuf != buf)		// safety check
     {
-	close_buffer(NULL, buf, DOBUF_UNLOAD, FALSE);
+	close_buffer(NULL, buf, DOBUF_UNLOAD, FALSE, TRUE);
 
 	// When autocommands/'autochdir' option changed directory: go back.
 	restore_start_dir(dirname_start);

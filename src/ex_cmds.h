@@ -1841,7 +1841,7 @@ struct exarg
     char_u	*(*getline)(int, void *, int, int);
     void	*cookie;	// argument for getline()
 #ifdef FEAT_EVAL
-    struct condstack *cstack;	// condition stack for ":if" etc.
+    cstack_T	*cstack;	// condition stack for ":if" etc.
 #endif
     long	verbose_save;	 // saved value of p_verbose
     int		save_msg_silent; // saved value of msg_silent

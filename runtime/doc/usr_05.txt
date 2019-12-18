@@ -1,4 +1,4 @@
-*usr_05.txt*	For Vim version 8.1.  Last change: 2019 May 23
+*usr_05.txt*	For Vim version 8.2.  Last change: 2019 May 23
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -472,7 +472,7 @@ Then copy the file to your plugin directory:
 
 	system		plugin directory ~
 	Unix		~/.vim/plugin/
-	PC and OS/2	$HOME/vimfiles/plugin or $VIM/vimfiles/plugin
+	PC		$HOME/vimfiles/plugin or $VIM/vimfiles/plugin
 	Amiga		s:vimfiles/plugin
 	Macintosh	$VIM:vimfiles:plugin
 	Mac OS X	~/.vim/plugin/

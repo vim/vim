@@ -75,9 +75,8 @@ VIMPROG = <->vim.exe
 
 SCRIPT = test1.out \
        test42.out test44.out test49.out \
-       test64.out test69.out \
-       test72.out test77a.out test88.out \
-       test95.out test99.out \
+       test77a.out \
+       test99.out \
        test_eval.out
 
 # Known problems:
@@ -85,7 +84,6 @@ SCRIPT = test1.out \
 # test59: Failed/Hangs - VMS does not support spell files (file names
 # with too many dots).
 #
-# test72: bug - Vim hangs at :rename (while rename works well otherwise)
 # test78: bug - Vim dies at :recover Xtest 
 # test89: bug - findfile() does not work on VMS (just in the current directory) 
 # test102: Just ODS-5 supports space and special chars in the filename.

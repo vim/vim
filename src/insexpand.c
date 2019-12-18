@@ -32,7 +32,7 @@
 # define CTRL_X_DICTIONARY	(9 + CTRL_X_WANT_IDENT)
 # define CTRL_X_THESAURUS	(10 + CTRL_X_WANT_IDENT)
 # define CTRL_X_CMDLINE		11
-# define CTRL_X_FUNCTION		12
+# define CTRL_X_FUNCTION	12
 # define CTRL_X_OMNI		13
 # define CTRL_X_SPELL		14
 # define CTRL_X_LOCAL_MSG	15	/* only used in "ctrl_x_msgs" */

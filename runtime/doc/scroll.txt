@@ -1,4 +1,4 @@
-*scroll.txt*    For Vim version 8.1.  Last change: 2019 May 13
+*scroll.txt*    For Vim version 8.2.  Last change: 2019 May 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

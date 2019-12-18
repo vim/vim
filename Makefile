@@ -85,13 +85,13 @@ indenttest:
 #    Before creating an archive first delete all backup files, *.orig, etc.
 
 MAJOR = 8
-MINOR = 1
+MINOR = 2
 
 # CHECKLIST for creating a new version:
 #
 # - Update Vim version number.  For a test version in: src/version.h,
 #   READMEdir/Contents, MAJOR/MINOR above, VIMMAJOR and VIMMINOR in
-#   src/Makefile, README.txt, README.md, READMEdir/README*.txt,
+#   src/Makefile, README.txt, README.md, src/README.md, READMEdir/README*.txt,
 #   runtime/doc/*.txt and make nsis/gvim_version.nsh.
 #   For a minor/major version: src/GvimExt/GvimExt.reg, src/vim.def,
 #   src/gvim.exe.mnf.
@@ -145,7 +145,7 @@ MINOR = 1
 # - > make dossrc
 #   > make dosrt
 #   Unpack dist/vim##rt.zip and dist/vim##src.zip on an MS-Windows PC.
-#   This creates the directory vim/vim81 and puts all files in there.
+#   This creates the directory vim/vim82 and puts all files in there.
 # Win32 console version build:
 # - See src/INSTALLpc.txt for installing the compiler and SDK.
 # - Set environment for Visual C++ 2015:
@@ -203,7 +203,7 @@ MINOR = 1
 #   Note: VisVim needs to be build with MSVC 5, newer versions don't work.
 #   gvimext64.dll can be obtained from:
 #   https://github.com/vim/vim-win32-installer/releases
-#	It is part of gvim_8.0.*_x64.zip as vim/vim80/GvimExt/gvimext64.dll.
+#	It is part of gvim_8.2.*_x64.zip as vim/vim82/GvimExt/gvimext64.dll.
 # - Make sure there is a diff.exe two levels up (get it from a previous Vim
 #   version).  Also put winpty32.dll and winpty-agent.exe there.
 # - go to ../nsis and do:

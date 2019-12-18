@@ -6,7 +6,7 @@
 " Last change:	2016 Apr 05
 "
 " To use it, copy it to
-"     for Unix and OS/2:  ~/.gvimrc
+"	       for Unix:  ~/.gvimrc
 "	      for Amiga:  s:.gvimrc
 "  for MS-DOS and Win32:  $VIM\_gvimrc
 "	    for OpenVMS:  sys$login:.gvimrc

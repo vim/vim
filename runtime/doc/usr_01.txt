@@ -1,4 +1,4 @@
-*usr_01.txt*	For Vim version 8.1.  Last change: 2019 Nov 21
+*usr_01.txt*	For Vim version 8.2.  Last change: 2019 Nov 21
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -71,7 +71,7 @@ you are using:
 
 Unix: >
 	:!cp -i $VIMRUNTIME/vimrc_example.vim ~/.vimrc
-MS-DOS, MS-Windows, OS/2: >
+MS-Windows: >
 	:!copy $VIMRUNTIME/vimrc_example.vim $VIM/_vimrc
 Amiga: >
 	:!copy $VIMRUNTIME/vimrc_example.vim $VIM/.vimrc

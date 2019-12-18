@@ -1,4 +1,4 @@
-*version4.txt*  For Vim version 8.1.  Last change: 2006 Apr 24
+*version4.txt*  For Vim version 8.2.  Last change: 2006 Apr 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

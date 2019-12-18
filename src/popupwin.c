@@ -1753,7 +1753,7 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 	// Check that arguments look OK.
 	if (argvars[0].v_type == VAR_NUMBER)
 	{
-	    buf = buflist_findnr( argvars[0].vval.v_number);
+	    buf = buflist_findnr(argvars[0].vval.v_number);
 	    if (buf == NULL)
 	    {
 		semsg(_(e_nobufnr), argvars[0].vval.v_number);
@@ -2097,6 +2097,10 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
 {
     int id = wp->w_id;
 
+    // Just in case a check higher up is missing.
+    if (wp == curwin && ERROR_IF_POPUP_WINDOW)
+	return;
+
     if (wp->w_close_cb.cb_name != NULL)
 	// Careful: This may make "wp" invalid.
 	invoke_popup_callback(wp, arg);
@@ -2331,8 +2335,12 @@ find_popup_win(int id)
 f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
 {
     int		id = (int)tv_get_number(argvars);
-    win_T	*wp = find_popup_win(id);
+    win_T	*wp;
 
+    if (ERROR_IF_POPUP_WINDOW)
+	return;
+
+    wp = find_popup_win(id);
     if (wp != NULL)
 	popup_close_and_callback(wp, &argvars[1]);
 }

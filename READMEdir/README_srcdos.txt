@@ -1,8 +1,8 @@
-README_srcdos.txt for version 8.1 of Vim: Vi IMproved.
+README_srcdos.txt for version 8.2 of Vim: Vi IMproved.
 
 See "README.txt" for general information about Vim.
 See "README_dos.txt" for installation instructions for MS-DOS and MS-Windows.
-These files are in the runtime archive (vim81rt.zip).
+These files are in the runtime archive (vim82rt.zip).
 
 
 The DOS source archive contains the files needed to compile Vim on MS-DOS or

@@ -2001,7 +2001,7 @@ do_join(
 	{
 	    curr = skipwhite(curr);
 	    if (*curr != NUL && *curr != ')'
-		    && currsize != 0 && endcurr1 != TAB
+		    && sumsize != 0 && endcurr1 != TAB
 		    && (!has_format_option(FO_MBYTE_JOIN)
 			|| (mb_ptr2char(curr) < 0x100 && endcurr1 < 0x100))
 		    && (!has_format_option(FO_MBYTE_JOIN2)
@@ -4233,7 +4233,8 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 	    {
 		if (hasFolding(oap->start.lnum, &oap->start.lnum, NULL))
 		    oap->start.col = 0;
-		if ((curwin->w_cursor.col > 0 || oap->inclusive)
+		if ((curwin->w_cursor.col > 0 || oap->inclusive
+						  || oap->motion_type == MLINE)
 			&& hasFolding(curwin->w_cursor.lnum, NULL,
 						      &curwin->w_cursor.lnum))
 		    curwin->w_cursor.col = (colnr_T)STRLEN(ml_get_curline());

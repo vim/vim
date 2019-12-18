@@ -1,4 +1,4 @@
-*ft_sql.txt*	For Vim version 8.1.  Last change: 2019 Dec 07
+*ft_sql.txt*	For Vim version 8.2.  Last change: 2019 Dec 07
 
 by David Fishburn
 

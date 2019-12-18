@@ -36,8 +36,13 @@ static int pum_win_col;
 static int pum_win_wcol;
 static int pum_win_width;
 
-static int pum_do_redraw = FALSE;	// do redraw anyway
-static int pum_skip_redraw = FALSE;	// skip redraw
+// Some parts are not updated when a popup menu is visible.  Setting this flag
+// makes pum_visible() return FALSE even when there is a popup menu.
+static int pum_pretend_not_visible = FALSE;
+
+// When set the popup menu will redraw soon using the pum_win_ values. Do not
+// draw over the poup menu area to avoid flicker.
+static int pum_will_redraw = FALSE;
 
 static int pum_set_selected(int n, int repeat);
 
@@ -175,6 +180,7 @@ pum_display(
 	    // pum below "pum_win_row"
 
 	    // Leave two lines of context if possible
+	    validate_cheight();
 	    if (curwin->w_cline_row
 				+ curwin->w_cline_height - curwin->w_wrow >= 3)
 		context_lines = 3;
@@ -377,7 +383,7 @@ pum_call_update_screen()
     int
 pum_under_menu(int row, int col)
 {
-    return pum_skip_redraw
+    return pum_will_redraw
 	    && row >= pum_row
 	    && row < pum_row + pum_height
 	    && col >= pum_col - 1
@@ -410,9 +416,11 @@ pum_redraw(void)
     if (call_update_screen)
     {
 	call_update_screen = FALSE;
-	pum_skip_redraw = TRUE;  // do not redraw in pum_may_redraw().
+	// Do not redraw in pum_may_redraw() and don't draw in the area where
+	// the popup menu will be.
+	pum_will_redraw = TRUE;
 	update_screen(0);
-	pum_skip_redraw = FALSE;
+	pum_will_redraw = FALSE;
     }
 
     // never display more than we have
@@ -905,7 +913,7 @@ pum_set_selected(int n, int repeat UNUSED)
 			// When the preview window was resized we need to
 			// update the view on the buffer.  Only go back to
 			// the window when needed, otherwise it will always be
-			// redraw.
+			// redrawn.
 			if (resized && win_valid(curwin_save))
 			{
 			    ++no_u_sync;
@@ -916,9 +924,14 @@ pum_set_selected(int n, int repeat UNUSED)
 
 			// Update the screen before drawing the popup menu.
 			// Enable updating the status lines.
-			pum_do_redraw = TRUE;
+			pum_pretend_not_visible = TRUE;
+			// But don't draw text at the new popup menu position,
+			// it causes flicker.  When resizing we need to draw
+			// anyway, the position may change later.
+			pum_will_redraw = !resized;
 			update_screen(0);
-			pum_do_redraw = FALSE;
+			pum_pretend_not_visible = FALSE;
+			pum_will_redraw = FALSE;
 
 			if (!resized && win_valid(curwin_save))
 			{
@@ -936,9 +949,11 @@ pum_set_selected(int n, int repeat UNUSED)
 
 			// May need to update the screen again when there are
 			// autocommands involved.
-			pum_do_redraw = TRUE;
+			pum_pretend_not_visible = TRUE;
+			pum_will_redraw = !resized;
 			update_screen(0);
-			pum_do_redraw = FALSE;
+			pum_pretend_not_visible = FALSE;
+			pum_will_redraw = FALSE;
 			call_update_screen = FALSE;
 		    }
 		}
@@ -990,13 +1005,14 @@ pum_clear(void)
 }
 
 /*
- * Return TRUE if the popup menu is displayed.
- * Overruled when "pum_do_redraw" is set, used to redraw the status lines.
+ * Return TRUE if the popup menu is displayed. Used to avoid some redrawing
+ * that could overwrite it.  Overruled when "pum_pretend_not_visible" is set,
+ * used to redraw the status lines.
  */
     int
 pum_visible(void)
 {
-    return !pum_do_redraw && pum_array != NULL;
+    return !pum_pretend_not_visible && pum_array != NULL;
 }
 
 /*
@@ -1009,7 +1025,7 @@ pum_may_redraw(void)
     int		len = pum_size;
     int		selected = pum_selected;
 
-    if (!pum_visible() || pum_skip_redraw)
+    if (!pum_visible() || pum_will_redraw)
 	return;  // nothing to do
 
     if (pum_window != curwin

@@ -863,8 +863,7 @@ struct eslist_elem
  */
 #define CSTACK_LEN	50
 
-struct condstack
-{
+typedef struct {
     short	cs_flags[CSTACK_LEN];	// CSF_ flags
     char	cs_pending[CSTACK_LEN];	// CSTP_: what's pending in ":finally"
     union {
@@ -878,7 +877,7 @@ struct condstack
     int		cs_trylevel;		// nr of nested ":try"s
     eslist_T	*cs_emsg_silent_list;	// saved values of "emsg_silent"
     char	cs_lflags;		// loop flags: CSL_ flags
-};
+} cstack_T;
 # define cs_rettv	cs_pend.csp_rv
 # define cs_exception	cs_pend.csp_ex
 
@@ -912,7 +911,7 @@ struct condstack
 # define CSTP_FINISH	32	// ":finish" is pending
 
 /*
- * Flags for the cs_lflags item in struct condstack.
+ * Flags for the cs_lflags item in cstack_T.
  */
 # define CSL_HAD_LOOP	 1	// just found ":while" or ":for"
 # define CSL_HAD_ENDLOOP 2	// just found ":endwhile" or ":endfor"
