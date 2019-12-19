@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.2.  Last change: 2019 Dec 07
+*syntax.txt*	For Vim version 8.2.  Last change: 2019 Dec 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2759,6 +2759,13 @@ command line before loading a file with the readline syntax: >
 
 This will add highlighting for the commands that BASH (version 2.05a and
 later, and part earlier) adds.
+
+
+REGO						*rego.vim* *ft-rego-syntax*
+
+Rego is a query language developed by Styra.  It is mostly used as a policy
+language for kubernetes, but can be applied to almost anything.  Files with
+the following extensions are recognized as rego files: .rego.
 
 
 RESTRUCTURED TEXT			*rst.vim* *ft-rst-syntax*

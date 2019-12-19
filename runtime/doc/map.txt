@@ -1,4 +1,4 @@
-*map.txt*       For Vim version 8.2.  Last change: 2019 Nov 09
+*map.txt*       For Vim version 8.2.  Last change: 2019 Dec 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1044,7 +1044,8 @@ See |:verbose-cmd| for more information.
 			See |:map-<buffer>| for the optional <buffer> argument.
 
 						*:una* *:unabbreviate*
-:una[bbreviate] {lhs}	Remove abbreviation for {lhs} from the list.  If none
+:una[bbreviate] [<buffer>] {lhs}
+			Remove abbreviation for {lhs} from the list.  If none
 			is found, remove abbreviations in which {lhs} matches
 			with the {rhs}.  This is done so that you can even
 			remove abbreviations after expansion.  To avoid
@@ -1059,7 +1060,8 @@ See |:verbose-cmd| for more information.
 			Same as ":ab", but for Command-line mode only.
 
 						*:cuna* *:cunabbrev*
-:cuna[bbrev] {lhs}	Same as ":una", but for Command-line mode only.
+:cuna[bbrev] [<buffer>] {lhs}
+			Same as ":una", but for Command-line mode only.
 
 						*:cnorea* *:cnoreabbrev*
 :cnorea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]
@@ -1071,7 +1073,8 @@ See |:verbose-cmd| for more information.
 			Same as ":ab", but for Insert mode only.
 
 						*:iuna* *:iunabbrev*
-:iuna[bbrev] {lhs}	Same as ":una", but for insert mode only.
+:iuna[bbrev] [<buffer>] {lhs}
+			Same as ":una", but for insert mode only.
 
 						*:inorea* *:inoreabbrev*
 :inorea[bbrev] [<expr>] [<buffer>] [lhs] [rhs]

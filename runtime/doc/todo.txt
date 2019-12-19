@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2019 Dec 11
+*todo.txt*      For Vim version 8.2.  Last change: 2019 Dec 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,7 +38,12 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+Include ipv6 syntax changes?  (DJ Lucas, #5360)
+
 Popup windows:
+- Make it possible to put a terminal window in a popup.  Would always grab key
+  input?  Sort-of possible by creating a hidden terminal and opening a popup
+  with that buffer: #4063.
 - Use popup (or popup menu) for command line completion
 - Implement flip option
 - Make redrawing more efficient and avoid flicker:
@@ -87,6 +92,7 @@ Terminal emulator window:
 - When the job in the terminal doesn't use mouse events, let the scroll wheel
   scroll the scrollback, like a terminal does at the shell prompt. #2490
   And use modeless selection.  #2962
+- Use CTRL-W CTRL-K to enter a digraph? #5371
 - When Vim runs in the terminal and changes the title, the statusline needs to
   be redrawn.
 - GUI: When using ":set go+=!" a system() call causes the hit-enter prompt.
@@ -136,6 +142,9 @@ Needs better docs.  Is there a better name?
 undo result wrong: Masato Nishihata, #4798
 
 Undo puts cursor in wrong line after "cG<Esc>" undo.
+
+:unmap <c-n> gives error but does remove the mapping. (Antony Scriven, 2019
+Dec 19)
 
 Sound: support on Mac?  Or does libcanberra work there?
 
@@ -522,7 +531,7 @@ matchaddpos() gets slow with many matches.  Proposal by Rick Howe, 2018 Jul
 19.
 
 Should make 'listchars' global-local.  Local to window or to buffer?
-Probably window.
+Probably window.  #5206
 Add something like 'fillchars' local to window, but allow for specifying a
 highlight name.  Esp. for the statusline.
 And "extends" and "precedes" are also useful without 'list' set.  Also in
