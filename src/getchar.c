@@ -87,7 +87,7 @@ static char_u	noremapbuf_init[TYPELEN_INIT];	// initial typebuf.tb_noremap
 
 static int	last_recorded_len = 0;	// number of last recorded chars
 
-static int	read_readbuf(buffheader_T *buf, int advance);
+static char_u	read_readbuf(buffheader_T *buf, int advance);
 static void	init_typebuf(void);
 static void	may_sync_undo(void);
 static void	free_typebuf(void);
@@ -318,10 +318,10 @@ static buffheader_T readbuf2 = {{NULL, {NUL}}, NULL, 0, 0};
  * If advance == TRUE go to the next char.
  * No translation is done K_SPECIAL and CSI are escaped.
  */
-    static int
+    static char_u
 read_readbuffers(int advance)
 {
-    int c;
+    char_u c;
 
     c = read_readbuf(&readbuf1, advance);
     if (c == NUL)
@@ -329,7 +329,7 @@ read_readbuffers(int advance)
     return c;
 }
 
-    static int
+    static char_u
 read_readbuf(buffheader_T *buf, int advance)
 {
     char_u	c;
