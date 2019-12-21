@@ -1331,14 +1331,12 @@ func Ch_close_handle(port)
 endfunc
 
 func Test_close_handle()
-  call ch_log('Test_close_handle()')
   call s:run_server('Ch_close_handle')
 endfunc
 
 """"""""""
 
 func Test_open_fail()
-  call ch_log('Test_open_fail()')
   silent! let ch = ch_open("noserver")
   echo ch
   let d = ch
@@ -1360,7 +1358,6 @@ func Ch_open_delay(port)
 endfunc
 
 func Test_open_delay()
-  call ch_log('Test_open_delay()')
   " The server will wait half a second before creating the port.
   call s:run_server('Ch_open_delay', 'delay')
 endfunc
@@ -1384,7 +1381,6 @@ function Ch_test_call(port)
 endfunc
 
 func Test_call()
-  call ch_log('Test_call()')
   call s:run_server('Ch_test_call')
 endfunc
 
@@ -1473,7 +1469,6 @@ function Ch_test_close_callback(port)
 endfunc
 
 func Test_close_callback()
-  call ch_log('Test_close_callback()')
   call s:run_server('Ch_test_close_callback')
 endfunc
 
@@ -1495,7 +1490,6 @@ function Ch_test_close_partial(port)
 endfunc
 
 func Test_close_partial()
-  call ch_log('Test_close_partial()')
   call s:run_server('Ch_test_close_partial')
 endfunc
 
@@ -1712,7 +1706,6 @@ function Ch_test_close_lambda(port)
 endfunc
 
 func Test_close_lambda()
-  call ch_log('Test_close_lambda()')
   call s:run_server('Ch_test_close_lambda')
 endfunc
 
@@ -1963,6 +1956,12 @@ func Test_zz_nl_err_to_out_pipe()
     sleep 10m
     call delete('Xlog')
   endtry
+endfunc
+
+func Test_empty_job()
+  " This was crashing on MS-Windows.
+  let job = job_start([""])
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
 endfunc
 
 " Do this last, it stops any channel log.

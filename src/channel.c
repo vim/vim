@@ -5947,6 +5947,11 @@ job_start(
 	if (win32_build_cmd(l, &ga) == FAIL)
 	    goto theend;
 	cmd = ga.ga_data;
+	if (cmd == NULL)
+	{
+	    emsg(_(e_invarg));
+	    goto theend;
+	}
 #endif
     }
 
