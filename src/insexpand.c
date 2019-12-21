@@ -20,7 +20,7 @@
  */
 # define CTRL_X_WANT_IDENT	0x100
 
-# define CTRL_X_NORMAL		0  /* CTRL-N CTRL-P completion, default */
+# define CTRL_X_NORMAL		0  // CTRL-N CTRL-P completion, default
 # define CTRL_X_NOT_DEFINED_YET	1
 # define CTRL_X_SCROLL		2
 # define CTRL_X_WHOLE_LINE	3
@@ -35,8 +35,8 @@
 # define CTRL_X_FUNCTION	12
 # define CTRL_X_OMNI		13
 # define CTRL_X_SPELL		14
-# define CTRL_X_LOCAL_MSG	15	/* only used in "ctrl_x_msgs" */
-# define CTRL_X_EVAL		16	/* for builtin function complete() */
+# define CTRL_X_LOCAL_MSG	15	// only used in "ctrl_x_msgs"
+# define CTRL_X_EVAL		16	// for builtin function complete()
 
 # define CTRL_X_MSG(i) ctrl_x_msgs[(i) & ~CTRL_X_WANT_IDENT]
 

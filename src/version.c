@@ -10,7 +10,7 @@
 #include "vim.h"
 
 #ifdef AMIGA
-# include <time.h>	/* for time() */
+# include <time.h>	// for time()
 #endif
 
 /*
@@ -86,7 +86,7 @@ static char *(features[]) =
 #else
 	"-acl",
 #endif
-#ifdef AMIGA		/* only for Amiga systems */
+#ifdef AMIGA		// only for Amiga systems
 # ifdef FEAT_ARP
 	"+ARP",
 # else
@@ -269,7 +269,7 @@ static char *(features[]) =
 #else
 	"-footer",
 #endif
-	    /* only interesting on Unix systems */
+	    // only interesting on Unix systems
 #if !defined(USE_SYSTEM) && defined(UNIX)
 	"+fork()",
 #endif
@@ -571,7 +571,7 @@ static char *(features[]) =
 #else
 	"-syntax",
 #endif
-	    /* only interesting on Unix systems */
+	    // only interesting on Unix systems
 #if defined(USE_SYSTEM) && defined(UNIX)
 	"+system()",
 #endif
@@ -602,7 +602,7 @@ static char *(features[]) =
 	"-terminal",
 #endif
 #if defined(UNIX)
-/* only Unix can have terminfo instead of termcap */
+// only Unix can have terminfo instead of termcap
 # ifdef TERMINFO
 	"+terminfo",
 # else
@@ -625,7 +625,7 @@ static char *(features[]) =
 	"-textprop",
 #endif
 #if !defined(UNIX)
-/* unix always includes termcap support */
+// unix always includes termcap support
 # ifdef HAVE_TGETENT
 	"+tgetent",
 # else
@@ -742,6 +742,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    27,
 /**/
     26,
 /**/
@@ -903,8 +905,8 @@ list_in_columns(char_u **items, int size, int current)
     int		use_highlight = (items == (char_u **)features);
 #endif
 
-    /* Find the length of the longest item, use that + 1 as the column
-     * width. */
+    // Find the length of the longest item, use that + 1 as the column
+    // width.
     for (i = 0; size < 0 ? items[i] != NULL : i < size; ++i)
     {
 	int l = (int)vim_strsize(items[i]) + (i == current ? 2 : 0);
@@ -1035,13 +1037,13 @@ list_version(void)
 
 #endif
 
-    /* Print the list of patch numbers if there is at least one. */
-    /* Print a range when patches are consecutive: "1-10, 12, 15-40, 42-45" */
+    // Print the list of patch numbers if there is at least one.
+    // Print a range when patches are consecutive: "1-10, 12, 15-40, 42-45"
     if (included_patches[0] != 0)
     {
 	msg_puts(_("\nIncluded patches: "));
 	first = -1;
-	/* find last one */
+	// find last one
 	for (i = 0; included_patches[i] != 0; ++i)
 	    ;
 	while (--i >= 0)
@@ -1063,7 +1065,7 @@ list_version(void)
 	}
     }
 
-    /* Print the list of extra patch descriptions if there is at least one. */
+    // Print the list of extra patch descriptions if there is at least one.
     if (extra_patches[0] != NULL)
     {
 	msg_puts(_("\nExtra patches: "));
@@ -1281,7 +1283,7 @@ maybe_intro_message(void)
  */
     void
 intro_message(
-    int		colon)		/* TRUE for ":intro" */
+    int		colon)		// TRUE for ":intro"
 {
     int		i;
     int		row;
@@ -1337,23 +1339,23 @@ intro_message(
     };
 #endif
 
-    /* blanklines = screen height - # message lines */
+    // blanklines = screen height - # message lines
     blanklines = (int)Rows - ((sizeof(lines) / sizeof(char *)) - 1);
     if (!p_cp)
-	blanklines += 4;  /* add 4 for not showing "Vi compatible" message */
+	blanklines += 4;  // add 4 for not showing "Vi compatible" message
 
-    /* Don't overwrite a statusline.  Depends on 'cmdheight'. */
+    // Don't overwrite a statusline.  Depends on 'cmdheight'.
     if (p_ls > 1)
 	blanklines -= Rows - topframe->fr_height;
     if (blanklines < 0)
 	blanklines = 0;
 
-    /* Show the sponsor and register message one out of four times, the Uganda
-     * message two out of four times. */
+    // Show the sponsor and register message one out of four times, the Uganda
+    // message two out of four times.
     sponsor = (int)time(NULL);
     sponsor = ((sponsor & 2) == 0) - ((sponsor & 4) == 0);
 
-    /* start displaying the message lines after half of the blank lines */
+    // start displaying the message lines after half of the blank lines
     row = blanklines / 2;
     if ((row >= 2 && Columns >= 50) || colon)
     {
@@ -1389,7 +1391,7 @@ intro_message(
 	}
     }
 
-    /* Make the wait-return message appear just below the text. */
+    // Make the wait-return message appear just below the text.
     if (colon)
 	msg_row = row;
 }
@@ -1419,14 +1421,14 @@ do_intro_line(
     }
 #endif
 
-    /* Center the message horizontally. */
+    // Center the message horizontally.
     col = vim_strsize(mesg);
     if (add_version)
     {
 	STRCPY(vers, mediumVersion);
 	if (highest_patch())
 	{
-	    /* Check for 9.9x or 9.9xx, alpha/beta version */
+	    // Check for 9.9x or 9.9xx, alpha/beta version
 	    if (isalpha((int)vers[3]))
 	    {
 		int len = (isalpha((int)vers[4])) ? 5 : 4;
@@ -1442,7 +1444,7 @@ do_intro_line(
     if (col < 0)
 	col = 0;
 
-    /* Split up in parts to highlight <> items differently. */
+    // Split up in parts to highlight <> items differently.
     for (p = mesg; *p != NUL; p += l)
     {
 	clen = 0;
@@ -1461,7 +1463,7 @@ do_intro_line(
 	col += clen;
     }
 
-    /* Add the version number to the version line. */
+    // Add the version number to the version line.
     if (add_version)
 	screen_puts(vers, row, col, 0);
 }

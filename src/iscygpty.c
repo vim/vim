@@ -35,18 +35,18 @@
 #include <windows.h>
 
 #ifdef USE_FILEEXTD
-/* VC 7.1 or earlier doesn't support SAL. */
+// VC 7.1 or earlier doesn't support SAL.
 # if !defined(_MSC_VER) || (_MSC_VER < 1400)
 #  define __out
 #  define __in
 #  define __in_opt
 # endif
-/* Win32 FileID API Library:
- * http://www.microsoft.com/en-us/download/details.aspx?id=22599
- * Needed for WinXP. */
+// Win32 FileID API Library:
+// http://www.microsoft.com/en-us/download/details.aspx?id=22599
+// Needed for WinXP.
 # include <fileextd.h>
-#else /* USE_FILEEXTD */
-/* VC 8 or earlier. */
+#else // USE_FILEEXTD
+// VC 8 or earlier.
 # if defined(_MSC_VER) && (_MSC_VER < 1500)
 #  ifdef ENABLE_STUB_IMPL
 #   define STUB_IMPL
@@ -54,7 +54,7 @@
 #   error "Win32 FileID API Library is required for VC2005 or earlier."
 #  endif
 # endif
-#endif /* USE_FILEEXTD */
+#endif // USE_FILEEXTD
 
 
 #include "iscygpty.h"
@@ -104,7 +104,7 @@ static void setup_fileid_api(void)
 #define is_wprefix(s, prefix) \
 	(wcsncmp((s), (prefix), sizeof(prefix) / sizeof(WCHAR) - 1) == 0)
 
-/* Check if the fd is a cygwin/msys's pty. */
+// Check if the fd is a cygwin/msys's pty.
 int is_cygpty(int fd)
 {
 #ifdef STUB_IMPL
@@ -121,7 +121,7 @@ int is_cygpty(int fd)
 	if (h == INVALID_HANDLE_VALUE) {
 		return 0;
 	}
-	/* Cygwin/msys's pty is a pipe. */
+	// Cygwin/msys's pty is a pipe.
 	if (GetFileType(h) != FILE_TYPE_PIPE) {
 		return 0;
 	}
@@ -129,20 +129,20 @@ int is_cygpty(int fd)
 	if (nameinfo == NULL) {
 		return 0;
 	}
-	/* Check the name of the pipe:
-	 * '\{cygwin,msys}-XXXXXXXXXXXXXXXX-ptyN-{from,to}-master' */
+	// Check the name of the pipe:
+	// '\{cygwin,msys}-XXXXXXXXXXXXXXXX-ptyN-{from,to}-master'
 	if (pGetFileInformationByHandleEx(h, FileNameInfo, nameinfo, size)) {
 		nameinfo->FileName[nameinfo->FileNameLength / sizeof(WCHAR)] = L'\0';
 		p = nameinfo->FileName;
-		if (is_wprefix(p, L"\\cygwin-")) {		/* Cygwin */
+		if (is_wprefix(p, L"\\cygwin-")) {		// Cygwin
 			p += 8;
-		} else if (is_wprefix(p, L"\\msys-")) {	/* MSYS and MSYS2 */
+		} else if (is_wprefix(p, L"\\msys-")) {	// MSYS and MSYS2
 			p += 6;
 		} else {
 			p = NULL;
 		}
 		if (p != NULL) {
-			while (*p && isxdigit(*p))	/* Skip 16-digit hexadecimal. */
+			while (*p && isxdigit(*p))	// Skip 16-digit hexadecimal.
 				++p;
 			if (is_wprefix(p, L"-pty")) {
 				p += 4;
@@ -151,7 +151,7 @@ int is_cygpty(int fd)
 			}
 		}
 		if (p != NULL) {
-			while (*p && isdigit(*p))	/* Skip pty number. */
+			while (*p && isdigit(*p))	// Skip pty number.
 				++p;
 			if (is_wprefix(p, L"-from-master")) {
 				//p += 12;
@@ -164,10 +164,10 @@ int is_cygpty(int fd)
 	}
 	free(nameinfo);
 	return (p != NULL);
-#endif /* STUB_IMPL */
+#endif // STUB_IMPL
 }
 
-/* Check if at least one cygwin/msys pty is used. */
+// Check if at least one cygwin/msys pty is used.
 int is_cygpty_used(void)
 {
 	int fd, ret = 0;
@@ -178,6 +178,6 @@ int is_cygpty_used(void)
 	return ret;
 }
 
-#endif /* _WIN32 */
+#endif // _WIN32
 
-/* vim: set ts=4 sw=4: */
+// vim: set ts=4 sw=4:
