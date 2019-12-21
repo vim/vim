@@ -14,12 +14,12 @@
 #undef NDEBUG
 #include <assert.h>
 
-/* Must include main.c because it contains much more than just main() */
+// Must include main.c because it contains much more than just main()
 #define NO_VIM_MAIN
 #include "main.c"
 
-/* This file has to be included because some of the tested functions are
- * static. */
+// This file has to be included because some of the tested functions are
+// static.
 #include "message.c"
 
 /*
@@ -31,7 +31,7 @@ test_trunc_string(void)
     char_u  *buf; /*allocated every time to find uninit errors */
     char_u  *s;
 
-    /* in place */
+    // in place
     buf = alloc(40);
     STRCPY(buf, "text");
     trunc_string(buf, buf, 20, 40);
@@ -56,7 +56,7 @@ test_trunc_string(void)
     assert(STRCMP(buf, "a text t...nott fits") == 0);
     vim_free(buf);
 
-    /* copy from string to buf */
+    // copy from string to buf
     buf = alloc(40);
     s = vim_strsave((char_u *)"text");
     trunc_string(s, buf, 20, 40);
