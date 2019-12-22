@@ -4568,6 +4568,8 @@ regtry(
 
 	cleanup_zsubexpr();
 	re_extmatch_out = make_extmatch();
+	if (re_extmatch_out == NULL)
+	    return 0;
 	for (i = 0; i < NSUBEXP; i++)
 	{
 	    if (REG_MULTI)
