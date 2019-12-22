@@ -7070,6 +7070,8 @@ nfa_regtry(
     {
 	cleanup_zsubexpr();
 	re_extmatch_out = make_extmatch();
+	if (re_extmatch_out == NULL)
+	    return 0;
 	// Loop over \z1, \z2, etc.  There is no \z0.
 	for (i = 1; i < subs.synt.in_use; i++)
 	{
