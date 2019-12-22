@@ -1960,8 +1960,8 @@ endfunc
 
 func Test_empty_job()
   " This was crashing on MS-Windows.
-  let job = job_start([""])
-  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  call assert_fails('let job = job_start([""])', 'E474:')
+  call assert_fails('let job = job_start(["   "])', 'E474:')
 endfunc
 
 " Do this last, it stops any channel log.

@@ -5943,11 +5943,19 @@ job_start(
 
 	if (build_argv_from_list(l, &argv, &argc) == FAIL)
 	    goto theend;
-#ifndef USE_ARGV
+
+	// Empty command is invalid.
+#ifdef USE_ARGV
+	if (argc == 0 || *skipwhite((char_u *)argv[0]) == NUL)
+	{
+	    emsg(_(e_invarg));
+	    goto theend;
+	}
+#else
 	if (win32_build_cmd(l, &ga) == FAIL)
 	    goto theend;
 	cmd = ga.ga_data;
-	if (cmd == NULL)
+	if (cmd == NULL || *skipwhite(cmd) == NUL)
 	{
 	    emsg(_(e_invarg));
 	    goto theend;
