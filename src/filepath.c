@@ -1658,7 +1658,8 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 	int	limit = 100;
 
 	p = vim_strsave(p);
-
+	if (p == NULL)
+	    goto fail;
 	if (p[0] == '.' && (vim_ispathsep(p[1])
 				   || (p[1] == '.' && (vim_ispathsep(p[2])))))
 	    is_relative_to_current = TRUE;
@@ -1681,7 +1682,10 @@ f_resolve(typval_T *argvars, typval_T *rettv)
 
 	buf = alloc(MAXPATHL + 1);
 	if (buf == NULL)
+	{
+	    vim_free(p);
 	    goto fail;
+	}
 
 	for (;;)
 	{
