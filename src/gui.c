@@ -3704,13 +3704,11 @@ get_tabline_label(
     if (**opt != NUL)
     {
 	int	use_sandbox = FALSE;
-	int	save_called_emsg = called_emsg;
+	int	called_emsg_before = called_emsg;
 	char_u	res[MAXPATHL];
 	tabpage_T *save_curtab;
 	char_u	*opt_name = (char_u *)(tooltip ? "guitabtooltip"
 							     : "guitablabel");
-
-	called_emsg = FALSE;
 
 	printer_page_num = tabpage_index(tp);
 # ifdef FEAT_EVAL
@@ -3742,10 +3740,9 @@ get_tabline_label(
 	curwin = curtab->tp_curwin;
 	curbuf = curwin->w_buffer;
 
-	if (called_emsg)
+	if (called_emsg > called_emsg_before)
 	    set_string_option_direct(opt_name, -1,
 					   (char_u *)"", OPT_FREE, SID_ERROR);
-	called_emsg |= save_called_emsg;
     }
 
     // If 'guitablabel'/'guitabtooltip' is not set or the result is empty then

@@ -4055,7 +4055,7 @@ next_search_hl(
     linenr_T	l;
     colnr_T	matchcol;
     long	nmatched;
-    int		save_called_emsg = called_emsg;
+    int		called_emsg_before = called_emsg;
 
     // for :{range}s/pat only highlight inside the range
     if (lnum < search_first_line || lnum > search_last_line)
@@ -4081,7 +4081,6 @@ next_search_hl(
      * Repeat searching for a match until one is found that includes "mincol"
      * or none is found in this line.
      */
-    called_emsg = FALSE;
     for (;;)
     {
 # ifdef FEAT_RELTIME
@@ -4143,7 +4142,7 @@ next_search_hl(
 	    if (regprog_is_copy)
 		cur->match.regprog = cur->hl.rm.regprog;
 
-	    if (called_emsg || got_int || timed_out)
+	    if (called_emsg > called_emsg_before || got_int || timed_out)
 	    {
 		// Error while handling regexp: stop using this regexp.
 		if (shl == search_hl)
@@ -4176,9 +4175,6 @@ next_search_hl(
 	    break;			// useful match found
 	}
     }
-
-    // Restore called_emsg for assert_fails().
-    called_emsg = save_called_emsg;
 }
 
 /*

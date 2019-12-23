@@ -581,7 +581,7 @@ ignore_error(char_u *msg)
 #if !defined(HAVE_STRERROR) || defined(PROTO)
 /*
  * Replacement for perror() that behaves more or less like emsg() was called.
- * v:errmsg will be set and called_emsg will be set.
+ * v:errmsg will be set and called_emsg will be incremented.
  */
     void
 do_perror(char *msg)
@@ -620,7 +620,7 @@ emsg_core(char_u *s)
 	return msg_use_printf() ? FALSE : msg((char *)s);
 #endif
 
-    called_emsg = TRUE;
+    ++called_emsg;
 
 #ifdef FEAT_EVAL
     // If "emsg_severe" is TRUE: When an error exception is to be thrown,

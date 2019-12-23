@@ -2370,17 +2370,15 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 
     if (STRCMP(cmd, "ex") == 0)
     {
-	int save_called_emsg = called_emsg;
+	int called_emsg_before = called_emsg;
 
-	called_emsg = FALSE;
 	ch_log(channel, "Executing ex command '%s'", (char *)arg);
 	++emsg_silent;
 	do_cmdline_cmd(arg);
 	--emsg_silent;
-	if (called_emsg)
+	if (called_emsg > called_emsg_before)
 	    ch_log(channel, "Ex command error: '%s'",
 					  (char *)get_vim_var_str(VV_ERRMSG));
-	called_emsg = save_called_emsg;
     }
     else if (STRCMP(cmd, "normal") == 0)
     {

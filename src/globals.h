@@ -226,7 +226,7 @@ EXTERN int	did_uncaught_emsg;	    // emsg() was called and did not
 #endif
 EXTERN int	did_emsg_syntax;	    // did_emsg set because of a
 					    // syntax error
-EXTERN int	called_emsg;		    // always set by emsg()
+EXTERN int	called_emsg;		    // always incremented by emsg()
 EXTERN int	ex_exitval INIT(= 0);	    // exit value for ex mode
 EXTERN int	emsg_on_display INIT(= FALSE);	// there is an error message
 EXTERN int	rc_did_emsg INIT(= FALSE);  // vim_regcomp() called emsg()
