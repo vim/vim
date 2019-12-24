@@ -196,11 +196,11 @@ the option value, use '\"' instead.  This example sets the 'titlestring'
 option to 'hi "there"': >
    :set titlestring=hi\ \"there\"
 
-For MS-DOS and WIN32 backslashes in file names are mostly not removed.  More
-precise: For options that expect a file name (those where environment
-variables are expanded) a backslash before a normal file name character is not
-removed.  But a backslash before a special character (space, backslash, comma,
-etc.) is used like explained above.
+For Win32 backslashes in file names are mostly not removed.  More precise: For
+options that expect a file name (those where environment variables are
+expanded) a backslash before a normal file name character is not removed.  But
+a backslash before a special character (space, backslash, comma, etc.) is used
+like explained above.
 There is one special situation, when the value starts with "\\": >
    :set dir=\\machine\path	    results in "\\machine\path"
    :set dir=\\\\machine\\path	    results in "\\machine\path"
@@ -652,7 +652,7 @@ supported use something like this: >
 A jump table for the options with a short description can be found at |Q_op|.
 
 					*'aleph'* *'al'* *aleph* *Aleph*
-'aleph' 'al'		number	(default 128 for MS-DOS, 224 otherwise)
+'aleph' 'al'		number	(default 128 for MS-Windows, 224 otherwise)
 			global
 			{only available when compiled with the |+rightleft|
 			feature}
@@ -1007,7 +1007,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'backupdir'* *'bdir'*
 'backupdir' 'bdir'	string	(default for Amiga: ".,t:",
-				 for MS-DOS and Win32: ".,$TEMP,c:/tmp,c:/temp"
+				 for Win32: ".,$TEMP,c:/tmp,c:/temp"
 				 for Unix: ".,~/tmp,~/")
 			global
 	List of directories for the backup file, separated with commas.
@@ -1018,8 +1018,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  impossible!).  Writing may fail because of this.
 	- A directory "." means to put the backup file in the same directory
 	  as the edited file.
-	- A directory starting with "./" (or ".\" for MS-DOS et al.) means to
-	  put the backup file relative to where the edited file is.  The
+	- A directory starting with "./" (or ".\" for MS-Windows et al.) means
+	  to put the backup file relative to where the edited file is.  The
 	  leading "." is replaced with the path name of the edited file.
 	  ("." inside a directory name has no special meaning).
 	- Spaces after the comma are ignored, other spaces are considered part
@@ -2700,7 +2700,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'directory'* *'dir'*
 'directory' 'dir'	string	(default for Amiga: ".,t:",
-				 for MS-DOS and Win32: ".,$TEMP,c:\tmp,c:\temp"
+				 for Win32: ".,$TEMP,c:\tmp,c:\temp"
 				 for Unix: ".,~/tmp,/var/tmp,/tmp")
 			global
 	List of directory names for the swap file, separated with commas.
@@ -2712,9 +2712,9 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  the edited file.  On Unix, a dot is prepended to the file name, so
 	  it doesn't show in a directory listing.  On MS-Windows the "hidden"
 	  attribute is set and a dot prepended if possible.
-	- A directory starting with "./" (or ".\" for MS-DOS et al.) means to
-	  put the swap file relative to where the edited file is.  The leading
-	  "." is replaced with the path name of the edited file.
+	- A directory starting with "./" (or ".\" for MS-Windows et al.) means
+	  to put the swap file relative to where the edited file is.  The
+	  leading "." is replaced with the path name of the edited file.
 	- For Unix and Win32, if a directory ends in two path separators "//",
 	  the swap file name will be built from the complete path to the file
 	  with all path separators substituted to percent '%' signs. This will
@@ -3586,17 +3586,16 @@ A jump table for the options with a short description can be found at |Q_op|.
 					r-cr:hor20-Cursor/lCursor,
 					sm:block-Cursor
 					-blinkwait175-blinkoff150-blinkon175",
-				for MS-DOS and Win32 console:
+				for Win32 console:
 					"n-v-c:block,o:hor50,i-ci:hor15,
 					r-cr:hor30,sm:block")
 			global
 			{only available when compiled with GUI enabled, and
-			for MS-DOS and Win32 console}
+			for Win32 console}
 	This option tells Vim what the cursor should look like in different
-	modes.  It fully works in the GUI.  In an MSDOS or Win32 console, only
-	the height of the cursor can be changed.  This can be done by
-	specifying a block cursor, or a percentage for a vertical or
-	horizontal cursor.
+	modes.  It fully works in the GUI.  In an Win32 console, only the
+	height of the cursor can be changed.  This can be done by specifying a
+	block cursor, or a percentage for a vertical or horizontal cursor.
 	For a console the 't_SI', 't_SR', and 't_EI' escape sequences are
 	used.
 
@@ -3873,7 +3872,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 <
 
 						*'helpfile'* *'hf'*
-'helpfile' 'hf'		string	(default (MSDOS)  "$VIMRUNTIME\doc\help.txt"
+'helpfile' 'hf'		string	(default (MS-Windows) "$VIMRUNTIME\doc\help.txt"
 					 (others) "$VIMRUNTIME/doc/help.txt")
 			global
 	Name of the main help file.  All distributed help files should be
@@ -5205,13 +5204,13 @@ A jump table for the options with a short description can be found at |Q_op|.
 	set and to the Vim default value when 'compatible' is reset.
 
 						*'mouse'* *E538*
-'mouse'			string	(default "", "a" for GUI, MS-DOS and Win32,
+'mouse'			string	(default "", "a" for GUI and Win32,
 					set to "a" or "nvi" in |defaults.vim|)
 			global
-	Enable the use of the mouse.  Works for most terminals (xterm, MS-DOS,
-	Win32 |win32-mouse|, QNX pterm, *BSD console with sysmouse and Linux
-	console with gpm).  For using the mouse in the GUI, see |gui-mouse|.
-	The mouse can be enabled for different modes:
+	Enable the use of the mouse.  Works for most terminals (xterm, Win32
+	|win32-mouse|, QNX pterm, *BSD console with sysmouse and Linux console
+	with gpm).  For using the mouse in the GUI, see |gui-mouse|.  The
+	mouse can be enabled for different modes:
 		n	Normal mode and Terminal modes
 		v	Visual mode
 		i	Insert mode
@@ -5259,7 +5258,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The mouse pointer is restored when the mouse is moved.
 
 						*'mousemodel'* *'mousem'*
-'mousemodel' 'mousem'	string	(default "extend", "popup" for MS-DOS and Win32)
+'mousemodel' 'mousem'	string	(default "extend", "popup" for Win32)
 			global
 	Sets the model to use for the mouse.  The name mostly specifies what
 	the right mouse button is used for:
@@ -5362,7 +5361,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 						*'mousetime'* *'mouset'*
 'mousetime' 'mouset'	number	(default 500)
 			global
-	Only for GUI, MS-DOS, Win32 and Unix with xterm.  Defines the maximum
+	Only for GUI, Win32 and Unix with xterm.  Defines the maximum
 	time in msec between two mouse clicks for the second click to be
 	recognized as a multi click.
 
@@ -6497,17 +6496,17 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'shellcmdflag'* *'shcf'*
 'shellcmdflag' 'shcf'	string	(default: "-c";
-				 MS-DOS and Win32, when 'shell' does not
-				 contain "sh" somewhere: "/c")
+				 Win32, when 'shell' does not contain "sh"
+				 somewhere: "/c")
 			global
 	Flag passed to the shell to execute "!" and ":!" commands; e.g.,
-	"bash.exe -c ls" or "command.com /c dir".  For the MS-DOS-like
+	"bash.exe -c ls" or "command.com /c dir".  For the MS-Windows-like
 	systems, the default is set according to the value of 'shell', to
 	reduce the need to set this option by the user.
 	On Unix it can have more than one flag.  Each white space separated
 	part is passed as an argument to the shell command.
 	See |option-backslash| about including spaces and backslashes.
-	Also see |dos-shell| for MS-DOS and MS-Windows.
+	Also see |dos-shell| for MS-Windows.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -6522,8 +6521,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	The name of the temporary file can be represented by "%s" if necessary
 	(the file name is appended automatically if no %s appears in the value
 	of this option).
-	For the Amiga and MS-DOS the default is ">".  The output is directly
-	saved in a file and not echoed to the screen.
+	For the Amiga the default is ">".  The output is directly saved in a
+	file and not echoed to the screen.
 	For Unix the default it "| tee".  The stdout of the compiler is saved
 	in a file and echoed to the screen.  If the 'shell' option is "csh" or
 	"tcsh" after initializations, the default becomes "|& tee".  If the
@@ -6546,7 +6545,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	security reasons.
 
 						*'shellquote'* *'shq'*
-'shellquote' 'shq'	string	(default: ""; MS-DOS and Win32, when 'shell'
+'shellquote' 'shq'	string	(default: ""; Win32, when 'shell'
 					contains "sh" somewhere: "\"")
 			global
 	Quoting character(s), put around the command passed to the shell, for
@@ -6554,10 +6553,10 @@ A jump table for the options with a short description can be found at |Q_op|.
 	quoting.  See 'shellxquote' to include the redirection.  It's
 	probably not useful to set both options.
 	This is an empty string by default.  Only known to be useful for
-	third-party shells on MS-DOS-like systems, such as the MKS Korn Shell
-	or bash, where it should be "\"".  The default is adjusted according
-	the value of 'shell', to reduce the need to set this option by the
-	user.  See |dos-shell|.
+	third-party shells on MS-Windows-like systems, such as the MKS Korn
+	Shell or bash, where it should be "\"".  The default is adjusted
+	according the value of 'shell', to reduce the need to set this option
+	by the user.  See |dos-shell|.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -6638,7 +6637,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 
 						*'shellxescape'* *'sxe'*
 'shellxescape' 'sxe'	string	(default: "";
-				 for MS-DOS and MS-Windows: "\"&|<>()@^")
+				 for MS-Windows: "\"&|<>()@^")
 			global
 	When 'shellxquote' is set to "(" then the characters listed in this
 	option will be escaped with a '^' character.  This makes it possible
@@ -6748,8 +6747,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	Filenames are assumed to be 8 characters plus one extension of 3
 	characters.  Multiple dots in file names are not allowed.  When this
 	option is on, dots in file names are replaced with underscores when
-	adding an extension (".~" or ".swp").  This option is not available
-	for MS-DOS, because then it would always be on.  This option is useful
+	adding an extension (".~" or ".swp").  This option is useful
 	when editing files on an MS-DOS compatible filesystem, e.g., messydos
 	or crossdos.  When running the Win32 GUI version under Win32s, this
 	option is always on by default.
@@ -7664,7 +7662,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 					 on BeOS: "beos-ansi"
 					  on Mac: "mac-ansi"
 					 on MiNT: "vt52"
-				       on MS-DOS: "pcterm"
 					 on Unix: "ansi"
 					  on VMS: "ansi"
 				       on Win 32: "win32")
@@ -8459,7 +8456,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	r	Removable media.  The argument is a string (up to the next
 		',').  This parameter can be given several times.  Each
 		specifies the start of a path for which no marks will be
-		stored.  This is to avoid removable media.  For MS-DOS you
+		stored.  This is to avoid removable media.  For MS-Windows you
 		could use "ra:,rb:", for Amiga "rdf0:,rdf1:,rdf2:".  You can
 		also use it for temp files, e.g., for Unix: "r/tmp".  Case is
 		ignored.  Maximum length of each 'r' argument is 50
@@ -8956,6 +8953,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 			global
 	The number of milliseconds to wait for each character sent to the
 	screen.  When non-zero, characters are sent to the terminal one by
-	one.  For MS-DOS pcterm this does not work.  For debugging purposes.
+	one.  For debugging purposes.
 
  vim:tw=78:ts=8:noet:ft=help:norl:

@@ -36,7 +36,7 @@ with the extension ".swp".
 - On Unix, a '.' is prepended to swap file names in the same directory as the
   edited file.  This avoids that the swap file shows up in a directory
   listing.
-- On MS-DOS machines and when the 'shortname' option is on, any '.' in the
+- On MS-Windows machines and when the 'shortname' option is on, any '.' in the
   original file name is replaced with '_'.
 - If this file already exists (e.g., when you are recovering from a crash) a
   warning is given and another extension is used, ".swo", ".swn", etc.
@@ -75,7 +75,7 @@ If you want to put swap files in a fixed place, put a command resembling the
 following ones in your .vimrc:
 	:set dir=dh2:tmp	(for Amiga)
 	:set dir=~/tmp		(for Unix)
-	:set dir=c:\\tmp	(for MS-DOS and Win32)
+	:set dir=c:\\tmp	(for Win32)
 This is also very handy when editing files on floppy.  Of course you will have
 to create that "tmp" directory for this to work!
 
@@ -110,7 +110,7 @@ the time with the 'updatetime' option.  The time is given in milliseconds.
 After writing to the swap file Vim syncs the file to disk.  This takes some
 time, especially on busy Unix systems.  If you don't want this you can set the
 'swapsync' option to an empty string.  The risk of losing work becomes bigger
-though.  On some non-Unix systems (MS-DOS, Amiga) the swap file won't be
+though.  On some non-Unix systems (MS-Windows, Amiga) the swap file won't be
 written at all.
 
 If the writing to the swap file is not wanted, it can be switched off by
