@@ -6201,9 +6201,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 					Macintosh: "$VIM:vimfiles,
 						$VIMRUNTIME,
 						$VIM:vimfiles:after"
-					RISC-OS: "Choices:vimfiles,
-						$VIMRUNTIME,
-						Choices:vimfiles/after"
 					VMS: "sys$login:vimfiles,
 						$VIM/vimfiles,
 						$VIMRUNTIME,
@@ -8339,8 +8336,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 							 "$VIM/vimfiles/view",
 				 for Unix: "~/.vim/view",
 				 for Macintosh: "$VIM:vimfiles:view"
-				 for VMS: "sys$login:vimfiles/view"
-				 for RiscOS: "Choices:vimfiles/view")
+				 for VMS: "sys$login:vimfiles/view")
 			global
 			{not available when compiled without the |+mksession|
 			feature}

@@ -133,7 +133,10 @@ Support for different systems.
 	- All Unix systems (it works on all systems it was tested on, although
 	  the GUI and Perl interface may not work everywhere).
 	- Amiga (500, 1000, 1200, 2000, 3000, 4000, ...).
-	- Windows NT, with support for long file names.
+	- MS-DOS in real-mode (no additional drivers required).
+	- In protected mode on Windows 3.1 and MS-DOS (DPMI driver required).
+	- Windows 95 and Windows NT, with support for long file names.
+	- OS/2 (needs emx.dll)
 	- VMS
 	- BeOS
 	- Macintosh

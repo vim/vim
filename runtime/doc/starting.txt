@@ -809,13 +809,12 @@ accordingly.  Vim proceeds in this order:
      a. If vim was started as |evim| or |eview| or with the |-y| argument, the
 	script $VIMRUNTIME/evim.vim will be loaded.
 							*system-vimrc*
-     b. For Unix, MS-Windows, VMS, Macintosh, RISC-OS and Amiga
-	the system vimrc file is read for initializations.  The path of this
-	file is shown with the ":version" command.  Mostly it's "$VIM/vimrc".
-	Note that this file is ALWAYS read in 'compatible' mode, since the
-	automatic resetting of 'compatible' is only done later.  Add a ":set
-	nocp" command if you like.
-	For the Macintosh the $VIMRUNTIME/macmap.vim is read.
+     b. For Unix, MS-Windows, VMS, Macintosh and Amiga the system vimrc file
+	is read for initializations.  The path of this file is shown with the
+	":version" command.  Mostly it's "$VIM/vimrc".  Note that this file is
+	ALWAYS read in 'compatible' mode, since the automatic resetting of
+	'compatible' is only done later.  Add a ":set nocp" command if you
+	like.  For the Macintosh the $VIMRUNTIME/macmap.vim is read.
 
 	  *VIMINIT* *.vimrc* *_vimrc* *EXINIT* *.exrc* *_exrc* *$MYVIMRC*
      c. Five places are searched for initializations.  The first that exists
