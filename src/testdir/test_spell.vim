@@ -167,18 +167,22 @@ endfunc
 func Test_spellsuggest_option_methods()
   set spell
 
-  set spellsuggest=fast
-  call assert_equal(['Keyword', 'Keyboard'], spellsuggest('Keybord', 2))
+  for e in ['latin1', 'utf-8']
+    exe 'set encoding=' .. e
 
-  " With best or double option, "Keyboard" should become the top suggestion
-  " because of better phonetic matching.
-  set spellsuggest=best
-  call assert_equal(['Keyboard', 'Keyword'], spellsuggest('Keybord', 2))
+    set spellsuggest=fast
+    call assert_equal(['Stick', 'Stitch'], spellsuggest('Stich', 2), e)
 
-  set spellsuggest=double
-  call assert_equal(['Keyboard', 'Keyword'], spellsuggest('Keybord', 2))
+    " With best or double option, "Stitch" should become the top suggestion
+    " because of better phonetic matching.
+    set spellsuggest=best
+    call assert_equal(['Stitch', 'Stick'], spellsuggest('Stich', 2), e)
 
-  set spell& spellsuggest&
+    set spellsuggest=double
+    call assert_equal(['Stitch', 'Stick'], spellsuggest('Stich', 2), e)
+  endfor
+
+  set spell& spellsuggest& encoding&
 endfunc
 
 " Test 'spellsuggest' option with value file:{filename}
