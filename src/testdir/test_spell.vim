@@ -186,22 +186,28 @@ func Test_spellsuggest_option_file()
   set spell spellsuggest=file:Xspellsuggest
   call writefile(['emacs/vim',
         \         'theribal/terrible',
-        \         'teribal/terrrible'],
+        \         'teribal/terrrible',
+        \         'terribal'],
         \         'Xspellsuggest')
 
   call assert_equal(['vim'],      spellsuggest('emacs', 2))
   call assert_equal(['terrible'], spellsuggest('theribal',2))
 
   " If the suggestion is misspelled (*terrrible* with 3 r),
-  " it should not be proposed
+  " it should not be proposed.
+  " The entry for "terribal" should be ignored because of missing slash.
   call assert_equal([], spellsuggest('teribal', 2))
+  call assert_equal([], spellsuggest('terribal', 2))
 
   set spell spellsuggest=best,file:Xspellsuggest
   call assert_equal(['vim', 'Emacs'],       spellsuggest('emacs', 2))
   call assert_equal(['terrible', 'tribal'], spellsuggest('theribal', 2))
   call assert_equal(['tribal'],             spellsuggest('teribal', 1))
+  call assert_equal(['tribal'],             spellsuggest('terribal', 1))
 
   call delete('Xspellsuggest')
+  call assert_fails("call spellsuggest('vim')", "E484: Can't open file Xspellsuggest")
+
   set spellsuggest& spell&
 endfunc
 
@@ -233,6 +239,9 @@ func Test_spellsuggest_option_number()
   \ .. " 1 \"Keyboard\"\n"
   \ .. " 2 \"Keyword\"\n"
   \ .. "Type number and <Enter> or click with mouse (empty cancels): ", a)
+
+  set spell spellsuggest=0
+  call assert_equal("\nSorry, no suggestions", execute('norm z='))
 
   " Unlike z=, function spellsuggest(...) should not be affected by the
   " max number of suggestions (2) set by the 'spellsuggest' option.
