@@ -429,6 +429,7 @@ NEW_TESTS_RES = \
 	test_textformat.res \
 	test_textobjects.res \
 	test_textprop.res \
+	test_timers.res \
 	test_trycatch.res \
 	test_undo.res \
 	test_user_func.res \

@@ -64,7 +64,6 @@ source test_tagcase.vim
 source test_tagfunc.vim
 source test_tagjump.vim
 source test_taglist.vim
-source test_timers.vim
 source test_true_false.vim
 source test_unlet.vim
 source test_virtualedit.vim
