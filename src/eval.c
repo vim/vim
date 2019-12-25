@@ -6261,7 +6261,8 @@ typval_compare(
     else if (typ1->v_type == VAR_FUNC || typ2->v_type == VAR_FUNC
 	|| typ1->v_type == VAR_PARTIAL || typ2->v_type == VAR_PARTIAL)
     {
-	if (type != ETYPE_EQUAL && type != ETYPE_NEQUAL)
+	if (type != ETYPE_EQUAL && type != ETYPE_NEQUAL
+		&& type != ETYPE_IS && type != ETYPE_ISNOT)
 	{
 	    emsg(_("E694: Invalid operation for Funcrefs"));
 	    clear_tv(typ1);
@@ -6306,15 +6307,15 @@ typval_compare(
 	n1 = FALSE;
 	switch (type)
 	{
+	    case ETYPE_IS:
 	    case ETYPE_EQUAL:    n1 = (f1 == f2); break;
+	    case ETYPE_ISNOT:
 	    case ETYPE_NEQUAL:   n1 = (f1 != f2); break;
 	    case ETYPE_GREATER:  n1 = (f1 > f2); break;
 	    case ETYPE_GEQUAL:   n1 = (f1 >= f2); break;
 	    case ETYPE_SMALLER:  n1 = (f1 < f2); break;
 	    case ETYPE_SEQUAL:   n1 = (f1 <= f2); break;
 	    case ETYPE_UNKNOWN:
-	    case ETYPE_IS:
-	    case ETYPE_ISNOT:
 	    case ETYPE_MATCH:
 	    case ETYPE_NOMATCH:  break;  // avoid gcc warning
 	}
@@ -6322,9 +6323,9 @@ typval_compare(
 #endif
 
     /*
-	* If one of the two variables is a number, compare as a number.
-	* When using "=~" or "!~", always compare as string.
-	*/
+     * If one of the two variables is a number, compare as a number.
+     * When using "=~" or "!~", always compare as string.
+     */
     else if ((typ1->v_type == VAR_NUMBER || typ2->v_type == VAR_NUMBER)
 	    && type != ETYPE_MATCH && type != ETYPE_NOMATCH)
     {
@@ -6332,15 +6333,15 @@ typval_compare(
 	n2 = tv_get_number(typ2);
 	switch (type)
 	{
+	    case ETYPE_IS:
 	    case ETYPE_EQUAL:    n1 = (n1 == n2); break;
+	    case ETYPE_ISNOT:
 	    case ETYPE_NEQUAL:   n1 = (n1 != n2); break;
 	    case ETYPE_GREATER:  n1 = (n1 > n2); break;
 	    case ETYPE_GEQUAL:   n1 = (n1 >= n2); break;
 	    case ETYPE_SMALLER:  n1 = (n1 < n2); break;
 	    case ETYPE_SEQUAL:   n1 = (n1 <= n2); break;
 	    case ETYPE_UNKNOWN:
-	    case ETYPE_IS:
-	    case ETYPE_ISNOT:
 	    case ETYPE_MATCH:
 	    case ETYPE_NOMATCH:  break;  // avoid gcc warning
 	}
@@ -6356,7 +6357,9 @@ typval_compare(
 	n1 = FALSE;
 	switch (type)
 	{
+	    case ETYPE_IS:
 	    case ETYPE_EQUAL:    n1 = (i == 0); break;
+	    case ETYPE_ISNOT:
 	    case ETYPE_NEQUAL:   n1 = (i != 0); break;
 	    case ETYPE_GREATER:  n1 = (i > 0); break;
 	    case ETYPE_GEQUAL:   n1 = (i >= 0); break;
@@ -6370,8 +6373,6 @@ typval_compare(
 			n1 = !n1;
 		    break;
 
-	    case ETYPE_IS:
-	    case ETYPE_ISNOT:
 	    case ETYPE_UNKNOWN:  break;  // avoid gcc warning
 	}
     }
