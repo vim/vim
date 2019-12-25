@@ -20,8 +20,8 @@ func Test_timer_oneshot()
   let slept = WaitFor('g:val == 1')
   call assert_equal(1, g:val)
   if has('mac')
-    " Mac on Travis can be slow.
-    let limit = 160
+    " Mac on Travis can be very slow.
+    let limit = 180
   else
     let limit = 100
   endif
