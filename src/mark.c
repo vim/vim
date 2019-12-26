@@ -854,6 +854,7 @@ ex_delmarks(exarg_T *eap)
 			else
 			    n = i - 'A';
 			namedfm[n].fmark.mark.lnum = 0;
+			namedfm[n].fmark.fnum = 0;
 			VIM_CLEAR(namedfm[n].fname);
 #ifdef FEAT_VIMINFO
 			namedfm[n].time_set = 0;
