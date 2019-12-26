@@ -103,6 +103,7 @@ SRC =	arabic.c						\
 	tag.c							\
 	term.c							\
 	testing.c						\
+	textformat.c						\
 	textobject.c						\
 	textprop.c						\
 	time.c							\

@@ -806,6 +806,7 @@ OBJ = \
 	$(OUTDIR)\tag.obj \
 	$(OUTDIR)\term.obj \
 	$(OUTDIR)\testing.obj \
+	$(OUTDIR)\textformat.obj \
 	$(OUTDIR)\textobject.obj \
 	$(OUTDIR)\textprop.obj \
 	$(OUTDIR)\time.obj \
@@ -1745,6 +1746,8 @@ $(OUTDIR)/term.obj:	$(OUTDIR) term.c  $(INCL)
 
 $(OUTDIR)/term.obj:	$(OUTDIR) testing.c  $(INCL)
 
+$(OUTDIR)/textformat.obj:	$(OUTDIR) textformat.c  $(INCL)
+
 $(OUTDIR)/textobject.obj:	$(OUTDIR) textobject.c  $(INCL)
 
 $(OUTDIR)/textprop.obj:	$(OUTDIR) textprop.c  $(INCL)
@@ -1945,6 +1948,7 @@ proto.h: \
 	proto/tag.pro \
 	proto/term.pro \
 	proto/testing.pro \
+	proto/textformat.pro \
 	proto/textobject.pro \
 	proto/textprop.pro \
 	proto/time.pro \

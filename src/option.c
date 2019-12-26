@@ -6492,18 +6492,6 @@ wc_use_keyname(char_u *varp, long *wcp)
 }
 
 /*
- * Return TRUE if format option 'x' is in effect.
- * Take care of no formatting when 'paste' is set.
- */
-    int
-has_format_option(int x)
-{
-    if (p_paste)
-	return FALSE;
-    return (vim_strchr(curbuf->b_p_fo, x) != NULL);
-}
-
-/*
  * Return TRUE if "x" is present in 'shortmess' option, or
  * 'shortmess' contains 'a' and "x" is present in SHM_A.
  */

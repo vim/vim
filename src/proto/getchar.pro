@@ -19,6 +19,7 @@ void stuffReadbuffLen(char_u *s, long len);
 void stuffReadbuffSpec(char_u *s);
 void stuffcharReadbuff(int c);
 void stuffnumReadbuff(long n);
+void stuffescaped(char_u *arg, int literally);
 int start_redo(long count, int old_redo);
 int start_redo_ins(void);
 void stop_redo_ins(void);
