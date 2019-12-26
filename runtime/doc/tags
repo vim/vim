@@ -5989,7 +5989,6 @@ debug.txt	debug.txt	/*debug.txt*
 debugbreak()	eval.txt	/*debugbreak()*
 debugger-compilation	debugger.txt	/*debugger-compilation*
 debugger-features	debugger.txt	/*debugger-features*
-debugger-integration	debugger.txt	/*debugger-integration*
 debugger-support	debugger.txt	/*debugger-support*
 debugger.txt	debugger.txt	/*debugger.txt*
 dec-mouse	options.txt	/*dec-mouse*

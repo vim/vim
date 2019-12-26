@@ -2272,8 +2272,8 @@ msgstr "E799: Nevalida ID: %d (devas esti egala aŭ pli granda ol 1)"
 msgid "E801: ID already taken: %d"
 msgstr "E801: ID jam uzata: %d"
 
-msgid "List or number required"
-msgstr "Listo aŭ nombro bezonata"
+msgid "E290: List or number required"
+msgstr "E290: Listo aŭ nombro bezonata"
 
 #, c-format
 msgid "E802: Invalid ID: %d (must be greater than or equal to 1)"

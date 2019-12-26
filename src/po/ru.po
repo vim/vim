@@ -2305,8 +2305,8 @@ msgstr "E799: Неверный ID: %d (должен быть больше или
 msgid "E801: ID already taken: %d"
 msgstr "E801: ID уже занят: %d"
 
-msgid "List or number required"
-msgstr "Требуется список или число"
+msgid "E290: List or number required"
+msgstr "E290: Требуется список или число"
 
 #, c-format
 msgid "E802: Invalid ID: %d (must be greater than or equal to 1)"

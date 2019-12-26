@@ -702,8 +702,8 @@ K			Run a program to lookup the keyword under the
 			     :5sleep	     "sleep for five seconds
 			     :sleep 100m     "sleep for a hundred milliseconds
 			     10gs	     "sleep for ten seconds
-<			Can be interrupted with CTRL-C (CTRL-Break on MS-DOS).
-			"gs" stands for "goto sleep".
+<			Can be interrupted with CTRL-C (CTRL-Break on
+			MS-Windows).  "gs" stands for "goto sleep".
 			While sleeping the cursor is positioned in the text,
 			if at a visible position.
 			Also process the received netbeans messages. {only

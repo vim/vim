@@ -74,9 +74,7 @@ Vim has only a few limits for the files that can be edited {Vi: can not handle
 <Nul> characters and characters above 128, has limited line length, many other
 limits}.
 							*E340*
-Maximum line length	   On machines with 16-bit ints (Amiga and MS-DOS real
-			   mode): 32767, otherwise 2147483647 characters.
-			   Longer lines are split.
+Maximum line length	   2147483647 characters.  Longer lines are split.
 Maximum number of lines	   2147483647 lines.
 Maximum file size	   2147483647 bytes (2 Gbyte) when a long integer is
 			   32 bits.  Much more for 64 bit longs.  Also limited
@@ -106,8 +104,7 @@ Memory usage limits
 The option 'maxmem' ('mm') is used to set the maximum memory used for one
 buffer (in kilobytes).  'maxmemtot' is used to set the maximum memory used for
 all buffers (in kilobytes).  The defaults depend on the system used.  For the
-Amiga and MS-DOS, 'maxmemtot' is set depending on the amount of memory
-available.
+Amiga, 'maxmemtot' is set depending on the amount of memory available.
 These are not hard limits, but tell Vim when to move text into a swap file.
 If you don't like Vim to swap to a file, set 'maxmem' and 'maxmemtot' to a
 very large value.  The swap file will then only be used for recovery.  If you
@@ -136,15 +133,18 @@ Support for different systems.
 	- All Unix systems (it works on all systems it was tested on, although
 	  the GUI and Perl interface may not work everywhere).
 	- Amiga (500, 1000, 1200, 2000, 3000, 4000, ...).
-	- Windows NT, with support for long file names.
+	- MS-DOS in real-mode (no additional drivers required).
+	- In protected mode on Windows 3.1 and MS-DOS (DPMI driver required).
+	- Windows 95 and Windows NT, with support for long file names.
+	- OS/2 (needs emx.dll)
 	- VMS
 	- BeOS
 	- Macintosh
 	- Risc OS
 	- IBM OS/390
 	Note that on some systems features need to be disabled to reduce
-	resource usage, esp. on MS-DOS.  For some outdated systems you need to
-	use an older Vim version.
+	resource usage.  For some outdated systems you need to use an older
+	Vim version.
 
 Multi level persistent undo.					|undo|
 	'u' goes backward in time, 'CTRL-R' goes forward again.  Set option
@@ -456,9 +456,8 @@ Printing.						|printing|
 
 Mouse support.						|mouse-using|
 	The mouse is supported in the GUI version, in an xterm for Unix, for
-	BSDs with sysmouse, for Linux with gpm, for MS-DOS, and Win32.  It
-	can be used to position the cursor, select the visual area, paste a
-	register, etc.
+	BSDs with sysmouse, for Linux with gpm, and Win32.  It can be used to
+	position the cursor, select the visual area, paste a register, etc.
 
 Usage of key names.					|<>| |key-notation|
 	Special keys now all have a name like <Up>, <End>, etc.
@@ -778,8 +777,8 @@ If the 'insertmode' option is set (e.g. in .exrc), Vim starts in insert mode.
 And it comes back there, when pressing <Esc>.
 
 Undo information is kept in memory.  Available memory limits the number and
-size of change that can be undone.  This may be a problem with MS-DOS, is
-hardly a problem on the Amiga and almost never with Unix and Win32.
+size of change that can be undone.  This is hardly a problem on the Amiga and
+almost never with Unix and Win32.
 
 If the 'backup' or 'writebackup' option is set: Before a file is overwritten,
 a backup file (.bak) is made.  If the "backup" option is set it is left

@@ -6306,8 +6306,8 @@ msgstr "E799: Käyttökelvoton ID: %ld (pitää olla vähintään 1)"
 msgid "E801: ID already taken: %ld"
 msgstr "E801: ID jo käytössä: %ld"
 
-msgid "List or number required"
-msgstr "Lista tai luku tarvitaan"
+msgid "E290: List or number required"
+msgstr "E290: Lista tai luku tarvitaan"
 
 #, c-format
 msgid "E802: Invalid ID: %ld (must be greater than or equal to 1)"

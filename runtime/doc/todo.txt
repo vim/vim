@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2019 Dec 19
+*todo.txt*      For Vim version 8.2.  Last change: 2019 Dec 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,6 +39,11 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Include ipv6 syntax changes?  (DJ Lucas, #5360)
+
+Still have /* */ comments:
+    misc1.c
+    misc2.c
+    others?
 
 Popup windows:
 - Make it possible to put a terminal window in a popup.  Would always grab key
@@ -120,7 +125,7 @@ Terminal emulator window:
   conversions.
 
 Error numbers available:
-E290, E292, E362, E366, E450, E451, E452,
+E292, E362, E366, E450, E451, E452,
 E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
 E654, E856, E857, E860, E861, E863, E889, E900
 

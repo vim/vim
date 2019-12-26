@@ -6280,8 +6280,8 @@ msgstr "E799: 비정상적인 ID: %ld (1보다 크거나 같아야 합니다)"
 #~ msgid "E801: ID already taken: %ld"
 #~ msgstr ""
 
-msgid "List or number required"
-msgstr "List나 number가 필요합니다"
+msgid "E290: List or number required"
+msgstr "E290: List나 number가 필요합니다"
 
 #, c-format
 msgid "E802: Invalid ID: %ld (must be greater than or equal to 1)"
