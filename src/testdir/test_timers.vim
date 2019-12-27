@@ -73,7 +73,12 @@ func Test_timer_with_partial_callback()
   let slept = WaitFor('g:val == 1')
   call assert_equal(1, g:val)
   if has('reltime')
-    call assert_inrange(49, 130, slept)
+    " Mac on Travis can be slow.
+    if has('mac')
+      call assert_inrange(49, 180, slept)
+    else
+      call assert_inrange(49, 130, slept)
+    endif
   else
     call assert_inrange(20, 100, slept)
   endif
