@@ -553,6 +553,14 @@ func Test_cmdline_complete_user_names()
   endif
 endfunc
 
+func Test_cmdline_complete_bang()
+  if executable('whoami')
+    return
+  endif
+  call feedkeys(":!whoam\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_match('^".*\<whoami\>', @:)
+endfunc
+
 funct Test_cmdline_complete_languages()
   let lang = substitute(execute('language messages'), '.*"\(.*\)"$', '\1', '')
 
@@ -573,6 +581,15 @@ funct Test_cmdline_complete_languages()
     call feedkeys(":language time \<c-a>\<c-b>\"\<cr>", 'tx')
     call assert_match('^"language .*\<' . lang . '\>', @:)
   endif
+endfunc
+
+func Test_cmdline_complete_env_variable()
+  let $X_VIM_TEST_COMPLETE_ENV = 'foo'
+
+  call feedkeys(":edit $X_VIM_TEST_COMPLETE_E\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_match('"edit $X_VIM_TEST_COMPLETE_ENV', @:)
+
+  unlet $X_VIM_TEST_COMPLETE_ENV
 endfunc
 
 func Test_cmdline_write_alternatefile()
