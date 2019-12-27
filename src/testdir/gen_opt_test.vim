@@ -10,6 +10,8 @@ set nomore
 " The terminal size is restored at the end.
 " Clear out t_WS, we don't want to resize the actual terminal.
 let script = [
+      \ '" DO NOT EDIT: Generated with gen_opt_test.vim',
+      \ '',
       \ 'let save_columns = &columns',
       \ 'let save_lines = &lines',
       \ 'let save_term = &term',
@@ -123,7 +125,7 @@ let test_values = {
       \ 'printmbfont': [['', 'r:some', 'b:Bold,c:yes'], ['xxx']],
       \ 'printoptions': [['', 'header:0', 'left:10pc,top:5pc'], ['xxx']],
       \ 'scrollopt': [['', 'ver', 'ver,hor'], ['xxx']],
-      \ 'renderoptions': [['', 'type:directx'], ['xxx']],
+      \ 'renderoptions': [[''], ['xxx']],
       \ 'selection': [['old', 'inclusive'], ['', 'xxx']],
       \ 'selectmode': [['', 'mouse', 'key,cmd'], ['xxx']],
       \ 'sessionoptions': [['', 'blank', 'help,options,slash'], ['xxx']],

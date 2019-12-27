@@ -389,6 +389,15 @@ func Test_set_values()
   endif
 endfunc
 
+func Test_renderoptions()
+  " Only do this for Windows Vista and later, fails on Windows XP and earlier.
+  " Doesn't hurt to do this on a non-Windows system.
+  if windowsversion() !~ '^[345]\.'
+    set renderoptions=type:directx
+    set rop=type:directx
+  endif
+endfunc
+
 func ResetIndentexpr()
   set indentexpr=
 endfunc

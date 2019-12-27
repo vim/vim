@@ -758,8 +758,6 @@ null_libintl_wputenv(const wchar_t *envstring UNUSED)
 # define VER_PLATFORM_WIN32_WINDOWS 1
 #endif
 
-DWORD g_PlatformId;
-
 #ifdef HAVE_ACL
 # ifndef PROTO
 #  include <aclapi.h>
@@ -806,8 +804,7 @@ win32_enable_privilege(LPTSTR lpszPrivilege, BOOL bEnable)
 #endif
 
 /*
- * Set g_PlatformId to VER_PLATFORM_WIN32_NT (NT) or
- * VER_PLATFORM_WIN32_WINDOWS (Win95).
+ * Set "win8_or_later" and fill in "windowsVersion".
  */
     void
 PlatformId(void)
@@ -821,7 +818,8 @@ PlatformId(void)
 	ovi.dwOSVersionInfoSize = sizeof(ovi);
 	GetVersionEx(&ovi);
 
-	g_PlatformId = ovi.dwPlatformId;
+	vim_snprintf(windowsVersion, sizeof(windowsVersion), "%d.%d",
+		(int)ovi.dwMajorVersion, (int)ovi.dwMinorVersion);
 
 	if ((ovi.dwMajorVersion == 6 && ovi.dwMinorVersion >= 2)
 		|| ovi.dwMajorVersion > 6)

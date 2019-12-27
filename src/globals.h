@@ -1724,6 +1724,9 @@ EXTERN int  did_echo_string_emsg INIT(= FALSE);
 
 // Used for checking if local variables or arguments used in a lambda.
 EXTERN int *eval_lavars_used INIT(= NULL);
+
+// Only filled for Win32.
+EXTERN char windowsVersion[20] INIT(= {0});
 #endif
 
 #ifdef MSWIN
