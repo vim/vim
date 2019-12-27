@@ -2055,8 +2055,7 @@ write_viminfo_filemarks(FILE *fp)
     for (i = 0; i < NMARKS; i++)
     {
 	if (vi_namedfm != NULL
-			&& (vi_namedfm[i].time_set > namedfm_p[i].time_set
-			    || namedfm_p[i].fmark.mark.lnum == 0))
+			&& (vi_namedfm[i].time_set > namedfm_p[i].time_set))
 	    fm = &vi_namedfm[i];
 	else
 	    fm = &namedfm_p[i];
