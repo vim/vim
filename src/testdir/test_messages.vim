@@ -257,13 +257,9 @@ func Test_message_more()
   call WaitForAssert({-> assert_equal('100 100', term_getline(buf, 5))})
   call WaitForAssert({-> assert_equal('Press ENTER or type command to continue', term_getline(buf, 6))})
 
-  " Enter Ex command line with :
-  call term_sendkeys(buf, ':foo')
-  call WaitForAssert({-> assert_equal('100 100', term_getline(buf, 5))})
-  call WaitForAssert({-> assert_equal(':foo', term_getline(buf, 6))})
-  call term_sendkeys(buf, "\<Esc>g<")
-  call WaitForAssert({-> assert_equal('100 100', term_getline(buf, 5))})
-  call WaitForAssert({-> assert_equal('Press ENTER or type command to continue', term_getline(buf, 6))})
+  call term_sendkeys(buf, ":%p#\n")
+  call WaitForAssert({-> assert_equal('  5 5', term_getline(buf, 5))})
+  call WaitForAssert({-> assert_equal('-- More --', term_getline(buf, 6))})
 
   " Stop command output with q, <Esc> or CTRL-C.
   call term_sendkeys(buf, 'q')
