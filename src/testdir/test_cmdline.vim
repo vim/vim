@@ -555,10 +555,9 @@ endfunc
 
 func Test_cmdline_complete_bang()
   if executable('whoami')
-    return
+    call feedkeys(":!whoam\<C-A>\<C-B>\"\<CR>", 'tx')
+    call assert_match('^".*\<whoami\>', @:)
   endif
-  call feedkeys(":!whoam\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_match('^".*\<whoami\>', @:)
 endfunc
 
 funct Test_cmdline_complete_languages()
