@@ -57,6 +57,7 @@ static struct
     {EXPAND_USER_DEFINED, "custom"},
     {EXPAND_USER_LIST, "customlist"},
 #endif
+    {EXPAND_DIFF_BUFFERS, "diff_buffer"},
     {EXPAND_DIRECTORIES, "dir"},
     {EXPAND_ENV_VARS, "environment"},
     {EXPAND_EVENTS, "event"},
