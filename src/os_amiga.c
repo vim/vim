@@ -92,7 +92,8 @@ static BPTR		raw_in = (BPTR)NULL;
 static BPTR		raw_out = (BPTR)NULL;
 static int		close_win = FALSE;  // set if Vim opened the window
 
-#ifndef __amigaos4__	// Use autoopen for AmigaOS4
+/* Use autoopen for AmigaOS4, AROS and MorphOS */
+#if !defined(__amigaos4__) && !defined(__AROS__) && !defined(__MORPHOS__)
 struct IntuitionBase	*IntuitionBase = NULL;
 #endif
 #ifdef FEAT_ARP
@@ -255,7 +256,9 @@ mch_suspend(void)
     void
 mch_init(void)
 {
+#if !defined(__amigaos4__) && !defined(__AROS__) && !defined(__MORPHOS__)
     static char	    intlibname[] = "intuition.library";
+#endif
 
 #ifdef AZTEC_C
     Enable_Abort = 0;		// disallow vim to be aborted
@@ -284,7 +287,7 @@ mch_init(void)
     out_flush();
 
     wb_window = NULL;
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__) && !defined(__MORPHOS__)
     if ((IntuitionBase = (struct IntuitionBase *)
 				OpenLibrary((UBYTE *)intlibname, 0L)) == NULL)
     {
@@ -329,7 +332,7 @@ mch_check_win(int argc, char **argv)
     char	    *av;
     char_u	    *device = NULL;
     int		    exitval = 4;
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__) && !defined(__MORPHOS__)
     struct Library  *DosBase;
 #endif
     int		    usewin = FALSE;
@@ -337,7 +340,7 @@ mch_check_win(int argc, char **argv)
 /*
  * check if we are running under DOS 2.0x or higher
  */
-#ifndef __amigaos4__
+#if !defined(__amigaos4__) && !defined(__AROS__) && !defined(__MORPHOS__)
     DosBase = OpenLibrary(DOS_LIBRARY, 37L);
     if (DosBase != NULL)
     // if (((struct Library *)DOSBase)->lib_Version >= 37)
@@ -361,7 +364,7 @@ mch_check_win(int argc, char **argv)
 	}
 # endif
     }
-#endif	// __amigaos4__
+#endif	/* __amigaos4__ __AROS__ __MORPHOS__ */
 
     /*
      * scan argv[] for the "-f" and "-d" arguments
