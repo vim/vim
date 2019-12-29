@@ -2280,8 +2280,8 @@ msgstr "E799: Неважећи ИД: %d (мора бити веће или је�
 msgid "E801: ID already taken: %d"
 msgstr "E801: ИД је већ заузет: %d"
 
-msgid "List or number required"
-msgstr "Захтева се листа или број"
+msgid "E290: List or number required"
+msgstr "E290: Захтева се листа или број"
 
 #, c-format
 msgid "E802: Invalid ID: %d (must be greater than or equal to 1)"

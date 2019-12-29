@@ -540,14 +540,10 @@ spell_suggest(int count)
     else if (count > 0)
     {
 	if (count > sug.su_ga.ga_len)
-	    smsg(_("Sorry, only %ld suggestions"),
-						      (long)sug.su_ga.ga_len);
+	    smsg(_("Sorry, only %ld suggestions"), (long)sug.su_ga.ga_len);
     }
     else
     {
-	VIM_CLEAR(repl_from);
-	VIM_CLEAR(repl_to);
-
 #ifdef FEAT_RIGHTLEFT
 	// When 'rightleft' is set the list is drawn right-left.
 	cmdmsg_rl = curwin->w_p_rl;
@@ -641,6 +637,9 @@ spell_suggest(int count)
     if (selected > 0 && selected <= sug.su_ga.ga_len && u_save_cursor() == OK)
     {
 	// Save the from and to text for :spellrepall.
+	VIM_CLEAR(repl_from);
+	VIM_CLEAR(repl_to);
+
 	stp = &SUG(sug.su_ga, selected - 1);
 	if (sug.su_badlen > stp->st_orglen)
 	{
@@ -3729,7 +3728,8 @@ cleanup_suggestions(
 	for (i = keep; i < gap->ga_len; ++i)
 	    vim_free(stp[i].st_word);
 	gap->ga_len = keep;
-	return stp[keep - 1].st_score;
+	if (keep >= 1)
+	    return stp[keep - 1].st_score;
     }
     return maxscore;
 }

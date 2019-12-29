@@ -114,7 +114,7 @@ You can also install Vim in the "Send To" menu:
 4. Follow the shortcut wizard, using the full path to VIM/GVIM.
 
 When you 'send a file to Vim', Vim changes to that file's directory.  Note,
-however, that any long directory names will appear in their short (MS-DOS)
+however, that any long directory names will appear in their short (MS-Windows)
 form.  This is a limitation of the Windows "Send To" mechanism.
 
 						*notepad*

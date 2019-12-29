@@ -650,14 +650,12 @@ win_redr_ruler(win_T *wp, int always, int ignore_pum)
 #ifdef FEAT_STL_OPT
     if (*p_ruf)
     {
-	int	save_called_emsg = called_emsg;
+	int	called_emsg_before = called_emsg;
 
-	called_emsg = FALSE;
 	win_redr_custom(wp, TRUE);
-	if (called_emsg)
+	if (called_emsg > called_emsg_before)
 	    set_string_option_direct((char_u *)"rulerformat", -1,
 					   (char_u *)"", OPT_FREE, SID_ERROR);
-	called_emsg |= save_called_emsg;
 	return;
     }
 #endif

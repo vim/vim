@@ -167,7 +167,7 @@ check_due_timer(void)
 	    // the current scope, such as being inside a try/catch.
 	    timer_busy = timer_busy > 0 || vgetc_busy > 0;
 	    vgetc_busy = 0;
-	    called_emsg = FALSE;
+	    called_emsg = 0;
 	    did_emsg = FALSE;
 	    did_uncaught_emsg = FALSE;
 	    must_redraw = 0;

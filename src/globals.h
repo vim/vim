@@ -226,7 +226,7 @@ EXTERN int	did_uncaught_emsg;	    // emsg() was called and did not
 #endif
 EXTERN int	did_emsg_syntax;	    // did_emsg set because of a
 					    // syntax error
-EXTERN int	called_emsg;		    // always set by emsg()
+EXTERN int	called_emsg;		    // always incremented by emsg()
 EXTERN int	ex_exitval INIT(= 0);	    // exit value for ex mode
 EXTERN int	emsg_on_display INIT(= FALSE);	// there is an error message
 EXTERN int	rc_did_emsg INIT(= FALSE);  // vim_regcomp() called emsg()
@@ -1660,6 +1660,8 @@ EXTERN short disallow_gui	INIT(= FALSE);
 EXTERN char top_bot_msg[] INIT(= N_("search hit TOP, continuing at BOTTOM"));
 EXTERN char bot_top_msg[] INIT(= N_("search hit BOTTOM, continuing at TOP"));
 
+EXTERN char line_msg[]		INIT(= N_(" line "));
+
 #ifdef FEAT_CRYPT
 EXTERN char need_key_msg[] INIT(= N_("Need encryption key for \"%s\""));
 #endif
@@ -1722,6 +1724,9 @@ EXTERN int  did_echo_string_emsg INIT(= FALSE);
 
 // Used for checking if local variables or arguments used in a lambda.
 EXTERN int *eval_lavars_used INIT(= NULL);
+
+// Only filled for Win32.
+EXTERN char windowsVersion[20] INIT(= {0});
 #endif
 
 #ifdef MSWIN

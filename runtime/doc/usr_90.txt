@@ -248,10 +248,6 @@ available:
 	vim61w32.zip		32 bit MS-Windows console version.  For use in
 				a Win NT/2000/XP console.  Does not work well
 				on Win 95/98.
-	vim61d32.zip		32 bit MS-DOS version.  For use in the
-				Win 95/98 console window.
-	vim61d16.zip		16 bit MS-DOS version.  Only for old systems.
-				Does not support long filenames.
 
 You only need one of them.  Although you could install both a GUI and a
 console version.  You always need to get the archive with runtime files.

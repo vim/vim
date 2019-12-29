@@ -38,98 +38,142 @@ func TerminalEscapeCode(code, row, col, m)
       " Hopefully the numbers are not too big.
       let bytes = str
     endif
-    call feedkeys("\<Esc>[M" .. bytes, 'Lx!')
+    return "\<Esc>[M" .. bytes
   elseif &ttymouse ==# 'sgr'
-    call feedkeys(printf("\<Esc>[<%d;%d;%d%s", a:code, a:col, a:row, a:m), 'Lx!')
+    return printf("\<Esc>[<%d;%d;%d%s", a:code, a:col, a:row, a:m)
   elseif &ttymouse ==# 'urxvt'
-    call feedkeys(printf("\<Esc>[%d;%d;%dM", a:code + 0x20, a:col, a:row), 'Lx!')
+    return printf("\<Esc>[%d;%d;%dM", a:code + 0x20, a:col, a:row)
   endif
 endfunc
 
 func DecEscapeCode(code, down, row, col)
-    call feedkeys(printf("\<Esc>[%d;%d;%d;%d&w", a:code, a:down, a:row, a:col), 'Lx!')
+    return printf("\<Esc>[%d;%d;%d;%d&w", a:code, a:down, a:row, a:col)
 endfunc
 
 func NettermEscapeCode(row, col)
-    call feedkeys(printf("\<Esc>}%d,%d\r", a:row, a:col), 'Lx!')
+    return printf("\<Esc>}%d,%d\r", a:row, a:col)
+endfunc
+
+func MouseLeftClickCode(row, col)
+  if &ttymouse ==# 'dec'
+    return DecEscapeCode(2, 4, a:row, a:col)
+  elseif &ttymouse ==# 'netterm'
+    return NettermEscapeCode(a:row, a:col)
+  else
+    return TerminalEscapeCode(0, a:row, a:col, 'M')
+  endif
 endfunc
 
 func MouseLeftClick(row, col)
+  call feedkeys(MouseLeftClickCode(a:row, a:col), 'Lx!')
+endfunc
+
+func MouseMiddleClickCode(row, col)
   if &ttymouse ==# 'dec'
-    call DecEscapeCode(2, 4, a:row, a:col)
-  elseif &ttymouse ==# 'netterm'
-    call NettermEscapeCode(a:row, a:col)
+    return DecEscapeCode(4, 2, a:row, a:col)
   else
-    call TerminalEscapeCode(0, a:row, a:col, 'M')
+    return TerminalEscapeCode(1, a:row, a:col, 'M')
   endif
 endfunc
 
 func MouseMiddleClick(row, col)
+  call feedkeys(MouseMiddleClickCode(a:row, a:col), 'Lx!')
+endfunc
+
+func MouseRightClickCode(row, col)
   if &ttymouse ==# 'dec'
-    call DecEscapeCode(4, 2, a:row, a:col)
+    return DecEscapeCode(6, 1, a:row, a:col)
   else
-    call TerminalEscapeCode(1, a:row, a:col, 'M')
+    return TerminalEscapeCode(2, a:row, a:col, 'M')
   endif
 endfunc
 
 func MouseRightClick(row, col)
-  if &ttymouse ==# 'dec'
-    call DecEscapeCode(6, 1, a:row, a:col)
-  else
-    call TerminalEscapeCode(2, a:row, a:col, 'M')
-  endif
+  call feedkeys(MouseRightClickCode(a:row, a:col), 'Lx!')
+endfunc
+
+func MouseCtrlLeftClickCode(row, col)
+  let ctrl = 0x10
+  return TerminalEscapeCode(0 + ctrl, a:row, a:col, 'M')
 endfunc
 
 func MouseCtrlLeftClick(row, col)
+  call feedkeys(MouseCtrlLeftClickCode(a:row, a:col), 'Lx!')
+endfunc
+
+func MouseCtrlRightClickCode(row, col)
   let ctrl = 0x10
-  call TerminalEscapeCode(0 + ctrl, a:row, a:col, 'M')
+  return TerminalEscapeCode(2 + ctrl, a:row, a:col, 'M')
 endfunc
 
 func MouseCtrlRightClick(row, col)
-  let ctrl = 0x10
-  call TerminalEscapeCode(2 + ctrl, a:row, a:col, 'M')
+  call feedkeys(MouseCtrlRightClickCode(a:row, a:col), 'Lx!')
+endfunc
+
+func MouseLeftReleaseCode(row, col)
+  if &ttymouse ==# 'dec'
+    return DecEscapeCode(3, 0, a:row, a:col)
+  elseif &ttymouse ==# 'netterm'
+    return ''
+  else
+    return TerminalEscapeCode(3, a:row, a:col, 'm')
+  endif
 endfunc
 
 func MouseLeftRelease(row, col)
+  call feedkeys(MouseLeftReleaseCode(a:row, a:col), 'Lx!')
+endfunc
+
+func MouseMiddleReleaseCode(row, col)
   if &ttymouse ==# 'dec'
-    call DecEscapeCode(3, 0, a:row, a:col)
-  elseif &ttymouse ==# 'netterm'
-    " send nothing
+    return DecEscapeCode(5, 0, a:row, a:col)
   else
-    call TerminalEscapeCode(3, a:row, a:col, 'm')
+    return TerminalEscapeCode(3, a:row, a:col, 'm')
   endif
 endfunc
 
 func MouseMiddleRelease(row, col)
+  call feedkeys(MouseMiddleReleaseCode(a:row, a:col), 'Lx!')
+endfunc
+
+func MouseRightReleaseCode(row, col)
   if &ttymouse ==# 'dec'
-    call DecEscapeCode(5, 0, a:row, a:col)
+    return DecEscapeCode(7, 0, a:row, a:col)
   else
-    call TerminalEscapeCode(3, a:row, a:col, 'm')
+    return TerminalEscapeCode(3, a:row, a:col, 'm')
   endif
 endfunc
 
 func MouseRightRelease(row, col)
+  call feedkeys(MouseRightReleaseCode(a:row, a:col), 'Lx!')
+endfunc
+
+func MouseLeftDragCode(row, col)
   if &ttymouse ==# 'dec'
-    call DecEscapeCode(7, 0, a:row, a:col)
+    return DecEscapeCode(1, 4, a:row, a:col)
   else
-    call TerminalEscapeCode(3, a:row, a:col, 'm')
+    return TerminalEscapeCode(0x20, a:row, a:col, 'M')
   endif
 endfunc
 
 func MouseLeftDrag(row, col)
-  if &ttymouse ==# 'dec'
-    call DecEscapeCode(1, 4, a:row, a:col)
-  else
-    call TerminalEscapeCode(0x20, a:row, a:col, 'M')
-  endif
+  call feedkeys(MouseLeftDragCode(a:row, a:col), 'Lx!')
+endfunc
+
+func MouseWheelUpCode(row, col)
+  return TerminalEscapeCode(0x40, a:row, a:col, 'M')
 endfunc
 
 func MouseWheelUp(row, col)
-  call TerminalEscapeCode(0x40, a:row, a:col, 'M')
+  call feedkeys(MouseWheelUpCode(a:row, a:col), 'Lx!')
+endfunc
+
+func MouseWheelDownCode(row, col)
+  return TerminalEscapeCode(0x41, a:row, a:col, 'M')
 endfunc
 
 func MouseWheelDown(row, col)
-  call TerminalEscapeCode(0x41, a:row, a:col, 'M')
+  call feedkeys(MouseWheelDownCode(a:row, a:col), 'Lx!')
 endfunc
 
 func Test_term_mouse_left_click()
@@ -184,7 +228,7 @@ func Test_xterm_mouse_right_click_extends_visual()
       call MouseRightClick(2, 2)
       call MouseRightRelease(2, 2)
 
-      " Right click extends bottom bottom right of visual area.
+      " Right click extends bottom right of visual area.
       call MouseRightClick(6, 6)
       call MouseRightRelease(6, 6)
       norm! r1gv
@@ -353,7 +397,7 @@ func Test_1xterm_mouse_wheel()
 endfunc
 
 " Test that dragging beyond the window (at the bottom and at the top)
-" scrolls window content by the number of of lines beyond the window.
+" scrolls window content by the number of lines beyond the window.
 func Test_term_mouse_drag_beyond_window()
   let save_mouse = &mouse
   let save_term = &term
@@ -872,6 +916,69 @@ func Test_xterm_mouse_click_in_fold_columns()
   bwipe!
 endfunc
 
+" Left or right click in Ex command line sets position of the cursor.
+func Test_term_mouse_click_in_cmdline_to_set_pos()
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  call test_override('no_query_mouse', 1)
+  set mouse=a term=xterm
+  let row = &lines
+
+  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+    let msg = 'ttymouse=' .. ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
+
+    call feedkeys(':"3456789'
+          \       .. MouseLeftClickCode(row, 7)
+          \       .. MouseLeftReleaseCode(row, 7) .. 'L'
+          \       .. MouseRightClickCode(row, 4)
+          \       .. MouseRightReleaseCode(row, 4) .. 'R'
+          \       .. "\<CR>", 'Lx!')
+    call assert_equal('"3R456L789', @:, msg)
+  endfor
+
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+  set mousetime&
+  call test_override('no_query_mouse', 0)
+endfunc
+
+" Middle click in command line pastes at position of cursor.
+func Test_term_mouse_middle_click_in_cmdline_to_paste()
+  CheckFeature clipboard_working
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  call test_override('no_query_mouse', 1)
+  set mouse=a term=xterm
+  let row = &lines
+  " Column values does not matter, paste is done at position of cursor.
+  let col = 1
+  let @* = 'paste'
+
+  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+    let msg = 'ttymouse=' .. ttymouse_val
+    exe 'set ttymouse=' .. ttymouse_val
+
+    call feedkeys(":\"->"
+          \       .. MouseMiddleReleaseCode(row, col)
+          \       .. MouseMiddleClickCode(row, col)
+          \       .. "<-"
+          \       .. MouseMiddleReleaseCode(row, col)
+          \       .. MouseMiddleClickCode(row, col)
+          \       .. "\<CR>", 'Lx!')
+    call assert_equal('"->paste<-paste', @:, msg)
+  endfor
+
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+  let @* = ''
+  call test_override('no_query_mouse', 0)
+endfunc
+
 " This only checks if the sequence is recognized.
 func Test_term_rgb_response()
   set t_RF=x
@@ -925,7 +1032,7 @@ func Test_term_rgb_response()
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termrbgresp)
   call assert_equal('dark', &background)
-  
+
   " response to t_RB, 2 digits, light
   set background=dark
   call test_option_not_set('background')
@@ -936,7 +1043,7 @@ func Test_term_rgb_response()
   call feedkeys(seq, 'Lx!')
   call assert_equal(seq, v:termrbgresp)
   call assert_equal('light', &background)
-  
+
   set t_RF= t_RB=
 endfunc
 
@@ -1158,7 +1265,7 @@ func RunTest_modifyOtherKeys(func)
   new
   set timeoutlen=10
 
-  " Shift-X is send as 'X' with the shift modifier
+  " Shift-X is sent as 'X' with the shift modifier
   call feedkeys('a' .. a:func('X', 2) .. "\<Esc>", 'Lx!')
   call assert_equal('X', getline(1))
 
@@ -1316,7 +1423,7 @@ func Test_mapping_works_with_shift()
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'S', 2)
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'S', 2)
 endfunc
-  
+
 func Test_mapping_works_with_ctrl()
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'C', 5)
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'C', 5)
@@ -1329,7 +1436,7 @@ endfunc
 
 " Below we also test the "u" code with Alt, This works, but libvterm would not
 " send the Alt key like this but by prefixing an Esc.
-  
+
 func Test_mapping_works_with_alt()
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSI27'), 'A', 3)
   call RunTest_mapping_works_with_mods(function('GetEscCodeCSIu'), 'A', 3)
@@ -1361,7 +1468,7 @@ func Test_insert_literal()
   call feedkeys('a' .. GetEscCodeCSI27('V', '5') .. GetEscCodeCSI27('X', '5') .. "\<Esc>", 'Lx!')
   call assert_equal("\<C-X>", getline(1))
 
-  " CTRL-SHIFT-V CTRL-X inserts escape sequencd
+  " CTRL-SHIFT-V CTRL-X inserts escape sequence
   call setline(1, '')
   call feedkeys('a' .. GetEscCodeCSIu('V', '6') .. GetEscCodeCSIu('X', '5') .. "\<Esc>", 'Lx!')
   call assert_equal("\<Esc>[88;5u", getline(1))
@@ -1384,7 +1491,7 @@ func Test_cmdline_literal()
   call feedkeys(':' .. GetEscCodeCSI27('V', '5') .. GetEscCodeCSI27('Y', '5') .. "\<C-B>\"\<CR>", 'Lx!')
   call assert_equal("\"\<C-Y>", @:)
 
-  " CTRL-SHIFT-V CTRL-Y inserts escape sequencd
+  " CTRL-SHIFT-V CTRL-Y inserts escape sequence
   call feedkeys(':' .. GetEscCodeCSIu('V', '6') .. GetEscCodeCSIu('Y', '5') .. "\<C-B>\"\<CR>", 'Lx!')
   call assert_equal("\"\<Esc>[89;5u", @:)
 

@@ -6557,8 +6557,8 @@ msgid "E801: ID already taken: %ld"
 msgstr "E801: ID вже зайнято: %ld"
 
 # msgstr "E396: "
-msgid "List or number required"
-msgstr "Потрібен список чи число"
+msgid "E290: List or number required"
+msgstr "E290: Потрібен список чи число"
 
 #, c-format
 msgid "E802: Invalid ID: %ld (must be greater than or equal to 1)"

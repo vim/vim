@@ -624,7 +624,7 @@ searchit(
     long	nmatched;
     int		submatch = 0;
     int		first_match = TRUE;
-    int		save_called_emsg = called_emsg;
+    int		called_emsg_before = called_emsg;
 #ifdef FEAT_SEARCH_EXTRA
     int		break_loop = FALSE;
 #endif
@@ -654,7 +654,6 @@ searchit(
     /*
      * find the string
      */
-    called_emsg = FALSE;
     do	// loop for count
     {
 	// When not accepting a match at the start position set "extra_col" to
@@ -745,7 +744,7 @@ searchit(
 #endif
 						      );
 		// Abort searching on an error (e.g., out of stack).
-		if (called_emsg
+		if (called_emsg > called_emsg_before
 #ifdef FEAT_RELTIME
 			|| (timed_out != NULL && *timed_out)
 #endif
@@ -1055,7 +1054,8 @@ searchit(
 	     * specified, after an interrupt, after a match and after looping
 	     * twice.
 	     */
-	    if (!p_ws || stop_lnum != 0 || got_int || called_emsg
+	    if (!p_ws || stop_lnum != 0 || got_int
+					    || called_emsg > called_emsg_before
 #ifdef FEAT_RELTIME
 				|| (timed_out != NULL && *timed_out)
 #endif
@@ -1082,7 +1082,7 @@ searchit(
 	    if (extra_arg != NULL)
 		extra_arg->sa_wrapped = TRUE;
 	}
-	if (got_int || called_emsg
+	if (got_int || called_emsg > called_emsg_before
 #ifdef FEAT_RELTIME
 		|| (timed_out != NULL && *timed_out)
 #endif
@@ -1095,8 +1095,6 @@ searchit(
     while (--count > 0 && found);   // stop after count matches or no match
 
     vim_regfree(regmatch.regprog);
-
-    called_emsg |= save_called_emsg;
 
     if (!found)		    // did not find it
     {
@@ -4799,7 +4797,7 @@ is_zero_width(char_u *pattern, int move, pos_T *cur, int direction)
     int		nmatched = 0;
     int		result = -1;
     pos_T	pos;
-    int		save_called_emsg = called_emsg;
+    int		called_emsg_before = called_emsg;
     int		flag = 0;
 
     if (pattern == NULL)
@@ -4828,7 +4826,6 @@ is_zero_width(char_u *pattern, int move, pos_T *cur, int direction)
     {
 	// Zero-width pattern should match somewhere, then we can check if
 	// start and end are in the same position.
-	called_emsg = FALSE;
 	do
 	{
 	    regmatch.startpos[0].col++;
@@ -4839,7 +4836,7 @@ is_zero_width(char_u *pattern, int move, pos_T *cur, int direction)
 	} while (direction == FORWARD ? regmatch.startpos[0].col < pos.col
 				      : regmatch.startpos[0].col > pos.col);
 
-	if (!called_emsg)
+	if (called_emsg == called_emsg_before)
 	{
 	    result = (nmatched != 0
 		&& regmatch.startpos[0].lnum == regmatch.endpos[0].lnum
@@ -4847,7 +4844,6 @@ is_zero_width(char_u *pattern, int move, pos_T *cur, int direction)
 	}
     }
 
-    called_emsg |= save_called_emsg;
     vim_regfree(regmatch.regprog);
     return result;
 }

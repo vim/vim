@@ -13,6 +13,7 @@ source test_delete.vim
 source test_ex_equal.vim
 source test_ex_undo.vim
 source test_ex_z.vim
+source test_ex_mode.vim
 source test_execute_func.vim
 source test_expand.vim
 source test_expand_dllpath.vim
@@ -63,7 +64,6 @@ source test_tagcase.vim
 source test_tagfunc.vim
 source test_tagjump.vim
 source test_taglist.vim
-source test_timers.vim
 source test_true_false.vim
 source test_unlet.vim
 source test_virtualedit.vim

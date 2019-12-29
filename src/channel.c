@@ -2370,17 +2370,15 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 
     if (STRCMP(cmd, "ex") == 0)
     {
-	int save_called_emsg = called_emsg;
+	int called_emsg_before = called_emsg;
 
-	called_emsg = FALSE;
 	ch_log(channel, "Executing ex command '%s'", (char *)arg);
 	++emsg_silent;
 	do_cmdline_cmd(arg);
 	--emsg_silent;
-	if (called_emsg)
+	if (called_emsg > called_emsg_before)
 	    ch_log(channel, "Ex command error: '%s'",
 					  (char *)get_vim_var_str(VV_ERRMSG));
-	called_emsg = save_called_emsg;
     }
     else if (STRCMP(cmd, "normal") == 0)
     {
@@ -5921,7 +5919,7 @@ job_start(
     {
 	// Command is a string.
 	cmd = argvars[0].vval.v_string;
-	if (cmd == NULL || *cmd == NUL)
+	if (cmd == NULL || *skipwhite(cmd) == NUL)
 	{
 	    emsg(_(e_invarg));
 	    goto theend;
@@ -5943,10 +5941,22 @@ job_start(
 
 	if (build_argv_from_list(l, &argv, &argc) == FAIL)
 	    goto theend;
+
+	// Empty command is invalid.
+	if (argc == 0 || *skipwhite((char_u *)argv[0]) == NUL)
+	{
+	    emsg(_(e_invarg));
+	    goto theend;
+	}
 #ifndef USE_ARGV
 	if (win32_build_cmd(l, &ga) == FAIL)
 	    goto theend;
 	cmd = ga.ga_data;
+	if (cmd == NULL || *skipwhite(cmd) == NUL)
+	{
+	    emsg(_(e_invarg));
+	    goto theend;
+	}
 #endif
     }
 

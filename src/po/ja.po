@@ -2254,8 +2254,8 @@ msgstr "E799: 無効な ID: %d (1 以上でなければなりません)"
 msgid "E801: ID already taken: %d"
 msgstr "E801: ID はすでに利用中です: %d"
 
-msgid "List or number required"
-msgstr "リストか数値が必要です"
+msgid "E290: List or number required"
+msgstr "E290: リストか数値が必要です"
 
 #, c-format
 msgid "E802: Invalid ID: %d (must be greater than or equal to 1)"

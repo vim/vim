@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2019 Dec 06
+*eval.txt*	For Vim version 8.2.  Last change: 2019 Dec 17
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -3993,16 +3993,15 @@ executable({expr})					*executable()*
 		arguments.
 		executable() uses the value of $PATH and/or the normal
 		searchpath for programs.		*PATHEXT*
-		On MS-DOS and MS-Windows the ".exe", ".bat", etc. can
-		optionally be included.  Then the extensions in $PATHEXT are
-		tried.  Thus if "foo.exe" does not exist, "foo.exe.bat" can be
-		found.  If $PATHEXT is not set then ".exe;.com;.bat;.cmd" is
-		used.  A dot by itself can be used in $PATHEXT to try using
-		the name without an extension.  When 'shell' looks like a
-		Unix shell, then the name is also tried without adding an
-		extension.
-		On MS-DOS and MS-Windows it only checks if the file exists and
-		is not a directory, not if it's really executable.
+		On MS-Windows the ".exe", ".bat", etc. can optionally be
+		included.  Then the extensions in $PATHEXT are tried.  Thus if
+		"foo.exe" does not exist, "foo.exe.bat" can be found.  If
+		$PATHEXT is not set then ".exe;.com;.bat;.cmd" is used.  A dot
+		by itself can be used in $PATHEXT to try using the name
+		without an extension.  When 'shell' looks like a Unix shell,
+		then the name is also tried without adding an extension.
+		On MS-Windows it only checks if the file exists and is not a
+		directory, not if it's really executable.
 		On MS-Windows an executable in the same directory as Vim is
 		always found.  Since this directory is added to $PATH it
 		should also work to execute it |win32-PATH|.
@@ -5371,7 +5370,7 @@ getmousepos()						*getmousepos()*
 							*getpid()*
 getpid()	Return a Number which is the process ID of the Vim process.
 		On Unix and MS-Windows this is a unique number, until Vim
-		exits.  On MS-DOS it's always zero.
+		exits.
 
 							*getpos()*
 getpos({expr})	Get the position for {expr}.  For possible values of {expr}
@@ -10383,6 +10382,13 @@ wincol()	The result is a Number, which is the virtual column of the
 		cursor in the window.  This is counting screen cells from the
 		left side of the window.  The leftmost column is one.
 
+							*windowsversion()*
+windowsversion()
+		The result is a String.  For MS-Windows it indicates the OS
+		version.  E.g, Windows 10 is "10.0", Windows 8 is "6.2",
+		Windows XP is "5.1".  For non-MS-Windows systems the result is
+		an empty string.
+
 winheight({nr})						*winheight()*
 		The result is a Number, which is the height of window {nr}.
 		{nr} can be the window number or the |window-ID|.
@@ -10685,8 +10691,8 @@ filterpipe		When 'shelltemp' is off pipes are used for shell
 find_in_path		Compiled with support for include file searches
 			|+find_in_path|.
 float			Compiled with support for |Float|.
-fname_case		Case in file names matters (for Amiga, MS-DOS, and
-			Windows this is not present).
+fname_case		Case in file names matters (for Amiga and MS-Windows
+			this is not present).
 folding			Compiled with |folding| support.
 footer			Compiled with GUI footer support. |gui-footer|
 fork			Compiled to use fork()/exec() instead of system().

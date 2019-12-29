@@ -5989,7 +5989,6 @@ debug.txt	debug.txt	/*debug.txt*
 debugbreak()	eval.txt	/*debugbreak()*
 debugger-compilation	debugger.txt	/*debugger-compilation*
 debugger-features	debugger.txt	/*debugger-features*
-debugger-integration	debugger.txt	/*debugger-integration*
 debugger-support	debugger.txt	/*debugger-support*
 debugger.txt	debugger.txt	/*debugger.txt*
 dec-mouse	options.txt	/*dec-mouse*
@@ -6498,6 +6497,7 @@ ft-quake-syntax	syntax.txt	/*ft-quake-syntax*
 ft-r-indent	indent.txt	/*ft-r-indent*
 ft-r-syntax	syntax.txt	/*ft-r-syntax*
 ft-readline-syntax	syntax.txt	/*ft-readline-syntax*
+ft-rego-syntax	syntax.txt	/*ft-rego-syntax*
 ft-rexx-syntax	syntax.txt	/*ft-rexx-syntax*
 ft-rmd-plugin	filetype.txt	/*ft-rmd-plugin*
 ft-rmd-syntax	syntax.txt	/*ft-rmd-syntax*
@@ -8561,6 +8561,7 @@ register	sponsor.txt	/*register*
 register-faq	sponsor.txt	/*register-faq*
 register-variable	eval.txt	/*register-variable*
 registers	change.txt	/*registers*
+rego.vim	syntax.txt	/*rego.vim*
 regular-expression	pattern.txt	/*regular-expression*
 reload	editing.txt	/*reload*
 reltime()	eval.txt	/*reltime()*

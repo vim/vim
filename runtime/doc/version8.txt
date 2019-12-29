@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.2.  Last change: 2019 Dec 12
+*version8.txt*  For Vim version 8.2.  Last change: 2019 Dec 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -25847,6 +25847,10 @@ Functions can now be called in a chain, using "->": >
 	mylist->filter(filterexpr)->map(mapexpr)->sort()->join()
 The new `:eval` command can be used if the chain has no result.
 
+Function arguments can be made optional by giving them a default value
+|optional-function-argument|: >
+	function Something(key, value = 10)
+
 The `:scriptversion` command was added to allow for changes that are not
 backwards compatible. E.g. to only use ".." for string concatenation, so that
 "." can be used to access a dictionary member consistently.
@@ -25897,7 +25901,7 @@ Makefiles for old Amiga compilers were removed: Dice, Manx and SAS.
 If a swap file is found without any changes it is automatically deleted.
 
 The FEAT_TAG_OLDSTATIC code was removed, it slowed down tag searches.
-The FEAT_TAG_ANYWHITE code was removed, is was not enabled in any build.
+The FEAT_TAG_ANYWHITE code was removed, it was not enabled in any build.
 The UNICODE16 code was removed, it was not useful.
 Workshop support was removed, nobody was using it.
 The Aap build files were removed, they were outdated.

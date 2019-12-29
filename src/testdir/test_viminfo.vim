@@ -323,6 +323,23 @@ func Test_viminfo_marks()
   call assert_equal([bufb, 22, 1, 0], getpos("'3")) " time 30
   call assert_equal([bufb, 12, 1, 0], getpos("'4")) " time 25
 
+  " deleted file marks are removed from viminfo
+  delmark C
+  wviminfo Xviminfo
+  rviminfo Xviminfo
+  call assert_equal([0, 0, 0, 0], getpos("'C"))
+
+  " deleted file marks stay in viminfo if defined in another vim later
+  call test_settime(70)
+  call setpos("'D", [bufb, 8, 1, 0])
+  wviminfo Xviminfo
+  call test_settime(65)
+  delmark D
+  call assert_equal([0, 0, 0, 0], getpos("'D"))
+  call test_settime(75)
+  rviminfo Xviminfo
+  call assert_equal([bufb, 8, 1, 0], getpos("'D"))
+
   call delete('Xviminfo')
   exe 'bwipe ' . bufa
   exe 'bwipe ' . bufb

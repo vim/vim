@@ -24,9 +24,6 @@ src/os_mac.*		Files for the Mac port.
 
 src/os_mint.8		Files for the Atari Mint port.
 
-src/os_os2*		Files for the OS/2 port.
-src/tee/*		Extra program for OS/2.
-
 src/os_vms*		Files for the VMS port.
 
 src/os_w32*

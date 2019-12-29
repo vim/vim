@@ -68,7 +68,7 @@ typedef struct VimMenu vimmenu_T;
 #endif
 
 /*
- * SCript ConteXt (SCTX): identifies a script script line.
+ * SCript ConteXt (SCTX): identifies a script line.
  * When sourcing a script "sc_lnum" is zero, "sourcing_lnum" is the current
  * line number. When executing a user function "sc_lnum" is the line where the
  * function was defined, "sourcing_lnum" is the line number inside the
@@ -3628,15 +3628,17 @@ typedef struct {
  */
 typedef enum
 {
-    TYPE_UNKNOWN = 0,
-    TYPE_EQUAL,		// ==
-    TYPE_NEQUAL,	// !=
-    TYPE_GREATER,	// >
-    TYPE_GEQUAL,	// >=
-    TYPE_SMALLER,	// <
-    TYPE_SEQUAL,	// <=
-    TYPE_MATCH,		// =~
-    TYPE_NOMATCH,	// !~
+    ETYPE_UNKNOWN = 0,
+    ETYPE_EQUAL,	// ==
+    ETYPE_NEQUAL,	// !=
+    ETYPE_GREATER,	// >
+    ETYPE_GEQUAL,	// >=
+    ETYPE_SMALLER,	// <
+    ETYPE_SEQUAL,	// <=
+    ETYPE_MATCH,	// =~
+    ETYPE_NOMATCH,	// !~
+    ETYPE_IS,		// is
+    ETYPE_ISNOT,	// isnot
 } exptype_T;
 
 /*

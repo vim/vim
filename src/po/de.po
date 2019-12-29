@@ -2297,8 +2297,8 @@ msgstr "E799: Ungültige ID: %d (muss größer gleich 1 sein)"
 msgid "E801: ID already taken: %d"
 msgstr "E801: ID bereits benutzt: %d"
 
-msgid "List or number required"
-msgstr "Liste oder Nummer erforderlich"
+msgid "E290: List or number required"
+msgstr "E290: Liste oder Nummer erforderlich"
 
 #, c-format
 msgid "E802: Invalid ID: %d (must be greater than or equal to 1)"

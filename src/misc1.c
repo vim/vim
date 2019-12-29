@@ -18,8 +18,8 @@
 # include <lm.h>
 #endif
 
-#define URL_SLASH	1		/* path_is_url() has found "://" */
-#define URL_BACKSLASH	2		/* path_is_url() has found ":\\" */
+#define URL_SLASH	1		// path_is_url() has found "://"
+#define URL_BACKSLASH	2		// path_is_url() has found ":\\"
 
 // All user names (for ~user completion as done by shell).
 static garray_T	ga_users;
@@ -45,15 +45,15 @@ get_leader_len(
     int		result;
     int		got_com = FALSE;
     int		found_one;
-    char_u	part_buf[COM_MAX_LEN];	/* buffer for one option part */
-    char_u	*string;		/* pointer to comment string */
+    char_u	part_buf[COM_MAX_LEN];	// buffer for one option part
+    char_u	*string;		// pointer to comment string
     char_u	*list;
     int		middle_match_len = 0;
     char_u	*prev_list;
     char_u	*saved_flags = NULL;
 
     result = i = 0;
-    while (VIM_ISWHITE(line[i]))    /* leading white space is ignored */
+    while (VIM_ISWHITE(line[i]))    // leading white space is ignored
 	++i;
 
     /*
@@ -67,60 +67,60 @@ get_leader_len(
 	found_one = FALSE;
 	for (list = curbuf->b_p_com; *list; )
 	{
-	    /* Get one option part into part_buf[].  Advance "list" to next
-	     * one.  Put "string" at start of string.  */
+	    // Get one option part into part_buf[].  Advance "list" to next
+	    // one.  Put "string" at start of string.
 	    if (!got_com && flags != NULL)
-		*flags = list;	    /* remember where flags started */
+		*flags = list;	    // remember where flags started
 	    prev_list = list;
 	    (void)copy_option_part(&list, part_buf, COM_MAX_LEN, ",");
 	    string = vim_strchr(part_buf, ':');
-	    if (string == NULL)	    /* missing ':', ignore this part */
+	    if (string == NULL)	    // missing ':', ignore this part
 		continue;
-	    *string++ = NUL;	    /* isolate flags from string */
+	    *string++ = NUL;	    // isolate flags from string
 
-	    /* If we found a middle match previously, use that match when this
-	     * is not a middle or end. */
+	    // If we found a middle match previously, use that match when this
+	    // is not a middle or end.
 	    if (middle_match_len != 0
 		    && vim_strchr(part_buf, COM_MIDDLE) == NULL
 		    && vim_strchr(part_buf, COM_END) == NULL)
 		break;
 
-	    /* When we already found a nested comment, only accept further
-	     * nested comments. */
+	    // When we already found a nested comment, only accept further
+	    // nested comments.
 	    if (got_com && vim_strchr(part_buf, COM_NEST) == NULL)
 		continue;
 
-	    /* When 'O' flag present and using "O" command skip this one. */
+	    // When 'O' flag present and using "O" command skip this one.
 	    if (backward && vim_strchr(part_buf, COM_NOBACK) != NULL)
 		continue;
 
-	    /* Line contents and string must match.
-	     * When string starts with white space, must have some white space
-	     * (but the amount does not need to match, there might be a mix of
-	     * TABs and spaces). */
+	    // Line contents and string must match.
+	    // When string starts with white space, must have some white space
+	    // (but the amount does not need to match, there might be a mix of
+	    // TABs and spaces).
 	    if (VIM_ISWHITE(string[0]))
 	    {
 		if (i == 0 || !VIM_ISWHITE(line[i - 1]))
-		    continue;  /* missing white space */
+		    continue;  // missing white space
 		while (VIM_ISWHITE(string[0]))
 		    ++string;
 	    }
 	    for (j = 0; string[j] != NUL && string[j] == line[i + j]; ++j)
 		;
 	    if (string[j] != NUL)
-		continue;  /* string doesn't match */
+		continue;  // string doesn't match
 
-	    /* When 'b' flag used, there must be white space or an
-	     * end-of-line after the string in the line. */
+	    // When 'b' flag used, there must be white space or an
+	    // end-of-line after the string in the line.
 	    if (vim_strchr(part_buf, COM_BLANK) != NULL
 			   && !VIM_ISWHITE(line[i + j]) && line[i + j] != NUL)
 		continue;
 
-	    /* We have found a match, stop searching unless this is a middle
-	     * comment. The middle comment can be a substring of the end
-	     * comment in which case it's better to return the length of the
-	     * end comment and its flags.  Thus we keep searching with middle
-	     * and end matches and use an end match if it matches better. */
+	    // We have found a match, stop searching unless this is a middle
+	    // comment. The middle comment can be a substring of the end
+	    // comment in which case it's better to return the length of the
+	    // end comment and its flags.  Thus we keep searching with middle
+	    // and end matches and use an end match if it matches better.
 	    if (vim_strchr(part_buf, COM_MIDDLE) != NULL)
 	    {
 		if (middle_match_len == 0)
@@ -131,8 +131,8 @@ get_leader_len(
 		continue;
 	    }
 	    if (middle_match_len != 0 && j > middle_match_len)
-		/* Use this match instead of the middle match, since it's a
-		 * longer thus better match. */
+		// Use this match instead of the middle match, since it's a
+		// longer thus better match.
 		middle_match_len = 0;
 
 	    if (middle_match_len == 0)
@@ -143,28 +143,28 @@ get_leader_len(
 
 	if (middle_match_len != 0)
 	{
-	    /* Use the previously found middle match after failing to find a
-	     * match with an end. */
+	    // Use the previously found middle match after failing to find a
+	    // match with an end.
 	    if (!got_com && flags != NULL)
 		*flags = saved_flags;
 	    i += middle_match_len;
 	    found_one = TRUE;
 	}
 
-	/* No match found, stop scanning. */
+	// No match found, stop scanning.
 	if (!found_one)
 	    break;
 
 	result = i;
 
-	/* Include any trailing white space. */
+	// Include any trailing white space.
 	while (VIM_ISWHITE(line[i]))
 	    ++i;
 
 	if (include_space)
 	    result = i;
 
-	/* If this comment doesn't nest, stop here. */
+	// If this comment doesn't nest, stop here.
 	got_com = TRUE;
 	if (vim_strchr(part_buf, COM_NEST) == NULL)
 	    break;
@@ -190,7 +190,7 @@ get_last_leader_offset(char_u *line, char_u **flags)
     char_u	*com_flags;
     char_u	*list;
     int		found_one;
-    char_u	part_buf[COM_MAX_LEN];	/* buffer for one option part */
+    char_u	part_buf[COM_MAX_LEN];	// buffer for one option part
 
     /*
      * Repeat to match several nested comment strings.
@@ -212,10 +212,10 @@ get_last_leader_offset(char_u *line, char_u **flags)
 	     */
 	    (void)copy_option_part(&list, part_buf, COM_MAX_LEN, ",");
 	    string = vim_strchr(part_buf, ':');
-	    if (string == NULL)	/* If everything is fine, this cannot actually
-				 * happen. */
+	    if (string == NULL)	// If everything is fine, this cannot actually
+				// happen.
 		continue;
-	    *string++ = NUL;	/* Isolate flags from string. */
+	    *string++ = NUL;	// Isolate flags from string.
 	    com_leader = string;
 
 	    /*
@@ -271,7 +271,7 @@ get_last_leader_offset(char_u *line, char_u **flags)
 
 	if (found_one)
 	{
-	    char_u  part_buf2[COM_MAX_LEN];	/* buffer for one option part */
+	    char_u  part_buf2[COM_MAX_LEN];	// buffer for one option part
 	    int     len1, len2, off;
 
 	    result = i;
@@ -283,11 +283,10 @@ get_last_leader_offset(char_u *line, char_u **flags)
 
 	    lower_check_bound = i;
 
-	    /* Let's verify whether the comment leader found is a substring
-	     * of other comment leaders. If it is, let's adjust the
-	     * lower_check_bound so that we make sure that we have determined
-	     * the comment leader correctly.
-	     */
+	    // Let's verify whether the comment leader found is a substring
+	    // of other comment leaders. If it is, let's adjust the
+	    // lower_check_bound so that we make sure that we have determined
+	    // the comment leader correctly.
 
 	    while (VIM_ISWHITE(*com_leader))
 		++com_leader;
@@ -308,8 +307,8 @@ get_last_leader_offset(char_u *line, char_u **flags)
 		if (len2 == 0)
 		    continue;
 
-		/* Now we have to verify whether string ends with a substring
-		 * beginning the com_leader. */
+		// Now we have to verify whether string ends with a substring
+		// beginning the com_leader.
 		for (off = (len2 > i ? i : len2); off > 0 && off + len1 > len2;)
 		{
 		    --off;
@@ -338,11 +337,11 @@ plines(linenr_T lnum)
 plines_win(
     win_T	*wp,
     linenr_T	lnum,
-    int		winheight)	/* when TRUE limit to window height */
+    int		winheight)	// when TRUE limit to window height
 {
 #if defined(FEAT_DIFF) || defined(PROTO)
-    /* Check for filler lines above this buffer line.  When folded the result
-     * is one line anyway. */
+    // Check for filler lines above this buffer line.  When folded the result
+    // is one line anyway.
     return plines_win_nofill(wp, lnum, winheight) + diff_check_fill(wp, lnum);
 }
 
@@ -356,7 +355,7 @@ plines_nofill(linenr_T lnum)
 plines_win_nofill(
     win_T	*wp,
     linenr_T	lnum,
-    int		winheight)	/* when TRUE limit to window height */
+    int		winheight)	// when TRUE limit to window height
 {
 #endif
     int		lines;
@@ -368,8 +367,8 @@ plines_win_nofill(
 	return 1;
 
 #ifdef FEAT_FOLDING
-    /* A folded lines is handled just like an empty line. */
-    /* NOTE: Caller must handle lines that are MAYBE folded. */
+    // A folded lines is handled just like an empty line.
+    // NOTE: Caller must handle lines that are MAYBE folded.
     if (lineFolded(wp, lnum) == TRUE)
 	return 1;
 #endif
@@ -392,7 +391,7 @@ plines_win_nofold(win_T *wp, linenr_T lnum)
     int		width;
 
     s = ml_get_buf(wp->w_buffer, lnum, FALSE);
-    if (*s == NUL)		/* empty line */
+    if (*s == NUL)		// empty line
 	return 1;
     col = win_linetabsize(wp, s, (colnr_T)MAXCOL);
 
@@ -430,8 +429,8 @@ plines_win_col(win_T *wp, linenr_T lnum, long column)
     char_u	*line;
 
 #ifdef FEAT_DIFF
-    /* Check for filler lines above this buffer line.  When folded the result
-     * is one line anyway. */
+    // Check for filler lines above this buffer line.  When folded the result
+    // is one line anyway.
     lines = diff_check_fill(wp, lnum);
 #endif
 
@@ -483,12 +482,12 @@ plines_m_win(win_T *wp, linenr_T first, linenr_T last)
 #ifdef FEAT_FOLDING
 	int	x;
 
-	/* Check if there are any really folded lines, but also included lines
-	 * that are maybe folded. */
+	// Check if there are any really folded lines, but also included lines
+	// that are maybe folded.
 	x = foldedCount(wp, first, NULL);
 	if (x > 0)
 	{
-	    ++count;	    /* count 1 for "+-- folded" line */
+	    ++count;	    // count 1 for "+-- folded" line
 	    first += x;
 	}
 	else
@@ -511,7 +510,7 @@ gchar_pos(pos_T *pos)
 {
     char_u	*ptr;
 
-    /* When searching columns is sometimes put at the end of a line. */
+    // When searching columns is sometimes put at the end of a line.
     if (pos->col == MAXCOL)
 	return NUL;
     ptr = ml_get_pos(pos);
@@ -585,7 +584,7 @@ ask_yesno(char_u *str, int direct)
     int	    r = ' ';
     int	    save_State = State;
 
-    if (exiting)		/* put terminal in raw mode for this question */
+    if (exiting)		// put terminal in raw mode for this question
 	settmode(TMODE_RAW);
     ++no_wait_return;
 #ifdef USE_ON_FLY_SCROLL
@@ -598,7 +597,7 @@ ask_yesno(char_u *str, int direct)
 
     while (r != 'y' && r != 'n')
     {
-	/* same highlighting as for wait_return */
+	// same highlighting as for wait_return
 	smsg_attr(HL_ATTR(HLF_R), "%s (y/n)?", str);
 	if (direct)
 	    r = get_keystroke();
@@ -606,7 +605,7 @@ ask_yesno(char_u *str, int direct)
 	    r = plain_vgetc();
 	if (r == Ctrl_C || r == ESC)
 	    r = 'n';
-	msg_putchar(r);	    /* show what you typed */
+	msg_putchar(r);	    // show what you typed
 	out_flush();
     }
     --no_wait_return;
@@ -632,7 +631,7 @@ f_mode(typval_T *argvars, typval_T *rettv)
 
     if (time_for_testing == 93784)
     {
-	/* Testing the two-character code. */
+	// Testing the two-character code.
 	buf[0] = 'x';
 	buf[1] = '!';
     }
@@ -702,8 +701,8 @@ f_mode(typval_T *argvars, typval_T *rettv)
 	}
     }
 
-    /* Clear out the minor mode when the argument is not a non-zero number or
-     * non-empty string.  */
+    // Clear out the minor mode when the argument is not a non-zero number or
+    // non-empty string.
     if (!non_zero_arg(&argvars[0]))
 	buf[1] = NUL;
 
@@ -777,15 +776,15 @@ get_keystroke(void)
     int		save_mapped_ctrl_c = mapped_ctrl_c;
     int		waited = 0;
 
-    mapped_ctrl_c = FALSE;	/* mappings are not used here */
+    mapped_ctrl_c = FALSE;	// mappings are not used here
     for (;;)
     {
 	cursor_on();
 	out_flush();
 
-	/* Leave some room for check_termcode() to insert a key code into (max
-	 * 5 chars plus NUL).  And fix_input_buffer() can triple the number of
-	 * bytes. */
+	// Leave some room for check_termcode() to insert a key code into (max
+	// 5 chars plus NUL).  And fix_input_buffer() can triple the number of
+	// bytes.
 	maxlen = (buflen - 6 - len) / 3;
 	if (buf == NULL)
 	    buf = alloc(buflen);
@@ -793,8 +792,8 @@ get_keystroke(void)
 	{
 	    char_u  *t_buf = buf;
 
-	    /* Need some more space. This might happen when receiving a long
-	     * escape sequence. */
+	    // Need some more space. This might happen when receiving a long
+	    // escape sequence.
 	    buflen += 100;
 	    buf = vim_realloc(buf, buflen);
 	    if (buf == NULL)
@@ -804,43 +803,43 @@ get_keystroke(void)
 	if (buf == NULL)
 	{
 	    do_outofmem_msg((long_u)buflen);
-	    return ESC;  /* panic! */
+	    return ESC;  // panic!
 	}
 
-	/* First time: blocking wait.  Second time: wait up to 100ms for a
-	 * terminal code to complete. */
+	// First time: blocking wait.  Second time: wait up to 100ms for a
+	// terminal code to complete.
 	n = ui_inchar(buf + len, maxlen, len == 0 ? -1L : 100L, 0);
 	if (n > 0)
 	{
-	    /* Replace zero and CSI by a special key code. */
+	    // Replace zero and CSI by a special key code.
 	    n = fix_input_buffer(buf + len, n);
 	    len += n;
 	    waited = 0;
 	}
 	else if (len > 0)
-	    ++waited;	    /* keep track of the waiting time */
+	    ++waited;	    // keep track of the waiting time
 
-	/* Incomplete termcode and not timed out yet: get more characters */
+	// Incomplete termcode and not timed out yet: get more characters
 	if ((n = check_termcode(1, buf, buflen, &len)) < 0
 	       && (!p_ttimeout || waited * 100L < (p_ttm < 0 ? p_tm : p_ttm)))
 	    continue;
 
-	if (n == KEYLEN_REMOVED)  /* key code removed */
+	if (n == KEYLEN_REMOVED)  // key code removed
 	{
 	    if (must_redraw != 0 && !need_wait_return && (State & CMDLINE) == 0)
 	    {
-		/* Redrawing was postponed, do it now. */
+		// Redrawing was postponed, do it now.
 		update_screen(0);
-		setcursor(); /* put cursor back where it belongs */
+		setcursor(); // put cursor back where it belongs
 	    }
 	    continue;
 	}
-	if (n > 0)		/* found a termcode: adjust length */
+	if (n > 0)		// found a termcode: adjust length
 	    len = n;
-	if (len == 0)		/* nothing typed yet */
+	if (len == 0)		// nothing typed yet
 	    continue;
 
-	/* Handle modifier and/or special key code. */
+	// Handle modifier and/or special key code.
 	n = buf[0];
 	if (n == K_SPECIAL)
 	{
@@ -866,7 +865,7 @@ get_keystroke(void)
 	if (has_mbyte)
 	{
 	    if (MB_BYTE2LEN(n) > len)
-		continue;	/* more bytes to get */
+		continue;	// more bytes to get
 	    buf[len >= buflen ? buflen - 1 : len] = NUL;
 	    n = (*mb_ptr2char)(buf);
 	}
@@ -888,7 +887,7 @@ get_keystroke(void)
  */
     int
 get_number(
-    int	    colon,			/* allow colon to abort */
+    int	    colon,			// allow colon to abort
     int	    *mouse_used)
 {
     int	n = 0;
@@ -898,16 +897,16 @@ get_number(
     if (mouse_used != NULL)
 	*mouse_used = FALSE;
 
-    /* When not printing messages, the user won't know what to type, return a
-     * zero (as if CR was hit). */
+    // When not printing messages, the user won't know what to type, return a
+    // zero (as if CR was hit).
     if (msg_silent != 0)
 	return 0;
 
 #ifdef USE_ON_FLY_SCROLL
-    dont_scroll = TRUE;		/* disallow scrolling here */
+    dont_scroll = TRUE;		// disallow scrolling here
 #endif
     ++no_mapping;
-    ++allow_keys;		/* no mapping here, but recognize keys */
+    ++allow_keys;		// no mapping here, but recognize keys
     for (;;)
     {
 	windgoto(msg_row, msg_col);
@@ -938,7 +937,7 @@ get_number(
 	    stuffcharReadbuff(':');
 	    if (!exmode_active)
 		cmdline_row = msg_row;
-	    skip_redraw = TRUE;	    /* skip redraw once */
+	    skip_redraw = TRUE;	    // skip redraw once
 	    do_redraw = FALSE;
 	    break;
 	}
@@ -962,7 +961,7 @@ prompt_for_number(int *mouse_used)
     int		save_cmdline_row;
     int		save_State;
 
-    /* When using ":silent" assume that <CR> was entered. */
+    // When using ":silent" assume that <CR> was entered.
     if (mouse_used != NULL)
 	msg_puts(_("Type number and <Enter> or click with mouse (empty cancels): "));
     else
@@ -1002,13 +1001,13 @@ msgmore(long n)
 {
     long pn;
 
-    if (global_busy	    /* no messages now, wait until global is finished */
-	    || !messaging())  /* 'lazyredraw' set, don't do messages now */
+    if (global_busy	    // no messages now, wait until global is finished
+	    || !messaging())  // 'lazyredraw' set, don't do messages now
 	return;
 
-    /* We don't want to overwrite another important message, but do overwrite
-     * a previous "more lines" or "fewer lines" message, so that "5dd" and
-     * then "put" reports the last action. */
+    // We don't want to overwrite another important message, but do overwrite
+    // a previous "more lines" or "fewer lines" message, so that "5dd" and
+    // then "put" reports the last action.
     if (keep_msg != NULL && !keep_msg_more)
 	return;
 
@@ -1054,7 +1053,7 @@ beep_flush(void)
  */
     void
 vim_beep(
-    unsigned val) /* one of the BO_ values, e.g., BO_OPER */
+    unsigned val) // one of the BO_ values, e.g., BO_OPER
 {
 #ifdef FEAT_EVAL
     called_vim_beep = TRUE;
@@ -1068,8 +1067,8 @@ vim_beep(
 	    static int		did_init = FALSE;
 	    static elapsed_T	start_tv;
 
-	    /* Only beep once per half a second, otherwise a sequence of beeps
-	     * would freeze Vim. */
+	    // Only beep once per half a second, otherwise a sequence of beeps
+	    // would freeze Vim.
 	    if (!did_init || ELAPSED_FUNC(start_tv) > 500)
 	    {
 		did_init = TRUE;
@@ -1077,15 +1076,15 @@ vim_beep(
 #endif
 		if (p_vb
 #ifdef FEAT_GUI
-			/* While the GUI is starting up the termcap is set for
-			 * the GUI but the output still goes to a terminal. */
+			// While the GUI is starting up the termcap is set for
+			// the GUI but the output still goes to a terminal.
 			&& !(gui.in_use && gui.starting)
 #endif
 			)
 		{
 		    out_str_cf(T_VB);
 #ifdef FEAT_VTP
-		    /* No restore color information, refresh the screen. */
+		    // No restore color information, refresh the screen.
 		    if (has_vtp_working() != 0
 # ifdef FEAT_TERMGUICOLORS
 			    && (p_tgc || (!p_tgc && t_colors >= 256))
@@ -1105,9 +1104,9 @@ vim_beep(
 #endif
 	}
 
-	/* When 'debug' contains "beep" produce a message.  If we are sourcing
-	 * a script or executing a function give the user a hint where the beep
-	 * comes from. */
+	// When 'debug' contains "beep" produce a message.  If we are sourcing
+	// a script or executing a function give the user a hint where the beep
+	// comes from.
 	if (vim_strchr(p_debug, 'e') != NULL)
 	{
 	    msg_source(HL_ATTR(HLF_W));
@@ -1132,7 +1131,7 @@ init_homedir(void)
 {
     char_u  *var;
 
-    /* In case we are called a second time (when 'encoding' changes). */
+    // In case we are called a second time (when 'encoding' changes).
     VIM_CLEAR(homedir);
 
 #ifdef VMS
@@ -1192,7 +1191,7 @@ init_homedir(void)
 	}
     }
 
-    if (var != NULL && *var == NUL)	/* empty is same as not set */
+    if (var != NULL && *var == NUL)	// empty is same as not set
 	var = NULL;
 
     if (enc_utf8 && var != NULL)
@@ -1200,8 +1199,8 @@ init_homedir(void)
 	int	len;
 	char_u  *pp = NULL;
 
-	/* Convert from active codepage to UTF-8.  Other conversions are
-	 * not done, because they would fail for non-ASCII characters. */
+	// Convert from active codepage to UTF-8.  Other conversions are
+	// not done, because they would fail for non-ASCII characters.
 	acp_to_enc(var, (int)STRLEN(var), &pp, &len);
 	if (pp != NULL)
 	{
@@ -1286,40 +1285,40 @@ expand_env_save_opt(char_u *src, int one)
  */
     void
 expand_env(
-    char_u	*src,		/* input string e.g. "$HOME/vim.hlp" */
-    char_u	*dst,		/* where to put the result */
-    int		dstlen)		/* maximum length of the result */
+    char_u	*src,		// input string e.g. "$HOME/vim.hlp"
+    char_u	*dst,		// where to put the result
+    int		dstlen)		// maximum length of the result
 {
     expand_env_esc(src, dst, dstlen, FALSE, FALSE, NULL);
 }
 
     void
 expand_env_esc(
-    char_u	*srcp,		/* input string e.g. "$HOME/vim.hlp" */
-    char_u	*dst,		/* where to put the result */
-    int		dstlen,		/* maximum length of the result */
-    int		esc,		/* escape spaces in expanded variables */
-    int		one,		/* "srcp" is one file name */
-    char_u	*startstr)	/* start again after this (can be NULL) */
+    char_u	*srcp,		// input string e.g. "$HOME/vim.hlp"
+    char_u	*dst,		// where to put the result
+    int		dstlen,		// maximum length of the result
+    int		esc,		// escape spaces in expanded variables
+    int		one,		// "srcp" is one file name
+    char_u	*startstr)	// start again after this (can be NULL)
 {
     char_u	*src;
     char_u	*tail;
     int		c;
     char_u	*var;
     int		copy_char;
-    int		mustfree;	/* var was allocated, need to free it later */
-    int		at_start = TRUE; /* at start of a name */
+    int		mustfree;	// var was allocated, need to free it later
+    int		at_start = TRUE; // at start of a name
     int		startstr_len = 0;
 
     if (startstr != NULL)
 	startstr_len = (int)STRLEN(startstr);
 
     src = skipwhite(srcp);
-    --dstlen;		    /* leave one char space for "\," */
+    --dstlen;		    // leave one char space for "\,"
     while (*src && dstlen > 0)
     {
 #ifdef FEAT_EVAL
-	/* Skip over `=expr`. */
+	// Skip over `=expr`.
 	if (src[0] == '`' && src[1] == '=')
 	{
 	    size_t len;
@@ -1355,17 +1354,17 @@ expand_env_esc(
 	     * The variable name is copied into dst temporarily, because it may
 	     * be a string in read-only memory and a NUL needs to be appended.
 	     */
-	    if (*src != '~')				/* environment var */
+	    if (*src != '~')				// environment var
 	    {
 		tail = src + 1;
 		var = dst;
 		c = dstlen - 1;
 
 #ifdef UNIX
-		/* Unix has ${var-name} type environment vars */
+		// Unix has ${var-name} type environment vars
 		if (*tail == '{' && !vim_isIDc('{'))
 		{
-		    tail++;	/* ignore '{' */
+		    tail++;	// ignore '{'
 		    while (c-- > 0 && *tail && *tail != '}')
 			*var++ = *tail++;
 		}
@@ -1402,7 +1401,7 @@ expand_env_esc(
 		}
 #endif
 	    }
-							/* home directory */
+							// home directory
 	    else if (  src[1] == NUL
 		    || vim_ispathsep(src[1])
 		    || vim_strchr((char_u *)" ,\t\n", src[1]) != NULL)
@@ -1410,7 +1409,7 @@ expand_env_esc(
 		var = homedir;
 		tail = src + 1;
 	    }
-	    else					/* user directory */
+	    else					// user directory
 	    {
 #if defined(UNIX) || (defined(VMS) && defined(USER_HOME))
 		/*
@@ -1434,8 +1433,8 @@ expand_env_esc(
 		 */
 #  if defined(HAVE_GETPWNAM) && defined(HAVE_PWD_H)
 		{
-		    /* Note: memory allocated by getpwnam() is never freed.
-		     * Calling endpwent() apparently doesn't help. */
+		    // Note: memory allocated by getpwnam() is never freed.
+		    // Calling endpwent() apparently doesn't help.
 		    struct passwd *pw = (*dst == NUL)
 					? NULL : getpwnam((char *)dst + 1);
 
@@ -1453,7 +1452,7 @@ expand_env_esc(
 		    mustfree = TRUE;
 		}
 
-# else	/* !UNIX, thus VMS */
+# else	// !UNIX, thus VMS
 		/*
 		 * USER_HOME is a comma-separated list of
 		 * directories to search for the user account in.
@@ -1483,17 +1482,17 @@ expand_env_esc(
 			}
 		    }
 		}
-# endif /* UNIX */
+# endif // UNIX
 #else
-		/* cannot expand user's home directory, so don't try */
+		// cannot expand user's home directory, so don't try
 		var = NULL;
-		tail = (char_u *)"";	/* for gcc */
-#endif /* UNIX || VMS */
+		tail = (char_u *)"";	// for gcc
+#endif // UNIX || VMS
 	    }
 
 #ifdef BACKSLASH_IN_FILENAME
-	    /* If 'shellslash' is set change backslashes to forward slashes.
-	     * Can't use slash_adjust(), p_ssl may be set temporarily. */
+	    // If 'shellslash' is set change backslashes to forward slashes.
+	    // Can't use slash_adjust(), p_ssl may be set temporarily.
 	    if (p_ssl && var != NULL && vim_strchr(var, '\\') != NULL)
 	    {
 		char_u	*p = vim_strsave(var);
@@ -1509,8 +1508,8 @@ expand_env_esc(
 	    }
 #endif
 
-	    /* If "var" contains white space, escape it with a backslash.
-	     * Required for ":e ~/tt" when $HOME includes a space. */
+	    // If "var" contains white space, escape it with a backslash.
+	    // Required for ":e ~/tt" when $HOME includes a space.
 	    if (esc && var != NULL && vim_strpbrk(var, (char_u *)" \t") != NULL)
 	    {
 		char_u	*p = vim_strsave_escaped(var, (char_u *)" \t");
@@ -1530,8 +1529,8 @@ expand_env_esc(
 		STRCPY(dst, var);
 		dstlen -= (int)STRLEN(var);
 		c = (int)STRLEN(var);
-		/* if var[] ends in a path separator and tail[] starts
-		 * with it, skip a character */
+		// if var[] ends in a path separator and tail[] starts
+		// with it, skip a character
 		if (*var != NUL && after_pathsep(dst, dst + c)
 #if defined(BACKSLASH_IN_FILENAME) || defined(AMIGA)
 			&& dst[-1] != ':'
@@ -1546,7 +1545,7 @@ expand_env_esc(
 		vim_free(var);
 	}
 
-	if (copy_char)	    /* copy at least one char */
+	if (copy_char)	    // copy at least one char
 	{
 	    /*
 	     * Recognize the start of a new name, for '~'.
@@ -1729,16 +1728,16 @@ vim_getenv(char_u *name, int *mustfree)
 #endif
 	if (p != NULL)
 	{
-	    /* remove the file name */
+	    // remove the file name
 	    pend = gettail(p);
 
-	    /* remove "doc/" from 'helpfile', if present */
+	    // remove "doc/" from 'helpfile', if present
 	    if (p == p_hf)
 		pend = remove_tail(p, pend, (char_u *)"doc");
 
 #ifdef USE_EXE_NAME
 # ifdef MACOS_X
-	    /* remove "MacOS" from exe_name and add "Resources/vim" */
+	    // remove "MacOS" from exe_name and add "Resources/vim"
 	    if (p == exe_name)
 	    {
 		char_u	*pend1;
@@ -1758,26 +1757,26 @@ vim_getenv(char_u *name, int *mustfree)
 		}
 	    }
 # endif
-	    /* remove "src/" from exe_name, if present */
+	    // remove "src/" from exe_name, if present
 	    if (p == exe_name)
 		pend = remove_tail(p, pend, (char_u *)"src");
 #endif
 
-	    /* for $VIM, remove "runtime/" or "vim54/", if present */
+	    // for $VIM, remove "runtime/" or "vim54/", if present
 	    if (!vimruntime)
 	    {
 		pend = remove_tail(p, pend, (char_u *)RUNTIME_DIRNAME);
 		pend = remove_tail(p, pend, (char_u *)VIM_VERSION_NODOT);
 	    }
 
-	    /* remove trailing path separator */
+	    // remove trailing path separator
 	    if (pend > p && after_pathsep(p, pend))
 		--pend;
 
 #ifdef MACOS_X
 	    if (p == exe_name || p == p_hf)
 #endif
-		/* check that the result is a directory name */
+		// check that the result is a directory name
 		p = vim_strnsave(p, (int)(pend - p));
 
 	    if (p != NULL && !mch_isdir(p))
@@ -1785,7 +1784,7 @@ vim_getenv(char_u *name, int *mustfree)
 	    else
 	    {
 #ifdef USE_EXE_NAME
-		/* may add "/vim54" or "/runtime" if it exists */
+		// may add "/vim54" or "/runtime" if it exists
 		if (vimruntime && (pend = vim_version_dir(p)) != NULL)
 		{
 		    vim_free(p);
@@ -1798,11 +1797,11 @@ vim_getenv(char_u *name, int *mustfree)
     }
 
 #ifdef HAVE_PATHDEF
-    /* When there is a pathdef.c file we can use default_vim_dir and
-     * default_vimruntime_dir */
+    // When there is a pathdef.c file we can use default_vim_dir and
+    // default_vimruntime_dir
     if (p == NULL)
     {
-	/* Only use default_vimruntime_dir when it is not empty */
+	// Only use default_vimruntime_dir when it is not empty
 	if (vimruntime && *default_vimruntime_dir != NUL)
 	{
 	    p = default_vimruntime_dir;
@@ -1909,7 +1908,7 @@ get_env_name(
     return NULL;
 # else
 # ifndef __WIN32__
-    /* Borland C++ 5.2 has this in a header file. */
+    // Borland C++ 5.2 has this in a header file.
     extern char		**environ;
 # endif
 # define ENVNAMELEN 100
@@ -2053,9 +2052,9 @@ match_user(char_u *name)
     for (i = 0; i < ga_users.ga_len; i++)
     {
 	if (STRCMP(((char_u **)ga_users.ga_data)[i], name) == 0)
-	    return 2; /* full match */
+	    return 2; // full match
 	if (STRNCMP(((char_u **)ga_users.ga_data)[i], name, n) == 0)
-	    result = 1; /* partial match */
+	    result = 1; // partial match
     }
     return result;
 }
@@ -2083,9 +2082,9 @@ concat_str(char_u *str1, char_u *str2)
 prepare_to_exit(void)
 {
 #if defined(SIGHUP) && defined(SIG_IGN)
-    /* Ignore SIGHUP, because a dropped connection causes a read error, which
-     * makes Vim exit and then handling SIGHUP causes various reentrance
-     * problems. */
+    // Ignore SIGHUP, because a dropped connection causes a read error, which
+    // makes Vim exit and then handling SIGHUP causes various reentrance
+    // problems.
     signal(SIGHUP, SIG_IGN);
 #endif
 
@@ -2093,7 +2092,7 @@ prepare_to_exit(void)
     if (gui.in_use)
     {
 	gui.dying = TRUE;
-	out_trash();	/* trash any pending output */
+	out_trash();	// trash any pending output
     }
     else
 #endif
@@ -2123,29 +2122,29 @@ preserve_exit(void)
 
     prepare_to_exit();
 
-    /* Setting this will prevent free() calls.  That avoids calling free()
-     * recursively when free() was invoked with a bad pointer. */
+    // Setting this will prevent free() calls.  That avoids calling free()
+    // recursively when free() was invoked with a bad pointer.
     really_exiting = TRUE;
 
     out_str(IObuff);
-    screen_start();		    /* don't know where cursor is now */
+    screen_start();		    // don't know where cursor is now
     out_flush();
 
-    ml_close_notmod();		    /* close all not-modified buffers */
+    ml_close_notmod();		    // close all not-modified buffers
 
     FOR_ALL_BUFFERS(buf)
     {
 	if (buf->b_ml.ml_mfp != NULL && buf->b_ml.ml_mfp->mf_fname != NULL)
 	{
 	    OUT_STR("Vim: preserving files...\n");
-	    screen_start();	    /* don't know where cursor is now */
+	    screen_start();	    // don't know where cursor is now
 	    out_flush();
-	    ml_sync_all(FALSE, FALSE);	/* preserve all swap files */
+	    ml_sync_all(FALSE, FALSE);	// preserve all swap files
 	    break;
 	}
     }
 
-    ml_close_all(FALSE);	    /* close all memfiles, without deleting */
+    ml_close_all(FALSE);	    // close all memfiles, without deleting
 
     OUT_STR("Vim: Finished.\n");
 
@@ -2208,8 +2207,8 @@ fast_breakcheck(void)
     char_u *
 get_cmd_output(
     char_u	*cmd,
-    char_u	*infile,	/* optional input file name */
-    int		flags,		/* can be SHELL_SILENT */
+    char_u	*infile,	// optional input file name
+    int		flags,		// can be SHELL_SILENT
     int		*ret_len)
 {
     char_u	*tempname;
@@ -2222,14 +2221,14 @@ get_cmd_output(
     if (check_restricted() || check_secure())
 	return NULL;
 
-    /* get a name for the temp file */
+    // get a name for the temp file
     if ((tempname = vim_tempname('o', FALSE)) == NULL)
     {
 	emsg(_(e_notmp));
 	return NULL;
     }
 
-    /* Add the redirection stuff */
+    // Add the redirection stuff
     command = make_filter_cmd(cmd, infile, tempname);
     if (command == NULL)
 	goto done;
@@ -2248,7 +2247,7 @@ get_cmd_output(
      * read the names from the file into memory
      */
 # ifdef VMS
-    /* created temporary file is not always readable as binary */
+    // created temporary file is not always readable as binary
     fd = mch_fopen((char *)tempname, "r");
 # else
     fd = mch_fopen((char *)tempname, READBIN);
@@ -2261,7 +2260,7 @@ get_cmd_output(
     }
 
     fseek(fd, 0L, SEEK_END);
-    len = ftell(fd);		    /* get size of temp file */
+    len = ftell(fd);		    // get size of temp file
     fseek(fd, 0L, SEEK_SET);
 
     buffer = alloc(len + 1);
@@ -2272,7 +2271,7 @@ get_cmd_output(
     if (buffer == NULL)
 	goto done;
 #ifdef VMS
-    len = i;	/* VMS doesn't give us what we asked for... */
+    len = i;	// VMS doesn't give us what we asked for...
 #endif
     if (i != len)
     {
@@ -2281,12 +2280,12 @@ get_cmd_output(
     }
     else if (ret_len == NULL)
     {
-	/* Change NUL into SOH, otherwise the string is truncated. */
+	// Change NUL into SOH, otherwise the string is truncated.
 	for (i = 0; i < len; ++i)
 	    if (buffer[i] == NUL)
 		buffer[i] = 1;
 
-	buffer[len] = NUL;	/* make sure the buffer is terminated */
+	buffer[len] = NUL;	// make sure the buffer is terminated
     }
     else
 	*ret_len = len;
@@ -2377,7 +2376,7 @@ get_cmd_output_as_rettv(
 	    if (p == NULL)
 	    {
 		fclose(fd);
-		goto errret;		/* type error; errmsg already given */
+		goto errret;		// type error; errmsg already given
 	    }
 	    len = STRLEN(p);
 	    if (len > 0 && fwrite(p, len, 1, fd) != 1)
@@ -2392,8 +2391,8 @@ get_cmd_output_as_rettv(
 	}
     }
 
-    /* Omit SHELL_COOKED when invoked with ":silent".  Avoids that the shell
-     * echoes typeahead, that messes up the display. */
+    // Omit SHELL_COOKED when invoked with ":silent".  Avoids that the shell
+    // echoes typeahead, that messes up the display.
     if (!msg_silent)
 	flags += SHELL_COOKED;
 
@@ -2448,7 +2447,7 @@ get_cmd_output_as_rettv(
     {
 	res = get_cmd_output(tv_get_string(&argvars[0]), infile, flags, NULL);
 #ifdef USE_CRNL
-	/* translate <CR><NL> into <NL> */
+	// translate <CR><NL> into <NL>
 	if (res != NULL)
 	{
 	    char_u	*s, *d;
@@ -2531,14 +2530,14 @@ get_isolated_shell_name(void)
     p = skiptowhite(p_sh);
     if (*p == NUL)
     {
-	/* No white space, use the tail. */
+	// No white space, use the tail.
 	p = vim_strsave(gettail(p_sh));
     }
     else
     {
 	char_u  *p1, *p2;
 
-	/* Find the last path separator before the space. */
+	// Find the last path separator before the space.
 	p1 = p_sh;
 	for (p2 = p_sh; p2 < p; MB_PTR_ADV(p2))
 	    if (vim_ispathsep(*p2))
@@ -2593,10 +2592,10 @@ add_time(char_u *buf, size_t buflen, time_t tt)
     {
 	curtime = vim_localtime(&tt, &tmval);
 	if (vim_time() - tt < (60L * 60L * 12L))
-	    /* within 12 hours */
+	    // within 12 hours
 	    (void)strftime((char *)buf, buflen, "%H:%M:%S", curtime);
 	else
-	    /* longer ago */
+	    // longer ago
 	    (void)strftime((char *)buf, buflen, "%Y/%m/%d %H:%M:%S", curtime);
     }
     else

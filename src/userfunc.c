@@ -800,16 +800,11 @@ call_user_func(
     current_funccal = fc;
     fc->func = fp;
     fc->rettv = rettv;
-    rettv->vval.v_number = 0;
-    fc->linenr = 0;
-    fc->returned = FALSE;
     fc->level = ex_nesting_level;
     // Check if this function has a breakpoint.
     fc->breakpoint = dbg_find_breakpoint(FALSE, fp->uf_name, (linenr_T)0);
     fc->dbg_tick = debug_tick;
     // Set up fields for closure.
-    fc->fc_refcount = 0;
-    fc->fc_copyID = 0;
     ga_init2(&fc->fc_funcs, sizeof(ufunc_T *), 1);
     func_ptr_ref(fp);
 
