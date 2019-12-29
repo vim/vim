@@ -349,8 +349,6 @@ spell_load_file(
     int		i;
     int		n;
     int		len;
-    char_u	*save_sourcing_name = sourcing_name;
-    linenr_T	save_sourcing_lnum = sourcing_lnum;
     slang_T	*lp = NULL;
     int		c = 0;
     int		res;
@@ -393,8 +391,7 @@ spell_load_file(
 	lp = old_lp;
 
     // Set sourcing_name, so that error messages mention the file name.
-    sourcing_name = fname;
-    sourcing_lnum = 0;
+    estack_push(ETYPE_SPELL, fname, 0);
 
     /*
      * <HEADER>: <fileID>
@@ -581,8 +578,7 @@ endFAIL:
 endOK:
     if (fd != NULL)
 	fclose(fd);
-    sourcing_name = save_sourcing_name;
-    sourcing_lnum = save_sourcing_lnum;
+    estack_pop();
 
     return lp;
 }

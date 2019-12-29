@@ -1496,6 +1496,8 @@ typedef struct
 				// used for s: variables
     int		uf_refcount;	// reference count, see func_name_refcount()
     funccall_T	*uf_scoped;	// l: local variables for closure
+    char_u	*uf_name_exp;	// if "uf_name[]" starts with SNR the name with
+				// "<SNR>" as a string, otherwise NULL
     char_u	uf_name[1];	// name of function (actually longer); can
 				// start with <SNR>123_ (<SNR> is K_SPECIAL
 				// KS_EXTRA KE_SNR)
@@ -1664,6 +1666,38 @@ struct partial_S
     typval_T	*pt_argv;	// arguments in allocated array
     dict_T	*pt_dict;	// dict for "self"
 };
+
+typedef struct AutoPatCmd_S AutoPatCmd;
+
+/*
+ * Entry in the execution stack "exestack".
+ */
+typedef enum {
+    ETYPE_TOP,		    // toplevel
+    ETYPE_SCRIPT,           // sourcing script, use es_info.sctx
+    ETYPE_UFUNC,            // user function, use es_info.ufunc
+    ETYPE_AUCMD,            // autocomand, use es_info.aucmd
+    ETYPE_MODELINE,         // modeline, use es_info.sctx
+    ETYPE_EXCEPT,           // exception, use es_info.exception
+    ETYPE_ARGS,             // command line argument
+    ETYPE_ENV,              // environment variable
+    ETYPE_INTERNAL,         // internal operation
+    ETYPE_SPELL,            // loading spell file
+} etype_T;
+
+typedef struct {
+    long      es_lnum;      // replaces "sourcing_lnum"
+    char_u    *es_name;     // replaces "sourcing_name"
+    etype_T   es_type;
+    union {
+	sctx_T  *sctx;      // script and modeline info
+#if defined(FEAT_EVAL)
+	ufunc_T *ufunc;     // function info
+#endif
+	AutoPatCmd *aucmd;  // autocommand info
+	except_T   *except; // exception info
+    } es_info;
+} estack_T;
 
 // Information returned by get_tty_info().
 typedef struct {

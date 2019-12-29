@@ -1,4 +1,9 @@
 /* scriptfile.c */
+void estack_init(void);
+estack_T *estack_push(etype_T type, char_u *name, long lnum);
+void estack_push_ufunc(etype_T type, ufunc_T *ufunc, long lnum);
+void estack_pop(void);
+char_u *estack_sfile(void);
 void ex_runtime(exarg_T *eap);
 int do_in_path(char_u *path, char_u *name, int flags, void (*callback)(char_u *fname, void *ck), void *cookie);
 int do_in_runtimepath(char_u *name, int flags, void (*callback)(char_u *fname, void *ck), void *cookie);

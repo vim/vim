@@ -434,15 +434,15 @@ reset_last_sourcing(void)
 }
 
 /*
- * Return TRUE if "sourcing_name" differs from "last_sourcing_name".
+ * Return TRUE if "SOURCING_NAME" differs from "last_sourcing_name".
  */
     static int
 other_sourcing_name(void)
 {
-    if (sourcing_name != NULL)
+    if (SOURCING_NAME != NULL)
     {
 	if (last_sourcing_name != NULL)
-	    return STRCMP(sourcing_name, last_sourcing_name) != 0;
+	    return STRCMP(SOURCING_NAME, last_sourcing_name) != 0;
 	return TRUE;
     }
     return FALSE;
@@ -458,12 +458,19 @@ get_emsg_source(void)
 {
     char_u	*Buf, *p;
 
-    if (sourcing_name != NULL && other_sourcing_name())
+    if (SOURCING_NAME != NULL && other_sourcing_name())
     {
+	char_u	    *sname = estack_sfile();
+	char_u	    *tofree = sname;
+
+	if (sname == NULL)
+	    sname = SOURCING_NAME;
+
 	p = (char_u *)_("Error detected while processing %s:");
-	Buf = alloc(STRLEN(sourcing_name) + STRLEN(p));
+	Buf = alloc(STRLEN(sname) + STRLEN(p));
 	if (Buf != NULL)
-	    sprintf((char *)Buf, (char *)p, sourcing_name);
+	    sprintf((char *)Buf, (char *)p, sname);
+	vim_free(tofree);
 	return Buf;
     }
     return NULL;
@@ -481,14 +488,14 @@ get_emsg_lnum(void)
 
     // lnum is 0 when executing a command from the command line
     // argument, we don't want a line number then
-    if (sourcing_name != NULL
-	    && (other_sourcing_name() || sourcing_lnum != last_sourcing_lnum)
-	    && sourcing_lnum != 0)
+    if (SOURCING_NAME != NULL
+	    && (other_sourcing_name() || SOURCING_LNUM != last_sourcing_lnum)
+	    && SOURCING_LNUM != 0)
     {
 	p = (char_u *)_("line %4ld:");
 	Buf = alloc(STRLEN(p) + 20);
 	if (Buf != NULL)
-	    sprintf((char *)Buf, (char *)p, (long)sourcing_lnum);
+	    sprintf((char *)Buf, (char *)p, (long)SOURCING_LNUM);
 	return Buf;
     }
     return NULL;
@@ -516,17 +523,17 @@ msg_source(int attr)
     {
 	msg_attr((char *)p, HL_ATTR(HLF_N));
 	vim_free(p);
-	last_sourcing_lnum = sourcing_lnum;  // only once for each line
+	last_sourcing_lnum = SOURCING_LNUM;  // only once for each line
     }
 
     // remember the last sourcing name printed, also when it's empty
-    if (sourcing_name == NULL || other_sourcing_name())
+    if (SOURCING_NAME == NULL || other_sourcing_name())
     {
 	vim_free(last_sourcing_name);
-	if (sourcing_name == NULL)
+	if (SOURCING_NAME == NULL)
 	    last_sourcing_name = NULL;
 	else
-	    last_sourcing_name = vim_strsave(sourcing_name);
+	    last_sourcing_name = vim_strsave(SOURCING_NAME);
     }
     --no_wait_return;
 }
@@ -2312,7 +2319,7 @@ inc_msg_scrolled(void)
 #ifdef FEAT_EVAL
     if (*get_vim_var_str(VV_SCROLLSTART) == NUL)
     {
-	char_u	    *p = sourcing_name;
+	char_u	    *p = SOURCING_NAME;
 	char_u	    *tofree = NULL;
 	int	    len;
 
@@ -2327,7 +2334,7 @@ inc_msg_scrolled(void)
 	    if (tofree != NULL)
 	    {
 		vim_snprintf((char *)tofree, len, _("%s line %ld"),
-						      p, (long)sourcing_lnum);
+						      p, (long)SOURCING_LNUM);
 		p = tofree;
 	    }
 	}

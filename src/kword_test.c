@@ -76,6 +76,7 @@ test_isword_funcs_utf8(void)
     int
 main(void)
 {
+    estack_init();
     test_isword_funcs_utf8();
     return 0;
 }

@@ -748,7 +748,7 @@ do_highlight(
 	    if (to_id > 0 && !forceit && !init
 				   && hl_has_settings(from_id - 1, dodefault))
 	    {
-		if (sourcing_name == NULL && !dodefault)
+		if (SOURCING_NAME == NULL && !dodefault)
 		    emsg(_("E414: group has settings, highlight link ignored"));
 	    }
 	    else if (HL_TABLE()[from_id - 1].sg_link != to_id
@@ -763,7 +763,7 @@ do_highlight(
 		HL_TABLE()[from_id - 1].sg_link = to_id;
 #ifdef FEAT_EVAL
 		HL_TABLE()[from_id - 1].sg_script_ctx = current_sctx;
-		HL_TABLE()[from_id - 1].sg_script_ctx.sc_lnum += sourcing_lnum;
+		HL_TABLE()[from_id - 1].sg_script_ctx.sc_lnum += SOURCING_LNUM;
 #endif
 		HL_TABLE()[from_id - 1].sg_cleared = FALSE;
 		redraw_all_later(SOME_VALID);
@@ -1518,7 +1518,7 @@ do_highlight(
 	    set_hl_attr(idx);
 #ifdef FEAT_EVAL
 	HL_TABLE()[idx].sg_script_ctx = current_sctx;
-	HL_TABLE()[idx].sg_script_ctx.sc_lnum += sourcing_lnum;
+	HL_TABLE()[idx].sg_script_ctx.sc_lnum += SOURCING_LNUM;
 #endif
     }
 

@@ -14,7 +14,7 @@ func RunDbgCmd(buf, cmd, ...)
     " Verify the expected output
     let lnum = 20 - len(a:1)
     for l in a:1
-      call WaitForAssert({-> assert_equal(l, term_getline(a:buf, lnum))})
+      call WaitForAssert({-> assert_equal(l, term_getline(a:buf, lnum))}, 200)
       let lnum += 1
     endfor
   endif

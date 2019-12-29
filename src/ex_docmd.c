@@ -703,7 +703,7 @@ do_cmdline(
     }
     else if (getline_equal(fgetline, cookie, getsourceline))
     {
-	fname = sourcing_name;
+	fname = SOURCING_NAME;
 	breakpoint = source_breakpoint(real_cookie);
 	dbg_tick = source_dbg_tick(real_cookie);
     }
@@ -819,22 +819,22 @@ do_cmdline(
 	    {
 		*breakpoint = dbg_find_breakpoint(
 				getline_equal(fgetline, cookie, getsourceline),
-							fname, sourcing_lnum);
+							fname, SOURCING_LNUM);
 		*dbg_tick = debug_tick;
 	    }
 
 	    next_cmdline = ((wcmd_T *)(lines_ga.ga_data))[current_line].line;
-	    sourcing_lnum = ((wcmd_T *)(lines_ga.ga_data))[current_line].lnum;
+	    SOURCING_LNUM = ((wcmd_T *)(lines_ga.ga_data))[current_line].lnum;
 
 	    // Did we encounter a breakpoint?
 	    if (breakpoint != NULL && *breakpoint != 0
-					      && *breakpoint <= sourcing_lnum)
+					      && *breakpoint <= SOURCING_LNUM)
 	    {
-		dbg_breakpoint(fname, sourcing_lnum);
+		dbg_breakpoint(fname, SOURCING_LNUM);
 		// Find next breakpoint.
 		*breakpoint = dbg_find_breakpoint(
 			       getline_equal(fgetline, cookie, getsourceline),
-							fname, sourcing_lnum);
+							fname, SOURCING_LNUM);
 		*dbg_tick = debug_tick;
 	    }
 # ifdef FEAT_PROFILE
@@ -963,8 +963,8 @@ do_cmdline(
 	    }
 	}
 
-	if (p_verbose >= 15 && sourcing_name != NULL)
-	    msg_verbose_cmd(sourcing_lnum, cmdline_copy);
+	if (p_verbose >= 15 && SOURCING_NAME != NULL)
+	    msg_verbose_cmd(SOURCING_LNUM, cmdline_copy);
 
 	/*
 	 * 2. Execute one '|' separated command.
@@ -1081,7 +1081,7 @@ do_cmdline(
 	// Check for the next breakpoint after a watchexpression
 	if (breakpoint != NULL && has_watchexpr())
 	{
-	    *breakpoint = dbg_find_breakpoint(FALSE, fname, sourcing_lnum);
+	    *breakpoint = dbg_find_breakpoint(FALSE, fname, SOURCING_LNUM);
 	    *dbg_tick = debug_tick;
 	}
 
@@ -1092,7 +1092,7 @@ do_cmdline(
 	{
 	    if (lines_ga.ga_len > 0)
 	    {
-		sourcing_lnum =
+		SOURCING_LNUM =
 		       ((wcmd_T *)lines_ga.ga_data)[lines_ga.ga_len - 1].lnum;
 		free_cmdlines(&lines_ga);
 	    }
@@ -1234,8 +1234,6 @@ do_cmdline(
 	if (did_throw)
 	{
 	    void	*p = NULL;
-	    char_u	*saved_sourcing_name;
-	    int		saved_sourcing_lnum;
 	    struct msglist	*messages = NULL, *next;
 
 	    /*
@@ -1260,10 +1258,8 @@ do_cmdline(
 		    break;
 	    }
 
-	    saved_sourcing_name = sourcing_name;
-	    saved_sourcing_lnum = sourcing_lnum;
-	    sourcing_name = current_exception->throw_name;
-	    sourcing_lnum = current_exception->throw_lnum;
+	    estack_push(ETYPE_EXCEPT, current_exception->throw_name,
+						current_exception->throw_lnum);
 	    current_exception->throw_name = NULL;
 
 	    discard_current_exception();	// uses IObuff if 'verbose'
@@ -1287,9 +1283,8 @@ do_cmdline(
 		emsg(p);
 		vim_free(p);
 	    }
-	    vim_free(sourcing_name);
-	    sourcing_name = saved_sourcing_name;
-	    sourcing_lnum = saved_sourcing_lnum;
+	    vim_free(SOURCING_NAME);
+	    estack_pop();
 	}
 
 	/*
@@ -1428,7 +1423,7 @@ get_loop_line(int c, void *cookie, int indent, int do_concat)
     KeyTyped = FALSE;
     ++cp->current_line;
     wp = (wcmd_T *)(cp->lines_gap->ga_data) + cp->current_line;
-    sourcing_lnum = wp->lnum;
+    SOURCING_LNUM = wp->lnum;
     return vim_strsave(wp->line);
 }
 
@@ -1441,7 +1436,7 @@ store_loop_line(garray_T *gap, char_u *line)
     if (ga_grow(gap, 1) == FAIL)
 	return FAIL;
     ((wcmd_T *)(gap->ga_data))[gap->ga_len].line = vim_strsave(line);
-    ((wcmd_T *)(gap->ga_data))[gap->ga_len].lnum = sourcing_lnum;
+    ((wcmd_T *)(gap->ga_data))[gap->ga_len].lnum = SOURCING_LNUM;
     ++gap->ga_len;
     return OK;
 }
@@ -8171,33 +8166,34 @@ eval_vars(
 		break;
 
 	case SPEC_SFILE:	// file name for ":so" command
-		result = sourcing_name;
+		result = estack_sfile();
 		if (result == NULL)
 		{
 		    *errormsg = _("E498: no :source file name to substitute for \"<sfile>\"");
 		    return NULL;
 		}
+		resultbuf = result;	    // remember allocated string
 		break;
 
 	case SPEC_SLNUM:	// line in file for ":so" command
-		if (sourcing_name == NULL || sourcing_lnum == 0)
+		if (SOURCING_NAME == NULL || SOURCING_LNUM == 0)
 		{
 		    *errormsg = _("E842: no line number to use for \"<slnum>\"");
 		    return NULL;
 		}
-		sprintf((char *)strbuf, "%ld", (long)sourcing_lnum);
+		sprintf((char *)strbuf, "%ld", SOURCING_LNUM);
 		result = strbuf;
 		break;
 
 #ifdef FEAT_EVAL
 	case SPEC_SFLNUM:	// line in script file
-		if (current_sctx.sc_lnum + sourcing_lnum == 0)
+		if (current_sctx.sc_lnum + SOURCING_LNUM == 0)
 		{
 		    *errormsg = _("E961: no line number to use for \"<sflnum>\"");
 		    return NULL;
 		}
 		sprintf((char *)strbuf, "%ld",
-				 (long)(current_sctx.sc_lnum + sourcing_lnum));
+				 (long)(current_sctx.sc_lnum + SOURCING_LNUM));
 		result = strbuf;
 		break;
 #endif
