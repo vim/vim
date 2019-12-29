@@ -801,6 +801,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_MESSAGES		46
 #define EXPAND_MAPCLEAR		47
 #define EXPAND_ARGLIST		48
+#define EXPAND_DIFF_BUFFERS	49
 
 // Values for exmode_active (0 is no exmode)
 #define EXMODE_NORMAL		1
@@ -829,6 +830,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define WILD_IGNORE_COMPLETESLASH   0x400
 #define WILD_NOERROR		    0x800  // sets EW_NOERROR
 #define WILD_BUFLASTUSED	    0x1000
+#define BUF_DIFF_FILTER		    0x2000
 
 // Flags for expand_wildcards()
 #define EW_DIR		0x01	// include directory names
