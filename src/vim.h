@@ -2551,15 +2551,15 @@ typedef enum {
 				// be freed.
 
 // errors for when calling a function
-#define ERROR_UNKNOWN	0
-#define ERROR_TOOMANY	1
-#define ERROR_TOOFEW	2
-#define ERROR_SCRIPT	3
-#define ERROR_DICT	4
-#define ERROR_NONE	5
-#define ERROR_OTHER	6
-#define ERROR_DELETED	7
-#define ERROR_NOTMETHOD	8   // function cannot be used as a method
+#define FNC_ERROR_UNKNOWN	0
+#define FNC_ERROR_TOOMANY	1
+#define FNC_ERROR_TOOFEW	2
+#define FNC_ERROR_SCRIPT	3
+#define FNC_ERROR_DICT	4
+#define FNC_ERROR_NONE	5
+#define FNC_ERROR_OTHER	6
+#define FNC_ERROR_DELETED	7
+#define FNC_ERROR_NOTMETHOD	8   // function cannot be used as a method
 
 // flags for find_name_end()
 #define FNE_INCL_BR	1	// include [] in name
