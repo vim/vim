@@ -32,7 +32,9 @@ estack_init(void)
     entry->es_type = ETYPE_TOP;
     entry->es_name = NULL;
     entry->es_lnum = 0;
+#ifdef FEAT_EVAL
     entry->es_info.ufunc = NULL;
+#endif
     ++exestack.ga_len;
 }
 
@@ -53,13 +55,16 @@ estack_push(etype_T type, char_u *name, long lnum)
 	entry->es_type = type;
 	entry->es_name = name;
 	entry->es_lnum = lnum;
+#ifdef FEAT_EVAL
 	entry->es_info.ufunc = NULL;
+#endif
 	++exestack.ga_len;
 	return entry;
     }
     return NULL;
 }
 
+#if defined(FEAT_EVAL) || defined(PROTO)
 /*
  * Add a user function to the execution stack.
  */
@@ -72,6 +77,7 @@ estack_push_ufunc(etype_T type, ufunc_T *ufunc, long lnum)
     if (entry != NULL)
 	entry->es_info.ufunc = ufunc;
 }
+#endif
 
 /*
  * Take an item off of the execution stack.
@@ -98,9 +104,12 @@ estack_sfile(void)
     entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
     if (entry->es_name == NULL)
 	return NULL;
+#ifdef FEAT_EVAL
     if (entry->es_info.ufunc == NULL)
+#endif
 	return vim_strsave(entry->es_name);
 
+#ifdef FEAT_EVAL
     // For a function we compose the call stack, as it was done in the past:
     //   "function One[123]..Two[456]..Three"
     len = STRLEN(entry->es_name) + 10;
@@ -132,6 +141,7 @@ estack_sfile(void)
 	vim_snprintf(res + done, len - done, "%s", entry->es_name);
     }
     return (char_u *)res;
+#endif
 }
 
 /*
