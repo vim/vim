@@ -95,11 +95,13 @@ estack_pop(void)
     char_u *
 estack_sfile(void)
 {
+    estack_T	*entry;
+#ifdef FEAT_EVAL
     int		len;
     int		idx;
-    estack_T	*entry;
     char	*res;
     int		done;
+#endif
 
     entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
     if (entry->es_name == NULL)
