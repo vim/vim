@@ -133,6 +133,8 @@ func Test_memory_func_capture_lvars()
 
   let vim = s:vim_new()
   call vim.start('--clean', '-c', 'set noswapfile', testfile)
+  " Wait a bit until the process has started and sourced the script.
+  sleep 200m
   let before = s:monitor_memory_usage(vim.pid).last
 
   call term_sendkeys(vim.buf, ":so %\<CR>")
