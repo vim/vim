@@ -4224,7 +4224,10 @@ tagstack_set_curidx(win_T *wp, int curidx)
 
 /*
  * Set the tag stack entries of the specified window.
- * 'action' is set to either 'a' for append or 'r' for replace.
+ * 'action' is set to one of:
+ *	'a' for append
+ *	'r' for replace
+ *	't' for truncate
  */
     int
 set_tagstack(win_T *wp, dict_T *d, int action)
@@ -4250,10 +4253,22 @@ set_tagstack(win_T *wp, dict_T *d, int action)
 	}
 	l = di->di_tv.vval.v_list;
 
-	if (action == 'r')
+	if (action == 'r')		// replace the stack
 	    tagstack_clear(wp);
+	else if (action == 't')		// truncate the stack
+	{
+	    taggy_T	*tagstack = wp->w_tagstack;
+	    int		tagstackidx = wp->w_tagstackidx;
+	    int		tagstacklen = wp->w_tagstacklen;
+	    // delete all the tag stack entries above the current entry
+	    while (tagstackidx < tagstacklen)
+		tagstack_clear_entry(&tagstack[--tagstacklen]);
+	    wp->w_tagstacklen = tagstacklen;
+	}
 
 	tagstack_push_items(wp, l);
+	// set the current index after the last entry
+	wp->w_tagstackidx = wp->w_tagstacklen;
     }
 
     if ((di = dict_find(d, (char_u *)"curidx", -1)) != NULL)

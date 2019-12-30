@@ -8778,7 +8778,12 @@ settagstack({nr}, {dict} [, {action}])			*settagstack()*
 							*E962*
 		If {action} is not present or is set to 'r', then the tag
 		stack is replaced. If {action} is set to 'a', then new entries
-		from {dict} are pushed onto the tag stack.
+		from {dict} are pushed onto the tag stack. If {action} is set
+		to 't', then all the entries above the current entry in the
+		tag stack are removed and new entries are pushed to the stack.
+
+		The current index is set to one after the length of the tag
+		stack. This can be changed by using 'curidx' in {dict}.
 
 		Returns zero for success, -1 for failure.
 
