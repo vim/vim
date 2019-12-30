@@ -100,8 +100,14 @@ main(int argc, char **argv)
     params.argc = argc;
     params.argv = argv;
     common_init(&params);
-    init_chartab();
 
+    set_option_value((char_u *)"encoding", 0, (char_u *)"utf-8", 0);
+    init_chartab();
     test_trunc_string();
+
+    set_option_value((char_u *)"encoding", 0, (char_u *)"latin1", 0);
+    init_chartab();
+    test_trunc_string();
+
     return 0;
 }

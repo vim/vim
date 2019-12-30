@@ -307,7 +307,8 @@ trunc_string(
     }
     else
     {
-	for (i = (int)STRLEN(s); len + (n = ptr2cells(s + i - 1)) <= room; --i)
+	for (i = (int)STRLEN(s);
+		   i - 1 >= 0 && len + (n = ptr2cells(s + i - 1)) <= room; --i)
 	    len += n;
     }
 
