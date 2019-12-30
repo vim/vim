@@ -2661,6 +2661,11 @@ ExpandBufnames(
     *num_file = 0;		    // return values in case of FAIL
     *file = NULL;
 
+#ifdef FEAT_DIFF
+    if ((options & BUF_DIFF_FILTER) && !curwin->w_p_diff)
+	return FAIL;
+#endif
+
     // Make a copy of "pat" and change "^" to "\(^\|[\/]\)".
     if (*pat == '^')
     {
@@ -2706,8 +2711,7 @@ ExpandBufnames(
 		if (options & BUF_DIFF_FILTER)
 		    // Skip buffers not suitable for
 		    // :diffget or :diffput completion.
-		    if (buf == curbuf
-			    || !diff_mode_buf(curbuf) || !diff_mode_buf(buf))
+		    if (buf == curbuf || !diff_mode_buf(buf))
 			continue;
 #endif
 
