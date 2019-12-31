@@ -542,6 +542,9 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_prop_find(typval_T *argvars, typval_T *rettv)
 {
+    int         lnum_start;
+    int         start_pos_has_prop = 0;
+    int         seen_end = 0;
     int         id = -1;
     int         type_id = -1;
     int         skipstart = 0;
@@ -625,9 +628,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
-    int lnum_start = lnum;
-    int start_pos_has_prop = 0;
-    int seen_end = 0;
+    lnum_start = lnum;
 
     if (rettv_dict_alloc(rettv) == OK)
     {
