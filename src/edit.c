@@ -5601,7 +5601,12 @@ ins_tab(void)
 	    i = cursor->col - fpos.col;
 	    if (i > 0)
 	    {
+#ifdef FEAT_PROP_POPUP
+		mch_memmove(ptr, ptr + i, curbuf->b_ml.ml_line_len - i
+					   - (ptr - curbuf->b_ml.ml_line_ptr));
+#else
 		STRMOVE(ptr, ptr + i);
+#endif
 		// correct replace stack.
 		if ((State & REPLACE_FLAG) && !(State & VREPLACE_FLAG))
 		    for (temp = i; --temp >= 0; )

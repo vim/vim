@@ -2648,6 +2648,12 @@ errorret:
 	unsigned    start, end;
 	colnr_T	    len;
 	int	    idx;
+#ifdef FEAT_PROP_POPUP
+	char_u	    *ptr;
+	int	    difference;
+	int	    textprop_index;
+	int	    textprop_len;
+#endif
 
 	ml_flush_line(buf);
 
@@ -2682,7 +2688,18 @@ errorret:
 	    end = dp->db_txt_end;
 	else
 	    end = ((dp->db_index[idx - 1]) & DB_INDEX_MASK);
+#ifdef FEAT_PROP_POPUP
+	ptr = (char_u *)dp + start;
+	len = (int)STRLEN(ptr) + 1;
+	difference = ((end - start) - len) % sizeof(textprop_T);
+	textprop_index = len + difference;
+	textprop_len = (end - start) - len - difference;
+	if (difference)
+	    mch_memmove(ptr + len, ptr + textprop_index, textprop_len);
+	len += textprop_len;
+#else
 	len = end - start;
+#endif
 
 	buf->b_ml.ml_line_ptr = (char_u *)dp + start;
 	buf->b_ml.ml_line_len = len;
