@@ -19,7 +19,7 @@ static char_u e_py_systemexit[]	= "E880: Can't handle SystemExit of %s exception
 typedef int Py_ssize_t;  // Python 2.4 and earlier don't have this type.
 #endif
 
-#define ENC_OPT ((char *)p_enc)
+#define ENC_OPT (enc_utf8 ? "utf-8" : (char *)p_enc)
 #define DOPY_FUNC "_vim_pydo"
 
 static const char *vim_special_path = "_vim_path_";
