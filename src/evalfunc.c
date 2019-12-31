@@ -976,14 +976,14 @@ call_internal_func(
 
     i = find_internal_func(name);
     if (i < 0)
-	return ERROR_UNKNOWN;
+	return FCERR_UNKNOWN;
     if (argcount < global_functions[i].f_min_argc)
-	return ERROR_TOOFEW;
+	return FCERR_TOOFEW;
     if (argcount > global_functions[i].f_max_argc)
-	return ERROR_TOOMANY;
+	return FCERR_TOOMANY;
     argvars[argcount].v_type = VAR_UNKNOWN;
     global_functions[i].f_func(argvars, rettv);
-    return ERROR_NONE;
+    return FCERR_NONE;
 }
 
 /*
@@ -1003,13 +1003,13 @@ call_internal_method(
 
     fi = find_internal_func(name);
     if (fi < 0)
-	return ERROR_UNKNOWN;
+	return FCERR_UNKNOWN;
     if (global_functions[fi].f_argtype == 0)
-	return ERROR_NOTMETHOD;
+	return FCERR_NOTMETHOD;
     if (argcount + 1 < global_functions[fi].f_min_argc)
-	return ERROR_TOOFEW;
+	return FCERR_TOOFEW;
     if (argcount + 1 > global_functions[fi].f_max_argc)
-	return ERROR_TOOMANY;
+	return FCERR_TOOMANY;
 
     if (global_functions[fi].f_argtype == FEARG_LAST)
     {
@@ -1055,7 +1055,7 @@ call_internal_method(
     argv[argcount + 1].v_type = VAR_UNKNOWN;
 
     global_functions[fi].f_func(argv, rettv);
-    return ERROR_NONE;
+    return FCERR_NONE;
 }
 
 /*
