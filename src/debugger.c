@@ -939,7 +939,7 @@ debuggy_find(
 		}
 		else
 		{
-		    if (typval_compare(tv, bp->dbg_val, ETYPE_IS, FALSE) == OK
+		    if (typval_compare(tv, bp->dbg_val, EXPR_IS, FALSE) == OK
 			    && tv->vval.v_number == FALSE)
 		    {
 			typval_T *v;

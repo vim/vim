@@ -1997,7 +1997,7 @@ eval4(char_u **arg, typval_T *rettv, int evaluate)
     typval_T	var2;
     char_u	*p;
     int		i;
-    exptype_T	type = ETYPE_UNKNOWN;
+    exptype_T	type = EXPR_UNKNOWN;
     int		len = 2;
     int		ic;
 
@@ -2011,30 +2011,30 @@ eval4(char_u **arg, typval_T *rettv, int evaluate)
     switch (p[0])
     {
 	case '=':   if (p[1] == '=')
-			type = ETYPE_EQUAL;
+			type = EXPR_EQUAL;
 		    else if (p[1] == '~')
-			type = ETYPE_MATCH;
+			type = EXPR_MATCH;
 		    break;
 	case '!':   if (p[1] == '=')
-			type = ETYPE_NEQUAL;
+			type = EXPR_NEQUAL;
 		    else if (p[1] == '~')
-			type = ETYPE_NOMATCH;
+			type = EXPR_NOMATCH;
 		    break;
 	case '>':   if (p[1] != '=')
 		    {
-			type = ETYPE_GREATER;
+			type = EXPR_GREATER;
 			len = 1;
 		    }
 		    else
-			type = ETYPE_GEQUAL;
+			type = EXPR_GEQUAL;
 		    break;
 	case '<':   if (p[1] != '=')
 		    {
-			type = ETYPE_SMALLER;
+			type = EXPR_SMALLER;
 			len = 1;
 		    }
 		    else
-			type = ETYPE_SEQUAL;
+			type = EXPR_SEQUAL;
 		    break;
 	case 'i':   if (p[1] == 's')
 		    {
@@ -2042,7 +2042,7 @@ eval4(char_u **arg, typval_T *rettv, int evaluate)
 			    len = 5;
 			i = p[len];
 			if (!isalnum(i) && i != '_')
-			    type = len == 2 ? ETYPE_IS : ETYPE_ISNOT;
+			    type = len == 2 ? EXPR_IS : EXPR_ISNOT;
 		    }
 		    break;
     }
@@ -2050,7 +2050,7 @@ eval4(char_u **arg, typval_T *rettv, int evaluate)
     /*
      * If there is a comparative operator, use it.
      */
-    if (type != ETYPE_UNKNOWN)
+    if (type != EXPR_UNKNOWN)
     {
 	// extra question mark appended: ignore case
 	if (p[len] == '?')
@@ -6189,13 +6189,13 @@ typval_compare(
     varnumber_T	n1, n2;
     char_u	*s1, *s2;
     char_u	buf1[NUMBUFLEN], buf2[NUMBUFLEN];
-    int		type_is = type == ETYPE_IS || type == ETYPE_ISNOT;
+    int		type_is = type == EXPR_IS || type == EXPR_ISNOT;
 
     if (type_is && typ1->v_type != typ2->v_type)
     {
 	// For "is" a different type always means FALSE, for "notis"
 	// it means TRUE.
-	n1 = (type == ETYPE_ISNOT);
+	n1 = (type == EXPR_ISNOT);
     }
     else if (typ1->v_type == VAR_BLOB || typ2->v_type == VAR_BLOB)
     {
@@ -6203,11 +6203,11 @@ typval_compare(
 	{
 	    n1 = (typ1->v_type == typ2->v_type
 			    && typ1->vval.v_blob == typ2->vval.v_blob);
-	    if (type == ETYPE_ISNOT)
+	    if (type == EXPR_ISNOT)
 		n1 = !n1;
 	}
 	else if (typ1->v_type != typ2->v_type
-		|| (type != ETYPE_EQUAL && type != ETYPE_NEQUAL))
+		|| (type != EXPR_EQUAL && type != EXPR_NEQUAL))
 	{
 	    if (typ1->v_type != typ2->v_type)
 		emsg(_("E977: Can only compare Blob with Blob"));
@@ -6220,7 +6220,7 @@ typval_compare(
 	{
 	    // Compare two Blobs for being equal or unequal.
 	    n1 = blob_equal(typ1->vval.v_blob, typ2->vval.v_blob);
-	    if (type == ETYPE_NEQUAL)
+	    if (type == EXPR_NEQUAL)
 		n1 = !n1;
 	}
     }
@@ -6230,11 +6230,11 @@ typval_compare(
 	{
 	    n1 = (typ1->v_type == typ2->v_type
 			    && typ1->vval.v_list == typ2->vval.v_list);
-	    if (type == ETYPE_ISNOT)
+	    if (type == EXPR_ISNOT)
 		n1 = !n1;
 	}
 	else if (typ1->v_type != typ2->v_type
-		|| (type != ETYPE_EQUAL && type != ETYPE_NEQUAL))
+		|| (type != EXPR_EQUAL && type != EXPR_NEQUAL))
 	{
 	    if (typ1->v_type != typ2->v_type)
 		emsg(_("E691: Can only compare List with List"));
@@ -6248,7 +6248,7 @@ typval_compare(
 	    // Compare two Lists for being equal or unequal.
 	    n1 = list_equal(typ1->vval.v_list, typ2->vval.v_list,
 							    ic, FALSE);
-	    if (type == ETYPE_NEQUAL)
+	    if (type == EXPR_NEQUAL)
 		n1 = !n1;
 	}
     }
@@ -6259,11 +6259,11 @@ typval_compare(
 	{
 	    n1 = (typ1->v_type == typ2->v_type
 			    && typ1->vval.v_dict == typ2->vval.v_dict);
-	    if (type == ETYPE_ISNOT)
+	    if (type == EXPR_ISNOT)
 		n1 = !n1;
 	}
 	else if (typ1->v_type != typ2->v_type
-		|| (type != ETYPE_EQUAL && type != ETYPE_NEQUAL))
+		|| (type != EXPR_EQUAL && type != EXPR_NEQUAL))
 	{
 	    if (typ1->v_type != typ2->v_type)
 		emsg(_("E735: Can only compare Dictionary with Dictionary"));
@@ -6277,7 +6277,7 @@ typval_compare(
 	    // Compare two Dictionaries for being equal or unequal.
 	    n1 = dict_equal(typ1->vval.v_dict, typ2->vval.v_dict,
 							    ic, FALSE);
-	    if (type == ETYPE_NEQUAL)
+	    if (type == EXPR_NEQUAL)
 		n1 = !n1;
 	}
     }
@@ -6285,8 +6285,8 @@ typval_compare(
     else if (typ1->v_type == VAR_FUNC || typ2->v_type == VAR_FUNC
 	|| typ1->v_type == VAR_PARTIAL || typ2->v_type == VAR_PARTIAL)
     {
-	if (type != ETYPE_EQUAL && type != ETYPE_NEQUAL
-		&& type != ETYPE_IS && type != ETYPE_ISNOT)
+	if (type != EXPR_EQUAL && type != EXPR_NEQUAL
+		&& type != EXPR_IS && type != EXPR_ISNOT)
 	{
 	    emsg(_("E694: Invalid operation for Funcrefs"));
 	    clear_tv(typ1);
@@ -6312,7 +6312,7 @@ typval_compare(
 	}
 	else
 	    n1 = tv_equal(typ1, typ2, ic, FALSE);
-	if (type == ETYPE_NEQUAL || type == ETYPE_ISNOT)
+	if (type == EXPR_NEQUAL || type == EXPR_ISNOT)
 	    n1 = !n1;
     }
 
@@ -6322,7 +6322,7 @@ typval_compare(
 	* When using "=~" or "!~", always compare as string.
 	*/
     else if ((typ1->v_type == VAR_FLOAT || typ2->v_type == VAR_FLOAT)
-	    && type != ETYPE_MATCH && type != ETYPE_NOMATCH)
+	    && type != EXPR_MATCH && type != EXPR_NOMATCH)
     {
 	float_T f1, f2;
 
@@ -6331,17 +6331,17 @@ typval_compare(
 	n1 = FALSE;
 	switch (type)
 	{
-	    case ETYPE_IS:
-	    case ETYPE_EQUAL:    n1 = (f1 == f2); break;
-	    case ETYPE_ISNOT:
-	    case ETYPE_NEQUAL:   n1 = (f1 != f2); break;
-	    case ETYPE_GREATER:  n1 = (f1 > f2); break;
-	    case ETYPE_GEQUAL:   n1 = (f1 >= f2); break;
-	    case ETYPE_SMALLER:  n1 = (f1 < f2); break;
-	    case ETYPE_SEQUAL:   n1 = (f1 <= f2); break;
-	    case ETYPE_UNKNOWN:
-	    case ETYPE_MATCH:
-	    case ETYPE_NOMATCH:  break;  // avoid gcc warning
+	    case EXPR_IS:
+	    case EXPR_EQUAL:    n1 = (f1 == f2); break;
+	    case EXPR_ISNOT:
+	    case EXPR_NEQUAL:   n1 = (f1 != f2); break;
+	    case EXPR_GREATER:  n1 = (f1 > f2); break;
+	    case EXPR_GEQUAL:   n1 = (f1 >= f2); break;
+	    case EXPR_SMALLER:  n1 = (f1 < f2); break;
+	    case EXPR_SEQUAL:   n1 = (f1 <= f2); break;
+	    case EXPR_UNKNOWN:
+	    case EXPR_MATCH:
+	    case EXPR_NOMATCH:  break;  // avoid gcc warning
 	}
     }
 #endif
@@ -6351,53 +6351,53 @@ typval_compare(
      * When using "=~" or "!~", always compare as string.
      */
     else if ((typ1->v_type == VAR_NUMBER || typ2->v_type == VAR_NUMBER)
-	    && type != ETYPE_MATCH && type != ETYPE_NOMATCH)
+	    && type != EXPR_MATCH && type != EXPR_NOMATCH)
     {
 	n1 = tv_get_number(typ1);
 	n2 = tv_get_number(typ2);
 	switch (type)
 	{
-	    case ETYPE_IS:
-	    case ETYPE_EQUAL:    n1 = (n1 == n2); break;
-	    case ETYPE_ISNOT:
-	    case ETYPE_NEQUAL:   n1 = (n1 != n2); break;
-	    case ETYPE_GREATER:  n1 = (n1 > n2); break;
-	    case ETYPE_GEQUAL:   n1 = (n1 >= n2); break;
-	    case ETYPE_SMALLER:  n1 = (n1 < n2); break;
-	    case ETYPE_SEQUAL:   n1 = (n1 <= n2); break;
-	    case ETYPE_UNKNOWN:
-	    case ETYPE_MATCH:
-	    case ETYPE_NOMATCH:  break;  // avoid gcc warning
+	    case EXPR_IS:
+	    case EXPR_EQUAL:    n1 = (n1 == n2); break;
+	    case EXPR_ISNOT:
+	    case EXPR_NEQUAL:   n1 = (n1 != n2); break;
+	    case EXPR_GREATER:  n1 = (n1 > n2); break;
+	    case EXPR_GEQUAL:   n1 = (n1 >= n2); break;
+	    case EXPR_SMALLER:  n1 = (n1 < n2); break;
+	    case EXPR_SEQUAL:   n1 = (n1 <= n2); break;
+	    case EXPR_UNKNOWN:
+	    case EXPR_MATCH:
+	    case EXPR_NOMATCH:  break;  // avoid gcc warning
 	}
     }
     else
     {
 	s1 = tv_get_string_buf(typ1, buf1);
 	s2 = tv_get_string_buf(typ2, buf2);
-	if (type != ETYPE_MATCH && type != ETYPE_NOMATCH)
+	if (type != EXPR_MATCH && type != EXPR_NOMATCH)
 	    i = ic ? MB_STRICMP(s1, s2) : STRCMP(s1, s2);
 	else
 	    i = 0;
 	n1 = FALSE;
 	switch (type)
 	{
-	    case ETYPE_IS:
-	    case ETYPE_EQUAL:    n1 = (i == 0); break;
-	    case ETYPE_ISNOT:
-	    case ETYPE_NEQUAL:   n1 = (i != 0); break;
-	    case ETYPE_GREATER:  n1 = (i > 0); break;
-	    case ETYPE_GEQUAL:   n1 = (i >= 0); break;
-	    case ETYPE_SMALLER:  n1 = (i < 0); break;
-	    case ETYPE_SEQUAL:   n1 = (i <= 0); break;
+	    case EXPR_IS:
+	    case EXPR_EQUAL:    n1 = (i == 0); break;
+	    case EXPR_ISNOT:
+	    case EXPR_NEQUAL:   n1 = (i != 0); break;
+	    case EXPR_GREATER:  n1 = (i > 0); break;
+	    case EXPR_GEQUAL:   n1 = (i >= 0); break;
+	    case EXPR_SMALLER:  n1 = (i < 0); break;
+	    case EXPR_SEQUAL:   n1 = (i <= 0); break;
 
-	    case ETYPE_MATCH:
-	    case ETYPE_NOMATCH:
+	    case EXPR_MATCH:
+	    case EXPR_NOMATCH:
 		    n1 = pattern_match(s2, s1, ic);
-		    if (type == ETYPE_NOMATCH)
+		    if (type == EXPR_NOMATCH)
 			n1 = !n1;
 		    break;
 
-	    case ETYPE_UNKNOWN:  break;  // avoid gcc warning
+	    case EXPR_UNKNOWN:  break;  // avoid gcc warning
 	}
     }
     clear_tv(typ1);
