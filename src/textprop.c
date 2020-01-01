@@ -560,96 +560,96 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_prop_find(typval_T *argvars, typval_T *rettv)
 {
-    int         lnum_start;
-    int         start_pos_has_prop = 0;
-    int         seen_end = 0;
-    int         id = -1;
-    int         type_id = -1;
-    int         skipstart = 0;
-    int         lnum = -1;
-    int         col = -1;
+    int		lnum_start;
+    int		start_pos_has_prop = 0;
+    int		seen_end = 0;
+    int		id = -1;
+    int		type_id = -1;
+    int		skipstart = 0;
+    int		lnum = -1;
+    int		col = -1;
     pos_T       *cursor = &curwin->w_cursor;
     char_u      *dir_s;
     int         dir = 1;    // 1 = forward, -1 = backward
-    dict_T	    *dict;
-    dictitem_T  *di;
-    buf_T	    *buf = curbuf;
+    dict_T	*dict;
+    dictitem_T	*di;
+    buf_T	*buf = curbuf;
 
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
     {
-    emsg(_(e_invarg));
-    return;
+	emsg(_(e_invarg));
+	return;
     }
 
     dict = argvars[0].vval.v_dict;
     
     if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
-    return; 
+	return; 
     if (buf->b_ml.ml_mfp == NULL)
-    return;
+	return;
 
     if (argvars[1].v_type != VAR_UNKNOWN)
     {
-    dir_s = tv_get_string(&argvars[1]);
-    if (*dir_s == 'b') 
-        dir = -1;
-    else if (*dir_s != 'f')
-    {
-        emsg(_(e_invarg));
-        return;
-    }
+	dir_s = tv_get_string(&argvars[1]);
+	if (*dir_s == 'b') 
+	    dir = -1;
+	else if (*dir_s != 'f')
+	{
+	    emsg(_(e_invarg));
+	    return;
+	}
     }
 
     di = dict_find(dict, (char_u *)"lnum", -1);
     if (di != NULL)
-    lnum = tv_get_number(&di->di_tv);
+	lnum = tv_get_number(&di->di_tv);
 
     di = dict_find(dict, (char_u *)"col", -1);
     if (di != NULL)
-    col = tv_get_number(&di->di_tv);
+	col = tv_get_number(&di->di_tv);
 
     if (lnum == -1)
     {
-    lnum = cursor->lnum;
-    col = cursor->col + 1;
+	lnum = cursor->lnum;
+	col = cursor->col + 1;
     }
     else    
     {
-    if (col == -1)
-    col = 1;
+	if (col == -1)
+	    col = 1;
     }
 
     if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
     {
-    emsg(_(e_invrange));
-    return;
+	emsg(_(e_invrange));
+	return;
     }
     
     di = dict_find(dict, (char_u *)"skipstart", -1);
     if (di != NULL)
-    skipstart = tv_get_number(&di->di_tv);
+	skipstart = tv_get_number(&di->di_tv);
 
     if (dict_find(dict, (char_u *)"id", -1) != NULL)
-    id = dict_get_number(dict, (char_u *)"id");
+	id = dict_get_number(dict, (char_u *)"id");
     if (dict_find(dict, (char_u *)"type", -1))
     {
-    char_u	    *name = dict_get_string(dict, (char_u *)"type", FALSE);
-    proptype_T  *type = lookup_prop_type(name, buf);
+	char_u	    *name = dict_get_string(dict, (char_u *)"type", FALSE);
+	proptype_T  *type = lookup_prop_type(name, buf);
 
-    if (type == NULL)
-        return;
-    type_id = type->pt_id;
+	if (type == NULL)
+	    return;
+	type_id = type->pt_id;
     }
     if (id == -1 && type_id == -1)
     {
-    emsg(_("E968: Need at least one of 'id' or 'type'"));
-    return;
+	emsg(_("E968: Need at least one of 'id' or 'type'"));
+	return;
     }
 
     lnum_start = lnum;
 
-    if (rettv_dict_alloc(rettv) == OK)
-    {
+    if (rettv_dict_alloc(rettv) == FAIL)
+	return;
     
     while (1)
     {	
@@ -672,51 +672,51 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
                 // Check if the starting position has text props.
                 if (lnum_start == lnum)
                 {
-                if (col >= prop.tp_col && (col <= prop.tp_col + prop.tp_len-1))
-                    start_pos_has_prop = 1;
+		    if (col >= prop.tp_col && (col <= prop.tp_col + prop.tp_len-1))
+			start_pos_has_prop = 1;
                 }
                 else
                 {
-                // Not at the first line of the search so adjust col to 
-                // indicate that we're continuing from prev/next line. 
-                if (dir < 0)
-                    col = buf->b_ml.ml_line_len;
-                else
-                    col = 1;
+		    // Not at the first line of the search so adjust col to 
+		    // indicate that we're continuing from prev/next line. 
+		    if (dir < 0)
+			col = buf->b_ml.ml_line_len;
+		    else
+			col = 1;
                 }
 
                 prop_start = !(prop.tp_flags & TP_FLAG_CONT_PREV);
                 prop_end = !(prop.tp_flags & TP_FLAG_CONT_NEXT);
                 if (!prop_start && prop_end && dir > 0)
-                seen_end = 1; 
+		    seen_end = 1; 
 
                 // Skip lines without the start flag.
                 if (!prop_start)
                 { 
-                // Always search backwards for start when search started
-                // on a prop and we're not skipping.
-                if (start_pos_has_prop && !skipstart)
-                    dir = -1;
-                break;
+		    // Always search backwards for start when search started
+		    // on a prop and we're not skipping.
+		    if (start_pos_has_prop && !skipstart)
+			dir = -1;
+		    break;
                 }
                    
                 // If skipstart is true, skip the prop at start pos (even if 
                 // continued from another line). 
                 if (start_pos_has_prop && skipstart && !seen_end)
                 {
-                start_pos_has_prop = 0;
-                break;
+		    start_pos_has_prop = 0;
+			break;
                 }
 
                 if (dir < 0)
                 {
-                if (col < prop.tp_col)
-                    break;
+		    if (col < prop.tp_col)
+			break;
                 }
                 else
                 {
-                if (col > prop.tp_col + prop.tp_len-1)
-                    break;
+		    if (col > prop.tp_col + prop.tp_len-1)
+			break;
                 }
                 
                 prop_fill_dict(rettv->vval.v_dict, &prop, buf);
@@ -728,19 +728,17 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 
         if (dir > 0)
         {
-        if (lnum >= buf->b_ml.ml_line_count)
-        break;
-        lnum++;
+	    if (lnum >= buf->b_ml.ml_line_count)
+		break;
+	    lnum++;
         }
         else
         {
-        if (lnum <= 1)
-        break;
-        lnum--;
+	    if (lnum <= 1)
+		break;
+	    lnum--;
         }
     } 
-
-    }
 }
 
 /*
@@ -781,7 +779,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 		break;
 	    mch_memmove(&prop, text + textlen + i * sizeof(textprop_T),
 							   sizeof(textprop_T));
-        prop_fill_dict(d, &prop, buf);
+	    prop_fill_dict(d, &prop, buf);
 	    list_append_dict(rettv->vval.v_list, d);
 	}
     }
