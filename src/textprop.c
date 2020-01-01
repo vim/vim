@@ -568,9 +568,9 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     int		skipstart = 0;
     int		lnum = -1;
     int		col = -1;
-    pos_T       *cursor = &curwin->w_cursor;
-    char_u      *dir_s;
-    int         dir = 1;    // 1 = forward, -1 = backward
+    pos_T	*cursor = &curwin->w_cursor;
+    char_u	*dir_s;
+    int		dir = 1;    // 1 = forward, -1 = backward
     dict_T	*dict;
     dictitem_T	*di;
     buf_T	*buf = curbuf;
@@ -653,12 +653,12 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     
     while (1)
     {	
-        char_u	    *text = ml_get_buf(buf, lnum, FALSE);
-        size_t	    textlen = STRLEN(text) + 1;
-        int	    count = (int)((buf->b_ml.ml_line_len - textlen)
+        char_u	*text = ml_get_buf(buf, lnum, FALSE);
+        size_t	textlen = STRLEN(text) + 1;
+        int	count = (int)((buf->b_ml.ml_line_len - textlen)
                                 / sizeof(textprop_T));
-        int	    i;
-        textprop_T  prop;
+        int i;
+        textprop_T prop;
         int prop_start;
         int prop_end;
 
