@@ -202,7 +202,7 @@ func Test_prop_find()
   let result = prop_find({'id': 999}, 'f')
   call assert_equal({}, result)
 
-  " Search backwards from from the proceeding position of the prop with id 11
+  " Search backwards from the proceeding position of the prop with id 11
   " (at line num 2 col 4). This should return an empty dict.
   let result = prop_find({'id': 11, 'lnum': 2, 'col': 3}, 'b')
   call assert_equal({}, result)
