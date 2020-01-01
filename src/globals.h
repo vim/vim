@@ -270,7 +270,7 @@ EXTERN int	msg_no_more INIT(= FALSE);  // don't use more prompt, truncate
  * Stack of execution contexts.  Each entry is an estack_T.
  * Current context is at ga_len - 1.
  */
-EXTERN garray_T	exestack INIT(= {0 COMMA 0 COMMA sizeof(estack_T) COMMA 50 COMMA NULL});
+EXTERN garray_T	exestack INIT5(0, 0, sizeof(estack_T), 50, NULL);
 // name of error message source
 #define SOURCING_NAME (((estack_T *)exestack.ga_data)[exestack.ga_len - 1].es_name)
 // line number in the message source or zero
@@ -285,7 +285,7 @@ EXTERN int	debug_backtrace_level INIT(= 0); // breakpoint backtrace level
 # ifdef FEAT_PROFILE
 EXTERN int	do_profiling INIT(= PROF_NONE);	// PROF_ values
 # endif
-EXTERN garray_T script_items INIT(= {0 COMMA 0 COMMA sizeof(scriptitem_T) COMMA 4 COMMA NULL});
+EXTERN garray_T script_items INIT5(0, 0, sizeof(scriptitem_T), 4, NULL);
 #define SCRIPT_ITEM(id) (((scriptitem_T *)script_items.ga_data)[(id) - 1])
 #define FUNCLINE(fp, j)	((char_u **)(fp->uf_lines.ga_data))[j]
 
@@ -375,7 +375,7 @@ EXTERN int	want_garbage_collect INIT(= FALSE);
 EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 
 // Script CTX being sourced or was sourced to define the current function.
-EXTERN sctx_T	current_sctx INIT(= {0 COMMA 0 COMMA 0 COMMA 0});
+EXTERN sctx_T	current_sctx INIT4(0, 0, 0, 0);
 #endif
 
 EXTERN int	did_source_packages INIT(= FALSE);
@@ -468,7 +468,7 @@ EXTERN int	au_did_filetype INIT(= FALSE);
 
 // When deleting the current buffer, another one must be loaded.  If we know
 // which one is preferred, au_new_curbuf is set to it
-EXTERN bufref_T	au_new_curbuf INIT(= {NULL COMMA 0 COMMA 0});
+EXTERN bufref_T	au_new_curbuf INIT3(NULL, 0, 0);
 
 // When deleting a buffer/window and autocmd_busy is TRUE, do not free the
 // buffer/window. but link it in the list starting with
@@ -1412,7 +1412,7 @@ EXTERN int	term_is_xterm INIT(= FALSE);	// xterm-like 'term'
 EXTERN char	psepc INIT(= '\\');	// normal path separator character
 EXTERN char	psepcN INIT(= '/');	// abnormal path separator character
 // normal path separator string
-EXTERN char	pseps[2] INIT(= {'\\' COMMA 0});
+EXTERN char	pseps[2] INIT2('\\', 0);
 #endif
 
 // Set to TRUE when an operator is being executed with virtual editing, MAYBE

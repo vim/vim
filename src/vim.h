@@ -1775,11 +1775,18 @@ void *vim_memset(void *, int, size_t);
 #ifndef EXTERN
 # define EXTERN extern
 # define INIT(x)
+# define INIT2(a, b)
+# define INIT3(a, b, c)
+# define INIT4(a, b, c, d)
+# define INIT5(a, b, c, d, e)
 #else
 # ifndef INIT
 #  define INIT(x) x
+#  define INIT2(a, b) = {a, b}
+#  define INIT3(a, b, c) = {a, b, c}
+#  define INIT4(a, b, c, d) = {a, b, c, d}
+#  define INIT5(a, b, c, d, e) = {a, b, c, d, e}
 #  define DO_INIT
-#  define COMMA ,
 # endif
 #endif
 
