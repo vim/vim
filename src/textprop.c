@@ -659,7 +659,6 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
                                 / sizeof(textprop_T));
         int	    i;
         textprop_T  prop;
-        proptype_T  *pt;
         int prop_start;
         int prop_end;
 
