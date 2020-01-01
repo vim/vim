@@ -172,5 +172,9 @@ func Test_unicode()
   " this crashed Vim once
   set encoding=utf32
   py3 print('hello')
+  set encoding=debug
+  py3 print('hello')
+  set encoding=euc-tw
+  py3 print('hello')
   set encoding=utf8
 endfunc
