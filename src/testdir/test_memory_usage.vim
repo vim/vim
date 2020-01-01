@@ -151,7 +151,7 @@ func Test_memory_func_capture_lvars()
   " otherwise the test fails sometimes.  On Cirrus CI with FreeBSD we need to
   " be even more permissive.
   if has('bsd')
-    let multiplier = 14
+    let multiplier = 15
   else
     let multiplier = 12
   endif
