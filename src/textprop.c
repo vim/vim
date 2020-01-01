@@ -705,7 +705,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
                 if (start_pos_has_prop && skipstart && !seen_end)
                 {
 		    start_pos_has_prop = 0;
-			break;
+		    break;
                 }
 
                 if (dir < 0)
