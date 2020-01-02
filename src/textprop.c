@@ -483,7 +483,7 @@ prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
     dict_add_number(dict, "end", !(prop->tp_flags & TP_FLAG_CONT_NEXT));
     pt = text_prop_type_by_id(buf, prop->tp_type);
     if (pt != NULL)
-    dict_add_string(dict, "type", pt->pt_name);
+	dict_add_string(dict, "type", pt->pt_name);
 }
 
 /*
@@ -560,6 +560,11 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
     void
 f_prop_find(typval_T *argvars, typval_T *rettv)
 {
+    pos_T	*cursor = &curwin->w_cursor;
+    char_u	*dir_s;
+    dict_T	*dict;
+    buf_T	*buf = curbuf;
+    dictitem_T	*di;
     int		lnum_start;
     int		start_pos_has_prop = 0;
     int		seen_end = 0;
@@ -568,13 +573,8 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     int		skipstart = 0;
     int		lnum = -1;
     int		col = -1;
-    pos_T	*cursor = &curwin->w_cursor;
-    char_u	*dir_s;
     int		dir = 1;    // 1 = forward, -1 = backward
-    dict_T	*dict;
-    dictitem_T	*di;
-    buf_T	*buf = curbuf;
-
+ 
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
     {
 	emsg(_(e_invarg));
@@ -653,14 +653,14 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
     
     while (1)
     {	
-        char_u	*text = ml_get_buf(buf, lnum, FALSE);
-        size_t	textlen = STRLEN(text) + 1;
-        int	count = (int)((buf->b_ml.ml_line_len - textlen)
+	char_u	*text = ml_get_buf(buf, lnum, FALSE);
+	size_t	textlen = STRLEN(text) + 1;
+	int	count = (int)((buf->b_ml.ml_line_len - textlen)
                                 / sizeof(textprop_T));
-        int i;
-        textprop_T prop;
-        int prop_start;
-        int prop_end;
+	int	    i;
+        textprop_T  prop;
+        int	    prop_start;
+        int	    prop_end;
 
         for (i = 0; i < count; ++i)
         {
@@ -737,7 +737,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 	    if (lnum <= 1)
 		break;
 	    lnum--;
-        }
+	}
     } 
 }
 
