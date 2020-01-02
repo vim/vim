@@ -20,12 +20,10 @@
 # include <float.h>
 #endif
 
-static char *e_missbrac = N_("E111: Missing ']'");
 static char *e_dictrange = N_("E719: Cannot use [:] with a Dictionary");
 #ifdef FEAT_FLOAT
 static char *e_float_as_string = N_("E806: using Float as a String");
 #endif
-static char *e_nowhitespace = N_("E274: No white space allowed before parenthesis");
 
 #define NAMESPACE_CHAR	(char_u *)"abglstvw"
 
@@ -60,10 +58,7 @@ static int eval6(char_u **arg, typval_T *rettv, int evaluate, int want_string);
 static int eval7(char_u **arg, typval_T *rettv, int evaluate, int want_string);
 static int eval7_leader(typval_T *rettv, char_u *start_leader, char_u **end_leaderp);
 
-static int get_string_tv(char_u **arg, typval_T *rettv, int evaluate);
-static int get_lit_string_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int free_unref_items(int copyID);
-static int get_env_tv(char_u **arg, typval_T *rettv, int evaluate);
 static char_u *make_expanded_name(char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end);
 static int tv_check_lock(typval_T *tv, char_u *name, int use_gettext);
 
@@ -223,6 +218,11 @@ eval1_emsg(char_u **arg, typval_T *rettv, int evaluate)
     return ret;
 }
 
+/*
+ * Evaluate an expression, which can be a function, partial or string.
+ * Pass arguments "argv[argc]".
+ * Return the result in "rettv" and OK or FAIL.
+ */
     int
 eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 {
@@ -244,14 +244,22 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
     {
 	partial_T   *partial = expr->vval.v_partial;
 
-	s = partial_name(partial);
-	if (s == NULL || *s == NUL)
-	    return FAIL;
-	vim_memset(&funcexe, 0, sizeof(funcexe));
-	funcexe.evaluate = TRUE;
-	funcexe.partial = partial;
-	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
-	    return FAIL;
+	if (partial->pt_func != NULL && partial->pt_func->uf_dfunc_idx >= 0)
+	{
+	    if (call_def_function(partial->pt_func, argc, argv, rettv) == FAIL)
+		return FAIL;
+	}
+	else
+	{
+	    s = partial_name(partial);
+	    if (s == NULL || *s == NUL)
+		return FAIL;
+	    vim_memset(&funcexe, 0, sizeof(funcexe));
+	    funcexe.evaluate = TRUE;
+	    funcexe.partial = partial;
+	    if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
+		return FAIL;
+	}
     }
     else
     {
@@ -1251,6 +1259,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	switch (tv1->v_type)
 	{
 	    case VAR_UNKNOWN:
+	    case VAR_VOID:
 	    case VAR_DICT:
 	    case VAR_FUNC:
 	    case VAR_PARTIAL:
@@ -1282,6 +1291,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 		return OK;
 
 	    case VAR_NUMBER:
+	    case VAR_BOOL:
 	    case VAR_STRING:
 		if (tv2->v_type == VAR_LIST)
 		    break;
@@ -1399,7 +1409,7 @@ eval_for_line(
     expr = skipwhite(expr);
     if (expr[0] != 'i' || expr[1] != 'n' || !VIM_ISWHITE(expr[2]))
     {
-	emsg(_("E690: Missing \"in\" after :for"));
+	emsg(_(e_missing_in));
 	return fi;
     }
 
@@ -1420,6 +1430,9 @@ eval_for_line(
 		}
 		else
 		{
+		    // Need a real list here.
+		    range_list_materialize(l);
+
 		    // No need to increment the refcount, it's already set for
 		    // the list being used in "tv".
 		    fi->fi_list = l;
@@ -1436,7 +1449,7 @@ eval_for_line(
 
 		    // Make a copy, so that the iteration still works when the
 		    // blob is changed.
-		    blob_copy(&tv, &btv);
+		    blob_copy(tv.vval.v_blob, &btv);
 		    fi->fi_blob = btv.vval.v_blob;
 		}
 		clear_tv(&tv);
@@ -1814,7 +1827,7 @@ eval1(char_u **arg, typval_T *rettv, int evaluate)
 	 */
 	if ((*arg)[0] != ':')
 	{
-	    emsg(_("E109: Missing ':' after '?'"));
+	    emsg(_(e_missing_colon));
 	    if (evaluate && result)
 		clear_tv(rettv);
 	    return FAIL;
@@ -2462,6 +2475,7 @@ eval6(
  *  $VAR		environment variable
  *  (expression)	nested expression
  *  [expr, expr]	List
+ *  {arg, arg -> expr}	Lambda
  *  {key: val, key: val}   Dictionary
  *  #{key: val, key: val}  Dictionary with literal keys
  *
@@ -2483,9 +2497,8 @@ eval7(
     char_u	**arg,
     typval_T	*rettv,
     int		evaluate,
-    int		want_string UNUSED)	// after "." operator
+    int		want_string)	// after "." operator
 {
-    varnumber_T	n;
     int		len;
     char_u	*s;
     char_u	*start_leader, *end_leader;
@@ -2532,105 +2545,8 @@ eval7(
     case '7':
     case '8':
     case '9':
-    case '.':
-	{
-#ifdef FEAT_FLOAT
-		char_u *p;
-		int    get_float = FALSE;
-
-		// We accept a float when the format matches
-		// "[0-9]\+\.[0-9]\+\([eE][+-]\?[0-9]\+\)\?".  This is very
-		// strict to avoid backwards compatibility problems.
-		// With script version 2 and later the leading digit can be
-		// omitted.
-		// Don't look for a float after the "." operator, so that
-		// ":let vers = 1.2.3" doesn't fail.
-		if (**arg == '.')
-		    p = *arg;
-		else
-		    p = skipdigits(*arg + 1);
-		if (!want_string && p[0] == '.' && vim_isdigit(p[1]))
-		{
-		    get_float = TRUE;
-		    p = skipdigits(p + 2);
-		    if (*p == 'e' || *p == 'E')
-		    {
-			++p;
-			if (*p == '-' || *p == '+')
-			    ++p;
-			if (!vim_isdigit(*p))
-			    get_float = FALSE;
-			else
-			    p = skipdigits(p + 1);
-		    }
-		    if (ASCII_ISALPHA(*p) || *p == '.')
-			get_float = FALSE;
-		}
-		if (get_float)
-		{
-		    float_T	f;
-
-		    *arg += string2float(*arg, &f);
-		    if (evaluate)
-		    {
-			rettv->v_type = VAR_FLOAT;
-			rettv->vval.v_float = f;
-		    }
-		}
-		else
-#endif
-		if (**arg == '0' && ((*arg)[1] == 'z' || (*arg)[1] == 'Z'))
-		{
-		    char_u  *bp;
-		    blob_T  *blob = NULL;  // init for gcc
-
-		    // Blob constant: 0z0123456789abcdef
-		    if (evaluate)
-			blob = blob_alloc();
-		    for (bp = *arg + 2; vim_isxdigit(bp[0]); bp += 2)
-		    {
-			if (!vim_isxdigit(bp[1]))
-			{
-			    if (blob != NULL)
-			    {
-				emsg(_("E973: Blob literal should have an even number of hex characters"));
-				ga_clear(&blob->bv_ga);
-				VIM_CLEAR(blob);
-			    }
-			    ret = FAIL;
-			    break;
-			}
-			if (blob != NULL)
-			    ga_append(&blob->bv_ga,
-					 (hex2nr(*bp) << 4) + hex2nr(*(bp+1)));
-			if (bp[2] == '.' && vim_isxdigit(bp[3]))
-			    ++bp;
-		    }
-		    if (blob != NULL)
-			rettv_blob_set(rettv, blob);
-		    *arg = bp;
-		}
-		else
-		{
-		    // decimal, hex or octal number
-		    vim_str2nr(*arg, NULL, &len, current_sctx.sc_version >= 4
-				  ? STR2NR_NO_OCT + STR2NR_QUOTE
-				  : STR2NR_ALL, &n, NULL, 0, TRUE);
-		    if (len == 0)
-		    {
-			semsg(_(e_invexpr2), *arg);
-			ret = FAIL;
-			break;
-		    }
-		    *arg += len;
-		    if (evaluate)
-		    {
-			rettv->v_type = VAR_NUMBER;
-			rettv->vval.v_number = n;
-		    }
-		}
+    case '.':	ret = get_number_tv(arg, rettv, evaluate, want_string);
 		break;
-	}
 
     /*
      * String constant: "string".
@@ -2706,7 +2622,7 @@ eval7(
 		    ++*arg;
 		else if (ret == OK)
 		{
-		    emsg(_("E110: Missing ')'"));
+		    emsg(_(e_missing_close));
 		    clear_tv(rettv);
 		    ret = FAIL;
 		}
@@ -2907,7 +2823,7 @@ eval_lambda(
 	    if (*skipwhite(*arg) == '(')
 		semsg(_(e_nowhitespace));
 	    else
-		semsg(_(e_missingparen), "lambda");
+		semsg(_(e_missing_paren), "lambda");
 	}
 	clear_tv(rettv);
 	ret = FAIL;
@@ -2961,7 +2877,7 @@ eval_method(
 	if (**arg != '(')
 	{
 	    if (verbose)
-		semsg(_(e_missingparen), name);
+		semsg(_(e_missing_paren), name);
 	    ret = FAIL;
 	}
 	else if (VIM_ISWHITE((*arg)[-1]))
@@ -3023,12 +2939,14 @@ eval_index(
 		emsg(_("E909: Cannot index a special variable"));
 	    return FAIL;
 	case VAR_UNKNOWN:
+	case VAR_VOID:
 	    if (evaluate)
 		return FAIL;
 	    // FALLTHROUGH
 
 	case VAR_STRING:
 	case VAR_NUMBER:
+	case VAR_BOOL:
 	case VAR_LIST:
 	case VAR_DICT:
 	case VAR_BLOB:
@@ -3128,6 +3046,7 @@ eval_index(
 	switch (rettv->v_type)
 	{
 	    case VAR_UNKNOWN:
+	    case VAR_VOID:
 	    case VAR_FUNC:
 	    case VAR_PARTIAL:
 	    case VAR_FLOAT:
@@ -3137,6 +3056,7 @@ eval_index(
 		break; // not evaluating, skipping over subscript
 
 	    case VAR_NUMBER:
+	    case VAR_BOOL:
 	    case VAR_STRING:
 		s = tv_get_string(rettv);
 		len = (long)STRLEN(s);
@@ -3411,10 +3331,120 @@ get_option_tv(
 }
 
 /*
+ * Allocate a variable for a number constant.  Also deals with "0z" for blob.
+ * Return OK or FAIL.
+ */
+    int
+get_number_tv(
+	char_u	    **arg,
+	typval_T    *rettv,
+	int	    evaluate,
+	int	    want_string UNUSED)
+{
+    int		len;
+#ifdef FEAT_FLOAT
+    char_u	*p;
+    int		get_float = FALSE;
+
+    // We accept a float when the format matches
+    // "[0-9]\+\.[0-9]\+\([eE][+-]\?[0-9]\+\)\?".  This is very
+    // strict to avoid backwards compatibility problems.
+    // With script version 2 and later the leading digit can be
+    // omitted.
+    // Don't look for a float after the "." operator, so that
+    // ":let vers = 1.2.3" doesn't fail.
+    if (**arg == '.')
+	p = *arg;
+    else
+	p = skipdigits(*arg + 1);
+    if (!want_string && p[0] == '.' && vim_isdigit(p[1]))
+    {
+	get_float = TRUE;
+	p = skipdigits(p + 2);
+	if (*p == 'e' || *p == 'E')
+	{
+	    ++p;
+	    if (*p == '-' || *p == '+')
+		++p;
+	    if (!vim_isdigit(*p))
+		get_float = FALSE;
+	    else
+		p = skipdigits(p + 1);
+	}
+	if (ASCII_ISALPHA(*p) || *p == '.')
+	    get_float = FALSE;
+    }
+    if (get_float)
+    {
+	float_T	f;
+
+	*arg += string2float(*arg, &f);
+	if (evaluate)
+	{
+	    rettv->v_type = VAR_FLOAT;
+	    rettv->vval.v_float = f;
+	}
+    }
+    else
+#endif
+    if (**arg == '0' && ((*arg)[1] == 'z' || (*arg)[1] == 'Z'))
+    {
+	char_u  *bp;
+	blob_T  *blob = NULL;  // init for gcc
+
+	// Blob constant: 0z0123456789abcdef
+	if (evaluate)
+	    blob = blob_alloc();
+	for (bp = *arg + 2; vim_isxdigit(bp[0]); bp += 2)
+	{
+	    if (!vim_isxdigit(bp[1]))
+	    {
+		if (blob != NULL)
+		{
+		    emsg(_("E973: Blob literal should have an even number of hex characters"));
+		    ga_clear(&blob->bv_ga);
+		    VIM_CLEAR(blob);
+		}
+		return FAIL;
+	    }
+	    if (blob != NULL)
+		ga_append(&blob->bv_ga,
+			     (hex2nr(*bp) << 4) + hex2nr(*(bp+1)));
+	    if (bp[2] == '.' && vim_isxdigit(bp[3]))
+		++bp;
+	}
+	if (blob != NULL)
+	    rettv_blob_set(rettv, blob);
+	*arg = bp;
+    }
+    else
+    {
+	varnumber_T	n;
+
+	// decimal, hex or octal number
+	vim_str2nr(*arg, NULL, &len, current_sctx.sc_version >= 4
+		      ? STR2NR_NO_OCT + STR2NR_QUOTE
+		      : STR2NR_ALL, &n, NULL, 0, TRUE);
+	if (len == 0)
+	{
+	    semsg(_(e_invexpr2), *arg);
+	    return FAIL;
+	}
+	*arg += len;
+	if (evaluate)
+	{
+	    rettv->v_type = VAR_NUMBER;
+	    rettv->vval.v_number = n;
+	}
+    }
+    return OK;
+}
+
+/*
  * Allocate a variable for a string constant.
  * Return OK or FAIL.
  */
-    static int
+    int
 get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 {
     char_u	*p;
@@ -3551,7 +3581,7 @@ get_string_tv(char_u **arg, typval_T *rettv, int evaluate)
  * Allocate a variable for a 'str''ing' constant.
  * Return OK or FAIL.
  */
-    static int
+    int
 get_lit_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 {
     char_u	*p;
@@ -3770,6 +3800,7 @@ tv_equal(
 	    return blob_equal(tv1->vval.v_blob, tv2->vval.v_blob);
 
 	case VAR_NUMBER:
+	case VAR_BOOL:
 	    return tv1->vval.v_number == tv2->vval.v_number;
 
 	case VAR_STRING:
@@ -3792,9 +3823,11 @@ tv_equal(
 #ifdef FEAT_JOB_CHANNEL
 	    return tv1->vval.v_channel == tv2->vval.v_channel;
 #endif
+
 	case VAR_FUNC:
 	case VAR_PARTIAL:
 	case VAR_UNKNOWN:
+	case VAR_VOID:
 	    break;
     }
 
@@ -4507,7 +4540,9 @@ echo_string_core(
 	    break;
 
 	case VAR_NUMBER:
+	case VAR_BOOL:
 	case VAR_UNKNOWN:
+	case VAR_VOID:
 	    *tofree = NULL;
 	    r = tv_get_string_buf(tv, numbuf);
 	    break;
@@ -4664,7 +4699,7 @@ string2float(
  * If the environment variable was not set, silently assume it is empty.
  * Return FAIL if the name is invalid.
  */
-    static int
+    int
 get_env_tv(char_u **arg, typval_T *rettv, int evaluate)
 {
     char_u	*string = NULL;
@@ -5357,8 +5392,10 @@ free_tv(typval_T *varp)
 		break;
 #endif
 	    case VAR_NUMBER:
+	    case VAR_BOOL:
 	    case VAR_FLOAT:
 	    case VAR_UNKNOWN:
+	    case VAR_VOID:
 	    case VAR_SPECIAL:
 		break;
 	}
@@ -5399,6 +5436,7 @@ clear_tv(typval_T *varp)
 		varp->vval.v_dict = NULL;
 		break;
 	    case VAR_NUMBER:
+	    case VAR_BOOL:
 	    case VAR_SPECIAL:
 		varp->vval.v_number = 0;
 		break;
@@ -5419,6 +5457,7 @@ clear_tv(typval_T *varp)
 		varp->vval.v_channel = NULL;
 #endif
 	    case VAR_UNKNOWN:
+	    case VAR_VOID:
 		break;
 	}
 	varp->v_lock = 0;
@@ -5459,6 +5498,7 @@ tv_get_number_chk(typval_T *varp, int *denote)
     switch (varp->v_type)
     {
 	case VAR_NUMBER:
+	case VAR_BOOL:
 	    return varp->vval.v_number;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
@@ -5496,6 +5536,7 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	    emsg(_("E974: Using a Blob as a Number"));
 	    break;
 	case VAR_UNKNOWN:
+	case VAR_VOID:
 	    internal_error("tv_get_number(UNKNOWN)");
 	    break;
     }
@@ -5513,6 +5554,7 @@ tv_get_float(typval_T *varp)
     switch (varp->v_type)
     {
 	case VAR_NUMBER:
+	case VAR_BOOL:
 	    return (float_T)(varp->vval.v_number);
 	case VAR_FLOAT:
 	    return varp->vval.v_float;
@@ -5546,6 +5588,7 @@ tv_get_float(typval_T *varp)
 	    emsg(_("E975: Using a Blob as a Float"));
 	    break;
 	case VAR_UNKNOWN:
+	case VAR_VOID:
 	    internal_error("tv_get_float(UNKNOWN)");
 	    break;
     }
@@ -5596,6 +5639,7 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
     switch (varp->v_type)
     {
 	case VAR_NUMBER:
+	case VAR_BOOL:
 	    vim_snprintf((char *)buf, NUMBUFLEN, "%lld",
 					    (long_long_T)varp->vval.v_number);
 	    return buf;
@@ -5667,6 +5711,7 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 #endif
 	    break;
 	case VAR_UNKNOWN:
+	case VAR_VOID:
 	    emsg(_("E908: using an invalid value as a String"));
 	    break;
     }
@@ -5743,6 +5788,7 @@ copy_tv(typval_T *from, typval_T *to)
     switch (from->v_type)
     {
 	case VAR_NUMBER:
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    to->vval.v_number = from->vval.v_number;
 	    break;
@@ -5813,6 +5859,7 @@ copy_tv(typval_T *from, typval_T *to)
 	    }
 	    break;
 	case VAR_UNKNOWN:
+	case VAR_VOID:
 	    internal_error("copy_tv(UNKNOWN)");
 	    break;
     }
@@ -5845,6 +5892,7 @@ item_copy(
     switch (from->v_type)
     {
 	case VAR_NUMBER:
+	case VAR_BOOL:
 	case VAR_FLOAT:
 	case VAR_STRING:
 	case VAR_FUNC:
@@ -5871,7 +5919,7 @@ item_copy(
 		ret = FAIL;
 	    break;
 	case VAR_BLOB:
-	    ret = blob_copy(from, to);
+	    ret = blob_copy(from->vval.v_blob, to);
 	    break;
 	case VAR_DICT:
 	    to->v_type = VAR_DICT;
@@ -5890,11 +5938,65 @@ item_copy(
 		ret = FAIL;
 	    break;
 	case VAR_UNKNOWN:
+	case VAR_VOID:
 	    internal_error("item_copy(UNKNOWN)");
 	    ret = FAIL;
     }
     --recurse;
     return ret;
+}
+
+    void
+echo_one(typval_T *rettv, int with_space, int *atstart, int *needclr)
+{
+    char_u	*tofree;
+    char_u	numbuf[NUMBUFLEN];
+    char_u	*p = echo_string(rettv, &tofree, numbuf, get_copyID());
+
+    if (*atstart)
+    {
+	*atstart = FALSE;
+	// Call msg_start() after eval1(), evaluating the expression
+	// may cause a message to appear.
+	if (with_space)
+	{
+	    // Mark the saved text as finishing the line, so that what
+	    // follows is displayed on a new line when scrolling back
+	    // at the more prompt.
+	    msg_sb_eol();
+	    msg_start();
+	}
+    }
+    else if (with_space)
+	msg_puts_attr(" ", echo_attr);
+
+    if (p != NULL)
+	for ( ; *p != NUL && !got_int; ++p)
+	{
+	    if (*p == '\n' || *p == '\r' || *p == TAB)
+	    {
+		if (*p != TAB && *needclr)
+		{
+		    // remove any text still there from the command
+		    msg_clr_eos();
+		    *needclr = FALSE;
+		}
+		msg_putchar_attr(*p, echo_attr);
+	    }
+	    else
+	    {
+		if (has_mbyte)
+		{
+		    int i = (*mb_ptr2len)(p);
+
+		    (void)msg_outtrans_len_attr(p, i, echo_attr);
+		    p += i - 1;
+		}
+		else
+		    (void)msg_outtrans_len_attr(p, 1, echo_attr);
+	    }
+	}
+    vim_free(tofree);
 }
 
 /*
@@ -5907,11 +6009,9 @@ ex_echo(exarg_T *eap)
 {
     char_u	*arg = eap->arg;
     typval_T	rettv;
-    char_u	*tofree;
     char_u	*p;
     int		needclr = TRUE;
     int		atstart = TRUE;
-    char_u	numbuf[NUMBUFLEN];
     int		did_emsg_before = did_emsg;
     int		called_emsg_before = called_emsg;
 
@@ -5940,52 +6040,8 @@ ex_echo(exarg_T *eap)
 	need_clr_eos = FALSE;
 
 	if (!eap->skip)
-	{
-	    if (atstart)
-	    {
-		atstart = FALSE;
-		// Call msg_start() after eval1(), evaluating the expression
-		// may cause a message to appear.
-		if (eap->cmdidx == CMD_echo)
-		{
-		    // Mark the saved text as finishing the line, so that what
-		    // follows is displayed on a new line when scrolling back
-		    // at the more prompt.
-		    msg_sb_eol();
-		    msg_start();
-		}
-	    }
-	    else if (eap->cmdidx == CMD_echo)
-		msg_puts_attr(" ", echo_attr);
-	    p = echo_string(&rettv, &tofree, numbuf, get_copyID());
-	    if (p != NULL)
-		for ( ; *p != NUL && !got_int; ++p)
-		{
-		    if (*p == '\n' || *p == '\r' || *p == TAB)
-		    {
-			if (*p != TAB && needclr)
-			{
-			    // remove any text still there from the command
-			    msg_clr_eos();
-			    needclr = FALSE;
-			}
-			msg_putchar_attr(*p, echo_attr);
-		    }
-		    else
-		    {
-			if (has_mbyte)
-			{
-			    int i = (*mb_ptr2len)(p);
+	    echo_one(&rettv, eap->cmdidx == CMD_echo, &atstart, &needclr);
 
-			    (void)msg_outtrans_len_attr(p, i, echo_attr);
-			    p += i - 1;
-			}
-			else
-			    (void)msg_outtrans_len_attr(p, 1, echo_attr);
-		    }
-		}
-	    vim_free(tofree);
-	}
 	clear_tv(&rettv);
 	arg = skipwhite(arg);
     }

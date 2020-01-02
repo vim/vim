@@ -27,7 +27,6 @@ static int	if_level = 0;		// depth in :if
 #endif
 static void	free_cmdmod(void);
 static void	append_command(char_u *cmd);
-static char_u	*find_command(exarg_T *eap, int *full);
 
 #ifndef FEAT_MENU
 # define ex_emenu		ex_ni
@@ -275,6 +274,7 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_debug		ex_ni
 # define ex_debuggreedy		ex_ni
 # define ex_delfunction		ex_ni
+# define ex_disassemble		ex_ni
 # define ex_echo		ex_ni
 # define ex_echohl		ex_ni
 # define ex_else		ex_ni
@@ -1706,7 +1706,7 @@ do_one_cmd(
     ea.cmd = skip_range(ea.cmd, NULL);
     if (*ea.cmd == '*' && vim_strchr(p_cpo, CPO_STAR) == NULL)
 	ea.cmd = skipwhite(ea.cmd + 1);
-    p = find_command(&ea, NULL);
+    p = find_ex_command(&ea, NULL);
 
 #ifdef FEAT_EVAL
 # ifdef FEAT_PROFILE
@@ -1874,7 +1874,7 @@ do_one_cmd(
 #ifdef FEAT_EVAL
 		&& !aborting()
 #endif
-		) ? find_command(&ea, NULL) : ea.cmd;
+		) ? find_ex_command(&ea, NULL) : ea.cmd;
     }
 
     if (p == NULL)
@@ -3108,8 +3108,8 @@ append_command(char_u *cmd)
  * "full" is set to TRUE if the whole command name matched.
  * Returns NULL for an ambiguous user command.
  */
-    static char_u *
-find_command(exarg_T *eap, int *full UNUSED)
+    char_u *
+find_ex_command(exarg_T *eap, int *full UNUSED)
 {
     int		len;
     char_u	*p;
@@ -3305,7 +3305,7 @@ cmd_exists(char_u *name)
     // For ":2match" and ":3match" we need to skip the number.
     ea.cmd = (*name == '2' || *name == '3') ? name + 1 : name;
     ea.cmdidx = (cmdidx_T)0;
-    p = find_command(&ea, &full);
+    p = find_ex_command(&ea, &full);
     if (p == NULL)
 	return 3;
     if (vim_isdigit(*name) && ea.cmdidx != CMD_match)

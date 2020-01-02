@@ -176,6 +176,7 @@ set_buffer_lines(
     if (lines->v_type == VAR_LIST)
     {
 	l = lines->vval.v_list;
+	range_list_materialize(l);
 	li = l->lv_first;
     }
     else
@@ -689,10 +690,16 @@ get_buffer_lines(
 {
     char_u	*p;
 
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-    if (retlist && rettv_list_alloc(rettv) == FAIL)
-	return;
+    if (retlist)
+    {
+	if (rettv_list_alloc(rettv) == FAIL)
+	    return;
+    }
+    else
+    {
+	rettv->v_type = VAR_STRING;
+	rettv->vval.v_string = NULL;
+    }
 
     if (buf == NULL || buf->b_ml.ml_mfp == NULL || start < 0)
 	return;

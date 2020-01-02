@@ -208,8 +208,9 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	    break;
 
 	case VAR_NUMBER:
+	case VAR_BOOL:
 	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%lld",
-						(long_long_T)val->vval.v_number);
+					      (long_long_T)val->vval.v_number);
 	    ga_concat(gap, numbuf);
 	    break;
 
@@ -344,6 +345,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	    break;
 #endif
 	case VAR_UNKNOWN:
+	case VAR_VOID:
 	    internal_error("json_encode_item()");
 	    return FAIL;
     }

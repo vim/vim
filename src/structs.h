@@ -1296,6 +1296,8 @@ typedef struct {
     int		cb_free_name;	    // cb_name was allocated
 } callback_T;
 
+typedef struct dfunc_S dfunc_T;	    // :def function
+
 typedef struct jobvar_S job_T;
 typedef struct readq_S readq_T;
 typedef struct writeq_S writeq_T;
@@ -1305,19 +1307,30 @@ typedef struct channel_S channel_T;
 
 typedef enum
 {
-    VAR_UNKNOWN = 0,
-    VAR_NUMBER,	 // "v_number" is used
-    VAR_STRING,	 // "v_string" is used
-    VAR_FUNC,	 // "v_string" is function name
-    VAR_PARTIAL, // "v_partial" is used
-    VAR_LIST,	 // "v_list" is used
-    VAR_DICT,	 // "v_dict" is used
-    VAR_FLOAT,	 // "v_float" is used
-    VAR_SPECIAL, // "v_number" is used
-    VAR_JOB,	 // "v_job" is used
-    VAR_CHANNEL, // "v_channel" is used
-    VAR_BLOB,	 // "v_blob" is used
+    VAR_UNKNOWN = 0,	// not set, also used for "any" type
+    VAR_VOID,		// no value
+    VAR_BOOL,		// "v_number" is used: VVAL_TRUE, VVAL_FALSE
+    VAR_SPECIAL,	// "v_number" is used: VVAL_NULL, VVAL_NONE
+    VAR_NUMBER,		// "v_number" is used
+    VAR_FLOAT,		// "v_float" is used
+    VAR_STRING,		// "v_string" is used
+    VAR_BLOB,		// "v_blob" is used
+    VAR_FUNC,		// "v_string" is function name
+    VAR_PARTIAL,	// "v_partial" is used
+    VAR_LIST,		// "v_list" is used
+    VAR_DICT,		// "v_dict" is used
+    VAR_JOB,		// "v_job" is used
+    VAR_CHANNEL,	// "v_channel" is used
 } vartype_T;
+
+// A type specification.
+typedef struct type_S type_T;
+struct type_S {
+    vartype_T	    tt_type;
+    short	    tt_argcount;    // for func, partial, -1 for unknown
+    type_T	    *tt_member;	    // for list, dict, func return type
+    type_T	    *tt_args;	    // func arguments
+};
 
 /*
  * Structure to hold an internal variable without a name.
@@ -1377,6 +1390,11 @@ struct listwatch_S
 /*
  * Structure to hold info about a list.
  * Order of members is optimized to reduce padding.
+ * When created by range() it will at first have special value:
+ *  lv_first == &range_list_item;
+ *  lv_last == start
+ *  lv_idx_item == end
+ *  lv_idx == stride
  */
 struct listvar_S
 {
@@ -1471,8 +1489,15 @@ typedef struct
     int		uf_flags;
     int		uf_calls;	// nr of active calls
     int		uf_cleared;	// func_clear() was already called
+    int		uf_dfunc_idx;	// >= 0 for :def function only
     garray_T	uf_args;	// arguments
     garray_T	uf_def_args;	// default argument expressions
+
+    // for :def
+    type_T	**uf_arg_types;	// argument types (count uf_args.ga_len)
+    type_T	*uf_ret_type;	// return type
+    garray_T	uf_type_list;	// types used in arg and return types
+
     garray_T	uf_lines;	// function lines
 # ifdef FEAT_PROFILE
     int		uf_profiling;	// TRUE when func is being profiled

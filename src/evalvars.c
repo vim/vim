@@ -41,6 +41,8 @@ static hashtab_T	compat_hashtab;
 
 #define VV_NAME(s, t)	s, {{t, 0, {0}}, 0, {0}}
 
+typedef struct vimvar vimvar_T;
+
 static struct vimvar
 {
     char	*vv_name;	// name of variable, without v:
@@ -1670,7 +1672,9 @@ item_lock(typval_T *tv, int deep, int lock)
     switch (tv->v_type)
     {
 	case VAR_UNKNOWN:
+	case VAR_VOID:
 	case VAR_NUMBER:
+	case VAR_BOOL:
 	case VAR_STRING:
 	case VAR_FUNC:
 	case VAR_PARTIAL:
@@ -1913,6 +1917,22 @@ get_vimvar_dict(void)
 }
 
 /*
+ * Returns the index of a v:variable.  Negative if not found.
+ */
+    int
+find_vim_var(char_u *name)
+{
+    dictitem_T *di = find_var_in_ht(&vimvarht, 0, name, TRUE);
+    struct vimvar *vv;
+
+    if (di == NULL)
+	return -1;
+    vv = (struct vimvar *)((char *)di - offsetof(vimvar_T, vv_di));
+    return (int)(vv - vimvars);
+}
+
+
+/*
  * Set type of v: variable to "type".
  */
     void
@@ -1929,6 +1949,12 @@ set_vim_var_type(int idx, vartype_T type)
 set_vim_var_nr(int idx, varnumber_T val)
 {
     vimvars[idx].vv_nr = val;
+}
+
+    char *
+get_vim_var_name(int idx)
+{
+    return vimvars[idx].vv_name;
 }
 
 /*

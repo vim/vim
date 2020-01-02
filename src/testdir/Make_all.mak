@@ -90,10 +90,10 @@ NEW_TESTS = \
 	test_digraph \
 	test_display \
 	test_edit \
+	test_environ \
 	test_erasebackword \
 	test_escaped_glob \
 	test_eval_stuff \
-	test_environ \
 	test_ex_equal \
 	test_ex_undo \
 	test_ex_z \
@@ -268,6 +268,8 @@ NEW_TESTS = \
 	test_utf8 \
 	test_utf8_comparisons \
 	test_vartabs \
+	test_vim9_expr \
+	test_vim9_script \
 	test_viminfo \
 	test_vimscript \
 	test_virtualedit \
@@ -435,6 +437,8 @@ NEW_TESTS_RES = \
 	test_user_func.res \
 	test_usercommands.res \
 	test_vartabs.res \
+	test_vim9_expr.res \
+	test_vim9_script.res \
 	test_viminfo.res \
 	test_vimscript.res \
 	test_visual.res \

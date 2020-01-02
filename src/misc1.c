@@ -2067,13 +2067,17 @@ match_user(char_u *name)
 concat_str(char_u *str1, char_u *str2)
 {
     char_u  *dest;
-    size_t  l = STRLEN(str1);
+    size_t  l = str1 == NULL ? 0 : STRLEN(str1);
 
-    dest = alloc(l + STRLEN(str2) + 1L);
+    dest = alloc(l + (str2 == NULL ? 0 : STRLEN(str2)) + 1L);
     if (dest != NULL)
     {
-	STRCPY(dest, str1);
-	STRCPY(dest + l, str2);
+	if (str1 == NULL)
+	    *dest = NUL;
+	else
+	    STRCPY(dest, str1);
+	if (str2 != NULL)
+	    STRCPY(dest + l, str2);
     }
     return dest;
 }

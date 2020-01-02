@@ -1314,6 +1314,7 @@ write_viminfo_varlist(FILE *fp)
 		{
 		    case VAR_STRING: s = "STR"; break;
 		    case VAR_NUMBER: s = "NUM"; break;
+		    case VAR_BOOL:   s = "BOO"; break;
 		    case VAR_FLOAT:  s = "FLO"; break;
 		    case VAR_DICT:   s = "DIC"; break;
 		    case VAR_LIST:   s = "LIS"; break;
@@ -1321,6 +1322,7 @@ write_viminfo_varlist(FILE *fp)
 		    case VAR_SPECIAL: s = "XPL"; break;
 
 		    case VAR_UNKNOWN:
+		    case VAR_VOID:
 		    case VAR_FUNC:
 		    case VAR_PARTIAL:
 		    case VAR_JOB:

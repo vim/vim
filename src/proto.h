@@ -226,6 +226,10 @@ void mbyte_im_set_active(int active_arg);
 # include "usercmd.pro"
 # include "userfunc.pro"
 # include "version.pro"
+# ifdef FEAT_EVAL
+#  include "vim9compile.pro"
+#  include "vim9execute.pro"
+# endif
 # include "window.pro"
 
 # ifdef FEAT_LUA

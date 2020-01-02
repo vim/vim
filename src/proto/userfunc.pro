@@ -1,18 +1,22 @@
 /* userfunc.c */
 void func_init(void);
 hashtab_T *func_tbl_get(void);
+int get_function_args(char_u **argp, char_u endchar, garray_T *newargs, garray_T *argtypes, int *varargs, garray_T *default_args, int skip);
 int get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate);
 char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, int no_autoload);
 void emsg_funcname(char *ermsg, char_u *name);
 int get_func_tv(char_u *name, int len, typval_T *rettv, char_u **arg, funcexe_T *funcexe);
 ufunc_T *find_func(char_u *name);
+int call_user_func_check(ufunc_T *fp, int argcount, typval_T *argvars, typval_T *rettv, funcexe_T *funcexe, dict_T *selfdict);
 void save_funccal(funccal_entry_T *entry);
 void restore_funccal(void);
 funccall_T *get_current_funccal(void);
 void free_all_functions(void);
+int builtin_function(char_u *name, int len);
 int func_call(char_u *name, typval_T *args, partial_T *partial, dict_T *selfdict, typval_T *rettv);
 int get_callback_depth(void);
 int call_callback(callback_T *callback, int len, typval_T *rettv, int argcount, typval_T *argvars);
+void user_func_error(int error, char_u *name);
 int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typval_T *argvars_in, funcexe_T *funcexe);
 char_u *trans_function_name(char_u **pp, int skip, int flags, funcdict_T *fdp, partial_T **partial);
 void ex_function(exarg_T *eap);

@@ -163,13 +163,14 @@ list_free_contents(list_T *l)
 {
     listitem_T *item;
 
-    for (item = l->lv_first; item != NULL; item = l->lv_first)
-    {
-	// Remove the item before deleting it.
-	l->lv_first = item->li_next;
-	clear_tv(&item->li_tv);
-	vim_free(item);
-    }
+    if (l->lv_first != &range_list_item)
+	for (item = l->lv_first; item != NULL; item = l->lv_first)
+	{
+	    // Remove the item before deleting it.
+	    l->lv_first = item->li_next;
+	    clear_tv(&item->li_tv);
+	    vim_free(item);
+	}
 }
 
 /*
@@ -299,6 +300,9 @@ list_equal(
     if (list_len(l1) != list_len(l2))
 	return FALSE;
 
+    range_list_materialize(l1);
+    range_list_materialize(l2);
+
     for (item1 = l1->lv_first, item2 = l2->lv_first;
 	    item1 != NULL && item2 != NULL;
 			       item1 = item1->li_next, item2 = item2->li_next)
@@ -328,6 +332,8 @@ list_find(list_T *l, long n)
     // Check for index out of range.
     if (n < 0 || n >= l->lv_len)
 	return NULL;
+
+    range_list_materialize(l);
 
     // When there is a cached index may start search from there.
     if (l->lv_idx_item != NULL)
@@ -398,6 +404,28 @@ list_find_nr(
 {
     listitem_T	*li;
 
+    if (l != NULL && l->lv_first == &range_list_item)
+    {
+	varnumber_T start = (varnumber_T)l->lv_last;
+	int	    stride = l->lv_idx;
+	long	    n = idx;
+
+	// not materialized range() list: compute the value.
+	// Negative index is relative to the end.
+	if (n < 0)
+	    n = l->lv_len + n;
+
+	// Check for index out of range.
+	if (n < 0 || n >= l->lv_len)
+	{
+	    if (errorp != NULL)
+		*errorp = TRUE;
+	    return -1L;
+	}
+
+	return start + n * stride;
+    }
+
     li = list_find(l, idx);
     if (li == NULL)
     {
@@ -437,6 +465,7 @@ list_idx_of_item(list_T *l, listitem_T *item)
 
     if (l == NULL)
 	return -1;
+    range_list_materialize(l);
     idx = 0;
     for (li = l->lv_first; li != NULL && li != item; li = li->li_next)
 	++idx;
@@ -451,6 +480,7 @@ list_idx_of_item(list_T *l, listitem_T *item)
     void
 list_append(list_T *l, listitem_T *item)
 {
+    range_list_materialize(l);
     if (l->lv_last == NULL)
     {
 	// empty list
@@ -469,7 +499,7 @@ list_append(list_T *l, listitem_T *item)
 }
 
 /*
- * Append typval_T "tv" to the end of list "l".
+ * Append typval_T "tv" to the end of list "l".  "tv" is copied.
  * Return FAIL when out of memory.
  */
     int
@@ -480,6 +510,22 @@ list_append_tv(list_T *l, typval_T *tv)
     if (li == NULL)
 	return FAIL;
     copy_tv(tv, &li->li_tv);
+    list_append(l, li);
+    return OK;
+}
+
+/*
+ * As list_append_tv() but move the value instead of copying it.
+ * Return FAIL when out of memory.
+ */
+    int
+list_append_tv_move(list_T *l, typval_T *tv)
+{
+    listitem_T	*li = listitem_alloc();
+
+    if (li == NULL)
+	return FAIL;
+    li->li_tv = *tv;
     list_append(l, li);
     return OK;
 }
@@ -584,6 +630,7 @@ list_insert_tv(list_T *l, typval_T *tv, listitem_T *item)
     void
 list_insert(list_T *l, listitem_T *ni, listitem_T *item)
 {
+    range_list_materialize(l);
     if (item == NULL)
 	// Append new item at end of list.
 	list_append(l, ni);
@@ -617,6 +664,9 @@ list_extend(list_T *l1, list_T *l2, listitem_T *bef)
 {
     listitem_T	*item;
     int		todo = l2->lv_len;
+
+    range_list_materialize(l1);
+    range_list_materialize(l2);
 
     // We also quit the loop when we have inserted the original item count of
     // the list, avoid a hang when we extend a list with itself.
@@ -675,6 +725,7 @@ list_copy(list_T *orig, int deep, int copyID)
 	    orig->lv_copyID = copyID;
 	    orig->lv_copylist = copy;
 	}
+	range_list_materialize(orig);
 	for (item = orig->lv_first; item != NULL && !got_int;
 							 item = item->li_next)
 	{
@@ -715,6 +766,8 @@ vimlist_remove(list_T *l, listitem_T *item, listitem_T *item2)
 {
     listitem_T	*ip;
 
+    range_list_materialize(l);
+
     // notify watchers
     for (ip = item; ip != NULL; ip = ip->li_next)
     {
@@ -748,6 +801,7 @@ list2string(typval_T *tv, int copyID, int restore_copyID)
 	return NULL;
     ga_init2(&ga, (int)sizeof(char), 80);
     ga_append(&ga, '[');
+    range_list_materialize(tv->vval.v_list);
     if (list_join(&ga, tv->vval.v_list, (char_u *)", ",
 				       FALSE, restore_copyID, copyID) == FAIL)
     {
@@ -785,6 +839,7 @@ list_join_inner(
     char_u	*s;
 
     // Stringify each item in the list.
+    range_list_materialize(l);
     for (item = l->lv_first; item != NULL && !got_int; item = item->li_next)
     {
 	s = echo_string_core(&item->li_tv, &tofree, numbuf, copyID,
@@ -983,6 +1038,7 @@ write_list(FILE *fd, list_T *list, int binary)
     int		ret = OK;
     char_u	*s;
 
+    range_list_materialize(list);
     for (li = list->lv_first; li != NULL; li = li->li_next)
     {
 	for (s = tv_get_string(&li->li_tv); *s != NUL; ++s)
@@ -1069,6 +1125,7 @@ f_list2str(typval_T *argvars, typval_T *rettv)
     if (argvars[1].v_type != VAR_UNKNOWN)
 	utf8 = (int)tv_get_number_chk(&argvars[1], NULL);
 
+    range_list_materialize(l);
     ga_init2(&ga, 1, 80);
     if (has_mbyte || utf8)
     {
@@ -1361,6 +1418,7 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 									TRUE))
 	    goto theend;
 	rettv_list_set(rettv, l);
+	range_list_materialize(l);
 
 	len = list_len(l);
 	if (len <= 1)
@@ -1723,6 +1781,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 	    // set_vim_var_nr() doesn't set the type
 	    set_vim_var_type(VV_KEY, VAR_NUMBER);
 
+	    range_list_materialize(l);
 	    for (li = l->lv_first; li != NULL; li = nli)
 	    {
 		if (map && var_check_lock(li->li_tv.v_lock, arg_errmsg, TRUE))

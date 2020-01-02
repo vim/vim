@@ -302,6 +302,10 @@
 # endif
 #endif
 
+#ifdef FEAT_EVAL
+# define FUNCARG(fp, j)	((char_u **)(fp->uf_args.ga_data))[j]
+#endif
+
 /*
  * In a hashtab item "hi_key" points to "di_key" in a dictitem.
  * This avoids adding a pointer to the hashtab item.
