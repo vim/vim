@@ -769,7 +769,6 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 							 / sizeof(textprop_T));
 	int	    i;
 	textprop_T  prop;
-	proptype_T  *pt;
 
 	for (i = 0; i < count; ++i)
 	{
