@@ -325,7 +325,7 @@ endfunc
 
 func dist#ft#FTmm()
   let n = 1
-  while n < 10
+  while n < 20
     let line = getline(n)
     if line =~ '^\s*\(#\s*\(include\|import\)\>\|@import\>\|/\*\)'
       setf objcpp
