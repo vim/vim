@@ -1,15 +1,15 @@
 ![Vim Logo](https://github.com/vim/vim/blob/master/runtime/vimlogo.gif)
 
-## What is Vim9? ##
+# What is Vim9?
 
 This is an experimental fork of [Vim](https://github.com/vim/vim).
 It explores ways of making Vim script faster and better.
 
 WARNING: Do not use for daily work, it's likely to crash!
 
-## Why Vim9? ##
+# Why Vim9?
 
-# 1. FASTER VIM SCRIPT
+## 1. FASTER VIM SCRIPT
 
 The third item on the poll results of 2018, after popup windows and text
 properties, is faster Vim script.  So how do we do that?
@@ -23,29 +23,54 @@ of a function call and executing every line is just too high.
 So what then?  We can only make something fast by having a new way of
 defining a function, with similar but different properties of the old
 way:
-*   Arguments are only available by name, not through the a: dictionary or
-    the a:000 list.
-
-*   Local variables are not available in an l: dictionary.
-
-*   A few more things that slow us down, such as exception handling details.
+* Arguments are only available by name, not through the a: dictionary or
+  the a:000 list.
+* Local variables are not available in an l: dictionary.
+* A few more things that slow us down, such as exception handling details.
 
 I Implemented a "proof of concept" and measured the time to run a simple
 for loop with an addition (Justin used this example in his presentation,
-code is below):
+full code is below):
 
-| how              | time in sec |
-| ---------------- | -------- |
-| Vim old function | 5.018541 |
-| Python           | 0.369598 |
-| Lua              | 0.078817 |
-| Vim new function | 0.073595 |
+``` vim
+  let sum = 0
+  for i in range(1, 2999999)
+    let sum += i
+  endfor
+```
+
+| how     | time in sec |
+| --------| -------- |
+| Vim old | 5.018541 |
+| Python  | 0.369598 |
+| Lua     | 0.078817 |
+| Vim new | 0.073595 |
 
 That looks very hopeful!  It's just one example, but it shows how much
 we can gain, and also that Vim script can be faster than builtin
 interfaces.
 
-How does this work?  The function is first compiled into a sequence of
+In practice the script would not do something useless as counting but change
+the text.  For example, re-indent all the lines.  Example:
+
+``` vim
+  let totallen = 0
+  for i in range(1, 100000)
+    call setline(i, '    ' .. getline(i))
+    let totallen += len(getline(i))
+  endfor
+```
+
+| how     | time in sec |
+| --------| -------- |
+| Vim old | 0.853752 |
+| Python  | 0.304584 |
+| Lua     | 0.286573 |
+| Vim new | 0.190276 |
+
+The differences are smaller, but Vim 9 script is clearly the fastest.
+
+How does Vim9 script work?  The function is first compiled into a sequence of
 instructions.  Each instruction has one or two parameters and a stack is
 used to store intermediate results.  Local variables are also on the
 stack, space is reserved during compilation.  This is a fairly normal
@@ -54,23 +79,21 @@ e.g. each stack item is a typeval_T.  And one of the instructions is
 "execute Ex command", for commands that are not compiled.
 
 
-# 2. PHASING OUT INTERFACES
+## 2. PHASING OUT INTERFACES
 
 Attempts have been made to implement functionality with built-in script
 languages such as Python, Perl, Lua, Tcl and Ruby.  This never gained much
 foothold, for various reasons.
 
 Instead of using script language support in Vim:
-*  Encourage implementing external tools in any language and communicate
+* Encourage implementing external tools in any language and communicate
   with them.  The job and channel support already makes this possible.
   Really any language can be used, also Java and Go, which are not
   available built-in.
-
-*   Phase out the built-in language interfaces, make maintenance a bit easier
+* Phase out the built-in language interfaces, make maintenance a bit easier
   and executables easier to build.  They will be kept for backwards
   compatibility, no new features.
-
-*  Improve the Vim script language, so that it can be used when an
+* Improve the Vim script language, so that it can be used when an
   external tool is undesired.
 
 All together this creates a clear situation: Vim with the +eval feature
@@ -82,28 +105,23 @@ language is missing.  This is a good long term goal.
 Rationale: Why is it easier to run a tool separately from Vim than using a
 built-in interface and interpreter?  Take for example something that is
 written in Python:
-*   The built-in interface uses the embedded python interpreter.  This is less
+* The built-in interface uses the embedded python interpreter.  This is less
   well maintained than the python command.  Building Vim with it requires
   installing developer packages.  If loaded dynamically there can be a version
   mismatch.
-
-*   When running the tool externally the standard python command can be used,
+* When running the tool externally the standard python command can be used,
   which is quite often available by default or can be easily installed.
-
-*   A .py file can be compiled into a .pyc file and execute much faster.
-
-*  Inside Vim multi-threading can cause problems, since the Vim core is single
+* A .py file can be compiled into a .pyc file and execute much faster.
+* Inside Vim multi-threading can cause problems, since the Vim core is single
   threaded.  In an external tool there are no such problems.
-
-*   The Vim part is written in .vim files, the Python part is in .py files, this
+* The Vim part is written in .vim files, the Python part is in .py files, this
   is nicely separated.
-
-*   Disadvantage: An interface needs to be made between Vim and Python.
+* Disadvantage: An interface needs to be made between Vim and Python.
   JSON is available for this, and it's fairly easy to use.  But it still
   requires implementing asynchronous communication.
 
 
-# 3. BETTER VIM SCRIPT
+## 3. BETTER VIM SCRIPT
 
 To make Vim faster a new way of defining a function needs to be added.
 While we are doing that, since the lines in this function won't be fully
@@ -142,7 +160,7 @@ def MyFunction(arg: number): number
    while todo > 0
       local += ADD
       --todo
-   endwhile
+   }
    return local
 enddef
 ```
@@ -151,7 +169,7 @@ Just some ideas, this will take time to design, discuss and implement.
 Eventually this will lead to Vim 9!
 
 
-# Code for time measurements
+## Code for sum time measurements
 
 Vim was build with -O2.
 
@@ -206,4 +224,77 @@ echo 'Lua: ' .. reltimestr(reltime(start))
 let start = reltime()
 echo VimNew()
 echo 'Vim new: ' .. reltimestr(reltime(start))
+```
+
+## Code for indent time measurements
+
+``` vim
+def VimNew(): number
+  let totallen = 0
+  for i in range(1, 100000)
+    setline(i, '    ' .. getline(i))
+    totallen += len(getline(i))
+  }
+  return totallen
+enddef
+
+func VimOld()
+  let totallen = 0
+  for i in range(1, 100000)
+    call setline(i, '    ' .. getline(i))
+    let totallen += len(getline(i))
+  endfor
+  return totallen
+endfunc
+
+func Lua()
+  lua << END
+    b = vim.buffer()
+    totallen = 0
+    for i = 1, 100000 do
+      b[i] = "    " .. b[i]
+      totallen = totallen + string.len(b[i])
+    end
+END
+  return luaeval('totallen')
+endfunc
+
+func Python()
+  py3 << END
+cb = vim.current.buffer
+totallen = 0
+for i in range(0, 100000):
+  cb[i] = '    ' + cb[i]
+  totallen += len(cb[i])
+END
+  return py3eval('totallen')
+endfunc
+
+new
+call setline(1, range(100000))
+let start = reltime()
+echo VimOld()
+echo 'Vim old: ' .. reltimestr(reltime(start))
+bwipe!
+
+new
+call setline(1, range(100000))
+let start = reltime()
+echo Python()
+echo 'Python: ' .. reltimestr(reltime(start))
+bwipe!
+ 
+new
+call setline(1, range(100000))
+let start = reltime()
+echo Lua()
+echo 'Lua: ' .. reltimestr(reltime(start))
+bwipe!
+
+new
+call setline(1, range(100000))
+let start = reltime()
+echo VimNew()
+echo 'Vim new: ' .. reltimestr(reltime(start))
+bwipe!
 ```
