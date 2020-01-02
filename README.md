@@ -1,149 +1,209 @@
 ![Vim Logo](https://github.com/vim/vim/blob/master/runtime/vimlogo.gif)
 
-[![Travis Build Status](https://travis-ci.org/vim/vim.svg?branch=master)](https://travis-ci.org/vim/vim)
-[![Appveyor Build status](https://ci.appveyor.com/api/projects/status/o2qht2kjm02sgghk?svg=true)](https://ci.appveyor.com/project/chrisbra/vim)
-[![Cirrus Build Status](https://api.cirrus-ci.com/github/vim/vim.svg)](https://cirrus-ci.com/github/vim/vim)
-[![Coverage Status](https://codecov.io/gh/vim/vim/coverage.svg?branch=master)](https://codecov.io/gh/vim/vim?branch=master)
-[![Coverity Scan](https://scan.coverity.com/projects/241/badge.svg)](https://scan.coverity.com/projects/vim)
-[![Language Grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/vim/vim.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/vim/vim/context:cpp)
-[![Debian CI](https://badges.debian.net/badges/debian/testing/vim/version.svg)](https://buildd.debian.org/vim)
-[![Packages](https://repology.org/badge/tiny-repos/vim.svg)](https://repology.org/metapackage/vim)
-For translations of this README see the end.
+## What is Vim9? ##
+
+This is an experimental fork of [Vim](https://github.com/vim/vim).
+It explores ways of making Vim script faster and better.
+
+WARNING: Do not use for daily work, it's likely to crash!
+
+## Why Vim9? ##
+
+# 1. FASTER VIM SCRIPT
+
+The third item on the poll results of 2018, after popup windows and text
+properties, is faster Vim script.  So how do we do that?
+
+I have been throwing some ideas around, and soon came to the conclusion
+that the current way functions are called and executed, with
+dictionaries for the arguments and local variables, is never going to be
+very fast.  We're lucky if we can make it twice as fast.  The overhead
+of a function call and executing every line is just too high.
+
+So what then?  We can only make something fast by having a new way of
+defining a function, with similar but different properties of the old
+way:
+*   Arguments are only available by name, not through the a: dictionary or
+    the a:000 list.
+
+*   Local variables are not available in an l: dictionary.
+
+*   A few more things that slow us down, such as exception handling details.
+
+I Implemented a "proof of concept" and measured the time to run a simple
+for loop with an addition (Justin used this example in his presentation,
+code is below):
+
+| how              | time in sec |
+| ---------------- | -------- |
+| Vim old function | 5.018541 |
+| Python           | 0.369598 |
+| Lua              | 0.078817 |
+| Vim new function | 0.073595 |
+
+That looks very hopeful!  It's just one example, but it shows how much
+we can gain, and also that Vim script can be faster than builtin
+interfaces.
+
+How does this work?  The function is first compiled into a sequence of
+instructions.  Each instruction has one or two parameters and a stack is
+used to store intermediate results.  Local variables are also on the
+stack, space is reserved during compilation.  This is a fairly normal
+way of compilation into an intermediate format, specialized for Vim,
+e.g. each stack item is a typeval_T.  And one of the instructions is
+"execute Ex command", for commands that are not compiled.
 
 
-## What is Vim? ##
+# 2. PHASING OUT INTERFACES
 
-Vim is a greatly improved version of the good old UNIX editor Vi.  Many new
-features have been added: multi-level undo, syntax highlighting, command line
-history, on-line help, spell checking, filename completion, block operations,
-script language, etc.  There is also a Graphical User Interface (GUI)
-available.  Still, Vi compatibility is maintained, those who have Vi "in the
-fingers" will feel at home.  See `runtime/doc/vi_diff.txt` for differences with
-Vi.
+Attempts have been made to implement functionality with built-in script
+languages such as Python, Perl, Lua, Tcl and Ruby.  This never gained much
+foothold, for various reasons.
 
-This editor is very useful for editing programs and other plain text files.
-All commands are given with normal keyboard characters, so those who can type
-with ten fingers can work very fast.  Additionally, function keys can be
-mapped to commands by the user, and the mouse can be used.
+Instead of using script language support in Vim:
+*  Encourage implementing external tools in any language and communicate
+  with them.  The job and channel support already makes this possible.
+  Really any language can be used, also Java and Go, which are not
+  available built-in.
 
-Vim runs under MS-Windows (NT, 2000, XP, Vista, 7, 8, 10), Macintosh, VMS and
-almost all flavours of UNIX.  Porting to other systems should not be very
-difficult.  Older versions of Vim run on MS-DOS, MS-Windows 95/98/Me, Amiga
-DOS, Atari MiNT, BeOS, RISC OS and OS/2.  These are no longer maintained.
+*   Phase out the built-in language interfaces, make maintenance a bit easier
+  and executables easier to build.  They will be kept for backwards
+  compatibility, no new features.
 
-## Distribution ##
+*  Improve the Vim script language, so that it can be used when an
+  external tool is undesired.
 
-You can often use your favorite package manager to install Vim.  On Mac and
-Linux a small version of Vim is pre-installed, you still need to install Vim
-if you want more features.
+All together this creates a clear situation: Vim with the +eval feature
+will be sufficient for most plugins, while some plugins require
+installing a tool that can be written in any language.  No confusion
+about having Vim but the plugin not working because some specific
+language is missing.  This is a good long term goal.
 
-There are separate distributions for Unix, PC, Amiga and some other systems.
-This `README.md` file comes with the runtime archive.  It includes the
-documentation, syntax files and other files that are used at runtime.  To run
-Vim you must get either one of the binary archives or a source archive.
-Which one you need depends on the system you want to run it on and whether you
-want or must compile it yourself.  Check http://www.vim.org/download.php for
-an overview of currently available distributions.
+Rationale: Why is it easier to run a tool separately from Vim than using a
+built-in interface and interpreter?  Take for example something that is
+written in Python:
+*   The built-in interface uses the embedded python interpreter.  This is less
+  well maintained than the python command.  Building Vim with it requires
+  installing developer packages.  If loaded dynamically there can be a version
+  mismatch.
 
-Some popular places to get the latest Vim:
-* Check out the git repository from [github](https://github.com/vim/vim).
-* Get the source code as an [archive](https://github.com/vim/vim/releases).
-* Get a Windows executable from the
-[vim-win32-installer](https://github.com/vim/vim-win32-installer/releases) repository.
+*   When running the tool externally the standard python command can be used,
+  which is quite often available by default or can be easily installed.
 
+*   A .py file can be compiled into a .pyc file and execute much faster.
 
+*  Inside Vim multi-threading can cause problems, since the Vim core is single
+  threaded.  In an external tool there are no such problems.
 
-## Compiling ##
+*   The Vim part is written in .vim files, the Python part is in .py files, this
+  is nicely separated.
 
-If you obtained a binary distribution you don't need to compile Vim.  If you
-obtained a source distribution, all the stuff for compiling Vim is in the
-`src` directory.  See `src/INSTALL` for instructions.
-
-
-## Installation ##
-
-See one of these files for system-specific instructions.  Either in the
-READMEdir directory (in the repository) or the top directory (if you unpack an
-archive):
-
-	README_ami.txt		Amiga
-	README_unix.txt		Unix
-	README_dos.txt		MS-DOS and MS-Windows
-	README_mac.txt		Macintosh
-	README_vms.txt		VMS
-
-There are other `README_*.txt` files, depending on the distribution you used.
+*   Disadvantage: An interface needs to be made between Vim and Python.
+  JSON is available for this, and it's fairly easy to use.  But it still
+  requires implementing asynchronous communication.
 
 
-## Documentation ##
+# 3. BETTER VIM SCRIPT
 
-The Vim tutor is a one hour training course for beginners.  Often it can be
-started as `vimtutor`.  See `:help tutor` for more information.
+To make Vim faster a new way of defining a function needs to be added.
+While we are doing that, since the lines in this function won't be fully
+backwards compatible anyway, we can also make Vim script easier to use.
+In other words: "less weird".  Making it work more like modern
+programming languages will help.  No surprises.
 
-The best is to use `:help` in Vim.  If you don't have an executable yet, read
-`runtime/doc/help.txt`.  It contains pointers to the other documentation
-files.  The User Manual reads like a book and is recommended to learn to use
-Vim.  See `:help user-manual`.
+A good example is how in a function the arguments are prefixed with
+"a:". No other language I know does that, so let's drop it.
 
+It should be possible to convert code from other languages to Vim
+script.  We can add functionality to make this easier.  This still needs
+to be discussed, but we can consider adding type checking and a simple
+form of classes.  If you look at JavaScript for example, it has gone
+through these stages over time, adding real class support and now
+Typescript adds type checking.  But we'll have to see how much of that
+we actually want to include in Vim script.  Ideally a conversion tool
+can take Python, JavaScript or Typescript code and convert it to Vim
+script, with only some things that cannot be converted.
 
-## Copying ##
-
-Vim is Charityware.  You can use and copy it as much as you like, but you are
-encouraged to make a donation to help orphans in Uganda.  Please read the file
-`runtime/doc/uganda.txt` for details (do `:help uganda` inside Vim).
-
-Summary of the license: There are no restrictions on using or distributing an
-unmodified copy of Vim.  Parts of Vim may also be distributed, but the license
-text must always be included.  For modified versions a few restrictions apply.
-The license is GPL compatible, you may compile Vim with GPL libraries and
-distribute it.
-
-
-## Sponsoring ##
-
-Fixing bugs and adding new features takes a lot of time and effort.  To show
-your appreciation for the work and motivate Bram and others to continue
-working on Vim please send a donation.
-
-Since Bram is back to a paid job the money will now be used to help children
-in Uganda.  See `runtime/doc/uganda.txt`.  But at the same time donations
-increase Bram's motivation to keep working on Vim!
-
-For the most recent information about sponsoring look on the Vim web site:
-	http://www.vim.org/sponsor/
+Vim script won't work the same as any specific language, but we can use
+mechanisms that are commonly known, ideally with the same syntax.  One
+thing I have been thinking of is assignments without ":let".  I often
+make that mistake (after writing JavaScript especially).  I think it is
+possible, if we make local variables shadow commands.  That should be OK,
+if you shadow a command you want to use, just rename the variable.
+Using "let" and "const" to declare a variable, like in JavaScript and
+Typescript, can work:
 
 
-## Contributing ##
+``` vim
+def MyFunction(arg: number): number
+   let local = 1
+   let todo = arg
+   const ADD = 88
+   while todo > 0
+      local += ADD
+      --todo
+   endwhile
+   return local
+enddef
+```
 
-If you would like to help making Vim better, see the [CONTRIBUTING.md](https://github.com/vim/vim/blob/master/CONTRIBUTING.md) file.
-
-
-## Information ##
-
-The latest news about Vim can be found on the Vim home page:
-	http://www.vim.org/
-
-If you have problems, have a look at the Vim documentation or tips:
-	http://www.vim.org/docs.php
-	http://vim.wikia.com/wiki/Vim_Tips_Wiki
-
-If you still have problems or any other questions, use one of the mailing
-lists to discuss them with Vim users and developers:
-	http://www.vim.org/maillist.php
-
-If nothing else works, report bugs directly:
-	Bram Moolenaar <Bram@vim.org>
+Just some ideas, this will take time to design, discuss and implement.
+Eventually this will lead to Vim 9!
 
 
-## Main author ##
+# Code for time measurements
 
-Send any other comments, patches, flowers and suggestions to:
-	Bram Moolenaar <Bram@vim.org>
+Vim was build with -O2.
 
+``` vim
+func VimOld()
+  let sum = 0
+  for i in range(1, 2999999)
+    let sum += i
+  endfor
+  return sum
+endfunc
 
-This is `README.md` for version 8.2 of Vim: Vi IMproved.
+func Python()
+  py3 << END
+sum = 0
+for i in range(1, 3000000):
+  sum += i
+END
+  return py3eval('sum')
+endfunc
 
+func Lua()
+  lua << END
+    sum = 0
+    for i = 1, 2999999 do
+      sum = sum + i
+    end
+END
+  return luaeval('sum')
+endfunc
 
-## Translations of this README ##
+def VimNew()
+  let sum = 0
+  for i in range(1, 2999999)
+    let sum += i
+  endfor
+  return sum
+enddef
 
-[Korean](https://github.com/cjw1359/opensource/blob/master/Vim/README_ko.md)
+let start = reltime()
+echo VimOld()
+echo 'Vim old: ' .. reltimestr(reltime(start))
+
+let start = reltime()
+echo Python()
+echo 'Python: ' .. reltimestr(reltime(start))
+
+let start = reltime()
+echo Lua()
+echo 'Lua: ' .. reltimestr(reltime(start))
+
+let start = reltime()
+echo VimNew()
+echo 'Vim new: ' .. reltimestr(reltime(start))
+```
