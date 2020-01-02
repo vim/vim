@@ -46,12 +46,12 @@ full code is below):
 | Lua     | 0.078817 |
 | Vim new | 0.073595 |
 
-That looks very hopeful!  It's just one example, but it shows how much
+That looks very promising!  It's just one example, but it shows how much
 we can gain, and also that Vim script can be faster than builtin
 interfaces.
 
 In practice the script would not do something useless as counting but change
-the text.  For example, re-indent all the lines.  Example:
+the text.  For example, re-indent all the lines:
 
 ``` vim
   let totallen = 0

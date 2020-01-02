@@ -43,6 +43,9 @@ func Test_assignment_failure()
 
   call CheckDefFailure(['let var: dict<string> = #{key: 123}'], 'expected dict<string> but got dict<number>')
   call CheckDefFailure(['let var: dict<number> = #{key: "xx"}'], 'expected dict<number> but got dict<string>')
+
+  call CheckDefFailure(['let var = feedkeys("0")'], 'E1031:')
+  call CheckDefFailure(['let var: number = feedkeys("0")'], 'expected number but got void')
 endfunc
 
 func Test_const()

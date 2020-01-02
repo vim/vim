@@ -2836,7 +2836,15 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
 
 	    lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
 	    if (!has_type)
-		lvar->lv_type = stacktype;
+	    {
+		if (stacktype->tt_type == VAR_VOID)
+		{
+		    emsg(_("E1031: Cannot use void value"));
+		    goto theend;
+		}
+		else
+		    lvar->lv_type = stacktype;
+	    }
 	    else
 		if (check_type(lvar->lv_type, stacktype, TRUE) == FAIL)
 		    goto theend;
