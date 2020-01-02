@@ -2572,9 +2572,13 @@ ex_function(exarg_T *eap)
 	    }
 	    else
 	    {
-		// redefine existing function
+		char_u *exp_name = fp->uf_name_exp;
+
+		// redefine existing function, keep the expanded name
 		VIM_CLEAR(name);
+		fp->uf_name_exp = NULL;
 		func_clear_items(fp);
+		fp->uf_name_exp = exp_name;
 #ifdef FEAT_PROFILE
 		fp->uf_profiling = FALSE;
 		fp->uf_prof_initialized = FALSE;
