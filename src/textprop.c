@@ -658,82 +658,82 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 	int	count = (int)((buf->b_ml.ml_line_len - textlen)
                                 / sizeof(textprop_T));
 	int	    i;
-        textprop_T  prop;
-        int	    prop_start;
-        int	    prop_end;
+	textprop_T  prop;
+	int	    prop_start;
+	int	    prop_end;
 
-        for (i = 0; i < count; ++i)
-        {
-            mch_memmove(&prop, text + textlen + i * sizeof(textprop_T),
-                            sizeof(textprop_T));
+	for (i = 0; i < count; ++i)
+	{
+	    mch_memmove(&prop, text + textlen + i * sizeof(textprop_T),
+			    sizeof(textprop_T));
 
-            if (prop.tp_id == id || prop.tp_type == type_id)
-            {
-                // Check if the starting position has text props.
-                if (lnum_start == lnum)
-                {
+	    if (prop.tp_id == id || prop.tp_type == type_id)
+	    {
+		// Check if the starting position has text props.
+		if (lnum_start == lnum)
+		{
 		    if (col >= prop.tp_col && (col <= prop.tp_col + prop.tp_len-1))
 			start_pos_has_prop = 1;
-                }
-                else
-                {
+		}
+		else
+		{
 		    // Not at the first line of the search so adjust col to 
 		    // indicate that we're continuing from prev/next line. 
 		    if (dir < 0)
 			col = buf->b_ml.ml_line_len;
 		    else
 			col = 1;
-                }
+		}
 
-                prop_start = !(prop.tp_flags & TP_FLAG_CONT_PREV);
-                prop_end = !(prop.tp_flags & TP_FLAG_CONT_NEXT);
-                if (!prop_start && prop_end && dir > 0)
+		prop_start = !(prop.tp_flags & TP_FLAG_CONT_PREV);
+		prop_end = !(prop.tp_flags & TP_FLAG_CONT_NEXT);
+		if (!prop_start && prop_end && dir > 0)
 		    seen_end = 1; 
 
-                // Skip lines without the start flag.
-                if (!prop_start)
-                { 
+		// Skip lines without the start flag.
+		if (!prop_start)
+		{ 
 		    // Always search backwards for start when search started
 		    // on a prop and we're not skipping.
 		    if (start_pos_has_prop && !skipstart)
 			dir = -1;
 		    break;
-                }
+		}
                    
-                // If skipstart is true, skip the prop at start pos (even if 
-                // continued from another line). 
-                if (start_pos_has_prop && skipstart && !seen_end)
-                {
+		// If skipstart is true, skip the prop at start pos (even if 
+		// continued from another line). 
+		if (start_pos_has_prop && skipstart && !seen_end)
+		{
 		    start_pos_has_prop = 0;
 		    break;
-                }
+		}
 
-                if (dir < 0)
-                {
+		if (dir < 0)
+		{
 		    if (col < prop.tp_col)
 			break;
-                }
-                else
-                {
+		}
+		else
+		{
 		    if (col > prop.tp_col + prop.tp_len-1)
 			break;
-                }
+		}
                 
-                prop_fill_dict(rettv->vval.v_dict, &prop, buf);
-                dict_add_number(rettv->vval.v_dict, "lnum", lnum);
+		prop_fill_dict(rettv->vval.v_dict, &prop, buf);
+		dict_add_number(rettv->vval.v_dict, "lnum", lnum);
 
-                return;
-            }
-        }
+		return;
+	    }
+	}
 
-        if (dir > 0)
-        {
+	if (dir > 0)
+	{
 	    if (lnum >= buf->b_ml.ml_line_count)
 		break;
 	    lnum++;
-        }
-        else
-        {
+	}
+	else
+	{
 	    if (lnum <= 1)
 		break;
 	    lnum--;
