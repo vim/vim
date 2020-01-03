@@ -83,11 +83,10 @@ endif
 if exists("loaded_matchit")
   let b:match_ignorecase = 0
   let b:match_words =
-	\ '\<fu\%[nction]\>:\<retu\%[rn]\>:\<endf\%[unction]\>,' .
- 	\ '\<\(wh\%[ile]\|for\)\>:\<brea\%[k]\>:\<con\%[tinue]\>:\<end\(w\%[hile]\|fo\%[r]\)\>,' .
-	\ '\<if\>:\<el\%[seif]\>:\<en\%[dif]\>,' .
-	\ '\<try\>:\<cat\%[ch]\>:\<fina\%[lly]\>:\<endt\%[ry]\>,' .
-	\ '\<aug\%[roup]\s\+\%(END\>\)\@!\S:\<aug\%[roup]\s\+END\>,'
+	\ '\<fu\%[nction]\>:\<endf\%[unction]\>,' .
+	\ '\<def\>:\<enddef\>,' .
+	\ '\<\(wh\%[ile]\|for\|if\|try\)\>:\<el\%[seif]\>:\<cat\%[ch]\>:\<fina\%[lly]\>:}\|\<endw\%[hile]\>\|\<endfo\%[r]\>\|\<en\%[dif]\>\|\<endt\%[ry]\>,' .
+	\ '\<aug\%[roup]\s\+\%(END\>\)\@!\S:\<aug\%[roup]\s\+END\>'
   " Ignore syntax region commands and settings, any 'en*' would clobber
   " if-endif.
   " - set spl=de,en
