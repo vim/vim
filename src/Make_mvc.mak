@@ -334,7 +334,7 @@ FEATURES = HUGE
 
 !ifndef CTAGS
 # this assumes ctags is Exuberant ctags
-CTAGS = ctags -I INIT+ --fields=+S
+CTAGS = ctags -I INIT+,INIT2+,INIT3+,INIT4+,INIT5+ --fields=+S
 !endif
 
 !ifndef CSCOPE
