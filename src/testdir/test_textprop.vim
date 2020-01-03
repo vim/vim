@@ -925,3 +925,39 @@ func Test_proptype_substitute2()
   call assert_equal(expected, prop_list(1))
   bwipe!
 endfunc
+
+func Test_textprop_noexpandtab()
+  %bwipe!
+  new
+  let save_ts = &tabstop
+  set tabstop=8
+  let save_sts = &softtabstop
+  set softtabstop=4
+  let save_sw = &shiftwidth
+  set shiftwidth=4
+  let save_et = &expandtab
+  set noexpandtab
+  let save_fdm = &foldmethod
+  set foldmethod=marker
+  call feedkeys("\<esc>\<esc>0Ca\<cr>\<esc>\<up>", "tx")
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call prop_add(1, 1, {'end_col': 2, 'type': 'test'})
+  call feedkeys("0i\<tab>", "tx")
+  call prop_remove({'type': 'test'})
+  call prop_add(1, 2, {'end_col': 3, 'type': 'test'})
+  call feedkeys("A\<left>\<tab>", "tx")
+  call prop_remove({'type': 'test'})
+  try
+    " It is correct that this does not pass
+    call prop_add(1, 6, {'end_col': 7, 'type': 'test'})
+    " Has already collapsed here, start_col:6 does not result in an error
+    call feedkeys("A\<left>\<tab>", "tx")
+  catch /^Vim\%((\a\+)\)\=:E964/
+  endtry
+  call prop_remove({'type': 'test'})
+  let &foldmethod = save_fdm
+  let &expandtab = save_et
+  let &shiftwidth = save_sw
+  let &softtabstop = save_sts
+  let &tabstop = save_ts
+endfunc
