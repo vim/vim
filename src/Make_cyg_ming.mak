@@ -115,7 +115,7 @@ endif
 
 ifndef CTAGS
 # this assumes ctags is Exuberant ctags
-CTAGS = ctags -I INIT+ --fields=+S
+CTAGS = ctags -I INIT+,INIT2+,INIT3+,INIT4+,INIT5+ --fields=+S
 endif
 
 # Link against the shared version of libstdc++ by default.  Set
