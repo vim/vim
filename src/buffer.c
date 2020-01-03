@@ -979,6 +979,7 @@ free_buffer_stuff(
 	hash_init(&buf->b_vars->dv_hashtab);
 	init_changedtick(buf);
 	CHANGEDTICK(buf) = tick;
+	remove_listeners(buf);
     }
 #endif
     uc_clear(&buf->b_ucmds);		// clear local user commands
