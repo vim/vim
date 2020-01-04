@@ -2980,7 +2980,7 @@ getwinvar(
  * "setwinvar()" and "settabwinvar()" functions
  */
     static void
-setwinvar(typval_T *argvars, typval_T *rettv UNUSED, int off)
+setwinvar(typval_T *argvars, int off)
 {
     win_T	*win;
     win_T	*save_curwin;
@@ -3381,14 +3381,12 @@ f_getbufvar(typval_T *argvars, typval_T *rettv)
  * "settabvar()" function
  */
     void
-f_settabvar(typval_T *argvars, typval_T *rettv)
+f_settabvar(typval_T *argvars, typval_T *rettv UNUSED)
 {
     tabpage_T	*save_curtab;
     tabpage_T	*tp;
     char_u	*varname, *tabvarname;
     typval_T	*varp;
-
-    rettv->vval.v_number = 0;
 
     if (check_secure())
 	return;
@@ -3421,18 +3419,18 @@ f_settabvar(typval_T *argvars, typval_T *rettv)
  * "settabwinvar()" function
  */
     void
-f_settabwinvar(typval_T *argvars, typval_T *rettv)
+f_settabwinvar(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    setwinvar(argvars, rettv, 1);
+    setwinvar(argvars, 1);
 }
 
 /*
  * "setwinvar()" function
  */
     void
-f_setwinvar(typval_T *argvars, typval_T *rettv)
+f_setwinvar(typval_T *argvars, typval_T *rettv UNUSED)
 {
-    setwinvar(argvars, rettv, 0);
+    setwinvar(argvars, 0);
 }
 
 /*
