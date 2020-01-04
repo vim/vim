@@ -932,7 +932,7 @@ if s:settings.dynamic_folds
 	\ "{",
 	\ "  var fold;",
 	\ "  fold = document.getElementById(objID);",
-	\ "  if(fold.className == 'closed-fold')",
+	\ "  if (fold.className == 'closed-fold')",
 	\ "  {",
 	\ "    fold.className = 'open-fold';",
 	\ "  }",
