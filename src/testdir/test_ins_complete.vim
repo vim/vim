@@ -158,17 +158,17 @@ func s:CompleteDone_CompleteFuncDict( findstart, base )
   endif
 
   return {
-          \ 'words': [
-            \ {
-              \ 'word': 'aword',
-              \ 'abbr': 'wrd',
-              \ 'menu': 'extra text',
-              \ 'info': 'words are cool',
-              \ 'kind': 'W',
-              \ 'user_data': 'test'
-            \ }
-          \ ]
-        \ }
+	  \ 'words': [
+	    \ {
+	      \ 'word': 'aword',
+	      \ 'abbr': 'wrd',
+	      \ 'menu': 'extra text',
+	      \ 'info': 'words are cool',
+	      \ 'kind': 'W',
+	      \ 'user_data': 'test'
+	    \ }
+	  \ ]
+	\ }
 endfunc
 
 func s:CompleteDone_CheckCompletedItemNone()
@@ -222,16 +222,17 @@ func s:CompleteDone_CompleteFuncDictNoUserData(findstart, base)
   endif
 
   return {
-          \ 'words': [
-            \ {
-              \ 'word': 'aword',
-              \ 'abbr': 'wrd',
-              \ 'menu': 'extra text',
-              \ 'info': 'words are cool',
-              \ 'kind': 'W'
-            \ }
-          \ ]
-        \ }
+	  \ 'words': [
+	    \ {
+	      \ 'word': 'aword',
+	      \ 'abbr': 'wrd',
+	      \ 'menu': 'extra text',
+	      \ 'info': 'words are cool',
+	      \ 'kind': 'W',
+	      \ 'user_data': ['one', 'two'],
+	    \ }
+	  \ ]
+	\ }
 endfunc
 
 func s:CompleteDone_CheckCompletedItemDictNoUserData()
@@ -240,7 +241,7 @@ func s:CompleteDone_CheckCompletedItemDictNoUserData()
   call assert_equal( 'extra text',     v:completed_item[ 'menu' ] )
   call assert_equal( 'words are cool', v:completed_item[ 'info' ] )
   call assert_equal( 'W',              v:completed_item[ 'kind' ] )
-  call assert_equal( '',               v:completed_item[ 'user_data' ] )
+  call assert_equal( ['one', 'two'],   v:completed_item[ 'user_data' ] )
 
   let s:called_completedone = 1
 endfunc
@@ -252,7 +253,7 @@ func Test_CompleteDoneDictNoUserData()
   execute "normal a\<C-X>\<C-U>\<C-Y>"
   set completefunc&
 
-  call assert_equal('', v:completed_item[ 'user_data' ])
+  call assert_equal(['one', 'two'], v:completed_item[ 'user_data' ])
   call assert_true(s:called_completedone)
 
   let s:called_completedone = 0

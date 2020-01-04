@@ -885,7 +885,7 @@ f_prop_type_delete(typval_T *argvars, typval_T *rettv UNUSED)
  * prop_type_get({name} [, {bufnr}])
  */
     void
-f_prop_type_get(typval_T *argvars, typval_T *rettv UNUSED)
+f_prop_type_get(typval_T *argvars, typval_T *rettv)
 {
     char_u *name = tv_get_string(&argvars[0]);
 
