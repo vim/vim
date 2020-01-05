@@ -432,3 +432,31 @@ func Test_pum_with_preview_win()
   call StopVimInTerminal(buf)
   call delete('Xpreviewscript')
 endfunc
+
+" Test for inserting the tag search pattern in insert mode
+func Test_ins_compl_tag_sft()
+  call writefile([
+        \ "!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "first\tXfoo\t/^int first() {}$/",
+        \ "second\tXfoo\t/^int second() {}$/",
+        \ "third\tXfoo\t/^int third() {}$/"],
+        \ 'Xtags')
+  set tags=Xtags
+  let code =<< trim [CODE]
+    int first() {}
+    int second() {}
+    int third() {}
+  [CODE]
+  call writefile(code, 'Xfoo')
+
+  enew
+  set showfulltag
+  exe "normal isec\<C-X>\<C-]>\<C-N>\<CR>"
+  call assert_equal('int second() {}', getline(1))
+  set noshowfulltag
+
+  call delete('Xtags')
+  call delete('Xfoo')
+  set tags&
+  %bwipe!
+endfunc

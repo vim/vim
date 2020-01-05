@@ -2633,16 +2633,13 @@ globpath(
 		ExpandEscape(&xpc, buf, num_p, p, WILD_SILENT|expand_options);
 
 		if (ga_grow(ga, num_p) == OK)
-		{
+		    // take over the pointers and put them in "ga"
 		    for (i = 0; i < num_p; ++i)
 		    {
-			((char_u **)ga->ga_data)[ga->ga_len] =
-					vim_strnsave(p[i], (int)STRLEN(p[i]));
+			((char_u **)ga->ga_data)[ga->ga_len] = p[i];
 			++ga->ga_len;
 		    }
-		}
-
-		FreeWild(num_p, p);
+		vim_free(p);
 	    }
 	}
     }
