@@ -3808,6 +3808,7 @@ test_for_current(
 find_extra(char_u **pp)
 {
     char_u	*str = *pp;
+    char_u	first_char = **pp;
 
     // Repeat for addresses separated with ';'
     for (;;)
@@ -3817,7 +3818,7 @@ find_extra(char_u **pp)
 	else if (*str == '/' || *str == '?')
 	{
 	    str = skip_regexp(str + 1, *str, FALSE, NULL);
-	    if (*str != **pp)
+	    if (*str != first_char)
 		str = NULL;
 	    else
 		++str;
@@ -3837,6 +3838,7 @@ find_extra(char_u **pp)
 		  || !(VIM_ISDIGIT(str[1]) || str[1] == '/' || str[1] == '?'))
 	    break;
 	++str;	// skip ';'
+	first_char = *str;
     }
 
     if (str != NULL && STRNCMP(str, ";\"", 2) == 0)
