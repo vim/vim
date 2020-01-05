@@ -91,8 +91,7 @@ static char *ctrl_x_mode_names[] = {
 #define CPT_MENU	1	// "menu"
 #define CPT_KIND	2	// "kind"
 #define CPT_INFO	3	// "info"
-#define CPT_USER_DATA	4	// "user data"
-#define CPT_COUNT	5	// Number of entries
+#define CPT_COUNT	4	// Number of entries
 
 /*
  * Structure used to store one match for insert completion.
@@ -104,6 +103,9 @@ struct compl_S
     compl_T	*cp_prev;
     char_u	*cp_str;	// matched text
     char_u	*(cp_text[CPT_COUNT]);	// text for the menu
+#ifdef FEAT_EVAL
+    typval_T	cp_user_data;
+#endif
     char_u	*cp_fname;	// file containing the match, allocated when
 				// cp_flags has CP_FREE_FNAME
     int		cp_flags;	// CP_ values
@@ -187,7 +189,7 @@ static expand_T	  compl_xp;
 static int	  compl_opt_refresh_always = FALSE;
 static int	  compl_opt_suppress_empty = FALSE;
 
-static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, int cdir, int flags, int adup);
+static int ins_compl_add(char_u *str, int len, char_u *fname, char_u **cptext, typval_T *user_data, int cdir, int flags, int adup);
 static void ins_compl_longest_match(compl_T *match);
 static void ins_compl_del_pum(void);
 static void ins_compl_files(int count, char_u **files, int thesaurus, int flags, regmatch_T *regmatch, char_u *buf, int *dir);
@@ -560,7 +562,7 @@ ins_compl_add_infercase(
     if (icase)
 	flags |= CP_ICASE;
 
-    return ins_compl_add(str, len, fname, NULL, dir, flags, FALSE);
+    return ins_compl_add(str, len, fname, NULL, NULL, dir, flags, FALSE);
 }
 
 /*
@@ -574,10 +576,11 @@ ins_compl_add(
     char_u	*str,
     int		len,
     char_u	*fname,
-    char_u	**cptext,   // extra text for popup menu or NULL
+    char_u	**cptext,	// extra text for popup menu or NULL
+    typval_T	*user_data,	// "user_data" entry or NULL
     int		cdir,
     int		flags_arg,
-    int		adup)	    // accept duplicate match
+    int		adup)		// accept duplicate match
 {
     compl_T	*match;
     int		dir = (cdir == 0 ? compl_direction : cdir);
@@ -646,6 +649,10 @@ ins_compl_add(
 	    if (cptext[i] != NULL && *cptext[i] != NUL)
 		match->cp_text[i] = vim_strsave(cptext[i]);
     }
+#ifdef FEAT_EVAL
+    if (user_data != NULL)
+	match->cp_user_data = *user_data;
+#endif
 
     // Link the new match structure in the list of matches.
     if (compl_first_match == NULL)
@@ -783,7 +790,7 @@ ins_compl_add_matches(
     int		dir = compl_direction;
 
     for (i = 0; i < num_matches && add_r != FAIL; i++)
-	if ((add_r = ins_compl_add(matches[i], -1, NULL, NULL, dir,
+	if ((add_r = ins_compl_add(matches[i], -1, NULL, NULL, NULL, dir,
 					   icase ? CP_ICASE : 0, FALSE)) == OK)
 	    // if dir was BACKWARD then honor it just once
 	    dir = FORWARD;
@@ -952,7 +959,10 @@ ins_compl_dict_alloc(compl_T *match)
 	dict_add_string(dict, "menu", match->cp_text[CPT_MENU]);
 	dict_add_string(dict, "kind", match->cp_text[CPT_KIND]);
 	dict_add_string(dict, "info", match->cp_text[CPT_INFO]);
-	dict_add_string(dict, "user_data", match->cp_text[CPT_USER_DATA]);
+	if (match->cp_user_data.v_type == VAR_UNKNOWN)
+	    dict_add_string(dict, "user_data", (char_u *)"");
+	else
+	    dict_add_tv(dict, "user_data", &match->cp_user_data);
     }
     return dict;
 }
@@ -1453,6 +1463,9 @@ ins_compl_free(void)
 	    vim_free(match->cp_fname);
 	for (i = 0; i < CPT_COUNT; ++i)
 	    vim_free(match->cp_text[i]);
+#ifdef FEAT_EVAL
+	clear_tv(&match->cp_user_data);
+#endif
 	vim_free(match);
     } while (compl_curr_match != NULL && compl_curr_match != compl_first_match);
     compl_first_match = compl_curr_match = NULL;
@@ -2264,7 +2277,9 @@ ins_compl_add_tv(typval_T *tv, int dir)
     int		empty = FALSE;
     int		flags = 0;
     char_u	*(cptext[CPT_COUNT]);
+    typval_T	user_data;
 
+    user_data.v_type = VAR_UNKNOWN;
     if (tv->v_type == VAR_DICT && tv->vval.v_dict != NULL)
     {
 	word = dict_get_string(tv->vval.v_dict, (char_u *)"word", FALSE);
@@ -2276,8 +2291,7 @@ ins_compl_add_tv(typval_T *tv, int dir)
 						     (char_u *)"kind", FALSE);
 	cptext[CPT_INFO] = dict_get_string(tv->vval.v_dict,
 						     (char_u *)"info", FALSE);
-	cptext[CPT_USER_DATA] = dict_get_string(tv->vval.v_dict,
-						 (char_u *)"user_data", FALSE);
+	dict_get_tv(tv->vval.v_dict, (char_u *)"user_data", &user_data);
 	if (dict_get_string(tv->vval.v_dict, (char_u *)"icase", FALSE) != NULL
 			&& dict_get_number(tv->vval.v_dict, (char_u *)"icase"))
 	    flags |= CP_ICASE;
@@ -2296,7 +2310,7 @@ ins_compl_add_tv(typval_T *tv, int dir)
     }
     if (word == NULL || (!empty && *word == NUL))
 	return FAIL;
-    return ins_compl_add(word, -1, NULL, cptext, dir, flags, dup);
+    return ins_compl_add(word, -1, NULL, cptext, &user_data, dir, flags, dup);
 }
 
 /*
@@ -2373,7 +2387,7 @@ set_completion(colnr_T startcol, list_T *list)
     if (p_ic)
 	flags |= CP_ICASE;
     if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-					-1, NULL, NULL, 0, flags, FALSE) != OK)
+				  -1, NULL, NULL, NULL, 0, flags, FALSE) != OK)
 	return;
 
     ctrl_x_mode = CTRL_X_EVAL;
@@ -2541,8 +2555,11 @@ get_complete_info(list_T *what_list, dict_T *retdict)
 		    dict_add_string(di, "menu", match->cp_text[CPT_MENU]);
 		    dict_add_string(di, "kind", match->cp_text[CPT_KIND]);
 		    dict_add_string(di, "info", match->cp_text[CPT_INFO]);
-		    dict_add_string(di, "user_data",
-					    match->cp_text[CPT_USER_DATA]);
+		    if (match->cp_user_data.v_type == VAR_UNKNOWN)
+			// Add an empty string for backwards compatibility
+			dict_add_string(di, "user_data", (char_u *)"");
+		    else
+			dict_add_tv(di, "user_data", &match->cp_user_data);
 		}
 		match = match->cp_next;
 	    }
@@ -3893,7 +3910,7 @@ ins_complete(int c, int enable_pum)
 	if (p_ic)
 	    flags |= CP_ICASE;
 	if (compl_orig_text == NULL || ins_compl_add(compl_orig_text,
-					-1, NULL, NULL, 0, flags, FALSE) != OK)
+				  -1, NULL, NULL, NULL, 0, flags, FALSE) != OK)
 	{
 	    VIM_CLEAR(compl_pattern);
 	    VIM_CLEAR(compl_orig_text);

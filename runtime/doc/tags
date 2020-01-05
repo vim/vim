@@ -4061,6 +4061,7 @@ E287	mbyte.txt	/*E287*
 E288	mbyte.txt	/*E288*
 E289	mbyte.txt	/*E289*
 E29	change.txt	/*E29*
+E292	message.txt	/*E292*
 E293	message.txt	/*E293*
 E294	message.txt	/*E294*
 E295	message.txt	/*E295*
@@ -4753,7 +4754,7 @@ E947	terminal.txt	/*E947*
 E948	terminal.txt	/*E948*
 E949	editing.txt	/*E949*
 E95	message.txt	/*E95*
-E950	message.txt	/*E950*
+E950	options.txt	/*E950*
 E951	pattern.txt	/*E951*
 E952	autocmd.txt	/*E952*
 E953	terminal.txt	/*E953*
@@ -10056,6 +10057,7 @@ windows.txt	windows.txt	/*windows.txt*
 windows95	os_win32.txt	/*windows95*
 windows98	os_win32.txt	/*windows98*
 windowsme	os_win32.txt	/*windowsme*
+windowsversion()	eval.txt	/*windowsversion()*
 winheight()	eval.txt	/*winheight()*
 winid	windows.txt	/*winid*
 winlayout()	eval.txt	/*winlayout()*

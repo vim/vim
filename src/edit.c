@@ -5601,14 +5601,20 @@ ins_tab(void)
 	    i = cursor->col - fpos.col;
 	    if (i > 0)
 	    {
-		STRMOVE(ptr, ptr + i);
+#ifdef FEAT_PROP_POPUP
+		if (!(State & VREPLACE_FLAG))
+		{
+		    mch_memmove(ptr, ptr + i, curbuf->b_ml.ml_line_len - i
+					   - (ptr - curbuf->b_ml.ml_line_ptr));
+		    curbuf->b_ml.ml_line_len -= i;
+		}
+		else
+#endif
+		    STRMOVE(ptr, ptr + i);
 		// correct replace stack.
 		if ((State & REPLACE_FLAG) && !(State & VREPLACE_FLAG))
 		    for (temp = i; --temp >= 0; )
 			replace_join(repl_off);
-#ifdef FEAT_PROP_POPUP
-		curbuf->b_ml.ml_line_len -= i;
-#endif
 	    }
 #ifdef FEAT_NETBEANS_INTG
 	    if (netbeans_active())

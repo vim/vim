@@ -448,6 +448,27 @@ dict_add_list(dict_T *d, char *key, list_T *list)
 }
 
 /*
+ * Add a typval_T entry to dictionary "d".
+ * Returns FAIL when out of memory and when key already exists.
+ */
+    int
+dict_add_tv(dict_T *d, char *key, typval_T *tv)
+{
+    dictitem_T	*item;
+
+    item = dictitem_alloc((char_u *)key);
+    if (item == NULL)
+	return FAIL;
+    copy_tv(tv, &item->di_tv);
+    if (dict_add(d, item) == FAIL)
+    {
+	dictitem_free(item);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
  * Add a callback to dictionary "d".
  * Returns FAIL when out of memory and when key already exists.
  */
@@ -587,6 +608,22 @@ dict_find(dict_T *d, char_u *key, int len)
     if (HASHITEM_EMPTY(hi))
 	return NULL;
     return HI2DI(hi);
+}
+
+/*
+ * Get a typval_T item from a dictionary and copy it into "rettv".
+ * Returns FAIL if the entry doesn't exist or out of memory.
+ */
+    int
+dict_get_tv(dict_T *d, char_u *key, typval_T *rettv)
+{
+    dictitem_T	*di;
+
+    di = dict_find(d, key, -1);
+    if (di == NULL)
+	return FAIL;
+    copy_tv(&di->di_tv, rettv);
+    return OK;
 }
 
 /*
@@ -745,7 +782,7 @@ get_literal_key(char_u **arg, typval_T *tv)
  * Return OK or FAIL.  Returns NOTDONE for {expr}.
  */
     int
-dict_get_tv(char_u **arg, typval_T *rettv, int evaluate, int literal)
+eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
 {
     dict_T	*d = NULL;
     typval_T	tvkey;

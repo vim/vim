@@ -1218,7 +1218,7 @@ del_bytes(
     // If "count" is negative the caller must be doing something wrong.
     if (count < 1)
     {
-	siemsg("E950: Invalid count for del_bytes(): %ld", count);
+	siemsg("E292: Invalid count for del_bytes(): %ld", count);
 	return FAIL;
     }
 

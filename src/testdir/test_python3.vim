@@ -167,3 +167,23 @@ func Test_Catch_Exception_Message()
     call assert_match( '^Vim(.*):RuntimeError: TEST$', v:exception )
   endtry
 endfunc
+
+func Test_unicode()
+  " this crashed Vim once
+  if &tenc != ''
+    throw "Skipped: 'termencoding' is not empty"
+  endif
+
+  set encoding=utf32
+  py3 print('hello')
+
+  if !has('win32')
+    set encoding=debug
+    py3 print('hello')
+
+    set encoding=euc-tw
+    py3 print('hello')
+  endif
+
+  set encoding=utf8
+endfunc

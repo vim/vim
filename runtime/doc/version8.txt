@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.2.  Last change: 2019 Dec 21
+*version8.txt*  For Vim version 8.2.  Last change: 2019 Dec 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -26004,7 +26004,6 @@ Added commands:
 	`:tlmenu`
 	`:tlnoremenu`
 	`:tlunmenu`
-	`:wsverb`
 	`:xrestore`
 
 Added options:

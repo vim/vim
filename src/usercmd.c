@@ -57,6 +57,7 @@ static struct
     {EXPAND_USER_DEFINED, "custom"},
     {EXPAND_USER_LIST, "customlist"},
 #endif
+    {EXPAND_DIFF_BUFFERS, "diff_buffer"},
     {EXPAND_DIRECTORIES, "dir"},
     {EXPAND_ENV_VARS, "environment"},
     {EXPAND_EVENTS, "event"},
@@ -190,7 +191,7 @@ find_ucmd(
 		    {
 			xp->xp_arg = uc->uc_compl_arg;
 			xp->xp_script_ctx = uc->uc_script_ctx;
-			xp->xp_script_ctx.sc_lnum += sourcing_lnum;
+			xp->xp_script_ctx.sc_lnum += SOURCING_LNUM;
 		    }
 # endif
 		    // Do not search for further abbreviations
@@ -955,7 +956,7 @@ uc_add_command(
     cmd->uc_compl = compl;
 #ifdef FEAT_EVAL
     cmd->uc_script_ctx = current_sctx;
-    cmd->uc_script_ctx.sc_lnum += sourcing_lnum;
+    cmd->uc_script_ctx.sc_lnum += SOURCING_LNUM;
     cmd->uc_compl_arg = compl_arg;
 #endif
     cmd->uc_addr_type = addr_type;

@@ -534,15 +534,16 @@ throw_exception(void *value, except_type_T type, char_u *cmdname)
 	goto nomem;
 
     excp->type = type;
-    excp->throw_name = vim_strsave(sourcing_name == NULL
-					      ? (char_u *)"" : sourcing_name);
+    excp->throw_name = estack_sfile();
+    if (excp->throw_name == NULL)
+	excp->throw_name = vim_strsave((char_u *)"");
     if (excp->throw_name == NULL)
     {
 	if (should_free)
 	    vim_free(excp->value);
 	goto nomem;
     }
-    excp->throw_lnum = sourcing_lnum;
+    excp->throw_lnum = SOURCING_LNUM;
 
     if (p_verbose >= 13 || debug_break_level > 0)
     {

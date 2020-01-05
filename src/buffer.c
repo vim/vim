@@ -979,6 +979,7 @@ free_buffer_stuff(
 	hash_init(&buf->b_vars->dv_hashtab);
 	init_changedtick(buf);
 	CHANGEDTICK(buf) = tick;
+	remove_listeners(buf);
     }
 #endif
     uc_clear(&buf->b_ucmds);		// clear local user commands
@@ -2661,6 +2662,11 @@ ExpandBufnames(
     *num_file = 0;		    // return values in case of FAIL
     *file = NULL;
 
+#ifdef FEAT_DIFF
+    if ((options & BUF_DIFF_FILTER) && !curwin->w_p_diff)
+	return FAIL;
+#endif
+
     // Make a copy of "pat" and change "^" to "\(^\|[\/]\)".
     if (*pat == '^')
     {
@@ -2702,6 +2708,14 @@ ExpandBufnames(
 	    {
 		if (!buf->b_p_bl)	// skip unlisted buffers
 		    continue;
+#ifdef FEAT_DIFF
+		if (options & BUF_DIFF_FILTER)
+		    // Skip buffers not suitable for
+		    // :diffget or :diffput completion.
+		    if (buf == curbuf || !diff_mode_buf(buf))
+			continue;
+#endif
+
 		p = buflist_match(&regmatch, buf, p_wic);
 		if (p != NULL)
 		{
@@ -5270,8 +5284,6 @@ chk_modeline(
     int		vers;
     int		end;
     int		retval = OK;
-    char_u	*save_sourcing_name;
-    linenr_T	save_sourcing_lnum;
 #ifdef FEAT_EVAL
     sctx_T	save_current_sctx;
 #endif
@@ -5316,10 +5328,8 @@ chk_modeline(
 	if (linecopy == NULL)
 	    return FAIL;
 
-	save_sourcing_lnum = sourcing_lnum;
-	save_sourcing_name = sourcing_name;
-	sourcing_lnum = lnum;		// prepare for emsg()
-	sourcing_name = (char_u *)"modelines";
+	// prepare for emsg()
+	estack_push(ETYPE_MODELINE, (char_u *)"modelines", lnum);
 
 	end = FALSE;
 	while (end == FALSE)
@@ -5362,7 +5372,7 @@ chk_modeline(
 		save_current_sctx = current_sctx;
 		current_sctx.sc_sid = SID_MODELINE;
 		current_sctx.sc_seq = 0;
-		current_sctx.sc_lnum = 0;
+		current_sctx.sc_lnum = lnum;
 		current_sctx.sc_version = 1;
 #endif
 		// Make sure no risky things are executed as a side effect.
@@ -5380,9 +5390,7 @@ chk_modeline(
 	    s = e + 1;			// advance to next part
 	}
 
-	sourcing_lnum = save_sourcing_lnum;
-	sourcing_name = save_sourcing_name;
-
+	estack_pop();
 	vim_free(linecopy);
     }
     return retval;

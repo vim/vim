@@ -226,6 +226,22 @@ register_closure(ufunc_T *fp)
     return OK;
 }
 
+    static void
+set_ufunc_name(ufunc_T *fp, char_u *name)
+{
+    STRCPY(fp->uf_name, name);
+
+    if (name[0] == K_SPECIAL)
+    {
+	fp->uf_name_exp = alloc(STRLEN(name) + 3);
+	if (fp->uf_name_exp != NULL)
+	{
+	    STRCPY(fp->uf_name_exp, "<SNR>");
+	    STRCAT(fp->uf_name_exp, fp->uf_name + 3);
+	}
+    }
+}
+
 /*
  * Parse a lambda expression and get a Funcref from "*arg".
  * Return OK or FAIL.  Returns NOTDONE for dict or {expr}.
@@ -309,7 +325,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	vim_strncpy(p + 7, s, e - s);
 
 	fp->uf_refcount = 1;
-	STRCPY(fp->uf_name, name);
+	set_ufunc_name(fp, name);
 	hash_add(&func_hashtab, UF2HIKEY(fp));
 	fp->uf_args = newargs;
 	ga_init(&fp->uf_def_args);
@@ -333,7 +349,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	fp->uf_flags = flags;
 	fp->uf_calls = 0;
 	fp->uf_script_ctx = current_sctx;
-	fp->uf_script_ctx.sc_lnum += sourcing_lnum - newlines.ga_len;
+	fp->uf_script_ctx.sc_lnum += SOURCING_LNUM - newlines.ga_len;
 
 	pt->pt_func = fp;
 	pt->pt_refcount = 1;
@@ -533,7 +549,7 @@ fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
 	if (eval_fname_sid(name))	// "<SID>" or "s:"
 	{
 	    if (current_sctx.sc_sid <= 0)
-		*error = ERROR_SCRIPT;
+		*error = FCERR_SCRIPT;
 	    else
 	    {
 		sprintf((char *)fname_buf + 3, "%ld_",
@@ -550,7 +566,7 @@ fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
 	{
 	    fname = alloc(i + STRLEN(name + llen) + 1);
 	    if (fname == NULL)
-		*error = ERROR_OTHER;
+		*error = FCERR_OTHER;
 	    else
 	    {
 		*tofree = fname;
@@ -759,8 +775,6 @@ call_user_func(
     linenr_T	lastline,	// last line of range
     dict_T	*selfdict)	// Dictionary for "self"
 {
-    char_u	*save_sourcing_name;
-    linenr_T	save_sourcing_lnum;
     sctx_T	save_current_sctx;
     int		using_sandbox = FALSE;
     funccall_T	*fc;
@@ -774,7 +788,6 @@ call_user_func(
     int		islambda = FALSE;
     char_u	numbuf[NUMBUFLEN];
     char_u	*name;
-    size_t	len;
 #ifdef FEAT_PROFILE
     proftime_T	wait_start;
     proftime_T	call_start;
@@ -948,9 +961,6 @@ call_user_func(
 
     // Don't redraw while executing the function.
     ++RedrawingDisabled;
-    save_sourcing_name = sourcing_name;
-    save_sourcing_lnum = sourcing_lnum;
-    sourcing_lnum = 1;
 
     if (fp->uf_flags & FC_SANDBOX)
     {
@@ -958,65 +968,51 @@ call_user_func(
 	++sandbox;
     }
 
-    // need space for function name + ("function " + 3) or "[number]"
-    len = (save_sourcing_name == NULL ? 0 : STRLEN(save_sourcing_name))
-						   + STRLEN(fp->uf_name) + 20;
-    sourcing_name = alloc(len);
-    if (sourcing_name != NULL)
+    estack_push_ufunc(ETYPE_UFUNC, fp, 1);
+    if (p_verbose >= 12)
     {
-	if (save_sourcing_name != NULL
-			  && STRNCMP(save_sourcing_name, "function ", 9) == 0)
-	    sprintf((char *)sourcing_name, "%s[%d]..",
-				 save_sourcing_name, (int)save_sourcing_lnum);
-	else
-	    STRCPY(sourcing_name, "function ");
-	cat_func_name(sourcing_name + STRLEN(sourcing_name), fp);
+	++no_wait_return;
+	verbose_enter_scroll();
 
-	if (p_verbose >= 12)
+	smsg(_("calling %s"), SOURCING_NAME);
+	if (p_verbose >= 14)
 	{
-	    ++no_wait_return;
-	    verbose_enter_scroll();
+	    char_u	buf[MSG_BUF_LEN];
+	    char_u	numbuf2[NUMBUFLEN];
+	    char_u	*tofree;
+	    char_u	*s;
 
-	    smsg(_("calling %s"), sourcing_name);
-	    if (p_verbose >= 14)
+	    msg_puts("(");
+	    for (i = 0; i < argcount; ++i)
 	    {
-		char_u	buf[MSG_BUF_LEN];
-		char_u	numbuf2[NUMBUFLEN];
-		char_u	*tofree;
-		char_u	*s;
-
-		msg_puts("(");
-		for (i = 0; i < argcount; ++i)
+		if (i > 0)
+		    msg_puts(", ");
+		if (argvars[i].v_type == VAR_NUMBER)
+		    msg_outnum((long)argvars[i].vval.v_number);
+		else
 		{
-		    if (i > 0)
-			msg_puts(", ");
-		    if (argvars[i].v_type == VAR_NUMBER)
-			msg_outnum((long)argvars[i].vval.v_number);
-		    else
+		    // Do not want errors such as E724 here.
+		    ++emsg_off;
+		    s = tv2string(&argvars[i], &tofree, numbuf2, 0);
+		    --emsg_off;
+		    if (s != NULL)
 		    {
-			// Do not want errors such as E724 here.
-			++emsg_off;
-			s = tv2string(&argvars[i], &tofree, numbuf2, 0);
-			--emsg_off;
-			if (s != NULL)
+			if (vim_strsize(s) > MSG_BUF_CLEN)
 			{
-			    if (vim_strsize(s) > MSG_BUF_CLEN)
-			    {
-				trunc_string(s, buf, MSG_BUF_CLEN, MSG_BUF_LEN);
-				s = buf;
-			    }
-			    msg_puts((char *)s);
-			    vim_free(tofree);
+			    trunc_string(s, buf, MSG_BUF_CLEN, MSG_BUF_LEN);
+			    s = buf;
 			}
+			msg_puts((char *)s);
+			vim_free(tofree);
 		    }
 		}
-		msg_puts(")");
 	    }
-	    msg_puts("\n");   // don't overwrite this either
-
-	    verbose_leave_scroll();
-	    --no_wait_return;
+	    msg_puts(")");
 	}
+	msg_puts("\n");   // don't overwrite this either
+
+	verbose_leave_scroll();
+	--no_wait_return;
     }
 #ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
@@ -1085,9 +1081,9 @@ call_user_func(
 	verbose_enter_scroll();
 
 	if (aborting())
-	    smsg(_("%s aborted"), sourcing_name);
+	    smsg(_("%s aborted"), SOURCING_NAME);
 	else if (fc->rettv->v_type == VAR_NUMBER)
-	    smsg(_("%s returning #%ld"), sourcing_name,
+	    smsg(_("%s returning #%ld"), SOURCING_NAME,
 					       (long)fc->rettv->vval.v_number);
 	else
 	{
@@ -1109,7 +1105,7 @@ call_user_func(
 		    trunc_string(s, buf, MSG_BUF_CLEN, MSG_BUF_LEN);
 		    s = buf;
 		}
-		smsg(_("%s returning %s"), sourcing_name, s);
+		smsg(_("%s returning %s"), SOURCING_NAME, s);
 		vim_free(tofree);
 	    }
 	}
@@ -1119,9 +1115,7 @@ call_user_func(
 	--no_wait_return;
     }
 
-    vim_free(sourcing_name);
-    sourcing_name = save_sourcing_name;
-    sourcing_lnum = save_sourcing_lnum;
+    estack_pop();
     current_sctx = save_current_sctx;
 #ifdef FEAT_PROFILE
     if (do_profiling == PROF_YES)
@@ -1130,12 +1124,12 @@ call_user_func(
     if (using_sandbox)
 	--sandbox;
 
-    if (p_verbose >= 12 && sourcing_name != NULL)
+    if (p_verbose >= 12 && SOURCING_NAME != NULL)
     {
 	++no_wait_return;
 	verbose_enter_scroll();
 
-	smsg(_("continuing in %s"), sourcing_name);
+	smsg(_("continuing in %s"), SOURCING_NAME);
 	msg_puts("\n");   // don't overwrite this either
 
 	verbose_leave_scroll();
@@ -1204,13 +1198,11 @@ func_clear_items(ufunc_T *fp)
     ga_clear_strings(&(fp->uf_args));
     ga_clear_strings(&(fp->uf_def_args));
     ga_clear_strings(&(fp->uf_lines));
+    VIM_CLEAR(fp->uf_name_exp);
 #ifdef FEAT_PROFILE
-    vim_free(fp->uf_tml_count);
-    fp->uf_tml_count = NULL;
-    vim_free(fp->uf_tml_total);
-    fp->uf_tml_total = NULL;
-    vim_free(fp->uf_tml_self);
-    fp->uf_tml_self = NULL;
+    VIM_CLEAR(fp->uf_tml_count);
+    VIM_CLEAR(fp->uf_tml_total);
+    VIM_CLEAR(fp->uf_tml_self);
 #endif
 }
 
@@ -1490,7 +1482,7 @@ call_func(
     funcexe_T	*funcexe)	// more arguments
 {
     int		ret = FAIL;
-    int		error = ERROR_NONE;
+    int		error = FCERR_NONE;
     int		i;
     ufunc_T	*fp;
     char_u	fname_buf[FLEN_FIXED + 1];
@@ -1528,13 +1520,13 @@ call_func(
 	// When the dict was bound explicitly use the one from the partial.
 	if (partial->pt_dict != NULL && (selfdict == NULL || !partial->pt_auto))
 	    selfdict = partial->pt_dict;
-	if (error == ERROR_NONE && partial->pt_argc > 0)
+	if (error == FCERR_NONE && partial->pt_argc > 0)
 	{
 	    for (argv_clear = 0; argv_clear < partial->pt_argc; ++argv_clear)
 	    {
 		if (argv_clear + argcount_in >= MAX_FUNC_ARGS)
 		{
-		    error = ERROR_TOOMANY;
+		    error = FCERR_TOOMANY;
 		    goto theend;
 		}
 		copy_tv(&partial->pt_argv[argv_clear], &argv[argv_clear]);
@@ -1546,7 +1538,7 @@ call_func(
 	}
     }
 
-    if (error == ERROR_NONE && funcexe->evaluate)
+    if (error == FCERR_NONE && funcexe->evaluate)
     {
 	char_u *rfname = fname;
 
@@ -1556,7 +1548,7 @@ call_func(
 
 	rettv->v_type = VAR_NUMBER;	// default rettv is number zero
 	rettv->vval.v_number = 0;
-	error = ERROR_UNKNOWN;
+	error = FCERR_UNKNOWN;
 
 	if (!builtin_function(rfname, -1))
 	{
@@ -1585,7 +1577,7 @@ call_func(
 	    }
 
 	    if (fp != NULL && (fp->uf_flags & FC_DELETED))
-		error = ERROR_DELETED;
+		error = FCERR_DELETED;
 	    else if (fp != NULL)
 	    {
 		if (funcexe->argv_func != NULL)
@@ -1606,11 +1598,11 @@ call_func(
 		if (fp->uf_flags & FC_RANGE && funcexe->doesrange != NULL)
 		    *funcexe->doesrange = TRUE;
 		if (argcount < fp->uf_args.ga_len - fp->uf_def_args.ga_len)
-		    error = ERROR_TOOFEW;
+		    error = FCERR_TOOFEW;
 		else if (!fp->uf_varargs && argcount > fp->uf_args.ga_len)
-		    error = ERROR_TOOMANY;
+		    error = FCERR_TOOMANY;
 		else if ((fp->uf_flags & FC_DICT) && selfdict == NULL)
-		    error = ERROR_DICT;
+		    error = FCERR_DICT;
 		else
 		{
 		    int did_save_redo = FALSE;
@@ -1638,7 +1630,7 @@ call_func(
 		    if (did_save_redo)
 			restoreRedobuff(&save_redo);
 		    restore_search_patterns();
-		    error = ERROR_NONE;
+		    error = FCERR_NONE;
 		}
 	    }
 	}
@@ -1670,7 +1662,7 @@ call_func(
 	 */
 	update_force_abort();
     }
-    if (error == ERROR_NONE)
+    if (error == FCERR_NONE)
 	ret = OK;
 
 theend:
@@ -1682,31 +1674,31 @@ theend:
     {
 	switch (error)
 	{
-	    case ERROR_UNKNOWN:
+	    case FCERR_UNKNOWN:
 		    emsg_funcname(N_("E117: Unknown function: %s"), name);
 		    break;
-	    case ERROR_NOTMETHOD:
+	    case FCERR_NOTMETHOD:
 		    emsg_funcname(
 			       N_("E276: Cannot use function as a method: %s"),
 									 name);
 		    break;
-	    case ERROR_DELETED:
+	    case FCERR_DELETED:
 		    emsg_funcname(N_("E933: Function was deleted: %s"), name);
 		    break;
-	    case ERROR_TOOMANY:
+	    case FCERR_TOOMANY:
 		    emsg_funcname((char *)e_toomanyarg, name);
 		    break;
-	    case ERROR_TOOFEW:
+	    case FCERR_TOOFEW:
 		    emsg_funcname(
 			     N_("E119: Not enough arguments for function: %s"),
 									name);
 		    break;
-	    case ERROR_SCRIPT:
+	    case FCERR_SCRIPT:
 		    emsg_funcname(
 			   N_("E120: Using <SID> not in a script context: %s"),
 									name);
 		    break;
-	    case ERROR_DICT:
+	    case FCERR_DICT:
 		    emsg_funcname(
 		      N_("E725: Calling dict function without Dictionary: %s"),
 									name);
@@ -1736,11 +1728,8 @@ list_func_head(ufunc_T *fp, int indent)
     if (indent)
 	msg_puts("   ");
     msg_puts("function ");
-    if (fp->uf_name[0] == K_SPECIAL)
-    {
-	msg_puts_attr("<SNR>", HL_ATTR(HLF_8));
-	msg_puts((char *)fp->uf_name + 3);
-    }
+    if (fp->uf_name_exp != NULL)
+	msg_puts((char *)fp->uf_name_exp);
     else
 	msg_puts((char *)fp->uf_name);
     msg_putchar('(');
@@ -2308,7 +2297,7 @@ ex_function(exarg_T *eap)
     }
 
     // Save the starting line number.
-    sourcing_lnum_top = sourcing_lnum;
+    sourcing_lnum_top = SOURCING_LNUM;
 
     indent = 2;
     nesting = 0;
@@ -2351,10 +2340,10 @@ ex_function(exarg_T *eap)
 	    goto erret;
 	}
 
-	// Detect line continuation: sourcing_lnum increased more than one.
+	// Detect line continuation: SOURCING_LNUM increased more than one.
 	sourcing_lnum_off = get_sourced_lnum(eap->getline, eap->cookie);
-	if (sourcing_lnum < sourcing_lnum_off)
-	    sourcing_lnum_off -= sourcing_lnum;
+	if (SOURCING_LNUM < sourcing_lnum_off)
+	    sourcing_lnum_off -= SOURCING_LNUM;
 	else
 	    sourcing_lnum_off = 0;
 
@@ -2583,9 +2572,13 @@ ex_function(exarg_T *eap)
 	    }
 	    else
 	    {
-		// redefine existing function
+		char_u *exp_name = fp->uf_name_exp;
+
+		// redefine existing function, keep the expanded name
 		VIM_CLEAR(name);
+		fp->uf_name_exp = NULL;
 		func_clear_items(fp);
+		fp->uf_name_exp = exp_name;
 #ifdef FEAT_PROFILE
 		fp->uf_profiling = FALSE;
 		fp->uf_prof_initialized = FALSE;
@@ -2631,16 +2624,16 @@ ex_function(exarg_T *eap)
 
 	    // Check that the autoload name matches the script name.
 	    j = FAIL;
-	    if (sourcing_name != NULL)
+	    if (SOURCING_NAME != NULL)
 	    {
 		scriptname = autoload_name(name);
 		if (scriptname != NULL)
 		{
 		    p = vim_strchr(scriptname, '/');
 		    plen = (int)STRLEN(p);
-		    slen = (int)STRLEN(sourcing_name);
+		    slen = (int)STRLEN(SOURCING_NAME);
 		    if (slen > plen && fnamecmp(p,
-					    sourcing_name + slen - plen) == 0)
+					    SOURCING_NAME + slen - plen) == 0)
 			j = OK;
 		    vim_free(scriptname);
 		}
@@ -2685,7 +2678,7 @@ ex_function(exarg_T *eap)
 	}
 
 	// insert the new function in the function list
-	STRCPY(fp->uf_name, name);
+	set_ufunc_name(fp, name);
 	if (overwrite)
 	{
 	    hi = hash_find(&func_hashtab, name);
@@ -3353,7 +3346,7 @@ get_func_line(
     if (fcp->dbg_tick != debug_tick)
     {
 	fcp->breakpoint = dbg_find_breakpoint(FALSE, fp->uf_name,
-							       sourcing_lnum);
+							       SOURCING_LNUM);
 	fcp->dbg_tick = debug_tick;
     }
 #ifdef FEAT_PROFILE
@@ -3376,7 +3369,7 @@ get_func_line(
 	else
 	{
 	    retval = vim_strsave(((char_u **)(gap->ga_data))[fcp->linenr++]);
-	    sourcing_lnum = fcp->linenr;
+	    SOURCING_LNUM = fcp->linenr;
 #ifdef FEAT_PROFILE
 	    if (do_profiling == PROF_YES)
 		func_line_start(cookie);
@@ -3385,12 +3378,12 @@ get_func_line(
     }
 
     // Did we encounter a breakpoint?
-    if (fcp->breakpoint != 0 && fcp->breakpoint <= sourcing_lnum)
+    if (fcp->breakpoint != 0 && fcp->breakpoint <= SOURCING_LNUM)
     {
-	dbg_breakpoint(fp->uf_name, sourcing_lnum);
+	dbg_breakpoint(fp->uf_name, SOURCING_LNUM);
 	// Find next breakpoint.
 	fcp->breakpoint = dbg_find_breakpoint(FALSE, fp->uf_name,
-							       sourcing_lnum);
+							       SOURCING_LNUM);
 	fcp->dbg_tick = debug_tick;
     }
 
@@ -3858,7 +3851,7 @@ set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID)
 {
     ufunc_T	*fp = fp_in;
     funccall_T	*fc;
-    int		error = ERROR_NONE;
+    int		error = FCERR_NONE;
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*tofree = NULL;
     char_u	*fname;

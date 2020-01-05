@@ -19,6 +19,134 @@ static garray_T		ga_loaded = {0, 0, sizeof(char_u *), 4, NULL};
 #endif
 
 /*
+ * Initialize the execution stack.
+ */
+    void
+estack_init(void)
+{
+    estack_T *entry;
+
+    if (ga_grow(&exestack, 10) == FAIL)
+	mch_exit(0);
+    entry = ((estack_T *)exestack.ga_data) + exestack.ga_len;
+    entry->es_type = ETYPE_TOP;
+    entry->es_name = NULL;
+    entry->es_lnum = 0;
+#ifdef FEAT_EVAL
+    entry->es_info.ufunc = NULL;
+#endif
+    ++exestack.ga_len;
+}
+
+/*
+ * Add an item to the execution stack.
+ * Returns the new entry or NULL when out of memory.
+ */
+    estack_T *
+estack_push(etype_T type, char_u *name, long lnum)
+{
+    estack_T *entry;
+
+    // If memory allocation fails then we'll pop more than we push, eventually
+    // at the top level it will be OK again.
+    if (ga_grow(&exestack, 1) == OK)
+    {
+	entry = ((estack_T *)exestack.ga_data) + exestack.ga_len;
+	entry->es_type = type;
+	entry->es_name = name;
+	entry->es_lnum = lnum;
+#ifdef FEAT_EVAL
+	entry->es_info.ufunc = NULL;
+#endif
+	++exestack.ga_len;
+	return entry;
+    }
+    return NULL;
+}
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Add a user function to the execution stack.
+ */
+    void
+estack_push_ufunc(etype_T type, ufunc_T *ufunc, long lnum)
+{
+    estack_T *entry = estack_push(type,
+	    ufunc->uf_name_exp != NULL
+				  ? ufunc->uf_name_exp : ufunc->uf_name, lnum);
+    if (entry != NULL)
+	entry->es_info.ufunc = ufunc;
+}
+#endif
+
+/*
+ * Take an item off of the execution stack.
+ */
+    void
+estack_pop(void)
+{
+    if (exestack.ga_len > 1)
+	--exestack.ga_len;
+}
+
+/*
+ * Get the current value for <sfile> in allocated memory.
+ */
+    char_u *
+estack_sfile(void)
+{
+    estack_T	*entry;
+#ifdef FEAT_EVAL
+    int		len;
+    int		idx;
+    char	*res;
+    int		done;
+#endif
+
+    entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
+    if (entry->es_name == NULL)
+	return NULL;
+#ifdef FEAT_EVAL
+    if (entry->es_info.ufunc == NULL)
+#endif
+	return vim_strsave(entry->es_name);
+
+#ifdef FEAT_EVAL
+    // For a function we compose the call stack, as it was done in the past:
+    //   "function One[123]..Two[456]..Three"
+    len = STRLEN(entry->es_name) + 10;
+    for (idx = exestack.ga_len - 2; idx >= 0; --idx)
+    {
+	entry = ((estack_T *)exestack.ga_data) + idx;
+	if (entry->es_name == NULL || entry->es_info.ufunc == NULL)
+	{
+	    ++idx;
+	    break;
+	}
+	len += STRLEN(entry->es_name) + 15;
+    }
+
+    res = (char *)alloc(len);
+    if (res != NULL)
+    {
+	STRCPY(res, "function ");
+	while (idx < exestack.ga_len - 1)
+	{
+	    done = STRLEN(res);
+	    entry = ((estack_T *)exestack.ga_data) + idx;
+	    vim_snprintf(res + done, len - done, "%s[%ld]..",
+					       entry->es_name, entry->es_lnum);
+	    ++idx;
+	}
+	done = STRLEN(res);
+	entry = ((estack_T *)exestack.ga_data) + idx;
+	vim_snprintf(res + done, len - done, "%s", entry->es_name);
+    }
+    return (char_u *)res;
+#endif
+}
+
+/*
  * ":runtime [what] {name}"
  */
     void
@@ -947,8 +1075,6 @@ do_source(
     int		is_vimrc)	    // DOSO_ value
 {
     struct source_cookie    cookie;
-    char_u		    *save_sourcing_name;
-    linenr_T		    save_sourcing_lnum;
     char_u		    *p;
     char_u		    *fname_exp;
     char_u		    *firstline = NULL;
@@ -1039,11 +1165,11 @@ do_source(
 	if (p_verbose > 0)
 	{
 	    verbose_enter();
-	    if (sourcing_name == NULL)
+	    if (SOURCING_NAME == NULL)
 		smsg(_("could not source \"%s\""), fname);
 	    else
 		smsg(_("line %ld: could not source \"%s\""),
-							sourcing_lnum, fname);
+							SOURCING_LNUM, fname);
 	    verbose_leave();
 	}
 	goto theend;
@@ -1055,11 +1181,10 @@ do_source(
     if (p_verbose > 1)
     {
 	verbose_enter();
-	if (sourcing_name == NULL)
+	if (SOURCING_NAME == NULL)
 	    smsg(_("sourcing \"%s\""), fname);
 	else
-	    smsg(_("line %ld: sourcing \"%s\""),
-							sourcing_lnum, fname);
+	    smsg(_("line %ld: sourcing \"%s\""), SOURCING_LNUM, fname);
 	verbose_leave();
     }
     if (is_vimrc == DOSO_VIMRC)
@@ -1090,10 +1215,7 @@ do_source(
 #endif
 
     // Keep the sourcing name/lnum, for recursive calls.
-    save_sourcing_name = sourcing_name;
-    sourcing_name = fname_exp;
-    save_sourcing_lnum = sourcing_lnum;
-    sourcing_lnum = 0;
+    estack_push(ETYPE_SCRIPT, fname_exp, 0);
 
 #ifdef STARTUPTIME
     if (time_fd != NULL)
@@ -1233,14 +1355,13 @@ do_source(
 
     if (got_int)
 	emsg(_(e_interr));
-    sourcing_name = save_sourcing_name;
-    sourcing_lnum = save_sourcing_lnum;
+    estack_pop();
     if (p_verbose > 1)
     {
 	verbose_enter();
 	smsg(_("finished sourcing %s"), fname);
-	if (sourcing_name != NULL)
-	    smsg(_("continuing in %s"), sourcing_name);
+	if (SOURCING_NAME != NULL)
+	    smsg(_("continuing in %s"), SOURCING_NAME);
 	verbose_leave();
     }
 #ifdef STARTUPTIME
@@ -1381,7 +1502,7 @@ get_sourced_lnum(char_u *(*fgetline)(int, void *, int, int), void *cookie)
 {
     return fgetline == getsourceline
 			? ((struct source_cookie *)cookie)->sourcing_lnum
-			: sourcing_lnum;
+			: SOURCING_LNUM;
 }
 
     static char_u *
@@ -1507,7 +1628,7 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
     // If breakpoints have been added/deleted need to check for it.
     if (sp->dbg_tick < debug_tick)
     {
-	sp->breakpoint = dbg_find_breakpoint(TRUE, sp->fname, sourcing_lnum);
+	sp->breakpoint = dbg_find_breakpoint(TRUE, sp->fname, SOURCING_LNUM);
 	sp->dbg_tick = debug_tick;
     }
 # ifdef FEAT_PROFILE
@@ -1517,7 +1638,7 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 #endif
 
     // Set the current sourcing line number.
-    sourcing_lnum = sp->sourcing_lnum + 1;
+    SOURCING_LNUM = sp->sourcing_lnum + 1;
 
     // Get current line.  If there is a read-ahead line, use it, otherwise get
     // one now.
@@ -1602,11 +1723,11 @@ getsourceline(int c UNUSED, void *cookie, int indent UNUSED, int do_concat)
 
 #ifdef FEAT_EVAL
     // Did we encounter a breakpoint?
-    if (sp->breakpoint != 0 && sp->breakpoint <= sourcing_lnum)
+    if (sp->breakpoint != 0 && sp->breakpoint <= SOURCING_LNUM)
     {
-	dbg_breakpoint(sp->fname, sourcing_lnum);
+	dbg_breakpoint(sp->fname, SOURCING_LNUM);
 	// Find next breakpoint.
-	sp->breakpoint = dbg_find_breakpoint(TRUE, sp->fname, sourcing_lnum);
+	sp->breakpoint = dbg_find_breakpoint(TRUE, sp->fname, SOURCING_LNUM);
 	sp->dbg_tick = debug_tick;
     }
 #endif

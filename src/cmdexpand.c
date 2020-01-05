@@ -1582,7 +1582,15 @@ set_one_cmd_context(
 	    xp->xp_context = EXPAND_BUFFERS;
 	    xp->xp_pattern = arg;
 	    break;
-
+#ifdef FEAT_DIFF
+	case CMD_diffget:
+	case CMD_diffput:
+	    // If current buffer is in diff mode, complete buffer names
+	    // which are in diff mode, and different than current buffer.
+	    xp->xp_context = EXPAND_DIFF_BUFFERS;
+	    xp->xp_pattern = arg;
+	    break;
+#endif
 	case CMD_USER:
 	case CMD_USER_BUF:
 	    if (compl != EXPAND_NOTHING)
@@ -2069,6 +2077,10 @@ ExpandFromContext(
 	return ExpandOldSetting(num_file, file);
     if (xp->xp_context == EXPAND_BUFFERS)
 	return ExpandBufnames(pat, num_file, file, options);
+#ifdef FEAT_DIFF
+    if (xp->xp_context == EXPAND_DIFF_BUFFERS)
+	return ExpandBufnames(pat, num_file, file, options | BUF_DIFF_FILTER);
+#endif
     if (xp->xp_context == EXPAND_TAGS
 	    || xp->xp_context == EXPAND_TAGS_LISTFILES)
 	return expand_tags(xp->xp_context == EXPAND_TAGS, pat, num_file, file);

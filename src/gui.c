@@ -5010,21 +5010,23 @@ ex_gui(exarg_T *eap)
     if (!gui.in_use)
     {
 #if defined(VIMDLL) && !defined(EXPERIMENTAL_GUI_CMD)
-	emsg(_(e_nogvim));
-	return;
-#else
+	if (!gui.starting)
+	{
+	    emsg(_(e_nogvim));
+	    return;
+	}
+#endif
 	// Clear the command.  Needed for when forking+exiting, to avoid part
 	// of the argument ending up after the shell prompt.
 	msg_clr_eos_force();
-# ifdef GUI_MAY_SPAWN
+#ifdef GUI_MAY_SPAWN
 	if (!ends_excmd(*eap->arg))
 	    gui_start(eap->arg);
 	else
-# endif
+#endif
 	    gui_start(NULL);
-# ifdef FEAT_JOB_CHANNEL
+#ifdef FEAT_JOB_CHANNEL
 	channel_gui_register_all();
-# endif
 #endif
     }
     if (!ends_excmd(*eap->arg))

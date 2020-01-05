@@ -4236,11 +4236,11 @@ dnl -i+m to test for older Exuberant ctags
 AC_MSG_CHECKING(how to create tags)
 test -f tags && mv tags tags.save
 if (eval ctags --version /dev/null | grep Exuberant) < /dev/null 1>&AC_FD_CC 2>&1; then
-  TAGPRG="ctags -I INIT+ --fields=+S"
+  TAGPRG="ctags -I INIT+,INIT2+,INIT3+,INIT4+,INIT5+ --fields=+S"
 elif (eval exctags --version /dev/null | grep Exuberant) < /dev/null 1>&AC_FD_CC 2>&1; then
-  TAGPRG="exctags -I INIT+ --fields=+S"
+  TAGPRG="exctags -I INIT+,INIT2+,INIT3+,INIT4+,INIT5+ --fields=+S"
 elif (eval exuberant-ctags --version /dev/null | grep Exuberant) < /dev/null 1>&AC_FD_CC 2>&1; then
-  TAGPRG="exuberant-ctags -I INIT+ --fields=+S"
+  TAGPRG="exuberant-ctags -I INIT+,INIT2+,INIT3+,INIT4+,INIT5+ --fields=+S"
 else
   TAGPRG="ctags"
   (eval etags	   /dev/null) < /dev/null 1>&AC_FD_CC 2>&1 && TAGPRG="etags"

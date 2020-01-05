@@ -295,3 +295,34 @@ func Test_listener_undo_line_number()
   delfunc EchoChanges
   call listener_remove(lid)
 endfunc
+
+func Test_listener_cleared_newbuf()
+  func Listener(bufnr, start, end, added, changes)
+    let g:gotCalled += 1
+  endfunc
+  new
+  " check that listening works
+  let g:gotCalled = 0
+  let lid = listener_add("Listener")
+  call feedkeys("axxx\<Esc>", 'xt')
+  call listener_flush(bufnr())
+  call assert_equal(1, g:gotCalled)
+  %bwipe!
+  let bufnr = bufnr()
+  let b:testing = 123
+  let lid = listener_add("Listener")
+  enew!
+  " check buffer is reused
+  call assert_equal(bufnr, bufnr())
+  call assert_false(exists('b:testing'))
+
+  " check that listening stops when reusing the buffer
+  let g:gotCalled = 0
+  call feedkeys("axxx\<Esc>", 'xt')
+  call listener_flush(bufnr())
+  call assert_equal(0, g:gotCalled)
+  unlet g:gotCalled
+
+  bwipe!
+  delfunc Listener
+endfunc

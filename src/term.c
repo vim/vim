@@ -2277,7 +2277,7 @@ add_termcap_entry(char_u *name, int force)
     }
 #endif
 
-    if (sourcing_name == NULL)
+    if (SOURCING_NAME == NULL)
     {
 #ifdef HAVE_TGETENT
 	if (error_msg != NULL)

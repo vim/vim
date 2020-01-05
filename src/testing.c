@@ -21,22 +21,24 @@
     static void
 prepare_assert_error(garray_T *gap)
 {
-    char buf[NUMBUFLEN];
+    char    buf[NUMBUFLEN];
+    char_u  *sname = estack_sfile();
 
     ga_init2(gap, 1, 100);
-    if (sourcing_name != NULL)
+    if (sname != NULL)
     {
-	ga_concat(gap, sourcing_name);
-	if (sourcing_lnum > 0)
+	ga_concat(gap, sname);
+	if (SOURCING_LNUM > 0)
 	    ga_concat(gap, (char_u *)" ");
     }
-    if (sourcing_lnum > 0)
+    if (SOURCING_LNUM > 0)
     {
-	sprintf(buf, "line %ld", (long)sourcing_lnum);
+	sprintf(buf, "line %ld", (long)SOURCING_LNUM);
 	ga_concat(gap, (char_u *)buf);
     }
-    if (sourcing_name != NULL || sourcing_lnum > 0)
+    if (sname != NULL || SOURCING_LNUM > 0)
 	ga_concat(gap, (char_u *)": ");
+    vim_free(sname);
 }
 
 /*

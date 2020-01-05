@@ -801,6 +801,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_MESSAGES		46
 #define EXPAND_MAPCLEAR		47
 #define EXPAND_ARGLIST		48
+#define EXPAND_DIFF_BUFFERS	49
 
 // Values for exmode_active (0 is no exmode)
 #define EXMODE_NORMAL		1
@@ -829,6 +830,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define WILD_IGNORE_COMPLETESLASH   0x400
 #define WILD_NOERROR		    0x800  // sets EW_NOERROR
 #define WILD_BUFLASTUSED	    0x1000
+#define BUF_DIFF_FILTER		    0x2000
 
 // Flags for expand_wildcards()
 #define EW_DIR		0x01	// include directory names
@@ -1773,11 +1775,18 @@ void *vim_memset(void *, int, size_t);
 #ifndef EXTERN
 # define EXTERN extern
 # define INIT(x)
+# define INIT2(a, b)
+# define INIT3(a, b, c)
+# define INIT4(a, b, c, d)
+# define INIT5(a, b, c, d, e)
 #else
 # ifndef INIT
 #  define INIT(x) x
+#  define INIT2(a, b) = {a, b}
+#  define INIT3(a, b, c) = {a, b, c}
+#  define INIT4(a, b, c, d) = {a, b, c, d}
+#  define INIT5(a, b, c, d, e) = {a, b, c, d, e}
 #  define DO_INIT
-#  define COMMA ,
 # endif
 #endif
 
@@ -2549,15 +2558,15 @@ typedef enum {
 				// be freed.
 
 // errors for when calling a function
-#define ERROR_UNKNOWN	0
-#define ERROR_TOOMANY	1
-#define ERROR_TOOFEW	2
-#define ERROR_SCRIPT	3
-#define ERROR_DICT	4
-#define ERROR_NONE	5
-#define ERROR_OTHER	6
-#define ERROR_DELETED	7
-#define ERROR_NOTMETHOD	8   // function cannot be used as a method
+#define FCERR_UNKNOWN	0
+#define FCERR_TOOMANY	1
+#define FCERR_TOOFEW	2
+#define FCERR_SCRIPT	3
+#define FCERR_DICT	4
+#define FCERR_NONE	5
+#define FCERR_OTHER	6
+#define FCERR_DELETED	7
+#define FCERR_NOTMETHOD	8   // function cannot be used as a method
 
 // flags for find_name_end()
 #define FNE_INCL_BR	1	// include [] in name
