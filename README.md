@@ -160,7 +160,7 @@ def MyFunction(arg: number): number
    while todo > 0
       local += ADD
       --todo
-   }
+   endwhile
    return local
 enddef
 ```
@@ -234,7 +234,7 @@ def VimNew(): number
   for i in range(1, 100000)
     setline(i, '    ' .. getline(i))
     totallen += len(getline(i))
-  }
+  endfor
   return totallen
 enddef
 

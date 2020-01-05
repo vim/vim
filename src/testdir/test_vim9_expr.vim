@@ -292,7 +292,7 @@ def Test_expr7()
     assert_equal(g:float_zero, 0.0)
     assert_equal(g:float_neg, -9.8)
     assert_equal(g:float_big, 9.9e99)
-  }
+  endif
 
   " blob constant
   assert_equal(g:blob_empty, 0z)

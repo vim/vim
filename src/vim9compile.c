@@ -3619,28 +3619,20 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	vim_memset(&ea, 0, sizeof(ea));
 	ea.cmd = skipwhite(line);
 
-	// "}" ends any scope
+	// "}" ends a block scope
 	if (*ea.cmd == '}')
 	{
 	    scopetype_T stype = cctx.ctx_scope == NULL
 					 ? NO_SCOPE : cctx.ctx_scope->se_type;
 
-	    if (stype == IF_SCOPE)
-		line = compile_endif(ea.cmd, &cctx);
-	    else if (stype == WHILE_SCOPE)
-		line = compile_endwhile(ea.cmd, &cctx);
-	    else if (stype == FOR_SCOPE)
-		line = compile_endfor(ea.cmd, &cctx);
-	    else if (stype == TRY_SCOPE)
-		line = compile_endtry(ea.cmd, &cctx);
-	    else if (stype == BLOCK_SCOPE)
+	    if (stype == BLOCK_SCOPE)
 	    {
 		compile_endblock(&cctx);
 		line = ea.cmd;
 	    }
 	    else
 	    {
-		emsg("E1025: using } outside of a scope");
+		emsg("E1025: using } outside of a block scope");
 		goto erret;
 	    }
 	    if (line != NULL)

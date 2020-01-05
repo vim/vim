@@ -6276,6 +6276,7 @@ faq	intro.txt	/*faq*
 farsi	farsi.txt	/*farsi*
 farsi.txt	farsi.txt	/*farsi.txt*
 fasm.vim	syntax.txt	/*fasm.vim*
+fast-functions	vim9.txt	/*fast-functions*
 fcs_choice-variable	eval.txt	/*fcs_choice-variable*
 fcs_reason-variable	eval.txt	/*fcs_reason-variable*
 feature-list	eval.txt	/*feature-list*
@@ -9542,6 +9543,7 @@ tutor	usr_01.txt	/*tutor*
 twice	if_cscop.txt	/*twice*
 two-engines	pattern.txt	/*two-engines*
 type()	eval.txt	/*type()*
+type-inference	vim9.txt	/*type-inference*
 type-mistakes	tips.txt	/*type-mistakes*
 typecorr-settings	usr_41.txt	/*typecorr-settings*
 typecorr.txt	usr_41.txt	/*typecorr.txt*
@@ -9905,6 +9907,10 @@ vim-variable	eval.txt	/*vim-variable*
 vim.vim	syntax.txt	/*vim.vim*
 vim7	version7.txt	/*vim7*
 vim8	version8.txt	/*vim8*
+vim9-rationale	vim9.txt	/*vim9-rationale*
+vim9-script	vim9.txt	/*vim9-script*
+vim9-types	vim9.txt	/*vim9-types*
+vim9.txt	vim9.txt	/*vim9.txt*
 vim:	options.txt	/*vim:*
 vim_announce	intro.txt	/*vim_announce*
 vim_dev	intro.txt	/*vim_dev*
