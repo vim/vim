@@ -15,7 +15,6 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-static int	throw_exception(void *, except_type_T, char_u *);
 static char	*get_end_emsg(cstack_T *cstack);
 
 /*
@@ -498,7 +497,7 @@ get_exception_string(
  * user or interrupt exception, or points to a message list in case of an
  * error exception.
  */
-    static int
+    int
 throw_exception(void *value, except_type_T type, char_u *cmdname)
 {
     except_T	*excp;

@@ -3515,8 +3515,21 @@ compile_endtry(char_u *arg, cctx_T *cctx)
     static char_u *
 compile_throw(char_u *arg, cctx_T *cctx UNUSED)
 {
-    // TODO
-    return arg;
+    char_u *p = skipwhite(arg);
+
+    if (ends_excmd(*p))
+    {
+	emsg(_(e_argreq));
+	return NULL;
+    }
+    if (compile_expr1(&p, cctx) == FAIL)
+	return NULL;
+    if (may_generate_2STRING(-1, cctx) == FAIL)
+	return NULL;
+    if (generate_instr_drop(cctx, ISN_THROW, 1) == NULL)
+	return NULL;
+
+    return p;
 }
 
 /*
@@ -3655,6 +3668,10 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    line = (char_u *)"";
 	    continue;
 	}
+
+	// Skip ":call" to get to the function name.
+	if (checkforcmd(&ea.cmd, "call", 3))
+	    ea.cmd = skipwhite(ea.cmd);
 
 	// Assuming the command starts with a variable or function name, find
 	// what follows.

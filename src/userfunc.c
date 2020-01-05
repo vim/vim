@@ -3788,7 +3788,7 @@ get_funccal(void)
     hashtab_T *
 get_funccal_local_ht()
 {
-    if (current_funccal == NULL)
+    if (current_funccal == NULL || current_funccal->l_vars.dv_refcount == 0)
 	return NULL;
     return &get_funccal()->l_vars.dv_hashtab;
 }
@@ -3800,7 +3800,7 @@ get_funccal_local_ht()
     dictitem_T *
 get_funccal_local_var()
 {
-    if (current_funccal == NULL)
+    if (current_funccal == NULL || current_funccal->l_vars.dv_refcount == 0)
 	return NULL;
     return &get_funccal()->l_vars_var;
 }
@@ -3812,7 +3812,7 @@ get_funccal_local_var()
     hashtab_T *
 get_funccal_args_ht()
 {
-    if (current_funccal == NULL)
+    if (current_funccal == NULL || current_funccal->l_vars.dv_refcount == 0)
 	return NULL;
     return &get_funccal()->l_avars.dv_hashtab;
 }
@@ -3824,7 +3824,7 @@ get_funccal_args_ht()
     dictitem_T *
 get_funccal_args_var()
 {
-    if (current_funccal == NULL)
+    if (current_funccal == NULL || current_funccal->l_vars.dv_refcount == 0)
 	return NULL;
     return &get_funccal()->l_avars_var;
 }
@@ -3835,7 +3835,7 @@ get_funccal_args_var()
     void
 list_func_vars(int *first)
 {
-    if (current_funccal != NULL)
+    if (current_funccal != NULL && current_funccal->l_vars.dv_refcount > 0)
 	list_hashtable_vars(&current_funccal->l_vars.dv_hashtab,
 							   "l:", FALSE, first);
 }

@@ -90,7 +90,9 @@ def Test_call_ufunc_count()
   Increment()
   Increment()
   Increment()
+  " works with and without :call
   assert_equal(4, g:counter)
+  call assert_equal(4, g:counter)
   unlet g:counter
 enddef
 
@@ -99,6 +101,20 @@ def Test_return_type_wrong()
   CheckScriptFailure(['def Func(): string', 'return 1', 'enddef'], 'expected string but got number')
   CheckScriptFailure(['def Func(): void', 'return "a"', 'enddef'], 'expected void but got string')
   CheckScriptFailure(['def Func()', 'return "a"', 'enddef'], 'expected void but got string')
+enddef
+
+def Test_try_catch()
+  let l = []
+  try
+    add(l, '1')
+    throw 'wrong'
+    add(l, '2')
+  catch
+    add(l, v:exception)
+  finally
+    add(l, '3')
+  endtry
+  assert_equal(['1', 'wrong', '3'], l)
 enddef
 
 

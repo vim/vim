@@ -915,7 +915,14 @@ call_def_function(
 		break;
 
 	    case ISN_THROW:
-		// TODO
+		--ectx.ec_stack.ga_len;
+		tv = STACK_TV_BOT(0);
+		if (throw_exception(tv->vval.v_string, ET_USER, NULL) == FAIL)
+		{
+		    vim_free(tv->vval.v_string);
+		    goto failed;
+		}
+		did_throw = TRUE;
 		break;
 
 	    // Computation with two number arguments
@@ -1400,7 +1407,6 @@ ex_disassemble(exarg_T *eap)
 		smsg("%4d ENDTRY", current);
 		break;
 	    case ISN_THROW:
-		// TODO
 		smsg("%4d THROW", current);
 		break;
 
