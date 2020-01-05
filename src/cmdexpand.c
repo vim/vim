@@ -16,6 +16,9 @@
 static int	cmd_showtail;	// Only show path tail in lists ?
 
 static void	set_expand_context(expand_T *xp);
+static int      ExpandGeneric(expand_T *xp, regmatch_T *regmatch,
+			      int *num_file, char_u ***file,
+			      char_u *((*func)(expand_T *, int)), int escaped);
 static int	ExpandFromContext(expand_T *xp, char_u *, int *, char_u ***, int);
 static int	expand_showtail(expand_T *xp);
 static int	expand_shellcmd(char_u *filepat, int *num_file, char_u ***file, int flagsarg);
@@ -2214,7 +2217,7 @@ ExpandFromContext(
  *
  * Returns OK when no problems encountered, FAIL for error (out of memory).
  */
-    int
+    static int
 ExpandGeneric(
     expand_T	*xp,
     regmatch_T	*regmatch,
@@ -2250,6 +2253,13 @@ ExpandGeneric(
 			str = vim_strsave_escaped(str, (char_u *)" \t\\.");
 		    else
 			str = vim_strsave(str);
+		    if (str == NULL)
+		    {
+			FreeWild(count, *file);
+			*num_file = 0;
+			*file = NULL;
+			return FAIL;
+		    }
 		    (*file)[count] = str;
 # ifdef FEAT_MENU
 		    if (func == get_menu_names && str != NULL)
@@ -2268,13 +2278,14 @@ ExpandGeneric(
 	{
 	    if (count == 0)
 		return OK;
-	    *num_file = count;
 	    *file = ALLOC_MULT(char_u *, count);
 	    if (*file == NULL)
 	    {
-		*file = (char_u **)"";
+		*num_file = 0;
+		*file = NULL;
 		return FAIL;
 	    }
+	    *num_file = count;
 	    count = 0;
 	}
     }
@@ -2297,7 +2308,6 @@ ExpandGeneric(
     // they don't show up when getting normal highlight names by ID.
     reset_expand_highlight();
 #endif
-
     return OK;
 }
 
