@@ -103,7 +103,9 @@ struct compl_S
     compl_T	*cp_prev;
     char_u	*cp_str;	// matched text
     char_u	*(cp_text[CPT_COUNT]);	// text for the menu
+#ifdef FEAT_EVAL
     typval_T	cp_user_data;
+#endif
     char_u	*cp_fname;	// file containing the match, allocated when
 				// cp_flags has CP_FREE_FNAME
     int		cp_flags;	// CP_ values
@@ -647,8 +649,10 @@ ins_compl_add(
 	    if (cptext[i] != NULL && *cptext[i] != NUL)
 		match->cp_text[i] = vim_strsave(cptext[i]);
     }
+#ifdef FEAT_EVAL
     if (user_data != NULL)
 	match->cp_user_data = *user_data;
+#endif
 
     // Link the new match structure in the list of matches.
     if (compl_first_match == NULL)
@@ -1459,7 +1463,9 @@ ins_compl_free(void)
 	    vim_free(match->cp_fname);
 	for (i = 0; i < CPT_COUNT; ++i)
 	    vim_free(match->cp_text[i]);
+#ifdef FEAT_EVAL
 	clear_tv(&match->cp_user_data);
+#endif
 	vim_free(match);
     } while (compl_curr_match != NULL && compl_curr_match != compl_first_match);
     compl_first_match = compl_curr_match = NULL;
