@@ -156,6 +156,11 @@ def Test_expr4()
   assert_equal(v:true, '2' !~ '0')
   assert_equal(v:false, '2' !~ '[0-9]')
 
+  assert_equal(v:false, 'abc' == 'ABC')
+  set ignorecase
+  assert_equal(v:false, 'abc' == 'ABC')
+  set noignorecase
+
   let mylist = [2]
   assert_equal(v:false, mylist is [2])
   let other = mylist

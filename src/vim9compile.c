@@ -2293,7 +2293,7 @@ compile_expr4(char_u **arg, cctx_T *cctx)
      */
     if (type != EXPR_UNKNOWN)
     {
-	int ic = MAYBE;
+	int ic = FALSE;  // Default: do not ignore case
 
 	if (type_is && (p[len] == '?' || p[len] == '#'))
 	{
@@ -2306,13 +2306,10 @@ compile_expr4(char_u **arg, cctx_T *cctx)
 	    ic = TRUE;
 	    ++len;
 	}
-	// extra '#' appended: match case
+	// extra '#' appended: match case (ignored)
 	else if (p[len] == '#')
-	{
-	    ic = FALSE;
 	    ++len;
-	}
-	// nothing appended: use 'ignorecase'
+	// nothing appended: match case
 
 	if (!VIM_ISWHITE(**arg) || !VIM_ISWHITE(p[len]))
 	{

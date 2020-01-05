@@ -87,6 +87,11 @@ used: >
 	echo temp  " Error!
 
 
+Comperators ~
+
+The 'ignorecase' option is not used for comperators that use strings.
+
+
 White space ~
 
 Vim9 script enforces proper use of white space.  This is no longer allowed: >

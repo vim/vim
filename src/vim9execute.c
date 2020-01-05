@@ -984,8 +984,6 @@ call_def_function(
 		    exptype_T	exptype = iptr->isn_arg.compare.cmp_type;
 		    int		ic = iptr->isn_arg.compare.cmp_ic;
 
-		    if (ic == MAYBE)
-			ic = p_ic;
 		    typval_compare(tv1, tv2, exptype, ic);
 		    clear_tv(tv2);
 		    tv1->v_type = VAR_SPECIAL;
@@ -1441,8 +1439,6 @@ ex_disassemble(exarg_T *eap)
 		       STRCPY(buf, p);
 		       if (iptr->isn_arg.compare.cmp_ic == TRUE)
 			   strcat(buf, "?");
-		       else if (iptr->isn_arg.compare.cmp_ic == FALSE)
-			   strcat(buf, "#");
 
 		       smsg("%4d COMPARE %s", current, buf);
 		   }
