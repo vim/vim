@@ -649,7 +649,7 @@ discard_current_exception(void)
 /*
  * Put an exception on the caught stack.
  */
-    static void
+    void
 catch_exception(except_T *excp)
 {
     excp->caught = caught_stack;
@@ -1492,7 +1492,7 @@ ex_catch(exarg_T *eap)
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
     {
-	eap->errmsg = N_("E603: :catch without :try");
+	eap->errmsg = e_catch;
 	give_up = TRUE;
     }
     else
@@ -1648,7 +1648,7 @@ ex_finally(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_("E606: :finally without :try");
+	eap->errmsg = e_finally;
     else
     {
 	if (!(cstack->cs_flags[cstack->cs_idx] & CSF_TRY))
@@ -1668,7 +1668,7 @@ ex_finally(exarg_T *eap)
 	if (cstack->cs_flags[idx] & CSF_FINALLY)
 	{
 	    // Give up for a multiple ":finally" and ignore it.
-	    eap->errmsg = N_("E607: multiple :finally");
+	    eap->errmsg = e_finally_dup;
 	    return;
 	}
 	rewind_conditionals(cstack, idx, CSF_WHILE | CSF_FOR,
@@ -1777,7 +1777,7 @@ ex_endtry(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_("E602: :endtry without :try");
+	eap->errmsg = e_no_endtry;
     else
     {
 	/*

@@ -618,7 +618,6 @@ dict_find(dict_T *d, char_u *key, int len)
 dict_get_tv(dict_T *d, char_u *key, typval_T *rettv)
 {
     dictitem_T	*di;
-    char_u	*s;
 
     di = dict_find(d, key, -1);
     if (di == NULL)

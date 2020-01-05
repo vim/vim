@@ -22,6 +22,16 @@
 
 #include "vim9.h"
 
+// Structure put on ec_trystack when ISN_TRY is encountered.
+typedef struct {
+    int	    tcd_frame;		// ec_frame when ISN_TRY was encountered
+    int	    tcd_catch_idx;	// instruction of the first catch
+    int	    tcd_finally_idx;	// instruction of the finally block
+    int	    tcd_caught;		// catch block entered
+    int	    tcd_return;		// when TRUE return from end of :finally
+} trycmd_T;
+
+
 // A stack is used to store:
 // - arguments passed to a :def function
 // - info about the calling function, to use when returning
@@ -47,6 +57,10 @@
 typedef struct {
     garray_T	ec_stack;	// stack of typval_T values
     int		ec_frame;	// index in ec_stack: context of ec_dfunc_idx
+
+    garray_T	ec_trystack;	// stack of trycmd_T values
+    int		ec_in_catch;	// when TRUE in catch or finally block
+
     int		ec_dfunc_idx;	// current function index
     isn_T	*ec_instr;	// array with instructions
     int		ec_iidx;	// index in ec_instr: instruction to execute
@@ -116,6 +130,40 @@ call_dfunc(int cdf_idx, int argcount, ectx_T *ectx)
 
     return OK;
 }
+
+// Get pointer to item in the stack.
+#define STACK_TV(idx) (((typval_T *)ectx->ec_stack.ga_data) + idx)
+
+/*
+ * Return from the current function.
+ */
+    static void
+func_return(ectx_T *ectx)
+{
+    int		ret_idx = ectx->ec_stack.ga_len - 1;
+    int		idx;
+    dfunc_T	*dfunc;
+
+    // execution context goes one level up
+    estack_pop();
+
+    // Clear the local variables and temporary values, but not
+    // the return value.
+    for (idx = ectx->ec_frame + STACK_FRAME_SIZE;
+					 idx < ectx->ec_stack.ga_len - 1; ++idx)
+	clear_tv(STACK_TV(idx));
+    dfunc = ((dfunc_T *)def_functions.ga_data) + ectx->ec_dfunc_idx;
+    ectx->ec_stack.ga_len =
+			  ectx->ec_frame - dfunc->df_ufunc->uf_args.ga_len + 1;
+    ectx->ec_dfunc_idx = STACK_TV(ectx->ec_frame)->vval.v_number;
+    ectx->ec_iidx = STACK_TV(ectx->ec_frame + 1)->vval.v_number;
+    ectx->ec_frame = STACK_TV(ectx->ec_frame + 2)->vval.v_number;
+    *STACK_TV_BOT(-1) = *STACK_TV(ret_idx);
+    dfunc = ((dfunc_T *)def_functions.ga_data) + ectx->ec_dfunc_idx;
+    ectx->ec_instr = dfunc->df_instr;
+}
+
+#undef STACK_TV
 
 /*
  * Prepare arguments and rettv for calling a builtin or user function.
@@ -309,10 +357,13 @@ call_def_function(
 // Get pointer to local variable on the stack.
 #define STACK_TV_VAR(idx) (((typval_T *)ectx.ec_stack.ga_data) + ectx.ec_frame + STACK_FRAME_SIZE + idx)
 
+    vim_memset(&ectx, 0, sizeof(ectx));
     ga_init2(&ectx.ec_stack, sizeof(typval_T), 500);
     if (ga_grow(&ectx.ec_stack, 20) == FAIL)
 	goto failed;
     ectx.ec_dfunc_idx = ufunc->uf_dfunc_idx;
+
+    ga_init2(&ectx.ec_trystack, sizeof(trycmd_T), 10);
 
     // Put arguments on the stack.
     for (idx = 0; idx < argc; ++idx)
@@ -342,8 +393,44 @@ call_def_function(
     ectx.ec_iidx = 0;
     for (;;)
     {
-	isn_T	    *iptr = &ectx.ec_instr[ectx.ec_iidx++];
+	isn_T	    *iptr;
+	trycmd_T    *trycmd = NULL;
 
+	if (did_throw && !ectx.ec_in_catch)
+	{
+	    garray_T	*trystack = &ectx.ec_trystack;
+
+	    // An exception jumps to the first catch, finally, or returns from
+	    // the current function.
+	    if (trystack->ga_len > 0)
+		trycmd = ((trycmd_T *)trystack->ga_data) + trystack->ga_len - 1;
+	    if (trycmd != NULL && trycmd->tcd_frame == ectx.ec_frame)
+	    {
+		// jump to ":catch" or ":finally"
+		ectx.ec_in_catch = TRUE;
+		ectx.ec_iidx = trycmd->tcd_catch_idx;
+	    }
+	    else
+	    {
+		// not inside try or need to return from current functions.
+		if (ectx.ec_frame == initial_frame_ptr)
+		{
+		    // At the toplevel we are done.  Push a dummy return value.
+		    if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+			goto failed;
+		    tv = STACK_TV_BOT(0);
+		    tv->v_type = VAR_NUMBER;
+		    tv->vval.v_number = 0;
+		    ++ectx.ec_stack.ga_len;
+		    goto done;
+		}
+
+		func_return(&ectx);
+	    }
+	    continue;
+	}
+
+	iptr = &ectx.ec_instr[ectx.ec_iidx++];
 	switch (iptr->isn_type)
 	{
 	    // execute Ex command line
@@ -652,31 +739,22 @@ call_def_function(
 	    // return from a :def function call
 	    case ISN_RETURN:
 		{
-		    int	ret_idx = ectx.ec_stack.ga_len - 1;
+		    if (trycmd != NULL && trycmd->tcd_frame == ectx.ec_frame
+			    && trycmd->tcd_finally_idx != 0)
+		    {
+			// jump to ":finally"
+			ectx.ec_iidx = trycmd->tcd_finally_idx;
+			trycmd->tcd_return = TRUE;
+		    }
+		    else
+		    {
+			// Restore previous function. If the frame pointer
+			// is zero then there is none and we are done.
+			if (ectx.ec_frame == initial_frame_ptr)
+			    goto done;
 
-		    // Restore previous function. If the frame pointer
-		    // is zero then there is none and we are done.
-		    if (ectx.ec_frame == initial_frame_ptr)
-			goto done;
-
-		    estack_pop();
-
-		    // Clear the local variables and temporary values, but not
-		    // the return value.
-		    for (idx = ectx.ec_frame + STACK_FRAME_SIZE;
-					 idx < ectx.ec_stack.ga_len - 1; ++idx)
-			clear_tv(STACK_TV(idx));
-		    dfunc = ((dfunc_T *)def_functions.ga_data)
-							 + ufunc->uf_dfunc_idx;
-		    ectx.ec_stack.ga_len = ectx.ec_frame
-				 - dfunc->df_ufunc->uf_args.ga_len + 1;
-		    ectx.ec_dfunc_idx = STACK_TV(ectx.ec_frame)->vval.v_number;
-		    ectx.ec_iidx = STACK_TV(ectx.ec_frame + 1)->vval.v_number;
-		    ectx.ec_frame = STACK_TV(ectx.ec_frame + 2)->vval.v_number;
-		    *STACK_TV_BOT(-1) = *STACK_TV(ret_idx);
-		    dfunc = ((dfunc_T *)def_functions.ga_data)
-							 + ufunc->uf_dfunc_idx;
-		    ectx.ec_instr = dfunc->df_instr;
+			func_return(&ectx);
+		    }
 		}
 		break;
 
@@ -761,6 +839,83 @@ call_def_function(
 			++ectx.ec_stack.ga_len;
 		    }
 		}
+		break;
+
+	    // start of ":try" block
+	    case ISN_TRY:
+		{
+		    if (ga_grow(&ectx.ec_trystack, 1) == FAIL)
+			goto failed;
+		    trycmd = ((trycmd_T *)ectx.ec_trystack.ga_data)
+						     + ectx.ec_trystack.ga_len;
+		    ++ectx.ec_trystack.ga_len;
+		    ++trylevel;
+		    trycmd->tcd_frame = ectx.ec_frame;
+		    trycmd->tcd_catch_idx = iptr->isn_arg.try.try_catch;
+		    trycmd->tcd_finally_idx = iptr->isn_arg.try.try_finally;
+		}
+		break;
+
+	    case ISN_PUSHEXC:
+		if (current_exception == NULL)
+		{
+		    iemsg("Evaluating catch while current_exception is NULL");
+		    goto failed;
+		}
+		if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		    goto failed;
+		tv = STACK_TV_BOT(0);
+		++ectx.ec_stack.ga_len;
+		tv->v_type = VAR_STRING;
+		tv->vval.v_string = vim_strsave(
+					   (char_u *)current_exception->value);
+		break;
+
+	    case ISN_CATCH:
+		{
+		    garray_T	*trystack = &ectx.ec_trystack;
+
+		    if (trystack->ga_len > 0)
+		    {
+			trycmd = ((trycmd_T *)trystack->ga_data)
+							+ trystack->ga_len - 1;
+			trycmd->tcd_caught = TRUE;
+		    }
+		    did_emsg = got_int = did_throw = FALSE;
+		    catch_exception(current_exception);
+		}
+		break;
+
+	    // end of ":try" block
+	    case ISN_ENDTRY:
+		{
+		    garray_T	*trystack = &ectx.ec_trystack;
+
+		    if (trystack->ga_len > 0)
+		    {
+			--trystack->ga_len;
+			--trylevel;
+			trycmd = ((trycmd_T *)trystack->ga_data)
+							    + trystack->ga_len;
+			if (trycmd->tcd_caught)
+			    // discard the exception
+			    discard_current_exception();
+
+			if (trycmd->tcd_return)
+			{
+			    // Restore previous function. If the frame pointer
+			    // is zero then there is none and we are done.
+			    if (ectx.ec_frame == initial_frame_ptr)
+				goto done;
+
+			    func_return(&ectx);
+			}
+		    }
+		}
+		break;
+
+	    case ISN_THROW:
+		// TODO
 		break;
 
 	    // Computation with two number arguments
@@ -1137,6 +1292,9 @@ ex_disassemble(exarg_T *eap)
 		    vim_free(tofree);
 		}
 		break;
+	    case ISN_PUSHEXC:
+		smsg("%4d PUSH v:exception", current);
+		break;
 	    case ISN_NEWLIST:
 		smsg("%4d NEWLIST size %lld", current, iptr->isn_arg.number);
 		break;
@@ -1226,6 +1384,26 @@ ex_disassemble(exarg_T *eap)
 		    smsg("%4d FOR $%d -> %d", current,
 					   forloop->for_idx, forloop->for_end);
 		}
+		break;
+
+	    case ISN_TRY:
+		{
+		    try_T *try = &iptr->isn_arg.try;
+
+		    smsg("%4d TRY catch -> %d, finally -> %d", current,
+					     try->try_catch, try->try_finally);
+		}
+		break;
+	    case ISN_CATCH:
+		// TODO
+		smsg("%4d CATCH", current);
+		break;
+	    case ISN_ENDTRY:
+		smsg("%4d ENDTRY", current);
+		break;
+	    case ISN_THROW:
+		// TODO
+		smsg("%4d THROW", current);
 		break;
 
 	    // expression operations on number

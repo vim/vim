@@ -9,6 +9,7 @@ void do_errthrow(cstack_T *cstack, char_u *cmdname);
 int do_intthrow(cstack_T *cstack);
 char *get_exception_string(void *value, except_type_T type, char_u *cmdname, int *should_free);
 void discard_current_exception(void);
+void catch_exception(except_T *excp);
 void report_make_pending(int pending, void *value);
 void ex_eval(exarg_T *eap);
 void ex_if(exarg_T *eap);

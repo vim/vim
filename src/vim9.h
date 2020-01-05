@@ -51,6 +51,12 @@ typedef enum {
     // loop
     ISN_FOR,	    // get next item from a list, uses isn_arg.forloop
 
+    ISN_TRY,	    // add entry to ec_trystack, uses isn_arg.try
+    ISN_THROW,	    // pop value of stack, store in v:exception
+    ISN_PUSHEXC,    // push v:exception
+    ISN_CATCH,	    // drop v:exception
+    ISN_ENDTRY,	    // take entry off from ec_trystack
+
     // expression operations on number
     ISN_MULTNR,
     ISN_DIVNR,
@@ -132,6 +138,12 @@ typedef struct {
     int	    for_end;	    // position to jump to after done
 } forloop_T;
 
+// arguments to ISN_TRY
+typedef struct {
+    int	    try_catch;	    // position to jump to on throw
+    int	    try_finally;    // position to jump to for return
+} try_T;
+
 // arguments to ISN_ECHO
 typedef struct {
     int	    echo_with_white;    // :echo instead of :echon
@@ -171,6 +183,7 @@ typedef struct {
 #endif
 	jump_T		    jump;
 	forloop_T	    forloop;
+	try_T		    try;
 	cbfunc_T	    bfunc;
 	cdfunc_T	    dfunc;
 	cpfunc_T	    pfunc;

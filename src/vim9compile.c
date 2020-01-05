@@ -56,11 +56,22 @@ typedef struct {
     endlabel_T	*fs_end_label;	    // break instructions
 } forscope_T;
 
+/*
+ * info specific for the scope of :try
+ */
+typedef struct {
+    int		ts_try_label;	    // instruction idx at TRY
+    endlabel_T	*ts_end_label;	    // jump to :finally or :endtry
+    int		ts_catch_label;	    // instruction idx of last CATCH
+    int		ts_caught_all;	    // "catch" without argument encountered
+} tryscope_T;
+
 typedef enum {
     NO_SCOPE,
     IF_SCOPE,
     WHILE_SCOPE,
     FOR_SCOPE,
+    TRY_SCOPE,
     BLOCK_SCOPE
 } scopetype_T;
 
@@ -73,9 +84,10 @@ struct scope_S {
     scopetype_T se_type;
     int		se_local_count;	    // ctx_locals.ga_len before scope
     union {
-	ifscope_T     se_if;
-	whilescope_T  se_while;
-	forscope_T    se_for;
+	ifscope_T	se_if;
+	whilescope_T	se_while;
+	forscope_T	se_for;
+	tryscope_T	se_try;
     };
 };
 
@@ -207,25 +219,56 @@ get_dict_type(type_T *member_type, garray_T *type_list)
 
 /*
  * Generate an instruction without arguments.
- * "drop" will be removed from the stack.
+ * Returns a pointer to the new instruction, NULL if failed.
  */
-    static int
-generate_instr(cctx_T *cctx, isntype_T type, int drop)
+    static isn_T *
+generate_instr(cctx_T *cctx, isntype_T isn_type)
 {
     garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
-    garray_T	*stack = &cctx->ctx_type_stack;
 
     if (ga_grow(instr, 1) == FAIL)
-	return FAIL;
+	return NULL;
     isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = type;
+    isn->isn_type = isn_type;
     isn->isn_lnum = cctx->ctx_lnum + 1;
     ++instr->ga_len;
 
-    stack->ga_len -= drop;
+    return isn;
+}
 
-    return OK;
+/*
+ * Generate an instruction without arguments.
+ * "drop" will be removed from the stack.
+ * Returns a pointer to the new instruction, NULL if failed.
+ */
+    static isn_T *
+generate_instr_drop(cctx_T *cctx, isntype_T isn_type, int drop)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+
+    stack->ga_len -= drop;
+    return generate_instr(cctx, isn_type);
+}
+
+/*
+ * Generate instruction "isn_type" and put "type" on the type stack.
+ */
+    static isn_T *
+generate_instr_type(cctx_T *cctx, isntype_T isn_type, type_T *type)
+{
+    isn_T	*isn;
+    garray_T	*stack = &cctx->ctx_type_stack;
+
+    if ((isn = generate_instr(cctx, isn_type)) == NULL)
+	return NULL;
+
+    if (ga_grow(stack, 1) == FAIL)
+	return NULL;
+    ((type_T **)stack->ga_data)[stack->ga_len] = type;
+    ++stack->ga_len;
+
+    return isn;
 }
 
 /*
@@ -234,18 +277,13 @@ generate_instr(cctx_T *cctx, isntype_T type, int drop)
     static int
 generate_COMPARE(cctx_T *cctx, exptype_T exptype, int ic)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_COMPARE)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_COMPARE;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.compare.cmp_type = exptype;
     isn->isn_arg.compare.cmp_ic = ic;
-    ++instr->ga_len;
 
     // takes two arguments, puts one bool back
     if (stack->ga_len >= 2)
@@ -263,17 +301,12 @@ generate_COMPARE(cctx_T *cctx, exptype_T exptype, int ic)
     static int
 generate_2BOOL(cctx_T *cctx, int invert)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_2BOOL)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_2BOOL;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.number = invert;
-    ++instr->ga_len;
 
     // type becomes bool
     ((type_T **)stack->ga_data)[stack->ga_len - 1] = &t_bool;
@@ -287,7 +320,6 @@ generate_2BOOL(cctx_T *cctx, int invert)
     static int
 may_generate_2STRING(int offset, cctx_T *cctx)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
     type_T	**type = ((type_T **)stack->ga_data) + stack->ga_len + offset;
@@ -296,13 +328,9 @@ may_generate_2STRING(int offset, cctx_T *cctx)
 	return OK;
     *type = &t_string;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_2STRING)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_2STRING;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.number = offset;
-    ++instr->ga_len;
 
     return OK;
 }
@@ -310,18 +338,13 @@ may_generate_2STRING(int offset, cctx_T *cctx)
     static int
 generate_TYPECHECK(cctx_T *cctx, type_T *vartype, int offset)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_CHECKTYPE)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_CHECKTYPE;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.type.ct_type = vartype->tt_type;  // TODO: whole type
     isn->isn_arg.type.ct_off = offset;
-    ++instr->ga_len;
 
     // type becomes vartype
     ((type_T **)stack->ga_data)[stack->ga_len - 1] = vartype;
@@ -335,22 +358,11 @@ generate_TYPECHECK(cctx_T *cctx, type_T *vartype, int offset)
     static int
 generate_PUSHNR(cctx_T *cctx, varnumber_T number)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
-    garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr_type(cctx, ISN_PUSHNR, &t_number)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_PUSHNR;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.number = number;
-    ++instr->ga_len;
-
-    if (ga_grow(stack, 1) == FAIL)
-	return FAIL;
-    ((type_T **)stack->ga_data)[stack->ga_len] = &t_number;
-    ++stack->ga_len;
 
     return OK;
 }
@@ -361,23 +373,13 @@ generate_PUSHNR(cctx_T *cctx, varnumber_T number)
     static int
 generate_PUSHSPEC(cctx_T *cctx, varnumber_T number)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
-    garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr_type(cctx, ISN_PUSHSPEC,
+		(number == VVAL_TRUE || number == VVAL_FALSE)
+		? &t_bool : &t_any)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_PUSHSPEC;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.number = number;
-    ++instr->ga_len;
-
-    if (ga_grow(stack, 1) == FAIL)
-	return FAIL;
-    ((type_T **)stack->ga_data)[stack->ga_len] =
-	      (number == VVAL_TRUE || number == VVAL_FALSE) ? &t_bool : &t_any;
-    ++stack->ga_len;
 
     return OK;
 }
@@ -389,22 +391,11 @@ generate_PUSHSPEC(cctx_T *cctx, varnumber_T number)
     static int
 generate_PUSHF(cctx_T *cctx, float_T fnumber)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
-    garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr_type(cctx, ISN_PUSHF, &t_float)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_PUSHF;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.fnumber = fnumber;
-    ++instr->ga_len;
-
-    if (ga_grow(stack, 1) == FAIL)
-	return FAIL;
-    ((type_T **)stack->ga_data)[stack->ga_len] = &t_float;
-    ++stack->ga_len;
 
     return OK;
 }
@@ -417,22 +408,11 @@ generate_PUSHF(cctx_T *cctx, float_T fnumber)
     static int
 generate_PUSHS(cctx_T *cctx, char_u *str)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
-    garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr_type(cctx, ISN_PUSHS, &t_string)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_PUSHS;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.string = str;
-    ++instr->ga_len;
-
-    if (ga_grow(stack, 1) == FAIL)
-	return FAIL;
-    ((type_T **)stack->ga_data)[stack->ga_len] = &t_string;
-    ++stack->ga_len;
 
     return OK;
 }
@@ -444,22 +424,11 @@ generate_PUSHS(cctx_T *cctx, char_u *str)
     static int
 generate_PUSHBLOB(cctx_T *cctx, blob_T *blob)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
-    garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr_type(cctx, ISN_PUSHBLOB, &t_blob)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_PUSHBLOB;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.blob = blob;
-    ++instr->ga_len;
-
-    if (ga_grow(stack, 1) == FAIL)
-	return FAIL;
-    ((type_T **)stack->ga_data)[stack->ga_len] = &t_blob;
-    ++stack->ga_len;
 
     return OK;
 }
@@ -470,23 +439,15 @@ generate_PUSHBLOB(cctx_T *cctx, blob_T *blob)
     static int
 generate_STORE(cctx_T *cctx, isntype_T isn_type, int idx, char_u *name)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
-    garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr_drop(cctx, isn_type, 1)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = isn_type;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     if (name != NULL)
 	isn->isn_arg.string = vim_strsave(name);
     else
 	isn->isn_arg.number = idx;
-    ++instr->ga_len;
 
-    if (stack->ga_len > 0)
-	--stack->ga_len;
     return OK;
 }
 
@@ -496,17 +457,12 @@ generate_STORE(cctx_T *cctx, isntype_T isn_type, int idx, char_u *name)
     static int
 generate_STORENR(cctx_T *cctx, int idx, varnumber_T value)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_STORENR)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_STORENR;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.storenr.str_idx = idx;
     isn->isn_arg.storenr.str_val = value;
-    ++instr->ga_len;
 
     return OK;
 }
@@ -522,25 +478,14 @@ generate_LOAD(
 	char_u	    *name,
 	type_T	    *type)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
-    garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr_type(cctx, isn_type, type)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = isn_type;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     if (name != NULL)
 	isn->isn_arg.string = vim_strsave(name);
     else
 	isn->isn_arg.number = idx;
-    ++instr->ga_len;
-
-    if (ga_grow(stack, 1) == FAIL)
-	return FAIL;
-    ((type_T **)stack->ga_data)[stack->ga_len] = type;
-    ++stack->ga_len;
 
     return OK;
 }
@@ -551,20 +496,15 @@ generate_LOAD(
     static int
 generate_NEWLIST(cctx_T *cctx, int count)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
     garray_T	*type_list = cctx->ctx_type_list;
     type_T	*type;
     type_T	*member;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_NEWLIST)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_NEWLIST;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.number = count;
-    ++instr->ga_len;
 
     // drop the value types
     stack->ga_len -= count;
@@ -591,20 +531,15 @@ generate_NEWLIST(cctx_T *cctx, int count)
     static int
 generate_NEWDICT(cctx_T *cctx, int count)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
     garray_T	*type_list = cctx->ctx_type_list;
     type_T	*type;
     type_T	*member;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_NEWDICT)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_NEWDICT;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.number = count;
-    ++instr->ga_len;
 
     // drop the key and value types
     stack->ga_len -= 2 * count;
@@ -631,17 +566,12 @@ generate_NEWDICT(cctx_T *cctx, int count)
     static int
 generate_FUNCREF(cctx_T *cctx, int dfunc_idx)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_FUNCREF)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_FUNCREF;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.number = dfunc_idx;
-    ++instr->ga_len;
 
     if (ga_grow(stack, 1) == FAIL)
 	return FAIL;
@@ -658,18 +588,13 @@ generate_FUNCREF(cctx_T *cctx, int dfunc_idx)
     static int
 generate_JUMP(cctx_T *cctx, jumpwhen_T when, int where)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_JUMP)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_JUMP;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.jump.jump_when = when;
     isn->isn_arg.jump.jump_where = where;
-    ++instr->ga_len;
 
     if (when != JUMP_ALWAYS && stack->ga_len > 0)
 	--stack->ga_len;
@@ -680,17 +605,12 @@ generate_JUMP(cctx_T *cctx, jumpwhen_T when, int where)
     static int
 generate_FOR(cctx_T *cctx, int loop_idx)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_FOR)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_FOR;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.forloop.for_idx = loop_idx;
-    ++instr->ga_len;
 
     if (ga_grow(stack, 1) == FAIL)
 	return FAIL;
@@ -708,21 +628,16 @@ generate_FOR(cctx_T *cctx, int loop_idx)
     static int
 generate_BCALL(cctx_T *cctx, int func_idx, int argcount)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
 
     if (check_internal_func(func_idx, argcount) == FAIL)
 	return FAIL;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_BCALL)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_BCALL;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.bfunc.cbf_idx = func_idx;
     isn->isn_arg.bfunc.cbf_argcount = argcount;
-    ++instr->ga_len;
 
     stack->ga_len -= argcount; // drop the arguments
     if (ga_grow(stack, 1) == FAIL)
@@ -741,7 +656,6 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount)
     static int
 generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int argcount)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
 
@@ -756,12 +670,11 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int argcount)
 	return FAIL;
     }
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx,
+		    ufunc->uf_dfunc_idx >= 0 ? ISN_DCALL : ISN_UCALL)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
     if (ufunc->uf_dfunc_idx >= 0)
     {
-	isn->isn_type = ISN_DCALL;
 	isn->isn_arg.dfunc.cdf_idx = ufunc->uf_dfunc_idx;
 	isn->isn_arg.dfunc.cdf_argcount = argcount;
     }
@@ -769,12 +682,9 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int argcount)
     {
 	// A user function may be deleted and redefined later, can't use the
 	// ufunc pointer, need to look it up again at runtime.
-	isn->isn_type = ISN_UCALL;
 	isn->isn_arg.ufunc.cuf_name = vim_strsave(ufunc->uf_name);
 	isn->isn_arg.ufunc.cuf_argcount = argcount;
     }
-    isn->isn_lnum = cctx->ctx_lnum + 1;
-    ++instr->ga_len;
 
     stack->ga_len -= argcount; // drop the arguments
     if (ga_grow(stack, 1) == FAIL)
@@ -792,18 +702,13 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int argcount)
     static int
 generate_UCALL(cctx_T *cctx, char_u *name, int argcount)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_UCALL)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_UCALL;
     isn->isn_arg.ufunc.cuf_name = vim_strsave(name);
     isn->isn_arg.ufunc.cuf_argcount = argcount;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
-    ++instr->ga_len;
 
     stack->ga_len -= argcount; // drop the arguments
 
@@ -819,18 +724,13 @@ generate_UCALL(cctx_T *cctx, char_u *name, int argcount)
     static int
 generate_PCALL(cctx_T *cctx, int argcount, int at_top)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_PCALL)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_PCALL;
     isn->isn_arg.pfunc.cpf_top = at_top;
     isn->isn_arg.pfunc.cpf_argcount = argcount;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
-    ++instr->ga_len;
 
     stack->ga_len -= argcount; // drop the arguments
 
@@ -846,18 +746,13 @@ generate_PCALL(cctx_T *cctx, int argcount, int at_top)
     static int
 generate_MEMBER(cctx_T *cctx, char_u *name, size_t len)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
     type_T	*type;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_MEMBER)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_MEMBER;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.string = vim_strnsave(name, len);
-    ++instr->ga_len;
 
     // change dict type to dict member type
     type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
@@ -872,20 +767,12 @@ generate_MEMBER(cctx_T *cctx, char_u *name, size_t len)
     static int
 generate_ECHO(cctx_T *cctx, int with_white, int count)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
-    garray_T	*stack = &cctx->ctx_type_stack;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr_drop(cctx, ISN_ECHO, count)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_ECHO;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.echo.echo_with_white = with_white;
     isn->isn_arg.echo.echo_count = count;
-    ++instr->ga_len;
-
-    stack->ga_len -= count;
 
     return OK;
 }
@@ -893,16 +780,11 @@ generate_ECHO(cctx_T *cctx, int with_white, int count)
     static int
 generate_EXEC(cctx_T *cctx, char_u *line)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
 
-    if (ga_grow(instr, 1) == FAIL)
+    if ((isn = generate_instr(cctx, ISN_EXEC)) == NULL)
 	return FAIL;
-    isn = ((isn_T *)instr->ga_data) + instr->ga_len;
-    isn->isn_type = ISN_EXEC;
-    isn->isn_lnum = cctx->ctx_lnum + 1;
     isn->isn_arg.string = vim_strsave(line);
-    ++instr->ga_len;
     return OK;
 }
 
@@ -1851,7 +1733,6 @@ get_vim_constant(char_u **arg, typval_T *rettv)
 compile_leader(cctx_T *cctx, char_u *start, char_u *end)
 {
     char_u	*p = end;
-    int		r;
 
     // this works from end to start
     while (p > start)
@@ -1859,7 +1740,8 @@ compile_leader(cctx_T *cctx, char_u *start, char_u *end)
 	--p;
 	if (*p == '-' || *p == '+')
 	{
-	    int  negate = *p == '-';
+	    int	    negate = *p == '-';
+	    isn_T   *isn;
 
 	    // TODO: check type
 	    while (p > start && (p[-1] == '-' || p[-1] == '+'))
@@ -1870,9 +1752,11 @@ compile_leader(cctx_T *cctx, char_u *start, char_u *end)
 	    }
 	    // only '-' has an effect, for '+' we only check the type
 	    if (negate)
-		r = generate_instr(cctx, ISN_NEGATENR, 0);
+		isn = generate_instr(cctx, ISN_NEGATENR);
 	    else
-		r = generate_instr(cctx, ISN_CHECKNR, 0);
+		isn = generate_instr(cctx, ISN_CHECKNR);
+	    if (isn == NULL)
+		return FAIL;
 	}
 	else
 	{
@@ -1883,10 +1767,9 @@ compile_leader(cctx_T *cctx, char_u *start, char_u *end)
 		--p;
 		invert = !invert;
 	    }
-	    r = generate_2BOOL(cctx, invert);
+	    if (generate_2BOOL(cctx, invert) == FAIL)
+		return FAIL;
 	}
-	if (r == FAIL)
-	    return FAIL;
     }
     return OK;
 }
@@ -1963,7 +1846,7 @@ compile_subscript(
 	    }
 	    *arg = skipwhite(*arg + 1);
 
-	    if (generate_instr(cctx, ISN_INDEX, 1) == FAIL)
+	    if (generate_instr_drop(cctx, ISN_INDEX, 1) == FAIL)
 		return FAIL;
 	}
 	else if (**arg == '.' && (*arg)[1] != '.')
@@ -2260,9 +2143,9 @@ compile_expr6(char_u **arg, cctx_T *cctx)
 	// TODO: if we know the type use a specific instruction
 	switch (*op)
 	{
-	    case '*': generate_instr(cctx, ISN_MULTNR, 1); break;
-	    case '/': generate_instr(cctx, ISN_DIVNR, 1); break;
-	    case '%': generate_instr(cctx, ISN_REMNR, 1); break;
+	    case '*': generate_instr_drop(cctx, ISN_MULTNR, 1); break;
+	    case '/': generate_instr_drop(cctx, ISN_DIVNR, 1); break;
+	    case '%': generate_instr_drop(cctx, ISN_REMNR, 1); break;
 	}
     }
 
@@ -2315,14 +2198,14 @@ compile_expr5(char_u **arg, cctx_T *cctx)
 	    return FAIL;
 	switch (*op)
 	{
-	    case '+': generate_instr(cctx, ISN_ADDNR, 1); break;
-	    case '-': generate_instr(cctx, ISN_SUBNR, 1); break;
+	    case '+': generate_instr_drop(cctx, ISN_ADDNR, 1); break;
+	    case '-': generate_instr_drop(cctx, ISN_SUBNR, 1); break;
 	    case '.':
 		      {
 			  if (may_generate_2STRING(-2, cctx) == FAIL
 				  || may_generate_2STRING(-1, cctx) == FAIL)
 			      return FAIL;
-			  generate_instr(cctx, ISN_CONCAT, 1);
+			  generate_instr_drop(cctx, ISN_CONCAT, 1);
 		      }
 		      break;
 	}
@@ -2446,17 +2329,17 @@ compile_expr4(char_u **arg, cctx_T *cctx)
 
 	// TODO: check type on both sides is number
 	if (type == EXPR_EQUAL)
-	    generate_instr(cctx, ISN_EQUALNR, 1);
+	    generate_instr_drop(cctx, ISN_EQUALNR, 1);
 	else if (type == EXPR_NEQUAL)
-	    generate_instr(cctx, ISN_NEQUALNR, 1);
+	    generate_instr_drop(cctx, ISN_NEQUALNR, 1);
 	else if (type == EXPR_GREATER)
-	    generate_instr(cctx, ISN_GREATERNR, 1);
+	    generate_instr_drop(cctx, ISN_GREATERNR, 1);
 	else if (type == EXPR_GEQUAL)
-	    generate_instr(cctx, ISN_GEQUALNR, 1);
+	    generate_instr_drop(cctx, ISN_GEQUALNR, 1);
 	else if (type == EXPR_SMALLER)
-	    generate_instr(cctx, ISN_SMALLERNR, 1);
+	    generate_instr_drop(cctx, ISN_SMALLERNR, 1);
 	else if (type == EXPR_SEQUAL)
-	    generate_instr(cctx, ISN_SEQUALNR, 1);
+	    generate_instr_drop(cctx, ISN_SEQUALNR, 1);
 	else
 	    generate_COMPARE(cctx, type, ic);
     }
@@ -2679,7 +2562,8 @@ compile_return(char_u *arg, int set_return_type, cctx_T *cctx)
 	generate_PUSHNR(cctx, 0);
     }
 
-    generate_instr(cctx, ISN_RETURN, 0);
+    if (generate_instr(cctx, ISN_RETURN) == NULL)
+	return NULL;
 
     // "return val | endif" is possible
     return skipwhite(p);
@@ -2888,12 +2772,12 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
 
 	switch (*op)
 	{
-	    case '+': generate_instr(cctx, ISN_ADDNR, 1); break;
-	    case '-': generate_instr(cctx, ISN_SUBNR, 1); break;
-	    case '*': generate_instr(cctx, ISN_MULTNR, 1); break;
-	    case '/': generate_instr(cctx, ISN_DIVNR, 1); break;
-	    case '%': generate_instr(cctx, ISN_REMNR, 1); break;
-	    case '.': generate_instr(cctx, ISN_CONCAT, 1); break;
+	    case '+': generate_instr_drop(cctx, ISN_ADDNR, 1); break;
+	    case '-': generate_instr_drop(cctx, ISN_SUBNR, 1); break;
+	    case '*': generate_instr_drop(cctx, ISN_MULTNR, 1); break;
+	    case '/': generate_instr_drop(cctx, ISN_DIVNR, 1); break;
+	    case '%': generate_instr_drop(cctx, ISN_REMNR, 1); break;
+	    case '.': generate_instr_drop(cctx, ISN_CONCAT, 1); break;
 	}
     }
 
@@ -2929,7 +2813,7 @@ theend:
 }
 
 /*
- * generate a jump to the ":endif"/":endfor"/":endwhile".
+ * generate a jump to the ":endif"/":endfor"/":endwhile"/":finally"/":endtry".
  */
     static int
 compile_jump_to_end(endlabel_T **el, jumpwhen_T when, cctx_T *cctx)
@@ -3250,7 +3134,8 @@ compile_endfor(char_u *arg, cctx_T *cctx)
     compile_fill_jump_to_end(&forscope->fs_end_label, cctx);
 
     // Below the ":for" scope drop the "expr" list from the stack.
-    generate_instr(cctx, ISN_DROP, 1);
+    if (generate_instr_drop(cctx, ISN_DROP, 1) == NULL)
+	return NULL;
 
     vim_free(scope);
 
@@ -3392,17 +3277,248 @@ compile_block(char_u *arg, cctx_T *cctx)
 }
 
 /*
- * compile "}" end of block
+ * compile end of block: drop one scope
  */
-    static char_u *
-compile_endblock(char_u *arg, cctx_T *cctx)
+    static void
+compile_endblock(cctx_T *cctx)
 {
     scope_T	*scope = cctx->ctx_scope;
 
     cctx->ctx_scope = scope->se_outer;
     cctx->ctx_locals.ga_len = scope->se_local_count;
     vim_free(scope);
+}
 
+/*
+ * compile "try"
+ * Creates a new scope for the try-endtry, pointing to the first catch and
+ * finally.
+ * Creates another scope for the "try" block itself.
+ * TRY instruction sets up exception handling at runtime.
+ *
+ *	"try"
+ *	    TRY -> catch1, -> finally  push trystack entry
+ *	    ... try block
+ *	"throw {exception}"
+ *	    EVAL {exception}
+ *	    THROW		create exception
+ *	    ... try block
+ *	" catch {expr}"
+ *	    JUMP -> finally
+ * catch1:  PUSH exeception
+ *	    EVAL {expr}
+ *	    MATCH
+ *	    JUMP nomatch -> catch2
+ *	    CATCH   remove exception
+ *	    ... catch block
+ *	" catch"
+ *	    JUMP -> finally
+ * catch2:  CATCH   remove exception
+ *	    ... catch block
+ *	" finally"
+ * finally:
+ *	    ... finally block
+ *	" endtry"
+ *	    ENDTRY  pop trystack entry, may rethrow
+ */
+    static char_u *
+compile_try(char_u *arg, cctx_T *cctx)
+{
+    garray_T	*instr = &cctx->ctx_instr;
+    scope_T	*try_scope;
+    scope_T	*scope;
+
+    // scope that holds the jumps that go to catch/finally/endtry
+    try_scope = new_scope(cctx, TRY_SCOPE);
+    if (try_scope == NULL)
+	return NULL;
+
+    // "catch" is set when the first ":catch" is found.
+    // "finally" is set when ":finally" or ":endtry" is found
+    try_scope->se_try.ts_try_label = instr->ga_len;
+    if (generate_instr(cctx, ISN_TRY) == NULL)
+	return NULL;
+
+    // scope for the try block itself
+    scope = new_scope(cctx, BLOCK_SCOPE);
+    if (scope == NULL)
+	return NULL;
+
+    return arg;
+}
+
+/*
+ * compile "catch {expr}"
+ */
+    static char_u *
+compile_catch(char_u *arg, cctx_T *cctx UNUSED)
+{
+    scope_T	*scope = cctx->ctx_scope;
+    garray_T	*instr = &cctx->ctx_instr;
+    char_u	*p;
+    isn_T	*isn;
+
+    // end block scope from :try or :catch
+    if (scope != NULL && scope->se_type == BLOCK_SCOPE)
+	compile_endblock(cctx);
+    scope = cctx->ctx_scope;
+
+    // Error if not in a :try scope
+    if (scope == NULL || scope->se_type != TRY_SCOPE)
+    {
+	emsg(_(e_catch));
+	return NULL;
+    }
+
+    if (scope->se_try.ts_caught_all)
+    {
+	emsg(_("E1033: catch unreachable after catch-all"));
+	return NULL;
+    }
+
+    // Jump from end of previous block to :finally or :endtry
+    if (compile_jump_to_end(&scope->se_try.ts_end_label,
+						    JUMP_ALWAYS, cctx) == FAIL)
+	return NULL;
+
+    // End :try or :catch scope: set value in ISN_TRY instruction
+    isn = ((isn_T *)instr->ga_data) + scope->se_try.ts_try_label;
+    if (isn->isn_arg.try.try_catch == 0)
+	isn->isn_arg.try.try_catch = instr->ga_len;
+    if (scope->se_try.ts_catch_label != 0)
+    {
+	// Previous catch without match jumps here
+	isn = ((isn_T *)instr->ga_data) + scope->se_try.ts_catch_label;
+	isn->isn_arg.jump.jump_where = instr->ga_len;
+    }
+
+    p = skipwhite(arg);
+    if (ends_excmd(*p))
+    {
+	scope->se_try.ts_caught_all = TRUE;
+	scope->se_try.ts_catch_label = 0;
+    }
+    else
+    {
+	// Push v:exception, push {expr} and MATCH
+	generate_instr_type(cctx, ISN_PUSHEXC, &t_string);
+
+	if (compile_expr1(&p, cctx) == FAIL)
+	    return NULL;
+
+	if (generate_COMPARE(cctx, EXPR_MATCH, FALSE) == FAIL)
+	    return NULL;
+
+	scope->se_try.ts_catch_label = instr->ga_len;
+	if (generate_JUMP(cctx, JUMP_IF_FALSE, 0) == FAIL)
+	    return NULL;
+    }
+
+    if (generate_instr(cctx, ISN_CATCH) == NULL)
+	return NULL;
+
+    if (new_scope(cctx, BLOCK_SCOPE) == NULL)
+	return NULL;
+    return p;
+}
+
+    static char_u *
+compile_finally(char_u *arg, cctx_T *cctx)
+{
+    scope_T	*scope = cctx->ctx_scope;
+    garray_T	*instr = &cctx->ctx_instr;
+    isn_T	*isn;
+
+    // end block scope from :try or :catch
+    if (scope != NULL && scope->se_type == BLOCK_SCOPE)
+	compile_endblock(cctx);
+    scope = cctx->ctx_scope;
+
+    // Error if not in a :try scope
+    if (scope == NULL || scope->se_type != TRY_SCOPE)
+    {
+	emsg(_(e_finally));
+	return NULL;
+    }
+
+    // End :catch or :finally scope: set value in ISN_TRY instruction
+    isn = ((isn_T *)instr->ga_data) + scope->se_try.ts_try_label;
+    if (isn->isn_arg.try.try_finally != 0)
+    {
+	emsg(_(e_finally_dup));
+	return NULL;
+    }
+
+    // Fill in the "end" label in jumps at the end of the blocks.
+    compile_fill_jump_to_end(&scope->se_try.ts_end_label, cctx);
+
+    if (scope->se_try.ts_catch_label != 0)
+    {
+	// Previous catch without match jumps here
+	isn = ((isn_T *)instr->ga_data) + scope->se_try.ts_catch_label;
+	isn->isn_arg.jump.jump_where = instr->ga_len;
+    }
+
+    isn->isn_arg.try.try_finally = instr->ga_len;
+    // TODO: set index in ts_finally_label jumps
+
+    return arg;
+}
+
+    static char_u *
+compile_endtry(char_u *arg, cctx_T *cctx)
+{
+    scope_T	*scope = cctx->ctx_scope;
+    garray_T	*instr = &cctx->ctx_instr;
+    isn_T	*isn;
+
+    // end block scope from :catch or :finally
+    if (scope != NULL && scope->se_type == BLOCK_SCOPE)
+	compile_endblock(cctx);
+    scope = cctx->ctx_scope;
+
+    // Error if not in a :try scope
+    if (scope == NULL || scope->se_type != TRY_SCOPE)
+    {
+	if (scope == NULL)
+	    emsg(_(e_no_endtry));
+	else if (scope->se_type == WHILE_SCOPE)
+	    emsg(_(e_endwhile));
+	if (scope->se_type == FOR_SCOPE)
+	    emsg(_(e_endfor));
+	else
+	    emsg(_(e_endif));
+	return NULL;
+    }
+
+    isn = ((isn_T *)instr->ga_data) + scope->se_try.ts_try_label;
+    if (isn->isn_arg.try.try_catch == 0 && isn->isn_arg.try.try_finally == 0)
+    {
+	emsg(_("E1032: missing :catch or :finally"));
+	return NULL;
+    }
+
+    // Fill in the "end" label in jumps at the end of the blocks, if not done
+    // by ":finally".
+    compile_fill_jump_to_end(&scope->se_try.ts_end_label, cctx);
+
+    // End :catch or :finally scope: set value in ISN_TRY instruction
+    if (isn->isn_arg.try.try_finally == 0)
+	isn->isn_arg.try.try_finally = instr->ga_len;
+    compile_endblock(cctx);
+
+    if (generate_instr(cctx, ISN_ENDTRY) == NULL)
+	return NULL;
+    return arg;
+}
+
+/*
+ * compile "throw {expr}"
+ */
+    static char_u *
+compile_throw(char_u *arg, cctx_T *cctx UNUSED)
+{
+    // TODO
     return arg;
 }
 
@@ -3515,8 +3631,13 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		line = compile_endwhile(ea.cmd, &cctx);
 	    else if (stype == FOR_SCOPE)
 		line = compile_endfor(ea.cmd, &cctx);
+	    else if (stype == TRY_SCOPE)
+		line = compile_endtry(ea.cmd, &cctx);
 	    else if (stype == BLOCK_SCOPE)
-		line = compile_endblock(ea.cmd, &cctx);
+	    {
+		compile_endblock(&cctx);
+		line = ea.cmd;
+	    }
 	    else
 	    {
 		emsg("E1025: using } outside of a scope");
@@ -3567,7 +3688,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		    goto erret;
 
 		// drop the return value
-		generate_instr(&cctx, ISN_DROP, 1);
+		generate_instr_drop(&cctx, ISN_DROP, 1);
 		line = p;
 		continue;
 	    }
@@ -3647,8 +3768,21 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		    line = compile_break(p, &cctx);
 		    break;
 
-	    // TODO: try / catch / finally / endtry
-	    // TODO: throw
+	    case CMD_try:
+		    line = compile_try(p, &cctx);
+		    break;
+	    case CMD_catch:
+		    line = compile_catch(p, &cctx);
+		    break;
+	    case CMD_finally:
+		    line = compile_finally(p, &cctx);
+		    break;
+	    case CMD_endtry:
+		    line = compile_endtry(p, &cctx);
+		    break;
+	    case CMD_throw:
+		    line = compile_throw(p, &cctx);
+		    break;
 
 	    case CMD_echo:
 		    line = compile_echo(p, TRUE, &cctx);
@@ -3696,7 +3830,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 
 	// Return zero if there is no return at the end.
 	generate_PUSHNR(&cctx, 0);
-	generate_instr(&cctx, ISN_RETURN, 0);
+	generate_instr(&cctx, ISN_RETURN);
     }
 
     dfunc->df_instr = instr->ga_data;
@@ -3738,6 +3872,7 @@ delete_instr(isn_T *isn)
 	case ISN_LOADENV:
 	case ISN_STOREG:
 	case ISN_PUSHS:
+	case ISN_PUSHEXC:
 	case ISN_MEMBER:
 	    vim_free(isn->isn_arg.string);
 	    break;
@@ -3766,6 +3901,10 @@ delete_instr(isn_T *isn)
 	case ISN_ECHO:
 	case ISN_EQUALNR:
 	case ISN_FOR:
+	case ISN_TRY:
+	case ISN_CATCH:
+	case ISN_ENDTRY:
+	case ISN_THROW:
 	case ISN_FUNCREF:
 	case ISN_GEQUALNR:
 	case ISN_GREATERNR:

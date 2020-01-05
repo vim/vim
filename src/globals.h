@@ -1495,9 +1495,13 @@ EXTERN char e_cmdwin[]	INIT(= N_("E11: Invalid in command-line window; <CR> exec
 EXTERN char e_curdir[]	INIT(= N_("E12: Command not allowed from exrc/vimrc in current dir or tag search"));
 #ifdef FEAT_EVAL
 EXTERN char e_endif[]		INIT(= N_("E171: Missing :endif"));
-EXTERN char e_endtry[]	INIT(= N_("E600: Missing :endtry"));
+EXTERN char e_catch[]		INIT(= N_("E603: :catch without :try"));
+EXTERN char e_finally[]		INIT(= N_("E606: :finally without :try"));
+EXTERN char e_finally_dup[]	INIT(= N_("E607: multiple :finally"));
+EXTERN char e_endtry[]		INIT(= N_("E600: Missing :endtry"));
+EXTERN char e_no_endtry[]	INIT(= N_("E602: :endtry without :try"));
 EXTERN char e_endwhile[]	INIT(= N_("E170: Missing :endwhile"));
-EXTERN char e_endfor[]	INIT(= N_("E170: Missing :endfor"));
+EXTERN char e_endfor[]		INIT(= N_("E170: Missing :endfor"));
 EXTERN char e_while[]		INIT(= N_("E588: :endwhile without :while"));
 EXTERN char e_for[]		INIT(= N_("E588: :endfor without :for"));
 #endif
