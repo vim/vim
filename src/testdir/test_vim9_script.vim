@@ -26,8 +26,17 @@ func Test_def_basic()
 endfunc
 
 def Test_assignment()
+  let bool1: bool = true
+  assert_equal(v:true, bool1)
+  let bool2: bool = false
+  assert_equal(v:false, bool2)
+
   let list1: list<string> = ['sdf', 'asdf']
   let list2: list<number> = [1, 2, 3]
+
+  " TODO: does not work yet
+  " let listS: list<string> = []
+  " let listN: list<number> = []
 
   let dict1: dict<string> = #{key: 'value'}
   let dict2: dict<number> = #{one: 1, two: 2}
@@ -37,6 +46,9 @@ func Test_assignment_failure()
   call CheckDefFailure(['let var=234'], 'E1005:')
   call CheckDefFailure(['let var =234'], 'E1005:')
   call CheckDefFailure(['let var= 234'], 'E1005:')
+
+  call CheckDefFailure(['let true = 1'], 'E1034:')
+  call CheckDefFailure(['let false = 1'], 'E1034:')
 
   call CheckDefFailure(['let var: list<string> = [123]'], 'expected list<string> but got list<number>')
   call CheckDefFailure(['let var: list<number> = ["xx"]'], 'expected list<number> but got list<string>')

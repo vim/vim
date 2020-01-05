@@ -1162,22 +1162,34 @@ compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
     }
     else
     {
-	int idx = lookup_arg(*arg, end - *arg, cctx);
+	size_t	len = end - *arg;
+	int	idx = lookup_arg(*arg, len, cctx);
 
 	if (idx >= 0)
 	{
+	    if (cctx->ctx_ufunc->uf_arg_types != NULL)
+		type = cctx->ctx_ufunc->uf_arg_types[idx];
+	    else
+		type = &t_any;
+
 	    // Arguments are located above the frame pointer.
 	    idx -= cctx->ctx_ufunc->uf_args.ga_len + STACK_FRAME_SIZE;
-	    // TODO: get type from stack
-	    type = &t_any;
 	}
 	else
 	{
-	    idx = lookup_local(*arg, end - *arg, cctx);
+	    idx = lookup_local(*arg, len, cctx);
 	    if (idx < 0)
 	    {
+		if ((len == 4 && STRNCMP("true", *arg, 4) == 0)
+			|| (len == 5 && STRNCMP("false", *arg, 5) == 0))
+		{
+		    generate_PUSHSPEC(cctx, **arg == 't'
+						     ? VVAL_TRUE : VVAL_FALSE);
+		    *arg = end;
+		    return OK;
+		}
 		if (error)
-		    emsg_namelen(_(e_var_notfound), *arg, (int)(end - *arg));
+		    emsg_namelen(_(e_var_notfound), *arg, (int)len);
 		return FAIL;
 	    }
 	    type = (((lvar_T *)cctx->ctx_locals.ga_data) + idx)->lv_type;
@@ -1187,7 +1199,6 @@ compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
 	if (ga_grow(instr, 1) == FAIL)
 	    return FAIL;
 	generate_LOAD(cctx, ISN_LOAD, idx, NULL, type);
-	// TODO: put type in context stack
     }
     return OK;
 }
@@ -2581,6 +2592,13 @@ assignment_len(char_u *p)
     return 0;
 }
 
+// words that cannot be used as a variable
+static char *reserved[] = {
+    "true",
+    "false",
+    NULL
+};
+
 /*
  * compile "let var [= expr]", "const var = expr" and "var = expr"
  */
@@ -2622,6 +2640,13 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
     }
     else
     {
+	for (idx = 0; reserved[idx] != NULL; ++idx)
+	    if (STRCMP(reserved[idx], name) == 0)
+	    {
+		semsg(_("E1034: Cannot use reserved name %s"), name);
+		goto theend;
+	    }
+
 	idx = lookup_local(arg, varlen, cctx);
 	if (idx >= 0)
 	{
