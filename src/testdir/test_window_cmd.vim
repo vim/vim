@@ -927,6 +927,10 @@ func Test_win_splitmove()
   call assert_fails('call win_splitmove(winnr(), 123)', 'E957:')
   call assert_fails('call win_splitmove(123, winnr())', 'E957:')
   call assert_fails('call win_splitmove(winnr(), winnr())', 'E957:')
+
+  tabnew
+  call assert_fails('call win_splitmove(1, win_getid(1, 1))', 'E957:')
+  tabclose
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

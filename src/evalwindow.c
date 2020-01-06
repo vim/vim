@@ -808,7 +808,8 @@ f_win_splitmove(typval_T *argvars, typval_T *rettv)
     wp = find_win_by_nr_or_id(&argvars[0]);
     targetwin = find_win_by_nr_or_id(&argvars[1]);
 
-    if (wp == NULL || targetwin == NULL || wp == targetwin)
+    if (wp == NULL || targetwin == NULL || wp == targetwin
+	    || !win_valid(wp) || !win_valid(targetwin))
     {
         emsg(_(e_invalwindow));
 	rettv->vval.v_number = -1;
