@@ -97,10 +97,10 @@ estack_sfile(void)
 {
     estack_T	*entry;
 #ifdef FEAT_EVAL
-    int		len;
+    size_t	len;
     int		idx;
     char	*res;
-    int		done;
+    size_t	done;
 #endif
 
     entry = ((estack_T *)exestack.ga_data) + exestack.ga_len - 1;
@@ -126,7 +126,7 @@ estack_sfile(void)
 	len += STRLEN(entry->es_name) + 15;
     }
 
-    res = (char *)alloc(len);
+    res = (char *)alloc((int)len);
     if (res != NULL)
     {
 	STRCPY(res, "function ");
