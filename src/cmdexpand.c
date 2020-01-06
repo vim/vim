@@ -2340,9 +2340,14 @@ expand_shellcmd(
     if (buf == NULL)
 	return FAIL;
 
-    // for ":set path=" and ":set tags=" halve backslashes for escaped
-    // space
+    // for ":set path=" and ":set tags=" halve backslashes for escaped space
     pat = vim_strsave(filepat);
+    if (pat == NULL)
+    {
+	vim_free(buf);
+	return FAIL;
+    }
+
     for (i = 0; pat[i]; ++i)
 	if (pat[i] == '\\' && pat[i + 1] == ' ')
 	    STRMOVE(pat + i, pat + i + 1);
