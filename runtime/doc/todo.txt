@@ -922,8 +922,6 @@ Patch from Christian Brabandt to preserve upper case marks when wiping out a
 buffer. (2013 Dec 9)
 Also fixes #2166?
 
-Patch to add argument to :cquit. (Thinca, 2014 Oct 12)
-
 Python: After "import vim" error messages only show the first line of the
 stack trace. (Yggdroot, 2017 Jul 28, #1887)
 
