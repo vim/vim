@@ -4920,8 +4920,8 @@ ex_quit(exarg_T *eap)
     static void
 ex_cquit(exarg_T *eap UNUSED)
 {
-    getout(1);	// this does not always pass on the exit code to the Manx
-		// compiler. why?
+    // this does not always pass on the exit code to the Manx compiler. why?
+    getout(eap->addr_count > 0 ? (int)eap->line2 : EXIT_FAILURE);
 }
 
 /*
