@@ -207,6 +207,10 @@ func Test_prop_find()
   let result = prop_find({'id': 11, 'lnum': 2, 'col': 3}, 'b')
   call assert_equal({}, result)
 
+  " When lnum is given and col is omitted, use column 1.
+  let result = prop_find({'type': 'prop_name', 'lnum': 1}, 'f')
+  call assert_equal(expected[0], result)
+
   call prop_clear(1,6)
   call prop_type_delete('prop_name')
 endfunc
