@@ -2327,7 +2327,7 @@ expand_shellcmd(
     char_u	*path = NULL;
     int		mustfree = FALSE;
     garray_T    ga;
-    char_u	*buf = alloc(MAXPATHL);
+    char_u	*buf;
     size_t	l;
     char_u	*s, *e;
     int		flags = flagsarg;
@@ -2337,12 +2337,18 @@ expand_shellcmd(
     hashitem_T	*hi;
     hash_T	hash;
 
+    buf = alloc(MAXPATHL);
     if (buf == NULL)
 	return FAIL;
 
-    // for ":set path=" and ":set tags=" halve backslashes for escaped
-    // space
+    // for ":set path=" and ":set tags=" halve backslashes for escaped space
     pat = vim_strsave(filepat);
+    if (pat == NULL)
+    {
+	vim_free(buf);
+	return FAIL;
+    }
+
     for (i = 0; pat[i]; ++i)
 	if (pat[i] == '\\' && pat[i + 1] == ' ')
 	    STRMOVE(pat + i, pat + i + 1);
