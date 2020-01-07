@@ -352,6 +352,7 @@ spell_load_file(
     slang_T	*lp = NULL;
     int		c = 0;
     int		res;
+    int		did_estack_push = FALSE;
 
     fd = mch_fopen((char *)fname, "r");
     if (fd == NULL)
@@ -392,6 +393,7 @@ spell_load_file(
 
     // Set sourcing_name, so that error messages mention the file name.
     estack_push(ETYPE_SPELL, fname, 0);
+    did_estack_push = TRUE;
 
     /*
      * <HEADER>: <fileID>
@@ -578,7 +580,8 @@ endFAIL:
 endOK:
     if (fd != NULL)
 	fclose(fd);
-    estack_pop();
+    if (did_estack_push)
+	estack_pop();
 
     return lp;
 }
