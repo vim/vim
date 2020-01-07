@@ -645,6 +645,7 @@ do_cmdline(
 # define cmd_cookie cookie
 #endif
     static int	call_depth = 0;		// recursiveness
+    ESTACK_CHECK_DECLARATION
 
 #ifdef FEAT_EVAL
     // For every pair of do_cmdline()/do_one_cmd() calls, use an extra memory
@@ -1260,6 +1261,7 @@ do_cmdline(
 
 	    estack_push(ETYPE_EXCEPT, current_exception->throw_name,
 						current_exception->throw_lnum);
+	    ESTACK_CHECK_SETUP
 	    current_exception->throw_name = NULL;
 
 	    discard_current_exception();	// uses IObuff if 'verbose'
@@ -1284,6 +1286,7 @@ do_cmdline(
 		vim_free(p);
 	    }
 	    vim_free(SOURCING_NAME);
+	    ESTACK_CHECK_NOW
 	    estack_pop();
 	}
 

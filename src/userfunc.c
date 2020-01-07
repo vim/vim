@@ -793,6 +793,7 @@ call_user_func(
     proftime_T	call_start;
     int		started_profiling = FALSE;
 #endif
+    ESTACK_CHECK_DECLARATION
 
     // If depth of calling is getting too high, don't execute the function
     if (depth >= p_mfd)
@@ -969,6 +970,7 @@ call_user_func(
     }
 
     estack_push_ufunc(ETYPE_UFUNC, fp, 1);
+    ESTACK_CHECK_SETUP
     if (p_verbose >= 12)
     {
 	++no_wait_return;
@@ -1115,6 +1117,7 @@ call_user_func(
 	--no_wait_return;
     }
 
+    ESTACK_CHECK_NOW
     estack_pop();
     current_sctx = save_current_sctx;
 #ifdef FEAT_PROFILE
