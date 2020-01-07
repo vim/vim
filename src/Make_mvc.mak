@@ -1193,10 +1193,11 @@ RUBY_LIB = $(RUBY)\lib\$(RUBY_INSTALL_NAME).lib
 # Do we want to load Ruby dynamically?
 ! if "$(DYNAMIC_RUBY)" == "yes"
 !  message Ruby DLL will be loaded dynamically
-CFLAGS = $(CFLAGS) -DDYNAMIC_RUBY -DDYNAMIC_RUBY_VER=$(RUBY_VER) \
-		-DDYNAMIC_RUBY_DLL=\"$(RUBY_INSTALL_NAME).dll\" 
+CFLAGS = $(CFLAGS) -DDYNAMIC_RUBY \
+		-DDYNAMIC_RUBY_DLL=\"$(RUBY_INSTALL_NAME).dll\"
 !  undef RUBY_LIB
 ! endif
+CFLAGS = $(CFLAGS) -DRUBY_VERSION=$(RUBY_VER)
 !endif # RUBY
 
 #
