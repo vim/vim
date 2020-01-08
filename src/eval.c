@@ -5682,6 +5682,7 @@ tv_stringify(typval_T *varp, char_u *buf)
 {
     if (varp->v_type == VAR_LIST
 	    || varp->v_type == VAR_DICT
+	    || varp->v_type == VAR_BLOB
 	    || varp->v_type == VAR_FUNC
 	    || varp->v_type == VAR_PARTIAL
 	    || varp->v_type == VAR_FLOAT)
@@ -6057,6 +6058,12 @@ ex_execute(exarg_T *eap)
 		p = tv_get_string_buf(&rettv, buf);
 	    else
 		p = tv_stringify(&rettv, buf);
+	    if (p == NULL)
+	    {
+		clear_tv(&rettv);
+		ret = FAIL;
+		break;
+	    }
 	    len = (int)STRLEN(p);
 	    if (ga_grow(&ga, len + 2) == FAIL)
 	    {
