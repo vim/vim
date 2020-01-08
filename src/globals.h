@@ -1599,6 +1599,7 @@ EXTERN char e_listreq[]	INIT(= N_("E714: List required"));
 EXTERN char e_listblobreq[]	INIT(= N_("E897: List or Blob required"));
 EXTERN char e_listdictarg[]	INIT(= N_("E712: Argument of %s must be a List or Dictionary"));
 EXTERN char e_listdictblobarg[]	INIT(= N_("E896: Argument of %s must be a List, Dictionary or Blob"));
+EXTERN char e_inval_string[]	INIT(= N_("E908: using an invalid value as a String"));
 #endif
 #ifdef FEAT_QUICKFIX
 EXTERN char e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));

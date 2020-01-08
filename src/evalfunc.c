@@ -2015,6 +2015,12 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
 	    return;
 	++list->lv_refcount;
     }
+    else if (argvars[arg_off].v_type == VAR_JOB
+	    || argvars[arg_off].v_type == VAR_CHANNEL)
+    {
+	emsg(_(e_inval_string));
+	return;
+    }
     else
     {
 	cmd = tv_get_string_chk(&argvars[arg_off]);

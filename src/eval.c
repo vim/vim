@@ -5667,7 +5667,7 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 #endif
 	    break;
 	case VAR_UNKNOWN:
-	    emsg(_("E908: using an invalid value as a String"));
+	    emsg(_(e_inval_string));
 	    break;
     }
     return NULL;
