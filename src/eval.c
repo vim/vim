@@ -6055,7 +6055,15 @@ ex_execute(exarg_T *eap)
 	    char_u   buf[NUMBUFLEN];
 
 	    if (eap->cmdidx == CMD_execute)
-		p = tv_get_string_buf(&rettv, buf);
+	    {
+		if (rettv.v_type == VAR_CHANNEL || rettv.v_type == VAR_JOB)
+		{
+		    emsg(_(e_inval_string));
+		    p = NULL;
+		}
+		else
+		    p = tv_get_string_buf(&rettv, buf);
+	    }
 	    else
 		p = tv_stringify(&rettv, buf);
 	    if (p == NULL)
