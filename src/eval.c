@@ -6057,6 +6057,12 @@ ex_execute(exarg_T *eap)
 		p = tv_get_string_buf(&rettv, buf);
 	    else
 		p = tv_stringify(&rettv, buf);
+	    if (p == NULL)
+	    {
+		clear_tv(&rettv);
+		ret = FAIL;
+		break;
+	    }
 	    len = (int)STRLEN(p);
 	    if (ga_grow(&ga, len + 2) == FAIL)
 	    {

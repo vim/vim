@@ -268,3 +268,7 @@ func Test_message_more()
   call term_sendkeys(buf, ':q!')
   call StopVimInTerminal(buf)
 endfunc
+
+func Test_null_list()
+  echom test_null_list()
+endfunc
