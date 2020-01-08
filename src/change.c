@@ -1128,14 +1128,33 @@ ins_str(char_u *s)
     oldp = ml_get(lnum);
     oldlen = (int)STRLEN(oldp);
 
-    newp = alloc(oldlen + newlen + 1);
+    newp = alloc(oldlen + newlen
+#ifdef FEAT_PROP_POPUP
+	    + (curbuf->b_ml.ml_line_len - (oldlen + 1))
+#endif
+	    + 1);
     if (newp == NULL)
 	return;
     if (col > 0)
 	mch_memmove(newp, oldp, (size_t)col);
     mch_memmove(newp + col, s, (size_t)newlen);
     mch_memmove(newp + col + newlen, oldp + col, (size_t)(oldlen - col + 1));
-    ml_replace(lnum, newp, FALSE);
+#ifdef FEAT_PROP_POPUP
+    if (curbuf->b_has_textprop)
+    {
+	mch_memmove(newp + col + newlen + (oldlen - col + 1),
+		   oldp + oldlen + 1, curbuf->b_ml.ml_line_len - (oldlen + 1));
+	if (curbuf->b_ml.ml_flags & ML_LINE_DIRTY)
+	    vim_free(curbuf->b_ml.ml_line_ptr);
+	curbuf->b_ml.ml_line_ptr = newp;
+	curbuf->b_ml.ml_line_len += newlen;
+	curbuf->b_ml.ml_line_lnum = lnum;
+	curbuf->b_ml.ml_flags = (curbuf->b_ml.ml_flags | ML_LINE_DIRTY)
+								   & ~ML_EMPTY;
+    }
+    else
+#endif
+	ml_replace(lnum, newp, FALSE);
     inserted_bytes(lnum, col, newlen);
     curwin->w_cursor.col += newlen;
 }
