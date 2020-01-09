@@ -89,6 +89,10 @@ func Test_popup_with_border_and_padding()
 	  call popup_create('paddings', #{line: 6, col: 23, padding: [1, 3, 2, 4]})
 	  call popup_create('wrapped longer text', #{line: 8, col: 55, padding: [0, 3, 0, 3], border: [0, 1, 0, 1]})
 	  call popup_create('right aligned text', #{line: 11, col: 56, wrap: 0, padding: [0, 3, 0, 3], border: [0, 1, 0, 1]})
+	  call popup_create('X', #{line: 2, col: 73})
+	  call popup_create('X', #{line: 3, col: 74})
+	  call popup_create('X', #{line: 4, col: 75})
+	  call popup_create('X', #{line: 5, col: 76})
     END
     call insert(lines, iter == 1 ? '' : 'set enc=latin1')
     call writefile(lines, 'XtestPopupBorder')
@@ -1634,8 +1638,8 @@ func s:VerifyPosition(p, msg, line, col, width, height)
 endfunc
 
 func Test_popup_position_adjust()
-  " Anything placed past 2 cells from of the right of the screen is moved to the
-  " left.
+  " Anything placed past the last cell on the right of the screen is moved to
+  " the left.
   "
   " When wrapping is disabled, we also shift to the left to display on the
   " screen, unless fixed is set.
@@ -1643,24 +1647,11 @@ func Test_popup_position_adjust()
   " Entries for cases which don't vary based on wrapping.
   " Format is per tests described below
   let both_wrap_tests = [
-	\       ['a', 5, &columns,        5, &columns - 2, 1, 1],
-	\       ['b', 5, &columns + 1,    5, &columns - 2, 1, 1],
-	\       ['c', 5, &columns - 1,    5, &columns - 2, 1, 1],
+	\       ['a', 5, &columns,        5, &columns, 1, 1],
+	\       ['b', 5, &columns + 1,    5, &columns, 1, 1],
+	\       ['c', 5, &columns - 1,    5, &columns - 1, 1, 1],
 	\       ['d', 5, &columns - 2,    5, &columns - 2, 1, 1],
-	\       ['e', 5, &columns - 3,    5, &columns - 3, 1, 1],
-	\
-	\       ['aa', 5, &columns,        5, &columns - 2, 2, 1],
-	\       ['bb', 5, &columns + 1,    5, &columns - 2, 2, 1],
-	\       ['cc', 5, &columns - 1,    5, &columns - 2, 2, 1],
-	\       ['dd', 5, &columns - 2,    5, &columns - 2, 2, 1],
-	\       ['ee', 5, &columns - 3,    5, &columns - 3, 2, 1],
-	\
-	\       ['aaa', 5, &columns,        5, &columns - 2, 3, 1],
-	\       ['bbb', 5, &columns + 1,    5, &columns - 2, 3, 1],
-	\       ['ccc', 5, &columns - 1,    5, &columns - 2, 3, 1],
-	\       ['ddd', 5, &columns - 2,    5, &columns - 2, 3, 1],
-	\       ['eee', 5, &columns - 3,    5, &columns - 3, 3, 1],
-	\ ]
+	\       ['e', 5, &columns - 3,    5, &columns - 3, 1, 1]]
 
   " these test groups are dicts with:
   "  - comment: something to identify the group of tests by
@@ -1681,11 +1672,24 @@ func Test_popup_position_adjust()
 	\     pos: 'botleft',
 	\   },
 	\   tests: both_wrap_tests + [
-	\       ['aaaa', 5, &columns,        4, &columns - 2, 3, 2],
-	\       ['bbbb', 5, &columns + 1,    4, &columns - 2, 3, 2],
-	\       ['cccc', 5, &columns - 1,    4, &columns - 2, 3, 2],
+	\       ['aa', 5, &columns,        4, &columns, 1, 2],
+	\       ['bb', 5, &columns + 1,    4, &columns, 1, 2],
+	\       ['cc', 5, &columns - 1,    5, &columns - 1, 2, 1],
+	\       ['dd', 5, &columns - 2,    5, &columns - 2, 2, 1],
+	\       ['ee', 5, &columns - 3,    5, &columns - 3, 2, 1],
+	\
+	\       ['aaa', 5, &columns,        3, &columns, 1, 3],
+	\       ['bbb', 5, &columns + 1,    3, &columns, 1, 3],
+	\       ['ccc', 5, &columns - 1,    4, &columns - 1, 2, 2],
+	\       ['ddd', 5, &columns - 2,    5, &columns - 2, 3, 1],
+	\       ['eee', 5, &columns - 3,    5, &columns - 3, 3, 1],
+	\
+	\       ['aaaa', 5, &columns,        2, &columns, 1, 4],
+	\       ['bbbb', 5, &columns + 1,    2, &columns, 1, 4],
+	\       ['cccc', 5, &columns - 1,    4, &columns - 1, 2, 2],
 	\       ['dddd', 5, &columns - 2,    4, &columns - 2, 3, 2],
 	\       ['eeee', 5, &columns - 3,    5, &columns - 3, 4, 1],
+	\       ['eeee', 5, &columns - 4,    5, &columns - 4, 4, 1],
 	\   ],
 	\ },
 	\ #{
@@ -1695,6 +1699,18 @@ func Test_popup_position_adjust()
 	\     pos: 'botleft',
 	\   },
 	\   tests: both_wrap_tests + [
+	\       ['aa', 5, &columns,        5, &columns - 1, 2, 1],
+	\       ['bb', 5, &columns + 1,    5, &columns - 1, 2, 1],
+	\       ['cc', 5, &columns - 1,    5, &columns - 1, 2, 1],
+	\       ['dd', 5, &columns - 2,    5, &columns - 2, 2, 1],
+	\       ['ee', 5, &columns - 3,    5, &columns - 3, 2, 1],
+	\
+	\       ['aaa', 5, &columns,        5, &columns - 2, 3, 1],
+	\       ['bbb', 5, &columns + 1,    5, &columns - 2, 3, 1],
+	\       ['ccc', 5, &columns - 1,    5, &columns - 2, 3, 1],
+	\       ['ddd', 5, &columns - 2,    5, &columns - 2, 3, 1],
+	\       ['eee', 5, &columns - 3,    5, &columns - 3, 3, 1],
+	\
 	\       ['aaaa', 5, &columns,        5, &columns - 3, 4, 1],
 	\       ['bbbb', 5, &columns + 1,    5, &columns - 3, 4, 1],
 	\       ['cccc', 5, &columns - 1,    5, &columns - 3, 4, 1],
@@ -1710,9 +1726,21 @@ func Test_popup_position_adjust()
 	\     pos: 'botleft',
 	\   },
 	\   tests: both_wrap_tests + [
-	\       ['aaaa', 5, &columns,        5, &columns - 2, 3, 1],
-	\       ['bbbb', 5, &columns + 1,    5, &columns - 2, 3, 1],
-	\       ['cccc', 5, &columns - 1,    5, &columns - 2, 3, 1],
+	\       ['aa', 5, &columns,        5, &columns, 1, 1],
+	\       ['bb', 5, &columns + 1,    5, &columns, 1, 1],
+	\       ['cc', 5, &columns - 1,    5, &columns - 1, 2, 1],
+	\       ['dd', 5, &columns - 2,    5, &columns - 2, 2, 1],
+	\       ['ee', 5, &columns - 3,    5, &columns - 3, 2, 1],
+	\
+	\       ['aaa', 5, &columns,        5, &columns, 1, 1],
+	\       ['bbb', 5, &columns + 1,    5, &columns, 1, 1],
+	\       ['ccc', 5, &columns - 1,    5, &columns - 1, 2, 1],
+	\       ['ddd', 5, &columns - 2,    5, &columns - 2, 3, 1],
+	\       ['eee', 5, &columns - 3,    5, &columns - 3, 3, 1],
+	\
+	\       ['aaaa', 5, &columns,        5, &columns, 1, 1],
+	\       ['bbbb', 5, &columns + 1,    5, &columns, 1, 1],
+	\       ['cccc', 5, &columns - 1,    5, &columns - 1, 2, 1],
 	\       ['dddd', 5, &columns - 2,    5, &columns - 2, 3, 1],
 	\       ['eeee', 5, &columns - 3,    5, &columns - 3, 4, 1],
 	\   ],

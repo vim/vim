@@ -5287,6 +5287,7 @@ chk_modeline(
 #ifdef FEAT_EVAL
     sctx_T	save_current_sctx;
 #endif
+    ESTACK_CHECK_DECLARATION
 
     prev = -1;
     for (s = ml_get(lnum); *s != NUL; ++s)
@@ -5330,6 +5331,7 @@ chk_modeline(
 
 	// prepare for emsg()
 	estack_push(ETYPE_MODELINE, (char_u *)"modelines", lnum);
+	ESTACK_CHECK_SETUP
 
 	end = FALSE;
 	while (end == FALSE)
@@ -5390,6 +5392,7 @@ chk_modeline(
 	    s = e + 1;			// advance to next part
 	}
 
+	ESTACK_CHECK_NOW
 	estack_pop();
 	vim_free(linecopy);
     }

@@ -1025,6 +1025,16 @@ sign_define_by_name(
 	else
 	    sp_prev->sn_next = sp;
     }
+    else
+    {
+	win_T *wp;
+
+	// Signs may already exist, a redraw is needed in windows with a
+	// non-empty sign list.
+	FOR_ALL_WINDOWS(wp)
+	    if (wp->w_buffer->b_signlist != NULL)
+		redraw_buf_later(wp->w_buffer, NOT_VALID);
+    }
 
     // set values for a defined sign.
     if (icon != NULL)
@@ -1781,10 +1791,8 @@ sign_get_placed(
     else
     {
 	FOR_ALL_BUFFERS(buf)
-	{
 	    if (buf->b_signlist != NULL)
 		sign_get_placed_in_buf(buf, 0, sign_id, sign_group, retlist);
-	}
     }
 }
 

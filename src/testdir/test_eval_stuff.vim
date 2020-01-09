@@ -216,3 +216,15 @@ func Test_scriptversion_fail()
   call assert_fails('source Xversionscript', 'E999:')
   call delete('Xversionscript')
 endfunc
+
+func Test_excute_null()
+  call assert_fails('execute test_null_list()', 'E730:')
+  call assert_fails('execute test_null_dict()', 'E731:')
+  call assert_fails('execute test_null_blob()', 'E976:')
+  execute test_null_string()
+  call assert_fails('execute test_null_partial()', 'E729:')
+  if has('job')
+    call assert_fails('execute test_null_job()', 'E908:')
+    call assert_fails('execute test_null_channel()', 'E908:')
+  endif
+endfunc
