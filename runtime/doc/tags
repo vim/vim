@@ -7557,6 +7557,7 @@ log10()	eval.txt	/*log10()*
 logiPat	pi_logipat.txt	/*logiPat*
 logiPat-arg	pi_logipat.txt	/*logiPat-arg*
 logiPat-caveat	pi_logipat.txt	/*logiPat-caveat*
+logiPat-cmd	pi_logipat.txt	/*logiPat-cmd*
 logiPat-contents	pi_logipat.txt	/*logiPat-contents*
 logiPat-copyright	pi_logipat.txt	/*logiPat-copyright*
 logiPat-examples	pi_logipat.txt	/*logiPat-examples*
