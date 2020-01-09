@@ -955,6 +955,38 @@ func Test_textprop_noexpandtab()
   catch /^Vim\%((\a\+)\)\=:E964/
   endtry
   call prop_remove({'type': 'test'})
+  call prop_type_delete('test')
+  let &foldmethod = save_fdm
+  let &expandtab = save_et
+  let &shiftwidth = save_sw
+  let &softtabstop = save_sts
+  let &tabstop = save_ts
+endfunc
+
+func Test_textprop_noexpandtab_redraw()
+  %bwipe!
+  new
+  let save_ts = &tabstop
+  set tabstop=8
+  let save_sts = &softtabstop
+  set softtabstop=4
+  let save_sw = &shiftwidth
+  set shiftwidth=4
+  let save_et = &expandtab
+  set noexpandtab
+  let save_fdm = &foldmethod
+  set foldmethod=marker
+  call feedkeys("\<esc>\<esc>0Ca\<cr>\<space>\<esc>\<up>", "tx")
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call prop_add(1, 1, {'end_col': 2, 'type': 'test'})
+  call feedkeys("0i\<tab>", "tx")
+  " Internally broken at the next line
+  call feedkeys("A\<left>\<tab>", "tx")
+  redraw
+  " Index calculation failed internally on next line
+  call prop_add(1, 1, {'end_col': 2, 'type': 'test'})
+  call prop_remove({'type': 'test', 'all': v:true})
+  call prop_type_delete('test')
   let &foldmethod = save_fdm
   let &expandtab = save_et
   let &shiftwidth = save_sw
