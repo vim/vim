@@ -926,19 +926,32 @@ func Test_proptype_substitute2()
   bwipe!
 endfunc
 
+func SaveOptions()
+  let d = #{tabstop: &tabstop,
+	  \ softtabstop: &softtabstop,
+	  \ shiftwidth: &shiftwidth,
+	  \ expandtab: &expandtab,
+	  \ foldmethod: '"' .. &foldmethod .. '"',
+	  \ }
+  return d
+endfunc
+
+func RestoreOptions(dict)
+  for name in keys(a:dict)
+    exe 'let &' .. name .. ' = ' .. a:dict[name]
+  endfor
+endfunc
+
 func Test_textprop_noexpandtab()
-  %bwipe!
   new
-  let save_ts = &tabstop
+  let save_dict = SaveOptions()
+
   set tabstop=8
-  let save_sts = &softtabstop
   set softtabstop=4
-  let save_sw = &shiftwidth
   set shiftwidth=4
-  let save_et = &expandtab
   set noexpandtab
-  let save_fdm = &foldmethod
   set foldmethod=marker
+
   call feedkeys("\<esc>\<esc>0Ca\<cr>\<esc>\<up>", "tx")
   call prop_type_add('test', {'highlight': 'ErrorMsg'})
   call prop_add(1, 1, {'end_col': 2, 'type': 'test'})
@@ -955,9 +968,51 @@ func Test_textprop_noexpandtab()
   catch /^Vim\%((\a\+)\)\=:E964/
   endtry
   call prop_remove({'type': 'test'})
-  let &foldmethod = save_fdm
-  let &expandtab = save_et
-  let &shiftwidth = save_sw
-  let &softtabstop = save_sts
-  let &tabstop = save_ts
+  call prop_type_delete('test')
+
+  call RestoreOptions(save_dict)
+  bwipe!
+endfunc
+
+func Test_textprop_noexpandtab_redraw()
+  new
+  let save_dict = SaveOptions()
+
+  set tabstop=8
+  set softtabstop=4
+  set shiftwidth=4
+  set noexpandtab
+  set foldmethod=marker
+
+  call feedkeys("\<esc>\<esc>0Ca\<cr>\<space>\<esc>\<up>", "tx")
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call prop_add(1, 1, {'end_col': 2, 'type': 'test'})
+  call feedkeys("0i\<tab>", "tx")
+  " Internally broken at the next line
+  call feedkeys("A\<left>\<tab>", "tx")
+  redraw
+  " Index calculation failed internally on next line
+  call prop_add(1, 1, {'end_col': 2, 'type': 'test'})
+  call prop_remove({'type': 'test', 'all': v:true})
+  call prop_type_delete('test')
+  call prop_type_delete('test')
+
+  call RestoreOptions(save_dict)
+  bwipe!
+endfunc
+
+func Test_textprop_ins_str()
+  new
+  call setline(1, 'just some text')
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call prop_add(1, 1, {'end_col': 2, 'type': 'test'})
+  call assert_equal([{'id': 0, 'col': 1, 'end': 1, 'type': 'test', 'length': 1, 'start': 1}], prop_list(1))
+
+  call feedkeys("foi\<F8>\<Esc>", "tx")
+  call assert_equal('just s<F8>ome text', getline(1))
+  call assert_equal([{'id': 0, 'col': 1, 'end': 1, 'type': 'test', 'length': 1, 'start': 1}], prop_list(1))
+
+  bwipe!
+  call prop_remove({'type': 'test'})
+  call prop_type_delete('test')
 endfunc
