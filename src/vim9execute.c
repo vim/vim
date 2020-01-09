@@ -1023,6 +1023,122 @@ call_def_function(
 		}
 		break;
 
+	    case ISN_ADDLIST:
+	    case ISN_ADDBLOB:
+		{
+		    typval_T *tv1 = STACK_TV_BOT(-2);
+		    typval_T *tv2 = STACK_TV_BOT(-1);
+
+		    if (iptr->isn_type == ISN_ADDLIST)
+			eval_addlist(tv1, tv2);
+		    else
+			eval_addblob(tv1, tv2);
+		    clear_tv(tv2);
+		    --ectx.ec_stack.ga_len;
+		}
+		break;
+
+	    // Computation with two arguments of unknown type
+	    case ISN_ADDANY:
+	    case ISN_MULTANY:
+	    case ISN_DIVANY:
+	    case ISN_SUBANY:
+	    case ISN_REMANY:
+		{
+		    typval_T	*tv1 = STACK_TV_BOT(-2);
+		    typval_T	*tv2 = STACK_TV_BOT(-1);
+		    varnumber_T	n1, n2;
+#ifdef FEAT_FLOAT
+		    float_T	f1 = 0, f2 = 0;
+#endif
+		    int		error = FALSE;
+
+		    if (iptr->isn_type == ISN_ADDANY)
+		    {
+			if (tv1->v_type == VAR_LIST && tv2->v_type == VAR_LIST)
+			{
+			    eval_addlist(tv1, tv2);
+			    break;
+			}
+			else if (tv1->v_type == VAR_BLOB
+						    && tv2->v_type == VAR_BLOB)
+			{
+			    eval_addblob(tv1, tv2);
+			    break;
+			}
+		    }
+#ifdef FEAT_FLOAT
+		    if (tv1->v_type == VAR_FLOAT)
+		    {
+			f1 = tv1->vval.v_float;
+			n1 = 0;
+		    }
+		    else
+#endif
+		    {
+			n1 = tv_get_number_chk(tv1, &error);
+			if (error)
+			    goto failed;
+#ifdef FEAT_FLOAT
+			if (tv2->v_type == VAR_FLOAT)
+			    f1 = n1;
+#endif
+		    }
+#ifdef FEAT_FLOAT
+		    if (tv2->v_type == VAR_FLOAT)
+		    {
+			f2 = tv2->vval.v_float;
+			n2 = 0;
+		    }
+		    else
+#endif
+		    {
+			n2 = tv_get_number_chk(tv2, &error);
+			if (error)
+			    goto failed;
+#ifdef FEAT_FLOAT
+			if (tv1->v_type == VAR_FLOAT)
+			    f2 = n2;
+#endif
+		    }
+#ifdef FEAT_FLOAT
+		    // if there is a float on either side the result is a float
+		    if (tv1->v_type == VAR_FLOAT || tv2->v_type == VAR_FLOAT)
+		    {
+			switch (iptr->isn_type)
+			{
+			    case ISN_MULTANY: f1 = f1 * f2; break;
+			    case ISN_DIVANY:  f1 = f1 / f2; break;
+			    case ISN_SUBANY:  f1 = f1 - f2; break;
+			    case ISN_ADDANY:  f1 = f1 + f2; break;
+			    default: emsg(_(e_modulus)); goto failed;
+			}
+			clear_tv(tv1);
+			clear_tv(tv2);
+			tv1->v_type = VAR_FLOAT;
+			tv1->vval.v_float = f1;
+			--ectx.ec_stack.ga_len;
+		    }
+		    else
+#endif
+		    {
+			switch (iptr->isn_type)
+			{
+			    case ISN_MULTANY: n1 = n1 * n2; break;
+			    case ISN_DIVANY:  n1 = num_divide(n1, n2); break;
+			    case ISN_SUBANY:  n1 = n1 - n2; break;
+			    case ISN_ADDANY:  n1 = n1 + n2; break;
+			    default:	      n1 = num_modulus(n1, n2); break;
+			}
+			clear_tv(tv1);
+			clear_tv(tv2);
+			tv1->v_type = VAR_NUMBER;
+			tv1->vval.v_number = n1;
+			--ectx.ec_stack.ga_len;
+		    }
+		}
+		break;
+
 	    case ISN_CONCAT:
 		{
 		    char_u *str1 = STACK_TV_BOT(-2)->vval.v_string;
@@ -1455,6 +1571,16 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_DIVF: smsg("%4d DIVF", current); break;
 	    case ISN_ADDF: smsg("%4d ADDF", current); break;
 	    case ISN_SUBF: smsg("%4d SUBF", current); break;
+
+	    // expression operations on unknown type
+	    case ISN_MULTANY: smsg("%4d MULT", current); break;
+	    case ISN_DIVANY: smsg("%4d DIV", current); break;
+	    case ISN_ADDANY: smsg("%4d ADD", current); break;
+	    case ISN_SUBANY: smsg("%4d SUB", current); break;
+	    case ISN_REMANY: smsg("%4d REM", current); break;
+
+	    case ISN_ADDLIST: smsg("%4d ADDLIST", current); break;
+	    case ISN_ADDBLOB: smsg("%4d ADDBLOB", current); break;
 
 	    // expression operations
 	    case ISN_CONCAT: smsg("%4d CONCAT", current); break;

@@ -2102,6 +2102,43 @@ eval4(char_u **arg, typval_T *rettv, int evaluate)
     return OK;
 }
 
+    void
+eval_addblob(typval_T *tv1, typval_T *tv2)
+{
+    blob_T  *b1 = tv1->vval.v_blob;
+    blob_T  *b2 = tv2->vval.v_blob;
+    blob_T  *b = blob_alloc();
+    int	    i;
+
+    if (b != NULL)
+    {
+	for (i = 0; i < blob_len(b1); i++)
+	    ga_append(&b->bv_ga, blob_get(b1, i));
+	for (i = 0; i < blob_len(b2); i++)
+	    ga_append(&b->bv_ga, blob_get(b2, i));
+
+	clear_tv(tv1);
+	rettv_blob_set(tv1, b);
+    }
+}
+
+    int
+eval_addlist(typval_T *tv1, typval_T *tv2)
+{
+    typval_T var3;
+
+    // concatenate Lists
+    if (list_concat(tv1->vval.v_list, tv2->vval.v_list, &var3) == FAIL)
+    {
+	clear_tv(tv1);
+	clear_tv(tv2);
+	return FAIL;
+    }
+    clear_tv(tv1);
+    *tv1 = var3;
+    return OK;
+}
+
 /*
  * Handle fourth level expression:
  *	+	number addition
@@ -2118,7 +2155,6 @@ eval4(char_u **arg, typval_T *rettv, int evaluate)
 eval5(char_u **arg, typval_T *rettv, int evaluate)
 {
     typval_T	var2;
-    typval_T	var3;
     int		op;
     varnumber_T	n1, n2;
 #ifdef FEAT_FLOAT
@@ -2202,36 +2238,12 @@ eval5(char_u **arg, typval_T *rettv, int evaluate)
 	    }
 	    else if (op == '+' && rettv->v_type == VAR_BLOB
 						   && var2.v_type == VAR_BLOB)
-	    {
-		blob_T  *b1 = rettv->vval.v_blob;
-		blob_T  *b2 = var2.vval.v_blob;
-		blob_T	*b = blob_alloc();
-		int	i;
-
-		if (b != NULL)
-		{
-		    for (i = 0; i < blob_len(b1); i++)
-			ga_append(&b->bv_ga, blob_get(b1, i));
-		    for (i = 0; i < blob_len(b2); i++)
-			ga_append(&b->bv_ga, blob_get(b2, i));
-
-		    clear_tv(rettv);
-		    rettv_blob_set(rettv, b);
-		}
-	    }
+		eval_addblob(rettv, &var2);
 	    else if (op == '+' && rettv->v_type == VAR_LIST
 						   && var2.v_type == VAR_LIST)
 	    {
-		// concatenate Lists
-		if (list_concat(rettv->vval.v_list, var2.vval.v_list,
-							       &var3) == FAIL)
-		{
-		    clear_tv(rettv);
-		    clear_tv(&var2);
+		if (eval_addlist(rettv, &var2) == FAIL)
 		    return FAIL;
-		}
-		clear_tv(rettv);
-		*rettv = var3;
 	    }
 	    else
 	    {
@@ -2437,7 +2449,7 @@ eval6(
 		}
 		else
 		{
-		    emsg(_("E804: Cannot use '%' with Float"));
+		    emsg(_(e_modulus));
 		    return FAIL;
 		}
 		rettv->v_type = VAR_FLOAT;

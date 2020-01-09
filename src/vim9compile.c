@@ -272,6 +272,151 @@ generate_instr_type(cctx_T *cctx, isntype_T isn_type, type_T *type)
 }
 
 /*
+ * If type at "offset" isn't already VAR_STRING then generate ISN_2STRING.
+ */
+    static int
+may_generate_2STRING(int offset, cctx_T *cctx)
+{
+    isn_T	*isn;
+    garray_T	*stack = &cctx->ctx_type_stack;
+    type_T	**type = ((type_T **)stack->ga_data) + stack->ga_len + offset;
+
+    if ((*type)->tt_type == VAR_STRING)
+	return OK;
+    *type = &t_string;
+
+    if ((isn = generate_instr(cctx, ISN_2STRING)) == NULL)
+	return FAIL;
+    isn->isn_arg.number = offset;
+
+    return OK;
+}
+
+    static int
+check_number_or_float(vartype_T type1, vartype_T type2, char_u *op)
+{
+    if (!((type1 == VAR_NUMBER || type1 == VAR_FLOAT || type1 == VAR_UNKNOWN)
+	    && (type2 == VAR_NUMBER || type2 == VAR_FLOAT
+						     || type2 == VAR_UNKNOWN)))
+    {
+	if (*op == '+')
+	    semsg(_("E1035: wrong argument type for +"));
+	else
+	    semsg(_("E1036: %c requires number or float arguments"), *op);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Generate an instruction with two arguments.  The instruction depends on the
+ * type of the arguments.
+ */
+    static int
+generate_two_op(cctx_T *cctx, char_u *op)
+{
+    garray_T	*stack = &cctx->ctx_type_stack;
+    type_T	*type1;
+    type_T	*type2;
+    vartype_T	vartype;
+
+    // Get the known type of the two items on the stack.  If they are matching
+    // use a type-specific instruction. Otherwise fall back to runtime type
+    // checking.
+    type1 = ((type_T **)stack->ga_data)[stack->ga_len - 2];
+    type2 = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+    if (type1->tt_type == VAR_NUMBER && type2->tt_type == VAR_NUMBER)
+	vartype = VAR_NUMBER;
+    else if (type1->tt_type == VAR_LIST && type2->tt_type == VAR_LIST)
+	vartype = VAR_LIST;
+    else if (type1->tt_type == VAR_BLOB && type2->tt_type == VAR_BLOB)
+	vartype = VAR_BLOB;
+#ifdef FEAT_FLOAT
+    else if (type1->tt_type == VAR_FLOAT && type2->tt_type == VAR_FLOAT)
+	vartype = VAR_FLOAT;
+#endif
+    else
+	vartype = VAR_UNKNOWN;
+
+    switch (*op)
+    {
+	case '+': if (vartype != VAR_LIST && vartype != VAR_BLOB
+			  && check_number_or_float(
+				   type1->tt_type, type2->tt_type, op) == FAIL)
+		      return FAIL;
+		  generate_instr_drop(cctx,
+			    vartype == VAR_NUMBER ? ISN_ADDNR
+			  : vartype == VAR_LIST ? ISN_ADDLIST
+			  : vartype == VAR_BLOB ? ISN_ADDBLOB
+#ifdef FEAT_FLOAT
+			  : vartype == VAR_FLOAT ? ISN_ADDF
+#endif
+			  : ISN_ADDANY, 1);
+		  break;
+
+	case '-':  if (check_number_or_float(type1->tt_type, type2->tt_type,
+								   op) == FAIL)
+		      return FAIL;
+		   generate_instr_drop(cctx,
+			  vartype == VAR_NUMBER ? ISN_SUBNR
+#ifdef FEAT_FLOAT
+			  : vartype == VAR_FLOAT ? ISN_SUBF
+#endif
+			  : ISN_SUBANY, 1);
+		  break;
+
+	case '*':  if (check_number_or_float(type1->tt_type, type2->tt_type,
+								   op) == FAIL)
+		      return FAIL;
+		   generate_instr_drop(cctx,
+			  vartype == VAR_NUMBER ? ISN_MULTNR
+#ifdef FEAT_FLOAT
+			  : vartype == VAR_FLOAT ? ISN_MULTF
+#endif
+			  : ISN_MULTANY, 1);
+		  break;
+
+	case '/': if (check_number_or_float(type1->tt_type, type2->tt_type,
+								   op) == FAIL)
+		      return FAIL;
+		  generate_instr_drop(cctx,
+			  vartype == VAR_NUMBER ? ISN_DIVNR
+#ifdef FEAT_FLOAT
+			  : vartype == VAR_FLOAT ? ISN_DIVF
+#endif
+			  : ISN_DIVANY, 1);
+		  break;
+
+	case '%': if (vartype != VAR_NUMBER
+			  && (type1->tt_type != VAR_UNKNOWN
+					     || type2->tt_type != VAR_UNKNOWN))
+		  {
+		      emsg(_("E1035: % requires number arguments"));
+		      return FAIL;
+		  }
+		  generate_instr_drop(cctx,
+			  vartype == VAR_NUMBER ? ISN_REMNR : ISN_REMANY, 1);
+		  break;
+    }
+
+    // correct type of result
+    if (vartype == VAR_UNKNOWN)
+    {
+	type_T *type = &t_any;
+
+#ifdef FEAT_FLOAT
+	// float+number and number+float results in float
+	if ((type1->tt_type == VAR_NUMBER || type1->tt_type == VAR_FLOAT)
+		&& (type2->tt_type == VAR_NUMBER || type2->tt_type == VAR_FLOAT))
+	    type = &t_float;
+#endif
+	((type_T **)stack->ga_data)[stack->ga_len - 1] = type;
+    }
+
+    return OK;
+}
+
+/*
  * Generate an ISN_COMPARE instruction.
  */
     static int
@@ -310,27 +455,6 @@ generate_2BOOL(cctx_T *cctx, int invert)
 
     // type becomes bool
     ((type_T **)stack->ga_data)[stack->ga_len - 1] = &t_bool;
-
-    return OK;
-}
-
-/*
- * If type at "offset" isn't already VAR_STRING then generate ISN_2STRING.
- */
-    static int
-may_generate_2STRING(int offset, cctx_T *cctx)
-{
-    isn_T	*isn;
-    garray_T	*stack = &cctx->ctx_type_stack;
-    type_T	**type = ((type_T **)stack->ga_data) + stack->ga_len + offset;
-
-    if ((*type)->tt_type == VAR_STRING)
-	return OK;
-    *type = &t_string;
-
-    if ((isn = generate_instr(cctx, ISN_2STRING)) == NULL)
-	return FAIL;
-    isn->isn_arg.number = offset;
 
     return OK;
 }
@@ -2131,7 +2255,7 @@ compile_expr6(char_u **arg, cctx_T *cctx)
 	return FAIL;
 
     /*
-     * Repeat computing, until no '*', '/' or '%' is following.
+     * Repeat computing, until no "*", "/" or "%" is following.
      */
     for (;;)
     {
@@ -2151,13 +2275,7 @@ compile_expr6(char_u **arg, cctx_T *cctx)
 	if (compile_expr7(arg, cctx) == FAIL)
 	    return FAIL;
 
-	// TODO: if we know the type use a specific instruction
-	switch (*op)
-	{
-	    case '*': generate_instr_drop(cctx, ISN_MULTNR, 1); break;
-	    case '/': generate_instr_drop(cctx, ISN_DIVNR, 1); break;
-	    case '%': generate_instr_drop(cctx, ISN_REMNR, 1); break;
-	}
+	generate_two_op(cctx, op);
     }
 
     return OK;
@@ -2173,14 +2291,13 @@ compile_expr5(char_u **arg, cctx_T *cctx)
 {
     char_u	*op;
     int		oplen;
-    garray_T	*instr = &cctx->ctx_instr;
 
     // get the first variable
     if (compile_expr6(arg, cctx) == FAIL)
 	return FAIL;
 
     /*
-     * Repeat computing, until no '+', '-' or '.' is following.
+     * Repeat computing, until no "+", "-" or ".." is following.
      */
     for (;;)
     {
@@ -2203,23 +2320,15 @@ compile_expr5(char_u **arg, cctx_T *cctx)
 	if (compile_expr6(arg, cctx) == FAIL)
 	    return FAIL;
 
-	// TODO: use a specific instruction depending on the type,
-	// e.g. + also works for lists and blob
-	if (ga_grow(instr, 1) == FAIL)
-	    return FAIL;
-	switch (*op)
+	if (*op == '.')
 	{
-	    case '+': generate_instr_drop(cctx, ISN_ADDNR, 1); break;
-	    case '-': generate_instr_drop(cctx, ISN_SUBNR, 1); break;
-	    case '.':
-		      {
-			  if (may_generate_2STRING(-2, cctx) == FAIL
-				  || may_generate_2STRING(-1, cctx) == FAIL)
-			      return FAIL;
-			  generate_instr_drop(cctx, ISN_CONCAT, 1);
-		      }
-		      break;
+	    if (may_generate_2STRING(-2, cctx) == FAIL
+		    || may_generate_2STRING(-1, cctx) == FAIL)
+		return FAIL;
+	    generate_instr_drop(cctx, ISN_CONCAT, 1);
 	}
+	else
+	    generate_two_op(cctx, op);
     }
 
     return OK;
@@ -3918,24 +4027,26 @@ delete_instr(isn_T *isn)
 
 	case ISN_2BOOL:
 	case ISN_2STRING:
+	case ISN_ADDANY:
+	case ISN_ADDBLOB:
 	case ISN_ADDF:
+	case ISN_ADDLIST:
 	case ISN_ADDNR:
 	case ISN_BCALL:
+	case ISN_CATCH:
 	case ISN_CHECKNR:
 	case ISN_CHECKTYPE:
 	case ISN_COMPARE:
 	case ISN_CONCAT:
 	case ISN_DCALL:
+	case ISN_DIVANY:
 	case ISN_DIVF:
 	case ISN_DIVNR:
 	case ISN_DROP:
 	case ISN_ECHO:
+	case ISN_ENDTRY:
 	case ISN_EQUALNR:
 	case ISN_FOR:
-	case ISN_TRY:
-	case ISN_CATCH:
-	case ISN_ENDTRY:
-	case ISN_THROW:
 	case ISN_FUNCREF:
 	case ISN_GEQUALNR:
 	case ISN_GREATERNR:
@@ -3944,6 +4055,7 @@ delete_instr(isn_T *isn)
 	case ISN_LOAD:
 	case ISN_LOADREG:
 	case ISN_LOADV:
+	case ISN_MULTANY:
 	case ISN_MULTF:
 	case ISN_MULTNR:
 	case ISN_NEGATENR:
@@ -3954,14 +4066,18 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHF:
 	case ISN_PUSHNR:
 	case ISN_PUSHSPEC:
+	case ISN_REMANY:
 	case ISN_REMNR:
 	case ISN_RETURN:
 	case ISN_SEQUALNR:
 	case ISN_SMALLERNR:
 	case ISN_STORE:
 	case ISN_STORENR:
+	case ISN_SUBANY:
 	case ISN_SUBF:
 	case ISN_SUBNR:
+	case ISN_THROW:
+	case ISN_TRY:
 	    // nothing allocated
 	    break;
     }

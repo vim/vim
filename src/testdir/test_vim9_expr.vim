@@ -1,5 +1,7 @@
 " Tests for Vim9 script expressions
 
+source check.vim
+
 " Check that "line" inside ":def" results in an "error" message.
 func CheckDefFailure(line, error)
   call writefile(['def Func()', a:line, 'enddef'], 'Xdef')
@@ -234,6 +236,25 @@ def Test_expr6()
   assert_equal(4, 6 * 4 / 6)
 enddef
 
+def Test_expr6_float()
+  CheckFeature float
+  assert_equal(36.0, 6.0 * 6)
+  assert_equal(36.0, 6 * 6.0)
+  assert_equal(36.0, 6.0 * 6.0)
+
+  assert_equal(10.0, 60 / 6.0)
+  assert_equal(10.0, 60.0 / 6)
+  assert_equal(10.0, 60.0 / 6.0)
+
+  assert_equal(4.0, 6.0 * 4 / 6)
+  assert_equal(4.0, 6 * 4.0 / 6)
+  assert_equal(4.0, 6 * 4 / 6.0)
+  assert_equal(4.0, 6.0 * 4.0 / 6)
+  assert_equal(4.0, 6 * 4.0 / 6.0)
+  assert_equal(4.0, 6.0 * 4 / 6.0)
+  assert_equal(4.0, 6.0 * 4.0 / 6.0)
+enddef
+
 func Test_expr6_fails()
   let msg = "white space required before and after '*'"
   call CheckDefFailure("let x = 1*2", msg)
@@ -249,6 +270,13 @@ func Test_expr6_fails()
   call CheckDefFailure("let x = 1%2", msg)
   call CheckDefFailure("let x = 1 %2", msg)
   call CheckDefFailure("let x = 1% 2", msg)
+
+  call CheckDefFailure("let x = [1] / [2]", 'E1036:')
+endfunc
+
+func Test_expr6_float_fails()
+  CheckFeature float
+  call CheckDefFailure("let x = 1.0 % 2", 'E1035:')
 endfunc
 
 " define here to use old style parsing

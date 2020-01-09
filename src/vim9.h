@@ -70,6 +70,17 @@ typedef enum {
     ISN_ADDF,
     ISN_SUBF,
 
+    // expression operations on unknown type
+    ISN_MULTANY,
+    ISN_DIVANY,
+    ISN_REMANY,
+    ISN_ADDANY,
+    ISN_SUBANY,
+
+    // moreexpression operations
+    ISN_ADDLIST,
+    ISN_ADDBLOB,
+
     // comparive operations
     ISN_EQUALNR,
     ISN_NEQUALNR,

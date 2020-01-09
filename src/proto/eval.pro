@@ -27,6 +27,8 @@ void set_context_for_expression(expand_T *xp, char_u *arg, cmdidx_T cmdidx);
 int pattern_match(char_u *pat, char_u *text, int ic);
 int eval0(char_u *arg, typval_T *rettv, char_u **nextcmd, int evaluate);
 int eval1(char_u **arg, typval_T *rettv, int evaluate);
+void eval_addblob(typval_T *tv1, typval_T *tv2);
+int eval_addlist(typval_T *tv1, typval_T *tv2);
 int get_option_tv(char_u **arg, typval_T *rettv, int evaluate);
 int get_number_tv(char_u **arg, typval_T *rettv, int evaluate, int want_string);
 int get_string_tv(char_u **arg, typval_T *rettv, int evaluate);
