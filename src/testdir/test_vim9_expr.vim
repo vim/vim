@@ -200,14 +200,45 @@ func Test_expr4_fails()
   call CheckDefFailure("let x = 1 isnot? 2", 'E15:')
 endfunc
 
+let afloat = 0.1
+let anint = 10
+let alsoint = 4
+
 " test addition, subtraction, concatenation
 def Test_expr5()
   assert_equal(66, 60 + 6)
+  assert_equal(70, 60 + g:anint)
+  assert_equal(9, g:alsoint + 5)
+  assert_equal(14, g:alsoint + g:anint)
+
   assert_equal(54, 60 - 6)
+  assert_equal(50, 60 - g:anint)
+  assert_equal(-1, g:alsoint - 5)
+  assert_equal(-6, g:alsoint - g:anint)
+
   assert_equal('hello', 'hel' .. 'lo')
   assert_equal('hello 123', 'hello ' .. 123)
   assert_equal('123 hello', 123 .. ' hello')
   assert_equal('123456', 123 .. 456)
+enddef
+
+def Test_expr5_float()
+  CheckFeature float
+  assert_equal(66.0, 60.0 + 6.0)
+  assert_equal(66.0, 60.0 + 6)
+  assert_equal(66.0, 60 + 6.0)
+  assert_equal(5.1, g:afloat + 5)
+  assert_equal(8.1, 8 + g:afloat)
+  assert_equal(10.1, g:anint + g:afloat)
+  assert_equal(10.1, g:afloat + g:anint)
+
+  assert_equal(54.0, 60.0 - 6.0)
+  assert_equal(54.0, 60.0 - 6)
+  assert_equal(54.0, 60 - 6.0)
+  assert_equal(-4.9, g:afloat - 5)
+  assert_equal(7.9, 8 - g:afloat)
+  assert_equal(9.9, g:anint - g:afloat)
+  assert_equal(-9.9, g:afloat - g:anint)
 enddef
 
 func Test_expr5_fails()
@@ -227,24 +258,38 @@ func Test_expr5_fails()
   call CheckDefFailure("let x = '1'.. '2'", msg)
 endfunc
 
-" test multiply, divide, remainder
+" test multiply, divide, modulo
 def Test_expr6()
   assert_equal(36, 6 * 6)
+  assert_equal(24, 6 * g:alsoint)
+  assert_equal(24, g:alsoint * 6)
+  assert_equal(40, g:anint * g:alsoint)
+
   assert_equal(10, 60 / 6)
+  assert_equal(6, 60 / g:anint)
+  assert_equal(1, g:anint / 6)
+  assert_equal(2, g:anint / g:alsoint)
+
   assert_equal(5, 11 % 6)
+  assert_equal(4, g:anint % 6)
+  assert_equal(3, 13 % g:anint)
+  assert_equal(2, g:anint % g:alsoint)
 
   assert_equal(4, 6 * 4 / 6)
 enddef
 
 def Test_expr6_float()
   CheckFeature float
+
   assert_equal(36.0, 6.0 * 6)
   assert_equal(36.0, 6 * 6.0)
   assert_equal(36.0, 6.0 * 6.0)
+  assert_equal(1.0, g:afloat * g:anint)
 
   assert_equal(10.0, 60 / 6.0)
   assert_equal(10.0, 60.0 / 6)
   assert_equal(10.0, 60.0 / 6.0)
+  assert_equal(0.01, g:afloat / g:anint)
 
   assert_equal(4.0, 6.0 * 4 / 6)
   assert_equal(4.0, 6 * 4.0 / 6)
@@ -252,6 +297,8 @@ def Test_expr6_float()
   assert_equal(4.0, 6.0 * 4.0 / 6)
   assert_equal(4.0, 6 * 4.0 / 6.0)
   assert_equal(4.0, 6.0 * 4 / 6.0)
+  assert_equal(4.0, 6.0 * 4.0 / 6.0)
+
   assert_equal(4.0, 6.0 * 4.0 / 6.0)
 enddef
 
@@ -271,7 +318,22 @@ func Test_expr6_fails()
   call CheckDefFailure("let x = 1 %2", msg)
   call CheckDefFailure("let x = 1% 2", msg)
 
+  call CheckDefFailure("let x = '1' * '2'", 'E1036:')
+  call CheckDefFailure("let x = '1' / '2'", 'E1036:')
+  call CheckDefFailure("let x = '1' % '2'", 'E1035:')
+
+  call CheckDefFailure("let x = 0z01 * 0z12", 'E1036:')
+  call CheckDefFailure("let x = 0z01 / 0z12", 'E1036:')
+  call CheckDefFailure("let x = 0z01 % 0z12", 'E1035:')
+
+  call CheckDefFailure("let x = [1] * [2]", 'E1036:')
   call CheckDefFailure("let x = [1] / [2]", 'E1036:')
+  call CheckDefFailure("let x = [1] % [2]", 'E1035:')
+
+  call CheckDefFailure("let x = #{one: 1} * #{two: 2}", 'E1036:')
+  call CheckDefFailure("let x = #{one: 1} / #{two: 2}", 'E1036:')
+  call CheckDefFailure("let x = #{one: 1} % #{two: 2}", 'E1035:')
+
 endfunc
 
 func Test_expr6_float_fails()

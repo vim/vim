@@ -387,9 +387,10 @@ generate_two_op(cctx_T *cctx, char_u *op)
 			  : ISN_DIVANY, 1);
 		  break;
 
-	case '%': if (vartype != VAR_NUMBER
-			  && (type1->tt_type != VAR_UNKNOWN
-					     || type2->tt_type != VAR_UNKNOWN))
+	case '%': if ((type1->tt_type != VAR_UNKNOWN
+					       && type1->tt_type != VAR_NUMBER)
+			  || (type2->tt_type != VAR_UNKNOWN
+					      && type2->tt_type != VAR_NUMBER))
 		  {
 		      emsg(_("E1035: % requires number arguments"));
 		      return FAIL;
