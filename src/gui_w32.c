@@ -5558,7 +5558,7 @@ _OnImeNotify(HWND hWnd, DWORD dwCommand, DWORD dwData UNUSED)
     LRESULT lResult = 0;
     HIMC hImc;
 
-    if (!pImmGetContext || (hImc = pImmGetContext(hWnd)) == (HIMC)0)
+    if (pImmGetContext == NULL || (hImc = pImmGetContext(hWnd)) == (HIMC)0)
 	return lResult;
     switch (dwCommand)
     {
@@ -5632,7 +5632,7 @@ GetCompositionString_inUCS2(HIMC hIMC, DWORD GCS, int *lenp)
     LPWSTR	    wbuf = NULL;
     char_u	    *buf;
 
-    if (!pImmGetContext)
+    if (pImmGetContext == NULL)
 	return NULL; // no imm32.dll
 
     // Try Unicode; this'll always work on NT regardless of codepage.
@@ -5684,7 +5684,7 @@ GetResultStr(HWND hwnd, int GCS, int *lenp)
     short_u	*buf = NULL;
     char_u	*convbuf = NULL;
 
-    if (!pImmGetContext || (hIMC = pImmGetContext(hwnd)) == (HIMC)0)
+    if (pImmGetContext == NULL || (hIMC = pImmGetContext(hwnd)) == (HIMC)0)
 	return NULL;
 
     // Reads in the composition string.

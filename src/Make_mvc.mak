@@ -844,7 +844,7 @@ CFLAGS = $(CFLAGS) -DFEAT_MBYTE_IME
 ! ifndef DYNAMIC_IME
 DYNAMIC_IME = yes
 ! endif
-! if "$(DYNAMIC_IME)" == "yes"
+! if "$(DYNAMIC_IME)" == "yes" && ("$(GUI)" == "yes" && "$(VIMDLL)" != "yes")
 CFLAGS = $(CFLAGS) -DDYNAMIC_IME
 ! else
 IME_LIB = imm32.lib
@@ -865,6 +865,7 @@ SUBSYSTEM_CON = console
 GVIM = g$(VIM)
 CUI_INCL = iscygpty.h
 CUI_OBJ = $(OUTDIR)\iscygpty.obj
+CUI_LIB = $(IME_LIB)
 RCFLAGS = $(RCFLAGS) -DVIMDLL
 ! else
 VIM = g$(VIM)
@@ -883,6 +884,7 @@ GUI_LIB = \
 SUBSYSTEM = console
 CUI_INCL = iscygpty.h
 CUI_OBJ = $(OUTDIR)\iscygpty.obj
+CUI_LIB = $(IME_LIB)
 !endif
 SUBSYSTEM_TOOLS = console
 
@@ -1277,7 +1279,7 @@ conflags = $(conflags) /map /mapinfo:lines
 LINKARGS1 = $(linkdebug) $(conflags)
 LINKARGS2 = $(CON_LIB) $(GUI_LIB) $(NODEFAULTLIB) $(LIBC) $(OLE_LIB) user32.lib \
 		$(LUA_LIB) $(MZSCHEME_LIB) $(PERL_LIB) $(PYTHON_LIB) $(PYTHON3_LIB) $(RUBY_LIB) \
-		$(TCL_LIB) $(SOUND_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(LINK_PDB)
+		$(TCL_LIB) $(SOUND_LIB) $(NETBEANS_LIB) $(XPM_LIB) $(CUI_LIB) $(LINK_PDB)
 
 # Report link time code generation progress if used. 
 !ifdef NODEBUG

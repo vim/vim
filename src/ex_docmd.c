@@ -241,6 +241,7 @@ static void	ex_rundo(exarg_T *eap);
 static void	ex_redo(exarg_T *eap);
 static void	ex_later(exarg_T *eap);
 static void	ex_redir(exarg_T *eap);
+static void	ex_redrawruler(exarg_T *eap);
 static void	ex_redrawstatus(exarg_T *eap);
 static void	ex_redrawtabline(exarg_T *eap);
 static void	close_redir(void);
@@ -7424,6 +7425,21 @@ ex_redraw(exarg_T *eap)
     need_wait_return = FALSE;
 
     out_flush();
+}
+
+/*
+ * ":redrawruler": force redraw of the ruler
+ */
+    static void
+ex_redrawruler(exarg_T *eap UNUSED)
+{
+#ifdef FEAT_CMDL_INFO
+    if (eap->forceit)
+	ruler_redraw_all();
+    else
+	ruler_redraw_curwin();
+    out_flush();
+#endif
 }
 
 /*

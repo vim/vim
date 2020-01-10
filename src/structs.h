@@ -3315,6 +3315,7 @@ struct window_S
 
 #ifdef FEAT_CMDL_INFO
     // remember what is shown in the ruler for this window (if 'ruler' set)
+    int		w_redr_ruler;	    // if TRUE ruler must be redrawn
     pos_T	w_ru_cursor;	    // cursor position shown in ruler
     colnr_T	w_ru_virtcol;	    // virtcol shown in ruler
     linenr_T	w_ru_topline;	    // topline shown in ruler

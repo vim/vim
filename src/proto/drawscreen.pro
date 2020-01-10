@@ -16,6 +16,8 @@ void redraw_curbuf_later(int type);
 void redraw_buf_later(buf_T *buf, int type);
 void redraw_buf_line_later(buf_T *buf, linenr_T lnum);
 void redraw_buf_and_status_later(buf_T *buf, int type);
+void ruler_redraw_all(void);
+void ruler_redraw_curwin(void);
 void status_redraw_all(void);
 void status_redraw_curbuf(void);
 void redraw_statuslines(void);
