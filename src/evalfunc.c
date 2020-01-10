@@ -620,6 +620,7 @@ static funcentry_T global_functions[] =
 #ifdef FEAT_PROP_POPUP
     {"prop_add",	3, 3, FEARG_1,	  f_prop_add},
     {"prop_clear",	1, 3, FEARG_1,	  f_prop_clear},
+    {"prop_find",	1, 2, FEARG_1,	  f_prop_find},
     {"prop_list",	1, 2, FEARG_1,	  f_prop_list},
     {"prop_remove",	1, 3, FEARG_1,	  f_prop_remove},
     {"prop_type_add",	2, 2, FEARG_1,	  f_prop_type_add},

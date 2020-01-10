@@ -469,6 +469,24 @@ find_type_by_id(hashtab_T *ht, int id)
 }
 
 /*
+ * Fill 'dict' with text properties in 'prop'.
+ */
+    static void
+prop_fill_dict(dict_T *dict, textprop_T *prop, buf_T *buf)
+{
+    proptype_T *pt;
+
+    dict_add_number(dict, "col", prop->tp_col);
+    dict_add_number(dict, "length", prop->tp_len);
+    dict_add_number(dict, "id", prop->tp_id);
+    dict_add_number(dict, "start", !(prop->tp_flags & TP_FLAG_CONT_PREV));
+    dict_add_number(dict, "end", !(prop->tp_flags & TP_FLAG_CONT_NEXT));
+    pt = text_prop_type_by_id(buf, prop->tp_type);
+    if (pt != NULL)
+	dict_add_string(dict, "type", pt->pt_name);
+}
+
+/*
  * Find a property type by ID in "buf" or globally.
  * Returns NULL if not found.
  */
@@ -537,6 +555,190 @@ f_prop_clear(typval_T *argvars, typval_T *rettv UNUSED)
 }
 
 /*
+ * prop_find({props} [, {direction}])
+ */
+    void
+f_prop_find(typval_T *argvars, typval_T *rettv)
+{
+    pos_T       *cursor = &curwin->w_cursor;
+    dict_T      *dict;
+    buf_T       *buf = curbuf;
+    dictitem_T  *di;
+    int         lnum_start;
+    int         start_pos_has_prop = 0;
+    int         seen_end = 0;
+    int         id = -1;
+    int         type_id = -1;
+    int         skipstart = 0;
+    int         lnum = -1;
+    int         col = -1;
+    int         dir = 1;    // 1 = forward, -1 = backward
+
+    if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
+    {
+	emsg(_(e_invarg));
+	return;
+    }
+    dict = argvars[0].vval.v_dict;
+
+    if (get_bufnr_from_arg(&argvars[0], &buf) == FAIL)
+	return;
+    if (buf->b_ml.ml_mfp == NULL)
+	return;
+
+    if (argvars[1].v_type != VAR_UNKNOWN)
+    {
+	char_u      *dir_s = tv_get_string(&argvars[1]);
+
+	if (*dir_s == 'b')
+	    dir = -1;
+	else if (*dir_s != 'f')
+	{
+	    emsg(_(e_invarg));
+	    return;
+	}
+    }
+
+    di = dict_find(dict, (char_u *)"lnum", -1);
+    if (di != NULL)
+	lnum = tv_get_number(&di->di_tv);
+
+    di = dict_find(dict, (char_u *)"col", -1);
+    if (di != NULL)
+	col = tv_get_number(&di->di_tv);
+
+    if (lnum == -1)
+    {
+	lnum = cursor->lnum;
+	col = cursor->col + 1;
+    }
+    else if (col == -1)
+	col = 1;
+
+    if (lnum < 1 || lnum > buf->b_ml.ml_line_count)
+    {
+	emsg(_(e_invrange));
+	return;
+    }
+
+    di = dict_find(dict, (char_u *)"skipstart", -1);
+    if (di != NULL)
+	skipstart = tv_get_number(&di->di_tv);
+
+    if (dict_find(dict, (char_u *)"id", -1) != NULL)
+	id = dict_get_number(dict, (char_u *)"id");
+    if (dict_find(dict, (char_u *)"type", -1))
+    {
+	char_u	    *name = dict_get_string(dict, (char_u *)"type", FALSE);
+	proptype_T  *type = lookup_prop_type(name, buf);
+
+	if (type == NULL)
+	    return;
+	type_id = type->pt_id;
+    }
+    if (id == -1 && type_id == -1)
+    {
+	emsg(_("E968: Need at least one of 'id' or 'type'"));
+	return;
+    }
+
+    lnum_start = lnum;
+
+    if (rettv_dict_alloc(rettv) == FAIL)
+	return;
+
+    while (1)
+    {
+	char_u	*text = ml_get_buf(buf, lnum, FALSE);
+	size_t	textlen = STRLEN(text) + 1;
+	int	count = (int)((buf->b_ml.ml_line_len - textlen)
+                                / sizeof(textprop_T));
+	int	    i;
+	textprop_T  prop;
+	int	    prop_start;
+	int	    prop_end;
+
+	for (i = 0; i < count; ++i)
+	{
+	    mch_memmove(&prop, text + textlen + i * sizeof(textprop_T),
+			    sizeof(textprop_T));
+
+	    if (prop.tp_id == id || prop.tp_type == type_id)
+	    {
+		// Check if the starting position has text props.
+		if (lnum_start == lnum)
+		{
+		    if (col >= prop.tp_col
+				       && (col <= prop.tp_col + prop.tp_len-1))
+			start_pos_has_prop = 1;
+		}
+		else
+		{
+		    // Not at the first line of the search so adjust col to
+		    // indicate that we're continuing from prev/next line.
+		    if (dir < 0)
+			col = buf->b_ml.ml_line_len;
+		    else
+			col = 1;
+		}
+
+		prop_start = !(prop.tp_flags & TP_FLAG_CONT_PREV);
+		prop_end = !(prop.tp_flags & TP_FLAG_CONT_NEXT);
+		if (!prop_start && prop_end && dir > 0)
+		    seen_end = 1;
+
+		// Skip lines without the start flag.
+		if (!prop_start)
+		{
+		    // Always search backwards for start when search started
+		    // on a prop and we're not skipping.
+		    if (start_pos_has_prop && !skipstart)
+			dir = -1;
+		    break;
+		}
+
+		// If skipstart is true, skip the prop at start pos (even if
+		// continued from another line).
+		if (start_pos_has_prop && skipstart && !seen_end)
+		{
+		    start_pos_has_prop = 0;
+		    break;
+		}
+
+		if (dir < 0)
+		{
+		    if (col < prop.tp_col)
+			break;
+		}
+		else
+		{
+		    if (col > prop.tp_col + prop.tp_len-1)
+			break;
+		}
+
+		prop_fill_dict(rettv->vval.v_dict, &prop, buf);
+		dict_add_number(rettv->vval.v_dict, "lnum", lnum);
+
+		return;
+	    }
+	}
+
+	if (dir > 0)
+	{
+	    if (lnum >= buf->b_ml.ml_line_count)
+		break;
+	    lnum++;
+	}
+	else
+	{
+	    if (lnum <= 1)
+		break;
+	    lnum--;
+	}
+    }
+}
+
+/*
  * prop_list({lnum} [, {bufnr}])
  */
     void
@@ -564,7 +766,6 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 							 / sizeof(textprop_T));
 	int	    i;
 	textprop_T  prop;
-	proptype_T  *pt;
 
 	for (i = 0; i < count; ++i)
 	{
@@ -574,15 +775,7 @@ f_prop_list(typval_T *argvars, typval_T *rettv)
 		break;
 	    mch_memmove(&prop, text + textlen + i * sizeof(textprop_T),
 							   sizeof(textprop_T));
-	    dict_add_number(d, "col", prop.tp_col);
-	    dict_add_number(d, "length", prop.tp_len);
-	    dict_add_number(d, "id", prop.tp_id);
-	    dict_add_number(d, "start", !(prop.tp_flags & TP_FLAG_CONT_PREV));
-	    dict_add_number(d, "end", !(prop.tp_flags & TP_FLAG_CONT_NEXT));
-	    pt = text_prop_type_by_id(buf, prop.tp_type);
-	    if (pt != NULL)
-		dict_add_string(d, "type", pt->pt_name);
-
+	    prop_fill_dict(d, &prop, buf);
 	    list_append_dict(rettv->vval.v_list, d);
 	}
     }
