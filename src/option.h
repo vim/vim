@@ -820,6 +820,7 @@ EXTERN int	p_ru;		// 'ruler'
 EXTERN char_u	*p_ruf;		// 'rulerformat'
 #endif
 EXTERN char_u	*p_pp;		// 'packpath'
+EXTERN char_u	*p_qftf;	// 'quickfixtextfunc'
 EXTERN char_u	*p_rtp;		// 'runtimepath'
 EXTERN long	p_sj;		// 'scrolljump'
 #if defined(MSWIN) && defined(FEAT_GUI)

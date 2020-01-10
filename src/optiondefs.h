@@ -2045,6 +2045,15 @@ static struct vimoption options[] =
 #endif
 			    {(char_u *)DEFAULT_PYTHON_VER, (char_u *)0L}
 			    SCTX_INIT},
+    {"quickfixtextfunc", "qftf", P_STRING|P_ALLOCED|P_VI_DEF|P_VIM|P_SECURE,
+#if defined(FEAT_QUICKFIX) && defined(FEAT_EVAL)
+			    (char_u *)&p_qftf, PV_NONE,
+			    {(char_u *)"", (char_u *)0L}
+#else
+			    (char_u *)NULL, PV_NONE,
+			    {(char_u *)NULL, (char_u *)NULL}
+#endif
+			    SCTX_INIT},
     {"quoteescape", "qe",   P_STRING|P_ALLOCED|P_VI_DEF,
 #ifdef FEAT_TEXTOBJ
 			    (char_u *)&p_qe, PV_QE,
