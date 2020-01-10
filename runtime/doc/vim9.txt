@@ -4,27 +4,56 @@
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
 
 
-THIS IS STILL UNDER DEVELOPEMNT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 Vim9 script commands and expressions.
 
 Most expression help is in |eval.txt|.  This file is about the new syntax and
 features in Vim9 script.
 
-THIS IS STILL UNDER DEVELOPEMNT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 
-1.  Differences			|vim9-script|
-2.  New style functions		|fast-functions|
-3.  Types			|vim9-types|
+1   What is Vim9 script?	|vim9-script|
+2.  Differences			|vim9-differences|
+3.  New style functions		|fast-functions|
+4.  Types			|vim9-types|
+5.  Import and Export		|vim9-export|
 
 9.  Rationale			|vim9-rationale|
 
 ==============================================================================
 
-1. Differences from legacy Vim script			*vim9-script*
+1. What is Vim9 script?					*vim9-script*
 
-THIS IS STILL UNDER DEVELOPEMNT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+
+Vim script has been growing over time, while keeping backwards compatibility.
+Execution it is quite slow, every line is parsed every time it is executed.
+
+The main goal of Vim9 script is to drastically improve performance.  An
+improvement of 10 to 100 times can be expected.  A secondary goal is to avoid
+Vim-specific constructs and get closer to commonly used programming languages.
+
+The performance improvements can only be achieved by not being 100% backwards
+compatible.  For example, in a function the arguments are not available in the
+"a:" dictionary, as creating that dictionary adds quite a lot of overhead.
+Other differences are more subtle, such as how errors are handled.
+
+The parts of vim9 script that are not compatible are limited to:
+- the `:def` command. define a function with the Vim9 syntax and semantics
+- files with `export` and `import` statements
+
+Otherwise Vim9 script and legacy Vim script can be mixed.  There is no need to
+rewrite old scripts, they keep working as before.  The toplevel of
+source'ed scripts use the legacy format, only `:def` functions use the new
+syntax.  New scripts that are imported fully use the Vim9 script syntax.
+
+==============================================================================
+
+2. Differences from legacy Vim script			*vim9-differences*
+
+THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 Vim9 functions ~
 
@@ -157,9 +186,9 @@ Note that in Vim9 one can use "true" for v:true and "false" for v:false.
 
 ==============================================================================
 
-2. New style functions					*fast-functions*
+3. New style functions					*fast-functions*
 
-THIS IS STILL UNDER DEVELOPEMNT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 :def[!] {name}([arguments])[: {return-type}
 			Define a new function by the name {name}.  The body of
@@ -189,9 +218,9 @@ THIS IS STILL UNDER DEVELOPEMNT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 ==============================================================================
 
-3. Types					*vim9-types*
+4. Types					*vim9-types*
 
-THIS IS STILL UNDER DEVELOPEMNT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 The following builtin types are supported:
 	bool
@@ -252,6 +281,56 @@ easy to see the type.
 
 If there is no return statement or all return statements do not have a return
 value then the return type is "void".
+
+==============================================================================
+
+5.  Import and Export				*vim9-export* *vim9-import*
+
+THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+
+A Vim9 script can be written to be imported.  This means that everything in
+the script is local, unless exported.  Those exported items, and only those
+items, can then be imported in another script.
+
+Exporting one item can be written as: >
+	export const EXPORTED_CONST = 1234
+	export let someValue = ...
+	export def MyFunc() ...
+	export class MyClass ...
+
+As this suggests, only constants, variables, `:def` functions and classes can
+be exported.
+
+Alternatively, an export statement can be used to export several already
+defined (so far script-local) items: >
+	export {EXPORTED_CONST, someValue, MyFunc, MyClass}
+
+The exported items can be imported individually in another Vim9 script: >
+	import EXPORTED_CONST from "thatscript.vim"
+	import MyClass from "thatscript.vim"
+
+To import multiple items at the same time: >
+	import {someValue, MyClass} from "thatscript.vim"
+
+To import all exported items under a specific identifier: >
+	import * as That from 'thatscript.vim'
+
+Then you can use "That.EXPORTED_CONST", "That.someValue", etc.  You are free
+to choose the name "That", but it is highly recommended to use the name of the
+script file to avoid confusion.
+
+The name after `import` can be:
+- A relative path, starting "." or "..".  This finds a file relative to the
+  location of the script file itself.  This is useful to split up a large
+  plugin into several files.
+- An absolute path, starting with "/" on Unix or "D:/" on MS-Windows.  This
+  will be rarely used.
+- A path not being relative or absolute.  This will be found in the
+  "vim9" subdirectories of 'runtimepath' entries.  The name will usually be
+  longer and unique, to avoid loading the wrong file.
+
+Once a vim9 script file has been imported, the result is cached and used the
+next time the same script is imported.  It will not be read again.
 
 ==============================================================================
 
@@ -324,6 +403,28 @@ On the other hand, overloading "+" to use both for addition and string
 concatenation goes against legacy Vim script and often leads to mistakes.
 For that reason we will keep using ".." for string concatenation.  Lua also
 uses ".." this way.
+
+
+Import and Export ~
+
+A problem of legacy Vim script is that by default all functions and variables
+are global.  It is possible to make them script-local, but then they are not
+available in other scripts.
+
+In Vim9 script a mechanism very similar to the Javascript import and export
+mechanism is supported.  It is a variant to the existing `:source` command
+that works like one would expect:
+- Instead of making everything global by default, everything is script-local,
+  unless exported.
+- When importing a script the symbols that are imported are listed, avoiding
+  name conflicts and failures if later functionality is added.
+- The mechanism allows for writing a big, long script with a very clear API:
+  the exported function(s) and class(es).
+- By using relative paths loading can be much faster for an import inside of a
+  package, no need to search many directories.
+- Once an import has been used, it can be cached and loading it again can be
+  avoided.
+- The Vim-specific use of "s:" to make things script-local can be dropped.
 
 
 Classes ~
