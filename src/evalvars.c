@@ -118,8 +118,8 @@ static struct vimvar
     {VV_NAME("option_command",	 VAR_STRING), VV_RO},
     {VV_NAME("option_type",	 VAR_STRING), VV_RO},
     {VV_NAME("errors",		 VAR_LIST), 0},
-    {VV_NAME("false",		 VAR_SPECIAL), VV_RO},
-    {VV_NAME("true",		 VAR_SPECIAL), VV_RO},
+    {VV_NAME("false",		 VAR_BOOL), VV_RO},
+    {VV_NAME("true",		 VAR_BOOL), VV_RO},
     {VV_NAME("null",		 VAR_SPECIAL), VV_RO},
     {VV_NAME("none",		 VAR_SPECIAL), VV_RO},
     {VV_NAME("vim_did_enter",	 VAR_NUMBER), VV_RO},
@@ -1675,6 +1675,7 @@ item_lock(typval_T *tv, int deep, int lock)
 	case VAR_FUNC:
 	case VAR_PARTIAL:
 	case VAR_FLOAT:
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:

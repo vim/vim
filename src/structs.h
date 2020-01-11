@@ -1313,7 +1313,8 @@ typedef enum
     VAR_LIST,	 // "v_list" is used
     VAR_DICT,	 // "v_dict" is used
     VAR_FLOAT,	 // "v_float" is used
-    VAR_SPECIAL, // "v_number" is used
+    VAR_BOOL,	 // "v_number" is VVAL_FALSE or VVAL_TRUE
+    VAR_SPECIAL, // "v_number" is VVAL_NONE or VVAL_NULL
     VAR_JOB,	 // "v_job" is used
     VAR_CHANNEL, // "v_channel" is used
     VAR_BLOB,	 // "v_blob" is used
