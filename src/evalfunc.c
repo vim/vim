@@ -199,7 +199,6 @@ static void f_screencol(typval_T *argvars, typval_T *rettv);
 static void f_screenrow(typval_T *argvars, typval_T *rettv);
 static void f_screenstring(typval_T *argvars, typval_T *rettv);
 static void f_search(typval_T *argvars, typval_T *rettv);
-static void f_searchcount(typval_T *argvars, typval_T *rettv);
 static void f_searchdecl(typval_T *argvars, typval_T *rettv);
 static void f_searchpair(typval_T *argvars, typval_T *rettv);
 static void f_searchpairpos(typval_T *argvars, typval_T *rettv);
@@ -4449,48 +4448,6 @@ f_line2byte(typval_T *argvars UNUSED, typval_T *rettv)
     if (rettv->vval.v_number >= 0)
 	++rettv->vval.v_number;
 #endif
-}
-
-/*
- * "searchcount()" function
- */
-    static void
-f_searchcount(typval_T *argvars, typval_T *rettv)
-{
-    dict_T	*dict;
-    dictitem_T	*di;
-    pos_T	pos = {0, 0, 0};
-    int		maxcount = 99;
-    int		recompute = TRUE;
-
-    if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
-    {
-	emsg(_(e_invarg));
-	return;
-    }
-
-    // TODO: drop "maxcount", "recompute" for return value
-    item_copy(&argvars[0], rettv, TRUE, 0);
-    dict = rettv->vval.v_dict;
-
-    di = dict_find(dict, (char_u *)"maxcount", -1);
-    if (di != NULL && di->di_tv.v_type == VAR_NUMBER)
-	maxcount = di->di_tv.vval.v_number;
-    if (maxcount <= 0)
-	maxcount = 99;
-
-    di = dict_find(dict, (char_u *)"recompute", -1);
-    if (di != NULL && di->di_tv.v_type == VAR_NUMBER)
-	recompute = !!di->di_tv.vval.v_number;
-
-    if (recompute)
-    {
-	set_last_search_stat(dict);
-	if (!has_last_search_stat())
-	    search_stat(0, &pos, NULL, TRUE, maxcount);
-    }
-
-    get_last_search_stat(dict);
 }
 
 /*

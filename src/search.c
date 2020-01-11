@@ -23,9 +23,20 @@ static int skip_chars(int, int);
 static void show_pat_in_path(char_u *, int,
 					 int, int, FILE *, linenr_T *, long);
 #endif
-#ifdef FEAT_VIMINFO
-static void wvsp_one(FILE *fp, int idx, char *s, int sc);
-#endif
+
+typedef struct searchstat
+{
+    int		cur;		// current position of found words
+    int		cnt;		// total count of found words
+    int		out_of_time;	// search was timed out
+} searchstat_T;
+
+static void cmdline_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, int show_top_bot_msg, char_u *msgbuf, int recompute, int maxcount, long timeout);
+static void update_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, searchstat_T *stat, int recompute, int maxcount, long timeout);
+
+#define SEARCH_STAT_DEF_TIMEOUT 20L
+#define SEARCH_STAT_DEF_MAX_COUNT 99
+#define SEARCH_STAT_BUF_LEN 12
 
 /*
  * This file contains various searching-related routines. These fall into
@@ -1206,7 +1217,6 @@ do_search(
     char_u	    *msgbuf = NULL;
     size_t	    len;
     int		    has_offset = FALSE;
-#define SEARCH_STAT_BUF_LEN 12
 
     /*
      * A line offset is not remembered, this is vi compatible.
@@ -1282,6 +1292,8 @@ do_search(
      */
     for (;;)
     {
+	int		show_top_bot_msg = FALSE;
+
 	searchstr = pat;
 	dircp = NULL;
 					    // use previous pattern
@@ -1527,6 +1539,11 @@ do_search(
 	if (dircp != NULL)
 	    *dircp = dirc;	// restore second '/' or '?' for normal_cmd()
 
+	if (!shortmess(SHM_SEARCH)
+		&& ((dirc == '/' && LT_POS(pos, curwin->w_cursor))
+			    || (dirc == '?' && LT_POS(curwin->w_cursor, pos))))
+	    show_top_bot_msg = TRUE;
+
 	if (c == FAIL)
 	{
 	    retval = 0;
@@ -1586,7 +1603,11 @@ do_search(
 		&& c != FAIL
 		&& !shortmess(SHM_SEARCHCOUNT)
 		&& msgbuf != NULL)
-	    search_stat(dirc, &pos, msgbuf, (count != 1 || has_offset), 99);
+		cmdline_search_stat(dirc, &pos, &curwin->w_cursor,
+				show_top_bot_msg, msgbuf,
+				(count != 1 || has_offset),
+				SEARCH_STAT_DEF_MAX_COUNT,
+				SEARCH_STAT_DEF_TIMEOUT);
 
 	/*
 	 * The search command can be followed by a ';' to do another search.
@@ -4995,258 +5016,179 @@ linewhite(linenr_T lnum)
     return (*p == NUL);
 }
 #endif
-
-static pos_T   stat_lastpos = {0, 0, 0};
-static int	stat_cur = 0;
-static int	stat_cnt = 0;
-static int	stat_wrap = 0;
-static int	stat_chgtick = 0;
-static char_u   *stat_lastpat = NULL;
-static buf_T    *stat_lbuf = NULL;
-
-
-    int
-has_last_search_stat()
-{
-    // TODO
-    return stat_lastpat != NULL;
-}
-
-    void
-set_last_search_stat(dict_T *dict)
-{
-    dictitem_T	*di;
-    char_u	*s;
-    int		n;
-
-    // dir
-    s = dict_get_string(dict, "dir", FALSE);
-    if (s != NULL && (s[0] == '/' || s[0] == '?'))
-	spats[0].off.dir = s[0];
-
-    // lastpos
-    di = dict_find(dict, "lastpos", -1);
-    if (di != NULL && di->di_tv.v_type == VAR_LIST
-	    && list_len(di->di_tv.vval.v_list) >= 3)
-    {
-	int	error;
-	int	lnum, col, coladd;
-	list_T *list = di->di_tv.vval.v_list;
-
-	lnum   = list_find_nr(list, 0L, &error);
-	if (error)
-	    goto skip_lastpos;
-	col    = list_find_nr(list, 1L, &error);
-	if (error)
-	    goto skip_lastpos;
-	coladd = list_find_nr(list, 2L, &error);
-	if (error)
-	    goto skip_lastpos;
-
-	stat_lastpos.lnum   = lnum;
-	stat_lastpos.col    = col;
-	stat_lastpos.coladd = coladd;
-    }
-skip_lastpos:
-
-    // pattern
-    s = dict_get_string(dict, "pattern", FALSE);
-    if (s != NULL)
-	stat_lastpat = s;
-
-    // changedtick
-    di = dict_find(dict, "changedtick", -1);
-    if (di != NULL && di->di_tv.v_type == VAR_NUMBER
-	    && di->di_tv.vval.v_number > 0)
-	stat_chgtick = di->di_tv.vval.v_number;
-
-    // TODO: bufnr
-    // di = dict_find(dict, "bufnr", -1);
-    // if (di != NULL && di->di_tv.v_type == VAR_NUMBER
-	   //  && di->di_tv.vval.v_number > 0)
-
-    // current
-    di = dict_find(dict, "current", -1);
-    if (di != NULL && di->di_tv.v_type == VAR_NUMBER
-	    && di->di_tv.vval.v_number > 0)
-	stat_cur = di->di_tv.vval.v_number;
-
-    // count
-    di = dict_find(dict, "count", -1);
-    if (di != NULL && di->di_tv.v_type == VAR_NUMBER
-	    && di->di_tv.vval.v_number > 0)
-	stat_cnt = di->di_tv.vval.v_number;
-
-    // wrap
-    di = dict_find(dict, "wrap", -1);
-    if (di != NULL && di->di_tv.v_type == VAR_NUMBER)
-	stat_wrap = !!di->di_tv.vval.v_number;
-}
-
-    void
-get_last_search_stat(dict_T *dict)
-{
-    char_u dir[] = {spats[0].off.dir, NUL};
-
-    list_T *lastpos = list_alloc();
-    list_append_number(lastpos, stat_lastpos.lnum);
-    list_append_number(lastpos, stat_lastpos.col);
-    list_append_number(lastpos, stat_lastpos.coladd);
-
-    dict_add_string(dict, "dir", dir);
-    dict_add_list(dict, "lastpos", lastpos);
-    dict_add_string(dict, "pattern", stat_lastpat);
-    dict_add_number(dict, "changedtick", stat_chgtick);
-    dict_add_number(dict, "bufnr", stat_lbuf != NULL ? stat_lbuf->b_fnum : -1);
-    dict_add_number(dict, "current", stat_cur);
-    dict_add_number(dict, "count", stat_cnt);
-    dict_add_number(dict, "wrap", stat_wrap);
-}
-
 /*
  * Add the search count "[3/19]" to "msgbuf".
- * When "recompute" is TRUE always recompute the numbers.
+ * See update_search_stat() for other arguments.
  */
-    void
-search_stat(
-    int	    dirc,
-    pos_T   *pos,
-    char_u  *msgbuf,
-    int	    recompute,
-    int	    max)
+    static void
+cmdline_search_stat(
+    int		dirc,
+    pos_T	*pos,
+    pos_T	*cursor_pos,
+    int		show_top_bot_msg,
+    char_u	*msgbuf,
+    int		recompute,
+    int		maxcount,
+    long	timeout)
 {
-    int		    wrap = FALSE;
-    int		    save_ws = p_ws;
-    int		    wraparound = FALSE;
-    pos_T	    p = (*pos);
-#ifdef FEAT_RELTIME
-    proftime_T  start;
-#endif
-#define OUT_OF_TIME -1
-
-    if ((dirc == '/' && LT_POS(p, curwin->w_cursor))
-			|| (dirc == '?' && LT_POS(curwin->w_cursor, p)))
-	wrap = TRUE;
-
-
-    if (dirc == 0)
-	dirc = spats[0].off.dir;
-
-    wraparound = ((dirc == '?' && LT_POS(stat_lastpos, p))
-	       || (dirc == '/' && LT_POS(p, stat_lastpos)));
-
-    // If anything relevant changed the count has to be recomputed.
-    // MB_STRNICMP ignores case, but we should not ignore case.
-    // Unfortunately, there is no MB_STRNICMP function.
-    if (!(stat_chgtick == CHANGEDTICK(curbuf)
-	&& MB_STRNICMP(stat_lastpat, spats[last_idx].pat, STRLEN(stat_lastpat)) == 0
-	&& STRLEN(stat_lastpat) == STRLEN(spats[last_idx].pat)
-	&& EQUAL_POS(stat_lastpos, curwin->w_cursor)
-	&& stat_lbuf == curbuf) || wraparound || stat_cur < 0 || stat_cur > max || recompute)
+    searchstat_T stat;
+    update_search_stat(dirc, pos, cursor_pos, &stat, recompute, maxcount, timeout);
+    if (stat.cur > 0)
     {
-	stat_cur = 0;
-	stat_cnt = 0;
-	CLEAR_POS(&stat_lastpos);
-	stat_lbuf = curbuf;
-    }
-
-    if (EQUAL_POS(stat_lastpos, curwin->w_cursor) && !wraparound
-					&& (dirc == '/' ? stat_cur < stat_cnt : stat_cur > 0))
-	stat_cur += dirc == '/' ? 1 : -1;
-    else
-    {
-	p_ws = FALSE;
-#ifdef FEAT_RELTIME
-	profile_setlimit(20L, &start);
-#endif
-	while (!got_int && searchit(curwin, curbuf, &stat_lastpos, NULL,
-			 FORWARD, NULL, 1, SEARCH_KEEP, RE_LAST, NULL) != FAIL)
-	{
-#ifdef FEAT_RELTIME
-	    // Stop after passing the time limit.
-	    if (profile_passed_limit(&start))
-	    {
-		stat_cnt = OUT_OF_TIME;
-		stat_cur = OUT_OF_TIME;
-		break;
-	    }
-#endif
-	    stat_cnt++;
-	    if (LTOREQ_POS(stat_lastpos, p))
-		stat_cur++;
-	    fast_breakcheck();
-	    if (stat_cnt > max)
-		break;
-	}
-    }
-    if (!got_int)
-    {
-	char	t[SEARCH_STAT_BUF_LEN] = "";
+	char	t[SEARCH_STAT_BUF_LEN];
 	size_t	len;
 
-	if (msgbuf != NULL)
-	{
 #ifdef FEAT_RIGHTLEFT
-	    if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
-	    {
-		if (stat_cur < 0)    // out of time
-		    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[?/??]");
-		else if (stat_cnt > max && stat_cur > max)
-		    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>%d/>%d]", max, max);
-		else if (stat_cnt > max)
-		    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>%d/%d]", max, stat_cur);
-		else
-		    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/%d]", stat_cnt, stat_cur);
-	    }
+	if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
+	{
+	    if (stat.out_of_time)
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[?/??]");
+	    else if (stat.cnt > maxcount && stat.cur > maxcount)
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>%d/>%d]", maxcount, maxcount);
+	    else if (stat.cnt > maxcount)
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>%d/%d]", maxcount, stat.cur);
 	    else
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/%d]", stat.cnt, stat.cur);
+	}
+	else
 #endif
-	    {
-		if (stat_cur < 0)    // out of time
-		    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[?/??]");
-		else if (stat_cnt > max && stat_cur > max)
-		    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>%d/>%d]", max, max);
-		else if (stat_cnt > max)
-		    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/>%d]", stat_cur, max);
-		else
-		    vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/%d]", stat_cur, stat_cnt);
-	    }
-
-// <<<<<<< HEAD
-	    len = STRLEN(t);
-	    if (wrap && len + 2 < SEARCH_STAT_BUF_LEN)
-	    {
-		STRCPY(t + len, " W");
-		len += 2;
-	    }
-
-	    mch_memmove(msgbuf + STRLEN(msgbuf) - len, t, len);
-// =======
-// 	len = STRLEN(t);
-// 	if (show_top_bot_msg && len + 2 < SEARCH_STAT_BUF_LEN)
-// 	{
-// 	    mch_memmove(t + 2, t, len);
-// 	    t[0] = 'W';
-// 	    t[1] = ' ';
-// 	    len += 2;
-// >>>>>>> origin/master
+	{
+	    if (stat.out_of_time)
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[?/??]");
+	    else if (stat.cnt > maxcount && stat.cur > maxcount)
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>%d/>%d]", maxcount, maxcount);
+	    else if (stat.cnt > maxcount)
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/>%d]", stat.cur, maxcount);
+	    else
+		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[%d/%d]", stat.cur, stat.cnt);
 	}
 
-	stat_wrap = wrap;
+	len = STRLEN(t);
+	if (show_top_bot_msg && len + 2 < SEARCH_STAT_BUF_LEN)
+	{
+	    mch_memmove(t + 2, t, len);
+	    t[0] = 'W';
+	    t[1] = ' ';
+	    len += 2;
+	}
 
-	if (dirc == '?' && stat_cur > max)
-	    stat_cur = -1;
-
-	vim_free(stat_lastpat);
-	stat_lastpat = vim_strsave(spats[last_idx].pat);
-	stat_chgtick = CHANGEDTICK(curbuf);
-	stat_lbuf    = curbuf;
-	stat_lastpos = p;
+	mch_memmove(msgbuf + STRLEN(msgbuf) - len, t, len);
+	if (dirc == '?' && stat.cur == maxcount + 1)
+	    stat.cur = -1;
 
 	// keep the message even after redraw, but don't put in history
 	msg_hist_off = TRUE;
 	give_warning(msgbuf, FALSE);
 	msg_hist_off = FALSE;
     }
+}
+
+/*
+ * Add the search count information to "stat".
+ * "stat" must not be NULL.
+ * When "recompute" is TRUE always recompute the numbers.
+ * dirc == 0: don't find the next/previous match (only set the result to "stat")
+ * dirc == '/': find the next match
+ * dirc == '?': find the previous match
+ */
+    static void
+update_search_stat(
+    int			dirc,
+    pos_T		*pos,
+    pos_T		*cursor_pos,
+    searchstat_T	*stat,
+    int			recompute,
+    int			maxcount,
+    long		timeout)
+{
+    int		    save_ws = p_ws;
+    int		    wraparound = FALSE;
+    pos_T	    p = (*pos);
+    static  pos_T   lastpos = {0, 0, 0};
+    static int	    cur = 0;
+    static int	    cnt = 0;
+    static int	    chgtick = 0;
+    static char_u   *lastpat = NULL;
+    static buf_T    *lbuf = NULL;
+#ifdef FEAT_RELTIME
+    proftime_T  start;
+#endif
+
+    vim_memset(stat, 0, sizeof(searchstat_T));
+
+    if (dirc == 0 && !recompute && !EMPTY_POS(lastpos))
+    {
+	stat->cur = cur;
+	stat->cnt = cnt;
+	return;
+    }
+
+    wraparound = ((dirc == '?' && LT_POS(lastpos, p))
+	       || (dirc == '/' && LT_POS(p, lastpos)));
+
+    // If anything relevant changed the count has to be recomputed.
+    // MB_STRNICMP ignores case, but we should not ignore case.
+    // Unfortunately, there is no MB_STRNICMP function.
+    // XXX: above comment should be "no MB_STRCMP function" ?
+    if (!(chgtick == CHANGEDTICK(curbuf)
+	&& MB_STRNICMP(lastpat, spats[last_idx].pat, STRLEN(lastpat)) == 0
+	&& STRLEN(lastpat) == STRLEN(spats[last_idx].pat)
+	&& EQUAL_POS(lastpos, *cursor_pos)
+	&& lbuf == curbuf) || wraparound || cur < 0
+	    || (maxcount > 0 && cur > maxcount) || recompute)
+    {
+	cur = 0;
+	cnt = 0;
+	CLEAR_POS(&lastpos);
+	lbuf = curbuf;
+    }
+
+    if (EQUAL_POS(lastpos, *cursor_pos) && !wraparound
+		&& (dirc == 0 || dirc == '/' ? cur < cnt : cur > 0))
+	cur += dirc == 0 ? 0 : dirc == '/' ? 1 : -1;
+    else
+    {
+	int	done_search = FALSE;
+	pos_T	endpos = {0, 0, 0};
+
+	p_ws = FALSE;
+#ifdef FEAT_RELTIME
+	profile_setlimit(timeout, &start);
+#endif
+	while (!got_int && searchit(curwin, curbuf, &lastpos, &endpos,
+			 FORWARD, NULL, 1, SEARCH_KEEP, RE_LAST, NULL) != FAIL)
+	{
+	    done_search = TRUE;
+#ifdef FEAT_RELTIME
+	    // Stop after passing the time limit.
+	    if (profile_passed_limit(&start))
+	    {
+		stat->out_of_time = TRUE;
+		break;
+	    }
+#endif
+	    cnt++;
+	    if (LTOREQ_POS(lastpos, p) && LTOREQ_POS(p, endpos))
+		cur = cnt;
+	    fast_breakcheck();
+	    if (maxcount > 0 && cnt > maxcount)
+		break;
+	}
+	if (got_int)
+	    cur = -1; // abort
+	if (LTOREQ_POS(endpos, p))
+	    cur = cnt + 1;
+	if (done_search)
+	{
+	    vim_free(lastpat);
+	    lastpat = vim_strsave(spats[last_idx].pat);
+	    chgtick = CHANGEDTICK(curbuf);
+	    lbuf = curbuf;
+	    lastpos = p;
+	}
+    }
+    stat->cur = cur;
+    stat->cnt = cnt;
     p_ws = save_ws;
 }
 
@@ -6016,5 +5958,113 @@ get_spat(int idx)
 get_spat_last_idx(void)
 {
     return last_idx;
+}
+#endif
+
+#ifdef FEAT_EVAL
+/*
+ * "searchcount()" function
+ */
+    void
+f_searchcount(typval_T *argvars, typval_T *rettv)
+{
+    pos_T		pos = curwin->w_cursor;
+    char_u		*pattern = NULL;
+    int			maxcount = 0;
+    long		timeout = SEARCH_STAT_DEF_TIMEOUT;
+    int			recompute = FALSE;
+    searchstat_T	stat;
+
+    if (rettv_dict_alloc(rettv) == FAIL)
+	return;
+
+    if (shortmess(SHM_SEARCHCOUNT))	// 'shortmess' contains 'S' flag
+	recompute = TRUE;
+
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	dict_T		*dict = argvars[0].vval.v_dict;
+	dictitem_T	*di;
+	listitem_T	*li;
+	int		error = FALSE;
+
+	di = dict_find(dict, (char_u *)"timeout", -1);
+	if (di != NULL) {
+	    timeout = (long)tv_get_number_chk(&di->di_tv, &error);
+	    if (error)
+		return;
+	}
+	di = dict_find(dict, (char_u *)"maxcount", -1);
+	if (di != NULL) {
+	    maxcount = (int)tv_get_number_chk(&di->di_tv, &error);
+	    if (error)
+		return;
+	}
+	di = dict_find(dict, (char_u *)"recompute", -1);
+	if (di != NULL) {
+	    recompute = tv_get_number_chk(&di->di_tv, &error);
+	    if (error)
+		return;
+	}
+	di = dict_find(dict, (char_u *)"pattern", -1);
+	if (di != NULL) {
+	    pattern = tv_get_string_chk(&di->di_tv);
+	    if (pattern == NULL)
+		return;
+	}
+	di = dict_find(dict, (char_u *)"pos", -1);
+	if (di != NULL) {
+	    if (di->di_tv.v_type != VAR_LIST)
+	    {
+		semsg(_(e_invarg));
+		return;
+	    }
+	    if (list_len(di->di_tv.vval.v_list) != 3)
+	    {
+		semsg(_(e_invarg2), "List format should be [lnum, col, off]");
+		return;
+	    }
+	    li = list_find(di->di_tv.vval.v_list, 0L);
+	    if (li != NULL)
+	    {
+		pos.lnum = tv_get_number_chk(&li->li_tv, &error);
+		if (error)
+		    return;
+	    }
+	    li = list_find(di->di_tv.vval.v_list, 1L);
+	    if (li != NULL)
+	    {
+	        pos.col = tv_get_number_chk(&li->li_tv, &error) - 1;
+		if (error)
+		    return;
+	    }
+	    li = list_find(di->di_tv.vval.v_list, 2L);
+	    if (li != NULL)
+	    {
+	        pos.coladd = tv_get_number_chk(&li->li_tv, &error);
+		if (error)
+		    return;
+	    }
+	}
+    }
+
+    save_last_search_pattern();
+    if (pattern != NULL)
+    {
+	if (*pattern == NUL)
+	    goto the_end;
+	spats[last_idx].pat = vim_strsave(pattern);
+    }
+    if (spats[last_idx].pat == NULL || *spats[last_idx].pat == NUL)
+	goto the_end;	// the previous pattern was never defined
+
+    update_search_stat(0, &pos, &pos, &stat, recompute, maxcount, timeout);
+
+    dict_add_number(rettv->vval.v_dict, "current", stat.cur);
+    dict_add_number(rettv->vval.v_dict, "total", stat.cnt);
+    dict_add_number(rettv->vval.v_dict, "timeout", stat.out_of_time);
+
+the_end:
+    restore_last_search_pattern();
 }
 #endif

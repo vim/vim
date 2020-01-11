@@ -2690,7 +2690,7 @@ screenrow()			Number	current cursor row
 screenstring({row}, {col})	String	characters at screen position
 search({pattern} [, {flags} [, {stopline} [, {timeout}]]])
 				Number	search for {pattern}
-searchcount([{dict}])		Dictionary	the search stats
+searchcount([{options}])	Dictionary	get/update search stats
 searchdecl({name} [, {global} [, {thisblock}]])
 				Number	search for variable declaration
 searchpair({start}, {middle}, {end} [, {flags} [, {skip} [...]]])
@@ -8193,30 +8193,50 @@ search({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*search()*
 		Can also be used as a |method|: >
 			GetPattern()->search()
 
-searchcount({dict})					*getregtype()*
-		The result is almost the same structure as {dict}.
-		Some keys can be specified by only arguments.
-		This function changes {dict} in-place and returns it.
-		If the keys of {dict} are omitted, default values were used.
+searchcount([{options}])					*searchcount()*
+		Get or update the last search count of "S" flag in 'shortmess'.
+		This works even if 'shortmess' contains "S" flag.
+		This returns a dictionary. If the previous pattern was not set
+		and "pattern" was not specified, returns an empty dictionary.
 
-		 key		type	arg only	meaning ~
-		  dir		String	no	(default: "/" if |v:searchforward| is
-					no	non-zero, otherwise "?")
-		  lastpos	List	no	`[lnum, col, off]` . see |getpos()|
-					no	(default: the last position if
-					no	|'shortmess'| does not contain "S",
-					no	otherwise `[0, 0, 0]`)
-		  pattern	String	no	(default: |@/|)
-		  bufnr		Number	no	(default: current buffer)
-		  changedtick	Number	no	(default: |b:changedtick|)
-		  current	Number	no
-		  count		Number	no
-		  wrap		Number	no
-		  maxcount	Number	yes	Max number of count (default: 99)
-		  recompute	Number	yes	if specified and zero, the
-						last computed values when
-						|'shortmess'| has not "S" flag
-						(default: non-zero)
+		{options} must be a Dictionary. It can contain:
+		  key		type		meaning ~
+		  recompute	|Boolean|	if |TRUE|, recompute the count
+						like |n| or |N| was executed.
+						otherwise returns the last
+						result by |n|, |N|, or this
+						function is returned.
+						(default: |FALSE|)
+		  pattern	|String|	recompute if this was given
+						and different with |@/|.
+						this works as same as the
+						below command is executed
+						before calling this function >
+						  let @/ = pattern
+<						(default: |@/|)
+		  timeout	|Number|	timeout milliseconds for
+						recomputing the result
+						(default: 20)
+		  maxcount	|Number|	max count of matched text
+						while recomputing the result.
+						if search exceeded total count,
+						"total" value becomes
+						`maxcount + 1` (default: 0)
+		  pos		|List|		`[lnum, col, off]` value
+						when recomputing the result.
+						this changes "current" result
+						value. see |cursor()|, |getpos()|
+						(default: cursor's position)
+
+		This returns a Dictionary like below:
+		  key		type	meaning ~
+		  current	Number	current position of match.
+					0 if cursor position is before the
+					first match. `total + 1` if cursor
+					position is after the last match.
+		  total		Number	total count of found matches
+		  timeout	Boolean	1 if recomputing was timed out.
+					otherwise 0.
 
 searchdecl({name} [, {global} [, {thisblock}]])			*searchdecl()*
 		Search for the declaration of {name}.
