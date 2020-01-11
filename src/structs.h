@@ -1309,8 +1309,8 @@ typedef enum
 {
     VAR_UNKNOWN = 0,	// not set, also used for "any" type
     VAR_VOID,		// no value
-    VAR_BOOL,		// "v_number" is used: VVAL_TRUE, VVAL_FALSE
-    VAR_SPECIAL,	// "v_number" is used: VVAL_NULL, VVAL_NONE
+    VAR_BOOL,		// "v_number" is used: VVAL_TRUE or VVAL_FALSE
+    VAR_SPECIAL,	// "v_number" is used: VVAL_NULL or VVAL_NONE
     VAR_NUMBER,		// "v_number" is used
     VAR_FLOAT,		// "v_float" is used
     VAR_STRING,		// "v_string" is used

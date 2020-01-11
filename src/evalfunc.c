@@ -621,6 +621,7 @@ static funcentry_T global_functions[] =
 #ifdef FEAT_PROP_POPUP
     {"prop_add",	3, 3, FEARG_1,	  &t_void,	f_prop_add},
     {"prop_clear",	1, 3, FEARG_1,	  &t_void,	f_prop_clear},
+    {"prop_find",	1, 2, FEARG_1,	  &t_dict_any,	f_prop_find},
     {"prop_list",	1, 2, FEARG_1,	  &t_list_any,	f_prop_list},
     {"prop_remove",	1, 3, FEARG_1,	  &t_number,	f_prop_remove},
     {"prop_type_add",	2, 2, FEARG_1,	  &t_void,	f_prop_type_add},
@@ -1117,7 +1118,7 @@ non_zero_arg(typval_T *argvars)
 {
     return ((argvars[0].v_type == VAR_NUMBER
 		&& argvars[0].vval.v_number != 0)
-	    || (argvars[0].v_type == VAR_SPECIAL
+	    || (argvars[0].v_type == VAR_BOOL
 		&& argvars[0].vval.v_number == VVAL_TRUE)
 	    || (argvars[0].v_type == VAR_STRING
 		&& argvars[0].vval.v_string != NULL
@@ -1846,7 +1847,6 @@ f_empty(typval_T *argvars, typval_T *rettv)
 	    n = FALSE;
 	    break;
 	case VAR_NUMBER:
-	case VAR_BOOL:
 	    n = argvars[0].vval.v_number == 0;
 	    break;
 	case VAR_FLOAT:
@@ -1862,6 +1862,7 @@ f_empty(typval_T *argvars, typval_T *rettv)
 	    n = argvars[0].vval.v_dict == NULL
 			|| argvars[0].vval.v_dict->dv_hashtab.ht_used == 0;
 	    break;
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    n = argvars[0].vval.v_number != VVAL_TRUE;
 	    break;
@@ -4357,7 +4358,6 @@ f_len(typval_T *argvars, typval_T *rettv)
     {
 	case VAR_STRING:
 	case VAR_NUMBER:
-	case VAR_BOOL:
 	    rettv->vval.v_number = (varnumber_T)STRLEN(
 					       tv_get_string(&argvars[0]));
 	    break;
@@ -4372,6 +4372,7 @@ f_len(typval_T *argvars, typval_T *rettv)
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_VOID:
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	case VAR_FLOAT:
 	case VAR_FUNC:
@@ -8422,21 +8423,15 @@ f_type(typval_T *argvars, typval_T *rettv)
 
     switch (argvars[0].v_type)
     {
-	case VAR_BOOL:
-	case VAR_NUMBER: n = VAR_TYPE_NUMBER; break;
-	case VAR_STRING: n = VAR_TYPE_STRING; break;
+	case VAR_NUMBER:  n = VAR_TYPE_NUMBER; break;
+	case VAR_STRING:  n = VAR_TYPE_STRING; break;
 	case VAR_PARTIAL:
-	case VAR_FUNC:   n = VAR_TYPE_FUNC; break;
-	case VAR_LIST:   n = VAR_TYPE_LIST; break;
-	case VAR_DICT:   n = VAR_TYPE_DICT; break;
-	case VAR_FLOAT:  n = VAR_TYPE_FLOAT; break;
-	case VAR_SPECIAL:
-	     if (argvars[0].vval.v_number == VVAL_FALSE
-		     || argvars[0].vval.v_number == VVAL_TRUE)
-		 n = VAR_TYPE_BOOL;
-	     else
-		 n = VAR_TYPE_NONE;
-	     break;
+	case VAR_FUNC:    n = VAR_TYPE_FUNC; break;
+	case VAR_LIST:    n = VAR_TYPE_LIST; break;
+	case VAR_DICT:    n = VAR_TYPE_DICT; break;
+	case VAR_FLOAT:   n = VAR_TYPE_FLOAT; break;
+	case VAR_BOOL:	  n = VAR_TYPE_BOOL; break;
+	case VAR_SPECIAL: n = VAR_TYPE_NONE; break;
 	case VAR_JOB:     n = VAR_TYPE_JOB; break;
 	case VAR_CHANNEL: n = VAR_TYPE_CHANNEL; break;
 	case VAR_BLOB:    n = VAR_TYPE_BLOB; break;

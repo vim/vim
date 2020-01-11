@@ -345,14 +345,14 @@ dict_add(dict_T *d, dictitem_T *item)
  * Returns FAIL when out of memory and when key already exists.
  */
     static int
-dict_add_number_special(dict_T *d, char *key, varnumber_T nr, int special)
+dict_add_number_special(dict_T *d, char *key, varnumber_T nr, vartype_T vartype)
 {
     dictitem_T	*item;
 
     item = dictitem_alloc((char_u *)key);
     if (item == NULL)
 	return FAIL;
-    item->di_tv.v_type = special ? VAR_SPECIAL : VAR_NUMBER;
+    item->di_tv.v_type = vartype;
     item->di_tv.vval.v_number = nr;
     if (dict_add(d, item) == FAIL)
     {
@@ -369,7 +369,7 @@ dict_add_number_special(dict_T *d, char *key, varnumber_T nr, int special)
     int
 dict_add_number(dict_T *d, char *key, varnumber_T nr)
 {
-    return dict_add_number_special(d, key, nr, FALSE);
+    return dict_add_number_special(d, key, nr, VAR_NUMBER);
 }
 
 /*
@@ -377,9 +377,9 @@ dict_add_number(dict_T *d, char *key, varnumber_T nr)
  * Returns FAIL when out of memory and when key already exists.
  */
     int
-dict_add_special(dict_T *d, char *key, varnumber_T nr)
+dict_add_bool(dict_T *d, char *key, varnumber_T nr)
 {
-    return dict_add_number_special(d, key, nr, TRUE);
+    return dict_add_number_special(d, key, nr, VAR_BOOL);
 }
 
 /*

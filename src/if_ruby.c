@@ -1183,7 +1183,7 @@ vim_to_ruby(typval_T *tv)
 	    }
 	}
     }
-    else if (tv->v_type == VAR_SPECIAL)
+    else if (tv->v_type == VAR_BOOL || tv->v_type == VAR_SPECIAL)
     {
 	if (tv->vval.v_number == VVAL_TRUE)
 	    result = Qtrue;
@@ -1827,11 +1827,11 @@ ruby_convert_to_vim_value(VALUE val, typval_T *rettv)
 	    rettv->vval.v_number = VVAL_NULL;
 	    break;
 	case T_TRUE:
-	    rettv->v_type = VAR_SPECIAL;
+	    rettv->v_type = VAR_BOOL;
 	    rettv->vval.v_number = VVAL_TRUE;
 	    break;
 	case T_FALSE:
-	    rettv->v_type = VAR_SPECIAL;
+	    rettv->v_type = VAR_BOOL;
 	    rettv->vval.v_number = VVAL_FALSE;
 	    break;
 	case T_BIGNUM:

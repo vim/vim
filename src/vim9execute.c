@@ -577,6 +577,7 @@ call_def_function(
 
 	    // push constant
 	    case ISN_PUSHNR:
+	    case ISN_PUSHBOOL:
 	    case ISN_PUSHSPEC:
 	    case ISN_PUSHF:
 	    case ISN_PUSHS:
@@ -589,6 +590,10 @@ call_def_function(
 		{
 		    case ISN_PUSHNR:
 			tv->v_type = VAR_NUMBER;
+			tv->vval.v_number = iptr->isn_arg.number;
+			break;
+		    case ISN_PUSHBOOL:
+			tv->v_type = VAR_BOOL;
 			tv->vval.v_number = iptr->isn_arg.number;
 			break;
 		    case ISN_PUSHSPEC:
@@ -957,7 +962,7 @@ call_def_function(
 		    clear_tv(tv2);
 		    if (iptr->isn_type == ISN_COMPARENR)
 		    {
-			tv1->v_type = VAR_SPECIAL;
+			tv1->v_type = VAR_BOOL;
 			tv1->vval.v_number = res ? VVAL_TRUE : VVAL_FALSE;
 		    }
 		    else
@@ -987,7 +992,7 @@ call_def_function(
 
 		    typval_compare(tv1, tv2, exptype, ic);
 		    clear_tv(tv2);
-		    tv1->v_type = VAR_SPECIAL;
+		    tv1->v_type = VAR_BOOL;
 		    tv1->vval.v_number = tv1->vval.v_number
 						      ? VVAL_TRUE : VVAL_FALSE;
 		    --ectx.ec_stack.ga_len;
@@ -1244,7 +1249,7 @@ call_def_function(
 		    if (iptr->isn_arg.number)  // invert
 			n = !n;
 		    clear_tv(tv);
-		    tv->v_type = VAR_SPECIAL;
+		    tv->v_type = VAR_BOOL;
 		    tv->vval.v_number = n ? VVAL_TRUE : VVAL_FALSE;
 		}
 		break;
@@ -1379,6 +1384,7 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_PUSHNR:
 		smsg("%4d PUSHNR %lld", current, iptr->isn_arg.number);
 		break;
+	    case ISN_PUSHBOOL:
 	    case ISN_PUSHSPEC:
 		smsg("%4d PUSH %s", current,
 				   get_var_special_name(iptr->isn_arg.number));
@@ -1638,7 +1644,6 @@ tv2bool(typval_T *tv)
     switch (tv->v_type)
     {
 	case VAR_NUMBER:
-	case VAR_BOOL:
 	    return tv->vval.v_number != 0;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
@@ -1656,6 +1661,7 @@ tv2bool(typval_T *tv)
 	case VAR_DICT:
 	    return tv->vval.v_dict != NULL
 				    && tv->vval.v_dict->dv_hashtab.ht_used > 0;
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    return tv->vval.v_number == VVAL_TRUE ? TRUE : FALSE;
 	case VAR_JOB:

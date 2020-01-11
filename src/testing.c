@@ -222,7 +222,7 @@ assert_bool(typval_T *argvars, int isTrue)
     int		error = FALSE;
     garray_T	ga;
 
-    if (argvars[0].v_type == VAR_SPECIAL
+    if (argvars[0].v_type == VAR_BOOL
 	    && argvars[0].vval.v_number == (isTrue ? VVAL_TRUE : VVAL_FALSE))
 	return 0;
     if (argvars[0].v_type != VAR_NUMBER

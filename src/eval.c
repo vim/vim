@@ -1254,7 +1254,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 
     // Can't do anything with a Funcref, Dict, v:true on the right.
     if (tv2->v_type != VAR_FUNC && tv2->v_type != VAR_DICT
-						&& tv2->v_type != VAR_SPECIAL)
+		      && tv2->v_type != VAR_BOOL && tv2->v_type != VAR_SPECIAL)
     {
 	switch (tv1->v_type)
 	{
@@ -1263,6 +1263,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	    case VAR_DICT:
 	    case VAR_FUNC:
 	    case VAR_PARTIAL:
+	    case VAR_BOOL:
 	    case VAR_SPECIAL:
 	    case VAR_JOB:
 	    case VAR_CHANNEL:
@@ -1291,7 +1292,6 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 		return OK;
 
 	    case VAR_NUMBER:
-	    case VAR_BOOL:
 	    case VAR_STRING:
 		if (tv2->v_type == VAR_LIST)
 		    break;
@@ -2944,6 +2944,7 @@ eval_index(
 		emsg(_(e_float_as_string));
 	    return FAIL;
 #endif
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
@@ -2958,7 +2959,6 @@ eval_index(
 
 	case VAR_STRING:
 	case VAR_NUMBER:
-	case VAR_BOOL:
 	case VAR_LIST:
 	case VAR_DICT:
 	case VAR_BLOB:
@@ -3062,13 +3062,13 @@ eval_index(
 	    case VAR_FUNC:
 	    case VAR_PARTIAL:
 	    case VAR_FLOAT:
+	    case VAR_BOOL:
 	    case VAR_SPECIAL:
 	    case VAR_JOB:
 	    case VAR_CHANNEL:
 		break; // not evaluating, skipping over subscript
 
 	    case VAR_NUMBER:
-	    case VAR_BOOL:
 	    case VAR_STRING:
 		s = tv_get_string(rettv);
 		len = (long)STRLEN(s);
@@ -3813,15 +3813,13 @@ tv_equal(
 
 	case VAR_NUMBER:
 	case VAR_BOOL:
+	case VAR_SPECIAL:
 	    return tv1->vval.v_number == tv2->vval.v_number;
 
 	case VAR_STRING:
 	    s1 = tv_get_string_buf(tv1, buf1);
 	    s2 = tv_get_string_buf(tv2, buf2);
 	    return ((ic ? MB_STRICMP(s1, s2) : STRCMP(s1, s2)) == 0);
-
-	case VAR_SPECIAL:
-	    return tv1->vval.v_number == tv2->vval.v_number;
 
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
@@ -4552,7 +4550,6 @@ echo_string_core(
 	    break;
 
 	case VAR_NUMBER:
-	case VAR_BOOL:
 	case VAR_UNKNOWN:
 	case VAR_VOID:
 	    *tofree = NULL;
@@ -4578,6 +4575,7 @@ echo_string_core(
 	    break;
 #endif
 
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    *tofree = NULL;
 	    r = (char_u *)get_var_special_name(tv->vval.v_number);
@@ -5404,10 +5402,10 @@ free_tv(typval_T *varp)
 		break;
 #endif
 	    case VAR_NUMBER:
-	    case VAR_BOOL:
 	    case VAR_FLOAT:
 	    case VAR_UNKNOWN:
 	    case VAR_VOID:
+	    case VAR_BOOL:
 	    case VAR_SPECIAL:
 		break;
 	}
@@ -5510,7 +5508,6 @@ tv_get_number_chk(typval_T *varp, int *denote)
     switch (varp->v_type)
     {
 	case VAR_NUMBER:
-	case VAR_BOOL:
 	    return varp->vval.v_number;
 	case VAR_FLOAT:
 #ifdef FEAT_FLOAT
@@ -5532,6 +5529,7 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	case VAR_DICT:
 	    emsg(_("E728: Using a Dictionary as a Number"));
 	    break;
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    return varp->vval.v_number == VVAL_TRUE ? 1 : 0;
 	case VAR_JOB:
@@ -5566,7 +5564,6 @@ tv_get_float(typval_T *varp)
     switch (varp->v_type)
     {
 	case VAR_NUMBER:
-	case VAR_BOOL:
 	    return (float_T)(varp->vval.v_number);
 	case VAR_FLOAT:
 	    return varp->vval.v_float;
@@ -5582,6 +5579,9 @@ tv_get_float(typval_T *varp)
 	    break;
 	case VAR_DICT:
 	    emsg(_("E894: Using a Dictionary as a Float"));
+	    break;
+	case VAR_BOOL:
+	    emsg(_("E362: Using a boolean value as a Float"));
 	    break;
 	case VAR_SPECIAL:
 	    emsg(_("E907: Using a special value as a Float"));
@@ -5651,7 +5651,6 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
     switch (varp->v_type)
     {
 	case VAR_NUMBER:
-	case VAR_BOOL:
 	    vim_snprintf((char *)buf, NUMBUFLEN, "%lld",
 					    (long_long_T)varp->vval.v_number);
 	    return buf;
@@ -5674,6 +5673,7 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 	    if (varp->vval.v_string != NULL)
 		return varp->vval.v_string;
 	    return (char_u *)"";
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    STRCPY(buf, get_var_special_name(varp->vval.v_number));
 	    return buf;
@@ -5905,11 +5905,11 @@ item_copy(
     switch (from->v_type)
     {
 	case VAR_NUMBER:
-	case VAR_BOOL:
 	case VAR_FLOAT:
 	case VAR_STRING:
 	case VAR_FUNC:
 	case VAR_PARTIAL:
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:

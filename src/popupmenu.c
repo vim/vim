@@ -1076,7 +1076,7 @@ pum_set_event_info(dict_T *dict)
     dict_add_number(dict, "row", pum_row);
     dict_add_number(dict, "col", pum_col);
     dict_add_number(dict, "size", pum_size);
-    dict_add_special(dict, "scrollbar", pum_scrollbar ? VVAL_TRUE : VVAL_FALSE);
+    dict_add_bool(dict, "scrollbar", pum_scrollbar ? VVAL_TRUE : VVAL_FALSE);
 }
 #endif
 

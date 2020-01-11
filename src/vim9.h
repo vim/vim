@@ -30,6 +30,7 @@ typedef enum {
 
     // constants
     ISN_PUSHNR,	    // push number isn_arg.number
+    ISN_PUSHBOOL,   // push bool value isn_arg.number
     ISN_PUSHSPEC,   // push special value isn_arg.number
     ISN_PUSHF,	    // push float isn_arg.fnumber
     ISN_PUSHS,	    // push string isn_arg.string

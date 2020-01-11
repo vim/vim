@@ -510,6 +510,21 @@ generate_PUSHNR(cctx_T *cctx, varnumber_T number)
 }
 
 /*
+ * Generate an ISN_PUSHBOOL instruction.
+ */
+    static int
+generate_PUSHBOOL(cctx_T *cctx, varnumber_T number)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr_type(cctx, ISN_PUSHBOOL, &t_bool)) == NULL)
+	return FAIL;
+    isn->isn_arg.number = number;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_PUSHSPEC instruction.
  */
     static int
@@ -517,9 +532,7 @@ generate_PUSHSPEC(cctx_T *cctx, varnumber_T number)
 {
     isn_T	*isn;
 
-    if ((isn = generate_instr_type(cctx, ISN_PUSHSPEC,
-		(number == VVAL_TRUE || number == VVAL_FALSE)
-		? &t_bool : &t_any)) == NULL)
+    if ((isn = generate_instr_type(cctx, ISN_PUSHSPEC, &t_any)) == NULL)
 	return FAIL;
     isn->isn_arg.number = number;
 
@@ -1325,7 +1338,7 @@ compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
 		if ((len == 4 && STRNCMP("true", *arg, 4) == 0)
 			|| (len == 5 && STRNCMP("false", *arg, 5) == 0))
 		{
-		    generate_PUSHSPEC(cctx, **arg == 't'
+		    generate_PUSHBOOL(cctx, **arg == 't'
 						     ? VVAL_TRUE : VVAL_FALSE);
 		    *arg = end;
 		    return OK;
@@ -1840,7 +1853,7 @@ apply_leader(typval_T *rettv, char_u *start, char_u *end)
 
 	    // '!' is permissive in the type.
 	    clear_tv(rettv);
-	    rettv->v_type = VAR_SPECIAL;
+	    rettv->v_type = VAR_BOOL;
 	    rettv->vval.v_number = v ? VVAL_FALSE : VVAL_TRUE;
 	}
     }
@@ -1855,13 +1868,13 @@ get_vim_constant(char_u **arg, typval_T *rettv)
 {
     if (STRNCMP(*arg, "v:true", 6) == 0)
     {
-	rettv->v_type = VAR_SPECIAL;
+	rettv->v_type = VAR_BOOL;
 	rettv->vval.v_number = VVAL_TRUE;
 	*arg += 6;
     }
     else if (STRNCMP(*arg, "v:false", 7) == 0)
     {
-	rettv->v_type = VAR_SPECIAL;
+	rettv->v_type = VAR_BOOL;
 	rettv->vval.v_number = VVAL_FALSE;
 	*arg += 7;
     }
@@ -2207,6 +2220,9 @@ compile_expr7(char_u **arg, cctx_T *cctx)
 	// push constant
 	switch (rettv.v_type)
 	{
+	    case VAR_BOOL:
+		generate_PUSHBOOL(cctx, rettv.vval.v_number);
+		break;
 	    case VAR_SPECIAL:
 		generate_PUSHSPEC(cctx, rettv.vval.v_number);
 		break;
@@ -2227,6 +2243,7 @@ compile_expr7(char_u **arg, cctx_T *cctx)
 		rettv.vval.v_string = NULL;
 		break;
 	    default:
+		iemsg("constant type missing");
 		return FAIL;
 	}
     }
@@ -4078,6 +4095,7 @@ delete_instr(isn_T *isn)
 	case ISN_PCALL:
 	case ISN_PUSHF:
 	case ISN_PUSHNR:
+	case ISN_PUSHBOOL:
 	case ISN_PUSHSPEC:
 	case ISN_RETURN:
 	case ISN_STORE:
