@@ -6472,9 +6472,10 @@ post_chdir(cdscope_T scope)
 
 /*
  * Change directory function used by :cd/:tcd/:lcd Ex commands and the
- * chdir() function. If 'winlocaldir' is TRUE, then changes the window-local
- * directory. If 'tablocaldir' is TRUE, then changes the tab-local directory.
- * Otherwise changes the global directory.
+ * chdir() function.
+ * scope == CDSCOPE_WINDOW: changes the window-local directory
+ * scope == CDSCOPE_TABPAGE: changes the tab-local directory
+ * Otherwise: changes the global directory
  * Returns TRUE if the directory is successfully changed.
  */
     int
