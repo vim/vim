@@ -6605,7 +6605,23 @@ ex_pwd(exarg_T *eap UNUSED)
 #ifdef BACKSLASH_IN_FILENAME
 	slash_adjust(NameBuff);
 #endif
-	msg((char *)NameBuff);
+	if (p_verbose > 0)
+	{
+	    if (curwin->w_localdir != NULL)
+	    {
+		smsg("[window] %s", (char *)NameBuff);
+	    }
+	    else if (curtab->tp_localdir != NULL)
+	    {
+		smsg("[tabpage] %s", (char *)NameBuff);
+	    }
+	    else
+	    {
+		smsg("[global] %s", (char *)NameBuff);
+	    }
+	}
+	else
+	    msg((char *)NameBuff);
     }
     else
 	emsg(_("E187: Unknown"));
