@@ -57,38 +57,27 @@ typedef enum {
     ISN_CATCH,	    // drop v:exception
     ISN_ENDTRY,	    // take entry off from ec_trystack
 
-    // expression operations on number
-    ISN_MULTNR,
-    ISN_DIVNR,
-    ISN_REMNR,
-    ISN_ADDNR,
-    ISN_SUBNR,
-
-    // expression operations on float
-    ISN_MULTF,
-    ISN_DIVF,
-    ISN_ADDF,
-    ISN_SUBF,
-
-    // expression operations on unknown type
-    ISN_MULTANY,
-    ISN_DIVANY,
-    ISN_REMANY,
-    ISN_ADDANY,
-    ISN_SUBANY,
-
     // moreexpression operations
     ISN_ADDLIST,
     ISN_ADDBLOB,
 
-    // comparive operations
-    ISN_EQUALNR,
-    ISN_NEQUALNR,
-    ISN_GREATERNR,
-    ISN_GEQUALNR,
-    ISN_SMALLERNR,
-    ISN_SEQUALNR,
-    ISN_COMPARE,    // isn_arg.compare.cmp_type is exptype_T, cmp_ic used
+    // operation with two arguments; isn_arg.op.op_type is exptype_T
+    ISN_OPNR,
+    ISN_OPFLOAT,
+    ISN_OPANY,
+
+    // comparative operations; isn_arg.op.op_type is exptype_T, op_ic used
+    ISN_COMPAREBOOL,
+    ISN_COMPARESPECIAL,
+    ISN_COMPARENR,
+    ISN_COMPAREFLOAT,
+    ISN_COMPARESTRING,
+    ISN_COMPAREBLOB,
+    ISN_COMPARELIST,
+    ISN_COMPAREDICT,
+    ISN_COMPAREFUNC,
+    ISN_COMPAREPARTIAL,
+    ISN_COMPAREANY,
 
     // expression operations
     ISN_CONCAT,
@@ -161,11 +150,11 @@ typedef struct {
     int	    echo_count;		// number of expressions
 } echo_T;
 
-// arguments to ISN_COMPARE
+// arguments to ISN_OPNR, ISN_OPFLOAT, etc.
 typedef struct {
-    exptype_T	cmp_type;
-    int		cmp_ic;	    // TRUE with '#', FALSE with '?', else MAYBE
-} compare_T;
+    exptype_T	op_type;
+    int		op_ic;	    // TRUE with '#', FALSE with '?', else MAYBE
+} opexpr_T;
 
 // arguments to ISN_CHECKTYPE
 typedef struct {
@@ -200,7 +189,7 @@ typedef struct {
 	cpfunc_T	    pfunc;
 	cufunc_T	    ufunc;
 	echo_T		    echo;
-	compare_T	    compare;
+	opexpr_T	    op;
 	checktype_T	    type;
 	storenr_T	    storenr;
     } isn_arg;

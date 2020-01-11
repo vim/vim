@@ -3698,6 +3698,12 @@ typedef enum
     EXPR_NOMATCH,	// !~
     EXPR_IS,		// is
     EXPR_ISNOT,		// isnot
+    // used with ISN_OPNR
+    EXPR_ADD,		// +
+    EXPR_SUB,		// -
+    EXPR_MULT,		// *
+    EXPR_DIV,		// /
+    EXPR_REM,		// %
 } exptype_T;
 
 /*

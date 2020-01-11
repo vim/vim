@@ -319,24 +319,22 @@ generate_two_op(cctx_T *cctx, char_u *op)
     type_T	*type1;
     type_T	*type2;
     vartype_T	vartype;
+    isn_T	*isn;
 
     // Get the known type of the two items on the stack.  If they are matching
     // use a type-specific instruction. Otherwise fall back to runtime type
     // checking.
     type1 = ((type_T **)stack->ga_data)[stack->ga_len - 2];
     type2 = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-    if (type1->tt_type == VAR_NUMBER && type2->tt_type == VAR_NUMBER)
-	vartype = VAR_NUMBER;
-    else if (type1->tt_type == VAR_LIST && type2->tt_type == VAR_LIST)
-	vartype = VAR_LIST;
-    else if (type1->tt_type == VAR_BLOB && type2->tt_type == VAR_BLOB)
-	vartype = VAR_BLOB;
+    vartype = VAR_UNKNOWN;
+    if (type1->tt_type == type2->tt_type
+	    && (type1->tt_type == VAR_NUMBER
+		|| type1->tt_type == VAR_LIST
 #ifdef FEAT_FLOAT
-    else if (type1->tt_type == VAR_FLOAT && type2->tt_type == VAR_FLOAT)
-	vartype = VAR_FLOAT;
+		|| type1->tt_type == VAR_FLOAT
 #endif
-    else
-	vartype = VAR_UNKNOWN;
+		|| type1->tt_type == VAR_BLOB))
+	vartype = type1->tt_type;
 
     switch (*op)
     {
@@ -344,47 +342,34 @@ generate_two_op(cctx_T *cctx, char_u *op)
 			  && check_number_or_float(
 				   type1->tt_type, type2->tt_type, op) == FAIL)
 		      return FAIL;
-		  generate_instr_drop(cctx,
-			    vartype == VAR_NUMBER ? ISN_ADDNR
+		  isn = generate_instr_drop(cctx,
+			    vartype == VAR_NUMBER ? ISN_OPNR
 			  : vartype == VAR_LIST ? ISN_ADDLIST
 			  : vartype == VAR_BLOB ? ISN_ADDBLOB
 #ifdef FEAT_FLOAT
-			  : vartype == VAR_FLOAT ? ISN_ADDF
+			  : vartype == VAR_FLOAT ? ISN_OPFLOAT
 #endif
-			  : ISN_ADDANY, 1);
+			  : ISN_OPANY, 1);
+		  if (isn != NULL)
+		      isn->isn_arg.op.op_type = EXPR_ADD;
 		  break;
 
-	case '-':  if (check_number_or_float(type1->tt_type, type2->tt_type,
-								   op) == FAIL)
-		      return FAIL;
-		   generate_instr_drop(cctx,
-			  vartype == VAR_NUMBER ? ISN_SUBNR
-#ifdef FEAT_FLOAT
-			  : vartype == VAR_FLOAT ? ISN_SUBF
-#endif
-			  : ISN_SUBANY, 1);
-		  break;
-
-	case '*':  if (check_number_or_float(type1->tt_type, type2->tt_type,
-								   op) == FAIL)
-		      return FAIL;
-		   generate_instr_drop(cctx,
-			  vartype == VAR_NUMBER ? ISN_MULTNR
-#ifdef FEAT_FLOAT
-			  : vartype == VAR_FLOAT ? ISN_MULTF
-#endif
-			  : ISN_MULTANY, 1);
-		  break;
-
+	case '-':
+	case '*':
 	case '/': if (check_number_or_float(type1->tt_type, type2->tt_type,
 								   op) == FAIL)
 		      return FAIL;
-		  generate_instr_drop(cctx,
-			  vartype == VAR_NUMBER ? ISN_DIVNR
+		  if (vartype == VAR_NUMBER)
+		      isn = generate_instr_drop(cctx, ISN_OPNR, 1);
 #ifdef FEAT_FLOAT
-			  : vartype == VAR_FLOAT ? ISN_DIVF
+		  else if (vartype == VAR_FLOAT)
+		      isn = generate_instr_drop(cctx, ISN_OPFLOAT, 1);
 #endif
-			  : ISN_DIVANY, 1);
+		  else
+		      isn = generate_instr_drop(cctx, ISN_OPANY, 1);
+		  if (isn != NULL)
+		      isn->isn_arg.op.op_type = *op == '*'
+				 ? EXPR_MULT : *op == '/'? EXPR_DIV : EXPR_SUB;
 		  break;
 
 	case '%': if ((type1->tt_type != VAR_UNKNOWN
@@ -395,8 +380,10 @@ generate_two_op(cctx_T *cctx, char_u *op)
 		      emsg(_("E1035: % requires number arguments"));
 		      return FAIL;
 		  }
-		  generate_instr_drop(cctx,
-			  vartype == VAR_NUMBER ? ISN_REMNR : ISN_REMANY, 1);
+		  isn = generate_instr_drop(cctx,
+			      vartype == VAR_NUMBER ? ISN_OPNR : ISN_OPANY, 1);
+		  if (isn != NULL)
+		      isn->isn_arg.op.op_type = EXPR_REM;
 		  break;
     }
 
@@ -418,18 +405,48 @@ generate_two_op(cctx_T *cctx, char_u *op)
 }
 
 /*
- * Generate an ISN_COMPARE instruction.
+ * Generate an ISN_COMPARE* instruction with a boolean result.
  */
     static int
 generate_COMPARE(cctx_T *cctx, exptype_T exptype, int ic)
 {
+    isntype_T	isntype;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
+    type_T	*type1;
+    type_T	*type2;
 
-    if ((isn = generate_instr(cctx, ISN_COMPARE)) == NULL)
+    // TODO: check for void
+    // TODO: if types differ result is always FALSE (or give an error?)
+    // Get the known type of the two items on the stack.  If they are matching
+    // use a type-specific instruction. Otherwise fall back to runtime type
+    // checking.
+    type1 = ((type_T **)stack->ga_data)[stack->ga_len - 2];
+    type2 = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+    if (type1->tt_type == type2->tt_type)
+    {
+	switch (type1->tt_type)
+	{
+	    case VAR_BOOL: isntype = ISN_COMPAREBOOL; break;
+	    case VAR_SPECIAL: isntype = ISN_COMPARESPECIAL; break;
+	    case VAR_NUMBER: isntype = ISN_COMPARENR; break;
+	    case VAR_FLOAT: isntype = ISN_COMPAREFLOAT; break;
+	    case VAR_STRING: isntype = ISN_COMPARESTRING; break;
+	    case VAR_BLOB: isntype = ISN_COMPAREBLOB; break;
+	    case VAR_LIST: isntype = ISN_COMPARELIST; break;
+	    case VAR_DICT: isntype = ISN_COMPAREDICT; break;
+	    case VAR_FUNC: isntype = ISN_COMPAREFUNC; break;
+	    case VAR_PARTIAL: isntype = ISN_COMPAREPARTIAL; break;
+	    default: isntype = ISN_COMPAREANY; break;
+	}
+    }
+    else
+	isntype = ISN_COMPAREANY;
+
+    if ((isn = generate_instr(cctx, isntype)) == NULL)
 	return FAIL;
-    isn->isn_arg.compare.cmp_type = exptype;
-    isn->isn_arg.compare.cmp_ic = ic;
+    isn->isn_arg.op.op_type = exptype;
+    isn->isn_arg.op.op_ic = ic;
 
     // takes two arguments, puts one bool back
     if (stack->ga_len >= 2)
@@ -2445,21 +2462,7 @@ compile_expr4(char_u **arg, cctx_T *cctx)
 	if (compile_expr5(arg, cctx) == FAIL)
 	    return FAIL;
 
-	// TODO: check type on both sides is number
-	if (type == EXPR_EQUAL)
-	    generate_instr_drop(cctx, ISN_EQUALNR, 1);
-	else if (type == EXPR_NEQUAL)
-	    generate_instr_drop(cctx, ISN_NEQUALNR, 1);
-	else if (type == EXPR_GREATER)
-	    generate_instr_drop(cctx, ISN_GREATERNR, 1);
-	else if (type == EXPR_GEQUAL)
-	    generate_instr_drop(cctx, ISN_GEQUALNR, 1);
-	else if (type == EXPR_SMALLER)
-	    generate_instr_drop(cctx, ISN_SMALLERNR, 1);
-	else if (type == EXPR_SEQUAL)
-	    generate_instr_drop(cctx, ISN_SEQUALNR, 1);
-	else
-	    generate_COMPARE(cctx, type, ic);
+	generate_COMPARE(cctx, type, ic);
     }
 
     return OK;
@@ -2902,14 +2905,22 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
 	if (need_type(stacktype, expected, -1, cctx) == FAIL)
 	    goto theend;
 
-	switch (*op)
+	if (*op == '.')
+	    generate_instr_drop(cctx, ISN_CONCAT, 1);
+	else
 	{
-	    case '+': generate_instr_drop(cctx, ISN_ADDNR, 1); break;
-	    case '-': generate_instr_drop(cctx, ISN_SUBNR, 1); break;
-	    case '*': generate_instr_drop(cctx, ISN_MULTNR, 1); break;
-	    case '/': generate_instr_drop(cctx, ISN_DIVNR, 1); break;
-	    case '%': generate_instr_drop(cctx, ISN_REMNR, 1); break;
-	    case '.': generate_instr_drop(cctx, ISN_CONCAT, 1); break;
+	    isn_T *isn = generate_instr_drop(cctx, ISN_OPNR, 1);
+
+	    if (isn == NULL)
+		goto theend;
+	    switch (*op)
+	    {
+		case '+': isn->isn_arg.op.op_type = EXPR_ADD; break;
+		case '-': isn->isn_arg.op.op_type = EXPR_SUB; break;
+		case '*': isn->isn_arg.op.op_type = EXPR_MULT; break;
+		case '/': isn->isn_arg.op.op_type = EXPR_DIV; break;
+		case '%': isn->isn_arg.op.op_type = EXPR_REM; break;
+	    }
 	}
     }
 
@@ -3538,6 +3549,7 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	if (compile_expr1(&p, cctx) == FAIL)
 	    return NULL;
 
+	// TODO: check for strings?
 	if (generate_COMPARE(cctx, EXPR_MATCH, FALSE) == FAIL)
 	    return NULL;
 
@@ -4028,55 +4040,48 @@ delete_instr(isn_T *isn)
 
 	case ISN_2BOOL:
 	case ISN_2STRING:
-	case ISN_ADDANY:
 	case ISN_ADDBLOB:
-	case ISN_ADDF:
 	case ISN_ADDLIST:
-	case ISN_ADDNR:
 	case ISN_BCALL:
 	case ISN_CATCH:
 	case ISN_CHECKNR:
 	case ISN_CHECKTYPE:
-	case ISN_COMPARE:
+	case ISN_COMPAREANY:
+	case ISN_COMPAREBLOB:
+	case ISN_COMPAREBOOL:
+	case ISN_COMPAREDICT:
+	case ISN_COMPAREFLOAT:
+	case ISN_COMPAREFUNC:
+	case ISN_COMPARELIST:
+	case ISN_COMPARENR:
+	case ISN_COMPAREPARTIAL:
+	case ISN_COMPARESPECIAL:
+	case ISN_COMPARESTRING:
 	case ISN_CONCAT:
 	case ISN_DCALL:
-	case ISN_DIVANY:
-	case ISN_DIVF:
-	case ISN_DIVNR:
 	case ISN_DROP:
 	case ISN_ECHO:
 	case ISN_ENDTRY:
-	case ISN_EQUALNR:
 	case ISN_FOR:
 	case ISN_FUNCREF:
-	case ISN_GEQUALNR:
-	case ISN_GREATERNR:
 	case ISN_INDEX:
 	case ISN_JUMP:
 	case ISN_LOAD:
 	case ISN_LOADREG:
 	case ISN_LOADV:
-	case ISN_MULTANY:
-	case ISN_MULTF:
-	case ISN_MULTNR:
 	case ISN_NEGATENR:
-	case ISN_NEQUALNR:
 	case ISN_NEWDICT:
 	case ISN_NEWLIST:
+	case ISN_OPNR:
+	case ISN_OPFLOAT:
+	case ISN_OPANY:
 	case ISN_PCALL:
 	case ISN_PUSHF:
 	case ISN_PUSHNR:
 	case ISN_PUSHSPEC:
-	case ISN_REMANY:
-	case ISN_REMNR:
 	case ISN_RETURN:
-	case ISN_SEQUALNR:
-	case ISN_SMALLERNR:
 	case ISN_STORE:
 	case ISN_STORENR:
-	case ISN_SUBANY:
-	case ISN_SUBF:
-	case ISN_SUBNR:
 	case ISN_THROW:
 	case ISN_TRY:
 	    // nothing allocated

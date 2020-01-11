@@ -6424,7 +6424,7 @@ typval_compare(
 	    case EXPR_SEQUAL:   n1 = (f1 <= f2); break;
 	    case EXPR_UNKNOWN:
 	    case EXPR_MATCH:
-	    case EXPR_NOMATCH:  break;  // avoid gcc warning
+	    default:  break;  // avoid gcc warning
 	}
     }
 #endif
@@ -6450,7 +6450,7 @@ typval_compare(
 	    case EXPR_SEQUAL:   n1 = (n1 <= n2); break;
 	    case EXPR_UNKNOWN:
 	    case EXPR_MATCH:
-	    case EXPR_NOMATCH:  break;  // avoid gcc warning
+	    default:  break;  // avoid gcc warning
 	}
     }
     else
@@ -6480,7 +6480,7 @@ typval_compare(
 			n1 = !n1;
 		    break;
 
-	    case EXPR_UNKNOWN:  break;  // avoid gcc warning
+	    default:  break;  // avoid gcc warning
 	}
     }
     clear_tv(typ1);

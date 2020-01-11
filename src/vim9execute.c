@@ -925,53 +925,37 @@ call_def_function(
 		did_throw = TRUE;
 		break;
 
-	    // Computation with two number arguments
-	    case ISN_MULTNR:
-	    case ISN_DIVNR:
-	    case ISN_REMNR:
-	    case ISN_SUBNR:
-	    case ISN_ADDNR:
-	    case ISN_EQUALNR:
-	    case ISN_NEQUALNR:
-	    case ISN_GREATERNR:
-	    case ISN_GEQUALNR:
-	    case ISN_SMALLERNR:
-	    case ISN_SEQUALNR:
+	    // Operation with two number arguments
+	    case ISN_COMPARENR:
+	    case ISN_OPNR:
 		{
 		    typval_T	*tv1 = STACK_TV_BOT(-2);
 		    typval_T	*tv2 = STACK_TV_BOT(-1);
 		    varnumber_T arg1 = tv1->vval.v_number;
 		    varnumber_T arg2 = tv2->vval.v_number;
 		    varnumber_T res;
-		    int		boolres = FALSE;
 
-		    switch (iptr->isn_type)
+		    switch (iptr->isn_arg.op.op_type)
 		    {
-			case ISN_MULTNR: res = arg1 * arg2; break;
-			case ISN_DIVNR: res = arg1 / arg2; break;
-			case ISN_REMNR: res = arg1 % arg2; break;
-			case ISN_SUBNR: res = arg1 - arg2; break;
-			case ISN_ADDNR: res = arg1 + arg2; break;
+			case EXPR_MULT: res = arg1 * arg2; break;
+			case EXPR_DIV: res = arg1 / arg2; break;
+			case EXPR_REM: res = arg1 % arg2; break;
+			case EXPR_SUB: res = arg1 - arg2; break;
+			case EXPR_ADD: res = arg1 + arg2; break;
 
-			case ISN_EQUALNR:
-				    res = arg1 == arg2; boolres = TRUE; break;
-			case ISN_NEQUALNR:
-				    res = arg1 != arg2; boolres = TRUE; break;
-			case ISN_GREATERNR:
-				    res = arg1 > arg2; boolres = TRUE; break;
-			case ISN_GEQUALNR:
-				    res = arg1 >= arg2; boolres = TRUE; break;
-			case ISN_SMALLERNR:
-				    res = arg1 < arg2; boolres = TRUE; break;
-			case ISN_SEQUALNR:
-				    res = arg1 <= arg2; boolres = TRUE; break;
+			case EXPR_EQUAL: res = arg1 == arg2; break;
+			case EXPR_NEQUAL: res = arg1 != arg2; break;
+			case EXPR_GREATER: res = arg1 > arg2; break;
+			case EXPR_GEQUAL: res = arg1 >= arg2; break;
+			case EXPR_SMALLER: res = arg1 < arg2; break;
+			case EXPR_SEQUAL: res = arg1 <= arg2; break;
 			default: res = 0; break;
 		    }
 
 		    --ectx.ec_stack.ga_len;
 		    clear_tv(tv1);
 		    clear_tv(tv2);
-		    if (boolres)
+		    if (iptr->isn_type == ISN_COMPARENR)
 		    {
 			tv1->v_type = VAR_SPECIAL;
 			tv1->vval.v_number = res ? VVAL_TRUE : VVAL_FALSE;
@@ -984,12 +968,22 @@ call_def_function(
 		}
 		break;
 
-	    case ISN_COMPARE:
+		// TODO: handle separately
+	    case ISN_COMPAREBOOL:
+	    case ISN_COMPARESPECIAL:
+	    case ISN_COMPAREFLOAT:
+	    case ISN_COMPARESTRING:
+	    case ISN_COMPAREBLOB:
+	    case ISN_COMPARELIST:
+	    case ISN_COMPAREDICT:
+	    case ISN_COMPAREFUNC:
+	    case ISN_COMPAREPARTIAL:
+	    case ISN_COMPAREANY:
 		{
 		    typval_T	*tv1 = STACK_TV_BOT(-2);
 		    typval_T	*tv2 = STACK_TV_BOT(-1);
-		    exptype_T	exptype = iptr->isn_arg.compare.cmp_type;
-		    int		ic = iptr->isn_arg.compare.cmp_ic;
+		    exptype_T	exptype = iptr->isn_arg.op.op_type;
+		    int		ic = iptr->isn_arg.op.op_ic;
 
 		    typval_compare(tv1, tv2, exptype, ic);
 		    clear_tv(tv2);
@@ -1001,21 +995,18 @@ call_def_function(
 		break;
 
 	    // Computation with two float arguments
-	    case ISN_MULTF:
-	    case ISN_DIVF:
-	    case ISN_SUBF:
-	    case ISN_ADDF:
+	    case ISN_OPFLOAT:
 		{
 		    float_T arg1 = STACK_TV_BOT(-2)->vval.v_float;
 		    float_T arg2 = STACK_TV_BOT(-1)->vval.v_float;
 		    float_T res;
 
-		    switch (iptr->isn_type)
+		    switch (iptr->isn_arg.op.op_type)
 		    {
-			case ISN_MULTF: res = arg1 * arg2; break;
-			case ISN_DIVF: res = arg1 / arg2; break;
-			case ISN_SUBF: res = arg1 - arg2; break;
-			case ISN_ADDF: res = arg1 + arg2; break;
+			case EXPR_MULT: res = arg1 * arg2; break;
+			case EXPR_DIV: res = arg1 / arg2; break;
+			case EXPR_SUB: res = arg1 - arg2; break;
+			case EXPR_ADD: res = arg1 + arg2; break;
 			default: res = 0; break;
 		    }
 		    --ectx.ec_stack.ga_len;
@@ -1039,11 +1030,7 @@ call_def_function(
 		break;
 
 	    // Computation with two arguments of unknown type
-	    case ISN_ADDANY:
-	    case ISN_MULTANY:
-	    case ISN_DIVANY:
-	    case ISN_SUBANY:
-	    case ISN_REMANY:
+	    case ISN_OPANY:
 		{
 		    typval_T	*tv1 = STACK_TV_BOT(-2);
 		    typval_T	*tv2 = STACK_TV_BOT(-1);
@@ -1053,7 +1040,7 @@ call_def_function(
 #endif
 		    int		error = FALSE;
 
-		    if (iptr->isn_type == ISN_ADDANY)
+		    if (iptr->isn_arg.op.op_type == EXPR_ADD)
 		    {
 			if (tv1->v_type == VAR_LIST && tv2->v_type == VAR_LIST)
 			{
@@ -1105,12 +1092,12 @@ call_def_function(
 		    // if there is a float on either side the result is a float
 		    if (tv1->v_type == VAR_FLOAT || tv2->v_type == VAR_FLOAT)
 		    {
-			switch (iptr->isn_type)
+			switch (iptr->isn_arg.op.op_type)
 			{
-			    case ISN_MULTANY: f1 = f1 * f2; break;
-			    case ISN_DIVANY:  f1 = f1 / f2; break;
-			    case ISN_SUBANY:  f1 = f1 - f2; break;
-			    case ISN_ADDANY:  f1 = f1 + f2; break;
+			    case EXPR_MULT: f1 = f1 * f2; break;
+			    case EXPR_DIV:  f1 = f1 / f2; break;
+			    case EXPR_SUB:  f1 = f1 - f2; break;
+			    case EXPR_ADD:  f1 = f1 + f2; break;
 			    default: emsg(_(e_modulus)); goto failed;
 			}
 			clear_tv(tv1);
@@ -1122,13 +1109,13 @@ call_def_function(
 		    else
 #endif
 		    {
-			switch (iptr->isn_type)
+			switch (iptr->isn_arg.op.op_type)
 			{
-			    case ISN_MULTANY: n1 = n1 * n2; break;
-			    case ISN_DIVANY:  n1 = num_divide(n1, n2); break;
-			    case ISN_SUBANY:  n1 = n1 - n2; break;
-			    case ISN_ADDANY:  n1 = n1 + n2; break;
-			    default:	      n1 = num_modulus(n1, n2); break;
+			    case EXPR_MULT: n1 = n1 * n2; break;
+			    case EXPR_DIV:  n1 = num_divide(n1, n2); break;
+			    case EXPR_SUB:  n1 = n1 - n2; break;
+			    case EXPR_ADD:  n1 = n1 + n2; break;
+			    default:	    n1 = num_modulus(n1, n2); break;
 			}
 			clear_tv(tv1);
 			clear_tv(tv2);
@@ -1527,24 +1514,50 @@ ex_disassemble(exarg_T *eap)
 		break;
 
 	    // expression operations on number
-	    case ISN_MULTNR: smsg("%4d MULTNR", current); break;
-	    case ISN_DIVNR: smsg("%4d DIVNR", current); break;
-	    case ISN_REMNR: smsg("%4d REMNR", current); break;
-	    case ISN_ADDNR: smsg("%4d ADDNR", current); break;
-	    case ISN_SUBNR: smsg("%4d SUBNR", current); break;
-	    case ISN_EQUALNR: smsg("%4d EQUALNR", current); break;
-	    case ISN_NEQUALNR: smsg("%4d NEQUALNR", current); break;
-	    case ISN_GREATERNR: smsg("%4d GREATERNR", current); break;
-	    case ISN_GEQUALNR: smsg("%4d GEQUALNR", current); break;
-	    case ISN_SMALLERNR: smsg("%4d SMALLERNR", current); break;
-	    case ISN_SEQUALNR: smsg("%4d SEQUALNR", current); break;
+	    case ISN_OPNR:
+	    case ISN_OPFLOAT:
+	    case ISN_OPANY:
+		{
+		    char *what;
+		    char *ins;
 
-	    case ISN_COMPARE:
+		    switch (iptr->isn_arg.op.op_type)
+		    {
+			case EXPR_MULT: what = "*"; break;
+			case EXPR_DIV: what = "/"; break;
+			case EXPR_REM: what = "%"; break;
+			case EXPR_SUB: what = "-"; break;
+			case EXPR_ADD: what = "+"; break;
+			default:       what = "???"; break;
+		    }
+		    switch (iptr->isn_type)
+		    {
+			case ISN_OPNR: ins = "OPNR"; break;
+			case ISN_OPFLOAT: ins = "OPFLOAT"; break;
+			case ISN_OPANY: ins = "OPANY"; break;
+			default: ins = "???"; break;
+		    }
+		    smsg("%4d OPNR %s", current, ins, what);
+		}
+		break;
+
+	    case ISN_COMPAREBOOL:
+	    case ISN_COMPARESPECIAL:
+	    case ISN_COMPARENR:
+	    case ISN_COMPAREFLOAT:
+	    case ISN_COMPARESTRING:
+	    case ISN_COMPAREBLOB:
+	    case ISN_COMPARELIST:
+	    case ISN_COMPAREDICT:
+	    case ISN_COMPAREFUNC:
+	    case ISN_COMPAREPARTIAL:
+	    case ISN_COMPAREANY:
 		   {
 		       char *p;
 		       char buf[10];
+		       char *type;
 
-		       switch (iptr->isn_arg.compare.cmp_type)
+		       switch (iptr->isn_arg.op.op_type)
 		       {
 			   case EXPR_EQUAL:	 p = "=="; break;
 			   case EXPR_NEQUAL:    p = "!="; break;
@@ -1556,28 +1569,33 @@ ex_disassemble(exarg_T *eap)
 			   case EXPR_IS:	 p = "is"; break;
 			   case EXPR_ISNOT:	 p = "isnot"; break;
 			   case EXPR_NOMATCH:	 p = "!~"; break;
-			   case EXPR_UNKNOWN:	 p = "???"; break;
+			   default:  p = "???"; break;
 		       }
 		       STRCPY(buf, p);
-		       if (iptr->isn_arg.compare.cmp_ic == TRUE)
+		       if (iptr->isn_arg.op.op_ic == TRUE)
 			   strcat(buf, "?");
+		       switch(iptr->isn_type)
+		       {
+			   case ISN_COMPAREBOOL: type = "COMPAREBOOL"; break;
+			   case ISN_COMPARESPECIAL:
+						 type = "COMPARESPECIAL"; break;
+			   case ISN_COMPARENR: type = "COMPARENR"; break;
+			   case ISN_COMPAREFLOAT: type = "COMPAREFLOAT"; break;
+			   case ISN_COMPARESTRING:
+						  type = "COMPARESTRING"; break;
+			   case ISN_COMPAREBLOB: type = "COMPAREBLOB"; break;
+			   case ISN_COMPARELIST: type = "COMPARELIST"; break;
+			   case ISN_COMPAREDICT: type = "COMPAREDICT"; break;
+			   case ISN_COMPAREFUNC: type = "COMPAREFUNC"; break;
+			   case ISN_COMPAREPARTIAL:
+						 type = "COMPAREPARTIAL"; break;
+			   case ISN_COMPAREANY: type = "COMPAREANY"; break;
+			   default: type = "???"; break;
+		       }
 
-		       smsg("%4d COMPARE %s", current, buf);
+		       smsg("%4d %s %s", current, type, buf);
 		   }
 		   break;
-
-	    // expression operations on float
-	    case ISN_MULTF: smsg("%4d MULTF", current); break;
-	    case ISN_DIVF: smsg("%4d DIVF", current); break;
-	    case ISN_ADDF: smsg("%4d ADDF", current); break;
-	    case ISN_SUBF: smsg("%4d SUBF", current); break;
-
-	    // expression operations on unknown type
-	    case ISN_MULTANY: smsg("%4d MULT", current); break;
-	    case ISN_DIVANY: smsg("%4d DIV", current); break;
-	    case ISN_ADDANY: smsg("%4d ADD", current); break;
-	    case ISN_SUBANY: smsg("%4d SUB", current); break;
-	    case ISN_REMANY: smsg("%4d REM", current); break;
 
 	    case ISN_ADDLIST: smsg("%4d ADDLIST", current); break;
 	    case ISN_ADDBLOB: smsg("%4d ADDBLOB", current); break;
