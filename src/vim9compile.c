@@ -416,8 +416,6 @@ generate_COMPARE(cctx_T *cctx, exptype_T exptype, int ic)
     type_T	*type1;
     type_T	*type2;
 
-    // TODO: check for void
-    // TODO: if types differ result is always FALSE (or give an error?)
     // Get the known type of the two items on the stack.  If they are matching
     // use a type-specific instruction. Otherwise fall back to runtime type
     // checking.
@@ -440,8 +438,16 @@ generate_COMPARE(cctx_T *cctx, exptype_T exptype, int ic)
 	    default: isntype = ISN_COMPAREANY; break;
 	}
     }
-    else
+    else if (type1->tt_type == VAR_UNKNOWN || type2->tt_type == VAR_UNKNOWN
+	    || ((type1->tt_type == VAR_NUMBER || type1->tt_type == VAR_FLOAT)
+	      && (type2->tt_type == VAR_NUMBER || type2->tt_type ==VAR_FLOAT)))
 	isntype = ISN_COMPAREANY;
+    else
+    {
+	semsg(_("E1037: Cannot compare %s with %s"),
+		vartype_name(type1->tt_type), vartype_name(type2->tt_type));
+	return FAIL;
+    }
 
     if ((isn = generate_instr(cctx, isntype)) == NULL)
 	return FAIL;
@@ -1218,7 +1224,7 @@ vartype_name(vartype_T type)
     {
 	case VAR_VOID: return "void";
 	case VAR_UNKNOWN: return "any";
-	case VAR_SPECIAL:
+	case VAR_SPECIAL: return "special";
 	case VAR_BOOL: return "bool";
 	case VAR_NUMBER: return "number";
 	case VAR_FLOAT: return "float";
@@ -1717,7 +1723,7 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	semsg(_(e_missing_dict_end), *arg);
 	goto failret;
     }
-    *arg = skipwhite(*arg + 1);
+    *arg = *arg + 1;
 
     dict_unref(d);
     return generate_NEWDICT(cctx, count);
