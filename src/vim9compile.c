@@ -410,20 +410,20 @@ generate_two_op(cctx_T *cctx, char_u *op)
     static int
 generate_COMPARE(cctx_T *cctx, exptype_T exptype, int ic)
 {
-    isntype_T	isntype;
+    isntype_T	isntype = ISN_DROP;
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
-    type_T	*type1;
-    type_T	*type2;
+    vartype_T	type1;
+    vartype_T	type2;
 
     // Get the known type of the two items on the stack.  If they are matching
     // use a type-specific instruction. Otherwise fall back to runtime type
     // checking.
-    type1 = ((type_T **)stack->ga_data)[stack->ga_len - 2];
-    type2 = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-    if (type1->tt_type == type2->tt_type)
+    type1 = ((type_T **)stack->ga_data)[stack->ga_len - 2]->tt_type;
+    type2 = ((type_T **)stack->ga_data)[stack->ga_len - 1]->tt_type;
+    if (type1 == type2)
     {
-	switch (type1->tt_type)
+	switch (type1)
 	{
 	    case VAR_BOOL: isntype = ISN_COMPAREBOOL; break;
 	    case VAR_SPECIAL: isntype = ISN_COMPARESPECIAL; break;
@@ -438,14 +438,32 @@ generate_COMPARE(cctx_T *cctx, exptype_T exptype, int ic)
 	    default: isntype = ISN_COMPAREANY; break;
 	}
     }
-    else if (type1->tt_type == VAR_UNKNOWN || type2->tt_type == VAR_UNKNOWN
-	    || ((type1->tt_type == VAR_NUMBER || type1->tt_type == VAR_FLOAT)
-	      && (type2->tt_type == VAR_NUMBER || type2->tt_type ==VAR_FLOAT)))
+    else if (type1 == VAR_UNKNOWN || type2 == VAR_UNKNOWN
+	    || ((type1 == VAR_NUMBER || type1 == VAR_FLOAT)
+	      && (type2 == VAR_NUMBER || type2 ==VAR_FLOAT)))
 	isntype = ISN_COMPAREANY;
-    else
+
+    if ((exptype == EXPR_IS || exptype == EXPR_ISNOT)
+	    && (isntype == ISN_COMPAREBOOL
+	    || isntype == ISN_COMPARESPECIAL
+	    || isntype == ISN_COMPARENR
+	    || isntype == ISN_COMPAREFLOAT))
+    {
+	semsg(_("E1037: Cannot use \"%s\" with %s"),
+		exptype == EXPR_IS ? "is" : "isnot" , vartype_name(type1));
+	return FAIL;
+    }
+    if (isntype == ISN_DROP
+	    || ((exptype != EXPR_EQUAL && exptype != EXPR_NEQUAL
+		    && (type1 == VAR_BOOL || type1 == VAR_SPECIAL
+		       || type2 == VAR_BOOL || type2 == VAR_SPECIAL)))
+	    || ((exptype != EXPR_EQUAL && exptype != EXPR_NEQUAL
+				 && exptype != EXPR_IS && exptype != EXPR_ISNOT
+		    && (type1 == VAR_BLOB || type2 == VAR_BLOB
+			|| type1 == VAR_LIST || type2 == VAR_LIST))))
     {
 	semsg(_("E1037: Cannot compare %s with %s"),
-		vartype_name(type1->tt_type), vartype_name(type2->tt_type));
+		vartype_name(type1), vartype_name(type2));
 	return FAIL;
     }
 
@@ -538,7 +556,7 @@ generate_PUSHSPEC(cctx_T *cctx, varnumber_T number)
 {
     isn_T	*isn;
 
-    if ((isn = generate_instr_type(cctx, ISN_PUSHSPEC, &t_any)) == NULL)
+    if ((isn = generate_instr_type(cctx, ISN_PUSHSPEC, &t_special)) == NULL)
 	return FAIL;
     isn->isn_arg.number = number;
 

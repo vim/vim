@@ -930,9 +930,32 @@ call_def_function(
 		did_throw = TRUE;
 		break;
 
+	    // compare with special values
+	    case ISN_COMPAREBOOL:
+	    case ISN_COMPARESPECIAL:
+		{
+		    typval_T	*tv1 = STACK_TV_BOT(-2);
+		    typval_T	*tv2 = STACK_TV_BOT(-1);
+		    varnumber_T arg1 = tv1->vval.v_number;
+		    varnumber_T arg2 = tv2->vval.v_number;
+		    int		res;
+
+		    switch (iptr->isn_arg.op.op_type)
+		    {
+			case EXPR_EQUAL: res = arg1 == arg2; break;
+			case EXPR_NEQUAL: res = arg1 != arg2; break;
+			default: res = 0; break;
+		    }
+
+		    --ectx.ec_stack.ga_len;
+		    tv1->v_type = VAR_BOOL;
+		    tv1->vval.v_number = res ? VVAL_TRUE : VVAL_FALSE;
+		}
+		break;
+
 	    // Operation with two number arguments
-	    case ISN_COMPARENR:
 	    case ISN_OPNR:
+	    case ISN_COMPARENR:
 		{
 		    typval_T	*tv1 = STACK_TV_BOT(-2);
 		    typval_T	*tv2 = STACK_TV_BOT(-1);
@@ -958,28 +981,106 @@ call_def_function(
 		    }
 
 		    --ectx.ec_stack.ga_len;
-		    clear_tv(tv1);
-		    clear_tv(tv2);
 		    if (iptr->isn_type == ISN_COMPARENR)
 		    {
 			tv1->v_type = VAR_BOOL;
 			tv1->vval.v_number = res ? VVAL_TRUE : VVAL_FALSE;
 		    }
 		    else
-		    {
-			tv1->v_type = VAR_NUMBER;
 			tv1->vval.v_number = res;
+		}
+		break;
+
+	    // Computation with two float arguments
+	    case ISN_OPFLOAT:
+	    case ISN_COMPAREFLOAT:
+		{
+		    typval_T	*tv1 = STACK_TV_BOT(-2);
+		    typval_T	*tv2 = STACK_TV_BOT(-1);
+		    float_T	arg1 = tv1->vval.v_float;
+		    float_T	arg2 = tv2->vval.v_float;
+		    float_T	res = 0;
+		    int		cmp = FALSE;
+
+		    switch (iptr->isn_arg.op.op_type)
+		    {
+			case EXPR_MULT: res = arg1 * arg2; break;
+			case EXPR_DIV: res = arg1 / arg2; break;
+			case EXPR_SUB: res = arg1 - arg2; break;
+			case EXPR_ADD: res = arg1 + arg2; break;
+
+			case EXPR_EQUAL: cmp = arg1 == arg2; break;
+			case EXPR_NEQUAL: cmp = arg1 != arg2; break;
+			case EXPR_GREATER: cmp = arg1 > arg2; break;
+			case EXPR_GEQUAL: cmp = arg1 >= arg2; break;
+			case EXPR_SMALLER: cmp = arg1 < arg2; break;
+			case EXPR_SEQUAL: cmp = arg1 <= arg2; break;
+			default: cmp = 0; break;
 		    }
+		    --ectx.ec_stack.ga_len;
+		    if (iptr->isn_type == ISN_COMPAREFLOAT)
+		    {
+			tv1->v_type = VAR_BOOL;
+			tv1->vval.v_number = cmp ? VVAL_TRUE : VVAL_FALSE;
+		    }
+		    else
+			tv1->vval.v_float = res;
+		}
+		break;
+
+	    case ISN_COMPARELIST:
+		{
+		    typval_T	*tv1 = STACK_TV_BOT(-2);
+		    typval_T	*tv2 = STACK_TV_BOT(-1);
+		    list_T	*arg1 = tv1->vval.v_list;
+		    list_T	*arg2 = tv2->vval.v_list;
+		    int		cmp = FALSE;
+		    int		ic = iptr->isn_arg.op.op_ic;
+
+		    switch (iptr->isn_arg.op.op_type)
+		    {
+			case EXPR_EQUAL: cmp =
+				      list_equal(arg1, arg2, ic, FALSE); break;
+			case EXPR_NEQUAL: cmp =
+				     !list_equal(arg1, arg2, ic, FALSE); break;
+			case EXPR_IS: cmp = arg1 == arg2; break;
+			case EXPR_ISNOT: cmp = arg1 != arg2; break;
+			default: cmp = 0; break;
+		    }
+		    --ectx.ec_stack.ga_len;
+		    clear_tv(tv1);
+		    clear_tv(tv2);
+		    tv1->v_type = VAR_BOOL;
+		    tv1->vval.v_number = cmp ? VVAL_TRUE : VVAL_FALSE;
+		}
+		break;
+
+	    case ISN_COMPAREBLOB:
+		{
+		    typval_T	*tv1 = STACK_TV_BOT(-2);
+		    typval_T	*tv2 = STACK_TV_BOT(-1);
+		    blob_T	*arg1 = tv1->vval.v_blob;
+		    blob_T	*arg2 = tv2->vval.v_blob;
+		    int		cmp = FALSE;
+
+		    switch (iptr->isn_arg.op.op_type)
+		    {
+			case EXPR_EQUAL: cmp = blob_equal(arg1, arg2); break;
+			case EXPR_NEQUAL: cmp = !blob_equal(arg1, arg2); break;
+			case EXPR_IS: cmp = arg1 == arg2; break;
+			case EXPR_ISNOT: cmp = arg1 != arg2; break;
+			default: cmp = 0; break;
+		    }
+		    --ectx.ec_stack.ga_len;
+		    clear_tv(tv1);
+		    clear_tv(tv2);
+		    tv1->v_type = VAR_BOOL;
+		    tv1->vval.v_number = cmp ? VVAL_TRUE : VVAL_FALSE;
 		}
 		break;
 
 		// TODO: handle separately
-	    case ISN_COMPAREBOOL:
-	    case ISN_COMPARESPECIAL:
-	    case ISN_COMPAREFLOAT:
 	    case ISN_COMPARESTRING:
-	    case ISN_COMPAREBLOB:
-	    case ISN_COMPARELIST:
 	    case ISN_COMPAREDICT:
 	    case ISN_COMPAREFUNC:
 	    case ISN_COMPAREPARTIAL:
@@ -996,26 +1097,6 @@ call_def_function(
 		    tv1->vval.v_number = tv1->vval.v_number
 						      ? VVAL_TRUE : VVAL_FALSE;
 		    --ectx.ec_stack.ga_len;
-		}
-		break;
-
-	    // Computation with two float arguments
-	    case ISN_OPFLOAT:
-		{
-		    float_T arg1 = STACK_TV_BOT(-2)->vval.v_float;
-		    float_T arg2 = STACK_TV_BOT(-1)->vval.v_float;
-		    float_T res;
-
-		    switch (iptr->isn_arg.op.op_type)
-		    {
-			case EXPR_MULT: res = arg1 * arg2; break;
-			case EXPR_DIV: res = arg1 / arg2; break;
-			case EXPR_SUB: res = arg1 - arg2; break;
-			case EXPR_ADD: res = arg1 + arg2; break;
-			default: res = 0; break;
-		    }
-		    --ectx.ec_stack.ga_len;
-		    STACK_TV_BOT(-1)->vval.v_float = res;
 		}
 		break;
 

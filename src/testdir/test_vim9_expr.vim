@@ -365,6 +365,38 @@ func Test_expr4_fails()
   call CheckDefFailure("let x = '1' == 2", 'Cannot compare string with number')
   call CheckDefFailure("let x = 1 == RetVoid()", 'Cannot use void value')
   call CheckDefFailure("let x = RetVoid() == 1", 'Cannot compare void with number')
+
+  call CheckDefFailure("let x = v:true > v:false", 'Cannot compare bool with bool')
+  call CheckDefFailure("let x = v:true >= v:false", 'Cannot compare bool with bool')
+  call CheckDefFailure("let x = v:true < v:false", 'Cannot compare bool with bool')
+  call CheckDefFailure("let x = v:true <= v:false", 'Cannot compare bool with bool')
+  call CheckDefFailure("let x = v:true =~ v:false", 'Cannot compare bool with bool')
+  call CheckDefFailure("let x = v:true !~ v:false", 'Cannot compare bool with bool')
+  call CheckDefFailure("let x = v:true is v:false", 'Cannot use "is" with bool')
+  call CheckDefFailure("let x = v:true isnot v:false", 'Cannot use "isnot" with bool')
+
+  call CheckDefFailure("let x = v:none is v:null", 'Cannot use "is" with special')
+  call CheckDefFailure("let x = v:none isnot v:null", 'Cannot use "isnot" with special')
+  call CheckDefFailure("let x = 123 is 123", 'Cannot use "is" with number')
+  call CheckDefFailure("let x = 123 isnot 123", 'Cannot use "isnot" with number')
+  if has('float')
+    call CheckDefFailure("let x = 1.3 is 1.3", 'Cannot use "is" with float')
+    call CheckDefFailure("let x = 1.3 isnot 1.3", 'Cannot use "isnot" with float')
+  endif
+
+  call CheckDefFailure("let x = 0za1 > 0z34", 'Cannot compare blob with blob')
+  call CheckDefFailure("let x = 0za1 >= 0z34", 'Cannot compare blob with blob')
+  call CheckDefFailure("let x = 0za1 < 0z34", 'Cannot compare blob with blob')
+  call CheckDefFailure("let x = 0za1 <= 0z34", 'Cannot compare blob with blob')
+  call CheckDefFailure("let x = 0za1 =~ 0z34", 'Cannot compare blob with blob')
+  call CheckDefFailure("let x = 0za1 !~ 0z34", 'Cannot compare blob with blob')
+
+  call CheckDefFailure("let x = [13] > [88]", 'Cannot compare list with list')
+  call CheckDefFailure("let x = [13] >= [88]", 'Cannot compare list with list')
+  call CheckDefFailure("let x = [13] < [88]", 'Cannot compare list with list')
+  call CheckDefFailure("let x = [13] <= [88]", 'Cannot compare list with list')
+  call CheckDefFailure("let x = [13] =~ [88]", 'Cannot compare list with list')
+  call CheckDefFailure("let x = [13] !~ [88]", 'Cannot compare list with list')
 endfunc
 
 " test addition, subtraction, concatenation
