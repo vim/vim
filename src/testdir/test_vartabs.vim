@@ -1,8 +1,7 @@
 " Test for variable tabstops
 
-if !has("vartabs")
-  finish
-endif
+source check.vim
+CheckFeature vartabs
 
 source view_util.vim
 
@@ -330,7 +329,7 @@ func Test_vartabs_shiftwidth()
   let lines = ScreenLines([1, 2], winwidth(0))
   call s:compare_lines(expect2, lines)
   call assert_equal(20, shiftwidth(virtcol('.')-2))
-  call assert_equal(30, shiftwidth(virtcol('.')))
+  call assert_equal(30, virtcol('.')->shiftwidth())
   norm! $>>
   let expect3 = ['                                        ', '                    x                   ', '~                                       ']
   let lines = ScreenLines([1, 3], winwidth(0))

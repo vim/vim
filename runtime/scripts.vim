@@ -1,7 +1,7 @@
 " Vim support file to detect file types in scripts
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2018 Feb 03
+" Last change:	2019 Jun 25
 
 " This file is called by an autocommand for every file that has just been
 " loaded into a buffer.  It checks if the type of file can be recognized by
@@ -195,7 +195,7 @@ else
   if s:line1 =~# '^:$'
     call dist#ft#SetFileTypeSH(s:line1)	" defined in filetype.vim
 
-    " Z shell scripts
+  " Z shell scripts
   elseif s:line1 =~# '^#compdef\>' || s:line1 =~# '^#autoload\>' ||
         \ "\n".s:line1."\n".s:line2."\n".s:line3."\n".s:line4."\n".s:line5 =~# '\n\s*emulate\s\+\%(-[LR]\s\+\)\=[ckz]\=sh\>'
     set ft=zsh
@@ -204,15 +204,20 @@ else
   elseif s:line1 =~# '^From \([a-zA-Z][a-zA-Z_0-9\.=-]*\(@[^ ]*\)\=\|-\) .* \(19\|20\)\d\d$'
     set ft=mail
 
-    " Mason
+  " Mason
   elseif s:line1 =~# '^<[%&].*>'
     set ft=mason
 
-    " Vim scripts (must have '" vim' as the first line to trigger this)
+  " Vim scripts (must have '" vim' as the first line to trigger this)
   elseif s:line1 =~# '^" *[vV]im$'
     set ft=vim
 
-    " MOO
+  " libcxx and libstdc++ standard library headers like "iostream" do not have
+  " an extension, recognize the Emacs file mode.
+  elseif s:line1 =~? '-\*-.*C++.*-\*-'
+    set ft=cpp
+
+  " MOO
   elseif s:line1 =~# '^\*\* LambdaMOO Database, Format Version \%([1-3]\>\)\@!\d\+ \*\*$'
     set ft=moo
 

@@ -6,17 +6,16 @@
  * Do ":help credits" in Vim to see a list of people who contributed.
  */
 
-/* Before Including the MacOS specific files,
- * lets set the OPAQUE_TOOLBOX_STRUCTS to 0 so we
- * can access the internal structures.
- * (Until fully Carbon compliant)
- * TODO: Can we remove this? (Dany)
- */
+// Before Including the MacOS specific files,
+// lets set the OPAQUE_TOOLBOX_STRUCTS to 0 so we
+// can access the internal structures.
+// (Until fully Carbon compliant)
+// TODO: Can we remove this? (Dany)
 #if 0
 # define OPAQUE_TOOLBOX_STRUCTS 0
 #endif
 
-/* Include MAC_OS_X_VERSION_* macros */
+// Include MAC_OS_X_VERSION_* macros
 #ifdef HAVE_AVAILABILITYMACROS_H
 # include <AvailabilityMacros.h>
 #endif
@@ -28,7 +27,7 @@
  * files have many conflicts).
  */
 #ifdef FEAT_GUI_MAC
-# include <Quickdraw.h>	    /* Apple calls it QuickDraw.h... */
+# include <Quickdraw.h>	    // Apple calls it QuickDraw.h...
 # include <ToolUtils.h>
 # include <LowMem.h>
 # include <Scrap.h>
@@ -43,17 +42,17 @@
 /*
  * Unix interface
  */
-#if defined(__APPLE_CC__) /* for Project Builder and ... */
+#if defined(__APPLE_CC__) // for Project Builder and ...
 # include <unistd.h>
-/* Get stat.h or something similar. Comment: How come some OS get in in vim.h */
+// Get stat.h or something similar. Comment: How come some OS get in in vim.h
 # include <sys/stat.h>
-/* && defined(HAVE_CURSE) */
-/* The curses.h from MacOS X provides by default some BACKWARD compatibility
- * definition which can cause us problem later on. So we undefine a few of them. */
+// && defined(HAVE_CURSE)
+// The curses.h from MacOS X provides by default some BACKWARD compatibility
+// definition which can cause us problem later on. So we undefine a few of them.
 # include <curses.h>
 # undef reg
 # undef ospeed
-/* OK defined to 0 in MacOS X 10.2 curses!  Remove it, we define it to be 1. */
+// OK defined to 0 in MacOS X 10.2 curses!  Remove it, we define it to be 1.
 # undef OK
 #endif
 #include <signal.h>
@@ -67,14 +66,13 @@
  * MacOS specific #define
  */
 
-/* This will go away when CMD_KEY fully tested */
+// This will go away when CMD_KEY fully tested
 #define USE_CMD_KEY
-/* On MacOS X use the / not the : */
-/* TODO: Should file such as ~/.vimrc reside instead in
- *       ~/Library/Vim or ~/Library/Preferences/org.vim.vim/ ? (Dany)
- */
-/* When compiled under MacOS X (including CARBON version)
- * we use the Unix File path style.  Also when UNIX is defined. */
+// On MacOS X use the / not the :
+// TODO: Should file such as ~/.vimrc reside instead in
+//       ~/Library/Vim or ~/Library/Preferences/org.vim.vim/ ? (Dany)
+// When compiled under MacOS X (including CARBON version)
+// we use the Unix File path style.  Also when UNIX is defined.
 #define USE_UNIXFILENAME
 
 
@@ -85,15 +83,15 @@
 #define FEAT_SOURCE_FFS
 #define FEAT_SOURCE_FF_MAC
 
-#define USE_EXE_NAME		    /* to find  $VIM */
-#define CASE_INSENSITIVE_FILENAME   /* ignore case when comparing file names */
+#define USE_EXE_NAME		    // to find  $VIM
+#define CASE_INSENSITIVE_FILENAME   // ignore case when comparing file names
 #define SPACE_IN_FILENAME
-#define BREAKCHECK_SKIP	   32	    /* call mch_breakcheck() each time, it's
-				       quite fast. Did I forgot to update the
-				       comment */
+#define BREAKCHECK_SKIP	   32	    // call mch_breakcheck() each time, it's
+				    // quite fast. Did I forgot to update the
+				    // comment
 
-#define USE_FNAME_CASE		/* make ":e os_Mac.c" open the file in its
-				   original case, as "os_mac.c" */
+#define USE_FNAME_CASE		// make ":e os_Mac.c" open the file in its
+				// original case, as "os_mac.c"
 #define BINARY_FILE_IO
 #define EOL_DEFAULT EOL_MAC
 #define HAVE_AVAIL_MEM
@@ -102,10 +100,10 @@
 # define HAVE_STRING_H
 # define HAVE_STRCSPN
 # define HAVE_MEMSET
-# define USE_TMPNAM		/* use tmpnam() instead of mktemp() */
+# define USE_TMPNAM		// use tmpnam() instead of mktemp()
 # define HAVE_FCNTL_H
 # define HAVE_QSORT
-# define HAVE_ST_MODE		/* have stat.st_mode */
+# define HAVE_ST_MODE		// have stat.st_mode
 # define HAVE_MATH_H
 
 # if defined(__DATE__) && defined(__TIME__)
@@ -193,18 +191,18 @@
 # ifndef VIMINFO_FILE
 #  define VIMINFO_FILE	"~/.viminfo"
 # endif
-#endif /* FEAT_VIMINFO */
+#endif // FEAT_VIMINFO
 
 #ifndef DFLT_BDIR
-# define DFLT_BDIR	"."	/* default for 'backupdir' */
+# define DFLT_BDIR	"."	// default for 'backupdir'
 #endif
 
 #ifndef DFLT_DIR
-# define DFLT_DIR	"."	/* default for 'directory' */
+# define DFLT_DIR	"."	// default for 'directory'
 #endif
 
 #ifndef DFLT_VDIR
-# define DFLT_VDIR	"$VIM/vimfiles/view"	/* default for 'viewdir' */
+# define DFLT_VDIR	"$VIM/vimfiles/view"	// default for 'viewdir'
 #endif
 
 #define DFLT_ERRORFILE		"errors.err"
@@ -219,14 +217,14 @@
 /*
  * Macintosh has plenty of memory, use large buffers
  */
-#define CMDBUFFSIZE 1024	/* size of the command processing buffer */
+#define CMDBUFFSIZE 1024	// size of the command processing buffer
 
 #ifndef DFLT_MAXMEM
-# define DFLT_MAXMEM	512	/* use up to  512 Kbyte for buffer */
+# define DFLT_MAXMEM	512	// use up to  512 Kbyte for buffer
 #endif
 
 #ifndef DFLT_MAXMEMTOT
-# define DFLT_MAXMEMTOT	2048	/* use up to 2048 Kbyte for Vim */
+# define DFLT_MAXMEMTOT	2048	// use up to 2048 Kbyte for Vim
 #endif
 
 #define WILDCHAR_LIST "*?[{`$"
@@ -239,7 +237,7 @@
 #  define mch_getenv(name)  ((char_u *)getenv((char *)(name)))
 #  define mch_setenv(name, val, x) setenv(name, val, x)
 # else
-  /* vim_getenv() is in pty.c */
+  // vim_getenv() is in pty.c
 #  define USE_VIMPTY_GETENV
 #  define mch_getenv(x) vimpty_getenv(x)
 #  define mch_setenv(name, val, x) setenv(name, val, x)
@@ -248,18 +246,17 @@
 
 #ifndef HAVE_CONFIG_H
 # ifdef __APPLE_CC__
-/* Assuming compiling for MacOS X */
-/* Trying to take advantage of the prebinding */
+// Assuming compiling for MacOS X
+// Trying to take advantage of the prebinding
 #  define HAVE_TGETENT
 #  define OSPEED_EXTERN
 #  define UP_BC_PC_EXTERN
 # endif
 #endif
 
-/* Some "prep work" definition to be able to compile the MacOS X
- * version with os_unix.c instead of os_mac.c. Based on the result
- * of ./configure for console MacOS X.
- */
+// Some "prep work" definition to be able to compile the MacOS X
+// version with os_unix.c instead of os_mac.c. Based on the result
+// of ./configure for console MacOS X.
 
 #ifndef SIGPROTOARG
 # define SIGPROTOARG	(int)
@@ -274,8 +271,8 @@
 #ifndef HAVE_CONFIG_H
 # define RETSIGTYPE void
 # define SIGRETURN  return
-/*# define USE_SYSTEM */  /* Output ship do debugger :(, but ot compile */
-# define HAVE_SYS_WAIT_H 1 /* Attempt */
+//# define USE_SYSTEM  // Output ship do debugger :(, but not compile
+# define HAVE_SYS_WAIT_H 1 // Attempt
 # define HAVE_TERMIOS_H 1
 # define SYS_SELECT_WITH_SYS_TIME 1
 # define HAVE_SELECT 1
@@ -289,5 +286,5 @@
 # define HAVE_PUTENV
 #endif
 
-/* A Mac constant causing big problem to syntax highlighting */
+// A Mac constant causing big problem to syntax highlighting
 #define UNKNOWN_CREATOR '\?\?\?\?'

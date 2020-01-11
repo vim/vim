@@ -35,7 +35,11 @@ FILE_CH_DIC = de_CH_frami.dic
 ZIPFILE_19 = de_OLDSPELL.zip   # unmaintained
 DICT_FILES = $FILE_20_AFF $FILE_20_DIC $FILE_AT_AFF $FILE_AT_DIC $FILE_CH_AFF $FILE_CH_DIC
 
-READMES    = README_de_DE_frami.txt README_extension_owner.txt
+# frami files adjusted for Vim are found here
+YAMAGIDIR = https://raw.githubusercontent.com/Yamagi/vim-german-dictionaries/master
+
+READMES    = README.md
+:attr {fetch = $YAMAGIDIR/%file%} $READMES
 
 all: $SPELLDIR/de.latin1.spl $SPELLDIR/de.utf-8.spl ../README_de.txt
 
@@ -49,36 +53,22 @@ $SPELLDIR/de.utf-8.spl : $FILES
 
 ../README_de.txt: $READMES
         :fetch $READMES
-        :print de_DE_frami.txt            >! $target
-        :cat README_de_DE_frami.txt       >> $target
-        :print =================================================== >>$target
-        :print extension_owner            >> $target
-        :cat README_extension_owner.txt   >> $target
+        :print README.md            >! $target
+        :cat README.md             >> $target
 
 #
 # Fetching the files from the LibreOffices github repository.
 # The OLDSPELL file comes from elsewhere
 #
-OODIR = https://github.com/LibreOffice/dictionaries/raw/master/de
 DEDIR = http://www.j3e.de/myspell
-:attr {fetch = $OODIR/%file%} $DICT_FILES
-:attr {fetch = $OODIR/%file%} $READMES
+:attr {fetch = $YAMAGIDIR/src/%file%} $DICT_FILES
 :attr {fetch = $DEDIR/%file%} $ZIPFILE_19
 
-# The files don't depend on the .zip file so that we can delete it.
-# Only download the zip file if the targets don't exist.
 de_DE.aff de_DE.dic de_20.aff de_20.dic: {buildcheck=}
-        :assertpkg patch
         :fetch $FILE_DE_AFF
         :fetch $FILE_DE_DIC
         :move de_DE_frami.aff de_DE.aff
         :move de_DE_frami.dic de_DE.dic
-        @if not os.path.exists('de_DE.orig.aff'):
-            :copy de_DE.aff de_DE.orig.aff
-        @if not os.path.exists('de_DE.orig.dic'):
-            :copy de_DE.dic de_DE.orig.dic
-        @if os.path.exists('de_DE.diff'):
-            :sys patch <de_DE.diff
         :copy de_DE.aff de_20.aff
         :copy de_DE.dic de_20.dic
 
@@ -97,80 +87,16 @@ de_19.aff de_19.dic: {buildcheck=}
             :sys patch <de_19.diff
 
 de_AT.aff de_AT.dic: {buildcheck=}
-        :assertpkg patch
         :fetch $FILE_AT_AFF
         :fetch $FILE_AT_DIC
         :move $FILE_AT_AFF de_AT.aff
         :move $FILE_AT_DIC de_AT.dic
-        @if not os.path.exists('de_AT.orig.aff'):
-            :copy de_AT.aff de_AT.orig.aff
-        @if not os.path.exists('de_AT.orig.dic'):
-            :copy de_AT.dic de_AT.orig.dic
-        @if os.path.exists('de_AT.diff'):
-            :sys patch <de_AT.diff
 
 de_CH.aff de_CH.dic: {buildcheck=}
-        :assertpkg patch
         :fetch $FILE_CH_AFF
         :fetch $FILE_CH_DIC
         :move $FILE_CH_AFF de_CH.aff
         :move $FILE_CH_DIC de_CH.dic
-        @if not os.path.exists('de_CH.orig.aff'):
-            :copy de_CH.aff de_CH.orig.aff
-        @if not os.path.exists('de_CH.orig.dic'):
-            :copy de_CH.dic de_CH.orig.dic
-        @if os.path.exists('de_CH.diff'):
-            :sys patch <de_CH.diff
 
-
-# Generate diff files, so that others can get the OpenOffice files and apply
-# the diffs to get the Vim versions.
-diff:
-        :assertpkg diff
-        :sys {force} diff -a -C 1 de_DE.orig.aff de_DE.aff >de_DE.diff
-        :sys {force} diff -a -C 1 de_DE.orig.dic de_DE.dic >>de_DE.diff
-        :sys {force} diff -a -C 1 de_19.orig.aff de_19.aff >de_19.diff
-        :sys {force} diff -a -C 1 de_19.orig.dic de_19.dic >>de_19.diff
-        :sys {force} diff -a -C 1 de_AT.orig.aff de_AT.aff >de_AT.diff
-        :sys {force} diff -a -C 1 de_AT.orig.dic de_AT.dic >>de_AT.diff
-        :sys {force} diff -a -C 1 de_CH.orig.aff de_CH.aff >de_CH.diff
-        :sys {force} diff -a -C 1 de_CH.orig.dic de_CH.dic >>de_CH.diff
-        :copy de_DE.diff de_20.diff
-
-
-# Check for updated OpenOffice spell files.  When there are changes the
-# ".new.aff" and ".new.dic" files are left behind for manual inspection.
-
-check:
-        :assertpkg unzip patch
-        :fetch $ZIPFILE_19
-        :fetch $DICT_FILES
-        @try:
-            :mkdir tmp
-            :cd tmp
-            :sys $UNZIP ../$ZIPFILE_19
-            :copy ../*.aff .
-            :copy ../*.dic .
-            :move de_OLDSPELL.aff de_19.aff
-            :move de_OLDSPELL.dic de_19.dic
-            :move de_DE_frami.aff de_DE.aff
-            :move de_DE_frami.dic de_DE.dic
-            :move de_AT_frami.dic de_AT.dic
-            :move de_AT_frami.aff de_AT.aff
-            :move de_CH_frami.dic de_CH.dic
-            :move de_CH_frami.aff de_CH.aff
-            :copy de_DE.dic de_20.dic
-            :copy de_DE.aff de_20.aff
-
-            @import stat
-            @for nm in ['de_DE', 'de_19', 'de_20', 'de_AT', 'de_CH']:
-                @for ext in ['aff', 'dic']:
-                    :sys {force} diff ../$(nm).orig.$ext $(nm).$ext >d
-                    @if os.stat('d')[stat.ST_SIZE] > 0:
-                        :copy $(nm).$ext ../$(nm).new.$ext
-                :sys {force} diff ../README_$(nm).txt README_$(nm).txt >d
-        @finally:
-            :cd ..
-            :delete {r}{f}{q} tmp
 
 # vim: set sts=4 sw=4 :

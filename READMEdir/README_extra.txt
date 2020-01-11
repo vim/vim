@@ -1,4 +1,4 @@
-README_extra.txt for version 8.1 of Vim: Vi IMproved.
+README_extra.txt for version 8.2 of Vim: Vi IMproved.
 
 These extra files of Vim are for special purposes.  This README explains what
 the files are for.  For general information about Vim, see the "README.txt"
@@ -23,9 +23,6 @@ src/gui_mac.*
 src/os_mac.*		Files for the Mac port.
 
 src/os_mint.8		Files for the Atari Mint port.
-
-src/os_os2*		Files for the OS/2 port.
-src/tee/*		Extra program for OS/2.
 
 src/os_vms*		Files for the VMS port.
 

@@ -35,7 +35,7 @@ func Test_with_tilde()
   call assert_true(isdirectory('Xdir ~ dir'))
   cd Xdir\ ~\ dir
   call assert_true(getcwd() =~ 'Xdir \~ dir')
-  exe 'cd ' . fnameescape(dir)
+  call chdir(dir)
   call delete('Xdir ~ dir', 'd')
   call assert_false(isdirectory('Xdir ~ dir'))
 endfunc
@@ -46,4 +46,38 @@ func Test_expand_tilde_filename()
   call assert_notequal(expand('%:p'), expand('~/'))
   call assert_match('\~', expand('%:p')) 
   bwipe!
+endfunc
+
+func Test_expandcmd()
+  let $FOO = 'Test'
+  call assert_equal('e x/Test/y', expandcmd('e x/$FOO/y'))
+  unlet $FOO
+
+  new
+  edit Xfile1
+  call assert_equal('e Xfile1', expandcmd('e %'))
+  edit Xfile2
+  edit Xfile1
+  call assert_equal('e Xfile2', 'e #'->expandcmd())
+  edit Xfile2
+  edit Xfile3
+  edit Xfile4
+  let bnum = bufnr('Xfile2')
+  call assert_equal('e Xfile2', expandcmd('e #' . bnum))
+  call setline('.', 'Vim!@#')
+  call assert_equal('e Vim', expandcmd('e <cword>'))
+  call assert_equal('e Vim!@#', expandcmd('e <cWORD>'))
+  enew!
+  edit Xfile.java
+  call assert_equal('e Xfile.py', expandcmd('e %:r.py'))
+  call assert_equal('make abc.java', expandcmd('make abc.%:e'))
+  call assert_equal('make Xabc.java', expandcmd('make %:s?file?abc?'))
+  edit a1a2a3.rb
+  call assert_equal('make b1b2b3.rb a1a2a3 Xfile.o', expandcmd('make %:gs?a?b? %< #<.o'))
+
+  call assert_fails('call expandcmd("make <afile>")', 'E495:')
+  call assert_fails('call expandcmd("make <afile>")', 'E495:')
+  enew
+  call assert_fails('call expandcmd("make %")', 'E499:')
+  close
 endfunc

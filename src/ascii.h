@@ -13,7 +13,7 @@
 
 #ifndef EBCDIC
 
-/* IF_EB(ASCII_constant, EBCDIC_constant) */
+// IF_EB(ASCII_constant, EBCDIC_constant)
 #define IF_EB(a, b)	a
 
 #define CharOrd(x)	((x) < 'a' ? (x) - 'A' : (x) - 'a')
@@ -28,7 +28,7 @@
 #define NL		'\012'
 #define NL_STR		(char_u *)"\012"
 #define FF		'\014'
-#define CAR		'\015'	/* CR is used by Mac OS X */
+#define CAR		'\015'	// CR is used by Mac OS X
 #define ESC		'\033'
 #define ESC_STR		(char_u *)"\033"
 #define ESC_STR_nc	"\033"
@@ -37,14 +37,14 @@
 
 #define POUND		0xA3
 
-#define Ctrl_chr(x)	(TOUPPER_ASC(x) ^ 0x40) /* '?' -> DEL, '@' -> ^@, etc. */
+#define Ctrl_chr(x)	(TOUPPER_ASC(x) ^ 0x40) // '?' -> DEL, '@' -> ^@, etc.
 #define Meta(x)		((x) | 0x80)
 
 #define CTRL_F_STR	"\006"
 #define CTRL_H_STR	"\010"
 #define CTRL_V_STR	"\026"
 
-#define Ctrl_AT		0   /* @ */
+#define Ctrl_AT		0   // @
 #define Ctrl_A		1
 #define Ctrl_B		2
 #define Ctrl_C		3
@@ -71,17 +71,17 @@
 #define Ctrl_X		24
 #define Ctrl_Y		25
 #define Ctrl_Z		26
-			    /* CTRL- [ Left Square Bracket == ESC*/
-#define Ctrl_BSL	28  /* \ BackSLash */
-#define Ctrl_RSB	29  /* ] Right Square Bracket */
-#define Ctrl_HAT	30  /* ^ */
+			    // CTRL- [ Left Square Bracket == ESC
+#define Ctrl_BSL	28  // \ BackSLash
+#define Ctrl_RSB	29  // ] Right Square Bracket
+#define Ctrl_HAT	30  // ^
 #define Ctrl__		31
 
 #else
 
-/* EBCDIC */
+// EBCDIC
 
-/* IF_EB(ASCII_constant, EBCDIC_constant) */
+// IF_EB(ASCII_constant, EBCDIC_constant)
 #define IF_EB(a, b)	b
 
 /*
@@ -120,7 +120,7 @@
 #define CTRL_H_STR	"\026"
 #define CTRL_V_STR	"\062"
 
-#define Ctrl_AT		0x00   /* @ */
+#define Ctrl_AT		0x00   // @
 #define Ctrl_A		0x01
 #define Ctrl_B		0x02
 #define Ctrl_C		0x03
@@ -147,10 +147,10 @@
 #define Ctrl_X		0x18
 #define Ctrl_Y		0x19
 #define Ctrl_Z		0x3F
-			    /* CTRL- [ Left Square Bracket == ESC*/
-#define Ctrl_RSB	0x1D  /* ] Right Square Bracket */
-#define Ctrl_BSL	0x1C  /* \ BackSLash */
-#define Ctrl_HAT	0x1E  /* ^ */
+			    // CTRL- [ Left Square Bracket == ESC
+#define Ctrl_RSB	0x1D  // ] Right Square Bracket
+#define Ctrl_BSL	0x1C  // \ BackSLash
+#define Ctrl_HAT	0x1E  // ^
 #define Ctrl__		0x1F
 
 #define Ctrl_chr(x)	(CtrlTable[(x)])
@@ -162,14 +162,14 @@ extern char CtrlCharTable[];
 #define MetaChar(x)	((x < ' ') ? MetaCharTable[(x)] : 0)
 extern char MetaCharTable[];
 
-#endif /* defined EBCDIC */
+#endif // defined EBCDIC
 
-/* TODO: EBCDIC Code page dependent (here 1047) */
-#define CSI		0x9b	/* Control Sequence Introducer */
+// TODO: EBCDIC Code page dependent (here 1047)
+#define CSI		0x9b	// Control Sequence Introducer
 #define CSI_STR		"\233"
-#define DCS		0x90	/* Device Control String */
-#define OSC		0x9d	/* Operating System Command */
-#define STERM		0x9c	/* String Terminator */
+#define DCS		0x90	// Device Control String
+#define OSC		0x9d	// Operating System Command
+#define STERM		0x9c	// String Terminator
 
 /*
  * Character that separates dir names in a path.

@@ -629,8 +629,6 @@ MSGFMT
 INSTALL_TOOL_LANGS
 INSTALL_LANGS
 TAGPRG
-HANGULIN_OBJ
-HANGULIN_SRC
 GUI_X_LIBS
 GUITYPE
 GUI_LIB_LOC
@@ -656,6 +654,7 @@ X_PRE_LIBS
 X_CFLAGS
 XMKMF
 xmkmfpath
+TERM_TEST
 TERM_OBJ
 TERM_SRC
 CHANNEL_OBJ
@@ -819,7 +818,6 @@ enable_multibyte
 enable_rightleft
 enable_arabic
 enable_farsi
-enable_hangulinput
 enable_xim
 enable_fontset
 with_x
@@ -840,6 +838,7 @@ enable_desktop_database_update
 with_motif_lib
 with_tlib
 enable_largefile
+enable_canberra
 enable_acl
 enable_gpm
 enable_sysmouse
@@ -1500,7 +1499,6 @@ Optional Features:
   --disable-rightleft     Do not include Right-to-Left language support.
   --disable-arabic        Do not include Arabic language support.
   --disable-farsi         Deprecated.
-  --enable-hangulinput    Include Hangul input support.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
   --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon
@@ -1515,6 +1513,7 @@ Optional Features:
   --disable-icon-cache-update        update disabled
   --disable-desktop-database-update  update disabled
   --disable-largefile     omit support for large files
+  --disable-canberra      Do not use libcanberra.
   --disable-acl           No check for ACL support.
   --disable-gpm           Don't use gpm (Linux mouse daemon).
   --disable-sysmouse      Don't use sysmouse (mouse in *BSD console).
@@ -7623,7 +7622,7 @@ $as_echo "$rubyhdrdir" >&6; }
 	  fi
 	  $as_echo "#define DYNAMIC_RUBY 1" >>confdefs.h
 
-	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby_soname\\\" -DDYNAMIC_RUBY_VER=$rubyversion $RUBY_CFLAGS"
+	  RUBY_CFLAGS="-DDYNAMIC_RUBY_DLL=\\\"$libruby_soname\\\" $RUBY_CFLAGS"
 	  RUBY_LIBS=
 	fi
       else
@@ -7905,9 +7904,11 @@ fi
 if test "$enable_terminal" = "yes" -a "$enable_channel" = "yes"; then
   $as_echo "#define FEAT_TERMINAL 1" >>confdefs.h
 
-  TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/termscreen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
+  TERM_SRC="libvterm/src/encoding.c libvterm/src/keyboard.c libvterm/src/mouse.c libvterm/src/parser.c libvterm/src/pen.c libvterm/src/creen.c libvterm/src/state.c libvterm/src/unicode.c libvterm/src/vterm.c"
 
-  TERM_OBJ="objects/encoding.o objects/keyboard.o objects/mouse.o objects/parser.o objects/pen.o objects/termscreen.o objects/state.o objects/unicode.o objects/vterm.o"
+  TERM_OBJ="objects/vterm_encoding.o objects/vterm_keyboard.o objects/vterm_mouse.o objects/vterm_parser.o objects/vterm_pen.o objects/vterm_screen.o objects/vterm_state.o objects/vterm_unicode.o objects/vterm_vterm.o"
+
+  TERM_TEST="test_libvterm"
 
 fi
 
@@ -7986,18 +7987,6 @@ if test "${enable_farsi+set}" = set; then :
   enableval=$enable_farsi;
 fi
 
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-hangulinput argument" >&5
-$as_echo_n "checking --enable-hangulinput argument... " >&6; }
-# Check whether --enable-hangulinput was given.
-if test "${enable_hangulinput+set}" = set; then :
-  enableval=$enable_hangulinput;
-else
-  enable_hangulinput="no"
-fi
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_hangulinput" >&5
-$as_echo "$enable_hangulinput" >&6; }
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-xim argument" >&5
 $as_echo_n "checking --enable-xim argument... " >&6; }
@@ -9303,28 +9292,8 @@ fi
 
 
 
-
-if test -z "$SKIP_GTK2"; then
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-gtktest argument" >&5
-$as_echo_n "checking --disable-gtktest argument... " >&6; }
-  # Check whether --enable-gtktest was given.
-if test "${enable_gtktest+set}" = set; then :
-  enableval=$enable_gtktest;
-else
-  enable_gtktest=yes
-fi
-
-  if test "x$enable_gtktest" = "xyes" ; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: gtk test enabled" >&5
-$as_echo "gtk test enabled" >&6; }
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: gtk test disabled" >&5
-$as_echo "gtk test disabled" >&6; }
-  fi
-
-  if test "X$PKG_CONFIG" = "X"; then
-    if test -n "$ac_tool_prefix"; then
+if test "X$PKG_CONFIG" = "X"; then
+  if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
 set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
@@ -9422,6 +9391,26 @@ else
   PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
 fi
 
+fi
+
+
+if test -z "$SKIP_GTK2"; then
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking --disable-gtktest argument" >&5
+$as_echo_n "checking --disable-gtktest argument... " >&6; }
+  # Check whether --enable-gtktest was given.
+if test "${enable_gtktest+set}" = set; then :
+  enableval=$enable_gtktest;
+else
+  enable_gtktest=yes
+fi
+
+  if test "x$enable_gtktest" = "xyes" ; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: gtk test enabled" >&5
+$as_echo "gtk test enabled" >&6; }
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: gtk test disabled" >&5
+$as_echo "gtk test disabled" >&6; }
   fi
 
   if test "x$PKG_CONFIG" != "xno"; then
@@ -9675,107 +9664,6 @@ $as_echo "gtk test enabled" >&6; }
   else
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: gtk test disabled" >&5
 $as_echo "gtk test disabled" >&6; }
-  fi
-
-  if test "X$PKG_CONFIG" = "X"; then
-    if test -n "$ac_tool_prefix"; then
-  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
-set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_PKG_CONFIG+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-PKG_CONFIG=$ac_cv_path_PKG_CONFIG
-if test -n "$PKG_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
-$as_echo "$PKG_CONFIG" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-
-fi
-if test -z "$ac_cv_path_PKG_CONFIG"; then
-  ac_pt_PKG_CONFIG=$PKG_CONFIG
-  # Extract the first word of "pkg-config", so it can be a program name with args.
-set dummy pkg-config; ac_word=$2
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-$as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_path_ac_pt_PKG_CONFIG+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  case $ac_pt_PKG_CONFIG in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_ac_pt_PKG_CONFIG="$ac_pt_PKG_CONFIG" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_path_ac_pt_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
-    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac
-fi
-ac_pt_PKG_CONFIG=$ac_cv_path_ac_pt_PKG_CONFIG
-if test -n "$ac_pt_PKG_CONFIG"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKG_CONFIG" >&5
-$as_echo "$ac_pt_PKG_CONFIG" >&6; }
-else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-fi
-
-  if test "x$ac_pt_PKG_CONFIG" = x; then
-    PKG_CONFIG="no"
-  else
-    case $cross_compiling:$ac_tool_warned in
-yes:)
-{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
-$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
-ac_tool_warned=yes ;;
-esac
-    PKG_CONFIG=$ac_pt_PKG_CONFIG
-  fi
-else
-  PKG_CONFIG="$ac_cv_path_PKG_CONFIG"
-fi
-
   fi
 
   if test "x$PKG_CONFIG" != "xno"; then
@@ -10592,8 +10480,7 @@ rm -f conftest*
   fi
   CPPFLAGS=$cppflags_save
 
-    if test "$enable_xim" = "auto" -a "$enable_hangulinput" != "yes" \
-		-a "x$GUITYPE" != "xNONE" ; then
+    if test "$enable_xim" = "auto" -a "x$GUITYPE" != "xNONE" ; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: X GUI selected; xim has been enabled" >&5
 $as_echo "X GUI selected; xim has been enabled" >&6; }
     enable_xim="yes"
@@ -10769,21 +10656,6 @@ $as_echo "no - using X11" >&6; }
     *)          CYGWIN=no; { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; };;
 esac
-
-if test "$enable_hangulinput" = "yes"; then
-  if test "x$GUITYPE" = "xNONE"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no GUI selected; hangul input has been disabled" >&5
-$as_echo "no GUI selected; hangul input has been disabled" >&6; }
-    enable_hangulinput=no
-  else
-    $as_echo "#define FEAT_HANGULIN 1" >>confdefs.h
-
-    HANGULIN_SRC=hangulin.c
-
-    HANGULIN_OBJ=objects/hangulin.o
-
-  fi
-fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether toupper is broken" >&5
@@ -12668,8 +12540,8 @@ for ac_func in fchdir fchown fchmod fsync getcwd getpseudotty \
 	memset mkdtemp nanosleep opendir putenv qsort readlink select setenv \
 	getpgid setpgid setsid sigaltstack sigstack sigset sigsetjmp sigaction \
 	sigprocmask sigvec strcasecmp strerror strftime stricmp strncasecmp \
-	strnicmp strpbrk strtol tgetent towlower towupper iswupper \
-	usleep utime utimes mblen ftruncate unsetenv posix_openpt
+	strnicmp strpbrk strptime strtol tgetent towlower towupper iswupper \
+	tzset usleep utime utimes mblen ftruncate unsetenv posix_openpt
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -13023,6 +12895,73 @@ rm -rf conftest*
   fi
 
 
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-canberra argument" >&5
+$as_echo_n "checking --enable-canberra argument... " >&6; }
+# Check whether --enable-canberra was given.
+if test "${enable_canberra+set}" = set; then :
+  enableval=$enable_canberra;
+else
+  enable_canberra="maybe"
+fi
+
+
+if test "$enable_canberra" = "maybe"; then
+  if test "$features" = "big" -o "$features" = "huge"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: Defaulting to yes" >&5
+$as_echo "Defaulting to yes" >&6; }
+    enable_canberra="yes"
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: Defaulting to no" >&5
+$as_echo "Defaulting to no" >&6; }
+    enable_canberra="no"
+  fi
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_canberra" >&5
+$as_echo "$enable_canberra" >&6; }
+fi
+if test "$enable_canberra" = "yes"; then
+  if test "x$PKG_CONFIG" != "xno"; then
+    canberra_lib=`$PKG_CONFIG --libs libcanberra 2>/dev/null`
+    canberra_cflags=`$PKG_CONFIG --cflags libcanberra 2>/dev/null`
+  fi
+  if test "x$canberra_lib" = "x"; then
+    canberra_lib=-lcanberra
+    canberra_cflags=-D_REENTRANT
+  fi
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libcanberra" >&5
+$as_echo_n "checking for libcanberra... " >&6; }
+  ac_save_CFLAGS="$CFLAGS"
+  ac_save_LIBS="$LIBS"
+  CFLAGS="$CFLAGS $canberra_cflags"
+  LIBS="$LIBS $canberra_lib"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+  # include <canberra.h>
+
+int
+main ()
+{
+
+     ca_context *hello;
+     ca_context_create(&hello);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }; $as_echo "#define HAVE_CANBERRA 1" >>confdefs.h
+
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no; try installing libcanberra-dev" >&5
+$as_echo "no; try installing libcanberra-dev" >&6; }; CFLAGS="$ac_save_CFLAGS"; LIBS="$ac_save_LIBS"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
 fi
 
 
@@ -14367,11 +14306,11 @@ fi
 $as_echo_n "checking how to create tags... " >&6; }
 test -f tags && mv tags tags.save
 if (eval ctags --version /dev/null | grep Exuberant) < /dev/null 1>&5 2>&1; then
-  TAGPRG="ctags -I INIT+ --fields=+S"
+  TAGPRG="ctags -I INIT+,INIT2+,INIT3+,INIT4+,INIT5+ --fields=+S"
 elif (eval exctags --version /dev/null | grep Exuberant) < /dev/null 1>&5 2>&1; then
-  TAGPRG="exctags -I INIT+ --fields=+S"
+  TAGPRG="exctags -I INIT+,INIT2+,INIT3+,INIT4+,INIT5+ --fields=+S"
 elif (eval exuberant-ctags --version /dev/null | grep Exuberant) < /dev/null 1>&5 2>&1; then
-  TAGPRG="exuberant-ctags -I INIT+ --fields=+S"
+  TAGPRG="exuberant-ctags -I INIT+,INIT2+,INIT3+,INIT4+,INIT5+ --fields=+S"
 else
   TAGPRG="ctags"
   (eval etags	   /dev/null) < /dev/null 1>&5 2>&1 && TAGPRG="etags"
@@ -14549,9 +14488,14 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo_n "checking if msgfmt supports --desktop... " >&6; }
       MSGFMT_DESKTOP=
       if "$MSGFMT" --help | grep -e '--desktop' >/dev/null; then
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+	if "$MSGFMT" --version | grep '0.19.[3-7]$' >/dev/null; then
+	  	  	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: broken" >&5
+$as_echo "broken" >&6; }
+	else
+	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-	MSGFMT_DESKTOP="gvim.desktop vim.desktop"
+	  MSGFMT_DESKTOP="gvim.desktop vim.desktop"
+	fi
       else
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -14831,6 +14775,7 @@ $as_echo "no" >&6; }
 $as_echo_n "checking whether we need -D_FORTIFY_SOURCE=1... " >&6; }
   if test "$gccmajor" -gt "3"; then
     CFLAGS=`echo "$CFLAGS" | sed -e 's/ *-Wp,-D_FORTIFY_SOURCE=.//g' -e 's/ *-D_FORTIFY_SOURCE=.//g' -e 's/ *-U_FORTIFY_SOURCE//g' -e 's/$/ -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1/'`
+    CPPFLAGS=`echo "$CPPFLAGS" | sed -e 's/ *-Wp,-D_FORTIFY_SOURCE=.//g' -e 's/ *-D_FORTIFY_SOURCE=.//g' -e 's/ *-U_FORTIFY_SOURCE//g'`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
   else

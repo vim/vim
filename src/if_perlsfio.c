@@ -10,14 +10,14 @@
  * if_perlsfio.c: Special I/O functions for Perl interface.
  */
 
-#define _memory_h	/* avoid memset redeclaration */
-#define IN_PERL_FILE	/* don't include if_perl.pro from prot.h */
+#define _memory_h	// avoid memset redeclaration
+#define IN_PERL_FILE	// don't include if_perl.pro from prot.h
 
 #include "vim.h"
 
 #if defined(USE_SFIO) || defined(PROTO)
 
-#ifndef USE_SFIO	/* just generating prototypes */
+#ifndef USE_SFIO	// just generating prototypes
 # define Sfio_t int
 # define Sfdisc_t int
 #endif
@@ -26,10 +26,10 @@
 
     static int
 sfvimwrite(
-    Sfio_t	    *f,		/* stream involved */
-    char	    *buf,	/* buffer to read from */
-    int		    n,		/* number of bytes to write */
-    Sfdisc_t	    *disc)	/* discipline */
+    Sfio_t	    *f,		// stream involved
+    char	    *buf,	// buffer to read from
+    int		    n,		// number of bytes to write
+    Sfdisc_t	    *disc)	// discipline
 {
     char_u *str;
 
@@ -51,7 +51,7 @@ sfdcnewvim(void)
 {
     Sfdisc_t	*disc;
 
-    disc = (Sfdisc_t *)alloc(sizeof(Sfdisc_t));
+    disc = ALLOC_ONE(Sfdisc_t);
     if (disc == NULL)
 	return NULL;
 
@@ -63,4 +63,4 @@ sfdcnewvim(void)
     return disc;
 }
 
-#endif /* USE_SFIO */
+#endif // USE_SFIO

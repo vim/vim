@@ -1,4 +1,4 @@
-" Tests for the writefile() function.
+" Tests for the writefile() function and some :write commands.
 
 func Test_writefile()
   let f = tempname()
@@ -14,6 +14,11 @@ func Test_writefile()
   call assert_equal("morning", l[3])
   call assert_equal("vimmers", l[4])
   call delete(f)
+endfunc
+
+func Test_writefile_ignore_regexp_error()
+  write Xt[z-a]est.txt
+  call delete('Xt[z-a]est.txt')
 endfunc
 
 func Test_writefile_fails_gently()
@@ -38,7 +43,7 @@ func Test_writefile_fails_conversion()
   endif
   " Without a backup file the write won't happen if there is a conversion
   " error.
-  set nobackup nowritebackup
+  set nobackup nowritebackup backupdir=. backupskip=
   new
   let contents = ["line one", "line two"]
   call writefile(contents, 'Xfile')
@@ -49,7 +54,7 @@ func Test_writefile_fails_conversion()
 
   call delete('Xfile')
   bwipe!
-  set backup& writebackup&
+  set backup& writebackup& backupdir&vim backupskip&vim
 endfunc
 
 func Test_writefile_fails_conversion2()
@@ -58,7 +63,7 @@ func Test_writefile_fails_conversion2()
   endif
   " With a backup file the write happens even if there is a conversion error,
   " but then the backup file must remain
-  set nobackup writebackup
+  set nobackup writebackup backupdir=. backupskip=
   let contents = ["line one", "line two"]
   call writefile(contents, 'Xfile_conversion_err')
   edit Xfile_conversion_err
@@ -71,6 +76,7 @@ func Test_writefile_fails_conversion2()
   call delete('Xfile_conversion_err')
   call delete('Xfile_conversion_err~')
   bwipe!
+  set backup& writebackup& backupdir&vim backupskip&vim
 endfunc
 
 func SetFlag(timer)

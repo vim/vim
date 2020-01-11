@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.1.  Last change: 2019 May 24
+*quickref.txt*  For Vim version 8.2.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -47,6 +47,7 @@ N is used to indicate an optional count that can be given before the command.
 |g$|	N  g$		to last character in screen line (differs from "$"
 			   when lines wrap)
 |gm|	   gm		to middle of the screen line
+|gM|	   gM		to middle of the line
 |bar|	N  |		to column N (default: 1)
 |f|	N  f{char}	to the Nth occurrence of {char} to the right
 |F|	N  F{char}	to the Nth occurrence of {char} to the left
@@ -291,7 +292,7 @@ moving around:
 |i_CTRL-A|	CTRL-A		  insert previously inserted text
 |i_CTRL-@|	CTRL-@		  insert previously inserted text and stop
 				     Insert mode
-|i_CTRL-R|	CTRL-R {0-9a-z%#:.-="}  insert the contents of a register
+|i_CTRL-R|	CTRL-R {register} insert the contents of a register
 
 |i_CTRL-N|	CTRL-N		  insert next match of identifier before the
 				     cursor
@@ -626,7 +627,7 @@ Short explanation of each option:		*option-list*
 'bioskey'	  'biosk'   MS-DOS: use bios calls for input characters
 'bomb'			    prepend a Byte Order Mark to the file
 'breakat'	  'brk'     characters that may cause a line break
-'breakindent'	  'bri'     wrapped line repeats indent 
+'breakindent'	  'bri'     wrapped line repeats indent
 'breakindentopt'  'briopt'  settings for 'breakindent'
 'browsedir'	  'bsdir'   which directory to start browsing in
 'bufhidden'	  'bh'	    what to do when buffer is no longer in window
@@ -651,6 +652,8 @@ Short explanation of each option:		*option-list*
 'complete'	  'cpt'     specify how Insert mode completion works
 'completefunc'	  'cfu'     function to be used for Insert mode completion
 'completeopt'	  'cot'     options for Insert mode completion
+'completepopup'	  'cpp'     options for the Insert mode completion info popup
+'completeslash'	  'csl'	    like 'shellslash' for completion
 'concealcursor'	  'cocu'    whether concealable text is hidden in cursor line
 'conceallevel'	  'cole'    whether concealable text is shown or hidden
 'confirm'	  'cf'	    ask what to do about unsaved/read-only files
@@ -668,6 +671,7 @@ Short explanation of each option:		*option-list*
 'cursorbind'	  'crb'     move cursor in window as it moves in other windows
 'cursorcolumn'	  'cuc'	    highlight the screen column of the cursor
 'cursorline'	  'cul'	    highlight the screen line of the cursor
+'cursorlineopt'	  'culopt'  settings for 'cursorline'
 'debug'			    set to "msg" to see all error messages
 'define'	  'def'     pattern to be used to find a macro definition
 'delcombine'	  'deco'    delete combining characters on their own
@@ -829,6 +833,7 @@ Short explanation of each option:		*option-list*
 'perldll'		    name of the Perl dynamic library
 'preserveindent'  'pi'	    preserve the indent structure when reindenting
 'previewheight'   'pvh'     height of the preview window
+'previewpopup'    'pvp'     use popup window for preview
 'previewwindow'   'pvw'     identifies the preview window
 'printdevice'	  'pdev'    name of the printer to be used for :hardcopy
 'printencoding'   'penc'    encoding to be used for printing
@@ -864,6 +869,7 @@ Short explanation of each option:		*option-list*
 'runtimepath'	  'rtp'     list of directories used for runtime files
 'scroll'	  'scr'     lines to scroll with CTRL-U and CTRL-D
 'scrollbind'	  'scb'     scroll in window as other windows scroll
+'scrollfocus'	  'scf'     scroll wheel applies to window under pointer
 'scrolljump'	  'sj'	    minimum number of lines to scroll
 'scrolloff'	  'so'	    minimum nr. of lines above and below cursor
 'scrollopt'	  'sbo'     how 'scrollbind' should behave
@@ -885,7 +891,7 @@ Short explanation of each option:		*option-list*
 'shiftround'	  'sr'	    round indent to multiple of shiftwidth
 'shiftwidth'	  'sw'	    number of spaces to use for (auto)indent step
 'shortmess'	  'shm'     list of flags, reduce length of messages
-'shortname'	  'sn'	    non-MS-DOS: Filenames assumed to be 8.3 chars
+'shortname'	  'sn'	    Filenames assumed to be 8.3 chars
 'showbreak'	  'sbr'     string to use at the start of wrapped lines
 'showcmd'	  'sc'	    show (partial) command in status line
 'showfulltag'	  'sft'     show full tag pattern when completing tag
@@ -982,6 +988,7 @@ Short explanation of each option:		*option-list*
 'wildmode'	  'wim'     mode for 'wildchar' command-line expansion
 'wildoptions'	  'wop'     specifies how command line completion is done
 'winaltkeys'	  'wak'     when the windows system handles ALT keys
+'wincolor'	  'wcr'	    window-local highlighting
 'window'	  'wi'	    nr of lines to scroll for CTRL-F and CTRL-B
 'winheight'	  'wh'	    minimum number of lines for the current window
 'winfixheight'	  'wfh'     keep window height when opening/closing windows
@@ -1046,11 +1053,12 @@ Short explanation of each option:		*option-list*
 |g_CTRL-G|	   g CTRL-G	show cursor column, line, and character
 				   position
 |CTRL-C|	   CTRL-C	during searches: Interrupt the search
-|dos-CTRL-Break|   CTRL-Break	MS-DOS: during searches: Interrupt the search
+|dos-CTRL-Break|   CTRL-Break	MS-Windows: during searches: Interrupt the
+				   search
 |<Del>|		   <Del>	while entering a count: delete last character
 |:version|	:ve[rsion]	show version information
-|:mode|		:mode N		MS-DOS: set screen mode to N (number, C80,
-				   C4350, etc.)
+|:mode|		:mode N		MS-Windows: set screen mode to N (number, C80,
+				C4350, etc.)
 |:normal|	:norm[al][!] {commands}
 				execute Normal mode commands
 |Q|		   Q		switch to "Ex" mode
@@ -1072,8 +1080,7 @@ Short explanation of each option:		*option-list*
 				      three digits)
 |c_CTRL-K|	CTRL-K {char1} {char2}
 				   enter digraph (See |Q_di|)
-|c_CTRL-R|	CTRL-R {0-9a-z"%#:-=}
-				   insert the contents of a register
+|c_CTRL-R|	CTRL-R {register}  insert the contents of a register
 
 |c_<Left>|	<Left>/<Right>	   cursor left/right
 |c_<S-Left>|	<S-Left>/<S-Right> cursor one word left/right

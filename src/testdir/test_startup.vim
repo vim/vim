@@ -2,6 +2,7 @@
 
 source shared.vim
 source screendump.vim
+source check.vim
 
 " Check that loading startup.vim works.
 func Test_startup_script()
@@ -157,6 +158,7 @@ endfunc
 " horizontally or vertically.
 func Test_o_arg()
   let after =<< trim [CODE]
+    set cpo&vim
     call writefile([winnr("$"),
 		\ winheight(1), winheight(2), &lines,
 		\ winwidth(1), winwidth(2), &columns,
@@ -261,10 +263,9 @@ endfunc
 
 " Test the -V[N] argument to set the 'verbose' option to [N]
 func Test_V_arg()
-  if has('gui_running')
-    " Can't catch the output of gvim.
-    return
-  endif
+  " Can't catch the output of gvim.
+  CheckNotGui
+
   let out = system(GetVimCommand() . ' --clean -es -X -V0 -c "set verbose?" -cq')
   call assert_equal("  verbose=0\n", out)
 
@@ -278,6 +279,8 @@ endfunc
 
 " Test the '-q [errorfile]' argument.
 func Test_q_arg()
+  CheckFeature quickfix
+
   let source_file = has('win32') ? '..\memfile.c' : '../memfile.c'
   let after =<< trim [CODE]
     call writefile([&errorfile, string(getpos("."))], "Xtestout")
@@ -394,10 +397,9 @@ func Test_A_F_H_arg()
 endfunc
 
 func Test_invalid_args()
-  if !has('unix') || has('gui_running')
-    " can't get output of Vim.
-    return
-  endif
+  " must be able to get the output of Vim.
+  CheckUnix
+  CheckNotGui
 
   for opt in ['-Y', '--does-not-exist']
     let out = split(system(GetVimCommand() .. ' ' .. opt), "\n")
@@ -458,14 +460,16 @@ func Test_invalid_args()
   call assert_equal('Too many edit arguments: "xxx"', out[1])
   call assert_equal('More info with: "vim -h"',       out[2])
 
-  " Detect invalid repeated arguments '-t foo -t foo", '-q foo -q foo'.
-  for opt in ['-t', '-q']
-    let out = split(system(GetVimCommand() .. repeat(' ' .. opt .. ' foo', 2)), "\n")
-    call assert_equal(1, v:shell_error)
-    call assert_match('^VIM - Vi IMproved .* (.*)$',              out[0])
-    call assert_equal('Too many edit arguments: "' .. opt .. '"', out[1])
-    call assert_equal('More info with: "vim -h"',                 out[2])
-  endfor
+  if has('quickfix')
+    " Detect invalid repeated arguments '-t foo -t foo", '-q foo -q foo'.
+    for opt in ['-t', '-q']
+      let out = split(system(GetVimCommand() .. repeat(' ' .. opt .. ' foo', 2)), "\n")
+      call assert_equal(1, v:shell_error)
+      call assert_match('^VIM - Vi IMproved .* (.*)$',              out[0])
+      call assert_equal('Too many edit arguments: "' .. opt .. '"', out[1])
+      call assert_equal('More info with: "vim -h"',                 out[2])
+    endfor
+  endif
 
   for opt in [' -cq', ' --cmd q', ' +', ' -S foo']
     let out = split(system(GetVimCommand() .. repeat(opt, 11)), "\n")
@@ -574,11 +578,17 @@ func Test_set_shell()
     quit!
   [CODE]
 
-  let $SHELL = '/bin/with space/sh'
+  if has('win32')
+    let $SHELL = 'C:\with space\cmd.exe'
+    let expected = '"C:\with space\cmd.exe"'
+  else
+    let $SHELL = '/bin/with space/sh'
+    let expected = '/bin/with\ space/sh'
+  endif
+
   if RunVimPiped([], after, '', '')
     let lines = readfile('Xtestout')
-    " MS-Windows adds a space after the word
-    call assert_equal('/bin/with\ space/sh', lines[0])
+    call assert_equal(expected, lines[0])
   endif
   call delete('Xtestout')
 endfunc
@@ -598,10 +608,9 @@ func Test_progpath()
 endfunc
 
 func Test_silent_ex_mode()
-  if !has('unix') || has('gui_running')
-    " can't get output of Vim.
-    return
-  endif
+  " must be able to get the output of Vim.
+  CheckUnix
+  CheckNotGui
 
   " This caused an ml_get error.
   let out = system(GetVimCommand() . '-u NONE -es -c''set verbose=1|h|exe "%norm\<c-y>\<c-d>"'' -c cq')
@@ -609,10 +618,9 @@ func Test_silent_ex_mode()
 endfunc
 
 func Test_default_term()
-  if !has('unix') || has('gui_running')
-    " can't get output of Vim.
-    return
-  endif
+  " must be able to get the output of Vim.
+  CheckUnix
+  CheckNotGui
 
   let save_term = $TERM
   let $TERM = 'unknownxxx'
@@ -648,10 +656,9 @@ func Test_zzz_startinsert()
 endfunc
 
 func Test_issue_3969()
-  if has('gui_running')
-    " Can't catch the output of gvim.
-    return
-  endif
+  " Can't catch the output of gvim.
+  CheckNotGui
+
   " Check that message is not truncated.
   let out = system(GetVimCommand() . ' -es -X -V1 -c "echon ''hello''" -cq')
   call assert_equal('hello', out)
@@ -659,7 +666,7 @@ endfunc
 
 func Test_start_with_tabs()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
 
   let buf = RunVimInTerminal('-p a b c', {})
@@ -667,4 +674,16 @@ func Test_start_with_tabs()
 
   " clean up
   call StopVimInTerminal(buf)
+endfunc
+
+func Test_v_argv()
+  " Can't catch the output of gvim.
+  CheckNotGui
+
+  let out = system(GetVimCommand() . ' -es -V1 -X arg1 --cmd "echo v:argv" --cmd q')
+  let list = out->split("', '")
+  call assert_match('vim', list[0])
+  let idx = index(list, 'arg1')
+  call assert_true(idx > 2)
+  call assert_equal(['arg1', '--cmd', 'echo v:argv', '--cmd', 'q'']'], list[idx:])
 endfunc

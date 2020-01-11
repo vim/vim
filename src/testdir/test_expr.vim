@@ -53,7 +53,7 @@ endfunc
 
 func Test_strgetchar()
   call assert_equal(char2nr('a'), strgetchar('axb', 0))
-  call assert_equal(char2nr('x'), strgetchar('axb', 1))
+  call assert_equal(char2nr('x'), 'axb'->strgetchar(1))
   call assert_equal(char2nr('b'), strgetchar('axb', 2))
 
   call assert_equal(-1, strgetchar('axb', -1))
@@ -63,7 +63,7 @@ endfunc
 
 func Test_strcharpart()
   call assert_equal('a', strcharpart('axb', 0, 1))
-  call assert_equal('x', strcharpart('axb', 1, 1))
+  call assert_equal('x', 'axb'->strcharpart(1, 1))
   call assert_equal('b', strcharpart('axb', 2, 1))
   call assert_equal('xb', strcharpart('axb', 1))
 
@@ -248,6 +248,9 @@ function Test_printf_misc()
   call assert_equal('abc ', printf('%-4s', 'abc'))
   call assert_equal('abc ', printf('%-4S', 'abc'))
 
+  call assert_equal('🐍', printf('%.2S', '🐍🐍'))
+  call assert_equal('', printf('%.1S', '🐍🐍'))
+
   call assert_equal('1%', printf('%d%%', 1))
 endfunc
 
@@ -403,7 +406,7 @@ function Test_printf_spec_s()
   call assert_equal(string(value), printf('%s', value))
 
   " funcref
-  call assert_equal('printf', printf('%s', function('printf')))
+  call assert_equal('printf', printf('%s', 'printf'->function()))
 
   " partial
   call assert_equal(string(function('printf', ['%s'])), printf('%s', function('printf', ['%s'])))
@@ -490,9 +493,11 @@ func Test_funcref()
   endfunc
   call assert_equal(2, OneByName())
   call assert_equal(1, OneByRef())
-  let OneByRef = funcref('One')
+  let OneByRef = 'One'->funcref()
   call assert_equal(2, OneByRef())
   call assert_fails('echo funcref("{")', 'E475:')
+  let OneByRef = funcref("One", repeat(["foo"], 20))
+  call assert_fails('let OneByRef = funcref("One", repeat(["foo"], 21))', 'E118:')
 endfunc
 
 func Test_setmatches()
@@ -504,7 +509,7 @@ func Test_setmatches()
     let set[0]['conceal'] = 5
     let exp[0]['conceal'] = '5'
   endif
-  call setmatches(set)
+  eval set->setmatches()
   call assert_equal(exp, getmatches())
 endfunc
 

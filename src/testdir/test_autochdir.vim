@@ -1,8 +1,7 @@
 " Test 'autochdir' behavior
 
-if !exists("+autochdir")
-  finish
-endif
+source check.vim
+CheckOption autochdir
 
 func Test_set_filename()
   let cwd = getcwd()
@@ -22,6 +21,6 @@ func Test_set_filename()
   bwipe!
   au! DirChanged
   set noacd
-  exe 'cd ' . cwd
+  call chdir(cwd)
   call delete('samples/Xtest')
 endfunc

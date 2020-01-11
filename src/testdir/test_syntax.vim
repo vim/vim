@@ -1,8 +1,7 @@
 " Test for syntax and syntax iskeyword option
 
-if !has("syntax")
-  finish
-endif
+source check.vim
+CheckFeature syntax
 
 source view_util.vim
 source screendump.vim
@@ -179,6 +178,11 @@ func Test_syntax_completion()
 
   call feedkeys(":syn match \<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_match('^"syn match Boolean Character ', @:)
+endfunc
+
+func Test_echohl_completion()
+  call feedkeys(":echohl no\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"echohl NonText Normal none', @:)
 endfunc
 
 func Test_syntax_arg_skipped()
@@ -394,7 +398,7 @@ endfunc
 
 func Test_ownsyntax_completion()
   call feedkeys(":ownsyntax java\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"ownsyntax java javacc javascript', @:)
+  call assert_equal('"ownsyntax java javacc javascript javascriptreact', @:)
 endfunc
 
 func Test_highlight_invalid_arg()
@@ -414,9 +418,8 @@ func Test_highlight_invalid_arg()
 endfunc
 
 func Test_bg_detection()
-  if has('gui_running')
-    return
-  endif
+  CheckNotGui
+
   " auto-detection of &bg, make sure sure it isn't set anywhere before
   " this test
   hi Normal ctermbg=0
@@ -518,8 +521,8 @@ func Test_synstack_synIDtrans()
   call assert_equal([], synstack(1, 1))
 
   norm f/
-  call assert_equal(['cComment', 'cCommentStart'], map(synstack(line("."), col(".")), 'synIDattr(v:val, "name")'))
-  call assert_equal(['Comment', 'Comment'],	   map(synstack(line("."), col(".")), 'synIDattr(synIDtrans(v:val), "name")'))
+  eval synstack(line("."), col("."))->map('synIDattr(v:val, "name")')->assert_equal(['cComment', 'cCommentStart'])
+  eval synstack(line("."), col("."))->map('synIDattr(synIDtrans(v:val), "name")')->assert_equal(['Comment', 'Comment'])
 
   norm fA
   call assert_equal(['cComment'], map(synstack(line("."), col(".")), 'synIDattr(v:val, "name")'))
@@ -536,13 +539,11 @@ endfunc
 " Check highlighting for a small piece of C code with a screen dump.
 func Test_syntax_c()
   if !CanRunVimInTerminal()
-    return
+    throw 'Skipped: cannot make screendumps'
   endif
   call writefile([
 	\ '/* comment line at the top */',
-	\ '  int',
-	\ 'main(int argc, char **argv)// another comment',
-	\ '{',
+	\ 'int main(int argc, char **argv) { // another comment',
 	\ '#if 0',
 	\ '   int   not_used;',
 	\ '#else',
@@ -551,12 +552,14 @@ func Test_syntax_c()
 	\ '   printf("Just an example piece of C code\n");',
 	\ '   return 0x0ff;',
 	\ '}',
+	\ "\t\t ",
 	\ '   static void',
 	\ 'myFunction(const double count, struct nothing, long there) {',
-	\ '  // 123: nothing to read here',
-	\ '  for (int i = 0; i < count; ++i) {',
-	\ '    break;',
-	\ '  }',
+	\ "\t// 123: nothing to endif here",
+	\ "\tfor (int i = 0; i < count; ++i) {",
+	\ "\t   break;",
+	\ "\t}",
+	\ "\tNote: asdf",
 	\ '}',
 	\ ], 'Xtest.c')
  
@@ -565,7 +568,14 @@ func Test_syntax_c()
   let $COLORFGBG = '15;0'
 
   let buf = RunVimInTerminal('Xtest.c', {})
+  call term_sendkeys(buf, ":syn keyword Search Note\r")
+  call term_sendkeys(buf, ":syn match Error /^\\s\\+$/\r")
+  call term_sendkeys(buf, ":set hlsearch\r")
+  call term_sendkeys(buf, "/endif\r")
+  call term_sendkeys(buf, "vjfC")
   call VerifyScreenDump(buf, 'Test_syntax_c_01', {})
+
+  call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
 
   let $COLORFGBG = ''
@@ -582,4 +592,42 @@ func Test_syn_wrong_z_one()
   redraw!
   call test_override("ALL", 0)
   bwipe!
+endfunc
+
+func Test_syntax_after_bufdo()
+  call writefile(['/* aaa comment */'], 'Xaaa.c')
+  call writefile(['/* bbb comment */'], 'Xbbb.c')
+  call writefile(['/* ccc comment */'], 'Xccc.c')
+  call writefile(['/* ddd comment */'], 'Xddd.c')
+
+  let bnr = bufnr('%')
+  new Xaaa.c
+  badd Xbbb.c
+  badd Xccc.c
+  badd Xddd.c
+  exe "bwipe " . bnr
+  let l = []
+  bufdo call add(l, bufnr('%'))
+  call assert_equal(4, len(l))
+
+  syntax on
+
+  " This used to only enable syntax HL in the last buffer.
+  bufdo tab split
+  tabrewind
+  for tab in range(1, 4)
+    norm fm
+    call assert_equal(['cComment'], map(synstack(line("."), col(".")), 'synIDattr(v:val, "name")'))
+    tabnext
+  endfor
+
+  bwipe! Xaaa.c
+  bwipe! Xbbb.c
+  bwipe! Xccc.c
+  bwipe! Xddd.c
+  syntax off
+  call delete('Xaaa.c')
+  call delete('Xbbb.c')
+  call delete('Xccc.c')
+  call delete('Xddd.c')
 endfunc

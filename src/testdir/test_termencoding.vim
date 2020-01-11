@@ -3,12 +3,12 @@
 
 " This only works with "iconv".
 if !has('iconv')
-  finish
+  throw 'Skipped: iconv feature missing'
 endif
 
 source screendump.vim
 if !CanRunVimInTerminal()
-  finish
+  throw 'Skipped: cannot make screendumps'
 endif
 
 " This Vim is running with 'encoding' "utf-8", the Vim in the terminal is

@@ -9,6 +9,27 @@ func Test_join_with_count()
   call setline(1, ['one', 'two', 'three', 'four'])
   normal 10J
   call assert_equal('one two three four', getline(1))
+
+  call setline(1, ['one', '', 'two'])
+  normal J
+  call assert_equal('one', getline(1))
+
+  call setline(1, ['one', ' ', 'two'])
+  normal J
+  call assert_equal('one', getline(1))
+
+  call setline(1, ['one', '', '', 'two'])
+  normal JJ
+  call assert_equal('one', getline(1))
+
+  call setline(1, ['one', ' ', ' ', 'two'])
+  normal JJ
+  call assert_equal('one', getline(1))
+
+  call setline(1, ['one', '', '', 'two'])
+  normal 2J
+  call assert_equal('one', getline(1))
+
   quit!
 endfunc
 
@@ -100,22 +121,22 @@ ert
 
   " Expected output
   let expected =<< trim [DATA]
-  asdfasdf. asdf
-  asdfasdf. asdf
-  asdfasdf.  asdf
-  asdfasdf.	asdf
-  asdfasdf. 	asdf
-  asdfasdf.	 asdf
-  asdfasdf.		asdf
-  asdfasdf asdf
-  asdfasdf asdf
-  asdfasdf  asdf
-  asdfasdf	asdf
-  asdfasdf	 asdf
-  asdfasdf 	asdf
-  asdfasdf		asdf
-  zx cvn. as dfg? hjkl iop! ert ernop
-  zx cvn. as dfg? hjkl iop! ert ernop
+    asdfasdf. asdf
+    asdfasdf. asdf
+    asdfasdf.  asdf
+    asdfasdf.	asdf
+    asdfasdf. 	asdf
+    asdfasdf.	 asdf
+    asdfasdf.		asdf
+    asdfasdf asdf
+    asdfasdf asdf
+    asdfasdf  asdf
+    asdfasdf	asdf
+    asdfasdf	 asdf
+    asdfasdf 	asdf
+    asdfasdf		asdf
+    zx cvn. as dfg? hjkl iop! ert ernop
+    zx cvn. as dfg? hjkl iop! ert ernop
   [DATA]
 
   call assert_equal(expected, getline(1, '$'))
@@ -142,22 +163,22 @@ ert
 
   " Expected output
   let expected =<< trim [DATA]
-  asdfasdf.  asdf
-  asdfasdf.  asdf
-  asdfasdf.  asdf
-  asdfasdf.	asdf
-  asdfasdf. 	asdf
-  asdfasdf.	 asdf
-  asdfasdf.		asdf
-  asdfasdf asdf
-  asdfasdf asdf
-  asdfasdf  asdf
-  asdfasdf	asdf
-  asdfasdf	 asdf
-  asdfasdf 	asdf
-  asdfasdf		asdf
-  zx cvn.  as dfg?  hjkl iop!  ert  enop
-  zx cvn.  as dfg? hjkl iop! ert ernop
+    asdfasdf.  asdf
+    asdfasdf.  asdf
+    asdfasdf.  asdf
+    asdfasdf.	asdf
+    asdfasdf. 	asdf
+    asdfasdf.	 asdf
+    asdfasdf.		asdf
+    asdfasdf asdf
+    asdfasdf asdf
+    asdfasdf  asdf
+    asdfasdf	asdf
+    asdfasdf	 asdf
+    asdfasdf 	asdf
+    asdfasdf		asdf
+    zx cvn.  as dfg?  hjkl iop!  ert  enop
+    zx cvn.  as dfg? hjkl iop! ert ernop
 
   [DATA]
 
@@ -176,21 +197,21 @@ ert
 
   " Expected output
   let expected =<< trim [DATA]
-  asdfasdf.  asdf
-  asdfasdf.  asdf
-  asdfasdf.  asdf
-  asdfasdf.	asdf
-  asdfasdf. 	asdf
-  asdfasdf.	 asdf
-  asdfasdf.		asdf
-  asdfasdf asdf
-  asdfasdf asdf
-  asdfasdf  asdf
-  asdfasdf	asdf
-  asdfasdf	 asdf
-  asdfasdf 	asdf
-  asdfasdf		asdf
-  zx cvn.  as dfg? hjkl iop! ert  a
+    asdfasdf.  asdf
+    asdfasdf.  asdf
+    asdfasdf.  asdf
+    asdfasdf.	asdf
+    asdfasdf. 	asdf
+    asdfasdf.	 asdf
+    asdfasdf.		asdf
+    asdfasdf asdf
+    asdfasdf asdf
+    asdfasdf  asdf
+    asdfasdf	asdf
+    asdfasdf	 asdf
+    asdfasdf 	asdf
+    asdfasdf		asdf
+    zx cvn.  as dfg? hjkl iop! ert  a
   [DATA]
 
   call assert_equal(expected, getline(1, '$'))
@@ -255,18 +276,18 @@ action();
 
   " Expected output
   let expected =<< trim [CODE]
-{
-/* Make sure the previous comment leader is not removed. */
-/* Make sure the previous comment leader is not removed. */
-// Should the next comment leader be left alone? Yes.
-// Should the next comment leader be left alone? Yes.
-/* Here the comment leader should be left intact. */ // And so should this one.
-/* Here the comment leader should be left intact. */ // And so should this one.
-if (condition) // Remove the next comment leader! OK, I will.
-action();
-if (condition) // Remove the next comment leader! OK, I will.
-action();
-}
+    {
+    /* Make sure the previous comment leader is not removed. */
+    /* Make sure the previous comment leader is not removed. */
+    // Should the next comment leader be left alone? Yes.
+    // Should the next comment leader be left alone? Yes.
+    /* Here the comment leader should be left intact. */ // And so should this one.
+    /* Here the comment leader should be left intact. */ // And so should this one.
+    if (condition) // Remove the next comment leader! OK, I will.
+    action();
+    if (condition) // Remove the next comment leader! OK, I will.
+    action();
+    }
   [CODE]
 
   call assert_equal(expected, getline(1, '$'))
@@ -378,31 +399,42 @@ int i = 7 /* foo *// 3
   exe "normal oSome code!\<CR>// Make sure backspacing does not remove this comment leader.\<Esc>0i\<C-H>\<Esc>"
 
   " Expected output
-  let expected =<< [CODE]
-{
-/* Make sure the previous comment leader is not removed.  */
-/* Make sure the previous comment leader is not removed.  */
-/* List: item1 foo bar baz foo bar baz item2 foo bar baz foo bar baz */
-/* List: item1 foo bar baz foo bar baz item2 foo bar baz foo bar baz */
-// Should the next comment leader be left alone?  Yes.
-// Should the next comment leader be left alone?  Yes.
-/* Here the comment leader should be left intact. */ // And so should this one.
-/* Here the comment leader should be left intact. */ // And so should this one.
-if (condition) // Remove the next comment leader!  OK, I will.
-    action();
-if (condition) // Remove the next comment leader!  OK, I will.
-    action();
-int i = 7 /* foo *// 3 // comment
- ;
-int i = 7 /* foo *// 3 // comment
- ;
-># Note that the last character of the ending comment leader (left angle bracket) is a comment leader itself. Make sure that this comment leader is not removed from the next line #< < On this line a new comment is opened which spans 2 lines. This comment should retain its comment leader.
-># Note that the last character of the ending comment leader (left angle bracket) is a comment leader itself. Make sure that this comment leader is not removed from the next line #< < On this line a new comment is opened which spans 2 lines. This comment should retain its comment leader.
-
-Some code!// Make sure backspacing does not remove this comment leader.
-}
-[CODE]
+  let expected =<< trim [CODE]
+    {
+    /* Make sure the previous comment leader is not removed.  */
+    /* Make sure the previous comment leader is not removed.  */
+    /* List: item1 foo bar baz foo bar baz item2 foo bar baz foo bar baz */
+    /* List: item1 foo bar baz foo bar baz item2 foo bar baz foo bar baz */
+    // Should the next comment leader be left alone?  Yes.
+    // Should the next comment leader be left alone?  Yes.
+    /* Here the comment leader should be left intact. */ // And so should this one.
+    /* Here the comment leader should be left intact. */ // And so should this one.
+    if (condition) // Remove the next comment leader!  OK, I will.
+        action();
+    if (condition) // Remove the next comment leader!  OK, I will.
+        action();
+    int i = 7 /* foo *// 3 // comment
+     ;
+    int i = 7 /* foo *// 3 // comment
+     ;
+    ># Note that the last character of the ending comment leader (left angle bracket) is a comment leader itself. Make sure that this comment leader is not removed from the next line #< < On this line a new comment is opened which spans 2 lines. This comment should retain its comment leader.
+    ># Note that the last character of the ending comment leader (left angle bracket) is a comment leader itself. Make sure that this comment leader is not removed from the next line #< < On this line a new comment is opened which spans 2 lines. This comment should retain its comment leader.
+    
+    Some code!// Make sure backspacing does not remove this comment leader.
+    }
+  [CODE]
 
   call assert_equal(expected, getline(1, '$'))
   close!
+endfunc
+
+func Test_join_lines()
+  new
+  call setline(1, ['a', 'b', '', 'c', 'd'])
+  %join
+  call assert_equal('a b c d', getline(1))
+  call setline(1, ['a', 'b', '', 'c', 'd'])
+  normal 5J
+  call assert_equal('a b c d', getline(1))
+  bwipe!
 endfunc

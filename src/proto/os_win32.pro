@@ -71,11 +71,13 @@ void used_file_arg(char *name, int literal, int full_path, int diff_mode);
 void set_alist_count(void);
 void fix_arg_enc(void);
 int mch_setenv(char *var, char *value, int x);
+void get_default_console_color(int *cterm_fg, int *cterm_bg, guicolor_T *gui_fg, guicolor_T *gui_bg);
 void control_console_color_rgb(void);
 int use_vtp(void);
 int is_term_win32(void);
 int has_vtp_working(void);
 int has_conpty_working(void);
+int get_conpty_type(void);
 int is_conpty_stable(void);
 void resize_console_buf(void);
 /* vim: set ft=c : */

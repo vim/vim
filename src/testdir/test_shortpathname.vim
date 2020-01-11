@@ -1,9 +1,11 @@
 " Test for shortpathname ':8' extension.
 " Only for use on Win32 systems!
 
-if !has('win32')
-  finish
-endif
+set encoding=utf-8
+scriptencoding utf-8
+
+source check.vim
+CheckMSWindows
 
 func TestIt(file, bits, expected)
   let res = fnamemodify(a:file, a:bits)
@@ -49,7 +51,7 @@ func Test_ColonEight()
   call TestIt(file2, ':p:8', resfile2)
   call TestIt(nofile2, ':p:8', resnofile2)
   call TestIt(nofile2, ':p:8:h', fnamemodify(resnofile2, ':h'))
-  exe 'cd ' . dir1
+  call chdir(dir1)
   call TestIt(file1, ':.:8', strpart(resfile1, strlen(resdir1)+1))
   call TestIt(nofile1, ':.:8', strpart(resnofile1, strlen(resdir1)+1))
   call TestIt(file2, ':.:8', strpart(resfile2, strlen(resdir1)+1))
@@ -66,5 +68,22 @@ func Test_ColonEight()
   call delete(dir2, 'd')
   call delete(dir1, 'd')
 
-  exe "cd " . save_dir
+  call chdir(save_dir)
+endfunc
+
+func Test_ColonEight_MultiByte()
+  let dir = 'Xtest'
+
+  let file = dir . '/日本語のファイル.txt'
+
+  call mkdir(dir)
+  call writefile([], file)
+
+  let sfile = fnamemodify(file, ':8')
+
+  call assert_notequal(file, sfile)
+  call assert_match('\~', sfile)
+
+  call delete(file)
+  call delete(dir, 'd')
 endfunc

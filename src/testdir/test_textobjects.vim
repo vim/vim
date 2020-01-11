@@ -1,8 +1,7 @@
 " Test for textobjects
 
-if !has('textobjects')
-  finish
-endif
+source check.vim
+CheckFeature textobjects
 
 func CpoM(line, useM, expected)
   new
@@ -46,8 +45,18 @@ func Test_quote_selection_selection_exclusive()
   new
   call setline(1, "a 'bcde' f")
   set selection=exclusive
+
   exe "norm! fdvhi'y"
   call assert_equal('bcde', @")
+
+  let @"='dummy'
+  exe "norm! $gevi'y"
+  call assert_equal('bcde', @")
+
+  let @"='dummy'
+  exe "norm! 0fbhvi'y"
+  call assert_equal('bcde', @")
+
   set selection&vim
   bw!
 endfunc

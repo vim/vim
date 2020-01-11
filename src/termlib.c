@@ -5,10 +5,10 @@
  * inclusion of this notice.
  */
 
-/* Modified by Bram Moolenaar for use with VIM - Vi Improved. */
-/* A few bugs removed by Olaf 'Rhialto' Seibert. */
+// Modified by Bram Moolenaar for use with VIM - Vi Improved.
+// A few bugs removed by Olaf 'Rhialto' Seibert.
 
-/* TERMLIB: Terminal independent database. */
+// TERMLIB: Terminal independent database.
 
 #include "vim.h"
 #include "termlib.pro"
@@ -27,10 +27,10 @@ static char *_find(char *, char *);
  * Global variables for termlib
  */
 
-char	*tent;		      /* Pointer to terminal entry, set by tgetent */
-char	PC = 0;		      /* Pad character, default NULL */
-char	*UP = 0, *BC = 0;     /* Pointers to UP and BC strings from database */
-short	ospeed;		      /* Baud rate (1-16, 1=300, 16=19200), as in stty */
+char	*tent;		      // Pointer to terminal entry, set by tgetent
+char	PC = 0;		      // Pad character, default NULL
+char	*UP = 0, *BC = 0;     // Pointers to UP and BC strings from database
+short	ospeed;		      // Baud rate (1-16, 1=300, 16=19200), as in stty
 
 /*
  * Module: tgetent
@@ -67,12 +67,12 @@ short	ospeed;		      /* Baud rate (1-16, 1=300, 16=19200), as in stty */
 
     int
 tgetent(
-    char    *tbuf,		/* Buffer to hold termcap entry, TBUFSZ bytes max */
-    char    *term)		/* Name of terminal */
+    char    *tbuf,		// Buffer to hold termcap entry, TBUFSZ bytes max
+    char    *term)		// Name of terminal
 {
-    char    tcbuf[32];		/* Temp buffer to handle */
-    char    *tcptr = tcbuf;	/* extended entries */
-    char    *tcap = TERMCAPFILE; /* Default termcap file */
+    char    tcbuf[32];		// Temp buffer to handle
+    char    *tcptr = tcbuf;	// extended entries
+    char    *tcap = TERMCAPFILE; // Default termcap file
     char    *tmp;
     FILE    *termcap;
     int	    retval = 0;
@@ -80,28 +80,28 @@ tgetent(
 
     if ((tmp = (char *)mch_getenv((char_u *)"TERMCAP")) != NULL)
     {
-	if (*tmp == '/')		/* TERMCAP = name of termcap file */
+	if (*tmp == '/')		// TERMCAP = name of termcap file
 	{
 	    tcap = tmp ;
 #if defined(AMIGA)
-	    /* Convert /usr/share/lib/termcap to usr:share/lib/termcap */
+	    // Convert /usr/share/lib/termcap to usr:share/lib/termcap
 	    tcap++;
 	    tmp = strchr(tcap, '/');
 	    if (tmp)
 		*tmp = ':';
 #endif
 	}
-	else				/* TERMCAP = termcap entry itself */
+	else				// TERMCAP = termcap entry itself
 	{
 	    int tlen = strlen(term);
 
-	    while (*tmp && *tmp != ':')		/* Check if TERM matches */
+	    while (*tmp && *tmp != ':')		// Check if TERM matches
 	    {
 		char *nexttmp;
 
 		while (*tmp == '|')
 		    tmp++;
-		nexttmp  = _find(tmp, ":|");	/* Rhialto */
+		nexttmp  = _find(tmp, ":|");	// Rhialto
 		if (tmp+tlen == nexttmp && _match(tmp, term) == tlen)
 		{
 		    strcpy(tbuf, tmp);
@@ -122,8 +122,8 @@ tgetent(
     len = 0;
     while (getent(tbuf + len, term, termcap, TBUFSZ - len))
     {
-	tcptr = tcbuf;				/* Rhialto */
-	if ((term = tgetstr("tc", &tcptr)))	/* extended entry */
+	tcptr = tcbuf;				// Rhialto
+	if ((term = tgetstr("tc", &tcptr)))	// extended entry
 	{
 	    rewind(termcap);
 	    len = strlen(tbuf);
@@ -131,7 +131,7 @@ tgetent(
 	else
 	{
 	    retval = 1;
-	    tent = tbuf;	/* reset it back to the beginning */
+	    tent = tbuf;	// reset it back to the beginning
 	    break;
 	}
     }
@@ -145,23 +145,23 @@ getent(char *tbuf, char *term, FILE *termcap, int buflen)
     char    *tptr;
     int	    tlen = strlen(term);
 
-    while (nextent(tbuf, termcap, buflen))	/* For each possible entry */
+    while (nextent(tbuf, termcap, buflen))	// For each possible entry
     {
 	tptr = tbuf;
-	while (*tptr && *tptr != ':')		/* : terminates name field */
+	while (*tptr && *tptr != ':')		// : terminates name field
 	{
 	    char    *nexttptr;
 
-	    while (*tptr == '|')		/* | separates names */
+	    while (*tptr == '|')		// | separates names
 		tptr++;
-	    nexttptr = _find(tptr, ":|");	/* Rhialto */
+	    nexttptr = _find(tptr, ":|");	// Rhialto
 	    if (tptr + tlen == nexttptr &&
-		_match(tptr, term) == tlen)	/* FOUND! */
+		_match(tptr, term) == tlen)	// FOUND!
 	    {
 		tent = tbuf;
 		return 1;
 	    }
-	    else				/* Look for next name */
+	    else				// Look for next name
 		tptr = nexttptr;
 	}
     }
@@ -174,33 +174,33 @@ getent(char *tbuf, char *term, FILE *termcap, int buflen)
     static int
 nextent(char *tbuf, FILE *termcap, int buflen)
 {
-    char *lbuf = tbuf;				/* lbuf=line buffer */
-				/* read lines straight into buffer */
+    char *lbuf = tbuf;				// lbuf=line buffer
+				// read lines straight into buffer
 
-    while (lbuf < tbuf+buflen &&		/* There's room and */
-	  fgets(lbuf, (int)(tbuf+buflen-lbuf), termcap)) /* another line */
+    while (lbuf < tbuf+buflen &&		// There's room and
+	  fgets(lbuf, (int)(tbuf+buflen-lbuf), termcap)) // another line
     {
 	int llen = strlen(lbuf);
 
-	if (*lbuf == '#')			/* eat comments */
+	if (*lbuf == '#')			// eat comments
 	    continue;
-	if (lbuf[-1] == ':' &&			/* and whitespace */
+	if (lbuf[-1] == ':' &&			// and whitespace
 	    lbuf[0] == '\t' &&
 	    lbuf[1] == ':')
 	{
 	    STRMOVE(lbuf, lbuf + 2);
 	    llen -= 2;
 	}
-	if (lbuf[llen-2] == '\\')		/* and continuations */
+	if (lbuf[llen-2] == '\\')		// and continuations
 	    lbuf += llen-2;
 	else
 	{
-	    lbuf[llen-1]=0;			/* no continuation, return */
+	    lbuf[llen-1]=0;			// no continuation, return
 	    return 1;
 	}
     }
 
-    return 0;					/* ran into end of file */
+    return 0;					// ran into end of file
 }
 
 /*
@@ -280,44 +280,44 @@ tgetstr(char *id, char **buf)
     int		i;
 
     do {
-	tmp = _find(tmp, ":");			/* For each field */
-	while (*tmp == ':')			/* skip empty fields */
+	tmp = _find(tmp, ":");			// For each field
+	while (*tmp == ':')			// skip empty fields
 	    tmp++;
 	if (!*tmp)
 	    break;
 
 	if (_match(id, tmp) == len) {
-	    tmp += len;				/* find '=' '@' or '#' */
-	    if (*tmp == '@')			/* :xx@: entry for tc */
-		return 0;			/* deleted entry */
+	    tmp += len;				// find '=' '@' or '#'
+	    if (*tmp == '@')			// :xx@: entry for tc
+		return 0;			// deleted entry
 	    hold= *buf;
-	    while (*++tmp && *tmp != ':') {	/* not at end of field */
+	    while (*++tmp && *tmp != ':') {	// not at end of field
 		switch(*tmp) {
-		case '\\':			/* Expand escapes here */
+		case '\\':			// Expand escapes here
 		    switch(*++tmp) {
-		    case 0:			/* ignore backslashes */
-			tmp--;			/* at end of entry */
-			break;			/* shouldn't happen */
+		    case 0:			// ignore backslashes
+			tmp--;			// at end of entry
+			break;			// shouldn't happen
 		    case 'e':
-		    case 'E':			/* ESC */
+		    case 'E':			// ESC
 			*(*buf)++ = ESC;
 			break;
-		    case 'n':			/* \n */
+		    case 'n':			// \n
 			*(*buf)++ = '\n';
 			break;
-		    case 'r':			/* \r */
+		    case 'r':			// \r
 			*(*buf)++ = '\r';
 			break;
-		    case 't':			/* \t */
+		    case 't':			// \t
 			*(*buf)++ = '\t';
 			break;
-		    case 'b':			/* \b */
+		    case 'b':			// \b
 			*(*buf)++ = '\b';
 			break;
-		    case 'f':			/* \f */
+		    case 'f':			// \f
 			*(*buf)++ = '\f';
 			break;
-		    case '0':			/* \nnn */
+		    case '0':			// \nnn
 		    case '1':
 		    case '2':
 		    case '3':
@@ -328,17 +328,17 @@ tgetstr(char *id, char **buf)
 		    case '8':
 		    case '9':
 			**buf = 0;
-			    /* get up to three digits */
+			    // get up to three digits
 			for (i = 0; i < 3 && VIM_ISDIGIT(*tmp); ++i)
 			    **buf = **buf * 8 + *tmp++ - '0';
 			(*buf)++;
 			tmp--;
 			break;
-		    default:			/* \x, for all other x */
+		    default:			// \x, for all other x
 			*(*buf)++= *tmp;
 		    }
 		    break;
-		case '^':			/* control characters */
+		case '^':			// control characters
 		    ++tmp;
 		    *(*buf)++ = Ctrl_chr(*tmp);
 		    break;
@@ -382,96 +382,96 @@ tgetstr(char *id, char **buf)
 
     char *
 tgoto(
-    char    *cm,				/* cm string, from termcap */
-    int	    col,				/* column, x position */
-    int	    line)				/* line, y position */
+    char    *cm,				// cm string, from termcap
+    int	    col,				// column, x position
+    int	    line)				// line, y position
 {
-    char    gx, gy,				/* x, y */
-	*ptr,					/* pointer in 'cm' */
-	reverse = 0,				/* reverse flag */
-	*bufp,					/* pointer in returned string */
-	addup = 0,				/* add upline */
-	addbak = 0,				/* add backup */
+    char    gx, gy,				// x, y
+	*ptr,					// pointer in 'cm'
+	reverse = 0,				// reverse flag
+	*bufp,					// pointer in returned string
+	addup = 0,				// add upline
+	addbak = 0,				// add backup
 	c;
     static char buffer[32];
 
     if (!cm)
-	return "OOPS";				/* Kludge, but standard */
+	return "OOPS";				// Kludge, but standard
 
     bufp = buffer;
     ptr = cm;
 
     while (*ptr) {
-	if ((c = *ptr++) != '%') {		/* normal char */
+	if ((c = *ptr++) != '%') {		// normal char
 	    *bufp++ = c;
-	} else {				/* % escape */
+	} else {				// % escape
 	    switch(c = *ptr++) {
-	    case 'd':				/* decimal */
+	    case 'd':				// decimal
 		bufp = _addfmt(bufp, "%d", line);
 		line = col;
 		break;
-	    case '2':				/* 2 digit decimal */
+	    case '2':				// 2 digit decimal
 		bufp = _addfmt(bufp, "%02d", line);
 		line = col;
 		break;
-	    case '3':				/* 3 digit decimal */
+	    case '3':				// 3 digit decimal
 		bufp = _addfmt(bufp, "%03d", line);
 		line = col;
 		break;
-	    case '>':				/* %>xy: if >x, add y */
+	    case '>':				// %>xy: if >x, add y
 		gx = *ptr++;
 		gy = *ptr++;
 		if (col>gx) col += gy;
 		if (line>gx) line += gy;
 		break;
-	    case '+':				/* %+c: add c */
+	    case '+':				// %+c: add c
 		line += *ptr++;
-	    case '.':				/* print x/y */
-		if (line == '\t' ||		/* these are */
-		   line == '\n' ||		/* chars that */
-		   line == '\004' ||		/* UNIX hates */
+	    case '.':				// print x/y
+		if (line == '\t' ||		// these are
+		   line == '\n' ||		// chars that
+		   line == '\004' ||		// UNIX hates
 		   line == '\0') {
-		    line++;			/* so go to next pos */
+		    line++;			// so go to next pos
 		    if (reverse == (line == col))
-			addup=1;		/* and mark UP */
+			addup=1;		// and mark UP
 		    else
-			addbak=1;		/* or BC */
+			addbak=1;		// or BC
 		}
 		*bufp++=line;
 		line = col;
 		break;
-	    case 'r':				/* r: reverse */
+	    case 'r':				// r: reverse
 		gx = line;
 		line = col;
 		col = gx;
 		reverse = 1;
 		break;
-	    case 'i':			/* increment (1-origin screen) */
+	    case 'i':			// increment (1-origin screen)
 		col++;
 		line++;
 		break;
-	    case '%':				/* %%=% literally */
+	    case '%':				// %%=% literally
 		*bufp++='%';
 		break;
-	    case 'n':				/* magic DM2500 code */
+	    case 'n':				// magic DM2500 code
 		line ^= 0140;
 		col ^= 0140;
 		break;
-	    case 'B':				/* bcd encoding */
+	    case 'B':				// bcd encoding
 		line = line/10<<4+line%10;
 		col = col/10<<4+col%10;
 		break;
-	    case 'D':				/* magic Delta Data code */
+	    case 'D':				// magic Delta Data code
 		line = line-2*(line&15);
 		col = col-2*(col&15);
 		break;
-	    default:				/* Unknown escape */
+	    default:				// Unknown escape
 		return "OOPS";
 	    }
 	}
     }
 
-    if (addup)					/* add upline */
+    if (addup)					// add upline
 	if (UP) {
 	    ptr=UP;
 	    while (VIM_ISDIGIT(*ptr) || *ptr == '.')
@@ -482,7 +482,7 @@ tgoto(
 		*bufp++ = *ptr++;
 	}
 
-    if (addbak)					/* add backspace */
+    if (addbak)					// add backspace
 	if (BC) {
 	    ptr=BC;
 	    while (VIM_ISDIGIT(*ptr) || *ptr == '.')
@@ -528,12 +528,12 @@ long _bauds[16]={
 
     int
 tputs(
-    char *cp,				/* string to print */
-    int affcnt,				/* Number of lines affected */
-    void (*outc)(unsigned int))		/* routine to output 1 character */
+    char *cp,				// string to print
+    int affcnt,				// Number of lines affected
+    void (*outc)(unsigned int))		// routine to output 1 character
 {
-    long    frac,			/* 10^(#digits after decimal point) */
-	counter,			/* digits */
+    long    frac,			// 10^(#digits after decimal point)
+	counter,			// digits
 	atol(const char *);
 
     if (VIM_ISDIGIT(*cp)) {
@@ -546,20 +546,20 @@ tputs(
 		counter = counter * 10L + (long)(*cp++ - '0');
 		frac = frac * 10;
 	    }
-	if (*cp!='*') {			/* multiply by affected lines */
+	if (*cp!='*') {			// multiply by affected lines
 	    if (affcnt>1) affcnt = 1;
 	}
 	else
 	    cp++;
 
-	/* Calculate number of characters for padding counter/frac ms delay */
+	// Calculate number of characters for padding counter/frac ms delay
 	if (ospeed)
 	    counter = (counter * _bauds[ospeed] * (long)affcnt) / frac;
 
-	while (*cp)			/* output string */
+	while (*cp)			// output string
 	    (*outc)(*cp++);
 	if (ospeed)
-	    while (counter--)		/* followed by pad characters */
+	    while (counter--)		// followed by pad characters
 		(*outc)(PC);
     }
     else

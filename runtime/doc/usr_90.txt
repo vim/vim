@@ -1,4 +1,4 @@
-*usr_90.txt*	For Vim version 8.1.  Last change: 2008 Sep 10
+*usr_90.txt*	For Vim version 8.2.  Last change: 2008 Sep 10
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -248,10 +248,6 @@ available:
 	vim61w32.zip		32 bit MS-Windows console version.  For use in
 				a Win NT/2000/XP console.  Does not work well
 				on Win 95/98.
-	vim61d32.zip		32 bit MS-DOS version.  For use in the
-				Win 95/98 console window.
-	vim61d16.zip		16 bit MS-DOS version.  Only for old systems.
-				Does not support long filenames.
 
 You only need one of them.  Although you could install both a GUI and a
 console version.  You always need to get the archive with runtime files.
@@ -480,9 +476,9 @@ probably contains your vimrc file and other runtime files that you created, so
 be careful.
 
 Else, if you installed Vim with the zip archives, the preferred way is to use
-the "uninstal" program (note the missing l at the end).  You can find it in
-the same directory as the "install" program, e.g., "c:\vim\vim61".  This
-should also work from the usual "install/remove software" page.
+the "uninstall" program.  You can find it in the same directory as the
+"install" program, e.g., "c:\vim\vim61".  This should also work from the usual
+"install/remove software" page.
    However, this only removes the registry entries for Vim.  You have to
 delete the files yourself.  Simply select the directory "vim\vim61" and delete
 it recursively.  There should be no files there that you changed, but you

@@ -2,9 +2,8 @@
 " leaks under valgrind.  That is because when fork/exec fails memory is not
 " freed.  Since the process exists right away it's not a real leak.
 
-if !has('terminal')
-  finish
-endif
+source check.vim
+CheckFeature terminal
 
 source shared.vim
 

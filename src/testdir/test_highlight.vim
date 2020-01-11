@@ -2,6 +2,7 @@
 
 source view_util.vim
 source screendump.vim
+source check.vim
 
 func Test_highlight()
   " basic test if ":highlight" doesn't crash
@@ -424,6 +425,7 @@ func Test_highlight_eol_with_cursorline_breakindent()
   let [hiCursorLine, hi_ul, hi_bg] = HiCursorLine()
 
   call NewWindow('topleft 5', 10)
+  set showbreak=xxx
   setlocal breakindent breakindentopt=min:0,shift:1 showbreak=>
   call setline(1, ' ' . repeat('a', 9) . 'bcd')
   call matchadd('Search', '\n')
@@ -481,6 +483,7 @@ func Test_highlight_eol_with_cursorline_breakindent()
 
   call CloseWindow()
   set showbreak=
+  setlocal showbreak=
   exe hiCursorLine
 endfunc
 
@@ -516,7 +519,7 @@ func Test_termguicolors()
   if !exists('+termguicolors')
     return
   endif
-  if has('vtp') && !has('vcon')
+  if has('vtp') && !has('vcon') && !has('gui_running')
     " Win32: 'guicolors' doesn't work without virtual console.
     call assert_fails('set termguicolors', 'E954:')
     return
@@ -532,9 +535,7 @@ func Test_termguicolors()
 endfunc
 
 func Test_cursorline_after_yank()
-  if !CanRunVimInTerminal()
-    return
-  endif
+  CheckScreendump
 
   call writefile([
 	\ 'set cul rnu',
@@ -553,10 +554,28 @@ func Test_cursorline_after_yank()
   call delete('Xtest_cursorline_yank')
 endfunc
 
+" test for issue #4862
+func Test_put_before_cursorline()
+  new
+  only!
+  call setline(1, 'A')
+  redraw
+  let std_attr = screenattr(1, 1)
+  set cursorline
+  redraw
+  let cul_attr = screenattr(1, 1)
+  normal yyP
+  redraw
+  " Line 1 has cursor so it should be highlighted with CursorLine.
+  call assert_equal(cul_attr, screenattr(1, 1))
+  " And CursorLine highlighting from the second line should be gone.
+  call assert_equal(std_attr, screenattr(2, 1))
+  set nocursorline
+  bwipe!
+endfunc
+
 func Test_cursorline_with_visualmode()
-  if !CanRunVimInTerminal()
-    return
-  endif
+  CheckScreendump
 
   call writefile([
 	\ 'set cul',
@@ -574,16 +593,20 @@ func Test_cursorline_with_visualmode()
 endfunc
 
 func Test_wincolor()
-  if !CanRunVimInTerminal()
-    return
-  endif
+  CheckScreendump
 
-  call writefile([
-	\ 'set cursorline cursorcolumn rnu',
-	\ 'call setline(1, ["","1111111111","22222222222","3 here 3",""])',
-	\ 'set wincolor=Pmenu',
-	\ '/here',
-	\ ], 'Xtest_wincolor')
+  let lines =<< trim END
+	set cursorline cursorcolumn rnu
+	call setline(1, ["","1111111111","22222222222","3 here 3","","the cat is out of the bag"])
+	set wincolor=Pmenu
+	hi CatLine guifg=green ctermfg=green
+	hi Reverse gui=reverse cterm=reverse
+	syn match CatLine /^the.*/
+	call prop_type_add("foo", {"highlight": "Reverse", "combine": 1})
+	call prop_add(6, 12, {"type": "foo", "end_col": 15})
+	/here
+  END
+  call writefile(lines, 'Xtest_wincolor')
   let buf = RunVimInTerminal('-S Xtest_wincolor', {'rows': 8})
   call term_wait(buf)
   call term_sendkeys(buf, "2G5lvj")
@@ -597,12 +620,75 @@ func Test_wincolor()
   call delete('Xtest_wincolor')
 endfunc
 
+func Test_wincolor_listchars()
+  CheckScreendump
+
+  let lines =<< trim END
+	call setline(1, ["one","\t\tsome random text enough long to show 'extends' and 'precedes' includingnbsps, preceding tabs and trailing spaces    ","three"])
+	set wincolor=Todo
+	set nowrap cole=1 cocu+=n
+	set list lcs=eol:$,tab:>-,space:.,trail:_,extends:>,precedes:<,conceal:*,nbsp:#
+	call matchadd('Conceal', 'text')
+	normal 2G5zl
+  END
+  call writefile(lines, 'Xtest_wincolorlcs')
+  let buf = RunVimInTerminal('-S Xtest_wincolorlcs', {'rows': 8})
+
+  call VerifyScreenDump(buf, 'Test_wincolor_lcs', {})
+
+  " clean up
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+  call delete('Xtest_wincolorlcs')
+endfunc
+
+func Test_colorcolumn()
+  CheckScreendump
+
+  " check that setting 'colorcolumn' when entering a buffer works
+  let lines =<< trim END
+	split
+	edit X
+	call setline(1, ["1111111111","22222222222","3333333333"])
+	set nomodified
+	set colorcolumn=3,9
+	set number cursorline cursorlineopt=number
+	wincmd w
+	buf X
+  END
+  call writefile(lines, 'Xtest_colorcolumn')
+  let buf = RunVimInTerminal('-S Xtest_colorcolumn', {'rows': 10})
+  call term_sendkeys(buf, ":\<CR>")
+  call term_wait(buf)
+  call VerifyScreenDump(buf, 'Test_colorcolumn_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('Xtest_colorcolumn')
+endfunc
+
 " This test must come before the Test_cursorline test, as it appears this
 " defines the Normal highlighting group anyway.
 func Test_1_highlight_Normalgroup_exists()
-  " MS-Windows GUI sets the font
-  if !has('win32') || !has('gui_running')
-    let hlNormal = HighlightArgs('Normal')
+  let hlNormal = HighlightArgs('Normal')
+  if !has('gui_running')
     call assert_match('hi Normal\s*clear', hlNormal)
+  elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
+    " expect is DEFAULT_FONT of gui_gtk_x11.c
+    call assert_match('hi Normal\s*font=Monospace 10', hlNormal)
+  elseif has('gui_motif') || has('gui_athena')
+    " expect is DEFAULT_FONT of gui_x11.c
+    call assert_match('hi Normal\s*font=7x13', hlNormal)
+  elseif has('win32')
+    " expect any font
+    call assert_match('hi Normal\s*font=.*', hlNormal)
   endif
 endfunc
+
+function Test_no_space_before_xxx()
+  let l:org_columns = &columns
+  set columns=17
+  let l:hi_StatusLineTermNC = join(split(execute('hi StatusLineTermNC')))
+  call assert_match('StatusLineTermNC xxx', l:hi_StatusLineTermNC)
+  let &columns = l:org_columns
+endfunction

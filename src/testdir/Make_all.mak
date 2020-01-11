@@ -13,17 +13,9 @@ SCRIPTS_FIRST = \
 
 # Tests that run on all systems.
 SCRIPTS_ALL = \
-	test3.out \
-	test39.out \
 	test42.out \
 	test44.out \
-	test48.out \
-	test64.out \
-	test69.out \
 	test70.out \
-	test88.out \
-	test94.out \
-	test95.out \
 	test99.out \
 	test_eval.out
 
@@ -42,9 +34,7 @@ SCRIPTS_MORE2 = \
 
 # Tests that run on most systems, but not on VMS
 SCRIPTS_MORE4 = \
-	test59.out \
-	test72.out \
-
+	test59.out
 
 # Tests specifically for MS-Windows.
 SCRIPTS_WIN32 =
@@ -59,13 +49,13 @@ NEW_TESTS = \
 	test_arabic \
 	test_arglist \
 	test_assert \
-	test_assign \
 	test_autochdir \
 	test_autocmd \
 	test_autoload \
 	test_backspace_opt \
 	test_backup \
 	test_balloon \
+	test_balloon_gui \
 	test_behave \
 	test_blob \
 	test_blockedit \
@@ -88,9 +78,11 @@ NEW_TESTS = \
 	test_comparators \
 	test_compiler \
 	test_conceal \
+	test_const \
 	test_crypt \
 	test_cscope \
 	test_cursor_func \
+	test_cursorline \
 	test_curswant \
 	test_debugger \
 	test_delete \
@@ -105,6 +97,8 @@ NEW_TESTS = \
 	test_ex_equal \
 	test_ex_undo \
 	test_ex_z \
+	test_ex_mode \
+	test_excmd \
 	test_exec_while_if \
 	test_execute_func \
 	test_exists \
@@ -152,6 +146,7 @@ NEW_TESTS = \
 	test_increment \
 	test_increment_dbcs \
 	test_ins_complete \
+	test_interrupt \
 	test_job_fails \
 	test_join \
 	test_json \
@@ -178,6 +173,7 @@ NEW_TESTS = \
 	test_matchadd_conceal \
 	test_matchadd_conceal_utf8 \
 	test_memory_usage \
+	test_method \
 	test_menu \
 	test_messages \
 	test_mksession \
@@ -196,6 +192,7 @@ NEW_TESTS = \
 	test_plus_arg_edit \
 	test_popup \
 	test_popupwin \
+	test_popupwin_textprop \
 	test_preview \
 	test_profile \
 	test_prompt_buffer \
@@ -206,6 +203,7 @@ NEW_TESTS = \
 	test_pyx3 \
 	test_quickfix \
 	test_quotestar \
+	test_random \
 	test_recover \
 	test_regex_char_classes \
 	test_regexp_latin \
@@ -224,14 +222,17 @@ NEW_TESTS = \
 	test_searchpos \
 	test_set \
 	test_sha256 \
+	test_shift \
 	test_shortpathname \
 	test_signals \
 	test_signs \
 	test_smartindent \
 	test_sort \
+	test_sound \
 	test_source \
 	test_source_utf8 \
 	test_spell \
+	test_spellfile \
 	test_startup \
 	test_startup_utf8 \
 	test_stat \
@@ -259,6 +260,7 @@ NEW_TESTS = \
 	test_textprop \
 	test_timers \
 	test_true_false \
+	test_trycatch \
 	test_undo \
 	test_unlet \
 	test_user_func \
@@ -296,6 +298,7 @@ NEW_TESTS_RES = \
 	test_autoload.res \
 	test_backspace_opt.res \
 	test_balloon.res \
+	test_balloon_gui.res \
 	test_blob.res \
 	test_blockedit.res \
 	test_breakindent.res \
@@ -312,6 +315,7 @@ NEW_TESTS_RES = \
 	test_command_count.res \
 	test_comparators.res \
 	test_conceal.res \
+	test_const.res \
 	test_crypt.res \
 	test_cscope.res \
 	test_curswant.res \
@@ -324,6 +328,7 @@ NEW_TESTS_RES = \
 	test_erasebackword.res \
 	test_escaped_glob.res \
 	test_eval_stuff.res \
+	test_excmd.res \
 	test_exec_while_if.res \
 	test_exists.res \
 	test_exists_autocmd.res \
@@ -350,6 +355,7 @@ NEW_TESTS_RES = \
 	test_increment.res \
 	test_increment_dbcs.res \
 	test_ins_complete.res \
+	test_interrupt.res \
 	test_job_fails.res \
 	test_json.res \
 	test_jumplist.res \
@@ -364,9 +370,11 @@ NEW_TESTS_RES = \
 	test_makeencoding.res \
 	test_man.res \
 	test_maparg.res \
+	test_mapping.res \
 	test_marks.res \
 	test_matchadd_conceal.res \
 	test_memory_usage.res \
+	test_method.res \
 	test_mksession.res \
 	test_nested_function.res \
 	test_netbeans.res \
@@ -378,6 +386,7 @@ NEW_TESTS_RES = \
 	test_perl.res \
 	test_plus_arg_edit.res \
 	test_popupwin.res \
+	test_popupwin_textprop.res \
 	test_preview.res \
 	test_profile.res \
 	test_prompt_buffer.res \
@@ -387,6 +396,7 @@ NEW_TESTS_RES = \
 	test_pyx3.res \
 	test_quickfix.res \
 	test_quotestar.res \
+	test_random.res \
 	test_regex_char_classes.res \
 	test_registers.res \
 	test_restricted.res \
@@ -400,8 +410,10 @@ NEW_TESTS_RES = \
 	test_signals.res \
 	test_signs.res \
 	test_smartindent.res \
+	test_sound.res \
 	test_source.res \
 	test_spell.res \
+	test_spellfile.res \
 	test_startup.res \
 	test_stat.res \
 	test_substitute.res \
@@ -417,6 +429,8 @@ NEW_TESTS_RES = \
 	test_textformat.res \
 	test_textobjects.res \
 	test_textprop.res \
+	test_timers.res \
+	test_trycatch.res \
 	test_undo.res \
 	test_user_func.res \
 	test_usercommands.res \

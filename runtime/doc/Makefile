@@ -103,6 +103,7 @@ DOCS = \
 	tagsrch.txt \
 	term.txt \
 	terminal.txt \
+	testing.txt \
 	textprop.txt \
 	tips.txt \
 	todo.txt \
@@ -241,6 +242,7 @@ HTMLS = \
 	tagsrch.html \
 	term.html \
 	terminal.html \
+	testing.html \
 	textprop.html \
 	tips.html \
 	todo.html \
@@ -321,7 +323,10 @@ all: tags vim.man evim.man vimdiff.man vimtutor.man xxd.man $(CONVERTED)
 # Use Vim to generate the tags file.  Can only be used when Vim has been
 # compiled and installed.  Supports multiple languages.
 vimtags: $(DOCS)
-	$(VIMEXE) -u NONE -esX -c "helptags ++t ." -c quit
+	@if command -v $(VIMEXE); then \
+	    $(VIMEXE) --clean -eX -u doctags.vim >/dev/null && \
+	      echo "help tags updated"; \
+	  else echo "vim executable $(VIMEXE) not found; help tags not updated"; fi
 
 # Use "doctags" to generate the tags file.  Only works for English!
 tags: doctags $(DOCS)

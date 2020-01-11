@@ -1,5 +1,5 @@
 #include "vterm.h"
-#include "../src/vterm_internal.h" /* We pull in some internal bits too */
+#include "../src/vterm_internal.h" // We pull in some internal bits too
 
 #include <stdio.h>
 #include <string.h>
@@ -163,16 +163,16 @@ static int parser_dcs(const char *command, size_t cmdlen, void *user)
 }
 
 static VTermParserCallbacks parser_cbs = {
-  parser_text, /* text */
-  parser_control, /* control */
-  parser_escape, /* escape */
-  parser_csi, /* csi */
-  parser_osc, /* osc */
-  parser_dcs, /* dcs */
-  NULL /* resize */
+  parser_text, // text
+  parser_control, // control
+  parser_escape, // escape
+  parser_csi, // csi
+  parser_osc, // osc
+  parser_dcs, // dcs
+  NULL // resize
 };
 
-/* These callbacks are shared by State and Screen */
+// These callbacks are shared by State and Screen
 
 static int want_movecursor = 0;
 static VTermPos state_pos;
@@ -241,7 +241,7 @@ static int settermprop(VTermProp prop, VTermValue *val, void *user)
   return 0;
 }
 
-/* These callbacks are for State */
+// These callbacks are for State
 
 static int want_state_putglyph = 0;
 static int state_putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
@@ -333,17 +333,17 @@ static int state_setlineinfo(int row, const VTermLineInfo *newinfo, const VTermL
 }
 
 VTermStateCallbacks state_cbs = {
-  state_putglyph, /* putglyph */
-  movecursor, /* movecursor */
-  scrollrect, /* scrollrect */
-  moverect, /* moverect */
-  state_erase, /* erase */
-  NULL, /* initpen */
-  state_setpenattr, /* setpenattr */
-  settermprop, /* settermprop */
-  NULL, /* bell */
-  NULL, /* resize */
-  state_setlineinfo, /* setlineinfo */
+  state_putglyph, // putglyph
+  movecursor, // movecursor
+  scrollrect, // scrollrect
+  moverect, // moverect
+  state_erase, // erase
+  NULL, // initpen
+  state_setpenattr, // setpenattr
+  settermprop, // settermprop
+  NULL, // bell
+  NULL, // resize
+  state_setlineinfo, // setlineinfo
 };
 
 static int want_screen_damage = 0;
@@ -427,7 +427,7 @@ static int screen_sb_popline(int cols, VTermScreenCell *cells, void *user)
   if(!want_screen_scrollback)
     return 0;
 
-  /* All lines of scrollback contain "ABCDE" */
+  // All lines of scrollback contain "ABCDE"
   for(col = 0; col < cols; col++) {
     if(col < 5)
       cells[col].chars[0] = 'A' + col;
@@ -442,14 +442,14 @@ static int screen_sb_popline(int cols, VTermScreenCell *cells, void *user)
 }
 
 VTermScreenCallbacks screen_cbs = {
-  screen_damage, /* damage */
-  moverect, /* moverect */
-  movecursor, /* movecursor */
-  settermprop, /* settermprop */
-  NULL, /* bell */
-  NULL, /* resize */
-  screen_sb_pushline, /* sb_pushline */
-  screen_sb_popline /* sb_popline */
+  screen_damage, // damage
+  moverect, // moverect
+  movecursor, // movecursor
+  settermprop, // settermprop
+  NULL, // bell
+  NULL, // resize
+  screen_sb_pushline, // sb_pushline
+  screen_sb_popline // sb_popline
 };
 
 int main(int argc, char **argv)
@@ -592,9 +592,8 @@ int main(int argc, char **argv)
     }
 
     else if(streq(line, "WANTENCODING")) {
-      /* This isn't really external API but it's hard to get this out any
-       * other way
-       */
+      // This isn't really external API but it's hard to get this out any
+      // other way
       encoding.enc = vterm_lookup_encoding(ENC_UTF8, 'u');
       if(encoding.enc->init)
         (*encoding.enc->init)(encoding.enc, encoding.data);
@@ -833,7 +832,7 @@ int main(int argc, char **argv)
         else if(len == 0)
           printf("\n");
         else {
-          /* Put an overwrite guard at both ends of the buffer */
+          // Put an overwrite guard at both ends of the buffer
           unsigned char *buffer = malloc(len + 4);
           unsigned char *text = buffer + 2;
           text[-2] = 0x55; text[-1] = 0xAA;

@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.1.  Last change: 2019 May 07
+*insert.txt*    For Vim version 8.2.  Last change: 2020 Jan 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -106,7 +106,7 @@ CTRL-K {char1} [char2]
 CTRL-N		Find next keyword (see |i_CTRL-N|).
 CTRL-P		Find previous keyword (see |i_CTRL-P|).
 
-CTRL-R {0-9a-z"%#*+:.-=}					*i_CTRL-R*
+CTRL-R {register}				*i_CTRL-R*
 		Insert the contents of a register.  Between typing CTRL-R and
 		the second character, '"' will be displayed to indicate that
 		you are expected to enter the name of a register.
@@ -143,7 +143,7 @@ CTRL-R {0-9a-z"%#*+:.-=}					*i_CTRL-R*
 				sequence will be broken.
 		See |registers| about registers.
 
-CTRL-R CTRL-R {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-R*
+CTRL-R CTRL-R {register}			*i_CTRL-R_CTRL-R*
 		Insert the contents of a register.  Works like using a single
 		CTRL-R, but the text is inserted literally, not as if typed.
 		This differs when the register contains characters like <BS>.
@@ -155,7 +155,7 @@ CTRL-R CTRL-R {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-R*
 		The '.' register (last inserted text) is still inserted as
 		typed.
 
-CTRL-R CTRL-O {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-O*
+CTRL-R CTRL-O {register}			*i_CTRL-R_CTRL-O*
 		Insert the contents of a register literally and don't
 		auto-indent.  Does the same as pasting with the mouse
 		|<MiddleMouse>|. When the register is linewise this will
@@ -164,7 +164,7 @@ CTRL-R CTRL-O {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-O*
 		The '.' register (last inserted text) is still inserted as
 		typed.
 
-CTRL-R CTRL-P {0-9a-z"%#*+/:.-=}			*i_CTRL-R_CTRL-P*
+CTRL-R CTRL-P {register}			*i_CTRL-R_CTRL-P*
 		Insert the contents of a register literally and fix the
 		indent, like |[<MiddleMouse>|.
 		Does not replace characters!
@@ -196,6 +196,13 @@ CTRL-V		Insert next non-digit literally.  For special keys, the
 		mapping.
 		Note: When CTRL-V is mapped (e.g., to paste text) you can
 		often use CTRL-Q instead |i_CTRL-Q|.
+		When |modifyOtherKeys| is enabled then special Escape sequence
+		is converted back to what it was without |modifyOtherKeys|,
+		unless the Shift key is also pressed.
+
+						*i_CTRL-SHIFT-V*
+CTRL-SHIFT-V	Works just like CTRL-V, unless |modifyOtherKeys| is active,
+		then it inserts the Escape sequence for a key with modifiers.
 
 						*i_CTRL-Q*
 CTRL-Q		Same as CTRL-V.
@@ -300,8 +307,7 @@ character is written at the end of each line.  Thus if you want to insert a
 
 						*i_CTRL-X* *insert_expand*
 CTRL-X enters a sub-mode where several commands can be used.  Most of these
-commands do keyword completion; see |ins-completion|.  These are not available
-when Vim was compiled without the |+insert_expand| feature.
+commands do keyword completion; see |ins-completion|.
 
 Two commands can be used to scroll the window up or down, without exiting
 insert mode:
@@ -608,9 +614,6 @@ entering new data while keeping all the columns aligned.
 In Insert and Replace mode, there are several commands to complete part of a
 keyword or line that has been typed.  This is useful if you are using
 complicated keywords (e.g., function names with capitals and underscores).
-
-These commands are not available when the |+insert_expand| feature was
-disabled at compile time.
 
 Completion can be done for:
 
@@ -1092,7 +1095,7 @@ items:
 	menu		extra text for the popup menu, displayed after "word"
 			or "abbr"
 	info		more information about the item, can be displayed in a
-			preview window
+			preview or popup window
 	kind		single letter indicating the type of completion
 	icase		when non-zero case is to be ignored when comparing
 			items to be equal; when omitted zero is used, thus
@@ -1105,7 +1108,8 @@ items:
 	empty		when non-zero this match will be added even when it is
 			an empty string
 	user_data 	custom data which is associated with the item and
-			available in |v:completed_item|
+			available in |v:completed_item|; it can be any type;
+			defaults to an empty string
 
 All of these except "icase", "equal", "dup" and "empty" must be a string.  If
 an item does not meet these requirements then an error message is given and
@@ -1114,12 +1118,55 @@ items in the returned list.
 
 The "menu" item is used in the popup menu and may be truncated, thus it should
 be relatively short.  The "info" item can be longer, it will  be displayed in
-the preview window when "preview" appears in 'completeopt'.  The "info" item
-will also remain displayed after the popup menu has been removed.  This is
-useful for function arguments.  Use a single space for "info" to remove
-existing text in the preview window.  The size of the preview window is three
-lines, but 'previewheight' is used when it has a value of 1 or 2.
+the preview window when "preview" appears in 'completeopt' or in a popup
+window when "popup" appears in 'completeopt'.  In the preview window the
+"info" item will also remain displayed after the popup menu has been removed.
+This is useful for function arguments.  Use a single space for "info" to
+remove existing text in the preview window.  The size of the preview window is
+three lines, but 'previewheight' is used when it has a value of 1 or 2.
 
+						*complete-popup*
+When "popup" is in 'completeopt' a popup window is used to display the "info".
+Then the 'completepopup' option specifies the properties of the popup.  This
+is used when the info popup is created.  The option is a comma separated list
+of values:
+	height		maximum height of the popup
+	width		maximum width of the popup
+	highlight	highlight group of the popup (default is PmenuSel)
+	align		"item" (default) or "menu"
+	border		"on" (default) or "off"
+Example: >
+	:set completepopup=height:10,width:60,highlight:InfoPopup
+
+When the "align" value is "item" then the popup is positioned close to the
+selected item.  Changing the selection will also move the popup.  When "align"
+is "menu" then the popup is aligned with the top of the menu if the menu is
+below the text, and the bottom of the menu otherwise.
+
+After the info popup is created it can be found with |popup_findinfo()| and
+properties can be changed with |popup_setoptions()|.
+
+						*complete-popuphidden*
+If the information for the popup is obtained asynchronously, use "popuphidden"
+in 'completeopt'.  The info popup will then be initially hidden and
+|popup_show()| must be called once it has been filled with the info.  This can
+be done with a |CompleteChanged| autocommand, something like this: >
+	set completeopt+=popuphidden
+	au CompleteChanged * call UpdateCompleteInfo()
+	func UpdateCompleteInfo()
+	  " Cancel any pending info fetch
+	  let item = v:event.completed_item
+	  " Start fetching info for the item then call ShowCompleteInfo(info)
+	endfunc
+	func ShowCompleteInfo(info)
+	  let id = popup_findinfo()
+	  if id
+	    call popup_settext(id, 'async info: ' .. a:info)
+	    call popup_show(id)
+	  endif
+	endfunc
+
+<						*complete-item-kind*
 The "kind" item uses a single letter to indicate the kind of completion.  This
 may be used to show the completion differently (different color or icon).
 Currently these types can be used:
@@ -1962,10 +2009,10 @@ If the 'fileformats' option is not empty Vim tries to recognize the type of
 changed, the detected format is only used while reading the file.
 A similar thing happens with 'fileencodings'.
 
-On non-MS-DOS, Win32, and OS/2 systems the message "[dos format]" is shown if
-a file is read in DOS format, to remind you that something unusual is done.
-On Macintosh, MS-DOS, Win32, and OS/2 the message "[unix format]" is shown if
-a file is read in Unix format.
+The message "[dos format]" is shown if a file is read in DOS format, to remind
+you that something unusual is done.
+On Macintosh and Win32 the message "[unix format]" is shown if a file is read
+in Unix format.
 On non-Macintosh systems, the message "[Mac format]" is shown if a file is
 read in Mac format.
 

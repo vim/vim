@@ -7,6 +7,6 @@ void ex_cstag(exarg_T *eap);
 int cs_fgets(char_u *buf, int size);
 void cs_free_tags(void);
 void cs_print_tags(void);
-int cs_connection(int num, char_u *dbpath, char_u *ppath);
 void cs_end(void);
+void f_cscope_connection(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

@@ -1,6 +1,8 @@
 " Tests for mappings and abbreviations
 
 source shared.vim
+source check.vim
+source screendump.vim
 
 func Test_abbreviation()
   " abbreviation with 0x80 should work
@@ -238,6 +240,12 @@ func Test_map_meta_quotes()
   iunmap <M-">
 endfunc
 
+func Test_map_meta_multibyte()
+  imap <M-á> foo
+  call assert_match('i  <M-á>\s*foo', execute('imap'))
+  iunmap <M-á>
+endfunc
+
 func Test_abbr_after_line_join()
   new
   abbr foo bar
@@ -291,7 +299,7 @@ func Test_map_timeout_with_timer_interrupt()
   let g:val = 0
   nnoremap \12 :let g:val = 1<CR>
   nnoremap \123 :let g:val = 2<CR>
-  set timeout timeoutlen=1000
+  set timeout timeoutlen=200
 
   func ExitCb(job, status)
     let g:timer = timer_start(1, {-> feedkeys("3\<Esc>", 't')})
@@ -396,4 +404,91 @@ func Test_motionforce_omap()
   bwipe!
   delfunc Select
   delfunc GetCommand
+endfunc
+
+func Test_error_in_map_expr()
+  " Unlike CheckRunVimInTerminal this does work in a win32 console
+  CheckFeature terminal
+  if has('win32') && has('gui_running')
+    throw 'Skipped: cannot run Vim in a terminal window'
+  endif
+
+  let lines =<< trim [CODE]
+  func Func()
+    " fail to create list
+    let x = [
+  endfunc
+  nmap <expr> ! Func()
+  set updatetime=50
+  [CODE]
+  call writefile(lines, 'Xtest.vim')
+
+  let buf = term_start(GetVimCommandCleanTerm() .. ' -S Xtest.vim', {'term_rows': 8})
+  let job = term_getjob(buf)
+  call WaitForAssert({-> assert_notequal('', term_getline(buf, 8))})
+
+  " GC must not run during map-expr processing, which can make Vim crash.
+  call term_sendkeys(buf, '!')
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, "\<CR>")
+  call term_wait(buf, 100)
+  call assert_equal('run', job_status(job))
+
+  call term_sendkeys(buf, ":qall!\<CR>")
+  call WaitFor({-> job_status(job) ==# 'dead'})
+  if has('unix')
+    call assert_equal('', job_info(job).termsig)
+  endif
+
+  call delete('Xtest.vim')
+  exe buf .. 'bwipe!'
+endfunc
+
+func Test_list_mappings()
+  " Remove default mappings
+  imapclear
+
+  inoremap <C-M> CtrlM
+  inoremap <A-S> AltS
+  inoremap <S-/> ShiftSlash
+  call assert_equal([
+	\ 'i  <S-/>       * ShiftSlash',
+	\ 'i  <M-S>       * AltS',
+	\ 'i  <C-M>       * CtrlM',
+	\], execute('imap')->trim()->split("\n"))
+  iunmap <C-M>
+  iunmap <A-S>
+  call assert_equal(['i  <S-/>       * ShiftSlash'], execute('imap')->trim()->split("\n"))
+  iunmap <S-/>
+  call assert_equal(['No mapping found'], execute('imap')->trim()->split("\n"))
+endfunc
+
+func Test_expr_map_restore_cursor()
+  CheckScreendump
+
+  let lines =<< trim END
+      call setline(1, ['one', 'two', 'three'])
+      2
+      set ls=2
+      hi! link StatusLine ErrorMsg
+      noremap <expr> <C-B> Func()
+      func Func()
+	  let g:on = !get(g:, 'on', 0)
+	  redraws
+	  return ''
+      endfunc
+      func Status()
+	  return get(g:, 'on', 0) ? '[on]' : ''
+      endfunc
+      set stl=%{Status()}
+  END
+  call writefile(lines, 'XtestExprMap')
+  let buf = RunVimInTerminal('-S XtestExprMap', #{rows: 10})
+  call term_wait(buf)
+  call term_sendkeys(buf, "\<C-B>")
+  call VerifyScreenDump(buf, 'Test_map_expr_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestExprMap')
 endfunc

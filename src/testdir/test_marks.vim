@@ -144,6 +144,11 @@ func Test_delmarks()
   " Deleting an already deleted mark should not fail.
   delmarks x
 
+  " getpos() should return all zeros after deleting a filemark.
+  norm mA
+  delmarks A
+  call assert_equal([0, 0, 0, 0], getpos("'A"))
+
   " Test deleting a range of marks.
   norm ma
   norm mb
@@ -174,3 +179,20 @@ func Test_mark_error()
   call assert_fails('mark xx', 'E488:')
   call assert_fails('mark _', 'E191:')
 endfunc
+
+" Test for :lockmarks when pasting content
+func Test_lockmarks_with_put()
+  new
+  call append(0, repeat(['sky is blue'], 4))
+  normal gg
+  1,2yank r
+  put r
+  normal G
+  lockmarks put r
+  call assert_equal(2, line("'["))
+  call assert_equal(3, line("']"))
+
+  bwipe!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

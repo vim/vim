@@ -12,7 +12,7 @@
  */
 #include "vim.h"
 
-static char_u	*username = NULL; /* cached result of mch_get_user_name() */
+static char_u	*username = NULL; // cached result of mch_get_user_name()
 
 static int coladvance2(pos_T *pos, int addspaces, int finetune, colnr_T wcol);
 
@@ -22,9 +22,9 @@ static int coladvance2(pos_T *pos, int addspaces, int finetune, colnr_T wcol);
     int
 virtual_active(void)
 {
-    /* While an operator is being executed we return "virtual_op", because
-     * VIsual_active has already been reset, thus we can't check for "block"
-     * being used. */
+    // While an operator is being executed we return "virtual_op", because
+    // VIsual_active has already been reset, thus we can't check for "block"
+    // being used.
     if (virtual_op != MAYBE)
 	return virtual_op;
     return (ve_flags == VE_ALL
@@ -58,7 +58,7 @@ coladvance_force(colnr_T wcol)
 	curwin->w_valid &= ~VALID_VIRTCOL;
     else
     {
-	/* Virtcol is valid */
+	// Virtcol is valid
 	curwin->w_valid |= VALID_VIRTCOL;
 	curwin->w_virtcol = wcol;
     }
@@ -99,7 +99,7 @@ coladvance(colnr_T wcol)
 	curwin->w_valid &= ~VALID_VIRTCOL;
     else if (*ml_get_cursor() != TAB)
     {
-	/* Virtcol is valid when not on a TAB */
+	// Virtcol is valid when not on a TAB
 	curwin->w_valid |= VALID_VIRTCOL;
 	curwin->w_virtcol = wcol;
     }
@@ -119,10 +119,11 @@ getvpos(pos_T *pos, colnr_T wcol)
     static int
 coladvance2(
     pos_T	*pos,
-    int		addspaces,	/* change the text to achieve our goal? */
-    int		finetune,	/* change char offset for the exact column */
-    colnr_T	wcol)		/* column to move to */
+    int		addspaces,	// change the text to achieve our goal?
+    int		finetune,	// change char offset for the exact column
+    colnr_T	wcol_arg)	// column to move to (can be negative)
 {
+    colnr_T	wcol = wcol_arg;
     int		idx;
     char_u	*ptr;
     char_u	*line;
@@ -136,7 +137,7 @@ coladvance2(
     one_more = (State & INSERT)
 		    || restart_edit != NUL
 		    || (VIsual_active && *p_sel != 'o')
-		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL) ;
+		    || ((ve_flags & VE_ONEMORE) && wcol < MAXCOL);
     line = ml_get_buf(curbuf, pos->lnum, FALSE);
 
     if (wcol >= MAXCOL)
@@ -167,10 +168,10 @@ coladvance2(
 	    if (wcol / width > (colnr_T)csize / width
 		    && ((State & INSERT) == 0 || (int)wcol > csize + 1))
 	    {
-		/* In case of line wrapping don't move the cursor beyond the
-		 * right screen edge.  In Insert mode allow going just beyond
-		 * the last character (like what happens when typing and
-		 * reaching the right window edge). */
+		// In case of line wrapping don't move the cursor beyond the
+		// right screen edge.  In Insert mode allow going just beyond
+		// the last character (like what happens when typing and
+		// reaching the right window edge).
 		wcol = (csize / width + 1) * width - 1;
 	    }
 	}
@@ -178,7 +179,7 @@ coladvance2(
 	ptr = line;
 	while (col <= wcol && *ptr != NUL)
 	{
-	    /* Count a tab for what it's worth (if list mode not on) */
+	    // Count a tab for what it's worth (if list mode not on)
 #ifdef FEAT_LINEBREAK
 	    csize = win_lbr_chartabsize(curwin, line, ptr, col, &head);
 	    MB_PTR_ADV(ptr);
@@ -198,7 +199,7 @@ coladvance2(
 	{
 	    idx -= 1;
 # ifdef FEAT_LINEBREAK
-	    /* Don't count the chars from 'showbreak'. */
+	    // Don't count the chars from 'showbreak'.
 	    csize -= head;
 # endif
 	    col -= csize;
@@ -206,14 +207,15 @@ coladvance2(
 
 	if (virtual_active()
 		&& addspaces
+		&& wcol >= 0
 		&& ((col != wcol && col != wcol + 1) || csize > 1))
 	{
-	    /* 'virtualedit' is set: The difference between wcol and col is
-	     * filled with spaces. */
+	    // 'virtualedit' is set: The difference between wcol and col is
+	    // filled with spaces.
 
 	    if (line[idx] == NUL)
 	    {
-		/* Append spaces */
+		// Append spaces
 		int	correct = wcol - col;
 		char_u	*newline = alloc(idx + correct + 1);
 		int	t;
@@ -236,9 +238,9 @@ coladvance2(
 	    }
 	    else
 	    {
-		/* Break a tab */
+		// Break a tab
 		int	linelen = (int)STRLEN(line);
-		int	correct = wcol - col - csize + 1; /* negative!! */
+		int	correct = wcol - col - csize + 1; // negative!!
 		char_u	*newline;
 		int	t, s = 0;
 		int	v;
@@ -280,7 +282,7 @@ coladvance2(
     {
 	if (wcol == MAXCOL)
 	{
-	    /* The width of the last character is used to set coladd. */
+	    // The width of the last character is used to set coladd.
 	    if (!one_more)
 	    {
 		colnr_T	    scol, ecol;
@@ -293,7 +295,7 @@ coladvance2(
 	{
 	    int b = (int)wcol - (int)col;
 
-	    /* The difference between wcol and col is used to set coladd. */
+	    // The difference between wcol and col is used to set coladd.
 	    if (b > 0 && b < (MAXCOL - 2 * curwin->w_width))
 		pos->coladd = b;
 
@@ -301,11 +303,11 @@ coladvance2(
 	}
     }
 
-    /* prevent from moving onto a trail byte */
+    // prevent from moving onto a trail byte
     if (has_mbyte)
 	mb_adjustpos(curbuf, pos);
 
-    if (col < wcol)
+    if (wcol < 0 || col < wcol)
 	return FAIL;
     return OK;
 }
@@ -331,11 +333,11 @@ inc(pos_T *lp)
 {
     char_u  *p;
 
-    /* when searching position may be set to end of a line */
+    // when searching position may be set to end of a line
     if (lp->col != MAXCOL)
     {
 	p = ml_get_pos(lp);
-	if (*p != NUL)	/* still within line, move to next char (may be NUL) */
+	if (*p != NUL)	// still within line, move to next char (may be NUL)
 	{
 	    if (has_mbyte)
 	    {
@@ -349,7 +351,7 @@ inc(pos_T *lp)
 	    return ((p[1] != NUL) ? 0 : 2);
 	}
     }
-    if (lp->lnum != curbuf->b_ml.ml_line_count)     /* there is a next line */
+    if (lp->lnum != curbuf->b_ml.ml_line_count)     // there is a next line
     {
 	lp->col = 0;
 	lp->lnum++;
@@ -392,7 +394,7 @@ dec(pos_T *lp)
     lp->coladd = 0;
     if (lp->col == MAXCOL)
     {
-	/* past end of line */
+	// past end of line
 	p = ml_get(lp->lnum);
 	lp->col = (colnr_T)STRLEN(p);
 	if (has_mbyte)
@@ -402,7 +404,7 @@ dec(pos_T *lp)
 
     if (lp->col > 0)
     {
-	/* still within line */
+	// still within line
 	lp->col--;
 	if (has_mbyte)
 	{
@@ -414,7 +416,7 @@ dec(pos_T *lp)
 
     if (lp->lnum > 1)
     {
-	/* there is a prior line */
+	// there is a prior line
 	lp->lnum--;
 	p = ml_get(lp->lnum);
 	lp->col = (colnr_T)STRLEN(p);
@@ -423,7 +425,7 @@ dec(pos_T *lp)
 	return 1;
     }
 
-    /* at start of file */
+    // at start of file
     return -1;
 }
 
@@ -448,7 +450,7 @@ decl(pos_T *lp)
     linenr_T
 get_cursor_rel_lnum(
     win_T	*wp,
-    linenr_T	lnum)		    /* line number to get the result for */
+    linenr_T	lnum)		    // line number to get the result for
 {
     linenr_T	cursor = wp->w_cursor.lnum;
     linenr_T	retval = 0;
@@ -461,8 +463,8 @@ get_cursor_rel_lnum(
 	    while (lnum > cursor)
 	    {
 		(void)hasFoldingWin(wp, lnum, &lnum, NULL, TRUE, NULL);
-		/* if lnum and cursor are in the same fold,
-		 * now lnum <= cursor */
+		// if lnum and cursor are in the same fold,
+		// now lnum <= cursor
 		if (lnum > cursor)
 		    retval++;
 		lnum--;
@@ -473,16 +475,15 @@ get_cursor_rel_lnum(
 	    while (lnum < cursor)
 	    {
 		(void)hasFoldingWin(wp, lnum, NULL, &lnum, TRUE, NULL);
-		/* if lnum and cursor are in the same fold,
-		 * now lnum >= cursor */
+		// if lnum and cursor are in the same fold,
+		// now lnum >= cursor
 		if (lnum < cursor)
 		    retval--;
 		lnum++;
 	    }
 	}
-	/* else if (lnum == cursor)
-	 *     retval = 0;
-	 */
+	// else if (lnum == cursor)
+	//     retval = 0;
     }
     else
 #endif
@@ -522,8 +523,8 @@ check_cursor_lnum(void)
     if (curwin->w_cursor.lnum > curbuf->b_ml.ml_line_count)
     {
 #ifdef FEAT_FOLDING
-	/* If there is a closed fold at the end of the file, put the cursor in
-	 * its first line.  Otherwise in the last line. */
+	// If there is a closed fold at the end of the file, put the cursor in
+	// its first line.  Otherwise in the last line.
 	if (!hasFolding(curbuf->b_ml.ml_line_count,
 						&curwin->w_cursor.lnum, NULL))
 #endif
@@ -557,10 +558,10 @@ check_cursor_col_win(win_T *win)
 	win->w_cursor.col = 0;
     else if (win->w_cursor.col >= len)
     {
-	/* Allow cursor past end-of-line when:
-	 * - in Insert mode or restarting Insert mode
-	 * - in Visual mode and 'selection' isn't "old"
-	 * - 'virtualedit' is set */
+	// Allow cursor past end-of-line when:
+	// - in Insert mode or restarting Insert mode
+	// - in Visual mode and 'selection' isn't "old"
+	// - 'virtualedit' is set
 	if ((State & INSERT) || restart_edit
 		|| (VIsual_active && *p_sel != 'o')
 		|| (ve_flags & VE_ONEMORE)
@@ -569,7 +570,7 @@ check_cursor_col_win(win_T *win)
 	else
 	{
 	    win->w_cursor.col = len - 1;
-	    /* Move the cursor to the head byte. */
+	    // Move the cursor to the head byte.
 	    if (has_mbyte)
 		mb_adjustpos(win->w_buffer, &win->w_cursor);
 	}
@@ -577,9 +578,9 @@ check_cursor_col_win(win_T *win)
     else if (win->w_cursor.col < 0)
 	win->w_cursor.col = 0;
 
-    /* If virtual editing is on, we can leave the cursor on the old position,
-     * only we must set it to virtual.  But don't do it when at the end of the
-     * line. */
+    // If virtual editing is on, we can leave the cursor on the old position,
+    // only we must set it to virtual.  But don't do it when at the end of the
+    // line.
     if (oldcol == MAXCOL)
 	win->w_cursor.coladd = 0;
     else if (ve_flags == VE_ALL)
@@ -588,9 +589,9 @@ check_cursor_col_win(win_T *win)
 	{
 	    win->w_cursor.coladd = oldcoladd - win->w_cursor.col;
 
-	    /* Make sure that coladd is not more than the char width.
-	     * Not for the last character, coladd is then used when the cursor
-	     * is actually after the last character. */
+	    // Make sure that coladd is not more than the char width.
+	    // Not for the last character, coladd is then used when the cursor
+	    // is actually after the last character.
 	    if (win->w_cursor.col + 1 < len && win->w_cursor.coladd > 0)
 	    {
 		int cs, ce;
@@ -601,7 +602,7 @@ check_cursor_col_win(win_T *win)
 	    }
 	}
 	else
-	    /* avoid weird number when there is a miscalculation or overflow */
+	    // avoid weird number when there is a miscalculation or overflow
 	    win->w_cursor.coladd = 0;
     }
 }
@@ -676,9 +677,9 @@ leftcol_changed(void)
     else if (s < curwin->w_leftcol)
     {
 	retval = TRUE;
-	if (coladvance(e + 1) == FAIL)	/* there isn't another character */
+	if (coladvance(e + 1) == FAIL)	// there isn't another character
 	{
-	    curwin->w_leftcol = s;	/* adjust w_leftcol instead */
+	    curwin->w_leftcol = s;	// adjust w_leftcol instead
 	    changed_cline_bef_curs();
 	}
     }
@@ -792,7 +793,7 @@ vim_mem_profile_dump(void)
 	    num_alloc, num_freed);
 }
 
-#endif /* MEM_PROFILE */
+#endif // MEM_PROFILE
 
 #ifdef FEAT_EVAL
     int
@@ -821,7 +822,7 @@ alloc_does_fail(size_t size)
  * The normal way to allocate memory.  This handles an out-of-memory situation
  * as well as possible, still returns NULL when we're completely out.
  */
-    char_u *
+    void *
 alloc(size_t size)
 {
     return lalloc(size, TRUE);
@@ -830,7 +831,7 @@ alloc(size_t size)
 /*
  * alloc() with an ID for alloc_fail().
  */
-    char_u *
+    void *
 alloc_id(size_t size, alloc_id_T id UNUSED)
 {
 #ifdef FEAT_EVAL
@@ -843,10 +844,10 @@ alloc_id(size_t size, alloc_id_T id UNUSED)
 /*
  * Allocate memory and set all bytes to zero.
  */
-    char_u *
+    void *
 alloc_clear(size_t size)
 {
-    char_u *p;
+    void *p;
 
     p = lalloc(size, TRUE);
     if (p != NULL)
@@ -857,7 +858,7 @@ alloc_clear(size_t size)
 /*
  * Same as alloc_clear() but with allocation id for testing
  */
-    char_u *
+    void *
 alloc_clear_id(size_t size, alloc_id_T id UNUSED)
 {
 #ifdef FEAT_EVAL
@@ -870,12 +871,12 @@ alloc_clear_id(size_t size, alloc_id_T id UNUSED)
 /*
  * Allocate memory like lalloc() and set all bytes to zero.
  */
-    char_u *
+    void *
 lalloc_clear(size_t size, int message)
 {
-    char_u *p;
+    void *p;
 
-    p = (lalloc(size, message));
+    p = lalloc(size, message);
     if (p != NULL)
 	(void)vim_memset(p, 0, size);
     return p;
@@ -885,14 +886,14 @@ lalloc_clear(size_t size, int message)
  * Low level memory allocation function.
  * This is used often, KEEP IT FAST!
  */
-    char_u *
+    void *
 lalloc(size_t size, int message)
 {
-    char_u	*p;		    /* pointer to new storage space */
-    static int	releasing = FALSE;  /* don't do mf_release_all() recursive */
+    void	*p;		    // pointer to new storage space
+    static int	releasing = FALSE;  // don't do mf_release_all() recursive
     int		try_again;
 #if defined(HAVE_AVAIL_MEM)
-    static size_t allocated = 0;    /* allocated since last avail check */
+    static size_t allocated = 0;    // allocated since last avail check
 #endif
 
     // Safety check for allocating zero bytes
@@ -921,23 +922,23 @@ lalloc(size_t size, int message)
 	 *    allocating KEEP_ROOM amount of memory.
 	 * 3. Strict check for available memory: call mch_avail_mem()
 	 */
-	if ((p = (char_u *)malloc(size)) != NULL)
+	if ((p = malloc(size)) != NULL)
 	{
 #ifndef HAVE_AVAIL_MEM
-	    /* 1. No check for available memory: Just return. */
+	    // 1. No check for available memory: Just return.
 	    goto theend;
 #else
-	    /* 2. Slow check for available memory: call mch_avail_mem() after
-	     *    allocating (KEEP_ROOM / 2) amount of memory. */
+	    // 2. Slow check for available memory: call mch_avail_mem() after
+	    //    allocating (KEEP_ROOM / 2) amount of memory.
 	    allocated += size;
 	    if (allocated < KEEP_ROOM / 2)
 		goto theend;
 	    allocated = 0;
 
-	    /* 3. check for available memory: call mch_avail_mem() */
+	    // 3. check for available memory: call mch_avail_mem()
 	    if (mch_avail_mem(TRUE) < KEEP_ROOM_KB && !releasing)
 	    {
-		free((char *)p);	/* System is low... no go! */
+		free(p);	// System is low... no go!
 		p = NULL;
 	    }
 	    else
@@ -952,8 +953,8 @@ lalloc(size_t size, int message)
 	    break;
 	releasing = TRUE;
 
-	clear_sb_text(TRUE);	      /* free any scrollback text */
-	try_again = mf_release_all(); /* release as many blocks as possible */
+	clear_sb_text(TRUE);	      // free any scrollback text
+	try_again = mf_release_all(); // release as many blocks as possible
 
 	releasing = FALSE;
 	if (!try_again)
@@ -965,7 +966,7 @@ lalloc(size_t size, int message)
 
 theend:
 #ifdef MEM_PROFILE
-    mem_post_alloc((void **)&p, size);
+    mem_post_alloc(&p, size);
 #endif
     return p;
 }
@@ -974,7 +975,7 @@ theend:
  * lalloc() with an ID for alloc_fail().
  */
 #if defined(FEAT_SIGNS) || defined(PROTO)
-    char_u *
+    void *
 lalloc_id(size_t size, int message, alloc_id_T id UNUSED)
 {
 #ifdef FEAT_EVAL
@@ -1014,14 +1015,19 @@ do_outofmem_msg(size_t size)
 {
     if (!did_outofmem_msg)
     {
-	/* Don't hide this message */
+	// Don't hide this message
 	emsg_silent = 0;
 
-	/* Must come first to avoid coming back here when printing the error
-	 * message fails, e.g. when setting v:errmsg. */
+	// Must come first to avoid coming back here when printing the error
+	// message fails, e.g. when setting v:errmsg.
 	did_outofmem_msg = TRUE;
 
 	semsg(_("E342: Out of memory!  (allocating %lu bytes)"), (long_u)size);
+
+	if (starting == NO_SCREEN)
+	    // Not even finished with initializations and already out of
+	    // memory?  Then nothing is going to work, exit.
+	    mch_exit(123);
     }
 }
 
@@ -1039,16 +1045,16 @@ free_all_mem(void)
 {
     buf_T	*buf, *nextbuf;
 
-    /* When we cause a crash here it is caught and Vim tries to exit cleanly.
-     * Don't try freeing everything again. */
+    // When we cause a crash here it is caught and Vim tries to exit cleanly.
+    // Don't try freeing everything again.
     if (entered_free_all_mem)
 	return;
     entered_free_all_mem = TRUE;
 
-    /* Don't want to trigger autocommands from here on. */
+    // Don't want to trigger autocommands from here on.
     block_autocmds();
 
-    /* Close all tabs and windows.  Reset 'equalalways' to avoid redraws. */
+    // Close all tabs and windows.  Reset 'equalalways' to avoid redraws.
     p_ea = FALSE;
     if (first_tabpage != NULL && first_tabpage->tp_next != NULL)
 	do_cmdline_cmd((char_u *)"tabonly!");
@@ -1056,11 +1062,11 @@ free_all_mem(void)
 	do_cmdline_cmd((char_u *)"only!");
 
 # if defined(FEAT_SPELL)
-    /* Free all spell info. */
+    // Free all spell info.
     spell_free_all();
 # endif
 
-#if defined(FEAT_INS_EXPAND) && defined(FEAT_BEVAL_TERM)
+# if defined(FEAT_BEVAL_TERM)
     ui_remove_balloon();
 # endif
 
@@ -1092,7 +1098,7 @@ free_all_mem(void)
 # endif
 # if defined(FEAT_KEYMAP)
 	do_cmdline_cmd((char_u *)"set keymap=");
-#endif
+# endif
     }
 
 # ifdef FEAT_TITLE
@@ -1102,21 +1108,17 @@ free_all_mem(void)
     free_findfile();
 # endif
 
-    /* Obviously named calls. */
+    // Obviously named calls.
     free_all_autocmds();
     clear_termcodes();
     free_all_marks();
     alist_clear(&global_alist);
     free_homedir();
-# if defined(FEAT_CMDL_COMPL)
     free_users();
-# endif
     free_search_patterns();
     free_old_sub();
     free_last_insert();
-# if defined(FEAT_INS_EXPAND)
     free_insexpand_stuff();
-# endif
     free_prev_shellcmd();
     free_regexp_stuff();
     free_tag_stuff();
@@ -1131,29 +1133,25 @@ free_all_mem(void)
     if (curtab != NULL)
 	diff_clear(curtab);
 # endif
-    clear_sb_text(TRUE);	      /* free any scrollback text */
+    clear_sb_text(TRUE);	      // free any scrollback text
 
-    /* Free some global vars. */
+    // Free some global vars.
     vim_free(username);
 # ifdef FEAT_CLIPBOARD
     vim_regfree(clip_exclude_prog);
 # endif
     vim_free(last_cmdline);
-# ifdef FEAT_CMDHIST
     vim_free(new_last_cmdline);
-# endif
     set_keep_msg(NULL, 0);
 
-    /* Clear cmdline history. */
+    // Clear cmdline history.
     p_hi = 0;
-# ifdef FEAT_CMDHIST
     init_history();
-# endif
-#ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
     clear_global_prop_types();
-#endif
+# endif
 
-#ifdef FEAT_QUICKFIX
+# ifdef FEAT_QUICKFIX
     {
 	win_T	    *win;
 	tabpage_T   *tab;
@@ -1163,7 +1161,7 @@ free_all_mem(void)
 	FOR_ALL_TAB_WINDOWS(tab, win)
 	    qf_free_all(win);
     }
-#endif
+# endif
 
     // Close all script inputs.
     close_all_scripts();
@@ -1172,32 +1170,32 @@ free_all_mem(void)
 	// Destroy all windows.  Must come before freeing buffers.
 	win_free_all();
 
-    /* Free all option values.  Must come after closing windows. */
+    // Free all option values.  Must come after closing windows.
     free_all_options();
 
-    /* Free all buffers.  Reset 'autochdir' to avoid accessing things that
-     * were freed already. */
-#ifdef FEAT_AUTOCHDIR
+    // Free all buffers.  Reset 'autochdir' to avoid accessing things that
+    // were freed already.
+# ifdef FEAT_AUTOCHDIR
     p_acd = FALSE;
-#endif
+# endif
     for (buf = firstbuf; buf != NULL; )
     {
 	bufref_T    bufref;
 
 	set_bufref(&bufref, buf);
 	nextbuf = buf->b_next;
-	close_buffer(NULL, buf, DOBUF_WIPE, FALSE);
+	close_buffer(NULL, buf, DOBUF_WIPE, FALSE, FALSE);
 	if (bufref_valid(&bufref))
-	    buf = nextbuf;	/* didn't work, try next one */
+	    buf = nextbuf;	// didn't work, try next one
 	else
 	    buf = firstbuf;
     }
 
 # ifdef FEAT_ARABIC
-    free_cmdline_buf();
+    free_arshape_buf();
 # endif
 
-    /* Clear registers. */
+    // Clear registers.
     clear_registers();
     ResetRedobuff();
     ResetRedobuff();
@@ -1206,7 +1204,7 @@ free_all_mem(void)
     vim_free(serverDelayedStartName);
 # endif
 
-    /* highlight info */
+    // highlight info
     free_highlight();
 
     reset_last_sourcing();
@@ -1218,11 +1216,11 @@ free_all_mem(void)
     }
 
 # ifdef UNIX
-    /* Machine-specific free. */
+    // Machine-specific free.
     mch_free_mem();
 # endif
 
-    /* message history */
+    // message history
     for (;;)
 	if (delete_first_msg() == FAIL)
 	    break;
@@ -1234,19 +1232,22 @@ free_all_mem(void)
     timer_free_all();
 # endif
 # ifdef FEAT_EVAL
-    /* must be after channel_free_all() with unrefs partials */
+    // must be after channel_free_all() with unrefs partials
     eval_clear();
 # endif
 # ifdef FEAT_JOB_CHANNEL
-    /* must be after eval_clear() with unrefs jobs */
+    // must be after eval_clear() with unrefs jobs
     job_free_all();
 # endif
 
     free_termoptions();
 
-    /* screenlines (can't display anything now!) */
+    // screenlines (can't display anything now!)
     free_screenlines();
 
+# if defined(FEAT_SOUND)
+    sound_free();
+# endif
 # if defined(USE_XSMP)
     xsmp_close();
 # endif
@@ -1345,18 +1346,18 @@ vim_strsave_escaped_ext(
      * First count the number of backslashes required.
      * Then allocate the memory and insert them.
      */
-    length = 1;				/* count the trailing NUL */
+    length = 1;				// count the trailing NUL
     for (p = string; *p; p++)
     {
 	if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
 	{
-	    length += l;		/* count a multibyte char */
+	    length += l;		// count a multibyte char
 	    p += l - 1;
 	    continue;
 	}
 	if (vim_strchr(esc_chars, *p) != NULL || (bsl && rem_backslash(p)))
-	    ++length;			/* count a backslash */
-	++length;			/* count an ordinary char */
+	    ++length;			// count a backslash
+	++length;			// count an ordinary char
     }
     escaped_string = alloc(length);
     if (escaped_string != NULL)
@@ -1368,7 +1369,7 @@ vim_strsave_escaped_ext(
 	    {
 		mch_memmove(p2, p, (size_t)l);
 		p2 += l;
-		p += l - 1;		/* skip multibyte char  */
+		p += l - 1;		// skip multibyte char
 		continue;
 	    }
 	    if (vim_strchr(esc_chars, *p) != NULL || (bsl && rem_backslash(p)))
@@ -1409,47 +1410,47 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
     int		l;
     int		csh_like;
 
-    /* Only csh and similar shells expand '!' within single quotes.  For sh and
-     * the like we must not put a backslash before it, it will be taken
-     * literally.  If do_special is set the '!' will be escaped twice.
-     * Csh also needs to have "\n" escaped twice when do_special is set. */
+    // Only csh and similar shells expand '!' within single quotes.  For sh and
+    // the like we must not put a backslash before it, it will be taken
+    // literally.  If do_special is set the '!' will be escaped twice.
+    // Csh also needs to have "\n" escaped twice when do_special is set.
     csh_like = csh_like_shell();
 
-    /* First count the number of extra bytes required. */
-    length = (unsigned)STRLEN(string) + 3;  /* two quotes and a trailing NUL */
+    // First count the number of extra bytes required.
+    length = (unsigned)STRLEN(string) + 3;  // two quotes and a trailing NUL
     for (p = string; *p != NUL; MB_PTR_ADV(p))
     {
 # ifdef MSWIN
 	if (!p_ssl)
 	{
 	    if (*p == '"')
-		++length;		/* " -> "" */
+		++length;		// " -> ""
 	}
 	else
 # endif
 	if (*p == '\'')
-	    length += 3;		/* ' => '\'' */
+	    length += 3;		// ' => '\''
 	if ((*p == '\n' && (csh_like || do_newline))
 		|| (*p == '!' && (csh_like || do_special)))
 	{
-	    ++length;			/* insert backslash */
+	    ++length;			// insert backslash
 	    if (csh_like && do_special)
-		++length;		/* insert backslash */
+		++length;		// insert backslash
 	}
 	if (do_special && find_cmdline_var(p, &l) >= 0)
 	{
-	    ++length;			/* insert backslash */
+	    ++length;			// insert backslash
 	    p += l - 1;
 	}
     }
 
-    /* Allocate memory for the result and fill it. */
+    // Allocate memory for the result and fill it.
     escaped_string = alloc(length);
     if (escaped_string != NULL)
     {
 	d = escaped_string;
 
-	/* add opening quote */
+	// add opening quote
 # ifdef MSWIN
 	if (!p_ssl)
 	    *d++ = '"';
@@ -1492,8 +1493,8 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	    }
 	    if (do_special && find_cmdline_var(p, &l) >= 0)
 	    {
-		*d++ = '\\';		/* insert backslash */
-		while (--l >= 0)	/* copy the var */
+		*d++ = '\\';		// insert backslash
+		while (--l >= 0)	// copy the var
 		    *d++ = *p++;
 		continue;
 	    }
@@ -1501,7 +1502,7 @@ vim_strsave_shellescape(char_u *string, int do_special, int do_newline)
 	    MB_COPY_CHAR(p, d);
 	}
 
-	/* add terminating quote and finish with a NUL */
+	// add terminating quote and finish with a NUL
 # ifdef MSWIN
 	if (!p_ssl)
 	    *d++ = '"';
@@ -1593,14 +1594,14 @@ strup_save(char_u *orig)
 		l = utf_ptr2len(p);
 		if (c == 0)
 		{
-		    /* overlong sequence, use only the first byte */
+		    // overlong sequence, use only the first byte
 		    c = *p;
 		    l = 1;
 		}
 		uc = utf_toupper(c);
 
-		/* Reallocate string when byte count changes.  This is rare,
-		 * thus it's OK to do another malloc()/free(). */
+		// Reallocate string when byte count changes.  This is rare,
+		// thus it's OK to do another malloc()/free().
 		newl = utf_char2len(uc);
 		if (newl != l)
 		{
@@ -1621,10 +1622,10 @@ strup_save(char_u *orig)
 		p += newl;
 	    }
 	    else if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
-		p += l;		/* skip multi-byte character */
+		p += l;		// skip multi-byte character
 	    else
 	    {
-		*p = TOUPPER_LOC(*p); /* note that toupper() can be a macro */
+		*p = TOUPPER_LOC(*p); // note that toupper() can be a macro
 		p++;
 	    }
 	}
@@ -1660,14 +1661,14 @@ strlow_save(char_u *orig)
 		l = utf_ptr2len(p);
 		if (c == 0)
 		{
-		    /* overlong sequence, use only the first byte */
+		    // overlong sequence, use only the first byte
 		    c = *p;
 		    l = 1;
 		}
 		lc = utf_tolower(c);
 
-		/* Reallocate string when byte count changes.  This is rare,
-		 * thus it's OK to do another malloc()/free(). */
+		// Reallocate string when byte count changes.  This is rare,
+		// thus it's OK to do another malloc()/free().
 		newl = utf_char2len(lc);
 		if (newl != l)
 		{
@@ -1688,10 +1689,10 @@ strlow_save(char_u *orig)
 		p += newl;
 	    }
 	    else if (has_mbyte && (l = (*mb_ptr2len)(p)) > 1)
-		p += l;		/* skip multi-byte character */
+		p += l;		// skip multi-byte character
 	    else
 	    {
-		*p = TOLOWER_LOC(*p); /* note that tolower() can be a macro */
+		*p = TOLOWER_LOC(*p); // note that tolower() can be a macro
 		p++;
 	    }
 	}
@@ -1760,7 +1761,7 @@ copy_option_part(
     int	    len = 0;
     char_u  *p = *option;
 
-    /* skip '.' at start of option part, for 'suffixes' */
+    // skip '.' at start of option part, for 'suffixes'
     if (*p == '.')
 	buf[len++] = *p++;
     while (*p != NUL && vim_strchr((char_u *)sep_chars, *p) == NULL)
@@ -1776,9 +1777,9 @@ copy_option_part(
     }
     buf[len] = NUL;
 
-    if (*p != NUL && *p != ',')	/* skip non-standard separator */
+    if (*p != NUL && *p != ',')	// skip non-standard separator
 	++p;
-    p = skip_to_option_part(p);	/* p points to next file name */
+    p = skip_to_option_part(p);	// p points to next file name
 
     *option = p;
     return len;
@@ -1830,13 +1831,13 @@ vim_stricmp(char *s1, char *s2)
     {
 	i = (int)TOLOWER_LOC(*s1) - (int)TOLOWER_LOC(*s2);
 	if (i != 0)
-	    return i;			    /* this character different */
+	    return i;			    // this character different
 	if (*s1 == NUL)
-	    break;			    /* strings match until NUL */
+	    break;			    // strings match until NUL
 	++s1;
 	++s2;
     }
-    return 0;				    /* strings match */
+    return 0;				    // strings match
 }
 #endif
 
@@ -1855,14 +1856,14 @@ vim_strnicmp(char *s1, char *s2, size_t len)
     {
 	i = (int)TOLOWER_LOC(*s1) - (int)TOLOWER_LOC(*s2);
 	if (i != 0)
-	    return i;			    /* this character different */
+	    return i;			    // this character different
 	if (*s1 == NUL)
-	    break;			    /* strings match until NUL */
+	    break;			    // strings match until NUL
 	++s1;
 	++s2;
 	--len;
     }
-    return 0;				    /* strings match */
+    return 0;				    // strings match
 }
 #endif
 
@@ -1884,7 +1885,7 @@ vim_strchr(char_u *string, int c)
 	{
 	    int l = utfc_ptr2len(p);
 
-	    /* Avoid matching an illegal byte here. */
+	    // Avoid matching an illegal byte here.
 	    if (utf_ptr2char(p) == c && l > 1)
 		return p;
 	    p += l;
@@ -2057,9 +2058,15 @@ ga_grow(garray_T *gap, int n)
     {
 	if (n < gap->ga_growsize)
 	    n = gap->ga_growsize;
+
+	// A linear growth is very inefficient when the array grows big.  This
+	// is a compromise between allocating memory that won't be used and too
+	// many copy operations. A factor of 1.5 seems reasonable.
+	if (n < gap->ga_len / 2)
+	    n = gap->ga_len / 2;
+
 	new_len = gap->ga_itemsize * (gap->ga_len + n);
-	pp = (gap->ga_data == NULL)
-	      ? alloc(new_len) : vim_realloc(gap->ga_data, new_len);
+	pp = vim_realloc(gap->ga_data, new_len);
 	if (pp == NULL)
 	    return FAIL;
 	old_len = gap->ga_itemsize * gap->ga_maxlen;
@@ -2169,7 +2176,7 @@ ga_append(garray_T *gap, int c)
     void
 append_ga_line(garray_T *gap)
 {
-    /* Remove trailing CR. */
+    // Remove trailing CR.
     if (gap->ga_len > 0
 	    && !curbuf->b_p_bin
 	    && ((char_u *)gap->ga_data)[gap->ga_len - 1] == CAR)
@@ -2191,9 +2198,9 @@ append_ga_line(garray_T *gap)
 
 static struct modmasktable
 {
-    short	mod_mask;	/* Bit-mask for particular key modifier */
-    short	mod_flag;	/* Bit(s) for particular key modifier */
-    char_u	name;		/* Single letter name of modifier */
+    short	mod_mask;	// Bit-mask for particular key modifier
+    short	mod_flag;	// Bit(s) for particular key modifier
+    char_u	name;		// Single letter name of modifier
 } mod_mask_table[] =
 {
     {MOD_MASK_ALT,		MOD_MASK_ALT,		(char_u)'M'},
@@ -2206,10 +2213,10 @@ static struct modmasktable
 #ifdef MACOS_X
     {MOD_MASK_CMD,		MOD_MASK_CMD,		(char_u)'D'},
 #endif
-    /* 'A' must be the last one */
+    // 'A' must be the last one
     {MOD_MASK_ALT,		MOD_MASK_ALT,		(char_u)'A'},
     {0, 0, NUL}
-    /* NOTE: when adding an entry, update MAX_KEY_NAME_LEN! */
+    // NOTE: when adding an entry, update MAX_KEY_NAME_LEN!
 };
 
 /*
@@ -2220,48 +2227,48 @@ static struct modmasktable
 
 static char_u modifier_keys_table[] =
 {
-/*  mod mask	    with modifier		without modifier */
-    MOD_MASK_SHIFT, '&', '9',			'@', '1',	/* begin */
-    MOD_MASK_SHIFT, '&', '0',			'@', '2',	/* cancel */
-    MOD_MASK_SHIFT, '*', '1',			'@', '4',	/* command */
-    MOD_MASK_SHIFT, '*', '2',			'@', '5',	/* copy */
-    MOD_MASK_SHIFT, '*', '3',			'@', '6',	/* create */
-    MOD_MASK_SHIFT, '*', '4',			'k', 'D',	/* delete char */
-    MOD_MASK_SHIFT, '*', '5',			'k', 'L',	/* delete line */
-    MOD_MASK_SHIFT, '*', '7',			'@', '7',	/* end */
-    MOD_MASK_CTRL,  KS_EXTRA, (int)KE_C_END,	'@', '7',	/* end */
-    MOD_MASK_SHIFT, '*', '9',			'@', '9',	/* exit */
-    MOD_MASK_SHIFT, '*', '0',			'@', '0',	/* find */
-    MOD_MASK_SHIFT, '#', '1',			'%', '1',	/* help */
-    MOD_MASK_SHIFT, '#', '2',			'k', 'h',	/* home */
-    MOD_MASK_CTRL,  KS_EXTRA, (int)KE_C_HOME,	'k', 'h',	/* home */
-    MOD_MASK_SHIFT, '#', '3',			'k', 'I',	/* insert */
-    MOD_MASK_SHIFT, '#', '4',			'k', 'l',	/* left arrow */
-    MOD_MASK_CTRL,  KS_EXTRA, (int)KE_C_LEFT,	'k', 'l',	/* left arrow */
-    MOD_MASK_SHIFT, '%', 'a',			'%', '3',	/* message */
-    MOD_MASK_SHIFT, '%', 'b',			'%', '4',	/* move */
-    MOD_MASK_SHIFT, '%', 'c',			'%', '5',	/* next */
-    MOD_MASK_SHIFT, '%', 'd',			'%', '7',	/* options */
-    MOD_MASK_SHIFT, '%', 'e',			'%', '8',	/* previous */
-    MOD_MASK_SHIFT, '%', 'f',			'%', '9',	/* print */
-    MOD_MASK_SHIFT, '%', 'g',			'%', '0',	/* redo */
-    MOD_MASK_SHIFT, '%', 'h',			'&', '3',	/* replace */
-    MOD_MASK_SHIFT, '%', 'i',			'k', 'r',	/* right arr. */
-    MOD_MASK_CTRL,  KS_EXTRA, (int)KE_C_RIGHT,	'k', 'r',	/* right arr. */
-    MOD_MASK_SHIFT, '%', 'j',			'&', '5',	/* resume */
-    MOD_MASK_SHIFT, '!', '1',			'&', '6',	/* save */
-    MOD_MASK_SHIFT, '!', '2',			'&', '7',	/* suspend */
-    MOD_MASK_SHIFT, '!', '3',			'&', '8',	/* undo */
-    MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_UP,	'k', 'u',	/* up arrow */
-    MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_DOWN,	'k', 'd',	/* down arrow */
+//  mod mask	    with modifier		without modifier
+    MOD_MASK_SHIFT, '&', '9',			'@', '1',	// begin
+    MOD_MASK_SHIFT, '&', '0',			'@', '2',	// cancel
+    MOD_MASK_SHIFT, '*', '1',			'@', '4',	// command
+    MOD_MASK_SHIFT, '*', '2',			'@', '5',	// copy
+    MOD_MASK_SHIFT, '*', '3',			'@', '6',	// create
+    MOD_MASK_SHIFT, '*', '4',			'k', 'D',	// delete char
+    MOD_MASK_SHIFT, '*', '5',			'k', 'L',	// delete line
+    MOD_MASK_SHIFT, '*', '7',			'@', '7',	// end
+    MOD_MASK_CTRL,  KS_EXTRA, (int)KE_C_END,	'@', '7',	// end
+    MOD_MASK_SHIFT, '*', '9',			'@', '9',	// exit
+    MOD_MASK_SHIFT, '*', '0',			'@', '0',	// find
+    MOD_MASK_SHIFT, '#', '1',			'%', '1',	// help
+    MOD_MASK_SHIFT, '#', '2',			'k', 'h',	// home
+    MOD_MASK_CTRL,  KS_EXTRA, (int)KE_C_HOME,	'k', 'h',	// home
+    MOD_MASK_SHIFT, '#', '3',			'k', 'I',	// insert
+    MOD_MASK_SHIFT, '#', '4',			'k', 'l',	// left arrow
+    MOD_MASK_CTRL,  KS_EXTRA, (int)KE_C_LEFT,	'k', 'l',	// left arrow
+    MOD_MASK_SHIFT, '%', 'a',			'%', '3',	// message
+    MOD_MASK_SHIFT, '%', 'b',			'%', '4',	// move
+    MOD_MASK_SHIFT, '%', 'c',			'%', '5',	// next
+    MOD_MASK_SHIFT, '%', 'd',			'%', '7',	// options
+    MOD_MASK_SHIFT, '%', 'e',			'%', '8',	// previous
+    MOD_MASK_SHIFT, '%', 'f',			'%', '9',	// print
+    MOD_MASK_SHIFT, '%', 'g',			'%', '0',	// redo
+    MOD_MASK_SHIFT, '%', 'h',			'&', '3',	// replace
+    MOD_MASK_SHIFT, '%', 'i',			'k', 'r',	// right arr.
+    MOD_MASK_CTRL,  KS_EXTRA, (int)KE_C_RIGHT,	'k', 'r',	// right arr.
+    MOD_MASK_SHIFT, '%', 'j',			'&', '5',	// resume
+    MOD_MASK_SHIFT, '!', '1',			'&', '6',	// save
+    MOD_MASK_SHIFT, '!', '2',			'&', '7',	// suspend
+    MOD_MASK_SHIFT, '!', '3',			'&', '8',	// undo
+    MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_UP,	'k', 'u',	// up arrow
+    MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_DOWN,	'k', 'd',	// down arrow
 
-								/* vt100 F1 */
+								// vt100 F1
     MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_XF1,	KS_EXTRA, (int)KE_XF1,
     MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_XF2,	KS_EXTRA, (int)KE_XF2,
     MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_XF3,	KS_EXTRA, (int)KE_XF3,
     MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_XF4,	KS_EXTRA, (int)KE_XF4,
 
-    MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_F1,	'k', '1',	/* F1 */
+    MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_F1,	'k', '1',	// F1
     MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_F2,	'k', '2',
     MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_F3,	'k', '3',
     MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_F4,	'k', '4',
@@ -2270,7 +2277,7 @@ static char_u modifier_keys_table[] =
     MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_F7,	'k', '7',
     MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_F8,	'k', '8',
     MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_F9,	'k', '9',
-    MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_F10,	'k', ';',	/* F10 */
+    MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_F10,	'k', ';',	// F10
 
     MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_F11,	'F', '1',
     MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_F12,	'F', '2',
@@ -2302,7 +2309,7 @@ static char_u modifier_keys_table[] =
     MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_F36,	'F', 'Q',
     MOD_MASK_SHIFT, KS_EXTRA, (int)KE_S_F37,	'F', 'R',
 
-							    /* TAB pseudo code*/
+							    // TAB pseudo code
     MOD_MASK_SHIFT, 'k', 'B',			KS_EXTRA, (int)KE_TAB,
 
     NUL
@@ -2310,29 +2317,29 @@ static char_u modifier_keys_table[] =
 
 static struct key_name_entry
 {
-    int	    key;	/* Special key code or ascii value */
-    char_u  *name;	/* Name of key */
+    int	    key;	// Special key code or ascii value
+    char_u  *name;	// Name of key
 } key_names_table[] =
 {
     {' ',		(char_u *)"Space"},
     {TAB,		(char_u *)"Tab"},
     {K_TAB,		(char_u *)"Tab"},
     {NL,		(char_u *)"NL"},
-    {NL,		(char_u *)"NewLine"},	/* Alternative name */
-    {NL,		(char_u *)"LineFeed"},	/* Alternative name */
-    {NL,		(char_u *)"LF"},	/* Alternative name */
+    {NL,		(char_u *)"NewLine"},	// Alternative name
+    {NL,		(char_u *)"LineFeed"},	// Alternative name
+    {NL,		(char_u *)"LF"},	// Alternative name
     {CAR,		(char_u *)"CR"},
-    {CAR,		(char_u *)"Return"},	/* Alternative name */
-    {CAR,		(char_u *)"Enter"},	/* Alternative name */
+    {CAR,		(char_u *)"Return"},	// Alternative name
+    {CAR,		(char_u *)"Enter"},	// Alternative name
     {K_BS,		(char_u *)"BS"},
-    {K_BS,		(char_u *)"BackSpace"},	/* Alternative name */
+    {K_BS,		(char_u *)"BackSpace"},	// Alternative name
     {ESC,		(char_u *)"Esc"},
     {CSI,		(char_u *)"CSI"},
     {K_CSI,		(char_u *)"xCSI"},
     {'|',		(char_u *)"Bar"},
     {'\\',		(char_u *)"Bslash"},
     {K_DEL,		(char_u *)"Del"},
-    {K_DEL,		(char_u *)"Delete"},	/* Alternative name */
+    {K_DEL,		(char_u *)"Delete"},	// Alternative name
     {K_KDEL,		(char_u *)"kDel"},
     {K_UP,		(char_u *)"Up"},
     {K_DOWN,		(char_u *)"Down"},
@@ -2394,7 +2401,7 @@ static struct key_name_entry
     {K_HELP,		(char_u *)"Help"},
     {K_UNDO,		(char_u *)"Undo"},
     {K_INS,		(char_u *)"Insert"},
-    {K_INS,		(char_u *)"Ins"},	/* Alternative name */
+    {K_INS,		(char_u *)"Ins"},	// Alternative name
     {K_KINS,		(char_u *)"kInsert"},
     {K_HOME,		(char_u *)"Home"},
     {K_KHOME,		(char_u *)"kHome"},
@@ -2463,8 +2470,8 @@ static struct key_name_entry
     {K_MOUSEUP,		(char_u *)"ScrollWheelDown"},
     {K_MOUSELEFT,	(char_u *)"ScrollWheelRight"},
     {K_MOUSERIGHT,	(char_u *)"ScrollWheelLeft"},
-    {K_MOUSEDOWN,	(char_u *)"MouseDown"}, /* OBSOLETE: Use	  */
-    {K_MOUSEUP,		(char_u *)"MouseUp"},	/* ScrollWheelXXX instead */
+    {K_MOUSEDOWN,	(char_u *)"MouseDown"}, // OBSOLETE: Use
+    {K_MOUSEUP,		(char_u *)"MouseUp"},	// ScrollWheelXXX instead
     {K_X1MOUSE,		(char_u *)"X1Mouse"},
     {K_X1DRAG,		(char_u *)"X1Drag"},
     {K_X1RELEASE,		(char_u *)"X1Release"},
@@ -2480,54 +2487,16 @@ static struct key_name_entry
     {K_CURSORHOLD,	(char_u *)"CursorHold"},
     {K_IGNORE,		(char_u *)"Ignore"},
     {0,			NULL}
-    /* NOTE: When adding a long name update MAX_KEY_NAME_LEN. */
+    // NOTE: When adding a long name update MAX_KEY_NAME_LEN.
 };
 
 #define KEY_NAMES_TABLE_LEN (sizeof(key_names_table) / sizeof(struct key_name_entry))
-
-#ifdef FEAT_MOUSE
-static struct mousetable
-{
-    int	    pseudo_code;	/* Code for pseudo mouse event */
-    int	    button;		/* Which mouse button is it? */
-    int	    is_click;		/* Is it a mouse button click event? */
-    int	    is_drag;		/* Is it a mouse drag event? */
-} mouse_table[] =
-{
-    {(int)KE_LEFTMOUSE,		MOUSE_LEFT,	TRUE,	FALSE},
-#ifdef FEAT_GUI
-    {(int)KE_LEFTMOUSE_NM,	MOUSE_LEFT,	TRUE,	FALSE},
-#endif
-    {(int)KE_LEFTDRAG,		MOUSE_LEFT,	FALSE,	TRUE},
-    {(int)KE_LEFTRELEASE,	MOUSE_LEFT,	FALSE,	FALSE},
-#ifdef FEAT_GUI
-    {(int)KE_LEFTRELEASE_NM,	MOUSE_LEFT,	FALSE,	FALSE},
-#endif
-    {(int)KE_MIDDLEMOUSE,	MOUSE_MIDDLE,	TRUE,	FALSE},
-    {(int)KE_MIDDLEDRAG,	MOUSE_MIDDLE,	FALSE,	TRUE},
-    {(int)KE_MIDDLERELEASE,	MOUSE_MIDDLE,	FALSE,	FALSE},
-    {(int)KE_RIGHTMOUSE,	MOUSE_RIGHT,	TRUE,	FALSE},
-    {(int)KE_RIGHTDRAG,		MOUSE_RIGHT,	FALSE,	TRUE},
-    {(int)KE_RIGHTRELEASE,	MOUSE_RIGHT,	FALSE,	FALSE},
-    {(int)KE_X1MOUSE,		MOUSE_X1,	TRUE,	FALSE},
-    {(int)KE_X1DRAG,		MOUSE_X1,	FALSE,	TRUE},
-    {(int)KE_X1RELEASE,		MOUSE_X1,	FALSE,	FALSE},
-    {(int)KE_X2MOUSE,		MOUSE_X2,	TRUE,	FALSE},
-    {(int)KE_X2DRAG,		MOUSE_X2,	FALSE,	TRUE},
-    {(int)KE_X2RELEASE,		MOUSE_X2,	FALSE,	FALSE},
-    /* DRAG without CLICK */
-    {(int)KE_MOUSEMOVE,		MOUSE_RELEASE,	FALSE,	TRUE},
-    /* RELEASE without CLICK */
-    {(int)KE_IGNORE,		MOUSE_RELEASE,	FALSE,	FALSE},
-    {0,				0,		0,	0},
-};
-#endif /* FEAT_MOUSE */
 
 /*
  * Return the modifier mask bit (MOD_MASK_*) which corresponds to the given
  * modifier name ('S' for Shift, 'C' for Ctrl etc).
  */
-    int
+    static int
 name_to_mod_mask(int c)
 {
     int	    i;
@@ -2552,7 +2521,7 @@ simplify_key(int key, int *modifiers)
 
     if (*modifiers & (MOD_MASK_SHIFT | MOD_MASK_CTRL | MOD_MASK_ALT))
     {
-	/* TAB is a special case */
+	// TAB is a special case
 	if (key == TAB && (*modifiers & MOD_MASK_SHIFT))
 	{
 	    *modifiers &= ~MOD_MASK_SHIFT;
@@ -2617,7 +2586,7 @@ get_special_key_name(int c, int modifiers)
     string[0] = '<';
     idx = 1;
 
-    /* Key that stands for a normal character. */
+    // Key that stands for a normal character.
     if (IS_SPECIAL(c) && KEY2TERMCAP0(c) == KS_KEY)
 	c = KEY2TERMCAP1(c);
 
@@ -2638,7 +2607,7 @@ get_special_key_name(int c, int modifiers)
 	    }
     }
 
-    /* try to find the key in the special key table */
+    // try to find the key in the special key table
     table_idx = find_special_key_in_table(c);
 
     /*
@@ -2653,7 +2622,7 @@ get_special_key_name(int c, int modifiers)
 	{
 	    c &= 0x7f;
 	    modifiers |= MOD_MASK_ALT;
-	    /* try again, to find the un-alted key in the special key table */
+	    // try again, to find the un-alted key in the special key table
 	    table_idx = find_special_key_in_table(c);
 	}
 	if (table_idx < 0 && !vim_isprintc(c) && c < ' ')
@@ -2667,7 +2636,7 @@ get_special_key_name(int c, int modifiers)
 	}
     }
 
-    /* translate the modifier into a string */
+    // translate the modifier into a string
     for (i = 0; mod_mask_table[i].name != 'A'; i++)
 	if ((modifiers & mod_mask_table[i].mod_mask)
 						== mod_mask_table[i].mod_flag)
@@ -2676,7 +2645,7 @@ get_special_key_name(int c, int modifiers)
 	    string[idx++] = (char_u)'-';
 	}
 
-    if (table_idx < 0)		/* unknown special key, may output t_xx */
+    if (table_idx < 0)		// unknown special key, may output t_xx
     {
 	if (IS_SPECIAL(c))
 	{
@@ -2685,7 +2654,7 @@ get_special_key_name(int c, int modifiers)
 	    string[idx++] = KEY2TERMCAP0(c);
 	    string[idx++] = KEY2TERMCAP1(c);
 	}
-	/* Not a special key, only modifiers, output directly */
+	// Not a special key, only modifiers, output directly
 	else
 	{
 	    if (has_mbyte && (*mb_char2len)(c) > 1)
@@ -2700,7 +2669,7 @@ get_special_key_name(int c, int modifiers)
 	    }
 	}
     }
-    else		/* use name of special key */
+    else		// use name of special key
     {
 	size_t len = STRLEN(key_names_table[table_idx].name);
 
@@ -2725,18 +2694,35 @@ get_special_key_name(int c, int modifiers)
 trans_special(
     char_u	**srcp,
     char_u	*dst,
-    int		keycode, /* prefer key code, e.g. K_DEL instead of DEL */
-    int		in_string) /* TRUE when inside a double quoted string */
+    int		keycode,    // prefer key code, e.g. K_DEL instead of DEL
+    int		in_string,  // TRUE when inside a double quoted string
+    int		simplify,	// simplify <C-H> and <A-x>
+    int		*did_simplify)  // found <C-H> or <A-x>
 {
     int		modifiers = 0;
     int		key;
-    int		dlen = 0;
 
-    key = find_special_key(srcp, &modifiers, keycode, FALSE, in_string);
+    key = find_special_key(srcp, &modifiers, keycode, FALSE, in_string,
+						       simplify, did_simplify);
     if (key == 0)
 	return 0;
 
-    /* Put the appropriate modifier in a string */
+    return special_to_buf(key, modifiers, keycode, dst);
+}
+
+/*
+ * Put the character sequence for "key" with "modifiers" into "dst" and return
+ * the resulting length.
+ * When "keycode" is TRUE prefer key code, e.g. K_DEL instead of DEL.
+ * The sequence is not NUL terminated.
+ * This is how characters in a string are encoded.
+ */
+    int
+special_to_buf(int key, int modifiers, int keycode, char_u *dst)
+{
+    int		dlen = 0;
+
+    // Put the appropriate modifier in a string
     if (modifiers != 0)
     {
 	dst[dlen++] = K_SPECIAL;
@@ -2769,9 +2755,11 @@ trans_special(
 find_special_key(
     char_u	**srcp,
     int		*modp,
-    int		keycode,     /* prefer key code, e.g. K_DEL instead of DEL */
-    int		keep_x_key,  /* don't translate xHome to Home key */
-    int		in_string)   /* TRUE in string, double quote is escaped */
+    int		keycode,	// prefer key code, e.g. K_DEL instead of DEL
+    int		keep_x_key,	// don't translate xHome to Home key
+    int		in_string,	// TRUE in string, double quote is escaped
+    int		simplify,	// simplify <C-H> and <A-x>
+    int		*did_simplify)  // found <C-H> or <A-x>
 {
     char_u	*last_dash;
     char_u	*end_of_name;
@@ -2787,7 +2775,7 @@ find_special_key(
     if (src[0] != '<')
 	return 0;
 
-    /* Find end of modifier list */
+    // Find end of modifier list
     last_dash = src;
     for (bp = src + 1; *bp == '-' || vim_isIDc(*bp); bp++)
     {
@@ -2800,10 +2788,10 @@ find_special_key(
 		    l = mb_ptr2len(bp + 1);
 		else
 		    l = 1;
-		/* Anything accepted, like <C-?>.
-		 * <C-"> or <M-"> are not special in strings as " is
-		 * the string delimiter. With a backslash it works: <M-\"> */
-		if (!(in_string && bp[1] == '"') && bp[2] == '>')
+		// Anything accepted, like <C-?>.
+		// <C-"> or <M-"> are not special in strings as " is
+		// the string delimiter. With a backslash it works: <M-\">
+		if (!(in_string && bp[1] == '"') && bp[l + 1] == '>')
 		    bp += l;
 		else if (in_string && bp[1] == '\\' && bp[2] == '"'
 							       && bp[3] == '>')
@@ -2811,7 +2799,7 @@ find_special_key(
 	    }
 	}
 	if (bp[0] == 't' && bp[1] == '_' && bp[2] && bp[3])
-	    bp += 3;	/* skip t_xx, xx may be '-' or '>' */
+	    bp += 3;	// skip t_xx, xx may be '-' or '>'
 	else if (STRNICMP(bp, "char-", 5) == 0)
 	{
 	    vim_str2nr(bp + 5, NULL, &l, STR2NR_ALL, NULL, NULL, 0, TRUE);
@@ -2825,11 +2813,11 @@ find_special_key(
 	}
     }
 
-    if (*bp == '>')	/* found matching '>' */
+    if (*bp == '>')	// found matching '>'
     {
 	end_of_name = bp + 1;
 
-	/* Which modifiers are given? */
+	// Which modifiers are given?
 	modifiers = 0x0;
 	for (bp = src + 1; bp < last_dash; bp++)
 	{
@@ -2837,7 +2825,7 @@ find_special_key(
 	    {
 		bit = name_to_mod_mask(*bp);
 		if (bit == 0x0)
-		    break;	/* Illegal modifier name */
+		    break;	// Illegal modifier name
 		modifiers |= bit;
 	    }
 	}
@@ -2850,8 +2838,9 @@ find_special_key(
 	    if (STRNICMP(last_dash + 1, "char-", 5) == 0
 						 && VIM_ISDIGIT(last_dash[6]))
 	    {
-		/* <Char-123> or <Char-033> or <Char-0x33> */
-		vim_str2nr(last_dash + 6, NULL, &l, STR2NR_ALL, NULL, &n, 0, TRUE);
+		// <Char-123> or <Char-033> or <Char-0x33>
+		vim_str2nr(last_dash + 6, NULL, &l, STR2NR_ALL, NULL,
+								  &n, 0, TRUE);
 		if (l == 0)
 		{
 		    emsg(_(e_invarg));
@@ -2863,7 +2852,7 @@ find_special_key(
 	    {
 		int off = 1;
 
-		/* Modifier with single letter, or special key name.  */
+		// Modifier with single letter, or special key name.
 		if (in_string && last_dash[1] == '\\' && last_dash[2] == '"')
 		    off = 2;
 		if (has_mbyte)
@@ -2894,18 +2883,17 @@ find_special_key(
 
 		if (!keycode)
 		{
-		    /* don't want keycode, use single byte code */
+		    // don't want keycode, use single byte code
 		    if (key == K_BS)
 			key = BS;
 		    else if (key == K_DEL || key == K_KDEL)
 			key = DEL;
 		}
 
-		/*
-		 * Normal Key with modifier: Try to make a single byte code.
-		 */
+		// Normal Key with modifier: Try to make a single byte code.
 		if (!IS_SPECIAL(key))
-		    key = extract_modifiers(key, &modifiers);
+		    key = extract_modifiers(key, &modifiers,
+						       simplify, did_simplify);
 
 		*modp = modifiers;
 		*srcp = end_of_name;
@@ -2919,26 +2907,37 @@ find_special_key(
 /*
  * Try to include modifiers in the key.
  * Changes "Shift-a" to 'A', "Alt-A" to 0xc0, etc.
+ * When "simplify" is FALSE don't do Ctrl and Alt.
+ * When "simplify" is TRUE and Ctrl or Alt is removed from modifiers set
+ * "did_simplify" when it's not NULL.
  */
     int
-extract_modifiers(int key, int *modp)
+extract_modifiers(int key, int *modp, int simplify, int *did_simplify)
 {
     int	modifiers = *modp;
 
 #ifdef MACOS_X
-    /* Command-key really special, no fancynest */
+    // Command-key really special, no fancynest
     if (!(modifiers & MOD_MASK_CMD))
 #endif
     if ((modifiers & MOD_MASK_SHIFT) && ASCII_ISALPHA(key))
     {
 	key = TOUPPER_ASC(key);
-	modifiers &= ~MOD_MASK_SHIFT;
+	// With <C-S-a> and <A-S-a> we keep the shift modifier.
+	// With <S-a> and <S-A> we don't keep the shift modifier.
+	if (simplify || modifiers == MOD_MASK_SHIFT)
+	    modifiers &= ~MOD_MASK_SHIFT;
     }
-    if ((modifiers & MOD_MASK_CTRL)
+
+    // <C-H> and <C-h> mean the same thing, always use "H"
+    if ((modifiers & MOD_MASK_CTRL) && ASCII_ISALPHA(key))
+	key = TOUPPER_ASC(key);
+
+    if (simplify && (modifiers & MOD_MASK_CTRL)
 #ifdef EBCDIC
-	    /* * TODO: EBCDIC Better use:
-	     * && (Ctrl_chr(key) || key == '?')
-	     * ???  */
+	    // TODO: EBCDIC Better use:
+	    // && (Ctrl_chr(key) || key == '?')
+	    // ???
 	    && strchr("?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_", key)
 						       != NULL
 #else
@@ -2948,19 +2947,24 @@ extract_modifiers(int key, int *modp)
     {
 	key = Ctrl_chr(key);
 	modifiers &= ~MOD_MASK_CTRL;
-	/* <C-@> is <Nul> */
+	// <C-@> is <Nul>
 	if (key == 0)
 	    key = K_ZERO;
+	if (did_simplify != NULL)
+	    *did_simplify = TRUE;
     }
+
 #ifdef MACOS_X
-    /* Command-key really special, no fancynest */
+    // Command-key really special, no fancynest
     if (!(modifiers & MOD_MASK_CMD))
 #endif
-    if ((modifiers & MOD_MASK_ALT) && key < 0x80
+    if (simplify && (modifiers & MOD_MASK_ALT) && key < 0x80
 	    && !enc_dbcs)		// avoid creating a lead byte
     {
 	key |= 0x80;
-	modifiers &= ~MOD_MASK_ALT;	/* remove the META modifier */
+	modifiers &= ~MOD_MASK_ALT;	// remove the META modifier
+	if (did_simplify != NULL)
+	    *did_simplify = TRUE;
     }
 
     *modp = modifiers;
@@ -3022,7 +3026,6 @@ get_special_key_code(char_u *name)
     return 0;
 }
 
-#if defined(FEAT_CMDL_COMPL) || defined(PROTO)
     char_u *
 get_key_name(int i)
 {
@@ -3030,67 +3033,6 @@ get_key_name(int i)
 	return NULL;
     return  key_names_table[i].name;
 }
-#endif
-
-#if defined(FEAT_MOUSE) || defined(PROTO)
-/*
- * Look up the given mouse code to return the relevant information in the other
- * arguments.  Return which button is down or was released.
- */
-    int
-get_mouse_button(int code, int *is_click, int *is_drag)
-{
-    int	    i;
-
-    for (i = 0; mouse_table[i].pseudo_code; i++)
-	if (code == mouse_table[i].pseudo_code)
-	{
-	    *is_click = mouse_table[i].is_click;
-	    *is_drag = mouse_table[i].is_drag;
-	    return mouse_table[i].button;
-	}
-    return 0;	    /* Shouldn't get here */
-}
-
-/*
- * Return the appropriate pseudo mouse event token (KE_LEFTMOUSE etc) based on
- * the given information about which mouse button is down, and whether the
- * mouse was clicked, dragged or released.
- */
-    int
-get_pseudo_mouse_code(
-    int	    button,	/* eg MOUSE_LEFT */
-    int	    is_click,
-    int	    is_drag)
-{
-    int	    i;
-
-    for (i = 0; mouse_table[i].pseudo_code; i++)
-	if (button == mouse_table[i].button
-	    && is_click == mouse_table[i].is_click
-	    && is_drag == mouse_table[i].is_drag)
-	{
-#ifdef FEAT_GUI
-	    /* Trick: a non mappable left click and release has mouse_col -1
-	     * or added MOUSE_COLOFF.  Used for 'mousefocus' in
-	     * gui_mouse_moved() */
-	    if (mouse_col < 0 || mouse_col > MOUSE_COLOFF)
-	    {
-		if (mouse_col < 0)
-		    mouse_col = 0;
-		else
-		    mouse_col -= MOUSE_COLOFF;
-		if (mouse_table[i].pseudo_code == (int)KE_LEFTMOUSE)
-		    return (int)KE_LEFTMOUSE_NM;
-		if (mouse_table[i].pseudo_code == (int)KE_LEFTRELEASE)
-		    return (int)KE_LEFTRELEASE_NM;
-	    }
-#endif
-	    return mouse_table[i].pseudo_code;
-	}
-    return (int)KE_IGNORE;	    /* not recognized, ignore it */
-}
-#endif /* FEAT_MOUSE */
 
 /*
  * Return the current end-of-line type: EOL_DOS, EOL_UNIX or EOL_MAC.
@@ -3114,7 +3056,7 @@ get_fileformat(buf_T *buf)
     int
 get_fileformat_force(
     buf_T	*buf,
-    exarg_T	*eap)	    /* can be NULL! */
+    exarg_T	*eap)	    // can be NULL!
 {
     int		c;
 
@@ -3142,7 +3084,7 @@ get_fileformat_force(
     void
 set_fileformat(
     int		t,
-    int		opt_flags)	/* OPT_LOCAL and/or OPT_GLOBAL */
+    int		opt_flags)	// OPT_LOCAL and/or OPT_GLOBAL
 {
     char	*p = NULL;
 
@@ -3165,11 +3107,11 @@ set_fileformat(
 	set_string_option_direct((char_u *)"ff", -1, (char_u *)p,
 						     OPT_FREE | opt_flags, 0);
 
-    /* This may cause the buffer to become (un)modified. */
+    // This may cause the buffer to become (un)modified.
     check_status(curbuf);
     redraw_tabline = TRUE;
 #ifdef FEAT_TITLE
-    need_maketitle = TRUE;	    /* set window title later */
+    need_maketitle = TRUE;	    // set window title later
 #endif
 }
 
@@ -3222,13 +3164,13 @@ call_shell(char_u *cmd, int opt)
     else
     {
 #ifdef FEAT_GUI_MSWIN
-	/* Don't hide the pointer while executing a shell command. */
+	// Don't hide the pointer while executing a shell command.
 	gui_mch_mousehide(FALSE);
 #endif
 #ifdef FEAT_GUI
 	++hold_gui_events;
 #endif
-	/* The external command may update a tags file, clear cached tags. */
+	// The external command may update a tags file, clear cached tags.
 	tag_freematch();
 
 	if (cmd == NULL || *p_sxq == NUL)
@@ -3237,7 +3179,7 @@ call_shell(char_u *cmd, int opt)
 	{
 	    char_u *ecmd = cmd;
 
-	    if (*p_sxe != NUL && STRCMP(p_sxq, "(") == 0)
+	    if (*p_sxe != NUL && *p_sxq == '(')
 	    {
 		ecmd = vim_strsave_escaped_ext(cmd, p_sxe, '^', FALSE);
 		if (ecmd == NULL)
@@ -3248,11 +3190,11 @@ call_shell(char_u *cmd, int opt)
 	    {
 		STRCPY(ncmd, p_sxq);
 		STRCAT(ncmd, ecmd);
-		/* When 'shellxquote' is ( append ).
-		 * When 'shellxquote' is "( append )". */
-		STRCAT(ncmd, STRCMP(p_sxq, "(") == 0 ? (char_u *)")"
-			   : STRCMP(p_sxq, "\"(") == 0 ? (char_u *)")\""
-			   : p_sxq);
+		// When 'shellxquote' is ( append ).
+		// When 'shellxquote' is "( append )".
+		STRCAT(ncmd, *p_sxq == '(' ? (char_u *)")"
+		    : *p_sxq == '"' && *(p_sxq+1) == '(' ? (char_u *)")\""
+		    : p_sxq);
 		retval = mch_call_shell(ncmd, opt);
 		vim_free(ncmd);
 	    }
@@ -3326,7 +3268,7 @@ same_directory(char_u *f1, char_u *f2)
     char_u	*t1;
     char_u	*t2;
 
-    /* safety check */
+    // safety check
     if (f1 == NULL || f2 == NULL)
 	return FALSE;
 
@@ -3384,11 +3326,11 @@ vim_chdirfile(char_u *fname, char *trigger_autocmd)
 illegal_slash(const char *name)
 {
     if (name[0] == NUL)
-	return FALSE;	    /* no file name is not illegal */
+	return FALSE;	    // no file name is not illegal
     if (name[strlen(name) - 1] != '/')
-	return FALSE;	    /* no trailing slash */
+	return FALSE;	    // no trailing slash
     if (mch_isdir((char_u *)name))
-	return FALSE;	    /* trailing slash for a directory */
+	return FALSE;	    // trailing slash for a directory
     return TRUE;
 }
 
@@ -3398,8 +3340,8 @@ illegal_slash(const char *name)
     int
 vim_stat(const char *name, stat_T *stp)
 {
-    /* On Solaris stat() accepts "file/" as if it was "file".  Return -1 if
-     * the name ends in "/" and it's not a directory. */
+    // On Solaris stat() accepts "file/" as if it was "file".  Return -1 if
+    // the name ends in "/" and it's not a directory.
     return illegal_slash(name) ? -1 : stat(name, stp);
 }
 #endif
@@ -3412,9 +3354,9 @@ vim_stat(const char *name, stat_T *stp)
 
 cursorentry_T shape_table[SHAPE_IDX_COUNT] =
 {
-    /* The values will be filled in from the 'guicursor' and 'mouseshape'
-     * defaults when Vim starts.
-     * Adjust the SHAPE_IDX_ defines when making changes! */
+    // The values will be filled in from the 'guicursor' and 'mouseshape'
+    // defaults when Vim starts.
+    // Adjust the SHAPE_IDX_ defines when making changes!
     {0,	0, 0, 700L, 400L, 250L, 0, 0, "n", SHAPE_CURSOR+SHAPE_MOUSE},
     {0,	0, 0, 700L, 400L, 250L, 0, 0, "v", SHAPE_CURSOR+SHAPE_MOUSE},
     {0,	0, 0, 700L, 400L, 250L, 0, 0, "i", SHAPE_CURSOR+SHAPE_MOUSE},
@@ -3441,8 +3383,8 @@ cursorentry_T shape_table[SHAPE_IDX_COUNT] =
  */
 static char * mshape_names[] =
 {
-    "arrow",	/* default, must be the first one */
-    "blank",	/* hidden */
+    "arrow",	// default, must be the first one
+    "blank",	// hidden
     "beam",
     "updown",
     "udsizing",
@@ -3474,12 +3416,12 @@ parse_shape_opt(int what)
     char_u	*commap;
     char_u	*slashp;
     char_u	*p, *endp;
-    int		idx = 0;		/* init for GCC */
+    int		idx = 0;		// init for GCC
     int		all_idx;
     int		len;
     int		i;
     long	n;
-    int		found_ve = FALSE;	/* found "ve" flag */
+    int		found_ve = FALSE;	// found "ve" flag
     int		round;
 
     /*
@@ -3515,7 +3457,7 @@ parse_shape_opt(int what)
 	    {
 		if (all_idx < 0)
 		{
-		    /* Find the mode. */
+		    // Find the mode.
 		    if (modep[1] == '-' || modep[1] == ':')
 			len = 1;
 		    else
@@ -3544,13 +3486,13 @@ parse_shape_opt(int what)
 #ifdef FEAT_MOUSESHAPE
 		    if (what == SHAPE_MOUSE)
 		    {
-			/* Set the default, for the missing parts */
+			// Set the default, for the missing parts
 			shape_table[idx].mshape = 0;
 		    }
 		    else
 #endif
 		    {
-			/* Set the defaults, for the missing parts */
+			// Set the defaults, for the missing parts
 			shape_table[idx].shape = SHAPE_BLOCK;
 			shape_table[idx].blinkwait = 700L;
 			shape_table[idx].blinkon = 400L;
@@ -3558,7 +3500,7 @@ parse_shape_opt(int what)
 		    }
 		}
 
-		/* Parse the part after the colon */
+		// Parse the part after the colon
 		for (p = colonp + 1; *p && *p != ','; )
 		{
 #ifdef FEAT_MOUSESHAPE
@@ -3587,7 +3529,7 @@ parse_shape_opt(int what)
 			    }
 			}
 		    }
-		    else /* if (what == SHAPE_MOUSE) */
+		    else // if (what == SHAPE_MOUSE)
 #endif
 		    {
 			/*
@@ -3611,7 +3553,7 @@ parse_shape_opt(int what)
 			    if (!VIM_ISDIGIT(*p))
 				return N_("E548: digit expected");
 			    n = getdigits(&p);
-			    if (len == 3)   /* "ver" or "hor" */
+			    if (len == 3)   // "ver" or "hor"
 			    {
 				if (n == 0)
 				    return N_("E549: Illegal percentage");
@@ -3640,20 +3582,20 @@ parse_shape_opt(int what)
 				shape_table[idx].shape = SHAPE_BLOCK;
 			    p += 5;
 			}
-			else	/* must be a highlight group name then */
+			else	// must be a highlight group name then
 			{
 			    endp = vim_strchr(p, '-');
-			    if (commap == NULL)		    /* last part */
+			    if (commap == NULL)		    // last part
 			    {
 				if (endp == NULL)
-				    endp = p + STRLEN(p);   /* find end of part */
+				    endp = p + STRLEN(p);   // find end of part
 			    }
 			    else if (endp > commap || endp == NULL)
 				endp = commap;
 			    slashp = vim_strchr(p, '/');
 			    if (slashp != NULL && slashp < endp)
 			    {
-				/* "group/langmap_group" */
+				// "group/langmap_group"
 				i = syn_check_group(p, (int)(slashp - p));
 				p = slashp + 1;
 			    }
@@ -3667,7 +3609,7 @@ parse_shape_opt(int what)
 			    }
 			    p = endp;
 			}
-		    } /* if (what != SHAPE_MOUSE) */
+		    } // if (what != SHAPE_MOUSE)
 
 		    if (*p == '-')
 			++p;
@@ -3679,7 +3621,7 @@ parse_shape_opt(int what)
 	}
     }
 
-    /* If the 's' flag is not given, use the 'v' cursor for 's' */
+    // If the 's' flag is not given, use the 'v' cursor for 's'
     if (!found_ve)
     {
 #ifdef FEAT_MOUSESHAPE
@@ -3776,19 +3718,19 @@ update_mouseshape(int shape_idx)
 {
     int new_mouse_shape;
 
-    /* Only works in GUI mode. */
+    // Only works in GUI mode.
     if (!gui.in_use || gui.starting)
 	return;
 
-    /* Postpone the updating when more is to come.  Speeds up executing of
-     * mappings. */
+    // Postpone the updating when more is to come.  Speeds up executing of
+    // mappings.
     if (shape_idx == -1 && char_avail())
     {
 	postponed_mouseshape = TRUE;
 	return;
     }
 
-    /* When ignoring the mouse don't change shape on the statusline. */
+    // When ignoring the mouse don't change shape on the statusline.
     if (*p_mouse == NUL
 	    && (shape_idx == SHAPE_IDX_CLINE
 		|| shape_idx == SHAPE_IDX_STATUS
@@ -3813,7 +3755,7 @@ update_mouseshape(int shape_idx)
 }
 # endif
 
-#endif /* CURSOR_SHAPE */
+#endif // CURSOR_SHAPE
 
 
 /*
@@ -3886,12 +3828,12 @@ qsort(
 	for (i = gap; i < elm_count; ++i)
 	    for (j = i - gap; j >= 0; j -= gap)
 	    {
-		/* Compare the elements. */
+		// Compare the elements.
 		p1 = (char_u *)base + j * elm_size;
 		p2 = (char_u *)base + (j + gap) * elm_size;
 		if ((*cmp)((void *)p1, (void *)p2) <= 0)
 		    break;
-		/* Exchange the elements. */
+		// Exchange the elements.
 		mch_memmove(buf, p1, elm_size);
 		mch_memmove(p1, p2, elm_size);
 		mch_memmove(p2, buf, elm_size);
@@ -3919,82 +3861,6 @@ sort_strings(
 {
     qsort((void *)files, (size_t)count, sizeof(char_u *), sort_compare);
 }
-
-#if !defined(NO_EXPANDPATH) || defined(PROTO)
-/*
- * Compare path "p[]" to "q[]".
- * If "maxlen" >= 0 compare "p[maxlen]" to "q[maxlen]"
- * Return value like strcmp(p, q), but consider path separators.
- */
-    int
-pathcmp(const char *p, const char *q, int maxlen)
-{
-    int		i, j;
-    int		c1, c2;
-    const char	*s = NULL;
-
-    for (i = 0, j = 0; maxlen < 0 || (i < maxlen && j < maxlen);)
-    {
-	c1 = PTR2CHAR((char_u *)p + i);
-	c2 = PTR2CHAR((char_u *)q + j);
-
-	/* End of "p": check if "q" also ends or just has a slash. */
-	if (c1 == NUL)
-	{
-	    if (c2 == NUL)  /* full match */
-		return 0;
-	    s = q;
-	    i = j;
-	    break;
-	}
-
-	/* End of "q": check if "p" just has a slash. */
-	if (c2 == NUL)
-	{
-	    s = p;
-	    break;
-	}
-
-	if ((p_fic ? MB_TOUPPER(c1) != MB_TOUPPER(c2) : c1 != c2)
-#ifdef BACKSLASH_IN_FILENAME
-		/* consider '/' and '\\' to be equal */
-		&& !((c1 == '/' && c2 == '\\')
-		    || (c1 == '\\' && c2 == '/'))
-#endif
-		)
-	{
-	    if (vim_ispathsep(c1))
-		return -1;
-	    if (vim_ispathsep(c2))
-		return 1;
-	    return p_fic ? MB_TOUPPER(c1) - MB_TOUPPER(c2)
-		    : c1 - c2;  /* no match */
-	}
-
-	i += MB_PTR2LEN((char_u *)p + i);
-	j += MB_PTR2LEN((char_u *)q + j);
-    }
-    if (s == NULL)	/* "i" or "j" ran into "maxlen" */
-	return 0;
-
-    c1 = PTR2CHAR((char_u *)s + i);
-    c2 = PTR2CHAR((char_u *)s + i + MB_PTR2LEN((char_u *)s + i));
-    /* ignore a trailing slash, but not "//" or ":/" */
-    if (c2 == NUL
-	    && i > 0
-	    && !after_pathsep((char_u *)s, (char_u *)s + i)
-#ifdef BACKSLASH_IN_FILENAME
-	    && (c1 == '/' || c1 == '\\')
-#else
-	    && c1 == '/'
-#endif
-       )
-	return 0;   /* match with trailing slash */
-    if (s == q)
-	return -1;	    /* no match */
-    return 1;
-}
-#endif
 
 /*
  * The putenv() implementation below comes from the "screen" program.
@@ -4024,14 +3890,14 @@ pathcmp(const char *p, const char *q, int maxlen)
 
 #if !defined(HAVE_SETENV) && !defined(HAVE_PUTENV)
 
-#define EXTRASIZE 5		/* increment to add to env. size */
+#define EXTRASIZE 5		// increment to add to env. size
 
-static int  envsize = -1;	/* current size of environment */
-extern char **environ;		/* the global which is your env. */
+static int  envsize = -1;	// current size of environment
+extern char **environ;		// the global which is your env.
 
-static int  findenv(char *name); /* look for a name in the env. */
-static int  newenv(void);	/* copy env. from stack to heap */
-static int  moreenv(void);	/* incr. size of env. */
+static int  findenv(char *name); // look for a name in the env.
+static int  newenv(void);	// copy env. from stack to heap
+static int  moreenv(void);	// incr. size of env.
 
     int
 putenv(const char *string)
@@ -4040,33 +3906,33 @@ putenv(const char *string)
     char    *p;
 
     if (envsize < 0)
-    {				/* first time putenv called */
-	if (newenv() < 0)	/* copy env. to heap */
+    {				// first time putenv called
+	if (newenv() < 0)	// copy env. to heap
 	    return -1;
     }
 
-    i = findenv((char *)string); /* look for name in environment */
+    i = findenv((char *)string); // look for name in environment
 
     if (i < 0)
-    {				/* name must be added */
+    {				// name must be added
 	for (i = 0; environ[i]; i++);
 	if (i >= (envsize - 1))
-	{			/* need new slot */
+	{			// need new slot
 	    if (moreenv() < 0)
 		return -1;
 	}
-	p = (char *)alloc(strlen(string) + 1);
-	if (p == NULL)		/* not enough core */
+	p = alloc(strlen(string) + 1);
+	if (p == NULL)		// not enough core
 	    return -1;
-	environ[i + 1] = 0;	/* new end of env. */
+	environ[i + 1] = 0;	// new end of env.
     }
     else
-    {				/* name already in env. */
+    {				// name already in env.
 	p = vim_realloc(environ[i], strlen(string) + 1);
 	if (p == NULL)
 	    return -1;
     }
-    sprintf(p, "%s", string);	/* copy into env. */
+    sprintf(p, "%s", string);	// copy into env.
     environ[i] = p;
 
     return 0;
@@ -4103,13 +3969,13 @@ newenv(void)
 	;
 
     esize = i + EXTRASIZE + 1;
-    env = (char **)alloc(esize * sizeof (elem));
+    env = ALLOC_MULT(char *, esize);
     if (env == NULL)
 	return -1;
 
     for (i = 0; environ[i]; i++)
     {
-	elem = (char *)alloc(strlen(environ[i]) + 1);
+	elem = alloc(strlen(environ[i]) + 1);
 	if (elem == NULL)
 	    return -1;
 	env[i] = elem;
@@ -4129,7 +3995,7 @@ moreenv(void)
     char    **env;
 
     esize = envsize + EXTRASIZE;
-    env = (char **)vim_realloc((char *)environ, esize * sizeof (*env));
+    env = vim_realloc((char *)environ, esize * sizeof (*env));
     if (env == 0)
 	return -1;
     environ = env;
@@ -4160,7 +4026,7 @@ vimpty_getenv(const char_u *string)
 }
 # endif
 
-#endif /* !defined(HAVE_SETENV) && !defined(HAVE_PUTENV) */
+#endif // !defined(HAVE_SETENV) && !defined(HAVE_PUTENV)
 
 #if defined(FEAT_EVAL) || defined(FEAT_SPELL) || defined(PROTO)
 /*
@@ -4241,8 +4107,8 @@ get3c(FILE *fd)
 get4c(FILE *fd)
 {
     int		c;
-    /* Use unsigned rather than int otherwise result is undefined
-     * when left-shift sets the MSB. */
+    // Use unsigned rather than int otherwise result is undefined
+    // when left-shift sets the MSB.
     unsigned	n;
 
     c = getc(fd);
@@ -4291,11 +4157,11 @@ read_string(FILE *fd, int cnt)
     int		i;
     int		c;
 
-    /* allocate memory */
+    // allocate memory
     str = alloc(cnt + 1);
     if (str != NULL)
     {
-	/* Read the string.  Quit when running into the EOF. */
+	// Read the string.  Quit when running into the EOF.
 	for (i = 0; i < cnt; ++i)
 	{
 	    c = getc(fd);
@@ -4327,8 +4193,8 @@ put_bytes(FILE *fd, long_u nr, int len)
 
 #ifdef _MSC_VER
 # if (_MSC_VER <= 1200)
-/* This line is required for VC6 without the service pack.  Also see the
- * matching #pragma below. */
+// This line is required for VC6 without the service pack.  Also see the
+// matching #pragma below.
  #  pragma optimize("", off)
 # endif
 #endif
@@ -4357,17 +4223,17 @@ time_to_bytes(time_T the_time, char_u *buf)
     int		bi = 0;
     time_T	wtime = the_time;
 
-    /* time_T can be up to 8 bytes in size, more than long_u, thus we
-     * can't use put_bytes() here.
-     * Another problem is that ">>" may do an arithmetic shift that keeps the
-     * sign.  This happens for large values of wtime.  A cast to long_u may
-     * truncate if time_T is 8 bytes.  So only use a cast when it is 4 bytes,
-     * it's safe to assume that long_u is 4 bytes or more and when using 8
-     * bytes the top bit won't be set. */
+    // time_T can be up to 8 bytes in size, more than long_u, thus we
+    // can't use put_bytes() here.
+    // Another problem is that ">>" may do an arithmetic shift that keeps the
+    // sign.  This happens for large values of wtime.  A cast to long_u may
+    // truncate if time_T is 8 bytes.  So only use a cast when it is 4 bytes,
+    // it's safe to assume that long_u is 4 bytes or more and when using 8
+    // bytes the top bit won't be set.
     for (i = 7; i >= 0; --i)
     {
 	if (i + 1 > (int)sizeof(time_T))
-	    /* ">>" doesn't work well when shifting more bits than avail */
+	    // ">>" doesn't work well when shifting more bits than avail
 	    buf[bi++] = 0;
 	else
 	{
@@ -4407,69 +4273,7 @@ has_non_ascii(char_u *s)
 }
 #endif
 
-#if defined(MESSAGE_QUEUE) || defined(PROTO)
-# define MAX_REPEAT_PARSE 8
-
-/*
- * Process messages that have been queued for netbeans or clientserver.
- * Also check if any jobs have ended.
- * These functions can call arbitrary vimscript and should only be called when
- * it is safe to do so.
- */
-    void
-parse_queued_messages(void)
-{
-    win_T   *old_curwin = curwin;
-    int	    i;
-
-    // Do not handle messages while redrawing, because it may cause buffers to
-    // change or be wiped while they are being redrawn.
-    if (updating_screen)
-	return;
-
-    // Loop when a job ended, but don't keep looping forever.
-    for (i = 0; i < MAX_REPEAT_PARSE; ++i)
-    {
-	// For Win32 mch_breakcheck() does not check for input, do it here.
-# if defined(MSWIN) && defined(FEAT_JOB_CHANNEL)
-	channel_handle_events(FALSE);
-# endif
-
-# ifdef FEAT_NETBEANS_INTG
-	// Process the queued netbeans messages.
-	netbeans_parse_messages();
-# endif
-# ifdef FEAT_JOB_CHANNEL
-	// Write any buffer lines still to be written.
-	channel_write_any_lines();
-
-	// Process the messages queued on channels.
-	channel_parse_messages();
-# endif
-# if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
-	// Process the queued clientserver messages.
-	server_parse_messages();
-# endif
-# ifdef FEAT_JOB_CHANNEL
-	// Check if any jobs have ended.  If so, repeat the above to handle
-	// changes, e.g. stdin may have been closed.
-	if (job_check_ended())
-	    continue;
-# endif
-# ifdef FEAT_TERMINAL
-	free_unused_terminals();
-# endif
-	break;
-    }
-
-    // If the current window changed we need to bail out of the waiting loop.
-    // E.g. when a job exit callback closes the terminal window.
-    if (curwin != old_curwin)
-	ins_char_typebuf(K_IGNORE);
-}
-#endif
-
-#ifndef PROTO  /* proto is defined in vim.h */
+#ifndef PROTO  // proto is defined in vim.h
 # ifdef ELAPSED_TIMEVAL
 /*
  * Return time in msec since "start_tv".
@@ -4563,7 +4367,7 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 	{
 	    if (use_shcf)
 	    {
-		/* Account for possible multiple args in p_shcf. */
+		// Account for possible multiple args in p_shcf.
 		p = p_shcf;
 		for (;;)
 		{
@@ -4575,8 +4379,8 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 		}
 	    }
 
-	    *argv = (char **)alloc((*argc + 4) * sizeof(char *));
-	    if (*argv == NULL)	    /* out of memory */
+	    *argv = ALLOC_MULT(char *, *argc + 4);
+	    if (*argv == NULL)	    // out of memory
 		return FAIL;
 	}
     }
@@ -4595,7 +4399,7 @@ build_argv_from_string(char_u *cmd, char ***argv, int *argc)
     char_u	*cmd_copy;
     int		i;
 
-    /* Make a copy, parsing will modify "cmd". */
+    // Make a copy, parsing will modify "cmd".
     cmd_copy = vim_strsave(cmd);
     if (cmd_copy == NULL
 	    || mch_parse_cmd(cmd_copy, FALSE, argv, argc) == FAIL)
@@ -4621,8 +4425,8 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
     listitem_T  *li;
     char_u	*s;
 
-    /* Pass argv[] to mch_call_shell(). */
-    *argv = (char **)alloc(sizeof(char *) * (l->lv_len + 1));
+    // Pass argv[] to mch_call_shell().
+    *argv = ALLOC_MULT(char *, l->lv_len + 1);
     if (*argv == NULL)
 	return FAIL;
     *argc = 0;
@@ -4646,79 +4450,21 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
 # endif
 #endif
 
-#if defined(FEAT_SESSION) || defined(PROTO)
 /*
- * Generate a script that can be used to restore the current editing session.
- * Save the value of v:this_session before running :mksession in order to make
- * automagic session save fully transparent.  Return TRUE on success.
+ * Change the behavior of vterm.
+ * 0: As usual.
+ * 1: Windows 10 version 1809
+ *      The bug causes unstable handling of ambiguous width character.
+ * 2: Windows 10 version 1903 & 1909
+ *      Use the wrong result because each result is different.
+ * 3: Windows 10 insider preview (current latest logic)
  */
     int
-write_session_file(char_u *filename)
+get_special_pty_type(void)
 {
-    char_u	    *escaped_filename;
-    char	    *mksession_cmdline;
-    unsigned int    save_ssop_flags;
-    int		    failed;
-
-    /*
-     * Build an ex command line to create a script that restores the current
-     * session if executed.  Escape the filename to avoid nasty surprises.
-     */
-    escaped_filename = vim_strsave_escaped(filename, escape_chars);
-    if (escaped_filename == NULL)
-	return FALSE;
-    mksession_cmdline = (char *)alloc(10 + (int)STRLEN(escaped_filename) + 1);
-    if (mksession_cmdline == NULL)
-    {
-	vim_free(escaped_filename);
-	return FALSE;
-    }
-    strcpy(mksession_cmdline, "mksession ");
-    STRCAT(mksession_cmdline, escaped_filename);
-    vim_free(escaped_filename);
-
-    /*
-     * Use a reasonable hardcoded set of 'sessionoptions' flags to avoid
-     * unpredictable effects when the session is saved automatically.  Also,
-     * we definitely need SSOP_GLOBALS to be able to restore v:this_session.
-     * Don't use SSOP_BUFFERS to prevent the buffer list from becoming
-     * enormously large if the GNOME session feature is used regularly.
-     */
-    save_ssop_flags = ssop_flags;
-    ssop_flags = (SSOP_BLANK|SSOP_CURDIR|SSOP_FOLDS|SSOP_GLOBALS
-		  |SSOP_HELP|SSOP_OPTIONS|SSOP_WINSIZE|SSOP_TABPAGES);
-
-    do_cmdline_cmd((char_u *)"let Save_VV_this_session = v:this_session");
-    failed = (do_cmdline_cmd((char_u *)mksession_cmdline) == FAIL);
-    do_cmdline_cmd((char_u *)"let v:this_session = Save_VV_this_session");
-    do_unlet((char_u *)"Save_VV_this_session", TRUE);
-
-    ssop_flags = save_ssop_flags;
-    vim_free(mksession_cmdline);
-
-    /*
-     * Reopen the file and append a command to restore v:this_session,
-     * as if this save never happened.	This is to avoid conflicts with
-     * the user's own sessions.  FIXME: It's probably less hackish to add
-     * a "stealth" flag to 'sessionoptions' -- gotta ask Bram.
-     */
-    if (!failed)
-    {
-	FILE *fd;
-
-	fd = open_exfile(filename, TRUE, APPENDBIN);
-
-	failed = (fd == NULL
-	       || put_line(fd, "let v:this_session = Save_VV_this_session") == FAIL
-	       || put_line(fd, "unlet Save_VV_this_session") == FAIL);
-
-	if (fd != NULL && fclose(fd) != 0)
-	    failed = TRUE;
-
-	if (failed)
-	    mch_remove(filename);
-    }
-
-    return !failed;
-}
+#ifdef MSWIN
+    return get_conpty_type();
+#else
+    return 0;
 #endif
+}

@@ -2,6 +2,7 @@
 
 source shared.vim
 source screendump.vim
+source check.vim
 
 let g:months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 let g:setting = ''
@@ -249,7 +250,7 @@ endfunc
 
 func Test_noinsert_complete()
   func! s:complTest1() abort
-    call complete(1, ['source', 'soundfold'])
+    eval ['source', 'soundfold']->complete(1)
     return ''
   endfunc
 
@@ -402,7 +403,7 @@ func DummyCompleteFour(findstart, base)
     return 0
   else
     call complete_add('four1')
-    call complete_add('four2')
+    eval 'four2'->complete_add()
     call complete_check()
     call complete_add('four3')
     call complete_add('four4')
@@ -489,6 +490,8 @@ endfunc
 " Test that 'completefunc' on Scratch buffer with preview window works when
 " it's OK.
 func Test_completefunc_with_scratch_buffer()
+  CheckFeature quickfix
+
   new +setlocal\ buftype=nofile\ bufhidden=wipe\ noswapfile
   set completeopt+=preview
   setlocal completefunc=DummyCompleteFive
@@ -663,9 +666,10 @@ func Test_complete_CTRLN_startofbuffer()
 endfunc
 
 func Test_popup_and_window_resize()
-  if !has('terminal') || has('gui_running')
-    return
-  endif
+  CheckFeature terminal
+  CheckFeature quickfix
+  CheckNotGui
+
   let h = winheight(0)
   if h < 15
     return
@@ -696,14 +700,13 @@ func Test_popup_and_window_resize()
 endfunc
 
 func Test_popup_and_preview_autocommand()
+  CheckFeature python
+  CheckFeature quickfix
+  if winheight(0) < 15
+    throw 'Skipped: window height insufficient'
+  endif
+
   " This used to crash Vim
-  if !has('python')
-    return
-  endif
-  let h = winheight(0)
-  if h < 15
-    return
-  endif
   new
   augroup MyBufAdd
     au!
@@ -734,15 +737,16 @@ func Test_popup_and_preview_autocommand()
 endfunc
 
 func Test_popup_and_previewwindow_dump()
-  if !CanRunVimInTerminal()
-    return
-  endif
-  call writefile([
-    \ 'set previewheight=9',
-    \ 'silent! pedit',
-    \ 'call setline(1, map(repeat(["ab"], 10), "v:val. v:key"))',
-    \ 'exec "norm! G\<C-E>\<C-E>"',
-	\ ], 'Xscript')
+  CheckScreendump
+  CheckFeature quickfix
+
+  let lines =<< trim END
+    set previewheight=9
+    silent! pedit
+    call setline(1, map(repeat(["ab"], 10), "v:val. v:key"))
+    exec "norm! G\<C-E>\<C-E>"
+  END
+  call writefile(lines, 'Xscript')
   let buf = RunVimInTerminal('-S Xscript', {})
 
   " Test that popup and previewwindow do not overlap.
@@ -756,9 +760,8 @@ func Test_popup_and_previewwindow_dump()
 endfunc
 
 func Test_balloon_split()
-  if !exists('*balloon_split')
-    return
-  endif
+  CheckFunction balloon_split
+
   call assert_equal([
         \ 'tempname: 0x555555e380a0 "/home/mool/.viminfz.tmp"',
         \ ], balloon_split(
@@ -769,13 +772,14 @@ func Test_balloon_split()
         \ ], balloon_split(
         \ 'one two three four one two three four one two three four'))
 
-  call assert_equal([
-        \ 'struct = {',
-        \ '  one = 1,',
-        \ '  two = 2,',
-        \ '  three = 3}',
-        \ ], balloon_split(
-        \ 'struct = {one = 1, two = 2, three = 3}'))
+  eval 'struct = {one = 1, two = 2, three = 3}'
+        \ ->balloon_split()
+        \ ->assert_equal([
+        \   'struct = {',
+        \   '  one = 1,',
+        \   '  two = 2,',
+        \   '  three = 3}',
+        \ ])
 
   call assert_equal([
         \ 'struct = {',
@@ -793,17 +797,23 @@ func Test_balloon_split()
         \ '  next = 123}',
         \ ], balloon_split(
         \ 'struct = 0x234 {long = 2343 "\\"some long string that will be wrapped in two\\"", next = 123}'))
+  call assert_equal([
+        \ 'Some comment',
+        \ '',
+        \ 'typedef this that;',
+        \ ], balloon_split(
+        \ "Some comment\n\ntypedef this that;"))
 endfunc
 
 func Test_popup_position()
-  if !CanRunVimInTerminal()
-    return
-  endif
-  call writefile([
-	\ '123456789_123456789_123456789_a',
-	\ '123456789_123456789_123456789_b',
-	\ '            123',
-	\ ], 'Xtest')
+  CheckScreendump
+
+  let lines =<< trim END
+    123456789_123456789_123456789_a
+    123456789_123456789_123456789_b
+                123
+  END
+  call writefile(lines, 'Xtest')
   let buf = RunVimInTerminal('Xtest', {})
   call term_sendkeys(buf, ":vsplit\<CR>")
 
@@ -838,15 +848,15 @@ func Test_popup_position()
 endfunc
 
 func Test_popup_command()
-  if !CanRunVimInTerminal() || !has('menu')
-    return
-  endif
+  CheckScreendump
+  CheckFeature menu
 
-  call writefile([
-	\ 'one two three four five',
-	\ 'and one two Xthree four five',
-	\ 'one more two three four five',
-	\ ], 'Xtest')
+  let lines =<< trim END
+	one two three four five
+	and one two Xthree four five
+	one more two three four five
+  END
+  call writefile(lines, 'Xtest')
   let buf = RunVimInTerminal('Xtest', {})
   call term_sendkeys(buf, ":source $VIMRUNTIME/menu.vim\<CR>")
   call term_sendkeys(buf, "/X\<CR>:popup PopUp\<CR>")
@@ -915,9 +925,9 @@ func Test_complete_o_tab()
 endfunc
 
 func Test_menu_only_exists_in_terminal()
-  if !exists(':tlmenu') || has('gui_running')
-    return
-  endif
+  CheckCommand tlmenu
+  CheckNotGui
+
   tlnoremenu  &Edit.&Paste<Tab>"+gP  <C-W>"+
   aunmenu *
   try
@@ -989,7 +999,7 @@ func GetCompleteInfo()
   if empty(g:compl_what)
     let g:compl_info = complete_info()
   else
-    let g:compl_info = complete_info(g:compl_what)
+    let g:compl_info = g:compl_what->complete_info()
   endif
   return ''
 endfunc
@@ -1029,6 +1039,20 @@ func Test_popup_complete_info_02()
   bwipe!
 endfunc
 
+func Test_popup_complete_info_no_pum()
+  new
+  call assert_false( pumvisible() )
+  let no_pum_info = complete_info()
+  let d = {
+        \   'mode': '',
+        \   'pum_visible': 0,
+        \   'items': [],
+        \   'selected': -1,
+        \  }
+  call assert_equal( d, complete_info() )
+  bwipe!
+endfunc
+
 func Test_CompleteChanged()
   new
   call setline(1, ['foo', 'bar', 'foobar', ''])
@@ -1059,8 +1083,36 @@ func Test_CompleteChanged()
 
   autocmd! AAAAA_Group
   set complete& completeopt&
-  delfunc! OnPumchange
+  delfunc! OnPumChange
   bw!
+endfunc
+
+function! GetPumPosition()
+  call assert_true( pumvisible() )
+  let g:pum_pos = pum_getpos()
+  return ''
+endfunction
+
+func Test_pum_getpos()
+  new
+  inoremap <buffer><F5> <C-R>=GetPumPosition()<CR>
+  setlocal completefunc=UserDefinedComplete
+
+  let d = {
+    \   'height':    5,
+    \   'width':     15,
+    \   'row':       1,
+    \   'col':       0,
+    \   'size':      5,
+    \   'scrollbar': v:false,
+    \ }
+  call feedkeys("i\<C-X>\<C-U>\<F5>", 'tx')
+  call assert_equal(d, g:pum_pos)
+
+  call assert_false( pumvisible() )
+  call assert_equal( {}, pum_getpos() )
+  bw!
+  unlet g:pum_pos
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

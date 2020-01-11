@@ -3452,7 +3452,6 @@ msgstr "E288: Метод вводу не підтримує стилі"
 msgid "E289: input method doesn't support my preedit type"
 msgstr "E289: Метод вводу не підтримує відредаговані типи"
 
-# msgstr "E292: "
 msgid "E293: block was not locked"
 msgstr "E293: Блок не було зафіксовано"
 
@@ -4670,7 +4669,6 @@ msgstr ""
 "\n"
 "Не вдалося запустити оболонку `sh'\n"
 
-# msgstr "E362: "
 msgid ""
 "\n"
 "shell returned "
@@ -6559,8 +6557,8 @@ msgid "E801: ID already taken: %ld"
 msgstr "E801: ID вже зайнято: %ld"
 
 # msgstr "E396: "
-msgid "List or number required"
-msgstr "Потрібен список чи число"
+msgid "E290: List or number required"
+msgstr "E290: Потрібен список чи число"
 
 #, c-format
 msgid "E802: Invalid ID: %ld (must be greater than or equal to 1)"

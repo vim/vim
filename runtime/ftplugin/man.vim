@@ -1,7 +1,8 @@
 " Vim filetype plugin file
 " Language:	man
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change: 	2019 Jan 22
+" Last Change: 	2019 Sep 26
+"		(fix by Jason Franklin)
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -131,17 +132,25 @@ func <SID>GetPage(cmdmods, ...)
     let page = expand('<cword>')
   endif
 
-  if sect != "" && s:FindPage(sect, page) == 0
-    let sect = ""
+  if !exists('g:ft_man_no_sect_fallback') || (g:ft_man_no_sect_fallback == 0)
+    if sect != "" && s:FindPage(sect, page) == 0
+      let sect = ""
+    endif
   endif
   if s:FindPage(sect, page) == 0
-    echo "\nCannot find a '".page."'."
+    let msg = "\nNo manual entry for ".page
+    if sect != ""
+      let msg .= " in section ".sect
+    endif
+    echo msg
     return
   endif
   exec "let s:man_tag_buf_".s:man_tag_depth." = ".bufnr("%")
   exec "let s:man_tag_lin_".s:man_tag_depth." = ".line(".")
   exec "let s:man_tag_col_".s:man_tag_depth." = ".col(".")
   let s:man_tag_depth = s:man_tag_depth + 1
+
+  let open_cmd = 'edit'
 
   " Use an existing "man" window if it exists, otherwise open a new one.
   if &filetype != "man"
@@ -161,28 +170,25 @@ func <SID>GetPage(cmdmods, ...)
     endif
     if &filetype != "man"
       if exists("g:ft_man_open_mode")
-        if g:ft_man_open_mode == "vert"
-          vnew
-        elseif g:ft_man_open_mode == "tab"
-          tabnew
+        if g:ft_man_open_mode == 'vert'
+	  let open_cmd = 'vsplit'
+        elseif g:ft_man_open_mode == 'tab'
+	  let open_cmd = 'tabedit'
         else
-          new
+	  let open_cmd = 'split'
         endif
       else
-	if a:cmdmods != ''
-	  exe a:cmdmods . ' new'
-	else
-	  new
-	endif
+	let open_cmd = a:cmdmods . ' split'
       endif
-      setl nonu fdc=0
     endif
   endif
-  silent exec "edit $HOME/".page.".".sect."~"
+
+  silent execute open_cmd . " $HOME/" . page . '.' . sect . '~'
+
   " Avoid warning for editing the dummy file twice
   setl buftype=nofile noswapfile
 
-  setl ma nonu nornu nofen
+  setl fdc=0 ma nofen nonu nornu
   silent exec "norm! 1GdG"
   let unsetwidth = 0
   if empty($MANWIDTH)

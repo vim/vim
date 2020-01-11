@@ -20,6 +20,7 @@ func HandleSwapExists()
   endif
 endfunc
 
+let failed_count = 0
 for fname in glob('testdir/*.in', 1, 1)
   let root = substitute(fname, '\.in', '', '')
 
@@ -110,10 +111,12 @@ for fname in glob('testdir/*.in', 1, 1)
     endif
 
     if failed
+      let failed_count += 1
       exe 'write ' . root . '.fail'
       echoerr 'Test ' . fname . ' FAILED!'
     else
       exe 'write ' . root . '.out'
+      echo "Test " . fname . " OK\n"
     endif
 
     quit!  " close the indented file
@@ -123,4 +126,8 @@ endfor
 " Matching "if 1" at the start.
 endif
 
+if failed_count > 0
+  " have make report an error
+  cquit
+endif
 qall!

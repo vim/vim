@@ -9,7 +9,7 @@ func Test_cd_up_and_down()
   let path = getcwd()
   cd ..
   call assert_notequal(path, getcwd())
-  exe 'cd ' . path
+  exe 'cd ' .. fnameescape(path)
   call assert_equal(path, getcwd())
 endfunc
 
@@ -20,7 +20,7 @@ func Test_cd_no_arg()
     cd
     call assert_equal($HOME, getcwd())
     call assert_notequal(path, getcwd())
-    exe 'cd ' . path
+    exe 'cd ' .. fnameescape(path)
     call assert_equal(path, getcwd())
   else
     " Test that cd without argument echoes cwd on non-Unix systems.
@@ -58,7 +58,7 @@ func Test_cd_with_cpo_chdir()
 
   " :cd should succeed when buffer has been written.
   w!
-  exe 'cd ' . path
+  exe 'cd ' .. fnameescape(path)
   call assert_equal(path, getcwd())
 
   call delete('Xfoo')
@@ -83,9 +83,9 @@ func Test_chdir_func()
   tabfirst
   call chdir('..')
   call assert_equal('y', fnamemodify(getcwd(1, 2), ':t'))
-  call assert_equal('z', fnamemodify(getcwd(3, 2), ':t'))
+  call assert_equal('z', fnamemodify(3->getcwd(2), ':t'))
   tabnext | wincmd t
-  call chdir('..')
+  eval '..'->chdir()
   call assert_equal('Xdir', fnamemodify(getcwd(1, 2), ':t'))
   call assert_equal('Xdir', fnamemodify(getcwd(2, 2), ':t'))
   call assert_equal('z', fnamemodify(getcwd(3, 2), ':t'))
@@ -103,6 +103,21 @@ func Test_chdir_func()
   call assert_equal("", d)
 
   only | tabonly
-  exe 'cd ' . topdir
+  call chdir(topdir)
   call delete('Xdir', 'rf')
+endfunc
+
+func Test_cd_completion()
+  call mkdir('XComplDir1', 'p')
+  call mkdir('XComplDir2', 'p')
+  call writefile([], 'XComplFile')
+
+  for cmd in ['cd', 'chdir', 'lcd', 'lchdir', 'tcd', 'tchdir']
+    call feedkeys(':' .. cmd .. " XCompl\<C-A>\<C-B>\"\<CR>", 'tx')
+    call assert_equal('"' .. cmd .. ' XComplDir1/ XComplDir2/', @:)
+  endfor
+
+  call delete('XComplDir1', 'd')
+  call delete('XComplDir2', 'd')
+  call delete('XComplFile')
 endfunc

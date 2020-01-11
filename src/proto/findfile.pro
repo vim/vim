@@ -3,7 +3,6 @@ void *vim_findfile_init(char_u *path, char_u *filename, char_u *stopdirs, int le
 char_u *vim_findfile_stopdir(char_u *buf);
 void vim_findfile_cleanup(void *ctx);
 char_u *vim_findfile(void *search_ctx_arg);
-void vim_findfile_free_visited(void *search_ctx_arg);
 char_u *find_file_in_path(char_u *ptr, int len, int options, int first, char_u *rel_fname);
 void free_findfile(void);
 char_u *find_directory_in_path(char_u *ptr, int len, int options, char_u *rel_fname);
@@ -16,4 +15,5 @@ int vim_ispathlistsep(int c);
 void uniquefy_paths(garray_T *gap, char_u *pattern);
 int expand_in_path(garray_T *gap, char_u *pattern, int flags);
 void simplify_filename(char_u *filename);
+void f_simplify(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

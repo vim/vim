@@ -1,8 +1,10 @@
 " Test spell checking
+" Note: this file uses latin1 encoding, but is used with utf-8 encoding.
 
-if !has('spell')
-  finish
-endif
+source check.vim
+CheckFeature spell
+
+source screendump.vim
 
 func TearDown()
   set nospell
@@ -73,7 +75,7 @@ func Test_spellbadword()
   set spell
 
   call assert_equal(['bycycle', 'bad'],  spellbadword('My bycycle.'))
-  call assert_equal(['another', 'caps'], spellbadword('A sentence. another sentence'))
+  call assert_equal(['another', 'caps'], 'A sentence. another sentence'->spellbadword())
 
   set spelllang=en
   call assert_equal(['', ''],            spellbadword('centre'))
@@ -126,22 +128,193 @@ func Test_spellreall()
   bwipe!
 endfunc
 
-func Test_spellinfo()
+" Test spellsuggest({word} [, {max} [, {capital}]])
+func Test_spellsuggest()
+  " No suggestions when spell checking is not enabled.
+  set nospell
+  call assert_equal([], spellsuggest('marrch'))
+
+  set spell
+
+  " With 1 argument.
+  call assert_equal(['march', 'March'], spellsuggest('marrch')[0:1])
+
+  " With 2 arguments.
+  call assert_equal(['march', 'March'], spellsuggest('marrch', 2))
+
+  " With 3 arguments.
+  call assert_equal(['march'], spellsuggest('marrch', 1, 0))
+  call assert_equal(['March'], spellsuggest('marrch', 1, 1))
+
+  " Test with digits and hyphen.
+  call assert_equal('Carbon-14', spellsuggest('Carbon-15')[0])
+
+  " Comment taken from spellsuggest.c explains the following test cases:
+  "
+  " If there are more UPPER than lower case letters suggest an
+  " ALLCAP word.  Otherwise, if the first letter is UPPER then
+  " suggest ONECAP.  Exception: "ALl" most likely should be "All",
+  " require three upper case letters.
+  call assert_equal(['THIRD', 'third'], spellsuggest('thIRD', 2))
+  call assert_equal(['third', 'THIRD'], spellsuggest('tHIrd', 2))
+  call assert_equal(['Third'], spellsuggest('THird', 1))
+  call assert_equal(['All'],      spellsuggest('ALl', 1))
+
+  set spell&
+endfunc
+
+" Test 'spellsuggest' option with methods fast, best and double.
+func Test_spellsuggest_option_methods()
+  set spell
+
+  for e in ['latin1', 'utf-8']
+    exe 'set encoding=' .. e
+
+    set spellsuggest=fast
+    call assert_equal(['Stick', 'Stitch'], spellsuggest('Stich', 2), e)
+
+    " With best or double option, "Stitch" should become the top suggestion
+    " because of better phonetic matching.
+    set spellsuggest=best
+    call assert_equal(['Stitch', 'Stick'], spellsuggest('Stich', 2), e)
+
+    set spellsuggest=double
+    call assert_equal(['Stitch', 'Stick'], spellsuggest('Stich', 2), e)
+  endfor
+
+  set spell& spellsuggest& encoding&
+endfunc
+
+" Test 'spellsuggest' option with value file:{filename}
+func Test_spellsuggest_option_file()
+  set spell spellsuggest=file:Xspellsuggest
+  call writefile(['emacs/vim',
+        \         'theribal/terrible',
+        \         'teribal/terrrible',
+        \         'terribal'],
+        \         'Xspellsuggest')
+
+  call assert_equal(['vim'],      spellsuggest('emacs', 2))
+  call assert_equal(['terrible'], spellsuggest('theribal',2))
+
+  " If the suggestion is misspelled (*terrrible* with 3 r),
+  " it should not be proposed.
+  " The entry for "terribal" should be ignored because of missing slash.
+  call assert_equal([], spellsuggest('teribal', 2))
+  call assert_equal([], spellsuggest('terribal', 2))
+
+  set spell spellsuggest=best,file:Xspellsuggest
+  call assert_equal(['vim', 'Emacs'],       spellsuggest('emacs', 2))
+  call assert_equal(['terrible', 'tribal'], spellsuggest('theribal', 2))
+  call assert_equal(['tribal'],             spellsuggest('teribal', 1))
+  call assert_equal(['tribal'],             spellsuggest('terribal', 1))
+
+  call delete('Xspellsuggest')
+  call assert_fails("call spellsuggest('vim')", "E484: Can't open file Xspellsuggest")
+
+  set spellsuggest& spell&
+endfunc
+
+" Test 'spellsuggest' option with value {number}
+" to limit the number of suggestions
+func Test_spellsuggest_option_number()
+  set spell spellsuggest=2,best
   new
 
+  " We limited the number of suggestions to 2, so selecting
+  " the 1st and 2nd suggestion should correct the word, but
+  " selecting a 3rd suggestion should do nothing.
+  call setline(1, 'A baord')
+  norm $1z=
+  call assert_equal('A board', getline(1))
+
+  call setline(1, 'A baord')
+  norm $2z=
+  call assert_equal('A bard', getline(1))
+
+  call setline(1, 'A baord')
+  norm $3z=
+  call assert_equal('A baord', getline(1))
+
+  let a = execute('norm $z=')
+  call assert_equal(
+  \    "\n"
+  \ .. "Change \"baord\" to:\n"
+  \ .. " 1 \"board\"\n"
+  \ .. " 2 \"bard\"\n"
+  \ .. "Type number and <Enter> or click with mouse (empty cancels): ", a)
+
+  set spell spellsuggest=0
+  call assert_equal("\nSorry, no suggestions", execute('norm $z='))
+
+  " Unlike z=, function spellsuggest(...) should not be affected by the
+  " max number of suggestions (2) set by the 'spellsuggest' option.
+  call assert_equal(['board', 'bard', 'broad'], spellsuggest('baord', 3))
+
+  set spellsuggest& spell&
+  bwipe!
+endfunc
+
+" Test 'spellsuggest' option with value expr:{expr}
+func Test_spellsuggest_option_expr()
+  " A silly 'spellsuggest' function which makes suggestions all uppercase
+  " and makes the score of each suggestion the length of the suggested word.
+  " So shorter suggestions are preferred.
+  func MySuggest()
+    let spellsuggest_save = &spellsuggest
+    set spellsuggest=3,best
+    let result = map(spellsuggest(v:val, 3), "[toupper(v:val), len(v:val)]")
+    let &spellsuggest = spellsuggest_save
+    return result
+  endfunc
+
+  set spell spellsuggest=expr:MySuggest()
+  call assert_equal(['BARD', 'BOARD', 'BROAD'], spellsuggest('baord', 3))
+
+  new
+  call setline(1, 'baord')
+  let a = execute('norm z=')
+  call assert_equal(
+  \    "\n"
+  \ .. "Change \"baord\" to:\n"
+  \ .. " 1 \"BARD\"\n"
+  \ .. " 2 \"BOARD\"\n"
+  \ .. " 3 \"BROAD\"\n"
+  \ .. "Type number and <Enter> or click with mouse (empty cancels): ", a)
+
+  " With verbose, z= should show the score i.e. word length with
+  " our SpellSuggest() function.
+  set verbose=1
+  let a = execute('norm z=')
+  call assert_equal(
+  \    "\n"
+  \ .. "Change \"baord\" to:\n"
+  \ .. " 1 \"BARD\"                      (4 - 0)\n"
+  \ .. " 2 \"BOARD\"                     (5 - 0)\n"
+  \ .. " 3 \"BROAD\"                     (5 - 0)\n"
+  \ .. "Type number and <Enter> or click with mouse (empty cancels): ", a)
+
+  set spell& spellsuggest& verbose&
+  bwipe!
+endfunc
+
+func Test_spellinfo()
+  new
+  let runtime = substitute($VIMRUNTIME, '\\', '/', 'g')
+
   set enc=latin1 spell spelllang=en
-  call assert_match("^\nfile: .*/runtime/spell/en.latin1.spl\n$", execute('spellinfo'))
+  call assert_match("^\nfile: " .. runtime .. "/spell/en.latin1.spl\n$", execute('spellinfo'))
 
   set enc=cp1250 spell spelllang=en
-  call assert_match("^\nfile: .*/runtime/spell/en.ascii.spl\n$", execute('spellinfo'))
+  call assert_match("^\nfile: " .. runtime .. "/spell/en.ascii.spl\n$", execute('spellinfo'))
 
   set enc=utf-8 spell spelllang=en
-  call assert_match("^\nfile: .*/runtime/spell/en.utf-8.spl\n$", execute('spellinfo'))
+  call assert_match("^\nfile: " .. runtime .. "/spell/en.utf-8.spl\n$", execute('spellinfo'))
 
   set enc=latin1 spell spelllang=en_us,en_nz
   call assert_match("^\n" .
-                 \  "file: .*/runtime/spell/en.latin1.spl\n" .
-                 \  "file: .*/runtime/spell/en.latin1.spl\n$", execute('spellinfo'))
+                 \  "file: " .. runtime .. "/spell/en.latin1.spl\n" .
+                 \  "file: " .. runtime.. "/spell/en.latin1.spl\n$", execute('spellinfo'))
 
   set spell spelllang=
   call assert_fails('spellinfo', 'E756:')
@@ -179,7 +352,7 @@ func Test_zz_basic()
         \ )
 
   call assert_equal("gebletegek", soundfold('goobledygoook'))
-  call assert_equal("kepereneven", soundfold('kóopërÿnôven'))
+  call assert_equal("kepereneven", 'kóopërÿnôven'->soundfold())
   call assert_equal("everles gesvets etele", soundfold('oeverloos gezwets edale'))
 endfunc
 
@@ -287,9 +460,9 @@ func Test_zz_affix()
         \ ])
 
   call LoadAffAndDic(g:test_data_aff7, g:test_data_dic7)
-  call RunGoodBad("meea1 meea\xE9 bar prebar barmeat prebarmeat  leadprebar lead tail leadtail  leadmiddletail",
+  call RunGoodBad("meea1 meezero meea\xE9 bar prebar barmeat prebarmeat  leadprebar lead tail leadtail  leadmiddletail",
         \ "bad: mee meea2 prabar probarmaat middle leadmiddle middletail taillead leadprobar",
-        \ ["bar", "barmeat", "lead", "meea1", "meea\xE9", "prebar", "prebarmeat", "tail"],
+        \ ["bar", "barmeat", "lead", "meea1", "meea\xE9", "meezero", "prebar", "prebarmeat", "tail"],
         \ [
         \   ["bad", ["bar", "lead", "tail"]],
         \   ["mee", ["meea1", "meea\xE9", "bar"]],
@@ -322,6 +495,19 @@ func Test_zz_Numbers()
         \ ["bar", "foo"],
         \ [
         \ ])
+endfunc
+
+" Affix flags
+func Test_zz_affix_flags()
+  call LoadAffAndDic(g:test_data_aff10, g:test_data_dic10)
+  call RunGoodBad("drink drinkable drinkables drinktable drinkabletable",
+	\ "bad: drinks drinkstable drinkablestable",
+        \ ["drink", "drinkable", "drinkables", "table"],
+        \ [['bad', []],
+	\ ['drinks', ['drink']],
+	\ ['drinkstable', ['drinktable', 'drinkable', 'drink table']],
+        \ ['drinkablestable', ['drinkabletable', 'drinkables table', 'drinkable table']],
+	\ ])
 endfunc
 
 function FirstSpellWord()
@@ -399,6 +585,18 @@ func Test_zeq_crash()
   bwipe!
 endfunc
 
+" Check handling a word longer than MAXWLEN.
+func Test_spell_long_word()
+  set enc=utf-8
+  new
+  call setline(1, "d\xCC\xB4\xCC\xBD\xCD\x88\xCD\x94a\xCC\xB5\xCD\x84\xCD\x84\xCC\xA8\xCD\x9Cr\xCC\xB5\xCC\x8E\xCD\x85\xCD\x85k\xCC\xB6\xCC\x89\xCC\x9D \xCC\xB6\xCC\x83\xCC\x8F\xCC\xA4\xCD\x8Ef\xCC\xB7\xCC\x81\xCC\x80\xCC\xA9\xCC\xB0\xCC\xAC\xCC\xA2\xCD\x95\xCD\x87\xCD\x8D\xCC\x9E\xCD\x99\xCC\xAD\xCC\xAB\xCC\x97\xCC\xBBo\xCC\xB6\xCC\x84\xCC\x95\xCC\x8C\xCC\x8B\xCD\x9B\xCD\x9C\xCC\xAFr\xCC\xB7\xCC\x94\xCD\x83\xCD\x97\xCC\x8C\xCC\x82\xCD\x82\xCD\x80\xCD\x91\xCC\x80\xCC\xBE\xCC\x82\xCC\x8F\xCC\xA3\xCD\x85\xCC\xAE\xCD\x8D\xCD\x99\xCC\xBC\xCC\xAB\xCC\xA7\xCD\x88c\xCC\xB7\xCD\x83\xCC\x84\xCD\x92\xCC\x86\xCC\x83\xCC\x88\xCC\x92\xCC\x94\xCC\xBE\xCC\x9D\xCC\xAF\xCC\x98\xCC\x9D\xCC\xBB\xCD\x8E\xCC\xBB\xCC\xB3\xCC\xA3\xCD\x8E\xCD\x99\xCC\xA5\xCC\xAD\xCC\x99\xCC\xB9\xCC\xAE\xCC\xA5\xCC\x9E\xCD\x88\xCC\xAE\xCC\x9E\xCC\xA9\xCC\x97\xCC\xBC\xCC\x99\xCC\xA5\xCD\x87\xCC\x97\xCD\x8E\xCD\x94\xCC\x99\xCC\x9D\xCC\x96\xCD\x94\xCC\xAB\xCC\xA7\xCC\xA5\xCC\x98\xCC\xBB\xCC\xAF\xCC\xABe\xCC\xB7\xCC\x8E\xCC\x82\xCD\x86\xCD\x9B\xCC\x94\xCD\x83\xCC\x85\xCD\x8A\xCD\x8C\xCC\x8B\xCD\x92\xCD\x91\xCC\x8F\xCC\x81\xCD\x95\xCC\xA2\xCC\xB9\xCC\xB2\xCD\x9C\xCC\xB1\xCC\xA6\xCC\xB3\xCC\xAF\xCC\xAE\xCC\x9C\xCD\x99s\xCC\xB8\xCC\x8C\xCC\x8E\xCC\x87\xCD\x81\xCD\x82\xCC\x86\xCD\x8C\xCD\x8C\xCC\x8B\xCC\x84\xCC\x8C\xCD\x84\xCD\x9B\xCD\x86\xCC\x93\xCD\x90\xCC\x85\xCC\x94\xCD\x98\xCD\x84\xCD\x92\xCD\x8B\xCC\x90\xCC\x83\xCC\x8F\xCD\x84\xCD\x81\xCD\x9B\xCC\x90\xCD\x81\xCC\x8F\xCC\xBD\xCC\x88\xCC\xBF\xCC\x88\xCC\x84\xCC\x8E\xCD\x99\xCD\x94\xCC\x99\xCD\x99\xCC\xB0\xCC\xA8\xCC\xA3\xCC\xA8\xCC\x96\xCC\x99\xCC\xAE\xCC\xBC\xCC\x99\xCD\x9A\xCC\xB2\xCC\xB1\xCC\x9F\xCC\xBB\xCC\xA6\xCD\x85\xCC\xAA\xCD\x89\xCC\x9D\xCC\x99\xCD\x96\xCC\xB1\xCC\xB1\xCC\x99\xCC\xA6\xCC\xA5\xCD\x95\xCC\xB2\xCC\xA0\xCD\x99 within")
+  set spell spelllang=en
+  redraw
+  redraw!
+  bwipe!
+  set nospell
+endfunc
+
 func LoadAffAndDic(aff_contents, dic_contents)
   set enc=latin1
   set spellfile=
@@ -428,7 +626,7 @@ func TestGoodBadBase()
       break
     endif
     let prevbad = bad
-    let lst = spellsuggest(bad, 3)
+    let lst = bad->spellsuggest(3)
     normal mm
 
     call add(result, [bad, lst])
@@ -445,6 +643,29 @@ func RunGoodBad(good, bad, expected_words, expected_bad_words)
   let bad_words = TestGoodBadBase()
   call assert_equal(a:expected_bad_words, bad_words)
   bwipe!
+endfunc
+
+func Test_spell_screendump()
+  CheckScreendump
+
+  let lines =<< trim END
+       call setline(1, [
+             \ "This is some text without any spell errors.  Everything",
+             \ "should just be black, nothing wrong here.",
+             \ "",
+             \ "This line has a sepll error. and missing caps.",
+             \ "And and this is the the duplication.",
+             \ "with missing caps here.",
+             \ ])
+       set spell spelllang=en_nz
+  END
+  call writefile(lines, 'XtestSpell')
+  let buf = RunVimInTerminal('-S XtestSpell', {'rows': 8})
+  call VerifyScreenDump(buf, 'Test_spell_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XtestSpell')
 endfunc
 
 let g:test_data_aff1 = [
@@ -708,6 +929,9 @@ let g:test_data_aff7 = [
       \"SFX 61003 Y 1",
       \"SFX 61003 0 meat .",
       \"",
+      \"SFX 0 Y 1",
+      \"SFX 0 0 zero .",
+      \"",
       \"SFX 391 Y 1",
       \"SFX 391 0 a1 .",
       \"",
@@ -719,7 +943,7 @@ let g:test_data_aff7 = [
       \ ]
 let g:test_data_dic7 = [
       \"1234",
-      \"mee/391,111,9999",
+      \"mee/0,391,111,9999",
       \"bar/17,61003,123",
       \"lead/2",
       \"tail/123",
@@ -742,6 +966,21 @@ let g:test_data_dic9 = [
       \"1234",
       \"foo",
       \"bar",
+      \ ]
+let g:test_data_aff10 = [
+      \"COMPOUNDRULE se",
+      \"COMPOUNDPERMITFLAG p",
+      \"",
+      \"SFX A Y 1",
+      \"SFX A 0 able/Mp .",
+      \"",
+      \"SFX M Y 1",
+      \"SFX M 0 s .",
+      \ ]
+let g:test_data_dic10 = [
+      \"1234",
+      \"drink/As",
+      \"table/e",
       \ ]
 let g:test_data_aff_sal = [
       \"SET ISO8859-1",

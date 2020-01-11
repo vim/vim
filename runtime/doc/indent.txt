@@ -1,4 +1,4 @@
-*indent.txt*    For Vim version 8.1.  Last change: 2019 Feb 21
+*indent.txt*    For Vim version 8.2.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -532,7 +532,7 @@ The examples below assume a 'shiftwidth' of 4.
 <
 			*javascript-cinoptions* *javascript-indenting* *cino-J*
 	JN    Indent JavaScript object declarations correctly by not confusing
-	      them with labels.  The value 'N' is currently unused but must be 
+	      them with labels.  The value 'N' is currently unused but must be
 	      non-zero (e.g. 'J1').  If you enable this you probably also want
 	      to set |cino-j|. >
 
@@ -541,7 +541,7 @@ The examples below assume a 'shiftwidth' of 4.
 			that: this,
 			some: ok,
 		    },
-		    "bar":{ 
+		    "bar":{
 			a : 2,
 			b: "123abc",
 			x: 4,
@@ -812,6 +812,16 @@ Detail:
       <!-- --> : -1
 
 
+MATLAB			*ft-matlab-indent* *matlab-indent* *matlab-indenting*
+
+The setting Function indenting format in MATLAB Editor/Debugger Language
+Preferences corresponds to: >
+    :let g:MATLAB_function_indent = {0, 1 or 2 (default)}
+
+Where 0 is for Classic, 1 for Indent nested functions and 2 for Indent all
+functions.
+
+
 PHP				*ft-php-indent* *php-indent* *php-indenting*
 
 NOTE:	PHP files will be indented correctly only if PHP |syntax| is active.
@@ -885,7 +895,7 @@ To automatically remove '\r' characters when the 'fileformat' is set to Unix: >
 							*PHP_BracesAtCodeLevel*
 To indent braces at the same level than the code they contain: >
     :let g:PHP_BracesAtCodeLevel = 1
-    
+
 This will give the following result: >
     if ($foo)
 	{
@@ -901,7 +911,7 @@ NOTE:	Indenting will be a bit slower if this option is used because some
 	optimizations won't be available.
 -------------
 
-							*PHP_vintage_case_default_indent*
+					*PHP_vintage_case_default_indent*
 To indent 'case:' and 'default:' statements in switch() blocks: >
     :let g:PHP_vintage_case_default_indent = 1
 
@@ -928,6 +938,43 @@ You will obtain the following result: >
         ->age()
         ->info();
 
+-------------
+
+					*PHP_IndentFunctionCallParameters*
+Extra indentation levels to add to parameters in multi-line function calls. >
+    let g:PHP_IndentFunctionCallParameters = 1
+
+Function call arguments will indent 1 extra level. For two-space indentation: >
+
+    function call_the_thing(
+      $with_this,
+      $and_that
+    ) {
+      $this->do_the_thing(
+          $with_this,
+          $and_that
+      );
+    }
+
+-------------
+
+				*PHP_IndentFunctionDeclarationParameters*
+Extra indentation levels to add to arguments in multi-line function
+definitions. >
+    let g:PHP_IndentFunctionDeclarationParameters = 1
+
+Function arguments in declarations will indent 1 extra level. For two-space
+indentation: >
+
+    function call_the_thing(
+        $with_this,
+        $and_that
+    ) {
+      $this->do_the_thing(
+        $with_this,
+        $and_that
+      );
+    }
 
 
 PYTHON							*ft-python-indent*

@@ -34,7 +34,7 @@
 # include <X11/Xaw/Dialog.h>
 # include <X11/Xaw/Text.h>
 # include <X11/Xaw/AsciiText.h>
-#endif /* FEAT_GUI_NEXTAW */
+#endif // FEAT_GUI_NEXTAW
 
 #ifndef FEAT_GUI_NEXTAW
 # include "gui_at_sb.h"
@@ -46,9 +46,9 @@ static Widget vimForm = (Widget)0;
 Widget textArea = (Widget)0;
 #ifdef FEAT_MENU
 static Widget menuBar = (Widget)0;
-static XtIntervalId timer = 0;	    /* 0 = expired, otherwise active */
+static XtIntervalId timer = 0;	    // 0 = expired, otherwise active
 
-/* Used to figure out menu ordering */
+// Used to figure out menu ordering
 static vimmenu_T *a_cur_menu = NULL;
 static Cardinal	athena_calculate_ins_pos(Widget);
 
@@ -96,7 +96,7 @@ gui_athena_scroll_cb_jump(
 
     if (sb == NULL)
 	return;
-    else if (sb->wp != NULL)	    /* Left or right scrollbar */
+    else if (sb->wp != NULL)	    // Left or right scrollbar
     {
 	/*
 	 * Careful: need to get scrollbar info out of first (left) scrollbar
@@ -105,7 +105,7 @@ gui_athena_scroll_cb_jump(
 	 */
 	sb_info = &sb->wp->w_scrollbars[0];
     }
-    else	    /* Bottom scrollbar */
+    else	    // Bottom scrollbar
 	sb_info = sb;
 
     value = (long)(*((float *)call_data) * (float)(sb_info->max + 1) + 0.001);
@@ -134,7 +134,7 @@ gui_athena_scroll_cb_scroll(
 
     if (sb == NULL)
 	return;
-    if (sb->wp != NULL)		/* Left or right scrollbar */
+    if (sb->wp != NULL)		// Left or right scrollbar
     {
 	/*
 	 * Careful: need to get scrollbar info out of first (left) scrollbar
@@ -144,7 +144,7 @@ gui_athena_scroll_cb_scroll(
 	sb_info = &sb->wp->w_scrollbars[0];
 
 	if (sb_info->size > 5)
-	    page = sb_info->size - 2;	    /* use two lines of context */
+	    page = sb_info->size - 2;	    // use two lines of context
 	else
 	    page = sb_info->size;
 #ifdef FEAT_GUI_NEXTAW
@@ -177,7 +177,7 @@ gui_athena_scroll_cb_scroll(
 	}
 #endif
     }
-    else			/* Bottom scrollbar */
+    else			// Bottom scrollbar
     {
 	sb_info = sb;
 #ifdef FEAT_GUI_NEXTAW
@@ -194,14 +194,14 @@ gui_athena_scroll_cb_scroll(
 		data = 1;
 	}
 #endif
-	if (data < -1)		/* page-width left */
+	if (data < -1)		// page-width left
 	{
 	    if (sb->size > 8)
 		data = -(sb->size - 5);
 	    else
 		data = -sb->size;
 	}
-	else if (data > 1)	/* page-width right */
+	else if (data > 1)	// page-width right
 	{
 	    if (sb->size > 8)
 		data = (sb->size - 5);
@@ -216,8 +216,8 @@ gui_athena_scroll_cb_scroll(
     else if (value < 0)
 	value = 0;
 
-    /* Update the bottom scrollbar an extra time (why is this needed?? */
-    if (sb->wp == NULL)		/* Bottom scrollbar */
+    // Update the bottom scrollbar an extra time (why is this needed??
+    if (sb->wp == NULL)		// Bottom scrollbar
 	gui_mch_set_scrollbar_thumb(sb, value, sb->size, sb->max);
 
     gui_drag_scrollbar(sb, value, FALSE);
@@ -235,7 +235,7 @@ gui_x11_create_widgets(void)
      */
     gui.border_offset = gui.border_width;
 
-    /* The form containing all the other widgets */
+    // The form containing all the other widgets
     vimForm = XtVaCreateManagedWidget("vimForm",
 	formWidgetClass,	vimShell,
 	XtNborderWidth,		0,
@@ -243,7 +243,7 @@ gui_x11_create_widgets(void)
     gui_athena_scroll_colors(vimForm);
 
 #ifdef FEAT_MENU
-    /* The top menu bar */
+    // The top menu bar
     menuBar = XtVaCreateManagedWidget("menuBar",
 	boxWidgetClass,		vimForm,
 	XtNresizable,		True,
@@ -259,8 +259,8 @@ gui_x11_create_widgets(void)
 #endif
 
 #ifdef FEAT_TOOLBAR
-    /* Don't create it Managed, it will be managed when creating the first
-     * item.  Otherwise an empty toolbar shows up. */
+    // Don't create it Managed, it will be managed when creating the first
+    // item.  Otherwise an empty toolbar shows up.
     toolBar = XtVaCreateWidget("toolBar",
 	boxWidgetClass,		vimForm,
 	XtNresizable,		True,
@@ -276,7 +276,7 @@ gui_x11_create_widgets(void)
     gui_athena_menu_colors(toolBar);
 #endif
 
-    /* The text area. */
+    // The text area.
     textArea = XtVaCreateManagedWidget("textArea",
 	coreWidgetClass,	vimForm,
 	XtNresizable,		True,
@@ -315,7 +315,7 @@ gui_x11_create_widgets(void)
 		    XtNumber(pullAction));
 #endif
 
-    /* Pretend we don't have input focus, we will get an event if we do. */
+    // Pretend we don't have input focus, we will get an event if we do.
     gui.in_focus = FALSE;
 }
 
@@ -352,10 +352,9 @@ gui_athena_create_pullright_pixmap(Widget w)
 	to.addr = (XtPointer)&font;
 	to.size = sizeof(XFontStruct *);
 #endif
-	/* Assumption: The menuBar children will use the same font as the
-	 *	       pulldown menu items AND they will all be of type
-	 *	       XtNfont.
-	 */
+	// Assumption: The menuBar children will use the same font as the
+	//	       pulldown menu items AND they will all be of type
+	//	       XtNfont.
 	XtVaGetValues(menuBar, XtNchildren, &children,
 			       XtNnumChildren, &num_children,
 			       NULL);
@@ -369,7 +368,7 @@ gui_athena_create_pullright_pixmap(Widget w)
 #endif
 		    ) == False)
 	    return None;
-	/* "font" should now contain data */
+	// "font" should now contain data
     }
     else
 #ifdef FONTSET_ALWAYS
@@ -449,18 +448,18 @@ static void createXpmImages(char_u *path, char **xpm, Pixmap *sen);
     static void
 get_toolbar_pixmap(vimmenu_T *menu, Pixmap *sen)
 {
-    char_u	buf[MAXPATHL];		/* buffer storing expanded pathname */
-    char	**xpm = NULL;		/* xpm array */
+    char_u	buf[MAXPATHL];		// buffer storing expanded pathname
+    char	**xpm = NULL;		// xpm array
 
-    buf[0] = NUL;			/* start with NULL path */
+    buf[0] = NUL;			// start with NULL path
 
     if (menu->iconfile != NULL)
     {
-	/* Use the "icon="  argument. */
+	// Use the "icon="  argument.
 	gui_find_iconfile(menu->iconfile, buf, "xpm");
 	createXpmImages(buf, NULL, sen);
 
-	/* If it failed, try using the menu name. */
+	// If it failed, try using the menu name.
 	if (*sen == (Pixmap)0 && gui_find_bitmap(menu->name, buf, "xpm") == OK)
 	    createXpmImages(buf, NULL, sen);
 	if (*sen != (Pixmap)0)
@@ -511,7 +510,7 @@ createXpmImages(char_u *path, char **xpm, Pixmap *sen)
 	    &color[TOP_SHADOW].pixel,
 	    &color[HIGHLIGHT].pixel);
 
-    /* Setup the color substitution table */
+    // Setup the color substitution table
     attrs.valuemask = XpmColorSymbols;
     attrs.colorsymbols = color;
     attrs.numsymbols = 5;
@@ -519,7 +518,7 @@ createXpmImages(char_u *path, char **xpm, Pixmap *sen)
     screenNum = DefaultScreen(gui.dpy);
     rootWindow = RootWindow(gui.dpy, screenNum);
 
-    /* Create the "sensitive" pixmap */
+    // Create the "sensitive" pixmap
     if (xpm != NULL)
 	status = XpmCreatePixmapFromData(gui.dpy, rootWindow, xpm,
 							 &map, &mask, &attrs);
@@ -532,13 +531,13 @@ createXpmImages(char_u *path, char **xpm, Pixmap *sen)
 	GC	    back_gc;
 	GC	    mask_gc;
 
-	/* Need to create new Pixmaps with the mask applied. */
+	// Need to create new Pixmaps with the mask applied.
 	gcvalues.foreground = color[BACKGROUND].pixel;
 	back_gc = XCreateGC(gui.dpy, map, GCForeground, &gcvalues);
 	mask_gc = XCreateGC(gui.dpy, map, GCForeground, &gcvalues);
 	XSetClipMask(gui.dpy, mask_gc, mask);
 
-	/* Create the "sensitive" pixmap. */
+	// Create the "sensitive" pixmap.
 	*sen = XCreatePixmap(gui.dpy, rootWindow,
 		 attrs.width, attrs.height,
 		 DefaultDepth(gui.dpy, screenNum));
@@ -567,7 +566,7 @@ gui_mch_set_toolbar_pos(
     Dimension	border;
     int		height;
 
-    if (!XtIsManaged(toolBar))	/* nothing to do */
+    if (!XtIsManaged(toolBar))	// nothing to do
 	return;
     XtUnmanageChild(toolBar);
     XtVaGetValues(toolBar,
@@ -602,7 +601,7 @@ gui_mch_set_text_area_pos(
 		  NULL);
     XtManageChild(textArea);
 #ifdef FEAT_TOOLBAR
-    /* Give keyboard focus to the textArea instead of the toolbar. */
+    // Give keyboard focus to the textArea instead of the toolbar.
     gui_mch_reset_focus();
 #endif
 }
@@ -686,7 +685,7 @@ gui_mch_set_menu_pos(
 
     XtUnmanageChild(menuBar);
     XtVaGetValues(menuBar, XtNborderWidth, &border, NULL);
-    /* avoid trouble when there are no menu items, and h is 1 */
+    // avoid trouble when there are no menu items, and h is 1
     height = h - 2 * border;
     if (height < 0)
 	height = 1;
@@ -709,19 +708,17 @@ gui_mch_set_menu_pos(
     static Cardinal
 athena_calculate_ins_pos(Widget widget)
 {
-    /* Assume that if the parent of the vimmenu_T is NULL, then we can get
-     * to this menu by traversing "next", starting at "root_menu".
-     *
-     * This holds true for popup menus, toolbar, and toplevel menu items.
-     */
+    // Assume that if the parent of the vimmenu_T is NULL, then we can get
+    // to this menu by traversing "next", starting at "root_menu".
+    //
+    // This holds true for popup menus, toolbar, and toplevel menu items.
 
-    /* Popup menus:  "id" is NULL. Only submenu_id is valid */
+    // Popup menus:  "id" is NULL. Only submenu_id is valid
 
-    /* Menus that are not toplevel: "parent" will be non-NULL, "id" &
-     * "submenu_id" will be non-NULL.
-     */
+    // Menus that are not toplevel: "parent" will be non-NULL, "id" &
+    // "submenu_id" will be non-NULL.
 
-    /* Toplevel menus: "parent" is NULL, id is the widget of the menu item */
+    // Toplevel menus: "parent" is NULL, id is the widget of the menu item
 
     WidgetList	children;
     Cardinal	num_children = 0;
@@ -793,7 +790,7 @@ gui_mch_add_menu(vimmenu_T *menu, int idx UNUSED)
 	    gui_athena_menu_colors(menu->submenu_id);
 	    gui_athena_menu_font(menu->submenu_id);
 
-	    /* Don't update the menu height when it was set at a fixed value */
+	    // Don't update the menu height when it was set at a fixed value
 	    if (!gui.menu_height_fixed)
 	    {
 		/*
@@ -827,9 +824,8 @@ gui_mch_add_menu(vimmenu_T *menu, int idx UNUSED)
 
 	XtVaSetValues(menu->id, XtNrightBitmap, pullerBitmap,
 				NULL);
-	/* If there are other menu items that are not pulldown menus,
-	 * we need to adjust the right margins of those, too.
-	 */
+	// If there are other menu items that are not pulldown menus,
+	// we need to adjust the right margins of those, too.
 	{
 	    WidgetList	children;
 	    Cardinal	num_children;
@@ -865,11 +861,10 @@ gui_mch_add_menu(vimmenu_T *menu, int idx UNUSED)
     a_cur_menu = NULL;
 }
 
-/* Used to determine whether a SimpleMenu has pulldown entries.
- *
- * "id" is the parent of the menu items.
- * Ignore widget "ignore" in the pane.
- */
+// Used to determine whether a SimpleMenu has pulldown entries.
+//
+// "id" is the parent of the menu items.
+// Ignore widget "ignore" in the pane.
     static Boolean
 gui_athena_menu_has_submenus(Widget id, Widget ignore)
 {
@@ -900,8 +895,8 @@ gui_athena_menu_font(Widget id)
 	{
 	    XtUnmanageChild(id);
 	    XtVaSetValues(id, XtNfontSet, gui.menu_fontset, NULL);
-	    /* We should force the widget to recalculate its
-	     * geometry now. */
+	    // We should force the widget to recalculate its
+	    // geometry now.
 	    XtManageChild(id);
 	}
 	else
@@ -929,7 +924,7 @@ gui_athena_menu_font(Widget id)
 	if (has_submenu(id))
 	    XtVaSetValues(id, XtNrightBitmap, pullerBitmap, NULL);
 
-	/* Force the widget to recalculate its geometry now. */
+	// Force the widget to recalculate its geometry now.
 	if (managed)
 	    XtManageChild(id);
     }
@@ -953,10 +948,9 @@ gui_mch_new_menu_font(void)
     gui_mch_submenu_change(root_menu, FALSE);
 
     {
-	/* Iterate through the menubar menu items and get the height of
-	 * each one.  The menu bar height is set to the maximum of all
-	 * the heights.
-	 */
+	// Iterate through the menubar menu items and get the height of
+	// each one.  The menu bar height is set to the maximum of all
+	// the heights.
 	vimmenu_T *mp;
 	int max_height = 9999;
 
@@ -975,7 +969,7 @@ gui_mch_new_menu_font(void)
 	}
 	if (max_height != 9999)
 	{
-	    /* Don't update the menu height when it was set at a fixed value */
+	    // Don't update the menu height when it was set at a fixed value
 	    if (!gui.menu_height_fixed)
 	    {
 		Dimension   space, border;
@@ -988,12 +982,11 @@ gui_mch_new_menu_font(void)
 	    }
 	}
     }
-    /* Now, to simulate the window being resized.  Only, this
-     * will resize the window to its current state.
-     *
-     * There has to be a better way, but I do not see one at this time.
-     * (David Harrison)
-     */
+    // Now, to simulate the window being resized.  Only, this
+    // will resize the window to its current state.
+    //
+    // There has to be a better way, but I do not see one at this time.
+    // (David Harrison)
     {
 	Position w, h;
 
@@ -1048,7 +1041,7 @@ gui_mch_new_tooltip_colors(void)
     static void
 gui_mch_submenu_change(
     vimmenu_T	*menu,
-    int		colors)		/* TRUE for colors, FALSE for font */
+    int		colors)		// TRUE for colors, FALSE for font
 {
     vimmenu_T	*mp;
 
@@ -1060,8 +1053,8 @@ gui_mch_submenu_change(
 	    {
 		gui_athena_menu_colors(mp->id);
 #ifdef FEAT_TOOLBAR
-		/* For a toolbar item: Free the pixmap and allocate a new one,
-		 * so that the background color is right. */
+		// For a toolbar item: Free the pixmap and allocate a new one,
+		// so that the background color is right.
 		if (mp->image != (Pixmap)0)
 		{
 		    XFreePixmap(gui.dpy, mp->image);
@@ -1071,7 +1064,7 @@ gui_mch_submenu_change(
 		}
 
 # ifdef FEAT_BEVAL_GUI
-		/* If we have a tooltip, then we need to change its colors */
+		// If we have a tooltip, then we need to change its colors
 		if (mp->tip != NULL)
 		{
 		    Arg args[2];
@@ -1089,9 +1082,8 @@ gui_mch_submenu_change(
 	    {
 		gui_athena_menu_font(mp->id);
 #ifdef FEAT_BEVAL_GUI
-		/* If we have a tooltip, then we need to change its font */
-		/* Assume XtNinternational == True (in createBalloonEvalWindow)
-		 */
+		// If we have a tooltip, then we need to change its font
+		// Assume XtNinternational == True (in createBalloonEvalWindow)
 		if (mp->tip != NULL)
 		{
 		    Arg args[1];
@@ -1106,7 +1098,7 @@ gui_mch_submenu_change(
 
 	if (mp->children != NULL)
 	{
-	    /* Set the colors/font for the tear off widget */
+	    // Set the colors/font for the tear off widget
 	    if (mp->submenu_id != (Widget)0)
 	    {
 		if (colors)
@@ -1114,7 +1106,7 @@ gui_mch_submenu_change(
 		else
 		    gui_athena_menu_font(mp->submenu_id);
 	    }
-	    /* Set the colors for the children */
+	    // Set the colors for the children
 	    gui_mch_submenu_change(mp->children, colors);
 	}
     }
@@ -1171,18 +1163,15 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
 	}
 	XtSetArg(args[n], XtNhighlightThickness, 0); n++;
 	type = commandWidgetClass;
-	/* TODO: figure out the position in the toolbar?
-	 *       This currently works fine for the default toolbar, but
-	 *       what if we add/remove items during later runtime?
-	 */
+	// TODO: figure out the position in the toolbar?
+	//       This currently works fine for the default toolbar, but
+	//       what if we add/remove items during later runtime?
 
-	/* NOTE: "idx" isn't used here.  The position is calculated by
-	 *       athena_calculate_ins_pos().  The position it calculates
-	 *       should be equal to "idx".
-	 */
-	/* TODO: Could we just store "idx" and use that as the child
-	 * placement?
-	 */
+	// NOTE: "idx" isn't used here.  The position is calculated by
+	//       athena_calculate_ins_pos().  The position it calculates
+	//       should be equal to "idx".
+	// TODO: Could we just store "idx" and use that as the child
+	// placement?
 
 	if (menu->id == NULL)
 	{
@@ -1206,10 +1195,10 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
 	    gui_mch_show_toolbar(TRUE);
 	gui.toolbar_height = gui_mch_compute_toolbar_height();
 	return;
-    } /* toolbar menu item */
+    } // toolbar menu item
 # endif
 
-    /* Add menu separator */
+    // Add menu separator
     if (menu_is_separator(menu->name))
     {
 	menu->submenu_id = (Widget)0;
@@ -1235,10 +1224,9 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
 	    if (menu->id == (Widget)0)
 		return;
 
-	    /* If there are other "pulldown" items in this pane, then adjust
-	     * the right margin to accommodate the arrow pixmap, otherwise
-	     * the right margin will be the same as the left margin.
-	     */
+	    // If there are other "pulldown" items in this pane, then adjust
+	    // the right margin to accommodate the arrow pixmap, otherwise
+	    // the right margin will be the same as the left margin.
 	    {
 		Dimension   left_margin;
 
@@ -1263,16 +1251,15 @@ gui_mch_add_menu_item(vimmenu_T *menu, int idx UNUSED)
     void
 gui_mch_show_toolbar(int showit)
 {
-    Cardinal	numChildren;	    /* how many children toolBar has */
+    Cardinal	numChildren;	    // how many children toolBar has
 
     if (toolBar == (Widget)0)
 	return;
     XtVaGetValues(toolBar, XtNnumChildren, &numChildren, NULL);
     if (showit && numChildren > 0)
     {
-	/* Assume that we want to show the toolbar if p_toolbar contains valid
-	 * option settings, therefore p_toolbar must not be NULL.
-	 */
+	// Assume that we want to show the toolbar if p_toolbar contains valid
+	// option settings, therefore p_toolbar must not be NULL.
 	WidgetList  children;
 
 	XtVaGetValues(toolBar, XtNchildren, &children, NULL);
@@ -1296,12 +1283,11 @@ gui_mch_show_toolbar(int showit)
 		for (toolbar = root_menu; toolbar; toolbar = toolbar->next)
 		    if (menu_is_toolbar(toolbar->dname))
 			break;
-		/* Assumption: toolbar is NULL if there is no toolbar,
-		 *	       otherwise it contains the toolbar menu structure.
-		 *
-		 * Assumption: "numChildren" == the number of items in the list
-		 *	       of items beginning with toolbar->children.
-		 */
+		// Assumption: toolbar is NULL if there is no toolbar,
+		//	       otherwise it contains the toolbar menu structure.
+		//
+		// Assumption: "numChildren" == the number of items in the list
+		//	       of items beginning with toolbar->children.
 		if (toolbar)
 		{
 		    for (cur = toolbar->children; cur; cur = cur->next)
@@ -1309,9 +1295,8 @@ gui_mch_show_toolbar(int showit)
 			Arg	    args[2];
 			int	    n = 0;
 
-			/* Enable/Disable tooltip (OK to enable while currently
-			 * enabled)
-			 */
+			// Enable/Disable tooltip (OK to enable while currently
+			// enabled)
 			if (cur->tip != NULL)
 			    (*action)(cur->tip);
 			if (text == 1)
@@ -1387,12 +1372,12 @@ gui_mch_show_toolbar(int showit)
     int
 gui_mch_compute_toolbar_height(void)
 {
-    Dimension	height;		    /* total Toolbar height */
-    Dimension	whgt;		    /* height of each widget */
-    Dimension	marginHeight;	    /* XmNmarginHeight of toolBar */
-    Dimension	shadowThickness;    /* thickness of Xtparent(toolBar) */
-    WidgetList	children;	    /* list of toolBar's children */
-    Cardinal	numChildren;	    /* how many children toolBar has */
+    Dimension	height;		    // total Toolbar height
+    Dimension	whgt;		    // height of each widget
+    Dimension	marginHeight;	    // XmNmarginHeight of toolBar
+    Dimension	shadowThickness;    // thickness of Xtparent(toolBar)
+    WidgetList	children;	    // list of toolBar's children
+    Cardinal	numChildren;	    // how many children toolBar has
     int		i;
 
     height = 0;
@@ -1438,7 +1423,7 @@ gui_mch_get_toolbar_colors(
     void
 gui_mch_toggle_tearoffs(int enable UNUSED)
 {
-    /* no tearoff menus */
+    // no tearoff menus
 }
 
     void
@@ -1464,23 +1449,21 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 {
     Widget	parent;
 
-    /* There is no item for the toolbar. */
+    // There is no item for the toolbar.
     if (menu->id == (Widget)0)
 	return;
 
     parent = XtParent(menu->id);
 
-    /* When removing the last "pulldown" menu item from a pane, adjust the
-     * right margins of the remaining widgets.
-     */
+    // When removing the last "pulldown" menu item from a pane, adjust the
+    // right margins of the remaining widgets.
     if (menu->submenu_id != (Widget)0)
     {
-	/* Go through the menu items in the parent of this item and
-	 * adjust their margins, if necessary.
-	 * This takes care of the case when we delete the last menu item in a
-	 * pane that has a submenu.  In this case, there will be no arrow
-	 * pixmaps shown anymore.
-	 */
+	// Go through the menu items in the parent of this item and
+	// adjust their margins, if necessary.
+	// This takes care of the case when we delete the last menu item in a
+	// pane that has a submenu.  In this case, there will be no arrow
+	// pixmaps shown anymore.
 	{
 	    WidgetList  children;
 	    Cardinal    num_children;
@@ -1515,11 +1498,10 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 	    }
 	}
     }
-    /* Please be sure to destroy the parent widget first (i.e. menu->id).
-     *
-     * This code should be basically identical to that in the file gui_motif.c
-     * because they are both Xt based.
-     */
+    // Please be sure to destroy the parent widget first (i.e. menu->id).
+    //
+    // This code should be basically identical to that in the file gui_motif.c
+    // because they are both Xt based.
     if (menu->id != (Widget)0)
     {
 	Cardinal    num_children;
@@ -1535,15 +1517,14 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 #if defined(FEAT_TOOLBAR) && defined(FEAT_BEVAL_GUI)
 	if (parent == toolBar && menu->tip != NULL)
 	{
-	    /* We try to destroy this before the actual menu, because there are
-	     * callbacks, etc. that will be unregistered during the tooltip
-	     * destruction.
-	     *
-	     * If you call "gui_mch_destroy_beval_area()" after destroying
-	     * menu->id, then the tooltip's window will have already been
-	     * deallocated by Xt, and unknown behaviour will ensue (probably
-	     * a core dump).
-	     */
+	    // We try to destroy this before the actual menu, because there are
+	    // callbacks, etc. that will be unregistered during the tooltip
+	    // destruction.
+	    //
+	    // If you call "gui_mch_destroy_beval_area()" after destroying
+	    // menu->id, then the tooltip's window will have already been
+	    // deallocated by Xt, and unknown behaviour will ensue (probably
+	    // a core dump).
 	    gui_mch_destroy_beval_area(menu->tip);
 	    menu->tip = NULL;
 	}
@@ -1555,15 +1536,14 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 	 * will be deleted soon anyway, and it will delete its children like
 	 * all good widgets do.
 	 */
-	/* NOTE: The cause of the BadValue X Protocol Error is because when the
-	 * last child is destroyed, it is first unmanaged, thus causing a
-	 * geometry resize request from the parent Shell widget.
-	 * Since the Shell widget has no more children, it is resized to have
-	 * width/height of 0.  XConfigureWindow() is then called with the
-	 * width/height of 0, which generates the BadValue.
-	 *
-	 * This happens in phase two of the widget destruction process.
-	 */
+	// NOTE: The cause of the BadValue X Protocol Error is because when the
+	// last child is destroyed, it is first unmanaged, thus causing a
+	// geometry resize request from the parent Shell widget.
+	// Since the Shell widget has no more children, it is resized to have
+	// width/height of 0.  XConfigureWindow() is then called with the
+	// width/height of 0, which generates the BadValue.
+	//
+	// This happens in phase two of the widget destruction process.
 	{
 	    if (parent != menuBar
 #ifdef FEAT_TOOLBAR
@@ -1588,7 +1568,7 @@ gui_mch_destroy_menu(vimmenu_T *menu)
 #ifdef FEAT_TOOLBAR
 	else if (parent == toolBar)
 	{
-	    /* When removing last toolbar item, don't display the toolbar. */
+	    // When removing last toolbar item, don't display the toolbar.
 	    XtVaGetValues(toolBar, XtNnumChildren, &num_children, NULL);
 	    if (num_children == 0)
 		gui_mch_show_toolbar(FALSE);
@@ -1620,7 +1600,7 @@ gui_athena_menu_timeout(
 	XtVaGetValues(w, XtNrightBitmap, &p, NULL);
 	if ((p != None) && (p != XtUnspecifiedPixmap))
 	{
-	    /* We are dealing with an item that has a submenu */
+	    // We are dealing with an item that has a submenu
 	    popup = get_popup_entry(XtParent(w));
 	    if (popup == (Widget)0)
 		return;
@@ -1629,7 +1609,8 @@ gui_athena_menu_timeout(
     }
 }
 
-/* This routine is used to calculate the position (in screen coordinates)
+/*
+ * This routine is used to calculate the position (in screen coordinates)
  * where a submenu should appear relative to the menu entry that popped it
  * up.  It should appear even with and just slightly to the left of the
  * rightmost end of the menu entry that caused the popup.
@@ -1642,12 +1623,12 @@ gui_athena_popup_callback(
     XtPointer	client_data,
     XtPointer	call_data UNUSED)
 {
-    /* Assumption: XtIsSubclass(XtParent(w),simpleMenuWidgetClass) */
+    // Assumption: XtIsSubclass(XtParent(w),simpleMenuWidgetClass)
     vimmenu_T	*menu = (vimmenu_T *)client_data;
     Dimension	width;
     Position	root_x, root_y;
 
-    /* First, popdown any siblings that may have menus popped up */
+    // First, popdown any siblings that may have menus popped up
     {
 	vimmenu_T *i;
 
@@ -1660,8 +1641,8 @@ gui_athena_popup_callback(
     XtVaGetValues(XtParent(w),
 		  XtNwidth,   &width,
 		  NULL);
-    /* Assumption: XawSimpleMenuGetActiveEntry(XtParent(w)) == menu->id */
-    /* i.e. This IS the active entry */
+    // Assumption: XawSimpleMenuGetActiveEntry(XtParent(w)) == menu->id
+    // i.e. This IS the active entry
     XtTranslateCoords(menu->id,width - 5, 0, &root_x, &root_y);
     XtVaSetValues(w, XtNx, root_x,
 		     XtNy, root_y,
@@ -1696,7 +1677,9 @@ gui_athena_popdown_submenus_action(
     }
 }
 
-/* Used to determine if the given widget has a submenu that can be popped up. */
+/*
+ * Used to determine if the given widget has a submenu that can be popped up.
+ */
     static Boolean
 has_submenu(Widget widget)
 {
@@ -1740,7 +1723,7 @@ gui_athena_delayed_arm_action(
 	{
 	    if (timer)
 	    {
-		/* If the timeout hasn't been triggered, remove it */
+		// If the timeout hasn't been triggered, remove it
 		XtRemoveTimeOut(timer);
 	    }
 	    gui_athena_popdown_submenus_action(w,event,args,nargs);
@@ -1760,22 +1743,22 @@ get_popup_entry(Widget w)
 {
     Widget	menuw;
 
-    /* Get the active entry for the current menu */
+    // Get the active entry for the current menu
     if ((menuw = XawSimpleMenuGetActiveEntry(w)) == (Widget)0)
 	return NULL;
 
     return submenu_widget(menuw);
 }
 
-/* Given the widget that has been determined to have a submenu, return the submenu widget
- * that is to be popped up.
+/*
+ * Given the widget that has been determined to have a submenu, return the
+ * submenu widget that is to be popped up.
  */
     static Widget
 submenu_widget(Widget widget)
 {
-    /* Precondition: has_submenu(widget) == True
-     *	    XtIsSubclass(XtParent(widget),simpleMenuWidgetClass) == True
-     */
+    // Precondition: has_submenu(widget) == True
+    //	    XtIsSubclass(XtParent(widget),simpleMenuWidgetClass) == True
 
     char_u	*pullright_name;
     Widget	popup;
@@ -1785,8 +1768,8 @@ submenu_widget(Widget widget)
     vim_free(pullright_name);
 
     return popup;
-    /* Postcondition: (popup != NULL) implies
-     * (XtIsSubclass(popup,simpleMenuWidgetClass) == True) */
+    // Postcondition: (popup != NULL) implies
+    // (XtIsSubclass(popup,simpleMenuWidgetClass) == True)
 }
 
     void
@@ -1799,7 +1782,7 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
     if (menu->submenu_id == (Widget)0)
 	return;
 
-    /* Position the popup menu at the pointer */
+    // Position the popup menu at the pointer
     if (XQueryPointer(gui.dpy, XtWindow(vimShell), &root, &child,
 		&rootx, &rooty, &winx, &winy, &mask))
     {
@@ -1819,7 +1802,7 @@ gui_mch_show_popupmenu(vimmenu_T *menu)
     XtPopupSpringLoaded(menu->submenu_id);
 }
 
-#endif /* FEAT_MENU */
+#endif // FEAT_MENU
 
 /*
  * Set the menu and scrollbar colors to their default values.
@@ -1866,7 +1849,7 @@ gui_mch_set_scrollbar_thumb(
      */
     if (max == 0)
     {
-	/* So you can't scroll it at all (normally it scrolls past end) */
+	// So you can't scroll it at all (normally it scrolls past end)
 #ifdef FEAT_GUI_NEXTAW
 	XawScrollbarSetThumb(sb->id, 0.0, 1.0);
 #else
@@ -1921,7 +1904,7 @@ gui_mch_enable_scrollbar(scrollbar_T *sb, int flag)
     void
 gui_mch_create_scrollbar(
     scrollbar_T *sb,
-    int		orient)	/* SBAR_VERT or SBAR_HORIZ */
+    int		orient)	// SBAR_VERT or SBAR_HORIZ
 {
     sb->id = XtVaCreateWidget("scrollBar",
 #ifdef FEAT_GUI_NEXTAW
@@ -1971,7 +1954,7 @@ gui_mch_set_scrollbar_colors(scrollbar_T *sb)
 	    XtNbackground, gui.scroll_bg_pixel,
 	    NULL);
 
-    /* This is needed for the rectangle below the vertical scrollbars. */
+    // This is needed for the rectangle below the vertical scrollbars.
     if (sb == &gui.bottom_sbar && vimForm != (Widget)0)
 	gui_athena_scroll_colors(vimForm);
 }
@@ -1992,17 +1975,17 @@ gui_x11_get_wid(void)
  */
     char_u *
 gui_mch_browse(
-    int		saving UNUSED,	/* select file to write */
-    char_u	*title,		/* title for the window */
-    char_u	*dflt,		/* default name */
-    char_u	*ext UNUSED,	/* extension added */
-    char_u	*initdir,	/* initial directory, NULL for current dir */
-    char_u	*filter UNUSED)	/* file name filter */
+    int		saving UNUSED,	// select file to write
+    char_u	*title,		// title for the window
+    char_u	*dflt,		// default name
+    char_u	*ext UNUSED,	// extension added
+    char_u	*initdir,	// initial directory, NULL for current dir
+    char_u	*filter UNUSED)	// file name filter
 {
     Position x, y;
     char_u	dirbuf[MAXPATHL];
 
-    /* Concatenate "initdir" and "dflt". */
+    // Concatenate "initdir" and "dflt".
     if (initdir == NULL || *initdir == NUL)
 	mch_dirname(dirbuf, MAXPATHL);
     else if (STRLEN(initdir) + 2 < MAXPATHL)
@@ -2016,7 +1999,7 @@ gui_mch_browse(
 	STRCAT(dirbuf, dflt);
     }
 
-    /* Position the file selector just below the menubar */
+    // Position the file selector just below the menubar
     XtTranslateCoords(vimShell, (Position)0, (Position)
 #ifdef FEAT_MENU
 	    gui.menu_height
@@ -2111,13 +2094,13 @@ gui_mch_dialog(
 	title = (char_u *)_("Vim dialog");
     dialogStatus = -1;
 
-    /* if our pointer is currently hidden, then we should show it. */
+    // if our pointer is currently hidden, then we should show it.
     gui_mch_mousehide(FALSE);
 
-    /* Check 'v' flag in 'guioptions': vertical button placement. */
+    // Check 'v' flag in 'guioptions': vertical button placement.
     vertical = (vim_strchr(p_go, GO_VERTICAL) != NULL);
 
-    /* The shell is created each time, to make sure it is resized properly */
+    // The shell is created each time, to make sure it is resized properly
     dialogshell = XtVaCreatePopupShell("dialogShell",
 	    transientShellWidgetClass, vimShell,
 	    XtNtitle, title,
@@ -2170,7 +2153,7 @@ gui_mch_dialog(
 	XtSetKeyboardFocus(dialog, dialogtextfield);
     }
 
-    /* make a copy, so that we can insert NULs */
+    // make a copy, so that we can insert NULs
     buts = vim_strsave(buttons);
     if (buts == NULL)
 	return -1;
@@ -2213,7 +2196,7 @@ gui_mch_dialog(
 
     XtRealizeWidget(dialogshell);
 
-    /* Setup for catching the close-window event, don't let it close Vim! */
+    // Setup for catching the close-window event, don't let it close Vim!
     dialogatom = XInternAtom(gui.dpy, "WM_DELETE_WINDOW", False);
     XSetWMProtocols(gui.dpy, XtWindow(dialogshell), &dialogatom, 1);
     XtAddEventHandler(dialogshell, NoEventMask, True, dialog_wm_handler, NULL);
@@ -2236,8 +2219,8 @@ gui_mch_dialog(
 	y = 0;
     XtVaSetValues(dialogshell, XtNx, x, XtNy, y, NULL);
 
-    /* Position the mouse pointer in the dialog, required for when focus
-     * follows mouse. */
+    // Position the mouse pointer in the dialog, required for when focus
+    // follows mouse.
     XWarpPointer(gui.dpy, (Window)0, XtWindow(dialogshell), 0, 0, 0, 0, 20, 40);
 
 

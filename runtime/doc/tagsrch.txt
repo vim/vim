@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 8.1.  Last change: 2019 May 07
+*tagsrch.txt*   For Vim version 8.2.  Last change: 2019 Dec 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -85,18 +85,21 @@ changed, to avoid confusion when using ":tnext".  It is changed when using
 ":tag {name}".
 
 The ignore-case matches are not found for a ":tag" command when:
-- the 'ignorecase' option is off and 'tagcase' is "followic"
+- 'tagcase' is "followic" and the 'ignorecase' option is off
+- 'tagcase' is "followscs" and the 'ignorecase' option is off and the
+  'smartcase' option is off or the pattern contains an upper case character.
 - 'tagcase' is "match"
 - 'tagcase' is "smart" and the pattern contains an upper case character.
-- 'tagcase' is "followscs" and 'smartcase' option is on and the pattern
-  contains an upper case character.
 
 The ignore-case matches are found when:
 - a pattern is used (starting with a "/")
 - for ":tselect"
-- when 'tagcase' is "followic" and 'ignorecase' is off
-- when 'tagcase' is "match"
-- when 'tagcase' is "followscs" and the 'smartcase' option is off
+- when 'tagcase' is "followic" and 'ignorecase' is on
+- when 'tagcase' is "followscs" and 'ignorecase' is on or the 'smartcase'
+  option is on and the pattern does not contain an upper case character
+- when 'tagcase' is "ignore"
+- when 'tagcase' is "smart" and the patter does not contain an upper case
+  character
 
 Note that using ignore-case tag searching disables binary searching in the
 tags file, which causes a slowdown.  This can be avoided by fold-case sorting
@@ -207,14 +210,14 @@ the same entry.
 			Example output:
 
 >
-	 nr pri kind tag		file
+	  # pri kind tag		file
 	  1 F	f    mch_delay		os_amiga.c
 			mch_delay(msec, ignoreinput)
 	> 2 F	f    mch_delay		os_msdos.c
 			mch_delay(msec, ignoreinput)
 	  3 F	f    mch_delay		os_unix.c
 			mch_delay(msec, ignoreinput)
-	Enter nr of choice (<CR> to abort):
+	Type number and <Enter> (empty cancels):
 <
 			See |tag-priority| for the "pri" column.  Note that
 			this depends on the current file, thus using
@@ -341,11 +344,11 @@ the same as above, with a "p" prepended.
 A static tag is a tag that is defined for a specific file.  In a C program
 this could be a static function.
 
-In Vi jumping to a tag sets the current search pattern.  This means that
-the "n" command after jumping to a tag does not search for the same pattern
-that it did before jumping to the tag.  Vim does not do this as we consider it
-to be a bug.  You can still find the tag search pattern in the search history.
-If you really want the old Vi behavior, set the 't' flag in 'cpoptions'.
+In Vi jumping to a tag sets the current search pattern.  This means that the
+"n" command after jumping to a tag does not search for the same pattern that
+it did before jumping to the tag.  Vim does not do this as we consider it to
+be a bug.  If you really want the old Vi behavior, set the 't' flag in
+'cpoptions'.
 
 							*tag-binary-search*
 Vim uses binary searching in the tags file to find the desired tag quickly
@@ -423,8 +426,7 @@ would otherwise go unnoticed.  Example: >
 
 In Vi the ":tag" command sets the last search pattern when the tag is searched
 for.  In Vim this is not done, the previous search pattern is still remembered,
-unless the 't' flag is present in 'cpoptions'.  The search pattern is always
-put in the search history, so you can modify it if searching fails.
+unless the 't' flag is present in 'cpoptions'.
 
 					*emacs-tags* *emacs_tags* *E430*
 Emacs style tag files are only supported if Vim was compiled with the
@@ -433,7 +435,7 @@ files here, it is only supported for backwards compatibility :-).
 
 Lines in Emacs tags files can be very long.  Vim only deals with lines of up
 to about 510 bytes.  To see whether lines are ignored set 'verbose' to 5 or
-higher.
+higher. Non-Emacs tags file lines can be any length.
 
 							*tags-option*
 The 'tags' option is a list of file names.  Each of these files is searched
@@ -503,7 +505,7 @@ Some programs that generate tags files:
 ctags			As found on most Unix systems.  Only supports C.  Only
 			does the basic work.
 							*Exuberant_ctags*
-exuberant ctags		This a very good one.  It works for C, C++, Java,
+exuberant ctags		This is a very good one.  It works for C, C++, Java,
 			Fortran, Eiffel and others.  It can generate tags for
 			many items.  See http://ctags.sourceforge.net.
 etags			Connected to Emacs.  Supports many languages.
@@ -824,7 +826,7 @@ CTRL-W d		Open a new window, with the cursor on the first
 			(default: whole file).
 			See |:search-args| for [/] and [!].
 
-							*:che* *:checkpath*
+					*:che* *:chec* *:check* *:checkpath*
 :che[ckpath]		List all the included files that could not be found.
 
 :che[ckpath]!		List all the included files.
@@ -895,7 +897,7 @@ The following fields are optional:
 If the function returns |v:null| instead of a List, a standard tag lookup will
 be performed instead.
 
-It is not allowed to change the tagstack from inside 'tagfunc'.  *E986* 
+It is not allowed to change the tagstack from inside 'tagfunc'.  *E986*
 
 The following is a hypothetical example of a function used for 'tagfunc'.  It
 uses the output of |taglist()| to generate the result: a list of tags in the

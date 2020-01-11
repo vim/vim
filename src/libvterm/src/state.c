@@ -11,7 +11,7 @@
 
 static int on_resize(int rows, int cols, void *user);
 
-/* Some convenient wrappers to make callback functions easier */
+// Some convenient wrappers to make callback functions easier
 
 static void putglyph(VTermState *state, const uint32_t chars[], int width, VTermPos pos)
 {
@@ -266,9 +266,8 @@ static int on_text(const char bytes[], size_t len, void *user)
       codepoints, &npoints, state->gsingle_set ? 1 : (int)len,
       bytes, &eaten, len);
 
-  /* There's a chance an encoding (e.g. UTF-8) hasn't found enough bytes yet
-   * for even a single codepoint
-   */
+  // There's a chance an encoding (e.g. UTF-8) hasn't found enough bytes yet
+  // for even a single codepoint
   if(!npoints)
   {
     vterm_allocator_free(state->vt, codepoints);
@@ -278,10 +277,10 @@ static int on_text(const char bytes[], size_t len, void *user)
   if(state->gsingle_set && npoints)
     state->gsingle_set = 0;
 
-  /* This is a combining char. that needs to be merged with the previous
-   * glyph output */
+  // This is a combining char. that needs to be merged with the previous
+  // glyph output
   if(vterm_unicode_is_combining(codepoints[i])) {
-    /* See if the cursor has moved since */
+    // See if the cursor has moved since
     if(state->pos.row == state->combine_pos.row && state->pos.col == state->combine_pos.col + state->combine_width) {
 #ifdef DEBUG_GLYPH_COMBINE
       int printpos;
@@ -291,12 +290,12 @@ static int on_text(const char bytes[], size_t len, void *user)
       printf("} + {");
 #endif
 
-      /* Find where we need to append these combining chars */
+      // Find where we need to append these combining chars
       int saved_i = 0;
       while(state->combine_chars[saved_i])
         saved_i++;
 
-      /* Add extra ones */
+      // Add extra ones
       while(i < npoints && vterm_unicode_is_combining(codepoints[i])) {
         if(saved_i >= (int)state->combine_chars_size)
           grow_combine_buffer(state);
@@ -312,7 +311,7 @@ static int on_text(const char bytes[], size_t len, void *user)
       printf("}\n");
 #endif
 
-      /* Now render it */
+      // Now render it
       putglyph(state, state->combine_chars, state->combine_width, state->combine_pos);
     }
     else {
@@ -337,6 +336,11 @@ static int on_text(const char bytes[], size_t len, void *user)
 
     for( ; i < glyph_ends; i++) {
       int this_width;
+      if(vterm_get_special_pty_type() == 2) {
+        state->vt->in_backspace -= (state->vt->in_backspace > 0) ? 1 : 0;
+        if(state->vt->in_backspace == 1)
+          codepoints[i] = 0; // codepoints under this condition must be 0
+      }
       chars[i - glyph_starts] = codepoints[i];
       this_width = vterm_unicode_width(codepoints[i]);
 #ifdef DEBUG
@@ -366,10 +370,9 @@ static int on_text(const char bytes[], size_t len, void *user)
     }
 
     if(state->mode.insert) {
-      /* TODO: This will be a little inefficient for large bodies of text, as
-       * it'll have to 'ICH' effectively before every glyph. We should scan
-       * ahead and ICH as many times as required
-       */
+      // TODO: This will be a little inefficient for large bodies of text, as
+      // it'll have to 'ICH' effectively before every glyph. We should scan
+      // ahead and ICH as many times as required
       VTermRect rect;
       rect.start_row = state->pos.row;
       rect.end_row   = state->pos.row + 1;
@@ -381,8 +384,8 @@ static int on_text(const char bytes[], size_t len, void *user)
     putglyph(state, chars, width, state->pos);
 
     if(i == npoints - 1) {
-      /* End of the buffer. Save the chars in case we have to combine with
-       * more on the next call */
+      // End of the buffer. Save the chars in case we have to combine with
+      // more on the next call
       int save_i;
       for(save_i = 0; chars[save_i]; save_i++) {
         if(save_i >= (int)state->combine_chars_size)
@@ -427,6 +430,12 @@ static int on_control(unsigned char control, void *user)
 
   VTermPos oldpos = state->pos;
 
+  VTermScreenCell cell;
+
+  // Preparing to see the leading byte
+  VTermPos leadpos = state->pos;
+  leadpos.col -= (leadpos.col >= 2 ? 2 : 0);
+
   switch(control) {
   case 0x07: // BEL - ECMA-48 8.3.3
     if(state->callbacks && state->callbacks->bell)
@@ -436,6 +445,12 @@ static int on_control(unsigned char control, void *user)
   case 0x08: // BS - ECMA-48 8.3.5
     if(state->pos.col > 0)
       state->pos.col--;
+    if(vterm_get_special_pty_type() == 2) {
+      // In 2 cell letters, go back 2 cells
+      vterm_screen_get_cell(state->vt->screen, leadpos, &cell);
+      if(vterm_unicode_width(cell.chars[0]) == 2)
+        state->pos.col--;
+    }
     break;
 
   case 0x09: // HT - ECMA-48 8.3.60
@@ -577,9 +592,8 @@ static int on_escape(const char *bytes, size_t len, void *user)
 {
   VTermState *state = user;
 
-  /* Easier to decode this from the first byte, even though the final
-   * byte terminates it
-   */
+  // Easier to decode this from the first byte, even though the final
+  // byte terminates it
   switch(bytes[0]) {
   case ' ':
     if(len != 2)
@@ -911,7 +925,7 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
   VTermPos oldpos = state->pos;
   int handled = 1;
 
-  /* Some temporaries for later code */
+  // Some temporaries for later code
   int count, val;
   int row, col;
   VTermRect rect;
@@ -1022,6 +1036,26 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     row = CSI_ARG_OR(args[0], 1);
     col = argcount < 2 || CSI_ARG_IS_MISSING(args[1]) ? 1 : CSI_ARG(args[1]);
     // zero-based
+    if(vterm_get_special_pty_type() == 2) {
+      // Fix a sequence that is not correct right now
+      if(state->pos.row == row - 1) {
+        int cnt, ptr = 0;
+        for(cnt = 0; cnt < col - 1; ++cnt) {
+	  VTermPos p;
+	  VTermScreenCell c0, c1;
+	  p.row = row - 1;
+	  p.col = ptr;
+	  vterm_screen_get_cell(state->vt->screen, p, &c0);
+	  p.col++;
+	  vterm_screen_get_cell(state->vt->screen, p, &c1);
+	  ptr += (c1.chars[0] == (uint32_t)-1)		    // double cell?
+	     ? (vterm_unicode_is_ambiguous(c0.chars[0]))    // is ambiguous?
+	     ? vterm_unicode_width(0x00a1) : 1		    // &ambiwidth
+	     : 1;					    // not ambiguous
+        }
+        col = ptr + 1;
+      }
+    }
     state->pos.row = row-1;
     state->pos.col = col-1;
     if(state->mode.origin) {
@@ -1258,7 +1292,7 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
     case 2:
     case 4:
       break;
-    /* TODO: 1, 2 and 4 aren't meaningful yet without line tab stops */
+    // TODO: 1, 2 and 4 aren't meaningful yet without line tab stops
     default:
       return 0;
     }
@@ -1298,6 +1332,11 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
 
   case 0x6d: // SGR - ECMA-48 8.3.117
     vterm_state_setpen(state, args, argcount);
+    break;
+
+  case LEADER('>', 0x6d): // xterm resource modifyOtherKeys
+    if (argcount == 2 && args[0] == 4)
+      state->mode.modify_other_keys = args[1] == 2;
     break;
 
   case 0x6e: // DSR - ECMA-48 8.3.35
@@ -1418,7 +1457,7 @@ static int on_csi(const char *leader, const long args[], int argcount, const cha
 
   case 0x74:
     switch(CSI_ARG(args[0])) {
-      case 8: /* CSI 8 ; rows ; cols t  set size */
+      case 8: // CSI 8 ; rows ; cols t  set size
 	if (argcount == 3)
 	  on_resize(CSI_ARG(args[1]), CSI_ARG(args[2]), state);
 	break;
@@ -1531,7 +1570,7 @@ static int on_osc(const char *command, size_t cmdlen, void *user)
     return 1;
   }
   else if(strneq(command, "10;", 3)) {
-    /* request foreground color: <Esc>]10;?<0x07> */
+    // request foreground color: <Esc>]10;?<0x07>
     int red = state->default_fg.red;
     int blue = state->default_fg.blue;
     int green = state->default_fg.green;
@@ -1539,7 +1578,7 @@ static int on_osc(const char *command, size_t cmdlen, void *user)
     return 1;
   }
   else if(strneq(command, "11;", 3)) {
-    /* request background color: <Esc>]11;?<0x07> */
+    // request background color: <Esc>]11;?<0x07>
     int red = state->default_bg.red;
     int blue = state->default_bg.blue;
     int green = state->default_bg.green;
@@ -1591,7 +1630,7 @@ static void request_status_string(VTermState *state, const char *command, size_t
       switch(state->mode.cursor_shape) {
         case VTERM_PROP_CURSORSHAPE_BLOCK:     reply = 2; break;
         case VTERM_PROP_CURSORSHAPE_UNDERLINE: reply = 4; break;
-	default: /* VTERM_PROP_CURSORSHAPE_BAR_LEFT */  reply = 6; break;
+	default: /* VTERM_PROP_CURSORSHAPE_BAR_LEFT */ reply = 6; break;
       }
       if(state->mode.cursor_blink)
         reply--;
@@ -1634,7 +1673,7 @@ static int on_resize(int rows, int cols, void *user)
     if (newtabstops == NULL)
       return 0;
 
-    /* TODO: This can all be done much more efficiently bytewise */
+    // TODO: This can all be done much more efficiently bytewise
     for(col = 0; col < state->cols && col < cols; col++) {
       unsigned char mask = 1 << (col & 7);
       if(state->tabstops[col >> 3] & mask)
@@ -1704,13 +1743,13 @@ static int on_resize(int rows, int cols, void *user)
 }
 
 static const VTermParserCallbacks parser_callbacks = {
-  on_text, /* text */
-  on_control, /* control */
-  on_escape, /* escape */
-  on_csi, /* csi */
-  on_osc, /* osc */
-  on_dcs, /* dcs */
-  on_resize /* resize */
+  on_text, // text
+  on_control, // control
+  on_escape, // escape
+  on_csi, // csi
+  on_osc, // osc
+  on_dcs, // dcs
+  on_resize // resize
 };
 
 /*
@@ -1875,8 +1914,8 @@ void *vterm_state_get_unrecognised_fbdata(VTermState *state)
 
 int vterm_state_set_termprop(VTermState *state, VTermProp prop, VTermValue *val)
 {
-  /* Only store the new value of the property if usercode said it was happy.
-   * This is especially important for altscreen switching */
+  // Only store the new value of the property if usercode said it was happy.
+  // This is especially important for altscreen switching
   if(state->callbacks && state->callbacks->settermprop)
     if(!(*state->callbacks->settermprop)(prop, val, state->cbdata))
       return 0;
