@@ -163,18 +163,7 @@ static dict_T		vimvardict;		// Dictionary with v: variables
 // for VIM_VERSION_ defines
 #include "version.h"
 
-/*
- * Array to hold the hashtab with variables local to each sourced script.
- * Each item holds a variable (nameless) that points to the dict_T.
- */
-typedef struct
-{
-    dictitem_T	sv_var;
-    dict_T	sv_dict;
-} scriptvar_T;
-
-static garray_T	    ga_scripts = {0, 0, sizeof(scriptvar_T *), 4, NULL};
-#define SCRIPT_SV(id) (((scriptvar_T **)ga_scripts.ga_data)[(id) - 1])
+#define SCRIPT_SV(id) (SCRIPT_ITEM(id).sn_vars)
 #define SCRIPT_VARS(id) (SCRIPT_SV(id)->sv_dict.dv_hashtab)
 
 static void ex_let_const(exarg_T *eap, int is_const);
@@ -289,14 +278,12 @@ evalvars_clear(void)
     // global variables
     vars_clear(&globvarht);
 
-    // Script-local variables. First clear all the variables and in a second
-    // loop free the scriptvar_T, because a variable in one script might hold
-    // a reference to the whole scope of another script.
-    for (i = 1; i <= ga_scripts.ga_len; ++i)
+    // Script-local variables. Clear all the variables here.
+    // The scriptvar_T is cleared later in free_scriptnames(), because a
+    // variable in one script might hold a reference to the whole scope of
+    // another script.
+    for (i = 1; i <= script_items.ga_len; ++i)
 	vars_clear(&SCRIPT_VARS(i));
-    for (i = 1; i <= ga_scripts.ga_len; ++i)
-	vim_free(SCRIPT_SV(i));
-    ga_clear(&ga_scripts);
 }
 #endif
 
@@ -318,7 +305,7 @@ garbage_collect_scriptvars(int copyID)
     int		i;
     int		abort = FALSE;
 
-    for (i = 1; i <= ga_scripts.ga_len; ++i)
+    for (i = 1; i <= script_items.ga_len; ++i)
 	abort = abort || set_ref_in_ht(&SCRIPT_VARS(i), copyID, NULL);
 
     return abort;
@@ -538,7 +525,7 @@ list_vim_vars(int *first)
     static void
 list_script_vars(int *first)
 {
-    if (current_sctx.sc_sid > 0 && current_sctx.sc_sid <= ga_scripts.ga_len)
+    if (current_sctx.sc_sid > 0 && current_sctx.sc_sid <= script_items.ga_len)
 	list_hashtable_vars(&SCRIPT_VARS(current_sctx.sc_sid),
 							   "s:", FALSE, first);
 }
@@ -2433,7 +2420,7 @@ find_var_ht(char_u *name, char_u **varname)
 	return get_funccal_local_ht();
     if (*name == 's'				// script variable
 	    && current_sctx.sc_sid > 0
-	    && current_sctx.sc_sid <= ga_scripts.ga_len)
+	    && current_sctx.sc_sid <= script_items.ga_len)
 	return &SCRIPT_VARS(current_sctx.sc_sid);
     return NULL;
 }
@@ -2461,32 +2448,13 @@ get_var_value(char_u *name)
     void
 new_script_vars(scid_T id)
 {
-    int		i;
-    hashtab_T	*ht;
     scriptvar_T *sv;
 
-    if (ga_grow(&ga_scripts, (int)(id - ga_scripts.ga_len)) == OK)
-    {
-	// Re-allocating ga_data means that an ht_array pointing to
-	// ht_smallarray becomes invalid.  We can recognize this: ht_mask is
-	// at its init value.  Also reset "v_dict", it's always the same.
-	for (i = 1; i <= ga_scripts.ga_len; ++i)
-	{
-	    ht = &SCRIPT_VARS(i);
-	    if (ht->ht_mask == HT_INIT_SIZE - 1)
-		ht->ht_array = ht->ht_smallarray;
-	    sv = SCRIPT_SV(i);
-	    sv->sv_var.di_tv.vval.v_dict = &sv->sv_dict;
-	}
-
-	while (ga_scripts.ga_len < id)
-	{
-	    sv = SCRIPT_SV(ga_scripts.ga_len + 1) =
-		ALLOC_CLEAR_ONE(scriptvar_T);
-	    init_var_dict(&sv->sv_dict, &sv->sv_var, VAR_SCOPE);
-	    ++ga_scripts.ga_len;
-	}
-    }
+    sv = ALLOC_CLEAR_ONE(scriptvar_T);
+    if (sv == NULL)
+	return;
+    init_var_dict(&sv->sv_dict, &sv->sv_var, VAR_SCOPE);
+    SCRIPT_ITEM(id).sn_vars = sv;
 }
 
 /*

@@ -149,8 +149,7 @@ eval_init(void)
 eval_clear(void)
 {
     evalvars_clear();
-
-    free_scriptnames();
+    free_scriptnames();  // must come after evalvars_clear().
     free_locales();
 
     // autoloaded script names
