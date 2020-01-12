@@ -1236,7 +1236,7 @@ do_source(
 
     save_current_sctx = current_sctx;
     current_sctx.sc_lnum = 0;
-    current_sctx.sc_version = 1;
+    current_sctx.sc_version = 1;  // default script version
     current_sctx.sc_had_command = FALSE;
 
     // Check if this script was sourced before to finds its SID.
@@ -1273,6 +1273,10 @@ do_source(
 	{
 	    ++script_items.ga_len;
 	    SCRIPT_ITEM(script_items.ga_len).sn_name = NULL;
+	    SCRIPT_ITEM(script_items.ga_len).sn_version = 1;
+
+	    // Allocate the local script variables to use for this script.
+	    new_script_vars(script_items.ga_len);
 # ifdef FEAT_PROFILE
 	    SCRIPT_ITEM(script_items.ga_len).sn_prof_on = FALSE;
 # endif
@@ -1290,9 +1294,6 @@ do_source(
 	else
 	    si->sn_dev_valid = FALSE;
 # endif
-
-	// Allocate the local script variables to use for this script.
-	new_script_vars(current_sctx.sc_sid);
     }
 
 # ifdef FEAT_PROFILE
@@ -1484,6 +1485,8 @@ free_scriptnames(void)
 
     for (i = script_items.ga_len; i > 0; --i)
     {
+	// the variables themselves are cleared in evalvars_clear()
+	vim_free(SCRIPT_ITEM(i).sn_vars);
 	vim_free(SCRIPT_ITEM(i).sn_name);
 #  ifdef FEAT_PROFILE
 	ga_clear(&SCRIPT_ITEM(i).sn_prl_ga);
@@ -1797,7 +1800,10 @@ ex_scriptversion(exarg_T *eap UNUSED)
     else if (nr > 4)
 	semsg(_("E999: scriptversion not supported: %d"), nr);
     else
+    {
 	current_sctx.sc_version = nr;
+	SCRIPT_ITEM(current_sctx.sc_sid).sn_version = nr;
+    }
 #endif
 }
 
