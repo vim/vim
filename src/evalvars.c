@@ -945,14 +945,22 @@ skip_var_list(
 /*
  * Skip one (assignable) variable name, including @r, $VAR, &option, d.key,
  * l[idx].
+ * In Vim9 script also skip over ": type".
  */
     static char_u *
 skip_var_one(char_u *arg)
 {
+    char_u *end;
+
     if (*arg == '@' && arg[1] != NUL)
 	return arg + 2;
-    return find_name_end(*arg == '$' || *arg == '&' ? arg + 1 : arg,
+    end = find_name_end(*arg == '$' || *arg == '&' ? arg + 1 : arg,
 				   NULL, NULL, FNE_INCL_BR | FNE_CHECK_START);
+    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9 && *end == ':')
+    {
+	end = skip_type(skipwhite(end + 1));
+    }
+    return end;
 }
 
 /*
@@ -1319,6 +1327,7 @@ ex_let_one(
     }
 
     // ":let var = expr": Set internal variable.
+    // ":let var: type = expr": Set internal variable with type.
     // ":let {expr} = expr": Idem, name made with curly braces
     else if (eval_isnamec1(*arg) || *arg == '{')
     {
@@ -1327,7 +1336,8 @@ ex_let_one(
 	p = get_lval(arg, tv, &lv, FALSE, FALSE, 0, FNE_CHECK_START);
 	if (p != NULL && lv.ll_name != NULL)
 	{
-	    if (endchars != NULL && vim_strchr(endchars, *skipwhite(p)) == NULL)
+	    if (endchars != NULL && vim_strchr(endchars,
+					   *skipwhite(lv.ll_name_end)) == NULL)
 		emsg(_(e_letunexp));
 	    else
 	    {
@@ -2391,6 +2401,19 @@ find_var_in_ht(
 }
 
 /*
+ * Get the script-local hashtab.  NULL if not in a script context.
+ */
+    hashtab_T *
+get_script_local_ht(void)
+{
+    scid_T sid = current_sctx.sc_sid;
+
+    if (sid > 0 && sid <= script_items.ga_len)
+	return &SCRIPT_VARS(sid);
+    return NULL;
+}
+
+/*
  * Find the hashtab used for a variable name.
  * Return NULL if the name is not valid.
  * Set "varname" to the start of name without ':'.
@@ -2420,9 +2443,18 @@ find_var_ht(char_u *name, char_u **varname)
 	}
 
 	ht = get_funccal_local_ht();
-	if (ht == NULL)
-	    return &globvarht;			// global variable
-	return ht;				// local variable
+	if (ht != NULL)
+	    return ht;				// local variable
+
+	// in Vim9 script items at the script level are script-local
+	if (current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+	{
+	    ht = get_script_local_ht();
+	    if (ht != NULL)
+		return ht;
+	}
+
+	return &globvarht;			// global variable
     }
     *varname = name + 2;
     if (*name == 'g')				// global variable
@@ -2439,14 +2471,19 @@ find_var_ht(char_u *name, char_u **varname)
 	return &curtab->tp_vars->dv_hashtab;
     if (*name == 'v')				// v: variable
 	return &vimvarht;
-    if (*name == 'a')				// a: function argument
-	return get_funccal_args_ht();
-    if (*name == 'l')				// l: local function variable
-	return get_funccal_local_ht();
-    if (*name == 's'				// script variable
-	    && current_sctx.sc_sid > 0
-	    && current_sctx.sc_sid <= script_items.ga_len)
-	return &SCRIPT_VARS(current_sctx.sc_sid);
+    if (current_sctx.sc_version != SCRIPT_VERSION_VIM9)
+    {
+	if (*name == 'a')			// a: function argument
+	    return get_funccal_args_ht();
+	if (*name == 'l')			// l: local function variable
+	    return get_funccal_local_ht();
+    }
+    if (*name == 's')				// script variable
+    {
+	ht = get_script_local_ht();
+	if (ht != NULL)
+	    return ht;
+    }
     return NULL;
 }
 
@@ -2642,7 +2679,7 @@ set_var(
     typval_T	*tv,
     int		copy)	    // make copy of value in "tv"
 {
-    set_var_const(name, tv, copy, FALSE);
+    set_var_const(name, NULL, tv, copy, FALSE);
 }
 
 /*
@@ -2653,6 +2690,7 @@ set_var(
     void
 set_var_const(
     char_u	*name,
+    type_T	*type,
     typval_T	*tv,
     int		copy,	    // make copy of value in "tv"
     int		is_const)   // disallow to modify existing variable
@@ -2660,6 +2698,7 @@ set_var_const(
     dictitem_T	*v;
     char_u	*varname;
     hashtab_T	*ht;
+    int		is_script_local;
 
     ht = find_var_ht(name, &varname);
     if (ht == NULL || *varname == NUL)
@@ -2667,6 +2706,8 @@ set_var_const(
 	semsg(_(e_illvar), name);
 	return;
     }
+    is_script_local = ht == get_script_local_ht();
+
     v = find_var_in_ht(ht, 0, varname, TRUE);
 
     // Search in parent scope which is possible to reference from lambda
@@ -2689,6 +2730,12 @@ set_var_const(
 	if (var_check_ro(v->di_flags, name, FALSE)
 			      || var_check_lock(v->di_tv.v_lock, name, FALSE))
 	    return;
+
+	if (is_script_local && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+	{
+	    semsg(_("E1041: Redefining script item %s"), name);
+	    return;
+	}
 
 	// Handle setting internal v: variables separately where needed to
 	// prevent changing the type.
@@ -2762,6 +2809,23 @@ set_var_const(
 	v->di_flags = DI_FLAGS_ALLOC;
 	if (is_const)
 	    v->di_flags |= DI_FLAGS_LOCK;
+
+	if (is_script_local && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+	{
+	    scriptitem_T *si = &SCRIPT_ITEM(current_sctx.sc_sid);
+
+	    // Store a pointer to the typval_T, so that it can be found by
+	    // index instead of using a hastab lookup.
+	    if (ga_grow(&si->sn_var_vals, 1) == OK)
+	    {
+		svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
+						      + si->sn_var_vals.ga_len;
+		sv->sv_tv = &v->di_tv;
+		sv->sv_type = type == NULL ? &t_any : type;
+		sv->sv_const = FALSE;
+		++si->sn_var_vals.ga_len;
+	    }
+	}
     }
 
     if (copy || tv->v_type == VAR_NUMBER || tv->v_type == VAR_FLOAT)

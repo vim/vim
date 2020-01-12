@@ -660,6 +660,7 @@ get_lval(
 
     // Find the end of the name.
     p = find_name_end(name, &expr_start, &expr_end, fne_flags);
+    lp->ll_name_end = p;
     if (expr_start != NULL)
     {
 	// Don't expand the name when we already know there is an error.
@@ -686,7 +687,19 @@ get_lval(
 	lp->ll_name = lp->ll_exp_name;
     }
     else
+    {
 	lp->ll_name = name;
+
+	if (current_sctx.sc_version == SCRIPT_VERSION_VIM9 && *p == ':')
+	{
+	    scriptitem_T *si = &SCRIPT_ITEM(current_sctx.sc_sid);
+	    char_u	 *tp = skipwhite(p + 1);
+
+	    // parse the type after the name
+	    lp->ll_type = parse_type(&tp, &si->sn_type_list);
+	    lp->ll_name_end = tp;
+	}
+    }
 
     // Without [idx] or .key we are done.
     if ((*p != '[' && *p != '.') || lp->ll_name == NULL)
@@ -1010,6 +1023,7 @@ get_lval(
     }
 
     clear_tv(&var1);
+    lp->ll_name_end = p;
     return p;
 }
 
@@ -1122,7 +1136,7 @@ set_var_lval(
 	    }
 	}
 	else
-	    set_var_const(lp->ll_name, rettv, copy, is_const);
+	    set_var_const(lp->ll_name, lp->ll_type, rettv, copy, is_const);
 	*endp = cc;
     }
     else if (var_check_lock(lp->ll_newkey == NULL

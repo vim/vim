@@ -1237,7 +1237,6 @@ do_source(
     save_current_sctx = current_sctx;
     current_sctx.sc_lnum = 0;
     current_sctx.sc_version = 1;  // default script version
-    current_sctx.sc_had_command = FALSE;
 
     // Check if this script was sourced before to finds its SID.
     // If it's new, generate a new SID.
@@ -1261,7 +1260,11 @@ do_source(
 			    && si->sn_ino == st.st_ino)) ||
 # endif
 		fnamecmp(si->sn_name, fname_exp) == 0))
+	{
+	    // loading the same script again
+	    si->sn_had_command = FALSE;
 	    break;
+	}
     }
     if (current_sctx.sc_sid == 0)
     {
@@ -1272,13 +1275,16 @@ do_source(
 	while (script_items.ga_len < current_sctx.sc_sid)
 	{
 	    ++script_items.ga_len;
-	    SCRIPT_ITEM(script_items.ga_len).sn_name = NULL;
-	    SCRIPT_ITEM(script_items.ga_len).sn_version = 1;
+	    si = &SCRIPT_ITEM(script_items.ga_len);
+	    si->sn_name = NULL;
+	    si->sn_version = 1;
 
 	    // Allocate the local script variables to use for this script.
 	    new_script_vars(script_items.ga_len);
+	    ga_init2(&si->sn_var_vals, sizeof(typval_T), 10);
+	    ga_init2(&si->sn_type_list, sizeof(type_T), 10);
 # ifdef FEAT_PROFILE
-	    SCRIPT_ITEM(script_items.ga_len).sn_prof_on = FALSE;
+	    si->sn_prof_on = FALSE;
 # endif
 	}
 	si = &SCRIPT_ITEM(current_sctx.sc_sid);

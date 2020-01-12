@@ -129,7 +129,23 @@ def Test_try_catch()
   assert_equal(['1', 'wrong', '3'], l)
 enddef
 
+" todo: move inside function
+let script_lines =<< trim END
+  namespace
+  let name: string = 'bob'
+  def Concat(arg: string): string
+    return name .. arg
+  enddef
+  let g:result = Concat('bie')
+END
+
 def Test_namespace()
+  writefile(g:script_lines, 'Xscript')
+  source Xscript
+  assert_equal('bobbie', g:result)
+
+  delete('Xscript')
+
   CheckScriptFailure(['scriptversion 2', 'namespace'], 'E1039:')
   CheckScriptFailure(['namespace', 'scriptversion 2'], 'E1040:')
 enddef

@@ -18,6 +18,7 @@ typedef enum {
     // get and set variables
     ISN_LOAD,	    // push local variable isn_arg.number
     ISN_LOADV,	    // push v: variable isn_arg.number
+    ISN_LOADSCRIPT, // push script-local variable isn_arg.number
     ISN_LOADG,	    // push g: variable isn_arg.string
     ISN_LOADOPT,    // push option isn_arg.string
     ISN_LOADENV,    // push environment variable isn_arg.string

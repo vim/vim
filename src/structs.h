@@ -85,7 +85,6 @@ typedef struct {
     int		sc_seq;		// sourcing sequence number
     linenr_T	sc_lnum;	// line number
     int		sc_version;	// :scriptversion
-    char	sc_had_command;	// TRUE when any non-comment command seen
 } sctx_T;
 
 /*
@@ -1606,6 +1605,15 @@ typedef struct
 } scriptvar_T;
 
 /*
+ * Entry for "sn_var_vals".  Used for script-local variables.
+ */
+typedef struct {
+    type_T	*sv_type;
+    typval_T	*sv_tv;		// points into "sn_vars"
+    int		sv_const;
+} svar_T;
+
+/*
  * Growarray to store info about already sourced scripts.
  * For Unix also store the dev/ino, so that we don't have to stat() each
  * script when going through the list.
@@ -1613,10 +1621,13 @@ typedef struct
 typedef struct
 {
     scriptvar_T	*sn_vars;	// stores s: variables for this script
+    garray_T	sn_var_vals;	// same variables as a list of svar_T
+    garray_T	sn_type_list;	// keeps types used by variables
 
     char_u	*sn_name;
 
     int		sn_version;	// :scriptversion
+    int		sn_had_command;	// TRUE if any command was executed
 
 # ifdef UNIX
     int		sn_dev_valid;
@@ -3838,6 +3849,8 @@ typedef struct
 typedef struct lval_S
 {
     char_u	*ll_name;	// start of variable name (can be NULL)
+    char_u	*ll_name_end;	// end of variable name (can be NULL)
+    type_T	*ll_type;	// type of variable (can be NULL)
     char_u	*ll_exp_name;	// NULL or expanded name in allocated memory.
     typval_T	*ll_tv;		// Typeval of item being used.  If "newkey"
 				// isn't NULL it's the Dict to which to add

@@ -1289,6 +1289,38 @@ type_name(type_T *type, char **tofree)
 }
 
 /*
+ * Generate an instruction to load script-local variable "name".
+ */
+    static int
+compile_load_scriptvar(cctx_T *cctx, char_u *name)
+{
+    hashtab_T   *ht = get_script_local_ht();
+    dictitem_T  *di;
+    scriptitem_T *si;
+    int		idx;
+
+    if (ht == NULL)
+	return FAIL;
+    di = find_var_in_ht(ht, 0, name, TRUE);
+    if (di == NULL)
+	return FAIL;
+    si = &SCRIPT_ITEM(current_sctx.sc_sid);
+    for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
+    {
+	svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
+
+	if (sv->sv_tv == &di->di_tv)
+	{
+	    generate_LOAD(cctx, ISN_LOADSCRIPT, idx, NULL, sv->sv_type);
+	    return OK;
+	}
+    }
+
+    siemsg("compile_load_scriptvar(%s)", name);
+    return FAIL;
+}
+
+/*
  * Compile a variable name into a load instruction.
  * "end" points to just after the name.
  * When "error" is FALSE do not give an error when not found.
@@ -1296,14 +1328,14 @@ type_name(type_T *type, char **tofree)
     static int
 compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
 {
-    garray_T	*instr = &cctx->ctx_instr;
     type_T	*type;
+    char_u	*name;
+    int		res = FAIL;
 
     if (*(*arg + 1) == ':')
     {
-	char_u *name = vim_strnsave(*arg + 2, end - (*arg + 2));
-
 	// load namespaced variable
+	name = vim_strnsave(*arg + 2, end - (*arg + 2));
 	if (name == NULL)
 	    return FAIL;
 
@@ -1316,34 +1348,39 @@ compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
 	    {
 		if (error)
 		    semsg(_(e_var_notfound), name);
-		vim_free(name);
-		return FAIL;
+		goto theend;
 	    }
-	    vim_free(name);
 
-	    if (ga_grow(instr, 1) == FAIL)
-		return FAIL;
 	    // TODO: get actual type
-	    generate_LOAD(cctx, ISN_LOADV, vidx, NULL, &t_any);
+	    res = generate_LOAD(cctx, ISN_LOADV, vidx, NULL, &t_any);
 	}
 	else if (**arg == 'g')
 	{
-	    if (ga_grow(instr, 1) == FAIL)
-		return FAIL;
-	    generate_LOAD(cctx, ISN_LOADG, 0, name, &t_any);
+	    // Global variables can be defined later, thus we don't check if it
+	    // exists, give error at runtime.
+	    res = generate_LOAD(cctx, ISN_LOADG, 0, name, &t_any);
+	}
+	else if (**arg == 's')
+	{
+	    res = compile_load_scriptvar(cctx, name);
 	}
 	else
 	{
 	    semsg("Namespace not supported yet: %s", **arg);
-	    return FAIL;
+	    goto theend;
 	}
-	*arg = end;
     }
     else
     {
-	size_t	len = end - *arg;
-	int	idx = lookup_arg(*arg, len, cctx);
+	size_t	    len = end - *arg;
+	int	    idx;
+	int	    gen_load = FALSE;
 
+	name = vim_strnsave(*arg, end - *arg);
+	if (name == NULL)
+	    return FAIL;
+
+	idx = lookup_arg(*arg, len, cctx);
 	if (idx >= 0)
 	{
 	    if (cctx->ctx_ufunc->uf_arg_types != NULL)
@@ -1353,33 +1390,37 @@ compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
 
 	    // Arguments are located above the frame pointer.
 	    idx -= cctx->ctx_ufunc->uf_args.ga_len + STACK_FRAME_SIZE;
+	    gen_load = TRUE;
 	}
 	else
 	{
 	    idx = lookup_local(*arg, len, cctx);
-	    if (idx < 0)
+	    if (idx >= 0)
+	    {
+		type = (((lvar_T *)cctx->ctx_locals.ga_data) + idx)->lv_type;
+		gen_load = TRUE;
+	    }
+	    else
 	    {
 		if ((len == 4 && STRNCMP("true", *arg, 4) == 0)
 			|| (len == 5 && STRNCMP("false", *arg, 5) == 0))
-		{
-		    generate_PUSHBOOL(cctx, **arg == 't'
+		    res = generate_PUSHBOOL(cctx, **arg == 't'
 						     ? VVAL_TRUE : VVAL_FALSE);
-		    *arg = end;
-		    return OK;
-		}
-		if (error)
-		    emsg_namelen(_(e_var_notfound), *arg, (int)len);
-		return FAIL;
+		else
+		   res = compile_load_scriptvar(cctx, name);
 	    }
-	    type = (((lvar_T *)cctx->ctx_locals.ga_data) + idx)->lv_type;
 	}
-	*arg = end;
-
-	if (ga_grow(instr, 1) == FAIL)
-	    return FAIL;
-	generate_LOAD(cctx, ISN_LOAD, idx, NULL, type);
+	if (gen_load)
+	    res = generate_LOAD(cctx, ISN_LOAD, idx, NULL, type);
     }
-    return OK;
+
+    *arg = end;
+
+theend:
+    if (res == FAIL && error)
+	semsg(_(e_var_notfound), name);
+    vim_free(name);
+    return res;
 }
 
 /*
@@ -4110,6 +4151,7 @@ delete_instr(isn_T *isn)
 	case ISN_INDEX:
 	case ISN_JUMP:
 	case ISN_LOAD:
+	case ISN_LOADSCRIPT:
 	case ISN_LOADREG:
 	case ISN_LOADV:
 	case ISN_NEGATENR:

@@ -28,12 +28,13 @@ ex_namespace(exarg_T *eap)
 	emsg(_("E1038: namespace can only be used in a script"));
 	return;
     }
-    if (current_sctx.sc_had_command)
+    if (SCRIPT_ITEM(current_sctx.sc_sid).sn_had_command)
     {
 	emsg(_("E1039: namespace must be the first command in a script"));
 	return;
     }
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
+    SCRIPT_ITEM(current_sctx.sc_sid).sn_had_command = TRUE;
 }
 
 /*

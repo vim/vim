@@ -472,6 +472,21 @@ call_def_function(
 		++ectx.ec_stack.ga_len;
 		break;
 
+	    // load s: variable
+	    case ISN_LOADSCRIPT:
+		{
+		    scriptitem_T *si = &SCRIPT_ITEM(current_sctx.sc_sid);
+		    svar_T	 *sv;
+
+		    sv = ((svar_T *)si->sn_var_vals.ga_data)
+							+ iptr->isn_arg.number;
+		    if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+			goto failed;
+		    copy_tv(sv->sv_tv, STACK_TV_BOT(0));
+		    ++ectx.ec_stack.ga_len;
+		}
+		break;
+
 	    // load g: variable
 	    case ISN_LOADG:
 		{
@@ -555,7 +570,7 @@ call_def_function(
 			funccal_entry_T entry;
 
 			save_funccal(&entry);
-			set_var_const(iptr->isn_arg.string,
+			set_var_const(iptr->isn_arg.string, NULL,
 						STACK_TV_BOT(0), FALSE, FALSE);
 			restore_funccal();
 		    }
@@ -1434,6 +1449,9 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_LOADV:
 		smsg("%4d LOADV v:%s", current,
 				       get_vim_var_name(iptr->isn_arg.number));
+		break;
+	    case ISN_LOADSCRIPT:
+		smsg("%4d LOADSCRIPT %lld", current, iptr->isn_arg.number);
 		break;
 	    case ISN_LOADG:
 		smsg("%4d LOADG g:%s", current, iptr->isn_arg.string);

@@ -372,7 +372,7 @@ EXTERN int	want_garbage_collect INIT(= FALSE);
 EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 
 // Script CTX being sourced or was sourced to define the current function.
-EXTERN sctx_T	current_sctx INIT5(0, 0, 0, 0, 0);
+EXTERN sctx_T	current_sctx INIT4(0, 0, 0, 0);
 
 
 // Commonly used types.
