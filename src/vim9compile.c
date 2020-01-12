@@ -8,7 +8,7 @@
  */
 
 /*
- * instruction.c: :def and dealing with instructions
+ * vim9compile.c: :def and dealing with instructions
  */
 
 #define USING_FLOAT_STUFF
@@ -2587,6 +2587,7 @@ compile_expr3(char_u **arg, cctx_T *cctx)
     if (compile_expr4(arg, cctx) == FAIL)
 	return FAIL;
 
+    // || and && work almost the same
     return compile_and_or(arg, cctx, "&&");
 }
 
@@ -2608,6 +2609,7 @@ compile_expr2(char_u **arg, cctx_T *cctx)
     if (compile_expr3(arg, cctx) == FAIL)
 	return FAIL;
 
+    // || and && work almost the same
     return compile_and_or(arg, cctx, "||");
 }
 

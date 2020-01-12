@@ -1237,6 +1237,7 @@ do_source(
     save_current_sctx = current_sctx;
     current_sctx.sc_lnum = 0;
     current_sctx.sc_version = 1;
+    current_sctx.sc_had_command = FALSE;
 
     // Check if this script was sourced before to finds its SID.
     // If it's new, generate a new SID.
@@ -1782,6 +1783,11 @@ ex_scriptversion(exarg_T *eap UNUSED)
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
 	emsg(_("E984: :scriptversion used outside of a sourced file"));
+	return;
+    }
+    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+    {
+	emsg(_("E1040: Cannot use :scriptversion after :namespace"));
 	return;
     }
 

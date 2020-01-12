@@ -14,13 +14,13 @@ features in Vim9 script.
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 
-1   What is Vim9 script?	|vim9-script|
-2.  Differences			|vim9-differences|
-3.  New style functions		|fast-functions|
-4.  Types			|vim9-types|
-5.  Import and Export		|vim9-export|
+1   What is Vim9 script?		|vim9-script|
+2.  Differences				|vim9-differences|
+3.  New style functions			|fast-functions|
+4.  Types				|vim9-types|
+5.  Namespace, Import and Export	|vim9-namespace|
 
-9.  Rationale			|vim9-rationale|
+9.  Rationale				|vim9-rationale|
 
 ==============================================================================
 
@@ -29,25 +29,28 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 Vim script has been growing over time, while keeping backwards compatibility.
-Execution it is quite slow, every line is parsed every time it is executed.
+That means bad choices from the past often can't be changed.  Execution is
+quite slow, every line is parsed every time it is executed.
 
 The main goal of Vim9 script is to drastically improve performance.  An
-improvement of 10 to 100 times can be expected.  A secondary goal is to avoid
-Vim-specific constructs and get closer to commonly used programming languages.
+increase in execution speed of 10 to 100 times can be expected.  A secondary
+goal is to avoid Vim-specific constructs and get closer to commonly used
+programming languages, such as JavaScript, TypeScript and Java.
 
 The performance improvements can only be achieved by not being 100% backwards
 compatible.  For example, in a function the arguments are not available in the
 "a:" dictionary, as creating that dictionary adds quite a lot of overhead.
 Other differences are more subtle, such as how errors are handled.
 
-The parts of vim9 script that are not compatible are limited to:
-- the `:def` command. define a function with the Vim9 syntax and semantics
-- files with `export` and `import` statements
+The Vim9 script syntax and semantics are used in:
+- the `:def` command, define a function, until the matching `enddef`
+- a script file where the first command is `namespace`
 
 Otherwise Vim9 script and legacy Vim script can be mixed.  There is no need to
 rewrite old scripts, they keep working as before.  The toplevel of
 source'ed scripts use the legacy format, only `:def` functions use the new
-syntax.  New scripts that are imported fully use the Vim9 script syntax.
+syntax.  New scripts with the `namespace` command fully use the Vim9 script
+syntax.
 
 ==============================================================================
 
@@ -181,7 +184,7 @@ string. >
 	'hello ' .. 123  == 'hello 123'
 	'hello ' .. v:true  == 'hello true'
 
-Note that in Vim9 one can use "true" for v:true and "false" for v:false.
+In Vim9 one can use "true" for v:true and "false" for v:false.
 
 
 ==============================================================================
@@ -284,13 +287,33 @@ value then the return type is "void".
 
 ==============================================================================
 
-5.  Import and Export				*vim9-export* *vim9-import*
+5.  Namespace, Import and Export
+				*vim8-namespace* *vim9-export* *vim9-import*
 
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 A Vim9 script can be written to be imported.  This means that everything in
 the script is local, unless exported.  Those exported items, and only those
 items, can then be imported in another script.
+
+
+Namespace ~
+							*:namespace* *:na*
+To recognize an imported file the `namespace` statement must appear as the first
+statement in the file.  It tells Vim to interpret the script in its own
+namespace, instead of the global namespace.  If a file starts with: >
+	namespace
+	let myvar = 'yes'
+Then "myvar" will only exist in this file.  While without `namespace` it would
+be available as `g:myvar` from any other script and function.
+
+The variables at the file level are very much like the script-local "s:"
+variables in legacy Vim script, but the "s:" is omitted.
+
+In Vim9 script the global "g:" namespace can still be used as before.
+
+
+Export ~
 
 Exporting one item can be written as: >
 	export const EXPORTED_CONST = 1234
@@ -304,6 +327,9 @@ be exported.
 Alternatively, an export statement can be used to export several already
 defined (so far script-local) items: >
 	export {EXPORTED_CONST, someValue, MyFunc, MyClass}
+
+
+Import ~
 
 The exported items can be imported individually in another Vim9 script: >
 	import EXPORTED_CONST from "thatscript.vim"
@@ -319,7 +345,7 @@ Then you can use "That.EXPORTED_CONST", "That.someValue", etc.  You are free
 to choose the name "That", but it is highly recommended to use the name of the
 script file to avoid confusion.
 
-The name after `import` can be:
+The script name after `import` can be:
 - A relative path, starting "." or "..".  This finds a file relative to the
   location of the script file itself.  This is useful to split up a large
   plugin into several files.
@@ -331,6 +357,15 @@ The name after `import` can be:
 
 Once a vim9 script file has been imported, the result is cached and used the
 next time the same script is imported.  It will not be read again.
+
+
+Import in legacy Vim script ~
+
+If an `import` statement is used in legacy Vim script the identifiers must not
+be in the global namespace.  At the toplevel the script-local "s:" namespace
+should be used.  In a function a function-local or script-local variable can
+be used.
+
 
 ==============================================================================
 

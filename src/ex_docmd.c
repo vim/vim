@@ -301,6 +301,9 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_unlet		ex_ni
 # define ex_unlockvar		ex_ni
 # define ex_while		ex_ni
+# define ex_namespace		ex_ni
+# define ex_import		ex_ni
+# define ex_export		ex_ni
 #endif
 #ifndef FEAT_SESSION
 # define ex_loadview		ex_ni
@@ -2486,6 +2489,10 @@ do_one_cmd(
     }
 
 #ifdef FEAT_EVAL
+    // Set flag that a command was executed, used by ex_namespace().
+    if (getline_equal(ea.getline, ea.cookie, getsourceline))
+	current_sctx.sc_had_command = TRUE;
+
     /*
      * If the command just executed called do_cmdline(), any throw or ":return"
      * or ":finish" encountered there must also check the cstack of the still

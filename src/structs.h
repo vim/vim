@@ -67,6 +67,9 @@ typedef struct terminal_S	term_T;
 typedef struct VimMenu vimmenu_T;
 #endif
 
+// value for sc_version in a Vim9 script file
+#define SCRIPT_VERSION_VIM9 999999
+
 /*
  * SCript ConteXt (SCTX): identifies a script line.
  * When sourcing a script "sc_lnum" is zero, "sourcing_lnum" is the current
@@ -80,6 +83,7 @@ typedef struct {
     int		sc_seq;		// sourcing sequence number
     linenr_T	sc_lnum;	// line number
     int		sc_version;	// :scriptversion
+    char	sc_had_command;	// TRUE when any non-comment command seen
 } sctx_T;
 
 /*

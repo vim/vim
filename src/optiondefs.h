@@ -273,7 +273,7 @@ struct vimoption
     char_u	*def_val[2];	// default values for variable (vi and vim)
 #ifdef FEAT_EVAL
     sctx_T	script_ctx;	// script context where the option was last set
-# define SCTX_INIT , {0, 0, 0, 1}
+# define SCTX_INIT , {0, 0, 0, 1, 0}
 #else
 # define SCTX_INIT
 #endif

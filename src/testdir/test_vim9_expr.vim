@@ -17,7 +17,7 @@ endfunc
 
 " test cond ? expr : expr
 def Test_expr1()
-  assert_equal('one', v:true ? 'one' : 'two')
+  assert_equal('one', true ? 'one' : 'two')
   assert_equal('one', 1 ? 'one' : 'two')
   assert_equal('one', 0.1 ? 'one' : 'two')
   assert_equal('one', 'x' ? 'one' : 'two')
@@ -27,7 +27,7 @@ def Test_expr1()
   let var = 1
   assert_equal('one', var ? 'one' : 'two')
 
-  assert_equal('two', v:false ? 'one' : 'two')
+  assert_equal('two', false ? 'one' : 'two')
   assert_equal('two', 0 ? 'one' : 'two')
   assert_equal('two', 0.0 ? 'one' : 'two')
   assert_equal('two', '' ? 'one' : 'two')
@@ -142,193 +142,193 @@ let adict = #{aaa: 2, bbb: 8}
 
 " test == comperator
 def Test_expr4_equal()
-  assert_equal(v:true, v:true == v:true)
-  assert_equal(v:false, v:true == v:false)
-  assert_equal(v:true, v:true == g:atrue)
-  assert_equal(v:false, g:atrue == v:false)
+  assert_equal(true, true == true)
+  assert_equal(false, true == false)
+  assert_equal(true, true == g:atrue)
+  assert_equal(false, g:atrue == false)
 
-  assert_equal(v:true, v:none == v:none)
-  assert_equal(v:false, v:none == v:null)
-  assert_equal(v:true, g:anone == v:none)
-  assert_equal(v:false, v:none == g:anull)
+  assert_equal(true, v:none == v:none)
+  assert_equal(false, v:none == v:null)
+  assert_equal(true, g:anone == v:none)
+  assert_equal(false, v:none == g:anull)
 
-  assert_equal(v:false, 2 == 0)
-  assert_equal(v:true, 61 == 61)
-  assert_equal(v:true, g:anint == 10)
-  assert_equal(v:false, 61 == g:anint)
+  assert_equal(false, 2 == 0)
+  assert_equal(true, 61 == 61)
+  assert_equal(true, g:anint == 10)
+  assert_equal(false, 61 == g:anint)
 
   if has('float')
-    assert_equal(v:true, 0.3 == 0.3)
-    assert_equal(v:false, 0.4 == 0.3)
-    assert_equal(v:true, 0.1 == g:afloat)
-    assert_equal(v:false, g:afloat == 0.3)
+    assert_equal(true, 0.3 == 0.3)
+    assert_equal(false, 0.4 == 0.3)
+    assert_equal(true, 0.1 == g:afloat)
+    assert_equal(false, g:afloat == 0.3)
 
-    assert_equal(v:true, 3.0 == 3)
-    assert_equal(v:true, 3 == 3.0)
-    assert_equal(v:false, 3.1 == 3)
-    assert_equal(v:false, 3 == 3.1)
+    assert_equal(true, 3.0 == 3)
+    assert_equal(true, 3 == 3.0)
+    assert_equal(false, 3.1 == 3)
+    assert_equal(false, 3 == 3.1)
   endif
 
-  assert_equal(v:true, 'abc' == 'abc')
-  assert_equal(v:false, 'xyz' == 'abc')
-  assert_equal(v:true, g:astring == 'asdf')
-  assert_equal(v:false, 'xyz' == g:astring)
+  assert_equal(true, 'abc' == 'abc')
+  assert_equal(false, 'xyz' == 'abc')
+  assert_equal(true, g:astring == 'asdf')
+  assert_equal(false, 'xyz' == g:astring)
 
-  assert_equal(v:false, 'abc' == 'ABC')
+  assert_equal(false, 'abc' == 'ABC')
   set ignorecase
-  assert_equal(v:false, 'abc' == 'ABC')
+  assert_equal(false, 'abc' == 'ABC')
   set noignorecase
 
-  assert_equal(v:true, 0z3f == 0z3f)
-  assert_equal(v:false, 0z3f == 0z4f)
-  assert_equal(v:true, g:ablob == 0z01ab)
-  assert_equal(v:false, 0z3f == g:ablob)
+  assert_equal(true, 0z3f == 0z3f)
+  assert_equal(false, 0z3f == 0z4f)
+  assert_equal(true, g:ablob == 0z01ab)
+  assert_equal(false, 0z3f == g:ablob)
 
-  assert_equal(v:true, [1, 2, 3] == [1, 2, 3])
-  assert_equal(v:false, [1, 2, 3] == [2, 3, 1])
-  assert_equal(v:true, [2, 3, 4] == g:alist)
-  assert_equal(v:false, g:alist == [2, 3, 1])
-  assert_equal(v:false, [1, 2, 3] == [])
-  assert_equal(v:false, [1, 2, 3] == ['1', '2', '3'])
+  assert_equal(true, [1, 2, 3] == [1, 2, 3])
+  assert_equal(false, [1, 2, 3] == [2, 3, 1])
+  assert_equal(true, [2, 3, 4] == g:alist)
+  assert_equal(false, g:alist == [2, 3, 1])
+  assert_equal(false, [1, 2, 3] == [])
+  assert_equal(false, [1, 2, 3] == ['1', '2', '3'])
 
-  assert_equal(v:true, #{one: 1, two: 2} == #{one: 1, two: 2})
-  assert_equal(v:false, #{one: 1, two: 2} == #{one: 2, two: 2})
-  assert_equal(v:false, #{one: 1, two: 2} == #{two: 2})
-  assert_equal(v:false, #{one: 1, two: 2} == #{})
-  assert_equal(v:true, g:adict == #{bbb: 8, aaa: 2})
-  assert_equal(v:false, #{ccc: 9, aaa: 2} == g:adict)
+  assert_equal(true, #{one: 1, two: 2} == #{one: 1, two: 2})
+  assert_equal(false, #{one: 1, two: 2} == #{one: 2, two: 2})
+  assert_equal(false, #{one: 1, two: 2} == #{two: 2})
+  assert_equal(false, #{one: 1, two: 2} == #{})
+  assert_equal(true, g:adict == #{bbb: 8, aaa: 2})
+  assert_equal(false, #{ccc: 9, aaa: 2} == g:adict)
 
-  assert_equal(v:true, function('Test_expr4_equal') == function('Test_expr4_equal'))
-  assert_equal(v:false, function('Test_expr4_equal') == function('Test_expr4_is'))
+  assert_equal(true, function('Test_expr4_equal') == function('Test_expr4_equal'))
+  assert_equal(false, function('Test_expr4_equal') == function('Test_expr4_is'))
 
-  assert_equal(v:true, function('Test_expr4_equal', [123]) == function('Test_expr4_equal', [123]))
-  assert_equal(v:false, function('Test_expr4_equal', [123]) == function('Test_expr4_is', [123]))
-  assert_equal(v:false, function('Test_expr4_equal', [123]) == function('Test_expr4_equal', [999]))
+  assert_equal(true, function('Test_expr4_equal', [123]) == function('Test_expr4_equal', [123]))
+  assert_equal(false, function('Test_expr4_equal', [123]) == function('Test_expr4_is', [123]))
+  assert_equal(false, function('Test_expr4_equal', [123]) == function('Test_expr4_equal', [999]))
 enddef
 
 " test != comperator
 def Test_expr4_notequal()
-  assert_equal(v:false, v:true != v:true)
-  assert_equal(v:true, v:true != v:false)
-  assert_equal(v:false, v:true != g:atrue)
-  assert_equal(v:true, g:atrue != v:false)
+  assert_equal(false, true != true)
+  assert_equal(true, true != false)
+  assert_equal(false, true != g:atrue)
+  assert_equal(true, g:atrue != false)
 
-  assert_equal(v:false, v:none != v:none)
-  assert_equal(v:true, v:none != v:null)
-  assert_equal(v:false, g:anone != v:none)
-  assert_equal(v:true, v:none != g:anull)
+  assert_equal(false, v:none != v:none)
+  assert_equal(true, v:none != v:null)
+  assert_equal(false, g:anone != v:none)
+  assert_equal(true, v:none != g:anull)
 
-  assert_equal(v:true, 2 != 0)
-  assert_equal(v:false, 55 != 55)
-  assert_equal(v:false, g:anint != 10)
-  assert_equal(v:true, 61 != g:anint)
+  assert_equal(true, 2 != 0)
+  assert_equal(false, 55 != 55)
+  assert_equal(false, g:anint != 10)
+  assert_equal(true, 61 != g:anint)
 
   if has('float')
-    assert_equal(v:false, 0.3 != 0.3)
-    assert_equal(v:true, 0.4 != 0.3)
-    assert_equal(v:false, 0.1 != g:afloat)
-    assert_equal(v:true, g:afloat != 0.3)
+    assert_equal(false, 0.3 != 0.3)
+    assert_equal(true, 0.4 != 0.3)
+    assert_equal(false, 0.1 != g:afloat)
+    assert_equal(true, g:afloat != 0.3)
 
-    assert_equal(v:false, 3.0 != 3)
-    assert_equal(v:false, 3 != 3.0)
-    assert_equal(v:true, 3.1 != 3)
-    assert_equal(v:true, 3 != 3.1)
+    assert_equal(false, 3.0 != 3)
+    assert_equal(false, 3 != 3.0)
+    assert_equal(true, 3.1 != 3)
+    assert_equal(true, 3 != 3.1)
   endif
 
-  assert_equal(v:false, 'abc' != 'abc')
-  assert_equal(v:true, 'xyz' != 'abc')
-  assert_equal(v:false, g:astring != 'asdf')
-  assert_equal(v:true, 'xyz' != g:astring)
+  assert_equal(false, 'abc' != 'abc')
+  assert_equal(true, 'xyz' != 'abc')
+  assert_equal(false, g:astring != 'asdf')
+  assert_equal(true, 'xyz' != g:astring)
 
-  assert_equal(v:true, 'abc' != 'ABC')
+  assert_equal(true, 'abc' != 'ABC')
   set ignorecase
-  assert_equal(v:true, 'abc' != 'ABC')
+  assert_equal(true, 'abc' != 'ABC')
   set noignorecase
 
-  assert_equal(v:false, 0z3f != 0z3f)
-  assert_equal(v:true, 0z3f != 0z4f)
-  assert_equal(v:false, g:ablob != 0z01ab)
-  assert_equal(v:true, 0z3f != g:ablob)
+  assert_equal(false, 0z3f != 0z3f)
+  assert_equal(true, 0z3f != 0z4f)
+  assert_equal(false, g:ablob != 0z01ab)
+  assert_equal(true, 0z3f != g:ablob)
 
-  assert_equal(v:false, [1, 2, 3] != [1, 2, 3])
-  assert_equal(v:true, [1, 2, 3] != [2, 3, 1])
-  assert_equal(v:false, [2, 3, 4] != g:alist)
-  assert_equal(v:true, g:alist != [2, 3, 1])
-  assert_equal(v:true, [1, 2, 3] != [])
-  assert_equal(v:true, [1, 2, 3] != ['1', '2', '3'])
+  assert_equal(false, [1, 2, 3] != [1, 2, 3])
+  assert_equal(true, [1, 2, 3] != [2, 3, 1])
+  assert_equal(false, [2, 3, 4] != g:alist)
+  assert_equal(true, g:alist != [2, 3, 1])
+  assert_equal(true, [1, 2, 3] != [])
+  assert_equal(true, [1, 2, 3] != ['1', '2', '3'])
 
-  assert_equal(v:false, #{one: 1, two: 2} != #{one: 1, two: 2})
-  assert_equal(v:true, #{one: 1, two: 2} != #{one: 2, two: 2})
-  assert_equal(v:true, #{one: 1, two: 2} != #{two: 2})
-  assert_equal(v:true, #{one: 1, two: 2} != #{})
-  assert_equal(v:false, g:adict != #{bbb: 8, aaa: 2})
-  assert_equal(v:true, #{ccc: 9, aaa: 2} != g:adict)
+  assert_equal(false, #{one: 1, two: 2} != #{one: 1, two: 2})
+  assert_equal(true, #{one: 1, two: 2} != #{one: 2, two: 2})
+  assert_equal(true, #{one: 1, two: 2} != #{two: 2})
+  assert_equal(true, #{one: 1, two: 2} != #{})
+  assert_equal(false, g:adict != #{bbb: 8, aaa: 2})
+  assert_equal(true, #{ccc: 9, aaa: 2} != g:adict)
 
-  assert_equal(v:false, function('Test_expr4_equal') != function('Test_expr4_equal'))
-  assert_equal(v:true, function('Test_expr4_equal') != function('Test_expr4_is'))
+  assert_equal(false, function('Test_expr4_equal') != function('Test_expr4_equal'))
+  assert_equal(true, function('Test_expr4_equal') != function('Test_expr4_is'))
 
-  assert_equal(v:false, function('Test_expr4_equal', [123]) != function('Test_expr4_equal', [123]))
-  assert_equal(v:true, function('Test_expr4_equal', [123]) != function('Test_expr4_is', [123]))
-  assert_equal(v:true, function('Test_expr4_equal', [123]) != function('Test_expr4_equal', [999]))
+  assert_equal(false, function('Test_expr4_equal', [123]) != function('Test_expr4_equal', [123]))
+  assert_equal(true, function('Test_expr4_equal', [123]) != function('Test_expr4_is', [123]))
+  assert_equal(true, function('Test_expr4_equal', [123]) != function('Test_expr4_equal', [999]))
 enddef
 
 " test > comperator
 def Test_expr4_greater()
-  assert_equal(v:true, 2 > 0)
-  assert_equal(v:true, 2 > 1)
-  assert_equal(v:false, 2 > 2)
-  assert_equal(v:false, 2 > 3)
+  assert_equal(true, 2 > 0)
+  assert_equal(true, 2 > 1)
+  assert_equal(false, 2 > 2)
+  assert_equal(false, 2 > 3)
 enddef
 
 " test >= comperator
 def Test_expr4_greaterequal()
-  assert_equal(v:true, 2 >= 0)
-  assert_equal(v:true, 2 >= 2)
-  assert_equal(v:false, 2 >= 3)
+  assert_equal(true, 2 >= 0)
+  assert_equal(true, 2 >= 2)
+  assert_equal(false, 2 >= 3)
 enddef
 
 " test < comperator
 def Test_expr4_smaller()
-  assert_equal(v:false, 2 < 0)
-  assert_equal(v:false, 2 < 2)
-  assert_equal(v:true, 2 < 3)
+  assert_equal(false, 2 < 0)
+  assert_equal(false, 2 < 2)
+  assert_equal(true, 2 < 3)
 enddef
 
 " test <= comperator
 def Test_expr4_smallerequal()
-  assert_equal(v:false, 2 <= 0)
-  assert_equal(v:false, 2 <= 1)
-  assert_equal(v:true, 2 <= 2)
-  assert_equal(v:true, 2 <= 3)
+  assert_equal(false, 2 <= 0)
+  assert_equal(false, 2 <= 1)
+  assert_equal(true, 2 <= 2)
+  assert_equal(true, 2 <= 3)
 enddef
 
 " test =~ comperator
 def Test_expr4_match()
-  assert_equal(v:false, '2' =~ '0')
-  assert_equal(v:true, '2' =~ '[0-9]')
+  assert_equal(false, '2' =~ '0')
+  assert_equal(true, '2' =~ '[0-9]')
 enddef
 
 " test !~ comperator
 def Test_expr4_nomatch()
-  assert_equal(v:true, '2' !~ '0')
-  assert_equal(v:false, '2' !~ '[0-9]')
+  assert_equal(true, '2' !~ '0')
+  assert_equal(false, '2' !~ '[0-9]')
 enddef
 
 " test is comperator
 def Test_expr4_is()
   let mylist = [2]
-  assert_equal(v:false, mylist is [2])
+  assert_equal(false, mylist is [2])
   let other = mylist
-  assert_equal(v:true, mylist is other)
+  assert_equal(true, mylist is other)
 enddef
 
 " test isnot comperator
 def Test_expr4_isnot()
   let mylist = [2]
-  assert_equal(v:true, '2' isnot '0')
-  assert_equal(v:true, mylist isnot [2])
+  assert_equal(true, '2' isnot '0')
+  assert_equal(true, mylist isnot [2])
   let other = mylist
-  assert_equal(v:false, mylist isnot other)
+  assert_equal(false, mylist isnot other)
 enddef
 
 def RetVoid()
@@ -366,14 +366,14 @@ func Test_expr4_fails()
   call CheckDefFailure("let x = 1 == RetVoid()", 'Cannot use void value')
   call CheckDefFailure("let x = RetVoid() == 1", 'Cannot compare void with number')
 
-  call CheckDefFailure("let x = v:true > v:false", 'Cannot compare bool with bool')
-  call CheckDefFailure("let x = v:true >= v:false", 'Cannot compare bool with bool')
-  call CheckDefFailure("let x = v:true < v:false", 'Cannot compare bool with bool')
-  call CheckDefFailure("let x = v:true <= v:false", 'Cannot compare bool with bool')
-  call CheckDefFailure("let x = v:true =~ v:false", 'Cannot compare bool with bool')
-  call CheckDefFailure("let x = v:true !~ v:false", 'Cannot compare bool with bool')
-  call CheckDefFailure("let x = v:true is v:false", 'Cannot use "is" with bool')
-  call CheckDefFailure("let x = v:true isnot v:false", 'Cannot use "isnot" with bool')
+  call CheckDefFailure("let x = true > false", 'Cannot compare bool with bool')
+  call CheckDefFailure("let x = true >= false", 'Cannot compare bool with bool')
+  call CheckDefFailure("let x = true < false", 'Cannot compare bool with bool')
+  call CheckDefFailure("let x = true <= false", 'Cannot compare bool with bool')
+  call CheckDefFailure("let x = true =~ false", 'Cannot compare bool with bool')
+  call CheckDefFailure("let x = true !~ false", 'Cannot compare bool with bool')
+  call CheckDefFailure("let x = true is false", 'Cannot use "is" with bool')
+  call CheckDefFailure("let x = true isnot false", 'Cannot use "isnot" with bool')
 
   call CheckDefFailure("let x = v:none is v:null", 'Cannot use "is" with special')
   call CheckDefFailure("let x = v:none isnot v:null", 'Cannot use "isnot" with special')
@@ -599,15 +599,15 @@ def Test_expr7()
   assert_equal(g:string_special, "ab\ncd\ref\ekk")
 
   " special constant
-  assert_equal(g:special_true, v:true)
-  assert_equal(g:special_false, v:false)
+  assert_equal(g:special_true, true)
+  assert_equal(g:special_false, false)
   assert_equal(g:special_null, v:null)
   assert_equal(g:special_none, v:none)
 
   " list
   assert_equal(g:list_empty, [])
   assert_equal(g:list_empty, [  ])
-  assert_equal(g:list_mixed, [1, 'b', v:false])
+  assert_equal(g:list_mixed, [1, 'b', false])
 
   " lambda
   let La = { -> 'result'}
@@ -647,12 +647,12 @@ def Test_expr7()
   assert_equal(6, -+-6)
   assert_equal(-6, ---6)
 
-  assert_equal(v:true, !'')
-  assert_equal(v:true, ![])
-  assert_equal(v:false, !'asdf')
-  assert_equal(v:false, ![2])
-  assert_equal(v:true, !!'asdf')
-  assert_equal(v:true, !![2])
+  assert_equal(true, !'')
+  assert_equal(true, ![])
+  assert_equal(false, !'asdf')
+  assert_equal(false, ![2])
+  assert_equal(true, !!'asdf')
+  assert_equal(true, !![2])
 enddef
 
 func Test_expr7_fails()

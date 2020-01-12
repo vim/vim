@@ -129,5 +129,10 @@ def Test_try_catch()
   assert_equal(['1', 'wrong', '3'], l)
 enddef
 
+def Test_namespace()
+  CheckScriptFailure(['scriptversion 2', 'namespace'], 'E1039:')
+  CheckScriptFailure(['namespace', 'scriptversion 2'], 'E1040:')
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
