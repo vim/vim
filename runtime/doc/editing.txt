@@ -1332,6 +1332,14 @@ present in 'cpoptions' and "!" is not used in the command.
 :pw[d]			Print the current directory name.
 			Also see |getcwd()|.
 
+:verbose pw[d]		Print the current directory name and its scope.
+			The scope is either:
+			output		command ~
+			[global]	|:cd|
+			[window]	|:lcd|
+			[tabpage]	|:tcd|
+			Also see |getcwd()|.
+
 So long as no |:lcd| or |:tcd| command has been used, all windows share the
 same current directory.  Using a command to jump to another window doesn't
 change anything for the current directory.
