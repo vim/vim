@@ -8251,14 +8251,17 @@ searchcount([{options}])					*searchcount()*
 						before calling this function >
 						  let @/ = pattern
 <						(default: |@/|)
-		  timeout	|Number|	timeout milliseconds for
-						recomputing the result
-						(default: 20)
-		  maxcount	|Number|	max count of matched text
-						while recomputing the result.
-						if search exceeded total count,
-						"total" value becomes
-						`maxcount + 1` (default: 0)
+		  timeout	|Number|	0 or negative number is no
+						timeout. timeout milliseconds
+						for recomputing the result
+						(default: 0)
+		  maxcount	|Number|	0 or negative number is no
+						limit. max count of matched
+						text while recomputing the
+						result.  if search exceeded
+						total count, "total" value
+						becomes `maxcount + 1`
+						(default: 0)
 		  pos		|List|		`[lnum, col, off]` value
 						when recomputing the result.
 						this changes "current" result
