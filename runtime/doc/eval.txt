@@ -8198,26 +8198,27 @@ searchcount([{options}])					*searchcount()*
 		This works even if 'shortmess' contains "S" flag.
 
 		It is useful to add the count to |statusline|: >
-		  function! LastSearchCount() abort
-		    let result = searchcount()
-		    if empty(result)
-		        return ''
-		    endif
-		    if result.timeout    " counting was timed out
-		        return printf(' /%s [%d/>%d]', @/, result.current, result.total)
-		    endif
-		    return printf(' /%s [%d/%d]', @/, result.current, result.total)
-		  endfunction
-		  let &statusline .= '%{LastSearchCount()}'
+			function! LastSearchCount() abort
+			  let result = searchcount()
+			  if empty(result)
+			    return ''
+			  endif
+			  if result.incomplete
+			    " counting was timed out or max count exceeded
+			    return printf(' /%s [%d/>%d]', @/, result.current, result.total)
+			  endif
+			  return printf(' /%s [%d/%d]', @/, result.current, result.total)
+			endfunction
+			let &statusline .= '%{LastSearchCount()}'
 
-		  " Or if you want to show the count only when 'hlsearch' was on
-		  " let &statusline .= '%{&hlsearch ? LastSearchCount() : ""}'
+			" Or if you want to show the count only when 'hlsearch' was on
+			" let &statusline .= '%{&hlsearch ? LastSearchCount() : ""}'
 <
 		This can also be used to count matched texts with specified
 		pattern in the current buffer using "pattern":  >
 
-		  " count '\<foo\>' in this buffer
-		  let result = searchcount(#{pattern: '\<foo\>'})
+			" count '\<foo\>' in this buffer
+			let result = searchcount(#{pattern: '\<foo\>'})
 <
 		To get the last search count when |n| or |N| was pressed, call
 		this function with `recompute: 0` . But this sometimes
@@ -8226,11 +8227,11 @@ searchcount([{options}])					*searchcount()*
 		+ 1 (100). If you want to get correct information, specify
 		`recompute: 1`: >
 
-		  " result becomes max count + 1 (100) when it's too many
-		  let result = searchcount(#{recompute: 0})
+			" result becomes max count + 1 (100) when it's too many
+			let result = searchcount(#{recompute: 0})
 
-		  " below returns correct result (default)
-		  let result = searchcount(#{recompute: 1})
+			" below returns correct result (default)
+			let result = searchcount(#{recompute: 1})
 <
 		This returns a dictionary. If the previous pattern was not set
 		and "pattern" was not specified, returns an empty dictionary.
@@ -8265,15 +8266,16 @@ searchcount([{options}])					*searchcount()*
 						(default: cursor's position)
 
 		This returns a Dictionary like below:
-		  key		type	meaning ~
-		  current	Number	current position of match.
-					0 if cursor position is before the
-					first match
-		  exact_match	Boolean	if "current" is matched on "pos".
-					otherwise 0
-		  total		Number	total count of found matches
-		  timeout	Boolean	1 if recomputing was timed out.
-					otherwise 0.
+		  key		type		meaning ~
+		  current	|Number|	current position of match.
+						0 if cursor position is before the
+						first match
+		  exact_match	|Boolean|	if "current" is matched on "pos".
+						otherwise 0
+		  total		|Number|	total count of found matches
+		  incomplete	|Number|	0: search was fully completed
+						1: recomputing was timed out
+						2: max count exceeded
 
 searchdecl({name} [, {global} [, {thisblock}]])			*searchdecl()*
 		Search for the declaration of {name}.
