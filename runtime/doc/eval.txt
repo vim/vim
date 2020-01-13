@@ -8196,6 +8196,34 @@ search({pattern} [, {flags} [, {stopline} [, {timeout}]]])	*search()*
 searchcount([{options}])					*searchcount()*
 		Get or update the last search count of "S" flag in 'shortmess'.
 		This works even if 'shortmess' contains "S" flag.
+
+		To get the last search count when |n| or |N| was pressed,
+		call this function with no arguments: >
+
+		  let result = searchcount()
+<
+		It is useful to add the count to |statusline|: >
+		  function! LastSearchCount() abort
+		    let result = searchcount()
+		    if empty(result)
+		        return ''
+		    endif
+		    if result.timeout    " counting was timed out
+		        return printf(' /%s [>%d/>%d]', @/, result.current, result.total)
+		    endif
+		    return printf(' /%s [%d/%d]', @/, result.current, result.total)
+		  endfunction
+		  let &statusline .= '%{LastSearchCount()}'
+
+		  " Or if you want to show the count only when 'hlsearch' was on
+		  " let &statusline .= '%{&hlsearch ? LastSearchCount() : ""}'
+<
+		This can also be used to count matched texts with specified
+		pattern in the current buffer using "recompute" and "pattern":  >
+
+		  " count '\<foo\>' in this buffer
+		  let result = searchcount(#{recompute: v:true, pattern: '\<foo\>'})
+<
 		This returns a dictionary. If the previous pattern was not set
 		and "pattern" was not specified, returns an empty dictionary.
 
