@@ -5162,7 +5162,8 @@ update_search_stat(
 
 	p_ws = FALSE;
 #ifdef FEAT_RELTIME
-	profile_setlimit(timeout, &start);
+	if (timeout > 0)
+	    profile_setlimit(timeout, &start);
 #endif
 	while (!got_int && searchit(curwin, curbuf, &lastpos, &endpos,
 			 FORWARD, NULL, 1, SEARCH_KEEP, RE_LAST, NULL) != FAIL)
@@ -5170,7 +5171,7 @@ update_search_stat(
 	    done_search = TRUE;
 #ifdef FEAT_RELTIME
 	    // Stop after passing the time limit.
-	    if (profile_passed_limit(&start))
+	    if (timeout > 0 && profile_passed_limit(&start))
 	    {
 		incomplete = 1;
 		break;
