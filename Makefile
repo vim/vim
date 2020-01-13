@@ -156,7 +156,7 @@ MINOR = 2
 # - Run the tests and check the ouput:
 #   > nmake -f Make_mvc.mak testclean
 #   > nmake -f Make_mvc.mak test
-# - Rename (using tools/rename.bat):
+# - Rename (using ../tools/rename.bat):
 #           vim.exe to vimw32.exe
 #           tee/tee.exe to teew32.exe
 #           xxd/xxd.exe to xxdw32.exe
@@ -210,7 +210,7 @@ MINOR = 2
 #	It is part of gvim_8.2.*_x64.zip as vim/vim82/GvimExt/gvimext64.dll.
 # - Make sure there is a diff.exe two levels up (get it from a previous Vim
 #   version).  Also put winpty32.dll and winpty-agent.exe there.
-# - go to nsis/ and do:
+# - go to ../nsis and do:
 #   > unzip icons.zip
 #   > makensis gvim.nsi  (takes a few minutes).
 #      ignore warning for libwinpthread-1.dll
