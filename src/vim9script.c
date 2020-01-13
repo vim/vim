@@ -8,7 +8,7 @@
  */
 
 /*
- * vim9script.c: :namespace, :import, :export and friends
+ * vim9script.c: :vim9script, :import, :export and friends
  */
 
 #include "vim.h"
@@ -18,19 +18,19 @@
 #include "vim9.h"
 
 /*
- * ":namespace".
+ * ":vim9script".
  */
     void
-ex_namespace(exarg_T *eap)
+ex_vim9script(exarg_T *eap)
 {
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
-	emsg(_("E1038: namespace can only be used in a script"));
+	emsg(_("E1038: vim9script can only be used in a script"));
 	return;
     }
     if (SCRIPT_ITEM(current_sctx.sc_sid).sn_had_command)
     {
-	emsg(_("E1039: namespace must be the first command in a script"));
+	emsg(_("E1039: vim9script must be the first command in a script"));
 	return;
     }
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;

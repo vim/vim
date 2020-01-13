@@ -571,7 +571,7 @@ call_def_function(
 
 			save_funccal(&entry);
 			set_var_const(iptr->isn_arg.string, NULL,
-						STACK_TV_BOT(0), FALSE, FALSE);
+						    STACK_TV_BOT(0), FALSE, 0);
 			restore_funccal();
 		    }
 		    else
@@ -918,8 +918,12 @@ call_def_function(
 			trycmd = ((trycmd_T *)trystack->ga_data)
 							    + trystack->ga_len;
 			if (trycmd->tcd_caught)
+			{
 			    // discard the exception
+			    if (caught_stack == current_exception)
+				caught_stack = caught_stack->caught;
 			    discard_current_exception();
+			}
 
 			if (trycmd->tcd_return)
 			{

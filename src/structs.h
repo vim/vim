@@ -1309,6 +1309,7 @@ typedef struct writeq_S writeq_T;
 typedef struct jsonq_S jsonq_T;
 typedef struct cbq_S cbq_T;
 typedef struct channel_S channel_T;
+typedef struct cctx_S cctx_T;
 
 typedef enum
 {

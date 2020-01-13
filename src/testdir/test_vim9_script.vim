@@ -131,23 +131,26 @@ enddef
 
 " todo: move inside function
 let script_lines =<< trim END
-  namespace
+  vim9script
   let name: string = 'bob'
   def Concat(arg: string): string
     return name .. arg
   enddef
   let g:result = Concat('bie')
+  let g:localname = name
 END
 
-def Test_namespace()
+def Test_vim9script()
   writefile(g:script_lines, 'Xscript')
   source Xscript
   assert_equal('bobbie', g:result)
+  assert_equal('bob', g:localname)
+  assert_false(exists('g:name'))
 
   delete('Xscript')
 
-  CheckScriptFailure(['scriptversion 2', 'namespace'], 'E1039:')
-  CheckScriptFailure(['namespace', 'scriptversion 2'], 'E1040:')
+  CheckScriptFailure(['scriptversion 2', 'vim9script'], 'E1039:')
+  CheckScriptFailure(['vim9script', 'scriptversion 2'], 'E1040:')
 enddef
 
 

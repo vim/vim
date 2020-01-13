@@ -105,7 +105,7 @@ typedef struct {
  * Context for compiling lines of Vim script.
  * Stores info about the local variables and condition stack.
  */
-typedef struct {
+struct cctx_S {
     ufunc_T	*ctx_ufunc;	    // current function
     int		ctx_lnum;	    // line number in current function
     garray_T	ctx_instr;	    // generated instructions
@@ -117,7 +117,7 @@ typedef struct {
 
     garray_T	ctx_type_stack;	    // type of each item on the stack
     garray_T	*ctx_type_list;	    // space for adding types
-} cctx_T;
+};
 
 static char e_var_notfound[] = N_("E1001: variable not found: %s");
 static char e_syntax_at[] = N_("E1002: Syntax error at %s");
@@ -1519,7 +1519,7 @@ compile_call(char_u **arg, size_t varlen, cctx_T *cctx, int argcount_init)
  * Return a pointer to just after the name.  Equal to "arg" if there is no
  * valid name.
  */
-    static char_u *
+    char_u *
 to_name_end(char_u *arg)
 {
     char_u	*p;
@@ -2777,7 +2777,7 @@ compile_return(char_u *arg, int set_return_type, cctx_T *cctx)
 /*
  * Return the length of an assignment operator, or zero if there isn't one.
  */
-    static int
+    int
 assignment_len(char_u *p)
 {
     if (*p == '=')
@@ -3804,6 +3804,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
     garray_T	*instr;
     int		called_emsg_before = called_emsg;
     int		ret = FAIL;
+    sctx_T	save_current_sctx = current_sctx;
 
     if (ufunc->uf_dfunc_idx >= 0)
     {
@@ -3834,7 +3835,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
     instr = &cctx.ctx_instr;
 
     // Most modern script version.
-    current_sctx.sc_version = 999;
+    current_sctx.sc_version = SCRIPT_VERSION_VIM9;
 
     for (;;)
     {
@@ -3907,7 +3908,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	// Assuming the command starts with a variable or function name, find
 	// what follows.
 	p = to_name_end(ea.cmd);
-	if (p > ea.cmd)
+	if (p > ea.cmd && *p != NUL)
 	{
 	    int oplen;
 
@@ -3920,14 +3921,6 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		    || p[1] == ':'
 		    || (*p == '-' && p[1] == '>'))
 	    {
-		p = ea.cmd;
-		if (compile_expr1(&p, &cctx) == FAIL)
-		    goto erret;
-
-		// drop the return value
-		generate_instr_drop(&cctx, ISN_DROP, 1);
-		line = p;
-		continue;
 	    }
 
 	    oplen = assignment_len(skipwhite(p));
@@ -3951,7 +3944,33 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	 * COMMAND after range
 	 */
 	ea.cmd = skip_range(ea.cmd, NULL);
-	p = find_ex_command(&ea, FALSE);
+	p = find_ex_command(&ea, NULL, lookup_local, &cctx);
+
+	if (p == ea.cmd && ea.cmdidx != CMD_SIZE)
+	{
+	    // Expression or function call.
+	    if (ea.cmdidx == CMD_eval)
+	    {
+		p = ea.cmd;
+		if (compile_expr1(&p, &cctx) == FAIL)
+		    goto erret;
+
+		// drop the return value
+		generate_instr_drop(&cctx, ISN_DROP, 1);
+		line = p;
+		continue;
+	    }
+	    if (ea.cmdidx == CMD_let)
+	    {
+		line = compile_assignment(ea.cmd, CMD_SIZE, &cctx);
+		if (line == NULL)
+		    goto erret;
+		continue;
+	    }
+	    iemsg("Command from find_ex_command() not handled");
+	    goto erret;
+	}
+
 	p = skipwhite(p);
 
 	switch (ea.cmdidx)
@@ -4091,6 +4110,7 @@ erret:
 	ufunc->uf_lines.ga_len = 0;
     }
 
+    current_sctx = save_current_sctx;
     ga_clear(&cctx.ctx_type_stack);
     ga_clear(&cctx.ctx_locals);
 }

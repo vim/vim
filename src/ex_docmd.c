@@ -1712,7 +1712,13 @@ do_one_cmd(
     ea.cmd = skip_range(ea.cmd, NULL);
     if (*ea.cmd == '*' && vim_strchr(p_cpo, CPO_STAR) == NULL)
 	ea.cmd = skipwhite(ea.cmd + 1);
-    p = find_ex_command(&ea, NULL);
+
+#ifdef FEAT_EVAL
+    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+	p = find_ex_command(&ea, NULL, lookup_scriptvar, NULL);
+    else
+#endif
+	p = find_ex_command(&ea, NULL, NULL, NULL);
 
 #ifdef FEAT_EVAL
 # ifdef FEAT_PROFILE
@@ -1880,7 +1886,7 @@ do_one_cmd(
 #ifdef FEAT_EVAL
 		&& !aborting()
 #endif
-		) ? find_ex_command(&ea, NULL) : ea.cmd;
+		) ? find_ex_command(&ea, NULL, NULL, NULL) : ea.cmd;
     }
 
     if (p == NULL)
@@ -3116,14 +3122,58 @@ append_command(char_u *cmd)
  * Start of the name can be found at eap->cmd.
  * Sets eap->cmdidx and returns a pointer to char after the command name.
  * "full" is set to TRUE if the whole command name matched.
+ *
+ * If "lookup" is not NULL recognize expression without "eval" or "call" and
+ * assignment without "let".  Sets eap->cmdidx to the command while returning
+ * "eap->cmd".
+ *
  * Returns NULL for an ambiguous user command.
  */
     char_u *
-find_ex_command(exarg_T *eap, int *full UNUSED)
+find_ex_command(
+	exarg_T *eap,
+	int *full UNUSED,
+	int (*lookup)(char_u *, size_t, cctx_T *),
+	cctx_T *cctx)
 {
     int		len;
     char_u	*p;
     int		i;
+
+    /*
+     * Recognize a script-local variable: "lvar = value"
+     */
+    if (lookup != NULL && (p = to_name_end(eap->cmd)) > eap->cmd && *p != NUL)
+    {
+	int oplen;
+
+	// "funcname(" is always a function call.
+	// "varname[]" is an expression.
+	// "g:varname" is an expression.
+	// "varname->expr" is an expression.
+	if (*p == '('
+		|| *p == '['
+		|| p[1] == ':'
+		|| (*p == '-' && p[1] == '>'))
+	{
+	    eap->cmdidx = CMD_eval;
+	    return eap->cmd;
+	}
+
+	oplen = assignment_len(skipwhite(p));
+	if (oplen > 0)
+	{
+	    // Recognize an assignment if we recognize the variable name:
+	    // "g:var = expr"
+	    // "var = expr"  where "var" is a local var name.
+	    if (((p - eap->cmd) > 2 && eap->cmd[1] == ':')
+		    || lookup(eap->cmd, p - eap->cmd, cctx) >= 0)
+	    {
+		eap->cmdidx = CMD_let;
+		return eap->cmd;
+	    }
+	}
+    }
 
     /*
      * Isolate the command and search for it in the command table.
@@ -3157,8 +3207,17 @@ find_ex_command(exarg_T *eap, int *full UNUSED)
 	    ++p;
 	// for python 3.x support ":py3", ":python3", ":py3file", etc.
 	if (eap->cmd[0] == 'p' && eap->cmd[1] == 'y')
+	{
 	    while (ASCII_ISALNUM(*p))
 		++p;
+	}
+	else if (*p == '9' && STRNCMP("vim9", eap->cmd, 4) == 0)
+	{
+	    // include "9" for "vim9script"
+	    ++p;
+	    while (ASCII_ISALPHA(*p))
+		++p;
+	}
 
 	// check for non-alpha command
 	if (p == eap->cmd && vim_strchr((char_u *)"@*!=><&~#", *p) != NULL)
@@ -3315,7 +3374,7 @@ cmd_exists(char_u *name)
     // For ":2match" and ":3match" we need to skip the number.
     ea.cmd = (*name == '2' || *name == '3') ? name + 1 : name;
     ea.cmdidx = (cmdidx_T)0;
-    p = find_ex_command(&ea, &full);
+    p = find_ex_command(&ea, &full, NULL, NULL);
     if (p == NULL)
 	return 3;
     if (vim_isdigit(*name) && ea.cmdidx != CMD_match)

@@ -1049,7 +1049,7 @@ set_var_lval(
     char_u	*endp,
     typval_T	*rettv,
     int		copy,
-    int		is_const,    // Disallow to modify existing variable for :const
+    int		flags,    // LET_IS_CONST and/or LET_NO_COMMAND
     char_u	*op)
 {
     int		cc;
@@ -1115,7 +1115,7 @@ set_var_lval(
 	{
 	    typval_T tv;
 
-	    if (is_const)
+	    if (flags & LET_IS_CONST)
 	    {
 		emsg(_(e_cannot_mod));
 		*endp = cc;
@@ -1136,7 +1136,7 @@ set_var_lval(
 	    }
 	}
 	else
-	    set_var_const(lp->ll_name, lp->ll_type, rettv, copy, is_const);
+	    set_var_const(lp->ll_name, lp->ll_type, rettv, copy, flags);
 	*endp = cc;
     }
     else if (var_check_lock(lp->ll_newkey == NULL
@@ -1148,7 +1148,7 @@ set_var_lval(
 	listitem_T *ll_li = lp->ll_li;
 	int	    ll_n1 = lp->ll_n1;
 
-	if (is_const)
+	if (flags & LET_IS_CONST)
 	{
 	    emsg(_("E996: Cannot lock a range"));
 	    return;
@@ -1207,7 +1207,7 @@ set_var_lval(
 	/*
 	 * Assign to a List or Dictionary item.
 	 */
-	if (is_const)
+	if (flags & LET_IS_CONST)
 	{
 	    emsg(_("E996: Cannot lock a list or dict"));
 	    return;
@@ -1504,7 +1504,7 @@ next_for_item(void *fi_void, char_u *arg)
 	tv.vval.v_number = blob_get(fi->fi_blob, fi->fi_bi);
 	++fi->fi_bi;
 	return ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
-					   fi->fi_varcount, FALSE, NULL) == OK;
+					       fi->fi_varcount, 0, NULL) == OK;
     }
 
     item = fi->fi_lw.lw_item;
@@ -1514,7 +1514,7 @@ next_for_item(void *fi_void, char_u *arg)
     {
 	fi->fi_lw.lw_item = item->li_next;
 	result = (ex_let_vars(arg, &item->li_tv, TRUE, fi->fi_semicolon,
-					  fi->fi_varcount, FALSE, NULL) == OK);
+					  fi->fi_varcount, 0, NULL) == OK);
     }
     return result;
 }

@@ -18,7 +18,7 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 2.  Differences				|vim9-differences|
 3.  New style functions			|fast-functions|
 4.  Types				|vim9-types|
-5.  Namespace, Import and Export	|vim9-namespace|
+5.  Namespace, Import and Export	|vim9script|
 
 9.  Rationale				|vim9-rationale|
 
@@ -44,12 +44,12 @@ Other differences are more subtle, such as how errors are handled.
 
 The Vim9 script syntax and semantics are used in:
 - the `:def` command, define a function, until the matching `enddef`
-- a script file where the first command is `namespace`
+- a script file where the first command is `vim9script`
 
 Otherwise Vim9 script and legacy Vim script can be mixed.  There is no need to
 rewrite old scripts, they keep working as before.  The toplevel of
 source'ed scripts use the legacy format, only `:def` functions use the new
-syntax.  New scripts with the `namespace` command fully use the Vim9 script
+syntax.  New scripts with the `vim9script` command fully use the Vim9 script
 syntax.
 
 ==============================================================================
@@ -288,7 +288,7 @@ value then the return type is "void".
 ==============================================================================
 
 5.  Namespace, Import and Export
-				*vim8-namespace* *vim9-export* *vim9-import*
+					*vim9script* *vim9-export* *vim9-import*
 
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
@@ -298,13 +298,13 @@ items, can then be imported in another script.
 
 
 Namespace ~
-							*:namespace* *:na*
-To recognize an imported file the `namespace` statement must appear as the first
-statement in the file.  It tells Vim to interpret the script in its own
+							*:vim9script* *:vim9*
+To recognize an imported file the `vim9script` statement must appear as the
+first statement in the file.  It tells Vim to interpret the script in its own
 namespace, instead of the global namespace.  If a file starts with: >
-	namespace
+	vim9script
 	let myvar = 'yes'
-Then "myvar" will only exist in this file.  While without `namespace` it would
+Then "myvar" will only exist in this file.  While without `vim9script` it would
 be available as `g:myvar` from any other script and function.
 
 The variables at the file level are very much like the script-local "s:"

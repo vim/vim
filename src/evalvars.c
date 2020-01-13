@@ -175,7 +175,7 @@ static void list_buf_vars(int *first);
 static void list_win_vars(int *first);
 static void list_tab_vars(int *first);
 static char_u *list_arg_vars(exarg_T *eap, char_u *arg, int *first);
-static char_u *ex_let_one(char_u *arg, typval_T *tv, int copy, int is_const, char_u *endchars, char_u *op);
+static char_u *ex_let_one(char_u *arg, typval_T *tv, int copy, int flags, char_u *endchars, char_u *op);
 static void ex_unletlock(exarg_T *eap, char_u *argstart, int deep);
 static int do_unlet_var(lval_T *lp, char_u *name_end, int forceit);
 static int do_lock_var(lval_T *lp, char_u *name_end, int deep, int lock);
@@ -703,6 +703,11 @@ ex_let_const(exarg_T *eap, int is_const)
     char_u	*argend;
     int		first = TRUE;
     int		concat;
+    int		flags = is_const ? LET_IS_CONST : 0;
+
+    // detect Vim9 assignment without ":let" or ":const"
+    if (eap->arg == eap->cmd)
+	flags |= LET_NO_COMMAND;
 
     argend = skip_var_list(arg, &var_count, &semicolon);
     if (argend == NULL)
@@ -751,7 +756,7 @@ ex_let_const(exarg_T *eap, int is_const)
 		op[0] = '=';
 		op[1] = NUL;
 		(void)ex_let_vars(eap->arg, &rettv, FALSE, semicolon, var_count,
-								is_const, op);
+								flags, op);
 	    }
 	    clear_tv(&rettv);
 	}
@@ -785,7 +790,7 @@ ex_let_const(exarg_T *eap, int is_const)
 	else if (i != FAIL)
 	{
 	    (void)ex_let_vars(eap->arg, &rettv, FALSE, semicolon, var_count,
-								 is_const, op);
+								 flags, op);
 	    clear_tv(&rettv);
 	}
     }
@@ -806,7 +811,7 @@ ex_let_vars(
     int		copy,		// copy values from "tv", don't move
     int		semicolon,	// from skip_var_list()
     int		var_count,	// from skip_var_list()
-    int		is_const,	// lock variables for const
+    int		flags,		// LET_IS_CONST and/or LET_NO_COMMAND
     char_u	*op)
 {
     char_u	*arg = arg_start;
@@ -818,7 +823,7 @@ ex_let_vars(
     if (*arg != '[')
     {
 	// ":let var = expr" or ":for var in list"
-	if (ex_let_one(arg, tv, copy, is_const, op, op) == NULL)
+	if (ex_let_one(arg, tv, copy, flags, op, op) == NULL)
 	    return FAIL;
 	return OK;
     }
@@ -846,8 +851,7 @@ ex_let_vars(
     while (*arg != ']')
     {
 	arg = skipwhite(arg + 1);
-	arg = ex_let_one(arg, &item->li_tv, TRUE, is_const,
-							  (char_u *)",;]", op);
+	arg = ex_let_one(arg, &item->li_tv, TRUE, flags, (char_u *)",;]", op);
 	item = item->li_next;
 	if (arg == NULL)
 	    return FAIL;
@@ -871,7 +875,7 @@ ex_let_vars(
 	    ltv.vval.v_list = l;
 	    l->lv_refcount = 1;
 
-	    arg = ex_let_one(skipwhite(arg + 1), &ltv, FALSE, is_const,
+	    arg = ex_let_one(skipwhite(arg + 1), &ltv, FALSE, flags,
 							    (char_u *)"]", op);
 	    clear_tv(&ltv);
 	    if (arg == NULL)
@@ -1151,7 +1155,7 @@ ex_let_one(
     char_u	*arg,		// points to variable name
     typval_T	*tv,		// value to assign to variable
     int		copy,		// copy value from "tv"
-    int		is_const,	// lock variable for const
+    int		flags,		// LET_IS_CONST and/or LET_NO_COMMAND
     char_u	*endchars,	// valid chars after variable name  or NULL
     char_u	*op)		// "+", "-", "."  or NULL
 {
@@ -1166,7 +1170,7 @@ ex_let_one(
     // ":let $VAR = expr": Set environment variable.
     if (*arg == '$')
     {
-	if (is_const)
+	if (flags & LET_IS_CONST)
 	{
 	    emsg(_("E996: Cannot lock an environment variable"));
 	    return NULL;
@@ -1224,7 +1228,7 @@ ex_let_one(
     // ":let &g:option = expr": Set global option value.
     else if (*arg == '&')
     {
-	if (is_const)
+	if (flags & LET_IS_CONST)
 	{
 	    emsg(_("E996: Cannot lock an option"));
 	    return NULL;
@@ -1291,7 +1295,7 @@ ex_let_one(
     // ":let @r = expr": Set register contents.
     else if (*arg == '@')
     {
-	if (is_const)
+	if (flags & LET_IS_CONST)
 	{
 	    emsg(_("E996: Cannot lock a register"));
 	    return NULL;
@@ -1341,7 +1345,7 @@ ex_let_one(
 		emsg(_(e_letunexp));
 	    else
 	    {
-		set_var_lval(&lv, p, tv, copy, is_const, op);
+		set_var_lval(&lv, p, tv, copy, flags, op);
 		arg_end = p;
 	    }
 	}
@@ -2414,6 +2418,40 @@ get_script_local_ht(void)
 }
 
 /*
+ * Look for "name[len]" in script-local variables.
+ * Return -1 when not found.
+ */
+    int
+lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy UNUSED)
+{
+    hashtab_T	*ht = get_script_local_ht();
+    char_u	buffer[30];
+    char_u	*p;
+    int		res;
+    hashitem_T	*hi;
+
+    if (ht == NULL)
+	return -1;
+    if (len < sizeof(buffer) - 1)
+    {
+	vim_strncpy(buffer, name, len);
+	p = buffer;
+    }
+    else
+    {
+	p = vim_strnsave(name, len);
+	if (p == NULL)
+	    return -1;
+    }
+
+    hi = hash_find(ht, p);
+    res = HASHITEM_EMPTY(hi) ? -1 : 1;
+    if (p != buffer)
+	vim_free(p);
+    return res;
+}
+
+/*
  * Find the hashtab used for a variable name.
  * Return NULL if the name is not valid.
  * Set "varname" to the start of name without ':'.
@@ -2679,7 +2717,7 @@ set_var(
     typval_T	*tv,
     int		copy)	    // make copy of value in "tv"
 {
-    set_var_const(name, NULL, tv, copy, FALSE);
+    set_var_const(name, NULL, tv, copy, 0);
 }
 
 /*
@@ -2693,7 +2731,7 @@ set_var_const(
     type_T	*type,
     typval_T	*tv,
     int		copy,	    // make copy of value in "tv"
-    int		is_const)   // disallow to modify existing variable
+    int		flags)	    // LET_IS_CONST and/or LET_NO_COMMAND
 {
     dictitem_T	*v;
     char_u	*varname;
@@ -2720,7 +2758,7 @@ set_var_const(
 
     if (v != NULL)
     {
-	if (is_const)
+	if (flags & LET_IS_CONST)
 	{
 	    emsg(_(e_cannot_mod));
 	    return;
@@ -2731,7 +2769,9 @@ set_var_const(
 			      || var_check_lock(v->di_tv.v_lock, name, FALSE))
 	    return;
 
-	if (is_script_local && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+	if ((flags & LET_NO_COMMAND) == 0
+		&& is_script_local
+		&& current_sctx.sc_version == SCRIPT_VERSION_VIM9)
 	{
 	    semsg(_("E1041: Redefining script item %s"), name);
 	    return;
@@ -2807,7 +2847,7 @@ set_var_const(
 	    return;
 	}
 	v->di_flags = DI_FLAGS_ALLOC;
-	if (is_const)
+	if (flags & LET_IS_CONST)
 	    v->di_flags |= DI_FLAGS_LOCK;
 
 	if (is_script_local && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
@@ -2837,7 +2877,7 @@ set_var_const(
 	init_tv(tv);
     }
 
-    if (is_const)
+    if (flags & LET_IS_CONST)
 	v->di_tv.v_lock |= VAR_LOCKED;
 }
 
@@ -3219,9 +3259,9 @@ var_redir_start(char_u *name, int append)
     tv.v_type = VAR_STRING;
     tv.vval.v_string = (char_u *)"";
     if (append)
-	set_var_lval(redir_lval, redir_endp, &tv, TRUE, FALSE, (char_u *)".");
+	set_var_lval(redir_lval, redir_endp, &tv, TRUE, 0, (char_u *)".");
     else
-	set_var_lval(redir_lval, redir_endp, &tv, TRUE, FALSE, (char_u *)"=");
+	set_var_lval(redir_lval, redir_endp, &tv, TRUE, 0, (char_u *)"=");
     clear_lval(redir_lval);
     err = did_emsg;
     did_emsg |= save_emsg;
@@ -3294,7 +3334,7 @@ var_redir_stop(void)
 	    redir_endp = get_lval(redir_varname, NULL, redir_lval,
 					FALSE, FALSE, 0, FNE_CHECK_START);
 	    if (redir_endp != NULL && redir_lval->ll_name != NULL)
-		set_var_lval(redir_lval, redir_endp, &tv, FALSE, FALSE,
+		set_var_lval(redir_lval, redir_endp, &tv, FALSE, 0,
 								(char_u *)".");
 	    clear_lval(redir_lval);
 	}
