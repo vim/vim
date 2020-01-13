@@ -664,7 +664,7 @@ func Test_prop_multiline()
   call prop_type_delete('comment')
 endfunc
 
-func Test_prop_byteoff()
+func Test_prop_line2byte()
   call prop_type_add('comment', {'highlight': 'Directory'})
   new
   call setline(1, ['line1', 'second line', ''])
@@ -675,6 +675,22 @@ func Test_prop_byteoff()
 
   bwipe!
   call prop_type_delete('comment')
+endfunc
+
+func Test_prop_byte2line()
+  new
+  set ff=unix
+  call setline(1, ['one one', 'two two', 'three three', 'four four', 'five'])
+  call assert_equal(4, byte2line(line2byte(4)))
+  call assert_equal(5, byte2line(line2byte(5)))
+
+  call prop_type_add('prop', {'highlight': 'Directory'})
+  call prop_add(3, 1, {'length': 5, 'type': 'prop'})
+  call assert_equal(4, byte2line(line2byte(4)))
+  call assert_equal(5, byte2line(line2byte(5)))
+
+  bwipe!
+  call prop_type_delete('prop')
 endfunc
 
 func Test_prop_undo()

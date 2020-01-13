@@ -5738,7 +5738,7 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 	count = (long)(buf->b_ml.ml_locked_high) -
 		(long)(buf->b_ml.ml_locked_low) + 1;
 	start_idx = idx = curline - buf->b_ml.ml_locked_low;
-	if (idx == 0)// first line in block, text at the end
+	if (idx == 0)  // first line in block, text at the end
 	    text_end = dp->db_txt_end;
 	else
 	    text_end = ((dp->db_index[idx - 1]) & DB_INDEX_MASK);
@@ -5752,13 +5752,38 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 	}
 	else
 	{
+#ifdef FEAT_PROP_POPUP
+	    long textprop_total = 0;
+	    long textprop_size = 0;
+	    char_u *l1, *l2;
+#endif
+
 	    extra = 0;
-	    while (offset >= size
-		       + text_end - (int)((dp->db_index[idx]) & DB_INDEX_MASK)
-								      + ffdos)
+	    for (;;)
 	    {
+#ifdef FEAT_PROP_POPUP
+		if (buf->b_has_textprop)
+		{
+		    // compensate for the extra bytes taken by textprops
+		    l1 = (char_u *)dp + ((dp->db_index[idx]) & DB_INDEX_MASK);
+		    l2 = (char_u *)dp + (idx == 0 ? dp->db_txt_end
+				  : ((dp->db_index[idx - 1]) & DB_INDEX_MASK));
+		    textprop_size = (l2 - l1) - (STRLEN(l1) + 1);
+		}
+#endif
+		if (!(offset >= size
+			+ text_end - (int)((dp->db_index[idx]) & DB_INDEX_MASK)
+#ifdef FEAT_PROP_POPUP
+			- textprop_total - textprop_size
+#endif
+			+ ffdos))
+		    break;
+
 		if (ffdos)
 		    size++;
+#ifdef FEAT_PROP_POPUP
+		textprop_total += textprop_size;
+#endif
 		if (idx == count - 1)
 		{
 		    extra = 1;
@@ -5776,7 +5801,8 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 	    // lengths.
 	    len = 0;
 	    for (i = start_idx; i <= idx; ++i)
-		len += (int)STRLEN((char_u *)dp + ((dp->db_index[i]) & DB_INDEX_MASK)) + 1;
+		len += (int)STRLEN((char_u *)dp
+				    + ((dp->db_index[i]) & DB_INDEX_MASK)) + 1;
 	}
 	else
 #endif
