@@ -32,6 +32,7 @@ typedef struct searchstat
     int		incomplete;	// 0: search was fully completed
 				// 1: recomputing was timed out
 				// 2: max count exceeded
+    int		last_maxcount;	// the max count of the last search
 } searchstat_T;
 
 static void cmdline_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, int show_top_bot_msg, char_u *msgbuf, int recompute, int maxcount, long timeout);
@@ -5112,6 +5113,7 @@ update_search_stat(
     static int	    cnt = 0;
     static int	    exact_match = FALSE;
     static int	    incomplete = 0;
+    static int	    last_maxcount = SEARCH_STAT_DEF_MAX_COUNT;
     static int	    chgtick = 0;
     static char_u   *lastpat = NULL;
     static buf_T    *lbuf = NULL;
@@ -5127,8 +5129,10 @@ update_search_stat(
 	stat->cnt = cnt;
 	stat->exact_match = exact_match;
 	stat->incomplete = incomplete;
+	stat->last_maxcount = last_maxcount;
 	return;
     }
+    last_maxcount = maxcount;
 
     wraparound = ((dirc == '?' && LT_POS(lastpos, p))
 	       || (dirc == '/' && LT_POS(p, lastpos)));
@@ -5206,6 +5210,7 @@ update_search_stat(
     stat->cnt = cnt;
     stat->exact_match = exact_match;
     stat->incomplete = incomplete;
+    stat->last_maxcount = last_maxcount;
     p_ws = save_ws;
 }
 
@@ -5987,8 +5992,8 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 {
     pos_T		pos = curwin->w_cursor;
     char_u		*pattern = NULL;
-    int			maxcount = 0;
-    long		timeout = 0;
+    int			maxcount = SEARCH_STAT_DEF_MAX_COUNT;
+    long		timeout = SEARCH_STAT_DEF_TIMEOUT;
     int			recompute = TRUE;
     searchstat_T	stat;
 
@@ -6081,6 +6086,7 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
     dict_add_number(rettv->vval.v_dict, "total", stat.cnt);
     dict_add_number(rettv->vval.v_dict, "exact_match", stat.exact_match);
     dict_add_number(rettv->vval.v_dict, "incomplete", stat.incomplete);
+    dict_add_number(rettv->vval.v_dict, "maxcount", stat.last_maxcount);
 
 the_end:
     restore_last_search_pattern();

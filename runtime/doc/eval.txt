@@ -8197,29 +8197,6 @@ searchcount([{options}])					*searchcount()*
 		Get or update the last search count of "S" flag in 'shortmess'.
 		This works even if 'shortmess' contains "S" flag.
 
-		It is useful to add the count to |statusline|: >
-			function! LastSearchCount() abort
-			  let result = searchcount()
-			  if empty(result)
-			    return ''
-			  endif
-			  if result.incomplete
-			    " counting was timed out or max count exceeded
-			    return printf(' /%s [%d/>%d]', @/, result.current, result.total)
-			  endif
-			  return printf(' /%s [%d/%d]', @/, result.current, result.total)
-			endfunction
-			let &statusline .= '%{LastSearchCount()}'
-
-			" Or if you want to show the count only when 'hlsearch' was on
-			" let &statusline .= '%{&hlsearch ? LastSearchCount() : ""}'
-<
-		This can also be used to count matched texts with specified
-		pattern in the current buffer using "pattern":  >
-
-			" count '\<foo\>' in this buffer
-			let result = searchcount(#{pattern: '\<foo\>'})
-<
 		To get the last search count when |n| or |N| was pressed, call
 		this function with `recompute: 0` . But this sometimes
 		returns wrong information because |n| and |N|'s default count
@@ -8227,11 +8204,64 @@ searchcount([{options}])					*searchcount()*
 		+ 1 (100). If you want to get correct information, specify
 		`recompute: 1`: >
 
-			" result becomes max count + 1 (100) when it's too many
+			" result == maxcount + 1 (100) when it's too many
 			let result = searchcount(#{recompute: 0})
 
-			" below returns correct result (default)
+			" Below returns correct result (default)
 			let result = searchcount(#{recompute: 1})
+<
+		It is useful to add the count to |statusline|: >
+			function! LastSearchCount() abort
+			  let result = searchcount(#{recompute: 0})
+			  if empty(result)
+			    return ''
+			  endif
+			  if result.incomplete ==# 1     " timed out
+			    return printf(' /%s [?/??]', @/)
+			  elseif result.incomplete ==# 2 " max count exceeded
+			    if result.total > result.maxcount &&
+			    \  result.current > result.maxcount
+			      return printf(' /%s [>%d/>%d]', @/,
+			      \             result.current, result.total)
+			    elseif result.total > result.maxcount
+			      return printf(' /%s [%d/>%d]', @/,
+			      \             result.current, result.total)
+			    endif
+			  endif
+			  return printf(' /%s [%d/%d]', @/,
+			  \             result.current, result.total)
+			endfunction
+			let &statusline .= '%{LastSearchCount()}'
+
+			" Or if you want to show the count only when
+			" 'hlsearch' was on
+			" let &statusline .=
+			\   '%{&hlsearch ? LastSearchCount() : ""}'
+<
+		You can also update the search count
+		by |CursorMoved|, |CursorMovedI|: >
+
+			autocmd CursorMoved,CursorMovedI *
+			  \ let s:searchcount_timer = timer_start(
+			  \   200, function('s:update_searchcount'))
+			function! s:update_searchcount(timer) abort
+			  if a:timer ==# s:searchcount_timer
+			    call searchcount(#{
+			    \ recompute: 1, maxcount: 0, timeout: 100})
+			    redrawstatus
+			  endif
+			endfunction
+<
+		This can also be used to count matched texts with specified
+		pattern in the current buffer using "pattern":  >
+
+			" Count '\<foo\>' in this buffer
+			" (Note that it also updates search count)
+			let result = searchcount(#{pattern: '\<foo\>'})
+
+			" To restore old search count by old pattern,
+			" search again
+			call searchcount()
 <
 		This returns a dictionary. If the previous pattern was not set
 		and "pattern" was not specified, returns an empty dictionary.
