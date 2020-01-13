@@ -52,7 +52,7 @@ func Test_search_stat()
   let stat = '\[>99/>99\]'
   call assert_match(pat .. stat, g:a)
   call assert_equal(#{current: 101, total: 100, timeout: 0}, searchcount())
-  call assert_equal(#{current: 272, total: 280, timeout: 0}, searchcount(#{recompute: 1}))
+  call assert_equal(#{current: 272, total: 280, timeout: 0}, searchcount(#{recompute: v:true}))
   call assert_equal(#{current: 1, total: 280, timeout: 0}, searchcount(#{recompute: 1, pos: [1, 1, 0]}))
   call cursor(line('$'), 1)
   let g:a = execute(':unsilent :norm! n')
@@ -60,7 +60,7 @@ func Test_search_stat()
   call assert_match(pat .. stat, g:a)
   call assert_equal(#{current: 1, total: 100, timeout: 0}, searchcount())
   call assert_equal(#{current: 1, total: 280, timeout: 0}, searchcount(#{recompute: 1}))
-  call assert_equal(#{current: 271, total: 280, timeout: 0}, searchcount(#{recompute: 1, pos: [line('$')-2, 1, 0]}))
+  call assert_equal(#{current: 271, total: 280, timeout: 0}, searchcount(#{recompute: v:true, pos: [line('$')-2, 1, 0]}))
 
   " Many matches
   call cursor(1, 1)
