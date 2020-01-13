@@ -28,8 +28,10 @@ typedef struct searchstat
 {
     int		cur;		// current position of found words
     int		cnt;		// total count of found words
-    int		out_of_time;	// search was timed out
     int		exact_match;	// TRUE if matched exactly on specified position
+    int		incomplete;	// 0: search was fully completed
+				// 1: recomputing was timed out
+				// 2: max count exceeded
 } searchstat_T;
 
 static void cmdline_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, int show_top_bot_msg, char_u *msgbuf, int recompute, int maxcount, long timeout);
@@ -5042,7 +5044,7 @@ cmdline_search_stat(
 #ifdef FEAT_RIGHTLEFT
 	if (curwin->w_p_rl && *curwin->w_p_rlc == 's')
 	{
-	    if (stat.out_of_time)
+	    if (stat.incomplete == 1)
 		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[?/??]");
 	    else if (stat.cnt > maxcount && stat.cur > maxcount)
 		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>%d/>%d]", maxcount, maxcount);
@@ -5054,7 +5056,7 @@ cmdline_search_stat(
 	else
 #endif
 	{
-	    if (stat.out_of_time)
+	    if (stat.incomplete == 1)
 		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[?/??]");
 	    else if (stat.cnt > maxcount && stat.cur > maxcount)
 		vim_snprintf(t, SEARCH_STAT_BUF_LEN, "[>%d/>%d]", maxcount, maxcount);
@@ -5109,6 +5111,7 @@ update_search_stat(
     static int	    cur = 0;
     static int	    cnt = 0;
     static int	    exact_match = FALSE;
+    static int	    incomplete = 0;
     static int	    chgtick = 0;
     static char_u   *lastpat = NULL;
     static buf_T    *lbuf = NULL;
@@ -5123,6 +5126,7 @@ update_search_stat(
 	stat->cur = cur;
 	stat->cnt = cnt;
 	stat->exact_match = exact_match;
+	stat->incomplete = incomplete;
 	return;
     }
 
@@ -5143,6 +5147,7 @@ update_search_stat(
 	cur = 0;
 	cnt = 0;
 	exact_match = FALSE;
+	incomplete = 0;
 	CLEAR_POS(&lastpos);
 	lbuf = curbuf;
     }
@@ -5167,7 +5172,7 @@ update_search_stat(
 	    // Stop after passing the time limit.
 	    if (profile_passed_limit(&start))
 	    {
-		stat->out_of_time = TRUE;
+		incomplete = 1;
 		break;
 	    }
 #endif
@@ -5180,7 +5185,10 @@ update_search_stat(
 	    }
 	    fast_breakcheck();
 	    if (maxcount > 0 && cnt > maxcount)
+	    {
+		incomplete = 2;    // max count exceeded
 		break;
+	    }
 	}
 	if (got_int)
 	    cur = -1; // abort
@@ -5196,6 +5204,7 @@ update_search_stat(
     stat->cur = cur;
     stat->cnt = cnt;
     stat->exact_match = exact_match;
+    stat->incomplete = incomplete;
     p_ws = save_ws;
 }
 
@@ -6070,7 +6079,7 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
     dict_add_number(rettv->vval.v_dict, "current", stat.cur);
     dict_add_number(rettv->vval.v_dict, "total", stat.cnt);
     dict_add_number(rettv->vval.v_dict, "exact_match", stat.exact_match);
-    dict_add_number(rettv->vval.v_dict, "timeout", stat.out_of_time);
+    dict_add_number(rettv->vval.v_dict, "incomplete", stat.incomplete);
 
 the_end:
     restore_last_search_pattern();
