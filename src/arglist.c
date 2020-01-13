@@ -864,6 +864,7 @@ do_arg_all(
 				//
     int		opened_len;	// length of opened[]
     int		use_firstwin = FALSE;	// use first window for arglist
+    int		tab_drop_empty_window = FALSE;
     int		split_ret = OK;
     int		p_ea_save;
     alist_T	*alist;		// argument list to be used
@@ -1027,13 +1028,16 @@ do_arg_all(
     last_curwin = curwin;
     last_curtab = curtab;
     win_enter(lastwin, FALSE);
-    // ":drop all" should re-use an empty window to avoid "--remote-tab"
+    // ":tab drop file" should re-use an empty window to avoid "--remote-tab"
     // leaving an empty tab page when executed locally.
     if (keep_tabs && BUFEMPTY() && curbuf->b_nwindows == 1
 			    && curbuf->b_ffname == NULL && !curbuf->b_changed)
+    {
 	use_firstwin = TRUE;
+	tab_drop_empty_window = TRUE;
+    }
 
-    for (i = 0; i < count && i < opened_len && !got_int; ++i)
+    for (i = 0; i < count && !got_int; ++i)
     {
 	if (alist == &global_alist && i == global_alist.al_ga.ga_len - 1)
 	    arg_had_last = TRUE;
@@ -1067,6 +1071,9 @@ do_arg_all(
 	}
 	else if (split_ret == OK)
 	{
+	    // trigger events for tab drop
+	    if (tab_drop_empty_window && i == count - 1)
+		--autocmd_no_enter;
 	    if (!use_firstwin)		// split current window
 	    {
 		p_ea_save = p_ea;
@@ -1091,6 +1098,8 @@ do_arg_all(
 		      ((buf_hide(curwin->w_buffer)
 			   || bufIsChanged(curwin->w_buffer)) ? ECMD_HIDE : 0)
 						       + ECMD_OLDBUF, curwin);
+	    if (tab_drop_empty_window && i == count - 1)
+		++autocmd_no_enter;
 	    if (use_firstwin)
 		++autocmd_no_leave;
 	    use_firstwin = FALSE;
