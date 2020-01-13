@@ -12,8 +12,7 @@ this, then you will get the default behavior as is documented, which should
 be fine for most people.
 
 This document assumes that you are building Vim for Win32 or later (Windows
-XP/2003/Vista/7/8/10).  There are also instructions for pre-XP systems, but
-they might no longer work.
+XP/2003/Vista/7/8/10).
 
 The recommended way is to build a 32 bit Vim, also on 64 bit systems.  You can
 build a 64 bit Vim if you like, the executable will be bigger and Vim won't be
