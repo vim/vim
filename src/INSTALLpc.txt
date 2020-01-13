@@ -33,12 +33,11 @@ Contents:
 10. Building with Perl support
 11. Building with Ruby support
 12. Building with Tcl support
-13. Building with Terminal support
-14. Building with DirectX (DirectWrite) support
-15. Windows 3.1
-16. MS-DOS
+13. Building with DirectX (DirectWrite) support
+14. Windows 3.1
+15. MS-DOS
 
-17. Installing after building from sources
+16. Installing after building from sources
 
 
 The currently recommended way (that means it has been verified to work) is
@@ -889,23 +888,7 @@ Or when using MinGW (as one line):
         TCL=C:/Tcl86 DYNAMIC_TCL=yes TCL_VER=86 TCL_VER_LONG=8.6
 
 
-13. Building with Terminal support
-==================================
-
-Vim with Terminal support can be built with either MSVC, MinGW or Cygwin.
-This uses the included libvterm and winpty.  No extra header files or
-libraries are needed for building.  Just set TERMINAL to yes.
-
-E.g. When using MSVC:
-
-    nmake -f Make_mvc.mak TERMINAL=yes
-
-Or when using MinGW:
-
-    mingw32-make -f Make_ming.mak TERMINAL=yes
-
-
-14. Building with DirectX (DirectWrite) support
+13. Building with DirectX (DirectWrite) support
 ===============================================
 
 Vim with DirectX (DirectWrite) support can be built with either MSVC or MinGW.
@@ -939,20 +922,20 @@ Just set DIRECTX to yes:
     mingw32-make -f Make_ming.mak DIRECTX=yes
 
 
-15. Windows 3.1x
+14. Windows 3.1x
 ================
 
 The Windows 3.1x support was removed in patch 7.4.1364.
 
 
-16. MS-DOS
+15. MS-DOS
 ==========
 
 The MS-DOS support was removed in patch 7.4.1399.  Only very old Vim versions
 work on MS-DOS because of the limited amount of memory available.
 
 
-17. Installing after building from sources
+16. Installing after building from sources
 ==========================================
 
 [provided by Michael Soyka, updated by Ken Takata]
