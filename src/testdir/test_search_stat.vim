@@ -24,7 +24,7 @@ func Test_search_stat()
   let stat = '\[2/50\]'
   let pat = escape(@/, '()*?'). '\s\+'
   call assert_match(pat .. stat, g:a)
-  call assert_equal(#{current: 2, total: 50, timeout: 0}, searchcount())
+  call assert_equal(#{current: 2, total: 50, timeout: 0}, searchcount(#{recompute: 0}))
   " didn't get added to message history
   call assert_equal(messages_before, execute('messages'))
 
@@ -33,7 +33,7 @@ func Test_search_stat()
   let g:a = execute(':unsilent :norm! n')
   let stat = '\[50/50\]'
   call assert_match(pat .. stat, g:a)
-  call assert_equal(#{current: 50, total: 50, timeout: 0}, searchcount())
+  call assert_equal(#{current: 50, total: 50, timeout: 0}, searchcount(#{recompute: 0}))
 
   " No search stat
   set shortmess+=S
@@ -41,7 +41,10 @@ func Test_search_stat()
   let stat = '\[2/50\]'
   let g:a = execute(':unsilent :norm! n')
   call assert_notmatch(pat .. stat, g:a)
-  call assert_equal(#{current: 2, total: 50, timeout: 0}, searchcount())
+  call writefile(getline(1, '$'), 'sample.txt')
+  " n does not update search stat
+  call assert_equal(#{current: 50, total: 50, timeout: 0}, searchcount(#{recompute: 0}))
+  call assert_equal(#{current: 2, total: 50, timeout: 0}, searchcount(#{recompute: v:true}))
   set shortmess-=S
 
   " Many matches
@@ -51,16 +54,16 @@ func Test_search_stat()
   let g:a = execute(':unsilent :norm! n')
   let stat = '\[>99/>99\]'
   call assert_match(pat .. stat, g:a)
-  call assert_equal(#{current: 101, total: 100, timeout: 0}, searchcount())
+  call assert_equal(#{current: 101, total: 100, timeout: 0}, searchcount(#{recompute: 0}))
   call assert_equal(#{current: 272, total: 280, timeout: 0}, searchcount(#{recompute: v:true}))
   call assert_equal(#{current: 1, total: 280, timeout: 0}, searchcount(#{recompute: 1, pos: [1, 1, 0]}))
   call cursor(line('$'), 1)
   let g:a = execute(':unsilent :norm! n')
   let stat = 'W \[1/>99\]'
   call assert_match(pat .. stat, g:a)
-  call assert_equal(#{current: 1, total: 100, timeout: 0}, searchcount())
+  call assert_equal(#{current: 1, total: 100, timeout: 0}, searchcount(#{recompute: 0}))
   call assert_equal(#{current: 1, total: 280, timeout: 0}, searchcount(#{recompute: 1}))
-  call assert_equal(#{current: 271, total: 280, timeout: 0}, searchcount(#{recompute: v:true, pos: [line('$')-2, 1, 0]}))
+  call assert_equal(#{current: 271, total: 280, timeout: 0}, searchcount(#{recompute: 1, pos: [line('$')-2, 1, 0]}))
 
   " Many matches
   call cursor(1, 1)

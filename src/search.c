@@ -5972,7 +5972,7 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
     char_u		*pattern = NULL;
     int			maxcount = 0;
     long		timeout = SEARCH_STAT_DEF_TIMEOUT;
-    int			recompute = FALSE;
+    int			recompute = TRUE;
     searchstat_T	stat;
 
     if (rettv_dict_alloc(rettv) == FAIL)

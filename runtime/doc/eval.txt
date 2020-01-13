@@ -8234,7 +8234,7 @@ searchcount([{options}])					*searchcount()*
 						otherwise returns the last
 						result by |n|, |N|, or this
 						function is returned.
-						(default: |FALSE|)
+						(default: |TRUE|)
 		  pattern	|String|	recompute if this was given
 						and different with |@/|.
 						this works as same as the
