@@ -20,6 +20,8 @@ func Test_search_stat()
   call assert_equal(#{current: 0, exact_match: 0, total: 10, incomplete: 0}, searchcount(#{pattern: 'fooooobar', pos: [2, 1, 0]}))
   call assert_equal(#{current: 1, exact_match: 1, total: 10, incomplete: 0}, searchcount(#{pattern: 'fooooobar', pos: [3, 1, 0]}))
   call assert_equal(#{current: 1, exact_match: 0, total: 10, incomplete: 0}, searchcount(#{pattern: 'fooooobar', pos: [4, 1, 0]}))
+  call assert_equal(#{current: 1, exact_match: 0, total: 2, incomplete: 2}, searchcount(#{pattern: 'fooooobar', pos: [4, 1, 0], maxcount: 1}))
+  call assert_equal(#{current: 0, exact_match: 0, total: 2, incomplete: 2}, searchcount(#{pattern: 'fooooobar', maxcount: 1}))
 
   " match at second line
   let messages_before = execute('messages')
@@ -202,6 +204,15 @@ func Test_search_stat()
   " it would insert '...' into the output.
   call assert_match('^\s\+' .. stat, g:b)
   unmap n
+
+  " Time out
+  %delete _
+  call append(0, repeat(['foobar', 'foo', 'fooooobar', 'foba', 'foobar'], 100000))
+  call cursor(1, 1)
+  let result = searchcount(#{pattern: 'foo', timeout: 1})
+  call assert_equal(1, result.current)
+  call assert_equal(1, result.exact_match)
+  call assert_equal(1, result.incomplete)
 
   " Clean up
   set shortmess+=S
