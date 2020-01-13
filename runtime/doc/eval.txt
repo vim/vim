@@ -8214,10 +8214,10 @@ searchcount([{options}])					*searchcount()*
 		  " let &statusline .= '%{&hlsearch ? LastSearchCount() : ""}'
 <
 		This can also be used to count matched texts with specified
-		pattern in the current buffer using "recompute" and "pattern":  >
+		pattern in the current buffer using "pattern":  >
 
 		  " count '\<foo\>' in this buffer
-		  let result = searchcount(#{recompute: v:true, pattern: '\<foo\>'})
+		  let result = searchcount(#{pattern: '\<foo\>'})
 <
 		To get the last search count when |n| or |N| was pressed, call
 		this function with `recompute: 0` . But this sometimes
