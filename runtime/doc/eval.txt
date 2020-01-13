@@ -8268,8 +8268,9 @@ searchcount([{options}])					*searchcount()*
 		  key		type	meaning ~
 		  current	Number	current position of match.
 					0 if cursor position is before the
-					first match. `total + 1` if cursor
-					position is after the last match.
+					first match
+		  exact_match	Boolean	if "current" is matched on "pos".
+					otherwise 0
 		  total		Number	total count of found matches
 		  timeout	Boolean	1 if recomputing was timed out.
 					otherwise 0.

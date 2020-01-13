@@ -29,6 +29,7 @@ typedef struct searchstat
     int		cur;		// current position of found words
     int		cnt;		// total count of found words
     int		out_of_time;	// search was timed out
+    int		exact_match;	// TRUE if matched exactly on specified position
 } searchstat_T;
 
 static void cmdline_search_stat(int dirc, pos_T *pos, pos_T *cursor_pos, int show_top_bot_msg, char_u *msgbuf, int recompute, int maxcount, long timeout);
@@ -5107,6 +5108,7 @@ update_search_stat(
     static  pos_T   lastpos = {0, 0, 0};
     static int	    cur = 0;
     static int	    cnt = 0;
+    static int	    exact_match = FALSE;
     static int	    chgtick = 0;
     static char_u   *lastpat = NULL;
     static buf_T    *lbuf = NULL;
@@ -5120,6 +5122,7 @@ update_search_stat(
     {
 	stat->cur = cur;
 	stat->cnt = cnt;
+	stat->exact_match = exact_match;
 	return;
     }
 
@@ -5139,6 +5142,7 @@ update_search_stat(
     {
 	cur = 0;
 	cnt = 0;
+	exact_match = FALSE;
 	CLEAR_POS(&lastpos);
 	lbuf = curbuf;
     }
@@ -5168,16 +5172,18 @@ update_search_stat(
 	    }
 #endif
 	    cnt++;
-	    if (LTOREQ_POS(lastpos, p) && LTOREQ_POS(p, endpos))
+	    if (LTOREQ_POS(lastpos, p))
+	    {
 		cur = cnt;
+		if (LTOREQ_POS(p, endpos))
+		    exact_match = TRUE;
+	    }
 	    fast_breakcheck();
 	    if (maxcount > 0 && cnt > maxcount)
 		break;
 	}
 	if (got_int)
 	    cur = -1; // abort
-	if (LTOREQ_POS(endpos, p))
-	    cur = cnt + 1;
 	if (done_search)
 	{
 	    vim_free(lastpat);
@@ -5189,6 +5195,7 @@ update_search_stat(
     }
     stat->cur = cur;
     stat->cnt = cnt;
+    stat->exact_match = exact_match;
     p_ws = save_ws;
 }
 
@@ -6062,6 +6069,7 @@ f_searchcount(typval_T *argvars, typval_T *rettv)
 
     dict_add_number(rettv->vval.v_dict, "current", stat.cur);
     dict_add_number(rettv->vval.v_dict, "total", stat.cnt);
+    dict_add_number(rettv->vval.v_dict, "exact_match", stat.exact_match);
     dict_add_number(rettv->vval.v_dict, "timeout", stat.out_of_time);
 
 the_end:
