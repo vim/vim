@@ -166,7 +166,7 @@ test_vim_snprintf(void)
 	assert(bsize == 0 || STRNCMP(buf, "deadbeef", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
-	n = vim_snprintf(buf, bsize, fmt_06b, 12);
+	n = vim_snprintf(buf, bsize, fmt_06b, (uvarnumber_T)12);
 	assert(n == 6);
 	assert(bsize == 0 || STRNCMP(buf, "001100", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
