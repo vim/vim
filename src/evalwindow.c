@@ -183,7 +183,8 @@ find_win_by_nr(
     {
 #ifdef FEAT_PROP_POPUP
 	// check tab-local popup windows
-	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	for (wp = (tp == NULL ? curtab : tp)->tp_first_popupwin;
+						   wp != NULL; wp = wp->w_next)
 	    if (wp->w_id == nr)
 		return wp;
 	// check global popup windows
