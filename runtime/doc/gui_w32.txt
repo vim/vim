@@ -106,16 +106,15 @@ when you have got a new version):
 You can also install Vim in the "Send To" menu:
 1. Start a Windows Explorer
 2. Navigate to your sendto directory:
-   Windows NT: %windir%\profiles\%user%\sendto (e.g.
-	       "c:\winnt\profiles\mattha\sendto")
    Windows XP: C:\Documents and Settings\%user%\SendTo
    Windows Vista: C:\Users\%user%\AppData\Roaming\Microsoft\Windows\SendTo .
 3. Right-click in the file pane and select New->Shortcut
 4. Follow the shortcut wizard, using the full path to VIM/GVIM.
 
 When you 'send a file to Vim', Vim changes to that file's directory.  Note,
-however, that any long directory names will appear in their short (MS-Windows)
-form.  This is a limitation of the Windows "Send To" mechanism.
+however, that any long directory names will appear in their short (MS-DOS)
+form on some Windows versions.  This is a limitation of the Windows "Send To"
+mechanism.
 
 						*notepad*
 You could replace notepad.exe with gvim.exe, but that has a few side effects.
@@ -169,8 +168,8 @@ you can.
 					    Vim Shell Extension
    HKEY_LOCAL_MACHINE\Software\Vim\Gvim
 		path			    {path}\gvim.exe
-   HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\vim 5.6
-		DisplayName		    Vim 5.6: Edit with Vim popup menu entry
+   HKEY_LOCAL_MACHINE\Software\Microsoft\Windows\CurrentVersion\Uninstall\vim 8.2
+		DisplayName		    Vim 8.2: Edit with Vim popup menu entry
 		UninstallString		    {path}\uninstall.exe
 
    Replace {path} with the path that leads to the executable.
@@ -214,7 +213,7 @@ REGEDIT4
 [HKEY_CLASSES_ROOT\Applications\gvim.exe\shell\edit]
 
 [HKEY_CLASSES_ROOT\Applications\gvim.exe\shell\edit\command]
-@="c:\\vim\\vim62\\gvim.exe \"%1\""
+@="c:\\vim\\vim82\\gvim.exe \"%1\""
 
 [HKEY_CLASSES_ROOT\.htm\OpenWithList\gvim.exe]
 
@@ -222,7 +221,7 @@ REGEDIT4
 
 ----------------------------------------------------------
 
-Change the "c:\\vim\\vim62" bit to where gvim.exe is actually located.
+Change the "c:\\vim\\vim82" bit to where gvim.exe is actually located.
 
 To uninstall this run the Vim uninstall program or manually delete the
 registry entries with "regedit".

@@ -7261,6 +7261,7 @@ i_CTRL-R_=	insert.txt	/*i_CTRL-R_=*
 i_CTRL-R_CTRL-O	insert.txt	/*i_CTRL-R_CTRL-O*
 i_CTRL-R_CTRL-P	insert.txt	/*i_CTRL-R_CTRL-P*
 i_CTRL-R_CTRL-R	insert.txt	/*i_CTRL-R_CTRL-R*
+i_CTRL-SHIFT-Q	insert.txt	/*i_CTRL-SHIFT-Q*
 i_CTRL-SHIFT-V	insert.txt	/*i_CTRL-SHIFT-V*
 i_CTRL-T	insert.txt	/*i_CTRL-T*
 i_CTRL-U	insert.txt	/*i_CTRL-U*
