@@ -74,6 +74,8 @@ typedef struct VimMenu vimmenu_T;
  * function was defined, "sourcing_lnum" is the line number inside the
  * function.  When stored with a function, mapping, option, etc. "sc_lnum" is
  * the line number in the script "sc_sid".
+ *
+ * sc_version is also here, for convenience.
  */
 typedef struct {
     scid_T	sc_sid;		// script ID
@@ -1313,7 +1315,8 @@ typedef enum
     VAR_LIST,	 // "v_list" is used
     VAR_DICT,	 // "v_dict" is used
     VAR_FLOAT,	 // "v_float" is used
-    VAR_SPECIAL, // "v_number" is used
+    VAR_BOOL,	 // "v_number" is VVAL_FALSE or VVAL_TRUE
+    VAR_SPECIAL, // "v_number" is VVAL_NONE or VVAL_NULL
     VAR_JOB,	 // "v_job" is used
     VAR_CHANNEL, // "v_channel" is used
     VAR_BLOB,	 // "v_blob" is used
@@ -1565,13 +1568,28 @@ struct funccal_entry {
 #define HI2UF(hi)     HIKEY2UF((hi)->hi_key)
 
 /*
+ * Holds the hashtab with variables local to each sourced script.
+ * Each item holds a variable (nameless) that points to the dict_T.
+ */
+typedef struct
+{
+    dictitem_T	sv_var;
+    dict_T	sv_dict;
+} scriptvar_T;
+
+/*
  * Growarray to store info about already sourced scripts.
  * For Unix also store the dev/ino, so that we don't have to stat() each
  * script when going through the list.
  */
-typedef struct scriptitem_S
+typedef struct
 {
+    scriptvar_T	*sn_vars;	// stores s: variables for this script
+
     char_u	*sn_name;
+
+    int		sn_version;	// :scriptversion
+
 # ifdef UNIX
     int		sn_dev_valid;
     dev_t	sn_dev;

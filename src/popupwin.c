@@ -1222,8 +1222,8 @@ popup_adjust_position(win_T *wp)
 		|| wp->w_popup_pos == POPPOS_BOTLEFT))
 	{
 	    wp->w_wincol = wantcol - 1;
-	    if (wp->w_wincol >= Columns - 3)
-		wp->w_wincol = Columns - 3;
+	    if (wp->w_wincol >= Columns - 1)
+		wp->w_wincol = Columns - 1;
 	}
     }
 

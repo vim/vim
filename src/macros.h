@@ -344,3 +344,15 @@
 #else
 # define ERROR_IF_POPUP_WINDOW 0
 #endif
+
+
+#ifdef ABORT_ON_INTERNAL_ERROR
+# define ESTACK_CHECK_DECLARATION int estack_len_before;
+# define ESTACK_CHECK_SETUP estack_len_before = exestack.ga_len;
+# define ESTACK_CHECK_NOW if (estack_len_before != exestack.ga_len) \
+	siemsg("Exestack length expected: %d, actual: %d", estack_len_before, exestack.ga_len);
+#else
+# define ESTACK_CHECK_DECLARATION
+# define ESTACK_CHECK_SETUP
+# define ESTACK_CHECK_NOW
+#endif

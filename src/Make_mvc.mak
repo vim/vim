@@ -1193,10 +1193,11 @@ RUBY_LIB = $(RUBY)\lib\$(RUBY_INSTALL_NAME).lib
 # Do we want to load Ruby dynamically?
 ! if "$(DYNAMIC_RUBY)" == "yes"
 !  message Ruby DLL will be loaded dynamically
-CFLAGS = $(CFLAGS) -DDYNAMIC_RUBY -DDYNAMIC_RUBY_VER=$(RUBY_VER) \
-		-DDYNAMIC_RUBY_DLL=\"$(RUBY_INSTALL_NAME).dll\" 
+CFLAGS = $(CFLAGS) -DDYNAMIC_RUBY \
+		-DDYNAMIC_RUBY_DLL=\"$(RUBY_INSTALL_NAME).dll\"
 !  undef RUBY_LIB
 ! endif
+CFLAGS = $(CFLAGS) -DRUBY_VERSION=$(RUBY_VER)
 !endif # RUBY
 
 #
@@ -1416,7 +1417,7 @@ clean: testclean
 # If this fails because you don't have Vim yet, first build and install Vim
 # without changes.
 cmdidxs: ex_cmds.h
-	vim --clean -X -u create_cmdidxs.vim
+	vim --clean -X --not-a-term -u create_cmdidxs.vim
 
 test:
 	cd testdir

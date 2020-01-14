@@ -154,8 +154,6 @@ prop_add({lnum}, {col}, {props})
 		added to. When not found, the global property types are used.
 		If not found an error is given.
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetLnum()->prop_add(col, props)
 
@@ -168,14 +166,11 @@ prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
 		When {props} contains a "bufnr" item use this buffer,
 		otherwise use the current buffer.
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetLnum()->prop_clear()
 <
 							*prop_find()*
 prop_find({props} [, {direction}])
-		{not implemented yet}
 		Search for a text property as specified with {props}:
 		   id		property with this ID
 		   type		property with this type name
@@ -197,8 +192,6 @@ prop_find({props} [, {direction}])
 		If a match is found then a Dict is returned with the entries
 		as with prop_list(), and additionally an "lnum" entry.
 		If no match is found then an empty Dict is returned.
-
-		See |text-properties| for information about text properties.
 
 
 prop_list({lnum} [, {props}])				*prop_list()*
@@ -223,8 +216,6 @@ prop_list({lnum} [, {props}])				*prop_list()*
 		When "end" is zero the property continues in the next line.
 		The line break after this line is included.
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetLnum()->prop_list()
 <
@@ -247,8 +238,6 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 		If buffer "bufnr" is not loaded then nothing happens.
 
 		Returns the number of properties that were removed.
-
-		See |text-properties| for information about text properties.
 
 		Can also be used as a |method|: >
 			GetProps()->prop_remove()
@@ -275,8 +264,6 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 		   end_incl	when TRUE inserts at the end position will be
 				included in the text property
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_add(props)
 
@@ -284,8 +271,6 @@ prop_type_change({name}, {props})			*prop_type_change()*
 		Change properties of an existing text property type.  If a
 		property with this name does not exist an error is given.
 		The {props} argument is just like |prop_type_add()|.
-
-		See |text-properties| for information about text properties.
 
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_change(props)
@@ -301,8 +286,6 @@ prop_type_delete({name} [, {props}])			*prop_type_delete()*
 
 		When text property type {name} is not found there is no error.
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_delete()
 
@@ -316,8 +299,6 @@ prop_type_get([{name} [, {props}])			*prop_type_get()*
 		{props} can contain a "bufnr" item.  When it is given, use
 		this buffer instead of the global property types.
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_get()
 
@@ -326,8 +307,6 @@ prop_type_list([{props}])				*prop_type_list()*
 
 		{props} can contain a "bufnr" item.  When it is given, use
 		this buffer instead of the global property types.
-
-		See |text-properties| for information about text properties.
 
 
 ==============================================================================

@@ -222,7 +222,7 @@ assert_bool(typval_T *argvars, int isTrue)
     int		error = FALSE;
     garray_T	ga;
 
-    if (argvars[0].v_type == VAR_SPECIAL
+    if (argvars[0].v_type == VAR_BOOL
 	    && argvars[0].vval.v_number == (isTrue ? VVAL_TRUE : VVAL_FALSE))
 	return 0;
     if (argvars[0].v_type != VAR_NUMBER
@@ -760,6 +760,7 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	case VAR_UNKNOWN:
 	case VAR_NUMBER:
 	case VAR_FLOAT:
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	case VAR_STRING:
 	    break;

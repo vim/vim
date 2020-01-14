@@ -149,8 +149,7 @@ eval_init(void)
 eval_clear(void)
 {
     evalvars_clear();
-
-    free_scriptnames();
+    free_scriptnames();  // must come after evalvars_clear().
     free_locales();
 
     // autoloaded script names
@@ -1246,7 +1245,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 
     // Can't do anything with a Funcref, Dict, v:true on the right.
     if (tv2->v_type != VAR_FUNC && tv2->v_type != VAR_DICT
-						&& tv2->v_type != VAR_SPECIAL)
+		      && tv2->v_type != VAR_BOOL && tv2->v_type != VAR_SPECIAL)
     {
 	switch (tv1->v_type)
 	{
@@ -1254,6 +1253,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	    case VAR_DICT:
 	    case VAR_FUNC:
 	    case VAR_PARTIAL:
+	    case VAR_BOOL:
 	    case VAR_SPECIAL:
 	    case VAR_JOB:
 	    case VAR_CHANNEL:
@@ -3016,6 +3016,7 @@ eval_index(
 		emsg(_(e_float_as_string));
 	    return FAIL;
 #endif
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
@@ -3131,6 +3132,7 @@ eval_index(
 	    case VAR_FUNC:
 	    case VAR_PARTIAL:
 	    case VAR_FLOAT:
+	    case VAR_BOOL:
 	    case VAR_SPECIAL:
 	    case VAR_JOB:
 	    case VAR_CHANNEL:
@@ -3777,6 +3779,7 @@ tv_equal(
 	    s2 = tv_get_string_buf(tv2, buf2);
 	    return ((ic ? MB_STRICMP(s1, s2) : STRCMP(s1, s2)) == 0);
 
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    return tv1->vval.v_number == tv2->vval.v_number;
 
@@ -4531,6 +4534,7 @@ echo_string_core(
 	    break;
 #endif
 
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    *tofree = NULL;
 	    r = (char_u *)get_var_special_name(tv->vval.v_number);
@@ -5359,6 +5363,7 @@ free_tv(typval_T *varp)
 	    case VAR_NUMBER:
 	    case VAR_FLOAT:
 	    case VAR_UNKNOWN:
+	    case VAR_BOOL:
 	    case VAR_SPECIAL:
 		break;
 	}
@@ -5399,6 +5404,7 @@ clear_tv(typval_T *varp)
 		varp->vval.v_dict = NULL;
 		break;
 	    case VAR_NUMBER:
+	    case VAR_BOOL:
 	    case VAR_SPECIAL:
 		varp->vval.v_number = 0;
 		break;
@@ -5480,6 +5486,7 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	case VAR_DICT:
 	    emsg(_("E728: Using a Dictionary as a Number"));
 	    break;
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    return varp->vval.v_number == VVAL_TRUE ? 1 : 0;
 	case VAR_JOB:
@@ -5528,6 +5535,9 @@ tv_get_float(typval_T *varp)
 	    break;
 	case VAR_DICT:
 	    emsg(_("E894: Using a Dictionary as a Float"));
+	    break;
+	case VAR_BOOL:
+	    emsg(_("E362: Using a boolean value as a Float"));
 	    break;
 	case VAR_SPECIAL:
 	    emsg(_("E907: Using a special value as a Float"));
@@ -5618,6 +5628,7 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 	    if (varp->vval.v_string != NULL)
 		return varp->vval.v_string;
 	    return (char_u *)"";
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    STRCPY(buf, get_var_special_name(varp->vval.v_number));
 	    return buf;
@@ -5667,7 +5678,7 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 #endif
 	    break;
 	case VAR_UNKNOWN:
-	    emsg(_("E908: using an invalid value as a String"));
+	    emsg(_(e_inval_string));
 	    break;
     }
     return NULL;
@@ -5682,6 +5693,7 @@ tv_stringify(typval_T *varp, char_u *buf)
 {
     if (varp->v_type == VAR_LIST
 	    || varp->v_type == VAR_DICT
+	    || varp->v_type == VAR_BLOB
 	    || varp->v_type == VAR_FUNC
 	    || varp->v_type == VAR_PARTIAL
 	    || varp->v_type == VAR_FLOAT)
@@ -5743,6 +5755,7 @@ copy_tv(typval_T *from, typval_T *to)
     switch (from->v_type)
     {
 	case VAR_NUMBER:
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	    to->vval.v_number = from->vval.v_number;
 	    break;
@@ -5849,6 +5862,7 @@ item_copy(
 	case VAR_STRING:
 	case VAR_FUNC:
 	case VAR_PARTIAL:
+	case VAR_BOOL:
 	case VAR_SPECIAL:
 	case VAR_JOB:
 	case VAR_CHANNEL:
@@ -6054,9 +6068,23 @@ ex_execute(exarg_T *eap)
 	    char_u   buf[NUMBUFLEN];
 
 	    if (eap->cmdidx == CMD_execute)
-		p = tv_get_string_buf(&rettv, buf);
+	    {
+		if (rettv.v_type == VAR_CHANNEL || rettv.v_type == VAR_JOB)
+		{
+		    emsg(_(e_inval_string));
+		    p = NULL;
+		}
+		else
+		    p = tv_get_string_buf(&rettv, buf);
+	    }
 	    else
 		p = tv_stringify(&rettv, buf);
+	    if (p == NULL)
+	    {
+		clear_tv(&rettv);
+		ret = FAIL;
+		break;
+	    }
 	    len = (int)STRLEN(p);
 	    if (ga_grow(&ga, len + 2) == FAIL)
 	    {
