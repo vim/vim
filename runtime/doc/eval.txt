@@ -2665,6 +2665,7 @@ range({expr} [, {max} [, {stride}]])
 readdir({dir} [, {expr}])	List	file names in {dir} selected by {expr}
 readfile({fname} [, {type} [, {max}]])
 				List	get list of lines from file {fname}
+reduce({list}, {func}, {init})	any	reduce {list} using {func} from {init}
 reg_executing()			String	get the executing register name
 reg_recording()			String	get the recording register name
 reltime([{start} [, {end}]])	List	get time value
@@ -7756,6 +7757,16 @@ readfile({fname} [, {type} [, {max}]])
 
 		Can also be used as a |method|: >
 			GetFileName()->readfile()
+
+reduce({list}, {func}, {init})				*reduce()*
+		Returns a value after reducing the {list} using {func},
+		starting with {init}.
+		Examples: >
+			echo reduce([1, 3, 5], { acc, val -> acc + val }, 1)
+			echo reduce(['x', 'y'], { acc, val -> acc .. val }, 'a')
+<
+		Can also be used as a |method|: >
+			[1, 2, 3]->reduce({ acc, val -> acc + val }, 1)
 
 reg_executing()						*reg_executing()*
 		Returns the single letter name of the register being executed.
