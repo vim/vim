@@ -2293,4 +2293,57 @@ f_reverse(typval_T *argvars, typval_T *rettv)
     }
 }
 
+/*
+ * "reduce(list, { accumlator, element -> value }, initial)" function
+ */
+    void
+f_reduce(typval_T *argvars, typval_T *rettv)
+{
+    list_T	*l;
+    listitem_T	*li;
+    typval_T	accum;
+    char_u	*func_name;
+    partial_T   *partial = NULL;
+    typval_T	argv[3];
+    funcexe_T	funcexe;
+
+    if (argvars[0].v_type != VAR_LIST)
+    {
+	emsg(_(e_listreq));
+	return;
+    }
+
+    l = argvars[0].vval.v_list;
+    accum = argvars[2];
+
+    if (argvars[1].v_type == VAR_FUNC)
+	func_name = argvars[1].vval.v_string;
+    else if (argvars[1].v_type == VAR_PARTIAL)
+    {
+	partial = argvars[1].vval.v_partial;
+	func_name = partial_name(partial);
+    }
+    else
+	func_name = tv_get_string(&argvars[1]);
+    if (*func_name == NUL)
+	return;		// type error or empty name
+
+    vim_memset(&funcexe, 0, sizeof(funcexe));
+    funcexe.evaluate = TRUE;
+    funcexe.partial = partial;
+
+    copy_tv(&accum, rettv);
+    if (l != NULL)
+    {
+	for (li = l->lv_first; li != NULL; li = li->li_next)
+	{
+	    argv[0] = accum;
+	    argv[1] = li->li_tv;
+	    if (call_func(func_name, -1, rettv, 2, argv, &funcexe) == FAIL)
+		return;
+	    accum = *rettv;
+	}
+    }
+}
+
 #endif // defined(FEAT_EVAL)

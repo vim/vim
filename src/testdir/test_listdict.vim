@@ -614,6 +614,19 @@ func Test_reverse_sort_uniq()
   call assert_fails('call reverse("")', 'E899:')
 endfunc
 
+" reduce a list
+func Test_reduce()
+  call assert_equal(1, reduce([], { acc, val -> acc + val }, 1))
+  call assert_equal(10, reduce([1, 3, 5], { acc, val -> acc + val }, 1))
+  call assert_equal(2 * (2 * ((2 * 1) + 2) + 3) + 4, reduce([2, 3, 4], { acc, val -> 2 * acc + val }, 1))
+  call assert_equal('a x y z', ['x', 'y', 'z']->reduce({ acc, val -> acc .. ' ' .. val}, 'a'))
+  call assert_equal(#{ x: 1, y: 1, z: 1 }, ['x', 'y', 'z']->reduce({ acc, val -> extend(acc, { val: 1 }) }, {}))
+
+  call assert_fails("call reduce({}, { acc, val -> acc + val }, 1)", 'E714:')
+  call assert_fails("call reduce(0, { acc, val -> acc + val }, 1)", 'E714:')
+  call assert_fails("call reduce('', { acc, val -> acc + val }, 1)", 'E714:')
+endfunc
+
 " splitting a string to a List
 func Test_str_split()
   call assert_equal(['aa', 'bb'], split('  aa  bb '))
