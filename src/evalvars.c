@@ -2862,8 +2862,12 @@ set_var_const(
 						      + si->sn_var_vals.ga_len;
 		sv->sv_tv = &v->di_tv;
 		sv->sv_type = type == NULL ? &t_any : type;
-		sv->sv_const = FALSE;
+		sv->sv_const = (flags & LET_IS_CONST);
+		sv->sv_export = is_export;
 		++si->sn_var_vals.ga_len;
+
+		// let ex_export() know the export worked.
+		is_export = FALSE;
 	    }
 	}
     }

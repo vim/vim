@@ -138,6 +138,12 @@ let script_lines =<< trim END
   enddef
   let g:result = Concat('bie')
   let g:localname = name
+
+  export const CONST = 1234
+  export let exported = 9876
+  export def Exported(): string
+    return 'Exported'
+  enddef
 END
 
 def Test_vim9script()

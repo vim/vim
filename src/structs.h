@@ -1612,6 +1612,7 @@ typedef struct {
     type_T	*sv_type;
     typval_T	*sv_tv;		// points into "sn_vars"
     int		sv_const;
+    int		sv_export;	// "export let var = val"
 } svar_T;
 
 /*
@@ -1621,11 +1622,11 @@ typedef struct {
  */
 typedef struct
 {
+    char_u	*sn_name;
+
     scriptvar_T	*sn_vars;	// stores s: variables for this script
     garray_T	sn_var_vals;	// same variables as a list of svar_T
     garray_T	sn_type_list;	// keeps types used by variables
-
-    char_u	*sn_name;
 
     int		sn_version;	// :scriptversion
     int		sn_had_command;	// TRUE if any command was executed

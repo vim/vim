@@ -23,6 +23,7 @@
 #define FC_REMOVED  0x20	// function redefined while uf_refcount > 0
 #define FC_SANDBOX  0x40	// function defined in the sandbox
 #define FC_DEAD	    0x80	// function kept only for reference to dfunc
+#define FC_EXPORT   0x100	// "export def Func()"
 
 /*
  * All user-defined functions are found in this hashtable.
@@ -609,10 +610,25 @@ fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
 find_func_even_dead(char_u *name)
 {
     hashitem_T	*hi;
+    char_u	buffer[200];
+
+    if (in_vim9script())
+    {
+	// Find script-local function before global one.
+	buffer[0] = K_SPECIAL;
+	buffer[1] = KS_EXTRA;
+	buffer[2] = (int)KE_SNR;
+	vim_snprintf((char *)buffer + 3, sizeof(buffer) - 3, "%ld_%s",
+					      (long)current_sctx.sc_sid, name);
+	hi = hash_find(&func_hashtab, buffer);
+	if (!HASHITEM_EMPTY(hi))
+	    return HI2UF(hi);
+    }
 
     hi = hash_find(&func_hashtab, name);
     if (!HASHITEM_EMPTY(hi))
 	return HI2UF(hi);
+
     return NULL;
 }
 
@@ -1885,7 +1901,9 @@ trans_function_name(
     int		lead;
     char_u	sid_buf[20];
     int		len;
+    int		extra = 0;
     lval_T	lv;
+    int		vim9script;
 
     if (fdp != NULL)
 	vim_memset(fdp, 0, sizeof(funcdict_T));
@@ -2026,6 +2044,8 @@ trans_function_name(
 	len = (int)(end - lv.ll_name);
     }
 
+    vim9script = current_sctx.sc_version == SCRIPT_VERSION_VIM9;
+
     /*
      * Copy the function name to allocated memory.
      * Accept <SID>name() inside a script, translate into <SNR>123_name().
@@ -2033,20 +2053,25 @@ trans_function_name(
      */
     if (skip)
 	lead = 0;	// do nothing
-    else if (lead > 0)
+    else if (lead > 0 || vim9script)
     {
-	lead = 3;
-	if ((lv.ll_exp_name != NULL && eval_fname_sid(lv.ll_exp_name))
+	if (!vim9script)
+	    lead = 3;
+	if (vim9script || (lv.ll_exp_name != NULL
+					     && eval_fname_sid(lv.ll_exp_name))
 						       || eval_fname_sid(*pp))
 	{
-	    // It's "s:" or "<SID>"
+	    // It's script-local, "s:" or "<SID>"
 	    if (current_sctx.sc_sid <= 0)
 	    {
 		emsg(_(e_usingsid));
 		goto theend;
 	    }
 	    sprintf((char *)sid_buf, "%ld_", (long)current_sctx.sc_sid);
-	    lead += (int)STRLEN(sid_buf);
+	    if (vim9script)
+		extra = 3 + (int)STRLEN(sid_buf);
+	    else
+		lead += (int)STRLEN(sid_buf);
 	}
     }
     else if (!(flags & TFN_INT) && builtin_function(lv.ll_name, len))
@@ -2066,19 +2091,19 @@ trans_function_name(
 	}
     }
 
-    name = alloc(len + lead + 1);
+    name = alloc(len + lead + extra + 1);
     if (name != NULL)
     {
-	if (lead > 0)
+	if (lead > 0 || vim9script)
 	{
 	    name[0] = K_SPECIAL;
 	    name[1] = KS_EXTRA;
 	    name[2] = (int)KE_SNR;
-	    if (lead > 3)	// If it's "<SID>"
+	    if (vim9script || lead > 3)	// If it's "<SID>"
 		STRCPY(name + 3, sid_buf);
 	}
-	mch_memmove(name + lead, lv.ll_name, (size_t)len);
-	name[lead + len] = NUL;
+	mch_memmove(name + lead + extra, lv.ll_name, (size_t)len);
+	name[lead + extra + len] = NUL;
     }
     *pp = end;
 
@@ -2890,6 +2915,12 @@ ex_function(exarg_T *eap)
     fp->uf_calls = 0;
     fp->uf_script_ctx = current_sctx;
     fp->uf_script_ctx.sc_lnum += sourcing_lnum_top;
+    if (is_export)
+    {
+	fp->uf_flags |= FC_EXPORT;
+	// let ex_export() know the export worked.
+	is_export = FALSE;
+    }
 
     // ":def Func()" needs to be compiled
     if (eap->cmdidx == CMD_def)

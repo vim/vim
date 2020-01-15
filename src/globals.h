@@ -1068,6 +1068,8 @@ EXTERN int	ctrl_c_interrupts INIT(= TRUE);	// CTRL-C sets got_int
 
 EXTERN cmdmod_T	cmdmod;			// Ex command modifiers
 
+EXTERN int	is_export INIT(= FALSE);    // :export {cmd}
+
 EXTERN int	msg_silent INIT(= 0);	// don't print messages
 EXTERN int	emsg_silent INIT(= 0);	// don't print error messages
 EXTERN int	emsg_noredir INIT(= 0);	// don't redirect error messages
