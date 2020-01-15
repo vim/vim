@@ -621,6 +621,8 @@ func Test_reduce()
   call assert_equal(2 * (2 * ((2 * 1) + 2) + 3) + 4, reduce([2, 3, 4], { acc, val -> 2 * acc + val }, 1))
   call assert_equal('a x y z', ['x', 'y', 'z']->reduce({ acc, val -> acc .. ' ' .. val}, 'a'))
   call assert_equal(#{ x: 1, y: 1, z: 1 }, ['x', 'y', 'z']->reduce({ acc, val -> extend(acc, { val: 1 }) }, {}))
+  call assert_equal([0, 1, 2, 3], reduce([1, 2, 3], function('add'), [0]))
+  call assert_equal(42, reduce(['x', 'y', 'z'], function('get'), #{ x: #{ y: #{ z: 42 } } }))
 
   call assert_fails("call reduce({}, { acc, val -> acc + val }, 1)", 'E714:')
   call assert_fails("call reduce(0, { acc, val -> acc + val }, 1)", 'E714:')
