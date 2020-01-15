@@ -1705,9 +1705,9 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 		    emsg(_(e_invalblob));
 		    break;
 		}
-		tv.v_type = VAR_NUMBER;
-		blob_set(b, i, tv.vval.v_number);
-		if (!map && rem)
+		if (map)
+		    blob_set(b, i, tv.vval.v_number);
+		else if (rem)
 		{
 		    char_u *p = (char_u *)argvars[0].vval.v_blob->bv_ga.ga_data;
 
