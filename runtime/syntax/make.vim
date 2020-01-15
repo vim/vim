@@ -42,6 +42,7 @@ syn region makeIdent	start="\${" skip="\\}\|\\\\" end="}" contains=makeStatement
 syn match makeIdent	"\$\$\w*"
 syn match makeIdent	"\$[^({]"
 syn match makeIdent	"^ *[^:#= \t]*\s*[:+?!*]="me=e-2
+syn match makeIdent	"^ *[^:#= \t]*\s*::="me=e-3
 syn match makeIdent	"^ *[^:#= \t]*\s*="me=e-1
 syn match makeIdent	"%"
 
