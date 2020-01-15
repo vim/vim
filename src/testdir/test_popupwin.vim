@@ -1045,7 +1045,7 @@ func Test_popup_hide()
   call assert_equal('hello', line)
   call assert_equal(0, popup_getpos(winid).visible)
   " buffer is still listed but hidden
-  call assert_match(winbufnr(winid) .. 'u h.*\[Popup\]', execute('ls u'))
+  call assert_match(winbufnr(winid) .. 'u a.*\[Popup\]', execute('ls u'))
 
   eval winid->popup_show()
   redraw
@@ -2936,6 +2936,16 @@ func Test_popupmenu_info_border()
   call term_sendkeys(buf, "cc\<C-X>\<C-U>")
   call VerifyScreenDump(buf, 'Test_popupwin_infopopup_6', {})
 
+  " Hide the info popup, cycle trough buffers, make sure it didn't get
+  " deleted.
+  call term_sendkeys(buf, "\<Esc>")
+  call term_sendkeys(buf, ":set hidden\<CR>")
+  call term_sendkeys(buf, ":bn\<CR>")
+  call term_sendkeys(buf, ":bn\<CR>")
+  call term_sendkeys(buf, "otest text test text\<C-X>\<C-U>")
+  call VerifyScreenDump(buf, 'Test_popupwin_infopopup_7', {})
+
+  call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
   call delete('XtestInfoPopup')
 endfunc

@@ -6685,7 +6685,7 @@ f_setpos(typval_T *argvars, typval_T *rettv)
     {
 	if (list2fpos(&argvars[1], &pos, &fnum, &curswant) == OK)
 	{
-	    if (--pos.col < 0)
+	    if (pos.col != MAXCOL && --pos.col < 0)
 		pos.col = 0;
 	    if (name[0] == '.' && name[1] == NUL)
 	    {
@@ -8453,11 +8453,21 @@ f_virtcol(typval_T *argvars, typval_T *rettv)
     colnr_T	vcol = 0;
     pos_T	*fp;
     int		fnum = curbuf->b_fnum;
+    int		len;
 
     fp = var2fpos(&argvars[0], FALSE, &fnum);
     if (fp != NULL && fp->lnum <= curbuf->b_ml.ml_line_count
 						    && fnum == curbuf->b_fnum)
     {
+	// Limit the column to a valid value, getvvcol() doesn't check.
+	if (fp->col < 0)
+	    fp->col = 0;
+	else
+	{
+	    len = (int)STRLEN(ml_get(fp->lnum));
+	    if (fp->col > len)
+		fp->col = len;
+	}
 	getvvcol(curwin, fp, NULL, NULL, &vcol);
 	++vcol;
     }

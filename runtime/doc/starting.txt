@@ -108,7 +108,7 @@ vimdiff vim -d	    Start in diff mode |diff-mode|
 gvimdiff vim -gd    Start in diff mode |diff-mode|
 
 Additional characters may follow, they are ignored.  For example, you can have
-"gvim-5" to start the GUI.  You must have an executable by that name then, of
+"gvim-8" to start the GUI.  You must have an executable by that name then, of
 course.
 
 On Unix, you would normally have one executable called Vim, and links from the
@@ -1140,12 +1140,12 @@ will try to get the value for $VIM in this order:
    variable too (the default is "$VIMRUNTIME/doc/help.txt": chicken-egg
    problem).  The file name ("help.txt" or any other) is removed.  Then
    trailing directory names are removed, in this order: "doc", "runtime" and
-   "vim{version}" (e.g., "vim54").
+   "vim{version}" (e.g., "vim82").
 3. For Win32 Vim tries to use the directory name of the executable.  If it
    ends in "/src", this is removed.  This is useful if you unpacked the .zip
    file in some directory, and adjusted the search path to find the vim
    executable.  Trailing directory names are removed, in this order: "runtime"
-   and "vim{version}" (e.g., "vim54").
+   and "vim{version}" (e.g., "vim82").
 4. For Unix the compile-time defined installation directory is used (see the
    output of ":version").
 
@@ -1163,7 +1163,7 @@ is the order used to find the value of $VIMRUNTIME:
 1. If the environment variable $VIMRUNTIME is set, it is used.  You can use
    this when the runtime files are in an unusual location.
 2. If "$VIM/vim{version}" exists, it is used.  {version} is the version
-   number of Vim, without any '-' or '.'.  For example: "$VIM/vim54".  This is
+   number of Vim, without any '-' or '.'.  For example: "$VIM/vim82".  This is
    the normal value for $VIMRUNTIME.
 3. If "$VIM/runtime" exists, it is used.
 4. The value of $VIM is used.  This is for backwards compatibility with older
@@ -1175,11 +1175,11 @@ For Unix, when there is a compiled-in default for $VIMRUNTIME (check the
 output of ":version"), steps 2, 3 and 4 are skipped, and the compiled-in
 default is used after step 5.  This means that the compiled-in default
 overrules the value of $VIM.  This is useful if $VIM is "/etc" and the runtime
-files are in "/usr/share/vim/vim54".
+files are in "/usr/share/vim/vim82".
 
 Once Vim has done this once, it will set the $VIMRUNTIME environment variable.
 To change it later, use a ":let" command like this: >
-	:let $VIMRUNTIME = "/home/piet/vim/vim54"
+	:let $VIMRUNTIME = "/home/piet/vim/vim82"
 
 In case you need the value of $VIMRUNTIME in a shell (e.g., for a script that
 greps in the help files) you might be able to use this: >
@@ -1208,8 +1208,8 @@ CTRL-Z			Suspend Vim, like ":stop".
 			buffers are not written, don't forget to bring Vim
 			back to the foreground later!
 
-In the GUI, suspending is implemented as iconising gvim.  In Windows 95/NT,
-gvim is minimized.
+In the GUI, suspending is implemented as iconising gvim.  In MS-Windows, gvim
+is minimized.
 
 On many Unix systems, it is possible to suspend Vim with CTRL-Z.  This is only
 possible in Normal and Visual mode (see next chapter, |vim-modes|).  Vim will

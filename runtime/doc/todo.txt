@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Jan 06
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Jan 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,14 +38,7 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-- Implement prop_find() issue #4970  Done by Ryan Hackett, #5421
-
 Include ipv6 syntax changes?  (DJ Lucas, #5360)
-
-Still have /* */ comments:
-    misc1.c
-    misc2.c
-    others?
 
 Popup windows:
 - Make it possible to put a terminal window in a popup.  Would always grab key
@@ -128,7 +121,7 @@ Terminal emulator window:
   conversions.
 
 Error numbers available:
-E362, E366, E450, E451, E452,
+E366, E450, E451, E452,
 E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
 E654, E856, E857, E860, E861, E863, E889, E900
 
@@ -149,6 +142,9 @@ Needs better docs.  Is there a better name?
 
 undo result wrong: Masato Nishihata, #4798
 
+Patch to add function to return the text used in the quickfix window.
+(Yegappan, #5465)
+
 Undo puts cursor in wrong line after "cG<Esc>" undo.
 
 :unmap <c-n> gives error but does remove the mapping. (Antony Scriven, 2019
@@ -162,6 +158,12 @@ Also put :argadd commands at the start for all buffers, so that their order
 remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 Also #4994: window-local options not always restored, related to using :badd.
 Also #5326: netrw buffers are not restored.
+
+Patch to support cindent option to handle pragmas differently.
+(Max Rumpf, #5468)
+
+Patch to make ":verbose pwd" show the scope of the directory. (Takuya
+Fujiwara, #5469)
 
 Completion mixes results from the current buffer with tags and other files.
 Happens when typing CTRL-N while still searching for results.  E.g., type "b_"
@@ -181,6 +183,9 @@ wrong.  E.g. in vim.h "Error:", and blowfish.c "error!". (#5299)
 ":bnext" in a help buffer is supposed to go to the next help buffer, but it
 goes to any buffer, and then :bnext skips help buffers, since they are
 unlisted. (#4478)
+
+Patch to provide search stats in a variable, so that it can be used in the
+statusline. (Fujiwara Takuya, #4446)
 
 Enable 'termbidi' if $VTE_VERSION >= 5703 ?
 
@@ -245,6 +250,9 @@ Patch to make FocusGained and FocusLost work in modern terminals. (Hayaki
 Saito, 2013 Apr 24) Update 2016 Aug 12.
 Also see issue #609.
 We could add the enable/disable sequences to t_ti/t_te or t_ks/t_ke.
+
+:buffer completion does not escape "+" properly and results in a regexp error.
+(#5467)
 
 Check_external_diff() is used too often. (Daniel Hahler, #4800)
 
@@ -1281,10 +1289,6 @@ Patch to add 'systemencoding', convert between 'encoding' and this for file
 names, shell commands and the like.  (Kikuchan, 2010 Oct 14)
 Assume the system converts between the actual encoding of the filesystem to
 the system encoding (usually utf-8).
-
-Using ":tab drop file" does not trigger BufEnter or TabEnter events.
-(Andy Stewart, 2017 Apr 27, #1660)
-Autocommands blocked in do_arg_all().  Supposed to happen later?
 
 'hlsearch' interferes with a Conceal match. (Rom Grk, 2016 Aug 9)
 

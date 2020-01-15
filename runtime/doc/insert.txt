@@ -200,14 +200,14 @@ CTRL-V		Insert next non-digit literally.  For special keys, the
 		is converted back to what it was without |modifyOtherKeys|,
 		unless the Shift key is also pressed.
 
-						*i_CTRL-SHIFT-V*
-CTRL-SHIFT-V	Works just like CTRL-V, unless |modifyOtherKeys| is active,
-		then it inserts the Escape sequence for a key with modifiers.
-
 						*i_CTRL-Q*
 CTRL-Q		Same as CTRL-V.
 		Note: Some terminal connections may eat CTRL-Q, it doesn't
 		work then.  It does work in the GUI.
+
+CTRL-SHIFT-V				*i_CTRL-SHIFT-V* *i_CTRL-SHIFT-Q*
+CTRL-SHIFT-Q	Works just like CTRL-V, unless |modifyOtherKeys| is active,
+		then it inserts the Escape sequence for a key with modifiers.
 
 CTRL-X		Enter CTRL-X mode.  This is a sub-mode where commands can
 		be given to complete words or scroll the window.  See
@@ -2009,11 +2009,11 @@ If the 'fileformats' option is not empty Vim tries to recognize the type of
 changed, the detected format is only used while reading the file.
 A similar thing happens with 'fileencodings'.
 
-The message "[dos format]" is shown if a file is read in DOS format, to remind
-you that something unusual is done.
+On non-Win32 systems the message "[dos format]" is shown if a file is read in
+DOS format, to remind you that something unusual is done.
 On Macintosh and Win32 the message "[unix format]" is shown if a file is read
 in Unix format.
-On non-Macintosh systems, the message "[Mac format]" is shown if a file is
+On non-Macintosh systems, the message "[mac format]" is shown if a file is
 read in Mac format.
 
 An example on how to use ":r !": >
