@@ -1711,11 +1711,12 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 		{
 		    char_u *p = (char_u *)argvars[0].vval.v_blob->bv_ga.ga_data;
 
-		    mch_memmove(p + idx, p + i + 1,
+		    mch_memmove(p + i, p + i + 1,
 					      (size_t)b->bv_ga.ga_len - i - 1);
 		    --b->bv_ga.ga_len;
 		    --i;
 		}
+		++idx;
 	    }
 	}
 	else // argvars[0].v_type == VAR_LIST
