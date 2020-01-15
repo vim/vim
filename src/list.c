@@ -1689,6 +1689,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 	{
 	    int		i;
 	    typval_T	tv;
+	    varnumber_T	val;
 
 	    // set_vim_var_nr() doesn't set the type
 	    set_vim_var_type(VV_KEY, VAR_NUMBER);
@@ -1696,7 +1697,8 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 	    for (i = 0; i < b->bv_ga.ga_len; i++)
 	    {
 		tv.v_type = VAR_NUMBER;
-		tv.vval.v_number = blob_get(b, i);
+		val = blob_get(b, i);
+		tv.vval.v_number = val;
 		set_vim_var_nr(VV_KEY, idx);
 		if (filter_map_one(&tv, expr, map, &rem) == FAIL || did_emsg)
 		    break;
@@ -1705,17 +1707,21 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 		    emsg(_(e_invalblob));
 		    break;
 		}
-		tv.v_type = VAR_NUMBER;
-		blob_set(b, i, tv.vval.v_number);
-		if (!map && rem)
+		if (map)
+		{
+		    if (tv.vval.v_number != val)
+			blob_set(b, i, tv.vval.v_number);
+		}
+		else if (rem)
 		{
 		    char_u *p = (char_u *)argvars[0].vval.v_blob->bv_ga.ga_data;
 
-		    mch_memmove(p + idx, p + i + 1,
+		    mch_memmove(p + i, p + i + 1,
 					      (size_t)b->bv_ga.ga_len - i - 1);
 		    --b->bv_ga.ga_len;
 		    --i;
 		}
+		++idx;
 	    }
 	}
 	else // argvars[0].v_type == VAR_LIST
