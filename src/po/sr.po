@@ -5664,7 +5664,7 @@ msgid "E429: File \"%s\" does not exist"
 msgstr "E429: Фајл \"%s\" не постоји"
 
 msgid "  # pri kind tag"
-msgstr "  # pri ознака врста"
+msgstr "  # при врста ознака"
 
 msgid "file\n"
 msgstr "фајл\n"
