@@ -130,7 +130,13 @@ def Test_try_catch()
 enddef
 
 " todo: move inside function
-let script_lines =<< trim END
+let g:import_script_lines =<< trim END
+  vim9script
+  import exported from './Xexport.vim'
+  let g:imported = exported
+END
+
+let g:export_script_lines =<< trim END
   vim9script
   let name: string = 'bob'
   def Concat(arg: string): string
@@ -147,13 +153,18 @@ let script_lines =<< trim END
 END
 
 def Test_vim9script()
-  writefile(g:script_lines, 'Xscript')
-  source Xscript
+  writefile(g:import_script_lines, 'Ximport.vim')
+  writefile(g:export_script_lines, 'Xexport.vim')
+
+  source Ximport.vim
+
   assert_equal('bobbie', g:result)
   assert_equal('bob', g:localname)
+  assert_equal(9876, g:imported)
   assert_false(exists('g:name'))
 
-  delete('Xscript')
+  delete('Ximport.vim')
+  delete('Xexport.vim')
 
   CheckScriptFailure(['scriptversion 2', 'vim9script'], 'E1039:')
   CheckScriptFailure(['vim9script', 'scriptversion 2'], 'E1040:')

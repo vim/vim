@@ -670,6 +670,30 @@ generate_LOAD(
 }
 
 /*
+ * Generate an ISN_LOADSCRIPT or ISN_STORESCRIPT instruction.
+ */
+    static int
+generate_SCRIPT(
+	cctx_T	    *cctx,
+	isntype_T   isn_type,
+	int	    sid,
+	int	    idx,
+	type_T	    *type)
+{
+    isn_T	*isn;
+
+    if (isn_type == ISN_LOADSCRIPT)
+	isn = generate_instr_type(cctx, isn_type, type);
+    else
+	isn = generate_instr_drop(cctx, isn_type, 1);
+    if (isn == NULL)
+	return FAIL;
+    isn->isn_arg.script.script_sid = sid;
+    isn->isn_arg.script.script_idx = idx;
+    return OK;
+}
+
+/*
  * Generate an ISN_NEWLIST instruction.
  */
     static int
@@ -1289,34 +1313,84 @@ type_name(type_T *type, char **tofree)
 }
 
 /*
- * Generate an instruction to load script-local variable "name".
+ * Find "name" in script-local items of script "sid".
  */
-    static int
-compile_load_scriptvar(cctx_T *cctx, char_u *name)
+    int
+get_script_item_idx(int sid, char_u *name)
 {
-    hashtab_T   *ht = get_script_local_ht();
-    dictitem_T  *di;
-    scriptitem_T *si;
-    int		idx;
+    hashtab_T	    *ht;
+    dictitem_T	    *di;
+    scriptitem_T    *si = &SCRIPT_ITEM(sid);
+    int		    idx;
 
-    if (ht == NULL)
-	return FAIL;
+    // First look the name up in the hashtable.
+    if (sid <= 0 || sid > script_items.ga_len)
+	return -1;
+    ht = &SCRIPT_VARS(sid);
     di = find_var_in_ht(ht, 0, name, TRUE);
     if (di == NULL)
-	return FAIL;
-    si = &SCRIPT_ITEM(current_sctx.sc_sid);
+	return -1;
+
+    // Now find the svar_T index in sn_var_vals.
     for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
     {
 	svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 
 	if (sv->sv_tv == &di->di_tv)
-	{
-	    generate_LOAD(cctx, ISN_LOADSCRIPT, idx, NULL, sv->sv_type);
-	    return OK;
-	}
+	    return idx;
+    }
+    return -1;
+}
+
+/*
+ * Find "name" in imported items of the current script/
+ */
+    imported_T *
+find_imported(char_u *name)
+{
+    scriptitem_T    *si = &SCRIPT_ITEM(current_sctx.sc_sid);
+    int		    idx;
+
+    for (idx = 0; idx < si->sn_imports.ga_len; ++idx)
+    {
+	imported_T *import = ((imported_T *)si->sn_imports.ga_data) + idx;
+
+	if (STRCMP(name, import->imp_name) == 0)
+	    return import;
+    }
+    return NULL;
+}
+
+/*
+ * Generate an instruction to load script-local variable "name".
+ */
+    static int
+compile_load_scriptvar(cctx_T *cctx, char_u *name)
+{
+    scriptitem_T    *si = &SCRIPT_ITEM(current_sctx.sc_sid);
+    int		    idx = get_script_item_idx(current_sctx.sc_sid, name);
+    imported_T	    *import;
+
+    if (idx >= 0)
+    {
+	svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
+
+	generate_SCRIPT(cctx, ISN_LOADSCRIPT,
+					current_sctx.sc_sid, idx, sv->sv_type);
+	return OK;
     }
 
-    siemsg("compile_load_scriptvar(%s)", name);
+    import = find_imported(name);
+    if (import != NULL)
+    {
+	generate_SCRIPT(cctx, ISN_LOADSCRIPT,
+		import->imp_sid,
+		import->imp_var_vals_idx,
+		import->imp_type);
+	return OK;
+    }
+
+    semsg(_("E1050: Item not found: %s"), name);
     return FAIL;
 }
 

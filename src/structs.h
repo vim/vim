@@ -1609,11 +1609,27 @@ typedef struct
  * Entry for "sn_var_vals".  Used for script-local variables.
  */
 typedef struct {
+    char_u	*sv_name;	// points into "sn_vars" di_key
+    typval_T	*sv_tv;		// points into "sn_vars" di_tv
     type_T	*sv_type;
-    typval_T	*sv_tv;		// points into "sn_vars"
     int		sv_const;
     int		sv_export;	// "export let var = val"
 } svar_T;
+
+typedef struct {
+    char_u	*imp_name;	    // name imported as (allocated)
+    int		imp_sid;	    // script ID of "from"
+
+    // for "import * as Name", "imp_name" is "Name"
+    int		imp_all;
+
+    // for variable
+    type_T	*imp_type;
+    int		imp_var_vals_idx;   // index in sn_var_vals of "from"
+
+    // for function
+    char_u	*imp_funcname;	    // user func name (NOT allocated)
+} imported_T;
 
 /*
  * Growarray to store info about already sourced scripts.
@@ -1626,6 +1642,9 @@ typedef struct
 
     scriptvar_T	*sn_vars;	// stores s: variables for this script
     garray_T	sn_var_vals;	// same variables as a list of svar_T
+
+    garray_T	sn_imports;	// imported items, imported_T
+
     garray_T	sn_type_list;	// keeps types used by variables
 
     int		sn_version;	// :scriptversion

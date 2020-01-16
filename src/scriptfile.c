@@ -184,7 +184,7 @@ ex_runtime(exarg_T *eap)
     static void
 source_callback(char_u *fname, void *cookie UNUSED)
 {
-    (void)do_source(fname, FALSE, DOSO_NONE);
+    (void)do_source(fname, FALSE, DOSO_NONE, NULL);
 }
 
 /*
@@ -427,7 +427,7 @@ source_all_matches(char_u *pat)
     if (gen_expand_wildcards(1, &pat, &num_files, &files, EW_FILE) == OK)
     {
 	for (i = 0; i < num_files; ++i)
-	    (void)do_source(files[i], FALSE, DOSO_NONE);
+	    (void)do_source(files[i], FALSE, DOSO_NONE, NULL);
 	FreeWild(num_files, files);
     }
 }
@@ -930,7 +930,7 @@ cmd_source(char_u *fname, exarg_T *eap)
 						 );
 
     // ":source" read ex commands
-    else if (do_source(fname, FALSE, DOSO_NONE) == FAIL)
+    else if (do_source(fname, FALSE, DOSO_NONE, NULL) == FAIL)
 	semsg(_(e_notopen), fname);
 }
 
@@ -1063,16 +1063,20 @@ fopen_noinh_readbin(char *filename)
 
 /*
  * do_source: Read the file "fname" and execute its lines as EX commands.
+ * When "ret_sid" is not NULL and we loaded the script before, don't load it
+ * again.
  *
  * This function may be called recursively!
  *
- * return FAIL if file could not be opened, OK otherwise
+ * Return FAIL if file could not be opened, OK otherwise.
+ * If a scriptitem_T was found or created "*ret_sid" is set to the SID.
  */
     int
 do_source(
     char_u	*fname,
     int		check_other,	    // check for .vimrc and _vimrc
-    int		is_vimrc)	    // DOSO_ value
+    int		is_vimrc,	    // DOSO_ value
+    int		*ret_sid)
 {
     struct source_cookie    cookie;
     char_u		    *p;
@@ -1085,6 +1089,7 @@ do_source(
     static int		    last_current_SID_seq = 0;
     funccal_entry_T	    funccalp_entry;
     int			    save_debug_break_level = debug_break_level;
+    int			    sid;
     scriptitem_T	    *si = NULL;
 # ifdef UNIX
     stat_T		    st;
@@ -1113,6 +1118,36 @@ do_source(
 	smsg(_("Cannot source a directory: \"%s\""), fname);
 	goto theend;
     }
+
+#ifdef FEAT_EVAL
+    // See if we loaded this script before.
+# ifdef UNIX
+    stat_ok = (mch_stat((char *)fname_exp, &st) >= 0);
+# endif
+    for (sid = script_items.ga_len; sid > 0; --sid)
+    {
+	si = &SCRIPT_ITEM(sid);
+	if (si->sn_name != NULL
+		&& (
+# ifdef UNIX
+		    // Compare dev/ino when possible, it catches symbolic
+		    // links.  Also compare file names, the inode may change
+		    // when the file was edited.
+		    ((stat_ok && si->sn_dev_valid)
+			&& (si->sn_dev == st.st_dev
+			    && si->sn_ino == st.st_ino)) ||
+# endif
+		fnamecmp(si->sn_name, fname_exp) == 0))
+	    // Found it!
+	    break;
+    }
+    if (sid > 0 && ret_sid != NULL)
+    {
+	// Already loaded and no need to load again, return here.
+	*ret_sid = sid;
+	return OK;
+    }
+#endif
 
     // Apply SourceCmd autocommands, they should get the file and source it.
     if (has_autocmd(EVENT_SOURCECMD, fname_exp, NULL)
@@ -1239,35 +1274,17 @@ do_source(
     current_sctx.sc_version = 1;  // default script version
 
     // Check if this script was sourced before to finds its SID.
-    // If it's new, generate a new SID.
     // Always use a new sequence number.
     current_sctx.sc_seq = ++last_current_SID_seq;
-# ifdef UNIX
-    stat_ok = (mch_stat((char *)fname_exp, &st) >= 0);
-# endif
-    for (current_sctx.sc_sid = script_items.ga_len; current_sctx.sc_sid > 0;
-							 --current_sctx.sc_sid)
+    if (sid > 0)
     {
-	si = &SCRIPT_ITEM(current_sctx.sc_sid);
-	if (si->sn_name != NULL
-		&& (
-# ifdef UNIX
-		    // Compare dev/ino when possible, it catches symbolic
-		    // links.  Also compare file names, the inode may change
-		    // when the file was edited.
-		    ((stat_ok && si->sn_dev_valid)
-			&& (si->sn_dev == st.st_dev
-			    && si->sn_ino == st.st_ino)) ||
-# endif
-		fnamecmp(si->sn_name, fname_exp) == 0))
-	{
-	    // loading the same script again
-	    si->sn_had_command = FALSE;
-	    break;
-	}
+	// loading the same script again
+	si->sn_had_command = FALSE;
+	current_sctx.sc_sid = sid;
     }
-    if (current_sctx.sc_sid == 0)
+    else
     {
+	// It's new, generate a new SID.
 	current_sctx.sc_sid = ++last_current_SID;
 	if (ga_grow(&script_items,
 		     (int)(current_sctx.sc_sid - script_items.ga_len)) == FAIL)
@@ -1282,6 +1299,7 @@ do_source(
 	    // Allocate the local script variables to use for this script.
 	    new_script_vars(script_items.ga_len);
 	    ga_init2(&si->sn_var_vals, sizeof(typval_T), 10);
+	    ga_init2(&si->sn_imports, sizeof(imported_T), 10);
 	    ga_init2(&si->sn_type_list, sizeof(type_T), 10);
 # ifdef FEAT_PROFILE
 	    si->sn_prof_on = FALSE;
@@ -1300,6 +1318,8 @@ do_source(
 	else
 	    si->sn_dev_valid = FALSE;
 # endif
+	if (ret_sid != NULL)
+	    *ret_sid = current_sctx.sc_sid;
     }
 
 # ifdef FEAT_PROFILE

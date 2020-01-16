@@ -165,9 +165,6 @@ static dict_T		vimvardict;		// Dictionary with v: variables
 // for VIM_VERSION_ defines
 #include "version.h"
 
-#define SCRIPT_SV(id) (SCRIPT_ITEM(id).sn_vars)
-#define SCRIPT_VARS(id) (SCRIPT_SV(id)->sv_dict.dv_hashtab)
-
 static void ex_let_const(exarg_T *eap, int is_const);
 static char_u *skip_var_one(char_u *arg);
 static void list_glob_vars(int *first);
@@ -2284,6 +2281,20 @@ get_var_tv(
 	    *dip = v;
     }
 
+    if (tv == NULL && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+    {
+	imported_T *import = find_imported(name);
+
+	// imported variable from another script
+	if (import != NULL)
+	{
+	    scriptitem_T    *si = &SCRIPT_ITEM(import->imp_sid);
+	    svar_T	    *sv = ((svar_T *)si->sn_var_vals.ga_data)
+						    + import->imp_var_vals_idx;
+	    tv = sv->sv_tv;
+	}
+    }
+
     if (tv == NULL)
     {
 	if (rettv != NULL && verbose)
@@ -2446,6 +2457,11 @@ lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy UNUSED)
 
     hi = hash_find(ht, p);
     res = HASHITEM_EMPTY(hi) ? -1 : 1;
+
+    // if not script-local, then perhaps imported
+    if (res == -1 && find_imported(p) != NULL)
+	res = 1;
+
     if (p != buffer)
 	vim_free(p);
     return res;
@@ -2860,6 +2876,7 @@ set_var_const(
 	    {
 		svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
 						      + si->sn_var_vals.ga_len;
+		sv->sv_name = v->di_key;
 		sv->sv_tv = &v->di_tv;
 		sv->sv_type = type == NULL ? &t_any : type;
 		sv->sv_const = (flags & LET_IS_CONST);
