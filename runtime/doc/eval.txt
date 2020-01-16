@@ -8236,7 +8236,7 @@ searchcount([{options}])					*searchcount()*
 			" Or if you want to show the count only when
 			" 'hlsearch' was on
 			" let &statusline .=
-			" \   '%{&hlsearch ? LastSearchCount() : ""}'
+			" \   '%{v:hlsearch ? LastSearchCount() : ""}'
 <
 		You can also update the search count
 		by |CursorMoved|, |CursorMovedI|: >
