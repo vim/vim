@@ -2329,7 +2329,7 @@ f_reduce(typval_T *argvars, typval_T *rettv)
     if (argvars[0].v_type == VAR_LIST)
     {
 	list_T	*l = argvars[0].vval.v_list;
-	listitem_T	*li;
+	listitem_T	*li = NULL;
 
 	if (argvars[2].v_type == VAR_UNKNOWN)
 	{
@@ -2344,7 +2344,8 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	else
 	{
 	    accum = argvars[2];
-	    li = l->lv_first;
+	    if (l != NULL)
+		li = l->lv_first;
 	}
 
 	copy_tv(&accum, rettv);
