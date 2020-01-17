@@ -633,11 +633,11 @@ func Test_reduce()
   call assert_fails("call reduce([], { acc, val -> acc + val })", 'E998: Reduce of an empty List with no initial value')
 
   call assert_equal(1, reduce(0z, { acc, val -> acc + val }, 1))
-  call assert_equal(1 + 0xaa + 0xbb + 0xcc, reduce(0zaabbcc, { acc, val -> acc + val }, 1))
-  call assert_equal(2 * (2 * 1 + 0xff) + 0xff, 0zffff->reduce({ acc, val -> 2 * acc + val }, 1))
+  call assert_equal(1 + 0xaf + 0xbf + 0xcf, reduce(0zAFBFCF, { acc, val -> acc + val }, 1))
+  call assert_equal(2 * (2 * 1 + 0xaf) + 0xbf, 0zAFBF->reduce({ acc, val -> 2 * acc + val }, 1))
 
   call assert_equal(0xff, reduce(0zff, { acc, val -> acc + val }))
-  call assert_equal(2 * (2 * 0xff + 0xff) + 0xff, reduce(0zffffff, { acc, val -> 2 * acc + val }))
+  call assert_equal(2 * (2 * 0xaf + 0xbf) + 0xcf, reduce(0zAFBFCF, { acc, val -> 2 * acc + val }))
   call assert_fails("call reduce(0z, { acc, val -> acc + val })", 'E998: Reduce of an empty Blob with no initial value')
 
   call assert_fails("call reduce({}, { acc, val -> acc + val }, 1)", 'E897:')
