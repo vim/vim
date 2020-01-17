@@ -157,7 +157,7 @@ LangString str_vimrc_page_subtitle ${LANG_TURKISH} \
     "Yüklenecek ek özellikler, klavye ve fare için ayarları seçin."
 
 LangString str_msg_compat_title    ${LANG_TURKISH} \
-    " Vi/Vim davranışı"
+    " Vi / Vim davranışı "
 LangString str_msg_compat_desc     ${LANG_TURKISH} \
     "&Uyumluluk ve ek özellikler"
 LangString str_msg_compat_vi       ${LANG_TURKISH} \
