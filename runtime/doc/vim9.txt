@@ -314,7 +314,7 @@ In Vim9 script the global "g:" namespace can still be used as before.
 
 
 Export ~
-
+							*:export* *:exp*
 Exporting one item can be written as: >
 	export const EXPORTED_CONST = 1234
 	export let someValue = ...
@@ -330,13 +330,17 @@ defined (so far script-local) items: >
 
 
 Import ~
-
+							*:import* *:imp*
 The exported items can be imported individually in another Vim9 script: >
 	import EXPORTED_CONST from "thatscript.vim"
-	import MyClass from "thatscript.vim"
+	import MyClass from "myclass.vim"
 
 To import multiple items at the same time: >
 	import {someValue, MyClass} from "thatscript.vim"
+
+In case the name is ambigiuous, another name can be specified: >
+	import MyClass as ThatClass from "myclass.vim"
+	import {someValue, MyClass as ThatClass} from "myclass.vim"
 
 To import all exported items under a specific identifier: >
 	import * as That from 'thatscript.vim'

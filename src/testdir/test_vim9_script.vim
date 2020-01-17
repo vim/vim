@@ -165,11 +165,59 @@ def Test_vim9script()
   assert_equal('Exported', g:imported_func)
   assert_false(exists('g:name'))
 
+  unlet g:result
+  unlet g:localname
+  unlet g:imported
+  unlet g:imported_func
   delete('Ximport.vim')
   delete('Xexport.vim')
 
   CheckScriptFailure(['scriptversion 2', 'vim9script'], 'E1039:')
   CheckScriptFailure(['vim9script', 'scriptversion 2'], 'E1040:')
+enddef
+
+def Test_import_absolute()
+  let import_lines = [
+        \ 'vim9script',
+        \ 'import exported from "' .. getcwd() .. '/Xexport_abs.vim"',
+        \ 'g:imported_abs = exported',
+        \ ]
+  writefile(import_lines, 'Ximport_abs.vim')
+  writefile(g:export_script_lines, 'Xexport_abs.vim')
+
+  source Ximport_abs.vim
+
+  assert_equal(9876, g:imported_abs)
+  unlet g:imported_abs
+
+  delete('Ximport_abs.vim')
+  delete('Xexport_abs.vim')
+enddef
+
+" TODO: get rid of this workaround
+func Set_rtp(val)
+  let &rtp = a:val
+endfunc
+
+def Test_import_rtp()
+  let import_lines = [
+        \ 'vim9script',
+        \ 'import exported from "' .. getcwd() .. '/Xexport_rtp.vim"',
+        \ 'g:imported_rtp = exported',
+        \ ]
+  writefile(import_lines, 'Ximport_rtp.vim')
+  writefile(g:export_script_lines, 'Xexport_rtp.vim')
+
+  let save_rtp = &rtp
+  Set_rtp(getcwd())
+  source Ximport_rtp.vim
+  Set_rtp(save_rtp)
+
+  assert_equal(9876, g:imported_rtp)
+  unlet g:imported_rtp
+
+  delete('Ximport_rtp.vim')
+  delete('Xexport_rtp.vim')
 enddef
 
 

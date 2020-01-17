@@ -182,9 +182,9 @@ ex_runtime(exarg_T *eap)
 }
 
     static void
-source_callback(char_u *fname, void *cookie UNUSED)
+source_callback(char_u *fname, void *cookie)
 {
-    (void)do_source(fname, FALSE, DOSO_NONE, NULL);
+    (void)do_source(fname, FALSE, DOSO_NONE, cookie);
 }
 
 /*
@@ -399,16 +399,16 @@ do_in_runtimepath(
     int
 source_runtime(char_u *name, int flags)
 {
-    return source_in_path(p_rtp, name, flags);
+    return source_in_path(p_rtp, name, flags, NULL);
 }
 
 /*
  * Just like source_runtime(), but use "path" instead of 'runtimepath'.
  */
     int
-source_in_path(char_u *path, char_u *name, int flags)
+source_in_path(char_u *path, char_u *name, int flags, int *ret_sid)
 {
-    return do_in_path_and_pp(path, name, flags, source_callback, NULL);
+    return do_in_path_and_pp(path, name, flags, source_callback, ret_sid);
 }
 
 

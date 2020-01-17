@@ -482,7 +482,7 @@ vim_main2(void)
 # else
 		(char_u *)"plugin/**/*.vim",
 # endif
-		DIP_ALL | DIP_NOAFTER);
+		DIP_ALL | DIP_NOAFTER, NULL);
 	TIME_MSG("loading plugins");
 	vim_free(rtp_copy);
 

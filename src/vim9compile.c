@@ -1683,10 +1683,12 @@ compile_list(char_u **arg, cctx_T *cctx)
     {
 	if (*p == NUL)
 	    return FAIL;
-	compile_expr1(&p, cctx);
+	if (compile_expr1(&p, cctx) == FAIL)
+	    break;
 	++count;
 	if (*p == ',')
-	    p = skipwhite(p + 1);
+	    ++p;
+	p = skipwhite(p);
     }
     *arg = p + 1;
 
@@ -3902,7 +3904,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 
     vim_memset(&cctx, 0, sizeof(cctx));
     cctx.ctx_ufunc = ufunc;
-    cctx.ctx_lnum = 0;
+    cctx.ctx_lnum = -1;
     ga_init2(&cctx.ctx_locals, sizeof(lvar_T), 10);
     ga_init2(&cctx.ctx_type_stack, sizeof(type_T *), 50);
     cctx.ctx_type_list = &ufunc->uf_type_list;
@@ -3924,11 +3926,15 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	}
 	else
 	{
-	    if (line != NULL)
+	    do
+	    {
 		++cctx.ctx_lnum;
+		if (cctx.ctx_lnum == ufunc->uf_lines.ga_len)
+		    break;
+		line = ((char_u **)ufunc->uf_lines.ga_data)[cctx.ctx_lnum];
+	    } while (line == NULL);
 	    if (cctx.ctx_lnum == ufunc->uf_lines.ga_len)
 		break;
-	    line = ((char_u **)ufunc->uf_lines.ga_data)[cctx.ctx_lnum];
 	    SOURCING_LNUM = ufunc->uf_script_ctx.sc_lnum + cctx.ctx_lnum + 1;
 	}
 

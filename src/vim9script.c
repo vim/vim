@@ -129,6 +129,7 @@ ex_import(exarg_T *eap)
     int		ret = FAIL;
     typval_T	tv;
     int		sid = -1;
+    int		res;
 
     if (current_sctx.sc_version != SCRIPT_VERSION_VIM9)
     {
@@ -196,7 +197,6 @@ ex_import(exarg_T *eap)
 	scriptitem_T	*si = &SCRIPT_ITEM(current_sctx.sc_sid);
 	char_u		*tail = gettail(si->sn_name);
 	char_u		*from_name;
-	int		res;
 
 	// Relative to current script: "./name.vim", "../../name.vim".
 	len = STRLEN(si->sn_name) - STRLEN(tail) + STRLEN(tv.vval.v_string) + 2;
@@ -210,18 +210,33 @@ ex_import(exarg_T *eap)
 	add_pathsep(from_name);
 	STRCAT(from_name, tv.vval.v_string);
 
-	sid = -1;
 	res = do_source(from_name, FALSE, DOSO_NONE, &sid);
 	vim_free(from_name);
-	if (res == FAIL || sid <= 0)
-	    return;
+    }
+    else if (mch_isFullName(tv.vval.v_string))
+    {
+	res = do_source(tv.vval.v_string, FALSE, DOSO_NONE, &sid);
     }
     else
     {
-	emsg("Searching for import in 'runtimepath' not supported yet");
-	return;
+	size_t	    len = 5 + STRLEN(tv.vval.v_string) + 1;
+	char_u	    *from_name;
+
+	// Find in "vim9" subdirs in 'runtimepath'.
+	from_name = alloc((int)len);
+	if (from_name == NULL)
+	{
+	    clear_tv(&tv);
+	    return;
+	}
+	vim_snprintf((char *)from_name, len, "vim9/%s", tv.vval.v_string);
+	source_in_path(p_rtp, from_name, DIP_NOAFTER, &sid);
+	vim_free(from_name);
     }
     clear_tv(&tv);
+
+    if (res == FAIL || sid <= 0)
+	return;
 
     if (*eap->arg == '*')
     {
