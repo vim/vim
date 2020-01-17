@@ -344,6 +344,52 @@ f_bufloaded(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "bufmode(expr)" function
+ */
+    void
+f_bufmode(typval_T *argvars, typval_T *rettv)
+{
+    buf_T *buf;
+    int mode;
+    char_u formatted[8];
+    int show_raw = FALSE;
+    int to_string = FALSE;
+
+    if (argvars[0].v_type == VAR_UNKNOWN) {
+        buf = curbuf;
+    } else {
+        /* Issue type error if not a Number or String. */
+        tv_get_number(&argvars[0]);
+
+        emsg_off++;
+        buf = tv_get_buf(&argvars[0], FALSE);
+        emsg_off--;
+    }
+
+    if (argvars[1].v_type != VAR_UNKNOWN) {
+        to_string = tv_get_number_chk(&argvars[1], NULL);
+    }
+
+    if (argvars[2].v_type != VAR_UNKNOWN) {
+        show_raw = tv_get_number_chk(&argvars[2], NULL);
+    }
+
+    if (buf == NULL) {
+        rettv->vval.v_number = -1;
+    } else {
+        mode = show_raw ? buf->b_orig_mode :
+                          buf->b_orig_mode & 07777;
+        if (to_string) {
+            snprintf(formatted, sizeof(formatted), "%#o", mode);
+            rettv->v_type = VAR_STRING;
+            rettv->vval.v_string = vim_strsave(formatted);
+        } else {
+            rettv->vval.v_number = mode;
+        }
+    }
+}
+
+/*
  * "bufname(expr)" function
  */
     void

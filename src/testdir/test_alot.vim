@@ -4,6 +4,7 @@
 source test_backup.vim
 source test_behave.vim
 source test_bufline.vim
+source test_bufmode.vim
 source test_cd.vim
 source test_changedtick.vim
 source test_compiler.vim

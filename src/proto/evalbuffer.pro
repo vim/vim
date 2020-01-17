@@ -9,6 +9,7 @@ void f_bufexists(typval_T *argvars, typval_T *rettv);
 void f_buflisted(typval_T *argvars, typval_T *rettv);
 void f_bufload(typval_T *argvars, typval_T *rettv);
 void f_bufloaded(typval_T *argvars, typval_T *rettv);
+void f_bufmode(typval_T *argvars, typval_T *rettv);
 void f_bufname(typval_T *argvars, typval_T *rettv);
 void f_bufnr(typval_T *argvars, typval_T *rettv);
 void f_bufwinid(typval_T *argvars, typval_T *rettv);

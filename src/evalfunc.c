@@ -351,6 +351,7 @@ static funcentry_T global_functions[] =
     {"buflisted",	1, 1, FEARG_1,	  f_buflisted},
     {"bufload",		1, 1, FEARG_1,	  f_bufload},
     {"bufloaded",	1, 1, FEARG_1,	  f_bufloaded},
+    {"bufmode",		0, 3, FEARG_1,	  f_bufmode},
     {"bufname",		0, 1, FEARG_1,	  f_bufname},
     {"bufnr",		0, 2, FEARG_1,	  f_bufnr},
     {"bufwinid",	1, 1, FEARG_1,	  f_bufwinid},
