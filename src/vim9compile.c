@@ -1314,6 +1314,7 @@ type_name(type_T *type, char **tofree)
 
 /*
  * Find "name" in script-local items of script "sid".
+ * Returns the index in "sn_var_vals" or -1 if not found.
  */
     int
 get_script_item_idx(int sid, char_u *name)

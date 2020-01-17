@@ -603,6 +603,27 @@ fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
 }
 
 /*
+ * Find a function "name" in script "sid".
+ */
+    static ufunc_T *
+find_func_with_sid(char_u *name, int sid)
+{
+    hashitem_T	*hi;
+    char_u	buffer[200];
+
+    buffer[0] = K_SPECIAL;
+    buffer[1] = KS_EXTRA;
+    buffer[2] = (int)KE_SNR;
+    vim_snprintf((char *)buffer + 3, sizeof(buffer) - 3, "%ld_%s",
+							      (long)sid, name);
+    hi = hash_find(&func_hashtab, buffer);
+    if (!HASHITEM_EMPTY(hi))
+	return HI2UF(hi);
+
+    return NULL;
+}
+
+/*
  * Find a function by name, return pointer to it in ufuncs.
  * Return NULL for unknown function.
  */
@@ -610,19 +631,24 @@ fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
 find_func_even_dead(char_u *name)
 {
     hashitem_T	*hi;
-    char_u	buffer[200];
+    ufunc_T	*func;
+    imported_T	*imported;
 
     if (in_vim9script())
     {
 	// Find script-local function before global one.
-	buffer[0] = K_SPECIAL;
-	buffer[1] = KS_EXTRA;
-	buffer[2] = (int)KE_SNR;
-	vim_snprintf((char *)buffer + 3, sizeof(buffer) - 3, "%ld_%s",
-					      (long)current_sctx.sc_sid, name);
-	hi = hash_find(&func_hashtab, buffer);
-	if (!HASHITEM_EMPTY(hi))
-	    return HI2UF(hi);
+	func = find_func_with_sid(name, current_sctx.sc_sid);
+	if (func != NULL)
+	    return func;
+
+	// Find imported funcion before global one.
+	imported = find_imported(name);
+	if (imported != NULL && imported->imp_funcname != NULL)
+	{
+	    hi = hash_find(&func_hashtab, imported->imp_funcname);
+	    if (!HASHITEM_EMPTY(hi))
+		return HI2UF(hi);
+	}
     }
 
     hi = hash_find(&func_hashtab, name);
@@ -2145,7 +2171,6 @@ ex_function(exarg_T *eap)
     funcdict_T	fudi;
     static int	func_nr = 0;	    // number for nameless function
     int		paren;
-    hashtab_T	*ht;
     int		todo;
     hashitem_T	*hi;
     int		do_concat = TRUE;
@@ -2696,6 +2721,8 @@ ex_function(exarg_T *eap)
      */
     if (fudi.fd_dict == NULL)
     {
+	hashtab_T	*ht;
+
 	v = find_var(name, &ht, FALSE);
 	if (v != NULL && v->di_tv.v_type == VAR_FUNC)
 	{

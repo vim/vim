@@ -247,7 +247,8 @@ ex_import(exarg_T *eap)
 	    int		cc;
 	    int		idx;
 	    svar_T	*sv;
-	    imported_T *imported;
+	    imported_T	*imported;
+	    ufunc_T	*ufunc;
 
 	    // isolate one name
 	    while (eval_isnamec1(*arg))
@@ -259,18 +260,47 @@ ex_import(exarg_T *eap)
 	    cc = *arg;
 	    *arg = NUL;
 	    idx = get_script_item_idx(sid, name);
-	    if (idx < 0)
+	    if (idx >= 0)
 	    {
-		semsg(_("E1048: Item not found in script: %s"), name);
-		*arg = cc;
-		return;
+		sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;
+		if (!sv->sv_export)
+		{
+		    semsg(_("E1049: Item not exported in script: %s"), name);
+		    *arg = cc;
+		    return;
+		}
 	    }
-	    sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;
-	    if (!sv->sv_export)
+	    else
 	    {
-		semsg(_("E1049: Item not exported in script: %s"), name);
-		*arg = cc;
-		return;
+		char_u	buffer[200];
+		char_u	*funcname;
+
+		// it could be a user function.
+		if (STRLEN(name) < sizeof(buffer) - 10)
+		    funcname = buffer;
+		else
+		{
+		    funcname = alloc(STRLEN(name) + 10);
+		    if (funcname == NULL)
+		    {
+			*arg = cc;
+			return;
+		    }
+		}
+		funcname[0] = K_SPECIAL;
+		funcname[1] = KS_EXTRA;
+		funcname[2] = (int)KE_SNR;
+		sprintf((char *)funcname + 3, "%ld_%s", (long)sid, name);
+		ufunc = find_func(funcname);
+		if (funcname != buffer)
+		    vim_free(funcname);
+
+		if (ufunc == NULL)
+		{
+		    semsg(_("E1048: Item not found in script: %s"), name);
+		    *arg = cc;
+		    return;
+		}
 	    }
 
 	    imported = new_imported();
@@ -284,12 +314,23 @@ ex_import(exarg_T *eap)
 	    // imported->imp_name = vim_strnsave(as_ptr, as_len);
 	    imported->imp_name = vim_strnsave(name, name_len);
 	    imported->imp_sid = sid;
-	    imported->imp_type = sv->sv_type;
-	    imported->imp_var_vals_idx = idx;
+	    if (idx >= 0)
+	    {
+		imported->imp_type = sv->sv_type;
+		imported->imp_var_vals_idx = idx;
+	    }
+	    else
+		imported->imp_funcname = ufunc->uf_name;
 
 	    arg = skipwhite(arg);
-	    if (*eap->arg != '{' || *arg == '}')
+	    if (*eap->arg != '{')
 		break;
+	    if (*arg == '}')
+	    {
+		arg = skipwhite(arg + 1);
+		break;
+	    }
+
 	    if (*arg != ',')
 	    {
 		emsg(_("E1046: Missing comma in import"));

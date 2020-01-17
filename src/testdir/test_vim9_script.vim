@@ -132,8 +132,9 @@ enddef
 " todo: move inside function
 let g:import_script_lines =<< trim END
   vim9script
-  import exported from './Xexport.vim'
-  let g:imported = exported
+  import {exported, Exported} from './Xexport.vim'
+  g:imported = exported
+  g:imported_func = Exported()
 END
 
 let g:export_script_lines =<< trim END
@@ -161,6 +162,7 @@ def Test_vim9script()
   assert_equal('bobbie', g:result)
   assert_equal('bob', g:localname)
   assert_equal(9876, g:imported)
+  assert_equal('Exported', g:imported_func)
   assert_false(exists('g:name'))
 
   delete('Ximport.vim')
