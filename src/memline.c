@@ -5774,7 +5774,7 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 		if (!(offset >= size
 			+ text_end - (int)((dp->db_index[idx]) & DB_INDEX_MASK)
 #ifdef FEAT_PROP_POPUP
-			- (long)(textprop_total - textprop_size)
+			- (long)(textprop_total + textprop_size)
 #endif
 			+ ffdos))
 		    break;
