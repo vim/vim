@@ -2299,22 +2299,17 @@ f_reverse(typval_T *argvars, typval_T *rettv)
     void
 f_reduce(typval_T *argvars, typval_T *rettv)
 {
-    list_T	*l;
-    listitem_T	*li;
     typval_T	accum;
     char_u	*func_name;
     partial_T   *partial = NULL;
-    typval_T	argv[3];
     funcexe_T	funcexe;
+    typval_T	argv[3];
 
-    if (argvars[0].v_type != VAR_LIST)
+    if (argvars[0].v_type != VAR_LIST && argvars[0].v_type != VAR_BLOB)
     {
-	emsg(_(e_listreq));
+	emsg(_(e_listblobreq));
 	return;
     }
-
-    l = argvars[0].vval.v_list;
-    accum = argvars[2];
 
     if (argvars[1].v_type == VAR_FUNC)
 	func_name = argvars[1].vval.v_string;
@@ -2327,21 +2322,47 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	func_name = tv_get_string(&argvars[1]);
     if (*func_name == NUL)
 	return;		// type error or empty name
-
     vim_memset(&funcexe, 0, sizeof(funcexe));
     funcexe.evaluate = TRUE;
     funcexe.partial = partial;
 
-    copy_tv(&accum, rettv);
-    if (l != NULL)
+    if (argvars[0].v_type == VAR_LIST)
     {
-	for (li = l->lv_first; li != NULL; li = li->li_next)
+	list_T	*l = argvars[0].vval.v_list;
+	listitem_T	*li;
+
+	accum = argvars[2];
+	copy_tv(&accum, rettv);
+	if (l != NULL)
 	{
-	    argv[0] = accum;
-	    argv[1] = li->li_tv;
-	    if (call_func(func_name, -1, rettv, 2, argv, &funcexe) == FAIL)
-		return;
-	    accum = *rettv;
+	    for (li = l->lv_first; li != NULL; li = li->li_next)
+	    {
+		argv[0] = accum;
+		argv[1] = li->li_tv;
+		if (call_func(func_name, -1, rettv, 2, argv, &funcexe) == FAIL)
+		    return;
+		accum = *rettv;
+	    }
+	}
+    }
+    else
+    {
+	blob_T	*b = argvars[0].vval.v_blob;
+	int 	i;
+
+	accum = argvars[2];
+	copy_tv(&accum, rettv);
+	if (b != NULL)
+	{
+	    for (i = 0; i < b->bv_ga.ga_len; i++)
+	    {
+		argv[0] = accum;
+		argv[1].v_type = VAR_NUMBER;
+		argv[1].vval.v_number = blob_get(b, i);
+		if (call_func(func_name, -1, rettv, 2, argv, &funcexe) == FAIL)
+		    return;
+		accum = *rettv;
+	    }
 	}
     }
 }

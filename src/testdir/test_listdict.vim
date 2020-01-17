@@ -614,7 +614,7 @@ func Test_reverse_sort_uniq()
   call assert_fails('call reverse("")', 'E899:')
 endfunc
 
-" reduce a list
+" reduce a list or a blob
 func Test_reduce()
   call assert_equal(1, reduce([], { acc, val -> acc + val }, 1))
   call assert_equal(10, reduce([1, 3, 5], { acc, val -> acc + val }, 1))
@@ -622,11 +622,18 @@ func Test_reduce()
   call assert_equal('a x y z', ['x', 'y', 'z']->reduce({ acc, val -> acc .. ' ' .. val}, 'a'))
   call assert_equal(#{ x: 1, y: 1, z: 1 }, ['x', 'y', 'z']->reduce({ acc, val -> extend(acc, { val: 1 }) }, {}))
   call assert_equal([0, 1, 2, 3], reduce([1, 2, 3], function('add'), [0]))
-  call assert_equal(42, reduce(['x', 'y', 'z'], function('get'), #{ x: #{ y: #{ z: 42 } } }))
 
-  call assert_fails("call reduce({}, { acc, val -> acc + val }, 1)", 'E714:')
-  call assert_fails("call reduce(0, { acc, val -> acc + val }, 1)", 'E714:')
-  call assert_fails("call reduce('', { acc, val -> acc + val }, 1)", 'E714:')
+  let l = ['x', 'y', 'z']
+  call assert_equal(42, reduce(l, function('get'), #{ x: #{ y: #{ z: 42 } } }))
+  call assert_equal(['x', 'y', 'z'], l)
+
+  call assert_equal(1, reduce(0z, { acc, val -> acc + val }, 1))
+  call assert_equal(1 + 0xaa + 0xbb + 0xcc, reduce(0zaabbcc, { acc, val -> acc + val }, 1))
+  call assert_equal(2 * (2 * 1 + 0xff) + 0xff, 0zffff->reduce({ acc, val -> 2 * acc + val }, 1))
+
+  call assert_fails("call reduce({}, { acc, val -> acc + val }, 1)", 'E897:')
+  call assert_fails("call reduce(0, { acc, val -> acc + val }, 1)", 'E897:')
+  call assert_fails("call reduce('', { acc, val -> acc + val }, 1)", 'E897:')
 endfunc
 
 " splitting a string to a List
