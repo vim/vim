@@ -629,7 +629,7 @@ func Test_reduce()
 
   call assert_equal(1, reduce([1], { acc, val -> acc + val }))
   call assert_equal('x y z', reduce(['x', 'y', 'z'], { acc, val -> acc .. ' ' .. val }))
-  call assert_equal(2 * (2 * ((2 * 1) + 2) + 3) + 4, reduce([1, 2, 3, 4], { acc, val -> 2 * acc + val }))
+  call assert_equal(120, range(1, 5)->reduce({ acc, val -> acc * val }))
   call assert_fails("call reduce([], { acc, val -> acc + val })", 'E998: Reduce of an empty List with no initial value')
 
   call assert_equal(1, reduce(0z, { acc, val -> acc + val }, 1))
