@@ -2665,7 +2665,7 @@ range({expr} [, {max} [, {stride}]])
 readdir({dir} [, {expr}])	List	file names in {dir} selected by {expr}
 readfile({fname} [, {type} [, {max}]])
 				List	get list of lines from file {fname}
-reduce({object}, {func}, {initial})
+reduce({object}, {func} [, {initial}])
 				any	reduce {object} using {func} from {initial}
 reg_executing()			String	get the executing register name
 reg_recording()			String	get the recording register name
@@ -7759,13 +7759,16 @@ readfile({fname} [, {type} [, {max}]])
 		Can also be used as a |method|: >
 			GetFileName()->readfile()
 
-reduce({object}, {func}, {initial})			*reduce()*
+reduce({object}, {func} [, {initial}])			*reduce()* *E998*
 		Returns a value after reducing the |List| or |Blob| {object}
-		using {func}, starting with {initial}.
+		using {func}, starting with {initial}. The {func} is called
+		with two arguments; accumulator and current element. When
+		{initial} is omitted, the first element is used as the initial
+		value.
 		Examples: >
 			echo reduce([1, 3, 5], { acc, val -> acc + val }, 1)
 			echo reduce(['x', 'y'], { acc, val -> acc .. val }, 'a')
-			echo reduce(0z1122, { acc, val -> 2 * acc + val }, 1)
+			echo reduce(0z1122, { acc, val -> 2 * acc + val })
 <
 		Can also be used as a |method|: >
 			[1, 2, 3]->reduce({ acc, val -> acc + val }, 1)

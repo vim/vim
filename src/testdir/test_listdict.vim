@@ -627,9 +627,18 @@ func Test_reduce()
   call assert_equal(42, reduce(l, function('get'), #{ x: #{ y: #{ z: 42 } } }))
   call assert_equal(['x', 'y', 'z'], l)
 
+  call assert_equal(1, reduce([1], { acc, val -> acc + val }))
+  call assert_equal('x y z', reduce(['x', 'y', 'z'], { acc, val -> acc .. ' ' .. val }))
+  call assert_equal(2 * (2 * ((2 * 1) + 2) + 3) + 4, reduce([1, 2, 3, 4], { acc, val -> 2 * acc + val }))
+  call assert_fails("call reduce([], { acc, val -> acc + val })", 'E998: Reduce of an empty List with no initial value')
+
   call assert_equal(1, reduce(0z, { acc, val -> acc + val }, 1))
   call assert_equal(1 + 0xaa + 0xbb + 0xcc, reduce(0zaabbcc, { acc, val -> acc + val }, 1))
   call assert_equal(2 * (2 * 1 + 0xff) + 0xff, 0zffff->reduce({ acc, val -> 2 * acc + val }, 1))
+
+  call assert_equal(0xff, reduce(0zff, { acc, val -> acc + val }))
+  call assert_equal(2 * (2 * 0xff + 0xff) + 0xff, reduce(0zffffff, { acc, val -> 2 * acc + val }))
+  call assert_fails("call reduce(0z, { acc, val -> acc + val })", 'E998: Reduce of an empty Blob with no initial value')
 
   call assert_fails("call reduce({}, { acc, val -> acc + val }, 1)", 'E897:')
   call assert_fails("call reduce(0, { acc, val -> acc + val }, 1)", 'E897:')

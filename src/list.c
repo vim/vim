@@ -2294,7 +2294,7 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * "reduce(list, { accumlator, element -> value }, initial)" function
+ * "reduce(list, { accumlator, element -> value } [, initial])" function
  */
     void
 f_reduce(typval_T *argvars, typval_T *rettv)
@@ -2331,11 +2331,26 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	list_T	*l = argvars[0].vval.v_list;
 	listitem_T	*li;
 
-	accum = argvars[2];
+	if (argvars[2].v_type == VAR_UNKNOWN)
+	{
+	    if (l == NULL || l->lv_first == NULL)
+	    {
+		semsg(_(e_reduceempty), "List");
+		return;
+	    }
+	    accum = l->lv_first->li_tv;
+	    li = l->lv_first->li_next;
+	}
+	else
+	{
+	    accum = argvars[2];
+	    li = l->lv_first;
+	}
+
 	copy_tv(&accum, rettv);
 	if (l != NULL)
 	{
-	    for (li = l->lv_first; li != NULL; li = li->li_next)
+	    for ( ; li != NULL; li = li->li_next)
 	    {
 		argv[0] = accum;
 		argv[1] = li->li_tv;
@@ -2350,11 +2365,27 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	blob_T	*b = argvars[0].vval.v_blob;
 	int 	i;
 
-	accum = argvars[2];
+	if (argvars[2].v_type == VAR_UNKNOWN)
+	{
+	    if (b == NULL || b->bv_ga.ga_len == 0)
+	    {
+		semsg(_(e_reduceempty), "Blob");
+		return;
+	    }
+	    accum.v_type = VAR_NUMBER;
+	    accum.vval.v_number = blob_get(b, 0);
+	    i = 1;
+	}
+	else
+	{
+	    accum = argvars[2];
+	    i = 0;
+	}
+
 	copy_tv(&accum, rettv);
 	if (b != NULL)
 	{
-	    for (i = 0; i < b->bv_ga.ga_len; i++)
+	    for ( ; i < b->bv_ga.ga_len; i++)
 	    {
 		argv[0] = accum;
 		argv[1].v_type = VAR_NUMBER;
