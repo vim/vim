@@ -54,7 +54,6 @@ int get_tty_info(int fd, ttyinfo_T *info);
 void mch_setmouse(int on);
 void mch_bevalterm_changed(void);
 void check_mouse_termcode(void);
-int mch_screenmode(char_u *arg);
 int mch_get_shellsize(void);
 int mch_report_winsize(int fd, int rows, int cols);
 void mch_set_shellsize(void);

@@ -3937,16 +3937,6 @@ check_mouse_termcode(void)
     }
 }
 
-/*
- * set screen mode, always fails.
- */
-    int
-mch_screenmode(char_u *arg UNUSED)
-{
-    emsg(_(e_screenmode));
-    return FAIL;
-}
-
 #ifndef VMS
 
 /*

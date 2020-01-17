@@ -742,17 +742,6 @@ mch_check_messages(void)
 #endif
 
 
-/*
- * set screen mode, always fails.
- */
-    int
-mch_screenmode(char_u *arg UNUSED)
-{
-    emsg(_(e_screenmode));
-    return FAIL;
-}
-
-
 #if defined(FEAT_LIBCALL) || defined(PROTO)
 /*
  * Call a DLL routine which takes either a string or int param

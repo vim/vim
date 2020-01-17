@@ -5927,7 +5927,7 @@ ex_mode(exarg_T *eap)
     if (*eap->arg == NUL)
 	shell_resized();
     else
-	mch_screenmode(eap->arg);
+	emsg(_(e_screenmode));
 }
 
 /*
