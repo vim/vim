@@ -320,7 +320,6 @@ static void	ex_setfiletype(exarg_T *eap);
 # define ex_diffupdate		ex_ni
 #endif
 static void	ex_digraphs(exarg_T *eap);
-static void	ex_set(exarg_T *eap);
 #ifdef FEAT_SEARCH_EXTRA
 static void	ex_nohlsearch(exarg_T *eap);
 #else
@@ -8486,23 +8485,6 @@ ex_digraphs(exarg_T *eap UNUSED)
 #else
     emsg(_("E196: No digraphs in this version"));
 #endif
-}
-
-    static void
-ex_set(exarg_T *eap)
-{
-    int		flags = 0;
-
-    if (eap->cmdidx == CMD_setlocal)
-	flags = OPT_LOCAL;
-    else if (eap->cmdidx == CMD_setglobal)
-	flags = OPT_GLOBAL;
-#if defined(FEAT_EVAL) && defined(FEAT_BROWSE)
-    if (cmdmod.browse && flags == 0)
-	ex_options(eap);
-    else
-#endif
-	(void)do_set(eap->arg, flags);
 }
 
 #if defined(FEAT_SEARCH_EXTRA) || defined(PROTO)

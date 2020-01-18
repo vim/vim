@@ -1066,6 +1066,27 @@ set_title_defaults(void)
 }
 #endif
 
+    void
+ex_set(exarg_T *eap)
+{
+    int		flags = 0;
+
+    if (eap->cmdidx == CMD_setlocal)
+	flags = OPT_LOCAL;
+    else if (eap->cmdidx == CMD_setglobal)
+	flags = OPT_GLOBAL;
+#if defined(FEAT_EVAL) && defined(FEAT_BROWSE)
+    if (cmdmod.browse && flags == 0)
+	ex_options(eap);
+    else
+#endif
+    {
+	if (eap->forceit)
+	    flags |= OPT_ONECOLUMN;
+	(void)do_set(eap->arg, flags);
+    }
+}
+
 /*
  * Parse 'arg' for option settings.
  *
@@ -4349,7 +4370,7 @@ showoptions(
 #define INC 20
 #define GAP 3
 
-    items = ALLOC_MULT(struct vimoption *, PARAM_COUNT);
+    items = ALLOC_MULT(struct vimoption *, OPTION_COUNT);
     if (items == NULL)
 	return;
 
@@ -4364,9 +4385,10 @@ showoptions(
 	msg_puts_title(_("\n--- Options ---"));
 
     /*
-     * do the loop two times:
+     * Do the loop two times:
      * 1. display the short items
      * 2. display the long items (only strings and numbers)
+     * When "opt_flags" has OPT_ONECOLUMN do everything in run 2.
      */
     for (run = 1; run <= 2 && !got_int; ++run)
     {
@@ -4377,12 +4399,12 @@ showoptions(
 	for (p = &options[0]; p->fullname != NULL; p++)
 	{
 	    // apply :filter /pat/
-	    if (message_filtered((char_u *) p->fullname))
+	    if (message_filtered((char_u *)p->fullname))
 		continue;
 
 	    varp = NULL;
 	    isterm = istermoption(p);
-	    if (opt_flags != 0)
+	    if ((opt_flags & (OPT_LOCAL | OPT_GLOBAL)) != 0)
 	    {
 		if (p->indir != PV_NONE && !isterm)
 		    varp = get_varp_scope(p, opt_flags);
@@ -4394,7 +4416,9 @@ showoptions(
 			|| (all == 1 && !isterm)
 			|| (all == 0 && !optval_default(p, varp, p_cp))))
 	    {
-		if (p->flags & P_BOOL)
+		if (opt_flags & OPT_ONECOLUMN)
+		    len = Columns;
+		else if (p->flags & P_BOOL)
 		    len = 1;		// a toggle option fits always
 		else
 		{
