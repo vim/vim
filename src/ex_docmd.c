@@ -4613,6 +4613,9 @@ ex_bmodified(exarg_T *eap)
     static void
 ex_bnext(exarg_T *eap)
 {
+    if (ERROR_IF_POPUP_WINDOW)
+	return;
+
     goto_buffer(eap, DOBUF_CURRENT, FORWARD, (int)eap->line2);
     if (eap->do_ecmd_cmd != NULL)
 	do_cmdline_cmd(eap->do_ecmd_cmd);
@@ -4627,6 +4630,9 @@ ex_bnext(exarg_T *eap)
     static void
 ex_bprevious(exarg_T *eap)
 {
+    if (ERROR_IF_POPUP_WINDOW)
+	return;
+
     goto_buffer(eap, DOBUF_CURRENT, BACKWARD, (int)eap->line2);
     if (eap->do_ecmd_cmd != NULL)
 	do_cmdline_cmd(eap->do_ecmd_cmd);
@@ -4641,6 +4647,9 @@ ex_bprevious(exarg_T *eap)
     static void
 ex_brewind(exarg_T *eap)
 {
+    if (ERROR_IF_POPUP_WINDOW)
+	return;
+
     goto_buffer(eap, DOBUF_FIRST, FORWARD, 0);
     if (eap->do_ecmd_cmd != NULL)
 	do_cmdline_cmd(eap->do_ecmd_cmd);
@@ -4653,6 +4662,9 @@ ex_brewind(exarg_T *eap)
     static void
 ex_blast(exarg_T *eap)
 {
+    if (ERROR_IF_POPUP_WINDOW)
+	return;
+
     goto_buffer(eap, DOBUF_LAST, BACKWARD, 0);
     if (eap->do_ecmd_cmd != NULL)
 	do_cmdline_cmd(eap->do_ecmd_cmd);
