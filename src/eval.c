@@ -1415,7 +1415,7 @@ eval_for_line(
     if (fi == NULL)
 	return NULL;
 
-    expr = skip_var_list(arg, &fi->fi_varcount, &fi->fi_semicolon);
+    expr = skip_var_list(arg, TRUE, &fi->fi_varcount, &fi->fi_semicolon);
     if (expr == NULL)
 	return fi;
 
@@ -3320,7 +3320,7 @@ get_option_tv(
     if (opt_type == -3)			// invalid name
     {
 	if (rettv != NULL)
-	    semsg(_("E113: Unknown option: %s"), *arg);
+	    semsg(_(e_unknown_option), *arg);
 	ret = FAIL;
     }
     else if (rettv != NULL)

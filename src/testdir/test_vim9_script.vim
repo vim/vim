@@ -129,7 +129,7 @@ def Test_try_catch()
   assert_equal(['1', 'wrong', '3'], l)
 enddef
 
-" todo: move inside function
+" TODO: move inside function
 let g:import_script_lines =<< trim END
   vim9script
   import {exported, Exported} from './Xexport.vim'
@@ -194,11 +194,6 @@ def Test_import_absolute()
   delete('Xexport_abs.vim')
 enddef
 
-" TODO: get rid of this workaround
-func Set_rtp(val)
-  let &rtp = a:val
-endfunc
-
 def Test_import_rtp()
   let import_lines = [
         \ 'vim9script',
@@ -209,9 +204,9 @@ def Test_import_rtp()
   writefile(g:export_script_lines, 'Xexport_rtp.vim')
 
   let save_rtp = &rtp
-  Set_rtp(getcwd())
+  &rtp = getcwd()
   source Ximport_rtp.vim
-  Set_rtp(save_rtp)
+  &rtp = save_rtp
 
   assert_equal(9876, g:imported_rtp)
   unlet g:imported_rtp

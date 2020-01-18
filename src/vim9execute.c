@@ -558,6 +558,35 @@ call_def_function(
 		*tv = *STACK_TV_BOT(0);
 		break;
 
+	    // store option
+	    case ISN_STOREOPT:
+		{
+		    long	n = 0;
+		    char_u	*s = NULL;
+		    char	*msg;
+
+		    --ectx.ec_stack.ga_len;
+		    tv = STACK_TV_BOT(0);
+		    if (tv->v_type == VAR_STRING)
+			s = tv->vval.v_string;
+		    else if (tv->v_type == VAR_NUMBER)
+			n = tv->vval.v_number;
+		    else
+		    {
+			emsg(_("E1051: Expected string or number"));
+			goto failed;
+		    }
+		    msg = set_option_value(iptr->isn_arg.storeopt.so_name,
+					n, s, iptr->isn_arg.storeopt.so_flags);
+		    if (msg != NULL)
+		    {
+			emsg(_(msg));
+			goto failed;
+		    }
+		    clear_tv(tv);
+		}
+		break;
+
 	    // store g: variable
 	    case ISN_STOREG:
 		{
@@ -1484,6 +1513,10 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_STOREG:
 		smsg("%4d STOREG g:%s", current, iptr->isn_arg.string);
+		break;
+	    case ISN_STOREOPT:
+		smsg("%4d STOREOPT &%s", current,
+					       iptr->isn_arg.storeopt.so_name);
 		break;
 
 	    case ISN_STORENR:

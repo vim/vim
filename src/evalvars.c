@@ -15,8 +15,6 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-static char *e_letunexp	= N_("E18: Unexpected characters in :let");
-
 static dictitem_T	globvars_var;		// variable used for g:
 static dict_T		globvardict;		// Dictionary with g: variables
 #define globvarht globvardict.dv_hashtab
@@ -166,7 +164,7 @@ static dict_T		vimvardict;		// Dictionary with v: variables
 #include "version.h"
 
 static void ex_let_const(exarg_T *eap, int is_const);
-static char_u *skip_var_one(char_u *arg);
+static char_u *skip_var_one(char_u *arg, int include_type);
 static void list_glob_vars(int *first);
 static void list_buf_vars(int *first);
 static void list_win_vars(int *first);
@@ -706,7 +704,7 @@ ex_let_const(exarg_T *eap, int is_const)
     if (eap->arg == eap->cmd)
 	flags |= LET_NO_COMMAND;
 
-    argend = skip_var_list(arg, &var_count, &semicolon);
+    argend = skip_var_list(arg, TRUE, &var_count, &semicolon);
     if (argend == NULL)
 	return;
     if (argend > arg && argend[-1] == '.')  // for var.='str'
@@ -899,6 +897,7 @@ ex_let_vars(
     char_u *
 skip_var_list(
     char_u	*arg,
+    int		include_type,
     int		*var_count,
     int		*semicolon)
 {
@@ -911,7 +910,7 @@ skip_var_list(
 	for (;;)
 	{
 	    p = skipwhite(p + 1);	// skip whites after '[', ';' or ','
-	    s = skip_var_one(p);
+	    s = skip_var_one(p, TRUE);
 	    if (s == p)
 	    {
 		semsg(_(e_invarg2), p);
@@ -940,16 +939,16 @@ skip_var_list(
 	return p + 1;
     }
     else
-	return skip_var_one(arg);
+	return skip_var_one(arg, include_type);
 }
 
 /*
  * Skip one (assignable) variable name, including @r, $VAR, &option, d.key,
  * l[idx].
- * In Vim9 script also skip over ": type".
+ * In Vim9 script also skip over ": type" if "include_type" is TRUE.
  */
     static char_u *
-skip_var_one(char_u *arg)
+skip_var_one(char_u *arg, int include_type)
 {
     char_u *end;
 
@@ -957,7 +956,8 @@ skip_var_one(char_u *arg)
 	return arg + 2;
     end = find_name_end(*arg == '$' || *arg == '&' ? arg + 1 : arg,
 				   NULL, NULL, FNE_INCL_BR | FNE_CHECK_START);
-    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9 && *end == ':')
+    if (include_type && current_sctx.sc_version == SCRIPT_VERSION_VIM9
+								&& *end == ':')
     {
 	end = skip_type(skipwhite(end + 1));
     }
@@ -1227,7 +1227,7 @@ ex_let_one(
     {
 	if (flags & LET_IS_CONST)
 	{
-	    emsg(_("E996: Cannot lock an option"));
+	    emsg(_(e_const_option));
 	    return NULL;
 	}
 	// Find the end of the name.

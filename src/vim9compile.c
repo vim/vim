@@ -647,6 +647,22 @@ generate_STORENR(cctx_T *cctx, int idx, varnumber_T value)
 }
 
 /*
+ * Generate an ISN_STOREOPT instruction
+ */
+    static int
+generate_STOREOPT(cctx_T *cctx, char_u *name, int opt_flags)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr(cctx, ISN_STOREOPT)) == NULL)
+	return FAIL;
+    isn->isn_arg.storeopt.so_name = vim_strsave(name);
+    isn->isn_arg.storeopt.so_flags = opt_flags;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_LOAD or similar instruction.
  */
     static int
@@ -1879,17 +1895,16 @@ compile_get_option(char_u **arg, cctx_T *cctx)
     char_u	*start = *arg;
     int		ret;
 
-    // parse the option and get the current value so we have the type.
+    // parse the option and get the current value to get the type.
     rettv.v_type = VAR_UNKNOWN;
     ret = get_option_tv(arg, &rettv, TRUE);
     if (ret == OK)
     {
 	// include the '&' in the name, get_option_tv() expects it.
 	char_u *name = vim_strnsave(start, *arg - start);
-	type_T	type;
+	type_T	*type = rettv.v_type == VAR_NUMBER ? &t_number : &t_string;
 
-	type.tt_type = rettv.v_type;
-	ret = generate_LOAD(cctx, ISN_LOADOPT, 0, name, &type);
+	ret = generate_LOAD(cctx, ISN_LOADOPT, 0, name, type);
 	vim_free(name);
     }
     clear_tv(&rettv);
@@ -2881,10 +2896,15 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
 {
     char_u	*p;
     char_u	*ret = NULL;
+    int		var_count = 0;
+    int		semicolon = 0;
     size_t	varlen;
     garray_T	*instr = &cctx->ctx_instr;
     int		idx = -1;
     char_u	*op;
+    int		option = FALSE;
+    int		opt_type;
+    int		opt_flags = 0;
     int		global = FALSE;
     int		oplen = 0;
     type_T	*type;
@@ -2895,15 +2915,60 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
     int		is_decl = cmdidx == CMD_let || cmdidx == CMD_const;
     int		instr_count = -1;
 
-    // TODO: let [var, var] = list
+    p = skip_var_list(arg, FALSE, &var_count, &semicolon);
+    if (p == NULL)
+	return NULL;
+    if (var_count > 0)
+    {
+	// TODO: let [var, var] = list
+	emsg("Cannot handle a list yet");
+	return NULL;
+    }
 
-    p = to_name_end(arg);
     varlen = p - arg;
-    name = vim_strnsave(arg, p - arg);
+    name = vim_strnsave(arg, varlen);
     if (name == NULL)
 	return NULL;
 
-    if (STRNCMP(arg, "g:", 2) == 0)
+    if (*arg == '&')
+    {
+	int	    cc;
+	long	    numval;
+	char_u	    *stringval = NULL;
+
+	option = TRUE;
+	if (cmdidx == CMD_const)
+	{
+	    emsg(_(e_const_option));
+	    return NULL;
+	}
+	if (is_decl)
+	{
+	    semsg(_("E1052: Cannot declare an option: %s"), arg);
+	    goto theend;
+	}
+	p = arg;
+	p = find_option_end(&p, &opt_flags);
+	if (p == NULL)
+	{
+	    emsg(_(e_letunexp));
+	    return NULL;
+	}
+	cc = *p;
+	*p = NUL;
+	opt_type = get_option_value(arg + 1, &numval, &stringval, opt_flags);
+	*p = cc;
+	if (opt_type == -3)
+	{
+	    semsg(_(e_unknown_option), *arg);
+	    return NULL;
+	}
+	if (opt_type == -2 || opt_type == 0)
+	    type = &t_string;
+	else
+	    type = &t_number;	// both number and boolean option
+    }
+    else if (STRNCMP(arg, "g:", 2) == 0)
     {
 	global = TRUE;
 	if (is_decl)
@@ -2941,24 +3006,27 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
 	}
     }
 
-    if (is_decl && *p == ':')
+    if (!option)
     {
-	// parse optional type: "let var: type = expr"
-	p = skipwhite(p + 1);
-	type = parse_type(&p, cctx->ctx_type_list);
-	if (type == NULL)
-	    goto theend;
-	has_type = TRUE;
-    }
-    else if (idx < 0)
-    {
-	// global and new local default to "any" type
-	type = &t_any;
-    }
-    else
-    {
-	lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
-	type = lvar->lv_type;
+	if (is_decl && *p == ':')
+	{
+	    // parse optional type: "let var: type = expr"
+	    p = skipwhite(p + 1);
+	    type = parse_type(&p, cctx->ctx_type_list);
+	    if (type == NULL)
+		goto theend;
+	    has_type = TRUE;
+	}
+	else if (idx < 0)
+	{
+	    // global and new local default to "any" type
+	    type = &t_any;
+	}
+	else
+	{
+	    lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
+	    type = lvar->lv_type;
+	}
     }
 
     sp = p;
@@ -2976,7 +3044,7 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
     }
 
     // +=, /=, etc. require an existing variable
-    if (idx < 0 && !global)
+    if (idx < 0 && !global && !option)
     {
 	if (oplen > 1)
 	{
@@ -2996,7 +3064,9 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
 	// for "+=", "*=", "..=" etc. first load the current value
 	if (*op != '=')
 	{
-	    if (global)
+	    if (option)
+		generate_LOAD(cctx, ISN_LOADOPT, 0, name + 1, type);
+	    else if (global)
 		generate_LOAD(cctx, ISN_LOADG, 0, name + 2, type);
 	    else
 		generate_LOAD(cctx, ISN_LOAD, idx, NULL, type);
@@ -3035,7 +3105,7 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
 	emsg(_("E1021: const requires a value"));
 	goto theend;
     }
-    else if (!has_type)
+    else if (!has_type || option)
     {
 	emsg(_("E1022: type or initialization required"));
 	goto theend;
@@ -3085,9 +3155,9 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
 	}
     }
 
-    if (ga_grow(instr, 1) == FAIL)
-	goto theend;
-    if (global)
+    if (option)
+	generate_STOREOPT(cctx, name + 1, opt_flags);
+    else if (global)
 	generate_STORE(cctx, ISN_STOREG, 0, name + 2);
     else
     {
@@ -3987,8 +4057,9 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    ea.cmd = skipwhite(ea.cmd);
 
 	// Assuming the command starts with a variable or function name, find
-	// what follows.
-	p = to_name_end(ea.cmd);
+	// what follows.  Also "&opt = value".
+	p = (*ea.cmd == '&') ? ea.cmd + 1 : ea.cmd;
+	p = to_name_end(p);
 	if (p > ea.cmd && *p != NUL)
 	{
 	    int oplen;
@@ -4002,6 +4073,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		    || p[1] == ':'
 		    || (*p == '-' && p[1] == '>'))
 	    {
+		// TODO
 	    }
 
 	    oplen = assignment_len(skipwhite(p));
@@ -4010,7 +4082,9 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		// Recognize an assignment if we recognize the variable name:
 		// "g:var = expr"
 		// "var = expr"  where "var" is a local var name.
-		if (((p - ea.cmd) > 2 && ea.cmd[1] == ':')
+		// "&opt = expr"
+		if (*ea.cmd == '&'
+			|| ((p - ea.cmd) > 2 && ea.cmd[1] == ':')
 			|| lookup_local(ea.cmd, p - ea.cmd, &cctx) >= 0)
 		{
 		    line = compile_assignment(ea.cmd, CMD_SIZE, &cctx);
@@ -4205,14 +4279,18 @@ delete_instr(isn_T *isn)
     switch (isn->isn_type)
     {
 	case ISN_EXEC:
+	case ISN_LOADENV:
 	case ISN_LOADG:
 	case ISN_LOADOPT:
-	case ISN_LOADENV:
-	case ISN_STOREG:
-	case ISN_PUSHS:
-	case ISN_PUSHEXC:
 	case ISN_MEMBER:
+	case ISN_PUSHEXC:
+	case ISN_PUSHS:
+	case ISN_STOREG:
 	    vim_free(isn->isn_arg.string);
+	    break;
+
+	case ISN_STOREOPT:
+	    vim_free(isn->isn_arg.storeopt.so_name);
 	    break;
 
 	case ISN_PUSHBLOB:   // push blob isn_arg.blob

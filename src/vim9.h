@@ -26,6 +26,7 @@ typedef enum {
 
     ISN_STORE,	    // pop into local variable isn_arg.number
     ISN_STOREG,	    // pop into global variable isn_arg.string
+    ISN_STOREOPT,   // pop into option isn_arg.string
     // ISN_STOREOTHER, // pop into other script variable isn_arg.other.
 
     ISN_STORENR,    // store number into local variable isn_arg.storenr.str_idx
@@ -171,6 +172,12 @@ typedef struct {
     varnumber_T	str_val;
 } storenr_T;
 
+// arguments to ISN_STOREOPT
+typedef struct {
+    char_u	*so_name;
+    int		so_flags;
+} storeopt_T;
+
 // arguments to ISN_LOADSCRIPT
 typedef struct {
     int		script_sid;	// script ID
@@ -201,6 +208,7 @@ typedef struct {
 	opexpr_T	    op;
 	checktype_T	    type;
 	storenr_T	    storenr;
+	storeopt_T	    storeopt;
 	script_T	    script;
     } isn_arg;
 } isn_T;

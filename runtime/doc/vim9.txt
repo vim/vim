@@ -81,6 +81,9 @@ Global, script and local variables are assigned to without `:let`: >
       lines += 55
 This may shadow Ex commands, rename the variable if needed.
 
+Since "&opt = value" is now assigning a value to option "opt", ":&" cannot be
+used to repeat a `:substitute` command.
+
 
 No curly braces expansion ~
 
