@@ -989,16 +989,6 @@ mch_settmode(int tmode)
 }
 
 /*
- * set screen mode, always fails.
- */
-    int
-mch_screenmode(char_u *arg)
-{
-    emsg(_(e_screenmode));
-    return FAIL;
-}
-
-/*
  * Code for this routine came from the following :
  *
  * ConPackets.c -  C. Scheppner, A. Finkel, P. Lindsay	CBM

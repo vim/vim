@@ -66,12 +66,12 @@ LangString str_desc_start_menu      ${LANG_TURKISH} \
 LangString str_section_edit_with    ${LANG_TURKISH} \
     "Vim ile Aç"
 LangString str_desc_edit_with       ${LANG_TURKISH} \
-    "Vim'i $\"Birlikte aç$\" sağ tıklama menüsüne ekler."
+    "Vim'i $\"Birlikte aç$\" sağ tık menüsüne ekler."
     
  LangString str_section_vim_rc       ${LANG_TURKISH} \
-    "Bir konfigürasyon dosyası oluştur"
+    "Bir yapılandırma dosyası oluştur"
 LangString str_desc_vim_rc          ${LANG_TURKISH} \
-    "Eğer yoksa bir konfigürasyon dosyası (_vimrc) oluşturur."
+    "Eğer yoksa bir yapılandırma dosyası (_vimrc) oluşturur."
 
 LangString str_group_plugin         ${LANG_TURKISH} \
     "Eklenti dizinleri oluştur"
@@ -108,7 +108,7 @@ LangString str_desc_unregister      ${LANG_TURKISH} \
 LangString str_unsection_exe        ${LANG_TURKISH} \
     "Vim programını ve çalıştırma dosyalarını kaldır"
 LangString str_desc_rm_exe          ${LANG_TURKISH} \
-    "Tüm Vim çalıştırılabilir dosyalarını ve diğer dosyaları kaldırır."
+    "Vim çalıştırılabilir dosyalarını ve diğer dosyaları kaldırır."
 
 LangString str_ungroup_plugin       ${LANG_TURKISH} \
     "Eklenti dizinlerini kaldır"
@@ -128,7 +128,7 @@ LangString str_desc_rm_plugin_vim   ${LANG_TURKISH} \
 LangString str_unsection_rootdir    ${LANG_TURKISH} \
     "Vim kök dizinini kaldır"
 LangString str_desc_rm_rootdir      ${LANG_TURKISH} \
-    "Vim kök dizinini kaldırır. Bu dizin Vim konfigürasyon dosyalarını içerir!"
+    "Vim kök dizinini kaldırır. Bu dizin Vim yapılandırma dosyalarını içerir!"
     
  LangString str_msg_install_fail  ${LANG_TURKISH} \
     "Yükleme başarısız oldu. Yeniden deneyin."
