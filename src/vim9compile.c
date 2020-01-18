@@ -686,6 +686,25 @@ generate_LOAD(
 }
 
 /*
+ * Generate an ISN_LOADS instruction.
+ */
+    static int
+generate_LOADS(
+	cctx_T	    *cctx,
+	char_u	    *name,
+	int	    sid)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr_type(cctx, ISN_LOADS, &t_any)) == NULL)
+	return FAIL;
+    isn->isn_arg.loads.ls_name = vim_strsave(name);
+    isn->isn_arg.loads.ls_sid = sid;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_LOADSCRIPT or ISN_STORESCRIPT instruction.
  */
     static int
@@ -1009,7 +1028,6 @@ generate_EXEC(cctx_T *cctx, char_u *line)
 
 static char e_white_both[] =
 			N_("E1004: white space required before and after '%s'");
-static char e_white_before[] = N_("E1005: white space required before '%s'");
 
 /*
  * Reserve space for a local variable.
@@ -1330,7 +1348,9 @@ type_name(type_T *type, char **tofree)
 
 /*
  * Find "name" in script-local items of script "sid".
- * Returns the index in "sn_var_vals" or -1 if not found.
+ * Returns the index in "sn_var_vals" if found.
+ * If found but not in "sn_var_vals" returns -1.
+ * If not found returns -2.
  */
     int
 get_script_item_idx(int sid, char_u *name)
@@ -1346,7 +1366,7 @@ get_script_item_idx(int sid, char_u *name)
     ht = &SCRIPT_VARS(sid);
     di = find_var_in_ht(ht, 0, name, TRUE);
     if (di == NULL)
-	return -1;
+	return -2;
 
     // Now find the svar_T index in sn_var_vals.
     for (idx = 0; idx < si->sn_var_vals.ga_len; ++idx)
@@ -1388,6 +1408,11 @@ compile_load_scriptvar(cctx_T *cctx, char_u *name)
     int		    idx = get_script_item_idx(current_sctx.sc_sid, name);
     imported_T	    *import;
 
+    if (idx == -1)
+    {
+	// variable exists but is not in sn_var_vals: old style script.
+	return generate_LOADS(cctx, name, current_sctx.sc_sid);
+    }
     if (idx >= 0)
     {
 	svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
@@ -2870,10 +2895,17 @@ compile_return(char_u *arg, int set_return_type, cctx_T *cctx)
  * Return the length of an assignment operator, or zero if there isn't one.
  */
     int
-assignment_len(char_u *p)
+assignment_len(char_u *p, int *heredoc)
 {
     if (*p == '=')
+    {
+	if (p[1] == '<' && p[2] == '<')
+	{
+	    *heredoc = TRUE;
+	    return 3;
+	}
 	return 1;
+    }
     if (vim_strchr((char_u *)"+-*/%", *p) != NULL && p[1] == '=')
 	return 2;
     if (STRNCMP(p, "..=", 3) == 0)
@@ -2889,10 +2921,32 @@ static char *reserved[] = {
 };
 
 /*
- * compile "let var [= expr]", "const var = expr" and "var = expr"
+ * Get a line for "=<<".
+ * Return a pointer to the line in allocated memory.
+ * Return NULL for end-of-file or some error.
  */
     static char_u *
-compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
+heredoc_getline(
+	int c UNUSED,
+	void *cookie,
+	int indent UNUSED,
+	int do_concat UNUSED)
+{
+    cctx_T  *cctx = (cctx_T *)cookie;
+
+    if (cctx->ctx_lnum == cctx->ctx_ufunc->uf_lines.ga_len)
+	NULL;
+    ++cctx->ctx_lnum;
+    return vim_strsave(((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)
+							     [cctx->ctx_lnum]);
+}
+
+/*
+ * compile "let var [= expr]", "const var = expr" and "var = expr"
+ * "arg" points to "var".
+ */
+    static char_u *
+compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 {
     char_u	*p;
     char_u	*ret = NULL;
@@ -2907,6 +2961,7 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
     int		opt_flags = 0;
     int		global = FALSE;
     int		oplen = 0;
+    int		heredoc = FALSE;
     type_T	*type;
     lvar_T	*lvar;
     char_u	*name;
@@ -3032,11 +3087,16 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
     sp = p;
     p = skipwhite(p);
     op = p;
-    oplen = assignment_len(p);
+    oplen = assignment_len(p, &heredoc);
     if (oplen > 0 && (!VIM_ISWHITE(*sp) || !VIM_ISWHITE(op[oplen])))
-	semsg(_(e_white_before), op);
+    {
+	char_u  buf[4];
 
-    if (oplen == 3 && !global && type->tt_type != VAR_STRING
+	vim_strncpy(buf, op, oplen);
+	semsg(_(e_white_both), buf);
+    }
+
+    if (oplen == 3 && !heredoc && !global && type->tt_type != VAR_STRING
 					       && type->tt_type != VAR_UNKNOWN)
     {
 	emsg("E1019: Can only concatenate to string");
@@ -3046,7 +3106,7 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
     // +=, /=, etc. require an existing variable
     if (idx < 0 && !global && !option)
     {
-	if (oplen > 1)
+	if (oplen > 1 && !heredoc)
 	{
 	    semsg(_("E1020: cannot use an operator on a new variable: %s"),
 									 name);
@@ -3059,7 +3119,28 @@ compile_assignment(char_u *arg, cmdidx_T cmdidx, cctx_T *cctx)
 	    goto theend;
     }
 
-    if (oplen > 0)
+    if (heredoc)
+    {
+	list_T	   *l;
+	listitem_T *li;
+
+	// [let] varname =<< [trim] {end}
+	eap->getline = heredoc_getline;
+	eap->cookie = cctx;
+	l = heredoc_get(eap, op + 3);
+
+	// Push each line and the create the list.
+	for (li = l->lv_first; li != NULL; li = li->li_next)
+	{
+	    generate_PUSHS(cctx, li->li_tv.vval.v_string);
+	    li->li_tv.vval.v_string = NULL;
+	}
+	generate_NEWLIST(cctx, l->lv_len);
+	type = &t_list_string;
+	list_free(l);
+	p += STRLEN(p);
+    }
+    else if (oplen > 0)
     {
 	// for "+=", "*=", "..=" etc. first load the current value
 	if (*op != '=')
@@ -4010,6 +4091,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 
 	had_return = FALSE;
 	vim_memset(&ea, 0, sizeof(ea));
+	ea.cmdlinep = &line;
 	ea.cmd = skipwhite(line);
 
 	// "}" ends a block scope
@@ -4063,6 +4145,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	if (p > ea.cmd && *p != NUL)
 	{
 	    int oplen;
+	    int heredoc;
 
 	    // "funcname(" is always a function call.
 	    // "varname[]" is an expression.
@@ -4076,7 +4159,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		// TODO
 	    }
 
-	    oplen = assignment_len(skipwhite(p));
+	    oplen = assignment_len(skipwhite(p), &heredoc);
 	    if (oplen > 0)
 	    {
 		// Recognize an assignment if we recognize the variable name:
@@ -4087,7 +4170,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 			|| ((p - ea.cmd) > 2 && ea.cmd[1] == ':')
 			|| lookup_local(ea.cmd, p - ea.cmd, &cctx) >= 0)
 		{
-		    line = compile_assignment(ea.cmd, CMD_SIZE, &cctx);
+		    line = compile_assignment(ea.cmd, &ea, CMD_SIZE, &cctx);
 		    if (line == NULL)
 			goto erret;
 		    continue;
@@ -4117,7 +4200,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    }
 	    if (ea.cmdidx == CMD_let)
 	    {
-		line = compile_assignment(ea.cmd, CMD_SIZE, &cctx);
+		line = compile_assignment(ea.cmd, &ea, CMD_SIZE, &cctx);
 		if (line == NULL)
 		    goto erret;
 		continue;
@@ -4143,7 +4226,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 
 	    case CMD_let:
 	    case CMD_const:
-		    line = compile_assignment(p, ea.cmdidx, &cctx);
+		    line = compile_assignment(p, &ea, ea.cmdidx, &cctx);
 		    break;
 
 	    case CMD_if:
@@ -4287,6 +4370,10 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHS:
 	case ISN_STOREG:
 	    vim_free(isn->isn_arg.string);
+	    break;
+
+	case ISN_LOADS:
+	    vim_free(isn->isn_arg.loads.ls_name);
 	    break;
 
 	case ISN_STOREOPT:

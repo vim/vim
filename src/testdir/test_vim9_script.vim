@@ -43,9 +43,9 @@ def Test_assignment()
 enddef
 
 func Test_assignment_failure()
-  call CheckDefFailure(['let var=234'], 'E1005:')
-  call CheckDefFailure(['let var =234'], 'E1005:')
-  call CheckDefFailure(['let var= 234'], 'E1005:')
+  call CheckDefFailure(['let var=234'], 'E1004:')
+  call CheckDefFailure(['let var =234'], 'E1004:')
+  call CheckDefFailure(['let var= 234'], 'E1004:')
 
   call CheckDefFailure(['let true = 1'], 'E1034:')
   call CheckDefFailure(['let false = 1'], 'E1034:')
@@ -129,15 +129,7 @@ def Test_try_catch()
   assert_equal(['1', 'wrong', '3'], l)
 enddef
 
-" TODO: move inside function
-let g:import_script_lines =<< trim END
-  vim9script
-  import {exported, Exported} from './Xexport.vim'
-  g:imported = exported
-  g:imported_func = Exported()
-END
-
-let g:export_script_lines =<< trim END
+let s:export_script_lines =<< trim END
   vim9script
   let name: string = 'bob'
   def Concat(arg: string): string
@@ -154,8 +146,15 @@ let g:export_script_lines =<< trim END
 END
 
 def Test_vim9script()
-  writefile(g:import_script_lines, 'Ximport.vim')
-  writefile(g:export_script_lines, 'Xexport.vim')
+  let import_script_lines =<< trim END
+    vim9script
+    import {exported, Exported} from './Xexport.vim'
+    g:imported = exported
+    g:imported_func = Exported()
+  END
+
+  writefile(import_script_lines, 'Ximport.vim')
+  writefile(s:export_script_lines, 'Xexport.vim')
 
   source Ximport.vim
 
@@ -183,7 +182,7 @@ def Test_import_absolute()
         \ 'g:imported_abs = exported',
         \ ]
   writefile(import_lines, 'Ximport_abs.vim')
-  writefile(g:export_script_lines, 'Xexport_abs.vim')
+  writefile(s:export_script_lines, 'Xexport_abs.vim')
 
   source Ximport_abs.vim
 
@@ -201,7 +200,7 @@ def Test_import_rtp()
         \ 'g:imported_rtp = exported',
         \ ]
   writefile(import_lines, 'Ximport_rtp.vim')
-  writefile(g:export_script_lines, 'Xexport_rtp.vim')
+  writefile(s:export_script_lines, 'Xexport_rtp.vim')
 
   let save_rtp = &rtp
   &rtp = getcwd()

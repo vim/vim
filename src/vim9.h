@@ -19,6 +19,7 @@ typedef enum {
     ISN_LOAD,	    // push local variable isn_arg.number
     ISN_LOADV,	    // push v: variable isn_arg.number
     ISN_LOADSCRIPT, // push script-local variable isn_arg.script.
+    ISN_LOADS,	    // push s: variable isn_arg.string
     ISN_LOADG,	    // push g: variable isn_arg.string
     ISN_LOADOPT,    // push option isn_arg.string
     ISN_LOADENV,    // push environment variable isn_arg.string
@@ -178,6 +179,12 @@ typedef struct {
     int		so_flags;
 } storeopt_T;
 
+// arguments to ISN_LOADS
+typedef struct {
+    char_u	*ls_name;	// variable name
+    int		ls_sid;		// script ID
+} loads_T;
+
 // arguments to ISN_LOADSCRIPT
 typedef struct {
     int		script_sid;	// script ID
@@ -209,6 +216,7 @@ typedef struct {
 	checktype_T	    type;
 	storenr_T	    storenr;
 	storeopt_T	    storeopt;
+	loads_T		    loads;
 	script_T	    script;
     } isn_arg;
 } isn_T;

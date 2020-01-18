@@ -541,7 +541,7 @@ list_script_vars(int *first)
  * indentation in the 'cmd' line) is stripped.
  * Returns a List with {lines} or NULL.
  */
-    static list_T *
+    list_T *
 heredoc_get(exarg_T *eap, char_u *cmd)
 {
     char_u	*theline;
@@ -666,6 +666,7 @@ heredoc_get(exarg_T *eap, char_u *cmd)
  * ":let var .= expr"		assignment command.
  * ":let var ..= expr"		assignment command.
  * ":let [var1, var2] = expr"	unpack list.
+ * ":let var =<< ..."		heredoc
  */
     void
 ex_let(exarg_T *eap)

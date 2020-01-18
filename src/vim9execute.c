@@ -472,7 +472,7 @@ call_def_function(
 		++ectx.ec_stack.ga_len;
 		break;
 
-	    // load s: variable
+	    // load s: variable in vim9script
 	    case ISN_LOADSCRIPT:
 		{
 		    scriptitem_T *si =
@@ -485,6 +485,27 @@ call_def_function(
 			goto failed;
 		    copy_tv(sv->sv_tv, STACK_TV_BOT(0));
 		    ++ectx.ec_stack.ga_len;
+		}
+		break;
+
+	    // load s: variable in old script
+	    case ISN_LOADS:
+		{
+		    hashtab_T	*ht = &SCRIPT_VARS(iptr->isn_arg.loads.ls_sid);
+		    char_u	*name = iptr->isn_arg.loads.ls_name;
+		    dictitem_T	*di = find_var_in_ht(ht, 0, name, TRUE);
+		    if (di == NULL)
+		    {
+			semsg(_("E121: Undefined variable: s:%s"), name);
+			goto failed;
+		    }
+		    else
+		    {
+			if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+			    goto failed;
+			copy_tv(&di->di_tv, STACK_TV_BOT(0));
+			++ectx.ec_stack.ga_len;
+		    }
 		}
 		break;
 
@@ -1493,6 +1514,14 @@ ex_disassemble(exarg_T *eap)
 
 		    smsg("%4d LOADSCRIPT %s from %s", current,
 						     sv->sv_name, si->sn_name);
+		}
+		break;
+	    case ISN_LOADS:
+		{
+		    scriptitem_T *si = &SCRIPT_ITEM(iptr->isn_arg.loads.ls_sid);
+
+		    smsg("%4d LOADS s:%s from %s", current,
+					    iptr->isn_arg.string, si->sn_name);
 		}
 		break;
 	    case ISN_LOADG:

@@ -3145,6 +3145,7 @@ find_ex_command(
     if (lookup != NULL && (p = to_name_end(eap->cmd)) > eap->cmd && *p != NUL)
     {
 	int oplen;
+	int heredoc;
 
 	// "funcname(" is always a function call.
 	// "varname[]" is an expression.
@@ -3159,7 +3160,7 @@ find_ex_command(
 	    return eap->cmd;
 	}
 
-	oplen = assignment_len(skipwhite(p));
+	oplen = assignment_len(skipwhite(p), &heredoc);
 	if (oplen > 0)
 	{
 	    // Recognize an assignment if we recognize the variable name:
