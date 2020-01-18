@@ -196,11 +196,12 @@ enddef
 def Test_import_rtp()
   let import_lines = [
         \ 'vim9script',
-        \ 'import exported from "' .. getcwd() .. '/Xexport_rtp.vim"',
+        \ 'import exported from "Xexport_rtp.vim"',
         \ 'g:imported_rtp = exported',
         \ ]
   writefile(import_lines, 'Ximport_rtp.vim')
-  writefile(s:export_script_lines, 'Xexport_rtp.vim')
+  mkdir('vim9')
+  writefile(s:export_script_lines, 'vim9/Xexport_rtp.vim')
 
   let save_rtp = &rtp
   &rtp = getcwd()
@@ -211,7 +212,8 @@ def Test_import_rtp()
   unlet g:imported_rtp
 
   delete('Ximport_rtp.vim')
-  delete('Xexport_rtp.vim')
+  delete('vim9/Xexport_rtp.vim')
+  delete('vim9', 'd')
 enddef
 
 

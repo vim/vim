@@ -230,13 +230,17 @@ ex_import(exarg_T *eap)
 	    return;
 	}
 	vim_snprintf((char *)from_name, len, "vim9/%s", tv.vval.v_string);
-	source_in_path(p_rtp, from_name, DIP_NOAFTER, &sid);
+	res = source_in_path(p_rtp, from_name, DIP_NOAFTER, &sid);
 	vim_free(from_name);
     }
-    clear_tv(&tv);
 
     if (res == FAIL || sid <= 0)
+    {
+	semsg(_("E1053: Could not import \"%s\""), tv.vval.v_string);
+	clear_tv(&tv);
 	return;
+    }
+    clear_tv(&tv);
 
     if (*eap->arg == '*')
     {
