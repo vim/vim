@@ -176,6 +176,7 @@ Page custom SetCustom ValidateCustom
     !include "lang\japanese.nsi"
     !include "lang\simpchinese.nsi"
     !include "lang\tradchinese.nsi"
+    !include "lang\turkish.nsi"
 !endif
 
 ##########################################################
