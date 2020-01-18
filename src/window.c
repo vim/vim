@@ -4120,6 +4120,12 @@ enter_tabpage(
     // different for each tab page.
     if (p_ch != curtab->tp_ch_used)
 	clear_cmdline = TRUE;
+
+    // When cmdheight is changed by '<C-w>-', cmdline_row is changed but p_ch
+    // and tp_ch_used is not changed. Thus we also need to check cmdline_row.
+    if (cmdline_row <= Rows - p_ch)
+	clear_cmdline = TRUE;
+
     p_ch = curtab->tp_ch_used;
     if (curtab->tp_old_Rows != Rows || (old_off != firstwin->w_winrow
 #ifdef FEAT_GUI_TABLINE
