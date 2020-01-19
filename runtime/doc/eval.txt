@@ -10630,7 +10630,7 @@ xor({expr}, {expr})					*xor()*
 <
 
 							*feature-list*
-There are four types of features:
+There are three types of features:
 1.  Features that are only supported when they have been enabled when Vim
     was compiled |+feature-list|.  Example: >
 	:if has("cindent")
