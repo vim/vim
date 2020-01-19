@@ -194,9 +194,11 @@ static void vtp_flag_init();
 static int vtp_working = 0;
 static void vtp_init();
 static void vtp_exit();
-static int vtp_printf(char *format, ...);
 static void vtp_sgr_bulk(int arg);
 static void vtp_sgr_bulks(int argc, int *argv);
+
+static int wt_working = 0;
+static void wt_init();
 
 static guicolor_T save_console_bg_rgb;
 static guicolor_T save_console_fg_rgb;
@@ -211,8 +213,10 @@ static int default_console_color_fg = 0xc0c0c0; // white
 
 # ifdef FEAT_TERMGUICOLORS
 #  define USE_VTP		(vtp_working && is_term_win32() && (p_tgc || (!p_tgc && t_colors >= 256)))
+#  define USE_WT		(wt_working)
 # else
 #  define USE_VTP		0
+#  define USE_WT		0
 # endif
 
 static void set_console_color_rgb(void);
@@ -2644,6 +2648,7 @@ mch_init_c(void)
 
     vtp_flag_init();
     vtp_init();
+    wt_init();
 }
 
 /*
@@ -5743,6 +5748,19 @@ insert_lines(unsigned cLines)
 	    clear_chars(coord, source.Right - source.Left + 1);
 	}
     }
+
+    if (USE_WT)
+    {
+	COORD coord;
+	int i;
+
+	coord.X = source.Left;
+	for (i = source.Top; i < dest.Y; ++i)
+	{
+	    coord.Y = i;
+	    clear_chars(coord, source.Right - source.Left + 1);
+	}
+    }
 }
 
 
@@ -5794,6 +5812,19 @@ delete_lines(unsigned cLines)
 
 	coord.X = source.Left;
 	for (i = nb; i < clip.Bottom; ++i)
+	{
+	    coord.Y = i;
+	    clear_chars(coord, source.Right - source.Left + 1);
+	}
+    }
+
+    if (USE_WT)
+    {
+	COORD coord;
+	int i;
+
+	coord.X = source.Left;
+	for (i = nb; i <= source.Bottom; ++i)
 	{
 	    coord.Y = i;
 	    clear_chars(coord, source.Right - source.Left + 1);
@@ -7346,7 +7377,7 @@ vtp_exit(void)
     reset_console_color_rgb();
 }
 
-    static int
+    int
 vtp_printf(
     char *format,
     ...)
@@ -7398,6 +7429,18 @@ vtp_sgr_bulks(
     vtp_printf((char *)buf);
 }
 
+    static void
+wt_init(void)
+{
+    wt_working = (mch_getenv("WT_SESSION") != NULL);
+}
+
+    int
+use_wt(void)
+{
+    return USE_WT;
+}
+
 # ifdef FEAT_TERMGUICOLORS
     static int
 ctermtoxterm(
@@ -7422,6 +7465,13 @@ set_console_color_rgb(void)
 	return;
 
     get_default_console_color(&ctermfg, &ctermbg, &fg, &bg);
+
+    if (USE_WT)
+    {
+	term_fg_rgb_color(fg);
+	term_bg_rgb_color(bg);
+	return;
+    }
 
     fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
     bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
@@ -7490,6 +7540,9 @@ reset_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
     DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+
+    if (USE_WT)
+	return;
 
     csbi.cbSize = sizeof(csbi);
     if (has_csbiex)
