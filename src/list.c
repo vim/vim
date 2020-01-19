@@ -65,6 +65,17 @@ list_fix_watch(list_T *l, listitem_T *item)
 	    lw->lw_item = item->li_next;
 }
 
+    static void
+list_init(list_T *l)
+{
+    // Prepend the list to the list of lists for garbage collection.
+    if (first_list != NULL)
+	first_list->lv_used_prev = l;
+    l->lv_used_prev = NULL;
+    l->lv_used_next = first_list;
+    first_list = l;
+}
+
 /*
  * Allocate an empty header for a list.
  * Caller should take care of the reference count.
@@ -76,14 +87,7 @@ list_alloc(void)
 
     l = ALLOC_CLEAR_ONE(list_T);
     if (l != NULL)
-    {
-	// Prepend the list to the list of lists for garbage collection.
-	if (first_list != NULL)
-	    first_list->lv_used_prev = l;
-	l->lv_used_prev = NULL;
-	l->lv_used_next = first_list;
-	first_list = l;
-    }
+	list_init(l);
     return l;
 }
 
@@ -98,6 +102,59 @@ list_alloc_id(alloc_id_T id UNUSED)
 	return NULL;
 #endif
     return (list_alloc());
+}
+
+/*
+ * Allocate space for a list, plus "count" items.
+ * Next list_set_item() must be called for each item.
+ */
+    list_T *
+list_alloc_with_items(int count)
+{
+    list_T	*l;
+
+    l = (list_T *)alloc_clear(sizeof(list_T) + count * sizeof(listitem_T));
+    if (l != NULL)
+    {
+	list_init(l);
+
+	if (count > 0)
+	{
+	    listitem_T	*li = (listitem_T *)(l + 1);
+	    int		i;
+
+	    l->lv_len = count;
+	    l->lv_with_items = count;
+	    l->lv_first = li;
+	    l->lv_last = li + count - 1;
+	    for (i = 0; i < count; ++i)
+	    {
+		if (i == 0)
+		    li->li_prev = NULL;
+		else
+		    li->li_prev = li - 1;
+		if (i == count - 1)
+		    li->li_next = NULL;
+		else
+		    li->li_next = li + 1;
+		++li;
+	    }
+	}
+    }
+    return l;
+}
+
+/*
+ * Set item "idx" for a list previously allocated with list_alloc_with_items().
+ * The contents of "tv" is moved into the list item.
+ * Each item must be set exactly once.
+ */
+    void
+list_set_item(list_T *l, int idx, typval_T *tv)
+{
+    listitem_T	*li = (listitem_T *)(l + 1) + idx;
+
+    li->li_tv = *tv;
 }
 
 /*
@@ -169,7 +226,7 @@ list_free_contents(list_T *l)
 	    // Remove the item before deleting it.
 	    l->lv_first = item->li_next;
 	    clear_tv(&item->li_tv);
-	    vim_free(item);
+	    list_free_item(l, item);
 	}
 }
 
@@ -251,13 +308,26 @@ listitem_alloc(void)
 }
 
 /*
- * Free a list item.  Also clears the value.  Does not notify watchers.
+ * Free a list item, unless it was allocated together with the list itself.
+ * Does not clear the value.  Does not notify watchers.
  */
     void
-listitem_free(listitem_T *item)
+list_free_item(list_T *l, listitem_T *item)
+{
+    if (l->lv_with_items == 0 || item < (listitem_T *)l
+			   || item >= (listitem_T *)(l + 1) + l->lv_with_items)
+	vim_free(item);
+}
+
+/*
+ * Free a list item, unless it was allocated together with the list itself.
+ * Also clears the value.  Does not notify watchers.
+ */
+    void
+listitem_free(list_T *l, listitem_T *item)
 {
     clear_tv(&item->li_tv);
-    vim_free(item);
+    list_free_item(l, item);
 }
 
 /*
@@ -267,7 +337,7 @@ listitem_free(listitem_T *item)
 listitem_remove(list_T *l, listitem_T *item)
 {
     vimlist_remove(l, item, item);
-    listitem_free(item);
+    listitem_free(l, item);
 }
 
 /*
@@ -1180,7 +1250,7 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 	    // Remove one item, return its value.
 	    vimlist_remove(l, item, item);
 	    *rettv = item->li_tv;
-	    vim_free(item);
+	    list_free_item(l, item);
 	}
 	else
 	{
@@ -1577,7 +1647,7 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 		    else
 			l->lv_last = ptrs[i].item;
 		    list_fix_watch(l, li);
-		    listitem_free(li);
+		    listitem_free(l, li);
 		    l->lv_len--;
 		}
 	    }

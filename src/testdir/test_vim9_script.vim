@@ -257,5 +257,14 @@ def Test_import_rtp()
   delete('import', 'd')
 enddef
 
+def Test_fixed_size_list()
+  " will be allocated as one piece of memory, check that changes work
+  let l = [1, 2, 3, 4]
+  l->remove(0)
+  l->add(5)
+  l->insert(99, 1)
+  call assert_equal([2, 99, 3, 4, 5], l)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

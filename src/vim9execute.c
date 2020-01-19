@@ -694,16 +694,17 @@ call_def_function(
 		}
 		break;
 
-	    // create a list from items on the stack
+	    // create a list from items on the stack; uses a single allocation
+	    // for the list header and the items
 	    case ISN_NEWLIST:
 		{
 		    int	    count = iptr->isn_arg.number;
-		    list_T  *list = list_alloc();
+		    list_T  *list = list_alloc_with_items(count);
 
 		    if (list == NULL)
 			goto failed;
 		    for (idx = 0; idx < count; ++idx)
-			list_append_tv_move(list, STACK_TV_BOT(idx - count));
+			list_set_item(list, idx, STACK_TV_BOT(idx - count));
 
 		    if (count > 0)
 			ectx.ec_stack.ga_len -= count - 1;

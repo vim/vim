@@ -368,12 +368,41 @@ Once a vim9 script file has been imported, the result is cached and used the
 next time the same script is imported.  It will not be read again.
 
 
+Import in an autoload script ~
+
+For optimal startup speed, loading scripts should be postponed until they are
+actually needed.  A recommended mechamism:
+
+1. In the plugin define user commands, functions and/or mappings that refer to
+   an autoload script. >
+   	command -nargs=1 SearchForStuff call searchfor#Stuff(<f-args>)
+
+<   This goes in .../plugin/anyname.vim.  "anyname.vim" can be freely chosen.
+
+2. In the autocommand script do the actual work.  You can import items from
+   other files to split up functionality in appropriate pieces. >
+	vim9script
+        import FilterFunc from "../import/someother.vim"
+	def searchfor#Stuff(arg: string)
+	  let filtered = FilterFunc(arg)
+	  ...
+<   This goes in .../autoload/searchfor.vim.  "searchfor" in the file name
+   must be exactly the same as the prefix for the function name, that is how
+   Vim finds the file.
+
+3. Other functionality, possibly shared between plugins, contains the exported
+   items and any private items. >
+	vim9script
+	let localVar = 'local'
+   	export def FilterFunc(arg: string): string
+	   ...
+<   This goes in .../import/someother.vim.
+
+
 Import in legacy Vim script ~
 
-If an `import` statement is used in legacy Vim script the identifiers must not
-be in the global namespace.  At the toplevel the script-local "s:" namespace
-should be used.  In a function a function-local or script-local variable can
-be used.
+If an `import` statement is used in legacy Vim script, for identifier the
+script-local "s:" namespace will be used, even when "s:" is not specified.
 
 
 ==============================================================================

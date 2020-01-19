@@ -841,8 +841,7 @@ luaV_list_newindex(lua_State *L)
     if (lua_isnil(L, 3)) // remove?
     {
 	vimlist_remove(l, li, li);
-	clear_tv(&li->li_tv);
-	vim_free(li);
+	listitem_free(l, li);
     }
     else
     {

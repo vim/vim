@@ -2302,7 +2302,7 @@ list_py_concat(list_T *l, PyObject *obj, PyObject *lookup_dict)
 	{
 	    Py_DECREF(item);
 	    Py_DECREF(iterator);
-	    listitem_free(li);
+	    listitem_free(l, li);
 	    return -1;
 	}
 
@@ -2662,7 +2662,7 @@ ListAssSlice(ListObject *self, Py_ssize_t first,
     }
 
     for (i = 0; i < numreplaced; i++)
-	listitem_free(lis[i]);
+	listitem_free(l, lis[i]);
     if (step == 1)
 	for (i = numreplaced; i < slicelen; i++)
 	    listitem_remove(l, lis[i]);

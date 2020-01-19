@@ -1413,6 +1413,8 @@ struct listvar_S
     list_T	*lv_used_prev;	// previous list in used lists list
     int		lv_refcount;	// reference count
     int		lv_len;		// number of items
+    int		lv_with_items;	// number of items following this struct that
+				// should not be freed
     int		lv_idx;		// cached index of an item
     int		lv_copyID;	// ID used by deepcopy()
     char	lv_lock;	// zero, VAR_LOCKED, VAR_FIXED
