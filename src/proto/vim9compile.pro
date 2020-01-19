@@ -2,7 +2,7 @@
 char_u *skip_type(char_u *start);
 type_T *parse_type(char_u **arg, garray_T *type_list);
 char *vartype_name(vartype_T type);
-int get_script_item_idx(int sid, char_u *name);
+int get_script_item_idx(int sid, char_u *name, int check_writable);
 imported_T *find_imported(char_u *name);
 char_u *to_name_end(char_u *arg);
 int assignment_len(char_u *p, int *heredoc);

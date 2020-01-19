@@ -175,6 +175,47 @@ def Test_vim9script()
   CheckScriptFailure(['vim9script', 'scriptversion 2'], 'E1040:')
 enddef
 
+def Test_vim9script_call()
+  let lines =<< trim END
+    vim9script
+    let var = ''
+    def MyFunc(arg: string)
+       var = arg
+    enddef
+    MyFunc('foobar')
+    assert_equal('foobar', var)
+  END
+  writefile(lines, 'Xcall.vim')
+  source Xcall.vim
+  delete('Xcall.vim')
+enddef
+
+def Test_vim9script_call_fail_decl()
+  let lines =<< trim END
+    vim9script
+    let var = ''
+    def MyFunc(arg: string)
+       let var = 123
+    enddef
+  END
+  writefile(lines, 'Xcall_decl.vim')
+  assert_fails('source Xcall_decl.vim', 'E1054:')
+  delete('Xcall_decl.vim')
+enddef
+
+def Test_vim9script_call_fail_const()
+  let lines =<< trim END
+    vim9script
+    const var = ''
+    def MyFunc(arg: string)
+       var = 'asdf'
+    enddef
+  END
+  writefile(lines, 'Xcall_const.vim')
+  assert_fails('source Xcall_const.vim', 'E46:')
+  delete('Xcall_const.vim')
+enddef
+
 def Test_import_absolute()
   let import_lines = [
         \ 'vim9script',

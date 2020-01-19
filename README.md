@@ -112,6 +112,8 @@ written in Python:
   mismatch.
 * When running the tool externally the standard python command can be used,
   which is quite often available by default or can be easily installed.
+* The built-in interface has an API that is unique for Vim with Python. This is
+  an extra API to learn.
 * A .py file can be compiled into a .pyc file and execute much faster.
 * Inside Vim multi-threading can cause problems, since the Vim core is single
   threaded.  In an external tool there are no such problems.
@@ -173,12 +175,15 @@ enddef
 The similarity with JavaScript/TypeScript can also be used for dependencies
 between files.  Vim currently uses the `:source` command, which has several
 disadvantages:
-*   It is not clear what the sourced script provides.
-*   It is not clear what function comes from what sourced script.
-*   Preventing loading the whole file twice must be manually implemented.
+*   In the sourced script, is not clear what it provides.  By default all
+    functions are global and can be used elsewhere.
+*   In a script that sources other scripts, it is not clear what function comes
+    from what sourced script.  Finding the implementation is a hassle.
+*   Prevention of loading the whole script twice must be manually implemented.
 
-We can use the `:import` and `:export` commands to make this much better.
-In script myfunction.vim define a function and export it:
+We can use the `:import` and `:export` commands from the JavaScript standard to
+make this much better.  For example, in script "myfunction.vim" define a
+function and export it:
 
 ``` vim
 vim9script  " Vim9 script syntax used here

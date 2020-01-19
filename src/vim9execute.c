@@ -579,6 +579,19 @@ call_def_function(
 		*tv = *STACK_TV_BOT(0);
 		break;
 
+	    // store script-local variable
+	    case ISN_STORESCRIPT:
+		{
+		    --ectx.ec_stack.ga_len;
+		    scriptitem_T *si = &SCRIPT_ITEM(
+					      iptr->isn_arg.script.script_sid);
+		    svar_T	 *sv = ((svar_T *)si->sn_var_vals.ga_data)
+					     + iptr->isn_arg.script.script_idx;
+		    clear_tv(sv->sv_tv);
+		    *sv->sv_tv = *STACK_TV_BOT(0);
+		}
+		break;
+
 	    // store option
 	    case ISN_STOREOPT:
 		{
@@ -1542,6 +1555,17 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_STOREG:
 		smsg("%4d STOREG g:%s", current, iptr->isn_arg.string);
+		break;
+	    case ISN_STORESCRIPT:
+		{
+		    scriptitem_T *si =
+				 &SCRIPT_ITEM(iptr->isn_arg.script.script_sid);
+		    svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
+					     + iptr->isn_arg.script.script_idx;
+
+		    smsg("%4d STORESCRIPT %s in %s", current,
+						     sv->sv_name, si->sn_name);
+		}
 		break;
 	    case ISN_STOREOPT:
 		smsg("%4d STOREOPT &%s", current,

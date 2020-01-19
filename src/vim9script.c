@@ -279,7 +279,7 @@ ex_import(exarg_T *eap)
 	    // TODO: also find script-local user function
 	    cc = *arg;
 	    *arg = NUL;
-	    idx = get_script_item_idx(sid, name);
+	    idx = get_script_item_idx(sid, name, FALSE);
 	    if (idx >= 0)
 	    {
 		sv = ((svar_T *)script->sn_var_vals.ga_data) + idx;

@@ -2070,7 +2070,9 @@ trans_function_name(
 	len = (int)(end - lv.ll_name);
     }
 
-    vim9script = current_sctx.sc_version == SCRIPT_VERSION_VIM9;
+    // In Vim9 script a user function is script-local by default.
+    vim9script = ASCII_ISUPPER(*start)
+			     && current_sctx.sc_version == SCRIPT_VERSION_VIM9;
 
     /*
      * Copy the function name to allocated memory.

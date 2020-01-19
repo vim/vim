@@ -241,14 +241,16 @@ The following builtin types are supported:
 	channel
 
 Not supported yet:
-	tuple<a: type, ...>
+	tuple<a: type, b: type, ...>
 
-These types can be used in declarations, but no variables will have this type:
+These types can be used in declarations, but no variable will have this type:
 	type|type
 	void
 	any
 
-Furthermore custom types can be defined with `:type`: >
+There is no array type, use list<type> instead.
+
+Custom types can be defined with `:type`: >
 	:type MyList list<string>
 
 And classes and interfaces can be used as types: >

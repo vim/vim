@@ -1127,19 +1127,20 @@ do_source(
     for (sid = script_items.ga_len; sid > 0; --sid)
     {
 	si = &SCRIPT_ITEM(sid);
-	if (si->sn_name != NULL
-		&& (
+	if (si->sn_name != NULL)
+	{
 # ifdef UNIX
-		    // Compare dev/ino when possible, it catches symbolic
-		    // links.  Also compare file names, the inode may change
-		    // when the file was edited.
-		    ((stat_ok && si->sn_dev_valid)
-			&& (si->sn_dev == st.st_dev
-			    && si->sn_ino == st.st_ino)) ||
+	    // Compare dev/ino when possible, it catches symbolic links.  Also
+	    // compare file names, the inode may change when the file was
+	    // edited or it may be re-used for another script (esp. in tests).
+	    if ((stat_ok && si->sn_dev_valid)
+		       && (si->sn_dev != st.st_dev || si->sn_ino != st.st_ino))
+		continue;
 # endif
-		fnamecmp(si->sn_name, fname_exp) == 0))
-	    // Found it!
-	    break;
+	    if (fnamecmp(si->sn_name, fname_exp) == 0)
+		// Found it!
+		break;
+	}
     }
     if (sid > 0 && ret_sid != NULL)
     {

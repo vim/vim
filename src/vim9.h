@@ -27,6 +27,7 @@ typedef enum {
 
     ISN_STORE,	    // pop into local variable isn_arg.number
     ISN_STOREG,	    // pop into global variable isn_arg.string
+    ISN_STORESCRIPT, // pop into scirpt variable isn_arg.script
     ISN_STOREOPT,   // pop into option isn_arg.string
     // ISN_STOREOTHER, // pop into other script variable isn_arg.other.
 
@@ -222,7 +223,7 @@ typedef struct {
 } isn_T;
 
 /*
- * Stores a function defined with :def.
+ * Info about a function defined with :def.  Used in "def_functions".
  */
 struct dfunc_S {
     ufunc_T	*df_ufunc;	    // struct containing most stuff
@@ -236,7 +237,7 @@ struct dfunc_S {
     int		df_varcount;	    // number of local variables
 };
 
-// Number of entries used by frame
+// Number of entries used by stack frame for a function call.
 #define STACK_FRAME_SIZE 3
 
 

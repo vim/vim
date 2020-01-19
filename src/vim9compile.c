@@ -168,6 +168,24 @@ lookup_arg(char_u *name, size_t len, cctx_T *cctx)
     return -1;
 }
 
+/*
+ * Lookup a variable in the current script.
+ * Returns OK or FAIL.
+ */
+    static int
+lookup_script(char_u *name, size_t len)
+{
+    int		    cc;
+    hashtab_T	    *ht = &SCRIPT_VARS(current_sctx.sc_sid);
+    dictitem_T	    *di;
+
+    cc = name[len];
+    name[len] = NUL;
+    di = find_var_in_ht(ht, 0, name, TRUE);
+    name[len] = cc;
+    return di == NULL ? FAIL: OK;
+}
+
     static type_T *
 get_list_type(type_T *member_type, garray_T *type_list)
 {
@@ -1353,7 +1371,7 @@ type_name(type_T *type, char **tofree)
  * If not found returns -2.
  */
     int
-get_script_item_idx(int sid, char_u *name)
+get_script_item_idx(int sid, char_u *name, int check_writable)
 {
     hashtab_T	    *ht;
     dictitem_T	    *di;
@@ -1374,7 +1392,11 @@ get_script_item_idx(int sid, char_u *name)
 	svar_T    *sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 
 	if (sv->sv_tv == &di->di_tv)
+	{
+	    if (check_writable && sv->sv_const)
+		semsg(_(e_readonlyvar), name);
 	    return idx;
+	}
     }
     return -1;
 }
@@ -1405,7 +1427,7 @@ find_imported(char_u *name)
 compile_load_scriptvar(cctx_T *cctx, char_u *name)
 {
     scriptitem_T    *si = &SCRIPT_ITEM(current_sctx.sc_sid);
-    int		    idx = get_script_item_idx(current_sctx.sc_sid, name);
+    int		    idx = get_script_item_idx(current_sctx.sc_sid, name, FALSE);
     imported_T	    *import;
 
     if (idx == -1)
@@ -2960,6 +2982,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     int		opt_type;
     int		opt_flags = 0;
     int		global = FALSE;
+    int		script = FALSE;
     int		oplen = 0;
     int		heredoc = FALSE;
     type_T	*type;
@@ -3057,6 +3080,16 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    semsg(_("E1018: Cannot assign to a constant: %s"), name);
 		    goto theend;
 		}
+	    }
+	}
+	else if (lookup_script(arg, varlen) == OK)
+	{
+	    script = TRUE;
+	    if (is_decl)
+	    {
+		semsg(_("E1054: Variable already declared in the script: %s"),
+									 name);
+		goto theend;
 	    }
 	}
     }
@@ -3240,6 +3273,13 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	generate_STOREOPT(cctx, name + 1, opt_flags);
     else if (global)
 	generate_STORE(cctx, ISN_STOREG, 0, name + 2);
+    else if (script)
+    {
+	idx = get_script_item_idx(current_sctx.sc_sid, name, TRUE);
+	// TODO: specific type
+	generate_SCRIPT(cctx, ISN_STORESCRIPT,
+					     current_sctx.sc_sid, idx, &t_any);
+    }
     else
     {
 	isn_T *isn = ((isn_T *)instr->ga_data) + instr->ga_len - 1;
@@ -4153,7 +4193,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    // "varname->expr" is an expression.
 	    if (*p == '('
 		    || *p == '['
-		    || p[1] == ':'
+		    || ((p - ea.cmd) > 2 && ea.cmd[1] == ':')
 		    || (*p == '-' && p[1] == '>'))
 	    {
 		// TODO
@@ -4168,7 +4208,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		// "&opt = expr"
 		if (*ea.cmd == '&'
 			|| ((p - ea.cmd) > 2 && ea.cmd[1] == ':')
-			|| lookup_local(ea.cmd, p - ea.cmd, &cctx) >= 0)
+			|| lookup_local(ea.cmd, p - ea.cmd, &cctx) >= 0
+			|| lookup_script(ea.cmd, p - ea.cmd) == OK)
 		{
 		    line = compile_assignment(ea.cmd, &ea, CMD_SIZE, &cctx);
 		    if (line == NULL)
@@ -4434,6 +4475,7 @@ delete_instr(isn_T *isn)
 	case ISN_RETURN:
 	case ISN_STORE:
 	case ISN_STORENR:
+	case ISN_STORESCRIPT:
 	case ISN_THROW:
 	case ISN_TRY:
 	    // nothing allocated
