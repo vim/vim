@@ -4093,6 +4093,7 @@ enter_tabpage(
     int		trigger_enter_autocmds,
     int		trigger_leave_autocmds)
 {
+    int		row;
     int		old_off = tp->tp_firstwin->w_winrow;
     win_T	*next_prevwin = tp->tp_prevwin;
 
@@ -4109,7 +4110,7 @@ enter_tabpage(
     prevwin = next_prevwin;
 
     last_status(FALSE);		// status line may appear or disappear
-    (void)win_comp_pos();	// recompute w_winrow for all windows
+    row = win_comp_pos();	// recompute w_winrow for all windows
 #ifdef FEAT_DIFF
     diff_need_scrollbind = TRUE;
 #endif
@@ -4121,6 +4122,13 @@ enter_tabpage(
     if (p_ch != curtab->tp_ch_used)
 	clear_cmdline = TRUE;
     p_ch = curtab->tp_ch_used;
+
+    // When cmdheight is changed in a tab page with '<C-w>-', cmdline_row is
+    // changed but p_ch and tp_ch_used are not changed. Thus we also need to
+    // check cmdline_row.
+    if ((row < cmdline_row) && (cmdline_row <= Rows - p_ch))
+	clear_cmdline = TRUE;
+
     if (curtab->tp_old_Rows != Rows || (old_off != firstwin->w_winrow
 #ifdef FEAT_GUI_TABLINE
 			    && !gui_use_tabline()
