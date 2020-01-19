@@ -359,7 +359,7 @@ The script name after `import` can be:
 - An absolute path, starting with "/" on Unix or "D:/" on MS-Windows.  This
   will be rarely used.
 - A path not being relative or absolute.  This will be found in the
-  "vim9" subdirectories of 'runtimepath' entries.  The name will usually be
+  "import" subdirectories of 'runtimepath' entries.  The name will usually be
   longer and unique, to avoid loading the wrong file.
 
 Once a vim9 script file has been imported, the result is cached and used the

@@ -215,21 +215,22 @@ ex_import(exarg_T *eap)
     }
     else if (mch_isFullName(tv.vval.v_string))
     {
+	// Absolute path: "/tmp/name.vim"
 	res = do_source(tv.vval.v_string, FALSE, DOSO_NONE, &sid);
     }
     else
     {
-	size_t	    len = 5 + STRLEN(tv.vval.v_string) + 1;
+	size_t	    len = 7 + STRLEN(tv.vval.v_string) + 1;
 	char_u	    *from_name;
 
-	// Find in "vim9" subdirs in 'runtimepath'.
+	// Find file in "import" subdirs in 'runtimepath'.
 	from_name = alloc((int)len);
 	if (from_name == NULL)
 	{
 	    clear_tv(&tv);
 	    return;
 	}
-	vim_snprintf((char *)from_name, len, "vim9/%s", tv.vval.v_string);
+	vim_snprintf((char *)from_name, len, "import/%s", tv.vval.v_string);
 	res = source_in_path(p_rtp, from_name, DIP_NOAFTER, &sid);
 	vim_free(from_name);
     }

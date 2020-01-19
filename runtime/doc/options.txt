@@ -6220,6 +6220,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  compiler/	compiler files |:compiler|
 	  doc/		documentation |write-local-help|
 	  ftplugin/	filetype plugins |write-filetype-plugin|
+	  import/	files that are found by `:import`
 	  indent/	indent scripts |indent-expression|
 	  keymap/	key mapping files |mbyte-keymap|
 	  lang/		menu translations |:menutrans|
@@ -6230,7 +6231,6 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  spell/	spell checking files |spell|
 	  syntax/	syntax files |mysyntaxfile|
 	  tutor/	files for vimtutor |tutor|
-	  vim9/		Vim9 scripts, may have export commands
 
 	And any other file searched for with the |:runtime| command.
 

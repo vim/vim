@@ -93,8 +93,9 @@ Instead of using script language support in Vim:
 * Phase out the built-in language interfaces, make maintenance a bit easier
   and executables easier to build.  They will be kept for backwards
   compatibility, no new features.
-* Improve the Vim script language, so that it can be used when an
-  external tool is undesired.
+* Improve the Vim script language, it is used to communicate with the external
+  tool and implements the Vim side of the interface.  Also, it can be used when
+  an external tool is undesired.
 
 All together this creates a clear situation: Vim with the +eval feature
 will be sufficient for most plugins, while some plugins require
@@ -102,7 +103,7 @@ installing a tool that can be written in any language.  No confusion
 about having Vim but the plugin not working because some specific
 language is missing.  This is a good long term goal.
 
-Rationale: Why is it easier to run a tool separately from Vim than using a
+Rationale: Why is it better to run a tool separately from Vim than using a
 built-in interface and interpreter?  Take for example something that is
 written in Python:
 * The built-in interface uses the embedded python interpreter.  This is less
@@ -132,14 +133,18 @@ programming languages will help.  No surprises.
 A good example is how in a function the arguments are prefixed with
 "a:". No other language I know does that, so let's drop it.
 
+Taking this one step further is also dropping "s:" for script-local variables;
+everything at the script level is script-local by default.  Since this is not
+backwards compatible it requires a new script style: Vim9 script!
+
 It should be possible to convert code from other languages to Vim
 script.  We can add functionality to make this easier.  This still needs
 to be discussed, but we can consider adding type checking and a simple
 form of classes.  If you look at JavaScript for example, it has gone
 through these stages over time, adding real class support and now
-Typescript adds type checking.  But we'll have to see how much of that
+TypeScript adds type checking.  But we'll have to see how much of that
 we actually want to include in Vim script.  Ideally a conversion tool
-can take Python, JavaScript or Typescript code and convert it to Vim
+can take Python, JavaScript or TypeScript code and convert it to Vim
 script, with only some things that cannot be converted.
 
 Vim script won't work the same as any specific language, but we can use
@@ -149,7 +154,7 @@ make that mistake (after writing JavaScript especially).  I think it is
 possible, if we make local variables shadow commands.  That should be OK,
 if you shadow a command you want to use, just rename the variable.
 Using "let" and "const" to declare a variable, like in JavaScript and
-Typescript, can work:
+TypeScript, can work:
 
 
 ``` vim
@@ -165,7 +170,40 @@ def MyFunction(arg: number): number
 enddef
 ```
 
-Just some ideas, this will take time to design, discuss and implement.
+The similarity with JavaScript/TypeScript can also be used for dependencies
+between files.  Vim currently uses the `:source` command, which has several
+disadvantages:
+*   It is not clear what the sourced script provides.
+*   It is not clear what function comes from what sourced script.
+*   Preventing loading the whole file twice must be manually implemented.
+
+We can use the `:import` and `:export` commands to make this much better.
+In script myfunction.vim define a function and export it:
+
+``` vim
+vim9script  " Vim9 script syntax used here
+
+let local = 'local variable is not exported, script-local'
+
+export def MyFunction()  " exported function
+...
+
+def LocalFunction() " not exported, script-local
+...
+```
+
+And in another script import the function:
+
+``` vim
+vim9script  " Vim9 script syntax used here
+
+import MyFunction from 'myfunction.vim'
+```
+
+This looks like JavaScript/TypeScript, thus many users will understand the
+syntax.
+
+These are ideas, this will take time to design, discuss and implement.
 Eventually this will lead to Vim 9!
 
 
