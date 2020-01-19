@@ -905,4 +905,22 @@ func Test_cmdwin_cedit()
   delfunc CmdWinType
 endfunc
 
+func Test_cmdlineclear_tabenter()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    call setline(1, range(30))
+  [SCRIPT]
+
+  call writefile(lines, 'XtestCmdlineClearTabenter')
+  let buf = RunVimInTerminal('-S XtestCmdlineClearTabenter', #{rows: 10})
+  call term_wait(buf, 50)
+  " in one tab make the command line higher with CTRL-W -
+  call term_sendkeys(buf, ":tabnew\<cr>\<C-w>-\<C-w>-gtgt")
+  call VerifyScreenDump(buf, 'Test_cmdlineclear_tabenter', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestCmdlineClearTabenter')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
