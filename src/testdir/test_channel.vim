@@ -1977,3 +1977,8 @@ func Test_zz_ch_log()
   call assert_match("%s%s", text[2])
   call delete('Xlog')
 endfunc
+
+func Test_job_start_fails()
+  " this was leaking memory
+  call assert_fails("call job_start([''])", "E474:")
+endfunc
