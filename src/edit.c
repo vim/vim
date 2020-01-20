@@ -4959,9 +4959,9 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
 	do
 	    c = vgetc();
 	while (c == K_IGNORE || c == K_VER_SCROLLBAR || c == K_HOR_SCROLLBAR);
-	if (c == NUL || got_int)
+	if (c == NUL || got_int || (ex_normal_busy > 0 && c == Ctrl_C))
 	    // When CTRL-C was encountered the typeahead will be flushed and we
-	    // won't get the end sequence.
+	    // won't get the end sequence.  Except when using ":normal".
 	    break;
 
 	if (has_mbyte)

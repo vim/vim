@@ -1449,3 +1449,8 @@ func Test_searchdecl()
 
   bwipe!
 endfunc
+
+func Test_search_special()
+  " this was causing illegal memory access
+  exe "norm /\x80PS"
+endfunc
