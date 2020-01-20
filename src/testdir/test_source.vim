@@ -1,4 +1,5 @@
 " Tests for the :source command.
+source check.vim
 
 func Test_source_autocmd()
   call writefile([
@@ -50,6 +51,7 @@ endfunc
 " When deleting a file and immediately creating a new one the inode may be
 " recycled.  Vim should not recognize it as the same script.
 func Test_different_script()
+  CheckFeature channel
   call ch_logfile('logfile', 'w')
   call writefile(['let s:var = "asdf"'], 'XoneScript')
   source XoneScript
