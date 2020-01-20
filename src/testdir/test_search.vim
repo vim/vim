@@ -1451,6 +1451,7 @@ func Test_searchdecl()
 endfunc
 
 func Test_search_special()
-  " this was causing illegal memory access
+  " this was causing illegal memory access and an endless loop
+  set t_PE=
   exe "norm /\x80PS"
 endfunc

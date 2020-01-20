@@ -4942,7 +4942,7 @@ bracketed_paste(paste_mode_T mode, int drop, garray_T *gap)
     int		save_paste = p_paste;
 
     // If the end code is too long we can't detect it, read everything.
-    if (STRLEN(end) >= NUMBUFLEN)
+    if (end != NULL && STRLEN(end) >= NUMBUFLEN)
 	end = NULL;
     ++no_mapping;
     allow_keys = 0;
