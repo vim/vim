@@ -9,7 +9,7 @@ anchors:
     - &small
       BUILD=yes TEST=test COVERAGE=no FEATURES=small CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     - &normal
-      BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow CHECK_AUTOCONF=no
+      BUILD=yes TEST=test COVERAGE=no FEATURES=normal CONFOPT= SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
     - &linux-huge
       BUILD=yes TEST="scripttests test_libvterm" COVERAGE=yes CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
       "CONFOPT='--enable-perlinterp --enable-pythoninterp --enable-python3interp --enable-rubyinterp --enable-luainterp --enable-tclinterp'"
@@ -21,6 +21,8 @@ anchors:
     - &asan # ASAN build
       SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
       ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
+    - &shadowopt
+      SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow
 
   linux: &linux
     os: linux
@@ -133,19 +135,15 @@ script:
     fi
   - echo -en "travis_fold:end:build\\r\\033[0K"
   - set +o errexit
-  - echo -e "\\033[33;1mTesting Vim\\033[0m" && echo -en "travis_fold:start:test\\r\\033[0K"
   # Show Vim version and also if_xx versions.
   - |
     if [[ "${BUILD}" = "yes" ]]; then
       "${SRCDIR}"/vim --version
-      "${SRCDIR}"/vim --not-a-term -u NONE -S "${SRCDIR}"/testdir/if_ver-1.vim -c quit > /dev/null
-      "${SRCDIR}"/vim --not-a-term -u NONE -S "${SRCDIR}"/testdir/if_ver-2.vim -c quit > /dev/null
-      cat if_ver.txt
+      "${SRCDIR}"/vim --clean --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
+      "${SRCDIR}"/vim --clean --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
     fi
-  - >
-    do_test make ${SHADOWOPT} ${TEST} &&
-    make -C runtime/doc vimtags VIMEXE=../../"${SRCDIR}"/vim &&
-    FOLD_MARKER=travis_fold
+  - echo -e "\\033[33;1mTesting Vim\\033[0m" && echo -en "travis_fold:start:test\\r\\033[0K"
+  - do_test make ${SHADOWOPT} ${TEST} && FOLD_MARKER=travis_fold
   - echo -en "${FOLD_MARKER}:end:test\\r\\033[0K"
 
 
@@ -194,11 +192,15 @@ matrix:
     - <<: *linux
       name: normal/clang
       compiler: clang
-      env: *normal
+      env:
+        - *normal
+        - *shadowopt
     - <<: *linux
       name: normal/gcc
       compiler: gcc
-      env: *normal
+      env:
+        - *normal
+        - *shadowopt
     - <<: *linux
       name: huge+coverage/clang
       compiler: clang
@@ -228,5 +230,11 @@ matrix:
         - *linux-huge
         - TEST="-C src testgui"
       after_success: *coverage
+    - <<: *linux
+      name: vimtags/gcc
+      compiler: gcc
+      env:
+        - *normal
+        - TEST="-C runtime/doc vimtags VIMEXE=../../${SRCDIR}/vim"
 
 # vim:set sts=2 sw=2 tw=0 et:

@@ -11,6 +11,7 @@ SRC_ALL =	\
 		.cirrus.yml \
 		appveyor.yml \
 		ci/appveyor.bat \
+		ci/if_ver*.vim \
 		src/Make_all.mak \
 		src/README.md \
 		src/alloc.h \
@@ -177,7 +178,6 @@ SRC_ALL =	\
 		src/testdir/dumps/*.dump \
 		src/testdir/samples/*.txt \
 		src/testdir/samples/test000 \
-		src/testdir/if_ver*.vim \
 		src/testdir/color_ramp.vim \
 		src/testdir/silent.wav \
 		src/testdir/popupbounce.vim \
