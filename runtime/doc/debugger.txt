@@ -114,7 +114,7 @@ other settings apply.
 
 The debugger features were added for use with Sun's Visual WorkShop Integrated
 Programming Environment (ipe).  However, they were done in as generic a manner
-as possible so that integration with other debuggers could also these
+as possible so that integration with other debuggers could also use these
 features.
 
 The following compile time preprocessor variables control the features:

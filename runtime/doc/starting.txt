@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2019 Dec 11
+*starting.txt*  For Vim version 8.2.  Last change: 2020 Jan 20
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1570,8 +1570,8 @@ remembered.
 VIMINFO FILE NAME					*viminfo-file-name*
 
 - The default name of the viminfo file is "$HOME/.viminfo" for Unix,
-  "s:.viminfo" for Amiga, "$HOME\_viminfo" for Win32.  For the last two, when
-  $HOME is not set, "$VIM\_viminfo" is used.  When $VIM is also not set,
+  "s:.viminfo" for Amiga, "$HOME\_viminfo" for Win32.  For Win32, when $HOME
+  is not set, "$VIM\_viminfo" is used.  When $VIM is also not set,
   "c:\_viminfo" is used.
 - The 'n' flag in the 'viminfo' option can be used to specify another viminfo
   file name |'viminfo'|.

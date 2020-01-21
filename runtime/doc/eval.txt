@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Jan 06
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Jan 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10630,7 +10630,7 @@ xor({expr}, {expr})					*xor()*
 <
 
 							*feature-list*
-There are four types of features:
+There are three types of features:
 1.  Features that are only supported when they have been enabled when Vim
     was compiled |+feature-list|.  Example: >
 	:if has("cindent")
