@@ -236,8 +236,7 @@ processing a quickfix or location list command, it will be aborted.
 			e.g., a compiler will not compile the same file again,
 			`git commit` will abort the committing process, `fc`
 			(built-in for shells like bash and zsh) will not
-			execute the command, etc.  will not compile the same
-			file again.
+			execute the command, etc.
 			{N} can also be zero, in which case Vim exits
 			normally.
 			WARNING: All changes in files are lost!  Also when the
@@ -1108,7 +1107,7 @@ id-utils) in a similar way to its compiler integration (see |:make| above).
 			allowed with |:bufdo|.
 			An example that uses the argument list and avoids
 			errors for files without matches: >
-                                :silent argdo try
+				:silent argdo try
 				  \ | grepadd! something %
 				  \ | catch /E480:/
 				  \ | endtry"
