@@ -11,7 +11,7 @@ SRC_ALL =	\
 		.cirrus.yml \
 		appveyor.yml \
 		ci/appveyor.bat \
-		ci/if_ver.vim \
+		ci/if_ver*.vim \
 		src/Make_all.mak \
 		src/README.md \
 		src/alloc.h \
