@@ -236,6 +236,14 @@ static char_u *exe_path = NULL;
 
 static BOOL win8_or_later = FALSE;
 
+# if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
+#  define AChar AsciiChar
+#  define UChar UnicodeChar
+# else
+#  define AChar uChar.AsciiChar
+#  define UChar uChar.UnicodeChar
+# endif
+
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 // Dynamic loading for portability
 typedef struct _DYN_CONSOLE_SCREEN_BUFFER_INFOEX
@@ -286,6 +294,29 @@ get_build_number(void)
 }
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
+    static BOOL
+is_ambiwidth_event(
+    INPUT_RECORD *ir)
+{
+    return ir->EventType == KEY_EVENT
+		&& ir->Event.KeyEvent.bKeyDown
+		&& ir->Event.KeyEvent.wRepeatCount == 1
+		&& ir->Event.KeyEvent.wVirtualKeyCode == 0x12
+		&& ir->Event.KeyEvent.wVirtualScanCode == 0x38
+		&& ir->Event.KeyEvent.dwControlKeyState == 2;
+}
+
+    static void
+make_ambiwidth_event(
+    INPUT_RECORD *down,
+    INPUT_RECORD *up)
+{
+    down->Event.KeyEvent.wVirtualKeyCode = 0;
+    down->Event.KeyEvent.wVirtualScanCode = 0;
+    down->Event.KeyEvent.UChar = up->Event.KeyEvent.UChar;
+    down->Event.KeyEvent.dwControlKeyState = 0;
+}
+
 /*
  * Version of ReadConsoleInput() that works with IME.
  * Works around problems on Windows 8.
@@ -321,10 +352,12 @@ read_console_input(
 
     if (s_dwMax == 0)
     {
-	if (nLength == -1)
+	if (!USE_WT && nLength == -1)
 	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
-	if (!ReadConsoleInputW(hInput, s_irCache, IRSIZE, &dwEvents))
-	    return FALSE;
+	GetNumberOfConsoleInputEvents(hInput, &dwEvents);
+	if (dwEvents == 0 && nLength == -1)
+	    return PeekConsoleInputW(hInput, lpBuffer, 1, lpEvents);
+	ReadConsoleInputW(hInput, s_irCache, IRSIZE, &dwEvents);
 	s_dwIndex = 0;
 	s_dwMax = dwEvents;
 	if (dwEvents == 0)
@@ -332,6 +365,10 @@ read_console_input(
 	    *lpEvents = 0;
 	    return TRUE;
 	}
+
+	for (i = s_dwIndex; i < (int)s_dwMax - 1; ++i)
+	    if (is_ambiwidth_event(&s_irCache[i]))
+		make_ambiwidth_event(&s_irCache[i], &s_irCache[i + 1]);
 
 	if (s_dwMax > 1)
 	{
@@ -921,12 +958,6 @@ static const struct
     { VK_NUMPAD9,TRUE,  '\376',	'\377',	'|',	    '}', },
 };
 
-
-# if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
-#  define UChar UnicodeChar
-# else
-#  define UChar uChar.UnicodeChar
-# endif
 
 /*
  * The return code indicates key code size.
