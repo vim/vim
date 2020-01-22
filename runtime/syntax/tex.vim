@@ -442,6 +442,7 @@ if !exists("g:tex_no_math")
  call TexNewMathZone("B","eqnarray",1)
  call TexNewMathZone("C","equation",1)
  call TexNewMathZone("D","math",1)
+ call TexNewMathZone("E","align",1)
 
  " Inline Math Zones: {{{2
  if s:tex_fast =~# 'M'
