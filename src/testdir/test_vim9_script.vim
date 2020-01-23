@@ -198,6 +198,30 @@ def Test_vim9script_call()
     enddef
     MyFunc('foobar')
     assert_equal('foobar', var)
+
+    let str = 'barfoo'
+    str->MyFunc()
+    assert_equal('barfoo', var)
+
+    let g:value = 'value'
+    g:value->MyFunc()
+    assert_equal('value', var)
+
+    let listvar = []
+    def ListFunc(arg: list<number>)
+       listvar = arg
+    enddef
+    [1, 2, 3]->ListFunc()
+    assert_equal([1, 2, 3], listvar)
+
+    let dictvar = {}
+    def DictFunc(arg: dict<number>)
+       dictvar = arg
+    enddef
+    {'a': 1, 'b': 2}->DictFunc()
+    assert_equal(#{a: 1, b: 2}, dictvar)
+    #{a: 3, b: 4}->DictFunc()
+    assert_equal(#{a: 3, b: 4}, dictvar)
   END
   writefile(lines, 'Xcall.vim')
   source Xcall.vim

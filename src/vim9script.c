@@ -32,18 +32,26 @@ in_vim9script(void)
     void
 ex_vim9script(exarg_T *eap)
 {
+    scriptitem_T *si = &SCRIPT_ITEM(current_sctx.sc_sid);
+
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
 	emsg(_("E1038: vim9script can only be used in a script"));
 	return;
     }
-    if (SCRIPT_ITEM(current_sctx.sc_sid).sn_had_command)
+    if (si->sn_had_command)
     {
 	emsg(_("E1039: vim9script must be the first command in a script"));
 	return;
     }
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
-    SCRIPT_ITEM(current_sctx.sc_sid).sn_had_command = TRUE;
+    si->sn_had_command = TRUE;
+
+    if (STRCMP(p_cpo, CPO_VIM) != 0)
+    {
+	si->sn_save_cpo = p_cpo;
+	p_cpo = vim_strsave((char_u *)CPO_VIM);
+    }
 }
 
 /*

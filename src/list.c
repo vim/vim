@@ -1040,7 +1040,7 @@ f_join(typval_T *argvars, typval_T *rettv)
  * Return OK or FAIL.
  */
     int
-get_list_tv(char_u **arg, typval_T *rettv, int evaluate)
+get_list_tv(char_u **arg, typval_T *rettv, int evaluate, int do_error)
 {
     list_T	*l = NULL;
     typval_T	tv;
@@ -1075,7 +1075,8 @@ get_list_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    break;
 	if (**arg != ',')
 	{
-	    semsg(_("E696: Missing comma in List: %s"), *arg);
+	    if (do_error)
+		semsg(_("E696: Missing comma in List: %s"), *arg);
 	    goto failret;
 	}
 	*arg = skipwhite(*arg + 1);
@@ -1083,7 +1084,8 @@ get_list_tv(char_u **arg, typval_T *rettv, int evaluate)
 
     if (**arg != ']')
     {
-	semsg(_("E697: Missing end of List ']': %s"), *arg);
+	if (do_error)
+	    semsg(_("E697: Missing end of List ']': %s"), *arg);
 failret:
 	if (evaluate)
 	    list_free(l);

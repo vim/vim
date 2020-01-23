@@ -1708,6 +1708,41 @@ to_name_end(char_u *arg)
     return p;
 }
 
+/*
+ * Like to_name_end() but also skip over a list or dict constant.
+ */
+    char_u *
+to_name_const_end(char_u *arg)
+{
+    char_u	*p = to_name_end(arg);
+    typval_T	rettv;
+
+    if (p == arg && *arg == '[')
+    {
+
+	// Can be "[1, 2, 3]->Func()".
+	if (get_list_tv(&p, &rettv, FALSE, FALSE) == FAIL)
+	    p = arg;
+    }
+    else if (p == arg && *arg == '#' && arg[1] == '{')
+    {
+	++p;
+	if (eval_dict(&p, &rettv, FALSE, TRUE) == FAIL)
+	    p = arg;
+    }
+    else if (p == arg && *arg == '{')
+    {
+	int	    ret = get_lambda_tv(&p, &rettv, FALSE);
+
+	if (ret == NOTDONE)
+	    ret = eval_dict(&p, &rettv, FALSE, FALSE);
+	if (ret != OK)
+	    p = arg;
+    }
+
+    return p;
+}
+
     static void
 type_mismatch(type_T *expected, type_T *actual)
 {

@@ -1418,6 +1418,15 @@ do_source(
 
 #ifdef FEAT_EVAL
 almosttheend:
+    // Get "si" again, "script_items" may have been reallocated.
+    si = &SCRIPT_ITEM(current_sctx.sc_sid);
+    if (si->sn_save_cpo != NULL)
+    {
+	free_string_option(p_cpo);
+	p_cpo = si->sn_save_cpo;
+	si->sn_save_cpo = NULL;
+    }
+
     current_sctx = save_current_sctx;
     restore_funccal();
 # ifdef FEAT_PROFILE
@@ -1514,7 +1523,9 @@ free_scriptnames(void)
     {
 	// the variables themselves are cleared in evalvars_clear()
 	vim_free(SCRIPT_ITEM(i).sn_vars);
+
 	vim_free(SCRIPT_ITEM(i).sn_name);
+	free_string_option(SCRIPT_ITEM(i).sn_save_cpo);
 #  ifdef FEAT_PROFILE
 	ga_clear(&SCRIPT_ITEM(i).sn_prl_ga);
 #  endif

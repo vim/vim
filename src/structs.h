@@ -1653,6 +1653,7 @@ typedef struct
 
     int		sn_version;	// :scriptversion
     int		sn_had_command;	// TRUE if any command was executed
+    char_u	*sn_save_cpo;	// 'cpo' value when :vim9script found
 
 # ifdef UNIX
     int		sn_dev_valid;

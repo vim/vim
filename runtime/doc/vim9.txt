@@ -67,16 +67,28 @@ range passed and cannot be a "dict" function.
 In the function body:
 - Arguments are accessed by name, without "a:".
 - There is no "a:" dictionary or "a:000" list.
-- Arguments from "..." are available with arg(N) and argcount()
+- Variable arguments are defined with a name and list of a type:
+  	def MyFunc(...name: list<type>)
 
 
-Omitting :let and :call ~
+Omitting :let, :call and :eval ~
 
 Functions can be called without `:call`: >
   	writefile(lines, 'file')
 Using `:call` is optional.
 
-Global, script and local variables are assigned to without `:let`: >
+A method call without `eval` is possible, so long as the start is an
+identifier or can't be an Ex command.  It does not work for string constants: >
+	myList->add(123)		" works
+	g:myList->add(123)		" works
+	[1, 2, 3]->Process()		" works
+	#{a: 1, b: 2}->Process()	" works
+	{'a': 1, 'b': 2}->Process()	" works
+	"foobar"->Process()		" does NOT work
+	eval "foobar"->Process()	" works
+
+Global, script and local variables, after being declared, are assigned to
+without `:let`: >
       let lines = 33
       lines += 55
 This may shadow Ex commands, rename the variable if needed.
@@ -120,6 +132,8 @@ used: >
 	   ...
 	}
 	echo temp  " Error!
+
+Variables cannot shadow previously defined variables.
 
 
 Comperators ~
@@ -248,7 +262,9 @@ These types can be used in declarations, but no variable will have this type:
 	void
 	any
 
-There is no array type, use list<type> instead.
+There is no array type, use list<type> instead.  For a list constant an
+efficient implementation is used that avoids allocating lot of small pieces of
+memory.
 
 Custom types can be defined with `:type`: >
 	:type MyList list<string>
@@ -317,6 +333,12 @@ variables in legacy Vim script, but the "s:" is omitted.
 
 In Vim9 script the global "g:" namespace can still be used as before.
 
+A side effect of `:vim9script` is that the 'cpoptions' option is set to the
+Vim default value, like with: >
+	:set cpo&vim
+One of the effects is that |line-continuation| is enabled.
+The original value of 'cpoptions' is restored at the end of the script.
+
 
 Export ~
 							*:export* *:exp*
@@ -366,6 +388,11 @@ The script name after `import` can be:
 
 Once a vim9 script file has been imported, the result is cached and used the
 next time the same script is imported.  It will not be read again.
+							*:import-cycle*
+The `import` commands are executed when encountered.  If that script (directly
+or indirectly) imports the current script, then items defined after the
+`import` won't be processed yet.  Therefore cyclic imports can exist, but may
+result in undefined items.
 
 
 Import in an autoload script ~

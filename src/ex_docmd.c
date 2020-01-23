@@ -3140,9 +3140,11 @@ find_ex_command(
     int		i;
 
     /*
-     * Recognize a script-local variable: "lvar = value"
+     * Recognize a Vim9 script function/method call and assignment:
+     * "lvar = value", "lvar(arg)", "[1, 2 3]->Func()"
      */
-    if (lookup != NULL && (p = to_name_end(eap->cmd)) > eap->cmd && *p != NUL)
+    if (lookup != NULL && (p = to_name_const_end(eap->cmd)) > eap->cmd
+								  && *p != NUL)
     {
 	int oplen;
 	int heredoc;
