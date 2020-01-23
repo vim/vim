@@ -640,7 +640,11 @@ term_start(
     }
 
     if (opt->jo_term_api != NULL)
-	term->tl_api = vim_strsave(opt->jo_term_api);
+    {
+	char_u *p = skiptowhite(opt->jo_term_api);
+
+	term->tl_api = vim_strnsave(opt->jo_term_api, p - opt->jo_term_api);
+    }
     else
 	term->tl_api = vim_strsave((char_u *)"Tapi_");
 
