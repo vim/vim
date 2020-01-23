@@ -5993,7 +5993,7 @@ theend:
 #ifndef USE_ARGV
     vim_free(ga.ga_data);
 #endif
-    if (argv != job->jv_argv)
+    if (argv != NULL && argv != job->jv_argv)
     {
 	for (i = 0; argv[i] != NULL; i++)
 	    vim_free(argv[i]);
