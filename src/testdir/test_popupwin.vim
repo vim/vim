@@ -2804,6 +2804,12 @@ func Test_previewpopup()
   call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_8', {})
 
+  call term_sendkeys(buf, "\<C-W>p")
+  call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_9', {})
+
+  call term_sendkeys(buf, ":call win_execute(popup_findpreview(), 'call popup_clear()')\<CR>")
+  call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_10', {})
+
   call StopVimInTerminal(buf)
   call delete('Xtags')
   call delete('Xtagfile')

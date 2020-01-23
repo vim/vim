@@ -4343,8 +4343,15 @@ win_goto(win_T *wp)
     win_T	*owp = curwin;
 #endif
 
+#ifdef FEAT_PROP_POPUP
     if (ERROR_IF_POPUP_WINDOW)
 	return;
+    if (popup_is_popup(wp))
+    {
+	emsg(_("E366: Not allowed to enter a popup window"));
+	return;
+    }
+#endif
     if (text_locked())
     {
 	beep_flush();
