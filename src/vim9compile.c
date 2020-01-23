@@ -169,6 +169,19 @@ lookup_arg(char_u *name, size_t len, cctx_T *cctx)
 }
 
 /*
+ * Lookup a vararg argument in the current function.
+ * Returns TRUE if there is a match.
+ */
+    static int
+lookup_vararg(char_u *name, size_t len, cctx_T *cctx)
+{
+    char_u  *va_name = cctx->ctx_ufunc->uf_va_name;
+
+    return len > 0 && va_name != NULL
+		 && STRNCMP(name, va_name, len) == 0 && STRLEN(va_name) == len;
+}
+
+/*
  * Lookup a variable in the current script.
  * Returns OK or FAIL.
  */
@@ -914,16 +927,27 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int argcount)
 {
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
+    int		regular_args = ufunc->uf_args.ga_len;
 
-    if (argcount > ufunc->uf_args.ga_len)
+    if (argcount > regular_args && !has_varargs(ufunc))
     {
 	semsg(_(e_toomanyarg), ufunc->uf_name);
 	return FAIL;
     }
-    if (argcount < ufunc->uf_args.ga_len - ufunc->uf_def_args.ga_len)
+    if (argcount < regular_args - ufunc->uf_def_args.ga_len)
     {
 	semsg(_(e_toofewarg), ufunc->uf_name);
 	return FAIL;
+    }
+
+    // Turn varargs into a list.
+    if (ufunc->uf_va_name != NULL)
+    {
+	int count = argcount - regular_args;
+
+	// TODO: add default values for optional arguments?
+	generate_NEWLIST(cctx, count < 0 ? 0 : count);
+	argcount = regular_args + 1;
     }
 
     if ((isn = generate_instr(cctx,
@@ -1057,7 +1081,7 @@ reserve_local(cctx_T *cctx, char_u *name, size_t len, int isConst, type_T *type)
     int	    idx;
     lvar_T  *lvar;
 
-    if (lookup_arg(name, len, cctx) >= 0)
+    if (lookup_arg(name, len, cctx) >= 0 || lookup_vararg(name, len, cctx))
     {
 	emsg_namelen(_("E1006: %s is used as an argument"), name, len);
 	return -1;
@@ -1338,7 +1362,7 @@ vartype_name(vartype_T type)
  * Return the name of a type.
  * The result may be in allocated memory, in which case "tofree" is set.
  */
-    static char *
+    char *
 type_name(type_T *type, char **tofree)
 {
     char *name = vartype_name(type->tt_type);
@@ -1528,6 +1552,15 @@ compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
 
 	    // Arguments are located above the frame pointer.
 	    idx -= cctx->ctx_ufunc->uf_args.ga_len + STACK_FRAME_SIZE;
+	    if (cctx->ctx_ufunc->uf_va_name != NULL)
+		--idx;
+	    gen_load = TRUE;
+	}
+	else if (lookup_vararg(*arg, len, cctx))
+	{
+	    // varargs is always the last argument
+	    idx = -STACK_FRAME_SIZE - 1;
+	    type = cctx->ctx_ufunc->uf_va_type;
 	    gen_load = TRUE;
 	}
 	else
@@ -1773,10 +1806,10 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     // Get the funcref in "rettv".
     if (get_lambda_tv(arg, &rettv, TRUE) == FAIL)
 	return FAIL;
+    ufunc = rettv.vval.v_partial->pt_func;
 
     // The function will have one line: "return {expr}".
     // Compile it into instructions.
-    ufunc = rettv.vval.v_partial->pt_func;
     compile_def_function(ufunc, TRUE);
 
     if (ufunc->uf_dfunc_idx >= 0)

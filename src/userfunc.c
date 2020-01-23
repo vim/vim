@@ -63,6 +63,76 @@ func_tbl_get(void)
 }
 
 /*
+ * Get one function argument and an optional type: "arg: type".
+ * Return a pointer to after the type.
+ * When something is wrong return "arg".
+ */
+    static char_u *
+one_function_arg(char_u *arg, garray_T *newargs, garray_T *argtypes, int skip)
+{
+    char_u *p = arg;
+
+    while (ASCII_ISALNUM(*p) || *p == '_')
+	++p;
+    if (arg == p || isdigit(*arg)
+	    || (p - arg == 9 && STRNCMP(arg, "firstline", 9) == 0)
+	    || (p - arg == 8 && STRNCMP(arg, "lastline", 8) == 0))
+    {
+	if (!skip)
+	    semsg(_("E125: Illegal argument: %s"), arg);
+	return arg;
+    }
+    if (newargs != NULL && ga_grow(newargs, 1) == FAIL)
+	return arg;
+    if (newargs != NULL)
+    {
+	char_u	*arg_copy;
+	int	c;
+	int	i;
+
+	c = *p;
+	*p = NUL;
+	arg_copy = vim_strsave(arg);
+	if (arg_copy == NULL)
+	{
+	    *p = c;
+	    return arg;
+	}
+
+	// Check for duplicate argument name.
+	for (i = 0; i < newargs->ga_len; ++i)
+	    if (STRCMP(((char_u **)(newargs->ga_data))[i], arg_copy) == 0)
+	    {
+		semsg(_("E853: Duplicate argument name: %s"), arg_copy);
+		vim_free(arg_copy);
+		return arg;
+	    }
+	((char_u **)(newargs->ga_data))[newargs->ga_len] = arg_copy;
+	newargs->ga_len++;
+
+	*p = c;
+    }
+
+    // get any type from "arg: type"
+    if (argtypes != NULL && ga_grow(argtypes, 1) == OK)
+    {
+	char_u *type = NULL;
+
+	if (*p == ':')
+	{
+	    type = skipwhite(p + 1);
+	    p = skip_type(type);
+	    type = vim_strnsave(type, p - type);
+	}
+	else if (*skipwhite(p) == ':')
+	    emsg(_("E1059: No white space allowed before :"));
+	((char_u **)argtypes->ga_data)[argtypes->ga_len++] = type;
+    }
+
+    return p;
+}
+
+/*
  * Get function arguments.
  */
     int
@@ -70,7 +140,7 @@ get_function_args(
     char_u	**argp,
     char_u	endchar,
     garray_T	*newargs,
-    garray_T	*argtypes,
+    garray_T	*argtypes,	// NULL unless using :def
     int		*varargs,
     garray_T	*default_args,
     int		skip)
@@ -79,7 +149,6 @@ get_function_args(
     char_u	*arg = *argp;
     char_u	*p = arg;
     int		c;
-    int		i;
     int		any_default = FALSE;
     char_u	*expr;
 
@@ -104,62 +173,28 @@ get_function_args(
 		*varargs = TRUE;
 	    p += 3;
 	    mustend = TRUE;
+
+	    if (argtypes != NULL)
+	    {
+		// ...name: list<type>
+		if (!ASCII_ISALPHA(*p))
+		{
+		    emsg(_("E1055: Missing name after ..."));
+		    break;
+		}
+
+		arg = p;
+		p = one_function_arg(p, newargs, argtypes, skip);
+		if (p == arg)
+		    break;
+	    }
 	}
 	else
 	{
 	    arg = p;
-	    while (ASCII_ISALNUM(*p) || *p == '_')
-		++p;
-	    if (arg == p || isdigit(*arg)
-		    || (p - arg == 9 && STRNCMP(arg, "firstline", 9) == 0)
-		    || (p - arg == 8 && STRNCMP(arg, "lastline", 8) == 0))
-	    {
-		if (!skip)
-		    semsg(_("E125: Illegal argument: %s"), arg);
+	    p = one_function_arg(p, newargs, argtypes, skip);
+	    if (p == arg)
 		break;
-	    }
-	    if (newargs != NULL && ga_grow(newargs, 1) == FAIL)
-		goto err_ret;
-	    if (newargs != NULL)
-	    {
-		c = *p;
-		*p = NUL;
-		arg = vim_strsave(arg);
-		if (arg == NULL)
-		{
-		    *p = c;
-		    goto err_ret;
-		}
-
-		// Check for duplicate argument name.
-		for (i = 0; i < newargs->ga_len; ++i)
-		    if (STRCMP(((char_u **)(newargs->ga_data))[i], arg) == 0)
-		    {
-			semsg(_("E853: Duplicate argument name: %s"), arg);
-			vim_free(arg);
-			goto err_ret;
-		    }
-		((char_u **)(newargs->ga_data))[newargs->ga_len] = arg;
-		newargs->ga_len++;
-
-		*p = c;
-	    }
-
-	    // get any type from "arg: type"
-	    if (argtypes != NULL && ga_grow(argtypes, 1) == OK)
-	    {
-		char_u *type = NULL;
-
-		if (*p == ':')
-		{
-		    type = skipwhite(p + 1);
-		    p = skip_type(type);
-		    type = vim_strnsave(type, p - type);
-		}
-		else if (*skipwhite(p) == ':')
-		    emsg(_("E999: No white space allowed before :"));
-		((char_u **)argtypes->ga_data)[argtypes->ga_len++] = type;
-	    }
 
 	    if (*skipwhite(p) == '=' && default_args != NULL)
 	    {
@@ -367,6 +402,7 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 #endif
 	if (sandbox)
 	    flags |= FC_SANDBOX;
+	// can be called with more args than uf_args.ga_len
 	fp->uf_varargs = TRUE;
 	fp->uf_flags = flags;
 	fp->uf_calls = 0;
@@ -1369,12 +1405,13 @@ call_user_func_check(
 	dict_T	    *selfdict)
 {
     int error;
+    int regular_args = fp->uf_args.ga_len;
 
     if (fp->uf_flags & FC_RANGE && funcexe->doesrange != NULL)
 	*funcexe->doesrange = TRUE;
-    if (argcount < fp->uf_args.ga_len - fp->uf_def_args.ga_len)
+    if (argcount < regular_args - fp->uf_def_args.ga_len)
 	error = FCERR_TOOFEW;
-    else if (!fp->uf_varargs && argcount > fp->uf_args.ga_len)
+    else if (!has_varargs(fp) && argcount > regular_args)
 	error = FCERR_TOOMANY;
     else if ((fp->uf_flags & FC_DICT) && selfdict == NULL)
 	error = FCERR_DICT;
@@ -1875,6 +1912,14 @@ list_func_head(ufunc_T *fp, int indent)
 	if (j)
 	    msg_puts(", ");
 	msg_puts((char *)FUNCARG(fp, j));
+	if (fp->uf_arg_types != NULL)
+	{
+	    char *tofree;
+
+	    msg_puts(": ");
+	    msg_puts(type_name(fp->uf_arg_types[j], &tofree));
+	    vim_free(tofree);
+	}
 	if (j >= fp->uf_args.ga_len - fp->uf_def_args.ga_len)
 	{
 	    msg_puts(" = ");
@@ -1887,6 +1932,21 @@ list_func_head(ufunc_T *fp, int indent)
 	if (j)
 	    msg_puts(", ");
 	msg_puts("...");
+    }
+    if (fp->uf_va_name != NULL)
+    {
+	if (j)
+	    msg_puts(", ");
+	msg_puts("...");
+	msg_puts((char *)fp->uf_va_name);
+	if (fp->uf_va_type)
+	{
+	    char *tofree;
+
+	    msg_puts(": ");
+	    msg_puts(type_name(fp->uf_va_type, &tofree));
+	    vim_free(tofree);
+	}
     }
     msg_putchar(')');
     if (fp->uf_flags & FC_ABORT)
@@ -2403,7 +2463,7 @@ ex_function(exarg_T *eap)
 	    if (p > ret_type)
 		p = skipwhite(p);
 	    else
-		semsg(_("E999: expected a type: %s"), ret_type);
+		semsg(_("E1056: expected a type: %s"), ret_type);
 	}
     }
     else
@@ -2514,7 +2574,7 @@ ex_function(exarg_T *eap)
 	if (theline == NULL)
 	{
 	    if (eap->cmdidx == CMD_def)
-		emsg(_("E999: Missing :enddef"));
+		emsg(_("E1057: Missing :enddef"));
 	    else
 		emsg(_("E126: Missing :endfunction"));
 	    goto erret;
@@ -2572,7 +2632,7 @@ ex_function(exarg_T *eap)
 		    nextcmd = line_arg;
 		else if (*p != NUL && *p != '"' && p_verbose > 0)
 		    give_warning2(eap->cmdidx == CMD_def
-			? (char_u *)_("W999: Text found after :enddef: %s")
+			? (char_u *)_("W1001: Text found after :enddef: %s")
 			: (char_u *)_("W22: Text found after :endfunction: %s"),
 			 p, TRUE);
 		if (nextcmd != NULL)
@@ -2612,7 +2672,7 @@ ex_function(exarg_T *eap)
 		if (*skipwhite(p) == '(')
 		{
 		    if (nesting == MAX_FUNC_NESTING - 1)
-			emsg(_("E999: function nesting too deep"));
+			emsg(_("E1058: function nesting too deep"));
 		    else
 		    {
 			++nesting;
@@ -2897,12 +2957,16 @@ ex_function(exarg_T *eap)
 
 	if (argtypes.ga_len > 0)
 	{
-	    fp->uf_arg_types = ALLOC_CLEAR_MULT(type_T *, argtypes.ga_len);
+	    // When "varargs" is set the last name/type goes into uf_va_name
+	    // and uf_va_type.
+	    int len = argtypes.ga_len - (varargs ? 1 : 0);
+
+	    fp->uf_arg_types = ALLOC_CLEAR_MULT(type_T *, len);
 	    if (fp->uf_arg_types != NULL)
 	    {
 		int i;
 
-		for (i = 0; i < argtypes.ga_len; ++ i)
+		for (i = 0; i < len; ++ i)
 		{
 		    p = ((char_u **)argtypes.ga_data)[i];
 		    if (p == NULL)
@@ -2912,6 +2976,21 @@ ex_function(exarg_T *eap)
 			fp->uf_arg_types[i] = parse_type(&p, &fp->uf_type_list);
 		}
 	    }
+	    if (varargs)
+	    {
+		// Move the last argument "...name: type" to uf_va_name and
+		// uf_va_type.
+		fp->uf_va_name = ((char_u **)fp->uf_args.ga_data)
+						      [fp->uf_args.ga_len - 1];
+		--fp->uf_args.ga_len;
+		p = ((char_u **)argtypes.ga_data)[len];
+		if (p == NULL)
+		    // todo: get type from default value
+		    fp->uf_va_type = &t_any;
+		else
+		    fp->uf_va_type = parse_type(&p, &fp->uf_type_list);
+	    }
+	    varargs = FALSE;
 	}
 
 	// parse the return type, if any
@@ -2999,6 +3078,16 @@ translated_function_exists(char_u *name)
 }
 
 /*
+ * Return TRUE when "ufunc" has old-style "..." varargs
+ * or named varargs "...name: type".
+ */
+    int
+has_varargs(ufunc_T *ufunc)
+{
+    return ufunc->uf_varargs || ufunc->uf_va_name != NULL;
+}
+
+/*
  * Return TRUE if a function "name" exists.
  * If "no_defef" is TRUE, do not dereference a Funcref.
  */
@@ -3078,7 +3167,7 @@ get_user_func_name(expand_T *xp, int idx)
 	if (xp->xp_context != EXPAND_USER_FUNC)
 	{
 	    STRCAT(IObuff, "(");
-	    if (!fp->uf_varargs && fp->uf_args.ga_len == 0)
+	    if (!has_varargs(fp) && fp->uf_args.ga_len == 0)
 		STRCAT(IObuff, ")");
 	}
 	return IObuff;

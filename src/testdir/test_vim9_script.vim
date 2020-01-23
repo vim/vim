@@ -108,6 +108,20 @@ def Test_call_ufunc_count()
   unlet g:counter
 enddef
 
+def MyVarargs(arg: string, ...rest: list<string>): string
+  let res = arg
+  for s in rest
+    res ..= ',' .. s
+  endfor
+  return res
+enddef
+
+def Test_call_varargs()
+  assert_equal('one', MyVarargs('one'))
+  assert_equal('one,two', MyVarargs('one', 'two'))
+  assert_equal('one,two,three', MyVarargs('one', 'two', 'three'))
+enddef
+
 def Test_return_type_wrong()
   CheckScriptFailure(['def Func(): number', 'return "a"', 'enddef'], 'expected number but got string')
   CheckScriptFailure(['def Func(): string', 'return 1', 'enddef'], 'expected string but got number')

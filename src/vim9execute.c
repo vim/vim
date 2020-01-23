@@ -70,6 +70,15 @@ typedef struct {
 #define STACK_TV_BOT(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_stack.ga_len + idx)
 
 /*
+ * Return the number of arguments, including any vararg.
+ */
+    static int
+ufunc_argcount(ufunc_T *ufunc)
+{
+    return ufunc->uf_args.ga_len + (ufunc->uf_va_name != NULL ? 1 : 0);
+}
+
+/*
  * Call compiled function "cdf_idx" from compiled code.
  *
  * Stack has:
@@ -86,7 +95,7 @@ call_dfunc(int cdf_idx, int argcount, ectx_T *ectx)
 {
     dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + cdf_idx;
     ufunc_T *ufunc = dfunc->df_ufunc;
-    int	    optcount = ufunc->uf_args.ga_len - argcount;
+    int	    optcount = ufunc_argcount(ufunc) - argcount;
     int	    idx;
 
     if (dfunc->df_deleted)
@@ -99,9 +108,14 @@ call_dfunc(int cdf_idx, int argcount, ectx_T *ectx)
 	return FAIL;
 
 // TODO: Put omitted argument default values on the stack.
-    if (argcount < dfunc->df_ufunc->uf_args.ga_len)
+    if (optcount > 0)
     {
 	emsg("optional arguments not implemented yet");
+	return FAIL;
+    }
+    if (optcount < 0)
+    {
+	emsg("argument count wrong?");
 	return FAIL;
     }
 //    for (idx = argcount - dfunc->df_minarg;
@@ -112,6 +126,8 @@ call_dfunc(int cdf_idx, int argcount, ectx_T *ectx)
 //    }
 
     // Store current execution state in stack frame for ISN_RETURN.
+    // TODO: If the actual number of arguments doesn't match what the called
+    // function expects things go bad.
     STACK_TV_BOT(0)->vval.v_number = ectx->ec_dfunc_idx;
     STACK_TV_BOT(1)->vval.v_number = ectx->ec_iidx;
     STACK_TV_BOT(2)->vval.v_number = ectx->ec_frame;
@@ -153,8 +169,8 @@ func_return(ectx_T *ectx)
 					 idx < ectx->ec_stack.ga_len - 1; ++idx)
 	clear_tv(STACK_TV(idx));
     dfunc = ((dfunc_T *)def_functions.ga_data) + ectx->ec_dfunc_idx;
-    ectx->ec_stack.ga_len =
-			  ectx->ec_frame - dfunc->df_ufunc->uf_args.ga_len + 1;
+    ectx->ec_stack.ga_len = ectx->ec_frame
+					 - ufunc_argcount(dfunc->df_ufunc) + 1;
     ectx->ec_dfunc_idx = STACK_TV(ectx->ec_frame)->vval.v_number;
     ectx->ec_iidx = STACK_TV(ectx->ec_frame + 1)->vval.v_number;
     ectx->ec_frame = STACK_TV(ectx->ec_frame + 2)->vval.v_number;
@@ -920,7 +936,7 @@ call_def_function(
 
 			if (li == NULL)
 			    goto failed;
-			*STACK_TV_BOT(0) = li->li_tv;
+			copy_tv(&li->li_tv, STACK_TV_BOT(0));
 			++ectx.ec_stack.ga_len;
 		    }
 		}
@@ -1481,6 +1497,10 @@ ex_disassemble(exarg_T *eap)
 	semsg("Function %s is not compiled", eap->arg);
 	return;
     }
+    if (ufunc->uf_name_exp != NULL)
+	msg((char *)ufunc->uf_name_exp);
+    else
+	msg((char *)ufunc->uf_name);
 
     dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
     instr = dfunc->df_instr;
@@ -1513,7 +1533,11 @@ ex_disassemble(exarg_T *eap)
 		}
 		break;
 	    case ISN_LOAD:
-		smsg("%4d LOAD $%lld", current, iptr->isn_arg.number);
+		if (iptr->isn_arg.number < 0)
+		    smsg("%4d LOAD arg[%lld]", current,
+				      iptr->isn_arg.number + STACK_FRAME_SIZE);
+		else
+		    smsg("%4d LOAD $%lld", current, iptr->isn_arg.number);
 		break;
 	    case ISN_LOADV:
 		smsg("%4d LOADV v:%s", current,
@@ -1632,7 +1656,9 @@ ex_disassemble(exarg_T *eap)
 							     + cdfunc->cdf_idx;
 
 		    smsg("%4d DCALL %s(argc %d)", current,
-				  df->df_ufunc->uf_name, cdfunc->cdf_argcount);
+			    df->df_ufunc->uf_name_exp != NULL
+				? df->df_ufunc->uf_name_exp
+				: df->df_ufunc->uf_name, cdfunc->cdf_argcount);
 		}
 		break;
 	    case ISN_UCALL:

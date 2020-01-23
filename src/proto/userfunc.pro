@@ -22,6 +22,9 @@ char_u *trans_function_name(char_u **pp, int skip, int flags, funcdict_T *fdp, p
 void ex_function(exarg_T *eap);
 int eval_fname_script(char_u *p);
 int translated_function_exists(char_u *name);
+int has_varargs(ufunc_T *ufunc);
+int is_def_func(ufunc_T *ufunc);
+void set_def_func(ufunc_T *ufunc);
 int function_exists(char_u *name, int no_deref);
 char_u *get_expanded_name(char_u *name, int check);
 char_u *get_user_func_name(expand_T *xp, int idx);

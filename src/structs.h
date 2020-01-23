@@ -1493,8 +1493,8 @@ typedef struct funccall_S funccall_T;
  */
 typedef struct
 {
-    int		uf_varargs;	// variable nr of arguments
-    int		uf_flags;
+    int		uf_varargs;	// variable nr of arguments (old style)
+    int		uf_flags;	// FC_ flags
     int		uf_calls;	// nr of active calls
     int		uf_cleared;	// func_clear() was already called
     int		uf_dfunc_idx;	// >= 0 for :def function only
@@ -1502,9 +1502,11 @@ typedef struct
     garray_T	uf_def_args;	// default argument expressions
 
     // for :def
-    type_T	**uf_arg_types;	// argument types (count uf_args.ga_len)
+    type_T	**uf_arg_types;	// argument types (count == uf_args.ga_len)
     type_T	*uf_ret_type;	// return type
     garray_T	uf_type_list;	// types used in arg and return types
+    char_u	*uf_va_name;	// name from "...name" or NULL
+    type_T	*uf_va_type;	// type from "...name: type" or NULL
 
     garray_T	uf_lines;	// function lines
 # ifdef FEAT_PROFILE

@@ -567,7 +567,7 @@ let $TESTVAR = 'testvar'
 let @a = 'register a'
 
 " test low level expression
-def Test_expr7()
+def Test_expr7_number()
   " number constant
   assert_equal(0, 0)
   assert_equal(654, 0654)
@@ -575,7 +575,9 @@ def Test_expr7()
   assert_equal(6, 0x6)
   assert_equal(15, 0xf)
   assert_equal(255, 0xff)
+enddef
 
+def Test_expr7_float()
   " float constant
   if has('float')
     assert_equal(g:float_zero, .0)
@@ -583,12 +585,16 @@ def Test_expr7()
     assert_equal(g:float_neg, -9.8)
     assert_equal(g:float_big, 9.9e99)
   endif
+enddef
 
+def Test_expr7_blob()
   " blob constant
   assert_equal(g:blob_empty, 0z)
   assert_equal(g:blob_one, 0z01)
   assert_equal(g:blob_long, 0z0102.0304)
+enddef
 
+def Test_expr7_string()
   " string constant
   assert_equal(g:string_empty, '')
   assert_equal(g:string_empty, "")
@@ -597,23 +603,31 @@ def Test_expr7()
   assert_equal(g:string_long, 'abcdefghijklm')
   assert_equal(g:string_long, "abcdefghijklm")
   assert_equal(g:string_special, "ab\ncd\ref\ekk")
+enddef
 
+def Test_expr7_special()
   " special constant
   assert_equal(g:special_true, true)
   assert_equal(g:special_false, false)
   assert_equal(g:special_null, v:null)
   assert_equal(g:special_none, v:none)
+enddef
 
+def Test_expr7_list()
   " list
   assert_equal(g:list_empty, [])
   assert_equal(g:list_empty, [  ])
   assert_equal(g:list_mixed, [1, 'b', false])
+enddef
 
+def Test_expr7_lambda()
   " lambda
   let La = { -> 'result'}
   assert_equal('result', La())
   assert_equal([1, 3, 5], [1, 2, 3]->map({key, val -> key + val}))
+enddef
 
+def Test_expr7_dict()
   " dictionary
   assert_equal(g:dict_empty, {})
   assert_equal(g:dict_empty, {  })
@@ -621,7 +635,9 @@ def Test_expr7()
   let key = 'one'
   let val = 1
   assert_equal(g:dict_one, {key: val})
+enddef
 
+def Test_expr7_option()
   " option
   set ts=11
   assert_equal(11, &ts)
@@ -629,14 +645,20 @@ def Test_expr7()
   set grepprg=some\ text
   assert_equal('some text', &grepprg)
   set grepprg&
+enddef
 
+def Test_expr7_environment()
   " environment variable
   assert_equal('testvar', $TESTVAR)
   assert_equal('', $ASDF_ASD_XXX)
+enddef
 
+def Test_expr7_register()
   " register
   assert_equal('register a', @a)
+enddef
 
+def Test_expr7_parens()
   " (expr)
   assert_equal(4, (6 * 4) / 6)
   assert_equal(0, 6 * ( 4 / 6 ))
@@ -646,7 +668,9 @@ def Test_expr7()
   assert_equal(6, --6)
   assert_equal(6, -+-6)
   assert_equal(-6, ---6)
+enddef
 
+def Test_expr7_not()
   assert_equal(true, !'')
   assert_equal(true, ![])
   assert_equal(false, !'asdf')
