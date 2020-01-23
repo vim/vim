@@ -33,7 +33,7 @@
 #
 #	OLE interface: OLE=yes (usually with GUI=yes)
 #
-#	IME support: IME=yes	(requires GUI=yes)
+#	IME support: IME=yes	(default is yes)
 #	  DYNAMIC_IME=[yes or no]  (to load the imm32.dll dynamically, default
 #	  is yes)
 #	Global IME support: GIME=yes (requires GUI=yes)
@@ -812,6 +812,9 @@ OLE_IDL = if_ole.idl
 OLE_LIB = oleaut32.lib
 !endif
 
+!ifndef IME
+IME = yes
+!endif
 !if "$(IME)" == "yes"
 CFLAGS = $(CFLAGS) -DFEAT_MBYTE_IME
 ! ifndef DYNAMIC_IME

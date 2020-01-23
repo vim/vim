@@ -1,4 +1,4 @@
-*quickref.txt*  For Vim version 8.2.  Last change: 2019 Dec 07
+*quickref.txt*  For Vim version 8.2.  Last change: 2020 Jan 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1057,8 +1057,7 @@ Short explanation of each option:		*option-list*
 				   search
 |<Del>|		   <Del>	while entering a count: delete last character
 |:version|	:ve[rsion]	show version information
-|:mode|		:mode N		MS-Windows: set screen mode to N (number, C80,
-				C4350, etc.)
+|:mode|		:mode N		set screen mode to N (obsolete)
 |:normal|	:norm[al][!] {commands}
 				execute Normal mode commands
 |Q|		   Q		switch to "Ex" mode

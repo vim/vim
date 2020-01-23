@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2020 Jan 01
+*options.txt*	For Vim version 8.2.  Last change: 2020 Jan 18
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -517,10 +517,11 @@ Examples:
 
 The second form (this is compatible with some versions of Vi):
 
-	[text]{white}{vi:|vim:|Vim:|ex:}[white]se[t] {options}:[text]
+	[text{white}]{vi:|vim:|Vim:|ex:}[white]se[t] {options}:[text]
 
-[text]			any text or empty
-{white}			at least one blank character (<Space> or <Tab>)
+[text{white}]		empty or any text followed by at least one blank
+			character (<Space> or <Tab>); "ex:" always requires at
+			least one blank character
 {vi:|vim:|Vim:|ex:}	the string "vi:", "vim:", "Vim:" or "ex:"
 [white]			optional white space
 se[t]			the string "set " or "se " (note the space); When
@@ -6753,8 +6754,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	option is on, dots in file names are replaced with underscores when
 	adding an extension (".~" or ".swp").  This option is useful
 	when editing files on an MS-DOS compatible filesystem, e.g., messydos
-	or crossdos.  When running the Win32 GUI version under Win32s, this
-	option is always on by default.
+	or crossdos.
 
 						*'showbreak'* *'sbr'* *E595*
 'showbreak' 'sbr'	string	(default "")
@@ -7289,8 +7289,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 <	Beware that an expression is evaluated each and every time the status
 	line is displayed.
 				*stl-%{* *g:actual_curbuf* *g:actual_curwin*
-	While evaluationg %{} the current buffer and current window will be
-	set temporarily to that of the window (and buffer) whose statusline is
+	While evaluating %{} the current buffer and current window will be set
+	temporarily to that of the window (and buffer) whose statusline is
 	currently being drawn.  The expression will evaluate in this context.
 	The variable "g:actual_curbuf" is set to the `bufnr()` number of the
 	real current buffer and "g:actual_curwin" to the |window-ID| of the

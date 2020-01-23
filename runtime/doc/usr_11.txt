@@ -1,4 +1,4 @@
-*usr_11.txt*	For Vim version 8.2.  Last change: 2019 Apr 28
+*usr_11.txt*	For Vim version 8.2.  Last change: 2020 Jan 17
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -211,8 +211,11 @@ will automatically delete it:
 - The flag that the file was modified is not set.
 - The process is not running.
 
+You can programatically deal with this situation with the |FileChangedShell|
+autocommand event.
 
-UNREADABLE SWAP FILE
+
+UNREADABLE SWAP FILE ~
 
 Sometimes the line
 

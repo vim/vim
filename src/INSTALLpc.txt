@@ -957,6 +957,7 @@ correct directory structure.
 
   Copy the "runtime" files into "vim82":
      copy runtime\* vim82
+     xcopy /s runtime\* vim82
 
   B.  Copy the new binaries into the "vim82" directory
   ----------------------------------------------------

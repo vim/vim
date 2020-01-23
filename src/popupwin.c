@@ -2484,6 +2484,8 @@ popup_close_tabpage(tabpage_T *tp, int id)
     void
 close_all_popups(void)
 {
+    if (ERROR_IF_POPUP_WINDOW)
+	return;
     while (first_popupwin != NULL)
 	popup_close(first_popupwin->w_id);
     while (curtab->tp_first_popupwin != NULL)

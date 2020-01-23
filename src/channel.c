@@ -5821,9 +5821,9 @@ job_start(
     char_u	*cmd = NULL;
     char	**argv = NULL;
     int		argc = 0;
+    int		i;
 #if defined(UNIX)
 # define USE_ARGV
-    int		i;
 #else
     garray_T	ga;
 #endif
@@ -5996,8 +5996,12 @@ theend:
 #ifndef USE_ARGV
     vim_free(ga.ga_data);
 #endif
-    if (argv != job->jv_argv)
+    if (argv != NULL && argv != job->jv_argv)
+    {
+	for (i = 0; argv[i] != NULL; i++)
+	    vim_free(argv[i]);
 	vim_free(argv);
+    }
     free_job_options(&opt);
     return job;
 }
