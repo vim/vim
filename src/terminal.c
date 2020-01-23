@@ -591,9 +591,7 @@ term_start(
 #if defined(FEAT_SESSION)
     // Remember the command for the session file.
     if (opt->jo_term_norestore || argv != NULL)
-    {
 	term->tl_command = vim_strsave((char_u *)"NONE");
-    }
     else if (argvar->v_type == VAR_STRING)
     {
 	char_u	*cmd = argvar->vval.v_string;
