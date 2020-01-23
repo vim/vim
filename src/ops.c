@@ -2744,7 +2744,12 @@ block_prep(
     char_u	*line;
     char_u	*prev_pstart;
     char_u	*prev_pend;
+#ifdef FEAT_LINEBREAK
+    int		lbr_saved = curwin->w_p_lbr;
 
+    // Avoid a problem with unwanted linebreaks in block mode.
+    curwin->w_p_lbr = FALSE;
+#endif
     bdp->startspaces = 0;
     bdp->endspaces = 0;
     bdp->textlen = 0;
@@ -2863,6 +2868,9 @@ block_prep(
     }
     bdp->textcol = (colnr_T) (pstart - line);
     bdp->textstart = pstart;
+#ifdef FEAT_LINEBREAK
+    curwin->w_p_lbr = lbr_saved;
+#endif
 }
 
 /*
@@ -4556,11 +4564,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 #ifdef FEAT_LINEBREAK
 		// Restore linebreak, so that when the user edits it looks as
 		// before.
-		if (curwin->w_p_lbr != lbr_saved)
-		{
-		    curwin->w_p_lbr = lbr_saved;
-		    get_op_vcol(oap, redo_VIsual_mode, FALSE);
-		}
+		curwin->w_p_lbr = lbr_saved;
 #endif
 		// Reset finish_op now, don't want it set inside edit().
 		finish_op = FALSE;
@@ -4663,11 +4667,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 #ifdef FEAT_LINEBREAK
 		// Restore linebreak, so that when the user edits it looks as
 		// before.
-		if (curwin->w_p_lbr != lbr_saved)
-		{
-		    curwin->w_p_lbr = lbr_saved;
-		    get_op_vcol(oap, redo_VIsual_mode, FALSE);
-		}
+		curwin->w_p_lbr = lbr_saved;
 #endif
 		op_insert(oap, cap->count1);
 #ifdef FEAT_LINEBREAK
@@ -4698,11 +4698,7 @@ do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank)
 #ifdef FEAT_LINEBREAK
 		// Restore linebreak, so that when the user edits it looks as
 		// before.
-		if (curwin->w_p_lbr != lbr_saved)
-		{
-		    curwin->w_p_lbr = lbr_saved;
-		    get_op_vcol(oap, redo_VIsual_mode, FALSE);
-		}
+		curwin->w_p_lbr = lbr_saved;
 #endif
 		op_replace(oap, cap->nchar);
 	    }
