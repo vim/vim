@@ -711,31 +711,48 @@ func Test_terminal_write_stdin()
   let nrs = split(getline('$'))
   call assert_equal(['2', '2', '10'], nrs)
   bwipe
+endfunc
 
-  if executable('python')
+func Test_terminal_eof_arg()
+  CheckExecutable python
+
+  new
+  call setline(1, ['print("hello")'])
+  1term ++eof=exit() python
+  " MS-Windows echoes the input, Unix doesn't.
+  call WaitFor('getline("$") =~ "exit" || getline(1) =~ "hello"')
+  if getline(1) =~ 'hello'
+    call assert_equal('hello', getline(1))
+  else
+    call assert_equal('hello', getline(line('$') - 1))
+  endif
+  bwipe
+
+  if has('win32')
     new
     call setline(1, ['print("hello")'])
-    1term ++eof=exit() python
-    " MS-Windows echoes the input, Unix doesn't.
-    call WaitFor('getline("$") =~ "exit" || getline(1) =~ "hello"')
-    if getline(1) =~ 'hello'
-      call assert_equal('hello', getline(1))
-    else
-      call assert_equal('hello', getline(line('$') - 1))
-    endif
+    1term ++eof=<C-Z> python
+    call WaitForAssert({-> assert_match('Z', getline("$"))})
+    call assert_equal('hello', getline(line('$') - 1))
     bwipe
-
-    if has('win32')
-      new
-      call setline(1, ['print("hello")'])
-      1term ++eof=<C-Z> python
-      call WaitForAssert({-> assert_match('Z', getline("$"))})
-      call assert_equal('hello', getline(line('$') - 1))
-      bwipe
-    endif
   endif
+endfunc
 
-  bwipe!
+func Test_terminal_duplicate_eof_arg()
+  CheckExecutable python
+
+  " Check the last specified ++eof arg is used and should not memory leak.
+  new
+  call setline(1, ['print("hello")'])
+  1term ++eof=<C-D> ++eof=exit() python
+  " MS-Windows echoes the input, Unix doesn't.
+  call WaitFor('getline("$") =~ "exit" || getline(1) =~ "hello"')
+  if getline(1) =~ 'hello'
+    call assert_equal('hello', getline(1))
+  else
+    call assert_equal('hello', getline(line('$') - 1))
+  endif
+  bwipe
 endfunc
 
 func Test_terminal_no_cmd()
