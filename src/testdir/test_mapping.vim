@@ -831,4 +831,26 @@ func Test_abbr_trigger_special()
   close!
 endfunc
 
+" Test for '<' in 'cpoptions'
+func Test_map_cpo_special_keycode()
+  set cpo-=<
+  imap x<Bslash>k Test
+  let d = maparg('x<Bslash>k', 'i', 0, 1)
+  call assert_equal(['x\k', 'Test', 'i'], [d.lhs, d.rhs, d.mode])
+  call feedkeys(":imap x\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"imap x\k', @:)
+  iunmap x<Bslash>k
+  set cpo+=<
+  imap x<Bslash>k Test
+  let d = maparg('x<Bslash>k', 'i', 0, 1)
+  call assert_equal(['x<Bslash>k', 'Test', 'i'], [d.lhs, d.rhs, d.mode])
+  call feedkeys(":imap x\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"imap x<Bslash>k', @:)
+  iunmap x<Bslash>k
+  set cpo-=<
+  " Modifying 'cpo' above adds some default mappings, remove them
+  mapclear
+  mapclear!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
