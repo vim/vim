@@ -1,4 +1,4 @@
-*usr_27.txt*	For Vim version 8.1.  Last change: 2019 Jul 14
+*usr_27.txt*	For Vim version 8.2.  Last change: 2019 Jul 14
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -83,7 +83,7 @@ matter if 'ignorecase' or 'smartcase' was changed.
 
 	Note:
 	If your search takes much longer than you expected, you can interrupt
-	it with CTRL-C on Unix and  CTRL-Break on MS-DOS and MS-Windows.
+	it with CTRL-C on Unix and CTRL-Break on MS-Windows.
 
 ==============================================================================
 *27.2*	Wrapping around the file end

@@ -1,7 +1,9 @@
 " tests for listener_add() and listener_remove()
 
-func s:StoreList(s, l)
+func s:StoreList(s, e, a, l)
   let s:start = a:s
+  let s:end = a:e
+  let s:added = a:a
   let s:text = getline(a:s)
   let s:list = a:l
 endfunc
@@ -19,7 +21,7 @@ func Test_listening()
   new
   call setline(1, ['one', 'two'])
   let s:list = []
-  let id = listener_add({b, s, e, a, l -> s:StoreList(s, l)})
+  let id = listener_add({b, s, e, a, l -> s:StoreList(s, e, a, l)})
   call setline(1, 'one one')
   call listener_flush()
   call assert_equal([{'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list)
@@ -65,6 +67,9 @@ func Test_listening()
   call bufnr()->listener_flush()
   call assert_equal([{'lnum': 3, 'end': 3, 'col': 1, 'added': 1},
 	\ {'lnum': 1, 'end': 2, 'col': 1, 'added': 0}], s:list)
+  call assert_equal(1, s:start)
+  call assert_equal(3, s:end)
+  call assert_equal(1, s:added)
 
   " an insert just above a previous change that was the last one does not get
   " merged
@@ -289,4 +294,35 @@ func Test_listener_undo_line_number()
   delfunc DoIt
   delfunc EchoChanges
   call listener_remove(lid)
+endfunc
+
+func Test_listener_cleared_newbuf()
+  func Listener(bufnr, start, end, added, changes)
+    let g:gotCalled += 1
+  endfunc
+  new
+  " check that listening works
+  let g:gotCalled = 0
+  let lid = listener_add("Listener")
+  call feedkeys("axxx\<Esc>", 'xt')
+  call listener_flush(bufnr())
+  call assert_equal(1, g:gotCalled)
+  %bwipe!
+  let bufnr = bufnr()
+  let b:testing = 123
+  let lid = listener_add("Listener")
+  enew!
+  " check buffer is reused
+  call assert_equal(bufnr, bufnr())
+  call assert_false(exists('b:testing'))
+
+  " check that listening stops when reusing the buffer
+  let g:gotCalled = 0
+  call feedkeys("axxx\<Esc>", 'xt')
+  call listener_flush(bufnr())
+  call assert_equal(0, g:gotCalled)
+  unlet g:gotCalled
+
+  bwipe!
+  delfunc Listener
 endfunc

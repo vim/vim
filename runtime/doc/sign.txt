@@ -1,4 +1,4 @@
-*sign.txt*      For Vim version 8.1.  Last change: 2019 Sep 06
+*sign.txt*      For Vim version 8.2.  Last change: 2019 Nov 30
 
 
 		  VIM REFERENCE MANUAL    by Gordon Prieur
@@ -48,8 +48,8 @@ When signs are defined for a file, Vim will automatically add a column of two
 characters to display them in.  When the last sign is unplaced the column
 disappears again.  This behavior can be changed with the 'signcolumn' option.
 
-The color of the column is set with the SignColumn group |hl-SignColumn|.
-Example to set the color: >
+The color of the column is set with the SignColumn highlight group
+|hl-SignColumn|.  Example to set the color: >
 
 	:highlight SignColumn guibg=darkgrey
 <
@@ -70,6 +70,10 @@ used, then the sign is placed in the global group. Otherwise the sign is
 placed in the named group. The sign identifier is unique within a group. The
 sign group allows Vim plugins to use unique signs without interfering with
 other plugins using signs.
+
+To place a sign in a popup window the group name must start with "PopUp".
+Other signs will not show in a popup window.  The group name "PopUpMenu" is
+used by popup windows where 'cursorline' is set.
 
 							*sign-priority*
 Each placed sign is assigned a priority value. When multiple signs are placed
@@ -371,7 +375,7 @@ sign_define({list})
 
 		The one argument {list} can be used to define a list of signs.
 		Each list item is a dictionary with the above items in {dict}
-		and a 'name' item for the sign name.
+		and a "name" item for the sign name.
 
 		Returns 0 on success and -1 on failure.  When the one argument
 		{list} is used, then returns a List of values one for each

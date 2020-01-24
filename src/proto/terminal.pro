@@ -13,7 +13,7 @@ int term_try_stop_job(buf_T *buf);
 int term_check_timers(int next_due_arg, proftime_T *now);
 int term_in_normal_mode(void);
 void term_enter_job_mode(void);
-int send_keys_to_term(term_T *term, int c, int typed);
+int send_keys_to_term(term_T *term, int c, int modmask, int typed);
 int terminal_is_active(void);
 cursorentry_T *term_get_cursor_shape(guicolor_T *fg, guicolor_T *bg);
 int term_use_loop(void);

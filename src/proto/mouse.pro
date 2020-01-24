@@ -17,4 +17,5 @@ int check_termcode_mouse(char_u *tp, int *slen, char_u *key_name, char_u *modifi
 int mouse_comp_pos(win_T *win, int *rowp, int *colp, linenr_T *lnump, int *plines_cache);
 win_T *mouse_find_win(int *rowp, int *colp, mouse_find_T popup);
 int vcol2col(win_T *wp, linenr_T lnum, int vcol);
+void f_getmousepos(typval_T *argvars, typval_T *rettv);
 /* vim: set ft=c : */

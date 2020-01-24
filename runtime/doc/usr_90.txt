@@ -1,4 +1,4 @@
-*usr_90.txt*	For Vim version 8.1.  Last change: 2008 Sep 10
+*usr_90.txt*	For Vim version 8.2.  Last change: 2008 Sep 10
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -64,20 +64,11 @@ provide the fastest download:
 Or use the home site ftp.vim.org, if you think it's fast enough.  Go to the
 "unix" directory and you'll find a list of files there.  The version number is
 embedded in the file name.  You will want to get the most recent version.
-   You can get the files for Unix in two ways: One big archive that contains
-everything, or four smaller ones that each fit on a floppy disk.  For version
-6.1 the single big one is called:
+   You can get the files for Unix in one big archive that contains everything:
 
-	vim-6.1.tar.bz2 ~
+	vim-8.2.tar.bz2 ~
 
-You need the bzip2 program to uncompress it.  If you don't have it, get the
-four smaller files, which can be uncompressed with gzip.  For Vim 6.1 they are
-called:
-
-	vim-6.1-src1.tar.gz ~
-	vim-6.1-src2.tar.gz ~
-	vim-6.1-rt1.tar.gz ~
-	vim-6.1-rt2.tar.gz ~
+You need the bzip2 program to uncompress it.
 
 
 COMPILING
@@ -87,22 +78,19 @@ First create a top directory to work in, for example: >
 	mkdir ~/vim
 	cd ~/vim
 
-Then unpack the archives there.  If you have the one big archive, you unpack
-it like this: >
+Then unpack the archives there.  You can unpack it like this: >
 
-	bzip2 -d -c path/vim-6.1.tar.bz2 | tar xf -
+	tar xf path/vim-8.2.tar.bz2
 
-Change "path" to where you have downloaded the file. >
+If your tar command doesn't support bz2 directly: >
 
-	gzip -d -c path/vim-6.1-src1.tar.gz | tar xf -
-	gzip -d -c path/vim-6.1-src2.tar.gz | tar xf -
-	gzip -d -c path/vim-6.1-rt1.tar.gz | tar xf -
-	gzip -d -c path/vim-6.1-rt2.tar.gz | tar xf -
+	bzip2 -d -c path/vim-8.2.tar.bz2 | tar xf -
 
+Change "path" to where you have downloaded the file.
 If you are satisfied with getting the default features, and your environment
 is setup properly, you should be able to compile Vim with just this: >
 
-	cd vim61/src
+	cd vim82/src
 	make
 
 The make program will run configure and compile everything.  Further on we
@@ -231,9 +219,9 @@ provide the fastest download:
 Or use the home site ftp.vim.org, if you think it's fast enough.  Go to the
 "pc" directory and you'll find a list of files there.  The version number is
 embedded in the file name.  You will want to get the most recent version.
-We will use "61" here, which is version 6.1.
+We will use "82" here, which is version 8.2.
 
-	gvim61.exe		The self-installing archive.
+	gvim82.exe		The self-installing archive.
 
 This is all you need for the second method.  Just launch the executable, and
 follow the prompts.
@@ -241,34 +229,28 @@ follow the prompts.
 For the first method you must chose one of the binary archives.  These are
 available:
 
-	gvim61.zip		The normal MS-Windows GUI version.
-	gvim61ole.zip		The MS-Windows GUI version with OLE support.
+	gvim82.zip		The normal MS-Windows GUI version.
+	gvim82ole.zip		The MS-Windows GUI version with OLE support.
 				Uses more memory, supports interfacing with
 				other OLE applications.
-	vim61w32.zip		32 bit MS-Windows console version.  For use in
-				a Win NT/2000/XP console.  Does not work well
-				on Win 95/98.
-	vim61d32.zip		32 bit MS-DOS version.  For use in the
-				Win 95/98 console window.
-	vim61d16.zip		16 bit MS-DOS version.  Only for old systems.
-				Does not support long filenames.
+	vim82w32.zip		32 bit MS-Windows console version.
 
 You only need one of them.  Although you could install both a GUI and a
 console version.  You always need to get the archive with runtime files.
 
-	vim61rt.zip		The runtime files.
+	vim82rt.zip		The runtime files.
 
 Use your un-zip program to unpack the files.  For example, using the "unzip"
 program: >
 
 	cd c:\
-	unzip path\gvim61.zip
-	unzip path\vim61rt.zip
+	unzip path\gvim82.zip
+	unzip path\vim82rt.zip
 
-This will unpack the files in the directory "c:\vim\vim61".  If you already
+This will unpack the files in the directory "c:\vim\vim82".  If you already
 have a "vim" directory somewhere, you will want to move to the directory just
 above it.
-   Now change to the "vim\vim61" directory and run the install program: >
+   Now change to the "vim\vim82" directory and run the install program: >
 
 	install
 
@@ -281,8 +263,8 @@ unpacked them.
 In case you are not satisfied with the features included in the supplied
 binaries, you could try compiling Vim yourself.  Get the source archive from
 the same location as where the binaries are.  You need a compiler for which a
-makefile exists.  Microsoft Visual C works, but is expensive.  The free MinGW
-and Cygwin compilers can be used.  Check the file src/INSTALLpc.txt for hints.
+makefile exists.  Microsoft Visual C, MinGW and Cygwin compilers can be used.
+Check the file src/INSTALLpc.txt for hints.
 
 ==============================================================================
 *90.3*	Upgrading
@@ -302,7 +284,7 @@ about keeping the old version, running "make install" will work fine.  You can
 delete the old runtime files manually.  Just delete the directory with the
 version number in it and all files below it.  Example: >
 
-	rm -rf /usr/local/share/vim/vim58
+	rm -rf /usr/local/share/vim/vim74
 
 There are normally no changed files below this directory.  If you did change
 the "filetype.vim" file, for example, you better merge the changes into the
@@ -312,21 +294,21 @@ If you are careful and want to try out the new version for a while before
 switching to it, install the new version under another name.  You need to
 specify a configure argument.  For example: >
 
-	./configure --with-vim-name=vim6
+	./configure --with-vim-name=vim8
 
 Before running "make install", you could use "make -n install" to check that
 no valuable existing files are overwritten.
    When you finally decide to switch to the new version, all you need to do is
 to rename the binary to "vim".  For example: >
 
-	mv /usr/local/bin/vim6 /usr/local/bin/vim
+	mv /usr/local/bin/vim8 /usr/local/bin/vim
 
 
 MS-WINDOWS
 
 Upgrading is mostly equal to installing a new version.  Just unpack the files
 in the same place as the previous version.  A new directory will be created,
-e.g., "vim61", for the files of the new version.  Your runtime files, vimrc
+e.g., "vim82", for the files of the new version.  Your runtime files, vimrc
 file, viminfo, etc. will be left alone.
    If you want to run the new version next to the old one, you will have to do
 some handwork.  Don't run the install program, it will overwrite a few files
@@ -432,7 +414,7 @@ However, if you have deleted the original files or you used an archive that
 someone supplied, you can't do this.  Do delete the files manually, here is an
 example for when "/usr/local" was used as the root: >
 
-	rm -rf /usr/local/share/vim/vim61
+	rm -rf /usr/local/share/vim/vim82
 	rm /usr/local/bin/eview
 	rm /usr/local/bin/evim
 	rm /usr/local/bin/ex
@@ -471,7 +453,7 @@ MS-WINDOWS
 
 If you installed Vim with the self-installing archive you can run
 the "uninstall-gui" program located in the same directory as the other Vim
-programs, e.g. "c:\vim\vim61".  You can also launch it from the Start menu if
+programs, e.g. "c:\vim\vim82".  You can also launch it from the Start menu if
 installed the Vim entries there.  This will remove most of the files, menu
 entries and desktop shortcuts.  Some files may remain however, as they need a
 Windows restart before being deleted.
@@ -481,10 +463,10 @@ be careful.
 
 Else, if you installed Vim with the zip archives, the preferred way is to use
 the "uninstall" program.  You can find it in the same directory as the
-"install" program, e.g., "c:\vim\vim61".  This should also work from the usual
+"install" program, e.g., "c:\vim\vim82".  This should also work from the usual
 "install/remove software" page.
    However, this only removes the registry entries for Vim.  You have to
-delete the files yourself.  Simply select the directory "vim\vim61" and delete
+delete the files yourself.  Simply select the directory "vim\vim82" and delete
 it recursively.  There should be no files there that you changed, but you
 might want to check that first.
    The "vim" directory probably contains your vimrc file and other runtime

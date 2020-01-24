@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.1.  Last change: 2019 Sep 26
+*terminal.txt*	For Vim version 8.2.  Last change: 2020 Jan 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -72,7 +72,7 @@ CTRL-W can be used to navigate between windows and other CTRL-W commands, e.g.:
 	CTRL-W :	enter an Ex command
 See |CTRL-W| for more commands.
 
-Special in the terminal window:			*t_CTRL-W_.*  *t_CTRL-W_N* 
+Special in the terminal window:			*t_CTRL-W_.*  *t_CTRL-W_N*
 	CTRL-W .	send a CTRL-W to the job in the terminal
 	CTRL-W CTRL-\	send a CTRL-\ to the job in the terminal
 	CTRL-W N	go to Terminal-Normal mode, see |Terminal-mode|
@@ -193,6 +193,7 @@ Command syntax ~
 			Supported [options] are:
 			++close		The terminal window will close
 					automatically when the job terminates.
+					|terminal-close|
 			++noclose	The terminal window will NOT close
 					automatically when the job terminates.
 			++open		When the job terminates and no window
@@ -209,6 +210,10 @@ Command syntax ~
 					no window will be used.
 			++norestore	Do not include this terminal window
 					in a session file.
+			++shell		Instead of executing {command}
+					directly, use a shell, like with
+					`:!command` 		*E279*
+					{only works on Unix currently}
 			++kill={how}	When trying to close the terminal
 					window kill the job with {how}.  See
 					|term_setkill()| for the values.
@@ -266,6 +271,12 @@ You can use `CTRL-W :hide` to close the terminal window and make the buffer
 hidden, the job keeps running.  The `:buffer` command can be used to turn the
 current window into a terminal window.  If there are unsaved changes this
 fails, use ! to force, as usual.
+
+							*terminal-close*
+When the terminal window is closed, e.g. when the shell exits and "++close"
+argument was used, and this is the last normal Vim window, then Vim will exit.
+This is like using |:quit| in a normal window. Help and preview windows are
+not counted.
 
 To have a background job run without a window, and open the window when it's
 done, use options like this: >
@@ -496,7 +507,7 @@ term_dumpload({filename} [, {options}])
 		For {options} see |term_dumpdiff()|.
 
 		Can also be used as a |method|: >
-			GetFilename()-> term_dumpload()
+			GetFilename()->term_dumpload()
 <
 							*term_dumpwrite()*
 term_dumpwrite({buf}, {filename} [, {options}])
@@ -514,7 +525,7 @@ term_dumpwrite({buf}, {filename} [, {options}])
 
 		Can also be used as a |method|, the base is used for the file
 		name: >
-			GetFilename()-> term_dumpwrite(bufnr)
+			GetFilename()->term_dumpwrite(bufnr)
 
 term_getaltscreen({buf})				*term_getaltscreen()*
 		Returns 1 if the terminal of {buf} is using the alternate
@@ -630,8 +641,8 @@ term_getsize({buf})					*term_getsize()*
 
 
 term_getstatus({buf})					*term_getstatus()*
-		Get the status of terminal {buf}. This returns a comma
-		separated list of these items:
+		Get the status of terminal {buf}. This returns a String with
+		a comma separated list of these items:
 			running		job is running
 			finished	job has finished
 			normal		in Terminal-Normal mode
@@ -863,8 +874,6 @@ term_start({cmd} [, {options}])			*term_start()*
 		Can also be used as a |method|: >
 			GetCommand()->term_start()
 
-<		{only available when compiled with the |+terminal| feature}
-
 
 term_wait({buf} [, {time}])					*term_wait()*
 		Wait for pending updates of {buf} to be handled.
@@ -917,7 +926,7 @@ Currently supported commands:
 
 		Call a user defined function with {argument}.
 		The function is called with two arguments: the buffer number
-		of the terminal and {argument}, the decoded JSON argument. 
+		of the terminal and {argument}, the decoded JSON argument.
 		By default, the function name must start with "Tapi_" to avoid
 		accidentally calling a function not meant to be used for the
 		terminal API.  This can be changed with |term_setapi()|.
@@ -1037,12 +1046,12 @@ file for now, e.g.: >
 
 The test will then fail, giving you the command to compare the reference dump
 and the failed dump, e.g.: >
-	call term_dumpdiff("Test_func.dump.failed", "dumps/Test_func.dump")
+	call term_dumpdiff("failed/Test_func.dump", "dumps/Test_func.dump")
 
 Use this command in Vim, with the current directory set to src/testdir.
 Once you are satisfied with the test, move the failed dump in place of the
 reference: >
-	:!mv Test_func.dump.failed dumps/Test_func.dump
+	:!mv failed/Test_func.dump dumps/Test_func.dump
 
 
 Creating a screen dump ~
@@ -1131,7 +1140,7 @@ program window	A terminal window for the executed program.  When "run" is
 
 The current window is used to show the source code.  When gdb pauses the
 source file location will be displayed, if possible.  A sign is used to
-highlight the current position, using highlight group debugPC.	 
+highlight the current position, using highlight group debugPC.
 
 If the buffer in the current window is modified, another window will be opened
 to display the current gdb position.  You can use `:Winbar` to add a window
@@ -1168,8 +1177,12 @@ Example session ~
 							*termdebug-example*
 Start in the Vim "src" directory and build Vim: >
 	% make
+Make sure that debug symbols are present, usually that means that $CFLAGS
+includes "-g".
+
 Start Vim: >
 	% ./vim
+
 Load the termdebug plugin and start debugging Vim: >
 	:packadd termdebug
 	:Termdebug vim
@@ -1184,7 +1197,7 @@ Put focus on the gdb window and type: >
 	run
 Vim will start running in the program window. Put focus there and type: >
 	:help gui
-Gdb will run into the ex_help breakpoint.  The source window now shows the 
+Gdb will run into the ex_help breakpoint.  The source window now shows the
 ex_cmds.c file.  A red "1 " marker will appear in the signcolumn where the
 breakpoint was set.  The line where the debugger stopped is highlighted.  You
 can now step through the program.  Let's use the mouse: click on the "Next"
@@ -1243,7 +1256,7 @@ gdb:
 
  *:Break*	set a breakpoint at the cursor position
  :Break {position}
- 		set a breakpoint at the specified position
+		set a breakpoint at the specified position
  *:Clear*	delete the breakpoint at the cursor position
 
  *:Step*	execute the gdb "step" command

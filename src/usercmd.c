@@ -57,6 +57,7 @@ static struct
     {EXPAND_USER_DEFINED, "custom"},
     {EXPAND_USER_LIST, "customlist"},
 #endif
+    {EXPAND_DIFF_BUFFERS, "diff_buffer"},
     {EXPAND_DIRECTORIES, "dir"},
     {EXPAND_ENV_VARS, "environment"},
     {EXPAND_EVENTS, "event"},
@@ -190,7 +191,7 @@ find_ucmd(
 		    {
 			xp->xp_arg = uc->uc_compl_arg;
 			xp->xp_script_ctx = uc->uc_script_ctx;
-			xp->xp_script_ctx.sc_lnum += sourcing_lnum;
+			xp->xp_script_ctx.sc_lnum += SOURCING_LNUM;
 		    }
 # endif
 		    // Do not search for further abbreviations
@@ -392,7 +393,7 @@ uc_list(char_u *name, size_t name_len)
     long	a;
     garray_T	*gap;
 
-    /* In cmdwin, the alternative buffer should be used. */
+    // In cmdwin, the alternative buffer should be used.
     gap =
 #ifdef FEAT_CMDWIN
 	(cmdwin_type != 0 && get_cmdline_type() == NUL) ?
@@ -868,7 +869,7 @@ uc_add_command(
     char_u	*rep_buf = NULL;
     garray_T	*gap;
 
-    replace_termcodes(rep, &rep_buf, FALSE, FALSE, FALSE);
+    replace_termcodes(rep, &rep_buf, 0, NULL);
     if (rep_buf == NULL)
     {
 	// Can't replace termcodes - try using the string as is
@@ -955,7 +956,7 @@ uc_add_command(
     cmd->uc_compl = compl;
 #ifdef FEAT_EVAL
     cmd->uc_script_ctx = current_sctx;
-    cmd->uc_script_ctx.sc_lnum += sourcing_lnum;
+    cmd->uc_script_ctx.sc_lnum += SOURCING_LNUM;
     cmd->uc_compl_arg = compl_arg;
 #endif
     cmd->uc_addr_type = addr_type;

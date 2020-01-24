@@ -545,6 +545,7 @@ get_buffer_info(buf_T *buf)
     dict_add_string(dict, "name", buf->b_ffname);
     dict_add_number(dict, "lnum", buf == curbuf ? curwin->w_cursor.lnum
 						     : buflist_findlnum(buf));
+    dict_add_number(dict, "linecount", buf->b_ml.ml_line_count);
     dict_add_number(dict, "loaded", buf->b_ml.ml_mfp != NULL);
     dict_add_number(dict, "listed", buf->b_p_bl);
     dict_add_number(dict, "changed", bufIsChanged(buf));
@@ -565,7 +566,7 @@ get_buffer_info(buf_T *buf)
 	dict_add_list(dict, "windows", windows);
     }
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // List of popup windows displaying this buffer
     windows = list_alloc();
     if (windows != NULL)
@@ -593,6 +594,10 @@ get_buffer_info(buf_T *buf)
 	    dict_add_list(dict, "signs", signs);
 	}
     }
+#endif
+
+#ifdef FEAT_VIMINFO
+    dict_add_number(dict, "lastused", buf->b_last_used);
 #endif
 
     return dict;
@@ -821,7 +826,7 @@ switch_buffer(bufref_T *save_curbuf, buf_T *buf)
 restore_buffer(bufref_T *save_curbuf)
 {
     unblock_autocmds();
-    /* Check for valid buffer, just in case. */
+    // Check for valid buffer, just in case.
     if (bufref_valid(save_curbuf))
     {
 	--curbuf->b_nwindows;

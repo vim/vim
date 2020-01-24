@@ -12,7 +12,7 @@ let s:common_script =<< trim [CODE]
   call setline(1, ["one one one", "two tXo two", "three three three"])
   set balloonevalterm balloonexpr=MyBalloonExpr() balloondelay=100
   func MyBalloonExpr()
-    return "line " .. v:beval_lnum .. " column " .. v:beval_col .. ": " .. v:beval_text
+    return "line " .. v:beval_lnum .. " column " .. v:beval_col .. ":\n" .. v:beval_text
   endfun
   redraw
 [CODE]

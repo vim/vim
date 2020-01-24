@@ -16,6 +16,9 @@
 static int	cmd_showtail;	// Only show path tail in lists ?
 
 static void	set_expand_context(expand_T *xp);
+static int      ExpandGeneric(expand_T *xp, regmatch_T *regmatch,
+			      int *num_file, char_u ***file,
+			      char_u *((*func)(expand_T *, int)), int escaped);
 static int	ExpandFromContext(expand_T *xp, char_u *, int *, char_u ***, int);
 static int	expand_showtail(expand_T *xp);
 static int	expand_shellcmd(char_u *filepat, int *num_file, char_u ***file, int flagsarg);
@@ -1508,6 +1511,7 @@ set_one_cmd_context(
 	    break;
 #endif
 #ifdef FEAT_EVAL
+	case CMD_const:
 	case CMD_let:
 	case CMD_if:
 	case CMD_elseif:
@@ -1581,7 +1585,15 @@ set_one_cmd_context(
 	    xp->xp_context = EXPAND_BUFFERS;
 	    xp->xp_pattern = arg;
 	    break;
-
+#ifdef FEAT_DIFF
+	case CMD_diffget:
+	case CMD_diffput:
+	    // If current buffer is in diff mode, complete buffer names
+	    // which are in diff mode, and different than current buffer.
+	    xp->xp_context = EXPAND_DIFF_BUFFERS;
+	    xp->xp_pattern = arg;
+	    break;
+#endif
 	case CMD_USER:
 	case CMD_USER_BUF:
 	    if (compl != EXPAND_NOTHING)
@@ -1976,6 +1988,8 @@ ExpandFromContext(
 	flags |= EW_KEEPALL;
     if (options & WILD_SILENT)
 	flags |= EW_SILENT;
+    if (options & WILD_NOERROR)
+	flags |= EW_NOERROR;
     if (options & WILD_ALLLINKS)
 	flags |= EW_ALLLINKS;
 
@@ -2066,6 +2080,10 @@ ExpandFromContext(
 	return ExpandOldSetting(num_file, file);
     if (xp->xp_context == EXPAND_BUFFERS)
 	return ExpandBufnames(pat, num_file, file, options);
+#ifdef FEAT_DIFF
+    if (xp->xp_context == EXPAND_DIFF_BUFFERS)
+	return ExpandBufnames(pat, num_file, file, options | BUF_DIFF_FILTER);
+#endif
     if (xp->xp_context == EXPAND_TAGS
 	    || xp->xp_context == EXPAND_TAGS_LISTFILES)
 	return expand_tags(xp->xp_context == EXPAND_TAGS, pat, num_file, file);
@@ -2199,7 +2217,7 @@ ExpandFromContext(
  *
  * Returns OK when no problems encountered, FAIL for error (out of memory).
  */
-    int
+    static int
 ExpandGeneric(
     expand_T	*xp,
     regmatch_T	*regmatch,
@@ -2235,6 +2253,13 @@ ExpandGeneric(
 			str = vim_strsave_escaped(str, (char_u *)" \t\\.");
 		    else
 			str = vim_strsave(str);
+		    if (str == NULL)
+		    {
+			FreeWild(count, *file);
+			*num_file = 0;
+			*file = NULL;
+			return FAIL;
+		    }
 		    (*file)[count] = str;
 # ifdef FEAT_MENU
 		    if (func == get_menu_names && str != NULL)
@@ -2253,13 +2278,14 @@ ExpandGeneric(
 	{
 	    if (count == 0)
 		return OK;
-	    *num_file = count;
 	    *file = ALLOC_MULT(char_u *, count);
 	    if (*file == NULL)
 	    {
-		*file = (char_u **)"";
+		*num_file = 0;
+		*file = NULL;
 		return FAIL;
 	    }
+	    *num_file = count;
 	    count = 0;
 	}
     }
@@ -2282,7 +2308,6 @@ ExpandGeneric(
     // they don't show up when getting normal highlight names by ID.
     reset_expand_highlight();
 #endif
-
     return OK;
 }
 
@@ -2302,7 +2327,7 @@ expand_shellcmd(
     char_u	*path = NULL;
     int		mustfree = FALSE;
     garray_T    ga;
-    char_u	*buf = alloc(MAXPATHL);
+    char_u	*buf;
     size_t	l;
     char_u	*s, *e;
     int		flags = flagsarg;
@@ -2312,12 +2337,18 @@ expand_shellcmd(
     hashitem_T	*hi;
     hash_T	hash;
 
+    buf = alloc(MAXPATHL);
     if (buf == NULL)
 	return FAIL;
 
-    // for ":set path=" and ":set tags=" halve backslashes for escaped
-    // space
+    // for ":set path=" and ":set tags=" halve backslashes for escaped space
     pat = vim_strsave(filepat);
+    if (pat == NULL)
+    {
+	vim_free(buf);
+	return FAIL;
+    }
+
     for (i = 0; pat[i]; ++i)
 	if (pat[i] == '\\' && pat[i + 1] == ' ')
 	    STRMOVE(pat + i, pat + i + 1);
@@ -2608,16 +2639,13 @@ globpath(
 		ExpandEscape(&xpc, buf, num_p, p, WILD_SILENT|expand_options);
 
 		if (ga_grow(ga, num_p) == OK)
-		{
+		    // take over the pointers and put them in "ga"
 		    for (i = 0; i < num_p; ++i)
 		    {
-			((char_u **)ga->ga_data)[ga->ga_len] =
-					vim_strnsave(p[i], (int)STRLEN(p[i]));
+			((char_u **)ga->ga_data)[ga->ga_len] = p[i];
 			++ga->ga_len;
 		    }
-		}
-
-		FreeWild(num_p, p);
+		vim_free(p);
 	    }
 	}
     }

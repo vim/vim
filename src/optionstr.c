@@ -39,7 +39,8 @@ static char *(p_ssop_values[]) = {"buffers", "winpos", "resize", "winsize",
     "localoptions", "options", "help", "blank", "globals", "slash", "unix",
     "sesdir", "curdir", "folds", "cursor", "tabpages", "terminal", NULL};
 #endif
-static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit", NULL};
+// Keep in sync with SWB_ flags in option.h
+static char *(p_swb_values[]) = {"useopen", "usetab", "split", "newtab", "vsplit", "uselast", NULL};
 static char *(p_tc_values[]) = {"followic", "ignore", "match", "followscs", "smart", NULL};
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
 static char *(p_toolbar_values[]) = {"text", "icons", "tooltips", "horiz", NULL};
@@ -47,7 +48,7 @@ static char *(p_toolbar_values[]) = {"text", "icons", "tooltips", "horiz", NULL}
 #if defined(FEAT_TOOLBAR) && defined(FEAT_GUI_GTK)
 static char *(p_tbis_values[]) = {"tiny", "small", "medium", "large", "huge", "giant", NULL};
 #endif
-#if defined(FEAT_MOUSE) && (defined(UNIX) || defined(VMS))
+#if defined(UNIX) || defined(VMS)
 static char *(p_ttym_values[]) = {"xterm", "xterm2", "dec", "netterm", "jsbterm", "pterm", "urxvt", "sgr", NULL};
 #endif
 static char *(p_ve_values[]) = {"block", "insert", "all", "onemore", NULL};
@@ -76,7 +77,7 @@ static char *(p_fdm_values[]) = {"manual", "expr", "marker", "indent", "syntax",
 				NULL};
 static char *(p_fcl_values[]) = {"all", NULL};
 #endif
-static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "popup", "noinsert", "noselect", NULL};
+static char *(p_cot_values[]) = {"menu", "menuone", "longest", "preview", "popup", "popuphidden", "noinsert", "noselect", NULL};
 #ifdef BACKSLASH_IN_FILENAME
 static char *(p_csl_values[]) = {"slash", "backslash", NULL};
 #endif
@@ -110,7 +111,7 @@ didset_string_options(void)
     (void)opt_strings_flags(p_dy, p_dy_values, &dy_flags, TRUE);
     (void)opt_strings_flags(p_tc, p_tc_values, &tc_flags, FALSE);
     (void)opt_strings_flags(p_ve, p_ve_values, &ve_flags, TRUE);
-#if defined(FEAT_MOUSE) && (defined(UNIX) || defined(VMS))
+#if defined(UNIX) || defined(VMS)
     (void)opt_strings_flags(p_ttym, p_ttym_values, &ttym_flags, FALSE);
 #endif
 #if defined(FEAT_TOOLBAR) && !defined(FEAT_GUI_MSWIN)
@@ -1440,12 +1441,12 @@ did_set_string_option(
 
 #ifdef FEAT_LINEBREAK
     // 'showbreak'
-    else if (varp == &p_sbr)
+    else if (gvarp == &p_sbr)
     {
-	for (s = p_sbr; *s; )
+	for (s = *varp; *s; )
 	{
 	    if (ptr2cells(s) != 1)
-		errmsg = N_("E595: contains unprintable or wide character");
+		errmsg = N_("E595: 'showbreak' contains unprintable or wide character");
 	    MB_PTR_ADV(s);
 	}
     }
@@ -1588,7 +1589,7 @@ did_set_string_option(
     }
 #endif
 
-#if defined(FEAT_MOUSE_TTY) && (defined(UNIX) || defined(VMS))
+#if defined(UNIX) || defined(VMS)
     // 'ttymouse'
     else if (varp == &p_ttym)
     {
@@ -1892,7 +1893,8 @@ did_set_string_option(
     {
 	if (*p_pt)
 	{
-	    (void)replace_termcodes(p_pt, &p, TRUE, TRUE, FALSE);
+	    (void)replace_termcodes(p_pt, &p,
+				      REPTERM_FROM_PART | REPTERM_DO_LT, NULL);
 	    if (p != NULL)
 	    {
 		if (new_value_alloced)
@@ -2218,7 +2220,7 @@ did_set_string_option(
     }
 #endif
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // 'previewpopup'
     else if (varp == &p_pvp)
     {
@@ -2253,12 +2255,7 @@ did_set_string_option(
 #endif
 	else if (varp == &p_mouse) // 'mouse'
 	{
-#ifdef FEAT_MOUSE
 	    p = (char_u *)MOUSE_ALL;
-#else
-	    if (*p_mouse != NUL)
-		errmsg = N_("E538: No mouse support");
-#endif
 	}
 #if defined(FEAT_GUI)
 	else if (varp == &p_go) // 'guioptions'
@@ -2388,20 +2385,16 @@ did_set_string_option(
 #endif
     }
 
-#ifdef FEAT_MOUSE
     if (varp == &p_mouse)
     {
-# ifdef FEAT_MOUSE_TTY
 	if (*p_mouse == NUL)
 	    mch_setmouse(FALSE);    // switch mouse off
 	else
-# endif
 	    setmouse();		    // in case 'mouse' changed
     }
-#endif
 
     if (curwin->w_curswant != MAXCOL
-		     && (get_option_flags(opt_idx) & (P_CURSWANT | P_RALL)) != 0)
+		   && (get_option_flags(opt_idx) & (P_CURSWANT | P_RALL)) != 0)
 	curwin->w_set_curswant = TRUE;
 
 #ifdef FEAT_GUI

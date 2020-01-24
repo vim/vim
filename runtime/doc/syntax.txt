@@ -1,4 +1,4 @@
-*syntax.txt*	For Vim version 8.1.  Last change: 2019 Sep 19
+*syntax.txt*	For Vim version 8.2.  Last change: 2019 Dec 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -60,8 +60,8 @@ If the VIM environment variable is not set, Vim will try to find
 the path in another way (see |$VIMRUNTIME|).  Usually this works just
 fine.  If it doesn't, try setting the VIM environment variable to the
 directory where the Vim stuff is located.  For example, if your syntax files
-are in the "/usr/vim/vim50/syntax" directory, set $VIMRUNTIME to
-"/usr/vim/vim50".  You must do this in the shell, before starting Vim.
+are in the "/usr/vim/vim82/syntax" directory, set $VIMRUNTIME to
+"/usr/vim/vim82".  You must do this in the shell, before starting Vim.
 This command also sources the |menu.vim| script when the GUI is running or
 will start soon.  See |'go-M'| about avoiding that.
 
@@ -79,9 +79,9 @@ with: >
 For a color terminal see |:hi-normal-cterm|.
 For setting up your own colors syntax highlighting see |syncolor|.
 
-NOTE: The syntax files on MS-DOS and Windows have lines that end in <CR><NL>.
+NOTE: The syntax files on MS-Windows have lines that end in <CR><NL>.
 The files for Unix end in <NL>.  This means you should use the right type of
-file for your system.  Although on MS-DOS and Windows the right format is
+file for your system.  Although on MS-Windows the right format is
 automatically selected if the 'fileformats' option is not empty.
 
 NOTE: When using reverse video ("gvim -fg white -bg black"), the default value
@@ -476,6 +476,16 @@ conversion. See |-E| and |-s-ex| for details. It is probably best to create a
 script to replace all the -c commands and use it with the -u flag instead of
 specifying each command separately.
 
+				    *hl-TOhtmlProgress* *TOhtml-progress-color*
+When displayed, the progress bar will show colored boxes along the statusline
+as the HTML conversion proceeds. By default, the background color as the
+current "DiffDelete" highlight group is used. If "DiffDelete" and "StatusLine"
+have the same background color, TOhtml will automatically adjust the color to
+differ. If you do not like the automatically selected colors, you can define
+your own highlight colors for the progress bar. Example: >
+
+	hi TOhtmlProgress guifg=#c0ffee ctermbg=7
+<
 							 *g:html_number_lines*
 Default: current 'number' setting.
 When 0, buffer text is displayed in the generated HTML without line numbering.
@@ -507,8 +517,8 @@ For example: >
 <
 							      *g:html_use_css*
 Default: 1.
-When 1, generate valid HTML 4.01 markup with CSS1 styling, supported in all
-modern browsers and most old browsers.
+When 1, generate valid HTML 5 markup with CSS styling, supported in all modern
+browsers and many old browsers.
 When 0, generate <font> tags and similar outdated markup. This is not
 recommended but it may work better in really old browsers, email clients,
 forum posts, and similar situations where basic CSS support is unavailable.
@@ -580,23 +590,43 @@ affected in this way as follows:
 Example, to make the fold column and line numbers uncopyable: >
 	:let g:html_prevent_copy = "fn"
 <
-This feature is currently implemented by inserting read-only <input> elements
-into the markup to contain the uncopyable areas. This does not work well in
-all cases. When pasting to some applications which understand HTML, the
-<input> elements also get pasted. But plain-text paste destinations should
-always work.
+The method used to prevent copying in the generated page depends on the value
+of |g:html_use_input_for_pc|.
+
+						    *g:html_use_input_for_pc*
+Default: "fallback"
+If |g:html_prevent_copy| is non-empty, then:
+
+When "all", read-only <input> elements are used in place of normal text for
+uncopyable regions. In some browsers, especially older browsers, after
+selecting an entire page and copying the selection, the <input> tags are not
+pasted with the page text. If |g:html_no_invalid| is 0, the <input> tags have
+invalid type; this works in more browsers, but the page will not validate.
+Note: this method does NOT work in recent versions of Chrome and equivalent
+browsers; the <input> tags get pasted with the text.
+
+When "fallback" (default value), the same <input> elements are generated for
+older browsers, but newer browsers (detected by CSS feature query) hide the
+<input> elements and instead use generated content in an ::before pseudoelement
+to display the uncopyable text. This method should work with the largest
+number of browsers, both old and new.
+
+When "none", the <input> elements are not generated at all. Only the
+generated-content method is used. This means that old browsers, notably
+Internet Explorer, will either copy the text intended not to be copyable, or
+the non-copyable text may not appear at all. However, this is the most
+standards-based method, and there will be much less markup.
 
 							   *g:html_no_invalid*
 Default: 0.
-When 0, if |g:html_prevent_copy| is non-empty, an invalid attribute is
-intentionally inserted into the <input> element for the uncopyable areas. This
-increases the number of applications you can paste to without also pasting the
-<input> elements. Specifically, Microsoft Word will not paste the <input>
-elements if they contain this invalid attribute.
-When 1, no invalid markup is ever intentionally inserted, and the generated
-page should validate. However, be careful pasting into Microsoft Word when
-|g:html_prevent_copy| is non-empty; it can be hard to get rid of the <input>
-elements which get pasted.
+When 0, if |g:html_prevent_copy| is non-empty and |g:html_use_input_for_pc| is
+not "none", an invalid attribute is intentionally inserted into the <input>
+element for the uncopyable areas. This prevents pasting the <input> elements
+in some applications. Specifically, some versions of Microsoft Word will not
+paste the <input> elements if they contain this invalid attribute. When 1, no
+invalid markup is inserted, and the generated page should validate. However,
+<input> elements may be pasted into some applications and can be difficult to
+remove afterward.
 
 							 *g:html_hover_unfold*
 Default: 0.
@@ -936,10 +966,12 @@ Basic.
 C							*c.vim* *ft-c-syntax*
 
 A few things in C highlighting are optional.  To enable them assign any value
-to the respective variable.  Example: >
+(including zero) to the respective variable.  Example: >
 	:let c_comment_strings = 1
-To disable them use ":unlet".  Example: >
+	:let c_no_bracket_error = 0
+To disable them use `:unlet`.  Example: >
 	:unlet c_comment_strings
+Setting the value to zero doesn't work!
 
 An alternative is to switch to the C++ highlighting: >
 	:set filetype=cpp
@@ -955,8 +987,8 @@ Variable		Highlight ~
 				except { and } in first column
 				Default is to highlight them, otherwise you
 				can't spot a missing ")".
-*c_curly_error*		highlight a missing }; this forces syncing from the
-			start of the file, can be slow
+*c_curly_error*		highlight a missing } by finding all pairs; this
+			forces syncing from the start of the file, can be slow
 *c_no_ansi*		don't do standard ANSI types and constants
 *c_ansi_typedefs*		 ... but do standard ANSI types
 *c_ansi_constants*	 ... but do standard ANSI constants
@@ -1158,6 +1190,26 @@ startup vimrc: >
    :let filetype_w = "cweb"
 
 
+DART						*dart.vim* *ft-dart-syntax*
+
+Dart is an object-oriented, typed, class defined, garbage collected language
+used for developing mobile, desktop, web, and back-end applications.  Dart uses
+a C-like syntax derived from C, Java, and JavaScript, with features adopted
+from Smalltalk, Python, Ruby, and others.
+
+More information about the language and its development environment at the
+official Dart language website at https://dart.dev
+
+dart.vim syntax detects and highlights Dart statements, reserved words,
+type declarations, storage classes, conditionals, loops, interpolated values,
+and comments.  There is no support idioms from Flutter or any other Dart
+framework.
+
+Changes, fixes?  Submit an issue or pull request via:
+
+https://github.com/pr3d4t0r/dart-vim-syntax/
+
+
 DESKTOP					   *desktop.vim* *ft-desktop-syntax*
 
 Primary goal of this syntax file is to highlight .desktop and .directory files
@@ -1349,26 +1401,26 @@ to your startup file.
 
 EUPHORIA	    *euphoria3.vim* *euphoria4.vim* *ft-euphoria-syntax*
 
-Two syntax highlighting files exists for Euphoria. One for Euphoria 
-version 3.1.1, which is the default syntax highlighting file, and one for 
+Two syntax highlighting files exists for Euphoria. One for Euphoria
+version 3.1.1, which is the default syntax highlighting file, and one for
 Euphoria version 4.0.5 or later.
 
-Euphoria version 3.1.1 (http://www.rapideuphoria.com/) is still necessary 
-for developing applications for the DOS platform, which Euphoria version 4 
+Euphoria version 3.1.1 (http://www.rapideuphoria.com/) is still necessary
+for developing applications for the DOS platform, which Euphoria version 4
 (http://www.openeuphoria.org/) does not support.
 
-The following file extensions are auto-detected as Euphoria file type: 
-    
+The following file extensions are auto-detected as Euphoria file type:
+
 	*.e, *.eu, *.ew, *.ex, *.exu, *.exw
 	*.E, *.EU, *.EW, *.EX, *.EXU, *.EXW
 
-To select syntax highlighting file for Euphoria, as well as for 
+To select syntax highlighting file for Euphoria, as well as for
 auto-detecting the *.e and *.E file extensions as Euphoria file type,
 add the following line to your startup file: >
 
 	:let filetype_euphoria="euphoria3"
 
-	or 
+	or
 
 	:let filetype_euphoria="euphoria4"
 
@@ -2263,7 +2315,7 @@ contain very long structures that Vim does not synchronize anymore.
 
 PAPP						*papp.vim* *ft-papp-syntax*
 
-The PApp syntax file handles .papp files and, to a lesser extend, .pxml
+The PApp syntax file handles .papp files and, to a lesser extent, .pxml
 and .pxsl files which are all a mixture of perl/xml/html/other using xml
 as the top-level file format.  By default everything inside phtml or pxml
 sections is treated as a string with embedded preprocessor commands.  If
@@ -2635,12 +2687,12 @@ Note: only existence of these options matter, not their value. You can replace
 
 QUAKE						*quake.vim* *ft-quake-syntax*
 
-The Quake syntax definition should work for most any FPS (First Person
-Shooter) based on one of the Quake engines.  However, the command names vary
-a bit between the three games (Quake, Quake 2, and Quake 3 Arena) so the
-syntax definition checks for the existence of three global variables to allow
-users to specify what commands are legal in their files.  The three variables
-can be set for the following effects:
+The Quake syntax definition should work for most FPS (First Person Shooter)
+based on one of the Quake engines.  However, the command names vary a bit
+between the three games (Quake, Quake 2, and Quake 3 Arena) so the syntax
+definition checks for the existence of three global variables to allow users
+to specify what commands are legal in their files.  The three variables can
+be set for the following effects:
 
 set to highlight commands only available in Quake: >
 	:let quake_is_quake1 = 1
@@ -2709,6 +2761,13 @@ This will add highlighting for the commands that BASH (version 2.05a and
 later, and part earlier) adds.
 
 
+REGO						*rego.vim* *ft-rego-syntax*
+
+Rego is a query language developed by Styra.  It is mostly used as a policy
+language for kubernetes, but can be applied to almost anything.  Files with
+the following extensions are recognized as rego files: .rego.
+
+
 RESTRUCTURED TEXT			*rst.vim* *ft-rst-syntax*
 
 Syntax highlighting is enabled for code blocks within the document for a
@@ -2721,10 +2780,10 @@ To set a user-defined list of code block syntax highlighting: >
 To assign multiple code block types to a single syntax, define
 `rst_syntax_code_list` as a mapping: >
 	let rst_syntax_code_list = {
-		\ 'cpp' = ['cpp', 'c++'],
-                \ 'bash' = ['bash', 'sh'],
+		\ 'cpp': ['cpp', 'c++'],
+		\ 'bash': ['bash', 'sh'],
 		...
-	}
+	\ }
 
 To use color highlighting for emphasis text: >
 	let rst_use_emphasis_colors = 1
@@ -2969,7 +3028,7 @@ variables in your <.vimrc>:
 
    ksh: >
 	let g:is_kornshell = 1
-<   posix:  (using this is the nearly the same as setting g:is_kornshell to 1) >
+<   posix:  (using this is nearly the same as setting g:is_kornshell to 1) >
 	let g:is_posix     = 1
 <   bash: >
 	let g:is_bash	   = 1
@@ -3485,26 +3544,26 @@ It will look much better with a font in a quadratic cell size, e.g. for X: >
 YAML						*yaml.vim* *ft-yaml-syntax*
 
 					*g:yaml_schema* *b:yaml_schema*
-A YAML schema is a combination of a set of tags and a mechanism for resolving 
-non-specific tags. For user this means that YAML parser may, depending on 
-plain scalar contents, treat plain scalar (which can actually be only string 
-and nothing else) as a value of the other type: null, boolean, floating-point, 
-integer. `g:yaml_schema` option determines according to which schema values 
+A YAML schema is a combination of a set of tags and a mechanism for resolving
+non-specific tags. For user this means that YAML parser may, depending on
+plain scalar contents, treat plain scalar (which can actually be only string
+and nothing else) as a value of the other type: null, boolean, floating-point,
+integer. `g:yaml_schema` option determines according to which schema values
 will be highlighted specially. Supported schemas are
 
 Schema		Description ~
 failsafe	No additional highlighting.
 json		Supports JSON-style numbers, booleans and null.
 core		Supports more number, boolean and null styles.
-pyyaml		In addition to core schema supports highlighting timestamps, 
-		but there are some differences in what is recognized as 
-		numbers and many additional boolean values not present in core 
+pyyaml		In addition to core schema supports highlighting timestamps,
+		but there are some differences in what is recognized as
+		numbers and many additional boolean values not present in core
 		schema.
 
 Default schema is `core`.
 
-Note that schemas are not actually limited to plain scalars, but this is the 
-only difference between schemas defined in YAML specification and the only 
+Note that schemas are not actually limited to plain scalars, but this is the
+only difference between schemas defined in YAML specification and the only
 difference defined in the syntax file.
 
 
@@ -3606,7 +3665,7 @@ SYNTAX ISKEYWORD SETTING				*:syn-iskeyword*
 
 	clear:		Syntax specific iskeyword setting is disabled and the
 			buffer-local 'iskeyword' setting is used.
-	{option}        Set the syntax 'iskeyword' option to a new value. 
+	{option}        Set the syntax 'iskeyword' option to a new value.
 
 	Example: >
   :syntax iskeyword @,48-57,192-255,$,_
@@ -4768,7 +4827,7 @@ mentioned for the default values. See |:verbose-cmd| for more information.
 					*highlight-args* *E416* *E417* *E423*
 There are three types of terminals for highlighting:
 term	a normal terminal (vt100, xterm)
-cterm	a color terminal (MS-DOS console, color-xterm, these have the "Co"
+cterm	a color terminal (MS-Windows console, color-xterm, these have the "Co"
 	termcap entry)
 gui	the GUI
 
@@ -4855,9 +4914,9 @@ ctermbg={color-nr}				*highlight-ctermbg*
 	Unfortunately this means that it's not possible to get the same colors
 	for each user.	See |xterm-color| for info about color xterms.
 
-	The MSDOS standard colors are fixed (in a console window), so these
-	have been used for the names.  But the meaning of color names in X11
-	are fixed, so these color settings have been used, to make the
+	The MS-Windows standard colors are fixed (in a console window), so
+	these have been used for the names.  But the meaning of color names in
+	X11 are fixed, so these color settings have been used, to make the
 	highlighting settings portable (complicated, isn't it?).  The
 	following names are recognized, with the color number used:
 
@@ -4922,8 +4981,8 @@ ctermbg={color-nr}				*highlight-ctermbg*
 							*E419* *E420*
 	When Vim knows the normal foreground and background colors, "fg" and
 	"bg" can be used as color names.  This only works after setting the
-	colors for the Normal group and for the MS-DOS console.  Example, for
-	reverse video: >
+	colors for the Normal group and for the MS-Windows console.  Example,
+	for reverse video: >
 	    :highlight Visual ctermfg=bg ctermbg=fg
 <	Note that the colors are used that are valid at the moment this
 	command are given.  If the Normal group colors are changed later, the
@@ -5051,6 +5110,12 @@ IncSearch	'incsearch' highlighting; also used for the text replaced with
 							*hl-LineNr*
 LineNr		Line number for ":number" and ":#" commands, and when 'number'
 		or 'relativenumber' option is set.
+							*hl-LineNrAbove*
+LineNrAbove	Line number for when the 'relativenumber'
+		option is set, above the cursor line.
+							*hl-LineNrBelow*
+LineNrBelow	Line number for when the 'relativenumber'
+		option is set, below the cursor line.
 							*hl-CursorLineNr*
 CursorLineNr	Like LineNr when 'cursorline' is set and 'cursorlineopt' is
 		set to "number" or "both", or 'relativenumber' is set, for

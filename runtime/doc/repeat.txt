@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.1.  Last change: 2019 Sep 20
+*repeat.txt*    For Vim version 8.2.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -79,7 +79,7 @@ The default for [range] is the whole buffer (1,$).  Use "CTRL-C" to interrupt
 the command.  If an error message is given for a line, the command for that
 line is aborted and the global command continues with the next marked or
 unmarked line.
-								*E147* 
+								*E147*
 When the command is used recursively, it only works on one line.  Giving a
 range is then not allowed. This is useful to find all lines that match a
 pattern and do not match another pattern: >
@@ -193,7 +193,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 			Read Ex commands from {file} in each directory given
 			by 'runtimepath' and/or 'packpath'.  There is no error
 			for non-existing files.
-			
+
 			Example: >
 				:runtime syntax/c.vim
 
@@ -268,7 +268,7 @@ For writing a Vim script, see chapter 41 of the user manual |usr_41.txt|.
 						*:packl* *:packloadall*
 :packl[oadall][!]	Load all packages in the "start" directory under each
 			entry in 'packpath'.
-			
+
 			First all the directories found are added to
 			'runtimepath', then the plugins found in the
 			directories are sourced.  This allows for a plugin to
@@ -414,13 +414,13 @@ with CTRL-V followed by the three digit decimal code.  This does NOT work for
 the <t_xx> termcap codes, these can only be used in mappings.
 
 							*:source_crnl* *W15*
-MS-DOS, Win32 and OS/2: Files that are read with ":source" normally have
-<CR><NL> <EOL>s.  These always work.  If you are using a file with <NL> <EOL>s
-(for example, a file made on Unix), this will be recognized if 'fileformats'
-is not empty and the first line does not end in a <CR>.  This fails if the
-first line has something like ":map <F1> :help^M", where "^M" is a <CR>.  If
-the first line ends in a <CR>, but following ones don't, you will get an error
-message, because the <CR> from the first lines will be lost.
+Win32: Files that are read with ":source" normally have <CR><NL> <EOL>s.
+These always work.  If you are using a file with <NL> <EOL>s (for example, a
+file made on Unix), this will be recognized if 'fileformats' is not empty and
+the first line does not end in a <CR>.  This fails if the first line has
+something like ":map <F1> :help^M", where "^M" is a <CR>.  If the first line
+ends in a <CR>, but following ones don't, you will get an error message,
+because the <CR> from the first lines will be lost.
 
 Mac Classic: Files that are read with ":source" normally have <CR> <EOL>s.
 These always work.  If you are using a file with <NL> <EOL>s (for example, a
@@ -430,7 +430,7 @@ linebreaks which has a <CR> in first line.
 
 On other systems, Vim expects ":source"ed files to end in a <NL>.  These
 always work.  If you are using a file with <CR><NL> <EOL>s (for example, a
-file made on MS-DOS), all lines will have a trailing <CR>.  This may cause
+file made on MS-Windows), all lines will have a trailing <CR>.  This may cause
 problems for some commands (e.g., mappings).  There is no automatic <EOL>
 detection, because it's common to start with a line that defines a mapping
 that ends in a <CR>, which will confuse the automaton.
@@ -547,7 +547,7 @@ When Vim starts up, after processing your .vimrc, it scans all directories in
 directories are added to 'runtimepath'.  Then all the plugins are loaded.
 See |packload-two-steps| for how these two steps can be useful.
 
-In the example Vim will find "pack/foo/start/foobar/plugin/foo.vim" and adds 
+In the example Vim will find "pack/foo/start/foobar/plugin/foo.vim" and adds
 "~/.vim/pack/foo/start/foobar" to 'runtimepath'.
 
 If the "foobar" plugin kicks in and sets the 'filetype' to "some", Vim will

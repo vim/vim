@@ -1,3 +1,5 @@
+source shared.vim
+
 " Command to check for the presence of a feature.
 command -nargs=1 CheckFeature call CheckFeature(<f-args>)
 func CheckFeature(name)
@@ -62,6 +64,15 @@ func CheckUnix()
   endif
 endfunc
 
+" Command to check for not running on a BSD system.
+" TODO: using this checks should not be needed
+command CheckNotBSD call CheckNotBSD()
+func CheckNotBSD()
+  if has('bsd')
+    throw 'Skipped: does not work on BSD'
+  endif
+endfunc
+
 " Command to check that making screendumps is supported.
 " Caller must source screendump.vim
 command CheckScreendump call CheckScreendump()
@@ -100,5 +111,13 @@ command CheckNotGui call CheckNotGui()
 func CheckNotGui()
   if has('gui_running')
     throw 'Skipped: only works in the terminal'
+  endif
+endfunc
+
+" Command to check that test is not running as root
+command CheckNotRoot call CheckNotRoot()
+func CheckNotRoot()
+  if IsRoot()
+    throw 'Skipped: cannot run test as root'
   endif
 endfunc

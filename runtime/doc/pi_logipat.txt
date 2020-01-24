@@ -1,7 +1,7 @@
-*pi_logipat.txt*	Logical Patterns			Jun 22, 2015
+*pi_logipat.txt*	Logical Patterns			May 01, 2019
 
-Author:  Charles E. Campbell  <NdrOchip@ScampbellPfamily.AbizM>
-Copyright: (c) 2004-2015 by Charles E. Campbell	*logiPat-copyright*
+Author:  Charles E. Campbell  <NcampObell@SdrPchip.AorgM-NOSPAM>
+Copyright: (c) 2004-2016 by Charles E. Campbell	*logiPat-copyright*
            The VIM LICENSE applies to LogiPat.vim and LogiPat.txt
            (see |copyright|) except use "LogiPat" instead of "Vim"
 	   No warranty, express or implied.  Use At-Your-Own-Risk.
@@ -28,12 +28,14 @@ Copyright: (c) 2004-2015 by Charles E. Campbell	*logiPat-copyright*
 			grouping   ( ... )
 			patterns   "pattern"
 
+	*logiPat-cmd*
 	:LogiPat {boolean-logic pattern}		*:LogiPat*
 		:LogiPat is a command which takes a boolean-logic
 		argument (|logiPat-arg|).
 
 	:LP {boolean-logic pattern}			*:LP*
 		:LP is a shorthand command version of :LogiPat
+		(|logiPat-cmd|).
 
 	:LPE {boolean-logic pattern}			*:LPE*
 		No search is done, but the conversion from the
@@ -41,7 +43,6 @@ Copyright: (c) 2004-2015 by Charles E. Campbell	*logiPat-copyright*
 		is performed and echoed onto the display.
 
 	:LogiPatFlags {search flags}			*LogiPat-flags*
-		:LogiPatFlags {search flags}
 		LogiPat uses the |search()| command.  The flags
 		passed to that call to search() may be specified
 		by the :LogiPatFlags command.
@@ -70,7 +71,7 @@ Copyright: (c) 2004-2015 by Charles E. Campbell	*logiPat-copyright*
 <		will search for lines containing the string  :abc:
 >
 	:LogiPat "ab""cd"
-<		will search for lines containing the string  :ab"c:
+<		will search for lines containing the string  :ab"cd:
 >
 	:LogiPat !"abc"
 <		will search for lines which don't contain the string  :abc:
@@ -105,7 +106,7 @@ Copyright: (c) 2004-2015 by Charles E. Campbell	*logiPat-copyright*
 
 
 ==============================================================================
-3. LogiPat History					*logiPat-history*
+5. LogiPat History					*logiPat-history*
 
 	v4 Jun 22, 2015 * LogiPat has been picked up by Bram M for standard
 			  plugin distribution; hence the name change

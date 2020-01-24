@@ -1,5 +1,8 @@
 " Tests for editing the command line.
 
+source check.vim
+source screendump.vim
+
 func Test_complete_tab()
   call writefile(['testfile'], 'Xtestfile')
   call feedkeys(":e Xtest\t\r", "tx")
@@ -181,6 +184,7 @@ func Test_expr_completion()
   endif
   for cmd in [
 	\ 'let a = ',
+	\ 'const a = ',
 	\ 'if',
 	\ 'elseif',
 	\ 'while',
@@ -415,7 +419,7 @@ func Test_expand_star_star()
   call delete('a', 'rf')
 endfunc
 
-func Test_paste_in_cmdline()
+func Test_cmdline_paste()
   let @a = "def"
   call feedkeys(":abc \<C-R>a ghi\<C-B>\"\<CR>", 'tx')
   call assert_equal('"abc def ghi', @:)
@@ -455,18 +459,37 @@ func Test_paste_in_cmdline()
   bwipe!
 endfunc
 
-func Test_remove_char_in_cmdline()
-  call feedkeys(":abc def\<S-Left>\<Del>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"abc ef', @:)
+func Test_cmdline_remove_char()
+  let encoding_save = &encoding
 
-  call feedkeys(":abc def\<S-Left>\<BS>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"abcdef', @:)
+  for e in ['utf8', 'latin1']
+    exe 'set encoding=' . e
 
-  call feedkeys(":abc def ghi\<S-Left>\<C-W>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"abc ghi', @:)
+    call feedkeys(":abc def\<S-Left>\<Del>\<C-B>\"\<CR>", 'tx')
+    call assert_equal('"abc ef', @:, e)
 
-  call feedkeys(":abc def\<S-Left>\<C-U>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"def', @:)
+    call feedkeys(":abc def\<S-Left>\<BS>\<C-B>\"\<CR>", 'tx')
+    call assert_equal('"abcdef', @:)
+
+    call feedkeys(":abc def ghi\<S-Left>\<C-W>\<C-B>\"\<CR>", 'tx')
+    call assert_equal('"abc ghi', @:, e)
+
+    call feedkeys(":abc def\<S-Left>\<C-U>\<C-B>\"\<CR>", 'tx')
+    call assert_equal('"def', @:, e)
+  endfor
+
+  let &encoding = encoding_save
+endfunc
+
+func Test_cmdline_keymap_ctrl_hat()
+  if !has('keymap')
+    return
+  endif
+
+  set keymap=esperanto
+  call feedkeys(":\"Jxauxdo \<C-^>Jxauxdo \<C-^>Jxauxdo\<CR>", 'tx')
+  call assert_equal('"Jxauxdo Ĵaŭdo Jxauxdo', @:)
+  set keymap=
 endfunc
 
 func Test_illegal_address1()
@@ -530,6 +553,13 @@ func Test_cmdline_complete_user_names()
   endif
 endfunc
 
+func Test_cmdline_complete_bang()
+  if executable('whoami')
+    call feedkeys(":!whoam\<C-A>\<C-B>\"\<CR>", 'tx')
+    call assert_match('^".*\<whoami\>', @:)
+  endif
+endfunc
+
 funct Test_cmdline_complete_languages()
   let lang = substitute(execute('language messages'), '.*"\(.*\)"$', '\1', '')
 
@@ -550,6 +580,15 @@ funct Test_cmdline_complete_languages()
     call feedkeys(":language time \<c-a>\<c-b>\"\<cr>", 'tx')
     call assert_match('^"language .*\<' . lang . '\>', @:)
   endif
+endfunc
+
+func Test_cmdline_complete_env_variable()
+  let $X_VIM_TEST_COMPLETE_ENV = 'foo'
+
+  call feedkeys(":edit $X_VIM_TEST_COMPLETE_E\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_match('"edit $X_VIM_TEST_COMPLETE_ENV', @:)
+
+  unlet $X_VIM_TEST_COMPLETE_ENV
 endfunc
 
 func Test_cmdline_write_alternatefile()
@@ -687,6 +726,26 @@ func Test_verbosefile()
   call delete('Xlog')
 endfunc
 
+func Test_verbose_option()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    command DoSomething echo 'hello' |set ts=4 |let v = '123' |echo v
+    call feedkeys("\r", 't') " for the hit-enter prompt
+    set verbose=20
+  [SCRIPT]
+  call writefile(lines, 'XTest_verbose')
+
+  let buf = RunVimInTerminal('-S XTest_verbose', {'rows': 12})
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, ":DoSomething\<CR>")
+  call VerifyScreenDump(buf, 'Test_verbose_option_1', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XTest_verbose')
+endfunc
+
 func Test_setcmdpos()
   func InsertTextAtPos(text, pos)
     call assert_equal(0, setcmdpos(a:pos))
@@ -717,20 +776,20 @@ func Test_cmdline_overstrike()
 
     " Test overstrike in the middle of the command line.
     call feedkeys(":\"01234\<home>\<right>\<right>ab\<right>\<insert>cd\<enter>", 'xt')
-    call assert_equal('"0ab1cd4', @:)
+    call assert_equal('"0ab1cd4', @:, e)
 
     " Test overstrike going beyond end of command line.
     call feedkeys(":\"01234\<home>\<right>\<right>ab\<right>\<insert>cdefgh\<enter>", 'xt')
-    call assert_equal('"0ab1cdefgh', @:)
+    call assert_equal('"0ab1cdefgh', @:, e)
 
     " Test toggling insert/overstrike a few times.
     call feedkeys(":\"01234\<home>\<right>ab\<right>\<insert>cd\<right>\<insert>ef\<enter>", 'xt')
-    call assert_equal('"ab0cd3ef4', @:)
+    call assert_equal('"ab0cd3ef4', @:, e)
   endfor
 
   " Test overstrike with multi-byte characters.
   call feedkeys(":\"テキストエディタ\<home>\<right>\<right>ab\<right>\<insert>cd\<enter>", 'xt')
-  call assert_equal('"テabキcdエディタ', @:)
+  call assert_equal('"テabキcdエディタ', @:, e)
 
   let &encoding = encoding_save
 endfunc
@@ -744,3 +803,124 @@ func Test_cmdwin_bug()
   endtry
   bw!
 endfunc
+
+func Test_cmdwin_restore()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    call setline(1, range(30))
+    2split
+  [SCRIPT]
+  call writefile(lines, 'XTest_restore')
+
+  let buf = RunVimInTerminal('-S XTest_restore', {'rows': 12})
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, "q:")
+  call VerifyScreenDump(buf, 'Test_cmdwin_restore_1', {})
+
+  " normal restore
+  call term_sendkeys(buf, ":q\<CR>")
+  call VerifyScreenDump(buf, 'Test_cmdwin_restore_2', {})
+
+  " restore after setting 'lines' with one window
+  call term_sendkeys(buf, ":close\<CR>")
+  call term_sendkeys(buf, "q:")
+  call term_sendkeys(buf, ":set lines=18\<CR>")
+  call term_sendkeys(buf, ":q\<CR>")
+  call VerifyScreenDump(buf, 'Test_cmdwin_restore_3', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XTest_restore')
+endfunc
+
+func Test_buffers_lastused()
+  " check that buffers are sorted by time when wildmode has lastused
+  call test_settime(1550020000)	  " middle
+  edit bufa
+  enew
+  call test_settime(1550030000)	  " newest
+  edit bufb
+  enew
+  call test_settime(1550010000)	  " oldest
+  edit bufc
+  enew
+  call test_settime(0)
+  enew
+
+  call assert_equal(['bufa', 'bufb', 'bufc'],
+	\ getcompletion('', 'buffer'))
+
+  let save_wildmode = &wildmode
+  set wildmode=full:lastused
+
+  let cap = "\<c-r>=execute('let X=getcmdline()')\<cr>"
+  call feedkeys(":b \<tab>" .. cap .. "\<esc>", 'xt')
+  call assert_equal('b bufb', X)
+  call feedkeys(":b \<tab>\<tab>" .. cap .. "\<esc>", 'xt')
+  call assert_equal('b bufa', X)
+  call feedkeys(":b \<tab>\<tab>\<tab>" .. cap .. "\<esc>", 'xt')
+  call assert_equal('b bufc', X)
+  enew
+
+  edit other
+  call feedkeys(":b \<tab>" .. cap .. "\<esc>", 'xt')
+  call assert_equal('b bufb', X)
+  call feedkeys(":b \<tab>\<tab>" .. cap .. "\<esc>", 'xt')
+  call assert_equal('b bufa', X)
+  call feedkeys(":b \<tab>\<tab>\<tab>" .. cap .. "\<esc>", 'xt')
+  call assert_equal('b bufc', X)
+  enew
+
+  let &wildmode = save_wildmode
+
+  bwipeout bufa
+  bwipeout bufb
+  bwipeout bufc
+endfunc
+
+func Test_cmdwin_feedkeys()
+  " This should not generate E488
+  call feedkeys("q:\<CR>", 'x')
+endfunc
+
+" Tests for the issues fixed in 7.4.441.
+" When 'cedit' is set to Ctrl-C, opening the command window hangs Vim
+func Test_cmdwin_cedit()
+  exe "set cedit=\<C-c>"
+  normal! :
+  call assert_equal(1, winnr('$'))
+
+  let g:cmd_wintype = ''
+  func CmdWinType()
+      let g:cmd_wintype = getcmdwintype()
+      return ''
+  endfunc
+
+  call feedkeys("\<C-c>a\<C-R>=CmdWinType()\<CR>\<CR>")
+  echo input('')
+  call assert_equal('@', g:cmd_wintype)
+
+  set cedit&vim
+  delfunc CmdWinType
+endfunc
+
+func Test_cmdlineclear_tabenter()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    call setline(1, range(30))
+  [SCRIPT]
+
+  call writefile(lines, 'XtestCmdlineClearTabenter')
+  let buf = RunVimInTerminal('-S XtestCmdlineClearTabenter', #{rows: 10})
+  call term_wait(buf, 50)
+  " in one tab make the command line higher with CTRL-W -
+  call term_sendkeys(buf, ":tabnew\<cr>\<C-w>-\<C-w>-gtgt")
+  call VerifyScreenDump(buf, 'Test_cmdlineclear_tabenter', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestCmdlineClearTabenter')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

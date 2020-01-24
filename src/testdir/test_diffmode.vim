@@ -242,6 +242,63 @@ func Test_diffput_two()
   bwipe! b
 endfunc
 
+" :diffput and :diffget completes names of buffers which
+" are in diff mode and which are different then current buffer.
+" No completion when the current window is not in diff mode.
+func Test_diffget_diffput_completion()
+  e            Xdiff1 | diffthis
+  botright new Xdiff2
+  botright new Xdiff3 | split | diffthis
+  botright new Xdiff4 | diffthis
+
+  wincmd t
+  call assert_equal('Xdiff1', bufname('%'))
+  call feedkeys(":diffput \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"diffput Xdiff3 Xdiff4', @:)
+  call feedkeys(":diffget \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"diffget Xdiff3 Xdiff4', @:)
+  call assert_equal(['Xdiff3', 'Xdiff4'], getcompletion('', 'diff_buffer'))
+
+  " Xdiff2 is not in diff mode, so no completion for :diffput, :diffget
+  wincmd j
+  call assert_equal('Xdiff2', bufname('%'))
+  call feedkeys(":diffput \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"diffput ', @:)
+  call feedkeys(":diffget \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"diffget ', @:)
+  call assert_equal([], getcompletion('', 'diff_buffer'))
+
+  " Xdiff3 is split in 2 windows, only the top one is in diff mode.
+  " So completion of :diffput :diffget only happens in the top window.
+  wincmd j
+  call assert_equal('Xdiff3', bufname('%'))
+  call assert_equal(1, &diff)
+  call feedkeys(":diffput \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"diffput Xdiff1 Xdiff4', @:)
+  call feedkeys(":diffget \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"diffget Xdiff1 Xdiff4', @:)
+  call assert_equal(['Xdiff1', 'Xdiff4'], getcompletion('', 'diff_buffer'))
+
+  wincmd j
+  call assert_equal('Xdiff3', bufname('%'))
+  call assert_equal(0, &diff)
+  call feedkeys(":diffput \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"diffput ', @:)
+  call feedkeys(":diffget \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"diffget ', @:)
+  call assert_equal([], getcompletion('', 'diff_buffer'))
+
+  wincmd j
+  call assert_equal('Xdiff4', bufname('%'))
+  call feedkeys(":diffput \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"diffput Xdiff1 Xdiff3', @:)
+  call feedkeys(":diffget \<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"diffget Xdiff1 Xdiff3', @:)
+  call assert_equal(['Xdiff1', 'Xdiff3'], getcompletion('', 'diff_buffer'))
+
+  %bwipe
+endfunc
+
 func Test_dp_do_buffer()
   e! one
   let bn1=bufnr('%')
@@ -963,4 +1020,48 @@ func Test_diff_of_diff()
   " clean up
   call StopVimInTerminal(buf)
   call delete('Xtest_diff_diff')
+endfunc
+
+func CloseoffSetup()
+  enew
+  call setline(1, ['one', 'two', 'three'])
+  diffthis
+  new
+  call setline(1, ['one', 'tow', 'three'])
+  diffthis
+  call assert_equal(1, &diff)
+  only!
+endfunc
+
+func Test_diff_closeoff()
+  " "closeoff" included by default: last diff win gets 'diff' reset'
+  call CloseoffSetup()
+  call assert_equal(0, &diff)
+  enew!
+
+  " "closeoff" excluded: last diff win keeps 'diff' set'
+  set diffopt-=closeoff
+  call CloseoffSetup()
+  call assert_equal(1, &diff)
+  diffoff!
+  enew!
+endfunc
+
+func Test_diff_maintains_change_mark()
+  enew!
+  call setline(1, ['a', 'b', 'c', 'd'])
+  diffthis
+  new
+  call setline(1, ['a', 'b', 'c', 'e'])
+  " Set '[ and '] marks
+  2,3yank
+  call assert_equal([2, 3], [line("'["), line("']")])
+  " Verify they aren't affected by the implicit diff
+  diffthis
+  call assert_equal([2, 3], [line("'["), line("']")])
+  " Verify they aren't affected by an explicit diff
+  diffupdate
+  call assert_equal([2, 3], [line("'["), line("']")])
+  bwipe!
+  bwipe!
 endfunc

@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.1.  Last change: 2019 Sep 16
+*autocmd.txt*   For Vim version 8.2.  Last change: 2020 Jan 17
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -268,7 +268,6 @@ Name			triggered by ~
 |BufCreate|		just after adding a buffer to the buffer list
 |BufDelete|		before deleting a buffer from the buffer list
 |BufWipeout|		before completely deleting a buffer
-|TerminalOpen|		after a terminal buffer was created
 
 |BufFilePre|		before changing the name of the current buffer
 |BufFilePost|		after changing the name of the current buffer
@@ -301,6 +300,10 @@ Name			triggered by ~
 |ExitPre|		when using a command that may make Vim exit
 |VimLeavePre|		before exiting Vim, before writing the viminfo file
 |VimLeave|		before exiting Vim, after writing the viminfo file
+
+	Terminal
+|TerminalOpen|		after a terminal buffer was created
+|TerminalWinOpen|	after a terminal buffer was created in a new window
 
 	Various
 |FileChangedShell|	Vim notices that a file changed since editing started
@@ -384,6 +387,8 @@ BufAdd or BufCreate		Just after creating a new buffer which is
 				to the buffer list.
 				Also used just after a buffer in the buffer
 				list has been renamed.
+				Not triggered for the initial buffers created
+				during startup.
 				The BufCreate event is for historic reasons.
 				NOTE: When this autocommand is executed, the
 				current buffer "%" may be different from the
@@ -605,6 +610,8 @@ CompleteChanged						*CompleteChanged*
 CompleteDone			After Insert mode completion is done.  Either
 				when something was completed or abandoning
 				completion. |ins-completion|
+				|complete_info()| can be used, the info is
+				cleared after triggering CompleteDone.
 				The |v:completed_item| variable contains
 				information about the completed item.
 
@@ -634,7 +641,7 @@ CursorHold			When the user doesn't press a key for the time
 				Hint: to force an update of the status lines
 				use: >
 					:let &ro = &ro
-<				{only on Amiga, Unix, Win32, MSDOS and all GUI
+<				{only on Amiga, Unix, Win32 and all GUI
 				versions}
 							*CursorHoldI*
 CursorHoldI			Just like CursorHold, but in Insert mode.
@@ -1081,6 +1088,12 @@ TerminalOpen			Just after a terminal buffer was created, with
 				`:terminal` or |term_start()|. This event is
 				triggered even if the buffer is created
 				without a window, with the ++hidden option.
+							*TerminalWinOpen*
+TerminalWinOpen			Just after a terminal buffer was created, with
+				`:terminal` or |term_start()|. This event is
+				triggered only if the buffer is created
+				with a window.  Can be used to set window
+				local options for the terminal window.
 							*TermResponse*
 TermResponse			After the response to |t_RV| is received from
 				the terminal.  The value of |v:termresponse|
@@ -1278,8 +1291,8 @@ The pattern is interpreted like mostly used in file names:
 	[^ch]   match any character but 'c' and 'h'
 
 Note that for all systems the '/' character is used for path separator (even
-MS-DOS and OS/2).  This was done because the backslash is difficult to use
-in a pattern and to make the autocommands portable across different systems.
+for MS-Windows).  This was done because the backslash is difficult to use in a
+pattern and to make the autocommands portable across different systems.
 
 It is possible to use |pattern| items, but they may not work as expected,
 because of the translation done for the above.

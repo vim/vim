@@ -1,4 +1,4 @@
-*usr_01.txt*	For Vim version 8.1.  Last change: 2017 Jul 15
+*usr_01.txt*	For Vim version 8.2.  Last change: 2019 Nov 21
 
 		     VIM USER MANUAL - by Bram Moolenaar
 
@@ -41,11 +41,11 @@ the commands and options used for it.  Use these two commands:
 	Press  CTRL-O  to jump back (repeat to go further back).
 
 Many links are in vertical bars, like this: |bars|.  The bars themselves may
-be hidden or invisible, see below.  An option name, like 'number', a command
+be hidden or invisible; see below.  An option name, like 'number', a command
 in double quotes like ":write" and any other word can also be used as a link.
 Try it out: Move the cursor to  CTRL-]  and press CTRL-] on it.
 
-Other subjects can be found with the ":help" command, see |help.txt|.
+Other subjects can be found with the ":help" command; see |help.txt|.
 
 The bars and stars are usually hidden with the |conceal| feature.  They also
 use |hl-Ignore|, using the same color for the text as the background.  You can
@@ -71,7 +71,7 @@ you are using:
 
 Unix: >
 	:!cp -i $VIMRUNTIME/vimrc_example.vim ~/.vimrc
-MS-DOS, MS-Windows, OS/2: >
+MS-Windows: >
 	:!copy $VIMRUNTIME/vimrc_example.vim $VIM/_vimrc
 Amiga: >
 	:!copy $VIMRUNTIME/vimrc_example.vim $VIM/.vimrc
@@ -101,14 +101,14 @@ For more info see |vimrc| and |compatible-default|.
 	alternative called "evim" (easy Vim).  This is still Vim, but used in
 	a way that resembles a click-and-type editor like Notepad.  It always
 	stays in Insert mode, thus it feels very different.  It is not
-	explained in the user manual, since it should be mostly self
-	explanatory.  See |evim-keys| for details.
+	explained in the user manual, since it should be mostly
+	self-explanatory.  See |evim-keys| for details.
 
 ==============================================================================
 *01.3*	Using the Vim tutor				*tutor* *vimtutor*
 
 Instead of reading the text (boring!) you can use the vimtutor to learn your
-first Vim commands.  This is a 30 minute tutorial that teaches the most basic
+first Vim commands.  This is a 30-minute tutorial that teaches the most basic
 Vim functionality hands-on.
 
 On Unix, if Vim has been properly installed, you can start it from the shell:

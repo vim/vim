@@ -20,8 +20,8 @@
 #undef	BEOS_DR8
 #define	BEOS_PR_OR_BETTER
 
-/* select emulation */
+// select emulation
 
 #ifndef PROTO
-# include <net/socket.h>		/* for typedefs and #defines only */
+# include <net/socket.h>		// for typedefs and #defines only
 #endif

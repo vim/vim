@@ -33,11 +33,21 @@
  * test program.  Other items from configure may also be wrong then!
  */
 # if (VIM_SIZEOF_INT == 0)
-    Error: configure did not run properly.  Check auto/config.log.
+#  error configure did not run properly.  Check auto/config.log.
+# endif
+
+# if (defined(__linux__) && !defined(__ANDROID__)) || defined(__CYGWIN__)
+// Needed for strptime().  Needs to be done early, since header files can
+// include other header files and end up including time.h, where these symbols
+// matter for Vim.
+// 700 is needed for mkdtemp().
+#  ifndef _XOPEN_SOURCE
+#   define _XOPEN_SOURCE    700
+#  endif
 # endif
 
 // for INT_MAX, LONG_MAX et al.
-#include <limits.h>
+# include <limits.h>
 
 /*
  * Cygwin may have fchdir() in a newer release, but in most versions it
@@ -138,7 +148,7 @@
 #endif
 
 #if VIM_SIZEOF_INT < 4 && !defined(PROTO)
-    Error: Vim only works with 32 bit int or larger
+# error Vim only works with 32 bit int or larger
 #endif
 
 /*
@@ -150,9 +160,6 @@
 #if defined(MACOS_X_DARWIN)
 # if defined(FEAT_SMALL) && !defined(FEAT_CLIPBOARD)
 #  define FEAT_CLIPBOARD
-# endif
-# if defined(FEAT_SMALL) && !defined(FEAT_MOUSE)
-#  define FEAT_MOUSE
 # endif
 #endif
 
@@ -328,7 +335,7 @@ typedef unsigned short	short_u;
 typedef unsigned int	int_u;
 
 // Older systems do not have support for long long
-// use a typedef instead of hadcoded long long
+// use a typedef instead of hard-coded long long
 #ifdef HAVE_NO_LONG_LONG
  typedef long long_long_T;
  typedef long unsigned long_long_u_T;
@@ -627,16 +634,23 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 // Values for w_popup_flags.
 #define POPF_IS_POPUP	0x01	// this is a popup window
 #define POPF_HIDDEN	0x02	// popup is not displayed
-#define POPF_HANDLED	0x04	// popup was just redrawn or filtered
-#define POPF_CURSORLINE	0x08	// popup is highlighting at the cursorline
-#define POPF_ON_CMDLINE	0x10	// popup overlaps command line
-#define POPF_DRAG	0x20	// popup can be moved by dragging
-#define POPF_RESIZE	0x40	// popup can be resized by dragging
-#define POPF_MAPPING	0x80	// mapping keys
-#define POPF_INFO	0x100	// used for info of popup menu
-#define POPF_INFO_MENU	0x200	// align info popup with popup menu
+#define POPF_CURSORLINE	0x04	// popup is highlighting at the cursorline
+#define POPF_ON_CMDLINE	0x08	// popup overlaps command line
+#define POPF_DRAG	0x10	// popup can be moved by dragging
+#define POPF_RESIZE	0x20	// popup can be resized by dragging
+#define POPF_MAPPING	0x40	// mapping keys
+#define POPF_INFO	0x80	// used for info of popup menu
+#define POPF_INFO_MENU	0x100	// align info popup with popup menu
+#define POPF_POSINVERT	0x200	// vertical position can be inverted
 
-#ifdef FEAT_TEXT_PROP
+// flags used in w_popup_handled
+#define POPUP_HANDLED_1	    0x01    // used by mouse_find_win()
+#define POPUP_HANDLED_2	    0x02    // used by popup_do_filter()
+#define POPUP_HANDLED_3	    0x04    // used by popup_check_cursor_pos()
+#define POPUP_HANDLED_4	    0x08    // used by may_update_popup_mask()
+#define POPUP_HANDLED_5	    0x10    // used by update_popups()
+
+#ifdef FEAT_PROP_POPUP
 # define WIN_IS_POPUP(wp) ((wp)->w_popup_flags != 0)
 #else
 # define WIN_IS_POPUP(wp) 0
@@ -787,6 +801,7 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define EXPAND_MESSAGES		46
 #define EXPAND_MAPCLEAR		47
 #define EXPAND_ARGLIST		48
+#define EXPAND_DIFF_BUFFERS	49
 
 // Values for exmode_active (0 is no exmode)
 #define EXMODE_NORMAL		1
@@ -813,6 +828,9 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define WILD_ICASE		    0x100
 #define WILD_ALLLINKS		    0x200
 #define WILD_IGNORE_COMPLETESLASH   0x400
+#define WILD_NOERROR		    0x800  // sets EW_NOERROR
+#define WILD_BUFLASTUSED	    0x1000
+#define BUF_DIFF_FILTER		    0x2000
 
 // Flags for expand_wildcards()
 #define EW_DIR		0x01	// include directory names
@@ -1211,12 +1229,13 @@ typedef struct {
  * When OPT_GLOBAL and OPT_LOCAL are both missing, set both local and global
  * values, get local value.
  */
-#define OPT_FREE	1	// free old value if it was allocated
-#define OPT_GLOBAL	2	// use global value
-#define OPT_LOCAL	4	// use local value
-#define OPT_MODELINE	8	// option in modeline
-#define OPT_WINONLY	16	// only set window-local options
-#define OPT_NOWIN	32	// don't set window-local options
+#define OPT_FREE	0x01	// free old value if it was allocated
+#define OPT_GLOBAL	0x02	// use global value
+#define OPT_LOCAL	0x04	// use local value
+#define OPT_MODELINE	0x08	// option in modeline
+#define OPT_WINONLY	0x10	// only set window-local options
+#define OPT_NOWIN	0x20	// don't set window-local options
+#define OPT_ONECOLUMN	0x40	// list options one per line
 
 // Magic chars used in confirm dialog strings
 #define DLG_BUTTON_SEP	'\n'
@@ -1343,6 +1362,7 @@ enum auto_event
     EVENT_TABNEW,		// when entering a new tab page
     EVENT_TERMCHANGED,		// after changing 'term'
     EVENT_TERMINALOPEN,		// after a terminal buffer was created
+    EVENT_TERMINALWINOPEN,	// after a terminal buffer was created and entering its window
     EVENT_TERMRESPONSE,		// after setting "v:termresponse"
     EVENT_TEXTCHANGED,		// text was modified not in Insert mode
     EVENT_TEXTCHANGEDI,         // text was modified in Insert mode
@@ -1382,6 +1402,8 @@ typedef enum
     , HLF_M	    // "--More--" message
     , HLF_CM	    // Mode (e.g., "-- INSERT --")
     , HLF_N	    // line number for ":number" and ":#" commands
+    , HLF_LNA	    // LineNrAbove
+    , HLF_LNB	    // LineNrBelow
     , HLF_CLN	    // current line number
     , HLF_R	    // return to continue message and yes/no questions
     , HLF_S	    // status lines
@@ -1423,8 +1445,8 @@ typedef enum
 // The HL_FLAGS must be in the same order as the HLF_ enums!
 // When changing this also adjust the default for 'highlight'.
 #define HL_FLAGS {'8', '~', '@', 'd', 'e', 'h', 'i', 'l', 'm', 'M', \
-		  'n', 'N', 'r', 's', 'S', 'c', 't', 'v', 'V', 'w', 'W', \
-		  'f', 'F', 'A', 'C', 'D', 'T', '-', '>', \
+		  'n', 'a', 'b', 'N', 'r', 's', 'S', 'c', 't', 'v', 'V', \
+		  'w', 'W', 'f', 'F', 'A', 'C', 'D', 'T', '-', '>', \
 		  'B', 'P', 'R', 'L', \
 		  '+', '=', 'x', 'X', '*', '#', '_', '!', '.', 'o', 'q', \
 		  'z', 'Z'}
@@ -1754,11 +1776,18 @@ void *vim_memset(void *, int, size_t);
 #ifndef EXTERN
 # define EXTERN extern
 # define INIT(x)
+# define INIT2(a, b)
+# define INIT3(a, b, c)
+# define INIT4(a, b, c, d)
+# define INIT5(a, b, c, d, e)
 #else
 # ifndef INIT
 #  define INIT(x) x
+#  define INIT2(a, b) = {a, b}
+#  define INIT3(a, b, c) = {a, b, c}
+#  define INIT4(a, b, c, d) = {a, b, c, d}
+#  define INIT5(a, b, c, d, e) = {a, b, c, d, e}
 #  define DO_INIT
-#  define COMMA ,
 # endif
 #endif
 
@@ -1817,80 +1846,78 @@ typedef int sock_T;
 #define PROF_YES	1	// profiling busy
 #define PROF_PAUSED	2	// profiling paused
 
-#ifdef FEAT_MOUSE
 
 // Codes for mouse button events in lower three bits:
-# define MOUSE_LEFT	0x00
-# define MOUSE_MIDDLE	0x01
-# define MOUSE_RIGHT	0x02
-# define MOUSE_RELEASE	0x03
+#define MOUSE_LEFT	0x00
+#define MOUSE_MIDDLE	0x01
+#define MOUSE_RIGHT	0x02
+#define MOUSE_RELEASE	0x03
 
 // bit masks for modifiers:
-# define MOUSE_SHIFT	0x04
-# define MOUSE_ALT	0x08
-# define MOUSE_CTRL	0x10
+#define MOUSE_SHIFT	0x04
+#define MOUSE_ALT	0x08
+#define MOUSE_CTRL	0x10
 
 // mouse buttons that are handled like a key press (GUI only)
 // Note that the scroll wheel keys are inverted: MOUSE_5 scrolls lines up but
 // the result of this is that the window moves down, similarly MOUSE_6 scrolls
 // columns left but the window moves right.
-# define MOUSE_4	0x100	// scroll wheel down
-# define MOUSE_5	0x200	// scroll wheel up
+#define MOUSE_4	0x100	// scroll wheel down
+#define MOUSE_5	0x200	// scroll wheel up
 
-# define MOUSE_X1	0x300 // Mouse-button X1 (6th)
-# define MOUSE_X2	0x400 // Mouse-button X2
+#define MOUSE_X1	0x300 // Mouse-button X1 (6th)
+#define MOUSE_X2	0x400 // Mouse-button X2
 
-# define MOUSE_6	0x500	// scroll wheel left
-# define MOUSE_7	0x600	// scroll wheel right
+#define MOUSE_6	0x500	// scroll wheel left
+#define MOUSE_7	0x600	// scroll wheel right
 
 // 0x20 is reserved by xterm
-# define MOUSE_DRAG_XTERM   0x40
+#define MOUSE_DRAG_XTERM   0x40
 
-# define MOUSE_DRAG	(0x40 | MOUSE_RELEASE)
+#define MOUSE_DRAG	(0x40 | MOUSE_RELEASE)
 
 // Lowest button code for using the mouse wheel (xterm only)
-# define MOUSEWHEEL_LOW		0x60
+#define MOUSEWHEEL_LOW		0x60
 
-# define MOUSE_CLICK_MASK	0x03
+#define MOUSE_CLICK_MASK	0x03
 
-# define NUM_MOUSE_CLICKS(code) \
+#define NUM_MOUSE_CLICKS(code) \
     (((unsigned)((code) & 0xC0) >> 6) + 1)
 
-# define SET_NUM_MOUSE_CLICKS(code, num) \
+#define SET_NUM_MOUSE_CLICKS(code, num) \
     (code) = ((code) & 0x3f) | ((((num) - 1) & 3) << 6)
 
 // Added to mouse column for GUI when 'mousefocus' wants to give focus to a
 // window by simulating a click on its status line.  We could use up to 128 *
 // 128 = 16384 columns, now it's reduced to 10000.
-# define MOUSE_COLOFF 10000
+#define MOUSE_COLOFF 10000
 
 /*
  * jump_to_mouse() returns one of first four these values, possibly with
  * some of the other three added.
  */
-# define IN_UNKNOWN		0
-# define IN_BUFFER		1
-# define IN_STATUS_LINE		2	// on status or command line
-# define IN_SEP_LINE		4	// on vertical separator line
-# define IN_OTHER_WIN		8	// in other window but can't go there
-# define CURSOR_MOVED		0x100
-# define MOUSE_FOLD_CLOSE	0x200	// clicked on '-' in fold column
-# define MOUSE_FOLD_OPEN	0x400	// clicked on '+' in fold column
-# define MOUSE_WINBAR		0x800	// in window toolbar
+#define IN_UNKNOWN		0
+#define IN_BUFFER		1
+#define IN_STATUS_LINE		2	// on status or command line
+#define IN_SEP_LINE		4	// on vertical separator line
+#define IN_OTHER_WIN		8	// in other window but can't go there
+#define CURSOR_MOVED		0x100
+#define MOUSE_FOLD_CLOSE	0x200	// clicked on '-' in fold column
+#define MOUSE_FOLD_OPEN		0x400	// clicked on '+' in fold column
+#define MOUSE_WINBAR		0x800	// in window toolbar
 
 // flags for jump_to_mouse()
-# define MOUSE_FOCUS		0x01	// need to stay in this window
-# define MOUSE_MAY_VIS		0x02	// may start Visual mode
-# define MOUSE_DID_MOVE		0x04	// only act when mouse has moved
-# define MOUSE_SETPOS		0x08	// only set current mouse position
-# define MOUSE_MAY_STOP_VIS	0x10	// may stop Visual mode
-# define MOUSE_RELEASED		0x20	// button was released
+#define MOUSE_FOCUS		0x01	// need to stay in this window
+#define MOUSE_MAY_VIS		0x02	// may start Visual mode
+#define MOUSE_DID_MOVE		0x04	// only act when mouse has moved
+#define MOUSE_SETPOS		0x08	// only set current mouse position
+#define MOUSE_MAY_STOP_VIS	0x10	// may stop Visual mode
+#define MOUSE_RELEASED		0x20	// button was released
 
-# if defined(UNIX) && defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
-#  define CHECK_DOUBLE_CLICK 1	// Checking for double clicks ourselves.
-# endif
+#if defined(UNIX) && defined(HAVE_GETTIMEOFDAY) && defined(HAVE_SYS_TIME_H)
+# define CHECK_DOUBLE_CLICK 1	// Checking for double clicks ourselves.
+#endif
 
-#endif // FEAT_MOUSE
 
 // defines for eval_vars()
 #define VALID_PATH		1
@@ -1990,13 +2017,14 @@ typedef int sock_T;
 #define VV_EVENT	90
 #define VV_VERSIONLONG	91
 #define VV_ECHOSPACE	92
-#define VV_LEN		93	// number of v: vars
+#define VV_ARGV		93
+#define VV_LEN		94	// number of v: vars
 
-// used for v_number in VAR_SPECIAL
-#define VVAL_FALSE	0L
-#define VVAL_TRUE	1L
-#define VVAL_NONE	2L
-#define VVAL_NULL	3L
+// used for v_number in VAR_BOOL and VAR_SPECIAL
+#define VVAL_FALSE	0L	// VAR_BOOL
+#define VVAL_TRUE	1L	// VAR_BOOL
+#define VVAL_NONE	2L	// VAR_SPECIAL
+#define VVAL_NULL	3L	// VAR_SPECIAL
 
 // Type values for type().
 #define VAR_TYPE_NUMBER	    0
@@ -2051,7 +2079,7 @@ typedef struct
     short_u	origin_end_col;
     short_u	word_start_col;
     short_u	word_end_col;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     // limits for selection inside a popup window
     short_u	min_col;
     short_u	max_col;
@@ -2115,6 +2143,13 @@ typedef enum {
     FLUSH_TYPEAHEAD,	// flush current typebuf contents
     FLUSH_INPUT		// flush typebuf and inchar() input
 } flush_buffers_T;
+
+// Argument for prepare_tagpreview()
+typedef enum {
+    USEPOPUP_NONE,
+    USEPOPUP_NORMAL,	// use info popup
+    USEPOPUP_HIDDEN	// use info popup initially hidden
+} use_popup_T;
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff
@@ -2433,9 +2468,10 @@ typedef enum {
 #define VIF_GET_OLDFILES	8	// load v:oldfiles
 
 // flags for buf_freeall()
-#define BFA_DEL		1	// buffer is going to be deleted
-#define BFA_WIPE	2	// buffer is going to be wiped out
-#define BFA_KEEP_UNDO	4	// do not free undo information
+#define BFA_DEL		 1	// buffer is going to be deleted
+#define BFA_WIPE	 2	// buffer is going to be wiped out
+#define BFA_KEEP_UNDO	 4	// do not free undo information
+#define BFA_IGNORE_ABORT 8	// do not abort for aborting()
 
 // direction for nv_mousescroll() and ins_mousescroll()
 #define MSCR_DOWN	0	// DOWN must be FALSE
@@ -2523,15 +2559,15 @@ typedef enum {
 				// be freed.
 
 // errors for when calling a function
-#define ERROR_UNKNOWN	0
-#define ERROR_TOOMANY	1
-#define ERROR_TOOFEW	2
-#define ERROR_SCRIPT	3
-#define ERROR_DICT	4
-#define ERROR_NONE	5
-#define ERROR_OTHER	6
-#define ERROR_DELETED	7
-#define ERROR_NOTMETHOD	8   // function cannot be used as a method
+#define FCERR_UNKNOWN	0
+#define FCERR_TOOMANY	1
+#define FCERR_TOOFEW	2
+#define FCERR_SCRIPT	3
+#define FCERR_DICT	4
+#define FCERR_NONE	5
+#define FCERR_OTHER	6
+#define FCERR_DELETED	7
+#define FCERR_NOTMETHOD	8   // function cannot be used as a method
 
 // flags for find_name_end()
 #define FNE_INCL_BR	1	// include [] in name
@@ -2632,5 +2668,11 @@ long elapsed(DWORD start_tick);
 #define APC_SUBSTITUTE		2   // text is replaced, not inserted
 
 #define CLIP_ZINDEX 32000
+
+// Flags for replace_termcodes()
+#define REPTERM_FROM_PART	1
+#define REPTERM_DO_LT		2
+#define REPTERM_SPECIAL		4
+#define REPTERM_NO_SIMPLIFY	8
 
 #endif // VIM__H

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.1.  Last change: 2019 Sep 27
+*change.txt*    For Vim version 8.2.  Last change: 2019 Sep 28
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -611,7 +611,7 @@ attack or other people reading your file).  When Vim exits the directory and
 all files in it are deleted.  When Vim has the setuid bit set this may cause
 problems, the temp file is owned by the setuid user but the filter command
 probably runs as the original user.
-On MS-DOS and OS/2 the first of these directories that works is used: $TMP,
+On MS-Windows the first of these directories that works is used: $TMP,
 $TEMP, c:\TMP, c:\TEMP.
 For Unix the list of directories is: $TMPDIR, /tmp, current-dir, $HOME.
 For MS-Windows the GetTempFileName() system function is used.
@@ -999,9 +999,13 @@ inside of strings can change!  Also see 'softtabstop' option. >
 			delete and yank) ({.%#:} only work with put).
 
 							*:reg* *:registers*
-:reg[isters]		Display the contents of all numbered and named
-			registers.  If a register is written to for |:redir|
-			it will not be listed.
+:reg[isters]		Display the type and contents of all numbered and
+			named registers.  If a register is written to for
+			|:redir| it will not be listed.
+			Type can be one of:
+			"c"	for |characterwise| text
+			"l"	for |linewise| text
+			"b"	for |blockwise-visual| text
 
 
 :reg[isters] {arg}	Display the contents of the numbered and named

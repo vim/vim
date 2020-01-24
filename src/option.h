@@ -197,7 +197,7 @@
 #define CPO_MINUS	'-'	// "9-" fails at and before line 9
 #define CPO_SPECI	'<'	// don't recognize <> in mappings
 #define CPO_REGAPPEND	'>'	// insert NL when appending to a register
-/* POSIX flags */
+// POSIX flags
 #define CPO_HASH	'#'	// "D", "o" and "O" do not use a count
 #define CPO_PARA	'{'	// "{" is also a paragraph boundary
 #define CPO_TSIZE	'|'	// $LINES and $COLUMNS overrule term size
@@ -207,7 +207,7 @@
 #define CPO_CHDIR	'.'	// don't chdir if buffer is modified
 #define CPO_SCOLON	';'	// using "," and ";" will skip over char if
 				// cursor would not move
-/* default values for Vim, Vi and POSIX */
+// default values for Vim, Vi and POSIX
 #define CPO_VIM		"aABceFs"
 #define CPO_VI		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>;"
 #define CPO_ALL		"aAbBcCdDeEfFgHiIjJkKlLmMnoOpPqrRsStuvwWxXyZ$!%*-+<>#{|&/\\.;"
@@ -338,6 +338,7 @@
 #define WIM_FULL	0x01
 #define WIM_LONGEST	0x02
 #define WIM_LIST	0x04
+#define WIM_BUFLASTUSED	0x08
 
 // arguments for can_bs()
 #define BS_INDENT	'i'	// "Indent"
@@ -566,7 +567,7 @@ EXTERN char_u	*p_fp;		// 'formatprg'
 EXTERN int	p_fs;		// 'fsync'
 #endif
 EXTERN int	p_gd;		// 'gdefault'
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 # ifdef FEAT_QUICKFIX
 EXTERN char_u	*p_cpp;		// 'completepopup'
 # endif
@@ -813,6 +814,9 @@ EXTERN char_u	*p_ruf;		// 'rulerformat'
 EXTERN char_u	*p_pp;		// 'packpath'
 EXTERN char_u	*p_rtp;		// 'runtimepath'
 EXTERN long	p_sj;		// 'scrolljump'
+#if defined(MSWIN) && defined(FEAT_GUI)
+EXTERN int	p_scf;		// 'scrollfocus'
+#endif
 EXTERN long	p_so;		// 'scrolloff'
 EXTERN char_u	*p_sbo;		// 'scrollopt'
 EXTERN char_u	*p_sections;	// 'sections'
@@ -907,11 +911,13 @@ EXTERN char_u	*p_su;		// 'suffixes'
 EXTERN char_u	*p_sws;		// 'swapsync'
 EXTERN char_u	*p_swb;		// 'switchbuf'
 EXTERN unsigned	swb_flags;
+// Keep in sync with p_swb_values in optionstr.c
 #define SWB_USEOPEN		0x001
 #define SWB_USETAB		0x002
 #define SWB_SPLIT		0x004
 #define SWB_NEWTAB		0x008
 #define SWB_VSPLIT		0x010
+#define SWB_USELAST		0x020
 EXTERN char_u	*p_syn;		// 'syntax'
 EXTERN long	p_ts;		// 'tabstop'
 EXTERN int	p_tbs;		// 'tagbsearch'
@@ -979,7 +985,7 @@ EXTERN unsigned tbis_flags;
 # define TBIS_GIANT		0x20
 #endif
 EXTERN long	p_ttyscroll;	// 'ttyscroll'
-#if defined(FEAT_MOUSE) && (defined(UNIX) || defined(VMS))
+#if defined(UNIX) || defined(VMS)
 EXTERN char_u	*p_ttym;	// 'ttymouse'
 EXTERN unsigned ttym_flags;
 # define TTYM_XTERM		0x01
@@ -1266,6 +1272,9 @@ enum
     , WV_CUL
     , WV_CULOPT
     , WV_CC
+#endif
+#ifdef FEAT_LINEBREAK
+    , WV_SBR
 #endif
 #ifdef FEAT_STL_OPT
     , WV_STL

@@ -1,17 +1,10 @@
-*textprop.txt*  For Vim version 8.1.  Last change: 2019 Sep 04
+*textprop.txt*  For Vim version 8.2.  Last change: 2020 Jan 10
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
 
 
 Displaying text with properties attached.	*textprop* *text-properties*
-
-THIS IS UNDER DEVELOPMENT - ANYTHING MAY STILL CHANGE  *E967*
-
-What is not working yet:
-- Adjusting column/length when inserting text
-- Text properties spanning more than one line
-- prop_find()
 
 
 1. Introduction			|text-prop-intro|
@@ -52,11 +45,11 @@ A text property has these fields:
 
 Property Types ~
 							*E971*
-A text property normally has the name of a property type, which defines 
+A text property normally has the name of a property type, which defines
 how to highlight the text.  The property type can have these entries:
 	"highlight"	name of the highlight group to use
-	"combine"	when TRUE the text property highlighting is combined
-			with any syntax highlighting, when omitted or FALSE the
+	"combine"	when omitted or TRUE the text property highlighting is
+			combined with any syntax highlighting; when FALSE the
 			text property highlighting replaces the syntax
 			highlighting
 	"priority"	when properties overlap, the one with the highest
@@ -93,6 +86,12 @@ and/or ends with a specific character, such as the quote surrounding a string.
 
 Nevertheless, when text is inserted or deleted the text may need to be parsed
 and the text properties updated.  But this can be done asynchronously.
+
+
+Internal error *E967*
+
+If you see E967, please report the bug.  You can do this at Github:
+https://github.com/vim/vim/issues/new
 
 ==============================================================================
 2. Functions						*text-prop-functions*
@@ -155,8 +154,6 @@ prop_add({lnum}, {col}, {props})
 		added to. When not found, the global property types are used.
 		If not found an error is given.
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetLnum()->prop_add(col, props)
 
@@ -169,14 +166,11 @@ prop_clear({lnum} [, {lnum-end} [, {props}]])		*prop_clear()*
 		When {props} contains a "bufnr" item use this buffer,
 		otherwise use the current buffer.
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetLnum()->prop_clear()
 <
 							*prop_find()*
 prop_find({props} [, {direction}])
-		{not implemented yet}
 		Search for a text property as specified with {props}:
 		   id		property with this ID
 		   type		property with this type name
@@ -198,8 +192,6 @@ prop_find({props} [, {direction}])
 		If a match is found then a Dict is returned with the entries
 		as with prop_list(), and additionally an "lnum" entry.
 		If no match is found then an empty Dict is returned.
-
-		See |text-properties| for information about text properties.
 
 
 prop_list({lnum} [, {props}])				*prop_list()*
@@ -224,8 +216,6 @@ prop_list({lnum} [, {props}])				*prop_list()*
 		When "end" is zero the property continues in the next line.
 		The line break after this line is included.
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetLnum()->prop_list()
 <
@@ -248,8 +238,6 @@ prop_remove({props} [, {lnum} [, {lnum-end}]])
 		If buffer "bufnr" is not loaded then nothing happens.
 
 		Returns the number of properties that were removed.
-
-		See |text-properties| for information about text properties.
 
 		Can also be used as a |method|: >
 			GetProps()->prop_remove()
@@ -276,8 +264,6 @@ prop_type_add({name}, {props})		*prop_type_add()* *E969* *E970*
 		   end_incl	when TRUE inserts at the end position will be
 				included in the text property
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_add(props)
 
@@ -285,8 +271,6 @@ prop_type_change({name}, {props})			*prop_type_change()*
 		Change properties of an existing text property type.  If a
 		property with this name does not exist an error is given.
 		The {props} argument is just like |prop_type_add()|.
-
-		See |text-properties| for information about text properties.
 
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_change(props)
@@ -302,8 +286,6 @@ prop_type_delete({name} [, {props}])			*prop_type_delete()*
 
 		When text property type {name} is not found there is no error.
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_delete()
 
@@ -317,8 +299,6 @@ prop_type_get([{name} [, {props}])			*prop_type_get()*
 		{props} can contain a "bufnr" item.  When it is given, use
 		this buffer instead of the global property types.
 
-		See |text-properties| for information about text properties.
-
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_get()
 
@@ -327,8 +307,6 @@ prop_type_list([{props}])				*prop_type_list()*
 
 		{props} can contain a "bufnr" item.  When it is given, use
 		this buffer instead of the global property types.
-
-		See |text-properties| for information about text properties.
 
 
 ==============================================================================

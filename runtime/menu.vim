@@ -2,7 +2,7 @@
 " You can also use this as a start for your own set of menus.
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2019 Sep 26
+" Last Change:	2019 Dec 10
 
 " Note that ":an" (short for ":anoremenu") is often used to make a menu work
 " in all modes and avoid side effects from mappings defined by the user.
@@ -159,6 +159,9 @@ an 20.335 &Edit.-SEP1-				<Nop>
 vnoremenu 20.340 &Edit.Cu&t<Tab>"+x		"+x
 vnoremenu 20.350 &Edit.&Copy<Tab>"+y		"+y
 cnoremenu 20.350 &Edit.&Copy<Tab>"+y		<C-Y>
+if exists(':tlmenu')
+  tlnoremenu 20.350 &Edit.&Copy<Tab>"+y 	<C-W>:<C-Y><CR>
+endif
 nnoremenu 20.360 &Edit.&Paste<Tab>"+gP		"+gP
 cnoremenu	 &Edit.&Paste<Tab>"+gP		<C-R>+
 if exists(':tlmenu')
@@ -569,7 +572,7 @@ func! s:XxdConv()
     %!mc vim:xxd
   else
     call s:XxdFind()
-    exe '%!"' . g:xxdprogram . '"'
+    exe '%!' . g:xxdprogram
   endif
   if getline(1) =~ "^0000000:"		" only if it worked
     set ft=xxd
@@ -583,7 +586,7 @@ func! s:XxdBack()
     %!mc vim:xxd -r
   else
     call s:XxdFind()
-    exe '%!"' . g:xxdprogram . '" -r'
+    exe '%!' . g:xxdprogram . ' -r'
   endif
   set ft=
   doautocmd filetypedetect BufReadPost
@@ -595,6 +598,9 @@ func! s:XxdFind()
     " On the PC xxd may not be in the path but in the install directory
     if has("win32") && !executable("xxd")
       let g:xxdprogram = $VIMRUNTIME . (&shellslash ? '/' : '\') . "xxd.exe"
+      if g:xxdprogram =~ ' '
+	let g:xxdprogram = '"' .. g:xxdprogram .. '"'
+      endif
     else
       let g:xxdprogram = "xxd"
     endif
@@ -694,11 +700,11 @@ func! s:BMShow(...)
     let g:bmenu_priority = a:1
   endif
 
-  " remove old menu, if exists; keep one entry to avoid a torn off menu to
-  " disappear.
-  silent! unmenu &Buffers
+  " Remove old menu, if exists; keep one entry to avoid a torn off menu to
+  " disappear.  Use try/catch to avoid setting v:errmsg
+  try | unmenu &Buffers | catch | endtry
   exe 'noremenu ' . g:bmenu_priority . ".1 &Buffers.Dummy l"
-  silent! unmenu! &Buffers
+  try | unmenu! &Buffers | catch | endtry
 
   " create new menu; set 'cpo' to include the <CR>
   let cpo_save = &cpo

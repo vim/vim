@@ -95,11 +95,11 @@ EXTERN int redrawing_for_callback INIT(= 0);
  */
 EXTERN short	*TabPageIdxs INIT(= NULL);
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 // Array with size Rows x Columns containing zindex of popups.
 EXTERN short	*popup_mask INIT(= NULL);
 EXTERN short	*popup_mask_next INIT(= NULL);
-// Array with flags for tansparent cells of current popup.
+// Array with flags for transparent cells of current popup.
 EXTERN char	*popup_transparent INIT(= NULL);
 
 // Flag set to TRUE when popup_mask needs to be updated.
@@ -226,7 +226,7 @@ EXTERN int	did_uncaught_emsg;	    // emsg() was called and did not
 #endif
 EXTERN int	did_emsg_syntax;	    // did_emsg set because of a
 					    // syntax error
-EXTERN int	called_emsg;		    // always set by emsg()
+EXTERN int	called_emsg;		    // always incremented by emsg()
 EXTERN int	ex_exitval INIT(= 0);	    // exit value for ex mode
 EXTERN int	emsg_on_display INIT(= FALSE);	// there is an error message
 EXTERN int	rc_did_emsg INIT(= FALSE);  // vim_regcomp() called emsg()
@@ -266,8 +266,15 @@ EXTERN int	lines_left INIT(= -1);	    // lines left for listing
 EXTERN int	msg_no_more INIT(= FALSE);  // don't use more prompt, truncate
 					    // messages
 
-EXTERN char_u	*sourcing_name INIT( = NULL);// name of error message source
-EXTERN linenr_T	sourcing_lnum INIT(= 0);    // line number of the source file
+/*
+ * Stack of execution contexts.  Each entry is an estack_T.
+ * Current context is at ga_len - 1.
+ */
+EXTERN garray_T	exestack INIT5(0, 0, sizeof(estack_T), 50, NULL);
+// name of error message source
+#define SOURCING_NAME (((estack_T *)exestack.ga_data)[exestack.ga_len - 1].es_name)
+// line number in the message source or zero
+#define SOURCING_LNUM (((estack_T *)exestack.ga_data)[exestack.ga_len - 1].es_lnum)
 
 #ifdef FEAT_EVAL
 EXTERN int	ex_nesting_level INIT(= 0);	// nesting level
@@ -278,7 +285,7 @@ EXTERN int	debug_backtrace_level INIT(= 0); // breakpoint backtrace level
 # ifdef FEAT_PROFILE
 EXTERN int	do_profiling INIT(= PROF_NONE);	// PROF_ values
 # endif
-EXTERN garray_T script_items INIT(= {0 COMMA 0 COMMA sizeof(scriptitem_T) COMMA 4 COMMA NULL});
+EXTERN garray_T script_items INIT5(0, 0, sizeof(scriptitem_T), 4, NULL);
 #define SCRIPT_ITEM(id) (((scriptitem_T *)script_items.ga_data)[(id) - 1])
 #define FUNCLINE(fp, j)	((char_u **)(fp->uf_lines.ga_data))[j]
 
@@ -368,7 +375,7 @@ EXTERN int	want_garbage_collect INIT(= FALSE);
 EXTERN int	garbage_collect_at_exit INIT(= FALSE);
 
 // Script CTX being sourced or was sourced to define the current function.
-EXTERN sctx_T	current_sctx INIT(= {0 COMMA 0 COMMA 0 COMMA 0});
+EXTERN sctx_T	current_sctx INIT4(0, 0, 0, 0);
 #endif
 
 EXTERN int	did_source_packages INIT(= FALSE);
@@ -393,7 +400,7 @@ EXTERN int include_link INIT(= 0);	// when 2 include "link" and "clear"
  * character just after the match in the last line.
  */
 EXTERN int	highlight_match INIT(= FALSE);	// show search match pos
-EXTERN linenr_T	search_match_lines;		// lines of of matched string
+EXTERN linenr_T	search_match_lines;		// lines of matched string
 EXTERN colnr_T	search_match_endcol;		// col nr of match end
 #ifdef FEAT_SEARCH_EXTRA
 EXTERN linenr_T	search_first_line INIT(= 0);	  // for :{FIRST},{last}s/pat
@@ -461,7 +468,7 @@ EXTERN int	au_did_filetype INIT(= FALSE);
 
 // When deleting the current buffer, another one must be loaded.  If we know
 // which one is preferred, au_new_curbuf is set to it
-EXTERN bufref_T	au_new_curbuf INIT(= {NULL COMMA 0 COMMA 0});
+EXTERN bufref_T	au_new_curbuf INIT3(NULL, 0, 0);
 
 // When deleting a buffer/window and autocmd_busy is TRUE, do not free the
 // buffer/window. but link it in the list starting with
@@ -470,7 +477,6 @@ EXTERN bufref_T	au_new_curbuf INIT(= {NULL COMMA 0 COMMA 0});
 EXTERN buf_T	*au_pending_free_buf INIT(= NULL);
 EXTERN win_T	*au_pending_free_win INIT(= NULL);
 
-#ifdef FEAT_MOUSE
 /*
  * Mouse coordinates, set by check_termcode()
  */
@@ -480,15 +486,15 @@ EXTERN int	mouse_past_bottom INIT(= FALSE);// mouse below last line
 EXTERN int	mouse_past_eol INIT(= FALSE);	// mouse right of line
 EXTERN int	mouse_dragging INIT(= 0);	// extending Visual area with
 						// mouse dragging
-# if defined(FEAT_MOUSE_DEC)
+#if defined(FEAT_MOUSE_DEC)
 /*
  * When the DEC mouse has been pressed but not yet released we enable
  * automatic queries for the mouse position.
  */
 EXTERN int	WantQueryMouse INIT(= FALSE);
-# endif
+#endif
 
-# ifdef FEAT_GUI
+#ifdef FEAT_GUI
 // When the window layout is about to be changed, need_mouse_correct is set,
 // so that gui_mouse_correct() is called afterwards, to correct the mouse
 // pointer when focus-follow-mouse is being used.
@@ -496,10 +502,10 @@ EXTERN int	need_mouse_correct INIT(= FALSE);
 
 // When double clicking, topline must be the same
 EXTERN linenr_T gui_prev_topline INIT(= 0);
-#  ifdef FEAT_DIFF
+# ifdef FEAT_DIFF
 EXTERN int	gui_prev_topfill INIT(= 0);
-#  endif
 # endif
+#endif
 
 # ifdef FEAT_MOUSESHAPE
 EXTERN int	drag_status_line INIT(= FALSE);	// dragging the status line
@@ -508,7 +514,6 @@ EXTERN int	postponed_mouseshape INIT(= FALSE); // postponed updating the
 EXTERN int	drag_sep_line INIT(= FALSE);	// dragging vert separator
 # endif
 
-#endif
 
 #ifdef FEAT_DIFF
 // Value set from 'diffopt'.
@@ -642,7 +647,7 @@ EXTERN win_T	*curwin;	// currently active window
 EXTERN win_T	*aucmd_win;	// window used in aucmd_prepbuf()
 EXTERN int	aucmd_win_used INIT(= FALSE);	// aucmd_win is being used
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 EXTERN win_T    *first_popupwin;		// first global popup window
 EXTERN win_T	*popup_dragwin INIT(= NULL);	// popup window being dragged
 
@@ -678,7 +683,7 @@ EXTERN buf_T	*curbuf INIT(= NULL);	// currently active buffer
 
 // Iterate through all the signs placed in a buffer
 #define FOR_ALL_SIGNS_IN_BUF(buf, sign) \
-	for (sign = buf->b_signlist; sign != NULL; sign = sign->next)
+	for (sign = buf->b_signlist; sign != NULL; sign = sign->se_next)
 
 // Flag that is set when switching off 'swapfile'.  It means that all blocks
 // are to be loaded into memory.  Shouldn't be global...
@@ -785,13 +790,11 @@ EXTERN int	resel_VIsual_mode INIT(= NUL);	// 'v', 'V', or Ctrl-V
 EXTERN linenr_T	resel_VIsual_line_count;	// number of lines
 EXTERN colnr_T	resel_VIsual_vcol;		// nr of cols or end col
 
-#ifdef FEAT_MOUSE
 /*
  * When pasting text with the middle mouse button in visual mode with
  * restart_edit set, remember where it started so we can set Insstart.
  */
 EXTERN pos_T	where_paste_started;
-#endif
 
 /*
  * This flag is used to make auto-indent work right on lines where only a
@@ -843,6 +846,8 @@ EXTERN int	can_si INIT(= FALSE);
 EXTERN int	can_si_back INIT(= FALSE);
 #endif
 
+EXTERN int	old_indent INIT(= 0);	// for ^^D command in insert mode
+
 EXTERN pos_T	saved_cursor		// w_cursor before formatting text.
 #ifdef DO_INIT
 	= {0, 0, 0}
@@ -855,9 +860,9 @@ EXTERN pos_T	saved_cursor		// w_cursor before formatting text.
 EXTERN pos_T	Insstart;		// This is where the latest
 					// insert/append mode started.
 
-/* This is where the latest insert/append mode started. In contrast to
- * Insstart, this won't be reset by certain keys and is needed for
- * op_insert(), to detect correctly where inserting by the user started. */
+// This is where the latest insert/append mode started. In contrast to
+// Insstart, this won't be reset by certain keys and is needed for
+// op_insert(), to detect correctly where inserting by the user started.
 EXTERN pos_T	Insstart_orig;
 
 /*
@@ -867,7 +872,7 @@ EXTERN int	orig_line_count INIT(= 0);  // Line count when "gR" started
 EXTERN int	vr_lines_changed INIT(= 0); // #Lines changed by "gR" so far
 
 #if defined(FEAT_X11) && defined(FEAT_XCLIPBOARD)
-/* argument to SETJMP() for handling X IO errors */
+// argument to SETJMP() for handling X IO errors
 EXTERN JMP_BUF x_jump_env;
 #endif
 
@@ -967,11 +972,6 @@ EXTERN guicolor_T	xim_bg_color INIT(= INVALCOLOR);
 # endif
 #endif
 
-#ifdef FEAT_HANGULIN
-EXTERN int		composing_hangul INIT(= 0);
-EXTERN char_u		composing_hangul_buffer[5];
-#endif
-
 /*
  * "State" is the main state of Vim.
  * There are other variables that modify the state:
@@ -1000,10 +1000,16 @@ EXTERN int ex_no_reprint INIT(= FALSE); // no need to print after z or p
 EXTERN int reg_recording INIT(= 0);	// register for recording  or zero
 EXTERN int reg_executing INIT(= 0);	// register being executed or zero
 
+// Set when a modifyOtherKeys sequence was seen, then simplified mappings will
+// no longer be used.
+EXTERN int seenModifyOtherKeys INIT(= FALSE);
+
 EXTERN int no_mapping INIT(= FALSE);	// currently no mapping allowed
 EXTERN int no_zero_mapping INIT(= 0);	// mapping zero not allowed
 EXTERN int allow_keys INIT(= FALSE);	// allow key codes when no_mapping
 					// is set
+EXTERN int no_reduce_keys INIT(= FALSE);  // do not apply Ctrl, Shift and Alt
+					  // to the key
 EXTERN int no_u_sync INIT(= 0);		// Don't call u_sync()
 #ifdef FEAT_EVAL
 EXTERN int u_sync_once INIT(= 0);	// Call u_sync() once when evaluating
@@ -1250,7 +1256,6 @@ EXTERN int	km_stopsel INIT(= FALSE);
 EXTERN int	km_startsel INIT(= FALSE);
 
 #ifdef FEAT_CMDWIN
-EXTERN int	cedit_key INIT(= -1);	// key value of 'cedit' option
 EXTERN int	cmdwin_type INIT(= 0);	// type of cmdline window or 0
 EXTERN int	cmdwin_result INIT(= 0); // result of cmdline window or 0
 #endif
@@ -1406,8 +1411,8 @@ EXTERN int	term_is_xterm INIT(= FALSE);	// xterm-like 'term'
 #ifdef BACKSLASH_IN_FILENAME
 EXTERN char	psepc INIT(= '\\');	// normal path separator character
 EXTERN char	psepcN INIT(= '/');	// abnormal path separator character
-/* normal path separator string */
-EXTERN char	pseps[2] INIT(= {'\\' COMMA 0});
+// normal path separator string
+EXTERN char	pseps[2] INIT2('\\', 0);
 #endif
 
 // Set to TRUE when an operator is being executed with virtual editing, MAYBE
@@ -1594,6 +1599,7 @@ EXTERN char e_listreq[]	INIT(= N_("E714: List required"));
 EXTERN char e_listblobreq[]	INIT(= N_("E897: List or Blob required"));
 EXTERN char e_listdictarg[]	INIT(= N_("E712: Argument of %s must be a List or Dictionary"));
 EXTERN char e_listdictblobarg[]	INIT(= N_("E896: Argument of %s must be a List, Dictionary or Blob"));
+EXTERN char e_inval_string[]	INIT(= N_("E908: using an invalid value as a String"));
 #endif
 #ifdef FEAT_QUICKFIX
 EXTERN char e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));
@@ -1662,6 +1668,8 @@ EXTERN short disallow_gui	INIT(= FALSE);
 EXTERN char top_bot_msg[] INIT(= N_("search hit TOP, continuing at BOTTOM"));
 EXTERN char bot_top_msg[] INIT(= N_("search hit BOTTOM, continuing at TOP"));
 
+EXTERN char line_msg[]		INIT(= N_(" line "));
+
 #ifdef FEAT_CRYPT
 EXTERN char need_key_msg[] INIT(= N_("Need encryption key for \"%s\""));
 #endif
@@ -1724,6 +1732,9 @@ EXTERN int  did_echo_string_emsg INIT(= FALSE);
 
 // Used for checking if local variables or arguments used in a lambda.
 EXTERN int *eval_lavars_used INIT(= NULL);
+
+// Only filled for Win32.
+EXTERN char windowsVersion[20] INIT(= {0});
 #endif
 
 #ifdef MSWIN

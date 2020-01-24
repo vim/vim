@@ -166,14 +166,14 @@ $(PACKAGE).pot: ../*.c ../if_perl.xs ../GvimExt/gvimext.cpp ../globals.h ../if_p
 	mv -f ../$(PACKAGE).po $(PACKAGE).pot
 
 vim.desktop: vim.desktop.in $(POFILES)
-	@echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
+	echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
 	$(MSGFMT) --desktop -d . --template vim.desktop.in -o tmp_vim.desktop
 	rm -f LINGUAS
 	if command -v desktop-file-validate; then desktop-file-validate tmp_vim.desktop; fi
 	mv tmp_vim.desktop vim.desktop
 
 gvim.desktop: gvim.desktop.in $(POFILES)
-	@echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
+	echo $(LANGUAGES) | tr " " "\n" |sed -e '/\./d' | sort > LINGUAS
 	$(MSGFMT) --desktop -d . --template gvim.desktop.in -o tmp_gvim.desktop
 	rm -f LINGUAS
 	if command -v desktop-file-validate; then desktop-file-validate tmp_gvim.desktop; fi

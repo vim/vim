@@ -180,6 +180,11 @@ func Test_syntax_completion()
   call assert_match('^"syn match Boolean Character ', @:)
 endfunc
 
+func Test_echohl_completion()
+  call feedkeys(":echohl no\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"echohl NonText Normal none', @:)
+endfunc
+
 func Test_syntax_arg_skipped()
   syn clear
   syntax case ignore
@@ -538,9 +543,7 @@ func Test_syntax_c()
   endif
   call writefile([
 	\ '/* comment line at the top */',
-	\ '  int',
-	\ 'main(int argc, char **argv)// another comment',
-	\ '{',
+	\ 'int main(int argc, char **argv) { // another comment',
 	\ '#if 0',
 	\ '   int   not_used;',
 	\ '#else',
@@ -549,12 +552,14 @@ func Test_syntax_c()
 	\ '   printf("Just an example piece of C code\n");',
 	\ '   return 0x0ff;',
 	\ '}',
+	\ "\t\t ",
 	\ '   static void',
 	\ 'myFunction(const double count, struct nothing, long there) {',
-	\ '  // 123: nothing to read here',
-	\ '  for (int i = 0; i < count; ++i) {',
-	\ '    break;',
-	\ '  }',
+	\ "\t// 123: nothing to endif here",
+	\ "\tfor (int i = 0; i < count; ++i) {",
+	\ "\t   break;",
+	\ "\t}",
+	\ "\tNote: asdf",
 	\ '}',
 	\ ], 'Xtest.c')
  
@@ -563,7 +568,14 @@ func Test_syntax_c()
   let $COLORFGBG = '15;0'
 
   let buf = RunVimInTerminal('Xtest.c', {})
+  call term_sendkeys(buf, ":syn keyword Search Note\r")
+  call term_sendkeys(buf, ":syn match Error /^\\s\\+$/\r")
+  call term_sendkeys(buf, ":set hlsearch\r")
+  call term_sendkeys(buf, "/endif\r")
+  call term_sendkeys(buf, "vjfC")
   call VerifyScreenDump(buf, 'Test_syntax_c_01', {})
+
+  call term_sendkeys(buf, "\<Esc>")
   call StopVimInTerminal(buf)
 
   let $COLORFGBG = ''

@@ -1331,14 +1331,12 @@ func Ch_close_handle(port)
 endfunc
 
 func Test_close_handle()
-  call ch_log('Test_close_handle()')
   call s:run_server('Ch_close_handle')
 endfunc
 
 """"""""""
 
 func Test_open_fail()
-  call ch_log('Test_open_fail()')
   silent! let ch = ch_open("noserver")
   echo ch
   let d = ch
@@ -1360,7 +1358,6 @@ func Ch_open_delay(port)
 endfunc
 
 func Test_open_delay()
-  call ch_log('Test_open_delay()')
   " The server will wait half a second before creating the port.
   call s:run_server('Ch_open_delay', 'delay')
 endfunc
@@ -1384,7 +1381,6 @@ function Ch_test_call(port)
 endfunc
 
 func Test_call()
-  call ch_log('Test_call()')
   call s:run_server('Ch_test_call')
 endfunc
 
@@ -1473,7 +1469,6 @@ function Ch_test_close_callback(port)
 endfunc
 
 func Test_close_callback()
-  call ch_log('Test_close_callback()')
   call s:run_server('Ch_test_close_callback')
 endfunc
 
@@ -1495,7 +1490,6 @@ function Ch_test_close_partial(port)
 endfunc
 
 func Test_close_partial()
-  call ch_log('Test_close_partial()')
   call s:run_server('Ch_test_close_partial')
 endfunc
 
@@ -1548,6 +1542,7 @@ endfunc
 
 func Test_write_to_deleted_buffer()
   CheckExecutable echo
+  CheckFeature quickfix
 
   let job = job_start('echo hello', {'out_io': 'buffer', 'out_name': 'test_buffer', 'out_msg': 0})
   let bufnr = bufnr('test_buffer')
@@ -1711,7 +1706,6 @@ function Ch_test_close_lambda(port)
 endfunc
 
 func Test_close_lambda()
-  call ch_log('Test_close_lambda()')
   call s:run_server('Ch_test_close_lambda')
 endfunc
 
@@ -1859,7 +1853,8 @@ func Test_job_exitval_and_termsig()
   " Terminate job by signal
   let cmd = ['sleep', '10']
   let job = job_start(cmd)
-  sleep 10m
+  " 10m usually works but 50m is needed when running Valgrind
+  sleep 50m
   call job_stop(job)
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
   let info = job_info(job)
@@ -1963,6 +1958,14 @@ func Test_zz_nl_err_to_out_pipe()
   endtry
 endfunc
 
+func Test_empty_job()
+  " This was crashing on MS-Windows.
+  call assert_fails('let job = job_start([""])', 'E474:')
+  call assert_fails('let job = job_start(["   "])', 'E474:')
+  call assert_fails('let job = job_start("")', 'E474:')
+  call assert_fails('let job = job_start("   ")', 'E474:')
+endfunc
+
 " Do this last, it stops any channel log.
 func Test_zz_ch_log()
   call ch_logfile('Xlog', 'w')
@@ -1973,4 +1976,9 @@ func Test_zz_ch_log()
   call assert_match("hello there", text[1])
   call assert_match("%s%s", text[2])
   call delete('Xlog')
+endfunc
+
+func Test_job_start_fails()
+  " this was leaking memory
+  call assert_fails("call job_start([''])", "E474:")
 endfunc

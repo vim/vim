@@ -67,10 +67,10 @@ TODO:
  */
 
 #include "vim.h"
-#undef EXTERN			/* tcl.h defines it too */
+#undef EXTERN			// tcl.h defines it too
 
 #ifdef DYNAMIC_TCL
-# define USE_TCL_STUBS /* use tcl's stubs mechanism */
+# define USE_TCL_STUBS // use tcl's stubs mechanism
 #endif
 
 #include <tcl.h>
@@ -106,7 +106,7 @@ static tcl_info tclinfo = { NULL, 0, 0, 0, 0, NULL, NULL };
 #define VIMOUT	((ClientData)1)
 #define VIMERR	((ClientData)2)
 
-/* This appears to be new in Tcl 8.4. */
+// This appears to be new in Tcl 8.4.
 #ifndef CONST84
 # define CONST84
 #endif
@@ -123,9 +123,9 @@ struct ref
     struct ref	*next;
 
     Tcl_Interp	*interp;
-    Tcl_Command cmd;	    /* Tcl command that represents this object */
-    Tcl_Obj	*delcmd;    /* Tcl command to call when object is being del. */
-    void	*vimobj;    /* Vim window or buffer (win_T* or buf_T*) */
+    Tcl_Command cmd;	    // Tcl command that represents this object
+    Tcl_Obj	*delcmd;    // Tcl command to call when object is being del.
+    void	*vimobj;    // Vim window or buffer (win_T* or buf_T*)
 };
 static char * tclgetbuffer _ANSI_ARGS_((Tcl_Interp *interp, buf_T *buf));
 static char * tclgetwindow _ANSI_ARGS_((Tcl_Interp *interp, win_T *win));
@@ -142,11 +142,11 @@ static void tclmsg _ANSI_ARGS_((char *text));
 static void tclerrmsg _ANSI_ARGS_((char *text));
 static void tclupdatevars _ANSI_ARGS_((void));
 
-static struct ref refsdeleted;	/* dummy object for deleted ref list */
+static struct ref refsdeleted;	// dummy object for deleted ref list
 
-/*****************************************************************************
- * TCL interface manager
- ****************************************************************************/
+//////////////////////////////////////////////////////////////////////////////
+// TCL interface manager
+////////////////////////////////////////////////////////////////////////////
 
 #if defined(DYNAMIC_TCL) || defined(PROTO)
 # ifndef DYNAMIC_TCL_DLL
@@ -156,7 +156,7 @@ static struct ref refsdeleted;	/* dummy object for deleted ref list */
 #  define DYNAMIC_TCL_VER "8.3"
 # endif
 
-# ifndef  DYNAMIC_TCL /* Just generating prototypes */
+# ifndef  DYNAMIC_TCL // Just generating prototypes
 typedef int HANDLE;
 # endif
 
@@ -230,7 +230,7 @@ tcl_runtime_link_init(char *libname, int verbose)
     }
     return OK;
 }
-#endif /* defined(DYNAMIC_TCL) || defined(PROTO) */
+#endif // defined(DYNAMIC_TCL) || defined(PROTO)
 
 #ifdef DYNAMIC_TCL
 static char *find_executable_arg = NULL;
@@ -270,7 +270,7 @@ tcl_enabled(int verbose)
 		Tcl_DeleteInterp(interp);
 		stubs_initialized = TRUE;
 	    }
-	    /* FIXME: When Tcl_InitStubs() was failed, how delete interp? */
+	    // FIXME: When Tcl_InitStubs() was failed, how delete interp?
 	}
     }
     return stubs_initialized;
@@ -289,9 +289,9 @@ tcl_end(void)
 #endif
 }
 
-/****************************************************************************
-  Tcl commands
- ****************************************************************************/
+/////////////////////////////////////////////////////////////////////////////
+// Tcl commands
+////////////////////////////////////////////////////////////////////////////
 
 /*
  * Replace standard "exit" command.
@@ -321,7 +321,7 @@ exitcmd(
 	case 2:
 	    if (Tcl_GetIntFromObj(interp, objv[1], &value) != TCL_OK)
 		break;
-	    /* FALLTHROUGH */
+	    // FALLTHROUGH
 	case 1:
 	    tclinfo.exitvalue = value;
 
@@ -402,7 +402,7 @@ buffercmd(
 	Tcl_SetResult(interp, _("invalid buffer number"), TCL_STATIC);
 	return TCL_ERROR;
     }
-    Tcl_ResetResult(interp); /* clear error from Tcl_GetIntFromObj */
+    Tcl_ResetResult(interp); // clear error from Tcl_GetIntFromObj
 
     err = Tcl_GetIndexFromObj(interp, objv[1], bcmdoptions, "option", 0, &idx);
     if (err != TCL_OK)
@@ -576,7 +576,7 @@ bufselfcmd(
 	     * Get line number of last line.
 	     */
 	    opt = 1;
-	    /* fallthrough */
+	    // fallthrough
 	case BUF_COUNT:
 	    /*
 	     * Get number of lines in buffer.
@@ -639,7 +639,7 @@ bufselfcmd(
 			err = TCL_ERROR;
 		}
 	    }
-	    else {  /* objc == 3 */
+	    else {  // objc == 3
 		line = (char *)ml_get_buf(buf, (linenr_T)val1, FALSE);
 		Tcl_SetResult(interp, line, TCL_VOLATILE);
 	    }
@@ -725,7 +725,7 @@ bufselfcmd(
 		}
 		if (i < lc)
 		{
-		    /* append lines */
+		    // append lines
 		    do
 		    {
 			line = Tcl_GetStringFromObj(lv[i], NULL);
@@ -738,7 +738,7 @@ bufselfcmd(
 		}
 		else if (n <= val2)
 		{
-		    /* did not replace all lines, delete */
+		    // did not replace all lines, delete
 		    i = n;
 		    do
 		    {
@@ -747,13 +747,13 @@ bufselfcmd(
 			++n;
 		    } while (n <= val2);
 		}
-		lc -= val2 - val1 + 1;	/* number of lines to be replaced */
+		lc -= val2 - val1 + 1;	// number of lines to be replaced
 		mark_adjust((linenr_T)val1, (linenr_T)val2, (long)MAXLNUM,
 								    (long)lc);
 		changed_lines((linenr_T)val1, 0, (linenr_T)val2 + 1, (long)lc);
 		break;
     setListError:
-		u_undo(1);  /* ??? */
+		u_undo(1);  // ???
 		Tcl_SetResult(interp, _("cannot set line(s)"), TCL_STATIC);
 		err = TCL_ERROR;
 	    }
@@ -838,7 +838,7 @@ bufselfcmd(
 
 	case BUF_INSERT:
 	    opt = 1;
-	    /* fallthrough */
+	    // fallthrough
 	case BUF_APPEND:
 	    if (objc != 4)
 	    {
@@ -1078,7 +1078,7 @@ winselfcmd(
 		if (err != TCL_OK)
 		    break;
 	    }
-	    else {  /* objc == 4 */
+	    else {  // objc == 4
 		err = tclgetlinenum(interp, objv[2], &val1, win->w_buffer);
 		if (err != TCL_OK)
 		    break;
@@ -1086,7 +1086,7 @@ winselfcmd(
 		if (err != TCL_OK)
 		    break;
 	    }
-	    /* TODO: should check column */
+	    // TODO: should check column
 	    win->w_cursor.lnum = val1;
 	    win->w_cursor.col = col2vim(val2);
 	    win->w_set_curswant = TRUE;
@@ -1145,9 +1145,9 @@ exprcmd(
     return tclvimexpr(interp, objc, objv, 1);
 }
 
-/****************************************************************************
-  Support functions for Tcl commands
- ****************************************************************************/
+/////////////////////////////////////////////////////////////////////////////
+// Support functions for Tcl commands
+////////////////////////////////////////////////////////////////////////////
 
 /*
  * Get a line number from 'obj' and convert it to vim's range.
@@ -1215,7 +1215,7 @@ tclfindwin(buf_T *buf)
 	if (win->w_buffer == buf)
 	    return win;
     }
-    return curwin;  /* keep current window context */
+    return curwin;  // keep current window context
 }
 
 /*
@@ -1267,7 +1267,7 @@ tcldoexcommand(
 	--emsg_off;
     err = vimerror(interp);
 
-    /* If the ex command created a new Tcl interpreter, remove it */
+    // If the ex command created a new Tcl interpreter, remove it
     if (tclinfo.interp)
 	tcldelthisinterp();
     memcpy(&tclinfo, &saveinfo, sizeof(tcl_info));
@@ -1325,7 +1325,7 @@ tclsetoption(
     {
 	if (isnum)
 	{
-	    sval = NULL;    /* avoid compiler warning */
+	    sval = NULL;    // avoid compiler warning
 	    err = Tcl_GetIndexFromObj(interp, objv[objn], optkw, "", 0, &idx);
 	    if (err != TCL_OK)
 	    {
@@ -1440,11 +1440,11 @@ delref(ClientData cref)
     static char *
 tclgetref(
     Tcl_Interp	*interp,
-    void	**refstartP,	/* ptr to w_tcl_ref/b_tcl-ref member of
-				   win_T/buf_T struct */
-    char	*prefix,	/* "win" or "buf" */
-    void	*vimobj,	/* win_T* or buf_T* */
-    Tcl_ObjCmdProc *proc)	/* winselfcmd or bufselfcmd */
+    void	**refstartP,	// ptr to w_tcl_ref/b_tcl-ref member of
+				// win_T/buf_T struct
+    char	*prefix,	// "win" or "buf"
+    void	*vimobj,	// win_T* or buf_T*
+    Tcl_ObjCmdProc *proc)	// winselfcmd or bufselfcmd
 {
     struct ref *ref, *unused = NULL;
     static char name[VARNAME_SIZE];
@@ -1481,7 +1481,7 @@ tclgetref(
 	    (*refstartP) = (void *)ref;
 	}
 
-	/* This might break on some exotic systems... */
+	// This might break on some exotic systems...
 	vim_snprintf(name, sizeof(name), "::vim::%s_%lx",
 					       prefix, (unsigned long)vimobj);
 	cmd = Tcl_CreateObjCommand(interp, name, proc,
@@ -1534,23 +1534,23 @@ tclsetdelcmd(
 	}
 	reflist = reflist->next;
     }
-    /* This should never happen.  Famous last word? */
+    // This should never happen.  Famous last word?
     emsg(_("E280: TCL FATAL ERROR: reflist corrupt!? Please report this to vim-dev@vim.org"));
     Tcl_SetResult(interp, _("cannot register callback command: buffer/window reference not found"), TCL_STATIC);
     return TCL_ERROR;
 }
 
 
-/*******************************************
-    I/O Channel
-********************************************/
+////////////////////////////////////////////
+//    I/O Channel
+////////////////////////////////////////////
 
     static int
 tcl_channel_close(ClientData instance, Tcl_Interp *interp UNUSED)
 {
     int		err = 0;
 
-    /* currently does nothing */
+    // currently does nothing
 
     if (instance != VIMOUT && instance != VIMERR)
     {
@@ -1568,7 +1568,7 @@ tcl_channel_input(
     int		*errptr)
 {
 
-    /* input is currently not supported */
+    // input is currently not supported
 
     Tcl_SetErrno(EINVAL);
     if (errptr)
@@ -1586,10 +1586,9 @@ tcl_channel_output(
     char_u	*str;
     int		result;
 
-    /* The buffer is not guaranteed to be 0-terminated, and we don't if
-     * there is enough room to add a '\0'.  So we have to create a copy
-     * of the buffer...
-     */
+    // The buffer is not guaranteed to be 0-terminated, and we don't if
+    // there is enough room to add a '\0'.  So we have to create a copy
+    // of the buffer...
     str = vim_strnsave((char_u *)buf, bufsiz);
     if (!str)
     {
@@ -1635,43 +1634,43 @@ tcl_channel_gethandle(
 
 static Tcl_ChannelType tcl_channel_type =
 {
-    "vimmessage",	/* typeName */
-    TCL_CHANNEL_VERSION_2, /* version */
-    tcl_channel_close,	/* closeProc */
-    tcl_channel_input,	/* inputProc */
-    tcl_channel_output,	/* outputProc */
-    NULL,		/* seekProc */
-    NULL,		/* setOptionProc */
-    NULL,		/* getOptionProc */
-    tcl_channel_watch,	/* watchProc */
-    tcl_channel_gethandle, /* getHandleProc */
-    NULL,		/* close2Proc */
-    NULL,		/* blockModeProc */
+    "vimmessage",	// typeName
+    TCL_CHANNEL_VERSION_2, // version
+    tcl_channel_close,	// closeProc
+    tcl_channel_input,	// inputProc
+    tcl_channel_output,	// outputProc
+    NULL,		// seekProc
+    NULL,		// setOptionProc
+    NULL,		// getOptionProc
+    tcl_channel_watch,	// watchProc
+    tcl_channel_gethandle, // getHandleProc
+    NULL,		// close2Proc
+    NULL,		// blockModeProc
 #ifdef TCL_CHANNEL_VERSION_2
-    NULL,		/* flushProc */
-    NULL,		/* handlerProc */
+    NULL,		// flushProc
+    NULL,		// handlerProc
 #endif
-/* The following should not be necessary since TCL_CHANNEL_VERSION_2 was
- * set above */
+// The following should not be necessary since TCL_CHANNEL_VERSION_2 was
+// set above
 #ifdef TCL_CHANNEL_VERSION_3
-    NULL,		/* wideSeekProc */
+    NULL,		// wideSeekProc
 #endif
 #ifdef TCL_CHANNEL_VERSION_4
-    NULL,		/* threadActionProc */
+    NULL,		// threadActionProc
 #endif
 #ifdef TCL_CHANNEL_VERSION_5
-    NULL		/* truncateProc */
+    NULL		// truncateProc
 #endif
 };
 
-/**********************************
-  Interface to vim
- **********************************/
+///////////////////////////////////
+// Interface to vim
+//////////////////////////////////
 
     static void
 tclupdatevars(void)
 {
-    char varname[VARNAME_SIZE];	/* must be writeable */
+    char varname[VARNAME_SIZE];	// must be writeable
     char *name;
 
     strcpy(varname, VAR_RANGE1);
@@ -1699,7 +1698,7 @@ tclupdatevars(void)
     static int
 tclinit(exarg_T *eap)
 {
-    char varname[VARNAME_SIZE];	/* Tcl_LinkVar requires writeable varname */
+    char varname[VARNAME_SIZE];	// Tcl_LinkVar requires writeable varname
     char *name;
 
 #ifdef DYNAMIC_TCL
@@ -1715,9 +1714,9 @@ tclinit(exarg_T *eap)
 	Tcl_Interp *interp;
 	static Tcl_Channel ch1, ch2;
 
-	/* Create replacement channels for stdout and stderr; this has to be
-	 * done each time an interpreter is created since the channels are closed
-	 * when the interpreter is deleted */
+	// Create replacement channels for stdout and stderr; this has to be
+	// done each time an interpreter is created since the channels are closed
+	// when the interpreter is deleted
 	ch1 = Tcl_CreateChannel(&tcl_channel_type, "vimout", VIMOUT, TCL_WRITABLE);
 	ch2 = Tcl_CreateChannel(&tcl_channel_type, "vimerr", VIMERR, TCL_WRITABLE);
 	Tcl_SetStdChannel(ch1, TCL_STDOUT);
@@ -1732,7 +1731,7 @@ tclinit(exarg_T *eap)
 	    return FAIL;
 	}
 #if 0
-	/* VIM sure is interactive */
+	// VIM sure is interactive
 	Tcl_SetVar(interp, "tcl_interactive", "1", TCL_GLOBAL_ONLY);
 #endif
 
@@ -1745,12 +1744,12 @@ tclinit(exarg_T *eap)
 	Tcl_SetChannelOption(interp, ch2, "-translation", "lf");
 #endif
 
-	/* replace standard Tcl exit command */
+	// replace standard Tcl exit command
 	Tcl_DeleteCommand(interp, "exit");
 	Tcl_CreateObjCommand(interp, "exit", exitcmd,
 	    (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 
-	/* new commands, in ::vim namespace */
+	// new commands, in ::vim namespace
 	Tcl_CreateObjCommand(interp, "::vim::buffer", buffercmd,
 	    (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 	Tcl_CreateObjCommand(interp, "::vim::window", windowcmd,
@@ -1764,12 +1763,12 @@ tclinit(exarg_T *eap)
 	Tcl_CreateObjCommand(interp, "::vim::expr", exprcmd,
 	   (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
 
-	/* "lbase" variable */
+	// "lbase" variable
 	tclinfo.lbase = 1;
 	strcpy(varname, VAR_LBASE);
 	Tcl_LinkVar(interp, varname, (char *)&tclinfo.lbase, TCL_LINK_INT);
 
-	/* "range" variable */
+	// "range" variable
 	tclinfo.range_start = eap->line1;
 	strcpy(varname, VAR_RANGE1);
 	Tcl_LinkVar(interp, varname, (char *)&tclinfo.range_start, TCL_LINK_INT|TCL_LINK_READ_ONLY);
@@ -1779,7 +1778,7 @@ tclinit(exarg_T *eap)
 	strcpy(varname, VAR_RANGE3);
 	Tcl_LinkVar(interp, varname, (char *)&tclinfo.range_end, TCL_LINK_INT|TCL_LINK_READ_ONLY);
 
-	/* "current" variable */
+	// "current" variable
 	tclinfo.curbuf = Tcl_Alloc(VARNAME_SIZE);
 	tclinfo.curwin = Tcl_Alloc(VARNAME_SIZE);
 	name = tclgetbuffer(interp, curbuf);
@@ -1795,7 +1794,7 @@ tclinit(exarg_T *eap)
     }
     else
     {
-	/* Interpreter already exists, just update variables */
+	// Interpreter already exists, just update variables
 	tclinfo.range_start = row2tcl(eap->line1);
 	tclinfo.range_end = row2tcl(eap->line2);
 	tclupdatevars();
@@ -1841,15 +1840,14 @@ tcldelthisinterp(void)
     if (!Tcl_InterpDeleted(tclinfo.interp))
 	Tcl_DeleteInterp(tclinfo.interp);
     Tcl_Release(tclinfo.interp);
-    /* The interpreter is now gets deleted.  All registered commands (esp.
-     * window and buffer commands) are deleted, triggering their deletion
-     * callback, which deletes all refs pointing to this interpreter.
-     * We could garbage-collect the unused ref structs in all windows and
-     * buffers, but unless the user creates hundreds of sub-interpreters
-     * all referring to lots of windows and buffers, this is hardly worth
-     * the effort.  Unused refs are recycled by other interpreters, and
-     * all refs are free'd when the window/buffer gets closed by vim.
-     */
+    // The interpreter is now gets deleted.  All registered commands (esp.
+    // window and buffer commands) are deleted, triggering their deletion
+    // callback, which deletes all refs pointing to this interpreter.
+    // We could garbage-collect the unused ref structs in all windows and
+    // buffers, but unless the user creates hundreds of sub-interpreters
+    // all referring to lots of windows and buffers, this is hardly worth
+    // the effort.  Unused refs are recycled by other interpreters, and
+    // all refs are free'd when the window/buffer gets closed by vim.
 
     tclinfo.interp = NULL;
     Tcl_Free(tclinfo.curbuf);
@@ -1862,9 +1860,9 @@ tclexit(int error)
 {
     int newerr = OK;
 
-    if (Tcl_InterpDeleted(tclinfo.interp)     /* True if we intercepted Tcl's exit command */
+    if (Tcl_InterpDeleted(tclinfo.interp)     // True if we intercepted Tcl's exit command
 #if (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 5) || TCL_MAJOR_VERSION > 8
-	|| Tcl_LimitExceeded(tclinfo.interp)  /* True if the interpreter cannot continue */
+	|| Tcl_LimitExceeded(tclinfo.interp)  // True if the interpreter cannot continue
 #endif
 	)
     {
@@ -1954,7 +1952,7 @@ ex_tcldo(exarg_T *eap)
 {
     char	*script, *line;
     int		err, rs, re, lnum;
-    char	var_lnum[VARNAME_SIZE]; /* must be writeable memory */
+    char	var_lnum[VARNAME_SIZE]; // must be writeable memory
     char	var_line[VARNAME_SIZE];
     linenr_T	first_line = 0;
     linenr_T	last_line = 0;
@@ -2035,7 +2033,7 @@ tcldelallrefs(struct ref *ref)
     char	*result;
 
 #ifdef DYNAMIC_TCL
-    /* TODO: this code currently crashes Vim on exit */
+    // TODO: this code currently crashes Vim on exit
     if (exiting)
 	return;
 #endif
@@ -2070,7 +2068,7 @@ tcl_buffer_free(buf_T *buf)
     struct ref *reflist;
 
 #ifdef DYNAMIC_TCL
-    if (!stubs_initialized)	/* Not using Tcl, nothing to do. */
+    if (!stubs_initialized)	// Not using Tcl, nothing to do.
 	return;
 #endif
 
@@ -2089,7 +2087,7 @@ tcl_window_free(win_T *win)
     struct ref *reflist;
 
 #ifdef DYNAMIC_TCL
-    if (!stubs_initialized)	/* Not using Tcl, nothing to do. */
+    if (!stubs_initialized)	// Not using Tcl, nothing to do.
 	return;
 #endif
 
@@ -2102,4 +2100,4 @@ tcl_window_free(win_T *win)
     }
 }
 
-/* The End */
+// The End

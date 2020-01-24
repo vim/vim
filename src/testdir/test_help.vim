@@ -55,3 +55,8 @@ func Test_help_local_additions()
   call delete('Xruntime', 'rf')
   let &rtp = rtp_save
 endfunc
+
+func Test_help_completion()
+  call feedkeys(":help :undo\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"help :undo :undoj :undol :undojoin :undolist', @:)
+endfunc

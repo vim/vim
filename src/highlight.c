@@ -559,10 +559,12 @@ lookup_color(int idx, int foreground, int *boldp)
     {
 	// t_Co is 8: use the 8 colors table
 #if defined(__QNXNTO__)
-	color = color_numbers_8_qansi[idx];
-#else
-	color = color_numbers_8[idx];
+	// On qnx, the 8 & 16 color arrays are the same
+	if (STRNCMP(T_NAME, "qansi", 5) == 0)
+	    color = color_numbers_16[idx];
+	else
 #endif
+	    color = color_numbers_8[idx];
 	if (foreground)
 	{
 	    // set/reset bold attribute to get light foreground
@@ -746,7 +748,7 @@ do_highlight(
 	    if (to_id > 0 && !forceit && !init
 				   && hl_has_settings(from_id - 1, dodefault))
 	    {
-		if (sourcing_name == NULL && !dodefault)
+		if (SOURCING_NAME == NULL && !dodefault)
 		    emsg(_("E414: group has settings, highlight link ignored"));
 	    }
 	    else if (HL_TABLE()[from_id - 1].sg_link != to_id
@@ -761,7 +763,7 @@ do_highlight(
 		HL_TABLE()[from_id - 1].sg_link = to_id;
 #ifdef FEAT_EVAL
 		HL_TABLE()[from_id - 1].sg_script_ctx = current_sctx;
-		HL_TABLE()[from_id - 1].sg_script_ctx.sc_lnum += sourcing_lnum;
+		HL_TABLE()[from_id - 1].sg_script_ctx.sc_lnum += SOURCING_LNUM;
 #endif
 		HL_TABLE()[from_id - 1].sg_cleared = FALSE;
 		redraw_all_later(SOME_VALID);
@@ -1136,13 +1138,6 @@ do_highlight(
 	    {
 		int bold = MAYBE;
 
-#if defined(__QNXNTO__)
-		static int *color_numbers_8_qansi = color_numbers_8;
-		// On qnx, the 8 & 16 color arrays are the same
-		if (STRNCMP(T_NAME, "qansi", 5) == 0)
-		    color_numbers_8_qansi = color_numbers_16;
-#endif
-
 		// reduce calls to STRICMP a bit, it can be slow
 		off = TOUPPER_ASC(*arg);
 		for (i = (sizeof(color_names) / sizeof(char *)); --i >= 0; )
@@ -1417,7 +1412,8 @@ do_highlight(
 		 */
 		for (p = arg, off = 0; off < 100 - 6 && *p; )
 		{
-		    len = trans_special(&p, buf + off, FALSE, FALSE);
+		    len = trans_special(&p, buf + off, FALSE, FALSE,
+								   TRUE, NULL);
 		    if (len > 0)	    // recognized special char
 			off += len;
 		    else		    // copy as normal char
@@ -1522,7 +1518,7 @@ do_highlight(
 	    set_hl_attr(idx);
 #ifdef FEAT_EVAL
 	HL_TABLE()[idx].sg_script_ctx = current_sctx;
-	HL_TABLE()[idx].sg_script_ctx.sc_lnum += sourcing_lnum;
+	HL_TABLE()[idx].sg_script_ctx.sc_lnum += SOURCING_LNUM;
 #endif
     }
 
@@ -3377,7 +3373,7 @@ highlight_changed(void)
 	     * bold-underlined.
 	     */
 	    attr = 0;
-	    for ( ; *p && *p != ','; ++p)	    // parse upto comma
+	    for ( ; *p && *p != ','; ++p)	    // parse up to comma
 	    {
 		if (VIM_ISWHITE(*p))		    // ignore white space
 		    continue;
@@ -3681,7 +3677,8 @@ match_add(
 	return -1;
     if (id < -1 || id == 0)
     {
-	semsg(_("E799: Invalid ID: %d (must be greater than or equal to 1)"), id);
+	semsg(_("E799: Invalid ID: %d (must be greater than or equal to 1)"),
+									   id);
 	return -1;
     }
     if (id != -1)
@@ -3799,7 +3796,7 @@ match_add(
 	    }
 	    else
 	    {
-		emsg(_("List or number required"));
+		emsg(_("E290: List or number required"));
 		goto fail;
 	    }
 	    if (toplnum == 0 || lnum < toplnum)
@@ -4058,7 +4055,7 @@ next_search_hl(
     linenr_T	l;
     colnr_T	matchcol;
     long	nmatched;
-    int		save_called_emsg = called_emsg;
+    int		called_emsg_before = called_emsg;
 
     // for :{range}s/pat only highlight inside the range
     if (lnum < search_first_line || lnum > search_last_line)
@@ -4084,7 +4081,6 @@ next_search_hl(
      * Repeat searching for a match until one is found that includes "mincol"
      * or none is found in this line.
      */
-    called_emsg = FALSE;
     for (;;)
     {
 # ifdef FEAT_RELTIME
@@ -4146,7 +4142,7 @@ next_search_hl(
 	    if (regprog_is_copy)
 		cur->match.regprog = cur->hl.rm.regprog;
 
-	    if (called_emsg || got_int || timed_out)
+	    if (called_emsg > called_emsg_before || got_int || timed_out)
 	    {
 		// Error while handling regexp: stop using this regexp.
 		if (shl == search_hl)
@@ -4179,9 +4175,6 @@ next_search_hl(
 	    break;			// useful match found
 	}
     }
-
-    // Restore called_emsg for assert_fails().
-    called_emsg = save_called_emsg;
 }
 
 /*
@@ -4345,7 +4338,7 @@ prepare_search_hl_line(
  * After end, check for start/end of next match.
  * When another match, have to check for start again.
  * Watch out for matching an empty string!
- * Return the udpated search_attr.
+ * Return the updated search_attr.
  */
     int
 update_search_hl(

@@ -1,4 +1,4 @@
-*if_perl.txt*   For Vim version 8.1.  Last change: 2019 Jul 21
+*if_perl.txt*   For Vim version 8.2.  Last change: 2019 Dec 07
 
 
 		  VIM REFERENCE MANUAL    by Sven Verdoolaege
@@ -55,14 +55,14 @@ The ActiveState one should work, Strawberry Perl is a good alternative.
 			working: >
 				:perl VIM::Msg("Hello")
 
-:pe[rl] << [endpattern]
+:pe[rl] << [endmarker]
 {script}
-{endpattern}
+{endmarker}
 			Execute Perl script {script}.
-			The {endpattern} after {script} must NOT be preceded
-			by any white space.
+			The {endmarker} after {script} must NOT be preceded by
+			any white space.
 
-			If [endpattern] is omitted, it defaults to a dot '.'
+			If [endmarker] is omitted, it defaults to a dot '.'
 			like for the |:append| and |:insert| commands.  Using
 			'.' helps when inside a function, because "$i;" looks
 			like the start of an |:insert| command to Vim.
@@ -180,7 +180,7 @@ VIM::Windows([{wn}...])	With no arguments, returns a list of all the windows
 VIM::DoCommand({cmd})	Executes Ex command {cmd}.
 
 							*perl-Eval*
-VIM::Eval({expr})	Evaluates {expr} and returns (success, value) in list 
+VIM::Eval({expr})	Evaluates {expr} and returns (success, value) in list
 			context or just value in scalar context.
 			success=1 indicates that val contains the value of
 			{expr}; success=0 indicates a failure to evaluate

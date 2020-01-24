@@ -16,7 +16,7 @@
 
 #include "xpm_w32.h"
 
-/* Engage Windows support in libXpm */
+// Engage Windows support in libXpm
 #define FOR_MSW
 
 #include "xpm.h"
@@ -33,8 +33,8 @@ LoadXpmImage(
     HBITMAP *hImage,
     HBITMAP *hShape)
 {
-    XImage	    *img;  /* loaded image */
-    XImage	    *shp;  /* shapeimage */
+    XImage	    *img;  // loaded image
+    XImage	    *shp;  // shapeimage
     XpmAttributes   attr;
     int		    res;
     HDC		    hdc = CreateCompatibleDC(NULL);

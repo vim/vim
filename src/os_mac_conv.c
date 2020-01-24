@@ -25,7 +25,7 @@
 #if defined(MACOS_CONVERT) || defined(PROTO)
 
 # ifdef PROTO
-/* A few dummy types to be able to generate function prototypes. */
+// A few dummy types to be able to generate function prototypes.
 typedef int UniChar;
 typedef int *TECObjectRef;
 typedef int CFStringRef;
@@ -34,9 +34,9 @@ typedef int CFStringRef;
 static char_u	    *mac_utf16_to_utf8(UniChar *from, size_t fromLen, size_t *actualLen);
 static UniChar	    *mac_utf8_to_utf16(char_u *from, size_t fromLen, size_t *actualLen);
 
-/* Converter for composing decomposed HFS+ file paths */
+// Converter for composing decomposed HFS+ file paths
 static TECObjectRef gPathConverter;
-/* Converter used by mac_utf16_to_utf8 */
+// Converter used by mac_utf16_to_utf8
 static TECObjectRef gUTF16ToUTF8Converter;
 
 /*
@@ -79,9 +79,9 @@ mac_string_convert(
 
     if (cfstr == NULL)
 	fprintf(stderr, "Encoding failed\n");
-    /* When conversion failed, try excluding bytes from the end, helps when
-     * there is an incomplete byte sequence.  Only do up to 6 bytes to avoid
-     * looping a long time when there really is something unconvertible. */
+    // When conversion failed, try excluding bytes from the end, helps when
+    // there is an incomplete byte sequence.  Only do up to 6 bytes to avoid
+    // looping a long time when there really is something unconvertible.
     while (cfstr == NULL && unconvlenp != NULL && len > 1 && *unconvlenp < 6)
     {
 	--len;
@@ -104,7 +104,7 @@ mac_string_convert(
 
 #if 0
     CFRange convertRange = CFRangeMake(0, CFStringGetLength(cfstr));
-    /*  Determine output buffer size */
+    //  Determine output buffer size
     CFStringGetBytes(cfstr, convertRange, to, NULL, FALSE, NULL, 0, (CFIndex *)&buflen);
     retval = (buflen > 0) ? alloc(buflen) : NULL;
     if (retval == NULL) {
@@ -127,8 +127,8 @@ mac_string_convert(
 	}
 
 	fprintf(stderr, "Trying char-by-char conversion...\n");
-	/* conversion failed for the whole string, but maybe it will work
-	 * for each character */
+	// conversion failed for the whole string, but maybe it will work
+	// for each character
 	for (d = retval, in = 0, out = 0; in < len && out < buflen - 1;)
 	{
 	    if (from == kCFStringEncodingUTF8)
@@ -188,8 +188,8 @@ macroman2enc(
     CFRange		r;
     CFIndex		len = *sizep;
 
-    /* MacRoman is an 8-bit encoding, no need to move bytes to
-     * conv_rest[]. */
+    // MacRoman is an 8-bit encoding, no need to move bytes to
+    // conv_rest[].
     cfstr = CFStringCreateWithBytes(NULL, ptr, len,
 						kCFStringEncodingMacRoman, 0);
     /*
@@ -203,8 +203,8 @@ macroman2enc(
     r.length = CFStringGetLength(cfstr);
     if (r.length != CFStringGetBytes(cfstr, r,
 	    (enc_utf8) ? kCFStringEncodingUTF8 : kCFStringEncodingISOLatin1,
-	    0, /* no lossy conversion */
-	    0, /* not external representation */
+	    0, // no lossy conversion
+	    0, // not external representation
 	    ptr + *sizep, real_size - *sizep, &len))
     {
 	CFRelease(cfstr);
@@ -256,9 +256,9 @@ enc2macroman(
     r.length = CFStringGetLength(cfstr);
     if (r.length != CFStringGetBytes(cfstr, r,
 		kCFStringEncodingMacRoman,
-		0, /* no lossy conversion */
-		0, /* not external representation (since vim
-		    * handles this internally */
+		0, // no lossy conversion
+		0, // not external representation (since vim
+		   // handles this internally
 		to, maxtolen, &l))
     {
 	CFRelease(cfstr);
@@ -296,8 +296,8 @@ mac_conv_init(void)
     if (TECCreateConverter(&gUTF16ToUTF8Converter, utf16_encoding,
 		utf8_canon_encoding) != noErr)
     {
-	/* On pre-10.3, Unicode normalization is not available so
-	 * fall back to non-normalizing converter */
+	// On pre-10.3, Unicode normalization is not available so
+	// fall back to non-normalizing converter
 	if (TECCreateConverter(&gUTF16ToUTF8Converter, utf16_encoding,
 		    utf8_encoding) != noErr)
 	    gUTF16ToUTF8Converter = NULL;
@@ -334,30 +334,30 @@ mac_utf16_to_enc(
     size_t fromLen,
     size_t *actualLen)
 {
-    /* Following code borrows somewhat from os_mswin.c */
+    // Following code borrows somewhat from os_mswin.c
     vimconv_T	conv;
     size_t      utf8_len;
     char_u      *utf8_str;
     char_u      *result = NULL;
 
-    /* Convert to utf-8 first, works better with iconv */
+    // Convert to utf-8 first, works better with iconv
     utf8_len = 0;
     utf8_str = mac_utf16_to_utf8(from, fromLen, &utf8_len);
 
     if (utf8_str)
     {
-	/* We might be called before we have p_enc set up. */
+	// We might be called before we have p_enc set up.
 	conv.vc_type = CONV_NONE;
 
-	/* If encoding (p_enc) is any unicode, it is actually in utf-8 (vim
-	 * internal unicode is always utf-8) so don't convert in such cases */
+	// If encoding (p_enc) is any unicode, it is actually in utf-8 (vim
+	// internal unicode is always utf-8) so don't convert in such cases
 
 	if ((enc_canon_props(p_enc) & ENC_UNICODE) == 0)
 	    convert_setup(&conv, (char_u *)"utf-8",
 		    p_enc? p_enc: (char_u *)"macroman");
 	if (conv.vc_type == CONV_NONE)
 	{
-	    /* p_enc is utf-8, so we're done. */
+	    // p_enc is utf-8, so we're done.
 	    result = utf8_str;
 	}
 	else
@@ -388,7 +388,7 @@ mac_enc_to_utf16(
     size_t fromLen,
     size_t *actualLen)
 {
-    /* Following code borrows somewhat from os_mswin.c */
+    // Following code borrows somewhat from os_mswin.c
     vimconv_T	conv;
     size_t      utf8_len;
     char_u      *utf8_str;
@@ -397,9 +397,9 @@ mac_enc_to_utf16(
 
     do
     {
-	/* Use MacRoman by default, we might be called before we have p_enc
-	 * set up.  Convert to utf-8 first, works better with iconv().  Does
-	 * nothing if 'encoding' is "utf-8". */
+	// Use MacRoman by default, we might be called before we have p_enc
+	// set up.  Convert to utf-8 first, works better with iconv().  Does
+	// nothing if 'encoding' is "utf-8".
 	conv.vc_type = CONV_NONE;
 	if ((enc_canon_props(p_enc) & ENC_UNICODE) == 0 &&
 		convert_setup(&conv, p_enc ? p_enc : (char_u *)"macroman",
@@ -583,4 +583,4 @@ mac_lang_init(void)
 	}
     }
 }
-#endif /* MACOS_CONVERT */
+#endif // MACOS_CONVERT

@@ -13,7 +13,21 @@
 
 #include "vim.h"
 
-#if defined(FEAT_MOUSE) || defined(PROTO)
+#ifdef CHECK_DOUBLE_CLICK
+/*
+ * Return the duration from t1 to t2 in milliseconds.
+ */
+    static long
+time_diff_ms(struct timeval *t1, struct timeval *t2)
+{
+    // This handles wrapping of tv_usec correctly without any special case.
+    // Example of 2 pairs (tv_sec, tv_usec) with a duration of 5 ms:
+    //	   t1 = (1, 998000) t2 = (2, 3000) gives:
+    //	   (2 - 1) * 1000 + (3000 - 998000) / 1000 -> 5 ms.
+    return (t2->tv_sec - t1->tv_sec) * 1000
+	 + (t2->tv_usec - t1->tv_usec) / 1000;
+}
+#endif
 
 /*
  * Get class of a character for selection: same class means same word.
@@ -277,7 +291,7 @@ do_mouse(
 	    bevalexpr_due_set = TRUE;
 	}
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	popup_handle_mouse_moved();
 #endif
 	return FALSE;
@@ -1090,7 +1104,7 @@ ins_mousescroll(int dir)
 			(long)(curwin->w_botline - curwin->w_topline));
 	    else
 		scroll_redraw(dir, 3L);
-# ifdef FEAT_TEXT_PROP
+# ifdef FEAT_PROP_POPUP
 	if (WIN_IS_POPUP(curwin))
 	    popup_set_firstline(curwin);
 # endif
@@ -1258,20 +1272,17 @@ get_pseudo_mouse_code(
     return (int)KE_IGNORE;	    // not recognized, ignore it
 }
 
-# ifdef FEAT_MOUSE_TTY
-#  define HMT_NORMAL	1
-#  define HMT_NETTERM	2
-#  define HMT_DEC	4
-#  define HMT_JSBTERM	8
-#  define HMT_PTERM	16
-#  define HMT_URXVT	32
-#  define HMT_GPM	64
-#  define HMT_SGR	128
-#  define HMT_SGR_REL	256
+# define HMT_NORMAL	1
+# define HMT_NETTERM	2
+# define HMT_DEC	4
+# define HMT_JSBTERM	8
+# define HMT_PTERM	16
+# define HMT_URXVT	32
+# define HMT_GPM	64
+# define HMT_SGR	128
+# define HMT_SGR_REL	256
 static int has_mouse_termcode = 0;
-# endif
 
-# if (!defined(UNIX) || defined(FEAT_MOUSE_TTY)) || defined(PROTO)
     void
 set_mouse_termcode(
     int		n,	// KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE
@@ -1282,7 +1293,6 @@ set_mouse_termcode(
     name[0] = n;
     name[1] = KE_FILLER;
     add_termcode(name, s, FALSE);
-#  ifdef FEAT_MOUSE_TTY
 #   ifdef FEAT_MOUSE_JSB
     if (n == KS_JSBTERM_MOUSE)
 	has_mouse_termcode |= HMT_JSBTERM;
@@ -1319,12 +1329,9 @@ set_mouse_termcode(
 	has_mouse_termcode |= HMT_SGR_REL;
     else
 	has_mouse_termcode |= HMT_NORMAL;
-#  endif
 }
-# endif
 
-# if ((defined(UNIX) || defined(VMS)) \
-	&& defined(FEAT_MOUSE_TTY)) || defined(PROTO)
+# if defined(UNIX) || defined(VMS) || defined(PROTO)
     void
 del_mouse_termcode(
     int		n)	// KS_MOUSE, KS_NETTERM_MOUSE or KS_DEC_MOUSE
@@ -1334,7 +1341,6 @@ del_mouse_termcode(
     name[0] = n;
     name[1] = KE_FILLER;
     del_termcode(name);
-#  ifdef FEAT_MOUSE_TTY
 #   ifdef FEAT_MOUSE_JSB
     if (n == KS_JSBTERM_MOUSE)
 	has_mouse_termcode &= ~HMT_JSBTERM;
@@ -1371,7 +1377,6 @@ del_mouse_termcode(
 	has_mouse_termcode &= ~HMT_SGR_REL;
     else
 	has_mouse_termcode &= ~HMT_NORMAL;
-#  endif
 }
 # endif
 
@@ -1381,15 +1386,13 @@ del_mouse_termcode(
     void
 setmouse(void)
 {
-# ifdef FEAT_MOUSE_TTY
     int	    checkfor;
-# endif
 
 # ifdef FEAT_MOUSESHAPE
     update_mouseshape(-1);
 # endif
 
-# ifdef FEAT_MOUSE_TTY // Should be outside proc, but may break MOUSESHAPE
+    // Should be outside proc, but may break MOUSESHAPE
 #  ifdef FEAT_GUI
     // In the GUI the mouse is always enabled.
     if (gui.in_use)
@@ -1423,7 +1426,6 @@ setmouse(void)
 	mch_setmouse(TRUE);
     else
 	mch_setmouse(FALSE);
-# endif
 }
 
 /*
@@ -1498,7 +1500,7 @@ jump_to_mouse(
 #ifdef FEAT_MENU
     static int  in_winbar = FALSE;
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     static int   in_popup_win = FALSE;
     static win_T *click_in_popup_win = NULL;
 #endif
@@ -1528,7 +1530,7 @@ jump_to_mouse(
 	    flags &= ~(MOUSE_FOCUS | MOUSE_DID_MOVE);
 	dragwin = NULL;
 	did_drag = FALSE;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (click_in_popup_win != NULL && popup_dragwin == NULL)
 	    popup_close_for_mouse_click(click_in_popup_win);
 
@@ -1573,7 +1575,7 @@ retnomove:
 	if (cmdwin_type != 0 && row < curwin->w_winrow)
 	    return IN_OTHER_WIN;
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	// Continue a modeless selection in a popup window or dragging it.
 	if (in_popup_win)
 	{
@@ -1621,7 +1623,7 @@ retnomove:
 	    return IN_UNKNOWN;
 	dragwin = NULL;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	// Click in a popup window may start dragging or modeless selection,
 	// but not much else.
 	if (WIN_IS_POPUP(wp))
@@ -1822,7 +1824,7 @@ retnomove:
 	if (cmdwin_type != 0 && row < curwin->w_winrow)
 	    return IN_OTHER_WIN;
 #endif
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (in_popup_win)
 	{
 	    if (popup_dragwin != NULL)
@@ -2012,7 +2014,7 @@ nv_mousescroll(cmdarg_T *cap)
 	wp = mouse_find_win(&row, &col, FIND_POPUP);
 	if (wp == NULL)
 	    return;
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (WIN_IS_POPUP(wp) && !wp->w_has_scrollbar)
 	    return;
 #endif
@@ -2026,7 +2028,7 @@ nv_mousescroll(cmdarg_T *cap)
 	if (term_use_loop())
 	    // This window is a terminal window, send the mouse event there.
 	    // Set "typed" to FALSE to avoid an endless loop.
-	    send_keys_to_term(curbuf->b_term, cap->cmdchar, FALSE);
+	    send_keys_to_term(curbuf->b_term, cap->cmdchar, mod_mask, FALSE);
 	else
 # endif
 	if (mod_mask & (MOD_MASK_SHIFT | MOD_MASK_CTRL))
@@ -2047,7 +2049,7 @@ nv_mousescroll(cmdarg_T *cap)
 	    cap->count0 = cap->count1;
 	    nv_scroll_line(cap);
 	}
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
 	if (WIN_IS_POPUP(curwin))
 	    popup_set_firstline(curwin);
 #endif
@@ -2289,7 +2291,7 @@ check_termcode_mouse(
 #   endif
 	   )
 	{
-#   if defined(UNIX) && defined(FEAT_MOUSE_TTY)
+#   if defined(UNIX)
 	    if (use_xterm_mouse() > 1 && mouse_code >= 0x80)
 		// mouse-move event, using MOUSE_DRAG works
 		mouse_code = MOUSE_DRAG;
@@ -2314,7 +2316,7 @@ check_termcode_mouse(
 	}
 #   endif
 
-#   if defined(UNIX) && defined(FEAT_MOUSE_TTY)
+#   if defined(UNIX)
 	else if (use_xterm_mouse() > 1)
 	{
 	    if (mouse_code & MOUSE_DRAG_XTERM)
@@ -2727,14 +2729,7 @@ check_termcode_mouse(
 			timediff = p_mouset;
 		    }
 		    else
-		    {
-			timediff = (mouse_time.tv_usec
-				- orig_mouse_time.tv_usec) / 1000;
-			if (timediff < 0)
-			    --orig_mouse_time.tv_sec;
-			timediff += (mouse_time.tv_sec
-				- orig_mouse_time.tv_sec) * 1000;
-		    }
+			timediff = time_diff_ms(&orig_mouse_time, &mouse_time);
 		    orig_mouse_time = mouse_time;
 		    if (mouse_code == orig_mouse_code
 			    && timediff < p_mouset
@@ -2810,10 +2805,8 @@ check_termcode_mouse(
 
     return 0;
 }
-#endif // FEAT_MOUSE
 
 // Functions also used for popup windows.
-#if defined(FEAT_MOUSE) || defined(FEAT_TEXT_PROP) || defined(PROTO)
 
 /*
  * Compute the buffer line position from the screen position "rowp" / "colp" in
@@ -2932,13 +2925,13 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
     frame_T	*fp;
     win_T	*wp;
 
-#ifdef FEAT_TEXT_PROP
+#ifdef FEAT_PROP_POPUP
     win_T	*pwp = NULL;
 
     if (popup != IGNORE_POPUP)
     {
-	popup_reset_handled();
-	while ((wp = find_next_popup(TRUE)) != NULL)
+	popup_reset_handled(POPUP_HANDLED_1);
+	while ((wp = find_next_popup(TRUE, POPUP_HANDLED_1)) != NULL)
 	{
 	    if (*rowp >= wp->w_winrow && *rowp < wp->w_winrow + popup_height(wp)
 		    && *colp >= wp->w_wincol
@@ -2994,7 +2987,7 @@ mouse_find_win(int *rowp, int *colp, mouse_find_T popup UNUSED)
     return NULL;
 }
 
-#if defined(NEED_VCOL2COL) || defined(FEAT_BEVAL) || defined(FEAT_TEXT_PROP) \
+#if defined(NEED_VCOL2COL) || defined(FEAT_BEVAL) || defined(FEAT_PROP_POPUP) \
 	|| defined(PROTO)
 /*
  * Convert a virtual (screen) column to a character column.
@@ -3018,14 +3011,70 @@ vcol2col(win_T *wp, linenr_T lnum, int vcol)
 }
 #endif
 
-#else // FEAT_MOUSE
-
-/*
- * Dummy implementation of setmouse() to avoid lots of #ifdefs.
- */
+#if defined(FEAT_EVAL) || defined(PROTO)
     void
-setmouse(void)
+f_getmousepos(typval_T *argvars UNUSED, typval_T *rettv)
 {
-}
+    dict_T	*d;
+    win_T	*wp;
+    int		row = mouse_row;
+    int		col = mouse_col;
+    varnumber_T winid = 0;
+    varnumber_T winrow = 0;
+    varnumber_T wincol = 0;
+    linenr_T	line = 0;
+    varnumber_T column = 0;
 
-#endif // FEAT_MOUSE
+    if (rettv_dict_alloc(rettv) != OK)
+	return;
+    d = rettv->vval.v_dict;
+
+    dict_add_number(d, "screenrow", (varnumber_T)mouse_row + 1);
+    dict_add_number(d, "screencol", (varnumber_T)mouse_col + 1);
+
+    wp = mouse_find_win(&row, &col, FIND_POPUP);
+    if (wp != NULL)
+    {
+	int	top_off = 0;
+	int	left_off = 0;
+	int	height = wp->w_height + wp->w_status_height;
+
+#ifdef FEAT_PROP_POPUP
+	if (WIN_IS_POPUP(wp))
+	{
+	    top_off = popup_top_extra(wp);
+	    left_off = popup_left_extra(wp);
+	    height = popup_height(wp);
+	}
+#endif
+	if (row < height)
+	{
+	    winid = wp->w_id;
+	    winrow = row + 1;
+	    wincol = col + 1;
+	    row -= top_off;
+	    col -= left_off;
+	    if (row >= 0 && row < wp->w_height && col >= 0 && col < wp->w_width)
+	    {
+		char_u	*p;
+		int	count;
+
+		mouse_comp_pos(wp, &row, &col, &line, NULL);
+
+		// limit to text length plus one
+		p = ml_get_buf(wp->w_buffer, line, FALSE);
+		count = (int)STRLEN(p);
+		if (col > count)
+		    col = count;
+
+		column = col + 1;
+	    }
+	}
+    }
+    dict_add_number(d, "winid", winid);
+    dict_add_number(d, "winrow", winrow);
+    dict_add_number(d, "wincol", wincol);
+    dict_add_number(d, "line", (varnumber_T)line);
+    dict_add_number(d, "column", column);
+}
+#endif

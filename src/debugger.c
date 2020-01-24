@@ -51,6 +51,7 @@ do_debug(char_u *cmd)
     int		n;
     char_u	*cmdline = NULL;
     char_u	*p;
+    char_u	*sname;
     char	*tail = NULL;
     static int	last_cmd = 0;
 #define CMD_CONT	1
@@ -104,10 +105,12 @@ do_debug(char_u *cmd)
 	vim_free(debug_newval);
 	debug_newval = NULL;
     }
-    if (sourcing_name != NULL)
-	msg((char *)sourcing_name);
-    if (sourcing_lnum != 0)
-	smsg(_("line %ld: %s"), (long)sourcing_lnum, cmd);
+    sname = estack_sfile();
+    if (sname != NULL)
+	msg((char *)sname);
+    vim_free(sname);
+    if (SOURCING_LNUM != 0)
+	smsg(_("line %ld: %s"), SOURCING_LNUM, cmd);
     else
 	smsg(_("cmd: %s"), cmd);
 
@@ -300,14 +303,14 @@ do_debug(char_u *cmd)
 }
 
     static int
-get_maxbacktrace_level(void)
+get_maxbacktrace_level(char_u *sname)
 {
     char	*p, *q;
     int		maxbacktrace = 0;
 
-    if (sourcing_name != NULL)
+    if (sname != NULL)
     {
-	p = (char *)sourcing_name;
+	p = (char *)sname;
 	while ((q = strstr(p, "..")) != NULL)
 	{
 	    p = q + 2;
@@ -341,27 +344,32 @@ do_checkbacktracelevel(void)
     }
     else
     {
-	int max = get_maxbacktrace_level();
+	char_u	*sname = estack_sfile();
+	int	max = get_maxbacktrace_level(sname);
 
 	if (debug_backtrace_level > max)
 	{
 	    debug_backtrace_level = max;
 	    smsg(_("frame at highest level: %d"), max);
 	}
+	vim_free(sname);
     }
 }
 
     static void
 do_showbacktrace(char_u *cmd)
 {
+    char_u  *sname;
     char    *cur;
     char    *next;
     int	    i = 0;
-    int	    max = get_maxbacktrace_level();
+    int	    max;
 
-    if (sourcing_name != NULL)
+    sname = estack_sfile();
+    max = get_maxbacktrace_level(sname);
+    if (sname != NULL)
     {
-	cur = (char *)sourcing_name;
+	cur = (char *)sname;
 	while (!got_int)
 	{
 	    next = strstr(cur, "..");
@@ -377,9 +385,11 @@ do_showbacktrace(char_u *cmd)
 	    *next = '.';
 	    cur = next + 2;
 	}
+	vim_free(sname);
     }
-    if (sourcing_lnum != 0)
-       smsg(_("line %ld: %s"), (long)sourcing_lnum, cmd);
+
+    if (SOURCING_LNUM != 0)
+       smsg(_("line %ld: %s"), (long)SOURCING_LNUM, cmd);
     else
        smsg(_("cmd: %s"), cmd);
 }
@@ -929,8 +939,7 @@ debuggy_find(
 		}
 		else
 		{
-		    if (typval_compare(tv, bp->dbg_val, TYPE_EQUAL,
-							     TRUE, FALSE) == OK
+		    if (typval_compare(tv, bp->dbg_val, EXPR_IS, FALSE) == OK
 			    && tv->vval.v_number == FALSE)
 		    {
 			typval_T *v;

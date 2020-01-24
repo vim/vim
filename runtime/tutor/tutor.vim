@@ -1,7 +1,7 @@
 " Vim tutor support file
 " Author: Eduardo F. Amatria <eferna1@platea.pntic.mec.es>
 " Maintainer: Bram Moolenaar
-" Last Change:	2019 Mar 30
+" Last Change:	2019 Nov 11
 
 " This Vim script is used for detecting if a translation of the
 " tutor file exist, i.e., a tutor.xx file, where xx is the language.
@@ -108,7 +108,7 @@ endif
 
 " The Turkish tutor is available in two encodings, guess which one to use
 if s:ext =~? '\.tr'
-  if &enc == "iso-8859-9"
+  if &enc == "iso-8859-9" || &enc == "cp1254"
     let s:ext = ".tr.iso9"
   endif
 endif

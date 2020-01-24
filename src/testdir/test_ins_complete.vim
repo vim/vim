@@ -1,3 +1,4 @@
+source screendump.vim
 source check.vim
 
 " Test for insert expansion
@@ -157,17 +158,17 @@ func s:CompleteDone_CompleteFuncDict( findstart, base )
   endif
 
   return {
-          \ 'words': [
-            \ {
-              \ 'word': 'aword',
-              \ 'abbr': 'wrd',
-              \ 'menu': 'extra text',
-              \ 'info': 'words are cool',
-              \ 'kind': 'W',
-              \ 'user_data': 'test'
-            \ }
-          \ ]
-        \ }
+	  \ 'words': [
+	    \ {
+	      \ 'word': 'aword',
+	      \ 'abbr': 'wrd',
+	      \ 'menu': 'extra text',
+	      \ 'info': 'words are cool',
+	      \ 'kind': 'W',
+	      \ 'user_data': 'test'
+	    \ }
+	  \ ]
+	\ }
 endfunc
 
 func s:CompleteDone_CheckCompletedItemNone()
@@ -181,6 +182,8 @@ func s:CompleteDone_CheckCompletedItemDict()
   call assert_equal( 'words are cool', v:completed_item[ 'info' ] )
   call assert_equal( 'W',              v:completed_item[ 'kind' ] )
   call assert_equal( 'test',           v:completed_item[ 'user_data' ] )
+
+  call assert_equal('function', complete_info().mode)
 
   let s:called_completedone = 1
 endfunc
@@ -221,16 +224,17 @@ func s:CompleteDone_CompleteFuncDictNoUserData(findstart, base)
   endif
 
   return {
-          \ 'words': [
-            \ {
-              \ 'word': 'aword',
-              \ 'abbr': 'wrd',
-              \ 'menu': 'extra text',
-              \ 'info': 'words are cool',
-              \ 'kind': 'W'
-            \ }
-          \ ]
-        \ }
+	  \ 'words': [
+	    \ {
+	      \ 'word': 'aword',
+	      \ 'abbr': 'wrd',
+	      \ 'menu': 'extra text',
+	      \ 'info': 'words are cool',
+	      \ 'kind': 'W',
+	      \ 'user_data': ['one', 'two'],
+	    \ }
+	  \ ]
+	\ }
 endfunc
 
 func s:CompleteDone_CheckCompletedItemDictNoUserData()
@@ -239,7 +243,7 @@ func s:CompleteDone_CheckCompletedItemDictNoUserData()
   call assert_equal( 'extra text',     v:completed_item[ 'menu' ] )
   call assert_equal( 'words are cool', v:completed_item[ 'info' ] )
   call assert_equal( 'W',              v:completed_item[ 'kind' ] )
-  call assert_equal( '',               v:completed_item[ 'user_data' ] )
+  call assert_equal( ['one', 'two'],   v:completed_item[ 'user_data' ] )
 
   let s:called_completedone = 1
 endfunc
@@ -251,7 +255,7 @@ func Test_CompleteDoneDictNoUserData()
   execute "normal a\<C-X>\<C-U>\<C-Y>"
   set completefunc&
 
-  call assert_equal('', v:completed_item[ 'user_data' ])
+  call assert_equal(['one', 'two'], v:completed_item[ 'user_data' ])
   call assert_true(s:called_completedone)
 
   let s:called_completedone = 0
@@ -380,3 +384,81 @@ func Test_ins_completeslash()
   set completeslash=
 endfunc
 
+func Test_pum_with_folds_two_tabs()
+  CheckScreendump
+
+  let lines =<< trim END
+    set fdm=marker
+    call setline(1, ['" x {{{1', '" a some text'])
+    call setline(3, range(&lines)->map({_, val -> '" a' .. val}))
+    norm! zm
+    tab sp
+    call feedkeys('2Gzv', 'xt')
+    call feedkeys("0fa", 'xt')
+  END
+
+  call writefile(lines, 'Xpumscript')
+  let buf = RunVimInTerminal('-S Xpumscript', #{rows: 10})
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, "a\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_with_folds_two_tabs', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+  call delete('Xpumscript')
+endfunc
+
+func Test_pum_with_preview_win()
+  CheckScreendump
+
+  let lines =<< trim END
+      funct Omni_test(findstart, base)
+	if a:findstart
+	  return col(".") - 1
+	endif
+	return [#{word: "one", info: "1info"}, #{word: "two", info: "2info"}, #{word: "three", info: "3info"}]
+      endfunc
+      set omnifunc=Omni_test
+      set completeopt+=longest
+  END
+
+  call writefile(lines, 'Xpreviewscript')
+  let buf = RunVimInTerminal('-S Xpreviewscript', #{rows: 12})
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, "Gi\<C-X>\<C-O>")
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, "\<C-N>")
+  call VerifyScreenDump(buf, 'Test_pum_with_preview_win', {})
+
+  call term_sendkeys(buf, "\<Esc>")
+  call StopVimInTerminal(buf)
+  call delete('Xpreviewscript')
+endfunc
+
+" Test for inserting the tag search pattern in insert mode
+func Test_ins_compl_tag_sft()
+  call writefile([
+        \ "!_TAG_FILE_ENCODING\tutf-8\t//",
+        \ "first\tXfoo\t/^int first() {}$/",
+        \ "second\tXfoo\t/^int second() {}$/",
+        \ "third\tXfoo\t/^int third() {}$/"],
+        \ 'Xtags')
+  set tags=Xtags
+  let code =<< trim [CODE]
+    int first() {}
+    int second() {}
+    int third() {}
+  [CODE]
+  call writefile(code, 'Xfoo')
+
+  enew
+  set showfulltag
+  exe "normal isec\<C-X>\<C-]>\<C-N>\<CR>"
+  call assert_equal('int second() {}', getline(1))
+  set noshowfulltag
+
+  call delete('Xtags')
+  call delete('Xfoo')
+  set tags&
+  %bwipe!
+endfunc
