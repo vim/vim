@@ -476,6 +476,15 @@ func Test_list_mappings()
   call assert_equal(['n  ,n            <Nop>'],
         \ execute('nmap ,n')->trim()->split("\n"))
 
+  " verbose map
+  call assert_match("\tLast set from .*/test_mapping.vim line \\d\\+$",
+        \ execute('verbose map ,n')->trim()->split("\n")[1])
+
+  " map to CTRL-V
+  exe "nmap ,k \<C-V>"
+  call assert_equal(['n  ,k            <Nop>'],
+        \ execute('nmap ,k')->trim()->split("\n"))
+
   nmapclear
 endfunc
 
@@ -810,6 +819,16 @@ func Test_abbr_remove()
   abbr foo bar
   unabbr foo<space><tab>
   call assert_equal({}, maparg('foo', 'i', 1, 1))
+endfunc
+
+" Trigger an abbreviation using a special key
+func Test_abbr_trigger_special()
+  new
+  iabbr teh the
+  call feedkeys("iteh\<F2>\<Esc>", 'xt')
+  call assert_equal('the<F2>', getline(1))
+  iunab teh
+  close!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
