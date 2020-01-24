@@ -1231,12 +1231,16 @@ call_def_function(
 			if (tv1->v_type == VAR_LIST && tv2->v_type == VAR_LIST)
 			{
 			    eval_addlist(tv1, tv2);
+			    clear_tv(tv2);
+			    --ectx.ec_stack.ga_len;
 			    break;
 			}
 			else if (tv1->v_type == VAR_BLOB
 						    && tv2->v_type == VAR_BLOB)
 			{
 			    eval_addblob(tv1, tv2);
+			    clear_tv(tv2);
+			    --ectx.ec_stack.ga_len;
 			    break;
 			}
 		    }
@@ -1768,7 +1772,7 @@ ex_disassemble(exarg_T *eap)
 			case ISN_OPANY: ins = "OPANY"; break;
 			default: ins = "???"; break;
 		    }
-		    smsg("%4d OPNR %s", current, ins, what);
+		    smsg("%4d %s %s", current, ins, what);
 		}
 		break;
 

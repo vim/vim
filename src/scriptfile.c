@@ -1282,6 +1282,16 @@ do_source(
 	// loading the same script again
 	si->sn_had_command = FALSE;
 	current_sctx.sc_sid = sid;
+	if (si->sn_version == SCRIPT_VERSION_VIM9)
+	{
+	    hashtab_T *ht = &SCRIPT_VARS(sid);
+
+	    // all s: variables are cleared
+	    vars_clear(ht);
+	    hash_init(ht);
+	    ga_clear(&si->sn_var_vals);
+	    free_imports(sid);
+	}
     }
     else
     {
@@ -1828,7 +1838,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
     }
     if (current_sctx.sc_version == SCRIPT_VERSION_VIM9)
     {
-	emsg(_("E1040: Cannot use :scriptversion after :namespace"));
+	emsg(_("E1040: Cannot use :scriptversion after :vim9script"));
 	return;
     }
 

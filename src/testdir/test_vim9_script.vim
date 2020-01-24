@@ -254,6 +254,31 @@ def Test_vim9script_call_fail_const()
   delete('Xcall_const.vim')
 enddef
 
+def Test_vim9script_reload()
+  let lines =<< trim END
+    vim9script
+    const var = ''
+    let valone = 1234
+    def MyFunc(arg: string)
+       valone = 5678
+    enddef
+  END
+  let morelines =<< trim END
+    let valtwo = 222
+    export def GetValtwo(): number
+      return valtwo
+    enddef
+  END
+  writefile(lines + morelines, 'Xreload.vim')
+  source Xreload.vim
+  source Xreload.vim
+  source Xreload.vim
+
+  " TODO: test that when not using "morelines" valtwo is not defined
+
+  delete('Xreload.vim')
+enddef
+
 def Test_import_absolute()
   let import_lines = [
         \ 'vim9script',

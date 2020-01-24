@@ -22,7 +22,7 @@ static char e_needs_vim9[] = N_("E1042: import/export can only be used in vim9sc
     int
 in_vim9script(void)
 {
-    // TODO: go up the stack
+    // TODO: go up the stack?
     return current_sctx.sc_version == SCRIPT_VERSION_VIM9;
 }
 
@@ -45,6 +45,7 @@ ex_vim9script(exarg_T *eap)
 	return;
     }
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
+    si->sn_version = SCRIPT_VERSION_VIM9;
     si->sn_had_command = TRUE;
 
     if (STRCMP(p_cpo, CPO_VIM) != 0)
@@ -115,6 +116,24 @@ new_imported(void)
 	return imp;
     }
     return NULL;
+}
+
+/*
+ * Free all imported items in script "sid".
+ */
+    void
+free_imports(int sid)
+{
+    scriptitem_T    *si = &SCRIPT_ITEM(sid);
+    int		    idx;
+
+    for (idx = 0; idx < si->sn_imports.ga_len; ++idx)
+    {
+	imported_T *imp = ((imported_T *)si->sn_imports.ga_data + idx);
+
+	vim_free(imp->imp_name);
+    }
+    ga_clear(&si->sn_imports);
 }
 
 /*
