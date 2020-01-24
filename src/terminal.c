@@ -776,6 +776,7 @@ ex_terminal(exarg_T *eap)
 	    char_u *buf = NULL;
 	    char_u *keys;
 
+	    vim_free(opt.jo_eof_chars);
 	    p = skiptowhite(cmd);
 	    *p = NUL;
 	    keys = replace_termcodes(ep + 1, &buf,
