@@ -689,53 +689,50 @@ func Test_terminal_noblock()
 endfunc
 
 func Test_terminal_write_stdin()
-  if !executable('wc')
-    throw 'skipped: wc command not available'
-  endif
-  if has('win32')
-    " TODO: enable once writing to stdin works on MS-Windows
-    return
-  endif
-  new
+  " TODO: enable once writing to stdin works on MS-Windows
+  CheckNotMSWindows
+  CheckExecutable wc
+
   call setline(1, ['one', 'two', 'three'])
   %term wc
   call WaitForAssert({-> assert_match('3', getline("$"))})
   let nrs = split(getline('$'))
   call assert_equal(['3', '3', '14'], nrs)
-  bwipe
+  %bwipe!
 
-  new
   call setline(1, ['one', 'two', 'three', 'four'])
   2,3term wc
   call WaitForAssert({-> assert_match('2', getline("$"))})
   let nrs = split(getline('$'))
   call assert_equal(['2', '2', '10'], nrs)
-  bwipe
+  %bwipe!
 endfunc
 
 func Test_terminal_eof_arg()
   CheckExecutable python
 
-  new
   call setline(1, ['print("hello")'])
   1term ++eof=exit() python
   " MS-Windows echoes the input, Unix doesn't.
-  call WaitFor('getline("$") =~ "exit" || getline(1) =~ "hello"')
-  if getline(1) =~ 'hello'
-    call assert_equal('hello', getline(1))
-  else
-    call assert_equal('hello', getline(line('$') - 1))
-  endif
-  bwipe
-
   if has('win32')
-    new
-    call setline(1, ['print("hello")'])
-    1term ++eof=<C-Z> python
-    call WaitForAssert({-> assert_match('Z', getline("$"))})
+    call WaitFor({-> getline('$') =~ 'exit()'})
     call assert_equal('hello', getline(line('$') - 1))
-    bwipe
+  else
+    call WaitFor({-> getline('$') =~ 'hello'})
+    call assert_equal('hello', getline('$'))
   endif
+  %bwipe!
+endfunc
+
+func Test_terminal_eof_arg_win32_ctrl_z()
+  CheckMSWindows
+  CheckExecutable python
+
+  call setline(1, ['print("hello")'])
+  1term ++eof=<C-Z> python
+  call WaitForAssert({-> assert_match('\^Z', getline(line('$') - 1))})
+  call assert_match('\^Z', getline(line('$') - 1))
+  %bwipe!
 endfunc
 
 func Test_terminal_duplicate_eof_arg()
@@ -744,15 +741,16 @@ func Test_terminal_duplicate_eof_arg()
   " Check the last specified ++eof arg is used and should not memory leak.
   new
   call setline(1, ['print("hello")'])
-  1term ++eof=<C-D> ++eof=exit() python
+  1term ++eof=<C-Z> ++eof=exit() python
   " MS-Windows echoes the input, Unix doesn't.
-  call WaitFor('getline("$") =~ "exit" || getline(1) =~ "hello"')
-  if getline(1) =~ 'hello'
-    call assert_equal('hello', getline(1))
+  if has('win32')
+    call WaitFor({-> getline('$') =~ 'exit()'})
+    call assert_match('exit()', getline('$'))
   else
-    call assert_equal('hello', getline(line('$') - 1))
+    call WaitFor({-> getline('$') =~ 'hello'})
+    call assert_equal('hello', getline('$'))
   endif
-  bwipe
+  %bwipe!
 endfunc
 
 func Test_terminal_no_cmd()
