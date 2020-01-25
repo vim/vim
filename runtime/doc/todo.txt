@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Jan 20
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Jan 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -121,7 +121,7 @@ Terminal emulator window:
   conversions.
 
 Error numbers available:
-E366, E450, E451, E452,
+E450, E451, E452,
 E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
 E654, E856, E857, E860, E861, E863, E889, E900
 
@@ -171,11 +171,11 @@ in terminal.c and then CTRL-N twice.
 Should do current file first and not split it up when more results are found.
 (Also #1890)
 
+Undo history wrong when ":next file" re-uses a buffer. (#5426)
+ex_next() should pass flag to do_argfile(), then to do_ecmd().
+
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
-
-Instead of using a syntax error, use #error to fail early when something is
-wrong.  E.g. in vim.h "Error:", and blowfish.c "error!". (#5299)
 
 ":helptags ALL" should skip directories where "tags" cannot be written.
 (Matěj Cepl, #5026)

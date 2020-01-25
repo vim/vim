@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2020 Jan 18
+*options.txt*	For Vim version 8.2.  Last change: 2020 Jan 24
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5253,7 +5253,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	default because it makes using the pull down menus a little goofy, as
 	a pointer transit may activate a window unintentionally.
 	MS-Windows: Also see 'scrollfocus' for what window is scrolled when
-	using the mouse scroll whel.
+	using the mouse scroll wheel.
 
 			*'mousehide'* *'mh'* *'nomousehide'* *'nomh'*
 'mousehide' 'mh'	boolean	(default on)

@@ -1,8 +1,8 @@
 " Vim syntax file
 " Language:	Vim 8.0 script
-" Maintainer:	Charles E. Campbell <NdrOchipS@PcampbellAfamily.Mbiz>
+" Maintainer:	Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
 " Last Change:	November 29, 2019
-" Version:	8.0-28
+" Version:	8.0-29
 " URL:	http://www.drchip.org/astronaut/vim/index.html#SYNTAX_VIM
 " Automatically generated keyword lists: {{{1
 
