@@ -43,14 +43,14 @@ compatible.  For example, in a function the arguments are not available in the
 Other differences are more subtle, such as how errors are handled.
 
 The Vim9 script syntax and semantics are used in:
-- the `:def` command, define a function, until the matching `enddef`
+- a function defined with the `:def` command
 - a script file where the first command is `vim9script`
 
-Otherwise Vim9 script and legacy Vim script can be mixed.  There is no need to
-rewrite old scripts, they keep working as before.  The toplevel of
-source'ed scripts use the legacy format, only `:def` functions use the new
-syntax.  New scripts with the `vim9script` command fully use the Vim9 script
-syntax.
+When using `:function` in a Vim9 script file the legacy syntax is used.
+However, this is discouraged.
+
+Vim9 script and legacy Vim script can be mixed.  There is no need to rewrite
+old scripts, they keep working as before.
 
 ==============================================================================
 
@@ -66,46 +66,26 @@ range passed and cannot be a "dict" function.
 
 In the function body:
 - Arguments are accessed by name, without "a:".
-- There is no "a:" dictionary or "a:000" list.
-- Variable arguments are defined with a name and list of a type:
-  	def MyFunc(...name: list<type>)
+- There is no "a:" dictionary or "a:000" list.  Variable arguments are defined
+  with a name and have a list type: >
+  	def MyFunc(...itemlist: list<type>)
+	   for item in itemlist
+	     ...
 
 
-Omitting :let, :call and :eval ~
-
-Functions can be called without `:call`: >
-  	writefile(lines, 'file')
-Using `:call` is optional.
-
-A method call without `eval` is possible, so long as the start is an
-identifier or can't be an Ex command.  It does not work for string constants: >
-	myList->add(123)		" works
-	g:myList->add(123)		" works
-	[1, 2, 3]->Process()		" works
-	#{a: 1, b: 2}->Process()	" works
-	{'a': 1, 'b': 2}->Process()	" works
-	"foobar"->Process()		" does NOT work
-	eval "foobar"->Process()	" works
-
-Global, script and local variables, after being declared, are assigned to
-without `:let`: >
-      let lines = 33
-      lines += 55
-This may shadow Ex commands, rename the variable if needed.
-
-Since "&opt = value" is now assigning a value to option "opt", ":&" cannot be
-used to repeat a `:substitute` command.
-
-
-No curly braces expansion ~
-
-|curly-braces-names| cannot be used.
-
-
-Variable declarations and scope ~
+Variable declarations with :let and :const ~
 
 Local variables need to be declared with `:let`.  Local constants need to be
 declared with `:const`.  We refer to both as "variables".
+
+Variables can be local to a script, function or code block: >
+	vim9script
+	let script_var = 123
+	def SomeFunc()
+	  let func_var = script_var
+	  if cond
+	    let block_var = func_var
+	  ...
 
 The variables are only visible in the block where they are defined and nested
 blocks.  Once the block ends the variable is no longer accessible: >
@@ -133,7 +113,37 @@ used: >
 	}
 	echo temp  " Error!
 
+An existing variable cannot be assigend to with `:let`, since that implies a
+declaration.  An exception is global variables: these can be both used with
+and without `:let`, because there is no rule about where they are declared.
+
 Variables cannot shadow previously defined variables.
+Variables may shadow Ex commands, rename the variable if needed.
+
+Since "&opt = value" is now assigning a value to option "opt", ":&" cannot be
+used to repeat a `:substitute` command.
+
+
+Omitting :call and :eval ~
+
+Functions can be called without `:call`: >
+  	writefile(lines, 'file')
+Using `:call` is still posible, but this is discouraged.
+
+A method call without `eval` is possible, so long as the start is an
+identifier or can't be an Ex command.  It does not work for string constants: >
+	myList->add(123)		" works
+	g:myList->add(123)		" works
+	[1, 2, 3]->Process()		" works
+	#{a: 1, b: 2}->Process()	" works
+	{'a': 1, 'b': 2}->Process()	" works
+	"foobar"->Process()		" does NOT work
+	eval "foobar"->Process()	" works
+
+
+No curly braces expansion ~
+
+|curly-braces-names| cannot be used.
 
 
 Comperators ~
@@ -196,12 +206,12 @@ The boolean operators "||" and "&&" do not change the value: >
 	0 && 2   == 0
 	[] && 2  == []
 
-When using `..` for string concatenation the arguments are converted to
+When using `..` for string concatenation the arguments are always converted to
 string. >
 	'hello ' .. 123  == 'hello 123'
 	'hello ' .. v:true  == 'hello true'
 
-In Vim9 one can use "true" for v:true and "false" for v:false.
+In Vim9 script one can use "true" for v:true and "false" for v:false.
 
 
 ==============================================================================
@@ -210,6 +220,7 @@ In Vim9 one can use "true" for v:true and "false" for v:false.
 
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
+							*:def*
 :def[!] {name}([arguments])[: {return-type}
 			Define a new function by the name {name}.  The body of
 			the function follows in the next lines, until the
@@ -233,6 +244,7 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 			[!] is used as with `:function`.
 
+							*:enddef*
 :enddef			End of a function defined with `:def`.
 
 
@@ -266,8 +278,13 @@ There is no array type, use list<type> instead.  For a list constant an
 efficient implementation is used that avoids allocating lot of small pieces of
 memory.
 
+A function defined with `:def` must declare the return type.  If there is no
+type then the function doesn't return anything.  "void" is used in type
+declarations.
+
 Custom types can be defined with `:type`: >
 	:type MyList list<string>
+{not implemented yet}
 
 And classes and interfaces can be used as types: >
 	:class MyClass
@@ -283,7 +300,8 @@ And classes and interfaces can be used as types: >
 	:class MyInterface<Targ>
 	:let mine: MyInterface<number>
 	:let mine: MyInterface<string>
-<
+{not implemented yet}
+
 
 Type inference						*type-inference*
 
@@ -292,19 +310,6 @@ declaring a variable and giving it a value: >
 	let var = 0		" infers number type
 	let var = 'hello'	" infers string type
 
-The return value of a function can be omitted if the type can be inferred from
-the first encountered `:return` statement: >
-	def MyFunc(arg: number)
-	  if arg
-	    return 'yes'     " infers return type is string
-	  endif
-	  return 'no'
-	enddef
-However, it's better to define the return type to avoid mistakes and make it
-easy to see the type.
-
-If there is no return statement or all return statements do not have a return
-value then the return type is "void".
 
 ==============================================================================
 
@@ -320,9 +325,10 @@ items, can then be imported in another script.
 
 Namespace ~
 							*:vim9script* *:vim9*
-To recognize an imported file the `vim9script` statement must appear as the
-first statement in the file.  It tells Vim to interpret the script in its own
-namespace, instead of the global namespace.  If a file starts with: >
+To recognize an file that can be imported the `vim9script` statement must
+appear as the first statement in the file.  It tells Vim to interpret the
+script in its own namespace, instead of the global namespace.  If a file
+starts with: >
 	vim9script
 	let myvar = 'yes'
 Then "myvar" will only exist in this file.  While without `vim9script` it would
@@ -336,7 +342,7 @@ In Vim9 script the global "g:" namespace can still be used as before.
 A side effect of `:vim9script` is that the 'cpoptions' option is set to the
 Vim default value, like with: >
 	:set cpo&vim
-One of the effects is that |line-continuation| is enabled.
+One of the effects is that |line-continuation| is always enabled.
 The original value of 'cpoptions' is restored at the end of the script.
 
 
@@ -352,7 +358,7 @@ As this suggests, only constants, variables, `:def` functions and classes can
 be exported.
 
 Alternatively, an export statement can be used to export several already
-defined (so far script-local) items: >
+defined (otherwise script-local) items: >
 	export {EXPORTED_CONST, someValue, MyFunc, MyClass}
 
 
