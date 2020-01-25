@@ -2451,7 +2451,7 @@ lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy UNUSED)
     }
     else
     {
-	p = vim_strnsave(name, len);
+	p = vim_strnsave(name, (int)len);
 	if (p == NULL)
 	    return -1;
     }

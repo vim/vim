@@ -4,13 +4,13 @@ source check.vim
 
 " Check that "line" inside ":def" results in an "error" message.
 func CheckDefFailure(line, error)
-  call writefile(['def Func()', a:line, 'enddef'], 'Xdef')
+  call writefile(['def! Func()', a:line, 'enddef'], 'Xdef')
   call assert_fails('so Xdef', a:error, a:line)
   call delete('Xdef')
 endfunc
 
 func CheckDefFailureList(lines, error)
-  call writefile(['def Func()'] + a:lines + ['enddef'], 'Xdef')
+  call writefile(['def! Func()'] + a:lines + ['enddef'], 'Xdef')
   call assert_fails('so Xdef', a:error, string(a:lines))
   call delete('Xdef')
 endfunc

@@ -598,11 +598,12 @@ call_def_function(
 	    // store script-local variable
 	    case ISN_STORESCRIPT:
 		{
-		    --ectx.ec_stack.ga_len;
 		    scriptitem_T *si = &SCRIPT_ITEM(
 					      iptr->isn_arg.script.script_sid);
 		    svar_T	 *sv = ((svar_T *)si->sn_var_vals.ga_data)
 					     + iptr->isn_arg.script.script_idx;
+
+		    --ectx.ec_stack.ga_len;
 		    clear_tv(sv->sv_tv);
 		    *sv->sv_tv = *STACK_TV_BOT(0);
 		}

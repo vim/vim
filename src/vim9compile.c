@@ -1034,7 +1034,7 @@ generate_MEMBER(cctx_T *cctx, char_u *name, size_t len)
 
     if ((isn = generate_instr(cctx, ISN_MEMBER)) == NULL)
 	return FAIL;
-    isn->isn_arg.string = vim_strnsave(name, len);
+    isn->isn_arg.string = vim_strnsave(name, (int)len);
 
     // change dict type to dict member type
     type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
@@ -1085,7 +1085,7 @@ reserve_local(cctx_T *cctx, char_u *name, size_t len, int isConst, type_T *type)
 
     if (lookup_arg(name, len, cctx) >= 0 || lookup_vararg(name, len, cctx))
     {
-	emsg_namelen(_("E1006: %s is used as an argument"), name, len);
+	emsg_namelen(_("E1006: %s is used as an argument"), name, (int)len);
 	return -1;
     }
 
@@ -1097,7 +1097,7 @@ reserve_local(cctx_T *cctx, char_u *name, size_t len, int isConst, type_T *type)
     ++cctx->ctx_locals.ga_len;
 
     lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
-    lvar->lv_name = vim_strnsave(name, len == 0 ? STRLEN(name) : len);
+    lvar->lv_name = vim_strnsave(name, (int)(len == 0 ? STRLEN(name) : len));
     lvar->lv_const = isConst;
     lvar->lv_type = type;
 
@@ -3085,7 +3085,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     }
 
     varlen = p - arg;
-    name = vim_strnsave(arg, varlen);
+    name = vim_strnsave(arg, (int)varlen);
     if (name == NULL)
 	return NULL;
 
