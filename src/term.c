@@ -146,7 +146,7 @@ static termrequest_T rbm_status = TERMREQUEST_INIT;
 // Request cursor style report:
 static termrequest_T rcs_status = TERMREQUEST_INIT;
 
-// Request windos position report:
+// Request window's position report:
 static termrequest_T winpos_status = TERMREQUEST_INIT;
 
 static termrequest_T *all_termrequests[] = {

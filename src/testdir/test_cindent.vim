@@ -815,7 +815,7 @@ func Test_cindent_1()
         }
      }
 
-  public: // <-- this was incorectly indented before!!
+  public: // <-- this was incorrectly indented before!!
      void testfall();
   protected:
      void testfall();
@@ -1780,7 +1780,7 @@ func Test_cindent_1()
   		}
   	}
 
-  	public: // <-- this was incorectly indented before!!
+  	public: // <-- this was incorrectly indented before!!
   	void testfall();
   	protected:
   	void testfall();

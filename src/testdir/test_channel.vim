@@ -20,7 +20,7 @@ endif
 
 let s:chopt = {}
 
-" Run "testfunc" after sarting the server and stop the server afterwards.
+" Run "testfunc" after starting the server and stop the server afterwards.
 func s:run_server(testfunc, ...)
   call RunServer('test_channel.py', a:testfunc, a:000)
 endfunc
@@ -425,7 +425,7 @@ func Test_connect_waittime()
 
   " We intend to use a socket that doesn't exist and wait for half a second
   " before giving up.  If the socket does exist it can fail in various ways.
-  " Check for "Connection reset by peer" to avoid flakyness.
+  " Check for "Connection reset by peer" to avoid flakiness.
   let start = reltime()
   try
     let handle = ch_open('localhost:9867', {'waittime': 500})

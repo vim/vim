@@ -960,7 +960,7 @@ dbcs_class(unsigned lead, unsigned trail)
 			// special symbols
 			return 10;
 		    case 0x23:
-			// alpha-numeric
+			// alphanumeric
 			return 11;
 		    case 0x24:
 			// hiragana
@@ -994,7 +994,7 @@ dbcs_class(unsigned lead, unsigned trail)
 		 * 20 : Hangul
 		 * 21 : Hanja
 		 * 22 : Symbols
-		 * 23 : Alpha-numeric/Roman Letter (Full width)
+		 * 23 : Alphanumeric/Roman Letter (Full width)
 		 * 24 : Hangul Letter(Alphabet)
 		 * 25 : Roman Numeral/Greek Letter
 		 * 26 : Box Drawings
@@ -1025,7 +1025,7 @@ dbcs_class(unsigned lead, unsigned trail)
 			// Symbols
 			return 22;
 		    case 0xA3:
-			// Alpha-numeric
+			// Alphanumeric
 			return 23;
 		    case 0xA4:
 			// Hangul Letter(Alphabet)

@@ -6927,7 +6927,7 @@ myresetstkoflw(void)
 	return 0;
     pStackBase = (BYTE*)mbi.AllocationBase;
 
-    // ...and the page thats min_stack_req pages away from stack base; this is
+    // ...and the page that's min_stack_req pages away from stack base; this is
     // the lowest page we could use.
     pLowestPossiblePage = pStackBase + MIN_STACK_WINNT * nPageSize;
 

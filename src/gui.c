@@ -3419,7 +3419,7 @@ gui_init_which_components(char_u *oldval UNUSED)
     if (oldval != NULL && gui.in_use)
     {
 	/*
-	 * Check if the menu's go from grey to non-grey or vise versa.
+	 * Check if the menu's go from grey to non-grey or vice versa.
 	 */
 	grey_old = (vim_strchr(oldval, GO_GREY) != NULL);
 	grey_new = (vim_strchr(p_go, GO_GREY) != NULL);

@@ -1690,7 +1690,7 @@ set_curbuf(buf_T *buf, int action)
     set_bufref(&prevbufref, prevbuf);
     set_bufref(&newbufref, buf);
 
-    // Autocommands may delete the curren buffer and/or the buffer we wan to go
+    // Autocommands may delete the curren buffer and/or the buffer we want to go
     // to.  In those cases don't close the buffer.
     if (!apply_autocmds(EVENT_BUFLEAVE, NULL, NULL, FALSE, curbuf)
 	    || (bufref_valid(&prevbufref)

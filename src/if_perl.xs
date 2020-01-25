@@ -930,7 +930,7 @@ I32 cur_val(IV iv, SV *sv)
 
     if (SvRV(sv) != SvRV(rv))
 	// XXX: This magic variable is a bit confusing...
-	// Is curently refcounted ?
+	// Is currently refcounted ?
 	sv_setsv(sv, rv);
 
     SvREFCNT_dec(rv);

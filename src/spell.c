@@ -1786,7 +1786,7 @@ spell_load_cb(char_u *fname, void *cookie)
 count_common_word(
     slang_T	*lp,
     char_u	*word,
-    int		len,	    // word length, -1 for upto NUL
+    int		len,	    // word length, -1 for up to NUL
     int		count)	    // 1 to count once, 10 to init
 {
     hash_T	hash;

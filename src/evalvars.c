@@ -2677,7 +2677,7 @@ set_var_const(
 		    char_u *val = tv_get_string(tv);
 
 		    // Careful: when assigning to v:errmsg and tv_get_string()
-		    // causes an error message the variable will alrady be set.
+		    // causes an error message the variable will already be set.
 		    if (v->di_tv.vval.v_string == NULL)
 			v->di_tv.vval.v_string = vim_strsave(val);
 		}

@@ -6063,7 +6063,7 @@ ex_edit(exarg_T *eap)
 }
 
 /*
- * ":edit <file>" command and alikes.
+ * ":edit <file>" command and alike.
  */
     void
 do_exedit(
