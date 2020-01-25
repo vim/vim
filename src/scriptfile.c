@@ -1279,19 +1279,24 @@ do_source(
     current_sctx.sc_seq = ++last_current_SID_seq;
     if (sid > 0)
     {
+	hashtab_T	*ht;
+	hashitem_T	*hi;
+	dictitem_T	*di;
+	int		todo;
+
 	// loading the same script again
 	si->sn_had_command = FALSE;
 	current_sctx.sc_sid = sid;
-	if (si->sn_version == SCRIPT_VERSION_VIM9)
-	{
-	    hashtab_T *ht = &SCRIPT_VARS(sid);
 
-	    // all s: variables are cleared
-	    vars_clear(ht);
-	    hash_init(ht);
-	    ga_clear(&si->sn_var_vals);
-	    free_imports(sid);
-	}
+	ht = &SCRIPT_VARS(sid);
+	todo = (int)ht->ht_used;
+	for (hi = ht->ht_array; todo > 0; ++hi)
+	    if (!HASHITEM_EMPTY(hi))
+	    {
+		--todo;
+		di = HI2DI(hi);
+		di->di_flags |= DI_FLAGS_RELOAD;
+	    }
     }
     else
     {

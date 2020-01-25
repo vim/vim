@@ -290,7 +290,7 @@ call_by_name(char_u *name, int argcount, ectx_T *ectx)
 	return call_bfunc(func_idx, argcount, ectx);
     }
 
-    ufunc = find_func(name);
+    ufunc = find_func(name, NULL);
     if (ufunc != NULL)
 	return call_ufunc(ufunc, argcount, ectx);
 
@@ -1484,7 +1484,7 @@ failed:
 ex_disassemble(exarg_T *eap)
 {
 #ifdef DISASSEMBLE
-    ufunc_T	*ufunc = find_func(eap->arg);
+    ufunc_T	*ufunc = find_func(eap->arg, NULL);
     dfunc_T	*dfunc;
     isn_T	*instr;
     int		current;

@@ -101,20 +101,10 @@ ex_export(exarg_T *eap UNUSED)
  * Add a new imported item entry to the current script.
  */
     static imported_T *
-new_imported(void)
+new_imported(garray_T *gap)
 {
-    scriptitem_T *si = &SCRIPT_ITEM(current_sctx.sc_sid);
-
-    // Store a pointer to the typval_T, so that it can be found by
-    // index instead of using a hastab lookup.
-    if (ga_grow(&si->sn_imports, 1) == OK)
-    {
-	imported_T *imp = ((imported_T *)si->sn_imports.ga_data
-						      + si->sn_imports.ga_len);
-
-	++si->sn_imports.ga_len;
-	return imp;
-    }
+    if (ga_grow(gap, 1) == OK)
+	return ((imported_T *)gap->ga_data + gap->ga_len++);
     return NULL;
 }
 
@@ -149,7 +139,27 @@ free_imports(int sid)
     void
 ex_import(exarg_T *eap)
 {
-    char_u	*arg = eap->arg;
+    if (current_sctx.sc_version != SCRIPT_VERSION_VIM9)
+	emsg(_(e_needs_vim9));
+    else
+    {
+	char_u *cmd_end = handle_import(eap->arg,
+			&SCRIPT_ITEM(current_sctx.sc_sid).sn_imports);
+
+	if (cmd_end != NULL)
+	    eap->nextcmd = check_nextcmd(cmd_end);
+    }
+}
+
+/*
+ * Handle an ":import" command and add the resulting imported_T to "gap".
+ * Returns a pointer to after the command or NULL in case of failure
+ */
+    char_u *
+handle_import(char_u *arg_start, garray_T *gap)
+{
+    char_u	*arg = arg_start;
+    char_u	*cmd_end;
     char_u	*as_ptr = NULL;
     char_u	*from_ptr;
     int		as_len = 0;
@@ -157,12 +167,6 @@ ex_import(exarg_T *eap)
     typval_T	tv;
     int		sid = -1;
     int		res;
-
-    if (current_sctx.sc_version != SCRIPT_VERSION_VIM9)
-    {
-	emsg(_(e_needs_vim9));
-	return;
-    }
 
     if (*arg == '{')
     {
@@ -192,16 +196,16 @@ ex_import(exarg_T *eap)
 	    as_len = (int)(arg - as_ptr);
 	    arg = skipwhite(arg);
 	}
-	else if (*eap->arg == '*')
+	else if (*arg_start == '*')
 	{
 	    emsg(_("E1045: Missing \"as\" after *"));
-	    return;
+	    return NULL;
 	}
     }
     if (STRNCMP("from", arg, 4) != 0 || !VIM_ISWHITE(arg[4]))
     {
 	emsg(_("E1045: Missing \"from\""));
-	return;
+	return NULL;
     }
     from_ptr = arg;
     arg = skipwhite(arg + 4);
@@ -213,9 +217,9 @@ ex_import(exarg_T *eap)
     if (ret == FAIL || tv.vval.v_string == NULL || *tv.vval.v_string == NUL)
     {
 	emsg(_("E1045: Invalid string after \"from\""));
-	return;
+	return NULL;
     }
-    eap->nextcmd = check_nextcmd(arg);
+    cmd_end = arg;
 
     // find script tv.vval.v_string
     if (*tv.vval.v_string == '.')
@@ -231,7 +235,7 @@ ex_import(exarg_T *eap)
 	if (from_name == NULL)
 	{
 	    clear_tv(&tv);
-	    return;
+	    return NULL;
 	}
 	vim_strncpy(from_name, si->sn_name, tail - si->sn_name);
 	add_pathsep(from_name);
@@ -255,7 +259,7 @@ ex_import(exarg_T *eap)
 	if (from_name == NULL)
 	{
 	    clear_tv(&tv);
-	    return;
+	    return NULL;
 	}
 	vim_snprintf((char *)from_name, len, "import/%s", tv.vval.v_string);
 	res = source_in_path(p_rtp, from_name, DIP_NOAFTER, &sid);
@@ -266,16 +270,16 @@ ex_import(exarg_T *eap)
     {
 	semsg(_("E1053: Could not import \"%s\""), tv.vval.v_string);
 	clear_tv(&tv);
-	return;
+	return NULL;
     }
     clear_tv(&tv);
 
-    if (*eap->arg == '*')
+    if (*arg_start == '*')
     {
-	imported_T *imported = new_imported();
+	imported_T *imported = new_imported(gap);
 
 	if (imported == NULL)
-	    return;
+	    return NULL;
 	imported->imp_name = vim_strnsave(as_ptr, as_len);
 	imported->imp_sid = sid;
 	imported->imp_all = TRUE;
@@ -284,7 +288,7 @@ ex_import(exarg_T *eap)
     {
 	scriptitem_T *script = &SCRIPT_ITEM(sid);
 
-	arg = eap->arg;
+	arg = arg_start;
 	if (*arg == '{')
 	    arg = skipwhite(arg + 1);
 	for (;;)
@@ -314,7 +318,7 @@ ex_import(exarg_T *eap)
 		{
 		    semsg(_("E1049: Item not exported in script: %s"), name);
 		    *arg = cc;
-		    return;
+		    return NULL;
 		}
 	    }
 	    else
@@ -331,14 +335,14 @@ ex_import(exarg_T *eap)
 		    if (funcname == NULL)
 		    {
 			*arg = cc;
-			return;
+			return NULL;
 		    }
 		}
 		funcname[0] = K_SPECIAL;
 		funcname[1] = KS_EXTRA;
 		funcname[2] = (int)KE_SNR;
 		sprintf((char *)funcname + 3, "%ld_%s", (long)sid, name);
-		ufunc = find_func(funcname);
+		ufunc = find_func(funcname, NULL);
 		if (funcname != buffer)
 		    vim_free(funcname);
 
@@ -346,13 +350,13 @@ ex_import(exarg_T *eap)
 		{
 		    semsg(_("E1048: Item not found in script: %s"), name);
 		    *arg = cc;
-		    return;
+		    return NULL;
 		}
 	    }
 
-	    imported = new_imported();
+	    imported = new_imported(gap);
 	    if (imported == NULL)
-		return;
+		return NULL;
 
 	    *arg = cc;
 	    arg = skipwhite(arg);
@@ -370,7 +374,7 @@ ex_import(exarg_T *eap)
 		imported->imp_funcname = ufunc->uf_name;
 
 	    arg = skipwhite(arg);
-	    if (*eap->arg != '{')
+	    if (*arg_start != '{')
 		break;
 	    if (*arg == '}')
 	    {
@@ -381,16 +385,17 @@ ex_import(exarg_T *eap)
 	    if (*arg != ',')
 	    {
 		emsg(_("E1046: Missing comma in import"));
-		return;
+		return NULL;
 	    }
 	    arg = skipwhite(arg + 1);
 	}
 	if (arg != from_ptr)
 	{
 	    emsg(_("E1047: syntax error in import"));
-	    return;
+	    return NULL;
 	}
     }
+    return cmd_end;
 }
 
 #endif // FEAT_EVAL

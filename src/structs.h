@@ -1436,7 +1436,7 @@ typedef struct {
 struct dictitem_S
 {
     typval_T	di_tv;		// type and value of the variable
-    char_u	di_flags;	// flags (only used for variable)
+    char_u	di_flags;	// DI_FLAGS_ flags (only used for variable)
     char_u	di_key[1];	// key (actually longer!)
 };
 typedef struct dictitem_S dictitem_T;
@@ -1449,16 +1449,18 @@ typedef struct dictitem_S dictitem_T;
 struct dictitem16_S
 {
     typval_T	di_tv;		// type and value of the variable
-    char_u	di_flags;	// flags (only used for variable)
+    char_u	di_flags;	// DI_FLAGS_ flags (only used for variable)
     char_u	di_key[DICTITEM16_KEY_LEN + 1];	// key
 };
 typedef struct dictitem16_S dictitem16_T;
 
-#define DI_FLAGS_RO	1  // "di_flags" value: read-only variable
-#define DI_FLAGS_RO_SBX 2  // "di_flags" value: read-only in the sandbox
-#define DI_FLAGS_FIX	4  // "di_flags" value: fixed: no :unlet or remove()
-#define DI_FLAGS_LOCK	8  // "di_flags" value: locked variable
-#define DI_FLAGS_ALLOC	16 // "di_flags" value: separately allocated
+// Flags for "di_flags"
+#define DI_FLAGS_RO	   0x01	    // read-only variable
+#define DI_FLAGS_RO_SBX	   0x02	    // read-only in the sandbox
+#define DI_FLAGS_FIX	   0x04	    // fixed: no :unlet or remove()
+#define DI_FLAGS_LOCK	   0x08	    // locked variable
+#define DI_FLAGS_ALLOC	   0x10	    // separately allocated
+#define DI_FLAGS_RELOAD	   0x20	    // set when script sourced again
 
 /*
  * Structure to hold info about a Dictionary.
@@ -1501,7 +1503,7 @@ typedef struct
     garray_T	uf_args;	// arguments
     garray_T	uf_def_args;	// default argument expressions
 
-    // for :def
+    // for :def (for :function uf_ret_type is NULL)
     type_T	**uf_arg_types;	// argument types (count == uf_args.ga_len)
     type_T	*uf_ret_type;	// return type
     garray_T	uf_type_list;	// types used in arg and return types

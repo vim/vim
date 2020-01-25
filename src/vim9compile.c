@@ -113,6 +113,8 @@ struct cctx_S {
     garray_T	ctx_locals;	    // currently visible local variables
     int		ctx_max_local;	    // maximum number of locals at one time
 
+    garray_T	ctx_imports;	    // imported items
+
     scope_T	*ctx_scope;	    // current scope, NULL at toplevel
 
     garray_T	ctx_type_stack;	    // type of each item on the stack
@@ -1429,10 +1431,20 @@ get_script_item_idx(int sid, char_u *name, int check_writable)
  * Find "name" in imported items of the current script/
  */
     imported_T *
-find_imported(char_u *name)
+find_imported(char_u *name, cctx_T *cctx)
 {
     scriptitem_T    *si = &SCRIPT_ITEM(current_sctx.sc_sid);
     int		    idx;
+
+    if (cctx != NULL)
+	for (idx = 0; idx < cctx->ctx_imports.ga_len; ++idx)
+	{
+	    imported_T *import = ((imported_T *)cctx->ctx_imports.ga_data)
+									 + idx;
+
+	    if (STRCMP(name, import->imp_name) == 0)
+		return import;
+	}
 
     for (idx = 0; idx < si->sn_imports.ga_len; ++idx)
     {
@@ -1468,9 +1480,10 @@ compile_load_scriptvar(cctx_T *cctx, char_u *name)
 	return OK;
     }
 
-    import = find_imported(name);
+    import = find_imported(name, cctx);
     if (import != NULL)
     {
+	// TODO: check this is a variable, not a function
 	generate_SCRIPT(cctx, ISN_LOADSCRIPT,
 		import->imp_sid,
 		import->imp_var_vals_idx,
@@ -1668,7 +1681,7 @@ compile_call(char_u **arg, size_t varlen, cctx_T *cctx, int argcount_init)
     }
 
     // If we can find the function by name generate the right call.
-    ufunc = find_func(namebuf);
+    ufunc = find_func(namebuf, cctx);
     if (ufunc != NULL)
 	return generate_CALL(cctx, ufunc, argcount);
 
@@ -3376,6 +3389,15 @@ theend:
 }
 
 /*
+ * Compile an :import command.
+ */
+    static char_u *
+compile_import(char_u *arg, cctx_T *cctx)
+{
+    return handle_import(arg, &cctx->ctx_imports);
+}
+
+/*
  * generate a jump to the ":endif"/":endfor"/":endwhile"/":finally"/":endtry".
  */
     static int
@@ -4166,6 +4188,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
     cctx.ctx_lnum = -1;
     ga_init2(&cctx.ctx_locals, sizeof(lvar_T), 10);
     ga_init2(&cctx.ctx_type_stack, sizeof(type_T *), 50);
+    ga_init2(&cctx.ctx_imports, sizeof(imported_T), 10);
     cctx.ctx_type_list = &ufunc->uf_type_list;
     ga_init2(&cctx.ctx_instr, sizeof(isn_T), 50);
     instr = &cctx.ctx_instr;
@@ -4336,6 +4359,10 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    case CMD_let:
 	    case CMD_const:
 		    line = compile_assignment(p, &ea, ea.cmdidx, &cctx);
+		    break;
+
+	    case CMD_import:
+		    line = compile_import(p, &cctx);
 		    break;
 
 	    case CMD_if:

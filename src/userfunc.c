@@ -664,7 +664,7 @@ find_func_with_sid(char_u *name, int sid)
  * Return NULL for unknown function.
  */
     static ufunc_T *
-find_func_even_dead(char_u *name)
+find_func_even_dead(char_u *name, cctx_T *cctx)
 {
     hashitem_T	*hi;
     ufunc_T	*func;
@@ -678,7 +678,7 @@ find_func_even_dead(char_u *name)
 	    return func;
 
 	// Find imported funcion before global one.
-	imported = find_imported(name);
+	imported = find_imported(name, cctx);
 	if (imported != NULL && imported->imp_funcname != NULL)
 	{
 	    hi = hash_find(&func_hashtab, imported->imp_funcname);
@@ -696,12 +696,13 @@ find_func_even_dead(char_u *name)
 
 /*
  * Find a function by name, return pointer to it in ufuncs.
+ * "cctx" is passed in a :def function to find imported functions.
  * Return NULL for unknown or dead function.
  */
     ufunc_T *
-find_func(char_u *name)
+find_func(char_u *name, cctx_T *cctx)
 {
-    ufunc_T	*fp = find_func_even_dead(name);
+    ufunc_T	*fp = find_func_even_dead(name, cctx);
 
     if (fp != NULL && (fp->uf_flags & FC_DEAD) == 0)
 	return fp;
@@ -1798,7 +1799,7 @@ call_func(
 	    if (partial != NULL && partial->pt_func != NULL)
 		fp = partial->pt_func;
 	    else
-		fp = find_func(rfname);
+		fp = find_func(rfname, NULL);
 
 	    // Trigger FuncUndefined event, may load the function.
 	    if (fp == NULL
@@ -1807,13 +1808,13 @@ call_func(
 		    && !aborting())
 	    {
 		// executed an autocommand, search for the function again
-		fp = find_func(rfname);
+		fp = find_func(rfname, NULL);
 	    }
 	    // Try loading a package.
 	    if (fp == NULL && script_autoload(rfname, TRUE) && !aborting())
 	    {
 		// loaded a package, search for the function again
-		fp = find_func(rfname);
+		fp = find_func(rfname, NULL);
 	    }
 
 	    if (fp != NULL && (fp->uf_flags & FC_DELETED))
@@ -1890,6 +1891,12 @@ theend:
     return ret;
 }
 
+    static char_u *
+printable_func_name(ufunc_T *fp)
+{
+    return fp->uf_name_exp != NULL ? fp->uf_name_exp : fp->uf_name;
+}
+
 /*
  * List the head of the function: "name(arg1, arg2)".
  */
@@ -1902,10 +1909,7 @@ list_func_head(ufunc_T *fp, int indent)
     if (indent)
 	msg_puts("   ");
     msg_puts("function ");
-    if (fp->uf_name_exp != NULL)
-	msg_puts((char *)fp->uf_name_exp);
-    else
-	msg_puts((char *)fp->uf_name);
+    msg_puts((char *)printable_func_name(fp));
     msg_putchar('(');
     for (j = 0; j < fp->uf_args.ga_len; ++j)
     {
@@ -2369,7 +2373,7 @@ ex_function(exarg_T *eap)
 	    *p = NUL;
 	if (!eap->skip && !got_int)
 	{
-	    fp = find_func(name);
+	    fp = find_func(name, NULL);
 	    if (fp != NULL)
 	    {
 		list_func_head(fp, TRUE);
@@ -2521,7 +2525,7 @@ ex_function(exarg_T *eap)
 	{
 	    if (fudi.fd_dict != NULL && fudi.fd_newkey == NULL)
 		emsg(_(e_funcdict));
-	    else if (name != NULL && find_func(name) != NULL)
+	    else if (name != NULL && find_func(name, NULL) != NULL)
 		emsg_funcname(e_funcexts, name);
 	}
 
@@ -2793,7 +2797,7 @@ ex_function(exarg_T *eap)
 	    goto erret;
 	}
 
-	fp = find_func_even_dead(name);
+	fp = find_func_even_dead(name, NULL);
 	if (fp != NULL)
 	{
 	    int dead = fp->uf_flags & FC_DEAD;
@@ -3074,7 +3078,7 @@ translated_function_exists(char_u *name)
 {
     if (builtin_function(name, -1))
 	return has_internal_func(name);
-    return find_func(name) != NULL;
+    return find_func(name, NULL) != NULL;
 }
 
 /*
@@ -3206,7 +3210,7 @@ ex_delfunction(exarg_T *eap)
 	*p = NUL;
 
     if (!eap->skip)
-	fp = find_func(name);
+	fp = find_func(name, NULL);
     vim_free(name);
 
     if (!eap->skip)
@@ -3261,7 +3265,7 @@ func_unref(char_u *name)
 
     if (name == NULL || !func_name_refcount(name))
 	return;
-    fp = find_func(name);
+    fp = find_func(name, NULL);
     if (fp == NULL && isdigit(*name))
     {
 #ifdef EXITFREE
@@ -3304,7 +3308,7 @@ func_ref(char_u *name)
 
     if (name == NULL || !func_name_refcount(name))
 	return;
-    fp = find_func(name);
+    fp = find_func(name, NULL);
     if (fp != NULL)
 	++fp->uf_refcount;
     else if (isdigit(*name))
@@ -3774,7 +3778,7 @@ make_partial(dict_T *selfdict_in, typval_T *rettv)
 					      : rettv->vval.v_partial->pt_name;
 	// Translate "s:func" to the stored function name.
 	fname = fname_trans_sid(fname, fname_buf, &tofree, &error);
-	fp = find_func(fname);
+	fp = find_func(fname, NULL);
 	vim_free(tofree);
     }
 
@@ -4196,7 +4200,7 @@ set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID)
     if (fp_in == NULL)
     {
 	fname = fname_trans_sid(name, fname_buf, &tofree, &error);
-	fp = find_func(fname);
+	fp = find_func(fname, NULL);
     }
     if (fp != NULL)
     {

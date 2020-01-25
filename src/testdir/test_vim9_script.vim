@@ -274,9 +274,34 @@ def Test_vim9script_reload()
   source Xreload.vim
   source Xreload.vim
 
-  " TODO: test that when not using "morelines" valtwo is not defined
+  let testlines =<< trim END
+    vim9script
+    def TheFunc()
+      import GetValtwo from './Xreload.vim'
+      assert_equal(222, GetValtwo())
+    enddef
+    TheFunc()
+  END
+  writefile(testlines, 'Ximport.vim')
+  source Ximport.vim
+
+  " test that when not using "morelines" valtwo is still defined
+  " need to source Xreload.vim again, import doesn't reload a script
+  writefile(lines, 'Xreload.vim')
+  source Xreload.vim
+  source Ximport.vim
+
+  " cannot declare a var twice
+  lines =<< trim END
+    vim9script
+    let valone = 1234
+    let valone = 5678
+  END
+  writefile(lines, 'Xreload.vim')
+  assert_fails('source Xreload.vim', 'E1041:')
 
   delete('Xreload.vim')
+  delete('Ximport.vim')
 enddef
 
 def Test_import_absolute()

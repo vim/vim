@@ -2284,7 +2284,7 @@ get_var_tv(
 
     if (tv == NULL && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
     {
-	imported_T *import = find_imported(name);
+	imported_T *import = find_imported(name, NULL);
 
 	// imported variable from another script
 	if (import != NULL)
@@ -2460,7 +2460,7 @@ lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy UNUSED)
     res = HASHITEM_EMPTY(hi) ? -1 : 1;
 
     // if not script-local, then perhaps imported
-    if (res == -1 && find_imported(p) != NULL)
+    if (res == -1 && find_imported(p, NULL) != NULL)
 	res = 1;
 
     if (p != buffer)
@@ -2750,7 +2750,7 @@ set_var_const(
     int		copy,	    // make copy of value in "tv"
     int		flags)	    // LET_IS_CONST and/or LET_NO_COMMAND
 {
-    dictitem_T	*v;
+    dictitem_T	*di;
     char_u	*varname;
     hashtab_T	*ht;
     int		is_script_local;
@@ -2763,83 +2763,90 @@ set_var_const(
     }
     is_script_local = ht == get_script_local_ht();
 
-    v = find_var_in_ht(ht, 0, varname, TRUE);
+    di = find_var_in_ht(ht, 0, varname, TRUE);
 
     // Search in parent scope which is possible to reference from lambda
-    if (v == NULL)
-	v = find_var_in_scoped_ht(name, TRUE);
+    if (di == NULL)
+	di = find_var_in_scoped_ht(name, TRUE);
 
     if ((tv->v_type == VAR_FUNC || tv->v_type == VAR_PARTIAL)
-				      && var_check_func_name(name, v == NULL))
+				      && var_check_func_name(name, di == NULL))
 	return;
 
-    if (v != NULL)
+    if (di != NULL)
     {
-	if (flags & LET_IS_CONST)
+	if ((di->di_flags & DI_FLAGS_RELOAD) == 0)
 	{
-	    emsg(_(e_cannot_mod));
-	    return;
+	    if (flags & LET_IS_CONST)
+	    {
+		emsg(_(e_cannot_mod));
+		return;
+	    }
+
+	    if (var_check_ro(di->di_flags, name, FALSE)
+			       || var_check_lock(di->di_tv.v_lock, name, FALSE))
+		return;
+
+	    if ((flags & LET_NO_COMMAND) == 0
+		    && is_script_local
+		    && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+	    {
+		semsg(_("E1041: Redefining script item %s"), name);
+		return;
+	    }
 	}
+	else
+	    // can only redefine once
+	    di->di_flags &= ~DI_FLAGS_RELOAD;
 
 	// existing variable, need to clear the value
-	if (var_check_ro(v->di_flags, name, FALSE)
-			      || var_check_lock(v->di_tv.v_lock, name, FALSE))
-	    return;
 
-	if ((flags & LET_NO_COMMAND) == 0
-		&& is_script_local
-		&& current_sctx.sc_version == SCRIPT_VERSION_VIM9)
-	{
-	    semsg(_("E1041: Redefining script item %s"), name);
-	    return;
-	}
-
-	// Handle setting internal v: variables separately where needed to
+	// Handle setting internal di: variables separately where needed to
 	// prevent changing the type.
 	if (ht == &vimvarht)
 	{
-	    if (v->di_tv.v_type == VAR_STRING)
+	    if (di->di_tv.v_type == VAR_STRING)
 	    {
-		VIM_CLEAR(v->di_tv.vval.v_string);
+		VIM_CLEAR(di->di_tv.vval.v_string);
 		if (copy || tv->v_type != VAR_STRING)
 		{
 		    char_u *val = tv_get_string(tv);
 
 		    // Careful: when assigning to v:errmsg and tv_get_string()
 		    // causes an error message the variable will alrady be set.
-		    if (v->di_tv.vval.v_string == NULL)
-			v->di_tv.vval.v_string = vim_strsave(val);
+		    if (di->di_tv.vval.v_string == NULL)
+			di->di_tv.vval.v_string = vim_strsave(val);
 		}
 		else
 		{
 		    // Take over the string to avoid an extra alloc/free.
-		    v->di_tv.vval.v_string = tv->vval.v_string;
+		    di->di_tv.vval.v_string = tv->vval.v_string;
 		    tv->vval.v_string = NULL;
 		}
 		return;
 	    }
-	    else if (v->di_tv.v_type == VAR_NUMBER)
+	    else if (di->di_tv.v_type == VAR_NUMBER)
 	    {
-		v->di_tv.vval.v_number = tv_get_number(tv);
+		di->di_tv.vval.v_number = tv_get_number(tv);
 		if (STRCMP(varname, "searchforward") == 0)
-		    set_search_direction(v->di_tv.vval.v_number ? '/' : '?');
+		    set_search_direction(di->di_tv.vval.v_number ? '/' : '?');
 #ifdef FEAT_SEARCH_EXTRA
 		else if (STRCMP(varname, "hlsearch") == 0)
 		{
-		    no_hlsearch = !v->di_tv.vval.v_number;
+		    no_hlsearch = !di->di_tv.vval.v_number;
 		    redraw_all_later(SOME_VALID);
 		}
 #endif
 		return;
 	    }
-	    else if (v->di_tv.v_type != tv->v_type)
+	    else if (di->di_tv.v_type != tv->v_type)
 	    {
 		semsg(_("E963: setting %s to value with wrong type"), name);
 		return;
 	    }
 	}
 
-	clear_tv(&v->di_tv);
+	clear_tv(&di->di_tv);
     }
     else		    // add a new variable
     {
@@ -2854,18 +2861,18 @@ set_var_const(
 	if (!valid_varname(varname))
 	    return;
 
-	v = alloc(sizeof(dictitem_T) + STRLEN(varname));
-	if (v == NULL)
+	di = alloc(sizeof(dictitem_T) + STRLEN(varname));
+	if (di == NULL)
 	    return;
-	STRCPY(v->di_key, varname);
-	if (hash_add(ht, DI2HIKEY(v)) == FAIL)
+	STRCPY(di->di_key, varname);
+	if (hash_add(ht, DI2HIKEY(di)) == FAIL)
 	{
-	    vim_free(v);
+	    vim_free(di);
 	    return;
 	}
-	v->di_flags = DI_FLAGS_ALLOC;
+	di->di_flags = DI_FLAGS_ALLOC;
 	if (flags & LET_IS_CONST)
-	    v->di_flags |= DI_FLAGS_LOCK;
+	    di->di_flags |= DI_FLAGS_LOCK;
 
 	if (is_script_local && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
 	{
@@ -2877,8 +2884,8 @@ set_var_const(
 	    {
 		svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
 						      + si->sn_var_vals.ga_len;
-		sv->sv_name = v->di_key;
-		sv->sv_tv = &v->di_tv;
+		sv->sv_name = di->di_key;
+		sv->sv_tv = &di->di_tv;
 		sv->sv_type = type == NULL ? &t_any : type;
 		sv->sv_const = (flags & LET_IS_CONST);
 		sv->sv_export = is_export;
@@ -2891,16 +2898,16 @@ set_var_const(
     }
 
     if (copy || tv->v_type == VAR_NUMBER || tv->v_type == VAR_FLOAT)
-	copy_tv(tv, &v->di_tv);
+	copy_tv(tv, &di->di_tv);
     else
     {
-	v->di_tv = *tv;
-	v->di_tv.v_lock = 0;
+	di->di_tv = *tv;
+	di->di_tv.v_lock = 0;
 	init_tv(tv);
     }
 
     if (flags & LET_IS_CONST)
-	v->di_tv.v_lock |= VAR_LOCKED;
+	di->di_tv.v_lock |= VAR_LOCKED;
 }
 
 /*
