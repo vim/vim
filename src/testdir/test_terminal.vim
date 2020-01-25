@@ -712,15 +712,16 @@ func Test_terminal_eof_arg()
   CheckExecutable python
 
   call setline(1, ['print("hello")'])
-  1term ++eof=exit() python
+  1term ++eof=exit(123) python
   " MS-Windows echoes the input, Unix doesn't.
   if has('win32')
-    call WaitFor({-> getline('$') =~ 'exit()'})
+    call WaitFor({-> getline('$') =~ 'exit(123)'})
     call assert_equal('hello', getline(line('$') - 1))
   else
     call WaitFor({-> getline('$') =~ 'hello'})
     call assert_equal('hello', getline('$'))
   endif
+  call assert_equal(123, bufnr()->term_getjob()->job_info().exitval)
   %bwipe!
 endfunc
 
@@ -741,15 +742,16 @@ func Test_terminal_duplicate_eof_arg()
   " Check the last specified ++eof arg is used and should not memory leak.
   new
   call setline(1, ['print("hello")'])
-  1term ++eof=<C-Z> ++eof=exit() python
+  1term ++eof=<C-Z> ++eof=exit(123) python
   " MS-Windows echoes the input, Unix doesn't.
   if has('win32')
-    call WaitFor({-> getline('$') =~ 'exit()'})
-    call assert_match('exit()', getline('$'))
+    call WaitFor({-> getline('$') =~ 'exit(123)'})
+    call assert_equal('hello', getline(line('$') - 1))
   else
     call WaitFor({-> getline('$') =~ 'hello'})
     call assert_equal('hello', getline('$'))
   endif
+  call assert_equal(123, bufnr()->term_getjob()->job_info().exitval)
   %bwipe!
 endfunc
 
