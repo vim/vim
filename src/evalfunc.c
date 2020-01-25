@@ -5316,12 +5316,12 @@ f_range(typval_T *argvars, typval_T *rettv)
 	list_T *list = rettv->vval.v_list;
 
 	// Create a non-materialized list.  This is much more efficient and
-	// works with ":for".  If used otherwis range_list_materialize() must
+	// works with ":for".  If used otherwise range_list_materialize() must
 	// be called.
 	list->lv_first = &range_list_item;
-	list->lv_last = (void *)start;
-	list->lv_idx_item = (void *)end;
-	list->lv_idx = stride;
+	list->lv_start = start;
+	list->lv_end = end;
+	list->lv_stride = stride;
 	list->lv_len = (end - start + 1) / stride;
     }
 }
@@ -5334,9 +5334,9 @@ range_list_materialize(list_T *list)
 {
     if (list->lv_first == &range_list_item)
     {
-	varnumber_T start = (varnumber_T)list->lv_last;
-	varnumber_T end = (varnumber_T)list->lv_idx_item;
-	int	    stride = list->lv_idx;
+	varnumber_T start = list->lv_start;
+	varnumber_T end = list->lv_end;
+	int	    stride = list->lv_stride;
 	varnumber_T i;
 
 	list->lv_first = NULL;

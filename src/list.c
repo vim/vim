@@ -476,8 +476,6 @@ list_find_nr(
 
     if (l != NULL && l->lv_first == &range_list_item)
     {
-	varnumber_T start = (varnumber_T)l->lv_last;
-	int	    stride = l->lv_idx;
 	long	    n = idx;
 
 	// not materialized range() list: compute the value.
@@ -493,7 +491,7 @@ list_find_nr(
 	    return -1L;
 	}
 
-	return start + n * stride;
+	return l->lv_start + n * l->lv_stride;
     }
 
     li = list_find(l, idx);

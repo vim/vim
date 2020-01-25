@@ -1398,16 +1398,25 @@ struct listwatch_S
  * Order of members is optimized to reduce padding.
  * When created by range() it will at first have special value:
  *  lv_first == &range_list_item;
- *  lv_last == start
- *  lv_idx_item == end
- *  lv_idx == stride
+ * and use lv_start, lv_end, lv_stride.
  */
 struct listvar_S
 {
     listitem_T	*lv_first;	// first item, NULL if none
-    listitem_T	*lv_last;	// last item, NULL if none
     listwatch_T	*lv_watch;	// first watcher, NULL if none
-    listitem_T	*lv_idx_item;	// when not NULL item at index "lv_idx"
+    union {
+	struct {	// used for non-materialized range list:
+			// "lv_first" is &range_list_item
+	    varnumber_T lv_start;
+	    varnumber_T lv_end;
+	    int		lv_stride;
+	};
+	struct {	// used for materialized list
+	    listitem_T	*lv_last;	// last item, NULL if none
+	    listitem_T	*lv_idx_item;	// when not NULL item at index "lv_idx"
+	    int		lv_idx;		// cached index of an item
+	};
+    };
     list_T	*lv_copylist;	// copied list used by deepcopy()
     list_T	*lv_used_next;	// next list in used lists list
     list_T	*lv_used_prev;	// previous list in used lists list
@@ -1415,7 +1424,6 @@ struct listvar_S
     int		lv_len;		// number of items
     int		lv_with_items;	// number of items following this struct that
 				// should not be freed
-    int		lv_idx;		// cached index of an item
     int		lv_copyID;	// ID used by deepcopy()
     char	lv_lock;	// zero, VAR_LOCKED, VAR_FIXED
 };

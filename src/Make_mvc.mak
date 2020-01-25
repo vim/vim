@@ -791,6 +791,9 @@ OBJ = \
 	$(OUTDIR)\undo.obj \
 	$(OUTDIR)\usercmd.obj \
 	$(OUTDIR)\userfunc.obj \
+	$(OUTDIR)\vim9compile.obj \
+	$(OUTDIR)\vim9execute.obj \
+	$(OUTDIR)\vim9script.obj \
 	$(OUTDIR)\viminfo.obj \
 	$(OUTDIR)\winclip.obj \
 	$(OUTDIR)\window.obj \
@@ -1726,6 +1729,12 @@ $(OUTDIR)/userfunc.obj:	$(OUTDIR) userfunc.c  $(INCL)
 
 $(OUTDIR)/version.obj:	$(OUTDIR) version.c  $(INCL) version.h
 
+$(OUTDIR)/vim9compile.obj:	$(OUTDIR) vim9compile.c  $(INCL)
+
+$(OUTDIR)/vim9execute.obj:	$(OUTDIR) vim9execute.c  $(INCL)
+
+$(OUTDIR)/vim9script.obj:	$(OUTDIR) vim9script.c  $(INCL)
+
 $(OUTDIR)/viminfo.obj:	$(OUTDIR) viminfo.c  $(INCL) version.h
 
 $(OUTDIR)/window.obj:	$(OUTDIR) window.c  $(INCL)
@@ -1907,6 +1916,9 @@ proto.h: \
 	proto/undo.pro \
 	proto/usercmd.pro \
 	proto/userfunc.pro \
+	proto/vim9compile.pro \
+	proto/vim9execute.pro \
+	proto/vim9script.pro \
 	proto/viminfo.pro \
 	proto/window.pro \
 	$(SOUND_PRO) \
