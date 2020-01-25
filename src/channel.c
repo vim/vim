@@ -5824,7 +5824,7 @@ job_start(
 	typval_T    *argvars,
 	char	    **argv_arg UNUSED,
 	jobopt_T    *opt_arg,
-	int	    is_terminal UNUSED)
+	job_T	    **term_job)
 {
     job_T	*job;
     char_u	*cmd = NULL;
@@ -5975,6 +5975,9 @@ job_start(
     // Save the command used to start the job.
     job->jv_argv = argv;
 
+    if (term_job != NULL)
+	*term_job = job;
+
 #ifdef USE_ARGV
     if (ch_log_active())
     {
@@ -5991,7 +5994,7 @@ job_start(
 	ch_log(NULL, "Starting job: %s", (char *)ga.ga_data);
 	ga_clear(&ga);
     }
-    mch_job_start(argv, job, &opt, is_terminal);
+    mch_job_start(argv, job, &opt, term_job != NULL);
 #else
     ch_log(NULL, "Starting job: %s", (char *)cmd);
     mch_job_start((char *)cmd, job, &opt);
@@ -6607,7 +6610,7 @@ f_job_start(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_JOB;
     if (check_restricted() || check_secure())
 	return;
-    rettv->vval.v_job = job_start(argvars, NULL, NULL, FALSE);
+    rettv->vval.v_job = job_start(argvars, NULL, NULL, NULL);
 }
 
 /*

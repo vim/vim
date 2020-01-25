@@ -6695,7 +6695,7 @@ term_and_job_init(
 #endif
 
     // This may change a string in "argvar".
-    term->tl_job = job_start(argvar, argv, opt, TRUE);
+    term->tl_job = job_start(argvar, argv, opt, &term->tl_job);
     if (term->tl_job != NULL)
 	++term->tl_job->jv_refcount;
 
