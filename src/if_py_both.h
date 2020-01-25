@@ -6352,7 +6352,6 @@ ConvertToPyObject(typval_T *tv)
 	    return PyBytes_FromString(tv->vval.v_string == NULL
 					    ? "" : (char *)tv->vval.v_string);
 	case VAR_NUMBER:
-	case VAR_BOOL:
 	    return PyLong_FromLong((long) tv->vval.v_number);
 #ifdef FEAT_FLOAT
 	case VAR_FLOAT:

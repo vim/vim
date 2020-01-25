@@ -1076,7 +1076,7 @@ do_source(
     char_u	*fname,
     int		check_other,	    // check for .vimrc and _vimrc
     int		is_vimrc,	    // DOSO_ value
-    int		*ret_sid)
+    int		*ret_sid UNUSED)
 {
     struct source_cookie    cookie;
     char_u		    *p;

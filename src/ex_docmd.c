@@ -300,6 +300,7 @@ static void	ex_tag_cmd(exarg_T *eap, char_u *name);
 # define ex_try			ex_ni
 # define ex_unlet		ex_ni
 # define ex_unlockvar		ex_ni
+# define ex_vim9script		ex_ni
 # define ex_while		ex_ni
 # define ex_namespace		ex_ni
 # define ex_import		ex_ni
@@ -3132,13 +3133,14 @@ append_command(char_u *cmd)
 find_ex_command(
 	exarg_T *eap,
 	int *full UNUSED,
-	int (*lookup)(char_u *, size_t, cctx_T *),
-	cctx_T *cctx)
+	int (*lookup)(char_u *, size_t, cctx_T *) UNUSED,
+	cctx_T *cctx UNUSED)
 {
     int		len;
     char_u	*p;
     int		i;
 
+#ifdef FEAT_EVAL
     /*
      * Recognize a Vim9 script function/method call and assignment:
      * "lvar = value", "lvar(arg)", "[1, 2 3]->Func()"
@@ -3176,6 +3178,7 @@ find_ex_command(
 	    }
 	}
     }
+#endif
 
     /*
      * Isolate the command and search for it in the command table.
@@ -8627,7 +8630,7 @@ ex_folddo(exarg_T *eap)
 }
 #endif
 
-#ifdef FEAT_QUICKFIX
+#if defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
  * Returns TRUE if the supplied Ex cmdidx is for a location list command
  * instead of a quickfix command.
