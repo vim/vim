@@ -123,10 +123,11 @@ def Test_call_varargs()
 enddef
 
 def Test_return_type_wrong()
-  CheckScriptFailure(['def Func(): number', 'return "a"', 'enddef'], 'expected number but got string')
-  CheckScriptFailure(['def Func(): string', 'return 1', 'enddef'], 'expected string but got number')
-  CheckScriptFailure(['def Func(): void', 'return "a"', 'enddef'], 'expected void but got string')
-  CheckScriptFailure(['def Func()', 'return "a"', 'enddef'], 'expected void but got string')
+  " TODO: why is ! needed for Mac and FreeBSD?
+  CheckScriptFailure(['def! Func(): number', 'return "a"', 'enddef'], 'expected number but got string')
+  CheckScriptFailure(['def! Func(): string', 'return 1', 'enddef'], 'expected string but got number')
+  CheckScriptFailure(['def! Func(): void', 'return "a"', 'enddef'], 'expected void but got string')
+  CheckScriptFailure(['def! Func()', 'return "a"', 'enddef'], 'expected void but got string')
 enddef
 
 def Test_try_catch()

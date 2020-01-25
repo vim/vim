@@ -210,6 +210,7 @@ handle_import(char_u *arg_start, garray_T *gap)
     from_ptr = arg;
     arg = skipwhite(arg + 4);
     tv.v_type = VAR_UNKNOWN;
+    // TODO: should we accept any expression?
     if (*arg == '\'')
 	ret = get_lit_string_tv(&arg, &tv, TRUE);
     else if (*arg == '"')

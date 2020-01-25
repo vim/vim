@@ -1696,7 +1696,7 @@ ex_disassemble(exarg_T *eap)
 
 	    case ISN_JUMP:
 		{
-		    char *when;
+		    char *when = "?";
 
 		    switch (iptr->isn_arg.jump.jump_when)
 		    {
