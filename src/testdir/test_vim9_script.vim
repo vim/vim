@@ -2,7 +2,7 @@
 
 " Check that "lines" inside ":def" results in an "error" message.
 func CheckDefFailure(lines, error)
-  call writefile(['def Func()'] + a:lines + ['enddef'], 'Xdef')
+  call writefile(['def! Func()'] + a:lines + ['enddef'], 'Xdef')
   call assert_fails('so Xdef', a:error, a:lines)
   call delete('Xdef')
 endfunc
@@ -307,7 +307,7 @@ enddef
 def Test_import_absolute()
   let import_lines = [
         \ 'vim9script',
-        \ 'import exported from "' .. getcwd() .. '/Xexport_abs.vim"',
+        \ 'import exported from "' .. escape(getcwd(), '\') .. '/Xexport_abs.vim"',
         \ 'g:imported_abs = exported',
         \ ]
   writefile(import_lines, 'Ximport_abs.vim')

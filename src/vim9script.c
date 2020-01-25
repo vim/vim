@@ -240,6 +240,7 @@ handle_import(char_u *arg_start, garray_T *gap)
 	vim_strncpy(from_name, si->sn_name, tail - si->sn_name);
 	add_pathsep(from_name);
 	STRCAT(from_name, tv.vval.v_string);
+	simplify_filename(from_name);
 
 	res = do_source(from_name, FALSE, DOSO_NONE, &sid);
 	vim_free(from_name);
