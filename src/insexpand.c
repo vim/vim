@@ -2061,17 +2061,12 @@ ins_compl_prep(int c)
 
 	    auto_format(FALSE, TRUE);
 
-	    {
-		int new_mode = ctrl_x_mode;
-
-		// Trigger the CompleteDone event to give scripts a chance to
-		// act upon the completion.  Do this before clearing the info,
-		// and restore ctrl_x_mode, so that complete_info() can be
-		// used.
-		ctrl_x_mode = prev_mode;
-		ins_apply_autocmds(EVENT_COMPLETEDONE);
-		ctrl_x_mode = new_mode;
-	    }
+	    // Trigger the CompleteDone event to give scripts a chance to
+	    // act upon the completion.  Do this before clearing the info,
+	    // and restore ctrl_x_mode, so that complete_info() can be
+	    // used.
+	    ctrl_x_mode = prev_mode;
+	    ins_apply_autocmds(EVENT_COMPLETEDONE);
 
 	    ins_compl_free();
 	    compl_started = FALSE;
