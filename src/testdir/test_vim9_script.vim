@@ -1,5 +1,7 @@
 " Test various aspects of the Vim9 script language.
 
+source check.vim
+
 " Check that "lines" inside ":def" results in an "error" message.
 func CheckDefFailure(lines, error)
   call writefile(['def! Func()'] + a:lines + ['enddef'], 'Xdef')
@@ -354,6 +356,17 @@ def Test_fixed_size_list()
   l->insert(99, 1)
   call assert_equal([2, 99, 3, 4, 5], l)
 enddef
+
+" Test that inside :function a Python function can be defined, :def is not
+" recognized.
+func Test_function_python()
+  CheckFeature python3
+  let py = 'python3'
+  execute py "<< EOF"
+def do_something():
+  return 1
+EOF
+endfunc
 
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

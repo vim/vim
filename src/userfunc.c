@@ -2667,8 +2667,11 @@ ex_function(exarg_T *eap)
 		indent += 2;
 
 	    // Check for defining a function inside this function.
+	    // Only recognize "def" inside "def", not inside "function",
+	    // For backwards compatibility, see Test_function_python().
 	    c = *p;
-	    if (checkforcmd(&p, "function", 2) || checkforcmd(&p, "def", 3))
+	    if (checkforcmd(&p, "function", 2)
+		    || (eap->cmdidx == CMD_def && checkforcmd(&p, "def", 3)))
 	    {
 		if (*p == '!')
 		    p = skipwhite(p + 1);
