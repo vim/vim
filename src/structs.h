@@ -1665,11 +1665,6 @@ typedef struct
     int		sn_had_command;	// TRUE if any command was executed
     char_u	*sn_save_cpo;	// 'cpo' value when :vim9script found
 
-# ifdef UNIX
-    int		sn_dev_valid;
-    dev_t	sn_dev;
-    ino_t	sn_ino;
-# endif
 # ifdef FEAT_PROFILE
     int		sn_prof_on;	// TRUE when script is/was profiled
     int		sn_pr_force;	// forceit: profile functions in this script

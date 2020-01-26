@@ -1091,10 +1091,6 @@ do_source(
     int			    save_debug_break_level = debug_break_level;
     int			    sid;
     scriptitem_T	    *si = NULL;
-# ifdef UNIX
-    stat_T		    st;
-    int			    stat_ok;
-# endif
 #endif
 #ifdef STARTUPTIME
     struct timeval	    tv_rel;
@@ -1121,26 +1117,17 @@ do_source(
 
 #ifdef FEAT_EVAL
     // See if we loaded this script before.
-# ifdef UNIX
-    stat_ok = (mch_stat((char *)fname_exp, &st) >= 0);
-# endif
     for (sid = script_items.ga_len; sid > 0; --sid)
     {
+	// We used to check inode here, but that doesn't work:
+	// - If a script is edited and written, it may get a different
+	//   inode number, even though to the user it is the same script.
+	// - If a script is deleted and another script is written, with a
+	//   different name, the inode may be re-used.
 	si = &SCRIPT_ITEM(sid);
-	if (si->sn_name != NULL)
-	{
-# ifdef UNIX
-	    // Compare dev/ino when possible, it catches symbolic links.  Also
-	    // compare file names, the inode may change when the file was
-	    // edited or it may be re-used for another script (esp. in tests).
-	    if ((stat_ok && si->sn_dev_valid)
-		       && (si->sn_dev != st.st_dev || si->sn_ino != st.st_ino))
-		continue;
-# endif
-	    if (fnamecmp(si->sn_name, fname_exp) == 0)
+	if (si->sn_name != NULL && fnamecmp(si->sn_name, fname_exp) == 0)
 		// Found it!
 		break;
-	}
     }
     if (sid > 0 && ret_sid != NULL)
     {
@@ -1324,16 +1311,6 @@ do_source(
 	si = &SCRIPT_ITEM(current_sctx.sc_sid);
 	si->sn_name = fname_exp;
 	fname_exp = vim_strsave(si->sn_name);  // used for autocmd
-# ifdef UNIX
-	if (stat_ok)
-	{
-	    si->sn_dev_valid = TRUE;
-	    si->sn_dev = st.st_dev;
-	    si->sn_ino = st.st_ino;
-	}
-	else
-	    si->sn_dev_valid = FALSE;
-# endif
 	if (ret_sid != NULL)
 	    *ret_sid = current_sctx.sc_sid;
     }

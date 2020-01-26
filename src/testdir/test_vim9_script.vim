@@ -4,7 +4,7 @@ source check.vim
 
 " Check that "lines" inside ":def" results in an "error" message.
 func CheckDefFailure(lines, error)
-  call writefile(['def! Func()'] + a:lines + ['enddef'], 'Xdef')
+  call writefile(['def Func()'] + a:lines + ['enddef'], 'Xdef')
   call assert_fails('so Xdef', a:error, a:lines)
   call delete('Xdef')
 endfunc
@@ -126,10 +126,10 @@ enddef
 
 def Test_return_type_wrong()
   " TODO: why is ! needed for Mac and FreeBSD?
-  CheckScriptFailure(['def! Func(): number', 'return "a"', 'enddef'], 'expected number but got string')
-  CheckScriptFailure(['def! Func(): string', 'return 1', 'enddef'], 'expected string but got number')
-  CheckScriptFailure(['def! Func(): void', 'return "a"', 'enddef'], 'expected void but got string')
-  CheckScriptFailure(['def! Func()', 'return "a"', 'enddef'], 'expected void but got string')
+  CheckScriptFailure(['def Func(): number', 'return "a"', 'enddef'], 'expected number but got string')
+  CheckScriptFailure(['def Func(): string', 'return 1', 'enddef'], 'expected string but got number')
+  CheckScriptFailure(['def Func(): void', 'return "a"', 'enddef'], 'expected void but got string')
+  CheckScriptFailure(['def Func()', 'return "a"', 'enddef'], 'expected void but got string')
 enddef
 
 def Test_try_catch()
