@@ -14,6 +14,7 @@ SRC_ALL =	\
 		ci/if_ver*.vim \
 		src/Make_all.mak \
 		src/README.md \
+		src/README_VIM9.md \
 		src/alloc.h \
 		src/arabic.c \
 		src/arglist.c \
@@ -133,6 +134,10 @@ SRC_ALL =	\
 		src/version.c \
 		src/version.h \
 		src/vim.h \
+		src/vim9.h \
+		src/vim9compile.c \
+		src/vim9execute.c \
+		src/vim9script.c \
 		src/viminfo.c \
 		src/winclip.c \
 		src/window.c \
@@ -275,6 +280,9 @@ SRC_ALL =	\
 		src/proto/usercmd.pro \
 		src/proto/userfunc.pro \
 		src/proto/version.pro \
+		src/proto/vim9compile.pro \
+		src/proto/vim9execute.pro \
+		src/proto/vim9script.pro \
 		src/proto/viminfo.pro \
 		src/proto/winclip.pro \
 		src/proto/window.pro \
