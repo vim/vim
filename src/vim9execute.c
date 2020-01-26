@@ -1095,6 +1095,7 @@ call_def_function(
 	    // Computation with two float arguments
 	    case ISN_OPFLOAT:
 	    case ISN_COMPAREFLOAT:
+#ifdef FEAT_FLOAT
 		{
 		    typval_T	*tv1 = STACK_TV_BOT(-2);
 		    typval_T	*tv2 = STACK_TV_BOT(-1);
@@ -1127,6 +1128,7 @@ call_def_function(
 		    else
 			tv1->vval.v_float = res;
 		}
+#endif
 		break;
 
 	    case ISN_COMPARELIST:
@@ -1618,7 +1620,9 @@ ex_disassemble(exarg_T *eap)
 				   get_var_special_name(iptr->isn_arg.number));
 		break;
 	    case ISN_PUSHF:
+#ifdef FEAT_FLOAT
 		smsg("%4d PUSHF %g", current, iptr->isn_arg.fnumber);
+#endif
 		break;
 	    case ISN_PUSHS:
 		smsg("%4d PUSHS \"%s\"", current, iptr->isn_arg.string);

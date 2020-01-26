@@ -6357,8 +6357,8 @@ ConvertToPyObject(typval_T *tv)
 					    ? "" : (char *)tv->vval.v_string);
 	case VAR_NUMBER:
 	    return PyLong_FromLong((long) tv->vval.v_number);
-#ifdef FEAT_FLOAT
 	case VAR_FLOAT:
+#ifdef FEAT_FLOAT
 	    return PyFloat_FromDouble((double) tv->vval.v_float);
 #endif
 	case VAR_LIST:

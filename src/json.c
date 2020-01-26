@@ -761,9 +761,9 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		    break;
 
 		default:
-		    if (VIM_ISDIGIT(*p) || (*p == '-' && VIM_ISDIGIT(p[1])))
+		    if (VIM_ISDIGIT(*p) || (*p == '-'
+					&& (VIM_ISDIGIT(p[1]) || p[1] == NUL)))
 		    {
-#ifdef FEAT_FLOAT
 			char_u  *sp = p;
 
 			if (*sp == '-')
@@ -782,6 +782,7 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 			    }
 			}
 			sp = skipdigits(sp);
+#ifdef FEAT_FLOAT
 			if (*sp == '.' || *sp == 'e' || *sp == 'E')
 			{
 			    if (cur_item == NULL)
@@ -889,7 +890,8 @@ json_decode_item(js_read_T *reader, typval_T *res, int options)
 		    }
 #endif
 		    // check for truncated name
-		    len = (int)(reader->js_end - (reader->js_buf + reader->js_used));
+		    len = (int)(reader->js_end
+					 - (reader->js_buf + reader->js_used));
 		    if (
 			    (len < 5 && STRNICMP((char *)p, "false", len) == 0)
 #ifdef FEAT_FLOAT

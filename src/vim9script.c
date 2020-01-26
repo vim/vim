@@ -323,6 +323,7 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid)
 		    *arg = cc;
 		    return NULL;
 		}
+		ufunc = NULL;
 	    }
 	    else
 	    {
@@ -355,6 +356,7 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid)
 		    *arg = cc;
 		    return NULL;
 		}
+		sv = NULL;
 	    }
 
 	    imported = new_imported(gap != NULL ? gap

@@ -1217,8 +1217,13 @@ parse_type(char_u **arg, garray_T *type_list)
 	case 'f':
 	    if (len == 5 && STRNCMP(*arg, "float", len) == 0)
 	    {
+#ifdef FEAT_FLOAT
 		*arg += len;
 		return &t_float;
+#else
+		emsg(_("E1055: This Vim is not compiled with float support"));
+		return &t_any;
+#endif
 	    }
 	    if (len == 4 && STRNCMP(*arg, "func", len) == 0)
 	    {
