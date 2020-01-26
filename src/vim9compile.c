@@ -3394,7 +3394,7 @@ theend:
     static char_u *
 compile_import(char_u *arg, cctx_T *cctx)
 {
-    return handle_import(arg, &cctx->ctx_imports);
+    return handle_import(arg, &cctx->ctx_imports, 0);
 }
 
 /*

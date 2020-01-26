@@ -143,8 +143,7 @@ ex_import(exarg_T *eap)
 	emsg(_(e_needs_vim9));
     else
     {
-	char_u *cmd_end = handle_import(eap->arg,
-			&SCRIPT_ITEM(current_sctx.sc_sid).sn_imports);
+	char_u *cmd_end = handle_import(eap->arg, NULL, current_sctx.sc_sid);
 
 	if (cmd_end != NULL)
 	    eap->nextcmd = check_nextcmd(cmd_end);
@@ -152,11 +151,12 @@ ex_import(exarg_T *eap)
 }
 
 /*
- * Handle an ":import" command and add the resulting imported_T to "gap".
+ * Handle an ":import" command and add the resulting imported_T to "gap", when
+ * not NULL, or script "import_sid" sn_imports.
  * Returns a pointer to after the command or NULL in case of failure
  */
     char_u *
-handle_import(char_u *arg_start, garray_T *gap)
+handle_import(char_u *arg_start, garray_T *gap, int import_sid)
 {
     char_u	*arg = arg_start;
     char_u	*cmd_end;
@@ -278,7 +278,8 @@ handle_import(char_u *arg_start, garray_T *gap)
 
     if (*arg_start == '*')
     {
-	imported_T *imported = new_imported(gap);
+	imported_T *imported = new_imported(gap != NULL ? gap
+					: &SCRIPT_ITEM(import_sid).sn_imports);
 
 	if (imported == NULL)
 	    return NULL;
@@ -356,7 +357,8 @@ handle_import(char_u *arg_start, garray_T *gap)
 		}
 	    }
 
-	    imported = new_imported(gap);
+	    imported = new_imported(gap != NULL ? gap
+					: &SCRIPT_ITEM(import_sid).sn_imports);
 	    if (imported == NULL)
 		return NULL;
 
