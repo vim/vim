@@ -492,7 +492,7 @@ call_def_function(
 	    case ISN_LOADSCRIPT:
 		{
 		    scriptitem_T *si =
-				 &SCRIPT_ITEM(iptr->isn_arg.script.script_sid);
+				  SCRIPT_ITEM(iptr->isn_arg.script.script_sid);
 		    svar_T	 *sv;
 
 		    sv = ((svar_T *)si->sn_var_vals.ga_data)
@@ -598,7 +598,7 @@ call_def_function(
 	    // store script-local variable
 	    case ISN_STORESCRIPT:
 		{
-		    scriptitem_T *si = &SCRIPT_ITEM(
+		    scriptitem_T *si = SCRIPT_ITEM(
 					      iptr->isn_arg.script.script_sid);
 		    svar_T	 *sv = ((svar_T *)si->sn_var_vals.ga_data)
 					     + iptr->isn_arg.script.script_idx;
@@ -1551,7 +1551,7 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_LOADSCRIPT:
 		{
 		    scriptitem_T *si =
-				 &SCRIPT_ITEM(iptr->isn_arg.script.script_sid);
+				  SCRIPT_ITEM(iptr->isn_arg.script.script_sid);
 		    svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
 					     + iptr->isn_arg.script.script_idx;
 
@@ -1561,7 +1561,7 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_LOADS:
 		{
-		    scriptitem_T *si = &SCRIPT_ITEM(iptr->isn_arg.loads.ls_sid);
+		    scriptitem_T *si = SCRIPT_ITEM(iptr->isn_arg.loads.ls_sid);
 
 		    smsg("%4d LOADS s:%s from %s", current,
 					    iptr->isn_arg.string, si->sn_name);
@@ -1589,7 +1589,7 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_STORESCRIPT:
 		{
 		    scriptitem_T *si =
-				 &SCRIPT_ITEM(iptr->isn_arg.script.script_sid);
+				  SCRIPT_ITEM(iptr->isn_arg.script.script_sid);
 		    svar_T *sv = ((svar_T *)si->sn_var_vals.ga_data)
 					     + iptr->isn_arg.script.script_idx;
 

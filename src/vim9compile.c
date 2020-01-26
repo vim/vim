@@ -1401,7 +1401,7 @@ get_script_item_idx(int sid, char_u *name, int check_writable)
 {
     hashtab_T	    *ht;
     dictitem_T	    *di;
-    scriptitem_T    *si = &SCRIPT_ITEM(sid);
+    scriptitem_T    *si = SCRIPT_ITEM(sid);
     int		    idx;
 
     // First look the name up in the hashtable.
@@ -1433,7 +1433,7 @@ get_script_item_idx(int sid, char_u *name, int check_writable)
     imported_T *
 find_imported(char_u *name, cctx_T *cctx)
 {
-    scriptitem_T    *si = &SCRIPT_ITEM(current_sctx.sc_sid);
+    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     int		    idx;
 
     if (cctx != NULL)
@@ -1462,7 +1462,7 @@ find_imported(char_u *name, cctx_T *cctx)
     static int
 compile_load_scriptvar(cctx_T *cctx, char_u *name)
 {
-    scriptitem_T    *si = &SCRIPT_ITEM(current_sctx.sc_sid);
+    scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     int		    idx = get_script_item_idx(current_sctx.sc_sid, name, FALSE);
     imported_T	    *import;
 

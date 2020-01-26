@@ -2289,7 +2289,7 @@ get_var_tv(
 	// imported variable from another script
 	if (import != NULL)
 	{
-	    scriptitem_T    *si = &SCRIPT_ITEM(import->imp_sid);
+	    scriptitem_T    *si = SCRIPT_ITEM(import->imp_sid);
 	    svar_T	    *sv = ((svar_T *)si->sn_var_vals.ga_data)
 						    + import->imp_var_vals_idx;
 	    tv = sv->sv_tv;
@@ -2571,7 +2571,7 @@ new_script_vars(scid_T id)
     if (sv == NULL)
 	return;
     init_var_dict(&sv->sv_dict, &sv->sv_var, VAR_SCOPE);
-    SCRIPT_ITEM(id).sn_vars = sv;
+    SCRIPT_ITEM(id)->sn_vars = sv;
 }
 
 /*
@@ -2876,7 +2876,7 @@ set_var_const(
 
 	if (is_script_local && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
 	{
-	    scriptitem_T *si = &SCRIPT_ITEM(current_sctx.sc_sid);
+	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
 
 	    // Store a pointer to the typval_T, so that it can be found by
 	    // index instead of using a hastab lookup.

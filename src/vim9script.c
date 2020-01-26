@@ -32,7 +32,7 @@ in_vim9script(void)
     void
 ex_vim9script(exarg_T *eap)
 {
-    scriptitem_T *si = &SCRIPT_ITEM(current_sctx.sc_sid);
+    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
 
     if (!getline_equal(eap->getline, eap->cookie, getsourceline))
     {
@@ -114,7 +114,7 @@ new_imported(garray_T *gap)
     void
 free_imports(int sid)
 {
-    scriptitem_T    *si = &SCRIPT_ITEM(sid);
+    scriptitem_T    *si = SCRIPT_ITEM(sid);
     int		    idx;
 
     for (idx = 0; idx < si->sn_imports.ga_len; ++idx)
@@ -226,7 +226,7 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid)
     if (*tv.vval.v_string == '.')
     {
 	size_t		len;
-	scriptitem_T	*si = &SCRIPT_ITEM(current_sctx.sc_sid);
+	scriptitem_T	*si = SCRIPT_ITEM(current_sctx.sc_sid);
 	char_u		*tail = gettail(si->sn_name);
 	char_u		*from_name;
 
@@ -279,7 +279,7 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid)
     if (*arg_start == '*')
     {
 	imported_T *imported = new_imported(gap != NULL ? gap
-					: &SCRIPT_ITEM(import_sid).sn_imports);
+					: &SCRIPT_ITEM(import_sid)->sn_imports);
 
 	if (imported == NULL)
 	    return NULL;
@@ -289,7 +289,7 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid)
     }
     else
     {
-	scriptitem_T *script = &SCRIPT_ITEM(sid);
+	scriptitem_T *script = SCRIPT_ITEM(sid);
 
 	arg = arg_start;
 	if (*arg == '{')
@@ -358,7 +358,7 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid)
 	    }
 
 	    imported = new_imported(gap != NULL ? gap
-					: &SCRIPT_ITEM(import_sid).sn_imports);
+				       : &SCRIPT_ITEM(import_sid)->sn_imports);
 	    if (imported == NULL)
 		return NULL;
 

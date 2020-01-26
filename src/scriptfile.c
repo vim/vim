@@ -1124,7 +1124,7 @@ do_source(
 	//   inode number, even though to the user it is the same script.
 	// - If a script is deleted and another script is written, with a
 	//   different name, the inode may be re-used.
-	si = &SCRIPT_ITEM(sid);
+	si = SCRIPT_ITEM(sid);
 	if (si->sn_name != NULL && fnamecmp(si->sn_name, fname_exp) == 0)
 		// Found it!
 		break;
@@ -1294,8 +1294,11 @@ do_source(
 	    goto almosttheend;
 	while (script_items.ga_len < current_sctx.sc_sid)
 	{
+	    si = ALLOC_CLEAR_ONE(scriptitem_T);
+	    if (si == NULL)
+		goto almosttheend;
 	    ++script_items.ga_len;
-	    si = &SCRIPT_ITEM(script_items.ga_len);
+	    SCRIPT_ITEM(script_items.ga_len) = si;
 	    si->sn_name = NULL;
 	    si->sn_version = 1;
 
@@ -1308,7 +1311,7 @@ do_source(
 	    si->sn_prof_on = FALSE;
 # endif
 	}
-	si = &SCRIPT_ITEM(current_sctx.sc_sid);
+	si = SCRIPT_ITEM(current_sctx.sc_sid);
 	si->sn_name = fname_exp;
 	fname_exp = vim_strsave(si->sn_name);  // used for autocmd
 	if (ret_sid != NULL)
@@ -1364,7 +1367,7 @@ do_source(
     if (do_profiling == PROF_YES)
     {
 	// Get "si" again, "script_items" may have been reallocated.
-	si = &SCRIPT_ITEM(current_sctx.sc_sid);
+	si = SCRIPT_ITEM(current_sctx.sc_sid);
 	if (si->sn_prof_on)
 	{
 	    profile_end(&si->sn_pr_start);
@@ -1411,7 +1414,7 @@ do_source(
 #ifdef FEAT_EVAL
 almosttheend:
     // Get "si" again, "script_items" may have been reallocated.
-    si = &SCRIPT_ITEM(current_sctx.sc_sid);
+    si = SCRIPT_ITEM(current_sctx.sc_sid);
     if (si->sn_save_cpo != NULL)
     {
 	free_string_option(p_cpo);
@@ -1456,16 +1459,16 @@ ex_scriptnames(exarg_T *eap)
 	    emsg(_(e_invarg));
 	else
 	{
-	    eap->arg = SCRIPT_ITEM(eap->line2).sn_name;
+	    eap->arg = SCRIPT_ITEM(eap->line2)->sn_name;
 	    do_exedit(eap, NULL);
 	}
 	return;
     }
 
     for (i = 1; i <= script_items.ga_len && !got_int; ++i)
-	if (SCRIPT_ITEM(i).sn_name != NULL)
+	if (SCRIPT_ITEM(i)->sn_name != NULL)
 	{
-	    home_replace(NULL, SCRIPT_ITEM(i).sn_name,
+	    home_replace(NULL, SCRIPT_ITEM(i)->sn_name,
 						    NameBuff, MAXPATHL, TRUE);
 	    smsg("%3d: %s", i, NameBuff);
 	}
@@ -1481,8 +1484,8 @@ scriptnames_slash_adjust(void)
     int i;
 
     for (i = 1; i <= script_items.ga_len; ++i)
-	if (SCRIPT_ITEM(i).sn_name != NULL)
-	    slash_adjust(SCRIPT_ITEM(i).sn_name);
+	if (SCRIPT_ITEM(i)->sn_name != NULL)
+	    slash_adjust(SCRIPT_ITEM(i)->sn_name);
 }
 # endif
 
@@ -1502,7 +1505,7 @@ get_scriptname(scid_T id)
 	return (char_u *)_("environment variable");
     if (id == SID_ERROR)
 	return (char_u *)_("error handler");
-    return SCRIPT_ITEM(id).sn_name;
+    return SCRIPT_ITEM(id)->sn_name;
 }
 
 # if defined(EXITFREE) || defined(PROTO)
@@ -1513,14 +1516,17 @@ free_scriptnames(void)
 
     for (i = script_items.ga_len; i > 0; --i)
     {
-	// the variables themselves are cleared in evalvars_clear()
-	vim_free(SCRIPT_ITEM(i).sn_vars);
+	scriptitem_T *si = SCRIPT_ITEM(i);
 
-	vim_free(SCRIPT_ITEM(i).sn_name);
-	free_string_option(SCRIPT_ITEM(i).sn_save_cpo);
+	// the variables themselves are cleared in evalvars_clear()
+	vim_free(si->sn_vars);
+
+	vim_free(si->sn_name);
+	free_string_option(si->sn_save_cpo);
 #  ifdef FEAT_PROFILE
-	ga_clear(&SCRIPT_ITEM(i).sn_prl_ga);
+	ga_clear(&si->sn_prl_ga);
 #  endif
+	vim_free(si);
     }
     ga_clear(&script_items);
 }
@@ -1832,7 +1838,7 @@ ex_scriptversion(exarg_T *eap UNUSED)
     else
     {
 	current_sctx.sc_version = nr;
-	SCRIPT_ITEM(current_sctx.sc_sid).sn_version = nr;
+	SCRIPT_ITEM(current_sctx.sc_sid)->sn_version = nr;
     }
 #endif
 }

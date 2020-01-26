@@ -692,7 +692,7 @@ get_lval(
 
 	if (current_sctx.sc_version == SCRIPT_VERSION_VIM9 && *p == ':')
 	{
-	    scriptitem_T *si = &SCRIPT_ITEM(current_sctx.sc_sid);
+	    scriptitem_T *si = SCRIPT_ITEM(current_sctx.sc_sid);
 	    char_u	 *tp = skipwhite(p + 1);
 
 	    // parse the type after the name
