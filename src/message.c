@@ -847,6 +847,17 @@ emsg_invreg(int name)
 }
 
 /*
+ * Give an error message which contains %s for "name[len]".
+ */
+    void
+emsg_namelen(char *msg, char_u *name, int len)
+{
+    char_u *copy = vim_strnsave((char_u *)name, len);
+
+    semsg(msg, copy == NULL ? "NULL" : (char *)copy);
+}
+
+/*
  * Like msg(), but truncate to a single line if p_shm contains 't', or when
  * "force" is TRUE.  This truncates in another way as for normal messages.
  * Careful: The string may be changed by msg_may_trunc()!

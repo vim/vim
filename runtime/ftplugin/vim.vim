@@ -84,8 +84,10 @@ if exists("loaded_matchit")
   let b:match_ignorecase = 0
   let b:match_words =
 	\ '\<fu\%[nction]\>:\<retu\%[rn]\>:\<endf\%[unction]\>,' .
+	\ '\<def\>:\<retu\%[rn]\>:\<enddef\>,' .
  	\ '\<\(wh\%[ile]\|for\)\>:\<brea\%[k]\>:\<con\%[tinue]\>:\<end\(w\%[hile]\|fo\%[r]\)\>,' .
 	\ '\<if\>:\<el\%[seif]\>:\<en\%[dif]\>,' .
+	\ '{:},' .
 	\ '\<try\>:\<cat\%[ch]\>:\<fina\%[lly]\>:\<endt\%[ry]\>,' .
 	\ '\<aug\%[roup]\s\+\%(END\>\)\@!\S:\<aug\%[roup]\s\+END\>,'
   " Ignore syntax region commands and settings, any 'en*' would clobber

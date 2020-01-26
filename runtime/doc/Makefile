@@ -149,6 +149,7 @@ DOCS = \
 	version7.txt \
 	version8.txt \
 	vi_diff.txt \
+	vim9.txt \
 	visual.txt \
 	windows.txt \
 	workshop.txt
@@ -289,6 +290,7 @@ HTMLS = \
 	version8.html \
 	vi_diff.html \
 	vimindex.html \
+	vim9.html \
 	visual.html \
 	windows.html \
 	workshop.html

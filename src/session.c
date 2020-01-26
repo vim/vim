@@ -980,7 +980,7 @@ ex_loadview(exarg_T *eap)
     fname = get_view_file(*eap->arg);
     if (fname != NULL)
     {
-	do_source(fname, FALSE, DOSO_NONE);
+	do_source(fname, FALSE, DOSO_NONE, NULL);
 	vim_free(fname);
     }
 }

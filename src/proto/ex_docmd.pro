@@ -7,6 +7,7 @@ void *getline_cookie(char_u *(*fgetline)(int, void *, int, int), void *cookie);
 int parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only);
 int parse_cmd_address(exarg_T *eap, char **errormsg, int silent);
 int checkforcmd(char_u **pp, char *cmd, int len);
+char_u *find_ex_command(exarg_T *eap, int *full, int (*lookup)(char_u *, size_t, cctx_T *), cctx_T *cctx);
 int modifier_len(char_u *cmd);
 int cmd_exists(char_u *name);
 cmdidx_T excmd_get_cmdidx(char_u *cmd, int len);

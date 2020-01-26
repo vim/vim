@@ -1327,6 +1327,7 @@ write_viminfo_varlist(FILE *fp)
 		    case VAR_SPECIAL: s = "XPL"; break;
 
 		    case VAR_UNKNOWN:
+		    case VAR_VOID:
 		    case VAR_FUNC:
 		    case VAR_PARTIAL:
 		    case VAR_JOB:

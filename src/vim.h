@@ -2151,6 +2151,10 @@ typedef enum {
     USEPOPUP_HIDDEN	// use info popup initially hidden
 } use_popup_T;
 
+// Flags for assignment functions.
+#define LET_IS_CONST	1   // ":const"
+#define LET_NO_COMMAND	2   // "var = expr" without ":let" or ":const"
+
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff
 

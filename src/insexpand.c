@@ -576,8 +576,8 @@ ins_compl_add(
     char_u	*str,
     int		len,
     char_u	*fname,
-    char_u	**cptext,	// extra text for popup menu or NULL
-    typval_T	*user_data,	// "user_data" entry or NULL
+    char_u	**cptext,	    // extra text for popup menu or NULL
+    typval_T	*user_data UNUSED,  // "user_data" entry or NULL
     int		cdir,
     int		flags_arg,
     int		adup)		// accept duplicate match

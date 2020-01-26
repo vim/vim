@@ -26,6 +26,7 @@ syn keyword vimCommand contained	abo[veleft] argdo au bel[owright] bp[revious] b
 syn keyword vimCommand contained	addd arge[dit] bN[ext] bf[irst] br[ewind] bufdo c[hange] caddf[ile] cbel[ow] ce[nter] cgetb[uffer] chi[story] cn[ext] colo[rscheme] cons[t] cs d[elete] deletel delm[arks] diffo[ff] dir doaut ea el[se] endt[ry] exu[sage] fin[d] foldc[lose] g h[elp] hi if intro k lN[ext] laddb[uffer] lb[uffer] lcl[ose] lex[pr] lgete[xpr] lla[st] lnew[er] lockv[ar] ls lvimgrepa[dd] mat[ch] mksp[ell] n[ext] noa nu[mber] ownsyntax ped[it] prev[ious] ps[earch] ptn[ext] py3 python3 qa[ll] redr[aw] retu[rn] rubyd[o] sIe sN[ext] sb[uffer] sbp[revious] sci scs sf[ind] sgi si sim[alt] sm[agic] sno[magic] spe[llgood] spellu[ndo] sre[wind] srp startr[eplace] sunme sy t tabc[lose] tabl[ast] tabp[revious] tcd ter[minal] tlm tlunmenu tno[remap] ts[elect] undoj[oin] uns[ilent] vert[ical] viu[sage] w[rite] windo wqa[ll] xmapc[lear] xprop y[ank]
 syn keyword vimCommand contained	al[l] argg[lobal] b[uffer] bl[ast] brea[k] buffers ca caf[ter] cbo[ttom] cex[pr] cgete[xpr] cl[ist] cnew[er] com cope[n] cscope debug deletep delp diffp[atch] dj[ump] dp earlier elsei[f] endw[hile] f[ile] fina[lly] foldd[oopen] go[to] ha[rdcopy] hid[e] ij[ump] is[earch] kee[pmarks] lNf[ile] laddf[ile] lbe[fore] lcs lf[ile] lgr[ep] lli[st] lnf[ile] lol[der] lt[ag] lw[indow] menut[ranslate] mkv[imrc] nb[key] noautocmd o[pen] p[rint] perld[o] pro ptN[ext] ptp[revious] py3do pythonx quita[ll] redraws[tatus] rew[ind] rubyf[ile] sIg sa[rgument] sba[ll] sbr[ewind] scl scscope sfir[st] sgl sic sin sm[ap] snoreme spelld[ump] spellw[rong]
 syn match   vimCommand contained	"\<z[-+^.=]\=\>"
+syn keyword vimCommand contained	def endd[ef] disa[ssemble] vim9[script] imp[ort] exp[ort]
 syn keyword vimStdPlugin contained	Arguments Break Cfilter Clear Continue DiffOrig Evaluate Finish Gdb Lfilter Man N[ext] Over P[rint] Program Run S Source Step Stop Termdebug TermdebugCommand TOhtml Winbar XMLent XMLns
 
 " vimOptions are caught only when contained in a vimSet {{{2
@@ -237,16 +238,17 @@ endif
 " =========
 syn cluster	vimFuncList	contains=vimCommand,vimFunctionError,vimFuncKey,Tag,vimFuncSID
 syn cluster	vimFuncBodyList	contains=vimAbb,vimAddress,vimAugroupKey,vimAutoCmd,vimCmplxRepeat,vimComment,vimContinue,vimCtrlChar,vimEcho,vimEchoHL,vimExecute,vimIsCommand,vimFBVar,vimFunc,vimFunction,vimFuncVar,vimGlobal,vimHighlight,vimIsCommand,vimLet,vimLetHereDoc,vimLineComment,vimMap,vimMark,vimNorm,vimNotation,vimNotFunc,vimNumber,vimOper,vimOperParen,vimRegion,vimRegister,vimSearch,vimSet,vimSpecFile,vimString,vimSubst,vimSynLine,vimUnmap,vimUserCommand
-syn match	vimFunction	"\<fu\%[nction]!\=\s\+\%(<[sS][iI][dD]>\|[sSgGbBwWtTlL]:\)\=\%(\i\|[#.]\|{.\{-1,}}\)*\ze\s*("	contains=@vimFuncList nextgroup=vimFuncBody
+syn match	vimFunction	"\<\(fu\%[nction]\|def\)!\=\s\+\%(<[sS][iI][dD]>\|[sSgGbBwWtTlL]:\)\=\%(\i\|[#.]\|{.\{-1,}}\)*\ze\s*("	contains=@vimFuncList nextgroup=vimFuncBody
 
 if exists("g:vimsyn_folding") && g:vimsyn_folding =~# 'f'
- syn region	vimFuncBody  contained	fold start="\ze\s*("	matchgroup=vimCommand end="\<\(endf\>\|endfu\%[nction]\>\)"		contains=@vimFuncBodyList
+  syn region	vimFuncBody  contained	fold start="\ze\s*("	matchgroup=vimCommand end="\<\(endf\>\|endfu\%[nction]\>\|enddef\>\)"		contains=@vimFuncBodyList
 else
- syn region	vimFuncBody  contained	start="\ze\s*("	matchgroup=vimCommand end="\<\(endf\>\|endfu\%[nction]\>\)"		contains=@vimFuncBodyList
+  syn region	vimFuncBody  contained	start="\ze\s*("	matchgroup=vimCommand end="\<\(endf\>\|endfu\%[nction]\>\|enddef\>\)"		contains=@vimFuncBodyList
 endif
 syn match	vimFuncVar   contained	"a:\(\K\k*\|\d\+\)"
 syn match	vimFuncSID   contained	"\c<sid>\|\<s:"
 syn keyword	vimFuncKey   contained	fu[nction]
+syn keyword	vimFuncKey   contained	def
 syn match	vimFuncBlank contained	"\s\+"
 
 syn keyword	vimPattern   contained	start	skip	end

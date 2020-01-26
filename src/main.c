@@ -482,7 +482,7 @@ vim_main2(void)
 # else
 		(char_u *)"plugin/**/*.vim",
 # endif
-		DIP_ALL | DIP_NOAFTER);
+		DIP_ALL | DIP_NOAFTER, NULL);
 	TIME_MSG("loading plugins");
 	vim_free(rtp_copy);
 
@@ -3169,7 +3169,7 @@ source_startup_scripts(mparm_T *parmp)
      */
     if (parmp->evim_mode)
     {
-	(void)do_source((char_u *)EVIM_FILE, FALSE, DOSO_NONE);
+	(void)do_source((char_u *)EVIM_FILE, FALSE, DOSO_NONE, NULL);
 	TIME_MSG("source evim file");
     }
 
@@ -3180,7 +3180,7 @@ source_startup_scripts(mparm_T *parmp)
     if (parmp->use_vimrc != NULL)
     {
 	if (STRCMP(parmp->use_vimrc, "DEFAULTS") == 0)
-	    do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE);
+	    do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL);
 	else if (STRCMP(parmp->use_vimrc, "NONE") == 0
 				     || STRCMP(parmp->use_vimrc, "NORC") == 0)
 	{
@@ -3191,7 +3191,7 @@ source_startup_scripts(mparm_T *parmp)
 	}
 	else
 	{
-	    if (do_source(parmp->use_vimrc, FALSE, DOSO_NONE) != OK)
+	    if (do_source(parmp->use_vimrc, FALSE, DOSO_NONE, NULL) != OK)
 		semsg(_("E282: Cannot read from \"%s\""), parmp->use_vimrc);
 	}
     }
@@ -3209,10 +3209,11 @@ source_startup_scripts(mparm_T *parmp)
 	 * Get system wide defaults, if the file name is defined.
 	 */
 #ifdef SYS_VIMRC_FILE
-	(void)do_source((char_u *)SYS_VIMRC_FILE, FALSE, DOSO_NONE);
+	(void)do_source((char_u *)SYS_VIMRC_FILE, FALSE, DOSO_NONE, NULL);
 #endif
 #ifdef MACOS_X
-	(void)do_source((char_u *)"$VIMRUNTIME/macmap.vim", FALSE, DOSO_NONE);
+	(void)do_source((char_u *)"$VIMRUNTIME/macmap.vim", FALSE,
+							      DOSO_NONE, NULL);
 #endif
 
 	/*
@@ -3227,28 +3228,31 @@ source_startup_scripts(mparm_T *parmp)
 	 */
 	if (process_env((char_u *)"VIMINIT", TRUE) != OK)
 	{
-	    if (do_source((char_u *)USR_VIMRC_FILE, TRUE, DOSO_VIMRC) == FAIL
+	    if (do_source((char_u *)USR_VIMRC_FILE, TRUE,
+						      DOSO_VIMRC, NULL) == FAIL
 #ifdef USR_VIMRC_FILE2
 		&& do_source((char_u *)USR_VIMRC_FILE2, TRUE,
-							   DOSO_VIMRC) == FAIL
+						      DOSO_VIMRC, NULL) == FAIL
 #endif
 #ifdef USR_VIMRC_FILE3
 		&& do_source((char_u *)USR_VIMRC_FILE3, TRUE,
-							   DOSO_VIMRC) == FAIL
+						      DOSO_VIMRC, NULL) == FAIL
 #endif
 #ifdef USR_VIMRC_FILE4
 		&& do_source((char_u *)USR_VIMRC_FILE4, TRUE,
-							   DOSO_VIMRC) == FAIL
+						      DOSO_VIMRC, NULL) == FAIL
 #endif
 		&& process_env((char_u *)"EXINIT", FALSE) == FAIL
-		&& do_source((char_u *)USR_EXRC_FILE, FALSE, DOSO_NONE) == FAIL
+		&& do_source((char_u *)USR_EXRC_FILE, FALSE,
+						       DOSO_NONE, NULL) == FAIL
 #ifdef USR_EXRC_FILE2
-		&& do_source((char_u *)USR_EXRC_FILE2, FALSE, DOSO_NONE) == FAIL
+		&& do_source((char_u *)USR_EXRC_FILE2, FALSE,
+						       DOSO_NONE, NULL) == FAIL
 #endif
 		&& !has_dash_c_arg)
 	    {
 		// When no .vimrc file was found: source defaults.vim.
-		do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE);
+		do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL);
 	    }
 	}
 
@@ -3285,7 +3289,7 @@ source_startup_scripts(mparm_T *parmp)
 				(char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 				)
-		i = do_source((char_u *)VIMRC_FILE, TRUE, DOSO_VIMRC);
+		i = do_source((char_u *)VIMRC_FILE, TRUE, DOSO_VIMRC, NULL);
 
 	    if (i == FAIL)
 	    {
@@ -3303,7 +3307,8 @@ source_startup_scripts(mparm_T *parmp)
 				(char_u *)EXRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 				)
-		    (void)do_source((char_u *)EXRC_FILE, FALSE, DOSO_NONE);
+		    (void)do_source((char_u *)EXRC_FILE, FALSE,
+							      DOSO_NONE, NULL);
 	    }
 	}
 	if (secure == 2)
@@ -3334,7 +3339,7 @@ main_start_gui(void)
 #endif  // NO_VIM_MAIN
 
 /*
- * Get an environment variable, and execute it as Ex commands.
+ * Get an environment variable and execute it as Ex commands.
  * Returns FAIL if the environment variable was not executed, OK otherwise.
  */
     int

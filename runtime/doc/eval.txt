@@ -12,6 +12,10 @@ Note: Expression evaluation can be disabled at compile time.  If this has been
 done, the features in this document are not available.  See |+eval| and
 |no-eval-feature|.
 
+This file is about the backwards compatible Vim script.  For Vim9 script,
+which executes much faster, supports type checking and much more, see
+|vim9.txt|.
+
 1.  Variables			|variables|
     1.1 Variable types
     1.2 Function references		|Funcref|
@@ -2512,8 +2516,8 @@ haslocaldir([{winnr} [, {tabnr}]])
 					or |:tcd|
 hasmapto({what} [, {mode} [, {abbr}]])
 				Number	|TRUE| if mapping to {what} exists
-histadd({history}, {item})	String	add an item to a history
-histdel({history} [, {item}])	String	remove an item from a history
+histadd({history}, {item})	Number	add an item to a history
+histdel({history} [, {item}])	Number	remove an item from a history
 histget({history} [, {index}])	String	get the item {index} from a history
 histnr({history})		Number	highest index of a history
 hlexists({name})		Number	|TRUE| if highlight group {name} exists
@@ -10893,6 +10897,9 @@ Don't forget that "^" will only match at the first character of the String and
 New functions can be defined.  These can be called just like builtin
 functions.  The function executes a sequence of Ex commands.  Normal mode
 commands can be executed with the |:normal| command.
+
+This section is about the legacy functions. For the Vim9 functions, which
+execute much faster, support type checking and more, see |vim9.txt|.
 
 The function name must start with an uppercase letter, to avoid confusion with
 builtin functions.  To prevent from using the same name in different scripts
