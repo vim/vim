@@ -139,8 +139,8 @@ script:
   - |
     if [[ "${BUILD}" = "yes" ]]; then
       "${SRCDIR}"/vim --version
-      "${SRCDIR}"/vim --clean --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
-      "${SRCDIR}"/vim --clean --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
+      "${SRCDIR}"/vim -u NONE --not-a-term -esNX -V1 -S ci/if_ver-1.vim -c quit
+      "${SRCDIR}"/vim -u NONE --not-a-term -esNX -V1 -S ci/if_ver-2.vim -c quit
     fi
   - echo -e "\\033[33;1mTesting Vim\\033[0m" && echo -en "travis_fold:start:test\\r\\033[0K"
   - do_test make ${SHADOWOPT} ${TEST} && FOLD_MARKER=travis_fold
