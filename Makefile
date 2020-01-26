@@ -153,7 +153,7 @@ MINOR = 2
 #   > msvc2015.bat
 # - Build the console binary:
 #   > nmake -f Make_mvc.mak
-# - Run the tests and check the ouput:
+# - Run the tests and check the output:
 #   > nmake -f Make_mvc.mak testclean
 #   > nmake -f Make_mvc.mak test
 # - Rename (using ../tools/rename.bat):

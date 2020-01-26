@@ -80,7 +80,7 @@ func Test_digraphs()
   call Put_Dig(".e")
   call Put_Dig("a.") " not defined
   call assert_equal(['ḃ', 'ė', '.'], getline(line('.')-2,line('.')))
-  " Diaresis
+  " Diaeresis
   call Put_Dig("a:")
   call Put_Dig(":u")
   call Put_Dig("b:") " not defined
@@ -285,7 +285,7 @@ func Test_digraphs_option()
   call Put_Dig_BS(".","e")
   call Put_Dig_BS("a",".") " not defined
   call assert_equal(['ḃ', 'ė', '.'], getline(line('.')-2,line('.')))
-  " Diaresis
+  " Diaeresis
   call Put_Dig_BS("a",":")
   call Put_Dig_BS(":","u")
   call Put_Dig_BS("b",":") " not defined

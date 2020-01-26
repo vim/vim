@@ -198,7 +198,7 @@ from CVS mirror ftp://ftp.polarhome.com/pub/cvs/SOURCE/
      more information can be found in os_vms_fix.com file itself.
 
      NOTE: even if os_vms_fix.com will fix all pre-processor directives it will
-     leave singe (long) line directives. You have to fix them manually.
+     leave single (long) line directives. You have to fix them manually.
      Known problematic files are option.h and option.c
 
 4.2. After the conversion you can continue building as it has been described
@@ -319,7 +319,7 @@ perl_env :
 
      Build it as normally.
 
-     Used sharable images are:
+     Used shareable images are:
 	gtk_root:[glib]libglib.exe /share,-
 	gtk_root:[glib.gmodule]libgmodule.exe /share,-
 	gtk_root:[gtk.gdk]libgdk.exe /share,-

@@ -1931,7 +1931,7 @@ get_x11_thing(
 	 * keep traversing up the tree until a window with a title/icon is
 	 * found.
 	 */
-	// Previously this was only done for xterm and alikes.  I don't see a
+	// Previously this was only done for xterm and alike.  I don't see a
 	// reason why it would fail for other terminal emulators.
 	// if (term_is_xterm)
 	{

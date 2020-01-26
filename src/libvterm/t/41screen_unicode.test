@@ -40,7 +40,7 @@ PUSH "e\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\
 PUSH  "\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81\xCC\x81"
   ?screen_cell 0,0 = {0x65,0x301,0x301,0x301,0x301,0x301} width=1 attrs={} fg=rgb(240,240,240) bg=rgb(0,0,0)
 
-!Outputing CJK doublewidth in 80th column should wraparound to next line and not crash"
+!Outputting CJK doublewidth in 80th column should wraparound to next line and not crash"
 RESET
 PUSH "\e[80G\xEF\xBC\x90"
   ?screen_cell 0,79 = {} width=1 attrs={} fg=rgb(240,240,240) bg=rgb(0,0,0)

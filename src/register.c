@@ -590,7 +590,7 @@ do_execreg(
 	if (y_current->y_array == NULL)
 	    return FAIL;
 
-	// Disallow remaping for ":@r".
+	// Disallow remapping for ":@r".
 	remap = colon ? REMAP_NONE : REMAP_YES;
 
 	// Insert lines into typeahead buffer, from last one to first one.

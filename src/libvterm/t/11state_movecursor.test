@@ -112,7 +112,7 @@ PUSH "\e[2F"
 PUSH "\e[0F"
   ?cursor = 0,0
 
-!Cursor Horizonal Absolute
+!Cursor Horizontal Absolute
 PUSH "\n"
   ?cursor = 1,0
 PUSH "\e[20G"

@@ -1206,7 +1206,7 @@ gui_mch_init(void)
 
     /*
      * Now that the text area widget has been created, set up the colours,
-     * which wil call PtSetResource from gui_mch_new_colors
+     * which will call PtSetResource from gui_mch_new_colors
      */
 
     /*

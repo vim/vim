@@ -2629,7 +2629,7 @@ func Test_cwindow_jump()
   call assert_equal('quickfix', getwinvar(1, '&buftype'))
   call assert_equal('quickfix', getwinvar(3, '&buftype'))
 
-  " Jumping to a file from the location list window should find a usuable
+  " Jumping to a file from the location list window should find a usable
   " window by wrapping around the window list.
   enew | only
   call setloclist(0, [], 'f')

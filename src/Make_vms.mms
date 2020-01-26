@@ -281,7 +281,7 @@ ALL_CFLAGS = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
  $(TCL_INC)$(XDIFF_INC)$(XPM_INC))
 
 # CFLAGS displayed in :ver information
-# It is specially formated for correct display of unix like includes
+# It is specially formatted for correct display of unix like includes
 # as $(GUI_INC) - replaced with $(GUI_INC_VER)
 # Otherwise should not be any other difference.
 ALL_CFLAGS_VER = /def=($(MODEL_DEF)$(DEFS)$(DEBUG_DEF)$(PERL_DEF)$(PYTHON_DEF) -
