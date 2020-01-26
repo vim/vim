@@ -175,7 +175,7 @@ func s:CompleteDone_CheckCompletedItemNone()
   let s:called_completedone = 1
 endfunc
 
-func s:CompleteDone_CheckCompletedItemDict()
+func s:CompleteDone_CheckCompletedItemDict(pre)
   call assert_equal( 'aword',          v:completed_item[ 'word' ] )
   call assert_equal( 'wrd',            v:completed_item[ 'abbr' ] )
   call assert_equal( 'extra text',     v:completed_item[ 'menu' ] )
@@ -183,7 +183,9 @@ func s:CompleteDone_CheckCompletedItemDict()
   call assert_equal( 'W',              v:completed_item[ 'kind' ] )
   call assert_equal( 'test',           v:completed_item[ 'user_data' ] )
 
-  call assert_equal('function', complete_info().mode)
+  if a:pre
+    call assert_equal('function', complete_info().mode)
+  endif
 
   let s:called_completedone = 1
 endfunc
@@ -205,7 +207,8 @@ func Test_CompleteDoneNone()
 endfunc
 
 func Test_CompleteDoneDict()
-  au CompleteDone * :call <SID>CompleteDone_CheckCompletedItemDict()
+  au CompleteDonePre * :call <SID>CompleteDone_CheckCompletedItemDict(1)
+  au CompleteDone * :call <SID>CompleteDone_CheckCompletedItemDict(0)
 
   set completefunc=<SID>CompleteDone_CompleteFuncDict
   execute "normal a\<C-X>\<C-U>\<C-Y>"
