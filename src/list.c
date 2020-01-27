@@ -1992,6 +1992,7 @@ f_count(typval_T *argvars, typval_T *rettv)
 
 	if ((l = argvars[0].vval.v_list) != NULL)
 	{
+	    range_list_materialize(l);
 	    li = l->lv_first;
 	    if (argvars[2].v_type != VAR_UNKNOWN)
 	    {
@@ -2256,6 +2257,16 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 	    && !var_check_lock(l->lv_lock,
 				    (char_u *)N_("reverse() argument"), TRUE))
     {
+	if (l->lv_first == &range_list_item)
+	{
+	    varnumber_T new_start = l->lv_start
+					      + (l->lv_len - 1) * l->lv_stride;
+	    l->lv_end = new_start - (l->lv_end - l->lv_start);
+	    l->lv_start = new_start;
+	    l->lv_stride = -l->lv_stride;
+	    rettv_list_set(rettv, l);
+	    return;
+	}
 	li = l->lv_last;
 	l->lv_first = l->lv_last = NULL;
 	l->lv_len = 0;
