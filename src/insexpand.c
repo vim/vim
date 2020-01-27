@@ -2330,6 +2330,7 @@ ins_compl_add_list(list_T *list)
     int		dir = compl_direction;
 
     // Go through the List with matches and add each of them.
+    range_list_materialize(list);
     for (li = list->lv_first; li != NULL; li = li->li_next)
     {
 	if (ins_compl_add_tv(&li->li_tv, dir) == OK)
@@ -2511,6 +2512,7 @@ get_complete_info(list_T *what_list, dict_T *retdict)
     else
     {
 	what_flag = 0;
+	range_list_materialize(what_list);
 	for (item = what_list->lv_first; item != NULL; item = item->li_next)
 	{
 	    char_u *what = tv_get_string(&item->li_tv);

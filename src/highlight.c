@@ -3739,6 +3739,7 @@ match_add(
 	listitem_T	*li;
 	int		i;
 
+	range_list_materialize(pos_list);
 	for (i = 0, li = pos_list->lv_first; li != NULL && i < MAXPOSMATCH;
 							i++, li = li->li_next)
 	{

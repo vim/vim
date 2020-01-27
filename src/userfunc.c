@@ -1600,13 +1600,14 @@ func_call(
     dict_T	*selfdict,
     typval_T	*rettv)
 {
+    list_T	*l = args->vval.v_list;
     listitem_T	*item;
     typval_T	argv[MAX_FUNC_ARGS + 1];
     int		argc = 0;
     int		r = 0;
 
-    for (item = args->vval.v_list->lv_first; item != NULL;
-							 item = item->li_next)
+    range_list_materialize(l);
+    for (item = l->lv_first; item != NULL; item = item->li_next)
     {
 	if (argc == MAX_FUNC_ARGS - (partial == NULL ? 0 : partial->pt_argc))
 	{

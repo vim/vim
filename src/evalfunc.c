@@ -1856,7 +1856,7 @@ f_empty(typval_T *argvars, typval_T *rettv)
 #endif
 	case VAR_LIST:
 	    n = argvars[0].vval.v_list == NULL
-				  || argvars[0].vval.v_list->lv_first == NULL;
+					|| argvars[0].vval.v_list->lv_len == 0;
 	    break;
 	case VAR_DICT:
 	    n = argvars[0].vval.v_dict == NULL
@@ -2064,7 +2064,7 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
     if (argvars[arg_off].v_type == VAR_LIST)
     {
 	list = argvars[arg_off].vval.v_list;
-	if (list == NULL || list->lv_first == NULL)
+	if (list == NULL || list->lv_len == 0)
 	    // empty list, no commands, empty output
 	    return;
 	++list->lv_refcount;
@@ -2114,8 +2114,10 @@ execute_common(typval_T *argvars, typval_T *rettv, int arg_off)
 	do_cmdline_cmd(cmd);
     else
     {
-	listitem_T	*item = list->lv_first;
+	listitem_T	*item;
 
+	range_list_materialize(list);
+	item = list->lv_first;
 	do_cmdline(NULL, get_list_line, (void *)&item,
 		      DOCMD_NOWAIT|DOCMD_VERBOSE|DOCMD_REPEAT|DOCMD_KEYTYPED);
 	--list->lv_refcount;
@@ -2643,9 +2645,12 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		    for (i = 0; i < arg_len; i++)
 			copy_tv(&arg_pt->pt_argv[i], &pt->pt_argv[i]);
 		    if (lv_len > 0)
+		    {
+			range_list_materialize(list);
 			for (li = list->lv_first; li != NULL;
 							 li = li->li_next)
 			    copy_tv(&li->li_tv, &pt->pt_argv[i++]);
+		    }
 		}
 
 		// For "function(dict.func, [], dict)" and "func" is a partial
@@ -4058,6 +4063,7 @@ f_index(typval_T *argvars, typval_T *rettv)
     l = argvars[0].vval.v_list;
     if (l != NULL)
     {
+	range_list_materialize(l);
 	item = l->lv_first;
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{
@@ -4139,6 +4145,7 @@ f_inputdialog(typval_T *argvars, typval_T *rettv)
     static void
 f_inputlist(typval_T *argvars, typval_T *rettv)
 {
+    list_T	*l;
     listitem_T	*li;
     int		selected;
     int		mouse_used;
@@ -4161,7 +4168,9 @@ f_inputlist(typval_T *argvars, typval_T *rettv)
     msg_scroll = TRUE;
     msg_clr_eos();
 
-    for (li = argvars[0].vval.v_list->lv_first; li != NULL; li = li->li_next)
+    l = argvars[0].vval.v_list;
+    range_list_materialize(l);
+    for (li = l->lv_first; li != NULL; li = li->li_next)
     {
 	msg_puts((char *)tv_get_string(&li->li_tv));
 	msg_putchar('\n');
@@ -4644,6 +4653,7 @@ find_some_match(typval_T *argvars, typval_T *rettv, matchtype_T type)
     {
 	if ((l = argvars[0].vval.v_list) == NULL)
 	    goto theend;
+	range_list_materialize(l);
 	li = l->lv_first;
     }
     else
@@ -4873,6 +4883,7 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
 	l = argvars[0].vval.v_list;
 	if (l != NULL)
 	{
+	    range_list_materialize(l);
 	    li = l->lv_first;
 	    if (li != NULL)
 	    {
@@ -5322,7 +5333,7 @@ f_range(typval_T *argvars, typval_T *rettv)
 	list->lv_start = start;
 	list->lv_end = end;
 	list->lv_stride = stride;
-	list->lv_len = (end - start + 1) / stride;
+	list->lv_len = (end - start) / stride + 1;
     }
 }
 
@@ -6790,22 +6801,25 @@ f_setreg(typval_T *argvars, typval_T *rettv)
 	allocval = lstval + len + 2;
 	curallocval = allocval;
 
-	for (li = ll == NULL ? NULL : ll->lv_first; li != NULL;
-							     li = li->li_next)
+	if (ll != NULL)
 	{
-	    strval = tv_get_string_buf_chk(&li->li_tv, buf);
-	    if (strval == NULL)
-		goto free_lstval;
-	    if (strval == buf)
+	    range_list_materialize(ll);
+	    for (li = ll->lv_first; li != NULL; li = li->li_next)
 	    {
-		// Need to make a copy, next tv_get_string_buf_chk() will
-		// overwrite the string.
-		strval = vim_strsave(buf);
+		strval = tv_get_string_buf_chk(&li->li_tv, buf);
 		if (strval == NULL)
 		    goto free_lstval;
-		*curallocval++ = strval;
+		if (strval == buf)
+		{
+		    // Need to make a copy, next tv_get_string_buf_chk() will
+		    // overwrite the string.
+		    strval = vim_strsave(buf);
+		    if (strval == NULL)
+			goto free_lstval;
+		    *curallocval++ = strval;
+		}
+		*curval++ = strval;
 	    }
-	    *curval++ = strval;
 	}
 	*curval++ = NULL;
 

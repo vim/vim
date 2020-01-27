@@ -843,6 +843,7 @@ ex_let_vars(
 	return FAIL;
     }
 
+    range_list_materialize(l);
     item = l->lv_first;
     while (*arg != ']')
     {
@@ -1699,7 +1700,7 @@ item_lock(typval_T *tv, int deep, int lock)
 		    l->lv_lock |= VAR_LOCKED;
 		else
 		    l->lv_lock &= ~VAR_LOCKED;
-		if (deep < 0 || deep > 1)
+		if ((deep < 0 || deep > 1) && l->lv_first != &range_list_item)
 		    // recursive: lock/unlock the items the List contains
 		    for (li = l->lv_first; li != NULL; li = li->li_next)
 			item_lock(&li->li_tv, deep - 1, lock);

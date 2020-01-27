@@ -4205,7 +4205,7 @@ set_ref_in_list_items(list_T *l, int copyID, ht_stack_T **ht_stack)
     cur_l = l;
     for (;;)
     {
-	if (!abort)
+	if (!abort && cur_l->lv_first != &range_list_item)
 	    // Mark each item in the list.  If the item contains a hashtab
 	    // it is added to ht_stack, if it contains a list it is added to
 	    // list_stack.

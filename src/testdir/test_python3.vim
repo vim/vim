@@ -189,7 +189,7 @@ func Test_unicode()
 endfunc
 
 " Test range objects, see :help python-range
-func Test_range()
+func Test_python3_range()
   new
   py3 b = vim.current.buffer
 

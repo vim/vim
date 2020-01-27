@@ -5123,6 +5123,7 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		    return FAIL;
 		}
 
+		range_list_materialize(item->vval.v_list);
 		li = item->vval.v_list->lv_first;
 		for (; li != NULL && n < 16; li = li->li_next, n++)
 		{
@@ -5529,6 +5530,7 @@ win32_build_cmd(list_T *l, garray_T *gap)
     listitem_T  *li;
     char_u	*s;
 
+    range_list_materialize(l);
     for (li = l->lv_first; li != NULL; li = li->li_next)
     {
 	s = tv_get_string_chk(&li->li_tv);
