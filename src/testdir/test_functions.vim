@@ -1147,7 +1147,9 @@ func Test_balloon_show()
   if has('balloon_eval')
     " This won't do anything but must not crash either.
     call balloon_show('hi!')
-    call balloon_show(range(3))
+    if !has('gui_running')
+      call balloon_show(range(3))
+    endif
   endif
 endfunc
 
