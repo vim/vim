@@ -2917,7 +2917,8 @@ compile_expr1(char_u **arg,  cctx_T *cctx)
 
 	// evaluate the second expression; any type is accepted
 	*arg = skipwhite(p + 1);
-	compile_expr1(arg, cctx);
+	if (compile_expr1(arg, cctx) == FAIL)
+	    return FAIL;
 
 	// remember the type and drop it
 	--stack->ga_len;
@@ -2942,7 +2943,8 @@ compile_expr1(char_u **arg,  cctx_T *cctx)
 
 	// evaluate the third expression
 	*arg = skipwhite(p + 1);
-	compile_expr1(arg, cctx);
+	if (compile_expr1(arg, cctx) == FAIL)
+	    return FAIL;
 
 	// If the types differ, the result has a more generic type.
 	type2 = ((type_T **)stack->ga_data)[stack->ga_len - 1];
@@ -3265,6 +3267,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	if (*op != '=')
 	{
 	    if (option)
+		// TODO: check the option exists
 		generate_LOAD(cctx, ISN_LOADOPT, 0, name + 1, type);
 	    else if (global)
 		generate_LOAD(cctx, ISN_LOADG, 0, name + 2, type);
