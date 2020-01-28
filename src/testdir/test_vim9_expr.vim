@@ -644,6 +644,8 @@ def Test_expr7_option()
   set ts=8
   set grepprg=some\ text
   assert_equal('some text', &grepprg)
+  &grepprg = test_null_string()
+  assert_equal('', &grepprg)
   set grepprg&
 enddef
 

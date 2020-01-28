@@ -625,7 +625,11 @@ call_def_function(
 		    --ectx.ec_stack.ga_len;
 		    tv = STACK_TV_BOT(0);
 		    if (tv->v_type == VAR_STRING)
+		    {
 			s = tv->vval.v_string;
+			if (s == NULL)
+			    s = (char_u *)"";
+		    }
 		    else if (tv->v_type == VAR_NUMBER)
 			n = tv->vval.v_number;
 		    else
