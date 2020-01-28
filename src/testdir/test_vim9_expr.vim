@@ -687,6 +687,8 @@ func Test_expr7_fails()
 
   call CheckDefFailure("let x = @", "E1002:")
   call CheckDefFailure("let x = @<", "E354:")
+
+  call CheckDefFailure("let x = &notexist", "E113:")
 endfunc
 
 let g:Funcrefs = [function('add')]

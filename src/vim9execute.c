@@ -556,7 +556,8 @@ call_def_function(
 
 		    if (ga_grow(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
-		    get_option_tv(&name, &optval, TRUE);
+		    if (get_option_tv(&name, &optval, TRUE) == FAIL)
+			goto failed;
 		    *STACK_TV_BOT(0) = optval;
 		    ++ectx.ec_stack.ga_len;
 		}
