@@ -851,6 +851,11 @@ call_def_function(
 	    // return from a :def function call
 	    case ISN_RETURN:
 		{
+		    garray_T	*trystack = &ectx.ec_trystack;
+
+		    if (trystack->ga_len > 0)
+			trycmd = ((trycmd_T *)trystack->ga_data)
+							+ trystack->ga_len - 1;
 		    if (trycmd != NULL && trycmd->tcd_frame == ectx.ec_frame
 			    && trycmd->tcd_finally_idx != 0)
 		    {
