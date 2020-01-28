@@ -4075,7 +4075,7 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 	    emsg(_(e_no_endtry));
 	else if (scope->se_type == WHILE_SCOPE)
 	    emsg(_(e_endwhile));
-	if (scope->se_type == FOR_SCOPE)
+	else if (scope->se_type == FOR_SCOPE)
 	    emsg(_(e_endfor));
 	else
 	    emsg(_(e_endif));
