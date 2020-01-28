@@ -358,14 +358,13 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid)
 		}
 		sv = NULL;
 	    }
+	    *arg = cc;
+	    arg = skipwhite(arg);
 
 	    imported = new_imported(gap != NULL ? gap
 				       : &SCRIPT_ITEM(import_sid)->sn_imports);
 	    if (imported == NULL)
 		return NULL;
-
-	    *arg = cc;
-	    arg = skipwhite(arg);
 
 	    // TODO: check for "as" following
 	    // imported->imp_name = vim_strnsave(as_ptr, as_len);
