@@ -640,3 +640,24 @@ func Test_visualbell()
   set novisualbell
   set belloff=all
 endfunc
+
+" Test for the 'write' option
+func Test_write()
+  new
+  call setline(1, ['L1'])
+  set nowrite
+  call assert_fails('write Xfile', 'E142:')
+  set write
+  close!
+endfunc
+
+" Test for 'buftype' option
+func Test_buftype()
+  new
+  call setline(1, ['L1'])
+  set buftype=nowrite
+  call assert_fails('write', 'E382:')
+  close!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

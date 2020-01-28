@@ -44,3 +44,45 @@ func Test_buffers_lastused()
   bwipeout bufb
   bwipeout bufc
 endfunc
+
+" Test for the :copy command
+func Test_copy()
+  new
+
+  call setline(1, ['L1', 'L2', 'L3', 'L4'])
+  " copy lines in a range to inside the range
+  1,3copy 2
+  call assert_equal(['L1', 'L2', 'L1', 'L2', 'L3', 'L3', 'L4'], getline(1, 7))
+
+  close!
+endfunc
+
+" Test for the :file command
+func Test_file_cmd()
+  call assert_fails('3file', 'E474:')
+  call assert_fails('0,0file', 'E474:')
+  call assert_fails('0file abc', 'E474:')
+endfunc
+
+" Test for the :drop command
+func Test_drop_cmd()
+  call writefile(['L1', 'L2'], 'Xfile')
+  enew | only
+  drop Xfile
+  call assert_equal('L2', getline(2))
+  " Test for switching to an existing window
+  below new
+  drop Xfile
+  call assert_equal(1, winnr())
+  " Test for splitting the current window
+  enew | only
+  set modified
+  drop Xfile
+  call assert_equal(2, winnr('$'))
+  " Check for setting the argument list
+  call assert_equal(['Xfile'], argv())
+  enew | only!
+  call delete('Xfile')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
