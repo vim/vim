@@ -570,7 +570,12 @@ call_def_function(
 
 		    if (ga_grow(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
-		    get_env_tv(&name, &optval, TRUE);
+		    if (get_env_tv(&name, &optval, TRUE) == FAIL)
+		    {
+			semsg(_("E1060: Invalid environment variable name: %s"),
+							 iptr->isn_arg.string);
+			goto failed;
+		    }
 		    *STACK_TV_BOT(0) = optval;
 		    ++ectx.ec_stack.ga_len;
 		}
