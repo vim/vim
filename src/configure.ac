@@ -2195,7 +2195,7 @@ else
   fi
 
   dnl On my HPUX system the X include dir is found, but the lib dir not.
-  dnl This is a desparate try to fix this.
+  dnl This is a desperate try to fix this.
 
   if test -d "$x_includes" && test ! -d "$x_libraries"; then
     x_libraries=`echo "$x_includes" | sed s/include/lib/`
