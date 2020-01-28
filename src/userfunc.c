@@ -2188,7 +2188,7 @@ trans_function_name(
     name = alloc(len + lead + extra + 1);
     if (name != NULL)
     {
-	if (lead > 0 || vim9script)
+	if (!skip && (lead > 0 || vim9script))
 	{
 	    name[0] = K_SPECIAL;
 	    name[1] = KS_EXTRA;
