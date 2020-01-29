@@ -424,6 +424,14 @@ func Test_format_align()
 	      \ ], getline(1, '$'))
   enew!
 
+  " align text with 'wrapmargin'
+  call setline(1, ['Vim'])
+  set textwidth=0
+  set wrapmargin=60
+  right
+  call assert_equal("\t\t Vim", getline(1))
+  set wrapmargin&
+
   set tw&
 endfunc
 

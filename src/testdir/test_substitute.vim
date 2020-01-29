@@ -218,6 +218,8 @@ func Test_substitute_errors()
   call assert_fails('s/FOO/bar/', 'E486:')
   call assert_fails('s/foo/bar/@', 'E488:')
   call assert_fails('s/\(/bar/', 'E476:')
+  call assert_fails('s afooabara', 'E146:')
+  call assert_fails('s\\a', 'E10:')
 
   setl nomodifiable
   call assert_fails('s/foo/bar/', 'E21:')
@@ -745,3 +747,5 @@ func Test_sub_beyond_end()
   call assert_equal('#', getline(1))
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
