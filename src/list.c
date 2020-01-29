@@ -1782,6 +1782,10 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 
 	if (argvars[0].v_type == VAR_DICT)
 	{
+	    int	    prev_lock = d->dv_lock;
+
+	    if (map && d->dv_lock == 0)
+		d->dv_lock = VAR_LOCKED;
 	    ht = &d->dv_hashtab;
 	    hash_lock(ht);
 	    todo = (int)ht->ht_used;
@@ -1813,6 +1817,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 		}
 	    }
 	    hash_unlock(ht);
+	    d->dv_lock = prev_lock;
 	}
 	else if (argvars[0].v_type == VAR_BLOB)
 	{
@@ -1855,10 +1860,14 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 	}
 	else // argvars[0].v_type == VAR_LIST
 	{
+	    int prev_lock = l->lv_lock;
+
 	    // set_vim_var_nr() doesn't set the type
 	    set_vim_var_type(VV_KEY, VAR_NUMBER);
 
 	    range_list_materialize(l);
+	    if (map && l->lv_lock == 0)
+		l->lv_lock = VAR_LOCKED;
 	    for (li = l->lv_first; li != NULL; li = nli)
 	    {
 		if (map && var_check_lock(li->li_tv.v_lock, arg_errmsg, TRUE))
@@ -1872,6 +1881,7 @@ filter_map(typval_T *argvars, typval_T *rettv, int map)
 		    listitem_remove(l, li);
 		++idx;
 	    }
+	    l->lv_lock = prev_lock;
 	}
 
 	restore_vimvar(VV_KEY, &save_key);
