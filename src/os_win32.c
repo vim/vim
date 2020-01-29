@@ -303,6 +303,8 @@ is_ambiwidth_event(
 		&& ir->Event.KeyEvent.wRepeatCount == 1
 		&& ir->Event.KeyEvent.wVirtualKeyCode == 0x12
 		&& ir->Event.KeyEvent.wVirtualScanCode == 0x38
+		&& ir->Event.KeyEvent.UChar == 0
+		&& ir->Event.KeyEvent.AChar == 0
 		&& ir->Event.KeyEvent.dwControlKeyState == 2;
 }
 
