@@ -4166,8 +4166,8 @@ ch_expr_common(typval_T *argvars, typval_T *rettv, int eval)
 
 	    // Move the item from the list and then change the type to
 	    // avoid the value being freed.
-	    *rettv = list->lv_last->li_tv;
-	    list->lv_last->li_tv.v_type = VAR_NUMBER;
+	    *rettv = list->lv_u.mat.lv_last->li_tv;
+	    list->lv_u.mat.lv_last->li_tv.v_type = VAR_NUMBER;
 	    free_tv(listtv);
 	}
     }

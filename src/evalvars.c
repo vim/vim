@@ -2128,7 +2128,7 @@ set_argv_var(char **argv, int argc)
     {
 	if (list_append_string(l, (char_u *)argv[i], -1) == FAIL)
 	    getout(1);
-	l->lv_last->li_tv.v_lock = VAR_FIXED;
+	l->lv_u.mat.lv_last->li_tv.v_lock = VAR_FIXED;
     }
     set_vim_var_list(VV_ARGV, l);
 }

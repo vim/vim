@@ -2628,7 +2628,7 @@ ListAssSlice(ListObject *self, Py_ssize_t first,
 	    if (li)
 		lastaddedli = li->li_prev;
 	    else
-		lastaddedli = l->lv_last;
+		lastaddedli = l->lv_u.mat.lv_last;
 	    numadded++;
 	}
 	clear_tv(&v);

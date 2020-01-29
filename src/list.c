@@ -126,7 +126,7 @@ list_alloc_with_items(int count)
 	    l->lv_len = count;
 	    l->lv_with_items = count;
 	    l->lv_first = li;
-	    l->lv_last = li + count - 1;
+	    l->lv_u.mat.lv_last = li + count - 1;
 	    for (i = 0; i < count; ++i)
 	    {
 		if (i == 0)
@@ -406,25 +406,25 @@ list_find(list_T *l, long n)
     range_list_materialize(l);
 
     // When there is a cached index may start search from there.
-    if (l->lv_idx_item != NULL)
+    if (l->lv_u.mat.lv_idx_item != NULL)
     {
-	if (n < l->lv_idx / 2)
+	if (n < l->lv_u.mat.lv_idx / 2)
 	{
 	    // closest to the start of the list
 	    item = l->lv_first;
 	    idx = 0;
 	}
-	else if (n > (l->lv_idx + l->lv_len) / 2)
+	else if (n > (l->lv_u.mat.lv_idx + l->lv_len) / 2)
 	{
 	    // closest to the end of the list
-	    item = l->lv_last;
+	    item = l->lv_u.mat.lv_last;
 	    idx = l->lv_len - 1;
 	}
 	else
 	{
 	    // closest to the cached index
-	    item = l->lv_idx_item;
-	    idx = l->lv_idx;
+	    item = l->lv_u.mat.lv_idx_item;
+	    idx = l->lv_u.mat.lv_idx;
 	}
     }
     else
@@ -438,7 +438,7 @@ list_find(list_T *l, long n)
 	else
 	{
 	    // closest to the end of the list
-	    item = l->lv_last;
+	    item = l->lv_u.mat.lv_last;
 	    idx = l->lv_len - 1;
 	}
     }
@@ -457,8 +457,8 @@ list_find(list_T *l, long n)
     }
 
     // cache the used index
-    l->lv_idx = idx;
-    l->lv_idx_item = item;
+    l->lv_u.mat.lv_idx = idx;
+    l->lv_u.mat.lv_idx_item = item;
 
     return item;
 }
@@ -491,7 +491,7 @@ list_find_nr(
 	    return -1L;
 	}
 
-	return l->lv_start + n * l->lv_stride;
+	return l->lv_u.nonmat.lv_start + n * l->lv_u.nonmat.lv_stride;
     }
 
     li = list_find(l, idx);
@@ -549,18 +549,18 @@ list_idx_of_item(list_T *l, listitem_T *item)
 list_append(list_T *l, listitem_T *item)
 {
     range_list_materialize(l);
-    if (l->lv_last == NULL)
+    if (l->lv_u.mat.lv_last == NULL)
     {
 	// empty list
 	l->lv_first = item;
-	l->lv_last = item;
+	l->lv_u.mat.lv_last = item;
 	item->li_prev = NULL;
     }
     else
     {
-	l->lv_last->li_next = item;
-	item->li_prev = l->lv_last;
-	l->lv_last = item;
+	l->lv_u.mat.lv_last->li_next = item;
+	item->li_prev = l->lv_u.mat.lv_last;
+	l->lv_u.mat.lv_last = item;
     }
     ++l->lv_len;
     item->li_next = NULL;
@@ -710,12 +710,12 @@ list_insert(list_T *l, listitem_T *ni, listitem_T *item)
 	if (item->li_prev == NULL)
 	{
 	    l->lv_first = ni;
-	    ++l->lv_idx;
+	    ++l->lv_u.mat.lv_idx;
 	}
 	else
 	{
 	    item->li_prev->li_next = ni;
-	    l->lv_idx_item = NULL;
+	    l->lv_u.mat.lv_idx_item = NULL;
 	}
 	item->li_prev = ni;
 	++l->lv_len;
@@ -846,14 +846,14 @@ vimlist_remove(list_T *l, listitem_T *item, listitem_T *item2)
     }
 
     if (item2->li_next == NULL)
-	l->lv_last = item->li_prev;
+	l->lv_u.mat.lv_last = item->li_prev;
     else
 	item2->li_next->li_prev = item->li_prev;
     if (item->li_prev == NULL)
 	l->lv_first = item2->li_next;
     else
 	item->li_prev->li_next = item2->li_next;
-    l->lv_idx_item = NULL;
+    l->lv_u.mat.lv_idx_item = NULL;
 }
 
 /*
@@ -1149,7 +1149,7 @@ init_static_list(staticList10_T *sl)
 
     memset(sl, 0, sizeof(staticList10_T));
     l->lv_first = &sl->sl_items[0];
-    l->lv_last = &sl->sl_items[9];
+    l->lv_u.mat.lv_last = &sl->sl_items[9];
     l->lv_refcount = DO_NOT_FREE_CNT;
     l->lv_lock = VAR_FIXED;
     sl->sl_list.lv_len = 10;
@@ -1280,7 +1280,7 @@ list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 		    {
 			l = rettv->vval.v_list;
 			l->lv_first = item;
-			l->lv_last = item2;
+			l->lv_u.mat.lv_last = item2;
 			item->li_prev = NULL;
 			item2->li_next = NULL;
 			l->lv_len = cnt;
@@ -1605,7 +1605,8 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 		if (!info.item_compare_func_err)
 		{
 		    // Clear the List and append the items in sorted order.
-		    l->lv_first = l->lv_last = l->lv_idx_item = NULL;
+		    l->lv_first = l->lv_u.mat.lv_last
+					      = l->lv_u.mat.lv_idx_item = NULL;
 		    l->lv_len = 0;
 		    for (i = 0; i < len; ++i)
 			list_append(l, ptrs[i].item);
@@ -1645,7 +1646,7 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 		    if (li->li_next != NULL)
 			li->li_next->li_prev = ptrs[i].item;
 		    else
-			l->lv_last = ptrs[i].item;
+			l->lv_u.mat.lv_last = ptrs[i].item;
 		    list_fix_watch(l, li);
 		    listitem_free(l, li);
 		    l->lv_len--;
@@ -2259,16 +2260,17 @@ f_reverse(typval_T *argvars, typval_T *rettv)
     {
 	if (l->lv_first == &range_list_item)
 	{
-	    varnumber_T new_start = l->lv_start
-					      + (l->lv_len - 1) * l->lv_stride;
-	    l->lv_end = new_start - (l->lv_end - l->lv_start);
-	    l->lv_start = new_start;
-	    l->lv_stride = -l->lv_stride;
+	    varnumber_T new_start = l->lv_u.nonmat.lv_start
+				  + (l->lv_len - 1) * l->lv_u.nonmat.lv_stride;
+	    l->lv_u.nonmat.lv_end = new_start
+			   - (l->lv_u.nonmat.lv_end - l->lv_u.nonmat.lv_start);
+	    l->lv_u.nonmat.lv_start = new_start;
+	    l->lv_u.nonmat.lv_stride = -l->lv_u.nonmat.lv_stride;
 	    rettv_list_set(rettv, l);
 	    return;
 	}
-	li = l->lv_last;
-	l->lv_first = l->lv_last = NULL;
+	li = l->lv_u.mat.lv_last;
+	l->lv_first = l->lv_u.mat.lv_last = NULL;
 	l->lv_len = 0;
 	while (li != NULL)
 	{
@@ -2277,7 +2279,7 @@ f_reverse(typval_T *argvars, typval_T *rettv)
 	    li = ni;
 	}
 	rettv_list_set(rettv, l);
-	l->lv_idx = l->lv_len - l->lv_idx - 1;
+	l->lv_u.mat.lv_idx = l->lv_len - l->lv_u.mat.lv_idx - 1;
     }
 }
 

@@ -1410,13 +1410,13 @@ struct listvar_S
 	    varnumber_T lv_start;
 	    varnumber_T lv_end;
 	    int		lv_stride;
-	};
+	} nonmat;
 	struct {	// used for materialized list
 	    listitem_T	*lv_last;	// last item, NULL if none
 	    listitem_T	*lv_idx_item;	// when not NULL item at index "lv_idx"
 	    int		lv_idx;		// cached index of an item
-	};
-    };
+	} mat;
+    } lv_u;
     list_T	*lv_copylist;	// copied list used by deepcopy()
     list_T	*lv_used_next;	// next list in used lists list
     list_T	*lv_used_prev;	// previous list in used lists list

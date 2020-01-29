@@ -88,7 +88,7 @@ struct scope_S {
 	whilescope_T	se_while;
 	forscope_T	se_for;
 	tryscope_T	se_try;
-    };
+    } se_u;
 };
 
 /*
@@ -3506,7 +3506,7 @@ compile_if(char_u *arg, cctx_T *cctx)
 	return NULL;
 
     // "where" is set when ":elseif", "else" or ":endif" is found
-    scope->se_if.is_if_label = instr->ga_len;
+    scope->se_u.se_if.is_if_label = instr->ga_len;
     generate_JUMP(cctx, JUMP_IF_FALSE, 0);
 
     return p;
@@ -3528,12 +3528,12 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     cctx->ctx_locals.ga_len = scope->se_local_count;
 
     // jump from previous block to the end
-    if (compile_jump_to_end(&scope->se_if.is_end_label,
+    if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
 						    JUMP_ALWAYS, cctx) == FAIL)
 	return NULL;
 
     // previous "if" or "elseif" jumps here
-    isn = ((isn_T *)instr->ga_data) + scope->se_if.is_if_label;
+    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_if.is_if_label;
     isn->isn_arg.jump.jump_where = instr->ga_len;
 
     // compile "expr"
@@ -3541,7 +3541,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	return NULL;
 
     // "where" is set when ":elseif", "else" or ":endif" is found
-    scope->se_if.is_if_label = instr->ga_len;
+    scope->se_u.se_if.is_if_label = instr->ga_len;
     generate_JUMP(cctx, JUMP_IF_FALSE, 0);
 
     return p;
@@ -3563,12 +3563,12 @@ compile_else(char_u *arg, cctx_T *cctx)
     cctx->ctx_locals.ga_len = scope->se_local_count;
 
     // jump from previous block to the end
-    if (compile_jump_to_end(&scope->se_if.is_end_label,
+    if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
 						    JUMP_ALWAYS, cctx) == FAIL)
 	return NULL;
 
     // previous "if" or "elseif" jumps here
-    isn = ((isn_T *)instr->ga_data) + scope->se_if.is_if_label;
+    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_if.is_if_label;
     isn->isn_arg.jump.jump_where = instr->ga_len;
 
     return p;
@@ -3587,12 +3587,12 @@ compile_endif(char_u *arg, cctx_T *cctx)
 	emsg(_(e_endif_without_if));
 	return NULL;
     }
-    ifscope = &scope->se_if;
+    ifscope = &scope->se_u.se_if;
     cctx->ctx_scope = scope->se_outer;
     cctx->ctx_locals.ga_len = scope->se_local_count;
 
     // previous "if" or "elseif" jumps here
-    isn = ((isn_T *)instr->ga_data) + scope->se_if.is_if_label;
+    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_if.is_if_label;
     isn->isn_arg.jump.jump_where = instr->ga_len;
 
     // Fill in the "end" label in jumps at the end of the blocks.
@@ -3688,7 +3688,7 @@ compile_for(char_u *arg, cctx_T *cctx)
     }
 
     // "for_end" is set when ":endfor" is found
-    scope->se_for.fs_top_label = instr->ga_len;
+    scope->se_u.se_for.fs_top_label = instr->ga_len;
 
     generate_FOR(cctx, loop_idx);
     generate_STORE(cctx, ISN_STORE, var_idx, NULL);
@@ -3712,7 +3712,7 @@ compile_endfor(char_u *arg, cctx_T *cctx)
 	emsg(_(e_for));
 	return NULL;
     }
-    forscope = &scope->se_for;
+    forscope = &scope->se_u.se_for;
     cctx->ctx_scope = scope->se_outer;
     cctx->ctx_locals.ga_len = scope->se_local_count;
 
@@ -3757,14 +3757,14 @@ compile_while(char_u *arg, cctx_T *cctx)
     if (scope == NULL)
 	return NULL;
 
-    scope->se_while.ws_top_label = instr->ga_len;
+    scope->se_u.se_while.ws_top_label = instr->ga_len;
 
     // compile "expr"
     if (compile_expr1(&p, cctx) == FAIL)
 	return NULL;
 
     // "while_end" is set when ":endwhile" is found
-    if (compile_jump_to_end(&scope->se_while.ws_end_label,
+    if (compile_jump_to_end(&scope->se_u.se_while.ws_end_label,
 						  JUMP_IF_FALSE, cctx) == FAIL)
 	return FAIL;
 
@@ -3788,11 +3788,11 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
     cctx->ctx_locals.ga_len = scope->se_local_count;
 
     // At end of ":for" scope jump back to the FOR instruction.
-    generate_JUMP(cctx, JUMP_ALWAYS, scope->se_while.ws_top_label);
+    generate_JUMP(cctx, JUMP_ALWAYS, scope->se_u.se_while.ws_top_label);
 
     // Fill in the "end" label in the WHILE statement so it can jump here.
     // And in any jumps for ":break"
-    compile_fill_jump_to_end(&scope->se_while.ws_end_label, cctx);
+    compile_fill_jump_to_end(&scope->se_u.se_while.ws_end_label, cctx);
 
     vim_free(scope);
 
@@ -3821,8 +3821,8 @@ compile_continue(char_u *arg, cctx_T *cctx)
 
     // Jump back to the FOR or WHILE instruction.
     generate_JUMP(cctx, JUMP_ALWAYS,
-	    scope->se_type == FOR_SCOPE ? scope->se_for.fs_top_label
-					       : scope->se_while.ws_top_label);
+	    scope->se_type == FOR_SCOPE ? scope->se_u.se_for.fs_top_label
+					  : scope->se_u.se_while.ws_top_label);
     return arg;
 }
 
@@ -3849,9 +3849,9 @@ compile_break(char_u *arg, cctx_T *cctx)
 
     // Jump to the end of the FOR or WHILE loop.
     if (scope->se_type == FOR_SCOPE)
-	el = &scope->se_for.fs_end_label;
+	el = &scope->se_u.se_for.fs_end_label;
     else
-	el = &scope->se_while.ws_end_label;
+	el = &scope->se_u.se_while.ws_end_label;
     if (compile_jump_to_end(el, JUMP_ALWAYS, cctx) == FAIL)
 	return FAIL;
 
@@ -3928,7 +3928,7 @@ compile_try(char_u *arg, cctx_T *cctx)
 
     // "catch" is set when the first ":catch" is found.
     // "finally" is set when ":finally" or ":endtry" is found
-    try_scope->se_try.ts_try_label = instr->ga_len;
+    try_scope->se_u.se_try.ts_try_label = instr->ga_len;
     if (generate_instr(cctx, ISN_TRY) == NULL)
 	return NULL;
 
@@ -3963,33 +3963,33 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	return NULL;
     }
 
-    if (scope->se_try.ts_caught_all)
+    if (scope->se_u.se_try.ts_caught_all)
     {
 	emsg(_("E1033: catch unreachable after catch-all"));
 	return NULL;
     }
 
     // Jump from end of previous block to :finally or :endtry
-    if (compile_jump_to_end(&scope->se_try.ts_end_label,
+    if (compile_jump_to_end(&scope->se_u.se_try.ts_end_label,
 						    JUMP_ALWAYS, cctx) == FAIL)
 	return NULL;
 
     // End :try or :catch scope: set value in ISN_TRY instruction
-    isn = ((isn_T *)instr->ga_data) + scope->se_try.ts_try_label;
+    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
     if (isn->isn_arg.try.try_catch == 0)
 	isn->isn_arg.try.try_catch = instr->ga_len;
-    if (scope->se_try.ts_catch_label != 0)
+    if (scope->se_u.se_try.ts_catch_label != 0)
     {
 	// Previous catch without match jumps here
-	isn = ((isn_T *)instr->ga_data) + scope->se_try.ts_catch_label;
+	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_catch_label;
 	isn->isn_arg.jump.jump_where = instr->ga_len;
     }
 
     p = skipwhite(arg);
     if (ends_excmd(*p))
     {
-	scope->se_try.ts_caught_all = TRUE;
-	scope->se_try.ts_catch_label = 0;
+	scope->se_u.se_try.ts_caught_all = TRUE;
+	scope->se_u.se_try.ts_catch_label = 0;
     }
     else
     {
@@ -4003,7 +4003,7 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	if (generate_COMPARE(cctx, EXPR_MATCH, FALSE) == FAIL)
 	    return NULL;
 
-	scope->se_try.ts_catch_label = instr->ga_len;
+	scope->se_u.se_try.ts_catch_label = instr->ga_len;
 	if (generate_JUMP(cctx, JUMP_IF_FALSE, 0) == FAIL)
 	    return NULL;
     }
@@ -4036,7 +4036,7 @@ compile_finally(char_u *arg, cctx_T *cctx)
     }
 
     // End :catch or :finally scope: set value in ISN_TRY instruction
-    isn = ((isn_T *)instr->ga_data) + scope->se_try.ts_try_label;
+    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
     if (isn->isn_arg.try.try_finally != 0)
     {
 	emsg(_(e_finally_dup));
@@ -4044,12 +4044,12 @@ compile_finally(char_u *arg, cctx_T *cctx)
     }
 
     // Fill in the "end" label in jumps at the end of the blocks.
-    compile_fill_jump_to_end(&scope->se_try.ts_end_label, cctx);
+    compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label, cctx);
 
-    if (scope->se_try.ts_catch_label != 0)
+    if (scope->se_u.se_try.ts_catch_label != 0)
     {
 	// Previous catch without match jumps here
-	isn = ((isn_T *)instr->ga_data) + scope->se_try.ts_catch_label;
+	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_catch_label;
 	isn->isn_arg.jump.jump_where = instr->ga_len;
     }
 
@@ -4085,7 +4085,7 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 	return NULL;
     }
 
-    isn = ((isn_T *)instr->ga_data) + scope->se_try.ts_try_label;
+    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_try.ts_try_label;
     if (isn->isn_arg.try.try_catch == 0 && isn->isn_arg.try.try_finally == 0)
     {
 	emsg(_("E1032: missing :catch or :finally"));
@@ -4094,7 +4094,7 @@ compile_endtry(char_u *arg, cctx_T *cctx)
 
     // Fill in the "end" label in jumps at the end of the blocks, if not done
     // by ":finally".
-    compile_fill_jump_to_end(&scope->se_try.ts_end_label, cctx);
+    compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label, cctx);
 
     // End :catch or :finally scope: set value in ISN_TRY instruction
     if (isn->isn_arg.try.try_finally == 0)
