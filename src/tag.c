@@ -3980,7 +3980,10 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
 
 	    // Skip pseudo-tag lines.
 	    if (STRNCMP(tp.tagname, "!_TAG_", 6) == 0)
+	    {
+		vim_free(matches[i]);
 		continue;
+	    }
 
 	    if ((dict = dict_alloc()) == NULL)
 		ret = FAIL;
