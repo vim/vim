@@ -74,7 +74,7 @@ endfunction
 "   s:CalcVCol("\t'\tx', b", 1, 4, 4)  -> 10
 function! s:CalcVCol(line, first_index, last_index, vcol, tabstop)
 
-  " We copy the relevant segment of the line, otherwise if the line were
+  " We copy the relevent segment of the line, otherwise if the line were
   " e.g. `"\t", term` then the else branch below would consume the `", term`
   " part at once.
   let line = a:line[a:first_index : a:last_index]

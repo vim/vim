@@ -93,7 +93,7 @@ syn region asciidocListingBlock start=/^-\{4,}$/ end=/^-\{4,}$/ contains=asciido
 syn region asciidocCommentBlock start="^/\{4,}$" end="^/\{4,}$" contains=asciidocToDo
 syn region asciidocPassthroughBlock start="^+\{4,}$" end="^+\{4,}$"
 
-" Allowing leading \w characters in the filter delimiter is to accommodate
+" Allowing leading \w characters in the filter delimiter is to accomodate
 " the pre version 8.2.7 syntax and may be removed in future releases.
 syn region asciidocFilterBlock start=/^\w*\~\{4,}$/ end=/^\w*\~\{4,}$/
 

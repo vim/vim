@@ -578,7 +578,7 @@ endfunction
       let res = substitute (a:res, "\n", "", "g" )
       "remove double space
       let res =substitute(res , "  ", " ", "g")
-      "remove space at beginning of string.
+      "remove space at begining of string.
       let res = substitute(res, "^ *", "", "g")
       return res
     endfunction
