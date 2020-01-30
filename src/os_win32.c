@@ -200,6 +200,8 @@ static void vtp_sgr_bulks(int argc, int *argv);
 
 static guicolor_T save_console_bg_rgb;
 static guicolor_T save_console_fg_rgb;
+static guicolor_T store_console_bg_rgb;
+static guicolor_T store_console_fg_rgb;
 
 static int g_color_index_bg = 0;
 static int g_color_index_fg = 7;
@@ -217,6 +219,7 @@ static int default_console_color_fg = 0xc0c0c0; // white
 
 static void set_console_color_rgb(void);
 static void reset_console_color_rgb(void);
+static void restore_console_color_rgb(void);
 #endif
 
 // This flag is newly created from Windows 10
@@ -5496,7 +5499,7 @@ termcap_mode_end(void)
     cb = &g_cbNonTermcap;
 # endif
     RestoreConsoleBuffer(cb, p_rs);
-    reset_console_color_rgb();
+    restore_console_color_rgb();
     SetConsoleCursorInfo(g_hConOut, &g_cci);
 
     if (p_rs || exiting)
@@ -7327,6 +7330,8 @@ vtp_init(void)
 	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
     save_console_bg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_bg];
     save_console_fg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_fg];
+    store_console_bg_rgb = save_console_bg_rgb;
+    store_console_fg_rgb = save_console_fg_rgb;
 
 # ifdef FEAT_TERMGUICOLORS
     bg = (COLORREF)csbi.ColorTable[g_color_index_bg];
@@ -7343,7 +7348,7 @@ vtp_init(void)
     static void
 vtp_exit(void)
 {
-    reset_console_color_rgb();
+    restore_console_color_rgb();
 }
 
     static int
@@ -7433,6 +7438,8 @@ set_console_color_rgb(void)
     csbi.cbSize = sizeof(csbi);
     csbi.srWindow.Right += 1;
     csbi.srWindow.Bottom += 1;
+    store_console_bg_rgb = csbi.ColorTable[g_color_index_bg];
+    store_console_fg_rgb = csbi.ColorTable[g_color_index_fg];
     csbi.ColorTable[g_color_index_bg] = (COLORREF)bg;
     csbi.ColorTable[g_color_index_fg] = (COLORREF)fg;
     if (has_csbiex)
@@ -7485,8 +7492,34 @@ get_default_console_color(
 }
 # endif
 
+/*
+ * Set the console colors to the original colors or the last set colors.
+ */
     static void
 reset_console_color_rgb(void)
+{
+# ifdef FEAT_TERMGUICOLORS
+    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+
+    csbi.cbSize = sizeof(csbi);
+    if (has_csbiex)
+	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+
+    csbi.cbSize = sizeof(csbi);
+    csbi.srWindow.Right += 1;
+    csbi.srWindow.Bottom += 1;
+    csbi.ColorTable[g_color_index_bg] = (COLORREF)store_console_bg_rgb;
+    csbi.ColorTable[g_color_index_fg] = (COLORREF)store_console_fg_rgb;
+    if (has_csbiex)
+	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+# endif
+}
+
+/*
+ * Set the console colors to the original colors.
+ */
+    static void
+restore_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
     DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
