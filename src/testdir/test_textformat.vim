@@ -425,12 +425,13 @@ func Test_format_align()
   enew!
 
   " align text with 'wrapmargin'
+  50vnew
   call setline(1, ['Vim'])
-  set textwidth=0
-  set wrapmargin=60
+  setl textwidth=0
+  setl wrapmargin=30
   right
   call assert_equal("\t\t Vim", getline(1))
-  set wrapmargin&
+  q!
 
   set tw&
 endfunc
