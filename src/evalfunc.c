@@ -4881,21 +4881,31 @@ max_min(typval_T *argvars, typval_T *rettv, int domax)
 	listitem_T	*li;
 
 	l = argvars[0].vval.v_list;
-	if (l != NULL)
+	if (l != NULL && l->lv_len > 0)
 	{
-	    range_list_materialize(l);
-	    li = l->lv_first;
-	    if (li != NULL)
+	    if (l->lv_first == &range_list_item)
 	    {
-		n = tv_get_number_chk(&li->li_tv, &error);
-		for (;;)
+		if ((l->lv_u.nonmat.lv_stride > 0) ^ domax)
+		    n = l->lv_u.nonmat.lv_start;
+		else
+		    n = l->lv_u.nonmat.lv_start + (l->lv_len - 1)
+						    * l->lv_u.nonmat.lv_stride;
+	    }
+	    else
+	    {
+		li = l->lv_first;
+		if (li != NULL)
 		{
-		    li = li->li_next;
-		    if (li == NULL)
-			break;
-		    i = tv_get_number_chk(&li->li_tv, &error);
-		    if (domax ? i > n : i < n)
-			n = i;
+		    n = tv_get_number_chk(&li->li_tv, &error);
+		    for (;;)
+		    {
+			li = li->li_next;
+			if (li == NULL)
+			    break;
+			i = tv_get_number_chk(&li->li_tv, &error);
+			if (domax ? i > n : i < n)
+			    n = i;
+		    }
 		}
 	    }
 	}
