@@ -324,5 +324,5 @@ func Test_blob_lock()
 endfunc
 
 func Test_blob_sort()
-  call assert_fails('call sort([1.0, 0z11], "f")', 'E975:')
+  call assert_fails('call sort(["abc", 0z11], "f")', 'E702:')
 endfunc

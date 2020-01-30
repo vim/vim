@@ -202,10 +202,12 @@ func Ch_communicate(port)
 
   " Reading while there is nothing available.
   call assert_equal(v:none, ch_read(handle, {'timeout': 0}))
-  let start = reltime()
-  call assert_equal(v:none, ch_read(handle, {'timeout': 333}))
-  let elapsed = reltime(start)
-  call assert_inrange(0.3, 0.6, reltimefloat(reltime(start)))
+  if exists('*reltimefloat')
+    let start = reltime()
+    call assert_equal(v:none, ch_read(handle, {'timeout': 333}))
+    let elapsed = reltime(start)
+    call assert_inrange(0.3, 0.6, reltimefloat(reltime(start)))
+  endif
 
   " Send without waiting for a response, then wait for a response.
   call ch_sendexpr(handle, 'wait a bit')
@@ -412,6 +414,8 @@ endfunc
 
 " Test that trying to connect to a non-existing port fails quickly.
 func Test_connect_waittime()
+  CheckFunction reltimefloat
+
   call ch_log('Test_connect_waittime()')
   let start = reltime()
   let handle = ch_open('localhost:9876', s:chopt)
@@ -927,6 +931,8 @@ func Test_pipe_to_nameless_buffer()
 endfunc
 
 func Test_pipe_to_buffer_json()
+  CheckFunction reltimefloat
+
   let job = job_start(s:python . " test_channel_pipe.py",
 	\ {'out_io': 'buffer', 'out_mode': 'json'})
   call assert_equal("run", job_status(job))
@@ -1423,6 +1429,8 @@ function MyExitTimeCb(job, status)
 endfunction
 
 func Test_exit_callback_interval()
+  CheckFunction reltimefloat
+
   let g:exit_cb_val = {'start': reltime(), 'end': 0, 'process': 0}
   let job = [s:python, '-c', 'import time;time.sleep(0.5)']->job_start({'exit_cb': 'MyExitTimeCb'})
   let g:exit_cb_val.process = job_info(job).process
@@ -1768,6 +1776,7 @@ endfunc
 
 func Test_job_start_in_timer()
   CheckFeature timers
+  CheckFeature reltimefloat
 
   func OutCb(chan, msg)
     let g:val += 1

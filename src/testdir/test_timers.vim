@@ -290,6 +290,7 @@ func Test_timer_getchar_zero()
   if has('win32') && !has('gui_running')
     throw 'Skipped: cannot get low-level input'
   endif
+  CheckFunction reltimefloat
 
   " Measure the elapsed time to avoid a hang when it fails.
   let start = reltime()

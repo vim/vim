@@ -19,7 +19,9 @@ endfunc
 def Test_expr1()
   assert_equal('one', true ? 'one' : 'two')
   assert_equal('one', 1 ? 'one' : 'two')
-  assert_equal('one', 0.1 ? 'one' : 'two')
+  if has('float')
+    assert_equal('one', 0.1 ? 'one' : 'two')
+  endif
   assert_equal('one', 'x' ? 'one' : 'two')
 "  assert_equal('one', 0z1234 ? 'one' : 'two')
   assert_equal('one', [0] ? 'one' : 'two')

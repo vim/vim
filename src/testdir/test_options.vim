@@ -615,9 +615,8 @@ func Test_local_scrolloff()
 endfunc
 
 func Test_writedelay()
-  if !has('reltime')
-    return
-  endif
+  CheckFunction reltimefloat
+
   new
   call setline(1, 'empty')
   redraw

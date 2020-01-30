@@ -28,12 +28,14 @@ func Test_empty()
   call assert_equal(0, empty(1))
   call assert_equal(0, empty(-1))
 
-  call assert_equal(1, empty(0.0))
-  call assert_equal(1, empty(-0.0))
-  call assert_equal(0, empty(1.0))
-  call assert_equal(0, empty(-1.0))
-  call assert_equal(0, empty(1.0/0.0))
-  call assert_equal(0, empty(0.0/0.0))
+  if has('float')
+    call assert_equal(1, empty(0.0))
+    call assert_equal(1, empty(-0.0))
+    call assert_equal(0, empty(1.0))
+    call assert_equal(0, empty(-1.0))
+    call assert_equal(0, empty(1.0/0.0))
+    call assert_equal(0, empty(0.0/0.0))
+  endif
 
   call assert_equal(1, empty([]))
   call assert_equal(0, empty(['a']))
@@ -116,7 +118,9 @@ func Test_strwidth()
     call assert_fails('call strwidth({->0})', 'E729:')
     call assert_fails('call strwidth([])', 'E730:')
     call assert_fails('call strwidth({})', 'E731:')
-    call assert_fails('call strwidth(1.2)', 'E806:')
+    if has('float')
+      call assert_fails('call strwidth(1.2)', 'E806:')
+    endif
   endfor
 
   set ambiwidth&
@@ -176,7 +180,9 @@ func Test_str2nr()
 
   call assert_fails('call str2nr([])', 'E730:')
   call assert_fails('call str2nr({->2})', 'E729:')
-  call assert_fails('call str2nr(1.2)', 'E806:')
+  if has('float')
+    call assert_fails('call str2nr(1.2)', 'E806:')
+  endif
   call assert_fails('call str2nr(10, [])', 'E474:')
 endfunc
 
@@ -422,7 +428,9 @@ func Test_simplify()
   call assert_fails('call simplify({->0})', 'E729:')
   call assert_fails('call simplify([])', 'E730:')
   call assert_fails('call simplify({})', 'E731:')
-  call assert_fails('call simplify(1.2)', 'E806:')
+  if has('float')
+    call assert_fails('call simplify(1.2)', 'E806:')
+  endif
 endfunc
 
 func Test_pathshorten()
