@@ -595,9 +595,7 @@ term_start(
 #if defined(FEAT_SESSION)
     // Remember the command for the session file.
     if (opt->jo_term_norestore || argv != NULL)
-    {
 	term->tl_command = vim_strsave((char_u *)"NONE");
-    }
     else if (argvar->v_type == VAR_STRING)
     {
 	char_u	*cmd = argvar->vval.v_string;
@@ -646,7 +644,11 @@ term_start(
     }
 
     if (opt->jo_term_api != NULL)
-	term->tl_api = vim_strsave(opt->jo_term_api);
+    {
+	char_u *p = skiptowhite(opt->jo_term_api);
+
+	term->tl_api = vim_strnsave(opt->jo_term_api, p - opt->jo_term_api);
+    }
     else
 	term->tl_api = vim_strsave((char_u *)"Tapi_");
 
@@ -778,6 +780,7 @@ ex_terminal(exarg_T *eap)
 	    char_u *buf = NULL;
 	    char_u *keys;
 
+	    vim_free(opt.jo_eof_chars);
 	    p = skiptowhite(cmd);
 	    *p = NUL;
 	    keys = replace_termcodes(ep + 1, &buf,
@@ -6697,7 +6700,7 @@ term_and_job_init(
 #endif
 
     // This may change a string in "argvar".
-    term->tl_job = job_start(argvar, argv, opt, TRUE);
+    term->tl_job = job_start(argvar, argv, opt, &term->tl_job);
     if (term->tl_job != NULL)
 	++term->tl_job->jv_refcount;
 

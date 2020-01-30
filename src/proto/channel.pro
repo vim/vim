@@ -51,7 +51,7 @@ void job_set_options(job_T *job, jobopt_T *opt);
 void job_stop_on_exit(void);
 int has_pending_job(void);
 int job_check_ended(void);
-job_T *job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg, int is_terminal);
+job_T *job_start(typval_T *argvars, char **argv_arg, jobopt_T *opt_arg, job_T **term_job);
 char *job_status(job_T *job);
 int job_stop(job_T *job, typval_T *argvars, char *type);
 void invoke_prompt_callback(void);
