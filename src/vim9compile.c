@@ -1651,7 +1651,7 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 compile_call(char_u **arg, size_t varlen, cctx_T *cctx, int argcount_init)
 {
     char_u	*name = *arg;
-    char_u	*p = *arg + varlen + 1;
+    char_u	*p;
     int		argcount = argcount_init;
     char_u	namebuf[100];
     ufunc_T	*ufunc;
@@ -2056,7 +2056,6 @@ compile_get_env(char_u **arg, cctx_T *cctx)
     int		ret;
     char_u	*name;
 
-    start = *arg;
     ++*arg;
     len = get_env_len(arg);
     if (len == 0)
