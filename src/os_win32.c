@@ -237,10 +237,8 @@ static char_u *exe_path = NULL;
 static BOOL win8_or_later = FALSE;
 
 # if defined(__GNUC__) && !defined(__MINGW32__)  && !defined(__CYGWIN__)
-#  define AChar AsciiChar
 #  define UChar UnicodeChar
 # else
-#  define AChar uChar.AsciiChar
 #  define UChar uChar.UnicodeChar
 # endif
 
@@ -304,7 +302,6 @@ is_ambiwidth_event(
 		&& ir->Event.KeyEvent.wVirtualKeyCode == 0x12
 		&& ir->Event.KeyEvent.wVirtualScanCode == 0x38
 		&& ir->Event.KeyEvent.UChar == 0
-		&& ir->Event.KeyEvent.AChar == 0
 		&& ir->Event.KeyEvent.dwControlKeyState == 2;
 }
 
