@@ -6572,6 +6572,8 @@ changedir_func(
     int		dir_differs;
     int		retval = FALSE;
 
+    if (new_dir == NULL)
+	return FALSE;
     if (allbuf_locked())
 	return FALSE;
 
