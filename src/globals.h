@@ -1798,7 +1798,7 @@ EXTERN int *eval_lavars_used INIT(= NULL);
 // Only filled for Win32.
 EXTERN char windowsVersion[20] INIT(= {0});
 
-// Used for a non-materialized range() list.
+// Used for lv_first in a non-materialized range() list.
 EXTERN listitem_T range_list_item;
 #endif
 

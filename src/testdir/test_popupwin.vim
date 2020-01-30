@@ -86,7 +86,7 @@ func Test_popup_with_border_and_padding()
 	  call popup_create('hello padding', #{line: 2, col: 23, padding: []})
 	  call popup_create('hello both', #{line: 2, col: 43, border: [], padding: [], highlight: 'Normal'})
 	  call popup_create('border TL', #{line: 6, col: 3, border: [1, 0, 0, 4]})
-	  call popup_create('paddings', #{line: 6, col: 23, padding: [1, 3, 2, 4]})
+	  call popup_create('paddings', #{line: 6, col: 23, padding: range(1, 4)})
 	  call popup_create('wrapped longer text', #{line: 8, col: 55, padding: [0, 3, 0, 3], border: [0, 1, 0, 1]})
 	  call popup_create('right aligned text', #{line: 11, col: 56, wrap: 0, padding: [0, 3, 0, 3], border: [0, 1, 0, 1]})
 	  call popup_create('X', #{line: 2, col: 73})
@@ -179,6 +179,14 @@ func Test_popup_with_border_and_padding()
   " Check that popup_setoptions() takes the output of popup_getoptions()
   call popup_setoptions(winid, options)
   call assert_equal(options, popup_getoptions(winid))
+
+  " Check that range() doesn't crash
+  call popup_setoptions(winid, #{
+	\ padding: range(1, 4),
+	\ border: range(5, 8),
+	\ borderhighlight: range(4),
+	\ borderchars: range(8),
+	\ })
 
   let winid = popup_create('hello both', #{line: 3, col: 8, border: [], padding: []})
   call assert_equal(#{
@@ -883,7 +891,13 @@ func Test_popup_invalid_arguments()
   call popup_clear()
   call assert_fails('call popup_create([#{text: "text", props: ["none"]}], {})', 'E715:')
   call popup_clear()
+  call assert_fails('call popup_create([#{text: "text", props: range(3)}], {})', 'E715:')
+  call popup_clear()
   call assert_fails('call popup_create("text", #{mask: ["asdf"]})', 'E475:')
+  call popup_clear()
+  call assert_fails('call popup_create("text", #{mask: range(5)})', 'E475:')
+  call popup_clear()
+  call popup_create("text", #{mask: [range(4)]})
   call popup_clear()
   call assert_fails('call popup_create("text", #{mask: test_null_list()})', 'E475:')
   call assert_fails('call popup_create("text", #{mapping: []})', 'E745:')
@@ -1331,7 +1345,8 @@ func Test_popup_atcursor_pos()
 	normal 3G45|r@
 	let winid1 = popup_atcursor(['First', 'SeconD'], #{
 	      \ pos: 'topright',
-	      \ moved: [0, 0, 0],
+	      \ moved: range(3),
+	      \ mousemoved: range(3),
 	      \ })
   END
   call writefile(lines, 'XtestPopupAtcursorPos')
@@ -2098,6 +2113,10 @@ func Test_popup_settext()
   " Dicts
   call term_sendkeys(buf, ":call popup_settext(p, [#{text: 'aaaa'}, #{text: 'bbbb'}, #{text: 'cccc'}])\<CR>")
   call VerifyScreenDump(buf, 'Test_popup_settext_06', {})
+
+  " range() (doesn't work)
+  call term_sendkeys(buf, ":call popup_settext(p, range(4, 8))\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_07', {})
 
   " clean up
   call StopVimInTerminal(buf)

@@ -4267,6 +4267,7 @@ set_tagstack(win_T *wp, dict_T *d, int action)
 	taggy_T	*tagstack = wp->w_tagstack;
 	int	tagstackidx = wp->w_tagstackidx;
 	int	tagstacklen = wp->w_tagstacklen;
+
 	// delete all the tag stack entries above the current entry
 	while (tagstackidx < tagstacklen)
 	    tagstack_clear_entry(&tagstack[--tagstacklen]);

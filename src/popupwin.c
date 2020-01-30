@@ -97,6 +97,8 @@ set_padding_border(dict_T *dict, int *array, char *name, int max_val)
 	    for (i = 0; i < 4; ++i)
 		array[i] = 1;
 	    if (list != NULL)
+	    {
+		range_list_materialize(list);
 		for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
 							 ++i, li = li->li_next)
 		{
@@ -104,6 +106,7 @@ set_padding_border(dict_T *dict, int *array, char *name, int max_val)
 		    if (nr >= 0)
 			array[i] = nr > max_val ? max_val : nr;
 		}
+	    }
 	}
     }
 }
@@ -476,6 +479,9 @@ apply_move_options(win_T *wp, dict_T *d)
 	wp->w_popup_prop_id = dict_get_number(d, (char_u *)"textpropid");
 }
 
+/*
+ * Handle "moved" and "mousemoved" arguments.
+ */
     static void
 handle_moved_argument(win_T *wp, dictitem_T *di, int mousemoved)
 {
@@ -506,11 +512,13 @@ handle_moved_argument(win_T *wp, dictitem_T *di, int mousemoved)
 	     || di->di_tv.vval.v_list->lv_len == 3))
     {
 	list_T	    *l = di->di_tv.vval.v_list;
-	listitem_T  *li = l->lv_first;
+	listitem_T  *li;
 	int	    mincol;
 	int	    maxcol;
 
-	if (di->di_tv.vval.v_list->lv_len == 3)
+	range_list_materialize(l);
+	li = l->lv_first;
+	if (l->lv_len == 3)
 	{
 	    varnumber_T nr = tv_get_number(&l->lv_first->li_tv);
 
@@ -748,6 +756,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    listitem_T	*li;
 	    int		i;
 
+	    range_list_materialize(list);
 	    for (i = 0, li = list->lv_first; i < 4 && i < list->lv_len;
 						     ++i, li = li->li_next)
 	    {
@@ -780,6 +789,8 @@ apply_general_options(win_T *wp, dict_T *dict)
 	    int		i;
 
 	    if (list != NULL)
+	    {
+		range_list_materialize(list);
 		for (i = 0, li = list->lv_first; i < 8 && i < list->lv_len;
 							 ++i, li = li->li_next)
 		{
@@ -787,6 +798,7 @@ apply_general_options(win_T *wp, dict_T *dict)
 		    if (*str != NUL)
 			wp->w_border_char[i] = mb_ptr2char(str);
 		}
+	    }
 	    if (list->lv_len == 1)
 		for (i = 1; i < 8; ++i)
 		    wp->w_border_char[i] = wp->w_border_char[0];
@@ -833,6 +845,8 @@ apply_general_options(win_T *wp, dict_T *dict)
 		    ok = FALSE;
 		    break;
 		}
+		else
+		    range_list_materialize(li->li_tv.vval.v_list);
 	    }
 	}
 	if (ok)

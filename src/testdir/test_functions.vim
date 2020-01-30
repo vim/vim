@@ -1955,11 +1955,48 @@ func Test_range()
   call setreg('a', range(3))
   call assert_equal("0\n1\n2\n", getreg('a'))
 
+  " settagstack()
+  call settagstack(1, #{items : range(4)})
+  
+  " sign_define()
+  call assert_fails("call sign_define(range(5))", "E715:")
+  call assert_fails("call sign_placelist(range(5))", "E715:")
+
+  " sign_undefine()
+  call assert_fails("call sign_undefine(range(5))", "E908:")
+
+  " sign_unplacelist()
+  call assert_fails("call sign_unplacelist(range(5))", "E715:")
+
   " sort()
   call assert_equal([0, 1, 2, 3, 4, 5], sort(range(5, 0, -1)))
 
+  " 'spellsuggest'
+  func MySuggest()
+    return range(3)
+  endfunc
+  set spell spellsuggest=expr:MySuggest()
+  call assert_equal([], spellsuggest('baord', 3))
+  set nospell spellsuggest&
+
   " string()
   call assert_equal('[0, 1, 2, 3, 4]', string(range(5)))
+
+  " taglist() with 'tagfunc'
+  func TagFunc(pattern, flags, info)
+    return range(10)
+  endfunc
+  set tagfunc=TagFunc
+  call assert_fails("call taglist('asdf')", 'E987:')
+  set tagfunc=
+  
+  " term_start()
+  if has('terminal')
+    call assert_fails('call term_start(range(3, 4))', 'E474:')
+    let g:terminal_ansi_colors = range(16)
+    call assert_fails('call term_start("ls", #{term_finish: "close"})', 'E475:')
+    unlet g:terminal_ansi_colors
+  endif
 
   " type()
   call assert_equal(v:t_list, type(range(5)))

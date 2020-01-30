@@ -417,7 +417,11 @@ term_start(
     if ((opt->jo_set & (JO_IN_IO + JO_OUT_IO + JO_ERR_IO))
 					 == (JO_IN_IO + JO_OUT_IO + JO_ERR_IO)
 	|| (!(opt->jo_set & JO_OUT_IO) && (opt->jo_set & JO_OUT_BUF))
-	|| (!(opt->jo_set & JO_ERR_IO) && (opt->jo_set & JO_ERR_BUF)))
+	|| (!(opt->jo_set & JO_ERR_IO) && (opt->jo_set & JO_ERR_BUF))
+	|| (argvar != NULL
+	    && argvar->v_type == VAR_LIST
+	    && argvar->vval.v_list != NULL
+	    && argvar->vval.v_list->lv_first == &range_list_item))
     {
 	emsg(_(e_invarg));
 	return NULL;
@@ -538,7 +542,7 @@ term_start(
 	}
 	else if (argvar->v_type != VAR_LIST
 		|| argvar->vval.v_list == NULL
-		|| argvar->vval.v_list->lv_len < 1
+		|| argvar->vval.v_list->lv_len == 0
 		|| (cmd = tv_get_string_chk(
 			       &argvar->vval.v_list->lv_first->li_tv)) == NULL)
 	    cmd = (char_u*)"";
@@ -3763,9 +3767,9 @@ set_ansi_colors_list(VTerm *vterm, list_T *list)
 {
     int		n = 0;
     long_u	rgb[16];
-    listitem_T	*li = list->lv_first;
+    listitem_T	*li;
 
-    for (; li != NULL && n < 16; li = li->li_next, n++)
+    for (li = list->lv_first; li != NULL && n < 16; li = li->li_next, n++)
     {
 	char_u		*color_name;
 	guicolor_T	guicolor;
@@ -3800,6 +3804,7 @@ init_vterm_ansi_colors(VTerm *vterm)
     if (var != NULL
 	    && (var->di_tv.v_type != VAR_LIST
 		|| var->di_tv.vval.v_list == NULL
+		|| var->di_tv.vval.v_list->lv_first == &range_list_item
 		|| set_ansi_colors_list(vterm, var->di_tv.vval.v_list) == FAIL))
 	semsg(_(e_invarg2), "g:terminal_ansi_colors");
 }
