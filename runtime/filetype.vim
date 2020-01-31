@@ -833,6 +833,9 @@ au BufNewFile,BufRead *.k			setf kwt
 " Kivy
 au BufNewFile,BufRead *.kv			setf kivy
 
+" Kotlin
+au BufNewFile,BufRead *.kt,*.ktm,*.kts		setf kotlin
+
 " KDE script
 au BufNewFile,BufRead *.ks			setf kscript
 
