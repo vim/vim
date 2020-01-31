@@ -1999,7 +1999,7 @@ func Test_range()
   set tagfunc=
   
   " term_start()
-  if has('terminal')
+  if has('terminal') && has('termguicolors')
     call assert_fails('call term_start(range(3, 4))', 'E474:')
     let g:terminal_ansi_colors = range(16)
     call assert_fails('call term_start("ls", #{term_finish: "close"})', 'E475:')
