@@ -31,7 +31,9 @@ def Test_expr1()
 
   assert_equal('two', false ? 'one' : 'two')
   assert_equal('two', 0 ? 'one' : 'two')
-  assert_equal('two', 0.0 ? 'one' : 'two')
+  if has('float')
+    assert_equal('two', 0.0 ? 'one' : 'two')
+  endif
   assert_equal('two', '' ? 'one' : 'two')
 "  assert_equal('one', 0z ? 'one' : 'two')
   assert_equal('two', [] ? 'one' : 'two')
@@ -420,22 +422,25 @@ def Test_expr5()
 enddef
 
 def Test_expr5_float()
-  CheckFeature float
-  assert_equal(66.0, 60.0 + 6.0)
-  assert_equal(66.0, 60.0 + 6)
-  assert_equal(66.0, 60 + 6.0)
-  assert_equal(5.1, g:afloat + 5)
-  assert_equal(8.1, 8 + g:afloat)
-  assert_equal(10.1, g:anint + g:afloat)
-  assert_equal(10.1, g:afloat + g:anint)
+  if !has('float')
+    MissingFeature 'float'
+  else
+    assert_equal(66.0, 60.0 + 6.0)
+    assert_equal(66.0, 60.0 + 6)
+    assert_equal(66.0, 60 + 6.0)
+    assert_equal(5.1, g:afloat + 5)
+    assert_equal(8.1, 8 + g:afloat)
+    assert_equal(10.1, g:anint + g:afloat)
+    assert_equal(10.1, g:afloat + g:anint)
 
-  assert_equal(54.0, 60.0 - 6.0)
-  assert_equal(54.0, 60.0 - 6)
-  assert_equal(54.0, 60 - 6.0)
-  assert_equal(-4.9, g:afloat - 5)
-  assert_equal(7.9, 8 - g:afloat)
-  assert_equal(9.9, g:anint - g:afloat)
-  assert_equal(-9.9, g:afloat - g:anint)
+    assert_equal(54.0, 60.0 - 6.0)
+    assert_equal(54.0, 60.0 - 6)
+    assert_equal(54.0, 60 - 6.0)
+    assert_equal(-4.9, g:afloat - 5)
+    assert_equal(7.9, 8 - g:afloat)
+    assert_equal(9.9, g:anint - g:afloat)
+    assert_equal(-9.9, g:afloat - g:anint)
+  endif
 enddef
 
 func Test_expr5_fails()
@@ -476,27 +481,29 @@ def Test_expr6()
 enddef
 
 def Test_expr6_float()
-  CheckFeature float
+  if !has('float')
+    MissingFeature 'float'
+  else
+    assert_equal(36.0, 6.0 * 6)
+    assert_equal(36.0, 6 * 6.0)
+    assert_equal(36.0, 6.0 * 6.0)
+    assert_equal(1.0, g:afloat * g:anint)
 
-  assert_equal(36.0, 6.0 * 6)
-  assert_equal(36.0, 6 * 6.0)
-  assert_equal(36.0, 6.0 * 6.0)
-  assert_equal(1.0, g:afloat * g:anint)
+    assert_equal(10.0, 60 / 6.0)
+    assert_equal(10.0, 60.0 / 6)
+    assert_equal(10.0, 60.0 / 6.0)
+    assert_equal(0.01, g:afloat / g:anint)
 
-  assert_equal(10.0, 60 / 6.0)
-  assert_equal(10.0, 60.0 / 6)
-  assert_equal(10.0, 60.0 / 6.0)
-  assert_equal(0.01, g:afloat / g:anint)
+    assert_equal(4.0, 6.0 * 4 / 6)
+    assert_equal(4.0, 6 * 4.0 / 6)
+    assert_equal(4.0, 6 * 4 / 6.0)
+    assert_equal(4.0, 6.0 * 4.0 / 6)
+    assert_equal(4.0, 6 * 4.0 / 6.0)
+    assert_equal(4.0, 6.0 * 4 / 6.0)
+    assert_equal(4.0, 6.0 * 4.0 / 6.0)
 
-  assert_equal(4.0, 6.0 * 4 / 6)
-  assert_equal(4.0, 6 * 4.0 / 6)
-  assert_equal(4.0, 6 * 4 / 6.0)
-  assert_equal(4.0, 6.0 * 4.0 / 6)
-  assert_equal(4.0, 6 * 4.0 / 6.0)
-  assert_equal(4.0, 6.0 * 4 / 6.0)
-  assert_equal(4.0, 6.0 * 4.0 / 6.0)
-
-  assert_equal(4.0, 6.0 * 4.0 / 6.0)
+    assert_equal(4.0, 6.0 * 4.0 / 6.0)
+  endif
 enddef
 
 func Test_expr6_fails()
@@ -581,7 +588,9 @@ enddef
 
 def Test_expr7_float()
   " float constant
-  if has('float')
+  if !has('float')
+    MissingFeature 'float'
+  else
     assert_equal(g:float_zero, .0)
     assert_equal(g:float_zero, 0.0)
     assert_equal(g:float_neg, -9.8)

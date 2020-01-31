@@ -3460,14 +3460,31 @@ new_scope(cctx_T *cctx, scopetype_T type)
 }
 
 /*
- * Evaluate an expression that is a constant: has(arg)
+ * Evaluate an expression that is a constant:
+ *  has(arg)
+ *
+ * Also handle:
+ *  ! in front		logical NOT
+ *
  * Return FAIL if the expression is not a constant.
  */
     static int
-evaluate_const_expr4(char_u **arg, cctx_T *cctx UNUSED, typval_T *tv)
+evaluate_const_expr7(char_u **arg, cctx_T *cctx UNUSED, typval_T *tv)
 {
     typval_T	argvars[2];
+    char_u	*start_leader, *end_leader;
 
+    /*
+     * Skip '!' characters.  They are handled later.
+     */
+    start_leader = *arg;
+    while (**arg == '!')
+	*arg = skipwhite(*arg + 1);
+    end_leader = *arg;
+
+    /*
+     * Recognize only has() for now.
+     */
     if (STRNCMP("has(", *arg, 4) != 0)
 	return FAIL;
     *arg = skipwhite(*arg + 4);
@@ -3496,6 +3513,13 @@ evaluate_const_expr4(char_u **arg, cctx_T *cctx UNUSED, typval_T *tv)
     tv->vval.v_number = 0;
     f_has(argvars, tv);
     clear_tv(&argvars[0]);
+
+    while (start_leader < end_leader)
+    {
+	if (*start_leader == '!')
+	    tv->vval.v_number = !tv->vval.v_number;
+	++start_leader;
+    }
 
     return OK;
 }
@@ -3529,7 +3553,7 @@ evaluate_const_and_or(char_u **arg, cctx_T *cctx, char *op, typval_T *tv)
 	    *arg = skipwhite(p + 2);
 	    tv2.v_type = VAR_UNKNOWN;
 	    if ((opchar == '|' ? evaluate_const_expr3(arg, cctx, &tv2)
-			       : evaluate_const_expr4(arg, cctx, &tv2)) == FAIL)
+			       : evaluate_const_expr7(arg, cctx, &tv2)) == FAIL)
 	    {
 		clear_tv(&tv2);
 		return FAIL;
@@ -3558,7 +3582,7 @@ evaluate_const_and_or(char_u **arg, cctx_T *cctx, char *op, typval_T *tv)
 evaluate_const_expr3(char_u **arg, cctx_T *cctx, typval_T *tv)
 {
     // evaluate the first expression
-    if (evaluate_const_expr4(arg, cctx, tv) == FAIL)
+    if (evaluate_const_expr7(arg, cctx, tv) == FAIL)
 	return FAIL;
 
     // || and && work almost the same
