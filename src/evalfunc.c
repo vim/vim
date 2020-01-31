@@ -100,7 +100,6 @@ static void f_getpos(typval_T *argvars, typval_T *rettv);
 static void f_getreg(typval_T *argvars, typval_T *rettv);
 static void f_getregtype(typval_T *argvars, typval_T *rettv);
 static void f_gettagstack(typval_T *argvars, typval_T *rettv);
-static void f_has(typval_T *argvars, typval_T *rettv);
 static void f_haslocaldir(typval_T *argvars, typval_T *rettv);
 static void f_hasmapto(typval_T *argvars, typval_T *rettv);
 static void f_hlID(typval_T *argvars, typval_T *rettv);
@@ -3261,7 +3260,7 @@ f_gettagstack(typval_T *argvars, typval_T *rettv)
 /*
  * "has()" function
  */
-    static void
+    void
 f_has(typval_T *argvars, typval_T *rettv)
 {
     int		i;

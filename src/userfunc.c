@@ -2691,9 +2691,10 @@ ex_function(exarg_T *eap)
 		}
 	    }
 
-	    // Check for ":append", ":change", ":insert".
+	    // Check for ":append", ":change", ":insert".  Not for :def.
 	    p = skip_range(p, NULL);
-	    if ((p[0] == 'a' && (!ASCII_ISALPHA(p[1]) || p[1] == 'p'))
+	    if (eap->cmdidx != CMD_def
+		&& ((p[0] == 'a' && (!ASCII_ISALPHA(p[1]) || p[1] == 'p'))
 		    || (p[0] == 'c'
 			&& (!ASCII_ISALPHA(p[1]) || (p[1] == 'h'
 				&& (!ASCII_ISALPHA(p[2]) || (p[2] == 'a'
@@ -2701,7 +2702,10 @@ ex_function(exarg_T *eap)
 					    || !ASCII_ISALPHA(p[6])))))))
 		    || (p[0] == 'i'
 			&& (!ASCII_ISALPHA(p[1]) || (p[1] == 'n'
-				&& (!ASCII_ISALPHA(p[2]) || (p[2] == 's'))))))
+				&& (!ASCII_ISALPHA(p[2])
+				    || (p[2] == 's'
+					&& (!ASCII_ISALPHA(p[3])
+						|| p[3] == 'e'))))))))
 		skip_until = vim_strsave((char_u *)".");
 
 	    // Check for ":python <<EOF", ":tcl <<EOF", etc.

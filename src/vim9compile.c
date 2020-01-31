@@ -115,6 +115,8 @@ struct cctx_S {
 
     garray_T	ctx_imports;	    // imported items
 
+    int		ctx_skip;	    // when TRUE skip commands, when FALSE skip
+				    // commands after "else"
     scope_T	*ctx_scope;	    // current scope, NULL at toplevel
 
     garray_T	ctx_type_stack;	    // type of each item on the stack
@@ -3459,6 +3461,185 @@ new_scope(cctx_T *cctx, scopetype_T type)
 }
 
 /*
+ * Evaluate an expression that is a constant: has(arg)
+ * Return FAIL if the expression is not a constant.
+ */
+    static int
+evaluate_const_expr4(char_u **arg, cctx_T *cctx UNUSED, typval_T *tv)
+{
+    typval_T	argvars[2];
+
+    if (STRNCMP("has(", *arg, 4) != 0)
+	return FAIL;
+    *arg = skipwhite(*arg + 4);
+
+    if (**arg == '"')
+    {
+	if (get_string_tv(arg, tv, TRUE) == FAIL)
+	    return FAIL;
+    }
+    else if (**arg == '\'')
+    {
+	if (get_lit_string_tv(arg, tv, TRUE) == FAIL)
+	    return FAIL;
+    }
+    else
+	return FAIL;
+
+    *arg = skipwhite(*arg);
+    if (**arg != ')')
+	return FAIL;
+    *arg = skipwhite(*arg + 1);
+
+    argvars[0] = *tv;
+    argvars[1].v_type = VAR_UNKNOWN;
+    tv->v_type = VAR_NUMBER;
+    tv->vval.v_number = 0;
+    f_has(argvars, tv);
+    clear_tv(&argvars[0]);
+
+    return OK;
+}
+
+static int evaluate_const_expr3(char_u **arg, cctx_T *cctx, typval_T *tv);
+
+/*
+ * Compile constant || or &&.
+ */
+    static int
+evaluate_const_and_or(char_u **arg, cctx_T *cctx, char *op, typval_T *tv)
+{
+    char_u	*p = skipwhite(*arg);
+    int		opchar = *op;
+
+    if (p[0] == opchar && p[1] == opchar)
+    {
+	int	val = tv2bool(tv);
+
+	/*
+	 * Repeat until there is no following "||" or "&&"
+	 */
+	while (p[0] == opchar && p[1] == opchar)
+	{
+	    typval_T	tv2;
+
+	    if (!VIM_ISWHITE(**arg) || !VIM_ISWHITE(p[2]))
+		return FAIL;
+
+	    // eval the next expression
+	    *arg = skipwhite(p + 2);
+	    tv2.v_type = VAR_UNKNOWN;
+	    if ((opchar == '|' ? evaluate_const_expr3(arg, cctx, &tv2)
+			       : evaluate_const_expr4(arg, cctx, &tv2)) == FAIL)
+	    {
+		clear_tv(&tv2);
+		return FAIL;
+	    }
+	    if ((opchar == '&') == val)
+	    {
+		// false || tv2  or true && tv2: use tv2
+		clear_tv(tv);
+		*tv = tv2;
+		val = tv2bool(tv);
+	    }
+	    else
+		clear_tv(&tv2);
+	    p = skipwhite(*arg);
+	}
+    }
+
+    return OK;
+}
+
+/*
+ * Evaluate an expression that is a constant: expr4 && expr4 && expr4
+ * Return FAIL if the expression is not a constant.
+ */
+    static int
+evaluate_const_expr3(char_u **arg, cctx_T *cctx, typval_T *tv)
+{
+    // evaluate the first expression
+    if (evaluate_const_expr4(arg, cctx, tv) == FAIL)
+	return FAIL;
+
+    // || and && work almost the same
+    return evaluate_const_and_or(arg, cctx, "&&", tv);
+}
+
+/*
+ * Evaluate an expression that is a constant: expr3 || expr3 || expr3
+ * Return FAIL if the expression is not a constant.
+ */
+    static int
+evaluate_const_expr2(char_u **arg, cctx_T *cctx, typval_T *tv)
+{
+    // evaluate the first expression
+    if (evaluate_const_expr3(arg, cctx, tv) == FAIL)
+	return FAIL;
+
+    // || and && work almost the same
+    return evaluate_const_and_or(arg, cctx, "||", tv);
+}
+
+/*
+ * Evaluate an expression that is a constant: expr2 ? expr1 : expr1
+ * E.g. for "has('feature')".
+ * This does not produce error messages.  "tv" should be cleared afterwards.
+ * Return FAIL if the expression is not a constant.
+ */
+    static int
+evaluate_const_expr1(char_u **arg, cctx_T *cctx, typval_T *tv)
+{
+    char_u	*p;
+
+    // evaluate the first expression
+    if (evaluate_const_expr2(arg, cctx, tv) == FAIL)
+	return FAIL;
+
+    p = skipwhite(*arg);
+    if (*p == '?')
+    {
+	int		val = tv2bool(tv);
+	typval_T	tv2;
+
+	if (!VIM_ISWHITE(**arg) || !VIM_ISWHITE(p[1]))
+	    return FAIL;
+
+	// evaluate the second expression; any type is accepted
+	clear_tv(tv);
+	*arg = skipwhite(p + 1);
+	if (evaluate_const_expr1(arg, cctx, tv) == FAIL)
+	    return FAIL;
+
+	// Check for the ":".
+	p = skipwhite(*arg);
+	if (*p != ':' || !VIM_ISWHITE(**arg) || !VIM_ISWHITE(p[1]))
+	    return FAIL;
+
+	// evaluate the third expression
+	*arg = skipwhite(p + 1);
+	tv2.v_type = VAR_UNKNOWN;
+	if (evaluate_const_expr1(arg, cctx, &tv2) == FAIL)
+	{
+	    clear_tv(&tv2);
+	    return FAIL;
+	}
+	if (val)
+	{
+	    // use the expr after "?"
+	    clear_tv(&tv2);
+	}
+	else
+	{
+	    // use the expr after ":"
+	    clear_tv(tv);
+	    *tv = tv2;
+	}
+    }
+    return OK;
+}
+
+/*
  * compile "if expr"
  *
  * "if expr" Produces instructions:
@@ -3496,18 +3677,34 @@ compile_if(char_u *arg, cctx_T *cctx)
     char_u	*p = arg;
     garray_T	*instr = &cctx->ctx_instr;
     scope_T	*scope;
+    typval_T	tv;
 
-    // compile "expr"
-    if (compile_expr1(&p, cctx) == FAIL)
-	return NULL;
+    // compile "expr"; if we know it evaluates to FALSE skip the block
+    tv.v_type = VAR_UNKNOWN;
+    if (evaluate_const_expr1(&p, cctx, &tv) == OK)
+	cctx->ctx_skip = tv2bool(&tv) ? FALSE : TRUE;
+    else
+	cctx->ctx_skip = MAYBE;
+    clear_tv(&tv);
+    if (cctx->ctx_skip == MAYBE)
+    {
+	p = arg;
+	if (compile_expr1(&p, cctx) == FAIL)
+	    return NULL;
+    }
 
     scope = new_scope(cctx, IF_SCOPE);
     if (scope == NULL)
 	return NULL;
 
-    // "where" is set when ":elseif", "else" or ":endif" is found
-    scope->se_u.se_if.is_if_label = instr->ga_len;
-    generate_JUMP(cctx, JUMP_IF_FALSE, 0);
+    if (cctx->ctx_skip == MAYBE)
+    {
+	// "where" is set when ":elseif", "else" or ":endif" is found
+	scope->se_u.se_if.is_if_label = instr->ga_len;
+	generate_JUMP(cctx, JUMP_IF_FALSE, 0);
+    }
+    else
+	scope->se_u.se_if.is_if_label = -1;
 
     return p;
 }
@@ -3519,6 +3716,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     garray_T	*instr = &cctx->ctx_instr;
     isn_T	*isn;
     scope_T	*scope = cctx->ctx_scope;
+    typval_T	tv;
 
     if (scope == NULL || scope->se_type != IF_SCOPE)
     {
@@ -3527,22 +3725,35 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     }
     cctx->ctx_locals.ga_len = scope->se_local_count;
 
-    // jump from previous block to the end
-    if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
+    if (cctx->ctx_skip != TRUE)
+    {
+	if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
 						    JUMP_ALWAYS, cctx) == FAIL)
-	return NULL;
+	    return NULL;
+	// previous "if" or "elseif" jumps here
+	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_if.is_if_label;
+	isn->isn_arg.jump.jump_where = instr->ga_len;
+    }
 
-    // previous "if" or "elseif" jumps here
-    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_if.is_if_label;
-    isn->isn_arg.jump.jump_where = instr->ga_len;
+    // compile "expr"; if we know it evaluates to FALSE skip the block
+    tv.v_type = VAR_UNKNOWN;
+    if (evaluate_const_expr1(&p, cctx, &tv) == OK)
+	cctx->ctx_skip = tv2bool(&tv) ? FALSE : TRUE;
+    else
+	cctx->ctx_skip = MAYBE;
+    clear_tv(&tv);
+    if (cctx->ctx_skip == MAYBE)
+    {
+	p = arg;
+	if (compile_expr1(&p, cctx) == FAIL)
+	    return NULL;
 
-    // compile "expr"
-    if (compile_expr1(&p, cctx) == FAIL)
-	return NULL;
-
-    // "where" is set when ":elseif", "else" or ":endif" is found
-    scope->se_u.se_if.is_if_label = instr->ga_len;
-    generate_JUMP(cctx, JUMP_IF_FALSE, 0);
+	// "where" is set when ":elseif", "else" or ":endif" is found
+	scope->se_u.se_if.is_if_label = instr->ga_len;
+	generate_JUMP(cctx, JUMP_IF_FALSE, 0);
+    }
+    else
+	scope->se_u.se_if.is_if_label = -1;
 
     return p;
 }
@@ -3562,14 +3773,26 @@ compile_else(char_u *arg, cctx_T *cctx)
     }
     cctx->ctx_locals.ga_len = scope->se_local_count;
 
-    // jump from previous block to the end
-    if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
+    // jump from previous block to the end, unless the else block is empty
+    if (cctx->ctx_skip == MAYBE)
+    {
+	if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
 						    JUMP_ALWAYS, cctx) == FAIL)
-	return NULL;
+	    return NULL;
+    }
 
-    // previous "if" or "elseif" jumps here
-    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_if.is_if_label;
-    isn->isn_arg.jump.jump_where = instr->ga_len;
+    if (cctx->ctx_skip != TRUE)
+    {
+	if (scope->se_u.se_if.is_if_label >= 0)
+	{
+	    // previous "if" or "elseif" jumps here
+	    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_if.is_if_label;
+	    isn->isn_arg.jump.jump_where = instr->ga_len;
+	}
+    }
+
+    if (cctx->ctx_skip != MAYBE)
+	cctx->ctx_skip = !cctx->ctx_skip;
 
     return p;
 }
@@ -3591,12 +3814,15 @@ compile_endif(char_u *arg, cctx_T *cctx)
     cctx->ctx_scope = scope->se_outer;
     cctx->ctx_locals.ga_len = scope->se_local_count;
 
-    // previous "if" or "elseif" jumps here
-    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_if.is_if_label;
-    isn->isn_arg.jump.jump_where = instr->ga_len;
-
+    if (scope->se_u.se_if.is_if_label >= 0)
+    {
+	// previous "if" or "elseif" jumps here
+	isn = ((isn_T *)instr->ga_data) + scope->se_u.se_if.is_if_label;
+	isn->isn_arg.jump.jump_where = instr->ga_len;
+    }
     // Fill in the "end" label in jumps at the end of the blocks.
     compile_fill_jump_to_end(&ifscope->is_end_label, cctx);
+    cctx->ctx_skip = FALSE;
 
     vim_free(scope);
     return arg;
@@ -4326,6 +4552,12 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 
 	if (p == ea.cmd && ea.cmdidx != CMD_SIZE)
 	{
+	    if (cctx.ctx_skip == TRUE)
+	    {
+		line += STRLEN(line);
+		continue;
+	    }
+
 	    // Expression or function call.
 	    if (ea.cmdidx == CMD_eval)
 	    {
@@ -4350,6 +4582,15 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	}
 
 	p = skipwhite(p);
+
+	if (cctx.ctx_skip == TRUE
+		&& ea.cmdidx != CMD_elseif
+		&& ea.cmdidx != CMD_else
+		&& ea.cmdidx != CMD_endif)
+	{
+	    line += STRLEN(line);
+	    continue;
+	}
 
 	switch (ea.cmdidx)
 	{

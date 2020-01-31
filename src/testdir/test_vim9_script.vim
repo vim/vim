@@ -368,5 +368,35 @@ def do_something():
 EOF
 endfunc
 
+def HasEval()
+  if has('eval')
+    echo 'yes'
+  else
+    echo 'no'
+  endif
+enddef
+
+def HasNothing()
+  if has('nothing')
+    echo 'yes'
+  else
+    echo 'no'
+  endif
+enddef
+
+def Test_compile_const_expr()
+  assert_equal("\nyes", execute('call HasEval()'))
+  let instr = execute('disassemble HasEval')
+  call assert_match('PUSHS "yes"', instr)
+  call assert_notmatch('PUSHS "no"', instr)
+  call assert_notmatch('JUMP', instr)
+
+  assert_equal("\nno", execute('call HasNothing()'))
+  instr = execute('disassemble HasNothing')
+  call assert_notmatch('PUSHS "yes"', instr)
+  call assert_match('PUSHS "no"', instr)
+  call assert_notmatch('JUMP', instr)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
