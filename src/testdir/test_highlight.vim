@@ -622,6 +622,7 @@ endfunc
 
 func Test_wincolor_listchars()
   CheckScreendump
+  CheckFeature conceal
 
   let lines =<< trim END
 	call setline(1, ["one","\t\tsome random text enough long to show 'extends' and 'precedes' includingnbsps, preceding tabs and trailing spaces    ","three"])
