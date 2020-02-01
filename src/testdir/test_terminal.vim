@@ -2321,3 +2321,44 @@ func Test_terminal_api_arg()
   unlet! g:called_bufnum
   unlet! g:called_arg
 endfunc
+
+func Test_terminal_in_popup()
+  CheckRunVimInTerminal
+
+  let text =<< trim END
+    some text
+    to edit
+    in a popup window
+  END
+  call writefile(text, 'Xtext')
+  let cmd = GetVimCommandClean()
+  let lines = [
+	\ 'call setline(1, range(20))',
+	\ 'hi PopTerm ctermbg=grey',
+	\ 'func OpenTerm(setColor)',
+	\ "  let buf = term_start('" .. cmd .. " Xtext', #{hidden: 1, term_finish: 'close'})",
+	\ '  let winid = popup_create(buf, #{minwidth: 45, minheight: 7, border: [], drag: 1, resize: 1})',
+	\ '  if a:setColor',
+	\ '    call win_execute(winid, "set wincolor=PopTerm")',
+	\ '  endif',
+	\ 'endfunc',
+	\ 'call OpenTerm(0)',
+	\ ]
+  call writefile(lines, 'XtermPopup')
+  let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
+  call VerifyScreenDump(buf, 'Test_terminal_popup_1', {})
+
+  call term_sendkeys(buf, ":q\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_2', {})
+ 
+  call term_sendkeys(buf, ":call OpenTerm(1)\<CR>")
+  call term_sendkeys(buf, ":set hlsearch\<CR>")
+  call term_sendkeys(buf, "/edit\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_3', {})
+ 
+  call term_sendkeys(buf, ":q\<CR>")
+  call term_wait(buf, 50)  " wait for terminal to vanish
+
+  call StopVimInTerminal(buf)
+  call delete('XtermPopup')
+endfunc

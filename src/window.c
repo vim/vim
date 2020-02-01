@@ -4344,7 +4344,7 @@ win_goto(win_T *wp)
 #endif
 
 #ifdef FEAT_PROP_POPUP
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_POPUP_WINDOW || ERROR_IF_TERM_POPUP_WINDOW)
 	return;
     if (popup_is_popup(wp))
     {
@@ -4486,6 +4486,10 @@ win_goto_ver(
 {
     win_T	*win;
 
+#ifdef FEAT_PROP_POPUP
+    if (ERROR_IF_TERM_POPUP_WINDOW)
+	return;
+#endif
     win = win_vert_neighbor(curtab, curwin, up, count);
     if (win != NULL)
 	win_goto(win);
@@ -4564,6 +4568,10 @@ win_goto_hor(
 {
     win_T	*win;
 
+#ifdef FEAT_PROP_POPUP
+    if (ERROR_IF_TERM_POPUP_WINDOW)
+	return;
+#endif
     win = win_horz_neighbor(curtab, curwin, left, count);
     if (win != NULL)
 	win_goto(win);

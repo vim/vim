@@ -2128,6 +2128,12 @@ did_set_string_option(
 		errmsg = e_invarg;
 	}
     }
+    // 'wincolor'
+    else if (varp == &curwin->w_p_wcr)
+    {
+	if (curwin->w_buffer->b_term != NULL)
+	    term_update_colors();
+    }
 # if defined(MSWIN)
     // 'termwintype'
     else if (varp == &p_twt)

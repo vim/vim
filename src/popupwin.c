@@ -1337,6 +1337,11 @@ popup_adjust_position(win_T *wp)
 
     wp->w_has_scrollbar = wp->w_want_scrollbar
 	   && (wp->w_topline > 1 || lnum <= wp->w_buffer->b_ml.ml_line_count);
+#ifdef FEAT_TERMINAL
+    if (wp->w_buffer->b_term != NULL)
+	// Terminal window never has a scrollbar, adjusts to window height.
+	wp->w_has_scrollbar = FALSE;
+#endif
     if (wp->w_has_scrollbar)
     {
 	++right_extra;
@@ -1769,20 +1774,13 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
 		semsg(_(e_nobufnr), argvars[0].vval.v_number);
 		return NULL;
 	    }
-#ifdef FEAT_TERMINAL
-	    if (buf->b_term != NULL)
-	    {
-		emsg(_("E278: Cannot put a terminal buffer in a popup window"));
-		return NULL;
-	    }
-#endif
 	}
 	else if (!(argvars[0].v_type == VAR_STRING
 			&& argvars[0].vval.v_string != NULL)
 		    && !(argvars[0].v_type == VAR_LIST
 			&& argvars[0].vval.v_list != NULL))
 	{
-	    emsg(_(e_listreq));
+	    emsg(_("E450: buffer number, text or a list required"));
 	    return NULL;
 	}
 	if (argvars[1].v_type != VAR_DICT || argvars[1].vval.v_dict == NULL)
@@ -2031,6 +2029,10 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     redraw_all_later(NOT_VALID);
     popup_mask_refresh = TRUE;
 
+    // When running a terminal in the popup it becomes the current window.
+    if (buf->b_term != NULL)
+	win_enter(wp, FALSE);
+
     return wp;
 }
 
@@ -2107,6 +2109,13 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
 {
     int id = wp->w_id;
 
+    if (wp == curwin && curbuf->b_term != NULL)
+    {
+	// Closing popup window with a terminal: put focus back on the previous
+	// window.
+	win_enter(prevwin, FALSE);
+    }
+
     // Just in case a check higher up is missing.
     if (wp == curwin && ERROR_IF_POPUP_WINDOW)
 	return;
@@ -2118,7 +2127,7 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
     popup_close(id);
 }
 
-    static void
+    void
 popup_close_with_retval(win_T *wp, int retval)
 {
     typval_T res;
@@ -2834,9 +2843,23 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
     int
 error_if_popup_window()
 {
-    if (WIN_IS_POPUP(curwin))
+    // win_execute() may set "curwin" to a popup window temporarily, but many
+    // commands are disallowed then.  When a terminal runs in the popup most
+    // things are allowed.
+    if (WIN_IS_POPUP(curwin) && curbuf->b_term == NULL)
     {
 	emsg(_("E994: Not allowed in a popup window"));
+	return TRUE;
+    }
+    return FALSE;
+}
+
+    int
+error_if_term_popup_window()
+{
+    if (WIN_IS_POPUP(curwin) && curbuf->b_term != NULL)
+    {
+	emsg(_("E899: Not allowed for a terminal in a popup window"));
 	return TRUE;
     }
     return FALSE;
@@ -2960,6 +2983,10 @@ popup_do_filter(int c)
     int		save_KeyTyped = KeyTyped;
     int		state;
     int		was_must_redraw = must_redraw;
+
+    // Popup window with terminal always gets focus.
+    if (popup_is_popup(curwin) && curbuf->b_term != NULL)
+	return FALSE;
 
     if (recursive)
 	return FALSE;
@@ -3430,6 +3457,9 @@ update_popups(void (*win_update)(win_T *wp))
 
 	wp->w_winrow -= top_off;
 	wp->w_wincol -= left_extra;
+	// cursor position matters in terminal
+	wp->w_wrow += top_off;
+	wp->w_wcol += left_extra;
 
 	total_width = popup_width(wp);
 	total_height = popup_height(wp);

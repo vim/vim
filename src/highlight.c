@@ -3134,8 +3134,9 @@ syn_id2colors(int hl_id, guicolor_T *fgp, guicolor_T *bgp)
 #endif
 
 #if (defined(MSWIN) \
-	&& (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL)) \
-	&& defined(FEAT_TERMGUICOLORS)) || defined(PROTO)
+	    && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL)) \
+	    && defined(FEAT_TERMGUICOLORS)) \
+	|| defined(FEAT_TERMINAL) || defined(PROTO)
     void
 syn_id2cterm_bg(int hl_id, int *fgp, int *bgp)
 {

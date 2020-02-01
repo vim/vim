@@ -491,7 +491,7 @@ win_line(
 	{
 	    extra_check = TRUE;
 	    get_term_attr = TRUE;
-	    win_attr = term_get_attr(wp->w_buffer, lnum, -1);
+	    win_attr = term_get_attr(wp, lnum, -1);
 	}
 #endif
 
@@ -1419,7 +1419,7 @@ win_line(
 		syntax_attr = 0;
 # ifdef FEAT_TERMINAL
 		if (get_term_attr)
-		    syntax_attr = term_get_attr(wp->w_buffer, lnum, vcol);
+		    syntax_attr = term_get_attr(wp, lnum, vcol);
 # endif
 		// Get syntax attribute.
 		if (has_syntax)
