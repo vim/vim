@@ -2029,9 +2029,11 @@ popup_create(typval_T *argvars, typval_T *rettv, create_type_T type)
     redraw_all_later(NOT_VALID);
     popup_mask_refresh = TRUE;
 
+#ifdef FEAT_TERMINAL
     // When running a terminal in the popup it becomes the current window.
     if (buf->b_term != NULL)
 	win_enter(wp, FALSE);
+#endif
 
     return wp;
 }
@@ -2109,12 +2111,14 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
 {
     int id = wp->w_id;
 
+#ifdef FEAT_TERMINAL
     if (wp == curwin && curbuf->b_term != NULL)
     {
 	// Closing popup window with a terminal: put focus back on the previous
 	// window.
 	win_enter(prevwin, FALSE);
     }
+#endif
 
     // Just in case a check higher up is missing.
     if (wp == curwin && ERROR_IF_POPUP_WINDOW)
@@ -2846,7 +2850,11 @@ error_if_popup_window()
     // win_execute() may set "curwin" to a popup window temporarily, but many
     // commands are disallowed then.  When a terminal runs in the popup most
     // things are allowed.
-    if (WIN_IS_POPUP(curwin) && curbuf->b_term == NULL)
+    if (WIN_IS_POPUP(curwin)
+# ifdef FEAT_TERMINAL
+	    && curbuf->b_term == NULL
+# endif
+	    )
     {
 	emsg(_("E994: Not allowed in a popup window"));
 	return TRUE;
@@ -2854,6 +2862,7 @@ error_if_popup_window()
     return FALSE;
 }
 
+# if defined(FEAT_TERMINAL) || defined(PROTO)
     int
 error_if_term_popup_window()
 {
@@ -2864,6 +2873,7 @@ error_if_term_popup_window()
     }
     return FALSE;
 }
+# endif
 
 /*
  * Reset all the "handled_flag" flags in global popup windows and popup windows
@@ -2984,9 +2994,11 @@ popup_do_filter(int c)
     int		state;
     int		was_must_redraw = must_redraw;
 
+#ifdef FEAT_TERMINAL
     // Popup window with terminal always gets focus.
     if (popup_is_popup(curwin) && curbuf->b_term != NULL)
 	return FALSE;
+#endif
 
     if (recursive)
 	return FALSE;
