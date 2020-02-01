@@ -2360,7 +2360,7 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
     int		id = (int)tv_get_number(argvars);
     win_T	*wp;
 
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
 
     wp = find_popup_win(id);
@@ -2511,7 +2511,7 @@ popup_close_tabpage(tabpage_T *tp, int id)
     void
 close_all_popups(void)
 {
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
     while (first_popupwin != NULL)
 	popup_close(first_popupwin->w_id);
@@ -2845,14 +2845,14 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 }
 
     int
-error_if_popup_window()
+error_if_popup_window(int also_with_term UNUSED)
 {
     // win_execute() may set "curwin" to a popup window temporarily, but many
     // commands are disallowed then.  When a terminal runs in the popup most
     // things are allowed.
     if (WIN_IS_POPUP(curwin)
 # ifdef FEAT_TERMINAL
-	    && curbuf->b_term == NULL
+	    && (also_with_term || curbuf->b_term == NULL)
 # endif
 	    )
     {

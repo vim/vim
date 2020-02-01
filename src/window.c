@@ -122,7 +122,7 @@ do_window(
 #endif
     char_u	cbuf[40];
 
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
 
 #ifdef FEAT_CMDWIN
@@ -784,7 +784,7 @@ check_split_disallowed()
     int
 win_split(int size, int flags)
 {
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return FAIL;
 
     // When the ":tab" modifier was used open a new tab page instead.
@@ -1574,7 +1574,7 @@ win_exchange(long Prenum)
     win_T	*wp2;
     int		temp;
 
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
     if (ONE_WINDOW)	    // just one window
     {
@@ -2441,7 +2441,7 @@ win_close(win_T *win, int free_buf)
     int		had_diffmode = win->w_p_diff;
 #endif
 
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return FAIL;
 
     if (last_window())
@@ -4344,7 +4344,7 @@ win_goto(win_T *wp)
 #endif
 
 #ifdef FEAT_PROP_POPUP
-    if (ERROR_IF_POPUP_WINDOW || ERROR_IF_TERM_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
     if (popup_is_popup(wp))
     {

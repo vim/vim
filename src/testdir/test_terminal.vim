@@ -2357,7 +2357,7 @@ func Test_terminal_in_popup()
   call VerifyScreenDump(buf, 'Test_terminal_popup_3', {})
  
   call term_sendkeys(buf, ":q\<CR>")
-  call term_wait(buf, 50)  " wait for terminal to vanish
+  call term_wait(buf, 100)  " wait for terminal to vanish
 
   call StopVimInTerminal(buf)
   call delete('XtermPopup')
