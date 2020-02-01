@@ -5300,6 +5300,7 @@ fun! netrw#BrowseX(fname,remote)
 
   " set up redirection (avoids browser messages)
   " by default, g:netrw_suppress_gx_mesg is true
+  redir=""
   if g:netrw_suppress_gx_mesg
    if &srr =~ "%s"
     if (has("win32") || has("win95") || has("win64") || has("win16"))
@@ -5383,7 +5384,7 @@ fun! netrw#BrowseX(fname,remote)
 
   elseif has("unix") && executable("exo-open") && executable("xdg-open") && executable("setsid")
 "   call Decho("(netrw#BrowseX) unix, exo-open, xdg-open",'~'.expand("<slnum>"))
-   call s:NetrwExe("sil !setsid xdg-open ".s:ShellEscape(fname,1).redir)
+   call s:NetrwExe("sil !setsid xdg-open ".s:ShellEscape(fname,1).redir."&")
    let ret= v:shell_error
 
   elseif has("unix") && $DESKTOP_SESSION == "mate" && executable("atril")
@@ -5402,7 +5403,7 @@ fun! netrw#BrowseX(fname,remote)
 
   elseif has("unix") && executable("xdg-open")
 "   call Decho("(netrw#BrowseX) unix and xdg-open",'~'.expand("<slnum>"))
-   call s:NetrwExe("sil !xdg-open ".s:ShellEscape(fname,1).redir)
+   call s:NetrwExe("sil !xdg-open ".s:ShellEscape(fname,1).redir."&")
    let ret= v:shell_error
 
   elseif has("macunix") && executable("open")
