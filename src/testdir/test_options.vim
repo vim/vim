@@ -659,4 +659,17 @@ func Test_buftype()
   close!
 endfunc
 
+" Test for the 'shellquote' option
+func Test_shellquote()
+  CheckUnix
+  set shellquote=#
+  set verbose=20
+  redir => v
+  silent! !echo Hello
+  redir END
+  set verbose&
+  set shellquote&
+  call assert_match(': "#echo Hello#"', v)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
