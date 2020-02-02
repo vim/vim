@@ -91,17 +91,17 @@ func Test_helptag_cmd()
     " Read-only tags file
     call writefile([''], 'Xdir/tags')
     call setfperm('Xdir/tags', 'r-xr--r--')
-    call assert_fails('helptags Xdir', 'E152:')
+    call assert_fails('helptags Xdir', 'E152:', getfperm('Xdir/tags'))
     call delete('Xdir/tags')
 
     " No permission to read the help file
-    call setfperm('Xdir/a/doc/sample.txt', '-wx------')
-    call assert_fails('helptags Xdir', 'E153:')
+    call setfperm('Xdir/a/doc/sample.txt', '-w-------')
+    call assert_fails('helptags Xdir', 'E153:', getfperm('Xdir/a/doc/sample.txt'))
+    call delete('Xdir/a/doc/sample.txt')
     call delete('Xdir/tags')
   endif
 
   " Duplicate tags in the help file
-  call delete('Xdir/a/doc/sample.txt')
   call writefile(['*tag1*', '*tag1*', '*tag2*'], 'Xdir/a/doc/sample.txt')
   call assert_fails('helptags Xdir', 'E154:')
 
