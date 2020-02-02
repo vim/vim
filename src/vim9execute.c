@@ -1502,21 +1502,26 @@ failed:
 ex_disassemble(exarg_T *eap)
 {
 #ifdef DISASSEMBLE
-    ufunc_T	*ufunc = find_func(eap->arg, NULL);
+    char_u	*fname;
+    ufunc_T	*ufunc;
     dfunc_T	*dfunc;
     isn_T	*instr;
     int		current;
     int		line_idx = 0;
     int		prev_current = 0;
 
+    fname = trans_function_name(&eap->arg, FALSE,
+	     TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF, NULL, NULL);
+    ufunc = find_func(fname, NULL);
+    vim_free(fname);
     if (ufunc == NULL)
     {
-	semsg("Cannot find function %s", eap->arg);
+	semsg("E1061: Cannot find function %s", eap->arg);
 	return;
     }
     if (ufunc->uf_dfunc_idx < 0)
     {
-	semsg("Function %s is not compiled", eap->arg);
+	semsg("E1062: Function %s is not compiled", eap->arg);
 	return;
     }
     if (ufunc->uf_name_exp != NULL)

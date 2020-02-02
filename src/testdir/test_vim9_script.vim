@@ -106,7 +106,7 @@ def Test_call_ufunc_count()
   Increment()
   " works with and without :call
   assert_equal(4, g:counter)
-  call assert_equal(4, g:counter)
+  assert_equal(4, g:counter)
   unlet g:counter
 enddef
 
@@ -354,7 +354,7 @@ def Test_fixed_size_list()
   l->remove(0)
   l->add(5)
   l->insert(99, 1)
-  call assert_equal([2, 99, 3, 4, 5], l)
+  assert_equal([2, 99, 3, 4, 5], l)
 enddef
 
 " Test that inside :function a Python function can be defined, :def is not
@@ -387,15 +387,52 @@ enddef
 def Test_compile_const_expr()
   assert_equal("\nyes", execute('call HasEval()'))
   let instr = execute('disassemble HasEval')
-  call assert_match('PUSHS "yes"', instr)
-  call assert_notmatch('PUSHS "no"', instr)
-  call assert_notmatch('JUMP', instr)
+  assert_match('PUSHS "yes"', instr)
+  assert_notmatch('PUSHS "no"', instr)
+  assert_notmatch('JUMP', instr)
 
   assert_equal("\nno", execute('call HasNothing()'))
   instr = execute('disassemble HasNothing')
-  call assert_notmatch('PUSHS "yes"', instr)
-  call assert_match('PUSHS "no"', instr)
-  call assert_notmatch('JUMP', instr)
+  assert_notmatch('PUSHS "yes"', instr)
+  assert_match('PUSHS "no"', instr)
+  assert_notmatch('JUMP', instr)
+enddef
+
+func NotCompiled()
+  echo "not"
+endfunc
+
+let s:scriptvar = 4
+let g:globalvar = 'g'
+
+def s:ScriptFunc(arg: string)
+  let local = 1
+  buffers
+  echo arg
+  echo local
+  echo v:version
+  echo s:scriptvar
+  echo g:globalvar
+  echo &tabstop
+  echo $ENVVAR
+  echo @z
+enddef
+
+def Test_disassemble()
+  assert_fails('disass NoFunc', 'E1061:')
+  assert_fails('disass NotCompiled', 'E1062:')
+
+  let res = execute('disass s:ScriptFunc')
+  assert_match('<SNR>\d*_ScriptFunc.*'
+        \ .. 'buffers.*'
+        \ .. ' EXEC \+buffers.*'
+        \ .. ' LOAD arg\[-1\].*'
+        \ .. ' LOAD $0.*'
+        \ .. ' LOADV v:version.*'
+        \ .. ' LOADS s:scriptvar from .*test_vim9_script.vim.*'
+        \ .. ' LOADG g:globalvar.*'
+        \ .. ' LOADENV $ENVVAR.*'
+        \ .. ' LOADREG @z.*', res)
 enddef
 
 

@@ -1060,6 +1060,8 @@ call_user_func(
     if (fp->uf_dfunc_idx >= 0)
     {
 	estack_push_ufunc(ETYPE_UFUNC, fp, 1);
+	save_current_sctx = current_sctx;
+	current_sctx = fp->uf_script_ctx;
 
 	// Execute the compiled function.
 	call_def_function(fp, argcount, argvars, rettv);
@@ -1067,6 +1069,7 @@ call_user_func(
 	current_funccal = fc->caller;
 
 	estack_pop();
+	current_sctx = save_current_sctx;
 	free_funccal(fc);
 	return;
     }
