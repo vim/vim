@@ -3260,6 +3260,29 @@ term_after_channel_closed(term_T *term)
     return FALSE;
 }
 
+#if defined(FEAT_PROP_POPUP) || defined(PROTO)
+/*
+ * If the current window is a terminal in a popup window and the job has
+ * finished, close the popup window and to back to the previous window.
+ * Otherwise return FAIL.
+ */
+    int
+may_close_term_popup(void)
+{
+    if (popup_is_popup(curwin) && curbuf->b_term != NULL
+					  && !term_job_running(curbuf->b_term))
+    {
+	win_T *pwin = curwin;
+
+	if (win_valid(prevwin))
+	    win_enter(prevwin, FALSE);
+	popup_close_with_retval(pwin, 0);
+	return OK;
+    }
+    return FAIL;
+}
+#endif
+
 /*
  * Called when a channel has been closed.
  * If this was a channel for a terminal window then finish it up.

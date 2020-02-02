@@ -2863,10 +2863,15 @@ error_if_popup_window(int also_with_term UNUSED)
 }
 
 # if defined(FEAT_TERMINAL) || defined(PROTO)
+/*
+ * Return TRUE if the current window is running a terminal in a popup window.
+ * Return FALSE when the job has ended.
+ */
     int
 error_if_term_popup_window()
 {
-    if (WIN_IS_POPUP(curwin) && curbuf->b_term != NULL)
+    if (WIN_IS_POPUP(curwin) && curbuf->b_term != NULL
+					   && term_job_running(curbuf->b_term))
     {
 	emsg(_("E899: Not allowed for a terminal in a popup window"));
 	return TRUE;

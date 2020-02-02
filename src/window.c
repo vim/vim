@@ -2441,6 +2441,11 @@ win_close(win_T *win, int free_buf)
     int		had_diffmode = win->w_p_diff;
 #endif
 
+#if defined(FEAT_TERMINAL) && defined(FEAT_PROP_POPUP)
+    // Can close a popup window with a terminal if the job has finished.
+    if (may_close_term_popup() == OK)
+	return OK;
+#endif
     if (ERROR_IF_ANY_POPUP_WINDOW)
 	return FAIL;
 
@@ -6438,6 +6443,12 @@ only_one_window(void)
 {
     int		count = 0;
     win_T	*wp;
+
+#if defined(FEAT_PROP_POPUP)
+    // If the current window is a popup then there always is another window.
+    if (popup_is_popup(curwin))
+	return FALSE;
+#endif
 
     // If there is another tab page there always is another window.
     if (first_tabpage->tp_next != NULL)

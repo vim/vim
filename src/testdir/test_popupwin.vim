@@ -2396,10 +2396,20 @@ endfunc
 
 func Test_popupwin_terminal_buffer()
   CheckFeature terminal
+  CheckUnix
 
+  let origwin = win_getid()
   let ptybuf = term_start(&shell, #{hidden: 1})
-  call assert_fails('let winnr = popup_create(ptybuf, #{})', 'E278:')
-  exe 'bwipe! ' .. ptybuf
+  let winnr = popup_create(ptybuf, #{minwidth: 40, minheight: 10})
+  " Wait for shell to start
+  sleep 200m
+  " Cannot quit while job is running
+  call assert_fails('call feedkeys("\<C-W>:quit\<CR>", "xt")', 'E948:')
+  call feedkeys("exit\<CR>", 'xt')
+  " Wait for shell to exit
+  sleep 100m
+  call feedkeys(":quit\<CR>", 'xt')
+  call assert_equal(origwin, win_getid())
 endfunc
 
 func Test_popupwin_with_buffer_and_filter()
