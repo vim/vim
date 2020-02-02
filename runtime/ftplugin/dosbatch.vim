@@ -29,7 +29,7 @@ if executable('help.exe')
  setlocal keywordprg=:Help
 endif
 
-let b:undo_ftplugin = "setlocal comments< formatoptions<"
+let b:undo_ftplugin = "setlocal comments< formatoptions< keywordprg<"
     \ . "| unlet! b:browsefiler"
 
 let &cpo = s:cpo_save
