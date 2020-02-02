@@ -87,7 +87,8 @@ func Test_helptag_cmd()
   call assert_equal(["help-tags\ttags\t1"], readfile('Xdir/tags'))
   call delete('Xdir/tags')
 
-  if has('unix')
+  " The following tests fail on FreeBSD for some reason
+  if has('unix') && !has('bsd')
     " Read-only tags file
     call writefile([''], 'Xdir/tags')
     call setfperm('Xdir/tags', 'r-xr--r--')
