@@ -1,4 +1,5 @@
 source shared.vim
+source term_util.vim
 
 command -nargs=1 MissingFeature throw 'Skipped: ' .. <args> .. ' feature missing'
 

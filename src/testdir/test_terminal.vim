@@ -2331,7 +2331,7 @@ func Test_terminal_in_popup()
     in a popup window
   END
   call writefile(text, 'Xtext')
-  let cmd = GetVimCommandClean()
+  let cmd = GetVimCommandCleanTerm()
   let lines = [
 	\ 'call setline(1, range(20))',
 	\ 'hi PopTerm ctermbg=grey',

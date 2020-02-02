@@ -594,6 +594,8 @@ endfunc
 
 func Test_wincolor()
   CheckScreendump
+  " make sure the width is enough for the test
+  set columns=80
 
   let lines =<< trim END
 	set cursorline cursorcolumn rnu
@@ -686,7 +688,8 @@ func Test_1_highlight_Normalgroup_exists()
   endif
 endfunc
 
-function Test_no_space_before_xxx()
+" Do this test last, sometimes restoring the columns doesn't work
+function Test_z_no_space_before_xxx()
   let l:org_columns = &columns
   set columns=17
   let l:hi_StatusLineTermNC = join(split(execute('hi StatusLineTermNC')))
