@@ -18,17 +18,21 @@ typedef enum {
     // get and set variables
     ISN_LOAD,	    // push local variable isn_arg.number
     ISN_LOADV,	    // push v: variable isn_arg.number
-    ISN_LOADSCRIPT, // push script-local variable isn_arg.script.
-    ISN_LOADS,	    // push s: variable isn_arg.string
     ISN_LOADG,	    // push g: variable isn_arg.string
+    ISN_LOADS,	    // push s: variable isn_arg.loadstore
+    ISN_LOADSCRIPT, // push script-local variable isn_arg.script.
     ISN_LOADOPT,    // push option isn_arg.string
     ISN_LOADENV,    // push environment variable isn_arg.string
     ISN_LOADREG,    // push register isn_arg.number
 
     ISN_STORE,	    // pop into local variable isn_arg.number
+    ISN_STOREV,	    // pop into v: variable isn_arg.number
     ISN_STOREG,	    // pop into global variable isn_arg.string
+    ISN_STORES,	    // pop into scirpt variable isn_arg.loadstore
     ISN_STORESCRIPT, // pop into scirpt variable isn_arg.script
     ISN_STOREOPT,   // pop into option isn_arg.string
+    ISN_STOREENV,    // pop into environment variable isn_arg.string
+    ISN_STOREREG,    // pop into register isn_arg.number
     // ISN_STOREOTHER, // pop into other script variable isn_arg.other.
 
     ISN_STORENR,    // store number into local variable isn_arg.storenr.str_idx
@@ -180,13 +184,13 @@ typedef struct {
     int		so_flags;
 } storeopt_T;
 
-// arguments to ISN_LOADS
+// arguments to ISN_LOADS and ISN_STORES
 typedef struct {
     char_u	*ls_name;	// variable name
     int		ls_sid;		// script ID
-} loads_T;
+} loadstore_T;
 
-// arguments to ISN_LOADSCRIPT
+// arguments to ISN_LOADSCRIPT and ISN_STORESCRIPT
 typedef struct {
     int		script_sid;	// script ID
     int		script_idx;	// index in sn_var_vals
@@ -217,7 +221,7 @@ typedef struct {
 	checktype_T	    type;
 	storenr_T	    storenr;
 	storeopt_T	    storeopt;
-	loads_T		    loads;
+	loadstore_T	    loadstore;
 	script_T	    script;
     } isn_arg;
 } isn_T;

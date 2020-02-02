@@ -335,7 +335,7 @@ check_number_or_float(vartype_T type1, vartype_T type2, char_u *op)
 						     || type2 == VAR_UNKNOWN)))
     {
 	if (*op == '+')
-	    semsg(_("E1035: wrong argument type for +"));
+	    emsg(_("E1035: wrong argument type for +"));
 	else
 	    semsg(_("E1036: %c requires number or float arguments"), *op);
 	return FAIL;
@@ -721,20 +721,49 @@ generate_LOAD(
 }
 
 /*
+ * Generate an ISN_LOADV instruction.
+ */
+    static int
+generate_LOADV(
+	cctx_T	    *cctx,
+	char_u	    *name,
+	int	    error)
+{
+    // load v:var
+    int vidx = find_vim_var(name);
+
+    if (vidx < 0)
+    {
+	if (error)
+	    semsg(_(e_var_notfound), name);
+	return FAIL;
+    }
+
+    // TODO: get actual type
+    return generate_LOAD(cctx, ISN_LOADV, vidx, NULL, &t_any);
+}
+
+/*
  * Generate an ISN_LOADS instruction.
  */
     static int
-generate_LOADS(
+generate_OLDSCRIPT(
 	cctx_T	    *cctx,
+	isntype_T   isn_type,
 	char_u	    *name,
-	int	    sid)
+	int	    sid,
+	type_T	    *type)
 {
     isn_T	*isn;
 
-    if ((isn = generate_instr_type(cctx, ISN_LOADS, &t_any)) == NULL)
+    if (isn_type == ISN_LOADS)
+	isn = generate_instr_type(cctx, isn_type, type);
+    else
+	isn = generate_instr_drop(cctx, isn_type, 1);
+    if (isn == NULL)
 	return FAIL;
-    isn->isn_arg.loads.ls_name = vim_strsave(name);
-    isn->isn_arg.loads.ls_sid = sid;
+    isn->isn_arg.loadstore.ls_name = vim_strsave(name);
+    isn->isn_arg.loadstore.ls_sid = sid;
 
     return OK;
 }
@@ -743,7 +772,7 @@ generate_LOADS(
  * Generate an ISN_LOADSCRIPT or ISN_STORESCRIPT instruction.
  */
     static int
-generate_SCRIPT(
+generate_VIM9SCRIPT(
 	cctx_T	    *cctx,
 	isntype_T   isn_type,
 	int	    sid,
@@ -1476,13 +1505,14 @@ compile_load_scriptvar(cctx_T *cctx, char_u *name)
     if (idx == -1)
     {
 	// variable exists but is not in sn_var_vals: old style script.
-	return generate_LOADS(cctx, name, current_sctx.sc_sid);
+	return generate_OLDSCRIPT(cctx, ISN_LOADS, name, current_sctx.sc_sid,
+								       &t_any);
     }
     if (idx >= 0)
     {
 	svar_T		*sv = ((svar_T *)si->sn_var_vals.ga_data) + idx;
 
-	generate_SCRIPT(cctx, ISN_LOADSCRIPT,
+	generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
 					current_sctx.sc_sid, idx, sv->sv_type);
 	return OK;
     }
@@ -1491,7 +1521,7 @@ compile_load_scriptvar(cctx_T *cctx, char_u *name)
     if (import != NULL)
     {
 	// TODO: check this is a variable, not a function
-	generate_SCRIPT(cctx, ISN_LOADSCRIPT,
+	generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
 		import->imp_sid,
 		import->imp_var_vals_idx,
 		import->imp_type);
@@ -1523,18 +1553,7 @@ compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
 
 	if (**arg == 'v')
 	{
-	    // load v:var
-	    int vidx = find_vim_var(name);
-
-	    if (vidx < 0)
-	    {
-		if (error)
-		    semsg(_(e_var_notfound), name);
-		goto theend;
-	    }
-
-	    // TODO: get actual type
-	    res = generate_LOAD(cctx, ISN_LOADV, vidx, NULL, &t_any);
+	    res = generate_LOADV(cctx, name, error);
 	}
 	else if (**arg == 'g')
 	{
@@ -3071,6 +3090,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     int		opt_type;
     int		opt_flags = 0;
     int		global = FALSE;
+    int		env = FALSE;
+    int		reg = FALSE;
+    int		vimvaridx = -1;
     int		script = FALSE;
     int		oplen = 0;
     int		heredoc = FALSE;
@@ -3135,12 +3157,49 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	else
 	    type = &t_number;	// both number and boolean option
     }
+    else if (*arg == '$')
+    {
+	env = TRUE;
+	if (is_decl)
+	{
+	    semsg(_("E1065: Cannot declare an environment variable: %s"), name);
+	    goto theend;
+	}
+    }
+    else if (*arg == '@')
+    {
+	if (!valid_yank_reg(arg[1], TRUE))
+	{
+	    emsg_invreg(arg[1]);
+	    return FAIL;
+	}
+	reg = TRUE;
+	if (is_decl)
+	{
+	    semsg(_("E1066: Cannot declare a register: %s"), name);
+	    goto theend;
+	}
+    }
     else if (STRNCMP(arg, "g:", 2) == 0)
     {
 	global = TRUE;
 	if (is_decl)
 	{
 	    semsg(_("E1016: Cannot declare a global variable: %s"), name);
+	    goto theend;
+	}
+    }
+    else if (STRNCMP(arg, "v:", 2) == 0)
+    {
+	vimvaridx = find_vim_var(name + 2);
+	if (vimvaridx < 0)
+	{
+	    semsg(_(e_var_notfound), arg);
+	    goto theend;
+	}
+	if (is_decl)
+	{
+	    semsg(_("E1064: Cannot declare a v: variable: %s"), name);
 	    goto theend;
 	}
     }
@@ -3171,7 +3230,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		}
 	    }
 	}
-	else if (lookup_script(arg, varlen) == OK)
+	else if ((STRNCMP(arg, "s:", 2) == 0
+		    ? lookup_script(arg + 2, varlen - 2)
+		    : lookup_script(arg, varlen)) == OK)
 	{
 	    script = TRUE;
 	    if (is_decl)
@@ -3226,7 +3287,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     }
 
     // +=, /=, etc. require an existing variable
-    if (idx < 0 && !global && !option)
+    if (idx < 0 && !global && !env && !reg && !option)
     {
 	if (oplen > 1 && !heredoc)
 	{
@@ -3272,6 +3333,13 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		generate_LOAD(cctx, ISN_LOADOPT, 0, name + 1, type);
 	    else if (global)
 		generate_LOAD(cctx, ISN_LOADG, 0, name + 2, type);
+	    else if (env)
+		// Include $ in the name here
+		generate_LOAD(cctx, ISN_LOADENV, 0, name, type);
+	    else if (reg)
+		generate_LOAD(cctx, ISN_LOADREG, arg[1], NULL, &t_string);
+	    else if (vimvaridx >= 0)
+		generate_LOADV(cctx, name + 2, TRUE);
 	    else
 		generate_LOAD(cctx, ISN_LOAD, idx, NULL, type);
 	}
@@ -3362,12 +3430,25 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     if (option)
 	generate_STOREOPT(cctx, name + 1, opt_flags);
     else if (global)
-	generate_STORE(cctx, ISN_STOREG, 0, name + 2);
+	// include g: with the name, easier to execute that way
+	generate_STORE(cctx, ISN_STOREG, 0, name);
+    else if (env)
+	generate_STORE(cctx, ISN_STOREENV, 0, name + 1);
+    else if (reg)
+	generate_STORE(cctx, ISN_STOREREG, name[1], NULL);
+    else if (vimvaridx >= 0)
+	generate_STORE(cctx, ISN_STOREV, vimvaridx, NULL);
     else if (script)
     {
-	idx = get_script_item_idx(current_sctx.sc_sid, name, TRUE);
+	char_u *rawname = name + (name[1] == ':' ? 2 : 0);
+
+	idx = get_script_item_idx(current_sctx.sc_sid, rawname, TRUE);
 	// TODO: specific type
-	generate_SCRIPT(cctx, ISN_STORESCRIPT,
+	if (idx < 0)
+	    generate_OLDSCRIPT(cctx, ISN_STORES, rawname,
+						  current_sctx.sc_sid, &t_any);
+	else
+	    generate_VIM9SCRIPT(cctx, ISN_STORESCRIPT,
 					     current_sctx.sc_sid, idx, &t_any);
     }
     else
@@ -4527,8 +4608,9 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    ea.cmd = skipwhite(ea.cmd);
 
 	// Assuming the command starts with a variable or function name, find
-	// what follows.  Also "&opt = value".
-	p = (*ea.cmd == '&') ? ea.cmd + 1 : ea.cmd;
+	// what follows.  Also "&opt = val", "$ENV = val" and "@r = val".
+	p = (*ea.cmd == '&' || *ea.cmd == '$' || *ea.cmd == '@')
+							 ? ea.cmd + 1 : ea.cmd;
 	p = to_name_end(p);
 	if (p > ea.cmd && *p != NUL)
 	{
@@ -4554,7 +4636,11 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		// "g:var = expr"
 		// "var = expr"  where "var" is a local var name.
 		// "&opt = expr"
+		// "$ENV = expr"
+		// "@r = expr"
 		if (*ea.cmd == '&'
+			|| *ea.cmd == '$'
+			|| *ea.cmd == '@'
 			|| ((p - ea.cmd) > 2 && ea.cmd[1] == ':')
 			|| lookup_local(ea.cmd, p - ea.cmd, &cctx) >= 0
 			|| lookup_script(ea.cmd, p - ea.cmd) == OK)
@@ -4776,12 +4862,14 @@ delete_instr(isn_T *isn)
 	case ISN_MEMBER:
 	case ISN_PUSHEXC:
 	case ISN_PUSHS:
+	case ISN_STOREENV:
 	case ISN_STOREG:
 	    vim_free(isn->isn_arg.string);
 	    break;
 
 	case ISN_LOADS:
-	    vim_free(isn->isn_arg.loads.ls_name);
+	case ISN_STORES:
+	    vim_free(isn->isn_arg.loadstore.ls_name);
 	    break;
 
 	case ISN_STOREOPT:
@@ -4841,7 +4929,9 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHSPEC:
 	case ISN_RETURN:
 	case ISN_STORE:
+	case ISN_STOREV:
 	case ISN_STORENR:
+	case ISN_STOREREG:
 	case ISN_STORESCRIPT:
 	case ISN_THROW:
 	case ISN_TRY:

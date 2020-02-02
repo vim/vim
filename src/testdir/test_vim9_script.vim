@@ -42,6 +42,13 @@ def Test_assignment()
 
   let dict1: dict<string> = #{key: 'value'}
   let dict2: dict<number> = #{one: 1, two: 2}
+
+  v:char = 'abc'
+  call assert_equal('abc', v:char)
+
+  $ENVVAR = 'foobar'
+  call assert_equal('foobar', $ENVVAR)
+  $ENVVAR = ''
 enddef
 
 func Test_assignment_failure()
@@ -106,7 +113,7 @@ def Test_call_ufunc_count()
   Increment()
   " works with and without :call
   assert_equal(4, g:counter)
-  assert_equal(4, g:counter)
+  call assert_equal(4, g:counter)
   unlet g:counter
 enddef
 
@@ -311,7 +318,11 @@ def Test_import_absolute()
   let import_lines = [
         \ 'vim9script',
         \ 'import exported from "' .. escape(getcwd(), '\') .. '/Xexport_abs.vim"',
-        \ 'g:imported_abs = exported',
+        \ 'def UseExported()',
+        \ '  g:imported_abs = exported',
+        \ 'enddef',
+        \ 'UseExported()',
+        \ 'g:import_disassabled = execute("disass UseExported")',
         \ ]
   writefile(import_lines, 'Ximport_abs.vim')
   writefile(s:export_script_lines, 'Xexport_abs.vim')
@@ -319,7 +330,12 @@ def Test_import_absolute()
   source Ximport_abs.vim
 
   assert_equal(9876, g:imported_abs)
+  assert_match('<SNR>\d\+_UseExported.*'
+        \ .. 'g:imported_abs = exported.*'
+        \ .. '0 LOADSCRIPT exported from .*Xexport_abs.vim.*'
+        \ .. '1 STOREG g:imported_abs', g:import_disassabled)
   unlet g:imported_abs
+  unlet g:import_disassabled
 
   delete('Ximport_abs.vim')
   delete('Xexport_abs.vim')
@@ -405,7 +421,7 @@ endfunc
 let s:scriptvar = 4
 let g:globalvar = 'g'
 
-def s:ScriptFunc(arg: string)
+def s:ScriptFuncLoad(arg: string)
   let local = 1
   buffers
   echo arg
@@ -418,12 +434,25 @@ def s:ScriptFunc(arg: string)
   echo @z
 enddef
 
+def s:ScriptFuncStore()
+  let localnr = 1
+  localnr = 2
+  let localstr = 'abc'
+  localstr = 'xyz'
+  v:char = 'abc'
+  s:scriptvar = 'sv'
+  g:globalvar = 'gv'
+  &tabstop = 8
+  $ENVVAR = 'ev'
+  @z = 'rv'
+enddef
+
 def Test_disassemble()
   assert_fails('disass NoFunc', 'E1061:')
   assert_fails('disass NotCompiled', 'E1062:')
 
-  let res = execute('disass s:ScriptFunc')
-  assert_match('<SNR>\d*_ScriptFunc.*'
+  let res = execute('disass s:ScriptFuncLoad')
+  assert_match('<SNR>\d*_ScriptFuncLoad.*'
         \ .. 'buffers.*'
         \ .. ' EXEC \+buffers.*'
         \ .. ' LOAD arg\[-1\].*'
@@ -432,7 +461,31 @@ def Test_disassemble()
         \ .. ' LOADS s:scriptvar from .*test_vim9_script.vim.*'
         \ .. ' LOADG g:globalvar.*'
         \ .. ' LOADENV $ENVVAR.*'
-        \ .. ' LOADREG @z.*', res)
+        \ .. ' LOADREG @z.*'
+        \, res)
+
+  " TODO:
+  " v:char =
+  " s:scriptvar =
+  res = execute('disass s:ScriptFuncStore')
+  assert_match('<SNR>\d*_ScriptFuncStore.*'
+        \ .. 'localnr = 2.*'
+        \ .. ' STORE 2 in $0.*'
+        \ .. 'localstr = ''xyz''.*'
+        \ .. ' STORE $1.*'
+        \ .. 'v:char = ''abc''.*'
+        \ .. 'STOREV v:char.*'
+        \ .. 's:scriptvar = ''sv''.*'
+        \ .. ' STORES s:scriptvar in .*test_vim9_script.vim.*'
+        \ .. 'g:globalvar = ''gv''.*'
+        \ .. ' STOREG g:globalvar.*'
+        \ .. '&tabstop = 8.*'
+        \ .. ' STOREOPT &tabstop.*'
+        \ .. '$ENVVAR = ''ev''.*'
+        \ .. ' STOREENV $ENVVAR.*'
+        \ .. '@z = ''rv''.*'
+        \ .. ' STOREREG @z.*'
+        \, res)
 enddef
 
 

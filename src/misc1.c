@@ -1854,6 +1854,22 @@ vim_unsetenv(char_u *var)
 
 
 /*
+ * Set environment variable "name" and take care of side effects.
+ */
+    void
+vim_setenv_ext(char_u *name, char_u *val)
+{
+    vim_setenv(name, val);
+    if (STRICMP(name, "HOME") == 0)
+	init_homedir();
+    else if (didset_vim && STRICMP(name, "VIM") == 0)
+	didset_vim = FALSE;
+    else if (didset_vimruntime
+	    && STRICMP(name, "VIMRUNTIME") == 0)
+	didset_vimruntime = FALSE;
+}
+
+/*
  * Our portable version of setenv.
  */
     void
