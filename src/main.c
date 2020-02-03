@@ -893,6 +893,10 @@ vim_main2(void)
     }
 #endif
 
+    // Redraw at least once, also when 'lazyredraw' is set, to make sure the
+    // window title gets updated.
+    do_redraw = TRUE;
+
     TIME_MSG("before starting main loop");
 
     /*
