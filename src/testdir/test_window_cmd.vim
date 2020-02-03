@@ -933,4 +933,13 @@ func Test_win_splitmove()
   tabclose
 endfunc
 
+" Test for the :only command
+func Test_window_only()
+  new
+  set modified
+  new
+  call assert_fails('only', 'E445:')
+  only!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

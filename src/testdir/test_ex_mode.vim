@@ -1,5 +1,7 @@
 " Test editing line in Ex mode (see :help Q and :help gQ).
 
+source check.vim
+
 " Helper function to test editing line in Q Ex mode
 func Ex_Q(cmd)
   " Is there a simpler way to test editing Ex line?
@@ -52,3 +54,34 @@ func Test_ex_mode()
   set sw&
   let &encoding = encoding_save
 endfunc
+
+" Test subsittute confirmation prompt :%s/pat/str/c in Ex mode
+func Test_Ex_substitute()
+  CheckRunVimInTerminal
+  let buf = RunVimInTerminal('', {'rows': 6})
+
+  call term_sendkeys(buf, ":call setline(1, ['foo foo', 'foo foo', 'foo foo'])\<CR>")
+  call term_sendkeys(buf, ":set number\<CR>")
+  call term_sendkeys(buf, "gQ")
+  call WaitForAssert({-> assert_match(':', term_getline(buf, 6))}, 1000)
+
+  call term_sendkeys(buf, "%s/foo/bar/gc\<CR>")
+  call WaitForAssert({-> assert_match('  1 foo foo', term_getline(buf, 5))},
+        \ 1000)
+  call WaitForAssert({-> assert_match('    ^^^', term_getline(buf, 6))}, 1000)
+  call term_sendkeys(buf, "n\<CR>")
+  call WaitForAssert({-> assert_match('        ^^^', term_getline(buf, 6))},
+        \ 1000)
+  call term_sendkeys(buf, "y\<CR>")
+
+  call term_sendkeys(buf, "q\<CR>")
+  call WaitForAssert({-> assert_match(':', term_getline(buf, 6))}, 1000)
+
+  call term_sendkeys(buf, ":vi\<CR>")
+  call WaitForAssert({-> assert_match('foo bar', term_getline(buf, 1))}, 1000)
+
+  call term_sendkeys(buf, ":q!\n")
+  call StopVimInTerminal(buf)
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
