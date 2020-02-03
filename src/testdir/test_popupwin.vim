@@ -2400,9 +2400,14 @@ func Test_popupwin_terminal_buffer()
 
   let origwin = win_getid()
   let ptybuf = term_start(&shell, #{hidden: 1})
-  let winnr = popup_create(ptybuf, #{minwidth: 40, minheight: 10})
+  let winid = popup_create(ptybuf, #{minwidth: 40, minheight: 10})
   " Wait for shell to start
   sleep 200m
+  " Check this doesn't crash
+  call assert_equal(winnr(), winnr('j'))
+  call assert_equal(winnr(), winnr('k'))
+  call assert_equal(winnr(), winnr('h'))
+  call assert_equal(winnr(), winnr('l'))
   " Cannot quit while job is running
   call assert_fails('call feedkeys("\<C-W>:quit\<CR>", "xt")', 'E948:')
   call feedkeys("exit\<CR>", 'xt')

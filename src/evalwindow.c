@@ -332,8 +332,6 @@ get_winnr(tabpage_T *tp, typval_T *argvar)
 	else if (STRCMP(arg, "#") == 0)
 	{
 	    twin = (tp == curtab) ? prevwin : tp->tp_prevwin;
-	    if (twin == NULL)
-		nr = 0;
 	}
 	else
 	{
@@ -360,6 +358,8 @@ get_winnr(tabpage_T *tp, typval_T *argvar)
 	    else
 		invalid_arg = TRUE;
 	}
+	if (twin == NULL)
+	    nr = 0;
 
 	if (invalid_arg)
 	{
