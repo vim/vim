@@ -2873,7 +2873,7 @@ error_if_term_popup_window()
     if (WIN_IS_POPUP(curwin) && curbuf->b_term != NULL
 					   && term_job_running(curbuf->b_term))
     {
-	emsg(_("E899: Not allowed for a terminal in a popup window"));
+	emsg(_("E863: Not allowed for a terminal in a popup window"));
 	return TRUE;
     }
     return FALSE;
