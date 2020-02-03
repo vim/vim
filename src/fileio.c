@@ -4423,17 +4423,17 @@ readdir_core(
     int		(*checkitem)(void *context, char_u *name))
 {
     int			failed = FALSE;
-#ifdef MSWIN
+# ifdef MSWIN
     char_u		*buf, *p;
     int			ok;
     HANDLE		hFind = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAW    wfb;
     WCHAR		*wn = NULL;	// UTF-16 name, NULL when not used.
-#endif
+# endif
 
     ga_init2(gap, (int)sizeof(char *), 20);
 
-#ifdef MSWIN
+# ifdef MSWIN
     buf = alloc(MAXPATHL);
     if (buf == NULL)
 	return FAIL;
@@ -4498,7 +4498,7 @@ readdir_core(
 
     vim_free(buf);
     vim_free(wn);
-#else
+# else
     DIR		*dirp;
     struct dirent *dp;
     char_u	*p;
@@ -4547,7 +4547,7 @@ readdir_core(
 
 	closedir(dirp);
     }
-#endif
+# endif
 
     if (!failed && gap->ga_len > 0)
 	sort_strings((char_u **)gap->ga_data, gap->ga_len);

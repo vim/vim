@@ -1236,41 +1236,6 @@ f_isdirectory(typval_T *argvars, typval_T *rettv)
 }
 
 /*
- * Evaluate "expr" (= "context") for readdir().
- */
-    static int
-readdir_checkitem(void *context, char_u *name)
-{
-    typval_T	*expr = (typval_T *)context;
-    typval_T	save_val;
-    typval_T	rettv;
-    typval_T	argv[2];
-    int		retval = 0;
-    int		error = FALSE;
-
-    if (expr->v_type == VAR_UNKNOWN)
-	return 1;
-
-    prepare_vimvar(VV_VAL, &save_val);
-    set_vim_var_string(VV_VAL, name, -1);
-    argv[0].v_type = VAR_STRING;
-    argv[0].vval.v_string = name;
-
-    if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
-	goto theend;
-
-    retval = tv_get_number_chk(&rettv, &error);
-    if (error)
-	retval = -1;
-    clear_tv(&rettv);
-
-theend:
-    set_vim_var_string(VV_VAL, NULL, 0);
-    restore_vimvar(VV_VAL, &save_val);
-    return retval;
-}
-
-/*
  * Create the directory in which "dir" is located, and higher levels when
  * needed.
  * Return OK or FAIL.
@@ -1363,6 +1328,41 @@ f_pathshorten(typval_T *argvars, typval_T *rettv)
 	if (p != NULL)
 	    shorten_dir(p);
     }
+}
+
+/*
+ * Evaluate "expr" (= "context") for readdir().
+ */
+    static int
+readdir_checkitem(void *context, char_u *name)
+{
+    typval_T	*expr = (typval_T *)context;
+    typval_T	save_val;
+    typval_T	rettv;
+    typval_T	argv[2];
+    int		retval = 0;
+    int		error = FALSE;
+
+    if (expr->v_type == VAR_UNKNOWN)
+	return 1;
+
+    prepare_vimvar(VV_VAL, &save_val);
+    set_vim_var_string(VV_VAL, name, -1);
+    argv[0].v_type = VAR_STRING;
+    argv[0].vval.v_string = name;
+
+    if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
+	goto theend;
+
+    retval = tv_get_number_chk(&rettv, &error);
+    if (error)
+	retval = -1;
+    clear_tv(&rettv);
+
+theend:
+    set_vim_var_string(VV_VAL, NULL, 0);
+    restore_vimvar(VV_VAL, &save_val);
+    return retval;
 }
 
 /*
