@@ -678,7 +678,7 @@ find_func_even_dead(char_u *name, cctx_T *cctx)
 	    return func;
 
 	// Find imported funcion before global one.
-	imported = find_imported(name, cctx);
+	imported = find_imported(name, 0, cctx);
 	if (imported != NULL && imported->imp_funcname != NULL)
 	{
 	    hi = hash_find(&func_hashtab, imported->imp_funcname);

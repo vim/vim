@@ -320,9 +320,11 @@ def Test_import_absolute()
         \ 'import exported from "' .. escape(getcwd(), '\') .. '/Xexport_abs.vim"',
         \ 'def UseExported()',
         \ '  g:imported_abs = exported',
+        \ '  exported = 8888',
+        \ '  g:imported_after = exported',
         \ 'enddef',
         \ 'UseExported()',
-        \ 'g:import_disassabled = execute("disass UseExported")',
+        \ 'g:import_disassembled = execute("disass UseExported")',
         \ ]
   writefile(import_lines, 'Ximport_abs.vim')
   writefile(s:export_script_lines, 'Xexport_abs.vim')
@@ -330,12 +332,19 @@ def Test_import_absolute()
   source Ximport_abs.vim
 
   assert_equal(9876, g:imported_abs)
+  assert_equal(8888, g:imported_after)
   assert_match('<SNR>\d\+_UseExported.*'
         \ .. 'g:imported_abs = exported.*'
         \ .. '0 LOADSCRIPT exported from .*Xexport_abs.vim.*'
-        \ .. '1 STOREG g:imported_abs', g:import_disassabled)
+        \ .. '1 STOREG g:imported_abs.*'
+        \ .. 'exported = 8888.*'
+        \ .. '3 STORESCRIPT exported in .*Xexport_abs.vim.*'
+        \ .. 'g:imported_after = exported.*'
+        \ .. '4 LOADSCRIPT exported from .*Xexport_abs.vim.*'
+        \ .. '5 STOREG g:imported_after.*'
+        \, g:import_disassembled)
   unlet g:imported_abs
-  unlet g:import_disassabled
+  unlet g:import_disassembled
 
   delete('Ximport_abs.vim')
   delete('Xexport_abs.vim')

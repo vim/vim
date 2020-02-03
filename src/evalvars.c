@@ -2296,7 +2296,7 @@ get_var_tv(
 
     if (tv == NULL && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
     {
-	imported_T *import = find_imported(name, NULL);
+	imported_T *import = find_imported(name, 0, NULL);
 
 	// imported variable from another script
 	if (import != NULL)
@@ -2472,7 +2472,7 @@ lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy UNUSED)
     res = HASHITEM_EMPTY(hi) ? -1 : 1;
 
     // if not script-local, then perhaps imported
-    if (res == -1 && find_imported(p, NULL) != NULL)
+    if (res == -1 && find_imported(p, 0, NULL) != NULL)
 	res = 1;
 
     if (p != buffer)
