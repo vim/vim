@@ -362,6 +362,7 @@ call_def_function(
     int		idx;
     int		ret = FAIL;
     dfunc_T	*dfunc;
+    int		optcount = ufunc_argcount(ufunc) - argc;
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -392,6 +393,12 @@ call_def_function(
     ectx.ec_frame = ectx.ec_stack.ga_len;
     initial_frame_ptr = ectx.ec_frame;
 
+// TODO: Put omitted argument default values on the stack.
+    if (optcount > 0)
+    {
+	emsg("optional arguments not implemented yet");
+	return FAIL;
+    }
     // dummy frame entries
     for (idx = 0; idx < STACK_FRAME_SIZE; ++idx)
     {
