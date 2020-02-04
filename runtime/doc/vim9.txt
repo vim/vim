@@ -325,7 +325,7 @@ items, can then be imported in another script.
 
 Namespace ~
 							*:vim9script* *:vim9*
-To recognize an file that can be imported the `vim9script` statement must
+To recognize a file that can be imported the `vim9script` statement must
 appear as the first statement in the file.  It tells Vim to interpret the
 script in its own namespace, instead of the global namespace.  If a file
 starts with: >
