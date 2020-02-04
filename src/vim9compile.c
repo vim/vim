@@ -3678,6 +3678,7 @@ evaluate_const_and_or(char_u **arg, cctx_T *cctx, char *op, typval_T *tv)
 	    // eval the next expression
 	    *arg = skipwhite(p + 2);
 	    tv2.v_type = VAR_UNKNOWN;
+	    tv2.v_lock = 0;
 	    if ((opchar == '|' ? evaluate_const_expr3(arg, cctx, &tv2)
 			       : evaluate_const_expr7(arg, cctx, &tv2)) == FAIL)
 	    {
