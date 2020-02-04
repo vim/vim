@@ -2968,6 +2968,11 @@ ex_function(exarg_T *eap)
 
     if (eap->cmdidx == CMD_def)
     {
+	int lnum_save = SOURCING_LNUM;
+
+	// error messages are for the first function line
+	SOURCING_LNUM = sourcing_lnum_top;
+
 	// parse the argument types
 	ga_init2(&fp->uf_type_list, sizeof(type_T), 5);
 
@@ -2980,16 +2985,23 @@ ex_function(exarg_T *eap)
 	    fp->uf_arg_types = ALLOC_CLEAR_MULT(type_T *, len);
 	    if (fp->uf_arg_types != NULL)
 	    {
-		int i;
+		int	i;
+		type_T	*type;
 
 		for (i = 0; i < len; ++ i)
 		{
 		    p = ((char_u **)argtypes.ga_data)[i];
 		    if (p == NULL)
 			// todo: get type from default value
-			fp->uf_arg_types[i] = &t_any;
+			type = &t_any;
 		    else
-			fp->uf_arg_types[i] = parse_type(&p, &fp->uf_type_list);
+			type = parse_type(&p, &fp->uf_type_list);
+		    if (type == NULL)
+		    {
+			SOURCING_LNUM = lnum_save;
+			goto errret_2;
+		    }
+		    fp->uf_arg_types[i] = type;
 		}
 	    }
 	    if (varargs)
@@ -3005,6 +3017,11 @@ ex_function(exarg_T *eap)
 		    fp->uf_va_type = &t_any;
 		else
 		    fp->uf_va_type = parse_type(&p, &fp->uf_type_list);
+		if (fp->uf_va_type == NULL)
+		{
+		    SOURCING_LNUM = lnum_save;
+		    goto errret_2;
+		}
 	    }
 	    varargs = FALSE;
 	}

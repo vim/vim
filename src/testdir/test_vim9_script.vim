@@ -160,11 +160,14 @@ def Test_call_default_args()
 enddef
 
 def Test_return_type_wrong()
-  " TODO: why is ! needed for Mac and FreeBSD?
   CheckScriptFailure(['def Func(): number', 'return "a"', 'enddef'], 'expected number but got string')
   CheckScriptFailure(['def Func(): string', 'return 1', 'enddef'], 'expected string but got number')
   CheckScriptFailure(['def Func(): void', 'return "a"', 'enddef'], 'expected void but got string')
   CheckScriptFailure(['def Func()', 'return "a"', 'enddef'], 'expected void but got string')
+enddef
+
+def Test_arg_type_wrong()
+  CheckScriptFailure(['def Func3(items: list)', 'echo "a"', 'enddef'], 'E1008: Missing <type>')
 enddef
 
 def Test_try_catch()
