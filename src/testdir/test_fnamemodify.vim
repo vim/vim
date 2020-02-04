@@ -37,6 +37,7 @@ func Test_fnamemodify()
   call assert_equal('foo', fnamemodify($HOME . '/XXXXXXXX/a/foo', ':p:~:.'))
   call assert_equal('~/XXXXXXXX/b/foo', fnamemodify($HOME . '/XXXXXXXX/b/foo', ':p:~:.'))
   call chdir(cwd)
+  call delete($HOME . '/XXXXXXXX', 'rf')
 
   call assert_equal('''abc def''', fnamemodify('abc def', ':S'))
   call assert_equal('''abc" "def''', fnamemodify('abc" "def', ':S'))
