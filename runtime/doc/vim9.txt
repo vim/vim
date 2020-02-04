@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2019 Dec 06
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -113,7 +113,7 @@ used: >
 	}
 	echo temp  " Error!
 
-An existing variable cannot be assigend to with `:let`, since that implies a
+An existing variable cannot be assigned to with `:let`, since that implies a
 declaration.  An exception is global variables: these can be both used with
 and without `:let`, because there is no rule about where they are declared.
 
@@ -128,7 +128,7 @@ Omitting :call and :eval ~
 
 Functions can be called without `:call`: >
   	writefile(lines, 'file')
-Using `:call` is still posible, but this is discouraged.
+Using `:call` is still possible, but this is discouraged.
 
 A method call without `eval` is possible, so long as the start is an
 identifier or can't be an Ex command.  It does not work for string constants: >
@@ -146,9 +146,14 @@ No curly braces expansion ~
 |curly-braces-names| cannot be used.
 
 
-Comperators ~
+No :append, :change or :insert ~
 
-The 'ignorecase' option is not used for comperators that use strings.
+These commands are too quickly confused with local variable names.
+
+
+Comparators ~
+
+The 'ignorecase' option is not used for comparators that use strings.
 
 
 White space ~
@@ -242,6 +247,10 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 			The second and third form are optional arguments.
 			When the caller omits an argument the {value} is used.
 
+			NOTE: It is possible to nest `:def` inside another
+			`:def`, but it is not possible to nest `:def` inside
+			`:function`, for backwards compatibility.
+
 			[!] is used as with `:function`.
 
 							*:enddef*
@@ -325,7 +334,7 @@ items, can then be imported in another script.
 
 Namespace ~
 							*:vim9script* *:vim9*
-To recognize an file that can be imported the `vim9script` statement must
+To recognize a file that can be imported the `vim9script` statement must
 appear as the first statement in the file.  It tells Vim to interpret the
 script in its own namespace, instead of the global namespace.  If a file
 starts with: >
@@ -371,7 +380,7 @@ The exported items can be imported individually in another Vim9 script: >
 To import multiple items at the same time: >
 	import {someValue, MyClass} from "thatscript.vim"
 
-In case the name is ambigiuous, another name can be specified: >
+In case the name is ambiguous, another name can be specified: >
 	import MyClass as ThatClass from "myclass.vim"
 	import {someValue, MyClass as ThatClass} from "myclass.vim"
 
@@ -404,7 +413,7 @@ result in undefined items.
 Import in an autoload script ~
 
 For optimal startup speed, loading scripts should be postponed until they are
-actually needed.  A recommended mechamism:
+actually needed.  A recommended mechanism:
 
 1. In the plugin define user commands, functions and/or mappings that refer to
    an autoload script. >
@@ -445,7 +454,7 @@ script-local "s:" namespace will be used, even when "s:" is not specified.
 The :def command ~
 
 Plugin writers have asked for a much faster Vim script.  Investigation have
-shown that keeping the existing semantics of funtion calls make this close to
+shown that keeping the existing semantics of function calls make this close to
 impossible, because of the overhead involved with calling a function, setting
 up the local function scope and executing lines.  There are many details that
 need to be handled, such as error messages and exceptions.  The need to create
@@ -483,7 +492,7 @@ JavaScript/TypeScript syntax and semantics ~
 Script writers have complained that the Vim script syntax is unexpectedly
 different from what they are used to.  To reduce this complaint popular
 languages will be used as an example.  At the same time, we do not want to
-abondon the well-known parts of legacy Vim script.
+abandon the well-known parts of legacy Vim script.
 
 Since Vim already uses `:let` and `:const` and optional type checking is
 desirable, the JavaScript/TypeScript syntax fits best for variable

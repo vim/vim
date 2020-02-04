@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2019 Nov 30
+*popup.txt*  For Vim version 8.2.  Last change: 2020 Feb 03
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -11,6 +11,7 @@ Displaying text in a floating window.	*popup* *popup-window* *popupwin*
    Window position and size	|popup-position|
    Closing the popup window	|popup-close|
    Popup buffer and window	|popup-buffer|
+   Terminal in popup window	|popup-terminal|
 2. Functions			|popup-functions|
    Details			|popup-function-details|
 3. Usage			|popup-usage|
@@ -139,6 +140,22 @@ And options can be set on the buffer with `setbufvar()`, e.g.: >
 	call setbufvar(winbufnr(winid), '&filetype', 'java')
 You can also use `win_execute()` with a ":setlocal" command.
 
+
+TERMINAL IN POPUP WINDOW				 *popup-terminal*
+
+A special case is running a terminal in a popup window.  Many rules are then
+different:						*E863*
+- The popup window always has focus, it is not possible to switch to another
+  window.
+- When the job ends, the popup window closes.
+- The default Pmenu color is only used for the border and padding.  To change
+  the color of the terminal itself set 'wincolor'.
+
+To run a terminal in a popup window, first create the terminal hidden.  Then
+pass the buffer number to popup_create().  Example: >
+	let buf = term_start(['picker', 'Something'], #{hidden: 1, term_finish: 'close'})
+	let winid = popup_create(buf, #{minwidth: 50, minheight: 20})
+	set wincolor=Search
 
 ==============================================================================
 2. Functions						*popup-functions*

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Jan 23
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Feb 04
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -40,10 +40,44 @@ browser use: https://github.com/vim/vim/issues/1234
 
 Include ipv6 syntax changes?  (DJ Lucas, #5360)
 
+Add win_type(), which "popup" and "cmdline" as values?
+
+Vim9 script:
+- test s:var += 'some'
+  test exported += 'some'
+- implement default values for optional arguments
+  Generate instructions at start of function, skip over if argument provided?
+- Disallow unlet for local/script/imported vars
+- :func inside vim9script must still use a:arg
+- Check that import in legacy script works and puts item in s:
+- Error in any command in "vim9script" aborts sourcing.
+- Find a way to test expressions in legacy and Vim9 script without duplication
+- Test each level of expressions properly, with type checking
+- Test the
+- Test try/catch and throw better, also nested.
+  Test return inside try/finally jumps to finally and then returns.
+- call autoload function.
+- Type checking arguments when calling :def function
+- can use func as reference:
+	def SomeFunc() ...
+	map(list, SomeFunc)
+- define function and create funcref in one step:
+	let ref = def(arg: type): rettype
+  Also extends lambda
+- Test: Function declared inside a :def function is local, disappears at the
+  end of the function.  Unless g: is used, just like with variables.
+- Can we omit \ for line continuation inside (), {}, ?
+  Requires parsing while reading a function.  Like fgetline in do_one_cmd()?
+- implement :type
+- implement class
+- implement interface
+- predefined class: Promise<T>
+- import statement for type declaration?
+- Make accessing varargs faster: arg[expr]
+	EVAL expr
+	LOADVARARG (varags idx)
+
 Popup windows:
-- Make it possible to put a terminal window in a popup.  Would always grab key
-  input?  Sort-of possible by creating a hidden terminal and opening a popup
-  with that buffer: #4063.
 - Use popup (or popup menu) for command line completion
 - When using a popup for the info of a completion menu, and there is not
   enough space, let the popup overlap with the menu. (#4544)
@@ -55,6 +89,8 @@ Popup windows:
 - Figure out the size and position better if wrapping inserts indent
 
 Text properties:
+- Combining text property with 'cursorline' does not always work (Billie
+  Cleek, #5533)
 - Text properties spanning more than one line
 - See remarks at top of src/textprop.c
 
@@ -121,9 +157,8 @@ Terminal emulator window:
   conversions.
 
 Error numbers available:
-E450, E451, E452,
-E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
-E654, E856, E857, E860, E861, E863, E889, E900
+E451, E452, E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
+E654, E856, E857, E860, E861, E900
 
 Patch to move duplicated code to a function. (Yegappan Lakshmanan, #5330)
 
@@ -142,15 +177,19 @@ Needs better docs.  Is there a better name?
 
 undo result wrong: Masato Nishihata, #4798
 
+When 'lazyredraw' is set sometimes the title is not updated.
+(Jason Franklin, 2020 Feb 3)  Looks like a race condition.
+
 Patch to add function to return the text used in the quickfix window.
 (Yegappan, #5465)
+
+Patch for Template string: #4491.  New pull: #4634
+Implementation is too inefficient, avoid using lambda.
 
 Undo puts cursor in wrong line after "cG<Esc>" undo.
 
 :unmap <c-n> gives error but does remove the mapping. (Antony Scriven, 2019
 Dec 19)
-
-Sound: support on Mac?  Or does libcanberra work there?
 
 Patch to fix session file when using multiple tab pages. (Jason Franklin, 2019
 May 20)
@@ -194,6 +233,8 @@ Enable 'termbidi' if $VTE_VERSION >= 5703 ?
 Universal solution to detect if t_RS is working, using cursor position.
 Koichi Iwamoto, #2126
 
+Sound: support on Mac?  Or does libcanberra work there?
+
 Python 3.8 doesn't work. (Antonios Hadjigeorgalis, #5509)
 
 The :syntax cchar value can only be a single character.  It would be useful to
@@ -203,6 +244,8 @@ Include Haiku port. (Adrien Destugues, Siarzhuk Zharski, 2013 Oct 24)
 It can replace the BeOS code, which is likely not used anymore.
 Now on github: #1856.  Updated Oct 2017
 Got permission to include this under the Vim license.
+
+"--cleanFOO" does not result in an error. (#5537)
 
 Add "t" action to settagstack(): truncate and add new entries. (#5405)
 
@@ -268,9 +311,6 @@ Patch by Alex Dobrynin, 2007 Jun 3.  Also fixes other scroll wheel problems.
 
 Add a WindowScrolled event.  Trigger around the same time as CursorMoved.
 Can be used to update highlighting. #3127  #5181
-
-Patch for Template string: #4491.  New pull: #4634
-Implementation is too inefficient, avoid using lambda.
 
 Incorrect formatting with autoindent. (Sebastian Gniazdowski, #4909)
 
@@ -811,9 +851,6 @@ option_save({list})					*option_save()*
 "gvim --remote" from a directory with non-word characters changes the current
 directory (Paulo Marcel Coelho Arabic, 2017 Oct 30, #2266)
 Also see #1689.
-
-crash when removing an element while inside map(). (Nikolai Pavlov, 2018 Feb
-17, #2652)
 
 When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
 highlighted. (van-de-bugger, 2018 Jan 23, #2576)

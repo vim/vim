@@ -2313,6 +2313,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :debug-name	repeat.txt	/*:debug-name*
 :debugg	repeat.txt	/*:debugg*
 :debuggreedy	repeat.txt	/*:debuggreedy*
+:def	vim9.txt	/*:def*
 :del	change.txt	/*:del*
 :delc	map.txt	/*:delc*
 :delcommand	map.txt	/*:delcommand*
@@ -2384,6 +2385,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :emenu	gui.txt	/*:emenu*
 :en	eval.txt	/*:en*
 :end	eval.txt	/*:end*
+:enddef	vim9.txt	/*:enddef*
 :endf	eval.txt	/*:endf*
 :endfo	eval.txt	/*:endfo*
 :endfor	eval.txt	/*:endfor*
@@ -2404,6 +2406,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :execute	eval.txt	/*:execute*
 :exi	editing.txt	/*:exi*
 :exit	editing.txt	/*:exit*
+:exp	vim9.txt	/*:exp*
+:export	vim9.txt	/*:export*
 :exu	helphelp.txt	/*:exu*
 :exusage	helphelp.txt	/*:exusage*
 :f	editing.txt	/*:f*
@@ -2506,6 +2510,9 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :imapclear	map.txt	/*:imapclear*
 :ime	gui.txt	/*:ime*
 :imenu	gui.txt	/*:imenu*
+:imp	vim9.txt	/*:imp*
+:import	vim9.txt	/*:import*
+:import-cycle	vim9.txt	/*:import-cycle*
 :in	insert.txt	/*:in*
 :index	index.txt	/*:index*
 :ino	map.txt	/*:ino*
@@ -3354,6 +3361,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :vie	editing.txt	/*:vie*
 :view	editing.txt	/*:view*
 :vim	quickfix.txt	/*:vim*
+:vim9	vim9.txt	/*:vim9*
+:vim9script	vim9.txt	/*:vim9script*
 :vimgrep	quickfix.txt	/*:vimgrep*
 :vimgrepa	quickfix.txt	/*:vimgrepa*
 :vimgrepadd	quickfix.txt	/*:vimgrepadd*
@@ -3834,6 +3843,7 @@ Command-line	cmdline.txt	/*Command-line*
 Command-line-mode	cmdline.txt	/*Command-line-mode*
 CompleteChanged	autocmd.txt	/*CompleteChanged*
 CompleteDone	autocmd.txt	/*CompleteDone*
+CompleteDonePre	autocmd.txt	/*CompleteDonePre*
 ConPTY	terminal.txt	/*ConPTY*
 Contents	quickref.txt	/*Contents*
 Cscope	if_cscop.txt	/*Cscope*
@@ -4661,6 +4671,7 @@ E858	eval.txt	/*E858*
 E859	eval.txt	/*E859*
 E86	windows.txt	/*E86*
 E862	eval.txt	/*E862*
+E863	popup.txt	/*E863*
 E864	pattern.txt	/*E864*
 E865	pattern.txt	/*E865*
 E866	pattern.txt	/*E866*
@@ -6276,6 +6287,7 @@ faq	intro.txt	/*faq*
 farsi	farsi.txt	/*farsi*
 farsi.txt	farsi.txt	/*farsi.txt*
 fasm.vim	syntax.txt	/*fasm.vim*
+fast-functions	vim9.txt	/*fast-functions*
 fcs_choice-variable	eval.txt	/*fcs_choice-variable*
 fcs_reason-variable	eval.txt	/*fcs_reason-variable*
 feature-list	eval.txt	/*feature-list*
@@ -8315,6 +8327,7 @@ popup-menu-added	version5.txt	/*popup-menu-added*
 popup-position	popup.txt	/*popup-position*
 popup-props	popup.txt	/*popup-props*
 popup-scrollbar	popup.txt	/*popup-scrollbar*
+popup-terminal	popup.txt	/*popup-terminal*
 popup-textprop-pos	popup.txt	/*popup-textprop-pos*
 popup-usage	popup.txt	/*popup-usage*
 popup-window	popup.txt	/*popup-window*
@@ -9544,6 +9557,7 @@ tutor	usr_01.txt	/*tutor*
 twice	if_cscop.txt	/*twice*
 two-engines	pattern.txt	/*two-engines*
 type()	eval.txt	/*type()*
+type-inference	vim9.txt	/*type-inference*
 type-mistakes	tips.txt	/*type-mistakes*
 typecorr-settings	usr_41.txt	/*typecorr-settings*
 typecorr.txt	usr_41.txt	/*typecorr.txt*
@@ -9907,6 +9921,14 @@ vim-variable	eval.txt	/*vim-variable*
 vim.vim	syntax.txt	/*vim.vim*
 vim7	version7.txt	/*vim7*
 vim8	version8.txt	/*vim8*
+vim9-differences	vim9.txt	/*vim9-differences*
+vim9-export	vim9.txt	/*vim9-export*
+vim9-import	vim9.txt	/*vim9-import*
+vim9-rationale	vim9.txt	/*vim9-rationale*
+vim9-script	vim9.txt	/*vim9-script*
+vim9-types	vim9.txt	/*vim9-types*
+vim9.txt	vim9.txt	/*vim9.txt*
+vim9script	vim9.txt	/*vim9script*
 vim:	options.txt	/*vim:*
 vim_announce	intro.txt	/*vim_announce*
 vim_dev	intro.txt	/*vim_dev*

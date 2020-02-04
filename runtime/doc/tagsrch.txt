@@ -1,4 +1,4 @@
-*tagsrch.txt*   For Vim version 8.2.  Last change: 2019 Dec 27
+*tagsrch.txt*   For Vim version 8.2.  Last change: 2020 Jan 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -903,8 +903,8 @@ The following is a hypothetical example of a function used for 'tagfunc'.  It
 uses the output of |taglist()| to generate the result: a list of tags in the
 inverse order of file names.
 >
-	function! TagFunc(pattern, flags, info)
-	  function! CompareFilenames(item1, item2)
+	function TagFunc(pattern, flags, info)
+	  function CompareFilenames(item1, item2)
 	    let f1 = a:item1['filename']
 	    let f2 = a:item2['filename']
 	    return f1 >=# f2 ?
