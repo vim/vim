@@ -301,6 +301,7 @@ modify_fname(
     char_u	dirname[MAXPATHL];
     int		c;
     int		has_fullname = 0;
+    int		has_homerelative = 0;
 #ifdef MSWIN
     char_u	*fname_start = *fnamep;
     int		has_shortname = 0;
@@ -412,7 +413,7 @@ repeat:
 	}
 	pbuf = NULL;
 	// Need full path first (use expand_env() to remove a "~/")
-	if (!has_fullname)
+	if (!has_fullname && !has_homerelative)
 	{
 	    if (c == '.' && **fnamep == '~')
 		p = pbuf = expand_env_save(*fnamep);
@@ -428,11 +429,28 @@ repeat:
 	{
 	    if (c == '.')
 	    {
+		size_t	namelen;
+
 		mch_dirname(dirname, MAXPATHL);
-		s = shorten_fname(p, dirname);
-		if (s != NULL)
+		if (has_homerelative)
 		{
-		    *fnamep = s;
+		    s = vim_strsave(dirname);
+		    if (s != NULL)
+		    {
+			home_replace(NULL, s, dirname, MAXPATHL, TRUE);
+			vim_free(s);
+		    }
+		}
+		namelen = STRLEN(dirname);
+
+		// Do not call shorten_fname here since it remove prefix
+		// eventhough the path does not have prefix.
+		if (fnamencmp(p, dirname, namelen) == 0)
+		{
+		    p += namelen;
+		    while (*p && vim_ispathsep(*p))
+			++p;
+		    *fnamep = p;
 		    if (pbuf != NULL)
 		    {
 			vim_free(*bufp);   // free any allocated file name
@@ -453,6 +471,7 @@ repeat:
 			*fnamep = s;
 			vim_free(*bufp);
 			*bufp = s;
+			has_homerelative = TRUE;
 		    }
 		}
 	    }
