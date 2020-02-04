@@ -812,9 +812,6 @@ option_save({list})					*option_save()*
 directory (Paulo Marcel Coelho Arabic, 2017 Oct 30, #2266)
 Also see #1689.
 
-crash when removing an element while inside map(). (Nikolai Pavlov, 2018 Feb
-17, #2652)
-
 When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
 highlighted. (van-de-bugger, 2018 Jan 23, #2576)
 
