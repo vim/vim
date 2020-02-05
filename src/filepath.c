@@ -448,14 +448,18 @@ repeat:
 		if (fnamencmp(p, dirname, namelen) == 0)
 		{
 		    p += namelen;
-		    while (*p && vim_ispathsep(*p))
-			++p;
-		    *fnamep = p;
-		    if (pbuf != NULL)
+		    if (vim_ispathsep(*p))
 		    {
-			vim_free(*bufp);   // free any allocated file name
-			*bufp = pbuf;
-			pbuf = NULL;
+			while (*p && vim_ispathsep(*p))
+			    ++p;
+			*fnamep = p;
+			if (pbuf != NULL)
+			{
+			    // free any allocated file name
+			    vim_free(*bufp);
+			    *bufp = pbuf;
+			    pbuf = NULL;
+			}
 		    }
 		}
 	    }
