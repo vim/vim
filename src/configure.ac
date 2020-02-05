@@ -2195,7 +2195,7 @@ else
   fi
 
   dnl On my HPUX system the X include dir is found, but the lib dir not.
-  dnl This is a desparate try to fix this.
+  dnl This is a desperate try to fix this.
 
   if test -d "$x_includes" && test ! -d "$x_libraries"; then
     x_libraries=`echo "$x_includes" | sed s/include/lib/`
@@ -4447,7 +4447,7 @@ dnl the number before the version number.
 DEPEND_CFLAGS_FILTER=
 if test "$GCC" = yes; then
   AC_MSG_CHECKING(for GCC 3 or later)
-  gccmajor=`echo "$gccversion" | sed -e 's/^\([[1-9]]\)\..*$/\1/g'`
+  gccmajor=`echo "$gccversion" | sed -e 's/^\([[0-9]]\+\)\..*$/\1/g'`
   if test "$gccmajor" -gt "2"; then
     DEPEND_CFLAGS_FILTER="| sed 's+-I */+-isystem /+g'"
     AC_MSG_RESULT(yes)

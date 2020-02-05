@@ -14762,7 +14762,7 @@ DEPEND_CFLAGS_FILTER=
 if test "$GCC" = yes; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GCC 3 or later" >&5
 $as_echo_n "checking for GCC 3 or later... " >&6; }
-  gccmajor=`echo "$gccversion" | sed -e 's/^\([1-9]\)\..*$/\1/g'`
+  gccmajor=`echo "$gccversion" | sed -e 's/^\([0-9]\+\)\..*$/\1/g'`
   if test "$gccmajor" -gt "2"; then
     DEPEND_CFLAGS_FILTER="| sed 's+-I */+-isystem /+g'"
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
