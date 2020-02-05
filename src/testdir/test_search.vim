@@ -1455,3 +1455,41 @@ func Test_search_special()
   set t_PE=
   exe "norm /\x80PS"
 endfunc
+
+" Test for command failures when the last search pattern and the last
+" substitute pattern are not set.
+func Test_no_last_pat()
+  call test_clear_search_pat()
+  call assert_fails("normal i\<C-R>/\e", 'E35:')
+  call assert_fails("exe '/'", 'E35:')
+  call assert_fails("exe '?'", 'E35:')
+  call assert_fails("/", 'E35:')
+  call assert_fails("?", 'E35:')
+  call assert_fails("normal n", 'E35:')
+  call assert_fails("normal N", 'E35:')
+  call assert_fails("normal gn", 'E35:')
+  call assert_fails("normal gN", 'E35:')
+  call assert_fails("normal cgn", 'E35:')
+  call assert_fails("normal cgN", 'E35:')
+  let p = []
+  let p = @/
+  call assert_equal('', p)
+  call assert_fails("normal :\<C-R>/", 'E35:')
+  call assert_fails("//p", 'E35:')
+  call assert_fails(";//p", 'E35:')
+  call assert_fails("??p", 'E35:')
+  call assert_fails(";??p", 'E35:')
+  call assert_fails('~', 'E33:')
+  call assert_fails('s//abc/g', 'E476:')
+  call assert_fails('s\/bar', 'E476:')
+  call assert_fails('s\&bar&', 'E476:')
+  call test_clear_search_pat()
+  let save_cpo = &cpo
+  set cpo+=/
+  call assert_fails('s/abc/%/', 'E33:')
+  let &cpo = save_cpo
+  call assert_fails('g//p', 'E476:')
+  call assert_fails('v//p', 'E476:')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

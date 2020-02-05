@@ -380,6 +380,13 @@ last_search_pattern(void)
 }
 #endif
 
+    void
+free_last_pat(int idx)
+{
+    vim_free(spats[idx].pat);
+    spats[idx].pat = NULL;
+}
+
 /*
  * Return TRUE when case should be ignored for search pattern "pat".
  * Uses the 'ignorecase' and 'smartcase' options.
