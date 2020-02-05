@@ -2337,12 +2337,15 @@ func Test_terminal_in_popup()
 	\ 'hi PopTerm ctermbg=grey',
 	\ 'func OpenTerm(setColor)',
 	\ "  let buf = term_start('" .. cmd .. " Xtext', #{hidden: 1, term_finish: 'close'})",
-	\ '  let winid = popup_create(buf, #{minwidth: 45, minheight: 7, border: [], drag: 1, resize: 1})',
+	\ '  let s:winid = popup_create(buf, #{minwidth: 45, minheight: 7, border: [], drag: 1, resize: 1})',
 	\ '  if a:setColor',
-	\ '    call win_execute(winid, "set wincolor=PopTerm")',
+	\ '    call win_execute(s:winid, "set wincolor=PopTerm")',
 	\ '  endif',
 	\ 'endfunc',
 	\ 'call OpenTerm(0)',
+	\ 'func HidePopup()',
+	\ '  call popup_hide(s:winid)',
+	\ 'endfunc',
 	\ ]
   call writefile(lines, 'XtermPopup')
   let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
@@ -2356,6 +2359,10 @@ func Test_terminal_in_popup()
   call term_sendkeys(buf, "/edit\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_3', {})
  
+  call term_sendkeys(buf, "\<C-W>:call HidePopup()\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_4', {})
+  call term_sendkeys(buf, "\<CR>")
+
   call term_sendkeys(buf, ":q\<CR>")
   call term_wait(buf, 100)  " wait for terminal to vanish
 

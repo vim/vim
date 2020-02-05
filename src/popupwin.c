@@ -2371,6 +2371,10 @@ f_popup_close(typval_T *argvars, typval_T *rettv UNUSED)
     void
 popup_hide(win_T *wp)
 {
+#ifdef FEAT_TERMINAL
+    if (error_if_term_popup_window())
+	return;
+#endif
     if ((wp->w_popup_flags & POPF_HIDDEN) == 0)
     {
 	wp->w_popup_flags |= POPF_HIDDEN;
