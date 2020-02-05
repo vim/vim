@@ -383,8 +383,7 @@ last_search_pattern(void)
     void
 free_last_pat(int idx)
 {
-    vim_free(spats[idx].pat);
-    spats[idx].pat = NULL;
+    VIM_CLEAR(spats[idx].pat);
 }
 
 /*

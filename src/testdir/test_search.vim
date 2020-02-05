@@ -1456,9 +1456,8 @@ func Test_search_special()
   exe "norm /\x80PS"
 endfunc
 
-" Test for command failures when the last search pattern and the last
-" substitute pattern are not set.
-func Test_no_last_pat()
+" Test for command failures when the last search pattern is not set.
+func Test_search_with_no_last_pat()
   call test_clear_search_pat()
   call assert_fails("normal i\<C-R>/\e", 'E35:')
   call assert_fails("exe '/'", 'E35:')
@@ -1479,17 +1478,21 @@ func Test_no_last_pat()
   call assert_fails(";//p", 'E35:')
   call assert_fails("??p", 'E35:')
   call assert_fails(";??p", 'E35:')
-  call assert_fails('~', 'E33:')
-  call assert_fails('s//abc/g', 'E476:')
-  call assert_fails('s\/bar', 'E476:')
-  call assert_fails('s\&bar&', 'E476:')
-  call test_clear_search_pat()
-  let save_cpo = &cpo
-  set cpo+=/
-  call assert_fails('s/abc/%/', 'E33:')
-  let &cpo = save_cpo
   call assert_fails('g//p', 'E476:')
   call assert_fails('v//p', 'E476:')
+endfunc
+
+" Test for using tilde (~) atom in search. This should use the last used
+" substitute pattern
+func Test_search_tilde_pat()
+  call test_clear_search_pat()
+  set regexpengine=1
+  call assert_fails('exe "normal /~\<CR>"', 'E33:')
+  call assert_fails('exe "normal ?~\<CR>"', 'E33:')
+  set regexpengine=2
+  call assert_fails('exe "normal /~\<CR>"', 'E383:')
+  call assert_fails('exe "normal ?~\<CR>"', 'E383:')
+  set regexpengine&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
