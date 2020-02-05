@@ -474,6 +474,15 @@ def s:ScriptFuncLoad(arg: string)
   echo @z
 enddef
 
+def s:ScriptFuncPush()
+  let localbool = true
+  let localspec = v:none
+  let localblob = 0z1234
+  if has('float')
+    let localfloat = 1.234
+  endif
+enddef
+
 def s:ScriptFuncStore()
   let localnr = 1
   localnr = 2
@@ -485,6 +494,16 @@ def s:ScriptFuncStore()
   &tabstop = 8
   $ENVVAR = 'ev'
   @z = 'rv'
+enddef
+
+def s:ScriptFuncTry()
+  try
+    echo 'yes'
+  catch /fail/
+    echo 'no'
+  finally
+    echo 'end'
+  endtry
 enddef
 
 def Test_disassemble()
@@ -504,9 +523,22 @@ def Test_disassemble()
         \ .. ' LOADREG @z.*'
         \, res)
 
-  " TODO:
-  " v:char =
-  " s:scriptvar =
+  res = execute('disass s:ScriptFuncPush')
+  assert_match('<SNR>\d*_ScriptFuncPush.*'
+        \ .. 'localbool = true.*'
+        \ .. ' PUSH v:true.*'
+        \ .. 'localspec = v:none.*'
+        \ .. ' PUSH v:none.*'
+        \ .. 'localblob = 0z1234.*'
+        \ .. ' PUSHBLOB 0z1234.*'
+        \, res)
+  if has('float')
+  assert_match('<SNR>\d*_ScriptFuncPush.*'
+        \ .. 'localfloat = 1.234.*'
+        \ .. ' PUSHF 1.234.*'
+        \, res)
+  endif
+
   res = execute('disass s:ScriptFuncStore')
   assert_match('<SNR>\d*_ScriptFuncStore.*'
         \ .. 'localnr = 2.*'
@@ -525,6 +557,23 @@ def Test_disassemble()
         \ .. ' STOREENV $ENVVAR.*'
         \ .. '@z = ''rv''.*'
         \ .. ' STOREREG @z.*'
+        \, res)
+
+  res = execute('disass s:ScriptFuncTry')
+  assert_match('<SNR>\d*_ScriptFuncTry.*'
+        \ .. 'try.*'
+        \ .. 'TRY catch -> \d\+, finally -> \d\+.*'
+        \ .. 'catch /fail/.*'
+        \ .. ' JUMP -> \d\+.*'
+        \ .. ' PUSH v:exception.*'
+        \ .. ' PUSHS "fail".*'
+        \ .. ' COMPARESTRING =\~.*'
+        \ .. ' JUMP_IF_FALSE -> \d\+.*'
+        \ .. ' CATCH.*'
+        \ .. 'finally.*'
+        \ .. ' PUSHS "end".*'
+        \ .. 'endtry.*'
+        \ .. ' ENDTRY.*'
         \, res)
 enddef
 

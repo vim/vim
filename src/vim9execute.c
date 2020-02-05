@@ -1726,7 +1726,7 @@ ex_disassemble(exarg_T *eap)
 		    char_u	*tofree;
 
 		    r = blob2string(iptr->isn_arg.blob, &tofree, numbuf);
-		    smsg("%4d PUSHBLOB \"%s\"", current, r);
+		    smsg("%4d PUSHBLOB %s", current, r);
 		    vim_free(tofree);
 		}
 		break;
