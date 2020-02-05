@@ -810,6 +810,7 @@ static funcentry_T global_functions[] =
 #endif
     {"test_alloc_fail",	3, 3, FEARG_1,	  &t_void,	f_test_alloc_fail},
     {"test_autochdir",	0, 0, 0,	  &t_void,	f_test_autochdir},
+    {"test_clear_search_pat",	0, 0, 0,  &t_void,	f_test_clear_search_pat},
     {"test_feedinput",	1, 1, FEARG_1,	  &t_void,	f_test_feedinput},
     {"test_garbagecollect_now",	0, 0, 0,  &t_void,	f_test_garbagecollect_now},
     {"test_garbagecollect_soon", 0, 0, 0, &t_void,	f_test_garbagecollect_soon},

@@ -632,6 +632,19 @@ f_test_autochdir(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 }
 
 /*
+ * "test_clear_search_pat()"
+ * Free the last search and substitute patterns
+ */
+    void
+f_test_clear_search_pat(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
+{
+    free_last_pat(RE_SUBST);
+    free_last_pat(RE_SEARCH);
+    set_old_sub(NULL);
+    free_regexp_prev_sub();
+}
+
+/*
  * "test_feedinput()"
  */
     void
