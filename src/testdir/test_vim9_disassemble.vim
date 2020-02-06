@@ -106,7 +106,7 @@ def s:ScriptFuncTry()
   catch /fail/
     echo 'no'
   finally
-    echo 'end'
+    throw 'end'
   endtry
 enddef
 
@@ -124,6 +124,7 @@ def Test_disassembleTry()
         \ .. ' CATCH.*'
         \ .. 'finally.*'
         \ .. ' PUSHS "end".*'
+        \ .. ' THROW.*'
         \ .. 'endtry.*'
         \ .. ' ENDTRY.*'
         \, res)
@@ -357,5 +358,81 @@ def Test_compile_for_loop()
         \, instr)
 enddef
 
+let g:number = 42
+
+def Computing()
+  let nr = 3
+  let nrres = nr + 7
+  nrres = nr - 7
+  nrres = nr * 7
+  nrres = nr / 7
+  nrres = nr % 7
+
+  let anyres = g:number + 7
+  anyres = g:number - 7
+  anyres = g:number * 7
+  anyres = g:number / 7
+  anyres = g:number % 7
+
+  if has('float')
+    let fl = 3.0
+    let flres = fl + 7.0
+    flres = fl - 7.0
+    flres = fl * 7.0
+    flres = fl / 7.0
+  endif
+enddef
+
+def Test_computing()
+  let instr = execute('disassemble Computing')
+  assert_match('Computing.*'
+        \ .. 'let nr = 3.*'
+        \ .. '\d STORE 3 in $0.*'
+        \ .. 'let nrres = nr + 7.*'
+        \ .. '\d LOAD $0.*'
+        \ .. '\d PUSHNR 7.*'
+        \ .. '\d OPNR +.*'
+        \ .. '\d STORE $1.*'
+        \ .. 'nrres = nr - 7.*'
+        \ .. '\d OPNR -.*'
+        \ .. 'nrres = nr \* 7.*'
+        \ .. '\d OPNR \*.*'
+        \ .. 'nrres = nr / 7.*'
+        \ .. '\d OPNR /.*'
+        \ .. 'nrres = nr % 7.*'
+        \ .. '\d OPNR %.*'
+        \ .. 'let anyres = g:number + 7.*'
+        \ .. '\d LOADG g:number.*'
+        \ .. '\d PUSHNR 7.*'
+        \ .. '\d OPANY +.*'
+        \ .. '\d STORE $2.*'
+        \ .. 'anyres = g:number - 7.*'
+        \ .. '\d OPANY -.*'
+        \ .. 'anyres = g:number \* 7.*'
+        \ .. '\d OPANY \*.*'
+        \ .. 'anyres = g:number / 7.*'
+        \ .. '\d OPANY /.*'
+        \ .. 'anyres = g:number % 7.*'
+        \ .. '\d OPANY %.*'
+        \, instr)
+  if has('float')
+    assert_match('Computing.*'
+        \ .. 'let fl = 3.0.*'
+        \ .. '\d PUSHF 3.0.*'
+        \ .. '\d STORE $3.*'
+        \ .. 'let flres = fl + 7.0.*'
+        \ .. '\d LOAD $3.*'
+        \ .. '\d PUSHF 7.0.*'
+        \ .. '\d OPFLOAT +.*'
+        \ .. '\d STORE $4.*'
+        \ .. 'flres = fl - 7.0.*'
+        \ .. '\d OPFLOAT -.*'
+        \ .. 'flres = fl \* 7.0.*'
+        \ .. '\d OPFLOAT \*.*'
+        \ .. 'flres = fl / 7.0.*'
+        \ .. '\d OPFLOAT /.*'
+        \, instr)
+  endif
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
