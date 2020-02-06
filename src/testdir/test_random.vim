@@ -38,3 +38,9 @@ func Test_Rand()
 
   call test_settime(0)
 endfunc
+
+func Test_issue_5587()
+  call rand()
+  call garbagecollect()
+  call rand()
+endfunc

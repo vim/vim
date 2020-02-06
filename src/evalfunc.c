@@ -5225,34 +5225,83 @@ f_pyxeval(typval_T *argvars, typval_T *rettv)
 }
 #endif
 
+#define SPLITMIX32 ( \
+    z = (x += 0x9e3779b9), \
+    z = (z ^ (z >> 16)) * 0x85ebca6b, \
+    z = (z ^ (z >> 13)) * 0xc2b2ae35, \
+    z ^ (z >> 16) \
+    )
+
+    void
+__srand(UINT32_T *x)
+{
+    static int dev_urandom_state = -1;  // FAIL or OK once tried
+
+    if (dev_urandom_state != FAIL)
+    {
+	int  fd = open("/dev/urandom", O_RDONLY);
+	struct {
+	    union {
+		UINT32_T number;
+		char     bytes[sizeof(UINT32_T)];
+	    } cont;
+	} buf;
+
+	// Attempt reading /dev/urandom.
+	if (fd == -1)
+	    dev_urandom_state = FAIL;
+	else
+	{
+	    buf.cont.number = 0;
+	    if (read(fd, buf.cont.bytes, sizeof(UINT32_T))
+						       != sizeof(UINT32_T))
+		dev_urandom_state = FAIL;
+	    else
+	    {
+		dev_urandom_state = OK;
+		*x = buf.cont.number;
+	    }
+	    close(fd);
+	}
+
+    }
+    if (dev_urandom_state != OK)
+	// Reading /dev/urandom doesn't work, fall back to time().
+	*x = vim_time();
+}
+
 /*
  * "rand()" function
  */
-    static void
+    void
 f_rand(typval_T *argvars, typval_T *rettv)
 {
     list_T	*l = NULL;
-    static list_T *globl = NULL;
-    UINT32_T	x, y, z, w, t, result;
+    static UINT32_T	gx = 0, gy = 0, gz = 0, gw = 0;
+    static int	initialized = FALSE;
     listitem_T	*lx, *ly, *lz, *lw;
+    UINT32_T	x, y, z, w, t, result;
 
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
 	// When no argument is given use the global seed list.
-	if (globl == NULL)
+	if (initialized == FALSE)
 	{
 	    // Initialize the global seed list.
-	    f_srand(argvars, rettv);
-	    l = rettv->vval.v_list;
-	    if (l == NULL || list_len(l) != 4)
-	    {
-		clear_tv(rettv);
-		goto theend;
-	    }
-	    globl = l;
+	    __srand(&gx);
+	    initialized = TRUE;
 	}
-	else
-	    l = globl;
+	x = gx;
+	y = gy;
+	z = gz;
+	w = gw;
+
+	if (rettv_list_alloc(rettv) != OK) goto theend;
+	l = rettv->vval.v_list;
+	list_append_number(l, (varnumber_T)SPLITMIX32);
+	list_append_number(l, (varnumber_T)SPLITMIX32);
+	list_append_number(l, (varnumber_T)SPLITMIX32);
+	list_append_number(l, (varnumber_T)SPLITMIX32);
     }
     else if (argvars[0].v_type == VAR_LIST)
     {
@@ -5286,6 +5335,14 @@ f_rand(typval_T *argvars, typval_T *rettv)
     z ^= t;
     w = ROTL(w, 11);
 #undef ROTL
+
+    if (argvars[0].v_type == VAR_UNKNOWN)
+    {
+	gx = x;
+	gy = y;
+	gz = z;
+	gw = w;
+    }
 
     lx->li_tv.vval.v_number = (varnumber_T)x;
     ly->li_tv.vval.v_number = (varnumber_T)y;
@@ -7223,44 +7280,13 @@ f_sqrt(typval_T *argvars, typval_T *rettv)
     static void
 f_srand(typval_T *argvars, typval_T *rettv)
 {
-    static int dev_urandom_state = -1;  // FAIL or OK once tried
     UINT32_T x = 0, z;
 
     if (rettv_list_alloc(rettv) == FAIL)
 	return;
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
-	if (dev_urandom_state != FAIL)
-	{
-	    int  fd = open("/dev/urandom", O_RDONLY);
-	    struct {
-		union {
-		    UINT32_T number;
-		    char     bytes[sizeof(UINT32_T)];
-		} cont;
-	    } buf;
-
-	    // Attempt reading /dev/urandom.
-	    if (fd == -1)
-		dev_urandom_state = FAIL;
-	    else
-	    {
-		buf.cont.number = 0;
-		if (read(fd, buf.cont.bytes, sizeof(UINT32_T))
-							   != sizeof(UINT32_T))
-		    dev_urandom_state = FAIL;
-		else
-		{
-		    dev_urandom_state = OK;
-		    x = buf.cont.number;
-		}
-		close(fd);
-	    }
-
-	}
-	if (dev_urandom_state != OK)
-	    // Reading /dev/urandom doesn't work, fall back to time().
-	    x = vim_time();
+	__srand(&x);
     }
     else
     {
@@ -7270,13 +7296,6 @@ f_srand(typval_T *argvars, typval_T *rettv)
 	if (error)
 	    return;
     }
-
-#define SPLITMIX32 ( \
-    z = (x += 0x9e3779b9), \
-    z = (z ^ (z >> 16)) * 0x85ebca6b, \
-    z = (z ^ (z >> 13)) * 0xc2b2ae35, \
-    z ^ (z >> 16) \
-    )
 
     list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32);
     list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32);
