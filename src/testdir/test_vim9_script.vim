@@ -27,6 +27,9 @@ func Test_def_basic()
   call assert_equal('yes', SomeFunc())
 endfunc
 
+let s:appendToMe = 'xxx'
+let s:addToMe = 111
+
 def Test_assignment()
   let bool1: bool = true
   assert_equal(v:true, bool1)
@@ -44,11 +47,16 @@ def Test_assignment()
   let dict2: dict<number> = #{one: 1, two: 2}
 
   v:char = 'abc'
-  call assert_equal('abc', v:char)
+  assert_equal('abc', v:char)
 
   $ENVVAR = 'foobar'
-  call assert_equal('foobar', $ENVVAR)
+  assert_equal('foobar', $ENVVAR)
   $ENVVAR = ''
+
+  appendToMe ..= 'yyy'
+  assert_equal('xxxyyy', appendToMe)
+  addToMe += 222
+  assert_equal(333, addToMe)
 enddef
 
 func Test_assignment_failure()
@@ -195,6 +203,7 @@ let s:export_script_lines =<< trim END
 
   export const CONST = 1234
   export let exported = 9876
+  export let exp_name = 'John'
   export def Exported(): string
     return 'Exported'
   enddef
@@ -205,7 +214,14 @@ def Test_vim9script()
     vim9script
     import {exported, Exported} from './Xexport.vim'
     g:imported = exported
+    exported += 3
+    g:imported_added = exported
     g:imported_func = Exported()
+
+    import {exp_name} from './Xexport.vim'
+    g:imported_name = exp_name
+    exp_name ..= ' Doe'
+    g:imported_name_appended = exp_name
   END
 
   writefile(import_script_lines, 'Ximport.vim')
@@ -216,13 +232,18 @@ def Test_vim9script()
   assert_equal('bobbie', g:result)
   assert_equal('bob', g:localname)
   assert_equal(9876, g:imported)
+  assert_equal(9879, g:imported_added)
   assert_equal('Exported', g:imported_func)
+  assert_equal('John', g:imported_name)
+  assert_equal('John Doe', g:imported_name_appended)
   assert_false(exists('g:name'))
 
   unlet g:result
   unlet g:localname
   unlet g:imported
+  unlet g:imported_added
   unlet g:imported_func
+  unlet g:imported_name g:imported_name_appended
   delete('Ximport.vim')
   delete('Xexport.vim')
 
