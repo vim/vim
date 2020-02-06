@@ -1001,8 +1001,7 @@ call_def_function(
 			if (when == JUMP_IF_FALSE
 					     || when == JUMP_AND_KEEP_IF_FALSE)
 			    jump = !jump;
-			if (when == JUMP_IF_FALSE || when == JUMP_IF_TRUE
-								      || !jump)
+			if (when == JUMP_IF_FALSE || !jump)
 			{
 			    // drop the value from the stack
 			    clear_tv(tv);
@@ -1583,15 +1582,14 @@ failed:
     return ret;
 }
 
-#define DISASSEMBLE 1
-
 /*
  * ":dissassemble".
+ * We don't really need this at runtime, but we do have tests that require it,
+ * so always include this.
  */
     void
 ex_disassemble(exarg_T *eap)
 {
-#ifdef DISASSEMBLE
     char_u	*fname;
     ufunc_T	*ufunc;
     dfunc_T	*dfunc;
@@ -1840,9 +1838,6 @@ ex_disassemble(exarg_T *eap)
 			case JUMP_ALWAYS:
 			    when = "JUMP";
 			    break;
-			case JUMP_IF_TRUE:
-			    when = "JUMP_IF_TRUE";
-			    break;
 			case JUMP_AND_KEEP_IF_TRUE:
 			    when = "JUMP_AND_KEEP_IF_TRUE";
 			    break;
@@ -1997,7 +1992,6 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_DROP: smsg("%4d DROP", current); break;
 	}
     }
-#endif
 }
 
 /*

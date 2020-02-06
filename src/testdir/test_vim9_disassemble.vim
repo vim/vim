@@ -278,5 +278,52 @@ def Test_compile_const_expr()
   assert_notmatch('JUMP', instr)
 enddef
 
+def WithLambda(): string
+  let F = {a -> "X" .. a .. "X"}
+  return F("x")
+enddef
+
+def Test_compile_lambda()
+  assert_equal("XxX", WithLambda())
+  let instr = execute('disassemble WithLambda')
+  assert_match('WithLambda.*'
+        \ .. 'let F = {a -> "X" .. a .. "X"}.*'
+        \ .. ' FUNCREF <lambda>\d\+.*'
+        \ .. 'PUSHS "x".*'
+        \ .. ' LOAD $0.*'
+        \ .. ' PCALL (argc 1).*'
+        \ .. ' CHECKTYPE string stack\[-1].*'
+        \, instr)
+enddef
+
+def AndOr(arg): string
+  if arg == 1 && arg != 2 || arg == 4
+    return 'yes'
+  endif
+  return 'no'
+enddef
+
+def Test_compile_and_or()
+  assert_equal("yes", AndOr(1))
+  assert_equal("no", AndOr(2))
+  assert_equal("yes", AndOr(4))
+  let instr = execute('disassemble AndOr')
+  assert_match('AndOr.*'
+        \ .. 'if arg == 1 && arg != 2 || arg == 4.*'
+        \ .. '\d LOAD arg\[-1].*'
+        \ .. '\d PUSHNR 1.*'
+        \ .. '\d COMPAREANY ==.*'
+        \ .. '\d JUMP_AND_KEEP_IF_FALSE -> \d\+.*'
+        \ .. '\d LOAD arg\[-1].*'
+        \ .. '\d PUSHNR 2.*'
+        \ .. '\d COMPAREANY !=.*'
+        \ .. '\d JUMP_AND_KEEP_IF_TRUE -> \d\+.*'
+        \ .. '\d LOAD arg\[-1].*'
+        \ .. '\d PUSHNR 4.*'
+        \ .. '\d COMPAREANY ==.*'
+        \ .. '\d JUMP_IF_FALSE -> \d\+.*'
+        \, instr)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

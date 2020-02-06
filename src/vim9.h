@@ -130,7 +130,6 @@ typedef struct {
 
 typedef enum {
     JUMP_ALWAYS,
-    JUMP_IF_TRUE,		// pop and jump if true
     JUMP_IF_FALSE,		// pop and jump if false
     JUMP_AND_KEEP_IF_TRUE,	// jump if top of stack is true, drop if not
     JUMP_AND_KEEP_IF_FALSE,	// jump if top of stack is false, drop if not
