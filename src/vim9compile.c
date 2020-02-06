@@ -3891,7 +3891,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
     }
     cctx->ctx_locals.ga_len = scope->se_local_count;
 
-    if (cctx->ctx_skip != TRUE)
+    if (cctx->ctx_skip == MAYBE)
     {
 	if (compile_jump_to_end(&scope->se_u.se_if.is_end_label,
 						    JUMP_ALWAYS, cctx) == FAIL)
@@ -3947,13 +3947,14 @@ compile_else(char_u *arg, cctx_T *cctx)
 	    return NULL;
     }
 
-    if (cctx->ctx_skip != TRUE)
+    if (cctx->ctx_skip == MAYBE)
     {
 	if (scope->se_u.se_if.is_if_label >= 0)
 	{
 	    // previous "if" or "elseif" jumps here
 	    isn = ((isn_T *)instr->ga_data) + scope->se_u.se_if.is_if_label;
 	    isn->isn_arg.jump.jump_where = instr->ga_len;
+	    scope->se_u.se_if.is_if_label = -1;
 	}
     }
 

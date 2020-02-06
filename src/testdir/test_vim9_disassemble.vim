@@ -216,5 +216,67 @@ def Test_disassembleCall()
         \, res)
 enddef
 
+def HasEval()
+  if has("eval")
+    echo "yes"
+  else
+    echo "no"
+  endif
+enddef
+
+def HasNothing()
+  if has("nothing")
+    echo "yes"
+  else
+    echo "no"
+  endif
+enddef
+
+def HasSomething()
+  if has("nothing")
+    echo "nothing"
+  elseif has("something")
+    echo "something"
+  elseif has("eval")
+    echo "eval"
+  elseif has("less")
+    echo "less"
+  endif
+enddef
+
+def Test_compile_const_expr()
+  assert_equal("\nyes", execute('call HasEval()'))
+  let instr = execute('disassemble HasEval')
+  assert_match('HasEval.*'
+        \ .. 'if has("eval").*'
+        \ .. ' PUSHS "yes".*'
+        \, instr)
+  assert_notmatch('JUMP', instr)
+
+  assert_equal("\nno", execute('call HasNothing()'))
+  instr = execute('disassemble HasNothing')
+  assert_match('HasNothing.*'
+        \ .. 'if has("nothing").*'
+        \ .. 'else.*'
+        \ .. ' PUSHS "no".*'
+        \, instr)
+  assert_notmatch('PUSHS "yes"', instr)
+  assert_notmatch('JUMP', instr)
+
+  assert_equal("\neval", execute('call HasSomething()'))
+  instr = execute('disassemble HasSomething')
+  assert_match('HasSomething.*'
+        \ .. 'if has("nothing").*'
+        \ .. 'elseif has("something").*'
+        \ .. 'elseif has("eval").*'
+        \ .. ' PUSHS "eval".*'
+        \ .. 'elseif has("less").*'
+        \, instr)
+  assert_notmatch('PUSHS "nothing"', instr)
+  assert_notmatch('PUSHS "something"', instr)
+  assert_notmatch('PUSHS "less"', instr)
+  assert_notmatch('JUMP', instr)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
