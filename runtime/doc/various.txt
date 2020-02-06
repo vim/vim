@@ -250,12 +250,17 @@ g8			Print the hex values of the bytes used in the
 			A '|' in {cmd} is passed to the shell, you cannot use
 			it to append a Vim command.  See |:bar|.
 
-			If {cmd} contains "%" it is expanded to the current
-			file name.  Special characters are not escaped, use
-			quotes to avoid their special meaning: >
+			If {cmd} contains "%" or "#" it is expanded to the
+			appropriate file name (|:_%| |:_#|).  Use escaping to
+			avoid this expansion: >
+				:!ls \%
+<			Use |escape()| to prevent expansion within variables: >
+				:exe "grep " . escape(@/, "%#") . " -R ."
+<			Special characters in the file name are not escaped,
+			use double quotes to avoid their special meaning: >
 				:!ls "%"
-<			If the file name contains a "$" single quotes might
-			work better (but a single quote causes trouble): >
+<			If the file name contains a "$", single quotes might
+			work better (except for file names containing a "'"): >
 				:!ls '%'
 <			This should always work, but it's more typing: >
 				:exe "!ls " . shellescape(expand("%"))
