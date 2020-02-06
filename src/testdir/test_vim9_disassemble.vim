@@ -325,5 +325,37 @@ def Test_compile_and_or()
         \, instr)
 enddef
 
+def ForLoop(): list<number>
+  let res: list<number>
+  for i in range(3)
+    res->add(i)
+  endfor
+  return res
+enddef
+
+def Test_compile_for_loop()
+  assert_equal([0, 1, 2], ForLoop())
+  let instr = execute('disassemble ForLoop')
+  assert_match('ForLoop.*'
+        \ .. 'let res: list<number>.*'
+        \ .. ' NEWLIST size 0.*'
+        \ .. '\d STORE $0.*'
+        \ .. 'for i in range(3).*'
+        \ .. '\d STORE -1 in $1.*'
+        \ .. '\d PUSHNR 3.*'
+        \ .. '\d BCALL range(argc 1).*'
+        \ .. '\d FOR $1 -> \d\+.*'
+        \ .. '\d STORE $2.*'
+        \ .. 'res->add(i).*'
+        \ .. '\d LOAD $0.*'
+        \ .. '\d LOAD $2.*'
+        \ .. '\d BCALL add(argc 2).*'
+        \ .. '\d DROP.*'
+        \ .. 'endfor.*'
+        \ .. '\d JUMP -> \d\+.*'
+        \ .. '\d DROP.*'
+        \, instr)
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

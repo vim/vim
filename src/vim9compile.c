@@ -3427,13 +3427,51 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     else
     {
 	// variables are always initialized
-	// TODO: support more types
 	if (ga_grow(instr, 1) == FAIL)
 	    goto theend;
-	if (type->tt_type == VAR_STRING)
-	    generate_PUSHS(cctx, vim_strsave((char_u *)""));
-	else
-	    generate_PUSHNR(cctx, 0);
+	switch (type->tt_type)
+	{
+	    case VAR_BOOL:
+		generate_PUSHBOOL(cctx, VVAL_FALSE);
+		break;
+	    case VAR_SPECIAL:
+		generate_PUSHSPEC(cctx, VVAL_NONE);
+		break;
+	    case VAR_FLOAT:
+#ifdef FEAT_FLOAT
+		generate_PUSHF(cctx, 0.0);
+#endif
+		break;
+	    case VAR_STRING:
+		generate_PUSHS(cctx, NULL);
+		break;
+	    case VAR_BLOB:
+		generate_PUSHBLOB(cctx, NULL);
+		break;
+	    case VAR_FUNC:
+		// generate_PUSHS(cctx, NULL); TODO
+		break;
+	    case VAR_PARTIAL:
+		// generate_PUSHS(cctx, NULL); TODO
+		break;
+	    case VAR_LIST:
+		generate_NEWLIST(cctx, 0);
+		break;
+	    case VAR_DICT:
+		generate_NEWDICT(cctx, 0);
+		break;
+	    case VAR_JOB:
+		// generate_PUSHS(cctx, NULL); TODO
+		break;
+	    case VAR_CHANNEL:
+		// generate_PUSHS(cctx, NULL); TODO
+		break;
+	    case VAR_NUMBER:
+	    case VAR_UNKNOWN:
+	    case VAR_VOID:
+		generate_PUSHNR(cctx, 0);
+		break;
+	}
     }
 
     if (oplen > 0 && *op != '=')
