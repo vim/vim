@@ -956,11 +956,12 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount)
  * Return FAIL if the number of arguments is wrong.
  */
     static int
-generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int argcount)
+generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 {
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
     int		regular_args = ufunc->uf_args.ga_len;
+    int		argcount = pushed_argcount;
 
     if (argcount > regular_args && !has_varargs(ufunc))
     {
@@ -978,9 +979,13 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int argcount)
     {
 	int count = argcount - regular_args;
 
-	// TODO: add default values for optional arguments?
-	generate_NEWLIST(cctx, count < 0 ? 0 : count);
-	argcount = regular_args + 1;
+	// If count is negative an empty list will be added after evaluating
+	// default values for missing optional arguments.
+	if (count >= 0)
+	{
+	    generate_NEWLIST(cctx, count);
+	    argcount = regular_args + 1;
+	}
     }
 
     if ((isn = generate_instr(cctx,
@@ -4600,6 +4605,44 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
     // Most modern script version.
     current_sctx.sc_version = SCRIPT_VERSION_VIM9;
 
+    if (ufunc->uf_def_args.ga_len > 0)
+    {
+	int	count = ufunc->uf_def_args.ga_len;
+	int	i;
+	char_u	*arg;
+	int	off = STACK_FRAME_SIZE + (ufunc->uf_va_name != NULL ? 1 : 0);
+
+	// Produce instructions for the default values of optional arguments.
+	// Store the instruction index in uf_def_arg_idx[] so that we know
+	// where to start when the function is called, depending on the number
+	// of arguments.
+	ufunc->uf_def_arg_idx = ALLOC_CLEAR_MULT(int, count + 1);
+	if (ufunc->uf_def_arg_idx == NULL)
+	    goto erret;
+	for (i = 0; i < count; ++i)
+	{
+	    ufunc->uf_def_arg_idx[i] = instr->ga_len;
+	    arg = ((char_u **)(ufunc->uf_def_args.ga_data))[i];
+	    if (compile_expr1(&arg, &cctx) == FAIL
+		    || generate_STORE(&cctx, ISN_STORE,
+						i - count - off, NULL) == FAIL)
+		goto erret;
+	}
+
+	// If a varargs is following, push an empty list.
+	if (ufunc->uf_va_name != NULL)
+	{
+	    if (generate_NEWLIST(&cctx, 0) == FAIL
+		    || generate_STORE(&cctx, ISN_STORE, -off, NULL) == FAIL)
+		goto erret;
+	}
+
+	ufunc->uf_def_arg_idx[count] = instr->ga_len;
+    }
+
+    /*
+     * Loop over all the lines of the function and generate instructions.
+     */
     for (;;)
     {
 	if (line != NULL && *line == '|')

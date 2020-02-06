@@ -70,12 +70,41 @@ typedef struct {
 #define STACK_TV_BOT(idx) (((typval_T *)ectx->ec_stack.ga_data) + ectx->ec_stack.ga_len + idx)
 
 /*
- * Return the number of arguments, including any vararg.
+ * Return the number of arguments, including optional arguments and any vararg.
  */
     static int
 ufunc_argcount(ufunc_T *ufunc)
 {
     return ufunc->uf_args.ga_len + (ufunc->uf_va_name != NULL ? 1 : 0);
+}
+
+/*
+ * Set the instruction index, depending on omitted arguments, where the default
+ * values are to be computed.  If all optional arguments are present, start
+ * with the function body.
+ * The expression evaluation is at the start of the instructions:
+ *  0 ->  EVAL default1
+ *	       STORE arg[-2]
+ *  1 ->  EVAL default2
+ *	       STORE arg[-1]
+ *  2 ->  function body
+ */
+    static void
+init_instr_idx(ufunc_T *ufunc, int argcount, ectx_T *ectx)
+{
+    if (ufunc->uf_def_args.ga_len == 0)
+	ectx->ec_iidx = 0;
+    else
+    {
+	int	defcount = ufunc->uf_args.ga_len - argcount;
+
+	// If there is a varargs argument defcount can be negative, no defaults
+	// to evaluate then.
+	if (defcount < 0)
+	    defcount = 0;
+	ectx->ec_iidx = ufunc->uf_def_arg_idx[
+					 ufunc->uf_def_args.ga_len - defcount];
+    }
 }
 
 /*
@@ -107,23 +136,15 @@ call_dfunc(int cdf_idx, int argcount, ectx_T *ectx)
     if (ga_grow(&ectx->ec_stack, optcount + 3 + dfunc->df_varcount) == FAIL)
 	return FAIL;
 
-// TODO: Put omitted argument default values on the stack.
-    if (optcount > 0)
-    {
-	emsg("optional arguments not implemented yet");
-	return FAIL;
-    }
     if (optcount < 0)
     {
 	emsg("argument count wrong?");
 	return FAIL;
     }
-//    for (idx = argcount - dfunc->df_minarg;
-//				     idx < dfunc->df_maxarg; ++idx)
-//    {
-//	copy_tv(&dfunc->df_defarg[idx], STACK_TV_BOT(0));
-//	++ectx->ec_stack.ga_len;
-//    }
+
+    // Reserve space for omitted optional arguments, filled in soon.
+    // Also any empty varargs argument.
+    ectx->ec_stack.ga_len += optcount;
 
     // Store current execution state in stack frame for ISN_RETURN.
     // TODO: If the actual number of arguments doesn't match what the called
@@ -142,7 +163,9 @@ call_dfunc(int cdf_idx, int argcount, ectx_T *ectx)
     ectx->ec_dfunc_idx = cdf_idx;
     ectx->ec_instr = dfunc->df_instr;
     estack_push_ufunc(ETYPE_UFUNC, dfunc->df_ufunc, 1);
-    ectx->ec_iidx = 0;
+
+    // Decide where to start execution, handles optional arguments.
+    init_instr_idx(ufunc, argcount, ectx);
 
     return OK;
 }
@@ -156,9 +179,9 @@ call_dfunc(int cdf_idx, int argcount, ectx_T *ectx)
     static void
 func_return(ectx_T *ectx)
 {
-    int		ret_idx = ectx->ec_stack.ga_len - 1;
     int		idx;
     dfunc_T	*dfunc;
+    int		top;
 
     // execution context goes one level up
     estack_pop();
@@ -166,17 +189,27 @@ func_return(ectx_T *ectx)
     // Clear the local variables and temporary values, but not
     // the return value.
     for (idx = ectx->ec_frame + STACK_FRAME_SIZE;
-					 idx < ectx->ec_stack.ga_len - 1; ++idx)
+					idx < ectx->ec_stack.ga_len - 1; ++idx)
 	clear_tv(STACK_TV(idx));
+
+    // Clear the arguments.
     dfunc = ((dfunc_T *)def_functions.ga_data) + ectx->ec_dfunc_idx;
-    ectx->ec_stack.ga_len = ectx->ec_frame
-					 - ufunc_argcount(dfunc->df_ufunc) + 1;
+    top = ectx->ec_frame - ufunc_argcount(dfunc->df_ufunc);
+    for (idx = top; idx < ectx->ec_frame; ++idx)
+	clear_tv(STACK_TV(idx));
+
+    // Restore the previous frame.
     ectx->ec_dfunc_idx = STACK_TV(ectx->ec_frame)->vval.v_number;
     ectx->ec_iidx = STACK_TV(ectx->ec_frame + 1)->vval.v_number;
     ectx->ec_frame = STACK_TV(ectx->ec_frame + 2)->vval.v_number;
-    *STACK_TV_BOT(-1) = *STACK_TV(ret_idx);
     dfunc = ((dfunc_T *)def_functions.ga_data) + ectx->ec_dfunc_idx;
     ectx->ec_instr = dfunc->df_instr;
+
+    // Reset the stack to the position before the call, move the return value
+    // to the top of the stack.
+    idx = ectx->ec_stack.ga_len - 1;
+    ectx->ec_stack.ga_len = top + 1;
+    *STACK_TV_BOT(-1) = *STACK_TV(idx);
 }
 
 #undef STACK_TV
@@ -362,7 +395,7 @@ call_def_function(
     int		idx;
     int		ret = FAIL;
     dfunc_T	*dfunc;
-    int		optcount = ufunc_argcount(ufunc) - argc;
+    int		defcount = ufunc->uf_args.ga_len - argc;
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -388,17 +421,18 @@ call_def_function(
 	copy_tv(&argv[idx], STACK_TV_BOT(0));
 	++ectx.ec_stack.ga_len;
     }
+    // Make space for omitted arguments, will store default value below.
+    if (defcount > 0)
+	for (idx = 0; idx < defcount; ++idx)
+	{
+	    STACK_TV_BOT(0)->v_type = VAR_UNKNOWN;
+	    ++ectx.ec_stack.ga_len;
+	}
 
     // Frame pointer points to just after arguments.
     ectx.ec_frame = ectx.ec_stack.ga_len;
     initial_frame_ptr = ectx.ec_frame;
 
-// TODO: Put omitted argument default values on the stack.
-    if (optcount > 0)
-    {
-	emsg("optional arguments not implemented yet");
-	return FAIL;
-    }
     // dummy frame entries
     for (idx = 0; idx < STACK_FRAME_SIZE; ++idx)
     {
@@ -413,7 +447,10 @@ call_def_function(
     ectx.ec_stack.ga_len += dfunc->df_varcount;
 
     ectx.ec_instr = dfunc->df_instr;
-    ectx.ec_iidx = 0;
+
+    // Decide where to start execution, handles optional arguments.
+    init_instr_idx(ufunc, argc, &ectx);
+
     for (;;)
     {
 	isn_T	    *iptr;
@@ -1657,7 +1694,11 @@ ex_disassemble(exarg_T *eap)
 		break;
 
 	    case ISN_STORE:
-		smsg("%4d STORE $%lld", current, iptr->isn_arg.number);
+		if (iptr->isn_arg.number < 0)
+		    smsg("%4d STORE arg[%lld]", current,
+				      iptr->isn_arg.number + STACK_FRAME_SIZE);
+		else
+		    smsg("%4d STORE $%lld", current, iptr->isn_arg.number);
 		break;
 	    case ISN_STOREV:
 		smsg("%4d STOREV v:%s", current,

@@ -139,6 +139,39 @@ def Test_call_varargs()
   assert_equal('one,two,three', MyVarargs('one', 'two', 'three'))
 enddef
 
+def MyDefaultArgs(name = 'string'): string
+  return name
+enddef
+
+def Test_call_default_args()
+  assert_equal('string', MyDefaultArgs())
+  assert_equal('one', MyDefaultArgs('one'))
+  assert_fails('call MyDefaultArgs("one", "two")', 'E118:')
+enddef
+
+func Test_call_default_args_from_func()
+  call assert_equal('string', MyDefaultArgs())
+  call assert_equal('one', MyDefaultArgs('one'))
+  call assert_fails('call MyDefaultArgs("one", "two")', 'E118:')
+endfunc
+
+" Default arg and varargs
+def MyDefVarargs(one: string, two = 'foo', ...rest: list<string>): string
+  let res = one .. ',' .. two
+  for s in rest
+    res ..= ',' .. s
+  endfor
+  return res
+enddef
+
+def Test_call_def_varargs()
+  call assert_fails('call MyDefVarargs()', 'E119:')
+  assert_equal('one,foo', MyDefVarargs('one'))
+  assert_equal('one,two', MyDefVarargs('one', 'two'))
+  assert_equal('one,two,three', MyDefVarargs('one', 'two', 'three'))
+enddef
+
+
 "def Test_call_func_defined_later()
 "  call assert_equal('one', DefineLater('one'))
 "  call assert_fails('call NotDefined("one")', 'E99:')
@@ -147,25 +180,6 @@ enddef
 func DefineLater(arg)
   return a:arg
 endfunc
-
-def MyDefaultArgs(name = 'string'): string
-  return name
-enddef
-
-func Test_call_default_args_from_func()
-  " TODO: implement using default value for optional argument
-  "call assert_equal('string', MyDefaultArgs())
-  call assert_fails('call MyDefaultArgs()', 'optional arguments not implemented yet')
-  call assert_equal('one', MyDefaultArgs('one'))
-  call assert_fails('call MyDefaultArgs("one", "two")', 'E118:')
-endfunc
-
-def Test_call_default_args()
-  " TODO: implement using default value for optional argument
-  "assert_equal('string', MyDefaultArgs())
-  assert_equal('one', MyDefaultArgs('one'))
-  assert_fails('call MyDefaultArgs("one", "two")', 'E118:')
-enddef
 
 def Test_return_type_wrong()
   CheckScriptFailure(['def Func(): number', 'return "a"', 'enddef'], 'expected number but got string')

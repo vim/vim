@@ -200,6 +200,7 @@ get_function_args(
 	    {
 		typval_T	rettv;
 
+		// find the end of the expression (doesn't evaluate it)
 		any_default = TRUE;
 		p = skipwhite(p) + 1;
 		p = skipwhite(p);

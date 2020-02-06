@@ -1515,6 +1515,8 @@ typedef struct
     type_T	**uf_arg_types;	// argument types (count == uf_args.ga_len)
     type_T	*uf_ret_type;	// return type
     garray_T	uf_type_list;	// types used in arg and return types
+    int		*uf_def_arg_idx; // instruction indexes for evaluating
+				// uf_def_args; length: uf_def_args.ga_len + 1
     char_u	*uf_va_name;	// name from "...name" or NULL
     type_T	*uf_va_type;	// type from "...name: type" or NULL
 
