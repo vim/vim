@@ -5232,7 +5232,7 @@ f_pyxeval(typval_T *argvars, typval_T *rettv)
     z ^ (z >> 16) \
     )
 
-    void
+    static void
 init_srand(UINT32_T *x)
 {
     static int dev_urandom_state = -1;  // FAIL or OK once tried
