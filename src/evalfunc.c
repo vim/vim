@@ -5233,7 +5233,7 @@ f_pyxeval(typval_T *argvars, typval_T *rettv)
     )
 
     void
-__srand(UINT32_T *x)
+init_srand(UINT32_T *x)
 {
     static int dev_urandom_state = -1;  // FAIL or OK once tried
 
@@ -5288,7 +5288,7 @@ f_rand(typval_T *argvars, typval_T *rettv)
 	if (initialized == FALSE)
 	{
 	    // Initialize the global seed list.
-	    __srand(&gx);
+	    init_srand(&gx);
 	    initialized = TRUE;
 	}
 	x = gx;
@@ -7286,7 +7286,7 @@ f_srand(typval_T *argvars, typval_T *rettv)
 	return;
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
-	__srand(&x);
+	init_srand(&x);
     }
     else
     {
