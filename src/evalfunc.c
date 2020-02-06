@@ -5273,7 +5273,7 @@ init_srand(UINT32_T *x)
 /*
  * "rand()" function
  */
-    void
+    static void
 f_rand(typval_T *argvars, typval_T *rettv)
 {
     list_T	*l = NULL;
