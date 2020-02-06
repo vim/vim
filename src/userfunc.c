@@ -573,8 +573,6 @@ get_func_tv(
     return ret;
 }
 
-#define FLEN_FIXED 40
-
 /*
  * Return TRUE if "p" starts with "<SID>" or "s:".
  * Only works if eval_fname_script() returned non-zero for "p"!
@@ -591,7 +589,7 @@ eval_fname_sid(char_u *p)
  * Use "fname_buf[FLEN_FIXED + 1]" when it fits, otherwise allocate memory
  * (slow).
  */
-    static char_u *
+    char_u *
 fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
 {
     int		llen;

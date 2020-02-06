@@ -1686,49 +1686,60 @@ compile_call(char_u **arg, size_t varlen, cctx_T *cctx, int argcount_init)
     char_u	*p;
     int		argcount = argcount_init;
     char_u	namebuf[100];
+    char_u	fname_buf[FLEN_FIXED + 1];
+    char_u	*tofree = NULL;
+    int		error = FCERR_NONE;
     ufunc_T	*ufunc;
+    int		res = FAIL;
 
     if (varlen >= sizeof(namebuf))
     {
 	semsg(_("E1011: name too long: %s"), name);
 	return FAIL;
     }
-    vim_strncpy(namebuf, name, varlen);
+    vim_strncpy(namebuf, *arg, varlen);
+    name = fname_trans_sid(namebuf, fname_buf, &tofree, &error);
 
     *arg = skipwhite(*arg + varlen + 1);
     if (compile_arguments(arg, cctx, &argcount) == FAIL)
-	return FAIL;
+	goto theend;
 
-    if (ASCII_ISLOWER(*name))
+    if (ASCII_ISLOWER(*name) && name[1] != ':')
     {
 	int	    idx;
 
 	// builtin function
-	idx = find_internal_func(namebuf);
+	idx = find_internal_func(name);
 	if (idx >= 0)
-	    return generate_BCALL(cctx, idx, argcount);
+	{
+	    res = generate_BCALL(cctx, idx, argcount);
+	    goto theend;
+	}
 	semsg(_(e_unknownfunc), namebuf);
     }
 
-    // User defined function or variable must start with upper case.
-    if (!ASCII_ISUPPER(*name))
-    {
-	semsg(_("E1012: Invalid function name: %s"), namebuf);
-	return FAIL;
-    }
-
     // If we can find the function by name generate the right call.
-    ufunc = find_func(namebuf, cctx);
+    ufunc = find_func(name, cctx);
     if (ufunc != NULL)
-	return generate_CALL(cctx, ufunc, argcount);
+    {
+	res = generate_CALL(cctx, ufunc, argcount);
+	goto theend;
+    }
 
     // If the name is a variable, load it and use PCALL.
     p = namebuf;
     if (compile_load(&p, namebuf + varlen, cctx, FALSE) == OK)
-	return generate_PCALL(cctx, argcount, FALSE);
+    {
+	res = generate_PCALL(cctx, argcount, FALSE);
+	goto theend;
+    }
 
     // The function may be defined only later.  Need to figure out at runtime.
-    return generate_UCALL(cctx, namebuf, argcount);
+    res = generate_UCALL(cctx, name, argcount);
+
+theend:
+    vim_free(tofree);
+    return res;
 }
 
 // like NAMESPACE_CHAR but with 'a' and 'l'.

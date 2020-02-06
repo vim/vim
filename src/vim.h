@@ -2574,6 +2574,9 @@ typedef enum {
 #define FCERR_DELETED	7
 #define FCERR_NOTMETHOD	8   // function cannot be used as a method
 
+// fixed buffer length for fname_trans_sid()
+#define FLEN_FIXED 40
+
 // flags for find_name_end()
 #define FNE_INCL_BR	1	// include [] in name
 #define FNE_CHECK_START	2	// check name starts with valid character

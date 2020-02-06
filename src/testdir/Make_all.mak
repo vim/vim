@@ -268,6 +268,7 @@ NEW_TESTS = \
 	test_utf8 \
 	test_utf8_comparisons \
 	test_vartabs \
+	test_vim9_disassemble \
 	test_vim9_expr \
 	test_vim9_script \
 	test_viminfo \
@@ -470,6 +471,7 @@ NEW_TESTS_RES = \
 	test_user_func.res \
 	test_usercommands.res \
 	test_vartabs.res \
+	test_vim9_disassemble.res \
 	test_vim9_expr.res \
 	test_vim9_script.res \
 	test_viminfo.res \
