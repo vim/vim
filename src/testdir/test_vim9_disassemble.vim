@@ -20,7 +20,7 @@ def s:ScriptFuncLoad(arg: string)
   echo @z
 enddef
 
-def Test_disassembleLoad()
+def Test_disassemble_load()
   assert_fails('disass NoFunc', 'E1061:')
   assert_fails('disass NotCompiled', 'E1062:')
 
@@ -47,7 +47,7 @@ def s:ScriptFuncPush()
   endif
 enddef
 
-def Test_disassemblePush()
+def Test_disassemble_push()
   let res = execute('disass s:ScriptFuncPush')
   assert_match('<SNR>\d*_ScriptFuncPush.*'
         \ .. 'localbool = true.*'
@@ -78,7 +78,7 @@ def s:ScriptFuncStore()
   @z = 'rv'
 enddef
 
-def Test_disassembleStore()
+def Test_disassemble_store()
   let res = execute('disass s:ScriptFuncStore')
   assert_match('<SNR>\d*_ScriptFuncStore.*'
         \ .. 'localnr = 2.*'
@@ -110,7 +110,7 @@ def s:ScriptFuncTry()
   endtry
 enddef
 
-def Test_disassembleTry()
+def Test_disassemble_try()
   let res = execute('disass s:ScriptFuncTry')
   assert_match('<SNR>\d*_ScriptFuncTry.*'
         \ .. 'try.*'
@@ -135,7 +135,7 @@ def s:ScriptFuncNew()
   let dd = #{one: 1, two: "val"}
 enddef
 
-def Test_disassembleNew()
+def Test_disassemble_new()
   let res = execute('disass s:ScriptFuncNew')
   assert_match('<SNR>\d*_ScriptFuncNew.*'
         \ .. 'let ll = \[1, "two", 333].*'
@@ -167,7 +167,7 @@ endfunc
 def s:ScriptFuncCall(): string
   changenr()
   char2nr("abc")
-  Test_disassembleNew()
+  Test_disassemble_new()
   FuncWithArg(343)
   ScriptFuncNew()
   s:ScriptFuncNew()
@@ -180,7 +180,7 @@ def s:ScriptFuncCall(): string
   return "yes"
 enddef
 
-def Test_disassembleCall()
+def Test_disassemble_call()
   let res = execute('disass s:ScriptFuncCall')
   assert_match('<SNR>\d\+_ScriptFuncCall.*'
         \ .. 'changenr().*'
@@ -188,8 +188,8 @@ def Test_disassembleCall()
         \ .. 'char2nr("abc").*'
         \ .. ' PUSHS "abc".*'
         \ .. ' BCALL char2nr(argc 1).*'
-        \ .. 'Test_disassembleNew().*'
-        \ .. ' DCALL Test_disassembleNew(argc 0).*'
+        \ .. 'Test_disassemble_new().*'
+        \ .. ' DCALL Test_disassemble_new(argc 0).*'
         \ .. 'FuncWithArg(343).*'
         \ .. ' PUSHNR 343.*'
         \ .. ' DCALL FuncWithArg(argc 1).*'
@@ -245,7 +245,7 @@ def HasSomething()
   endif
 enddef
 
-def Test_compile_const_expr()
+def Test_disassemble_const_expr()
   assert_equal("\nyes", execute('call HasEval()'))
   let instr = execute('disassemble HasEval')
   assert_match('HasEval.*'
@@ -284,7 +284,7 @@ def WithLambda(): string
   return F("x")
 enddef
 
-def Test_compile_lambda()
+def Test_disassemble_lambda()
   assert_equal("XxX", WithLambda())
   let instr = execute('disassemble WithLambda')
   assert_match('WithLambda.*'
@@ -304,7 +304,7 @@ def AndOr(arg): string
   return 'no'
 enddef
 
-def Test_compile_and_or()
+def Test_disassemble_and_or()
   assert_equal("yes", AndOr(1))
   assert_equal("no", AndOr(2))
   assert_equal("yes", AndOr(4))
@@ -334,7 +334,7 @@ def ForLoop(): list<number>
   return res
 enddef
 
-def Test_compile_for_loop()
+def Test_disassemble_for_loop()
   assert_equal([0, 1, 2], ForLoop())
   let instr = execute('disassemble ForLoop')
   assert_match('ForLoop.*'
@@ -383,7 +383,7 @@ def Computing()
   endif
 enddef
 
-def Test_computing()
+def Test_disassemble_computing()
   let instr = execute('disassemble Computing')
   assert_match('Computing.*'
         \ .. 'let nr = 3.*'
@@ -433,6 +433,101 @@ def Test_computing()
         \ .. '\d OPFLOAT /.*'
         \, instr)
   endif
+enddef
+
+def Test_disassemble_compare()
+  " TODO: COMPAREFUNC
+  let cases = [
+        \ ['true == false', 'COMPAREBOOL =='],
+        \ ['true != false', 'COMPAREBOOL !='],
+        \ ['v:none == v:null', 'COMPARESPECIAL =='],
+        \ ['v:none != v:null', 'COMPARESPECIAL !='],
+        \
+        \ ['111 == 222', 'COMPARENR =='],
+        \ ['111 != 222', 'COMPARENR !='],
+        \ ['111 > 222', 'COMPARENR >'],
+        \ ['111 < 222', 'COMPARENR <'],
+        \ ['111 >= 222', 'COMPARENR >='],
+        \ ['111 <= 222', 'COMPARENR <='],
+        \ ['111 =~ 222', 'COMPARENR =\~'],
+        \ ['111 !~ 222', 'COMPARENR !\~'],
+        \
+        \ ['"xx" == "yy"', 'COMPARESTRING =='],
+        \ ['"xx" != "yy"', 'COMPARESTRING !='],
+        \ ['"xx" > "yy"', 'COMPARESTRING >'],
+        \ ['"xx" < "yy"', 'COMPARESTRING <'],
+        \ ['"xx" >= "yy"', 'COMPARESTRING >='],
+        \ ['"xx" <= "yy"', 'COMPARESTRING <='],
+        \ ['"xx" =~ "yy"', 'COMPARESTRING =\~'],
+        \ ['"xx" !~ "yy"', 'COMPARESTRING !\~'],
+        \ ['"xx" is "yy"', 'COMPARESTRING is'],
+        \ ['"xx" isnot "yy"', 'COMPARESTRING isnot'],
+        \
+        \ ['0z11 == 0z22', 'COMPAREBLOB =='],
+        \ ['0z11 != 0z22', 'COMPAREBLOB !='],
+        \ ['0z11 is 0z22', 'COMPAREBLOB is'],
+        \ ['0z11 isnot 0z22', 'COMPAREBLOB isnot'],
+        \
+        \ ['[1,2] == [3,4]', 'COMPARELIST =='],
+        \ ['[1,2] != [3,4]', 'COMPARELIST !='],
+        \ ['[1,2] is [3,4]', 'COMPARELIST is'],
+        \ ['[1,2] isnot [3,4]', 'COMPARELIST isnot'],
+        \
+        \ ['#{a:1} == #{x:2}', 'COMPAREDICT =='],
+        \ ['#{a:1} != #{x:2}', 'COMPAREDICT !='],
+        \ ['#{a:1} is #{x:2}', 'COMPAREDICT is'],
+        \ ['#{a:1} isnot #{x:2}', 'COMPAREDICT isnot'],
+        \
+        \ ['{->33} == {->44}', 'COMPAREPARTIAL =='],
+        \ ['{->33} != {->44}', 'COMPAREPARTIAL !='],
+        \ ['{->33} is {->44}', 'COMPAREPARTIAL is'],
+        \ ['{->33} isnot {->44}', 'COMPAREPARTIAL isnot'],
+        \
+        \ ['77 == g:xx', 'COMPAREANY =='],
+        \ ['77 != g:xx', 'COMPAREANY !='],
+        \ ['77 > g:xx', 'COMPAREANY >'],
+        \ ['77 < g:xx', 'COMPAREANY <'],
+        \ ['77 >= g:xx', 'COMPAREANY >='],
+        \ ['77 <= g:xx', 'COMPAREANY <='],
+        \ ['77 =~ g:xx', 'COMPAREANY =\~'],
+        \ ['77 !~ g:xx', 'COMPAREANY !\~'],
+        \ ['77 is g:xx', 'COMPAREANY is'],
+        \ ['77 isnot g:xx', 'COMPAREANY isnot'],
+        \ ]
+  if has('float')
+    cases->extend([
+        \ ['1.1 == 2.2', 'COMPAREFLOAT =='],
+        \ ['1.1 != 2.2', 'COMPAREFLOAT !='],
+        \ ['1.1 > 2.2', 'COMPAREFLOAT >'],
+        \ ['1.1 < 2.2', 'COMPAREFLOAT <'],
+        \ ['1.1 >= 2.2', 'COMPAREFLOAT >='],
+        \ ['1.1 <= 2.2', 'COMPAREFLOAT <='],
+        \ ['1.1 =~ 2.2', 'COMPAREFLOAT =\~'],
+        \ ['1.1 !~ 2.2', 'COMPAREFLOAT !\~'],
+        \ ])
+  endif
+
+  let nr = 1
+  for case in cases
+    writefile(['def TestCase' .. nr .. '()',
+             \ '  if ' .. case[0],
+             \ '    echo 42'
+             \ '  endif',
+             \ 'enddef'], 'Xdisassemble')
+    source Xdisassemble
+    let instr = execute('disassemble TestCase' .. nr)
+    assert_match('TestCase' .. nr .. '.*'
+        \ .. 'if ' .. substitute(case[0], '[[~]', '\\\0', 'g') .. '.*'
+        \ .. '\d \(PUSH\|FUNCREF\).*'
+        \ .. '\d \(PUSH\|FUNCREF\|LOADG\).*'
+        \ .. '\d ' .. case[1] .. '.*'
+        \ .. '\d JUMP_IF_FALSE -> \d\+.*'
+        \, instr)
+
+    nr += 1
+  endfor
+
+  " delete('Xdisassemble')
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

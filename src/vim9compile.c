@@ -2342,7 +2342,7 @@ compile_subscript(
 		emsg(_(e_missbrac));
 		return FAIL;
 	    }
-	    *arg = skipwhite(*arg + 1);
+	    *arg = *arg + 1;
 
 	    if (generate_instr_drop(cctx, ISN_INDEX, 1) == FAIL)
 		return FAIL;
