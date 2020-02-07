@@ -5301,9 +5301,9 @@ f_rand(typval_T *argvars, typval_T *rettv)
 	    // Initialize the global seed list.
 	    init_srand(&gx);
 
-	    gx = SPLITMIX32(gx, gz);
+	    t = SPLITMIX32(gx, gz);
 	    gy = SPLITMIX32(gx, gz);
-	    gz = SPLITMIX32(gx, gz);
+	    t = SPLITMIX32(gx, gz);
 	    gw = SPLITMIX32(gx, gz);
 
 	    initialized = TRUE;
