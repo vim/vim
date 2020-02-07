@@ -21,9 +21,14 @@ func Test_Rand()
     call assert_notequal(s, srand())
   endif
 
-  call srand()
-  let v = rand()
-  call assert_notequal(v, rand())
+  let [v, c] = [rand(), 0]
+  for i in range(5)
+    if v == rand()
+      let c += 1
+	endif
+  endfor
+  " at least, rand() should return different values in 5 times.
+  call assert_notequal(5, c)
 
   if has('float')
     call assert_fails('echo srand(1.2)', 'E805:')
