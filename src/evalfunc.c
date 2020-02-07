@@ -5288,7 +5288,7 @@ init_srand(UINT32_T *x)
 f_rand(typval_T *argvars, typval_T *rettv)
 {
     list_T	*l = NULL;
-    static UINT32_T	gx = 0, gy = 0, gz = 0, gw = 0;
+    static UINT32_T	gx, gy, gz, gw;
     static int	initialized = FALSE;
     listitem_T	*lx, *ly, *lz, *lw;
     UINT32_T	x, y, z, w, t, result;
