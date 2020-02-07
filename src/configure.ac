@@ -4447,7 +4447,7 @@ dnl the number before the version number.
 DEPEND_CFLAGS_FILTER=
 if test "$GCC" = yes; then
   AC_MSG_CHECKING(for GCC 3 or later)
-  gccmajor=`echo "$gccversion" | sed -e 's/^\([[0-9]]\+\)\..*$/\1/g'`
+  gccmajor=`echo "$gccversion" | sed -e 's/^\([[1-9]][[0-9]]*\)\..*$/\1/g'`
   if test "$gccmajor" -gt "2"; then
     DEPEND_CFLAGS_FILTER="| sed 's+-I */+-isystem /+g'"
     AC_MSG_RESULT(yes)
