@@ -6006,15 +6006,19 @@ write_chars(
     int		    length;
     int		    cp = enc_utf8 ? CP_UTF8 : enc_codepage;
 
-    length = MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite, 0, 0);
-    if (unicodebuf == NULL || length > unibuflen)
+    // The simplest case: convert -> break
+    // Initialization case: get first unicodebuf -> convert -> break
+    // Complex case: convert failed -> get new unicodebuf -> convert -> break
+    do
     {
+	length = MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite,
+							unicodebuf, unibuflen);
+	if (length && length <= unibuflen)
+	    break;
 	vim_free(unicodebuf);
-	unicodebuf = LALLOC_MULT(WCHAR, length);
-	unibuflen = length;
-    }
-    MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite,
-			unicodebuf, unibuflen);
+	unicodebuf = length ? LALLOC_MULT(WCHAR, length) : NULL;
+	unibuflen = unibuflen ? 0 : length;
+    } while (1);
 
     cells = mb_string2cells(pchBuf, cbToWrite);
 
