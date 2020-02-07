@@ -2362,7 +2362,7 @@ func Test_terminal_in_popup()
   call term_sendkeys(buf, "\<C-W>:call HidePopup()\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_4', {})
   call term_sendkeys(buf, "\<CR>")
-  call term_wait(buf, 50)
+  call term_wait(buf, 100)
 
   call term_sendkeys(buf, ":q\<CR>")
   call term_wait(buf, 100)  " wait for terminal to vanish
