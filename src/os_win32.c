@@ -5551,12 +5551,14 @@ clear_chars(
     COORD coord,
     DWORD n)
 {
-    DWORD dwDummy;
-
-    FillConsoleOutputCharacter(g_hConOut, ' ', n, coord, &dwDummy);
-
     if (!USE_VTP)
-	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, n, coord, &dwDummy);
+    {
+	DWORD dwDummy;
+
+	FillConsoleOutputCharacter(g_hConOut, ' ', n, coord, &dwDummy);
+	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, n, coord,
+								     &dwDummy);
+    }
     else
     {
 	set_console_color_rgb();
