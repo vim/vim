@@ -5272,7 +5272,7 @@ init_srand(UINT32_T *x)
     z = (z ^ (z >> 13)) * 0xc2b2ae35, \
     z ^ (z >> 16) \
     )
-#define SHUFFLE_XOSHIRO128STARSTAR(result, x, y, z, w, t) \
+#define SHUFFLE_XOSHIRO128STARSTAR(x, y, z, w) \
     result = ROTL(y * 5, 7) * 9; \
     t = y << 9; \
     z ^= x; \
@@ -5299,17 +5299,16 @@ f_rand(typval_T *argvars, typval_T *rettv)
 	if (initialized == FALSE)
 	{
 	    // Initialize the global seed list.
-	    init_srand(&gx);
+	    init_srand(&x);
 
-	    x = SPLITMIX32(gx, gz);
-	    y = SPLITMIX32(gx, gz);
-	    z = SPLITMIX32(gx, gz);
-	    w = SPLITMIX32(gx, gz);
-	    gx = x; gy = y; gz = z; gw = w;
+	    gx = SPLITMIX32(x, z);
+	    gy = SPLITMIX32(x, z);
+	    gz = SPLITMIX32(x, z);
+	    gw = SPLITMIX32(x, z);
 	    initialized = TRUE;
 	}
 
-	SHUFFLE_XOSHIRO128STARSTAR(result, gx, gy, gz, gw, t);
+	SHUFFLE_XOSHIRO128STARSTAR(gx, gy, gz, gw);
     }
     else if (argvars[0].v_type == VAR_LIST)
     {
@@ -5330,7 +5329,7 @@ f_rand(typval_T *argvars, typval_T *rettv)
 	z = (UINT32_T)lz->li_tv.vval.v_number;
 	w = (UINT32_T)lw->li_tv.vval.v_number;
 
-	SHUFFLE_XOSHIRO128STARSTAR(result, x, y, z, w, t);
+	SHUFFLE_XOSHIRO128STARSTAR(x, y, z, w);
 
 	lx->li_tv.vval.v_number = (varnumber_T)x;
 	ly->li_tv.vval.v_number = (varnumber_T)y;
