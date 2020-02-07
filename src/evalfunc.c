@@ -5351,7 +5351,6 @@ theend:
 }
 
 #undef ROTL
-#undef SPLITMIX32
 #undef SHUFFLE_XOSHIRO128STARSTAR
 
 /*
@@ -7292,21 +7291,13 @@ f_srand(typval_T *argvars, typval_T *rettv)
 	    return;
     }
 
-#define SPLITMIX32 ( \
-    z = (x += 0x9e3779b9), \
-    z = (z ^ (z >> 16)) * 0x85ebca6b, \
-    z = (z ^ (z >> 13)) * 0xc2b2ae35, \
-    z ^ (z >> 16) \
-    )
-
-    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32);
-    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32);
-    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32);
-    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32);
-
-#undef SPLITMIX32
+    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32(x, z));
+    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32(x, z));
+    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32(x, z));
+    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32(x, z));
 }
 
+#undef SPLITMIX32
 
 #ifdef FEAT_FLOAT
 /*
