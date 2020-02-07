@@ -7408,11 +7408,12 @@ vtp_printf(
     char_u  buf[100];
     va_list list;
     DWORD   result;
+    int	    len;
 
     va_start(list, format);
-    vim_vsnprintf((char *)buf, 100, (char *)format, list);
+    len = vim_vsnprintf((char *)buf, 100, (char *)format, list);
     va_end(list);
-    WriteConsoleA(g_hConOut, buf, (DWORD)STRLEN(buf), &result, NULL);
+    WriteConsoleA(g_hConOut, buf, (DWORD)len, &result, NULL);
     return (int)result;
 }
 
