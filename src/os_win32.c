@@ -7374,10 +7374,7 @@ vtp_printf(
 vtp_sgr_bulk(
     int arg)
 {
-    int args[1];
-
-    args[0] = arg;
-    vtp_sgr_bulks(1, args);
+    vtp_printf("\033[%dm", arg & 0xff);
 }
 
     static void
