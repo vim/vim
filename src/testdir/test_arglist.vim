@@ -512,9 +512,6 @@ func Test_quit_with_arglist()
   argadd Y Z
   argdelete Z
   call assert_fails('quit', 'E173:')
-  " Opening a new window should make quit fail again
-  new | close
-  call assert_fails('quit', 'E173:')
   call Reset_arglist()
   %bwipe!
 endfunc
