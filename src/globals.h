@@ -1788,6 +1788,8 @@ EXTERN proftime_T bevalexpr_due;
 
 #ifdef FEAT_EVAL
 EXTERN time_T time_for_testing INIT(= 0);
+EXTERN UINT32_T srand_seed_for_testing INIT(= 0);
+EXTERN int srand_seed_for_testing_is_used INIT(= FALSE);
 
 // Abort conversion to string after a recursion error.
 EXTERN int  did_echo_string_emsg INIT(= FALSE);

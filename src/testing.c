@@ -961,5 +961,16 @@ f_test_settime(typval_T *argvars, typval_T *rettv UNUSED)
     time_for_testing = (time_t)tv_get_number(&argvars[0]);
 }
 
+    void
+f_test_srand_seed(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    if (argvars[0].v_type == VAR_UNKNOWN)
+        srand_seed_for_testing_is_used = FALSE;
+    else
+    {
+        srand_seed_for_testing = (UINT32_T)tv_get_number(&argvars[0]);
+        srand_seed_for_testing_is_used = TRUE;
+    }
+}
 
 #endif // defined(FEAT_EVAL)
