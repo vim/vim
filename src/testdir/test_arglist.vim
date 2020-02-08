@@ -505,3 +505,16 @@ func Test_argdo()
   call assert_equal(['Xa.c', 'Xb.c', 'Xc.c'], l)
   bwipe Xa.c Xb.c Xc.c
 endfunc
+
+" Test for quiting Vim when the argument list has more files to edit
+func Test_quit_with_arglist()
+  args X
+  argadd Y Z
+  argdelete Z
+  call assert_fails('quit', 'E173:')
+  " Opening a new window should make quit fail again
+  new | close
+  call assert_fails('quit', 'E173:')
+  call Reset_arglist()
+  %bwipe!
+endfunc
