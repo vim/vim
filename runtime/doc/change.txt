@@ -636,6 +636,7 @@ For other systems the tmpnam() library function is used.
 			|cmdline-ranges|.
 
 			See |:s_flags| for [flags].
+			The delimiter doesn't need to be /, see |E146|.
 
 :[range]s[ubstitute] [flags] [count]
 :[range]&[&][flags] [count]					*:&*
