@@ -2867,6 +2867,7 @@ test_refcount({expr})		Number	get the reference count of {expr}
 test_scrollbar({which}, {value}, {dragging})
 				none	scroll in the GUI for testing
 test_setmouse({row}, {col})	none	set the mouse position for testing
+test_srand_seed([seed])		none	set seed for testing srand()
 test_settime({expr})		none	set current time for testing
 timer_info([{id}])		List	information about timers
 timer_pause({id}, {pause})	none	pause or unpause a timer
