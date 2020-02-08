@@ -1,6 +1,7 @@
 " Test the :compiler command
 
 source check.vim
+source shared.vim
 
 func Test_compiler()
   if !executable('perl')
@@ -46,6 +47,15 @@ func Test_compiler_without_arg()
   call assert_match(runtime .. '/compiler/ant.vim$',   a[0])
   call assert_match(runtime .. '/compiler/bcc.vim$',   a[1])
   call assert_match(runtime .. '/compiler/xmlwf.vim$', a[-1])
+endfunc
+
+" Test executing :compiler from the command line, not from a script
+func Test_compiler_commandline()
+  call system(GetVimCommandClean() .. ' --not-a-term -c "compiler gcc" -c "call writefile([b:current_compiler], ''XcompilerOut'')" -c "quit"')
+  call assert_equal(0, v:shell_error)
+  call assert_equal(["gcc"], readfile('XcompilerOut'))
+
+  call delete('XcompilerOut')
 endfunc
 
 func Test_compiler_completion()
