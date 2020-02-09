@@ -40,7 +40,7 @@
 #include "vim.h"
 
 #ifdef __HAIKU__
-// FIXME!!!
+// Cursor does not flash
     int
 gui_mch_is_blink_off(void)
 {
