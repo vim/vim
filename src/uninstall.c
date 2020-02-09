@@ -233,6 +233,10 @@ remove_batfiles(int doit)
     int	 i;
     int	 found = 0;
 
+    // avoid looking in the "installdir" by chdir to system root
+    mch_chdir(sysdrive);
+    mch_chdir("\\");
+
     for (i = 1; i < TARGET_COUNT; ++i)
     {
 	batfile_path = searchpath_save(targets[i].batname);
@@ -249,6 +253,8 @@ remove_batfiles(int doit)
 	    free(batfile_path);
 	}
     }
+
+    mch_chdir(installdir);
     return found;
 }
 
