@@ -16,8 +16,11 @@
 #define USR_VIM_DIR "$BE_USER_SETTINGS/vim"
 
 #define USR_EXRC_FILE	USR_VIM_DIR "/exrc"
+#define USR_EXRC_FILE2	USR_VIM_DIR "/vim/exrc"
 #define USR_VIMRC_FILE	USR_VIM_DIR "/vimrc"
+#define USR_VIMRC_FILE2	USR_VIM_DIR "/vim/vimrc"
 #define USR_GVIMRC_FILE	USR_VIM_DIR "/gvimrc"
+#define USR_GVIMRC_FILE2	USR_VIM_DIR "/vim/gvimrc"
 #define VIMINFO_FILE	USR_VIM_DIR "/viminfo"
 
 #ifdef RUNTIME_GLOBAL
