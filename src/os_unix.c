@@ -2151,7 +2151,8 @@ mch_settitle(char_u *title, char_u *icon)
     if (get_x11_windis() == OK)
 	type = 1;
 #else
-# if defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC) || defined(FEAT_GUI_GTK)
+# if defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC) \
+    || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_HAIKU)
     if (gui.in_use)
 	type = 1;
 # endif
@@ -2184,7 +2185,7 @@ mch_settitle(char_u *title, char_u *icon)
 # endif
 	    set_x11_title(title);		// x11
 #endif
-#if defined(FEAT_GUI_GTK) \
+#if defined(FEAT_GUI_GTK) || defined(FEAT_GUI_HAIKU) \
 	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MAC)
 	else
 	    gui_mch_settitle(title, icon);
@@ -4591,7 +4592,7 @@ mch_call_shell_fork(
     {
 	SIGSET_DECL(curset)
 
-# ifdef __BEOS__
+# if defined(__BEOS__) && USE_THREAD_FOR_INPUT_WITH_TIMEOUT
 	beos_cleanup_read_thread();
 # endif
 

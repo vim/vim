@@ -103,6 +103,7 @@
 #if defined(FEAT_GUI_MOTIF) \
     || defined(FEAT_GUI_GTK) \
     || defined(FEAT_GUI_ATHENA) \
+    || defined(FEAT_GUI_HAIKU) \
     || defined(FEAT_GUI_MAC) \
     || defined(FEAT_GUI_MSWIN) \
     || defined(FEAT_GUI_PHOTON)
@@ -227,6 +228,11 @@
 
 #ifdef __BEOS__
 # include "os_beos.h"
+#endif
+
+#ifdef __HAIKU__
+# include "os_haiku.h"
+# define __ARGS(x)  x
 #endif
 
 #if (defined(UNIX) || defined(VMS)) \
@@ -2104,6 +2110,9 @@ typedef struct
     int_u	format;		// Vim's own special clipboard format
     int_u	format_raw;	// Vim's raw text clipboard format
 # endif
+# ifdef FEAT_GUI_HAIKU
+    // No clipboard at the moment. TODO?
+# endif
 } Clipboard_T;
 #else
 typedef int Clipboard_T;	// This is required for the prototypes.
@@ -2165,7 +2174,7 @@ typedef enum {
 // functions of these names. The declarations would break if the defines had
 // been seen at that stage.  But it must be before globals.h, where error_ga
 // is declared.
-#if !defined(MSWIN) && !defined(FEAT_GUI_X11) \
+#if !defined(MSWIN) && !defined(FEAT_GUI_X11) && !defined(FEAT_GUI_HAIKU) \
 	&& !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MAC) && !defined(PROTO)
 # define mch_errmsg(str)	fprintf(stderr, "%s", (str))
 # define display_errors()	fflush(stderr)

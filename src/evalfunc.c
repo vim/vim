@@ -3280,6 +3280,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef __BEOS__
 	"beos",
 #endif
+#ifdef __HAIKU__
+	"haiku",
+#endif
 #if defined(BSD) && !defined(MACOS_X)
 	"bsd",
 #endif
@@ -3465,6 +3468,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 #ifdef FEAT_GUI_GNOME
 	"gui_gnome",
+#endif
+#ifdef FEAT_GUI_HAIKU
+	"gui_haiku",
 #endif
 #ifdef FEAT_GUI_MAC
 	"gui_mac",

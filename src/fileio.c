@@ -3367,6 +3367,7 @@ shorten_fnames(int force)
 #if (defined(FEAT_DND) && defined(FEAT_GUI_GTK)) \
 	|| defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_MAC) \
+	|| defined(FEAT_GUI_HAIKU) \
 	|| defined(PROTO)
 /*
  * Shorten all filenames in "fnames[count]" by current directory.
@@ -4423,8 +4424,9 @@ readdir_core(
     int		(*checkitem)(void *context, char_u *name))
 {
     int			failed = FALSE;
+    char_u		*p;
 # ifdef MSWIN
-    char_u		*buf, *p;
+    char_u		*buf;
     int			ok;
     HANDLE		hFind = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATAW    wfb;
@@ -4499,9 +4501,9 @@ readdir_core(
     vim_free(buf);
     vim_free(wn);
 # else
+{
     DIR		*dirp;
     struct dirent *dp;
-    char_u	*p;
 
     dirp = opendir((char *)path);
     if (dirp == NULL)
@@ -4547,6 +4549,7 @@ readdir_core(
 
 	closedir(dirp);
     }
+}
 # endif
 
     if (!failed && gap->ga_len > 0)

@@ -1420,6 +1420,11 @@ termgui_mch_get_rgb(guicolor_T color)
 # define DEFAULT_TERM	(char_u *)"beos-ansi"
 #endif
 
+#ifdef __HAIKU__
+# undef DEFAULT_TERM
+# define DEFAULT_TERM	(char_u *)"xterm"
+#endif
+
 #ifndef DEFAULT_TERM
 # define DEFAULT_TERM	(char_u *)"dumb"
 #endif

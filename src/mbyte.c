@@ -6488,7 +6488,7 @@ im_set_active(int active_arg)
 #  endif
 }
 
-#  if defined(FEAT_GUI) && !defined(VIMDLL)
+#  if defined(FEAT_GUI) && !defined(FEAT_GUI_HAIKU) && !defined(VIMDLL)
     void
 im_set_position(int row UNUSED, int col UNUSED)
 {

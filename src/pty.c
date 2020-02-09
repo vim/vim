@@ -386,7 +386,7 @@ mch_openpty(char **ttyn)
 static char PtyProto[] = "/dev/ptym/ptyXY";
 static char TtyProto[] = "/dev/pty/ttyXY";
 # else
-#  ifdef __BEOS__
+#  if defined (__BEOS__) || defined(__HAIKU__)
 static char PtyProto[] = "/dev/pt/XY";
 static char TtyProto[] = "/dev/tt/XY";
 #  else
