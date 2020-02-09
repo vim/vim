@@ -127,6 +127,7 @@ SRC_ALL =	\
 		src/termlib.c \
 		src/testing.c \
 		src/textprop.c \
+		src/time.c \
 		src/ui.c \
 		src/undo.c \
 		src/usercmd.c \
@@ -275,6 +276,7 @@ SRC_ALL =	\
 		src/proto/termlib.pro \
 		src/proto/testing.pro \
 		src/proto/textprop.pro \
+		src/proto/time.pro \
 		src/proto/ui.pro \
 		src/proto/undo.pro \
 		src/proto/usercmd.pro \

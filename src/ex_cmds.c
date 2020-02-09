@@ -1679,20 +1679,6 @@ append_redir(
 }
 
 /*
- * Return the current time in seconds.  Calls time(), unless test_settime()
- * was used.
- */
-    time_T
-vim_time(void)
-{
-# ifdef FEAT_EVAL
-    return time_for_testing == 0 ? time(NULL) : time_for_testing;
-# else
-    return time(NULL);
-# endif
-}
-
-/*
  * Implementation of ":fixdel", also used by get_stty().
  *  <BS>    resulting <Del>
  *   ^?		^H

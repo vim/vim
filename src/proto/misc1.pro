@@ -47,5 +47,4 @@ int goto_im(void);
 char_u *get_isolated_shell_name(void);
 int path_is_url(char_u *p);
 int path_with_url(char_u *fname);
-void add_time(char_u *buf, size_t buflen, time_t tt);
 /* vim: set ft=c : */
