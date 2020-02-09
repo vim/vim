@@ -6092,9 +6092,13 @@ mch_write(
     // translate ESC | sequences into faked bios calls
     while (len--)
     {
-	// optimization: use one single write_chars for runs of text,
-	// rather than once per character  It ain't curses, but it helps.
-	DWORD  prefix = (DWORD)strcspn((char *)s, "\n\r\b\a\033");
+	int prefix = -1;
+	char_u ch;
+
+	while((ch = s[++prefix]))
+	    if (ch <= 0x1e && !(ch != '\n' && ch != '\r' && ch != '\b'
+						&& ch != '\a' && ch != '\033'))
+		break;
 
 	if (p_wd)
 	{
