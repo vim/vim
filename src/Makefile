@@ -1391,9 +1391,10 @@ HAIKUGUI_OBJ	= objects/gui.o objects/gui_haiku.o
 HAIKUGUI_DEFS	= -DFEAT_GUI_HAIKU
 HAIKUGUI_IPATH	=
 HAIKUGUI_LIBS_DIR =
-HAIKUGUI_LIBS1	= -lbe -lroot -ltracker -ltranslation
 ifeq ($(strip $(word 1, $(subst -, , $(subst ., , $(shell $(CC) -dumpversion))))), 8)
-HAIKUGUI_LIBS1	+= -lsupc++ -lstdc++
+	HAIKUGUI_LIBS1	= -lbe -lroot -ltracker -ltranslation -lsupc++ -lstdc++
+else
+	HAIKUGUI_LIBS1	= -lbe -lroot -ltracker -ltranslation
 endif
 HAIKUGUI_LIBS2	=
 HAIKUGUI_INSTALL = install_normal install_haiku_extra
