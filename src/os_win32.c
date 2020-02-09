@@ -6099,7 +6099,9 @@ write_chars(
 	    g_coord.Y++;
     }
 
-    gotoxy(g_coord.X + 1, g_coord.Y + 1);
+    // Cursor under VTP is always in the correct position, no need to reset.
+    if (!USE_VTP)
+	gotoxy(g_coord.X + 1, g_coord.Y + 1);
 
     return written;
 }
