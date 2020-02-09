@@ -21,9 +21,14 @@
 #define VIMINFO_FILE	USR_VIM_DIR "/viminfo"
 
 #ifdef RUNTIME_GLOBAL
-# define DFLT_RUNTIMEPATH	USR_VIM_DIR "/vimfiles,"  RUNTIME_GLOBAL \
-			",$VIMRUNTIME," RUNTIME_GLOBAL "/after," USR_VIM_DIR "/vimfiles/after"
+# ifdef RUNTIME_GLOBAL_AFTER
+#  define DFLT_RUNTIMEPATH	USR_VIM_DIR"," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER ","USR_VIM_DIR"/after"
+#  define CLEAN_RUNTIMEPATH	RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL_AFTER
+# else
+#  define DFLT_RUNTIMEPATH	USR_VIM_DIR"," RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after,"USR_VIM_DIR"/after"
+#  define CLEAN_RUNTIMEPATH	RUNTIME_GLOBAL ",$VIMRUNTIME," RUNTIME_GLOBAL "/after"
+# endif
 #else
-# define DFLT_RUNTIMEPATH	USR_VIM_DIR "/vimfiles," "$VIM/vimfiles" \
-			",$VIMRUNTIME," "$VIM/vimfiles/after,"   USR_VIM_DIR "/vimfiles/after"
+# define DFLT_RUNTIMEPATH	USR_VIM_DIR",$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,"USR_VIM_DIR"/after"
+# define CLEAN_RUNTIMEPATH	"$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after"
 #endif
