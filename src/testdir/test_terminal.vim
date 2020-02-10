@@ -2372,7 +2372,7 @@ func Test_terminal_in_popup()
 endfunc
 
 func Test_issue_5607()
-  terminal cmd /c
+  exe 'terminal' &shell &shellcmdflag 'exit'
   sleep 1
   let old_wincolor = &wincolor
   try
