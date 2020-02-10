@@ -5384,9 +5384,9 @@ mch_signal_job(job_T *job, char_u *how)
 	{
 	    if (job->jv_channel != NULL && job->jv_channel->ch_anonymous_pipe)
 		job->jv_channel->ch_killing = TRUE;
-	    return TerminateJobObject(job->jv_job_object, 0) ? OK : FAIL;
+	    return TerminateJobObject(job->jv_job_object, -1) ? OK : FAIL;
 	}
-	return terminate_all(job->jv_proc_info.hProcess, 0) ? OK : FAIL;
+	return terminate_all(job->jv_proc_info.hProcess, -1) ? OK : FAIL;
     }
 
     if (!AttachConsole(job->jv_proc_info.dwProcessId))
