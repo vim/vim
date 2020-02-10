@@ -6000,27 +6000,57 @@ write_chars(
 {
     COORD	    coord = g_coord;
     DWORD	    written;
-    DWORD	    n, cchwritten, cells;
+    DWORD	    n, cchwritten;
+    static DWORD    cells;
     static WCHAR    *unicodebuf = NULL;
     static int	    unibuflen = 0;
-    int		    length;
+    static int	    length;
     int		    cp = enc_utf8 ? CP_UTF8 : enc_codepage;
+    static WCHAR    *utf8spbuf = NULL;
+    static int	    utf8splength;
+    static DWORD    utf8spcells;
+    static WCHAR    **utf8usingbuf = &unicodebuf;
 
-    // The simplest case: convert -> break
-    // Initialization case: get first unicodebuf -> convert -> break
-    // Complex case: convert failed -> get new unicodebuf -> convert -> break
-    do
+    if (cbToWrite != 1 || *pchBuf != ' ' || !enc_utf8)
     {
-	length = MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite,
+	utf8usingbuf = &unicodebuf;
+	do
+	{
+	    length = MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite,
 							unicodebuf, unibuflen);
-	if (length && length <= unibuflen)
-	    break;
-	vim_free(unicodebuf);
-	unicodebuf = length ? LALLOC_MULT(WCHAR, length) : NULL;
-	unibuflen = unibuflen ? 0 : length;
-    } while (1);
-
-    cells = mb_string2cells(pchBuf, cbToWrite);
+	    if (length && length <= unibuflen)
+		break;
+	    vim_free(unicodebuf);
+	    unicodebuf = length ? LALLOC_MULT(WCHAR, length) : NULL;
+	    unibuflen = unibuflen ? 0 : length;
+	} while(1);
+	cells = mb_string2cells(pchBuf, cbToWrite);
+    }
+    else // cbToWrite == 1 && *pchBuf == ' ' && enc_utf8
+    {
+	if (utf8usingbuf != &utf8spbuf)
+	{
+	    if (utf8spbuf == NULL)
+	    {
+		cells = mb_string2cells((char_u *)" ", 1);
+		length = MultiByteToWideChar(CP_UTF8, 0, " ", 1, NULL, 0);
+		utf8spbuf = LALLOC_MULT(WCHAR, length);
+		if (utf8spbuf != NULL)
+		{
+		    MultiByteToWideChar(CP_UTF8, 0, " ", 1, utf8spbuf, length);
+		    utf8usingbuf = &utf8spbuf;
+		    utf8splength = length;
+		    utf8spcells = cells;
+		}
+	    }
+	    else
+	    {
+		utf8usingbuf = &utf8spbuf;
+		length = utf8splength;
+		cells = utf8spcells;
+	    }
+	}
+    }
 
     if (!USE_VTP)
     {
@@ -6028,14 +6058,14 @@ write_chars(
 				    coord, &written);
 	// When writing fails or didn't write a single character, pretend one
 	// character was written, otherwise we get stuck.
-	if (WriteConsoleOutputCharacterW(g_hConOut, unicodebuf, length,
+	if (WriteConsoleOutputCharacterW(g_hConOut, *utf8usingbuf, length,
 		    coord, &cchwritten) == 0
 		|| cchwritten == 0 || cchwritten == (DWORD)-1)
 	    cchwritten = 1;
     }
     else
     {
-	if (WriteConsoleW(g_hConOut, unicodebuf, length, &cchwritten,
+	if (WriteConsoleW(g_hConOut, *utf8usingbuf, length, &cchwritten,
 		    NULL) == 0 || cchwritten == 0)
 	    cchwritten = 1;
     }
