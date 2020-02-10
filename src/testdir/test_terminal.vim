@@ -2370,3 +2370,18 @@ func Test_terminal_in_popup()
   call StopVimInTerminal(buf)
   call delete('XtermPopup')
 endfunc
+
+func Test_issue_5607()
+  if !has('win32')
+    return
+  endif
+  terminal cmd /c
+  sleep 1
+  let old_wincolor = &wincolor
+  try
+    set wincolor=
+  finally
+    let &wincolor = old_wincolor
+    bw!
+  endtry
+endfunc
