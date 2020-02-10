@@ -2372,9 +2372,6 @@ func Test_terminal_in_popup()
 endfunc
 
 func Test_issue_5607()
-  if !has('win32')
-    return
-  endif
   terminal cmd /c
   sleep 1
   let old_wincolor = &wincolor
