@@ -1,6 +1,5 @@
 /* time.c */
 char *get_ctime(time_t thetime, int add_newline);
-struct tm *vim_localtime(const time_t *timep, struct tm *result);
 time_T vim_time(void);
 void f_localtime(typval_T *argvars, typval_T *rettv);
 void f_reltime(typval_T *argvars, typval_T *rettv);

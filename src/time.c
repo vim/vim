@@ -14,6 +14,62 @@
 #include "vim.h"
 
 /*
+ * Cache of the current timezone name as retrieved from TZ, or an empty string
+ * where unset, up to 64 octets long including trailing null byte.
+ */
+#if defined(HAVE_LOCALTIME_R) && defined(HAVE_TZSET)
+static char	tz_cache[64];
+#endif
+
+/*
+ * Call either localtime(3) or localtime_r(3) from POSIX libc time.h, with the
+ * latter version preferred for reentrancy.
+ *
+ * If we use localtime_r(3) and we have tzset(3) available, check to see if the
+ * environment variable TZ has changed since the last run, and call tzset(3) to
+ * update the global timezone variables if it has.  This is because the POSIX
+ * standard doesn't require localtime_r(3) implementations to do that as it
+ * does with localtime(3), and we don't want to call tzset(3) every time.
+ */
+    static struct tm *
+vim_localtime(
+    const time_t	*timep,		// timestamp for local representation
+    struct tm		*result UNUSED)	// pointer to caller return buffer
+{
+#ifdef HAVE_LOCALTIME_R
+# ifdef HAVE_TZSET
+    char		*tz;		// pointer for TZ environment var
+
+    tz = (char *)mch_getenv((char_u *)"TZ");
+    if (tz == NULL)
+	tz = "";
+    if (STRNCMP(tz_cache, tz, sizeof(tz_cache) - 1) != 0)
+    {
+	tzset();
+	vim_strncpy((char_u *)tz_cache, (char_u *)tz, sizeof(tz_cache) - 1);
+    }
+# endif	// HAVE_TZSET
+    return localtime_r(timep, result);
+#else
+    return localtime(timep);
+#endif	// HAVE_LOCALTIME_R
+}
+
+/*
+ * Return the current time in seconds.  Calls time(), unless test_settime()
+ * was used.
+ */
+    time_T
+vim_time(void)
+{
+# ifdef FEAT_EVAL
+    return time_for_testing == 0 ? time(NULL) : time_for_testing;
+# else
+    return time(NULL);
+# endif
+}
+
+/*
  * Replacement for ctime(), which is not safe to use.
  * Requires strftime(), otherwise returns "(unknown)".
  * If "thetime" is invalid returns "(invalid)".  Never returns NULL.
@@ -57,62 +113,6 @@ get_ctime(time_t thetime, int add_newline)
     if (add_newline)
 	STRCAT(buf, "\n");
     return buf;
-}
-
-/*
- * Cache of the current timezone name as retrieved from TZ, or an empty string
- * where unset, up to 64 octets long including trailing null byte.
- */
-#if defined(HAVE_LOCALTIME_R) && defined(HAVE_TZSET)
-static char	tz_cache[64];
-#endif
-
-/*
- * Call either localtime(3) or localtime_r(3) from POSIX libc time.h, with the
- * latter version preferred for reentrancy.
- *
- * If we use localtime_r(3) and we have tzset(3) available, check to see if the
- * environment variable TZ has changed since the last run, and call tzset(3) to
- * update the global timezone variables if it has.  This is because the POSIX
- * standard doesn't require localtime_r(3) implementations to do that as it
- * does with localtime(3), and we don't want to call tzset(3) every time.
- */
-    struct tm *
-vim_localtime(
-    const time_t	*timep,		// timestamp for local representation
-    struct tm		*result UNUSED)	// pointer to caller return buffer
-{
-#ifdef HAVE_LOCALTIME_R
-# ifdef HAVE_TZSET
-    char		*tz;		// pointer for TZ environment var
-
-    tz = (char *)mch_getenv((char_u *)"TZ");
-    if (tz == NULL)
-	tz = "";
-    if (STRNCMP(tz_cache, tz, sizeof(tz_cache) - 1) != 0)
-    {
-	tzset();
-	vim_strncpy((char_u *)tz_cache, (char_u *)tz, sizeof(tz_cache) - 1);
-    }
-# endif	// HAVE_TZSET
-    return localtime_r(timep, result);
-#else
-    return localtime(timep);
-#endif	// HAVE_LOCALTIME_R
-}
-
-/*
- * Return the current time in seconds.  Calls time(), unless test_settime()
- * was used.
- */
-    time_T
-vim_time(void)
-{
-# ifdef FEAT_EVAL
-    return time_for_testing == 0 ? time(NULL) : time_for_testing;
-# else
-    return time(NULL);
-# endif
 }
 
 #if defined(FEAT_EVAL) || defined(PROTO)
