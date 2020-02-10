@@ -192,6 +192,7 @@ static void vtp_flag_init();
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 static int vtp_working = 0;
+static int vtp_initialize = 0; // Some early cases
 static void vtp_init();
 static void vtp_exit();
 static int vtp_printf(char *format, ...);
@@ -2155,7 +2156,12 @@ mch_init_g(void)
     win_clip_init();
 # endif
 
-    vtp_flag_init();
+    switch (vtp_initialize)
+    {
+	case 0:
+	    vtp_initialize++;
+	    vtp_flag_init();
+    }
 }
 
 
@@ -2645,8 +2651,18 @@ mch_init_c(void)
     win_clip_init();
 # endif
 
-    vtp_flag_init();
-    vtp_init();
+    switch (vtp_initialize)
+    {
+	case 0:
+	    vtp_initialize++;
+	    vtp_flag_init();
+	    // fallthrough
+	case 1:
+	    vtp_initialize++;
+	    vtp_init();
+    }
+
+    wt_init();
 }
 
 /*
@@ -6112,6 +6128,17 @@ mch_write(
     if (gui.in_use)
 	return;
 # endif
+
+    switch (vtp_initialize)
+    {
+	case 0:
+	    vtp_initialize++;
+	    vtp_flag_init();
+	    // fallthrough
+	case 1:
+	    vtp_initialize++;
+	    vtp_init();
+    }
 
     s[len] = NUL;
 
