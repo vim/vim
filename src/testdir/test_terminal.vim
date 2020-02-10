@@ -2370,3 +2370,18 @@ func Test_terminal_in_popup()
   call StopVimInTerminal(buf)
   call delete('XtermPopup')
 endfunc
+
+func Test_issue_5607()
+  let wincount = winnr('$')
+  exe 'terminal' &shell &shellcmdflag 'exit'
+  let job = term_getjob(bufnr())
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+
+  let old_wincolor = &wincolor
+  try
+    set wincolor=
+  finally
+    let &wincolor = old_wincolor
+    bw!
+  endtry
+endfunc
