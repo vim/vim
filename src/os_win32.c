@@ -2160,6 +2160,10 @@ mch_init_g(void)
     {
 	case 0:
 	    vtp_initialize++;
+	    out_buf_realloc(Columns * Rows);
+	    // fallthrough
+	case 1:
+	    vtp_initialize++;
 	    vtp_flag_init();
     }
 }
@@ -2655,9 +2659,13 @@ mch_init_c(void)
     {
 	case 0:
 	    vtp_initialize++;
-	    vtp_flag_init();
+	    out_buf_realloc(Columns * Rows);
 	    // fallthrough
 	case 1:
+	    vtp_initialize++;
+	    vtp_flag_init();
+	    // fallthrough
+	case 2:
 	    vtp_initialize++;
 	    vtp_init();
     }
@@ -3812,6 +3820,7 @@ mch_set_shellsize(void)
 	    Columns = coordScreen.X;
 
 	ResizeConBufAndWindow(g_hConOut, Columns, Rows);
+	out_buf_realloc(Columns * Rows);
     }
 }
 
@@ -6133,9 +6142,12 @@ mch_write(
     {
 	case 0:
 	    vtp_initialize++;
-	    vtp_flag_init();
 	    // fallthrough
 	case 1:
+	    vtp_initialize++;
+	    vtp_flag_init();
+	    // fallthrough
+	case 2:
 	    vtp_initialize++;
 	    vtp_init();
     }

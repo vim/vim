@@ -8,6 +8,7 @@ int term_is_8bit(char_u *name);
 int term_is_gui(char_u *name);
 char_u *tltoa(unsigned long i);
 void termcapinit(char_u *name);
+void out_buf_realloc(int size);
 void out_flush(void);
 void out_flush_cursor(int force, int clear_selection);
 void out_flush_check(void);

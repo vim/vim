@@ -2460,9 +2460,32 @@ static char_u		out_buf[OUT_SIZE + 1];
 
 static int		out_pos = 0;	// number of chars in out_buf
 
+static char_u		*out_buf_ptr = out_buf;
+static int		out_size = OUT_SIZE;
+
 // Since the maximum number of SGR parameters shown as a normal value range is
 // 16, the escape sequence length can be 4 * 16 + lead + tail.
 #define MAX_ESC_SEQ_LEN	80
+
+/*
+ * out_buf_realloc(): Maybe: buffer is invalidated momentally
+ */
+    void
+out_buf_realloc(
+    int	size)
+{
+    out_flush();
+
+    if (out_buf_ptr != out_buf)
+	free(out_buf_ptr);
+    out_size = (size < OUT_SIZE) ? OUT_SIZE : size;
+    out_buf_ptr = (char_u *)alloc(out_size + 1);
+    if (out_buf_ptr == NULL)
+    {
+	out_buf_ptr = out_buf;
+	out_size = OUT_SIZE;
+    }
+}
 
 /*
  * out_flush(): flush the output buffer
@@ -2477,7 +2500,7 @@ out_flush(void)
 	// set out_pos to 0 before ui_write, to avoid recursiveness
 	len = out_pos;
 	out_pos = 0;
-	ui_write(out_buf, len);
+	ui_write(out_buf_ptr, len);
     }
 }
 
@@ -2510,7 +2533,7 @@ out_flush_cursor(
     void
 out_flush_check(void)
 {
-    if (enc_dbcs != 0 && out_pos >= OUT_SIZE - MB_MAXBYTES)
+    if (enc_dbcs != 0 && out_pos >= out_size - MB_MAXBYTES)
 	out_flush();
 }
 
@@ -2539,10 +2562,10 @@ out_char(unsigned c)
 	out_char('\r');
 #endif
 
-    out_buf[out_pos++] = c;
+    out_buf_ptr[out_pos++] = c;
 
     // For testing we flush each time.
-    if (out_pos >= OUT_SIZE || p_wd)
+    if (out_pos >= out_size || p_wd)
 	out_flush();
 }
 
@@ -2552,9 +2575,9 @@ out_char(unsigned c)
     static void
 out_char_nf(unsigned c)
 {
-    out_buf[out_pos++] = c;
+    out_buf_ptr[out_pos++] = c;
 
-    if (out_pos >= OUT_SIZE)
+    if (out_pos >= out_size)
 	out_flush();
 }
 
@@ -2571,7 +2594,7 @@ out_char_nf(unsigned c)
 out_str_nf(char_u *s)
 {
     // avoid terminal strings being split up
-    if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
+    if (out_pos > out_size - MAX_ESC_SEQ_LEN)
 	out_flush();
 
     while (*s)
@@ -2605,7 +2628,7 @@ out_str_cf(char_u *s)
 	    return;
 	}
 #endif
-	if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
+	if (out_pos > out_size - MAX_ESC_SEQ_LEN)
 	    out_flush();
 #ifdef HAVE_TGETENT
 	for (p = s; *s; ++s)
@@ -2673,7 +2696,7 @@ out_str(char_u *s)
 	}
 #endif
 	// avoid terminal strings being split up
-	if (out_pos > OUT_SIZE - MAX_ESC_SEQ_LEN)
+	if (out_pos > out_size - MAX_ESC_SEQ_LEN)
 	    out_flush();
 #ifdef HAVE_TGETENT
 	tputs((char *)s, 1, TPUTSFUNCAST out_char_nf);
