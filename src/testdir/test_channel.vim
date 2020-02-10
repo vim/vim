@@ -2006,3 +2006,12 @@ func Test_issue_5150()
   sleep 10m
   call assert_equal(-1, job_info(g:job).exitval)
 endfunc
+
+func Test_issue_5485()
+  let $VAR1 = 'global'
+  let g:Ch_reply = ""
+  let l:job = job_start([&shell, &shellcmdflag, has('win32') ? 'echo %VAR1% %VAR2%' : 'echo $VAR1 $VAR2'], {'env': {'VAR1': 'local', 'VAR2': 'local'}, 'callback': 'Ch_handler'})
+  let g:Ch_job = l:job
+  call WaitForAssert({-> assert_equal("local local", trim(g:Ch_reply))})
+  unlet $VAR1
+endfunc

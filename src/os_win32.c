@@ -4948,24 +4948,6 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
     if (ga_grow(gap, 1) == FAIL)
 	return;
 
-    if (base)
-    {
-	WCHAR	*p = (WCHAR*) base;
-
-	// for last \0
-	if (ga_grow(gap, 1) == FAIL)
-	    return;
-
-	while (*p != 0 || *(p + 1) != 0)
-	{
-	    if (ga_grow(gap, 1) == OK)
-		*((WCHAR*)gap->ga_data + gap->ga_len++) = *p;
-	    p++;
-	}
-	FreeEnvironmentStrings(base);
-	*((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
-    }
-
     if (env != NULL)
     {
 	for (hi = env->dv_hashtab.ht_array; todo > 0; ++hi)
@@ -4995,6 +4977,24 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 		vim_free(wval);
 	    }
 	}
+    }
+
+    if (base)
+    {
+	WCHAR	*p = (WCHAR*) base;
+
+	// for last \0
+	if (ga_grow(gap, 1) == FAIL)
+	    return;
+
+	while (*p != 0 || *(p + 1) != 0)
+	{
+	    if (ga_grow(gap, 1) == OK)
+		*((WCHAR*)gap->ga_data + gap->ga_len++) = *p;
+	    p++;
+	}
+	FreeEnvironmentStrings(base);
+	*((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
     }
 
 # if defined(FEAT_CLIENTSERVER) || defined(FEAT_TERMINAL)
