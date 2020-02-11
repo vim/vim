@@ -657,6 +657,8 @@ OPTFLAG = /Ox
 !  if "$(OPTIMIZE)" != "SPACE"
 OPTFLAG = $(OPTFLAG) /GL
 !  endif
+# Visual Studio 2005 has 'deprecated' many of the standard CRT functions
+CFLAGS = $(CFLAGS) /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
 ! endif
 
 # (/Wp64 is deprecated in VC9 and generates an obnoxious warning.)

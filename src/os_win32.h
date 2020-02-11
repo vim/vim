@@ -18,12 +18,6 @@
 # endif
 #endif
 
-// Stop the VC2005 compiler from nagging.
-#if _MSC_VER >= 1400
-# define _CRT_SECURE_NO_DEPRECATE
-# define _CRT_NONSTDC_NO_DEPRECATE
-#endif
-
 #define BINARY_FILE_IO
 #define USE_EXE_NAME		// use argv[0] for $VIM
 #define USE_TERM_CONSOLE

@@ -119,12 +119,6 @@
 # endif
 #endif
 
-// Visual Studio 2005 has 'deprecated' many of the standard CRT functions
-#if _MSC_VER >= 1400
-# define _CRT_SECURE_NO_DEPRECATE
-# define _CRT_NONSTDC_NO_DEPRECATE
-#endif
-
 /*
  * VIM_SIZEOF_INT is used in feature.h, and the system-specific included files
  * need items from feature.h.  Therefore define VIM_SIZEOF_INT here.
