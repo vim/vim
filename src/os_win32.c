@@ -195,6 +195,7 @@ static int vtp_working = 0;
 static int vtp_initialize = 0; // Some early cases
 static void vtp_init();
 static void vtp_exit();
+static int vtp_printf(char *format, ...);
 static void vtp_sgr_bulk(int arg);
 static void vtp_sgr_bulks(int argc, int *argv);
 
@@ -7429,7 +7430,7 @@ vtp_exit(void)
     restore_console_color_rgb();
 }
 
-    int
+    static int
 vtp_printf(
     char *format,
     ...)
