@@ -4216,6 +4216,10 @@ build_stl_str_hl(
 		{
 		    p = t;
 		    l = 0;
+		    // do not use the highlighting from the removed group
+		    for (n = groupitem[groupdepth] + 1; n < curitem; n++)
+			if (item[n].type == Highlight)
+			    item[n].type = Empty;
 		}
 	    }
 	    if (l > item[groupitem[groupdepth]].maxwid)

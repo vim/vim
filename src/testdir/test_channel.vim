@@ -1991,3 +1991,27 @@ func Test_job_start_fails()
   " this was leaking memory
   call assert_fails("call job_start([''])", "E474:")
 endfunc
+
+func Test_issue_5150()
+  let g:job = job_start('grep foo', {})
+  call job_stop(g:job)
+  sleep 10m
+  call assert_equal(-1, job_info(g:job).exitval)
+  let g:job = job_start('grep foo', {})
+  call job_stop(g:job, 'term')
+  sleep 10m
+  call assert_equal(-1, job_info(g:job).exitval)
+  let g:job = job_start('grep foo', {})
+  call job_stop(g:job, 'kill')
+  sleep 10m
+  call assert_equal(-1, job_info(g:job).exitval)
+endfunc
+
+func Test_issue_5485()
+  let $VAR1 = 'global'
+  let g:Ch_reply = ""
+  let l:job = job_start([&shell, &shellcmdflag, has('win32') ? 'echo %VAR1% %VAR2%' : 'echo $VAR1 $VAR2'], {'env': {'VAR1': 'local', 'VAR2': 'local'}, 'callback': 'Ch_handler'})
+  let g:Ch_job = l:job
+  call WaitForAssert({-> assert_equal("local local", trim(g:Ch_reply))})
+  unlet $VAR1
+endfunc

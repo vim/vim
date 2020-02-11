@@ -2495,7 +2495,8 @@ do_one_cmd(
 
 #ifdef FEAT_EVAL
     // Set flag that any command was executed, used by ex_vim9script().
-    if (getline_equal(ea.getline, ea.cookie, getsourceline))
+    if (getline_equal(ea.getline, ea.cookie, getsourceline)
+						    && current_sctx.sc_sid > 0)
 	SCRIPT_ITEM(current_sctx.sc_sid)->sn_had_command = TRUE;
 
     /*

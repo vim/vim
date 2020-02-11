@@ -4295,6 +4295,8 @@ term_update_colors(void)
 {
     term_T *term = curwin->w_buffer->b_term;
 
+    if (term->tl_vterm == NULL)
+	return;
     init_default_colors(term, curwin);
     vterm_state_set_default_colors(
 	    vterm_obtain_state(term->tl_vterm),

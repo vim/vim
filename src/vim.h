@@ -1129,20 +1129,6 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define VIMINFO_VERSION_WITH_REGISTERS 3
 #define VIMINFO_VERSION_WITH_MARKS 4
 
-typedef enum {
-    BVAL_NR,
-    BVAL_STRING,
-    BVAL_EMPTY
-} btype_T;
-
-typedef struct {
-    btype_T	bv_type;
-    long	bv_nr;
-    char_u	*bv_string;
-    int		bv_len;		// length of bv_string
-    int		bv_allocated;	// bv_string was allocated
-} bval_T;
-
 /*
  * Values for do_tag().
  */

@@ -210,7 +210,6 @@ test_setmouse({row}, {col})				*test_setmouse()*
 			call test_setmouse(4, 20)
 			call feedkeys("\<LeftMouse>", "xt")
 
-
 test_settime({expr})					*test_settime()*
 		Set the time Vim uses internally.  Currently only used for
 		timestamps in the history, as they are used in viminfo, and
@@ -222,6 +221,10 @@ test_settime({expr})					*test_settime()*
 
 		Can also be used as a |method|: >
 			GetTime()->test_settime()
+
+test_srand_seed([seed])					*test_srand_seed()*
+		When [seed] is given this sets the seed value used by
+		`srand()`.  When omitted the test seed is removed.
 
 ==============================================================================
 3. Assert functions				*assert-functions-details*

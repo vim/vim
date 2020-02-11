@@ -168,6 +168,7 @@ static void f_pyeval(typval_T *argvars, typval_T *rettv);
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
 static void f_pyxeval(typval_T *argvars, typval_T *rettv);
 #endif
+static void f_test_srand_seed(typval_T *argvars, typval_T *rettv);
 static void f_rand(typval_T *argvars, typval_T *rettv);
 static void f_range(typval_T *argvars, typval_T *rettv);
 static void f_reg_executing(typval_T *argvars, typval_T *rettv);
@@ -835,6 +836,7 @@ static funcentry_T global_functions[] =
 #endif
     {"test_setmouse",	2, 2, 0,	  &t_void,	f_test_setmouse},
     {"test_settime",	1, 1, FEARG_1,	  &t_void,	f_test_settime},
+    {"test_srand_seed",	0, 1, FEARG_1,	  &t_void,	f_test_srand_seed},
 #ifdef FEAT_TIMERS
     {"timer_info",	0, 1, FEARG_1,	  &t_list_dict_any, f_timer_info},
     {"timer_pause",	2, 2, FEARG_1,	  &t_void,	f_timer_pause},
@@ -5225,6 +5227,83 @@ f_pyxeval(typval_T *argvars, typval_T *rettv)
 }
 #endif
 
+static UINT32_T srand_seed_for_testing = 0;
+static int	srand_seed_for_testing_is_used = FALSE;
+
+    static void
+f_test_srand_seed(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    if (argvars[0].v_type == VAR_UNKNOWN)
+        srand_seed_for_testing_is_used = FALSE;
+    else
+    {
+        srand_seed_for_testing = (UINT32_T)tv_get_number(&argvars[0]);
+        srand_seed_for_testing_is_used = TRUE;
+    }
+}
+
+    static void
+init_srand(UINT32_T *x)
+{
+#ifndef MSWIN
+    static int dev_urandom_state = NOTDONE;  // FAIL or OK once tried
+#endif
+
+    if (srand_seed_for_testing_is_used)
+    {
+        *x = srand_seed_for_testing;
+	return;
+    }
+#ifndef MSWIN
+    if (dev_urandom_state != FAIL)
+    {
+	int  fd = open("/dev/urandom", O_RDONLY);
+	struct {
+	    union {
+		UINT32_T number;
+		char     bytes[sizeof(UINT32_T)];
+	    } contents;
+	} buf;
+
+	// Attempt reading /dev/urandom.
+	if (fd == -1)
+	    dev_urandom_state = FAIL;
+	else
+	{
+	    buf.contents.number = 0;
+	    if (read(fd, buf.contents.bytes, sizeof(UINT32_T))
+							   != sizeof(UINT32_T))
+		dev_urandom_state = FAIL;
+	    else
+	    {
+		dev_urandom_state = OK;
+		*x = buf.contents.number;
+	    }
+	    close(fd);
+	}
+    }
+    if (dev_urandom_state != OK)
+	// Reading /dev/urandom doesn't work, fall back to time().
+#endif
+	*x = vim_time();
+}
+
+#define ROTL(x, k) ((x << k) | (x >> (32 - k)))
+#define SPLITMIX32(x, z) ( \
+    z = (x += 0x9e3779b9), \
+    z = (z ^ (z >> 16)) * 0x85ebca6b, \
+    z = (z ^ (z >> 13)) * 0xc2b2ae35, \
+    z ^ (z >> 16) \
+    )
+#define SHUFFLE_XOSHIRO128STARSTAR(x, y, z, w) \
+    result = ROTL(y * 5, 7) * 9; \
+    t = y << 9; \
+    z ^= x; \
+    w ^= y; \
+    y ^= z, x ^= w; \
+    z ^= t; \
+    w = ROTL(w, 11);
+
 /*
  * "rand()" function
  */
@@ -5232,65 +5311,56 @@ f_pyxeval(typval_T *argvars, typval_T *rettv)
 f_rand(typval_T *argvars, typval_T *rettv)
 {
     list_T	*l = NULL;
-    static list_T *globl = NULL;
-    UINT32_T	x, y, z, w, t, result;
+    static UINT32_T	gx, gy, gz, gw;
+    static int	initialized = FALSE;
     listitem_T	*lx, *ly, *lz, *lw;
+    UINT32_T	x, y, z, w, t, result;
 
     if (argvars[0].v_type == VAR_UNKNOWN)
     {
 	// When no argument is given use the global seed list.
-	if (globl == NULL)
+	if (initialized == FALSE)
 	{
 	    // Initialize the global seed list.
-	    f_srand(argvars, rettv);
-	    l = rettv->vval.v_list;
-	    if (l == NULL || list_len(l) != 4)
-	    {
-		clear_tv(rettv);
-		goto theend;
-	    }
-	    globl = l;
+	    init_srand(&x);
+
+	    gx = SPLITMIX32(x, z);
+	    gy = SPLITMIX32(x, z);
+	    gz = SPLITMIX32(x, z);
+	    gw = SPLITMIX32(x, z);
+	    initialized = TRUE;
 	}
-	else
-	    l = globl;
+
+	SHUFFLE_XOSHIRO128STARSTAR(gx, gy, gz, gw);
     }
     else if (argvars[0].v_type == VAR_LIST)
     {
 	l = argvars[0].vval.v_list;
 	if (l == NULL || list_len(l) != 4)
 	    goto theend;
+
+	lx = list_find(l, 0L);
+	ly = list_find(l, 1L);
+	lz = list_find(l, 2L);
+	lw = list_find(l, 3L);
+	if (lx->li_tv.v_type != VAR_NUMBER) goto theend;
+	if (ly->li_tv.v_type != VAR_NUMBER) goto theend;
+	if (lz->li_tv.v_type != VAR_NUMBER) goto theend;
+	if (lw->li_tv.v_type != VAR_NUMBER) goto theend;
+	x = (UINT32_T)lx->li_tv.vval.v_number;
+	y = (UINT32_T)ly->li_tv.vval.v_number;
+	z = (UINT32_T)lz->li_tv.vval.v_number;
+	w = (UINT32_T)lw->li_tv.vval.v_number;
+
+	SHUFFLE_XOSHIRO128STARSTAR(x, y, z, w);
+
+	lx->li_tv.vval.v_number = (varnumber_T)x;
+	ly->li_tv.vval.v_number = (varnumber_T)y;
+	lz->li_tv.vval.v_number = (varnumber_T)z;
+	lw->li_tv.vval.v_number = (varnumber_T)w;
     }
     else
 	goto theend;
-
-    lx = list_find(l, 0L);
-    ly = list_find(l, 1L);
-    lz = list_find(l, 2L);
-    lw = list_find(l, 3L);
-    if (lx->li_tv.v_type != VAR_NUMBER) goto theend;
-    if (ly->li_tv.v_type != VAR_NUMBER) goto theend;
-    if (lz->li_tv.v_type != VAR_NUMBER) goto theend;
-    if (lw->li_tv.v_type != VAR_NUMBER) goto theend;
-    x = (UINT32_T)lx->li_tv.vval.v_number;
-    y = (UINT32_T)ly->li_tv.vval.v_number;
-    z = (UINT32_T)lz->li_tv.vval.v_number;
-    w = (UINT32_T)lw->li_tv.vval.v_number;
-
-    // SHUFFLE_XOSHIRO128STARSTAR
-#define ROTL(x, k) ((x << k) | (x >> (32 - k)))
-    result = ROTL(y * 5, 7) * 9;
-    t = y << 9;
-    z ^= x;
-    w ^= y;
-    y ^= z, x ^= w;
-    z ^= t;
-    w = ROTL(w, 11);
-#undef ROTL
-
-    lx->li_tv.vval.v_number = (varnumber_T)x;
-    ly->li_tv.vval.v_number = (varnumber_T)y;
-    lz->li_tv.vval.v_number = (varnumber_T)z;
-    lw->li_tv.vval.v_number = (varnumber_T)w;
 
     rettv->v_type = VAR_NUMBER;
     rettv->vval.v_number = (varnumber_T)result;
@@ -5301,6 +5371,39 @@ theend:
     rettv->v_type = VAR_NUMBER;
     rettv->vval.v_number = -1;
 }
+
+/*
+ * "srand()" function
+ */
+    static void
+f_srand(typval_T *argvars, typval_T *rettv)
+{
+    UINT32_T x = 0, z;
+
+    if (rettv_list_alloc(rettv) == FAIL)
+	return;
+    if (argvars[0].v_type == VAR_UNKNOWN)
+    {
+	init_srand(&x);
+    }
+    else
+    {
+	int	    error = FALSE;
+
+	x = (UINT32_T)tv_get_number_chk(&argvars[0], &error);
+	if (error)
+	    return;
+    }
+
+    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32(x, z));
+    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32(x, z));
+    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32(x, z));
+    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32(x, z));
+}
+
+#undef ROTL
+#undef SPLITMIX32
+#undef SHUFFLE_XOSHIRO128STARSTAR
 
 /*
  * "range()" function
@@ -7216,73 +7319,6 @@ f_sqrt(typval_T *argvars, typval_T *rettv)
 	rettv->vval.v_float = 0.0;
 }
 #endif
-
-/*
- * "srand()" function
- */
-    static void
-f_srand(typval_T *argvars, typval_T *rettv)
-{
-    static int dev_urandom_state = -1;  // FAIL or OK once tried
-    UINT32_T x = 0, z;
-
-    if (rettv_list_alloc(rettv) == FAIL)
-	return;
-    if (argvars[0].v_type == VAR_UNKNOWN)
-    {
-	if (dev_urandom_state != FAIL)
-	{
-	    int  fd = open("/dev/urandom", O_RDONLY);
-	    struct {
-		union {
-		    UINT32_T number;
-		    char     bytes[sizeof(UINT32_T)];
-		} cont;
-	    } buf;
-
-	    // Attempt reading /dev/urandom.
-	    if (fd == -1)
-		dev_urandom_state = FAIL;
-	    else
-	    {
-		buf.cont.number = 0;
-		if (read(fd, buf.cont.bytes, sizeof(UINT32_T))
-							   != sizeof(UINT32_T))
-		    dev_urandom_state = FAIL;
-		else
-		{
-		    dev_urandom_state = OK;
-		    x = buf.cont.number;
-		}
-		close(fd);
-	    }
-
-	}
-	if (dev_urandom_state != OK)
-	    // Reading /dev/urandom doesn't work, fall back to time().
-	    x = vim_time();
-    }
-    else
-    {
-	int	    error = FALSE;
-
-	x = (UINT32_T)tv_get_number_chk(&argvars[0], &error);
-	if (error)
-	    return;
-    }
-
-#define SPLITMIX32 ( \
-    z = (x += 0x9e3779b9), \
-    z = (z ^ (z >> 16)) * 0x85ebca6b, \
-    z = (z ^ (z >> 13)) * 0xc2b2ae35, \
-    z ^ (z >> 16) \
-    )
-
-    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32);
-    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32);
-    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32);
-    list_append_number(rettv->vval.v_list, (varnumber_T)SPLITMIX32);
-}
 
 #ifdef FEAT_FLOAT
 /*

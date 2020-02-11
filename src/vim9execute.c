@@ -1622,6 +1622,7 @@ ex_disassemble(exarg_T *eap)
     for (current = 0; current < dfunc->df_instr_count; ++current)
     {
 	isn_T	    *iptr = &instr[current];
+	char	    *line;
 
 	while (line_idx < iptr->isn_lnum && line_idx < ufunc->uf_lines.ga_len)
 	{
@@ -1630,7 +1631,9 @@ ex_disassemble(exarg_T *eap)
 		msg_puts("\n\n");
 		prev_current = current;
 	    }
-	    msg(((char **)ufunc->uf_lines.ga_data)[line_idx++]);
+	    line = ((char **)ufunc->uf_lines.ga_data)[line_idx++];
+	    if (line != NULL)
+		msg(line);
 	}
 
 	switch (iptr->isn_type)
