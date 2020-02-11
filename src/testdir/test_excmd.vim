@@ -256,11 +256,25 @@ endfunc
 func Test_redir_cmd()
   call assert_fails('redir @@', 'E475:')
   call assert_fails('redir abc', 'E475:')
+  if has('unix')
+    call mkdir('Xdir')
+    call assert_fails('redir > Xdir', 'E17:')
+    call delete('Xdir', 'd')
+  endif
+  call writefile([], 'Xfile')
+  call setfperm('Xfile', 'r--r--r--')
+  call assert_fails('redir! > Xfile', 'E190:')
+  call delete('Xfile')
 endfunc
 
 " Test for the :filetype command
 func Test_filetype_cmd()
   call assert_fails('filetype abc', 'E475:')
+endfunc
+
+" Test for the :mode command
+func Test_mode_cmd()
+  call assert_fails('mode abc', 'E359:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

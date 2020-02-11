@@ -950,7 +950,7 @@ endfunc
 
 " Test for errors with :winpos
 func Test_winpos_errors()
-  if !has("gui_running")
+  if !has("gui_running") && !has('win32')
     call assert_fails('winpos', 'E188:')
   endif
   call assert_fails('winpos 10', 'E466:')
