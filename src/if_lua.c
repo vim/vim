@@ -1148,7 +1148,7 @@ luaV_blob_add(lua_State *L)
 	size_t i, l = 0;
 	const char *s = lua_tolstring(L, 2, &l);
 
-	if (ga_grow(&b->bv_ga, l) == OK)
+	if (ga_grow(&b->bv_ga, (int)l) == OK)
 	    for (i = 0; i < l; ++i)
 		ga_append(&b->bv_ga, s[i]);
     }
@@ -1781,7 +1781,7 @@ luaV_blob(lua_State *L)
 	    size_t i, l = 0;
 	    const char *s = lua_tolstring(L, 1, &l);
 
-	    if (ga_grow(&b->bv_ga, l) == OK)
+	    if (ga_grow(&b->bv_ga, (int)l) == OK)
 		for (i = 0; i < l; ++i)
 		    ga_append(&b->bv_ga, s[i]);
 	}
