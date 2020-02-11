@@ -32,6 +32,7 @@ void buf_reload(buf_T *buf, int orig_mode);
 void buf_store_time(buf_T *buf, stat_T *st, char_u *fname);
 void write_lnum_adjust(linenr_T offset);
 int readdir_core(garray_T *gap, char_u *path, void *context, int (*checkitem)(void *context, char_u *name));
+int readdirex_core(garray_T *gap, char_u *path, void *context, int (*checkitem)(void *context, dict_T *item));
 int delete_recursive(char_u *name);
 void vim_deltempdir(void);
 char_u *vim_tempname(int extra_char, int keep);
