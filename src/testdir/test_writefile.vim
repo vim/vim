@@ -216,8 +216,6 @@ func Test_write_errors()
 
   call assert_fails('w > Xtest', 'E494:')
 
-  call assert_fails('w > Xtest', 'E494:')
-
   " Try to overwrite a directory
   if has('unix')
     call mkdir('Xdir1')
