@@ -188,11 +188,11 @@ static int win32_set_archive(char_u *name);
 static int conpty_working = 0;
 static int conpty_type = 0;
 static int conpty_stable = 0;
+static int vtp_initialize = 0; // Some early cases
 static void vtp_flag_init();
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 static int vtp_working = 0;
-static int vtp_initialize = 0; // Some early cases
 static void vtp_init();
 static void vtp_exit();
 static int vtp_printf(char *format, ...);
