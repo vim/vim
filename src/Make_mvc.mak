@@ -1584,7 +1584,7 @@ $(OUTDIR)/if_lua.obj: $(OUTDIR) if_lua.c  $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(LUA_INC) if_lua.c
 
 auto/if_perl.c : if_perl.xs typemap
-	-mkdir auto
+	-if not exist auto/nul mkdir auto
 	$(XSUBPP) -prototypes -typemap $(XSUBPP_TYPEMAP) \
 		-typemap typemap if_perl.xs -output $@
 
