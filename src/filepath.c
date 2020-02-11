@@ -1374,7 +1374,7 @@ f_pathshorten(typval_T *argvars, typval_T *rettv)
  * Evaluate "expr" (= "context") for readdir().
  */
     static int
-readdir_checkitem(void *context, char_u *name)
+readdir_checkitem(void *context, void *item)
 {
     typval_T	*expr = (typval_T *)context;
     typval_T	save_val;
@@ -1382,9 +1382,7 @@ readdir_checkitem(void *context, char_u *name)
     typval_T	argv[2];
     int		retval = 0;
     int		error = FALSE;
-
-    if (expr->v_type == VAR_UNKNOWN)
-	return 1;
+    char_u	*name = (char_u*)item;
 
     prepare_vimvar(VV_VAL, &save_val);
     set_vim_var_string(VV_VAL, name, -1);
@@ -1423,7 +1421,8 @@ f_readdir(typval_T *argvars, typval_T *rettv)
     path = tv_get_string(&argvars[0]);
     expr = &argvars[1];
 
-    ret = readdir_core(&ga, path, (void *)expr, readdir_checkitem);
+    ret = readdir_core(&ga, path, FALSE, (void *)expr,
+	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdir_checkitem);
     if (ret == OK)
     {
 	for (i = 0; i < ga.ga_len; i++)
@@ -1439,7 +1438,7 @@ f_readdir(typval_T *argvars, typval_T *rettv)
  * Evaluate "expr" (= "context") for readdirex().
  */
     static int
-readdirex_checkitem(void *context, dict_T *item)
+readdirex_checkitem(void *context, void *item)
 {
     typval_T	*expr = (typval_T *)context;
     typval_T	save_val;
@@ -1447,14 +1446,12 @@ readdirex_checkitem(void *context, dict_T *item)
     typval_T	argv[2];
     int		retval = 0;
     int		error = FALSE;
-
-    if (expr->v_type == VAR_UNKNOWN)
-	return 1;
+    dict_T	*dict = (dict_T*)item;
 
     prepare_vimvar(VV_VAL, &save_val);
-    set_vim_var_dict(VV_VAL, item);
+    set_vim_var_dict(VV_VAL, dict);
     argv[0].v_type = VAR_DICT;
-    argv[0].vval.v_dict = item;
+    argv[0].vval.v_dict = dict;
 
     if (eval_expr_typval(expr, argv, 1, &rettv) == FAIL)
 	goto theend;
@@ -1487,7 +1484,8 @@ f_readdirex(typval_T *argvars, typval_T *rettv)
     path = tv_get_string(&argvars[0]);
     expr = &argvars[1];
 
-    ret = readdirex_core(&ga, path, (void *)expr, readdirex_checkitem);
+    ret = readdir_core(&ga, path, TRUE, (void *)expr,
+	    (expr->v_type == VAR_UNKNOWN) ? NULL : readdirex_checkitem);
     if (ret == OK)
     {
 	for (i = 0; i < ga.ga_len; i++)
