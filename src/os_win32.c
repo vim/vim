@@ -7542,6 +7542,29 @@ ctermtoxterm(
     cterm_color2rgb(cterm, &r, &g, &b, &idx);
     return (((int)r << 16) | ((int)g << 8) | (int)b);
 }
+
+    void
+get_current_initial_palette(
+    guicolor_T *fg,
+    guicolor_T *bg)
+{
+    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    COLORREF fgc = save_console_fg_rgb;
+    COLORREF bgc = save_console_bg_rgb;
+
+    if (has_csbiex)
+    {
+	csbi.cbSize = sizeof(csbi);
+	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+	fgc = csbi.ColorTable[g_color_index_fg];
+	bgc = csbi.ColorTable[g_color_index_bg];
+    }
+
+    if (*fg == INVALCOLOR)
+	*fg = (GetRValue(fgc) << 16) | (GetGValue(fgc) << 8) | GetBValue(fgc);
+    if (*bg == INVALCOLOR)
+	*bg = (GetRValue(bgc) << 16) | (GetGValue(bgc) << 8) | GetBValue(bgc);
+}
 # endif
 
     static void
