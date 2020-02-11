@@ -2006,7 +2006,7 @@ fun! Test_normal37_g_cmd6()
     tabclose
   endfor
   " clean up
-  call assert_fails(':tabclose', 'E784')
+  call assert_fails(':tabclose', 'E784:')
 endfunc
 
 fun! Test_normal38_nvhome()
