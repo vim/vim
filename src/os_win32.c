@@ -5451,6 +5451,9 @@ termcap_mode_start(void)
     if (g_fTermcapMode)
 	return;
 
+    if (!p_rs && USE_VTP)
+	vtp_printf("\033[?1049h");
+
     SaveConsoleBuffer(&g_cbNonTermcap);
 
     if (g_cbTermcap.IsValid)
@@ -5549,6 +5552,9 @@ termcap_mode_end(void)
 	 */
 	SetConsoleCursorPosition(g_hConOut, coord);
     }
+
+    if (!p_rs && USE_VTP)
+	vtp_printf("\033[?1049l");
 
     g_fTermcapMode = FALSE;
 }
