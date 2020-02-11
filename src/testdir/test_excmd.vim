@@ -20,6 +20,7 @@ func Test_range_error()
   call assert_fails(':\/echo 1', 'E481:')
   normal vv
   call assert_fails(":'<,'>echo 1", 'E481:')
+  call assert_fails(":\\xcenter", 'E10:')
 endfunc
 
 func Test_buffers_lastused()
@@ -239,6 +240,27 @@ func Test_confirm_cmd()
 
   call delete('foo')
   call delete('bar')
+endfunc
+
+" Test for the :print command
+func Test_print_cmd()
+  call assert_fails('print', 'E749:')
+endfunc
+
+" Test for the :winsize command
+func Test_winsize_cmd()
+  call assert_fails('winsize 1', 'E465:')
+endfunc
+
+" Test for the :redir command
+func Test_redir_cmd()
+  call assert_fails('redir @@', 'E475:')
+  call assert_fails('redir abc', 'E475:')
+endfunc
+
+" Test for the :filetype command
+func Test_filetype_cmd()
+  call assert_fails('filetype abc', 'E475:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
