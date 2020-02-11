@@ -261,10 +261,12 @@ func Test_redir_cmd()
     call assert_fails('redir > Xdir', 'E17:')
     call delete('Xdir', 'd')
   endif
-  call writefile([], 'Xfile')
-  call setfperm('Xfile', 'r--r--r--')
-  call assert_fails('redir! > Xfile', 'E190:')
-  call delete('Xfile')
+  if !has('bsd')
+    call writefile([], 'Xfile')
+    call setfperm('Xfile', 'r--r--r--')
+    call assert_fails('redir! > Xfile', 'E190:')
+    call delete('Xfile')
+  endif
 endfunc
 
 " Test for the :filetype command

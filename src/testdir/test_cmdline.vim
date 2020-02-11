@@ -923,4 +923,13 @@ func Test_cmdlineclear_tabenter()
   call delete('XtestCmdlineClearTabenter')
 endfunc
 
+" Test for failure in expanding special keywords in cmdline
+func Test_cmdline_expand_special()
+  %bwipe!
+  call assert_fails('e #', 'E499:')
+  call assert_fails('e <afile>', 'E495:')
+  call assert_fails('e <abuf>', 'E496:')
+  call assert_fails('e <amatch>', 'E497:')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
