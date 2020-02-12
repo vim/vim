@@ -658,7 +658,8 @@ OPTFLAG = /Ox
 OPTFLAG = $(OPTFLAG) /GL
 !  endif
 # Visual Studio 2005 has 'deprecated' many of the standard CRT functions
-CFLAGS = $(CFLAGS) /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
+CFLAGS_DEPR = /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
+CFLAGS = $(CFLAGS) $(CFLAGS_DEPR)
 ! endif
 
 # (/Wp64 is deprecated in VC9 and generates an obnoxious warning.)
@@ -1348,15 +1349,17 @@ $(VIM): $(VIM).exe
 $(OUTDIR):
 	if not exist $(OUTDIR)/nul  mkdir $(OUTDIR)
 
+CFLAGS_INST = /nologo -DNDEBUG -DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) $(CFLAGS_DEPR)
+
 install.exe: dosinst.c dosinst.h version.h
-	$(CC) /nologo -DNDEBUG -DWIN32 dosinst.c kernel32.lib shell32.lib \
+	$(CC) $(CFLAGS_INST) dosinst.c kernel32.lib shell32.lib \
 		user32.lib ole32.lib advapi32.lib uuid.lib \
 		-link -subsystem:$(SUBSYSTEM_TOOLS)
 	- if exist install.exe del install.exe
 	ren dosinst.exe install.exe
 
 uninstall.exe: uninstall.c dosinst.h version.h
-	$(CC) /nologo -DNDEBUG -DWIN32 uninstall.c shell32.lib advapi32.lib \
+	$(CC) $(CFLAGS_INST) uninstall.c shell32.lib advapi32.lib \
 		-link -subsystem:$(SUBSYSTEM_TOOLS)
 
 vimrun.exe: vimrun.c

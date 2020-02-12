@@ -529,7 +529,6 @@ SRC_DOS =	\
 		src/uninstall.c \
 		src/vim.def \
 		src/vim.rc \
-		src/vimio.h \
 		src/gvim.exe.mnf \
 		src/vimrun.c \
 		src/xpm_w32.c \

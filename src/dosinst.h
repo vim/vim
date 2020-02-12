@@ -10,12 +10,6 @@
  * dosinst.h: Common code for dosinst.c and uninstall.c
  */
 
-// Visual Studio 2005 has 'deprecated' many of the standard CRT functions
-#if _MSC_VER >= 1400
-# define _CRT_SECURE_NO_DEPRECATE
-# define _CRT_NONSTDC_NO_DEPRECATE
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,7 +17,7 @@
 #include <fcntl.h>
 
 #ifndef UNIX_LINT
-# include "vimio.h"
+# include <io.h>
 # include <ctype.h>
 
 # include <direct.h>

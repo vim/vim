@@ -14,7 +14,6 @@
  * Also used by Cygwin, using os_unix.c.
  */
 
-#include "vimio.h"
 #include "vim.h"
 
 /*
