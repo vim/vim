@@ -18,7 +18,7 @@
 #endif
 
 #ifdef MSWIN
-# include "vimio.h"
+# include <io.h>
 #endif
 
 // ============ the header file puzzle: order matters =========
