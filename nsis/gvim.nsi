@@ -39,7 +39,7 @@ Unicode true
 # Uncomment the next line if you want to include VisVim extension:
 #!define HAVE_VIS_VIM
 
-# Comment the following line to create a multilanguage installer:
+# Comment the following line to create an English-only installer:
 !define HAVE_MULTI_LANG
 
 # Uncomment the next line if you want to create a 64-bit installer.
