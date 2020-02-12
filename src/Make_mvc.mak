@@ -626,6 +626,12 @@ NODEFAULTLIB =
 NODEFAULTLIB = /nodefaultlib
 !endif
 
+# Specify source code charset to suppress warning C4819 on non-English
+# environment. Only available from MSVC 14.
+!if $(MSVC_MAJOR) >= 14
+CFLAGS = $(CFLAGS) /source-charset:utf-8
+!endif
+
 # Use multiprocess build on MSVC 10
 !if ("$(USE_MP)" == "yes") && ($(MSVC_MAJOR) >= 10)
 CFLAGS = $(CFLAGS) /MP
@@ -668,6 +674,9 @@ CFLAGS = $(CFLAGS) $(WP64CHECK)
 
 CFLAGS = $(CFLAGS) $(OPTFLAG) -DNDEBUG $(CPUARG)
 RCFLAGS = $(rcflags) $(rcvars) -DNDEBUG
+! if "$(CL)" == "/D_USING_V110_SDK71_"
+RCFLAGS = $(RCFLAGS) /D_USING_V110_SDK71_
+! endif
 ! ifdef USE_MSVCRT
 CFLAGS = $(CFLAGS) /MD
 LIBC = msvcrt.lib
