@@ -7484,7 +7484,8 @@ vtp_sgr_bulks(
 	p += vim_snprintf((char *)p, 4, "%d", args[i] & 0xff);
 	*p++ = ';';
     }
-    p--;
+    if (argc > 0)
+	p--;
     *p++ = 'm';
     *p = NUL;
     vtp_printf((char *)buf);
