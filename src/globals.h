@@ -384,9 +384,9 @@ EXTERN type_T t_void INIT4(VAR_VOID, 0, NULL, NULL);
 EXTERN type_T t_bool INIT4(VAR_BOOL, 0, NULL, NULL);
 EXTERN type_T t_special INIT4(VAR_SPECIAL, 0, NULL, NULL);
 EXTERN type_T t_number INIT4(VAR_NUMBER, 0, NULL, NULL);
-#ifdef FEAT_FLOAT
+# ifdef FEAT_FLOAT
 EXTERN type_T t_float INIT4(VAR_FLOAT, 0, NULL, NULL);
-#endif
+# endif
 EXTERN type_T t_string INIT4(VAR_STRING, 0, NULL, NULL);
 EXTERN type_T t_blob INIT4(VAR_BLOB, 0, NULL, NULL);
 EXTERN type_T t_job INIT4(VAR_JOB, 0, NULL, NULL);
