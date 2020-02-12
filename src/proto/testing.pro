@@ -13,7 +13,6 @@ void f_assert_report(typval_T *argvars, typval_T *rettv);
 void f_assert_true(typval_T *argvars, typval_T *rettv);
 void f_test_alloc_fail(typval_T *argvars, typval_T *rettv);
 void f_test_autochdir(typval_T *argvars, typval_T *rettv);
-void f_test_clear_search_pat(typval_T *argvars, typval_T *rettv);
 void f_test_feedinput(typval_T *argvars, typval_T *rettv);
 void f_test_getvalue(typval_T *argvars, typval_T *rettv);
 void f_test_option_not_set(typval_T *argvars, typval_T *rettv);

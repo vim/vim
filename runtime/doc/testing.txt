@@ -52,11 +52,6 @@ test_autochdir()					*test_autochdir()*
 		startup has finished.
 
 
-test_clear_search_pat()				*test_clear_search_pat()*
-		Clears the last used search pattern (|/|) and the substitute
-		pattern (|:s|). This is useful for testing conditions where
-		these patterns are not set previously.
-
 test_feedinput({string})				*test_feedinput()*
 		Characters in {string} are queued for processing as if they
 		were typed by the user. This uses a low level input buffer.
