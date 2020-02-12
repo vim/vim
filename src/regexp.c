@@ -2663,15 +2663,6 @@ free_regexp_stuff(void)
 }
 #endif
 
-/*
- * Free the previously used substitute search pattern.
- */
-    void
-free_regexp_prev_sub(void)
-{
-    VIM_CLEAR(reg_prev_sub);
-}
-
 #ifdef FEAT_EVAL
     static void
 report_re_switch(char_u *pat)
