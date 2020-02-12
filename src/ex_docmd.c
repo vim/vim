@@ -4870,8 +4870,6 @@ ex_colorscheme(exarg_T *eap)
 	// background color change requires clear + redraw
 	update_screen(CLEAR);
 	redrawcmd();
-
-	vtp_sgr_bulks_sp_init();
     }
 #endif
 }

@@ -7464,47 +7464,6 @@ vtp_sgr_bulk(
     vtp_printf("\033[%dm", arg & 0xff);
 }
 
-static char_u *bulks_idxc = NULL;
-static char_u *bulks_idxv[256];
-static long   bulks_idx = 1;
-
-    int
-vtp_sgr_bulks_sp_init(void)
-{
-    if (bulks_idxc == NULL)
-	bulks_idxc = alloc(256 * 256 * 256);
-    if (bulks_idxc == NULL)
-	return FALSE;
-    else
-	while (--bulks_idx)
-	    free(bulks_idxv[bulks_idxc[bulks_idx]]);
-    bulks_idx = 1;
-    vim_memset(bulks_idxc, 0, 256 * 256 * 256);
-    return TRUE;
-}
-
-    static BOOL
-vtp_sgr_bulks_sp(
-    int *args)
-{
-    long v = ((args[2] & 0xff) << 16) | ((args[3] & 0xff) << 8)
-							    | (args[4] & 0xff);
-    if (bulks_idxc[v] == 0)
-    {
-	if (bulks_idx > 255)
-	    return FALSE;
-	bulks_idxv[bulks_idx] = alloc(20);
-	if (bulks_idxv[bulks_idx] == NULL)
-	    return FALSE;
-	sprintf((char *)bulks_idxv[bulks_idx], "\033[38;2;%d;%d;%dm",
-			       args[2] & 0xff, args[3] & 0xff, args[4] & 0xff);
-	bulks_idxc[v] = bulks_idx++;
-    }
-
-    vtp_printf((char *)bulks_idxv[bulks_idxc[v]]);
-    return TRUE;
-}
-
     static void
 vtp_sgr_bulks(
     int argc,
@@ -7515,15 +7474,6 @@ vtp_sgr_bulks(
     char_u buf[2 + (4 * 16) + 1];
     char_u *p;
     int    i;
-    static BOOL spinit = FALSE;
-
-    if (argc == 5 && args[0] == 38 && args[1] == 2)
-    {
-	if (!spinit)
-	    spinit = vtp_sgr_bulks_sp_init();
-	if (spinit && vtp_sgr_bulks_sp(args))
-	    return;
-    }
 
     p = buf;
     *p++ = '\033';
