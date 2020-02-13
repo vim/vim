@@ -4427,7 +4427,7 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	char_u *end;
 	char_u *pat;
 	char_u *tofree = NULL;
-	size_t len;
+	int	len;
 
 	// Push v:exception, push {expr} and MATCH
 	generate_instr_type(cctx, ISN_PUSHEXC, &t_string);
@@ -4440,9 +4440,9 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	    return FAIL;
 	}
 	if (tofree == NULL)
-	    len = end - (p + 1);
+	    len = (int)(end - (p + 1));
 	else
-	    len = end - (tofree + 1);
+	    len = (int)(end - (tofree + 1));
 	pat = vim_strnsave(p + 1, len);
 	vim_free(tofree);
 	p += len + 2;
