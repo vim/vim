@@ -7465,7 +7465,7 @@ vtp_printf(
 vtp_sgr_bulk(
     int arg)
 {
-    vtp_printf("\033[%dm", arg & 0xff);
+    vtp_sgr_bulks(1, &arg);
 }
 
     static void
@@ -7475,24 +7475,117 @@ vtp_sgr_bulks(
 )
 {
     // 2('\033[') + 4('255.') * 16 + NUL
-    char_u buf[2 + (4 * 16) + 1];
-    char_u *p;
-    int    i;
+    char_u  buf[2 + (4 * 16) + 1];
+    char_u  *p;
+    int	    i, in, out;
+    int	    newargs[16];
+    static int sgrfgr = -1, sgrfgg = -1, sgrfgb = -1;
+    static int sgrbgr = -1, sgrbgg = -1, sgrbgb = -1;
 
-    p = buf;
-    *p++ = '\033';
-    *p++ = '[';
-
-    for (i = 0; i < argc; ++i)
+    if (argc == 0) // ^[m
     {
-	p += vim_snprintf((char *)p, 4, "%d", args[i] & 0xff);
-	*p++ = ';';
+	sgrfgr = sgrfgg = sgrfgb = sgrbgr = sgrbgg = sgrbgb = -1;
+	vtp_printf("\033[m");
+	return;
     }
-    if (argc > 0)
+
+    in = out = 0;
+    while (in < argc || out < argc)
+    {
+	switch (args[in])
+	{
+	    case 30: case 31: case 32: case 33:
+	    case 34: case 35: case 36: case 37: case 39:
+	    case 90: case 91: case 92: case 93:
+	    case 94: case 95: case 96: case 97:
+		sgrfgr = sgrfgg = sgrfgb = -1;
+		newargs[out++] = args[in++];
+		break;
+
+	    case 40: case 41: case 42: case 43:
+	    case 44: case 45: case 46: case 47: case 49:
+	    case 100: case 101: case 102: case 103:
+	    case 104: case 105: case 106: case 107:
+		sgrbgr = sgrbgg = sgrbgb = -1;
+		newargs[out++] = args[in++];
+		break;
+
+	    default:
+		sgrfgr = sgrfgg = sgrfgb = -1;
+		sgrbgr = sgrbgg = sgrbgb = -1;
+		newargs[out++] = args[in++];
+	}
+
+	if (args[in] == 38 && argc - in >= 5 && args[in + 1] == 2)
+	{
+	    if (sgrfgr == args[in + 2] && sgrfgg == args[in + 3]
+						     && sgrfgb == args[in + 4])
+		in += 5;
+	    else
+	    {
+		sgrfgr = args[in + 2];
+		sgrfgg = args[in + 3];
+		sgrfgb = args[in + 4];
+
+		for (i = 0; i < 5; ++i)
+		   newargs[out++] = args[in++];
+	    }
+	    continue;
+	}
+
+	if (args[in] == 48 && argc - in >= 5 && args[in + 1] == 2)
+	{
+	    if (sgrbgr == args[in + 2] && sgrbgg == args[in + 3]
+						     && sgrbgb == args[in + 4])
+		in += 5;
+	    else
+	    {
+		sgrbgr = args[in + 2];
+		sgrbgg = args[in + 3];
+		sgrbgb = args[in + 4];
+
+		for (i = 0; i < 5; ++i)
+		    newargs[out++] = args[in++];
+	    }
+	    continue;
+	}
+
+	if (args[in] == 38 && argc - in >= 3 && args[in + 1] == 5)
+	{
+	    sgrfgr = sgrfgg = sgrfgb = -1;
+
+	    for (i = 0; i < 3; ++i)
+		newargs[out++] = args[in++];
+
+	    continue;
+	}
+
+	if (args[in] == 48 && argc - in >= 3 && args[in + 1] == 5)
+	{
+	    sgrbgr = sgrbgg = sgrbgb = -1;
+
+	    for (i = 0; i < 3; ++i)
+		newargs[out++] = args[in++];
+
+	    continue;
+	}
+    }
+
+    if (out > 0)
+    {
+	p = buf;
+	*p++ = '\033';
+	*p++ = '[';
+	for (i = 0; i < out; ++i)
+	{
+	    p += vim_snprintf((char *)p, 4, "%d", newargs[i] & 0xff);
+	    *p++ = ';';
+	}
 	p--;
-    *p++ = 'm';
-    *p = NUL;
-    vtp_printf((char *)buf);
+	*p++ = 'm';
+	*p = NUL;
+	vtp_printf((char *)buf);
+    }
 }
 
 # ifdef FEAT_TERMGUICOLORS
