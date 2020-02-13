@@ -1598,6 +1598,11 @@ ex_disassemble(exarg_T *eap)
     int		line_idx = 0;
     int		prev_current = 0;
 
+    if (*eap->arg == NUL)
+    {
+	emsg(_(e_argreq));
+	return;
+    }
     fname = trans_function_name(&eap->arg, FALSE,
 	     TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF, NULL, NULL);
     ufunc = find_func(fname, NULL);

@@ -21,6 +21,7 @@ def s:ScriptFuncLoad(arg: string)
 enddef
 
 def Test_disassemble_load()
+  assert_fails('disass', 'E471:')
   assert_fails('disass NoFunc', 'E1061:')
   assert_fails('disass NotCompiled', 'E1062:')
 
