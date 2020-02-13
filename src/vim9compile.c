@@ -138,7 +138,7 @@ lookup_local(char_u *name, size_t len, cctx_T *cctx)
 {
     int	    idx;
 
-    if (len <= 0)
+    if (len == 0)
 	return -1;
     for (idx = 0; idx < cctx->ctx_locals.ga_len; ++idx)
     {
@@ -160,7 +160,7 @@ lookup_arg(char_u *name, size_t len, cctx_T *cctx)
 {
     int	    idx;
 
-    if (len <= 0)
+    if (len == 0)
 	return -1;
     for (idx = 0; idx < cctx->ctx_ufunc->uf_args.ga_len; ++idx)
     {
