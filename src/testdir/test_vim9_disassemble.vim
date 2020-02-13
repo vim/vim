@@ -23,6 +23,10 @@ enddef
 def Test_disassemble_load()
   assert_fails('disass NoFunc', 'E1061:')
   assert_fails('disass NotCompiled', 'E1062:')
+  assert_fails('disass', 'E471:')
+  assert_fails('disass [', 'E475:')
+  assert_fails('disass 234', 'E475:')
+  assert_fails('disass <XX>foo', 'E475:')
 
   let res = execute('disass s:ScriptFuncLoad')
   assert_match('<SNR>\d*_ScriptFuncLoad.*'

@@ -1590,6 +1590,7 @@ failed:
     void
 ex_disassemble(exarg_T *eap)
 {
+    char_u	*arg = eap->arg;
     char_u	*fname;
     ufunc_T	*ufunc;
     dfunc_T	*dfunc;
@@ -1598,8 +1599,14 @@ ex_disassemble(exarg_T *eap)
     int		line_idx = 0;
     int		prev_current = 0;
 
-    fname = trans_function_name(&eap->arg, FALSE,
+    fname = trans_function_name(&arg, FALSE,
 	     TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF, NULL, NULL);
+    if (fname == NULL)
+    {
+	semsg(_(e_invarg2), eap->arg);
+	return;
+    }
+
     ufunc = find_func(fname, NULL);
     vim_free(fname);
     if (ufunc == NULL)
