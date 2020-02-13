@@ -7735,6 +7735,7 @@ readdirex({directory} [, {expr}])			*readdirex()*
 
 		The Dictionary for file and directory information has the
 		following items:
+			group	Group name of the entry. (Only on Unix)
 			name	Name of the entry.
 			perm	Permissions of the entry. See |getfperm()|.
 			size	Size of the entry. See |getfsize()|.
@@ -7750,8 +7751,11 @@ readdirex({directory} [, {expr}])			*readdirex()*
 				    Symlink to a dir	"linkd"
 				    Other symlink	"link"
 				    Other reparse point	"reparse"
-		If the entry is a symlink, the Dictionary includes the
-		information of the symlink itself, not the target.
+			user	User name of the entry's owner. (Only on Unix)
+		On Unix, if the entry is a symlink, the Dictionary includes
+		the information of the target (except the "type" item).
+		On MS-Windows, it includes the information of the symlink
+		itself because of performance reasons.
 
 		When {expr} is omitted all entries are included.
 		When {expr} is given, it is evaluated to check what to do:

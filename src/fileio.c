@@ -16,6 +16,10 @@
 #if defined(__TANDEM) || defined(__MINT__)
 # include <limits.h>		// for SSIZE_MAX
 #endif
+#if defined(UNIX) && defined(FEAT_EVAL)
+# include <pwd.h>
+# include <grp.h>
+#endif
 
 // Is there any system that doesn't have access()?
 #define USE_MCH_ACCESS
@@ -4508,6 +4512,11 @@ create_readdirex_item(WIN32_FIND_DATAW *wfd)
     if (dict_add_string(item, "perm", getfpermwfd(wfd, permbuf)) == FAIL)
 	goto theend;
 
+    if (dict_add_string(item, "user", (char_u*)"") == FAIL)
+	goto theend;
+    if (dict_add_string(item, "group", (char_u*)"") == FAIL)
+	goto theend;
+
     return item;
 
 theend:
@@ -4525,7 +4534,9 @@ create_readdirex_item(char_u *path, char_u *name)
     int		ret, link = FALSE;
     varnumber_T	size;
     char_u	permbuf[] = "---------";
-    char_u	*type;
+    char_u	*q;
+    struct passwd *pw;
+    struct group  *gr;
 
     item = dict_alloc();
     if (item == NULL)
@@ -4564,15 +4575,30 @@ create_readdirex_item(char_u *path, char_u *name)
 	if (link)
 	{
 	    if (S_ISDIR(st.st_mode))
-		type = (char_u*)"linkd";
+		q = (char_u*)"linkd";
 	    else
-		type = (char_u*)"link";
+		q = (char_u*)"link";
 	}
 	else
-	    type = getftypest(&st);
-	if (dict_add_string(item, "type", type) == FAIL)
+	    q = getftypest(&st);
+	if (dict_add_string(item, "type", q) == FAIL)
 	    goto theend;
 	if (dict_add_string(item, "perm", getfpermst(&st, permbuf)) == FAIL)
+	    goto theend;
+
+	pw = getpwuid(st.st_uid);
+	if (pw == NULL)
+	    q = (char_u*)"";
+	else
+	    q = (char_u*)pw->pw_name;
+	if (dict_add_string(item, "user", q) == FAIL)
+	    goto theend;
+	gr = getgrgid(st.st_gid);
+	if (gr == NULL)
+	    q = (char_u*)"";
+	else
+	    q = (char_u*)gr->gr_name;
+	if (dict_add_string(item, "group", q) == FAIL)
 	    goto theend;
     }
     else
@@ -4584,6 +4610,10 @@ create_readdirex_item(char_u *path, char_u *name)
 	if (dict_add_string(item, "type", (char_u*)"") == FAIL)
 	    goto theend;
 	if (dict_add_string(item, "perm", (char_u*)"") == FAIL)
+	    goto theend;
+	if (dict_add_string(item, "user", (char_u*)"") == FAIL)
+	    goto theend;
+	if (dict_add_string(item, "group", (char_u*)"") == FAIL)
 	    goto theend;
     }
     return item;
