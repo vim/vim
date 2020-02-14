@@ -2,6 +2,7 @@
 source shared.vim
 source check.vim
 source term_util.vim
+source screendump.vim
 
 " Must be done first, since the alternate buffer must be unset.
 func Test_00_bufexists()
@@ -2016,4 +2017,20 @@ func Test_range()
 
   " uniq()
   call assert_equal([0, 1, 2, 3, 4], uniq(range(5)))
+endfunc
+
+func Test_echoraw()
+  CheckScreendump
+
+  " Normally used for escape codes, but let's test with a CR.
+  let lines =<< trim END
+    call echoraw("hello\<CR>x")
+  END
+  call writefile(lines, 'XTest_echoraw')
+  let buf = RunVimInTerminal('-S XTest_echoraw', {'rows': 5, 'cols': 40})
+  call VerifyScreenDump(buf, 'Test_functions_echoraw', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XTest_echoraw')
 endfunc

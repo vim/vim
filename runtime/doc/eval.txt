@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Feb 03
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Feb 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2414,6 +2414,7 @@ deletebufline({expr}, {first} [, {last}])
 did_filetype()			Number	|TRUE| if FileType autocmd event used
 diff_filler({lnum})		Number	diff filler lines about {lnum}
 diff_hlID({lnum}, {col})	Number	diff highlighting at {lnum}/{col}
+echoraw({expr})			none	output {expr} as-is
 empty({expr})			Number	|TRUE| if {expr} is empty
 environ()			Dict	return environment variables
 escape({string}, {chars})	String	escape {chars} in {string} with '\'
@@ -2899,6 +2900,7 @@ win_id2win({expr})		Number	get window nr from window ID
 win_screenpos({nr})		List	get screen position of window {nr}
 win_splitmove({nr}, {target} [, {options}])
 				Number	move window {nr} to split of {target}
+win_type([{nr}])		String	type of window {nr}
 winbufnr({nr})			Number	buffer number of window {nr}
 wincol()			Number	window column of the cursor
 winheight({nr})			Number	height of window {nr}
@@ -3943,6 +3945,17 @@ diff_hlID({lnum}, {col})				*diff_hlID()*
 
 		Can also be used as a |method|: >
 			GetLnum()->diff_hlID(col)
+
+
+echoraw({expr})						*echoraw()*
+		Output {expr} as-is, including unprintable characters.  This
+		can be used to output a terminal code. For example, to disable
+		modifyOtherKeys: >
+			call echoraw(&t_TE)
+<		and to enable it again: >
+			call echoraw(&t_TI)
+<		Use with care, you can mess up the terminal this way.
+
 
 empty({expr})						*empty()*
 		Return the Number 1 if {expr} is empty, zero otherwise.
@@ -10402,6 +10415,7 @@ win_splitmove({nr}, {target} [, {options}])		*win_splitmove()*
 		Can also be used as a |method|: >
 			GetWinid()->win_splitmove(target)
 <
+
 							*winbufnr()*
 winbufnr({nr})	The result is a Number, which is the number of the buffer
 		associated with window {nr}.  {nr} can be the window number or

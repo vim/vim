@@ -60,6 +60,7 @@ static void f_debugbreak(typval_T *argvars, typval_T *rettv);
 #endif
 static void f_deepcopy(typval_T *argvars, typval_T *rettv);
 static void f_did_filetype(typval_T *argvars, typval_T *rettv);
+static void f_echoraw(typval_T *argvars, typval_T *rettv);
 static void f_empty(typval_T *argvars, typval_T *rettv);
 static void f_environ(typval_T *argvars, typval_T *rettv);
 static void f_escape(typval_T *argvars, typval_T *rettv);
@@ -394,6 +395,7 @@ static funcentry_T global_functions[] =
     {"did_filetype",	0, 0, 0,	  &t_number,	f_did_filetype},
     {"diff_filler",	1, 1, FEARG_1,	  &t_number,	f_diff_filler},
     {"diff_hlID",	2, 2, FEARG_1,	  &t_number,	f_diff_hlID},
+    {"echoraw",		1, 1, FEARG_1,	  &t_number,	f_echoraw},
     {"empty",		1, 1, FEARG_1,	  &t_number,	f_empty},
     {"environ",		0, 0, 0,	  &t_dict_string, f_environ},
     {"escape",		2, 2, FEARG_1,	  &t_string,	f_escape},
@@ -1811,6 +1813,21 @@ f_deepcopy(typval_T *argvars, typval_T *rettv)
 f_did_filetype(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
 {
     rettv->vval.v_number = did_filetype;
+}
+
+/*
+ * "echoraw({expr})" function
+ */
+    static void
+f_echoraw(typval_T *argvars, typval_T *rettv UNUSED)
+{
+    char_u *str = tv_get_string_chk(&argvars[0]);
+
+    if (str != NULL && *str != NUL)
+    {
+	out_str(str);
+	out_flush();
+    }
 }
 
 /*
