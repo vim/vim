@@ -165,6 +165,45 @@ func Test_xxd()
   call delete('Xinput')
   call delete('XXDfile')
 
+  " Test 13: simple, decimal offset
+  call PrepareBuffer(range(1,30))
+  set ff=unix
+  w! XXDfile
+  let s:test += 1
+  exe '%!' . s:xxd_cmd . ' -d %'
+  let expected = [
+        \ '00000000: 310a 320a 330a 340a 350a 360a 370a 380a  1.2.3.4.5.6.7.8.',
+        \ '00000016: 390a 3130 0a31 310a 3132 0a31 330a 3134  9.10.11.12.13.14',
+        \ '00000032: 0a31 350a 3136 0a31 370a 3138 0a31 390a  .15.16.17.18.19.',
+        \ '00000048: 3230 0a32 310a 3232 0a32 330a 3234 0a32  20.21.22.23.24.2',
+        \ '00000064: 350a 3236 0a32 370a 3238 0a32 390a 3330  5.26.27.28.29.30',
+        \ '00000080: 0a                                       .']
+  call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+
+  " Test 14: grouping with -d
+  let s:test += 1
+  let expected = [
+        \ '00000000: 310a320a 330a340a 350a360a 370a380a  1.2.3.4.5.6.7.8.',
+        \ '00000016: 390a3130 0a31310a 31320a31 330a3134  9.10.11.12.13.14',
+        \ '00000032: 0a31350a 31360a31 370a3138 0a31390a  .15.16.17.18.19.',
+        \ '00000048: 32300a32 310a3232 0a32330a 32340a32  20.21.22.23.24.2',
+        \ '00000064: 350a3236 0a32370a 32380a32 390a3330  5.26.27.28.29.30',
+        \ '00000080: 0a                                   .']
+  for arg in ['-g 4', '-group 4', '-g4']
+    exe '%!' . s:xxd_cmd . ' ' . arg . ' -d %'
+    call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+  endfor
+
+  " Test 15: cols with decimal offset: -c 21 -d
+  let s:test += 1
+  let expected = [
+        \ '00000000: 310a 320a 330a 340a 350a 360a 370a 380a 390a 3130 0a  1.2.3.4.5.6.7.8.9.10.',
+        \ '00000021: 3131 0a31 320a 3133 0a31 340a 3135 0a31 360a 3137 0a  11.12.13.14.15.16.17.',
+        \ '00000042: 3138 0a31 390a 3230 0a32 310a 3232 0a32 330a 3234 0a  18.19.20.21.22.23.24.',
+        \ '00000063: 3235 0a32 360a 3237 0a32 380a 3239 0a33 300a          25.26.27.28.29.30.']
+  exe '%!' . s:xxd_cmd . ' -c 21 -d %'
+  call assert_equal(expected, getline(1,'$'), s:Mess(s:test))
+
   " TODO:
   " -o -offset
 
