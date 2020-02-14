@@ -20,10 +20,6 @@
 # include <float.h>
 #endif
 
-#if defined(MACOS_X)
-# include <time.h>	// for time_t
-#endif
-
 #ifdef FEAT_FLOAT
 static void f_abs(typval_T *argvars, typval_T *rettv);
 static void f_acos(typval_T *argvars, typval_T *rettv);
@@ -126,7 +122,6 @@ static void f_libcall(typval_T *argvars, typval_T *rettv);
 static void f_libcallnr(typval_T *argvars, typval_T *rettv);
 static void f_line(typval_T *argvars, typval_T *rettv);
 static void f_line2byte(typval_T *argvars, typval_T *rettv);
-static void f_localtime(typval_T *argvars, typval_T *rettv);
 #ifdef FEAT_FLOAT
 static void f_log(typval_T *argvars, typval_T *rettv);
 static void f_log10(typval_T *argvars, typval_T *rettv);
@@ -173,11 +168,6 @@ static void f_rand(typval_T *argvars, typval_T *rettv);
 static void f_range(typval_T *argvars, typval_T *rettv);
 static void f_reg_executing(typval_T *argvars, typval_T *rettv);
 static void f_reg_recording(typval_T *argvars, typval_T *rettv);
-static void f_reltime(typval_T *argvars, typval_T *rettv);
-#ifdef FEAT_FLOAT
-static void f_reltimefloat(typval_T *argvars, typval_T *rettv);
-#endif
-static void f_reltimestr(typval_T *argvars, typval_T *rettv);
 static void f_remote_expr(typval_T *argvars, typval_T *rettv);
 static void f_remote_foreground(typval_T *argvars, typval_T *rettv);
 static void f_remote_peek(typval_T *argvars, typval_T *rettv);
@@ -234,17 +224,11 @@ static void f_str2float(typval_T *argvars, typval_T *rettv);
 static void f_str2list(typval_T *argvars, typval_T *rettv);
 static void f_str2nr(typval_T *argvars, typval_T *rettv);
 static void f_strchars(typval_T *argvars, typval_T *rettv);
-#ifdef HAVE_STRFTIME
-static void f_strftime(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_strgetchar(typval_T *argvars, typval_T *rettv);
 static void f_stridx(typval_T *argvars, typval_T *rettv);
 static void f_strlen(typval_T *argvars, typval_T *rettv);
 static void f_strcharpart(typval_T *argvars, typval_T *rettv);
 static void f_strpart(typval_T *argvars, typval_T *rettv);
-#ifdef HAVE_STRPTIME
-static void f_strptime(typval_T *argvars, typval_T *rettv);
-#endif
 static void f_strridx(typval_T *argvars, typval_T *rettv);
 static void f_strtrans(typval_T *argvars, typval_T *rettv);
 static void f_strdisplaywidth(typval_T *argvars, typval_T *rettv);
@@ -4512,15 +4496,6 @@ f_line2byte(typval_T *argvars UNUSED, typval_T *rettv)
 #endif
 }
 
-/*
- * "localtime()" function
- */
-    static void
-f_localtime(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    rettv->vval.v_number = (varnumber_T)time(NULL);
-}
-
 #ifdef FEAT_FLOAT
 /*
  * "log()" function
@@ -5498,118 +5473,6 @@ f_reg_executing(typval_T *argvars UNUSED, typval_T *rettv)
 f_reg_recording(typval_T *argvars UNUSED, typval_T *rettv)
 {
     return_register(reg_recording, rettv);
-}
-
-#if defined(FEAT_RELTIME)
-/*
- * Convert a List to proftime_T.
- * Return FAIL when there is something wrong.
- */
-    static int
-list2proftime(typval_T *arg, proftime_T *tm)
-{
-    long	n1, n2;
-    int	error = FALSE;
-
-    if (arg->v_type != VAR_LIST || arg->vval.v_list == NULL
-					     || arg->vval.v_list->lv_len != 2)
-	return FAIL;
-    n1 = list_find_nr(arg->vval.v_list, 0L, &error);
-    n2 = list_find_nr(arg->vval.v_list, 1L, &error);
-# ifdef MSWIN
-    tm->HighPart = n1;
-    tm->LowPart = n2;
-# else
-    tm->tv_sec = n1;
-    tm->tv_usec = n2;
-# endif
-    return error ? FAIL : OK;
-}
-#endif // FEAT_RELTIME
-
-/*
- * "reltime()" function
- */
-    static void
-f_reltime(typval_T *argvars UNUSED, typval_T *rettv UNUSED)
-{
-#ifdef FEAT_RELTIME
-    proftime_T	res;
-    proftime_T	start;
-
-    if (argvars[0].v_type == VAR_UNKNOWN)
-    {
-	// No arguments: get current time.
-	profile_start(&res);
-    }
-    else if (argvars[1].v_type == VAR_UNKNOWN)
-    {
-	if (list2proftime(&argvars[0], &res) == FAIL)
-	    return;
-	profile_end(&res);
-    }
-    else
-    {
-	// Two arguments: compute the difference.
-	if (list2proftime(&argvars[0], &start) == FAIL
-		|| list2proftime(&argvars[1], &res) == FAIL)
-	    return;
-	profile_sub(&res, &start);
-    }
-
-    if (rettv_list_alloc(rettv) == OK)
-    {
-	long	n1, n2;
-
-# ifdef MSWIN
-	n1 = res.HighPart;
-	n2 = res.LowPart;
-# else
-	n1 = res.tv_sec;
-	n2 = res.tv_usec;
-# endif
-	list_append_number(rettv->vval.v_list, (varnumber_T)n1);
-	list_append_number(rettv->vval.v_list, (varnumber_T)n2);
-    }
-#endif
-}
-
-#ifdef FEAT_FLOAT
-/*
- * "reltimefloat()" function
- */
-    static void
-f_reltimefloat(typval_T *argvars UNUSED, typval_T *rettv)
-{
-# ifdef FEAT_RELTIME
-    proftime_T	tm;
-# endif
-
-    rettv->v_type = VAR_FLOAT;
-    rettv->vval.v_float = 0;
-# ifdef FEAT_RELTIME
-    if (list2proftime(&argvars[0], &tm) == OK)
-	rettv->vval.v_float = profile_float(&tm);
-# endif
-}
-#endif
-
-/*
- * "reltimestr()" function
- */
-    static void
-f_reltimestr(typval_T *argvars UNUSED, typval_T *rettv)
-{
-#ifdef FEAT_RELTIME
-    proftime_T	tm;
-#endif
-
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-#ifdef FEAT_RELTIME
-    if (list2proftime(&argvars[0], &tm) == OK)
-	rettv->vval.v_string = vim_strsave((char_u *)profile_msg(&tm));
-#endif
 }
 
 #if defined(FEAT_CLIENTSERVER) && defined(FEAT_X11)
@@ -7422,61 +7285,6 @@ f_str2nr(typval_T *argvars, typval_T *rettv)
 
 }
 
-#ifdef HAVE_STRFTIME
-/*
- * "strftime({format}[, {time}])" function
- */
-    static void
-f_strftime(typval_T *argvars, typval_T *rettv)
-{
-    char_u	result_buf[256];
-    struct tm	tmval;
-    struct tm	*curtime;
-    time_t	seconds;
-    char_u	*p;
-
-    rettv->v_type = VAR_STRING;
-
-    p = tv_get_string(&argvars[0]);
-    if (argvars[1].v_type == VAR_UNKNOWN)
-	seconds = time(NULL);
-    else
-	seconds = (time_t)tv_get_number(&argvars[1]);
-    curtime = vim_localtime(&seconds, &tmval);
-    // MSVC returns NULL for an invalid value of seconds.
-    if (curtime == NULL)
-	rettv->vval.v_string = vim_strsave((char_u *)_("(Invalid)"));
-    else
-    {
-	vimconv_T   conv;
-	char_u	    *enc;
-
-	conv.vc_type = CONV_NONE;
-	enc = enc_locale();
-	convert_setup(&conv, p_enc, enc);
-	if (conv.vc_type != CONV_NONE)
-	    p = string_convert(&conv, p, NULL);
-	if (p != NULL)
-	    (void)strftime((char *)result_buf, sizeof(result_buf),
-							  (char *)p, curtime);
-	else
-	    result_buf[0] = NUL;
-
-	if (conv.vc_type != CONV_NONE)
-	    vim_free(p);
-	convert_setup(&conv, enc, p_enc);
-	if (conv.vc_type != CONV_NONE)
-	    rettv->vval.v_string = string_convert(&conv, result_buf, NULL);
-	else
-	    rettv->vval.v_string = vim_strsave(result_buf);
-
-	// Release conversion descriptors
-	convert_setup(&conv, NULL, NULL);
-	vim_free(enc);
-    }
-}
-#endif
-
 /*
  * "strgetchar()" function
  */
@@ -7733,40 +7541,6 @@ f_strpart(typval_T *argvars, typval_T *rettv)
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = vim_strnsave(p + n, len);
 }
-
-#ifdef HAVE_STRPTIME
-/*
- * "strptime({format}, {timestring})" function
- */
-    static void
-f_strptime(typval_T *argvars, typval_T *rettv)
-{
-    struct tm	tmval;
-    char_u	*fmt;
-    char_u	*str;
-    vimconv_T   conv;
-    char_u	*enc;
-
-    vim_memset(&tmval, NUL, sizeof(tmval));
-    fmt = tv_get_string(&argvars[0]);
-    str = tv_get_string(&argvars[1]);
-
-    conv.vc_type = CONV_NONE;
-    enc = enc_locale();
-    convert_setup(&conv, p_enc, enc);
-    if (conv.vc_type != CONV_NONE)
-	fmt = string_convert(&conv, fmt, NULL);
-    if (fmt == NULL
-	    || strptime((char *)str, (char *)fmt, &tmval) == NULL
-	    || (rettv->vval.v_number = mktime(&tmval)) == -1)
-	rettv->vval.v_number = 0;
-
-    if (conv.vc_type != CONV_NONE)
-	vim_free(fmt);
-    convert_setup(&conv, NULL, NULL);
-    vim_free(enc);
-}
-#endif
 
 /*
  * "strridx()" function

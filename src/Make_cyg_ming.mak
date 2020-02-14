@@ -783,6 +783,7 @@ OBJ = \
 	$(OUTDIR)/term.o \
 	$(OUTDIR)/testing.o \
 	$(OUTDIR)/textprop.o \
+	$(OUTDIR)/time.o \
 	$(OUTDIR)/ui.o \
 	$(OUTDIR)/undo.o \
 	$(OUTDIR)/usercmd.o \
