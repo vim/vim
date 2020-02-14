@@ -86,7 +86,6 @@ static void f_garbagecollect(typval_T *argvars, typval_T *rettv);
 static void f_get(typval_T *argvars, typval_T *rettv);
 static void f_getchangelist(typval_T *argvars, typval_T *rettv);
 static void f_getcharsearch(typval_T *argvars, typval_T *rettv);
-static void f_getcmdwintype(typval_T *argvars, typval_T *rettv);
 static void f_getenv(typval_T *argvars, typval_T *rettv);
 static void f_getfontname(typval_T *argvars, typval_T *rettv);
 static void f_getjumplist(typval_T *argvars, typval_T *rettv);
@@ -845,6 +844,7 @@ static funcentry_T global_functions[] =
     {"win_execute",	2, 3, FEARG_2,	  &t_string,	f_win_execute},
     {"win_findbuf",	1, 1, FEARG_1,	  &t_list_number, f_win_findbuf},
     {"win_getid",	0, 2, FEARG_1,	  &t_number,	f_win_getid},
+    {"win_gettype",	0, 1, FEARG_1,    &t_string,	f_win_gettype},
     {"win_gotoid",	1, 1, FEARG_1,	  &t_number,	f_win_gotoid},
     {"win_id2tabwin",	1, 1, FEARG_1,	  &t_list_number, f_win_id2tabwin},
     {"win_id2win",	1, 1, FEARG_1,	  &t_number,	f_win_id2win},
@@ -2917,24 +2917,6 @@ f_getcharsearch(typval_T *argvars UNUSED, typval_T *rettv)
 	dict_add_number(dict, "forward", last_csearch_forward());
 	dict_add_number(dict, "until", last_csearch_until());
     }
-}
-
-/*
- * "getcmdwintype()" function
- */
-    static void
-f_getcmdwintype(typval_T *argvars UNUSED, typval_T *rettv)
-{
-    rettv->v_type = VAR_STRING;
-    rettv->vval.v_string = NULL;
-#ifdef FEAT_CMDWIN
-    rettv->vval.v_string = alloc(2);
-    if (rettv->vval.v_string != NULL)
-    {
-	rettv->vval.v_string[0] = cmdwin_type;
-	rettv->vval.v_string[1] = NUL;
-    }
-#endif
 }
 
 /*

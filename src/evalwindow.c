@@ -840,6 +840,54 @@ f_win_splitmove(typval_T *argvars, typval_T *rettv)
 }
 
 /*
+ * "win_gettype(nr)" function
+ */
+    void
+f_win_gettype(typval_T *argvars, typval_T *rettv)
+{
+    win_T	*wp = curwin;
+
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+    if (argvars[0].v_type != VAR_UNKNOWN)
+    {
+	wp = find_win_by_nr_or_id(&argvars[0]);
+	if (wp == NULL)
+	{
+	    rettv->vval.v_string = vim_strsave((char_u *)"unknown");
+	    return;
+	}
+    }
+#ifdef FEAT_PROP_POPUP
+    if (WIN_IS_POPUP(wp))
+	rettv->vval.v_string = vim_strsave((char_u *)"popup");
+    else
+#endif
+#ifdef FEAT_CMDWIN
+    if (wp == curwin && cmdwin_type != 0)
+	rettv->vval.v_string = vim_strsave((char_u *)"command");
+#endif
+}
+
+/*
+ * "getcmdwintype()" function
+ */
+    void
+f_getcmdwintype(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_STRING;
+    rettv->vval.v_string = NULL;
+#ifdef FEAT_CMDWIN
+    rettv->vval.v_string = alloc(2);
+    if (rettv->vval.v_string != NULL)
+    {
+	rettv->vval.v_string[0] = cmdwin_type;
+	rettv->vval.v_string[1] = NUL;
+    }
+#endif
+}
+
+/*
  * "winbufnr(nr)" function
  */
     void

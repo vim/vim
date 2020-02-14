@@ -2333,6 +2333,7 @@ func Test_terminal_in_popup()
   call writefile(text, 'Xtext')
   let cmd = GetVimCommandCleanTerm()
   let lines = [
+	\ 'set t_u7=',
 	\ 'call setline(1, range(20))',
 	\ 'hi PopTerm ctermbg=grey',
 	\ 'func OpenTerm(setColor)',
@@ -2346,6 +2347,9 @@ func Test_terminal_in_popup()
 	\ 'func HidePopup()',
 	\ '  call popup_hide(s:winid)',
 	\ 'endfunc',
+	\ 'sleep 10m',
+	\ 'redraw',
+	\ 'echo getwinvar(s:winid, "&buftype") win_gettype(s:winid)',
 	\ ]
   call writefile(lines, 'XtermPopup')
   let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
