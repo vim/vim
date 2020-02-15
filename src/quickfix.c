@@ -980,11 +980,11 @@ qf_parse_fmt_t(regmatch_T *rmp, int midx, qffields_T *fields)
 }
 
 /*
- * Parse the match for '%+' format pattern. The whole matching line is included
- * in the error string.  Return the matched line in "fields->errmsg".
+ * Copy a non-error line into the error string.  Return the matched line in
+ * "fields->errmsg".
  */
     static int
-qf_parse_fmt_plus(char_u *linebuf, int linelen, qffields_T *fields)
+copy_nonerror_line(char_u *linebuf, int linelen, qffields_T *fields)
 {
     char_u	*p;
 
@@ -996,7 +996,9 @@ qf_parse_fmt_plus(char_u *linebuf, int linelen, qffields_T *fields)
 	fields->errmsg = p;
 	fields->errmsglen = linelen + 1;
     }
+    // copy whole line to error message
     vim_strncpy(fields->errmsg, linebuf, linelen);
+
     return QF_OK;
 }
 
@@ -1180,7 +1182,7 @@ qf_parse_match(
 	else if (i == 5)
 	{
 	    if (fmt_ptr->flags == '+' && !qf_multiscan)	// %+
-		status = qf_parse_fmt_plus(linebuf, linelen, fields);
+		status = copy_nonerror_line(linebuf, linelen, fields);
 	    else if (midx > 0)				// %m
 		status = qf_parse_fmt_m(regmatch, midx, fields);
 	}
@@ -1307,23 +1309,11 @@ qf_parse_file_pfx(
     static int
 qf_parse_line_nomatch(char_u *linebuf, int linelen, qffields_T *fields)
 {
-    char_u	*p;
-
     fields->namebuf[0] = NUL;	// no match found, remove file name
     fields->lnum = 0;		// don't jump to this line
     fields->valid = FALSE;
-    if (linelen >= fields->errmsglen)
-    {
-	// linelen + null terminator
-	if ((p = vim_realloc(fields->errmsg, linelen + 1)) == NULL)
-	    return QF_NOMEM;
-	fields->errmsg = p;
-	fields->errmsglen = linelen + 1;
-    }
-    // copy whole line to error message
-    vim_strncpy(fields->errmsg, linebuf, linelen);
 
-    return QF_OK;
+    return copy_nonerror_line(linebuf, linelen, fields);
 }
 
 /*
