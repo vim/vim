@@ -2341,6 +2341,8 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :diffupdate	diff.txt	/*:diffupdate*
 :dig	digraph.txt	/*:dig*
 :digraphs	digraph.txt	/*:digraphs*
+:disa	vim9.txt	/*:disa*
+:disassemble	vim9.txt	/*:disassemble*
 :display	change.txt	/*:display*
 :dj	tagsrch.txt	/*:dj*
 :djump	tagsrch.txt	/*:djump*
@@ -6108,6 +6110,7 @@ dtd2vim	insert.txt	/*dtd2vim*
 dying-variable	eval.txt	/*dying-variable*
 e	motion.txt	/*e*
 easy	starting.txt	/*easy*
+echoraw()	eval.txt	/*echoraw()*
 echospace-variable	eval.txt	/*echospace-variable*
 edit-a-file	editing.txt	/*edit-a-file*
 edit-binary	editing.txt	/*edit-binary*
@@ -8244,6 +8247,7 @@ patches-8.2	version8.txt	/*patches-8.2*
 pathshorten()	eval.txt	/*pathshorten()*
 pattern	pattern.txt	/*pattern*
 pattern-atoms	pattern.txt	/*pattern-atoms*
+pattern-delimiter	change.txt	/*pattern-delimiter*
 pattern-multi-byte	pattern.txt	/*pattern-multi-byte*
 pattern-multi-items	pattern.txt	/*pattern-multi-items*
 pattern-overview	pattern.txt	/*pattern-overview*
@@ -9485,6 +9489,7 @@ test_refcount()	testing.txt	/*test_refcount()*
 test_scrollbar()	testing.txt	/*test_scrollbar()*
 test_setmouse()	testing.txt	/*test_setmouse()*
 test_settime()	testing.txt	/*test_settime()*
+test_srand_seed()	testing.txt	/*test_srand_seed()*
 testing	testing.txt	/*testing*
 testing-support	testing.txt	/*testing-support*
 testing-variable	eval.txt	/*testing-variable*
@@ -10050,6 +10055,7 @@ win32s	os_win32.txt	/*win32s*
 win_execute()	eval.txt	/*win_execute()*
 win_findbuf()	eval.txt	/*win_findbuf()*
 win_getid()	eval.txt	/*win_getid()*
+win_gettype()	eval.txt	/*win_gettype()*
 win_gotoid()	eval.txt	/*win_gotoid()*
 win_id2tabwin()	eval.txt	/*win_id2tabwin()*
 win_id2win()	eval.txt	/*win_id2win()*

@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2020 Jan 20
+*starting.txt*  For Vim version 8.2.  Last change: 2020 Feb 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -58,10 +58,12 @@ filename	One or more file names.  The first one will be the current
 		that is read from stdin.  The commands that would normally be
 		read from stdin will now be read from stderr.  Example: >
 			find . -name "*.c" -print | vim -
-<		The buffer will not be marked as modified, so that it's easy
-		to exit.  Be careful to mark it as modified if you don't want
-		to accidentally lose it.  Example: >
-			ls | view -
+
+<		The buffer will be marked as modified, so that you are
+		reminded to save the text when trying to exit.  If you don't
+		like that, put this these lines in your vimrc: >
+			" Don't set 'modified' when reading from stdin
+			au StdinReadPost * set nomodified
 <
 		Starting in Ex mode: >
 			ex -

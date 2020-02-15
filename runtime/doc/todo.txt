@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Feb 04
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Feb 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -40,15 +40,15 @@ browser use: https://github.com/vim/vim/issues/1234
 
 Include ipv6 syntax changes?  (DJ Lucas, #5360)
 
-Add win_type(), which "popup" and "cmdline" as values?
+Avoid modifyOtherKeys temporarily:
+	call modify_other_keys(v:false)  " disable modifyOtherKeys
+Should fix #5617.
 
 Vim9 script:
-- test s:var += 'some'
-  test exported += 'some'
-- implement default values for optional arguments
-  Generate instructions at start of function, skip over if argument provided?
+- "echo Func()" is an error if Func() does not return anything.
 - Disallow unlet for local/script/imported vars
 - :func inside vim9script must still use a:arg
+- Make "++nr" work.
 - Check that import in legacy script works and puts item in s:
 - Error in any command in "vim9script" aborts sourcing.
 - Find a way to test expressions in legacy and Vim9 script without duplication
@@ -58,6 +58,7 @@ Vim9 script:
   Test return inside try/finally jumps to finally and then returns.
 - call autoload function.
 - Type checking arguments when calling :def function
+- Implement more expressions, e.g. [a:b]
 - can use func as reference:
 	def SomeFunc() ...
 	map(list, SomeFunc)
@@ -164,6 +165,10 @@ Patch to move duplicated code to a function. (Yegappan Lakshmanan, #5330)
 
 Patch to use more FOR_ALL_ macros and use them. (Yegappan Lakshmanan, #5339)
 
+Patch to explain use of "%" in :!.  (#5591)
+
+Patch to add "-d" to xxd. (#5616)
+
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif? Now test_gui crashes in submenu_change().
 Athena is OK.
@@ -174,6 +179,8 @@ Flag in 'formatoptions' is not used in the tests.
 
 Patch to add 'vtp' option. (#5344)
 Needs better docs.  Is there a better name?
+
+Patch for Haiku support. (Emir Sarı, #5605)
 
 undo result wrong: Masato Nishihata, #4798
 
@@ -186,10 +193,20 @@ Patch to add function to return the text used in the quickfix window.
 Patch for Template string: #4491.  New pull: #4634
 Implementation is too inefficient, avoid using lambda.
 
+Patch to add readdirex() (Ken Takata, #5619)
+
+Request to support <Cmd> in mappings, similar to how Neovim does this.
+(Daniel Hahler, #4784)
+
 Undo puts cursor in wrong line after "cG<Esc>" undo.
 
 :unmap <c-n> gives error but does remove the mapping. (Antony Scriven, 2019
 Dec 19)
+
+Dos uninstal may delete vim.bat from the wrong directory (e.g., when someone
+makes his own wrapper).  Add a magic string with the version number to the
+.bat file and check for it in the uninstaller.  E.g.
+          # uninstall key: vim8.1*
 
 Patch to fix session file when using multiple tab pages. (Jason Franklin, 2019
 May 20)
@@ -216,6 +233,11 @@ ex_next() should pass flag to do_argfile(), then to do_ecmd().
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
 
+FR: add search_status(), the current values displayed for search (current
+match, total matches). (#5631)
+Patch to provide search stats in a variable, so that it can be used in the
+statusline. (Fujiwara Takuya, #4446)
+
 ":helptags ALL" should skip directories where "tags" cannot be written.
 (Matěj Cepl, #5026)
 
@@ -225,8 +247,7 @@ unlisted. (#4478)
 
 Patch to include reduce() function. (#5481)
 
-Patch to provide search stats in a variable, so that it can be used in the
-statusline. (Fujiwara Takuya, #4446)
+Statusline highlighting error, off by one. (#5599)
 
 Enable 'termbidi' if $VTE_VERSION >= 5703 ?
 
@@ -1109,11 +1130,9 @@ Make a function to check for function-like type?
 Screen updated delayed when using CTRL-O u in Insert mode.
 (Barlik, #1191)  Perhaps because status message?
 
-Implement optional arguments for functions.
+Implement named arguments for functions:
     func Foo(start, count = 1 all = 1)
-    call Foo(12)
     call Foo(12, all = 0)
-    call Foo(12, 15, 0)
 
 Add a command to take a range of lines, filter them and put the output
 somewhere else.  :{range}copy {dest} !cmd
@@ -2757,11 +2776,6 @@ argument list or opening each file in a separate tab.
 
 Windows installer: licence text should not use indent, causes bad word wrap.
 (Benjamin Fritz, 2010 Aug 16)
-
-Dos uninstal may delete vim.bat from the wrong directory (e.g., when someone
-makes his own wrapper).  Add a magic string with the version number to the
-.bat file and check for it in the uninstaller.  E.g.
-          # uninstall key: vim8.1*
 
 Changes for Win32 makefile. (Mike Williams, 2007 Jan 22, Alexei Alexandrov,
 2007 Feb 8)
@@ -4491,8 +4505,6 @@ Vim script language:
 8   Pass the command line arguments to Vim scripts in some way.  As v:args
     List?  Or extra parameter to argv()?
 8   Add command arguments with three dashes, passed on to Vim scripts.
-9   Add optional arguments to user functions:
-	:func myFunc(arg1, arg2, arg3 = "blah", arg4 = 17)
 6   User functions: Functions local to buffer "b:func()"?
 8   For Strings add ":let var[{expr}] = {expr}".  When past the end of "var"
     just ignore.

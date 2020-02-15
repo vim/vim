@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2020 Feb 03
+*popup.txt*  For Vim version 8.2.  Last change: 2020 Feb 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -402,6 +402,7 @@ popup_hide({id})						*popup_hide()*
 		hidden.
 		If window {id} does not exist nothing happens.  If window {id}
 		exists but is not a popup window an error is given. *E993*
+		If popup window {id} contains a terminal an error is given.
 
 		Can also be used as a |method|: >
 			GetPopup()->popup_hide()

@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Jan 30
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Feb 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -231,11 +231,8 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 			the function follows in the next lines, until the
 			matching `:enddef`.
 
-			When {return-type} is omitted the return type will be
-			decided upon by the first encountered `return`
-			statement in the function.  E.g., for: >
-				return 'message'
-<			The return type will be "string".
+			When {return-type} is omitted the function is not
+			expected to return anything.
 			
 			{arguments} is a sequence of zero or more argument
 			declarations.  There are three forms:
@@ -256,6 +253,10 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 							*:enddef*
 :enddef			End of a function defined with `:def`.
 
+
+						*:disa* *:disassemble*
+:disa[ssemble] {func}	Show the instructions generated for {func}.
+			This is for debugging and testing.
 
 ==============================================================================
 
