@@ -162,3 +162,7 @@ endfunc
 func Test_user_method()
   eval 'bar'->s:addFoo()->assert_equal('barfoo')
 endfunc
+
+func Test_failed_call_in_try()
+  try | call UnknownFunc() | catch | endtry
+endfunc

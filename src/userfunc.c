@@ -3554,7 +3554,8 @@ ex_call(exarg_T *eap)
     if (eap->skip)
 	--emsg_skip;
 
-    if (!failed)
+    // When inside :try we need to check for following "| catch".
+    if (!failed || eap->cstack->cs_trylevel > 0)
     {
 	// Check for trailing illegal characters and a following command.
 	if (!ends_excmd(*arg))
