@@ -2972,7 +2972,7 @@ msgid "-S <session>\t\tSource file <session> after loading the first file"
 msgstr "-S <oturum>\t\tİlk dosyayı yükleyip <oturum> dosyasını kaynak al"
 
 msgid "-s <scriptin>\tRead Normal mode commands from file <scriptin>"
-msgstr "-s <betikgir>\t\tNormal kip komutlarını <betikgir> dosyasından oku"
+msgstr "-s <betikgir>\tNormal kip komutlarını <betikgir> dosyasından oku"
 
 msgid "-w <scriptout>\tAppend all typed commands to file <scriptout>"
 msgstr "-w <betikçık>\tGirilen tüm komutları <betikçık> dosyasına iliştir"
