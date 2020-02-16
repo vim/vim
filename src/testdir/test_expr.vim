@@ -530,3 +530,12 @@ func Test_broken_number()
   call assert_equal(2, str2nr('2a'))
   call assert_fails('inoremap <Char-0b1z> b', 'E474:')
 endfunc
+
+func Test_eval_after_if()
+  let s:val = ''
+  func SetVal(x)
+    let s:val ..= a:x
+  endfunc
+  if 0 | eval SetVal('a') | endif | call SetVal('b')
+  call assert_equal('b', s:val)
+endfunc
