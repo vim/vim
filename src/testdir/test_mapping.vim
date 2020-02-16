@@ -38,6 +38,7 @@ func Test_abclear()
 
    abclear
    call assert_equal("\n\nNo abbreviation found", execute('abbrev'))
+   call assert_fails('%abclear', 'E481:')
 endfunc
 
 func Test_abclear_buffer()

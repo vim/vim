@@ -2705,3 +2705,19 @@ func Test_normal_gk()
   bw!
   set cpoptions& number& numberwidth&
 endfunc
+
+" Test for cursor movement with '-' in 'cpoptions'
+func Test_normal_cpo_minus()
+  new
+  call setline(1, ['foo', 'bar', 'baz'])
+  let save_cpo = &cpo
+  set cpo+=-
+  call assert_beeps('normal 10j')
+  call assert_equal(1, line('.'))
+  normal G
+  call assert_beeps('normal 10k')
+  call assert_equal(3, line('.'))
+  call assert_fails(10, 'E16:')
+  let &cpo = save_cpo
+  close!
+endfunc
