@@ -3312,7 +3312,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     if (oplen == 3 && !heredoc && dest != dest_global
 	    && type->tt_type != VAR_STRING && type->tt_type != VAR_UNKNOWN)
     {
-	emsg("E1019: Can only concatenate to string");
+	emsg(_("E1019: Can only concatenate to string"));
 	goto theend;
     }
 
@@ -4735,7 +4735,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    }
 	    else
 	    {
-		emsg("E1025: using } outside of a block scope");
+		emsg(_("E1025: using } outside of a block scope"));
 		goto erret;
 	    }
 	    if (line != NULL)
@@ -4995,7 +4995,7 @@ erret:
 	if (errormsg != NULL)
 	    emsg(errormsg);
 	else if (called_emsg == called_emsg_before)
-	    emsg("E1028: compile_def_function failed");
+	    emsg(_("E1028: compile_def_function failed"));
 
 	// don't execute this function body
 	ufunc->uf_lines.ga_len = 0;

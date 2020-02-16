@@ -1611,12 +1611,12 @@ ex_disassemble(exarg_T *eap)
     vim_free(fname);
     if (ufunc == NULL)
     {
-	semsg("E1061: Cannot find function %s", eap->arg);
+	semsg(_("E1061: Cannot find function %s"), eap->arg);
 	return;
     }
     if (ufunc->uf_dfunc_idx < 0)
     {
-	semsg("E1062: Function %s is not compiled", eap->arg);
+	semsg(_("E1062: Function %s is not compiled"), eap->arg);
 	return;
     }
     if (ufunc->uf_name_exp != NULL)
