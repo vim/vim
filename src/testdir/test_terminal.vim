@@ -2353,6 +2353,7 @@ func Test_terminal_in_popup()
 	\ ]
   call writefile(lines, 'XtermPopup')
   let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
+  call term_wait(buf, 100)
   call term_sendkeys(buf, ":\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_1', {})
 
