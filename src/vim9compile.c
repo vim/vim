@@ -2330,6 +2330,9 @@ compile_subscript(
 	}
 	else if (**arg == '[')
 	{
+	    garray_T	*stack;
+	    type_T	**typep;
+
 	    // list index: list[123]
 	    // TODO: more arguments
 	    // TODO: dict member  dict['name']
@@ -2346,6 +2349,14 @@ compile_subscript(
 
 	    if (generate_instr_drop(cctx, ISN_INDEX, 1) == FAIL)
 		return FAIL;
+	    stack = &cctx->ctx_type_stack;
+	    typep = ((type_T **)stack->ga_data) + stack->ga_len - 1;
+	    if ((*typep)->tt_type != VAR_LIST && *typep != &t_any)
+	    {
+		emsg(_(e_listreq));
+		return FAIL;
+	    }
+	    *typep = (*typep)->tt_member;
 	}
 	else if (**arg == '.' && (*arg)[1] != '.')
 	{

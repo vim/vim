@@ -478,6 +478,17 @@ def Test_expr6()
   assert_equal(2, g:anint % g:alsoint)
 
   assert_equal(4, 6 * 4 / 6)
+
+  let x = [2]
+  let y = [3]
+  assert_equal(5, x[0] + y[0])
+  assert_equal(6, x[0] * y[0])
+  if has('float')
+    let xf = [2.0]
+    let yf = [3.0]
+    assert_equal(5.0, xf[0] + yf[0])
+    assert_equal(6.0, xf[0] * yf[0])
+  endif
 enddef
 
 def Test_expr6_float()
@@ -538,6 +549,10 @@ func Test_expr6_fails()
   call CheckDefFailure("let x = #{one: 1} / #{two: 2}", 'E1036:')
   call CheckDefFailure("let x = #{one: 1} % #{two: 2}", 'E1035:')
 
+  call CheckDefFailure("let x = 0xff[1]", 'E714:')
+  if has('float')
+    call CheckDefFailure("let x = 0.7[1]", 'E714:')
+  endif
 endfunc
 
 func Test_expr6_float_fails()
