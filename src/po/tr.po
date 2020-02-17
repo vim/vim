@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-15 21:55+0300\n"
-"PO-Revision-Date: 2020-02-15 23:45+0300\n"
+"POT-Creation-Date: 2020-02-17 13:58+0300\n"
+"PO-Revision-Date: 2020-02-17 14:10+0300\n"
 "Last-Translator: Emir SARI <bitigchi@me.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "Language: tr\n"
@@ -3425,8 +3425,7 @@ msgstr ""
 "(Bu dosyası başka bir adla kaydetmek isteyebilir ve orijinal\n"
 
 msgid "and run diff with the original file to check for changes)"
-msgstr ""
-"dosya ile (varsa) karşılaştırmasını yapmak isteyebilirsiniz)"
+msgstr "dosya ile (varsa) karşılaştırmasını yapmak isteyebilirsiniz)"
 
 msgid "Recovery completed. Buffer contents equals file contents."
 msgstr "Kurtarma tamamlandı. Arabellek içeriği dosya içeriğine eşit."
@@ -5984,6 +5983,7 @@ msgstr "E124: '(' eksik: %s"
 msgid "E862: Cannot use g: here"
 msgstr "E862: g: burada kullanılamaz"
 
+#, c-format
 msgid "E1056: expected a type: %s"
 msgstr "E1056: Şu türden bekleniyordu: %s"
 
@@ -5997,6 +5997,7 @@ msgstr "E1057: Eksik :enddef"
 msgid "E126: Missing :endfunction"
 msgstr "E126: :endfunction eksik"
 
+#, c-format
 msgid "W1001: Text found after :enddef: %s"
 msgstr "W1001: :enddef sonrası metin bulundu: %s"
 
@@ -6317,27 +6318,33 @@ msgstr "bilgi için             :help register<Enter>  "
 msgid "menu  Help->Sponsor/Register  for information    "
 msgstr "bilgi için: menü -> Yardım -> Sponsorluk/Kayıt   "
 
+#, c-format
 msgid "E1001: variable not found: %s"
 msgstr "E1001: Değişken bulunamadı: %s"
 
+#, c-format
 msgid "E1002: Syntax error at %s"
 msgstr "E1002: %s konumunda sözdizimi hatası"
 
 msgid "E1035: wrong argument type for +"
 msgstr "E1035: + için yanlış değişken türü"
 
+#, c-format
 msgid "E1036: %c requires number or float arguments"
 msgstr "E1036: %c sayı veya kayan noktalı değer değişken gerektirir"
 
 msgid "E1035: % requires number arguments"
 msgstr "E1035: Şunun için sayı değişken gerekiyor: %"
 
+#, c-format
 msgid "E1037: Cannot use \"%s\" with %s"
 msgstr "E1037: \"%s\", %s ile kullanılamaz"
 
+#, c-format
 msgid "E1037: Cannot compare %s with %s"
 msgstr "E1037: %s, %s ile karşılaştırılamaz"
 
+#, c-format
 msgid "E1004: white space required before and after '%s'"
 msgstr "E1004: '%s' öncesi ve sonrası boşluk karakteri gerekiyor"
 
@@ -6357,12 +6364,15 @@ msgstr "E1009: Tür sonrası eksik >"
 msgid "E1055: This Vim is not compiled with float support"
 msgstr "E1055: Bu Vim kayan noktalı değer desteği ile derlenmemiş"
 
+#, c-format
 msgid "E1010: Type not recognized: %s"
 msgstr "E1010: Tür tanımlanamadı: %s"
 
+#, c-format
 msgid "E1050: Item not found: %s"
 msgstr "E1050: Öge bulunamadı: %s"
 
+#, c-format
 msgid "E1011: name too long: %s"
 msgstr "E1011: Ad çok uzun: %s"
 
@@ -6370,36 +6380,46 @@ msgstr "E1011: Ad çok uzun: %s"
 msgid "E1013: type mismatch, expected %s but got %s"
 msgstr "E1013: Tür uyuşmazlığı, %s bekleniyordu ancak %s alındı"
 
+#, c-format
 msgid "E1014: Invalid key: %s"
 msgstr "E1014: Geçersiz anahtar: %s"
 
+#, c-format
 msgid "E1015: Name expected: %s"
 msgstr "E1015: Ad bekleniyordu: %s"
 
 msgid "E1003: Missing return value"
 msgstr "E1003: Eksik dönüş değeri"
 
+#, c-format
 msgid "E1052: Cannot declare an option: %s"
 msgstr "E1052: Seçenek tanımlanamıyor: %s"
 
+#, c-format
 msgid "E1065: Cannot declare an environment variable: %s"
 msgstr "E1065: Ortam değişkeni tanımlanamıyor: %s"
 
+#, c-format
 msgid "E1066: Cannot declare a register: %s"
 msgstr "E1066: Yazmaç tanımlanamıyor: %s"
 
+#, c-format
 msgid "E1016: Cannot declare a global variable: %s"
 msgstr "E1016: Global değişken tanımlanamıyor: %s"
 
+#, c-format
 msgid "E1064: Cannot declare a v: variable: %s"
 msgstr "E1064: v: değişkeni tanımlanamıyor: %s"
 
+#, c-format
 msgid "E1034: Cannot use reserved name %s"
 msgstr "E1034: Ayrılmış ad %s kullanılamaz"
 
+#, c-format
 msgid "E1017: Variable already declared: %s"
 msgstr "E1017: Değişken hâlihazırda tanımlanmış: %s"
 
+#, c-format
 msgid "E1018: Cannot assign to a constant: %s"
 msgstr "E1018: Sabit değere atanamıyor: %s"
 
@@ -6407,6 +6427,10 @@ msgstr "E1018: Sabit değere atanamıyor: %s"
 msgid "E1054: Variable already declared in the script: %s"
 msgstr "E1054: Değişken betikte hâlihazırda tanımlandı: %s"
 
+msgid "E1019: Can only concatenate to string"
+msgstr "E1019: Yalnızca bir diziye bağlanabilir"
+
+#, c-format
 msgid "E1020: cannot use an operator on a new variable: %s"
 msgstr "E1020: Yeni bir değişken üzerinde işleç kullanılamıyor: %s"
 
@@ -6419,6 +6443,7 @@ msgstr "E1021: const bir değer gerektirir"
 msgid "E1022: type or initialization required"
 msgstr "E1022: Tür veya ilklendirme gerekiyor"
 
+#, c-format
 msgid "E1023: variable already defined: %s"
 msgstr "E1023: Değişken hâlihazırda tanımlanmış: %s"
 
@@ -6428,14 +6453,19 @@ msgstr "E1024: Üzerinde yineleme için bir Liste gerekli"
 msgid "E1033: catch unreachable after catch-all"
 msgstr "E1033: catch'e catch-all'dan sonra ulaşılamıyor"
 
+#, c-format
 msgid "E1067: Separator mismatch: %s"
 msgstr "E1067: Ayırıcı uyuşmazlığı: %s"
 
 msgid "E1032: missing :catch or :finally"
 msgstr "E1032: :catch veya :finally eksik"
 
+#, c-format
 msgid "E488: Trailing characters: %s"
 msgstr "E488: Sonda fazladan karakterler: %s"
+
+msgid "E1025: using } outside of a block scope"
+msgstr "E1025: } bir blok kapsamı dışında kullanılıyor"
 
 msgid "E1026: Missing }"
 msgstr "E1026: Eksik }."
@@ -6443,17 +6473,29 @@ msgstr "E1026: Eksik }."
 msgid "E1027: Missing return statement"
 msgstr "E1027: Eksik dönüş ifadesi"
 
+msgid "E1028: compile_def_function failed"
+msgstr "E1028: compile_def_function başarısız oldu"
+
+#, c-format
 msgid "E121: Undefined variable: g:%s"
 msgstr "E121: Tanımlanmamış değişken: g:%s"
 
+#, c-format
 msgid "E1060: Invalid environment variable name: %s"
 msgstr "E1060: Geçersiz ortam değişkeni adı: %s"
 
 msgid "E1051: Expected string or number"
 msgstr "E1051: Dizi veya sayı bekleniyordu"
 
+#, c-format
 msgid "E1029: Expected %s but got %s"
 msgstr "E1029: %s bekleniyordu ancak %s alındı"
+
+msgid "E1061: Cannot find function %s"
+msgstr "E1061: %s işlevi bulunamıyor"
+
+msgid "E1062: Function %s is not compiled"
+msgstr "E1062: %s işlevi derlenmemiş"
 
 msgid "E1030: Using a String as a Number"
 msgstr "E1030: Bir Dizi, Sayı yerine kullanılıyor"
@@ -6482,12 +6524,15 @@ msgstr "E1045: Eksik \"from\""
 msgid "E1045: Invalid string after \"from\""
 msgstr "E1045: \"from\" sonrası geçersiz dizi"
 
+#, c-format
 msgid "E1053: Could not import \"%s\""
 msgstr "E1053: \"%s\" içe aktarılamadı"
 
+#, c-format
 msgid "E1049: Item not exported in script: %s"
 msgstr "E1049: Betikteki öge dışa aktarılmadı: %s"
 
+#, c-format
 msgid "E1048: Item not found in script: %s"
 msgstr "E1048: Öge betikte bulunamadı: %s"
 
@@ -6706,8 +6751,7 @@ msgid "Sorry, this command is disabled: the Perl library could not be loaded."
 msgstr "Üzgünüm, bu komut etkin değil: Perl kitaplığı yüklenemedi."
 
 msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
-msgstr ""
-"E299: Güvenli modül olmadan kum havuzu içinde Perl değerlendirmesine "
+msgstr "E299: Güvenli modül olmadan kum havuzu içinde Perl değerlendirmesine "
 "izin verilmiyor"
 
 msgid "Edit with &multiple Vims"
