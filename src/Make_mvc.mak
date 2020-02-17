@@ -1359,7 +1359,7 @@ $(VIM): $(VIM).exe
 $(OUTDIR):
 	if not exist $(OUTDIR)/nul  mkdir $(OUTDIR)
 
-CFLAGS_INST = /nologo -DNDEBUG -DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) $(CFLAGS_DEPR)
+CFLAGS_INST = /nologo /O2 -DNDEBUG -DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) $(CFLAGS_DEPR)
 
 install.exe: dosinst.c dosinst.h version.h
 	$(CC) $(CFLAGS_INST) dosinst.c kernel32.lib shell32.lib \

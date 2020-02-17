@@ -200,8 +200,7 @@ batfile_thisversion(char *path)
 {
     FILE	*fd;
     char	line[BUFSIZE];
-    char	*p;
-    int		ver_len = strlen(VIM_VERSION_NODOT);
+    int		key_len = strlen(VIMBAT_UNINSTKEY);
     int		found = FALSE;
 
     fd = fopen(path, "r");
@@ -209,17 +208,11 @@ batfile_thisversion(char *path)
     {
 	while (fgets(line, sizeof(line), fd) != NULL)
 	{
-	    for (p = line; *p != 0; ++p)
-		// don't accept "vim60an" when looking for "vim60".
-		if (strnicmp(p, VIM_VERSION_NODOT, ver_len) == 0
-			&& !isdigit(p[ver_len])
-			&& !isalpha(p[ver_len]))
-		{
-		    found = TRUE;
-		    break;
-		}
-	    if (found)
+	    if (strncmp(line, VIMBAT_UNINSTKEY, key_len) == 0)
+	    {
+		found = TRUE;
 		break;
+	    }
 	}
 	fclose(fd);
     }
