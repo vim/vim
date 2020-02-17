@@ -373,14 +373,9 @@ generate_two_op(cctx_T *cctx, char_u *op)
 
     switch (*op)
     {
-	case '+': if (vartype != VAR_LIST && vartype != VAR_BLOB
-			  && check_number_or_float(
-				   type1->tt_type, type2->tt_type, op) == FAIL)
-		      return FAIL;
+	case '+':
 		  isn = generate_instr_drop(cctx,
 			    vartype == VAR_NUMBER ? ISN_OPNR
-			  : vartype == VAR_LIST ? ISN_ADDLIST
-			  : vartype == VAR_BLOB ? ISN_ADDBLOB
 #ifdef FEAT_FLOAT
 			  : vartype == VAR_FLOAT ? ISN_OPFLOAT
 #endif
