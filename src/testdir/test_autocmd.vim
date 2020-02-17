@@ -2357,3 +2357,5 @@ func Test_FileType_spell()
   au! crash
   setglobal spellfile=
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

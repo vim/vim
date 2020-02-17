@@ -621,3 +621,25 @@ func Test_setfiletype_completion()
   call feedkeys(":setfiletype java\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"setfiletype java javacc javascript javascriptreact', @:)
 endfunc
+
+" Test for ':filetype detect' command for a buffer without a file
+func Test_emptybuf_ftdetect()
+  new
+  call setline(1, '#!/bin/sh')
+  call assert_equal('', &filetype)
+  filetype detect
+  call assert_equal('sh', &filetype)
+  close!
+endfunc
+
+" Test for ':filetype indent on' and ':filetype indent off' commands
+func Test_filetype_indent_off()
+  new Xtest.vim
+  filetype indent on
+  call assert_equal(1, g:did_indent_on)
+  filetype indent off
+  call assert_equal(0, exists('g:did_indent_on'))
+  close
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

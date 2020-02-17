@@ -894,4 +894,18 @@ func Test_block_insert_replace_tabs()
   bwipe!
 endfunc
 
+" Test for * register in :
+func Test_star_register()
+  call assert_fails('*bfirst', 'E16:')
+  new
+  call setline(1, ['foo', 'bar', 'baz', 'qux'])
+  exe "normal jVj\<ESC>"
+  *yank r
+  call assert_equal("bar\nbaz\n", @r)
+
+  delmarks < >
+  call assert_fails('*yank', 'E20:')
+  close!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
