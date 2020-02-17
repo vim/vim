@@ -90,10 +90,18 @@ func Test_helptag_cmd()
   " The following tests fail on FreeBSD for some reason
   if has('unix') && !has('bsd')
     " Read-only tags file
-    call writefile([''], 'Xdir/tags')
-    call setfperm('Xdir/tags', 'r-xr--r--')
-    call assert_fails('helptags Xdir', 'E152:', getfperm('Xdir/tags'))
-    call delete('Xdir/tags')
+    call mkdir('Xdir/doc', 'p')
+    call writefile([''], 'Xdir/doc/tags')
+    call writefile([], 'Xdir/doc/sample.txt')
+    call setfperm('Xdir/doc/tags', 'r-xr--r--')
+    call assert_fails('helptags Xdir/doc', 'E152:', getfperm('Xdir/doc/tags'))
+
+    let rtp = &rtp
+    let &rtp = 'Xdir'
+    helptags ALL
+    let &rtp = rtp
+
+    call delete('Xdir/doc/tags')
 
     " No permission to read the help file
     call setfperm('Xdir/a/doc/sample.txt', '-w-------')

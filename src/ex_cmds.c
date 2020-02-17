@@ -5920,7 +5920,8 @@ helptags_one(
     char_u	*dir,		// doc directory
     char_u	*ext,		// suffix, ".txt", ".itx", ".frx", etc.
     char_u	*tagfname,	// "tags" for English, "tags-fr" for French.
-    int		add_help_tags)	// add "help-tags" tag
+    int		add_help_tags,	// add "help-tags" tag
+    int		ignore_writeerr)    // ignore write error
 {
     FILE	*fd_tags;
     FILE	*fd;
@@ -5964,7 +5965,8 @@ helptags_one(
     fd_tags = mch_fopen((char *)NameBuff, "w");
     if (fd_tags == NULL)
     {
-	semsg(_("E152: Cannot open %s for writing"), NameBuff);
+	if (!ignore_writeerr)
+	    semsg(_("E152: Cannot open %s for writing"), NameBuff);
 	FreeWild(filecount, files);
 	return;
     }
@@ -6165,7 +6167,7 @@ helptags_one(
  * Generate tags in one help directory, taking care of translations.
  */
     static void
-do_helptags(char_u *dirname, int add_help_tags)
+do_helptags(char_u *dirname, int add_help_tags, int ignore_writeerr)
 {
 #ifdef FEAT_MULTI_LANG
     int		len;
@@ -6251,7 +6253,7 @@ do_helptags(char_u *dirname, int add_help_tags)
 	    ext[1] = fname[5];
 	    ext[2] = fname[6];
 	}
-	helptags_one(dirname, ext, fname, add_help_tags);
+	helptags_one(dirname, ext, fname, add_help_tags, ignore_writeerr);
     }
 
     ga_clear(&ga);
@@ -6259,14 +6261,15 @@ do_helptags(char_u *dirname, int add_help_tags)
 
 #else
     // No language support, just use "*.txt" and "tags".
-    helptags_one(dirname, (char_u *)".txt", (char_u *)"tags", add_help_tags);
+    helptags_one(dirname, (char_u *)".txt", (char_u *)"tags", add_help_tags,
+							    ignore_writeerr);
 #endif
 }
 
     static void
 helptags_cb(char_u *fname, void *cookie)
 {
-    do_helptags(fname, *(int *)cookie);
+    do_helptags(fname, *(int *)cookie, TRUE);
 }
 
 /*
@@ -6300,7 +6303,7 @@ ex_helptags(exarg_T *eap)
 	if (dirname == NULL || !mch_isdir(dirname))
 	    semsg(_("E150: Not a directory: %s"), eap->arg);
 	else
-	    do_helptags(dirname, add_help_tags);
+	    do_helptags(dirname, add_help_tags, FALSE);
 	vim_free(dirname);
     }
 }
