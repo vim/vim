@@ -354,6 +354,9 @@ struct
 					"vimtutor.bat",  "vimtutor.bat", ""},
 };
 
+/* Uninstall key for vim.bat, etc. */
+#define VIMBAT_UNINSTKEY    "rem # uninstall key: " VIM_VERSION_NODOT " #"
+
 #define ICON_COUNT 3
 char *(icon_names[ICON_COUNT]) =
 	{"gVim " VIM_VERSION_SHORT,
