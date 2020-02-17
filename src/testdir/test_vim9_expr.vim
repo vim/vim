@@ -478,6 +478,10 @@ def Test_expr6()
   assert_equal(2, g:anint % g:alsoint)
 
   assert_equal(4, 6 * 4 / 6)
+
+  let x = [2.0]
+  let y = [3.0]
+  assert_equal(6.0, x[0] * y[0])
 enddef
 
 def Test_expr6_float()

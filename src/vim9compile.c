@@ -391,9 +391,7 @@ generate_two_op(cctx_T *cctx, char_u *op)
 
 	case '-':
 	case '*':
-	case '/': if (check_number_or_float(type1->tt_type, type2->tt_type,
-								   op) == FAIL)
-		      return FAIL;
+	case '/': 
 		  if (vartype == VAR_NUMBER)
 		      isn = generate_instr_drop(cctx, ISN_OPNR, 1);
 #ifdef FEAT_FLOAT
