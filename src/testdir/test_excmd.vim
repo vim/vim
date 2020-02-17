@@ -313,4 +313,26 @@ func Test_read_cmd()
   call delete('Xfile')
 endfunc
 
+" Test for running Ex commands when text is locked.
+" <C-\>e in the command line is used to lock the text
+func Test_run_excmd_with_text_locked()
+  " :quit
+  let cmd = ":\<C-\>eexecute('quit')\<CR>\<C-C>"
+  call assert_fails("call feedkeys(cmd, 'xt')", 'E523:')
+
+  " :qall
+  let cmd = ":\<C-\>eexecute('qall')\<CR>\<C-C>"
+  call assert_fails("call feedkeys(cmd, 'xt')", 'E523:')
+
+  " :exit
+  let cmd = ":\<C-\>eexecute('exit')\<CR>\<C-C>"
+  call assert_fails("call feedkeys(cmd, 'xt')", 'E523:')
+
+  " :close - should be ignored
+  new
+  let cmd = ":\<C-\>eexecute('close')\<CR>\<C-C>"
+  call assert_equal(2, winnr('$'))
+  close
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
