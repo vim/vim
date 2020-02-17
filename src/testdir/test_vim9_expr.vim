@@ -481,6 +481,7 @@ def Test_expr6()
 
   let x = [2.0]
   let y = [3.0]
+  assert_equal(5.0, x[0] + y[0])
   assert_equal(6.0, x[0] * y[0])
 enddef
 
