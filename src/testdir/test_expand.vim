@@ -95,6 +95,7 @@ func Test_source_sfile()
     :call assert_fails('call expandcmd("edit #<2")', 'E684:')
     :call assert_fails('call expandcmd("edit <cword>")', 'E348:')
     :call assert_fails('call expandcmd("edit <cexpr>")', 'E348:')
+    :call assert_fails('autocmd User MyCmd echo "<sfile>"', 'E498:')
     :call writefile(v:errors, 'Xresult')
     :qall!
 

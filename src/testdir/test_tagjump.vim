@@ -1062,6 +1062,7 @@ func Test_inc_search()
   call assert_equal('3:foo', execute('+1,$isearch foo'))
   call assert_fails('1,.-1isearch 3 foo', 'E389:')
   call assert_fails('isearch bar', 'E389:')
+  call assert_fails('isearch /foo/3', 'E488:')
 
   " Test for [I and ]I
   call assert_equal([

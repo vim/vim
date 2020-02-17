@@ -386,4 +386,15 @@ func Test_put_reg_restart_mode()
   bwipe!
 endfunc
 
+" Test for executing a register using :@ command
+func Test_execute_register()
+  call setreg('r', [])
+  call assert_beeps('@r')
+  let i = 1
+  let @q = 'let i+= 1'
+  @q
+  @
+  call assert_equal(3, i)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
