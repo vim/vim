@@ -3413,25 +3413,26 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 }
 
     static int
-did_encount_string_quote(char_u **expr, int is_literal_string)
+did_encounter_string_quote(char_u **expr, int is_literal_string)
 {
-    // encounted a double quote in the single quoted string (lit str),
-    int did_encount_double_in_single =
+    // encountered a double quote in the single quoted string (lit str),
+    int did_encounter_double_in_single =
 	(is_literal_string && **expr == '"');
 
     // a single quote in the double quoted string,
-    int did_encount_single_in_double =
+    int did_encounter_single_in_double =
 	(!is_literal_string && **expr == '\'');
 
     // or a single quote in the double quoted string?
-    int did_encount_escaped_quote = is_escaped_quote(is_literal_string, *expr);
+    int did_encounter_escaped_quote =
+				is_escaped_quote(is_literal_string, *expr);
 
     int result =
-	did_encount_double_in_single ||
-	did_encount_single_in_double ||
-	did_encount_escaped_quote;
+	did_encounter_double_in_single ||
+	did_encounter_single_in_double ||
+	did_encounter_escaped_quote;
 
-    if (did_encount_escaped_quote)
+    if (did_encounter_escaped_quote)
 	++*expr;
 
     return result;
@@ -3503,7 +3504,7 @@ read_template_expr(garray_T *result, char_u **expr, int is_literal_string)
     size_t	    nested_blocks = 0;
     int		    is_in_quote = FALSE;
 
-    // While the closing '}' encounted. The '}' is neither '}' of a dict nor
+    // While the closing '}' encountered. The '}' is neither '}' of a dict nor
     // '}' in a string.
     for (; !(!is_in_quote && **expr == '}' && nested_blocks == 0);
 							MB_PTR_ADV(*expr))
@@ -3522,7 +3523,7 @@ read_template_expr(garray_T *result, char_u **expr, int is_literal_string)
 		semsg(_("E451: Unterminated template literal: %s"), expr_head);
 		return FAIL;
 	    default:
-		if (did_encount_string_quote(expr, is_literal_string))
+		if (did_encounter_string_quote(expr, is_literal_string))
 		    is_in_quote = !is_in_quote;
 		break;
 	}
