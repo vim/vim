@@ -2659,13 +2659,9 @@ eval7(
      * Environment variable: $VAR.
      */
     case '$':	if (*(*arg + 1) == '"' || *(*arg + 1) == '\'')
-		{
 		    ret = get_template_string_tv(arg, rettv, evaluate);
-		}
 		else
-		{
 		    ret = get_env_tv(arg, rettv, evaluate);
-		}
 		break;
 
     /*
@@ -3325,7 +3321,10 @@ eval_index(
 }
 
     static int
-is_closing_quote(char_u *template, int is_literal_string, int *is_skipping_needed)
+is_closing_quote(
+	char_u *template,
+	int is_literal_string,
+	int *is_skipping_needed)
 {
     char_u quote = is_literal_string ? '\'' : '"';
 
@@ -3358,7 +3357,9 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
     ga_append(&result, quote);
 
     // Continue while it is not NULL and it is not a closing quote.
-    for (; (**arg != NUL) && !is_closing_quote(*arg, is_literal_string, &is_skipping_needed); ++*arg)
+    for (; (**arg != NUL) &&
+	    !is_closing_quote(*arg, is_literal_string, &is_skipping_needed);
+	    ++*arg)
     {
 	if (is_skipping_needed)
 	{
@@ -3372,7 +3373,8 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    int success;
 	    int does_expect_embraced = *(*arg + 1) == '{';
 
-	    *arg += does_expect_embraced ? 2 : 1;  // forward to beginning of the template literal
+	    // forward to beginning of the template literal
+	    *arg += does_expect_embraced ? 2 : 1;
 	    success = does_expect_embraced
 		? read_template_expr(&result, arg, is_literal_string)
 		: read_template_var(&result, arg);
@@ -3430,9 +3432,7 @@ did_encount_string_quote(char_u **expr, int is_literal_string)
 	did_encount_escaped_quote;
 
     if (did_encount_escaped_quote)
-    {
 	++*expr;
-    }
 
     return result;
 }
@@ -3477,10 +3477,12 @@ escape_quotes_in_quote(char_u *x, int is_literal_string)
 
     for (p = x; *p != NUL; MB_PTR_ADV(p))
     {
-	if (is_literal_string && *p == '\'') {
+	if (is_literal_string && *p == '\'')
+	{
 	    ga_concat(&result, (char_u *) "''");
 	    continue;
-	} else if (!is_literal_string && *p == '"')
+	}
+	else if (!is_literal_string && *p == '"')
 	{
 	    ga_concat(&result, (char_u *) "\\\"");
 	    continue;
@@ -3501,31 +3503,27 @@ read_template_expr(garray_T *result, char_u **expr, int is_literal_string)
     size_t	    nested_blocks = 0;
     int		    is_in_quote = FALSE;
 
-    // While the closing '}' encounted. The '}' is neither '}' of a dict nor '}' in a string.
-    for (; !(!is_in_quote && **expr == '}' && nested_blocks == 0); MB_PTR_ADV(*expr))
+    // While the closing '}' encounted. The '}' is neither '}' of a dict nor
+    // '}' in a string.
+    for (; !(!is_in_quote && **expr == '}' && nested_blocks == 0);
+							MB_PTR_ADV(*expr))
     {
 	switch (**expr)
 	{
 	    case '{':
 		if (!is_in_quote)
-		{
 		    ++nested_blocks;
-		}
 		break;
 	    case '}':
 		if (!is_in_quote)
-		{
 		    --nested_blocks;
-		}
 		break;
 	    case NUL:
 		semsg(_("E451: Unterminated template literal: %s"), expr_head);
 		return FAIL;
 	    default:
 		if (did_encount_string_quote(expr, is_literal_string))
-		{
 		    is_in_quote = !is_in_quote;
-		}
 		break;
 	}
     }
@@ -3563,12 +3561,11 @@ read_template_expr(garray_T *result, char_u **expr, int is_literal_string)
 	success = eval1(&stringified, &var_value, TRUE);
 	vim_free(to_free_stringified);
 	if (!success)
-	{
 	    return FAIL;
-	}
 
 	// Evaluate the lambda call
-	escaped = escape_quotes_in_quote(var_value.vval.v_string, is_literal_string);
+	escaped = escape_quotes_in_quote(var_value.vval.v_string,
+							is_literal_string);
 	ga_concat(result, escaped);
 	vim_free(var_value.vval.v_string);
 	vim_free(escaped);
