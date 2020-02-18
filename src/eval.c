@@ -3492,6 +3492,11 @@ escape_quotes_in_quote(char_u *x, int is_literal_string)
 	    ga_concat(&result, (char_u *) "\\\"");
 	    continue;
 	}
+	else if (!is_literal_string && *p == '\\')
+	{
+	    ga_concat(&result, (char_u *) "\\\\");
+	    continue;
+	}
 	ga_concatn(&result, p, mb_ptr2len(p));
     }
 

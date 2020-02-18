@@ -30,6 +30,8 @@ func Test_template_string_basic()
   call assert_equal("'", $'$x')
   let x = '"'
   call assert_equal('"', $"$x")
+  let x = '\x31'
+  call assert_equal('\x31', $"$x")
   let x20 = 20
   call assert_equal('20', $'$x20')
   let Fo_O0O = 30
