@@ -3458,10 +3458,10 @@ remove_all_quote_escaping(char_u *expr, int is_literal_string)
 	if (is_escaped_quote(is_literal_string, p))
 	{
 	    ga_append(&result, *(p + 1));
-	    MB_PTR_ADV(p);
+	    ++p;
 	    continue;
 	}
-	ga_append(&result, *p);
+	ga_concatn(&result, p, mb_ptr2len(p));
     }
 
     return (char_u *) result.ga_data;
@@ -3487,7 +3487,7 @@ escape_quotes_in_quote(char_u *x, int is_literal_string)
 	    ga_concat(&result, (char_u *) "\\\"");
 	    continue;
 	}
-	ga_append(&result, *p);
+	ga_concatn(&result, p, mb_ptr2len(p));
     }
 
     return (char_u *) result.ga_data;

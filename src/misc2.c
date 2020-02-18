@@ -2152,11 +2152,19 @@ ga_add_string(garray_T *gap, char_u *p)
     void
 ga_concat(garray_T *gap, char_u *s)
 {
-    int    len;
-
     if (s == NULL || *s == NUL)
 	return;
-    len = (int)STRLEN(s);
+    ga_concatn(gap, s, (int)STRLEN(s));
+}
+
+/*
+ * Similar to ga_concat(), but concatenate only specified length.
+ */
+    void
+ga_concatn(garray_T *gap, char_u *s, int len)
+{
+    if (s == NULL || len <= 0)
+	return;
     if (ga_grow(gap, len) == OK)
     {
 	mch_memmove((char *)gap->ga_data + gap->ga_len, s, (size_t)len);
