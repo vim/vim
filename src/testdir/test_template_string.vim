@@ -23,9 +23,13 @@ func Test_template_string_basic()
   " Variables
   let x = 10
   call assert_equal('I have 10', $'I have ${x}')
-  "" Only variables can be ommt "{}"
+  "" Only variables can be omit "{}"
   call assert_equal('I have 10', $'I have $x')
   call assert_equal('10 and me', $'$x and me')
+  let x = "'"
+  call assert_equal("'", $'$x')
+  let x = '"'
+  call assert_equal('"', $"$x")
   let x20 = 20
   call assert_equal('20', $'$x20')
   let Fo_O0O = 30
@@ -73,6 +77,7 @@ func Test_template_string_appendix()
 
   " Multi byte string
   call assert_equal('こんにちは Vim', $'こんにちは ${"Vim"}')
+  call assert_equal('あ', $'${"あ"}')
 endfunc
 
 " These should be an exception, should not be a 'Segmentation fault'.
