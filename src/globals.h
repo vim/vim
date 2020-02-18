@@ -1028,6 +1028,10 @@ EXTERN int	motion_force INIT(= 0); // motion force for pending operator
  * Ex mode (Q) state
  */
 EXTERN int exmode_active INIT(= 0);	// zero, EXMODE_NORMAL or EXMODE_VIM
+
+// Flag set when main_loop() should exit when entering Ex mode.
+EXTERN int pending_exmode_active INIT(= FALSE);
+
 EXTERN int ex_no_reprint INIT(= FALSE); // no need to print after z or p
 
 EXTERN int reg_recording INIT(= 0);	// register for recording  or zero

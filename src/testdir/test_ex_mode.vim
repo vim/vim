@@ -111,4 +111,12 @@ func Test_open_command()
   close!
 endfunc
 
+func Test_Ex_feedkeys()
+  " this doesn't do anything useful, just check it doesn't hang
+  new
+  call setline(1, ["foo"])
+  call feedkeys("Qg/foo/visual\<CR>", "xt")
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

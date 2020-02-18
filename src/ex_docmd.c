@@ -6185,9 +6185,11 @@ do_exedit(
 		hold_gui_events = 0;
 #endif
 		must_redraw = CLEAR;
+		pending_exmode_active = TRUE;
 
 		main_loop(FALSE, TRUE);
 
+		pending_exmode_active = FALSE;
 		RedrawingDisabled = rd;
 		no_wait_return = nwr;
 		msg_scroll = ms;

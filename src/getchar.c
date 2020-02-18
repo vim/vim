@@ -3041,6 +3041,10 @@ vgetorpeek(int advance)
 #ifdef FEAT_CMDWIN
 		    tc = c;
 #endif
+		    // return from main_loop()
+		    if (pending_exmode_active)
+			exmode_active = EXMODE_NORMAL;
+
 		    break;
 		}
 
