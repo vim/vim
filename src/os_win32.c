@@ -190,6 +190,8 @@ static int conpty_type = 0;
 static int conpty_stable = 0;
 static int vtp_initialize = 0; // Some early cases
 static void vtp_flag_init();
+static int vtp_can_enable();
+static void vtp_set_conpty_type();
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 static int vtp_working = 0;
@@ -7358,24 +7360,58 @@ mch_setenv(char *var, char *value, int x UNUSED)
     static void
 vtp_flag_init(void)
 {
-    DWORD   ver = get_build_number();
+    vtp_switch_by_version();
+    vtp_set_conpty_type();
+}
+
+    static int
+vtp_can_enable(void)
+{
+    return get_build_number() >= VTP_FIRST_SUPPORT_BUILD ? 1 : 0;
+}
+
+    void
+vtp_switch_by_version(void)
+{
+    vtp_switch_by_force(vtp_can_enable());
+}
+
+    void
+vtp_switch_by_force(
+    int force)
+{
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
-    DWORD   mode;
-    HANDLE  out;
+    vtp_working = force;
 
 # ifdef VIMDLL
     if (!gui.in_use)
 # endif
     {
-	out = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD mode;
+	HANDLE out;
 
-	vtp_working = (ver >= VTP_FIRST_SUPPORT_BUILD) ? 1 : 0;
-	GetConsoleMode(out, &mode);
-	mode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-	if (SetConsoleMode(out, mode) == 0)
-	    vtp_working = 0;
+	if (vtp_can_enable())
+	{
+	    out = GetStdHandle(STD_OUTPUT_HANDLE);
+	    GetConsoleMode(out, &mode);
+
+	    mode |= ENABLE_PROCESSED_OUTPUT;
+
+	    if (vtp_working)
+		mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	    else
+		mode &= ~ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+
+	    SetConsoleMode(out, mode);
+	}
     }
 #endif
+}
+
+    static void
+vtp_set_conpty_type(void)
+{
+    DWORD ver = get_build_number();
 
     if (ver >= CONPTY_FIRST_SUPPORT_BUILD)
 	conpty_working = 1;

@@ -71,6 +71,8 @@ void used_file_arg(char *name, int literal, int full_path, int diff_mode);
 void set_alist_count(void);
 void fix_arg_enc(void);
 int mch_setenv(char *var, char *value, int x);
+void vtp_switch_by_version(void);
+void vtp_switch_by_force(int force);
 void get_current_initial_palette(guicolor_T *fg, guicolor_T *bg);
 void get_default_console_color(int *cterm_fg, int *cterm_bg, guicolor_T *gui_fg, guicolor_T *gui_bg);
 void control_console_color_rgb(void);
