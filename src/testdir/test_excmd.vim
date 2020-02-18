@@ -238,6 +238,22 @@ func Test_confirm_cmd()
   call assert_equal(['foo4'], readfile('foo'))
   call assert_equal(['bar2'], readfile('bar'))
 
+  " Test for closing a window with a modified buffer
+  let buf = RunVimInTerminal('', {'rows': 20})
+  call term_sendkeys(buf, ":set nomore\n")
+  call term_sendkeys(buf, ":new\n")
+  call term_sendkeys(buf, ":call setline(1, 'abc')\n")
+  call term_sendkeys(buf, ":confirm close\n")
+  call WaitForAssert({-> assert_match('^\[Y\]es, (N)o, (C)ancel: *$',
+        \ term_getline(buf, 20))}, 1000)
+  call term_sendkeys(buf, "C")
+  call term_sendkeys(buf, ":confirm close\n")
+  call WaitForAssert({-> assert_match('^\[Y\]es, (N)o, (C)ancel: *$',
+        \ term_getline(buf, 20))}, 1000)
+  call term_sendkeys(buf, "N")
+  call term_sendkeys(buf, ":quit\n")
+  call StopVimInTerminal(buf)
+
   call delete('foo')
   call delete('bar')
 endfunc

@@ -2358,4 +2358,28 @@ func Test_FileType_spell()
   setglobal spellfile=
 endfunc
 
+" Test closing a window or editing another buffer from a FileChangedRO handler
+" in a readonly buffer
+func Test_FileChangedRO_winclose()
+  augroup FileChangedROTest
+    au!
+    autocmd FileChangedRO * quit
+  augroup END
+  new
+  set readonly
+  call assert_fails('normal i', 'E788:')
+  close
+  augroup! FileChangedROTest
+
+  augroup FileChangedROTest
+    au!
+    autocmd FileChangedRO * edit Xfile
+  augroup END
+  new
+  set readonly
+  call assert_fails('normal i', 'E788:')
+  close
+  augroup! FileChangedROTest
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

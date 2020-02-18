@@ -965,4 +965,12 @@ func Test_winpos_errors()
   call assert_fails('winpos 10', 'E466:')
 endfunc
 
+" Test for +cmd in a :split command
+func Test_split_cmd()
+  split +set\ readonly
+  call assert_equal(1, &readonly)
+  call assert_equal(2, winnr('$'))
+  close
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
