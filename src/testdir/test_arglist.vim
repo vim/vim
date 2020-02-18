@@ -525,10 +525,12 @@ func Test_quit_with_arglist()
   call term_sendkeys(buf, ":set nomore\n")
   call term_sendkeys(buf, ":args a b c\n")
   call term_sendkeys(buf, ":confirm quit\n")
-  call WaitForAssert({-> assert_match('\[Y\]es, (N)o: ', term_getline(buf, 6))})
+  call WaitForAssert({-> assert_match('^\[Y\]es, (N)o: *$',
+        \ term_getline(buf, 6))})
   call term_sendkeys(buf, "N")
   call term_sendkeys(buf, ":confirm quit\n")
-  call WaitForAssert({-> assert_match('\[Y\]es, (N)o: ', term_getline(buf, 6))})
+  call WaitForAssert({-> assert_match('^\[Y\]es, (N)o: *$',
+        \ term_getline(buf, 6))})
   call term_sendkeys(buf, "Y")
   call StopVimInTerminal(buf)
 endfunc
