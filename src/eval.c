@@ -55,7 +55,6 @@ static int eval7_leader(typval_T *rettv, char_u *start_leader, char_u **end_lead
 
 static int get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate);
 static int read_template_expr(garray_T *result, char_u **expr, int is_literal_string, int evaluate);
-static int read_template_var(garray_T *result, char_u **expr, int is_literal_string, int evaluate);
 static int is_escaped_quote(int is_literal_string, char_u *quotes);
 static int free_unref_items(int copyID);
 static char_u *make_expanded_name(char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end);
@@ -3368,16 +3367,16 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 	    ga_append(&result, (int) **arg);
 	    continue;
 	}
-	else if (**arg == '$')
+	else if (**arg == '$' && *(*arg + 1) == '{')
 	{
 	    int success;
-	    int does_expect_embraced = *(*arg + 1) == '{';
 
-	    // forward to beginning of the template literal
-	    *arg += does_expect_embraced ? 2 : 1;
-	    success = does_expect_embraced
-		? read_template_expr(&result, arg, is_literal_string, evaluate)
-		: read_template_var(&result, arg, is_literal_string, evaluate);
+	    *arg += 2;  // forward to beginning of the template literal
+	    success = read_template_expr(
+		    &result,
+		    arg,
+		    is_literal_string,
+		    evaluate);
 	    if (!success)
 	    {
 		ga_clear(&result);
@@ -3669,7 +3668,7 @@ read_template_var(
 }
 
 /*
- * Return the function name of partial "pt".
+ * Return the function name of the partial.
  */
     char_u *
 partial_name(partial_T *pt)
