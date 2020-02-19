@@ -3777,6 +3777,25 @@ init_default_colors(term_T *term, win_T *wp)
 		fg_rgb = cterm_normal_fg_gui_color;
 	    if (bg_rgb == INVALCOLOR)
 		bg_rgb = cterm_normal_bg_gui_color;
+
+#  if defined(MSWIN) && (!defined(FEAT_GUI_MSWIN) || defined(VIMDLL))
+#   ifdef VIMDLL
+	    if (!gui.in_use)
+#   endif
+	    {
+		// If Normal is not present, use the current RGB value from
+		// the palette at startup at the command prompt.
+		// In that case, cterm_normal_*_gui_color contains INVALCOLOR.
+		if (id == 0)
+		{
+		    // Use Normal if available.
+		    id = syn_name2id((char_u *)"Normal");
+		    if (id != 0)
+			syn_id2colors(id, &fg_rgb, &bg_rgb);
+		}
+		get_current_initial_palette(&fg_rgb, &bg_rgb);
+	    }
+#  endif
 	}
 # endif
 	if (fg_rgb != INVALCOLOR)

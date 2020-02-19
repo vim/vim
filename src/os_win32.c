@@ -188,7 +188,13 @@ static int win32_set_archive(char_u *name);
 static int conpty_working = 0;
 static int conpty_type = 0;
 static int conpty_stable = 0;
+static int vtp_initialize = 0; // Some early cases
 static void vtp_flag_init();
+static int vtp_can_enable();
+static void vtp_set_conpty_type();
+
+static int vtp_flag = 0;
+static void vtp_flag_set_from_env();
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 static int vtp_working = 0;
@@ -2155,7 +2161,16 @@ mch_init_g(void)
     win_clip_init();
 # endif
 
-    vtp_flag_init();
+    switch (vtp_initialize)
+    {
+	case 0:
+	    vtp_initialize++;
+	    out_buf_realloc(Columns * Rows);
+	    // fallthrough
+	case 1:
+	    vtp_initialize++;
+	    vtp_flag_init();
+    }
 }
 
 
@@ -2645,8 +2660,20 @@ mch_init_c(void)
     win_clip_init();
 # endif
 
-    vtp_flag_init();
-    vtp_init();
+    switch (vtp_initialize)
+    {
+	case 0:
+	    vtp_initialize++;
+	    out_buf_realloc(Columns * Rows);
+	    // fallthrough
+	case 1:
+	    vtp_initialize++;
+	    vtp_flag_init();
+	    // fallthrough
+	case 2:
+	    vtp_initialize++;
+	    vtp_init();
+    }
 }
 
 /*
@@ -3796,6 +3823,7 @@ mch_set_shellsize(void)
 	    Columns = coordScreen.X;
 
 	ResizeConBufAndWindow(g_hConOut, Columns, Rows);
+	out_buf_realloc(Columns * Rows);
     }
 }
 
@@ -5405,6 +5433,9 @@ termcap_mode_start(void)
     if (g_fTermcapMode)
 	return;
 
+    if (!p_rs && USE_VTP)
+	vtp_printf("\033[?1049h");
+
     SaveConsoleBuffer(&g_cbNonTermcap);
 
     if (g_cbTermcap.IsValid)
@@ -5504,6 +5535,9 @@ termcap_mode_end(void)
 	SetConsoleCursorPosition(g_hConOut, coord);
     }
 
+    if (!p_rs && USE_VTP)
+	vtp_printf("\033[?1049l");
+
     g_fTermcapMode = FALSE;
 }
 #endif // FEAT_GUI_MSWIN
@@ -5528,12 +5562,14 @@ clear_chars(
     COORD coord,
     DWORD n)
 {
-    DWORD dwDummy;
-
-    FillConsoleOutputCharacter(g_hConOut, ' ', n, coord, &dwDummy);
-
     if (!USE_VTP)
-	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, n, coord, &dwDummy);
+    {
+	DWORD dwDummy;
+
+	FillConsoleOutputCharacter(g_hConOut, ' ', n, coord, &dwDummy);
+	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, n, coord,
+								     &dwDummy);
+    }
     else
     {
 	set_console_color_rgb();
@@ -5795,6 +5831,10 @@ gotoxy(
 
     if (!USE_VTP)
     {
+	// Fixed because the display is broken even if it is not VTP.
+	g_coord.X = 0;
+	SetConsoleCursorPosition(g_hConOut, g_coord);
+
 	// external cursor coords are 1-based; internal are 0-based
 	g_coord.X = x - 1;
 	g_coord.Y = y - 1;
@@ -5958,6 +5998,10 @@ visual_bell(void)
 cursor_visible(BOOL fVisible)
 {
     s_cursor_visible = fVisible;
+
+    if (USE_VTP)
+	vtp_printf("\033[?25%c", fVisible ? 'h' : 'l');
+
 # ifdef MCH_CURSOR_SHAPE
     mch_update_cursor();
 # endif
@@ -5975,23 +6019,57 @@ write_chars(
 {
     COORD	    coord = g_coord;
     DWORD	    written;
-    DWORD	    n, cchwritten, cells;
+    DWORD	    n, cchwritten;
+    static DWORD    cells;
     static WCHAR    *unicodebuf = NULL;
     static int	    unibuflen = 0;
-    int		    length;
+    static int	    length;
     int		    cp = enc_utf8 ? CP_UTF8 : enc_codepage;
+    static WCHAR    *utf8spbuf = NULL;
+    static int	    utf8splength;
+    static DWORD    utf8spcells;
+    static WCHAR    **utf8usingbuf = &unicodebuf;
 
-    length = MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite, 0, 0);
-    if (unicodebuf == NULL || length > unibuflen)
+    if (cbToWrite != 1 || *pchBuf != ' ' || !enc_utf8)
     {
-	vim_free(unicodebuf);
-	unicodebuf = LALLOC_MULT(WCHAR, length);
-	unibuflen = length;
+	utf8usingbuf = &unicodebuf;
+	do
+	{
+	    length = MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite,
+							unicodebuf, unibuflen);
+	    if (length && length <= unibuflen)
+		break;
+	    vim_free(unicodebuf);
+	    unicodebuf = length ? LALLOC_MULT(WCHAR, length) : NULL;
+	    unibuflen = unibuflen ? 0 : length;
+	} while(1);
+	cells = mb_string2cells(pchBuf, cbToWrite);
     }
-    MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite,
-			unicodebuf, unibuflen);
-
-    cells = mb_string2cells(pchBuf, cbToWrite);
+    else // cbToWrite == 1 && *pchBuf == ' ' && enc_utf8
+    {
+	if (utf8usingbuf != &utf8spbuf)
+	{
+	    if (utf8spbuf == NULL)
+	    {
+		cells = mb_string2cells((char_u *)" ", 1);
+		length = MultiByteToWideChar(CP_UTF8, 0, " ", 1, NULL, 0);
+		utf8spbuf = LALLOC_MULT(WCHAR, length);
+		if (utf8spbuf != NULL)
+		{
+		    MultiByteToWideChar(CP_UTF8, 0, " ", 1, utf8spbuf, length);
+		    utf8usingbuf = &utf8spbuf;
+		    utf8splength = length;
+		    utf8spcells = cells;
+		}
+	    }
+	    else
+	    {
+		utf8usingbuf = &utf8spbuf;
+		length = utf8splength;
+		cells = utf8spcells;
+	    }
+	}
+    }
 
     if (!USE_VTP)
     {
@@ -5999,14 +6077,14 @@ write_chars(
 				    coord, &written);
 	// When writing fails or didn't write a single character, pretend one
 	// character was written, otherwise we get stuck.
-	if (WriteConsoleOutputCharacterW(g_hConOut, unicodebuf, length,
+	if (WriteConsoleOutputCharacterW(g_hConOut, *utf8usingbuf, length,
 		    coord, &cchwritten) == 0
 		|| cchwritten == 0 || cchwritten == (DWORD)-1)
 	    cchwritten = 1;
     }
     else
     {
-	if (WriteConsoleW(g_hConOut, unicodebuf, length, &cchwritten,
+	if (WriteConsoleW(g_hConOut, *utf8usingbuf, length, &cchwritten,
 		    NULL) == 0 || cchwritten == 0)
 	    cchwritten = 1;
     }
@@ -6032,7 +6110,9 @@ write_chars(
 	    g_coord.Y++;
     }
 
-    gotoxy(g_coord.X + 1, g_coord.Y + 1);
+    // Cursor under VTP is always in the correct position, no need to reset.
+    if (!USE_VTP)
+	gotoxy(g_coord.X + 1, g_coord.Y + 1);
 
     return written;
 }
@@ -6052,6 +6132,20 @@ mch_write(
 	return;
 # endif
 
+    switch (vtp_initialize)
+    {
+	case 0:
+	    vtp_initialize++;
+	    // fallthrough
+	case 1:
+	    vtp_initialize++;
+	    vtp_flag_init();
+	    // fallthrough
+	case 2:
+	    vtp_initialize++;
+	    vtp_init();
+    }
+
     s[len] = NUL;
 
     if (!term_console)
@@ -6063,9 +6157,13 @@ mch_write(
     // translate ESC | sequences into faked bios calls
     while (len--)
     {
-	// optimization: use one single write_chars for runs of text,
-	// rather than once per character  It ain't curses, but it helps.
-	DWORD  prefix = (DWORD)strcspn((char *)s, "\n\r\b\a\033");
+	int prefix = -1;
+	char_u ch;
+
+	while((ch = s[++prefix]))
+	    if (ch <= 0x1e && !(ch != '\n' && ch != '\r' && ch != '\b'
+						&& ch != '\a' && ch != '\033'))
+		break;
 
 	if (p_wd)
 	{
@@ -6285,6 +6383,10 @@ mch_write(
 
 	    case 'M':
 		delete_lines(1);
+		goto got3;
+
+	    case 'm':
+		normvideo();
 		goto got3;
 
 	    case 'S':
@@ -7242,24 +7344,64 @@ mch_setenv(char *var, char *value, int x UNUSED)
     static void
 vtp_flag_init(void)
 {
-    DWORD   ver = get_build_number();
+    vtp_flag_set_from_env();
+    vtp_switch_by_version();
+    vtp_set_conpty_type();
+}
+
+    static int
+vtp_can_enable(void)
+{
+    return get_build_number() >= VTP_FIRST_SUPPORT_BUILD ? 1 : 0;
+}
+
+    void
+vtp_switch_by_version(void)
+{
+    if (vtp_flag & VTP_DISABLE_FORCEMODE)
+	vtp_switch_by_force(FALSE);
+    else if (vtp_flag & VTP_ENABLE_FORCEMODE)
+	vtp_switch_by_force(TRUE);
+    else
+	vtp_switch_by_force(vtp_can_enable());
+}
+
+    void
+vtp_switch_by_force(
+    int force)
+{
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
-    DWORD   mode;
-    HANDLE  out;
+    vtp_working = force;
 
 # ifdef VIMDLL
     if (!gui.in_use)
 # endif
     {
-	out = GetStdHandle(STD_OUTPUT_HANDLE);
+	DWORD mode;
+	HANDLE out;
 
-	vtp_working = (ver >= VTP_FIRST_SUPPORT_BUILD) ? 1 : 0;
-	GetConsoleMode(out, &mode);
-	mode |= (ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-	if (SetConsoleMode(out, mode) == 0)
-	    vtp_working = 0;
+	if (vtp_can_enable())
+	{
+	    out = GetStdHandle(STD_OUTPUT_HANDLE);
+	    GetConsoleMode(out, &mode);
+
+	    mode |= ENABLE_PROCESSED_OUTPUT;
+
+	    if (vtp_working)
+		mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+	    else
+		mode &= ~ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+
+	    SetConsoleMode(out, mode);
+	}
     }
 #endif
+}
+
+    static void
+vtp_set_conpty_type(void)
+{
+    DWORD ver = get_build_number();
 
     if (ver >= CONPTY_FIRST_SUPPORT_BUILD)
 	conpty_working = 1;
@@ -7275,6 +7417,27 @@ vtp_flag_init(void)
     if (ver < CONPTY_FIRST_SUPPORT_BUILD)
 	conpty_type = 1;
 }
+
+    static void
+vtp_flag_set_from_env(void)
+{
+    char_u *env = mch_getenv("VIMVTP");
+
+    if (env != NULL && *env != NUL)
+    {
+	if (strstr((char *)env, "edgefill:disable") != NULL)
+	    vtp_flag |= VTP_DISABLE_EDGEFILL;
+	if (strstr((char *)env, "forcemode:disable") != NULL)
+	    vtp_flag |= VTP_DISABLE_FORCEMODE;
+	if (strstr((char *)env, "forcemode:enable") != NULL)
+	    vtp_flag |= VTP_ENABLE_FORCEMODE;
+	if (strstr((char *)env, "forcemode:auto") != NULL)
+	    vtp_flag &= ~(VTP_DISABLE_FORCEMODE | VTP_ENABLE_FORCEMODE);
+	if (strstr((char *)env, "lazycolor:enable") != NULL)
+	    vtp_flag |= VTP_ENABLE_LAZYCOLOR;
+    }
+}
+
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)
 
@@ -7336,11 +7499,12 @@ vtp_printf(
     char_u  buf[100];
     va_list list;
     DWORD   result;
+    int	    len;
 
     va_start(list, format);
-    vim_vsnprintf((char *)buf, 100, (char *)format, list);
+    len = vim_vsnprintf((char *)buf, 100, (char *)format, list);
     va_end(list);
-    WriteConsoleA(g_hConOut, buf, (DWORD)STRLEN(buf), &result, NULL);
+    WriteConsoleA(g_hConOut, buf, (DWORD)len, &result, NULL);
     return (int)result;
 }
 
@@ -7348,10 +7512,7 @@ vtp_printf(
 vtp_sgr_bulk(
     int arg)
 {
-    int args[1];
-
-    args[0] = arg;
-    vtp_sgr_bulks(1, args);
+    vtp_sgr_bulks(1, &arg);
 }
 
     static void
@@ -7361,23 +7522,120 @@ vtp_sgr_bulks(
 )
 {
     // 2('\033[') + 4('255.') * 16 + NUL
-    char_u buf[2 + (4 * 16) + 1];
-    char_u *p;
-    int    i;
+    char_u  buf[2 + (4 * 16) + 1];
+    char_u  *p;
+    int	    i, in, out;
+    int	    newargs[16];
+    static int sgrfgr = -1, sgrfgg = -1, sgrfgb = -1;
+    static int sgrbgr = -1, sgrbgg = -1, sgrbgb = -1;
 
-    p = buf;
-    *p++ = '\033';
-    *p++ = '[';
-
-    for (i = 0; i < argc; ++i)
+    if (argc == 0) // ^[m
     {
-	p += vim_snprintf((char *)p, 4, "%d", args[i] & 0xff);
-	*p++ = ';';
+	sgrfgr = sgrfgg = sgrfgb = sgrbgr = sgrbgg = sgrbgb = -1;
+	vtp_printf("\033[m");
+	return;
     }
-    p--;
-    *p++ = 'm';
-    *p = NUL;
-    vtp_printf((char *)buf);
+
+    in = out = 0;
+    while (in < argc || out < argc)
+    {
+	if ((vtp_flag & VTP_ENABLE_LAZYCOLOR) == 0)
+	    sgrfgr = sgrfgg = sgrfgb = sgrbgr = sgrbgg = sgrbgb = -1;
+
+	switch (args[in])
+	{
+	    case 30: case 31: case 32: case 33:
+	    case 34: case 35: case 36: case 37: case 39:
+	    case 90: case 91: case 92: case 93:
+	    case 94: case 95: case 96: case 97:
+		sgrfgr = sgrfgg = sgrfgb = -1;
+		newargs[out++] = args[in++];
+		break;
+
+	    case 40: case 41: case 42: case 43:
+	    case 44: case 45: case 46: case 47: case 49:
+	    case 100: case 101: case 102: case 103:
+	    case 104: case 105: case 106: case 107:
+		sgrbgr = sgrbgg = sgrbgb = -1;
+		newargs[out++] = args[in++];
+		break;
+
+	    default:
+		sgrfgr = sgrfgg = sgrfgb = -1;
+		sgrbgr = sgrbgg = sgrbgb = -1;
+		newargs[out++] = args[in++];
+	}
+
+	if (args[in] == 38 && argc - in >= 5 && args[in + 1] == 2)
+	{
+	    if (sgrfgr == args[in + 2] && sgrfgg == args[in + 3]
+						     && sgrfgb == args[in + 4])
+		in += 5;
+	    else
+	    {
+		sgrfgr = args[in + 2];
+		sgrfgg = args[in + 3];
+		sgrfgb = args[in + 4];
+
+		for (i = 0; i < 5; ++i)
+		   newargs[out++] = args[in++];
+	    }
+	    continue;
+	}
+
+	if (args[in] == 48 && argc - in >= 5 && args[in + 1] == 2)
+	{
+	    if (sgrbgr == args[in + 2] && sgrbgg == args[in + 3]
+						     && sgrbgb == args[in + 4])
+		in += 5;
+	    else
+	    {
+		sgrbgr = args[in + 2];
+		sgrbgg = args[in + 3];
+		sgrbgb = args[in + 4];
+
+		for (i = 0; i < 5; ++i)
+		    newargs[out++] = args[in++];
+	    }
+	    continue;
+	}
+
+	if (args[in] == 38 && argc - in >= 3 && args[in + 1] == 5)
+	{
+	    sgrfgr = sgrfgg = sgrfgb = -1;
+
+	    for (i = 0; i < 3; ++i)
+		newargs[out++] = args[in++];
+
+	    continue;
+	}
+
+	if (args[in] == 48 && argc - in >= 3 && args[in + 1] == 5)
+	{
+	    sgrbgr = sgrbgg = sgrbgb = -1;
+
+	    for (i = 0; i < 3; ++i)
+		newargs[out++] = args[in++];
+
+	    continue;
+	}
+    }
+
+    if (out > 0)
+    {
+	p = buf;
+	*p++ = '\033';
+	*p++ = '[';
+	for (i = 0; i < out; ++i)
+	{
+	    p += vim_snprintf((char *)p, 4, "%d", newargs[i] & 0xff);
+	    *p++ = ';';
+	}
+	p--;
+	*p++ = 'm';
+	*p = NUL;
+	vtp_printf((char *)buf);
+    }
 }
 
 # ifdef FEAT_TERMGUICOLORS
@@ -7389,6 +7647,29 @@ ctermtoxterm(
 
     cterm_color2rgb(cterm, &r, &g, &b, &idx);
     return (((int)r << 16) | ((int)g << 8) | (int)b);
+}
+
+    void
+get_current_initial_palette(
+    guicolor_T *fg,
+    guicolor_T *bg)
+{
+    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    COLORREF fgc = save_console_fg_rgb;
+    COLORREF bgc = save_console_bg_rgb;
+
+    if (has_csbiex)
+    {
+	csbi.cbSize = sizeof(csbi);
+	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+	fgc = csbi.ColorTable[g_color_index_fg];
+	bgc = csbi.ColorTable[g_color_index_bg];
+    }
+
+    if (*fg == INVALCOLOR)
+	*fg = (GetRValue(fgc) << 16) | (GetGValue(fgc) << 8) | GetBValue(fgc);
+    if (*bg == INVALCOLOR)
+	*bg = (GetRValue(bgc) << 16) | (GetGValue(bgc) << 8) | GetBValue(bgc);
 }
 # endif
 
@@ -7540,6 +7821,12 @@ is_term_win32(void)
 has_vtp_working(void)
 {
     return vtp_working;
+}
+
+    int
+get_vtp_flag(void)
+{
+    return vtp_flag;
 }
 
 #endif
