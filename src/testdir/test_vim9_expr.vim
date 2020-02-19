@@ -9,6 +9,14 @@ func CheckDefFailure(line, error)
   call delete('Xdef')
 endfunc
 
+" Check that "line" inside ":def" results in an "error" message when executed.
+func CheckDefExecFailure(line, error)
+  call writefile(['def! Func()', a:line, 'enddef'], 'Xdef')
+  so Xdef
+  call assert_fails('call Func()', a:error, a:line)
+  call delete('Xdef')
+endfunc
+
 func CheckDefFailureList(lines, error)
   call writefile(['def! Func()'] + a:lines + ['enddef'], 'Xdef')
   call assert_fails('so Xdef', a:error, string(a:lines))
@@ -725,9 +733,17 @@ func CallMe(arg)
   return a:arg
 endfunc
 
+func CallMe2(one, two)
+  return a:one .. a:two
+endfunc
+
 def Test_expr7_trailing()
   " user function call
   assert_equal(123, CallMe(123))
+  assert_equal(123, CallMe(  123))
+  assert_equal(123, CallMe(123  ))
+  assert_equal('yesno', CallMe2('yes', 'no'))
+  assert_equal('yesno', CallMe2( 'yes', 'no' ))
   assert_equal('nothing', CallMe('nothing'))
 
   " partial call
@@ -761,4 +777,8 @@ endfunc
 func Test_expr_fails()
   call CheckDefFailure("let x = '1'is2", 'E488:')
   call CheckDefFailure("let x = '1'isnot2", 'E488:')
+
+  call CheckDefExecFailure("CallMe ('yes')", 'E492:')
+  call CheckDefFailure("CallMe2('yes','no')", 'E1069:')
+  call CheckDefFailure("CallMe2('yes' , 'no')", 'E1068:')
 endfunc

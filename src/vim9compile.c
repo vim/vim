@@ -1658,9 +1658,21 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 	if (compile_expr1(&p, cctx) == FAIL)
 	    return FAIL;
 	++*argcount;
+
+	if (*p != ',' && *skipwhite(p) == ',')
+	{
+	    emsg(_("E1068: No white space allowed before ,"));
+	    p = skipwhite(p);
+	}
 	if (*p == ',')
-	    p = skipwhite(p + 1);
+	{
+	    ++p;
+	    if (!VIM_ISWHITE(*p))
+		emsg(_("E1069: white space required after ,"));
+	}
+	p = skipwhite(p);
     }
+    p = skipwhite(p);
     if (*p != ')')
     {
 	emsg(_(e_missing_close));
