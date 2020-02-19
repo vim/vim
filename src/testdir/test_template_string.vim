@@ -23,19 +23,9 @@ func Test_template_string_basic()
   " Variables
   let x = 10
   call assert_equal('I have 10', $'I have ${x}')
-  "" Only variables can be omit "{}"
-  call assert_equal('I have 10', $'I have $x')
-  call assert_equal('10 and me', $'$x and me')
-  let x = "'"
-  call assert_equal("'", $'$x')
-  let x = '"'
-  call assert_equal('"', $"$x")
-  let x = '\x31'
-  call assert_equal('\x31', $"$x")
-  let x20 = 20
-  call assert_equal('20', $'$x20')
-  let Fo_O0O = 30
-  call assert_equal('30', $'$Fo_O0O')
+  "" In Vim script, template string doesn't support the variable expansion by `$foo`
+  let x = 10
+  call assert_equal('$x', $'$x')
 
   " Another types (compound tests)
   if exists('*job_start')
@@ -61,23 +51,34 @@ func Test_template_string_basic()
   " echo
   echo $'${10}'
   " let
-  let x = $'${10}'
+  let _ = $'${10}'
 endfunc
 
 func Test_template_string_appendix()
-  " Double quoted
-  call assert_equal("10 } '' \\ \"", $"${10} ${'}'} '' \\ \"")
+  " Escaping of string
+  call assert_equal("\\ \"", $"\\ \"")
+  call assert_equal('''', $'''')
 
-  " Escape '}'
+  " Quotes in quotes
+  call assert_equal('', $'${''}')
+  call assert_equal('x', $'${'x'}')
+  call assert_equal('''', $'${''''}')
+  call assert_equal("", $"${""}")
+  call assert_equal("x", $"${"x"}")
+
+  " Escaping '}'
   call assert_equal("}", $'${"}"}')
-  call assert_equal('}', $'${''}''}')
+  call assert_equal('}', $'${'}'}')
   call assert_equal('}', $"${'}'}")
-  call assert_equal("}", $"${\"}\"}")
+  call assert_equal("}", $"${"}"}")
 
-  " Independent '$'
-  call assert_equal('$', $'${"$"}')
+  " Independent '${'
+  call assert_equal('${', $'${'${'}')
+  call assert_equal("${", $"${"${"}")
+  call assert_equal('${', $'${"${"}')
+  call assert_equal("${", $"${'${'}")
 
-  " Multi byte string
+  " Multi byte strings
   call assert_equal('こんにちは Vim', $'こんにちは ${"Vim"}')
   call assert_equal('あ', $'${"あ"}')
 endfunc
@@ -96,20 +97,6 @@ func Test_template_string_illformed()
     call assert_report('Should throw an exception.')
   catch
     call assert_exception('E115:')
-  endtry
-
-  try
-    let _ = $'$10'
-    call assert_report('Should throw an exception.')
-  catch
-    call assert_exception('E450:')
-  endtry
-
-  try
-    let _ = $'---$---'
-    call assert_report('Should throw an exception.')
-  catch
-    call assert_exception('E450:')
   endtry
 
   try
