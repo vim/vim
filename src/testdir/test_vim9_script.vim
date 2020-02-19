@@ -29,6 +29,7 @@ endfunc
 
 let s:appendToMe = 'xxx'
 let s:addToMe = 111
+let g:existing = 'yes'
 
 def Test_assignment()
   let bool1: bool = true
@@ -45,6 +46,13 @@ def Test_assignment()
 
   let dict1: dict<string> = #{key: 'value'}
   let dict2: dict<number> = #{one: 1, two: 2}
+
+  g:newvar = 'new'
+  assert_equal('new', g:newvar)
+
+  assert_equal('yes', g:existing)
+  g:existing = 'no'
+  assert_equal('no', g:existing)
 
   v:char = 'abc'
   assert_equal('abc', v:char)

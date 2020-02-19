@@ -726,8 +726,10 @@ call_def_function(
 		    int	reg = iptr->isn_arg.number;
 
 		    --ectx.ec_stack.ga_len;
+		    tv = STACK_TV_BOT(0);
 		    write_reg_contents(reg == '@' ? '"' : reg,
-				    tv_get_string(STACK_TV_BOT(0)), -1, FALSE);
+						 tv_get_string(tv), -1, FALSE);
+		    clear_tv(tv);
 		}
 		break;
 
@@ -746,7 +748,7 @@ call_def_function(
 
 		    --ectx.ec_stack.ga_len;
 		    di = find_var_in_ht(get_globvar_ht(), 0,
-						   iptr->isn_arg.string, TRUE);
+					       iptr->isn_arg.string + 2, TRUE);
 		    if (di == NULL)
 		    {
 			funccal_entry_T entry;
