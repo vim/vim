@@ -1158,9 +1158,8 @@ func Test_out_cb()
     call WaitForAssert({-> assert_equal("dict: there", g:Ch_errmsg)})
 
     " Receive a json object split in pieces
-    unlet! g:Ch_outobj
-    call ch_sendraw(job, "echosplit [0, {\"one\": 1,| \"tw|o\": 2, \"three\": 3|}]\n")
     let g:Ch_outobj = ''
+    call ch_sendraw(job, "echosplit [0, {\"one\": 1,| \"tw|o\": 2, \"three\": 3|}]\n")
     call WaitForAssert({-> assert_equal({'one': 1, 'two': 2, 'three': 3}, g:Ch_outobj)})
   finally
     call job_stop(job)
