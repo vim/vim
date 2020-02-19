@@ -477,5 +477,26 @@ def Test_if_elseif_else()
   assert_equal('three', IfElse(3))
 enddef
 
+def Test_delfunc()
+  let lines =<< trim END
+    vim9script
+    def GoneSoon()
+      echo 'hello'
+    enddef
+
+    def CallGoneSoon()
+      GoneSoon()
+    enddef
+
+    delfunc GoneSoon
+    CallGoneSoon()
+  END
+  writefile(lines, 'XToDelFunc')
+  assert_fails('so XToDelFunc', 'E933')
+  assert_fails('so XToDelFunc', 'E933')
+
+  delete('XToDelFunc')
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
