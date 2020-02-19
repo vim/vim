@@ -61,10 +61,10 @@ def Test_assignment()
   assert_equal('foobar', $ENVVAR)
   $ENVVAR = ''
 
-  appendToMe ..= 'yyy'
-  assert_equal('xxxyyy', appendToMe)
-  addToMe += 222
-  assert_equal(333, addToMe)
+  s:appendToMe ..= 'yyy'
+  assert_equal('xxxyyy', s:appendToMe)
+  s:addToMe += 222
+  assert_equal(333, s:addToMe)
 enddef
 
 func Test_assignment_failure()

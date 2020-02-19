@@ -726,6 +726,9 @@ func Test_expr7_fails()
 
   call CheckDefFailure("let x = &notexist", 'E113:')
   call CheckDefExecFailure("&grepprg = [343]", 'E1051:')
+
+  call CheckDefExecFailure("echo s:doesnt_exist", 'E121:')
+  call CheckDefExecFailure("echo g:doesnt_exist", 'E121:')
 endfunc
 
 let g:Funcrefs = [function('add')]

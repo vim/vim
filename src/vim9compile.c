@@ -1513,9 +1513,9 @@ compile_load_scriptvar(cctx_T *cctx, char_u *name)
     int		    idx = get_script_item_idx(current_sctx.sc_sid, name, FALSE);
     imported_T	    *import;
 
-    if (idx == -1)
+    if (idx == -1 || si->sn_version != SCRIPT_VERSION_VIM9)
     {
-	// variable exists but is not in sn_var_vals: old style script.
+	// variable is not in sn_var_vals: old style script.
 	return generate_OLDSCRIPT(cctx, ISN_LOADS, name, current_sctx.sc_sid,
 								       &t_any);
     }
@@ -1627,7 +1627,9 @@ compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
 			|| (len == 5 && STRNCMP("false", *arg, 5) == 0))
 		    res = generate_PUSHBOOL(cctx, **arg == 't'
 						     ? VVAL_TRUE : VVAL_FALSE);
-		else
+		else if (SCRIPT_ITEM(current_sctx.sc_sid)->sn_version
+							== SCRIPT_VERSION_VIM9)
+		    // in Vim9 script "var" can be script-local.
 		   res = compile_load_scriptvar(cctx, name);
 	    }
 	}
