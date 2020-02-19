@@ -3393,7 +3393,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    generate_LOAD(cctx, ISN_LOADG, 0, name + 2, type);
 		    break;
 		case dest_script:
-		    compile_load_scriptvar(cctx, name);
+		    compile_load_scriptvar(cctx, name + (name[1] == ':' ? 2 : 0));
 		    break;
 		case dest_env:
 		    // Include $ in the name here
