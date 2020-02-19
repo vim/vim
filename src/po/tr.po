@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-17 13:58+0300\n"
-"PO-Revision-Date: 2020-02-17 14:10+0300\n"
+"POT-Creation-Date: 2020-02-19 23:23+0300\n"
+"PO-Revision-Date: 2020-02-19 23:30+0300\n"
 "Last-Translator: Emir SARI <bitigchi@me.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "Language: tr\n"
@@ -1692,8 +1692,7 @@ msgstr "E854: Yol tamamlama için çok uzun"
 msgid ""
 "E343: Invalid path: '**[number]' must be at the end of the path or be "
 "followed by '%s'."
-msgstr ""
-"E343: Geçersiz yol: '**[sayı]' yolun sonunda olmalı veya sonrasında "
+msgstr "E343: Geçersiz yol: '**[sayı]' yolun sonunda olmalı veya sonrasında "
 "'%s' gelmelidir"
 
 #, c-format
@@ -6346,14 +6345,14 @@ msgstr "E1037: %s, %s ile karşılaştırılamaz"
 
 #, c-format
 msgid "E1004: white space required before and after '%s'"
-msgstr "E1004: '%s' öncesi ve sonrası boşluk karakteri gerekiyor"
+msgstr "E1004: '%s' öncesi ve sonrası boşluk gerekiyor"
 
 #, c-format
 msgid "E1006: %s is used as an argument"
 msgstr "E1006: %s bir değişken olarak kullanılıyor"
 
 msgid "E1007: No white space allowed before <"
-msgstr "E1007: < öncesi boşluk karakterine izin verilmiyor"
+msgstr "E1007: < öncesi boşluğa izin verilmiyor"
 
 msgid "E1008: Missing <type>"
 msgstr "E1008: Eksik <tür>"
@@ -6371,6 +6370,12 @@ msgstr "E1010: Tür tanımlanamadı: %s"
 #, c-format
 msgid "E1050: Item not found: %s"
 msgstr "E1050: Öge bulunamadı: %s"
+
+msgid "E1068: No white space allowed before ,"
+msgstr "E1068: , öncesi boşluğa izin verilmiyor"
+
+msgid "E1069: white space required after ,"
+msgstr "E1069: , sonrası boşluk gerekiyor"
 
 #, c-format
 msgid "E1011: name too long: %s"
@@ -6491,9 +6496,11 @@ msgstr "E1051: Dizi veya sayı bekleniyordu"
 msgid "E1029: Expected %s but got %s"
 msgstr "E1029: %s bekleniyordu ancak %s alındı"
 
+#, c-format
 msgid "E1061: Cannot find function %s"
 msgstr "E1061: %s işlevi bulunamıyor"
 
+#, c-format
 msgid "E1062: Function %s is not compiled"
 msgstr "E1062: %s işlevi derlenmemiş"
 
