@@ -54,7 +54,7 @@ static int eval7(char_u **arg, typval_T *rettv, int flags, int want_string);
 static int eval7_leader(typval_T *rettv, char_u *start_leader, char_u **end_leaderp);
 
 static int get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate);
-static int read_template_expr(garray_T *result, char_u **expr, int is_literal_string, int evaluate);
+static int eval_next_template_expr_into_result(garray_T *result, char_u **source, int is_literal_string, int evaluate);
 static int is_escaped_quote(int is_literal_string, char_u *quotes);
 static int free_unref_items(int copyID);
 static char_u *make_expanded_name(char_u *in_start, char_u *expr_start, char_u *expr_end, char_u *in_end);
@@ -3369,19 +3369,19 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 	}
 	else if (**arg == '$' && *(*arg + 1) == '{')
 	{
-	    int success;
+	    int success =
+		eval_next_template_expr_into_result(
+			&result,
+			arg,
+			is_literal_string,
+			evaluate);
 
-	    *arg += 2;  // forward to beginning of the template literal
-	    success = read_template_expr(
-		    &result,
-		    arg,
-		    is_literal_string,
-		    evaluate);
 	    if (!success)
 	    {
 		ga_clear(&result);
 		return FAIL;
 	    }
+
 	    continue;
 	}
 	ga_append(&result, (int) **arg);
@@ -3404,41 +3404,39 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
     else
     {
 	char_u	*to_free = (char_u *) result.ga_data;
-	int	success;
-
-	success = is_literal_string ?
-	    get_lit_string_tv((char_u**) &result.ga_data, rettv, TRUE) :
-	    get_string_tv((char_u**) &result.ga_data, rettv, TRUE);
+	int	success = eval1((char_u **) &result.ga_data, rettv, TRUE);
 
 	vim_free(to_free);
 	return success;
     }
 }
 
-    static int
-did_encounter_string_quote(char_u **expr, int is_literal_string)
+/*
+ * Refreshes previous_quote with NUL
+ *	if the closing quote of
+ *	the opening quote (previous_quote) found on **source.
+ * Refreshes previous_quote with ' or "
+ *	if a opening quote is never found and that quote found.
+ * Doesn't Refresh if no quotes found.
+ */
+    static void
+refresh_pair_of_quote(char_u *previous_quote, char_u source)
 {
-    // encountered a double quote in the single quoted string (lit str),
-    int did_encounter_double_in_single =
-	(is_literal_string && **expr == '"');
+    if (*previous_quote == NUL && source == '\'')
+    {
+	*previous_quote = '\'';
+	return;
+    }
+    else if (*previous_quote == NUL && source == '"')
+    {
+	*previous_quote = '"';
+	return;
+    }
 
-    // a single quote in the double quoted string,
-    int did_encounter_single_in_double =
-	(!is_literal_string && **expr == '\'');
-
-    // or a single quote in the double quoted string?
-    int did_encounter_escaped_quote =
-				is_escaped_quote(is_literal_string, *expr);
-
-    int result =
-	did_encounter_double_in_single ||
-	did_encounter_single_in_double ||
-	did_encounter_escaped_quote;
-
-    if (did_encounter_escaped_quote)
-	++*expr;
-
-    return result;
+    if (*previous_quote == '\'' && source == '\'')
+	*previous_quote = NUL;
+    else if (*previous_quote == '"' && source == '"')
+	*previous_quote = NUL;
 }
 
     static int
@@ -3447,28 +3445,6 @@ is_escaped_quote(int is_literal_string, char_u *p)
     return
 	(is_literal_string && *p == '\'' && *(p + 1) == '\'') ||
 	(!is_literal_string && *p == '\\' && *(p + 1) == '"');
-}
-
-    static char_u*
-remove_all_quote_escaping(char_u *expr, int is_literal_string)
-{
-    garray_T	result;
-    char_u	*p;
-
-    ga_init2(&result, 1, 80);
-
-    for (p = expr; *p != NUL; MB_PTR_ADV(p))
-    {
-	if (is_escaped_quote(is_literal_string, p))
-	{
-	    ga_append(&result, *(p + 1));
-	    ++p;
-	    continue;
-	}
-	ga_concatn(&result, p, mb_ptr2len(p));
-    }
-
-    return (char_u *) result.ga_data;
 }
 
     static char_u*
@@ -3503,88 +3479,158 @@ escape_quotes_in_quote(char_u *x, int is_literal_string)
 }
 
 /*
- * Returns OK when succeed, or returns FAIL.
+ * Finds closing '}' of taken expr
  */
     static int
-read_template_expr(
-	garray_T *result,
-	char_u **expr,
-	int is_literal_string,
-	int evaluate)
+forward_to_end_of_template_expr(char_u **expr, int is_literal_string)
 {
-    char_u	    *expr_head = *expr;
-    size_t	    nested_blocks = 0;
-    int		    is_in_quote = FALSE;
+    char_u  *expr_head = *expr;
+    size_t  nested_blocks = 0;
+    char_u  encountered_quote = NUL;
 
     // While the closing '}' encountered. The '}' is neither '}' of a dict nor
     // '}' in a string.
-    for (; !(!is_in_quote && **expr == '}' && nested_blocks == 0);
+    for (; !(encountered_quote == NUL && nested_blocks == 0 && **expr == '}');
 							MB_PTR_ADV(*expr))
     {
 	switch (**expr)
 	{
 	    case '{':
-		if (!is_in_quote)
+		if (encountered_quote == NUL)
 		    ++nested_blocks;
 		break;
 	    case '}':
-		if (!is_in_quote)
+		if (encountered_quote == NUL)
 		    --nested_blocks;
 		break;
 	    case NUL:
-		semsg(_("E451: Unterminated template literal: %s"), expr_head);
+		semsg(_("E451: Unterminated template expression: %s"), expr_head);
 		return FAIL;
 	    default:
-		if (did_encounter_string_quote(expr, is_literal_string))
-		    is_in_quote = !is_in_quote;
+		if (is_escaped_quote(encountered_quote == '\'', *expr))
+		{
+		    ++*expr;
+		    break;
+		}
+		refresh_pair_of_quote(&encountered_quote, **expr);
 		break;
 	}
     }
 
     if (*expr == expr_head)
     {
-	semsg(_("E452: Empty template literal: %s"), expr_head);
+	semsg(_("E452: Empty template expression: %s"), expr_head);
 	return FAIL;
     }
+
+    return OK;
+}
+
+/*
+ * Get expr of "${" expr  "}" of source,
+ * and forward source.
+ */
+    static char_u*
+read_template_expr(char_u **source, int is_literal_string)
+{
+    char_u  *expr_head;
+    char_u  *expr;
+
+    *source += 2;  // forward with beginning '${'
+    expr_head = *source;
+
+    if (!forward_to_end_of_template_expr(source, is_literal_string))
+	return NULL;
+
+    **source = NUL;
+    expr = (char_u *) alloc(STRLEN(expr_head) + 1);
+    STRCPY(expr, expr_head);
+    **source = '}';
+
+    return expr;
+}
+
+    static char_u*
+get_stringifying(char_u *expr)
+{
+    char_u	    *result;
+    const char_u    *STRINGIFY =
+	(char_u *) "((type(%s) is v:t_string) ? (%s) : string(%s))";
+    size_t	    stringify_length =
+	STRLEN(STRINGIFY) - (2 * 3);  // 2 is the part of %s
+
+    // Get a lambda call of STRINGIFY and the source
+    result = (char_u *) alloc(stringify_length + (STRLEN(expr) * 3) + 1);
+    sprintf((char *) result, (char *) STRINGIFY, expr, expr, expr);
+    return result;
+}
+
+    static char_u*
+stringify_expr(char_u *expr)
+{
+    char_u	    *stringifying = get_stringifying(expr);
+    char_u	    *to_free_stringifying = stringifying;
+    typval_T	    stringified = { VAR_UNKNOWN, VAR_LOCKED, { 0 } };
+    int		    is_stringifying_success = eval1(&stringifying, &stringified, TRUE);
+    char_u	    *result;
+    const size_t    ENCOSING_QUOTES_NUM = 2;
+
+    if (!is_stringifying_success)
+    {
+	vim_free(to_free_stringifying);
+	vim_free(stringified.vval.v_string);
+	return NULL;
+    }
+    result = (char_u *) alloc(STRLEN(stringified.vval.v_string) + ENCOSING_QUOTES_NUM + 1);
+
+    // Use '"' to make a string correctly.
+    // Vim script's string() constantly shows `'`.
+    // e.g.
+    // string(function("function")) => "function('function')"
+    // string({"x": "x"}) => "{'x': 'x'}"
+    sprintf((char *) result, "\"%s\"", stringified.vval);
+    vim_free(stringified.vval.v_string);
+
+    return result;
+}
+
+/*
+ * Returns OK when succeed, or returns FAIL.
+ */
+    static int
+eval_next_template_expr_into_result(
+	garray_T *result,
+	char_u **source,
+	int is_literal_string,
+	int evaluate)
+{
+    char_u *expr = read_template_expr(source, is_literal_string);
+
+    if (expr == NULL)
+	return FAIL;
 
     if (!evaluate)
 	return OK;
 
     /*
-     * Evaluate the expr
+     * Evaluate the source
      */
     {
-	const char_u    *STRINGIFY = (char_u *) "{ x -> (type(x) is v:t_string) ? x : string(x) }(%s)";
-	size_t		stringify_length = STRLEN(STRINGIFY) - 2;  // 2 is %s
-	typval_T	var_value = { VAR_UNKNOWN, VAR_LOCKED, { 0 } };
-	char_u		*literal;
-	char_u		*stringified;
-	char_u		*to_free_stringified;
-	int		success;
-	char_u		*escaped;
+	char_u quote = is_literal_string ? '\'' : '"';
+	char_u *stringified = stringify_expr(expr);
+	char_u *to_free_stringified = stringified;
 
-	// Get the expr
-	**expr = NUL;
-	literal = remove_all_quote_escaping(expr_head, is_literal_string);
-	**expr = '}';
-
-	// Get a lambda call of STRINGIFY and the expr
-	stringified = (char_u *) alloc(stringify_length + STRLEN(literal) + 1);
-	sprintf((char *) stringified, (char *) STRINGIFY, literal);
-	vim_free(literal);
-	to_free_stringified = stringified;
-
-	success = eval1(&stringified, &var_value, TRUE);
-	vim_free(to_free_stringified);
-	if (!success)
+	vim_free(expr);
+	if (stringified == NULL)
 	    return FAIL;
 
-	// Escape quotes in the result
-	escaped = escape_quotes_in_quote(var_value.vval.v_string,
-							is_literal_string);
-	ga_concat(result, escaped);
-	vim_free(var_value.vval.v_string);
-	vim_free(escaped);
+	ga_append(result, quote);
+	ga_concat(result, (char_u *) "..");
+	ga_concat(result, stringified);
+	ga_concat(result, (char_u *) "..");
+	ga_append(result, quote);
+
+	vim_free(to_free_stringified);
     }
 
     return OK;
