@@ -206,6 +206,34 @@ def Test_try_catch()
   assert_equal(['1', 'wrong', '3'], l)
 enddef
 
+def ThrowFromDef()
+  throw 'getout'
+enddef
+
+func CatchInFunc()
+  try
+    call ThrowFromDef()
+  catch
+    let g:thrown_func = v:exception
+  endtry
+endfunc
+
+def CatchInDef()
+  try
+    ThrowFromDef()
+  catch
+    g:thrown_def = v:exception
+  endtry
+enddef
+
+def Test_try_catch_nested()
+  CatchInFunc()
+  assert_equal('getout', g:thrown_func)
+
+  CatchInDef()
+  assert_equal('getout', g:thrown_def)
+enddef
+
 let s:export_script_lines =<< trim END
   vim9script
   let name: string = 'bob'

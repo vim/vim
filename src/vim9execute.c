@@ -482,6 +482,7 @@ call_def_function(
 		    tv->v_type = VAR_NUMBER;
 		    tv->vval.v_number = 0;
 		    ++ectx.ec_stack.ga_len;
+		    need_rethrow = TRUE;
 		    goto done;
 		}
 
