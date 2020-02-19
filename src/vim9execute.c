@@ -356,6 +356,20 @@ call_partial(typval_T *tv, int argcount, ectx_T *ectx)
 }
 
 /*
+ * Store "tv" in variable "name".
+ * This is for s: and g: variables.
+ */
+    static void
+store_var(char_u *name, typval_T *tv)
+{
+    funccal_entry_T entry;
+
+    save_funccal(&entry);
+    set_var_const(name, NULL, tv, FALSE, 0);
+    restore_funccal();
+}
+
+/*
  * Execute a function by "name".
  * This can be a builtin function, user function or a funcref.
  */
@@ -556,6 +570,7 @@ call_def_function(
 					       iptr->isn_arg.loadstore.ls_sid);
 		    char_u	*name = iptr->isn_arg.loadstore.ls_name;
 		    dictitem_T	*di = find_var_in_ht(ht, 0, name, TRUE);
+
 		    if (di == NULL)
 		    {
 			semsg(_(e_undefvar), name);
@@ -574,10 +589,9 @@ call_def_function(
 	    // load g: variable
 	    case ISN_LOADG:
 		{
-		    dictitem_T *di;
-
-		    di = find_var_in_ht(get_globvar_ht(), 0,
+		    dictitem_T *di = find_var_in_ht(get_globvar_ht(), 0,
 						   iptr->isn_arg.string, TRUE);
+
 		    if (di == NULL)
 		    {
 			semsg(_("E121: Undefined variable: g:%s"),
@@ -617,12 +631,8 @@ call_def_function(
 
 		    if (ga_grow(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
-		    if (get_env_tv(&name, &optval, TRUE) == FAIL)
-		    {
-			semsg(_("E1060: Invalid environment variable name: %s"),
-							 iptr->isn_arg.string);
-			goto failed;
-		    }
+		    // name is always valid, checked when compiling
+		    (void)get_env_tv(&name, &optval, TRUE);
 		    *STACK_TV_BOT(0) = optval;
 		    ++ectx.ec_stack.ga_len;
 		}
@@ -653,16 +663,16 @@ call_def_function(
 		    hashtab_T	*ht = &SCRIPT_VARS(
 					       iptr->isn_arg.loadstore.ls_sid);
 		    char_u	*name = iptr->isn_arg.loadstore.ls_name;
-		    dictitem_T	*di = find_var_in_ht(ht, 0, name, TRUE);
+		    dictitem_T	*di = find_var_in_ht(ht, 0, name + 2, TRUE);
 
-		    if (di == NULL)
-		    {
-			semsg(_(e_undefvar), name);
-			goto failed;
-		    }
 		    --ectx.ec_stack.ga_len;
-		    clear_tv(&di->di_tv);
-		    di->di_tv = *STACK_TV_BOT(0);
+		    if (di == NULL)
+			store_var(iptr->isn_arg.string, STACK_TV_BOT(0));
+		    else
+		    {
+			clear_tv(&di->di_tv);
+			di->di_tv = *STACK_TV_BOT(0);
+		    }
 		}
 		break;
 
@@ -750,14 +760,7 @@ call_def_function(
 		    di = find_var_in_ht(get_globvar_ht(), 0,
 					       iptr->isn_arg.string + 2, TRUE);
 		    if (di == NULL)
-		    {
-			funccal_entry_T entry;
-
-			save_funccal(&entry);
-			set_var_const(iptr->isn_arg.string, NULL,
-						    STACK_TV_BOT(0), FALSE, 0);
-			restore_funccal();
-		    }
+			store_var(iptr->isn_arg.string, STACK_TV_BOT(0));
 		    else
 		    {
 			clear_tv(&di->di_tv);
@@ -1723,7 +1726,7 @@ ex_disassemble(exarg_T *eap)
 		    scriptitem_T *si = SCRIPT_ITEM(
 					       iptr->isn_arg.loadstore.ls_sid);
 
-		    smsg("%4d STORES s:%s in %s", current,
+		    smsg("%4d STORES %s in %s", current,
 					    iptr->isn_arg.string, si->sn_name);
 		}
 		break;

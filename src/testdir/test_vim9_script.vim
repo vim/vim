@@ -65,6 +65,8 @@ def Test_assignment()
   assert_equal('xxxyyy', s:appendToMe)
   s:addToMe += 222
   assert_equal(333, s:addToMe)
+  s:newVar = 'new'
+  assert_equal('new', s:newVar)
 enddef
 
 func Test_assignment_failure()

@@ -3284,10 +3284,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		}
 	    }
 	}
-	else if ((STRNCMP(arg, "s:", 2) == 0
-		    ? lookup_script(arg + 2, varlen - 2)
-		    : lookup_script(arg, varlen)) == OK
-				   || find_imported(arg, varlen, cctx) != NULL)
+	else if (STRNCMP(arg, "s:", 2) == 0
+		|| lookup_script(arg, varlen) == OK
+		|| find_imported(arg, varlen, cctx) != NULL)
 	{
 	    dest = dest_script;
 	    if (is_decl)
@@ -3566,7 +3565,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		idx = get_script_item_idx(sid, rawname, TRUE);
 		// TODO: specific type
 		if (idx < 0)
-		    generate_OLDSCRIPT(cctx, ISN_STORES, rawname, sid, &t_any);
+		    generate_OLDSCRIPT(cctx, ISN_STORES, name, sid, &t_any);
 		else
 		    generate_VIM9SCRIPT(cctx, ISN_STORESCRIPT,
 							     sid, idx, &t_any);
