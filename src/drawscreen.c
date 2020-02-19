@@ -2427,7 +2427,7 @@ win_update(win_T *wp)
 
 #ifdef FEAT_VTP
     // Rewrite the character at the end of the screen line.
-    if ((get_vtp_flag() & VTP_DISABLE_EDGEFILL) == 0)
+    if (use_vtp() && (get_vtp_flag() & VTP_DISABLE_EDGEFILL) == 0)
     {
 	int i;
 
