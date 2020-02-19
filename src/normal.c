@@ -4304,7 +4304,7 @@ normal_search(
     curwin->w_set_curswant = TRUE;
 
     vim_memset(&sia, 0, sizeof(sia));
-    i = do_search(cap->oap, dir, pat, cap->count1,
+    i = do_search(cap->oap, dir, dir, pat, cap->count1,
 			    opt | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG, &sia);
     if (wrapped != NULL)
 	*wrapped = sia.sa_wrapped;
