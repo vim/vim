@@ -439,6 +439,145 @@ def Test_disassemble_computing()
   endif
 enddef
 
+def AddListBlob()
+  let reslist = [1, 2] + [3, 4]
+  let resblob = 0z1122 + 0z3344
+enddef
+
+def Test_disassemble_add_list_blob()
+  let instr = execute('disassemble AddListBlob')
+  assert_match('AddListBlob.*'
+        \ .. 'let reslist = \[1, 2] + \[3, 4].*'
+        \ .. '\d PUSHNR 1.*'
+        \ .. '\d PUSHNR 2.*'
+        \ .. '\d NEWLIST size 2.*'
+        \ .. '\d PUSHNR 3.*'
+        \ .. '\d PUSHNR 4.*'
+        \ .. '\d NEWLIST size 2.*'
+        \ .. '\d ADDLIST.*'
+        \ .. '\d STORE $.*.*'
+        \ .. 'let resblob = 0z1122 + 0z3344.*'
+        \ .. '\d PUSHBLOB 0z1122.*'
+        \ .. '\d PUSHBLOB 0z3344.*'
+        \ .. '\d ADDBLOB.*'
+        \ .. '\d STORE $.*'
+        \, instr)
+enddef
+
+let g:aa = 'aa'
+def ConcatString(): string
+  let res = g:aa .. "bb"
+  return res
+enddef
+
+def Test_disassemble_concat()
+  let instr = execute('disassemble ConcatString')
+  assert_match('ConcatString.*'
+        \ .. 'let res = g:aa .. "bb".*'
+        \ .. '\d LOADG g:aa.*'
+        \ .. '\d PUSHS "bb".*'
+        \ .. '\d 2STRING stack\[-2].*'
+        \ .. '\d CONCAT.*'
+        \ .. '\d STORE $.*'
+        \, instr)
+  assert_equal('aabb', ConcatString())
+enddef
+
+def ListIndex(): number
+  let l = [1, 2, 3]
+  let res = l[1]
+  return res
+enddef
+
+def Test_disassemble_list_index()
+  let instr = execute('disassemble ListIndex')
+  assert_match('ListIndex.*'
+        \ .. 'let l = \[1, 2, 3].*'
+        \ .. '\d PUSHNR 1.*'
+        \ .. '\d PUSHNR 2.*'
+        \ .. '\d PUSHNR 3.*'
+        \ .. '\d NEWLIST size 3.*'
+        \ .. '\d STORE $0.*'
+        \ .. 'let res = l\[1].*'
+        \ .. '\d LOAD $0.*'
+        \ .. '\d PUSHNR 1.*'
+        \ .. '\d INDEX.*'
+        \ .. '\d STORE $1.*'
+        \, instr)
+  assert_equal(2, ListIndex())
+enddef
+
+def DictMember(): number
+  let d = #{item: 1}
+  let res = d.item
+  return res
+enddef
+
+def Test_disassemble_dict_member()
+  let instr = execute('disassemble DictMember')
+  assert_match('DictMember.*'
+        \ .. 'let d = #{item: 1}.*'
+        \ .. '\d PUSHS "item".*'
+        \ .. '\d PUSHNR 1.*'
+        \ .. '\d NEWDICT size 1.*'
+        \ .. '\d STORE $0.*'
+        \ .. 'let res = d.item.*'
+        \ .. '\d LOAD $0.*'
+        \ .. '\d MEMBER item.*'
+        \ .. '\d STORE $1.*'
+        \, instr)
+  call assert_equal(1, DictMember())
+enddef
+
+def NegateNumber(): number
+  let nr = 9
+  let plus = +nr
+  let res = -nr
+  return res
+enddef
+
+def Test_disassemble_negate_number()
+  let instr = execute('disassemble NegateNumber')
+  assert_match('NegateNumber.*'
+        \ .. 'let nr = 9.*'
+        \ .. '\d STORE 9 in $0.*'
+        \ .. 'let plus = +nr.*'
+        \ .. '\d LOAD $0.*'
+        \ .. '\d CHECKNR.*'
+        \ .. '\d STORE $1.*'
+        \ .. 'let res = -nr.*'
+        \ .. '\d LOAD $0.*'
+        \ .. '\d NEGATENR.*'
+        \ .. '\d STORE $2.*'
+        \, instr)
+  call assert_equal(-9, NegateNumber())
+enddef
+
+def InvertBool(): bool
+  let flag = true
+  let invert = !flag
+  let res = !!flag
+  return res
+enddef
+
+def Test_disassemble_invert_bool()
+  let instr = execute('disassemble InvertBool')
+  assert_match('InvertBool.*'
+        \ .. 'let flag = true.*'
+        \ .. '\d PUSH v:true.*'
+        \ .. '\d STORE $0.*'
+        \ .. 'let invert = !flag.*'
+        \ .. '\d LOAD $0.*'
+        \ .. '\d INVERT (!val).*'
+        \ .. '\d STORE $1.*'
+        \ .. 'let res = !!flag.*'
+        \ .. '\d LOAD $0.*'
+        \ .. '\d 2BOOL (!!val).*'
+        \ .. '\d STORE $2.*'
+        \, instr)
+  call assert_equal(true, InvertBool())
+enddef
+
 def Test_disassemble_compare()
   " TODO: COMPAREFUNC
   let cases = [
