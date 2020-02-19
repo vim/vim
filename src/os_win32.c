@@ -193,6 +193,9 @@ static void vtp_flag_init();
 static int vtp_can_enable();
 static void vtp_set_conpty_type();
 
+static int vtp_flag = 0;
+static void vtp_flag_set_from_env();
+
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
 static int vtp_working = 0;
 static void vtp_init();
@@ -7360,6 +7363,7 @@ mch_setenv(char *var, char *value, int x UNUSED)
     static void
 vtp_flag_init(void)
 {
+    vtp_flag_set_from_env();
     vtp_switch_by_version();
     vtp_set_conpty_type();
 }
@@ -7373,7 +7377,12 @@ vtp_can_enable(void)
     void
 vtp_switch_by_version(void)
 {
-    vtp_switch_by_force(vtp_can_enable());
+    if (vtp_flag & VTP_DISABLE_FORCEMODE)
+	vtp_switch_by_force(FALSE);
+    else if (vtp_flag & VTP_ENABLE_FORCEMODE)
+	vtp_switch_by_force(TRUE);
+    else
+	vtp_switch_by_force(vtp_can_enable());
 }
 
     void
@@ -7427,6 +7436,25 @@ vtp_set_conpty_type(void)
     if (ver < CONPTY_FIRST_SUPPORT_BUILD)
 	conpty_type = 1;
 }
+
+    static void
+vtp_flag_set_from_env(void)
+{
+    char_u *env = mch_getenv("VIMVTP");
+
+    if (env != NULL && *env != NUL)
+    {
+	if (strstr((char *)env, "edgefill:disable") != NULL)
+	    vtp_flag |= VTP_DISABLE_EDGEFILL;
+	if (strstr((char *)env, "forcemode:disable") != NULL)
+	    vtp_flag |= VTP_DISABLE_FORCEMODE;
+	if (strstr((char *)env, "forcemode:enable") != NULL)
+	    vtp_flag |= VTP_ENABLE_FORCEMODE;
+	if (strstr((char *)env, "forcemode:auto") != NULL)
+	    vtp_flag &= ~(VTP_DISABLE_FORCEMODE | VTP_ENABLE_FORCEMODE);
+    }
+}
+
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)
 
@@ -7807,6 +7835,12 @@ is_term_win32(void)
 has_vtp_working(void)
 {
     return vtp_working;
+}
+
+    int
+get_vtp_flag(void)
+{
+    return vtp_flag;
 }
 
 #endif

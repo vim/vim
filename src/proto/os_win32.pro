@@ -79,6 +79,7 @@ void control_console_color_rgb(void);
 int use_vtp(void);
 int is_term_win32(void);
 int has_vtp_working(void);
+int get_vtp_flag(void);
 int has_conpty_working(void);
 int get_conpty_type(void);
 int is_conpty_stable(void);

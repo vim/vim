@@ -2669,4 +2669,9 @@ long elapsed(DWORD start_tick);
 #define REPTERM_SPECIAL		4
 #define REPTERM_NO_SIMPLIFY	8
 
+// Flags for VTP
+#define VTP_DISABLE_EDGEFILL	1
+#define VTP_DISABLE_FORCEMODE	2
+#define VTP_ENABLE_FORCEMODE	4
+
 #endif // VIM__H
