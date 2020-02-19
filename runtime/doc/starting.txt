@@ -16,6 +16,7 @@ Starting Vim						*starting*
 8. Saving settings		|save-settings|
 9. Views and Sessions		|views-sessions|
 10. The viminfo file		|viminfo-file|
+11. $VIMVTP			|$VIMVTP|
 
 ==============================================================================
 1. Vim arguments					*vim-arguments*
@@ -1666,5 +1667,38 @@ most of the information will be restored).
 			and still get the prompt to enter a file number.
 			Use ! to abandon a modified buffer. |abandon|
 			{not when compiled with tiny or small features}
+
+==============================================================================
+11. $VIMVTP						*$VIMVTP*
+
+This works on Windows.
+
+Not all third-party terminals are supported, and there is no way to know what
+the terminal is from a .vimrc.  Therefore, use the environment variable
+$VIMVTP.
+
+If the following string is included, the function associated with that string
+will work.  The delimiter can be anything.
+
+forcemode:disable	Force disable even if OS supports VTP.  Only good old
+			16 colors are available.
+
+forcemode:enable	Force enable even if the terminal does not support
+			the correct way to switch to VTP.
+
+forcemode:auto	        Switch to VTP in the right way and use the results as
+			is.
+
+edgefill:disable	In the old VTP, the rightmost two digits of the screen
+			do not scroll.  On the correct third party terminal,
+			fixing this bug will break the screen.  With this
+			specification, processing is suppressed.
+
+lazycolor:enable	Suppresses the operation of resetting the currently
+			set background color to the exact same color.  This
+			makes it possible to visually observe the improvement
+			in drawing speed, but the setting of the background
+			color by the echoraw() function cannot be detected.
+			You can use this setting if it is acceptable.
 
  vim:tw=78:ts=8:noet:ft=help:norl:
