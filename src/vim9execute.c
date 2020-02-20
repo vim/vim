@@ -527,6 +527,8 @@ call_def_function(
 							   &atstart, &needclr);
 			clear_tv(tv);
 		    }
+		    if (needclr)
+			msg_clr_eos();
 		    ectx.ec_stack.ga_len -= count;
 		}
 		break;
