@@ -400,6 +400,8 @@ EXTERN type_T t_partial_any INIT4(VAR_PARTIAL, -1, &t_any, NULL);
 
 EXTERN type_T t_list_any INIT4(VAR_LIST, 0, &t_any, NULL);
 EXTERN type_T t_dict_any INIT4(VAR_DICT, 0, &t_any, NULL);
+EXTERN type_T t_list_void INIT4(VAR_LIST, 0, &t_void, NULL);
+EXTERN type_T t_dict_void INIT4(VAR_DICT, 0, &t_void, NULL);
 
 EXTERN type_T t_list_number INIT4(VAR_LIST, 0, &t_number, NULL);
 EXTERN type_T t_list_string INIT4(VAR_LIST, 0, &t_string, NULL);
