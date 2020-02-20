@@ -1425,7 +1425,7 @@ do_search(
 		// empty for the search_stat feature.
 		if (!cmd_silent)
 		{
-		    msgbuf[0] = search_delim;
+		    msgbuf[0] = dirc;
 
 		    if (enc_utf8 && utf_iscomposing(utf_ptr2char(p)))
 		    {
