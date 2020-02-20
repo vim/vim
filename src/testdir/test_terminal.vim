@@ -2337,8 +2337,8 @@ func Test_terminal_in_popup()
 	\ 'call setline(1, range(20))',
 	\ 'hi PopTerm ctermbg=grey',
 	\ 'func OpenTerm(setColor)',
-	\ "  let buf = term_start('" .. cmd .. " Xtext', #{hidden: 1, term_finish: 'close'})",
-	\ '  let s:winid = popup_create(buf, #{minwidth: 45, minheight: 7, border: [], drag: 1, resize: 1})',
+	\ "  let s:buf = term_start('" .. cmd .. " Xtext', #{hidden: 1, term_finish: 'close'})",
+	\ '  let s:winid = popup_create(s:buf, #{minwidth: 45, minheight: 7, border: [], drag: 1, resize: 1})',
 	\ '  if a:setColor',
 	\ '    call win_execute(s:winid, "set wincolor=PopTerm")',
 	\ '  endif',
@@ -2346,6 +2346,12 @@ func Test_terminal_in_popup()
 	\ 'call OpenTerm(0)',
 	\ 'func HidePopup()',
 	\ '  call popup_hide(s:winid)',
+	\ 'endfunc',
+	\ 'func ClosePopup()',
+	\ '  call popup_close(s:winid)',
+	\ 'endfunc',
+	\ 'func ReopenPopup()',
+	\ '  call popup_create(s:buf, #{minwidth: 40, minheight: 6, border: []})',
 	\ 'endfunc',
 	\ 'sleep 10m',
 	\ 'redraw',
@@ -2368,6 +2374,13 @@ func Test_terminal_in_popup()
   call term_sendkeys(buf, "\<C-W>:call HidePopup()\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_4', {})
   call term_sendkeys(buf, "\<CR>")
+  call term_wait(buf, 100)
+
+  call term_sendkeys(buf, "\<C-W>:call ClosePopup()\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_5', {})
+
+  call term_sendkeys(buf, "\<C-W>:call ReopenPopup()\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_6', {})
   call term_wait(buf, 100)
 
   call term_sendkeys(buf, ":q\<CR>")
