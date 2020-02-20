@@ -236,12 +236,40 @@ def CatchInDef()
   endtry
 enddef
 
+def ReturnFinally(): string
+  try
+    return 'intry'
+  finally
+    g:in_finally = 'finally'
+  endtry
+  return 'end'
+enddef
+
 def Test_try_catch_nested()
   CatchInFunc()
   assert_equal('getout', g:thrown_func)
 
   CatchInDef()
   assert_equal('getout', g:thrown_def)
+
+  assert_equal('intry', ReturnFinally())
+  assert_equal('finally', g:in_finally)
+enddef
+
+def Test_try_catch_match()
+  let seq = 'a'
+  try
+    throw 'something'
+  catch /nothing/
+    seq ..= 'x'
+  catch /some/
+    seq ..= 'b'
+  catch /asdf/
+    seq ..= 'x'
+  finally
+    seq ..= 'c'
+  endtry
+  assert_equal('abc', seq)
 enddef
 
 let s:export_script_lines =<< trim END
