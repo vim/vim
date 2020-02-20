@@ -781,6 +781,11 @@ func Test_expr7_fails()
 
   call CheckDefExecFailure("echo s:doesnt_exist", 'E121:')
   call CheckDefExecFailure("echo g:doesnt_exist", 'E121:')
+
+  call CheckDefExecFailure("let x = +g:astring", 'E1030:')
+  call CheckDefExecFailure("let x = +g:ablob", 'E974:')
+  call CheckDefExecFailure("let x = +g:alist", 'E745:')
+  call CheckDefExecFailure("let x = +g:adict", 'E728:')
 endfunc
 
 let g:Funcrefs = [function('add')]

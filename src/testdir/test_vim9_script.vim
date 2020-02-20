@@ -114,9 +114,16 @@ def ReturnNumber(): number
   return 123
 enddef
 
+let g:notNumber = 'string'
+
+def ReturnGlobal(): number
+  return g:notNumber
+enddef
+
 def Test_return_string()
   assert_equal('string', ReturnString())
   assert_equal(123, ReturnNumber())
+  assert_fails('call ReturnGlobal()', 'E1029: Expected number but got string')
 enddef
 
 func Increment()
