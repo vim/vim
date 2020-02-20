@@ -1996,5 +1996,18 @@ func Test_reload_in_try_catch()
   call delete('Xreload')
 endfunc
 
+" Test for errors with :catch, :throw, :finally                            {{{1
+func Test_try_catch_errors()
+  call assert_fails('throw |', 'E471:')
+  call assert_fails("throw \n ", 'E471:')
+  call assert_fails('catch abc', 'E603:')
+  call assert_fails('try | let i = 1| finally | catch | endtry', 'E604:')
+  call assert_fails('finally', 'E606:')
+  call assert_fails('try | finally | finally | endtry', 'E607:')
+  call assert_fails('try | for i in range(5) | endif | endtry', 'E580:')
+  call assert_fails('try | while v:true | endtry', 'E170:')
+  call assert_fails('try | if v:true | endtry', 'E171:')
+endfunc
+
 " Modeline								    {{{1
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

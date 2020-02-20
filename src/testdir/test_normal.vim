@@ -2721,3 +2721,13 @@ func Test_normal_cpo_minus()
   let &cpo = save_cpo
   close!
 endfunc
+
+" Test for using : to run a multi-line Ex command in operator pending mode
+func Test_normal_yank_with_excmd()
+  new
+  call setline(1, ['foo', 'bar', 'baz'])
+  let @a = ''
+  call feedkeys("\"ay:if v:true\<CR>normal l\<CR>endif\<CR>", 'xt')
+  call assert_equal('f', @a)
+  close!
+endfunc
