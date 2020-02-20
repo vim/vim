@@ -209,7 +209,8 @@ do_incsearch_highlighting(int firstc, int *search_delim, incsearch_state_T *is_s
     search_first_line = 0;
     search_last_line = MAXLNUM;
 
-    if (firstc == '/' || firstc == '?') {
+    if (firstc == '/' || firstc == '?')
+    {
 	*search_delim = firstc;
 	return TRUE;
     }
