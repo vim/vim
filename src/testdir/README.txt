@@ -25,6 +25,8 @@ At 2), instead of running the test separately, it can be included in
 bit faster, because Vim doesn't have to be started, one Vim instance runs many
 tests.
 
+At 4), to run a test in GUI, add "GUI_FLAG=-g" to the make command.
+
 
 What you can use (see test_assert.vim for an example):
 
