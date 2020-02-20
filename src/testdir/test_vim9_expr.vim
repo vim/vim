@@ -286,32 +286,54 @@ enddef
 
 " test > comperator
 def Test_expr4_greater()
-  assert_equal(true, 2 > 0)
-  assert_equal(true, 2 > 1)
-  assert_equal(false, 2 > 2)
-  assert_equal(false, 2 > 3)
+  assert_true(2 > 0)
+  assert_true(2 > 1)
+  assert_false(2 > 2)
+  assert_false(2 > 3)
+  if has('float')
+    assert_true(2.0 > 0.0)
+    assert_true(2.0 > 1.0)
+    assert_false(2.0 > 2.0)
+    assert_false(2.0 > 3.0)
+  endif
 enddef
 
 " test >= comperator
 def Test_expr4_greaterequal()
-  assert_equal(true, 2 >= 0)
-  assert_equal(true, 2 >= 2)
-  assert_equal(false, 2 >= 3)
+  assert_true(2 >= 0)
+  assert_true(2 >= 2)
+  assert_false(2 >= 3)
+  if has('float')
+    assert_true(2.0 >= 0.0)
+    assert_true(2.0 >= 2.0)
+    assert_false(2.0 >= 3.0)
+  endif
 enddef
 
 " test < comperator
 def Test_expr4_smaller()
-  assert_equal(false, 2 < 0)
-  assert_equal(false, 2 < 2)
-  assert_equal(true, 2 < 3)
+  assert_false(2 < 0)
+  assert_false(2 < 2)
+  assert_true(2 < 3)
+  if has('float')
+    assert_false(2.0 < 0.0)
+    assert_false(2.0 < 2.0)
+    assert_true(2.0 < 3.0)
+  endif
 enddef
 
 " test <= comperator
 def Test_expr4_smallerequal()
-  assert_equal(false, 2 <= 0)
-  assert_equal(false, 2 <= 1)
-  assert_equal(true, 2 <= 2)
-  assert_equal(true, 2 <= 3)
+  assert_false(2 <= 0)
+  assert_false(2 <= 1)
+  assert_true(2 <= 2)
+  assert_true(2 <= 3)
+  if has('float')
+    assert_false(2.0 <= 0.0)
+    assert_false(2.0 <= 1.0)
+    assert_true(2.0 <= 2.0)
+    assert_true(2.0 <= 3.0)
+  endif
 enddef
 
 " test =~ comperator
@@ -329,18 +351,28 @@ enddef
 " test is comperator
 def Test_expr4_is()
   let mylist = [2]
-  assert_equal(false, mylist is [2])
+  assert_false(mylist is [2])
   let other = mylist
-  assert_equal(true, mylist is other)
+  assert_true(mylist is other)
+
+  let myblob = 0z1234
+  assert_false(myblob is 0z1234)
+  let otherblob = myblob
+  assert_true(myblob is otherblob)
 enddef
 
 " test isnot comperator
 def Test_expr4_isnot()
   let mylist = [2]
-  assert_equal(true, '2' isnot '0')
-  assert_equal(true, mylist isnot [2])
+  assert_true('2' isnot '0')
+  assert_true(mylist isnot [2])
   let other = mylist
-  assert_equal(false, mylist isnot other)
+  assert_false(mylist isnot other)
+
+  let myblob = 0z1234
+  assert_true(myblob isnot 0z1234)
+  let otherblob = myblob
+  assert_false(myblob isnot otherblob)
 enddef
 
 def RetVoid()
@@ -427,6 +459,12 @@ def Test_expr5()
   assert_equal('hello 123', 'hello ' .. 123)
   assert_equal('123 hello', 123 .. ' hello')
   assert_equal('123456', 123 .. 456)
+
+  assert_equal([1, 2, 3, 4], [1, 2] + [3, 4])
+  assert_equal(0z11223344, 0z1122 + 0z3344)
+  assert_equal(0z112201ab, 0z1122 + g:ablob)
+  assert_equal(0z01ab3344, g:ablob + 0z3344)
+  assert_equal(0z01ab01ab, g:ablob + g:ablob)
 enddef
 
 def Test_expr5_float()
@@ -466,6 +504,13 @@ func Test_expr5_fails()
   call CheckDefFailure("let x = '1'..'2'", msg)
   call CheckDefFailure("let x = '1' ..'2'", msg)
   call CheckDefFailure("let x = '1'.. '2'", msg)
+
+  call CheckDefFailure("let x = 0z1122 + 33", 'E1035')
+  call CheckDefFailure("let x = 0z1122 + [3]", 'E1035')
+  call CheckDefFailure("let x = 0z1122 + 'asd'", 'E1035')
+  call CheckDefFailure("let x = 33 + 0z1122", 'E1035')
+  call CheckDefFailure("let x = [3] + 0z1122", 'E1035')
+  call CheckDefFailure("let x = 'asdf' + 0z1122", 'E1035')
 endfunc
 
 " test multiply, divide, modulo
@@ -650,6 +695,10 @@ def Test_expr7_list()
   assert_equal(g:list_empty, [])
   assert_equal(g:list_empty, [  ])
   assert_equal(g:list_mixed, [1, 'b', false])
+
+  call CheckDefExecFailure("let x = g:anint[3]", 'E714:')
+  call CheckDefExecFailure("let x = g:list_mixed['xx']", 'E39:')
+  call CheckDefExecFailure("let x = g:list_empty[3]", 'E684:')
 enddef
 
 def Test_expr7_lambda()
@@ -667,6 +716,9 @@ def Test_expr7_dict()
   let key = 'one'
   let val = 1
   assert_equal(g:dict_one, {key: val})
+
+  call CheckDefExecFailure("let x = g:anint.member", 'E715:')
+  call CheckDefExecFailure("let x = g:dict_empty.member", 'E716:')
 enddef
 
 def Test_expr7_option()

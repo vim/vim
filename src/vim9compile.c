@@ -374,6 +374,8 @@ generate_two_op(cctx_T *cctx, char_u *op)
     switch (*op)
     {
 	case '+': if (vartype != VAR_LIST && vartype != VAR_BLOB
+			  && type1->tt_type != VAR_UNKNOWN
+			  && type2->tt_type != VAR_UNKNOWN
 			  && check_number_or_float(
 				   type1->tt_type, type2->tt_type, op) == FAIL)
 		      return FAIL;
@@ -1074,9 +1076,16 @@ generate_MEMBER(cctx_T *cctx, char_u *name, size_t len)
 	return FAIL;
     isn->isn_arg.string = vim_strnsave(name, (int)len);
 
-    // change dict type to dict member type
+    // check for dict type
     type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-    ((type_T **)stack->ga_data)[stack->ga_len - 1] = type->tt_member;
+    if (type->tt_type != VAR_DICT && type != &t_any)
+    {
+	emsg(_(e_dictreq));
+	return FAIL;
+    }
+    // change dict type to dict member type
+    if (type->tt_type == VAR_DICT)
+	((type_T **)stack->ga_data)[stack->ga_len - 1] = type->tt_member;
 
     return OK;
 }
@@ -2370,7 +2379,8 @@ compile_subscript(
 		emsg(_(e_listreq));
 		return FAIL;
 	    }
-	    *typep = (*typep)->tt_member;
+	    if ((*typep)->tt_type == VAR_LIST)
+		*typep = (*typep)->tt_member;
 	}
 	else if (**arg == '.' && (*arg)[1] != '.')
 	{
@@ -2387,7 +2397,6 @@ compile_subscript(
 		semsg(_(e_syntax_at), *arg);
 		return FAIL;
 	    }
-	    // TODO: check type is dict
 	    if (generate_MEMBER(cctx, *arg, p - *arg) == FAIL)
 		return FAIL;
 	    *arg = p;
@@ -4964,6 +4973,10 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 
 	    default:
 		    // Not recognized, execute with do_cmdline_cmd().
+		    // TODO:
+		    // CMD_echomsg
+		    // CMD_execute
+		    // etc.
 		    generate_EXEC(&cctx, line);
 		    line = (char_u *)"";
 		    break;
