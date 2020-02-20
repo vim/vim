@@ -40,9 +40,8 @@ def Test_assignment()
   let list1: list<string> = ['sdf', 'asdf']
   let list2: list<number> = [1, 2, 3]
 
-  " TODO: does not work yet
-  " let listS: list<string> = []
-  " let listN: list<number> = []
+  let listS: list<string> = []
+  let listN: list<number> = []
 
   let dict1: dict<string> = #{key: 'value'}
   let dict2: dict<number> = #{one: 1, two: 2}

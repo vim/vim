@@ -211,6 +211,8 @@ get_list_type(type_T *member_type, garray_T *type_list)
     // recognize commonly used types
     if (member_type->tt_type == VAR_UNKNOWN)
 	return &t_list_any;
+    if (member_type->tt_type == VAR_VOID)
+	return &t_list_empty;
     if (member_type->tt_type == VAR_NUMBER)
 	return &t_list_number;
     if (member_type->tt_type == VAR_STRING)
@@ -234,6 +236,8 @@ get_dict_type(type_T *member_type, garray_T *type_list)
     // recognize commonly used types
     if (member_type->tt_type == VAR_UNKNOWN)
 	return &t_dict_any;
+    if (member_type->tt_type == VAR_VOID)
+	return &t_dict_empty;
     if (member_type->tt_type == VAR_NUMBER)
 	return &t_dict_number;
     if (member_type->tt_type == VAR_STRING)
@@ -813,11 +817,12 @@ generate_NEWLIST(cctx_T *cctx, int count)
     // drop the value types
     stack->ga_len -= count;
 
-    // use the first value type for the list member type
+    // Use the first value type for the list member type.  Use "void" for an
+    // empty list.
     if (count > 0)
 	member = ((type_T **)stack->ga_data)[stack->ga_len];
     else
-	member = &t_any;
+	member = &t_void;
     type = get_list_type(member, type_list);
 
     // add the list type to the type stack
@@ -848,11 +853,12 @@ generate_NEWDICT(cctx_T *cctx, int count)
     // drop the key and value types
     stack->ga_len -= 2 * count;
 
-    // use the first value type for the list member type
+    // Use the first value type for the list member type.  Use "void" for an
+    // empty dict.
     if (count > 0)
 	member = ((type_T **)stack->ga_data)[stack->ga_len + 1];
     else
-	member = &t_any;
+	member = &t_void;
     type = get_dict_type(member, type_list);
 
     // add the dict type to the type stack
@@ -1854,8 +1860,13 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 	}
 	if (expected->tt_type == VAR_DICT || expected->tt_type == VAR_LIST)
 	{
-	    int ret = check_type(expected->tt_member, actual->tt_member,
-									FALSE);
+	    int ret;
+
+	    // void is used for an empty list or dict
+	    if (actual->tt_member == &t_void)
+		ret = OK;
+	    else
+		ret = check_type(expected->tt_member, actual->tt_member, FALSE);
 	    if (ret == FAIL && give_msg)
 		type_mismatch(expected, actual);
 	    return ret;
@@ -1873,7 +1884,7 @@ check_type(type_T *expected, type_T *actual, int give_msg)
     static int
 need_type(type_T *actual, type_T *expected, int offset, cctx_T *cctx)
 {
-    if (equal_type(actual, expected) || expected->tt_type == VAR_UNKNOWN)
+    if (check_type(expected, actual, FALSE))
 	return OK;
     if (actual->tt_type != VAR_UNKNOWN)
     {
