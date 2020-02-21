@@ -1996,5 +1996,44 @@ func Test_reload_in_try_catch()
   call delete('Xreload')
 endfunc
 
+" Test for errors with :catch, :throw, :finally                            {{{1
+func Test_try_catch_errors()
+  call assert_fails('throw |', 'E471:')
+  call assert_fails("throw \n ", 'E471:')
+  call assert_fails('catch abc', 'E603:')
+  call assert_fails('try | let i = 1| finally | catch | endtry', 'E604:')
+  call assert_fails('finally', 'E606:')
+  call assert_fails('try | finally | finally | endtry', 'E607:')
+  call assert_fails('try | for i in range(5) | endif | endtry', 'E580:')
+  call assert_fails('try | while v:true | endtry', 'E170:')
+  call assert_fails('try | if v:true | endtry', 'E171:')
+endfunc
+
+" Test for verbose messages with :try :catch, and :finally                 {{{1
+func Test_try_catch_verbose()
+  " This test works only when the language is English
+  if v:lang != "C" && v:lang !~ '^[Ee]n'
+    return
+  endif
+
+  set verbose=14
+  redir => msg
+  try
+    echo i
+  catch /E121:/
+  finally
+  endtry
+  redir END
+  let expected = [
+        \ 'Exception thrown: Vim(echo):E121: Undefined variable: i',
+        \ '',
+        \ 'Exception caught: Vim(echo):E121: Undefined variable: i',
+        \ '',
+        \ 'Exception finished: Vim(echo):E121: Undefined variable: i'
+        \ ]
+  call assert_equal(expected, split(msg, "\n"))
+  set verbose&
+endfunc
+
 " Modeline								    {{{1
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -111,11 +111,14 @@ func Test_open_command()
   close!
 endfunc
 
-func Test_Ex_feedkeys()
-  " this doesn't do anything useful, just check it doesn't hang
+" Test for :g/pat/visual to run vi commands in Ex mode
+" This used to hang Vim before 8.2.0274.
+func Test_Ex_global()
   new
-  call setline(1, ["foo"])
-  call feedkeys("Qg/foo/visual\<CR>", "xt")
+  call setline(1, ['', 'foo', 'bar', 'foo', 'bar', 'foo'])
+  call feedkeys("Qg/bar/visual\<CR>$rxQ$ryQvisual\<CR>j", "xt")
+  call assert_equal('bax', getline(3))
+  call assert_equal('bay', getline(5))
   bwipe!
 endfunc
 
