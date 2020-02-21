@@ -2800,7 +2800,7 @@ msgid "-t tag          edit file where tag is defined"
 msgstr "-t etiket       etiket tanımlanan dosyaları düzenle"
 
 msgid "-q [errorfile]  edit file with first error"
-msgstr "-q [hatalıd.]   hata içeren ilk dosyayı düzenle"
+msgstr "-q [hatadosyası]   hata içeren ilk dosyayı düzenle"
 
 msgid ""
 "\n"
