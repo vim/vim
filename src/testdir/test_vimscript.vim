@@ -1991,6 +1991,7 @@ func Test_missing_end()
   endtry
   call assert_equal(1, caught_e733)
 
+  " Missing 'in' in a :for statement
   call assert_fails('for i range(1) | endfor', 'E690:')
 endfunc
 
