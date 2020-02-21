@@ -4739,6 +4739,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
      */
     for (;;)
     {
+	int	is_ex_command;
+
 	if (line != NULL && *line == '|')
 	    // the line continues after a '|'
 	    ++line;
@@ -4793,6 +4795,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    line = compile_block(ea.cmd, &cctx);
 	    continue;
 	}
+	is_ex_command = *ea.cmd == ':';
 
 	/*
 	 * COMMAND MODIFIERS
@@ -4810,48 +4813,53 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	if (checkforcmd(&ea.cmd, "call", 3))
 	    ea.cmd = skipwhite(ea.cmd);
 
-	// Assuming the command starts with a variable or function name, find
-	// what follows.  Also "&opt = val", "$ENV = val" and "@r = val".
-	p = (*ea.cmd == '&' || *ea.cmd == '$' || *ea.cmd == '@')
-							 ? ea.cmd + 1 : ea.cmd;
-	p = to_name_end(p);
-	if (p > ea.cmd && *p != NUL)
+	if (!is_ex_command)
 	{
-	    int oplen;
-	    int heredoc;
-
-	    // "funcname(" is always a function call.
-	    // "varname[]" is an expression.
-	    // "varname->expr" is an expression.
-	    if (*p == '('
-		    || *p == '['
-		    || ((p - ea.cmd) > 2 && ea.cmd[1] == ':')
-		    || (*p == '-' && p[1] == '>'))
+	    // Assuming the command starts with a variable or function name,
+	    // find what follows.  Also "&opt = val", "$ENV = val" and "@r =
+	    // val".
+	    p = (*ea.cmd == '&' || *ea.cmd == '$' || *ea.cmd == '@')
+							 ? ea.cmd + 1 : ea.cmd;
+	    p = to_name_end(p);
+	    if (p > ea.cmd && *p != NUL)
 	    {
-		// TODO
-	    }
+		int oplen;
+		int heredoc;
 
-	    oplen = assignment_len(skipwhite(p), &heredoc);
-	    if (oplen > 0)
-	    {
-		// Recognize an assignment if we recognize the variable name:
-		// "g:var = expr"
-		// "var = expr"  where "var" is a local var name.
-		// "&opt = expr"
-		// "$ENV = expr"
-		// "@r = expr"
-		if (*ea.cmd == '&'
-			|| *ea.cmd == '$'
-			|| *ea.cmd == '@'
+		// "funcname(" is always a function call.
+		// "varname[]" is an expression.
+		// "varname->expr" is an expression.
+		if (*p == '('
+			|| *p == '['
 			|| ((p - ea.cmd) > 2 && ea.cmd[1] == ':')
-			|| lookup_local(ea.cmd, p - ea.cmd, &cctx) >= 0
-			|| lookup_script(ea.cmd, p - ea.cmd) == OK
-			|| find_imported(ea.cmd, p - ea.cmd, &cctx) != NULL)
+			|| (*p == '-' && p[1] == '>'))
 		{
-		    line = compile_assignment(ea.cmd, &ea, CMD_SIZE, &cctx);
-		    if (line == NULL)
-			goto erret;
-		    continue;
+		    // TODO
+		}
+
+		oplen = assignment_len(skipwhite(p), &heredoc);
+		if (oplen > 0)
+		{
+		    // Recognize an assignment if we recognize the variable
+		    // name:
+		    // "g:var = expr"
+		    // "var = expr"  where "var" is a local var name.
+		    // "&opt = expr"
+		    // "$ENV = expr"
+		    // "@r = expr"
+		    if (*ea.cmd == '&'
+			    || *ea.cmd == '$'
+			    || *ea.cmd == '@'
+			    || ((p - ea.cmd) > 2 && ea.cmd[1] == ':')
+			    || lookup_local(ea.cmd, p - ea.cmd, &cctx) >= 0
+			    || lookup_script(ea.cmd, p - ea.cmd) == OK
+			    || find_imported(ea.cmd, p - ea.cmd, &cctx) != NULL)
+		    {
+			line = compile_assignment(ea.cmd, &ea, CMD_SIZE, &cctx);
+			if (line == NULL)
+			    goto erret;
+			continue;
+		    }
 		}
 	    }
 	}
@@ -4860,7 +4868,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	 * COMMAND after range
 	 */
 	ea.cmd = skip_range(ea.cmd, NULL);
-	p = find_ex_command(&ea, NULL, lookup_local, &cctx);
+	p = find_ex_command(&ea, NULL, is_ex_command ? NULL : lookup_local,
+									&cctx);
 
 	if (p == ea.cmd && ea.cmdidx != CMD_SIZE)
 	{

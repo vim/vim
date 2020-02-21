@@ -570,5 +570,12 @@ def Test_delfunc()
   delete('XToDelFunc')
 enddef
 
+def Test_substitute_cmd()
+  new
+  setline(1, 'something')
+  :substitute(some(other(
+  assert_equal('otherthing', getline(1))
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

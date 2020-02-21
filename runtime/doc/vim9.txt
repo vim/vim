@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Feb 13
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Feb 21
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -140,6 +140,13 @@ identifier or can't be an Ex command.  It does not work for string constants: >
 	"foobar"->Process()		" does NOT work
 	eval "foobar"->Process()	" works
 
+In case there is ambiguity between a function name and an Ex command, use ":"
+to make clear you want to use the Ex command.  For example, there is both the
+`:substitute` command and the `substitute()` function.  When the line starts
+with `substitute(` this will use the function, prepend a colon to use the
+command instead: >
+	:substitute(pattern(replacement(
+
 
 No curly braces expansion ~
 
@@ -175,6 +182,9 @@ White space is not allowed:
   	call Func(arg)	   " OK
   	call Func(
 	     \ arg)	   " OK
+  	call Func(
+	     \ arg	   " OK
+	     \ )
 
 
 Conditions and expressions ~
@@ -252,6 +262,12 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 							*:enddef*
 :enddef			End of a function defined with `:def`.
+
+
+If the script the function is defined in is Vim9 script, then script-local
+variables can be accessed without the "s:" prefix.  They must be defined
+before the function.  If the script the function is defined in is legacy
+script, then script-local variables must be accessed with the "s:" prefix.
 
 
 						*:disa* *:disassemble*
