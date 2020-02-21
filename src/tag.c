@@ -3543,7 +3543,7 @@ jumpto_tag(
 	    else
 		// start search before first line
 		curwin->w_cursor.lnum = 0;
-	    if (do_search(NULL, pbuf[0], pbuf + 1, (long)1,
+	    if (do_search(NULL, pbuf[0], pbuf[0], pbuf + 1, (long)1,
 							 search_options, NULL))
 		retval = OK;
 	    else
@@ -3555,7 +3555,7 @@ jumpto_tag(
 		 * try again, ignore case now
 		 */
 		p_ic = TRUE;
-		if (!do_search(NULL, pbuf[0], pbuf + 1, (long)1,
+		if (!do_search(NULL, pbuf[0], pbuf[0], pbuf + 1, (long)1,
 							 search_options, NULL))
 		{
 		    /*
@@ -3566,13 +3566,13 @@ jumpto_tag(
 		    cc = *tagp.tagname_end;
 		    *tagp.tagname_end = NUL;
 		    sprintf((char *)pbuf, "^%s\\s\\*(", tagp.tagname);
-		    if (!do_search(NULL, '/', pbuf, (long)1,
+		    if (!do_search(NULL, '/', '/', pbuf, (long)1,
 							 search_options, NULL))
 		    {
 			// Guess again: "^char * \<func  ("
 			sprintf((char *)pbuf, "^\\[#a-zA-Z_]\\.\\*\\<%s\\s\\*(",
 								tagp.tagname);
-			if (!do_search(NULL, '/', pbuf, (long)1,
+			if (!do_search(NULL, '/', '/', pbuf, (long)1,
 							 search_options, NULL))
 			    found = 0;
 		    }
