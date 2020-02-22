@@ -2387,6 +2387,8 @@ func LogACmd()
 endfunc
 
 func Test_TermChanged()
+  CheckNotGui
+
   enew!
   tabnew
   call setline(1, ['a', 'b', 'c', 'd'])
