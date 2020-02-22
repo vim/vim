@@ -209,6 +209,14 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 /*
  * Wrapper defines
  */
+// Ruby 2.7 actually expands the following symbols as macro.
+# if RUBY_VERSION >= 27
+#  undef rb_define_global_function
+#  undef rb_define_method
+#  undef rb_define_module_function
+#  undef rb_define_singleton_method
+# endif
+
 # define rb_assoc_new			dll_rb_assoc_new
 # define rb_cObject			(*dll_rb_cObject)
 # define rb_class_new_instance		dll_rb_class_new_instance
@@ -1228,7 +1236,7 @@ static const rb_data_type_t buffer_type = {
     "vim_buffer",
     {0, 0, buffer_dsize,
 # if RUBY_VERSION >= 27
-	0, 0
+	0, {0}
 # else
 	{0, 0}
 # endif
@@ -1508,7 +1516,7 @@ static const rb_data_type_t window_type = {
     "vim_window",
     {0, 0, window_dsize,
 # if RUBY_VERSION >= 27
-	0, 0
+	0, {0}
 # else
 	{0, 0}
 # endif
