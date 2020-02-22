@@ -131,21 +131,23 @@ Functions can be called without `:call`: >
 Using `:call` is still possible, but this is discouraged.
 
 A method call without `eval` is possible, so long as the start is an
-identifier or can't be an Ex command.  It does not work for string constants: >
+identifier or can't be an Ex command.  It does NOT work for string constants: >
 	myList->add(123)		" works
 	g:myList->add(123)		" works
 	[1, 2, 3]->Process()		" works
 	#{a: 1, b: 2}->Process()	" works
 	{'a': 1, 'b': 2}->Process()	" works
 	"foobar"->Process()		" does NOT work
-	eval "foobar"->Process()	" works
+	("foobar")->Process()		" works
+	'foobar'->Process()		" does NOT work
+	('foobar')->Process()		" works
 
 In case there is ambiguity between a function name and an Ex command, use ":"
 to make clear you want to use the Ex command.  For example, there is both the
 `:substitute` command and the `substitute()` function.  When the line starts
 with `substitute(` this will use the function, prepend a colon to use the
 command instead: >
-	:substitute(pattern(replacement(
+	:substitute(pattern (replacement (
 
 
 No curly braces expansion ~

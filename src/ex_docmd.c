@@ -3146,8 +3146,9 @@ find_ex_command(
      * Recognize a Vim9 script function/method call and assignment:
      * "lvar = value", "lvar(arg)", "[1, 2 3]->Func()"
      */
-    if (lookup != NULL && (p = to_name_const_end(eap->cmd)) > eap->cmd
-								  && *p != NUL)
+    p = eap->cmd;
+    if (lookup != NULL && (*p == '('
+	       || ((p = to_name_const_end(eap->cmd)) > eap->cmd && *p != NUL)))
     {
 	int oplen;
 	int heredoc;
@@ -3156,6 +3157,7 @@ find_ex_command(
 	// "varname[]" is an expression.
 	// "g:varname" is an expression.
 	// "varname->expr" is an expression.
+	// "(..." is an expression.
 	if (*p == '('
 		|| *p == '['
 		|| p[1] == ':'

@@ -4821,21 +4821,10 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    p = (*ea.cmd == '&' || *ea.cmd == '$' || *ea.cmd == '@')
 							 ? ea.cmd + 1 : ea.cmd;
 	    p = to_name_end(p);
-	    if (p > ea.cmd && *p != NUL)
+	    if ((p > ea.cmd && *p != NUL) || *p == '(')
 	    {
 		int oplen;
 		int heredoc;
-
-		// "funcname(" is always a function call.
-		// "varname[]" is an expression.
-		// "varname->expr" is an expression.
-		if (*p == '('
-			|| *p == '['
-			|| ((p - ea.cmd) > 2 && ea.cmd[1] == ':')
-			|| (*p == '-' && p[1] == '>'))
-		{
-		    // TODO
-		}
 
 		oplen = assignment_len(skipwhite(p), &heredoc);
 		if (oplen > 0)

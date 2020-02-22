@@ -370,6 +370,11 @@ def Test_vim9script_call()
     assert_equal(#{a: 1, b: 2}, dictvar)
     #{a: 3, b: 4}->DictFunc()
     assert_equal(#{a: 3, b: 4}, dictvar)
+
+    ('text')->MyFunc()
+    assert_equal('text', var)
+    ("some")->MyFunc()
+    assert_equal('some', var)
   END
   writefile(lines, 'Xcall.vim')
   source Xcall.vim
