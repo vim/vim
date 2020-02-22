@@ -2029,8 +2029,7 @@ func Test_try_catch_verbose()
   let expected = [
         \ 'Exception thrown: Vim(echo):E121: Undefined variable: i', '',
         \ 'Exception caught: Vim(echo):E121: Undefined variable: i', '',
-        \ 'Exception finished: Vim(echo):E121: Undefined variable: i'
-        \ ]
+        \ 'Exception finished: Vim(echo):E121: Undefined variable: i']
   call assert_equal(expected, split(msg, "\n"))
 
   " Test for verbose messages displayed when an exception is discarded
@@ -2126,6 +2125,28 @@ func Test_try_catch_verbose()
         \ 'continuing in Test_try_catch_verbose']
   call assert_equal(expected, split(msg, "\n")[1:])
   call delete('Xscript')
+
+  " Test for messages displayed when a pending :continue is discarded by an
+  " exception in a finally handler
+  redir => msg
+  try
+    for i in range(1)
+      try
+        continue
+      finally
+        throw 'abc'
+      endtry
+    endfor
+  catch
+  endtry
+  redir END
+  let expected = [
+        \ ':continue made pending', '',
+        \ 'Exception thrown: abc', '',
+        \ ':continue discarded', '',
+        \ 'Exception caught: abc', '',
+        \ 'Exception finished: abc']
+  call assert_equal(expected, split(msg, "\n"))
 
   set verbose&
 endfunc
