@@ -2071,21 +2071,24 @@ set_termname(char_u *term)
 	check_map_keycodes();	// check mappings for terminal codes used
 
 	{
-	    bufref_T	old_curbuf;
+	    buf_T	*buf;
+	    aco_save_T	aco;
 
 	    /*
 	     * Execute the TermChanged autocommands for each buffer that is
 	     * loaded.
 	     */
-	    set_bufref(&old_curbuf, curbuf);
-	    FOR_ALL_BUFFERS(curbuf)
+	    FOR_ALL_BUFFERS(buf)
 	    {
 		if (curbuf->b_ml.ml_mfp != NULL)
+		{
+		    aucmd_prepbuf(&aco, buf);
 		    apply_autocmds(EVENT_TERMCHANGED, NULL, NULL, FALSE,
 								      curbuf);
+		    // restore curwin/curbuf and a few other things
+		    aucmd_restbuf(&aco);
+		}
 	    }
-	    if (bufref_valid(&old_curbuf))
-		curbuf = old_curbuf.br_buf;
 	}
     }
 

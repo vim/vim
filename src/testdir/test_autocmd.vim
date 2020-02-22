@@ -2382,4 +2382,24 @@ func Test_FileChangedRO_winclose()
   augroup! FileChangedROTest
 endfunc
 
+func LogACmd()
+  call add(g:logged, line('$'))
+endfunc
+
+func Test_TermChanged()
+  enew!
+  tabnew
+  call setline(1, ['a', 'b', 'c', 'd'])
+  $
+  au TermChanged * call LogACmd()
+  let g:logged = []
+  let term_save = &term
+  set term=xterm
+  call assert_equal([1, 4], g:logged)
+
+  au! TermChanged
+  let &term = term_save
+  bwipe!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
