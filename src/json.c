@@ -215,7 +215,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 
 	case VAR_NUMBER:
 	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%lld",
-					      (long_long_T)val->vval.v_number);
+					      (varnumber_T)val->vval.v_number);
 	    ga_concat(gap, numbuf);
 	    break;
 

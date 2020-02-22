@@ -1248,30 +1248,40 @@ typedef long_u hash_T;		// Type for hi_hash
 // Use 64-bit Number.
 #ifdef MSWIN
 # ifdef PROTO
-typedef long		    varnumber_T;
-typedef unsigned long	    uvarnumber_T;
-#  define VARNUM_MIN	    LONG_MIN
-#  define VARNUM_MAX	    LONG_MAX
-#  define UVARNUM_MAX	    ULONG_MAX
+   // workaround for cproto that doesn't recognize __int64
+   typedef long			varnumber_T;
+   typedef unsigned long	uvarnumber_T;
+#  define VARNUM_MIN		LONG_MIN
+#  define VARNUM_MAX		LONG_MAX
+#  define UVARNUM_MAX		ULONG_MAX
 # else
-typedef __int64		    varnumber_T;
-typedef unsigned __int64    uvarnumber_T;
-#  define VARNUM_MIN	    _I64_MIN
-#  define VARNUM_MAX	    _I64_MAX
-#  define UVARNUM_MAX	    _UI64_MAX
+   typedef __int64		varnumber_T;
+   typedef unsigned __int64	uvarnumber_T;
+#  define VARNUM_MIN		_I64_MIN
+#  define VARNUM_MAX		_I64_MAX
+#  define UVARNUM_MAX		_UI64_MAX
 # endif
-#elif defined(HAVE_STDINT_H)
-typedef int64_t		    varnumber_T;
-typedef uint64_t	    uvarnumber_T;
-# define VARNUM_MIN	    INT64_MIN
-# define VARNUM_MAX	    INT64_MAX
-# define UVARNUM_MAX	    UINT64_MAX
+#elif defined(HAVE_NO_LONG_LONG)
+# if defined(HAVE_STDINT_H)
+   typedef int64_t		varnumber_T;
+   typedef uint64_t		uvarnumber_T;
+#  define VARNUM_MIN		INT64_MIN
+#  define VARNUM_MAX		INT64_MAX
+#  define UVARNUM_MAX		UINT64_MAX
+# else
+   // this may cause trouble for code that depends on 64 bit ints
+   typedef long			varnumber_T;
+   typedef unsigned long	uvarnumber_T;
+#  define VARNUM_MIN		LONG_MIN
+#  define VARNUM_MAX		LONG_MAX
+#  define UVARNUM_MAX		ULONG_MAX
+# endif
 #else
-typedef long		    varnumber_T;
-typedef unsigned long	    uvarnumber_T;
-# define VARNUM_MIN	    LONG_MIN
-# define VARNUM_MAX	    LONG_MAX
-# define UVARNUM_MAX	    ULONG_MAX
+  typedef long long		varnumber_T;
+  typedef unsigned long long	uvarnumber_T;
+# define VARNUM_MIN		LLONG_MIN
+# define VARNUM_MAX		LLONG_MAX
+# define UVARNUM_MAX		ULLONG_MAX
 #endif
 
 typedef double	float_T;

@@ -3016,14 +3016,14 @@ msg_add_lines(
 	*p++ = ' ';
     if (shortmess(SHM_LINES))
 	vim_snprintf((char *)p, IOSIZE - (p - IObuff),
-		"%ldL, %lldC", lnum, (long_long_T)nchars);
+		"%ldL, %lldC", lnum, (varnumber_T)nchars);
     else
     {
 	sprintf((char *)p, NGETTEXT("%ld line, ", "%ld lines, ", lnum), lnum);
 	p += STRLEN(p);
 	vim_snprintf((char *)p, IOSIZE - (p - IObuff),
 		NGETTEXT("%lld character", "%lld characters", nchars),
-		(long_long_T)nchars);
+		(varnumber_T)nchars);
     }
 }
 

@@ -228,3 +228,9 @@ func Test_excute_null()
     call assert_fails('execute test_null_channel()', 'E908:')
   endif
 endfunc
+
+func Test_numbersize()
+  " This will fail on systems without 64 bit int support or when not configured
+  " correctly.
+  call assert_equal(64, v:numbersize)
+endfunc

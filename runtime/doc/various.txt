@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2019 Dec 07
+*various.txt*   For Vim version 8.2.  Last change: 2020 Feb 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -407,7 +407,9 @@ N  *+multi_lang*	non-English language support |multi-lang|
 m  *+mzscheme*		Mzscheme interface |mzscheme|
 m  *+mzscheme/dyn*	Mzscheme interface |mzscheme-dynamic| |/dyn|
 m  *+netbeans_intg*	|netbeans|
-   *+num64*		64-bit Number support |Number|
+   *+num64*		64-bit Number support |Number| 
+   			Always enabled since 8.2.0271, use v:numbersize to
+			check the actual size of a Number.
 m  *+ole*		Win32 GUI only: |ole-interface|
 N  *+packages*		Loading |packages|
 N  *+path_extra*	Up/downwards search in 'path' and 'tags'

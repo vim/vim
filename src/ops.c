@@ -3364,17 +3364,13 @@ do_addsub(
 	    buf2[i] = '\0';
 	}
 	else if (pre == 0)
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llu",
-							(long_long_u_T)n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llu", (uvarnumber_T)n);
 	else if (pre == '0')
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llo",
-							(long_long_u_T)n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llo", (uvarnumber_T)n);
 	else if (pre && hexupper)
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llX",
-							(long_long_u_T)n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llX", (uvarnumber_T)n);
 	else
-	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llx",
-							(long_long_u_T)n);
+	    vim_snprintf((char *)buf2, NUMBUFLEN, "%llx", (uvarnumber_T)n);
 	length -= (int)STRLEN(buf2);
 
 	/*
@@ -3773,21 +3769,21 @@ cursor_pos_info(dict_T *dict)
 			    _("Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Bytes"),
 			    buf1, line_count_selected,
 			    (long)curbuf->b_ml.ml_line_count,
-			    (long_long_T)word_count_cursor,
-			    (long_long_T)word_count,
-			    (long_long_T)byte_count_cursor,
-			    (long_long_T)byte_count);
+			    (varnumber_T)word_count_cursor,
+			    (varnumber_T)word_count,
+			    (varnumber_T)byte_count_cursor,
+			    (varnumber_T)byte_count);
 		else
 		    vim_snprintf((char *)IObuff, IOSIZE,
 			    _("Selected %s%ld of %ld Lines; %lld of %lld Words; %lld of %lld Chars; %lld of %lld Bytes"),
 			    buf1, line_count_selected,
 			    (long)curbuf->b_ml.ml_line_count,
-			    (long_long_T)word_count_cursor,
-			    (long_long_T)word_count,
-			    (long_long_T)char_count_cursor,
-			    (long_long_T)char_count,
-			    (long_long_T)byte_count_cursor,
-			    (long_long_T)byte_count);
+			    (varnumber_T)word_count_cursor,
+			    (varnumber_T)word_count,
+			    (varnumber_T)char_count_cursor,
+			    (varnumber_T)char_count,
+			    (varnumber_T)byte_count_cursor,
+			    (varnumber_T)byte_count);
 	    }
 	    else
 	    {
@@ -3805,17 +3801,17 @@ cursor_pos_info(dict_T *dict)
 			(char *)buf1, (char *)buf2,
 			(long)curwin->w_cursor.lnum,
 			(long)curbuf->b_ml.ml_line_count,
-			(long_long_T)word_count_cursor, (long_long_T)word_count,
-			(long_long_T)byte_count_cursor, (long_long_T)byte_count);
+			(varnumber_T)word_count_cursor, (varnumber_T)word_count,
+			(varnumber_T)byte_count_cursor, (varnumber_T)byte_count);
 		else
 		    vim_snprintf((char *)IObuff, IOSIZE,
 			_("Col %s of %s; Line %ld of %ld; Word %lld of %lld; Char %lld of %lld; Byte %lld of %lld"),
 			(char *)buf1, (char *)buf2,
 			(long)curwin->w_cursor.lnum,
 			(long)curbuf->b_ml.ml_line_count,
-			(long_long_T)word_count_cursor, (long_long_T)word_count,
-			(long_long_T)char_count_cursor, (long_long_T)char_count,
-			(long_long_T)byte_count_cursor, (long_long_T)byte_count);
+			(varnumber_T)word_count_cursor, (varnumber_T)word_count,
+			(varnumber_T)char_count_cursor, (varnumber_T)char_count,
+			(varnumber_T)byte_count_cursor, (varnumber_T)byte_count);
 	    }
 	}
 
@@ -3825,7 +3821,7 @@ cursor_pos_info(dict_T *dict)
 	    size_t len = STRLEN(IObuff);
 
 	    vim_snprintf((char *)IObuff + len, IOSIZE - len,
-				 _("(+%lld for BOM)"), (long_long_T)bom_count);
+				 _("(+%lld for BOM)"), (varnumber_T)bom_count);
 	}
 	if (dict == NULL)
 	{
