@@ -773,8 +773,10 @@ def Test_expr7_not()
   assert_equal(true, !{})
   assert_equal(false, !{'yes': 'no'})
 
-  assert_equal(true, !test_null_job())
-  assert_equal(true, !test_null_channel())
+  if has('channel')
+    assert_equal(true, !test_null_job())
+    assert_equal(true, !test_null_channel())
+  endif
 
   assert_equal(true, !test_null_blob())
   assert_equal(true, !0z)
