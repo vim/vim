@@ -221,6 +221,23 @@ def Test_disassemble_call()
         \, res)
 enddef
 
+
+def FuncWithDefault(arg: string = 'default'): string
+  return arg
+enddef
+
+def Test_disassemble_call_default()
+  let res = execute('disass FuncWithDefault')
+  assert_match('FuncWithDefault.*'
+        \ .. '\d PUSHS "default".*'
+        \ .. '\d STORE arg\[-1].*'
+        \ .. 'return arg.*'
+        \ .. '\d LOAD arg\[-1].*'
+        \ .. '\d RETURN.*'
+        \, res)
+enddef
+
+
 def HasEval()
   if has("eval")
     echo "yes"

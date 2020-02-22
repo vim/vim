@@ -123,6 +123,13 @@ test_null_string()					*test_null_string()*
 		Return a |String| that is null. Only useful for testing.
 
 
+test_unknown()						*test_unknown()*
+		Return a value with unknown type. Only useful for testing.
+
+test_void()						*test_void()*
+		Return a value with void type. Only useful for testing.
+
+
 test_option_not_set({name})				*test_option_not_set()*
 		Reset the flag that indicates option {name} was set.  Thus it
 		looks like it still has the default value. Use like this: >

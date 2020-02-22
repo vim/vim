@@ -896,6 +896,18 @@ f_test_null_string(typval_T *argvars UNUSED, typval_T *rettv)
     rettv->vval.v_string = NULL;
 }
 
+    void
+f_test_unknown(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_UNKNOWN;
+}
+
+    void
+f_test_void(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_VOID;
+}
+
 #ifdef FEAT_GUI
     void
 f_test_scrollbar(typval_T *argvars, typval_T *rettv UNUSED)

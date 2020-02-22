@@ -821,6 +821,8 @@ static funcentry_T global_functions[] =
     {"test_setmouse",	2, 2, 0,	  &t_void,	f_test_setmouse},
     {"test_settime",	1, 1, FEARG_1,	  &t_void,	f_test_settime},
     {"test_srand_seed",	0, 1, FEARG_1,	  &t_void,	f_test_srand_seed},
+    {"test_unknown",	0, 0, 0,	  &t_any,	f_test_unknown},
+    {"test_void",	0, 0, 0,	  &t_any,	f_test_void},
 #ifdef FEAT_TIMERS
     {"timer_info",	0, 1, FEARG_1,	  &t_list_dict_any, f_timer_info},
     {"timer_pause",	2, 2, FEARG_1,	  &t_void,	f_timer_pause},
