@@ -781,7 +781,7 @@ func Test_terminal_special_chars()
   call writefile(['x'], 'Xdir with spaces/quoted"file')
   term ls Xdir\ with\ spaces/quoted\"file
   call WaitForAssert({-> assert_match('quoted"file', term_getline('', 1))})
-  call term_wait('')
+  call WaitForAssert({-> assert_match('finish', term_getstatus(bufnr()))})
 
   call delete('Xdir with spaces', 'rf')
   bwipe
