@@ -333,8 +333,30 @@ def Test_vim9script()
   delete('Ximport.vim')
   delete('Xexport.vim')
 
+  " Check that in a Vim9 script 'cpo' is set to the Vim default.
+  set cpo&vi
+  let cpo_before = &cpo
+  let lines =<< trim END
+    vim9script
+    g:cpo_in_vim9script = &cpo
+  END
+  writefile(lines, 'Xvim9_script')
+  source Xvim9_script
+  assert_equal(cpo_before, &cpo)
+  set cpo&vim
+  assert_equal(&cpo, g:cpo_in_vim9script)
+  delete('Xvim9_script')
+enddef
+
+def Test_vim9script_fails()
   CheckScriptFailure(['scriptversion 2', 'vim9script'], 'E1039:')
   CheckScriptFailure(['vim9script', 'scriptversion 2'], 'E1040:')
+  CheckScriptFailure(['export let some = 123'], 'E1042:')
+  CheckScriptFailure(['vim9script', 'export let g:some'], 'E1044:')
+  CheckScriptFailure(['vim9script', 'export echo 134'], 'E1043:')
+
+  assert_fails('vim9script', 'E1038')
+  assert_fails('export something', 'E1042')
 enddef
 
 def Test_vim9script_call()
