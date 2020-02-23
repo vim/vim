@@ -18,7 +18,7 @@
 #endif
 
 #ifdef MSWIN
-# include "vimio.h"
+# include <io.h>
 #endif
 
 // ============ the header file puzzle: order matters =========
@@ -33,7 +33,7 @@
  * test program.  Other items from configure may also be wrong then!
  */
 # if (VIM_SIZEOF_INT == 0)
-    Error: configure did not run properly.  Check auto/config.log.
+#  error configure did not run properly.  Check auto/config.log.
 # endif
 
 # if (defined(__linux__) && !defined(__ANDROID__)) || defined(__CYGWIN__)
@@ -119,12 +119,6 @@
 # endif
 #endif
 
-// Visual Studio 2005 has 'deprecated' many of the standard CRT functions
-#if _MSC_VER >= 1400
-# define _CRT_SECURE_NO_DEPRECATE
-# define _CRT_NONSTDC_NO_DEPRECATE
-#endif
-
 /*
  * VIM_SIZEOF_INT is used in feature.h, and the system-specific included files
  * need items from feature.h.  Therefore define VIM_SIZEOF_INT here.
@@ -148,7 +142,7 @@
 #endif
 
 #if VIM_SIZEOF_INT < 4 && !defined(PROTO)
-    Error: Vim only works with 32 bit int or larger
+# error Vim only works with 32 bit int or larger
 #endif
 
 /*
@@ -333,16 +327,6 @@
 typedef unsigned char	char_u;
 typedef unsigned short	short_u;
 typedef unsigned int	int_u;
-
-// Older systems do not have support for long long
-// use a typedef instead of hard-coded long long
-#ifdef HAVE_NO_LONG_LONG
- typedef long long_long_T;
- typedef long unsigned long_long_u_T;
-#else
- typedef long long long_long_T;
- typedef long long unsigned long_long_u_T;
-#endif
 
 // Make sure long_u is big enough to hold a pointer.
 // On Win64, longs are 32 bits and pointers are 64 bits.
@@ -1129,20 +1113,6 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define VIMINFO_VERSION_WITH_REGISTERS 3
 #define VIMINFO_VERSION_WITH_MARKS 4
 
-typedef enum {
-    BVAL_NR,
-    BVAL_STRING,
-    BVAL_EMPTY
-} btype_T;
-
-typedef struct {
-    btype_T	bv_type;
-    long	bv_nr;
-    char_u	*bv_string;
-    int		bv_len;		// length of bv_string
-    int		bv_allocated;	// bv_string was allocated
-} bval_T;
-
 /*
  * Values for do_tag().
  */
@@ -1229,12 +1199,13 @@ typedef struct {
  * When OPT_GLOBAL and OPT_LOCAL are both missing, set both local and global
  * values, get local value.
  */
-#define OPT_FREE	1	// free old value if it was allocated
-#define OPT_GLOBAL	2	// use global value
-#define OPT_LOCAL	4	// use local value
-#define OPT_MODELINE	8	// option in modeline
-#define OPT_WINONLY	16	// only set window-local options
-#define OPT_NOWIN	32	// don't set window-local options
+#define OPT_FREE	0x01	// free old value if it was allocated
+#define OPT_GLOBAL	0x02	// use global value
+#define OPT_LOCAL	0x04	// use local value
+#define OPT_MODELINE	0x08	// option in modeline
+#define OPT_WINONLY	0x10	// only set window-local options
+#define OPT_NOWIN	0x20	// don't set window-local options
+#define OPT_ONECOLUMN	0x40	// list options one per line
 
 // Magic chars used in confirm dialog strings
 #define DLG_BUTTON_SEP	'\n'
@@ -1302,6 +1273,7 @@ enum auto_event
     EVENT_COLORSCHEMEPRE,	// before loading a colorscheme
     EVENT_COMPLETECHANGED,	// after completion popup menu changed
     EVENT_COMPLETEDONE,		// after finishing insert complete
+    EVENT_COMPLETEDONEPRE,	// idem, before clearing info
     EVENT_CURSORHOLD,		// cursor in same position for a while
     EVENT_CURSORHOLDI,		// idem, in Insert mode
     EVENT_CURSORMOVED,		// cursor was moved
@@ -1993,31 +1965,32 @@ typedef int sock_T;
 #define VV_ERRORS	67
 #define VV_FALSE	68
 #define VV_TRUE		69
-#define VV_NULL		70
-#define VV_NONE		71
-#define VV_VIM_DID_ENTER 72
-#define VV_TESTING	73
-#define VV_TYPE_NUMBER	74
-#define VV_TYPE_STRING	75
-#define VV_TYPE_FUNC	76
-#define VV_TYPE_LIST	77
-#define VV_TYPE_DICT	78
-#define VV_TYPE_FLOAT	79
-#define VV_TYPE_BOOL	80
-#define VV_TYPE_NONE	81
-#define VV_TYPE_JOB	82
-#define VV_TYPE_CHANNEL	83
-#define VV_TYPE_BLOB	84
-#define VV_TERMRFGRESP	85
-#define VV_TERMRBGRESP	86
-#define VV_TERMU7RESP	87
-#define VV_TERMSTYLERESP 88
-#define VV_TERMBLINKRESP 89
-#define VV_EVENT	90
-#define VV_VERSIONLONG	91
-#define VV_ECHOSPACE	92
-#define VV_ARGV		93
-#define VV_LEN		94	// number of v: vars
+#define VV_NONE		70
+#define VV_NULL		71
+#define VV_NUMBERSIZE	72
+#define VV_VIM_DID_ENTER 73
+#define VV_TESTING	74
+#define VV_TYPE_NUMBER	75
+#define VV_TYPE_STRING	76
+#define VV_TYPE_FUNC	77
+#define VV_TYPE_LIST	78
+#define VV_TYPE_DICT	79
+#define VV_TYPE_FLOAT	80
+#define VV_TYPE_BOOL	81
+#define VV_TYPE_NONE	82
+#define VV_TYPE_JOB	83
+#define VV_TYPE_CHANNEL	84
+#define VV_TYPE_BLOB	85
+#define VV_TERMRFGRESP	86
+#define VV_TERMRBGRESP	87
+#define VV_TERMU7RESP	88
+#define VV_TERMSTYLERESP 89
+#define VV_TERMBLINKRESP 90
+#define VV_EVENT	91
+#define VV_VERSIONLONG	92
+#define VV_ECHOSPACE	93
+#define VV_ARGV		94
+#define VV_LEN		95	// number of v: vars
 
 // used for v_number in VAR_BOOL and VAR_SPECIAL
 #define VVAL_FALSE	0L	// VAR_BOOL
@@ -2149,6 +2122,10 @@ typedef enum {
     USEPOPUP_NORMAL,	// use info popup
     USEPOPUP_HIDDEN	// use info popup initially hidden
 } use_popup_T;
+
+// Flags for assignment functions.
+#define LET_IS_CONST	1   // ":const"
+#define LET_NO_COMMAND	2   // "var = expr" without ":let" or ":const"
 
 #include "ex_cmds.h"	    // Ex command defines
 #include "spell.h"	    // spell checking stuff
@@ -2567,6 +2544,9 @@ typedef enum {
 #define FCERR_OTHER	6
 #define FCERR_DELETED	7
 #define FCERR_NOTMETHOD	8   // function cannot be used as a method
+
+// fixed buffer length for fname_trans_sid()
+#define FLEN_FIXED 40
 
 // flags for find_name_end()
 #define FNE_INCL_BR	1	// include [] in name

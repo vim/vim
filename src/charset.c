@@ -1939,7 +1939,7 @@ vim_str2nr(
 	}
     }
 
-    // Check for an alpha-numeric character immediately following, that is
+    // Check for an alphanumeric character immediately following, that is
     // most likely a typo.
     if (strict && n - 1 != maxlen && ASCII_ISALNUM(*ptr))
 	return;

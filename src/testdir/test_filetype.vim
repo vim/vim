@@ -139,7 +139,7 @@ let s:filename_checks = {
     \ 'dockerfile': ['Containerfile', 'Dockerfile', 'file.Dockerfile'],
     \ 'dosbatch': ['file.bat', 'file.sys'],
     \ 'dosini': ['.editorconfig', '/etc/yum.conf', 'file.ini'],
-    \ 'dot': ['file.dot'],
+    \ 'dot': ['file.dot', 'file.gv'],
     \ 'dracula': ['file.drac', 'file.drc', 'filelvs', 'filelpe'],
     \ 'dsl': ['file.dsl'],
     \ 'dtd': ['file.dtd'],
@@ -234,6 +234,7 @@ let s:filename_checks = {
     \ 'kconfig': ['Kconfig', 'Kconfig.debug'],
     \ 'kivy': ['file.kv'],
     \ 'kix': ['file.kix'],
+    \ 'kotlin': ['file.kt', 'file.ktm', 'file.kts'],
     \ 'kscript': ['file.ks'],
     \ 'kwt': ['file.k'],
     \ 'lace': ['file.ace', 'file.ACE'],
@@ -432,6 +433,9 @@ let s:filename_checks = {
     \ 'sudoers': ['any/etc/sudoers', 'sudoers.tmp'],
     \ 'svg': ['file.svg'],
     \ 'svn': ['svn-commitfile.tmp'],
+    \ 'swift': ['file.swift'],
+    \ 'swiftgyb': ['file.swift.gyb'],
+    \ 'sil': ['file.sil'],
     \ 'sysctl': ['/etc/sysctl.conf', '/etc/sysctl.d/file.conf'],
     \ 'systemd': ['any/systemd/file.automount', 'any/systemd/file.mount', 'any/systemd/file.path', 'any/systemd/file.service', 'any/systemd/file.socket', 'any/systemd/file.swap', 'any/systemd/file.target', 'any/systemd/file.timer', '/etc/systemd/system/some.d/file.conf', '/etc/systemd/system/some.d/.#file'],
     \ 'systemverilog': ['file.sv', 'file.svh'],
@@ -617,3 +621,29 @@ func Test_setfiletype_completion()
   call feedkeys(":setfiletype java\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"setfiletype java javacc javascript javascriptreact', @:)
 endfunc
+
+" Test for ':filetype detect' command for a buffer without a file
+func Test_emptybuf_ftdetect()
+  new
+  call setline(1, '#!/bin/sh')
+  call assert_equal('', &filetype)
+  filetype detect
+  call assert_equal('sh', &filetype)
+  close!
+endfunc
+
+" Test for ':filetype indent on' and ':filetype indent off' commands
+func Test_filetype_indent_off()
+  new Xtest.vim
+  filetype indent on
+  call assert_equal(1, g:did_indent_on)
+  call assert_equal(['filetype detection:ON  plugin:OFF  indent:ON'],
+        \ execute('filetype')->split("\n"))
+  filetype indent off
+  call assert_equal(0, exists('g:did_indent_on'))
+  call assert_equal(['filetype detection:ON  plugin:OFF  indent:OFF'],
+        \ execute('filetype')->split("\n"))
+  close
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -2006,7 +2006,7 @@ fun! Test_normal37_g_cmd6()
     tabclose
   endfor
   " clean up
-  call assert_fails(':tabclose', 'E784')
+  call assert_fails(':tabclose', 'E784:')
 endfunc
 
 fun! Test_normal38_nvhome()
@@ -2704,4 +2704,30 @@ func Test_normal_gk()
   bw!
   bw!
   set cpoptions& number& numberwidth&
+endfunc
+
+" Test for cursor movement with '-' in 'cpoptions'
+func Test_normal_cpo_minus()
+  new
+  call setline(1, ['foo', 'bar', 'baz'])
+  let save_cpo = &cpo
+  set cpo+=-
+  call assert_beeps('normal 10j')
+  call assert_equal(1, line('.'))
+  normal G
+  call assert_beeps('normal 10k')
+  call assert_equal(3, line('.'))
+  call assert_fails(10, 'E16:')
+  let &cpo = save_cpo
+  close!
+endfunc
+
+" Test for using : to run a multi-line Ex command in operator pending mode
+func Test_normal_yank_with_excmd()
+  new
+  call setline(1, ['foo', 'bar', 'baz'])
+  let @a = ''
+  call feedkeys("\"ay:if v:true\<CR>normal l\<CR>endif\<CR>", 'xt')
+  call assert_equal('f', @a)
+  close!
 endfunc

@@ -1786,7 +1786,7 @@ spell_load_cb(char_u *fname, void *cookie)
 count_common_word(
     slang_T	*lp,
     char_u	*word,
-    int		len,	    // word length, -1 for upto NUL
+    int		len,	    // word length, -1 for up to NUL
     int		count)	    // 1 to count once, 10 to init
 {
     hash_T	hash;
@@ -2861,7 +2861,7 @@ ex_spellrepall(exarg_T *eap UNUSED)
     curwin->w_cursor.lnum = 0;
     while (!got_int)
     {
-	if (do_search(NULL, '/', frompat, 1L, SEARCH_KEEP, NULL) == 0
+	if (do_search(NULL, '/', '/', frompat, 1L, SEARCH_KEEP, NULL) == 0
 						   || u_save_cursor() == FAIL)
 	    break;
 

@@ -589,7 +589,7 @@ func Test_edit_CTRL_K()
   call feedkeys("A\<c-x>\<c-k>\<down>\<down>\<down>\<down>\<cr>\<esc>", 'tnix')
   call assert_equal(['AA'], getline(1, '$'))
 
-  " press an unexecpted key after dictionary completion
+  " press an unexpected key after dictionary completion
   %d
   call setline(1, 'A')
   call cursor(1, 1)
@@ -1500,6 +1500,22 @@ func Test_edit_startinsert()
   bwipe!
 endfunc
 
+" Test for :startreplace and :startgreplace
+func Test_edit_startreplace()
+  new
+  call setline(1, 'abc')
+  call feedkeys("l:startreplace\<CR>xyz\e", 'xt')
+  call assert_equal('axyz', getline(1))
+  call feedkeys("0:startreplace!\<CR>abc\e", 'xt')
+  call assert_equal('axyzabc', getline(1))
+  call setline(1, "a\tb")
+  call feedkeys("0l:startgreplace\<CR>xyz\e", 'xt')
+  call assert_equal("axyz\tb", getline(1))
+  call feedkeys("0i\<C-R>=execute('startreplace')\<CR>12\e", 'xt')
+  call assert_equal("12axyz\tb", getline(1))
+  close!
+endfunc
+
 func Test_edit_noesckeys()
   CheckNotGui
   new
@@ -1519,3 +1535,5 @@ func Test_edit_noesckeys()
   bwipe!
   set esckeys
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

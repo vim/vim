@@ -3041,6 +3041,10 @@ vgetorpeek(int advance)
 #ifdef FEAT_CMDWIN
 		    tc = c;
 #endif
+		    // return from main_loop()
+		    if (pending_exmode_active)
+			exmode_active = EXMODE_NORMAL;
+
 		    break;
 		}
 
@@ -3237,7 +3241,7 @@ vgetorpeek(int advance)
  *	1. a scriptfile
  *	2. the keyboard
  *
- *  As much characters as we can get (upto 'maxlen') are put in "buf" and
+ *  As many characters as we can get (up to 'maxlen') are put in "buf" and
  *  NUL terminated (buffer length must be 'maxlen' + 1).
  *  Minimum for "maxlen" is 3!!!!
  *

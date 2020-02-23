@@ -200,6 +200,8 @@ static void vtp_sgr_bulks(int argc, int *argv);
 
 static guicolor_T save_console_bg_rgb;
 static guicolor_T save_console_fg_rgb;
+static guicolor_T store_console_bg_rgb;
+static guicolor_T store_console_fg_rgb;
 
 static int g_color_index_bg = 0;
 static int g_color_index_fg = 7;
@@ -217,6 +219,7 @@ static int default_console_color_fg = 0xc0c0c0; // white
 
 static void set_console_color_rgb(void);
 static void reset_console_color_rgb(void);
+static void restore_console_color_rgb(void);
 #endif
 
 // This flag is newly created from Windows 10
@@ -4170,7 +4173,6 @@ mch_system_piped(char *cmd, int options)
     int		ta_len = 0;		// valid bytes in ta_buf[]
 
     DWORD	i;
-    int		c;
     int		noread_cnt = 0;
     garray_T	ga;
     int		delay = 1;
@@ -4309,29 +4311,7 @@ mch_system_piped(char *cmd, int options)
 			}
 		    }
 
-		    // replace K_BS by <BS> and K_DEL by <DEL>
-		    for (i = ta_len; i < ta_len + len; ++i)
-		    {
-			if (ta_buf[i] == CSI && len - i > 2)
-			{
-			    c = TERMCAP2KEY(ta_buf[i + 1], ta_buf[i + 2]);
-			    if (c == K_DEL || c == K_KDEL || c == K_BS)
-			    {
-				mch_memmove(ta_buf + i + 1, ta_buf + i + 3,
-					    (size_t)(len - i - 2));
-				if (c == K_DEL || c == K_KDEL)
-				    ta_buf[i] = DEL;
-				else
-				    ta_buf[i] = Ctrl_H;
-				len -= 2;
-			    }
-			}
-			else if (ta_buf[i] == '\r')
-			    ta_buf[i] = '\n';
-			if (has_mbyte)
-			    i += (*mb_ptr2len_len)(ta_buf + i,
-						    ta_len + len - i) - 1;
-		    }
+		    term_replace_bs_del_keycode(ta_buf, ta_len, len);
 
 		    /*
 		     * For pipes: echo the typed characters.  For a pty this
@@ -4945,24 +4925,6 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
     if (ga_grow(gap, 1) == FAIL)
 	return;
 
-    if (base)
-    {
-	WCHAR	*p = (WCHAR*) base;
-
-	// for last \0
-	if (ga_grow(gap, 1) == FAIL)
-	    return;
-
-	while (*p != 0 || *(p + 1) != 0)
-	{
-	    if (ga_grow(gap, 1) == OK)
-		*((WCHAR*)gap->ga_data + gap->ga_len++) = *p;
-	    p++;
-	}
-	FreeEnvironmentStrings(base);
-	*((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
-    }
-
     if (env != NULL)
     {
 	for (hi = env->dv_hashtab.ht_array; todo > 0; ++hi)
@@ -4992,6 +4954,24 @@ win32_build_env(dict_T *env, garray_T *gap, int is_terminal)
 		vim_free(wval);
 	    }
 	}
+    }
+
+    if (base)
+    {
+	WCHAR	*p = (WCHAR*) base;
+
+	// for last \0
+	if (ga_grow(gap, 1) == FAIL)
+	    return;
+
+	while (*p != 0 || *(p + 1) != 0)
+	{
+	    if (ga_grow(gap, 1) == OK)
+		*((WCHAR*)gap->ga_data + gap->ga_len++) = *p;
+	    p++;
+	}
+	FreeEnvironmentStrings(base);
+	*((WCHAR*)gap->ga_data + gap->ga_len++) = L'\0';
     }
 
 # if defined(FEAT_CLIENTSERVER) || defined(FEAT_TERMINAL)
@@ -5381,9 +5361,9 @@ mch_signal_job(job_T *job, char_u *how)
 	{
 	    if (job->jv_channel != NULL && job->jv_channel->ch_anonymous_pipe)
 		job->jv_channel->ch_killing = TRUE;
-	    return TerminateJobObject(job->jv_job_object, 0) ? OK : FAIL;
+	    return TerminateJobObject(job->jv_job_object, -1) ? OK : FAIL;
 	}
-	return terminate_all(job->jv_proc_info.hProcess, 0) ? OK : FAIL;
+	return terminate_all(job->jv_proc_info.hProcess, -1) ? OK : FAIL;
     }
 
     if (!AttachConsole(job->jv_proc_info.dwProcessId))
@@ -5496,7 +5476,7 @@ termcap_mode_end(void)
     cb = &g_cbNonTermcap;
 # endif
     RestoreConsoleBuffer(cb, p_rs);
-    reset_console_color_rgb();
+    restore_console_color_rgb();
     SetConsoleCursorInfo(g_hConOut, &g_cci);
 
     if (p_rs || exiting)
@@ -6927,7 +6907,7 @@ myresetstkoflw(void)
 	return 0;
     pStackBase = (BYTE*)mbi.AllocationBase;
 
-    // ...and the page thats min_stack_req pages away from stack base; this is
+    // ...and the page that's min_stack_req pages away from stack base; this is
     // the lowest page we could use.
     pLowestPossiblePage = pStackBase + MIN_STACK_WINNT * nPageSize;
 
@@ -7327,6 +7307,8 @@ vtp_init(void)
 	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
     save_console_bg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_bg];
     save_console_fg_rgb = (guicolor_T)csbi.ColorTable[g_color_index_fg];
+    store_console_bg_rgb = save_console_bg_rgb;
+    store_console_fg_rgb = save_console_fg_rgb;
 
 # ifdef FEAT_TERMGUICOLORS
     bg = (COLORREF)csbi.ColorTable[g_color_index_bg];
@@ -7343,7 +7325,7 @@ vtp_init(void)
     static void
 vtp_exit(void)
 {
-    reset_console_color_rgb();
+    restore_console_color_rgb();
 }
 
     static int
@@ -7433,6 +7415,8 @@ set_console_color_rgb(void)
     csbi.cbSize = sizeof(csbi);
     csbi.srWindow.Right += 1;
     csbi.srWindow.Bottom += 1;
+    store_console_bg_rgb = csbi.ColorTable[g_color_index_bg];
+    store_console_fg_rgb = csbi.ColorTable[g_color_index_fg];
     csbi.ColorTable[g_color_index_bg] = (COLORREF)bg;
     csbi.ColorTable[g_color_index_fg] = (COLORREF)fg;
     if (has_csbiex)
@@ -7485,8 +7469,34 @@ get_default_console_color(
 }
 # endif
 
+/*
+ * Set the console colors to the original colors or the last set colors.
+ */
     static void
 reset_console_color_rgb(void)
+{
+# ifdef FEAT_TERMGUICOLORS
+    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+
+    csbi.cbSize = sizeof(csbi);
+    if (has_csbiex)
+	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+
+    csbi.cbSize = sizeof(csbi);
+    csbi.srWindow.Right += 1;
+    csbi.srWindow.Bottom += 1;
+    csbi.ColorTable[g_color_index_bg] = (COLORREF)store_console_bg_rgb;
+    csbi.ColorTable[g_color_index_fg] = (COLORREF)store_console_fg_rgb;
+    if (has_csbiex)
+	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+# endif
+}
+
+/*
+ * Set the console colors to the original colors.
+ */
+    static void
+restore_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
     DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;

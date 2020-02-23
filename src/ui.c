@@ -1500,7 +1500,7 @@ clip_invert_area(
 	    row2--;
 	}
 
-	// Handle the rectangle thats left
+	// Handle the rectangle that's left
 	if (row2 >= row1)
 	    clip_invert_rectangle(cbd, row1, 0, row2 - row1 + 1,
 							 (int)Columns, invert);

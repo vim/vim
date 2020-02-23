@@ -111,7 +111,7 @@ struct data_block
     unsigned	db_txt_end;	// byte just after data block
     linenr_T	db_line_count;	// number of lines in this block
     unsigned	db_index[1];	// index for start of line (actually bigger)
-				// followed by empty space upto db_txt_start
+				// followed by empty space up to db_txt_start
 				// followed by the text in the lines until
 				// end of page
 };
@@ -2079,94 +2079,6 @@ get_b0_dict(char_u *fname, dict_T *d)
 	dict_add_string(d, "error", (char_u *)"Cannot open file");
 }
 #endif
-
-/*
- * Cache of the current timezone name as retrieved from TZ, or an empty string
- * where unset, up to 64 octets long including trailing null byte.
- */
-#if defined(HAVE_LOCALTIME_R) && defined(HAVE_TZSET)
-static char	tz_cache[64];
-#endif
-
-/*
- * Call either localtime(3) or localtime_r(3) from POSIX libc time.h, with the
- * latter version preferred for reentrancy.
- *
- * If we use localtime_r(3) and we have tzset(3) available, check to see if the
- * environment variable TZ has changed since the last run, and call tzset(3) to
- * update the global timezone variables if it has.  This is because the POSIX
- * standard doesn't require localtime_r(3) implementations to do that as it
- * does with localtime(3), and we don't want to call tzset(3) every time.
- */
-    struct tm *
-vim_localtime(
-    const time_t	*timep,		// timestamp for local representation
-    struct tm		*result UNUSED)	// pointer to caller return buffer
-{
-#ifdef HAVE_LOCALTIME_R
-# ifdef HAVE_TZSET
-    char		*tz;		// pointer for TZ environment var
-
-    tz = (char *)mch_getenv((char_u *)"TZ");
-    if (tz == NULL)
-	tz = "";
-    if (STRNCMP(tz_cache, tz, sizeof(tz_cache) - 1) != 0)
-    {
-	tzset();
-	vim_strncpy((char_u *)tz_cache, (char_u *)tz, sizeof(tz_cache) - 1);
-    }
-# endif	// HAVE_TZSET
-    return localtime_r(timep, result);
-#else
-    return localtime(timep);
-#endif	// HAVE_LOCALTIME_R
-}
-
-/*
- * Replacement for ctime(), which is not safe to use.
- * Requires strftime(), otherwise returns "(unknown)".
- * If "thetime" is invalid returns "(invalid)".  Never returns NULL.
- * When "add_newline" is TRUE add a newline like ctime() does.
- * Uses a static buffer.
- */
-    char *
-get_ctime(time_t thetime, int add_newline)
-{
-    static char buf[50];
-#ifdef HAVE_STRFTIME
-    struct tm	tmval;
-    struct tm	*curtime;
-
-    curtime = vim_localtime(&thetime, &tmval);
-    // MSVC returns NULL for an invalid value of seconds.
-    if (curtime == NULL)
-	vim_strncpy((char_u *)buf, (char_u *)_("(Invalid)"), sizeof(buf) - 1);
-    else
-    {
-	(void)strftime(buf, sizeof(buf) - 1, _("%a %b %d %H:%M:%S %Y"),
-								    curtime);
-# ifdef MSWIN
-	if (enc_codepage >= 0 && (int)GetACP() != enc_codepage)
-	{
-	    char_u	*to_free = NULL;
-	    int		len;
-
-	    acp_to_enc((char_u *)buf, (int)strlen(buf), &to_free, &len);
-	    if (to_free != NULL)
-	    {
-		STRCPY(buf, to_free);
-		vim_free(to_free);
-	    }
-	}
-# endif
-    }
-#else
-    STRCPY(buf, "(unknown)");
-#endif
-    if (add_newline)
-	STRCAT(buf, "\n");
-    return buf;
-}
 
 /*
  * Give information about an existing swap file.
@@ -5753,8 +5665,8 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 	else
 	{
 #ifdef FEAT_PROP_POPUP
-	    long textprop_total = 0;
-	    long textprop_size = 0;
+	    size_t textprop_total = 0;
+	    size_t textprop_size = 0;
 	    char_u *l1, *l2;
 #endif
 
@@ -5774,7 +5686,7 @@ ml_find_line_or_offset(buf_T *buf, linenr_T lnum, long *offp)
 		if (!(offset >= size
 			+ text_end - (int)((dp->db_index[idx]) & DB_INDEX_MASK)
 #ifdef FEAT_PROP_POPUP
-			- textprop_total - textprop_size
+			- (long)(textprop_total + textprop_size)
 #endif
 			+ ffdos))
 		    break;

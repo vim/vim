@@ -302,6 +302,10 @@
 # endif
 #endif
 
+#ifdef FEAT_EVAL
+# define FUNCARG(fp, j)	((char_u **)(fp->uf_args.ga_data))[j]
+#endif
+
 /*
  * In a hashtab item "hi_key" points to "di_key" in a dictitem.
  * This avoids adding a pointer to the hashtab item.
@@ -340,9 +344,16 @@
 
 // Give an error in curwin is a popup window and evaluate to TRUE.
 #ifdef FEAT_PROP_POPUP
-# define ERROR_IF_POPUP_WINDOW error_if_popup_window()
+# define ERROR_IF_POPUP_WINDOW error_if_popup_window(FALSE)
+# define ERROR_IF_ANY_POPUP_WINDOW error_if_popup_window(TRUE)
 #else
 # define ERROR_IF_POPUP_WINDOW 0
+# define ERROR_IF_ANY_POPUP_WINDOW 0
+#endif
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_TERMINAL)
+# define ERROR_IF_TERM_POPUP_WINDOW error_if_term_popup_window()
+#else
+# define ERROR_IF_TERM_POPUP_WINDOW 0
 #endif
 
 

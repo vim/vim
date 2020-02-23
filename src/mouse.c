@@ -1736,6 +1736,11 @@ retnomove:
 # endif
 	}
 #endif
+#if defined(FEAT_PROP_POPUP) && defined(FEAT_TERMINAL)
+	if (popup_is_popup(curwin) && curbuf->b_term != NULL)
+	    // terminal in popup window: don't jump to another window
+	    return IN_OTHER_WIN;
+#endif
 	// Only change window focus when not clicking on or dragging the
 	// status line.  Do change focus when releasing the mouse button
 	// (MOUSE_FOCUS was set above if we dragged first).

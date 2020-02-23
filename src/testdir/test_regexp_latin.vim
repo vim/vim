@@ -2,6 +2,8 @@
 set encoding=latin1
 scriptencoding latin1
 
+source check.vim
+
 func s:equivalence_test()
   let str = "AÀÁÂÃÄÅ B C D EÈÉÊË F G H IÌÍÎÏ J K L M NÑ OÒÓÔÕÖØ P Q R S T UÙÚÛÜ V W X Yİ Z aàáâãäå b c d eèéêë f g h iìíîï j k l m nñ oòóôõöø p q r s t uùúûü v w x yıÿ z"
   let groups = split(str)
@@ -132,9 +134,9 @@ func Test_range_with_newline()
 endfunc
 
 func Test_pattern_compile_speed()
-  if !exists('+spellcapcheck') || !has('reltime')
-    return
-  endif
+  CheckOption spellcapcheck
+  CheckFunction reltimefloat
+
   let start = reltime()
   " this used to be very slow, not it should be about a second
   set spc=\\v(((((Nxxxxxxx&&xxxx){179})+)+)+){179}

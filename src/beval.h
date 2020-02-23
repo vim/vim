@@ -38,7 +38,7 @@ typedef struct BalloonEvalStruct
     GtkWidget		*balloonShell;
     GtkWidget		*balloonLabel;
     unsigned int	timerID;	// timer for run
-    BeState		showState;	// tells us whats currently going on
+    BeState		showState;	// tells us what's currently going on
     int			x;
     int			y;
     unsigned int	state;		// Button/Modifier key state
@@ -48,7 +48,7 @@ typedef struct BalloonEvalStruct
     Widget		balloonShell;
     Widget		balloonLabel;
     XtIntervalId	timerID;	// timer for run
-    BeState		showState;	// tells us whats currently going on
+    BeState		showState;	// tells us what's currently going on
     XtAppContext	appContext;	// used in event handler
     Position		x;
     Position		y;
@@ -60,7 +60,7 @@ typedef struct BalloonEvalStruct
     HWND		balloon;
     int			x;
     int			y;
-    BeState		showState;	// tells us whats currently going on
+    BeState		showState;	// tells us what's currently going on
 #  endif
 # endif
 # if !defined(FEAT_GUI_GTK) && !defined(FEAT_GUI_MSWIN)

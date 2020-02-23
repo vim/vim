@@ -933,4 +933,44 @@ func Test_win_splitmove()
   tabclose
 endfunc
 
+" Test for the :only command
+func Test_window_only()
+  new
+  set modified
+  new
+  call assert_fails('only', 'E445:')
+  only!
+  " Test for :only with a count
+  let wid = win_getid()
+  new
+  new
+  3only
+  call assert_equal(1, winnr('$'))
+  call assert_equal(wid, win_getid())
+  call assert_fails('close', 'E444:')
+  call assert_fails('%close', 'E16:')
+endfunc
+
+" Test for errors with :wincmd
+func Test_wincmd_errors()
+  call assert_fails('wincmd g', 'E474:')
+  call assert_fails('wincmd ab', 'E474:')
+endfunc
+
+" Test for errors with :winpos
+func Test_winpos_errors()
+  if !has("gui_running") && !has('win32')
+    call assert_fails('winpos', 'E188:')
+  endif
+  call assert_fails('winpos 10', 'E466:')
+endfunc
+
+" Test for +cmd in a :split command
+func Test_split_cmd()
+  split +set\ readonly
+  call assert_equal(1, &readonly)
+  call assert_equal(2, winnr('$'))
+  close
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

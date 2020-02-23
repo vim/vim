@@ -369,7 +369,9 @@ function Test_printf_errors()
   call assert_fails('echo printf("%d", [])', 'E745:')
   call assert_fails('echo printf("%d", 1, 2)', 'E767:')
   call assert_fails('echo printf("%*d", 1)', 'E766:')
-  call assert_fails('echo printf("%d", 1.2)', 'E805:')
+  if has('float')
+    call assert_fails('echo printf("%d", 1.2)', 'E805:')
+  endif
 endfunc
 
 function Test_max_min_errors()
@@ -380,9 +382,7 @@ function Test_max_min_errors()
 endfunc
 
 function Test_printf_64bit()
-  if has('num64')
-    call assert_equal("123456789012345", printf('%d', 123456789012345))
-  endif
+  call assert_equal("123456789012345", printf('%d', 123456789012345))
 endfunc
 
 function Test_printf_spec_s()
@@ -421,12 +421,8 @@ function Test_printf_spec_b()
   call assert_equal(" 0b1111011", printf('%#10b', 123))
   call assert_equal("0B01111011", printf('%#010B', 123))
   call assert_equal("1001001100101100000001011010010", printf('%b', 1234567890))
-  if has('num64')
-    call assert_equal("11100000100100010000110000011011101111101111001", printf('%b', 123456789012345))
-    call assert_equal("1111111111111111111111111111111111111111111111111111111111111111", printf('%b', -1))
-  else
-    call assert_equal("11111111111111111111111111111111", printf('%b', -1))
-  endif
+  call assert_equal("11100000100100010000110000011011101111101111001", printf('%b', 123456789012345))
+  call assert_equal("1111111111111111111111111111111111111111111111111111111111111111", printf('%b', -1))
 endfunc
 
 func Test_substitute_expr()
@@ -527,4 +523,13 @@ func Test_broken_number()
   call assert_fails('echo 011X', 'E15:')
   call assert_equal(2, str2nr('2a'))
   call assert_fails('inoremap <Char-0b1z> b', 'E474:')
+endfunc
+
+func Test_eval_after_if()
+  let s:val = ''
+  func SetVal(x)
+    let s:val ..= a:x
+  endfunc
+  if 0 | eval SetVal('a') | endif | call SetVal('b')
+  call assert_equal('b', s:val)
 endfunc

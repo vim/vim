@@ -576,8 +576,8 @@ ins_compl_add(
     char_u	*str,
     int		len,
     char_u	*fname,
-    char_u	**cptext,	// extra text for popup menu or NULL
-    typval_T	*user_data,	// "user_data" entry or NULL
+    char_u	**cptext,	    // extra text for popup menu or NULL
+    typval_T	*user_data UNUSED,  // "user_data" entry or NULL
     int		cdir,
     int		flags_arg,
     int		adup)		// accept duplicate match
@@ -1813,6 +1813,7 @@ ins_compl_prep(int c)
     int		want_cindent;
 #endif
     int		retval = FALSE;
+    int		prev_mode = ctrl_x_mode;
 
     // Forget any previous 'special' messages if this is actually
     // a ^X mode key - bar ^R, in which case we wait to see what it gives us.
@@ -2060,6 +2061,12 @@ ins_compl_prep(int c)
 
 	    auto_format(FALSE, TRUE);
 
+	    // Trigger the CompleteDonePre event to give scripts a chance to
+	    // act upon the completion before clearing the info, and restore
+	    // ctrl_x_mode, so that complete_info() can be used.
+	    ctrl_x_mode = prev_mode;
+	    ins_apply_autocmds(EVENT_COMPLETEDONEPRE);
+
 	    ins_compl_free();
 	    compl_started = FALSE;
 	    compl_matches = 0;
@@ -2085,7 +2092,7 @@ ins_compl_prep(int c)
 		do_c_expr_indent();
 #endif
 	    // Trigger the CompleteDone event to give scripts a chance to act
-	    // upon the completion.
+	    // upon the end of completion.
 	    ins_apply_autocmds(EVENT_COMPLETEDONE);
 	}
     }
@@ -2323,6 +2330,7 @@ ins_compl_add_list(list_T *list)
     int		dir = compl_direction;
 
     // Go through the List with matches and add each of them.
+    range_list_materialize(list);
     for (li = list->lv_first; li != NULL; li = li->li_next)
     {
 	if (ins_compl_add_tv(&li->li_tv, dir) == OK)
@@ -2504,6 +2512,7 @@ get_complete_info(list_T *what_list, dict_T *retdict)
     else
     {
 	what_flag = 0;
+	range_list_materialize(what_list);
 	for (item = what_list->lv_first; item != NULL; item = item->li_next)
 	{
 	    char_u *what = tv_get_string(&item->li_tv);

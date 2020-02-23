@@ -72,10 +72,10 @@ void term_get_bg_color(char_u *r, char_u *g, char_u *b);
 char_u *replace_termcodes(char_u *from, char_u **bufp, int flags, int *did_simplify);
 void show_termcodes(void);
 int show_one_termcode(char_u *name, char_u *code, int printit);
-char_u *translate_mapping(char_u *str);
 void update_tcap(int attr);
 void swap_tcap(void);
 guicolor_T gui_get_color_cmn(char_u *name);
 guicolor_T gui_get_rgb_color_cmn(int r, int g, int b);
 void cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx);
+void term_replace_bs_del_keycode(char_u *ta_buf, int ta_len, int len);
 /* vim: set ft=c : */

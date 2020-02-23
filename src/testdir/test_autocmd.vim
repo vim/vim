@@ -2357,3 +2357,51 @@ func Test_FileType_spell()
   au! crash
   setglobal spellfile=
 endfunc
+
+" Test closing a window or editing another buffer from a FileChangedRO handler
+" in a readonly buffer
+func Test_FileChangedRO_winclose()
+  augroup FileChangedROTest
+    au!
+    autocmd FileChangedRO * quit
+  augroup END
+  new
+  set readonly
+  call assert_fails('normal i', 'E788:')
+  close
+  augroup! FileChangedROTest
+
+  augroup FileChangedROTest
+    au!
+    autocmd FileChangedRO * edit Xfile
+  augroup END
+  new
+  set readonly
+  call assert_fails('normal i', 'E788:')
+  close
+  augroup! FileChangedROTest
+endfunc
+
+func LogACmd()
+  call add(g:logged, line('$'))
+endfunc
+
+func Test_TermChanged()
+  CheckNotGui
+
+  enew!
+  tabnew
+  call setline(1, ['a', 'b', 'c', 'd'])
+  $
+  au TermChanged * call LogACmd()
+  let g:logged = []
+  let term_save = &term
+  set term=xterm
+  call assert_equal([1, 4], g:logged)
+
+  au! TermChanged
+  let &term = term_save
+  bwipe!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

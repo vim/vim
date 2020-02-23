@@ -1931,7 +1931,7 @@ get_x11_thing(
 	 * keep traversing up the tree until a window with a title/icon is
 	 * found.
 	 */
-	// Previously this was only done for xterm and alikes.  I don't see a
+	// Previously this was only done for xterm and alike.  I don't see a
 	// reason why it would fail for other terminal emulators.
 	// if (term_is_xterm)
 	{
@@ -3937,16 +3937,6 @@ check_mouse_termcode(void)
     }
 }
 
-/*
- * set screen mode, always fails.
- */
-    int
-mch_screenmode(char_u *arg UNUSED)
-{
-    emsg(_(e_screenmode));
-    return FAIL;
-}
-
 #ifndef VMS
 
 /*
@@ -4990,29 +4980,7 @@ mch_call_shell_fork(
 			    }
 			}
 
-			// replace K_BS by <BS> and K_DEL by <DEL>
-			for (i = ta_len; i < ta_len + len; ++i)
-			{
-			    if (ta_buf[i] == CSI && len - i > 2)
-			    {
-				c = TERMCAP2KEY(ta_buf[i + 1], ta_buf[i + 2]);
-				if (c == K_DEL || c == K_KDEL || c == K_BS)
-				{
-				    mch_memmove(ta_buf + i + 1, ta_buf + i + 3,
-						       (size_t)(len - i - 2));
-				    if (c == K_DEL || c == K_KDEL)
-					ta_buf[i] = DEL;
-				    else
-					ta_buf[i] = Ctrl_H;
-				    len -= 2;
-				}
-			    }
-			    else if (ta_buf[i] == '\r')
-				ta_buf[i] = '\n';
-			    if (has_mbyte)
-				i += (*mb_ptr2len_len)(ta_buf + i,
-							ta_len + len - i) - 1;
-			}
+			term_replace_bs_del_keycode(ta_buf, ta_len, len);
 
 			/*
 			 * For pipes: echo the typed characters.

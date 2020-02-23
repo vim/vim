@@ -3009,7 +3009,7 @@ static struct vimoption options[] =
     {NULL, NULL, 0, NULL, PV_NONE, {NULL, NULL} SCTX_INIT}
 };
 
-#define PARAM_COUNT (sizeof(options) / sizeof(struct vimoption))
+#define OPTION_COUNT (sizeof(options) / sizeof(struct vimoption))
 
 // The following is needed to make the gen_opt_test.vim script work.
 // {"

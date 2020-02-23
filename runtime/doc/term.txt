@@ -579,7 +579,7 @@ remove highlighting from a line.  This is required for "hpterm".  Setting the
 versa.
 
 							*scroll-region*
-Some termcaps do not include an entry for 'cs' (scroll region), although the
+Some termcaps do not include an entry for "cs" (scroll region), although the
 terminal does support it.  For example: xterm on a Sun.  You can use the
 builtin_xterm or define t_cs yourself.  For example: >
 	:set t_cs=^V^[[%i%d;%dr
@@ -596,11 +596,9 @@ cleared when scrolling).
 Unfortunately it is not possible to deduce from the termcap how cursor
 positioning should be done when using a scrolling region: Relative to the
 beginning of the screen or relative to the beginning of the scrolling region.
-Most terminals use the first method.  A known exception is the MS-Windows
-console (pcterm).  The 't_CS' option should be set to any string when cursor
-positioning is relative to the start of the scrolling region.  It should be
-set to an empty string otherwise.  It defaults to "yes" when 'term' is
-"pcterm".
+Most terminals use the first method.  The 't_CS' option should be set to any
+string when cursor positioning is relative to the start of the scrolling
+region.  It should be set to an empty string otherwise.
 
 Note for xterm users: The shifted cursor keys normally don't work.  You can
 	make them work with the xmodmap command and some mappings in Vim.
@@ -652,15 +650,7 @@ One command can be used to set the screen size:
 :mod[e] [mode]
 
 Without argument this only detects the screen size and redraws the screen.
-With MS-Windows it is possible to switch screen mode.  [mode] can be one of
-these values:
-	"bw40"		40 columns black&white
-	"c40"		40 columns color
-	"bw80"		80 columns black&white
-	"c80"		80 columns color (most people use this)
-	"mono"		80 columns monochrome
-	"c4350"		43 or 50 lines EGA/VGA mode
-	number		mode number to use, depends on your video card
+[mode] was used on MS-DOS, but it doesn't work anymore.
 
 ==============================================================================
 4. Slow and fast terminals			*slow-fast-terminal*
@@ -911,8 +901,8 @@ A double click on a word selects that word.  'iskeyword' is used to specify
 which characters are included in a word.  A double click on a character
 that has a match selects until that match (like using "v%").  If the match is
 an #if/#else/#endif block, the selection becomes linewise.
-For xterm the time for double clicking can be set with the 'mousetime' option.
-For the other systems this time is defined outside of Vim.
+For MS-Windows and xterm the time for double clicking can be set with the
+'mousetime' option.  For the other systems this time is defined outside of Vim.
 An example, for using a double click to jump to the tag under the cursor: >
 	:map <2-LeftMouse> :exe "tag ". expand("<cword>")<CR>
 

@@ -783,11 +783,15 @@ OBJ = \
 	$(OUTDIR)/term.o \
 	$(OUTDIR)/testing.o \
 	$(OUTDIR)/textprop.o \
+	$(OUTDIR)/time.o \
 	$(OUTDIR)/ui.o \
 	$(OUTDIR)/undo.o \
 	$(OUTDIR)/usercmd.o \
 	$(OUTDIR)/userfunc.o \
 	$(OUTDIR)/version.o \
+	$(OUTDIR)/vim9compile.o \
+	$(OUTDIR)/vim9execute.o \
+	$(OUTDIR)/vim9script.o \
 	$(OUTDIR)/viminfo.o \
 	$(OUTDIR)/winclip.o \
 	$(OUTDIR)/window.o
@@ -1152,6 +1156,12 @@ $(OUTDIR)/misc1.o: misc1.c $(INCL) version.h
 $(OUTDIR)/netbeans.o: netbeans.c $(INCL) version.h
 
 $(OUTDIR)/version.o: version.c $(INCL) version.h
+
+$(OUTDIR)/vim9compile.o: vim9compile.c $(INCL) version.h
+
+$(OUTDIR)/vim9execute.o: vim9execute.c $(INCL) version.h
+
+$(OUTDIR)/vim9script.o: vim9script.c $(INCL) version.h
 
 $(OUTDIR)/viminfo.o: viminfo.c $(INCL) version.h
 

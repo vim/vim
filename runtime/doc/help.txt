@@ -197,7 +197,7 @@ Remarks about specific systems ~
 |os_390.txt|	OS/390 Unix
 |os_amiga.txt|	Amiga
 |os_beos.txt|	BeOS and BeBox
-|os_dos.txt|	MS-DOS and MS-Windows NT/95 common items
+|os_dos.txt|	MS-DOS and MS-Windows common items
 |os_mac.txt|	Macintosh
 |os_mint.txt|	Atari MiNT
 |os_msdos.txt|	MS-DOS (plain DOS and DOS box under Windows)
@@ -206,7 +206,7 @@ Remarks about specific systems ~
 |os_risc.txt|	RISC-OS
 |os_unix.txt|	Unix
 |os_vms.txt|	VMS
-|os_win32.txt|	MS-Windows 95/98/NT
+|os_win32.txt|	MS-Windows
 						*standard-plugin-list*
 Standard plugins ~
 |pi_getscript.txt| Downloading latest version of Vim scripts

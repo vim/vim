@@ -3543,7 +3543,7 @@ jumpto_tag(
 	    else
 		// start search before first line
 		curwin->w_cursor.lnum = 0;
-	    if (do_search(NULL, pbuf[0], pbuf + 1, (long)1,
+	    if (do_search(NULL, pbuf[0], pbuf[0], pbuf + 1, (long)1,
 							 search_options, NULL))
 		retval = OK;
 	    else
@@ -3555,7 +3555,7 @@ jumpto_tag(
 		 * try again, ignore case now
 		 */
 		p_ic = TRUE;
-		if (!do_search(NULL, pbuf[0], pbuf + 1, (long)1,
+		if (!do_search(NULL, pbuf[0], pbuf[0], pbuf + 1, (long)1,
 							 search_options, NULL))
 		{
 		    /*
@@ -3566,13 +3566,13 @@ jumpto_tag(
 		    cc = *tagp.tagname_end;
 		    *tagp.tagname_end = NUL;
 		    sprintf((char *)pbuf, "^%s\\s\\*(", tagp.tagname);
-		    if (!do_search(NULL, '/', pbuf, (long)1,
+		    if (!do_search(NULL, '/', '/', pbuf, (long)1,
 							 search_options, NULL))
 		    {
 			// Guess again: "^char * \<func  ("
 			sprintf((char *)pbuf, "^\\[#a-zA-Z_]\\.\\*\\<%s\\s\\*(",
 								tagp.tagname);
-			if (!do_search(NULL, '/', pbuf, (long)1,
+			if (!do_search(NULL, '/', '/', pbuf, (long)1,
 							 search_options, NULL))
 			    found = 0;
 		    }
@@ -3980,7 +3980,10 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
 
 	    // Skip pseudo-tag lines.
 	    if (STRNCMP(tp.tagname, "!_TAG_", 6) == 0)
+	    {
+		vim_free(matches[i]);
 		continue;
+	    }
 
 	    if ((dict = dict_alloc()) == NULL)
 		ret = FAIL;
@@ -4123,7 +4126,7 @@ tagstack_clear(win_T *wp)
 
 /*
  * Remove the oldest entry from the tag stack and shift the rest of
- * the entires to free up the top of the stack.
+ * the entries to free up the top of the stack.
  */
     static void
 tagstack_shift(win_T *wp)
@@ -4264,6 +4267,7 @@ set_tagstack(win_T *wp, dict_T *d, int action)
 	taggy_T	*tagstack = wp->w_tagstack;
 	int	tagstackidx = wp->w_tagstackidx;
 	int	tagstacklen = wp->w_tagstacklen;
+
 	// delete all the tag stack entries above the current entry
 	while (tagstackidx < tagstacklen)
 	    tagstack_clear_entry(&tagstack[--tagstacklen]);

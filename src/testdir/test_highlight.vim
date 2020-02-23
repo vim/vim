@@ -594,6 +594,8 @@ endfunc
 
 func Test_wincolor()
   CheckScreendump
+  " make sure the width is enough for the test
+  set columns=80
 
   let lines =<< trim END
 	set cursorline cursorcolumn rnu
@@ -622,6 +624,7 @@ endfunc
 
 func Test_wincolor_listchars()
   CheckScreendump
+  CheckFeature conceal
 
   let lines =<< trim END
 	call setline(1, ["one","\t\tsome random text enough long to show 'extends' and 'precedes' includingnbsps, preceding tabs and trailing spaces    ","three"])
@@ -685,7 +688,8 @@ func Test_1_highlight_Normalgroup_exists()
   endif
 endfunc
 
-function Test_no_space_before_xxx()
+" Do this test last, sometimes restoring the columns doesn't work
+function Test_z_no_space_before_xxx()
   let l:org_columns = &columns
   set columns=17
   let l:hi_StatusLineTermNC = join(split(execute('hi StatusLineTermNC')))

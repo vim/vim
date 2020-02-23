@@ -114,6 +114,7 @@ static struct event_name
     {"ColorSchemePre",	EVENT_COLORSCHEMEPRE},
     {"CompleteChanged",	EVENT_COMPLETECHANGED},
     {"CompleteDone",	EVENT_COMPLETEDONE},
+    {"CompleteDonePre",	EVENT_COMPLETEDONEPRE},
     {"CursorHold",	EVENT_CURSORHOLD},
     {"CursorHoldI",	EVENT_CURSORHOLDI},
     {"CursorMoved",	EVENT_CURSORMOVED},

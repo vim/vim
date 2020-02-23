@@ -1,7 +1,7 @@
 " Test for breakindent
 "
 " Note: if you get strange failures when adding new tests, it might be that
-" while the test is run, the breakindent cacheing gets in its way.
+" while the test is run, the breakindent caching gets in its way.
 " It helps to change the tabstop setting and force a redraw (e.g. see
 " Test_breakindent08())
 source check.vim
@@ -658,3 +658,29 @@ func Test_breakindent18_vartabs()
   call s:close_windows('set breakindent& list& listchars&')
 endfunc
 
+func Test_breakindent19_sbr_nextpage()
+  let s:input = ""
+  call s:test_windows('setl breakindent briopt=shift:2,sbr,min:18 sbr=>')
+  call setline(1, repeat('a', 200))
+  norm! 1gg
+  redraw!
+  let lines = s:screen_lines(1, 20)
+  let expect = [
+	\ "aaaaaaaaaaaaaaaaaaaa",
+	\ "> aaaaaaaaaaaaaaaaaa",
+	\ "> aaaaaaaaaaaaaaaaaa",
+	\ ]
+  call s:compare_lines(expect, lines)
+  " Scroll down one screen line
+  setl scrolloff=5
+  norm! 5gj
+  redraw!
+  let lines = s:screen_lines(1, 20)
+  let expect = [
+	\ "> aaaaaaaaaaaaaaaaaa",
+	\ "> aaaaaaaaaaaaaaaaaa",
+	\ "> aaaaaaaaaaaaaaaaaa",
+	\ ]
+  call s:compare_lines(expect, lines)
+  call s:close_windows('set breakindent& briopt& sbr&')
+endfunc

@@ -10,7 +10,7 @@ if s:python == ''
   throw 'Skipped: python program missing'
 endif
 
-" Run "testfunc" after sarting the server and stop the server afterwards.
+" Run "testfunc" after starting the server and stop the server afterwards.
 func s:run_server(testfunc, ...)
   call RunServer('test_netbeans.py', a:testfunc, a:000)
 endfunc

@@ -1,4 +1,4 @@
-*version8.txt*  For Vim version 8.2.  Last change: 2019 Dec 29
+*version8.txt*  For Vim version 8.2.  Last change: 2020 Feb 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -306,7 +306,6 @@ New and extended functions: ~
 |systemlist()|		get the result of a shell command as a list
 |test_alloc_fail()|	make memory allocation fail
 |test_autochdir()|	test 'autochdir' functionality
-test_disable_char_avail() test without typeahead (removed later)
 |test_garbagecollect_now()| free memory right now
 |test_null_channel()|	return a null Channel
 |test_null_dict()|	return a null Dict

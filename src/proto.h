@@ -221,11 +221,17 @@ void mbyte_im_set_active(int active_arg);
 #  include "textprop.pro"
 # endif
 # include "testing.pro"
+# include "time.pro"
 # include "ui.pro"
 # include "undo.pro"
 # include "usercmd.pro"
 # include "userfunc.pro"
 # include "version.pro"
+# ifdef FEAT_EVAL
+#  include "vim9compile.pro"
+#  include "vim9execute.pro"
+#  include "vim9script.pro"
+# endif
 # include "window.pro"
 
 # ifdef FEAT_LUA

@@ -44,7 +44,7 @@ func Test_wildchar()
   set wildchar&
 endfunc
 
-func Test_options()
+func Test_options_command()
   let caught = 'ok'
   try
     options
@@ -388,6 +388,13 @@ func Test_set_all()
   set tw& iskeyword& splitbelow&
 endfunc
 
+func Test_set_one_column()
+  let out_mult = execute('set all')->split("\n")
+  let out_one = execute('set! all')->split("\n")
+  " one column should be two to four times as many lines
+  call assert_inrange(len(out_mult) * 2, len(out_mult) * 4, len(out_one))
+endfunc
+
 func Test_set_values()
   if filereadable('opt_test.vim')
     source opt_test.vim
@@ -608,9 +615,8 @@ func Test_local_scrolloff()
 endfunc
 
 func Test_writedelay()
-  if !has('reltime')
-    return
-  endif
+  CheckFunction reltimefloat
+
   new
   call setline(1, 'empty')
   redraw
@@ -633,3 +639,37 @@ func Test_visualbell()
   set novisualbell
   set belloff=all
 endfunc
+
+" Test for the 'write' option
+func Test_write()
+  new
+  call setline(1, ['L1'])
+  set nowrite
+  call assert_fails('write Xfile', 'E142:')
+  set write
+  close!
+endfunc
+
+" Test for 'buftype' option
+func Test_buftype()
+  new
+  call setline(1, ['L1'])
+  set buftype=nowrite
+  call assert_fails('write', 'E382:')
+  close!
+endfunc
+
+" Test for the 'shellquote' option
+func Test_shellquote()
+  CheckUnix
+  set shellquote=#
+  set verbose=20
+  redir => v
+  silent! !echo Hello
+  redir END
+  set verbose&
+  set shellquote&
+  call assert_match(': "#echo Hello#"', v)
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

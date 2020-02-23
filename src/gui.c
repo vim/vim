@@ -519,7 +519,7 @@ gui_init(void)
 	if (vim_strchr(p_go, GO_NOSYSMENU) == NULL)
 	{
 	    sys_menu = TRUE;
-	    do_source((char_u *)SYS_MENU_FILE, FALSE, DOSO_NONE);
+	    do_source((char_u *)SYS_MENU_FILE, FALSE, DOSO_NONE, NULL);
 	    sys_menu = FALSE;
 	}
 #endif
@@ -540,8 +540,8 @@ gui_init(void)
 	{
 	    if (STRCMP(use_gvimrc, "NONE") != 0
 		    && STRCMP(use_gvimrc, "NORC") != 0
-		    && do_source(use_gvimrc, FALSE, DOSO_NONE) != OK)
-		semsg(_("E230: Cannot read from \"%s\""), use_gvimrc);
+		    && do_source(use_gvimrc, FALSE, DOSO_NONE, NULL) != OK)
+		semsg(_("E230: Cannot read from \"%s\""), use_gvimrc, NULL);
 	}
 	else
 	{
@@ -549,7 +549,7 @@ gui_init(void)
 	     * Get system wide defaults for gvim, only when file name defined.
 	     */
 #ifdef SYS_GVIMRC_FILE
-	    do_source((char_u *)SYS_GVIMRC_FILE, FALSE, DOSO_NONE);
+	    do_source((char_u *)SYS_GVIMRC_FILE, FALSE, DOSO_NONE, NULL);
 #endif
 
 	    /*
@@ -563,19 +563,20 @@ gui_init(void)
 	     */
 	    if (process_env((char_u *)"GVIMINIT", FALSE) == FAIL
 		 && do_source((char_u *)USR_GVIMRC_FILE, TRUE,
-							  DOSO_GVIMRC) == FAIL
+						     DOSO_GVIMRC, NULL) == FAIL
 #ifdef USR_GVIMRC_FILE2
 		 && do_source((char_u *)USR_GVIMRC_FILE2, TRUE,
-							  DOSO_GVIMRC) == FAIL
+						     DOSO_GVIMRC, NULL) == FAIL
 #endif
 #ifdef USR_GVIMRC_FILE3
 		 && do_source((char_u *)USR_GVIMRC_FILE3, TRUE,
-							  DOSO_GVIMRC) == FAIL
+						     DOSO_GVIMRC, NULL) == FAIL
 #endif
 				)
 	    {
 #ifdef USR_GVIMRC_FILE4
-		(void)do_source((char_u *)USR_GVIMRC_FILE4, TRUE, DOSO_GVIMRC);
+		(void)do_source((char_u *)USR_GVIMRC_FILE4, TRUE,
+							    DOSO_GVIMRC, NULL);
 #endif
 	    }
 
@@ -623,7 +624,7 @@ gui_init(void)
 				(char_u *)GVIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 			)
-		    do_source((char_u *)GVIMRC_FILE, TRUE, DOSO_GVIMRC);
+		    do_source((char_u *)GVIMRC_FILE, TRUE, DOSO_GVIMRC, NULL);
 
 		if (secure == 2)
 		    need_wait_return = TRUE;
@@ -3419,7 +3420,7 @@ gui_init_which_components(char_u *oldval UNUSED)
     if (oldval != NULL && gui.in_use)
     {
 	/*
-	 * Check if the menu's go from grey to non-grey or vise versa.
+	 * Check if the menus go from grey to non-grey or vice versa.
 	 */
 	grey_old = (vim_strchr(oldval, GO_GREY) != NULL);
 	grey_new = (vim_strchr(p_go, GO_GREY) != NULL);
@@ -5373,7 +5374,7 @@ gui_do_findrepl(
 	i = msg_scroll;
 	if (down)
 	{
-	    (void)do_search(NULL, '/', ga.ga_data, 1L, searchflags, NULL);
+	    (void)do_search(NULL, '/', '/', ga.ga_data, 1L, searchflags, NULL);
 	}
 	else
 	{
@@ -5381,7 +5382,7 @@ gui_do_findrepl(
 	    // direction
 	    p = vim_strsave_escaped(ga.ga_data, (char_u *)"?");
 	    if (p != NULL)
-	        (void)do_search(NULL, '?', p, 1L, searchflags, NULL);
+	        (void)do_search(NULL, '?', '?', p, 1L, searchflags, NULL);
 	    vim_free(p);
 	}
 

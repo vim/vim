@@ -847,6 +847,17 @@ emsg_invreg(int name)
 }
 
 /*
+ * Give an error message which contains %s for "name[len]".
+ */
+    void
+emsg_namelen(char *msg, char_u *name, int len)
+{
+    char_u *copy = vim_strnsave((char_u *)name, len);
+
+    semsg(msg, copy == NULL ? "NULL" : (char *)copy);
+}
+
+/*
  * Like msg(), but truncate to a single line if p_shm contains 't', or when
  * "force" is TRUE.  This truncates in another way as for normal messages.
  * Careful: The string may be changed by msg_may_trunc()!
@@ -4118,7 +4129,7 @@ infinity_str(int positive,
  * Limited support for floating point was added: 'f', 'F', 'e', 'E', 'g', 'G'.
  *
  * Length modifiers 'h' (short int) and 'l' (long int) and 'll' (long long int)
- * are supported.
+ * are supported.  NOTE: for 'll' the argument is varnumber_T or uvarnumber_T.
  *
  * The locale is not used, the string is used as a byte string.  This is only
  * relevant for double-byte encodings where the second byte may be '%'.
@@ -4235,10 +4246,8 @@ vim_vsnprintf_typval(
 #  define TMP_LEN 350	// On my system 1e308 is the biggest number possible.
 			// That sounds reasonable to use as the maximum
 			// printable.
-# elif defined(FEAT_NUM64)
-#  define TMP_LEN 66
 # else
-#  define TMP_LEN 34
+#  define TMP_LEN 66
 # endif
 	    char    tmp[TMP_LEN];
 
@@ -4362,12 +4371,8 @@ vim_vsnprintf_typval(
 		p++;
 		if (length_modifier == 'l' && *p == 'l')
 		{
-		    // double l = long long
-# ifdef FEAT_NUM64
+		    // double l = __int64 / varnumber_T
 		    length_modifier = 'L';
-# else
-		    length_modifier = 'l';	// treat it as a single 'l'
-# endif
 		    p++;
 		}
 	    }
@@ -4383,7 +4388,7 @@ vim_vsnprintf_typval(
 		default: break;
 	    }
 
-# if defined(FEAT_EVAL) && defined(FEAT_NUM64)
+# if defined(FEAT_EVAL)
 	    switch (fmt_spec)
 	    {
 		case 'd': case 'u': case 'o': case 'x': case 'X':
@@ -4496,22 +4501,20 @@ vim_vsnprintf_typval(
 		    // argument is never negative)
 		    int arg_sign = 0;
 
-		    // only defined for length modifier h, or for no
-		    // length modifiers
+		    // only set for length modifier h, or for no length
+		    // modifiers
 		    int int_arg = 0;
 		    unsigned int uint_arg = 0;
 
-		    // only defined for length modifier l
+		    // only set for length modifier l
 		    long int long_arg = 0;
 		    unsigned long int ulong_arg = 0;
 
-# ifdef FEAT_NUM64
-		    // only defined for length modifier ll
+		    // only set for length modifier ll
 		    varnumber_T llong_arg = 0;
 		    uvarnumber_T ullong_arg = 0;
-# endif
 
-		    // only defined for b conversion
+		    // only set for b conversion
 		    uvarnumber_T bin_arg = 0;
 
 		    // pointer argument value -only defined for p
@@ -4570,19 +4573,17 @@ vim_vsnprintf_typval(
 			    else if (long_arg < 0)
 				arg_sign = -1;
 			    break;
-# ifdef FEAT_NUM64
 			case 'L':
 			    llong_arg =
-#  if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
 					tvs != NULL ? tv_nr(tvs, &arg_idx) :
-#  endif
+# endif
 					    va_arg(ap, varnumber_T);
 			    if (llong_arg > 0)
 				arg_sign =  1;
 			    else if (llong_arg < 0)
 				arg_sign = -1;
 			    break;
-# endif
 			}
 		    }
 		    else
@@ -4611,18 +4612,16 @@ vim_vsnprintf_typval(
 				if (ulong_arg != 0)
 				    arg_sign = 1;
 				break;
-# ifdef FEAT_NUM64
 			    case 'L':
 				ullong_arg =
-#  if defined(FEAT_EVAL)
+# if defined(FEAT_EVAL)
 					    tvs != NULL ? (uvarnumber_T)
 							tv_nr(tvs, &arg_idx) :
-#  endif
+# endif
 						va_arg(ap, uvarnumber_T);
 				if (ullong_arg != 0)
 				    arg_sign = 1;
 				break;
-# endif
 			}
 		    }
 
@@ -4676,16 +4675,12 @@ vim_vsnprintf_typval(
 			    ;
 			else if (length_modifier == 'L')
 			{
-# ifdef FEAT_NUM64
-#  ifdef MSWIN
+# ifdef MSWIN
 			    f[f_l++] = 'I';
 			    f[f_l++] = '6';
 			    f[f_l++] = '4';
-#  else
-			    f[f_l++] = 'l';
-			    f[f_l++] = 'l';
-#  endif
 # else
+			    f[f_l++] = 'l';
 			    f[f_l++] = 'l';
 # endif
 			}
@@ -4724,11 +4719,9 @@ vim_vsnprintf_typval(
 			    case 'l': str_arg_l += sprintf(
 						tmp + str_arg_l, f, long_arg);
 				      break;
-# ifdef FEAT_NUM64
 			    case 'L': str_arg_l += sprintf(
 					       tmp + str_arg_l, f, llong_arg);
 				      break;
-# endif
 			    }
 			}
 			else
@@ -4743,11 +4736,9 @@ vim_vsnprintf_typval(
 			    case 'l': str_arg_l += sprintf(
 					       tmp + str_arg_l, f, ulong_arg);
 				      break;
-# ifdef FEAT_NUM64
 			    case 'L': str_arg_l += sprintf(
 					      tmp + str_arg_l, f, ullong_arg);
 				      break;
-# endif
 			    }
 			}
 

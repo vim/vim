@@ -121,9 +121,11 @@ func MakeBadFunc()
 endfunc
 
 func Test_default_arg()
-  call assert_equal(1.0, Log(10))
-  call assert_equal(log(10), Log(10, exp(1)))
-  call assert_fails("call Log(1,2,3)", 'E118')
+  if has('float')
+    call assert_equal(1.0, Log(10))
+    call assert_equal(log(10), Log(10, exp(1)))
+    call assert_fails("call Log(1,2,3)", 'E118')
+  endif
 
   let res = Args(1)
   call assert_equal(res.mandatory, 1)
@@ -159,4 +161,8 @@ endfunc
 
 func Test_user_method()
   eval 'bar'->s:addFoo()->assert_equal('barfoo')
+endfunc
+
+func Test_failed_call_in_try()
+  try | call UnknownFunc() | catch | endtry
 endfunc

@@ -632,7 +632,30 @@ func Test_cmdline_search_range()
   1,\&s/b/B/
   call assert_equal('B', getline(2))
 
+  let @/ = 'apple'
+  call assert_fails('\/print', 'E486:')
+
   bwipe!
+endfunc
+
+" Test for the tick mark (') in an excmd range
+func Test_tick_mark_in_range()
+  " If only the tick is passed as a range and no command is specified, there
+  " should not be an error
+  call feedkeys(":'\<CR>", 'xt')
+  call assert_equal("'", getreg(':'))
+  call assert_fails("',print", 'E78:')
+endfunc
+
+" Test for using a line number followed by a search pattern as range
+func Test_lnum_and_pattern_as_range()
+  new
+  call setline(1, ['foo 1', 'foo 2', 'foo 3'])
+  let @" = ''
+  2/foo/yank
+  call assert_equal("foo 3\n", @")
+  call assert_equal(1, line('.'))
+  close!
 endfunc
 
 " Tests for getcmdline(), getcmdpos() and getcmdtype()
@@ -894,15 +917,93 @@ func Test_cmdwin_cedit()
   let g:cmd_wintype = ''
   func CmdWinType()
       let g:cmd_wintype = getcmdwintype()
+      let g:wintype = win_gettype()
       return ''
   endfunc
 
   call feedkeys("\<C-c>a\<C-R>=CmdWinType()\<CR>\<CR>")
   echo input('')
   call assert_equal('@', g:cmd_wintype)
+  call assert_equal('command', g:wintype)
 
   set cedit&vim
   delfunc CmdWinType
+endfunc
+
+func Test_cmdlineclear_tabenter()
+  CheckScreendump
+
+  let lines =<< trim [SCRIPT]
+    call setline(1, range(30))
+  [SCRIPT]
+
+  call writefile(lines, 'XtestCmdlineClearTabenter')
+  let buf = RunVimInTerminal('-S XtestCmdlineClearTabenter', #{rows: 10})
+  call term_wait(buf, 50)
+  " in one tab make the command line higher with CTRL-W -
+  call term_sendkeys(buf, ":tabnew\<cr>\<C-w>-\<C-w>-gtgt")
+  call VerifyScreenDump(buf, 'Test_cmdlineclear_tabenter', {})
+
+  call StopVimInTerminal(buf)
+  call delete('XtestCmdlineClearTabenter')
+endfunc
+
+" Test for failure in expanding special keywords in cmdline
+func Test_cmdline_expand_special()
+  %bwipe!
+  call assert_fails('e #', 'E499:')
+  call assert_fails('e <afile>', 'E495:')
+  call assert_fails('e <abuf>', 'E496:')
+  call assert_fails('e <amatch>', 'E497:')
+endfunc
+
+func Test_cmdwin_jump_to_win()
+  call assert_fails('call feedkeys("q:\<C-W>\<C-W>\<CR>", "xt")', 'E11:')
+  new
+  set modified
+  call assert_fails('call feedkeys("q/:qall\<CR>", "xt")', 'E162:')
+  close!
+  call feedkeys("q/:close\<CR>", "xt")
+  call assert_equal(1, winnr('$'))
+  call feedkeys("q/:exit\<CR>", "xt")
+  call assert_equal(1, winnr('$'))
+endfunc
+
+" Test for backtick expression in the command line
+func Test_cmd_backtick()
+  %argd
+  argadd `=['a', 'b', 'c']`
+  call assert_equal(['a', 'b', 'c'], argv())
+  %argd
+endfunc
+
+" Test for the :! command
+func Test_cmd_bang()
+  if !has('unix')
+    return
+  endif
+
+  let lines =<< trim [SCRIPT]
+    " Test for no previous command
+    call assert_fails('!!', 'E34:')
+    set nomore
+    " Test for cmdline expansion with :!
+    call setline(1, 'foo!')
+    silent !echo <cWORD> > Xfile.out
+    call assert_equal(['foo!'], readfile('Xfile.out'))
+    " Test for using previous command
+    silent !echo \! !
+    call assert_equal(['! echo foo!'], readfile('Xfile.out'))
+    call writefile(v:errors, 'Xresult')
+    call delete('Xfile.out')
+    qall!
+  [SCRIPT]
+  call writefile(lines, 'Xscript')
+  if RunVim([], [], '--clean -S Xscript')
+    call assert_equal([], readfile('Xresult'))
+  endif
+  call delete('Xscript')
+  call delete('Xresult')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

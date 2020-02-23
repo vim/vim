@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2020 Jan 04
+*terminal.txt*	For Vim version 8.2.  Last change: 2020 Jan 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1025,7 +1025,7 @@ Writing a screen dump test for Vim ~
 For an example see the Test_syntax_c() function in
 src/testdir/test_syntax.vim.  The main parts are:
 - Write a file you want to test with. This is useful for testing syntax
-  highlighting.  You can also start Vim with en empty buffer.
+  highlighting.  You can also start Vim with an empty buffer.
 - Run Vim in a terminal with a specific size.  The default is 20 lines of 75
   characters.  This makes sure the dump is always this size.  The function
   RunVimInTerminal() takes care of this.  Pass it the arguments for the Vim

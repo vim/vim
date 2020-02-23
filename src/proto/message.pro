@@ -13,6 +13,7 @@ int emsg(char *s);
 void iemsg(char *s);
 void internal_error(char *where);
 void emsg_invreg(int name);
+void emsg_namelen(char *msg, char_u *name, int len);
 char *msg_trunc_attr(char *s, int force, int attr);
 char_u *msg_may_trunc(int force, char_u *s);
 int delete_first_msg(void);

@@ -1084,6 +1084,30 @@ func Test_incsearch_substitute_dump()
   call delete('Xis_subst_script')
 endfunc
 
+func Test_incsearch_highlighting()
+  if !exists('+incsearch')
+    return
+  endif
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot make screendumps'
+  endif
+
+  call writefile([
+	\ 'set incsearch hlsearch',
+	\ 'call setline(1, "hello/there")',
+	\ ], 'Xis_subst_hl_script')
+  let buf = RunVimInTerminal('-S Xis_subst_hl_script', {'rows': 4, 'cols': 20})
+  " Give Vim a chance to redraw to get rid of the spaces in line 2 caused by
+  " the 'ambiwidth' check.
+  sleep 300m
+
+  " Using a different search delimiter should still highlight matches
+  " that contain a '/'.
+  call term_sendkeys(buf, ":%s;ello/the")
+  call VerifyScreenDump(buf, 'Test_incsearch_substitute_15', {})
+  call term_sendkeys(buf, "<Esc>")
+endfunc
+
 func Test_incsearch_with_change()
   if !has('timers') || !exists('+incsearch') || !CanRunVimInTerminal()
     throw 'Skipped: cannot make screendumps and/or timers feature and/or incsearch option missing'
@@ -1449,3 +1473,97 @@ func Test_searchdecl()
 
   bwipe!
 endfunc
+
+func Test_search_special()
+  " this was causing illegal memory access and an endless loop
+  set t_PE=
+  exe "norm /\x80PS"
+endfunc
+
+" Test for command failures when the last search pattern is not set.
+" Need to run this in a new vim instance where last search pattern is not set.
+func Test_search_with_no_last_pat()
+  let lines =<< trim [SCRIPT]
+    call assert_fails("normal i\<C-R>/\e", 'E35:')
+    call assert_fails("exe '/'", 'E35:')
+    call assert_fails("exe '?'", 'E35:')
+    call assert_fails("/", 'E35:')
+    call assert_fails("?", 'E35:')
+    call assert_fails("normal n", 'E35:')
+    call assert_fails("normal N", 'E35:')
+    call assert_fails("normal gn", 'E35:')
+    call assert_fails("normal gN", 'E35:')
+    call assert_fails("normal cgn", 'E35:')
+    call assert_fails("normal cgN", 'E35:')
+    let p = []
+    let p = @/
+    call assert_equal('', p)
+    call assert_fails("normal :\<C-R>/", 'E35:')
+    call assert_fails("//p", 'E35:')
+    call assert_fails(";//p", 'E35:')
+    call assert_fails("??p", 'E35:')
+    call assert_fails(";??p", 'E35:')
+    call assert_fails('g//p', 'E476:')
+    call assert_fails('v//p', 'E476:')
+    call writefile(v:errors, 'Xresult')
+    qall!
+  [SCRIPT]
+  call writefile(lines, 'Xscript')
+
+  if RunVim([], [], '--clean -S Xscript')
+    call assert_equal([], readfile('Xresult'))
+  endif
+  call delete('Xscript')
+  call delete('Xresult')
+endfunc
+
+" Test for using tilde (~) atom in search. This should use the last used
+" substitute pattern
+func Test_search_tilde_pat()
+  let lines =<< trim [SCRIPT]
+    set regexpengine=1
+    call assert_fails('exe "normal /~\<CR>"', 'E33:')
+    call assert_fails('exe "normal ?~\<CR>"', 'E33:')
+    set regexpengine=2
+    call assert_fails('exe "normal /~\<CR>"', 'E383:')
+    call assert_fails('exe "normal ?~\<CR>"', 'E383:')
+    set regexpengine&
+    call writefile(v:errors, 'Xresult')
+    qall!
+  [SCRIPT]
+  call writefile(lines, 'Xscript')
+  if RunVim([], [], '--clean -S Xscript')
+    call assert_equal([], readfile('Xresult'))
+  endif
+  call delete('Xscript')
+  call delete('Xresult')
+endfunc
+
+" Test for searching a pattern that is not present with 'nowrapscan'
+func Test_search_pat_not_found()
+  new
+  set nowrapscan
+  let @/ = '1abcxyz2'
+  call assert_fails('normal n', 'E385:')
+  call assert_fails('normal N', 'E384:')
+  set wrapscan&
+  close
+endfunc
+
+" Test for v:searchforward variable
+func Test_searchforward_var()
+  new
+  call setline(1, ['foo', '', 'foo'])
+  call cursor(2, 1)
+  let @/ = 'foo'
+  let v:searchforward = 0
+  normal N
+  call assert_equal(3, line('.'))
+  call cursor(2, 1)
+  let v:searchforward = 1
+  normal N
+  call assert_equal(1, line('.'))
+  close!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -482,7 +482,7 @@ vim_main2(void)
 # else
 		(char_u *)"plugin/**/*.vim",
 # endif
-		DIP_ALL | DIP_NOAFTER);
+		DIP_ALL | DIP_NOAFTER, NULL);
 	TIME_MSG("loading plugins");
 	vim_free(rtp_copy);
 
@@ -892,6 +892,10 @@ vim_main2(void)
 	netbeans_open(netbeansArg + 3, TRUE);
     }
 #endif
+
+    // Redraw at least once, also when 'lazyredraw' is set, to make sure the
+    // window title gets updated.
+    do_redraw = TRUE;
 
     TIME_MSG("before starting main loop");
 
@@ -3169,7 +3173,7 @@ source_startup_scripts(mparm_T *parmp)
      */
     if (parmp->evim_mode)
     {
-	(void)do_source((char_u *)EVIM_FILE, FALSE, DOSO_NONE);
+	(void)do_source((char_u *)EVIM_FILE, FALSE, DOSO_NONE, NULL);
 	TIME_MSG("source evim file");
     }
 
@@ -3180,7 +3184,7 @@ source_startup_scripts(mparm_T *parmp)
     if (parmp->use_vimrc != NULL)
     {
 	if (STRCMP(parmp->use_vimrc, "DEFAULTS") == 0)
-	    do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE);
+	    do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL);
 	else if (STRCMP(parmp->use_vimrc, "NONE") == 0
 				     || STRCMP(parmp->use_vimrc, "NORC") == 0)
 	{
@@ -3191,7 +3195,7 @@ source_startup_scripts(mparm_T *parmp)
 	}
 	else
 	{
-	    if (do_source(parmp->use_vimrc, FALSE, DOSO_NONE) != OK)
+	    if (do_source(parmp->use_vimrc, FALSE, DOSO_NONE, NULL) != OK)
 		semsg(_("E282: Cannot read from \"%s\""), parmp->use_vimrc);
 	}
     }
@@ -3209,10 +3213,11 @@ source_startup_scripts(mparm_T *parmp)
 	 * Get system wide defaults, if the file name is defined.
 	 */
 #ifdef SYS_VIMRC_FILE
-	(void)do_source((char_u *)SYS_VIMRC_FILE, FALSE, DOSO_NONE);
+	(void)do_source((char_u *)SYS_VIMRC_FILE, FALSE, DOSO_NONE, NULL);
 #endif
 #ifdef MACOS_X
-	(void)do_source((char_u *)"$VIMRUNTIME/macmap.vim", FALSE, DOSO_NONE);
+	(void)do_source((char_u *)"$VIMRUNTIME/macmap.vim", FALSE,
+							      DOSO_NONE, NULL);
 #endif
 
 	/*
@@ -3227,28 +3232,31 @@ source_startup_scripts(mparm_T *parmp)
 	 */
 	if (process_env((char_u *)"VIMINIT", TRUE) != OK)
 	{
-	    if (do_source((char_u *)USR_VIMRC_FILE, TRUE, DOSO_VIMRC) == FAIL
+	    if (do_source((char_u *)USR_VIMRC_FILE, TRUE,
+						      DOSO_VIMRC, NULL) == FAIL
 #ifdef USR_VIMRC_FILE2
 		&& do_source((char_u *)USR_VIMRC_FILE2, TRUE,
-							   DOSO_VIMRC) == FAIL
+						      DOSO_VIMRC, NULL) == FAIL
 #endif
 #ifdef USR_VIMRC_FILE3
 		&& do_source((char_u *)USR_VIMRC_FILE3, TRUE,
-							   DOSO_VIMRC) == FAIL
+						      DOSO_VIMRC, NULL) == FAIL
 #endif
 #ifdef USR_VIMRC_FILE4
 		&& do_source((char_u *)USR_VIMRC_FILE4, TRUE,
-							   DOSO_VIMRC) == FAIL
+						      DOSO_VIMRC, NULL) == FAIL
 #endif
 		&& process_env((char_u *)"EXINIT", FALSE) == FAIL
-		&& do_source((char_u *)USR_EXRC_FILE, FALSE, DOSO_NONE) == FAIL
+		&& do_source((char_u *)USR_EXRC_FILE, FALSE,
+						       DOSO_NONE, NULL) == FAIL
 #ifdef USR_EXRC_FILE2
-		&& do_source((char_u *)USR_EXRC_FILE2, FALSE, DOSO_NONE) == FAIL
+		&& do_source((char_u *)USR_EXRC_FILE2, FALSE,
+						       DOSO_NONE, NULL) == FAIL
 #endif
 		&& !has_dash_c_arg)
 	    {
 		// When no .vimrc file was found: source defaults.vim.
-		do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE);
+		do_source((char_u *)VIM_DEFAULTS_FILE, FALSE, DOSO_NONE, NULL);
 	    }
 	}
 
@@ -3285,7 +3293,7 @@ source_startup_scripts(mparm_T *parmp)
 				(char_u *)VIMRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 				)
-		i = do_source((char_u *)VIMRC_FILE, TRUE, DOSO_VIMRC);
+		i = do_source((char_u *)VIMRC_FILE, TRUE, DOSO_VIMRC, NULL);
 
 	    if (i == FAIL)
 	    {
@@ -3303,7 +3311,8 @@ source_startup_scripts(mparm_T *parmp)
 				(char_u *)EXRC_FILE, FALSE, TRUE) != FPC_SAME
 #endif
 				)
-		    (void)do_source((char_u *)EXRC_FILE, FALSE, DOSO_NONE);
+		    (void)do_source((char_u *)EXRC_FILE, FALSE,
+							      DOSO_NONE, NULL);
 	    }
 	}
 	if (secure == 2)
@@ -3334,7 +3343,7 @@ main_start_gui(void)
 #endif  // NO_VIM_MAIN
 
 /*
- * Get an environment variable, and execute it as Ex commands.
+ * Get an environment variable and execute it as Ex commands.
  * Returns FAIL if the environment variable was not executed, OK otherwise.
  */
     int
@@ -3659,110 +3668,6 @@ check_swap_exists_action(void)
 }
 
 #endif // NO_VIM_MAIN
-
-#if defined(STARTUPTIME) || defined(PROTO)
-static struct timeval	prev_timeval;
-
-# ifdef MSWIN
-/*
- * Windows doesn't have gettimeofday(), although it does have struct timeval.
- */
-    static int
-gettimeofday(struct timeval *tv, char *dummy UNUSED)
-{
-    long t = clock();
-    tv->tv_sec = t / CLOCKS_PER_SEC;
-    tv->tv_usec = (t - tv->tv_sec * CLOCKS_PER_SEC) * 1000000 / CLOCKS_PER_SEC;
-    return 0;
-}
-# endif
-
-/*
- * Save the previous time before doing something that could nest.
- * set "*tv_rel" to the time elapsed so far.
- */
-    void
-time_push(void *tv_rel, void *tv_start)
-{
-    *((struct timeval *)tv_rel) = prev_timeval;
-    gettimeofday(&prev_timeval, NULL);
-    ((struct timeval *)tv_rel)->tv_usec = prev_timeval.tv_usec
-					- ((struct timeval *)tv_rel)->tv_usec;
-    ((struct timeval *)tv_rel)->tv_sec = prev_timeval.tv_sec
-					 - ((struct timeval *)tv_rel)->tv_sec;
-    if (((struct timeval *)tv_rel)->tv_usec < 0)
-    {
-	((struct timeval *)tv_rel)->tv_usec += 1000000;
-	--((struct timeval *)tv_rel)->tv_sec;
-    }
-    *(struct timeval *)tv_start = prev_timeval;
-}
-
-/*
- * Compute the previous time after doing something that could nest.
- * Subtract "*tp" from prev_timeval;
- * Note: The arguments are (void *) to avoid trouble with systems that don't
- * have struct timeval.
- */
-    void
-time_pop(
-    void	*tp)	// actually (struct timeval *)
-{
-    prev_timeval.tv_usec -= ((struct timeval *)tp)->tv_usec;
-    prev_timeval.tv_sec -= ((struct timeval *)tp)->tv_sec;
-    if (prev_timeval.tv_usec < 0)
-    {
-	prev_timeval.tv_usec += 1000000;
-	--prev_timeval.tv_sec;
-    }
-}
-
-    static void
-time_diff(struct timeval *then, struct timeval *now)
-{
-    long	usec;
-    long	msec;
-
-    usec = now->tv_usec - then->tv_usec;
-    msec = (now->tv_sec - then->tv_sec) * 1000L + usec / 1000L,
-    usec = usec % 1000L;
-    fprintf(time_fd, "%03ld.%03ld", msec, usec >= 0 ? usec : usec + 1000L);
-}
-
-    void
-time_msg(
-    char	*mesg,
-    void	*tv_start)  // only for do_source: start time; actually
-			    // (struct timeval *)
-{
-    static struct timeval	start;
-    struct timeval		now;
-
-    if (time_fd != NULL)
-    {
-	if (strstr(mesg, "STARTING") != NULL)
-	{
-	    gettimeofday(&start, NULL);
-	    prev_timeval = start;
-	    fprintf(time_fd, "\n\ntimes in msec\n");
-	    fprintf(time_fd, " clock   self+sourced   self:  sourced script\n");
-	    fprintf(time_fd, " clock   elapsed:              other lines\n\n");
-	}
-	gettimeofday(&now, NULL);
-	time_diff(&start, &now);
-	if (((struct timeval *)tv_start) != NULL)
-	{
-	    fprintf(time_fd, "  ");
-	    time_diff(((struct timeval *)tv_start), &now);
-	}
-	fprintf(time_fd, "  ");
-	time_diff(&prev_timeval, &now);
-	prev_timeval = now;
-	fprintf(time_fd, ": %s\n", mesg);
-    }
-}
-
-#endif
 
 #if !defined(NO_VIM_MAIN) && defined(FEAT_EVAL)
     static void

@@ -67,6 +67,9 @@ typedef struct terminal_S	term_T;
 typedef struct VimMenu vimmenu_T;
 #endif
 
+// value for sc_version in a Vim9 script file
+#define SCRIPT_VERSION_VIM9 999999
+
 /*
  * SCript ConteXt (SCTX): identifies a script line.
  * When sourcing a script "sc_lnum" is zero, "sourcing_lnum" is the current
@@ -1242,42 +1245,43 @@ typedef struct hashtable_S
 typedef long_u hash_T;		// Type for hi_hash
 
 
-#ifdef FEAT_NUM64
 // Use 64-bit Number.
-# ifdef MSWIN
-#  ifdef PROTO
-typedef long		    varnumber_T;
-typedef unsigned long	    uvarnumber_T;
-#   define VARNUM_MIN	    LONG_MIN
-#   define VARNUM_MAX	    LONG_MAX
-#   define UVARNUM_MAX	    ULONG_MAX
-#  else
-typedef __int64		    varnumber_T;
-typedef unsigned __int64    uvarnumber_T;
-#   define VARNUM_MIN	    _I64_MIN
-#   define VARNUM_MAX	    _I64_MAX
-#   define UVARNUM_MAX	    _UI64_MAX
-#  endif
-# elif defined(HAVE_STDINT_H)
-typedef int64_t		    varnumber_T;
-typedef uint64_t	    uvarnumber_T;
-#  define VARNUM_MIN	    INT64_MIN
-#  define VARNUM_MAX	    INT64_MAX
-#  define UVARNUM_MAX	    UINT64_MAX
+#ifdef MSWIN
+# ifdef PROTO
+   // workaround for cproto that doesn't recognize __int64
+   typedef long			varnumber_T;
+   typedef unsigned long	uvarnumber_T;
+#  define VARNUM_MIN		LONG_MIN
+#  define VARNUM_MAX		LONG_MAX
+#  define UVARNUM_MAX		ULONG_MAX
 # else
-typedef long		    varnumber_T;
-typedef unsigned long	    uvarnumber_T;
-#  define VARNUM_MIN	    LONG_MIN
-#  define VARNUM_MAX	    LONG_MAX
-#  define UVARNUM_MAX	    ULONG_MAX
+   typedef __int64		varnumber_T;
+   typedef unsigned __int64	uvarnumber_T;
+#  define VARNUM_MIN		_I64_MIN
+#  define VARNUM_MAX		_I64_MAX
+#  define UVARNUM_MAX		_UI64_MAX
+# endif
+#elif defined(HAVE_NO_LONG_LONG)
+# if defined(HAVE_STDINT_H)
+   typedef int64_t		varnumber_T;
+   typedef uint64_t		uvarnumber_T;
+#  define VARNUM_MIN		INT64_MIN
+#  define VARNUM_MAX		INT64_MAX
+#  define UVARNUM_MAX		UINT64_MAX
+# else
+   // this may cause trouble for code that depends on 64 bit ints
+   typedef long			varnumber_T;
+   typedef unsigned long	uvarnumber_T;
+#  define VARNUM_MIN		LONG_MIN
+#  define VARNUM_MAX		LONG_MAX
+#  define UVARNUM_MAX		ULONG_MAX
 # endif
 #else
-// Use 32-bit Number.
-typedef int		    varnumber_T;
-typedef unsigned int	    uvarnumber_T;
-# define VARNUM_MIN	    INT_MIN
-# define VARNUM_MAX	    INT_MAX
-# define UVARNUM_MAX	    UINT_MAX
+  typedef long long		varnumber_T;
+  typedef unsigned long long	uvarnumber_T;
+# define VARNUM_MIN		LLONG_MIN
+# define VARNUM_MAX		LLONG_MAX
+# define UVARNUM_MAX		ULLONG_MAX
 #endif
 
 typedef double	float_T;
@@ -1298,29 +1302,42 @@ typedef struct {
     int		cb_free_name;	    // cb_name was allocated
 } callback_T;
 
+typedef struct dfunc_S dfunc_T;	    // :def function
+
 typedef struct jobvar_S job_T;
 typedef struct readq_S readq_T;
 typedef struct writeq_S writeq_T;
 typedef struct jsonq_S jsonq_T;
 typedef struct cbq_S cbq_T;
 typedef struct channel_S channel_T;
+typedef struct cctx_S cctx_T;
 
 typedef enum
 {
-    VAR_UNKNOWN = 0,
-    VAR_NUMBER,	 // "v_number" is used
-    VAR_STRING,	 // "v_string" is used
-    VAR_FUNC,	 // "v_string" is function name
-    VAR_PARTIAL, // "v_partial" is used
-    VAR_LIST,	 // "v_list" is used
-    VAR_DICT,	 // "v_dict" is used
-    VAR_FLOAT,	 // "v_float" is used
-    VAR_BOOL,	 // "v_number" is VVAL_FALSE or VVAL_TRUE
-    VAR_SPECIAL, // "v_number" is VVAL_NONE or VVAL_NULL
-    VAR_JOB,	 // "v_job" is used
-    VAR_CHANNEL, // "v_channel" is used
-    VAR_BLOB,	 // "v_blob" is used
+    VAR_UNKNOWN = 0,	// not set, also used for "any" type
+    VAR_VOID,		// no value
+    VAR_BOOL,		// "v_number" is used: VVAL_TRUE or VVAL_FALSE
+    VAR_SPECIAL,	// "v_number" is used: VVAL_NULL or VVAL_NONE
+    VAR_NUMBER,		// "v_number" is used
+    VAR_FLOAT,		// "v_float" is used
+    VAR_STRING,		// "v_string" is used
+    VAR_BLOB,		// "v_blob" is used
+    VAR_FUNC,		// "v_string" is function name
+    VAR_PARTIAL,	// "v_partial" is used
+    VAR_LIST,		// "v_list" is used
+    VAR_DICT,		// "v_dict" is used
+    VAR_JOB,		// "v_job" is used
+    VAR_CHANNEL,	// "v_channel" is used
 } vartype_T;
+
+// A type specification.
+typedef struct type_S type_T;
+struct type_S {
+    vartype_T	    tt_type;
+    short	    tt_argcount;    // for func, partial, -1 for unknown
+    type_T	    *tt_member;	    // for list, dict, func return type
+    type_T	    *tt_args;	    // func arguments
+};
 
 /*
  * Structure to hold an internal variable without a name.
@@ -1380,19 +1397,34 @@ struct listwatch_S
 /*
  * Structure to hold info about a list.
  * Order of members is optimized to reduce padding.
+ * When created by range() it will at first have special value:
+ *  lv_first == &range_list_item;
+ * and use lv_start, lv_end, lv_stride.
  */
 struct listvar_S
 {
     listitem_T	*lv_first;	// first item, NULL if none
-    listitem_T	*lv_last;	// last item, NULL if none
     listwatch_T	*lv_watch;	// first watcher, NULL if none
-    listitem_T	*lv_idx_item;	// when not NULL item at index "lv_idx"
+    union {
+	struct {	// used for non-materialized range list:
+			// "lv_first" is &range_list_item
+	    varnumber_T lv_start;
+	    varnumber_T lv_end;
+	    int		lv_stride;
+	} nonmat;
+	struct {	// used for materialized list
+	    listitem_T	*lv_last;	// last item, NULL if none
+	    listitem_T	*lv_idx_item;	// when not NULL item at index "lv_idx"
+	    int		lv_idx;		// cached index of an item
+	} mat;
+    } lv_u;
     list_T	*lv_copylist;	// copied list used by deepcopy()
     list_T	*lv_used_next;	// next list in used lists list
     list_T	*lv_used_prev;	// previous list in used lists list
     int		lv_refcount;	// reference count
     int		lv_len;		// number of items
-    int		lv_idx;		// cached index of an item
+    int		lv_with_items;	// number of items following this struct that
+				// should not be freed
     int		lv_copyID;	// ID used by deepcopy()
     char	lv_lock;	// zero, VAR_LOCKED, VAR_FIXED
 };
@@ -1413,7 +1445,7 @@ typedef struct {
 struct dictitem_S
 {
     typval_T	di_tv;		// type and value of the variable
-    char_u	di_flags;	// flags (only used for variable)
+    char_u	di_flags;	// DI_FLAGS_ flags (only used for variable)
     char_u	di_key[1];	// key (actually longer!)
 };
 typedef struct dictitem_S dictitem_T;
@@ -1426,16 +1458,18 @@ typedef struct dictitem_S dictitem_T;
 struct dictitem16_S
 {
     typval_T	di_tv;		// type and value of the variable
-    char_u	di_flags;	// flags (only used for variable)
+    char_u	di_flags;	// DI_FLAGS_ flags (only used for variable)
     char_u	di_key[DICTITEM16_KEY_LEN + 1];	// key
 };
 typedef struct dictitem16_S dictitem16_T;
 
-#define DI_FLAGS_RO	1  // "di_flags" value: read-only variable
-#define DI_FLAGS_RO_SBX 2  // "di_flags" value: read-only in the sandbox
-#define DI_FLAGS_FIX	4  // "di_flags" value: fixed: no :unlet or remove()
-#define DI_FLAGS_LOCK	8  // "di_flags" value: locked variable
-#define DI_FLAGS_ALLOC	16 // "di_flags" value: separately allocated
+// Flags for "di_flags"
+#define DI_FLAGS_RO	   0x01	    // read-only variable
+#define DI_FLAGS_RO_SBX	   0x02	    // read-only in the sandbox
+#define DI_FLAGS_FIX	   0x04	    // fixed: no :unlet or remove()
+#define DI_FLAGS_LOCK	   0x08	    // locked variable
+#define DI_FLAGS_ALLOC	   0x10	    // separately allocated
+#define DI_FLAGS_RELOAD	   0x20	    // set when script sourced again
 
 /*
  * Structure to hold info about a Dictionary.
@@ -1470,12 +1504,23 @@ typedef struct funccall_S funccall_T;
  */
 typedef struct
 {
-    int		uf_varargs;	// variable nr of arguments
-    int		uf_flags;
+    int		uf_varargs;	// variable nr of arguments (old style)
+    int		uf_flags;	// FC_ flags
     int		uf_calls;	// nr of active calls
     int		uf_cleared;	// func_clear() was already called
+    int		uf_dfunc_idx;	// >= 0 for :def function only
     garray_T	uf_args;	// arguments
     garray_T	uf_def_args;	// default argument expressions
+
+    // for :def (for :function uf_ret_type is NULL)
+    type_T	**uf_arg_types;	// argument types (count == uf_args.ga_len)
+    type_T	*uf_ret_type;	// return type
+    garray_T	uf_type_list;	// types used in arg and return types
+    int		*uf_def_arg_idx; // instruction indexes for evaluating
+				// uf_def_args; length: uf_def_args.ga_len + 1
+    char_u	*uf_va_name;	// name from "...name" or NULL
+    type_T	*uf_va_type;	// type from "...name: type" or NULL
+
     garray_T	uf_lines;	// function lines
 # ifdef FEAT_PROFILE
     int		uf_profiling;	// TRUE when func is being profiled
@@ -1578,23 +1623,51 @@ typedef struct
 } scriptvar_T;
 
 /*
+ * Entry for "sn_var_vals".  Used for script-local variables.
+ */
+typedef struct {
+    char_u	*sv_name;	// points into "sn_vars" di_key
+    typval_T	*sv_tv;		// points into "sn_vars" di_tv
+    type_T	*sv_type;
+    int		sv_const;
+    int		sv_export;	// "export let var = val"
+} svar_T;
+
+typedef struct {
+    char_u	*imp_name;	    // name imported as (allocated)
+    int		imp_sid;	    // script ID of "from"
+
+    // for "import * as Name", "imp_name" is "Name"
+    int		imp_all;
+
+    // for variable
+    type_T	*imp_type;
+    int		imp_var_vals_idx;   // index in sn_var_vals of "from"
+
+    // for function
+    char_u	*imp_funcname;	    // user func name (NOT allocated)
+} imported_T;
+
+/*
  * Growarray to store info about already sourced scripts.
  * For Unix also store the dev/ino, so that we don't have to stat() each
  * script when going through the list.
  */
 typedef struct
 {
-    scriptvar_T	*sn_vars;	// stores s: variables for this script
-
     char_u	*sn_name;
 
-    int		sn_version;	// :scriptversion
+    scriptvar_T	*sn_vars;	// stores s: variables for this script
+    garray_T	sn_var_vals;	// same variables as a list of svar_T
 
-# ifdef UNIX
-    int		sn_dev_valid;
-    dev_t	sn_dev;
-    ino_t	sn_ino;
-# endif
+    garray_T	sn_imports;	// imported items, imported_T
+
+    garray_T	sn_type_list;	// keeps types used by variables
+
+    int		sn_version;	// :scriptversion
+    int		sn_had_command;	// TRUE if any command was executed
+    char_u	*sn_save_cpo;	// 'cpo' value when :vim9script found
+
 # ifdef FEAT_PROFILE
     int		sn_prof_on;	// TRUE when script is/was profiled
     int		sn_pr_force;	// forceit: profile functions in this script
@@ -2036,7 +2109,7 @@ typedef struct
     int		jo_block_write;	// for testing only
     int		jo_part;
     int		jo_id;
-    char_u	jo_soe_buf[NUMBUFLEN];
+    char_u	jo_stoponexit_buf[NUMBUFLEN];
     char_u	*jo_stoponexit;
     dict_T	*jo_env;	// environment variables
     char_u	jo_cwd_buf[NUMBUFLEN];
@@ -2051,17 +2124,21 @@ typedef struct
     buf_T	*jo_bufnr_buf;
     int		jo_hidden;
     int		jo_term_norestore;
+    char_u	jo_term_name_buf[NUMBUFLEN];
     char_u	*jo_term_name;
+    char_u	jo_term_opencmd_buf[NUMBUFLEN];
     char_u	*jo_term_opencmd;
     int		jo_term_finish;
+    char_u	jo_eof_chars_buf[NUMBUFLEN];
     char_u	*jo_eof_chars;
+    char_u	jo_term_kill_buf[NUMBUFLEN];
     char_u	*jo_term_kill;
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     long_u	jo_ansi_colors[16];
 # endif
     int		jo_tty_type;	    // first character of "tty_type"
-    char_u	*jo_term_api;
     char_u	jo_term_api_buf[NUMBUFLEN];
+    char_u	*jo_term_api;
 #endif
 } jobopt_T;
 
@@ -3691,6 +3768,12 @@ typedef enum
     EXPR_NOMATCH,	// !~
     EXPR_IS,		// is
     EXPR_ISNOT,		// isnot
+    // used with ISN_OPNR
+    EXPR_ADD,		// +
+    EXPR_SUB,		// -
+    EXPR_MULT,		// *
+    EXPR_DIV,		// /
+    EXPR_REM,		// %
 } exptype_T;
 
 /*
@@ -3804,6 +3887,8 @@ typedef struct
 typedef struct lval_S
 {
     char_u	*ll_name;	// start of variable name (can be NULL)
+    char_u	*ll_name_end;	// end of variable name (can be NULL)
+    type_T	*ll_type;	// type of variable (can be NULL)
     char_u	*ll_exp_name;	// NULL or expanded name in allocated memory.
     typval_T	*ll_tv;		// Typeval of item being used.  If "newkey"
 				// isn't NULL it's the Dict to which to add

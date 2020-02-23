@@ -93,3 +93,13 @@ func Test_map_fails()
   call assert_fails('call map([1], "42 +")', 'E15:')
   call assert_fails('call filter([1], "42 +")', 'E15:')
 endfunc
+
+func Test_map_and_modify()
+  let l = ["abc"]
+  " cannot change the list halfway a map()
+  call assert_fails('call map(l, "remove(l, 0)[0]")', 'E741:')
+
+  let d = #{a: 1, b: 2, c: 3}
+  call assert_fails('call map(d, "remove(d, v:key)[0]")', 'E741:')
+  call assert_fails('echo map(d, {k,v -> remove(d, k)})', 'E741:')
+endfunc

@@ -514,6 +514,30 @@ buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr)
 		sattr->sat_texthl = syn_id2attr(sp->sn_text_hl);
 	    if (sp->sn_line_hl > 0)
 		sattr->sat_linehl = syn_id2attr(sp->sn_line_hl);
+
+	    // If there is another sign next with the same priority, may
+	    // combine the text and the line highlighting.
+	    if (sign->se_next != NULL
+		    && sign->se_next->se_priority == sign->se_priority
+		    && sign->se_next->se_lnum == sign->se_lnum)
+	    {
+		sign_T	*next_sp = find_sign_by_typenr(sign->se_next->se_typenr);
+
+		if (next_sp != NULL)
+		{
+		    if (sattr->sat_icon == NULL && sattr->sat_text == NULL)
+		    {
+# ifdef FEAT_SIGN_ICONS
+			sattr->sat_icon = next_sp->sn_image;
+# endif
+			sattr->sat_text = next_sp->sn_text;
+		    }
+		    if (sp->sn_text_hl <= 0 && next_sp->sn_text_hl > 0)
+			sattr->sat_texthl = syn_id2attr(next_sp->sn_text_hl);
+		    if (sp->sn_line_hl <= 0 && next_sp->sn_line_hl > 0)
+			sattr->sat_linehl = syn_id2attr(next_sp->sn_line_hl);
+		}
+	    }
 	    return TRUE;
 	}
     }

@@ -15,7 +15,6 @@
 
 #if defined(FEAT_EVAL) || defined(PROTO)
 
-static int	throw_exception(void *, except_type_T, char_u *);
 static char	*get_end_emsg(cstack_T *cstack);
 
 /*
@@ -498,7 +497,7 @@ get_exception_string(
  * user or interrupt exception, or points to a message list in case of an
  * error exception.
  */
-    static int
+    int
 throw_exception(void *value, except_type_T type, char_u *cmdname)
 {
     except_T	*excp;
@@ -649,7 +648,7 @@ discard_current_exception(void)
 /*
  * Put an exception on the caught stack.
  */
-    static void
+    void
 catch_exception(except_T *excp)
 {
     excp->caught = caught_stack;
@@ -932,7 +931,7 @@ ex_endif(exarg_T *eap)
     if (eap->cstack->cs_idx < 0
 	    || (eap->cstack->cs_flags[eap->cstack->cs_idx]
 					   & (CSF_WHILE | CSF_FOR | CSF_TRY)))
-	eap->errmsg = N_("E580: :endif without :if");
+	eap->errmsg = N_(e_endif_without_if);
     else
     {
 	/*
@@ -976,10 +975,10 @@ ex_else(exarg_T *eap)
     {
 	if (eap->cmdidx == CMD_else)
 	{
-	    eap->errmsg = N_("E581: :else without :if");
+	    eap->errmsg = N_(e_else_without_if);
 	    return;
 	}
-	eap->errmsg = N_("E582: :elseif without :if");
+	eap->errmsg = N_(e_elseif_without_if);
 	skip = TRUE;
     }
     else if (cstack->cs_flags[cstack->cs_idx] & CSF_ELSE)
@@ -1152,7 +1151,7 @@ ex_continue(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_looplevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_("E586: :continue without :while or :for");
+	eap->errmsg = N_(e_continue);
     else
     {
 	// Try to find the matching ":while".  This might stop at a try
@@ -1190,7 +1189,7 @@ ex_break(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_looplevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_("E587: :break without :while or :for");
+	eap->errmsg = N_(e_break);
     else
     {
 	// Inactivate conditionals until the matching ":while" or a try
@@ -1492,7 +1491,7 @@ ex_catch(exarg_T *eap)
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
     {
-	eap->errmsg = N_("E603: :catch without :try");
+	eap->errmsg = e_catch;
 	give_up = TRUE;
     }
     else
@@ -1648,7 +1647,7 @@ ex_finally(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_("E606: :finally without :try");
+	eap->errmsg = e_finally;
     else
     {
 	if (!(cstack->cs_flags[cstack->cs_idx] & CSF_TRY))
@@ -1668,7 +1667,7 @@ ex_finally(exarg_T *eap)
 	if (cstack->cs_flags[idx] & CSF_FINALLY)
 	{
 	    // Give up for a multiple ":finally" and ignore it.
-	    eap->errmsg = N_("E607: multiple :finally");
+	    eap->errmsg = e_finally_dup;
 	    return;
 	}
 	rewind_conditionals(cstack, idx, CSF_WHILE | CSF_FOR,
@@ -1777,7 +1776,7 @@ ex_endtry(exarg_T *eap)
     cstack_T	*cstack = eap->cstack;
 
     if (cstack->cs_trylevel <= 0 || cstack->cs_idx < 0)
-	eap->errmsg = N_("E602: :endtry without :try");
+	eap->errmsg = e_no_endtry;
     else
     {
 	/*

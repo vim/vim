@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Jan 06
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Feb 15
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,19 +38,47 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-- Implement prop_find() issue #4970  Done by Ryan Hackett, #5421
-
 Include ipv6 syntax changes?  (DJ Lucas, #5360)
 
-Still have /* */ comments:
-    misc1.c
-    misc2.c
-    others?
+Avoid modifyOtherKeys temporarily:
+	call modify_other_keys(v:false)  " disable modifyOtherKeys
+Should fix #5617.
+
+Vim9 script:
+- "echo Func()" is an error if Func() does not return anything.
+- Disallow unlet for local/script/imported vars
+- :func inside vim9script must still use a:arg
+- Make "++nr" work.
+- Check that import in legacy script works and puts item in s:
+- Error in any command in "vim9script" aborts sourcing.
+- Find a way to test expressions in legacy and Vim9 script without duplication
+- Test each level of expressions properly, with type checking
+- Test the
+- Test try/catch and throw better, also nested.
+  Test return inside try/finally jumps to finally and then returns.
+- call autoload function.
+- Type checking arguments when calling :def function
+- Implement more expressions, e.g. [a:b]
+- can use func as reference:
+	def SomeFunc() ...
+	map(list, SomeFunc)
+- define function and create funcref in one step:
+	let ref = def(arg: type): rettype
+  Also extends lambda
+- Test: Function declared inside a :def function is local, disappears at the
+  end of the function.  Unless g: is used, just like with variables.
+- Can we omit \ for line continuation inside (), {}, ?
+  Requires parsing while reading a function.  Like fgetline in do_one_cmd()?
+- implement :type
+- implement class
+- implement interface
+- predefined class: Promise<T>
+- import statement for type declaration?
+- Make accessing varargs faster: arg[expr]
+	EVAL expr
+	LOADVARARG (varags idx)
 
 Popup windows:
-- Make it possible to put a terminal window in a popup.  Would always grab key
-  input?  Sort-of possible by creating a hidden terminal and opening a popup
-  with that buffer: #4063.
 - Use popup (or popup menu) for command line completion
 - When using a popup for the info of a completion menu, and there is not
   enough space, let the popup overlap with the menu. (#4544)
@@ -62,6 +90,8 @@ Popup windows:
 - Figure out the size and position better if wrapping inserts indent
 
 Text properties:
+- Combining text property with 'cursorline' does not always work (Billie
+  Cleek, #5533)
 - Text properties spanning more than one line
 - See remarks at top of src/textprop.c
 
@@ -128,13 +158,16 @@ Terminal emulator window:
   conversions.
 
 Error numbers available:
-E362, E366, E450, E451, E452,
-E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
-E654, E856, E857, E860, E861, E863, E889, E900
+E451, E452, E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
+E654, E856, E857, E860, E861, E900
 
 Patch to move duplicated code to a function. (Yegappan Lakshmanan, #5330)
 
 Patch to use more FOR_ALL_ macros and use them. (Yegappan Lakshmanan, #5339)
+
+Patch to explain use of "%" in :!.  (#5591)
+
+Patch to add "-d" to xxd. (#5616)
 
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif? Now test_gui crashes in submenu_change().
@@ -147,14 +180,33 @@ Flag in 'formatoptions' is not used in the tests.
 Patch to add 'vtp' option. (#5344)
 Needs better docs.  Is there a better name?
 
+Patch for Haiku support. (Emir Sarı, #5605)
+
 undo result wrong: Masato Nishihata, #4798
+
+When 'lazyredraw' is set sometimes the title is not updated.
+(Jason Franklin, 2020 Feb 3)  Looks like a race condition.
+
+Patch to add function to return the text used in the quickfix window.
+(Yegappan, #5465)
+
+Patch for Template string: #4491.  New pull: #4634
+Implementation is too inefficient, avoid using lambda.
+
+Patch to add readdirex() (Ken Takata, #5619)
+
+Request to support <Cmd> in mappings, similar to how Neovim does this.
+(Daniel Hahler, #4784)
 
 Undo puts cursor in wrong line after "cG<Esc>" undo.
 
 :unmap <c-n> gives error but does remove the mapping. (Antony Scriven, 2019
 Dec 19)
 
-Sound: support on Mac?  Or does libcanberra work there?
+Dos uninstal may delete vim.bat from the wrong directory (e.g., when someone
+makes his own wrapper).  Add a magic string with the version number to the
+.bat file and check for it in the uninstaller.  E.g.
+          # uninstall key: vim8.1*
 
 Patch to fix session file when using multiple tab pages. (Jason Franklin, 2019
 May 20)
@@ -163,17 +215,28 @@ remains equal?  Then %argdel to clean it up.  Do try this with 'hidden' set.
 Also #4994: window-local options not always restored, related to using :badd.
 Also #5326: netrw buffers are not restored.
 
+Patch to support cindent option to handle pragmas differently.
+(Max Rumpf, #5468)
+
+Patch to make ":verbose pwd" show the scope of the directory. (Takuya
+Fujiwara, #5469)
+
 Completion mixes results from the current buffer with tags and other files.
 Happens when typing CTRL-N while still searching for results.  E.g., type "b_"
 in terminal.c and then CTRL-N twice.
 Should do current file first and not split it up when more results are found.
 (Also #1890)
 
+Undo history wrong when ":next file" re-uses a buffer. (#5426)
+ex_next() should pass flag to do_argfile(), then to do_ecmd().
+
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
 
-Instead of using a syntax error, use #error to fail early when something is
-wrong.  E.g. in vim.h "Error:", and blowfish.c "error!". (#5299)
+FR: add search_status(), the current values displayed for search (current
+match, total matches). (#5631)
+Patch to provide search stats in a variable, so that it can be used in the
+statusline. (Fujiwara Takuya, #4446)
 
 ":helptags ALL" should skip directories where "tags" cannot be written.
 (Matěj Cepl, #5026)
@@ -182,10 +245,18 @@ wrong.  E.g. in vim.h "Error:", and blowfish.c "error!". (#5299)
 goes to any buffer, and then :bnext skips help buffers, since they are
 unlisted. (#4478)
 
+Patch to include reduce() function. (#5481)
+
+Statusline highlighting error, off by one. (#5599)
+
 Enable 'termbidi' if $VTE_VERSION >= 5703 ?
 
 Universal solution to detect if t_RS is working, using cursor position.
 Koichi Iwamoto, #2126
+
+Sound: support on Mac?  Or does libcanberra work there?
+
+Python 3.8 doesn't work. (Antonios Hadjigeorgalis, #5509)
 
 The :syntax cchar value can only be a single character.  It would be useful to
 support combining characters. (Charles Campbell)  Also #4687
@@ -195,9 +266,13 @@ It can replace the BeOS code, which is likely not used anymore.
 Now on github: #1856.  Updated Oct 2017
 Got permission to include this under the Vim license.
 
+"--cleanFOO" does not result in an error. (#5537)
+
 Add "t" action to settagstack(): truncate and add new entries. (#5405)
 
 Result of synID() sometimes wrong in help files. (#5252)
+
+Status line is nut updated when splitting windows. (Marcin Szamotulski, #5496)
 
 Problem showing a line if the number column width changes when using "o".
 (Mateusz Morusiewicz, #4245)
@@ -246,6 +321,9 @@ Saito, 2013 Apr 24) Update 2016 Aug 12.
 Also see issue #609.
 We could add the enable/disable sequences to t_ti/t_te or t_ks/t_ke.
 
+:buffer completion does not escape "+" properly and results in a regexp error.
+(#5467)
+
 Check_external_diff() is used too often. (Daniel Hahler, #4800)
 
 Win32: after "[I" showing matches, scroll wheel messes up screen. (Tsakiridis,
@@ -254,9 +332,6 @@ Patch by Alex Dobrynin, 2007 Jun 3.  Also fixes other scroll wheel problems.
 
 Add a WindowScrolled event.  Trigger around the same time as CursorMoved.
 Can be used to update highlighting. #3127  #5181
-
-Patch for Template string: #4491.  New pull: #4634
-Implementation is too inefficient, avoid using lambda.
 
 Incorrect formatting with autoindent. (Sebastian Gniazdowski, #4909)
 
@@ -798,9 +873,6 @@ option_save({list})					*option_save()*
 directory (Paulo Marcel Coelho Arabic, 2017 Oct 30, #2266)
 Also see #1689.
 
-crash when removing an element while inside map(). (Nikolai Pavlov, 2018 Feb
-17, #2652)
-
 When 'virtualedit' is "all" and 'cursorcolumn' is set, the wrong column may be
 highlighted. (van-de-bugger, 2018 Jan 23, #2576)
 
@@ -1058,11 +1130,9 @@ Make a function to check for function-like type?
 Screen updated delayed when using CTRL-O u in Insert mode.
 (Barlik, #1191)  Perhaps because status message?
 
-Implement optional arguments for functions.
+Implement named arguments for functions:
     func Foo(start, count = 1 all = 1)
-    call Foo(12)
     call Foo(12, all = 0)
-    call Foo(12, 15, 0)
 
 Add a command to take a range of lines, filter them and put the output
 somewhere else.  :{range}copy {dest} !cmd
@@ -1113,6 +1183,7 @@ Patch for 'cursorlinenr' option. (Ozaki Kiichi, 2016 Nov 30)
 
 When 'completeopt' has "noselect" does not insert a newline. (Lifepillar, 2017
 Apr 23, #1653)
+Can 'completeopt' be made buffer-local? (#5487)
 
 Window resizing with 'winfixheight': With a vertical split the height changes
 anyway. (Tommy allen, 2017 Feb 21, #1502)
@@ -1281,10 +1352,6 @@ Patch to add 'systemencoding', convert between 'encoding' and this for file
 names, shell commands and the like.  (Kikuchan, 2010 Oct 14)
 Assume the system converts between the actual encoding of the filesystem to
 the system encoding (usually utf-8).
-
-Using ":tab drop file" does not trigger BufEnter or TabEnter events.
-(Andy Stewart, 2017 Apr 27, #1660)
-Autocommands blocked in do_arg_all().  Supposed to happen later?
 
 'hlsearch' interferes with a Conceal match. (Rom Grk, 2016 Aug 9)
 
@@ -2709,11 +2776,6 @@ argument list or opening each file in a separate tab.
 
 Windows installer: licence text should not use indent, causes bad word wrap.
 (Benjamin Fritz, 2010 Aug 16)
-
-Dos uninstal may delete vim.bat from the wrong directory (e.g., when someone
-makes his own wrapper).  Add a magic string with the version number to the
-.bat file and check for it in the uninstaller.  E.g.
-          # uninstall key: vim8.1*
 
 Changes for Win32 makefile. (Mike Williams, 2007 Jan 22, Alexei Alexandrov,
 2007 Feb 8)
@@ -4443,8 +4505,6 @@ Vim script language:
 8   Pass the command line arguments to Vim scripts in some way.  As v:args
     List?  Or extra parameter to argv()?
 8   Add command arguments with three dashes, passed on to Vim scripts.
-9   Add optional arguments to user functions:
-	:func myFunc(arg1, arg2, arg3 = "blah", arg4 = 17)
 6   User functions: Functions local to buffer "b:func()"?
 8   For Strings add ":let var[{expr}] = {expr}".  When past the end of "var"
     just ignore.

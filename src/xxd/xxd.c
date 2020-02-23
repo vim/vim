@@ -35,7 +35,7 @@
  *	    xxdline().
  *  7.06.96 -i printed 'int' instead of 'char'. *blush*
  *	    added Bram's OS2 ifdefs...
- * 18.07.96 gcc -Wall @ SunOS4 is now slient.
+ * 18.07.96 gcc -Wall @ SunOS4 is now silent.
  *	    Added osver for MSDOS/DJGPP/WIN32.
  * 29.08.96 Added size_t to strncmp() for Amiga.
  * 24.03.97 Windows NT support (Phil Hanna). Clean exit for Amiga WB (Bram)

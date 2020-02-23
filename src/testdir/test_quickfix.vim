@@ -484,6 +484,7 @@ func Xtest_browse(cchar)
 		\ 'RegularLine2']
 
   Xfirst
+  call assert_fails('-5Xcc', 'E16:')
   call assert_fails('Xprev', 'E553')
   call assert_fails('Xpfile', 'E553')
   Xnfile
@@ -538,6 +539,15 @@ func Xtest_browse(cchar)
   10Xcc
   call assert_equal(11, line('.'))
   call assert_equal('Xqftestfile2', bufname('%'))
+  Xopen
+  call cursor(2, 1)
+  if a:cchar == 'c'
+    .cc
+  else
+    .ll
+  endif
+  call assert_equal(6, line('.'))
+  call assert_equal('Xqftestfile1', bufname('%'))
 
   " Jumping to an error from the error window (when only the error window is
   " present)
@@ -1628,6 +1638,13 @@ func Test_setqflist_invalid_nr()
   eval []->setqflist(' ', {'nr' : $XXX_DOES_NOT_EXIST})
 endfunc
 
+func Test_setqflist_user_sets_buftype()
+  call setqflist([{'text': 'foo'}, {'text': 'bar'}])
+  set buftype=quickfix
+  call setqflist([], 'a')
+  enew
+endfunc
+
 func Test_quickfix_set_list_with_act()
   call XquickfixSetListWithAct('c')
   call XquickfixSetListWithAct('l')
@@ -2629,7 +2646,7 @@ func Test_cwindow_jump()
   call assert_equal('quickfix', getwinvar(1, '&buftype'))
   call assert_equal('quickfix', getwinvar(3, '&buftype'))
 
-  " Jumping to a file from the location list window should find a usuable
+  " Jumping to a file from the location list window should find a usable
   " window by wrapping around the window list.
   enew | only
   call setloclist(0, [], 'f')
@@ -2741,6 +2758,21 @@ func Test_vimgrep_incsearch()
 
   call test_override("ALL", 0)
   set noincsearch
+endfunc
+
+" Test vimgrep with the last search pattern not set
+func Test_vimgrep_with_no_last_search_pat()
+  let lines =<< trim [SCRIPT]
+    call assert_fails('vimgrep // *', 'E35:')
+    call writefile(v:errors, 'Xresult')
+    qall!
+  [SCRIPT]
+  call writefile(lines, 'Xscript')
+  if RunVim([], [], '--clean -S Xscript')
+    call assert_equal([], readfile('Xresult'))
+  endif
+  call delete('Xscript')
+  call delete('Xresult')
 endfunc
 
 func XfreeTests(cchar)
@@ -4162,6 +4194,20 @@ func Test_splitview()
   exe "normal j\<C-W>\<CR>"
   call assert_notequal(locid, getloclist(0, {'id' : 0}).id)
   call assert_equal(0, getloclist(0, {'winid' : 0}).winid)
+  new | only
+
+  " Using :split or :vsplit from a quickfix window should behave like a :new
+  " or a :vnew command
+  copen
+  split
+  call assert_equal(3, winnr('$'))
+  let l = getwininfo()
+  call assert_equal([0, 0, 1], [l[0].quickfix, l[1].quickfix, l[2].quickfix])
+  close
+  copen
+  vsplit
+  let l = getwininfo()
+  call assert_equal([0, 0, 1], [l[0].quickfix, l[1].quickfix, l[2].quickfix])
   new | only
 
   call delete('Xtestfile1')

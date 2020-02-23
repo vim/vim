@@ -640,6 +640,12 @@ f_test_feedinput(typval_T *argvars, typval_T *rettv UNUSED)
 #ifdef USE_INPUT_BUF
     char_u	*val = tv_get_string_chk(&argvars[0]);
 
+# ifdef VIMDLL
+    // this doesn't work in the console
+    if (!gui.in_use)
+	return;
+# endif
+
     if (val != NULL)
     {
 	trash_input_buf();
@@ -758,9 +764,10 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
     switch (argvars[0].v_type)
     {
 	case VAR_UNKNOWN:
+	case VAR_VOID:
 	case VAR_NUMBER:
-	case VAR_FLOAT:
 	case VAR_BOOL:
+	case VAR_FLOAT:
 	case VAR_SPECIAL:
 	case VAR_STRING:
 	    break;
@@ -781,7 +788,7 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	    {
 		ufunc_T *fp;
 
-		fp = find_func(argvars[0].vval.v_string);
+		fp = find_func(argvars[0].vval.v_string, NULL);
 		if (fp != NULL)
 		    retval = fp->uf_refcount;
 	    }
@@ -887,6 +894,18 @@ f_test_null_string(typval_T *argvars UNUSED, typval_T *rettv)
 {
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+}
+
+    void
+f_test_unknown(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_UNKNOWN;
+}
+
+    void
+f_test_void(typval_T *argvars UNUSED, typval_T *rettv)
+{
+    rettv->v_type = VAR_VOID;
 }
 
 #ifdef FEAT_GUI

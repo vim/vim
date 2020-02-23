@@ -1854,6 +1854,22 @@ vim_unsetenv(char_u *var)
 
 
 /*
+ * Set environment variable "name" and take care of side effects.
+ */
+    void
+vim_setenv_ext(char_u *name, char_u *val)
+{
+    vim_setenv(name, val);
+    if (STRICMP(name, "HOME") == 0)
+	init_homedir();
+    else if (didset_vim && STRICMP(name, "VIM") == 0)
+	didset_vim = FALSE;
+    else if (didset_vimruntime
+	    && STRICMP(name, "VIMRUNTIME") == 0)
+	didset_vimruntime = FALSE;
+}
+
+/*
  * Our portable version of setenv.
  */
     void
@@ -2067,13 +2083,17 @@ match_user(char_u *name)
 concat_str(char_u *str1, char_u *str2)
 {
     char_u  *dest;
-    size_t  l = STRLEN(str1);
+    size_t  l = str1 == NULL ? 0 : STRLEN(str1);
 
-    dest = alloc(l + STRLEN(str2) + 1L);
+    dest = alloc(l + (str2 == NULL ? 0 : STRLEN(str2)) + 1L);
     if (dest != NULL)
     {
-	STRCPY(dest, str1);
-	STRCPY(dest + l, str2);
+	if (str1 == NULL)
+	    *dest = NUL;
+	else
+	    STRCPY(dest, str1);
+	if (str2 != NULL)
+	    STRCPY(dest + l, str2);
     }
     return dest;
 }
@@ -2576,35 +2596,4 @@ path_with_url(char_u *fname)
     for (p = fname; isalpha(*p); ++p)
 	;
     return path_is_url(p);
-}
-
-/*
- * Put timestamp "tt" in "buf[buflen]" in a nice format.
- */
-    void
-add_time(char_u *buf, size_t buflen, time_t tt)
-{
-#ifdef HAVE_STRFTIME
-    struct tm	tmval;
-    struct tm	*curtime;
-
-    if (vim_time() - tt >= 100)
-    {
-	curtime = vim_localtime(&tt, &tmval);
-	if (vim_time() - tt < (60L * 60L * 12L))
-	    // within 12 hours
-	    (void)strftime((char *)buf, buflen, "%H:%M:%S", curtime);
-	else
-	    // longer ago
-	    (void)strftime((char *)buf, buflen, "%Y/%m/%d %H:%M:%S", curtime);
-    }
-    else
-#endif
-    {
-	long seconds = (long)(vim_time() - tt);
-
-	vim_snprintf((char *)buf, buflen,
-		NGETTEXT("%ld second ago", "%ld seconds ago", seconds),
-		seconds);
-    }
 }

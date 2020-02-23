@@ -491,7 +491,7 @@ win_line(
 	{
 	    extra_check = TRUE;
 	    get_term_attr = TRUE;
-	    win_attr = term_get_attr(wp->w_buffer, lnum, -1);
+	    win_attr = term_get_attr(wp, lnum, -1);
 	}
 #endif
 
@@ -1176,6 +1176,8 @@ win_line(
 		    c_final = NUL;
 		    n_extra = get_breakindent_win(wp,
 				       ml_get_buf(wp->w_buffer, lnum, FALSE));
+		    if (wp->w_skipcol > 0 && wp->w_p_wrap)
+			need_showbreak = FALSE;
 		    // Correct end of highlighted area for 'breakindent',
 		    // required when 'linebreak' is also set.
 		    if (tocol == vcol)
@@ -1222,7 +1224,8 @@ win_line(
 		    c_extra = NUL;
 		    c_final = NUL;
 		    n_extra = (int)STRLEN(sbr);
-		    need_showbreak = FALSE;
+		    if (wp->w_skipcol == 0 || !wp->w_p_wrap)
+			need_showbreak = FALSE;
 		    vcol_sbr = vcol + MB_CHARLEN(sbr);
 		    // Correct end of highlighted area for 'showbreak',
 		    // required when 'linebreak' is also set.
@@ -1416,7 +1419,7 @@ win_line(
 		syntax_attr = 0;
 # ifdef FEAT_TERMINAL
 		if (get_term_attr)
-		    syntax_attr = term_get_attr(wp->w_buffer, lnum, vcol);
+		    syntax_attr = term_get_attr(wp, lnum, vcol);
 # endif
 		// Get syntax attribute.
 		if (has_syntax)

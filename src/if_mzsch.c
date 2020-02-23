@@ -3044,7 +3044,7 @@ vim_to_mzscheme_impl(typval_T *vim_value, int depth, Scheme_Hash_Table *visited)
 	    MZ_GC_VAR_IN_REG(0, obj);
 	    MZ_GC_REG();
 
-	    curr = list->lv_last;
+	    curr = list->lv_u.mat.lv_last;
 	    obj = vim_to_mzscheme_impl(&curr->li_tv, depth + 1, visited);
 	    result = scheme_make_pair(obj, scheme_null);
 	    MZ_GC_CHECK();
