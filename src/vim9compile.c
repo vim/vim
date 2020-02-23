@@ -1522,7 +1522,11 @@ find_imported(char_u *name, size_t len, cctx_T *cctx)
  * Generate an instruction to load script-local variable "name".
  */
     static int
-compile_load_scriptvar(cctx_T *cctx, char_u *name)
+compile_load_scriptvar(
+	cctx_T *cctx,
+	char_u *name,	    // variable NUL terminated
+	char_u *start,	    // start of variable
+	char_u **end)	    // end of variable
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     int		    idx = get_script_item_idx(current_sctx.sc_sid, name, FALSE);
@@ -1546,11 +1550,40 @@ compile_load_scriptvar(cctx_T *cctx, char_u *name)
     import = find_imported(name, 0, cctx);
     if (import != NULL)
     {
-	// TODO: check this is a variable, not a function
-	generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
-		import->imp_sid,
-		import->imp_var_vals_idx,
-		import->imp_type);
+	if (import->imp_all)
+	{
+	    char_u	*p = skipwhite(*end);
+	    int		name_len;
+	    ufunc_T	*ufunc;
+	    type_T	*type;
+
+	    // Used "import * as Name", need to lookup the member.
+	    if (*p != '.')
+	    {
+		semsg(_("E1060: expected dot after name: %s"), start);
+		return FAIL;
+	    }
+	    ++p;
+
+	    idx = find_exported(import->imp_sid, &p, &name_len, &ufunc, &type);
+	    // TODO: what if it is a function?
+	    if (idx < 0)
+		return FAIL;
+	    *end = p;
+
+	    generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
+		    import->imp_sid,
+		    idx,
+		    type);
+	}
+	else
+	{
+	    // TODO: check this is a variable, not a function
+	    generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
+		    import->imp_sid,
+		    import->imp_var_vals_idx,
+		    import->imp_type);
+	}
 	return OK;
     }
 
@@ -1564,10 +1597,11 @@ compile_load_scriptvar(cctx_T *cctx, char_u *name)
  * When "error" is FALSE do not give an error when not found.
  */
     static int
-compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
+compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 {
     type_T	*type;
     char_u	*name;
+    char_u	*end = end_arg;
     int		res = FAIL;
 
     if (*(*arg + 1) == ':')
@@ -1589,7 +1623,7 @@ compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
 	}
 	else if (**arg == 's')
 	{
-	    res = compile_load_scriptvar(cctx, name);
+	    res = compile_load_scriptvar(cctx, name, NULL, NULL);
 	}
 	else
 	{
@@ -1645,7 +1679,7 @@ compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
 		else if (SCRIPT_ITEM(current_sctx.sc_sid)->sn_version
 							== SCRIPT_VERSION_VIM9)
 		    // in Vim9 script "var" can be script-local.
-		   res = compile_load_scriptvar(cctx, name);
+		   res = compile_load_scriptvar(cctx, name, *arg, &end);
 	    }
 	}
 	if (gen_load)
@@ -3412,7 +3446,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    generate_LOAD(cctx, ISN_LOADG, 0, name + 2, type);
 		    break;
 		case dest_script:
-		    compile_load_scriptvar(cctx, name + (name[1] == ':' ? 2 : 0));
+		    compile_load_scriptvar(cctx, name + (name[1] == ':' ? 2 : 0), NULL, NULL);
 		    break;
 		case dest_env:
 		    // Include $ in the name here

@@ -331,6 +331,28 @@ def Test_vim9script()
   unlet g:imported_func
   unlet g:imported_name g:imported_name_appended
   delete('Ximport.vim')
+
+  let import_star_as_lines =<< trim END
+    vim9script
+    import * as Export from './Xexport.vim'
+    def UseExport()
+      g:imported = Export.exported
+    enddef
+    UseExport()
+  END
+  writefile(import_star_as_lines, 'Ximport.vim')
+  source Ximport.vim
+  assert_equal(9876, g:imported)
+
+  let import_star_lines =<< trim END
+    vim9script
+    import * from './Xexport.vim'
+    g:imported = exported
+  END
+  writefile(import_star_lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1045:')
+
+  delete('Ximport.vim')
   delete('Xexport.vim')
 
   " Check that in a Vim9 script 'cpo' is set to the Vim default.
@@ -352,6 +374,7 @@ def Test_vim9script_fails()
   CheckScriptFailure(['scriptversion 2', 'vim9script'], 'E1039:')
   CheckScriptFailure(['vim9script', 'scriptversion 2'], 'E1040:')
   CheckScriptFailure(['export let some = 123'], 'E1042:')
+  CheckScriptFailure(['import some from "./Xexport.vim"'], 'E1042:')
   CheckScriptFailure(['vim9script', 'export let g:some'], 'E1044:')
   CheckScriptFailure(['vim9script', 'export echo 134'], 'E1043:')
 
