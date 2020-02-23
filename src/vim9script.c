@@ -172,7 +172,7 @@ find_exported(
     scriptitem_T *script = SCRIPT_ITEM(sid);
 
     // isolate one name
-    while (eval_isnamec1(*arg))
+    while (eval_isnamec(*arg))
 	++arg;
     *name_len = (int)(arg - name);
 
@@ -262,9 +262,9 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid)
     {
 	if (*arg == '*')
 	    arg = skipwhite(arg + 1);
-	else
+	else if (eval_isnamec1(*arg))
 	{
-	    while (eval_isnamec1(*arg))
+	    while (eval_isnamec(*arg))
 		++arg;
 	    arg = skipwhite(arg);
 	}
@@ -273,8 +273,9 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid)
 	    // skip over "as Name "
 	    arg = skipwhite(arg + 2);
 	    as_ptr = arg;
-	    while (eval_isnamec1(*arg))
-		++arg;
+	    if (eval_isnamec1(*arg))
+		while (eval_isnamec(*arg))
+		    ++arg;
 	    as_len = (int)(arg - as_ptr);
 	    arg = skipwhite(arg);
 	}
@@ -286,7 +287,7 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid)
     }
     if (STRNCMP("from", arg, 4) != 0 || !VIM_ISWHITE(arg[4]))
     {
-	emsg(_("E1045: Missing \"from\""));
+	emsg(_("E1070: Missing \"from\""));
 	return NULL;
     }
     from_ptr = arg;
@@ -299,7 +300,7 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid)
 	ret = get_string_tv(&arg, &tv, TRUE);
     if (ret == FAIL || tv.vval.v_string == NULL || *tv.vval.v_string == NUL)
     {
-	emsg(_("E1045: Invalid string after \"from\""));
+	emsg(_("E1071: Invalid string after \"from\""));
 	return NULL;
     }
     cmd_end = arg;
@@ -423,6 +424,7 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid)
 	}
 	if (arg != from_ptr)
 	{
+	    // cannot happen, just in case the above has a flaw
 	    emsg(_("E1047: syntax error in import"));
 	    return NULL;
 	}

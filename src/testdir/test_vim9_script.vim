@@ -352,6 +352,50 @@ def Test_vim9script()
   writefile(import_star_lines, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1045:')
 
+  " try to import something that exists but is not exported
+  let import_not_exported_lines =<< trim END
+    vim9script
+    import name from './Xexport.vim'
+  END
+  writefile(import_not_exported_lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1049:')
+
+  " import a very long name, requires making a copy
+  let import_long_name_lines =<< trim END
+    vim9script
+    import name012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789 from './Xexport.vim'
+  END
+  writefile(import_long_name_lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1048:')
+
+  let import_no_from_lines =<< trim END
+    vim9script
+    import name './Xexport.vim'
+  END
+  writefile(import_no_from_lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1070:')
+
+  let import_invalid_string_lines =<< trim END
+    vim9script
+    import name from Xexport.vim
+  END
+  writefile(import_invalid_string_lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1071:')
+
+  let import_wrong_name_lines =<< trim END
+    vim9script
+    import name from './XnoExport.vim'
+  END
+  writefile(import_wrong_name_lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1053:')
+
+  let import_missing_comma_lines =<< trim END
+    vim9script
+    import {exported name} from './Xexport.vim'
+  END
+  writefile(import_missing_comma_lines, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1046:')
+
   delete('Ximport.vim')
   delete('Xexport.vim')
 
