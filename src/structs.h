@@ -3341,13 +3341,14 @@ struct window_S
     int		*w_p_cc_cols;	    // array of columns to highlight or NULL
     char_u	w_p_culopt_flags;   // flags for cursorline highlighting
 #endif
-#ifdef FEAT_LINEBREAK
-    int		w_p_brimin;	    // minimum width for breakindent
-    int		w_p_brishift;	    // additional shift for breakindent
-    int		w_p_brisbr;	    // sbr in 'briopt'
-#endif
     long	w_p_siso;	    // 'sidescrolloff' local value
     long	w_p_so;		    // 'scrolloff' local value
+
+#ifdef FEAT_LINEBREAK
+    int		w_briopt_min;	    // minimum width for breakindent
+    int		w_briopt_shift;	    // additional shift for breakindent
+    int		w_briopt_sbr;	    // sbr in 'briopt'
+#endif
 
     // transform a pointer to a "onebuf" option into a "allbuf" option
 #define GLOBAL_WO(p)	((char *)p + sizeof(winopt_T))

@@ -875,9 +875,9 @@ briopt_check(win_T *wp)
 	    ++p;
     }
 
-    wp->w_p_brishift = bri_shift;
-    wp->w_p_brimin   = bri_min;
-    wp->w_p_brisbr   = bri_sbr;
+    wp->w_briopt_shift = bri_shift;
+    wp->w_briopt_min   = bri_min;
+    wp->w_briopt_sbr   = bri_sbr;
 
     return OK;
 }
@@ -927,10 +927,10 @@ get_breakindent_win(
 				     (int)wp->w_buffer->b_p_ts, wp->w_p_list);
 # endif
     }
-    bri = prev_indent + wp->w_p_brishift;
+    bri = prev_indent + wp->w_briopt_shift;
 
     // indent minus the length of the showbreak string
-    if (wp->w_p_brisbr)
+    if (wp->w_briopt_sbr)
 	bri -= vim_strsize(get_showbreak_value(wp));
 
     // Add offset for number column, if 'n' is in 'cpoptions'
@@ -941,9 +941,9 @@ get_breakindent_win(
 	bri = 0;
     // always leave at least bri_min characters on the left,
     // if text width is sufficient
-    else if (bri > eff_wwidth - wp->w_p_brimin)
-	bri = (eff_wwidth - wp->w_p_brimin < 0)
-			    ? 0 : eff_wwidth - wp->w_p_brimin;
+    else if (bri > eff_wwidth - wp->w_briopt_min)
+	bri = (eff_wwidth - wp->w_briopt_min < 0)
+					   ? 0 : eff_wwidth - wp->w_briopt_min;
 
     return bri;
 }
