@@ -3568,16 +3568,18 @@ get_stringifying(char_u *expr)
     static char_u*
 stringify_expr(char_u *expr)
 {
+    const size_t    ENCOSING_QUOTES_NUM = 2;
+    char_u	    *result;
     char_u	    *stringifying = get_stringifying(expr);
     char_u	    *to_free_stringifying = stringifying;
     typval_T	    stringified = { VAR_UNKNOWN, VAR_LOCKED, { 0 } };
-    int		    is_stringifying_success = eval1(&stringifying, &stringified, TRUE);
-    char_u	    *result;
-    const size_t    ENCOSING_QUOTES_NUM = 2;
+    int		    is_stringifying_success;
+
+    is_stringifying_success = eval1(&stringifying, &stringified, TRUE);
+    vim_free(to_free_stringifying);
 
     if (!is_stringifying_success)
     {
-	vim_free(to_free_stringifying);
 	vim_free(stringified.vval.v_string);
 	return NULL;
     }
