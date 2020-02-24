@@ -328,14 +328,15 @@ syn keyword phpBoolean true false contained
 
 " Float
 " Refer to: https://www.php.net/manual/en/language.types.float.php
-syn match phpFloat "\%(\w\|\.\)\@<!\%(\d\|\.\)*\d\%(\d\|\.\)*\%([eE][+-]\=\%(\d\|\.\)\+\)\=\%(\w\|\.\)\@!" contained contains=phpFloatError display
-syn match phpFloatError "[eE.].*\." contained display
+" and https://wiki.php.net/rfc/numeric_literal_separator#restrictions
+syn match phpFloat "\%(\w\|\.\)\@<!\%(\d_\?\|\.\)*\d\%(\d\|_\|\.\)*\%([eE][+-]\=\%(\d\|_\|\.\)\+\)\=\%(\w\|\.\)\@!" contained contains=phpFloatError display
+syn match phpFloatError "\%([eE.][0-9._+-]*\.\|__\|_\(\>\|[eE]\)\|\(\>\|[eE]\)_\)" contained display
 
 " Number
-syn match phpNumber "\%(\.\)\@<!\<\%([1-9]\d*\|0\|0[xX]\x\+\)\>\%(\.\)\@!" contained display
+syn match phpNumber "\%(\.\)\@<!\<\%([1-9]\d*\|0\|0[xX]\(\x_\?\)*\x\)\>\%(\.\)\@!" contained display
 syn match phpNumber "\%(\.\)\@<!\<0\d\+\>\%(\.\)\@!" contained contains=phpOctalError display
 syn match phpBinaryError "[2-9]" contained display
-syn match phpNumber "\%(\.\)\@<!\<0[bB]\d\+\>\%(\.\)\@!" contained contains=phpBinaryError display
+syn match phpNumber "\%(\.\)\@<!\<0[bB]\(\d_\?\)*\d\>\%(\.\)\@!" contained contains=phpBinaryError display
 
 " Backslash escapes
 syn case match
