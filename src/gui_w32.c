@@ -382,6 +382,14 @@ directx_binddc(void)
     if (s_textArea != NULL)
     {
 	RECT	rect;
+
+	// Win 10 1809 stopped maintaining off-screen area, so using CopyFromRenderTarget()
+	// for scrolling breaks. Using a layered child window for text area restores the
+	// previous behavior. This isn't supported on earlier than Win 8, but no ill effect
+	// is observed from making these API calls regardless.
+	SetWindowLongPtr(s_textArea, GWL_EXSTYLE, WS_EX_LAYERED);
+	SetLayeredWindowAttributes(s_textArea, RGB(0, 0, 0), 255, LWA_ALPHA);
+
 	GetClientRect(s_textArea, &rect);
 	DWriteContext_BindDC(s_dwc, s_hdc, &rect);
     }
