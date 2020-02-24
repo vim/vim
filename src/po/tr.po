@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-19 23:23+0300\n"
-"PO-Revision-Date: 2020-02-19 23:30+0300\n"
+"POT-Creation-Date: 2020-02-25 01:21+0300\n"
+"PO-Revision-Date: 2020-02-25 01:30+0300\n"
 "Last-Translator: Emir SARI <bitigchi@me.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "Language: tr\n"
@@ -409,7 +409,7 @@ msgid "W10: Warning: Changing a readonly file"
 msgstr "W10: Uyarı: Saltokunur bir dosya değiştiriliyor"
 
 msgid "E902: Cannot connect to port"
-msgstr "E902: Porta bağlanılamıyor"
+msgstr "E902: Kapıya bağlanılamıyor"
 
 msgid "E901: gethostbyname() in channel_open()"
 msgstr "E901: channel_open() içinde gethostbyname()"
@@ -780,7 +780,7 @@ msgid "E894: Using a Dictionary as a Float"
 msgstr "E894: Bir Sözlük, Kayan Noktalı Değer yerine kullanılıyor"
 
 msgid "E362: Using a boolean value as a Float"
-msgstr "E362: Bir Boolean, Kayan Noktalı Değer yerine kullanılıyor"
+msgstr "E362: Bir Boole Değeri, Kayan Noktalı Değer yerine kullanılıyor"
 
 msgid "E907: Using a special value as a Float"
 msgstr "E907: Bir Özel Değer, Kayan Noktalı Değer yerine kullanılıyor"
@@ -1321,8 +1321,9 @@ msgid "Append File"
 msgstr "Dosya iliştir"
 
 msgid "E747: Cannot change directory, buffer is modified (add ! to override)"
-msgstr "E747: Dizin değiştirilemiyor, arabellekte değiştirilmiş (yoksaymak "
-"için ! ekleyin)"
+msgstr ""
+"E747: Dizin değiştirilemiyor, arabellekte değiştirilmiş (yoksaymak için ! "
+"ekleyin)"
 
 msgid "E186: No previous directory"
 msgstr "E186: Öncesinde dizin yok"
@@ -1692,8 +1693,9 @@ msgstr "E854: Yol tamamlama için çok uzun"
 msgid ""
 "E343: Invalid path: '**[number]' must be at the end of the path or be "
 "followed by '%s'."
-msgstr "E343: Geçersiz yol: '**[sayı]' yolun sonunda olmalı veya sonrasında "
-"'%s' gelmelidir"
+msgstr ""
+"E343: Geçersiz yol: '**[sayı]' yolun sonunda olmalı veya sonrasında '%s' "
+"gelmelidir"
 
 #, c-format
 msgid "E344: Can't find directory \"%s\" in cdpath"
@@ -2800,7 +2802,7 @@ msgid "-t tag          edit file where tag is defined"
 msgstr "-t etiket       etiket tanımlanan dosyaları düzenle"
 
 msgid "-q [errorfile]  edit file with first error"
-msgstr "-q [hatadosyası]   hata içeren ilk dosyayı düzenle"
+msgstr "-q [hatalıd.]   hata içeren ilk dosyayı düzenle"
 
 msgid ""
 "\n"
@@ -6367,6 +6369,9 @@ msgstr "E1055: Bu Vim kayan noktalı değer desteği ile derlenmemiş"
 msgid "E1010: Type not recognized: %s"
 msgstr "E1010: Tür tanımlanamadı: %s"
 
+msgid "E1060: expected dot after name: %s"
+msgstr "E1060: Addan sonra nokta bekleniyordu: %s"
+
 #, c-format
 msgid "E1050: Item not found: %s"
 msgstr "E1050: Öge bulunamadı: %s"
@@ -6485,10 +6490,6 @@ msgstr "E1028: compile_def_function başarısız oldu"
 msgid "E121: Undefined variable: g:%s"
 msgstr "E121: Tanımlanmamış değişken: g:%s"
 
-#, c-format
-msgid "E1060: Invalid environment variable name: %s"
-msgstr "E1060: Geçersiz ortam değişkeni adı: %s"
-
 msgid "E1051: Expected string or number"
 msgstr "E1051: Dizi veya sayı bekleniyordu"
 
@@ -6522,19 +6523,6 @@ msgstr "E1044: Geçersiz değişkenle dışa aktarım"
 msgid "E1043: Invalid command after :export"
 msgstr "E1043: :export sonrası geçersiz komut"
 
-msgid "E1045: Missing \"as\" after *"
-msgstr "E1045: * sonrası \"as\" eksik"
-
-msgid "E1045: Missing \"from\""
-msgstr "E1045: Eksik \"from\""
-
-msgid "E1045: Invalid string after \"from\""
-msgstr "E1045: \"from\" sonrası geçersiz dizi"
-
-#, c-format
-msgid "E1053: Could not import \"%s\""
-msgstr "E1053: \"%s\" içe aktarılamadı"
-
 #, c-format
 msgid "E1049: Item not exported in script: %s"
 msgstr "E1049: Betikteki öge dışa aktarılmadı: %s"
@@ -6542,6 +6530,19 @@ msgstr "E1049: Betikteki öge dışa aktarılmadı: %s"
 #, c-format
 msgid "E1048: Item not found in script: %s"
 msgstr "E1048: Öge betikte bulunamadı: %s"
+
+msgid "E1045: Missing \"as\" after *"
+msgstr "E1045: * sonrası \"as\" eksik"
+
+msgid "E1070: Missing \"from\""
+msgstr "E1070: Eksik \"from\""
+
+msgid "E1071: Invalid string after \"from\""
+msgstr "E1071: \"from\" sonrası geçersiz dizi"
+
+#, c-format
+msgid "E1053: Could not import \"%s\""
+msgstr "E1053: \"%s\" içe aktarılamadı"
 
 msgid "E1046: Missing comma in import"
 msgstr "E1046: İçe aktarımda virgül eksik"
@@ -6758,8 +6759,9 @@ msgid "Sorry, this command is disabled: the Perl library could not be loaded."
 msgstr "Üzgünüm, bu komut etkin değil: Perl kitaplığı yüklenemedi."
 
 msgid "E299: Perl evaluation forbidden in sandbox without the Safe module"
-msgstr "E299: Güvenli modül olmadan kum havuzu içinde Perl değerlendirmesine "
-"izin verilmiyor"
+msgstr ""
+"E299: Güvenli modül olmadan kum havuzu içinde Perl değerlendirmesine izin "
+"verilmiyor"
 
 msgid "Edit with &multiple Vims"
 msgstr "Birden &fazla Vim ile düzenle"
