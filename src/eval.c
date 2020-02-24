@@ -3447,37 +3447,6 @@ is_escaped_quote(int is_literal_string, char_u *p)
 	(!is_literal_string && *p == '\\' && *(p + 1) == '"');
 }
 
-    static char_u*
-escape_quotes_in_quote(char_u *x, int is_literal_string)
-{
-    garray_T	result;
-    char_u	*p;
-
-    ga_init2(&result, 1, 80);
-
-    for (p = x; *p != NUL; MB_PTR_ADV(p))
-    {
-	if (is_literal_string && *p == '\'')
-	{
-	    ga_concat(&result, (char_u *) "''");
-	    continue;
-	}
-	else if (!is_literal_string && *p == '"')
-	{
-	    ga_concat(&result, (char_u *) "\\\"");
-	    continue;
-	}
-	else if (!is_literal_string && *p == '\\')
-	{
-	    ga_concat(&result, (char_u *) "\\\\");
-	    continue;
-	}
-	ga_concatn(&result, p, mb_ptr2len(p));
-    }
-
-    return (char_u *) result.ga_data;
-}
-
 /*
  * Finds closing '}' of taken expr
  */
@@ -3590,7 +3559,7 @@ stringify_expr(char_u *expr)
     // e.g.
     // string(function("function")) => "function('function')"
     // string({"x": "x"}) => "{'x': 'x'}"
-    sprintf((char *) result, "\"%s\"", stringified.vval);
+    sprintf((char *) result, "\"%s\"", (char *) stringified.vval.v_string);
     vim_free(stringified.vval.v_string);
 
     return result;
