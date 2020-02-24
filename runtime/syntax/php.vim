@@ -459,7 +459,7 @@ if exists("php_folding") && php_folding==1
   syn region phpFoldCatch matchgroup=Exception start="^\z(\s*\)catch\s\+\([^}]*$\)\@=" matchgroup=Delimiter end="^\z1}" contains=@phpClFunction,phpFoldFunction contained transparent fold extend
   syn region phpFoldTry matchgroup=Exception start="^\z(\s*\)try\s\+\([^}]*$\)\@=" matchgroup=Delimiter end="^\z1}" contains=@phpClFunction,phpFoldFunction contained transparent fold extend
 else
-  syn keyword phpDefine function contained
+  syn keyword phpDefine function fn contained
   syn keyword phpStructure abstract class trait interface contained
   syn keyword phpException catch throw try finally contained
   syn keyword phpStorageClass final global private protected public static contained
