@@ -566,6 +566,8 @@ term_start(
 	    }
 	}
     }
+    vim_free(curbuf->b_sfname);
+    curbuf->b_sfname = vim_strsave(curbuf->b_ffname);
     curbuf->b_fname = curbuf->b_ffname;
 
     if (opt->jo_term_opencmd != NULL)

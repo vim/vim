@@ -2405,3 +2405,9 @@ func Test_issue_5607()
     bw!
   endtry
 endfunc
+
+func Test_hidden_terminal()
+  let buf = term_start(&shell, #{hidden: 1})
+  call assert_equal('', bufname('^$'))
+  call StopShellInTerminal(buf)
+endfunc
