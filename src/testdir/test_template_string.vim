@@ -65,6 +65,8 @@ func Test_template_string_appendix()
   call assert_equal('''', $'${''''}')
   call assert_equal("", $"${""}")
   call assert_equal("x", $"${"x"}")
+  call assert_equal("a\"b", $"${'a"b'}")
+  call assert_equal('a''b', $'${"a'b"}')
 
   " Escaping '}'
   call assert_equal("}", $'${"}"}')
