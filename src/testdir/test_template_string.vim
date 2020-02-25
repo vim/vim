@@ -102,6 +102,13 @@ func Test_template_string_illformed()
   endtry
 
   try
+    let _ = $'${$UNDEFINED_ENV_VAR}'
+    call assert_report('Should throw an exception.')
+  catch
+    call assert_exception('E450:')
+  endtry
+
+  try
     let _ = $'${10'
     call assert_report('Should throw an exception.')
   catch

@@ -1436,8 +1436,14 @@ Template string helps you to write complex string. Other rules:
 <
 Other exceptions:
 >
-	echo $'${var'  " E451: Unterminated template expression: $'${var'
-	echo $'${}'    " E452: Empty template expression: $'${}'
+	echo $'${$UNDEFINED_ENV_VAR}'
+	" E450: Unknown environment variable: $UNDEFINED_ENV_VAR
+
+	echo $'${var'
+	" E451: Unterminated template expression: $'${var'
+
+	echo $'${}'
+	" E452: Empty template expression: $'${}'
 <
 
 option						*expr-option* *E112* *E113*
