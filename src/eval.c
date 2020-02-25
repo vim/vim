@@ -3552,6 +3552,12 @@ stringify_expr(char_u *expr)
 	vim_free(stringified.vval.v_string);
 	return NULL;
     }
+    // If $UNDEFINED_ENV_VAR evaluated
+    if (stringified.vval.v_string == NULL)
+    {
+	stringified.vval.v_string = "";
+    }
+
     result = (char_u *) alloc(STRLEN(stringified.vval.v_string) + ENCOSING_QUOTES_NUM + 1);
 
     // Use '"' to make a string correctly.
