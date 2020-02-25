@@ -1412,12 +1412,9 @@ These are same as
 Template string helps you to write complex string. Other rules:
 >
 	" Only strings or literal strings doesn't apply string()
-	echo $'I am a ${"vim"}'   " I am a vim
-	                          " not: I am a 'vim'
-	echo $"I am a ${'vim'}"   " I am a vim
-
-	" In template-string, you can write '$' as $$
-	echo $'$$'  " $
+	echo $'I''m ${"000"}'   " I'm 000
+	                          " not: I'm '000'
+	echo $"I'm ${'000'}"    " I'm 000
 
 	" Escaping in template (non-literal) string
 	echo $"${10} \\ \""   " 10 \ "
@@ -1433,12 +1430,12 @@ Template string helps you to write complex string. Other rules:
 	"" Meaning escaping is not needed
 	echo $'${''x''}'  " E199: ... (syntax error)
 	echo $"${\"x\"}"  " E199: ... (syntax error)
+
+	echo $'${$UNDEFINED_ENV_VAR}' " (empty string)
 <
+
 Other exceptions:
 >
-	echo $'${$UNDEFINED_ENV_VAR}'
-	" E450: Unknown environment variable: $UNDEFINED_ENV_VAR
-
 	echo $'${var'
 	" E451: Unterminated template expression: $'${var'
 
