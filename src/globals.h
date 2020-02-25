@@ -403,10 +403,12 @@ EXTERN type_T t_dict_any INIT4(VAR_DICT, 0, &t_any, NULL);
 EXTERN type_T t_list_empty INIT4(VAR_LIST, 0, &t_void, NULL);
 EXTERN type_T t_dict_empty INIT4(VAR_DICT, 0, &t_void, NULL);
 
+EXTERN type_T t_list_bool INIT4(VAR_LIST, 0, &t_bool, NULL);
 EXTERN type_T t_list_number INIT4(VAR_LIST, 0, &t_number, NULL);
 EXTERN type_T t_list_string INIT4(VAR_LIST, 0, &t_string, NULL);
 EXTERN type_T t_list_dict_any INIT4(VAR_LIST, 0, &t_dict_any, NULL);
 
+EXTERN type_T t_dict_bool INIT4(VAR_DICT, 0, &t_bool, NULL);
 EXTERN type_T t_dict_number INIT4(VAR_DICT, 0, &t_number, NULL);
 EXTERN type_T t_dict_string INIT4(VAR_DICT, 0, &t_string, NULL);
 

@@ -213,6 +213,8 @@ get_list_type(type_T *member_type, garray_T *type_list)
 	return &t_list_any;
     if (member_type->tt_type == VAR_VOID)
 	return &t_list_empty;
+    if (member_type->tt_type == VAR_BOOL)
+	return &t_list_bool;
     if (member_type->tt_type == VAR_NUMBER)
 	return &t_list_number;
     if (member_type->tt_type == VAR_STRING)
@@ -238,6 +240,8 @@ get_dict_type(type_T *member_type, garray_T *type_list)
 	return &t_dict_any;
     if (member_type->tt_type == VAR_VOID)
 	return &t_dict_empty;
+    if (member_type->tt_type == VAR_BOOL)
+	return &t_dict_bool;
     if (member_type->tt_type == VAR_NUMBER)
 	return &t_dict_number;
     if (member_type->tt_type == VAR_STRING)

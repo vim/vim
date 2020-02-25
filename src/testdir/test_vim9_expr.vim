@@ -861,4 +861,8 @@ func Test_expr_fails()
   call CheckDefExecFailure("CallMe ('yes')", 'E492:')
   call CheckDefFailure("CallMe2('yes','no')", 'E1069:')
   call CheckDefFailure("CallMe2('yes' , 'no')", 'E1068:')
+
+  call CheckDefFailure("v:nosuch += 3", 'E1001:')
+  call CheckDefFailure("let v:version = 3", 'E1064:')
+  call CheckDefFailure("let asdf = v:nosuch", 'E1001:')
 endfunc

@@ -37,14 +37,20 @@ def Test_assignment()
   let bool2: bool = false
   assert_equal(v:false, bool2)
 
-  let list1: list<string> = ['sdf', 'asdf']
+  let list1: list<bool> = [false, true, false]
   let list2: list<number> = [1, 2, 3]
+  let list3: list<string> = ['sdf', 'asdf']
+  let list4: list<any> = ['yes', true, 1234]
+  let list5: list<blob> = [0z01, 0z02]
 
   let listS: list<string> = []
   let listN: list<number> = []
 
-  let dict1: dict<string> = #{key: 'value'}
+  let dict1: dict<bool> = #{one: false, two: true}
   let dict2: dict<number> = #{one: 1, two: 2}
+  let dict3: dict<string> = #{key: 'value'}
+  let dict4: dict<any> = #{one: 1, two: '2'}
+  let dict5: dict<blob> = #{one: 0z01, tw: 0z02}
 
   g:newvar = 'new'
   assert_equal('new', g:newvar)
