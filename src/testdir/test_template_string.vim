@@ -27,6 +27,10 @@ func Test_template_string_basic()
   let x = 10
   call assert_equal('$x', $'$x')
 
+  " Environment variables
+  call assert_equal($HOME, $'${$HOME}')
+  call assert_equal($UNDEFINED_ENV_VAR, $'${$UNDEFINED_ENV_VAR}')
+
   " Another types (compound tests)
   if exists('*job_start')
     let x = job_start('ls', {})
@@ -104,13 +108,6 @@ func Test_template_string_illformed()
   endtry
 
   try
-    let _ = $'${$UNDEFINED_ENV_VAR}'
-    call assert_report('Should throw an exception.')
-  catch
-    call assert_exception('E450:')
-  endtry
-
-  try
     let _ = $'${10'
     call assert_report('Should throw an exception.')
   catch
@@ -136,6 +133,6 @@ func Test_template_string_illformed()
     let _ = $'missing closing of ${function(}'
     call assert_report('Should throw an exception.')
   catch
-    call assert_exception('E119:')
+    call assert_exception('E116:')
   endtry
 endfunc
