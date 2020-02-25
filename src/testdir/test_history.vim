@@ -133,6 +133,7 @@ func Test_history_size()
   set history=5
   call histadd(':', 'abc')
   call assert_equal('', histget(':', 6))
+  call assert_equal('', histget(':', 12))
   call assert_equal('cmd7', histget(':', 7))
   call assert_equal('abc', histget(':', -1))
 
