@@ -173,14 +173,14 @@ msgstr "E88: İlk arabellekten öncesine gidilemez"
 #, c-format
 msgid "E89: No write since last change for buffer %d (add ! to override)"
 msgstr ""
-"E89: %d numaralı arabellek son değişiklikten sonra yazılmadı (yoksaymak "
+"E89: %d numaralı arabellek son değişiklikten sonra yazılmadı (yok saymak "
 "için ! ekleyin)"
 
 msgid "E948: Job still running (add ! to end the job)"
 msgstr "E948: İş hâlâ sürüyor (bitirmek için ! ekleyin)"
 
 msgid "E37: No write since last change (add ! to override)"
-msgstr "E37: Son değişiklikten sonra yazılmadı (yoksaymak için ! ekleyin)"
+msgstr "E37: Son değişiklikten sonra yazılmadı (yok saymak için ! ekleyin)"
 
 msgid "E948: Job still running"
 msgstr "E948: İş hâlâ sürüyor"
@@ -302,22 +302,22 @@ msgid "writing to device disabled with 'opendevice' option"
 msgstr "aygıta yazma 'opendevice' seçeneği ile kapatılmış"
 
 msgid "is read-only (add ! to override)"
-msgstr "saltokunur (yoksaymak için ! ekleyin)"
+msgstr "saltokunur (yok saymak için ! ekleyin)"
 
 msgid "E506: Can't write to backup file (add ! to override)"
-msgstr "E506: Yedek dosyasına yazılamıyor (yoksaymak için ! ekleyin)"
+msgstr "E506: Yedek dosyasına yazılamıyor (yok saymak için ! ekleyin)"
 
 msgid "E507: Close error for backup file (add ! to override)"
-msgstr "E507: Yedek dosya için kapatma hatası (yoksaymak için ! ekleyin)"
+msgstr "E507: Yedek dosya için kapatma hatası (yok saymak için ! ekleyin)"
 
 msgid "E508: Can't read file for backup (add ! to override)"
-msgstr "E508: Yedek dosyası okunamıyor (yoksaymak için ! ekleyin)"
+msgstr "E508: Yedek dosyası okunamıyor (yok saymak için ! ekleyin)"
 
 msgid "E509: Cannot create backup file (add ! to override)"
-msgstr "E509: Yedek dosyası oluşturulamıyor (yoksaymak için ! ekleyin)"
+msgstr "E509: Yedek dosyası oluşturulamıyor (yok saymak için ! ekleyin)"
 
 msgid "E510: Can't make backup file (add ! to override)"
-msgstr "E510: Yedek dosyası yapılamıyor (yoksaymak için ! ekleyin) "
+msgstr "E510: Yedek dosyası yapılamıyor (yok saymak için ! ekleyin) "
 
 msgid "E214: Can't find temp file for writing"
 msgstr "E214: Yazma için geçici dosya bulunamıyor"
@@ -339,14 +339,14 @@ msgstr "E512: Kapatma başarısız oldu"
 
 msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
 msgstr ""
-"E513: Yazma hatası, dönüştürme başarısız (yoksaymak için 'fenc'i boş bırakın)"
+"E513: Yazma hatası, dönüştürme başarısız (yok saymak için 'fenc'i boş bırakın)"
 
 #, c-format
 msgid ""
 "E513: write error, conversion failed in line %ld (make 'fenc' empty to "
 "override)"
 msgstr ""
-"E513: Yazma hatası, %ld. satırda dönüştürme başarısız (yoksaymak için "
+"E513: Yazma hatası, %ld. satırda dönüştürme başarısız (yok saymak için "
 "'fenc'i boş bırakın)"
 
 msgid "E514: write error (file system full?)"
@@ -1053,7 +1053,7 @@ msgstr "Takas dosyası \"%s\" mevcut, yine de üzerine yazılsın mı?"
 
 #, c-format
 msgid "E768: Swap file exists: %s (:silent! overrides)"
-msgstr "E768: Takas dosyası mevcut: %s (:silent! yoksayar)"
+msgstr "E768: Takas dosyası mevcut: %s (:silent! yok sayar)"
 
 #, c-format
 msgid "E141: No file name for buffer %ld"
@@ -1082,7 +1082,7 @@ msgstr ""
 
 #, c-format
 msgid "E505: \"%s\" is read-only (add ! to override)"
-msgstr "E505: \"%s\" saltokunur (yoksaymak için ! ekleyin)"
+msgstr "E505: \"%s\" saltokunur (yok saymak için ! ekleyin)"
 
 msgid "Edit File"
 msgstr "Dosya Düzenle"
@@ -1208,11 +1208,11 @@ msgstr "E666: Derleyici desteklenmiyor: %s"
 
 #, c-format
 msgid "W20: Required python version 2.x not supported, ignoring file: %s"
-msgstr "W20: Gerekli 2.x Python sürümü desteklenmiyor, dosya yoksayılıyor: %s"
+msgstr "W20: Gerekli 2.x Python sürümü desteklenmiyor, dosya yok sayılıyor: %s"
 
 #, c-format
 msgid "W21: Required python version 3.x not supported, ignoring file: %s"
-msgstr "W21: Gerekli Python sürümü 3.x desteklenmiyor, dosya yoksayılıyor: %s"
+msgstr "W21: Gerekli Python sürümü 3.x desteklenmiyor, dosya yok sayılıyor: %s"
 
 #, c-format
 msgid "Current %slanguage: \"%s\""
@@ -1322,7 +1322,7 @@ msgstr "Dosya iliştir"
 
 msgid "E747: Cannot change directory, buffer is modified (add ! to override)"
 msgstr ""
-"E747: Dizin değiştirilemiyor, arabellekte değiştirilmiş (yoksaymak için ! "
+"E747: Dizin değiştirilemiyor, arabellekte değiştirilmiş (yok saymak için ! "
 "ekleyin)"
 
 msgid "E186: No previous directory"
@@ -1356,7 +1356,7 @@ msgstr "E739: Dizin oluşturulamıyor: %s"
 
 #, c-format
 msgid "E189: \"%s\" exists (add ! to override)"
-msgstr "E189: \"%s\" zaten var (yoksaymak için ! ekleyin)"
+msgstr "E189: \"%s\" zaten var (yok saymak için ! ekleyin)"
 
 #, c-format
 msgid "E190: Cannot open \"%s\" for writing"
@@ -2135,7 +2135,7 @@ msgid "E413: Too many arguments: \":highlight link %s\""
 msgstr "E413: Çok fazla değişken: \":highlight link %s\""
 
 msgid "E414: group has settings, highlight link ignored"
-msgstr "E414: Grup ayarları mevcut, vurgulama bağlantısı yoksayıldı"
+msgstr "E414: Grup ayarları mevcut, vurgulama bağlantısı yok sayıldı"
 
 #, c-format
 msgid "E415: unexpected equal sign: %s"
@@ -2828,7 +2828,7 @@ msgid ""
 "Where case is ignored prepend / to make flag upper case"
 msgstr ""
 "\n"
-"BÜYÜK/küçük harfin yoksayıldığı yerde bayrağı BÜYÜK harfli yapmak için "
+"BÜYÜK/küçük harfin yok sayıldığı yerde bayrağı BÜYÜK harfli yapmak için "
 "başına / koyun"
 
 msgid ""
@@ -3894,7 +3894,7 @@ msgstr "E511: NetBeans hâlihazırda bağlı"
 
 #, c-format
 msgid "E505: %s is read-only (add ! to override)"
-msgstr "E505: %s saltokunur (yoksaymak için ! ekleyin)"
+msgstr "E505: %s saltokunur (yok saymak için ! ekleyin)"
 
 msgid "E349: No identifier under cursor"
 msgstr "E349: İmleç altında bir tanımlayıcı yok"
@@ -5187,7 +5187,7 @@ msgstr "%d yinelenen sözcük, %s içinde"
 
 #, c-format
 msgid "Ignored %d word(s) with non-ASCII characters in %s"
-msgstr "%d sözcük %s içinde ASCII olmayan karakterler içerdiğinden yoksayıldı"
+msgstr "%d sözcük %s içinde ASCII olmayan karakterler içerdiğinden yok sayıldı"
 
 #, c-format
 msgid "Reading word file %s..."
@@ -5195,15 +5195,15 @@ msgstr "Sözcük dosyası %s okunuyor..."
 
 #, c-format
 msgid "Duplicate /encoding= line ignored in %s line %d: %s"
-msgstr "%s içinde %d. satırda yinelenen /encoding= satırı yoksayıldı: %s"
+msgstr "%s içinde %d. satırda yinelenen /encoding= satırı yok sayıldı: %s"
 
 #, c-format
 msgid "/encoding= line after word ignored in %s line %d: %s"
-msgstr "%s içinde %d. satırda sözcükten sonra gelen /encoding yoksayıldı: %s"
+msgstr "%s içinde %d. satırda sözcükten sonra gelen /encoding= yok sayıldı: %s"
 
 #, c-format
 msgid "Duplicate /regions= line ignored in %s line %d: %s"
-msgstr "%s içinde %d. satırda yinelenen /regions= satırı yoksayıldı: %s"
+msgstr "%s içinde %d. satırda yinelenen /regions= satırı yok sayıldı: %s"
 
 #, c-format
 msgid "Too many regions in %s line %d: %s"
@@ -5211,7 +5211,7 @@ msgstr "%s içinde %d. satırda çok fazla bölge: %s"
 
 #, c-format
 msgid "/ line ignored in %s line %d: %s"
-msgstr "%s içinde %d. satırda / satırı yoksayılıyor: %s"
+msgstr "%s içinde %d. satırda / satırı yok sayılıyor: %s"
 
 #, c-format
 msgid "Invalid region nr in %s line %d: %s"
@@ -5223,7 +5223,7 @@ msgstr "%s içinde %d. satırda tanınmayan bayraklar: %s"
 
 #, c-format
 msgid "Ignored %d words with non-ASCII characters"
-msgstr "ASCII olmayan karakter içeren %d sözcük yoksayıldı"
+msgstr "ASCII olmayan karakter içeren %d sözcük yok sayıldı"
 
 msgid "E845: Insufficient memory, word list will be incomplete"
 msgstr "E845: Yetersiz bellek, sözcük listesi tam olmayacak"
@@ -5325,7 +5325,7 @@ msgid "E390: Illegal argument: %s"
 msgstr "E390: İzin verilmeyen değişken: %s"
 
 msgid "syntax case ignore"
-msgstr "sözdizim BÜYÜK/küçük harf yoksay"
+msgstr "sözdizim BÜYÜK/küçük harf yok say"
 
 msgid "syntax case match"
 msgstr "sözdizim BÜYÜK/küçük harfe duyarlı"
@@ -5350,7 +5350,7 @@ msgid "E391: No such syntax cluster: %s"
 msgstr "E391: Böyle bir sözdizim kümesi yok: %s"
 
 msgid "syncing on C-style comments"
-msgstr "C dili türü komutlar eşitleniyor"
+msgstr "C biçemli komutlar eşitleniyor"
 
 msgid "no syncing"
 msgstr "eşitleme yok"
@@ -5527,7 +5527,7 @@ msgid "E429: File \"%s\" does not exist"
 msgstr "E429: Dosya \"%s\" mevcut değil"
 
 msgid "  # pri kind tag"
-msgstr "  # ön tür etiket"
+msgstr "  # ön  tür  etiket"
 
 msgid "file\n"
 msgstr "dosya\n"
@@ -5563,7 +5563,7 @@ msgid "E433: No tags file"
 msgstr "E433: Etiket dosyası yok"
 
 msgid "Ignoring long line in tags file"
-msgstr "Etiket dosyasındaki uzun satır yoksayılıyor"
+msgstr "Etiket dosyasındaki uzun satır yok sayılıyor"
 
 msgid "E434: Can't find tag pattern"
 msgstr "E434: Etiket dizgisi bulunamıyor"
@@ -6844,7 +6844,7 @@ msgid "E588: :endfor without :for"
 msgstr "E588: :for olmadan :endfor"
 
 msgid "E13: File exists (add ! to override)"
-msgstr "E13: Dosya mevcut (yoksaymak için ! ekleyin)"
+msgstr "E13: Dosya mevcut (yok saymak için ! ekleyin)"
 
 msgid "E472: Command failed"
 msgstr "E472: Komut başarısız oldu"
@@ -7047,7 +7047,7 @@ msgid "E44: Corrupted regexp program"
 msgstr "E44: Bozulmuş regexp programı"
 
 msgid "E45: 'readonly' option is set (add ! to override)"
-msgstr "E45: 'readonly' seçeneği ayarlanmış (yoksaymak için ! ekleyin)"
+msgstr "E45: 'readonly' seçeneği ayarlanmış (yok saymak için ! ekleyin)"
 
 #, c-format
 msgid "E121: Undefined variable: %s"
