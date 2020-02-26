@@ -702,6 +702,10 @@ def Test_execute_cmd()
   assert_equal('execute-var', getline(1))
   execute cmd .. '|call setline(1, "execute-var-string")'
   assert_equal('execute-var-string', getline(1))
+  let cmd_first = 'call '
+  let cmd_last = 'setline(1, "execute-var-var")'
+  execute cmd_first .. cmd_last
+  assert_equal('execute-var-var', getline(1))
 enddef
 
 
