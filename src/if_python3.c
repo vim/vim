@@ -1641,7 +1641,7 @@ LineToString(const char *str)
 {
     PyObject *result;
     Py_ssize_t len = strlen(str);
-    char *tmp,*p;
+    char *tmp, *p;
 
     tmp = alloc(len + 1);
     p = tmp;

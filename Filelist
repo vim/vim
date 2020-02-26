@@ -14,7 +14,6 @@ SRC_ALL =	\
 		ci/if_ver*.vim \
 		src/Make_all.mak \
 		src/README.md \
-		src/README_VIM9.md \
 		src/alloc.h \
 		src/arabic.c \
 		src/arglist.c \
@@ -661,6 +660,7 @@ SRC_EXTRA =	\
 RT_ALL =	\
 		README.txt \
 		README.md \
+		README_VIM9.md \
 		LICENSE \
 		CONTRIBUTING.md \
 		runtime/bugreport.vim \

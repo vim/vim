@@ -669,6 +669,7 @@ heredoc_get(exarg_T *eap, char_u *cmd)
  * ":let var ..= expr"		assignment command.
  * ":let [var1, var2] = expr"	unpack list.
  * ":let var =<< ..."		heredoc
+ * ":let var: string"		Vim9 declaration
  */
     void
 ex_let(exarg_T *eap)
