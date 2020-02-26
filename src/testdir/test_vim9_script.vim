@@ -178,6 +178,15 @@ func Test_call_default_args_from_func()
   call assert_fails('call MyDefaultArgs("one", "two")', 'E118:')
 endfunc
 
+func TakesOneArg(arg)
+  echo a:arg
+endfunc
+
+def Test_call_wrong_arg_count()
+  call CheckDefFailure(['TakesOneArg()'], 'E119:')
+  call CheckDefFailure(['TakesOneArg(11, 22)'], 'E118:')
+enddef
+
 " Default arg and varargs
 def MyDefVarargs(one: string, two = 'foo', ...rest: list<string>): string
   let res = one .. ',' .. two
@@ -194,13 +203,12 @@ def Test_call_def_varargs()
   assert_equal('one,two,three', MyDefVarargs('one', 'two', 'three'))
 enddef
 
+def Test_call_func_defined_later()
+  call assert_equal('one', DefinedLater('one'))
+  call assert_fails('call NotDefined("one")', 'E117:')
+enddef
 
-"def Test_call_func_defined_later()
-"  call assert_equal('one', DefineLater('one'))
-"  call assert_fails('call NotDefined("one")', 'E99:')
-"enddef
-
-func DefineLater(arg)
+func DefinedLater(arg)
   return a:arg
 endfunc
 

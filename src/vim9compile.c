@@ -1545,7 +1545,8 @@ compile_load_scriptvar(
 	cctx_T *cctx,
 	char_u *name,	    // variable NUL terminated
 	char_u *start,	    // start of variable
-	char_u **end)	    // end of variable
+	char_u **end,	    // end of variable
+	int    error)	    // when TRUE may give error
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     int		    idx = get_script_item_idx(current_sctx.sc_sid, name, FALSE);
@@ -1606,7 +1607,8 @@ compile_load_scriptvar(
 	return OK;
     }
 
-    semsg(_("E1050: Item not found: %s"), name);
+    if (error)
+	semsg(_("E1050: Item not found: %s"), name);
     return FAIL;
 }
 
@@ -1642,7 +1644,7 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 	}
 	else if (**arg == 's')
 	{
-	    res = compile_load_scriptvar(cctx, name, NULL, NULL);
+	    res = compile_load_scriptvar(cctx, name, NULL, NULL, error);
 	}
 	else
 	{
@@ -1698,7 +1700,7 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 		else if (SCRIPT_ITEM(current_sctx.sc_sid)->sn_version
 							== SCRIPT_VERSION_VIM9)
 		    // in Vim9 script "var" can be script-local.
-		   res = compile_load_scriptvar(cctx, name, *arg, &end);
+		   res = compile_load_scriptvar(cctx, name, *arg, &end, error);
 	    }
 	}
 	if (gen_load)
@@ -3465,7 +3467,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    generate_LOAD(cctx, ISN_LOADG, 0, name + 2, type);
 		    break;
 		case dest_script:
-		    compile_load_scriptvar(cctx, name + (name[1] == ':' ? 2 : 0), NULL, NULL);
+		    compile_load_scriptvar(cctx,
+			    name + (name[1] == ':' ? 2 : 0), NULL, NULL, TRUE);
 		    break;
 		case dest_env:
 		    // Include $ in the name here
