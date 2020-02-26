@@ -1427,9 +1427,6 @@ Template string helps you to write complex string. Other rules:
 	" Quotes in quotes
 	echo $'${'*'}'  " *
 	echo $"${"*"}"  " *
-	"" Meaning escaping is not needed
-	echo $'${''x''}'  " E199: ... (syntax error)
-	echo $"${\"x\"}"  " E199: ... (syntax error)
 
 	echo $'${$UNDEFINED_ENV_VAR}' " (empty string)
 <
