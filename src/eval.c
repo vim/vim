@@ -3415,9 +3415,8 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
     {
 	if (is_skipping_needed)
 	{
-	    ga_append(&current, (int) **arg);
+	    ga_concatn(&current, *arg, 2);
 	    ++*arg;
-	    ga_append(&current, (int) **arg);
 	    continue;
 	}
 	else if (**arg == '$' && *(*arg + 1) == '{')
@@ -3595,7 +3594,6 @@ forward_to_end_of_template_expr(char_u **expr, int is_literal_string)
 read_template_expr(char_u **source, int is_literal_string)
 {
     char_u  *expr_head;
-    char_u  *expr;
 
     *source += 2;  // forward with beginning '${'
     expr_head = *source;
@@ -3603,12 +3601,7 @@ read_template_expr(char_u **source, int is_literal_string)
     if (!forward_to_end_of_template_expr(source, is_literal_string))
 	return NULL;
 
-    **source = NUL;
-    expr = (char_u *) alloc(STRLEN(expr_head) + 1);
-    STRCPY(expr, expr_head);
-    **source = '}';
-
-    return expr;
+    return vim_strnsave(expr_head, (int)(*source - expr_head));
 }
 
     static char_u*
