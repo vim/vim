@@ -14,6 +14,10 @@
 #include "vim.h"
 #include "version.h"
 
+#if defined(__HAIKU__)
+# include <storage/FindDirectory.h>
+#endif
+
 #if defined(MSWIN)
 # include <lm.h>
 #endif
@@ -1667,6 +1671,18 @@ vim_getenv(char_u *name, int *mustfree)
     // handling $VIMRUNTIME and $VIM is below, bail out if it's another name.
     vimruntime = (STRCMP(name, "VIMRUNTIME") == 0);
     if (!vimruntime && STRCMP(name, "VIM") != 0)
+#if defined(__HAIKU__)
+	// special handling for user settings directory...
+	if (STRCMP(name, "BE_USER_SETTINGS") == 0)
+	{
+	    static char userSettingsPath[MAXPATHL] = {0};
+
+	    if (B_OK == find_directory(B_USER_SETTINGS_DIRECTORY, 0,
+					    false, userSettingsPath, MAXPATHL))
+		return userSettingsPath;
+	}
+	else
+#endif
 	return NULL;
 
     /*

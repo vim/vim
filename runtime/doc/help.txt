@@ -204,6 +204,7 @@ Remarks about specific systems ~
 |os_os2.txt|	OS/2
 |os_qnx.txt|	QNX
 |os_risc.txt|	RISC-OS
+|os_haiku.txt|	Haiku
 |os_unix.txt|	Unix
 |os_vms.txt|	VMS
 |os_win32.txt|	MS-Windows
