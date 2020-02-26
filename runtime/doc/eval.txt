@@ -1389,7 +1389,7 @@ to be doubled.  These two commands are equivalent: >
 	if a =~ '\s*'
 
 
-template-string					*template-string* *E1000*
+template-string				*template-string* *E451* *E452*
 ---------------
 
 $"string"	template string			*expr-$quote*
