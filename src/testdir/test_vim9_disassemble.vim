@@ -690,4 +690,37 @@ def Test_disassemble_compare()
   " delete('Xdisassemble')
 enddef
 
+def s:Execute()
+  execute 'help vim9.txt'
+  let cmd = 'help vim9.txt'
+  execute cmd
+  let tag = 'vim9.txt'
+  execute 'help ' .. tag
+enddef
+
+def Test_disassemble_execute()
+  let res = execute('disass s:Execute')
+  assert_match('\<SNR>\d*_Execute.*'
+        \ .. "execute 'help vim9.txt'.*"
+        \ .. '\d PUSHS "help vim9.txt".*'
+        \ .. '\d EXECUTE 1.*'
+        \ .. "let cmd = 'help vim9.txt'.*"
+        \ .. '\d PUSHS "help vim9.txt".*'
+        \ .. '\d STORE $0.*'
+        \ .. 'execute cmd.*'
+        \ .. '\d LOAD $0.*'
+        \ .. '\d EXECUTE 1.*'
+        \ .. "let tag = 'vim9.txt'.*"
+        \ .. '\d PUSHS "vim9.txt".*'
+        \ .. '\d STORE $1.*'
+        \ .. "execute 'help ' .. tag.*"
+        \ .. '\d PUSHS "help ".*'
+        \ .. '\d LOAD $1.*'
+        \ .. '\d CONCAT.*'
+        \ .. '\d EXECUTE 1.*'
+        \ .. '\d PUSHNR 0.*'
+        \ .. '\d RETURN'
+        \, res)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

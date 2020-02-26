@@ -14,6 +14,8 @@
 typedef enum {
     ISN_EXEC,	    // execute Ex command line isn_arg.string
     ISN_ECHO,	    // echo isn_arg.number items on top of stack
+    ISN_EXECUTE,    // execute Ex commands isn_arg.execute.execute_count
+		    // items on top of stack
 
     // get and set variables
     ISN_LOAD,	    // push local variable isn_arg.number
@@ -159,6 +161,11 @@ typedef struct {
     int	    echo_count;		// number of expressions
 } echo_T;
 
+// arguments to ISN_EXEC
+typedef struct {
+    int	    execute_count;	// number of expressions
+} execute_T;
+
 // arguments to ISN_OPNR, ISN_OPFLOAT, etc.
 typedef struct {
     exptype_T	op_type;
@@ -216,6 +223,7 @@ typedef struct {
 	cpfunc_T	    pfunc;
 	cufunc_T	    ufunc;
 	echo_T		    echo;
+	execute_T   	    execute;
 	opexpr_T	    op;
 	checktype_T	    type;
 	storenr_T	    storenr;

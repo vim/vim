@@ -533,6 +533,21 @@ call_def_function(
 		}
 		break;
 
+	    // execute :execute {string} ...
+	    case ISN_EXECUTE:
+		{
+		    int count = iptr->isn_arg.execute.execute_count;
+
+		    for (idx = 0; idx < count; ++idx)
+		    {
+			tv = STACK_TV_BOT(idx - count);
+			do_cmdline_cmd(tv_get_string_chk(tv));
+			clear_tv(tv);
+		    }
+		    ectx.ec_stack.ga_len -= count;
+		}
+		break;
+
 	    // load local variable or argument
 	    case ISN_LOAD:
 		if (ga_grow(&ectx.ec_stack, 1) == FAIL)
@@ -1664,6 +1679,13 @@ ex_disassemble(exarg_T *eap)
 		    smsg("%4d %s %d", current,
 			    echo->echo_with_white ? "ECHO" : "ECHON",
 			    echo->echo_count);
+		}
+		break;
+	    case ISN_EXECUTE:
+		{
+		    execute_T *execute = &iptr->isn_arg.execute;
+
+		    smsg("%4d EXECUTE %d", current, execute->execute_count);
 		}
 		break;
 	    case ISN_LOAD:

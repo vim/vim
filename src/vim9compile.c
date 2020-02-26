@@ -1116,6 +1116,21 @@ generate_ECHO(cctx_T *cctx, int with_white, int count)
     return OK;
 }
 
+/*
+ * Generate an ISN_EXECUTE instruction.
+ */
+    static int
+generate_EXECUTE(cctx_T *cctx, int count)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr_drop(cctx, ISN_EXECUTE, count)) == NULL)
+	return FAIL;
+    isn->isn_arg.execute.execute_count = count;
+
+    return OK;
+}
+
     static int
 generate_EXEC(cctx_T *cctx, char_u *line)
 {
@@ -4684,6 +4699,24 @@ compile_echo(char_u *arg, int with_white, cctx_T *cctx)
 }
 
 /*
+ * compile "execute expr"
+ */
+    static char_u *
+compile_execute(char_u *arg, cctx_T *cctx)
+{
+    char_u	*p = arg;
+    int		count = 0;
+
+    if (compile_expr1(&p, cctx) == FAIL)
+	return NULL;
+    ++count;
+
+    generate_EXECUTE(cctx, count);
+
+    return p;
+}
+
+/*
  * After ex_function() has collected all the function lines: parse and compile
  * the lines into instructions.
  * Adds the function to "def_functions".
@@ -5017,12 +5050,14 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    case CMD_echon:
 		    line = compile_echo(p, FALSE, &cctx);
 		    break;
+	    case CMD_execute:
+		    line = compile_execute(p, &cctx);
+		    break;
 
 	    default:
 		    // Not recognized, execute with do_cmdline_cmd().
 		    // TODO:
 		    // CMD_echomsg
-		    // CMD_execute
 		    // etc.
 		    generate_EXEC(&cctx, line);
 		    line = (char_u *)"";
@@ -5150,6 +5185,7 @@ delete_instr(isn_T *isn)
 	case ISN_DCALL:
 	case ISN_DROP:
 	case ISN_ECHO:
+	case ISN_EXECUTE:
 	case ISN_ENDTRY:
 	case ISN_FOR:
 	case ISN_FUNCREF:

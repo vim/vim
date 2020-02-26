@@ -692,5 +692,17 @@ def Test_substitute_cmd()
   delete('Xvim9lines')
 enddef
 
+def Test_execute_cmd()
+  new
+  setline(1, 'default')
+  execute 'call setline(1, "execute-string")'
+  assert_equal('execute-string', getline(1))
+  let cmd = 'call setline(1, "execute-var")'
+  execute cmd
+  assert_equal('execute-var', getline(1))
+  execute cmd .. '|call setline(1, "execute-var-string")'
+  assert_equal('execute-var-string', getline(1))
+enddef
+
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
