@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Feb 15
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Feb 25
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,15 +38,20 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Include ipv6 syntax changes?  (DJ Lucas, #5360)
-
-Avoid modifyOtherKeys temporarily:
-	call modify_other_keys(v:false)  " disable modifyOtherKeys
-Should fix #5617.
+Patch for this (#5696):
+- Empty text prop which includes start/end does not grow when inserting text.
+  (Axel Forsman, #5679)
 
 Vim9 script:
+- "func" inside "vim9script" doesn't work?  (Ben Jackson, #5670)
+- Completion for :disassemble
 - "echo Func()" is an error if Func() does not return anything.
+- Make "g:imported = Export.exported" work in Vim9 script.
+- Make Foo.Bar() work to call the dict function. (#5676)
+- make "let var: string" work in a vim9script.
 - Disallow unlet for local/script/imported vars
+- Support type for ":let"/":const" at script level for Vim9 script.
+    (Ben Jackson, #5671)
 - :func inside vim9script must still use a:arg
 - Make "++nr" work.
 - Check that import in legacy script works and puts item in s:
@@ -79,20 +84,25 @@ Vim9 script:
 	LOADVARARG (varags idx)
 
 Popup windows:
+- With terminal in popup, allow for popup_hide() to temporarily hide it.?
 - Use popup (or popup menu) for command line completion
 - When using a popup for the info of a completion menu, and there is not
   enough space, let the popup overlap with the menu. (#4544)
 - Implement flip option.
 - Make redrawing more efficient and avoid flicker:
     - put popup menu also in popup_mask?
+- Match does not have right BG color if line length equals popup width.
+  (#5658)
 - Any other commands to disable in a popup window?
   Use ERROR_IF_POPUP_WINDOW for these.
 - Figure out the size and position better if wrapping inserts indent
 
 Text properties:
+- prop_find() may not find text property at start of the line. (#5663)
+- Get E685 with a sequence of commands. (#5674)
 - Combining text property with 'cursorline' does not always work (Billie
   Cleek, #5533)
-- Text properties spanning more than one line
+- Text properties spanning more than one line.  #5683
 - See remarks at top of src/textprop.c
 
 'incsearch' with :s:
@@ -161,13 +171,16 @@ Error numbers available:
 E451, E452, E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
 E654, E856, E857, E860, E861, E900
 
-Patch to move duplicated code to a function. (Yegappan Lakshmanan, #5330)
+Patch to fix drawing error with DirectX. (James Grant, #5688)
+Causes flicker on resizing.
 
 Patch to use more FOR_ALL_ macros and use them. (Yegappan Lakshmanan, #5339)
 
-Patch to explain use of "%" in :!.  (#5591)
+Patch to explain use of "%" in :!.  (David Briscoe, #5591)
 
 Patch to add "-d" to xxd. (#5616)
+
+Patch to add Turkish manual. (Emir Sarı, #5641)
 
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif? Now test_gui crashes in submenu_change().
@@ -187,6 +200,11 @@ undo result wrong: Masato Nishihata, #4798
 When 'lazyredraw' is set sometimes the title is not updated.
 (Jason Franklin, 2020 Feb 3)  Looks like a race condition.
 
+Strange sequence of BufWipeout and BufNew events while doing omni-complete.
+(Paul Jolly, #5656)
+Get BufDelete without preceding BufNew. (Paul Jolly, #5694)
+BufWinenter event not fired when saving unnamed buffer. (Paul Jolly, #5655)
+
 Patch to add function to return the text used in the quickfix window.
 (Yegappan, #5465)
 
@@ -202,11 +220,6 @@ Undo puts cursor in wrong line after "cG<Esc>" undo.
 
 :unmap <c-n> gives error but does remove the mapping. (Antony Scriven, 2019
 Dec 19)
-
-Dos uninstal may delete vim.bat from the wrong directory (e.g., when someone
-makes his own wrapper).  Add a magic string with the version number to the
-.bat file and check for it in the uninstaller.  E.g.
-          # uninstall key: vim8.1*
 
 Patch to fix session file when using multiple tab pages. (Jason Franklin, 2019
 May 20)
@@ -230,6 +243,8 @@ Should do current file first and not split it up when more results are found.
 Undo history wrong when ":next file" re-uses a buffer. (#5426)
 ex_next() should pass flag to do_argfile(), then to do_ecmd().
 
+Patch to add "note" type to quickfix. (#5527)  Missing tests.
+
 Adding "10" to 'spellsuggest' causes spell suggestions to become very slow.
 (#4087)
 
@@ -237,9 +252,6 @@ FR: add search_status(), the current values displayed for search (current
 match, total matches). (#5631)
 Patch to provide search stats in a variable, so that it can be used in the
 statusline. (Fujiwara Takuya, #4446)
-
-":helptags ALL" should skip directories where "tags" cannot be written.
-(Matěj Cepl, #5026)
 
 ":bnext" in a help buffer is supposed to go to the next help buffer, but it
 goes to any buffer, and then :bnext skips help buffers, since they are
@@ -301,6 +313,8 @@ Does not build with MinGW out of the box:
 
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
+
+Display messed up with matchparen, wrapping and scrolling. (#5638)
 
 Patch to configure BUILD_DATE for reproducible builds. (James McCoy, #513)
 

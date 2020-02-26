@@ -8160,6 +8160,7 @@ nroff.vim	syntax.txt	/*nroff.vim*
 null-variable	eval.txt	/*null-variable*
 number_relativenumber	options.txt	/*number_relativenumber*
 numbered-function	eval.txt	/*numbered-function*
+numbersize-variable	eval.txt	/*numbersize-variable*
 o	insert.txt	/*o*
 o_CTRL-V	motion.txt	/*o_CTRL-V*
 o_V	motion.txt	/*o_V*
@@ -9490,6 +9491,8 @@ test_scrollbar()	testing.txt	/*test_scrollbar()*
 test_setmouse()	testing.txt	/*test_setmouse()*
 test_settime()	testing.txt	/*test_settime()*
 test_srand_seed()	testing.txt	/*test_srand_seed()*
+test_unknown()	testing.txt	/*test_unknown()*
+test_void()	testing.txt	/*test_void()*
 testing	testing.txt	/*testing*
 testing-support	testing.txt	/*testing-support*
 testing-variable	eval.txt	/*testing-variable*
@@ -9690,6 +9693,7 @@ v:mouse_win	eval.txt	/*v:mouse_win*
 v:mouse_winid	eval.txt	/*v:mouse_winid*
 v:none	eval.txt	/*v:none*
 v:null	eval.txt	/*v:null*
+v:numbersize	eval.txt	/*v:numbersize*
 v:oldfiles	eval.txt	/*v:oldfiles*
 v:operator	eval.txt	/*v:operator*
 v:option_command	eval.txt	/*v:option_command*

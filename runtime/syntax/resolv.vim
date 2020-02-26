@@ -2,12 +2,14 @@
 " Language: resolver configuration file
 " Maintainer: Radu Dineiu <radu.dineiu@gmail.com>
 " URL: https://raw.github.com/rid9/vim-resolv/master/resolv.vim
-" Last Change: 2013 May 21
-" Version: 1.0
+" Last Change: 2020 Feb 15
+" By: DJ Lucas
+" Version: 1.1
 "
 " Credits:
 "   David Necas (Yeti) <yeti@physics.muni.cz>
 "   Stefano Zacchiroli <zack@debian.org>
+"   DJ Lucas <dj@linuxfromscratch.org>
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -31,6 +33,15 @@ syn match resolvHostname contained /\w\{-}\.[-0-9A-Za-z_\.]*/
 
 " Particular
 syn match resolvIPNameserver contained /\%(\%(\d\{1,4}\.\)\{3}\d\{1,4}\%(\s\|$\)\)\+/ contains=@resolvIPCluster
+syn match resolvIPNameserver contained /\<\(\x\{1,4}:\)\{6}\(\x\{1,4}:\x\{1,4}\)\>/
+syn match resolvIPNameserver contained /\s\@<=::\(\(\x\{1,4}:\)\{,6}\x\{1,4}\)\>/
+syn match resolvIPNameserver contained /\<\(\x\{1,4}:\)\{1}:\(\(\x\{1,4}:\)\{,5}\x\{1,4}\)\>/
+syn match resolvIPNameserver contained /\<\(\x\{1,4}:\)\{2}:\(\(\x\{1,4}:\)\{,4}\x\{1,4}\)\>/
+syn match resolvIPNameserver contained /\<\(\x\{1,4}:\)\{3}:\(\(\x\{1,4}:\)\{,3}\x\{1,4}\)\>/
+syn match resolvIPNameserver contained /\<\(\x\{1,4}:\)\{4}:\(\(\x\{1,4}:\)\{,2}\x\{1,4}\)\>/
+syn match resolvIPNameserver contained /\<\(\x\{1,4}:\)\{5}:\(\(\x\{1,4}:\)\{,1}\x\{1,4}\)\>/
+syn match resolvIPNameserver contained /\<\(\x\{1,4}:\)\{6}:\x\{1,4}\>/
+syn match resolvIPNameserver contained /\<\(\x\{1,4}:\)\{1,7}:\(\s\|;\|$\)\@=/
 syn match resolvHostnameSearch contained /\%(\%([-0-9A-Za-z_]\+\.\)*[-0-9A-Za-z_]\+\.\?\%(\s\|$\)\)\+/
 syn match resolvIPNetmaskSortList contained /\%(\%(\d\{1,4}\.\)\{3}\d\{1,4}\%(\/\%(\%(\d\{1,4}\.\)\{,3}\d\{1,4}\)\)\?\%(\s\|$\)\)\+/ contains=resolvOperator,@resolvIPCluster
 
