@@ -1249,16 +1249,18 @@ adjust_prop_columns(
     for (ri = 0; ri < proplen; ++ri)
     {
 	textprop_T	prop;
+	int start_incl, end_incl, can_drop;
 	mch_memmove(&prop, props + ri * sizeof(textprop_T),
 		sizeof(textprop_T));
 	pt = text_prop_type_by_id(curbuf, prop.tp_type);
-	int start_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL))
+	start_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL))
 	    || (flags & APC_SUBSTITUTE);
-	int end_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL));
+	end_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL));
 	// Do not drop zero-width props if they later can increase in size
-	int can_drop = !(start_incl || end_incl);
+	can_drop = !(start_incl || end_incl);
 
-	if (bytes_added > 0) {
+	if (bytes_added > 0)
+	{
 	    if (col + 1 <= prop.tp_col - (start_incl || (prop.tp_len == 0 && end_incl)))
 	    {
 		// Change is entirely before the text property: Only shift
@@ -1267,7 +1269,9 @@ adjust_prop_columns(
 		if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
 		    u_savesub(lnum);
 		dirty = TRUE;
-	    } else if (col + 1 < prop.tp_col + prop.tp_len + end_incl) {
+	    }
+	    else if (col + 1 < prop.tp_col + prop.tp_len + end_incl)
+	    {
 		// Insertion was inside text property
 		prop.tp_len += bytes_added;
 		// Save for undo if requested and not done yet.
