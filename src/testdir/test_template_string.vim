@@ -20,6 +20,12 @@ func Test_template_string_basic()
   call assert_equal('I''m a vim', $'I''m a ${"vim"}')
   call assert_equal('You are a vim', $'You are a ${"vim"}')
 
+  " Nested
+  call assert_equal('x', $'${$'x'}')
+  call assert_equal('10', $'${$'${10}'}')
+  call assert_equal("x", $"${$"x"}")
+  call assert_equal("10", $"${$"${10}"}")
+
   " Variables
   let x = 10
   call assert_equal('I have 10', $'I have ${x}')
