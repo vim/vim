@@ -533,6 +533,48 @@ call_def_function(
 		}
 		break;
 
+	    // execute :execute {string} ...
+	    case ISN_EXECUTE:
+		{
+		    int		count = iptr->isn_arg.number;
+		    garray_T	ga;
+		    char_u	buf[NUMBUFLEN];
+		    char_u	*p;
+		    int		len;
+		    int		failed = FALSE;
+
+		    ga_init2(&ga, 1, 80);
+		    for (idx = 0; idx < count; ++idx)
+		    {
+			tv = STACK_TV_BOT(idx - count);
+			if (tv->v_type == VAR_CHANNEL || tv->v_type == VAR_JOB)
+			{
+			    emsg(_(e_inval_string));
+			    break;
+			}
+			else
+			    p = tv_get_string_buf(tv, buf);
+
+			len = (int)STRLEN(p);
+			if (ga_grow(&ga, len + 2) == FAIL)
+			    failed = TRUE;
+			else
+			{
+			    if (ga.ga_len > 0)
+				((char_u *)(ga.ga_data))[ga.ga_len++] = ' ';
+			    STRCPY((char_u *)(ga.ga_data) + ga.ga_len, p);
+			    ga.ga_len += len;
+			}
+			clear_tv(tv);
+		    }
+		    ectx.ec_stack.ga_len -= count;
+
+		    if (!failed && ga.ga_data != NULL)
+			do_cmdline_cmd((char_u *)ga.ga_data);
+		    ga_clear(&ga);
+		}
+		break;
+
 	    // load local variable or argument
 	    case ISN_LOAD:
 		if (ga_grow(&ectx.ec_stack, 1) == FAIL)
@@ -1665,6 +1707,9 @@ ex_disassemble(exarg_T *eap)
 			    echo->echo_with_white ? "ECHO" : "ECHON",
 			    echo->echo_count);
 		}
+		break;
+	    case ISN_EXECUTE:
+		smsg("%4d EXECUTE %d", current, iptr->isn_arg.number);
 		break;
 	    case ISN_LOAD:
 		if (iptr->isn_arg.number < 0)
