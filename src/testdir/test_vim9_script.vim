@@ -212,6 +212,19 @@ func DefinedLater(arg)
   return a:arg
 endfunc
 
+def FuncWithForwardCall()
+  return DefinedEvenLater("yes")
+enddef
+
+def DefinedEvenLater(arg: string): string
+  return arg
+enddef
+
+def Test_error_in_nested_function()
+  " Error in called function requires unwinding the call stack.
+  assert_fails('call FuncWithForwardCall()', 'E1029')
+enddef
+
 def Test_return_type_wrong()
   CheckScriptFailure(['def Func(): number', 'return "a"', 'enddef'], 'expected number but got string')
   CheckScriptFailure(['def Func(): string', 'return 1', 'enddef'], 'expected string but got number')
