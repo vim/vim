@@ -436,7 +436,7 @@ call_def_function(
     vim_memset(&ectx, 0, sizeof(ectx));
     ga_init2(&ectx.ec_stack, sizeof(typval_T), 500);
     if (ga_grow(&ectx.ec_stack, 20) == FAIL)
-	goto failed;
+	return FAIL;
     ectx.ec_dfunc_idx = ufunc->uf_dfunc_idx;
 
     ga_init2(&ectx.ec_trystack, sizeof(trycmd_T), 10);
