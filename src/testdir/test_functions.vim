@@ -1162,6 +1162,19 @@ func Test_input_func()
         \ .. "\<C-A>\<CR>", 'xt')
   delfunc Tcomplete
   call assert_equal('item1 item2 item3', c)
+
+  call assert_fails("call input('F:', '', 'invalid')", 'E180:')
+  call assert_fails("call input('F:', '', [])", 'E730:')
+endfunc
+
+" Test for the inputdialog() function
+func Test_inputdialog()
+  CheckNotGui
+
+  call feedkeys(":let v=inputdialog('Q:', 'xx', 'yy')\<CR>\<CR>", 'xt')
+  call assert_equal('xx', v)
+  call feedkeys(":let v=inputdialog('Q:', 'xx', 'yy')\<CR>\<Esc>", 'xt')
+  call assert_equal('yy', v)
 endfunc
 
 " Test for inputlist()

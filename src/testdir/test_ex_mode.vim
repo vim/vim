@@ -116,10 +116,16 @@ endfunc
 func Test_Ex_global()
   new
   call setline(1, ['', 'foo', 'bar', 'foo', 'bar', 'foo'])
-  call feedkeys("Qg/bar/visual\<CR>$rxQ$ryQvisual\<CR>j", "xt")
+  call feedkeys("Q\<bs>g/bar/visual\<CR>$rxQ$ryQvisual\<CR>j", "xt")
   call assert_equal('bax', getline(3))
   call assert_equal('bay', getline(5))
   bwipe!
+endfunc
+
+" In Ex-mode, a backslash escapes a newline
+func Test_Ex_escape_enter()
+  call feedkeys("gQlet l = \"a\\\<kEnter>b\"\<cr>vi\<cr>", 'xt')
+  call assert_equal("a\rb", l)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
