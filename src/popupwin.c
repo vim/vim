@@ -2977,7 +2977,7 @@ invoke_popup_filter(win_T *wp, int c)
 
     // Convert the number to a string, so that the function can use:
     //	    if a:c == "\<F2>"
-    buf[special_to_buf(c, mod_mask, TRUE, buf)] = NUL;
+    buf[special_to_buf(c, mod_mask, FALSE, buf)] = NUL;
     argv[1].v_type = VAR_STRING;
     argv[1].vval.v_string = vim_strsave(buf);
 
