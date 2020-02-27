@@ -674,6 +674,7 @@ endfunc
 
 " Test for the 'rightleftcmd' option
 func Test_rightleftcmd()
+  CheckFeature rightleft
   set rightleft
   set rightleftcmd
 
