@@ -2114,9 +2114,31 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
 #ifdef FEAT_TERMINAL
     if (wp == curwin && curbuf->b_term != NULL)
     {
-	// Closing popup window with a terminal: put focus back on the previous
-	// window.
-	win_enter(prevwin, FALSE);
+	win_T *owp;
+
+	// Closing popup window with a terminal: put focus back on the first
+	// that works:
+	// - another popup window with a terminal
+	// - the previous window
+	// - the first one.
+	for (owp = first_popupwin; owp != NULL; owp = owp->w_next)
+	    if (owp != curwin && owp->w_buffer->b_term != NULL)
+		break;
+	if (owp != NULL)
+	    win_enter(owp, FALSE);
+	else
+	{
+	    for (owp = curtab->tp_first_popupwin; owp != NULL;
+							     owp = owp->w_next)
+		if (owp != curwin && owp->w_buffer->b_term != NULL)
+		    break;
+	    if (owp != NULL)
+		win_enter(owp, FALSE);
+	    else if (win_valid(prevwin))
+		win_enter(prevwin, FALSE);
+	    else
+		win_enter(firstwin, FALSE);
+	}
     }
 #endif
 
