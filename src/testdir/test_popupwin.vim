@@ -1409,8 +1409,8 @@ func Test_popup_filter()
   call setline(1, 'some text')
 
   func MyPopupFilter(winid, c)
-    if a:c == 'e'
-      let g:eaten = 'e'
+    if a:c == 'e' || a:c == "\<F9>"
+      let g:eaten = a:c
       return 1
     endif
     if a:c == '0'
@@ -1430,6 +1430,8 @@ func Test_popup_filter()
   " e is consumed by the filter
   call feedkeys('e', 'xt')
   call assert_equal('e', g:eaten)
+  call feedkeys("\<F9>", 'xt')
+  call assert_equal("\<F9>", g:eaten)
 
   " 0 is ignored by the filter
   normal $
@@ -1440,7 +1442,7 @@ func Test_popup_filter()
 
   " x closes the popup
   call feedkeys('x', 'xt')
-  call assert_equal('e', g:eaten)
+  call assert_equal("\<F9>", g:eaten)
   call assert_equal(-1, winbufnr(winid))
 
   delfunc MyPopupFilter
@@ -3269,6 +3271,28 @@ func Test_popupwin_bufnr()
 
   call popup_clear()
   bwipe!
+endfunc
+
+func Test_popupwin_filter_input_multibyte()
+  func MyPopupFilter(winid, c)
+    let g:bytes = range(a:c->strlen())->map({i -> char2nr(a:c[i])})
+    return 0
+  endfunc
+  let winid = popup_create('', #{mapping: 0, filter: 'MyPopupFilter'})
+
+  " UTF-8: E3 80 80, including K_SPECIAL(0x80)
+  call feedkeys("\u3000", 'xt')
+  call assert_equal([0xe3, 0x80, 0x80], g:bytes)
+
+  if has('gui')
+    " UTF-8: E3 80 9B, including CSI(0x9B)
+    call feedkeys("\u301b", 'xt')
+    call assert_equal([0xe3, 0x80, 0x9b], g:bytes)
+  endif
+
+  call popup_clear()
+  delfunc MyPopupFilter
+  unlet g:bytes
 endfunc
 
 " vim: shiftwidth=2 sts=2
