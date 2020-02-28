@@ -3408,6 +3408,8 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
     ga_init2(&current, 1, 80);
     ga_append(&current, quote);
 
+    init_tv(&current_result);
+
     // Continue while it is not NULL and it is not a closing quote.
     for (; (**arg != NUL) &&
 	    !is_closing_quote(*arg, is_literal_string, &is_skipping_needed);
@@ -3504,8 +3506,7 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 
 /*
  * Refreshes previous_quote with NUL
- *	if the closing quote of
- *	the opening quote (previous_quote) found on **source.
+ *	if the closing quote of the opening quote (previous_quote) found on **source.
  * Refreshes previous_quote with ' or "
  *	if a opening quote is never found and that quote found.
  * Doesn't Refresh if no quotes found.
@@ -3620,10 +3621,7 @@ stringify_expr(char_u *expr)
 	result = string_result;
     }
     else if (result.vval.v_string == NULL)
-    {
-	result.vval.v_string = (char_u *) alloc(1);  // meaning success of this function
-	result.vval.v_string[0] = '\0';
-    }
+	result.vval.v_string = ALLOC_CLEAR_ONE(char_u);  // meaning success of this function
 
     return result.vval.v_string;
 }
