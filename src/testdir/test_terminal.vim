@@ -2382,8 +2382,16 @@ func Test_terminal_in_popup()
 
   call term_sendkeys(buf, "\<C-W>:call ReopenPopup()\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_6', {})
-  call term_wait(buf, 100)
 
+  " Go to terminal-Normal mode and visually select text.
+  call term_sendkeys(buf, "\<C-W>Ngg/in\<CR>vww")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_7', {})
+
+  " Back to job mode, redraws
+  call term_sendkeys(buf, "A")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_8', {})
+
+  call term_wait(buf, 100)
   call term_sendkeys(buf, ":q\<CR>")
   call term_wait(buf, 100)  " wait for terminal to vanish
 

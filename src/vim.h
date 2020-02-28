@@ -640,12 +640,6 @@ extern int (*dyn_libintl_wputenv)(const wchar_t *envstring);
 #define POPUP_HANDLED_4	    0x08    // used by may_update_popup_mask()
 #define POPUP_HANDLED_5	    0x10    // used by update_popups()
 
-#ifdef FEAT_PROP_POPUP
-# define WIN_IS_POPUP(wp) ((wp)->w_popup_flags != 0)
-#else
-# define WIN_IS_POPUP(wp) 0
-#endif
-
 /*
  * Terminal highlighting attribute bits.
  * Attributes above HL_ALL are used for syntax highlighting.

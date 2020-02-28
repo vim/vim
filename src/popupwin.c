@@ -3505,9 +3505,12 @@ update_popups(void (*win_update)(win_T *wp))
 
 	wp->w_winrow -= top_off;
 	wp->w_wincol -= left_extra;
-	// cursor position matters in terminal
-	wp->w_wrow += top_off;
-	wp->w_wcol += left_extra;
+	// cursor position matters in terminal in job mode
+	if (wp != curwin || !term_in_normal_mode())
+	{
+	    wp->w_wrow += top_off;
+	    wp->w_wcol += left_extra;
+	}
 
 	total_width = popup_width(wp);
 	total_height = popup_height(wp);
