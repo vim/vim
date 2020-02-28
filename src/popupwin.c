@@ -3506,7 +3506,9 @@ update_popups(void (*win_update)(win_T *wp))
 	wp->w_winrow -= top_off;
 	wp->w_wincol -= left_extra;
 	// cursor position matters in terminal in job mode
+#ifdef FEAT_TERMINAL
 	if (wp != curwin || !term_in_normal_mode())
+#endif
 	{
 	    wp->w_wrow += top_off;
 	    wp->w_wcol += left_extra;
