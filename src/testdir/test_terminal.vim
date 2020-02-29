@@ -2339,29 +2339,28 @@ func Test_terminal_in_popup()
 	\ 'hi PopTerm ctermbg=grey',
 	\ 'func OpenTerm(setColor)',
 	\ "  let s:buf = term_start('" .. cmd .. " Xtext', #{hidden: 1, term_finish: 'close'})",
-	\ '  let s:winid = popup_create(s:buf, #{minwidth: 45, minheight: 7, border: [], drag: 1, resize: 1})',
+	\ '  let g:winid = popup_create(s:buf, #{minwidth: 45, minheight: 7, border: [], drag: 1, resize: 1})',
 	\ '  if a:setColor',
-	\ '    call win_execute(s:winid, "set wincolor=PopTerm")',
+	\ '    call win_execute(g:winid, "set wincolor=PopTerm")',
 	\ '  endif',
 	\ 'endfunc',
-	\ 'call OpenTerm(0)',
 	\ 'func HidePopup()',
-	\ '  call popup_hide(s:winid)',
+	\ '  call popup_hide(g:winid)',
 	\ 'endfunc',
 	\ 'func ClosePopup()',
-	\ '  call popup_close(s:winid)',
+	\ '  call popup_close(g:winid)',
 	\ 'endfunc',
 	\ 'func ReopenPopup()',
 	\ '  call popup_create(s:buf, #{minwidth: 40, minheight: 6, border: []})',
 	\ 'endfunc',
-	\ 'sleep 10m',
-	\ 'redraw',
-	\ 'echo getwinvar(s:winid, "&buftype") win_gettype(s:winid)',
 	\ ]
   call writefile(lines, 'XtermPopup')
   let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
   call term_wait(buf, 100)
+  call term_sendkeys(buf, ":call OpenTerm(0)\<CR>")
+  call term_wait(buf, 100)
   call term_sendkeys(buf, ":\<CR>")
+  call term_sendkeys(buf, "\<C-W>:echo getwinvar(g:winid, \"&buftype\") win_gettype(g:winid)\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_1', {})
 
   call term_sendkeys(buf, ":q\<CR>")
