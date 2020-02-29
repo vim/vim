@@ -63,6 +63,16 @@ func Test_empty()
   call assert_fails("call empty(test_unknown())", 'E685:')
 endfunc
 
+func Test_test_void()
+  call assert_fails('echo 1 == test_void()', 'E685:')
+  if has('float')
+    call assert_fails('echo 1.0 == test_void()', 'E685:')
+  endif
+  call assert_fails('let x = json_encode(test_void())', 'E685:')
+  call assert_fails('let x = copy(test_void())', 'E685:')
+  call assert_fails('let x = copy([test_void()])', 'E685:')
+endfunc
+
 func Test_len()
   call assert_equal(1, len(0))
   call assert_equal(2, len(12))

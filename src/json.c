@@ -352,7 +352,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 #endif
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	    internal_error("json_encode_item()");
+	    internal_error_no_abort("json_encode_item()");
 	    return FAIL;
     }
     return OK;

@@ -838,6 +838,16 @@ internal_error(char *where)
     siemsg(_(e_intern2), where);
 }
 
+/*
+ * Like internal_error() but do not call abort(), to avoid tests using
+ * test_unknown() and test_void() causing Vim to exit.
+ */
+    void
+internal_error_no_abort(char *where)
+{
+     semsg(_(e_intern2), where);
+}
+
 // emsg3() and emsgn() are in misc2.c to avoid warnings for the prototypes.
 
     void
