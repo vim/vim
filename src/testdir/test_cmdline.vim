@@ -1190,6 +1190,7 @@ endfunc
 
 " Test for moving the cursor on the / command line in 'rightleft' mode
 func Test_cmdline_edit_rightleft()
+  CheckFeature rightleft
   set rightleft
   set rightleftcmd=search
   let str = "/one two\<C-U>"
