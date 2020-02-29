@@ -3642,7 +3642,10 @@ eval_next_template_expr_into_result(
 	return FAIL;
 
     if (!evaluate)
+    {
+	vim_free(expr);
 	return OK;
+    }
 
     /*
      * Evaluate the source
