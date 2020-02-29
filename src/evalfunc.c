@@ -1890,7 +1890,10 @@ f_empty(typval_T *argvars, typval_T *rettv)
 #endif
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	    internal_error("f_empty(UNKNOWN)");
+	    // Let's not use internal_error() here, otherwise
+	    // empty(test_unknown()) with ABORT_ON_INTERNAL_ERROR defined makes
+	    // Vim abort.
+	    semsg(_(e_intern2), "f_empty(UNKNOWN)");
 	    n = TRUE;
 	    break;
     }
@@ -8275,7 +8278,10 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_BLOB:    n = VAR_TYPE_BLOB; break;
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	     internal_error("f_type(UNKNOWN)");
+	     // Let's not use internal_error() here, otherwise
+	     // empty(test_unknown()) with ABORT_ON_INTERNAL_ERROR defined
+	     // makes Vim abort.
+	     semsg(_(e_intern2), "f_type(UNKNOWN)");
 	     n = -1;
 	     break;
     }
