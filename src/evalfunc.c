@@ -1890,7 +1890,7 @@ f_empty(typval_T *argvars, typval_T *rettv)
 #endif
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	    internal_error("f_empty(UNKNOWN)");
+	    internal_error_no_abort("f_empty(UNKNOWN)");
 	    n = TRUE;
 	    break;
     }
@@ -8275,7 +8275,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_BLOB:    n = VAR_TYPE_BLOB; break;
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	     internal_error("f_type(UNKNOWN)");
+	     internal_error_no_abort("f_type(UNKNOWN)");
 	     n = -1;
 	     break;
     }

@@ -2114,9 +2114,31 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
 #ifdef FEAT_TERMINAL
     if (wp == curwin && curbuf->b_term != NULL)
     {
-	// Closing popup window with a terminal: put focus back on the previous
-	// window.
-	win_enter(prevwin, FALSE);
+	win_T *owp;
+
+	// Closing popup window with a terminal: put focus back on the first
+	// that works:
+	// - another popup window with a terminal
+	// - the previous window
+	// - the first one.
+	for (owp = first_popupwin; owp != NULL; owp = owp->w_next)
+	    if (owp != curwin && owp->w_buffer->b_term != NULL)
+		break;
+	if (owp != NULL)
+	    win_enter(owp, FALSE);
+	else
+	{
+	    for (owp = curtab->tp_first_popupwin; owp != NULL;
+							     owp = owp->w_next)
+		if (owp != curwin && owp->w_buffer->b_term != NULL)
+		    break;
+	    if (owp != NULL)
+		win_enter(owp, FALSE);
+	    else if (win_valid(prevwin))
+		win_enter(prevwin, FALSE);
+	    else
+		win_enter(firstwin, FALSE);
+	}
     }
 #endif
 
@@ -2977,7 +2999,7 @@ invoke_popup_filter(win_T *wp, int c)
 
     // Convert the number to a string, so that the function can use:
     //	    if a:c == "\<F2>"
-    buf[special_to_buf(c, mod_mask, TRUE, buf)] = NUL;
+    buf[special_to_buf(c, mod_mask, FALSE, buf)] = NUL;
     argv[1].v_type = VAR_STRING;
     argv[1].vval.v_string = vim_strsave(buf);
 
@@ -3483,9 +3505,14 @@ update_popups(void (*win_update)(win_T *wp))
 
 	wp->w_winrow -= top_off;
 	wp->w_wincol -= left_extra;
-	// cursor position matters in terminal
-	wp->w_wrow += top_off;
-	wp->w_wcol += left_extra;
+	// cursor position matters in terminal in job mode
+#ifdef FEAT_TERMINAL
+	if (wp != curwin || !term_in_normal_mode())
+#endif
+	{
+	    wp->w_wrow += top_off;
+	    wp->w_wcol += left_extra;
+	}
 
 	total_width = popup_width(wp);
 	total_height = popup_height(wp);

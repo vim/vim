@@ -672,4 +672,27 @@ func Test_shellquote()
   call assert_match(': "#echo Hello#"', v)
 endfunc
 
+" Test for the 'rightleftcmd' option
+func Test_rightleftcmd()
+  CheckFeature rightleft
+  set rightleft
+  set rightleftcmd
+
+  let g:l = []
+  func AddPos()
+    call add(g:l, screencol())
+    return ''
+  endfunc
+  cmap <expr> <F2> AddPos()
+
+  call feedkeys("/\<F2>abc\<Left>\<F2>\<Right>\<Right>\<F2>" ..
+        \ "\<Left>\<F2>\<Esc>", 'xt')
+  call assert_equal([&co - 1, &co - 4, &co - 2, &co - 3], g:l)
+
+  cunmap <F2>
+  unlet g:l
+  set rightleftcmd&
+  set rightleft&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

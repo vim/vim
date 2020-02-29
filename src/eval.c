@@ -5562,7 +5562,7 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	    internal_error("tv_get_number(UNKNOWN)");
+	    internal_error_no_abort("tv_get_number(UNKNOWN)");
 	    break;
     }
     if (denote == NULL)		// useful for values that must be unsigned
@@ -5616,7 +5616,7 @@ tv_get_float(typval_T *varp)
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	    internal_error("tv_get_float(UNKNOWN)");
+	    internal_error_no_abort("tv_get_float(UNKNOWN)");
 	    break;
     }
     return 0;
@@ -5888,7 +5888,7 @@ copy_tv(typval_T *from, typval_T *to)
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	    internal_error("copy_tv(UNKNOWN)");
+	    internal_error_no_abort("copy_tv(UNKNOWN)");
 	    break;
     }
 }
@@ -5967,7 +5967,7 @@ item_copy(
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	    internal_error("item_copy(UNKNOWN)");
+	    internal_error_no_abort("item_copy(UNKNOWN)");
 	    ret = FAIL;
     }
     --recurse;
