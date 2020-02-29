@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-02-25 01:21+0300\n"
-"PO-Revision-Date: 2020-02-25 01:30+0300\n"
+"PO-Revision-Date: 2020-02-25 13:45+0300\n"
 "Last-Translator: Emir SARI <bitigchi@me.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "Language: tr\n"
@@ -1110,26 +1110,26 @@ msgstr "(Yarıda kesildi) "
 #, c-format
 msgid "%ld match on %ld line"
 msgid_plural "%ld matches on %ld line"
-msgstr[0] "%ld eşleşme/%ld satırda"
-msgstr[1] "%ld eşleşme/%ld satırda"
+msgstr[0] "%ld eşleşme, %ld satırda"
+msgstr[1] "%ld eşleşme, %ld satırda"
 
 #, c-format
 msgid "%ld substitution on %ld line"
 msgid_plural "%ld substitutions on %ld line"
-msgstr[0] "%ld değiştirme/%ld satırda"
-msgstr[1] "%ld değiştirme/%ld satırda"
+msgstr[0] "%ld değiştirme, %ld satırda"
+msgstr[1] "%ld değiştirme, %ld satırda"
 
 #, c-format
 msgid "%ld match on %ld lines"
 msgid_plural "%ld matches on %ld lines"
-msgstr[0] "%ld eşleşme/%ld satırda"
-msgstr[1] "%ld eşleşme/%ld satırda"
+msgstr[0] "%ld eşleşme, %ld satırda"
+msgstr[1] "%ld eşleşme, %ld satırda"
 
 #, c-format
 msgid "%ld substitution on %ld lines"
 msgid_plural "%ld substitutions on %ld lines"
-msgstr[0] "%ld değiştirme/%ld satırda"
-msgstr[1] "%ld değiştirme/%ld satırda"
+msgstr[0] "%ld değiştirme, %ld satırda"
+msgstr[1] "%ld değiştirme, %ld satırda"
 
 msgid "E147: Cannot do :global recursive with a range"
 msgstr "E147: :global bir erim ile özyineli yapılamaz"
