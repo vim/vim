@@ -149,6 +149,12 @@ with `substitute(` this will use the function, prepend a colon to use the
 command instead: >
 	:substitute(pattern (replacement (
 
+Note that while variables need to be defined before they can be used,
+functions can be called before being defined.  This is required to be able
+have cyclic dependencies between functions.  It is slightly less efficient,
+since the function has to be looked up by name.  And a typo in the function
+name will only be found when the call is executed.
+
 
 No curly braces expansion ~
 
@@ -275,6 +281,8 @@ script, then script-local variables must be accessed with the "s:" prefix.
 						*:disa* *:disassemble*
 :disa[ssemble] {func}	Show the instructions generated for {func}.
 			This is for debugging and testing.
+			Note that for command line completion of {func} you
+			can prepend "s:" to find script-local functions.
 
 ==============================================================================
 
