@@ -3340,8 +3340,6 @@ is_closing_quote(
 /*
  * Consumes current to evaluate,
  * and joins its result into result.
- * 
- * current will be initialized.
  *
  * Returns the result of evaluating current.
  * Or return NULL if evaluating is FAIL.
@@ -3363,7 +3361,6 @@ eval_template_current_into_result(
 	ga_clear(current);
 	return FAIL;
     }
-    ga_clear(current);
 
     if (current_result.vval.v_string == NULL)
 	return FAIL;
@@ -3421,6 +3418,7 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 		    &result,
 		    quote,
 		    evaluate);
+	    ga_clear(&current);
 	    ga_append(&current, quote);  // open quotation
 
 	    if (!is_eval_current_success)
