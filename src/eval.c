@@ -3350,6 +3350,8 @@ eval_template_current(garray_T *current, int evaluate)
     typval_T	result;
     char_u	*to_eval_current = (char_u *) current->ga_data;
 
+    init_tv(&result);
+
     if (!eval1(&to_eval_current, &result, evaluate))
     {
 	ga_clear(current);
