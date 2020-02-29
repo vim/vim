@@ -64,7 +64,43 @@ func Test_template_string_basic()
   let _ = $'${10}'
 endfunc
 
+let s:count = [0, 0]
+
+func s:increment_count0() abort
+  let s:count[0] += 1
+endfunc
+
+func s:increment_count1() abort
+  let s:count[1] += 1
+endfunc
+
+func s:throw_exception() abort
+  throw 'exception'
+endfunc
+
 func Test_template_string_appendix()
+  " Lambda scopes
+  call assert_equal('10', call({ x -> $'${x}' }, [10]))
+
+  " evaluate == 0
+  if 0
+    call assert_equal('10', $'${10}')
+  endif
+
+  " Catching exceptions in ${}
+  try
+    let _ = $'${s:throw_exception()}'
+  catch
+    call assert_exception('exception')
+  endtry
+
+  " Evaluate ${expressions} before an exception threw
+  try
+    let _ = $'${s:increment_count0()}, ${s:throw_exception()}, ${s:increment_count1()}'
+  catch
+    call assert_equal(s:count, [1, 0])
+  endtry
+
   " Escaping of string
   call assert_equal("\\ \"", $"\\ \"")
   call assert_equal('''', $'''')
