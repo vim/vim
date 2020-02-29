@@ -3338,35 +3338,13 @@ is_closing_quote(
 }
 
 /*
- * Consumes current to evaluate.
+ * Consumes current to evaluate,
+ * and joins its result into result.
+ * 
  * current will be initialized.
  *
  * Returns the result of evaluating current.
  * Or return NULL if evaluating is FAIL.
- */
-    static char_u*
-eval_template_current(garray_T *current, int evaluate)
-{
-    typval_T	result;
-    char_u	*to_eval_current = (char_u *) current->ga_data;
-
-    init_tv(&result);
-
-    if (!eval1(&to_eval_current, &result, evaluate))
-    {
-	ga_clear(current);
-	return NULL;
-    }
-    ga_clear(current);
-
-    return result.vval.v_string;
-}
-
-/*
- * Consumes current to evaluate,
- * and joins its result into result.
- *
- * Please also see eval_template_current().
  */
     static int
 eval_template_current_into_result(
@@ -3375,14 +3353,23 @@ eval_template_current_into_result(
 	char_u quote,
 	int evaluate)
 {
-    char_u  *current_result;
+    typval_T	current_result;
+    char_u	*to_eval_current = (char_u *) current->ga_data;
 
-    current_result = eval_template_current(current, evaluate);
-    if (current_result == NULL)
+    init_tv(&current_result);
+
+    if (!eval1(&to_eval_current, &current_result, evaluate))
+    {
+	ga_clear(current);
+	return FAIL;
+    }
+    ga_clear(current);
+
+    if (current_result.vval.v_string == NULL)
 	return FAIL;
 
-    ga_concat(result, current_result);
-    vim_free(current_result);
+    ga_concat(result, current_result.vval.v_string);
+    vim_free(current_result.vval.v_string);
 
     return OK;
 }
