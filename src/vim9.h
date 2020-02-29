@@ -39,14 +39,18 @@ typedef enum {
     ISN_STORENR,    // store number into local variable isn_arg.storenr.str_idx
 
     // constants
-    ISN_PUSHNR,	    // push number isn_arg.number
-    ISN_PUSHBOOL,   // push bool value isn_arg.number
-    ISN_PUSHSPEC,   // push special value isn_arg.number
-    ISN_PUSHF,	    // push float isn_arg.fnumber
-    ISN_PUSHS,	    // push string isn_arg.string
-    ISN_PUSHBLOB,   // push blob isn_arg.blob
-    ISN_NEWLIST,    // push list from stack items, size is isn_arg.number
-    ISN_NEWDICT,    // push dict from stack items, size is isn_arg.number
+    ISN_PUSHNR,		// push number isn_arg.number
+    ISN_PUSHBOOL,	// push bool value isn_arg.number
+    ISN_PUSHSPEC,	// push special value isn_arg.number
+    ISN_PUSHF,		// push float isn_arg.fnumber
+    ISN_PUSHS,		// push string isn_arg.string
+    ISN_PUSHBLOB,	// push blob isn_arg.blob
+    ISN_PUSHFUNC,	// push func isn_arg.string
+    ISN_PUSHPARTIAL,	// push partial ?
+    ISN_PUSHCHANNEL,	// push channel isn_arg.channel
+    ISN_PUSHJOB,	// push channel isn_arg.job
+    ISN_NEWLIST,	// push list from stack items, size is isn_arg.number
+    ISN_NEWDICT,	// push dict from stack items, size is isn_arg.number
 
     // function call
     ISN_BCALL,	    // call builtin function isn_arg.bfunc
@@ -209,6 +213,8 @@ typedef struct {
 #ifdef FEAT_FLOAT
 	float_T		    fnumber;
 #endif
+	channel_T	    *channel;
+	job_T		    *job;
 	jump_T		    jump;
 	forloop_T	    forloop;
 	try_T		    try;

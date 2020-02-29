@@ -840,6 +840,10 @@ call_def_function(
 	    case ISN_PUSHF:
 	    case ISN_PUSHS:
 	    case ISN_PUSHBLOB:
+	    case ISN_PUSHFUNC:
+	    case ISN_PUSHPARTIAL:
+	    case ISN_PUSHCHANNEL:
+	    case ISN_PUSHJOB:
 		if (ga_grow(&ectx.ec_stack, 1) == FAIL)
 		    goto failed;
 		tv = STACK_TV_BOT(0);
@@ -866,6 +870,29 @@ call_def_function(
 #endif
 		    case ISN_PUSHBLOB:
 			blob_copy(iptr->isn_arg.blob, tv);
+			break;
+		    case ISN_PUSHFUNC:
+			tv->v_type = VAR_FUNC;
+			tv->vval.v_string = vim_strsave(iptr->isn_arg.string);
+			break;
+		    case ISN_PUSHPARTIAL:
+			tv->v_type = VAR_UNKNOWN;
+			break;
+		    case ISN_PUSHCHANNEL:
+#ifdef FEAT_JOB_CHANNEL
+			tv->v_type = VAR_CHANNEL;
+			tv->vval.v_channel = iptr->isn_arg.channel;
+			if (tv->vval.v_channel != NULL)
+			    ++tv->vval.v_channel->ch_refcount;
+#endif
+			break;
+		    case ISN_PUSHJOB:
+#ifdef FEAT_JOB_CHANNEL
+			tv->v_type = VAR_JOB;
+			tv->vval.v_job = iptr->isn_arg.job;
+			if (tv->vval.v_job != NULL)
+			    ++tv->vval.v_job->jv_refcount;
+#endif
 			break;
 		    default:
 			tv->v_type = VAR_STRING;
@@ -1845,6 +1872,36 @@ ex_disassemble(exarg_T *eap)
 		    smsg("%4d PUSHBLOB %s", current, r);
 		    vim_free(tofree);
 		}
+		break;
+	    case ISN_PUSHFUNC:
+		smsg("%4d PUSHFUNC \"%s\"", current, iptr->isn_arg.string);
+		break;
+	    case ISN_PUSHPARTIAL:
+		// TODO
+		smsg("%4d PUSHPARTIAL", current);
+		break;
+	    case ISN_PUSHCHANNEL:
+#ifdef FEAT_JOB_CHANNEL
+		{
+		    channel_T *channel = iptr->isn_arg.channel;
+
+		    smsg("%4d PUSHCHANNEL %d", current,
+					 channel == NULL ? 0 : channel->ch_id);
+		}
+#endif
+		break;
+	    case ISN_PUSHJOB:
+#ifdef FEAT_JOB_CHANNEL
+		{
+		    typval_T	tv;
+		    char_u	*name;
+
+		    tv.v_type = VAR_JOB;
+		    tv.vval.v_job = iptr->isn_arg.job;
+		    name = tv_get_string(&tv);
+		    smsg("%4d PUSHJOB %s", current, name);
+		}
+#endif
 		break;
 	    case ISN_PUSHEXC:
 		smsg("%4d PUSH v:exception", current);

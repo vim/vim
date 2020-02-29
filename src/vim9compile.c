@@ -642,6 +642,38 @@ generate_PUSHS(cctx_T *cctx, char_u *str)
 }
 
 /*
+ * Generate an ISN_PUSHCHANNEL instruction.
+ * Consumes "channel".
+ */
+    static int
+generate_PUSHCHANNEL(cctx_T *cctx, channel_T *channel)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr_type(cctx, ISN_PUSHCHANNEL, &t_channel)) == NULL)
+	return FAIL;
+    isn->isn_arg.channel = channel;
+
+    return OK;
+}
+
+/*
+ * Generate an ISN_PUSHJOB instruction.
+ * Consumes "job".
+ */
+    static int
+generate_PUSHJOB(cctx_T *cctx, job_T *job)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr_type(cctx, ISN_PUSHCHANNEL, &t_channel)) == NULL)
+	return FAIL;
+    isn->isn_arg.job = job;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_PUSHBLOB instruction.
  * Consumes "blob".
  */
@@ -653,6 +685,22 @@ generate_PUSHBLOB(cctx_T *cctx, blob_T *blob)
     if ((isn = generate_instr_type(cctx, ISN_PUSHBLOB, &t_blob)) == NULL)
 	return FAIL;
     isn->isn_arg.blob = blob;
+
+    return OK;
+}
+
+/*
+ * Generate an ISN_PUSHFUNC instruction with name "name".
+ * Consumes "name".
+ */
+    static int
+generate_PUSHFUNC(cctx_T *cctx, char_u *name)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr_type(cctx, ISN_PUSHFUNC, &t_func_void)) == NULL)
+	return FAIL;
+    isn->isn_arg.string = name;
 
     return OK;
 }
@@ -3549,10 +3597,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		generate_PUSHBLOB(cctx, NULL);
 		break;
 	    case VAR_FUNC:
-		// generate_PUSHS(cctx, NULL); TODO
+		generate_PUSHFUNC(cctx, NULL);
 		break;
 	    case VAR_PARTIAL:
-		// generate_PUSHS(cctx, NULL); TODO
+		// generate_PUSHPARTIAL(cctx, NULL);
+		emsg("Partial type not supported yet");
 		break;
 	    case VAR_LIST:
 		generate_NEWLIST(cctx, 0);
@@ -3561,10 +3610,10 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		generate_NEWDICT(cctx, 0);
 		break;
 	    case VAR_JOB:
-		// generate_PUSHS(cctx, NULL); TODO
+		generate_PUSHJOB(cctx, NULL);
 		break;
 	    case VAR_CHANNEL:
-		// generate_PUSHS(cctx, NULL); TODO
+		generate_PUSHCHANNEL(cctx, NULL);
 		break;
 	    case VAR_NUMBER:
 	    case VAR_UNKNOWN:
@@ -4748,6 +4797,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
     int		called_emsg_before = called_emsg;
     int		ret = FAIL;
     sctx_T	save_current_sctx = current_sctx;
+    int		emsg_before = called_emsg;
 
     if (ufunc->uf_dfunc_idx >= 0)
     {
@@ -4828,7 +4878,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    ++line;
 	else if (line != NULL && *line != NUL)
 	{
-	    semsg(_("E488: Trailing characters: %s"), line);
+	    if (emsg_before == called_emsg)
+		semsg(_("E488: Trailing characters: %s"), line);
 	    goto erret;
 	}
 	else
@@ -4844,6 +4895,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		break;
 	    SOURCING_LNUM = ufunc->uf_script_ctx.sc_lnum + cctx.ctx_lnum + 1;
 	}
+	emsg_before = called_emsg;
 
 	had_return = FALSE;
 	vim_memset(&ea, 0, sizeof(ea));
@@ -5153,6 +5205,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHS:
 	case ISN_STOREENV:
 	case ISN_STOREG:
+	case ISN_PUSHFUNC:
 	    vim_free(isn->isn_arg.string);
 	    break;
 
@@ -5167,6 +5220,18 @@ delete_instr(isn_T *isn)
 
 	case ISN_PUSHBLOB:   // push blob isn_arg.blob
 	    blob_unref(isn->isn_arg.blob);
+	    break;
+
+	case ISN_PUSHPARTIAL:
+	    // TODO
+	    break;
+
+	case ISN_PUSHJOB:
+	    job_unref(isn->isn_arg.job);
+	    break;
+
+	case ISN_PUSHCHANNEL:
+	    channel_unref(isn->isn_arg.channel);
 	    break;
 
 	case ISN_UCALL:

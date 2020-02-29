@@ -53,6 +53,10 @@ def Test_assignment()
   let dict4: dict<any> = #{one: 1, two: '2'}
   let dict5: dict<blob> = #{one: 0z01, tw: 0z02}
 
+  if has('channel')
+    let chan1: channel
+  endif
+
   g:newvar = 'new'
   assert_equal('new', g:newvar)
 
@@ -91,6 +95,21 @@ func Test_assignment_failure()
 
   call CheckDefFailure(['let var = feedkeys("0")'], 'E1031:')
   call CheckDefFailure(['let var: number = feedkeys("0")'], 'expected number but got void')
+
+  call CheckDefFailure(['let var: dict <number>'], 'E1007:')
+  call CheckDefFailure(['let var: dict<number'], 'E1009:')
+
+  call CheckDefFailure(['let var: ally'], 'E1010:')
+  call CheckDefFailure(['let var: bram'], 'E1010:')
+  call CheckDefFailure(['let var: cathy'], 'E1010:')
+  call CheckDefFailure(['let var: dom'], 'E1010:')
+  call CheckDefFailure(['let var: freddy'], 'E1010:')
+  call CheckDefFailure(['let var: john'], 'E1010:')
+  call CheckDefFailure(['let var: larry'], 'E1010:')
+  call CheckDefFailure(['let var: ned'], 'E1010:')
+  call CheckDefFailure(['let var: pam'], 'E1010:')
+  call CheckDefFailure(['let var: sam'], 'E1010:')
+  call CheckDefFailure(['let var: vim'], 'E1010:')
 endfunc
 
 func Test_const()
@@ -201,6 +220,12 @@ def Test_call_def_varargs()
   assert_equal('one,foo', MyDefVarargs('one'))
   assert_equal('one,two', MyDefVarargs('one', 'two'))
   assert_equal('one,two,three', MyDefVarargs('one', 'two', 'three'))
+enddef
+
+def Test_using_var_as_arg()
+  call writefile(['def Func(x: number)',  'let x = 234', 'enddef'], 'Xdef')
+  call assert_fails('so Xdef', 'E1006:')
+  call delete('Xdef')
 enddef
 
 def Test_call_func_defined_later()
