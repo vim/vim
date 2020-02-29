@@ -3419,14 +3419,13 @@ get_template_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 		    quote,
 		    evaluate);
 	    ga_clear(&current);
-	    ga_append(&current, quote);  // open quotation
 
 	    if (!is_eval_current_success)
 	    {
-		ga_clear(&current);
 		ga_clear(&result);
 		return FAIL;
 	    }
+	    ga_append(&current, quote);  // open quotation
 
 	    is_eval_expr_success =
 		eval_next_template_expr_into_result(
