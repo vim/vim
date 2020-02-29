@@ -3363,7 +3363,7 @@ eval_template_current_into_result(
     }
 
     if (current_result.vval.v_string == NULL)
-	return FAIL;
+	current_result.vval.v_string = "";
 
     ga_concat(result, current_result.vval.v_string);
     vim_free(current_result.vval.v_string);
