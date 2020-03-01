@@ -280,11 +280,13 @@ ret_number(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_number;
 }
+#ifdef FEAT_FLOAT
     static type_T *
 ret_float(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_float;
 }
+#endif
     static type_T *
 ret_string(int argcount UNUSED, type_T **argtypes UNUSED)
 {
