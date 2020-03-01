@@ -62,3 +62,5 @@ func Test_getimstatus()
   set imactivatefunc=
   set imstatusfunc=
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

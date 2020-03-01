@@ -49,6 +49,8 @@ func Test_ex_mode()
     call assert_equal(['  foo', '    foo'],       Ex("    foo\<C-d>"), e)
     call assert_equal(['foo', '    foo0'],        Ex("    foo0\<C-d>"), e)
     call assert_equal(['foo', '    foo^'],        Ex("    foo^\<C-d>"), e)
+    call assert_equal(['foo', 'foo'],
+          \ Ex("\<BS>\<C-H>\<Del>foo"), e)
   endfor
 
   set sw&
@@ -126,6 +128,15 @@ endfunc
 func Test_Ex_escape_enter()
   call feedkeys("gQlet l = \"a\\\<kEnter>b\"\<cr>vi\<cr>", 'xt')
   call assert_equal("a\rb", l)
+endfunc
+
+" Test for :append! command in Ex mode
+func Test_Ex_append()
+  new
+  call setline(1, "\t   abc")
+  call feedkeys("Qappend!\npqr\nxyz\n.\nvisual\n", 'xt')
+  call assert_equal(["\t   abc", "\t   pqr", "\t   xyz"], getline(1, '$'))
+  close!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
