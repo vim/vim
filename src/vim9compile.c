@@ -5227,11 +5227,15 @@ delete_instr(isn_T *isn)
 	    break;
 
 	case ISN_PUSHJOB:
+#ifdef FEAT_JOB_CHANNEL
 	    job_unref(isn->isn_arg.job);
+#endif
 	    break;
 
 	case ISN_PUSHCHANNEL:
+#ifdef FEAT_JOB_CHANNEL
 	    channel_unref(isn->isn_arg.channel);
+#endif
 	    break;
 
 	case ISN_UCALL:
