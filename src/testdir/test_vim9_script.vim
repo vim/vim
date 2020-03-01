@@ -775,5 +775,19 @@ def Test_echo_cmd()
   assert_match('^some more$', Screenline(&lines))
 enddef
 
+def Test_for_outside_of_function()
+  let lines =<< trim END
+    vim9script
+    new
+    for var in range(0, 3)
+      append(line('$'), var)
+    endfor
+    assert_equal(['', '0', '1', '2', '3'], getline(1, '$'))
+    bwipe!
+  END
+  writefile(lines, 'Xvim9for.vim')
+  source Xvim9for.vim
+  delete('Xvim9for.vim')
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

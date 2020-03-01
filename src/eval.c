@@ -1491,6 +1491,8 @@ next_for_item(void *fi_void, char_u *arg)
 {
     forinfo_T	*fi = (forinfo_T *)fi_void;
     int		result;
+    int		flag = current_sctx.sc_version == SCRIPT_VERSION_VIM9 ?
+							LET_NO_COMMAND : 0;
     listitem_T	*item;
 
     if (fi->fi_blob != NULL)
@@ -1504,7 +1506,7 @@ next_for_item(void *fi_void, char_u *arg)
 	tv.vval.v_number = blob_get(fi->fi_blob, fi->fi_bi);
 	++fi->fi_bi;
 	return ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
-					       fi->fi_varcount, 0, NULL) == OK;
+				       fi->fi_varcount, flag, NULL) == OK;
     }
 
     item = fi->fi_lw.lw_item;
@@ -1514,7 +1516,7 @@ next_for_item(void *fi_void, char_u *arg)
     {
 	fi->fi_lw.lw_item = item->li_next;
 	result = (ex_let_vars(arg, &item->li_tv, TRUE, fi->fi_semicolon,
-					  fi->fi_varcount, 0, NULL) == OK);
+				      fi->fi_varcount, flag, NULL) == OK);
     }
     return result;
 }
