@@ -2357,6 +2357,7 @@ do_one_cmd(
 	    case CMD_finally:
 	    case CMD_endtry:
 	    case CMD_function:
+	    case CMD_def:
 				break;
 
 	    // Commands that handle '|' themselves.  Check: A command should
