@@ -60,7 +60,10 @@ def Test_assignment()
   if has('float')
     let float1: float = 3.4
   endif
-  let party: partial = funcref('Test_syntax')
+  let funky1: func
+  let funky2: func = function('len')
+  let party1: partial
+  let party2: partial = funcref('Test_syntax')
 
   g:newvar = 'new'
   assert_equal('new', g:newvar)

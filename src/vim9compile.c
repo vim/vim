@@ -706,6 +706,23 @@ generate_PUSHFUNC(cctx_T *cctx, char_u *name)
 }
 
 /*
+ * Generate an ISN_PUSHPARTIAL instruction with partial "part".
+ * Consumes "name".
+ */
+    static int
+generate_PUSHPARTIAL(cctx_T *cctx, partial_T *part)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr_type(cctx, ISN_PUSHPARTIAL,
+						      &t_partial_any)) == NULL)
+	return FAIL;
+    isn->isn_arg.partial = part;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_STORE instruction.
  */
     static int
@@ -3605,8 +3622,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		generate_PUSHFUNC(cctx, NULL);
 		break;
 	    case VAR_PARTIAL:
-		// generate_PUSHPARTIAL(cctx, NULL);
-		emsg("Partial type not supported yet");
+		generate_PUSHPARTIAL(cctx, NULL);
 		break;
 	    case VAR_LIST:
 		generate_NEWLIST(cctx, 0);
@@ -5228,7 +5244,7 @@ delete_instr(isn_T *isn)
 	    break;
 
 	case ISN_PUSHPARTIAL:
-	    // TODO
+	    partial_unref(isn->isn_arg.partial);
 	    break;
 
 	case ISN_PUSHJOB:

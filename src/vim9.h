@@ -215,6 +215,7 @@ typedef struct {
 #endif
 	channel_T	    *channel;
 	job_T		    *job;
+	partial_T	    *partial;
 	jump_T		    jump;
 	forloop_T	    forloop;
 	try_T		    try;

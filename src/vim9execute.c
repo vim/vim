@@ -873,10 +873,17 @@ call_def_function(
 			break;
 		    case ISN_PUSHFUNC:
 			tv->v_type = VAR_FUNC;
-			tv->vval.v_string = vim_strsave(iptr->isn_arg.string);
+			if (iptr->isn_arg.string == NULL)
+			    tv->vval.v_string = NULL;
+			else
+			    tv->vval.v_string =
+					     vim_strsave(iptr->isn_arg.string);
 			break;
 		    case ISN_PUSHPARTIAL:
-			tv->v_type = VAR_UNKNOWN;
+			tv->v_type = VAR_PARTIAL;
+			tv->vval.v_partial = iptr->isn_arg.partial;
+			if (tv->vval.v_partial != NULL)
+			    ++tv->vval.v_partial->pt_refcount;
 			break;
 		    case ISN_PUSHCHANNEL:
 #ifdef FEAT_JOB_CHANNEL
@@ -1874,11 +1881,20 @@ ex_disassemble(exarg_T *eap)
 		}
 		break;
 	    case ISN_PUSHFUNC:
-		smsg("%4d PUSHFUNC \"%s\"", current, iptr->isn_arg.string);
+		{
+		    char *name = (char *)iptr->isn_arg.string;
+
+		    smsg("%4d PUSHFUNC \"%s\"", current,
+					       name == NULL ? "[none]" : name);
+		}
 		break;
 	    case ISN_PUSHPARTIAL:
-		// TODO
-		smsg("%4d PUSHPARTIAL", current);
+		{
+		    partial_T *part = iptr->isn_arg.partial;
+
+		    smsg("%4d PUSHPARTIAL \"%s\"", current,
+			 part == NULL ? "[none]" : (char *)partial_name(part));
+		}
 		break;
 	    case ISN_PUSHCHANNEL:
 #ifdef FEAT_JOB_CHANNEL
