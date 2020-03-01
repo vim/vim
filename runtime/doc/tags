@@ -5823,6 +5823,7 @@ complete-item-kind	insert.txt	/*complete-item-kind*
 complete-items	insert.txt	/*complete-items*
 complete-popup	insert.txt	/*complete-popup*
 complete-popuphidden	insert.txt	/*complete-popuphidden*
+complete-script-local-functions	cmdline.txt	/*complete-script-local-functions*
 complete_CTRL-E	insert.txt	/*complete_CTRL-E*
 complete_CTRL-Y	insert.txt	/*complete_CTRL-Y*
 complete_add()	eval.txt	/*complete_add()*
@@ -7371,6 +7372,7 @@ in_name	channel.txt	/*in_name*
 in_top	channel.txt	/*in_top*
 inactive-buffer	windows.txt	/*inactive-buffer*
 include-search	tagsrch.txt	/*include-search*
+inclusion	helphelp.txt	/*inclusion*
 inclusive	motion.txt	/*inclusive*
 incomp-small-6	version6.txt	/*incomp-small-6*
 incompatible-5	version5.txt	/*incompatible-5*

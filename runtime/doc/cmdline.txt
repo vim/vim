@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.2.  Last change: 2020 Feb 15
+*cmdline.txt*   For Vim version 8.2.  Last change: 2020 Feb 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -475,6 +475,10 @@ emulate it.  For example, this mimics autolist=ambiguous:
 	:set wildmode=longest,list
 This will find the longest match with the first 'wildchar', then list all
 matching files with the next.
+
+					*complete-script-local-functions*
+When completing user function names, prepend "s:" to find script-local
+functions.
 
 							*suffixes*
 For file name completion you can use the 'suffixes' option to set a priority

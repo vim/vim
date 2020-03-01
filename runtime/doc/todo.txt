@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Feb 25
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Mar 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,13 +38,9 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Patch for this (#5696):
-- Empty text prop which includes start/end does not grow when inserting text.
-  (Axel Forsman, #5679)
-
 Vim9 script:
+- better implementation for partial and tests.
 - "func" inside "vim9script" doesn't work?  (Ben Jackson, #5670)
-- Completion for :disassemble
 - "echo Func()" is an error if Func() does not return anything.
 - Make "g:imported = Export.exported" work in Vim9 script.
 - Make Foo.Bar() work to call the dict function. (#5676)
@@ -193,8 +189,6 @@ Flag in 'formatoptions' is not used in the tests.
 Patch to add 'vtp' option. (#5344)
 Needs better docs.  Is there a better name?
 
-Patch for Haiku support. (Emir Sarı, #5605)
-
 undo result wrong: Masato Nishihata, #4798
 
 When 'lazyredraw' is set sometimes the title is not updated.
@@ -204,6 +198,7 @@ Strange sequence of BufWipeout and BufNew events while doing omni-complete.
 (Paul Jolly, #5656)
 Get BufDelete without preceding BufNew. (Paul Jolly, #5694)
 BufWinenter event not fired when saving unnamed buffer. (Paul Jolly, #5655)
+Another spurious BufDelete. (Dani Dickstein, #5701)
 
 Patch to add function to return the text used in the quickfix window.
 (Yegappan, #5465)
