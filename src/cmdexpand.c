@@ -2124,7 +2124,7 @@ ExpandFromContext(
 	int len = (int)STRLEN(pat) + 20;
 
 	tofree = alloc(len);
-	snprintf((char *)tofree, len, "^<SNR>\\d\\+_%s", pat + 3);
+	vim_snprintf((char *)tofree, len, "^<SNR>\\d\\+_%s", pat + 3);
 	pat = tofree;
     }
 
