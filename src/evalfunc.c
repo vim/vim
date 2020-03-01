@@ -264,6 +264,91 @@ static void f_windowsversion(typval_T *argvars, typval_T *rettv);
 static void f_wordcount(typval_T *argvars, typval_T *rettv);
 static void f_xor(typval_T *argvars, typval_T *rettv);
 
+
+    static type_T *
+ret_void(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_void;
+}
+    static type_T *
+ret_any(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_any;
+}
+    static type_T *
+ret_number(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_number;
+}
+    static type_T *
+ret_float(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_float;
+}
+    static type_T *
+ret_string(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_string;
+}
+    static type_T * ret_list_any(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_list_any;
+}
+    static type_T *
+ret_list_number(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_list_number;
+}
+    static type_T *
+ret_list_string(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_list_string;
+}
+    static type_T *
+ret_list_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_list_dict_any;
+}
+    static type_T *
+ret_dict_any(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_dict_any;
+}
+    static type_T *
+ret_dict_number(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_dict_number;
+}
+    static type_T *
+ret_dict_string(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_dict_string;
+}
+    static type_T *
+ret_blob(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_blob;
+}
+    static type_T *
+ret_partial_void(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_partial_void;
+}
+#ifdef FEAT_JOB_CHANNEL
+    static type_T *
+ret_channel(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_channel;
+}
+    static type_T *
+ret_job(int argcount UNUSED, type_T **argtypes UNUSED)
+{
+    return &t_job;
+}
+#endif
+
+static type_T *ret_f_function(int argcount, type_T **argtypes);
+
 /*
  * Array with names and number of arguments of all internal functions
  * MUST BE KEPT SORTED IN strcmp() ORDER FOR BINARY SEARCH!
@@ -274,7 +359,8 @@ typedef struct
     char	f_min_argc;	// minimal number of arguments
     char	f_max_argc;	// maximal number of arguments
     char	f_argtype;	// for method: FEARG_ values
-    type_T	*f_rettype;	// return type
+    type_T	*(*f_retfunc)(int argcount, type_T **argtypes);
+				// return type function
     void	(*f_func)(typval_T *args, typval_T *rvar);
 				// implementation of function
 } funcentry_T;
@@ -289,585 +375,585 @@ typedef struct
 static funcentry_T global_functions[] =
 {
 #ifdef FEAT_FLOAT
-    {"abs",		1, 1, FEARG_1,	  &t_any,	f_abs},
-    {"acos",		1, 1, FEARG_1,	  &t_float,	f_acos},	// WJMc
+    {"abs",		1, 1, FEARG_1,	  ret_any,	f_abs},
+    {"acos",		1, 1, FEARG_1,	  ret_float,	f_acos},	// WJMc
 #endif
-    {"add",		2, 2, FEARG_1,	  &t_any,	f_add},
-    {"and",		2, 2, FEARG_1,	  &t_number,	f_and},
-    {"append",		2, 2, FEARG_LAST, &t_number,	f_append},
-    {"appendbufline",	3, 3, FEARG_LAST, &t_number,	f_appendbufline},
-    {"argc",		0, 1, 0,	  &t_number,	f_argc},
-    {"argidx",		0, 0, 0,	  &t_number,	f_argidx},
-    {"arglistid",	0, 2, 0,	  &t_number,	f_arglistid},
-    {"argv",		0, 2, 0,	  &t_any,	f_argv},
+    {"add",		2, 2, FEARG_1,	  ret_any,	f_add},
+    {"and",		2, 2, FEARG_1,	  ret_number,	f_and},
+    {"append",		2, 2, FEARG_LAST, ret_number,	f_append},
+    {"appendbufline",	3, 3, FEARG_LAST, ret_number,	f_appendbufline},
+    {"argc",		0, 1, 0,	  ret_number,	f_argc},
+    {"argidx",		0, 0, 0,	  ret_number,	f_argidx},
+    {"arglistid",	0, 2, 0,	  ret_number,	f_arglistid},
+    {"argv",		0, 2, 0,	  ret_any,	f_argv},
 #ifdef FEAT_FLOAT
-    {"asin",		1, 1, FEARG_1,	  &t_float,	f_asin},	// WJMc
+    {"asin",		1, 1, FEARG_1,	  ret_float,	f_asin},	// WJMc
 #endif
-    {"assert_beeps",	1, 2, FEARG_1,	  &t_number,	f_assert_beeps},
-    {"assert_equal",	2, 3, FEARG_2,	  &t_number,	f_assert_equal},
-    {"assert_equalfile", 2, 2, FEARG_1,	  &t_number,	f_assert_equalfile},
-    {"assert_exception", 1, 2, 0,	  &t_number,	f_assert_exception},
-    {"assert_fails",	1, 3, FEARG_1,	  &t_number,	f_assert_fails},
-    {"assert_false",	1, 2, FEARG_1,	  &t_number,	f_assert_false},
-    {"assert_inrange",	3, 4, FEARG_3,	  &t_number,	f_assert_inrange},
-    {"assert_match",	2, 3, FEARG_2,	  &t_number,	f_assert_match},
-    {"assert_notequal",	2, 3, FEARG_2,	  &t_number,	f_assert_notequal},
-    {"assert_notmatch",	2, 3, FEARG_2,	  &t_number,	f_assert_notmatch},
-    {"assert_report",	1, 1, FEARG_1,	  &t_number,	f_assert_report},
-    {"assert_true",	1, 2, FEARG_1,	  &t_number,	f_assert_true},
+    {"assert_beeps",	1, 2, FEARG_1,	  ret_number,	f_assert_beeps},
+    {"assert_equal",	2, 3, FEARG_2,	  ret_number,	f_assert_equal},
+    {"assert_equalfile", 2, 2, FEARG_1,	  ret_number,	f_assert_equalfile},
+    {"assert_exception", 1, 2, 0,	  ret_number,	f_assert_exception},
+    {"assert_fails",	1, 3, FEARG_1,	  ret_number,	f_assert_fails},
+    {"assert_false",	1, 2, FEARG_1,	  ret_number,	f_assert_false},
+    {"assert_inrange",	3, 4, FEARG_3,	  ret_number,	f_assert_inrange},
+    {"assert_match",	2, 3, FEARG_2,	  ret_number,	f_assert_match},
+    {"assert_notequal",	2, 3, FEARG_2,	  ret_number,	f_assert_notequal},
+    {"assert_notmatch",	2, 3, FEARG_2,	  ret_number,	f_assert_notmatch},
+    {"assert_report",	1, 1, FEARG_1,	  ret_number,	f_assert_report},
+    {"assert_true",	1, 2, FEARG_1,	  ret_number,	f_assert_true},
 #ifdef FEAT_FLOAT
-    {"atan",		1, 1, FEARG_1,	  &t_float,	f_atan},
-    {"atan2",		2, 2, FEARG_1,	  &t_float,	f_atan2},
+    {"atan",		1, 1, FEARG_1,	  ret_float,	f_atan},
+    {"atan2",		2, 2, FEARG_1,	  ret_float,	f_atan2},
 #endif
 #ifdef FEAT_BEVAL
-    {"balloon_gettext",	0, 0, 0,	  &t_string,	f_balloon_gettext},
-    {"balloon_show",	1, 1, FEARG_1,	  &t_void,	f_balloon_show},
+    {"balloon_gettext",	0, 0, 0,	  ret_string,	f_balloon_gettext},
+    {"balloon_show",	1, 1, FEARG_1,	  ret_void,	f_balloon_show},
 # if defined(FEAT_BEVAL_TERM)
-    {"balloon_split",	1, 1, FEARG_1,	  &t_list_string, f_balloon_split},
+    {"balloon_split",	1, 1, FEARG_1,	  ret_list_string, f_balloon_split},
 # endif
 #endif
-    {"browse",		4, 4, 0,	  &t_string,	f_browse},
-    {"browsedir",	2, 2, 0,	  &t_string,	f_browsedir},
-    {"bufadd",		1, 1, FEARG_1,	  &t_number,	f_bufadd},
-    {"bufexists",	1, 1, FEARG_1,	  &t_number,	f_bufexists},
-    {"buffer_exists",	1, 1, FEARG_1,	  &t_number,	f_bufexists},	// obsolete
-    {"buffer_name",	0, 1, FEARG_1,	  &t_string,	f_bufname},	// obsolete
-    {"buffer_number",	0, 1, FEARG_1,	  &t_number,	f_bufnr},	// obsolete
-    {"buflisted",	1, 1, FEARG_1,	  &t_number,	f_buflisted},
-    {"bufload",		1, 1, FEARG_1,	  &t_void,	f_bufload},
-    {"bufloaded",	1, 1, FEARG_1,	  &t_number,	f_bufloaded},
-    {"bufname",		0, 1, FEARG_1,	  &t_string,	f_bufname},
-    {"bufnr",		0, 2, FEARG_1,	  &t_number,	f_bufnr},
-    {"bufwinid",	1, 1, FEARG_1,	  &t_number,	f_bufwinid},
-    {"bufwinnr",	1, 1, FEARG_1,	  &t_number,	f_bufwinnr},
-    {"byte2line",	1, 1, FEARG_1,	  &t_number,	f_byte2line},
-    {"byteidx",		2, 2, FEARG_1,	  &t_number,	f_byteidx},
-    {"byteidxcomp",	2, 2, FEARG_1,	  &t_number,	f_byteidxcomp},
-    {"call",		2, 3, FEARG_1,	  &t_any,	f_call},
+    {"browse",		4, 4, 0,	  ret_string,	f_browse},
+    {"browsedir",	2, 2, 0,	  ret_string,	f_browsedir},
+    {"bufadd",		1, 1, FEARG_1,	  ret_number,	f_bufadd},
+    {"bufexists",	1, 1, FEARG_1,	  ret_number,	f_bufexists},
+    {"buffer_exists",	1, 1, FEARG_1,	  ret_number,	f_bufexists},	// obsolete
+    {"buffer_name",	0, 1, FEARG_1,	  ret_string,	f_bufname},	// obsolete
+    {"buffer_number",	0, 1, FEARG_1,	  ret_number,	f_bufnr},	// obsolete
+    {"buflisted",	1, 1, FEARG_1,	  ret_number,	f_buflisted},
+    {"bufload",		1, 1, FEARG_1,	  ret_void,	f_bufload},
+    {"bufloaded",	1, 1, FEARG_1,	  ret_number,	f_bufloaded},
+    {"bufname",		0, 1, FEARG_1,	  ret_string,	f_bufname},
+    {"bufnr",		0, 2, FEARG_1,	  ret_number,	f_bufnr},
+    {"bufwinid",	1, 1, FEARG_1,	  ret_number,	f_bufwinid},
+    {"bufwinnr",	1, 1, FEARG_1,	  ret_number,	f_bufwinnr},
+    {"byte2line",	1, 1, FEARG_1,	  ret_number,	f_byte2line},
+    {"byteidx",		2, 2, FEARG_1,	  ret_number,	f_byteidx},
+    {"byteidxcomp",	2, 2, FEARG_1,	  ret_number,	f_byteidxcomp},
+    {"call",		2, 3, FEARG_1,	  ret_any,	f_call},
 #ifdef FEAT_FLOAT
-    {"ceil",		1, 1, FEARG_1,	  &t_float,	f_ceil},
+    {"ceil",		1, 1, FEARG_1,	  ret_float,	f_ceil},
 #endif
 #ifdef FEAT_JOB_CHANNEL
-    {"ch_canread",	1, 1, FEARG_1,	  &t_number,	f_ch_canread},
-    {"ch_close",	1, 1, FEARG_1,	  &t_void,	f_ch_close},
-    {"ch_close_in",	1, 1, FEARG_1,	  &t_void,	f_ch_close_in},
-    {"ch_evalexpr",	2, 3, FEARG_1,	  &t_any,	f_ch_evalexpr},
-    {"ch_evalraw",	2, 3, FEARG_1,	  &t_any,	f_ch_evalraw},
-    {"ch_getbufnr",	2, 2, FEARG_1,	  &t_number,	f_ch_getbufnr},
-    {"ch_getjob",	1, 1, FEARG_1,	  &t_job,	f_ch_getjob},
-    {"ch_info",		1, 1, FEARG_1,	  &t_dict_any,	f_ch_info},
-    {"ch_log",		1, 2, FEARG_1,	  &t_void,	f_ch_log},
-    {"ch_logfile",	1, 2, FEARG_1,	  &t_void,	f_ch_logfile},
-    {"ch_open",		1, 2, FEARG_1,	  &t_channel,	f_ch_open},
-    {"ch_read",		1, 2, FEARG_1,	  &t_string,	f_ch_read},
-    {"ch_readblob",	1, 2, FEARG_1,	  &t_blob,	f_ch_readblob},
-    {"ch_readraw",	1, 2, FEARG_1,	  &t_string,	f_ch_readraw},
-    {"ch_sendexpr",	2, 3, FEARG_1,	  &t_void,	f_ch_sendexpr},
-    {"ch_sendraw",	2, 3, FEARG_1,	  &t_void,	f_ch_sendraw},
-    {"ch_setoptions",	2, 2, FEARG_1,	  &t_void,	f_ch_setoptions},
-    {"ch_status",	1, 2, FEARG_1,	  &t_string,	f_ch_status},
+    {"ch_canread",	1, 1, FEARG_1,	  ret_number,	f_ch_canread},
+    {"ch_close",	1, 1, FEARG_1,	  ret_void,	f_ch_close},
+    {"ch_close_in",	1, 1, FEARG_1,	  ret_void,	f_ch_close_in},
+    {"ch_evalexpr",	2, 3, FEARG_1,	  ret_any,	f_ch_evalexpr},
+    {"ch_evalraw",	2, 3, FEARG_1,	  ret_any,	f_ch_evalraw},
+    {"ch_getbufnr",	2, 2, FEARG_1,	  ret_number,	f_ch_getbufnr},
+    {"ch_getjob",	1, 1, FEARG_1,	  ret_job,	f_ch_getjob},
+    {"ch_info",		1, 1, FEARG_1,	  ret_dict_any,	f_ch_info},
+    {"ch_log",		1, 2, FEARG_1,	  ret_void,	f_ch_log},
+    {"ch_logfile",	1, 2, FEARG_1,	  ret_void,	f_ch_logfile},
+    {"ch_open",		1, 2, FEARG_1,	  ret_channel,	f_ch_open},
+    {"ch_read",		1, 2, FEARG_1,	  ret_string,	f_ch_read},
+    {"ch_readblob",	1, 2, FEARG_1,	  ret_blob,	f_ch_readblob},
+    {"ch_readraw",	1, 2, FEARG_1,	  ret_string,	f_ch_readraw},
+    {"ch_sendexpr",	2, 3, FEARG_1,	  ret_void,	f_ch_sendexpr},
+    {"ch_sendraw",	2, 3, FEARG_1,	  ret_void,	f_ch_sendraw},
+    {"ch_setoptions",	2, 2, FEARG_1,	  ret_void,	f_ch_setoptions},
+    {"ch_status",	1, 2, FEARG_1,	  ret_string,	f_ch_status},
 #endif
-    {"changenr",	0, 0, 0,	  &t_number,	f_changenr},
-    {"char2nr",		1, 2, FEARG_1,	  &t_number,	f_char2nr},
-    {"chdir",		1, 1, FEARG_1,	  &t_string,	f_chdir},
-    {"cindent",		1, 1, FEARG_1,	  &t_number,	f_cindent},
-    {"clearmatches",	0, 1, FEARG_1,	  &t_void,	f_clearmatches},
-    {"col",		1, 1, FEARG_1,	  &t_number,	f_col},
-    {"complete",	2, 2, FEARG_2,	  &t_void,	f_complete},
-    {"complete_add",	1, 1, FEARG_1,	  &t_number,	f_complete_add},
-    {"complete_check",	0, 0, 0,	  &t_number,	f_complete_check},
-    {"complete_info",	0, 1, FEARG_1,	  &t_dict_any,	f_complete_info},
-    {"confirm",		1, 4, FEARG_1,	  &t_number,	f_confirm},
-    {"copy",		1, 1, FEARG_1,	  &t_any,	f_copy},
+    {"changenr",	0, 0, 0,	  ret_number,	f_changenr},
+    {"char2nr",		1, 2, FEARG_1,	  ret_number,	f_char2nr},
+    {"chdir",		1, 1, FEARG_1,	  ret_string,	f_chdir},
+    {"cindent",		1, 1, FEARG_1,	  ret_number,	f_cindent},
+    {"clearmatches",	0, 1, FEARG_1,	  ret_void,	f_clearmatches},
+    {"col",		1, 1, FEARG_1,	  ret_number,	f_col},
+    {"complete",	2, 2, FEARG_2,	  ret_void,	f_complete},
+    {"complete_add",	1, 1, FEARG_1,	  ret_number,	f_complete_add},
+    {"complete_check",	0, 0, 0,	  ret_number,	f_complete_check},
+    {"complete_info",	0, 1, FEARG_1,	  ret_dict_any,	f_complete_info},
+    {"confirm",		1, 4, FEARG_1,	  ret_number,	f_confirm},
+    {"copy",		1, 1, FEARG_1,	  ret_any,	f_copy},
 #ifdef FEAT_FLOAT
-    {"cos",		1, 1, FEARG_1,	  &t_float,	f_cos},
-    {"cosh",		1, 1, FEARG_1,	  &t_float,	f_cosh},
+    {"cos",		1, 1, FEARG_1,	  ret_float,	f_cos},
+    {"cosh",		1, 1, FEARG_1,	  ret_float,	f_cosh},
 #endif
-    {"count",		2, 4, FEARG_1,	  &t_number,	f_count},
-    {"cscope_connection",0,3, 0,	  &t_number,	f_cscope_connection},
-    {"cursor",		1, 3, FEARG_1,	  &t_number,	f_cursor},
+    {"count",		2, 4, FEARG_1,	  ret_number,	f_count},
+    {"cscope_connection",0,3, 0,	  ret_number,	f_cscope_connection},
+    {"cursor",		1, 3, FEARG_1,	  ret_number,	f_cursor},
 #ifdef MSWIN
-    {"debugbreak",	1, 1, FEARG_1,	  &t_number,	f_debugbreak},
+    {"debugbreak",	1, 1, FEARG_1,	  ret_number,	f_debugbreak},
 #endif
-    {"deepcopy",	1, 2, FEARG_1,	  &t_any,	f_deepcopy},
-    {"delete",		1, 2, FEARG_1,	  &t_number,	f_delete},
-    {"deletebufline",	2, 3, FEARG_1,	  &t_number,	f_deletebufline},
-    {"did_filetype",	0, 0, 0,	  &t_number,	f_did_filetype},
-    {"diff_filler",	1, 1, FEARG_1,	  &t_number,	f_diff_filler},
-    {"diff_hlID",	2, 2, FEARG_1,	  &t_number,	f_diff_hlID},
-    {"echoraw",		1, 1, FEARG_1,	  &t_number,	f_echoraw},
-    {"empty",		1, 1, FEARG_1,	  &t_number,	f_empty},
-    {"environ",		0, 0, 0,	  &t_dict_string, f_environ},
-    {"escape",		2, 2, FEARG_1,	  &t_string,	f_escape},
-    {"eval",		1, 1, FEARG_1,	  &t_any,	f_eval},
-    {"eventhandler",	0, 0, 0,	  &t_number,	f_eventhandler},
-    {"executable",	1, 1, FEARG_1,	  &t_number,	f_executable},
-    {"execute",		1, 2, FEARG_1,	  &t_string,	f_execute},
-    {"exepath",		1, 1, FEARG_1,	  &t_string,	f_exepath},
-    {"exists",		1, 1, FEARG_1,	  &t_number,	f_exists},
+    {"deepcopy",	1, 2, FEARG_1,	  ret_any,	f_deepcopy},
+    {"delete",		1, 2, FEARG_1,	  ret_number,	f_delete},
+    {"deletebufline",	2, 3, FEARG_1,	  ret_number,	f_deletebufline},
+    {"did_filetype",	0, 0, 0,	  ret_number,	f_did_filetype},
+    {"diff_filler",	1, 1, FEARG_1,	  ret_number,	f_diff_filler},
+    {"diff_hlID",	2, 2, FEARG_1,	  ret_number,	f_diff_hlID},
+    {"echoraw",		1, 1, FEARG_1,	  ret_number,	f_echoraw},
+    {"empty",		1, 1, FEARG_1,	  ret_number,	f_empty},
+    {"environ",		0, 0, 0,	  ret_dict_string, f_environ},
+    {"escape",		2, 2, FEARG_1,	  ret_string,	f_escape},
+    {"eval",		1, 1, FEARG_1,	  ret_any,	f_eval},
+    {"eventhandler",	0, 0, 0,	  ret_number,	f_eventhandler},
+    {"executable",	1, 1, FEARG_1,	  ret_number,	f_executable},
+    {"execute",		1, 2, FEARG_1,	  ret_string,	f_execute},
+    {"exepath",		1, 1, FEARG_1,	  ret_string,	f_exepath},
+    {"exists",		1, 1, FEARG_1,	  ret_number,	f_exists},
 #ifdef FEAT_FLOAT
-    {"exp",		1, 1, FEARG_1,	  &t_float,	f_exp},
+    {"exp",		1, 1, FEARG_1,	  ret_float,	f_exp},
 #endif
-    {"expand",		1, 3, FEARG_1,	  &t_any,	f_expand},
-    {"expandcmd",	1, 1, FEARG_1,	  &t_string,	f_expandcmd},
-    {"extend",		2, 3, FEARG_1,	  &t_any,	f_extend},
-    {"feedkeys",	1, 2, FEARG_1,	  &t_void,	f_feedkeys},
-    {"file_readable",	1, 1, FEARG_1,	  &t_number,	f_filereadable}, // obsolete
-    {"filereadable",	1, 1, FEARG_1,	  &t_number,	f_filereadable},
-    {"filewritable",	1, 1, FEARG_1,	  &t_number,	f_filewritable},
-    {"filter",		2, 2, FEARG_1,	  &t_any,	f_filter},
-    {"finddir",		1, 3, FEARG_1,	  &t_string,	f_finddir},
-    {"findfile",	1, 3, FEARG_1,	  &t_string,	f_findfile},
+    {"expand",		1, 3, FEARG_1,	  ret_any,	f_expand},
+    {"expandcmd",	1, 1, FEARG_1,	  ret_string,	f_expandcmd},
+    {"extend",		2, 3, FEARG_1,	  ret_any,	f_extend},
+    {"feedkeys",	1, 2, FEARG_1,	  ret_void,	f_feedkeys},
+    {"file_readable",	1, 1, FEARG_1,	  ret_number,	f_filereadable}, // obsolete
+    {"filereadable",	1, 1, FEARG_1,	  ret_number,	f_filereadable},
+    {"filewritable",	1, 1, FEARG_1,	  ret_number,	f_filewritable},
+    {"filter",		2, 2, FEARG_1,	  ret_any,	f_filter},
+    {"finddir",		1, 3, FEARG_1,	  ret_string,	f_finddir},
+    {"findfile",	1, 3, FEARG_1,	  ret_string,	f_findfile},
 #ifdef FEAT_FLOAT
-    {"float2nr",	1, 1, FEARG_1,	  &t_number,	f_float2nr},
-    {"floor",		1, 1, FEARG_1,	  &t_float,	f_floor},
-    {"fmod",		2, 2, FEARG_1,	  &t_float,	f_fmod},
+    {"float2nr",	1, 1, FEARG_1,	  ret_number,	f_float2nr},
+    {"floor",		1, 1, FEARG_1,	  ret_float,	f_floor},
+    {"fmod",		2, 2, FEARG_1,	  ret_float,	f_fmod},
 #endif
-    {"fnameescape",	1, 1, FEARG_1,	  &t_string,	f_fnameescape},
-    {"fnamemodify",	2, 2, FEARG_1,	  &t_string,	f_fnamemodify},
-    {"foldclosed",	1, 1, FEARG_1,	  &t_number,	f_foldclosed},
-    {"foldclosedend",	1, 1, FEARG_1,	  &t_number,	f_foldclosedend},
-    {"foldlevel",	1, 1, FEARG_1,	  &t_number,	f_foldlevel},
-    {"foldtext",	0, 0, 0,	  &t_string,	f_foldtext},
-    {"foldtextresult",	1, 1, FEARG_1,	  &t_string,	f_foldtextresult},
-    {"foreground",	0, 0, 0,	  &t_void,	f_foreground},
-    {"funcref",		1, 3, FEARG_1,	  &t_any,	f_funcref},
-    {"function",	1, 3, FEARG_1,	  &t_any,	f_function},
-    {"garbagecollect",	0, 1, 0,	  &t_void,	f_garbagecollect},
-    {"get",		2, 3, FEARG_1,	  &t_any,	f_get},
-    {"getbufinfo",	0, 1, 0,	  &t_list_dict_any, f_getbufinfo},
-    {"getbufline",	2, 3, FEARG_1,	  &t_list_string, f_getbufline},
-    {"getbufvar",	2, 3, FEARG_1,	  &t_any,	f_getbufvar},
-    {"getchangelist",	0, 1, FEARG_1,	  &t_list_any,	f_getchangelist},
-    {"getchar",		0, 1, 0,	  &t_number,	f_getchar},
-    {"getcharmod",	0, 0, 0,	  &t_number,	f_getcharmod},
-    {"getcharsearch",	0, 0, 0,	  &t_dict_any,	f_getcharsearch},
-    {"getcmdline",	0, 0, 0,	  &t_string,	f_getcmdline},
-    {"getcmdpos",	0, 0, 0,	  &t_number,	f_getcmdpos},
-    {"getcmdtype",	0, 0, 0,	  &t_string,	f_getcmdtype},
-    {"getcmdwintype",	0, 0, 0,	  &t_string,	f_getcmdwintype},
-    {"getcompletion",	2, 3, FEARG_1,	  &t_list_string, f_getcompletion},
-    {"getcurpos",	0, 0, 0,	  &t_list_number, f_getcurpos},
-    {"getcwd",		0, 2, FEARG_1,	  &t_string,	f_getcwd},
-    {"getenv",		1, 1, FEARG_1,	  &t_string,	f_getenv},
-    {"getfontname",	0, 1, 0,	  &t_string,	f_getfontname},
-    {"getfperm",	1, 1, FEARG_1,	  &t_string,	f_getfperm},
-    {"getfsize",	1, 1, FEARG_1,	  &t_number,	f_getfsize},
-    {"getftime",	1, 1, FEARG_1,	  &t_number,	f_getftime},
-    {"getftype",	1, 1, FEARG_1,	  &t_string,	f_getftype},
-    {"getimstatus",	0, 0, 0,	  &t_number,	f_getimstatus},
-    {"getjumplist",	0, 2, FEARG_1,	  &t_list_any,	f_getjumplist},
-    {"getline",		1, 2, FEARG_1,	  &t_string,	f_getline},
-    {"getloclist",	1, 2, 0,	  &t_list_dict_any, f_getloclist},
-    {"getmatches",	0, 1, 0,	  &t_list_dict_any, f_getmatches},
-    {"getmousepos",	0, 0, 0,	  &t_dict_number, f_getmousepos},
-    {"getpid",		0, 0, 0,	  &t_number,	f_getpid},
-    {"getpos",		1, 1, FEARG_1,	  &t_list_number,	f_getpos},
-    {"getqflist",	0, 1, 0,	  &t_list_dict_any,	f_getqflist},
-    {"getreg",		0, 3, FEARG_1,	  &t_string,	f_getreg},
-    {"getregtype",	0, 1, FEARG_1,	  &t_string,	f_getregtype},
-    {"gettabinfo",	0, 1, FEARG_1,	  &t_list_dict_any,	f_gettabinfo},
-    {"gettabvar",	2, 3, FEARG_1,	  &t_any,	f_gettabvar},
-    {"gettabwinvar",	3, 4, FEARG_1,	  &t_any,	f_gettabwinvar},
-    {"gettagstack",	0, 1, FEARG_1,	  &t_dict_any,	f_gettagstack},
-    {"getwininfo",	0, 1, FEARG_1,	  &t_list_dict_any,	f_getwininfo},
-    {"getwinpos",	0, 1, FEARG_1,	  &t_list_number,	f_getwinpos},
-    {"getwinposx",	0, 0, 0,	  &t_number,	f_getwinposx},
-    {"getwinposy",	0, 0, 0,	  &t_number,	f_getwinposy},
-    {"getwinvar",	2, 3, FEARG_1,	  &t_any,	f_getwinvar},
-    {"glob",		1, 4, FEARG_1,	  &t_any,	f_glob},
-    {"glob2regpat",	1, 1, FEARG_1,	  &t_string,	f_glob2regpat},
-    {"globpath",	2, 5, FEARG_2,	  &t_any,	f_globpath},
-    {"has",		1, 1, 0,	  &t_number,	f_has},
-    {"has_key",		2, 2, FEARG_1,	  &t_number,	f_has_key},
-    {"haslocaldir",	0, 2, FEARG_1,	  &t_number,	f_haslocaldir},
-    {"hasmapto",	1, 3, FEARG_1,	  &t_number,	f_hasmapto},
-    {"highlightID",	1, 1, FEARG_1,	  &t_number,	f_hlID},	// obsolete
-    {"highlight_exists",1, 1, FEARG_1,	  &t_number,	f_hlexists},	// obsolete
-    {"histadd",		2, 2, FEARG_2,	  &t_number,	f_histadd},
-    {"histdel",		1, 2, FEARG_1,	  &t_number,	f_histdel},
-    {"histget",		1, 2, FEARG_1,	  &t_string,	f_histget},
-    {"histnr",		1, 1, FEARG_1,	  &t_number,	f_histnr},
-    {"hlID",		1, 1, FEARG_1,	  &t_number,	f_hlID},
-    {"hlexists",	1, 1, FEARG_1,	  &t_number,	f_hlexists},
-    {"hostname",	0, 0, 0,	  &t_string,	f_hostname},
-    {"iconv",		3, 3, FEARG_1,	  &t_string,	f_iconv},
-    {"indent",		1, 1, FEARG_1,	  &t_number,	f_indent},
-    {"index",		2, 4, FEARG_1,	  &t_number,	f_index},
-    {"input",		1, 3, FEARG_1,	  &t_string,	f_input},
-    {"inputdialog",	1, 3, FEARG_1,	  &t_string,	f_inputdialog},
-    {"inputlist",	1, 1, FEARG_1,	  &t_number,	f_inputlist},
-    {"inputrestore",	0, 0, 0,	  &t_number,	f_inputrestore},
-    {"inputsave",	0, 0, 0,	  &t_number,	f_inputsave},
-    {"inputsecret",	1, 2, FEARG_1,	  &t_string,	f_inputsecret},
-    {"insert",		2, 3, FEARG_1,	  &t_any,	f_insert},
-    {"interrupt",	0, 0, 0,	  &t_void,	f_interrupt},
-    {"invert",		1, 1, FEARG_1,	  &t_number,	f_invert},
-    {"isdirectory",	1, 1, FEARG_1,	  &t_number,	f_isdirectory},
+    {"fnameescape",	1, 1, FEARG_1,	  ret_string,	f_fnameescape},
+    {"fnamemodify",	2, 2, FEARG_1,	  ret_string,	f_fnamemodify},
+    {"foldclosed",	1, 1, FEARG_1,	  ret_number,	f_foldclosed},
+    {"foldclosedend",	1, 1, FEARG_1,	  ret_number,	f_foldclosedend},
+    {"foldlevel",	1, 1, FEARG_1,	  ret_number,	f_foldlevel},
+    {"foldtext",	0, 0, 0,	  ret_string,	f_foldtext},
+    {"foldtextresult",	1, 1, FEARG_1,	  ret_string,	f_foldtextresult},
+    {"foreground",	0, 0, 0,	  ret_void,	f_foreground},
+    {"funcref",		1, 3, FEARG_1,	  ret_partial_void, f_funcref},
+    {"function",	1, 3, FEARG_1,	  ret_f_function, f_function},
+    {"garbagecollect",	0, 1, 0,	  ret_void,	f_garbagecollect},
+    {"get",		2, 3, FEARG_1,	  ret_any,	f_get},
+    {"getbufinfo",	0, 1, 0,	  ret_list_dict_any, f_getbufinfo},
+    {"getbufline",	2, 3, FEARG_1,	  ret_list_string, f_getbufline},
+    {"getbufvar",	2, 3, FEARG_1,	  ret_any,	f_getbufvar},
+    {"getchangelist",	0, 1, FEARG_1,	  ret_list_any,	f_getchangelist},
+    {"getchar",		0, 1, 0,	  ret_number,	f_getchar},
+    {"getcharmod",	0, 0, 0,	  ret_number,	f_getcharmod},
+    {"getcharsearch",	0, 0, 0,	  ret_dict_any,	f_getcharsearch},
+    {"getcmdline",	0, 0, 0,	  ret_string,	f_getcmdline},
+    {"getcmdpos",	0, 0, 0,	  ret_number,	f_getcmdpos},
+    {"getcmdtype",	0, 0, 0,	  ret_string,	f_getcmdtype},
+    {"getcmdwintype",	0, 0, 0,	  ret_string,	f_getcmdwintype},
+    {"getcompletion",	2, 3, FEARG_1,	  ret_list_string, f_getcompletion},
+    {"getcurpos",	0, 0, 0,	  ret_list_number, f_getcurpos},
+    {"getcwd",		0, 2, FEARG_1,	  ret_string,	f_getcwd},
+    {"getenv",		1, 1, FEARG_1,	  ret_string,	f_getenv},
+    {"getfontname",	0, 1, 0,	  ret_string,	f_getfontname},
+    {"getfperm",	1, 1, FEARG_1,	  ret_string,	f_getfperm},
+    {"getfsize",	1, 1, FEARG_1,	  ret_number,	f_getfsize},
+    {"getftime",	1, 1, FEARG_1,	  ret_number,	f_getftime},
+    {"getftype",	1, 1, FEARG_1,	  ret_string,	f_getftype},
+    {"getimstatus",	0, 0, 0,	  ret_number,	f_getimstatus},
+    {"getjumplist",	0, 2, FEARG_1,	  ret_list_any,	f_getjumplist},
+    {"getline",		1, 2, FEARG_1,	  ret_f_getline, f_getline},
+    {"getloclist",	1, 2, 0,	  ret_list_dict_any, f_getloclist},
+    {"getmatches",	0, 1, 0,	  ret_list_dict_any, f_getmatches},
+    {"getmousepos",	0, 0, 0,	  ret_dict_number, f_getmousepos},
+    {"getpid",		0, 0, 0,	  ret_number,	f_getpid},
+    {"getpos",		1, 1, FEARG_1,	  ret_list_number,	f_getpos},
+    {"getqflist",	0, 1, 0,	  ret_list_dict_any,	f_getqflist},
+    {"getreg",		0, 3, FEARG_1,	  ret_string,	f_getreg},
+    {"getregtype",	0, 1, FEARG_1,	  ret_string,	f_getregtype},
+    {"gettabinfo",	0, 1, FEARG_1,	  ret_list_dict_any,	f_gettabinfo},
+    {"gettabvar",	2, 3, FEARG_1,	  ret_any,	f_gettabvar},
+    {"gettabwinvar",	3, 4, FEARG_1,	  ret_any,	f_gettabwinvar},
+    {"gettagstack",	0, 1, FEARG_1,	  ret_dict_any,	f_gettagstack},
+    {"getwininfo",	0, 1, FEARG_1,	  ret_list_dict_any,	f_getwininfo},
+    {"getwinpos",	0, 1, FEARG_1,	  ret_list_number,	f_getwinpos},
+    {"getwinposx",	0, 0, 0,	  ret_number,	f_getwinposx},
+    {"getwinposy",	0, 0, 0,	  ret_number,	f_getwinposy},
+    {"getwinvar",	2, 3, FEARG_1,	  ret_any,	f_getwinvar},
+    {"glob",		1, 4, FEARG_1,	  ret_any,	f_glob},
+    {"glob2regpat",	1, 1, FEARG_1,	  ret_string,	f_glob2regpat},
+    {"globpath",	2, 5, FEARG_2,	  ret_any,	f_globpath},
+    {"has",		1, 1, 0,	  ret_number,	f_has},
+    {"has_key",		2, 2, FEARG_1,	  ret_number,	f_has_key},
+    {"haslocaldir",	0, 2, FEARG_1,	  ret_number,	f_haslocaldir},
+    {"hasmapto",	1, 3, FEARG_1,	  ret_number,	f_hasmapto},
+    {"highlightID",	1, 1, FEARG_1,	  ret_number,	f_hlID},	// obsolete
+    {"highlight_exists",1, 1, FEARG_1,	  ret_number,	f_hlexists},	// obsolete
+    {"histadd",		2, 2, FEARG_2,	  ret_number,	f_histadd},
+    {"histdel",		1, 2, FEARG_1,	  ret_number,	f_histdel},
+    {"histget",		1, 2, FEARG_1,	  ret_string,	f_histget},
+    {"histnr",		1, 1, FEARG_1,	  ret_number,	f_histnr},
+    {"hlID",		1, 1, FEARG_1,	  ret_number,	f_hlID},
+    {"hlexists",	1, 1, FEARG_1,	  ret_number,	f_hlexists},
+    {"hostname",	0, 0, 0,	  ret_string,	f_hostname},
+    {"iconv",		3, 3, FEARG_1,	  ret_string,	f_iconv},
+    {"indent",		1, 1, FEARG_1,	  ret_number,	f_indent},
+    {"index",		2, 4, FEARG_1,	  ret_number,	f_index},
+    {"input",		1, 3, FEARG_1,	  ret_string,	f_input},
+    {"inputdialog",	1, 3, FEARG_1,	  ret_string,	f_inputdialog},
+    {"inputlist",	1, 1, FEARG_1,	  ret_number,	f_inputlist},
+    {"inputrestore",	0, 0, 0,	  ret_number,	f_inputrestore},
+    {"inputsave",	0, 0, 0,	  ret_number,	f_inputsave},
+    {"inputsecret",	1, 2, FEARG_1,	  ret_string,	f_inputsecret},
+    {"insert",		2, 3, FEARG_1,	  ret_any,	f_insert},
+    {"interrupt",	0, 0, 0,	  ret_void,	f_interrupt},
+    {"invert",		1, 1, FEARG_1,	  ret_number,	f_invert},
+    {"isdirectory",	1, 1, FEARG_1,	  ret_number,	f_isdirectory},
 #if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
-    {"isinf",		1, 1, FEARG_1,	  &t_number,	f_isinf},
+    {"isinf",		1, 1, FEARG_1,	  ret_number,	f_isinf},
 #endif
-    {"islocked",	1, 1, FEARG_1,	  &t_number,	f_islocked},
+    {"islocked",	1, 1, FEARG_1,	  ret_number,	f_islocked},
 #if defined(FEAT_FLOAT) && defined(HAVE_MATH_H)
-    {"isnan",		1, 1, FEARG_1,	  &t_number,	f_isnan},
+    {"isnan",		1, 1, FEARG_1,	  ret_number,	f_isnan},
 #endif
-    {"items",		1, 1, FEARG_1,	  &t_list_any,	f_items},
+    {"items",		1, 1, FEARG_1,	  ret_list_any,	f_items},
 #ifdef FEAT_JOB_CHANNEL
-    {"job_getchannel",	1, 1, FEARG_1,	  &t_channel,	f_job_getchannel},
-    {"job_info",	0, 1, FEARG_1,	  &t_dict_any,	f_job_info},
-    {"job_setoptions",	2, 2, FEARG_1,	  &t_void,	f_job_setoptions},
-    {"job_start",	1, 2, FEARG_1,	  &t_job,	f_job_start},
-    {"job_status",	1, 1, FEARG_1,	  &t_string,	f_job_status},
-    {"job_stop",	1, 2, FEARG_1,	  &t_number,	f_job_stop},
+    {"job_getchannel",	1, 1, FEARG_1,	  ret_channel,	f_job_getchannel},
+    {"job_info",	0, 1, FEARG_1,	  ret_dict_any,	f_job_info},
+    {"job_setoptions",	2, 2, FEARG_1,	  ret_void,	f_job_setoptions},
+    {"job_start",	1, 2, FEARG_1,	  ret_job,	f_job_start},
+    {"job_status",	1, 1, FEARG_1,	  ret_string,	f_job_status},
+    {"job_stop",	1, 2, FEARG_1,	  ret_number,	f_job_stop},
 #endif
-    {"join",		1, 2, FEARG_1,	  &t_string,	f_join},
-    {"js_decode",	1, 1, FEARG_1,	  &t_any,	f_js_decode},
-    {"js_encode",	1, 1, FEARG_1,	  &t_string,	f_js_encode},
-    {"json_decode",	1, 1, FEARG_1,	  &t_any,	f_json_decode},
-    {"json_encode",	1, 1, FEARG_1,	  &t_string,	f_json_encode},
-    {"keys",		1, 1, FEARG_1,	  &t_list_any,	f_keys},
-    {"last_buffer_nr",	0, 0, 0,	  &t_number,	f_last_buffer_nr}, // obsolete
-    {"len",		1, 1, FEARG_1,	  &t_number,	f_len},
-    {"libcall",		3, 3, FEARG_3,	  &t_string,	f_libcall},
-    {"libcallnr",	3, 3, FEARG_3,	  &t_number,	f_libcallnr},
-    {"line",		1, 2, FEARG_1,	  &t_number,	f_line},
-    {"line2byte",	1, 1, FEARG_1,	  &t_number,	f_line2byte},
-    {"lispindent",	1, 1, FEARG_1,	  &t_number,	f_lispindent},
-    {"list2str",	1, 2, FEARG_1,	  &t_string,	f_list2str},
-    {"listener_add",	1, 2, FEARG_2,	  &t_number,	f_listener_add},
-    {"listener_flush",	0, 1, FEARG_1,	  &t_void,	f_listener_flush},
-    {"listener_remove",	1, 1, FEARG_1,	  &t_number,	f_listener_remove},
-    {"localtime",	0, 0, 0,	  &t_number,	f_localtime},
+    {"join",		1, 2, FEARG_1,	  ret_string,	f_join},
+    {"js_decode",	1, 1, FEARG_1,	  ret_any,	f_js_decode},
+    {"js_encode",	1, 1, FEARG_1,	  ret_string,	f_js_encode},
+    {"json_decode",	1, 1, FEARG_1,	  ret_any,	f_json_decode},
+    {"json_encode",	1, 1, FEARG_1,	  ret_string,	f_json_encode},
+    {"keys",		1, 1, FEARG_1,	  ret_list_any,	f_keys},
+    {"last_buffer_nr",	0, 0, 0,	  ret_number,	f_last_buffer_nr}, // obsolete
+    {"len",		1, 1, FEARG_1,	  ret_number,	f_len},
+    {"libcall",		3, 3, FEARG_3,	  ret_string,	f_libcall},
+    {"libcallnr",	3, 3, FEARG_3,	  ret_number,	f_libcallnr},
+    {"line",		1, 2, FEARG_1,	  ret_number,	f_line},
+    {"line2byte",	1, 1, FEARG_1,	  ret_number,	f_line2byte},
+    {"lispindent",	1, 1, FEARG_1,	  ret_number,	f_lispindent},
+    {"list2str",	1, 2, FEARG_1,	  ret_string,	f_list2str},
+    {"listener_add",	1, 2, FEARG_2,	  ret_number,	f_listener_add},
+    {"listener_flush",	0, 1, FEARG_1,	  ret_void,	f_listener_flush},
+    {"listener_remove",	1, 1, FEARG_1,	  ret_number,	f_listener_remove},
+    {"localtime",	0, 0, 0,	  ret_number,	f_localtime},
 #ifdef FEAT_FLOAT
-    {"log",		1, 1, FEARG_1,	  &t_float,	f_log},
-    {"log10",		1, 1, FEARG_1,	  &t_float,	f_log10},
+    {"log",		1, 1, FEARG_1,	  ret_float,	f_log},
+    {"log10",		1, 1, FEARG_1,	  ret_float,	f_log10},
 #endif
 #ifdef FEAT_LUA
-    {"luaeval",		1, 2, FEARG_1,	  &t_any,	f_luaeval},
+    {"luaeval",		1, 2, FEARG_1,	  ret_any,	f_luaeval},
 #endif
-    {"map",		2, 2, FEARG_1,	  &t_any,	f_map},
-    {"maparg",		1, 4, FEARG_1,	  &t_string,	f_maparg},
-    {"mapcheck",	1, 3, FEARG_1,	  &t_string,	f_mapcheck},
-    {"match",		2, 4, FEARG_1,	  &t_any,	f_match},
-    {"matchadd",	2, 5, FEARG_1,	  &t_number,	f_matchadd},
-    {"matchaddpos",	2, 5, FEARG_1,	  &t_number,	f_matchaddpos},
-    {"matcharg",	1, 1, FEARG_1,	  &t_list_string, f_matcharg},
-    {"matchdelete",	1, 2, FEARG_1,	  &t_number,	f_matchdelete},
-    {"matchend",	2, 4, FEARG_1,	  &t_number,	f_matchend},
-    {"matchlist",	2, 4, FEARG_1,	  &t_list_string, f_matchlist},
-    {"matchstr",	2, 4, FEARG_1,	  &t_string,	f_matchstr},
-    {"matchstrpos",	2, 4, FEARG_1,	  &t_list_any,	f_matchstrpos},
-    {"max",		1, 1, FEARG_1,	  &t_any,	f_max},
-    {"min",		1, 1, FEARG_1,	  &t_any,	f_min},
-    {"mkdir",		1, 3, FEARG_1,	  &t_number,	f_mkdir},
-    {"mode",		0, 1, FEARG_1,	  &t_string,	f_mode},
+    {"map",		2, 2, FEARG_1,	  ret_any,	f_map},
+    {"maparg",		1, 4, FEARG_1,	  ret_string,	f_maparg},
+    {"mapcheck",	1, 3, FEARG_1,	  ret_string,	f_mapcheck},
+    {"match",		2, 4, FEARG_1,	  ret_any,	f_match},
+    {"matchadd",	2, 5, FEARG_1,	  ret_number,	f_matchadd},
+    {"matchaddpos",	2, 5, FEARG_1,	  ret_number,	f_matchaddpos},
+    {"matcharg",	1, 1, FEARG_1,	  ret_list_string, f_matcharg},
+    {"matchdelete",	1, 2, FEARG_1,	  ret_number,	f_matchdelete},
+    {"matchend",	2, 4, FEARG_1,	  ret_number,	f_matchend},
+    {"matchlist",	2, 4, FEARG_1,	  ret_list_string, f_matchlist},
+    {"matchstr",	2, 4, FEARG_1,	  ret_string,	f_matchstr},
+    {"matchstrpos",	2, 4, FEARG_1,	  ret_list_any,	f_matchstrpos},
+    {"max",		1, 1, FEARG_1,	  ret_any,	f_max},
+    {"min",		1, 1, FEARG_1,	  ret_any,	f_min},
+    {"mkdir",		1, 3, FEARG_1,	  ret_number,	f_mkdir},
+    {"mode",		0, 1, FEARG_1,	  ret_string,	f_mode},
 #ifdef FEAT_MZSCHEME
-    {"mzeval",		1, 1, FEARG_1,	  &t_any,	f_mzeval},
+    {"mzeval",		1, 1, FEARG_1,	  ret_any,	f_mzeval},
 #endif
-    {"nextnonblank",	1, 1, FEARG_1,	  &t_number,	f_nextnonblank},
-    {"nr2char",		1, 2, FEARG_1,	  &t_string,	f_nr2char},
-    {"or",		2, 2, FEARG_1,	  &t_number,	f_or},
-    {"pathshorten",	1, 1, FEARG_1,	  &t_string,	f_pathshorten},
+    {"nextnonblank",	1, 1, FEARG_1,	  ret_number,	f_nextnonblank},
+    {"nr2char",		1, 2, FEARG_1,	  ret_string,	f_nr2char},
+    {"or",		2, 2, FEARG_1,	  ret_number,	f_or},
+    {"pathshorten",	1, 1, FEARG_1,	  ret_string,	f_pathshorten},
 #ifdef FEAT_PERL
-    {"perleval",	1, 1, FEARG_1,	  &t_any,	f_perleval},
+    {"perleval",	1, 1, FEARG_1,	  ret_any,	f_perleval},
 #endif
 #ifdef FEAT_PROP_POPUP
-    {"popup_atcursor",	2, 2, FEARG_1,	  &t_number,	f_popup_atcursor},
-    {"popup_beval",	2, 2, FEARG_1,	  &t_number,	f_popup_beval},
-    {"popup_clear",	0, 0, 0,	  &t_void,	f_popup_clear},
-    {"popup_close",	1, 2, FEARG_1,	  &t_void,	f_popup_close},
-    {"popup_create",	2, 2, FEARG_1,	  &t_number,	f_popup_create},
-    {"popup_dialog",	2, 2, FEARG_1,	  &t_number,	f_popup_dialog},
-    {"popup_filter_menu", 2, 2, 0,	  &t_number,	f_popup_filter_menu},
-    {"popup_filter_yesno", 2, 2, 0,	  &t_number,	f_popup_filter_yesno},
-    {"popup_findinfo",	0, 0, 0,	  &t_number,	f_popup_findinfo},
-    {"popup_findpreview", 0, 0, 0,	  &t_number,	f_popup_findpreview},
-    {"popup_getoptions", 1, 1, FEARG_1,	  &t_dict_any,	f_popup_getoptions},
-    {"popup_getpos",	1, 1, FEARG_1,	  &t_dict_any,	f_popup_getpos},
-    {"popup_hide",	1, 1, FEARG_1,	  &t_void,	f_popup_hide},
-    {"popup_locate",	2, 2, 0,	  &t_number,	f_popup_locate},
-    {"popup_menu",	2, 2, FEARG_1,	  &t_number,	f_popup_menu},
-    {"popup_move",	2, 2, FEARG_1,	  &t_void,	f_popup_move},
-    {"popup_notification", 2, 2, FEARG_1, &t_number,	f_popup_notification},
-    {"popup_setoptions", 2, 2, FEARG_1,	  &t_void,	f_popup_setoptions},
-    {"popup_settext",	2, 2, FEARG_1,	  &t_void,	f_popup_settext},
-    {"popup_show",	1, 1, FEARG_1,	  &t_void,	f_popup_show},
+    {"popup_atcursor",	2, 2, FEARG_1,	  ret_number,	f_popup_atcursor},
+    {"popup_beval",	2, 2, FEARG_1,	  ret_number,	f_popup_beval},
+    {"popup_clear",	0, 0, 0,	  ret_void,	f_popup_clear},
+    {"popup_close",	1, 2, FEARG_1,	  ret_void,	f_popup_close},
+    {"popup_create",	2, 2, FEARG_1,	  ret_number,	f_popup_create},
+    {"popup_dialog",	2, 2, FEARG_1,	  ret_number,	f_popup_dialog},
+    {"popup_filter_menu", 2, 2, 0,	  ret_number,	f_popup_filter_menu},
+    {"popup_filter_yesno", 2, 2, 0,	  ret_number,	f_popup_filter_yesno},
+    {"popup_findinfo",	0, 0, 0,	  ret_number,	f_popup_findinfo},
+    {"popup_findpreview", 0, 0, 0,	  ret_number,	f_popup_findpreview},
+    {"popup_getoptions", 1, 1, FEARG_1,	  ret_dict_any,	f_popup_getoptions},
+    {"popup_getpos",	1, 1, FEARG_1,	  ret_dict_any,	f_popup_getpos},
+    {"popup_hide",	1, 1, FEARG_1,	  ret_void,	f_popup_hide},
+    {"popup_locate",	2, 2, 0,	  ret_number,	f_popup_locate},
+    {"popup_menu",	2, 2, FEARG_1,	  ret_number,	f_popup_menu},
+    {"popup_move",	2, 2, FEARG_1,	  ret_void,	f_popup_move},
+    {"popup_notification", 2, 2, FEARG_1, ret_number,	f_popup_notification},
+    {"popup_setoptions", 2, 2, FEARG_1,	  ret_void,	f_popup_setoptions},
+    {"popup_settext",	2, 2, FEARG_1,	  ret_void,	f_popup_settext},
+    {"popup_show",	1, 1, FEARG_1,	  ret_void,	f_popup_show},
 #endif
 #ifdef FEAT_FLOAT
-    {"pow",		2, 2, FEARG_1,	  &t_float,	f_pow},
+    {"pow",		2, 2, FEARG_1,	  ret_float,	f_pow},
 #endif
-    {"prevnonblank",	1, 1, FEARG_1,	  &t_number,	f_prevnonblank},
-    {"printf",		1, 19, FEARG_2,	  &t_string,	f_printf},
+    {"prevnonblank",	1, 1, FEARG_1,	  ret_number,	f_prevnonblank},
+    {"printf",		1, 19, FEARG_2,	  ret_string,	f_printf},
 #ifdef FEAT_JOB_CHANNEL
-    {"prompt_setcallback", 2, 2, FEARG_1, &t_void,	 f_prompt_setcallback},
-    {"prompt_setinterrupt", 2, 2, FEARG_1,&t_void,	 f_prompt_setinterrupt},
-    {"prompt_setprompt", 2, 2, FEARG_1,	  &t_void,	 f_prompt_setprompt},
+    {"prompt_setcallback", 2, 2, FEARG_1, ret_void,	 f_prompt_setcallback},
+    {"prompt_setinterrupt", 2, 2, FEARG_1,ret_void,	 f_prompt_setinterrupt},
+    {"prompt_setprompt", 2, 2, FEARG_1,	  ret_void,	 f_prompt_setprompt},
 #endif
 #ifdef FEAT_PROP_POPUP
-    {"prop_add",	3, 3, FEARG_1,	  &t_void,	f_prop_add},
-    {"prop_clear",	1, 3, FEARG_1,	  &t_void,	f_prop_clear},
-    {"prop_find",	1, 2, FEARG_1,	  &t_dict_any,	f_prop_find},
-    {"prop_list",	1, 2, FEARG_1,	  &t_list_dict_any, f_prop_list},
-    {"prop_remove",	1, 3, FEARG_1,	  &t_number,	f_prop_remove},
-    {"prop_type_add",	2, 2, FEARG_1,	  &t_void,	f_prop_type_add},
-    {"prop_type_change", 2, 2, FEARG_1,	  &t_void,	f_prop_type_change},
-    {"prop_type_delete", 1, 2, FEARG_1,	  &t_void,	f_prop_type_delete},
-    {"prop_type_get",	1, 2, FEARG_1,	  &t_dict_any,	f_prop_type_get},
-    {"prop_type_list",	0, 1, FEARG_1,	  &t_list_string, f_prop_type_list},
+    {"prop_add",	3, 3, FEARG_1,	  ret_void,	f_prop_add},
+    {"prop_clear",	1, 3, FEARG_1,	  ret_void,	f_prop_clear},
+    {"prop_find",	1, 2, FEARG_1,	  ret_dict_any,	f_prop_find},
+    {"prop_list",	1, 2, FEARG_1,	  ret_list_dict_any, f_prop_list},
+    {"prop_remove",	1, 3, FEARG_1,	  ret_number,	f_prop_remove},
+    {"prop_type_add",	2, 2, FEARG_1,	  ret_void,	f_prop_type_add},
+    {"prop_type_change", 2, 2, FEARG_1,	  ret_void,	f_prop_type_change},
+    {"prop_type_delete", 1, 2, FEARG_1,	  ret_void,	f_prop_type_delete},
+    {"prop_type_get",	1, 2, FEARG_1,	  ret_dict_any,	f_prop_type_get},
+    {"prop_type_list",	0, 1, FEARG_1,	  ret_list_string, f_prop_type_list},
 #endif
-    {"pum_getpos",	0, 0, 0,	  &t_dict_number, f_pum_getpos},
-    {"pumvisible",	0, 0, 0,	  &t_number,	f_pumvisible},
+    {"pum_getpos",	0, 0, 0,	  ret_dict_number, f_pum_getpos},
+    {"pumvisible",	0, 0, 0,	  ret_number,	f_pumvisible},
 #ifdef FEAT_PYTHON3
-    {"py3eval",		1, 1, FEARG_1,	  &t_any,	f_py3eval},
+    {"py3eval",		1, 1, FEARG_1,	  ret_any,	f_py3eval},
 #endif
 #ifdef FEAT_PYTHON
-    {"pyeval",		1, 1, FEARG_1,	  &t_any,	f_pyeval},
+    {"pyeval",		1, 1, FEARG_1,	  ret_any,	f_pyeval},
 #endif
 #if defined(FEAT_PYTHON) || defined(FEAT_PYTHON3)
-    {"pyxeval",		1, 1, FEARG_1,	  &t_any,	f_pyxeval},
+    {"pyxeval",		1, 1, FEARG_1,	  ret_any,	f_pyxeval},
 #endif
-    {"rand",		0, 1, FEARG_1,	  &t_number,	f_rand},
-    {"range",		1, 3, FEARG_1,	  &t_list_number, f_range},
-    {"readdir",		1, 2, FEARG_1,	  &t_list_string, f_readdir},
-    {"readfile",	1, 3, FEARG_1,	  &t_any,	f_readfile},
-    {"reg_executing",	0, 0, 0,	  &t_string,	f_reg_executing},
-    {"reg_recording",	0, 0, 0,	  &t_string,	f_reg_recording},
-    {"reltime",		0, 2, FEARG_1,	  &t_list_any,	f_reltime},
+    {"rand",		0, 1, FEARG_1,	  ret_number,	f_rand},
+    {"range",		1, 3, FEARG_1,	  ret_list_number, f_range},
+    {"readdir",		1, 2, FEARG_1,	  ret_list_string, f_readdir},
+    {"readfile",	1, 3, FEARG_1,	  ret_any,	f_readfile},
+    {"reg_executing",	0, 0, 0,	  ret_string,	f_reg_executing},
+    {"reg_recording",	0, 0, 0,	  ret_string,	f_reg_recording},
+    {"reltime",		0, 2, FEARG_1,	  ret_list_any,	f_reltime},
 #ifdef FEAT_FLOAT
-    {"reltimefloat",	1, 1, FEARG_1,	  &t_float,	f_reltimefloat},
+    {"reltimefloat",	1, 1, FEARG_1,	  ret_float,	f_reltimefloat},
 #endif
-    {"reltimestr",	1, 1, FEARG_1,	  &t_string,	f_reltimestr},
-    {"remote_expr",	2, 4, FEARG_1,	  &t_string,	f_remote_expr},
-    {"remote_foreground", 1, 1, FEARG_1,  &t_string,	f_remote_foreground},
-    {"remote_peek",	1, 2, FEARG_1,	  &t_number,	f_remote_peek},
-    {"remote_read",	1, 2, FEARG_1,	  &t_string,	f_remote_read},
-    {"remote_send",	2, 3, FEARG_1,	  &t_string,	f_remote_send},
-    {"remote_startserver", 1, 1, FEARG_1, &t_void,	 f_remote_startserver},
-    {"remove",		2, 3, FEARG_1,	  &t_any,	f_remove},
-    {"rename",		2, 2, FEARG_1,	  &t_number,	f_rename},
-    {"repeat",		2, 2, FEARG_1,	  &t_any,	f_repeat},
-    {"resolve",		1, 1, FEARG_1,	  &t_string,	f_resolve},
-    {"reverse",		1, 1, FEARG_1,	  &t_any,	f_reverse},
+    {"reltimestr",	1, 1, FEARG_1,	  ret_string,	f_reltimestr},
+    {"remote_expr",	2, 4, FEARG_1,	  ret_string,	f_remote_expr},
+    {"remote_foreground", 1, 1, FEARG_1,  ret_string,	f_remote_foreground},
+    {"remote_peek",	1, 2, FEARG_1,	  ret_number,	f_remote_peek},
+    {"remote_read",	1, 2, FEARG_1,	  ret_string,	f_remote_read},
+    {"remote_send",	2, 3, FEARG_1,	  ret_string,	f_remote_send},
+    {"remote_startserver", 1, 1, FEARG_1, ret_void,	 f_remote_startserver},
+    {"remove",		2, 3, FEARG_1,	  ret_any,	f_remove},
+    {"rename",		2, 2, FEARG_1,	  ret_number,	f_rename},
+    {"repeat",		2, 2, FEARG_1,	  ret_any,	f_repeat},
+    {"resolve",		1, 1, FEARG_1,	  ret_string,	f_resolve},
+    {"reverse",		1, 1, FEARG_1,	  ret_any,	f_reverse},
 #ifdef FEAT_FLOAT
-    {"round",		1, 1, FEARG_1,	  &t_float,	f_round},
+    {"round",		1, 1, FEARG_1,	  ret_float,	f_round},
 #endif
 #ifdef FEAT_RUBY
-    {"rubyeval",	1, 1, FEARG_1,	  &t_any,	f_rubyeval},
+    {"rubyeval",	1, 1, FEARG_1,	  ret_any,	f_rubyeval},
 #endif
-    {"screenattr",	2, 2, FEARG_1,	  &t_number,	f_screenattr},
-    {"screenchar",	2, 2, FEARG_1,	  &t_number,	f_screenchar},
-    {"screenchars",	2, 2, FEARG_1,	  &t_list_number, f_screenchars},
-    {"screencol",	0, 0, 0,	  &t_number,	f_screencol},
-    {"screenpos",	3, 3, FEARG_1,	  &t_dict_number, f_screenpos},
-    {"screenrow",	0, 0, 0,	  &t_number,	f_screenrow},
-    {"screenstring",	2, 2, FEARG_1,	  &t_string,	f_screenstring},
-    {"search",		1, 4, FEARG_1,	  &t_number,	f_search},
-    {"searchdecl",	1, 3, FEARG_1,	  &t_number,	f_searchdecl},
-    {"searchpair",	3, 7, 0,	  &t_number,	f_searchpair},
-    {"searchpairpos",	3, 7, 0,	  &t_list_number, f_searchpairpos},
-    {"searchpos",	1, 4, FEARG_1,	  &t_list_number, f_searchpos},
-    {"server2client",	2, 2, FEARG_1,	  &t_number,	f_server2client},
-    {"serverlist",	0, 0, 0,	  &t_string,	f_serverlist},
-    {"setbufline",	3, 3, FEARG_3,	  &t_number,	f_setbufline},
-    {"setbufvar",	3, 3, FEARG_3,	  &t_void,	f_setbufvar},
-    {"setcharsearch",	1, 1, FEARG_1,	  &t_void,	f_setcharsearch},
-    {"setcmdpos",	1, 1, FEARG_1,	  &t_number,	f_setcmdpos},
-    {"setenv",		2, 2, FEARG_2,	  &t_void,	f_setenv},
-    {"setfperm",	2, 2, FEARG_1,	  &t_number,	f_setfperm},
-    {"setline",		2, 2, FEARG_2,	  &t_number,	f_setline},
-    {"setloclist",	2, 4, FEARG_2,	  &t_number,	f_setloclist},
-    {"setmatches",	1, 2, FEARG_1,	  &t_number,	f_setmatches},
-    {"setpos",		2, 2, FEARG_2,	  &t_number,	f_setpos},
-    {"setqflist",	1, 3, FEARG_1,	  &t_number,	f_setqflist},
-    {"setreg",		2, 3, FEARG_2,	  &t_number,	f_setreg},
-    {"settabvar",	3, 3, FEARG_3,	  &t_void,	f_settabvar},
-    {"settabwinvar",	4, 4, FEARG_4,	  &t_void,	f_settabwinvar},
-    {"settagstack",	2, 3, FEARG_2,	  &t_number,	f_settagstack},
-    {"setwinvar",	3, 3, FEARG_3,	  &t_void,	f_setwinvar},
+    {"screenattr",	2, 2, FEARG_1,	  ret_number,	f_screenattr},
+    {"screenchar",	2, 2, FEARG_1,	  ret_number,	f_screenchar},
+    {"screenchars",	2, 2, FEARG_1,	  ret_list_number, f_screenchars},
+    {"screencol",	0, 0, 0,	  ret_number,	f_screencol},
+    {"screenpos",	3, 3, FEARG_1,	  ret_dict_number, f_screenpos},
+    {"screenrow",	0, 0, 0,	  ret_number,	f_screenrow},
+    {"screenstring",	2, 2, FEARG_1,	  ret_string,	f_screenstring},
+    {"search",		1, 4, FEARG_1,	  ret_number,	f_search},
+    {"searchdecl",	1, 3, FEARG_1,	  ret_number,	f_searchdecl},
+    {"searchpair",	3, 7, 0,	  ret_number,	f_searchpair},
+    {"searchpairpos",	3, 7, 0,	  ret_list_number, f_searchpairpos},
+    {"searchpos",	1, 4, FEARG_1,	  ret_list_number, f_searchpos},
+    {"server2client",	2, 2, FEARG_1,	  ret_number,	f_server2client},
+    {"serverlist",	0, 0, 0,	  ret_string,	f_serverlist},
+    {"setbufline",	3, 3, FEARG_3,	  ret_number,	f_setbufline},
+    {"setbufvar",	3, 3, FEARG_3,	  ret_void,	f_setbufvar},
+    {"setcharsearch",	1, 1, FEARG_1,	  ret_void,	f_setcharsearch},
+    {"setcmdpos",	1, 1, FEARG_1,	  ret_number,	f_setcmdpos},
+    {"setenv",		2, 2, FEARG_2,	  ret_void,	f_setenv},
+    {"setfperm",	2, 2, FEARG_1,	  ret_number,	f_setfperm},
+    {"setline",		2, 2, FEARG_2,	  ret_number,	f_setline},
+    {"setloclist",	2, 4, FEARG_2,	  ret_number,	f_setloclist},
+    {"setmatches",	1, 2, FEARG_1,	  ret_number,	f_setmatches},
+    {"setpos",		2, 2, FEARG_2,	  ret_number,	f_setpos},
+    {"setqflist",	1, 3, FEARG_1,	  ret_number,	f_setqflist},
+    {"setreg",		2, 3, FEARG_2,	  ret_number,	f_setreg},
+    {"settabvar",	3, 3, FEARG_3,	  ret_void,	f_settabvar},
+    {"settabwinvar",	4, 4, FEARG_4,	  ret_void,	f_settabwinvar},
+    {"settagstack",	2, 3, FEARG_2,	  ret_number,	f_settagstack},
+    {"setwinvar",	3, 3, FEARG_3,	  ret_void,	f_setwinvar},
 #ifdef FEAT_CRYPT
-    {"sha256",		1, 1, FEARG_1,	  &t_string,	f_sha256},
+    {"sha256",		1, 1, FEARG_1,	  ret_string,	f_sha256},
 #endif
-    {"shellescape",	1, 2, FEARG_1,	  &t_string,	f_shellescape},
-    {"shiftwidth",	0, 1, FEARG_1,	  &t_number,	f_shiftwidth},
+    {"shellescape",	1, 2, FEARG_1,	  ret_string,	f_shellescape},
+    {"shiftwidth",	0, 1, FEARG_1,	  ret_number,	f_shiftwidth},
 #ifdef FEAT_SIGNS
-    {"sign_define",	1, 2, FEARG_1,	  &t_any,	f_sign_define},
-    {"sign_getdefined",	0, 1, FEARG_1,	  &t_list_dict_any, f_sign_getdefined},
-    {"sign_getplaced",	0, 2, FEARG_1,	  &t_list_dict_any, f_sign_getplaced},
-    {"sign_jump",	3, 3, FEARG_1,	  &t_number,	f_sign_jump},
-    {"sign_place",	4, 5, FEARG_1,	  &t_number,	f_sign_place},
-    {"sign_placelist",	1, 1, FEARG_1,	  &t_list_number, f_sign_placelist},
-    {"sign_undefine",	0, 1, FEARG_1,	  &t_number,	f_sign_undefine},
-    {"sign_unplace",	1, 2, FEARG_1,	  &t_number,	f_sign_unplace},
-    {"sign_unplacelist", 1, 2, FEARG_1,	  &t_list_number, f_sign_unplacelist},
+    {"sign_define",	1, 2, FEARG_1,	  ret_any,	f_sign_define},
+    {"sign_getdefined",	0, 1, FEARG_1,	  ret_list_dict_any, f_sign_getdefined},
+    {"sign_getplaced",	0, 2, FEARG_1,	  ret_list_dict_any, f_sign_getplaced},
+    {"sign_jump",	3, 3, FEARG_1,	  ret_number,	f_sign_jump},
+    {"sign_place",	4, 5, FEARG_1,	  ret_number,	f_sign_place},
+    {"sign_placelist",	1, 1, FEARG_1,	  ret_list_number, f_sign_placelist},
+    {"sign_undefine",	0, 1, FEARG_1,	  ret_number,	f_sign_undefine},
+    {"sign_unplace",	1, 2, FEARG_1,	  ret_number,	f_sign_unplace},
+    {"sign_unplacelist", 1, 2, FEARG_1,	  ret_list_number, f_sign_unplacelist},
 #endif
-    {"simplify",	1, 1, 0,	  &t_string,	f_simplify},
+    {"simplify",	1, 1, 0,	  ret_string,	f_simplify},
 #ifdef FEAT_FLOAT
-    {"sin",		1, 1, FEARG_1,	  &t_float,	f_sin},
-    {"sinh",		1, 1, FEARG_1,	  &t_float,	f_sinh},
+    {"sin",		1, 1, FEARG_1,	  ret_float,	f_sin},
+    {"sinh",		1, 1, FEARG_1,	  ret_float,	f_sinh},
 #endif
-    {"sort",		1, 3, FEARG_1,	  &t_list_any,	f_sort},
+    {"sort",		1, 3, FEARG_1,	  ret_list_any,	f_sort},
 #ifdef FEAT_SOUND
-    {"sound_clear",	0, 0, 0,	  &t_void,	f_sound_clear},
-    {"sound_playevent",	1, 2, FEARG_1,	  &t_number,	f_sound_playevent},
-    {"sound_playfile",	1, 2, FEARG_1,	  &t_number,	f_sound_playfile},
-    {"sound_stop",	1, 1, FEARG_1,	  &t_void,	f_sound_stop},
+    {"sound_clear",	0, 0, 0,	  ret_void,	f_sound_clear},
+    {"sound_playevent",	1, 2, FEARG_1,	  ret_number,	f_sound_playevent},
+    {"sound_playfile",	1, 2, FEARG_1,	  ret_number,	f_sound_playfile},
+    {"sound_stop",	1, 1, FEARG_1,	  ret_void,	f_sound_stop},
 #endif
-    {"soundfold",	1, 1, FEARG_1,	  &t_string,	f_soundfold},
-    {"spellbadword",	0, 1, FEARG_1,	  &t_list_string, f_spellbadword},
-    {"spellsuggest",	1, 3, FEARG_1,	  &t_list_string, f_spellsuggest},
-    {"split",		1, 3, FEARG_1,	  &t_list_string, f_split},
+    {"soundfold",	1, 1, FEARG_1,	  ret_string,	f_soundfold},
+    {"spellbadword",	0, 1, FEARG_1,	  ret_list_string, f_spellbadword},
+    {"spellsuggest",	1, 3, FEARG_1,	  ret_list_string, f_spellsuggest},
+    {"split",		1, 3, FEARG_1,	  ret_list_string, f_split},
 #ifdef FEAT_FLOAT
-    {"sqrt",		1, 1, FEARG_1,	  &t_float,	f_sqrt},
+    {"sqrt",		1, 1, FEARG_1,	  ret_float,	f_sqrt},
 #endif
-    {"srand",		0, 1, FEARG_1,	  &t_list_number, f_srand},
-    {"state",		0, 1, FEARG_1,	  &t_string,	f_state},
+    {"srand",		0, 1, FEARG_1,	  ret_list_number, f_srand},
+    {"state",		0, 1, FEARG_1,	  ret_string,	f_state},
 #ifdef FEAT_FLOAT
-    {"str2float",	1, 1, FEARG_1,	  &t_float,	f_str2float},
+    {"str2float",	1, 1, FEARG_1,	  ret_float,	f_str2float},
 #endif
-    {"str2list",	1, 2, FEARG_1,	  &t_list_number, f_str2list},
-    {"str2nr",		1, 3, FEARG_1,	  &t_number,	f_str2nr},
-    {"strcharpart",	2, 3, FEARG_1,	  &t_string,	f_strcharpart},
-    {"strchars",	1, 2, FEARG_1,	  &t_number,	f_strchars},
-    {"strdisplaywidth",	1, 2, FEARG_1,	  &t_number,	f_strdisplaywidth},
+    {"str2list",	1, 2, FEARG_1,	  ret_list_number, f_str2list},
+    {"str2nr",		1, 3, FEARG_1,	  ret_number,	f_str2nr},
+    {"strcharpart",	2, 3, FEARG_1,	  ret_string,	f_strcharpart},
+    {"strchars",	1, 2, FEARG_1,	  ret_number,	f_strchars},
+    {"strdisplaywidth",	1, 2, FEARG_1,	  ret_number,	f_strdisplaywidth},
 #ifdef HAVE_STRFTIME
-    {"strftime",	1, 2, FEARG_1,	  &t_string,	f_strftime},
+    {"strftime",	1, 2, FEARG_1,	  ret_string,	f_strftime},
 #endif
-    {"strgetchar",	2, 2, FEARG_1,	  &t_number,	f_strgetchar},
-    {"stridx",		2, 3, FEARG_1,	  &t_number,	f_stridx},
-    {"string",		1, 1, FEARG_1,	  &t_string,	f_string},
-    {"strlen",		1, 1, FEARG_1,	  &t_number,	f_strlen},
-    {"strpart",		2, 3, FEARG_1,	  &t_string,	f_strpart},
+    {"strgetchar",	2, 2, FEARG_1,	  ret_number,	f_strgetchar},
+    {"stridx",		2, 3, FEARG_1,	  ret_number,	f_stridx},
+    {"string",		1, 1, FEARG_1,	  ret_string,	f_string},
+    {"strlen",		1, 1, FEARG_1,	  ret_number,	f_strlen},
+    {"strpart",		2, 3, FEARG_1,	  ret_string,	f_strpart},
 #ifdef HAVE_STRPTIME
-    {"strptime",	2, 2, FEARG_1,	  &t_number,	f_strptime},
+    {"strptime",	2, 2, FEARG_1,	  ret_number,	f_strptime},
 #endif
-    {"strridx",		2, 3, FEARG_1,	  &t_number,	f_strridx},
-    {"strtrans",	1, 1, FEARG_1,	  &t_string,	f_strtrans},
-    {"strwidth",	1, 1, FEARG_1,	  &t_number,	f_strwidth},
-    {"submatch",	1, 2, FEARG_1,	  &t_string,	f_submatch},
-    {"substitute",	4, 4, FEARG_1,	  &t_string,	f_substitute},
-    {"swapinfo",	1, 1, FEARG_1,	  &t_dict_any,	f_swapinfo},
-    {"swapname",	1, 1, FEARG_1,	  &t_string,	f_swapname},
-    {"synID",		3, 3, 0,	  &t_number,	f_synID},
-    {"synIDattr",	2, 3, FEARG_1,	  &t_string,	f_synIDattr},
-    {"synIDtrans",	1, 1, FEARG_1,	  &t_number,	f_synIDtrans},
-    {"synconcealed",	2, 2, 0,	  &t_list_any,	f_synconcealed},
-    {"synstack",	2, 2, 0,	  &t_list_number, f_synstack},
-    {"system",		1, 2, FEARG_1,	  &t_string,	f_system},
-    {"systemlist",	1, 2, FEARG_1,	  &t_list_string, f_systemlist},
-    {"tabpagebuflist",	0, 1, FEARG_1,	  &t_list_number, f_tabpagebuflist},
-    {"tabpagenr",	0, 1, 0,	  &t_number,	f_tabpagenr},
-    {"tabpagewinnr",	1, 2, FEARG_1,	  &t_number,	f_tabpagewinnr},
-    {"tagfiles",	0, 0, 0,	  &t_list_string, f_tagfiles},
-    {"taglist",		1, 2, FEARG_1,	  &t_list_dict_any, f_taglist},
+    {"strridx",		2, 3, FEARG_1,	  ret_number,	f_strridx},
+    {"strtrans",	1, 1, FEARG_1,	  ret_string,	f_strtrans},
+    {"strwidth",	1, 1, FEARG_1,	  ret_number,	f_strwidth},
+    {"submatch",	1, 2, FEARG_1,	  ret_string,	f_submatch},
+    {"substitute",	4, 4, FEARG_1,	  ret_string,	f_substitute},
+    {"swapinfo",	1, 1, FEARG_1,	  ret_dict_any,	f_swapinfo},
+    {"swapname",	1, 1, FEARG_1,	  ret_string,	f_swapname},
+    {"synID",		3, 3, 0,	  ret_number,	f_synID},
+    {"synIDattr",	2, 3, FEARG_1,	  ret_string,	f_synIDattr},
+    {"synIDtrans",	1, 1, FEARG_1,	  ret_number,	f_synIDtrans},
+    {"synconcealed",	2, 2, 0,	  ret_list_any,	f_synconcealed},
+    {"synstack",	2, 2, 0,	  ret_list_number, f_synstack},
+    {"system",		1, 2, FEARG_1,	  ret_string,	f_system},
+    {"systemlist",	1, 2, FEARG_1,	  ret_list_string, f_systemlist},
+    {"tabpagebuflist",	0, 1, FEARG_1,	  ret_list_number, f_tabpagebuflist},
+    {"tabpagenr",	0, 1, 0,	  ret_number,	f_tabpagenr},
+    {"tabpagewinnr",	1, 2, FEARG_1,	  ret_number,	f_tabpagewinnr},
+    {"tagfiles",	0, 0, 0,	  ret_list_string, f_tagfiles},
+    {"taglist",		1, 2, FEARG_1,	  ret_list_dict_any, f_taglist},
 #ifdef FEAT_FLOAT
-    {"tan",		1, 1, FEARG_1,	  &t_float,	f_tan},
-    {"tanh",		1, 1, FEARG_1,	  &t_float,	f_tanh},
+    {"tan",		1, 1, FEARG_1,	  ret_float,	f_tan},
+    {"tanh",		1, 1, FEARG_1,	  ret_float,	f_tanh},
 #endif
-    {"tempname",	0, 0, 0,	  &t_string,	f_tempname},
+    {"tempname",	0, 0, 0,	  ret_string,	f_tempname},
 #ifdef FEAT_TERMINAL
-    {"term_dumpdiff",	2, 3, FEARG_1,	  &t_number,	f_term_dumpdiff},
-    {"term_dumpload",	1, 2, FEARG_1,	  &t_number,	f_term_dumpload},
-    {"term_dumpwrite",	2, 3, FEARG_2,	  &t_void,	f_term_dumpwrite},
-    {"term_getaltscreen", 1, 1, FEARG_1,  &t_number,	f_term_getaltscreen},
+    {"term_dumpdiff",	2, 3, FEARG_1,	  ret_number,	f_term_dumpdiff},
+    {"term_dumpload",	1, 2, FEARG_1,	  ret_number,	f_term_dumpload},
+    {"term_dumpwrite",	2, 3, FEARG_2,	  ret_void,	f_term_dumpwrite},
+    {"term_getaltscreen", 1, 1, FEARG_1,  ret_number,	f_term_getaltscreen},
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-    {"term_getansicolors", 1, 1, FEARG_1, &t_list_string, f_term_getansicolors},
+    {"term_getansicolors", 1, 1, FEARG_1, ret_list_string, f_term_getansicolors},
 # endif
-    {"term_getattr",	2, 2, FEARG_1,	  &t_number,	f_term_getattr},
-    {"term_getcursor",	1, 1, FEARG_1,	  &t_list_any,	f_term_getcursor},
-    {"term_getjob",	1, 1, FEARG_1,	  &t_job,	f_term_getjob},
-    {"term_getline",	2, 2, FEARG_1,	  &t_string,	f_term_getline},
-    {"term_getscrolled", 1, 1, FEARG_1,	  &t_number,	f_term_getscrolled},
-    {"term_getsize",	1, 1, FEARG_1,	  &t_list_number, f_term_getsize},
-    {"term_getstatus",	1, 1, FEARG_1,	  &t_string,	f_term_getstatus},
-    {"term_gettitle",	1, 1, FEARG_1,	  &t_string,	f_term_gettitle},
-    {"term_gettty",	1, 2, FEARG_1,	  &t_string,	f_term_gettty},
-    {"term_list",	0, 0, 0,	  &t_list_number, f_term_list},
-    {"term_scrape",	2, 2, FEARG_1,	  &t_list_dict_any, f_term_scrape},
-    {"term_sendkeys",	2, 2, FEARG_1,	  &t_void,	f_term_sendkeys},
+    {"term_getattr",	2, 2, FEARG_1,	  ret_number,	f_term_getattr},
+    {"term_getcursor",	1, 1, FEARG_1,	  ret_list_any,	f_term_getcursor},
+    {"term_getjob",	1, 1, FEARG_1,	  ret_job,	f_term_getjob},
+    {"term_getline",	2, 2, FEARG_1,	  ret_string,	f_term_getline},
+    {"term_getscrolled", 1, 1, FEARG_1,	  ret_number,	f_term_getscrolled},
+    {"term_getsize",	1, 1, FEARG_1,	  ret_list_number, f_term_getsize},
+    {"term_getstatus",	1, 1, FEARG_1,	  ret_string,	f_term_getstatus},
+    {"term_gettitle",	1, 1, FEARG_1,	  ret_string,	f_term_gettitle},
+    {"term_gettty",	1, 2, FEARG_1,	  ret_string,	f_term_gettty},
+    {"term_list",	0, 0, 0,	  ret_list_number, f_term_list},
+    {"term_scrape",	2, 2, FEARG_1,	  ret_list_dict_any, f_term_scrape},
+    {"term_sendkeys",	2, 2, FEARG_1,	  ret_void,	f_term_sendkeys},
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
-    {"term_setansicolors", 2, 2, FEARG_1, &t_void,	f_term_setansicolors},
+    {"term_setansicolors", 2, 2, FEARG_1, ret_void,	f_term_setansicolors},
 # endif
-    {"term_setapi",	2, 2, FEARG_1,	  &t_void,	f_term_setapi},
-    {"term_setkill",	2, 2, FEARG_1,	  &t_void,	f_term_setkill},
-    {"term_setrestore",	2, 2, FEARG_1,	  &t_void,	f_term_setrestore},
-    {"term_setsize",	3, 3, FEARG_1,	  &t_void,	f_term_setsize},
-    {"term_start",	1, 2, FEARG_1,	  &t_number,	f_term_start},
-    {"term_wait",	1, 2, FEARG_1,	  &t_void,	f_term_wait},
+    {"term_setapi",	2, 2, FEARG_1,	  ret_void,	f_term_setapi},
+    {"term_setkill",	2, 2, FEARG_1,	  ret_void,	f_term_setkill},
+    {"term_setrestore",	2, 2, FEARG_1,	  ret_void,	f_term_setrestore},
+    {"term_setsize",	3, 3, FEARG_1,	  ret_void,	f_term_setsize},
+    {"term_start",	1, 2, FEARG_1,	  ret_number,	f_term_start},
+    {"term_wait",	1, 2, FEARG_1,	  ret_void,	f_term_wait},
 #endif
-    {"test_alloc_fail",	3, 3, FEARG_1,	  &t_void,	f_test_alloc_fail},
-    {"test_autochdir",	0, 0, 0,	  &t_void,	f_test_autochdir},
-    {"test_feedinput",	1, 1, FEARG_1,	  &t_void,	f_test_feedinput},
-    {"test_garbagecollect_now",	0, 0, 0,  &t_void,	f_test_garbagecollect_now},
-    {"test_garbagecollect_soon", 0, 0, 0, &t_void,	f_test_garbagecollect_soon},
-    {"test_getvalue",	1, 1, FEARG_1,	  &t_number,	f_test_getvalue},
-    {"test_ignore_error", 1, 1, FEARG_1,  &t_void,	f_test_ignore_error},
-    {"test_null_blob",	0, 0, 0,	  &t_blob,	f_test_null_blob},
+    {"test_alloc_fail",	3, 3, FEARG_1,	  ret_void,	f_test_alloc_fail},
+    {"test_autochdir",	0, 0, 0,	  ret_void,	f_test_autochdir},
+    {"test_feedinput",	1, 1, FEARG_1,	  ret_void,	f_test_feedinput},
+    {"test_garbagecollect_now",	0, 0, 0,  ret_void,	f_test_garbagecollect_now},
+    {"test_garbagecollect_soon", 0, 0, 0, ret_void,	f_test_garbagecollect_soon},
+    {"test_getvalue",	1, 1, FEARG_1,	  ret_number,	f_test_getvalue},
+    {"test_ignore_error", 1, 1, FEARG_1,  ret_void,	f_test_ignore_error},
+    {"test_null_blob",	0, 0, 0,	  ret_blob,	f_test_null_blob},
 #ifdef FEAT_JOB_CHANNEL
-    {"test_null_channel", 0, 0, 0,	  &t_channel,	f_test_null_channel},
+    {"test_null_channel", 0, 0, 0,	  ret_channel,	f_test_null_channel},
 #endif
-    {"test_null_dict",	0, 0, 0,	  &t_dict_any,	f_test_null_dict},
+    {"test_null_dict",	0, 0, 0,	  ret_dict_any,	f_test_null_dict},
 #ifdef FEAT_JOB_CHANNEL
-    {"test_null_job",	0, 0, 0,	  &t_job,	f_test_null_job},
+    {"test_null_job",	0, 0, 0,	  ret_job,	f_test_null_job},
 #endif
-    {"test_null_list",	0, 0, 0,	  &t_list_any,	f_test_null_list},
-    {"test_null_partial", 0, 0, 0,	  &t_partial_void, f_test_null_partial},
-    {"test_null_string", 0, 0, 0,	  &t_string,	f_test_null_string},
-    {"test_option_not_set", 1, 1, FEARG_1,&t_void,	 f_test_option_not_set},
-    {"test_override",	2, 2, FEARG_2,	  &t_void,	f_test_override},
-    {"test_refcount",	1, 1, FEARG_1,	  &t_number,	f_test_refcount},
+    {"test_null_list",	0, 0, 0,	  ret_list_any,	f_test_null_list},
+    {"test_null_partial", 0, 0, 0,	  ret_partial_void, f_test_null_partial},
+    {"test_null_string", 0, 0, 0,	  ret_string,	f_test_null_string},
+    {"test_option_not_set", 1, 1, FEARG_1,ret_void,	 f_test_option_not_set},
+    {"test_override",	2, 2, FEARG_2,	  ret_void,	f_test_override},
+    {"test_refcount",	1, 1, FEARG_1,	  ret_number,	f_test_refcount},
 #ifdef FEAT_GUI
-    {"test_scrollbar",	3, 3, FEARG_2,	  &t_void,	f_test_scrollbar},
+    {"test_scrollbar",	3, 3, FEARG_2,	  ret_void,	f_test_scrollbar},
 #endif
-    {"test_setmouse",	2, 2, 0,	  &t_void,	f_test_setmouse},
-    {"test_settime",	1, 1, FEARG_1,	  &t_void,	f_test_settime},
-    {"test_srand_seed",	0, 1, FEARG_1,	  &t_void,	f_test_srand_seed},
-    {"test_unknown",	0, 0, 0,	  &t_any,	f_test_unknown},
-    {"test_void",	0, 0, 0,	  &t_any,	f_test_void},
+    {"test_setmouse",	2, 2, 0,	  ret_void,	f_test_setmouse},
+    {"test_settime",	1, 1, FEARG_1,	  ret_void,	f_test_settime},
+    {"test_srand_seed",	0, 1, FEARG_1,	  ret_void,	f_test_srand_seed},
+    {"test_unknown",	0, 0, 0,	  ret_any,	f_test_unknown},
+    {"test_void",	0, 0, 0,	  ret_any,	f_test_void},
 #ifdef FEAT_TIMERS
-    {"timer_info",	0, 1, FEARG_1,	  &t_list_dict_any, f_timer_info},
-    {"timer_pause",	2, 2, FEARG_1,	  &t_void,	f_timer_pause},
-    {"timer_start",	2, 3, FEARG_1,	  &t_number,	f_timer_start},
-    {"timer_stop",	1, 1, FEARG_1,	  &t_void,	f_timer_stop},
-    {"timer_stopall",	0, 0, 0,	  &t_void,	f_timer_stopall},
+    {"timer_info",	0, 1, FEARG_1,	  ret_list_dict_any, f_timer_info},
+    {"timer_pause",	2, 2, FEARG_1,	  ret_void,	f_timer_pause},
+    {"timer_start",	2, 3, FEARG_1,	  ret_number,	f_timer_start},
+    {"timer_stop",	1, 1, FEARG_1,	  ret_void,	f_timer_stop},
+    {"timer_stopall",	0, 0, 0,	  ret_void,	f_timer_stopall},
 #endif
-    {"tolower",		1, 1, FEARG_1,	  &t_string,	f_tolower},
-    {"toupper",		1, 1, FEARG_1,	  &t_string,	f_toupper},
-    {"tr",		3, 3, FEARG_1,	  &t_string,	f_tr},
-    {"trim",		1, 2, FEARG_1,	  &t_string,	f_trim},
+    {"tolower",		1, 1, FEARG_1,	  ret_string,	f_tolower},
+    {"toupper",		1, 1, FEARG_1,	  ret_string,	f_toupper},
+    {"tr",		3, 3, FEARG_1,	  ret_string,	f_tr},
+    {"trim",		1, 2, FEARG_1,	  ret_string,	f_trim},
 #ifdef FEAT_FLOAT
-    {"trunc",		1, 1, FEARG_1,	  &t_float,	f_trunc},
+    {"trunc",		1, 1, FEARG_1,	  ret_float,	f_trunc},
 #endif
-    {"type",		1, 1, FEARG_1,	  &t_number,	f_type},
-    {"undofile",	1, 1, FEARG_1,	  &t_string,	f_undofile},
-    {"undotree",	0, 0, 0,	  &t_dict_any,	f_undotree},
-    {"uniq",		1, 3, FEARG_1,	  &t_list_any,	f_uniq},
-    {"values",		1, 1, FEARG_1,	  &t_list_any,	f_values},
-    {"virtcol",		1, 1, FEARG_1,	  &t_number,	f_virtcol},
-    {"visualmode",	0, 1, 0,	  &t_string,	f_visualmode},
-    {"wildmenumode",	0, 0, 0,	  &t_number,	f_wildmenumode},
-    {"win_execute",	2, 3, FEARG_2,	  &t_string,	f_win_execute},
-    {"win_findbuf",	1, 1, FEARG_1,	  &t_list_number, f_win_findbuf},
-    {"win_getid",	0, 2, FEARG_1,	  &t_number,	f_win_getid},
-    {"win_gettype",	0, 1, FEARG_1,    &t_string,	f_win_gettype},
-    {"win_gotoid",	1, 1, FEARG_1,	  &t_number,	f_win_gotoid},
-    {"win_id2tabwin",	1, 1, FEARG_1,	  &t_list_number, f_win_id2tabwin},
-    {"win_id2win",	1, 1, FEARG_1,	  &t_number,	f_win_id2win},
-    {"win_screenpos",	1, 1, FEARG_1,	  &t_list_number, f_win_screenpos},
-    {"win_splitmove",   2, 3, FEARG_1,    &t_number,	f_win_splitmove},
-    {"winbufnr",	1, 1, FEARG_1,	  &t_number,	f_winbufnr},
-    {"wincol",		0, 0, 0,	  &t_number,	f_wincol},
-    {"windowsversion",	0, 0, 0,	  &t_string,	f_windowsversion},
-    {"winheight",	1, 1, FEARG_1,	  &t_number,	f_winheight},
-    {"winlayout",	0, 1, FEARG_1,	  &t_list_any,	f_winlayout},
-    {"winline",		0, 0, 0,	  &t_number,	f_winline},
-    {"winnr",		0, 1, FEARG_1,	  &t_number,	f_winnr},
-    {"winrestcmd",	0, 0, 0,	  &t_string,	f_winrestcmd},
-    {"winrestview",	1, 1, FEARG_1,	  &t_void,	f_winrestview},
-    {"winsaveview",	0, 0, 0,	  &t_dict_any,	f_winsaveview},
-    {"winwidth",	1, 1, FEARG_1,	  &t_number,	f_winwidth},
-    {"wordcount",	0, 0, 0,	  &t_dict_number, f_wordcount},
-    {"writefile",	2, 3, FEARG_1,	  &t_number,	f_writefile},
-    {"xor",		2, 2, FEARG_1,	  &t_number,	f_xor},
+    {"type",		1, 1, FEARG_1,	  ret_number,	f_type},
+    {"undofile",	1, 1, FEARG_1,	  ret_string,	f_undofile},
+    {"undotree",	0, 0, 0,	  ret_dict_any,	f_undotree},
+    {"uniq",		1, 3, FEARG_1,	  ret_list_any,	f_uniq},
+    {"values",		1, 1, FEARG_1,	  ret_list_any,	f_values},
+    {"virtcol",		1, 1, FEARG_1,	  ret_number,	f_virtcol},
+    {"visualmode",	0, 1, 0,	  ret_string,	f_visualmode},
+    {"wildmenumode",	0, 0, 0,	  ret_number,	f_wildmenumode},
+    {"win_execute",	2, 3, FEARG_2,	  ret_string,	f_win_execute},
+    {"win_findbuf",	1, 1, FEARG_1,	  ret_list_number, f_win_findbuf},
+    {"win_getid",	0, 2, FEARG_1,	  ret_number,	f_win_getid},
+    {"win_gettype",	0, 1, FEARG_1,    ret_string,	f_win_gettype},
+    {"win_gotoid",	1, 1, FEARG_1,	  ret_number,	f_win_gotoid},
+    {"win_id2tabwin",	1, 1, FEARG_1,	  ret_list_number, f_win_id2tabwin},
+    {"win_id2win",	1, 1, FEARG_1,	  ret_number,	f_win_id2win},
+    {"win_screenpos",	1, 1, FEARG_1,	  ret_list_number, f_win_screenpos},
+    {"win_splitmove",   2, 3, FEARG_1,    ret_number,	f_win_splitmove},
+    {"winbufnr",	1, 1, FEARG_1,	  ret_number,	f_winbufnr},
+    {"wincol",		0, 0, 0,	  ret_number,	f_wincol},
+    {"windowsversion",	0, 0, 0,	  ret_string,	f_windowsversion},
+    {"winheight",	1, 1, FEARG_1,	  ret_number,	f_winheight},
+    {"winlayout",	0, 1, FEARG_1,	  ret_list_any,	f_winlayout},
+    {"winline",		0, 0, 0,	  ret_number,	f_winline},
+    {"winnr",		0, 1, FEARG_1,	  ret_number,	f_winnr},
+    {"winrestcmd",	0, 0, 0,	  ret_string,	f_winrestcmd},
+    {"winrestview",	1, 1, FEARG_1,	  ret_void,	f_winrestview},
+    {"winsaveview",	0, 0, 0,	  ret_dict_any,	f_winsaveview},
+    {"winwidth",	1, 1, FEARG_1,	  ret_number,	f_winwidth},
+    {"wordcount",	0, 0, 0,	  ret_dict_number, f_wordcount},
+    {"writefile",	2, 3, FEARG_1,	  ret_number,	f_writefile},
+    {"xor",		2, 2, FEARG_1,	  ret_number,	f_xor},
 };
 
 /*
@@ -963,13 +1049,9 @@ internal_func_name(int idx)
 }
 
     type_T *
-internal_func_ret_type(int idx, int argcount)
+internal_func_ret_type(int idx, int argcount, type_T **argtypes)
 {
-    funcentry_T *fe = &global_functions[idx];
-
-    if (fe->f_func == f_getline)
-	return argcount == 1 ? &t_string : &t_list_string;
-    return fe->f_rettype;
+    return global_functions[idx].f_retfunc(argcount, argtypes);
 }
 
 /*
@@ -2716,6 +2798,14 @@ theend:
 f_funcref(typval_T *argvars, typval_T *rettv)
 {
     common_function(argvars, rettv, TRUE);
+}
+
+    static type_T *
+ret_f_function(int argcount, type_T **argtypes UNUSED)
+{
+    if (argcount == 1 && argtypes[0]->tt_type == VAR_STRING)
+	return &t_func_any;
+    return &t_partial_void;
 }
 
 /*

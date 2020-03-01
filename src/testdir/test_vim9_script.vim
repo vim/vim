@@ -55,7 +55,12 @@ def Test_assignment()
 
   if has('channel')
     let chan1: channel
+    let job1: job
   endif
+  if has('float')
+    let float1: float = 3.4
+  endif
+  let party: partial = funcref('Test_syntax')
 
   g:newvar = 'new'
   assert_equal('new', g:newvar)

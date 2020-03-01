@@ -992,6 +992,8 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount)
 {
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
+    type_T	*argtypes[MAX_FUNC_ARGS];
+    int		i;
 
     if (check_internal_func(func_idx, argcount) == FAIL)
 	return FAIL;
@@ -1001,11 +1003,14 @@ generate_BCALL(cctx_T *cctx, int func_idx, int argcount)
     isn->isn_arg.bfunc.cbf_idx = func_idx;
     isn->isn_arg.bfunc.cbf_argcount = argcount;
 
+    for (i = 0; i < argcount; ++i)
+	argtypes[i] = ((type_T **)stack->ga_data)[stack->ga_len - argcount + i];
+
     stack->ga_len -= argcount; // drop the arguments
     if (ga_grow(stack, 1) == FAIL)
 	return FAIL;
     ((type_T **)stack->ga_data)[stack->ga_len] =
-				    internal_func_ret_type(func_idx, argcount);
+			  internal_func_ret_type(func_idx, argcount, argtypes);
     ++stack->ga_len;	    // add return value
 
     return OK;
@@ -1374,7 +1379,7 @@ parse_type(char_u **arg, garray_T *type_list)
 	    }
 	    break;
 	case 'p':
-	    if (len == 4 && STRNCMP(*arg, "partial", len) == 0)
+	    if (len == 7 && STRNCMP(*arg, "partial", len) == 0)
 	    {
 		*arg += len;
 		// TODO: arguments and return type
