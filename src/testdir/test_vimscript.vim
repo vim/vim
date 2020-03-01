@@ -1165,6 +1165,8 @@ func Test_type()
     call assert_equal(v:t_none, type(v:none))
     call assert_equal(v:t_none, type(v:null))
 
+    call assert_fails("call type(test_void())", 'E685:')
+    call assert_fails("call type(test_unknown())", 'E685:')
 
     call assert_equal(0, 0 + v:false)
     call assert_equal(1, 0 + v:true)

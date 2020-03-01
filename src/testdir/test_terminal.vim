@@ -781,7 +781,8 @@ func Test_terminal_special_chars()
   call writefile(['x'], 'Xdir with spaces/quoted"file')
   term ls Xdir\ with\ spaces/quoted\"file
   call WaitForAssert({-> assert_match('quoted"file', term_getline('', 1))})
-  call term_wait('')
+  " make sure the job has finished
+  call WaitForAssert({-> assert_match('finish', term_getstatus(bufnr()))})
 
   call delete('Xdir with spaces', 'rf')
   bwipe
@@ -2338,29 +2339,28 @@ func Test_terminal_in_popup()
 	\ 'hi PopTerm ctermbg=grey',
 	\ 'func OpenTerm(setColor)',
 	\ "  let s:buf = term_start('" .. cmd .. " Xtext', #{hidden: 1, term_finish: 'close'})",
-	\ '  let s:winid = popup_create(s:buf, #{minwidth: 45, minheight: 7, border: [], drag: 1, resize: 1})',
+	\ '  let g:winid = popup_create(s:buf, #{minwidth: 45, minheight: 7, border: [], drag: 1, resize: 1})',
 	\ '  if a:setColor',
-	\ '    call win_execute(s:winid, "set wincolor=PopTerm")',
+	\ '    call win_execute(g:winid, "set wincolor=PopTerm")',
 	\ '  endif',
 	\ 'endfunc',
-	\ 'call OpenTerm(0)',
 	\ 'func HidePopup()',
-	\ '  call popup_hide(s:winid)',
+	\ '  call popup_hide(g:winid)',
 	\ 'endfunc',
 	\ 'func ClosePopup()',
-	\ '  call popup_close(s:winid)',
+	\ '  call popup_close(g:winid)',
 	\ 'endfunc',
 	\ 'func ReopenPopup()',
 	\ '  call popup_create(s:buf, #{minwidth: 40, minheight: 6, border: []})',
 	\ 'endfunc',
-	\ 'sleep 10m',
-	\ 'redraw',
-	\ 'echo getwinvar(s:winid, "&buftype") win_gettype(s:winid)',
 	\ ]
   call writefile(lines, 'XtermPopup')
   let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
   call term_wait(buf, 100)
+  call term_sendkeys(buf, ":call OpenTerm(0)\<CR>")
+  call term_wait(buf, 100)
   call term_sendkeys(buf, ":\<CR>")
+  call term_sendkeys(buf, "\<C-W>:echo getwinvar(g:winid, \"&buftype\") win_gettype(g:winid)\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_1', {})
 
   call term_sendkeys(buf, ":q\<CR>")
@@ -2381,13 +2381,32 @@ func Test_terminal_in_popup()
 
   call term_sendkeys(buf, "\<C-W>:call ReopenPopup()\<CR>")
   call VerifyScreenDump(buf, 'Test_terminal_popup_6', {})
-  call term_wait(buf, 100)
 
+  " Go to terminal-Normal mode and visually select text.
+  call term_sendkeys(buf, "\<C-W>Ngg/in\<CR>vww")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_7', {})
+
+  " Back to job mode, redraws
+  call term_sendkeys(buf, "A")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_8', {})
+
+  call term_wait(buf, 100)
   call term_sendkeys(buf, ":q\<CR>")
   call term_wait(buf, 100)  " wait for terminal to vanish
 
   call StopVimInTerminal(buf)
   call delete('XtermPopup')
+endfunc
+
+func Test_double_popup_terminal()
+  let buf1 = term_start(&shell, #{hidden: 1})
+  let win1 = popup_create(buf1, {})
+  let buf2 = term_start(&shell, #{hidden: 1})
+  let win2 = popup_create(buf2, {})
+  call popup_close(win1)
+  call popup_close(win2)
+  exe buf1 .. 'bwipe!'
+  exe buf2 .. 'bwipe!'
 endfunc
 
 func Test_issue_5607()
@@ -2403,4 +2422,10 @@ func Test_issue_5607()
     let &wincolor = old_wincolor
     bw!
   endtry
+endfunc
+
+func Test_hidden_terminal()
+  let buf = term_start(&shell, #{hidden: 1})
+  call assert_equal('', bufname('^$'))
+  call StopShellInTerminal(buf)
 endfunc

@@ -790,6 +790,7 @@ accordingly.  Vim proceeds in this order:
 				or $VIM/_vimrc
 		Amiga		s:.vimrc, home:.vimrc, home:vimfiles:vimrc
 				or $VIM/.vimrc
+		Haiku		$HOME/config/settings/vim/vimrc
 
 	The files are searched in the order specified above and only the first
 	one that is found is read.
@@ -835,6 +836,8 @@ accordingly.  Vim proceeds in this order:
 		    "$HOME/_vimrc"	   (for Win32) (*)
 		    "$HOME/vimfiles/vimrc" (for Win32) (*)
 		    "$VIM/_vimrc"	   (for Win32) (*)
+		    "$HOME/config/settings/vim/vimrc"	(for Haiku) (*)
+
 		Note: For Unix and Amiga, when ".vimrc" does not exist,
 		"_vimrc" is also tried, in case an MS-DOS compatible file
 		system is used.  For MS-Windows ".vimrc" is checked after
@@ -950,6 +953,8 @@ sessions.  Put it in a place so that it will be found by 3b:
 	~/.vimrc	(Unix)
 	s:.vimrc	(Amiga)
 	$VIM\_vimrc	(Win32)
+	~/config/settings/vim/vimrc (Haiku)
+
 Note that creating a vimrc file will cause the 'compatible' option to be off
 by default.  See |compatible-default|.
 

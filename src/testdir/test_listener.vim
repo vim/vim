@@ -326,3 +326,16 @@ func Test_listener_cleared_newbuf()
   bwipe!
   delfunc Listener
 endfunc
+
+func Test_col_after_deletion_moved_cur()
+	func Listener(bufnr, start, end, added, changes)
+    call assert_equal([#{lnum: 1, end: 2, added: 0, col: 2}], a:changes)
+	endfunc
+	new
+	call setline(1, ['foo'])
+	let lid = listener_add('Listener')
+	call feedkeys("lD", 'xt')
+  call listener_flush()
+	bwipe!
+	delfunc Listener
+endfunc

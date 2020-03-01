@@ -1501,7 +1501,7 @@ Optional Features:
   --disable-farsi         Deprecated.
   --enable-xim            Include XIM input support.
   --enable-fontset        Include X fontset output support.
-  --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/photon/carbon
+  --enable-gui=OPTS       X11 GUI. default=auto OPTS=auto/no/gtk2/gnome2/gtk3/motif/athena/neXtaw/haiku/photon/carbon
   --enable-gtk2-check     If auto-select GUI, check for GTK+ 2 default=yes
   --enable-gnome-check    If GTK GUI, check for GNOME default=no
   --enable-gtk3-check     If auto-select GUI, check for GTK+ 3 default=yes
@@ -4540,6 +4540,15 @@ case `uname` in
 		BEOS=yes; { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; };;
     *)		BEOS=no; { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; };;
+esac
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for Haiku" >&5
+$as_echo_n "checking for Haiku... " >&6; }
+case `uname` in
+    Haiku) HAIKU=yes; { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; };;
+    *)     HAIKU=no; { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; };;
 esac
 
@@ -7714,7 +7723,55 @@ $as_echo "yes" >&6; }
 fi
 
 if test "$enable_channel" = "yes"; then
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for socket in -lsocket" >&5
+
+  if test "x$HAIKU" = "xyes"; then
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for socket in -lnetwork" >&5
+$as_echo_n "checking for socket in -lnetwork... " >&6; }
+if ${ac_cv_lib_network_socket+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lnetwork  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char socket ();
+int
+main ()
+{
+return socket ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_network_socket=yes
+else
+  ac_cv_lib_network_socket=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_network_socket" >&5
+$as_echo "$ac_cv_lib_network_socket" >&6; }
+if test "x$ac_cv_lib_network_socket" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBNETWORK 1
+_ACEOF
+
+  LIBS="-lnetwork $LIBS"
+
+fi
+
+  else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for socket in -lsocket" >&5
 $as_echo_n "checking for socket in -lsocket... " >&6; }
 if ${ac_cv_lib_socket_socket+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -7758,6 +7815,8 @@ _ACEOF
   LIBS="-lsocket $LIBS"
 
 fi
+
+  fi
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gethostbyname in -lnsl" >&5
 $as_echo_n "checking for gethostbyname in -lnsl... " >&6; }
@@ -9034,7 +9093,7 @@ if test "x$with_x" = xno -a "x$with_x_arg" = xyes; then
     as_fn_error $? "could not configure X" "$LINENO" 5
 fi
 
-test "x$with_x" = xno -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
+test "x$with_x" = xno -a "x$HAIKU" != "xyes" -a "x$MACOS_X" != "xyes" -a "x$QNX" != "xyes" && enable_gui=no
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking --enable-gui argument" >&5
 $as_echo_n "checking --enable-gui argument... " >&6; }
@@ -9056,10 +9115,27 @@ SKIP_MOTIF=YES
 SKIP_ATHENA=YES
 SKIP_NEXTAW=YES
 SKIP_PHOTON=YES
+SKIP_HAIKU=YES
 SKIP_CARBON=YES
 GUITYPE=NONE
 
-if test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
+if test "x$HAIKU" = "xyes"; then
+  SKIP_HAIKU=
+  case "$enable_gui_canon" in
+    no)     { $as_echo "$as_me:${as_lineno-$LINENO}: result: no GUI support" >&5
+$as_echo "no GUI support" >&6; }
+            SKIP_HAIKU=YES ;;
+    yes|"") { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes - automatic GUI support" >&5
+$as_echo "yes - automatic GUI support" >&6; } ;;
+    auto)   { $as_echo "$as_me:${as_lineno-$LINENO}: result: auto - automatic GUI support" >&5
+$as_echo "auto - automatic GUI support" >&6; } ;;
+    haiku)  { $as_echo "$as_me:${as_lineno-$LINENO}: result: Haiku GUI support" >&5
+$as_echo "Haiku GUI support" >&6; } ;;
+    *)      { $as_echo "$as_me:${as_lineno-$LINENO}: result: Sorry, $enable_gui GUI is not supported" >&5
+$as_echo "Sorry, $enable_gui GUI is not supported" >&6; }
+            SKIP_HAIKU=YES ;;
+    esac
+elif test "x$QNX" = "xyes" -a "x$with_x" = "xno" ; then
   SKIP_PHOTON=
   case "$enable_gui_canon" in
     no)		{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no GUI support" >&5
@@ -9283,6 +9359,7 @@ $as_echo "yes" >&6; };
   SKIP_ATHENA=YES;
   SKIP_NEXTAW=YES;
   SKIP_PHOTON=YES;
+  SKIP_HAIKU=YES;
   SKIP_CARBON=YES
 fi
 
@@ -10587,6 +10664,10 @@ if test "x$GUITYPE:$enable_fontset" = "xGTK:yes"; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: GTK+ 2 GUI selected; fontset has been disabled" >&5
 $as_echo "GTK+ 2 GUI selected; fontset has been disabled" >&6; }
   enable_fontset="no"
+fi
+
+if test -z "$SKIP_HAIKU"; then
+  GUITYPE=HAIKUGUI
 fi
 
 if test -z "$SKIP_PHOTON"; then

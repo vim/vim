@@ -1284,6 +1284,9 @@ do_source(
 		di = HI2DI(hi);
 		di->di_flags |= DI_FLAGS_RELOAD;
 	    }
+
+	// old imports are no longer valid
+	free_imports(sid);
     }
     else
     {

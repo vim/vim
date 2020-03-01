@@ -58,6 +58,19 @@ func Test_empty()
 
   call assert_equal(0, empty(function('Test_empty')))
   call assert_equal(0, empty(function('Test_empty', [0])))
+
+  call assert_fails("call empty(test_void())", 'E685:')
+  call assert_fails("call empty(test_unknown())", 'E685:')
+endfunc
+
+func Test_test_void()
+  call assert_fails('echo 1 == test_void()', 'E685:')
+  if has('float')
+    call assert_fails('echo 1.0 == test_void()', 'E685:')
+  endif
+  call assert_fails('let x = json_encode(test_void())', 'E685:')
+  call assert_fails('let x = copy(test_void())', 'E685:')
+  call assert_fails('let x = copy([test_void()])', 'E685:')
 endfunc
 
 func Test_len()
@@ -1141,6 +1154,43 @@ func Test_col()
   bw!
 endfunc
 
+" Test for input()
+func Test_input_func()
+  " Test for prompt with multiple lines
+  redir => v
+  call feedkeys(":let c = input(\"A\\nB\\nC\\n? \")\<CR>B\<CR>", 'xt')
+  redir END
+  call assert_equal("B", c)
+  call assert_equal(['A', 'B', 'C'], split(v, "\n"))
+
+  " Test for default value
+  call feedkeys(":let c = input('color? ', 'red')\<CR>\<CR>", 'xt')
+  call assert_equal('red', c)
+
+  " Test for completion at the input prompt
+  func! Tcomplete(arglead, cmdline, pos)
+    return "item1\nitem2\nitem3"
+  endfunc
+  call feedkeys(":let c = input('Q? ', '' , 'custom,Tcomplete')\<CR>"
+        \ .. "\<C-A>\<CR>", 'xt')
+  delfunc Tcomplete
+  call assert_equal('item1 item2 item3', c)
+
+  call assert_fails("call input('F:', '', 'invalid')", 'E180:')
+  call assert_fails("call input('F:', '', [])", 'E730:')
+endfunc
+
+" Test for the inputdialog() function
+func Test_inputdialog()
+  CheckNotGui
+
+  call feedkeys(":let v=inputdialog('Q:', 'xx', 'yy')\<CR>\<CR>", 'xt')
+  call assert_equal('xx', v)
+  call feedkeys(":let v=inputdialog('Q:', 'xx', 'yy')\<CR>\<Esc>", 'xt')
+  call assert_equal('yy', v)
+endfunc
+
+" Test for inputlist()
 func Test_inputlist()
   call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>1\<cr>", 'tx')
   call assert_equal(1, c)
@@ -2034,3 +2084,5 @@ func Test_echoraw()
   call StopVimInTerminal(buf)
   call delete('XTest_echoraw')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

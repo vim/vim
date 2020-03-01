@@ -213,6 +213,8 @@ get_list_type(type_T *member_type, garray_T *type_list)
 	return &t_list_any;
     if (member_type->tt_type == VAR_VOID)
 	return &t_list_empty;
+    if (member_type->tt_type == VAR_BOOL)
+	return &t_list_bool;
     if (member_type->tt_type == VAR_NUMBER)
 	return &t_list_number;
     if (member_type->tt_type == VAR_STRING)
@@ -238,6 +240,8 @@ get_dict_type(type_T *member_type, garray_T *type_list)
 	return &t_dict_any;
     if (member_type->tt_type == VAR_VOID)
 	return &t_dict_empty;
+    if (member_type->tt_type == VAR_BOOL)
+	return &t_dict_bool;
     if (member_type->tt_type == VAR_NUMBER)
 	return &t_dict_number;
     if (member_type->tt_type == VAR_STRING)
@@ -638,6 +642,38 @@ generate_PUSHS(cctx_T *cctx, char_u *str)
 }
 
 /*
+ * Generate an ISN_PUSHCHANNEL instruction.
+ * Consumes "channel".
+ */
+    static int
+generate_PUSHCHANNEL(cctx_T *cctx, channel_T *channel)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr_type(cctx, ISN_PUSHCHANNEL, &t_channel)) == NULL)
+	return FAIL;
+    isn->isn_arg.channel = channel;
+
+    return OK;
+}
+
+/*
+ * Generate an ISN_PUSHJOB instruction.
+ * Consumes "job".
+ */
+    static int
+generate_PUSHJOB(cctx_T *cctx, job_T *job)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr_type(cctx, ISN_PUSHCHANNEL, &t_channel)) == NULL)
+	return FAIL;
+    isn->isn_arg.job = job;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_PUSHBLOB instruction.
  * Consumes "blob".
  */
@@ -649,6 +685,22 @@ generate_PUSHBLOB(cctx_T *cctx, blob_T *blob)
     if ((isn = generate_instr_type(cctx, ISN_PUSHBLOB, &t_blob)) == NULL)
 	return FAIL;
     isn->isn_arg.blob = blob;
+
+    return OK;
+}
+
+/*
+ * Generate an ISN_PUSHFUNC instruction with name "name".
+ * Consumes "name".
+ */
+    static int
+generate_PUSHFUNC(cctx_T *cctx, char_u *name)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr_type(cctx, ISN_PUSHFUNC, &t_func_void)) == NULL)
+	return FAIL;
+    isn->isn_arg.string = name;
 
     return OK;
 }
@@ -1112,6 +1164,21 @@ generate_ECHO(cctx_T *cctx, int with_white, int count)
     return OK;
 }
 
+/*
+ * Generate an ISN_EXECUTE instruction.
+ */
+    static int
+generate_EXECUTE(cctx_T *cctx, int count)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr_drop(cctx, ISN_EXECUTE, count)) == NULL)
+	return FAIL;
+    isn->isn_arg.number = count;
+
+    return OK;
+}
+
     static int
 generate_EXEC(cctx_T *cctx, char_u *line)
 {
@@ -1522,7 +1589,12 @@ find_imported(char_u *name, size_t len, cctx_T *cctx)
  * Generate an instruction to load script-local variable "name".
  */
     static int
-compile_load_scriptvar(cctx_T *cctx, char_u *name)
+compile_load_scriptvar(
+	cctx_T *cctx,
+	char_u *name,	    // variable NUL terminated
+	char_u *start,	    // start of variable
+	char_u **end,	    // end of variable
+	int    error)	    // when TRUE may give error
 {
     scriptitem_T    *si = SCRIPT_ITEM(current_sctx.sc_sid);
     int		    idx = get_script_item_idx(current_sctx.sc_sid, name, FALSE);
@@ -1546,15 +1618,45 @@ compile_load_scriptvar(cctx_T *cctx, char_u *name)
     import = find_imported(name, 0, cctx);
     if (import != NULL)
     {
-	// TODO: check this is a variable, not a function
-	generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
-		import->imp_sid,
-		import->imp_var_vals_idx,
-		import->imp_type);
+	if (import->imp_all)
+	{
+	    char_u	*p = skipwhite(*end);
+	    int		name_len;
+	    ufunc_T	*ufunc;
+	    type_T	*type;
+
+	    // Used "import * as Name", need to lookup the member.
+	    if (*p != '.')
+	    {
+		semsg(_("E1060: expected dot after name: %s"), start);
+		return FAIL;
+	    }
+	    ++p;
+
+	    idx = find_exported(import->imp_sid, &p, &name_len, &ufunc, &type);
+	    // TODO: what if it is a function?
+	    if (idx < 0)
+		return FAIL;
+	    *end = p;
+
+	    generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
+		    import->imp_sid,
+		    idx,
+		    type);
+	}
+	else
+	{
+	    // TODO: check this is a variable, not a function
+	    generate_VIM9SCRIPT(cctx, ISN_LOADSCRIPT,
+		    import->imp_sid,
+		    import->imp_var_vals_idx,
+		    import->imp_type);
+	}
 	return OK;
     }
 
-    semsg(_("E1050: Item not found: %s"), name);
+    if (error)
+	semsg(_("E1050: Item not found: %s"), name);
     return FAIL;
 }
 
@@ -1564,10 +1666,11 @@ compile_load_scriptvar(cctx_T *cctx, char_u *name)
  * When "error" is FALSE do not give an error when not found.
  */
     static int
-compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
+compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 {
     type_T	*type;
     char_u	*name;
+    char_u	*end = end_arg;
     int		res = FAIL;
 
     if (*(*arg + 1) == ':')
@@ -1589,7 +1692,7 @@ compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
 	}
 	else if (**arg == 's')
 	{
-	    res = compile_load_scriptvar(cctx, name);
+	    res = compile_load_scriptvar(cctx, name, NULL, NULL, error);
 	}
 	else
 	{
@@ -1645,7 +1748,7 @@ compile_load(char_u **arg, char_u *end, cctx_T *cctx, int error)
 		else if (SCRIPT_ITEM(current_sctx.sc_sid)->sn_version
 							== SCRIPT_VERSION_VIM9)
 		    // in Vim9 script "var" can be script-local.
-		   res = compile_load_scriptvar(cctx, name);
+		   res = compile_load_scriptvar(cctx, name, *arg, &end, error);
 	    }
 	}
 	if (gen_load)
@@ -3412,7 +3515,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    generate_LOAD(cctx, ISN_LOADG, 0, name + 2, type);
 		    break;
 		case dest_script:
-		    compile_load_scriptvar(cctx, name + (name[1] == ':' ? 2 : 0));
+		    compile_load_scriptvar(cctx,
+			    name + (name[1] == ':' ? 2 : 0), NULL, NULL, TRUE);
 		    break;
 		case dest_env:
 		    // Include $ in the name here
@@ -3493,10 +3597,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		generate_PUSHBLOB(cctx, NULL);
 		break;
 	    case VAR_FUNC:
-		// generate_PUSHS(cctx, NULL); TODO
+		generate_PUSHFUNC(cctx, NULL);
 		break;
 	    case VAR_PARTIAL:
-		// generate_PUSHS(cctx, NULL); TODO
+		// generate_PUSHPARTIAL(cctx, NULL);
+		emsg("Partial type not supported yet");
 		break;
 	    case VAR_LIST:
 		generate_NEWLIST(cctx, 0);
@@ -3505,10 +3610,10 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		generate_NEWDICT(cctx, 0);
 		break;
 	    case VAR_JOB:
-		// generate_PUSHS(cctx, NULL); TODO
+		generate_PUSHJOB(cctx, NULL);
 		break;
 	    case VAR_CHANNEL:
-		// generate_PUSHS(cctx, NULL); TODO
+		generate_PUSHCHANNEL(cctx, NULL);
 		break;
 	    case VAR_NUMBER:
 	    case VAR_UNKNOWN:
@@ -4633,14 +4738,40 @@ compile_echo(char_u *arg, int with_white, cctx_T *cctx)
     char_u	*p = arg;
     int		count = 0;
 
-    // for ()
+    for (;;)
     {
 	if (compile_expr1(&p, cctx) == FAIL)
 	    return NULL;
 	++count;
+	p = skipwhite(p);
+	if (ends_excmd(*p))
+	    break;
     }
 
     generate_ECHO(cctx, with_white, count);
+    return p;
+}
+
+/*
+ * compile "execute expr"
+ */
+    static char_u *
+compile_execute(char_u *arg, cctx_T *cctx)
+{
+    char_u	*p = arg;
+    int		count = 0;
+
+    for (;;)
+    {
+	if (compile_expr1(&p, cctx) == FAIL)
+	    return NULL;
+	++count;
+	p = skipwhite(p);
+	if (ends_excmd(*p))
+	    break;
+    }
+
+    generate_EXECUTE(cctx, count);
 
     return p;
 }
@@ -4666,6 +4797,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
     int		called_emsg_before = called_emsg;
     int		ret = FAIL;
     sctx_T	save_current_sctx = current_sctx;
+    int		emsg_before = called_emsg;
 
     if (ufunc->uf_dfunc_idx >= 0)
     {
@@ -4746,7 +4878,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    ++line;
 	else if (line != NULL && *line != NUL)
 	{
-	    semsg(_("E488: Trailing characters: %s"), line);
+	    if (emsg_before == called_emsg)
+		semsg(_("E488: Trailing characters: %s"), line);
 	    goto erret;
 	}
 	else
@@ -4762,6 +4895,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		break;
 	    SOURCING_LNUM = ufunc->uf_script_ctx.sc_lnum + cctx.ctx_lnum + 1;
 	}
+	emsg_before = called_emsg;
 
 	had_return = FALSE;
 	vim_memset(&ea, 0, sizeof(ea));
@@ -4979,12 +5113,14 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    case CMD_echon:
 		    line = compile_echo(p, FALSE, &cctx);
 		    break;
+	    case CMD_execute:
+		    line = compile_execute(p, &cctx);
+		    break;
 
 	    default:
 		    // Not recognized, execute with do_cmdline_cmd().
 		    // TODO:
 		    // CMD_echomsg
-		    // CMD_execute
 		    // etc.
 		    generate_EXEC(&cctx, line);
 		    line = (char_u *)"";
@@ -5069,6 +5205,7 @@ delete_instr(isn_T *isn)
 	case ISN_PUSHS:
 	case ISN_STOREENV:
 	case ISN_STOREG:
+	case ISN_PUSHFUNC:
 	    vim_free(isn->isn_arg.string);
 	    break;
 
@@ -5083,6 +5220,18 @@ delete_instr(isn_T *isn)
 
 	case ISN_PUSHBLOB:   // push blob isn_arg.blob
 	    blob_unref(isn->isn_arg.blob);
+	    break;
+
+	case ISN_PUSHPARTIAL:
+	    // TODO
+	    break;
+
+	case ISN_PUSHJOB:
+	    job_unref(isn->isn_arg.job);
+	    break;
+
+	case ISN_PUSHCHANNEL:
+	    channel_unref(isn->isn_arg.channel);
 	    break;
 
 	case ISN_UCALL:
@@ -5112,6 +5261,7 @@ delete_instr(isn_T *isn)
 	case ISN_DCALL:
 	case ISN_DROP:
 	case ISN_ECHO:
+	case ISN_EXECUTE:
 	case ISN_ENDTRY:
 	case ISN_FOR:
 	case ISN_FUNCREF:

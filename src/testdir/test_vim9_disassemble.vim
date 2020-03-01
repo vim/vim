@@ -222,6 +222,38 @@ def Test_disassemble_call()
 enddef
 
 
+def FuncWithForwardCall(): string
+  return DefinedLater("yes")
+enddef
+
+def DefinedLater(arg: string): string
+  return arg
+enddef
+
+def Test_disassemble_update_instr()
+  let res = execute('disass FuncWithForwardCall')
+  assert_match('FuncWithForwardCall.*'
+        \ .. 'return DefinedLater("yes").*'
+        \ .. '\d PUSHS "yes".*'
+        \ .. '\d UCALL DefinedLater(argc 1).*'
+        \ .. '\d CHECKTYPE string stack\[-1].*'
+        \ .. '\d RETURN.*'
+        \, res)
+
+  " Calling the function will change UCALL into the faster DCALL
+  assert_equal('yes', FuncWithForwardCall())
+
+  res = execute('disass FuncWithForwardCall')
+  assert_match('FuncWithForwardCall.*'
+        \ .. 'return DefinedLater("yes").*'
+        \ .. '\d PUSHS "yes".*'
+        \ .. '\d DCALL DefinedLater(argc 1).*'
+        \ .. '\d CHECKTYPE string stack\[-1].*'
+        \ .. '\d RETURN.*'
+        \, res)
+enddef
+
+
 def FuncWithDefault(arg: string = 'default'): string
   return arg
 enddef
@@ -688,6 +720,39 @@ def Test_disassemble_compare()
   endfor
 
   " delete('Xdisassemble')
+enddef
+
+def s:Execute()
+  execute 'help vim9.txt'
+  let cmd = 'help vim9.txt'
+  execute cmd
+  let tag = 'vim9.txt'
+  execute 'help ' .. tag
+enddef
+
+def Test_disassemble_execute()
+  let res = execute('disass s:Execute')
+  assert_match('\<SNR>\d*_Execute.*'
+        \ .. "execute 'help vim9.txt'.*"
+        \ .. '\d PUSHS "help vim9.txt".*'
+        \ .. '\d EXECUTE 1.*'
+        \ .. "let cmd = 'help vim9.txt'.*"
+        \ .. '\d PUSHS "help vim9.txt".*'
+        \ .. '\d STORE $0.*'
+        \ .. 'execute cmd.*'
+        \ .. '\d LOAD $0.*'
+        \ .. '\d EXECUTE 1.*'
+        \ .. "let tag = 'vim9.txt'.*"
+        \ .. '\d PUSHS "vim9.txt".*'
+        \ .. '\d STORE $1.*'
+        \ .. "execute 'help ' .. tag.*"
+        \ .. '\d PUSHS "help ".*'
+        \ .. '\d LOAD $1.*'
+        \ .. '\d CONCAT.*'
+        \ .. '\d EXECUTE 1.*'
+        \ .. '\d PUSHNR 0.*'
+        \ .. '\d RETURN'
+        \, res)
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

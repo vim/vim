@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.2.  Last change: 2020 Jan 10
+*textprop.txt*  For Vim version 8.2.  Last change: 2020 Feb 22
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -143,8 +143,9 @@ prop_add({lnum}, {col}, {props})
 		within one line, or use "end_lnum" and "end_col" for a
 		property that spans more than one line.
 		When neither "length" nor "end_col" are given the property
-		will be zero-width.  That means it will not be highlighted but
-		will move with the text, as a kind of mark.
+		will be zero-width.  That means it will move with the text, as
+		a kind of mark.  One character will be highlighted, if the
+		type specifies highlighting.
 		The property can end exactly at the last character of the
 		text, or just after it.  In the last case, if text is appended
 		to the line, the text property size will increase, also when
@@ -335,10 +336,11 @@ properties below the changed text, so that they still highlight the same text,
 thus you don't need to update these.
 
 
-Text property columns are not updated: ~
+Text property columns are not updated or copied: ~
 
 - When setting the line with |setline()| or through an interface, such as Lua,
   Tcl or Python.  Vim does not know what text got inserted or deleted.
+- With a command like `:move`, which takes a line of text out of context.
 
 
  vim:tw=78:ts=8:noet:ft=help:norl:

@@ -1279,9 +1279,15 @@ typedef long_u hash_T;		// Type for hi_hash
 #else
   typedef long long		varnumber_T;
   typedef unsigned long long	uvarnumber_T;
-# define VARNUM_MIN		LLONG_MIN
-# define VARNUM_MAX		LLONG_MAX
-# define UVARNUM_MAX		ULLONG_MAX
+# ifdef LLONG_MIN
+#  define VARNUM_MIN		LLONG_MIN
+#  define VARNUM_MAX		LLONG_MAX
+#  define UVARNUM_MAX		ULLONG_MAX
+# else
+#  define VARNUM_MIN		LONG_LONG_MIN
+#  define VARNUM_MAX		LONG_LONG_MAX
+#  define UVARNUM_MAX		ULONG_LONG_MAX
+# endif
 #endif
 
 typedef double	float_T;
@@ -3341,13 +3347,14 @@ struct window_S
     int		*w_p_cc_cols;	    // array of columns to highlight or NULL
     char_u	w_p_culopt_flags;   // flags for cursorline highlighting
 #endif
-#ifdef FEAT_LINEBREAK
-    int		w_p_brimin;	    // minimum width for breakindent
-    int		w_p_brishift;	    // additional shift for breakindent
-    int		w_p_brisbr;	    // sbr in 'briopt'
-#endif
     long	w_p_siso;	    // 'sidescrolloff' local value
     long	w_p_so;		    // 'scrolloff' local value
+
+#ifdef FEAT_LINEBREAK
+    int		w_briopt_min;	    // minimum width for breakindent
+    int		w_briopt_shift;	    // additional shift for breakindent
+    int		w_briopt_sbr;	    // sbr in 'briopt'
+#endif
 
     // transform a pointer to a "onebuf" option into a "allbuf" option
 #define GLOBAL_WO(p)	((char *)p + sizeof(winopt_T))
@@ -3635,6 +3642,13 @@ struct VimMenu
     UINT	id;		    // Id of menu item
     HMENU	submenu_id;	    // If this is submenu, add children here
     HWND	tearoff_handle;	    // hWnd of tearoff if created
+#endif
+#if FEAT_GUI_HAIKU
+    BMenuItem  *id;		    // Id of menu item
+    BMenu  *submenu_id;		    // If this is submenu, add children here
+# ifdef FEAT_TOOLBAR
+    BPictureButton *button;
+# endif
 #endif
 #ifdef FEAT_GUI_MAC
 //  MenuHandle	id;

@@ -14,6 +14,11 @@ func Test_complete_list()
   " We can't see the output, but at least we check the code runs properly.
   call feedkeys(":e test\<C-D>\r", "tx")
   call assert_equal('test', expand('%:t'))
+
+  " If a command doesn't support completion, then CTRL-D should be literally
+  " used.
+  call feedkeys(":chistory \<C-D>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"chistory \<C-D>", @:)
 endfunc
 
 func Test_complete_wildmenu()
@@ -50,6 +55,17 @@ func Test_complete_wildmenu()
   call assert_equal('testfile3', getline(1))
   call feedkeys(":e Xdir1/\<Tab>\<Down>\<Up>\<Right>\<CR>", 'tx')
   call assert_equal('testfile1', getline(1))
+
+  " Test for canceling the wild menu by adding a character
+  redrawstatus
+  call feedkeys(":e Xdir1/\<Tab>x\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e Xdir1/Xdir2/x', @:)
+
+  " Completion using a relative path
+  cd Xdir1/Xdir2
+  call feedkeys(":e ../\<Tab>\<Right>\<Down>\<C-A>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"e Xtestfile3 Xtestfile4', @:)
+  cd -
 
   " cleanup
   %bwipe
@@ -456,6 +472,19 @@ func Test_cmdline_paste()
     " ignore error E32
   endtry
   call assert_equal("Xtestfile", bufname("%"))
+
+  " Try to paste an invalid register using <C-R>
+  call feedkeys(":\"one\<C-R>\<C-X>two\<CR>", 'xt')
+  call assert_equal('"onetwo', @:)
+
+  let @a = "xy\<C-H>z"
+  call feedkeys(":\"\<C-R>a\<CR>", 'xt')
+  call assert_equal('"xz', @:)
+  call feedkeys(":\"\<C-R>\<C-O>a\<CR>", 'xt')
+  call assert_equal("\"xy\<C-H>z", @:)
+
+  call assert_beeps('call feedkeys(":\<C-R>=\<C-R>=\<Esc>", "xt")')
+
   bwipe!
 endfunc
 
@@ -528,6 +557,17 @@ func Test_cmdline_complete_user_cmd()
   call feedkeys(":Foo b\<Tab>\<Home>\"\<cr>", 'tx')
   call assert_equal('"Foo blue', @:)
   delcommand Foo
+endfunc
+
+func s:ScriptLocalFunction()
+  echo 'yes'
+endfunc
+
+func Test_cmdline_complete_user_func()
+  call feedkeys(":func Test_cmdline_complete_user\<Tab>\<Home>\"\<cr>", 'tx')
+  call assert_match('"func Test_cmdline_complete_user', @:)
+  call feedkeys(":func s:ScriptL\<Tab>\<Home>\"\<cr>", 'tx')
+  call assert_match('"func <SNR>\d\+_ScriptLocalFunction', @:)
 endfunc
 
 func Test_cmdline_complete_user_names()
@@ -690,6 +730,8 @@ func Test_getcmdtype()
   cnoremap <expr> <F6> Check_cmdline('=')
   call feedkeys("a\<C-R>=MyCmd a\<F6>\<Esc>\<Esc>", "xt")
   cunmap <F6>
+
+  call assert_equal('', getcmdline())
 endfunc
 
 func Test_getcmdwintype()
@@ -930,6 +972,22 @@ func Test_cmdwin_cedit()
   delfunc CmdWinType
 endfunc
 
+" Test for CmdwinEnter autocmd
+func Test_cmdwin_autocmd()
+  augroup CmdWin
+    au!
+    autocmd CmdwinEnter * startinsert
+  augroup END
+
+  call assert_fails('call feedkeys("q:xyz\<CR>", "xt")', 'E492:')
+  call assert_equal('xyz', @:)
+
+  augroup CmdWin
+    au!
+  augroup END
+  augroup! CmdWin
+endfunc
+
 func Test_cmdlineclear_tabenter()
   CheckScreendump
 
@@ -966,6 +1024,10 @@ func Test_cmdwin_jump_to_win()
   call feedkeys("q/:close\<CR>", "xt")
   call assert_equal(1, winnr('$'))
   call feedkeys("q/:exit\<CR>", "xt")
+  call assert_equal(1, winnr('$'))
+
+  " opening command window twice should fail
+  call assert_beeps('call feedkeys("q:q:\<CR>\<CR>", "xt")')
   call assert_equal(1, winnr('$'))
 endfunc
 
@@ -1004,6 +1066,171 @@ func Test_cmd_bang()
   endif
   call delete('Xscript')
   call delete('Xresult')
+endfunc
+
+" Test for using ~ for home directory in cmdline completion matches
+func Test_cmdline_expand_home()
+  call mkdir('Xdir')
+  call writefile([], 'Xdir/Xfile1')
+  call writefile([], 'Xdir/Xfile2')
+  cd Xdir
+  let save_HOME = $HOME
+  let $HOME = getcwd()
+  call feedkeys(":e ~/\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e ~/Xfile1 ~/Xfile2', @:)
+  let $HOME = save_HOME
+  cd ..
+  call delete('Xdir', 'rf')
+endfunc
+
+" Test for using CTRL-\ CTRL-G in the command line to go back to normal mode
+" or insert mode (when 'insertmode' is set)
+func Test_cmdline_ctrl_g()
+  new
+  call setline(1, 'abc')
+  call cursor(1, 3)
+  " If command line is entered from insert mode, using C-\ C-G should back to
+  " insert mode
+  call feedkeys("i\<C-O>:\<C-\>\<C-G>xy", 'xt')
+  call assert_equal('abxyc', getline(1))
+  call assert_equal(4, col('.'))
+
+  " If command line is entered in 'insertmode', using C-\ C-G should back to
+  " 'insertmode'
+  call feedkeys(":set im\<cr>\<C-L>:\<C-\>\<C-G>12\<C-L>:set noim\<cr>", 'xt')
+  call assert_equal('ab12xyc', getline(1))
+  close!
+endfunc
+
+" Return the 'len' characters in screen starting from (row,col)
+func s:ScreenLine(row, col, len)
+  let s = ''
+  for i in range(a:len)
+    let s .= nr2char(screenchar(a:row, a:col + i))
+  endfor
+  return s
+endfunc
+
+" Test for 'wildmode'
+func Test_wildmode()
+  func T(a, c, p)
+    return "oneA\noneB\noneC"
+  endfunc
+  command -nargs=1 -complete=custom,T MyCmd
+
+  func SaveScreenLine()
+    let g:Sline = s:ScreenLine(&lines - 1, 1, 20)
+    return ''
+  endfunc
+  cnoremap <expr> <F2> SaveScreenLine()
+
+  set nowildmenu
+  set wildmode=full,list
+  let g:Sline = ''
+  call feedkeys(":MyCmd \t\t\<F2>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('oneA  oneB  oneC    ', g:Sline)
+  call assert_equal('"MyCmd oneA', @:)
+
+  set wildmode=longest,full
+  call feedkeys(":MyCmd o\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd one', @:)
+  call feedkeys(":MyCmd o\t\t\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneC', @:)
+
+  set wildmode=longest
+  call feedkeys(":MyCmd one\t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd one', @:)
+
+  set wildmode=list:longest
+  let g:Sline = ''
+  call feedkeys(":MyCmd \t\<F2>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('oneA  oneB  oneC    ', g:Sline)
+  call assert_equal('"MyCmd one', @:)
+
+  set wildmode=""
+  call feedkeys(":MyCmd \t\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd oneA', @:)
+
+  delcommand MyCmd
+  delfunc T
+  delfunc SaveScreenLine
+  cunmap <F2>
+  set wildmode&
+endfunc
+
+" Test for interrupting the command-line completion
+func Test_interrupt_compl()
+  func F(lead, cmdl, p)
+    if a:lead =~ 'tw'
+      call interrupt()
+      return
+    endif
+    return "one\ntwo\nthree"
+  endfunc
+  command -nargs=1 -complete=custom,F Tcmd
+
+  set nowildmenu
+  set wildmode=full
+  let interrupted = 0
+  try
+    call feedkeys(":Tcmd tw\<Tab>\<C-B>\"\<CR>", 'xt')
+  catch /^Vim:Interrupt$/
+    let interrupted = 1
+  endtry
+  call assert_equal(1, interrupted)
+
+  delcommand Tcmd
+  delfunc F
+  set wildmode&
+endfunc
+
+" Test for moving the cursor on the : command line
+func Test_cmdline_edit()
+  let str = ":one two\<C-U>"
+  let str ..= "one two\<C-W>\<C-W>"
+  let str ..= "\<Left>five\<Right>"
+  let str ..= "\<Home>two "
+  let str ..= "\<C-Left>one "
+  let str ..= "\<C-Right> three"
+  let str ..= "\<End>\<S-Left>four "
+  let str ..= "\<S-Right> six"
+  let str ..= "\<C-B>\"\<C-E> seven\<CR>"
+  call feedkeys(str, 'xt')
+  call assert_equal("\"one two three four five six seven", @:)
+endfunc
+
+" Test for moving the cursor on the / command line in 'rightleft' mode
+func Test_cmdline_edit_rightleft()
+  CheckFeature rightleft
+  set rightleft
+  set rightleftcmd=search
+  let str = "/one two\<C-U>"
+  let str ..= "one two\<C-W>\<C-W>"
+  let str ..= "\<Right>five\<Left>"
+  let str ..= "\<Home>two "
+  let str ..= "\<C-Right>one "
+  let str ..= "\<C-Left> three"
+  let str ..= "\<End>\<S-Right>four "
+  let str ..= "\<S-Left> six"
+  let str ..= "\<C-B>\"\<C-E> seven\<CR>"
+  call assert_fails("call feedkeys(str, 'xt')", 'E486:')
+  call assert_equal("\"one two three four five six seven", @/)
+  set rightleftcmd&
+  set rightleft&
+endfunc
+
+" Test for using <C-\>e in the command line to evaluate an expression
+func Test_cmdline_expr()
+  " Evaluate an expression from the beginning of a command line
+  call feedkeys(":abc\<C-B>\<C-\>e\"\\\"hello\"\<CR>\<CR>", 'xt')
+  call assert_equal('"hello', @:)
+
+  " Use an invalid expression for <C-\>e
+  call assert_beeps('call feedkeys(":\<C-\>einvalid\<CR>", "tx")')
+
+  " Insert literal <CTRL-\> in the command line
+  call feedkeys(":\"e \<C-\>\<C-Y>\<CR>", 'xt')
+  call assert_equal("\"e \<C-\>\<C-Y>", @:)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

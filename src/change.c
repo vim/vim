@@ -1301,7 +1301,7 @@ del_bytes(
 #endif
 
     // mark the buffer as changed and prepare for displaying
-    inserted_bytes(lnum, curwin->w_cursor.col, -count);
+    inserted_bytes(lnum, col, -count);
 
     return OK;
 }

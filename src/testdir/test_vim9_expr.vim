@@ -9,6 +9,12 @@ func CheckDefFailure(line, error)
   call delete('Xdef')
 endfunc
 
+func CheckDefFailureMult(lines, error)
+  call writefile(['def! Func()'] + a:lines + ['enddef'], 'Xdef')
+  call assert_fails('so Xdef', a:error, join(a:lines, ' | '))
+  call delete('Xdef')
+endfunc
+
 " Check that "line" inside ":def" results in an "error" message when executed.
 func CheckDefExecFailure(line, error)
   call writefile(['def! Func()', a:line, 'enddef'], 'Xdef')
@@ -805,6 +811,8 @@ func Test_expr7_fails()
   call CheckDefExecFailure("let x = +g:ablob", 'E974:')
   call CheckDefExecFailure("let x = +g:alist", 'E745:')
   call CheckDefExecFailure("let x = +g:adict", 'E728:')
+
+  call CheckDefFailureMult(["let x = ''", "let y = x.memb"], 'E715:')
 endfunc
 
 let g:Funcrefs = [function('add')]
@@ -861,4 +869,8 @@ func Test_expr_fails()
   call CheckDefExecFailure("CallMe ('yes')", 'E492:')
   call CheckDefFailure("CallMe2('yes','no')", 'E1069:')
   call CheckDefFailure("CallMe2('yes' , 'no')", 'E1068:')
+
+  call CheckDefFailure("v:nosuch += 3", 'E1001:')
+  call CheckDefFailure("let v:version = 3", 'E1064:')
+  call CheckDefFailure("let asdf = v:nosuch", 'E1001:')
 endfunc

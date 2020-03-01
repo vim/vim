@@ -64,6 +64,7 @@ DOCS = \
 	os_amiga.txt \
 	os_beos.txt \
 	os_dos.txt \
+	os_haiku.txt \
 	os_mac.txt \
 	os_mint.txt \
 	os_msdos.txt \
@@ -204,6 +205,7 @@ HTMLS = \
 	os_amiga.html \
 	os_beos.html \
 	os_dos.html \
+	os_haiku.html \
 	os_mac.html \
 	os_mint.html \
 	os_msdos.html \
@@ -421,6 +423,9 @@ os_beos.txt:
 
 os_dos.txt:
 	touch os_dos.txt
+
+os_haiku.txt:
+	touch os_haiku.txt
 
 os_mac.txt:
 	touch os_mac.txt

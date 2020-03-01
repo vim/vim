@@ -2549,6 +2549,10 @@ retry:
 
     win_new_shellsize();    // fit the windows in the new sized shell
 
+#ifdef FEAT_GUI_HAIKU
+    vim_lock_screen();  // be safe, put it here
+#endif
+
     comp_col();		// recompute columns for shown command and ruler
 
     /*
@@ -2798,6 +2802,10 @@ give_up:
     }
 #endif
     clear_TabPageIdxs();
+
+#ifdef FEAT_GUI_HAIKU
+    vim_unlock_screen();
+#endif
 
     entered = FALSE;
     --RedrawingDisabled;
@@ -3646,6 +3654,10 @@ screen_ins_lines(
 	clip_scroll_selection(-line_count);
 #endif
 
+#ifdef FEAT_GUI_HAIKU
+    vim_lock_screen();
+#endif
+
 #ifdef FEAT_GUI
     // Don't update the GUI cursor here, ScreenLines[] is invalid until the
     // scrolling is actually carried out.
@@ -3699,6 +3711,10 @@ screen_ins_lines(
 		lineinvalid(temp, (int)Columns);
 	}
     }
+
+#ifdef FEAT_GUI_HAIKU
+    vim_unlock_screen();
+#endif
 
     screen_stop_highlight();
     windgoto(cursor_row, cursor_col);
@@ -3927,6 +3943,10 @@ screen_del_lines(
 		lineinvalid(temp, (int)Columns);
 	}
     }
+
+#ifdef FEAT_GUI_HAIKU
+    vim_unlock_screen();
+#endif
 
     if (screen_attr != clear_attr)
 	screen_stop_highlight();

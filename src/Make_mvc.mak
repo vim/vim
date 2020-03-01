@@ -663,9 +663,6 @@ OPTFLAG = /Ox
 !  if "$(OPTIMIZE)" != "SPACE"
 OPTFLAG = $(OPTFLAG) /GL
 !  endif
-# Visual Studio 2005 has 'deprecated' many of the standard CRT functions
-CFLAGS_DEPR = /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
-CFLAGS = $(CFLAGS) $(CFLAGS_DEPR)
 ! endif
 
 # (/Wp64 is deprecated in VC9 and generates an obnoxious warning.)
@@ -706,6 +703,12 @@ LIBC = $(LIBC) libcmtd.lib
 CFLAGS = $(CFLAGS) /Zl /MTd
 ! endif
 !endif # DEBUG
+
+!if $(MSVC_MAJOR) >= 8
+# Visual Studio 2005 has 'deprecated' many of the standard CRT functions
+CFLAGS_DEPR = /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
+CFLAGS = $(CFLAGS) $(CFLAGS_DEPR)
+!endif
 
 !include Make_all.mak
 !include testdir\Make_all.mak

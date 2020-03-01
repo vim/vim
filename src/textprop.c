@@ -1232,7 +1232,6 @@ adjust_prop_columns(
 {
     int		proplen;
     char_u	*props;
-    textprop_T	tmp_prop;
     proptype_T  *pt;
     int		dirty = FALSE;
     int		ri, wi;
@@ -1249,62 +1248,80 @@ adjust_prop_columns(
     wi = 0; // write index
     for (ri = 0; ri < proplen; ++ri)
     {
-	int start_incl;
+	textprop_T	prop;
+	int		start_incl, end_incl;
+	int		can_drop;
 
-	mch_memmove(&tmp_prop, props + ri * sizeof(textprop_T),
-							   sizeof(textprop_T));
-	pt = text_prop_type_by_id(curbuf, tmp_prop.tp_type);
-	start_incl = (flags & APC_SUBSTITUTE) ||
-		       (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL));
+	mch_memmove(&prop, props + ri * sizeof(textprop_T), sizeof(textprop_T));
+	pt = text_prop_type_by_id(curbuf, prop.tp_type);
+	start_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL))
+						   || (flags & APC_SUBSTITUTE);
+	end_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL));
+	// Do not drop zero-width props if they later can increase in size
+	can_drop = !(start_incl || end_incl);
 
-	if (bytes_added > 0
-		&& (tmp_prop.tp_col >= col + (start_incl ? 2 : 1)))
+	if (bytes_added > 0)
 	{
-	    tmp_prop.tp_col += bytes_added;
-	    // Save for undo if requested and not done yet.
-	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
-		u_savesub(lnum);
-	    dirty = TRUE;
+	    if (col + 1 <= prop.tp_col
+			      - (start_incl || (prop.tp_len == 0 && end_incl)))
+	    {
+		// Change is entirely before the text property: Only shift
+		prop.tp_col += bytes_added;
+		// Save for undo if requested and not done yet.
+		if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
+		    u_savesub(lnum);
+		dirty = TRUE;
+	    }
+	    else if (col + 1 < prop.tp_col + prop.tp_len + end_incl)
+	    {
+		// Insertion was inside text property
+		prop.tp_len += bytes_added;
+		// Save for undo if requested and not done yet.
+		if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
+		    u_savesub(lnum);
+		dirty = TRUE;
+	    }
 	}
-	else if (bytes_added <= 0 && (tmp_prop.tp_col > col + 1))
+	else if (prop.tp_col > col + 1)
 	{
 	    int len_changed = FALSE;
 
-	    if (tmp_prop.tp_col + bytes_added < col + 1)
+	    if (prop.tp_col + bytes_added < col + 1)
 	    {
-		tmp_prop.tp_len += (tmp_prop.tp_col - 1 - col) + bytes_added;
-		tmp_prop.tp_col = col + 1;
+		prop.tp_len += (prop.tp_col - 1 - col) + bytes_added;
+		prop.tp_col = col + 1;
 		len_changed = TRUE;
 	    }
 	    else
-		tmp_prop.tp_col += bytes_added;
+		prop.tp_col += bytes_added;
 	    // Save for undo if requested and not done yet.
 	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
 		u_savesub(lnum);
 	    dirty = TRUE;
-	    if (len_changed && tmp_prop.tp_len <= 0)
-		continue;  // drop this text property
+	    if (len_changed && prop.tp_len <= 0)
+	    {
+		prop.tp_len = 0;
+		if (can_drop)
+		    continue;  // drop this text property
+	    }
 	}
-	else if (tmp_prop.tp_len > 0
-		&& tmp_prop.tp_col + tmp_prop.tp_len > col
-		       + ((pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL))
-								      ? 0 : 1))
+	else if (prop.tp_len > 0 && prop.tp_col + prop.tp_len > col)
 	{
-	    int after = col - bytes_added
-				     - (tmp_prop.tp_col - 1 + tmp_prop.tp_len);
+	    int after = col - bytes_added - (prop.tp_col - 1 + prop.tp_len);
+
 	    if (after > 0)
-		tmp_prop.tp_len += bytes_added + after;
+		prop.tp_len += bytes_added + after;
 	    else
-		tmp_prop.tp_len += bytes_added;
+		prop.tp_len += bytes_added;
 	    // Save for undo if requested and not done yet.
 	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
 		u_savesub(lnum);
 	    dirty = TRUE;
-	    if (tmp_prop.tp_len <= 0)
+	    if (prop.tp_len <= 0 && can_drop)
 		continue;  // drop this text property
 	}
-	mch_memmove(props + wi * sizeof(textprop_T), &tmp_prop,
-							   sizeof(textprop_T));
+
+	mch_memmove(props + wi * sizeof(textprop_T), &prop, sizeof(textprop_T));
 	++wi;
     }
     if (dirty)

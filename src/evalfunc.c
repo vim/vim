@@ -1890,7 +1890,7 @@ f_empty(typval_T *argvars, typval_T *rettv)
 #endif
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	    internal_error("f_empty(UNKNOWN)");
+	    internal_error_no_abort("f_empty(UNKNOWN)");
 	    n = TRUE;
 	    break;
     }
@@ -3264,6 +3264,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 #ifdef __BEOS__
 	"beos",
 #endif
+#ifdef __HAIKU__
+	"haiku",
+#endif
 #if defined(BSD) && !defined(MACOS_X)
 	"bsd",
 #endif
@@ -3449,6 +3452,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 #ifdef FEAT_GUI_GNOME
 	"gui_gnome",
+#endif
+#ifdef FEAT_GUI_HAIKU
+	"gui_haiku",
 #endif
 #ifdef FEAT_GUI_MAC
 	"gui_mac",
@@ -8269,7 +8275,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_BLOB:    n = VAR_TYPE_BLOB; break;
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	     internal_error("f_type(UNKNOWN)");
+	     internal_error_no_abort("f_type(UNKNOWN)");
 	     n = -1;
 	     break;
     }

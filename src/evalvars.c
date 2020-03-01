@@ -669,6 +669,7 @@ heredoc_get(exarg_T *eap, char_u *cmd)
  * ":let var ..= expr"		assignment command.
  * ":let [var1, var2] = expr"	unpack list.
  * ":let var =<< ..."		heredoc
+ * ":let var: string"		Vim9 declaration
  */
     void
 ex_let(exarg_T *eap)
@@ -2540,8 +2541,10 @@ find_var_ht(char_u *name, char_u **varname)
 	return &curtab->tp_vars->dv_hashtab;
     if (*name == 'v')				// v: variable
 	return &vimvarht;
-    if (current_sctx.sc_version != SCRIPT_VERSION_VIM9)
+    if (get_current_funccal() != NULL
+			      && get_current_funccal()->func->uf_dfunc_idx < 0)
     {
+	// a: and l: are only used in functions defined with ":function"
 	if (*name == 'a')			// a: function argument
 	    return get_funccal_args_ht();
 	if (*name == 'l')			// l: local function variable
