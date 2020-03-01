@@ -1268,4 +1268,39 @@ func Test_cmdline_inputmethod()
   %bwipe!
 endfunc
 
+" Test for opening the command-line window when too many windows are present
+func Test_cmdwin_fail_to_open()
+  " Open as many windows as possible
+  for i in range(100)
+    try
+      new
+    catch /E36:/
+      break
+    endtry
+  endfor
+  call assert_beeps('call feedkeys("q:\<CR>", "xt")')
+  only
+endfunc
+
+" Test for recursively getting multiple command line inputs
+func Test_cmdwin_multi_input()
+  call feedkeys(":\<C-R>=input('P: ')\<CR>\"cyan\<CR>\<CR>", 'xt')
+  call assert_equal('"cyan', @:)
+endfunc
+
+" Test for using CTRL-_ in the command line with 'allowrevins'
+func Test_cmdline_revins()
+  CheckFeature rightleft
+  set allowrevins
+  call feedkeys(":\"abc\<c-_>xyz\<c-_>\<CR>", 'xt')
+  call assert_equal('"abcñèæ', @:)
+  set allowrevins&
+endfunc
+
+" Test for typing UTF-8 composing characters in the command line
+func Test_cmdline_composing_chars()
+  call feedkeys(":\"\<C-V>u3046\<C-V>u3099\<CR>", 'xt')
+  call assert_equal('"ゔ', @:)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

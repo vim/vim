@@ -1156,7 +1156,7 @@ EOF
 :$put =string(pyeval('dd') is# pyeval('dd'))
 :$put =string(pyeval('df'))
 :delfunction Put
-py << EOF
+py <<
 del DupDict
 del DupList
 del DupFun
@@ -1164,7 +1164,7 @@ del dd
 del dl
 del dl2
 del df
-EOF
+.
 :"
 :" Test chdir
 py << EOF

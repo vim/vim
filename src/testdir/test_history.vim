@@ -176,11 +176,24 @@ func Test_history_search()
   cunmap <F2>
   delfunc SavePat
 
+  " Search for a pattern that is not present in the history
+  call assert_beeps('call feedkeys("/a1b2\<Up>\<CR>", "xt")')
+
   " Recall patterns with 'history' set to 0
   set history=0
   let @/ = 'abc'
   let cmd = 'call feedkeys("/\<Up>\<Down>\<S-Up>\<S-Down>\<CR>", "xt")'
   call assert_fails(cmd, 'E486:')
+  set history&
+
+  " Recall patterns till the end of history
+  set history=5
+  call histadd('/', 'pat')
+  call histdel('/')
+  call histadd('/', 'pat1')
+  call histadd('/', 'pat2')
+  call assert_beeps('call feedkeys("/\<Up>\<Up>\<Up>\<C-U>\<cr>", "xt")')
+  call assert_beeps('call feedkeys("/\<Down><cr>", "xt")')
   set history&
 endfunc
 
