@@ -56,6 +56,7 @@ def Test_assignment()
   if has('channel')
     let chan1: channel
     let job1: job
+    let job2: job = job_start('willfail')
   endif
   if has('float')
     let float1: float = 3.4

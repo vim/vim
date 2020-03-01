@@ -1915,7 +1915,7 @@ ex_disassemble(exarg_T *eap)
 		    tv.v_type = VAR_JOB;
 		    tv.vval.v_job = iptr->isn_arg.job;
 		    name = tv_get_string(&tv);
-		    smsg("%4d PUSHJOB %s", current, name);
+		    smsg("%4d PUSHJOB \"%s\"", current, name);
 		}
 #endif
 		break;

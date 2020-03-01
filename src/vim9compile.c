@@ -666,7 +666,7 @@ generate_PUSHJOB(cctx_T *cctx, job_T *job)
 {
     isn_T	*isn;
 
-    if ((isn = generate_instr_type(cctx, ISN_PUSHCHANNEL, &t_channel)) == NULL)
+    if ((isn = generate_instr_type(cctx, ISN_PUSHJOB, &t_channel)) == NULL)
 	return FAIL;
     isn->isn_arg.job = job;
 
