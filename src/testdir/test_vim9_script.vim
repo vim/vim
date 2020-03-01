@@ -66,6 +66,9 @@ def Test_assignment()
   let party1: partial
   let party2: partial = funcref('Test_syntax')
 
+  " type becomes list<any>
+  let somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
+
   g:newvar = 'new'
   assert_equal('new', g:newvar)
 

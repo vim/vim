@@ -1902,7 +1902,7 @@ printable_func_name(ufunc_T *fp)
 }
 
 /*
- * List the head of the function: "name(arg1, arg2)".
+ * List the head of the function: "function name(arg1, arg2)".
  */
     static void
 list_func_head(ufunc_T *fp, int indent)
@@ -1912,7 +1912,10 @@ list_func_head(ufunc_T *fp, int indent)
     msg_start();
     if (indent)
 	msg_puts("   ");
-    msg_puts("function ");
+    if (fp->uf_dfunc_idx >= 0)
+	msg_puts("def ");
+    else
+	msg_puts("function ");
     msg_puts((char *)printable_func_name(fp));
     msg_putchar('(');
     for (j = 0; j < fp->uf_args.ga_len; ++j)
@@ -1957,7 +1960,19 @@ list_func_head(ufunc_T *fp, int indent)
 	}
     }
     msg_putchar(')');
-    if (fp->uf_flags & FC_ABORT)
+
+    if (fp->uf_dfunc_idx >= 0)
+    {
+	if (fp->uf_ret_type != &t_void)
+	{
+	    char *tofree;
+
+	    msg_puts(": ");
+	    msg_puts(type_name(fp->uf_ret_type, &tofree));
+	    vim_free(tofree);
+	}
+    }
+    else if (fp->uf_flags & FC_ABORT)
 	msg_puts(" abort");
     if (fp->uf_flags & FC_RANGE)
 	msg_puts(" range");

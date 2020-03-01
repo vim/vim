@@ -1443,7 +1443,7 @@ equal_type(type_T *type1, type_T *type2)
 	case VAR_BLOB:
 	case VAR_JOB:
 	case VAR_CHANNEL:
-	    return TRUE;  // not composite is always OK
+	    break;  // not composite is always OK
 	case VAR_LIST:
 	case VAR_DICT:
 	    return equal_type(type1->tt_member, type2->tt_member);
@@ -1461,27 +1461,32 @@ equal_type(type_T *type1, type_T *type2)
  * "type2" and "dest" may be the same.
  */
     static void
-common_type(type_T *type1, type_T *type2, type_T *dest)
+common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_list)
 {
     if (equal_type(type1, type2))
     {
-	if (dest != type2)
-	    *dest = *type2;
+	*dest = type1;
 	return;
     }
 
     if (type1->tt_type == type2->tt_type)
     {
-	dest->tt_type = type1->tt_type;
 	if (type1->tt_type == VAR_LIST || type2->tt_type == VAR_DICT)
 	{
-	    common_type(type1->tt_member, type2->tt_member, dest->tt_member);
+	    type_T *common;
+
+	    common_type(type1->tt_member, type2->tt_member, &common, type_list);
+	    if (type1->tt_type == VAR_LIST)
+		*dest = get_list_type(common, type_list);
+	    else
+		*dest = get_dict_type(common, type_list);
 	    return;
 	}
 	// TODO: VAR_FUNC and VAR_PARTIAL
+	*dest = type1;
     }
 
-    dest->tt_type = VAR_UNKNOWN;  // "any"
+    *dest = &t_any;
 }
 
     char *
@@ -1501,7 +1506,7 @@ vartype_name(vartype_T type)
 	case VAR_CHANNEL: return "channel";
 	case VAR_LIST: return "list";
 	case VAR_DICT: return "dict";
-	case VAR_FUNC: return "function";
+	case VAR_FUNC: return "func";
 	case VAR_PARTIAL: return "partial";
     }
     return "???";
@@ -3160,7 +3165,7 @@ compile_expr1(char_u **arg,  cctx_T *cctx)
 
 	// If the types differ, the result has a more generic type.
 	type2 = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	common_type(type1, type2, type2);
+	common_type(type1, type2, &type2, cctx->ctx_type_list);
 
 	// jump here from JUMP_ALWAYS
 	isn = ((isn_T *)instr->ga_data) + end_idx;

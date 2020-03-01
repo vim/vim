@@ -814,4 +814,36 @@ def Test_disassemble_execute()
         \, res)
 enddef
 
+def SomeStringArg(arg: string)
+  echo arg
+enddef
+
+def SomeAnyArg(arg: any)
+  echo arg
+enddef
+
+def SomeStringArgAndReturn(arg: string): string
+  return arg
+enddef
+
+def Test_display_func()
+  let res1 = execute('function SomeStringArg')
+  assert_match('.* def SomeStringArg(arg: string).*'
+        \ .. '  echo arg.*'
+        \ .. '  enddef'
+        \, res1)
+
+  let res2 = execute('function SomeAnyArg')
+  assert_match('.* def SomeAnyArg(arg: any).*'
+        \ .. '  echo arg.*'
+        \ .. '  enddef'
+        \, res2)
+
+  let res3 = execute('function SomeStringArgAndReturn')
+  assert_match('.* def SomeStringArgAndReturn(arg: string): string.*'
+        \ .. '  return arg.*'
+        \ .. '  enddef'
+        \, res3)
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
