@@ -187,13 +187,40 @@ func Test_history_search()
   set history&
 
   " Recall patterns till the end of history
-  set history=5
+  set history=4
   call histadd('/', 'pat')
   call histdel('/')
   call histadd('/', 'pat1')
   call histadd('/', 'pat2')
   call assert_beeps('call feedkeys("/\<Up>\<Up>\<Up>\<C-U>\<cr>", "xt")')
   call assert_beeps('call feedkeys("/\<Down><cr>", "xt")')
+
+  " Test for wrapping around the history list
+  for i in range(3, 7)
+    call histadd('/', 'pat' .. i)
+  endfor
+  let upcmd = "\<up>\<up>\<up>\<up>\<up>"
+  let downcmd = "\<down>\<down>\<down>\<down>\<down>"
+  try
+    call feedkeys("/" .. upcmd .. "\<cr>", 'xt')
+  catch /E486:/
+  endtry
+  call assert_equal('pat4', @/)
+  try
+    call feedkeys("/" .. upcmd .. downcmd .. "\<cr>", 'xt')
+  catch /E486:/
+  endtry
+  call assert_equal('pat4', @/)
+
+  " Test for changing the search command separator in the history
+  call assert_fails('call feedkeys("/def/\<cr>", "xt")', 'E486:')
+  call assert_fails('call feedkeys("?\<up>\<cr>", "xt")', 'E486:')
+  call assert_equal('def?', histget('/', -1))
+
+  call assert_fails('call feedkeys("/ghi?\<cr>", "xt")', 'E486:')
+  call assert_fails('call feedkeys("?\<up>\<cr>", "xt")', 'E486:')
+  call assert_equal('ghi\?', histget('/', -1))
+
   set history&
 endfunc
 

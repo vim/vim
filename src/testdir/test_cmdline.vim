@@ -1188,7 +1188,7 @@ endfunc
 func Test_cmdline_edit()
   let str = ":one two\<C-U>"
   let str ..= "one two\<C-W>\<C-W>"
-  let str ..= "one\<BS>\<C-H>\<Del>"
+  let str ..= "four\<BS>\<C-H>\<Del>\<kDel>"
   let str ..= "\<Left>five\<Right>"
   let str ..= "\<Home>two "
   let str ..= "\<C-Left>one "
@@ -1207,7 +1207,7 @@ func Test_cmdline_edit_rightleft()
   set rightleftcmd=search
   let str = "/one two\<C-U>"
   let str ..= "one two\<C-W>\<C-W>"
-  let str ..= "one\<BS>\<C-H>\<Del>"
+  let str ..= "four\<BS>\<C-H>\<Del>\<kDel>"
   let str ..= "\<Right>five\<Left>"
   let str ..= "\<Home>two "
   let str ..= "\<C-Right>one "
@@ -1292,6 +1292,8 @@ endfunc
 func Test_cmdline_revins()
   CheckNotMSWindows
   CheckFeature rightleft
+  call feedkeys(":\"abc\<c-_>\<cr>", 'xt')
+  call assert_equal("\"abc\<c-_>", @:)
   set allowrevins
   call feedkeys(":\"abc\<c-_>xyz\<c-_>\<CR>", 'xt')
   call assert_equal('"abcñèæ', @:)
