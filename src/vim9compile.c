@@ -507,7 +507,7 @@ generate_COMPARE(cctx_T *cctx, exptype_T exptype, int ic)
 		    && (type1 == VAR_BLOB || type2 == VAR_BLOB
 			|| type1 == VAR_LIST || type2 == VAR_LIST))))
     {
-	semsg(_("E1037: Cannot compare %s with %s"),
+	semsg(_("E1072: Cannot compare %s with %s"),
 		vartype_name(type1), vartype_name(type2));
 	return FAIL;
     }
@@ -1494,8 +1494,8 @@ vartype_name(vartype_T type)
 {
     switch (type)
     {
+	case VAR_UNKNOWN: break;
 	case VAR_VOID: return "void";
-	case VAR_UNKNOWN: return "any";
 	case VAR_SPECIAL: return "special";
 	case VAR_BOOL: return "bool";
 	case VAR_NUMBER: return "number";
@@ -1509,7 +1509,7 @@ vartype_name(vartype_T type)
 	case VAR_FUNC: return "func";
 	case VAR_PARTIAL: return "partial";
     }
-    return "???";
+    return "any";
 }
 
 /*
@@ -1907,11 +1907,12 @@ theend:
 /*
  * Find the end of a variable or function name.  Unlike find_name_end() this
  * does not recognize magic braces.
+ * When "namespace" is TRUE recognize "b:", "s:", etc.
  * Return a pointer to just after the name.  Equal to "arg" if there is no
  * valid name.
  */
-    char_u *
-to_name_end(char_u *arg)
+    static char_u *
+to_name_end(char_u *arg, int namespace)
 {
     char_u	*p;
 
@@ -1923,6 +1924,7 @@ to_name_end(char_u *arg)
 	// Include a namespace such as "s:var" and "v:var".  But "n:" is not
 	// and can be used in slice "[n:]".
 	if (*p == ':' && (p != arg + 1
+			     || !namespace
 			     || vim_strchr(VIM9_NAMESPACE_CHAR, *arg) == NULL))
 	    break;
     return p;
@@ -1934,7 +1936,7 @@ to_name_end(char_u *arg)
     char_u *
 to_name_const_end(char_u *arg)
 {
-    char_u	*p = to_name_end(arg);
+    char_u	*p = to_name_end(arg, TRUE);
     typval_T	rettv;
 
     if (p == arg && *arg == '[')
@@ -2145,7 +2147,7 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 
 	if (literal)
 	{
-	    char_u *p = to_name_end(*arg);
+	    char_u *p = to_name_end(*arg, !literal);
 
 	    if (p == *arg)
 	    {
@@ -2766,7 +2768,7 @@ compile_expr7(char_u **arg, cctx_T *cctx)
 	}
 
 	// "name" or "name()"
-	p = to_name_end(*arg);
+	p = to_name_end(*arg, TRUE);
 	if (*p == '(')
 	    r = compile_call(arg, p - *arg, cctx, 0);
 	else
@@ -4980,7 +4982,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    // val".
 	    p = (*ea.cmd == '&' || *ea.cmd == '$' || *ea.cmd == '@')
 							 ? ea.cmd + 1 : ea.cmd;
-	    p = to_name_end(p);
+	    p = to_name_end(p, TRUE);
 	    if ((p > ea.cmd && *p != NUL) || *p == '(')
 	    {
 		int oplen;
@@ -4992,7 +4994,9 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		    // Recognize an assignment if we recognize the variable
 		    // name:
 		    // "g:var = expr"
-		    // "var = expr"  where "var" is a local var name.
+		    // "local = expr"  where "local" is a local var.
+		    // "script = expr"  where "script" is a script-local var.
+		    // "import = expr"  where "import" is an imported var
 		    // "&opt = expr"
 		    // "$ENV = expr"
 		    // "@r = expr"

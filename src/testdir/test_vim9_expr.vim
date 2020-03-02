@@ -37,9 +37,9 @@ def Test_expr1()
     assert_equal('one', 0.1 ? 'one' : 'two')
   endif
   assert_equal('one', 'x' ? 'one' : 'two')
-"  assert_equal('one', 0z1234 ? 'one' : 'two')
+  assert_equal('one', 0z1234 ? 'one' : 'two')
   assert_equal('one', [0] ? 'one' : 'two')
-"  assert_equal('one', #{x: 0} ? 'one' : 'two')
+  assert_equal('one', #{x: 0} ? 'one' : 'two')
   let var = 1
   assert_equal('one', var ? 'one' : 'two')
 
@@ -49,9 +49,9 @@ def Test_expr1()
     assert_equal('two', 0.0 ? 'one' : 'two')
   endif
   assert_equal('two', '' ? 'one' : 'two')
-"  assert_equal('one', 0z ? 'one' : 'two')
+  assert_equal('two', 0z ? 'one' : 'two')
   assert_equal('two', [] ? 'one' : 'two')
-"  assert_equal('two', {} ? 'one' : 'two')
+  assert_equal('two', {} ? 'one' : 'two')
   var = 0
   assert_equal('two', var ? 'one' : 'two')
 enddef
@@ -447,6 +447,11 @@ func Test_expr4_fails()
   call CheckDefFailure("let x = [13] <= [88]", 'Cannot compare list with list')
   call CheckDefFailure("let x = [13] =~ [88]", 'Cannot compare list with list')
   call CheckDefFailure("let x = [13] !~ [88]", 'Cannot compare list with list')
+
+  call CheckDefFailureMult(['let j: job', 'let chan: channel', 'let r = j == chan'], 'Cannot compare job with channel')
+  call CheckDefFailureMult(['let j: job', 'let x: list<any>', 'let r = j == x'], 'Cannot compare job with list')
+  call CheckDefFailureMult(['let j: job', 'let x: func', 'let r = j == x'], 'Cannot compare job with func')
+  call CheckDefFailureMult(['let j: job', 'let x: partial', 'let r = j == x'], 'Cannot compare job with partial')
 endfunc
 
 " test addition, subtraction, concatenation

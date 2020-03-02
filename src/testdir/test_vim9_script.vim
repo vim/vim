@@ -68,6 +68,8 @@ def Test_assignment()
 
   " type becomes list<any>
   let somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
+  " type becomes dict<any>
+  let somedict = rand() > 0 ? #{a: 1, b: 2} : #{a: 'a', b: 'b'}
 
   g:newvar = 'new'
   assert_equal('new', g:newvar)
@@ -373,6 +375,7 @@ def Test_vim9script()
     g:imported_name = exp_name
     exp_name ..= ' Doe'
     g:imported_name_appended = exp_name
+    g:imported_later = exported
   END
 
   writefile(import_script_lines, 'Ximport.vim')
@@ -384,6 +387,7 @@ def Test_vim9script()
   assert_equal('bob', g:localname)
   assert_equal(9876, g:imported)
   assert_equal(9879, g:imported_added)
+  assert_equal(9879, g:imported_later)
   assert_equal('Exported', g:imported_func)
   assert_equal('John', g:imported_name)
   assert_equal('John Doe', g:imported_name_appended)
@@ -393,9 +397,29 @@ def Test_vim9script()
   unlet g:localname
   unlet g:imported
   unlet g:imported_added
+  unlet g:imported_later
   unlet g:imported_func
   unlet g:imported_name g:imported_name_appended
   delete('Ximport.vim')
+
+  let import_in_def_lines =<< trim END
+    vim9script
+    def ImportInDef()
+      import exported from './Xexport.vim'
+      g:imported = exported
+      exported += 7
+      g:imported_added = exported
+    enddef
+    ImportInDef()
+  END
+  writefile(import_in_def_lines, 'Ximport2.vim')
+  source Ximport2.vim
+  " TODO: this should be 9879
+  assert_equal(9876, g:imported)
+  assert_equal(9883, g:imported_added)
+  unlet g:imported
+  unlet g:imported_added
+  delete('Ximport2.vim')
 
   let import_star_as_lines =<< trim END
     vim9script
@@ -407,7 +431,7 @@ def Test_vim9script()
   END
   writefile(import_star_as_lines, 'Ximport.vim')
   source Ximport.vim
-  assert_equal(9876, g:imported)
+  assert_equal(9883, g:imported)
 
   let import_star_lines =<< trim END
     vim9script
