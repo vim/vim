@@ -58,12 +58,12 @@ syn match sshdconfigCiphers "\<aes256-gcm@openssh\.com\>"
 syn match sshdconfigCiphers "\<chacha20-poly1305@openssh\.com\>"
 
 syn keyword sshdconfigMAC hmac-sha1
-syn keyword sshdconfigMAC mac-sha1-96
-syn keyword sshdconfigMAC mac-sha2-256
-syn keyword sshdconfigMAC mac-sha2-512
-syn keyword sshdconfigMAC mac-md5
-syn keyword sshdconfigMAC mac-md5-96
-syn keyword sshdconfigMAC mac-ripemd160
+syn keyword sshdconfigMAC hmac-sha1-96
+syn keyword sshdconfigMAC hmac-sha2-256
+syn keyword sshdconfigMAC hmac-sha2-512
+syn keyword sshdconfigMAC hmac-md5
+syn keyword sshdconfigMAC hmac-md5-96
+syn keyword sshdconfigMAC hmac-ripemd160
 syn match   sshdconfigMAC "\<hmac-ripemd160@openssh\.com\>"
 syn match   sshdconfigMAC "\<umac-64@openssh\.com\>"
 syn match   sshdconfigMAC "\<umac-128@openssh\.com\>"
