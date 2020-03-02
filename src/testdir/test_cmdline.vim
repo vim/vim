@@ -477,11 +477,21 @@ func Test_cmdline_paste()
   call feedkeys(":\"one\<C-R>\<C-X>two\<CR>", 'xt')
   call assert_equal('"onetwo', @:)
 
+  " Test for pasting register containing CTRL-H using CTRL-R and CTRL-R CTRL-R
   let @a = "xy\<C-H>z"
   call feedkeys(":\"\<C-R>a\<CR>", 'xt')
   call assert_equal('"xz', @:)
+  call feedkeys(":\"\<C-R>\<C-R>a\<CR>", 'xt')
+  call assert_equal("\"xy\<C-H>z", @:)
   call feedkeys(":\"\<C-R>\<C-O>a\<CR>", 'xt')
   call assert_equal("\"xy\<C-H>z", @:)
+
+  " Test for pasting register containing CTRL-V using CTRL-R and CTRL-R CTRL-R
+  let @a = "xy\<C-V>z"
+  call feedkeys(":\"\<C-R>=@a\<CR>\<cr>", 'xt')
+  call assert_equal('"xyz', @:)
+  call feedkeys(":\"\<C-R>\<C-R>=@a\<CR>\<cr>", 'xt')
+  call assert_equal("\"xy\<C-V>z", @:)
 
   call assert_beeps('call feedkeys(":\<C-R>=\<C-R>=\<Esc>", "xt")')
 
