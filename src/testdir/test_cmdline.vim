@@ -1290,6 +1290,7 @@ endfunc
 
 " Test for using CTRL-_ in the command line with 'allowrevins'
 func Test_cmdline_revins()
+  CheckNotMSWindows
   CheckFeature rightleft
   set allowrevins
   call feedkeys(":\"abc\<c-_>xyz\<c-_>\<CR>", 'xt')
