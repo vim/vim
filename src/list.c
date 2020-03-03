@@ -2331,6 +2331,7 @@ f_reduce(typval_T *argvars, typval_T *rettv)
 	list_T	*l = argvars[0].vval.v_list;
 	listitem_T	*li = NULL;
 
+	range_list_materialize(l);
 	if (argvars[2].v_type == VAR_UNKNOWN)
 	{
 	    if (l == NULL || l->lv_first == NULL)
