@@ -398,6 +398,7 @@ NEW_TESTS_RES = \
 	test_marks.res \
 	test_match.res \
 	test_matchadd_conceal.res \
+	test_matchadd_conceal_utf8.res \
 	test_memory_usage.res \
 	test_messages.res \
 	test_method.res \
