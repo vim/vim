@@ -1281,7 +1281,7 @@ popup_adjust_position(win_T *wp)
 							      (colnr_T)MAXCOL);
 	wp->w_width = w_width;
 
-	if (wp->w_p_wrap)
+	if (wp->w_p_wrap && maxwidth > 0)
 	{
 	    while (len > maxwidth)
 	    {
