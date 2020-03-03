@@ -732,6 +732,108 @@ def Test_if_elseif_else()
   assert_equal('three', IfElse(3))
 enddef
 
+let g:bool_true = v:true
+let g:bool_false = v:false
+
+def Test_if_const_expr()
+  let res = false
+  if true ? true : false
+    res = true
+  endif
+  assert_equal(true, res)
+
+  res = false
+  if g:bool_true ? true : false
+    res = true
+  endif
+  assert_equal(true, res)
+
+  res = false
+  if true ? g:bool_true : false
+    res = true
+  endif
+  assert_equal(true, res)
+
+  res = false
+  if true ? true : g:bool_false
+    res = true
+  endif
+  assert_equal(true, res)
+
+  res = false
+  if true ? false : true
+    res = true
+  endif
+  assert_equal(false, res)
+
+  res = false
+  if false ? false : true
+    res = true
+  endif
+  assert_equal(true, res)
+
+  res = false
+  if false ? true : false
+    res = true
+  endif
+  assert_equal(false, res)
+
+  res = false
+  if true && true
+    res = true
+  endif
+  assert_equal(true, res)
+
+  res = false
+  if true && false
+    res = true
+  endif
+  assert_equal(false, res)
+
+  res = false
+  if g:bool_true && false
+    res = true
+  endif
+  assert_equal(false, res)
+
+  res = false
+  if true && g:bool_false
+    res = true
+  endif
+  assert_equal(false, res)
+
+  res = false
+  if false && false
+    res = true
+  endif
+  assert_equal(false, res)
+
+  res = false
+  if true || false
+    res = true
+  endif
+  assert_equal(true, res)
+
+  res = false
+  if g:bool_true || false
+    res = true
+  endif
+  assert_equal(true, res)
+
+  res = false
+  if true || g:bool_false
+    res = true
+  endif
+  assert_equal(true, res)
+
+  res = false
+  if false || false
+    res = true
+  endif
+  assert_equal(false, res)
+
+enddef
+
 def Test_delfunc()
   let lines =<< trim END
     vim9script
