@@ -3,14 +3,12 @@
 vimtutor \- the Vim tutor
 .SH SYNOPSIS
 .br
-.B vimtutor [\-g] [language]
+.B vimtutor [[[\-l | \-\-language ISO639] [\-c | \-\-chapter NUMBER] [\-g | \-\-gui] [ISO639]] | [\-h | \-\-help] | [\-\-list]]
 .SH DESCRIPTION
 .B Vimtutor
 starts the
 .B Vim
-tutor.
-It copies the tutor file first, so that it can be modified without changing
-the original file.
+tutor. It copies the tutor file first, so that it can be modified without changing the original file.
 .PP
 The
 .B Vimtutor
@@ -18,29 +16,74 @@ is useful for people that want to learn their first
 .B Vim
 commands.
 .PP
-The optional argument \-g starts vimtutor with gvim rather than vim, if the
-GUI version of vim is available, or falls back to Vim if gvim is not found.
-.PP
-The optional [language] argument is the two-letter name of a language, like
-"it" or "es".
-If the [language] argument is missing, the language of the current locale will
-be used.
-If a tutor in this language is available, it will be used.
-Otherwise the English version will be used.
-.PP
 .B Vim
 is always started in Vi compatible mode.
+
+.SH OPTIONS
+.TP
+.BR \-l ", " \-\-language =\fIISO639\fR
+Set the two or three letter language code. E.g. 'it', 'es', 'bar'. Defaults to language of locale if available or falls back to English.
+.TP
+.BR \-c ", " \-\-chapter =\fINUMBER\fR
+Set the one or two digit chapter number. Defaults to chapter one.
+.TP
+.BR \-g ", " \-\-gui
+Start
+.BR vimtutor
+ in the GUI version of vim if available, otherwise fallback to console vim.
+.TP
+.BR \-h ", " \-\-help
+Display usage information.
+.TP
+.BR \-\-list
+Display chapters and languages.
+.SH EXAMPLES
+To start
+.BR vimtutor
+in German on chapter one:
+.PP
+.nf
+.RS
+vimtutor de
+.RE
+.fi
+.PP
+In English on chapter two:
+.PP
+.nf
+.RS
+vimtutor -c2
+.RE
+.fi
+.PP
+Longform command for Bavarian in the GUI on chapter one:
+.PP
+.nf
+.RS
+vimtutor --language bar --chapter 1 --gui
+.RE
+.fi
 .SH FILES
 .TP 15
 /usr/local/lib/vim/tutor/tutor[.language]
 The
 .B Vimtutor
-text file(s).
+chapter one text file(s).
+.TP 15
+/usr/local/lib/vim/tutor/tutor02[.language]
+The
+.B Vimtutor
+chapter two text file(s).
 .TP 15
 /usr/local/lib/vim/tutor/tutor.vim
 The Vim script used to copy the
 .B Vimtutor
-text file.
+chapter one text file.
+.TP 15
+/usr/local/lib/vim/tutor/tutor02.vim
+The Vim script used to copy the
+.B Vimtutor
+chapter two text file.
 .SH AUTHOR
 The
 .B Vimtutor
