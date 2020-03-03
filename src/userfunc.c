@@ -1293,6 +1293,13 @@ call_user_func(
 
     if (default_arg_err && (fp->uf_flags & FC_ABORT))
 	did_emsg = TRUE;
+    else if (islambda)
+    {
+	char_u *p = *(char_u**)fp->uf_lines.ga_data + 7; // Skip "return ".
+	++ex_nesting_level;
+	eval1(&p, rettv, TRUE);
+	--ex_nesting_level;
+    }
     else
 	// call do_cmdline() to execute the lines
 	do_cmdline(NULL, get_func_line, (void *)fc,
