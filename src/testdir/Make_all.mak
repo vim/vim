@@ -488,6 +488,7 @@ NEW_TESTS_RES = \
 	test_tagjump.res \
 	test_taglist.res \
 	test_tcl.res \
+	test_template_string.res \
 	test_termcodes.res \
 	test_termencoding.res \
 	test_terminal.res \
