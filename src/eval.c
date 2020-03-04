@@ -3357,13 +3357,10 @@ eval_template_current_into_result(
     init_tv(&current_result);
 
     if (!eval1(&to_eval_current, &current_result, evaluate))
-    {
-	ga_clear(current);
 	return FAIL;
-    }
 
-    if (current_result.vval.v_string == NULL)
-	current_result.vval.v_string = "";
+    if (!evaluate)
+	return OK;
 
     ga_concat(result, current_result.vval.v_string);
     vim_free(current_result.vval.v_string);
