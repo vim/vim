@@ -773,8 +773,8 @@ generate_STORENR(cctx_T *cctx, int idx, varnumber_T value)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_STORENR)) == NULL)
 	return FAIL;
-    isn->isn_arg.storenr.str_idx = idx;
-    isn->isn_arg.storenr.str_val = value;
+    isn->isn_arg.storenr.stnr_idx = idx;
+    isn->isn_arg.storenr.stnr_val = value;
 
     return OK;
 }
@@ -3789,8 +3789,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    garray_T	*stack = &cctx->ctx_type_stack;
 
 		    isn->isn_type = ISN_STORENR;
-		    isn->isn_arg.storenr.str_idx = idx;
-		    isn->isn_arg.storenr.str_val = val;
+		    isn->isn_arg.storenr.stnr_idx = idx;
+		    isn->isn_arg.storenr.stnr_val = val;
 		    if (stack->ga_len > 0)
 			--stack->ga_len;
 		}

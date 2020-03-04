@@ -827,10 +827,10 @@ call_def_function(
 
 	    // store number in local variable
 	    case ISN_STORENR:
-		tv = STACK_TV_VAR(iptr->isn_arg.storenr.str_idx);
+		tv = STACK_TV_VAR(iptr->isn_arg.storenr.stnr_idx);
 		clear_tv(tv);
 		tv->v_type = VAR_NUMBER;
-		tv->vval.v_number = iptr->isn_arg.storenr.str_val;
+		tv->vval.v_number = iptr->isn_arg.storenr.stnr_val;
 		break;
 
 	    // push constant
@@ -1848,8 +1848,8 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_STORENR:
 		smsg("%4d STORE %lld in $%d", current,
-				iptr->isn_arg.storenr.str_val,
-				iptr->isn_arg.storenr.str_idx);
+				iptr->isn_arg.storenr.stnr_val,
+				iptr->isn_arg.storenr.stnr_idx);
 		break;
 
 	    // constants

@@ -36,7 +36,7 @@ typedef enum {
     ISN_STOREREG,    // pop into register isn_arg.number
     // ISN_STOREOTHER, // pop into other script variable isn_arg.other.
 
-    ISN_STORENR,    // store number into local variable isn_arg.storenr.str_idx
+    ISN_STORENR,    // store number into local variable isn_arg.storenr.stnr_idx
 
     // constants
     ISN_PUSHNR,		// push number isn_arg.number
@@ -178,8 +178,8 @@ typedef struct {
 
 // arguments to ISN_STORENR
 typedef struct {
-    int		str_idx;
-    varnumber_T	str_val;
+    int		stnr_idx;
+    varnumber_T	stnr_val;
 } storenr_T;
 
 // arguments to ISN_STOREOPT
