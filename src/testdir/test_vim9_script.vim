@@ -855,28 +855,6 @@ def Test_delfunc()
   delete('XToDelFunc')
 enddef
 
-def Test_substitute_cmd()
-  new
-  setline(1, 'something')
-  :substitute(some(other(
-  assert_equal('otherthing', getline(1))
-  bwipe!
-
-  " also when the context is Vim9 script
-  let lines =<< trim END
-    vim9script
-    new
-    setline(1, 'something')
-    :substitute(some(other(
-    assert_equal('otherthing', getline(1))
-    bwipe!
-  END
-  writefile(lines, 'Xvim9lines')
-  source Xvim9lines
-
-  delete('Xvim9lines')
-enddef
-
 def Test_execute_cmd()
   new
   setline(1, 'default')
@@ -918,6 +896,44 @@ def Test_for_outside_of_function()
   writefile(lines, 'Xvim9for.vim')
   source Xvim9for.vim
   delete('Xvim9for.vim')
+enddef
+
+def Test_while_loop()
+  let result = ''
+  let cnt = 0
+  while cnt < 555
+    if cnt == 3
+      break
+    endif
+    cnt += 1
+    if cnt == 2
+      continue
+    endif
+    result ..= cnt .. '_'
+  endwhile
+  assert_equal('1_3_', result)
+enddef
+
+def Test_substitute_cmd()
+  new
+  setline(1, 'something')
+  :substitute(some(other(
+  assert_equal('otherthing', getline(1))
+  bwipe!
+
+  " also when the context is Vim9 script
+  let lines =<< trim END
+    vim9script
+    new
+    setline(1, 'something')
+    :substitute(some(other(
+    assert_equal('otherthing', getline(1))
+    bwipe!
+  END
+  writefile(lines, 'Xvim9lines')
+  source Xvim9lines
+
+  delete('Xvim9lines')
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
