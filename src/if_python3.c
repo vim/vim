@@ -603,7 +603,6 @@ static struct
     static inline void
 py3__Py_DECREF(const char *filename UNUSED, int lineno UNUSED, PyObject *op)
 {
-    _Py_DEC_REFTOTAL;
     if (--op->ob_refcnt != 0)
     {
 #  ifdef Py_REF_DEBUG
