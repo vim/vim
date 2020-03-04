@@ -1,15 +1,15 @@
 # Turkish translations for Vim
-# PACKAGE paketi için Türkçe çeviriler.
-# Copyright (C) 2019 THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# Emir SARI <bitigchi@me.com>, 2019.
-#
+# Vim Türkçe çevirileri.
+# Copyright (C) 2020 Emir SARI <bitigchi@me.com>
+# This file is distributed under the same license as the Vim package.
+# Emir SARI <bitigchi@me.com>, 2020.
+
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-02-25 01:21+0300\n"
-"PO-Revision-Date: 2020-02-25 13:45+0300\n"
+"POT-Creation-Date: 2020-03-04 01:05+0300\n"
+"PO-Revision-Date: 2020-03-04 22:15+0300\n"
 "Last-Translator: Emir SARI <bitigchi@me.com>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
 "Language: tr\n"
@@ -339,7 +339,8 @@ msgstr "E512: Kapatma başarısız oldu"
 
 msgid "E513: write error, conversion failed (make 'fenc' empty to override)"
 msgstr ""
-"E513: Yazma hatası, dönüştürme başarısız (yok saymak için 'fenc'i boş bırakın)"
+"E513: Yazma hatası, dönüştürme başarısız (yok saymak için 'fenc'i boş "
+"bırakın)"
 
 #, c-format
 msgid ""
@@ -6181,6 +6182,9 @@ msgstr "(X11-neXtaw grafik arabirim ile)."
 msgid "with X11-Athena GUI."
 msgstr "(X11-Athena grafik arabirim ile)."
 
+msgid "with Haiku GUI."
+msgstr "(Haiku grafik arabirimi ile)."
+
 msgid "with Photon GUI."
 msgstr "(Photon grafik arabirim ile)."
 
@@ -6342,8 +6346,8 @@ msgid "E1037: Cannot use \"%s\" with %s"
 msgstr "E1037: \"%s\", %s ile kullanılamaz"
 
 #, c-format
-msgid "E1037: Cannot compare %s with %s"
-msgstr "E1037: %s, %s ile karşılaştırılamaz"
+msgid "E1072: Cannot compare %s with %s"
+msgstr "E1072: %s, %s ile karşılaştırılamıyor"
 
 #, c-format
 msgid "E1004: white space required before and after '%s'"
@@ -6369,6 +6373,7 @@ msgstr "E1055: Bu Vim kayan noktalı değer desteği ile derlenmemiş"
 msgid "E1010: Type not recognized: %s"
 msgstr "E1010: Tür tanımlanamadı: %s"
 
+#, c-format
 msgid "E1060: expected dot after name: %s"
 msgstr "E1060: Addan sonra nokta bekleniyordu: %s"
 
