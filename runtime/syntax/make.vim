@@ -18,15 +18,6 @@ set cpo&vim
 syn match makeSpecial	"^\s*[@+-]\+"
 syn match makeNextLine	"\\\n\s*"
 
-" some directives
-syn match makePreCondit	"^ *\(ifn\=\(eq\|def\)\>\|else\(\s\+ifn\=\(eq\|def\)\)\=\>\|endif\>\)"
-syn match makeInclude	"^ *[-s]\=include\s.*$"
-syn match makeStatement	"^ *vpath"
-syn match makeExport    "^ *\(export\|unexport\)\>"
-syn match makeOverride	"^ *override"
-hi link makeOverride makeStatement
-hi link makeExport makeStatement
-
 " catch unmatched define/endef keywords.  endef only matches it is by itself on a line, possibly followed by a commend
 syn region makeDefine start="^\s*define\s" end="^\s*endef\s*\(#.*\)\?$" contains=makeStatement,makeIdent,makePreCondit,makeDefine
 
@@ -63,7 +54,12 @@ syn match makeCommandError "^\s\+\S.*" contained
 syn region makeCommands start=";"hs=s+1 start="^\t" end="^[^\t#]"me=e-1,re=e-1 end="^$" contained contains=makeCmdNextLine,makeSpecial,makeComment,makeIdent,makePreCondit,makeDefine,makeDString,makeSString nextgroup=makeCommandError
 syn match makeCmdNextLine	"\\\n."he=e-1 contained
 
-
+" some directives
+syn match makePreCondit	"^ *\(ifn\=\(eq\|def\)\>\|else\(\s\+ifn\=\(eq\|def\)\)\=\>\|endif\>\)"
+syn match makeInclude	"^ *[-s]\=include\s.*$"
+syn match makeStatement	"^ *vpath"
+syn match makeExport    "^ *\(export\|unexport\)\>"
+syn match makeOverride	"^ *override"
 " Statements / Functions (GNU make)
 syn match makeStatement contained "(\(abspath\|addprefix\|addsuffix\|and\|basename\|call\|dir\|error\|eval\|file\|filter-out\|filter\|findstring\|firstword\|flavor\|foreach\|guile\|if\|info\|join\|lastword\|notdir\|or\|origin\|patsubst\|realpath\|shell\|sort\|strip\|subst\|suffix\|value\|warning\|wildcard\|word\|wordlist\|words\)\>"ms=s+1
 
@@ -103,6 +99,9 @@ syn sync match makeCommandSync groupthere makeCommands "^[A-Za-z0-9_./$()%-][A-Z
 
 hi def link makeNextLine	makeSpecial
 hi def link makeCmdNextLine	makeSpecial
+hi link     makeOverride        makeStatement
+hi link     makeExport          makeStatement
+
 hi def link makeSpecTarget	Statement
 if !exists("make_no_commands")
 hi def link makeCommands	Number
