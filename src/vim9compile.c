@@ -1305,6 +1305,30 @@ reserve_local(cctx_T *cctx, char_u *name, size_t len, int isConst, type_T *type)
     return idx;
 }
 
+    static void
+unwind_local(cctx_T *cctx, int new_top)
+{
+    if (cctx->ctx_locals.ga_len > new_top)
+    {
+	int idx;
+	lvar_T *lvar;
+
+	for (idx = new_top; idx < cctx->ctx_locals.ga_len; ++idx)
+	{
+	    lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
+	    vim_free(lvar->lv_name);
+	}
+    }
+    cctx->ctx_locals.ga_len = new_top;
+}
+
+    static void
+free_local(cctx_T *cctx)
+{
+    unwind_local(cctx, 0);
+    ga_clear(&cctx->ctx_locals);
+}
+
 /*
  * Skip over a type definition and return a pointer to just after it.
  */
@@ -4217,7 +4241,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	emsg(_(e_elseif_without_if));
 	return NULL;
     }
-    cctx->ctx_locals.ga_len = scope->se_local_count;
+    unwind_local(cctx, scope->se_local_count);
 
     if (cctx->ctx_skip == MAYBE)
     {
@@ -4265,7 +4289,7 @@ compile_else(char_u *arg, cctx_T *cctx)
 	emsg(_(e_else_without_if));
 	return NULL;
     }
-    cctx->ctx_locals.ga_len = scope->se_local_count;
+    unwind_local(cctx, scope->se_local_count);
 
     // jump from previous block to the end, unless the else block is empty
     if (cctx->ctx_skip == MAYBE)
@@ -4307,7 +4331,7 @@ compile_endif(char_u *arg, cctx_T *cctx)
     }
     ifscope = &scope->se_u.se_if;
     cctx->ctx_scope = scope->se_outer;
-    cctx->ctx_locals.ga_len = scope->se_local_count;
+    unwind_local(cctx, scope->se_local_count);
 
     if (scope->se_u.se_if.is_if_label >= 0)
     {
@@ -4435,7 +4459,7 @@ compile_endfor(char_u *arg, cctx_T *cctx)
     }
     forscope = &scope->se_u.se_for;
     cctx->ctx_scope = scope->se_outer;
-    cctx->ctx_locals.ga_len = scope->se_local_count;
+    unwind_local(cctx, scope->se_local_count);
 
     // At end of ":for" scope jump back to the FOR instruction.
     generate_JUMP(cctx, JUMP_ALWAYS, forscope->fs_top_label);
@@ -4506,7 +4530,7 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
 	return NULL;
     }
     cctx->ctx_scope = scope->se_outer;
-    cctx->ctx_locals.ga_len = scope->se_local_count;
+    unwind_local(cctx, scope->se_local_count);
 
     // At end of ":for" scope jump back to the FOR instruction.
     generate_JUMP(cctx, JUMP_ALWAYS, scope->se_u.se_while.ws_top_label);
@@ -4599,7 +4623,7 @@ compile_endblock(cctx_T *cctx)
     scope_T	*scope = cctx->ctx_scope;
 
     cctx->ctx_scope = scope->se_outer;
-    cctx->ctx_locals.ga_len = scope->se_local_count;
+    unwind_local(cctx, scope->se_local_count);
     vim_free(scope);
 }
 
@@ -5327,8 +5351,8 @@ erret:
     }
 
     current_sctx = save_current_sctx;
+    free_local(&cctx);
     ga_clear(&cctx.ctx_type_stack);
-    ga_clear(&cctx.ctx_locals);
 }
 
 /*
