@@ -3284,11 +3284,9 @@ func Test_popupwin_filter_input_multibyte()
   call feedkeys("\u3000", 'xt')
   call assert_equal([0xe3, 0x80, 0x80], g:bytes)
 
-  if has('gui')
-    " UTF-8: E3 80 9B, including CSI(0x9B)
-    call feedkeys("\u301b", 'xt')
-    call assert_equal([0xe3, 0x80, 0x9b], g:bytes)
-  endif
+  " UTF-8: E3 80 9B, including CSI(0x9B)
+  call feedkeys("\u301b", 'xt')
+  call assert_equal([0xe3, 0x80, 0x9b], g:bytes)
 
   call popup_clear()
   delfunc MyPopupFilter
