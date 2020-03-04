@@ -1,36 +1,35 @@
-.TH VIMTUTOR 1 "2001 April 2"
+.TH VIMTUTOR 1 "2020 March 4"
 .SH NAME
 vimtutor \- the Vim tutor
 .SH SYNOPSIS
 .br
 .B vimtutor [[[\-l | \-\-language ISO639] [\-c | \-\-chapter NUMBER] [\-g | \-\-gui] [ISO639]] | [\-h | \-\-help] | [\-\-list]]
 .SH DESCRIPTION
-.B Vimtutor
-starts the
-.B Vim
-tutor. It copies the tutor file first, so that it can be modified without changing the original file.
-.PP
 The
 .B Vimtutor
 is useful for people that want to learn their first
 .B Vim
 commands.
 .PP
+.B Vimtutor
+only opens temporary copies of the original tutor files, there is no danger of overwriting the lessons.
+.PP
 .B Vim
-is always started in Vi compatible mode.
-
+is always started in
+.B Vi
+compatible mode.
 .SH OPTIONS
 .TP
 .BR \-l ", " \-\-language =\fIISO639\fR
-Set the two or three letter language code. E.g. 'it', 'es', 'bar'. Defaults to language of locale if available or falls back to English.
+Set the two or three letter language code. E.g. 'it', 'es', 'bar'. Defaults to language of locale if available, else to English.
 .TP
 .BR \-c ", " \-\-chapter =\fINUMBER\fR
 Set the one or two digit chapter number. Defaults to chapter one.
 .TP
 .BR \-g ", " \-\-gui
 Start
-.BR vimtutor
- in the GUI version of vim if available, otherwise fallback to console vim.
+.B vimtutor
+in the GUI version of vim if available, otherwise fallback to console vim.
 .TP
 .BR \-h ", " \-\-help
 Display usage information.
@@ -39,7 +38,7 @@ Display usage information.
 Display chapters and languages.
 .SH EXAMPLES
 To start
-.BR vimtutor
+.B vimtutor
 in German on chapter one:
 .PP
 .nf
@@ -65,36 +64,38 @@ vimtutor --language bar --chapter 1 --gui
 .fi
 .SH FILES
 .TP 15
-/usr/local/lib/vim/tutor/tutor[.language]
+/usr/share/vim/vim82/tutor/tutor[.language]
 The
 .B Vimtutor
 chapter one text file(s).
 .TP 15
-/usr/local/lib/vim/tutor/tutor02[.language]
+/usr/share/vim/vim82/tutor/tutor02[.language]
 The
 .B Vimtutor
 chapter two text file(s).
 .TP 15
-/usr/local/lib/vim/tutor/tutor.vim
-The Vim script used to copy the
+/usr/share/vim/vim82/tutor/tutor.vim
+The
+.B Vim
+script used to copy the
 .B Vimtutor
 chapter one text file.
 .TP 15
-/usr/local/lib/vim/tutor/tutor02.vim
-The Vim script used to copy the
+/usr/share/vim/vim82/tutor/tutor02.vim
+The
+.B Vim
+script used to copy the
 .B Vimtutor
 chapter two text file.
 .SH AUTHOR
-The
-.B Vimtutor
-was originally written for Vi by Michael C. Pierce and Robert K. Ware,
-Colorado School of Mines using ideas supplied by Charles Smith,
-Colorado State University.
-E-mail: bware@mines.colorado.edu.
-.br
-It was modified for
+.B The Vi Tutorial
+was originally written for Vi by Michael C. Pierce and Robert K. Ware, Colorado School of Mines using ideas supplied by Charles Smith, Colorado State University.
+.B E-mail: bware@mines.colorado.edu.
+.PP
+Modified for
 .B Vim
 by Bram Moolenaar.
-For the names of the translators see the tutor files.
+.PP
+Translation contributors are listed in the tutor files.
 .SH SEE ALSO
 vim(1)

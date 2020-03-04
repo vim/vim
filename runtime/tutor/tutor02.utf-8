@@ -23,15 +23,14 @@
 
   2. Navigate to any point on the word 'Edward' and type   "ayiw
 
-NOTE: mnemonic => into register(") named (a) (y)ank (i)nner (w)ord
+MNEMONIC: into register(") named (a) (y)ank (i)nner (w)ord
 
   3. Navigate forward to the word 'cookie' (fk or 2fc or $2b or /co<enter>)
      and type   "byiw
 
   4. Navigate to any point on the word 'Vince' and type   ciw<C-r>a<ESC>
 
-NOTE: mnemonic => (c)hange (i)nner (w)ord with <contents of (r)egister> named
-      (a)
+MNEMONIC: (c)hange (i)nner (w)ord with <contents of (r)egister> named (a)
 
   5. Navigate to any point on the word 'cake' and type   ciw<C-r>b<ESC>
 
@@ -66,7 +65,7 @@ REFERENCE: 	Registers 	:h registers
      Today's date is: 
 
 NOTE: the same can be achieved with :pu=system('date')
-      or, with fewer keystrokes :r !date
+      or, with fewer keystrokes :r!date
 
 REFERENCE: 	Expression Register 	:h quote=
 
@@ -136,8 +135,8 @@ NOTE: exact position on line is NOT important!
 
   4. Delete the block into register a with   "ad'a
 
-NOTE: mnemonic => into register(") named (a) put the (d)eletion from the 
-                  cursor to the LINE containing mark(') (a)
+MNEMONIC: into register(") named (a) put the (d)eletion from the cursor to the
+          LINE containing mark(') (a)
 
   5. Paste the block between BBB and CCC   "ap
 
@@ -145,20 +144,18 @@ NOTE: practice this operation multiple times to become fluent   ma$%"ad'a
 
 ---> AAA
      function itGotRealBigRealFast() {
-       if ( somethingIsTrue) {
+       if ( somethingIsTrue ) {
          doIt()
        }
        // the taxonomy of our function has changed and it
-       // no longer makes alphabetical sense in it's current position. 
-     
+       // no longer makes alphabetical sense in it's current position
+
        // imagine hundreds of lines of code
-       ...
-       ...
-     
-       // to find the start and end numbers of this code block, you would 
-       // need to navigate to the start and end and record their line numbers
+
+       // naively you could navigate to the start and end and record or
+       // remember each line number
      }
-     BBB  
+     BBB
      CCC
 
 NOTE: marks and registers do not share a namespace, therefore register a is

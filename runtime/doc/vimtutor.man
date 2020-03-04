@@ -7,22 +7,21 @@ SYNOPSIS
        vimtutor [[[-l | --language ISO639] [-c | --chapter NUMBER] [-g | --gui] [ISO639]] | [-h | --help] | [--list]]
 
 DESCRIPTION
-       Vimtutor starts the Vim tutor. It copies the tutor file first, so that it can be modified without changing the original file.
-
        The Vimtutor is useful for people that want to learn their first Vim commands.
+
+       Vimtutor only opens temporary copies of the original tutor files, there is no danger of overwriting the lessons.
 
        Vim is always started in Vi compatible mode.
 
 OPTIONS
        -l, --language=ISO639
-              Set the two or three letter language code. E.g. 'it', 'es', 'bar'. Defaults to language of locale if available or falls back to English.
+              Set the two or three letter language code. E.g. 'it', 'es', 'bar'. Defaults to language of locale if available, else to English.
 
        -c, --chapter=NUMBER
               Set the one or two digit chapter number. Defaults to chapter one.
 
        -g, --gui
-              Start vimtutor
-               in the GUI version of vim if available, otherwise fallback to console vim.
+              Start vimtutor in the GUI version of vim if available, otherwise fallback to console vim.
 
        -h, --help
               Display usage information.
@@ -43,24 +42,27 @@ EXAMPLES
               vimtutor --language bar --chapter 1 --gui
 
 FILES
-       /usr/local/lib/vim/tutor/tutor[.language]
+       /usr/share/vim/vim82/tutor/tutor[.language]
                       The Vimtutor chapter one text file(s).
 
-       /usr/local/lib/vim/tutor/tutor02[.language]
+       /usr/share/vim/vim82/tutor/tutor02[.language]
                       The Vimtutor chapter two text file(s).
 
-       /usr/local/lib/vim/tutor/tutor.vim
+       /usr/share/vim/vim82/tutor/tutor.vim
                       The Vim script used to copy the Vimtutor chapter one text file.
 
-       /usr/local/lib/vim/tutor/tutor02.vim
+       /usr/share/vim/vim82/tutor/tutor02.vim
                       The Vim script used to copy the Vimtutor chapter two text file.
 
 AUTHOR
-       The Vimtutor was originally written for Vi by Michael C. Pierce and Robert K. Ware, Colorado School of Mines using ideas supplied by Charles Smith, Colorado
-       State University.  E-mail: bware@mines.colorado.edu.
-       It was modified for Vim by Bram Moolenaar.  For the names of the translators see the tutor files.
+       The  Vi Tutorial was originally written for Vi by Michael C. Pierce and Robert K. Ware, Colorado School of Mines using ideas supplied by Charles Smith, Col‐
+       orado State University.  E-mail: bware@mines.colorado.edu.
+
+       Modified for Vim by Bram Moolenaar.
+
+       Translation contributors are listed in the tutor files.
 
 SEE ALSO
        vim(1)
 
-                                                                            2001 April 2                                                                VIMTUTOR(1)
+                                                                            2020 March 4                                                                VIMTUTOR(1)
