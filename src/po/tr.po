@@ -223,7 +223,7 @@ msgid "[Read errors]"
 msgstr "[Okuma hataları]"
 
 msgid "[RO]"
-msgstr "[RO]"
+msgstr "[SO]"
 
 msgid "[readonly]"
 msgstr "[saltokunur]"
@@ -231,8 +231,8 @@ msgstr "[saltokunur]"
 #, c-format
 msgid "%ld line --%d%%--"
 msgid_plural "%ld lines --%d%%--"
-msgstr[0] "%ld satır --%d%%"
-msgstr[1] "%ld satır --%d%%"
+msgstr[0] "%ld. satır --%d%%"
+msgstr[1] "%ld. satır --%d%%"
 
 #, c-format
 msgid "line %ld of %ld --%d%%-- col "
