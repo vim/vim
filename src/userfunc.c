@@ -1739,11 +1739,11 @@ call_func(
     int		ret = FAIL;
     int		error = FCERR_NONE;
     int		i;
-    ufunc_T	*fp;
+    ufunc_T	*fp = NULL;
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*tofree = NULL;
-    char_u	*fname;
-    char_u	*name;
+    char_u	*fname = NULL;
+    char_u	*name = NULL;
     int		argcount = argcount_in;
     typval_T	*argvars = argvars_in;
     dict_T	*selfdict = funcexe->selfdict;
@@ -1757,13 +1757,18 @@ call_func(
     // even when call_func() returns FAIL.
     rettv->v_type = VAR_UNKNOWN;
 
-    // Make a copy of the name, if it comes from a funcref variable it could
-    // be changed or deleted in the called function.
-    name = len > 0 ? vim_strnsave(funcname, len) : vim_strsave(funcname);
-    if (name == NULL)
-	return ret;
+    if (partial != NULL)
+	fp = partial->pt_func;
+    if (fp == NULL)
+    {
+	// Make a copy of the name, if it comes from a funcref variable it
+	// could be changed or deleted in the called function.
+	name = len > 0 ? vim_strnsave(funcname, len) : vim_strsave(funcname);
+	if (name == NULL)
+	    return ret;
 
-    fname = fname_trans_sid(name, fname_buf, &tofree, &error);
+	fname = fname_trans_sid(name, fname_buf, &tofree, &error);
+    }
 
     if (funcexe->doesrange != NULL)
 	*funcexe->doesrange = FALSE;
@@ -1798,21 +1803,19 @@ call_func(
 	char_u *rfname = fname;
 
 	// Ignore "g:" before a function name.
-	if (fname[0] == 'g' && fname[1] == ':')
+	if (fp == NULL && fname[0] == 'g' && fname[1] == ':')
 	    rfname = fname + 2;
 
 	rettv->v_type = VAR_NUMBER;	// default rettv is number zero
 	rettv->vval.v_number = 0;
 	error = FCERR_UNKNOWN;
 
-	if (!builtin_function(rfname, -1))
+	if (fp != NULL || !builtin_function(rfname, -1))
 	{
 	    /*
 	     * User defined function.
 	     */
-	    if (partial != NULL && partial->pt_func != NULL)
-		fp = partial->pt_func;
-	    else
+	    if (fp == NULL)
 		fp = find_func(rfname, NULL);
 
 	    // Trigger FuncUndefined event, may load the function.
