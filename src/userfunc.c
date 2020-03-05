@@ -1895,7 +1895,7 @@ theend:
      */
     if (!aborting())
     {
-	user_func_error(error, name);
+	user_func_error(error, (name != NULL) ? name : funcname);
     }
 
     // clear the copies made from the partial
