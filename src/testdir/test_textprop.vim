@@ -270,6 +270,23 @@ func Test_prop_remove()
 
   call DeletePropTypes()
   bwipe!
+
+  new
+  call AddPropTypes()
+  call SetupPropsInFirstLine()
+  call prop_add(1, 6, {'length': 2, 'id': 11, 'type': 'three'})
+  let props = Get_expected_props()
+  call insert(props, {'col': 6, 'length': 2, 'id': 11, 'type': 'three', 'start': 1, 'end': 1}, 3)
+  call assert_equal(props, prop_list(1))
+  call assert_equal(1, prop_remove({'type': 'three', 'id': 11, 'both': 1, 'all': 1}, 1))
+  unlet props[3]
+  call assert_equal(props, prop_list(1))
+
+  call assert_fails("call prop_remove({'id': 11, 'both': 1})", 'E860')
+  call assert_fails("call prop_remove({'type': 'three', 'both': 1})", 'E860')
+
+  call DeletePropTypes()
+  bwipe!
 endfunc
 
 func SetupOneLine()

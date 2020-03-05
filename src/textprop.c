@@ -796,6 +796,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     int		do_all = FALSE;
     int		id = -1;
     int		type_id = -1;
+    int		both = FALSE;
 
     rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
@@ -838,9 +839,16 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	    return;
 	type_id = type->pt_id;
     }
+    if (dict_find(dict, (char_u *)"both", -1) != NULL)
+	both = dict_get_number(dict, (char_u *)"both");
     if (id == -1 && type_id == -1)
     {
 	emsg(_("E968: Need at least one of 'id' or 'type'"));
+	return;
+    }
+    if (both && (id == -1 || type_id == -1))
+    {
+	emsg(_("E860: Need 'id' and 'type' with 'both'"));
 	return;
     }
 
@@ -868,7 +876,8 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 		size_t	taillen;
 
 		mch_memmove(&textprop, cur_prop, sizeof(textprop_T));
-		if (textprop.tp_id == id || textprop.tp_type == type_id)
+		if (both ? textprop.tp_id == id && textprop.tp_type == type_id
+			 : textprop.tp_id == id || textprop.tp_type == type_id)
 		{
 		    if (!(buf->b_ml.ml_flags & ML_LINE_DIRTY))
 		    {
