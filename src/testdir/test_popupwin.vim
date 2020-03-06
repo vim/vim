@@ -3293,4 +3293,17 @@ func Test_popupwin_filter_input_multibyte()
   unlet g:bytes
 endfunc
 
+func Test_popupwin_atcursor_far_right()
+  new
+
+  " this was getting stuck
+  set signcolumn=yes
+  call setline(1, repeat('=', &columns))
+  normal! ggg$
+  call popup_atcursor(repeat('x', 500), #{moved: 'any', border: []})
+
+  bwipe!
+  set signcolumn&
+endfunc
+
 " vim: shiftwidth=2 sts=2
