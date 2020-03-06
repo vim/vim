@@ -24,6 +24,7 @@
 #define FC_SANDBOX  0x40	// function defined in the sandbox
 #define FC_DEAD	    0x80	// function kept only for reference to dfunc
 #define FC_EXPORT   0x100	// "export def Func()"
+#define FC_NOARGS   0x200	// No a: variables
 
 /*
  * All user-defined functions are found in this hashtable.
@@ -381,6 +382,9 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	((char_u **)(newlines.ga_data))[newlines.ga_len++] = p;
 	STRCPY(p, "return ");
 	vim_strncpy(p + 7, s, e - s);
+	if (strstr(p + 7, "a:") == NULL)
+	    // No a: variables are used.
+	    flags |= FC_NOARGS;
 
 	fp->uf_refcount = 1;
 	set_ufunc_name(fp, name);
@@ -1106,20 +1110,24 @@ call_user_func(
      * Set a:000 to a list with room for the "..." arguments.
      */
     init_var_dict(&fc->l_avars, &fc->l_avars_var, VAR_SCOPE);
-    add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "0",
+    if ((fp->uf_flags & FC_NOARGS) == 0)
+	add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "0",
 				(varnumber_T)(argcount >= fp->uf_args.ga_len
 				    ? argcount - fp->uf_args.ga_len : 0));
     fc->l_avars.dv_lock = VAR_FIXED;
     // Use "name" to avoid a warning from some compiler that checks the
     // destination size.
-    v = &fc->fixvar[fixvar_idx++].var;
-    name = v->di_key;
-    STRCPY(name, "000");
-    v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
-    hash_add(&fc->l_avars.dv_hashtab, DI2HIKEY(v));
-    v->di_tv.v_type = VAR_LIST;
-    v->di_tv.v_lock = VAR_FIXED;
-    v->di_tv.vval.v_list = &fc->l_varlist;
+    if ((fp->uf_flags & FC_NOARGS) == 0)
+    {
+	v = &fc->fixvar[fixvar_idx++].var;
+	name = v->di_key;
+	STRCPY(name, "000");
+	v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
+	hash_add(&fc->l_avars.dv_hashtab, DI2HIKEY(v));
+	v->di_tv.v_type = VAR_LIST;
+	v->di_tv.v_lock = VAR_FIXED;
+	v->di_tv.vval.v_list = &fc->l_varlist;
+    }
     vim_memset(&fc->l_varlist, 0, sizeof(list_T));
     fc->l_varlist.lv_refcount = DO_NOT_FREE_CNT;
     fc->l_varlist.lv_lock = VAR_FIXED;
@@ -1129,7 +1137,7 @@ call_user_func(
      * Set a:name to named arguments.
      * Set a:N to the "..." arguments.
      */
-    if (!islambda)
+    if ((fp->uf_flags & FC_NOARGS) == 0)
     {
 	add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "firstline",
 						      (varnumber_T)firstline);
@@ -1171,6 +1179,9 @@ call_user_func(
 	}
 	else
 	{
+	    if ((fp->uf_flags & FC_NOARGS) != 0)
+		break;
+
 	    // "..." argument a:1, a:2, etc.
 	    sprintf((char *)numbuf, "%d", ai + 1);
 	    name = numbuf;
