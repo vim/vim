@@ -4664,19 +4664,19 @@ msgstr "%ld satırlık yer açılıyor"
 
 #, c-format
 msgid " into \"%c"
-msgstr " \"%c içine"
+msgstr " \"%c"
 
 #, c-format
 msgid "block of %ld line yanked%s"
 msgid_plural "block of %ld lines yanked%s"
-msgstr[0] "%ld satırlık bir blok kopyalandı%s"
-msgstr[1] "%ld satırlık bir blok kopyalandı%s"
+msgstr[0] "%ld satırlık blok şuraya kopyalandı:%s"
+msgstr[1] "%ld satırlık blok şuraya kopyalandı:%s"
 
 #, c-format
 msgid "%ld line yanked%s"
 msgid_plural "%ld lines yanked%s"
-msgstr[0] "%ld satır kopyalandı%s"
-msgstr[1] "%ld satır kopyalandı%s"
+msgstr[0] "%ld satır şuraya kopyalandı:%s"
+msgstr[1] "%ld satır şuraya kopyalandı:%s"
 
 #, c-format
 msgid "E353: Nothing in register %s"
