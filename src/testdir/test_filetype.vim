@@ -601,6 +601,7 @@ let s:script_checks = {
       \ 'haskell': [['#!/path/haskell']],
       \ 'cpp': [['// Standard iostream objects -*- C++ -*-'],
       \         ['// -*- C++ -*-']],
+      \ 'yaml': [['%YAML 1.2']],
       \ }
 
 func Test_script_detection()
