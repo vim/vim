@@ -54,6 +54,7 @@ func Test_ex_mode()
     " default wildchar <Tab> interferes with this test
     set wildchar=<c-e>
     call assert_equal(["a\tb", "a\tb"],           Ex("a\t\t\<C-H>b"), e)
+    call assert_equal(["\t  mn", "\tm\<C-T>n"],        Ex("\tm\<C-T>n"), e)
     set wildchar&
   endfor
 
