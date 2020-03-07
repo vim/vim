@@ -5346,6 +5346,16 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	generate_instr(&cctx, ISN_RETURN);
     }
 
+    // Free old instructions.
+    if (dfunc->df_instr != NULL)
+    {
+	int idx;
+
+	for (idx = 0; idx < dfunc->df_instr_count; ++idx)
+	    delete_instr(dfunc->df_instr + idx);
+	vim_free(dfunc->df_instr);
+    }
+
     dfunc->df_instr = instr->ga_data;
     dfunc->df_instr_count = instr->ga_len;
     dfunc->df_varcount = cctx.ctx_max_local;
@@ -5355,6 +5365,10 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 erret:
     if (ret == FAIL)
     {
+	int idx;
+
+	for (idx = 0; idx < instr->ga_len; ++idx)
+	    delete_instr(((isn_T *)instr->ga_data) + idx);
 	ga_clear(instr);
 	ufunc->uf_dfunc_idx = -1;
 	--def_functions.ga_len;
