@@ -1992,15 +1992,20 @@ func Test_job_start_fails()
 endfunc
 
 func Test_issue_5150()
-  let g:job = job_start('grep foo', {})
+  if has('win32')
+    let cmd = 'cmd /c pause'
+  else
+    let cmd = 'grep foo'
+  endif
+  let g:job = job_start(cmd, {})
   call job_stop(g:job)
   sleep 10m
   call assert_equal(-1, job_info(g:job).exitval)
-  let g:job = job_start('grep foo', {})
+  let g:job = job_start(cmd, {})
   call job_stop(g:job, 'term')
   sleep 10m
   call assert_equal(-1, job_info(g:job).exitval)
-  let g:job = job_start('grep foo', {})
+  let g:job = job_start(cmd, {})
   call job_stop(g:job, 'kill')
   sleep 10m
   call assert_equal(-1, job_info(g:job).exitval)
