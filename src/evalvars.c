@@ -3643,7 +3643,8 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
     callback_T
 get_callback(typval_T *arg)
 {
-    callback_T res;
+    callback_T  res;
+    int		r = OK;
 
     res.cb_free_name = FALSE;
     if (arg->v_type == VAR_PARTIAL && arg->vval.v_partial != NULL)
@@ -3655,17 +3656,21 @@ get_callback(typval_T *arg)
     else
     {
 	res.cb_partial = NULL;
-	if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
+	if (arg->v_type == VAR_STRING && arg->vval.v_string != NULL
+					       && isdigit(*arg->vval.v_string))
+	    r = FAIL;
+	else if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
 	{
 	    // Note that we don't make a copy of the string.
 	    res.cb_name = arg->vval.v_string;
 	    func_ref(res.cb_name);
 	}
 	else if (arg->v_type == VAR_NUMBER && arg->vval.v_number == 0)
-	{
 	    res.cb_name = (char_u *)"";
-	}
 	else
+	    r = FAIL;
+
+	if (r == FAIL)
 	{
 	    emsg(_("E921: Invalid callback argument"));
 	    res.cb_name = NULL;
