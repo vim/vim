@@ -1678,6 +1678,7 @@ failed:
     for (idx = 0; idx < ectx.ec_stack.ga_len; ++idx)
 	clear_tv(STACK_TV(idx));
     vim_free(ectx.ec_stack.ga_data);
+    vim_free(ectx.ec_trystack.ga_data);
     return ret;
 }
 
