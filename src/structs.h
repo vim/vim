@@ -1308,6 +1308,7 @@ typedef struct {
     int		cb_free_name;	    // cb_name was allocated
 } callback_T;
 
+typedef struct isn_S isn_T;	    // instruction
 typedef struct dfunc_S dfunc_T;	    // :def function
 
 typedef struct jobvar_S job_T;

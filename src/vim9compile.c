@@ -5362,7 +5362,7 @@ erret:
 /*
  * Delete an instruction, free what it contains.
  */
-    static void
+    void
 delete_instr(isn_T *isn)
 {
     switch (isn->isn_type)
