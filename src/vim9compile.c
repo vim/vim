@@ -1286,7 +1286,7 @@ reserve_local(cctx_T *cctx, char_u *name, size_t len, int isConst, type_T *type)
 
     if (lookup_arg(name, len, cctx) >= 0 || lookup_vararg(name, len, cctx))
     {
-	emsg_namelen(_("E1006: %s is used as an argument"), name, (int)len);
+	semsg(_("E1006: %.*s is used as an argument"), (int)len, name);
 	return -1;
     }
 
