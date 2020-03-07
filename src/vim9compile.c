@@ -5364,7 +5364,7 @@ erret:
 	    emsg(_("E1028: compile_def_function failed"));
 
 	// don't execute this function body
-	ufunc->uf_lines.ga_len = 0;
+	ga_clear_strings(&ufunc->uf_lines);
     }
 
     current_sctx = save_current_sctx;
