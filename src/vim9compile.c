@@ -2151,7 +2151,10 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     // Get the funcref in "rettv".
     if (get_lambda_tv(arg, &rettv, TRUE) == FAIL)
 	return FAIL;
+
     ufunc = rettv.vval.v_partial->pt_func;
+    ++ufunc->uf_refcount;
+    clear_tv(&rettv);
 
     // The function will have one line: "return {expr}".
     // Compile it into instructions.
@@ -2193,10 +2196,12 @@ compile_lambda_call(char_u **arg, cctx_T *cctx)
 	return FAIL;
     }
 
-    // The function will have one line: "return {expr}".
-    // Compile it into instructions.
     ufunc = rettv.vval.v_partial->pt_func;
     ++ufunc->uf_refcount;
+    clear_tv(&rettv);
+
+    // The function will have one line: "return {expr}".
+    // Compile it into instructions.
     compile_def_function(ufunc, TRUE);
 
     // compile the arguments
@@ -2205,7 +2210,6 @@ compile_lambda_call(char_u **arg, cctx_T *cctx)
 	// call the compiled function
 	ret = generate_CALL(cctx, ufunc, argcount);
 
-    clear_tv(&rettv);
     return ret;
 }
 
