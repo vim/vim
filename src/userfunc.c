@@ -3086,11 +3086,11 @@ ex_function(exarg_T *eap)
 
 erret:
     ga_clear_strings(&newargs);
-    ga_clear_strings(&argtypes);
     ga_clear_strings(&default_args);
 errret_2:
     ga_clear_strings(&newlines);
 ret_free:
+    ga_clear_strings(&argtypes);
     vim_free(skip_until);
     vim_free(line_to_free);
     vim_free(fudi.fd_newkey);
