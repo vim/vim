@@ -8612,10 +8612,10 @@ setpos({expr}, {list})
 setqflist({list} [, {action} [, {what}]])		*setqflist()*
 		Create or replace or add to the quickfix list.
 
-		When {what} is not present, use the items in {list}.  Each
-		item must be a dictionary.  Non-dictionary items in {list} are
-		ignored.  Each dictionary item can contain the following
-		entries:
+		The items in {list} are used only when {what} is not present.
+		Each item must be a dictionary.  Non-dictionary items in
+		{list} are ignored. Each dictionary item can contain the
+		following entries:
 
 		    bufnr	buffer number; must be the number of a valid
 				buffer
@@ -8671,6 +8671,7 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 		only the items listed in {what} are set. The first {list}
 		argument is ignored.  The following items can be specified in
 		{what}:
+
 		    context	quickfix list context. See |quickfix-context|
 		    efm		errorformat to use when parsing text from
 				"lines". If this is not present, then the
@@ -8691,6 +8692,7 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 				means the current quickfix list and "$" means
 				the last quickfix list.
 		    title	quickfix list title text. See |quickfix-title|
+
 		Unsupported keys in {what} are ignored.
 		If the "nr" item is not present, then the current quickfix list
 		is modified. When creating a new quickfix list, "nr" can be
