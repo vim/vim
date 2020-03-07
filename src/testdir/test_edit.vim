@@ -265,6 +265,10 @@ func Test_edit_10()
   call cursor(1, 4)
   call feedkeys("A\<s-home>start\<esc>", 'txin')
   call assert_equal(['startdef', 'ghi'], getline(1, '$'))
+  " start select mode again with gv
+  set selectmode=cmd
+  call feedkeys('gvabc', 'xt')
+  call assert_equal('abctdef', getline(1))
   set selectmode= keymodel=
   bw!
 endfunc
@@ -1262,6 +1266,16 @@ func Test_edit_forbidden()
     call assert_fails(1, 'unknown function')
   catch /^Vim\%((\a\+)\)\=:E117/ " catch E117: unknown function
   endtry
+  au! InsertCharPre
+  " Not allowed to enter ex mode when text is locked
+  au InsertCharPre <buffer> :normal! gQ<CR>
+  let caught_e523 = 0
+  try
+    call feedkeys("ix\<esc>", 'xt')
+  catch /^Vim\%((\a\+)\)\=:E523/ " catch E523
+    let caught_e523 = 1
+  endtry
+  call assert_equal(1, caught_e523)
   au! InsertCharPre
   " 3) edit when completion is shown
   fun! Complete(findstart, base)
