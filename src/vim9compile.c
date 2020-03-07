@@ -1695,6 +1695,20 @@ find_imported(char_u *name, size_t len, cctx_T *cctx)
     return NULL;
 }
 
+    static void
+free_imported(cctx_T *cctx)
+{
+    int idx;
+
+    for (idx = 0; idx < cctx->ctx_imports.ga_len; ++idx)
+    {
+	imported_T *import = ((imported_T *)cctx->ctx_imports.ga_data) + idx;
+
+	vim_free(import->imp_name);
+    }
+    ga_clear(&cctx->ctx_imports);
+}
+
 /*
  * Generate an instruction to load script-local variable "name".
  */
@@ -5354,6 +5368,7 @@ erret:
     }
 
     current_sctx = save_current_sctx;
+    free_imported(&cctx);
     free_local(&cctx);
     ga_clear(&cctx.ctx_type_stack);
 }
