@@ -1133,7 +1133,8 @@ do_source(
     {
 	// Already loaded and no need to load again, return here.
 	*ret_sid = sid;
-	return OK;
+	retval = OK;
+	goto theend;
     }
 #endif
 
