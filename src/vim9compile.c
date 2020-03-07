@@ -5481,6 +5481,7 @@ delete_def_function(ufunc_T *ufunc)
     {
 	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
+
 	ga_clear(&dfunc->df_def_args_isn);
 
 	for (idx = 0; idx < dfunc->df_instr_count; ++idx)
@@ -5495,6 +5496,19 @@ delete_def_function(ufunc_T *ufunc)
     void
 free_def_functions(void)
 {
+    int i, j;
+
+    for (i = 0; i < def_functions.ga_len; ++i)
+    {
+	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + i;
+
+	ga_clear(&dfunc->df_def_args_isn);
+
+	for (j = 0; j < dfunc->df_instr_count; ++j)
+	    if (dfunc->df_instr != NULL)
+		delete_instr(dfunc->df_instr + j);
+	VIM_CLEAR(dfunc->df_instr);
+    }
     vim_free(def_functions.ga_data);
 }
 #endif
