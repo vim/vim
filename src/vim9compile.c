@@ -3426,7 +3426,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	{
 	    int	    cc;
 	    long	    numval;
-	    char_u	    *stringval = NULL;
 
 	    dest = dest_option;
 	    if (cmdidx == CMD_const)
@@ -3448,7 +3447,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    }
 	    cc = *p;
 	    *p = NUL;
-	    opt_type = get_option_value(arg + 1, &numval, &stringval, opt_flags);
+	    opt_type = get_option_value(arg + 1, &numval, NULL, opt_flags);
 	    *p = cc;
 	    if (opt_type == -3)
 	    {
