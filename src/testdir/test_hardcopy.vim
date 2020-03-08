@@ -64,9 +64,12 @@ func Test_printmbfont()
 endfunc
 
 func Test_errors()
-  edit test_hardcopy.vim
-  call assert_fails('hardcopy! >', 'E324:')
-  bwipe
+  " Windows fails differently than Unix.
+  if has('unix')
+    edit test_hardcopy.vim
+    call assert_fails('hardcopy >', 'E324:')
+    bwipe
+  endif
 endfunc
 
 func Test_dark_background()
