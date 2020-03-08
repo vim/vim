@@ -1316,4 +1316,14 @@ func Test_cmdline_composing_chars()
   call assert_equal('"ゔ', @:)
 endfunc
 
+" Test for normal mode commands not supported in the cmd window
+func Test_cmdwin_blocked_commands()
+  call assert_fails('call feedkeys("q:\<C-T>\<CR>", "xt")', 'E11:')
+  call assert_fails('call feedkeys("q:\<C-]>\<CR>", "xt")', 'E11:')
+  call assert_fails('call feedkeys("q:\<C-^>\<CR>", "xt")', 'E11:')
+  call assert_fails('call feedkeys("q:Q\<CR>", "xt")', 'E11:')
+  call assert_fails('call feedkeys("q:Z\<CR>", "xt")', 'E11:')
+  call assert_fails('call feedkeys("q:\<F1>\<CR>", "xt")', 'E11:')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
