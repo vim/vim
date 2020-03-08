@@ -434,8 +434,8 @@ func Test_normal11_showcmd()
   bw!
 endfunc
 
+" Test for nv_error
 func Test_normal12_nv_error()
-  " Test for nv_error
   10new
   call setline(1, range(1,5))
   " should not do anything, just beep
@@ -445,6 +445,7 @@ func Test_normal12_nv_error()
   call assert_beeps("normal! g\<C-A>")
   call assert_beeps("normal! g\<C-X>")
   call assert_beeps("normal! g\<C-B>")
+  call assert_beeps("normal! vQ")
   bw!
 endfunc
 
@@ -720,6 +721,27 @@ func Test_normal17_z_scroll_hor2()
   " cleanup
   set wrap listchars=eol:$ sidescrolloff=0
   bw!
+endfunc
+
+" Test for H, M and L commands with folds
+func Test_scroll_cmds()
+  new
+  call setline(1, range(1, 100))
+  exe "normal! 30ggz\<CR>"
+  set foldenable
+  33,36fold
+  40,43fold
+  46,49fold
+  let h = winheight(0)
+  " Top of the screen = 30
+  " Folded lines = 9
+  " Bottom of the screen = 30 + h + 9 - 1
+  normal! 4L
+  call assert_equal(35 + h, line('.'))
+  normal! 4H
+  call assert_equal(33, line('.'))
+  set foldenable&
+  close!
 endfunc
 
 func Test_normal18_z_fold()
@@ -1157,6 +1179,9 @@ func Test_normal22_zet()
   let a = readfile('Xfile')
   call assert_equal(['1', '2'], a)
 
+  " Unsupported Z command
+  call assert_beeps('normal! ZW')
+
   " clean up
   for file in ['Xfile']
     call delete(file)
@@ -1224,6 +1249,15 @@ func Test_normal23_K()
   else
     call assert_match("man --pager=cat 'man'", a)
   endif
+
+  " Error cases
+  call setline(1, '#$#')
+  call assert_fails('normal! ggK', 'E349:')
+  call setline(1, '---')
+  call assert_fails('normal! ggv2lK', 'E349:')
+  call setline(1, ['abc', 'xyz'])
+  call assert_fails("normal! gg2lv2h\<C-]>", 'E426:')
+  call assert_beeps("normal! ggVjK")
 
   " clean up
   let &keywordprg = k
@@ -1860,6 +1894,10 @@ func Test_g_ctrl_g()
   let a = execute(":norm! g\<c-g>")
   call assert_equal("\n--No lines in buffer--", a)
 
+  " Test for CTRL-G (same as :file)
+  let a = execute(":norm! \<c-g>")
+  call assert_equal("\n\n\"[No Name]\" --No lines in buffer--", a)
+
   call setline(1, ['first line', 'second line'])
 
   " Test g CTRL-g with dos, mac and unix file type.
@@ -2076,6 +2114,19 @@ fun! Test_normal38_nvhome()
   bw!
 endfunc
 
+" Test for <End> and <C-End> keys
+func Test_normal_nvend()
+  new
+  call setline(1, map(range(1, 10), '"line" .. v:val'))
+  exe "normal! \<End>"
+  call assert_equal(5, col('.'))
+  exe "normal! 4\<End>"
+  call assert_equal([4, 5], [line('.'), col('.')])
+  exe "normal! \<C-End>"
+  call assert_equal([10, 6], [line('.'), col('.')])
+  close!
+endfunc
+
 " Test for cw cW ce
 fun! Test_normal39_cw()
   " Test for cw and cW on whitespace
@@ -2136,6 +2187,11 @@ fun! Test_normal40_ctrl_bsl()
   set noim
   call assert_equal('are   some words', getline(1))
   call assert_false(&insertmode)
+  call assert_beeps("normal! \<C-\>\<C-A>", 'xt')
+
+  " Using CTRL-\ CTRL-N in cmd window should close the window
+  call feedkeys("q:\<C-\>\<C-N>", 'xt')
+  call assert_equal('', getcmdwintype())
 
   " clean up
   bw!
@@ -2603,6 +2659,10 @@ endfunc
 " Jumping to beginning and end of methods in Java-like languages
 func Test_java_motion()
   new
+  call assert_beeps('normal! [m')
+  call assert_beeps('normal! ]m')
+  call assert_beeps('normal! [M')
+  call assert_beeps('normal! ]M')
   a
 Piece of Java
 {
@@ -2840,12 +2900,20 @@ func Test_wincmd_with_count()
 endfunc
 
 " Test for 'b', 'B' 'ge' and 'gE' commands
-func Test_backward_motion()
+func Test_horiz_motion()
+  new
   normal! gg
   call assert_beeps('normal! b')
   call assert_beeps('normal! B')
   call assert_beeps('normal! gE')
   call assert_beeps('normal! ge')
+  " <S-Backspace> moves one word left and <C-Backspace> moves one WORD left
+  call setline(1, 'one ,two ,three')
+  exe "normal! $\<S-BS>"
+  call assert_equal(11, col('.'))
+  exe "normal! $\<C-BS>"
+  call assert_equal(10, col('.'))
+  close!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

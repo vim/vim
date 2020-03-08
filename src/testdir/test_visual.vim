@@ -645,6 +645,16 @@ func Test_characterwise_select_mode()
   exe "normal Gkgh\<Down>\<End>\<Del>"
   call assert_equal(['', 'a', ''], getline(1, '$'))
 
+  " CTRL-H in select mode behaves like 'x'
+  call setline(1, 'abcdef')
+  exe "normal! gggh\<Right>\<Right>\<Right>\<C-H>"
+  call assert_equal('ef', getline(1))
+
+  " CTRL-O in select mode switches to visual mode for one command
+  call setline(1, 'abcdef')
+  exe "normal! gggh\<C-O>3lm"
+  call assert_equal('mef', getline(1))
+
   sunmap <lt>End>
   sunmap <lt>Down>
   sunmap <lt>Del>

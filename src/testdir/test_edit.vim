@@ -281,7 +281,7 @@ func Test_edit_11()
   call cursor(2, 1)
   call feedkeys("i\<c-f>int c;\<esc>", 'tnix')
   call cursor(3, 1)
-  call feedkeys("i/* comment */", 'tnix')
+  call feedkeys("\<Insert>/* comment */", 'tnix')
   call assert_equal(['{', "\<tab>int c;", "/* comment */"], getline(1, '$'))
   " added changed cindentkeys slightly
   set cindent cinkeys+=*/
@@ -1266,16 +1266,6 @@ func Test_edit_forbidden()
     call assert_fails(1, 'unknown function')
   catch /^Vim\%((\a\+)\)\=:E117/ " catch E117: unknown function
   endtry
-  au! InsertCharPre
-  " Not allowed to enter ex mode when text is locked
-  au InsertCharPre <buffer> :normal! gQ<CR>
-  let caught_e523 = 0
-  try
-    call feedkeys("ix\<esc>", 'xt')
-  catch /^Vim\%((\a\+)\)\=:E523/ " catch E523
-    let caught_e523 = 1
-  endtry
-  call assert_equal(1, caught_e523)
   au! InsertCharPre
   " 3) edit when completion is shown
   fun! Complete(findstart, base)
