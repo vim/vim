@@ -725,7 +725,7 @@ endfunc
 
 " Test for H, M and L commands with folds
 func Test_scroll_cmds()
-  new
+  15new
   call setline(1, range(1, 100))
   exe "normal! 30ggz\<CR>"
   set foldenable
