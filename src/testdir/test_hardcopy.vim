@@ -63,6 +63,39 @@ func Test_printmbfont()
   bwipe
 endfunc
 
+func Test_printexpr()
+  if !has('unix')
+    return
+  endif
+
+  " Not a very useful printexpr value, but enough to test
+  " hardcopy with 'printexpr'.
+  function PrintFile(fname)
+    call writefile(['Test printexpr: ' .. v:cmdarg],
+    \              'Xhardcopy_printexpr')
+    call delete(a:fname)
+    return 0
+  endfunc
+  set printexpr=PrintFile(v:fname_in)
+
+  help help
+  hardcopy dummy args
+  call assert_equal(['Test printexpr: dummy args'],
+  \                 readfile('Xhardcopy_printexpr'))
+  call delete('Xhardcopy_printexpr')
+
+  " Function return 1 to test print failure.
+  function PrintFails(fname)
+    call delete(a:fname)
+    return 1
+  endfunc
+  set printexpr=PrintFails(v:fname_in)
+  call assert_fails('hardcopy', 'E365:')
+
+  set printexpr&
+  bwipe
+endfunc
+
 func Test_errors()
   " FIXME: Windows fails differently than Unix.
   if has('unix')
