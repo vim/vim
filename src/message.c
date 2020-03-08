@@ -4722,7 +4722,10 @@ vim_vsnprintf_typval(
 			    // signed
 			    switch (length_modifier)
 			    {
-			    case '\0':
+			    case '\0': str_arg_l += sprintf(
+						 tmp + str_arg_l, f,
+						 int_arg);
+				       break;
 			    case 'h': str_arg_l += sprintf(
 						 tmp + str_arg_l, f,
 						 (short)int_arg);
@@ -4740,7 +4743,10 @@ vim_vsnprintf_typval(
 			    // unsigned
 			    switch (length_modifier)
 			    {
-			    case '\0':
+			    case '\0': str_arg_l += sprintf(
+						tmp + str_arg_l, f,
+						uint_arg);
+				       break;
 			    case 'h': str_arg_l += sprintf(
 						tmp + str_arg_l, f,
 						(unsigned short)uint_arg);
