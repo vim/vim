@@ -7,7 +7,9 @@ func Test_printoptions()
   for opt in ['left:5in,right:10pt,top:8mm,bottom:2pc',
         \     'left:2in,top:30pt,right:16mm,bottom:3pc',
         \     'header:3,syntax:y,number:y,wrap:n',
+        \     'header:3,syntax:n,number:y,wrap:y',
         \     'duplex:short,collate:n,jobsplit:y,portrait:n',
+        \     'duplex:long,collate:y,jobsplit:n,portrait:y',
         \     'paper:10x14',
         \     'paper:A3',
         \     'paper:A4',
@@ -68,16 +70,20 @@ func Test_errors()
 endfunc
 
 func Test_dark_background()
-  set background=dark
   edit test_hardcopy.vim
+  syn on
 
-  if has('postscript')
-    hardcopy > Xhardcopy_dark_background
-    let lines = readfile('Xhardcopy_dark_background')
-    call assert_true(len(lines) > 20)
-    call assert_true(lines[0] =~ 'PS-Adobe')
-    call delete('Xhardcopy_dark_background')
-  endif
+  for bg in ['dark', 'light']
+    exe 'set background=' .. bg
+
+    if has('postscript')
+      hardcopy > Xhardcopy_dark_background
+      let lines = readfile('Xhardcopy_dark_background')
+      call assert_true(len(lines) > 20)
+      call assert_true(lines[0] =~ 'PS-Adobe')
+      call delete('Xhardcopy_dark_background')
+    endif
+  endfor
 
   set background&
   bwipe
@@ -85,7 +91,6 @@ endfun
 
 func Test_empty_buffer()
   new
-  call assert_equal("\nNo text to be printed", execute('hardcopy'))
   call assert_equal("\nNo text to be printed", execute('hardcopy!'))
   bwipe
 endfunc
