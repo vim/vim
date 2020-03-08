@@ -65,7 +65,7 @@ endfunc
 
 func Test_errors()
   edit test_hardcopy.vim
-  call assert_fails('hardcopy >', 'E324:')
+  call assert_fails('hardcopy! >', 'E324:')
   bwipe
 endfunc
 
