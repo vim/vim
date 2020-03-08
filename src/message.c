@@ -4724,7 +4724,8 @@ vim_vsnprintf_typval(
 			    {
 			    case '\0':
 			    case 'h': str_arg_l += sprintf(
-						 tmp + str_arg_l, f, int_arg);
+						 tmp + str_arg_l, f,
+						 (short)int_arg);
 				      break;
 			    case 'l': str_arg_l += sprintf(
 						tmp + str_arg_l, f, long_arg);
@@ -4741,7 +4742,8 @@ vim_vsnprintf_typval(
 			    {
 			    case '\0':
 			    case 'h': str_arg_l += sprintf(
-						tmp + str_arg_l, f, uint_arg);
+						tmp + str_arg_l, f,
+						(unsigned short)uint_arg);
 				      break;
 			    case 'l': str_arg_l += sprintf(
 					       tmp + str_arg_l, f, ulong_arg);
