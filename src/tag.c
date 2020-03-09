@@ -3229,7 +3229,9 @@ parse_match(
 		tagp->command_end = p;
 	    p += 2;	// skip ";\""
 	    if (*p++ == TAB)
-		while (ASCII_ISALPHA(*p))
+		// Accept ASCII alphabetic kind characters and any multi-byte
+		// character.
+		while (ASCII_ISALPHA(*p) || mb_ptr2len(p) > 1)
 		{
 		    if (STRNCMP(p, "kind:", 5) == 0)
 			tagp->tagkind = p + 5;
@@ -3245,20 +3247,21 @@ parse_match(
 			tagp->tagkind = p;
 		    if (pt == NULL)
 			break;
-		    p = pt + 1;
+		    p = pt;
+		    MB_PTR_ADV(p);
 		}
 	}
 	if (tagp->tagkind != NULL)
 	{
 	    for (p = tagp->tagkind;
-			    *p && *p != '\t' && *p != '\r' && *p != '\n'; ++p)
+			    *p && *p != '\t' && *p != '\r' && *p != '\n'; MB_PTR_ADV(p))
 		;
 	    tagp->tagkind_end = p;
 	}
 	if (tagp->user_data != NULL)
 	{
 	    for (p = tagp->user_data;
-			    *p && *p != '\t' && *p != '\r' && *p != '\n'; ++p)
+			    *p && *p != '\t' && *p != '\r' && *p != '\n'; MB_PTR_ADV(p))
 		;
 	    tagp->user_data_end = p;
 	}
@@ -4006,7 +4009,7 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
 	    if (tp.command_end != NULL)
 	    {
 		for (p = tp.command_end + 3;
-				   *p != NUL && *p != '\n' && *p != '\r'; ++p)
+			  *p != NUL && *p != '\n' && *p != '\r'; MB_PTR_ADV(p))
 		{
 		    if (p == tp.tagkind || (p + 5 == tp.tagkind
 					      && STRNCMP(p, "kind:", 5) == 0))
