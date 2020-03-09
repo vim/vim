@@ -54,7 +54,7 @@ func OpfuncDummy(type, ...)
   let g:bufnr=bufnr('%')
 endfunc
 
-fun! Test_normal00_optrans()
+func Test_normal00_optrans()
   new
   call append(0, ['1 This is a simple test: abcd', '2 This is the second line', '3 this is the third line'])
   1
@@ -1477,7 +1477,7 @@ func Test_normal28_parenthesis()
   bw!
 endfunc
 
-fun! Test_normal29_brace()
+func Test_normal29_brace()
   " basic test for { and } movements
   let text =<< trim [DATA]
     A paragraph begins after each empty line, and also at each of a set of
@@ -1637,7 +1637,8 @@ fun! Test_normal29_brace()
   bw!
 endfunc
 
-fun! Test_normal30_changecase()
+" Test for ~ command
+func Test_normal30_changecase()
   new
   call append(0, 'This is a simple test: äüöß')
   norm! 1ggVu
@@ -1657,8 +1658,23 @@ fun! Test_normal30_changecase()
   norm! V~
   call assert_equal('THIS IS A simple test: äüöss', getline('.'))
 
-  " Turkish ASCII turns to multi-byte.  On some systems Turkish locale
-  " is available but toupper()/tolower() don't do the right thing.
+  " Test for changing case across lines using 'whichwrap'
+  call setline(1, ['aaaaaa', 'aaaaaa'])
+  normal! gg10~
+  call assert_equal(['AAAAAA', 'aaaaaa'], getline(1, 2))
+  set whichwrap+=~
+  normal! gg10~
+  call assert_equal(['aaaaaa', 'AAAAaa'], getline(1, 2))
+  set whichwrap&
+
+  " clean up
+  bw!
+endfunc
+
+" Turkish ASCII turns to multi-byte.  On some systems Turkish locale
+" is available but toupper()/tolower() don't do the right thing.
+func Test_normal_changecase_turkish()
+  new
   try
     lang tr_TR.UTF-8
     set casemap=
@@ -1702,21 +1718,11 @@ fun! Test_normal30_changecase()
     " can't use Turkish locale
     throw 'Skipped: Turkish locale not available'
   endtry
-
-  call setline(1, ['aaaaaa', 'aaaaaa'])
-  normal! gg10~
-  call assert_equal(['AAAAAA', 'aaaaaa'], getline(1, 2))
-  set whichwrap+=~
-  normal! gg10~
-  call assert_equal(['aaaaaa', 'AAAAaa'], getline(1, 2))
-  set whichwrap&
-
-  " clean up
-  bw!
+  close!
 endfunc
 
-fun! Test_normal31_r_cmd()
-  " Test for r command
+" Test for r command
+func Test_normal31_r_cmd()
   new
   call append(0, 'This is a simple test: abcd')
   exe "norm! 1gg$r\<cr>"
@@ -1734,6 +1740,19 @@ fun! Test_normal31_r_cmd()
   call setline(1, 'This is a')
   exe "norm! 1gg05rf"
   call assert_equal('fffffis a', getline(1))
+
+  " When replacing characters, copy characters from above and below lines
+  " using CTRL-Y and CTRL-E.
+  " Different code paths are used for utf-8 and latin1 encodings
+  set showmatch
+  for enc in ['latin1', 'utf-8']
+    let &encoding = enc
+    %d
+    call setline(1, [' {a}', 'xxxxxxxxxx', '      [b]'])
+    exe "norm! 2gg5r\<C-Y>l5r\<C-E>"
+    call assert_equal(' {a}x [b]x', getline(2))
+  endfor
+  set showmatch&
 
   " clean up
   set noautoindent
@@ -1758,7 +1777,7 @@ endfunc
 
 " Test for g`, g;, g,, g&, gv, gk, gj, gJ, g0, g^, g_, gm, g$, gM, g CTRL-G,
 " gi and gI commands
-fun! Test_normal33_g_cmd2()
+func Test_normal33_g_cmd2()
   if !has("jumplist")
     return
   endif
@@ -2007,7 +2026,7 @@ func Test_g_ctrl_g()
 endfunc
 
 " Test for g8
-fun! Test_normal34_g_cmd3()
+func Test_normal34_g_cmd3()
   new
   let a=execute(':norm! 1G0g8')
   call assert_equal("\nNUL", a)
@@ -2057,7 +2076,7 @@ func Test_normal_8g8()
 endfunc
 
 " Test for g<
-fun! Test_normal35_g_cmd4()
+func Test_normal35_g_cmd4()
   " Cannot capture its output,
   " probably a bug, therefore, test disabled:
   throw "Skipped: output of g< can't be tested currently"
@@ -2067,7 +2086,7 @@ fun! Test_normal35_g_cmd4()
 endfunc
 
 " Test for gp gP go
-fun! Test_normal36_g_cmd5()
+func Test_normal36_g_cmd5()
   new
   call append(0, 'abcdefghijklmnopqrstuvwxyz')
   set ff=unix
@@ -2106,7 +2125,7 @@ fun! Test_normal36_g_cmd5()
 endfunc
 
 " Test for gt and gT
-fun! Test_normal37_g_cmd6()
+func Test_normal37_g_cmd6()
   tabnew 1.txt
   tabnew 2.txt
   tabnew 3.txt
@@ -2133,7 +2152,7 @@ fun! Test_normal37_g_cmd6()
 endfunc
 
 " Test for <Home> and <C-Home> key
-fun! Test_normal38_nvhome()
+func Test_normal38_nvhome()
   new
   call setline(1, range(10))
   $
@@ -2169,7 +2188,7 @@ func Test_normal_nvend()
 endfunc
 
 " Test for cw cW ce
-fun! Test_normal39_cw()
+func Test_normal39_cw()
   " Test for cw and cW on whitespace
   " and cpo+=w setting
   new
@@ -2209,7 +2228,7 @@ fun! Test_normal39_cw()
 endfunc
 
 " Test for CTRL-\ commands
-fun! Test_normal40_ctrl_bsl()
+func Test_normal40_ctrl_bsl()
   new
   call append(0, 'here      are   some words')
   exe "norm! 1gg0a\<C-\>\<C-N>"
@@ -2239,7 +2258,7 @@ fun! Test_normal40_ctrl_bsl()
 endfunc
 
 " Test for <c-r>=, <c-r><c-r>= and <c-r><c-o>= in insert mode
-fun! Test_normal41_insert_reg()
+func Test_normal41_insert_reg()
   new
   set sts=2 sw=2 ts=8 tw=0
   call append(0, ["aaa\tbbb\tccc", '', '', ''])
@@ -2295,7 +2314,7 @@ func Test_normal42_halfpage()
 endfunc
 
 " Tests for text object aw
-fun! Test_normal43_textobject1()
+func Test_normal43_textobject1()
   new
   call append(0, ['foobar,eins,foobar', 'foo,zwei,foo    '])
   " diw
@@ -2780,7 +2799,7 @@ Piece of Java
   close!
 endfunc
 
-fun! Test_normal_gdollar_cmd()
+func Test_normal_gdollar_cmd()
   if !has("jumplist")
     return
   endif
