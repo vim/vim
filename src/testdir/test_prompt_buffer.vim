@@ -136,6 +136,12 @@ func Test_prompt_buffer_edit()
   call assert_beeps('normal! O')
   call assert_beeps('normal! p')
   call assert_beeps('normal! P')
+  call assert_beeps('normal! u')
+  call assert_beeps('normal! ra')
+  call assert_beeps('normal! s')
+  call assert_beeps('normal! S')
+  call assert_beeps("normal! \<C-A>")
+  call assert_beeps("normal! \<C-X>")
   close!
 endfunc
 

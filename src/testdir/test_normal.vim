@@ -434,7 +434,7 @@ func Test_normal11_showcmd()
   bw!
 endfunc
 
-" Test for nv_error
+" Test for nv_error and normal command errors
 func Test_normal12_nv_error()
   10new
   call setline(1, range(1,5))
@@ -445,7 +445,22 @@ func Test_normal12_nv_error()
   call assert_beeps("normal! g\<C-A>")
   call assert_beeps("normal! g\<C-X>")
   call assert_beeps("normal! g\<C-B>")
-  call assert_beeps("normal! vQ")
+  call assert_beeps("normal! vQ\<Esc>")
+  call assert_beeps("normal! 2[[")
+  call assert_beeps("normal! 2]]")
+  call assert_beeps("normal! 2[]")
+  call assert_beeps("normal! 2][")
+  call assert_beeps("normal! 4[z")
+  call assert_beeps("normal! 4]z")
+  call assert_beeps("normal! 4[c")
+  call assert_beeps("normal! 4]c")
+  call assert_beeps("normal! 200%")
+  call assert_beeps("normal! %")
+  call assert_beeps("normal! 2{")
+  call assert_beeps("normal! 2}")
+  call assert_beeps("normal! r\<Right>")
+  call assert_beeps("normal! 8ry")
+  call assert_beeps('normal! "@')
   bw!
 endfunc
 
@@ -499,6 +514,12 @@ func Test_normal14_page_eol()
   " check with valgrind that cursor is put back in column 1
   exe "norm 2\<c-b>"
   bw!
+endfunc
+
+" Test for errors with z command
+func Test_normal_z_error()
+  call assert_beeps('normal! z2p')
+  call assert_beeps('normal! zp')
 endfunc
 
 func Test_normal15_z_scroll_vert()
@@ -600,6 +621,13 @@ func Test_normal16_z_scroll_hor()
   $put =lineA
   $put =lineB
   1d
+
+  " Test for zl and zh with a count
+  norm! 0z10l
+  call assert_equal([11, 1], [col('.'), wincol()])
+  norm! z4h
+  call assert_equal([11, 5], [col('.'), wincol()])
+  normal! 2gg
 
   " Test for zl
   1
@@ -752,6 +780,9 @@ func Test_normal18_z_fold()
   call Setup_NewWindow()
   50
   setl foldenable fdm=marker foldlevel=5
+
+  call assert_beeps('normal! zj')
+  call assert_beeps('normal! zk')
 
   " Test for zF
   " First fold
@@ -2913,6 +2944,14 @@ func Test_horiz_motion()
   call assert_equal(11, col('.'))
   exe "normal! $\<C-BS>"
   call assert_equal(10, col('.'))
+  close!
+endfunc
+
+" Test for using a : command in operator pending mode
+func Test_normal_colon_op()
+  new
+  call setline(1, ['one', 'two'])
+  call assert_beeps("normal! Gc:d\<CR>")
   close!
 endfunc
 
