@@ -362,7 +362,7 @@ let s:export_script_lines =<< trim END
   enddef
 END
 
-def Test_vim9script()
+def Test_vim9_import_export()
   let import_script_lines =<< trim END
     vim9script
     import {exported, Exported} from './Xexport.vim'
@@ -449,6 +449,33 @@ def Test_vim9script()
   writefile(import_not_exported_lines, 'Ximport.vim')
   assert_fails('source Ximport.vim', 'E1049:')
 
+  " try to import something that is already defined
+  let import_already_defined =<< trim END
+    vim9script
+    let exported = 'something'
+    import exported from './Xexport.vim'
+  END
+  writefile(import_already_defined, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1073:')
+
+  " try to import something that is already defined
+  import_already_defined =<< trim END
+    vim9script
+    let exported = 'something'
+    import * as exported from './Xexport.vim'
+  END
+  writefile(import_already_defined, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1073:')
+
+  " try to import something that is already defined
+  import_already_defined =<< trim END
+    vim9script
+    let exported = 'something'
+    import {exported} from './Xexport.vim'
+  END
+  writefile(import_already_defined, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1073:')
+
   " import a very long name, requires making a copy
   let import_long_name_lines =<< trim END
     vim9script
@@ -482,10 +509,11 @@ def Test_vim9script()
     vim9script
     import {exported name} from './Xexport.vim'
   END
-  writefile(import_missing_comma_lines, 'Ximport.vim')
-  assert_fails('source Ximport.vim', 'E1046:')
+  writefile(import_missing_comma_lines, 'Ximport3.vim')
+  assert_fails('source Ximport3.vim', 'E1046:')
 
   delete('Ximport.vim')
+  delete('Ximport3.vim')
   delete('Xexport.vim')
 
   " Check that in a Vim9 script 'cpo' is set to the Vim default.

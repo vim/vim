@@ -203,6 +203,25 @@ lookup_script(char_u *name, size_t len)
     return di == NULL ? FAIL: OK;
 }
 
+/*
+ * Check if "p[len]" is already defined, either in script "import_sid" or in
+ * compilation context "cctx".
+ * Return FAIL and give an error if it defined.
+ */
+    int
+check_defined(char_u *p, int len, cctx_T *cctx)
+{
+    if (lookup_script(p, len) == OK
+	    || (cctx != NULL
+		&& (lookup_local(p, len, cctx) >= 0
+		    || find_imported(p, len, cctx) != NULL)))
+    {
+	semsg("E1073: imported name already defined: %s", p);
+	return FAIL;
+    }
+    return OK;
+}
+
     static type_T *
 get_list_type(type_T *member_type, garray_T *type_list)
 {
@@ -3812,7 +3831,7 @@ theend:
     static char_u *
 compile_import(char_u *arg, cctx_T *cctx)
 {
-    return handle_import(arg, &cctx->ctx_imports, 0);
+    return handle_import(arg, &cctx->ctx_imports, 0, cctx);
 }
 
 /*

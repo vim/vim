@@ -1,4 +1,5 @@
 /* vim9compile.c */
+int check_defined(char_u *p, int len, cctx_T *cctx);
 char_u *skip_type(char_u *start);
 type_T *parse_type(char_u **arg, garray_T *type_list);
 char *vartype_name(vartype_T type);
