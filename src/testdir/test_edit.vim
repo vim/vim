@@ -1540,4 +1540,22 @@ func Test_edit_noesckeys()
   set esckeys
 endfunc
 
+" Test for running an invalid ex command in insert mode using CTRL-O
+" Note that vim has a hard-coded sleep of 3 seconds. So this test will take
+" more than 3 seconds to complete.
+func Test_edit_ctrl_o_invalid_cmd()
+  new
+  set showmode showcmd
+  let caught_e492 = 0
+  try
+    call feedkeys("i\<C-O>:invalid\<CR>abc\<Esc>", "xt")
+  catch /E492:/
+    let caught_e492 = 1
+  endtry
+  call assert_equal(1, caught_e492)
+  call assert_equal('abc', getline(1))
+  set showmode& showcmd&
+  close!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

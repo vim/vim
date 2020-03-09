@@ -95,6 +95,12 @@ func Test_normal01_keymodel()
   50
   call feedkeys("\<S-Up>y", 'tx')
   call assert_equal(['49', '5'], getreg(0, 0, 1))
+  " Use the different Shift special keys
+  50
+  call feedkeys("\<S-Right>\<S-Left>\<S-Up>\<S-Down>\<S-Home>\<S-End>y", 'tx')
+  call assert_equal(['50'], getline("'<", "'>"))
+  call assert_equal(['50', ''], getreg(0, 0, 1))
+
   " Do not start visual mode when keymodel=
   set keymodel=
   50
@@ -1914,6 +1920,10 @@ fun! Test_normal33_g_cmd2()
   call assert_equal('foo       first line', getline(1))
   set virtualedit&
 
+  " Test for aboring a g command using CTRL-\ CTRL-G
+  exe "normal! g\<C-\>\<C-G>"
+  call assert_equal('foo       first line', getline('.'))
+
   " clean up
   bw!
 endfunc
@@ -2521,6 +2531,8 @@ func Test_normal52_rl()
   call assert_equal(19, col('.'))
   call feedkeys("\<right>", 'tx')
   call assert_equal(18, col('.'))
+  call feedkeys("\<left>", 'tx')
+  call assert_equal(19, col('.'))
   call feedkeys("\<s-right>", 'tx')
   call assert_equal(13, col('.'))
   call feedkeys("\<c-right>", 'tx')
