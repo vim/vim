@@ -7886,6 +7886,9 @@ ex_pedit(exarg_T *eap)
 {
     win_T	*curwin_save = curwin;
 
+    if (ERROR_IF_ANY_POPUP_WINDOW)
+	return;
+
     // Open the preview window or popup and make it the current window.
     g_do_tagpreview = p_pvh;
     prepare_tagpreview(TRUE, TRUE, FALSE);
