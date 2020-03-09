@@ -1746,8 +1746,8 @@ func Test_normal31_r_cmd()
   " Different code paths are used for utf-8 and latin1 encodings
   set showmatch
   for enc in ['latin1', 'utf-8']
+    enew!
     let &encoding = enc
-    %d
     call setline(1, [' {a}', 'xxxxxxxxxx', '      [b]'])
     exe "norm! 2gg5r\<C-Y>l5r\<C-E>"
     call assert_equal(' {a}x [b]x', getline(2))
