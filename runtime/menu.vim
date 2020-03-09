@@ -656,6 +656,11 @@ if !exists("no_buffers_menu")
 " startup faster.
 let s:bmenu_wait = 1
 
+" dictionary of buffer ID to name. This helps prevent bugs where a buffer is
+" somehow being renamed and we can't remove it from the menu because we are
+" using the wrong menu name.
+let s:bmenu_items = {}
+
 if !exists("bmenu_priority")
   let bmenu_priority = 60
 endif
@@ -678,14 +683,13 @@ func! s:BMRemove()
     if isdirectory(name)
       return
     endif
-    let munge = <SID>BMMunge(name, expand("<abuf>"))
-
-    if s:bmenu_short == 0
-      exe 'silent! aun &Buffers.' . munge
-    else
-      exe 'silent! aun &Buffers.' . <SID>BMHash2(munge) . munge
+    let bufnum = expand("<abuf>")
+    if s:bmenu_items->has_key(bufnum)
+      let menu_name = s:bmenu_items[bufnum]
+      exe 'silent! aun &Buffers.' . menu_name
+      let s:bmenu_count = s:bmenu_count - 1
+      unlet s:bmenu_items[bufnum]
     endif
-    let s:bmenu_count = s:bmenu_count - 1
   endif
 endfunc
 
@@ -694,6 +698,7 @@ func! s:BMShow(...)
   let s:bmenu_wait = 1
   let s:bmenu_short = 1
   let s:bmenu_count = 0
+  let s:bmenu_items = {}
   "
   " get new priority, if exists
   if a:0 == 1
@@ -789,9 +794,12 @@ func! s:BMFilename(name, num)
   let munge = <SID>BMMunge(a:name, a:num)
   let hash = <SID>BMHash(munge)
   if s:bmenu_short == 0
+    let s:bmenu_items[a:num] = munge
     let name = 'an ' . g:bmenu_priority . '.' . hash . ' &Buffers.' . munge
   else
-    let name = 'an ' . g:bmenu_priority . '.' . hash . '.' . hash . ' &Buffers.' . <SID>BMHash2(munge) . munge
+    let menu_name = <SID>BMHash2(munge) . munge
+    let s:bmenu_items[a:num] = l:menu_name
+    let name = 'an ' . g:bmenu_priority . '.' . hash . '.' . hash . ' &Buffers.' . menu_name
   endif
   " set 'cpo' to include the <CR>
   let cpo_save = &cpo
