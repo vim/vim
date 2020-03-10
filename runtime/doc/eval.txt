@@ -10486,11 +10486,12 @@ winlayout([{tabnr}])					*winlayout()*
 			" Two horizontally split windows
 			:echo winlayout()
 			['col', [['leaf', 1000], ['leaf', 1001]]]
-			" Three horizontally split windows, with two
-			" vertically split windows in the middle window
+			" The second tab page, with three horizontally split
+			" windows, with two vertically split windows in the
+			" middle window
 			:echo winlayout(2)
-			['col', [['leaf', 1002], ['row', ['leaf', 1003],
-					     ['leaf', 1001]]], ['leaf', 1000]]
+			['col', [['leaf', 1002], ['row', [['leaf', 1003],
+					    ['leaf', 1001]]], ['leaf', 1000]]]
 <
 		Can also be used as a |method|: >
 			GetTabnr()->winlayout()
