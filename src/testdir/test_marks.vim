@@ -222,4 +222,27 @@ func Test_marks_k_cmd()
   close!
 endfunc
 
+" Test for file marks (A-Z)
+func Test_file_mark()
+  new Xone
+  call setline(1, ['aaa', 'bbb'])
+  norm! G$mB
+  w!
+  new Xtwo
+  call setline(1, ['ccc', 'ddd'])
+  norm! GmD
+  w!
+
+  enew
+  normal! `B
+  call assert_equal('Xone', bufname())
+  call assert_equal([2, 3], [line('.'), col('.')])
+  normal! 'D
+  call assert_equal('Xtwo', bufname())
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  call delete('Xone')
+  call delete('Xtwo')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

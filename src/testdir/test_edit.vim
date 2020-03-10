@@ -1558,4 +1558,18 @@ func Test_edit_ctrl_o_invalid_cmd()
   close!
 endfunc
 
+" Test for inserting text at the beginning of a line
+func Test_insert_before_first_nonblank()
+  new
+  call setline(1, '    ')
+  normal! Ia
+  call assert_equal('    a', getline(1))
+  set cpo+=H
+  call setline(1, '    ')
+  normal! Ia
+  call assert_equal('   a ', getline(1))
+  set cpo-=H
+  close!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

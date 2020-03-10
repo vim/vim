@@ -1454,8 +1454,8 @@ func Test_normal27_bracket()
   bw!
 endfunc
 
+" Test for ( and ) sentence movements
 func Test_normal28_parenthesis()
-  " basic testing for ( and )
   new
   call append(0, ['This is a test. With some sentences!', '', 'Even with a question? And one more. And no sentence here'])
 
@@ -1473,12 +1473,27 @@ func Test_normal28_parenthesis()
   norm! $d(
   call assert_equal(['With some sentences!', '', ' ', '', 'This is a long sentence', ''], getline(1, '$'))
 
+  " It is an error if a next sentence is not found
+  %d
+  call setline(1, '.SH')
+  call assert_beeps('normal )')
+
+  " Jumping to a fold should open the fold
+  call setline(1, ['', '', 'one', 'two', 'three'])
+  set foldenable
+  2,$fold
+  call feedkeys(')', 'xt')
+  call assert_equal(3, line('.'))
+  call assert_equal(1, foldlevel('.'))
+  call assert_equal(-1, foldclosed('.'))
+  set foldenable&
+
   " clean up
   bw!
 endfunc
 
+" Test for { and } paragraph movements
 func Test_normal29_brace()
-  " basic test for { and } movements
   let text =<< trim [DATA]
     A paragraph begins after each empty line, and also at each of a set of
     paragraph macros, specified by the pairs of characters in the 'paragraphs'
@@ -1632,6 +1647,17 @@ func Test_normal29_brace()
   [DATA]
   call assert_equal(expected, getline(1, '$'))
 
+  " Jumping to a fold should open the fold
+  %d
+  call setline(1, ['', 'one', 'two', ''])
+  set foldenable
+  2,$fold
+  call feedkeys('}', 'xt')
+  call assert_equal(4, line('.'))
+  call assert_equal(1, foldlevel('.'))
+  call assert_equal(-1, foldclosed('.'))
+  set foldenable&
+
   " clean up
   set cpo-={
   bw!
@@ -1721,7 +1747,7 @@ func Test_normal_changecase_turkish()
   close!
 endfunc
 
-" Test for r command
+" Test for r (replace) command
 func Test_normal31_r_cmd()
   new
   call append(0, 'This is a simple test: abcd')
@@ -1753,6 +1779,9 @@ func Test_normal31_r_cmd()
     call assert_equal(' {a}x [b]x', getline(2))
   endfor
   set showmatch&
+
+  " r command should fail in operator pending mode
+  call assert_beeps('normal! cr')
 
   " clean up
   set noautoindent
@@ -1825,6 +1854,16 @@ func Test_normal33_g_cmd2()
   exe "norm! /[1-8]\<cr>"
   norm! g&
   call assert_equal(['11', '22', '33', '44', '55', '66', '77', '88', '9', '110', 'a', 'b', 'c', 'dd'], getline(1, '$'))
+
+  " Jumping to a fold using gg should open the fold
+  set foldenable
+  set foldopen+=jump
+  5,8fold
+  call feedkeys('6gg', 'xt')
+  call assert_equal(1, foldlevel('.'))
+  call assert_equal(-1, foldclosed('.'))
+  set foldopen-=jump
+  set foldenable&
 
   " Test for gv
   %d
@@ -2675,6 +2714,8 @@ func Test_changelist()
   normal g;
   call assert_equal([2, 2], [line('.'), col('.')])
   call assert_fails('normal g;', 'E662:')
+  new
+  call assert_fails('normal g;', 'E664:')
   %bwipe!
   let &ul = save_ul
 endfunc
