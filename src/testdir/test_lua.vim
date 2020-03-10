@@ -2,6 +2,7 @@
 
 source check.vim
 CheckFeature lua
+CheckFeature float
 
 func TearDown()
   " Run garbage collection after each test to exercise luaV_setref().
@@ -9,7 +10,7 @@ func TearDown()
 endfunc
 
 " Check that switching to another buffer does not trigger ml_get error.
-func Test_command_new_no_ml_get_error()
+func Test_lua_command_new_no_ml_get_error()
   new
   let wincount = winnr('$')
   call setline(1, ['one', 'two', 'three'])
@@ -19,7 +20,7 @@ func Test_command_new_no_ml_get_error()
 endfunc
 
 " Test vim.command()
-func Test_command()
+func Test_lua_command()
   new
   call setline(1, ['one', 'two', 'three'])
   luado vim.command("1,2d_")
@@ -28,7 +29,7 @@ func Test_command()
 endfunc
 
 " Test vim.eval()
-func Test_eval()
+func Test_lua_eval()
   " lua.eval with a number
   lua v = vim.eval('123')
   call assert_equal('number', luaeval('vim.type(v)'))
@@ -69,7 +70,7 @@ func Test_eval()
 endfunc
 
 " Test vim.window()
-func Test_window()
+func Test_lua_window()
   e Xfoo2
   new Xfoo1
 
@@ -85,7 +86,7 @@ func Test_window()
 endfunc
 
 " Test vim.window().height
-func Test_window_height()
+func Test_lua_window_height()
   new
   lua vim.window().height = 2
   call assert_equal(2, winheight(0))
@@ -95,7 +96,7 @@ func Test_window_height()
 endfunc
 
 " Test vim.window().width
-func Test_window_width()
+func Test_lua_window_width()
   vert new
   lua vim.window().width = 2
   call assert_equal(2, winwidth(0))
@@ -105,7 +106,7 @@ func Test_window_width()
 endfunc
 
 " Test vim.window().line and vim.window.col
-func Test_window_line_col()
+func Test_lua_window_line_col()
   new
   call setline(1, ['line1', 'line2', 'line3'])
   lua vim.window().line = 2
@@ -121,7 +122,7 @@ func Test_window_line_col()
 endfunc
 
 " Test setting the current window
-func Test_window_set_current()
+func Test_lua_window_set_current()
   new Xfoo1
   lua w1 = vim.window()
   new Xfoo2
@@ -138,7 +139,7 @@ func Test_window_set_current()
 endfunc
 
 " Test vim.window().buffer
-func Test_window_buffer()
+func Test_lua_window_buffer()
   new Xfoo1
   lua w1 = vim.window()
   lua b1 = w1.buffer()
@@ -156,7 +157,7 @@ func Test_window_buffer()
 endfunc
 
 " Test vim.window():previous() and vim.window():next()
-func Test_window_next_previous()
+func Test_lua_window_next_previous()
   new Xfoo1
   new Xfoo2
   new Xfoo3
@@ -170,7 +171,7 @@ func Test_window_next_previous()
 endfunc
 
 " Test vim.window():isvalid()
-func Test_window_isvalid()
+func Test_lua_window_isvalid()
   new Xfoo
   lua w = vim.window()
   call assert_true(luaeval('w:isvalid()'))
@@ -183,7 +184,7 @@ func Test_window_isvalid()
 endfunc
 
 " Test vim.buffer() with and without argument
-func Test_buffer()
+func Test_lua_buffer()
   new Xfoo1
   let bn1 = bufnr('%')
   new Xfoo2
@@ -205,7 +206,7 @@ func Test_buffer()
 endfunc
 
 " Test vim.buffer().name and vim.buffer().fname
-func Test_buffer_name()
+func Test_lua_buffer_name()
   new
   call assert_equal('', luaeval('vim.buffer().name'))
   call assert_equal('', luaeval('vim.buffer().fname'))
@@ -218,13 +219,13 @@ func Test_buffer_name()
 endfunc
 
 " Test vim.buffer().number
-func Test_buffer_number()
+func Test_lua_buffer_number()
   " All numbers in Lua are floating points number (no integers).
   call assert_equal(bufnr('%'), float2nr(luaeval('vim.buffer().number')))
 endfunc
 
 " Test inserting lines in buffer.
-func Test_buffer_insert()
+func Test_lua_buffer_insert()
   new
   lua vim.buffer()[1] = '3'
   lua vim.buffer():insert('1', 0)
@@ -236,7 +237,7 @@ func Test_buffer_insert()
 endfunc
 
 " Test deleting line in buffer
-func Test_buffer_delete()
+func Test_lua_buffer_delete()
   new
   call setline(1, ['1', '2', '3'])
   lua vim.buffer()[2] = nil
@@ -248,7 +249,7 @@ func Test_buffer_delete()
 endfunc
 
 " Test #vim.buffer() i.e. number of lines in buffer
-func Test_buffer_number_lines()
+func Test_lua_buffer_number_lines()
   new
   call setline(1, ['a', 'b', 'c'])
   call assert_equal(3.0, luaeval('#vim.buffer()'))
@@ -258,7 +259,7 @@ endfunc
 " Test vim.buffer():next() and vim.buffer():previous()
 " Note that these functions get the next or previous buffers
 " but do not switch buffer.
-func Test_buffer_next_previous()
+func Test_lua_buffer_next_previous()
   new Xfoo1
   new Xfoo2
   new Xfoo3
@@ -286,7 +287,7 @@ func Test_buffer_next_previous()
 endfunc
 
 " Test vim.buffer():isvalid()
-func Test_buffer_isvalid()
+func Test_lua_buffer_isvalid()
   new Xfoo
   lua b = vim.buffer()
   call assert_true(luaeval('b:isvalid()'))
@@ -298,7 +299,7 @@ func Test_buffer_isvalid()
   bwipe!
 endfunc
 
-func Test_list()
+func Test_lua_list()
   call assert_equal([], luaeval('vim.list()'))
 
   let l = []
@@ -326,7 +327,7 @@ func Test_list()
   lua l = nil
 endfunc
 
-func Test_list_table()
+func Test_lua_list_table()
   " See :help lua-vim
   " Non-numeric keys should not be used to initialize the list
   " so say = 'hi' should be ignored.
@@ -341,7 +342,7 @@ func Test_list_table()
 endfunc
 
 " Test l() i.e. iterator on list
-func Test_list_iter()
+func Test_lua_list_iter()
   lua l = vim.list():add('foo'):add('bar')
   lua str = ''
   lua for v in l() do str = str .. v end
@@ -350,7 +351,7 @@ func Test_list_iter()
   lua str, l = nil
 endfunc
 
-func Test_recursive_list()
+func Test_lua_recursive_list()
   lua l = vim.list():add(1):add(2)
   lua l = l:add(l)
 
@@ -374,7 +375,7 @@ func Test_recursive_list()
   lua l = nil
 endfunc
 
-func Test_dict()
+func Test_lua_dict()
   call assert_equal({}, luaeval('vim.dict()'))
 
   let d = {}
@@ -401,7 +402,7 @@ func Test_dict()
   lua d = nil
 endfunc
 
-func Test_dict_table()
+func Test_lua_dict_table()
   lua t = {key1 = 'x', key2 = 3.14, key3 = true, key4 = false}
   call assert_equal({'key1': 'x', 'key2': 3.14, 'key3': v:true, 'key4': v:false},
         \           luaeval('vim.dict(t)'))
@@ -422,7 +423,7 @@ func Test_dict_table()
 endfunc
 
 " Test d() i.e. iterator on dictionary
-func Test_dict_iter()
+func Test_lua_dict_iter()
   let d = {'a': 1, 'b':2}
   lua d = vim.eval('d')
   lua str = ''
@@ -432,7 +433,7 @@ func Test_dict_iter()
   lua str, d = nil
 endfunc
 
-func Test_blob()
+func Test_lua_blob()
   call assert_equal(0z, luaeval('vim.blob("")'))
   call assert_equal(0z31326162, luaeval('vim.blob("12ab")'))
   call assert_equal(0z00010203, luaeval('vim.blob("\x00\x01\x02\x03")'))
@@ -456,7 +457,7 @@ func Test_blob()
   lua b = nil
 endfunc
 
-func Test_funcref()
+func Test_lua_funcref()
   function I(x)
     return a:x
   endfunction
@@ -483,7 +484,7 @@ func Test_funcref()
 endfunc
 
 " Test vim.type()
-func Test_type()
+func Test_lua_type()
   " The following values are identical to Lua's type function.
   call assert_equal('string',   luaeval('vim.type("foo")'))
   call assert_equal('number',   luaeval('vim.type(1)'))
@@ -503,7 +504,7 @@ func Test_type()
 endfunc
 
 " Test vim.open()
-func Test_open()
+func Test_lua_open()
   call assert_notmatch('XOpen', execute('ls'))
 
   " Open a buffer XOpen1, but do not jump to it.
@@ -524,7 +525,7 @@ func Test_open()
 endfunc
 
 " Test vim.line()
-func Test_line()
+func Test_lua_line()
   new
   call setline(1, ['first line', 'second line'])
   1
@@ -535,7 +536,7 @@ func Test_line()
 endfunc
 
 " Test vim.beep()
-func Test_beep()
+func Test_lua_beep()
   call assert_beeps('lua vim.beep()')
 endfunc
 
@@ -591,7 +592,7 @@ func Test_luafile_error()
   bwipe!
 endfunc
 
-func Test_set_cursor()
+func Test_lua_set_cursor()
   " Check that setting the cursor position works.
   new
   call setline(1, ['first line', 'second line'])

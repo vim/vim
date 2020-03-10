@@ -21,7 +21,7 @@
 
 #ifdef _WIN32
 # if !defined(DYNAMIC_RUBY) || (RUBY_VERSION < 18)
-#   define NT
+#  define NT
 # endif
 # ifndef DYNAMIC_RUBY
 #  define IMPORT // For static dll usage __declspec(dllimport)
@@ -209,6 +209,14 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 /*
  * Wrapper defines
  */
+// Ruby 2.7 actually expands the following symbols as macro.
+# if RUBY_VERSION >= 27
+#  undef rb_define_global_function
+#  undef rb_define_method
+#  undef rb_define_module_function
+#  undef rb_define_singleton_method
+# endif
+
 # define rb_assoc_new			dll_rb_assoc_new
 # define rb_cObject			(*dll_rb_cObject)
 # define rb_class_new_instance		dll_rb_class_new_instance
@@ -300,8 +308,8 @@ static int ruby_convert_to_vim_value(VALUE val, typval_T *rettv);
 #  define rb_float_new			dll_rb_float_new
 #  define rb_ary_new			dll_rb_ary_new
 #  ifdef rb_ary_new4
-#    define RB_ARY_NEW4_MACRO 1
-#    undef rb_ary_new4
+#   define RB_ARY_NEW4_MACRO 1
+#   undef rb_ary_new4
 #  endif
 #  define rb_ary_new4			dll_rb_ary_new4
 #  define rb_ary_push			dll_rb_ary_push
@@ -1071,15 +1079,15 @@ error_print(int state)
 	    }
 
 	    attr = syn_name2attr((char_u *)"Error");
-# if RUBY_VERSION >= 21
+#if RUBY_VERSION >= 21
 	    bt = rb_funcallv(error, rb_intern("backtrace"), 0, 0);
 	    for (i = 0; i < RARRAY_LEN(bt); i++)
 		msg_attr(RSTRING_PTR(RARRAY_AREF(bt, i)), attr);
-# else
+#else
 	    bt = rb_funcall2(error, rb_intern("backtrace"), 0, 0);
 	    for (i = 0; i < RARRAY_LEN(bt); i++)
 		msg_attr(RSTRING_PTR(RARRAY_PTR(bt)[i]), attr);
-# endif
+#endif
 	    break;
 	default:
 	    vim_snprintf(buff, BUFSIZ, _("E273: unknown longjmp status %d"), state);
@@ -1228,7 +1236,7 @@ static const rb_data_type_t buffer_type = {
     "vim_buffer",
     {0, 0, buffer_dsize,
 # if RUBY_VERSION >= 27
-	0, 0
+	0, {0}
 # else
 	{0, 0}
 # endif
@@ -1508,7 +1516,7 @@ static const rb_data_type_t window_type = {
     "vim_window",
     {0, 0, window_dsize,
 # if RUBY_VERSION >= 27
-	0, 0
+	0, {0}
 # else
 	{0, 0}
 # endif

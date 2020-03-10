@@ -7409,17 +7409,7 @@ nfa_regexec_multi(
     proftime_T	*tm,		// timeout limit or NULL
     int		*timed_out)	// flag set on timeout or NULL
 {
-    rex.reg_match = NULL;
-    rex.reg_mmatch = rmp;
-    rex.reg_buf = buf;
-    rex.reg_win = win;
-    rex.reg_firstlnum = lnum;
-    rex.reg_maxline = rex.reg_buf->b_ml.ml_line_count - lnum;
-    rex.reg_line_lbr = FALSE;
-    rex.reg_ic = rmp->rmm_ic;
-    rex.reg_icombine = FALSE;
-    rex.reg_maxcol = rmp->rmm_maxcol;
-
+    init_regexec_multi(rmp, win, buf, lnum);
     return nfa_regexec_both(NULL, col, tm, timed_out);
 }
 

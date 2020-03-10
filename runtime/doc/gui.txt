@@ -99,6 +99,7 @@ Recommended place for your personal GUI initializations:
 			    or $VIM/_gvimrc
 	Amiga		    s:.gvimrc, home:.gvimrc, home:vimfiles:gvimrc
 			    or $VIM/.gvimrc
+	Haiku	            $HOME/config/settings/vim/gvimrc
 
 The personal initialization files are searched in the order specified above
 and only the first one that is found is read.

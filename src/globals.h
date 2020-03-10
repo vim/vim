@@ -384,9 +384,9 @@ EXTERN type_T t_void INIT4(VAR_VOID, 0, NULL, NULL);
 EXTERN type_T t_bool INIT4(VAR_BOOL, 0, NULL, NULL);
 EXTERN type_T t_special INIT4(VAR_SPECIAL, 0, NULL, NULL);
 EXTERN type_T t_number INIT4(VAR_NUMBER, 0, NULL, NULL);
-#ifdef FEAT_FLOAT
+# ifdef FEAT_FLOAT
 EXTERN type_T t_float INIT4(VAR_FLOAT, 0, NULL, NULL);
-#endif
+# endif
 EXTERN type_T t_string INIT4(VAR_STRING, 0, NULL, NULL);
 EXTERN type_T t_blob INIT4(VAR_BLOB, 0, NULL, NULL);
 EXTERN type_T t_job INIT4(VAR_JOB, 0, NULL, NULL);
@@ -400,11 +400,15 @@ EXTERN type_T t_partial_any INIT4(VAR_PARTIAL, -1, &t_any, NULL);
 
 EXTERN type_T t_list_any INIT4(VAR_LIST, 0, &t_any, NULL);
 EXTERN type_T t_dict_any INIT4(VAR_DICT, 0, &t_any, NULL);
+EXTERN type_T t_list_empty INIT4(VAR_LIST, 0, &t_void, NULL);
+EXTERN type_T t_dict_empty INIT4(VAR_DICT, 0, &t_void, NULL);
 
+EXTERN type_T t_list_bool INIT4(VAR_LIST, 0, &t_bool, NULL);
 EXTERN type_T t_list_number INIT4(VAR_LIST, 0, &t_number, NULL);
 EXTERN type_T t_list_string INIT4(VAR_LIST, 0, &t_string, NULL);
 EXTERN type_T t_list_dict_any INIT4(VAR_LIST, 0, &t_dict_any, NULL);
 
+EXTERN type_T t_dict_bool INIT4(VAR_DICT, 0, &t_bool, NULL);
 EXTERN type_T t_dict_number INIT4(VAR_DICT, 0, &t_number, NULL);
 EXTERN type_T t_dict_string INIT4(VAR_DICT, 0, &t_string, NULL);
 
@@ -1028,6 +1032,10 @@ EXTERN int	motion_force INIT(= 0); // motion force for pending operator
  * Ex mode (Q) state
  */
 EXTERN int exmode_active INIT(= 0);	// zero, EXMODE_NORMAL or EXMODE_VIM
+
+// Flag set when main_loop() should exit when entering Ex mode.
+EXTERN int pending_exmode_active INIT(= FALSE);
+
 EXTERN int ex_no_reprint INIT(= FALSE); // no need to print after z or p
 
 EXTERN int reg_recording INIT(= 0);	// register for recording  or zero
@@ -1492,7 +1500,7 @@ EXTERN int netbeansSuppressNoLines INIT(= 0); // skip "No lines in buffer"
  * Excluded are errors that are only used once and debugging messages.
  */
 EXTERN char e_abort[]		INIT(= N_("E470: Command aborted"));
-EXTERN char e_argreq[]	INIT(= N_("E471: Argument required"));
+EXTERN char e_argreq[]		INIT(= N_("E471: Argument required"));
 EXTERN char e_backslash[]	INIT(= N_("E10: \\ should be followed by /, ? or &"));
 #ifdef FEAT_CMDWIN
 EXTERN char e_cmdwin[]	INIT(= N_("E11: Invalid in command-line window; <CR> executes, CTRL-C quits"));
@@ -1516,7 +1524,7 @@ EXTERN char e_failed[]	INIT(= N_("E472: Command failed"));
 EXTERN char e_fontset[]	INIT(= N_("E234: Unknown fontset: %s"));
 #endif
 #if defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) || defined(FEAT_GUI_MAC) \
-	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MSWIN)
+	|| defined(FEAT_GUI_PHOTON) || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_HAIKU)
 EXTERN char e_font[]		INIT(= N_("E235: Unknown font: %s"));
 #endif
 #if defined(FEAT_GUI_X11) && !defined(FEAT_GUI_GTK)
@@ -1635,7 +1643,7 @@ EXTERN char e_invalblob[]	INIT(= N_("E978: Invalid operation for Blob"));
 EXTERN char e_toomanyarg[]	INIT(= N_("E118: Too many arguments for function: %s"));
 EXTERN char e_toofewarg[]	INIT(= N_("E119: Not enough arguments for function: %s"));
 EXTERN char e_func_deleted[]	INIT(= N_("E933: Function was deleted: %s"));
-EXTERN char e_dictkey[]	INIT(= N_("E716: Key not present in Dictionary: %s"));
+EXTERN char e_dictkey[]		INIT(= N_("E716: Key not present in Dictionary: %s"));
 EXTERN char e_listreq[]		INIT(= N_("E714: List required"));
 EXTERN char e_listblobreq[]	INIT(= N_("E897: List or Blob required"));
 EXTERN char e_listdictarg[]	INIT(= N_("E712: Argument of %s must be a List or Dictionary"));
@@ -1798,7 +1806,7 @@ EXTERN int *eval_lavars_used INIT(= NULL);
 // Only filled for Win32.
 EXTERN char windowsVersion[20] INIT(= {0});
 
-// Used for a non-materialized range() list.
+// Used for lv_first in a non-materialized range() list.
 EXTERN listitem_T range_list_item;
 #endif
 

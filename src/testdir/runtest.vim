@@ -386,7 +386,7 @@ let s:flaky_errors_re = 'StopVimInTerminal\|VerifyScreenDump'
 redir @q
 silent function /^Test_
 redir END
-let s:tests = split(substitute(@q, 'function \(\k*()\)', '\1', 'g'))
+let s:tests = split(substitute(@q, '\(function\|def\) \(\k*()\)', '\2', 'g'))
 
 " If there is an extra argument filter the function names against it.
 if argc() > 1

@@ -33,6 +33,7 @@ void set_vim_var_type(int idx, vartype_T type);
 void set_vim_var_nr(int idx, varnumber_T val);
 char *get_vim_var_name(int idx);
 typval_T *get_vim_var_tv(int idx);
+int set_vim_var_tv(int idx, typval_T *tv);
 varnumber_T get_vim_var_nr(int idx);
 char_u *get_vim_var_str(int idx);
 list_T *get_vim_var_list(int idx);

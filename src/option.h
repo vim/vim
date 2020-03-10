@@ -10,6 +10,9 @@
  * option.h: definition of global variables for settable options
  */
 
+#ifndef _OPTION_H_
+#define _OPTION_H_
+
 //
 // Flags
 //
@@ -1290,3 +1293,5 @@ enum
 
 // Value for b_p_ul indicating the global value must be used.
 #define NO_LOCAL_UNDOLEVEL -123456
+
+#endif // _OPTION_H_

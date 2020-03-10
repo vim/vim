@@ -6,8 +6,6 @@ CheckFeature textprop
 
 source screendump.vim
 
-" test length zero
-
 func Test_proptype_global()
   call prop_type_add('comment', {'highlight': 'Directory', 'priority': 123, 'start_incl': 1, 'end_incl': 1})
   let proptypes = prop_type_list()
@@ -233,13 +231,20 @@ func Test_prop_add()
 
   " Prop without length or end column is zero length
   call prop_clear(1)
-  call prop_add(1, 5, {'type': 'two'})
-  let expected = [{'col': 5, 'length': 0, 'type': 'two', 'id': 0, 'start': 1, 'end': 1}]
+  call prop_type_add('included', {'start_incl': 1, 'end_incl': 1})
+  call prop_add(1, 5, #{type: 'included'})
+  let expected = [#{col: 5, length: 0, type: 'included', id: 0, start: 1, end: 1}]
+  call assert_equal(expected, prop_list(1))
+
+  " Inserting text makes the prop bigger.
+  exe "normal 5|ixx\<Esc>"
+  let expected = [#{col: 5, length: 2, type: 'included', id: 0, start: 1, end: 1}]
   call assert_equal(expected, prop_list(1))
 
   call assert_fails("call prop_add(1, 5, {'type': 'two', 'bufnr': 234343})", 'E158:')
 
   call DeletePropTypes()
+  call prop_type_delete('included')
   bwipe!
 endfunc
 
@@ -262,6 +267,23 @@ func Test_prop_remove()
 
   " remove from unknown buffer
   call assert_fails("call prop_remove({'type': 'one', 'bufnr': 123456}, 1)", 'E158:')
+
+  call DeletePropTypes()
+  bwipe!
+
+  new
+  call AddPropTypes()
+  call SetupPropsInFirstLine()
+  call prop_add(1, 6, {'length': 2, 'id': 11, 'type': 'three'})
+  let props = Get_expected_props()
+  call insert(props, {'col': 6, 'length': 2, 'id': 11, 'type': 'three', 'start': 1, 'end': 1}, 3)
+  call assert_equal(props, prop_list(1))
+  call assert_equal(1, prop_remove({'type': 'three', 'id': 11, 'both': 1, 'all': 1}, 1))
+  unlet props[3]
+  call assert_equal(props, prop_list(1))
+
+  call assert_fails("call prop_remove({'id': 11, 'both': 1})", 'E860')
+  call assert_fails("call prop_remove({'type': 'three', 'both': 1})", 'E860')
 
   call DeletePropTypes()
   bwipe!

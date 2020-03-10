@@ -1,4 +1,4 @@
-*autocmd.txt*   For Vim version 8.2.  Last change: 2020 Jan 17
+*autocmd.txt*   For Vim version 8.2.  Last change: 2020 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar

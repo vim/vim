@@ -381,11 +381,15 @@ SRC = \
 	termlib.c \
 	testing.c \
 	textprop.c \
+	time.c \
 	ui.c \
 	undo.c \
 	usercmd.c \
 	userfunc.c \
 	version.c \
+	vim9compile.c \
+	vim9execute.c \
+	vim9script.c \
 	viminfo.c \
 	window.c \
 	$(GUI_SRC) \
@@ -484,11 +488,15 @@ OBJ = \
 	termlib.obj \
 	testing.obj \
 	textprop.obj \
+	time.obj \
 	ui.obj \
 	undo.obj \
 	usercmd.obj \
 	userfunc.obj \
 	version.obj \
+	vim9compile.obj \
+	vim9execute.obj \
+	vim9script.obj \
 	viminfo.obj \
 	window.obj \
 	$(GUI_OBJ) \
@@ -972,6 +980,9 @@ testing.obj : testing.c vim.h [.auto]config.h feature.h os_unix.h   \
 textprop.obj : textprop.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h
+time.obj : time.c vim.h [.auto]config.h feature.h os_unix.h   \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
+ [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h
 ui.obj : ui.c vim.h [.auto]config.h feature.h os_unix.h   \
  ascii.h keymap.h term.h macros.h structs.h regexp.h gui.h beval.h \
  [.proto]gui_beval.pro option.h ex_cmds.h proto.h globals.h
@@ -991,6 +1002,18 @@ version.obj : version.c vim.h [.auto]config.h feature.h os_unix.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h version.h
 viminfo.obj : viminfo.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h version.h
+vim9compile.obj : vim9compile.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h version.h
+vim9execute.obj : vim9execute.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h version.h
+vim9script.obj : vim9script.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h version.h

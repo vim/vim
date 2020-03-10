@@ -2617,14 +2617,14 @@ getreg_wrap_one_line(char_u *s, int flags)
 }
 
 /*
- * Return the contents of a register as a single allocated string.
+ * Return the contents of a register as a single allocated string or as a list.
  * Used for "@r" in expressions and for getreg().
  * Returns NULL for error.
  * Flags:
  *	GREG_NO_EXPR	Do not allow expression register
  *	GREG_EXPR_SRC	For the expression register: return expression itself,
  *			not the result of its evaluation.
- *	GREG_LIST	Return a list of lines in place of a single string.
+ *	GREG_LIST	Return a list of lines instead of a single string.
  */
     char_u *
 get_reg_contents(int regname, int flags)

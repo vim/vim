@@ -31,6 +31,7 @@ void expand_env(char_u *src, char_u *dst, int dstlen);
 void expand_env_esc(char_u *srcp, char_u *dst, int dstlen, int esc, int one, char_u *startstr);
 char_u *vim_getenv(char_u *name, int *mustfree);
 void vim_unsetenv(char_u *var);
+void vim_setenv_ext(char_u *name, char_u *val);
 void vim_setenv(char_u *name, char_u *val);
 char_u *get_env_name(expand_T *xp, int idx);
 char_u *get_users(expand_T *xp, int idx);
@@ -46,5 +47,4 @@ int goto_im(void);
 char_u *get_isolated_shell_name(void);
 int path_is_url(char_u *p);
 int path_with_url(char_u *fname);
-void add_time(char_u *buf, size_t buflen, time_t tt);
 /* vim: set ft=c : */

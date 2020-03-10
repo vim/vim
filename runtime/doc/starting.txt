@@ -1,4 +1,4 @@
-*starting.txt*  For Vim version 8.2.  Last change: 2020 Jan 20
+*starting.txt*  For Vim version 8.2.  Last change: 2020 Feb 04
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -58,10 +58,12 @@ filename	One or more file names.  The first one will be the current
 		that is read from stdin.  The commands that would normally be
 		read from stdin will now be read from stderr.  Example: >
 			find . -name "*.c" -print | vim -
-<		The buffer will not be marked as modified, so that it's easy
-		to exit.  Be careful to mark it as modified if you don't want
-		to accidentally lose it.  Example: >
-			ls | view -
+
+<		The buffer will be marked as modified, so that you are
+		reminded to save the text when trying to exit.  If you don't
+		like that, put this these lines in your vimrc: >
+			" Don't set 'modified' when reading from stdin
+			au StdinReadPost * set nomodified
 <
 		Starting in Ex mode: >
 			ex -
@@ -788,6 +790,7 @@ accordingly.  Vim proceeds in this order:
 				or $VIM/_vimrc
 		Amiga		s:.vimrc, home:.vimrc, home:vimfiles:vimrc
 				or $VIM/.vimrc
+		Haiku		$HOME/config/settings/vim/vimrc
 
 	The files are searched in the order specified above and only the first
 	one that is found is read.
@@ -833,6 +836,8 @@ accordingly.  Vim proceeds in this order:
 		    "$HOME/_vimrc"	   (for Win32) (*)
 		    "$HOME/vimfiles/vimrc" (for Win32) (*)
 		    "$VIM/_vimrc"	   (for Win32) (*)
+		    "$HOME/config/settings/vim/vimrc"	(for Haiku) (*)
+
 		Note: For Unix and Amiga, when ".vimrc" does not exist,
 		"_vimrc" is also tried, in case an MS-DOS compatible file
 		system is used.  For MS-Windows ".vimrc" is checked after
@@ -948,6 +953,8 @@ sessions.  Put it in a place so that it will be found by 3b:
 	~/.vimrc	(Unix)
 	s:.vimrc	(Amiga)
 	$VIM\_vimrc	(Win32)
+	~/config/settings/vim/vimrc (Haiku)
+
 Note that creating a vimrc file will cause the 'compatible' option to be off
 by default.  See |compatible-default|.
 

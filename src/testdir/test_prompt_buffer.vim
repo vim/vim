@@ -124,3 +124,15 @@ func Test_prompt_garbage_collect()
   delfunc MyPromptCallback
   bwipe!
 endfunc
+
+" Test for editing the prompt buffer
+func Test_prompt_buffer_edit()
+  new
+  set buftype=prompt
+  normal! i
+  call assert_beeps('normal! dd')
+  call assert_beeps('normal! ~')
+  close!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

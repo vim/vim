@@ -909,8 +909,8 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_KE,	IF_EB("\033[?1l\033>", ESC_STR "[?1l" ESC_STR_nc ">")},
 #  ifdef FEAT_XTERM_SAVE
     {(int)KS_TI,	IF_EB("\0337\033[?47h", ESC_STR "7" ESC_STR_nc "[?47h")},
-    {(int)KS_TE,	IF_EB("\033[2J\033[?47l\0338",
-				  ESC_STR "[2J" ESC_STR_nc "[?47l" ESC_STR_nc "8")},
+    {(int)KS_TE,	IF_EB("\033[?47l\0338",
+					   ESC_STR_nc "[?47l" ESC_STR_nc "8")},
 #  endif
     {(int)KS_CTI,	IF_EB("\033[>4;2m", ESC_STR_nc "[>4;2m")},
     {(int)KS_CTE,	IF_EB("\033[>4;m", ESC_STR_nc "[>4;m")},
@@ -1418,6 +1418,11 @@ termgui_mch_get_rgb(guicolor_T color)
 #ifdef __BEOS__
 # undef DEFAULT_TERM
 # define DEFAULT_TERM	(char_u *)"beos-ansi"
+#endif
+
+#ifdef __HAIKU__
+# undef DEFAULT_TERM
+# define DEFAULT_TERM	(char_u *)"xterm"
 #endif
 
 #ifndef DEFAULT_TERM
@@ -2071,21 +2076,24 @@ set_termname(char_u *term)
 	check_map_keycodes();	// check mappings for terminal codes used
 
 	{
-	    bufref_T	old_curbuf;
+	    buf_T	*buf;
+	    aco_save_T	aco;
 
 	    /*
 	     * Execute the TermChanged autocommands for each buffer that is
 	     * loaded.
 	     */
-	    set_bufref(&old_curbuf, curbuf);
-	    FOR_ALL_BUFFERS(curbuf)
+	    FOR_ALL_BUFFERS(buf)
 	    {
 		if (curbuf->b_ml.ml_mfp != NULL)
+		{
+		    aucmd_prepbuf(&aco, buf);
 		    apply_autocmds(EVENT_TERMCHANGED, NULL, NULL, FALSE,
 								      curbuf);
+		    // restore curwin/curbuf and a few other things
+		    aucmd_restbuf(&aco);
+		}
 	    }
-	    if (bufref_valid(&old_curbuf))
-		curbuf = old_curbuf.br_buf;
 	}
     }
 
@@ -6399,3 +6407,34 @@ cterm_color2rgb(int nr, char_u *r, char_u *g, char_u *b, char_u *ansi_idx)
 }
 #endif
 
+/*
+ * Replace K_BS by <BS> and K_DEL by <DEL>
+ */
+    void
+term_replace_bs_del_keycode(char_u *ta_buf, int ta_len, int len)
+{
+    int		i;
+    int		c;
+
+    for (i = ta_len; i < ta_len + len; ++i)
+    {
+	if (ta_buf[i] == CSI && len - i > 2)
+	{
+	    c = TERMCAP2KEY(ta_buf[i + 1], ta_buf[i + 2]);
+	    if (c == K_DEL || c == K_KDEL || c == K_BS)
+	    {
+		mch_memmove(ta_buf + i + 1, ta_buf + i + 3,
+			(size_t)(len - i - 2));
+		if (c == K_DEL || c == K_KDEL)
+		    ta_buf[i] = DEL;
+		else
+		    ta_buf[i] = Ctrl_H;
+		len -= 2;
+	    }
+	}
+	else if (ta_buf[i] == '\r')
+	    ta_buf[i] = '\n';
+	if (has_mbyte)
+	    i += (*mb_ptr2len_len)(ta_buf + i, ta_len + len - i) - 1;
+    }
+}

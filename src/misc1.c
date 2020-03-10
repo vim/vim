@@ -14,6 +14,10 @@
 #include "vim.h"
 #include "version.h"
 
+#if defined(__HAIKU__)
+# include <storage/FindDirectory.h>
+#endif
+
 #if defined(MSWIN)
 # include <lm.h>
 #endif
@@ -1667,6 +1671,18 @@ vim_getenv(char_u *name, int *mustfree)
     // handling $VIMRUNTIME and $VIM is below, bail out if it's another name.
     vimruntime = (STRCMP(name, "VIMRUNTIME") == 0);
     if (!vimruntime && STRCMP(name, "VIM") != 0)
+#if defined(__HAIKU__)
+	// special handling for user settings directory...
+	if (STRCMP(name, "BE_USER_SETTINGS") == 0)
+	{
+	    static char userSettingsPath[MAXPATHL] = {0};
+
+	    if (B_OK == find_directory(B_USER_SETTINGS_DIRECTORY, 0,
+					    false, userSettingsPath, MAXPATHL))
+		return userSettingsPath;
+	}
+	else
+#endif
 	return NULL;
 
     /*
@@ -1852,6 +1868,22 @@ vim_unsetenv(char_u *var)
 }
 #endif
 
+
+/*
+ * Set environment variable "name" and take care of side effects.
+ */
+    void
+vim_setenv_ext(char_u *name, char_u *val)
+{
+    vim_setenv(name, val);
+    if (STRICMP(name, "HOME") == 0)
+	init_homedir();
+    else if (didset_vim && STRICMP(name, "VIM") == 0)
+	didset_vim = FALSE;
+    else if (didset_vimruntime
+	    && STRICMP(name, "VIMRUNTIME") == 0)
+	didset_vimruntime = FALSE;
+}
 
 /*
  * Our portable version of setenv.
@@ -2580,35 +2612,4 @@ path_with_url(char_u *fname)
     for (p = fname; isalpha(*p); ++p)
 	;
     return path_is_url(p);
-}
-
-/*
- * Put timestamp "tt" in "buf[buflen]" in a nice format.
- */
-    void
-add_time(char_u *buf, size_t buflen, time_t tt)
-{
-#ifdef HAVE_STRFTIME
-    struct tm	tmval;
-    struct tm	*curtime;
-
-    if (vim_time() - tt >= 100)
-    {
-	curtime = vim_localtime(&tt, &tmval);
-	if (vim_time() - tt < (60L * 60L * 12L))
-	    // within 12 hours
-	    (void)strftime((char *)buf, buflen, "%H:%M:%S", curtime);
-	else
-	    // longer ago
-	    (void)strftime((char *)buf, buflen, "%Y/%m/%d %H:%M:%S", curtime);
-    }
-    else
-#endif
-    {
-	long seconds = (long)(vim_time() - tt);
-
-	vim_snprintf((char *)buf, buflen,
-		NGETTEXT("%ld second ago", "%ld seconds ago", seconds),
-		seconds);
-    }
 }

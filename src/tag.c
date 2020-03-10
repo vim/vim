@@ -3229,7 +3229,9 @@ parse_match(
 		tagp->command_end = p;
 	    p += 2;	// skip ";\""
 	    if (*p++ == TAB)
-		while (ASCII_ISALPHA(*p))
+		// Accept ASCII alphabetic kind characters and any multi-byte
+		// character.
+		while (ASCII_ISALPHA(*p) || mb_ptr2len(p) > 1)
 		{
 		    if (STRNCMP(p, "kind:", 5) == 0)
 			tagp->tagkind = p + 5;
@@ -3245,20 +3247,21 @@ parse_match(
 			tagp->tagkind = p;
 		    if (pt == NULL)
 			break;
-		    p = pt + 1;
+		    p = pt;
+		    MB_PTR_ADV(p);
 		}
 	}
 	if (tagp->tagkind != NULL)
 	{
 	    for (p = tagp->tagkind;
-			    *p && *p != '\t' && *p != '\r' && *p != '\n'; ++p)
+			    *p && *p != '\t' && *p != '\r' && *p != '\n'; MB_PTR_ADV(p))
 		;
 	    tagp->tagkind_end = p;
 	}
 	if (tagp->user_data != NULL)
 	{
 	    for (p = tagp->user_data;
-			    *p && *p != '\t' && *p != '\r' && *p != '\n'; ++p)
+			    *p && *p != '\t' && *p != '\r' && *p != '\n'; MB_PTR_ADV(p))
 		;
 	    tagp->user_data_end = p;
 	}
@@ -3543,7 +3546,7 @@ jumpto_tag(
 	    else
 		// start search before first line
 		curwin->w_cursor.lnum = 0;
-	    if (do_search(NULL, pbuf[0], pbuf + 1, (long)1,
+	    if (do_search(NULL, pbuf[0], pbuf[0], pbuf + 1, (long)1,
 							 search_options, NULL))
 		retval = OK;
 	    else
@@ -3555,7 +3558,7 @@ jumpto_tag(
 		 * try again, ignore case now
 		 */
 		p_ic = TRUE;
-		if (!do_search(NULL, pbuf[0], pbuf + 1, (long)1,
+		if (!do_search(NULL, pbuf[0], pbuf[0], pbuf + 1, (long)1,
 							 search_options, NULL))
 		{
 		    /*
@@ -3566,13 +3569,13 @@ jumpto_tag(
 		    cc = *tagp.tagname_end;
 		    *tagp.tagname_end = NUL;
 		    sprintf((char *)pbuf, "^%s\\s\\*(", tagp.tagname);
-		    if (!do_search(NULL, '/', pbuf, (long)1,
+		    if (!do_search(NULL, '/', '/', pbuf, (long)1,
 							 search_options, NULL))
 		    {
 			// Guess again: "^char * \<func  ("
 			sprintf((char *)pbuf, "^\\[#a-zA-Z_]\\.\\*\\<%s\\s\\*(",
 								tagp.tagname);
-			if (!do_search(NULL, '/', pbuf, (long)1,
+			if (!do_search(NULL, '/', '/', pbuf, (long)1,
 							 search_options, NULL))
 			    found = 0;
 		    }
@@ -3980,7 +3983,10 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
 
 	    // Skip pseudo-tag lines.
 	    if (STRNCMP(tp.tagname, "!_TAG_", 6) == 0)
+	    {
+		vim_free(matches[i]);
 		continue;
+	    }
 
 	    if ((dict = dict_alloc()) == NULL)
 		ret = FAIL;
@@ -4003,7 +4009,7 @@ get_tags(list_T *list, char_u *pat, char_u *buf_fname)
 	    if (tp.command_end != NULL)
 	    {
 		for (p = tp.command_end + 3;
-				   *p != NUL && *p != '\n' && *p != '\r'; ++p)
+			  *p != NUL && *p != '\n' && *p != '\r'; MB_PTR_ADV(p))
 		{
 		    if (p == tp.tagkind || (p + 5 == tp.tagkind
 					      && STRNCMP(p, "kind:", 5) == 0))
@@ -4264,6 +4270,7 @@ set_tagstack(win_T *wp, dict_T *d, int action)
 	taggy_T	*tagstack = wp->w_tagstack;
 	int	tagstackidx = wp->w_tagstackidx;
 	int	tagstacklen = wp->w_tagstacklen;
+
 	// delete all the tag stack entries above the current entry
 	while (tagstackidx < tagstacklen)
 	    tagstack_clear_entry(&tagstack[--tagstacklen]);

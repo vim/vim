@@ -626,6 +626,12 @@ NODEFAULTLIB =
 NODEFAULTLIB = /nodefaultlib
 !endif
 
+# Specify source code charset to suppress warning C4819 on non-English
+# environment. Only available from MSVC 14.
+!if $(MSVC_MAJOR) >= 14
+CFLAGS = $(CFLAGS) /source-charset:utf-8
+!endif
+
 # Use multiprocess build on MSVC 10
 !if ("$(USE_MP)" == "yes") && ($(MSVC_MAJOR) >= 10)
 CFLAGS = $(CFLAGS) /MP
@@ -666,6 +672,9 @@ CFLAGS = $(CFLAGS) $(WP64CHECK)
 
 CFLAGS = $(CFLAGS) $(OPTFLAG) -DNDEBUG $(CPUARG)
 RCFLAGS = $(rcflags) $(rcvars) -DNDEBUG
+! if "$(CL)" == "/D_USING_V110_SDK71_"
+RCFLAGS = $(RCFLAGS) /D_USING_V110_SDK71_
+! endif
 ! ifdef USE_MSVCRT
 CFLAGS = $(CFLAGS) /MD
 LIBC = msvcrt.lib
@@ -694,6 +703,12 @@ LIBC = $(LIBC) libcmtd.lib
 CFLAGS = $(CFLAGS) /Zl /MTd
 ! endif
 !endif # DEBUG
+
+!if $(MSVC_MAJOR) >= 8
+# Visual Studio 2005 has 'deprecated' many of the standard CRT functions
+CFLAGS_DEPR = /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
+CFLAGS = $(CFLAGS) $(CFLAGS_DEPR)
+!endif
 
 !include Make_all.mak
 !include testdir\Make_all.mak
@@ -787,6 +802,7 @@ OBJ = \
 	$(OUTDIR)\term.obj \
 	$(OUTDIR)\testing.obj \
 	$(OUTDIR)\textprop.obj \
+	$(OUTDIR)\time.obj \
 	$(OUTDIR)\ui.obj \
 	$(OUTDIR)\undo.obj \
 	$(OUTDIR)\usercmd.obj \
@@ -1346,15 +1362,17 @@ $(VIM): $(VIM).exe
 $(OUTDIR):
 	if not exist $(OUTDIR)/nul  mkdir $(OUTDIR)
 
+CFLAGS_INST = /nologo /O2 -DNDEBUG -DWIN32 -DWINVER=$(WINVER) -D_WIN32_WINNT=$(WINVER) $(CFLAGS_DEPR)
+
 install.exe: dosinst.c dosinst.h version.h
-	$(CC) /nologo -DNDEBUG -DWIN32 dosinst.c kernel32.lib shell32.lib \
+	$(CC) $(CFLAGS_INST) dosinst.c kernel32.lib shell32.lib \
 		user32.lib ole32.lib advapi32.lib uuid.lib \
 		-link -subsystem:$(SUBSYSTEM_TOOLS)
 	- if exist install.exe del install.exe
 	ren dosinst.exe install.exe
 
 uninstall.exe: uninstall.c dosinst.h version.h
-	$(CC) /nologo -DNDEBUG -DWIN32 uninstall.c shell32.lib advapi32.lib \
+	$(CC) $(CFLAGS_INST) uninstall.c shell32.lib advapi32.lib \
 		-link -subsystem:$(SUBSYSTEM_TOOLS)
 
 vimrun.exe: vimrun.c
@@ -1584,7 +1602,7 @@ $(OUTDIR)/if_lua.obj: $(OUTDIR) if_lua.c  $(INCL)
 	$(CC) $(CFLAGS_OUTDIR) $(LUA_INC) if_lua.c
 
 auto/if_perl.c : if_perl.xs typemap
-	-mkdir auto
+	-if not exist auto/nul mkdir auto
 	$(XSUBPP) -prototypes -typemap $(XSUBPP_TYPEMAP) \
 		-typemap typemap if_perl.xs -output $@
 
@@ -1718,6 +1736,8 @@ $(OUTDIR)/term.obj:	$(OUTDIR) term.c  $(INCL)
 $(OUTDIR)/term.obj:	$(OUTDIR) testing.c  $(INCL)
 
 $(OUTDIR)/textprop.obj:	$(OUTDIR) textprop.c  $(INCL)
+
+$(OUTDIR)/time.obj:	$(OUTDIR) time.c  $(INCL)
 
 $(OUTDIR)/ui.obj:	$(OUTDIR) ui.c  $(INCL)
 
@@ -1912,6 +1932,7 @@ proto.h: \
 	proto/term.pro \
 	proto/testing.pro \
 	proto/textprop.pro \
+	proto/time.pro \
 	proto/ui.pro \
 	proto/undo.pro \
 	proto/usercmd.pro \

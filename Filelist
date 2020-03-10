@@ -14,7 +14,6 @@ SRC_ALL =	\
 		ci/if_ver*.vim \
 		src/Make_all.mak \
 		src/README.md \
-		src/README_VIM9.md \
 		src/alloc.h \
 		src/arabic.c \
 		src/arglist.c \
@@ -127,6 +126,7 @@ SRC_ALL =	\
 		src/termlib.c \
 		src/testing.c \
 		src/textprop.c \
+		src/time.c \
 		src/ui.c \
 		src/undo.c \
 		src/usercmd.c \
@@ -275,6 +275,7 @@ SRC_ALL =	\
 		src/proto/termlib.pro \
 		src/proto/testing.pro \
 		src/proto/textprop.pro \
+		src/proto/time.pro \
 		src/proto/ui.pro \
 		src/proto/undo.pro \
 		src/proto/usercmd.pro \
@@ -529,7 +530,6 @@ SRC_DOS =	\
 		src/uninstall.c \
 		src/vim.def \
 		src/vim.rc \
-		src/vimio.h \
 		src/gvim.exe.mnf \
 		src/vimrun.c \
 		src/xpm_w32.c \
@@ -599,6 +599,14 @@ SRC_AMI =	\
 		src/testdir/amiga.vim \
 		src/xxd/Make_amiga.mak \
 
+# source files for Haiku (also in the extra archive)
+SRC_HAIKU =	\
+		src/os_haiku.h \
+		src/os_haiku.rdef \
+		src/gui_haiku.cc \
+		src/gui_haiku.h \
+		src/proto/gui_haiku.pro \
+
 # source files for the Mac (also in the extra archive)
 SRC_MAC =	\
 		src/INSTALLmac.txt \
@@ -634,13 +642,13 @@ SRC_QNX =	\
 		src/proto/gui_photon.pro \
 		src/proto/os_qnx.pro \
 
-
 # source files for the extra archive (all sources that are not for Unix)
 SRC_EXTRA =	\
 		$(SRC_AMI) \
 		$(SRC_AMI_DOS) \
 		$(SRC_DOS) \
 		$(SRC_DOS_BIN) \
+		$(SRC_HAIKU) \
 		$(SRC_MAC) \
 		$(SRC_QNX) \
 		$(SRC_VMS) \
@@ -660,6 +668,7 @@ SRC_EXTRA =	\
 RT_ALL =	\
 		README.txt \
 		README.md \
+		README_VIM9.md \
 		LICENSE \
 		CONTRIBUTING.md \
 		runtime/bugreport.vim \

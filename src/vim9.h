@@ -13,35 +13,44 @@
 
 typedef enum {
     ISN_EXEC,	    // execute Ex command line isn_arg.string
-    ISN_ECHO,	    // echo isn_arg.number items on top of stack
+    ISN_ECHO,	    // echo isn_arg.echo.echo_count items on top of stack
+    ISN_EXECUTE,    // execute Ex commands isn_arg.number items on top of stack
 
     // get and set variables
     ISN_LOAD,	    // push local variable isn_arg.number
     ISN_LOADV,	    // push v: variable isn_arg.number
-    ISN_LOADSCRIPT, // push script-local variable isn_arg.script.
-    ISN_LOADS,	    // push s: variable isn_arg.string
     ISN_LOADG,	    // push g: variable isn_arg.string
+    ISN_LOADS,	    // push s: variable isn_arg.loadstore
+    ISN_LOADSCRIPT, // push script-local variable isn_arg.script.
     ISN_LOADOPT,    // push option isn_arg.string
     ISN_LOADENV,    // push environment variable isn_arg.string
     ISN_LOADREG,    // push register isn_arg.number
 
     ISN_STORE,	    // pop into local variable isn_arg.number
+    ISN_STOREV,	    // pop into v: variable isn_arg.number
     ISN_STOREG,	    // pop into global variable isn_arg.string
+    ISN_STORES,	    // pop into scirpt variable isn_arg.loadstore
     ISN_STORESCRIPT, // pop into scirpt variable isn_arg.script
     ISN_STOREOPT,   // pop into option isn_arg.string
+    ISN_STOREENV,    // pop into environment variable isn_arg.string
+    ISN_STOREREG,    // pop into register isn_arg.number
     // ISN_STOREOTHER, // pop into other script variable isn_arg.other.
 
-    ISN_STORENR,    // store number into local variable isn_arg.storenr.str_idx
+    ISN_STORENR,    // store number into local variable isn_arg.storenr.stnr_idx
 
     // constants
-    ISN_PUSHNR,	    // push number isn_arg.number
-    ISN_PUSHBOOL,   // push bool value isn_arg.number
-    ISN_PUSHSPEC,   // push special value isn_arg.number
-    ISN_PUSHF,	    // push float isn_arg.fnumber
-    ISN_PUSHS,	    // push string isn_arg.string
-    ISN_PUSHBLOB,   // push blob isn_arg.blob
-    ISN_NEWLIST,    // push list from stack items, size is isn_arg.number
-    ISN_NEWDICT,    // push dict from stack items, size is isn_arg.number
+    ISN_PUSHNR,		// push number isn_arg.number
+    ISN_PUSHBOOL,	// push bool value isn_arg.number
+    ISN_PUSHSPEC,	// push special value isn_arg.number
+    ISN_PUSHF,		// push float isn_arg.fnumber
+    ISN_PUSHS,		// push string isn_arg.string
+    ISN_PUSHBLOB,	// push blob isn_arg.blob
+    ISN_PUSHFUNC,	// push func isn_arg.string
+    ISN_PUSHPARTIAL,	// push partial ?
+    ISN_PUSHCHANNEL,	// push channel isn_arg.channel
+    ISN_PUSHJOB,	// push channel isn_arg.job
+    ISN_NEWLIST,	// push list from stack items, size is isn_arg.number
+    ISN_NEWDICT,	// push dict from stack items, size is isn_arg.number
 
     // function call
     ISN_BCALL,	    // call builtin function isn_arg.bfunc
@@ -126,7 +135,6 @@ typedef struct {
 
 typedef enum {
     JUMP_ALWAYS,
-    JUMP_IF_TRUE,		// pop and jump if true
     JUMP_IF_FALSE,		// pop and jump if false
     JUMP_AND_KEEP_IF_TRUE,	// jump if top of stack is true, drop if not
     JUMP_AND_KEEP_IF_FALSE,	// jump if top of stack is false, drop if not
@@ -170,8 +178,8 @@ typedef struct {
 
 // arguments to ISN_STORENR
 typedef struct {
-    int		str_idx;
-    varnumber_T	str_val;
+    int		stnr_idx;
+    varnumber_T	stnr_val;
 } storenr_T;
 
 // arguments to ISN_STOREOPT
@@ -180,13 +188,13 @@ typedef struct {
     int		so_flags;
 } storeopt_T;
 
-// arguments to ISN_LOADS
+// arguments to ISN_LOADS and ISN_STORES
 typedef struct {
     char_u	*ls_name;	// variable name
     int		ls_sid;		// script ID
-} loads_T;
+} loadstore_T;
 
-// arguments to ISN_LOADSCRIPT
+// arguments to ISN_LOADSCRIPT and ISN_STORESCRIPT
 typedef struct {
     int		script_sid;	// script ID
     int		script_idx;	// index in sn_var_vals
@@ -205,6 +213,9 @@ typedef struct {
 #ifdef FEAT_FLOAT
 	float_T		    fnumber;
 #endif
+	channel_T	    *channel;
+	job_T		    *job;
+	partial_T	    *partial;
 	jump_T		    jump;
 	forloop_T	    forloop;
 	try_T		    try;
@@ -217,7 +228,7 @@ typedef struct {
 	checktype_T	    type;
 	storenr_T	    storenr;
 	storeopt_T	    storeopt;
-	loads_T		    loads;
+	loadstore_T	    loadstore;
 	script_T	    script;
     } isn_arg;
 } isn_T;

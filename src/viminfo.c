@@ -26,6 +26,21 @@ typedef struct
     garray_T	vir_barlines;	// lines starting with |
 } vir_T;
 
+typedef enum {
+    BVAL_NR,
+    BVAL_STRING,
+    BVAL_EMPTY
+} btype_T;
+
+typedef struct {
+    btype_T	bv_type;
+    long	bv_nr;
+    char_u	*bv_string;
+    char_u	*bv_tofree;	// free later when not NULL
+    int		bv_len;		// length of bv_string
+    int		bv_allocated;	// bv_string was allocated
+} bval_T;
+
 #if defined(FEAT_VIMINFO) || defined(PROTO)
 
 static int  viminfo_errcnt;
@@ -1087,22 +1102,24 @@ barline_parse(vir_T *virp, char_u *text, garray_T *values)
 	    s[len] = NUL;
 
 	    converted = FALSE;
+	    value->bv_tofree = NULL;
 	    if (virp->vir_conv.vc_type != CONV_NONE && *s != NUL)
 	    {
 		sconv = string_convert(&virp->vir_conv, s, NULL);
 		if (sconv != NULL)
 		{
 		    if (s == buf)
-			vim_free(s);
+			// the converted string is stored in bv_string and
+			// freed later, also need to free "buf" later
+			value->bv_tofree = buf;
 		    s = sconv;
-		    buf = s;
 		    converted = TRUE;
 		}
 	    }
 
 	    // Need to copy in allocated memory if the string wasn't allocated
 	    // above and we did allocate before, thus vir_line may change.
-	    if (s != buf && allocated)
+	    if (s != buf && allocated && !converted)
 		s = vim_strsave(s);
 	    value->bv_string = s;
 	    value->bv_type = BVAL_STRING;
@@ -2747,6 +2764,7 @@ read_viminfo_barline(vir_T *virp, int got_encoding, int force, int writing)
 	    vp = (bval_T *)values.ga_data + i;
 	    if (vp->bv_type == BVAL_STRING && vp->bv_allocated)
 		vim_free(vp->bv_string);
+	    vim_free(vp->bv_tofree);
 	}
 	ga_clear(&values);
     }

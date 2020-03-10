@@ -194,7 +194,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
     switch (val->v_type)
     {
 	case VAR_BOOL:
-	    switch (val->vval.v_number)
+	    switch ((long)val->vval.v_number)
 	    {
 		case VVAL_FALSE: ga_concat(gap, (char_u *)"false"); break;
 		case VVAL_TRUE: ga_concat(gap, (char_u *)"true"); break;
@@ -202,7 +202,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 	    break;
 
 	case VAR_SPECIAL:
-	    switch (val->vval.v_number)
+	    switch ((long)val->vval.v_number)
 	    {
 		case VVAL_NONE: if ((options & JSON_JS) != 0
 					     && (options & JSON_NO_NONE) == 0)
@@ -215,7 +215,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 
 	case VAR_NUMBER:
 	    vim_snprintf((char *)numbuf, NUMBUFLEN, "%lld",
-					      (long_long_T)val->vval.v_number);
+					      (varnumber_T)val->vval.v_number);
 	    ga_concat(gap, numbuf);
 	    break;
 
@@ -352,7 +352,7 @@ json_encode_item(garray_T *gap, typval_T *val, int copyID, int options)
 #endif
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	    internal_error("json_encode_item()");
+	    internal_error_no_abort("json_encode_item()");
 	    return FAIL;
     }
     return OK;

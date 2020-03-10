@@ -24,7 +24,7 @@ void set_last_search_pat(char_u *s, int idx, int magic, int setlast);
 void last_pat_prog(regmmatch_T *regmatch);
 int searchit(win_T *win, buf_T *buf, pos_T *pos, pos_T *end_pos, int dir, char_u *pat, long count, int options, int pat_use, searchit_arg_T *extra_arg);
 void set_search_direction(int cdir);
-int do_search(oparg_T *oap, int dirc, char_u *pat, long count, int options, searchit_arg_T *sia);
+int do_search(oparg_T *oap, int dirc, int search_delim, char_u *pat, long count, int options, searchit_arg_T *sia);
 int search_for_exact_line(buf_T *buf, pos_T *pos, int dir, char_u *pat);
 int searchc(cmdarg_T *cap, int t_cmd);
 pos_T *findmatch(oparg_T *oap, int initc);

@@ -1187,6 +1187,7 @@ first_submatch(regmmatch_T *rp)
 do_search(
     oparg_T	    *oap,	// can be NULL
     int		    dirc,	// '/' or '?'
+    int		    search_delim, // the delimiter for the search, e.g. '%' in s%regex%replacement%
     char_u	    *pat,
     long	    count,
     int		    options,
@@ -1285,7 +1286,7 @@ do_search(
 	searchstr = pat;
 	dircp = NULL;
 					    // use previous pattern
-	if (pat == NULL || *pat == NUL || *pat == dirc)
+	if (pat == NULL || *pat == NUL || *pat == search_delim)
 	{
 	    if (spats[RE_SEARCH].pat == NULL)	    // no previous pattern
 	    {
@@ -1311,7 +1312,7 @@ do_search(
 	     * If there is a matching '/' or '?', toss it.
 	     */
 	    ps = strcopy;
-	    p = skip_regexp(pat, dirc, (int)p_magic, &strcopy);
+	    p = skip_regexp(pat, search_delim, (int)p_magic, &strcopy);
 	    if (strcopy != ps)
 	    {
 		// made a copy of "pat" to change "\?" to "?"
@@ -1319,7 +1320,7 @@ do_search(
 		pat = strcopy;
 		searchstr = strcopy;
 	    }
-	    if (*p == dirc)
+	    if (*p == search_delim)
 	    {
 		dircp = p;	// remember where we put the NUL
 		*p++ = NUL;
@@ -1525,7 +1526,7 @@ do_search(
 		RE_LAST, sia);
 
 	if (dircp != NULL)
-	    *dircp = dirc;	// restore second '/' or '?' for normal_cmd()
+	    *dircp = search_delim;	// restore second '/' or '?' for normal_cmd()
 
 	if (!shortmess(SHM_SEARCH)
 		&& ((dirc == '/' && LT_POS(pos, curwin->w_cursor))
@@ -1606,6 +1607,7 @@ do_search(
 	    break;
 
 	dirc = *++pat;
+	search_delim = dirc;
 	if (dirc != '?' && dirc != '/')
 	{
 	    retval = 0;

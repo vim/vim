@@ -1,4 +1,4 @@
-*cmdline.txt*   For Vim version 8.2.  Last change: 2019 Dec 17
+*cmdline.txt*   For Vim version 8.2.  Last change: 2020 Feb 29
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -476,6 +476,10 @@ emulate it.  For example, this mimics autolist=ambiguous:
 This will find the longest match with the first 'wildchar', then list all
 matching files with the next.
 
+					*complete-script-local-functions*
+When completing user function names, prepend "s:" to find script-local
+functions.
+
 							*suffixes*
 For file name completion you can use the 'suffixes' option to set a priority
 between files with almost the same name.  If there are multiple matches,
@@ -586,6 +590,7 @@ followed by another Vim command:
     :command
     :cscope
     :debug
+    :eval
     :folddoopen
     :folddoclosed
     :function
@@ -933,8 +938,7 @@ These modifiers can be given, in this order:
 		directory.
 	:.	Reduce file name to be relative to current directory, if
 		possible.  File name is unmodified if it is not below the
-		current directory, but on MS-Windows the drive is removed if
-		it is the current drive.
+		current directory.
 		For maximum shortness, use ":~:.".
 	:h	Head of the file name (the last component and any separators
 		removed).  Cannot be used with :e, :r or :t.

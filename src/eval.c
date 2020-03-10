@@ -1491,6 +1491,8 @@ next_for_item(void *fi_void, char_u *arg)
 {
     forinfo_T	*fi = (forinfo_T *)fi_void;
     int		result;
+    int		flag = current_sctx.sc_version == SCRIPT_VERSION_VIM9 ?
+							LET_NO_COMMAND : 0;
     listitem_T	*item;
 
     if (fi->fi_blob != NULL)
@@ -1504,7 +1506,7 @@ next_for_item(void *fi_void, char_u *arg)
 	tv.vval.v_number = blob_get(fi->fi_blob, fi->fi_bi);
 	++fi->fi_bi;
 	return ex_let_vars(arg, &tv, TRUE, fi->fi_semicolon,
-					       fi->fi_varcount, 0, NULL) == OK;
+				       fi->fi_varcount, flag, NULL) == OK;
     }
 
     item = fi->fi_lw.lw_item;
@@ -1514,7 +1516,7 @@ next_for_item(void *fi_void, char_u *arg)
     {
 	fi->fi_lw.lw_item = item->li_next;
 	result = (ex_let_vars(arg, &item->li_tv, TRUE, fi->fi_semicolon,
-					  fi->fi_varcount, 0, NULL) == OK);
+				      fi->fi_varcount, flag, NULL) == OK);
     }
     return result;
 }
@@ -5560,7 +5562,7 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	    internal_error("tv_get_number(UNKNOWN)");
+	    internal_error_no_abort("tv_get_number(UNKNOWN)");
 	    break;
     }
     if (denote == NULL)		// useful for values that must be unsigned
@@ -5614,7 +5616,7 @@ tv_get_float(typval_T *varp)
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	    internal_error("tv_get_float(UNKNOWN)");
+	    internal_error_no_abort("tv_get_float(UNKNOWN)");
 	    break;
     }
     return 0;
@@ -5665,7 +5667,7 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
     {
 	case VAR_NUMBER:
 	    vim_snprintf((char *)buf, NUMBUFLEN, "%lld",
-					    (long_long_T)varp->vval.v_number);
+					    (varnumber_T)varp->vval.v_number);
 	    return buf;
 	case VAR_FUNC:
 	case VAR_PARTIAL:
@@ -5886,7 +5888,7 @@ copy_tv(typval_T *from, typval_T *to)
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	    internal_error("copy_tv(UNKNOWN)");
+	    internal_error_no_abort("copy_tv(UNKNOWN)");
 	    break;
     }
 }
@@ -5965,7 +5967,7 @@ item_copy(
 	    break;
 	case VAR_UNKNOWN:
 	case VAR_VOID:
-	    internal_error("item_copy(UNKNOWN)");
+	    internal_error_no_abort("item_copy(UNKNOWN)");
 	    ret = FAIL;
     }
     --recurse;

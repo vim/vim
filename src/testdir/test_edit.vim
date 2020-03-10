@@ -265,6 +265,10 @@ func Test_edit_10()
   call cursor(1, 4)
   call feedkeys("A\<s-home>start\<esc>", 'txin')
   call assert_equal(['startdef', 'ghi'], getline(1, '$'))
+  " start select mode again with gv
+  set selectmode=cmd
+  call feedkeys('gvabc', 'xt')
+  call assert_equal('abctdef', getline(1))
   set selectmode= keymodel=
   bw!
 endfunc
@@ -1263,6 +1267,16 @@ func Test_edit_forbidden()
   catch /^Vim\%((\a\+)\)\=:E117/ " catch E117: unknown function
   endtry
   au! InsertCharPre
+  " Not allowed to enter ex mode when text is locked
+  au InsertCharPre <buffer> :normal! gQ<CR>
+  let caught_e523 = 0
+  try
+    call feedkeys("ix\<esc>", 'xt')
+  catch /^Vim\%((\a\+)\)\=:E523/ " catch E523
+    let caught_e523 = 1
+  endtry
+  call assert_equal(1, caught_e523)
+  au! InsertCharPre
   " 3) edit when completion is shown
   fun! Complete(findstart, base)
     if a:findstart
@@ -1500,6 +1514,22 @@ func Test_edit_startinsert()
   bwipe!
 endfunc
 
+" Test for :startreplace and :startgreplace
+func Test_edit_startreplace()
+  new
+  call setline(1, 'abc')
+  call feedkeys("l:startreplace\<CR>xyz\e", 'xt')
+  call assert_equal('axyz', getline(1))
+  call feedkeys("0:startreplace!\<CR>abc\e", 'xt')
+  call assert_equal('axyzabc', getline(1))
+  call setline(1, "a\tb")
+  call feedkeys("0l:startgreplace\<CR>xyz\e", 'xt')
+  call assert_equal("axyz\tb", getline(1))
+  call feedkeys("0i\<C-R>=execute('startreplace')\<CR>12\e", 'xt')
+  call assert_equal("12axyz\tb", getline(1))
+  close!
+endfunc
+
 func Test_edit_noesckeys()
   CheckNotGui
   new
@@ -1519,3 +1549,5 @@ func Test_edit_noesckeys()
   bwipe!
   set esckeys
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

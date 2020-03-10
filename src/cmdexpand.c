@@ -1550,6 +1550,7 @@ set_one_cmd_context(
 
 	case CMD_function:
 	case CMD_delfunction:
+	case CMD_disassemble:
 	    xp->xp_context = EXPAND_USER_FUNC;
 	    xp->xp_pattern = arg;
 	    break;
@@ -1978,6 +1979,7 @@ ExpandFromContext(
     regmatch_T	regmatch;
     int		ret;
     int		flags;
+    char_u	*tofree = NULL;
 
     flags = EW_DIR;	// include directories
     if (options & WILD_LIST_NOTFOUND)
@@ -2115,6 +2117,17 @@ ExpandFromContext(
     if (xp->xp_context == EXPAND_PACKADD)
 	return ExpandPackAddDir(pat, num_file, file);
 
+    // When expanding a function name starting with s:, match the <SNR>nr_
+    // prefix.
+    if (xp->xp_context == EXPAND_USER_FUNC && STRNCMP(pat, "^s:", 3) == 0)
+    {
+	int len = (int)STRLEN(pat) + 20;
+
+	tofree = alloc(len);
+	vim_snprintf((char *)tofree, len, "^<SNR>\\d\\+_%s", pat + 3);
+	pat = tofree;
+    }
+
     regmatch.regprog = vim_regcomp(pat, p_magic ? RE_MAGIC : 0);
     if (regmatch.regprog == NULL)
 	return FAIL;
@@ -2204,6 +2217,7 @@ ExpandFromContext(
     }
 
     vim_regfree(regmatch.regprog);
+    vim_free(tofree);
 
     return ret;
 }

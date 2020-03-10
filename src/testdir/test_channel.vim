@@ -202,10 +202,12 @@ func Ch_communicate(port)
 
   " Reading while there is nothing available.
   call assert_equal(v:none, ch_read(handle, {'timeout': 0}))
-  let start = reltime()
-  call assert_equal(v:none, ch_read(handle, {'timeout': 333}))
-  let elapsed = reltime(start)
-  call assert_inrange(0.3, 0.6, reltimefloat(reltime(start)))
+  if exists('*reltimefloat')
+    let start = reltime()
+    call assert_equal(v:none, ch_read(handle, {'timeout': 333}))
+    let elapsed = reltime(start)
+    call assert_inrange(0.3, 0.6, reltimefloat(reltime(start)))
+  endif
 
   " Send without waiting for a response, then wait for a response.
   call ch_sendexpr(handle, 'wait a bit')
@@ -412,6 +414,8 @@ endfunc
 
 " Test that trying to connect to a non-existing port fails quickly.
 func Test_connect_waittime()
+  CheckFunction reltimefloat
+
   call ch_log('Test_connect_waittime()')
   let start = reltime()
   let handle = ch_open('localhost:9876', s:chopt)
@@ -927,6 +931,8 @@ func Test_pipe_to_nameless_buffer()
 endfunc
 
 func Test_pipe_to_buffer_json()
+  CheckFunction reltimefloat
+
   let job = job_start(s:python . " test_channel_pipe.py",
 	\ {'out_io': 'buffer', 'out_mode': 'json'})
   call assert_equal("run", job_status(job))
@@ -1152,9 +1158,8 @@ func Test_out_cb()
     call WaitForAssert({-> assert_equal("dict: there", g:Ch_errmsg)})
 
     " Receive a json object split in pieces
-    unlet! g:Ch_outobj
-    call ch_sendraw(job, "echosplit [0, {\"one\": 1,| \"tw|o\": 2, \"three\": 3|}]\n")
     let g:Ch_outobj = ''
+    call ch_sendraw(job, "echosplit [0, {\"one\": 1,| \"tw|o\": 2, \"three\": 3|}]\n")
     call WaitForAssert({-> assert_equal({'one': 1, 'two': 2, 'three': 3}, g:Ch_outobj)})
   finally
     call job_stop(job)
@@ -1423,6 +1428,8 @@ function MyExitTimeCb(job, status)
 endfunction
 
 func Test_exit_callback_interval()
+  CheckFunction reltimefloat
+
   let g:exit_cb_val = {'start': reltime(), 'end': 0, 'process': 0}
   let job = [s:python, '-c', 'import time;time.sleep(0.5)']->job_start({'exit_cb': 'MyExitTimeCb'})
   let g:exit_cb_val.process = job_info(job).process
@@ -1768,6 +1775,7 @@ endfunc
 
 func Test_job_start_in_timer()
   CheckFeature timers
+  CheckFeature reltimefloat
 
   func OutCb(chan, msg)
     let g:val += 1
@@ -1981,4 +1989,33 @@ endfunc
 func Test_job_start_fails()
   " this was leaking memory
   call assert_fails("call job_start([''])", "E474:")
+endfunc
+
+func Test_issue_5150()
+  if has('win32')
+    let cmd = 'cmd /c pause'
+  else
+    let cmd = 'grep foo'
+  endif
+  let g:job = job_start(cmd, {})
+  call job_stop(g:job)
+  sleep 10m
+  call assert_equal(-1, job_info(g:job).exitval)
+  let g:job = job_start(cmd, {})
+  call job_stop(g:job, 'term')
+  sleep 10m
+  call assert_equal(-1, job_info(g:job).exitval)
+  let g:job = job_start(cmd, {})
+  call job_stop(g:job, 'kill')
+  sleep 10m
+  call assert_equal(-1, job_info(g:job).exitval)
+endfunc
+
+func Test_issue_5485()
+  let $VAR1 = 'global'
+  let g:Ch_reply = ""
+  let l:job = job_start([&shell, &shellcmdflag, has('win32') ? 'echo %VAR1% %VAR2%' : 'echo $VAR1 $VAR2'], {'env': {'VAR1': 'local', 'VAR2': 'local'}, 'callback': 'Ch_handler'})
+  let g:Ch_job = l:job
+  call WaitForAssert({-> assert_equal("local local", trim(g:Ch_reply))})
+  unlet $VAR1
 endfunc

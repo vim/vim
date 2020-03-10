@@ -212,4 +212,13 @@ func Test_lockmarks_with_put()
   bwipe!
 endfunc
 
+" Test for :k command to set a mark
+func Test_marks_k_cmd()
+  new
+  call setline(1, ['foo', 'bar', 'baz', 'qux'])
+  1,3kr
+  call assert_equal([0, 3, 1, 0], getpos("'r"))
+  close!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -1,4 +1,4 @@
-*insert.txt*    For Vim version 8.2.  Last change: 2020 Jan 04
+*insert.txt*    For Vim version 8.2.  Last change: 2020 Jan 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1079,7 +1079,8 @@ If you want to suppress the warning message for an empty result, return
 
 Other items are ignored.
 
-For acting upon end of completion, see the |CompleteDone| autocommand event.
+For acting upon end of completion, see the |CompleteDonePre| and
+|CompleteDone| autocommand event.
 
 For example, the function can contain this: >
 	let matches = ... list of words ...

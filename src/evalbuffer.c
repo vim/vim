@@ -752,6 +752,12 @@ f_getbufline(typval_T *argvars, typval_T *rettv)
     get_buffer_lines(buf, lnum, end, TRUE, rettv);
 }
 
+    type_T *
+ret_f_getline(int argcount, type_T **argtypes UNUSED)
+{
+    return argcount == 1 ? &t_string : &t_list_string;
+}
+
 /*
  * "getline(lnum, [end])" function
  */

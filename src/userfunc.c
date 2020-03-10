@@ -200,6 +200,7 @@ get_function_args(
 	    {
 		typval_T	rettv;
 
+		// find the end of the expression (doesn't evaluate it)
 		any_default = TRUE;
 		p = skipwhite(p) + 1;
 		p = skipwhite(p);
@@ -572,8 +573,6 @@ get_func_tv(
     return ret;
 }
 
-#define FLEN_FIXED 40
-
 /*
  * Return TRUE if "p" starts with "<SID>" or "s:".
  * Only works if eval_fname_script() returned non-zero for "p"!
@@ -590,7 +589,7 @@ eval_fname_sid(char_u *p)
  * Use "fname_buf[FLEN_FIXED + 1]" when it fits, otherwise allocate memory
  * (slow).
  */
-    static char_u *
+    char_u *
 fname_trans_sid(char_u *name, char_u *fname_buf, char_u **tofree, int *error)
 {
     int		llen;
@@ -678,7 +677,7 @@ find_func_even_dead(char_u *name, cctx_T *cctx)
 	    return func;
 
 	// Find imported funcion before global one.
-	imported = find_imported(name, cctx);
+	imported = find_imported(name, 0, cctx);
 	if (imported != NULL && imported->imp_funcname != NULL)
 	{
 	    hi = hash_find(&func_hashtab, imported->imp_funcname);
@@ -1060,6 +1059,8 @@ call_user_func(
     if (fp->uf_dfunc_idx >= 0)
     {
 	estack_push_ufunc(ETYPE_UFUNC, fp, 1);
+	save_current_sctx = current_sctx;
+	current_sctx = fp->uf_script_ctx;
 
 	// Execute the compiled function.
 	call_def_function(fp, argcount, argvars, rettv);
@@ -1067,6 +1068,7 @@ call_user_func(
 	current_funccal = fc->caller;
 
 	estack_pop();
+	current_sctx = save_current_sctx;
 	free_funccal(fc);
 	return;
     }
@@ -1900,7 +1902,7 @@ printable_func_name(ufunc_T *fp)
 }
 
 /*
- * List the head of the function: "name(arg1, arg2)".
+ * List the head of the function: "function name(arg1, arg2)".
  */
     static void
 list_func_head(ufunc_T *fp, int indent)
@@ -1910,7 +1912,10 @@ list_func_head(ufunc_T *fp, int indent)
     msg_start();
     if (indent)
 	msg_puts("   ");
-    msg_puts("function ");
+    if (fp->uf_dfunc_idx >= 0)
+	msg_puts("def ");
+    else
+	msg_puts("function ");
     msg_puts((char *)printable_func_name(fp));
     msg_putchar('(');
     for (j = 0; j < fp->uf_args.ga_len; ++j)
@@ -1955,7 +1960,19 @@ list_func_head(ufunc_T *fp, int indent)
 	}
     }
     msg_putchar(')');
-    if (fp->uf_flags & FC_ABORT)
+
+    if (fp->uf_dfunc_idx >= 0)
+    {
+	if (fp->uf_ret_type != &t_void)
+	{
+	    char *tofree;
+
+	    msg_puts(": ");
+	    msg_puts(type_name(fp->uf_ret_type, &tofree));
+	    vim_free(tofree);
+	}
+    }
+    else if (fp->uf_flags & FC_ABORT)
 	msg_puts(" abort");
     if (fp->uf_flags & FC_RANGE)
 	msg_puts(" range");
@@ -2188,7 +2205,7 @@ trans_function_name(
     name = alloc(len + lead + extra + 1);
     if (name != NULL)
     {
-	if (lead > 0 || vim9script)
+	if (!skip && (lead > 0 || vim9script))
 	{
 	    name[0] = K_SPECIAL;
 	    name[1] = KS_EXTRA;
@@ -2691,9 +2708,10 @@ ex_function(exarg_T *eap)
 		}
 	    }
 
-	    // Check for ":append", ":change", ":insert".
+	    // Check for ":append", ":change", ":insert".  Not for :def.
 	    p = skip_range(p, NULL);
-	    if ((p[0] == 'a' && (!ASCII_ISALPHA(p[1]) || p[1] == 'p'))
+	    if (eap->cmdidx != CMD_def
+		&& ((p[0] == 'a' && (!ASCII_ISALPHA(p[1]) || p[1] == 'p'))
 		    || (p[0] == 'c'
 			&& (!ASCII_ISALPHA(p[1]) || (p[1] == 'h'
 				&& (!ASCII_ISALPHA(p[2]) || (p[2] == 'a'
@@ -2701,7 +2719,10 @@ ex_function(exarg_T *eap)
 					    || !ASCII_ISALPHA(p[6])))))))
 		    || (p[0] == 'i'
 			&& (!ASCII_ISALPHA(p[1]) || (p[1] == 'n'
-				&& (!ASCII_ISALPHA(p[2]) || (p[2] == 's'))))))
+				&& (!ASCII_ISALPHA(p[2])
+				    || (p[2] == 's'
+					&& (!ASCII_ISALPHA(p[3])
+						|| p[3] == 'e'))))))))
 		skip_until = vim_strsave((char_u *)".");
 
 	    // Check for ":python <<EOF", ":tcl <<EOF", etc.
@@ -2961,6 +2982,11 @@ ex_function(exarg_T *eap)
 
     if (eap->cmdidx == CMD_def)
     {
+	int lnum_save = SOURCING_LNUM;
+
+	// error messages are for the first function line
+	SOURCING_LNUM = sourcing_lnum_top;
+
 	// parse the argument types
 	ga_init2(&fp->uf_type_list, sizeof(type_T), 5);
 
@@ -2973,16 +2999,23 @@ ex_function(exarg_T *eap)
 	    fp->uf_arg_types = ALLOC_CLEAR_MULT(type_T *, len);
 	    if (fp->uf_arg_types != NULL)
 	    {
-		int i;
+		int	i;
+		type_T	*type;
 
 		for (i = 0; i < len; ++ i)
 		{
 		    p = ((char_u **)argtypes.ga_data)[i];
 		    if (p == NULL)
 			// todo: get type from default value
-			fp->uf_arg_types[i] = &t_any;
+			type = &t_any;
 		    else
-			fp->uf_arg_types[i] = parse_type(&p, &fp->uf_type_list);
+			type = parse_type(&p, &fp->uf_type_list);
+		    if (type == NULL)
+		    {
+			SOURCING_LNUM = lnum_save;
+			goto errret_2;
+		    }
+		    fp->uf_arg_types[i] = type;
 		}
 	    }
 	    if (varargs)
@@ -2998,6 +3031,11 @@ ex_function(exarg_T *eap)
 		    fp->uf_va_type = &t_any;
 		else
 		    fp->uf_va_type = parse_type(&p, &fp->uf_type_list);
+		if (fp->uf_va_type == NULL)
+		{
+		    SOURCING_LNUM = lnum_save;
+		    goto errret_2;
+		}
 	    }
 	    varargs = FALSE;
 	}
@@ -3030,6 +3068,7 @@ ex_function(exarg_T *eap)
 	flags |= FC_SANDBOX;
     fp->uf_flags = flags;
     fp->uf_calls = 0;
+    fp->uf_cleared = FALSE;
     fp->uf_script_ctx = current_sctx;
     fp->uf_script_ctx.sc_lnum += sourcing_lnum_top;
     if (is_export)
@@ -3531,13 +3570,17 @@ ex_call(exarg_T *eap)
     if (eap->skip)
 	--emsg_skip;
 
-    if (!failed)
+    // When inside :try we need to check for following "| catch".
+    if (!failed || eap->cstack->cs_trylevel > 0)
     {
 	// Check for trailing illegal characters and a following command.
 	if (!ends_excmd(*arg))
 	{
-	    emsg_severe = TRUE;
-	    emsg(_(e_trailing));
+	    if (!failed)
+	    {
+		emsg_severe = TRUE;
+		emsg(_(e_trailing));
+	    }
 	}
 	else
 	    eap->nextcmd = check_nextcmd(arg);

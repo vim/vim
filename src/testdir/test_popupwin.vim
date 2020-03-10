@@ -86,7 +86,7 @@ func Test_popup_with_border_and_padding()
 	  call popup_create('hello padding', #{line: 2, col: 23, padding: []})
 	  call popup_create('hello both', #{line: 2, col: 43, border: [], padding: [], highlight: 'Normal'})
 	  call popup_create('border TL', #{line: 6, col: 3, border: [1, 0, 0, 4]})
-	  call popup_create('paddings', #{line: 6, col: 23, padding: [1, 3, 2, 4]})
+	  call popup_create('paddings', #{line: 6, col: 23, padding: range(1, 4)})
 	  call popup_create('wrapped longer text', #{line: 8, col: 55, padding: [0, 3, 0, 3], border: [0, 1, 0, 1]})
 	  call popup_create('right aligned text', #{line: 11, col: 56, wrap: 0, padding: [0, 3, 0, 3], border: [0, 1, 0, 1]})
 	  call popup_create('X', #{line: 2, col: 73})
@@ -179,6 +179,14 @@ func Test_popup_with_border_and_padding()
   " Check that popup_setoptions() takes the output of popup_getoptions()
   call popup_setoptions(winid, options)
   call assert_equal(options, popup_getoptions(winid))
+
+  " Check that range() doesn't crash
+  call popup_setoptions(winid, #{
+	\ padding: range(1, 4),
+	\ border: range(5, 8),
+	\ borderhighlight: range(4),
+	\ borderchars: range(8),
+	\ })
 
   let winid = popup_create('hello both', #{line: 3, col: 8, border: [], padding: []})
   call assert_equal(#{
@@ -883,7 +891,13 @@ func Test_popup_invalid_arguments()
   call popup_clear()
   call assert_fails('call popup_create([#{text: "text", props: ["none"]}], {})', 'E715:')
   call popup_clear()
+  call assert_fails('call popup_create([#{text: "text", props: range(3)}], {})', 'E715:')
+  call popup_clear()
   call assert_fails('call popup_create("text", #{mask: ["asdf"]})', 'E475:')
+  call popup_clear()
+  call assert_fails('call popup_create("text", #{mask: range(5)})', 'E475:')
+  call popup_clear()
+  call popup_create("text", #{mask: [range(4)]})
   call popup_clear()
   call assert_fails('call popup_create("text", #{mask: test_null_list()})', 'E475:')
   call assert_fails('call popup_create("text", #{mapping: []})', 'E745:')
@@ -912,6 +926,7 @@ func Test_win_execute_not_allowed()
   call assert_fails('call win_execute(winid, "tabnext")', 'E994:')
   call assert_fails('call win_execute(winid, "next")', 'E994:')
   call assert_fails('call win_execute(winid, "rewind")', 'E994:')
+  call assert_fails('call win_execute(winid, "pedit filename")', 'E994:')
   call assert_fails('call win_execute(winid, "buf")', 'E994:')
   call assert_fails('call win_execute(winid, "bnext")', 'E994:')
   call assert_fails('call win_execute(winid, "bprev")', 'E994:')
@@ -1331,7 +1346,8 @@ func Test_popup_atcursor_pos()
 	normal 3G45|r@
 	let winid1 = popup_atcursor(['First', 'SeconD'], #{
 	      \ pos: 'topright',
-	      \ moved: [0, 0, 0],
+	      \ moved: range(3),
+	      \ mousemoved: range(3),
 	      \ })
   END
   call writefile(lines, 'XtestPopupAtcursorPos')
@@ -1394,8 +1410,8 @@ func Test_popup_filter()
   call setline(1, 'some text')
 
   func MyPopupFilter(winid, c)
-    if a:c == 'e'
-      let g:eaten = 'e'
+    if a:c == 'e' || a:c == "\<F9>"
+      let g:eaten = a:c
       return 1
     endif
     if a:c == '0'
@@ -1415,6 +1431,8 @@ func Test_popup_filter()
   " e is consumed by the filter
   call feedkeys('e', 'xt')
   call assert_equal('e', g:eaten)
+  call feedkeys("\<F9>", 'xt')
+  call assert_equal("\<F9>", g:eaten)
 
   " 0 is ignored by the filter
   normal $
@@ -1425,7 +1443,7 @@ func Test_popup_filter()
 
   " x closes the popup
   call feedkeys('x', 'xt')
-  call assert_equal('e', g:eaten)
+  call assert_equal("\<F9>", g:eaten)
   call assert_equal(-1, winbufnr(winid))
 
   delfunc MyPopupFilter
@@ -2099,6 +2117,10 @@ func Test_popup_settext()
   call term_sendkeys(buf, ":call popup_settext(p, [#{text: 'aaaa'}, #{text: 'bbbb'}, #{text: 'cccc'}])\<CR>")
   call VerifyScreenDump(buf, 'Test_popup_settext_06', {})
 
+  " range() (doesn't work)
+  call term_sendkeys(buf, ":call popup_settext(p, range(4, 8))\<CR>")
+  call VerifyScreenDump(buf, 'Test_popup_settext_07', {})
+
   " clean up
   call StopVimInTerminal(buf)
   call delete('XtestPopupSetText')
@@ -2377,10 +2399,25 @@ endfunc
 
 func Test_popupwin_terminal_buffer()
   CheckFeature terminal
+  CheckUnix
 
+  let origwin = win_getid()
   let ptybuf = term_start(&shell, #{hidden: 1})
-  call assert_fails('let winnr = popup_create(ptybuf, #{})', 'E278:')
-  exe 'bwipe! ' .. ptybuf
+  let winid = popup_create(ptybuf, #{minwidth: 40, minheight: 10})
+  " Wait for shell to start
+  sleep 200m
+  " Check this doesn't crash
+  call assert_equal(winnr(), winnr('j'))
+  call assert_equal(winnr(), winnr('k'))
+  call assert_equal(winnr(), winnr('h'))
+  call assert_equal(winnr(), winnr('l'))
+  " Cannot quit while job is running
+  call assert_fails('call feedkeys("\<C-W>:quit\<CR>", "xt")', 'E948:')
+  call feedkeys("exit\<CR>", 'xt')
+  " Wait for shell to exit
+  sleep 100m
+  call feedkeys(":quit\<CR>", 'xt')
+  call assert_equal(origwin, win_getid())
 endfunc
 
 func Test_popupwin_with_buffer_and_filter()
@@ -2787,9 +2824,9 @@ func Test_previewpopup()
   call term_sendkeys(buf, "/another\<CR>\<C-W>}")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_4', {})
 
-  call term_sendkeys(buf, ":cd ..\<CR>:\<CR>")
+  call term_sendkeys(buf, ":silent cd ..\<CR>:\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_previewpopup_5', {})
-  call term_sendkeys(buf, ":cd testdir\<CR>")
+  call term_sendkeys(buf, ":silent cd testdir\<CR>")
 
   call term_sendkeys(buf, ":pclose\<CR>")
   call term_sendkeys(buf, ":\<BS>")
@@ -3235,6 +3272,39 @@ func Test_popupwin_bufnr()
 
   call popup_clear()
   bwipe!
+endfunc
+
+func Test_popupwin_filter_input_multibyte()
+  func MyPopupFilter(winid, c)
+    let g:bytes = range(a:c->strlen())->map({i -> char2nr(a:c[i])})
+    return 0
+  endfunc
+  let winid = popup_create('', #{mapping: 0, filter: 'MyPopupFilter'})
+
+  " UTF-8: E3 80 80, including K_SPECIAL(0x80)
+  call feedkeys("\u3000", 'xt')
+  call assert_equal([0xe3, 0x80, 0x80], g:bytes)
+
+  " UTF-8: E3 80 9B, including CSI(0x9B)
+  call feedkeys("\u301b", 'xt')
+  call assert_equal([0xe3, 0x80, 0x9b], g:bytes)
+
+  call popup_clear()
+  delfunc MyPopupFilter
+  unlet g:bytes
+endfunc
+
+func Test_popupwin_atcursor_far_right()
+  new
+
+  " this was getting stuck
+  set signcolumn=yes
+  call setline(1, repeat('=', &columns))
+  normal! ggg$
+  call popup_atcursor(repeat('x', 500), #{moved: 'any', border: []})
+
+  bwipe!
+  set signcolumn&
 endfunc
 
 " vim: shiftwidth=2 sts=2

@@ -38,6 +38,7 @@ func Test_abclear()
 
    abclear
    call assert_equal("\n\nNo abbreviation found", execute('abbrev'))
+   call assert_fails('%abclear', 'E481:')
 endfunc
 
 func Test_abclear_buffer()
@@ -552,6 +553,13 @@ func Test_map_error()
   map <expr> ,f abc
   call assert_fails('normal ,f', 'E121:')
   unmap <expr> ,f
+
+  " Recursive use of :normal in a map
+  set maxmapdepth=100
+  map gq :normal gq<CR>
+  call assert_fails('normal gq', 'E192:')
+  unmap gq
+  set maxmapdepth&
 endfunc
 
 " Test for <special> key mapping

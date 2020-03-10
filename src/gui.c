@@ -446,7 +446,8 @@ gui_init_check(void)
     gui.menu_width = 0;
 # endif
 #endif
-#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
+#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
+	|| defined(FEAT_GUI_HAIKU))
     gui.toolbar_height = 0;
 #endif
 #if defined(FEAT_FOOTER) && defined(FEAT_GUI_MOTIF)
@@ -1371,15 +1372,23 @@ gui_position_components(int total_width UNUSED)
 	text_area_y += gui.tabline_height;
 #endif
 
-#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA))
+#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_ATHENA) \
+	|| defined(FEAT_GUI_HAIKU))
     if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
     {
-# ifdef FEAT_GUI_ATHENA
+# if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_HAIKU)
 	gui_mch_set_toolbar_pos(0, text_area_y,
 				gui.menu_width, gui.toolbar_height);
 # endif
 	text_area_y += gui.toolbar_height;
     }
+#endif
+
+# if defined(FEAT_GUI_TABLINE) && defined(FEAT_GUI_HAIKU)
+    gui_mch_set_tabline_pos(0, text_area_y,
+    gui.menu_width, gui.tabline_height);
+    if (gui_has_tabline())
+	text_area_y += gui.tabline_height;
 #endif
 
     text_area_width = gui.num_cols * gui.char_width + gui.border_offset * 2;
@@ -1453,7 +1462,7 @@ gui_get_base_height(void)
 #  endif
 # endif
 # if defined(FEAT_GUI_TABLINE) && (defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_MOTIF))
+	|| defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_HAIKU))
     if (gui_has_tabline())
 	base_height += gui.tabline_height;
 # endif
@@ -1496,6 +1505,10 @@ again:
     new_pixel_height = 0;
     busy = TRUE;
 
+#ifdef FEAT_GUI_HAIKU
+    vim_lock_screen();
+#endif
+
     // Flush pending output before redrawing
     out_flush();
 
@@ -1517,6 +1530,10 @@ again:
     if (gui.num_rows != screen_Rows || gui.num_cols != screen_Columns
 	    || gui.num_rows != Rows || gui.num_cols != Columns)
 	shell_resized();
+
+#ifdef FEAT_GUI_HAIKU
+    vim_unlock_screen();
+#endif
 
     gui_update_scrollbars(TRUE);
     gui_update_cursor(FALSE, TRUE);
@@ -4254,9 +4271,10 @@ gui_update_scrollbars(
 		y += gui.menu_height;
 #endif
 
-#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_ATHENA))
+#if defined(FEAT_TOOLBAR) && (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_ATHENA) \
+	|| defined(FEAT_GUI_HAIKU))
 	    if (vim_strchr(p_go, GO_TOOLBAR) != NULL)
-# ifdef FEAT_GUI_ATHENA
+# if defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_HAIKU)
 		y += gui.toolbar_height;
 # else
 #  ifdef FEAT_GUI_MSWIN
@@ -4265,7 +4283,7 @@ gui_update_scrollbars(
 # endif
 #endif
 
-#if defined(FEAT_GUI_TABLINE) && defined(FEAT_GUI_MSWIN)
+#if defined(FEAT_GUI_TABLINE) && defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_HAIKU)
 	    if (gui_has_tabline())
 		y += gui.tabline_height;
 #endif
@@ -5035,10 +5053,11 @@ ex_gui(exarg_T *eap)
 }
 
 #if ((defined(FEAT_GUI_X11) || defined(FEAT_GUI_GTK) \
-	    || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_PHOTON)) \
+	    || defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_PHOTON) \
+	    || defined(FEAT_GUI_HAIKU)) \
 	    && defined(FEAT_TOOLBAR)) || defined(PROTO)
 /*
- * This is shared between Athena, Motif and GTK.
+ * This is shared between Athena, Haiku, Motif, and GTK.
  */
 
 /*
@@ -5374,7 +5393,7 @@ gui_do_findrepl(
 	i = msg_scroll;
 	if (down)
 	{
-	    (void)do_search(NULL, '/', ga.ga_data, 1L, searchflags, NULL);
+	    (void)do_search(NULL, '/', '/', ga.ga_data, 1L, searchflags, NULL);
 	}
 	else
 	{
@@ -5382,7 +5401,7 @@ gui_do_findrepl(
 	    // direction
 	    p = vim_strsave_escaped(ga.ga_data, (char_u *)"?");
 	    if (p != NULL)
-	        (void)do_search(NULL, '?', p, 1L, searchflags, NULL);
+	        (void)do_search(NULL, '?', '?', p, 1L, searchflags, NULL);
 	    vim_free(p);
 	}
 

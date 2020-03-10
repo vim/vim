@@ -5258,9 +5258,18 @@ func Test_cindent_case()
   set cindent
   norm! f:a:
   call assert_equal('case x:: // x', getline(1))
-
   set cindent&
   bwipe!
+endfunc
+
+" Test for changing multiple lines (using c) with cindent
+func Test_cindent_change_multline()
+  new
+  setlocal cindent
+  call setline(1, ['if (a)', '{', '    i = 1;', '}'])
+  normal! jc3jm = 2;
+  call assert_equal("\tm = 2;", getline(2))
+  close!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

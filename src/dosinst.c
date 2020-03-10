@@ -841,6 +841,7 @@ install_bat_choice(int idx)
 
 	    fprintf(fd, "@echo off\n");
 	    fprintf(fd, "rem -- Run Vim --\n");
+	    fprintf(fd, VIMBAT_UNINSTKEY "\n");
 	    fprintf(fd, "\n");
 	    fprintf(fd, "setlocal\n");
 

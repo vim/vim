@@ -30,14 +30,16 @@ func Test_execute_string()
   call assert_equal("\nthat", evaled)
 
   call assert_fails('call execute("doesnotexist")', 'E492:')
-  call assert_fails('call execute(3.4)', 'E806:')
   call assert_fails('call execute("call NestedRedir()")', 'E930:')
 
   call assert_equal("\nsomething", execute('echo "something"', ''))
   call assert_equal("\nsomething", execute('echo "something"', 'silent'))
   call assert_equal("\nsomething", execute('echo "something"', 'silent!'))
   call assert_equal("", execute('burp', 'silent!'))
-  call assert_fails('call execute("echo \"x\"", 3.4)', 'E806:')
+  if has('float')
+    call assert_fails('call execute(3.4)', 'E806:')
+    call assert_fails('call execute("echo \"x\"", 3.4)', 'E806:')
+  endif
 endfunc
 
 func Test_execute_list()

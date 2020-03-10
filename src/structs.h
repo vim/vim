@@ -1245,42 +1245,49 @@ typedef struct hashtable_S
 typedef long_u hash_T;		// Type for hi_hash
 
 
-#ifdef FEAT_NUM64
 // Use 64-bit Number.
-# ifdef MSWIN
-#  ifdef PROTO
-typedef long		    varnumber_T;
-typedef unsigned long	    uvarnumber_T;
-#   define VARNUM_MIN	    LONG_MIN
-#   define VARNUM_MAX	    LONG_MAX
-#   define UVARNUM_MAX	    ULONG_MAX
-#  else
-typedef __int64		    varnumber_T;
-typedef unsigned __int64    uvarnumber_T;
-#   define VARNUM_MIN	    _I64_MIN
-#   define VARNUM_MAX	    _I64_MAX
-#   define UVARNUM_MAX	    _UI64_MAX
-#  endif
-# elif defined(HAVE_STDINT_H)
-typedef int64_t		    varnumber_T;
-typedef uint64_t	    uvarnumber_T;
-#  define VARNUM_MIN	    INT64_MIN
-#  define VARNUM_MAX	    INT64_MAX
-#  define UVARNUM_MAX	    UINT64_MAX
+#ifdef MSWIN
+# ifdef PROTO
+   // workaround for cproto that doesn't recognize __int64
+   typedef long			varnumber_T;
+   typedef unsigned long	uvarnumber_T;
+#  define VARNUM_MIN		LONG_MIN
+#  define VARNUM_MAX		LONG_MAX
+#  define UVARNUM_MAX		ULONG_MAX
 # else
-typedef long		    varnumber_T;
-typedef unsigned long	    uvarnumber_T;
-#  define VARNUM_MIN	    LONG_MIN
-#  define VARNUM_MAX	    LONG_MAX
-#  define UVARNUM_MAX	    ULONG_MAX
+   typedef __int64		varnumber_T;
+   typedef unsigned __int64	uvarnumber_T;
+#  define VARNUM_MIN		_I64_MIN
+#  define VARNUM_MAX		_I64_MAX
+#  define UVARNUM_MAX		_UI64_MAX
+# endif
+#elif defined(HAVE_NO_LONG_LONG)
+# if defined(HAVE_STDINT_H)
+   typedef int64_t		varnumber_T;
+   typedef uint64_t		uvarnumber_T;
+#  define VARNUM_MIN		INT64_MIN
+#  define VARNUM_MAX		INT64_MAX
+#  define UVARNUM_MAX		UINT64_MAX
+# else
+   // this may cause trouble for code that depends on 64 bit ints
+   typedef long			varnumber_T;
+   typedef unsigned long	uvarnumber_T;
+#  define VARNUM_MIN		LONG_MIN
+#  define VARNUM_MAX		LONG_MAX
+#  define UVARNUM_MAX		ULONG_MAX
 # endif
 #else
-// Use 32-bit Number.
-typedef int		    varnumber_T;
-typedef unsigned int	    uvarnumber_T;
-# define VARNUM_MIN	    INT_MIN
-# define VARNUM_MAX	    INT_MAX
-# define UVARNUM_MAX	    UINT_MAX
+  typedef long long		varnumber_T;
+  typedef unsigned long long	uvarnumber_T;
+# ifdef LLONG_MIN
+#  define VARNUM_MIN		LLONG_MIN
+#  define VARNUM_MAX		LLONG_MAX
+#  define UVARNUM_MAX		ULLONG_MAX
+# else
+#  define VARNUM_MIN		LONG_LONG_MIN
+#  define VARNUM_MAX		LONG_LONG_MAX
+#  define UVARNUM_MAX		ULONG_LONG_MAX
+# endif
 #endif
 
 typedef double	float_T;
@@ -1410,13 +1417,13 @@ struct listvar_S
 	    varnumber_T lv_start;
 	    varnumber_T lv_end;
 	    int		lv_stride;
-	};
+	} nonmat;
 	struct {	// used for materialized list
 	    listitem_T	*lv_last;	// last item, NULL if none
 	    listitem_T	*lv_idx_item;	// when not NULL item at index "lv_idx"
 	    int		lv_idx;		// cached index of an item
-	};
-    };
+	} mat;
+    } lv_u;
     list_T	*lv_copylist;	// copied list used by deepcopy()
     list_T	*lv_used_next;	// next list in used lists list
     list_T	*lv_used_prev;	// previous list in used lists list
@@ -1515,6 +1522,8 @@ typedef struct
     type_T	**uf_arg_types;	// argument types (count == uf_args.ga_len)
     type_T	*uf_ret_type;	// return type
     garray_T	uf_type_list;	// types used in arg and return types
+    int		*uf_def_arg_idx; // instruction indexes for evaluating
+				// uf_def_args; length: uf_def_args.ga_len + 1
     char_u	*uf_va_name;	// name from "...name" or NULL
     type_T	*uf_va_type;	// type from "...name: type" or NULL
 
@@ -2106,7 +2115,7 @@ typedef struct
     int		jo_block_write;	// for testing only
     int		jo_part;
     int		jo_id;
-    char_u	jo_soe_buf[NUMBUFLEN];
+    char_u	jo_stoponexit_buf[NUMBUFLEN];
     char_u	*jo_stoponexit;
     dict_T	*jo_env;	// environment variables
     char_u	jo_cwd_buf[NUMBUFLEN];
@@ -2121,17 +2130,21 @@ typedef struct
     buf_T	*jo_bufnr_buf;
     int		jo_hidden;
     int		jo_term_norestore;
+    char_u	jo_term_name_buf[NUMBUFLEN];
     char_u	*jo_term_name;
+    char_u	jo_term_opencmd_buf[NUMBUFLEN];
     char_u	*jo_term_opencmd;
     int		jo_term_finish;
+    char_u	jo_eof_chars_buf[NUMBUFLEN];
     char_u	*jo_eof_chars;
+    char_u	jo_term_kill_buf[NUMBUFLEN];
     char_u	*jo_term_kill;
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     long_u	jo_ansi_colors[16];
 # endif
     int		jo_tty_type;	    // first character of "tty_type"
-    char_u	*jo_term_api;
     char_u	jo_term_api_buf[NUMBUFLEN];
+    char_u	*jo_term_api;
 #endif
 } jobopt_T;
 
@@ -3334,13 +3347,14 @@ struct window_S
     int		*w_p_cc_cols;	    // array of columns to highlight or NULL
     char_u	w_p_culopt_flags;   // flags for cursorline highlighting
 #endif
-#ifdef FEAT_LINEBREAK
-    int		w_p_brimin;	    // minimum width for breakindent
-    int		w_p_brishift;	    // additional shift for breakindent
-    int		w_p_brisbr;	    // sbr in 'briopt'
-#endif
     long	w_p_siso;	    // 'sidescrolloff' local value
     long	w_p_so;		    // 'scrolloff' local value
+
+#ifdef FEAT_LINEBREAK
+    int		w_briopt_min;	    // minimum width for breakindent
+    int		w_briopt_shift;	    // additional shift for breakindent
+    int		w_briopt_sbr;	    // sbr in 'briopt'
+#endif
 
     // transform a pointer to a "onebuf" option into a "allbuf" option
 #define GLOBAL_WO(p)	((char *)p + sizeof(winopt_T))
@@ -3628,6 +3642,13 @@ struct VimMenu
     UINT	id;		    // Id of menu item
     HMENU	submenu_id;	    // If this is submenu, add children here
     HWND	tearoff_handle;	    // hWnd of tearoff if created
+#endif
+#if FEAT_GUI_HAIKU
+    BMenuItem  *id;		    // Id of menu item
+    BMenu  *submenu_id;		    // If this is submenu, add children here
+# ifdef FEAT_TOOLBAR
+    BPictureButton *button;
+# endif
 #endif
 #ifdef FEAT_GUI_MAC
 //  MenuHandle	id;

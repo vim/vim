@@ -184,7 +184,7 @@ set_search_match(pos_T *t)
  * May change the last search pattern.
  */
     static int
-do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
+do_incsearch_highlighting(int firstc, int *search_delim, incsearch_state_T *is_state,
 						     int *skiplen, int *patlen)
 {
     char_u	*cmd;
@@ -210,7 +210,10 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
     search_last_line = MAXLNUM;
 
     if (firstc == '/' || firstc == '?')
+    {
+	*search_delim = firstc;
 	return TRUE;
+    }
     if (firstc != ':')
 	return FALSE;
 
@@ -273,6 +276,7 @@ do_incsearch_highlighting(int firstc, incsearch_state_T *is_state,
 
     p = skipwhite(p);
     delim = (delim_optional && vim_isIDc(*p)) ? ' ' : *p++;
+    *search_delim = delim;
     end = skip_regexp(p, delim, p_magic, NULL);
 
     use_last_pat = end == p && *end == delim;
@@ -385,12 +389,13 @@ may_do_incsearch_highlighting(
     int		next_char;
     int		use_last_pat;
     int		did_do_incsearch = is_state->did_incsearch;
+    int		search_delim;
 
     // Parsing range may already set the last search pattern.
     // NOTE: must call restore_last_search_pattern() before returning!
     save_last_search_pattern();
 
-    if (!do_incsearch_highlighting(firstc, is_state, &skiplen, &patlen))
+    if (!do_incsearch_highlighting(firstc, &search_delim, is_state, &skiplen, &patlen))
     {
 	restore_last_search_pattern();
 	finish_incsearch_highlighting(FALSE, is_state, TRUE);
@@ -457,7 +462,7 @@ may_do_incsearch_highlighting(
 	vim_memset(&sia, 0, sizeof(sia));
 	sia.sa_tm = &tm;
 #endif
-	found = do_search(NULL, firstc == ':' ? '/' : firstc,
+	found = do_search(NULL, firstc == ':' ? '/' : firstc, search_delim,
 				 ccline.cmdbuff + skiplen, count, search_flags,
 #ifdef FEAT_RELTIME
 		&sia
@@ -565,12 +570,13 @@ may_adjust_incsearch_highlighting(
     int	    search_flags = SEARCH_NOOF;
     int	    i;
     int	    save;
+    int	    search_delim;
 
     // Parsing range may already set the last search pattern.
     // NOTE: must call restore_last_search_pattern() before returning!
     save_last_search_pattern();
 
-    if (!do_incsearch_highlighting(firstc, is_state, &skiplen, &patlen))
+    if (!do_incsearch_highlighting(firstc, &search_delim, is_state, &skiplen, &patlen))
     {
 	restore_last_search_pattern();
 	return OK;
@@ -581,7 +587,7 @@ may_adjust_incsearch_highlighting(
 	return FAIL;
     }
 
-    if (firstc == ccline.cmdbuff[skiplen])
+    if (search_delim == ccline.cmdbuff[skiplen])
     {
 	pat = last_search_pattern();
 	skiplen = 0;
@@ -668,13 +674,13 @@ may_adjust_incsearch_highlighting(
     static int
 may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
 {
-    int		skiplen, patlen;
+    int		skiplen, patlen, search_delim;
 
     // Parsing range may already set the last search pattern.
     // NOTE: must call restore_last_search_pattern() before returning!
     save_last_search_pattern();
 
-    if (!do_incsearch_highlighting(firstc, is_state, &skiplen, &patlen))
+    if (!do_incsearch_highlighting(firstc, &search_delim, is_state, &skiplen, &patlen))
     {
 	restore_last_search_pattern();
 	return FAIL;
@@ -693,7 +699,7 @@ may_add_char_to_search(int firstc, int *c, incsearch_state_T *is_state)
 	    // the character to lowercase.
 	    if (p_ic && p_scs && !pat_has_uppercase(ccline.cmdbuff + skiplen))
 		*c = MB_TOLOWER(*c);
-	    if (*c == firstc || vim_strchr((char_u *)(
+	    if (*c == search_delim || vim_strchr((char_u *)(
 			       p_magic ? "\\~^$.*[" : "\\^$"), *c) != NULL)
 	    {
 		// put a backslash before special characters

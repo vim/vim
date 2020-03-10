@@ -79,6 +79,7 @@ tag.c		| tags
 term.c		| terminal handling, termcap codes
 testing.c	| testing: assert and test functions
 textprop.c	| text properties
+time.c		| time and timer functions
 undo.c		| undo and redo
 usercmd.c	| user defined commands
 userfunc.c	| user defined functions

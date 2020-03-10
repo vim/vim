@@ -2,6 +2,7 @@
 source shared.vim
 source check.vim
 source term_util.vim
+source screendump.vim
 
 " Must be done first, since the alternate buffer must be unset.
 func Test_00_bufexists()
@@ -28,12 +29,14 @@ func Test_empty()
   call assert_equal(0, empty(1))
   call assert_equal(0, empty(-1))
 
-  call assert_equal(1, empty(0.0))
-  call assert_equal(1, empty(-0.0))
-  call assert_equal(0, empty(1.0))
-  call assert_equal(0, empty(-1.0))
-  call assert_equal(0, empty(1.0/0.0))
-  call assert_equal(0, empty(0.0/0.0))
+  if has('float')
+    call assert_equal(1, empty(0.0))
+    call assert_equal(1, empty(-0.0))
+    call assert_equal(0, empty(1.0))
+    call assert_equal(0, empty(-1.0))
+    call assert_equal(0, empty(1.0/0.0))
+    call assert_equal(0, empty(0.0/0.0))
+  endif
 
   call assert_equal(1, empty([]))
   call assert_equal(0, empty(['a']))
@@ -55,6 +58,19 @@ func Test_empty()
 
   call assert_equal(0, empty(function('Test_empty')))
   call assert_equal(0, empty(function('Test_empty', [0])))
+
+  call assert_fails("call empty(test_void())", 'E685:')
+  call assert_fails("call empty(test_unknown())", 'E685:')
+endfunc
+
+func Test_test_void()
+  call assert_fails('echo 1 == test_void()', 'E685:')
+  if has('float')
+    call assert_fails('echo 1.0 == test_void()', 'E685:')
+  endif
+  call assert_fails('let x = json_encode(test_void())', 'E685:')
+  call assert_fails('let x = copy(test_void())', 'E685:')
+  call assert_fails('let x = copy([test_void()])', 'E685:')
 endfunc
 
 func Test_len()
@@ -116,7 +132,9 @@ func Test_strwidth()
     call assert_fails('call strwidth({->0})', 'E729:')
     call assert_fails('call strwidth([])', 'E730:')
     call assert_fails('call strwidth({})', 'E731:')
-    call assert_fails('call strwidth(1.2)', 'E806:')
+    if has('float')
+      call assert_fails('call strwidth(1.2)', 'E806:')
+    endif
   endfor
 
   set ambiwidth&
@@ -176,7 +194,9 @@ func Test_str2nr()
 
   call assert_fails('call str2nr([])', 'E730:')
   call assert_fails('call str2nr({->2})', 'E729:')
-  call assert_fails('call str2nr(1.2)', 'E806:')
+  if has('float')
+    call assert_fails('call str2nr(1.2)', 'E806:')
+  endif
   call assert_fails('call str2nr(10, [])', 'E474:')
 endfunc
 
@@ -422,7 +442,9 @@ func Test_simplify()
   call assert_fails('call simplify({->0})', 'E729:')
   call assert_fails('call simplify([])', 'E730:')
   call assert_fails('call simplify({})', 'E731:')
-  call assert_fails('call simplify(1.2)', 'E806:')
+  if has('float')
+    call assert_fails('call simplify(1.2)', 'E806:')
+  endif
 endfunc
 
 func Test_pathshorten()
@@ -1132,6 +1154,43 @@ func Test_col()
   bw!
 endfunc
 
+" Test for input()
+func Test_input_func()
+  " Test for prompt with multiple lines
+  redir => v
+  call feedkeys(":let c = input(\"A\\nB\\nC\\n? \")\<CR>B\<CR>", 'xt')
+  redir END
+  call assert_equal("B", c)
+  call assert_equal(['A', 'B', 'C'], split(v, "\n"))
+
+  " Test for default value
+  call feedkeys(":let c = input('color? ', 'red')\<CR>\<CR>", 'xt')
+  call assert_equal('red', c)
+
+  " Test for completion at the input prompt
+  func! Tcomplete(arglead, cmdline, pos)
+    return "item1\nitem2\nitem3"
+  endfunc
+  call feedkeys(":let c = input('Q? ', '' , 'custom,Tcomplete')\<CR>"
+        \ .. "\<C-A>\<CR>", 'xt')
+  delfunc Tcomplete
+  call assert_equal('item1 item2 item3', c)
+
+  call assert_fails("call input('F:', '', 'invalid')", 'E180:')
+  call assert_fails("call input('F:', '', [])", 'E730:')
+endfunc
+
+" Test for the inputdialog() function
+func Test_inputdialog()
+  CheckNotGui
+
+  call feedkeys(":let v=inputdialog('Q:', 'xx', 'yy')\<CR>\<CR>", 'xt')
+  call assert_equal('xx', v)
+  call feedkeys(":let v=inputdialog('Q:', 'xx', 'yy')\<CR>\<Esc>", 'xt')
+  call assert_equal('yy', v)
+endfunc
+
+" Test for inputlist()
 func Test_inputlist()
   call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>1\<cr>", 'tx')
   call assert_equal(1, c)
@@ -1844,12 +1903,10 @@ func Test_range()
   call assert_equal(1, index(range(1, 5), 2))
 
   " inputlist()
-  call test_feedinput("1\<CR>")
-  call assert_equal(1, inputlist(range(10)))
-  call test_feedinput("1\<CR>")
-  call assert_equal(1, inputlist(range(3, 10)))
-
-  call assert_equal('[0,1,2,3]', json_encode(range(4)))
+  call feedkeys(":let result = inputlist(range(10))\<CR>1\<CR>", 'x')
+  call assert_equal(1, result)
+  call feedkeys(":let result = inputlist(range(3, 10))\<CR>1\<CR>", 'x')
+  call assert_equal(1, result)
 
   " insert()
   call assert_equal([42, 1, 2, 3, 4, 5], insert(range(1, 5), 42))
@@ -1861,6 +1918,9 @@ func Test_range()
 
   " join()
   call assert_equal('0 1 2 3 4', join(range(5)))
+
+  " json_encode()
+  call assert_equal('[0,1,2,3]', json_encode(range(4)))
 
   " len()
   call assert_equal(0, len(range(0)))
@@ -1954,11 +2014,53 @@ func Test_range()
   call setreg('a', range(3))
   call assert_equal("0\n1\n2\n", getreg('a'))
 
+  " settagstack()
+  call settagstack(1, #{items : range(4)})
+
+  " sign_define()
+  call assert_fails("call sign_define(range(5))", "E715:")
+  call assert_fails("call sign_placelist(range(5))", "E715:")
+
+  " sign_undefine()
+  call assert_fails("call sign_undefine(range(5))", "E908:")
+
+  " sign_unplacelist()
+  call assert_fails("call sign_unplacelist(range(5))", "E715:")
+
   " sort()
   call assert_equal([0, 1, 2, 3, 4, 5], sort(range(5, 0, -1)))
 
+  " 'spellsuggest'
+  func MySuggest()
+    return range(3)
+  endfunc
+  set spell spellsuggest=expr:MySuggest()
+  call assert_equal([], spellsuggest('baord', 3))
+  set nospell spellsuggest&
+
   " string()
   call assert_equal('[0, 1, 2, 3, 4]', string(range(5)))
+
+  " taglist() with 'tagfunc'
+  func TagFunc(pattern, flags, info)
+    return range(10)
+  endfunc
+  set tagfunc=TagFunc
+  call assert_fails("call taglist('asdf')", 'E987:')
+  set tagfunc=
+
+  " term_start()
+  if has('terminal') && has('termguicolors')
+    call assert_fails('call term_start(range(3, 4))', 'E474:')
+    let g:terminal_ansi_colors = range(16)
+    if has('win32')
+      let cmd = "cmd /c dir"
+    else
+      let cmd = "ls"
+    endif
+    call assert_fails('call term_start("' .. cmd .. '", #{term_finish: "close"})', 'E475:')
+    unlet g:terminal_ansi_colors
+  endif
 
   " type()
   call assert_equal(v:t_list, type(range(5)))
@@ -1966,3 +2068,21 @@ func Test_range()
   " uniq()
   call assert_equal([0, 1, 2, 3, 4], uniq(range(5)))
 endfunc
+
+func Test_echoraw()
+  CheckScreendump
+
+  " Normally used for escape codes, but let's test with a CR.
+  let lines =<< trim END
+    call echoraw("hello\<CR>x")
+  END
+  call writefile(lines, 'XTest_echoraw')
+  let buf = RunVimInTerminal('-S XTest_echoraw', {'rows': 5, 'cols': 40})
+  call VerifyScreenDump(buf, 'Test_functions_echoraw', {})
+
+  " clean up
+  call StopVimInTerminal(buf)
+  call delete('XTest_echoraw')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

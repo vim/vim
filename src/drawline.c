@@ -491,7 +491,7 @@ win_line(
 	{
 	    extra_check = TRUE;
 	    get_term_attr = TRUE;
-	    win_attr = term_get_attr(wp->w_buffer, lnum, -1);
+	    win_attr = term_get_attr(wp, lnum, -1);
 	}
 #endif
 
@@ -1140,11 +1140,11 @@ win_line(
 	    }
 
 #ifdef FEAT_LINEBREAK
-	    if (wp->w_p_brisbr && draw_state == WL_BRI - 1
+	    if (wp->w_briopt_sbr && draw_state == WL_BRI - 1
 			    && n_extra == 0 && *get_showbreak_value(wp) != NUL)
 		// draw indent after showbreak value
 		draw_state = WL_BRI;
-	    else if (wp->w_p_brisbr && draw_state == WL_SBR && n_extra == 0)
+	    else if (wp->w_briopt_sbr && draw_state == WL_SBR && n_extra == 0)
 		// After the showbreak, draw the breakindent
 		draw_state = WL_BRI - 1;
 
@@ -1176,7 +1176,7 @@ win_line(
 		    c_final = NUL;
 		    n_extra = get_breakindent_win(wp,
 				       ml_get_buf(wp->w_buffer, lnum, FALSE));
-		    if (wp->w_skipcol > 0 && wp->w_p_wrap)
+		    if (wp->w_skipcol > 0 && wp->w_p_wrap && wp->w_briopt_sbr)
 			need_showbreak = FALSE;
 		    // Correct end of highlighted area for 'breakindent',
 		    // required when 'linebreak' is also set.
@@ -1419,7 +1419,7 @@ win_line(
 		syntax_attr = 0;
 # ifdef FEAT_TERMINAL
 		if (get_term_attr)
-		    syntax_attr = term_get_attr(wp->w_buffer, lnum, vcol);
+		    syntax_attr = term_get_attr(wp, lnum, vcol);
 # endif
 		// Get syntax attribute.
 		if (has_syntax)

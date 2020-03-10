@@ -240,14 +240,26 @@ test_vim_snprintf(void)
 
 	// %p format is not tested in vim script tests Test_printf*()
 	// as it only makes sense in C code.
+	// NOTE: SunOS libc doesn't use the prefix "0x" on %p.
+#ifdef SUN_SYSTEM
+# define PREFIX_LEN  0
+# define PREFIX_STR1 ""
+# define PREFIX_STR2 "00"
+#else
+# define PREFIX_LEN  2
+# define PREFIX_STR1 "0x"
+# define PREFIX_STR2 "0x"
+#endif
 	n = vim_snprintf(buf, bsize, "%p", ptr);
-	assert(n == 10);
-	assert(bsize == 0 || STRNCMP(buf, "0x87654321", bsize_int) == 0);
+	assert(n == 8 + PREFIX_LEN);
+	assert(bsize == 0
+		     || STRNCMP(buf, PREFIX_STR1 "87654321", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
 	n = vim_snprintf(buf, bsize, fmt_012p, ptr);
 	assert(n == 12);
-	assert(bsize == 0 || STRNCMP(buf, "0x0087654321", bsize_int) == 0);
+	assert(bsize == 0
+		   || STRNCMP(buf, PREFIX_STR2 "0087654321", bsize_int) == 0);
 	assert(bsize == 0 || buf[MIN(n, bsize_int)] == '\0');
 
 	free(buf);

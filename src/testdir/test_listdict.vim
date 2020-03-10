@@ -596,18 +596,20 @@ func Test_reverse_sort_uniq()
   call assert_equal(['-0', 'A11', 2, 'xaaa', 4, 'foo', 'foo6', 'foo', [0, 1, 2], 'x8', [0, 1, 2], 1.5], uniq(copy(l)))
   call assert_equal([1.5, [0, 1, 2], 'x8', [0, 1, 2], 'foo', 'foo6', 'foo', 4, 'xaaa', 2, 2, 'A11', '-0'], reverse(l))
   call assert_equal([1.5, [0, 1, 2], 'x8', [0, 1, 2], 'foo', 'foo6', 'foo', 4, 'xaaa', 2, 2, 'A11', '-0'], reverse(reverse(l)))
-  call assert_equal(['-0', 'A11', 'foo', 'foo', 'foo6', 'x8', 'xaaa', 1.5, 2, 2, 4, [0, 1, 2], [0, 1, 2]], sort(l))
-  call assert_equal([[0, 1, 2], [0, 1, 2], 4, 2, 2, 1.5, 'xaaa', 'x8', 'foo6', 'foo', 'foo', 'A11', '-0'], reverse(sort(l)))
-  call assert_equal(['-0', 'A11', 'foo', 'foo', 'foo6', 'x8', 'xaaa', 1.5, 2, 2, 4, [0, 1, 2], [0, 1, 2]], sort(reverse(sort(l))))
-  call assert_equal(['-0', 'A11', 'foo', 'foo6', 'x8', 'xaaa', 1.5, 2, 4, [0, 1, 2]], uniq(sort(l)))
+  if has('float')
+    call assert_equal(['-0', 'A11', 'foo', 'foo', 'foo6', 'x8', 'xaaa', 1.5, 2, 2, 4, [0, 1, 2], [0, 1, 2]], sort(l))
+    call assert_equal([[0, 1, 2], [0, 1, 2], 4, 2, 2, 1.5, 'xaaa', 'x8', 'foo6', 'foo', 'foo', 'A11', '-0'], reverse(sort(l)))
+    call assert_equal(['-0', 'A11', 'foo', 'foo', 'foo6', 'x8', 'xaaa', 1.5, 2, 2, 4, [0, 1, 2], [0, 1, 2]], sort(reverse(sort(l))))
+    call assert_equal(['-0', 'A11', 'foo', 'foo6', 'x8', 'xaaa', 1.5, 2, 4, [0, 1, 2]], uniq(sort(l)))
 
-  let l=[7, 9, 'one', 18, 12, 22, 'two', 10.0e-16, -1, 'three', 0xff, 0.22, 'four']
-  call assert_equal([-1, 'one', 'two', 'three', 'four', 1.0e-15, 0.22, 7, 9, 12, 18, 22, 255], sort(copy(l), 'n'))
+    let l = [7, 9, 'one', 18, 12, 22, 'two', 10.0e-16, -1, 'three', 0xff, 0.22, 'four']
+    call assert_equal([-1, 'one', 'two', 'three', 'four', 1.0e-15, 0.22, 7, 9, 12, 18, 22, 255], sort(copy(l), 'n'))
 
-  let l=[7, 9, 18, 12, 22, 10.0e-16, -1, 0xff, 0, -0, 0.22, 'bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', {}, []]
-  call assert_equal(['bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l), 1))
-  call assert_equal(['bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l), 'i'))
-  call assert_equal(['BAR', 'Bar', 'FOO', 'FOOBAR', 'Foo', 'bar', 'foo', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l)))
+    let l = [7, 9, 18, 12, 22, 10.0e-16, -1, 0xff, 0, -0, 0.22, 'bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', {}, []]
+    call assert_equal(['bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l), 1))
+    call assert_equal(['bar', 'BAR', 'Bar', 'Foo', 'FOO', 'foo', 'FOOBAR', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l), 'i'))
+    call assert_equal(['BAR', 'Bar', 'FOO', 'FOOBAR', 'Foo', 'bar', 'foo', -1, 0, 0, 0.22, 1.0e-15, 12, 18, 22, 255, 7, 9, [], {}], sort(copy(l)))
+  endif
 
   call assert_fails('call reverse("")', 'E899:')
 endfunc
@@ -683,7 +685,9 @@ func Test_listdict_extend()
   let l = [1, 2, 3]
   call assert_fails("call extend(l, [4, 5, 6], 4)", 'E684:')
   call assert_fails("call extend(l, [4, 5, 6], -4)", 'E684:')
-  call assert_fails("call extend(l, [4, 5, 6], 1.2)", 'E805:')
+  if has('float')
+    call assert_fails("call extend(l, [4, 5, 6], 1.2)", 'E805:')
+  endif
 
   " Test extend() with dictionaries.
 
@@ -707,7 +711,9 @@ func Test_listdict_extend()
   let d = {'a': 'A', 'b': 'B'}
   call assert_fails("call extend(d, {'b': 0, 'c':'C'}, 'error')", 'E737:')
   call assert_fails("call extend(d, {'b': 0, 'c':'C'}, 'xxx')", 'E475:')
-  call assert_fails("call extend(d, {'b': 0, 'c':'C'}, 1.2)", 'E806:')
+  if has('float')
+    call assert_fails("call extend(d, {'b': 0, 'c':'C'}, 1.2)", 'E806:')
+  endif
   call assert_equal({'a': 'A', 'b': 'B'}, d)
 
   call assert_fails("call extend([1, 2], 1)", 'E712:')

@@ -120,8 +120,9 @@ static struct vimvar
     {VV_NAME("errors",		 VAR_LIST), 0},
     {VV_NAME("false",		 VAR_BOOL), VV_RO},
     {VV_NAME("true",		 VAR_BOOL), VV_RO},
-    {VV_NAME("null",		 VAR_SPECIAL), VV_RO},
     {VV_NAME("none",		 VAR_SPECIAL), VV_RO},
+    {VV_NAME("null",		 VAR_SPECIAL), VV_RO},
+    {VV_NAME("numbersize",	 VAR_NUMBER), VV_RO},
     {VV_NAME("vim_did_enter",	 VAR_NUMBER), VV_RO},
     {VV_NAME("testing",		 VAR_NUMBER), 0},
     {VV_NAME("t_number",	 VAR_NUMBER), VV_RO},
@@ -229,6 +230,7 @@ evalvars_init(void)
     set_vim_var_nr(VV_TRUE, VVAL_TRUE);
     set_vim_var_nr(VV_NONE, VVAL_NONE);
     set_vim_var_nr(VV_NULL, VVAL_NULL);
+    set_vim_var_nr(VV_NUMBERSIZE, sizeof(varnumber_T) * 8);
 
     set_vim_var_nr(VV_TYPE_NUMBER,  VAR_TYPE_NUMBER);
     set_vim_var_nr(VV_TYPE_STRING,  VAR_TYPE_STRING);
@@ -667,6 +669,7 @@ heredoc_get(exarg_T *eap, char_u *cmd)
  * ":let var ..= expr"		assignment command.
  * ":let [var1, var2] = expr"	unpack list.
  * ":let var =<< ..."		heredoc
+ * ":let var: string"		Vim9 declaration
  */
     void
 ex_let(exarg_T *eap)
@@ -1206,14 +1209,7 @@ ex_let_one(
 		}
 		if (p != NULL)
 		{
-		    vim_setenv(name, p);
-		    if (STRICMP(name, "HOME") == 0)
-			init_homedir();
-		    else if (didset_vim && STRICMP(name, "VIM") == 0)
-			didset_vim = FALSE;
-		    else if (didset_vimruntime
-					&& STRICMP(name, "VIMRUNTIME") == 0)
-			didset_vimruntime = FALSE;
+		    vim_setenv_ext(name, p);
 		    arg_end = arg;
 		}
 		name[len] = c1;
@@ -1967,6 +1963,24 @@ get_vim_var_tv(int idx)
 }
 
 /*
+ * Set v: variable to "tv".  Only accepts the same type.
+ * Takes over the value of "tv".
+ */
+    int
+set_vim_var_tv(int idx, typval_T *tv)
+{
+    if (vimvars[idx].vv_type != tv->v_type)
+    {
+	emsg(_("E1063: type mismatch for v: variable"));
+	clear_tv(tv);
+	return FAIL;
+    }
+    clear_tv(&vimvars[idx].vv_di.di_tv);
+    vimvars[idx].vv_di.di_tv = *tv;
+    return OK;
+}
+
+/*
  * Get number v: variable value.
  */
     varnumber_T
@@ -2128,7 +2142,7 @@ set_argv_var(char **argv, int argc)
     {
 	if (list_append_string(l, (char_u *)argv[i], -1) == FAIL)
 	    getout(1);
-	l->lv_last->li_tv.v_lock = VAR_FIXED;
+	l->lv_u.mat.lv_last->li_tv.v_lock = VAR_FIXED;
     }
     set_vim_var_list(VV_ARGV, l);
 }
@@ -2285,7 +2299,7 @@ get_var_tv(
 
     if (tv == NULL && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
     {
-	imported_T *import = find_imported(name, NULL);
+	imported_T *import = find_imported(name, 0, NULL);
 
 	// imported variable from another script
 	if (import != NULL)
@@ -2461,7 +2475,7 @@ lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy UNUSED)
     res = HASHITEM_EMPTY(hi) ? -1 : 1;
 
     // if not script-local, then perhaps imported
-    if (res == -1 && find_imported(p, NULL) != NULL)
+    if (res == -1 && find_imported(p, 0, NULL) != NULL)
 	res = 1;
 
     if (p != buffer)
@@ -2527,8 +2541,10 @@ find_var_ht(char_u *name, char_u **varname)
 	return &curtab->tp_vars->dv_hashtab;
     if (*name == 'v')				// v: variable
 	return &vimvarht;
-    if (current_sctx.sc_version != SCRIPT_VERSION_VIM9)
+    if (get_current_funccal() != NULL
+			      && get_current_funccal()->func->uf_dfunc_idx < 0)
     {
+	// a: and l: are only used in functions defined with ":function"
 	if (*name == 'a')			// a: function argument
 	    return get_funccal_args_ht();
 	if (*name == 'l')			// l: local function variable
@@ -3627,7 +3643,8 @@ f_setbufvar(typval_T *argvars, typval_T *rettv UNUSED)
     callback_T
 get_callback(typval_T *arg)
 {
-    callback_T res;
+    callback_T  res;
+    int		r = OK;
 
     res.cb_free_name = FALSE;
     if (arg->v_type == VAR_PARTIAL && arg->vval.v_partial != NULL)
@@ -3639,17 +3656,21 @@ get_callback(typval_T *arg)
     else
     {
 	res.cb_partial = NULL;
-	if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
+	if (arg->v_type == VAR_STRING && arg->vval.v_string != NULL
+					       && isdigit(*arg->vval.v_string))
+	    r = FAIL;
+	else if (arg->v_type == VAR_FUNC || arg->v_type == VAR_STRING)
 	{
 	    // Note that we don't make a copy of the string.
 	    res.cb_name = arg->vval.v_string;
 	    func_ref(res.cb_name);
 	}
 	else if (arg->v_type == VAR_NUMBER && arg->vval.v_number == 0)
-	{
 	    res.cb_name = (char_u *)"";
-	}
 	else
+	    r = FAIL;
+
+	if (r == FAIL)
 	{
 	    emsg(_("E921: Invalid callback argument"));
 	    res.cb_name = NULL;

@@ -1647,6 +1647,9 @@ do_one_cmd(
     int		save_reg_executing = reg_executing;
     int		ni;			// set when Not Implemented
     char_u	*cmd;
+#ifdef FEAT_EVAL
+    int		starts_with_colon;
+#endif
 
     vim_memset(&ea, 0, sizeof(ea));
     ea.line1 = 1;
@@ -1689,6 +1692,7 @@ do_one_cmd(
     ea.cookie = cookie;
 #ifdef FEAT_EVAL
     ea.cstack = cstack;
+    starts_with_colon = *skipwhite(ea.cmd) == ':';
 #endif
     if (parse_command_modifiers(&ea, &errormsg, FALSE) == FAIL)
 	goto doend;
@@ -1713,7 +1717,7 @@ do_one_cmd(
 	ea.cmd = skipwhite(ea.cmd + 1);
 
 #ifdef FEAT_EVAL
-    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+    if (current_sctx.sc_version == SCRIPT_VERSION_VIM9 && !starts_with_colon)
 	p = find_ex_command(&ea, NULL, lookup_scriptvar, NULL);
     else
 #endif
@@ -2353,6 +2357,7 @@ do_one_cmd(
 	    case CMD_finally:
 	    case CMD_endtry:
 	    case CMD_function:
+	    case CMD_def:
 				break;
 
 	    // Commands that handle '|' themselves.  Check: A command should
@@ -2375,6 +2380,7 @@ do_one_cmd(
 	    case CMD_echoerr:
 	    case CMD_echomsg:
 	    case CMD_echon:
+	    case CMD_eval:
 	    case CMD_execute:
 	    case CMD_filter:
 	    case CMD_help:
@@ -2495,7 +2501,8 @@ do_one_cmd(
 
 #ifdef FEAT_EVAL
     // Set flag that any command was executed, used by ex_vim9script().
-    if (getline_equal(ea.getline, ea.cookie, getsourceline))
+    if (getline_equal(ea.getline, ea.cookie, getsourceline)
+						    && current_sctx.sc_sid > 0)
 	SCRIPT_ITEM(current_sctx.sc_sid)->sn_had_command = TRUE;
 
     /*
@@ -3144,8 +3151,9 @@ find_ex_command(
      * Recognize a Vim9 script function/method call and assignment:
      * "lvar = value", "lvar(arg)", "[1, 2 3]->Func()"
      */
-    if (lookup != NULL && (p = to_name_const_end(eap->cmd)) > eap->cmd
-								  && *p != NUL)
+    p = eap->cmd;
+    if (lookup != NULL && (*p == '('
+	       || ((p = to_name_const_end(eap->cmd)) > eap->cmd && *p != NUL)))
     {
 	int oplen;
 	int heredoc;
@@ -3154,6 +3162,7 @@ find_ex_command(
 	// "varname[]" is an expression.
 	// "g:varname" is an expression.
 	// "varname->expr" is an expression.
+	// "(..." is an expression.
 	if (*p == '('
 		|| *p == '['
 		|| p[1] == ':'
@@ -3669,7 +3678,7 @@ get_address(
 			curwin->w_cursor.col = 0;
 		    searchcmdlen = 0;
 		    flags = silent ? 0 : SEARCH_HIS | SEARCH_MSG;
-		    if (!do_search(NULL, c, cmd, 1L, flags, NULL))
+		    if (!do_search(NULL, c, c, cmd, 1L, flags, NULL))
 		    {
 			curwin->w_cursor = pos;
 			cmd = NULL;
@@ -4633,7 +4642,7 @@ ex_doautocmd(exarg_T *eap)
     static void
 ex_bunload(exarg_T *eap)
 {
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
     eap->errmsg = do_bufdel(
 	    eap->cmdidx == CMD_bdelete ? DOBUF_DEL
@@ -4649,7 +4658,7 @@ ex_bunload(exarg_T *eap)
     static void
 ex_buffer(exarg_T *eap)
 {
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
     if (*eap->arg)
 	eap->errmsg = e_trailing;
@@ -4683,7 +4692,7 @@ ex_bmodified(exarg_T *eap)
     static void
 ex_bnext(exarg_T *eap)
 {
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
 
     goto_buffer(eap, DOBUF_CURRENT, FORWARD, (int)eap->line2);
@@ -4700,7 +4709,7 @@ ex_bnext(exarg_T *eap)
     static void
 ex_bprevious(exarg_T *eap)
 {
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
 
     goto_buffer(eap, DOBUF_CURRENT, BACKWARD, (int)eap->line2);
@@ -4717,7 +4726,7 @@ ex_bprevious(exarg_T *eap)
     static void
 ex_brewind(exarg_T *eap)
 {
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
 
     goto_buffer(eap, DOBUF_FIRST, FORWARD, 0);
@@ -4732,7 +4741,7 @@ ex_brewind(exarg_T *eap)
     static void
 ex_blast(exarg_T *eap)
 {
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
 
     goto_buffer(eap, DOBUF_LAST, BACKWARD, 0);
@@ -5762,7 +5771,7 @@ ex_splitview(exarg_T *eap)
 		       || eap->cmdidx == CMD_tabfind
 		       || eap->cmdidx == CMD_tabnew;
 
-    if (ERROR_IF_POPUP_WINDOW)
+    if (ERROR_IF_ANY_POPUP_WINDOW)
 	return;
 
 #ifdef FEAT_GUI
@@ -6145,7 +6154,8 @@ do_exedit(
     int		need_hide;
     int		exmode_was = exmode_active;
 
-    if (eap->cmdidx != CMD_pedit && ERROR_IF_POPUP_WINDOW)
+    if ((eap->cmdidx != CMD_pedit && ERROR_IF_POPUP_WINDOW)
+						 || ERROR_IF_TERM_POPUP_WINDOW)
 	return;
     /*
      * ":vi" command ends Ex mode.
@@ -6182,9 +6192,11 @@ do_exedit(
 		hold_gui_events = 0;
 #endif
 		must_redraw = CLEAR;
+		pending_exmode_active = TRUE;
 
 		main_loop(FALSE, TRUE);
 
+		pending_exmode_active = FALSE;
 		RedrawingDisabled = rd;
 		no_wait_return = nwr;
 		msg_scroll = ms;
@@ -6572,7 +6584,7 @@ changedir_func(
     int		dir_differs;
     int		retval = FALSE;
 
-    if (allbuf_locked())
+    if (new_dir == NULL || allbuf_locked())
 	return FALSE;
 
     if (vim_strchr(p_cpo, CPO_CHDIR) != NULL && curbufIsChanged() && !forceit)
@@ -7873,6 +7885,9 @@ ex_ptag(exarg_T *eap)
 ex_pedit(exarg_T *eap)
 {
     win_T	*curwin_save = curwin;
+
+    if (ERROR_IF_ANY_POPUP_WINDOW)
+	return;
 
     // Open the preview window or popup and make it the current window.
     g_do_tagpreview = p_pvh;

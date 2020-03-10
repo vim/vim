@@ -29,6 +29,10 @@
 # include <gtk/gtk.h>
 #endif
 
+#ifdef FEAT_GUI_HAIKU
+# include "gui_haiku.h"
+#endif
+
 // Needed when generating prototypes, since FEAT_GUI is always defined then.
 #if defined(FEAT_XCLIPBOARD) && !defined(FEAT_GUI_MOTIF) \
 	&& !defined(FEAT_GUI_ATHENA) && !defined(FEAT_GUI_GTK)
@@ -73,7 +77,8 @@
  */
 #if (defined(FEAT_DND) && defined(FEAT_GUI_GTK)) \
 	|| defined(FEAT_GUI_MSWIN) \
-	|| defined(FEAT_GUI_MAC)
+	|| defined(FEAT_GUI_MAC) \
+	|| defined(FEAT_GUI_HAIKU)
 # define HAVE_DROP_FILE
 #endif
 
@@ -199,6 +204,10 @@ typedef struct GuiScrollbar
 				// 32767 lines.  When the file is longer,
 				// scroll_shift is set to the number of shifts
 				// to reduce the count.
+#endif
+
+#if FEAT_GUI_HAIKU
+    VimScrollBar *id;		// Pointer to real scroll bar
 #endif
 #ifdef FEAT_GUI_MAC
     ControlHandle id;		// A handle to the scrollbar
@@ -426,7 +435,7 @@ typedef struct Gui
 
 #if defined(FEAT_GUI_TABLINE) \
 	&& (defined(FEAT_GUI_MSWIN) || defined(FEAT_GUI_MOTIF) \
-		|| defined(FEAT_GUI_MAC))
+		|| defined(FEAT_GUI_MAC) || defined(FEAT_GUI_HAIKU))
     int		tabline_height;
 #endif
 
@@ -435,7 +444,7 @@ typedef struct Gui
 #endif
 
 #if defined(FEAT_TOOLBAR) \
-	&& (defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MOTIF))
+	&& (defined(FEAT_GUI_ATHENA) || defined(FEAT_GUI_MOTIF) || defined(FEAT_GUI_HAIKU))
     int		toolbar_height;	    // height of the toolbar
 #endif
 
@@ -454,6 +463,14 @@ typedef struct Gui
     guicolor_T	currFgColor;	    // Current foreground text color
     guicolor_T	currBgColor;	    // Current background text color
     guicolor_T	currSpColor;	    // Current special text color
+#endif
+
+#ifdef FEAT_GUI_HAIKU
+    VimApp     *vimApp;
+    VimWindow  *vimWindow;
+    VimFormView *vimForm;
+    VimTextAreaView *vimTextArea;
+    int	vdcmp;			    // Vim Direct Communication Message Port
 #endif
 
 #ifdef FEAT_GUI_MAC

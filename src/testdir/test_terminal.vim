@@ -689,53 +689,70 @@ func Test_terminal_noblock()
 endfunc
 
 func Test_terminal_write_stdin()
-  if !executable('wc')
-    throw 'skipped: wc command not available'
-  endif
-  if has('win32')
-    " TODO: enable once writing to stdin works on MS-Windows
-    return
-  endif
-  new
+  " TODO: enable once writing to stdin works on MS-Windows
+  CheckNotMSWindows
+  CheckExecutable wc
+
   call setline(1, ['one', 'two', 'three'])
   %term wc
   call WaitForAssert({-> assert_match('3', getline("$"))})
   let nrs = split(getline('$'))
   call assert_equal(['3', '3', '14'], nrs)
-  bwipe
+  %bwipe!
 
-  new
   call setline(1, ['one', 'two', 'three', 'four'])
   2,3term wc
   call WaitForAssert({-> assert_match('2', getline("$"))})
   let nrs = split(getline('$'))
   call assert_equal(['2', '2', '10'], nrs)
-  bwipe
+  %bwipe!
+endfunc
 
-  if executable('python')
-    new
-    call setline(1, ['print("hello")'])
-    1term ++eof=exit() python
-    " MS-Windows echoes the input, Unix doesn't.
-    call WaitFor('getline("$") =~ "exit" || getline(1) =~ "hello"')
-    if getline(1) =~ 'hello'
-      call assert_equal('hello', getline(1))
-    else
-      call assert_equal('hello', getline(line('$') - 1))
-    endif
-    bwipe
+func Test_terminal_eof_arg()
+  CheckExecutable python
 
-    if has('win32')
-      new
-      call setline(1, ['print("hello")'])
-      1term ++eof=<C-Z> python
-      call WaitForAssert({-> assert_match('Z', getline("$"))})
-      call assert_equal('hello', getline(line('$') - 1))
-      bwipe
-    endif
+  call setline(1, ['print("hello")'])
+  1term ++eof=exit(123) python
+  " MS-Windows echoes the input, Unix doesn't.
+  if has('win32')
+    call WaitFor({-> getline('$') =~ 'exit(123)'})
+    call assert_equal('hello', getline(line('$') - 1))
+  else
+    call WaitFor({-> getline('$') =~ 'hello'})
+    call assert_equal('hello', getline('$'))
   endif
+  call assert_equal(123, bufnr()->term_getjob()->job_info().exitval)
+  %bwipe!
+endfunc
 
-  bwipe!
+func Test_terminal_eof_arg_win32_ctrl_z()
+  CheckMSWindows
+  CheckExecutable python
+
+  call setline(1, ['print("hello")'])
+  1term ++eof=<C-Z> python
+  call WaitForAssert({-> assert_match('\^Z', getline(line('$') - 1))})
+  call assert_match('\^Z', getline(line('$') - 1))
+  %bwipe!
+endfunc
+
+func Test_terminal_duplicate_eof_arg()
+  CheckExecutable python
+
+  " Check the last specified ++eof arg is used and should not memory leak.
+  new
+  call setline(1, ['print("hello")'])
+  1term ++eof=<C-Z> ++eof=exit(123) python
+  " MS-Windows echoes the input, Unix doesn't.
+  if has('win32')
+    call WaitFor({-> getline('$') =~ 'exit(123)'})
+    call assert_equal('hello', getline(line('$') - 1))
+  else
+    call WaitFor({-> getline('$') =~ 'hello'})
+    call assert_equal('hello', getline('$'))
+  endif
+  call assert_equal(123, bufnr()->term_getjob()->job_info().exitval)
+  %bwipe!
 endfunc
 
 func Test_terminal_no_cmd()
@@ -764,7 +781,8 @@ func Test_terminal_special_chars()
   call writefile(['x'], 'Xdir with spaces/quoted"file')
   term ls Xdir\ with\ spaces/quoted\"file
   call WaitForAssert({-> assert_match('quoted"file', term_getline('', 1))})
-  call term_wait('')
+  " make sure the job has finished
+  call WaitForAssert({-> assert_match('finish', term_getstatus(bufnr()))})
 
   call delete('Xdir with spaces', 'rf')
   bwipe
@@ -2242,9 +2260,7 @@ func Test_terminal_shell_option()
 endfunc
 
 func Test_terminal_setapi_and_call()
-  if !CanRunVimInTerminal()
-    return
-  endif
+  CheckRunVimInTerminal
 
   call WriteApiCall('Tapi_TryThis')
   call ch_logfile('Xlog', 'w')
@@ -2252,17 +2268,18 @@ func Test_terminal_setapi_and_call()
   unlet! g:called_bufnum
   unlet! g:called_arg
 
-  let buf = RunVimInTerminal('-S Xscript', {'term_api': 0})
+  let buf = RunVimInTerminal('-S Xscript', {'term_api': ''})
   call WaitForAssert({-> assert_match('Unpermitted function: Tapi_TryThis', string(readfile('Xlog')))})
   call assert_false(exists('g:called_bufnum'))
   call assert_false(exists('g:called_arg'))
 
-  call term_setapi(buf, 'Tapi_TryThis')
+  eval buf->term_setapi('Tapi_')
   call term_sendkeys(buf, ":set notitle\<CR>")
   call term_sendkeys(buf, ":source Xscript\<CR>")
   call WaitFor({-> exists('g:called_bufnum')})
   call assert_equal(buf, g:called_bufnum)
   call assert_equal(['hello', 123], g:called_arg)
+
   call StopVimInTerminal(buf)
 
   call delete('Xscript')
@@ -2270,4 +2287,146 @@ func Test_terminal_setapi_and_call()
   call delete('Xlog')
   unlet! g:called_bufnum
   unlet! g:called_arg
+endfunc
+
+func Test_terminal_api_arg()
+  CheckRunVimInTerminal
+
+  call WriteApiCall('Tapi_TryThis')
+  call ch_logfile('Xlog', 'w')
+
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+
+  execute 'term ++api= ' .. GetVimCommandCleanTerm() .. '-S Xscript'
+  let buf = bufnr('%')
+  call WaitForAssert({-> assert_match('Unpermitted function: Tapi_TryThis', string(readfile('Xlog')))})
+  call assert_false(exists('g:called_bufnum'))
+  call assert_false(exists('g:called_arg'))
+
+  call StopVimInTerminal(buf)
+
+  call ch_logfile('Xlog', 'w')
+
+  execute 'term ++api=Tapi_ ' .. GetVimCommandCleanTerm() .. '-S Xscript'
+  let buf = bufnr('%')
+  call WaitFor({-> exists('g:called_bufnum')})
+  call assert_equal(buf, g:called_bufnum)
+  call assert_equal(['hello', 123], g:called_arg)
+
+  call StopVimInTerminal(buf)
+
+  call delete('Xscript')
+  call ch_logfile('')
+  call delete('Xlog')
+  unlet! g:called_bufnum
+  unlet! g:called_arg
+endfunc
+
+func Test_terminal_in_popup()
+  CheckRunVimInTerminal
+
+  let text =<< trim END
+    some text
+    to edit
+    in a popup window
+  END
+  call writefile(text, 'Xtext')
+  let cmd = GetVimCommandCleanTerm()
+  let lines = [
+	\ 'set t_u7=',
+	\ 'call setline(1, range(20))',
+	\ 'hi PopTerm ctermbg=grey',
+	\ 'func OpenTerm(setColor)',
+	\ "  let s:buf = term_start('" .. cmd .. " Xtext', #{hidden: 1, term_finish: 'close'})",
+	\ '  let g:winid = popup_create(s:buf, #{minwidth: 45, minheight: 7, border: [], drag: 1, resize: 1})',
+	\ '  if a:setColor',
+	\ '    call win_execute(g:winid, "set wincolor=PopTerm")',
+	\ '  endif',
+	\ 'endfunc',
+	\ 'func HidePopup()',
+	\ '  call popup_hide(g:winid)',
+	\ 'endfunc',
+	\ 'func ClosePopup()',
+	\ '  call popup_close(g:winid)',
+	\ 'endfunc',
+	\ 'func ReopenPopup()',
+	\ '  call popup_create(s:buf, #{minwidth: 40, minheight: 6, border: []})',
+	\ 'endfunc',
+	\ ]
+  call writefile(lines, 'XtermPopup')
+  let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, "\<C-L>")
+  call term_sendkeys(buf, ":call OpenTerm(0)\<CR>")
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, ":\<CR>")
+  call term_sendkeys(buf, "\<C-W>:echo getwinvar(g:winid, \"&buftype\") win_gettype(g:winid)\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_1', {})
+
+  call term_sendkeys(buf, ":q\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_2', {})
+ 
+  call term_sendkeys(buf, ":call OpenTerm(1)\<CR>")
+  call term_sendkeys(buf, ":set hlsearch\<CR>")
+  call term_sendkeys(buf, "/edit\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_3', {})
+ 
+  call term_sendkeys(buf, "\<C-W>:call HidePopup()\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_4', {})
+  call term_sendkeys(buf, "\<CR>")
+  call term_wait(buf, 100)
+
+  call term_sendkeys(buf, "\<C-W>:call ClosePopup()\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_5', {})
+
+  call term_sendkeys(buf, "\<C-W>:call ReopenPopup()\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_6', {})
+
+  " Go to terminal-Normal mode and visually select text.
+  call term_sendkeys(buf, "\<C-W>Ngg/in\<CR>vww")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_7', {})
+
+  " Back to job mode, redraws
+  call term_sendkeys(buf, "A")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_8', {})
+
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, ":q\<CR>")
+  call term_wait(buf, 100)  " wait for terminal to vanish
+
+  call StopVimInTerminal(buf)
+  call delete('XtermPopup')
+endfunc
+
+func Test_double_popup_terminal()
+  let buf1 = term_start(&shell, #{hidden: 1})
+  let win1 = popup_create(buf1, {})
+  let buf2 = term_start(&shell, #{hidden: 1})
+  let win2 = popup_create(buf2, {})
+  call popup_close(win1)
+  call popup_close(win2)
+  exe buf1 .. 'bwipe!'
+  exe buf2 .. 'bwipe!'
+endfunc
+
+func Test_issue_5607()
+  let wincount = winnr('$')
+  exe 'terminal' &shell &shellcmdflag 'exit'
+  let job = term_getjob(bufnr())
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+
+  let old_wincolor = &wincolor
+  try
+    set wincolor=
+  finally
+    let &wincolor = old_wincolor
+    bw!
+  endtry
+endfunc
+
+func Test_hidden_terminal()
+  let buf = term_start(&shell, #{hidden: 1})
+  call assert_equal('', bufname('^$'))
+  call StopShellInTerminal(buf)
 endfunc
