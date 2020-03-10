@@ -63,4 +63,24 @@ func Test_getimstatus()
   set imstatusfunc=
 endfunc
 
+" Test for using an lmap in insert mode
+func Test_lmap_in_insert_mode()
+  new
+  call setline(1, 'abc')
+  lmap { w
+  set iminsert=1
+  call feedkeys('r{', 'xt')
+  call assert_equal('wbc', getline(1))
+  set iminsert=2
+  call feedkeys('$r{', 'xt')
+  call assert_equal('wb{', getline(1))
+  call setline(1, 'vim web')
+  set iminsert=1
+  call feedkeys('0f{', 'xt')
+  call assert_equal(5, col('.'))
+  set iminsert&
+  lunmap {
+  close!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

@@ -157,11 +157,16 @@ func Test_blockwise_visual_o_O()
   exe "norm! gvO\<Esc>rb"
   exe "norm! gvo\<C-c>rc"
   exe "norm! gvO\<C-c>rd"
+  set selection=exclusive
+  exe "norm! gvOo\<C-c>re"
+  call assert_equal('...a   be.', getline(4))
+  exe "norm! gvOO\<C-c>rf"
+  set selection&
 
   call assert_equal(['..........',
         \            '...c   d..',
         \            '...     ..',
-        \            '...a   b..',
+        \            '...a   bf.',
         \            '..........'], getline(1, '$'))
 
   enew!
@@ -645,6 +650,16 @@ func Test_characterwise_select_mode()
   exe "normal Gkgh\<Down>\<End>\<Del>"
   call assert_equal(['', 'a', ''], getline(1, '$'))
 
+  " CTRL-H in select mode behaves like 'x'
+  call setline(1, 'abcdef')
+  exe "normal! gggh\<Right>\<Right>\<Right>\<C-H>"
+  call assert_equal('ef', getline(1))
+
+  " CTRL-O in select mode switches to visual mode for one command
+  call setline(1, 'abcdef')
+  exe "normal! gggh\<C-O>3lm"
+  call assert_equal('mef', getline(1))
+
   sunmap <lt>End>
   sunmap <lt>Down>
   sunmap <lt>Del>
@@ -752,8 +767,7 @@ endfunc
 func Test_visual_block_mode()
   new
   call append(0, '')
-  call setline(1, ['abcdefghijklm', 'abcdefghijklm', 'abcdefghijklm',
-        \ 'abcdefghijklm', 'abcdefghijklm'])
+  call setline(1, repeat(['abcdefghijklm'], 5))
   call cursor(1, 1)
 
   " Test shift-right of a block
@@ -771,6 +785,16 @@ func Test_visual_block_mode()
         \ 'axyzqqqqef mno        ghijklm',
         \ 'axyzqqqqefgmnoklm',
         \ 'abcdqqqqijklm'], getline(1, 5))
+
+  " Test 'C' to change till the end of the line
+  call cursor(3, 4)
+  exe "normal! \<C-V>j3lCooo"
+  call assert_equal(['axyooo', 'axyooo'], getline(3, 4))
+
+  " Test 'D' to delete till the end of the line
+  call cursor(3, 3)
+  exe "normal! \<C-V>j2lD"
+  call assert_equal(['ax', 'ax'], getline(3, 4))
 
   bwipe!
 endfunc
@@ -958,8 +982,8 @@ func Test_exclusive_selection()
   close!
 endfunc
 
-" Test for starting visual mode with a count
-" This test should be run withou any previous visual modes. So this should be
+" Test for starting visual mode with a count.
+" This test should be run without any previous visual modes. So this should be
 " run as a first test.
 func Test_AAA_start_visual_mode_with_count()
   new
