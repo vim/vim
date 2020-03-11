@@ -663,24 +663,22 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 	    mch_memmove(&prop, text + textlen + i * sizeof(textprop_T),
 			    sizeof(textprop_T));
 
+	    if (dir < 0)
+	    {
+		if (col < prop.tp_col)
+		    break;
+	    }
+	    else if (prop.tp_col + prop.tp_len - (prop.tp_len != 0) < col)
+		continue;
+
 	    if (prop.tp_id == id || prop.tp_type == type_id)
 	    {
 		// Check if the starting position has text props.
-		if (lnum_start == lnum)
-		{
-		    if (col >= prop.tp_col
-				       && (col <= prop.tp_col + prop.tp_len-1))
-			start_pos_has_prop = 1;
-		}
-		else
-		{
-		    // Not at the first line of the search so adjust col to
-		    // indicate that we're continuing from prev/next line.
-		    if (dir < 0)
-			col = buf->b_ml.ml_line_len;
-		    else
-			col = 1;
-		}
+		if (lnum_start == lnum
+			&& col >= prop.tp_col
+			&& (col <= prop.tp_col + prop.tp_len
+							 - (prop.tp_len != 0)))
+		    start_pos_has_prop = 1;
 
 		prop_start = !(prop.tp_flags & TP_FLAG_CONT_PREV);
 		prop_end = !(prop.tp_flags & TP_FLAG_CONT_NEXT);
@@ -705,17 +703,6 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 		    break;
 		}
 
-		if (dir < 0)
-		{
-		    if (col < prop.tp_col)
-			break;
-		}
-		else
-		{
-		    if (col > prop.tp_col + prop.tp_len-1)
-			break;
-		}
-
 		prop_fill_dict(rettv->vval.v_dict, &prop, buf);
 		dict_add_number(rettv->vval.v_dict, "lnum", lnum);
 
@@ -735,6 +722,8 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 		break;
 	    lnum--;
 	}
+	// Adjust col to indicate that we're continuing from prev/next line.
+	col = dir < 0 ? buf->b_ml.ml_line_len : 1;
     }
 }
 
