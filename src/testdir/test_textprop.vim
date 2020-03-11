@@ -1166,3 +1166,30 @@ func Test_textprop_ins_str()
   call prop_remove({'type': 'test'})
   call prop_type_delete('test')
 endfunc
+
+func Test_find_prop_later_in_line()
+  new
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call setline(1, 'just some text')
+  call prop_add(1, 1, {'length': 4, 'type': 'test'})
+  call prop_add(1, 10, {'length': 3, 'type': 'test'})
+
+  call assert_equal({'id': 0, 'lnum': 1, 'col': 10, 'end': 1, 'type': 'test', 'length': 3, 'start': 1},
+			  \ prop_find(#{type: 'test', lnum: 1, col: 6}))
+
+  bwipe!
+  call prop_type_delete('test')
+endfunc
+
+func Test_find_zerowidth_prop_sol()
+  new
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call setline(1, 'just some text')
+  call prop_add(1, 1, {'length': 0, 'type': 'test'})
+
+  call assert_equal({'id': 0, 'lnum': 1, 'col': 1, 'end': 1, 'type': 'test', 'length': 0, 'start': 1},
+			  \ prop_find(#{type: 'test', lnum: 1}))
+
+  bwipe!
+  call prop_type_delete('test')
+endfunc
