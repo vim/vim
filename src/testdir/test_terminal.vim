@@ -368,7 +368,11 @@ func Test_terminal_postponed_scrollback()
   call term_wait(buf)
   call term_sendkeys(buf, "exit\<CR>")
   call term_wait(buf)
-  call term_sendkeys(buf, ":q\<CR>")
+  let tsk_ret = term_sendkeys(buf, ":q\<CR>")
+
+  " check type of term_sendkeys() return value
+  echo type(tsk_ret)
+
   call StopVimInTerminal(buf)
   call delete('XTest_postponed')
   call delete('Xtext')
