@@ -921,6 +921,7 @@ GUI:						*gui-functions*
 	balloon_show()		set the balloon content
 	balloon_split()		split a message for a balloon
 	balloon_gettext()	get the text in the balloon
+	menu_info()		get information about a menu item
 
 Vim server:					*server-functions*
 	serverlist()		return the list of server names

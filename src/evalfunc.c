@@ -646,6 +646,7 @@ static funcentry_T global_functions[] =
     {"matchstr",	2, 4, FEARG_1,	  ret_string,	f_matchstr},
     {"matchstrpos",	2, 4, FEARG_1,	  ret_list_any,	f_matchstrpos},
     {"max",		1, 1, FEARG_1,	  ret_any,	f_max},
+    {"menu_info",	1, 2, FEARG_1,	  ret_dict_any,	f_menu_info},
     {"min",		1, 1, FEARG_1,	  ret_any,	f_min},
     {"mkdir",		1, 3, FEARG_1,	  ret_number,	f_mkdir},
     {"mode",		0, 1, FEARG_1,	  ret_string,	f_mode},

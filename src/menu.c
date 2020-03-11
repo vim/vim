@@ -1685,6 +1685,49 @@ get_menu_cmd_modes(
 }
 
 /*
+ * Return the string representation of the menu modes. Does the opposite
+ * of get_menu_cmd_modes().
+ */
+    static char_u *
+get_menu_mode_str(int modes)
+{
+    if ((modes & (MENU_INSERT_MODE | MENU_CMDLINE_MODE | MENU_NORMAL_MODE |
+		  MENU_VISUAL_MODE | MENU_SELECT_MODE | MENU_OP_PENDING_MODE))
+	    == (MENU_INSERT_MODE | MENU_CMDLINE_MODE | MENU_NORMAL_MODE |
+		MENU_VISUAL_MODE | MENU_SELECT_MODE | MENU_OP_PENDING_MODE))
+	return (char_u *)"a";
+    if ((modes & (MENU_NORMAL_MODE | MENU_VISUAL_MODE | MENU_SELECT_MODE |
+		  MENU_OP_PENDING_MODE))
+	    == (MENU_NORMAL_MODE | MENU_VISUAL_MODE | MENU_SELECT_MODE |
+		MENU_OP_PENDING_MODE))
+	return (char_u *)" ";
+    if ((modes & (MENU_INSERT_MODE | MENU_CMDLINE_MODE))
+	    == (MENU_INSERT_MODE | MENU_CMDLINE_MODE))
+	return (char_u *)"!";
+    if ((modes & (MENU_VISUAL_MODE | MENU_SELECT_MODE))
+	    == (MENU_VISUAL_MODE | MENU_SELECT_MODE))
+	return (char_u *)"v";
+    if (modes & MENU_VISUAL_MODE)
+	return (char_u *)"x";
+    if (modes & MENU_SELECT_MODE)
+	return (char_u *)"s";
+    if (modes & MENU_OP_PENDING_MODE)
+	return (char_u *)"o";
+    if (modes & MENU_INSERT_MODE)
+	return (char_u *)"i";
+    if (modes & MENU_TERMINAL_MODE)
+	return (char_u *)"tl";
+    if (modes & MENU_CMDLINE_MODE)
+	return (char_u *)"c";
+    if (modes & MENU_NORMAL_MODE)
+	return (char_u *)"n";
+    if (modes & MENU_TIP_MODE)
+	return (char_u *)"t";
+
+    return (char_u *)"";
+}
+
+/*
  * Modify a menu name starting with "PopUp" to include the mode character.
  * Returns the name in allocated memory (NULL for failure).
  */
@@ -2393,40 +2436,21 @@ execute_menu(exarg_T *eap, vimmenu_T *menu, int mode_idx)
 }
 
 /*
- * Given a menu descriptor, e.g. "File.New", find it in the menu hierarchy and
- * execute it.
+ * Lookup a menu by the descriptor name e.g. "File.New"
+ * Returns NULL if the menu is not found
  */
-    void
-ex_emenu(exarg_T *eap)
+    vimmenu_T *
+menu_getbyname(char_u *name_arg)
 {
-    vimmenu_T	*menu;
     char_u	*name;
     char_u	*saved_name;
-    char_u	*arg = eap->arg;
+    vimmenu_T	*menu;
     char_u	*p;
     int		gave_emsg = FALSE;
-    int		mode_idx = -1;
 
-    if (arg[0] && VIM_ISWHITE(arg[1]))
-    {
-	switch (arg[0])
-	{
-	    case 'n': mode_idx = MENU_INDEX_NORMAL; break;
-	    case 'v': mode_idx = MENU_INDEX_VISUAL; break;
-	    case 's': mode_idx = MENU_INDEX_SELECT; break;
-	    case 'o': mode_idx = MENU_INDEX_OP_PENDING; break;
-	    case 't': mode_idx = MENU_INDEX_TERMINAL; break;
-	    case 'i': mode_idx = MENU_INDEX_INSERT; break;
-	    case 'c': mode_idx = MENU_INDEX_CMDLINE; break;
-	    default: semsg(_(e_invarg2), arg);
-		     return;
-	}
-	arg = skipwhite(arg + 2);
-    }
-
-    saved_name = vim_strsave(arg);
+    saved_name = vim_strsave(name_arg);
     if (saved_name == NULL)
-	return;
+	return NULL;
 
     menu = *get_root_menu(saved_name);
     name = saved_name;
@@ -2463,9 +2487,44 @@ ex_emenu(exarg_T *eap)
     if (menu == NULL)
     {
 	if (!gave_emsg)
-	    semsg(_("E334: Menu not found: %s"), arg);
-	return;
+	    semsg(_("E334: Menu not found: %s"), name_arg);
+	return NULL;
     }
+
+    return menu;
+}
+
+/*
+ * Given a menu descriptor, e.g. "File.New", find it in the menu hierarchy and
+ * execute it.
+ */
+    void
+ex_emenu(exarg_T *eap)
+{
+    vimmenu_T	*menu;
+    char_u	*arg = eap->arg;
+    int		mode_idx = -1;
+
+    if (arg[0] && VIM_ISWHITE(arg[1]))
+    {
+	switch (arg[0])
+	{
+	    case 'n': mode_idx = MENU_INDEX_NORMAL; break;
+	    case 'v': mode_idx = MENU_INDEX_VISUAL; break;
+	    case 's': mode_idx = MENU_INDEX_SELECT; break;
+	    case 'o': mode_idx = MENU_INDEX_OP_PENDING; break;
+	    case 't': mode_idx = MENU_INDEX_TERMINAL; break;
+	    case 'i': mode_idx = MENU_INDEX_INSERT; break;
+	    case 'c': mode_idx = MENU_INDEX_CMDLINE; break;
+	    default: semsg(_(e_invarg2), arg);
+		     return;
+	}
+	arg = skipwhite(arg + 2);
+    }
+
+    menu = menu_getbyname(arg);
+    if (menu == NULL)
+	return;
 
     // Found the menu, so execute.
     execute_menu(eap, menu, mode_idx);
@@ -2771,6 +2830,160 @@ menu_translate_tab_and_shift(char_u *arg_start)
     arg = skipwhite(arg);
 
     return arg;
+}
+
+/*
+ * Get the information about a menu item in mode 'which'
+ */
+    static int
+menuitem_getinfo(vimmenu_T *menu, int modes, dict_T *dict)
+{
+    int		status;
+
+    if (menu_is_tearoff(menu->dname))		// skip tearoff menu item
+	return OK;
+
+    status = dict_add_string(dict, "name", menu->name);
+    if (status == OK)
+	status = dict_add_string(dict, "display", menu->dname);
+    if (status == OK && menu->actext != NULL)
+	status = dict_add_string(dict, "accel", menu->actext);
+    if (status == OK)
+	status = dict_add_number(dict, "priority", menu->priority);
+    if (status == OK)
+	status = dict_add_string(dict, "modes",
+					get_menu_mode_str(menu->modes));
+#ifdef FEAT_TOOLBAR
+    if (status == OK && menu->iconfile != NULL)
+	status = dict_add_string(dict, "icon", menu->iconfile);
+    if (status == OK && menu->iconidx >= 0)
+	status = dict_add_number(dict, "iconidx", menu->iconidx);
+#endif
+    if (status == OK)
+    {
+	char_u	buf[NUMBUFLEN];
+
+	if (has_mbyte)
+	    buf[utf_char2bytes(menu->mnemonic, buf)] = NUL;
+	else
+	{
+	    buf[0] = (char_u)menu->mnemonic;
+	    buf[1] = NUL;
+	}
+	status = dict_add_string(dict, "shortcut", buf);
+    }
+    if (status == OK && menu->children == NULL)
+    {
+	int		bit;
+
+	// Get the first mode in which the menu is available
+	for (bit = 0; (bit < MENU_MODES) && !((1 << bit) & modes); bit++)
+	    ;
+	if (menu->strings[bit] != NULL)
+	    status = dict_add_string(dict, "rhs",
+		    *menu->strings[bit] == NUL ?
+		    vim_strsave((char_u *)"<Nop>") :
+		    str2special_save(menu->strings[bit], FALSE));
+	if (status == OK)
+	    status = dict_add_bool(dict, "noremenu",
+					menu->noremap[bit] == REMAP_NONE);
+	if (status == OK)
+	    status = dict_add_bool(dict, "script",
+					menu->noremap[bit] == REMAP_SCRIPT);
+	if (status == OK)
+	    status = dict_add_bool(dict, "silent", menu->silent[bit]);
+	if (status == OK)
+	    status = dict_add_bool(dict, "enabled",
+		    ((menu->enabled & (1 << bit)) != 0));
+    }
+    // If there are submenus, add all the submenu display names
+    if (status == OK && menu->children != NULL)
+    {
+	list_T		*l = list_alloc();
+	vimmenu_T	*child;
+
+	if (l == NULL)
+	    return FAIL;
+
+	dict_add_list(dict, "submenus", l);
+	child = menu->children;
+	while (child)
+	{
+	    if (!menu_is_tearoff(child->dname))		// skip tearoff menu
+		list_append_string(l, child->dname, -1);
+	    child = child->next;
+	}
+    }
+
+    return status;
+}
+
+/*
+ * "menu_info()" function
+ * Return information about a menu (including all the child menus)
+ */
+    void
+f_menu_info(typval_T *argvars, typval_T *rettv)
+{
+    char_u	*menu_name;
+    char_u	*which;
+    int		modes;
+    char_u	*saved_name;
+    char_u	*name;
+    vimmenu_T	*menu;
+    dict_T	*retdict;
+
+    if (rettv_dict_alloc(rettv) != OK)
+	return;
+    retdict = rettv->vval.v_dict;
+
+    menu_name = tv_get_string_chk(&argvars[0]);
+    if (menu_name == NULL)
+	return;
+
+    // menu mode
+    if (argvars[1].v_type != VAR_UNKNOWN)
+	which = tv_get_string_chk(&argvars[1]);
+    else
+	which = (char_u *)"";	    // Default is modes for "menu"
+    if (which == NULL)
+	return;
+
+    modes = get_menu_cmd_modes(which, *which == '!', NULL, NULL);
+
+    // Locate the specified menu or menu item
+    menu = *get_root_menu(menu_name);
+    saved_name = vim_strsave(menu_name);
+    if (saved_name == NULL)
+	return;
+    if (*saved_name != NUL)
+    {
+	char_u	*p;
+
+	name = saved_name;
+	while (*name)
+	{
+	    // Find in the menu hierarchy
+	    p = menu_name_skip(name);
+	    while (menu != NULL)
+	    {
+		if (menu_name_equal(name, menu))
+		    break;
+		menu = menu->next;
+	    }
+	    if (menu == NULL || *p == NUL)
+		break;
+	    menu = menu->children;
+	    name = p;
+	}
+    }
+    vim_free(saved_name);
+
+    if (menu == NULL)		// specified menu not found
+	return;
+
+    if (menu->modes & modes)
+	menuitem_getinfo(menu, modes, retdict);
 }
 
 #endif // FEAT_MENU
