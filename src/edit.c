@@ -1612,6 +1612,10 @@ decodeModifyOtherKeys(int c)
 	    // Match, consume the code.
 	    typebuf.tb_off += idx + 1;
 	    typebuf.tb_len -= idx + 1;
+#if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
+	    if (typebuf.tb_len == 0)
+		typebuf_was_filled = FALSE;
+#endif
 
 	    mod_mask = decode_modifiers(arg[!form]);
 	    c = merge_modifyOtherKeys(arg[form]);
