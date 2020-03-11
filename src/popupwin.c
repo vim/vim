@@ -2135,7 +2135,7 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
 		    break;
 	    if (owp != NULL)
 		win_enter(owp, FALSE);
-	    else if (win_valid(prevwin))
+	    else if (win_valid(prevwin) && wp != prevwin)
 		win_enter(prevwin, FALSE);
 	    else
 		win_enter(firstwin, FALSE);
@@ -2147,11 +2147,13 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
     if (wp == curwin && ERROR_IF_POPUP_WINDOW)
 	return;
 
+    CHECK_CURBUF;
     if (wp->w_close_cb.cb_name != NULL)
 	// Careful: This may make "wp" invalid.
 	invoke_popup_callback(wp, arg);
 
     popup_close(id);
+    CHECK_CURBUF;
 }
 
     void
@@ -2505,6 +2507,11 @@ popup_close(int id)
     for (wp = first_popupwin; wp != NULL; prev = wp, wp = wp->w_next)
 	if (wp->w_id == id)
 	{
+	    if (wp == curwin)
+	    {
+		ERROR_IF_ANY_POPUP_WINDOW;
+		return;
+	    }
 	    if (prev == NULL)
 		first_popupwin = wp->w_next;
 	    else
@@ -2531,6 +2538,11 @@ popup_close_tabpage(tabpage_T *tp, int id)
     for (wp = *root; wp != NULL; prev = wp, wp = wp->w_next)
 	if (wp->w_id == id)
 	{
+	    if (wp == curwin)
+	    {
+		ERROR_IF_ANY_POPUP_WINDOW;
+		return;
+	    }
 	    if (prev == NULL)
 		*root = wp->w_next;
 	    else
@@ -2881,10 +2893,11 @@ error_if_popup_window(int also_with_term UNUSED)
 {
     // win_execute() may set "curwin" to a popup window temporarily, but many
     // commands are disallowed then.  When a terminal runs in the popup most
-    // things are allowed.
+    // things are allowed.  When a terminal is finished it can be closed.
     if (WIN_IS_POPUP(curwin)
 # ifdef FEAT_TERMINAL
 	    && (also_with_term || curbuf->b_term == NULL)
+	    && !term_is_finished(curbuf)
 # endif
 	    )
     {

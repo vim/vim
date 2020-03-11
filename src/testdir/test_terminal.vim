@@ -2430,3 +2430,27 @@ func Test_hidden_terminal()
   call assert_equal('', bufname('^$'))
   call StopShellInTerminal(buf)
 endfunc
+
+func Test_term_nasty_callback()
+  func OpenTerms()
+    set hidden
+    let g:buf0 = term_start('sh', #{hidden: 1})
+    call popup_create(g:buf0, {})
+    let g:buf1 = term_start('sh', #{hidden: 1, term_finish: 'close'})
+    call popup_create(g:buf1, {})
+    let g:buf2 = term_start(['sh', '-c'], #{curwin: 1, exit_cb: function('TermExit')})
+    sleep 100m
+    call popup_close(win_getid())
+  endfunc
+  func TermExit(...)
+    call term_sendkeys(bufnr('#'), "exit\<CR>")
+    call popup_close(win_getid())
+  endfu
+  call OpenTerms()
+
+  call term_sendkeys(g:buf0, "exit\<CR>")
+  sleep 50m
+  exe g:buf0 .. 'bwipe'
+  set hidden&
+endfunc
+

@@ -508,6 +508,7 @@ close_buffer(
     int		wipe_buf = (action == DOBUF_WIPE || action == DOBUF_WIPE_REUSE);
     int		del_buf = (action == DOBUF_DEL || wipe_buf);
 
+    CHECK_CURBUF;
     /*
      * Force unloading or deleting when 'bufhidden' says so.
      * The caller must take care of NOT deleting/freeing when 'bufhidden' is
@@ -530,6 +531,7 @@ close_buffer(
 #ifdef FEAT_TERMINAL
     if (bt_terminal(buf) && (buf->b_nwindows == 1 || del_buf))
     {
+	CHECK_CURBUF;
 	if (term_job_running(buf->b_term))
 	{
 	    if (wipe_buf || unload_buf)
@@ -554,6 +556,7 @@ close_buffer(
 	    unload_buf = TRUE;
 	    wipe_buf = TRUE;
 	}
+	CHECK_CURBUF;
     }
 #endif
 
@@ -743,6 +746,7 @@ aucmd_abort:
 	if (del_buf)
 	    buf->b_p_bl = FALSE;
     }
+    // NOTE: at this point "curbuf" may be invalid!
 }
 
 /*
@@ -933,7 +937,11 @@ free_buffer(buf_T *buf)
 	au_pending_free_buf = buf;
     }
     else
+    {
 	vim_free(buf);
+	if (curbuf == buf)
+	    curbuf = NULL;  // make clear it's not to be used
+    }
 }
 
 /*

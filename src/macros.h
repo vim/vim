@@ -364,8 +364,11 @@
 # define ESTACK_CHECK_SETUP estack_len_before = exestack.ga_len;
 # define ESTACK_CHECK_NOW if (estack_len_before != exestack.ga_len) \
 	siemsg("Exestack length expected: %d, actual: %d", estack_len_before, exestack.ga_len);
+# define CHECK_CURBUF if (curwin != NULL && curwin->w_buffer != curbuf) \
+		iemsg("curbuf != curwin->w_buffer")
 #else
 # define ESTACK_CHECK_DECLARATION
 # define ESTACK_CHECK_SETUP
 # define ESTACK_CHECK_NOW
+# define CHECK_CURBUF
 #endif

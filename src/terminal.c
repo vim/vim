@@ -382,6 +382,7 @@ term_close_buffer(buf_T *buf, buf_T *old_curbuf)
 	curwin->w_buffer = curbuf;
 	++curbuf->b_nwindows;
     }
+    CHECK_CURBUF;
 
     // Wiping out the buffer will also close the window and call
     // free_terminal().
