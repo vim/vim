@@ -11,17 +11,17 @@
 
 :: Use Vim to copy the tutor, it knows the value of $VIMRUNTIME
 FOR %%d in (. %TMP% %TEMP%) DO (
-call :test_dir %0 %%d
+call :test_dir_writable %0 %%d
 IF NOT ERRORLEVEL 1 GOTO dir_ok
 )
 
 echo No working directory is found
 GOTO end
 
-:test_dir
+:test_dir_writable
 SET TUTORCOPY=%2\$tutor$
 COPY %1 %TUTORCOPY% >nul 2>nul
-goto end
+goto :EOF
 
 :dir_ok
 
