@@ -1998,7 +1998,7 @@ ex_disassemble(exarg_T *eap)
 			    when = "JUMP_AND_KEEP_IF_FALSE";
 			    break;
 		    }
-		    smsg("%4d %s -> %lld", current, when,
+		    smsg("%4d %s -> %d", current, when,
 						iptr->isn_arg.jump.jump_where);
 		}
 		break;
