@@ -32,7 +32,7 @@ anchors:
         sources:
           # Need msgfmt 0.19.8 to be able to generate .desktop files
           - sourceline: 'ppa:ricotz/toolchain'
-        packages:
+        packages: &linux-packages
           - autoconf
           - clang
           - lcov
@@ -73,9 +73,13 @@ anchors:
         fi
     before_script:
       # Start virtual framebuffer to be able to test the GUI. Does not work on OS X.
-      - export DISPLAY=:99.0
-      - sh -e /etc/init.d/xvfb start && sleep 3
-      - sudo modprobe snd-dummy
+      - |
+        if [[ "${TEST}" =~ gui ]]; then
+          export DISPLAY=:99.0
+          sh -e /etc/init.d/xvfb start && sleep 3
+        fi
+      - |
+        [ "${TRAVIS_CPU_ARCH}" = s390x ] || sudo modprobe snd-dummy
       - sudo usermod -a -G audio $USER
       - do_test() { sg audio "sg $(id -gn) '$*'"; }
 
@@ -201,6 +205,17 @@ matrix:
       env:
         - *normal
         - *shadowopt
+    - <<: *linux
+      arch: s390x
+      name: huge/gcc-s390x
+      compiler: gcc
+      env:
+        - *linux-huge
+      addons:
+        apt:
+          packages:
+            - *linux-packages
+            - libtool-bin
     - <<: *linux
       name: huge+coverage/clang
       compiler: clang
