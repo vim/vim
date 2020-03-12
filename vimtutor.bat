@@ -21,7 +21,7 @@ GOTO end
 :test_dir_writable
 SET TUTORCOPY=%2\$tutor$
 COPY %1 %TUTORCOPY% >nul 2>nul
-goto :EOF
+GOTO end
 
 :dir_ok
 
