@@ -213,6 +213,17 @@ func Test_prop_find()
   call prop_type_delete('prop_name')
 endfunc
 
+func Test_prop_find_smaller_len_than_match_col()
+  new
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call setline(1, ['xxxx', 'x'])
+  call prop_add(1, 4, {'type': 'test'})
+  call assert_equal({'id': 0, 'lnum': 1, 'col': 4, 'type': 'test', 'length': 0, 'start': 1, 'end': 1},
+        \ prop_find({'type': 'test', 'lnum': 2, 'col': 1}, 'b'))
+  bwipe!
+  call prop_type_delete('test')
+endfunc
+
 func Test_prop_add()
   new
   call AddPropTypes()
