@@ -2492,6 +2492,31 @@ popup_free(win_T *wp)
     popup_mask_refresh = TRUE;
 }
 
+    static void
+error_for_popup_window(void)
+{
+    emsg(_("E994: Not allowed in a popup window"));
+}
+
+    int
+error_if_popup_window(int also_with_term UNUSED)
+{
+    // win_execute() may set "curwin" to a popup window temporarily, but many
+    // commands are disallowed then.  When a terminal runs in the popup most
+    // things are allowed.  When a terminal is finished it can be closed.
+    if (WIN_IS_POPUP(curwin)
+# ifdef FEAT_TERMINAL
+	    && (also_with_term || curbuf->b_term == NULL)
+	    && !term_is_finished(curbuf)
+# endif
+	    )
+    {
+	error_for_popup_window();
+	return TRUE;
+    }
+    return FALSE;
+}
+
 /*
  * Close a popup window by Window-id.
  * Does not invoke the callback.
@@ -2509,7 +2534,7 @@ popup_close(int id)
 	{
 	    if (wp == curwin)
 	    {
-		ERROR_IF_ANY_POPUP_WINDOW;
+		error_for_popup_window();
 		return;
 	    }
 	    if (prev == NULL)
@@ -2540,7 +2565,7 @@ popup_close_tabpage(tabpage_T *tp, int id)
 	{
 	    if (wp == curwin)
 	    {
-		ERROR_IF_ANY_POPUP_WINDOW;
+		error_for_popup_window();
 		return;
 	    }
 	    if (prev == NULL)
@@ -2886,25 +2911,6 @@ f_popup_getoptions(typval_T *argvars, typval_T *rettv)
 				 ?  (long)wp->w_popup_timer->tr_interval : 0L);
 # endif
     }
-}
-
-    int
-error_if_popup_window(int also_with_term UNUSED)
-{
-    // win_execute() may set "curwin" to a popup window temporarily, but many
-    // commands are disallowed then.  When a terminal runs in the popup most
-    // things are allowed.  When a terminal is finished it can be closed.
-    if (WIN_IS_POPUP(curwin)
-# ifdef FEAT_TERMINAL
-	    && (also_with_term || curbuf->b_term == NULL)
-	    && !term_is_finished(curbuf)
-# endif
-	    )
-    {
-	emsg(_("E994: Not allowed in a popup window"));
-	return TRUE;
-    }
-    return FALSE;
 }
 
 # if defined(FEAT_TERMINAL) || defined(PROTO)
