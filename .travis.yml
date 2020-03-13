@@ -85,6 +85,10 @@ anchors:
 
   osx: &osx
     os: osx
+    before_script:
+      - do_test() { "$@"; }
+
+  homebrew: &homebrew
     addons:
       homebrew:
         packages:
@@ -98,8 +102,6 @@ anchors:
       - rvm reset
       # Lua is not installed on Travis OSX
       - export LUA_PREFIX=/usr/local
-    before_script:
-      - do_test() { "$@"; }
 
   coverage: &coverage
     - ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8
@@ -166,10 +168,12 @@ matrix:
       compiler: gcc
       env: *tiny-nogui
     - <<: *osx
+      <<: *homebrew
       name: huge/clang
       compiler: clang
       env: *osx-huge
     - <<: *osx
+      <<: *homebrew
       name: huge/gcc
       compiler: gcc
       env: *osx-huge
