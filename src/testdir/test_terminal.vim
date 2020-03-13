@@ -2453,7 +2453,7 @@ func Test_term_nasty_callback()
   call OpenTerms()
 
   call term_sendkeys(g:buf0, "exit\<CR>")
-  sleep 50m
+  sleep 100m
   exe g:buf0 .. 'bwipe'
   set hidden&
 endfunc
