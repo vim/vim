@@ -1,4 +1,4 @@
-*textprop.txt*  For Vim version 8.2.  Last change: 2020 Feb 22
+*textprop.txt*  For Vim version 8.2.  Last change: 2020 Mar 05
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -133,8 +133,8 @@ prop_add({lnum}, {col}, {props})
 				to {lnum}, this is a zero-width text property
 		   bufnr	buffer to add the property to; when omitted
 				the current buffer is used
-		   id		user defined ID for the property; when omitted
-				zero is used
+		   id		user defined ID for the property; must be a
+				number; when omitted zero is used
 		   type		name of the text property type
 		All fields except "type" are optional.
 

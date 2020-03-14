@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Feb 29
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Mar 01
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -213,7 +213,7 @@ few exceptions.
 	blob		non-empty
 	list		non-empty (different from JavaScript)
 	dictionary	non-empty (different from JavaScript)
-	funcref		when not NULL
+	func		when not NULL
 	partial		when not NULL
 	special		v:true
 	job		when not NULL
@@ -301,6 +301,8 @@ The following builtin types are supported:
 	(a: type, b: type): type
 	job
 	channel
+	func
+	partial
 
 Not supported yet:
 	tuple<a: type, b: type, ...>

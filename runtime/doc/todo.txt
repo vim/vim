@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Mar 01
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Mar 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,10 +38,23 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
+When starting a terminal popup the size defaults to nothing. Should have a
+sensible default, e.g. four lines of 30 chars.
+call popup_create(term_start(&shell, #{hidden: 1}), #{})
+
+Test_terminal_in_popup() still sometimes fails with "All" instead of "Top".
+
+Patch to fix vimtutor problems on Windows (Wu Yongwei, #5774)
+
+Additional tests for menu. (Yegappan, #5760)
+Introduces menu_info(), check that out.
+
 Vim9 script:
-- better implementation for partial and tests.
+- Add vim9 commands to index, so that vim.vim will get them automatically.
+    See email from Charles March 11 2020.
 - "func" inside "vim9script" doesn't work?  (Ben Jackson, #5670)
 - "echo Func()" is an error if Func() does not return anything.
+- better implementation for partial and tests for that.
 - Make "g:imported = Export.exported" work in Vim9 script.
 - Make Foo.Bar() work to call the dict function. (#5676)
 - make "let var: string" work in a vim9script.
@@ -80,7 +93,14 @@ Vim9 script:
 	LOADVARARG (varags idx)
 
 Popup windows:
+- popup_clear() and popup_close() should close the terminal popup, and
+   make the buffer hidden. #5745
 - With terminal in popup, allow for popup_hide() to temporarily hide it.?
+- With some sequence get get hidden finished terminal buffer. (#5768)
+- Fire some autocommand event after a new popup window was created and
+  positioned?  PopupNew?  Could be used to set some options or move it out of
+  the way. (#5737)
+  However, it may also cause trouble, changing the popup of another plugin.
 - Use popup (or popup menu) for command line completion
 - When using a popup for the info of a completion menu, and there is not
   enough space, let the popup overlap with the menu. (#4544)
@@ -94,7 +114,7 @@ Popup windows:
 - Figure out the size and position better if wrapping inserts indent
 
 Text properties:
-- prop_find() may not find text property at start of the line. (#5663)
+- "cc" does not call inserted_bytes(). (Axel Forsman, #5763)
 - Get E685 with a sequence of commands. (#5674)
 - Combining text property with 'cursorline' does not always work (Billie
   Cleek, #5533)
@@ -165,7 +185,7 @@ Terminal emulator window:
 
 Error numbers available:
 E451, E452, E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
-E654, E856, E857, E860, E861, E900
+E654, E856, E857, E861, E900
 
 Patch to fix drawing error with DirectX. (James Grant, #5688)
 Causes flicker on resizing.
@@ -174,9 +194,14 @@ Patch to use more FOR_ALL_ macros and use them. (Yegappan Lakshmanan, #5339)
 
 Patch to explain use of "%" in :!.  (David Briscoe, #5591)
 
+Patch to improve Windows terminal support. (Nobuhiro Takasaki, #5546)
+Ready to include.
+
 Patch to add "-d" to xxd. (#5616)
 
 Patch to add Turkish manual. (Emir Sarı, #5641)
+
+File marks merging has duplicates since 7.4.1925. (Ingo Karkat, #5733)
 
 Running test_gui and test_gui_init with Motif sometimes kills the window
 manager.  Problem with Motif? Now test_gui crashes in submenu_change().
@@ -191,20 +216,24 @@ Needs better docs.  Is there a better name?
 
 undo result wrong: Masato Nishihata, #4798
 
+Patch for Template string: #4491.  New pull: #4634
+Ready to include?  Review the code.
+
 When 'lazyredraw' is set sometimes the title is not updated.
 (Jason Franklin, 2020 Feb 3)  Looks like a race condition.
 
 Strange sequence of BufWipeout and BufNew events while doing omni-complete.
 (Paul Jolly, #5656)
 Get BufDelete without preceding BufNew. (Paul Jolly, #5694)
+    Later more requests for what to track.
+    Should we add new events that don't allow any buffer manipulation?
+    Really only for dealing with appearing and disappearing buffers, load and
+    unload.
 BufWinenter event not fired when saving unnamed buffer. (Paul Jolly, #5655)
 Another spurious BufDelete. (Dani Dickstein, #5701)
 
 Patch to add function to return the text used in the quickfix window.
 (Yegappan, #5465)
-
-Patch for Template string: #4491.  New pull: #4634
-Implementation is too inefficient, avoid using lambda.
 
 Patch to add readdirex() (Ken Takata, #5619)
 
@@ -247,6 +276,12 @@ FR: add search_status(), the current values displayed for search (current
 match, total matches). (#5631)
 Patch to provide search stats in a variable, so that it can be used in the
 statusline. (Fujiwara Takuya, #4446)
+
+Patch for ambiguous width characters in libvterm on MS-Windows 10.
+(Nobuhiro Takasaki, #4411)
+
+behavior of i_CTRl-R_CTRL-R differs from documentation. (Paul Desmond Parker,
+#5771)
 
 ":bnext" in a help buffer is supposed to go to the next help buffer, but it
 goes to any buffer, and then :bnext skips help buffers, since they are
@@ -305,6 +340,7 @@ Patch to add per-tabpage and per-window previous directory: "lcd -" and "tcd
 Does not build with MinGW out of the box:
 - _stat64 is not defined, need to use "struct stat" in vim.h
 - WINVER conflict, should use 0x0600 by default?
+- INT_MAX not defined: need to include <limits.h> in vim.h
 
 Crash when mixing matchadd and substitute()? (Max Christian Pohle, 2018 May
 13, #2910)  Can't reproduce?
@@ -430,9 +466,6 @@ CTRL-Y scroll one screen line, also if this means the first line doesn't start
 with the first character (like what happens with a last line that doesn't
 fit).  Display "<<<" at the start of the first visible line (like "@@@" is
 displayed in the last line). (Arseny Nasokin,  #5154)
-
-Patch for ambiguous width characters in libvterm on MS-Windows 10.
-(Nobuhiro Takasaki, #4411)
 
 Window size changes after closing a tab. (#4741)
 

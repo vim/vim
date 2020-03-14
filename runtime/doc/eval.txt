@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Feb 22
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Mar 14
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -4357,6 +4357,8 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 		'L'	Lowlevel input.  Only works for Unix or when using the
 			GUI. Keys are used as if they were coming from the
 			terminal.  Other flags are not used.  *E980*
+			When a CTRL-C interrupts it sets the internal
+			"got_int" flag.
 		'i'	Insert the string instead of appending (see above).
 		'x'	Execute commands until typeahead is empty.  This is
 			similar to using ":normal!".  You can call feedkeys()
@@ -5829,6 +5831,15 @@ has({feature})	The result is a Number, which is 1 if the feature {feature} is
 		supported, zero otherwise.  The {feature} argument is a
 		string.  See |feature-list| below.
 		Also see |exists()|.
+		Note that to skip code that has a syntax error when the
+		feature is not available, Vim may skip the rest of the line
+		and miss a following `endif`.  Therfore put the `endif` on a
+		separate line: >
+			if has('feature')
+			  let x = this->breaks->without->the->feature
+			endif
+<		If the `endif` would be in the second line it would not be
+		found.
 
 
 has_key({dict}, {key})					*has_key()*
@@ -8612,7 +8623,12 @@ setpos({expr}, {list})
 setqflist({list} [, {action} [, {what}]])		*setqflist()*
 		Create or replace or add to the quickfix list.
 
-		When {what} is not present, use the items in {list}.  Each
+		If the optional {what} dictionary argument is supplied, then
+		only the items listed in {what} are set. The first {list}
+		argument is ignored.  See below for the supported items in
+		{what}.
+
+		When {what} is not present, the items in {list} or used.  Each
 		item must be a dictionary.  Non-dictionary items in {list} are
 		ignored.  Each dictionary item can contain the following
 		entries:
@@ -8667,10 +8683,7 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 		freed. To add a new quickfix list at the end of the stack,
 		set "nr" in {what} to "$".
 
-		If the optional {what} dictionary argument is supplied, then
-		only the items listed in {what} are set. The first {list}
-		argument is ignored.  The following items can be specified in
-		{what}:
+		The following items can be specified in dictionary {what}:
 		    context	quickfix list context. See |quickfix-context|
 		    efm		errorformat to use when parsing text from
 				"lines". If this is not present, then the
@@ -10486,11 +10499,12 @@ winlayout([{tabnr}])					*winlayout()*
 			" Two horizontally split windows
 			:echo winlayout()
 			['col', [['leaf', 1000], ['leaf', 1001]]]
-			" Three horizontally split windows, with two
-			" vertically split windows in the middle window
+			" The second tab page, with three horizontally split
+			" windows, with two vertically split windows in the
+			" middle window
 			:echo winlayout(2)
-			['col', [['leaf', 1002], ['row', ['leaf', 1003],
-					     ['leaf', 1001]]], ['leaf', 1000]]
+			['col', [['leaf', 1002], ['row', [['leaf', 1003],
+					    ['leaf', 1001]]], ['leaf', 1000]]]
 <
 		Can also be used as a |method|: >
 			GetTabnr()->winlayout()
