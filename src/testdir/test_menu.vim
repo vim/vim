@@ -114,7 +114,7 @@ func Test_menu_errors()
   call assert_fails('emenu Test.Foo.Bar', 'E334:')
   call assert_fails('menutranslate Test', 'E474:')
 
-  unmenu Foo
+  silent! unmenu Foo
   unmenu Test
 endfunc
 

@@ -981,13 +981,15 @@ endfunc
 
 " Test for displaying the popup menu using the right mouse click
 func Test_mouse_popup_menu()
+  CheckFeature menu
   new
   call setline(1, 'popup menu test')
   let save_mouse = &mouse
   let save_term = &term
   let save_ttymouse = &ttymouse
+  let save_mousemodel = &mousemodel
   call test_override('no_query_mouse', 1)
-  set mouse=a term=xterm
+  set mouse=a term=xterm mousemodel=popup
 
   menu PopUp.foo :let g:menustr = 'foo'<CR>
   menu PopUp.bar :let g:menustr = 'bar'<CR>
@@ -1005,6 +1007,7 @@ func Test_mouse_popup_menu()
   let &mouse = save_mouse
   let &term = save_term
   let &ttymouse = save_ttymouse
+  let &mousemodel = save_mousemodel
   call test_override('no_query_mouse', 0)
   close!
 endfunc
@@ -1531,3 +1534,5 @@ func Test_cmdline_literal()
 
   set timeoutlen&
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
