@@ -2400,6 +2400,43 @@ func Test_terminal_in_popup()
   call term_wait(buf, 100)  " wait for terminal to vanish
 
   call StopVimInTerminal(buf)
+  call delete('Xtext')
+  call delete('XtermPopup')
+endfunc
+
+" Check a terminal in popup window uses the default mininum size.
+func Test_terminal_in_popup_min_size()
+  CheckRunVimInTerminal
+
+  let text =<< trim END
+    another text
+    to show
+    in a popup window
+  END
+  call writefile(text, 'Xtext')
+  let lines = [
+	\ 'set t_u7=',
+	\ 'call setline(1, range(20))',
+	\ 'hi PopTerm ctermbg=grey',
+	\ 'func OpenTerm()',
+	\ "  let s:buf = term_start('cat Xtext', #{hidden: 1})",
+	\ '  let g:winid = popup_create(s:buf, #{ border: []})',
+	\ 'endfunc',
+	\ ]
+  call writefile(lines, 'XtermPopup')
+  let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, "\<C-L>")
+  call term_sendkeys(buf, ":call OpenTerm()\<CR>")
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, ":\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_m1', {})
+
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, ":q\<CR>")
+  call term_wait(buf, 100)  " wait for terminal to vanish
+  call StopVimInTerminal(buf)
+  call delete('Xtext')
   call delete('XtermPopup')
 endfunc
 

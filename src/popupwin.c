@@ -1127,7 +1127,7 @@ popup_adjust_position(win_T *wp)
     int		org_height = wp->w_height;
     int		org_leftcol = wp->w_leftcol;
     int		org_leftoff = wp->w_popup_leftoff;
-    int		minwidth;
+    int		minwidth, minheight;
     int		wantline = wp->w_wantline;  // adjusted for textprop
     int		wantcol = wp->w_wantcol;    // adjusted for textprop
     int		use_wantcol = wantcol != 0;
@@ -1249,6 +1249,18 @@ popup_adjust_position(win_T *wp)
 	maxwidth = wp->w_maxwidth;
     }
     minwidth = wp->w_minwidth;
+    minheight = wp->w_minheight;
+#ifdef FEAT_TERMINAL
+    // A terminal popup initially does not have content, use a default minimal
+    // width of 20 characters and height of 5 lines.
+    if (wp->w_buffer->b_term != NULL)
+    {
+	if (minwidth == 0)
+	    minwidth = 20;
+	if (minheight == 0)
+	    minheight = 5;
+    }
+#endif
 
     // start at the desired first line
     if (wp->w_firstline > 0)
@@ -1419,8 +1431,8 @@ popup_adjust_position(win_T *wp)
 
     wp->w_height = wp->w_buffer->b_ml.ml_line_count - wp->w_topline
 								 + 1 + wrapped;
-    if (wp->w_minheight > 0 && wp->w_height < wp->w_minheight)
-	wp->w_height = wp->w_minheight;
+    if (minheight > 0 && wp->w_height < minheight)
+	wp->w_height = minheight;
     if (wp->w_maxheight > 0 && wp->w_height > wp->w_maxheight)
 	wp->w_height = wp->w_maxheight;
     w_height_before_limit = wp->w_height;
