@@ -114,6 +114,7 @@ func Test_menu_errors()
   call assert_fails('emenu Test.Foo.Bar', 'E334:')
   call assert_fails('menutranslate Test', 'E474:')
 
+  unmenu Foo
   unmenu Test
 endfunc
 
@@ -376,7 +377,7 @@ func Test_menu_icon()
         \ enabled: v:true, shortcut: '', modes: 'a', script: v:false,
         \ iconidx: 22, priority: 500, silent: v:false,
         \ rhs: ':echo "BuiltIn22"<CR>', noremenu: v:false},
-        \ menu_info("ToolBar.BuiltIn22"))
+        \ menu_info("ToolBar.BuiltIn22"))
   aunmenu ToolBar.BuiltIn22
 endfunc
 
