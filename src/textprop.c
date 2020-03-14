@@ -664,6 +664,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 			    sizeof(textprop_T));
 
 	    if (lnum == lnum_start)
+	    {
 		if (dir < 0)
 		{
 		    if (col < prop.tp_col)
@@ -671,7 +672,7 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 		}
 		else if (prop.tp_col + prop.tp_len - (prop.tp_len != 0) < col)
 		    continue;
-
+	    }
 	    if (prop.tp_id == id || prop.tp_type == type_id)
 	    {
 		// Check if the starting position has text props.
