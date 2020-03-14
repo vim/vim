@@ -3719,6 +3719,9 @@ cleanup_suggestions(
     suggest_T   *stp = &SUG(*gap, 0);
     int		i;
 
+    if (gap->ga_len == 0)
+	return maxscore;
+
     // Sort the list.
     qsort(gap->ga_data, (size_t)gap->ga_len, sizeof(suggest_T), sug_compare);
 
