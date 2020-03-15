@@ -203,7 +203,7 @@ op_shift(oparg_T *oap, int curs_top, int amount)
 	vim_snprintf((char *)IObuff, IOSIZE,
 		NGETTEXT(msg_line_single, msg_line_plural, oap->line_count),
 		oap->line_count, op, amount);
-	msg((char *)IObuff);
+	msg_attr_keep((char *)IObuff, 0, TRUE);
     }
 
     if (!cmdmod.lockmarks)
