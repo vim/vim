@@ -1,6 +1,6 @@
 language: c
 
-anchors:
+_anchors:
   envs:
     - &tiny-nogui
       BUILD=yes TEST=test COVERAGE=no FEATURES=tiny "CONFOPT='--disable-gui'" SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=no
@@ -85,6 +85,10 @@ anchors:
 
   osx: &osx
     os: osx
+    before_script:
+      - do_test() { "$@"; }
+
+  homebrew: &osx-homebrew
     addons:
       homebrew:
         packages:
@@ -93,13 +97,11 @@ anchors:
     cache:
       directories:
         - /usr/local/Homebrew/Library/Homebrew/vendor/
-        - /usr/local/Homebrew/Library/Taps/
+        - /usr/local/Homebrew/Library/Taps/homebrew/homebrew-core/
     before_install:
       - rvm reset
       # Lua is not installed on Travis OSX
       - export LUA_PREFIX=/usr/local
-    before_script:
-      - do_test() { "$@"; }
 
   coverage: &coverage
     - ~/.local/bin/coveralls -b "${SRCDIR}" -x .xs -e "${SRCDIR}"/if_perl.c -e "${SRCDIR}"/xxd -e "${SRCDIR}"/libvterm --encodings utf-8
@@ -110,8 +112,6 @@ anchors:
       while read log; do
         asan_symbolize < "${log}"
       done < <(find . -type f -name 'asan.*' -size +0)
-
-sudo: false
 
 branches:
   except:
@@ -155,7 +155,7 @@ script:
 # exclude some builds on mac os x and linux
 # on mac os x "tiny" is always without GUI
 # linux: 2*compiler + 5*env + mac: 2*compiler + 2*env
-matrix:
+jobs:
   include:
     - <<: *osx
       name: tiny-nogui/clang
@@ -166,10 +166,12 @@ matrix:
       compiler: gcc
       env: *tiny-nogui
     - <<: *osx
+      <<: *osx-homebrew
       name: huge/clang
       compiler: clang
       env: *osx-huge
     - <<: *osx
+      <<: *osx-homebrew
       name: huge/gcc
       compiler: gcc
       env: *osx-huge
