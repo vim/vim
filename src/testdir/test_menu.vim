@@ -435,11 +435,14 @@ endfunc
 
 " Test for listing the menus using the :menu command
 func Test_show_menus()
+  " In the GUI, tear-off menu items are present in the output below
+  " So skip this test
+  CheckNotGui
   aunmenu *
   call assert_equal(['--- Menus ---'], split(execute('menu'), "\n"))
   nmenu <script> 200.10 Test.nmenu1 :nmenu1<CR>
   nmenu 200.20 Test.nmenu2 :nmenu2<CR>
-  noremenu 200.30 Test.nmenu3 :nmenu3<CR>
+  nnoremenu 200.30 Test.nmenu3 :nmenu3<CR>
   nmenu 200.40 Test.nmenu4 :nmenu4<CR>
   nmenu 200.50 disable Test.nmenu4
   let exp =<< trim [TEXT]
@@ -466,7 +469,7 @@ func Test_tmenu()
   tmenu Test.nmenu2.sub1 nmenu2.sub1
   let exp =<< trim [TEXT]
   --- Menus ---
-  200 Test
+  500 Test
     500 nmenu1
         t  - nmenu1
     500 nmenu2
