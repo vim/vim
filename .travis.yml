@@ -32,7 +32,7 @@ _anchors:
         sources:
           # Need msgfmt 0.19.8 to be able to generate .desktop files
           - sourceline: 'ppa:ricotz/toolchain'
-        packages: &linux-packages
+        packages:
           - autoconf
           - clang
           - lcov
@@ -207,11 +207,6 @@ jobs:
       name: huge/gcc-s390x
       compiler: gcc
       env: *linux-huge
-      addons:
-        apt:
-          packages:
-            - *linux-packages
-            - libtool-bin
     - <<: *linux
       name: huge+coverage/clang
       compiler: clang
