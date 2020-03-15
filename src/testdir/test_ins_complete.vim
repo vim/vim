@@ -429,7 +429,7 @@ func Test_pum_with_preview_win()
   let buf = RunVimInTerminal('-S Xpreviewscript', #{rows: 12})
   call term_wait(buf, 100)
   call term_sendkeys(buf, "Gi\<C-X>\<C-O>")
-  call term_wait(buf, 100)
+  call term_wait(buf, 200)
   call term_sendkeys(buf, "\<C-N>")
   call VerifyScreenDump(buf, 'Test_pum_with_preview_win', {})
 

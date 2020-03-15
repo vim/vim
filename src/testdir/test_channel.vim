@@ -1999,15 +1999,15 @@ func Test_issue_5150()
   endif
   let g:job = job_start(cmd, {})
   call job_stop(g:job)
-  sleep 10m
+  sleep 50m
   call assert_equal(-1, job_info(g:job).exitval)
   let g:job = job_start(cmd, {})
   call job_stop(g:job, 'term')
-  sleep 10m
+  sleep 50m
   call assert_equal(-1, job_info(g:job).exitval)
   let g:job = job_start(cmd, {})
   call job_stop(g:job, 'kill')
-  sleep 10m
+  sleep 50m
   call assert_equal(-1, job_info(g:job).exitval)
 endfunc
 
