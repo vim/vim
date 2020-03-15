@@ -166,6 +166,16 @@ func Test_menu_expand()
 
   set wildmenu&
   unmenu Xmenu
+
+  " Test for expanding popup menus with some hidden items
+  menu Xmenu.foo.A1 a1
+  menu Xmenu.]bar bar
+  menu Xmenu.]baz.B1 b1
+  menu Xmenu.-sep- :
+  call feedkeys(":popup Xmenu.\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"popup Xmenu.foo', @:)
+  unmenu Xmenu
+
 endfunc
 
 " Test for the menu_info() function
@@ -345,6 +355,13 @@ func Test_menu_info()
   call assert_equal('<C-C>:amenu<CR><C-\><C-G>',
         \ menu_info('Test.amenu', 'c').rhs)
   aunmenu Test.amenu
+
+  " Test for hidden menus
+  menu ]Test.menu :menu<CR>
+  call assert_equal(#{name: ']Test', display: ']Test', priority: 500,
+        \ shortcut: '', modes: ' ', submenus: ['menu']},
+        \ menu_info(']Test'))
+  unmenu ]Test
 endfunc
 
 " Test for <special> keyword in a menu with 'cpo' containing '<'
@@ -414,6 +431,50 @@ func Test_popup_menu()
   menu enable PopUp.bar
   call assert_equal(v:true, "PopUp.bar"->menu_info().enabled)
   unmenu PopUp
+endfunc
+
+" Test for listing the menus using the :menu command
+func Test_show_menus()
+  aunmenu *
+  call assert_equal(['--- Menus ---'], split(execute('menu'), "\n"))
+  nmenu <script> 200.10 Test.nmenu1 :nmenu1<CR>
+  nmenu 200.20 Test.nmenu2 :nmenu2<CR>
+  noremenu 200.30 Test.nmenu3 :nmenu3<CR>
+  nmenu 200.40 Test.nmenu4 :nmenu4<CR>
+  nmenu 200.50 disable Test.nmenu4
+  let exp =<< trim [TEXT]
+  --- Menus ---
+  200 Test
+    10 nmenu1
+        n&   :nmenu1<CR>
+    20 nmenu2
+        n    :nmenu2<CR>
+    30 nmenu3
+        n*   :nmenu3<CR>
+    40 nmenu4
+        n  - :nmenu4<CR>
+  [TEXT]
+  call assert_equal(exp, split(execute('nmenu'), "\n"))
+  nunmenu Test
+endfunc
+
+" Test for menu tips
+func Test_tmenu()
+  tunmenu *
+  call assert_equal(['--- Menus ---'], split(execute('tmenu'), "\n"))
+  tmenu Test.nmenu1 nmenu1
+  tmenu Test.nmenu2.sub1 nmenu2.sub1
+  let exp =<< trim [TEXT]
+  --- Menus ---
+  200 Test
+    500 nmenu1
+        t  - nmenu1
+    500 nmenu2
+      500 sub1
+          t  - nmenu2.sub1
+  [TEXT]
+  call assert_equal(exp, split(execute('tmenu'), "\n"))
+  tunmenu Test
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
