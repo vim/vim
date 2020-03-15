@@ -28,7 +28,7 @@ func Test_printoptions()
         \     '']
     exe 'set printoptions=' .. opt
     if has('postscript')
-      hardcopy > Xhardcopy_printoptions
+      1,50hardcopy > Xhardcopy_printoptions
       let lines = readfile('Xhardcopy_printoptions')
       call assert_true(len(lines) > 20, opt)
       call assert_true(lines[0] =~ 'PS-Adobe', opt)
@@ -60,6 +60,30 @@ func Test_printmbfont()
     endif
   endfor
   set printmbfont&
+  bwipe
+endfunc
+
+func Test_printmbcharset()
+  " digraph.txt has plenty of non-latin1 characters.
+  help digraph.txt
+
+  set printmbcharset=ISO10646 printencoding=utf-8 printmbfont=r:WadaMin-Regular
+  hardcopy > Xhardcopy_printmbcharset
+  let lines = readfile('Xhardcopy_printmbcharset')
+  call assert_true(len(lines) > 20)
+  call assert_true(lines[0] =~ 'PS-Adobe')
+
+  set printmbcharset=does-not-exist printencoding=utf-8 printmbfont=r:WadaMin-Regular
+  call assert_fails('hardcopy > Xhardcopy_printmbcharset', 'E456:')
+
+  set printmbcharset=GB_2312-80 printencoding=utf-8 printmbfont=r:WadaMin-Regular
+  call assert_fails('hardcopy > Xhardcopy_printmbcharset', 'E673:')
+
+  set printmbcharset=ISO10646 printencoding=utf-8 printmbfont=
+  call assert_fails('hardcopy > Xhardcopy_printmbcharset', 'E675:')
+
+  call delete('Xhardcopy_printmbcharset')
+  set printmbcharset& printencoding& printmbfont&
   bwipe
 endfunc
 
