@@ -64,15 +64,14 @@ func Test_printmbfont()
 endfunc
 
 func Test_printmbcharset()
-  " FIXME: Unclear why this fails on Windows.
-  if !has('unix')
+  if !has('postscript')
     return
   endif
 
   " digraph.txt has plenty of non-latin1 characters.
   help digraph.txt
-
   set printmbcharset=ISO10646 printencoding=utf-8 printmbfont=r:WadaMin-Regular
+
   hardcopy > Xhardcopy_printmbcharset
   let lines = readfile('Xhardcopy_printmbcharset')
   call assert_true(len(lines) > 20)
@@ -93,7 +92,7 @@ func Test_printmbcharset()
 endfunc
 
 func Test_printexpr()
-  if !has('unix')
+  if !has('postscript')
     return
   endif
 
@@ -126,8 +125,7 @@ func Test_printexpr()
 endfunc
 
 func Test_errors()
-  " FIXME: Windows fails differently than Unix.
-  if has('unix')
+  if has('postscript')
     edit test_hardcopy.vim
     call assert_fails('hardcopy >', 'E324:')
     bwipe
@@ -155,8 +153,7 @@ func Test_dark_background()
 endfun
 
 func Test_empty_buffer()
-  " FIXME: Unclear why this fails on Windows.
-  if has('unix')
+  if has('postscript')
     new
     call assert_equal("\nNo text to be printed", execute('hardcopy'))
     bwipe
