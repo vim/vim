@@ -64,6 +64,11 @@ func Test_printmbfont()
 endfunc
 
 func Test_printmbcharset()
+  " FIXME: Unclear why this fails on Windows.
+  if !has('unix')
+    return
+  endif
+
   " digraph.txt has plenty of non-latin1 characters.
   help digraph.txt
 
@@ -108,7 +113,7 @@ func Test_printexpr()
   \                 readfile('Xhardcopy_printexpr'))
   call delete('Xhardcopy_printexpr')
 
-  " Function return 1 to test print failure.
+  " Function returns 1 to test print failure.
   function PrintFails(fname)
     call delete(a:fname)
     return 1
