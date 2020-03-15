@@ -979,6 +979,39 @@ func Test_term_mouse_middle_click_in_cmdline_to_paste()
   call test_override('no_query_mouse', 0)
 endfunc
 
+" Test for displaying the popup menu using the right mouse click
+func Test_mouse_popup_menu()
+  CheckFeature menu
+  new
+  call setline(1, 'popup menu test')
+  let save_mouse = &mouse
+  let save_term = &term
+  let save_ttymouse = &ttymouse
+  let save_mousemodel = &mousemodel
+  call test_override('no_query_mouse', 1)
+  set mouse=a term=xterm mousemodel=popup
+
+  menu PopUp.foo :let g:menustr = 'foo'<CR>
+  menu PopUp.bar :let g:menustr = 'bar'<CR>
+  menu PopUp.baz :let g:menustr = 'baz'<CR>
+
+  for ttymouse_val in s:ttymouse_values
+    exe 'set ttymouse=' .. ttymouse_val
+    let g:menustr = ''
+    call feedkeys(MouseRightClickCode(1, 4)
+		\ .. MouseRightReleaseCode(1, 4) .. "\<Down>\<Down>\<CR>", "x")
+    call assert_equal('bar', g:menustr)
+  endfor
+
+  unmenu PopUp
+  let &mouse = save_mouse
+  let &term = save_term
+  let &ttymouse = save_ttymouse
+  let &mousemodel = save_mousemodel
+  call test_override('no_query_mouse', 0)
+  close!
+endfunc
+
 " This only checks if the sequence is recognized.
 func Test_term_rgb_response()
   set t_RF=x
@@ -1501,3 +1534,5 @@ func Test_cmdline_literal()
 
   set timeoutlen&
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
