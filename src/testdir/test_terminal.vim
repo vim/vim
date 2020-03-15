@@ -352,22 +352,24 @@ func Test_terminal_postponed_scrollback()
 	\ ], 'XTest_postponed')
   let buf = RunVimInTerminal('-S XTest_postponed', {})
   " Check that the Xtext lines are displayed and in Terminal-Normal mode
-  call VerifyScreenDump(buf, 'Test_terminal_01', {})
+  call VerifyScreenDump(buf, 'Test_terminal_scrollback_1', {})
 
   silent !echo 'one more line' >>Xtext
   " Screen will not change, move cursor to get a different dump
   call term_sendkeys(buf, "k")
-  call VerifyScreenDump(buf, 'Test_terminal_02', {})
+  call VerifyScreenDump(buf, 'Test_terminal_scrollback_2', {})
 
   " Back to Terminal-Job mode, text will scroll and show the extra line.
   call term_sendkeys(buf, "a")
-  call VerifyScreenDump(buf, 'Test_terminal_03', {})
+  call VerifyScreenDump(buf, 'Test_terminal_scrollback_3', {})
 
-  call term_wait(buf)
+  " stop "tail -f"
   call term_sendkeys(buf, "\<C-C>")
-  call term_wait(buf)
+  call term_wait(buf, 50)
+  " stop shell
   call term_sendkeys(buf, "exit\<CR>")
-  call term_wait(buf)
+  call term_wait(buf, 100)
+  " close terminal window
   let tsk_ret = term_sendkeys(buf, ":q\<CR>")
 
   " check type of term_sendkeys() return value
