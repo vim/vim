@@ -194,3 +194,5 @@ func Test_illegal_byte()
   bwipe!
   call delete('Xpstest')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
