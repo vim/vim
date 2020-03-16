@@ -2495,7 +2495,7 @@ func Test_term_nasty_callback()
 
   call term_sendkeys(g:buf0, "exit\<CR>")
   sleep 100m
-  exe g:buf0 .. 'bwipe'
+  exe g:buf0 .. 'bwipe!'
   set hidden&
 endfunc
 

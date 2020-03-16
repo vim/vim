@@ -262,7 +262,7 @@ func CustomComplete(A, L, P)
 endfunc
 
 func CustomCompleteList(A, L, P)
-  return [ "Monday", "Tuesday", "Wednesday" ]
+  return [ "Monday", "Tuesday", "Wednesday", {}]
 endfunc
 
 func Test_CmdCompletion()
@@ -327,6 +327,12 @@ func Test_CmdCompletion()
 
   com! -complete=customlist,CustomComp DoCmd :
   call assert_fails("call feedkeys(':DoCmd \<C-D>', 'tx')", 'E117:')
+
+  " custom completion without a function
+  com! -complete=custom, DoCmd
+  call assert_beeps("call feedkeys(':DoCmd \t', 'tx')")
+
+  delcom DoCmd
 endfunc
 
 func CallExecute(A, L, P)
@@ -542,3 +548,5 @@ func Test_command_list()
   call assert_equal("\nNo user-defined commands found", execute(':command Xxx'))
   call assert_equal("\nNo user-defined commands found", execute('command'))
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
