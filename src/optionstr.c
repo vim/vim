@@ -500,7 +500,7 @@ set_string_option(
     if (is_hidden_option(opt_idx))	// don't set hidden option
 	return NULL;
 
-    s = vim_strsave(value);
+    s = vim_strsave(value == NULL ? (char_u *)"" : value);
     if (s != NULL)
     {
 	varp = (char_u **)get_option_varp_scope(opt_idx,
