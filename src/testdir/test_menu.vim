@@ -19,6 +19,39 @@ func Test_load_menu()
   call assert_equal('', v:errmsg)
 endfunc
 
+func Test_buffer_menu_special_buffers()
+  " Load in runtime menus
+  try
+    source $VIMRUNTIME/menu.vim
+  catch
+    call assert_report('error while loading menus: ' . v:exception)
+  endtry
+
+  let v:errmsg = ''
+  doautocmd LoadBufferMenu VimEnter
+  call assert_equal('', v:errmsg)
+
+  let orig_buffer_menus = execute("nmenu Buffers")
+
+  " Make a new command-line window, test that it creates a new buffer menu,
+  " and test that when we exits the command-line window, the menu item got removed.
+  call feedkeys("q::let cmdline_buffer_menus=execute('nmenu Buffers')\<CR>:q\<CR>", 'ntx')
+  call assert_equal(len(split(orig_buffer_menus, "\n")) + 2, len(split(cmdline_buffer_menus, "\n")))
+  call assert_equal(orig_buffer_menus, execute("nmenu Buffers"))
+
+  " Make a terminal window, and also test that it creates and removes the
+  " buffer menu item.
+  terminal
+  let term_buffer_menus = execute('nmenu Buffers')
+  call assert_equal(len(split(orig_buffer_menus, "\n")) + 2, len(split(term_buffer_menus, "\n")))
+  bd!
+  call assert_equal(orig_buffer_menus, execute("nmenu Buffers"))
+
+  " Remove menus to clean up
+  source $VIMRUNTIME/delmenu.vim
+  call assert_equal('', v:errmsg)
+endfunc
+
 func Test_translate_menu()
   if !has('multi_lang')
     return
