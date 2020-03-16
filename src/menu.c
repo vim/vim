@@ -2882,10 +2882,16 @@ menuitem_getinfo(vimmenu_T *menu, int modes, dict_T *dict)
 	if (bit < MENU_MODES) // just in case, avoid Coverity warning
 	{
 	    if (menu->strings[bit] != NULL)
+	    {
+		char_u *tofree = NULL;
+
 		status = dict_add_string(dict, "rhs",
 			*menu->strings[bit] == NUL
-				? vim_strsave((char_u *)"<Nop>")
-				: str2special_save(menu->strings[bit], FALSE));
+				? (char_u *)"<Nop>"
+				: (tofree = str2special_save(
+						  menu->strings[bit], FALSE)));
+		vim_free(tofree);
+	    }
 	    if (status == OK)
 		status = dict_add_bool(dict, "noremenu",
 					     menu->noremap[bit] == REMAP_NONE);
