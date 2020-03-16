@@ -2,6 +2,7 @@
 
 source check.vim
 source screendump.vim
+source view_util.vim
 
 func Test_complete_tab()
   call writefile(['testfile'], 'Xtestfile')
@@ -767,6 +768,22 @@ func Test_cmdline_complete_various()
   " completion for :set dir= with a backslash
   call feedkeys(":set dir=a\\ b\<C-A>\<C-B>\"\<CR>", 'xt')
   call assert_equal('"set dir=a\ b', @:)
+
+  " completion for the :py3 commands
+  call feedkeys(":py3\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"py3 py3do py3file', @:)
+
+  " redir @" is not the start of a comment. So complete after that
+  call feedkeys(":redir @\" | cwin\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"redir @" | cwindow', @:)
+
+  " completion after a backtick
+  call feedkeys(":e `a1b2c\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"e `a1b2c', @:)
+
+  " completion for the expression register
+  call feedkeys(":\"\<C-R>=float2\t\"\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"float2nr("', @=)
 endfunc
 
 func Test_cmdline_write_alternatefile()
@@ -1244,15 +1261,6 @@ func Test_cmdline_ctrl_g()
   close!
 endfunc
 
-" Return the 'len' characters in screen starting from (row,col)
-func s:ScreenLine(row, col, len)
-  let s = ''
-  for i in range(a:len)
-    let s .= nr2char(screenchar(a:row, a:col + i))
-  endfor
-  return s
-endfunc
-
 " Test for 'wildmode'
 func Test_wildmode()
   func T(a, c, p)
@@ -1261,7 +1269,7 @@ func Test_wildmode()
   command -nargs=1 -complete=custom,T MyCmd
 
   func SaveScreenLine()
-    let g:Sline = s:ScreenLine(&lines - 1, 1, 20)
+    let g:Sline = Screenline(&lines - 1)
     return ''
   endfunc
   cnoremap <expr> <F2> SaveScreenLine()
@@ -1270,7 +1278,7 @@ func Test_wildmode()
   set wildmode=full,list
   let g:Sline = ''
   call feedkeys(":MyCmd \t\t\<F2>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('oneA  oneB  oneC    ', g:Sline)
+  call assert_equal('oneA  oneB  oneC', g:Sline)
   call assert_equal('"MyCmd oneA', @:)
 
   set wildmode=longest,full
@@ -1286,18 +1294,35 @@ func Test_wildmode()
   set wildmode=list:longest
   let g:Sline = ''
   call feedkeys(":MyCmd \t\<F2>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('oneA  oneB  oneC    ', g:Sline)
+  call assert_equal('oneA  oneB  oneC', g:Sline)
   call assert_equal('"MyCmd one', @:)
 
   set wildmode=""
   call feedkeys(":MyCmd \t\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"MyCmd oneA', @:)
 
+  " Test for wildmode=longest with 'fileignorecase' set
+  set wildmode=longest
+  set fileignorecase
+  argadd AA AAA AAAA
+  call feedkeys(":buffer \t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"buffer AA', @:)
+  set fileignorecase&
+
+  " Test for listing files with wildmode=list
+  set wildmode=list
+  let g:Sline = ''
+  call feedkeys(":b A\t\t\<F2>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('AA    AAA   AAAA', g:Sline)
+  call assert_equal('"b A', @:)
+
+  %argdelete
   delcommand MyCmd
   delfunc T
   delfunc SaveScreenLine
   cunmap <F2>
   set wildmode&
+  %bwipe!
 endfunc
 
 " Test for interrupting the command-line completion
