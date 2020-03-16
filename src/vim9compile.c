@@ -129,6 +129,7 @@ static char e_syntax_at[] = N_("E1002: Syntax error at %s");
 static int compile_expr1(char_u **arg,  cctx_T *cctx);
 static int compile_expr2(char_u **arg,  cctx_T *cctx);
 static int compile_expr3(char_u **arg,  cctx_T *cctx);
+static void delete_def_function_contents(dfunc_T *dfunc);
 
 /*
  * Lookup variable "name" in the local scope and return the index.
@@ -4983,9 +4984,11 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 
     if (ufunc->uf_dfunc_idx >= 0)
     {
-	// redefining a function that was compiled before
+	// Redefining a function that was compiled before.
 	dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
-	dfunc->df_deleted = FALSE;
+
+	// Free old instructions.
+	delete_def_function_contents(dfunc);
     }
     else
     {
@@ -5346,16 +5349,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	generate_instr(&cctx, ISN_RETURN);
     }
 
-    // Free old instructions.
-    if (dfunc->df_instr != NULL)
-    {
-	int idx;
-
-	for (idx = 0; idx < dfunc->df_instr_count; ++idx)
-	    delete_instr(dfunc->df_instr + idx);
-	vim_free(dfunc->df_instr);
-    }
-
+    dfunc->df_deleted = FALSE;
     dfunc->df_instr = instr->ga_data;
     dfunc->df_instr_count = instr->ga_len;
     dfunc->df_varcount = cctx.ctx_max_local;
@@ -5370,15 +5364,18 @@ erret:
 	for (idx = 0; idx < instr->ga_len; ++idx)
 	    delete_instr(((isn_T *)instr->ga_data) + idx);
 	ga_clear(instr);
+
 	ufunc->uf_dfunc_idx = -1;
-	--def_functions.ga_len;
+	if (!dfunc->df_deleted)
+	    --def_functions.ga_len;
+
+	// Don't execute this function body.
+	ga_clear_strings(&ufunc->uf_lines);
+
 	if (errormsg != NULL)
 	    emsg(errormsg);
 	else if (called_emsg == called_emsg_before)
 	    emsg(_("E1028: compile_def_function failed"));
-
-	// don't execute this function body
-	ga_clear_strings(&ufunc->uf_lines);
     }
 
     current_sctx = save_current_sctx;
@@ -5498,26 +5495,35 @@ delete_instr(isn_T *isn)
     }
 }
 
+    static void
+delete_def_function_contents(dfunc_T *dfunc)
+{
+    int idx;
+
+    ga_clear(&dfunc->df_def_args_isn);
+
+    if (dfunc->df_instr != NULL)
+    {
+	for (idx = 0; idx < dfunc->df_instr_count; ++idx)
+	    delete_instr(dfunc->df_instr + idx);
+	VIM_CLEAR(dfunc->df_instr);
+    }
+
+    dfunc->df_deleted = TRUE;
+}
+
 /*
  * When a user function is deleted, delete any associated def function.
  */
     void
 delete_def_function(ufunc_T *ufunc)
 {
-    int idx;
-
     if (ufunc->uf_dfunc_idx >= 0)
     {
 	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
 
-	ga_clear(&dfunc->df_def_args_isn);
-
-	for (idx = 0; idx < dfunc->df_instr_count; ++idx)
-	    delete_instr(dfunc->df_instr + idx);
-	VIM_CLEAR(dfunc->df_instr);
-
-	dfunc->df_deleted = TRUE;
+	delete_def_function_contents(dfunc);
     }
 }
 
@@ -5525,20 +5531,16 @@ delete_def_function(ufunc_T *ufunc)
     void
 free_def_functions(void)
 {
-    int i, j;
+    int idx;
 
-    for (i = 0; i < def_functions.ga_len; ++i)
+    for (idx = 0; idx < def_functions.ga_len; ++idx)
     {
-	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + i;
+	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + idx;
 
-	ga_clear(&dfunc->df_def_args_isn);
-
-	for (j = 0; j < dfunc->df_instr_count; ++j)
-	    if (dfunc->df_instr != NULL)
-		delete_instr(dfunc->df_instr + j);
-	VIM_CLEAR(dfunc->df_instr);
+	delete_def_function_contents(dfunc);
     }
-    vim_free(def_functions.ga_data);
+
+    ga_clear(&def_functions);
 }
 #endif
 
