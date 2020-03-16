@@ -783,8 +783,9 @@ call_def_function(
 	    // store $ENV
 	    case ISN_STOREENV:
 		--ectx.ec_stack.ga_len;
-		vim_setenv_ext(iptr->isn_arg.string,
-					       tv_get_string(STACK_TV_BOT(0)));
+		tv = STACK_TV_BOT(0);
+		vim_setenv_ext(iptr->isn_arg.string, tv_get_string(tv));
+		clear_tv(tv);
 		break;
 
 	    // store @r
