@@ -1154,7 +1154,9 @@ getcount:
 
 	    kmsg = keep_msg;
 	    keep_msg = NULL;
-	    // showmode() will clear keep_msg, but we want to use it anyway
+	    // Showmode() will clear keep_msg, but we want to use it anyway.
+	    // First update w_topline.
+	    setcursor();
 	    update_screen(0);
 	    // now reset it, otherwise it's put in the history again
 	    keep_msg = kmsg;
@@ -1167,6 +1169,9 @@ getcount:
 	    }
 	}
 	setcursor();
+#ifdef CURSOR_SHAPE
+	ui_cursor_shape();		// may show different cursor shape
+#endif
 	cursor_on();
 	out_flush();
 	if (msg_scroll || emsg_on_display)
@@ -1280,7 +1285,7 @@ set_vcount_ca(cmdarg_T *cap, int *set_prevcount)
 #endif
 
 /*
- * Check if  highlighting for visual mode is possible, give a warning message
+ * Check if highlighting for Visual mode is possible, give a warning message
  * if not.
  */
     void
