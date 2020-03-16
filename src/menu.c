@@ -2877,25 +2877,29 @@ menuitem_getinfo(vimmenu_T *menu, int modes, dict_T *dict)
 	int		bit;
 
 	// Get the first mode in which the menu is available
-	for (bit = 0; (bit < MENU_MODES) && !((1 << bit) & modes); bit++)
+	for (bit = 0; bit < MENU_MODES && !((1 << bit) & modes); bit++)
 	    ;
-	if (menu->strings[bit] != NULL)
-	    status = dict_add_string(dict, "rhs",
-		    *menu->strings[bit] == NUL ?
-		    vim_strsave((char_u *)"<Nop>") :
-		    str2special_save(menu->strings[bit], FALSE));
-	if (status == OK)
-	    status = dict_add_bool(dict, "noremenu",
-					menu->noremap[bit] == REMAP_NONE);
-	if (status == OK)
-	    status = dict_add_bool(dict, "script",
-					menu->noremap[bit] == REMAP_SCRIPT);
-	if (status == OK)
-	    status = dict_add_bool(dict, "silent", menu->silent[bit]);
-	if (status == OK)
-	    status = dict_add_bool(dict, "enabled",
-		    ((menu->enabled & (1 << bit)) != 0));
+	if (bit < MENU_MODES) // just in case, avoid Coverity warning
+	{
+	    if (menu->strings[bit] != NULL)
+		status = dict_add_string(dict, "rhs",
+			*menu->strings[bit] == NUL
+				? vim_strsave((char_u *)"<Nop>")
+				: str2special_save(menu->strings[bit], FALSE));
+	    if (status == OK)
+		status = dict_add_bool(dict, "noremenu",
+					     menu->noremap[bit] == REMAP_NONE);
+	    if (status == OK)
+		status = dict_add_bool(dict, "script",
+					   menu->noremap[bit] == REMAP_SCRIPT);
+	    if (status == OK)
+		status = dict_add_bool(dict, "silent", menu->silent[bit]);
+	    if (status == OK)
+		status = dict_add_bool(dict, "enabled",
+					  ((menu->enabled & (1 << bit)) != 0));
+	}
     }
+
     // If there are submenus, add all the submenu display names
     if (status == OK && menu->children != NULL)
     {
