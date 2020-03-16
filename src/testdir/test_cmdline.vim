@@ -401,6 +401,7 @@ func Test_getcompletion()
   set tags&
 
   call assert_fails('call getcompletion("", "burp")', 'E475:')
+  call assert_fails('call getcompletion("abc", [])', 'E474:')
 endfunc
 
 func Test_shellcmd_completion()
@@ -639,6 +640,133 @@ func Test_cmdline_complete_env_variable()
   call assert_match('"edit $X_VIM_TEST_COMPLETE_ENV', @:)
 
   unlet $X_VIM_TEST_COMPLETE_ENV
+endfunc
+
+" Test for various command-line completion
+func Test_cmdline_complete_various()
+  " completion for a command starting with a comment
+  call feedkeys(": :|\"\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\" :|\"\<C-A>", @:)
+
+  " completion for a range followed by a comment
+  call feedkeys(":1,2\"\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"1,2\"\<C-A>", @:)
+
+  " completion for :k command
+  call feedkeys(":ka\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"ka\<C-A>", @:)
+
+  " completion for short version of the :s command
+  call feedkeys(":sI \<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"sI \<C-A>", @:)
+
+  " completion for :write command
+  call mkdir('Xdir')
+  call writefile(['one'], 'Xdir/Xfile1')
+  let save_cwd = getcwd()
+  cd Xdir
+  call feedkeys(":w >> \<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"w >> Xfile1", @:)
+  call chdir(save_cwd)
+  call delete('Xdir', 'rf')
+
+  " completion for :w ! and :r ! commands
+  call feedkeys(":w !invalid_xyz_cmd\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"w !invalid_xyz_cmd", @:)
+  call feedkeys(":r !invalid_xyz_cmd\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"r !invalid_xyz_cmd", @:)
+
+  " completion for :>> and :<< commands
+  call feedkeys(":>>>\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\">>>\<C-A>", @:)
+  call feedkeys(":<<<\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"<<<\<C-A>", @:)
+
+  " completion for command with +cmd argument
+  call feedkeys(":buffer +/pat Xabc\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"buffer +/pat Xabc", @:)
+  call feedkeys(":buffer +/pat\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"buffer +/pat\<C-A>", @:)
+
+  " completion for a command with a trailing comment
+  call feedkeys(":ls \" comment\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"ls \" comment\<C-A>", @:)
+
+  " completion for a command with a trailing command
+  call feedkeys(":ls | ls\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"ls | ls", @:)
+
+  " completion for a command with an CTRL-V escaped argument
+  call feedkeys(":ls \<C-V>\<C-V>a\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"ls \<C-V>a\<C-A>", @:)
+
+  " completion for a command that doesn't take additional arguments
+  call feedkeys(":all abc\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"all abc\<C-A>", @:)
+
+  " completion for a command with a command modifier
+  call feedkeys(":topleft new\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"topleft new", @:)
+
+  " completion for the :match command
+  call feedkeys(":match Search /pat/\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"match Search /pat/\<C-A>", @:)
+
+  " completion for the :s command
+  call feedkeys(":s/from/to/g\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"s/from/to/g\<C-A>", @:)
+
+  " completion for the :dlist command
+  call feedkeys(":dlist 10 /pat/ a\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"dlist 10 /pat/ a\<C-A>", @:)
+
+  " completion for the :doautocmd command
+  call feedkeys(":doautocmd User MyCmd a.c\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"doautocmd User MyCmd a.c\<C-A>", @:)
+
+  " completion for the :augroup command
+  augroup XTest
+  augroup END
+  call feedkeys(":augroup X\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"augroup XTest", @:)
+  augroup! XTest
+
+  " completion for the :unlet command
+  call feedkeys(":unlet a b c\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"unlet a b c", @:)
+
+  " completion for the :bdelete command
+  call feedkeys(":bdel a b c\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"bdel a b c", @:)
+
+  " completion for the :mapclear command
+  call feedkeys(":mapclear \<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"mapclear <buffer>", @:)
+
+  " completion for user defined commands with menu names
+  menu Test.foo :ls<CR>
+  com -nargs=* -complete=menu MyCmd
+  call feedkeys(":MyCmd Te\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd Test.', @:)
+  delcom MyCmd
+  unmenu Test
+
+  " completion for user defined commands with mappings
+  mapclear
+  map <F3> :ls<CR>
+  com -nargs=* -complete=mapping MyCmd
+  call feedkeys(":MyCmd <F\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"MyCmd <F3>', @:)
+  mapclear
+  delcom MyCmd
+
+  " completion for :set path= with multiple backslashes
+  call feedkeys(":set path=a\\\\\\ b\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set path=a\\\ b', @:)
+
+  " completion for :set dir= with a backslash
+  call feedkeys(":set dir=a\\ b\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set dir=a\ b', @:)
 endfunc
 
 func Test_cmdline_write_alternatefile()
