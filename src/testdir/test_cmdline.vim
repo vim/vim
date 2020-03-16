@@ -732,8 +732,8 @@ func Test_cmdline_complete_various()
   augroup! XTest
 
   " completion for the :unlet command
-  call feedkeys(":unlet a b c\<C-A>\<C-B>\"\<CR>", 'xt')
-  call assert_equal("\"unlet a b c", @:)
+  call feedkeys(":unlet one two\<C-A>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"unlet one two", @:)
 
   " completion for the :bdelete command
   call feedkeys(":bdel a b c\<C-A>\<C-B>\"\<CR>", 'xt')
