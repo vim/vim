@@ -943,6 +943,7 @@ func_clear_items(ufunc_T *fp)
     VIM_CLEAR(fp->uf_name_exp);
     VIM_CLEAR(fp->uf_arg_types);
     VIM_CLEAR(fp->uf_def_arg_idx);
+    VIM_CLEAR(fp->uf_va_name);
     ga_clear(&fp->uf_type_list);
 #ifdef FEAT_PROFILE
     VIM_CLEAR(fp->uf_tml_count);
