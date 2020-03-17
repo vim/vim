@@ -207,6 +207,7 @@ jobs:
       name: huge/gcc-s390x
       compiler: gcc
       env: *linux-huge
+      services: []
     - <<: *linux
       name: huge+coverage/clang
       compiler: clang
