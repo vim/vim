@@ -6419,8 +6419,8 @@ msgid "E1004: white space required before and after '%s'"
 msgstr "E1004: spacetoj bezonataj ĉirkaŭ '%s'"
 
 #, c-format
-msgid "E1006: %s is used as an argument"
-msgstr "E1006: %s estas uzata kiel argumento"
+msgid "E1006: %.*s is used as an argument"
+msgstr "E1006: %.*s estas uzata kiel argumento"
 
 msgid "E1007: No white space allowed before <"
 msgstr "E1007: Neniu spaceto permesebla antaŭ ol <"
