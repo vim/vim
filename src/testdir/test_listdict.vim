@@ -559,6 +559,18 @@ func Test_let_lock_list()
   unlet l
 endfunc
 
+" Locking part of the list
+func Test_let_lock_list_items()
+  let l = [1, 2, 3, 4]
+  lockvar l[2:]
+  call assert_equal(0, islocked('l[0]'))
+  call assert_equal(1, islocked('l[2]'))
+  call assert_equal(1, islocked('l[3]'))
+  call assert_fails('let l[2] = 10', 'E741:')
+  call assert_fails('let l[3] = 20', 'E741:')
+  unlet l
+endfunc
+
 " lockvar/islocked() triggering script autoloading
 func Test_lockvar_script_autoload()
   let old_rtp = &rtp
@@ -791,3 +803,43 @@ func Test_scope_dict()
   " Test for v:
   call s:check_scope_dict('v', v:true)
 endfunc
+
+" Test for deep nesting of lists (> 100)
+func Test_deep_nested_list()
+  let deep_list = []
+  let l = deep_list
+  for i in range(102)
+    let newlist = []
+    call add(l, newlist)
+    let l = newlist
+  endfor
+  call add(l, 102)
+
+  call assert_fails('let m = deepcopy(deep_list)', 'E698:')
+  call assert_fails('lockvar 110 deep_list', 'E743:')
+  call assert_fails('unlockvar 110 deep_list', 'E743:')
+  call assert_fails('let x = execute("echo deep_list")', 'E724:')
+  call test_garbagecollect_now()
+  unlet deep_list
+endfunc
+
+" Test for deep nesting of dicts (> 100)
+func Test_deep_nested_dict()
+  let deep_dict = {}
+  let d = deep_dict
+  for i in range(102)
+    let newdict = {}
+    let d.k = newdict
+    let d = newdict
+  endfor
+  let d.k = 'v'
+
+  call assert_fails('let m = deepcopy(deep_dict)', 'E698:')
+  call assert_fails('lockvar 110 deep_dict', 'E743:')
+  call assert_fails('unlockvar 110 deep_dict', 'E743:')
+  call assert_fails('let x = execute("echo deep_dict")', 'E724:')
+  call test_garbagecollect_now()
+  unlet deep_dict
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
