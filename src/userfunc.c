@@ -942,6 +942,8 @@ func_clear_items(ufunc_T *fp)
     ga_clear_strings(&(fp->uf_lines));
     VIM_CLEAR(fp->uf_name_exp);
     VIM_CLEAR(fp->uf_arg_types);
+    VIM_CLEAR(fp->uf_def_arg_idx);
+    VIM_CLEAR(fp->uf_va_name);
     ga_clear(&fp->uf_type_list);
 #ifdef FEAT_PROFILE
     VIM_CLEAR(fp->uf_tml_count);
@@ -3086,11 +3088,11 @@ ex_function(exarg_T *eap)
 
 erret:
     ga_clear_strings(&newargs);
-    ga_clear_strings(&argtypes);
     ga_clear_strings(&default_args);
 errret_2:
     ga_clear_strings(&newlines);
 ret_free:
+    ga_clear_strings(&argtypes);
     vim_free(skip_until);
     vim_free(line_to_free);
     vim_free(fudi.fd_newkey);
