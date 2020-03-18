@@ -94,7 +94,7 @@ func RunVimInTerminal(arguments, options)
   endtry
 
   " Starting a terminal to run Vim is always considered flaky.
-  let test_is_flaky = 1
+  let g:test_is_flaky = 1
 
   return buf
 endfunc
@@ -102,7 +102,7 @@ endfunc
 " Stop a Vim running in terminal buffer "buf".
 func StopVimInTerminal(buf)
   " Using a terminal to run Vim is always considered flaky.
-  let test_is_flaky = 1
+  let g:test_is_flaky = 1
 
   call assert_equal("running", term_getstatus(a:buf))
 

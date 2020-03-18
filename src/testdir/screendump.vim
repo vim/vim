@@ -25,7 +25,7 @@ func VerifyScreenDump(buf, filename, options, ...)
   let testfile = 'failed/' . a:filename . '.dump'
 
   " Starting a terminal to make a screendump is always considered flaky.
-  let test_is_flaky = 1
+  let g:test_is_flaky = 1
 
   " Redraw to execute the code that updates the screen.  Otherwise we get the
   " text and attributes only from the internal buffer.
