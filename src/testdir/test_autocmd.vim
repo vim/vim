@@ -1868,6 +1868,8 @@ endfunc
 func Test_Changed_FirstTime()
   CheckFeature terminal
   CheckNotGui
+  " Starting a terminal to run Vim is always considered flaky.
+  let test_is_flaky = 1
 
   " Prepare file for TextChanged event.
   call writefile([''], 'Xchanged.txt')

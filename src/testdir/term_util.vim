@@ -93,11 +93,17 @@ func RunVimInTerminal(arguments, options)
     call assert_report('RunVimInTerminal() failed, screen contents: ' . join(lines, "<NL>"))
   endtry
 
+  " Starting a terminal to run Vim is always considered flaky.
+  let test_is_flaky = 1
+
   return buf
 endfunc
 
 " Stop a Vim running in terminal buffer "buf".
 func StopVimInTerminal(buf)
+  " Using a terminal to run Vim is always considered flaky.
+  let test_is_flaky = 1
+
   call assert_equal("running", term_getstatus(a:buf))
 
   " CTRL-O : works both in Normal mode and Insert mode to start a command line.
