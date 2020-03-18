@@ -518,6 +518,15 @@ func Test_raw_pipe()
     endif
   endfor
   call assert_equal(1, found)
+
+  " Try to use the job and channel where a number is expected. This is not
+  " related to testing the raw pipe. This test is here just to reuse the
+  " already created job/channel.
+  let ch = job_getchannel(job)
+  call assert_fails('let i = job + 1', 'E910:')
+  call assert_fails('let j = ch + 1', 'E913:')
+  call assert_fails('echo 2.0 == job', 'E911:')
+  call assert_fails('echo 2.0 == ch', 'E914:')
 endfunc
 
 func Test_raw_pipe_blob()
@@ -2025,3 +2034,5 @@ func Test_issue_5485()
   call WaitForAssert({-> assert_equal("local local", trim(g:Ch_reply))})
   unlet $VAR1
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

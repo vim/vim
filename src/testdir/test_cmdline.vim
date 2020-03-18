@@ -195,35 +195,6 @@ func Test_highlight_completion()
   call assert_equal([], getcompletion('A', 'highlight'))
 endfunc
 
-func Test_expr_completion()
-  if !has('cmdline_compl')
-    return
-  endif
-  for cmd in [
-	\ 'let a = ',
-	\ 'const a = ',
-	\ 'if',
-	\ 'elseif',
-	\ 'while',
-	\ 'for',
-	\ 'echo',
-	\ 'echon',
-	\ 'execute',
-	\ 'echomsg',
-	\ 'echoerr',
-	\ 'call',
-	\ 'return',
-	\ 'cexpr',
-	\ 'caddexpr',
-	\ 'cgetexpr',
-	\ 'lexpr',
-	\ 'laddexpr',
-	\ 'lgetexpr']
-    call feedkeys(":" . cmd . " getl\<Tab>\<Home>\"\<CR>", 'xt')
-    call assert_equal('"' . cmd . ' getline(', getreg(':'))
-  endfor
-endfunc
-
 func Test_getcompletion()
   if !has('cmdline_compl')
     return
@@ -612,7 +583,7 @@ func Test_cmdline_complete_bang()
   endif
 endfunc
 
-funct Test_cmdline_complete_languages()
+func Test_cmdline_complete_languages()
   let lang = substitute(execute('language messages'), '.*"\(.*\)"$', '\1', '')
 
   call feedkeys(":language \<c-a>\<c-b>\"\<cr>", 'tx')
@@ -636,10 +607,8 @@ endfunc
 
 func Test_cmdline_complete_env_variable()
   let $X_VIM_TEST_COMPLETE_ENV = 'foo'
-
   call feedkeys(":edit $X_VIM_TEST_COMPLETE_E\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_match('"edit $X_VIM_TEST_COMPLETE_ENV', @:)
-
   unlet $X_VIM_TEST_COMPLETE_ENV
 endfunc
 
@@ -781,17 +750,13 @@ func Test_cmdline_complete_various()
   call feedkeys(":e `a1b2c\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"e `a1b2c', @:)
 
-  " completion for the expression register
-  call feedkeys(":\"\<C-R>=float2\t\"\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"float2nr("', @=)
-
   " completion for :language command with an invalid argument
   call feedkeys(":language dummy \t\<C-B>\"\<CR>", 'xt')
   call assert_equal("\"language dummy \t", @:)
 
   " completion for commands after a :global command
-  call feedkeys(":g/a\\xb/call float2\t\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"g/a\xb/call float2nr(', @:)
+  call feedkeys(":g/a\\xb/clearj\t\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"g/a\xb/clearjumps', @:)
 
   " completion with ambiguous user defined commands
   com TCmd1 echo 'TCmd1'
@@ -804,20 +769,6 @@ func Test_cmdline_complete_various()
   " completion after a range followed by a pipe (|) character
   call feedkeys(":1,10 | chist\t\<C-B>\"\<CR>", 'xt')
   call assert_equal('"1,10 | chistory', @:)
-
-  " completion for window local variables
-  let w:wvar1 = 10
-  let w:wvar2 = 10
-  call feedkeys(":echo w:wvar\<C-A>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"echo w:wvar1 w:wvar2', @:)
-  unlet w:wvar1 w:wvar2
-
-  " completion for tab local variables
-  let t:tvar1 = 10
-  let t:tvar2 = 10
-  call feedkeys(":echo t:tvar\<C-A>\<C-B>\"\<CR>", 'xt')
-  call assert_equal('"echo t:tvar1 t:tvar2', @:)
-  unlet t:tvar1 t:tvar2
 endfunc
 
 func Test_cmdline_write_alternatefile()

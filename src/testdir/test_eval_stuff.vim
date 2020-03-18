@@ -234,3 +234,5 @@ func Test_numbersize()
   " correctly.
   call assert_equal(64, v:numbersize)
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
