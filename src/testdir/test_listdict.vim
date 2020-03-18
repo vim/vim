@@ -823,4 +823,23 @@ func Test_deep_nested_list()
   unlet deep_list
 endfunc
 
+" Test for deep nesting of dicts (> 100)
+func Test_deep_nested_dict()
+  let deep_dict = {}
+  let d = deep_dict
+  for i in range(102)
+    let newdict = {}
+    let d.k = newdict
+    let d = newdict
+  endfor
+  let d.k = 'v'
+
+  call assert_fails('let m = deepcopy(deep_dict)', 'E698:')
+  call assert_fails('lockvar 110 deep_dict', 'E743:')
+  call assert_fails('unlockvar 110 deep_dict', 'E743:')
+  call assert_fails('let x = execute("echo deep_dict")', 'E724:')
+  call test_garbagecollect_now()
+  unlet deep_dict
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
