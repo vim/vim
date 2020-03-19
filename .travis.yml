@@ -69,11 +69,7 @@ _anchors:
           export DISPLAY=:99.0
           sh -e /etc/init.d/xvfb start && sleep 3
         fi
-      # Sound testing works only on amd64
-      - |
-        if [[ "${TRAVIS_CPU_ARCH}" = "amd64" ]]; then
-          sudo modprobe snd-dummy
-        fi
+      - sudo bash ci/load-snd-dummy.sh || true
       - sudo usermod -a -G audio $USER
       - do_test() { sg audio "sg $(id -gn) '$*'"; }
 
