@@ -175,9 +175,9 @@ NEW_TESTS = \
 	test_matchadd_conceal \
 	test_matchadd_conceal_utf8 \
 	test_memory_usage \
-	test_method \
 	test_menu \
 	test_messages \
+	test_method \
 	test_mksession \
 	test_mksession_utf8 \
 	test_modeline \
@@ -402,6 +402,7 @@ NEW_TESTS_RES = \
 	test_matchadd_conceal.res \
 	test_matchadd_conceal_utf8.res \
 	test_memory_usage.res \
+	test_menu.res \
 	test_messages.res \
 	test_method.res \
 	test_mksession.res \
