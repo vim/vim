@@ -222,4 +222,8 @@ func Test_find_cmd()
   call CleanFiles()
   let &path = save_path
   close
+
+  call assert_fails('find', 'E471:')
+  call assert_fails('sfind', 'E471:')
+  call assert_fails('tabfind', 'E471:')
 endfunc

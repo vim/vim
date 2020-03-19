@@ -778,7 +778,7 @@ def Test_disassemble_compare()
     nr += 1
   endfor
 
-  " delete('Xdisassemble')
+  delete('Xdisassemble')
 enddef
 
 def s:Execute()
