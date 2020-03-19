@@ -83,8 +83,7 @@ Stuff that does not work yet:
   still playing with the scrollbar it won't change it itself. I provided a
   workaround which kicks in when the window is activated or deactivated (so it
   works best with focus- follows-mouse turned on).
-- The cursor does not flash (very low priority; I'm not sure I even like it
-  when it flashes)
+- The cursor does not flash.
 
 
 4. The $VIM directory					*haiku-vimdir*
