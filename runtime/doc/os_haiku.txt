@@ -224,10 +224,11 @@ Thank you, all!
 
 13. Bugs & things To Do					*haiku-bugs*
 
-The port is under development now and far away from the perfect state. Bug
-reports, patches and wishes are welcome.
+The port is under development now and far away from the perfect state. For bug
+reports, patches and wishes, please use the Vim mailing list or Vim Github
+repository.
 
- -Siarzhuk Zharski <imker@gmx.li>
-
+Mailing list: https://www.vim.org/maillist.php
+Vim Github repository: https://github.com/vim/vim
 
  vim:tw=78:ts=8:ft=help:norl:
