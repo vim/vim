@@ -656,7 +656,15 @@ func Test_buftype()
   call setline(1, ['L1'])
   set buftype=nowrite
   call assert_fails('write', 'E382:')
-  close!
+
+  for val in ['', 'nofile', 'nowrite', 'acwrite', 'quickfix', 'help', 'terminal', 'prompt', 'popup']
+    exe 'set buftype=' .. val
+    call writefile(['something'], 'XBuftype')
+    call assert_fails('write XBuftype', 'E13:', 'with buftype=' .. val)
+  endfor
+
+  call delete('XBuftype')
+  bwipe!
 endfunc
 
 " Test for the 'shellquote' option
