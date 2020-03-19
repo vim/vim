@@ -38,7 +38,8 @@
 #	  is yes)
 #	Global IME support: GIME=yes (requires GUI=yes)
 #
-#	Terminal support: TERMINAL=yes (default is yes)
+#	Terminal support: TERMINAL=yes (default is yes if FEATURES is HUGE)
+#	  Will also enable CHANNEL
 #
 #	Sound support: SOUND=yes (default is yes)
 #
@@ -109,13 +110,13 @@
 #	PostScript printing: POSTSCRIPT=yes (default is no)
 #
 #	Netbeans Support: NETBEANS=[yes or no] (default is yes if GUI is yes)
-#	Requires CHANNEL.
+#	  Requires CHANNEL.
 #
 #	Netbeans Debugging Support: NBDEBUG=[yes or no] (should be no, yes
 #	doesn't work)
 #
 #	Inter process communication: CHANNEL=[yes or no] (default is yes if GUI
-#	is yes)
+#	is yes or TERMINAL is yes)
 #
 #	XPM Image Support: XPM=[path to XPM directory]
 #	Default is "xpm", using the files included in the distribution.
@@ -388,7 +389,7 @@ NETBEANS = $(GUI)
 !endif
 
 !ifndef CHANNEL
-! if "$(FEATURES)"=="HUGE"
+! if "$(FEATURES)"=="HUGE" || "$(TERMINAL)"=="yes"
 CHANNEL = yes
 ! else
 CHANNEL = $(GUI)
