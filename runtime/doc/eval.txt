@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Mar 14
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Mar 16
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5839,8 +5839,8 @@ has({feature})	The result is a Number, which is 1 if the feature {feature} is
 			if has('feature')
 			  let x = this->breaks->without->the->feature
 			endif
-<		If the `endif` would be in the second line it would not be
-		found.
+<		If the `endif` would be moved to the second line as "| endif" it
+		would not be found.
 
 
 has_key({dict}, {key})					*has_key()*
@@ -7190,11 +7190,11 @@ menu_info({name} [, {mode}])				*menu_info()*
 		Returns an empty dictionary if the menu item is not found.
 
 		Examples: >
-			:echo maparg('Edit.Cut')
-			:echo maparg('File.Save', 'n')
+			:echo menu_info('Edit.Cut')
+			:echo menu_info('File.Save', 'n')
 <
 		Can also be used as a |method|: >
-			GetMenuName()->maparg('v')
+			GetMenuName()->menu_info('v')
 
 
 <							*min()*

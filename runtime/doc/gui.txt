@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.2.  Last change: 2019 Nov 16
+*gui.txt*       For Vim version 8.2.  Last change: 2020 Mar 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -855,6 +855,8 @@ Special characters in the list, just before the rhs:
 *	The menu was defined with "nore" to disallow remapping.
 &	The menu was defined with "<script>" to allow remapping script-local
 	mappings only.
+s	The menu was defined with "<silent>" to avoid showing what it is
+	mapped to when triggered.
 -	The menu was disabled.
 
 Note that hitting <Tab> while entering a menu name after a menu command may

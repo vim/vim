@@ -1,4 +1,4 @@
-*windows.txt*   For Vim version 8.2.  Last change: 2019 Dec 07
+*windows.txt*   For Vim version 8.2.  Last change: 2020 Mar 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -215,7 +215,7 @@ CTRL-W CTRL_N						*CTRL-W_CTRL-N*
 		height).  Reduces the current window height to create room
 		(and others, if the 'equalalways' option is set).
 
-:[N]sv[iew] [++opt] [+cmd] {file}		*:sv* *:sview* *splitview*
+:[N]sv[iew] [++opt] [+cmd] [file]		*:sv* *:sview* *splitview*
 		Same as ":split", but set 'readonly' option for this buffer.
 
 :[N]sf[ind] [++opt] [+cmd] {file}	     *:sf* *:sfi* *:sfind* *splitfind*

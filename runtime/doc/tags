@@ -1267,6 +1267,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +X11	various.txt	/*+X11*
 +acl	various.txt	/*+acl*
 +arabic	various.txt	/*+arabic*
++autochdir	various.txt	/*+autochdir*
 +autocmd	various.txt	/*+autocmd*
 +autoservername	various.txt	/*+autoservername*
 +balloon_eval	various.txt	/*+balloon_eval*
@@ -7734,7 +7735,11 @@ menu-changes-5.4	version5.txt	/*menu-changes-5.4*
 menu-examples	gui.txt	/*menu-examples*
 menu-priority	gui.txt	/*menu-priority*
 menu-separator	gui.txt	/*menu-separator*
+menu-shortcut	gui.txt	/*menu-shortcut*
+menu-text	gui.txt	/*menu-text*
+menu-tips	gui.txt	/*menu-tips*
 menu.vim	gui.txt	/*menu.vim*
+menu_info()	eval.txt	/*menu_info()*
 menus	gui.txt	/*menus*
 merge	diff.txt	/*merge*
 message-history	message.txt	/*message-history*
@@ -9568,6 +9573,7 @@ toggle	options.txt	/*toggle*
 toggle-revins	version4.txt	/*toggle-revins*
 tolower()	eval.txt	/*tolower()*
 toolbar-icon	gui.txt	/*toolbar-icon*
+tooltips	gui.txt	/*tooltips*
 toupper()	eval.txt	/*toupper()*
 tr()	eval.txt	/*tr()*
 trim()	eval.txt	/*trim()*
