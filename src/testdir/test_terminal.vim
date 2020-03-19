@@ -17,6 +17,7 @@ func Run_shell_in_terminal(options)
   else
     let buf = term_start(&shell, a:options)
   endif
+  let g:test_is_flaky = 1
 
   let termlist = term_list()
   call assert_equal(1, len(termlist))

@@ -23,6 +23,9 @@ let s:chopt = {}
 " Run "testfunc" after starting the server and stop the server afterwards.
 func s:run_server(testfunc, ...)
   call RunServer('test_channel.py', a:testfunc, a:000)
+
+  " communicating with a server can be flaky
+  let g:test_is_flaky = 1
 endfunc
 
 " Return a list of open files.
@@ -415,6 +418,8 @@ endfunc
 " Test that trying to connect to a non-existing port fails quickly.
 func Test_connect_waittime()
   CheckFunction reltimefloat
+  " this is timing sensitive
+  let g:test_is_flaky = 1
 
   call ch_log('Test_connect_waittime()')
   let start = reltime()
