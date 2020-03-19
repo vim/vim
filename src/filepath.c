@@ -1929,7 +1929,8 @@ f_writefile(typval_T *argvars, typval_T *rettv)
     }
     else
     {
-	semsg(_(e_invarg2), "writefile()");
+	semsg(_(e_invarg2),
+		_("writefile() first argument must be a List or a Blob"));
 	return;
     }
 
