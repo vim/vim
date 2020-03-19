@@ -5,9 +5,8 @@ source screendump.vim
 source check.vim
 
 func Test_search_cmdline()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   " need to disable char_avail,
   " so that expansion of commandline works
   call test_override("char_avail", 1)
@@ -202,9 +201,8 @@ func Test_search_cmdline()
 endfunc
 
 func Test_search_cmdline2()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   " need to disable char_avail,
   " so that expansion of commandline works
   call test_override("char_avail", 1)
@@ -446,9 +444,8 @@ func Incsearch_cleanup()
 endfunc
 
 func Test_search_cmdline3()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   call Cmdline3_prep()
   1
   " first match
@@ -459,9 +456,8 @@ func Test_search_cmdline3()
 endfunc
 
 func Test_search_cmdline3s()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   call Cmdline3_prep()
   1
   call feedkeys(":%s/the\<c-l>/xxx\<cr>", 'tx')
@@ -485,9 +481,8 @@ func Test_search_cmdline3s()
 endfunc
 
 func Test_search_cmdline3g()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   call Cmdline3_prep()
   1
   call feedkeys(":g/the\<c-l>/d\<cr>", 'tx')
@@ -508,9 +503,8 @@ func Test_search_cmdline3g()
 endfunc
 
 func Test_search_cmdline3v()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   call Cmdline3_prep()
   1
   call feedkeys(":v/the\<c-l>/d\<cr>", 'tx')
@@ -525,9 +519,8 @@ func Test_search_cmdline3v()
 endfunc
 
 func Test_search_cmdline4()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   " need to disable char_avail,
   " so that expansion of commandline works
   call test_override("char_avail", 1)
@@ -559,9 +552,8 @@ func Test_search_cmdline4()
 endfunc
 
 func Test_search_cmdline5()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   " Do not call test_override("char_avail", 1) so that <C-g> and <C-t> work
   " regardless char_avail.
   new
@@ -581,9 +573,8 @@ endfunc
 func Test_search_cmdline6()
   " Test that consecutive matches
   " are caught by <c-g>/<c-t>
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   " need to disable char_avail,
   " so that expansion of commandline works
   call test_override("char_avail", 1)
@@ -621,9 +612,8 @@ endfunc
 func Test_search_cmdline7()
   " Test that an pressing <c-g> in an empty command line
   " does not move the cursor
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   " need to disable char_avail,
   " so that expansion of commandline works
   call test_override("char_avail", 1)
@@ -754,9 +744,8 @@ func Test_search_regexp()
 endfunc
 
 func Test_search_cmdline_incsearch_highlight()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   set incsearch hlsearch
   " need to disable char_avail,
   " so that expansion of commandline works
@@ -874,9 +863,8 @@ func Test_search_cmdline_incsearch_highlight_attr()
 endfunc
 
 func Test_incsearch_cmdline_modifier()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   call test_override("char_avail", 1)
   new
   call setline(1, ['foo'])
@@ -918,12 +906,9 @@ func Test_incsearch_scrolling()
 endfunc
 
 func Test_incsearch_search_dump()
-  if !exists('+incsearch')
-    return
-  endif
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckOption incsearch
+  CheckScreendump
+
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
 	\ 'for n in range(1, 8)',
@@ -951,9 +936,8 @@ func Test_incsearch_search_dump()
 endfunc
 
 func Test_incsearch_substitute()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   call test_override("char_avail", 1)
   new
   set incsearch
@@ -973,12 +957,9 @@ endfunc
 
 " Similar to Test_incsearch_substitute() but with a screendump halfway.
 func Test_incsearch_substitute_dump()
-  if !exists('+incsearch')
-    return
-  endif
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckOption incsearch
+  CheckScreendump
+
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
 	\ 'for n in range(1, 10)',
@@ -1085,12 +1066,8 @@ func Test_incsearch_substitute_dump()
 endfunc
 
 func Test_incsearch_highlighting()
-  if !exists('+incsearch')
-    return
-  endif
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckOption incsearch
+  CheckScreendump
 
   call writefile([
 	\ 'set incsearch hlsearch',
@@ -1106,12 +1083,15 @@ func Test_incsearch_highlighting()
   call term_sendkeys(buf, ":%s;ello/the")
   call VerifyScreenDump(buf, 'Test_incsearch_substitute_15', {})
   call term_sendkeys(buf, "<Esc>")
+
+  call StopVimInTerminal(buf)
+  call delete('Xis_subst_hl_script')
 endfunc
 
 func Test_incsearch_with_change()
-  if !has('timers') || !exists('+incsearch') || !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps and/or timers feature and/or incsearch option missing'
-  endif
+  CheckFeature timers
+  CheckOption incsearch
+  CheckScreendump
 
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
@@ -1134,12 +1114,9 @@ endfunc
 
 " Similar to Test_incsearch_substitute_dump() for :sort
 func Test_incsearch_sort_dump()
-  if !exists('+incsearch')
-    return
-  endif
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckOption incsearch
+  CheckScreendump
+
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
 	\ 'call setline(1, ["another one 2", "that one 3", "the one 1"])',
@@ -1160,12 +1137,9 @@ endfunc
 
 " Similar to Test_incsearch_substitute_dump() for :vimgrep famiry
 func Test_incsearch_vimgrep_dump()
-  if !exists('+incsearch')
-    return
-  endif
-  if !CanRunVimInTerminal()
-    throw 'Skipped: cannot make screendumps'
-  endif
+  CheckOption incsearch
+  CheckScreendump
+
   call writefile([
 	\ 'set incsearch hlsearch scrolloff=0',
 	\ 'call setline(1, ["another one 2", "that one 3", "the one 1"])',
@@ -1201,9 +1175,8 @@ func Test_incsearch_vimgrep_dump()
 endfunc
 
 func Test_keep_last_search_pattern()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   new
   call setline(1, ['foo', 'foo', 'foo'])
   set incsearch
@@ -1222,9 +1195,8 @@ func Test_keep_last_search_pattern()
 endfunc
 
 func Test_word_under_cursor_after_match()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   new
   call setline(1, 'foo bar')
   set incsearch
@@ -1241,9 +1213,8 @@ func Test_word_under_cursor_after_match()
 endfunc
 
 func Test_subst_word_under_cursor()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   new
   call setline(1, ['int SomeLongName;', 'for (xxx = 1; xxx < len; ++xxx)'])
   set incsearch
@@ -1258,9 +1229,8 @@ func Test_subst_word_under_cursor()
 endfunc
 
 func Test_search_undefined_behaviour()
-  if !has("terminal")
-    return
-  endif
+  CheckFeature terminal
+
   let h = winheight(0)
   if h < 3
     return
@@ -1326,9 +1296,8 @@ func Test_search_Ctrl_L_combining()
     " ' ̇' U+0307 Dec:775 COMBINING DOT ABOVE &#x307; /\%u307\Z "\u0307"
     " ' ̣' U+0323 Dec:803 COMBINING DOT BELOW &#x323; /\%u323 "\u0323"
   " Those should also appear on the commandline
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   call Cmdline3_prep()
   1
   let bufcontent = ['', 'Miạ̀́̇m']
@@ -1377,9 +1346,8 @@ func Test_one_error_msg()
 endfunc
 
 func Test_incsearch_add_char_under_cursor()
-  if !exists('+incsearch')
-    return
-  endif
+  CheckOption incsearch
+
   set incsearch
   new
   call setline(1, ['find match', 'anything'])
