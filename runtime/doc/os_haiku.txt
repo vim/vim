@@ -221,7 +221,7 @@ All the changes and patches released under vim-license.
 Thank you, all!
 
 
-13. Bugs & things To Do					*haiku-bugs*
+13. Bugs & to-do					*haiku-bugs*
 
 The port is under development now and far away from the perfect state. For bug
 reports, patches and wishes, please use the Vim mailing list or Vim Github
