@@ -1,4 +1,4 @@
-*os_haiku.txt*	For Vim version 8.2.  Last change: 2020 Feb 26
+*os_haiku.txt*	For Vim version 8.2.  Last change: 2020 Mar 19
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -16,7 +16,7 @@ targets personal computing.
  2. Compiling Vim		|haiku-compiling|
  3. The Haiku GUI		|haiku-gui|
  4. The $VIM directory		|haiku-vimdir|
- 5. The $BE_USER_SETTINGS
+ 5. The $USER_SETTINGS_DIR
     directory			|haiku-user-settings-dir|
  6. Drag & Drop			|haiku-dragndrop|
  7. Single Launch vs. Multiple
@@ -44,8 +44,13 @@ Vim can be compiled using the standard configure/make approach. Running
 vim with the Haiku GUI support.  Run ./configure --help , to find out other
 features you can enable/disable.
 
+Haiku uses "ncurses6" as its terminal library, therefore you need to have
+"ncurses6_devel" package installed from HaikuDepot in order to configure
+the Haiku build. Just append "--with-tlib=ncurses6" to ./configure command
+below for the initial build.
+
 Now you should use "make" to compile Vim, then "make install" to install it.
-For seamless integration into the Haiku the GUI-less vim binary should be
+For seamless integration into Haiku, the GUI-less vim binary should be
 additionally installed over the GUI version. Typical build commands are: >
 
   ./configure --prefix=`finddir B_SYSTEM_NONPACKAGED_DIRECTORY` \
@@ -89,9 +94,10 @@ The default value for $VIM is set at compile time and can be determined with >
 
   :version
 
-The normal value is /boot/common/data/vim.  If you don't like it you can
-set the VIM environment variable to override this, or set 'helpfile' in your
-.vimrc: >
+The normal value is /boot/system/data/vim for Haikuports version, 
+/boot/system/non-packaged/data/vim for manual builds.  If you don't like it
+you can set the VIM environment variable to override this, or set 'helpfile'
+in your .vimrc: >
 
   :if version >= 500
   :    set helpfile=~/vim/runtime/doc/help.txt
@@ -220,7 +226,6 @@ Thank you, all!
 
 The port is under development now and far away from the perfect state. Bug
 reports, patches and wishes are welcome.
-
 
  -Siarzhuk Zharski <imker@gmx.li>
 
