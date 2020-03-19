@@ -1160,7 +1160,8 @@ func Test_out_cb()
     " Receive a json object split in pieces
     let g:Ch_outobj = ''
     call ch_sendraw(job, "echosplit [0, {\"one\": 1,| \"tw|o\": 2, \"three\": 3|}]\n")
-    call WaitForAssert({-> assert_equal({'one': 1, 'two': 2, 'three': 3}, g:Ch_outobj)})
+    " For unknown reason this can be very slow on Mac.
+    call WaitForAssert({-> assert_equal({'one': 1, 'two': 2, 'three': 3}, g:Ch_outobj)}, 10000)
   finally
     call job_stop(job)
   endtry
