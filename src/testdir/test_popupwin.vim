@@ -3307,4 +3307,16 @@ func Test_popupwin_atcursor_far_right()
   set signcolumn&
 endfunc
 
+func Test_popupwin_splitmove()
+  vsplit
+  let win2 = win_getid()
+  let popup_winid = popup_dialog('hello', {})
+  call assert_fails('call win_splitmove(popup_winid, win2)', 'E957:')
+  call assert_fails('call win_splitmove(win2, popup_winid)', 'E957:')
+
+  call popup_clear()
+  bwipe
+endfunc
+
+
 " vim: shiftwidth=2 sts=2
