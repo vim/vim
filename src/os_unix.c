@@ -143,7 +143,7 @@ typedef int waitstatus;
 #endif
 static int  WaitForChar(long msec, int *interrupted, int ignore_input);
 static int  WaitForCharOrMouse(long msec, int *interrupted, int ignore_input);
-#ifdef(VMS)
+#ifdef VMS
 int  RealWaitForChar(int, long, int *, int *interrupted);
 #else
 static int  RealWaitForChar(int, long, int *, int *interrupted);

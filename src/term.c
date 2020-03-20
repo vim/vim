@@ -362,7 +362,7 @@ static struct builtin_term builtin_termcaps[] =
     {TERMCAP2KEY('*', '7'), "\233\065\065~"},	// shifted end key
 # endif
 
-# ifdef(ALL_BUILTIN_TCAPS)
+# ifdef ALL_BUILTIN_TCAPS
 /*
  * almost standard ANSI terminal
  */
