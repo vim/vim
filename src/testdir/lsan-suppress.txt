@@ -2,5 +2,6 @@
 leak:libX11.so.6
 leak:libXt.so.6
 leak:libtinfo.so.5
+leak:libfontconfig.so.1
 # Suppress leaks from libpython (maybe python's bug).
 leak:libpython*.so.*
