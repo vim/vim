@@ -203,7 +203,7 @@ typedef struct {
 /*
  * Instruction
  */
-typedef struct {
+struct isn_S {
     isntype_T	isn_type;
     int		isn_lnum;
     union {
@@ -231,7 +231,7 @@ typedef struct {
 	loadstore_T	    loadstore;
 	script_T	    script;
     } isn_arg;
-} isn_T;
+};
 
 /*
  * Info about a function defined with :def.  Used in "def_functions".

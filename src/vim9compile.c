@@ -129,6 +129,7 @@ static char e_syntax_at[] = N_("E1002: Syntax error at %s");
 static int compile_expr1(char_u **arg,  cctx_T *cctx);
 static int compile_expr2(char_u **arg,  cctx_T *cctx);
 static int compile_expr3(char_u **arg,  cctx_T *cctx);
+static void delete_def_function_contents(dfunc_T *dfunc);
 
 /*
  * Lookup variable "name" in the local scope and return the index.
@@ -1306,6 +1307,36 @@ reserve_local(cctx_T *cctx, char_u *name, size_t len, int isConst, type_T *type)
 }
 
 /*
+ * Remove local variables above "new_top".
+ */
+    static void
+unwind_locals(cctx_T *cctx, int new_top)
+{
+    if (cctx->ctx_locals.ga_len > new_top)
+    {
+	int	idx;
+	lvar_T	*lvar;
+
+	for (idx = new_top; idx < cctx->ctx_locals.ga_len; ++idx)
+	{
+	    lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
+	    vim_free(lvar->lv_name);
+	}
+    }
+    cctx->ctx_locals.ga_len = new_top;
+}
+
+/*
+ * Free all local variables.
+ */
+    static void
+free_local(cctx_T *cctx)
+{
+    unwind_locals(cctx, 0);
+    ga_clear(&cctx->ctx_locals);
+}
+
+/*
  * Skip over a type definition and return a pointer to just after it.
  */
     char_u *
@@ -1669,6 +1700,23 @@ find_imported(char_u *name, size_t len, cctx_T *cctx)
 	    return import;
     }
     return NULL;
+}
+
+/*
+ * Free all imported variables.
+ */
+    static void
+free_imported(cctx_T *cctx)
+{
+    int idx;
+
+    for (idx = 0; idx < cctx->ctx_imports.ga_len; ++idx)
+    {
+	imported_T *import = ((imported_T *)cctx->ctx_imports.ga_data) + idx;
+
+	vim_free(import->imp_name);
+    }
+    ga_clear(&cctx->ctx_imports);
 }
 
 /*
@@ -2127,7 +2175,10 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     // Get the funcref in "rettv".
     if (get_lambda_tv(arg, &rettv, TRUE) == FAIL)
 	return FAIL;
+
     ufunc = rettv.vval.v_partial->pt_func;
+    ++ufunc->uf_refcount;
+    clear_tv(&rettv);
 
     // The function will have one line: "return {expr}".
     // Compile it into instructions.
@@ -2169,10 +2220,12 @@ compile_lambda_call(char_u **arg, cctx_T *cctx)
 	return FAIL;
     }
 
-    // The function will have one line: "return {expr}".
-    // Compile it into instructions.
     ufunc = rettv.vval.v_partial->pt_func;
     ++ufunc->uf_refcount;
+    clear_tv(&rettv);
+
+    // The function will have one line: "return {expr}".
+    // Compile it into instructions.
     compile_def_function(ufunc, TRUE);
 
     // compile the arguments
@@ -2181,7 +2234,6 @@ compile_lambda_call(char_u **arg, cctx_T *cctx)
 	// call the compiled function
 	ret = generate_CALL(cctx, ufunc, argcount);
 
-    clear_tv(&rettv);
     return ret;
 }
 
@@ -3398,7 +3450,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	{
 	    int	    cc;
 	    long	    numval;
-	    char_u	    *stringval = NULL;
 
 	    dest = dest_option;
 	    if (cmdidx == CMD_const)
@@ -3420,7 +3471,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    }
 	    cc = *p;
 	    *p = NUL;
-	    opt_type = get_option_value(arg + 1, &numval, &stringval, opt_flags);
+	    opt_type = get_option_value(arg + 1, &numval, NULL, opt_flags);
 	    *p = cc;
 	    if (opt_type == -3)
 	    {
@@ -4217,7 +4268,7 @@ compile_elseif(char_u *arg, cctx_T *cctx)
 	emsg(_(e_elseif_without_if));
 	return NULL;
     }
-    cctx->ctx_locals.ga_len = scope->se_local_count;
+    unwind_locals(cctx, scope->se_local_count);
 
     if (cctx->ctx_skip == MAYBE)
     {
@@ -4265,7 +4316,7 @@ compile_else(char_u *arg, cctx_T *cctx)
 	emsg(_(e_else_without_if));
 	return NULL;
     }
-    cctx->ctx_locals.ga_len = scope->se_local_count;
+    unwind_locals(cctx, scope->se_local_count);
 
     // jump from previous block to the end, unless the else block is empty
     if (cctx->ctx_skip == MAYBE)
@@ -4307,7 +4358,7 @@ compile_endif(char_u *arg, cctx_T *cctx)
     }
     ifscope = &scope->se_u.se_if;
     cctx->ctx_scope = scope->se_outer;
-    cctx->ctx_locals.ga_len = scope->se_local_count;
+    unwind_locals(cctx, scope->se_local_count);
 
     if (scope->se_u.se_if.is_if_label >= 0)
     {
@@ -4435,7 +4486,7 @@ compile_endfor(char_u *arg, cctx_T *cctx)
     }
     forscope = &scope->se_u.se_for;
     cctx->ctx_scope = scope->se_outer;
-    cctx->ctx_locals.ga_len = scope->se_local_count;
+    unwind_locals(cctx, scope->se_local_count);
 
     // At end of ":for" scope jump back to the FOR instruction.
     generate_JUMP(cctx, JUMP_ALWAYS, forscope->fs_top_label);
@@ -4506,7 +4557,7 @@ compile_endwhile(char_u *arg, cctx_T *cctx)
 	return NULL;
     }
     cctx->ctx_scope = scope->se_outer;
-    cctx->ctx_locals.ga_len = scope->se_local_count;
+    unwind_locals(cctx, scope->se_local_count);
 
     // At end of ":for" scope jump back to the FOR instruction.
     generate_JUMP(cctx, JUMP_ALWAYS, scope->se_u.se_while.ws_top_label);
@@ -4599,7 +4650,7 @@ compile_endblock(cctx_T *cctx)
     scope_T	*scope = cctx->ctx_scope;
 
     cctx->ctx_scope = scope->se_outer;
-    cctx->ctx_locals.ga_len = scope->se_local_count;
+    unwind_locals(cctx, scope->se_local_count);
     vim_free(scope);
 }
 
@@ -4942,9 +4993,11 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 
     if (ufunc->uf_dfunc_idx >= 0)
     {
-	// redefining a function that was compiled before
+	// Redefining a function that was compiled before.
 	dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
-	dfunc->df_deleted = FALSE;
+
+	// Free old instructions.
+	delete_def_function_contents(dfunc);
     }
     else
     {
@@ -5305,6 +5358,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	generate_instr(&cctx, ISN_RETURN);
     }
 
+    dfunc->df_deleted = FALSE;
     dfunc->df_instr = instr->ga_data;
     dfunc->df_instr_count = instr->ga_len;
     dfunc->df_varcount = cctx.ctx_max_local;
@@ -5314,27 +5368,35 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 erret:
     if (ret == FAIL)
     {
+	int idx;
+
+	for (idx = 0; idx < instr->ga_len; ++idx)
+	    delete_instr(((isn_T *)instr->ga_data) + idx);
 	ga_clear(instr);
+
 	ufunc->uf_dfunc_idx = -1;
-	--def_functions.ga_len;
+	if (!dfunc->df_deleted)
+	    --def_functions.ga_len;
+
+	// Don't execute this function body.
+	ga_clear_strings(&ufunc->uf_lines);
+
 	if (errormsg != NULL)
 	    emsg(errormsg);
 	else if (called_emsg == called_emsg_before)
 	    emsg(_("E1028: compile_def_function failed"));
-
-	// don't execute this function body
-	ufunc->uf_lines.ga_len = 0;
     }
 
     current_sctx = save_current_sctx;
+    free_imported(&cctx);
+    free_local(&cctx);
     ga_clear(&cctx.ctx_type_stack);
-    ga_clear(&cctx.ctx_locals);
 }
 
 /*
  * Delete an instruction, free what it contains.
  */
-    static void
+    void
 delete_instr(isn_T *isn)
 {
     switch (isn->isn_type)
@@ -5443,32 +5505,57 @@ delete_instr(isn_T *isn)
 }
 
 /*
+ * Free all instructions for "dfunc".
+ */
+    static void
+delete_def_function_contents(dfunc_T *dfunc)
+{
+    int idx;
+
+    ga_clear(&dfunc->df_def_args_isn);
+
+    if (dfunc->df_instr != NULL)
+    {
+	for (idx = 0; idx < dfunc->df_instr_count; ++idx)
+	    delete_instr(dfunc->df_instr + idx);
+	VIM_CLEAR(dfunc->df_instr);
+    }
+
+    dfunc->df_deleted = TRUE;
+}
+
+/*
  * When a user function is deleted, delete any associated def function.
  */
     void
 delete_def_function(ufunc_T *ufunc)
 {
-    int idx;
-
     if (ufunc->uf_dfunc_idx >= 0)
     {
 	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data)
 							 + ufunc->uf_dfunc_idx;
-	ga_clear(&dfunc->df_def_args_isn);
 
-	for (idx = 0; idx < dfunc->df_instr_count; ++idx)
-	    delete_instr(dfunc->df_instr + idx);
-	VIM_CLEAR(dfunc->df_instr);
-
-	dfunc->df_deleted = TRUE;
+	delete_def_function_contents(dfunc);
     }
 }
 
 #if defined(EXITFREE) || defined(PROTO)
+/*
+ * Free all functions defined with ":def".
+ */
     void
 free_def_functions(void)
 {
-    vim_free(def_functions.ga_data);
+    int idx;
+
+    for (idx = 0; idx < def_functions.ga_len; ++idx)
+    {
+	dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + idx;
+
+	delete_def_function_contents(dfunc);
+    }
+
+    ga_clear(&def_functions);
 }
 #endif
 

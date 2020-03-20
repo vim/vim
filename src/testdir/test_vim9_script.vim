@@ -942,6 +942,16 @@ def Test_while_loop()
   assert_equal('1_3_', result)
 enddef
 
+def Test_interrupt_loop()
+  let x = 0
+  while 1
+    x += 1
+    if x == 100
+      feedkeys("\<C-C>", 'L')
+    endif
+  endwhile
+enddef
+
 def Test_substitute_cmd()
   new
   setline(1, 'something')
@@ -962,6 +972,26 @@ def Test_substitute_cmd()
   source Xvim9lines
 
   delete('Xvim9lines')
+enddef
+
+def Test_redef_failure()
+  call writefile(['def Func0(): string',  'return "Func0"', 'enddef'], 'Xdef')
+  so Xdef
+  call writefile(['def Func1(): string',  'return "Func1"', 'enddef'], 'Xdef')
+  so Xdef
+  call writefile(['def! Func0(): string', 'enddef'], 'Xdef')
+  call assert_fails('so Xdef', 'E1027:')
+  call writefile(['def Func2(): string',  'return "Func2"', 'enddef'], 'Xdef')
+  so Xdef
+  call delete('Xdef')
+
+  call assert_equal(0, Func0())
+  call assert_equal('Func1', Func1())
+  call assert_equal('Func2', Func2())
+
+  delfunc! Func0
+  delfunc! Func1
+  delfunc! Func2
 enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
