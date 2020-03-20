@@ -103,6 +103,7 @@ _anchors:
     - (cd "${SRCDIR}" && bash <(curl -s https://codecov.io/bash))
 
   asan_symbolize: &asan_symbolize
+    - (cd "${PYENV_ROOT}" && git fetch -p origin && git checkout "$(git rev-list --tags -n1)") &>/dev/null || true
     - |
       while read log; do
         asan_symbolize < "${log}"
