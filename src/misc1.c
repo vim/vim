@@ -2223,6 +2223,19 @@ fast_breakcheck(void)
     }
 }
 
+/*
+ * Like line_breakcheck() but check 100 times less often.
+ */
+    void
+veryfast_breakcheck(void)
+{
+    if (++breakcheck_count >= BREAKCHECK_SKIP * 100)
+    {
+	breakcheck_count = 0;
+	ui_breakcheck();
+    }
+}
+
 #if defined(VIM_BACKTICK) || defined(FEAT_EVAL) \
 	|| (defined(HAVE_LOCALE_H) || defined(X_LOCALE)) \
 	|| defined(PROTO)

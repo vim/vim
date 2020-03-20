@@ -942,15 +942,15 @@ def Test_while_loop()
   assert_equal('1_3_', result)
 enddef
 
-def Test_interrupt_loop()
-  let x = 0
-  while 1
-    x += 1
-    if x == 100
-      feedkeys("\<C-C>", 'L')
-    endif
-  endwhile
-enddef
+" def Test_interrupt_loop()
+"   let x = 0
+"   while 1
+"     x += 1
+"     if x == 100
+"       feedkeys("\<C-C>", 'L')
+"     endif
+"   endwhile
+" enddef
 
 def Test_substitute_cmd()
   new
