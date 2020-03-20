@@ -2472,7 +2472,17 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 	    if (lowlevel)
 	    {
 #ifdef USE_INPUT_BUF
-		add_to_input_buf(keys, (int)STRLEN(keys));
+		int idx;
+		int len = (int)STRLEN(keys);
+
+		for (idx = 0; idx < len; ++idx)
+		{
+		    // if a CTRL-C was typed, set got_int, similar to what
+		    // happens in fill_input_buf()
+		    if (keys[idx] == 3 && ctrl_c_interrupts && typed)
+			got_int = TRUE;
+		    add_to_input_buf(keys + idx, 1);
+		}
 #else
 		emsg(_("E980: lowlevel input not supported"));
 #endif

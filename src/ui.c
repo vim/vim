@@ -2280,7 +2280,7 @@ fill_input_buf(int exit_on_error UNUSED)
     for (try = 0; try < 100; ++try)
     {
 	size_t readlen = (size_t)((INBUFLEN - inbufcount)
-			    / input_conv.vc_factor);
+						       / input_conv.vc_factor);
 #  ifdef VMS
 	len = vms_read((char *)inbuf + inbufcount, readlen);
 #  else
@@ -2344,9 +2344,12 @@ fill_input_buf(int exit_on_error UNUSED)
 	while (len-- > 0)
 	{
 	    /*
-	     * if a CTRL-C was typed, remove it from the buffer and set got_int
+	     * If a CTRL-C was typed, remove it from the buffer and set
+	     * got_int.  Also recognize CTRL-C with modifyOtherKeys set.
 	     */
-	    if (inbuf[inbufcount] == 3 && ctrl_c_interrupts)
+	    if (ctrl_c_interrupts && (inbuf[inbufcount] == 3
+			|| (len >= 9 && STRNCMP(inbuf + inbufcount,
+						     "\e[27;5;99~", 10) == 0)))
 	    {
 		// remove everything typed before the CTRL-C
 		mch_memmove(inbuf, inbuf + inbufcount, (size_t)(len + 1));
