@@ -362,11 +362,10 @@ static struct builtin_term builtin_termcaps[] =
     {TERMCAP2KEY('*', '7'), "\233\065\065~"},	// shifted end key
 # endif
 
-# if defined(__BEOS__) || defined(ALL_BUILTIN_TCAPS)
+# ifdef(ALL_BUILTIN_TCAPS)
 /*
- * almost standard ANSI terminal, default for bebox
+ * almost standard ANSI terminal
  */
-    {(int)KS_NAME,	"beos-ansi"},
     {(int)KS_CE,	"\033[K"},
     {(int)KS_CD,	"\033[J"},
     {(int)KS_AL,	"\033[L"},
@@ -381,13 +380,6 @@ static struct builtin_term builtin_termcaps[] =
 #  else
     {(int)KS_CDL,	"\033[%dM"},
 #  endif
-#ifdef BEOS_PR_OR_BETTER
-#  ifdef TERMINFO
-    {(int)KS_CS,	"\033[%i%p1%d;%p2%dr"},
-#  else
-    {(int)KS_CS,	"\033[%i%d;%dr"},	// scroll region
-#  endif
-#endif
     {(int)KS_CL,	"\033[H\033[2J"},
 #ifdef notyet
     {(int)KS_VI,	"[VI]"}, // cursor invisible, VT320: CSI ? 25 l
@@ -424,9 +416,6 @@ static struct builtin_term builtin_termcaps[] =
     {(int)KS_CRI,	"\033[%p1%dC"},
 #  else
     {(int)KS_CRI,	"\033[%dC"},
-#  endif
-#  if defined(BEOS_DR8)
-    {(int)KS_DB,	""},		// hack! see screen.c
 #  endif
 
     {K_UP,		"\033[A"},
@@ -1413,11 +1402,6 @@ termgui_mch_get_rgb(guicolor_T color)
 
 #ifdef VMS
 # define DEFAULT_TERM	(char_u *)"vt320"
-#endif
-
-#ifdef __BEOS__
-# undef DEFAULT_TERM
-# define DEFAULT_TERM	(char_u *)"beos-ansi"
 #endif
 
 #ifdef __HAIKU__
@@ -2429,17 +2413,6 @@ termcapinit(char_u *name)
 	name = NULL;	    // empty name is equal to no name
     term = name;
 
-#ifdef __BEOS__
-    /*
-     * TERM environment variable is normally set to 'ansi' on the Bebox;
-     * Since the BeBox doesn't quite support full ANSI yet, we use our
-     * own custom 'ansi-beos' termcap instead, unless the -T option has
-     * been given on the command line.
-     */
-    if (term == NULL
-		 && strcmp((char *)mch_getenv((char_u *)"TERM"), "ansi") == 0)
-	term = DEFAULT_TERM;
-#endif
 #ifndef MSWIN
     if (term == NULL)
 	term = mch_getenv((char_u *)"TERM");

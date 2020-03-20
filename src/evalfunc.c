@@ -3356,9 +3356,6 @@ f_has(typval_T *argvars, typval_T *rettv)
 	"arp",
 # endif
 #endif
-#ifdef __BEOS__
-	"beos",
-#endif
 #ifdef __HAIKU__
 	"haiku",
 #endif

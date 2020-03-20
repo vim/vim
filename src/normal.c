@@ -3385,14 +3385,6 @@ nv_clear(cmdarg_T *cap)
 {
     if (!checkclearop(cap->oap))
     {
-#if defined(__BEOS__) && !USE_THREAD_FOR_INPUT_WITH_TIMEOUT
-	/*
-	 * Right now, the BeBox doesn't seem to have an easy way to detect
-	 * window resizing, so we cheat and make the user detect it
-	 * manually with CTRL-L instead
-	 */
-	ui_get_shellsize();
-#endif
 #ifdef FEAT_SYN_HL
 	// Clear all syntax states to force resyncing.
 	syn_stack_free_all(curwin->w_s);

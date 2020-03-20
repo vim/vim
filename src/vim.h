@@ -220,10 +220,6 @@
 # include <clib/exec_protos.h>
 #endif
 
-#ifdef __BEOS__
-# include "os_beos.h"
-#endif
-
 #ifdef __HAIKU__
 # include "os_haiku.h"
 # define __ARGS(x)  x
