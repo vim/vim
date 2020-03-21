@@ -1046,7 +1046,7 @@ clip_modeless(int button, int is_click, int is_drag)
     else if (is_drag)
     {
 	// Don't try extending a selection if there isn't one.  Happens when
-	// button-down is in the cmdline and them moving mouse upwards.
+	// button-down is in the cmdline and then moving mouse upwards.
 	if (clip_star.state != SELECT_CLEARED)
 	    clip_process_selection(button, mouse_col, mouse_row, repeat);
     }

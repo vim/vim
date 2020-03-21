@@ -180,6 +180,7 @@ NEW_TESTS = \
 	test_method \
 	test_mksession \
 	test_mksession_utf8 \
+	test_modeless \
 	test_modeline \
 	test_move \
 	test_nested_function \
@@ -222,6 +223,7 @@ NEW_TESTS = \
 	test_search \
 	test_search_stat \
 	test_searchpos \
+	test_selectmode \
 	test_set \
 	test_sha256 \
 	test_shift \
@@ -406,6 +408,7 @@ NEW_TESTS_RES = \
 	test_messages.res \
 	test_method.res \
 	test_mksession.res \
+	test_modeless.res \
 	test_modeline.res \
 	test_nested_function.res \
 	test_netbeans.res \
@@ -440,6 +443,7 @@ NEW_TESTS_RES = \
 	test_scrollbind.res \
 	test_search.res \
 	test_search_stat.res \
+	test_selectmode.res \
 	test_shortpathname.res \
 	test_signals.res \
 	test_signs.res \
