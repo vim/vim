@@ -1,6 +1,7 @@
 # Suppress leaks from X libraries on Ubuntu xenial.
 leak:libX11.so.6
 leak:libXt.so.6
+leak:libcairo.so.2
 leak:libfontconfig.so.1
 leak:libglib-2.0.so.0
 leak:libtinfo.so.5
