@@ -20,7 +20,7 @@ _anchors:
       BUILD=no TEST=unittests CFLAGS=--coverage LDFLAGS=--coverage FEATURES=huge SHADOWOPT= SRCDIR=./src CHECK_AUTOCONF=yes
     - &asan # ASAN build
       SANITIZER_CFLAGS="-g -O1 -DABORT_ON_INTERNAL_ERROR -DEXITFREE -fsanitize=address -fno-omit-frame-pointer"
-      ASAN_OPTIONS="print_stacktrace=1 log_path=asan" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
+      ASAN_OPTIONS="print_stacktrace=1 log_path=asan fast_unwind_on_malloc=0" LSAN_OPTIONS="suppressions=$TRAVIS_BUILD_DIR/src/testdir/lsan-suppress.txt"
     - &shadowopt
       SHADOWOPT="-C src/shadow" SRCDIR=./src/shadow
 
