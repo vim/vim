@@ -526,9 +526,15 @@ term_start(
     apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
 
     if (opt->jo_term_name != NULL)
+    {
+	vim_free(curbuf->b_ffname);
 	curbuf->b_ffname = vim_strsave(opt->jo_term_name);
+    }
     else if (argv != NULL)
+    {
+	vim_free(curbuf->b_ffname);
 	curbuf->b_ffname = vim_strsave((char_u *)"!system");
+    }
     else
     {
 	int	i;
