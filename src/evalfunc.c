@@ -566,7 +566,7 @@ static funcentry_T global_functions[] =
     {"glob",		1, 4, FEARG_1,	  ret_any,	f_glob},
     {"glob2regpat",	1, 1, FEARG_1,	  ret_string,	f_glob2regpat},
     {"globpath",	2, 5, FEARG_2,	  ret_any,	f_globpath},
-    {"has",		1, 1, 0,	  ret_number,	f_has},
+    {"has",		1, 2, 0,	  ret_number,	f_has},
     {"has_key",		2, 2, FEARG_1,	  ret_number,	f_has_key},
     {"haslocaldir",	0, 2, FEARG_1,	  ret_number,	f_haslocaldir},
     {"hasmapto",	1, 3, FEARG_1,	  ret_number,	f_hasmapto},
@@ -3357,551 +3357,1148 @@ f_has(typval_T *argvars, typval_T *rettv)
 {
     int		i;
     char_u	*name;
+    int		x = FALSE;
     int		n = FALSE;
-    static char	*(has_list[]) =
+    typedef struct {
+	char *name;
+	short present;
+    } has_item_T;
+    static has_item_T has_list[] =
     {
+	{"amiga",
 #ifdef AMIGA
-	"amiga",
-# ifdef FEAT_ARP
-	"arp",
-# endif
-#endif
-#ifdef __BEOS__
-	"beos",
-#endif
-#ifdef __HAIKU__
-	"haiku",
-#endif
-#if defined(BSD) && !defined(MACOS_X)
-	"bsd",
-#endif
-#ifdef hpux
-	"hpux",
-#endif
-#ifdef __linux__
-	"linux",
-#endif
-#ifdef MACOS_X
-	"mac",		// Mac OS X (and, once, Mac OS Classic)
-	"osx",		// Mac OS X
-# ifdef MACOS_X_DARWIN
-	"macunix",	// Mac OS X, with the darwin feature
-	"osxdarwin",	// synonym for macunix
-# endif
-#endif
-#ifdef __QNX__
-	"qnx",
-#endif
-#ifdef SUN_SYSTEM
-	"sun",
+		1
 #else
-	"moon",
+		0
 #endif
+		},
+	{"arp",
+#if defined(AMIGA) && defined(FEAT_ARP)
+		1
+#else
+		0
+#endif
+		},
+	{"beos",
+#ifdef __BEOS__
+		1
+#else
+		0
+#endif
+		},
+	{"haiku",
+#ifdef __HAIKU__
+		1
+#else
+		0
+#endif
+		},
+	{"bsd",
+#if defined(BSD) && !defined(MACOS_X)
+		1
+#else
+		0
+#endif
+		},
+	{"hpux",
+#ifdef hpux
+		1
+#else
+		0
+#endif
+		},
+	{"linux",
+#ifdef __linux__
+		1
+#else
+		0
+#endif
+		},
+	{"mac",		// Mac OS X (and, once, Mac OS Classic)
+#ifdef MACOS_X
+		1
+#else
+		0
+#endif
+		},
+	{"osx",		// Mac OS X
+#ifdef MACOS_X
+		1
+#else
+		0
+#endif
+		},
+	{"macunix",	// Mac OS X, with the darwin feature
+#if defined(MACOS_X) && defined(MACOS_X_DARWIN)
+		1
+#else
+		0
+#endif
+		},
+	{"osxdarwin",	// synonym for macunix
+#if defined(MACOS_X) && defined(MACOS_X_DARWIN)
+		1
+#else
+		0
+#endif
+		},
+	{"qnx",
+#ifdef __QNX__
+		1
+#else
+		0
+#endif
+		},
+	{"sun",
+#ifdef SUN_SYSTEM
+		1
+#else
+		0
+#endif
+		},
+	{"unix",
 #ifdef UNIX
-	"unix",
+		1
+#else
+		0
 #endif
+		},
+	{"vms",
 #ifdef VMS
-	"vms",
+		1
+#else
+		0
 #endif
+		},
+	{"win32",
 #ifdef MSWIN
-	"win32",
+		1
+#else
+		0
 #endif
+		},
+	{"win32unix",
 #if defined(UNIX) && defined(__CYGWIN__)
-	"win32unix",
+		1
+#else
+		0
 #endif
+		},
+	{"win64",
 #ifdef _WIN64
-	"win64",
+		1
+#else
+		0
 #endif
+		},
+	{"ebcdic",
 #ifdef EBCDIC
-	"ebcdic",
+		1
+#else
+		0
 #endif
+		},
+	{"fname_case",
 #ifndef CASE_INSENSITIVE_FILENAME
-	"fname_case",
+		1
+#else
+		0
 #endif
+		},
+	{"acl",
 #ifdef HAVE_ACL
-	"acl",
+		1
+#else
+		0
 #endif
+		},
+	{"arabic",
 #ifdef FEAT_ARABIC
-	"arabic",
+		1
+#else
+		0
 #endif
-	"autocmd",
+		},
+	{"autocmd", 1},
+	{"autochdir",
 #ifdef FEAT_AUTOCHDIR
-	"autochdir",
+		1
+#else
+		0
 #endif
+		},
+	{"autoservername",
 #ifdef FEAT_AUTOSERVERNAME
-	"autoservername",
+		1
+#else
+		0
 #endif
+		},
+	{"balloon_eval",
 #ifdef FEAT_BEVAL_GUI
-	"balloon_eval",
-# ifndef FEAT_GUI_MSWIN // other GUIs always have multiline balloons
-	"balloon_multiline",
-# endif
+		1
+#else
+		0
 #endif
+		},
+	{"balloon_multiline",
+#if defined(FEAT_BEVAL_GUI) && !defined(FEAT_GUI_MSWIN)
+			// MS-Windows requires runtime check, see below
+		1
+#else
+		0
+#endif
+		},
+	{"balloon_eval_term",
 #ifdef FEAT_BEVAL_TERM
-	"balloon_eval_term",
+		1
+#else
+		0
 #endif
+		},
+	{"builtin_terms",
 #if defined(SOME_BUILTIN_TCAPS) || defined(ALL_BUILTIN_TCAPS)
-	"builtin_terms",
-# ifdef ALL_BUILTIN_TCAPS
-	"all_builtin_terms",
-# endif
+		1
+#else
+		0
 #endif
+		},
+	{"all_builtin_terms",
+#if defined(ALL_BUILTIN_TCAPS)
+		1
+#else
+		0
+#endif
+		},
+	{"browsefilter",
 #if defined(FEAT_BROWSE) && (defined(USE_FILE_CHOOSER) \
 	|| defined(FEAT_GUI_MSWIN) \
 	|| defined(FEAT_GUI_MOTIF))
-	"browsefilter",
-#endif
-#ifdef FEAT_BYTEOFF
-	"byte_offset",
-#endif
-#ifdef FEAT_JOB_CHANNEL
-	"channel",
-#endif
-#ifdef FEAT_CINDENT
-	"cindent",
-#endif
-#ifdef FEAT_CLIENTSERVER
-	"clientserver",
-#endif
-#ifdef FEAT_CLIPBOARD
-	"clipboard",
-#endif
-	"cmdline_compl",
-	"cmdline_hist",
-	"comments",
-#ifdef FEAT_CONCEAL
-	"conceal",
-#endif
-#ifdef FEAT_CRYPT
-	"cryptv",
-	"crypt-blowfish",
-	"crypt-blowfish2",
-#endif
-#ifdef FEAT_CSCOPE
-	"cscope",
-#endif
-	"cursorbind",
-#ifdef CURSOR_SHAPE
-	"cursorshape",
-#endif
-#ifdef DEBUG
-	"debug",
-#endif
-#ifdef FEAT_CON_DIALOG
-	"dialog_con",
-#endif
-#ifdef FEAT_GUI_DIALOG
-	"dialog_gui",
-#endif
-#ifdef FEAT_DIFF
-	"diff",
-#endif
-#ifdef FEAT_DIGRAPHS
-	"digraphs",
-#endif
-#ifdef FEAT_DIRECTX
-	"directx",
-#endif
-#ifdef FEAT_DND
-	"dnd",
-#endif
-#ifdef FEAT_EMACS_TAGS
-	"emacs_tags",
-#endif
-	"eval",	    // always present, of course!
-	"ex_extra", // graduated feature
-#ifdef FEAT_SEARCH_EXTRA
-	"extra_search",
-#endif
-#ifdef FEAT_SEARCHPATH
-	"file_in_path",
-#endif
-#if defined(FEAT_FILTERPIPE) && !defined(VIMDLL)
-	"filterpipe",
-#endif
-#ifdef FEAT_FIND_ID
-	"find_in_path",
-#endif
-#ifdef FEAT_FLOAT
-	"float",
-#endif
-#ifdef FEAT_FOLDING
-	"folding",
-#endif
-#ifdef FEAT_FOOTER
-	"footer",
-#endif
-#if !defined(USE_SYSTEM) && defined(UNIX)
-	"fork",
-#endif
-#ifdef FEAT_GETTEXT
-	"gettext",
-#endif
-#ifdef FEAT_GUI
-	"gui",
-#endif
-#ifdef FEAT_GUI_ATHENA
-# ifdef FEAT_GUI_NEXTAW
-	"gui_neXtaw",
-# else
-	"gui_athena",
-# endif
-#endif
-#ifdef FEAT_GUI_GTK
-	"gui_gtk",
-# ifdef USE_GTK3
-	"gui_gtk3",
-# else
-	"gui_gtk2",
-# endif
-#endif
-#ifdef FEAT_GUI_GNOME
-	"gui_gnome",
-#endif
-#ifdef FEAT_GUI_HAIKU
-	"gui_haiku",
-#endif
-#ifdef FEAT_GUI_MAC
-	"gui_mac",
-#endif
-#ifdef FEAT_GUI_MOTIF
-	"gui_motif",
-#endif
-#ifdef FEAT_GUI_PHOTON
-	"gui_photon",
-#endif
-#ifdef FEAT_GUI_MSWIN
-	"gui_win32",
-#endif
-#if defined(HAVE_ICONV_H) && defined(USE_ICONV)
-	"iconv",
-#endif
-	"insert_expand",
-#ifdef FEAT_JOB_CHANNEL
-	"job",
-#endif
-#ifdef FEAT_JUMPLIST
-	"jumplist",
-#endif
-#ifdef FEAT_KEYMAP
-	"keymap",
-#endif
-	"lambda", // always with FEAT_EVAL, since 7.4.2120 with closure
-#ifdef FEAT_LANGMAP
-	"langmap",
-#endif
-#ifdef FEAT_LIBCALL
-	"libcall",
-#endif
-#ifdef FEAT_LINEBREAK
-	"linebreak",
-#endif
-#ifdef FEAT_LISP
-	"lispindent",
-#endif
-	"listcmds",
-	"localmap",
-#ifdef FEAT_LUA
-# ifndef DYNAMIC_LUA
-	"lua",
-# endif
-#endif
-#ifdef FEAT_MENU
-	"menu",
-#endif
-#ifdef FEAT_SESSION
-	"mksession",
-#endif
-	"modify_fname",
-	"mouse",
-#ifdef FEAT_MOUSESHAPE
-	"mouseshape",
-#endif
-#if defined(UNIX) || defined(VMS)
-# ifdef FEAT_MOUSE_DEC
-	"mouse_dec",
-# endif
-# ifdef FEAT_MOUSE_GPM
-	"mouse_gpm",
-# endif
-# ifdef FEAT_MOUSE_JSB
-	"mouse_jsbterm",
-# endif
-# ifdef FEAT_MOUSE_NET
-	"mouse_netterm",
-# endif
-# ifdef FEAT_MOUSE_PTERM
-	"mouse_pterm",
-# endif
-# ifdef FEAT_MOUSE_XTERM
-	"mouse_sgr",
-# endif
-# ifdef FEAT_SYSMOUSE
-	"mouse_sysmouse",
-# endif
-# ifdef FEAT_MOUSE_URXVT
-	"mouse_urxvt",
-# endif
-# ifdef FEAT_MOUSE_XTERM
-	"mouse_xterm",
-# endif
-#endif
-	"multi_byte",
-#ifdef FEAT_MBYTE_IME
-	"multi_byte_ime",
-#endif
-#ifdef FEAT_MULTI_LANG
-	"multi_lang",
-#endif
-#ifdef FEAT_MZSCHEME
-#ifndef DYNAMIC_MZSCHEME
-	"mzscheme",
-#endif
-#endif
-	"num64",
-#ifdef FEAT_OLE
-	"ole",
-#endif
-#ifdef FEAT_EVAL
-	"packages",
-#endif
-#ifdef FEAT_PATH_EXTRA
-	"path_extra",
-#endif
-#ifdef FEAT_PERL
-#ifndef DYNAMIC_PERL
-	"perl",
-#endif
-#endif
-#ifdef FEAT_PERSISTENT_UNDO
-	"persistent_undo",
-#endif
-#if defined(FEAT_PYTHON)
-	"python_compiled",
-# if defined(DYNAMIC_PYTHON)
-	"python_dynamic",
-# else
-	"python",
-	"pythonx",
-# endif
-#endif
-#if defined(FEAT_PYTHON3)
-	"python3_compiled",
-# if defined(DYNAMIC_PYTHON3)
-	"python3_dynamic",
-# else
-	"python3",
-	"pythonx",
-# endif
-#endif
-#ifdef FEAT_PROP_POPUP
-	"popupwin",
-#endif
-#ifdef FEAT_POSTSCRIPT
-	"postscript",
-#endif
-#ifdef FEAT_PRINTER
-	"printer",
-#endif
-#ifdef FEAT_PROFILE
-	"profile",
-#endif
-#ifdef FEAT_RELTIME
-	"reltime",
-#endif
-#ifdef FEAT_QUICKFIX
-	"quickfix",
-#endif
-#ifdef FEAT_RIGHTLEFT
-	"rightleft",
-#endif
-#if defined(FEAT_RUBY) && !defined(DYNAMIC_RUBY)
-	"ruby",
-#endif
-	"scrollbind",
-#ifdef FEAT_CMDL_INFO
-	"showcmd",
-	"cmdline_info",
-#endif
-#ifdef FEAT_SIGNS
-	"signs",
-#endif
-#ifdef FEAT_SMARTINDENT
-	"smartindent",
-#endif
-#ifdef STARTUPTIME
-	"startuptime",
-#endif
-#ifdef FEAT_STL_OPT
-	"statusline",
-#endif
-#ifdef FEAT_NETBEANS_INTG
-	"netbeans_intg",
-#endif
-#ifdef FEAT_SOUND
-	"sound",
-#endif
-#ifdef FEAT_SPELL
-	"spell",
-#endif
-#ifdef FEAT_SYN_HL
-	"syntax",
-#endif
-#if defined(USE_SYSTEM) || !defined(UNIX)
-	"system",
-#endif
-#ifdef FEAT_TAG_BINS
-	"tag_binary",
-#endif
-#ifdef FEAT_TCL
-# ifndef DYNAMIC_TCL
-	"tcl",
-# endif
-#endif
-#ifdef FEAT_TERMGUICOLORS
-	"termguicolors",
-#endif
-#if defined(FEAT_TERMINAL) && !defined(MSWIN)
-	"terminal",
-#endif
-#ifdef TERMINFO
-	"terminfo",
-#endif
-#ifdef FEAT_TERMRESPONSE
-	"termresponse",
-#endif
-#ifdef FEAT_TEXTOBJ
-	"textobjects",
-#endif
-#ifdef FEAT_PROP_POPUP
-	"textprop",
-#endif
-#ifdef HAVE_TGETENT
-	"tgetent",
-#endif
-#ifdef FEAT_TIMERS
-	"timers",
-#endif
-#ifdef FEAT_TITLE
-	"title",
-#endif
-#ifdef FEAT_TOOLBAR
-	"toolbar",
-#endif
-#if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
-	"unnamedplus",
-#endif
-	"user-commands",    // was accidentally included in 5.4
-	"user_commands",
-#ifdef FEAT_VARTABS
-	"vartabs",
-#endif
-	"vertsplit",
-#ifdef FEAT_VIMINFO
-	"viminfo",
-#endif
-	"vimscript-1",
-	"vimscript-2",
-	"vimscript-3",
-	"vimscript-4",
-	"virtualedit",
-	"visual",
-	"visualextra",
-	"vreplace",
-#ifdef FEAT_VTP
-	"vtp",
-#endif
-#ifdef FEAT_WILDIGN
-	"wildignore",
-#endif
-#ifdef FEAT_WILDMENU
-	"wildmenu",
-#endif
-	"windows",
-#ifdef FEAT_WAK
-	"winaltkeys",
-#endif
-#ifdef FEAT_WRITEBACKUP
-	"writebackup",
-#endif
-#ifdef FEAT_XIM
-	"xim",
-#endif
-#ifdef FEAT_XFONTSET
-	"xfontset",
-#endif
-#ifdef FEAT_XPM_W32
-	"xpm",
-	"xpm_w32",	// for backward compatibility
+		1
 #else
-# if defined(HAVE_XPM)
-	"xpm",
-# endif
+		0
 #endif
+		},
+	{"byte_offset",
+#ifdef FEAT_BYTEOFF
+		1
+#else
+		0
+#endif
+		},
+	{"channel",
+#ifdef FEAT_JOB_CHANNEL
+		1
+#else
+		0
+#endif
+		},
+	{"cindent",
+#ifdef FEAT_CINDENT
+		1
+#else
+		0
+#endif
+		},
+	{"clientserver",
+#ifdef FEAT_CLIENTSERVER
+		1
+#else
+		0
+#endif
+		},
+	{"clipboard",
+#ifdef FEAT_CLIPBOARD
+		1
+#else
+		0
+#endif
+		},
+	{"cmdline_compl", 1},
+	{"cmdline_hist", 1},
+	{"comments", 1},
+	{"conceal",
+#ifdef FEAT_CONCEAL
+		1
+#else
+		0
+#endif
+		},
+	{"cryptv",
+#ifdef FEAT_CRYPT
+		1
+#else
+		0
+#endif
+		},
+	{"crypt-blowfish",
+#ifdef FEAT_CRYPT
+		1
+#else
+		0
+#endif
+		},
+	{"crypt-blowfish2",
+#ifdef FEAT_CRYPT
+		1
+#else
+		0
+#endif
+		},
+	{"cscope",
+#ifdef FEAT_CSCOPE
+		1
+#else
+		0
+#endif
+		},
+	{"cursorbind", 1},
+	{"cursorshape",
+#ifdef CURSOR_SHAPE
+		1
+#else
+		0
+#endif
+		},
+	{"debug",
+#ifdef DEBUG
+		1
+#else
+		0
+#endif
+		},
+	{"dialog_con",
+#ifdef FEAT_CON_DIALOG
+		1
+#else
+		0
+#endif
+		},
+	{"dialog_gui",
+#ifdef FEAT_GUI_DIALOG
+		1
+#else
+		0
+#endif
+		},
+	{"diff",
+#ifdef FEAT_DIFF
+		1
+#else
+		0
+#endif
+		},
+	{"digraphs",
+#ifdef FEAT_DIGRAPHS
+		1
+#else
+		0
+#endif
+		},
+	{"directx",
+#ifdef FEAT_DIRECTX
+		1
+#else
+		0
+#endif
+		},
+	{"dnd",
+#ifdef FEAT_DND
+		1
+#else
+		0
+#endif
+		},
+	{"emacs_tags",
+#ifdef FEAT_EMACS_TAGS
+		1
+#else
+		0
+#endif
+		},
+	{"eval", 1},		// always present, of course!
+	{"ex_extra", 1},	// graduated feature
+	{"extra_search",
+#ifdef FEAT_SEARCH_EXTRA
+		1
+#else
+		0
+#endif
+		},
+	{"file_in_path",
+#ifdef FEAT_SEARCHPATH
+		1
+#else
+		0
+#endif
+		},
+	{"filterpipe",
+#if defined(FEAT_FILTERPIPE) && !defined(VIMDLL)
+		1
+#else
+		0
+#endif
+		},
+	{"find_in_path",
+#ifdef FEAT_FIND_ID
+		1
+#else
+		0
+#endif
+		},
+	{"float",
+#ifdef FEAT_FLOAT
+		1
+#else
+		0
+#endif
+		},
+	{"folding",
+#ifdef FEAT_FOLDING
+		1
+#else
+		0
+#endif
+		},
+	{"footer",
+#ifdef FEAT_FOOTER
+		1
+#else
+		0
+#endif
+		},
+	{"fork",
+#if !defined(USE_SYSTEM) && defined(UNIX)
+		1
+#else
+		0
+#endif
+		},
+	{"gettext",
+#ifdef FEAT_GETTEXT
+		1
+#else
+		0
+#endif
+		},
+	{"gui",
+#ifdef FEAT_GUI
+		1
+#else
+		0
+#endif
+		},
+	{"gui_neXtaw",
+#if defined(FEAT_GUI_ATHENA) && defined(FEAT_GUI_NEXTAW)
+		1
+#else
+		0
+#endif
+		},
+	{"gui_athena",
+#if defined(FEAT_GUI_ATHENA) && !defined(FEAT_GUI_NEXTAW)
+		1
+#else
+		0
+#endif
+		},
+	{"gui_gtk",
+#ifdef FEAT_GUI_GTK
+		1
+#else
+		0
+#endif
+		},
+	{"gui_gtk2",
+#if defined(FEAT_GUI_GTK) && !defined(USE_GTK3)
+		1
+#else
+		0
+#endif
+		},
+	{"gui_gtk3",
+#if defined(FEAT_GUI_GTK) && defined(USE_GTK3)
+		1
+#else
+		0
+#endif
+		},
+	{"gui_gnome",
+#ifdef FEAT_GUI_GNOME
+		1
+#else
+		0
+#endif
+		},
+	{"gui_haiku",
+#ifdef FEAT_GUI_HAIKU
+		1
+#else
+		0
+#endif
+		},
+	{"gui_mac",
+#ifdef FEAT_GUI_MAC
+		1
+#else
+		0
+#endif
+		},
+	{"gui_motif",
+#ifdef FEAT_GUI_MOTIF
+		1
+#else
+		0
+#endif
+		},
+	{"gui_photon",
+#ifdef FEAT_GUI_PHOTON
+		1
+#else
+		0
+#endif
+		},
+	{"gui_win32",
+#ifdef FEAT_GUI_MSWIN
+		1
+#else
+		0
+#endif
+		},
+	{"iconv",
+#if defined(HAVE_ICONV_H) && defined(USE_ICONV)
+		1
+#else
+		0
+#endif
+		},
+	{"insert_expand", 1},
+	{"job",
+#ifdef FEAT_JOB_CHANNEL
+		1
+#else
+		0
+#endif
+		},
+	{"jumplist",
+#ifdef FEAT_JUMPLIST
+		1
+#else
+		0
+#endif
+		},
+	{"keymap",
+#ifdef FEAT_KEYMAP
+		1
+#else
+		0
+#endif
+		},
+	{"lambda", 1}, // always with FEAT_EVAL, since 7.4.2120 with closure
+	{"langmap",
+#ifdef FEAT_LANGMAP
+		1
+#else
+		0
+#endif
+		},
+	{"libcall",
+#ifdef FEAT_LIBCALL
+		1
+#else
+		0
+#endif
+		},
+	{"linebreak",
+#ifdef FEAT_LINEBREAK
+		1
+#else
+		0
+#endif
+		},
+	{"lispindent",
+#ifdef FEAT_LISP
+		1
+#else
+		0
+#endif
+		},
+	{"listcmds", 1},
+	{"localmap", 1},
+	{"lua",
+#if defined(FEAT_LUA) && !defined(DYNAMIC_LUA)
+		1
+#else
+		0
+#endif
+		},
+	{"menu",
+#ifdef FEAT_MENU
+		1
+#else
+		0
+#endif
+		},
+	{"mksession",
+#ifdef FEAT_SESSION
+		1
+#else
+		0
+#endif
+		},
+	{"modify_fname", 1},
+	{"mouse", 1},
+	{"mouseshape",
+#ifdef FEAT_MOUSESHAPE
+		1
+#else
+		0
+#endif
+		},
+	{"mouse_dec",
+#if (defined(UNIX) || defined(VMS)) && defined(FEAT_MOUSE_DEC)
+		1
+#else
+		0
+#endif
+		},
+	{"mouse_gpm",
+#if (defined(UNIX) || defined(VMS)) && defined(FEAT_MOUSE_GPM)
+		1
+#else
+		0
+#endif
+		},
+	{"mouse_jsbterm",
+#if (defined(UNIX) || defined(VMS)) && defined(FEAT_MOUSE_JSB)
+		1
+#else
+		0
+#endif
+		},
+	{"mouse_netterm",
+#if (defined(UNIX) || defined(VMS)) && defined(FEAT_MOUSE_NET)
+		1
+#else
+		0
+#endif
+		},
+	{"mouse_pterm",
+#if (defined(UNIX) || defined(VMS)) && defined(FEAT_MOUSE_PTERM)
+		1
+#else
+		0
+#endif
+		},
+	{"mouse_sgr",
+#if (defined(UNIX) || defined(VMS)) && defined(FEAT_MOUSE_XTERM)
+		1
+#else
+		0
+#endif
+		},
+	{"mouse_sysmouse",
+#if (defined(UNIX) || defined(VMS)) && defined(FEAT_SYSMOUSE)
+		1
+#else
+		0
+#endif
+		},
+	{"mouse_urxvt",
+#if (defined(UNIX) || defined(VMS)) && defined(FEAT_MOUSE_URXVT)
+		1
+#else
+		0
+#endif
+		},
+	{"mouse_xterm",
+#if (defined(UNIX) || defined(VMS)) && defined(FEAT_MOUSE_XTERM)
+		1
+#else
+		0
+#endif
+		},
+	{"multi_byte", 1},
+	{"multi_byte_ime",
+#ifdef FEAT_MBYTE_IME
+		1
+#else
+		0
+#endif
+		},
+	{"multi_lang",
+#ifdef FEAT_MULTI_LANG
+		1
+#else
+		0
+#endif
+		},
+	{"mzscheme",
+#if defined(FEAT_MZSCHEME) && !defined(DYNAMIC_MZSCHEME)
+		1
+#else
+		0
+#endif
+		},
+	{"num64", 1},
+	{"ole",
+#ifdef FEAT_OLE
+		1
+#else
+		0
+#endif
+		},
+	{"packages",
+#ifdef FEAT_EVAL
+		1
+#else
+		0
+#endif
+		},
+	{"path_extra",
+#ifdef FEAT_PATH_EXTRA
+		1
+#else
+		0
+#endif
+		},
+	{"perl",
+#if defined(FEAT_PERL) && !defined(DYNAMIC_PERL)
+		1
+#else
+		0
+#endif
+		},
+	{"persistent_undo",
+#ifdef FEAT_PERSISTENT_UNDO
+		1
+#else
+		0
+#endif
+		},
+	{"python_compiled",
+#if defined(FEAT_PYTHON)
+		1
+#else
+		0
+#endif
+		},
+	{"python_dynamic",
+#if defined(FEAT_PYTHON) && defined(DYNAMIC_PYTHON)
+		1
+#else
+		0
+#endif
+		},
+	{"python",
+#if defined(FEAT_PYTHON) && !defined(DYNAMIC_PYTHON)
+		1
+#else
+		0
+#endif
+		},
+	{"pythonx",
+#if (defined(FEAT_PYTHON) && !defined(DYNAMIC_PYTHON)) \
+	|| (defined(FEAT_PYTHON3) && !defined(DYNAMIC_PYTHON3))
+		1
+#else
+		0
+#endif
+		},
+	{"python3_compiled",
+#if defined(FEAT_PYTHON3)
+		1
+#else
+		0
+#endif
+		},
+	{"python3_dynamic",
+#if defined(FEAT_PYTHON3) && defined(DYNAMIC_PYTHON3)
+		1
+#else
+		0
+#endif
+		},
+	{"python3",
+#if defined(FEAT_PYTHON3) && !defined(DYNAMIC_PYTHON3)
+		1
+#else
+		0
+#endif
+		},
+	{"popupwin",
+#ifdef FEAT_PROP_POPUP
+		1
+#else
+		0
+#endif
+		},
+	{"postscript",
+#ifdef FEAT_POSTSCRIPT
+		1
+#else
+		0
+#endif
+		},
+	{"printer",
+#ifdef FEAT_PRINTER
+		1
+#else
+		0
+#endif
+		},
+	{"profile",
+#ifdef FEAT_PROFILE
+		1
+#else
+		0
+#endif
+		},
+	{"reltime",
+#ifdef FEAT_RELTIME
+		1
+#else
+		0
+#endif
+		},
+	{"quickfix",
+#ifdef FEAT_QUICKFIX
+		1
+#else
+		0
+#endif
+		},
+	{"rightleft",
+#ifdef FEAT_RIGHTLEFT
+		1
+#else
+		0
+#endif
+		},
+	{"ruby",
+#if defined(FEAT_RUBY) && !defined(DYNAMIC_RUBY)
+		1
+#else
+		0
+#endif
+		},
+	{"scrollbind", 1},
+	{"showcmd",
+#ifdef FEAT_CMDL_INFO
+		1
+#else
+		0
+#endif
+		},
+	{"cmdline_info",
+#ifdef FEAT_CMDL_INFO
+		1
+#else
+		0
+#endif
+		},
+	{"signs",
+#ifdef FEAT_SIGNS
+		1
+#else
+		0
+#endif
+		},
+	{"smartindent",
+#ifdef FEAT_SMARTINDENT
+		1
+#else
+		0
+#endif
+		},
+	{"startuptime",
+#ifdef STARTUPTIME
+		1
+#else
+		0
+#endif
+		},
+	{"statusline",
+#ifdef FEAT_STL_OPT
+		1
+#else
+		0
+#endif
+		},
+	{"netbeans_intg",
+#ifdef FEAT_NETBEANS_INTG
+		1
+#else
+		0
+#endif
+		},
+	{"sound",
+#ifdef FEAT_SOUND
+		1
+#else
+		0
+#endif
+		},
+	{"spell",
+#ifdef FEAT_SPELL
+		1
+#else
+		0
+#endif
+		},
+	{"syntax",
+#ifdef FEAT_SYN_HL
+		1
+#else
+		0
+#endif
+		},
+	{"system",
+#if defined(USE_SYSTEM) || !defined(UNIX)
+		1
+#else
+		0
+#endif
+		},
+	{"tag_binary",
+#ifdef FEAT_TAG_BINS
+		1
+#else
+		0
+#endif
+		},
+	{"tcl",
+#if defined(FEAT_TCL) && !defined(DYNAMIC_TCL)
+		1
+#else
+		0
+#endif
+		},
+	{"termguicolors",
+#ifdef FEAT_TERMGUICOLORS
+		1
+#else
+		0
+#endif
+		},
+	{"terminal",
+#if defined(FEAT_TERMINAL) && !defined(MSWIN)
+		1
+#else
+		0
+#endif
+		},
+	{"terminfo",
+#ifdef TERMINFO
+		1
+#else
+		0
+#endif
+		},
+	{"termresponse",
+#ifdef FEAT_TERMRESPONSE
+		1
+#else
+		0
+#endif
+		},
+	{"textobjects",
+#ifdef FEAT_TEXTOBJ
+		1
+#else
+		0
+#endif
+		},
+	{"textprop",
+#ifdef FEAT_PROP_POPUP
+		1
+#else
+		0
+#endif
+		},
+	{"tgetent",
+#ifdef HAVE_TGETENT
+		1
+#else
+		0
+#endif
+		},
+	{"timers",
+#ifdef FEAT_TIMERS
+		1
+#else
+		0
+#endif
+		},
+	{"title",
+#ifdef FEAT_TITLE
+		1
+#else
+		0
+#endif
+		},
+	{"toolbar",
+#ifdef FEAT_TOOLBAR
+		1
+#else
+		0
+#endif
+		},
+	{"unnamedplus",
+#if defined(FEAT_CLIPBOARD) && defined(FEAT_X11)
+		1
+#else
+		0
+#endif
+		},
+	{"user-commands", 1},    // was accidentally included in 5.4
+	{"user_commands", 1},
+	{"vartabs",
+#ifdef FEAT_VARTABS
+		1
+#else
+		0
+#endif
+		},
+	{"vertsplit", 1},
+	{"viminfo",
+#ifdef FEAT_VIMINFO
+		1
+#else
+		0
+#endif
+		},
+	{"vimscript-1", 1},
+	{"vimscript-2", 1},
+	{"vimscript-3", 1},
+	{"vimscript-4", 1},
+	{"virtualedit", 1},
+	{"visual", 1},
+	{"visualextra", 1},
+	{"vreplace", 1},
+	{"vtp",
+#ifdef FEAT_VTP
+		1
+#else
+		0
+#endif
+		},
+	{"wildignore",
+#ifdef FEAT_WILDIGN
+		1
+#else
+		0
+#endif
+		},
+	{"wildmenu",
+#ifdef FEAT_WILDMENU
+		1
+#else
+		0
+#endif
+		},
+	{"windows", 1},
+	{"winaltkeys",
+#ifdef FEAT_WAK
+		1
+#else
+		0
+#endif
+		},
+	{"writebackup",
+#ifdef FEAT_WRITEBACKUP
+		1
+#else
+		0
+#endif
+		},
+	{"xim",
+#ifdef FEAT_XIM
+		1
+#else
+		0
+#endif
+		},
+	{"xfontset",
+#ifdef FEAT_XFONTSET
+		1
+#else
+		0
+#endif
+		},
+	{"xpm",
+#if defined(FEAT_XPM_W32) || defined(HAVE_XPM)
+		1
+#else
+		0
+#endif
+		},
+	{"xpm_w32",	// for backward compatibility
+#ifdef FEAT_XPM_W32
+		1
+#else
+		0
+#endif
+		},
+	{"xsmp",
 #ifdef USE_XSMP
-	"xsmp",
+		1
+#else
+		0
 #endif
+		},
+	{"xsmp_interact",
 #ifdef USE_XSMP_INTERACT
-	"xsmp_interact",
+		1
+#else
+		0
 #endif
+		},
+	{"xterm_clipboard",
 #ifdef FEAT_XCLIPBOARD
-	"xterm_clipboard",
+		1
+#else
+		0
 #endif
+		},
+	{"xterm_save",
 #ifdef FEAT_XTERM_SAVE
-	"xterm_save",
+		1
+#else
+		0
 #endif
+		},
+	{"X11",
 #if defined(UNIX) && defined(FEAT_X11)
-	"X11",
+		1
+#else
+		0
 #endif
-	NULL
+		},
+	{NULL, 0}
     };
 
     name = tv_get_string(&argvars[0]);
-    for (i = 0; has_list[i] != NULL; ++i)
-	if (STRICMP(name, has_list[i]) == 0)
+    for (i = 0; has_list[i].name != NULL; ++i)
+	if (STRICMP(name, has_list[i].name) == 0)
 	{
-	    n = TRUE;
+	    x = TRUE;
+	    n = has_list[i].present;
 	    break;
 	}
 
-    if (n == FALSE)
+    // features also in has_list[] but sometimes enabled at runtime
+    if (x == TRUE && n == FALSE)
     {
-	if (STRNICMP(name, "patch", 5) == 0)
-	{
-	    if (name[5] == '-'
-		    && STRLEN(name) >= 11
-		    && vim_isdigit(name[6])
-		    && vim_isdigit(name[8])
-		    && vim_isdigit(name[10]))
-	    {
-		int major = atoi((char *)name + 6);
-		int minor = atoi((char *)name + 8);
-
-		// Expect "patch-9.9.01234".
-		n = (major < VIM_VERSION_MAJOR
-		     || (major == VIM_VERSION_MAJOR
-			 && (minor < VIM_VERSION_MINOR
-			     || (minor == VIM_VERSION_MINOR
-				 && has_patch(atoi((char *)name + 10))))));
-	    }
-	    else
-		n = has_patch(atoi((char *)name + 5));
-	}
-	else if (STRICMP(name, "vim_starting") == 0)
-	    n = (starting != 0);
-	else if (STRICMP(name, "ttyin") == 0)
-	    n = mch_input_isatty();
-	else if (STRICMP(name, "ttyout") == 0)
-	    n = stdout_isatty;
-	else if (STRICMP(name, "multi_byte_encoding") == 0)
-	    n = has_mbyte;
+	if (0)
+	    ;
 #if defined(FEAT_BEVAL) && defined(FEAT_GUI_MSWIN)
 	else if (STRICMP(name, "balloon_multiline") == 0)
 	    n = multiline_balloon_available();
 #endif
-#ifdef DYNAMIC_TCL
-	else if (STRICMP(name, "tcl") == 0)
-	    n = tcl_enabled(FALSE);
+#ifdef VIMDLL
+	else if (STRICMP(name, "filterpipe") == 0)
+	    n = gui.in_use || gui.starting;
 #endif
 #if defined(USE_ICONV) && defined(DYNAMIC_ICONV)
 	else if (STRICMP(name, "iconv") == 0)
@@ -3915,9 +4512,9 @@ f_has(typval_T *argvars, typval_T *rettv)
 	else if (STRICMP(name, "mzscheme") == 0)
 	    n = mzscheme_enabled(FALSE);
 #endif
-#ifdef DYNAMIC_RUBY
-	else if (STRICMP(name, "ruby") == 0)
-	    n = ruby_enabled(FALSE);
+#ifdef DYNAMIC_PERL
+	else if (STRICMP(name, "perl") == 0)
+	    n = perl_enabled(FALSE);
 #endif
 #ifdef DYNAMIC_PYTHON
 	else if (STRICMP(name, "python") == 0)
@@ -3944,53 +4541,129 @@ f_has(typval_T *argvars, typval_T *rettv)
 # endif
 	}
 #endif
-#ifdef DYNAMIC_PERL
-	else if (STRICMP(name, "perl") == 0)
-	    n = perl_enabled(FALSE);
+#ifdef DYNAMIC_RUBY
+	else if (STRICMP(name, "ruby") == 0)
+	    n = ruby_enabled(FALSE);
 #endif
-#ifdef FEAT_GUI
-	else if (STRICMP(name, "gui_running") == 0)
-	    n = (gui.in_use || gui.starting);
-# ifdef FEAT_BROWSE
-	else if (STRICMP(name, "browse") == 0)
-	    n = gui.in_use;	// gui_mch_browse() works when GUI is running
-# endif
-#endif
-#ifdef FEAT_SYN_HL
-	else if (STRICMP(name, "syntax_items") == 0)
-	    n = syntax_present(curwin);
-#endif
-#ifdef FEAT_VTP
-	else if (STRICMP(name, "vcon") == 0)
-	    n = is_term_win32() && has_vtp_working();
-#endif
-#ifdef FEAT_NETBEANS_INTG
-	else if (STRICMP(name, "netbeans_enabled") == 0)
-	    n = netbeans_active();
-#endif
-#ifdef FEAT_MOUSE_GPM
-	else if (STRICMP(name, "mouse_gpm_enabled") == 0)
-	    n = gpm_enabled();
+#ifdef DYNAMIC_TCL
+	else if (STRICMP(name, "tcl") == 0)
+	    n = tcl_enabled(FALSE);
 #endif
 #if defined(FEAT_TERMINAL) && defined(MSWIN)
 	else if (STRICMP(name, "terminal") == 0)
 	    n = terminal_enabled();
 #endif
-#if defined(FEAT_TERMINAL) && defined(MSWIN)
-	else if (STRICMP(name, "conpty") == 0)
-	    n = use_conpty();
-#endif
-#ifdef FEAT_CLIPBOARD
-	else if (STRICMP(name, "clipboard_working") == 0)
-	    n = clip_star.available;
-#endif
-#ifdef VIMDLL
-	else if (STRICMP(name, "filterpipe") == 0)
-	    n = gui.in_use || gui.starting;
-#endif
     }
 
-    rettv->vval.v_number = n;
+    // features not in has_list[]
+    if (x == FALSE)
+    {
+	if (STRNICMP(name, "patch", 5) == 0)
+	{
+	    x = TRUE;
+	    if (name[5] == '-'
+		    && STRLEN(name) >= 11
+		    && vim_isdigit(name[6])
+		    && vim_isdigit(name[8])
+		    && vim_isdigit(name[10]))
+	    {
+		int major = atoi((char *)name + 6);
+		int minor = atoi((char *)name + 8);
+
+		// Expect "patch-9.9.01234".
+		n = (major < VIM_VERSION_MAJOR
+		     || (major == VIM_VERSION_MAJOR
+			 && (minor < VIM_VERSION_MINOR
+			     || (minor == VIM_VERSION_MINOR
+				 && has_patch(atoi((char *)name + 10))))));
+	    }
+	    else
+		n = has_patch(atoi((char *)name + 5));
+	}
+	else if (STRICMP(name, "vim_starting") == 0)
+	{
+	    x = TRUE;
+	    n = (starting != 0);
+	}
+	else if (STRICMP(name, "ttyin") == 0)
+	{
+	    x = TRUE;
+	    n = mch_input_isatty();
+	}
+	else if (STRICMP(name, "ttyout") == 0)
+	{
+	    x = TRUE;
+	    n = stdout_isatty;
+	}
+	else if (STRICMP(name, "multi_byte_encoding") == 0)
+	{
+	    x = TRUE;
+	    n = has_mbyte;
+	}
+	else if (STRICMP(name, "gui_running") == 0)
+	{
+	    x = TRUE;
+#ifdef FEAT_GUI
+	    n = (gui.in_use || gui.starting);
+#endif
+	}
+	else if (STRICMP(name, "browse") == 0)
+	{
+	    x = TRUE;
+#if defined(FEAT_GUI) && defined(FEAT_BROWSE)
+	    n = gui.in_use;	// gui_mch_browse() works when GUI is running
+#endif
+	}
+	else if (STRICMP(name, "syntax_items") == 0)
+	{
+	    x = TRUE;
+#ifdef FEAT_SYN_HL
+	    n = syntax_present(curwin);
+#endif
+	}
+	else if (STRICMP(name, "vcon") == 0)
+	{
+	    x = TRUE;
+#ifdef FEAT_VTP
+	    n = is_term_win32() && has_vtp_working();
+#endif
+	}
+	else if (STRICMP(name, "netbeans_enabled") == 0)
+	{
+	    x = TRUE;
+#ifdef FEAT_NETBEANS_INTG
+	    n = netbeans_active();
+#endif
+	}
+	else if (STRICMP(name, "mouse_gpm_enabled") == 0)
+	{
+	    x = TRUE;
+#ifdef FEAT_MOUSE_GPM
+	    n = gpm_enabled();
+#endif
+	}
+	else if (STRICMP(name, "conpty") == 0)
+	{
+	    x = TRUE;
+#if defined(FEAT_TERMINAL) && defined(MSWIN)
+	    n = use_conpty();
+#endif
+	}
+	else if (STRICMP(name, "clipboard_working") == 0)
+	{
+	    x = TRUE;
+#ifdef FEAT_CLIPBOARD
+	    n = clip_star.available;
+#endif
+	}
+    }
+
+    if (argvars[1].v_type != VAR_UNKNOWN && tv_get_number(&argvars[1]) != 0)
+	// return whether feature could ever be enabled
+	rettv->vval.v_number = x;
+    else
+	// return whether feature is enabled
+	rettv->vval.v_number = n;
 }
 
 /*

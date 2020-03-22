@@ -20,6 +20,14 @@ func Test_00_bufexists()
   call assert_equal(0, bufexists('Xfoo'))
 endfunc
 
+func Test_has()
+  call assert_equal(1, has('eval'))
+  call assert_equal(1, has('eval', 1))
+
+  call assert_equal(0, has('nonexistent'))
+  call assert_equal(0, has('nonexistent', 1))
+endfunc
+
 func Test_empty()
   call assert_equal(1, empty(''))
   call assert_equal(0, empty('a'))
@@ -1586,7 +1594,7 @@ func Test_confirm()
   call assert_equal(2, a)
 
   " confirm() should return 0 when pressing CTRL-C.
-  call feedkeys("\<C-c>", 'L')
+  call feedkeys("\<C-C>", 'L')
   let a = confirm('Are you sure?', "&Yes\n&No")
   call assert_equal(0, a)
 

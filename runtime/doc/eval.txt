@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Mar 16
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Mar 22
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -2515,7 +2515,7 @@ glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])
 glob2regpat({expr})		String	convert a glob pat into a search pat
 globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
 				String	do glob({expr}) for all dirs in {path}
-has({feature})			Number	|TRUE| if feature {feature} supported
+has({feature} [, {check}])	Number	|TRUE| if feature {feature} supported
 has_key({dict}, {key})		Number	|TRUE| if {dict} has entry {key}
 haslocaldir([{winnr} [, {tabnr}]])
 				Number	|TRUE| if the window executed |:lcd|
@@ -4358,8 +4358,8 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 		'L'	Lowlevel input.  Only works for Unix or when using the
 			GUI. Keys are used as if they were coming from the
 			terminal.  Other flags are not used.  *E980*
-			When a CTRL-C interrupts it sets the internal
-			"got_int" flag.
+			When a CTRL-C interrupts and 't' is included it sets
+			the internal "got_int" flag.
 		'i'	Insert the string instead of appending (see above).
 		'x'	Execute commands until typeahead is empty.  This is
 			similar to using ":normal!".  You can call feedkeys()
@@ -5828,10 +5828,20 @@ globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
 			GetExpr()->globpath(&rtp)
 <
 							*has()*
-has({feature})	The result is a Number, which is 1 if the feature {feature} is
-		supported, zero otherwise.  The {feature} argument is a
-		string.  See |feature-list| below.
+has({feature} [, {check}])
+		When {check} is omitted or is zero: The result is a Number,
+		which is 1 if the feature {feature} is supported, zero
+		otherwise.  The {feature} argument is a string, case is
+		ignored.  See |feature-list| below.
+
+		When {check} is present and not zero: The result is a Number,
+		which is 1 if the feature {feature} could ever be supported,
+		zero otherwise.  This is useful to check for a typo in
+		{feature}.  Keep in mind that an older Vim version will not
+		know about a feature added later.
+
 		Also see |exists()|.
+
 		Note that to skip code that has a syntax error when the
 		feature is not available, Vim may skip the rest of the line
 		and miss a following `endif`.  Therfore put the `endif` on a
