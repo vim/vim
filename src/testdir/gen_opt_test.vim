@@ -73,7 +73,7 @@ let test_values = {
       \ 'buftype': [['', 'help', 'nofile'], ['xxx', 'help,nofile']],
       \ 'casemap': [['', 'internal'], ['xxx']],
       \ 'cedit': [['', '\<Esc>'], ['xxx', 'f']],
-      \ 'clipboard': [['', 'unnamed', 'autoselect,unnamed'], ['xxx']],
+      \ 'clipboard': [['', 'unnamed', 'autoselect,unnamed', 'html', 'exclude:vimdisplay'], ['xxx', '\ze*']],
       \ 'colorcolumn': [['', '8', '+2'], ['xxx']],
       \ 'comments': [['', 'b:#'], ['xxx']],
       \ 'commentstring': [['', '/*%s*/'], ['xxx']],

@@ -6,175 +6,7 @@ CheckNotGui
 CheckUnix
 
 source shared.vim
-
-" xterm2 and sgr always work, urxvt is optional.
-let s:ttymouse_values = ['xterm2', 'sgr']
-if has('mouse_urxvt')
-  call add(s:ttymouse_values, 'urxvt')
-endif
-
-" dec doesn't support all the functionality
-if has('mouse_dec')
-  let s:ttymouse_dec = ['dec']
-else
-  let s:ttymouse_dec = []
-endif
-
-" netterm only supports left click
-if has('mouse_netterm')
-  let s:ttymouse_netterm = ['netterm']
-else
-  let s:ttymouse_netterm = []
-endif
-
-" Helper function to emit a terminal escape code.
-func TerminalEscapeCode(code, row, col, m)
-  if &ttymouse ==# 'xterm2'
-    " need to use byte encoding here.
-    let str = list2str([a:code + 0x20, a:col + 0x20, a:row + 0x20])
-    if has('iconv')
-      let bytes = str->iconv('utf-8', 'latin1')
-    else
-      " Hopefully the numbers are not too big.
-      let bytes = str
-    endif
-    return "\<Esc>[M" .. bytes
-  elseif &ttymouse ==# 'sgr'
-    return printf("\<Esc>[<%d;%d;%d%s", a:code, a:col, a:row, a:m)
-  elseif &ttymouse ==# 'urxvt'
-    return printf("\<Esc>[%d;%d;%dM", a:code + 0x20, a:col, a:row)
-  endif
-endfunc
-
-func DecEscapeCode(code, down, row, col)
-    return printf("\<Esc>[%d;%d;%d;%d&w", a:code, a:down, a:row, a:col)
-endfunc
-
-func NettermEscapeCode(row, col)
-    return printf("\<Esc>}%d,%d\r", a:row, a:col)
-endfunc
-
-func MouseLeftClickCode(row, col)
-  if &ttymouse ==# 'dec'
-    return DecEscapeCode(2, 4, a:row, a:col)
-  elseif &ttymouse ==# 'netterm'
-    return NettermEscapeCode(a:row, a:col)
-  else
-    return TerminalEscapeCode(0, a:row, a:col, 'M')
-  endif
-endfunc
-
-func MouseLeftClick(row, col)
-  call feedkeys(MouseLeftClickCode(a:row, a:col), 'Lx!')
-endfunc
-
-func MouseMiddleClickCode(row, col)
-  if &ttymouse ==# 'dec'
-    return DecEscapeCode(4, 2, a:row, a:col)
-  else
-    return TerminalEscapeCode(1, a:row, a:col, 'M')
-  endif
-endfunc
-
-func MouseMiddleClick(row, col)
-  call feedkeys(MouseMiddleClickCode(a:row, a:col), 'Lx!')
-endfunc
-
-func MouseRightClickCode(row, col)
-  if &ttymouse ==# 'dec'
-    return DecEscapeCode(6, 1, a:row, a:col)
-  else
-    return TerminalEscapeCode(2, a:row, a:col, 'M')
-  endif
-endfunc
-
-func MouseRightClick(row, col)
-  call feedkeys(MouseRightClickCode(a:row, a:col), 'Lx!')
-endfunc
-
-func MouseCtrlLeftClickCode(row, col)
-  let ctrl = 0x10
-  return TerminalEscapeCode(0 + ctrl, a:row, a:col, 'M')
-endfunc
-
-func MouseCtrlLeftClick(row, col)
-  call feedkeys(MouseCtrlLeftClickCode(a:row, a:col), 'Lx!')
-endfunc
-
-func MouseCtrlRightClickCode(row, col)
-  let ctrl = 0x10
-  return TerminalEscapeCode(2 + ctrl, a:row, a:col, 'M')
-endfunc
-
-func MouseCtrlRightClick(row, col)
-  call feedkeys(MouseCtrlRightClickCode(a:row, a:col), 'Lx!')
-endfunc
-
-func MouseLeftReleaseCode(row, col)
-  if &ttymouse ==# 'dec'
-    return DecEscapeCode(3, 0, a:row, a:col)
-  elseif &ttymouse ==# 'netterm'
-    return ''
-  else
-    return TerminalEscapeCode(3, a:row, a:col, 'm')
-  endif
-endfunc
-
-func MouseLeftRelease(row, col)
-  call feedkeys(MouseLeftReleaseCode(a:row, a:col), 'Lx!')
-endfunc
-
-func MouseMiddleReleaseCode(row, col)
-  if &ttymouse ==# 'dec'
-    return DecEscapeCode(5, 0, a:row, a:col)
-  else
-    return TerminalEscapeCode(3, a:row, a:col, 'm')
-  endif
-endfunc
-
-func MouseMiddleRelease(row, col)
-  call feedkeys(MouseMiddleReleaseCode(a:row, a:col), 'Lx!')
-endfunc
-
-func MouseRightReleaseCode(row, col)
-  if &ttymouse ==# 'dec'
-    return DecEscapeCode(7, 0, a:row, a:col)
-  else
-    return TerminalEscapeCode(3, a:row, a:col, 'm')
-  endif
-endfunc
-
-func MouseRightRelease(row, col)
-  call feedkeys(MouseRightReleaseCode(a:row, a:col), 'Lx!')
-endfunc
-
-func MouseLeftDragCode(row, col)
-  if &ttymouse ==# 'dec'
-    return DecEscapeCode(1, 4, a:row, a:col)
-  else
-    return TerminalEscapeCode(0x20, a:row, a:col, 'M')
-  endif
-endfunc
-
-func MouseLeftDrag(row, col)
-  call feedkeys(MouseLeftDragCode(a:row, a:col), 'Lx!')
-endfunc
-
-func MouseWheelUpCode(row, col)
-  return TerminalEscapeCode(0x40, a:row, a:col, 'M')
-endfunc
-
-func MouseWheelUp(row, col)
-  call feedkeys(MouseWheelUpCode(a:row, a:col), 'Lx!')
-endfunc
-
-func MouseWheelDownCode(row, col)
-  return TerminalEscapeCode(0x41, a:row, a:col, 'M')
-endfunc
-
-func MouseWheelDown(row, col)
-  call feedkeys(MouseWheelDownCode(a:row, a:col), 'Lx!')
-endfunc
+source mouse.vim
 
 func Test_term_mouse_left_click()
   new
@@ -185,7 +17,7 @@ func Test_term_mouse_left_click()
   set mouse=a term=xterm
   call setline(1, ['line 1', 'line 2', 'line 3 is a bit longer'])
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec + s:ttymouse_netterm
+  for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec + g:Ttymouse_netterm
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
     go
@@ -215,7 +47,7 @@ func Test_xterm_mouse_right_click_extends_visual()
   set mouse=a term=xterm
 
   for visual_mode in ["v", "V", "\<C-V>"]
-    for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+    for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec
       let msg = 'visual=' .. visual_mode .. ' ttymouse=' .. ttymouse_val
       exe 'set ttymouse=' .. ttymouse_val
 
@@ -284,7 +116,7 @@ func Test_xterm_mouse_ctrl_click()
   let save_ttymouse = &ttymouse
   set mouse=a term=xterm
 
-  for ttymouse_val in s:ttymouse_values
+  for ttymouse_val in g:Ttymouse_values
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
     help
@@ -322,7 +154,7 @@ func Test_term_mouse_middle_click()
   let @* = 'abc'
   set mouse=a term=xterm
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+  for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
     call setline(1, ['123456789', '123456789'])
@@ -366,7 +198,7 @@ func Test_1xterm_mouse_wheel()
   set mouse=a term=xterm
   call setline(1, range(1, 100))
 
-  for ttymouse_val in s:ttymouse_values
+  for ttymouse_val in g:Ttymouse_values
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
     go
@@ -413,7 +245,7 @@ func Test_term_mouse_drag_beyond_window()
   wincmd j
   2split
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+  for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
 
@@ -490,7 +322,7 @@ func Test_term_mouse_drag_window_separator()
   call test_override('no_query_mouse', 1)
   set mouse=a term=xterm
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+  for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
 
@@ -549,7 +381,7 @@ func Test_term_mouse_drag_statusline()
   let save_laststatus = &laststatus
   set mouse=a term=xterm laststatus=2
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+  for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
 
@@ -592,7 +424,7 @@ func Test_term_mouse_click_tab()
   set mouse=a term=xterm
   let row = 1
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec + s:ttymouse_netterm
+  for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec + g:Ttymouse_netterm
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
     e Xfoo
@@ -642,7 +474,7 @@ func Test_term_mouse_click_X_to_close_tab()
   let row = 1
   let col = &columns
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec + s:ttymouse_netterm
+  for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec + g:Ttymouse_netterm
     if ttymouse_val ==# 'xterm2' && col > 223
       " When 'ttymouse' is 'xterm2', row/col bigger than 223 are not supported.
       continue
@@ -690,7 +522,7 @@ func Test_term_mouse_drag_to_move_tab()
   set mouse=a term=xterm mousetime=1
   let row = 1
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+  for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
     e Xtab1
@@ -744,7 +576,7 @@ func Test_term_mouse_double_click_to_create_tab()
   let row = 1
   let col = 10
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+  for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
     e Xtab1
@@ -797,7 +629,7 @@ func Test_term_mouse_multiple_clicks_to_visually_select()
   set mouse=a term=xterm mousetime=200
   new
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+  for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
     call setline(1, ['foo [foo bar] foo', 'foo'])
@@ -925,7 +757,7 @@ func Test_term_mouse_click_in_cmdline_to_set_pos()
   set mouse=a term=xterm
   let row = &lines
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+  for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
 
@@ -958,7 +790,7 @@ func Test_term_mouse_middle_click_in_cmdline_to_paste()
   let col = 1
   let @* = 'paste'
 
-  for ttymouse_val in s:ttymouse_values + s:ttymouse_dec
+  for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec
     let msg = 'ttymouse=' .. ttymouse_val
     exe 'set ttymouse=' .. ttymouse_val
 
@@ -995,7 +827,7 @@ func Test_mouse_popup_menu()
   menu PopUp.bar :let g:menustr = 'bar'<CR>
   menu PopUp.baz :let g:menustr = 'baz'<CR>
 
-  for ttymouse_val in s:ttymouse_values
+  for ttymouse_val in g:Ttymouse_values
     exe 'set ttymouse=' .. ttymouse_val
     let g:menustr = ''
     call feedkeys(MouseRightClickCode(1, 4)
