@@ -943,13 +943,20 @@ def Test_while_loop()
 enddef
 
 def Test_interrupt_loop()
+  let caught = false
   let x = 0
-  while 1
-    x += 1
-    if x == 100
-      feedkeys("\<C-C>", 'Lt')
-    endif
-  endwhile
+  try
+    while 1
+      x += 1
+      if x == 100
+        feedkeys("\<C-C>", 'Lt')
+      endif
+    endwhile
+  catch
+    caught = true
+    assert_equal(100, x)
+  endtry
+  assert_true(caught, 'should have caught an exception')
 enddef
 
 def Test_substitute_cmd()

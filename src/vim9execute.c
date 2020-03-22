@@ -487,7 +487,7 @@ call_def_function(
 	{
 	    // Turn CTRL-C into an exception.
 	    got_int = FALSE;
-	    if (throw_exception("Vim:Interrupt", ET_INTERRUPT, NULL) != FAIL)
+	    if (throw_exception("Vim:Interrupt", ET_INTERRUPT, NULL) == FAIL)
 		goto failed;
 	    did_throw = TRUE;
 	}
