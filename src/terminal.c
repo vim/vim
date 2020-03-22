@@ -465,7 +465,7 @@ term_start(
 	buf_T *buf;
 
 	// Create a new buffer without a window. Make it the current buffer for
-	// a moment to be able to do the initialisations.
+	// a moment to be able to do the initializations.
 	buf = buflist_new((char_u *)"", NULL, (linenr_T)0,
 							 BLN_NEW | BLN_LISTED);
 	if (buf == NULL || ml_open(buf) == FAIL)
@@ -526,9 +526,15 @@ term_start(
     apply_autocmds(EVENT_BUFFILEPRE, NULL, NULL, FALSE, curbuf);
 
     if (opt->jo_term_name != NULL)
+    {
+	vim_free(curbuf->b_ffname);
 	curbuf->b_ffname = vim_strsave(opt->jo_term_name);
+    }
     else if (argv != NULL)
+    {
+	vim_free(curbuf->b_ffname);
 	curbuf->b_ffname = vim_strsave((char_u *)"!system");
+    }
     else
     {
 	int	i;
@@ -1983,7 +1989,7 @@ term_enter_job_mode()
     redraw_buf_and_status_later(curbuf, NOT_VALID);
 #ifdef FEAT_PROP_POPUP
     if (WIN_IS_POPUP(curwin))
-	redraw_win_later(curwin, NOT_VALID);
+	redraw_later(NOT_VALID);
 #endif
 }
 
@@ -4321,6 +4327,8 @@ term_update_colors(void)
 	    vterm_obtain_state(term->tl_vterm),
 	    &term->tl_default_color.fg,
 	    &term->tl_default_color.bg);
+
+    redraw_later(NOT_VALID);
 }
 
 /*
