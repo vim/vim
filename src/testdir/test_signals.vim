@@ -108,6 +108,5 @@ func Test_signal_INT()
   call term_sendkeys(buf, ":call setline(1, 'INTERUPTED')\n")
   call WaitForAssert({-> assert_equal('INTERUPTED', term_getline(buf, 1))})
 
-  call term_sendkeys(buf, ":q!\n")
   call StopVimInTerminal(buf)
 endfunc
