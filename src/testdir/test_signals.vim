@@ -1,6 +1,8 @@
 " Test signal handling.
 
 source check.vim
+source term_util.vim
+
 CheckUnix
 
 source shared.vim
@@ -50,7 +52,7 @@ endfunc
 " Test signal PWR, which should update the swap file.
 func Test_signal_PWR()
   if !HasSignal('PWR')
-    return
+    throw 'Skipped: PWR signal not supported'
   endif
 
   " Set a very large 'updatetime' and 'updatecount', so that we can be sure
@@ -74,4 +76,38 @@ func Test_signal_PWR()
 
   bwipe!
   set updatetime& updatecount&
+endfunc
+
+" Test signal INT. Handler sets got_int. It should be like typing CTRL-C.
+func Test_signal_INT()
+  if !HasSignal('INT')
+    throw 'Skipped: INT signal not supported'
+  endif
+
+  " Skip the rest of the test when running with valgrind as signal INT is not
+  " received somehow by Vim when running with valgrind.
+  let cmd = GetVimCommand()
+  if cmd =~ 'valgrind'
+    throw 'Skipped: cannot test signal INT with valgrind'
+  endif
+
+  if !CanRunVimInTerminal()
+    throw 'Skipped: cannot run vim in terminal'
+  endif
+  let buf = RunVimInTerminal('', {'rows': 6})
+
+  " Get the PID of Vim running in terminal.
+  call term_sendkeys(buf, ":echo '<' .. getpid() .. '>'\n")
+  call WaitForAssert({-> assert_match('^<\d\+>', term_getline(buf, 6))})
+  let pid = substitute(term_getline(buf, 6), '^<\(\d\+\)>.*', '\=submatch(1)', '')
+
+  " Check that an endless loop in Vim is interrupted by signal INT.
+  call term_sendkeys(buf, ":while 1 | endwhile\n")
+  call WaitForAssert({-> assert_equal(':while 1 | endwhile', term_getline(buf, 6))})
+  exe 'silent !kill -s INT ' .. pid
+  call term_sendkeys(buf, ":call setline(1, 'INTERUPTED')\n")
+  call WaitForAssert({-> assert_equal('INTERUPTED', term_getline(buf, 1))})
+
+  call term_sendkeys(buf, ":q!\n")
+  call StopVimInTerminal(buf)
 endfunc
