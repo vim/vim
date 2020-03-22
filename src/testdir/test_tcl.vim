@@ -653,6 +653,9 @@ endfunc
 
 " Test exiting current Tcl interpreter and re-creating one.
 func Test_tcl_exit()
+  call assert_fails('tcl exit 1 1', 'wrong # args: should be "exit ?returnCode?"')
+  call assert_fails('tcl exit x', 'expected integer but got "x"')
+
   tcl set foo "foo"
   call assert_fails('tcl exit 3', 'E572: exit code 3')
 
