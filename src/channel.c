@@ -4457,9 +4457,11 @@ channel_parse_messages(void)
 	    if (channel->ch_killing)
 	    {
 		channel_free_contents(channel);
+		channel_free_channel(channel);
 		channel->ch_job->jv_channel = NULL;
 	    }
-	    channel_free(channel);
+	    else
+		channel_free(channel);
 	    // channel has been freed, start over
 	    channel = first_channel;
 	    continue;
