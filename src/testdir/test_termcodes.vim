@@ -758,16 +758,20 @@ func Test_term_mouse_click_in_cmdline_to_set_pos()
   let row = &lines
 
   for ttymouse_val in g:Ttymouse_values + g:Ttymouse_dec
-    let msg = 'ttymouse=' .. ttymouse_val
-    exe 'set ttymouse=' .. ttymouse_val
+    " When 'ttymouse' is 'xterm2', row/col bigger than 223 are not supported.
+    if ttymouse_val !=# 'xterm2' || row <= 223
+      let msg = 'ttymouse=' .. ttymouse_val
+      exe 'set ttymouse=' .. ttymouse_val
 
-    call feedkeys(':"3456789'
-          \       .. MouseLeftClickCode(row, 7)
-          \       .. MouseLeftReleaseCode(row, 7) .. 'L'
-          \       .. MouseRightClickCode(row, 4)
-          \       .. MouseRightReleaseCode(row, 4) .. 'R'
-          \       .. "\<CR>", 'Lx!')
-    call assert_equal('"3R456L789', @:, msg)
+
+      call feedkeys(':"3456789'
+            \       .. MouseLeftClickCode(row, 7)
+            \       .. MouseLeftReleaseCode(row, 7) .. 'L'
+            \       .. MouseRightClickCode(row, 4)
+            \       .. MouseRightReleaseCode(row, 4) .. 'R'
+            \       .. "\<CR>", 'Lx!')
+      call assert_equal('"3R456L789', @:, msg)
+    endif
   endfor
 
   let &mouse = save_mouse

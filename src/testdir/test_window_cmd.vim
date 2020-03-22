@@ -1013,13 +1013,13 @@ func Run_noroom_for_newwindow_test(dir_arg)
   let dir = (a:dir_arg == 'v') ? 'vert ' : ''
 
   " Open as many windows as possible
-  for i in range(500)
+  while v:true
     try
       exe dir . 'new'
     catch /E36:/
       break
     endtry
-  endfor
+  endwhile
 
   call writefile(['first', 'second', 'third'], 'Xfile1')
   call writefile([], 'Xfile2')
