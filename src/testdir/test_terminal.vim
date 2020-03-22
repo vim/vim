@@ -2330,6 +2330,10 @@ func Test_terminal_api_arg()
   unlet! g:called_arg
 endfunc
 
+func Test_terminal_invalid_arg()
+  call assert_fails('terminal ++xyz', 'E181:')
+endfunc
+
 func Test_terminal_in_popup()
   CheckRunVimInTerminal
 
