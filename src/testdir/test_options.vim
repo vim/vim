@@ -396,8 +396,7 @@ endfunc
 func Test_set_one_column()
   let out_mult = execute('set all')->split("\n")
   let out_one = execute('set! all')->split("\n")
-  " one column should be two to four times as many lines
-  call assert_inrange(len(out_mult) * 2, len(out_mult) * 4, len(out_one))
+  call assert_true(len(out_mult) < len(out_one))
 endfunc
 
 func Test_set_values()

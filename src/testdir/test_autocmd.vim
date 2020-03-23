@@ -1967,12 +1967,12 @@ endfunc
 func Test_autocmd_bufreadpre()
   new
   let b:bufreadpre = 1
-  call append(0, range(100))
+  call append(0, range(1000))
   w! XAutocmdBufReadPre.txt
   autocmd BufReadPre <buffer> :let b:bufreadpre += 1
-  norm! 50gg
+  norm! 500gg
   sp
-  norm! 100gg
+  norm! 1000gg
   wincmd p
   let g:wsv1 = winsaveview()
   wincmd p
