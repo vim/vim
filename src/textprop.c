@@ -1372,26 +1372,35 @@ adjust_props_for_split(
     for (i = 0; i < count; ++i)
     {
 	textprop_T  prop;
-	textprop_T *p;
+	proptype_T *pt;
+	int start_incl, end_incl, cont_prev, cont_next;
 
 	// copy the prop to an aligned structure
 	mch_memmove(&prop, props + i * sizeof(textprop_T), sizeof(textprop_T));
+	pt = text_prop_type_by_id(curbuf, prop.tp_type);
+	start_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_START_INCL));
+	end_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL));
+	cont_prev = prop.tp_col + !start_incl <= kept;
+	cont_next = skipped <= prop.tp_col + prop.tp_len - !end_incl;
 
-	if (prop.tp_col < kept && ga_grow(&prevprop, 1) == OK)
+	if (cont_prev && ga_grow(&prevprop, 1) == OK)
 	{
-	    p = ((textprop_T *)prevprop.ga_data) + prevprop.ga_len;
+	    textprop_T *p = ((textprop_T *)prevprop.ga_data) + prevprop.ga_len;
 	    *p = prop;
+	    ++prevprop.ga_len;
 	    if (p->tp_col + p->tp_len >= kept)
 		p->tp_len = kept - p->tp_col;
-	    ++prevprop.ga_len;
+	    if (cont_next)
+		p->tp_flags |= TP_FLAG_CONT_NEXT;
 	}
 
 	// Only add the property to the next line if the length is bigger than
 	// zero.
-	if (prop.tp_col + prop.tp_len > skipped && ga_grow(&nextprop, 1) == OK)
+	if (cont_next && ga_grow(&nextprop, 1) == OK)
 	{
-	    p = ((textprop_T *)nextprop.ga_data) + nextprop.ga_len;
+	    textprop_T *p = ((textprop_T *)nextprop.ga_data) + nextprop.ga_len;
 	    *p = prop;
+	    ++nextprop.ga_len;
 	    if (p->tp_col > skipped)
 		p->tp_col -= skipped - 1;
 	    else
@@ -1399,7 +1408,8 @@ adjust_props_for_split(
 		p->tp_len -= skipped - p->tp_col;
 		p->tp_col = 1;
 	    }
-	    ++nextprop.ga_len;
+	    if (cont_prev)
+		p->tp_flags |= TP_FLAG_CONT_PREV;
 	}
     }
 
