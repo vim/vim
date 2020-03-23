@@ -1774,7 +1774,7 @@ ex_disassemble(exarg_T *eap)
 		}
 		break;
 	    case ISN_EXECUTE:
-		smsg("%4d EXECUTE %d", current, iptr->isn_arg.number);
+		smsg("%4d EXECUTE %lld", current, iptr->isn_arg.number);
 		break;
 	    case ISN_LOAD:
 		if (iptr->isn_arg.number < 0)
@@ -1817,7 +1817,7 @@ ex_disassemble(exarg_T *eap)
 		smsg("%4d LOADENV %s", current, iptr->isn_arg.string);
 		break;
 	    case ISN_LOADREG:
-		smsg("%4d LOADREG @%c", current, iptr->isn_arg.number);
+		smsg("%4d LOADREG @%c", current, (int)iptr->isn_arg.number);
 		break;
 
 	    case ISN_STORE:
@@ -1862,7 +1862,7 @@ ex_disassemble(exarg_T *eap)
 		smsg("%4d STOREENV $%s", current, iptr->isn_arg.string);
 		break;
 	    case ISN_STOREREG:
-		smsg("%4d STOREREG @%c", current, iptr->isn_arg.number);
+		smsg("%4d STOREREG @%c", current, (int)iptr->isn_arg.number);
 		break;
 	    case ISN_STORENR:
 		smsg("%4d STORE %lld in $%d", current,
@@ -2153,7 +2153,7 @@ ex_disassemble(exarg_T *eap)
 			    else
 				smsg("%4d 2BOOL (!!val)", current);
 			    break;
-	    case ISN_2STRING: smsg("%4d 2STRING stack[%d]", current,
+	    case ISN_2STRING: smsg("%4d 2STRING stack[%lld]", current,
 							 iptr->isn_arg.number);
 				break;
 
