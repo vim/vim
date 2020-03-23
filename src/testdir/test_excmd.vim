@@ -255,7 +255,6 @@ func Test_confirm_cmd()
   call WaitForAssert({-> assert_match('^\[Y\]es, (N)o, (C)ancel: *$',
         \ term_getline(buf, 20))}, 1000)
   call term_sendkeys(buf, "N")
-  call term_sendkeys(buf, ":quit\n")
   call StopVimInTerminal(buf)
 
   call delete('foo')
