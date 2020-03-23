@@ -2495,7 +2495,7 @@ func Test_term_nasty_callback()
   func TermExit(...)
     call term_sendkeys(bufnr('#'), "exit\<CR>")
     call popup_close(win_getid())
-  endfu
+  endfunc
   call OpenTerms()
 
   call term_sendkeys(g:buf0, "exit\<CR>")
