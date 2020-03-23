@@ -95,16 +95,12 @@ func Test_signal_INT()
     throw 'Skipped: cannot run vim in terminal'
   endif
   let buf = RunVimInTerminal('', {'rows': 6})
-
-  " Get the PID of Vim running in terminal.
-  call term_sendkeys(buf, ":echo '<' .. getpid() .. '>'\n")
-  call WaitForAssert({-> assert_match('^<\d\+>', term_getline(buf, 6))})
-  let pid = substitute(term_getline(buf, 6), '^<\(\d\+\)>.*', '\=submatch(1)', '')
+  let pid_vim = term_getjob(buf)->job_info().process
 
   " Check that an endless loop in Vim is interrupted by signal INT.
   call term_sendkeys(buf, ":while 1 | endwhile\n")
   call WaitForAssert({-> assert_equal(':while 1 | endwhile', term_getline(buf, 6))})
-  exe 'silent !kill -s INT ' .. pid
+  exe 'silent !kill -s INT ' .. pid_vim
   call term_sendkeys(buf, ":call setline(1, 'INTERUPTED')\n")
   call WaitForAssert({-> assert_equal('INTERUPTED', term_getline(buf, 1))})
 
