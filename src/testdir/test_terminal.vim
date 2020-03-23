@@ -673,7 +673,7 @@ func Test_terminal_noblock()
     let len = 5000
   endif
 
-  for c in ['a','b','c','d','e','f','g','h','i','j','k']
+  for c in split('abcdefghijklmnopqrstuvwxyz', '\zs')
     call term_sendkeys(buf, 'echo ' . repeat(c, len) . "\<cr>")
   endfor
   call term_sendkeys(buf, "echo done\<cr>")
