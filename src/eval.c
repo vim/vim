@@ -2848,7 +2848,7 @@ eval_lambda(
 	if (verbose)
 	{
 	    if (*skipwhite(*arg) == '(')
-		semsg(_(e_nowhitespace));
+		emsg(_(e_nowhitespace));
 	    else
 		semsg(_(e_missing_paren), "lambda");
 	}
@@ -2910,7 +2910,7 @@ eval_method(
 	else if (VIM_ISWHITE((*arg)[-1]))
 	{
 	    if (verbose)
-		semsg(_(e_nowhitespace));
+		emsg(_(e_nowhitespace));
 	    ret = FAIL;
 	}
 	else

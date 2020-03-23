@@ -1830,7 +1830,7 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 	}
 	else
 	{
-	    semsg("Namespace not supported yet: %s", **arg);
+	    semsg("Namespace not supported yet: %s", *arg);
 	    goto theend;
 	}
     }
@@ -2213,7 +2213,7 @@ compile_lambda_call(char_u **arg, cctx_T *cctx)
     if (**arg != '(')
     {
 	if (*skipwhite(*arg) == '(')
-	    semsg(_(e_nowhitespace));
+	    emsg(_(e_nowhitespace));
 	else
 	    semsg(_(e_missing_paren), "lambda");
 	clear_tv(&rettv);

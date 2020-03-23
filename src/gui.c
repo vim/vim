@@ -542,7 +542,7 @@ gui_init(void)
 	    if (STRCMP(use_gvimrc, "NONE") != 0
 		    && STRCMP(use_gvimrc, "NORC") != 0
 		    && do_source(use_gvimrc, FALSE, DOSO_NONE, NULL) != OK)
-		semsg(_("E230: Cannot read from \"%s\""), use_gvimrc, NULL);
+		semsg(_("E230: Cannot read from \"%s\""), use_gvimrc);
 	}
 	else
 	{
