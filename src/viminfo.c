@@ -2992,7 +2992,7 @@ read_viminfo(
     if (p_verbose > 0)
     {
 	verbose_enter();
-	smsg(_("Reading viminfo file \"%s\"%s%s%s"),
+	smsg(_("Reading viminfo file \"%s\"%s%s%s%s"),
 		fname,
 		(flags & VIF_WANT_INFO) ? _(" info") : "",
 		(flags & VIF_WANT_MARKS) ? _(" marks") : "",

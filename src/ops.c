@@ -2999,7 +2999,7 @@ op_addsub(
 	    curbuf->b_op_start = startpos;
 
 	if (change_cnt > p_report)
-	    smsg(NGETTEXT("%ld line changed", "%ld lines changed",
+	    smsg(NGETTEXT("%d line changed", "%d lines changed",
 						      change_cnt), change_cnt);
     }
 }

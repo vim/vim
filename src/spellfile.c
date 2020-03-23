@@ -4115,7 +4115,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 	    pc = string_convert(&spin->si_conv, rline, NULL);
 	    if (pc == NULL)
 	    {
-		smsg(_("Conversion failure for word in %s line %d: %s"),
+		smsg(_("Conversion failure for word in %s line %ld: %s"),
 							   fname, lnum, rline);
 		continue;
 	    }
@@ -4133,10 +4133,10 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 	    if (STRNCMP(line, "encoding=", 9) == 0)
 	    {
 		if (spin->si_conv.vc_type != CONV_NONE)
-		    smsg(_("Duplicate /encoding= line ignored in %s line %d: %s"),
+		    smsg(_("Duplicate /encoding= line ignored in %s line %ld: %s"),
 						       fname, lnum, line - 1);
 		else if (did_word)
-		    smsg(_("/encoding= line after word ignored in %s line %d: %s"),
+		    smsg(_("/encoding= line after word ignored in %s line %ld: %s"),
 						       fname, lnum, line - 1);
 		else
 		{
@@ -4159,13 +4159,13 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 	    if (STRNCMP(line, "regions=", 8) == 0)
 	    {
 		if (spin->si_region_count > 1)
-		    smsg(_("Duplicate /regions= line ignored in %s line %d: %s"),
+		    smsg(_("Duplicate /regions= line ignored in %s line %ld: %s"),
 						       fname, lnum, line);
 		else
 		{
 		    line += 8;
 		    if (STRLEN(line) > MAXREGIONS * 2)
-			smsg(_("Too many regions in %s line %d: %s"),
+			smsg(_("Too many regions in %s line %ld: %s"),
 						       fname, lnum, line);
 		    else
 		    {
@@ -4179,7 +4179,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 		continue;
 	    }
 
-	    smsg(_("/ line ignored in %s line %d: %s"),
+	    smsg(_("/ line ignored in %s line %ld: %s"),
 						       fname, lnum, line - 1);
 	    continue;
 	}
@@ -4209,7 +4209,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 		    l = *p - '0';
 		    if (l == 0 || l > spin->si_region_count)
 		    {
-			smsg(_("Invalid region nr in %s line %d: %s"),
+			smsg(_("Invalid region nr in %s line %ld: %s"),
 							  fname, lnum, p);
 			break;
 		    }
@@ -4217,7 +4217,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 		}
 		else
 		{
-		    smsg(_("Unrecognized flags in %s line %d: %s"),
+		    smsg(_("Unrecognized flags in %s line %ld: %s"),
 							      fname, lnum, p);
 		    break;
 		}
