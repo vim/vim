@@ -2349,7 +2349,7 @@ fill_input_buf(int exit_on_error UNUSED)
 	     */
 	    if (ctrl_c_interrupts && (inbuf[inbufcount] == 3
 			|| (len >= 9 && STRNCMP(inbuf + inbufcount,
-						     "\e[27;5;99~", 10) == 0)))
+						   "\033[27;5;99~", 10) == 0)))
 	    {
 		// remove everything typed before the CTRL-C
 		mch_memmove(inbuf, inbuf + inbufcount, (size_t)(len + 1));
