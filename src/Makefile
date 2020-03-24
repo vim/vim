@@ -1599,6 +1599,7 @@ BASIC_SRC = \
 	change.c \
 	charset.c \
 	cindent.c \
+	clipboard.c \
 	cmdexpand.c \
 	cmdhist.c \
 	crypt.c \
@@ -1743,6 +1744,7 @@ OBJ_COMMON = \
 	objects/blob.o \
 	objects/blowfish.o \
 	objects/cindent.o \
+	objects/clipboard.o \
 	objects/cmdexpand.o \
 	objects/cmdhist.o \
 	objects/crypt.o \
@@ -1903,6 +1905,7 @@ PRO_AUTO = \
 	channel.pro \
 	charset.pro \
 	cindent.pro \
+	clipboard.pro \
 	cmdexpand.pro \
 	cmdhist.pro \
 	crypt.pro \
@@ -3117,6 +3120,9 @@ objects/charset.o: charset.c
 objects/cindent.o: cindent.c
 	$(CCC) -o $@ cindent.c
 
+objects/clipboard.o: clipboard.c
+	$(CCC) -o $@ clipboard.c
+
 objects/cmdexpand.o: cmdexpand.c
 	$(CCC) -o $@ cmdexpand.c
 
@@ -3731,6 +3737,10 @@ objects/charset.o: charset.c vim.h protodef.h auto/config.h feature.h os_unix.h 
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/cindent.o: cindent.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/clipboard.o: clipboard.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
