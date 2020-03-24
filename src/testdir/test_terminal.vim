@@ -666,23 +666,26 @@ func Test_terminal_noblock()
     " The shell or something else has a problem dealing with more than 1000
     " characters at the same time.
     let len = 1000
+    let wait_time = 15000
   " NPFS is used in Windows, nonblocking mode does not work properly.
   elseif has('win32')
     let len = 1
+    let wait_time = 5000
   else
     let len = 5000
+    let wait_time = 5000
   endif
 
+  " Send a lot of text lines, should be buffered properly.
   for c in split('abcdefghijklmnopqrstuvwxyz', '\zs')
     call term_sendkeys(buf, 'echo ' . repeat(c, len) . "\<cr>")
-    call term_wait(buf, 1)
   endfor
   call term_sendkeys(buf, "echo done\<cr>")
 
   " On MS-Windows there is an extra empty line below "done".  Find "done" in
   " the last-but-one or the last-but-two line.
   let lnum = term_getsize(buf)[0] - 1
-  call WaitForAssert({-> assert_match('done', term_getline(buf, lnum - 1) .. '//' .. term_getline(buf, lnum))})
+  call WaitForAssert({-> assert_match('done', term_getline(buf, lnum - 1) .. '//' .. term_getline(buf, lnum))}, wait_time)
   let line = term_getline(buf, lnum)
   if line !~ 'done'
     let line = term_getline(buf, lnum - 1)
