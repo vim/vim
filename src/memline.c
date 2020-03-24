@@ -3405,7 +3405,6 @@ adjust_text_props_for_delete(
     int		done_del;
     int		done_this;
     textprop_T	prop_del;
-    textprop_T	prop_this;
     bhdr_T	*hp;
     DATA_BL	*dp;
     int		idx;
@@ -3453,22 +3452,18 @@ adjust_text_props_for_delete(
 	    found = FALSE;
 	    for (done_this = 0; done_this < this_props_len; done_this += sizeof(textprop_T))
 	    {
+		int flag = above ? TP_FLAG_CONT_NEXT : TP_FLAG_CONT_PREV;
+		textprop_T prop_this;
 		mch_memmove(&prop_this, text + textlen + done_del, sizeof(textprop_T));
-		if (prop_del.tp_id == prop_this.tp_id
+
+		if (prop_this.tp_flags & flag
+			&& prop_del.tp_id == prop_this.tp_id
 			&& prop_del.tp_type == prop_this.tp_type)
 		{
-		    int flag = above ? TP_FLAG_CONT_NEXT : TP_FLAG_CONT_PREV;
-
 		    found = TRUE;
-		    if (prop_this.tp_flags & flag)
-		    {
-			prop_this.tp_flags &= ~flag;
-			mch_memmove(text + textlen + done_del, &prop_this, sizeof(textprop_T));
-		    }
-		    else if (above)
-			internal_error("text property above deleted line does not continue");
-		    else
-			internal_error("text property below deleted line does not continue");
+		    prop_this.tp_flags &= ~flag;
+		    mch_memmove(text + textlen + done_del, &prop_this, sizeof(textprop_T));
+		    break;
 		}
 	    }
 	    if (!found)
