@@ -777,7 +777,7 @@ perl_end(void)
 	Perl_sys_term();
 #endif
     }
-#ifdef DYNAMIC_PERL
+#if defined(DYNAMIC_PERL) && !USE_ADDRESS_SANITIZER
     if (hPerlLib)
     {
 	close_dll(hPerlLib);

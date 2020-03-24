@@ -280,7 +280,7 @@ tcl_enabled(int verbose)
     void
 tcl_end(void)
 {
-#ifdef DYNAMIC_TCL
+#if defined(DYNAMIC_TCL) && !USE_ADDRESS_SANITIZER
     if (hTclLib)
     {
 	close_dll(hTclLib);

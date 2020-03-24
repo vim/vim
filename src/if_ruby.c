@@ -741,11 +741,13 @@ static struct
     static void
 end_dynamic_ruby(void)
 {
+#if !USE_ADDRESS_SANITIZER
     if (hinstRuby)
     {
 	close_dll(hinstRuby);
 	hinstRuby = NULL;
     }
+#endif
 }
 
 /*

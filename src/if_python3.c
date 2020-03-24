@@ -640,11 +640,13 @@ py3__Py_XDECREF(PyObject *op)
     static void
 end_dynamic_python3(void)
 {
+#if !USE_ADDRESS_SANITIZER
     if (hinstPy3 != 0)
     {
 	close_dll(hinstPy3);
 	hinstPy3 = 0;
     }
+#endif
 }
 
 /*

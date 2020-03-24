@@ -2657,4 +2657,13 @@ long elapsed(DWORD start_tick);
 #define REPTERM_SPECIAL		4
 #define REPTERM_NO_SIMPLIFY	8
 
+// Build with ASan (Address Sanitizer)
+#ifdef __clang__
+# define USE_ADDRESS_SANITIZER __has_feature(address_sanitizer)
+#elif defined(__SANITIZE_ADDRESS__) // gcc
+# define USE_ADDRESS_SANITIZER 1
+#else
+# define USE_ADDRESS_SANITIZER 0
+#endif
+
 #endif // VIM__H
