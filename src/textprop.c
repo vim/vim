@@ -380,6 +380,29 @@ get_text_props(buf_T *buf, linenr_T lnum, char_u **props, int will_change)
     return (int)(proplen / sizeof(textprop_T));
 }
 
+/**
+ * Return the number of text properties on line "lnum" in the current buffer.
+ * When "only_starting" is true only text properties starting in this line will
+ * be considered.
+ */
+    int
+count_props(
+	linenr_T lnum,
+	int only_starting)
+{
+    char_u *props;
+    int proplen = get_text_props(curbuf, lnum, &props, 0);
+    int result = proplen, i;
+    if (only_starting)
+	for (i = 0; i < proplen; ++i) {
+	    textprop_T prop;
+	    mch_memmove(&prop, props + i * sizeof prop, sizeof prop);
+	    if (prop.tp_flags & TP_FLAG_CONT_PREV)
+		--result;
+	}
+    return result;
+}
+
 /*
  * Find text property "type_id" in the visible lines of window "wp".
  * Match "id" when it is > 0.
@@ -1424,112 +1447,54 @@ adjust_props_for_split(
     ga_clear(&nextprop);
 }
 
-/*
- * Line "lnum" has been joined and will end up at column "col" in the new line.
- * "removed" bytes have been removed from the start of the line, properties
- * there are to be discarded.
- * Move the adjusted text properties to an allocated string, store it in
- * "prop_line" and adjust the columns.
+/**
+ * TODO
  */
     void
-adjust_props_for_join(
-	linenr_T    lnum,
-	textprop_T  **prop_line,
-	int	    *prop_length,
-	long	    col,
-	int	    removed)
+append_joined_props(
+	char_u *new_props,
+	int *n,
+	linenr_T lnum,
+	int add_all,
+	long col,
+	int removed)
 {
-    int		proplen;
-    char_u	*props;
-    int		ri;
-    int		wi = 0;
+    char_u *props;
+    int proplen = get_text_props(curbuf, lnum, &props, FALSE);
+    int i;
 
-    proplen = get_text_props(curbuf, lnum, &props, FALSE);
-    if (proplen > 0)
+    for (i = 0; i < proplen; ++i)
     {
-	*prop_line = ALLOC_MULT(textprop_T, proplen);
-	if (*prop_line != NULL)
-	{
-	    for (ri = 0; ri < proplen; ++ri)
-	    {
-		textprop_T *cp = *prop_line + wi;
+	textprop_T prop;
+	int start;
+	mch_memmove(&prop, props + i * sizeof prop, sizeof prop);
+	start = !(prop.tp_flags & TP_FLAG_CONT_PREV);
 
-		mch_memmove(cp, props + ri * sizeof(textprop_T),
-							   sizeof(textprop_T));
-		if (cp->tp_col + cp->tp_len > removed)
-		{
-		    if (cp->tp_col > removed)
-			cp->tp_col += col;
-		    else
-		    {
-			// property was partly deleted, make it shorter
-			cp->tp_len -= removed - cp->tp_col;
-			cp->tp_col = col;
-		    }
-		    ++wi;
+	adjust_prop(&prop, 0, -removed, 0); // Remove leading spaces
+	adjust_prop(&prop, -1, col, 0); // Make line start at its final colum
+
+	if (add_all || start)
+	    mch_memmove(new_props + (*n)++ * sizeof prop, &prop, sizeof prop);
+	else
+	{
+	    int j, found = FALSE;
+	    // Search for continuing prop
+	    for (j = *n; j-- > 0; ) {
+		textprop_T op;
+		mch_memmove(&op, new_props + j * sizeof(textprop_T), sizeof op);
+		if ((op.tp_flags & TP_FLAG_CONT_NEXT)
+			&& op.tp_id == prop.tp_id && op.tp_type == prop.tp_type) {
+		    found = TRUE;
+		    op.tp_len = prop.tp_col + prop.tp_len - op.tp_col;
+		    // tp_flags is taken care of when deleting joined lines
+		    mch_memmove(new_props + j * sizeof op, &op, sizeof op);
+		    break;
 		}
 	    }
+	    if (!found)
+		internal_error("text property above joined line not found");
 	}
-	*prop_length = wi;
     }
-}
-
-/*
- * After joining lines: concatenate the text and the properties of all joined
- * lines into one line and replace the line.
- */
-    void
-join_prop_lines(
-	linenr_T    lnum,
-	char_u	    *newp,
-	textprop_T  **prop_lines,
-	int	    *prop_lengths,
-	int	    count)
-{
-    size_t	proplen = 0;
-    size_t	oldproplen;
-    char_u	*props;
-    int		i;
-    size_t	len;
-    char_u	*line;
-    size_t	l;
-
-    for (i = 0; i < count - 1; ++i)
-	proplen += prop_lengths[i];
-    if (proplen == 0)
-    {
-	ml_replace(lnum, newp, FALSE);
-	return;
-    }
-
-    // get existing properties of the joined line
-    oldproplen = get_text_props(curbuf, lnum, &props, FALSE);
-
-    len = STRLEN(newp) + 1;
-    line = alloc(len + (oldproplen + proplen) * sizeof(textprop_T));
-    if (line == NULL)
-	return;
-    mch_memmove(line, newp, len);
-    if (oldproplen > 0)
-    {
-	l = oldproplen * sizeof(textprop_T);
-	mch_memmove(line + len, props, l);
-	len += l;
-    }
-
-    for (i = 0; i < count - 1; ++i)
-	if (prop_lines[i] != NULL)
-	{
-	    l = prop_lengths[i] * sizeof(textprop_T);
-	    mch_memmove(line + len, prop_lines[i], l);
-	    len += l;
-	    vim_free(prop_lines[i]);
-	}
-
-    ml_replace_len(lnum, line, (colnr_T)len, TRUE, FALSE);
-    vim_free(newp);
-    vim_free(prop_lines);
-    vim_free(prop_lengths);
 }
 
 #endif // FEAT_PROP_POPUP

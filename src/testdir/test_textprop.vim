@@ -1209,17 +1209,22 @@ func Test_find_zerowidth_prop_sol()
   call prop_type_delete('test')
 endfunc
 
-func Test_split()
+func Test_split_join()
   new
   call prop_type_add('test', {'highlight': 'ErrorMsg'})
   call setline(1, 'just some text')
   call prop_add(1, 6, {'length': 4, 'type': 'test'})
-  execute "normal! 8|i\<CR>"
 
+  " Split in middle of "some"
+  execute "normal! 8|i\<CR>"
   call assert_equal([{'id': 0, 'col': 6, 'end': 0, 'type': 'test', 'length': 2, 'start': 1}],
 			  \ prop_list(1))
   call assert_equal([{'id': 0, 'col': 1, 'end': 1, 'type': 'test', 'length': 2, 'start': 0}],
 			  \ prop_list(2))
+
+  " Join the two lines back together
+  normal! 1GJ
+  call assert_equal([{'id': 0, 'col': 6, 'end': 1, 'type': 'test', 'length': 5, 'start': 1}], prop_list(1))
 
   bwipe!
   call prop_type_delete('test')
