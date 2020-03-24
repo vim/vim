@@ -396,6 +396,7 @@ channel_can_close(channel_T *channel)
 
 /*
  * Close a channel and free all its resources.
+ * The "channel" pointer remains valid.
  */
     static void
 channel_free_contents(channel_T *channel)
@@ -405,6 +406,9 @@ channel_free_contents(channel_T *channel)
     ch_log(channel, "Freeing channel");
 }
 
+/*
+ * Unlink "channel" from the list of channels and free it.
+ */
     static void
 channel_free_channel(channel_T *channel)
 {
@@ -497,10 +501,8 @@ free_unused_channels(int copyID, int mask)
 	ch_next = ch->ch_next;
 	if (!channel_still_useful(ch)
 				 && (ch->ch_copyID & mask) != (copyID & mask))
-	{
 	    // Free the channel struct itself.
 	    channel_free_channel(ch);
-	}
     }
 }
 
@@ -4454,15 +4456,12 @@ channel_parse_messages(void)
 	}
 	if (channel->ch_to_be_freed || channel->ch_killing)
 	{
-	    if (channel->ch_killing)
-	    {
-		channel_free_contents(channel);
-		channel_free_channel(channel);
+	    channel_free_contents(channel);
+	    if (channel->ch_job != NULL)
 		channel->ch_job->jv_channel = NULL;
-	    }
-	    else
-		channel_free(channel);
-	    // channel has been freed, start over
+
+	    // free the channel and then start over
+	    channel_free_channel(channel);
 	    channel = first_channel;
 	    continue;
 	}
