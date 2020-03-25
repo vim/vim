@@ -24,7 +24,7 @@ func Test_has()
   call assert_equal(1, has('eval'))
   call assert_equal(1, has('eval', 1))
 
-  if has('unix')
+  if has('unix') && !has('bsd')
     call assert_equal(1, has('ttyin'))
     call assert_equal(0, has('ttyout'))
     call assert_equal(1, has('multi_byte_encoding'))

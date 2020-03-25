@@ -68,7 +68,7 @@ func Test_exists()
   " Existing environment variable
   let $EDITOR_NAME = 'Vim Editor'
   call assert_equal(1, exists('$EDITOR_NAME'))
-  call assert_equal(1, exists('${VIM}'))
+  call assert_equal(1, exists('${EDITOR_NAME}'))
   " Non-existing environment variable
   call assert_equal(0, exists('$NON_ENV_VAR'))
 
