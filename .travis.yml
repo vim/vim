@@ -232,7 +232,6 @@ jobs:
       env:
         - *linux-huge
         - *asan
-        - CONFOPT=
       after_failure: *asan_symbolize
     - <<: *linux
       name: huge-testgui+coverage/gcc
