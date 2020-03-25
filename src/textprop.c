@@ -1451,8 +1451,9 @@ adjust_props_for_split(
  * TODO
  */
     void
-append_joined_props(
+prepend_joined_props(
 	char_u *new_props,
+	int max_n,
 	int *n,
 	linenr_T lnum,
 	int add_all,
@@ -1463,30 +1464,34 @@ append_joined_props(
     int proplen = get_text_props(curbuf, lnum, &props, FALSE);
     int i;
 
-    for (i = 0; i < proplen; ++i)
+    for (i = proplen; i-- > 0; )
     {
 	textprop_T prop;
-	int start;
+	int end;
 	mch_memmove(&prop, props + i * sizeof prop, sizeof prop);
-	start = !(prop.tp_flags & TP_FLAG_CONT_PREV);
+	end = !(prop.tp_flags & TP_FLAG_CONT_NEXT);
 
 	adjust_prop(&prop, 0, -removed, 0); // Remove leading spaces
 	adjust_prop(&prop, -1, col, 0); // Make line start at its final colum
 
-	if (add_all || start)
-	    mch_memmove(new_props + (*n)++ * sizeof prop, &prop, sizeof prop);
+	if (add_all || end)
+	    mch_memmove(new_props + --(*n) * sizeof prop, &prop, sizeof prop);
 	else
 	{
 	    int j, found = FALSE;
 	    // Search for continuing prop
-	    for (j = *n; j-- > 0; ) {
+	    for (j = *n; j < max_n; ++j)
+	    {
 		textprop_T op;
-		mch_memmove(&op, new_props + j * sizeof(textprop_T), sizeof op);
-		if ((op.tp_flags & TP_FLAG_CONT_NEXT)
-			&& op.tp_id == prop.tp_id && op.tp_type == prop.tp_type) {
+		mch_memmove(&op, new_props + j * sizeof op, sizeof op);
+		if ((op.tp_flags & TP_FLAG_CONT_PREV)
+			&& op.tp_id == prop.tp_id && op.tp_type == prop.tp_type)
+		{
 		    found = TRUE;
-		    op.tp_len = prop.tp_col + prop.tp_len - op.tp_col;
-		    // tp_flags is taken care of when deleting joined lines
+		    op.tp_len += op.tp_col - prop.tp_col;
+		    op.tp_col = prop.tp_col;
+		    // Start/end is taken care of when deleting joined lines
+		    op.tp_flags = prop.tp_flags;
 		    mch_memmove(new_props + j * sizeof op, &op, sizeof op);
 		    break;
 		}

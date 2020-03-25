@@ -1942,6 +1942,7 @@ do_join(
 				  && has_format_option(FO_REMOVE_COMS);
     int		prev_was_comment;
     int		propcount = 0;	// number of props over all joined lines
+    int		props_remaining;
 
     if (save_undo && u_save((linenr_T)(curwin->w_cursor.lnum - 1),
 			    (linenr_T)(curwin->w_cursor.lnum + count)) == FAIL)
@@ -2068,45 +2069,48 @@ do_join(
 
     /*
      * Move affected lines to the new long one.
-     * This loops forward over the joined lines, including the original line.
+     * This loops backwards over the joined lines, including the original line.
      *
      * Move marks from each deleted line to the joined line, adjusting the
      * column.  This is not Vi compatible, but Vi deletes the marks, thus that
      * should not really be a problem.
      */
-    char_u *newp_in = newp;
-    char_u *first_prop = newp + sumsize + 1;
-    int n = 0; // number of currently inserted props
-    for (t = 0; t < count; ++t) {
-	char_u *linestart = newp_in;
+    props_remaining = propcount;
+    for (t = count - 1; ; --t)
+    {
 	int spaces_removed;
 
-	curr = curr_start = ml_get(curwin->w_cursor.lnum + t);
-	if (remove_comments)
-	    curr += comments[t];
-	if (insert_space && t > 0)
-	    curr = skipwhite(curr);
-	currsize = (int)STRLEN(curr);
+	cend -= currsize;
+	mch_memmove(cend, curr, (size_t)currsize);
 
-	vim_memset(newp_in, ' ', (size_t) spaces[t]); // Insert spaces
-	newp_in += spaces[t];
-
-	mch_memmove(newp_in, curr, (size_t) currsize);
-	newp_in += currsize;
+	if (spaces[t] > 0) {
+	    cend -= spaces[t];
+	    vim_memset(cend, ' ', (size_t)(spaces[t]));
+	}
 
 	// If deleting more spaces than adding, the cursor moves no more than
 	// what is added if it is inside these spaces.
 	spaces_removed = (curr - curr_start) - spaces[t];
 
 	mark_col_adjust(curwin->w_cursor.lnum + t, (colnr_T)0, (linenr_T)-t,
-			 (long)(linestart - newp) - spaces_removed, spaces_removed);
+			 (long)(cend - newp - spaces_removed), spaces_removed);
 #ifdef FEAT_PROP_POPUP
-	append_joined_props(first_prop, &n, curwin->w_cursor.lnum + t, t == 0,
-		(long) (linestart - newp), spaces_removed);
+	prepend_joined_props(newp + sumsize + 1, propcount, &props_remaining,
+		curwin->w_cursor.lnum + t, t == count - 1,
+		(long)(cend - newp), spaces_removed);
 #endif
+
+	if (t == 0)
+	    break;
+	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t - 1));
+	if (remove_comments)
+	    curr += comments[t - 1];
+	if (insert_space && t > 1)
+	    curr = skipwhite(curr);
+	currsize = (int)STRLEN(curr);
     }
 
-    ml_replace_len(curwin->w_cursor.lnum, newp, len_newp, propcount > 0, FALSE);
+    ml_replace_len(curwin->w_cursor.lnum, newp, len_newp, TRUE, FALSE);
 
     if (setmark && !cmdmod.lockmarks)
     {
