@@ -5,5 +5,7 @@ leak:libcairo.so.2
 leak:libfontconfig.so.1
 leak:libglib-2.0.so.0
 leak:libtinfo.so.5
-# Suppress leaks from libpython (maybe python's bug).
+# Suppress leaks from other language libraries.
+leak:libperl.so.*
 leak:libpython*.so.*
+leak:libruby*.so.*
