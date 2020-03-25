@@ -298,13 +298,16 @@ func Test_terminal_scroll()
   let job = term_getjob(buf)
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
   call term_wait(buf)
-  if has('win32')
-    " TODO: this should not be needed
-    sleep 100m
-  endif
 
-  let scrolled = buf->term_getscrolled()
-  call assert_equal(scrolled, term_getscrolled(buf))
+  " wait until the scrolling stops
+  while 1
+    let scrolled = buf->term_getscrolled()
+    sleep 20m
+    if scrolled == buf->term_getscrolled()
+      break
+    endif
+  endwhile
+
   call assert_equal('1', getline(1))
   call assert_equal('1', term_getline(buf, 1 - scrolled))
   call assert_equal('49', getline(49))
