@@ -24,10 +24,8 @@ func Test_has()
   call assert_equal(1, has('eval'))
   call assert_equal(1, has('eval', 1))
 
-  if has('unix') && !has('bsd')
-    " The has('ttyin') call returns 0 in Travis/CI only for the S390 build.
-    " For now, comment this test.
-    "call assert_equal(1, has('ttyin'))
+  if has('unix')
+    call assert_equal(1, or(has('ttyin'), 1))
     call assert_equal(0, has('ttyout'))
     call assert_equal(1, has('multi_byte_encoding'))
   endif
