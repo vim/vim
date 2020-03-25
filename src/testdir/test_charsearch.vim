@@ -29,6 +29,8 @@ func Test_charsearch()
   set cpo-=;
   normal! ;;p
   call assert_equal('ZabcdeZfghijkZZemnokqretkZvwxyz', getline(3))
+
+  call assert_fails("call setcharsearch([])", 'E715:')
   enew!
 endfunc
 

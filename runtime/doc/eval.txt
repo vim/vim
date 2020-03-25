@@ -8802,6 +8802,7 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 							*setreg()*
 setreg({regname}, {value} [, {options}])
 		Set the register {regname} to {value}.
+		If {regname} is "" or "@", the unnamed register '"' is used.
 		{value} may be any value returned by |getreg()|, including
 		a |List|.
 		If {options} contains "a" or {regname} is upper case,

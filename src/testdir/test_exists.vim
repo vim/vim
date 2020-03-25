@@ -68,6 +68,7 @@ func Test_exists()
   " Existing environment variable
   let $EDITOR_NAME = 'Vim Editor'
   call assert_equal(1, exists('$EDITOR_NAME'))
+  call assert_equal(1, exists('${VIM}'))
   " Non-existing environment variable
   call assert_equal(0, exists('$NON_ENV_VAR'))
 
@@ -323,3 +324,5 @@ endfunc
 func Test_exists_funcarg()
   call FuncArg_Tests("arg1", "arg2")
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

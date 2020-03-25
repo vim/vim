@@ -1385,6 +1385,15 @@ func Test_search_match_at_curpos()
   close!
 endfunc
 
+" Test for error cases with the search() function
+func Test_search_errors()
+  call assert_fails("call search('pat', [])", 'E730:')
+  call assert_fails("call search('pat', 'b', {})", 'E728:')
+  call assert_fails("call search('pat', 'b', 1, [])", 'E745:')
+  call assert_fails("call search('pat', 'ns')", 'E475:')
+  call assert_fails("call search('pat', 'mr')", 'E475:')
+endfunc
+
 func Test_search_display_pattern()
   new
   call setline(1, ['foo', 'bar', 'foobar'])

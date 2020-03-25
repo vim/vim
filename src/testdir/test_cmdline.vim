@@ -68,6 +68,11 @@ func Test_complete_wildmenu()
   call assert_equal('"e Xtestfile3 Xtestfile4', @:)
   cd -
 
+  cnoremap <expr> <F2> wildmenumode()
+  call feedkeys(":cd Xdir\<Tab>\<F2>\<C-B>\"\<CR>", 'tx')
+  call assert_equal('"cd Xdir1/1', @:)
+  cunmap <F2>
+
   " cleanup
   %bwipe
   call delete('Xdir1/Xdir2/Xtestfile4')

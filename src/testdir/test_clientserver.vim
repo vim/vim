@@ -98,7 +98,11 @@ func Test_client_server()
       call job_stop(job, 'kill')
     endif
   endtry
+
+  call assert_fails("let x=remote_peek([])", 'E730:')
 endfunc
 
 " Uncomment this line to get a debugging log
 " call ch_logfile('channellog', 'w')
+
+" vim: shiftwidth=2 sts=2 expandtab
