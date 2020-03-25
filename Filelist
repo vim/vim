@@ -786,20 +786,20 @@ RT_UNIX =	\
 		README_unix.txt \
 		runtime/hi16-action-make.png \
 		runtime/hi22-action-make.png \
-		runtime/vim16x16.png \
-		runtime/vim16x16.xpm \
-		runtime/vim32x32.png \
-		runtime/vim32x32.xpm \
-		runtime/vim48x48.png \
-		runtime/vim48x48.xpm \
 		runtime/gvim.desktop \
 		runtime/vim.desktop \
 
 # Unix and DOS runtime without CR-LF translation
 RT_UNIX_DOS_BIN =	\
 		runtime/vim16x16.gif \
+		runtime/vim16x16.png \
+		runtime/vim16x16.xpm \
 		runtime/vim32x32.gif \
+		runtime/vim32x32.png \
+		runtime/vim32x32.xpm \
 		runtime/vim48x48.gif \
+		runtime/vim48x48.png \
+		runtime/vim48x48.xpm \
 
 # runtime not for unix or extra
 RT_NO_UNIX =	\
