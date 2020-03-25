@@ -101,10 +101,7 @@ _anchors:
     - (cd "${SRCDIR}" && bash <(curl -s https://codecov.io/bash))
 
   asan_symbolize: &asan_symbolize
-    - |
-      while read log; do
-        asan_symbolize < "${log}"
-      done < <(find . -type f -name 'asan.*' -size +0)
+    - find . -type f -name 'asan.*' -size +0 2>/dev/null | xargs -I{} -n1 -t asan_symbolize -l{}
 
 branches:
   except:
