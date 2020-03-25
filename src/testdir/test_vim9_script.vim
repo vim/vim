@@ -1001,4 +1001,62 @@ def Test_redef_failure()
   delfunc! Func2
 enddef
 
+" Test for internal functions returning different types
+func Test_InternalFuncRetType()
+  let lines =<< trim END
+    def RetFloat(): float
+      return ceil(1.456)
+    enddef
+
+    def RetListAny(): list<any>
+      return items({'k' : 'v'})
+    enddef
+
+    def RetListString(): list<string>
+      return split('a:b:c', ':')
+    enddef
+
+    def RetListDictAny(): list<dict<any>>
+      return getbufinfo()
+    enddef
+
+    def RetDictNumber(): dict<number>
+      return wordcount()
+    enddef
+
+    def RetDictString(): dict<string>
+      return environ()
+    enddef
+  END
+  call writefile(lines, 'Xscript')
+  source Xscript
+
+  call assert_equal(2.0, RetFloat())
+  call assert_equal([['k', 'v']], RetListAny())
+  call assert_equal(['a', 'b', 'c'], RetListString())
+  call assert_notequal([], RetListDictAny())
+  call assert_notequal({}, RetDictNumber())
+  call assert_notequal({}, RetDictString())
+  call delete('Xscript')
+endfunc
+
+" Test for passing too many or too few arguments to internal functions
+func Test_internalfunc_arg_error()
+  let l =<< trim END
+    def! FArgErr(): float
+      return ceil(1.1, 2)
+    enddef
+  END
+  call writefile(l, 'Xinvalidarg')
+  call assert_fails('so Xinvalidarg', 'E118:')
+  let l =<< trim END
+    def! FArgErr(): float
+      return ceil()
+    enddef
+  END
+  call writefile(l, 'Xinvalidarg')
+  call assert_fails('so Xinvalidarg', 'E119:')
+  call delete('Xinvalidarg')
+endfunc
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker
