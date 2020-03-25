@@ -286,6 +286,8 @@ func Test_blob_index()
   call assert_equal(3, 0z11110111->index(0x11, 2))
   call assert_equal(2, index(0z11111111, 0x11, -2))
   call assert_equal(3, index(0z11110111, 0x11, -2))
+  call assert_equal(0, index(0z11110111, 0x11, -10))
+  call assert_fails("echo index(0z11110111, 0x11, [])", 'E745:')
 
   call assert_fails('call index("asdf", 0)', 'E897:')
 endfunc
@@ -331,3 +333,5 @@ func Test_blob_sort()
     call assert_fails('call sort(["abc", 0z11], "f")', 'E702:')
   endif
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

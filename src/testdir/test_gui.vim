@@ -75,6 +75,7 @@ func Test_getfontname_with_arg()
   elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
     " Invalid font name. The result should be the name plus the default size.
     call assert_equal('notexist 10', getfontname('notexist'))
+    call assert_equal('', getfontname('*'))
 
     " Valid font name. This is usually the real name of Monospace by default.
     let fname = 'Bitstream Vera Sans Mono 12'
@@ -825,3 +826,5 @@ func Test_gui_dash_y()
   call delete('Xscriptgui')
   call delete('Xtestgui')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

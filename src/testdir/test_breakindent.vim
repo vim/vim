@@ -417,6 +417,7 @@ func Test_breakindent11()
   let width = strlen(text[1:]) + indent(2) + strlen(&sbr) * 3 " text wraps 3 times
   call assert_equal(width, strdisplaywidth(text))
   call s:close_windows('set sbr=')
+  call assert_equal(4, strdisplaywidth("\t", 4))
 endfunc
 
 func Test_breakindent11_vartabs()
@@ -694,3 +695,5 @@ func Test_breakindent19_sbr_nextpage()
   call s:compare_lines(expect, lines)
   call s:close_windows('set breakindent& briopt& sbr&')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

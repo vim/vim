@@ -20,6 +20,8 @@ func Test_strchars()
     call assert_equal(exp[i][1], inp[i]->strchars(0))
     call assert_equal(exp[i][2], strchars(inp[i], 1))
   endfor
+  call assert_fails("let v=strchars('abc', [])", 'E474:')
+  call assert_fails("let v=strchars('abc', 2)", 'E474:')
 endfunc
 
 " Test for customlist completion
@@ -99,6 +101,7 @@ func Test_list2str_str2list_latin1()
   
   let lres = str2list(s, 1)
   let sres = list2str(l, 1)
+  call assert_equal([65, 66, 67], str2list("ABC"))
 
   let &encoding = save_encoding
   call assert_equal(l, lres)
@@ -138,3 +141,5 @@ func Test_screenchar_utf8()
 
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

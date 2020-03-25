@@ -302,6 +302,7 @@ func Test_dict_deepcopy()
   let l[1] = l2
   let l3 = deepcopy(l2)
   call assert_true(l3[1] is l3[2])
+  call assert_fails("call deepcopy([1, 2], 2)", 'E474:')
 endfunc
 
 " Locked variables
@@ -381,6 +382,11 @@ func Test_list_locked_var()
       call assert_equal(expected[depth][u][1], ps)
     endfor
   endfor
+  call assert_fails("let x=islocked('a b')", 'E488:')
+  let mylist = [1, 2, 3]
+  call assert_fails("let x = islocked('mylist[1:2]')", 'E786:')
+  let mydict = {'k' : 'v'}
+  call assert_fails("let x = islocked('mydict.a')", 'E716:')
 endfunc
 
 " Unletting locked variables
@@ -629,7 +635,7 @@ func Test_reverse_sort_uniq()
   call assert_fails('call reverse("")', 'E899:')
 endfunc
 
-" splitting a string to a List
+" splitting a string to a List using split()
 func Test_str_split()
   call assert_equal(['aa', 'bb'], split('  aa  bb '))
   call assert_equal(['aa', 'bb'], split('  aa  bb  ', '\W\+', 0))
@@ -640,6 +646,8 @@ func Test_str_split()
   call assert_equal(['aa', '', 'bb', 'cc', ''], split('aa,,bb, cc,', ',\s*', 1))
   call assert_equal(['a', 'b', 'c'], split('abc', '\zs'))
   call assert_equal(['', 'a', '', 'b', '', 'c', ''], split('abc', '\zs', 1))
+  call assert_fails("call split('abc', [])", 'E730:')
+  call assert_fails("call split('abc', 'b', [])", 'E745:')
 endfunc
 
 " compare recursively linked list and dict

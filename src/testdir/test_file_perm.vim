@@ -21,4 +21,10 @@ func Test_file_perm()
 
   call assert_equal(1, setfperm('Xtest', 'rwx------'))
   call delete('Xtest')
+
+  call assert_fails("call setfperm(['Xfile'], 'rw-rw-rw-')", 'E730:')
+  call assert_fails("call setfperm('Xfile', [])", 'E730:')
+  call assert_fails("call setfperm('Xfile', 'rwxrwxrwxrw')", 'E475:')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
