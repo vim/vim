@@ -2035,4 +2035,12 @@ func Test_issue_5485()
   unlet $VAR1
 endfunc
 
+func Test_job_trailing_space_unix()
+  CheckUnix
+  CheckExecutable cat
+  let job = job_start("cat ", #{in_io: 'null'})
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  call assert_equal(0, job_info(job).exitval)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
