@@ -4428,13 +4428,21 @@ channel_parse_messages(void)
     int		ret = FALSE;
     int		r;
     ch_part_T	part = PART_SOCK;
+    static int	recursive = FALSE;
 #ifdef ELAPSED_FUNC
     elapsed_T	start_tv;
-
-    ELAPSED_INIT(start_tv);
 #endif
 
+    // The code below may invoke callbacks, which might call us back.
+    // That doesn't work well, just return without doing anything.
+    if (recursive)
+	return FALSE;
+    recursive = TRUE;
     ++safe_to_invoke_callback;
+
+#ifdef ELAPSED_FUNC
+    ELAPSED_INIT(start_tv);
+#endif
 
     // Only do this message when another message was given, otherwise we get
     // lots of them.
@@ -4513,6 +4521,7 @@ channel_parse_messages(void)
     }
 
     --safe_to_invoke_callback;
+    recursive = FALSE;
 
     return ret;
 }
