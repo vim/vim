@@ -25,9 +25,12 @@ func CheckOption(name)
   endif
 endfunc
 
-" Command to check for the presence of a function.
+" Command to check for the presence of a built-in function.
 command -nargs=1 CheckFunction call CheckFunction(<f-args>)
 func CheckFunction(name)
+  if !exists('?' .. a:name)
+    throw 'Checking for non-existent function ' .. a:name
+  endif
   if !exists('*' .. a:name)
     throw 'Skipped: ' .. a:name .. ' function missing'
   endif

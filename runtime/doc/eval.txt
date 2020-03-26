@@ -4102,8 +4102,12 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 					string)
 			*funcname	built-in function (see |functions|)
 					or user defined function (see
-					|user-functions|). Also works for a
-					variable that is a Funcref.
+					|user-functions|) that is implemented.
+					Also works for a variable that is a
+					Funcref.
+			?funcname	built-in function that could be
+					implemented; to be used to check if
+					"funcname" is valid
 			varname		internal variable (see
 					|internal-variables|).  Also works
 					for |curly-braces-names|, |Dictionary|

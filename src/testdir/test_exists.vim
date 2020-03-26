@@ -92,6 +92,11 @@ func Test_exists()
   " Function that may be created by script autoloading
   call assert_equal(0, exists('*footest#F'))
 
+  call assert_equal(has('float'), exists('*acos'))
+  call assert_equal(1, exists('?acos'))
+  call assert_equal(has('win32'), exists('*debugbreak'))
+  call assert_equal(1, exists('?debugbreak'))
+
   " Valid internal command (full match)
   call assert_equal(2, exists(':edit'))
   " Valid internal command (full match) with garbage
