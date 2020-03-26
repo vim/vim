@@ -247,6 +247,9 @@ func Test_confirm_cmd()
 endfunc
 
 func Test_confirm_cmd_cancel()
+  CheckNotGui
+  CheckRunVimInTerminal
+
   " Test for closing a window with a modified buffer
   let buf = RunVimInTerminal('', {'rows': 20})
   call term_sendkeys(buf, ":set nomore\n")
