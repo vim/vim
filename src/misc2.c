@@ -4251,6 +4251,8 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 	{
 	    if (i == 1)
 		(*argv)[*argc] = (char *)p;
+	    if (*p == NUL)
+		break;
 	    ++*argc;
 	    d = p;
 	    while (*p != NUL && (inquote || (*p != ' ' && *p != TAB)))
