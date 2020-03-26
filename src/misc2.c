@@ -4242,14 +4242,14 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
      * 1: find number of arguments
      * 2: separate them and build argv[]
      */
-    for (i = 0; i < 2; ++i)
+    for (i = 1; i <= 2; ++i)
     {
 	p = skipwhite(cmd);
 	inquote = FALSE;
 	*argc = 0;
-	for (;;)
+	while (*p != NUL)
 	{
-	    if (i == 1)
+	    if (i == 2)
 		(*argv)[*argc] = (char *)p;
 	    ++*argc;
 	    d = p;
@@ -4266,18 +4266,18 @@ mch_parse_cmd(char_u *cmd, int use_shcf, char ***argv, int *argc)
 			// Second pass: Remove the backslash.
 			++p;
 		    }
-		    if (i == 1)
+		    if (i == 2)
 			*d++ = *p;
 		}
 		++p;
 	    }
 	    if (*p == NUL)
 	    {
-		if (i == 1)
+		if (i == 2)
 		    *d++ = NUL;
 		break;
 	    }
-	    if (i == 1)
+	    if (i == 2)
 		*d++ = NUL;
 	    p = skipwhite(p + 1);
 	}
