@@ -2434,7 +2434,6 @@ func Test_terminal_in_popup_min_size()
   let lines = [
 	\ 'set t_u7=',
 	\ 'call setline(1, range(20))',
-	\ 'hi PopTerm ctermbg=grey',
 	\ 'func OpenTerm()',
 	\ "  let s:buf = term_start('cat Xtext', #{hidden: 1})",
 	\ '  let g:winid = popup_create(s:buf, #{ border: []})',
@@ -2455,6 +2454,46 @@ func Test_terminal_in_popup_min_size()
   call StopVimInTerminal(buf)
   call delete('Xtext')
   call delete('XtermPopup')
+endfunc
+
+" Check a terminal in popup window with different colors
+func Terminal_in_popup_colored(group_name, highlight_cmd, highlight_opt)
+  CheckRunVimInTerminal
+  CheckUnix
+
+  let lines = [
+	\ 'set t_u7=',
+	\ 'call setline(1, range(20))',
+	\ 'func OpenTerm()',
+	\ "  let s:buf = term_start('cat', #{hidden: 1, "
+	\ .. a:highlight_opt .. "})",
+	\ '  let g:winid = popup_create(s:buf, #{ border: []})',
+	\ 'endfunc',
+	\ a:highlight_cmd,
+	\ ]
+  call writefile(lines, 'XtermPopup')
+  let buf = RunVimInTerminal('-S XtermPopup', #{rows: 15})
+  call term_wait(buf, 200)
+  call term_sendkeys(buf, ":set noruler\<CR>")
+  call term_sendkeys(buf, ":call OpenTerm()\<CR>")
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, "hello\<CR>")
+  call VerifyScreenDump(buf, 'Test_terminal_popup_' .. a:group_name, {})
+
+  call term_sendkeys(buf, "\<C-D>")
+  call term_wait(buf, 100)
+  call term_sendkeys(buf, ":q\<CR>")
+  call term_wait(buf, 100)  " wait for terminal to vanish
+  call StopVimInTerminal(buf)
+  call delete('XtermPopup')
+endfunc
+
+func Test_terminal_in_popup_colored_Terminal()
+  call Terminal_in_popup_colored("Terminal", "highlight Terminal ctermfg=blue ctermbg=yellow", "")
+endfunc
+
+func Test_terminal_in_popup_colored_group()
+  call Terminal_in_popup_colored("MyTermCol", "highlight MyTermCol ctermfg=darkgreen ctermbg=lightblue", "term_highlight: 'MyTermCol',")
 endfunc
 
 func Test_double_popup_terminal()

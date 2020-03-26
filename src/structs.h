@@ -2071,6 +2071,7 @@ struct channel_S {
 #define JO2_TTY_TYPE	    0x10000	// "tty_type"
 #define JO2_BUFNR	    0x20000	// "bufnr"
 #define JO2_TERM_API	    0x40000	// "term_api"
+#define JO2_TERM_HIGHLIGHT  0x80000	// "highlight"
 
 #define JO_MODE_ALL	(JO_MODE + JO_IN_MODE + JO_OUT_MODE + JO_ERR_MODE)
 #define JO_CB_ALL \
@@ -2143,6 +2144,8 @@ typedef struct
 # if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
     long_u	jo_ansi_colors[16];
 # endif
+    char_u	jo_term_highlight_buf[NUMBUFLEN];
+    char_u	*jo_term_highlight;
     int		jo_tty_type;	    // first character of "tty_type"
     char_u	jo_term_api_buf[NUMBUFLEN];
     char_u	*jo_term_api;

@@ -5168,6 +5168,21 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		memcpy(opt->jo_ansi_colors, rgb, sizeof(rgb));
 	    }
 # endif
+	    else if (STRCMP(hi->hi_key, "term_highlight") == 0)
+	    {
+		char_u *p;
+
+		if (!(supported2 & JO2_TERM_HIGHLIGHT))
+		    break;
+		opt->jo_set2 |= JO2_TERM_HIGHLIGHT;
+		p = tv_get_string_buf_chk(item, opt->jo_term_highlight_buf);
+		if (p == NULL || *p == NUL)
+		{
+		    semsg(_(e_invargval), "term_highlight");
+		    return FAIL;
+		}
+		opt->jo_term_highlight = p;
+	    }
 	    else if (STRCMP(hi->hi_key, "term_api") == 0)
 	    {
 		if (!(supported2 & JO2_TERM_API))

@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2020 Jan 30
+*terminal.txt*	For Vim version 8.2.  Last change: 2020 Mar 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -148,7 +148,12 @@ terminal window will start with a white or black background.
 To use a different color the Terminal highlight group can be used, for
 example: >
     hi Terminal ctermbg=lightgrey ctermfg=blue guibg=lightgrey guifg=blue
-<
+The highlight needs to be defined before the terminal is created.  Doing it
+later, or setting 'wincolor', will only have effect when the program running
+in the terminal displays text or clears the terminal.
+Instead of Terminal another group can be specified with the "term_highlight"
+option for `term_start()`.
+
 							*g:terminal_ansi_colors*
 In GUI mode or with 'termguicolors', the 16 ANSI colors used by default in new
 terminal windows may be configured using the variable
@@ -857,6 +862,8 @@ term_start({cmd} [, {options}])			*term_start()*
 				     have "%d" where the buffer number goes,
 				     e.g. "10split|buffer %d"; when not
 				     specified "botright sbuf %d" is used
+		   "term_highlight"  highlight group to use instead of
+				     "Terminal"
 		   "eof_chars"	     Text to send after all buffer lines were
 				     written to the terminal.  When not set
 				     CTRL-D is used on MS-Windows. For Python
