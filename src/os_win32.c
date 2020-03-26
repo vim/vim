@@ -5821,6 +5821,12 @@ gotoxy(
 
     if (!USE_VTP)
     {
+	// There are reports of double-width characters not displayed
+	// correctly.  This workaround should fix it, similar to how it's done
+	// for VTP.
+	g_coord.X = 0;
+	SetConsoleCursorPosition(g_hConOut, g_coord);
+
 	// external cursor coords are 1-based; internal are 0-based
 	g_coord.X = x - 1;
 	g_coord.Y = y - 1;
