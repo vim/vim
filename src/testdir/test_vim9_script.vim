@@ -269,6 +269,9 @@ def Test_return_type_wrong()
   CheckScriptFailure(['def Func(): string', 'return 1', 'enddef'], 'expected string but got number')
   CheckScriptFailure(['def Func(): void', 'return "a"', 'enddef'], 'expected void but got string')
   CheckScriptFailure(['def Func()', 'return "a"', 'enddef'], 'expected void but got string')
+
+  CheckScriptFailure(['def Func(): list', 'return []', 'enddef'], 'E1008:')
+  CheckScriptFailure(['def Func(): dict', 'return {}', 'enddef'], 'E1008:')
 enddef
 
 def Test_arg_type_wrong()

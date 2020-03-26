@@ -1375,19 +1375,19 @@ parse_type_member(char_u **arg, type_T *type, garray_T *type_list)
 	    emsg(_("E1007: No white space allowed before <"));
 	else
 	    emsg(_("E1008: Missing <type>"));
-	return NULL;
+	return type;
     }
     *arg = skipwhite(*arg + 1);
 
     member_type = parse_type(arg, type_list);
     if (member_type == NULL)
-	return NULL;
+	return type;
 
     *arg = skipwhite(*arg);
     if (**arg != '>')
     {
 	emsg(_("E1009: Missing > after type"));
-	return NULL;
+	return type;
     }
     ++*arg;
 
