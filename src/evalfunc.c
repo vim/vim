@@ -915,7 +915,7 @@ static funcentry_T global_functions[] =
     {"term_dumpwrite",	2, 3, FEARG_2,	  ret_void,	TERM_FUNC(f_term_dumpwrite)},
     {"term_getaltscreen", 1, 1, FEARG_1,  ret_number,	TERM_FUNC(f_term_getaltscreen)},
     {"term_getansicolors", 1, 1, FEARG_1, ret_list_string,
-#if defined(TERMINAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
+#if defined(FEAT_TERMINAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
 	    f_term_getansicolors
 #else
 	    NULL
@@ -934,7 +934,7 @@ static funcentry_T global_functions[] =
     {"term_scrape",	2, 2, FEARG_1,	  ret_list_dict_any, TERM_FUNC(f_term_scrape)},
     {"term_sendkeys",	2, 2, FEARG_1,	  ret_void,	TERM_FUNC(f_term_sendkeys)},
     {"term_setansicolors", 2, 2, FEARG_1, ret_void,
-#if defined(TERMINAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
+#if defined(FEAT_TERMINAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
 	    f_term_setansicolors
 #else
 	    NULL
