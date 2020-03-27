@@ -1556,4 +1556,25 @@ func Test_insert_before_first_nonblank()
   close!
 endfunc
 
+" Test for '$' flag in 'cpoptions'
+func Test_insert_mode_display_dollar()
+  new
+  let g:Line = ''
+  func SaveFirstLine()
+    let g:Line = Screenline(1)
+    return ''
+  endfunc
+  inoremap <expr> <buffer> <F2> SaveFirstLine()
+  call test_override('redraw_flag', 1)
+  set cpo+=$
+  call setline(1, 'one two three')
+  redraw!
+  exe "normal c2w\<F2>vim"
+  call assert_equal('one tw$ three', g:Line)
+  call assert_equal('vim three', getline(1))
+  set cpo-=$
+  call test_override('redraw_flag', 0)
+  %bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
