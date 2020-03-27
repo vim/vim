@@ -280,13 +280,11 @@ ret_number(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_number;
 }
-#ifdef FEAT_FLOAT
     static type_T *
 ret_float(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_float;
 }
-#endif
     static type_T *
 ret_string(int argcount UNUSED, type_T **argtypes UNUSED)
 {
@@ -336,7 +334,6 @@ ret_partial_void(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_partial_void;
 }
-#ifdef FEAT_JOB_CHANNEL
     static type_T *
 ret_channel(int argcount UNUSED, type_T **argtypes UNUSED)
 {
@@ -347,7 +344,6 @@ ret_job(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_job;
 }
-#endif
 
 static type_T *ret_f_function(int argcount, type_T **argtypes);
 
