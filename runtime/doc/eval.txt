@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Mar 22
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Mar 26
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5841,8 +5841,10 @@ has({feature} [, {check}])
 		When {check} is present and not zero: The result is a Number,
 		which is 1 if the feature {feature} could ever be supported,
 		zero otherwise.  This is useful to check for a typo in
-		{feature}.  Keep in mind that an older Vim version will not
-		know about a feature added later.
+		{feature} and to detect dead code.  Keep in mind that an older
+		Vim version will not know about a feature added later and
+		features that have been abandoned will not be know by the
+		current Vim version.
 
 		Also see |exists()|.
 

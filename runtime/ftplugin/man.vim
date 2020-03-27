@@ -1,7 +1,7 @@
 " Vim filetype plugin file
 " Language:	man
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change: 	2019 Sep 26
+" Last Change: 	2020 Mar 25
 "		(fix by Jason Franklin)
 
 " To make the ":Man" command available before editing a manual page, source
@@ -96,7 +96,7 @@ func <SID>PreGetPage(cnt)
     let sect = a:cnt
     let page = expand("<cword>")
   endif
-  call s:GetPage(sect, page)
+  call s:GetPage('', sect, page)
 endfunc
 
 func <SID>GetCmdArg(sect, page)

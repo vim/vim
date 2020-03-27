@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.2.  Last change: 2020 Jan 14
+*index.txt*     For Vim version 8.2.  Last change: 2020 Mar 27
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -1260,11 +1260,12 @@ tag		command		action ~
 |:cunmenu|	:cunme[nu]	remove menu for Command-line mode
 |:cwindow|	:cw[indow]	open or close quickfix window
 |:delete|	:d[elete]	delete lines
-|:delmarks|	:delm[arks]	delete marks
 |:debug|	:deb[ug]	run a command in debugging mode
 |:debuggreedy|	:debugg[reedy]	read debug mode commands from normal input
+|:def|		:def		define a Vim9 user function
 |:delcommand|	:delc[ommand]	delete user-defined command
 |:delfunction|	:delf[unction]	delete a user function
+|:delmarks|	:delm[arks]	delete marks
 |:diffupdate|	:dif[fupdate]	update 'diff' buffers
 |:diffget|	:diffg[et]	remove differences in current buffer
 |:diffoff|	:diffo[ff]	switch off diff mode
@@ -1274,9 +1275,9 @@ tag		command		action ~
 |:diffthis|	:diffthis	make current window a diff window
 |:digraphs|	:dig[raphs]	show or enter digraphs
 |:display|	:di[splay]	display registers
+|:disassemble|	:disa[ssemble]	disassemble Vim9 user function
 |:djump|	:dj[ump]	jump to #define
 |:dl|		:dl		short for |:delete| with the 'l' flag
-|:del|		:del[ete]l	short for |:delete| with the 'l' flag
 |:dlist|	:dli[st]	list #defines
 |:doautocmd|	:do[autocmd]	apply autocommands to current buffer
 |:doautoall|	:doautoa[ll]	apply autocommands for all loaded buffers
@@ -1295,15 +1296,17 @@ tag		command		action ~
 |:else|		:el[se]		part of an :if command
 |:elseif|	:elsei[f]	part of an :if command
 |:emenu|	:em[enu]	execute a menu by name
+|:enddef|	:enddef		end of a user function started with :def
 |:endif|	:en[dif]	end previous :if
 |:endfor|	:endfo[r]	end previous :for
-|:endfunction|	:endf[unction]	end of a user function
+|:endfunction|	:endf[unction]	end of a user function started with :function
 |:endtry|	:endt[ry]	end previous :try
 |:endwhile|	:endw[hile]	end previous :while
 |:enew|		:ene[w]		edit a new, unnamed buffer
 |:ex|		:ex		same as ":edit"
 |:execute|	:exe[cute]	execute result of expressions
 |:exit|		:exi[t]		same as ":xit"
+|:export|	:exp[ort]	Vim9: export an item from a script
 |:exusage|	:exu[sage]	overview of Ex commands
 |:file|		:f[ile]		show or set the current file name
 |:files|	:files		list all files in the buffer list
@@ -1345,6 +1348,7 @@ tag		command		action ~
 |:imap|		:im[ap]		like ":map" but for Insert mode
 |:imapclear|	:imapc[lear]	like ":mapclear" but for Insert mode
 |:imenu|	:ime[nu]	add menu for Insert mode
+|:import|	:imp[ort]	Vim9: import an item from another script
 |:inoremap|	:ino[remap]	like ":noremap" but for Insert mode
 |:inoreabbrev|	:inorea[bbrev]	like ":noreabbrev" but for Insert mode
 |:inoremenu|	:inoreme[nu]	like ":noremenu" but for Insert mode
@@ -1686,6 +1690,7 @@ tag		command		action ~
 |:version|	:ve[rsion]	print version number and other info
 |:verbose|	:verb[ose]	execute command with 'verbose' set
 |:vertical|	:vert[ical]	make following command split vertically
+|:vim9script|	:vim9[script]	indicates Vim9 script file
 |:vimgrep|	:vim[grep]	search for pattern in files
 |:vimgrepadd|	:vimgrepa[dd]	like :vimgrep, but append to current list
 |:visual|	:vi[sual]	same as ":edit", but turns off "Ex" mode

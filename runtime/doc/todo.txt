@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Mar 19
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Mar 27
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -38,19 +38,10 @@ browser use: https://github.com/vim/vim/issues/1234
 							*known-bugs*
 -------------------- Known bugs and current work -----------------------
 
-Add second argument to has(), return True when the feature can exist at all.
-
-Patch to fix buffer menu. (Yee Cheng Chin, #5787)
-
-Add $TEST_MAY_FAIL, comma separated list of test functions that won't be fatal
-when failed. 
-- When matcning in AfterTheTest() then do not add to s:errors but to
-  s:warnings.  in testdir/runtest.vim
-
 Vim9 script:
-- Add vim9 commands to index, so that vim.vim will get them automatically.
-    See email from Charles March 11 2020.
 - "func" inside "vim9script" doesn't work?  (Ben Jackson, #5670)
+- "let x = x + 1" should say that "x" is not defined (declare local after
+  evaluating expresion).
 - "echo Func()" is an error if Func() does not return anything.
 - better implementation for partial and tests for that.
 - Make "g:imported = Export.exported" work in Vim9 script.
@@ -206,6 +197,9 @@ Patch to add "-d" to xxd. (#5616)
 
 Patch to add Turkish manual. (Emir Sarı, #5641)
 
+Patch to support cindent option to handle pragmas differently.
+(Max Rumpf, #5468)
+
 File marks merging has duplicates since 7.4.1925. (Ingo Karkat, #5733)
 
 Running test_gui and test_gui_init with Motif sometimes kills the window
@@ -226,6 +220,8 @@ Ready to include?  Review the code.
 
 When 'lazyredraw' is set sometimes the title is not updated.
 (Jason Franklin, 2020 Feb 3)  Looks like a race condition.
+
+Patch to delete BeOS code. (#5817)
 
 Strange sequence of BufWipeout and BufNew events while doing omni-complete.
 (Paul Jolly, #5656)
@@ -259,9 +255,6 @@ Also #5326: netrw buffers are not restored.
 
 When 'backupdir' has a path ending in double slash (meaning: use full path of
 the file) combined with 'patchmode' the file name is wrong. (#5791)
-
-Patch to support cindent option to handle pragmas differently.
-(Max Rumpf, #5468)
 
 Patch to make ":verbose pwd" show the scope of the directory. (Takuya
 Fujiwara, #5469)
@@ -646,24 +639,7 @@ Make ":interactive !cmd" stop termcap mode, also when used in an autocommand.
 
 Add buffer argument to undotree(). (#4001)
 
-Using uninitialized value in test_gn
 Using uninitialized value in test_crypt (can't explain why).
-memory leak in test_cmdline
-==6522==    by 0x291AFF: ga_grow (misc2.c:2069)
-==6522==    by 0x3D5B4B: win_size_save (window.c:5243)
-==6522==    by 0x222922: open_cmdwin (ex_getln.c:4177)
-==6522==    by 0x21D472: getcmdline_int (ex_getln.c:1376)
-memory leak in test_paste
-Memory leak in test_terminal:
-==23530==    by 0x2640D7: alloc (misc2.c:874)
-==23530==    by 0x2646D6: vim_strsave (misc2.c:1315)
-==23530==    by 0x25841D: FullName_save (misc1.c:5443)
-==23530==    by 0x17CB4F: fix_fname (buffer.c:4794)
-==23530==    by 0x17CB9A: fname_expand (buffer.c:4838)
-==23530==    by 0x1759AB: buflist_new (buffer.c:1889)
-==23530==    by 0x35C923: term_start (terminal.c:421)
-==23530==    by 0x2AFF30: mch_call_shell_terminal (os_unix.c:4377)
-==23530==    by 0x2B16BE: mch_call_shell (os_unix.c:5383)
 Memory leak in test_terminal_fail
 TODO: be able to run all parts of test_alot with valgrind separately
 Memory leak in test_alot with pyeval() (allocating partial)
