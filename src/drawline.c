@@ -270,7 +270,6 @@ win_line(
     int		tocol = MAXCOL;		// end of inverting
     int		fromcol_prev = -2;	// start of inverting after cursor
     int		noinvcur = FALSE;	// don't invert the cursor
-    pos_T	*top, *bot;
     int		lnum_in_visual_area = FALSE;
     pos_T	pos;
     long	v;
@@ -535,6 +534,8 @@ win_line(
 	// handle Visual active in this window
 	if (VIsual_active && wp->w_buffer == curwin->w_buffer)
 	{
+	    pos_T	*top, *bot;
+
 	    if (LTOREQ_POS(curwin->w_cursor, VIsual))
 	    {
 		// Visual is after curwin->w_cursor
