@@ -2788,7 +2788,7 @@ give_up:
 	    && ScreenLines != NULL
 	    && old_Rows != Rows)
     {
-	(void)gui_redraw_block(0, 0, (int)Rows - 1, (int)Columns - 1, 0);
+	gui_redraw_block(0, 0, (int)Rows - 1, (int)Columns - 1, 0);
 	/*
 	 * Adjust the position of the cursor, for when executing an external
 	 * command.
