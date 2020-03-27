@@ -12,6 +12,7 @@ SRC_ALL =	\
 		appveyor.yml \
 		ci/appveyor.bat \
 		ci/if_ver*.vim \
+		ci/load-snd-dummy.sh \
 		src/Make_all.mak \
 		src/README.md \
 		src/alloc.h \
@@ -151,17 +152,18 @@ SRC_ALL =	\
 		src/testdir/*.py \
 		src/testdir/lsan-suppress.txt \
 		src/testdir/sautest/autoload/*.vim \
-		src/testdir/runtest.vim \
-		src/testdir/summarize.vim \
 		src/testdir/check.vim \
-		src/testdir/shared.vim \
-		src/testdir/screendump.vim \
-		src/testdir/view_util.vim \
-		src/testdir/term_util.vim \
-		src/testdir/setup.vim \
 		src/testdir/gui_init.vim \
-		src/testdir/setup_gui.vim \
 		src/testdir/gui_preinit.vim \
+		src/testdir/mouse.vim \
+		src/testdir/runtest.vim \
+		src/testdir/screendump.vim \
+		src/testdir/setup.vim \
+		src/testdir/setup_gui.vim \
+		src/testdir/shared.vim \
+		src/testdir/summarize.vim \
+		src/testdir/term_util.vim \
+		src/testdir/view_util.vim \
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test[0-9]*a.ok \
 		src/testdir/test_[a-z]*.ok \

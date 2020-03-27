@@ -26,7 +26,7 @@ targets personal computing.
 10. Mouse key mappings		|haiku-mouse|
 11. Color names			|haiku-colors|
 12. Credits			|haiku-support-credits|
-13. Bugs & things To Do		|haiku-bugs|
+13. Bugs & to-do		|haiku-bugs|
 
 
 1. General						*haiku-general*
@@ -83,8 +83,7 @@ Stuff that does not work yet:
   still playing with the scrollbar it won't change it itself. I provided a
   workaround which kicks in when the window is activated or deactivated (so it
   works best with focus- follows-mouse turned on).
-- The cursor does not flash (very low priority; I'm not sure I even like it
-  when it flashes)
+- The cursor does not flash.
 
 
 4. The $VIM directory					*haiku-vimdir*
@@ -222,12 +221,14 @@ All the changes and patches released under vim-license.
 Thank you, all!
 
 
-13. Bugs & things To Do					*haiku-bugs*
-
-The port is under development now and far away from the perfect state. Bug
-reports, patches and wishes are welcome.
-
- -Siarzhuk Zharski <imker@gmx.li>
+13. Bugs & to-do					*haiku-bugs*
+ 
+The port is under development now and far away from the perfect state. For bug
+reports, patches and wishes, please use the Vim mailing list or Vim Github
+repository.
+ 
+Mailing list: https://www.vim.org/maillist.php
+Vim Github repository: https://github.com/vim/vim
 
 
  vim:tw=78:ts=8:ft=help:norl:

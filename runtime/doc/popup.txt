@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2020 Mar 14
+*popup.txt*  For Vim version 8.2.  Last change: 2020 Mar 21
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -151,15 +151,19 @@ different:						*E863*
 - The popup window can be closed with `popup_close()`, the terminal buffer
   then becomes hidden.
 - The default Pmenu color is only used for the border and padding.  To change
-  the color of the terminal itself set 'wincolor'.
+  the color of the terminal itself set the Terminal highlight group before
+  creating the terminal.  Setting 'wincolor' later can work but requires the
+  program in the terminal to redraw everything.
 - The default minimal size is 5 lines of 20 characters; Use the "minwidth" and
   "minheight" parameters to set a different value.
+- The terminal size will grow if the program running in the terminal writes
+  text.  Set "maxheight" and "maxwidth" to restrict the size.
 
 To run a terminal in a popup window, first create the terminal hidden.  Then
 pass the buffer number to popup_create().  Example: >
+	hi link Terminal Search
 	let buf = term_start(['picker', 'Something'], #{hidden: 1, term_finish: 'close'})
 	let winid = popup_create(buf, #{minwidth: 50, minheight: 20})
-	set wincolor=Search
 
 ==============================================================================
 2. Functions						*popup-functions*

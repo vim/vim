@@ -280,13 +280,11 @@ ret_number(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_number;
 }
-#ifdef FEAT_FLOAT
     static type_T *
 ret_float(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_float;
 }
-#endif
     static type_T *
 ret_string(int argcount UNUSED, type_T **argtypes UNUSED)
 {
@@ -336,7 +334,6 @@ ret_partial_void(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_partial_void;
 }
-#ifdef FEAT_JOB_CHANNEL
     static type_T *
 ret_channel(int argcount UNUSED, type_T **argtypes UNUSED)
 {
@@ -347,7 +344,6 @@ ret_job(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_job;
 }
-#endif
 
 static type_T *ret_f_function(int argcount, type_T **argtypes);
 
@@ -915,7 +911,7 @@ static funcentry_T global_functions[] =
     {"term_dumpwrite",	2, 3, FEARG_2,	  ret_void,	TERM_FUNC(f_term_dumpwrite)},
     {"term_getaltscreen", 1, 1, FEARG_1,  ret_number,	TERM_FUNC(f_term_getaltscreen)},
     {"term_getansicolors", 1, 1, FEARG_1, ret_list_string,
-#if defined(TERMINAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
+#if defined(FEAT_TERMINAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
 	    f_term_getansicolors
 #else
 	    NULL
@@ -934,7 +930,7 @@ static funcentry_T global_functions[] =
     {"term_scrape",	2, 2, FEARG_1,	  ret_list_dict_any, TERM_FUNC(f_term_scrape)},
     {"term_sendkeys",	2, 2, FEARG_1,	  ret_void,	TERM_FUNC(f_term_sendkeys)},
     {"term_setansicolors", 2, 2, FEARG_1, ret_void,
-#if defined(TERMINAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
+#if defined(FEAT_TERMINAL) && (defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS))
 	    f_term_setansicolors
 #else
 	    NULL
