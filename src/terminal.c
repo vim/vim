@@ -6925,8 +6925,6 @@ term_and_job_init(
 	jobopt_T    *orig_opt UNUSED)
 {
     term->tl_arg0_cmd = NULL;
-    if (opt->jo_set2 & JO2_TERM_HIGHLIGHT)
-	term->tl_highlight_name = vim_strsave(opt->jo_term_highlight);
 
     if (create_vterm(term, term->tl_rows, term->tl_cols) == FAIL)
 	return FAIL;
