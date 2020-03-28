@@ -5298,6 +5298,10 @@ get_job_options(typval_T *tv, jobopt_T *opt, int supported, int supported2)
 		opt->jo_set |= JO_BLOCK_WRITE;
 		opt->jo_block_write = tv_get_number(item);
 	    }
+	    else if (STRCMP(hi->hi_key, "tag") == 0)
+	    {
+		opt->tag = tv_get_number(item);
+	    }
 	    else
 		break;
 	    --todo;
@@ -5769,6 +5773,7 @@ job_set_options(job_T *job, jobopt_T *opt)
 	else
 	    copy_callback(&job->jv_exit_cb, &opt->jo_exit_cb);
     }
+    job->tag = opt->tag;
 }
 
 /*
@@ -6538,6 +6543,7 @@ job_info(job_T *job, dict_T *dict)
     int		i;
 
     dict_add_string(dict, "status", (char_u *)job_status(job));
+    dict_add_number(dict, "tag", job->tag);
 
     item = dictitem_alloc((char_u *)"channel");
     if (item == NULL)

@@ -1848,6 +1848,7 @@ struct jobvar_S
 
     channel_T	*jv_channel;	// channel for I/O, reference counted
     char	**jv_argv;	// command line used to start the job
+    int tag;
 };
 
 /*
@@ -2150,6 +2151,7 @@ typedef struct
     char_u	jo_term_api_buf[NUMBUFLEN];
     char_u	*jo_term_api;
 #endif
+    int		tag;
 } jobopt_T;
 
 #ifdef FEAT_EVAL
