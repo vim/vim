@@ -2643,7 +2643,7 @@ gui_undraw_cursor(void)
 	    redraw_start_col -= 1;
 
 	gui_redraw_block(gui.cursor_row, redraw_start_col,
-			      gui.cursor_row, gui.cursor_col, GUI_MON_NOCLEAR);
+			  gui.cursor_row, gui.cursor_col, GUI_MON_NOCLEAR);
 
 	// Cursor_is_valid is reset when the cursor is undrawn, also reset it
 	// here in case it wasn't needed to undraw it.
