@@ -242,7 +242,7 @@ get_list_type(type_T *member_type, garray_T *type_list)
 
     // Not a common type, create a new entry.
     if (ga_grow(type_list, 1) == FAIL)
-	return FAIL;
+	return &t_any;
     type = ((type_T *)type_list->ga_data) + type_list->ga_len;
     ++type_list->ga_len;
     type->tt_type = VAR_LIST;
@@ -269,7 +269,7 @@ get_dict_type(type_T *member_type, garray_T *type_list)
 
     // Not a common type, create a new entry.
     if (ga_grow(type_list, 1) == FAIL)
-	return FAIL;
+	return &t_any;
     type = ((type_T *)type_list->ga_data) + type_list->ga_len;
     ++type_list->ga_len;
     type->tt_type = VAR_DICT;
@@ -1368,6 +1368,7 @@ skip_type(char_u *start)
 parse_type_member(char_u **arg, type_T *type, garray_T *type_list)
 {
     type_T  *member_type;
+    int	    prev_called_emsg = called_emsg;
 
     if (**arg != '<')
     {
@@ -1380,11 +1381,9 @@ parse_type_member(char_u **arg, type_T *type, garray_T *type_list)
     *arg = skipwhite(*arg + 1);
 
     member_type = parse_type(arg, type_list);
-    if (member_type == NULL)
-	return type;
 
     *arg = skipwhite(*arg);
-    if (**arg != '>')
+    if (**arg != '>' && called_emsg == prev_called_emsg)
     {
 	emsg(_("E1009: Missing > after type"));
 	return type;
@@ -1766,6 +1765,11 @@ compile_load_scriptvar(
 		return FAIL;
 	    }
 	    ++p;
+	    if (VIM_ISWHITE(*p))
+	    {
+		emsg(_("E1074: no white space allowed after dot"));
+		return FAIL;
+	    }
 
 	    idx = find_exported(import->imp_sid, &p, &name_len, &ufunc, &type);
 	    // TODO: what if it is a function?
@@ -1806,6 +1810,7 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
     char_u	*name;
     char_u	*end = end_arg;
     int		res = FAIL;
+    int		prev_called_emsg = called_emsg;
 
     if (*(*arg + 1) == ':')
     {
@@ -1892,7 +1897,7 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
     *arg = end;
 
 theend:
-    if (res == FAIL && error)
+    if (res == FAIL && error && called_emsg == prev_called_emsg)
 	semsg(_(e_var_notfound), name);
     vim_free(name);
     return res;

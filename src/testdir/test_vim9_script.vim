@@ -112,6 +112,16 @@ func Test_assignment_failure()
 
   call CheckDefFailure(['let var: dict <number>'], 'E1007:')
   call CheckDefFailure(['let var: dict<number'], 'E1009:')
+endfunc
+
+func Test_wrong_type()
+  call CheckDefFailure(['let var: list<nothing>'], 'E1010:')
+  call CheckDefFailure(['let var: list<list<nothing>>'], 'E1010:')
+  call CheckDefFailure(['let var: dict<nothing>'], 'E1010:')
+  call CheckDefFailure(['let var: dict<dict<nothing>>'], 'E1010:')
+
+  call CheckDefFailure(['let var: dict<number'], 'E1009:')
+  call CheckDefFailure(['let var: dict<list<number>'], 'E1009:')
 
   call CheckDefFailure(['let var: ally'], 'E1010:')
   call CheckDefFailure(['let var: bram'], 'E1010:')
@@ -435,6 +445,37 @@ def Test_vim9_import_export()
   writefile(import_star_as_lines, 'Ximport.vim')
   source Ximport.vim
   assert_equal(9883, g:imported)
+
+  let import_star_as_lines_no_dot =<< trim END
+    vim9script
+    import * as Export from './Xexport.vim'
+    def Func()
+      let dummy = 1
+      let imported = Export + dummy
+    enddef
+  END
+  writefile(import_star_as_lines_no_dot, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1060:')
+
+  let import_star_as_lines_dot_space =<< trim END
+    vim9script
+    import * as Export from './Xexport.vim'
+    def Func()
+      let imported = Export . exported
+    enddef
+  END
+  writefile(import_star_as_lines_dot_space, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1074:')
+
+  let import_star_as_lines_missing_name =<< trim END
+    vim9script
+    import * as Export from './Xexport.vim'
+    def Func()
+      let imported = Export.
+    enddef
+  END
+  writefile(import_star_as_lines_missing_name, 'Ximport.vim')
+  assert_fails('source Ximport.vim', 'E1048:')
 
   let import_star_lines =<< trim END
     vim9script
