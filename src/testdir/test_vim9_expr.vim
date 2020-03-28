@@ -806,6 +806,12 @@ func Test_expr7_fails()
   call CheckDefFailure("let x = @", "E1002:")
   call CheckDefFailure("let x = @<", "E354:")
 
+  call CheckDefFailure("let x = [1, 2", "E697:")
+  call CheckDefFailure("let x = [notfound]", "E1001:")
+
+  call CheckDefFailure("let x = { -> 123) }", "E451:")
+  call CheckDefFailure("let x = 123->{x -> x + 5) }", "E451:")
+
   call CheckDefFailure("let x = &notexist", 'E113:')
   call CheckDefExecFailure("&grepprg = [343]", 'E1051:')
 
@@ -878,6 +884,7 @@ enddef
 
 func Test_expr7_trailing_fails()
   call CheckDefFailureList(['let l = [2]', 'l->{l -> add(l, 8)}'], 'E107')
+  call CheckDefFailureList(['let l = [2]', 'l->{l -> add(l, 8)} ()'], 'E274')
 endfunc
 
 func Test_expr_fails()
