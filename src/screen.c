@@ -2788,11 +2788,10 @@ give_up:
 	    && ScreenLines != NULL
 	    && old_Rows != Rows)
     {
-	(void)gui_redraw_block(0, 0, (int)Rows - 1, (int)Columns - 1, 0);
-	/*
-	 * Adjust the position of the cursor, for when executing an external
-	 * command.
-	 */
+	gui_redraw_block(0, 0, (int)Rows - 1, (int)Columns - 1, 0);
+
+	// Adjust the position of the cursor, for when executing an external
+	// command.
 	if (msg_row >= Rows)		// Rows got smaller
 	    msg_row = Rows - 1;		// put cursor at last row
 	else if (Rows > old_Rows)	// Rows got bigger

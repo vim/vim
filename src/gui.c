@@ -2630,18 +2630,19 @@ gui_outstr_nowrap(
 
 /*
  * Un-draw the cursor.	Actually this just redraws the character at the given
- * position.  The character just before it too, for when it was in bold.
+ * position.
  */
     void
 gui_undraw_cursor(void)
 {
     if (gui.cursor_is_valid)
     {
-	if (gui_redraw_block(gui.cursor_row, gui.cursor_col,
-			      gui.cursor_row, gui.cursor_col, GUI_MON_NOCLEAR)
-		&& gui.cursor_col > 0)
-	    (void)gui_redraw_block(gui.cursor_row, gui.cursor_col - 1,
-			 gui.cursor_row, gui.cursor_col - 1, GUI_MON_NOCLEAR);
+	// Redraw the character just before too, if there is one, because with
+	// some fonts and characters there can be a one pixel overlap.
+	gui_redraw_block(gui.cursor_row,
+		      gui.cursor_col > 0 ? gui.cursor_col - 1 : gui.cursor_col,
+		      gui.cursor_row, gui.cursor_col, GUI_MON_NOCLEAR);
+
 	// Cursor_is_valid is reset when the cursor is undrawn, also reset it
 	// here in case it wasn't needed to undraw it.
 	gui.cursor_is_valid = FALSE;
@@ -2662,7 +2663,7 @@ gui_redraw(
     row2 = Y_2_ROW(y + h - 1);
     col2 = X_2_COL(x + w - 1);
 
-    (void)gui_redraw_block(row1, col1, row2, col2, GUI_MON_NOCLEAR);
+    gui_redraw_block(row1, col1, row2, col2, GUI_MON_NOCLEAR);
 
     /*
      * We may need to redraw the cursor, but don't take it upon us to change
@@ -2678,10 +2679,8 @@ gui_redraw(
 /*
  * Draw a rectangular block of characters, from row1 to row2 (inclusive) and
  * from col1 to col2 (inclusive).
- * Return TRUE when the character before the first drawn character has
- * different attributes (may have to be redrawn too).
  */
-    int
+    void
 gui_redraw_block(
     int		row1,
     int		col1,
@@ -2695,12 +2694,11 @@ gui_redraw_block(
     sattr_T	first_attr;
     int		idx, len;
     int		back, nback;
-    int		retval = FALSE;
     int		orig_col1, orig_col2;
 
     // Don't try to update when ScreenLines is not valid
     if (!screen_cleared || ScreenLines == NULL)
-	return retval;
+	return;
 
     // Don't try to draw outside the shell!
     // Check everything, strange values may be caused by a big border width
@@ -2762,8 +2760,6 @@ gui_redraw_block(
 	    if (ScreenAttrs[off - 1 - back] != ScreenAttrs[off]
 		    || ScreenLines[off - 1 - back] == ' ')
 		break;
-	retval = (col1 > 0 && ScreenAttrs[off - 1] != 0 && back == 0
-					      && ScreenLines[off - 1] != ' ');
 
 	// Break it up in strings of characters with the same attributes.
 	// Print UTF-8 characters individually.
@@ -2845,8 +2841,6 @@ gui_redraw_block(
     gui.row = old_row;
     gui.col = old_col;
     gui.highlight_mask = (int)old_hl_mask;
-
-    return retval;
 }
 
     static void
