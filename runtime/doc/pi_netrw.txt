@@ -1080,7 +1080,7 @@ QUICK REFERENCE: MAPS				*netrw-browse-maps* {{{2
 	   a	Cycles between normal display,                       |netrw-a|
 	    	hiding (suppress display of files matching g:netrw_list_hide)
 	    	and showing (display only files which match g:netrw_list_hide)
-	   c	Make browsing directory the current directory        |netrw-c|
+	   cd	Make browsing directory the current directory        |netrw-cd|
 	   C	Setting the editing window                           |netrw-C|
 	   d	Make a directory                                     |netrw-d|
 	   D	Attempt to remove the file(s)/directory(ies)         |netrw-D|
@@ -2753,7 +2753,7 @@ your browsing preferences.  (see also: |netrw-settings|)
 				=0 keep the current directory the same as the
 				   browsing directory.
 				The current browsing directory is contained in
-				b:netrw_curdir (also see |netrw-c|)
+				b:netrw_curdir (also see |netrw-cd|)
 
   *g:netrw_keepj*		="keepj" (default) netrw attempts to keep the
 				         |:jumps| table unaffected.
@@ -3124,7 +3124,7 @@ a file using the local browser (by putting the cursor on it) and pressing
 
 Related topics:
  * To see what the current directory is, use |:pwd|
- * To make the currently browsed directory the current directory, see |netrw-c|
+ * To make the currently browsed directory the current directory, see |netrw-cd|
  * To automatically make the currently browsed directory the current
    directory, see |g:netrw_keepdir|.
 
