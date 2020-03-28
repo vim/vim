@@ -2173,7 +2173,10 @@ compile_list(char_u **arg, cctx_T *cctx)
     while (*p != ']')
     {
 	if (*p == NUL)
+	{
+	    semsg(_(e_list_end), *arg);
 	    return FAIL;
+	}
 	if (compile_expr1(&p, cctx) == FAIL)
 	    break;
 	++count;
@@ -2199,7 +2202,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
     ufunc_T	*ufunc;
 
     // Get the funcref in "rettv".
-    if (get_lambda_tv(arg, &rettv, TRUE) == FAIL)
+    if (get_lambda_tv(arg, &rettv, TRUE) != OK)
 	return FAIL;
 
     ufunc = rettv.vval.v_partial->pt_func;
