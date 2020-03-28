@@ -26,7 +26,7 @@ _anchors:
 
   linux: &linux
     os: linux
-    dist: xenial
+    dist: bionic
     addons:
       apt:
         sources:
