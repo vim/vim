@@ -101,6 +101,8 @@ func Test_assignment_failure()
   call CheckDefFailure(['let true = 1'], 'E1034:')
   call CheckDefFailure(['let false = 1'], 'E1034:')
 
+  call CheckScriptFailure(['vim9script', 'def Func()', 'let dummy = s:notfound', 'enddef'], 'E1050:')
+
   call CheckDefFailure(['let var: list<string> = [123]'], 'expected list<string> but got list<number>')
   call CheckDefFailure(['let var: list<number> = ["xx"]'], 'expected list<number> but got list<string>')
 
@@ -618,6 +620,12 @@ def Test_vim9script_call()
     enddef
     {'a': 1, 'b': 2}->DictFunc()
     assert_equal(#{a: 1, b: 2}, dictvar)
+    def CompiledDict()
+      {'a': 3, 'b': 4}->DictFunc()
+    enddef
+    CompiledDict()
+    assert_equal(#{a: 3, b: 4}, dictvar)
+
     #{a: 3, b: 4}->DictFunc()
     assert_equal(#{a: 3, b: 4}, dictvar)
 

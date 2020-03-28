@@ -1815,7 +1815,10 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
     if (*(*arg + 1) == ':')
     {
 	// load namespaced variable
-	name = vim_strnsave(*arg + 2, end - (*arg + 2));
+	if (end <= *arg + 2)
+	    name = vim_strsave((char_u *)"[empty]");
+	else
+	    name = vim_strnsave(*arg + 2, end - (*arg + 2));
 	if (name == NULL)
 	    return FAIL;
 
@@ -1833,9 +1836,24 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 	{
 	    res = compile_load_scriptvar(cctx, name, NULL, NULL, error);
 	}
+	else if (**arg == 'b')
+	{
+	    semsg("Namespace b: not supported yet: %s", *arg);
+	    goto theend;
+	}
+	else if (**arg == 'w')
+	{
+	    semsg("Namespace w: not supported yet: %s", *arg);
+	    goto theend;
+	}
+	else if (**arg == 't')
+	{
+	    semsg("Namespace t: not supported yet: %s", *arg);
+	    goto theend;
+	}
 	else
 	{
-	    semsg("Namespace not supported yet: %s", *arg);
+	    semsg("E1075: Namespace not supported: %s", *arg);
 	    goto theend;
 	}
     }
@@ -2060,6 +2078,7 @@ to_name_const_end(char_u *arg)
     }
     else if (p == arg && *arg == '#' && arg[1] == '{')
     {
+	// Can be "#{a: 1}->Func()".
 	++p;
 	if (eval_dict(&p, &rettv, FALSE, TRUE) == FAIL)
 	    p = arg;
@@ -2068,6 +2087,8 @@ to_name_const_end(char_u *arg)
     {
 	int	    ret = get_lambda_tv(&p, &rettv, FALSE);
 
+	// Can be "{x -> ret}()".
+	// Can be "{'a': 1}->Func()".
 	if (ret == NOTDONE)
 	    ret = eval_dict(&p, &rettv, FALSE, FALSE);
 	if (ret != OK)
@@ -5123,7 +5144,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	}
 
 	// "{" starts a block scope
-	if (*ea.cmd == '{')
+	// "{'a': 1}->func() is something else
+	if (*ea.cmd == '{' && ends_excmd(*skipwhite(ea.cmd + 1)))
 	{
 	    line = compile_block(ea.cmd, &cctx);
 	    continue;

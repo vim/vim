@@ -1274,6 +1274,7 @@ do_source(
 
 	// loading the same script again
 	si->sn_had_command = FALSE;
+	si->sn_version = 1;
 	current_sctx.sc_sid = sid;
 
 	ht = &SCRIPT_VARS(sid);
