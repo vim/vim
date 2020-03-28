@@ -4428,16 +4428,14 @@ channel_parse_messages(void)
     int		ret = FALSE;
     int		r;
     ch_part_T	part = PART_SOCK;
-    static int	recursive = FALSE;
+    static int	recursive = 0;
 #ifdef ELAPSED_FUNC
     elapsed_T	start_tv;
 #endif
 
     // The code below may invoke callbacks, which might call us back.
-    // That doesn't work well, just return without doing anything.
-    if (recursive)
-	return FALSE;
-    recursive = TRUE;
+    // In a recursive call channels will not be closed.
+    ++recursive;
     ++safe_to_invoke_callback;
 
 #ifdef ELAPSED_FUNC
@@ -4454,33 +4452,37 @@ channel_parse_messages(void)
     }
     while (channel != NULL)
     {
-	if (channel_can_close(channel))
+	if (recursive == 1)
 	{
-	    channel->ch_to_be_closed = (1U << PART_COUNT);
-	    channel_close_now(channel);
-	    // channel may have been freed, start over
-	    channel = first_channel;
-	    continue;
-	}
-	if (channel->ch_to_be_freed || channel->ch_killing)
-	{
-	    channel_free_contents(channel);
-	    if (channel->ch_job != NULL)
-		channel->ch_job->jv_channel = NULL;
+	    if (channel_can_close(channel))
+	    {
+		channel->ch_to_be_closed = (1U << PART_COUNT);
+		channel_close_now(channel);
+		// channel may have been freed, start over
+		channel = first_channel;
+		continue;
+	    }
+	    if (channel->ch_to_be_freed || channel->ch_killing)
+	    {
+		channel_free_contents(channel);
+		if (channel->ch_job != NULL)
+		    channel->ch_job->jv_channel = NULL;
 
-	    // free the channel and then start over
-	    channel_free_channel(channel);
-	    channel = first_channel;
-	    continue;
+		// free the channel and then start over
+		channel_free_channel(channel);
+		channel = first_channel;
+		continue;
+	    }
+	    if (channel->ch_refcount == 0 && !channel_still_useful(channel))
+	    {
+		// channel is no longer useful, free it
+		channel_free(channel);
+		channel = first_channel;
+		part = PART_SOCK;
+		continue;
+	    }
 	}
-	if (channel->ch_refcount == 0 && !channel_still_useful(channel))
-	{
-	    // channel is no longer useful, free it
-	    channel_free(channel);
-	    channel = first_channel;
-	    part = PART_SOCK;
-	    continue;
-	}
+
 	if (channel->ch_part[part].ch_fd != INVALID_FD
 				      || channel_has_readahead(channel, part))
 	{
@@ -4521,7 +4523,7 @@ channel_parse_messages(void)
     }
 
     --safe_to_invoke_callback;
-    recursive = FALSE;
+    --recursive;
 
     return ret;
 }
