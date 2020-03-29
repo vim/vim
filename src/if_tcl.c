@@ -199,7 +199,7 @@ static struct {
     static void
 end_dynamic_tcl(void)
 {
-# if !USE_ADDRESS_SANITIZER
+# if defined(EXITFREE) && !USE_ADDRESS_SANITIZER
     if (hTclLib)
     {
 	close_dll(hTclLib);

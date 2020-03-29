@@ -660,13 +660,13 @@ static struct
     static void
 end_dynamic_python(void)
 {
-#if !USE_ADDRESS_SANITIZER
+# if defined(EXITFREE) && !USE_ADDRESS_SANITIZER
     if (hinstPython)
     {
 	close_dll(hinstPython);
 	hinstPython = 0;
     }
-#endif
+# endif
 }
 
 /*

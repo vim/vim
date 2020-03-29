@@ -684,13 +684,13 @@ S_POPMARK(pTHX)
     static void
 end_dynamic_perl(void)
 {
-#if !USE_ADDRESS_SANITIZER
+# if defined(EXITFREE) && !USE_ADDRESS_SANITIZER
     if (hPerlLib)
     {
 	close_dll(hPerlLib);
 	hPerlLib = NULL;
     }
-#endif
+# endif
 }
 
 /*

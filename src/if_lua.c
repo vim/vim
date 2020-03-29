@@ -401,13 +401,13 @@ static HANDLE hinstLua = NULL;
     static void
 end_dynamic_lua(void)
 {
-#if !USE_ADDRESS_SANITIZER
+# if defined(EXITFREE) && !USE_ADDRESS_SANITIZER
     if (hinstLua)
     {
 	close_dll(hinstLua);
 	hinstLua = 0;
     }
-#endif
+# endif
 }
 
     static int
