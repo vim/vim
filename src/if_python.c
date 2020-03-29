@@ -881,27 +881,22 @@ python_end(void)
     python_end_called = TRUE;
     ++recurse;
 
+    if (
 #ifdef DYNAMIC_PYTHON
-    if (hinstPython && Py_IsInitialized())
+	hinstPython &&
+#endif
+	Py_IsInitialized())
     {
-# ifdef PY_CAN_RECURSE
+#ifdef PY_CAN_RECURSE
 	PyGILState_Ensure();
-# else
-	Python_RestoreThread();	    // enter python
-# endif
-	Py_Finalize();
-    }
-    end_dynamic_python();
 #else
-    if (Py_IsInitialized())
-    {
-# ifdef PY_CAN_RECURSE
-	PyGILState_Ensure();
-# else
 	Python_RestoreThread();	    // enter python
-# endif
+#endif
 	Py_Finalize();
     }
+
+#ifdef DYNAMIC_PYTHON
+    end_dynamic_python();
 #endif
 
     --recurse;

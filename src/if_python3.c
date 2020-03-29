@@ -864,10 +864,11 @@ python3_end(void)
     python_end_called = TRUE;
     ++recurse;
 
+    if (
 #ifdef DYNAMIC_PYTHON3
-    if (hinstPy3)
+	hinstPy3 &&
 #endif
-    if (Py_IsInitialized())
+	Py_IsInitialized())
     {
 	// acquire lock before finalizing
 	PyGILState_Ensure();
