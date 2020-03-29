@@ -1612,7 +1612,21 @@ call_def_function(
 
 	    case ISN_NEGATENR:
 		tv = STACK_TV_BOT(-1);
-		tv->vval.v_number = -tv->vval.v_number;
+		if (tv->v_type != VAR_NUMBER
+#ifdef FEAT_FLOAT
+			&& tv->v_type != VAR_FLOAT
+#endif
+			)
+		{
+		    emsg(_(e_number_exp));
+		    goto failed;
+		}
+#ifdef FEAT_FLOAT
+		if (tv->v_type == VAR_FLOAT)
+		    tv->vval.v_float = -tv->vval.v_float;
+		else
+#endif
+		    tv->vval.v_number = -tv->vval.v_number;
 		break;
 
 	    case ISN_CHECKNR:
