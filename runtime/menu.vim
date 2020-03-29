@@ -672,7 +672,7 @@ func s:BMAdd()
       call s:BMShow()
     else
       let name = expand("<afile>")
-      let num = expand("<abuf>")
+      let num = expand("<abuf>") + 0 " +0 to convert 'num' to a number type
       if s:BMCanAdd(name, num)
 	call <SID>BMFilename(name, num)
 	let s:bmenu_count += 1
