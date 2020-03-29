@@ -194,6 +194,21 @@ static struct {
 };
 
 /*
+ * Free tcl.dll
+ */
+    static void
+end_dynamic_tcl(void)
+{
+# if !USE_ADDRESS_SANITIZER
+    if (hTclLib)
+    {
+	close_dll(hTclLib);
+	hTclLib = NULL;
+    }
+# endif
+}
+
+/*
  * Make all runtime-links of tcl.
  *
  * 1. Get module handle using LoadLibraryEx.
@@ -280,12 +295,8 @@ tcl_enabled(int verbose)
     void
 tcl_end(void)
 {
-#if defined(DYNAMIC_TCL) && !USE_ADDRESS_SANITIZER
-    if (hTclLib)
-    {
-	close_dll(hTclLib);
-	hTclLib = NULL;
-    }
+#ifdef DYNAMIC_TCL
+    end_dynamic_tcl();
 #endif
 }
 
