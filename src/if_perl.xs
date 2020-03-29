@@ -679,6 +679,21 @@ S_POPMARK(pTHX)
 # endif
 
 /*
+ * Free perl.dll
+ */
+    static void
+end_dynamic_perl(void)
+{
+#if !USE_ADDRESS_SANITIZER
+    if (hPerlLib)
+    {
+	close_dll(hPerlLib);
+	hPerlLib = NULL;
+    }
+#endif
+}
+
+/*
  * Make all runtime-links of perl.
  *
  * 1. Get module handle using dlopen() or vimLoadLib().
@@ -777,12 +792,9 @@ perl_end(void)
 	Perl_sys_term();
 #endif
     }
-#if defined(DYNAMIC_PERL) && !USE_ADDRESS_SANITIZER
-    if (hPerlLib)
-    {
-	close_dll(hPerlLib);
-	hPerlLib = NULL;
-    }
+
+#ifdef DYNAMIC_PERL
+    end_dynamic_perl();
 #endif
 }
 
