@@ -2536,17 +2536,19 @@ func Test_term_nasty_callback()
     let g:buf1 = term_start('sh', #{hidden: 1, term_finish: 'close'})
     call popup_create(g:buf1, {})
     let g:buf2 = term_start(['sh', '-c'], #{curwin: 1, exit_cb: function('TermExit')})
-    sleep 100m
+    call term_wait(g:buf2, 100)
     call popup_close(win_getid())
   endfunc
   func TermExit(...)
-    call term_sendkeys(bufnr('#'), "exit\<CR>")
+    let altbuf = bufnr('#')
+    call term_sendkeys(altbuf, "exit\<CR>")
+    call term_wait(altbuf)
     call popup_close(win_getid())
   endfunc
   call OpenTerms()
 
   call term_sendkeys(g:buf0, "exit\<CR>")
-  sleep 100m
+  call term_wait(g:buf0, 100)
   exe g:buf0 .. 'bwipe!'
   set hidden&
 endfunc
