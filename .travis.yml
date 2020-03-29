@@ -50,16 +50,10 @@ _anchors:
       - xvfb
     before_install:
       - rvm reset
-      # Remove /opt/python/3.x.x/bin from $PATH for using system python3.
-      # ("pyenv global system" doesn't seem to work.)
-      - |
-        if [[ "$(which python3)" =~ ^/opt/python/ ]]; then
-          export PATH=$(py3=$(which python3); echo ${PATH//${py3%/python3}:/})
-        fi
       # Use llvm-cov instead of gcov when compiler is clang.
       - |
         if [[ "${CC}" = "clang" ]]; then
-          ln -sf "$(which llvm-cov)" /home/travis/bin/gcov
+          ln -sf "$(command -v llvm-cov)" /home/travis/bin/gcov
         fi
       # Setup lua5.3 manually since its package doesn't provide alternative.
       # https://bugs.launchpad.net/ubuntu/+source/lua5.3/+bug/1707212
