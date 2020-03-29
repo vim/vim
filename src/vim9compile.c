@@ -2622,11 +2622,14 @@ compile_subscript(
 	    else
 	    {
 		// method call:  list->method()
-		for (p = *arg; eval_isnamec1(*p); ++p)
+		p = *arg;
+		if (ASCII_ISALPHA(*p) && p[1] == ':')
+		    p += 2;
+		for ( ; eval_isnamec1(*p); ++p)
 		    ;
 		if (*p != '(')
 		{
-		    semsg(_(e_missing_paren), arg);
+		    semsg(_(e_missing_paren), *arg);
 		    return FAIL;
 		}
 		// TODO: base value may not be the first argument

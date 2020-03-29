@@ -706,9 +706,12 @@ def Test_expr7_list()
   assert_equal(g:list_empty, [])
   assert_equal(g:list_empty, [  ])
   assert_equal(g:list_mixed, [1, 'b', false])
+  assert_equal('b', g:list_mixed[1])
 
   call CheckDefExecFailure("let x = g:anint[3]", 'E714:')
+  call CheckDefFailure("let x = g:list_mixed[xxx]", 'E1001:')
   call CheckDefExecFailure("let x = g:list_mixed['xx']", 'E39:')
+  call CheckDefFailure("let x = g:list_mixed[0", 'E111:')
   call CheckDefExecFailure("let x = g:list_empty[3]", 'E684:')
 enddef
 
@@ -737,6 +740,12 @@ def Test_expr7_dict()
   call CheckDefFailure("let x = #{a: 1, a: 2}", 'E721:')
   call CheckDefExecFailure("let x = g:anint.member", 'E715:')
   call CheckDefExecFailure("let x = g:dict_empty.member", 'E716:')
+enddef
+
+def Test_expr_member()
+  assert_equal(1, g:dict_one.one)
+
+  call CheckDefFailure("let x = g:dict_one.#$!", 'E1002:')
 enddef
 
 def Test_expr7_option()
@@ -777,6 +786,30 @@ def Test_expr7_parens()
   assert_equal(6, -+-6)
   assert_equal(-6, ---6)
 enddef
+
+def Test_expr7_negate()
+  assert_equal(-99, -99)
+  assert_equal(99, --99)
+  let nr = 88
+  assert_equal(-88, -nr)
+  assert_equal(88, --nr)
+enddef
+
+def Echo(arg): string
+  return arg
+enddef
+
+def s:EchoArg(arg): string
+  return arg
+enddef
+
+def Test_expr7_call()
+  assert_equal('yes', 'yes'->Echo())
+  assert_equal('yes', 'yes'->s:EchoArg())
+
+  call CheckDefFailure("let x = 'yes'->Echo", 'E107:')
+enddef
+
 
 def Test_expr7_not()
   assert_equal(true, !'')
