@@ -280,13 +280,6 @@ tcl_enabled(int verbose)
     void
 tcl_end(void)
 {
-#ifdef DYNAMIC_TCL
-    if (hTclLib)
-    {
-	close_dll(hTclLib);
-	hTclLib = NULL;
-    }
-#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////

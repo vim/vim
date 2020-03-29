@@ -762,7 +762,7 @@ perl_init(void)
 }
 
 /*
- * perl_end(): clean up after ourselves
+ * Clean up after ourselves.
  */
     void
 perl_end(void)
@@ -777,13 +777,6 @@ perl_end(void)
 	Perl_sys_term();
 #endif
     }
-#ifdef DYNAMIC_PERL
-    if (hPerlLib)
-    {
-	close_dll(hPerlLib);
-	hPerlLib = NULL;
-    }
-#endif
 }
 
 /*

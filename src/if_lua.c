@@ -398,16 +398,6 @@ static const luaV_Reg luaV_dll[] = {
 
 static HANDLE hinstLua = NULL;
 
-    static void
-end_dynamic_lua(void)
-{
-    if (hinstLua)
-    {
-	close_dll(hinstLua);
-	hinstLua = 0;
-    }
-}
-
     static int
 lua_link_init(char *libname, int verbose)
 {
@@ -2121,9 +2111,6 @@ lua_end(void)
     {
 	lua_close(L);
 	L = NULL;
-#ifdef DYNAMIC_LUA
-	end_dynamic_lua();
-#endif
     }
 }
 
