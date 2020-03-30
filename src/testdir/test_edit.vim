@@ -1542,8 +1542,8 @@ func Test_edit_ctrl_o_invalid_cmd()
   close!
 endfunc
 
-" Test for inserting text at the beginning of a line
-func Test_insert_before_first_nonblank()
+" Test for inserting text in a line with only spaces ('H' flag in 'cpoptions')
+func Test_edit_cpo_H()
   new
   call setline(1, '    ')
   normal! Ia
@@ -1556,24 +1556,22 @@ func Test_insert_before_first_nonblank()
   close!
 endfunc
 
-" Test for '$' flag in 'cpoptions'
-func Test_insert_mode_display_dollar()
+" Test for inserting tab in virtual replace mode ('L' flag in 'cpoptions')
+func Test_edit_cpo_L()
   new
-  let g:Line = ''
-  func SaveFirstLine()
-    let g:Line = Screenline(1)
-    return ''
-  endfunc
-  inoremap <expr> <buffer> <F2> SaveFirstLine()
-  call test_override('redraw_flag', 1)
-  set cpo+=$
-  call setline(1, 'one two three')
-  redraw!
-  exe "normal c2w\<F2>vim"
-  call assert_equal('one tw$ three', g:Line)
-  call assert_equal('vim three', getline(1))
-  set cpo-=$
-  call test_override('redraw_flag', 0)
+  call setline(1, 'abcdefghijklmnopqr')
+  exe "normal 0gR\<Tab>"
+  call assert_equal("\<Tab>ijklmnopqr", getline(1))
+  set cpo+=L
+  set list
+  call setline(1, 'abcdefghijklmnopqr')
+  exe "normal 0gR\<Tab>"
+  call assert_equal("\<Tab>cdefghijklmnopqr", getline(1))
+  set nolist
+  call setline(1, 'abcdefghijklmnopqr')
+  exe "normal 0gR\<Tab>"
+  call assert_equal("\<Tab>ijklmnopqr", getline(1))
+  set cpo-=L
   %bw!
 endfunc
 

@@ -1026,4 +1026,13 @@ func Test_comment_nested()
   %bw!
 endfunc
 
+" Test for 'a' and 'w' flags in 'formatoptions'
+func Test_fo_a_w()
+  new
+  setlocal fo+=aw tw=10
+  call feedkeys("iabc abc a abc\<Esc>k0weade", 'xt')
+  call assert_equal(['abc abcde ', 'a abc'], getline(1, '$'))
+  %bw!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
