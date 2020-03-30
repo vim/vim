@@ -58,6 +58,7 @@ enddef
 
 func Test_expr1_fails()
   call CheckDefFailure("let x = 1 ? 'one'", "Missing ':' after '?'")
+  call CheckDefFailure("let x = 1 ? 'one' : xxx", "E1001:")
 
   let msg = "white space required before and after '?'"
   call CheckDefFailure("let x = 1? 'one' : 'two'", msg)
@@ -192,10 +193,17 @@ def Test_expr4_equal()
   assert_equal(true, g:astring == 'asdf')
   assert_equal(false, 'xyz' == g:astring)
 
+  assert_equal(false, 'abc' == 'aBc')
+  assert_equal(false, 'abc' ==# 'aBc')
+  assert_equal(true, 'abc' ==? 'aBc')
+
   assert_equal(false, 'abc' == 'ABC')
   set ignorecase
   assert_equal(false, 'abc' == 'ABC')
+  assert_equal(false, 'abc' ==# 'ABC')
   set noignorecase
+
+  call CheckDefFailure("let x = 'a' == xxx", 'E1001:')
 
   assert_equal(true, 0z3f == 0z3f)
   assert_equal(false, 0z3f == 0z4f)

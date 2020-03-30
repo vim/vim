@@ -3353,9 +3353,9 @@ compile_return(char_u *arg, int set_return_type, cctx_T *cctx)
     }
     else
     {
-	if (set_return_type)
-	    cctx->ctx_ufunc->uf_ret_type = &t_void;
-	else if (cctx->ctx_ufunc->uf_ret_type->tt_type != VAR_VOID)
+	// "set_return_type" cannot be TRUE, only used for a lambda which
+	// always has an argument.
+	if (cctx->ctx_ufunc->uf_ret_type->tt_type != VAR_VOID)
 	{
 	    emsg(_("E1003: Missing return value"));
 	    return NULL;
@@ -3416,7 +3416,10 @@ heredoc_getline(
     cctx_T  *cctx = (cctx_T *)cookie;
 
     if (cctx->ctx_lnum == cctx->ctx_ufunc->uf_lines.ga_len)
-	NULL;
+    {
+	iemsg("Heredoc got to end");
+	return NULL;
+    }
     ++cctx->ctx_lnum;
     return vim_strsave(((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)
 							     [cctx->ctx_lnum]);
@@ -3472,6 +3475,10 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	return NULL;
     }
 
+    // "a: type" is declaring variable "a" with a type, not "a:".
+    if (is_decl && p == arg + 2 && p[-1] == ':')
+	--p;
+
     varlen = p - arg;
     name = vim_strnsave(arg, (int)varlen);
     if (name == NULL)
@@ -3499,6 +3506,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    p = find_option_end(&p, &opt_flags);
 	    if (p == NULL)
 	    {
+		// cannot happen?
 		emsg(_(e_letunexp));
 		return NULL;
 	    }
@@ -3508,7 +3516,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    *p = cc;
 	    if (opt_type == -3)
 	    {
-		semsg(_(e_unknown_option), *arg);
+		semsg(_(e_unknown_option), arg);
 		return NULL;
 	    }
 	    if (opt_type == -2 || opt_type == 0)

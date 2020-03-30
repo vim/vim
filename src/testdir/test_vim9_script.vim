@@ -53,6 +53,9 @@ def Test_assignment()
   let dict4: dict<any> = #{one: 1, two: '2'}
   let dict5: dict<blob> = #{one: 0z01, tw: 0z02}
 
+  let a: number = 6
+  assert_equal(6, a)
+
   if has('channel')
     let chan1: channel
     let job1: job
@@ -101,6 +104,21 @@ func Test_assignment_failure()
   call CheckDefFailure(['let true = 1'], 'E1034:')
   call CheckDefFailure(['let false = 1'], 'E1034:')
 
+  call CheckDefFailure(['let [a; b; c] = g:list'], 'E452:')
+
+  call CheckDefFailure(['let &option'], 'E1052:')
+  call CheckDefFailure(['&g:option = 5'], 'E113:')
+
+  call CheckDefFailure(['let $VAR = 5'], 'E1065:')
+
+  call CheckDefFailure(['let @~ = 5'], 'E354:')
+  call CheckDefFailure(['let @a = 5'], 'E1066:')
+
+  call CheckDefFailure(['let g:var = 5'], 'E1016:')
+
+  call CheckDefFailure(['let anr = 4', 'anr ..= "text"'], 'E1019:')
+  call CheckDefFailure(['let xnr += 4'], 'E1020:')
+
   call CheckScriptFailure(['vim9script', 'def Func()', 'let dummy = s:notfound', 'enddef'], 'E1050:')
 
   call CheckDefFailure(['let var: list<string> = [123]'], 'expected list<string> but got list<number>')
@@ -142,6 +160,7 @@ func Test_const()
   call CheckDefFailure(['const var = 234', 'var = 99'], 'E1018:')
   call CheckDefFailure(['const one = 234', 'let one = 99'], 'E1017:')
   call CheckDefFailure(['const two'], 'E1021:')
+  call CheckDefFailure(['const &option'], 'E996:')
 endfunc
 
 def Test_block()
@@ -172,10 +191,24 @@ def ReturnGlobal(): number
   return g:notNumber
 enddef
 
-def Test_return_string()
+def Test_return_something()
   assert_equal('string', ReturnString())
   assert_equal(123, ReturnNumber())
   assert_fails('call ReturnGlobal()', 'E1029: Expected number but got string')
+enddef
+
+let s:nothing = 0
+def ReturnNothing()
+  s:nothing = 1
+  if true
+    return
+  endif
+  s:nothing = 2
+enddef
+
+def Test_return_nothing()
+  ReturnNothing()
+  assert_equal(1, s:nothing)
 enddef
 
 func Increment()
@@ -281,6 +314,8 @@ def Test_return_type_wrong()
   CheckScriptFailure(['def Func(): string', 'return 1', 'enddef'], 'expected string but got number')
   CheckScriptFailure(['def Func(): void', 'return "a"', 'enddef'], 'expected void but got string')
   CheckScriptFailure(['def Func()', 'return "a"', 'enddef'], 'expected void but got string')
+
+  CheckScriptFailure(['def Func(): number', 'return', 'enddef'], 'E1003:')
 
   CheckScriptFailure(['def Func(): list', 'return []', 'enddef'], 'E1008:')
   CheckScriptFailure(['def Func(): dict', 'return {}', 'enddef'], 'E1008:')
