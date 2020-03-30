@@ -78,7 +78,7 @@ func Test_restricted_mode()
       call assert_fails("call job_start('vim')", 'E145:')
     endif
 
-    if has('libcall')
+    if has('unix') && has('libcall')
       call assert_fails("echo libcall('libc.so', 'getenv', 'HOME')", 'E145:')
     endif
     call assert_fails("call rename('a', 'b')", 'E145:')
@@ -87,9 +87,13 @@ func Test_restricted_mode()
     call assert_fails('!ls', 'E145:')
     call assert_fails('shell', 'E145:')
     call assert_fails('stop', 'E145:')
+    call assert_fails('exe "normal \<C-Z>"', 'E145:')
+    set insertmode
+    call assert_fails('call feedkeys("\<C-Z>", "xt")', 'E145:')
+    set insertmode&
     call assert_fails('suspend', 'E145:')
-    call assert_fails('call system("vim")', 'E145:')
-    call assert_fails('call systemlist("vim")', 'E145:')
+    call assert_fails('call system("ls")', 'E145:')
+    call assert_fails('call systemlist("ls")', 'E145:')
     if has('unix')
       call assert_fails('cd `pwd`', 'E145:')
     endif

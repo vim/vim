@@ -403,7 +403,7 @@ EXTERN char_u	*p_bex;		// 'backupext'
 EXTERN char_u	*p_bo;		// 'belloff'
 EXTERN unsigned	bo_flags;
 
-// values for the 'beepon' option
+// values for the 'belloff' option
 #define BO_ALL		0x0001
 #define BO_BS		0x0002
 #define BO_CRSR		0x0004

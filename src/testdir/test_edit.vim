@@ -1542,8 +1542,8 @@ func Test_edit_ctrl_o_invalid_cmd()
   close!
 endfunc
 
-" Test for inserting text at the beginning of a line
-func Test_insert_before_first_nonblank()
+" Test for inserting text in a line with only spaces ('H' flag in 'cpoptions')
+func Test_edit_cpo_H()
   new
   call setline(1, '    ')
   normal! Ia
@@ -1554,6 +1554,25 @@ func Test_insert_before_first_nonblank()
   call assert_equal('   a ', getline(1))
   set cpo-=H
   close!
+endfunc
+
+" Test for inserting tab in virtual replace mode ('L' flag in 'cpoptions')
+func Test_edit_cpo_L()
+  new
+  call setline(1, 'abcdefghijklmnopqr')
+  exe "normal 0gR\<Tab>"
+  call assert_equal("\<Tab>ijklmnopqr", getline(1))
+  set cpo+=L
+  set list
+  call setline(1, 'abcdefghijklmnopqr')
+  exe "normal 0gR\<Tab>"
+  call assert_equal("\<Tab>cdefghijklmnopqr", getline(1))
+  set nolist
+  call setline(1, 'abcdefghijklmnopqr')
+  exe "normal 0gR\<Tab>"
+  call assert_equal("\<Tab>ijklmnopqr", getline(1))
+  set cpo-=L
+  %bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

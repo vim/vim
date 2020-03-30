@@ -121,6 +121,11 @@ func Test_prompt_garbage_collect()
   call feedkeys("\<CR>\<C-C>", 'xt')
   call assert_true(v:true)
 
+  call assert_fails("call prompt_setcallback(bufnr(), [])", 'E921:')
+  call assert_equal(0, prompt_setcallback({}, ''))
+  call assert_fails("call prompt_setinterrupt(bufnr(), [])", 'E921:')
+  call assert_equal(0, prompt_setinterrupt({}, ''))
+
   delfunc MyPromptCallback
   bwipe!
 endfunc

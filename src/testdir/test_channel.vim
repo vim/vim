@@ -251,6 +251,7 @@ func Ch_two_channels(port)
   call assert_equal('got it', ch_evalexpr(newhandle, 'hello!'))
 
   call ch_close(newhandle)
+  call assert_fails("call ch_close(newhandle)", 'E906:')
 endfunc
 
 func Test_two_channels()
@@ -497,6 +498,11 @@ func Test_raw_pipe()
     call ch_sendraw(job, "double this\n", {'callback': 'Ch_handler'})
     call WaitForAssert({-> assert_equal("this\nAND this\n", substitute(g:Ch_reply, "\r", "", 'g'))})
 
+    call assert_fails("let i = ch_evalraw(job, '2 + 2', {'callback' : 'abc'})", 'E917:')
+    call assert_fails("let i = ch_evalexpr(job, '2 + 2')", 'E912:')
+    call assert_fails("let i = ch_evalraw(job, '2 + 2', {'drop' : ''})", 'E475:')
+    call assert_fails("let i = ch_evalraw(test_null_job(), '2 + 2')", 'E906:')
+
     let reply = job->ch_evalraw("quit\n", {'timeout': 100})
     call assert_equal("Goodbye!\n", substitute(reply, "\r", "", 'g'))
   finally
@@ -518,6 +524,10 @@ func Test_raw_pipe()
     endif
   endfor
   call assert_equal(1, found)
+
+  call assert_fails("call job_stop('abc')", 'E475:')
+  call assert_fails("call job_stop(job, [])", 'E474:')
+  call assert_fails("call job_stop(test_null_job())", 'E916:')
 
   " Try to use the job and channel where a number is expected. This is not
   " related to testing the raw pipe. This test is here just to reuse the
@@ -620,6 +630,7 @@ func Test_nl_read_file()
     call Stop_g_job()
     call delete('Xinput')
   endtry
+  call assert_fails("echo ch_read(test_null_channel(), {'callback' : 'abc'})", 'E475:')
 endfunc
 
 func Test_nl_write_out_file()
@@ -1362,9 +1373,23 @@ endfunc
 """"""""""
 
 func Test_open_fail()
-  silent! let ch = ch_open("noserver")
+  call assert_fails("let ch = ch_open('noserver')", 'E475:')
   echo ch
   let d = ch
+  call assert_fails("let ch = ch_open('noserver', 10)", 'E474:')
+  call assert_fails("let ch = ch_open('localhost:-1')", 'E475:')
+  call assert_fails("let ch = ch_open('localhost:8765', {'timeout' : -1})",
+        \ 'E474:')
+  call assert_fails("let ch = ch_open('localhost:8765', {'axby' : 1})",
+        \ 'E475:')
+  call assert_fails("let ch = ch_open('localhost:8765', {'mode' : 'abc'})",
+        \ 'E475:')
+  call assert_fails("let ch = ch_open('localhost:8765', {'part' : 'out'})",
+        \ 'E475:')
+endfunc
+
+func Test_ch_info_fail()
+  call assert_fails("let x = ch_info(10)", 'E475:')
 endfunc
 
 """"""""""
@@ -1403,6 +1428,10 @@ function Ch_test_call(port)
   let g:Ch_call_ret = []
   call assert_equal('ok', ch_evalexpr(handle, 'call-func'))
   call WaitForAssert({-> assert_equal([1, 2, 3], g:Ch_call_ret)})
+
+  call assert_fails("let i = ch_evalexpr(handle, '2 + 2', {'callback' : 'abc'})", 'E917:')
+  call assert_fails("let i = ch_evalexpr(handle, '2 + 2', {'drop' : ''})", 'E475:')
+  call assert_fails("let i = ch_evalexpr(test_null_job(), '2 + 2')", 'E906:')
 endfunc
 
 func Test_call()
@@ -1520,9 +1549,68 @@ func Test_close_partial()
   call s:run_server('Ch_test_close_partial')
 endfunc
 
-func Test_job_start_invalid()
+func Test_job_start_fails()
+  " this was leaking memory
+  call assert_fails("call job_start([''])", "E474:")
   call assert_fails('call job_start($x)', 'E474:')
   call assert_fails('call job_start("")', 'E474:')
+  call assert_fails('call job_start("ls", {"out_io" : "abc"})', 'E475:')
+  call assert_fails('call job_start("ls", {"err_io" : "abc"})', 'E475:')
+  call assert_fails('call job_start("ls", [])', 'E715:')
+  call assert_fails("call job_start('ls', {'in_top' : -1})", 'E475:')
+  call assert_fails("call job_start('ls', {'in_bot' : -1})", 'E475:')
+  call assert_fails("call job_start('ls', {'channel' : -1})", 'E475:')
+  call assert_fails("call job_start('ls', {'callback' : -1})", 'E475:')
+  call assert_fails("call job_start('ls', {'out_cb' : -1})", 'E475:')
+  call assert_fails("call job_start('ls', {'err_cb' : -1})", 'E475:')
+  call assert_fails("call job_start('ls', {'close_cb' : -1})", 'E475:')
+  call assert_fails("call job_start('ls', {'exit_cb' : -1})", 'E475:')
+  call assert_fails("call job_start('ls', {'term_name' : []})", 'E475:')
+  call assert_fails("call job_start('ls', {'term_finish' : 'run'})", 'E475:')
+  call assert_fails("call job_start('ls', {'term_api' : []})", 'E475:')
+  call assert_fails("call job_start('ls', {'stoponexit' : []})", 'E475:')
+  call assert_fails("call job_start('ls', {'in_io' : 'file'})", 'E920:')
+  call assert_fails("call job_start('ls', {'out_io' : 'file'})", 'E920:')
+  call assert_fails("call job_start('ls', {'err_io' : 'file'})", 'E920:')
+  call assert_fails("call job_start('ls', {'in_mode' : 'abc'})", 'E475:')
+  call assert_fails("call job_start('ls', {'out_mode' : 'abc'})", 'E475:')
+  call assert_fails("call job_start('ls', {'err_mode' : 'abc'})", 'E475:')
+  call assert_fails("call job_start('ls',
+        \ {'in_io' : 'buffer', 'in_buf' : 99999})", 'E86:')
+  call assert_fails("call job_start('ls',
+        \ {'out_io' : 'buffer', 'out_buf' : 99999})", 'E86:')
+  call assert_fails("call job_start('ls',
+        \ {'err_io' : 'buffer', 'err_buf' : 99999})", 'E86:')
+
+  call assert_fails("call job_start('ls',
+        \ {'in_io' : 'buffer', 'in_buf' : -1})", 'E475:')
+  call assert_fails("call job_start('ls',
+        \ {'out_io' : 'buffer', 'out_buf' : -1})", 'E475:')
+  call assert_fails("call job_start('ls',
+        \ {'err_io' : 'buffer', 'err_buf' : -1})", 'E475:')
+
+  set nomodifiable
+  call assert_fails("call job_start('cmd /c dir',
+        \ {'out_io' : 'buffer', 'out_buf' :" .. bufnr() .. "})", 'E21:')
+  call assert_fails("call job_start('cmd /c dir',
+        \ {'err_io' : 'buffer', 'err_buf' :" .. bufnr() .. "})", 'E21:')
+  set modifiable
+
+  call assert_fails("call job_start('ls', {'in_io' : 'buffer'})", 'E915:')
+
+  edit! XXX
+  let bnum = bufnr()
+  enew
+  call assert_fails("call job_start('ls',
+        \ {'in_io' : 'buffer', 'in_buf' : bnum})", 'E918:')
+
+  " Empty job tests
+  " This was crashing on MS-Windows.
+  call assert_fails('let job = job_start([""])', 'E474:')
+  call assert_fails('let job = job_start(["   "])', 'E474:')
+  call assert_fails('let job = job_start("")', 'E474:')
+  call assert_fails('let job = job_start("   ")', 'E474:')
+  %bw!
 endfunc
 
 func Test_job_stop_immediately()
@@ -1986,14 +2074,6 @@ func Test_zz_nl_err_to_out_pipe()
   endtry
 endfunc
 
-func Test_empty_job()
-  " This was crashing on MS-Windows.
-  call assert_fails('let job = job_start([""])', 'E474:')
-  call assert_fails('let job = job_start(["   "])', 'E474:')
-  call assert_fails('let job = job_start("")', 'E474:')
-  call assert_fails('let job = job_start("   ")', 'E474:')
-endfunc
-
 " Do this last, it stops any channel log.
 func Test_zz_ch_log()
   call ch_logfile('Xlog', 'w')
@@ -2003,12 +2083,10 @@ func Test_zz_ch_log()
   let text = readfile('Xlog')
   call assert_match("hello there", text[1])
   call assert_match("%s%s", text[2])
+  call mkdir("Xdir1")
+  call assert_fails("call ch_logfile('Xdir1')", 'E484:')
+  cal delete("Xdir1", 'd')
   call delete('Xlog')
-endfunc
-
-func Test_job_start_fails()
-  " this was leaking memory
-  call assert_fails("call job_start([''])", "E474:")
 endfunc
 
 func Test_issue_5150()
@@ -2046,6 +2124,84 @@ func Test_job_trailing_space_unix()
   let job = job_start("cat ", #{in_io: 'null'})
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
   call assert_equal(0, job_info(job).exitval)
+endfunc
+
+func Test_ch_getbufnr()
+  let ch = test_null_channel()
+  call assert_equal(-1, ch_getbufnr(ch, 'in'))
+  call assert_equal(-1, ch_getbufnr(ch, 'out'))
+  call assert_equal(-1, ch_getbufnr(ch, 'err'))
+  call assert_equal(-1, ch_getbufnr(ch, ''))
+endfunc
+
+" Test for unsupported options passed to ch_status()
+func Test_invalid_job_chan_options()
+  let ch = test_null_channel()
+  let invalid_opts = [
+        \ {'in_io' : 'null'},
+        \ {'out_io' : 'null'},
+        \ {'err_io' : 'null'},
+        \ {'mode' : 'json'},
+        \ {'out_mode' : 'json'},
+        \ {'err_mode' : 'json'},
+        \ {'noblock' : 1},
+        \ {'in_name' : '/a/b'},
+        \ {'pty' : 1},
+        \ {'in_buf' : 1},
+        \ {'out_buf' : 1},
+        \ {'err_buf' : 1},
+        \ {'out_modifiable' : 1},
+        \ {'err_modifiable' : 1},
+        \ {'out_msg' : 1},
+        \ {'err_msg' : 1},
+        \ {'in_top' : 1},
+        \ {'in_bot' : 1},
+        \ {'channel' : ch},
+        \ {'callback' : ''},
+        \ {'out_cb' : ''},
+        \ {'err_cb' : ''},
+        \ {'close_cb' : ''},
+        \ {'exit_cb' : ''},
+        \ {'term_opencmd' : ''},
+        \ {'eof_chars' : ''},
+        \ {'term_rows' : 10},
+        \ {'term_cols' : 10},
+        \ {'vertical' : 0},
+        \ {'curwin' : 1},
+        \ {'bufnr' : 1},
+        \ {'hidden' : 0},
+        \ {'norestore' : 0},
+        \ {'term_kill' : 'kill'},
+        \ {'tty_type' : ''},
+        \ {'term_highlight' : ''},
+        \ {'env' : {}},
+        \ {'cwd' : ''},
+        \ {'timeout' : 0},
+        \ {'out_timeout' : 0},
+        \ {'err_timeout' : 0},
+        \ {'id' : 0},
+        \ {'stoponexit' : ''},
+        \ {'block_write' : 1}
+        \ ]
+  if has('gui')
+    call add(invalid_opts, {'ansi_colors' : []})
+  endif
+
+  for opt in invalid_opts
+    call assert_fails("let x = ch_status(ch, opt)", 'E475:')
+  endfor
+endfunc
+
+" Test for passing the command and the arguments as List on MS-Windows
+func Test_job_with_list_args()
+  CheckMSWindows
+
+  enew!
+  let bnum = bufnr()
+  let job = job_start(['cmd', '/c', 'echo', 'Hello', 'World'], {'out_io' : 'buffer', 'out_buf' : bnum})
+  call WaitForAssert({-> assert_equal("dead", job_status(job))})
+  call assert_equal('Hello World', getline(1))
+  %bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
