@@ -3446,6 +3446,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     size_t	varlen;
     garray_T	*instr = &cctx->ctx_instr;
     int		idx = -1;
+    int		new_local = FALSE;
     char_u	*op;
     int		opt_type;
     assign_dest_T dest = dest_local;
@@ -3660,6 +3661,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	idx = reserve_local(cctx, arg, varlen, cmdidx == CMD_const, type);
 	if (idx < 0)
 	    goto theend;
+	new_local = TRUE;
     }
 
     if (heredoc)
@@ -3721,12 +3723,12 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 
 	// Compile the expression.  Temporarily hide the new local variable
 	// here, it is not available to this expression.
-	if (idx >= 0)
+	if (new_local)
 	    --cctx->ctx_locals.ga_len;
 	instr_count = instr->ga_len;
 	p = skipwhite(p + oplen);
 	r = compile_expr1(&p, cctx);
-	if (idx >= 0)
+	if (new_local)
 	    ++cctx->ctx_locals.ga_len;
 	if (r == FAIL)
 	    goto theend;
