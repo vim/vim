@@ -3685,6 +3685,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     }
     else if (oplen > 0)
     {
+	int r;
+
 	// for "+=", "*=", "..=" etc. first load the current value
 	if (*op != '=')
 	{
@@ -3717,10 +3719,16 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    }
 	}
 
-	// compile the expression
+	// Compile the expression.  Temporarily hide the new local variable
+	// here, it is not available to this expression.
+	if (idx >= 0)
+	    --cctx->ctx_locals.ga_len;
 	instr_count = instr->ga_len;
 	p = skipwhite(p + oplen);
-	if (compile_expr1(&p, cctx) == FAIL)
+	r = compile_expr1(&p, cctx);
+	if (idx >= 0)
+	    ++cctx->ctx_locals.ga_len;
+	if (r == FAIL)
 	    goto theend;
 
 	if (idx >= 0 && (is_decl || !has_type))
