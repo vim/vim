@@ -26,13 +26,10 @@ _anchors:
 
   linux: &linux
     os: linux
-    dist: trusty
+    dist: bionic
     addons:
       apt:
-        sources:
-          # Need msgfmt 0.19.8 to be able to generate .desktop files
-          - sourceline: 'ppa:ricotz/toolchain'
-        packages: &linux-packages
+        packages:
           - autoconf
           - clang
           - lcov
@@ -41,34 +38,33 @@ _anchors:
           - libperl-dev
           - python-dev
           - python3-dev
-          - liblua5.2-dev
-          - lua5.2
+          - liblua5.3-dev
+          - lua5.3
           - ruby-dev
           - tcl-dev
           - cscope
           - libgtk2.0-dev
           - desktop-file-utils
+          - libtool-bin
+    services:
+      - xvfb
     before_install:
       - rvm reset
-      # Remove /opt/python/3.x.x/bin from $PATH for using system python3.
-      # ("pyenv global system" doesn't seem to work.)
-      - |
-        if [[ "$(which python3)" =~ ^/opt/python/ ]]; then
-          export PATH=$(py3=$(which python3); echo ${PATH//${py3%/python3}:/})
-        fi
       # Use llvm-cov instead of gcov when compiler is clang.
       - |
         if [[ "${CC}" = "clang" ]]; then
-          ln -sf "$(which llvm-cov)" /home/travis/bin/gcov
+          ln -sf "$(command -v llvm-cov)" /home/travis/bin/gcov
+        fi
+      # Setup lua5.3 manually since its package doesn't provide alternative.
+      # https://bugs.launchpad.net/ubuntu/+source/lua5.3/+bug/1707212
+      - |
+        if [[ "${CONFOPT}" =~ luainterp ]]; then
+          sudo update-alternatives --install /usr/bin/lua lua /usr/bin/lua5.3 10
         fi
     before_script:
-      # Start virtual framebuffer to be able to test the GUI. For dists newer
-      # than trusty, the "services: xvfb" setting should be used instead
-      - |
-        if [[ ${TRAVIS_DIST} = trusty ]]; then
-          export DISPLAY=:99.0
-          sh -e /etc/init.d/xvfb start && sleep 3
-        fi
+      # On travis bionic-amd64 gethostbyname() resolves "localhost" to 127.0.1.1
+      # so that makes various channel tests fail.
+      - sudo sed -i '/^127\.0\.1\.1\s/s/\blocalhost\b//g' /etc/hosts
       - sudo bash ci/load-snd-dummy.sh || true
       - sudo usermod -a -G audio $USER
       - do_test() { sg audio "sg $(id -gn) '$*'"; }
@@ -90,7 +86,7 @@ _anchors:
         - /usr/local/Homebrew/Library/Taps/homebrew/homebrew-core/
     before_install:
       - rvm reset
-      # Lua is not installed on Travis OSX
+      # Lua is not installed on macOS
       - export LUA_PREFIX=/usr/local
 
   coverage: &coverage
@@ -101,10 +97,10 @@ _anchors:
     - (cd "${SRCDIR}" && bash <(curl -s https://codecov.io/bash))
 
   asan_symbolize: &asan_symbolize
-    - |
-      while read log; do
-        asan_symbolize < "${log}"
-      done < <(find . -type f -name 'asan.*' -size +0)
+    # Update pyenv to fix the error "/opt/pyenv/libexec/pyenv: line 43: cd: asan_symbolize-6.0: Not a directory".
+    # https://github.com/pyenv/pyenv/issues/580
+    - (cd "${PYENV_ROOT}" && git fetch -p origin && git checkout "$(git rev-list --tags -n1)") &>/dev/null || true
+    - find . -type f -name 'asan.*' -size +0 2>/dev/null | xargs -I{} -n1 -t asan_symbolize -l{}
 
 branches:
   except:
@@ -205,15 +201,14 @@ jobs:
       name: huge/gcc-s390x
       compiler: gcc
       env: *linux-huge
-      addons:
-        apt:
-          packages:
-            - *linux-packages
-            - libtool-bin
+      services: []
     - <<: *linux
       name: huge+coverage/clang
       compiler: clang
-      env: *linux-huge
+      env:
+        - *linux-huge
+        # Clang cannot compile test_libvterm with "--coverage" flag.
+        - TEST=scripttests
       after_success: *coverage
     - <<: *linux
       name: huge+coverage/gcc
