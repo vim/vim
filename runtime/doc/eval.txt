@@ -5136,8 +5136,8 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 <
 							*getcurpos()*
 getcurpos()	Get the position of the cursor.  This is like getpos('.'), but
-		includes an extra item in the list:
-		    [bufnum, lnum, col, off, curswant] ~
+		includes an extra item in the list and bufnum is always 0:
+		    [0, lnum, col, off, curswant] ~
 		The "curswant" number is the preferred column when moving the
 		cursor vertically.  Also see |getpos()|.
 
