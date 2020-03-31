@@ -257,7 +257,7 @@ struct dfunc_S {
 // Functions defined with :def are stored in this growarray.
 // They are never removed, so that they can be found by index.
 // Deleted functions have the df_deleted flag set.
-garray_T def_functions = {0, 0, sizeof(dfunc_T), 200, NULL};
+garray_T def_functions = {0, 0, sizeof(dfunc_T), 50, NULL};
 #else
 extern garray_T def_functions;
 #endif

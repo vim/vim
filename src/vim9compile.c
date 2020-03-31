@@ -5029,11 +5029,12 @@ compile_execute(char_u *arg, cctx_T *cctx)
  * Adds the function to "def_functions".
  * When "set_return_type" is set then set ufunc->uf_ret_type to the type of the
  * return statement (used for lambda).
+ * This can be used recursively through compile_lambda(), which may reallocate
+ * "def_functions".
  */
     void
 compile_def_function(ufunc_T *ufunc, int set_return_type)
 {
-    dfunc_T	*dfunc;
     char_u	*line = NULL;
     char_u	*p;
     exarg_T	ea;
@@ -5046,25 +5047,29 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
     sctx_T	save_current_sctx = current_sctx;
     int		emsg_before = called_emsg;
 
-    if (ufunc->uf_dfunc_idx >= 0)
     {
-	// Redefining a function that was compiled before.
-	dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
+	dfunc_T	*dfunc;  // may be invalidated by compile_lambda()
 
-	// Free old instructions.
-	delete_def_function_contents(dfunc);
-    }
-    else
-    {
-	// Add the function to "def_functions".
-	if (ga_grow(&def_functions, 1) == FAIL)
-	    return;
-	dfunc = ((dfunc_T *)def_functions.ga_data) + def_functions.ga_len;
-	vim_memset(dfunc, 0, sizeof(dfunc_T));
-	dfunc->df_idx = def_functions.ga_len;
-	ufunc->uf_dfunc_idx = dfunc->df_idx;
-	dfunc->df_ufunc = ufunc;
-	++def_functions.ga_len;
+	if (ufunc->uf_dfunc_idx >= 0)
+	{
+	    // Redefining a function that was compiled before.
+	    dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
+
+	    // Free old instructions.
+	    delete_def_function_contents(dfunc);
+	}
+	else
+	{
+	    // Add the function to "def_functions".
+	    if (ga_grow(&def_functions, 1) == FAIL)
+		return;
+	    dfunc = ((dfunc_T *)def_functions.ga_data) + def_functions.ga_len;
+	    vim_memset(dfunc, 0, sizeof(dfunc_T));
+	    dfunc->df_idx = def_functions.ga_len;
+	    ufunc->uf_dfunc_idx = dfunc->df_idx;
+	    dfunc->df_ufunc = ufunc;
+	    ++def_functions.ga_len;
+	}
     }
 
     vim_memset(&cctx, 0, sizeof(cctx));
@@ -5414,10 +5419,14 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	generate_instr(&cctx, ISN_RETURN);
     }
 
-    dfunc->df_deleted = FALSE;
-    dfunc->df_instr = instr->ga_data;
-    dfunc->df_instr_count = instr->ga_len;
-    dfunc->df_varcount = cctx.ctx_max_local;
+    {
+	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
+							 + ufunc->uf_dfunc_idx;
+	dfunc->df_deleted = FALSE;
+	dfunc->df_instr = instr->ga_data;
+	dfunc->df_instr_count = instr->ga_len;
+	dfunc->df_varcount = cctx.ctx_max_local;
+    }
 
     ret = OK;
 
@@ -5425,6 +5434,8 @@ erret:
     if (ret == FAIL)
     {
 	int idx;
+	dfunc_T	*dfunc = ((dfunc_T *)def_functions.ga_data)
+							 + ufunc->uf_dfunc_idx;
 
 	for (idx = 0; idx < instr->ga_len; ++idx)
 	    delete_instr(((isn_T *)instr->ga_data) + idx);
