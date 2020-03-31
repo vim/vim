@@ -224,6 +224,31 @@ def Test_disassemble_call()
 enddef
 
 
+def EchoArg(arg: string): string
+  return arg
+enddef
+def RefThis(): func
+  return function('EchoArg')
+enddef
+def s:ScriptPCall()
+  RefThis()("text")
+enddef
+
+def Test_disassemble_pcall()
+  let res = execute('disass s:ScriptPCall')
+  assert_match('<SNR>\d\+_ScriptPCall.*'
+        \ .. 'RefThis()("text").*'
+        \ .. '\d DCALL RefThis(argc 0).*'
+        \ .. '\d PUSHS "text".*'
+        \ .. '\d PCALL top (argc 1).*'
+        \ .. '\d PCALL end.*'
+        \ .. '\d DROP.*'
+        \ .. '\d PUSHNR 0.*'
+        \ .. '\d RETURN.*'
+        \, res)
+enddef
+
+
 def FuncWithForwardCall(): string
   return DefinedLater("yes")
 enddef

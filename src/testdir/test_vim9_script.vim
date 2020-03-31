@@ -260,9 +260,10 @@ func TakesOneArg(arg)
   echo a:arg
 endfunc
 
-def Test_call_wrong_arg_count()
+def Test_call_wrong_args()
   call CheckDefFailure(['TakesOneArg()'], 'E119:')
   call CheckDefFailure(['TakesOneArg(11, 22)'], 'E118:')
+  call CheckDefFailure(['bufnr(xxx)'], 'E1001:')
 enddef
 
 " Default arg and varargs
@@ -1027,6 +1028,14 @@ def Test_while_loop()
     result ..= cnt .. '_'
   endwhile
   assert_equal('1_3_', result)
+enddef
+
+def Test_for_loop_fails()
+  call CheckDefFailure(['for # in range(5)'], 'E690:')
+  call CheckDefFailure(['for i In range(5)'], 'E690:')
+  call CheckDefFailure(['let x = 5', 'for x in range(5)'], 'E1023:')
+  call CheckScriptFailure(['def Func(arg)', 'for arg in range(5)', 'enddef'], 'E1006:')
+  call CheckDefFailure(['for i in "text"'], 'E1024:')
 enddef
 
 def Test_interrupt_loop()

@@ -1196,6 +1196,11 @@ generate_PCALL(cctx_T *cctx, int argcount, int at_top)
     // drop the funcref/partial, get back the return value
     ((type_T **)stack->ga_data)[stack->ga_len - 1] = &t_any;
 
+    // If partial is above the arguments it must be cleared and replaced with
+    // the return value.
+    if (at_top && generate_instr(cctx, ISN_PCALL_END) == NULL)
+	return FAIL;
+
     return OK;
 }
 
@@ -5200,7 +5205,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    p = (*ea.cmd == '&' || *ea.cmd == '$' || *ea.cmd == '@')
 							 ? ea.cmd + 1 : ea.cmd;
 	    p = to_name_end(p, TRUE);
-	    if ((p > ea.cmd && *p != NUL) || *p == '(')
+	    if (p > ea.cmd && *p != NUL)
 	    {
 		int oplen;
 		int heredoc;
@@ -5538,6 +5543,7 @@ delete_instr(isn_T *isn)
 	case ISN_OPFLOAT:
 	case ISN_OPANY:
 	case ISN_PCALL:
+	case ISN_PCALL_END:
 	case ISN_PUSHF:
 	case ISN_PUSHNR:
 	case ISN_PUSHBOOL:

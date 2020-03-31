@@ -57,6 +57,7 @@ typedef enum {
     ISN_DCALL,	    // call def function isn_arg.dfunc
     ISN_UCALL,	    // call user function or funcref/partial isn_arg.ufunc
     ISN_PCALL,	    // call partial, use isn_arg.pfunc
+    ISN_PCALL_END,  // cleanup after ISN_PCALL with cpf_top set
     ISN_RETURN,	    // return, result is on top of stack
     ISN_FUNCREF,    // push a function ref to dfunc isn_arg.number
 
@@ -256,7 +257,7 @@ struct dfunc_S {
 // Functions defined with :def are stored in this growarray.
 // They are never removed, so that they can be found by index.
 // Deleted functions have the df_deleted flag set.
-garray_T def_functions = {0, 0, sizeof(dfunc_T), 50, NULL};
+garray_T def_functions = {0, 0, sizeof(dfunc_T), 200, NULL};
 #else
 extern garray_T def_functions;
 #endif
