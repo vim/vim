@@ -730,6 +730,7 @@ OBJ = \
 	$(OUTDIR)\change.obj \
 	$(OUTDIR)\charset.obj \
 	$(OUTDIR)\cindent.obj \
+	$(OUTDIR)\clientserver.obj \
 	$(OUTDIR)\clipboard.obj \
 	$(OUTDIR)\cmdexpand.obj \
 	$(OUTDIR)\cmdhist.obj \
@@ -1516,6 +1517,8 @@ $(OUTDIR)/charset.obj:	$(OUTDIR) charset.c  $(INCL)
 
 $(OUTDIR)/cindent.obj:	$(OUTDIR) cindent.c  $(INCL)
 
+$(OUTDIR)/clientserver.obj:	$(OUTDIR) clientserver.c  $(INCL)
+
 $(OUTDIR)/clipboard.obj:	$(OUTDIR) clipboard.c  $(INCL)
 
 $(OUTDIR)/cmdexpand.obj:	$(OUTDIR) cmdexpand.c  $(INCL)
@@ -1865,6 +1868,7 @@ proto.h: \
 	proto/change.pro \
 	proto/charset.pro \
 	proto/cindent.pro \
+	proto/clientserver.pro \
 	proto/clipboard.pro \
 	proto/cmdexpand.pro \
 	proto/cmdhist.pro \

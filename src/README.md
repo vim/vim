@@ -30,6 +30,7 @@ buffer.c	| manipulating buffers (loaded files)
 bufwrite.c	| writing a buffer to file
 change.c	| handling changes to text
 cindent.c	| C and Lisp indentation
+clientserver.c	| client server functionality
 clipboard.c	| handling the clipboard
 cmdexpand.c	| command-line completion
 cmdhist.c	| command-line history
