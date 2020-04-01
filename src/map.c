@@ -2200,6 +2200,8 @@ get_maparg(typval_T *argvars, typval_T *rettv, int exact)
 	dict_add_string(dict, "lhs", lhs);
 	dict_add_string(dict, "rhs", mp->m_orig_str);
 	dict_add_number(dict, "noremap", mp->m_noremap ? 1L : 0L);
+	dict_add_number(dict, "script", mp->m_noremap == REMAP_SCRIPT
+								    ? 1L : 0L);
 	dict_add_number(dict, "expr", mp->m_expr ? 1L : 0L);
 	dict_add_number(dict, "silent", mp->m_silent ? 1L : 0L);
 	dict_add_number(dict, "sid", (long)mp->m_script_ctx.sc_sid);
