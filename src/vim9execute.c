@@ -684,6 +684,8 @@ call_def_function(
 		    typval_T	optval;
 		    char_u	*name = iptr->isn_arg.string;
 
+		    // This is not expected to fail, name is checked during
+		    // compilation: don't set SOURCING_LNUM.
 		    if (ga_grow(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
 		    if (get_option_tv(&name, &optval, TRUE) == FAIL)

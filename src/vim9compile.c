@@ -277,6 +277,25 @@ get_dict_type(type_T *member_type, garray_T *type_list)
     return type;
 }
 
+/*
+ * Return the type_T for a typval.  Only for primitive types.
+ */
+    static type_T *
+typval2type(typval_T *tv)
+{
+    if (tv->v_type == VAR_NUMBER)
+	return &t_number;
+    if (tv->v_type == VAR_BOOL)
+	return &t_bool;
+    if (tv->v_type == VAR_STRING)
+	return &t_string;
+    if (tv->v_type == VAR_LIST)  // e.g. for v:oldfiles
+	return &t_list_string;
+    if (tv->v_type == VAR_DICT)  // e.g. for v:completed_item
+	return &t_dict_any;
+    return &t_any;
+}
+
 /////////////////////////////////////////////////////////////////////
 // Following generate_ functions expect the caller to call ga_grow().
 
@@ -1402,7 +1421,7 @@ parse_type_member(char_u **arg, type_T *type, garray_T *type_list)
 
 /*
  * Parse a type at "arg" and advance over it.
- * Return NULL for failure.
+ * Return &t_any for failure.
  */
     type_T *
 parse_type(char_u **arg, garray_T *type_list)
@@ -3462,7 +3481,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     int		vimvaridx = -1;
     int		oplen = 0;
     int		heredoc = FALSE;
-    type_T	*type;
+    type_T	*type = &t_any;
     lvar_T	*lvar;
     char_u	*name;
     char_u	*sp;
@@ -3532,6 +3551,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	else if (*arg == '$')
 	{
 	    dest = dest_env;
+	    type = &t_string;
 	    if (is_decl)
 	    {
 		semsg(_("E1065: Cannot declare an environment variable: %s"), name);
@@ -3546,6 +3566,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		goto theend;
 	    }
 	    dest = dest_reg;
+	    type = &t_string;
 	    if (is_decl)
 	    {
 		semsg(_("E1066: Cannot declare a register: %s"), name);
@@ -3563,6 +3584,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	}
 	else if (STRNCMP(arg, "v:", 2) == 0)
 	{
+	    typval_T *vtv;
+
 	    vimvaridx = find_vim_var(name + 2);
 	    if (vimvaridx < 0)
 	    {
@@ -3570,6 +3593,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		goto theend;
 	    }
 	    dest = dest_vimvar;
+	    vtv = get_vim_var_tv(vimvaridx);
+	    type = typval2type(vtv);
 	    if (is_decl)
 	    {
 		semsg(_("E1064: Cannot declare a v: variable: %s"), name);
@@ -3625,16 +3650,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    // parse optional type: "let var: type = expr"
 	    p = skipwhite(p + 1);
 	    type = parse_type(&p, cctx->ctx_type_list);
-	    if (type == NULL)
-		goto theend;
 	    has_type = TRUE;
 	}
-	else if (idx < 0)
-	{
-	    // global and new local default to "any" type
-	    type = &t_any;
-	}
-	else
+	else if (idx >= 0)
 	{
 	    lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
 	    type = lvar->lv_type;
@@ -3700,7 +3718,9 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     }
     else if (oplen > 0)
     {
-	int r;
+	int	r;
+	type_T	*stacktype;
+	garray_T *stack;
 
 	// for "+=", "*=", "..=" etc. first load the current value
 	if (*op != '=')
@@ -3709,7 +3729,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    {
 		case dest_option:
 		    // TODO: check the option exists
-		    generate_LOAD(cctx, ISN_LOADOPT, 0, name + 1, type);
+		    generate_LOAD(cctx, ISN_LOADOPT, 0, name, type);
 		    break;
 		case dest_global:
 		    generate_LOAD(cctx, ISN_LOADG, 0, name + 2, type);
@@ -3746,12 +3766,10 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	if (r == FAIL)
 	    goto theend;
 
+	stack = &cctx->ctx_type_stack;
+	stacktype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
 	if (idx >= 0 && (is_decl || !has_type))
 	{
-	    garray_T	*stack = &cctx->ctx_type_stack;
-	    type_T	*stacktype =
-				((type_T **)stack->ga_data)[stack->ga_len - 1];
-
 	    lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
 	    if (!has_type)
 	    {
@@ -3767,6 +3785,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		if (check_type(lvar->lv_type, stacktype, TRUE) == FAIL)
 		    goto theend;
 	}
+	else if (*p != '=' && check_type(type, stacktype, TRUE) == FAIL)
+	    goto theend;
     }
     else if (cmdidx == CMD_const)
     {

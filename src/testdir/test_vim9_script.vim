@@ -31,6 +31,8 @@ endfunc
 let s:appendToMe = 'xxx'
 let s:addToMe = 111
 let g:existing = 'yes'
+let g:inc_counter = 1
+let $SOME_ENV_VAR = 'some'
 
 def Test_assignment()
   let bool1: bool = true
@@ -94,6 +96,27 @@ def Test_assignment()
   assert_equal(333, s:addToMe)
   s:newVar = 'new'
   assert_equal('new', s:newVar)
+
+  set ts=7
+  &ts += 1
+  assert_equal(8, &ts)
+  call CheckDefFailure(['&notex += 3'], 'E113:')
+  call CheckDefFailure(['&ts ..= "xxx"'], 'E1019:')
+  call CheckDefFailure(['&path += 3'], 'E1013:')
+
+  g:inc_counter += 1
+  assert_equal(2, g:inc_counter)
+
+  $SOME_ENV_VAR ..= 'more'
+  assert_equal('somemore', $SOME_ENV_VAR)
+  call CheckDefFailure(['$SOME_ENV_VAR += "more"'], 'E1013:')
+  call CheckDefFailure(['$SOME_ENV_VAR += 123'], 'E1013:')
+
+  @a = 'areg'
+  @a ..= 'add'
+  assert_equal('aregadd', @a)
+  call CheckDefFailure(['@a += "more"'], 'E1013:')
+  call CheckDefFailure(['@a += 123'], 'E1013:')
 enddef
 
 func Test_assignment_failure()

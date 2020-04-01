@@ -106,6 +106,8 @@ func Test_expr2_fails()
   call CheckDefFailure("let x = 1||2", msg)
   call CheckDefFailure("let x = 1 ||2", msg)
   call CheckDefFailure("let x = 1|| 2", msg)
+
+  call CheckDefFailure("let x = 1 || xxx", 'E1001:')
 endfunc
 
 " test &&
@@ -877,7 +879,7 @@ func Test_expr7_fails()
   call CheckDefFailure("let x = 123->{x -> x + 5) }", "E451:")
 
   call CheckDefFailure("let x = &notexist", 'E113:')
-  call CheckDefExecFailure("&grepprg = [343]", 'E1051:')
+  call CheckDefFailure("&grepprg = [343]", 'E1013:')
 
   call CheckDefExecFailure("echo s:doesnt_exist", 'E121:')
   call CheckDefExecFailure("echo g:doesnt_exist", 'E121:')
