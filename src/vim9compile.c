@@ -3767,7 +3767,8 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    goto theend;
 
 	stack = &cctx->ctx_type_stack;
-	stacktype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	stacktype = stack->ga_len == 0 ? &t_void
+			      : ((type_T **)stack->ga_data)[stack->ga_len - 1];
 	if (idx >= 0 && (is_decl || !has_type))
 	{
 	    lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
