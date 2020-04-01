@@ -100,9 +100,19 @@ def Test_assignment()
   set ts=7
   &ts += 1
   assert_equal(8, &ts)
+  &ts -= 3
+  assert_equal(5, &ts)
+  &ts *= 2
+  assert_equal(10, &ts)
+  &ts /= 3
+  assert_equal(3, &ts)
+  set ts=10
+  &ts %= 4
+  assert_equal(2, &ts)
   call CheckDefFailure(['&notex += 3'], 'E113:')
   call CheckDefFailure(['&ts ..= "xxx"'], 'E1019:')
   call CheckDefFailure(['&path += 3'], 'E1013:')
+  &ts = 8
 
   g:inc_counter += 1
   assert_equal(2, g:inc_counter)
@@ -1013,7 +1023,11 @@ def Test_if_const_expr()
     res = true
   endif
   assert_equal(false, res)
+enddef
 
+def Test_if_const_expr_fails()
+  call CheckDefFailure(['if "aaa" == "bbb'], 'E114:')
+  call CheckDefFailure(["if 'aaa' == 'bbb"], 'E115:')
 enddef
 
 def Test_delfunc()

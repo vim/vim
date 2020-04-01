@@ -4043,6 +4043,7 @@ evaluate_const_expr7(char_u **arg, cctx_T *cctx UNUSED, typval_T *tv)
 {
     typval_T	argvars[2];
     char_u	*start_leader, *end_leader;
+    int		has_call = FALSE;
 
     /*
      * Skip '!' characters.  They are handled later.
@@ -4070,9 +4071,11 @@ evaluate_const_expr7(char_u **arg, cctx_T *cctx UNUSED, typval_T *tv)
 	return OK;
     }
 
-    if (STRNCMP("has(", *arg, 4) != 0)
-	return FAIL;
-    *arg = skipwhite(*arg + 4);
+    if (STRNCMP("has(", *arg, 4) == 0)
+    {
+	has_call = TRUE;
+	*arg = skipwhite(*arg + 4);
+    }
 
     if (**arg == '"')
     {
@@ -4087,23 +4090,26 @@ evaluate_const_expr7(char_u **arg, cctx_T *cctx UNUSED, typval_T *tv)
     else
 	return FAIL;
 
-    *arg = skipwhite(*arg);
-    if (**arg != ')')
-	return FAIL;
-    *arg = skipwhite(*arg + 1);
-
-    argvars[0] = *tv;
-    argvars[1].v_type = VAR_UNKNOWN;
-    tv->v_type = VAR_NUMBER;
-    tv->vval.v_number = 0;
-    f_has(argvars, tv);
-    clear_tv(&argvars[0]);
-
-    while (start_leader < end_leader)
+    if (has_call)
     {
-	if (*start_leader == '!')
-	    tv->vval.v_number = !tv->vval.v_number;
-	++start_leader;
+	*arg = skipwhite(*arg);
+	if (**arg != ')')
+	    return FAIL;
+	*arg = skipwhite(*arg + 1);
+
+	argvars[0] = *tv;
+	argvars[1].v_type = VAR_UNKNOWN;
+	tv->v_type = VAR_NUMBER;
+	tv->vval.v_number = 0;
+	f_has(argvars, tv);
+	clear_tv(&argvars[0]);
+
+	while (start_leader < end_leader)
+	{
+	    if (*start_leader == '!')
+		tv->vval.v_number = !tv->vval.v_number;
+	    ++start_leader;
+	}
     }
 
     return OK;
@@ -4129,8 +4135,33 @@ evaluate_const_expr4(char_u **arg, cctx_T *cctx UNUSED, typval_T *tv)
      */
     if (type != EXPR_UNKNOWN)
     {
-	// TODO
-	return FAIL;
+	typval_T    tv2;
+	char_u	    *s1, *s2;
+	char_u	    buf1[NUMBUFLEN], buf2[NUMBUFLEN];
+	int	    n;
+
+	// TODO:  Only string == string is supported now
+	if (tv->v_type != VAR_STRING)
+	    return FAIL;
+	if (type != EXPR_EQUAL)
+	    return FAIL;
+
+	// get the second variable
+	tv2.v_type = VAR_UNKNOWN;
+	*arg = skipwhite(p + len);
+	if (evaluate_const_expr7(arg, cctx, &tv2) == FAIL
+						   || tv2.v_type != VAR_STRING)
+	{
+	    clear_tv(&tv2);
+	    return FAIL;
+	}
+	s1 = tv_get_string_buf(tv, buf1);
+	s2 = tv_get_string_buf(&tv2, buf2);
+	n = STRCMP(s1, s2);
+	clear_tv(tv);
+	clear_tv(&tv2);
+	tv->v_type = VAR_BOOL;
+	tv->vval.v_number = n == 0 ? VVAL_TRUE : VVAL_FALSE;
     }
 
     return OK;
