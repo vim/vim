@@ -9,3 +9,4 @@ leak:libtinfo.so.5
 leak:libperl.so.*
 leak:libpython*.so.*
 leak:libruby*.so.*
+leak:libxcb*.so.*

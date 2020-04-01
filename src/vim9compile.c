@@ -3500,7 +3500,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    if (cmdidx == CMD_const)
 	    {
 		emsg(_(e_const_option));
-		return NULL;
+		goto theend;
 	    }
 	    if (is_decl)
 	    {
@@ -3513,7 +3513,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    {
 		// cannot happen?
 		emsg(_(e_letunexp));
-		return NULL;
+		goto theend;
 	    }
 	    cc = *p;
 	    *p = NUL;
@@ -3522,7 +3522,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    if (opt_type == -3)
 	    {
 		semsg(_(e_unknown_option), arg);
-		return NULL;
+		goto theend;
 	    }
 	    if (opt_type == -2 || opt_type == 0)
 		type = &t_string;
@@ -3543,7 +3543,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    if (!valid_yank_reg(arg[1], TRUE))
 	    {
 		emsg_invreg(arg[1]);
-		return FAIL;
+		goto theend;
 	    }
 	    dest = dest_reg;
 	    if (is_decl)
@@ -3994,6 +3994,23 @@ new_scope(cctx_T *cctx, scopetype_T type)
 }
 
 /*
+ * Free the current scope and go back to the outer scope.
+ */
+    static void
+drop_scope(cctx_T *cctx)
+{
+    scope_T *scope = cctx->ctx_scope;
+
+    if (scope == NULL)
+    {
+	iemsg("calling drop_scope() without a scope");
+	return;
+    }
+    cctx->ctx_scope = scope->se_outer;
+    vim_free(scope);
+}
+
+/*
  * Evaluate an expression that is a constant:
  *  has(arg)
  *
@@ -4412,7 +4429,6 @@ compile_endif(char_u *arg, cctx_T *cctx)
 	return NULL;
     }
     ifscope = &scope->se_u.se_if;
-    cctx->ctx_scope = scope->se_outer;
     unwind_locals(cctx, scope->se_local_count);
 
     if (scope->se_u.se_if.is_if_label >= 0)
@@ -4425,7 +4441,7 @@ compile_endif(char_u *arg, cctx_T *cctx)
     compile_fill_jump_to_end(&ifscope->is_end_label, cctx);
     cctx->ctx_skip = FALSE;
 
-    vim_free(scope);
+    drop_scope(cctx);
     return arg;
 }
 
@@ -4486,25 +4502,35 @@ compile_for(char_u *arg, cctx_T *cctx)
     // Reserve a variable to store the loop iteration counter.
     loop_idx = reserve_local(cctx, (char_u *)"", 0, FALSE, &t_number);
     if (loop_idx < 0)
+    {
+	drop_scope(cctx);
 	return NULL;
+    }
 
     // Reserve a variable to store "var"
     var_idx = reserve_local(cctx, arg, varlen, FALSE, &t_any);
     if (var_idx < 0)
+    {
+	drop_scope(cctx);
 	return NULL;
+    }
 
     generate_STORENR(cctx, loop_idx, -1);
 
     // compile "expr", it remains on the stack until "endfor"
     arg = p;
     if (compile_expr1(&arg, cctx) == FAIL)
+    {
+	drop_scope(cctx);
 	return NULL;
+    }
 
     // now we know the type of "var"
     vartype = ((type_T **)stack->ga_data)[stack->ga_len - 1];
     if (vartype->tt_type != VAR_LIST)
     {
 	emsg(_("E1024: need a List to iterate over"));
+	drop_scope(cctx);
 	return NULL;
     }
     if (vartype->tt_member->tt_type != VAR_UNKNOWN)
