@@ -106,6 +106,10 @@ test_null_dict()					*test_null_dict()*
 		Return a |Dict| that is null. Only useful for testing.
 
 
+test_null_function()					*test_null_function()*
+		Return a |FuncRef| that is null. Only useful for testing.
+
+
 test_null_job()						*test_null_job()*
 		Return a |Job| that is null. Only useful for testing.
 		{only available when compiled with the +job feature}

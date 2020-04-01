@@ -766,7 +766,7 @@ generate_PUSHFUNC(cctx_T *cctx, char_u *name)
 
 /*
  * Generate an ISN_PUSHPARTIAL instruction with partial "part".
- * Consumes "name".
+ * Consumes "part".
  */
     static int
 generate_PUSHPARTIAL(cctx_T *cctx, partial_T *part)
@@ -3808,9 +3808,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    case VAR_BOOL:
 		generate_PUSHBOOL(cctx, VVAL_FALSE);
 		break;
-	    case VAR_SPECIAL:
-		generate_PUSHSPEC(cctx, VVAL_NONE);
-		break;
 	    case VAR_FLOAT:
 #ifdef FEAT_FLOAT
 		generate_PUSHF(cctx, 0.0);
@@ -3843,6 +3840,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    case VAR_NUMBER:
 	    case VAR_UNKNOWN:
 	    case VAR_VOID:
+	    case VAR_SPECIAL:  // cannot happen
 		generate_PUSHNR(cctx, 0);
 		break;
 	}

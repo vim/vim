@@ -3849,8 +3849,12 @@ tv_equal(
 	    return tv1->vval.v_channel == tv2->vval.v_channel;
 #endif
 
-	case VAR_FUNC:
 	case VAR_PARTIAL:
+	    return tv1->vval.v_partial == tv2->vval.v_partial;
+
+	case VAR_FUNC:
+	    return tv1->vval.v_string == tv2->vval.v_string;
+
 	case VAR_UNKNOWN:
 	case VAR_VOID:
 	    break;

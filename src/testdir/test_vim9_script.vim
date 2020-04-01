@@ -117,6 +117,48 @@ def Test_assignment()
   assert_equal('aregadd', @a)
   call CheckDefFailure(['@a += "more"'], 'E1013:')
   call CheckDefFailure(['@a += 123'], 'E1013:')
+
+  v:errmsg = 'none'
+  v:errmsg ..= 'again'
+  assert_equal('noneagain', v:errmsg)
+  call CheckDefFailure(['v:errmsg += "more"'], 'E1013:')
+  call CheckDefFailure(['v:errmsg += 123'], 'E1013:')
+
+  " Test default values.
+  let thebool: bool
+  assert_equal(v:false, thebool)
+
+  let thenumber: number
+  assert_equal(0, thenumber)
+
+  if has('float')
+    let thefloat: float
+    assert_equal(0.0, thefloat)
+  endif
+
+  let thestring: string
+  assert_equal('', thestring)
+
+  let theblob: blob
+  assert_equal(0z, theblob)
+
+  let thefunc: func
+  assert_equal(test_null_function(), thefunc)
+
+  let thepartial: partial
+  assert_equal(test_null_partial(), thepartial)
+
+  let thelist: list<any>
+  assert_equal([], thelist)
+
+  let thedict: dict<any>
+  assert_equal({}, thedict)
+
+  let thejob: job
+  assert_equal(test_null_job(), thejob)
+
+  let thechannel: channel
+  assert_equal(test_null_channel(), thechannel)
 enddef
 
 func Test_assignment_failure()
@@ -129,6 +171,7 @@ func Test_assignment_failure()
 
   call CheckDefFailure(['let [a; b; c] = g:list'], 'E452:')
 
+  call CheckDefFailure(['let somevar'], "E1022:")
   call CheckDefFailure(['let &option'], 'E1052:')
   call CheckDefFailure(['&g:option = 5'], 'E113:')
 

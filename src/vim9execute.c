@@ -920,7 +920,9 @@ call_def_function(
 			break;
 		    default:
 			tv->v_type = VAR_STRING;
-			tv->vval.v_string = vim_strsave(iptr->isn_arg.string);
+			tv->vval.v_string = vim_strsave(
+				iptr->isn_arg.string == NULL
+					? (char_u *)"" : iptr->isn_arg.string);
 		}
 		break;
 
