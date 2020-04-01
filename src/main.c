@@ -1966,7 +1966,7 @@ parse_command_name(mparm_T *parmp)
 #endif
     }
 
-    // Checking for "ex" here may catch some weir names, such as "vimex" or
+    // Checking for "ex" here may catch some weird names, such as "vimex" or
     // "viewex", we assume the user knows that.
     if (STRNICMP(initstr, "ex", 2) == 0)
     {
