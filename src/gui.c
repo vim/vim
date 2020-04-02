@@ -4189,7 +4189,7 @@ gui_update_scrollbars(
     // avoid that moving components around generates events
     ++hold_gui_events;
 
-    for (wp = firstwin; wp != NULL; wp = W_NEXT(wp))
+    FOR_ALL_WINDOWS(wp)
     {
 	if (wp->w_buffer == NULL)	// just in case
 	    continue;

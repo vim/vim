@@ -2587,7 +2587,7 @@ ExpandUserList(
 
     ga_init2(&ga, (int)sizeof(char *), 3);
     // Loop over the items in the list.
-    for (li = retlist->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(retlist, li)
     {
 	if (li->li_tv.v_type != VAR_STRING || li->li_tv.vval.v_string == NULL)
 	    continue;  // Skip non-string items and empty strings

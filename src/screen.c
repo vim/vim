@@ -2572,11 +2572,11 @@ retry:
 	win_free_lsize(aucmd_win);
 #ifdef FEAT_PROP_POPUP
     // global popup windows
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS(wp)
 	win_free_lsize(wp);
     // tab-local popup windows
     FOR_ALL_TABPAGES(tp)
-	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
 	    win_free_lsize(wp);
 #endif
 
@@ -2614,7 +2614,7 @@ retry:
 	outofmem = TRUE;
 #ifdef FEAT_PROP_POPUP
     // global popup windows
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS(wp)
 	if (win_alloc_lines(wp) == FAIL)
 	{
 	    outofmem = TRUE;
@@ -2622,7 +2622,7 @@ retry:
 	}
     // tab-local popup windows
     FOR_ALL_TABPAGES(tp)
-	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
 	    if (win_alloc_lines(wp) == FAIL)
 	    {
 		outofmem = TRUE;

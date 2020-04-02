@@ -6911,7 +6911,7 @@ qf_add_entries(
 	qf_store_title(qfl, title);
     }
 
-    for (li = list->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(list, li)
     {
 	if (li->li_tv.v_type != VAR_DICT)
 	    continue; // Skip non-dict items

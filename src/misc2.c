@@ -4348,7 +4348,7 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
     if (*argv == NULL)
 	return FAIL;
     *argc = 0;
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(l, li)
     {
 	s = tv_get_string_chk(&li->li_tv);
 	if (s == NULL)

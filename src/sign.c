@@ -57,6 +57,9 @@ static char *cmds[] = {
 # define SIGNCMD_LAST	6
 };
 
+#define FOR_ALL_SIGNS(sp)	\
+    for ((sp) = first_sign; (sp) != NULL; (sp) = (sp)->sn_next)
+
 static hashtab_T	sg_table;	// sign group (signgroup_T) hashtable
 static int		next_sign_id = 1; // next sign id in the global group
 
@@ -294,7 +297,7 @@ find_sign_by_typenr(int typenr)
 {
     sign_T	*sp;
 
-    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
+    FOR_ALL_SIGNS(sp)
 	if (sp->sn_typenr == typenr)
 	    return sp;
     return NULL;
@@ -308,7 +311,7 @@ sign_typenr2name(int typenr)
 {
     sign_T	*sp;
 
-    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
+    FOR_ALL_SIGNS(sp)
 	if (sp->sn_typenr == typenr)
 	    return sp->sn_name;
     return (char_u *)_("[Deleted]");
@@ -880,7 +883,7 @@ sign_find(char_u *name, sign_T **sp_prev)
 
     if (sp_prev != NULL)
 	*sp_prev = NULL;
-    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
+    FOR_ALL_SIGNS(sp)
     {
 	if (STRCMP(sp->sn_name, name) == 0)
 	    break;
@@ -1153,7 +1156,7 @@ sign_place(
     if (sign_group != NULL && (*sign_group == '*' || *sign_group == '\0'))
 	return FAIL;
 
-    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
+    FOR_ALL_SIGNS(sp)
 	if (STRCMP(sp->sn_name, sign_name) == 0)
 	    break;
     if (sp == NULL)
@@ -1830,7 +1833,7 @@ sign_gui_started(void)
 {
     sign_T	*sp;
 
-    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
+    FOR_ALL_SIGNS(sp)
 	if (sp->sn_icon != NULL)
 	    sp->sn_image = gui_mch_register_sign(sp->sn_icon);
 }
@@ -1911,7 +1914,7 @@ sign_get_image(
 {
     sign_T	*sp;
 
-    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
+    FOR_ALL_SIGNS(sp)
 	if (sp->sn_typenr == typenr)
 	    return sp->sn_image;
     return NULL;
@@ -1950,7 +1953,7 @@ get_nth_sign_name(int idx)
 
     // Complete with name of signs already defined
     current_idx = 0;
-    for (sp = first_sign; sp != NULL; sp = sp->sn_next)
+    FOR_ALL_SIGNS(sp)
 	if (current_idx++ == idx)
 	    return sp->sn_name;
     return NULL;
@@ -2212,7 +2215,7 @@ sign_define_multiple(list_T *l, list_T *retlist)
     listitem_T	*li;
     int		retval;
 
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(l, li)
     {
 	retval = -1;
 	if (li->li_tv.v_type == VAR_DICT)
@@ -2547,7 +2550,7 @@ f_sign_placelist(typval_T *argvars, typval_T *rettv)
     }
 
     // Process the List of sign attributes
-    for (li = argvars[0].vval.v_list->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(argvars[0].vval.v_list, li)
     {
 	sign_id = -1;
 	if (li->li_tv.v_type == VAR_DICT)
@@ -2569,7 +2572,7 @@ sign_undefine_multiple(list_T *l, list_T *retlist)
     listitem_T	*li;
     int		retval;
 
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(l, li)
     {
 	retval = -1;
 	name = tv_get_string_chk(&li->li_tv);
@@ -2765,7 +2768,7 @@ f_sign_unplacelist(typval_T *argvars, typval_T *rettv)
 	return;
     }
 
-    for (li = argvars[0].vval.v_list->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(argvars[0].vval.v_list, li)
     {
 	retval = -1;
 	if (li->li_tv.v_type == VAR_DICT)

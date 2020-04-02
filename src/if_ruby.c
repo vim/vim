@@ -1147,7 +1147,7 @@ vim_to_ruby(typval_T *tv)
 
 	if (list != NULL)
 	{
-	    for (curr = list->lv_first; curr != NULL; curr = curr->li_next)
+	    FOR_ALL_LIST_ITEMS(list, curr)
 		rb_ary_push(result, vim_to_ruby(&curr->li_tv));
 	}
     }

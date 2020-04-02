@@ -1109,7 +1109,7 @@ write_list(FILE *fd, list_T *list, int binary)
     char_u	*s;
 
     range_list_materialize(list);
-    for (li = list->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(list, li)
     {
 	for (s = tv_get_string(&li->li_tv); *s != NUL; ++s)
 	{
@@ -1207,7 +1207,7 @@ f_list2str(typval_T *argvars, typval_T *rettv)
 	else
 	    char2bytes = mb_char2bytes;
 
-	for (li = l->lv_first; li != NULL; li = li->li_next)
+	FOR_ALL_LIST_ITEMS(l, li)
 	{
 	    buf[(*char2bytes)(tv_get_number(&li->li_tv), buf)] = NUL;
 	    ga_concat(&ga, buf);
@@ -1216,7 +1216,7 @@ f_list2str(typval_T *argvars, typval_T *rettv)
     }
     else if (ga_grow(&ga, list_len(l) + 1) == OK)
     {
-	for (li = l->lv_first; li != NULL; li = li->li_next)
+	FOR_ALL_LIST_ITEMS(l, li)
 	    ga_append(&ga, tv_get_number(&li->li_tv));
 	ga_append(&ga, NUL);
     }
@@ -1579,7 +1579,7 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 	if (sort)
 	{
 	    // sort(): ptrs will be the list to sort
-	    for (li = l->lv_first; li != NULL; li = li->li_next)
+	    FOR_ALL_LIST_ITEMS(l, li)
 	    {
 		ptrs[i].item = li;
 		ptrs[i].idx = i;

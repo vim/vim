@@ -1698,7 +1698,7 @@ item_lock(typval_T *tv, int deep, int lock)
 		    l->lv_lock &= ~VAR_LOCKED;
 		if ((deep < 0 || deep > 1) && l->lv_first != &range_list_item)
 		    // recursive: lock/unlock the items the List contains
-		    for (li = l->lv_first; li != NULL; li = li->li_next)
+		    FOR_ALL_LIST_ITEMS(l, li)
 			item_lock(&li->li_tv, deep - 1, lock);
 	    }
 	    break;

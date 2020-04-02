@@ -296,6 +296,12 @@
 #define CF_WORD		0x01
 #define CF_UPPER	0x02
 
+/*
+ * Loop through all the siblings of a node (including the node)
+ */
+#define FOR_ALL_NODE_SIBLINGS(node, np) \
+    for ((np) = (node); (np) != NULL; (np) = (np)->wn_sibling)
+
 static int set_spell_finish(spelltab_T	*new_st);
 static int write_spell_prefcond(FILE *fd, garray_T *gap);
 static int read_region_section(FILE *fd, slang_T *slang, int len);
@@ -1737,7 +1743,7 @@ spell_reload_one(
     slang_T	*slang;
     int		didit = FALSE;
 
-    for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+    FOR_ALL_SPELL_LANGS(slang)
     {
 	if (fullpathcmp(fname, slang->sl_fname, FALSE, TRUE) == FPC_SAME)
 	{
@@ -2081,7 +2087,7 @@ spell_clear_flags(wordnode_T *node)
 {
     wordnode_T	*np;
 
-    for (np = node; np != NULL; np = np->wn_sibling)
+    FOR_ALL_NODE_SIBLINGS(node, np)
     {
 	np->wn_u1.index = FALSE;
 	spell_clear_flags(np->wn_child);
@@ -4427,7 +4433,7 @@ tree_add_word(
 	{
 	    --node->wn_refs;
 	    copyprev = prev;
-	    for (copyp = node; copyp != NULL; copyp = copyp->wn_sibling)
+	    FOR_ALL_NODE_SIBLINGS(node, copyp)
 	    {
 		// Allocate a new node and copy the info.
 		np = get_wordnode(spin);
@@ -4618,7 +4624,7 @@ deref_wordnode(spellinfo_T *spin, wordnode_T *node)
 
     if (--node->wn_refs == 0)
     {
-	for (np = node; np != NULL; np = np->wn_sibling)
+	FOR_ALL_NODE_SIBLINGS(node, np)
 	{
 	    if (np->wn_child != NULL)
 		cnt += deref_wordnode(spin, np->wn_child);
@@ -4761,7 +4767,7 @@ node_compress(
      */
     node->wn_u1.hashkey[0] = len;
     nr = 0;
-    for (np = node; np != NULL; np = np->wn_sibling)
+    FOR_ALL_NODE_SIBLINGS(node, np)
     {
 	if (np->wn_byte == NUL)
 	    // end node: use wn_flags, wn_region and wn_affixID
@@ -5252,7 +5258,7 @@ clear_node(wordnode_T *node)
     wordnode_T	*np;
 
     if (node != NULL)
-	for (np = node; np != NULL; np = np->wn_sibling)
+	FOR_ALL_NODE_SIBLINGS(node, np)
 	{
 	    np->wn_u1.index = 0;
 	    np->wn_u2.wnode = NULL;
@@ -5296,7 +5302,7 @@ put_node(
     node->wn_u1.index = idx;
 
     // Count the number of siblings.
-    for (np = node; np != NULL; np = np->wn_sibling)
+    FOR_ALL_NODE_SIBLINGS(node, np)
 	++siblingcount;
 
     // Write the sibling count.
@@ -5304,7 +5310,7 @@ put_node(
 	putc(siblingcount, fd);				// <siblingcount>
 
     // Write each sibling byte and optionally extra info.
-    for (np = node; np != NULL; np = np->wn_sibling)
+    FOR_ALL_NODE_SIBLINGS(node, np)
     {
 	if (np->wn_byte == 0)
 	{
@@ -5392,7 +5398,7 @@ put_node(
     newindex += siblingcount + 1;
 
     // Recursively dump the children of each sibling.
-    for (np = node; np != NULL; np = np->wn_sibling)
+    FOR_ALL_NODE_SIBLINGS(node, np)
 	if (np->wn_byte != 0 && np->wn_child->wn_u2.wnode == node)
 	    newindex = put_node(fd, np->wn_child, newindex, regionmask,
 								  prefixtree);
@@ -5447,7 +5453,7 @@ spell_make_sugfile(spellinfo_T *spin, char_u *wfname)
      * of the code for the soundfolding stuff.
      * It might have been done already by spell_reload_one().
      */
-    for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+    FOR_ALL_SPELL_LANGS(slang)
 	if (fullpathcmp(wfname, slang->sl_fname, FALSE, TRUE) == FPC_SAME)
 	    break;
     if (slang == NULL)
@@ -5666,7 +5672,7 @@ sug_filltable(
     int		nr;
     int		prev_nr;
 
-    for (p = node; p != NULL; p = p->wn_sibling)
+    FOR_ALL_NODE_SIBLINGS(node, p)
     {
 	if (p->wn_byte == NUL)
 	{

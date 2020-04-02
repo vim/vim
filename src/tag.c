@@ -1358,7 +1358,7 @@ find_tagfunc_tags(
     }
     taglist = rettv.vval.v_list;
 
-    for (item = taglist->lv_first; item != NULL; item = item->li_next)
+    FOR_ALL_LIST_ITEMS(taglist, item)
     {
 	char_u		*mfp;
 	char_u		*res_name, *res_fname, *res_cmd, *res_kind;
@@ -4191,7 +4191,7 @@ tagstack_push_items(win_T *wp, list_T *l)
     int		fnum;
 
     // Add one entry at a time to the tag stack
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(l, li)
     {
 	if (li->li_tv.v_type != VAR_DICT || li->li_tv.vval.v_dict == NULL)
 	    continue;				// Skip non-dict items

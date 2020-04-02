@@ -676,6 +676,11 @@ EXTERN win_T	*prevwin INIT(= NULL);	// previous window
 	for ((wp) = ((tp) == curtab) \
 		? firstwin : (tp)->tp_firstwin; (wp); (wp) = (wp)->w_next)
 
+#define FOR_ALL_POPUPWINS(wp) \
+    for ((wp) = first_popupwin; (wp) != NULL; (wp) = (wp)->w_next)
+#define FOR_ALL_POPUPWINS_IN_TAB(tp, wp) \
+    for ((wp) = (tp)->tp_first_popupwin; (wp) != NULL; (wp) = (wp)->w_next)
+
 
 EXTERN win_T	*curwin;	// currently active window
 
@@ -715,6 +720,9 @@ EXTERN buf_T	*lastbuf INIT(= NULL);	// last buffer
 EXTERN buf_T	*curbuf INIT(= NULL);	// currently active buffer
 
 #define FOR_ALL_BUFFERS(buf) for (buf = firstbuf; buf != NULL; buf = buf->b_next)
+
+#define FOR_ALL_BUF_WININFO(buf, wip) \
+    for ((wip) = (buf)->b_wininfo; (wip) != NULL; (wip) = (wip)->wi_next)
 
 // Iterate through all the signs placed in a buffer
 #define FOR_ALL_SIGNS_IN_BUF(buf, sign) \
@@ -1469,6 +1477,9 @@ EXTERN disptick_T	display_tick INIT(= 0);
 // Line in which spell checking wasn't highlighted because it touched the
 // cursor position in Insert mode.
 EXTERN linenr_T		spell_redraw_lnum INIT(= 0);
+
+#define FOR_ALL_SPELL_LANGS(slang) \
+    for ((slang) = first_lang; (slang) != NULL; (slang) = slang->sl_next)
 #endif
 
 #ifdef FEAT_CONCEAL
@@ -1822,3 +1833,6 @@ EXTERN int did_repeated_msg INIT(= 0);
 # define REPEATED_MSG_LOOKING	    1
 # define REPEATED_MSG_SAFESTATE	    2
 #endif
+
+#define FOR_ALL_LIST_ITEMS(l, li) \
+    for ((li) = (l)->lv_first; (li) != NULL; (li) = (li)->li_next)

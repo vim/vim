@@ -792,7 +792,7 @@ free_funccal_contents(funccall_T *fc)
     vars_clear(&fc->l_avars.dv_hashtab);
 
     // Free the a:000 variables.
-    for (li = fc->l_varlist.lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(&fc->l_varlist, li)
 	clear_tv(&li->li_tv);
 
     free_funccal(fc);
@@ -851,7 +851,7 @@ cleanup_function_call(funccall_T *fc)
 	free_fc = FALSE;
 
 	// Make a copy of the a:000 items, since we didn't do that above.
-	for (li = fc->l_varlist.lv_first; li != NULL; li = li->li_next)
+	FOR_ALL_LIST_ITEMS(&fc->l_varlist, li)
 	    copy_tv(&li->li_tv, &li->li_tv);
     }
 
@@ -1640,7 +1640,7 @@ func_call(
     int		r = 0;
 
     range_list_materialize(l);
-    for (item = l->lv_first; item != NULL; item = item->li_next)
+    FOR_ALL_LIST_ITEMS(args->vval.v_list, item)
     {
 	if (argc == MAX_FUNC_ARGS - (partial == NULL ? 0 : partial->pt_argc))
 	{
