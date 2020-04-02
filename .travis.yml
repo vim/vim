@@ -100,7 +100,7 @@ _anchors:
     # Update pyenv to fix the error "/opt/pyenv/libexec/pyenv: line 43: cd: asan_symbolize-6.0: Not a directory".
     # https://github.com/pyenv/pyenv/issues/580
     - (cd "${PYENV_ROOT}" && git fetch -p origin && git checkout "$(git rev-list --tags -n1)") &>/dev/null || true
-    - find . -type f -name 'asan.*' -size +0 2>/dev/null | xargs -I{} -n1 -t asan_symbolize -l{}
+    - find . -type f -name 'asan.*' -size +0 2>/dev/null | xargs grep -l '^==[[:digit:]]*==ERROR:' | xargs -I{} -n1 -t asan_symbolize -l{}
 
 branches:
   except:
