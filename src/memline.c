@@ -243,7 +243,7 @@ static void set_b0_dir_flag(ZERO_BL *b0p, buf_T *buf);
 static void add_b0_fenc(ZERO_BL *b0p, buf_T *buf);
 static time_t swapfile_info(char_u *);
 static int recov_file_names(char_u **, char_u *, int prepend_dot);
-static int ml_delete_int(buf_T *, linenr_T, int);
+static int ml_delete_int(buf_T *, linenr_T, int, int);
 static char_u *findswapname(buf_T *, char_u **, char_u *);
 static void ml_flush_line(buf_T *);
 static bhdr_T *ml_new_data(memfile_T *, int, int);
@@ -2664,7 +2664,7 @@ add_text_props_for_append(
 		{
 		    prop.tp_flags |= TP_FLAG_CONT_PREV;
 		    prop.tp_col = 1;
-		    prop.tp_len = *len;
+		    prop.tp_len = *len; // XXX: This is the wrong len, but does not really matter
 		    mch_memmove(new_line + *len + new_prop_count * sizeof(textprop_T), &prop, sizeof(textprop_T));
 		}
 		++new_prop_count;
@@ -2684,7 +2684,8 @@ ml_append_int(
     char_u	*line_arg,	// text of the new line
     colnr_T	len_arg,	// length of line, including NUL, or 0
     int		newfile,	// flag, see above
-    int		mark)		// mark the new line
+    int		mark,		// mark the new line
+    int flags)
 {
     char_u	*line = line_arg;
     colnr_T	len = len_arg;
@@ -2716,7 +2717,7 @@ ml_append_int(
 	len = (colnr_T)STRLEN(line) + 1;	// space needed for the text
 
 #ifdef FEAT_PROP_POPUP
-    if (curbuf->b_has_textprop && lnum > 0)
+    if (curbuf->b_has_textprop && lnum > 0 && !flags)
 	// Add text properties that continue from the previous line.
 	add_text_props_for_append(buf, lnum, &line, &len, &tofree);
 #endif
@@ -3207,7 +3208,8 @@ ml_append_flush(
     linenr_T	lnum,		// append after this line (can be 0)
     char_u	*line,		// text of the new line
     colnr_T	len,		// length of line, including NUL, or 0
-    int		newfile)	// flag, see above
+    int		newfile,	// flag, see above
+    int flags)
 {
     if (lnum > buf->b_ml.ml_line_count)
 	return FAIL;  // lnum out of range
@@ -3224,7 +3226,7 @@ ml_append_flush(
 	ml_flush_line(buf);
 #endif
 
-    return ml_append_int(buf, lnum, line, len, newfile, FALSE);
+    return ml_append_int(buf, lnum, line, len, newfile, FALSE, flags);
 }
 
 /*
@@ -3249,8 +3251,23 @@ ml_append(
     // When starting up, we might still need to create the memfile
     if (curbuf->b_ml.ml_mfp == NULL && open_buffer(FALSE, NULL, 0) == FAIL)
 	return FAIL;
-    return ml_append_flush(curbuf, lnum, line, len, newfile);
+    return ml_append_flush(curbuf, lnum, line, len, newfile, 0);
 }
+
+    int
+ml_append_flags(
+    linenr_T	lnum,		// append after this line (can be 0)
+    char_u	*line,		// text of the new line
+    colnr_T	len,		// length of new line, including NUL, or 0
+    int		newfile,	// flag, see above
+    int flags)
+{
+    // When starting up, we might still need to create the memfile
+    if (curbuf->b_ml.ml_mfp == NULL && open_buffer(FALSE, NULL, 0) == FAIL)
+	return FAIL;
+    return ml_append_flush(curbuf, lnum, line, len, newfile, flags);
+}
+
 
 #if defined(FEAT_SPELL) || defined(FEAT_QUICKFIX) || defined(PROTO)
 /*
@@ -3267,7 +3284,7 @@ ml_append_buf(
 {
     if (buf->b_ml.ml_mfp == NULL)
 	return FAIL;
-    return ml_append_flush(buf, lnum, line, len, newfile);
+    return ml_append_flush(buf, lnum, line, len, newfile, 0);
 }
 #endif
 
@@ -3507,11 +3524,27 @@ ml_delete(linenr_T lnum, int message)
     may_invoke_listeners(curbuf, lnum, lnum + 1, -1);
 #endif
 
-    return ml_delete_int(curbuf, lnum, message);
+    return ml_delete_int(curbuf, lnum, message, 0);
+}
+
+    int
+ml_delete_flags(linenr_T lnum, int message, int flags)
+{
+    ml_flush_line(curbuf);
+    if (lnum < 1 || lnum > curbuf->b_ml.ml_line_count)
+	return FAIL;
+
+#ifdef FEAT_EVAL
+    // When inserting above recorded changes: flush the changes before changing
+    // the text.
+    may_invoke_listeners(curbuf, lnum, lnum + 1, -1);
+#endif
+
+    return ml_delete_int(curbuf, lnum, message, flags);
 }
 
     static int
-ml_delete_int(buf_T *buf, linenr_T lnum, int message)
+ml_delete_int(buf_T *buf, linenr_T lnum, int message, int flags)
 {
     bhdr_T	*hp;
     memfile_T	*mfp;
@@ -3586,7 +3619,7 @@ ml_delete_int(buf_T *buf, linenr_T lnum, int message)
 #ifdef FEAT_PROP_POPUP
     // If there are text properties, make a copy, so that we can update
     // properties in preceding and following lines.
-    if (buf->b_has_textprop)
+    if (buf->b_has_textprop && !flags)
     {
 	size_t	textlen = STRLEN((char_u *)dp + line_start) + 1;
 
@@ -3906,8 +3939,8 @@ ml_flush_line(buf_T *buf)
 		 */
 		// How about handling errors???
 		(void)ml_append_int(buf, lnum, new_line, new_len, FALSE,
-					     (dp->db_index[idx] & DB_MARKED));
-		(void)ml_delete_int(buf, lnum, FALSE);
+					     (dp->db_index[idx] & DB_MARKED), 0);
+		(void)ml_delete_int(buf, lnum, FALSE, 0);
 	    }
 	}
 	vim_free(new_line);

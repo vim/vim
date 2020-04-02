@@ -375,6 +375,21 @@ u_save_line(undoline_T *ul, linenr_T lnum)
     return ul->ul_line == NULL ? FAIL : OK;
 }
 
+    static int
+has_prop_w_flags(linenr_T lnum, int flags)
+{
+    char_u *props;
+    int i, proplen = get_text_props(curbuf, lnum, &props, FALSE);
+    for (i = 0; i < proplen; ++i)
+    {
+	textprop_T prop;
+	mch_memmove(&prop, props + i * sizeof prop, sizeof prop);
+	if (prop.tp_flags & flags)
+	    return TRUE;
+    }
+    return FALSE;
+}
+
 /*
  * Common code for various ways to save text before a change.
  * "top" is the line above the first changed line.
@@ -448,6 +463,19 @@ u_savecommon(
 
 #ifdef U_DEBUG
     u_check(FALSE);
+#endif
+
+#ifdef FEAT_PROP_POPUP
+    // Include lines with start/end props that will change
+    if (bot - top > 1) {
+	if (top > 0 && has_prop_w_flags(top + 1, TP_FLAG_CONT_PREV))
+	    --top;
+	if (bot <= curbuf->b_ml.ml_line_count && has_prop_w_flags(bot - 1, TP_FLAG_CONT_NEXT)) {
+	    ++bot;
+	    if (newbot)
+		++newbot;
+	}
+    }
 #endif
 
     size = bot - top - 1;
@@ -2745,7 +2773,7 @@ u_undoredo(int undo)
 		// dummy empty line will be inserted
 		if (curbuf->b_ml.ml_line_count == 1)
 		    empty_buffer = TRUE;
-		ml_delete(lnum, FALSE);
+		ml_delete_flags(lnum, FALSE, 1);
 	    }
 	}
 	else
@@ -2767,8 +2795,8 @@ u_undoredo(int undo)
 		    ml_replace_len((linenr_T)1, uep->ue_array[i].ul_line,
 					  uep->ue_array[i].ul_len, TRUE, TRUE);
 		else
-		    ml_append(lnum, uep->ue_array[i].ul_line,
-				      (colnr_T)uep->ue_array[i].ul_len, FALSE);
+		    ml_append_flags(lnum, uep->ue_array[i].ul_line,
+				      (colnr_T)uep->ue_array[i].ul_len, FALSE, 1);
 		vim_free(uep->ue_array[i].ul_line);
 	    }
 	    vim_free((char_u *)uep->ue_array);
