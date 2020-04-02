@@ -164,11 +164,13 @@ def Test_assignment()
   let thedict: dict<any>
   assert_equal({}, thedict)
 
-  let thejob: job
-  assert_equal(test_null_job(), thejob)
+  if has('channel')
+    let thejob: job
+    assert_equal(test_null_job(), thejob)
 
-  let thechannel: channel
-  assert_equal(test_null_channel(), thechannel)
+    let thechannel: channel
+    assert_equal(test_null_channel(), thechannel)
+  endif
 enddef
 
 func Test_assignment_failure()
