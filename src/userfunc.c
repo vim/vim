@@ -24,6 +24,7 @@
 #define FC_SANDBOX  0x40	// function defined in the sandbox
 #define FC_DEAD	    0x80	// function kept only for reference to dfunc
 #define FC_EXPORT   0x100	// "export def Func()"
+#define FC_NOARGS   0x200	// no a: variables in lambda
 
 /*
  * All user-defined functions are found in this hashtable.
@@ -384,6 +385,9 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	((char_u **)(newlines.ga_data))[newlines.ga_len++] = p;
 	STRCPY(p, "return ");
 	vim_strncpy(p + 7, s, e - s);
+	if (strstr((char *)p + 7, "a:") == NULL)
+	    // No a: variables are used for sure.
+	    flags |= FC_NOARGS;
 
 	fp->uf_refcount = 1;
 	set_ufunc_name(fp, name);
@@ -1106,25 +1110,29 @@ call_user_func(
     }
 
     /*
-     * Init a: variables.
+     * Init a: variables, unless none found (in lambda).
      * Set a:0 to "argcount" less number of named arguments, if >= 0.
      * Set a:000 to a list with room for the "..." arguments.
      */
     init_var_dict(&fc->l_avars, &fc->l_avars_var, VAR_SCOPE);
-    add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "0",
+    if ((fp->uf_flags & FC_NOARGS) == 0)
+	add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "0",
 				(varnumber_T)(argcount >= fp->uf_args.ga_len
 				    ? argcount - fp->uf_args.ga_len : 0));
     fc->l_avars.dv_lock = VAR_FIXED;
-    // Use "name" to avoid a warning from some compiler that checks the
-    // destination size.
-    v = &fc->fixvar[fixvar_idx++].var;
-    name = v->di_key;
-    STRCPY(name, "000");
-    v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
-    hash_add(&fc->l_avars.dv_hashtab, DI2HIKEY(v));
-    v->di_tv.v_type = VAR_LIST;
-    v->di_tv.v_lock = VAR_FIXED;
-    v->di_tv.vval.v_list = &fc->l_varlist;
+    if ((fp->uf_flags & FC_NOARGS) == 0)
+    {
+	// Use "name" to avoid a warning from some compiler that checks the
+	// destination size.
+	v = &fc->fixvar[fixvar_idx++].var;
+	name = v->di_key;
+	STRCPY(name, "000");
+	v->di_flags = DI_FLAGS_RO | DI_FLAGS_FIX;
+	hash_add(&fc->l_avars.dv_hashtab, DI2HIKEY(v));
+	v->di_tv.v_type = VAR_LIST;
+	v->di_tv.v_lock = VAR_FIXED;
+	v->di_tv.vval.v_list = &fc->l_varlist;
+    }
     vim_memset(&fc->l_varlist, 0, sizeof(list_T));
     fc->l_varlist.lv_refcount = DO_NOT_FREE_CNT;
     fc->l_varlist.lv_lock = VAR_FIXED;
@@ -1133,11 +1141,15 @@ call_user_func(
      * Set a:firstline to "firstline" and a:lastline to "lastline".
      * Set a:name to named arguments.
      * Set a:N to the "..." arguments.
+     * Skipped when no a: variables used (in lambda).
      */
-    add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "firstline",
+    if ((fp->uf_flags & FC_NOARGS) == 0)
+    {
+	add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "firstline",
 						      (varnumber_T)firstline);
-    add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "lastline",
+	add_nr_var(&fc->l_avars, &fc->fixvar[fixvar_idx++].var, "lastline",
 						       (varnumber_T)lastline);
+    }
     for (i = 0; i < argcount || i < fp->uf_args.ga_len; ++i)
     {
 	int	    addlocal = FALSE;
@@ -1173,6 +1185,10 @@ call_user_func(
 	}
 	else
 	{
+	    if ((fp->uf_flags & FC_NOARGS) != 0)
+		// Bail out if no a: arguments used (in lambda).
+		break;
+
 	    // "..." argument a:1, a:2, etc.
 	    sprintf((char *)numbuf, "%d", ai + 1);
 	    name = numbuf;
@@ -1298,6 +1314,16 @@ call_user_func(
 
     if (default_arg_err && (fp->uf_flags & FC_ABORT))
 	did_emsg = TRUE;
+    else if (islambda)
+    {
+	char_u *p = *(char_u **)fp->uf_lines.ga_data + 7;
+
+	// A Lambda always has the command "return {expr}".  It is much faster
+	// to evaluate {expr} directly.
+	++ex_nesting_level;
+	eval1(&p, rettv, TRUE);
+	--ex_nesting_level;
+    }
     else
 	// call do_cmdline() to execute the lines
 	do_cmdline(NULL, get_func_line, (void *)fc,
@@ -1734,11 +1760,11 @@ call_func(
     int		ret = FAIL;
     int		error = FCERR_NONE;
     int		i;
-    ufunc_T	*fp;
+    ufunc_T	*fp = NULL;
     char_u	fname_buf[FLEN_FIXED + 1];
     char_u	*tofree = NULL;
-    char_u	*fname;
-    char_u	*name;
+    char_u	*fname = NULL;
+    char_u	*name = NULL;
     int		argcount = argcount_in;
     typval_T	*argvars = argvars_in;
     dict_T	*selfdict = funcexe->selfdict;
@@ -1752,13 +1778,18 @@ call_func(
     // even when call_func() returns FAIL.
     rettv->v_type = VAR_UNKNOWN;
 
-    // Make a copy of the name, if it comes from a funcref variable it could
-    // be changed or deleted in the called function.
-    name = len > 0 ? vim_strnsave(funcname, len) : vim_strsave(funcname);
-    if (name == NULL)
-	return ret;
+    if (partial != NULL)
+	fp = partial->pt_func;
+    if (fp == NULL)
+    {
+	// Make a copy of the name, if it comes from a funcref variable it
+	// could be changed or deleted in the called function.
+	name = len > 0 ? vim_strnsave(funcname, len) : vim_strsave(funcname);
+	if (name == NULL)
+	    return ret;
 
-    fname = fname_trans_sid(name, fname_buf, &tofree, &error);
+	fname = fname_trans_sid(name, fname_buf, &tofree, &error);
+    }
 
     if (funcexe->doesrange != NULL)
 	*funcexe->doesrange = FALSE;
@@ -1793,21 +1824,19 @@ call_func(
 	char_u *rfname = fname;
 
 	// Ignore "g:" before a function name.
-	if (fname[0] == 'g' && fname[1] == ':')
+	if (fp == NULL && fname[0] == 'g' && fname[1] == ':')
 	    rfname = fname + 2;
 
 	rettv->v_type = VAR_NUMBER;	// default rettv is number zero
 	rettv->vval.v_number = 0;
 	error = FCERR_UNKNOWN;
 
-	if (!builtin_function(rfname, -1))
+	if (fp != NULL || !builtin_function(rfname, -1))
 	{
 	    /*
 	     * User defined function.
 	     */
-	    if (partial != NULL && partial->pt_func != NULL)
-		fp = partial->pt_func;
-	    else
+	    if (fp == NULL)
 		fp = find_func(rfname, NULL);
 
 	    // Trigger FuncUndefined event, may load the function.
@@ -1887,7 +1916,7 @@ theend:
      */
     if (!aborting())
     {
-	user_func_error(error, name);
+	user_func_error(error, (name != NULL) ? name : funcname);
     }
 
     // clear the copies made from the partial
