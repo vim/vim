@@ -5598,7 +5598,7 @@ get_syn_pattern(char_u *arg, synpat_T *ci)
     if (arg == NULL || arg[0] == NUL || arg[1] == NUL || arg[2] == NUL)
 	return NULL;
 
-    end = skip_regexp(arg + 1, *arg, TRUE, NULL);
+    end = skip_regexp(arg + 1, *arg, TRUE);
     if (*end != *arg)			    // end delimiter not found
     {
 	semsg(_("E401: Pattern delimiter not found: %s"), arg);
@@ -5775,7 +5775,7 @@ syn_cmd_sync(exarg_T *eap, int syncing UNUSED)
 		finished = TRUE;
 		break;
 	    }
-	    arg_end = skip_regexp(next_arg + 1, *next_arg, TRUE, NULL);
+	    arg_end = skip_regexp(next_arg + 1, *next_arg, TRUE);
 	    if (*arg_end != *next_arg)	    // end delimiter not found
 	    {
 		illegal = TRUE;

@@ -1527,7 +1527,7 @@ ex_catch(exarg_T *eap)
     else
     {
 	pat = eap->arg + 1;
-	end = skip_regexp(pat, *eap->arg, TRUE, NULL);
+	end = skip_regexp(pat, *eap->arg, TRUE);
     }
 
     if (!give_up)

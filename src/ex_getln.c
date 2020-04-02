@@ -277,7 +277,7 @@ do_incsearch_highlighting(int firstc, int *search_delim, incsearch_state_T *is_s
     p = skipwhite(p);
     delim = (delim_optional && vim_isIDc(*p)) ? ' ' : *p++;
     *search_delim = delim;
-    end = skip_regexp(p, delim, p_magic, NULL);
+    end = skip_regexp(p, delim, p_magic);
 
     use_last_pat = end == p && *end == delim;
 

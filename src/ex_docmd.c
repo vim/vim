@@ -3663,7 +3663,7 @@ get_address(
 		}
 		if (skip)	// skip "/pat/"
 		{
-		    cmd = skip_regexp(cmd, c, (int)p_magic, NULL);
+		    cmd = skip_regexp(cmd, c, (int)p_magic);
 		    if (*cmd == c)
 			++cmd;
 		}
@@ -6123,7 +6123,7 @@ ex_open(exarg_T *eap)
     {
 	// ":open /pattern/": put cursor in column found with pattern
 	++eap->arg;
-	p = skip_regexp(eap->arg, '/', p_magic, NULL);
+	p = skip_regexp(eap->arg, '/', p_magic);
 	*p = NUL;
 	regmatch.regprog = vim_regcomp(eap->arg, p_magic ? RE_MAGIC : 0);
 	if (regmatch.regprog != NULL)
@@ -7857,7 +7857,7 @@ ex_findpat(exarg_T *eap)
     {
 	whole = FALSE;
 	++eap->arg;
-	p = skip_regexp(eap->arg, '/', p_magic, NULL);
+	p = skip_regexp(eap->arg, '/', p_magic);
 	if (*p)
 	{
 	    *p++ = NUL;

@@ -1389,7 +1389,7 @@ set_one_cmd_context(
 		if (*arg != NUL)
 		{
 		    xp->xp_context = EXPAND_NOTHING;
-		    arg = skip_regexp(arg + 1, *arg, p_magic, NULL);
+		    arg = skip_regexp(arg + 1, *arg, p_magic);
 		}
 	    }
 	    return find_nextcmd(arg);
@@ -1427,7 +1427,7 @@ set_one_cmd_context(
 	    {
 		// skip "from" part
 		++arg;
-		arg = skip_regexp(arg, delim, p_magic, NULL);
+		arg = skip_regexp(arg, delim, p_magic);
 	    }
 	    // skip "to" part
 	    while (arg[0] != NUL && arg[0] != delim)

@@ -2330,7 +2330,7 @@ ex_function(exarg_T *eap)
      */
     if (*eap->arg == '/')
     {
-	p = skip_regexp(eap->arg + 1, '/', TRUE, NULL);
+	p = skip_regexp(eap->arg + 1, '/', TRUE);
 	if (!eap->skip)
 	{
 	    regmatch_T	regmatch;

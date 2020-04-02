@@ -1312,7 +1312,7 @@ do_search(
 	     * If there is a matching '/' or '?', toss it.
 	     */
 	    ps = strcopy;
-	    p = skip_regexp(pat, search_delim, (int)p_magic, &strcopy);
+	    p = skip_regexp_ex(pat, search_delim, (int)p_magic, &strcopy, NULL);
 	    if (strcopy != ps)
 	    {
 		// made a copy of "pat" to change "\?" to "?"

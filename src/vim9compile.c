@@ -4095,7 +4095,7 @@ evaluate_const_expr7(char_u **arg, cctx_T *cctx UNUSED, typval_T *tv)
 	*arg = skipwhite(*arg);
 	if (**arg != ')')
 	    return FAIL;
-	*arg = skipwhite(*arg + 1);
+	*arg = *arg + 1;
 
 	argvars[0] = *tv;
 	argvars[1].v_type = VAR_UNKNOWN;
@@ -4269,6 +4269,7 @@ evaluate_const_expr1(char_u **arg, cctx_T *cctx, typval_T *tv)
 	int		val = tv2bool(tv);
 	typval_T	tv2;
 
+	// require space before and after the ?
 	if (!VIM_ISWHITE(**arg) || !VIM_ISWHITE(p[1]))
 	    return FAIL;
 
@@ -4553,6 +4554,7 @@ compile_for(char_u *arg, cctx_T *cctx)
     loop_idx = reserve_local(cctx, (char_u *)"", 0, FALSE, &t_number);
     if (loop_idx < 0)
     {
+	// only happens when out of memory
 	drop_scope(cctx);
 	return NULL;
     }
@@ -4899,12 +4901,13 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	char_u *end;
 	char_u *pat;
 	char_u *tofree = NULL;
+	int	dropped = 0;
 	int	len;
 
 	// Push v:exception, push {expr} and MATCH
 	generate_instr_type(cctx, ISN_PUSHEXC, &t_string);
 
-	end = skip_regexp(p + 1, *p, TRUE, &tofree);
+	end = skip_regexp_ex(p + 1, *p, TRUE, &tofree, &dropped);
 	if (*end != *p)
 	{
 	    semsg(_("E1067: Separator mismatch: %s"), p);
@@ -4914,10 +4917,10 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
 	if (tofree == NULL)
 	    len = (int)(end - (p + 1));
 	else
-	    len = (int)(end - (tofree + 1));
-	pat = vim_strnsave(p + 1, len);
+	    len = (int)(end - tofree);
+	pat = vim_strnsave(tofree == NULL ? p + 1 : tofree, len);
 	vim_free(tofree);
-	p += len + 2;
+	p += len + 2 + dropped;
 	if (pat == NULL)
 	    return FAIL;
 	if (generate_PUSHS(cctx, pat) == FAIL)

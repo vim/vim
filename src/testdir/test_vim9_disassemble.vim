@@ -809,6 +809,8 @@ def Test_disassemble_compare_const()
   let cases = [
         \ ['"xx" == "yy"', false],
         \ ['"aa" == "aa"', true],
+        \ ['has("eval") ? true : false', true],
+        \ ['has("asdf") ? true : false', false],
         \ ]
 
   let nr = 1

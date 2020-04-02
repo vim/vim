@@ -468,10 +468,18 @@ def Test_try_catch_match()
     seq ..= 'b'
   catch /asdf/
     seq ..= 'x'
+  catch ?a\?sdf?
+    seq ..= 'y'
   finally
     seq ..= 'c'
   endtry
   assert_equal('abc', seq)
+enddef
+
+def Test_try_catch_fails()
+  call CheckDefFailure(['catch'], 'E603:')
+  call CheckDefFailure(['try', 'echo 0', 'catch','catch'], 'E1033:')
+  call CheckDefFailure(['try', 'echo 0', 'catch /pat'], 'E1067:')
 enddef
 
 let s:export_script_lines =<< trim END
@@ -926,6 +934,13 @@ def Test_if_elseif_else()
   assert_equal('three', IfElse(3))
 enddef
 
+def Test_if_elseif_else_fails()
+  call CheckDefFailure(['elseif true'], 'E582:')
+  call CheckDefFailure(['else'], 'E581:')
+  call CheckDefFailure(['endif'], 'E580:')
+  call CheckDefFailure(['if true', 'elseif xxx'], 'E1001:')
+enddef
+
 let g:bool_true = v:true
 let g:bool_false = v:false
 
@@ -968,6 +983,12 @@ def Test_if_const_expr()
 
   res = false
   if false ? true : false
+    res = true
+  endif
+  assert_equal(false, res)
+
+  res = false
+  if has('xyz') ? true : false
     res = true
   endif
   assert_equal(false, res)
@@ -1030,6 +1051,8 @@ enddef
 def Test_if_const_expr_fails()
   call CheckDefFailure(['if "aaa" == "bbb'], 'E114:')
   call CheckDefFailure(["if 'aaa' == 'bbb"], 'E115:')
+  call CheckDefFailure(["if has('aaa'"], 'E110:')
+  call CheckDefFailure(["if has('aaa') ? true false"], 'E109:')
 enddef
 
 def Test_delfunc()
@@ -1096,6 +1119,30 @@ def Test_for_outside_of_function()
   delete('Xvim9for.vim')
 enddef
 
+def Test_for_loop()
+  let result = ''
+  for cnt in range(7)
+    if cnt == 4
+      break
+    endif
+    if cnt == 2
+      continue
+    endif
+    result ..= cnt .. '_'
+  endfor
+  assert_equal('0_1_3_', result)
+enddef
+
+def Test_for_loop_fails()
+  call CheckDefFailure(['for # in range(5)'], 'E690:')
+  call CheckDefFailure(['for i In range(5)'], 'E690:')
+  call CheckDefFailure(['let x = 5', 'for x in range(5)'], 'E1023:')
+  call CheckScriptFailure(['def Func(arg)', 'for arg in range(5)', 'enddef'], 'E1006:')
+  call CheckDefFailure(['for i in "text"'], 'E1024:')
+  call CheckDefFailure(['for i in xxx'], 'E1001:')
+  call CheckDefFailure(['endfor'], 'E588:')
+enddef
+
 def Test_while_loop()
   let result = ''
   let cnt = 0
@@ -1112,12 +1159,13 @@ def Test_while_loop()
   assert_equal('1_3_', result)
 enddef
 
-def Test_for_loop_fails()
-  call CheckDefFailure(['for # in range(5)'], 'E690:')
-  call CheckDefFailure(['for i In range(5)'], 'E690:')
-  call CheckDefFailure(['let x = 5', 'for x in range(5)'], 'E1023:')
-  call CheckScriptFailure(['def Func(arg)', 'for arg in range(5)', 'enddef'], 'E1006:')
-  call CheckDefFailure(['for i in "text"'], 'E1024:')
+def Test_while_loop_fails()
+  call CheckDefFailure(['while xxx'], 'E1001:')
+  call CheckDefFailure(['endwhile'], 'E588:')
+  call CheckDefFailure(['continue'], 'E586:')
+  call CheckDefFailure(['if true', 'continue'], 'E586:')
+  call CheckDefFailure(['break'], 'E587:')
+  call CheckDefFailure(['if true', 'break'], 'E587:')
 enddef
 
 def Test_interrupt_loop()

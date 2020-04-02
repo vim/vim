@@ -4964,7 +4964,7 @@ ex_match(exarg_T *eap)
 	    semsg(_(e_invarg2), eap->arg);
 	    return;
 	}
-	end = skip_regexp(p + 1, *p, TRUE, NULL);
+	end = skip_regexp(p + 1, *p, TRUE);
 	if (!eap->skip)
 	{
 	    if (*end != NUL && !ends_excmd(*skipwhite(end + 1)))
