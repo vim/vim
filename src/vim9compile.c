@@ -4147,7 +4147,7 @@ evaluate_const_expr4(char_u **arg, cctx_T *cctx UNUSED, typval_T *tv)
 	    return FAIL;
 
 	// get the second variable
-	tv2.v_type = VAR_UNKNOWN;
+	init_tv(&tv2);
 	*arg = skipwhite(p + len);
 	if (evaluate_const_expr7(arg, cctx, &tv2) == FAIL
 						   || tv2.v_type != VAR_STRING)
