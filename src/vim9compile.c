@@ -4972,6 +4972,7 @@ compile_finally(char_u *arg, cctx_T *cctx)
     // Fill in the "end" label in jumps at the end of the blocks.
     compile_fill_jump_to_end(&scope->se_u.se_try.ts_end_label, cctx);
 
+    isn->isn_arg.try.try_finally = instr->ga_len;
     if (scope->se_u.se_try.ts_catch_label != 0)
     {
 	// Previous catch without match jumps here
@@ -4979,7 +4980,6 @@ compile_finally(char_u *arg, cctx_T *cctx)
 	isn->isn_arg.jump.jump_where = instr->ga_len;
     }
 
-    isn->isn_arg.try.try_finally = instr->ga_len;
     // TODO: set index in ts_finally_label jumps
 
     return arg;
@@ -5350,13 +5350,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		line = p;
 		continue;
 	    }
-	    if (ea.cmdidx == CMD_let)
-	    {
-		line = compile_assignment(ea.cmd, &ea, CMD_SIZE, &cctx);
-		if (line == NULL)
-		    goto erret;
-		continue;
-	    }
+	    // CMD_let cannot happen, compile_assignment() above is used
 	    iemsg("Command from find_ex_command() not handled");
 	    goto erret;
 	}
@@ -5464,6 +5458,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	}
 	if (line == NULL)
 	    goto erret;
+	line = skipwhite(line);
 
 	if (cctx.ctx_type_stack.ga_len < 0)
 	{
