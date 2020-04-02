@@ -1929,6 +1929,7 @@ do_join(
     char_u      *curr_start = NULL;
     char_u	*cend;
     char_u	*newp;
+    size_t	newp_len;
     char_u	*spaces;	// number of spaces inserted before a line
     int		endcurr1 = NUL;
     int		endcurr2 = NUL;
@@ -1971,10 +1972,10 @@ do_join(
      */
     for (t = 0; t < count; ++t)
     {
+	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t));
 #ifdef FEAT_PROP_POPUP
 	propcount += count_props((linenr_T) (curwin->w_cursor.lnum + t), t > 0);
 #endif
-	curr = curr_start = ml_get((linenr_T)(curwin->w_cursor.lnum + t));
 	if (t == 0 && setmark && !cmdmod.lockmarks)
 	{
 	    // Set the '[ mark.
@@ -2057,8 +2058,8 @@ do_join(
     col = sumsize - currsize - spaces[count - 1];
 
     // allocate the space for the new line
-    size_t len_newp = sumsize + 1 + propcount * sizeof(textprop_T);
-    newp = alloc(len_newp);
+    newp_len = sumsize + 1 + propcount * sizeof(textprop_T);
+    newp = alloc(newp_len);
     if (newp == NULL)
     {
 	ret = FAIL;
@@ -2110,7 +2111,7 @@ do_join(
 	currsize = (int)STRLEN(curr);
     }
 
-    ml_replace_len(curwin->w_cursor.lnum, newp, len_newp, TRUE, FALSE);
+    ml_replace_len(curwin->w_cursor.lnum, newp, newp_len, TRUE, FALSE);
 
     if (setmark && !cmdmod.lockmarks)
     {

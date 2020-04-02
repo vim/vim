@@ -1235,10 +1235,11 @@ clear_buf_prop_types(buf_T *buf)
     buf->b_proptypes = NULL;
 }
 
-typedef struct {
-    int dirty;
-    int can_drop;
-} apres_T;
+typedef struct
+{
+    int dirty; // If the property was changed
+    int can_drop; // Whether after this change, the prop may be removed
+} adjustres_T;
 
 /*
  * Adjust the property for "added" bytes (can be negative) inserted at "col".
@@ -1248,7 +1249,7 @@ typedef struct {
  * "flags" can have:
  * APC_SUBSTITUTE:	Text is replaced, not inserted.
  */
-    static apres_T
+    static adjustres_T
 adjust_prop(
 	textprop_T *prop,
 	colnr_T col,
@@ -1260,8 +1261,8 @@ adjust_prop(
 	|| (flags & APC_SUBSTITUTE);
     int end_incl = (pt != NULL && (pt->pt_flags & PT_FLAG_INS_END_INCL));
     // Do not drop zero-width props if they later can increase in size
-    int can_drop = !(start_incl || end_incl);
-    apres_T res = {TRUE, FALSE};
+    int droppable = !(start_incl || end_incl);
+    adjustres_T res = {TRUE, FALSE};
 
     if (added > 0)
     {
@@ -1282,7 +1283,7 @@ adjust_prop(
 	    if (prop->tp_len <= 0)
 	    {
 		prop->tp_len = 0;
-		res.can_drop = can_drop;
+		res.can_drop = droppable;
 	    }
 	}
 	else
@@ -1292,7 +1293,7 @@ adjust_prop(
     {
 	int after = col - added - (prop->tp_col - 1 + prop->tp_len);
 	prop->tp_len += after > 0 ? added + after : added;
-	res.can_drop = prop->tp_len <= 0 && can_drop;
+	res.can_drop = prop->tp_len <= 0 && droppable;
     }
     else
 	res.dirty = FALSE;
@@ -1320,7 +1321,6 @@ adjust_prop_columns(
 {
     int		proplen;
     char_u	*props;
-    proptype_T  *pt;
     int		dirty = FALSE;
     int		ri, wi;
     size_t	textlen;
@@ -1337,15 +1337,16 @@ adjust_prop_columns(
     for (ri = 0; ri < proplen; ++ri)
     {
 	textprop_T	prop;
+	adjustres_T res;
 	mch_memmove(&prop, props + ri * sizeof prop, sizeof prop);
-	apres_T adjust_res = adjust_prop(&prop, col, bytes_added, flags);
-	if (adjust_res.dirty) {
+	res = adjust_prop(&prop, col, bytes_added, flags);
+	if (res.dirty) {
 	    // Save for undo if requested and not done yet.
 	    if ((flags & APC_SAVE_FOR_UNDO) && !dirty)
 		u_savesub(lnum);
 	    dirty = TRUE;
 	}
-	if (adjust_res.can_drop)
+	if (res.can_drop)
 	    continue; // Drop this text property
 	mch_memmove(props + wi * sizeof(textprop_T), &prop, sizeof(textprop_T));
 	++wi;
