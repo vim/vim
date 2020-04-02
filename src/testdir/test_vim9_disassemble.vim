@@ -728,7 +728,6 @@ def Test_disassemble_compare()
         \ ['111 =~ 222', 'COMPARENR =\~'],
         \ ['111 !~ 222', 'COMPARENR !\~'],
         \
-        \ ['"xx" == "yy"', 'COMPARESTRING =='],
         \ ['"xx" != "yy"', 'COMPARESTRING !='],
         \ ['"xx" > "yy"', 'COMPARESTRING >'],
         \ ['"xx" < "yy"', 'COMPARESTRING <'],
@@ -799,6 +798,47 @@ def Test_disassemble_compare()
         \ .. '\d ' .. case[1] .. '.*'
         \ .. '\d JUMP_IF_FALSE -> \d\+.*'
         \, instr)
+
+    nr += 1
+  endfor
+
+  delete('Xdisassemble')
+enddef
+
+def Test_disassemble_compare_const()
+  let cases = [
+        \ ['"xx" == "yy"', false],
+        \ ['"aa" == "aa"', true],
+        \ ]
+
+  let nr = 1
+  for case in cases
+    writefile(['def TestCase' .. nr .. '()',
+             \ '  if ' .. case[0],
+             \ '    echo 42'
+             \ '  endif',
+             \ 'enddef'], 'Xdisassemble')
+    source Xdisassemble
+    let instr = execute('disassemble TestCase' .. nr)
+    if case[1]
+      " condition true, "echo 42" executed
+      assert_match('TestCase' .. nr .. '.*'
+          \ .. 'if ' .. substitute(case[0], '[[~]', '\\\0', 'g') .. '.*'
+          \ .. '\d PUSHNR 42.*'
+          \ .. '\d ECHO 1.*'
+          \ .. '\d PUSHNR 0.*'
+          \ .. '\d RETURN.*'
+          \, instr)
+    else
+      " condition false, function just returns
+      assert_match('TestCase' .. nr .. '.*'
+          \ .. 'if ' .. substitute(case[0], '[[~]', '\\\0', 'g') .. '[ \n]*'
+          \ .. 'echo 42[ \n]*'
+          \ .. 'endif[ \n]*'
+          \ .. '\s*\d PUSHNR 0.*'
+          \ .. '\d RETURN.*'
+          \, instr)
+    endif
 
     nr += 1
   endfor
