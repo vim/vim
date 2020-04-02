@@ -3995,6 +3995,18 @@ compile_fill_jump_to_end(endlabel_T **el, cctx_T *cctx)
     }
 }
 
+    static void
+compile_free_jump_to_end(endlabel_T **el)
+{
+    while (*el != NULL)
+    {
+	endlabel_T  *cur = (*el);
+
+	*el = cur->el_next;
+	vim_free(cur);
+    }
+}
+
 /*
  * Create a new scope and set up the generic items.
  */
@@ -4026,6 +4038,20 @@ drop_scope(cctx_T *cctx)
 	return;
     }
     cctx->ctx_scope = scope->se_outer;
+    switch (scope->se_type)
+    {
+	case IF_SCOPE:
+	    compile_free_jump_to_end(&scope->se_u.se_if.is_end_label); break;
+	case FOR_SCOPE:
+	    compile_free_jump_to_end(&scope->se_u.se_for.fs_end_label); break;
+	case WHILE_SCOPE:
+	    compile_free_jump_to_end(&scope->se_u.se_while.ws_end_label); break;
+	case TRY_SCOPE:
+	    compile_free_jump_to_end(&scope->se_u.se_try.ts_end_label); break;
+	case NO_SCOPE:
+	case BLOCK_SCOPE:
+	    break;
+    }
     vim_free(scope);
 }
 
@@ -5518,6 +5544,9 @@ erret:
 	ufunc->uf_dfunc_idx = -1;
 	if (!dfunc->df_deleted)
 	    --def_functions.ga_len;
+
+	while (cctx.ctx_scope != NULL)
+	    drop_scope(&cctx);
 
 	// Don't execute this function body.
 	ga_clear_strings(&ufunc->uf_lines);
