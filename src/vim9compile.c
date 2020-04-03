@@ -224,7 +224,7 @@ check_defined(char_u *p, int len, cctx_T *cctx)
 }
 
     static type_T *
-get_list_type(type_T *member_type, garray_T *type_list)
+get_list_type(type_T *member_type, garray_T *type_gap)
 {
     type_T *type;
 
@@ -241,17 +241,19 @@ get_list_type(type_T *member_type, garray_T *type_list)
 	return &t_list_string;
 
     // Not a common type, create a new entry.
-    if (ga_grow(type_list, 1) == FAIL)
+    if (ga_grow(type_gap, 1) == FAIL)
 	return &t_any;
-    type = ((type_T *)type_list->ga_data) + type_list->ga_len;
-    ++type_list->ga_len;
+    type = ((type_T *)type_gap->ga_data) + type_gap->ga_len;
+    ++type_gap->ga_len;
     type->tt_type = VAR_LIST;
     type->tt_member = member_type;
+    type->tt_argcount = 0;
+    type->tt_args = NULL;
     return type;
 }
 
     static type_T *
-get_dict_type(type_T *member_type, garray_T *type_list)
+get_dict_type(type_T *member_type, garray_T *type_gap)
 {
     type_T *type;
 
@@ -268,12 +270,68 @@ get_dict_type(type_T *member_type, garray_T *type_list)
 	return &t_dict_string;
 
     // Not a common type, create a new entry.
-    if (ga_grow(type_list, 1) == FAIL)
+    if (ga_grow(type_gap, 1) == FAIL)
 	return &t_any;
-    type = ((type_T *)type_list->ga_data) + type_list->ga_len;
-    ++type_list->ga_len;
+    type = ((type_T *)type_gap->ga_data) + type_gap->ga_len;
+    ++type_gap->ga_len;
     type->tt_type = VAR_DICT;
     type->tt_member = member_type;
+    type->tt_argcount = 0;
+    type->tt_args = NULL;
+    return type;
+}
+
+/*
+ * Get a function type, based on the return type "ret_type".
+ * If "argcount" is -1 or 0 a predefined type can be used.
+ * If "argcount" > 0 always create a new type, so that arguments can be added.
+ */
+    static type_T *
+get_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
+{
+    type_T *type;
+
+    // recognize commonly used types
+    if (argcount <= 0)
+    {
+	if (ret_type == &t_void)
+	{
+	    if (argcount == 0)
+		return &t_func_0_void;
+	    else
+		return &t_func_void;
+	}
+	if (ret_type == &t_any)
+	{
+	    if (argcount == 0)
+		return &t_func_0_any;
+	    else
+		return &t_func_any;
+	}
+	if (ret_type == &t_number)
+	{
+	    if (argcount == 0)
+		return &t_func_0_number;
+	    else
+		return &t_func_number;
+	}
+	if (ret_type == &t_string)
+	{
+	    if (argcount == 0)
+		return &t_func_0_string;
+	    else
+		return &t_func_string;
+	}
+    }
+
+    // Not a common type or has arguments, create a new entry.
+    if (ga_grow(type_gap, 1) == FAIL)
+	return &t_any;
+    type = ((type_T *)type_gap->ga_data) + type_gap->ga_len;
+    ++type_gap->ga_len;
+    type->tt_type = VAR_FUNC;
+    type->tt_member = ret_type;
+    type->tt_args = NULL;
     return type;
 }
 
@@ -774,8 +832,7 @@ generate_PUSHPARTIAL(cctx_T *cctx, partial_T *part)
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr_type(cctx, ISN_PUSHPARTIAL,
-						      &t_partial_any)) == NULL)
+    if ((isn = generate_instr_type(cctx, ISN_PUSHPARTIAL, &t_func_any)) == NULL)
 	return FAIL;
     isn->isn_arg.partial = part;
 
@@ -942,7 +999,6 @@ generate_NEWLIST(cctx_T *cctx, int count)
 {
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
-    garray_T	*type_list = cctx->ctx_type_list;
     type_T	*type;
     type_T	*member;
 
@@ -960,7 +1016,7 @@ generate_NEWLIST(cctx_T *cctx, int count)
 	member = ((type_T **)stack->ga_data)[stack->ga_len];
     else
 	member = &t_void;
-    type = get_list_type(member, type_list);
+    type = get_list_type(member, cctx->ctx_type_list);
 
     // add the list type to the type stack
     if (ga_grow(stack, 1) == FAIL)
@@ -979,7 +1035,6 @@ generate_NEWDICT(cctx_T *cctx, int count)
 {
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
-    garray_T	*type_list = cctx->ctx_type_list;
     type_T	*type;
     type_T	*member;
 
@@ -997,7 +1052,7 @@ generate_NEWDICT(cctx_T *cctx, int count)
 	member = ((type_T **)stack->ga_data)[stack->ga_len + 1];
     else
 	member = &t_void;
-    type = get_dict_type(member, type_list);
+    type = get_dict_type(member, cctx->ctx_type_list);
 
     // add the dict type to the type stack
     if (ga_grow(stack, 1) == FAIL)
@@ -1024,7 +1079,7 @@ generate_FUNCREF(cctx_T *cctx, int dfunc_idx)
 
     if (ga_grow(stack, 1) == FAIL)
 	return FAIL;
-    ((type_T **)stack->ga_data)[stack->ga_len] = &t_partial_any;
+    ((type_T **)stack->ga_data)[stack->ga_len] = &t_func_any;
     // TODO: argument and return types
     ++stack->ga_len;
 
@@ -1298,6 +1353,8 @@ generate_EXEC(cctx_T *cctx, char_u *line)
 
 static char e_white_both[] =
 			N_("E1004: white space required before and after '%s'");
+static char e_white_after[] = N_("E1069: white space required after '%s'");
+static char e_no_white_before[] = N_("E1068: No white space allowed before '%s'");
 
 /*
  * Reserve space for a local variable.
@@ -1385,11 +1442,11 @@ skip_type(char_u *start)
 
 /*
  * Parse the member type: "<type>" and return "type" with the member set.
- * Use "type_list" if a new type needs to be added.
+ * Use "type_gap" if a new type needs to be added.
  * Returns NULL in case of failure.
  */
     static type_T *
-parse_type_member(char_u **arg, type_T *type, garray_T *type_list)
+parse_type_member(char_u **arg, type_T *type, garray_T *type_gap)
 {
     type_T  *member_type;
     int	    prev_called_emsg = called_emsg;
@@ -1397,14 +1454,14 @@ parse_type_member(char_u **arg, type_T *type, garray_T *type_list)
     if (**arg != '<')
     {
 	if (*skipwhite(*arg) == '<')
-	    emsg(_("E1007: No white space allowed before <"));
+	    semsg(_(e_no_white_before), "<");
 	else
 	    emsg(_("E1008: Missing <type>"));
 	return type;
     }
     *arg = skipwhite(*arg + 1);
 
-    member_type = parse_type(arg, type_list);
+    member_type = parse_type(arg, type_gap);
 
     *arg = skipwhite(*arg);
     if (**arg != '>' && called_emsg == prev_called_emsg)
@@ -1415,8 +1472,8 @@ parse_type_member(char_u **arg, type_T *type, garray_T *type_list)
     ++*arg;
 
     if (type->tt_type == VAR_LIST)
-	return get_list_type(member_type, type_list);
-    return get_dict_type(member_type, type_list);
+	return get_list_type(member_type, type_gap);
+    return get_dict_type(member_type, type_gap);
 }
 
 /*
@@ -1424,7 +1481,7 @@ parse_type_member(char_u **arg, type_T *type, garray_T *type_list)
  * Return &t_any for failure.
  */
     type_T *
-parse_type(char_u **arg, garray_T *type_list)
+parse_type(char_u **arg, garray_T *type_gap)
 {
     char_u  *p = *arg;
     size_t  len;
@@ -1466,7 +1523,7 @@ parse_type(char_u **arg, garray_T *type_list)
 	    if (len == 4 && STRNCMP(*arg, "dict", len) == 0)
 	    {
 		*arg += len;
-		return parse_type_member(arg, &t_dict_any, type_list);
+		return parse_type_member(arg, &t_dict_any, type_gap);
 	    }
 	    break;
 	case 'f':
@@ -1482,9 +1539,85 @@ parse_type(char_u **arg, garray_T *type_list)
 	    }
 	    if (len == 4 && STRNCMP(*arg, "func", len) == 0)
 	    {
+		type_T  *type;
+		type_T  *ret_type = &t_void;
+		int	argcount = -1;
+		int	flags = 0;
+		type_T	*arg_type[MAX_FUNC_ARGS + 1];
+
+		// func({type}, ...): {type}
 		*arg += len;
-		// TODO: arguments and return type
-		return &t_func_any;
+		if (**arg == '(')
+		{
+		    p = ++*arg;
+		    argcount = 0;
+		    while (*p != NUL && *p != ')')
+		    {
+			if (STRNCMP(p, "...", 3) == 0)
+			{
+			    flags |= TTFLAG_VARARGS;
+			    break;
+			}
+			arg_type[argcount++] = parse_type(&p, type_gap);
+
+			if (*p != ',' && *skipwhite(p) == ',')
+			{
+			    semsg(_(e_no_white_before), ",");
+			    return &t_any;
+			}
+			if (*p == ',')
+			{
+			    ++p;
+			    if (!VIM_ISWHITE(*p))
+				semsg(_(e_white_after), ",");
+			}
+			p = skipwhite(p);
+			if (argcount == MAX_FUNC_ARGS)
+			{
+			    emsg(_("E740: Too many argument types"));
+			    return &t_any;
+			}
+		    }
+
+		    p = skipwhite(p);
+		    if (*p != ')')
+		    {
+			emsg(_(e_missing_close));
+			return &t_any;
+		    }
+		    *arg = p + 1;
+		}
+		if (**arg == ':')
+		{
+		    // parse return type
+		    ++*arg;
+		    if (!VIM_ISWHITE(*p))
+			semsg(_(e_white_after), ":");
+		    *arg = skipwhite(*arg);
+		    ret_type = parse_type(arg, type_gap);
+		}
+		type = get_func_type(ret_type, flags == 0 ? argcount : 99,
+								    type_gap);
+		if (flags != 0)
+		    type->tt_flags = flags;
+		if (argcount > 0)
+		{
+		    int type_ptr_cnt = (sizeof(type_T *) * argcount
+					+ sizeof(type_T) - 1) / sizeof(type_T);
+
+		    type->tt_argcount = argcount;
+		    // Get space from "type_gap" to avoid having to keep track
+		    // of the pointer and freeing it.
+		    ga_grow(type_gap, type_ptr_cnt);
+		    if (ga_grow(type_gap, type_ptr_cnt) == FAIL)
+			return &t_any;
+		    type->tt_args =
+			     ((type_T **)type_gap->ga_data) + type_gap->ga_len;
+		    type_gap->ga_len += type_ptr_cnt;
+		    mch_memmove(type->tt_args, arg_type,
+						  sizeof(type_T *) * argcount);
+		}
+		return type;
 	    }
 	    break;
 	case 'j':
@@ -1498,7 +1631,7 @@ parse_type(char_u **arg, garray_T *type_list)
 	    if (len == 4 && STRNCMP(*arg, "list", len) == 0)
 	    {
 		*arg += len;
-		return parse_type_member(arg, &t_list_any, type_list);
+		return parse_type_member(arg, &t_list_any, type_gap);
 	    }
 	    break;
 	case 'n':
@@ -1506,14 +1639,6 @@ parse_type(char_u **arg, garray_T *type_list)
 	    {
 		*arg += len;
 		return &t_number;
-	    }
-	    break;
-	case 'p':
-	    if (len == 7 && STRNCMP(*arg, "partial", len) == 0)
-	    {
-		*arg += len;
-		// TODO: arguments and return type
-		return &t_partial_any;
 	    }
 	    break;
 	case 's':
@@ -1574,7 +1699,7 @@ equal_type(type_T *type1, type_T *type2)
  * "type2" and "dest" may be the same.
  */
     static void
-common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_list)
+common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 {
     if (equal_type(type1, type2))
     {
@@ -1588,11 +1713,11 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_list)
 	{
 	    type_T *common;
 
-	    common_type(type1->tt_member, type2->tt_member, &common, type_list);
+	    common_type(type1->tt_member, type2->tt_member, &common, type_gap);
 	    if (type1->tt_type == VAR_LIST)
-		*dest = get_list_type(common, type_list);
+		*dest = get_list_type(common, type_gap);
 	    else
-		*dest = get_dict_type(common, type_list);
+		*dest = get_dict_type(common, type_gap);
 	    return;
 	}
 	// TODO: VAR_FUNC and VAR_PARTIAL
@@ -1962,14 +2087,14 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 
 	if (*p != ',' && *skipwhite(p) == ',')
 	{
-	    emsg(_("E1068: No white space allowed before ,"));
+	    semsg(_(e_no_white_before), ",");
 	    p = skipwhite(p);
 	}
 	if (*p == ',')
 	{
 	    ++p;
 	    if (!VIM_ISWHITE(*p))
-		emsg(_("E1069: white space required after ,"));
+		semsg(_(e_white_after), ",");
 	}
 	p = skipwhite(p);
     }

@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Mar 01
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Apr 03
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -249,8 +249,8 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 			the function follows in the next lines, until the
 			matching `:enddef`.
 
-			When {return-type} is omitted the function is not
-			expected to return anything.
+			When {return-type} is omitted or is "void" the
+			function is not expected to return anything.
 			
 			{arguments} is a sequence of zero or more argument
 			declarations.  There are three forms:
@@ -296,29 +296,40 @@ The following builtin types are supported:
 	float
 	string
 	blob
-	list<type>
-	dict<type>
-	(a: type, b: type): type
+	list<{type}>
+	dict<{type}>
 	job
 	channel
 	func
-	partial
+	func({type}, ...)
+	func({type}, ...): {type}
 
 Not supported yet:
-	tuple<a: type, b: type, ...>
+	tuple<a: {type}, b: {type}, ...>
 
-These types can be used in declarations, but no variable will have this type:
-	type|type
+These types can be used in declarations, but no value will have this type:
+	{type}|{type}
 	void
 	any
 
-There is no array type, use list<type> instead.  For a list constant an
+There is no array type, use list<{type}> instead.  For a list constant an
 efficient implementation is used that avoids allocating lot of small pieces of
 memory.
 
-A function defined with `:def` must declare the return type.  If there is no
-type then the function doesn't return anything.  "void" is used in type
-declarations.
+A partial and function can be declared in more or less specific ways:
+func				any kind of function reference, no type
+				checking
+func: {type}			any number and type of arguments with specific
+				return type
+func({type} ...)		function with argument types, does not return
+				a value
+func({type} ...): {type}	function with argument types and return type
+
+If the return type is "void" the function does not return a value.
+
+The reference can also be a |Partial|, in which case it stores extra arguments
+and/or a dictionary, which are not visible to the caller.  Since they are
+called in the same way the declaration is the same.
 
 Custom types can be defined with `:type`: >
 	:type MyList list<string>

@@ -68,8 +68,7 @@ def Test_assignment()
   endif
   let funky1: func
   let funky2: func = function('len')
-  let party1: partial
-  let party2: partial = funcref('Test_syntax')
+  let party2: func = funcref('Test_syntax')
 
   " type becomes list<any>
   let somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
@@ -157,9 +156,6 @@ def Test_assignment()
   let thefunc: func
   assert_equal(test_null_function(), thefunc)
 
-  let thepartial: partial
-  assert_equal(test_null_partial(), thepartial)
-
   let thelist: list<any>
   assert_equal([], thelist)
 
@@ -213,7 +209,7 @@ func Test_assignment_failure()
   call CheckDefFailure(['let var = feedkeys("0")'], 'E1031:')
   call CheckDefFailure(['let var: number = feedkeys("0")'], 'expected number but got void')
 
-  call CheckDefFailure(['let var: dict <number>'], 'E1007:')
+  call CheckDefFailure(['let var: dict <number>'], 'E1068:')
   call CheckDefFailure(['let var: dict<number'], 'E1009:')
 endfunc
 

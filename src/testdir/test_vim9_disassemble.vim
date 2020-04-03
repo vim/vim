@@ -362,8 +362,7 @@ enddef
 def WithFunc()
   let funky1: func
   let funky2: func = function("len")
-  let party1: partial
-  let party2: partial = funcref("UserFunc")
+  let party2: func = funcref("UserFunc")
 enddef
 
 def Test_disassemble_function()
@@ -376,15 +375,12 @@ def Test_disassemble_function()
         \ .. '2 PUSHS "len".*'
         \ .. '3 BCALL function(argc 1).*'
         \ .. '4 STORE $1.*'
-        \ .. 'let party1: partial.*'
-        \ .. '5 PUSHPARTIAL "\[none]".*'
-        \ .. '6 STORE $2.*'
-        \ .. 'let party2: partial = funcref("UserFunc").*'
-        \ .. '7 PUSHS "UserFunc".*'
-        \ .. '8 BCALL funcref(argc 1).*'
-        \ .. '9 STORE $3.*'
-        \ .. '10 PUSHNR 0.*'
-        \ .. '11 RETURN.*'
+        \ .. 'let party2: func = funcref("UserFunc").*'
+        \ .. '\d PUSHS "UserFunc".*'
+        \ .. '\d BCALL funcref(argc 1).*'
+        \ .. '\d STORE $2.*'
+        \ .. '\d PUSHNR 0.*'
+        \ .. '\d RETURN.*'
         \, instr)
 enddef
 
@@ -753,10 +749,10 @@ def Test_disassemble_compare()
         \ ['#{a:1} is #{x:2}', 'COMPAREDICT is'],
         \ ['#{a:1} isnot #{x:2}', 'COMPAREDICT isnot'],
         \
-        \ ['{->33} == {->44}', 'COMPAREPARTIAL =='],
-        \ ['{->33} != {->44}', 'COMPAREPARTIAL !='],
-        \ ['{->33} is {->44}', 'COMPAREPARTIAL is'],
-        \ ['{->33} isnot {->44}', 'COMPAREPARTIAL isnot'],
+        \ ['{->33} == {->44}', 'COMPAREFUNC =='],
+        \ ['{->33} != {->44}', 'COMPAREFUNC !='],
+        \ ['{->33} is {->44}', 'COMPAREFUNC is'],
+        \ ['{->33} isnot {->44}', 'COMPAREFUNC isnot'],
         \
         \ ['77 == g:xx', 'COMPAREANY =='],
         \ ['77 != g:xx', 'COMPAREANY !='],

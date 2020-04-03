@@ -336,11 +336,6 @@ ret_func_any(int argcount UNUSED, type_T **argtypes UNUSED)
     return &t_func_any;
 }
     static type_T *
-ret_partial_any(int argcount UNUSED, type_T **argtypes UNUSED)
-{
-    return &t_partial_any;
-}
-    static type_T *
 ret_channel(int argcount UNUSED, type_T **argtypes UNUSED)
 {
     return &t_channel;
@@ -564,7 +559,7 @@ static funcentry_T global_functions[] =
     {"foldtext",	0, 0, 0,	  ret_string,	f_foldtext},
     {"foldtextresult",	1, 1, FEARG_1,	  ret_string,	f_foldtextresult},
     {"foreground",	0, 0, 0,	  ret_void,	f_foreground},
-    {"funcref",		1, 3, FEARG_1,	  ret_partial_any, f_funcref},
+    {"funcref",		1, 3, FEARG_1,	  ret_func_any, f_funcref},
     {"function",	1, 3, FEARG_1,	  ret_f_function, f_function},
     {"garbagecollect",	0, 1, 0,	  ret_void,	f_garbagecollect},
     {"get",		2, 3, FEARG_1,	  ret_any,	f_get},
@@ -961,7 +956,7 @@ static funcentry_T global_functions[] =
     {"test_null_function", 0, 0, 0,	  ret_func_any,	f_test_null_function},
     {"test_null_job",	0, 0, 0,	  ret_job,	JOB_FUNC(f_test_null_job)},
     {"test_null_list",	0, 0, 0,	  ret_list_any,	f_test_null_list},
-    {"test_null_partial", 0, 0, 0,	  ret_partial_any, f_test_null_partial},
+    {"test_null_partial", 0, 0, 0,	  ret_func_any, f_test_null_partial},
     {"test_null_string", 0, 0, 0,	  ret_string,	f_test_null_string},
     {"test_option_not_set", 1, 1, FEARG_1,ret_void,	 f_test_option_not_set},
     {"test_override",	2, 2, FEARG_2,	  ret_void,	f_test_override},
@@ -2902,7 +2897,7 @@ ret_f_function(int argcount, type_T **argtypes UNUSED)
 {
     if (argcount == 1 && argtypes[0]->tt_type == VAR_STRING)
 	return &t_func_any;
-    return &t_partial_void;
+    return &t_func_void;
 }
 
 /*

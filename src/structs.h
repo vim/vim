@@ -1342,9 +1342,13 @@ typedef struct type_S type_T;
 struct type_S {
     vartype_T	    tt_type;
     short	    tt_argcount;    // for func, partial, -1 for unknown
+    short	    tt_flags;	    // TTFLAG_ values
     type_T	    *tt_member;	    // for list, dict, func return type
-    type_T	    *tt_args;	    // func arguments
+    type_T	    **tt_args;	    // func arguments, allocated
 };
+
+#define TTFLAG_VARARGS	1	    // func args ends with "..."
+#define TTFLAG_OPTARG	2	    // func arg type with "?"
 
 /*
  * Structure to hold an internal variable without a name.

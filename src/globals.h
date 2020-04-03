@@ -379,36 +379,39 @@ EXTERN sctx_T	current_sctx INIT4(0, 0, 0, 0);
 
 
 // Commonly used types.
-EXTERN type_T t_any INIT4(VAR_UNKNOWN, 0, NULL, NULL);
-EXTERN type_T t_void INIT4(VAR_VOID, 0, NULL, NULL);
-EXTERN type_T t_bool INIT4(VAR_BOOL, 0, NULL, NULL);
-EXTERN type_T t_special INIT4(VAR_SPECIAL, 0, NULL, NULL);
-EXTERN type_T t_number INIT4(VAR_NUMBER, 0, NULL, NULL);
-EXTERN type_T t_float INIT4(VAR_FLOAT, 0, NULL, NULL);
-EXTERN type_T t_string INIT4(VAR_STRING, 0, NULL, NULL);
-EXTERN type_T t_blob INIT4(VAR_BLOB, 0, NULL, NULL);
-EXTERN type_T t_job INIT4(VAR_JOB, 0, NULL, NULL);
-EXTERN type_T t_channel INIT4(VAR_CHANNEL, 0, NULL, NULL);
+EXTERN type_T t_any INIT5(VAR_UNKNOWN, 0, 0, NULL, NULL);
+EXTERN type_T t_void INIT5(VAR_VOID, 0, 0, NULL, NULL);
+EXTERN type_T t_bool INIT5(VAR_BOOL, 0, 0, NULL, NULL);
+EXTERN type_T t_special INIT5(VAR_SPECIAL, 0, 0, NULL, NULL);
+EXTERN type_T t_number INIT5(VAR_NUMBER, 0, 0, NULL, NULL);
+EXTERN type_T t_float INIT5(VAR_FLOAT, 0, 0, NULL, NULL);
+EXTERN type_T t_string INIT5(VAR_STRING, 0, 0, NULL, NULL);
+EXTERN type_T t_blob INIT5(VAR_BLOB, 0, 0, NULL, NULL);
+EXTERN type_T t_job INIT5(VAR_JOB, 0, 0, NULL, NULL);
+EXTERN type_T t_channel INIT5(VAR_CHANNEL, 0, 0, NULL, NULL);
 
-EXTERN type_T t_func_void INIT4(VAR_FUNC, -1, &t_void, NULL);
-EXTERN type_T t_func_any INIT4(VAR_FUNC, -1, &t_any, NULL);
+EXTERN type_T t_func_void INIT5(VAR_FUNC, -1, 0, &t_void, NULL);
+EXTERN type_T t_func_any INIT5(VAR_FUNC, -1, 0, &t_any, NULL);
+EXTERN type_T t_func_number INIT5(VAR_FUNC, -1, 0, &t_number, NULL);
+EXTERN type_T t_func_string INIT5(VAR_FUNC, -1, 0, &t_string, NULL);
+EXTERN type_T t_func_0_void INIT5(VAR_FUNC, 0, 0, &t_void, NULL);
+EXTERN type_T t_func_0_any INIT5(VAR_FUNC, 0, 0, &t_any, NULL);
+EXTERN type_T t_func_0_number INIT5(VAR_FUNC, 0, 0, &t_number, NULL);
+EXTERN type_T t_func_0_string INIT5(VAR_FUNC, 0, 0, &t_string, NULL);
 
-EXTERN type_T t_partial_void INIT4(VAR_PARTIAL, -1, &t_void, NULL);
-EXTERN type_T t_partial_any INIT4(VAR_PARTIAL, -1, &t_any, NULL);
+EXTERN type_T t_list_any INIT5(VAR_LIST, 0, 0, &t_any, NULL);
+EXTERN type_T t_dict_any INIT5(VAR_DICT, 0, 0, &t_any, NULL);
+EXTERN type_T t_list_empty INIT5(VAR_LIST, 0, 0, &t_void, NULL);
+EXTERN type_T t_dict_empty INIT5(VAR_DICT, 0, 0, &t_void, NULL);
 
-EXTERN type_T t_list_any INIT4(VAR_LIST, 0, &t_any, NULL);
-EXTERN type_T t_dict_any INIT4(VAR_DICT, 0, &t_any, NULL);
-EXTERN type_T t_list_empty INIT4(VAR_LIST, 0, &t_void, NULL);
-EXTERN type_T t_dict_empty INIT4(VAR_DICT, 0, &t_void, NULL);
+EXTERN type_T t_list_bool INIT5(VAR_LIST, 0, 0, &t_bool, NULL);
+EXTERN type_T t_list_number INIT5(VAR_LIST, 0, 0, &t_number, NULL);
+EXTERN type_T t_list_string INIT5(VAR_LIST, 0, 0, &t_string, NULL);
+EXTERN type_T t_list_dict_any INIT5(VAR_LIST, 0, 0, &t_dict_any, NULL);
 
-EXTERN type_T t_list_bool INIT4(VAR_LIST, 0, &t_bool, NULL);
-EXTERN type_T t_list_number INIT4(VAR_LIST, 0, &t_number, NULL);
-EXTERN type_T t_list_string INIT4(VAR_LIST, 0, &t_string, NULL);
-EXTERN type_T t_list_dict_any INIT4(VAR_LIST, 0, &t_dict_any, NULL);
-
-EXTERN type_T t_dict_bool INIT4(VAR_DICT, 0, &t_bool, NULL);
-EXTERN type_T t_dict_number INIT4(VAR_DICT, 0, &t_number, NULL);
-EXTERN type_T t_dict_string INIT4(VAR_DICT, 0, &t_string, NULL);
+EXTERN type_T t_dict_bool INIT5(VAR_DICT, 0, 0, &t_bool, NULL);
+EXTERN type_T t_dict_number INIT5(VAR_DICT, 0, 0, &t_number, NULL);
+EXTERN type_T t_dict_string INIT5(VAR_DICT, 0, 0, &t_string, NULL);
 
 
 #endif
