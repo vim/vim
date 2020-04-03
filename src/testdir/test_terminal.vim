@@ -36,16 +36,6 @@ func Test_terminal_basic()
   au TerminalOpen * let b:done = 'yes'
   let buf = Run_shell_in_terminal({})
 
-  if has("unix")
-    call assert_match('^/dev/', job_info(g:job).tty_out)
-    call assert_match('^/dev/', term_gettty(''))
-  else
-    " ConPTY works on anonymous pipe.
-    if !has('conpty')
-      call assert_match('^\\\\.\\pipe\\', job_info(g:job).tty_out)
-      call assert_match('^\\\\.\\pipe\\', ''->term_gettty())
-    endif
-  endif
   call assert_equal('t', mode())
   call assert_equal('yes', b:done)
   call assert_match('%aR[^\n]*running]', execute('ls'))
@@ -2184,6 +2174,49 @@ func Test_term_gettitle()
   call WaitForAssert({-> assert_equal('foo', term_gettitle(term)) })
 
   exe term . 'bwipe!'
+endfunc
+
+func Test_term_gettty()
+  let buf = Run_shell_in_terminal({})
+  let gettty = term_gettty(buf)
+
+  if has('unix') && executable('tty')
+    " Find tty using the tty shell command.
+    call WaitForAssert({-> assert_notequal('', term_getline(buf, 1))})
+    call term_sendkeys(buf, "tty\r")
+    call WaitForAssert({-> assert_notequal('', term_getline(buf, 3))})
+    let tty = term_getline(buf, 2)
+    call assert_equal(tty, gettty)
+  endif
+
+  let gettty0 = term_gettty(buf, 0)
+  let gettty1 = term_gettty(buf, 1)
+
+  call assert_equal(gettty, gettty0)
+  call assert_equal(job_info(g:job).tty_out, gettty0)
+  call assert_equal(job_info(g:job).tty_in,  gettty1)
+
+  if has('unix')
+    " For unix, term_gettty(..., 0) and term_gettty(..., 1)
+    " are identical according to :help term_gettty()
+    call assert_equal(gettty0, gettty1)
+    call assert_match('^/dev/', gettty)
+  else
+    " ConPTY works on anonymous pipe.
+    if !has('conpty')
+      call assert_match('^\\\\.\\pipe\\', gettty0)
+      call assert_match('^\\\\.\\pipe\\', gettty1)
+    endif
+  endif
+
+  call assert_fails('call term_gettty(buf, 2)', 'E475:')
+  call assert_fails('call term_gettty(buf, -1)', 'E475:')
+
+  call assert_equal('', term_gettty(buf + 1))
+
+  call StopShellInTerminal(buf)
+  call term_wait(buf)
+  exe buf . 'bwipe'
 endfunc
 
 " When drawing the statusline the cursor position may not have been updated
