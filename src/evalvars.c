@@ -2382,6 +2382,7 @@ find_var(char_u *name, hashtab_T **htp, int no_autoload)
 
 /*
  * Find variable "varname" in hashtab "ht" with name "htname".
+ * When "varname" is empty returns curwin/curtab/etc vars dictionary.
  * Returns NULL if not found.
  */
     dictitem_T *
@@ -3503,8 +3504,12 @@ f_getbufvar(typval_T *argvars, typval_T *rettv)
 	else
 	{
 	    // Look up the variable.
-	    // Let getbufvar({nr}, "") return the "b:" dictionary.
-	    v = find_var_in_ht(&buf->b_vars->dv_hashtab, 'b', varname, FALSE);
+	    if (*varname == NUL)
+		// Let getbufvar({nr}, "") return the "b:" dictionary.
+		v = &buf->b_bufvar;
+	    else
+		v = find_var_in_ht(&buf->b_vars->dv_hashtab, 'b',
+							       varname, FALSE);
 	    if (v != NULL)
 	    {
 		copy_tv(&v->di_tv, rettv);
