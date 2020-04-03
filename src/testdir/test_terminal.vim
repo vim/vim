@@ -2193,8 +2193,8 @@ func Test_term_gettty()
   let gettty1 = term_gettty(buf, 1)
 
   call assert_equal(gettty, gettty0)
-  call assert_equal(job_info(g:job).tty_in,  gettty0)
-  call assert_equal(job_info(g:job).tty_out, gettty1)
+  call assert_equal(job_info(g:job).tty_out, gettty0)
+  call assert_equal(job_info(g:job).tty_in,  gettty1)
 
   if has('unix')
     " For unix, term_gettty(..., 0) and term_gettty(..., 1)
