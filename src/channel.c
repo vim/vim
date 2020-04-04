@@ -724,17 +724,18 @@ channel_open(
 	int waittime,
 	void (*nb_close_cb)(void))
 {
-    int			sd = -1;
-    struct sockaddr_in	server;
-    struct hostent	*host;
+    int			    sd = -1;
+    int			    addr_family = 0;
+    socklen_t		    server_addrlen = 0;
+    struct sockaddr_storage server_addr;
+    char		    port[6];
+    struct addrinfo	    hints;
+    struct addrinfo	    *res = NULL;
 #ifdef MSWIN
-    u_short		port = port_in;
-    u_long		val = 1;
-#else
-    int			port = port_in;
+    u_long		    val = 1;
 #endif
-    channel_T		*channel;
-    int			ret;
+    channel_T		    *channel;
+    int			    ret;
 
 #ifdef MSWIN
     channel_init_winsock();
@@ -749,24 +750,22 @@ channel_open(
 
     // Get the server internet address and put into addr structure
     // fill in the socket address structure and connect to server
-    vim_memset((char *)&server, 0, sizeof(server));
-    server.sin_family = AF_INET;
-    server.sin_port = htons(port);
-    if ((host = gethostbyname(hostname)) == NULL)
+    vim_memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    vim_snprintf(port, sizeof(port), "%d", port_in);
+    if (getaddrinfo(hostname, port, &hints, &res) != 0)
     {
-	ch_error(channel, "in gethostbyname() in channel_open()");
-	PERROR(_("E901: gethostbyname() in channel_open()"));
+	ch_error(channel, "in getaddrinfo() in channel_open()");
+	PERROR(_("E901: getaddrinfo() in channel_open()"));
 	channel_free(channel);
 	return NULL;
     }
-    {
-	char		*p;
-
-	// When using host->h_addr_list[0] directly ubsan warns for it to not
-	// be aligned.  First copy the pointer to avoid that.
-	memcpy(&p, &host->h_addr_list[0], sizeof(p));
-	memcpy((char *)&server.sin_addr, p, host->h_length);
-    }
+    addr_family = res->ai_family;
+    server_addrlen = res->ai_addrlen;
+    vim_memset(&server_addr, 0, sizeof(server_addr));
+    memcpy(&server_addr, res->ai_addr, server_addrlen);
+    freeaddrinfo(res);
 
     // On Mac and Solaris a zero timeout almost never works.  At least wait
     // one millisecond. Let's do it for all systems, because we don't know why
@@ -785,7 +784,7 @@ channel_open(
 
 	if (sd >= 0)
 	    sock_close(sd);
-	sd = socket(AF_INET, SOCK_STREAM, 0);
+	sd = socket(addr_family, SOCK_STREAM, 0);
 	if (sd == -1)
 	{
 	    ch_error(channel, "in socket() in channel_open().");
@@ -815,8 +814,8 @@ channel_open(
 	}
 
 	// Try connecting to the server.
-	ch_log(channel, "Connecting to %s port %d", hostname, port);
-	ret = connect(sd, (struct sockaddr *)&server, sizeof(server));
+	ch_log(channel, "Connecting to %s port %d", hostname, port_in);
+	ret = connect(sd, (struct sockaddr *)&server_addr, server_addrlen);
 
 	if (ret == 0)
 	    // The connection could be established.
@@ -1222,6 +1221,7 @@ channel_open_func(typval_T *argvars)
     char_u	*p;
     char	*rest;
     int		port;
+    int		is_ipv6 = FALSE;
     jobopt_T    opt;
     channel_T	*channel = NULL;
 
@@ -1234,20 +1234,40 @@ channel_open_func(typval_T *argvars)
     }
 
     // parse address
-    p = vim_strchr(address, ':');
-    if (p == NULL)
+    if (*address == '[')
+    {
+	// ipv6 address
+	is_ipv6 = TRUE;
+	p = vim_strchr(address + 1, ']');
+	if (p == NULL || *++p != ':')
+	{
+	    semsg(_(e_invarg2), address);
+	    return NULL;
+	}
+    }
+    else
+    {
+	p = vim_strchr(address, ':');
+	if (p == NULL)
+	{
+	    semsg(_(e_invarg2), address);
+	    return NULL;
+	}
+    }
+    port = strtol((char *)(p + 1), &rest, 10);
+    if (*address == NUL || port <= 0 || port >= 65536 || *rest != NUL)
     {
 	semsg(_(e_invarg2), address);
 	return NULL;
     }
-    *p++ = NUL;
-    port = strtol((char *)p, &rest, 10);
-    if (*address == NUL || port <= 0 || *rest != NUL)
+    if (is_ipv6)
     {
-	p[-1] = ':';
-	semsg(_(e_invarg2), address);
-	return NULL;
+	// strip '[' and ']'
+	++address;
+	*(p - 1) = NUL;
     }
+    else
+	*p = NUL;
 
     // parse options
     clear_job_options(&opt);
