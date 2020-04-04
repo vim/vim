@@ -2038,7 +2038,7 @@ else
 fi
 
 if test "$enable_channel" = "yes"; then
-  dnl On Solaris we need the socket and nsl library.
+  dnl On Solaris we need the socket library.
 
   if test "x$HAIKU" = "xyes"; then
 	AC_CHECK_LIB(network, socket)
@@ -2046,7 +2046,6 @@ if test "$enable_channel" = "yes"; then
 	AC_CHECK_LIB(socket, socket)
   fi
 
-  AC_CHECK_LIB(nsl, gethostbyname)
   AC_MSG_CHECKING(whether compiling with process communication is possible)
   AC_TRY_LINK([
 #include <stdio.h>
@@ -2066,11 +2065,13 @@ if test "$enable_channel" = "yes"; then
 	    ], [
 		/* Check creating a socket. */
 		struct sockaddr_in server;
+		struct addrinfo *res;
 		(void)socket(AF_INET, SOCK_STREAM, 0);
 		(void)htons(100);
-		(void)gethostbyname("microsoft.com");
+		(void)getaddrinfo("microsoft.com", NULL, NULL, &res);
 		if (errno == ECONNREFUSED)
 		  (void)connect(1, (struct sockaddr *)&server, sizeof(server));
+		(void)freeaddrinfo(res);
 	    ],
 	AC_MSG_RESULT(yes),
 	AC_MSG_RESULT(no); enable_netbeans="no"; enable_channel="no")
