@@ -20,6 +20,8 @@ static char *e_listblobarg = N_("E899: Argument of %s must be a List or Blob");
 // List heads for garbage collection.
 static list_T		*first_list = NULL;	// list of all lists
 
+static void list_free_item(list_T *l, listitem_T *item);
+
 /*
  * Add a watcher to a list.
  */
@@ -311,7 +313,7 @@ listitem_alloc(void)
  * Free a list item, unless it was allocated together with the list itself.
  * Does not clear the value.  Does not notify watchers.
  */
-    void
+    static void
 list_free_item(list_T *l, listitem_T *item)
 {
     if (l->lv_with_items == 0 || item < (listitem_T *)l
@@ -1225,7 +1227,7 @@ f_list2str(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = ga.ga_data;
 }
 
-    void
+    static void
 list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 {
     list_T	*l;
