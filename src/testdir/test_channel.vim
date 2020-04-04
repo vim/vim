@@ -19,7 +19,7 @@ endif
 " call ch_logfile('channellog', 'w')
 
 func SetUp(test)
-  if a:test =~ '_ipv6'
+  if a:test =~ '_ipv6\>'
     let s:localhost = '[::1]:'
     let s:testscript = 'test_channel_6.py'
   else
