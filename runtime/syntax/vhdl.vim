@@ -16,10 +16,10 @@ set cpo&vim
 " case is not significant
 syn case	ignore
 
-" VHDL keywords
-syn keyword	vhdlStatement	access after alias all assert
+" VHDL 1076-2019 keywords
+syn keyword	vhdlStatement	access after alias all
 syn keyword 	vhdlStatement	architecture array attribute
-syn keyword 	vhdlStatement	assume assume_guarantee
+syn keyword 	vhdlStatement	assert assume
 syn keyword 	vhdlStatement	begin block body buffer bus
 syn keyword 	vhdlStatement	case component configuration constant
 syn keyword 	vhdlStatement	context cover
@@ -34,20 +34,19 @@ syn keyword 	vhdlStatement	map
 syn keyword 	vhdlStatement	new next null
 syn keyword 	vhdlStatement	of on open others out
 syn keyword 	vhdlStatement	package port postponed procedure process pure
-syn keyword 	vhdlStatement	parameter property protected
+syn keyword 	vhdlStatement	parameter property protected private
 syn keyword 	vhdlStatement	range record register reject report return
-syn keyword 	vhdlStatement	release restrict restrict_guarantee
-syn keyword 	vhdlStatement	select severity signal shared
-syn keyword 	vhdlStatement	subtype
+syn keyword 	vhdlStatement	release restrict
+syn keyword 	vhdlStatement	select severity signal shared subtype
 syn keyword 	vhdlStatement	sequence strong
 syn keyword 	vhdlStatement	then to transport type
 syn keyword 	vhdlStatement	unaffected units until use
-syn keyword 	vhdlStatement	variable
-" VHDL-2019 interface
-syn keyword 	vhdlStatement	view
-syn keyword 	vhdlStatement	vmode vprop vunit
+syn keyword 	vhdlStatement	variable view
+syn keyword 	vhdlStatement	vpkg vmode vprop vunit
 syn keyword 	vhdlStatement	wait when while with
-syn keyword 	vhdlStatement	note warning error failure
+
+" VHDL predefined severity levels
+syn keyword 	vhdlAttribute	note warning error failure
 
 " Linting of conditionals.
 syn match	vhdlStatement	"\<\(if\|else\)\>"
