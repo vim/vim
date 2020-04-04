@@ -34,6 +34,9 @@ func Test_cscopeWithCscopeConnections()
     call assert_fails('cscope add', 'E560')
     call assert_fails('cscope add Xcscope.out', 'E568')
     call assert_fails('cscope add doesnotexist.out', 'E563')
+    if has('unix')
+      call assert_fails('cscope add /dev/null', 'E564:')
+    endif
 
     " Test 1: Find this C-Symbol
     for cmd in ['cs find s main', 'cs find 0 main']
@@ -45,7 +48,9 @@ func Test_cscopeWithCscopeConnections()
     endfor
 
     " Test 2: Find this definition
-    for cmd in ['cs find g test_mf_hash', 'cs find 1 test_mf_hash']
+    for cmd in ['cs find g test_mf_hash',
+          \     'cs find 1 test_mf_hash',
+          \     'cs find 1   test_mf_hash'] " leading space ignored.
       exe cmd
       call assert_equal(['', '/*', ' * Test mf_hash_*() functions.', ' */', '    static void', 'test_mf_hash(void)', '{'], getline(line('.')-5, line('.')+1))
     endfor
@@ -192,12 +197,24 @@ func Test_cscopeWithCscopeConnections()
     let a = execute('tags')
     call assert_match('1  1 TEST_COUNT\s\+\d\+\s\+#define index_to_key', a)
 
-    " Test 19: this should trigger call to cs_print_tags()
+    " Test 19: 'cscoperelative'
+    call mkdir('Xcscoperelative')
+    cd Xcscoperelative
+    let a = execute('cs find g test_mf_hash')
+    call assert_notequal('test_mf_hash(void)', getline('.'))
+    set cscoperelative
+    let a = execute('cs find g test_mf_hash')
+    call assert_equal('test_mf_hash(void)', getline('.'))
+    set nocscoperelative
+    cd ..
+    call delete('Xcscoperelative', 'd')
+
+    " Test 20: this should trigger call to cs_print_tags()
     " Unclear how to check result though, we just exercise the code.
     set cst cscopequickfix=s0
     call feedkeys(":cs find s main\<CR>", 't')
 
-    " Test 20: cscope kill
+    " Test 21: cscope kill
     call assert_fails('cscope kill 2', 'E261:')
     call assert_fails('cscope kill xxx', 'E261:')
 
@@ -214,20 +231,20 @@ func Test_cscopeWithCscopeConnections()
     let a = execute('cscope kill -1')
     call assert_equal('', a)
 
-    " Test 21: 'csprg' option
+    " Test 22: 'csprg' option
     call assert_equal('cscope', &csprg)
     set csprg=doesnotexist
     call assert_fails('cscope add Xcscope2.out', 'E609:')
     set csprg=cscope
 
-    " Test 22: multiple cscope connections
+    " Test 23: multiple cscope connections
     cscope add Xcscope.out
     cscope add Xcscope2.out . -C
     let a = execute('cscope show')
     call assert_match('\n 0 \d\+.*Xcscope.out\s*<none>', a)
     call assert_match('\n 1 \d\+.*Xcscope2.out\s*\.', a)
 
-    " Test 23: test Ex command line completion
+    " Test 24: test Ex command line completion
     call feedkeys(":cs \<C-A>\<C-B>\"\<CR>", 'tx')
     call assert_equal('"cs add find help kill reset show', @:)
 
@@ -243,19 +260,26 @@ func Test_cscopeWithCscopeConnections()
     call feedkeys(":cs add Xcscope\<C-A>\<C-B>\"\<CR>", 'tx')
     call assert_equal('"cs add Xcscope.out Xcscope2.out', @:)
 
-    " Test 24: cscope_connection()
+    " Test 25: cscope_connection()
     call assert_equal(cscope_connection(), 1)
     call assert_equal(cscope_connection(0, 'out'), 1)
     call assert_equal(cscope_connection(0, 'xxx'), 1)
+
     call assert_equal(cscope_connection(1, 'out'), 1)
     call assert_equal(cscope_connection(1, 'xxx'), 0)
+
     call assert_equal(cscope_connection(2, 'out'), 0)
+    call assert_equal(cscope_connection(2, getcwd() .. '/Xcscope.out', 1), 1)
+
     call assert_equal(cscope_connection(3, 'xxx', '..'), 0)
     call assert_equal(cscope_connection(3, 'out', 'xxx'), 0)
     call assert_equal(cscope_connection(3, 'out', '.'), 1)
+
     call assert_equal(cscope_connection(4, 'out', '.'), 0)
 
-    " CleanUp
+    call assert_equal(cscope_connection(5, 'out'), 0)
+    call assert_equal(cscope_connection(-1, 'out'), 0)
+
     call CscopeSetupOrClean(0)
 endfunc
 
