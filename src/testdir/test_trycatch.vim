@@ -2012,9 +2012,7 @@ endfunc
 " Test for verbose messages with :try :catch, and :finally                 {{{1
 func Test_try_catch_verbose()
   " This test works only when the language is English
-  if v:lang != "C" && v:lang !~ '^[Ee]n'
-    return
-  endif
+  CheckEnglish
 
   set verbose=14
 

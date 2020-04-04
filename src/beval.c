@@ -110,6 +110,8 @@ find_word_under_cursor(
 			lbuf = vim_strnsave(lbuf, len);
 		    }
 		}
+		else
+		    scol = col;
 
 		if (winp != NULL)
 		    *winp = wp;

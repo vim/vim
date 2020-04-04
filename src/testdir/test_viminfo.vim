@@ -760,6 +760,11 @@ func Test_viminfo_perm()
   call setfperm('Xviminfo', '--x------')
   call assert_fails('rviminfo Xviminfo', 'E195:')
   call delete('Xviminfo')
+
+  " Try to write the viminfo to a directory
+  call mkdir('Xdir')
+  call assert_fails('wviminfo Xdir', 'E886:')
+  call delete('Xdir', 'rf')
 endfunc
 
 " Test for writing to an existing viminfo file merges the file marks
