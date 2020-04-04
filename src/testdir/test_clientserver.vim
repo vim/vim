@@ -141,7 +141,7 @@ func Test_client_server()
 
     " Error cases
     if v:lang == "C" || v:lang =~ '^[Ee]n'
-      let l = systemlist(cmd .. ' --remote +pwd')
+      let l = split(system(cmd .. ' --remote +pwd'), "\n")
       call assert_equal("Argument missing after: \"+pwd\"", l[1])
     endif
     let l = system(cmd .. ' --remote-expr "abcd"')
