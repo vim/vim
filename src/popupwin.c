@@ -798,16 +798,16 @@ apply_general_options(win_T *wp, dict_T *dict)
 		    if (*str != NUL)
 			wp->w_border_char[i] = mb_ptr2char(str);
 		}
-	    }
-	    if (list->lv_len == 1)
-		for (i = 1; i < 8; ++i)
-		    wp->w_border_char[i] = wp->w_border_char[0];
-	    if (list->lv_len == 2)
-	    {
-		for (i = 4; i < 8; ++i)
-		    wp->w_border_char[i] = wp->w_border_char[1];
-		for (i = 1; i < 4; ++i)
-		    wp->w_border_char[i] = wp->w_border_char[0];
+		if (list->lv_len == 1)
+		    for (i = 1; i < 8; ++i)
+			wp->w_border_char[i] = wp->w_border_char[0];
+		if (list->lv_len == 2)
+		{
+		    for (i = 4; i < 8; ++i)
+			wp->w_border_char[i] = wp->w_border_char[1];
+		    for (i = 1; i < 4; ++i)
+			wp->w_border_char[i] = wp->w_border_char[0];
+		}
 	    }
 	}
     }
