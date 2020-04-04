@@ -1,5 +1,5 @@
 " Test :retab
-func SetUp()
+func SetUp(test)
   new
   call setline(1, "\ta  \t    b        c    ")
 endfunc

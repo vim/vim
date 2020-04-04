@@ -18,14 +18,20 @@ endif
 " Add ch_log() calls where you want to see what happens.
 " call ch_logfile('channellog', 'w')
 
-func SetUp()
-  let s:localhost = 'localhost:'
+func SetUp(test)
+  if a:test =~ '_ipv6'
+    let s:localhost = '[::1]:'
+    let s:testscript = 'test_channel_6.py'
+  else
+    let s:localhost = 'localhost:'
+    let s:testscript = 'test_channel.py'
+  endif
   let s:chopt = {}
 endfunc
 
 " Run "testfunc" after starting the server and stop the server afterwards.
 func s:run_server(testfunc, ...)
-  call RunServer('test_channel.py', a:testfunc, a:000)
+  call RunServer(s:testscript, a:testfunc, a:000)
 
   " communicating with a server can be flaky
   let g:test_is_flaky = 1
@@ -230,7 +236,6 @@ func Test_communicate()
 endfunc
 
 func Test_communicate_ipv6()
-  let s:localhost = '[::1]:'
   call ch_log('Test_communicate_ipv6()')
   call s:run_server('Ch_communicate')
 endfunc
@@ -267,7 +272,6 @@ func Test_two_channels()
 endfunc
 
 func Test_two_channels_ipv6()
-  let s:localhost = '[::1]:'
   eval 'Test_two_channels_ipv6()'->ch_log()
   call s:run_server('Ch_two_channels')
 endfunc
@@ -291,7 +295,6 @@ func Test_server_crash()
 endfunc
 
 func Test_server_crash_ipv6()
-  let s:localhost = '[::1]:'
   call ch_log('Test_server_crash_ipv6()')
   call s:run_server('Ch_server_crash')
 endfunc
@@ -331,7 +334,6 @@ func Test_channel_handler()
 endfunc
 
 func Test_channel_handler_ipv6()
-  let s:localhost = '[::1]:'
   call ch_log('Test_channel_handler_ipv6()')
   let g:Ch_reply = ""
   let s:chopt.callback = 'Ch_handler'
@@ -401,7 +403,6 @@ func Test_zero_reply()
 endfunc
 
 func Test_zero_reply_ipv6()
-  let s:localhost = '[::1]:'
   call ch_log('Test_zero_reply_ipv6()')
   " Run with channel handler
   let s:has_handler = 1
@@ -457,7 +458,6 @@ func Test_raw_one_time_callback()
 endfunc
 
 func Test_raw_one_time_callback_ipv6()
-  let s:localhost = '[::1]:'
   call ch_log('Test_raw_one_time_callback_ipv6()')
   call s:run_server('Ch_raw_one_time_callback')
 endfunc
@@ -1400,7 +1400,6 @@ func Test_unlet_handle()
 endfunc
 
 func Test_unlet_handle_ipv6()
-  let s:localhost = '[::1]:'
   call ch_log('Test_unlet_handle_ipv6()')
   call s:run_server('Ch_unlet_handle')
 endfunc
@@ -1425,7 +1424,6 @@ func Test_close_handle()
 endfunc
 
 func Test_close_handle_ipv6()
-  let s:localhost = '[::1]:'
   call s:run_server('Ch_close_handle')
 endfunc
 

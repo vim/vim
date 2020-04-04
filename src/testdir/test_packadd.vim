@@ -1,7 +1,7 @@
 " Tests for 'packpath' and :packadd
 
 
-func SetUp()
+func SetUp(test)
   let s:topdir = getcwd() . '/Xdir'
   exe 'set packpath=' . s:topdir
   let s:plugdir = s:topdir . '/pack/mine/opt/mytest'

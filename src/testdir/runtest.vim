@@ -149,7 +149,7 @@ func RunTheTest(test)
 
   if exists("*SetUp")
     try
-      call SetUp()
+      call SetUp(a:test)
     catch
       call add(v:errors, 'Caught exception in SetUp() before ' . a:test . ': ' . v:exception . ' @ ' . v:throwpoint)
     endtry
