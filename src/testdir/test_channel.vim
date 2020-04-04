@@ -19,13 +19,7 @@ endif
 " call ch_logfile('channellog', 'w')
 
 func SetUp(test)
-  if a:test =~ '_ipv6\>'
-    let s:localhost = '[::1]:'
-    let s:testscript = 'test_channel_6.py'
-  else
-    let s:localhost = 'localhost:'
-    let s:testscript = 'test_channel.py'
-  endif
+  let s:testscript = a:test =~ '_ipv6\>' ? 'test_channel_6.py' : 'test_channel.py'
   let s:chopt = {}
 endfunc
 
@@ -63,7 +57,7 @@ func Ch_communicate(port)
   let s:chopt.drop = 'never'
   " Also add the noblock flag to try it out.
   let s:chopt.noblock = 1
-  let handle = ch_open(s:localhost . a:port, s:chopt)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -242,7 +236,7 @@ endfunc
 
 " Test that we can open two channels.
 func Ch_two_channels(port)
-  let handle = ch_open(s:localhost . a:port, s:chopt)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
   call assert_equal(v:t_channel, type(handle))
   if handle->ch_status() == "fail"
     call assert_report("Can't open channel")
@@ -251,7 +245,7 @@ func Ch_two_channels(port)
 
   call assert_equal('got it', ch_evalexpr(handle, 'hello!'))
 
-  let newhandle = ch_open(s:localhost . a:port, s:chopt)
+  let newhandle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(newhandle) == "fail"
     call assert_report("Can't open second channel")
     return
@@ -278,7 +272,7 @@ endfunc
 
 " Test that a server crash is handled gracefully.
 func Ch_server_crash(port)
-  let handle = ch_open(s:localhost . a:port, s:chopt)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -308,7 +302,7 @@ func Ch_handler(chan, msg)
 endfunc
 
 func Ch_channel_handler(port)
-  let handle = ch_open(s:localhost . a:port, s:chopt)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -358,7 +352,7 @@ func Ch_oneHandler(chan, msg)
 endfunc
 
 func Ch_channel_zero(port)
-  let handle = (s:localhost .. a:port)->ch_open(s:chopt)
+  let handle = ('localhost:' .. a:port)->ch_open(s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -435,7 +429,7 @@ func Ch_handleRaw3(chan, msg)
 endfunc
 
 func Ch_raw_one_time_callback(port)
-  let handle = ch_open(s:localhost . a:port, s:chopt)
+  let handle = ch_open('localhost:' . a:port, s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -1389,7 +1383,7 @@ endfunc
 
 " Test that "unlet handle" in a handler doesn't crash Vim.
 func Ch_unlet_handle(port)
-  let s:channelfd = ch_open(s:localhost . a:port, s:chopt)
+  let s:channelfd = ch_open('localhost:' . a:port, s:chopt)
   eval s:channelfd->ch_sendexpr("test", {'callback': function('s:UnletHandler')})
   call WaitForAssert({-> assert_equal('what?', g:Ch_unletResponse)})
 endfunc
@@ -1414,7 +1408,7 @@ endfunc
 
 " Test that "unlet handle" in a handler doesn't crash Vim.
 func Ch_close_handle(port)
-  let s:channelfd = ch_open(s:localhost . a:port, s:chopt)
+  let s:channelfd = ch_open('localhost:' . a:port, s:chopt)
   call ch_sendexpr(s:channelfd, "test", {'callback': function('Ch_CloseHandler')})
   call WaitForAssert({-> assert_equal('what?', g:Ch_unletResponse)})
 endfunc
