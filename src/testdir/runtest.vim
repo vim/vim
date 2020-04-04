@@ -408,8 +408,8 @@ for s:test in sort(s:tests)
   let total_errors = []
   let g:run_nr = 1
 
-  " A test can set test_is_flaky to retry running the test.
-  let test_is_flaky = 0
+  " A test can set g:test_is_flaky to retry running the test.
+  let g:test_is_flaky = 0
 
   call RunTheTest(s:test)
 
@@ -418,7 +418,7 @@ for s:test in sort(s:tests)
   " - it fails five times (with a different message)
   if len(v:errors) > 0
         \ && (index(s:flaky_tests, s:test) >= 0
-        \      || test_is_flaky)
+        \      || g:test_is_flaky)
     while 1
       call add(s:messages, 'Found errors in ' . s:test . ':')
       call extend(s:messages, v:errors)
