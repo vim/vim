@@ -146,9 +146,7 @@ endfunc
 " In Ex-mode, backslashes at the end of a command should be halved.
 func Test_Ex_echo_backslash()
   " This test works only when the language is English
-  if v:lang != "C" && v:lang !~ '^[Ee]n'
-    return
-  endif
+  CheckEnglish
   let bsl = '\\\\'
   let bsl2 = '\\\'
   call assert_fails('call feedkeys("Qecho " .. bsl .. "\nvisual\n", "xt")',

@@ -82,6 +82,8 @@ func RunVimInTerminal(arguments, options)
     let cols = term_getsize(buf)[1]
   endif
 
+  call term_wait(buf)
+
   " Wait for "All" or "Top" of the ruler to be shown in the last line or in
   " the status line of the last window. This can be quite slow (e.g. when
   " using valgrind).
@@ -113,3 +115,5 @@ func StopVimInTerminal(buf)
   call WaitForAssert({-> assert_equal("finished", term_getstatus(a:buf))})
   only!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

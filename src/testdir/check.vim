@@ -133,3 +133,13 @@ func CheckNotRoot()
     throw 'Skipped: cannot run test as root'
   endif
 endfunc
+
+" Command to check that the current language is English
+command CheckEnglish call CheckEnglish()
+func CheckEnglish()
+  if v:lang != "C" && v:lang !~ '^[Ee]n'
+      throw 'Skipped: only works in English language environment'
+  endif
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

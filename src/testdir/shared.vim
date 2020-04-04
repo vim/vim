@@ -337,3 +337,5 @@ func IsRoot()
   endif
   return v:false
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
