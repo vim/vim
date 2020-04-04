@@ -126,6 +126,18 @@ func Test_client_server()
     call system(cmd .. ' --remote-tab Xfile1 Xfile2 Xfile3')
     call assert_equal('3', remote_expr(name, 'tabpagenr("$")'))
     call assert_equal('Xfile2', remote_expr(name, 'bufname(tabpagebuflist(2)[0])'))
+    eval name->remote_send(":%bw!\<CR>")
+
+    " Edit a file using --remote-wait
+    eval name->remote_send(":source $VIMRUNTIME/plugin/rrhelper.vim\<CR>")
+    call system(cmd .. ' --remote-wait +enew Xfile1')
+    call assert_equal("Xfile1", remote_expr(name, 'bufname("#")'))
+    eval name->remote_send(":%bw!\<CR>")
+
+    " Edit files using --remote-tab-wait
+    call system(cmd .. ' --remote-tabwait +tabonly\|enew Xfile1 Xfile2')
+    call assert_equal('1', remote_expr(name, 'tabpagenr("$")'))
+    eval name->remote_send(":%bw!\<CR>")
 
     " Error cases
     if v:lang == "C" || v:lang =~ '^[Ee]n'
