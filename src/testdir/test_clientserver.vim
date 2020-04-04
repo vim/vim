@@ -76,7 +76,10 @@ func Test_client_server()
   endif
   let g:testvar = 'myself'
   call assert_equal('myself', remote_expr(v:servername, 'testvar'))
-  call assert_fails('let v=remote_expr(v:servername, "/2")', 'E449:')
+  call remote_send(v:servername, ":let g:testvar2 = 75\<CR>")
+  call feedkeys('', 'x')
+  call assert_equal(75, g:testvar2)
+  call assert_fails('let v = remote_expr(v:servername, "/2")', 'E449:')
 
   call remote_send(name, ":call server2client(expand('<client>'), 'got it')\<CR>", 'g:myserverid')
   call assert_equal('got it', g:myserverid->remote_read(2))
@@ -123,6 +126,14 @@ func Test_client_server()
     call system(cmd .. ' --remote-tab Xfile1 Xfile2 Xfile3')
     call assert_equal('3', remote_expr(name, 'tabpagenr("$")'))
     call assert_equal('Xfile2', remote_expr(name, 'bufname(tabpagebuflist(2)[0])'))
+
+    " Error cases
+    if v:lang == "C" || v:lang =~ '^[Ee]n'
+      let l = systemlist(cmd .. ' --remote +pwd')
+      call assert_equal("Argument missing after: \"+pwd\"", l[1])
+    endif
+    let l = system(cmd .. ' --remote-expr "abcd"')
+    call assert_match('^E449: ', l)
   endif
 
   eval name->remote_send(":%bw!\<CR>")
