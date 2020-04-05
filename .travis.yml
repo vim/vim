@@ -62,6 +62,7 @@ _anchors:
           sudo update-alternatives --install /usr/bin/lua lua /usr/bin/lua5.3 10
         fi
     before_script:
+      - sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
       - sudo bash ci/load-snd-dummy.sh || true
       - sudo usermod -a -G audio $USER
       - do_test() { sg audio "sg $(id -gn) '$*'"; }
