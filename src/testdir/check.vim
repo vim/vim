@@ -154,18 +154,20 @@ func CheckIPv6()
 endfunc
 
 func s:CheckIPv6Loopback()
-  if filereadable('/proc/net/if_inet6')
+  if has('win32')
+    return system('netsh interface ipv6 show interface') =~? '\<Loopback\>'
+  elseif filereadable('/proc/net/if_inet6')
     return (match(readfile('/proc/net/if_inet6'), '\slo$') >= 0)
   elseif executable('ifconfig')
     for arg in ['lo0', 'lo', 'loop']
       if system('ifconfig ' .. arg .. ' 2>/dev/null') =~? '\<inet6\>'
-        return 1
+        return v:true
       endif
     endfor
   else
     " TODO: How to check it in other platforms?
   endif
-  return 0
+  return v:false
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
