@@ -5493,7 +5493,14 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 	    // Use 'term' or $TERM if it starts with "xterm", otherwise fall
 	    // back to "xterm".
 	    if (term == NULL || *term == NUL || STRNCMP(term, "xterm", 5) != 0)
-		term = "xterm";
+	    {
+		if (t_colors > 16)
+		    term = "xterm-color";
+		if (t_colors >= 256)
+		    term = "xterm-256color";
+		else
+		    term = "xterm";
+	    }
 	    set_child_environment(
 		    (long)options->jo_term_rows,
 		    (long)options->jo_term_cols,
