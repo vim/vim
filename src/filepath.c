@@ -1477,7 +1477,9 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 	if (read_blob(fd, rettv->vval.v_blob) == FAIL)
 	{
 	    emsg("cannot read file");
+	    // Free what was read and return an empty blob in case of error.
 	    blob_free(rettv->vval.v_blob);
+	    rettv_blob_alloc(rettv);
 	}
 	fclose(fd);
 	return;
