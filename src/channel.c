@@ -711,86 +711,36 @@ channel_gui_unregister(channel_T *channel)
 static char *e_cannot_connect = N_("E902: Cannot connect to port");
 
 /*
- * Open a socket channel to "hostname":"port".
- * "waittime" is the time in msec to wait for the connection.
- * When negative wait forever.
- * Returns the channel for success.
- * Returns NULL for failure.
+ * For Unix we need to call connect() again after connect() failed.
+ * On Win32 one time is sufficient.
  */
-    channel_T *
-channel_open(
-	char *hostname,
-	int port_in,
-	int waittime,
-	void (*nb_close_cb)(void))
+    static int
+channel_connect(
+	channel_T *channel,
+	const struct sockaddr *server_addr,
+	socklen_t server_addrlen,
+	int waittime)
 {
-    int			    sd = -1;
-    int			    addr_family = 0;
-    socklen_t		    server_addrlen = 0;
-    struct sockaddr_storage server_addr;
-    char		    port[6];
-    struct addrinfo	    hints;
-    struct addrinfo	    *res = NULL;
+    int		sd = -1;
 #ifdef MSWIN
-    u_long		    val = 1;
-#endif
-    channel_T		    *channel;
-    int			    ret;
-
-#ifdef MSWIN
-    channel_init_winsock();
+    u_long	val = 1;
 #endif
 
-    channel = add_channel();
-    if (channel == NULL)
-    {
-	ch_error(NULL, "Cannot allocate channel.");
-	return NULL;
-    }
-
-    // Get the server internet address and put into addr structure
-    // fill in the socket address structure and connect to server
-    vim_memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-    vim_snprintf(port, sizeof(port), "%d", port_in);
-    if (getaddrinfo(hostname, port, &hints, &res) != 0)
-    {
-	ch_error(channel, "in getaddrinfo() in channel_open()");
-	PERROR(_("E901: getaddrinfo() in channel_open()"));
-	channel_free(channel);
-	return NULL;
-    }
-    addr_family = res->ai_family;
-    server_addrlen = res->ai_addrlen;
-    vim_memset(&server_addr, 0, sizeof(server_addr));
-    memcpy(&server_addr, res->ai_addr, server_addrlen);
-    freeaddrinfo(res);
-
-    // On Mac and Solaris a zero timeout almost never works.  At least wait
-    // one millisecond. Let's do it for all systems, because we don't know why
-    // this is needed.
-    if (waittime == 0)
-	waittime = 1;
-
-    /*
-     * For Unix we need to call connect() again after connect() failed.
-     * On Win32 one time is sufficient.
-     */
     while (TRUE)
     {
 	long	elapsed_msec = 0;
 	int	waitnow;
+	int	ret;
 
 	if (sd >= 0)
 	    sock_close(sd);
-	sd = socket(addr_family, SOCK_STREAM, 0);
+	sd = socket(server_addr->sa_family, SOCK_STREAM, 0);
 	if (sd == -1)
 	{
-	    ch_error(channel, "in socket() in channel_open().");
-	    PERROR(_("E898: socket() in channel_open()"));
+	    ch_error(channel, "in socket() in channel_connect().");
+	    PERROR(_("E898: socket() in channel_connect()"));
 	    channel_free(channel);
-	    return NULL;
+	    return -1;
 	}
 
 	if (waittime >= 0)
@@ -806,17 +756,16 @@ channel_open(
 	    {
 		SOCK_ERRNO;
 		ch_error(channel,
-			 "channel_open: Connect failed with errno %d", errno);
+		      "channel_connect: Connect failed with errno %d", errno);
 		sock_close(sd);
-		channel_free(channel);
-		return NULL;
+		return -1;
 	    }
 	}
 
 	// Try connecting to the server.
-	ch_log(channel, "Connecting to %s port %d", hostname, port_in);
-	ret = connect(sd, (struct sockaddr *)&server_addr, server_addrlen);
+	ch_log(channel, "Connecting...");
 
+	ret = connect(sd, server_addr, server_addrlen);
 	if (ret == 0)
 	    // The connection could be established.
 	    break;
@@ -830,11 +779,16 @@ channel_open(
 		))
 	{
 	    ch_error(channel,
-			 "channel_open: Connect failed with errno %d", errno);
+		      "channel_connect: Connect failed with errno %d", errno);
 	    PERROR(_(e_cannot_connect));
 	    sock_close(sd);
-	    channel_free(channel);
-	    return NULL;
+	    return -1;
+	}
+	else if (errno == ECONNREFUSED)
+	{
+	    ch_error(channel, "channel_connect: Connection refused");
+	    sock_close(sd);
+	    return -1;
 	}
 
 	// Limit the waittime to 50 msec.  If it doesn't work within this
@@ -843,9 +797,6 @@ channel_open(
 
 	// If connect() didn't finish then try using select() to wait for the
 	// connection to be made. For Win32 always use select() to wait.
-#ifndef MSWIN
-	if (errno != ECONNREFUSED)
-#endif
 	{
 	    struct timeval	tv;
 	    fd_set		rfds;
@@ -867,18 +818,17 @@ channel_open(
 	    gettimeofday(&start_tv, NULL);
 #endif
 	    ch_log(channel,
-		    "Waiting for connection (waiting %d msec)...", waitnow);
-	    ret = select((int)sd + 1, &rfds, &wfds, NULL, &tv);
+		      "Waiting for connection (waiting %d msec)...", waitnow);
 
+	    ret = select((int)sd + 1, &rfds, &wfds, NULL, &tv);
 	    if (ret < 0)
 	    {
 		SOCK_ERRNO;
 		ch_error(channel,
-			"channel_open: Connect failed with errno %d", errno);
+		      "channel_connect: Connect failed with errno %d", errno);
 		PERROR(_(e_cannot_connect));
 		sock_close(sd);
-		channel_free(channel);
-		return NULL;
+		return -1;
 	    }
 
 #ifdef MSWIN
@@ -913,12 +863,17 @@ channel_open(
 			))
 		{
 		    ch_error(channel,
-			    "channel_open: Connect failed with errno %d",
+			    "channel_connect: Connect failed with errno %d",
 			    so_error);
 		    PERROR(_(e_cannot_connect));
 		    sock_close(sd);
-		    channel_free(channel);
-		    return NULL;
+		    return -1;
+		}
+		else if (errno == ECONNREFUSED)
+		{
+		    ch_error(channel, "channel_connect: Connection refused");
+		    sock_close(sd);
+		    return -1;
 		}
 	    }
 
@@ -928,7 +883,7 @@ channel_open(
 
 	    gettimeofday(&end_tv, NULL);
 	    elapsed_msec = (end_tv.tv_sec - start_tv.tv_sec) * 1000
-			     + (end_tv.tv_usec - start_tv.tv_usec) / 1000;
+				 + (end_tv.tv_usec - start_tv.tv_usec) / 1000;
 #endif
 	}
 
@@ -961,11 +916,8 @@ channel_open(
 	// We timed out.
 	ch_error(channel, "Connection timed out");
 	sock_close(sd);
-	channel_free(channel);
-	return NULL;
+	return -1;
     }
-
-    ch_log(channel, "Connection made");
 
     if (waittime >= 0)
     {
@@ -976,6 +928,96 @@ channel_open(
 	(void)fcntl(sd, F_SETFL, 0);
 #endif
     }
+
+    return sd;
+}
+
+/*
+ * Open a socket channel to "hostname":"port".
+ * "waittime" is the time in msec to wait for the connection.
+ * When negative wait forever.
+ * Returns the channel for success.
+ * Returns NULL for failure.
+ */
+    channel_T *
+channel_open(
+	const char *hostname,
+	int port_in,
+	int waittime,
+	void (*nb_close_cb)(void))
+{
+    int			sd = -1;
+    char		port[6];
+    struct addrinfo	hints;
+    struct addrinfo	*res = NULL;
+    struct addrinfo	*addr = NULL;
+    channel_T		*channel;
+
+#ifdef MSWIN
+    channel_init_winsock();
+#endif
+
+    channel = add_channel();
+    if (channel == NULL)
+    {
+	ch_error(NULL, "Cannot allocate channel.");
+	return NULL;
+    }
+
+    // Get the server internet address and put into addr structure
+    // fill in the socket address structure and connect to server
+    vim_memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    vim_snprintf(port, sizeof(port), "%d", port_in);
+    if (getaddrinfo(hostname, port, &hints, &res) != 0)
+    {
+	ch_error(channel, "in getaddrinfo() in channel_open()");
+	PERROR(_("E901: getaddrinfo() in channel_open()"));
+	channel_free(channel);
+	return NULL;
+    }
+
+    // On Mac and Solaris a zero timeout almost never works.  At least wait
+    // one millisecond. Let's do it for all systems, because we don't know why
+    // this is needed.
+    if (waittime == 0)
+	waittime = 1;
+
+    for (addr = res; addr != NULL; addr = addr->ai_next)
+    {
+	const void *src = NULL;
+	const char *dst = hostname;
+	char buf[NUMBUFLEN];
+
+	if (addr->ai_family == AF_INET6)
+	    src = &((const struct sockaddr_in6 *)addr->ai_addr)->sin6_addr;
+	else if (addr->ai_family == AF_INET)
+	    src = &((const struct sockaddr_in *)addr->ai_addr)->sin_addr;
+	if (src != NULL)
+	{
+	    dst = inet_ntop(addr->ai_family, src, buf, sizeof(buf));
+	    if (dst != NULL)
+		ch_log(channel, "Resolved %s to %s", hostname, dst);
+	}
+
+	ch_log(channel, "Trying to connect to %s port %d", dst, port_in);
+
+	sd = channel_connect(channel, addr->ai_addr, addr->ai_addrlen,
+								    waittime);
+	if (sd >= 0)
+	    break;
+    }
+
+    freeaddrinfo(res);
+
+    if (sd < 0)
+    {
+	channel_free(channel);
+	return NULL;
+    }
+
+    ch_log(channel, "Connection made");
 
     channel->CH_SOCK_FD = (sock_T)sd;
     channel->ch_nb_close_cb = nb_close_cb;
