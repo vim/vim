@@ -258,8 +258,8 @@ func Test_blob_read_write()
   call assert_equal(b, br)
   call delete('Xblob')
 
-  " This was crashing at least in Vim-8.2.519 and older.
-  call assert_fails("call readfile('./', 'B')", 'cannot read file')
+  " This was crashing when calling readfile() with a directory.
+  call assert_fails("call readfile('.', 'B')", 'cannot read a directory')
 endfunc
 
 " filter() item in blob

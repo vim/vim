@@ -1466,6 +1466,12 @@ f_readfile(typval_T *argvars, typval_T *rettv)
     // Always open the file in binary mode, library functions have a mind of
     // their own about CR-LF conversion.
     fname = tv_get_string(&argvars[0]);
+
+    if (mch_isdir(fname))
+    {
+	emsg("cannot read a directory");
+	return;
+    }
     if (*fname == NUL || (fd = mch_fopen((char *)fname, READBIN)) == NULL)
     {
 	semsg(_(e_notopen), *fname == NUL ? (char_u *)_("<empty>") : fname);
@@ -1477,7 +1483,7 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 	if (read_blob(fd, rettv->vval.v_blob) == FAIL)
 	{
 	    emsg("cannot read file");
-	    // Free what was read and return an empty blob in case of error.
+	    // An empty blob is returned on error.
 	    blob_free(rettv->vval.v_blob);
 	    rettv_blob_alloc(rettv);
 	}
