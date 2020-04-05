@@ -353,7 +353,8 @@ get_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
 }
 
 /*
- * For a function type, reserve space for "argcount" argument types.
+ * For a function type, reserve space for "argcount" argument types (including
+ * vararg).
  */
     static int
 func_type_add_arg_types(
@@ -5823,16 +5824,19 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
     }
 
     {
-	int argcount = ufunc->uf_args.ga_len
-					 + (ufunc->uf_va_name == NULL ? 0 : 1);
+	int varargs = ufunc->uf_va_name != NULL;
+	int argcount = ufunc->uf_args.ga_len - (varargs ? 1 : 0);
 
 	// Create a type for the function, with the return type and any
 	// argument types.
-	ufunc->uf_func_type = get_func_type(ufunc->uf_ret_type, argcount,
-							 &ufunc->uf_type_list);
-	if (argcount > 0)
+	// A vararg is included in uf_args.ga_len but not in uf_arg_types.
+	// The type is included in "tt_args".
+	ufunc->uf_func_type = get_func_type(ufunc->uf_ret_type,
+				  ufunc->uf_args.ga_len, &ufunc->uf_type_list);
+	if (ufunc->uf_args.ga_len > 0)
 	{
-	    if (func_type_add_arg_types(ufunc->uf_func_type, argcount,
+	    if (func_type_add_arg_types(ufunc->uf_func_type,
+			ufunc->uf_args.ga_len,
 			argcount - ufunc->uf_def_args.ga_len,
 						 &ufunc->uf_type_list) == FAIL)
 	    {
@@ -5850,6 +5854,9 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    else
 		mch_memmove(ufunc->uf_func_type->tt_args,
 			     ufunc->uf_arg_types, sizeof(type_T *) * argcount);
+	    if (varargs)
+		ufunc->uf_func_type->tt_args[argcount] =
+			ufunc->uf_va_type == NULL ? &t_any : ufunc->uf_va_type;
 	}
     }
 
