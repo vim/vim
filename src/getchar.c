@@ -99,7 +99,7 @@ static int	inchar(char_u *buf, int maxlen, long wait_time);
 /*
  * Free and clear a buffer.
  */
-    void
+    static void
 free_buff(buffheader_T *buf)
 {
     buffblock_T	*p, *np;

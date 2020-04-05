@@ -2435,7 +2435,7 @@ find_var_in_ht(
 /*
  * Get the script-local hashtab.  NULL if not in a script context.
  */
-    hashtab_T *
+    static hashtab_T *
 get_script_local_ht(void)
 {
     scid_T sid = current_sctx.sc_sid;
