@@ -517,14 +517,6 @@ EXTERN bufref_T	au_new_curbuf INIT3(NULL, 0, 0);
 EXTERN buf_T	*au_pending_free_buf INIT(= NULL);
 EXTERN win_T	*au_pending_free_win INIT(= NULL);
 
-// Macro to loop over all the patterns for an autocmd event
-#define FOR_ALL_AUTOCMD_PATTERNS(event, ap) \
-    for ((ap) = first_autopat[(int)(event)]; (ap) != NULL; (ap) = (ap)->next)
-
-// Macro to iterate through all the commands registered for an autocmd pattern
-#define FOR_ALL_AUTOPAT_CMDS(ap, ac) \
-    for ((ac) = (ap)->cmds; (ac) != NULL; (ac) = (ac)->next)
-
 /*
  * Mouse coordinates, set by check_termcode()
  */
