@@ -19,23 +19,15 @@ endif
 " call ch_logfile('channellog', 'w')
 
 func SetUp(test)
-  if a:test =~ '_ipv6\>' 
-    if !exists('s:ipv6_localhost')
-      " Check if can resolve 'localhost' to IPv6 address.
-      if filereadable('/etc/hosts') &&
-            \ (match(readfile('/etc/hosts'), '^::1\s\(.*\s\)\?localhost\_s') >= 0)
-        let s:ipv6_localhost = 'localhost:'
-      else
-        let s:ipv6_localhost = '[::1]:'
-      endif
-    endif
-    let s:localhost = s:ipv6_localhost
+  if a:test =~ '_ipv6()$' 
+    let s:localhost = '[::1]:'
     let s:testscript = 'test_channel_6.py'
   else
     let s:localhost = 'localhost:'
     let s:testscript = 'test_channel.py'
   endif
   let s:chopt = {}
+  call ch_log(a:test)
 endfunc
 
 " Run "testfunc" after starting the server and stop the server afterwards.
@@ -240,14 +232,12 @@ func Ch_communicate(port)
 endfunc
 
 func Test_communicate()
-  call ch_log('Test_communicate()')
   call s:run_server('Ch_communicate')
 endfunc
 
 func Test_communicate_ipv6()
   CheckIPv6
-  call ch_log('Test_communicate_ipv6()')
-  call s:run_server('Ch_communicate')
+  call Test_communicate()
 endfunc
 
 " Test that we can open two channels.
@@ -283,8 +273,7 @@ endfunc
 
 func Test_two_channels_ipv6()
   CheckIPv6
-  eval 'Test_two_channels_ipv6()'->ch_log()
-  call s:run_server('Ch_two_channels')
+  call Test_two_channels()
 endfunc
 
 " Test that a server crash is handled gracefully.
@@ -301,14 +290,12 @@ func Ch_server_crash(port)
 endfunc
 
 func Test_server_crash()
-  call ch_log('Test_server_crash()')
   call s:run_server('Ch_server_crash')
 endfunc
 
 func Test_server_crash_ipv6()
   CheckIPv6
-  call ch_log('Test_server_crash_ipv6()')
-  call s:run_server('Ch_server_crash')
+  call Test_server_crash()
 endfunc
 
 """""""""
@@ -336,7 +323,6 @@ func Ch_channel_handler(port)
 endfunc
 
 func Test_channel_handler()
-  call ch_log('Test_channel_handler()')
   let g:Ch_reply = ""
   let s:chopt.callback = 'Ch_handler'
   call s:run_server('Ch_channel_handler')
@@ -347,13 +333,7 @@ endfunc
 
 func Test_channel_handler_ipv6()
   CheckIPv6
-  call ch_log('Test_channel_handler_ipv6()')
-  let g:Ch_reply = ""
-  let s:chopt.callback = 'Ch_handler'
-  call s:run_server('Ch_channel_handler')
-  let g:Ch_reply = ""
-  let s:chopt.callback = function('Ch_handler')
-  call s:run_server('Ch_channel_handler')
+  call Test_channel_handler()
 endfunc
 
 """""""""
@@ -403,7 +383,6 @@ func Ch_channel_zero(port)
 endfunc
 
 func Test_zero_reply()
-  call ch_log('Test_zero_reply()')
   " Run with channel handler
   let s:has_handler = 1
   let s:chopt.callback = 'Ch_zeroHandler'
@@ -417,15 +396,7 @@ endfunc
 
 func Test_zero_reply_ipv6()
   CheckIPv6
-  call ch_log('Test_zero_reply_ipv6()')
-  " Run with channel handler
-  let s:has_handler = 1
-  let s:chopt.callback = 'Ch_zeroHandler'
-  call s:run_server('Ch_channel_zero')
-
-  " Run without channel handler
-  let s:has_handler = 0
-  call s:run_server('Ch_channel_zero')
+  call Test_zero_reply()
 endfunc
 
 """""""""
@@ -467,14 +438,12 @@ func Ch_raw_one_time_callback(port)
 endfunc
 
 func Test_raw_one_time_callback()
-  call ch_log('Test_raw_one_time_callback()')
   call s:run_server('Ch_raw_one_time_callback')
 endfunc
 
 func Test_raw_one_time_callback_ipv6()
   CheckIPv6
-  call ch_log('Test_raw_one_time_callback_ipv6()')
-  call s:run_server('Ch_raw_one_time_callback')
+  call Test_raw_one_time_callback()
 endfunc
 
 """""""""
@@ -485,7 +454,6 @@ func Test_connect_waittime()
   " this is timing sensitive
   let g:test_is_flaky = 1
 
-  call ch_log('Test_connect_waittime()')
   let start = reltime()
   let handle = ch_open('localhost:9876', s:chopt)
   if ch_status(handle) != "fail"
@@ -815,7 +783,6 @@ func Test_close_output_buffer()
   enew!
   let test_lines = ['one', 'two']
   call setline(1, test_lines)
-  call ch_log('Test_close_output_buffer()')
   let options = {'out_io': 'buffer'}
   let options['out_name'] = 'buffer-output'
   let options['out_msg'] = 0
@@ -987,17 +954,14 @@ func Run_pipe_through_sort(all, use_buffer)
 endfunc
 
 func Test_pipe_through_sort_all()
-  call ch_log('Test_pipe_through_sort_all()')
   call Run_pipe_through_sort(1, 1)
 endfunc
 
 func Test_pipe_through_sort_some()
-  call ch_log('Test_pipe_through_sort_some()')
   call Run_pipe_through_sort(0, 1)
 endfunc
 
 func Test_pipe_through_sort_feed()
-  call ch_log('Test_pipe_through_sort_feed()')
   call Run_pipe_through_sort(1, 0)
 endfunc
 
@@ -1410,14 +1374,12 @@ func Ch_unlet_handle(port)
 endfunc
 
 func Test_unlet_handle()
-  call ch_log('Test_unlet_handle()')
   call s:run_server('Ch_unlet_handle')
 endfunc
 
 func Test_unlet_handle_ipv6()
   CheckIPv6
-  call ch_log('Test_unlet_handle_ipv6()')
-  call s:run_server('Ch_unlet_handle')
+  call Test_unlet_handle()
 endfunc
 
 """"""""""
@@ -1441,7 +1403,7 @@ endfunc
 
 func Test_close_handle_ipv6()
   CheckIPv6
-  call s:run_server('Ch_close_handle')
+  call Test_close_handle()
 endfunc
 
 """"""""""
@@ -1501,6 +1463,11 @@ func Test_open_delay()
   call s:run_server('Ch_open_delay', 'delay')
 endfunc
 
+func Test_open_delay_ipv6()
+  CheckIPv6
+  call Test_open_delay()
+endfunc
+
 """""""""
 
 function MyFunction(a,b,c)
@@ -1525,6 +1492,11 @@ endfunc
 
 func Test_call()
   call s:run_server('Ch_test_call')
+endfunc
+
+func Test_call_ipv6()
+  CheckIPv6
+  call Test_call()
 endfunc
 
 """""""""
@@ -1617,6 +1589,11 @@ func Test_close_callback()
   call s:run_server('Ch_test_close_callback')
 endfunc
 
+func Test_close_callback_ipv6()
+  CheckIPv6
+  call Test_close_callback()
+endfunc
+
 function Ch_test_close_partial(port)
   let handle = ch_open(s:localhost . a:port, s:chopt)
   if ch_status(handle) == "fail"
@@ -1636,6 +1613,11 @@ endfunc
 
 func Test_close_partial()
   call s:run_server('Ch_test_close_partial')
+endfunc
+
+func Test_close_partial_ipv6()
+  CheckIPv6
+  call Test_close_partial()
 endfunc
 
 func Test_job_start_fails()
@@ -1911,6 +1893,11 @@ endfunc
 
 func Test_close_lambda()
   call s:run_server('Ch_test_close_lambda')
+endfunc
+
+func Test_close_lambda_ipv6()
+  CheckIPv6
+  call Test_close_lambda()
 endfunc
 
 func s:test_list_args(cmd, out, remove_lf)

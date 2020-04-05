@@ -143,29 +143,29 @@ func CheckEnglish()
 endfunc
 
 " Command to check that loopback device has IPv6 address
-func s:CheckIPV6Loopback()
-  if exists('s:ipv6_loopback')
-    return s:ipv6_loopback
+command CheckIPv6 call CheckIPv6()
+func CheckIPv6()
+  if !exists('s:ipv6_loopback')
+    let s:ipv6_loopback = s:CheckIPv6Loopback()
   endif
-  let s:ipv6_loopback = 0
-  if filereadable('/proc/net/if_inet6')
-    let s:ipv6_loopback = (match(readfile('/proc/net/if_inet6'), '\slo$') >= 0)
-  elseif executable('ifconfig')
-    let res = system('ifconfig lo 2>/dev/null')
-    if res ==# ''
-      let res = system('ifconfig lo0 2>/dev/null')
-    endif
-    let s:ipv6_loopback = (res =~? '\<inet6\>')
-  else
-    " TODO: How to check it in other platforms?
+  if !s:ipv6_loopback
+    throw 'Skipped: no IPv6 address for loopback device'
   endif
 endfunc
 
-command CheckIPv6 call CheckIPv6()
-func CheckIPv6()
-  if !s:CheckIPV6Loopback()
-    throw 'Skipped: no IPv6 address for loopback device'
+func s:CheckIPv6Loopback()
+  if filereadable('/proc/net/if_inet6')
+    return (match(readfile('/proc/net/if_inet6'), '\slo$') >= 0)
+  elseif executable('ifconfig')
+    for arg in ['lo0', 'lo', 'loop']
+      if system('ifconfig ' .. arg .. ' 2>/dev/null') =~? '\<inet6\>'
+        return 1
+      endif
+    endfor
+  else
+    " TODO: How to check it in other platforms?
   endif
+  return 0
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
