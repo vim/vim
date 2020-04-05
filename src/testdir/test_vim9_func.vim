@@ -380,6 +380,10 @@ def FuncOneArgRetNumber(arg: number): number
   return arg
 enddef
 
+def FuncOneArgRetAny(arg: any): any
+  return arg
+enddef
+
 def Test_func_type()
   let Ref1: func()
   funcResult = 0
@@ -415,6 +419,21 @@ def Test_func_type_fails()
   CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncNoArgRetNumber'], 'E1013: type mismatch, expected func() but got func(): number')
   CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncOneArgNoRet'], 'E1013: type mismatch, expected func() but got func(number)')
   CheckDefFailure(['let Ref1: func()', 'Ref1 = FuncOneArgRetNumber'], 'E1013: type mismatch, expected func() but got func(number): number')
+enddef
+
+def Test_func_return_type()
+  let nr: number
+  nr = FuncNoArgRetNumber()
+  assert_equal(1234, nr)
+
+  nr = FuncOneArgRetAny(122)
+  assert_equal(122, nr)
+
+  let str: string
+  str = FuncOneArgRetAny('yes')
+  assert_equal('yes', str)
+
+  CheckDefFailure(['let str: string', 'str = FuncNoArgRetNumber()'], 'E1013: type mismatch, expected string but got number')
 enddef
 
 

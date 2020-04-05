@@ -2432,7 +2432,7 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 	if (ret == FAIL && give_msg)
 	    type_mismatch(expected, actual);
     }
-    return OK;
+    return ret;
 }
 
 /*
@@ -2444,7 +2444,7 @@ check_type(type_T *expected, type_T *actual, int give_msg)
     static int
 need_type(type_T *actual, type_T *expected, int offset, cctx_T *cctx)
 {
-    if (check_type(expected, actual, FALSE))
+    if (check_type(expected, actual, FALSE) == OK)
 	return OK;
     if (actual->tt_type != VAR_ANY && actual->tt_type != VAR_UNKNOWN)
     {
@@ -4069,7 +4069,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 			lvar->lv_type = stacktype;
 		}
 	    }
-	    else if (check_type(lvar->lv_type, stacktype, TRUE) == FAIL)
+	    else if (need_type(stacktype, lvar->lv_type, -1, cctx) == FAIL)
 		goto theend;
 	}
 	else if (*p != '=' && check_type(type, stacktype, TRUE) == FAIL)
