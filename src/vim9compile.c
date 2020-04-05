@@ -368,7 +368,8 @@ func_type_add_arg_types(
     functype->tt_args = ALLOC_CLEAR_MULT(type_T *, argcount);
     if (functype->tt_args == NULL)
 	return FAIL;
-    ((type_T **)type_gap->ga_data)[type_gap->ga_len] = (void *)functype->tt_args;
+    ((type_T **)type_gap->ga_data)[type_gap->ga_len] =
+						     (void *)functype->tt_args;
     ++type_gap->ga_len;
 
     functype->tt_argcount = argcount;
@@ -1846,7 +1847,7 @@ type_name(type_T *type, char **tofree)
 
 	    if (i > 0)
 	    {
-		STRCPY(ga.ga_data + ga.ga_len, ", ");
+		STRCPY((char *)ga.ga_data + ga.ga_len, ", ");
 		ga.ga_len += 2;
 	    }
 	    len = (int)STRLEN(arg_type);
@@ -1856,13 +1857,13 @@ type_name(type_T *type, char **tofree)
 		return "[unknown]";
 	    }
 	    *tofree = ga.ga_data;
-	    STRCPY(ga.ga_data + ga.ga_len, arg_type);
+	    STRCPY((char *)ga.ga_data + ga.ga_len, arg_type);
 	    ga.ga_len += len;
 	    vim_free(arg_free);
 	}
 
 	if (type->tt_member == &t_void)
-	    STRCPY(ga.ga_data + ga.ga_len, ")");
+	    STRCPY((char *)ga.ga_data + ga.ga_len, ")");
 	else
 	{
 	    char *ret_free;
@@ -1876,8 +1877,8 @@ type_name(type_T *type, char **tofree)
 		return "[unknown]";
 	    }
 	    *tofree = ga.ga_data;
-	    STRCPY(ga.ga_data + ga.ga_len, "): ");
-	    STRCPY(ga.ga_data + ga.ga_len + 3, ret_name);
+	    STRCPY((char *)ga.ga_data + ga.ga_len, "): ");
+	    STRCPY((char *)ga.ga_data + ga.ga_len + 3, ret_name);
 	    vim_free(ret_free);
 	}
 	return ga.ga_data;
