@@ -1668,6 +1668,7 @@ item_lock(typval_T *tv, int deep, int lock)
     switch (tv->v_type)
     {
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	case VAR_NUMBER:
 	case VAR_BOOL:

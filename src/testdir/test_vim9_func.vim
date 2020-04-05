@@ -386,6 +386,27 @@ def Test_func_type()
   Ref1 = FuncNoArgNoRet
   Ref1()
   assert_equal(11, funcResult)
+
+  let Ref2: func
+  funcResult = 0
+  Ref2 = FuncNoArgNoRet
+  Ref2()
+  assert_equal(11, funcResult)
+
+  funcResult = 0
+  Ref2 = FuncOneArgNoRet
+  Ref2(12)
+  assert_equal(12, funcResult)
+
+  funcResult = 0
+  Ref2 = FuncNoArgRetNumber
+  assert_equal(1234, Ref2())
+  assert_equal(22, funcResult)
+
+  funcResult = 0
+  Ref2 = FuncOneArgRetNumber
+  assert_equal(13, Ref2(13))
+  assert_equal(13, funcResult)
 enddef
 
 def Test_func_type_fails()

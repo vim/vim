@@ -249,9 +249,10 @@ get_list_type(type_T *member_type, garray_T *type_gap)
     type_T *type;
 
     // recognize commonly used types
-    if (member_type->tt_type == VAR_UNKNOWN)
+    if (member_type->tt_type == VAR_ANY)
 	return &t_list_any;
-    if (member_type->tt_type == VAR_VOID)
+    if (member_type->tt_type == VAR_VOID
+	    || member_type->tt_type == VAR_UNKNOWN)
 	return &t_list_empty;
     if (member_type->tt_type == VAR_BOOL)
 	return &t_list_bool;
@@ -277,9 +278,10 @@ get_dict_type(type_T *member_type, garray_T *type_gap)
     type_T *type;
 
     // recognize commonly used types
-    if (member_type->tt_type == VAR_UNKNOWN)
+    if (member_type->tt_type == VAR_ANY)
 	return &t_dict_any;
-    if (member_type->tt_type == VAR_VOID)
+    if (member_type->tt_type == VAR_VOID
+	    || member_type->tt_type == VAR_UNKNOWN)
 	return &t_dict_empty;
     if (member_type->tt_type == VAR_BOOL)
 	return &t_dict_bool;
@@ -482,9 +484,9 @@ may_generate_2STRING(int offset, cctx_T *cctx)
     static int
 check_number_or_float(vartype_T type1, vartype_T type2, char_u *op)
 {
-    if (!((type1 == VAR_NUMBER || type1 == VAR_FLOAT || type1 == VAR_UNKNOWN)
+    if (!((type1 == VAR_NUMBER || type1 == VAR_FLOAT || type1 == VAR_ANY)
 	    && (type2 == VAR_NUMBER || type2 == VAR_FLOAT
-						     || type2 == VAR_UNKNOWN)))
+							 || type2 == VAR_ANY)))
     {
 	if (*op == '+')
 	    emsg(_("E1035: wrong argument type for +"));
@@ -515,7 +517,7 @@ generate_two_op(cctx_T *cctx, char_u *op)
     // checking.
     type1 = ((type_T **)stack->ga_data)[stack->ga_len - 2];
     type2 = ((type_T **)stack->ga_data)[stack->ga_len - 1];
-    vartype = VAR_UNKNOWN;
+    vartype = VAR_ANY;
     if (type1->tt_type == type2->tt_type
 	    && (type1->tt_type == VAR_NUMBER
 		|| type1->tt_type == VAR_LIST
@@ -528,8 +530,8 @@ generate_two_op(cctx_T *cctx, char_u *op)
     switch (*op)
     {
 	case '+': if (vartype != VAR_LIST && vartype != VAR_BLOB
-			  && type1->tt_type != VAR_UNKNOWN
-			  && type2->tt_type != VAR_UNKNOWN
+			  && type1->tt_type != VAR_ANY
+			  && type2->tt_type != VAR_ANY
 			  && check_number_or_float(
 				   type1->tt_type, type2->tt_type, op) == FAIL)
 		      return FAIL;
@@ -563,9 +565,9 @@ generate_two_op(cctx_T *cctx, char_u *op)
 				 ? EXPR_MULT : *op == '/'? EXPR_DIV : EXPR_SUB;
 		  break;
 
-	case '%': if ((type1->tt_type != VAR_UNKNOWN
+	case '%': if ((type1->tt_type != VAR_ANY
 					       && type1->tt_type != VAR_NUMBER)
-			  || (type2->tt_type != VAR_UNKNOWN
+			  || (type2->tt_type != VAR_ANY
 					      && type2->tt_type != VAR_NUMBER))
 		  {
 		      emsg(_("E1035: % requires number arguments"));
@@ -579,7 +581,7 @@ generate_two_op(cctx_T *cctx, char_u *op)
     }
 
     // correct type of result
-    if (vartype == VAR_UNKNOWN)
+    if (vartype == VAR_ANY)
     {
 	type_T *type = &t_any;
 
@@ -614,6 +616,11 @@ generate_COMPARE(cctx_T *cctx, exptype_T exptype, int ic)
     // checking.
     type1 = ((type_T **)stack->ga_data)[stack->ga_len - 2]->tt_type;
     type2 = ((type_T **)stack->ga_data)[stack->ga_len - 1]->tt_type;
+    if (type1 == VAR_UNKNOWN)
+	type1 = VAR_ANY;
+    if (type2 == VAR_UNKNOWN)
+	type2 = VAR_ANY;
+
     if (type1 == type2)
     {
 	switch (type1)
@@ -631,7 +638,7 @@ generate_COMPARE(cctx_T *cctx, exptype_T exptype, int ic)
 	    default: isntype = ISN_COMPAREANY; break;
 	}
     }
-    else if (type1 == VAR_UNKNOWN || type2 == VAR_UNKNOWN
+    else if (type1 == VAR_ANY || type2 == VAR_ANY
 	    || ((type1 == VAR_NUMBER || type1 == VAR_FLOAT)
 	      && (type2 == VAR_NUMBER || type2 ==VAR_FLOAT)))
 	isntype = ISN_COMPAREANY;
@@ -1723,8 +1730,9 @@ equal_type(type_T *type1, type_T *type2)
 	return FALSE;
     switch (type1->tt_type)
     {
-	case VAR_VOID:
 	case VAR_UNKNOWN:
+	case VAR_ANY:
+	case VAR_VOID:
 	case VAR_SPECIAL:
 	case VAR_BOOL:
 	case VAR_NUMBER:
@@ -1785,6 +1793,7 @@ vartype_name(vartype_T type)
     switch (type)
     {
 	case VAR_UNKNOWN: break;
+	case VAR_ANY: return "any";
 	case VAR_VOID: return "void";
 	case VAR_SPECIAL: return "special";
 	case VAR_BOOL: return "bool";
@@ -1799,7 +1808,7 @@ vartype_name(vartype_T type)
 	case VAR_FUNC: return "func";
 	case VAR_PARTIAL: return "partial";
     }
-    return "any";
+    return "unknown";
 }
 
 /*
@@ -2396,7 +2405,7 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 {
     int ret = OK;
 
-    if (expected->tt_type != VAR_UNKNOWN)
+    if (expected->tt_type != VAR_UNKNOWN && expected->tt_type != VAR_ANY)
     {
 	if (expected->tt_type != actual->tt_type)
 	{
@@ -2406,13 +2415,14 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 	}
 	if (expected->tt_type == VAR_DICT || expected->tt_type == VAR_LIST)
 	{
-	    // void is used for an empty list or dict
-	    if (actual->tt_member != &t_void)
+	    // "unknown" is used for an empty list or dict
+	    if (actual->tt_member != &t_unknown)
 		ret = check_type(expected->tt_member, actual->tt_member, FALSE);
 	}
 	else if (expected->tt_type == VAR_FUNC)
 	{
-	    if (expected->tt_member != &t_any)
+	    if (expected->tt_member != &t_any
+					  && expected->tt_member != &t_unknown)
 		ret = check_type(expected->tt_member, actual->tt_member, FALSE);
 	    if (ret == OK && expected->tt_argcount != -1
 		    && (actual->tt_argcount < expected->tt_min_argcount
@@ -2436,7 +2446,7 @@ need_type(type_T *actual, type_T *expected, int offset, cctx_T *cctx)
 {
     if (check_type(expected, actual, FALSE))
 	return OK;
-    if (actual->tt_type != VAR_UNKNOWN)
+    if (actual->tt_type != VAR_ANY && actual->tt_type != VAR_UNKNOWN)
     {
 	type_mismatch(expected, actual);
 	return FAIL;
@@ -3642,7 +3652,8 @@ compile_return(char_u *arg, int set_return_type, cctx_T *cctx)
     {
 	// "set_return_type" cannot be TRUE, only used for a lambda which
 	// always has an argument.
-	if (cctx->ctx_ufunc->uf_ret_type->tt_type != VAR_VOID)
+	if (cctx->ctx_ufunc->uf_ret_type->tt_type != VAR_VOID
+		&& cctx->ctx_ufunc->uf_ret_type->tt_type != VAR_UNKNOWN)
 	{
 	    emsg(_("E1003: Missing return value"));
 	    return NULL;
@@ -3936,7 +3947,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
     }
 
     if (oplen == 3 && !heredoc && dest != dest_global
-	    && type->tt_type != VAR_STRING && type->tt_type != VAR_UNKNOWN)
+		    && type->tt_type != VAR_STRING && type->tt_type != VAR_ANY)
     {
 	emsg(_("E1019: Can only concatenate to string"));
 	goto theend;
@@ -4115,6 +4126,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		break;
 	    case VAR_NUMBER:
 	    case VAR_UNKNOWN:
+	    case VAR_ANY:
 	    case VAR_VOID:
 	    case VAR_SPECIAL:  // cannot happen
 		generate_PUSHNR(cctx, 0);
@@ -4903,7 +4915,7 @@ compile_for(char_u *arg, cctx_T *cctx)
 	drop_scope(cctx);
 	return NULL;
     }
-    if (vartype->tt_member->tt_type != VAR_UNKNOWN)
+    if (vartype->tt_member->tt_type != VAR_ANY)
     {
 	lvar_T *lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + var_idx;
 

@@ -1321,8 +1321,9 @@ typedef struct cctx_S cctx_T;
 
 typedef enum
 {
-    VAR_UNKNOWN = 0,	// not set, also used for "any" type
-    VAR_VOID,		// no value
+    VAR_UNKNOWN = 0,	// not set, any type or "void" allowed
+    VAR_ANY,		// used for "any" type
+    VAR_VOID,		// no value (function not returning anything)
     VAR_BOOL,		// "v_number" is used: VVAL_TRUE or VVAL_FALSE
     VAR_SPECIAL,	// "v_number" is used: VVAL_NULL or VVAL_NONE
     VAR_NUMBER,		// "v_number" is used

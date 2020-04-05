@@ -6390,6 +6390,7 @@ ConvertToPyObject(typval_T *tv)
 		(char*) tv->vval.v_blob->bv_ga.ga_data,
 		(Py_ssize_t) tv->vval.v_blob->bv_ga.ga_len);
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	case VAR_CHANNEL:
 	case VAR_JOB:

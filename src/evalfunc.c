@@ -2042,6 +2042,7 @@ f_empty(typval_T *argvars, typval_T *rettv)
 	    break;
 #endif
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	    internal_error_no_abort("f_empty(UNKNOWN)");
 	    n = TRUE;
@@ -5217,6 +5218,7 @@ f_len(typval_T *argvars, typval_T *rettv)
 	    rettv->vval.v_number = dict_len(argvars[0].vval.v_dict);
 	    break;
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	case VAR_BOOL:
 	case VAR_SPECIAL:
@@ -8805,6 +8807,7 @@ f_type(typval_T *argvars, typval_T *rettv)
 	case VAR_CHANNEL: n = VAR_TYPE_CHANNEL; break;
 	case VAR_BLOB:    n = VAR_TYPE_BLOB; break;
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	     internal_error_no_abort("f_type(UNKNOWN)");
 	     n = -1;

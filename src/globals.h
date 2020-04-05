@@ -379,7 +379,8 @@ EXTERN sctx_T	current_sctx INIT4(0, 0, 0, 0);
 
 
 // Commonly used types.
-EXTERN type_T t_any INIT6(VAR_UNKNOWN, 0, 0, 0, NULL, NULL);
+EXTERN type_T t_unknown INIT6(VAR_UNKNOWN, 0, 0, 0, NULL, NULL);
+EXTERN type_T t_any INIT6(VAR_ANY, 0, 0, 0, NULL, NULL);
 EXTERN type_T t_void INIT6(VAR_VOID, 0, 0, 0, NULL, NULL);
 EXTERN type_T t_bool INIT6(VAR_BOOL, 0, 0, 0, NULL, NULL);
 EXTERN type_T t_special INIT6(VAR_SPECIAL, 0, 0, 0, NULL, NULL);
@@ -390,6 +391,7 @@ EXTERN type_T t_blob INIT6(VAR_BLOB, 0, 0, 0, NULL, NULL);
 EXTERN type_T t_job INIT6(VAR_JOB, 0, 0, 0, NULL, NULL);
 EXTERN type_T t_channel INIT6(VAR_CHANNEL, 0, 0, 0, NULL, NULL);
 
+EXTERN type_T t_func_unknown INIT6(VAR_FUNC, -1, 0, 0, &t_unknown, NULL);
 EXTERN type_T t_func_void INIT6(VAR_FUNC, -1, 0, 0, &t_void, NULL);
 EXTERN type_T t_func_any INIT6(VAR_FUNC, -1, 0, 0, &t_any, NULL);
 EXTERN type_T t_func_number INIT6(VAR_FUNC, -1, 0, 0, &t_number, NULL);
@@ -401,8 +403,8 @@ EXTERN type_T t_func_0_string INIT6(VAR_FUNC, 0, 0, 0, &t_string, NULL);
 
 EXTERN type_T t_list_any INIT6(VAR_LIST, 0, 0, 0, &t_any, NULL);
 EXTERN type_T t_dict_any INIT6(VAR_DICT, 0, 0, 0, &t_any, NULL);
-EXTERN type_T t_list_empty INIT6(VAR_LIST, 0, 0, 0, &t_void, NULL);
-EXTERN type_T t_dict_empty INIT6(VAR_DICT, 0, 0, 0, &t_void, NULL);
+EXTERN type_T t_list_empty INIT6(VAR_LIST, 0, 0, 0, &t_unknown, NULL);
+EXTERN type_T t_dict_empty INIT6(VAR_DICT, 0, 0, 0, &t_unknown, NULL);
 
 EXTERN type_T t_list_bool INIT6(VAR_LIST, 0, 0, 0, &t_bool, NULL);
 EXTERN type_T t_list_number INIT6(VAR_LIST, 0, 0, 0, &t_number, NULL);
