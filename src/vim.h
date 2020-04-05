@@ -1751,6 +1751,7 @@ void *vim_memset(void *, int, size_t);
 # define INIT3(a, b, c)
 # define INIT4(a, b, c, d)
 # define INIT5(a, b, c, d, e)
+# define INIT6(a, b, c, d, e, f)
 #else
 # ifndef INIT
 #  define INIT(x) x
@@ -1758,6 +1759,7 @@ void *vim_memset(void *, int, size_t);
 #  define INIT3(a, b, c) = {a, b, c}
 #  define INIT4(a, b, c, d) = {a, b, c, d}
 #  define INIT5(a, b, c, d, e) = {a, b, c, d, e}
+#  define INIT6(a, b, c, d, e, f) = {a, b, c, d, e, f}
 #  define DO_INIT
 # endif
 #endif

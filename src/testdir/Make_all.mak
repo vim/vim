@@ -274,6 +274,7 @@ NEW_TESTS = \
 	test_vartabs \
 	test_vim9_disassemble \
 	test_vim9_expr \
+	test_vim9_func \
 	test_vim9_script \
 	test_viminfo \
 	test_vimscript \
@@ -483,6 +484,7 @@ NEW_TESTS_RES = \
 	test_vartabs.res \
 	test_vim9_disassemble.res \
 	test_vim9_expr.res \
+	test_vim9_func.res \
 	test_vim9_script.res \
 	test_viminfo.res \
 	test_vimscript.res \

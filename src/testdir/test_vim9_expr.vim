@@ -460,8 +460,8 @@ func Test_expr4_fails()
 
   call CheckDefFailureMult(['let j: job', 'let chan: channel', 'let r = j == chan'], 'Cannot compare job with channel')
   call CheckDefFailureMult(['let j: job', 'let x: list<any>', 'let r = j == x'], 'Cannot compare job with list')
-  call CheckDefFailureMult(['let j: job', 'let x: func', 'let r = j == x'], 'Cannot compare job with func')
-  call CheckDefFailureMult(['let j: job', 'let x: func', 'let r = j == x'], 'Cannot compare job with func')
+  call CheckDefFailureMult(['let j: job', 'let Xx: func', 'let r = j == Xx'], 'Cannot compare job with func')
+  call CheckDefFailureMult(['let j: job', 'let Xx: func', 'let r = j == Xx'], 'Cannot compare job with func')
 endfunc
 
 " test addition, subtraction, concatenation

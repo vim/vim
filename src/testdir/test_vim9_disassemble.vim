@@ -87,8 +87,10 @@ enddef
 def Test_disassemble_store()
   let res = execute('disass s:ScriptFuncStore')
   assert_match('<SNR>\d*_ScriptFuncStore.*'
+        \ .. 'let localnr = 1.*'
         \ .. 'localnr = 2.*'
         \ .. ' STORE 2 in $0.*'
+        \ .. 'let localstr = ''abc''.*'
         \ .. 'localstr = ''xyz''.*'
         \ .. ' STORE $1.*'
         \ .. 'v:char = ''abc''.*'
@@ -360,22 +362,22 @@ def Test_disassemble_const_expr()
 enddef
 
 def WithFunc()
-  let funky1: func
-  let funky2: func = function("len")
-  let party2: func = funcref("UserFunc")
+  let Funky1: func
+  let Funky2: func = function("len")
+  let Party2: func = funcref("UserFunc")
 enddef
 
 def Test_disassemble_function()
   let instr = execute('disassemble WithFunc')
   assert_match('WithFunc.*'
-        \ .. 'let funky1: func.*'
+        \ .. 'let Funky1: func.*'
         \ .. '0 PUSHFUNC "\[none]".*'
         \ .. '1 STORE $0.*'
-        \ .. 'let funky2: func = function("len").*'
+        \ .. 'let Funky2: func = function("len").*'
         \ .. '2 PUSHS "len".*'
         \ .. '3 BCALL function(argc 1).*'
         \ .. '4 STORE $1.*'
-        \ .. 'let party2: func = funcref("UserFunc").*'
+        \ .. 'let Party2: func = funcref("UserFunc").*'
         \ .. '\d PUSHS "UserFunc".*'
         \ .. '\d BCALL funcref(argc 1).*'
         \ .. '\d STORE $2.*'

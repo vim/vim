@@ -951,6 +951,9 @@ func_clear_items(ufunc_T *fp)
     VIM_CLEAR(fp->uf_arg_types);
     VIM_CLEAR(fp->uf_def_arg_idx);
     VIM_CLEAR(fp->uf_va_name);
+    while (fp->uf_type_list.ga_len > 0)
+	vim_free(((type_T **)fp->uf_type_list.ga_data)
+						  [--fp->uf_type_list.ga_len]);
     ga_clear(&fp->uf_type_list);
 #ifdef FEAT_PROFILE
     VIM_CLEAR(fp->uf_tml_count);
@@ -3013,6 +3016,7 @@ ex_function(exarg_T *eap)
     fp->uf_args = newargs;
     fp->uf_def_args = default_args;
     fp->uf_ret_type = &t_any;
+    fp->uf_func_type = &t_func_any;
 
     if (eap->cmdidx == CMD_def)
     {
@@ -3022,7 +3026,7 @@ ex_function(exarg_T *eap)
 	SOURCING_LNUM = sourcing_lnum_top;
 
 	// parse the argument types
-	ga_init2(&fp->uf_type_list, sizeof(type_T), 5);
+	ga_init2(&fp->uf_type_list, sizeof(type_T *), 10);
 
 	if (argtypes.ga_len > 0)
 	{

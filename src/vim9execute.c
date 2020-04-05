@@ -377,7 +377,7 @@ store_var(char_u *name, typval_T *tv)
     funccal_entry_T entry;
 
     save_funccal(&entry);
-    set_var_const(name, NULL, tv, FALSE, 0);
+    set_var_const(name, NULL, tv, FALSE, LET_NO_COMMAND);
     restore_funccal();
 }
 
@@ -739,7 +739,7 @@ call_def_function(
 
 		    --ectx.ec_stack.ga_len;
 		    if (di == NULL)
-			store_var(iptr->isn_arg.string, STACK_TV_BOT(0));
+			store_var(name, STACK_TV_BOT(0));
 		    else
 		    {
 			clear_tv(&di->di_tv);
@@ -1828,7 +1828,7 @@ ex_disassemble(exarg_T *eap)
 					       iptr->isn_arg.loadstore.ls_sid);
 
 		    smsg("%4d LOADS s:%s from %s", current,
-					    iptr->isn_arg.string, si->sn_name);
+				 iptr->isn_arg.loadstore.ls_name, si->sn_name);
 		}
 		break;
 	    case ISN_LOADG:
@@ -1865,7 +1865,7 @@ ex_disassemble(exarg_T *eap)
 					       iptr->isn_arg.loadstore.ls_sid);
 
 		    smsg("%4d STORES %s in %s", current,
-					    iptr->isn_arg.string, si->sn_name);
+				 iptr->isn_arg.loadstore.ls_name, si->sn_name);
 		}
 		break;
 	    case ISN_STORESCRIPT:
