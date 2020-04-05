@@ -47,6 +47,7 @@
 #else
 # include <netdb.h>
 # include <netinet/in.h>
+# include <arpa/inet.h>
 # include <sys/socket.h>
 # ifdef HAVE_LIBGEN_H
 #  include <libgen.h>
@@ -725,7 +726,7 @@ channel_connect(
 	channel_T *channel,
 	const struct sockaddr *server_addr,
 	int server_addrlen,
-	int waittime)
+	int *waittime)
 {
     int		sd = -1;
 #ifdef MSWIN
@@ -745,11 +746,10 @@ channel_connect(
 	{
 	    ch_error(channel, "in socket() in channel_connect().");
 	    PERROR(_("E898: socket() in channel_connect()"));
-	    channel_free(channel);
 	    return -1;
 	}
 
-	if (waittime >= 0)
+	if (*waittime >= 0)
 	{
 	    // Make connect() non-blocking.
 	    if (
@@ -777,7 +777,7 @@ channel_connect(
 	    break;
 
 	SOCK_ERRNO;
-	if (waittime < 0 || (errno != EWOULDBLOCK
+	if (*waittime < 0 || (errno != EWOULDBLOCK
 		&& errno != ECONNREFUSED
 #ifdef EINPROGRESS
 		&& errno != EINPROGRESS
@@ -799,7 +799,7 @@ channel_connect(
 
 	// Limit the waittime to 50 msec.  If it doesn't work within this
 	// time we close the socket and try creating it again.
-	waitnow = waittime > 50 ? 50 : waittime;
+	waitnow = *waittime > 50 ? 50 : *waittime;
 
 	// If connect() didn't finish then try using select() to wait for the
 	// connection to be made. For Win32 always use select() to wait.
@@ -843,9 +843,9 @@ channel_connect(
 	    if (FD_ISSET(sd, &wfds))
 		break;
 	    elapsed_msec = waitnow;
-	    if (waittime > 1 && elapsed_msec < waittime)
+	    if (*waittime > 1 && elapsed_msec < *waittime)
 	    {
-		waittime -= elapsed_msec;
+		*waittime -= elapsed_msec;
 		continue;
 	    }
 #else
@@ -894,25 +894,25 @@ channel_connect(
 	}
 
 #ifndef MSWIN
-	if (waittime > 1 && elapsed_msec < waittime)
+	if (*waittime > 1 && elapsed_msec < *waittime)
 	{
 	    // The port isn't ready but we also didn't get an error.
 	    // This happens when the server didn't open the socket
 	    // yet.  Select() may return early, wait until the remaining
 	    // "waitnow"  and try again.
 	    waitnow -= elapsed_msec;
-	    waittime -= elapsed_msec;
+	    *waittime -= elapsed_msec;
 	    if (waitnow > 0)
 	    {
 		mch_delay((long)waitnow, TRUE);
 		ui_breakcheck();
-		waittime -= waitnow;
+		*waittime -= waitnow;
 	    }
 	    if (!got_int)
 	    {
-		if (waittime <= 0)
+		if (*waittime <= 0)
 		    // give it one more try
-		    waittime = 1;
+		    *waittime = 1;
 		continue;
 	    }
 	    // we were interrupted, behave as if timed out
@@ -925,7 +925,7 @@ channel_connect(
 	return -1;
     }
 
-    if (waittime >= 0)
+    if (*waittime >= 0)
     {
 #ifdef MSWIN
 	val = 0;
@@ -948,12 +948,12 @@ channel_connect(
     channel_T *
 channel_open(
 	const char *hostname,
-	int port_in,
+	int port,
 	int waittime,
 	void (*nb_close_cb)(void))
 {
     int			sd = -1;
-    char		port[6];
+    char		port_str[6];
     struct addrinfo	hints;
     struct addrinfo	*res = NULL;
     struct addrinfo	*addr = NULL;
@@ -975,8 +975,8 @@ channel_open(
     vim_memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    vim_snprintf(port, sizeof(port), "%d", port_in);
-    if (getaddrinfo(hostname, port, &hints, &res) != 0)
+    vim_snprintf(port_str, sizeof(port_str), "%d", port);
+    if (getaddrinfo(hostname, port_str, &hints, &res) != 0)
     {
 	ch_error(channel, "in getaddrinfo() in channel_open()");
 	PERROR(_("E901: getaddrinfo() in channel_open()"));
@@ -984,16 +984,10 @@ channel_open(
 	return NULL;
     }
 
-    // On Mac and Solaris a zero timeout almost never works.  At least wait
-    // one millisecond. Let's do it for all systems, because we don't know why
-    // this is needed.
-    if (waittime == 0)
-	waittime = 1;
-
     for (addr = res; addr != NULL; addr = addr->ai_next)
     {
-	const void *src = NULL;
 	const char *dst = hostname;
+	const void *src = NULL;
 	char buf[NUMBUFLEN];
 
 	if (addr->ai_family == AF_INET6)
@@ -1003,14 +997,20 @@ channel_open(
 	if (src != NULL)
 	{
 	    dst = inet_ntop(addr->ai_family, src, buf, sizeof(buf));
-	    if (dst != NULL)
+	    if (dst != NULL && STRCMP(hostname, dst) != 0)
 		ch_log(channel, "Resolved %s to %s", hostname, dst);
 	}
 
-	ch_log(channel, "Trying to connect to %s port %d", dst, port_in);
+	ch_log(channel, "Trying to connect to %s port %d", dst, port);
+
+	// On Mac and Solaris a zero timeout almost never works.  At least wait
+	// one millisecond. Let's do it for all systems, because we don't know
+	// why this is needed.
+	if (waittime == 0)
+	    waittime = 1;
 
 	sd = channel_connect(channel, addr->ai_addr, addr->ai_addrlen,
-								    waittime);
+								   &waittime);
 	if (sd >= 0)
 	    break;
     }
@@ -1028,7 +1028,7 @@ channel_open(
     channel->CH_SOCK_FD = (sock_T)sd;
     channel->ch_nb_close_cb = nb_close_cb;
     channel->ch_hostname = (char *)vim_strsave((char_u *)hostname);
-    channel->ch_port = port_in;
+    channel->ch_port = port;
     channel->ch_to_be_closed |= (1U << PART_SOCK);
 
 #ifdef FEAT_GUI
