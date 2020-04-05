@@ -6136,16 +6136,13 @@ write_chars(
     return written;
 }
 
-/*
- * Pointer to next if SGR (^[[n;2;*;*;*m), NULL otherwise.
- */
     static char_u *
-sgrn2(
-    char_u *head,
-    int	   n)
+get_seq(
+    int *args,
+    int *count,
+    char_u *head)
 {
     int argc;
-    int args[16];
     char_u *p;
 
     if (head == NULL || *head != '\033')
@@ -6160,8 +6157,51 @@ sgrn2(
 	args[argc] = getdigits(&p);
 	argc += (argc < 15) ? 1 : 0;
     } while (*p == ';');
+    *count = argc;
 
-    return *p == 'm' && argc == 5 && args[0] == n && args[1] == 2 ? ++p : NULL;
+    return p;
+}
+
+    static char_u *
+get_sgr(
+    int *args,
+    int *count,
+    char_u *head)
+{
+    char_u *p = get_seq(args, count, head);
+
+    return (p && *p == 'm') ? ++p : NULL;
+}
+
+/*
+ * Pointer to next if SGR (^[[n;2;*;*;*m), NULL otherwise.
+ */
+    static char_u *
+sgrn2(
+    char_u *head,
+    int	   n)
+{
+    int argc;
+    int args[16];
+    char_u *p = get_sgr(args, &argc, head);
+
+    return p && argc == 5 && args[0] == n && args[1] == 2 ? p : NULL;
+}
+
+/*
+ * Pointer to next if SGR(^[[nm)<space>ESC, NULL otherwise.
+ */
+    static char_u *
+sgrnc(
+    char_u *head,
+    int	   n)
+{
+    int argc;
+    int args[16];
+    char_u *p = get_sgr(args, &argc, head);
+
+    return p && argc == 1 && args[0] == n && (p = skipwhite(p)) && *p == '\033'
+								    ? p : NULL;
 }
 
     static char_u *
@@ -6185,7 +6225,22 @@ sgrn2c(
 {
     char_u *p = sgrn2(head, n);
 
-    return (p && *p != NUL && (p = skipblank(p)) && *p == '\033') ? p : NULL;
+    return p && *p != NUL && (p = skipblank(p)) && *p == '\033' ? p : NULL;
+}
+
+/*
+ * If there is only a newline between the sequence immediately following it,
+ * a pointer to the character following the newline is returned.
+ * Otherwise NULL.
+ */
+    static char_u *
+sgrn2cn(
+    char_u *head,
+    int n)
+{
+    char_u *p = sgrn2(head, n);
+
+    return p && p[0] == 0x0a && p[1] == '\033' ? ++p : NULL;
 }
 
 /*
@@ -6320,7 +6375,23 @@ mch_write(
 	    {
 	    case '0': case '1': case '2': case '3': case '4':
 	    case '5': case '6': case '7': case '8': case '9':
+		if (*(p = get_seq(args, &argc, s)) != 'm')
+		    goto notsgr;
+
 		p = s;
+
+		// Handling frequent optional sequences.  Output to the screen
+		// takes too long, so do not output as much as possible.
+
+		// If resetFG,FG,BG,<cr>,BG,FG are connected, the preceding
+		// resetFG,FG,BG are omitted.
+		if (sgrn2(sgrn2(sgrn2cn(sgrn2(sgrnc(p, 39), 38), 48), 48), 38))
+		{
+		    p = sgrn2(sgrn2(sgrnc(p, 39), 38), 48);
+		    len = len + 1 - (int)(p - s);
+		    s = p;
+		    break;
+		}
 
 		// If FG,BG,BG,FG of SGR are connected, the first FG can be
 		// omitted.
@@ -6336,19 +6407,14 @@ mch_write(
 		if (sgrn2((sp = sgrn2(p, 48)), 48))
 		    p = sp;
 
-		++p;
-		do
-		{
-		    ++p;
-		    args[argc] = getdigits(&p);
-		    argc += (argc < 15) ? 1 : 0;
-		    if (p > s + len)
-			break;
-		} while (*p == ';');
+		// If restoreFG and FG are connected, the restoreFG can be
+	        // omitted.
+		if (sgrn2((sp = sgrnc(p, 39)), 38))
+		    p = sp;
 
-		if (p > s + len)
-		    break;
+		p = get_seq(args, &argc, p);
 
+notsgr:
 		arg1 = args[0];
 		arg2 = args[1];
 		if (*p == 'm')
@@ -7543,30 +7609,150 @@ vtp_sgr_bulk(
     vtp_sgr_bulks(1, args);
 }
 
+#define FAST256(x) \
+    if ((*p-- = "0123456789"[(n = x % 10)]) \
+	    && x >= 10 && (*p-- = "0123456789"[((m = x % 100) - n) / 10]) \
+	    && x >= 100 && (*p-- = "012"[((x & 0xff) - m) / 100]));
+
+#define FAST256CASE(x) \
+    case x: \
+	FAST256(newargs[x - 1]);
+
     static void
 vtp_sgr_bulks(
     int argc,
-    int *args
-)
+    int *args)
 {
-    // 2('\033[') + 4('255.') * 16 + NUL
-    char_u buf[2 + (4 * 16) + 1];
-    char_u *p;
-    int    i;
+#define MAXSGR 16
+#define SGRBUFSIZE 2 + 4 * MAXSGR + 1 // '\033[' + SGR + 'm'
+    char_u  buf[SGRBUFSIZE];
+    char_u  *p;
+    int	    in, out;
+    int	    newargs[16];
+    static int sgrfgr = -1, sgrfgg, sgrfgb;
+    static int sgrbgr = -1, sgrbgg, sgrbgb;
 
-    p = buf;
-    *p++ = '\033';
-    *p++ = '[';
-
-    for (i = 0; i < argc; ++i)
+    if (argc == 0)
     {
-	p += vim_snprintf((char *)p, 4, "%d", args[i] & 0xff);
-	*p++ = ';';
+	sgrfgr = sgrbgr = -1;
+	vtp_printf("033[m");
+	return;
     }
-    p--;
-    *p++ = 'm';
-    *p = NUL;
-    vtp_printf((char *)buf);
+
+    in = out = 0;
+    while (in < argc)
+    {
+	int s = args[in];
+	int copylen = 1;
+
+	if (s == 38)
+	{
+	    if (argc - in >= 5 && args[in + 1] == 2)
+	    {
+		if (sgrfgr == args[in + 2] && sgrfgg == args[in + 3]
+						     && sgrfgb == args[in + 4])
+		{
+		    in += 5;
+		    copylen = 0;
+		}
+		else
+		{
+		    sgrfgr = args[in + 2];
+		    sgrfgg = args[in + 3];
+		    sgrfgb = args[in + 4];
+		    copylen = 5;
+		}
+	    }
+	    else if (argc - in >= 3 && args[in + 1] == 5)
+	    {
+		sgrfgr = -1;
+		copylen = 3;
+	    }
+	}
+	else if (s == 48)
+	{
+	    if (argc - in >= 5 && args[in + 1] == 2)
+	    {
+		if (sgrbgr == args[in + 2] && sgrbgg == args[in + 3]
+						     && sgrbgb == args[in + 4])
+		{
+		    in += 5;
+		    copylen = 0;
+		}
+		else
+		{
+		    sgrbgr = args[in + 2];
+		    sgrbgg = args[in + 3];
+		    sgrbgb = args[in + 4];
+		    copylen = 5;
+		}
+	    }
+	    else if (argc - in >= 3 && args[in + 1] == 5)
+	    {
+		sgrbgr = -1;
+		copylen = 3;
+	    }
+	}
+	else if (30 <= s && s <= 39)
+	    sgrfgr = -1;
+	else if (90 <= s && s <= 97)
+	    sgrfgr = -1;
+	else if (40 <= s && s <= 49)
+	    sgrbgr = -1;
+	else if (100 <= s && s <= 107)
+	    sgrbgr = -1;
+	else if (s == 0)
+	    sgrfgr = sgrbgr = -1;
+
+	while (copylen--)
+	    newargs[out++] = args[in++];
+    }
+
+    p = &buf[sizeof(buf) - 1];
+    *p-- = 'm';
+
+    switch (out)
+    {
+	int	n, m;
+	DWORD	r;
+
+	FAST256CASE(16);
+	*p-- = ';';
+	FAST256CASE(15);
+	*p-- = ';';
+	FAST256CASE(14);
+	*p-- = ';';
+	FAST256CASE(13);
+	*p-- = ';';
+	FAST256CASE(12);
+	*p-- = ';';
+	FAST256CASE(11);
+	*p-- = ';';
+	FAST256CASE(10);
+	*p-- = ';';
+	FAST256CASE(9);
+	*p-- = ';';
+	FAST256CASE(8);
+	*p-- = ';';
+	FAST256CASE(7);
+	*p-- = ';';
+	FAST256CASE(6);
+	*p-- = ';';
+	FAST256CASE(5);
+	*p-- = ';';
+	FAST256CASE(4);
+	*p-- = ';';
+	FAST256CASE(3);
+	*p-- = ';';
+	FAST256CASE(2);
+	*p-- = ';';
+	FAST256CASE(1);
+	*p-- = '[';
+	*p = '\033';
+	WriteConsoleA(g_hConOut, p, (DWORD)(&buf[SGRBUFSIZE] - p), &r, NULL);
+    default:
+	break;
+    }
 }
 
 # ifdef FEAT_TERMGUICOLORS
