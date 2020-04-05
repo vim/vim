@@ -68,6 +68,7 @@ extern int _stricoll(char *a, char *b);
 # include "change.pro"
 # include "charset.pro"
 # include "cindent.pro"
+# include "clientserver.pro"
 # include "clipboard.pro"
 # include "cmdexpand.pro"
 # include "cmdhist.pro"

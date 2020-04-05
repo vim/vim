@@ -30,6 +30,7 @@ SRC_ALL =	\
 		src/channel.c \
 		src/charset.c \
 		src/cindent.c \
+		src/clientserver.c \
 		src/clipboard.c \
 		src/cmdexpand.c \
 		src/cmdhist.c \
@@ -203,6 +204,7 @@ SRC_ALL =	\
 		src/proto/channel.pro \
 		src/proto/charset.pro \
 		src/proto/cindent.pro \
+		src/proto/clientserver.pro \
 		src/proto/clipboard.pro \
 		src/proto/cmdexpand.pro \
 		src/proto/cmdhist.pro \

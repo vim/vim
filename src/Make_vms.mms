@@ -306,6 +306,7 @@ SRC = \
 	change.c \
 	charset.c \
 	cindent.c \
+	clientserver.c \
 	clipboard.c \
 	cmdexpand.c \
 	cmdhist.c \
@@ -413,6 +414,7 @@ OBJ = \
 	change.obj \
 	charset.obj \
 	cindent.obj \
+	clientserver.obj \
 	clipboard.obj \
 	cmdexpand.obj \
 	cmdhist.obj \
@@ -699,6 +701,10 @@ charset.obj : charset.c vim.h [.auto]config.h feature.h os_unix.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h
 cindent.obj : cindent.c vim.h [.auto]config.h feature.h os_unix.h \
+ ascii.h keymap.h term.h macros.h structs.h regexp.h \
+ gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
+ globals.h
+clientserver.obj : clientserver.c vim.h [.auto]config.h feature.h os_unix.h \
  ascii.h keymap.h term.h macros.h structs.h regexp.h \
  gui.h beval.h [.proto]gui_beval.pro option.h ex_cmds.h proto.h \
  globals.h

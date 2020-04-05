@@ -33,6 +33,7 @@ SRC =	arabic.c						\
 	change.c						\
 	charset.c						\
 	cindent.c						\
+	clientserver.c						\
 	clipboard.c						\
 	cmdexpand.c						\
 	cmdhist.c						\
