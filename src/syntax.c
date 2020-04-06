@@ -3374,6 +3374,48 @@ syn_cmd_case(exarg_T *eap, int syncing UNUSED)
 }
 
 /*
+ * Handle ":syntax foldlevel" command.
+ */
+    static void
+syn_cmd_foldlevel(exarg_T *eap, int syncing UNUSED)
+{
+    char_u *arg = eap->arg;
+    char_u *arg_end;
+
+    eap->nextcmd = find_nextcmd(arg);
+    if (eap->skip)
+	return;
+
+    if (*arg == NUL)
+    {
+	switch (curwin->w_s->b_syn_foldlevel)
+	{
+	    case SYNFLD_START:   msg(_("syntax foldlevel start"));   break;
+	    case SYNFLD_MINIMUM: msg(_("syntax foldlevel minimum")); break;
+	    default: break;
+	}
+	return;
+    }
+
+    arg_end = skiptowhite(arg);
+    if (STRNICMP(arg, "start", 5) == 0 && arg_end - arg == 5)
+	curwin->w_s->b_syn_foldlevel = SYNFLD_START;
+    else if (STRNICMP(arg, "minimum", 7) == 0 && arg_end - arg == 7)
+	curwin->w_s->b_syn_foldlevel = SYNFLD_MINIMUM;
+    else
+    {
+	semsg(_("E390: Illegal argument: %s"), arg);
+	return;
+    }
+
+    arg = skipwhite(arg_end);
+    if (*arg != NUL)
+    {
+	semsg(_("E390: Illegal argument: %s"), arg);
+    }
+}
+
+/*
  * Handle ":syntax spell" command.
  */
     static void
@@ -3476,6 +3518,7 @@ syntax_clear(synblock_T *block)
     block->b_syn_slow = FALSE;	    // clear previous timeout
 #endif
     block->b_syn_ic = FALSE;	    // Use case, by default
+    block->b_syn_foldlevel = SYNFLD_START;
     block->b_syn_spell = SYNSPL_DEFAULT; // default spell checking
     block->b_syn_containedin = FALSE;
 #ifdef FEAT_CONCEAL
@@ -6192,6 +6235,7 @@ static struct subcommand subcommands[] =
     {"cluster",		syn_cmd_cluster},
     {"conceal",		syn_cmd_conceal},
     {"enable",		syn_cmd_enable},
+    {"foldlevel",	syn_cmd_foldlevel},
     {"include",		syn_cmd_include},
     {"iskeyword",	syn_cmd_iskeyword},
     {"keyword",		syn_cmd_keyword},
@@ -6507,6 +6551,8 @@ syn_cur_foldlevel(void)
 syn_get_foldlevel(win_T *wp, long lnum)
 {
     int		level = 0;
+    int		low_level;
+    int		cur_level;
 
     // Return quickly when there are no fold items at all.
     if (wp->w_s->b_syn_folditems != 0
@@ -6518,7 +6564,25 @@ syn_get_foldlevel(win_T *wp, long lnum)
     {
 	syntax_start(wp, lnum);
 
+	/* Start with the fold level at the start of the line. */
 	level = syn_cur_foldlevel();
+
+	if (wp->w_s->b_syn_foldlevel == SYNFLD_MINIMUM)
+	{
+	    /* Find the lowest fold level that is followed by a higher one. */
+	    cur_level = level;
+	    low_level = cur_level;
+	    while (!current_finished)
+	    {
+		(void)syn_current_attr(FALSE, FALSE, NULL, FALSE);
+		cur_level = syn_cur_foldlevel();
+		if (cur_level < low_level)
+		    low_level = cur_level;
+		else if (cur_level > low_level)
+		    level = low_level;
+		++current_col;
+	    }
+	}
     }
     if (level > wp->w_p_fdn)
     {
