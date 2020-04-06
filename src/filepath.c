@@ -1452,20 +1452,18 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 	    maxline = (long)tv_get_number(&argvars[2]);
     }
 
-    if (blob)
-    {
-	if (rettv_blob_alloc(rettv) == FAIL)
-	    return;
-    }
-    else
-    {
-	if (rettv_list_alloc(rettv) == FAIL)
-	    return;
-    }
+    if ((blob ? rettv_blob_alloc(rettv) : rettv_list_alloc(rettv)) == FAIL)
+	return;
 
     // Always open the file in binary mode, library functions have a mind of
     // their own about CR-LF conversion.
     fname = tv_get_string(&argvars[0]);
+
+    if (mch_isdir(fname))
+    {
+	semsg(_(e_isadir2), fname);
+	return;
+    }
     if (*fname == NUL || (fd = mch_fopen((char *)fname, READBIN)) == NULL)
     {
 	semsg(_(e_notopen), *fname == NUL ? (char_u *)_("<empty>") : fname);
@@ -1476,8 +1474,10 @@ f_readfile(typval_T *argvars, typval_T *rettv)
     {
 	if (read_blob(fd, rettv->vval.v_blob) == FAIL)
 	{
-	    emsg("cannot read file");
+	    semsg(_(e_notread), fname);
+	    // An empty blob is returned on error.
 	    blob_free(rettv->vval.v_blob);
+	    rettv->vval.v_blob = NULL;
 	}
 	fclose(fd);
 	return;
