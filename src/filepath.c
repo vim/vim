@@ -3171,7 +3171,6 @@ dos_expandpath(
 	if (current_file_short_name == NULL)
 	    break;
 
-
 	// Ignore entries starting with a dot, unless when asked for.  Accept
 	// all entries found with "matchname".
 	if ((p[0] != '.' || starts_with_dot
