@@ -3179,7 +3179,10 @@ dos_expandpath(
 			     && p[1] != NUL && (p[1] != '.' || p[2] != NUL)))
 		&& (matchname == NULL
 		  || (regmatch.regprog != NULL
-				     && (vim_regexec(&regmatch, p, (colnr_T)0) || vim_regexec(&regmatch, current_file_short_name, (colnr_T)0)))
+		     && (
+			 vim_regexec(&regmatch, p, (colnr_T)0) 
+		     || (vim_regexec(&regmatch, current_file_short_name, (colnr_T)0))
+		     ))
 		  || ((flags & EW_NOTWILD)
 		     && fnamencmp(path + (s - buf), p, e - s) == 0)))
 	{
@@ -3198,19 +3201,15 @@ dos_expandpath(
 		--stardepth;
 	    }
 
-	    if ((wfb.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+	    STRCPY(buf + len, path_end);
+
+	    if (mch_has_exp_wildcard(path_end))
 	    {
-		STRCPY(buf + len, path_end);
-
-		if (mch_has_exp_wildcard(path_end))
-		{
-		    // need to expand another component of the path
-		    // remove backslashes for the remaining components only
-		    (void)dos_expandpath(gap, buf, len + 1, flags, FALSE);
-		}
+		// need to expand another component of the path
+		// remove backslashes for the remaining components only
+		(void)dos_expandpath(gap, buf, len + 1, flags, FALSE);
 	    }
-
-	    if (!mch_has_exp_wildcard(path_end))
+	    else
 	    {
 		// no more wildcards, check if there is a match
 		// remove backslashes for the remaining components only
