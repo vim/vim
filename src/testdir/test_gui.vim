@@ -388,7 +388,10 @@ func Test_set_guifont()
     call assert_equal('Monospace 10', getfontname())
   endif
 
-  call assert_fails('set guifont=xa1bc23d7f', 'E596:')
+  if has('win32')
+    " Invalid font names are accepted in GTK GUI
+    call assert_fails('set guifont=xa1bc23d7f', 'E596:')
+  endif
 
   if has('xfontset')
     let &guifontset = guifontset_saved

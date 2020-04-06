@@ -699,8 +699,11 @@ endfunc
 
 " Test for :highlight command errors
 func Test_highlight_cmd_errors()
-  call assert_fails('hi Xcomment ctermfg=fg', 'E419:')
-  call assert_fails('hi Xcomment ctermfg=bg', 'E420:')
+  if has('gui_running')
+    " This test doesn't fail in the MS-Windows console version.
+    call assert_fails('hi Xcomment ctermfg=fg', 'E419:')
+    call assert_fails('hi Xcomment ctermfg=bg', 'E420:')
+  endif
 
   " Try using a very long terminal code. Define a dummy terminal code for this
   " test.

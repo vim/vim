@@ -479,6 +479,9 @@ endfunc
 
 " Test for error in a keymap file
 func Test_loadkeymap_error()
+  if !has('keymap')
+    return
+  endif
   call assert_fails('loadkeymap', 'E105:')
   call writefile(['loadkeymap', 'a'], 'Xkeymap')
   call assert_fails('source Xkeymap', 'E791:')
