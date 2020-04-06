@@ -689,10 +689,28 @@ func Test_1_highlight_Normalgroup_exists()
 endfunc
 
 " Do this test last, sometimes restoring the columns doesn't work
-function Test_z_no_space_before_xxx()
+func Test_z_no_space_before_xxx()
   let l:org_columns = &columns
   set columns=17
   let l:hi_StatusLineTermNC = join(split(execute('hi StatusLineTermNC')))
   call assert_match('StatusLineTermNC xxx', l:hi_StatusLineTermNC)
   let &columns = l:org_columns
-endfunction
+endfunc
+
+" Test for :highlight command errors
+func Test_highlight_cmd_errors()
+  if has('gui_running')
+    " This test doesn't fail in the MS-Windows console version.
+    call assert_fails('hi Xcomment ctermfg=fg', 'E419:')
+    call assert_fails('hi Xcomment ctermfg=bg', 'E420:')
+  endif
+
+  " Try using a very long terminal code. Define a dummy terminal code for this
+  " test.
+  let &t_fo = "\<Esc>1;"
+  let c = repeat("t_fo,", 100) . "t_fo"
+  call assert_fails('exe "hi Xgroup1 start=" . c', 'E422:')
+  let &t_fo = ""
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -1966,6 +1966,7 @@ func Test_range()
   execute "normal! a\<C-r>=[complete(col('.'), range(10)), ''][1]\<CR>"
   " complete_info()
   execute "normal! a\<C-r>=[complete(col('.'), range(10)), ''][1]\<CR>\<C-r>=[complete_info(range(5)), ''][1]\<CR>"
+  call assert_fails('call complete(1, ["a"])', 'E785:')
 
   " copy()
   call assert_equal([1, 2, 3], copy(range(1, 3)))
