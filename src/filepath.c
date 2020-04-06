@@ -3168,7 +3168,7 @@ dos_expandpath(
 	    break;  // out of memory
 
 	if (*wfb.cAlternateFileName == NUL)
-	    p_alt == NULL;
+	    p_alt = NULL;
 	else
 	    p_alt = utf16_to_enc(wfb.cAlternateFileName, NULL);
 
@@ -3179,10 +3179,9 @@ dos_expandpath(
 			     && p[1] != NUL && (p[1] != '.' || p[2] != NUL)))
 		&& (matchname == NULL
 		  || (regmatch.regprog != NULL
-		     && (vim_regexec(&regmatch, p, (colnr_T)0)
+		      && (vim_regexec(&regmatch, p, (colnr_T)0)
 			 || (p_alt != NULL
-				 && vim_regexec(&regmatch, p_alt, (colnr_T)0)))
-		     ))
+				&& vim_regexec(&regmatch, p_alt, (colnr_T)0))))
 		  || ((flags & EW_NOTWILD)
 		     && fnamencmp(path + (s - buf), p, e - s) == 0)))
 	{
