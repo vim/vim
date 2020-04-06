@@ -159,8 +159,10 @@ func s:CheckIPv6Loopback()
   elseif filereadable('/proc/net/if_inet6')
     return (match(readfile('/proc/net/if_inet6'), '\slo$') >= 0)
   elseif executable('ifconfig')
-    for arg in ['lo0', 'lo', 'loop']
-      if system('ifconfig ' .. arg .. ' 2>/dev/null') =~? '\<inet6\>'
+    for dev in ['lo0', 'lo', 'loop']
+      " NOTE: On SunOS, need specify address family 'inet6' to get IPv6 info.
+      if system('ifconfig ' .. dev .. ' inet6 2>/dev/null') =~? '\<inet6\>'
+            \ || system('ifconfig ' .. dev .. ' 2>/dev/null') =~? '\<inet6\>'
         return v:true
       endif
     endfor
