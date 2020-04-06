@@ -6489,6 +6489,17 @@ syn_get_stack_item(int i)
 #endif
 
 #if defined(FEAT_FOLDING) || defined(PROTO)
+    static int
+syn_cur_foldlevel(void)
+{
+    int		level = 0;
+    int		i;
+    for (i = 0; i < current_state.ga_len; ++i)
+	if (CUR_STATE(i).si_flags & HL_FOLD)
+	    ++level;
+    return level;
+}
+
 /*
  * Function called to get folding level for line "lnum" in window "wp".
  */
@@ -6496,7 +6507,6 @@ syn_get_stack_item(int i)
 syn_get_foldlevel(win_T *wp, long lnum)
 {
     int		level = 0;
-    int		i;
 
     // Return quickly when there are no fold items at all.
     if (wp->w_s->b_syn_folditems != 0
@@ -6508,9 +6518,7 @@ syn_get_foldlevel(win_T *wp, long lnum)
     {
 	syntax_start(wp, lnum);
 
-	for (i = 0; i < current_state.ga_len; ++i)
-	    if (CUR_STATE(i).si_flags & HL_FOLD)
-		++level;
+	level = syn_cur_foldlevel();
     }
     if (level > wp->w_p_fdn)
     {
