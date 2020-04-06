@@ -1,6 +1,6 @@
 " Tests for using Ctrl-A/Ctrl-X on visual selections
 
-func SetUp(test)
+func SetUp()
   new dummy
   set nrformats&vim
 endfunc

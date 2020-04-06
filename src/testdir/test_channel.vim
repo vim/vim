@@ -18,8 +18,8 @@ endif
 " Add ch_log() calls where you want to see what happens.
 " call ch_logfile('channellog', 'w')
 
-func SetUp(test)
-  if a:test =~ '_ipv6()$' 
+func SetUp()
+  if g:testfunc =~ '_ipv6()$' 
     let s:localhost = '[::1]:'
     let s:testscript = 'test_channel_6.py'
   else
@@ -27,7 +27,7 @@ func SetUp(test)
     let s:testscript = 'test_channel.py'
   endif
   let s:chopt = {}
-  call ch_log(a:test)
+  call ch_log(g:testfunc)
 endfunc
 
 " Run "testfunc" after starting the server and stop the server afterwards.

@@ -2,7 +2,7 @@
 set encoding=cp932
 scriptencoding cp932
 
-func SetUp(test)
+func SetUp()
   new
   set nrformats&
 endfunc

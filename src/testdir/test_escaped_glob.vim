@@ -1,7 +1,7 @@
 " Test whether glob()/globpath() return correct results with certain escaped
 " characters.
 
-func SetUp(test)
+func SetUp()
   " consistent sorting of file names
   set nofileignorecase
 endfunction
