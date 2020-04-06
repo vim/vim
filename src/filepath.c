@@ -12,6 +12,7 @@
  */
 
 #include "vim.h"
+#include <winnt.h>
 
 #ifdef MSWIN
 /*
@@ -3178,7 +3179,8 @@ dos_expandpath(
 	    STRCPY(s, p);
 	    len = (int)STRLEN(buf);
 
-	    if (starstar && stardepth < 100)
+	    if (starstar && stardepth < 100 
+		    && (wfb.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
 	    {
 		// For "**" in the pattern first go deeper in the tree to
 		// find matches.
@@ -3189,16 +3191,20 @@ dos_expandpath(
 		--stardepth;
 	    }
 
-	    STRCPY(buf + len, path_end);
-	    if (mch_has_exp_wildcard(path_end))
+	    if ((wfb.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
 	    {
-		// need to expand another component of the path
-		// remove backslashes for the remaining components only
-		(void)dos_expandpath(gap, buf, len + 1, flags, FALSE);
+		STRCPY(buf + len, path_end);
+
+		if (mch_has_exp_wildcard(path_end))
+		{
+		    // need to expand another component of the path
+		    // remove backslashes for the remaining components only
+		    (void)dos_expandpath(gap, buf, len + 1, flags, FALSE);
+		}
 	    }
 	    else
 	    {
-		// no more wildcards, check if there is a match
+		// we reached a file which is not a directory, check if there is a match
 		// remove backslashes for the remaining components only
 		if (*path_end != 0)
 		    backslash_halve(buf + len + 1);
@@ -3209,22 +3215,6 @@ dos_expandpath(
 
 	vim_free(p);
 	ok = FindNextFileW(hFind, &wfb);
-
-	// If no more matches and no match was used, try expanding the name
-	// itself.  Finds the long name of a short filename.
-	if (!ok && matchname != NULL && gap->ga_len == start_len)
-	{
-	    STRCPY(s, matchname);
-	    FindClose(hFind);
-	    vim_free(wn);
-	    wn = enc_to_utf16(buf, NULL);
-	    if (wn != NULL)
-		hFind = FindFirstFileW(wn, &wfb);
-	    else
-		hFind =	INVALID_HANDLE_VALUE;
-	    ok = (hFind != INVALID_HANDLE_VALUE);
-	    VIM_CLEAR(matchname);
-	}
     }
 
     FindClose(hFind);
