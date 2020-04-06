@@ -12,7 +12,6 @@
  */
 
 #include "vim.h"
-#include <winnt.h>
 
 #ifdef MSWIN
 /*
@@ -3048,6 +3047,7 @@ dos_expandpath(
     WCHAR		*wn = NULL;	// UCS-2 name, NULL when not used.
     char_u		*matchname;
     int			ok;
+    char_u	*current_file_short_name;
 
     // Expanding "**" may take a long time, check for CTRL-C.
     if (stardepth > 0)
@@ -3162,8 +3162,15 @@ dos_expandpath(
     while (ok)
     {
 	p = utf16_to_enc(wfb.cFileName, NULL);   // p is allocated here
+
 	if (p == NULL)
 	    break;  // out of memory
+
+	current_file_short_name = utf16_to_enc(wfb.cAlternateFileName, NULL);
+
+	if (current_file_short_name == NULL)
+	    break;
+
 
 	// Ignore entries starting with a dot, unless when asked for.  Accept
 	// all entries found with "matchname".
@@ -3172,14 +3179,14 @@ dos_expandpath(
 			     && p[1] != NUL && (p[1] != '.' || p[2] != NUL)))
 		&& (matchname == NULL
 		  || (regmatch.regprog != NULL
-				     && vim_regexec(&regmatch, p, (colnr_T)0))
+				     && (vim_regexec(&regmatch, p, (colnr_T)0) || vim_regexec(&regmatch, current_file_short_name, (colnr_T)0)))
 		  || ((flags & EW_NOTWILD)
 		     && fnamencmp(path + (s - buf), p, e - s) == 0)))
 	{
 	    STRCPY(s, p);
 	    len = (int)STRLEN(buf);
 
-	    if (starstar && stardepth < 100 
+	    if (starstar && stardepth < 100
 		    && (wfb.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
 	    {
 		// For "**" in the pattern first go deeper in the tree to
@@ -3202,9 +3209,10 @@ dos_expandpath(
 		    (void)dos_expandpath(gap, buf, len + 1, flags, FALSE);
 		}
 	    }
-	    else
+
+	    if (!mch_has_exp_wildcard(path_end))
 	    {
-		// we reached a file which is not a directory, check if there is a match
+		// no more wildcards, check if there is a match
 		// remove backslashes for the remaining components only
 		if (*path_end != 0)
 		    backslash_halve(buf + len + 1);
@@ -3214,6 +3222,7 @@ dos_expandpath(
 	}
 
 	vim_free(p);
+	vim_free(current_file_short_name);
 	ok = FindNextFileW(hFind, &wfb);
     }
 
