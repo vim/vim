@@ -7591,7 +7591,7 @@ gui_mch_tearoff(
     for (col = 0; col < 2; col++)
     {
 	columnWidths[col] = 0;
-	for (pmenu = menu->children; pmenu != NULL; pmenu = pmenu->next)
+	FOR_ALL_CHILD_MENUS(menu, pmenu)
 	{
 	    // Use "dname" here to compute the width of the visible text.
 	    text = (col == 0) ? pmenu->dname : pmenu->actext;

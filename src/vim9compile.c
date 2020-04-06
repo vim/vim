@@ -3984,7 +3984,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	l = heredoc_get(eap, op + 3);
 
 	// Push each line and the create the list.
-	for (li = l->lv_first; li != NULL; li = li->li_next)
+	FOR_ALL_LIST_ITEMS(l, li)
 	{
 	    generate_PUSHS(cctx, li->li_tv.vval.v_string);
 	    li->li_tv.vval.v_string = NULL;

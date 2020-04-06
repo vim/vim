@@ -1643,7 +1643,7 @@ func_call(
     int		r = 0;
 
     range_list_materialize(l);
-    FOR_ALL_LIST_ITEMS(args->vval.v_list, item)
+    FOR_ALL_LIST_ITEMS(l, item)
     {
 	if (argc == MAX_FUNC_ARGS - (partial == NULL ? 0 : partial->pt_argc))
 	{

@@ -444,8 +444,7 @@ get_tabpage_info(tabpage_T *tp, int tp_idx)
     l = list_alloc();
     if (l != NULL)
     {
-	for (wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
-						   wp != NULL; wp = wp->w_next)
+	FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 	    list_append_number(l, (varnumber_T)wp->w_id);
 	dict_add_list(dict, "windows", l);
     }

@@ -889,7 +889,7 @@ do_set_mnemonics(int enable)
 {
     vimmenu_T	*menu;
 
-    for (menu = root_menu; menu != NULL; menu = menu->next)
+    FOR_ALL_MENUS(menu)
 	if (menu->id != (Widget)0)
 	    XtVaSetValues(menu->id,
 		    XmNmnemonic, enable ? menu->mnemonic : NUL,
@@ -1094,7 +1094,7 @@ gui_mch_compute_menu_height(
 
     // Find any menu Widget, to be able to call XtManageChild()
     else
-	for (mp = root_menu; mp != NULL; mp = mp->next)
+	FOR_ALL_MENUS(mp)
 	    if (mp->id != (Widget)0 && menu_is_menubar(mp->name))
 	    {
 		id = mp->id;
@@ -1112,7 +1112,7 @@ gui_mch_compute_menu_height(
      * Now find the menu item that is the furthest down, and get its position.
      */
     maxy = 0;
-    for (mp = root_menu; mp != NULL; mp = mp->next)
+    FOR_ALL_MENUS(mp)
     {
 	if (mp->id != (Widget)0 && menu_is_menubar(mp->name))
 	{
@@ -2928,7 +2928,7 @@ gui_mch_show_toolbar(int showit)
 		vimmenu_T   *toolbar;
 		vimmenu_T   *cur;
 
-		for (toolbar = root_menu; toolbar; toolbar = toolbar->next)
+		FOR_ALL_MENUS(toolbar)
 		    if (menu_is_toolbar(toolbar->dname))
 			break;
 		// Assumption: toolbar is NULL if there is no toolbar,

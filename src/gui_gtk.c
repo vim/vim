@@ -824,7 +824,7 @@ gui_gtk_set_mnemonics(int enable)
     vimmenu_T	*menu;
     char_u	*name;
 
-    for (menu = root_menu; menu != NULL; menu = menu->next)
+    FOR_ALL_MENUS(menu)
     {
 	if (menu->id == NULL)
 	    continue;
