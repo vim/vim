@@ -195,6 +195,7 @@ func Test_complete()
   new
   call feedkeys("i\<C-N>\<Esc>", 'xt')
   bwipe!
+  call assert_fails('set complete=ix', 'E535:')
   set complete&
 endfun
 
@@ -381,6 +382,10 @@ func Test_set_ttytype()
 
   set ttytype&
   call assert_equal(&ttytype, &term)
+
+  if has('gui') && !has('gui_running')
+    call assert_fails('set term=gui', 'E531:')
+  endif
 endfunc
 
 func Test_set_all()

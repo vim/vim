@@ -633,6 +633,7 @@ func Test_reverse_sort_uniq()
   endif
 
   call assert_fails('call reverse("")', 'E899:')
+  call assert_fails('call uniq([1, 2], {x, y -> []})', 'E882:')
 endfunc
 
 " splitting a string to a List using split()

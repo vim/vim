@@ -465,3 +465,23 @@ func Test_ins_compl_tag_sft()
   set tags&
   %bwipe!
 endfunc
+
+" Test for 'completefunc' deleting text
+func Test_completefunc_error()
+  new
+  func CompleteFunc(findstart, base)
+    if a:findstart == 1
+      normal dd
+      return col('.') - 1
+    endif
+    return ['a', 'b']
+  endfunc
+  set completefunc=CompleteFunc
+  call setline(1, ['', 'abcd', ''])
+  call assert_fails('exe "normal 2G$a\<C-X>\<C-U>"', 'E840:')
+  set completefunc&
+  delfunc CompleteFunc
+  close!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

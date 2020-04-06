@@ -364,6 +364,7 @@ func Test_normal09a_operatorfunc()
   " clean up
   unmap <buffer> ,,
   set opfunc=
+  call assert_fails('normal Vg@', 'E774:')
   bw!
   unlet! g:opt
 endfunc

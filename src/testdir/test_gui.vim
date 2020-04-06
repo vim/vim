@@ -388,6 +388,8 @@ func Test_set_guifont()
     call assert_equal('Monospace 10', getfontname())
   endif
 
+  call assert_fails('set guifont=xa1bc23d7f', 'E596:')
+
   if has('xfontset')
     let &guifontset = guifontset_saved
   endif
@@ -401,6 +403,8 @@ endfunc
 func Test_set_guifontset()
   CheckFeature xfontset
   let skipped = ''
+
+  call assert_fails('set guifontset=*', 'E597:')
 
   let ctype_saved = v:ctype
 
@@ -468,6 +472,7 @@ func Test_set_guifontset()
 endfunc
 
 func Test_set_guifontwide()
+  call assert_fails('set guifontwide=*', 'E533:')
   let skipped = ''
 
   if !g:x11_based_gui
@@ -785,6 +790,7 @@ func Test_set_term()
   " It's enough to check the current value since setting 'term' to anything
   " other than builtin_gui makes no sense at all.
   call assert_equal('builtin_gui', &term)
+  call assert_fails('set term=xterm', 'E530:')
 endfunc
 
 func Test_windowid_variable()

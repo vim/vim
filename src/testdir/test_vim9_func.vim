@@ -168,10 +168,12 @@ def Test_return_type_wrong()
 
   CheckScriptFailure(['def Func(): list', 'return []', 'enddef'], 'E1008:')
   CheckScriptFailure(['def Func(): dict', 'return {}', 'enddef'], 'E1008:')
+  CheckScriptFailure(['def Func()', 'return 1'], 'E1057:')
 enddef
 
 def Test_arg_type_wrong()
   CheckScriptFailure(['def Func3(items: list)', 'echo "a"', 'enddef'], 'E1008: Missing <type>')
+  CheckScriptFailure(['def Func4(...)', 'echo "a"', 'enddef'], 'E1055: Missing name after ...')
 enddef
 
 def Test_vim9script_call()
@@ -436,5 +438,28 @@ def Test_func_return_type()
   CheckDefFailure(['let str: string', 'str = FuncNoArgRetNumber()'], 'E1013: type mismatch, expected string but got number')
 enddef
 
+" When using CheckScriptFailure() for the below test, E1010 is generated instead
+" of E1056.
+func Test_E1056_1059()
+  let caught_1056 = 0
+  try
+    def F():
+      return 1
+    enddef
+  catch /E1056:/
+    let caught_1056 = 1
+  endtry
+  call assert_equal(1, caught_1056)
+
+  let caught_1059 = 0
+  try
+    def F5(items : list)
+      echo 'a'
+    enddef
+  catch /E1059:/
+    let caught_1059 = 1
+  endtry
+  call assert_equal(1, caught_1059)
+endfunc
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

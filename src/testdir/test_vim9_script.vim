@@ -259,7 +259,6 @@ def Test_cmd_modifier()
   call CheckDefFailure(['5tab echo 3'], 'E16:')
 enddef
 
-
 def Test_try_catch()
   let l = []
   try
@@ -958,7 +957,6 @@ def Test_interrupt_loop()
   endtry
   assert_true(caught, 'should have caught an exception')
 enddef
-
 
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
