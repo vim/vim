@@ -3220,8 +3220,8 @@ dos_expandpath(
 	    }
 	}
 
-	vim_free(p);
 	vim_free(current_file_short_name);
+	vim_free(p);
 	ok = FindNextFileW(hFind, &wfb);
     }
 
