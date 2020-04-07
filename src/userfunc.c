@@ -3045,8 +3045,8 @@ ex_function(exarg_T *eap)
 		{
 		    p = ((char_u **)argtypes.ga_data)[i];
 		    if (p == NULL)
-			// todo: get type from default value
-			type = &t_any;
+			// will get the type from the default value
+			type = &t_unknown;
 		    else
 			type = parse_type(&p, &fp->uf_type_list);
 		    if (type == NULL)
