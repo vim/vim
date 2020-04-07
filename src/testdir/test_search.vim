@@ -1547,8 +1547,10 @@ endfunc
 func Test_invalid_regexp()
   set regexpengine=1
   call assert_fails("call search(repeat('\\(.\\)', 10))", 'E51:')
-  call assert_fails("call search('a\\+*')", 'E61:')
+  call assert_fails("call search('\\%(')", 'E53:')
+  call assert_fails("call search('\\(')", 'E54:')
   call assert_fails("call search('x\\@#')", 'E59:')
+  call assert_fails("call search('a\\+*')", 'E61:')
   call assert_fails("call search('\\_m')", 'E63:')
   call assert_fails("call search('\\+')", 'E64:')
   call assert_fails("call search('\\1')", 'E65:')

@@ -677,6 +677,15 @@ func Test_buftype()
   bwipe!
 endfunc
 
+" Test for the 'shell' option
+func Test_shell()
+  CheckUnix
+  let save_shell = &shell
+  set shell=
+  call assert_fails('shell', 'E91:')
+  let &shell = save_shell
+endfunc
+
 " Test for the 'shellquote' option
 func Test_shellquote()
   CheckUnix
