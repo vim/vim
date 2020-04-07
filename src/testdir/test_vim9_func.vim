@@ -373,12 +373,21 @@ def FuncNoArgRetNumber(): number
   return 1234
 enddef
 
+def FuncNoArgRetString(): string
+  funcResult = 45
+  return 'text'
+enddef
+
 def FuncOneArgNoRet(arg: number)
   funcResult = arg
 enddef
 
 def FuncOneArgRetNumber(arg: number): number
   funcResult = arg
+  return arg
+enddef
+
+def FuncOneArgRetString(arg: string): string
   return arg
 enddef
 
@@ -413,6 +422,32 @@ def Test_func_type()
   Ref2 = FuncOneArgRetNumber
   assert_equal(13, Ref2(13))
   assert_equal(13, funcResult)
+enddef
+
+def Test_func_type_part()
+  let RefVoid: func: void
+  RefVoid = FuncNoArgNoRet
+  RefVoid = FuncOneArgNoRet
+  CheckDefFailure(['let RefVoid: func: void', 'RefVoid = FuncNoArgRetNumber'], 'E1013: type mismatch, expected func() but got func(): number')
+  CheckDefFailure(['let RefVoid: func: void', 'RefVoid = FuncNoArgRetString'], 'E1013: type mismatch, expected func() but got func(): string')
+
+  let RefAny: func(): any
+  RefAny = FuncNoArgRetNumber
+  RefAny = FuncNoArgRetString
+  CheckDefFailure(['let RefAny: func(): any', 'RefAny = FuncNoArgNoRet'], 'E1013: type mismatch, expected func(): any but got func()')
+  CheckDefFailure(['let RefAny: func(): any', 'RefAny = FuncOneArgNoRet'], 'E1013: type mismatch, expected func(): any but got func(number)')
+
+  let RefNr: func: number
+  RefNr = FuncNoArgRetNumber
+  RefNr = FuncOneArgRetNumber
+  CheckDefFailure(['let RefNr: func: number', 'RefNr = FuncNoArgNoRet'], 'E1013: type mismatch, expected func(): number but got func()')
+  CheckDefFailure(['let RefNr: func: number', 'RefNr = FuncNoArgRetString'], 'E1013: type mismatch, expected func(): number but got func(): string')
+
+  let RefStr: func: string
+  RefStr = FuncNoArgRetString
+  RefStr = FuncOneArgRetString
+  CheckDefFailure(['let RefStr: func: string', 'RefStr = FuncNoArgNoRet'], 'E1013: type mismatch, expected func(): string but got func()')
+  CheckDefFailure(['let RefStr: func: string', 'RefStr = FuncNoArgRetNumber'], 'E1013: type mismatch, expected func(): string but got func(): number')
 enddef
 
 def Test_func_type_fails()

@@ -314,6 +314,11 @@ get_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
     // recognize commonly used types
     if (argcount <= 0)
     {
+	if (ret_type == &t_unknown)
+	{
+	    // (argcount == 0) is not possible
+	    return &t_func_unknown;
+	}
 	if (ret_type == &t_void)
 	{
 	    if (argcount == 0)
@@ -350,6 +355,7 @@ get_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
 	return &t_any;
     type->tt_type = VAR_FUNC;
     type->tt_member = ret_type;
+    type->tt_argcount = argcount;
     type->tt_args = NULL;
     return type;
 }
@@ -1589,7 +1595,7 @@ parse_type(char_u **arg, garray_T *type_gap)
 	    if (len == 4 && STRNCMP(*arg, "func", len) == 0)
 	    {
 		type_T  *type;
-		type_T  *ret_type = &t_any;
+		type_T  *ret_type = &t_unknown;
 		int	argcount = -1;
 		int	flags = 0;
 		int	first_optional = -1;
@@ -1657,7 +1663,7 @@ parse_type(char_u **arg, garray_T *type_gap)
 		{
 		    // parse return type
 		    ++*arg;
-		    if (!VIM_ISWHITE(*p))
+		    if (!VIM_ISWHITE(**arg))
 			semsg(_(e_white_after), ":");
 		    *arg = skipwhite(*arg);
 		    ret_type = parse_type(arg, type_gap);
@@ -2405,7 +2411,10 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 {
     int ret = OK;
 
-    if (expected->tt_type != VAR_UNKNOWN && expected->tt_type != VAR_ANY)
+    // When expected is "unknown" we accept any actual type.
+    // When expected is "any" we accept any actual type except "void".
+    if (expected->tt_type != VAR_UNKNOWN
+	    && (expected->tt_type != VAR_ANY || actual->tt_type == VAR_VOID))
     {
 	if (expected->tt_type != actual->tt_type)
 	{
@@ -2421,8 +2430,7 @@ check_type(type_T *expected, type_T *actual, int give_msg)
 	}
 	else if (expected->tt_type == VAR_FUNC)
 	{
-	    if (expected->tt_member != &t_any
-					  && expected->tt_member != &t_unknown)
+	    if (expected->tt_member != &t_unknown)
 		ret = check_type(expected->tt_member, actual->tt_member, FALSE);
 	    if (ret == OK && expected->tt_argcount != -1
 		    && (actual->tt_argcount < expected->tt_min_argcount
@@ -4044,36 +4052,39 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	if (r == FAIL)
 	    goto theend;
 
-	stack = &cctx->ctx_type_stack;
-	stacktype = stack->ga_len == 0 ? &t_void
-			      : ((type_T **)stack->ga_data)[stack->ga_len - 1];
-	if (idx >= 0 && (is_decl || !has_type))
+	if (cctx->ctx_skip != TRUE)
 	{
-	    lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
-	    if (new_local && !has_type)
+	    stack = &cctx->ctx_type_stack;
+	    stacktype = stack->ga_len == 0 ? &t_void
+			      : ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	    if (idx >= 0 && (is_decl || !has_type))
 	    {
-		if (stacktype->tt_type == VAR_VOID)
+		lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
+		if (new_local && !has_type)
 		{
-		    emsg(_("E1031: Cannot use void value"));
-		    goto theend;
-		}
-		else
-		{
-		    // An empty list or dict has a &t_void member, for a
-		    // variable that implies &t_any.
-		    if (stacktype == &t_list_empty)
-			lvar->lv_type = &t_list_any;
-		    else if (stacktype == &t_dict_empty)
-			lvar->lv_type = &t_dict_any;
+		    if (stacktype->tt_type == VAR_VOID)
+		    {
+			emsg(_("E1031: Cannot use void value"));
+			goto theend;
+		    }
 		    else
-			lvar->lv_type = stacktype;
+		    {
+			// An empty list or dict has a &t_void member, for a
+			// variable that implies &t_any.
+			if (stacktype == &t_list_empty)
+			    lvar->lv_type = &t_list_any;
+			else if (stacktype == &t_dict_empty)
+			    lvar->lv_type = &t_dict_any;
+			else
+			    lvar->lv_type = stacktype;
+		    }
 		}
+		else if (need_type(stacktype, lvar->lv_type, -1, cctx) == FAIL)
+		    goto theend;
 	    }
-	    else if (need_type(stacktype, lvar->lv_type, -1, cctx) == FAIL)
+	    else if (*p != '=' && check_type(type, stacktype, TRUE) == FAIL)
 		goto theend;
 	}
-	else if (*p != '=' && check_type(type, stacktype, TRUE) == FAIL)
-	    goto theend;
     }
     else if (cmdidx == CMD_const)
     {

@@ -43,6 +43,19 @@ SCRIPTS_WIN32 =
 # Tests for the GUI.
 SCRIPTS_GUI =
 
+# Tests for Vim9 script.
+TEST_VIM9 = \
+	test_vim9_disassemble \
+	test_vim9_expr \
+	test_vim9_func \
+	test_vim9_script
+
+TEST_VIM9_RES = \
+	test_vim9_disassemble.res \
+	test_vim9_expr.res \
+	test_vim9_func.res \
+	test_vim9_script.res
+
 # Individual tests, including the ones part of test_alot.
 # Please keep sorted up to test_alot.
 NEW_TESTS = \
@@ -272,10 +285,7 @@ NEW_TESTS = \
 	test_utf8 \
 	test_utf8_comparisons \
 	test_vartabs \
-	test_vim9_disassemble \
-	test_vim9_expr \
-	test_vim9_func \
-	test_vim9_script \
+	$(TEST_VIM9) \
 	test_viminfo \
 	test_vimscript \
 	test_virtualedit \
@@ -482,10 +492,7 @@ NEW_TESTS_RES = \
 	test_user_func.res \
 	test_usercommands.res \
 	test_vartabs.res \
-	test_vim9_disassemble.res \
-	test_vim9_expr.res \
-	test_vim9_func.res \
-	test_vim9_script.res \
+	$(TEST_VIM9_RES) \
 	test_viminfo.res \
 	test_vimscript.res \
 	test_virtualedit.res \
