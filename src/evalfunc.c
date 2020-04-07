@@ -4561,7 +4561,8 @@ f_has(typval_T *argvars, typval_T *rettv)
     if (x == TRUE && n == FALSE)
     {
 	if (0)
-	    ;
+	{
+	}
 #if defined(FEAT_BEVAL) && defined(FEAT_GUI_MSWIN)
 	else if (STRICMP(name, "balloon_multiline") == 0)
 	    n = multiline_balloon_available();
