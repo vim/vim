@@ -953,7 +953,6 @@ channel_open(
 	void (*nb_close_cb)(void))
 {
     int			sd = -1;
-    char		port_str[6];
     struct addrinfo	hints;
     struct addrinfo	*res = NULL;
     struct addrinfo	*addr = NULL;
@@ -970,13 +969,12 @@ channel_open(
 	return NULL;
     }
 
-    // Get the server internet address and put into addr structure
-    // fill in the socket address structure and connect to server
+    // Get the server internet address and put into addr structure fill in the
+    // socket address structure and connect to server.
     vim_memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    vim_snprintf(port_str, sizeof(port_str), "%d", port);
-    if (getaddrinfo(hostname, port_str, &hints, &res) != 0)
+    if (getaddrinfo(hostname, NULL, &hints, &res) != 0)
     {
 	ch_error(channel, "in getaddrinfo() in channel_open()");
 	PERROR(_("E901: getaddrinfo() in channel_open()"));
@@ -991,9 +989,19 @@ channel_open(
 	char buf[NUMBUFLEN];
 
 	if (addr->ai_family == AF_INET6)
-	    src = &((const struct sockaddr_in6 *)addr->ai_addr)->sin6_addr;
+	{
+	    struct sockaddr_in6 *sai = (struct sockaddr_in6 *)addr->ai_addr;
+
+	    sai->sin6_port = htons(port);
+	    src = &sai->sin6_addr;
+	}
 	else if (addr->ai_family == AF_INET)
-	    src = &((const struct sockaddr_in *)addr->ai_addr)->sin_addr;
+	{
+	    struct sockaddr_in *sai = (struct sockaddr_in *)addr->ai_addr;
+
+	    sai->sin_port = htons(port);
+	    src = &sai->sin_addr;
+	}
 	if (src != NULL)
 	{
 	    dst = inet_ntop(addr->ai_family, src, buf, sizeof(buf));
