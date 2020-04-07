@@ -1411,6 +1411,10 @@ func Test_echo_and_string()
     call assert_equal(["{'a': [1, 2, 3], 'b': [...]}",
 		     \ "{'a': [1, 2, 3], 'b': [1, 2, 3]}"], l)
 
+    call assert_fails('echo &:', 'E112:')
+    call assert_fails('echo &g:', 'E112:')
+    call assert_fails('echo &l:', 'E112:')
+
 endfunc
 
 "-------------------------------------------------------------------------------
