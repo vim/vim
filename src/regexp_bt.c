@@ -2178,7 +2178,7 @@ reg(
     }
     else
 #endif
-	if (paren == REG_PAREN)
+    if (paren == REG_PAREN)
     {
 	// Make a MOPEN node.
 	if (regnpar >= NSUBEXP)
