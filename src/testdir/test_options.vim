@@ -22,6 +22,21 @@ func Test_whichwrap()
   set whichwrap=h,h,h
   call assert_equal('h', &whichwrap)
 
+  " For compatibility with Vim 3.0 and before, number values are also
+  " supported for 'whichwrap'
+  set whichwrap=1
+  call assert_equal('b', &whichwrap)
+  set whichwrap=2
+  call assert_equal('s', &whichwrap)
+  set whichwrap=4
+  call assert_equal('h,l', &whichwrap)
+  set whichwrap=8
+  call assert_equal('<,>', &whichwrap)
+  set whichwrap=16
+  call assert_equal('[,]', &whichwrap)
+  set whichwrap=31
+  call assert_equal('b,s,h,l,<,>,[,]', &whichwrap)
+
   set whichwrap&
 endfunc
 
@@ -82,6 +97,13 @@ func Test_options_command()
 
   " close option-window
   close
+
+  " Open the options window browse
+  if has('browse')
+    browse set
+    call assert_equal('option-window', bufname(''))
+    close
+  endif
 endfunc
 
 func Test_path_keep_commas()
@@ -308,6 +330,17 @@ func Test_set_errors()
   call assert_fails('set winminwidth=10 winwidth=9', 'E592:')
   call assert_fails("set showbreak=\x01", 'E595:')
   call assert_fails('set t_foo=', 'E846:')
+  call assert_fails('set tabstop??', 'E488:')
+  call assert_fails('set wrapscan!!', 'E488:')
+  call assert_fails('set tabstop&&', 'E488:')
+  call assert_fails('set wrapscan<<', 'E488:')
+  call assert_fails('set wrapscan=1', 'E474:')
+  call assert_fails('set autoindent@', 'E488:')
+  call assert_fails('set wildchar=<abc>', 'E474:')
+  call assert_fails('set cmdheight=1a', 'E521:')
+  if has('python') && has('python3')
+    call assert_fails('set pyxversion=6', 'E474:')
+  endif
 endfunc
 
 func CheckWasSet(name)
@@ -728,6 +761,70 @@ func Test_debug_option()
   exe "normal \<C-c>"
   call assert_equal('Beep!', Screenline(&lines))
   set debug&
+endfunc
+
+" Test for the default CDPATH option
+func Test_opt_default_cdpath()
+  CheckFeature file_in_path
+  let after =<< trim [CODE]
+    call assert_equal(',/path/to/dir1,/path/to/dir2', &cdpath)
+    call writefile(v:errors, 'Xtestout')
+    qall
+  [CODE]
+  let $CDPATH='/path/to/dir1:/path/to/dir2'
+  if RunVim([], after, '')
+    call assert_equal([], readfile('Xtestout'))
+    call delete('Xtestout')
+  endif
+endfunc
+
+" Test for setting keycodes using set
+func Test_opt_set_keycode()
+  call assert_fails('set <t_k1=l', 'E474:')
+  call assert_fails('set <Home=l', 'E474:')
+  set <t_k9>=abcd
+  call assert_equal('abcd', &t_k9)
+  set <t_k9>&
+  set <F9>=xyz
+  call assert_equal('xyz', &t_k9)
+  set <t_k9>&
+endfunc
+
+" Test for changing options in a sandbox
+func Test_opt_sandbox()
+  for opt in ['backupdir', 'cdpath', 'exrc']
+    call assert_fails('sandbox set ' .. opt .. '?', 'E48:')
+  endfor
+endfunc
+
+" Test for setting an option with local value to global value
+func Test_opt_local_to_global()
+  setglobal equalprg=gprg
+  setlocal equalprg=lprg
+  call assert_equal('gprg', &g:equalprg)
+  call assert_equal('lprg', &l:equalprg)
+  call assert_equal('lprg', &equalprg)
+  set equalprg<
+  call assert_equal('', &l:equalprg)
+  call assert_equal('gprg', &equalprg)
+  setglobal equalprg=gnewprg
+  setlocal equalprg=lnewprg
+  setlocal equalprg<
+  call assert_equal('gnewprg', &l:equalprg)
+  call assert_equal('gnewprg', &equalprg)
+  set equalprg&
+endfunc
+
+" Test for incrementing, decrementing and multiplying a number option value
+func Test_opt_num_op()
+  set shiftwidth=4
+  set sw+=2
+  call assert_equal(6, &sw)
+  set sw-=2
+  call assert_equal(4, &sw)
+  set sw^=2
+  call assert_equal(8, &sw)
+  set shiftwidth&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
