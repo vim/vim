@@ -3020,7 +3020,7 @@ ex_function(exarg_T *eap)
 
     if (eap->cmdidx == CMD_def)
     {
-	int lnum_save = SOURCING_LNUM;
+	int	lnum_save = SOURCING_LNUM;
 
 	// error messages are for the first function line
 	SOURCING_LNUM = sourcing_lnum_top;
@@ -3034,7 +3034,8 @@ ex_function(exarg_T *eap)
 	    // and uf_va_type.
 	    int len = argtypes.ga_len - (varargs ? 1 : 0);
 
-	    fp->uf_arg_types = ALLOC_CLEAR_MULT(type_T *, len);
+	    if (len > 0)
+		fp->uf_arg_types = ALLOC_CLEAR_MULT(type_T *, len);
 	    if (fp->uf_arg_types != NULL)
 	    {
 		int	i;

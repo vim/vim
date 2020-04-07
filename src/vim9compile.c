@@ -130,6 +130,8 @@ static int compile_expr1(char_u **arg,  cctx_T *cctx);
 static int compile_expr2(char_u **arg,  cctx_T *cctx);
 static int compile_expr3(char_u **arg,  cctx_T *cctx);
 static void delete_def_function_contents(dfunc_T *dfunc);
+static void arg_type_mismatch(type_T *expected, type_T *actual, int argidx);
+static int check_type(type_T *expected, type_T *actual, int give_msg);
 
 /*
  * Lookup variable "name" in the local scope and return the index.
@@ -1238,6 +1240,32 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
     {
 	semsg(_(e_toofewarg), ufunc->uf_name);
 	return FAIL;
+    }
+
+    if (ufunc->uf_dfunc_idx >= 0)
+    {
+	int		i;
+
+	for (i = 0; i < argcount; ++i)
+	{
+	    type_T *expected;
+	    type_T *actual;
+
+	    if (i < regular_args)
+	    {
+		if (ufunc->uf_arg_types == NULL)
+		    continue;
+		expected = ufunc->uf_arg_types[i];
+	    }
+	    else
+		expected = ufunc->uf_va_type->tt_member;
+	    actual = ((type_T **)stack->ga_data)[stack->ga_len - argcount + i];
+	    if (check_type(expected, actual, FALSE) == FAIL)
+	    {
+		arg_type_mismatch(expected, actual, i + 1);
+		return FAIL;
+	    }
+	}
     }
 
     // Turn varargs into a list.
@@ -2399,6 +2427,18 @@ type_mismatch(type_T *expected, type_T *actual)
 
     semsg(_("E1013: type mismatch, expected %s but got %s"),
 		   type_name(expected, &tofree1), type_name(actual, &tofree2));
+    vim_free(tofree1);
+    vim_free(tofree2);
+}
+
+    static void
+arg_type_mismatch(type_T *expected, type_T *actual, int argidx)
+{
+    char *tofree1, *tofree2;
+
+    semsg(_("E1013: argument %d: type mismatch, expected %s but got %s"),
+	    argidx,
+	    type_name(expected, &tofree1), type_name(actual, &tofree2));
     vim_free(tofree1);
     vim_free(tofree2);
 }

@@ -130,6 +130,19 @@ def Test_call_def_varargs()
   assert_equal('one,two,three', MyDefVarargs('one', 'two', 'three'))
 enddef
 
+" Only varargs
+def MyVarargsOnly(...args: list<string>): string
+  return join(args, ',')
+enddef
+
+def Test_call_varargs_only()
+  assert_equal('', MyVarargsOnly())
+  assert_equal('one', MyVarargsOnly('one'))
+  assert_equal('one,two', MyVarargsOnly('one', 'two'))
+  call CheckDefFailure(['MyVarargsOnly(1)'], 'E1013: argument 1: type mismatch, expected string but got number')
+  call CheckDefFailure(['MyVarargsOnly("one", 2)'], 'E1013: argument 2: type mismatch, expected string but got number')
+enddef
+
 def Test_using_var_as_arg()
   call writefile(['def Func(x: number)',  'let x = 234', 'enddef'], 'Xdef')
   call assert_fails('so Xdef', 'E1006:')
