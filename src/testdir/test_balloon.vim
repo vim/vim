@@ -32,14 +32,14 @@ func Test_balloon_eval_term()
 
   " Check that the balloon shows up after a mouse move
   let buf = RunVimInTerminal('-S XTest_beval', {'rows': 10, 'cols': 50})
-  call term_wait(buf, 100)
+  call TermWait(buf, 100)
   call term_sendkeys(buf, 'll')
   call term_sendkeys(buf, ":call Trigger()\<CR>")
   call VerifyScreenDump(buf, 'Test_balloon_eval_term_01', {})
 
   " Make sure the balloon still shows after 'updatetime' passed and CursorHold
   " was triggered.
-  call term_wait(buf, 300)
+  call TermWait(buf, 300)
   call VerifyScreenDump(buf, 'Test_balloon_eval_term_01a', {})
 
   " clean up
@@ -57,7 +57,7 @@ func Test_balloon_eval_term_visual()
 
   " Check that the balloon shows up after a mouse move
   let buf = RunVimInTerminal('-S XTest_beval_visual', {'rows': 10, 'cols': 50})
-  call term_wait(buf, 100)
+  call TermWait(buf, 100)
   call VerifyScreenDump(buf, 'Test_balloon_eval_term_02', {})
 
   " clean up
