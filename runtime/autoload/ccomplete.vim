@@ -635,3 +635,5 @@ endfunc
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
+
+" vim: noet sw=2 ts=8
