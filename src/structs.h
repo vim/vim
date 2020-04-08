@@ -1290,6 +1290,10 @@ typedef long_u hash_T;		// Type for hi_hash
 # endif
 #endif
 
+// On rare systems "char" is unsigned, sometimes we really want a signed 8-bit
+// value.
+typedef signed char int8_T;
+
 typedef double	float_T;
 
 typedef struct listvar_S list_T;
@@ -1342,7 +1346,7 @@ typedef enum
 typedef struct type_S type_T;
 struct type_S {
     vartype_T	    tt_type;
-    char	    tt_argcount;    // for func, -1 for unknown
+    int8_T	    tt_argcount;    // for func, -1 for unknown
     char	    tt_min_argcount; // number of non-optional arguments
     char	    tt_flags;	    // TTFLAG_ values
     type_T	    *tt_member;	    // for list, dict, func return type
