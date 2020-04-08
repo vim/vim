@@ -8,7 +8,7 @@ source check.vim
 " If the expected output argument is supplied, then check for it.
 func RunDbgCmd(buf, cmd, ...)
   call term_sendkeys(a:buf, a:cmd . "\r")
-  call term_wait(a:buf, 20)
+  call TermWait(a:buf)
 
   if a:0 != 0
     " Verify the expected output

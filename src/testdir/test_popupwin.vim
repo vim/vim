@@ -65,9 +65,9 @@ func Test_simple_popup()
 
   " clear all popups after moving the cursor a bit, so that ruler is updated
   call term_sendkeys(buf, "axxx\<Esc>")
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "0")
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, ":call popup_clear()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_08', {})
 
@@ -1389,7 +1389,7 @@ func Test_popup_beval()
   END
   call writefile(lines, 'XtestPopupBeval')
   let buf = RunVimInTerminal('-S XtestPopupBeval', #{rows: 10})
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, 'j')
   call term_sendkeys(buf, ":call Hover()\<CR>")
   call VerifyScreenDump(buf, 'Test_popupwin_beval_1', {})
@@ -2958,7 +2958,7 @@ func Test_popupmenu_info_border()
   call writefile(lines, 'XtestInfoPopup')
 
   let buf = RunVimInTerminal('-S XtestInfoPopup', #{rows: 14})
-  call term_wait(buf, 50)
+  call TermWait(buf, 25)
 
   call term_sendkeys(buf, "A\<C-X>\<C-U>")
   call VerifyScreenDump(buf, 'Test_popupwin_infopopup_1', {})
@@ -3006,7 +3006,7 @@ func Test_popupmenu_info_noborder()
   call writefile(lines, 'XtestInfoPopupNb')
 
   let buf = RunVimInTerminal('-S XtestInfoPopupNb', #{rows: 14})
-  call term_wait(buf, 50)
+  call TermWait(buf, 25)
 
   call term_sendkeys(buf, "A\<C-X>\<C-U>")
   call VerifyScreenDump(buf, 'Test_popupwin_infopopup_nb_1', {})
@@ -3024,7 +3024,7 @@ func Test_popupmenu_info_align_menu()
   call writefile(lines, 'XtestInfoPopupNb')
 
   let buf = RunVimInTerminal('-S XtestInfoPopupNb', #{rows: 14})
-  call term_wait(buf, 50)
+  call TermWait(buf, 25)
 
   call term_sendkeys(buf, "A\<C-X>\<C-U>")
   call term_sendkeys(buf, "\<C-N>")
@@ -3055,7 +3055,7 @@ func Test_popupmenu_info_hidden()
   call writefile(lines, 'XtestInfoPopupHidden')
 
   let buf = RunVimInTerminal('-S XtestInfoPopupHidden', #{rows: 14})
-  call term_wait(buf, 50)
+  call TermWait(buf, 25)
 
   call term_sendkeys(buf, "A\<C-X>\<C-U>")
   call VerifyScreenDump(buf, 'Test_popupwin_infopopup_hidden_1', {})
@@ -3113,7 +3113,7 @@ func Test_popupmenu_info_too_wide()
 
   call writefile(lines, 'XtestInfoPopupWide')
   let buf = RunVimInTerminal('-S XtestInfoPopupWide', #{rows: 8})
-  call term_wait(buf, 50)
+  call TermWait(buf, 25)
 
   call term_sendkeys(buf, "Ascr\<C-X>\<C-O>")
   call VerifyScreenDump(buf, 'Test_popupwin_infopopup_wide_1', {})

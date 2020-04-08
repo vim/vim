@@ -1761,9 +1761,9 @@ function s:Before_test_dirchanged()
   augroup END
   let s:li = []
   let s:dir_this = getcwd()
-  let s:dir_foo = s:dir_this . '/foo'
+  let s:dir_foo = s:dir_this . '/Xfoo'
   call mkdir(s:dir_foo)
-  let s:dir_bar = s:dir_this . '/bar'
+  let s:dir_bar = s:dir_this . '/Xbar'
   call mkdir(s:dir_bar)
 endfunc
 
@@ -2291,9 +2291,9 @@ func Test_autocmd_SafeState()
   call WaitForAssert({-> assert_match('^xxx', term_getline(buf, 6))}, 1000)
 
   call term_sendkeys(buf, ":let g:again = ''\<CR>:call CallTimer()\<CR>")
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, ":\<CR>")
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, ":echo g:again\<CR>")
   call WaitForAssert({-> assert_match('xtx', term_getline(buf, 6))}, 1000)
 
@@ -2317,7 +2317,7 @@ func Test_autocmd_CmdWinEnter()
   let buf = RunVimInTerminal('-S '.filename, #{rows: 6})
 
   call term_sendkeys(buf, "q:")
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, ":echo b:dummy_var\<cr>")
   call WaitForAssert({-> assert_match('^This is a dummy', term_getline(buf, 6))}, 2000)
   call term_sendkeys(buf, ":echo &buftype\<cr>")

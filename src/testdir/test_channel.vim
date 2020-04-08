@@ -1062,7 +1062,7 @@ func Test_write_to_buffer_and_scroll()
   END
   call writefile(lines, 'XtestBufferScroll')
   let buf = RunVimInTerminal('-S XtestBufferScroll', #{rows: 10})
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_job_buffer_scroll_1', {})
 
   " clean up

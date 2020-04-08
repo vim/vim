@@ -24,6 +24,21 @@ func StopShellInTerminal(buf)
   call WaitFor({-> job_status(job) == "dead"})
 endfunc
 
+" Wrapper around term_wait() to allow more time for re-runs of flaky tests
+" The second argument is the minimum time to wait in msec, 10 if omitted.
+func TermWait(buf, ...)
+  let wait_time = a:0 ? a:1 : 10
+  if g:run_nr == 2
+    let wait_time *= 4
+  elseif g:run_nr > 2
+    let wait_time *= 10
+  endif
+  call term_wait(a:buf, wait_time)
+
+  " In case it wasn't set yet.
+  let g:test_is_flaky = 1
+endfunc
+
 " Run Vim with "arguments" in a new terminal window.
 " By default uses a size of 20 lines and 75 columns.
 " Returns the buffer number of the terminal.
@@ -82,7 +97,7 @@ func RunVimInTerminal(arguments, options)
     let cols = term_getsize(buf)[1]
   endif
 
-  call term_wait(buf)
+  call TermWait(buf)
 
   " Wait for "All" or "Top" of the ruler to be shown in the last line or in
   " the status line of the last window. This can be quite slow (e.g. when
