@@ -1543,4 +1543,39 @@ func Test_searchforward_var()
   close!
 endfunc
 
+" Test for invalid regular expressions
+func Test_invalid_regexp()
+  set regexpengine=1
+  call assert_fails("call search(repeat('\\(.\\)', 10))", 'E51:')
+  call assert_fails("call search('a\\+*')", 'E61:')
+  call assert_fails("call search('x\\@#')", 'E59:')
+  call assert_fails("call search('\\_m')", 'E63:')
+  call assert_fails("call search('\\+')", 'E64:')
+  call assert_fails("call search('\\1')", 'E65:')
+  call assert_fails("call search('\\z\\(\\)')", 'E66:')
+  call assert_fails("call search('\\z2')", 'E67:')
+  call assert_fails("call search('\\zx')", 'E68:')
+  call assert_fails("call search('\\%[ab')", 'E69:')
+  call assert_fails("call search('\\%[]')", 'E70:')
+  call assert_fails("call search('\\%a')", 'E71:')
+  call assert_fails("call search('ab\\%[\\(cd\\)]')", 'E369:')
+  call assert_fails("call search('ab\\%[\\%(cd\\)]')", 'E369:')
+  set regexpengine=2
+  call assert_fails("call search('\\_')", 'E865:')
+  call assert_fails("call search('\\+')", 'E866:')
+  call assert_fails("call search('\\zx')", 'E867:')
+  call assert_fails("call search('\\%a')", 'E867:')
+  call assert_fails("call search('x\\@#')", 'E869:')
+  call assert_fails("call search(repeat('\\(.\\)', 10))", 'E872:')
+  call assert_fails("call search('\\_m')", 'E877:')
+  call assert_fails("call search('\\%(')", 'E53:')
+  call assert_fails("call search('\\(')", 'E54:')
+  call assert_fails("call search('\\)')", 'E55:')
+  call assert_fails("call search('\\z\\(\\)')", 'E66:')
+  call assert_fails("call search('\\%[ab')", 'E69:')
+  call assert_fails("call search('\\%9999999999999999999999999999v')", 'E951:')
+  set regexpengine&
+  call assert_fails("call search('\\%#=3ab')", 'E864:')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
