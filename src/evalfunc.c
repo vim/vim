@@ -837,7 +837,7 @@ static funcentry_T global_functions[] =
     {"sign_undefine",	0, 1, FEARG_1,	  ret_number,	SIGN_FUNC(f_sign_undefine)},
     {"sign_unplace",	1, 2, FEARG_1,	  ret_number,	SIGN_FUNC(f_sign_unplace)},
     {"sign_unplacelist", 1, 2, FEARG_1,	  ret_list_number, SIGN_FUNC(f_sign_unplacelist)},
-    {"simplify",	1, 1, 0,	  ret_string,	f_simplify},
+    {"simplify",	1, 1, FEARG_1,	  ret_string,	f_simplify},
     {"sin",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_sin)},
     {"sinh",		1, 1, FEARG_1,	  ret_float,	FLOAT_FUNC(f_sinh)},
     {"sort",		1, 3, FEARG_1,	  ret_list_any,	f_sort},
