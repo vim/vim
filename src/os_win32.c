@@ -6136,6 +6136,57 @@ write_chars(
     return written;
 }
 
+/*
+ * Pointer to next if SGR (^[[n;2;*;*;*m), NULL otherwise.
+ */
+    static char_u *
+sgrn2(
+    char_u *head,
+    int	   n)
+{
+    int argc;
+    int args[16];
+    char_u *p;
+
+    if (head == NULL || *head != '\033')
+	return NULL;
+
+    argc = 0;
+    p = head;
+    ++p;
+    do
+    {
+	++p;
+	args[argc] = getdigits(&p);
+	argc += (argc < 15) ? 1 : 0;
+    } while (*p == ';');
+
+    return *p == 'm' && argc == 5 && args[0] == n && args[1] == 2 ? ++p : NULL;
+}
+
+    static char_u *
+skipblank(char_u *q)
+{
+    char_u *p = q;
+
+    while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r')
+	++p;
+    return p;
+}
+
+/*
+ * Pointer to the next if any whitespace that may follow SGR is ESC, otherwise
+ * NULL.
+ */
+    static char_u *
+sgrn2c(
+    char_u *head,
+    int	   n)
+{
+    char_u *p = sgrn2(head, n);
+
+    return (p && *p != NUL && (p = skipblank(p)) && *p == '\033') ? p : NULL;
+}
 
 /*
  * mch_write(): write the output buffer to the screen, translating ESC
@@ -6255,12 +6306,29 @@ mch_write(
 # endif
 	    char_u  *p;
 	    int	    arg1 = 0, arg2 = 0, argc = 0, args[16];
+	    char_u  *sp;
 
 	    switch (s[2])
 	    {
 	    case '0': case '1': case '2': case '3': case '4':
 	    case '5': case '6': case '7': case '8': case '9':
-		p = s + 1;
+		p = s;
+
+		// If FG,BG,BG,FG of SGR are connected, the first FG can be
+		// omitted.
+		if (sgrn2(sgrn2(sgrn2c((sp = sgrn2(p, 38)), 48), 48), 38))
+		    p = sp;
+
+		// If FG,BG,FG,BG of SGR are connected, the first FG can be
+		// omitted.
+		if (sgrn2(sgrn2(sgrn2c((sp = sgrn2(p, 38)), 48), 38), 48))
+		    p = sp;
+
+		// If BG,BG of SGR are connected, the first BG can be omitted.
+		if (sgrn2((sp = sgrn2(p, 48)), 48))
+		    p = sp;
+
+		++p;
 		do
 		{
 		    ++p;
