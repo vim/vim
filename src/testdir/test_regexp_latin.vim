@@ -596,6 +596,9 @@ func Test_regexp_single_line_pat()
   " Test \%V atom
   call add(tl, [2, '\%>70vGesamt', 'Jean-Michel Charlier & Victor Hubinon\Gesamtausgabe [Salleck]    Buck Danny {Jean-Michel Charlier & Victor Hubinon}\Gesamtausgabe', 'Gesamt'])
 
+  " Test for ignoring case and matching repeated characters
+  call add(tl, [2, '\cb\+', 'aAbBbBcC', 'bBbB'])
+
   " Run the tests
   for t in tl
     let re = t[0]
@@ -694,6 +697,10 @@ func Test_regexp_multiline_pat()
   call add(tl, [2, '\_s\+', [' ', ' ', 'a', 'b'], ['XXaXXbXX']])
   " Any non-whitespace character or end-of-line
   call add(tl, [2, '\_S\+', [' ', ' ', 'a', 'b'], [' XX XX']])
+  " Any decimal digit or end-of-line
+  call add(tl, [2, '\_d\+', ['1', 'a', '2', 'b', '3'], ['XXaXXbXX']])
+  " Any non-decimal digit or end-of-line
+  call add(tl, [2, '\_D\+', ['1', 'a', '2', 'b', '3'], ['1XX2XX3XX']])
   " Any hexadecimal digit or end-of-line
   call add(tl, [2, '\_x\+', ['1', 'a', 'g', '9', '8'], ['XXgXX']])
   " Any non-hexadecimal digit or end-of-line
