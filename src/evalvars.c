@@ -1978,6 +1978,17 @@ set_vim_var_tv(int idx, typval_T *tv)
 	clear_tv(tv);
 	return FAIL;
     }
+    // VV_RO is also checked when compiling, but let's check here as well.
+    if (vimvars[idx].vv_flags & VV_RO)
+    {
+	semsg(_(e_readonlyvar), vimvars[idx].vv_name);
+	return FAIL;
+    }
+    if (sandbox && (vimvars[idx].vv_flags & VV_RO_SBX))
+    {
+	semsg(_(e_readonlysbx), vimvars[idx].vv_name);
+	return FAIL;
+    }
     clear_tv(&vimvars[idx].vv_di.di_tv);
     vimvars[idx].vv_di.di_tv = *tv;
     return OK;

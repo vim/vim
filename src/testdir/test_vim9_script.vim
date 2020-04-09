@@ -170,6 +170,11 @@ def Test_assignment_default()
   assert_equal(5678, nr)
 enddef
 
+def Mess(): string
+  v:foldstart = 123
+  return 'xxx'
+enddef
+
 func Test_assignment_failure()
   call CheckDefFailure(['let var=234'], 'E1004:')
   call CheckDefFailure(['let var =234'], 'E1004:')
@@ -206,6 +211,9 @@ func Test_assignment_failure()
   call CheckDefFailure(['let var: number = feedkeys("0")'], 'expected number but got void')
 
   call CheckDefFailure(['let var: dict <number>'], 'E1068:')
+  call CheckDefFailure(['let var: dict<number'], 'E1009:')
+
+  call assert_fails('s/^/\=Mess()/n', 'E794:')
   call CheckDefFailure(['let var: dict<number'], 'E1009:')
 endfunc
 
