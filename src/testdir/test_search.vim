@@ -1587,6 +1587,7 @@ func Test_invalid_regexp()
   call assert_fails("call search('\\)')", 'E55:')
   call assert_fails("call search('\\z\\(\\)')", 'E66:')
   call assert_fails("call search('\\%[ab')", 'E69:')
+  call assert_fails("call search('\\%[]')", 'E70:')
   call assert_fails("call search('\\%9999999999999999999999999999v')", 'E951:')
   set regexpengine&
   call assert_fails("call search('\\%#=3ab')", 'E864:')

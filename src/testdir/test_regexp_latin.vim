@@ -731,6 +731,13 @@ func Test_regexp_multiline_pat()
   call add(tl, [2, '\_U\+', ['a', 'A', 'b', 'B'], ['XXAXXBXX']])
   " Collection or end-of-line
   call add(tl, [2, '\_[a-z]\+', ['a', 'A', 'b', 'B'], ['XXAXXBXX']])
+  " start of line anywhere in the text
+  call add(tl, [2, 'one\zs\_s*\_^\zetwo',
+        \ ['', 'one', ' two', 'one', '', 'two'],
+        \ ['', 'one', ' two', 'oneXXtwo']])
+  " end of line anywhere in the text
+  call add(tl, [2, 'one\zs\_$\_s*two',
+        \ ['', 'one', ' two', 'one', '', 'two'], ['', 'oneXX', 'oneXX']])
 
   " Check that \_[0-9] matching EOL does not break a following \>
   call add(tl, [2, '\<\(\(25\_[0-5]\|2\_[0-4]\_[0-9]\|\_[01]\?\_[0-9]\_[0-9]\?\)\.\)\{3\}\(25\_[0-5]\|2\_[0-4]\_[0-9]\|\_[01]\?\_[0-9]\_[0-9]\?\)\>', ['', 'localnet/192.168.0.1', ''], ['', 'localnet/XX', '']])
@@ -876,22 +883,8 @@ func Test_matching_curpos()
   set re&
 endfunc
 
-" Test for matching the start and end of line
-func Test_start_end_of_line_match()
-  new
-  set regexpengine=1
-  call setline(1, ['', 'one', ' two', 'one', '', 'two'])
-  call search('one\_s*\_^two')
-  call assert_equal([4, 1], [line('.'), col('.')])
-  exe "normal gg/one\\_$\\_s* two\<CR>"
-  call assert_equal([2, 1], [line('.'), col('.')])
-  set regexpengine&
-  close!
-endfunc
-
 " Test for matching the start and end of a buffer
-func Test_start_end_of_buffer_match()
-  new
+func Regex_start_end_buffer()
   call setline(1, repeat(['vim edit'], 20))
   /\%^
   call assert_equal([0, 1, 1, 0], getpos('.'))
@@ -901,25 +894,33 @@ func Test_start_end_of_buffer_match()
   call assert_equal([0, 20, 8, 0], getpos('.'))
   exe "normal 6gg/..\\%$\<CR>"
   call assert_equal([0, 20, 7, 0], getpos('.'))
+  %d
+endfunc
+
+func Test_start_end_of_buffer_match()
+  new
+  set regexpengine=1
+  call Regex_start_end_buffer()
+  set regexpengine=2
+  call Regex_start_end_buffer()
   bwipe!
 endfunc
 
 " Check for detecting error
 func Test_regexp_error()
-  set regexpengine=2
-  call assert_fails("call matchlist('x x', ' \\ze*')", 'E888:')
-  call assert_fails("call matchlist('x x', ' \\zs*')", 'E888:')
-  set re&
+  call assert_fails("call matchlist('x x', '\\%#=1 \\zs*')", 'E888:')
+  call assert_fails("call matchlist('x x', '\\%#=1 \\ze*')", 'E888:')
+  call assert_fails("call matchlist('x x', '\\%#=2 \\zs*')", 'E888:')
+  call assert_fails("call matchlist('x x', '\\%#=2 \\ze*')", 'E888:')
   call assert_fails('exe "normal /\\%#=1\\%[x\\%[x]]\<CR>"', 'E369:')
 endfunc
 
 " Test for using the last substitute string pattern (~)
 func Test_regexp_last_subst_string()
   new
-  set regexpengine=1
   s/bar/baz/e
-  call assert_equal(matchstr("foo\nbaz\nbar", "\~"), "baz")
-  set regexpengine&
+  call assert_equal(matchstr("foo\nbaz\nbar", "\\%#=1\~"), "baz")
+  call assert_equal(matchstr("foo\nbaz\nbar", "\\%#=2\~"), "baz")
   close!
 endfunc
 
