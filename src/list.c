@@ -368,11 +368,14 @@ list_equal(
 {
     listitem_T	*item1, *item2;
 
-    if (l1 == NULL || l2 == NULL)
-	return FALSE;
     if (l1 == l2)
 	return TRUE;
     if (list_len(l1) != list_len(l2))
+	return FALSE;
+    if (list_len(l1) == 0)
+	// empty and NULL list are considered equal
+	return TRUE;
+    if (l1 == NULL || l2 == NULL)
 	return FALSE;
 
     range_list_materialize(l1);
