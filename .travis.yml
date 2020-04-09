@@ -124,8 +124,9 @@ script:
   - echo -e "\\033[33;1mBuilding Vim\\033[0m" && echo -en "travis_fold:start:build\\r\\033[0K"
   - |
     if [[ "${BUILD}" = "yes" ]]; then
+      # Append various warning flags to CFLAGS.
       # BSD sed needs backup extension specified.
-      sed -i.bak '/^CFLAGS/s/$/ -Wall -Wextra -Wshadow -Werror/' ${SRCDIR}/auto/config.mk
+      sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
       make ${SHADOWOPT} -j${NPROC}
     fi
   - echo -en "travis_fold:end:build\\r\\033[0K"
