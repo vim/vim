@@ -403,7 +403,7 @@ typval2type(typval_T *tv)
 	return &t_list_string;
     if (tv->v_type == VAR_DICT)  // e.g. for v:completed_item
 	return &t_dict_any;
-    return &t_any;
+    return &t_any;  // not used
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -974,7 +974,7 @@ generate_LOAD(
 }
 
 /*
- * Generate an ISN_LOADV instruction.
+ * Generate an ISN_LOADV instruction for v:var.
  */
     static int
 generate_LOADV(
@@ -982,8 +982,9 @@ generate_LOADV(
 	char_u	    *name,
 	int	    error)
 {
-    // load v:var
-    int vidx = find_vim_var(name);
+    int	    di_flags;
+    int	    vidx = find_vim_var(name, &di_flags);
+    type_T  *type;
 
     RETURN_OK_IF_SKIP(cctx);
     if (vidx < 0)
@@ -992,9 +993,9 @@ generate_LOADV(
 	    semsg(_(e_var_notfound), name);
 	return FAIL;
     }
+    type = typval2type(get_vim_var_tv(vidx));
 
-    // TODO: get actual type
-    return generate_LOAD(cctx, ISN_LOADV, vidx, NULL, &t_any);
+    return generate_LOAD(cctx, ISN_LOADV, vidx, NULL, type);
 }
 
 /*
@@ -3907,14 +3908,18 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	}
 	else if (STRNCMP(arg, "v:", 2) == 0)
 	{
-	    typval_T *vtv;
+	    typval_T	*vtv;
+	    int		di_flags;
 
-	    vimvaridx = find_vim_var(name + 2);
+	    vimvaridx = find_vim_var(name + 2, &di_flags);
 	    if (vimvaridx < 0)
 	    {
 		semsg(_(e_var_notfound), arg);
 		goto theend;
 	    }
+	    // We use the current value of "sandbox" here, is that OK?
+	    if (var_check_ro(di_flags, name, FALSE))
+		goto theend;
 	    dest = dest_vimvar;
 	    vtv = get_vim_var_tv(vimvaridx);
 	    type = typval2type(vtv);

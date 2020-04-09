@@ -28,7 +28,7 @@ char *get_var_special_name(int nr);
 dict_T *get_globvar_dict(void);
 hashtab_T *get_globvar_ht(void);
 dict_T *get_vimvar_dict(void);
-int find_vim_var(char_u *name);
+int find_vim_var(char_u *name, int *di_flags);
 void set_vim_var_type(int idx, vartype_T type);
 void set_vim_var_nr(int idx, varnumber_T val);
 char *get_vim_var_name(int idx);

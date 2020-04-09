@@ -1915,15 +1915,17 @@ get_vimvar_dict(void)
 
 /*
  * Returns the index of a v:variable.  Negative if not found.
+ * Returns DI_ flags in "di_flags".
  */
     int
-find_vim_var(char_u *name)
+find_vim_var(char_u *name, int *di_flags)
 {
-    dictitem_T *di = find_var_in_ht(&vimvarht, 0, name, TRUE);
-    struct vimvar *vv;
+    dictitem_T	    *di = find_var_in_ht(&vimvarht, 0, name, TRUE);
+    struct vimvar   *vv;
 
     if (di == NULL)
 	return -1;
+    *di_flags = di->di_flags;
     vv = (struct vimvar *)((char *)di - offsetof(vimvar_T, vv_di));
     return (int)(vv - vimvars);
 }

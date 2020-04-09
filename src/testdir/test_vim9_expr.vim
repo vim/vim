@@ -711,12 +711,28 @@ def Test_expr7_string()
   call CheckDefFailure("let x = 'abc", 'E115:')
 enddef
 
+def Test_expr7_vimvar()
+  let old: list<string> = v:oldfiles
+  let compl: dict<any> = v:completed_item
+
+  call CheckDefFailure("let old: list<number> = v:oldfiles", 'E1013: type mismatch, expected list<number> but got list<string>')
+  call CheckDefFailure("let old: dict<number> = v:completed_item", 'E1013: type mismatch, expected dict<number> but got dict<any>')
+enddef
+
 def Test_expr7_special()
   " special constant
   assert_equal(g:special_true, true)
   assert_equal(g:special_false, false)
+  assert_equal(g:special_true, v:true)
+  assert_equal(g:special_false, v:false)
   assert_equal(g:special_null, v:null)
   assert_equal(g:special_none, v:none)
+
+  call CheckDefFailure('v:true = true', 'E46:')
+  call CheckDefFailure('v:true = false', 'E46:')
+  call CheckDefFailure('v:false = true', 'E46:')
+  call CheckDefFailure('v:null = 11', 'E46:')
+  call CheckDefFailure('v:none = 22', 'E46:')
 enddef
 
 def Test_expr7_list()
@@ -962,7 +978,7 @@ func Test_expr_fails()
   call CheckDefFailure("CallMe2('yes' , 'no')", 'E1068:')
 
   call CheckDefFailure("v:nosuch += 3", 'E1001:')
-  call CheckDefFailure("let v:version = 3", 'E1064:')
+  call CheckDefFailure("let v:statusmsg = ''", 'E1064:')
   call CheckDefFailure("let asdf = v:nosuch", 'E1001:')
 
   call CheckDefFailure("echo len('asdf'", 'E110:')
