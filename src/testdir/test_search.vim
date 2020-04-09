@@ -688,9 +688,7 @@ func Test_search_cmdline8()
 endfunc
 
 " Tests for regexp with various magic settings
-func Test_search_regexp()
-  enew!
-
+func Run_search_regexp_magic_opt()
   put ='1 a aa abb abbccc'
   exe 'normal! /a*b\{2}c\+/e' . "\<CR>"
   call assert_equal([0, 2, 17, 0], getpos('.'))
@@ -725,6 +723,18 @@ func Test_search_regexp()
   exe 'normal! /\V[ab]\(\[xy]\)\1' . "\<CR>"
   call assert_equal([0, 9, 7, 0], getpos('.'))
 
+  %d
+endfunc
+
+func Test_search_regexp()
+  enew!
+
+  set regexpengine=1
+  call Run_search_regexp_magic_opt()
+  set regexpengine=2
+  call Run_search_regexp_magic_opt()
+  set regexpengine&
+
   set undolevels=100
   put ='9 foobar'
   put =''
@@ -732,12 +742,12 @@ func Test_search_regexp()
   normal G
   exe 'normal! dv?bar?' . "\<CR>"
   call assert_equal('9 foo', getline('.'))
-  call assert_equal([0, 10, 5, 0], getpos('.'))
-  call assert_equal(10, line('$'))
+  call assert_equal([0, 2, 5, 0], getpos('.'))
+  call assert_equal(2, line('$'))
   normal u
   call assert_equal('9 foobar', getline('.'))
-  call assert_equal([0, 10, 6, 0], getpos('.'))
-  call assert_equal(11, line('$'))
+  call assert_equal([0, 2, 6, 0], getpos('.'))
+  call assert_equal(3, line('$'))
 
   set undolevels&
   enew!
@@ -1547,8 +1557,12 @@ endfunc
 func Test_invalid_regexp()
   set regexpengine=1
   call assert_fails("call search(repeat('\\(.\\)', 10))", 'E51:')
-  call assert_fails("call search('a\\+*')", 'E61:')
+  call assert_fails("call search('\\%(')", 'E53:')
+  call assert_fails("call search('\\(')", 'E54:')
+  call assert_fails("call search('\\)')", 'E55:')
   call assert_fails("call search('x\\@#')", 'E59:')
+  call assert_fails('call search(''\v%(%(%(%(%(%(%(%(%(%(%(a){1}){1}){1}){1}){1}){1}){1}){1}){1}){1}){1}'')', 'E60:')
+  call assert_fails("call search('a\\+*')", 'E61:')
   call assert_fails("call search('\\_m')", 'E63:')
   call assert_fails("call search('\\+')", 'E64:')
   call assert_fails("call search('\\1')", 'E65:')
@@ -1573,6 +1587,7 @@ func Test_invalid_regexp()
   call assert_fails("call search('\\)')", 'E55:')
   call assert_fails("call search('\\z\\(\\)')", 'E66:')
   call assert_fails("call search('\\%[ab')", 'E69:')
+  call assert_fails("call search('\\%[]')", 'E70:')
   call assert_fails("call search('\\%9999999999999999999999999999v')", 'E951:')
   set regexpengine&
   call assert_fails("call search('\\%#=3ab')", 'E864:')
