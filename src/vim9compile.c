@@ -396,7 +396,7 @@ typval2type(typval_T *tv)
     if (tv->v_type == VAR_NUMBER)
 	return &t_number;
     if (tv->v_type == VAR_BOOL)
-	return &t_bool;
+	return &t_bool;  // not used
     if (tv->v_type == VAR_STRING)
 	return &t_string;
     if (tv->v_type == VAR_LIST)  // e.g. for v:oldfiles
@@ -642,7 +642,6 @@ generate_COMPARE(cctx_T *cctx, exptype_T exptype, int ic)
 	    case VAR_LIST: isntype = ISN_COMPARELIST; break;
 	    case VAR_DICT: isntype = ISN_COMPAREDICT; break;
 	    case VAR_FUNC: isntype = ISN_COMPAREFUNC; break;
-	    case VAR_PARTIAL: isntype = ISN_COMPAREPARTIAL; break;
 	    default: isntype = ISN_COMPAREANY; break;
 	}
     }
@@ -875,23 +874,6 @@ generate_PUSHFUNC(cctx_T *cctx, char_u *name, type_T *type)
     if ((isn = generate_instr_type(cctx, ISN_PUSHFUNC, type)) == NULL)
 	return FAIL;
     isn->isn_arg.string = name;
-
-    return OK;
-}
-
-/*
- * Generate an ISN_PUSHPARTIAL instruction with partial "part".
- * Consumes "part".
- */
-    static int
-generate_PUSHPARTIAL(cctx_T *cctx, partial_T *part)
-{
-    isn_T	*isn;
-
-    RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr_type(cctx, ISN_PUSHPARTIAL, &t_func_any)) == NULL)
-	return FAIL;
-    isn->isn_arg.partial = part;
 
     return OK;
 }
@@ -4165,9 +4147,6 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    case VAR_FUNC:
 		generate_PUSHFUNC(cctx, NULL, &t_func_void);
 		break;
-	    case VAR_PARTIAL:
-		generate_PUSHPARTIAL(cctx, NULL);
-		break;
 	    case VAR_LIST:
 		generate_NEWLIST(cctx, 0);
 		break;
@@ -4183,6 +4162,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	    case VAR_NUMBER:
 	    case VAR_UNKNOWN:
 	    case VAR_ANY:
+	    case VAR_PARTIAL:
 	    case VAR_VOID:
 	    case VAR_SPECIAL:  // cannot happen
 		generate_PUSHNR(cctx, 0);
@@ -6018,10 +5998,6 @@ delete_instr(isn_T *isn)
 	    blob_unref(isn->isn_arg.blob);
 	    break;
 
-	case ISN_PUSHPARTIAL:
-	    partial_unref(isn->isn_arg.partial);
-	    break;
-
 	case ISN_PUSHJOB:
 #ifdef FEAT_JOB_CHANNEL
 	    job_unref(isn->isn_arg.job);
@@ -6054,7 +6030,6 @@ delete_instr(isn_T *isn)
 	case ISN_COMPAREFUNC:
 	case ISN_COMPARELIST:
 	case ISN_COMPARENR:
-	case ISN_COMPAREPARTIAL:
 	case ISN_COMPARESPECIAL:
 	case ISN_COMPARESTRING:
 	case ISN_CONCAT:

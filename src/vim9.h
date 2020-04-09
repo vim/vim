@@ -46,7 +46,6 @@ typedef enum {
     ISN_PUSHS,		// push string isn_arg.string
     ISN_PUSHBLOB,	// push blob isn_arg.blob
     ISN_PUSHFUNC,	// push func isn_arg.string
-    ISN_PUSHPARTIAL,	// push partial ?
     ISN_PUSHCHANNEL,	// push channel isn_arg.channel
     ISN_PUSHJOB,	// push channel isn_arg.job
     ISN_NEWLIST,	// push list from stack items, size is isn_arg.number
@@ -92,7 +91,6 @@ typedef enum {
     ISN_COMPARELIST,
     ISN_COMPAREDICT,
     ISN_COMPAREFUNC,
-    ISN_COMPAREPARTIAL,
     ISN_COMPAREANY,
 
     // expression operations

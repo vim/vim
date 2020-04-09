@@ -858,7 +858,6 @@ call_def_function(
 	    case ISN_PUSHS:
 	    case ISN_PUSHBLOB:
 	    case ISN_PUSHFUNC:
-	    case ISN_PUSHPARTIAL:
 	    case ISN_PUSHCHANNEL:
 	    case ISN_PUSHJOB:
 		if (ga_grow(&ectx.ec_stack, 1) == FAIL)
@@ -895,12 +894,6 @@ call_def_function(
 			else
 			    tv->vval.v_string =
 					     vim_strsave(iptr->isn_arg.string);
-			break;
-		    case ISN_PUSHPARTIAL:
-			tv->v_type = VAR_PARTIAL;
-			tv->vval.v_partial = iptr->isn_arg.partial;
-			if (tv->vval.v_partial != NULL)
-			    ++tv->vval.v_partial->pt_refcount;
 			break;
 		    case ISN_PUSHCHANNEL:
 #ifdef FEAT_JOB_CHANNEL
@@ -1412,7 +1405,6 @@ call_def_function(
 	    case ISN_COMPARESTRING:
 	    case ISN_COMPAREDICT:
 	    case ISN_COMPAREFUNC:
-	    case ISN_COMPAREPARTIAL:
 	    case ISN_COMPAREANY:
 		{
 		    typval_T	*tv1 = STACK_TV_BOT(-2);
@@ -1932,14 +1924,6 @@ ex_disassemble(exarg_T *eap)
 					       name == NULL ? "[none]" : name);
 		}
 		break;
-	    case ISN_PUSHPARTIAL:
-		{
-		    partial_T *part = iptr->isn_arg.partial;
-
-		    smsg("%4d PUSHPARTIAL \"%s\"", current,
-			 part == NULL ? "[none]" : (char *)partial_name(part));
-		}
-		break;
 	    case ISN_PUSHCHANNEL:
 #ifdef FEAT_JOB_CHANNEL
 		{
@@ -2117,7 +2101,6 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_COMPARELIST:
 	    case ISN_COMPAREDICT:
 	    case ISN_COMPAREFUNC:
-	    case ISN_COMPAREPARTIAL:
 	    case ISN_COMPAREANY:
 		   {
 		       char *p;
@@ -2154,8 +2137,6 @@ ex_disassemble(exarg_T *eap)
 			   case ISN_COMPARELIST: type = "COMPARELIST"; break;
 			   case ISN_COMPAREDICT: type = "COMPAREDICT"; break;
 			   case ISN_COMPAREFUNC: type = "COMPAREFUNC"; break;
-			   case ISN_COMPAREPARTIAL:
-						 type = "COMPAREPARTIAL"; break;
 			   case ISN_COMPAREANY: type = "COMPAREANY"; break;
 			   default: type = "???"; break;
 		       }
