@@ -127,6 +127,7 @@ script:
       # Append various warning flags to CFLAGS.
       # BSD sed needs backup extension specified.
       sed -i.bak -f ci/config.mk.sed ${SRCDIR}/auto/config.mk
+      sed -i.bak -f ci/config.mk.${CC}.sed ${SRCDIR}/auto/config.mk
       make ${SHADOWOPT} -j${NPROC}
     fi
   - echo -en "travis_fold:end:build\\r\\033[0K"
