@@ -953,10 +953,15 @@ channel_open(
 	void (*nb_close_cb)(void))
 {
     int			sd = -1;
+    channel_T		*channel = NULL;
+#ifdef FEAT_IPV6
     struct addrinfo	hints;
     struct addrinfo	*res = NULL;
     struct addrinfo	*addr = NULL;
-    channel_T		*channel;
+#else
+    struct sockaddr_in	server;
+    struct hostent	*host = NULL;
+#endif
 
 #ifdef MSWIN
     channel_init_winsock();
@@ -971,9 +976,16 @@ channel_open(
 
     // Get the server internet address and put into addr structure fill in the
     // socket address structure and connect to server.
+#ifdef FEAT_IPV6
     vim_memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
+# ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+# endif
+    // Set port number manually in order to prevent name resolution services
+    // from being invoked in the environment where AI_NUMERICSERV is not
+    // defined.
     if (getaddrinfo(hostname, NULL, &hints, &res) != 0)
     {
 	ch_error(channel, "in getaddrinfo() in channel_open()");
@@ -1012,7 +1024,7 @@ channel_open(
 	ch_log(channel, "Trying to connect to %s port %d", dst, port);
 
 	// On Mac and Solaris a zero timeout almost never works.  At least wait
-	// one millisecond. Let's do it for all systems, because we don't know
+	// one millisecond.  Let's do it for all systems, because we don't know
 	// why this is needed.
 	if (waittime == 0)
 	    waittime = 1;
@@ -1024,6 +1036,37 @@ channel_open(
     }
 
     freeaddrinfo(res);
+#else
+    vim_memset((char *)&server, 0, sizeof(server));
+    server.sin_family = AF_INET;
+    server.sin_port = htons(port);
+    if ((host = gethostbyname(hostname)) == NULL)
+    {
+	ch_error(channel, "in gethostbyname() in channel_open()");
+	PERROR(_("E901: gethostbyname() in channel_open()"));
+	channel_free(channel);
+	return NULL;
+    }
+    {
+	char *p;
+
+	// When using host->h_addr_list[0] directly ubsan warns for it to not
+	// be aligned.  First copy the pointer to avoid that.
+	memcpy(&p, &host->h_addr_list[0], sizeof(p));
+	memcpy((char *)&server.sin_addr, p, host->h_length);
+    }
+
+    ch_log(channel, "Trying to connect to %s port %d", hostname, port);
+
+    // On Mac and Solaris a zero timeout almost never works.  At least wait one
+    // millisecond.  Let's do it for all systems, because we don't know why
+    // this is needed.
+    if (waittime == 0)
+	waittime = 1;
+
+    sd = channel_connect(channel, (struct sockaddr *)&server, sizeof(server),
+								   &waittime);
+#endif
 
     if (sd < 0)
     {
