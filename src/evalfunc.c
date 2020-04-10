@@ -3943,6 +3943,13 @@ f_has(typval_T *argvars, typval_T *rettv)
 #endif
 		},
 	{"insert_expand", 1},
+	{"ipv6",
+#ifdef FEAT_IPV6
+		1
+#else
+		0
+#endif
+	},
 	{"job",
 #ifdef FEAT_JOB_CHANNEL
 		1

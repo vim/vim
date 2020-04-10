@@ -145,6 +145,9 @@ endfunc
 " Command to check that loopback device has IPv6 address
 command CheckIPv6 call CheckIPv6()
 func CheckIPv6()
+  if !has('ipv6')
+    throw 'Skipped: cannot use IPv6 networking'
+  endif
   if !exists('s:ipv6_loopback')
     let s:ipv6_loopback = s:CheckIPv6Loopback()
   endif
