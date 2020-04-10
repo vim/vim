@@ -1,4 +1,4 @@
-*help.txt*	For Vim version 8.2.  Last change: 2019 Jul 21
+*help.txt*	For Vim version 8.2.  Last change: 2020 Apr 05
 
 			VIM - main help file
 									 k
@@ -31,7 +31,7 @@ Get specific help:  It is possible to go directly to whatever you want help
 		    help entries for "word".
 		    Or use ":helpgrep word". |:helpgrep|
 
-  Getting started:  Do the Vim tutor, a 20 minute interactive training for the
+  Getting started:  Do the Vim tutor, a 30-minute interactive course for the
 		    basic commands, see |vimtutor|.
 		    Read the user manual from start to end: |usr_01.txt|
 
@@ -41,7 +41,7 @@ through the help of many others.  See |credits|.
 						*doc-file-list* *Q_ct*
 BASIC:
 |quickref|	Overview of the most common commands you will use
-|tutor|		20 minutes training course for beginners
+|tutor|		30-minute interactive course for beginners
 |copying|	About copyrights
 |iccf|		Helping poor children in Uganda
 |sponsor|	Sponsor Vim development, become a registered Vim user
@@ -144,7 +144,7 @@ Special issues ~
 |remote.txt|	using Vim as a server or client
 |term.txt|	using different terminals and mice
 |terminal.txt|	Terminal window support
-|popup.txt|	popop window support
+|popup.txt|	popup window support
 
 Programming language support ~
 |indent.txt|	automatic indenting for C and other languages

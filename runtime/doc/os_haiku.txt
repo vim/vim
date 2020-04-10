@@ -88,7 +88,7 @@ Stuff that does not work yet:
 
 4. The $VIM directory					*haiku-vimdir*
 
-$VIM is the symbolic name for the place where Vims support files are stored.
+$VIM is the symbolic name for the place where Vim's support files are stored.
 The default value for $VIM is set at compile time and can be determined with >
 
   :version

@@ -1,8 +1,7 @@
 " Vim filetype plugin file
 " Language:	man
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
-" Last Change: 	2020 Mar 25
-"		(fix by Jason Franklin)
+" Last Change: 	2020 Apr 6
 
 " To make the ":Man" command available before editing a manual page, source
 " this script from your startup vimrc file.
@@ -205,6 +204,7 @@ func <SID>GetPage(cmdmods, ...)
     let s:env_has_u = (v:shell_error == 0)
   endif
   let env_cmd = s:env_has_u ? 'env -u MANPAGER' : 'env MANPAGER=cat'
+  let env_cmd .= ' GROFF_NO_SGR=1'
   let man_cmd = env_cmd . ' man ' . s:GetCmdArg(sect, page) . ' | col -b'
   silent exec "r !" . man_cmd
 

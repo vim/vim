@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Apr 03
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Apr 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -120,6 +120,13 @@ and without `:let`, because there is no rule about where they are declared.
 Variables cannot shadow previously defined variables.
 Variables may shadow Ex commands, rename the variable if needed.
 
+Global variables must be prefixed with "g:", also at the script level.
+However, global user defined functions are used without "g:". >
+	vim9script
+	let script_local = 'text'
+	let g:global = 'value'
+	let Funcref = ThatFunction
+
 Since "&opt = value" is now assigning a value to option "opt", ":&" cannot be
 used to repeat a `:substitute` command.
 
@@ -154,6 +161,18 @@ functions can be called before being defined.  This is required to be able
 have cyclic dependencies between functions.  It is slightly less efficient,
 since the function has to be looked up by name.  And a typo in the function
 name will only be found when the call is executed.
+
+
+Omitting function() ~
+
+A user defined function can be used as a function reference in an expression
+without `function()`. The argument types and return type will then be checked.
+The function must already have been defined. >
+
+	let Funcref = MyFunction
+
+When using `function()` the resulting type is "func", a function with any
+number of arguments and any return type.  The function can be defined later.
 
 
 No curly braces expansion ~
@@ -213,8 +232,7 @@ few exceptions.
 	blob		non-empty
 	list		non-empty (different from JavaScript)
 	dictionary	non-empty (different from JavaScript)
-	func		when not NULL
-	partial		when not NULL
+	func		when there is a function name
 	special		v:true
 	job		when not NULL
 	channel		when not NULL
@@ -301,6 +319,7 @@ The following builtin types are supported:
 	job
 	channel
 	func
+	func: {type}
 	func({type}, ...)
 	func({type}, ...): {type}
 
@@ -318,12 +337,22 @@ memory.
 
 A partial and function can be declared in more or less specific ways:
 func				any kind of function reference, no type
-				checking
+				checking for arguments or return value
 func: {type}			any number and type of arguments with specific
 				return type
-func({type} ...)		function with argument types, does not return
+func({type})			function with argument type, does not return
 				a value
-func({type} ...): {type}	function with argument types and return type
+func({type}): {type}		function with argument type and return type
+func(?{type})			function with type of optional argument, does
+				not return a value
+func(...{type})			function with type of variable number of
+				arguments, does not return a value
+func({type}, ?{type}, ...{type}): {type}
+				function with:
+				- type of mandatory argument
+				- type of optional argument
+				- type of variable number of arguments
+				- return type
 
 If the return type is "void" the function does not return a value.
 

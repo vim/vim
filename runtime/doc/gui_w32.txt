@@ -199,7 +199,7 @@ With..." menu.  This means you can use Vim to edit many files.  Not every file
 One reason to add this is to be able to edit HTML files directly from Internet
 Explorer.  To enable this use the "Tools" menu, "Internet Options..." entry.
 In the dialog select the "Programs" tab and select Vim in the "HTML editor"
-choice.  If it's not there than installing didn't work properly.
+choice.  If it's not there then installing didn't work properly.
 
 Doing this manually can be done with this script:
 
