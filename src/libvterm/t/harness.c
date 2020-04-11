@@ -65,10 +65,9 @@ static VTermScreen *screen;
 
 static VTermEncodingInstance encoding;
 
-static int parser_text(const char bytes[], size_t len, void *user)
+static int parser_text(const char bytes[], size_t len, void *user UNUSED)
 {
   size_t i;
-  (void)user;
 
   printf("text ");
   for(i = 0; i < len; i++) {
@@ -82,18 +81,16 @@ static int parser_text(const char bytes[], size_t len, void *user)
   return i;
 }
 
-static int parser_control(unsigned char control, void *user)
+static int parser_control(unsigned char control, void *user UNUSED)
 {
-  (void)user;
   printf("control %02x\n", control);
 
   return 1;
 }
 
-static int parser_escape(const char bytes[], size_t len, void *user)
+static int parser_escape(const char bytes[], size_t len, void *user UNUSED)
 {
   size_t i;
-  (void)user;
 
   if(bytes[0] >= 0x20 && bytes[0] < 0x30) {
     if(len < 2)
@@ -112,10 +109,9 @@ static int parser_escape(const char bytes[], size_t len, void *user)
   return len;
 }
 
-static int parser_csi(const char *leader, const long args[], int argcount, const char *intermed, char command, void *user)
+static int parser_csi(const char *leader, const long args[], int argcount, const char *intermed, char command, void *user UNUSED)
 {
   int i;
-  (void)user;
   printf("csi %02x", command);
 
   if(leader && leader[0]) {
@@ -144,10 +140,9 @@ static int parser_csi(const char *leader, const long args[], int argcount, const
   return 1;
 }
 
-static int parser_osc(const char *command, size_t cmdlen, void *user)
+static int parser_osc(const char *command, size_t cmdlen, void *user UNUSED)
 {
   size_t i;
-  (void)user;
 
   printf("osc ");
   for(i = 0; i < cmdlen; i++)
@@ -157,10 +152,9 @@ static int parser_osc(const char *command, size_t cmdlen, void *user)
   return 1;
 }
 
-static int parser_dcs(const char *command, size_t cmdlen, void *user)
+static int parser_dcs(const char *command, size_t cmdlen, void *user UNUSED)
 {
   size_t i;
-  (void)user;
 
   printf("dcs ");
   for(i = 0; i < cmdlen; i++)
@@ -184,9 +178,8 @@ static VTermParserCallbacks parser_cbs = {
 
 static int want_movecursor = 0;
 static VTermPos state_pos;
-static int movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user)
+static int movecursor(VTermPos pos, VTermPos oldpos UNUSED, int visible UNUSED, void *user UNUSED)
 {
-  (void)oldpos, (void)visible, (void)user;
   state_pos = pos;
 
   if(want_movecursor)
@@ -196,9 +189,8 @@ static int movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user)
 }
 
 static int want_scrollrect = 0;
-static int scrollrect(VTermRect rect, int downward, int rightward, void *user)
+static int scrollrect(VTermRect rect, int downward, int rightward, void *user UNUSED)
 {
-  (void)user;
   if(!want_scrollrect)
     return 0;
 
@@ -210,9 +202,8 @@ static int scrollrect(VTermRect rect, int downward, int rightward, void *user)
 }
 
 static int want_moverect = 0;
-static int moverect(VTermRect dest, VTermRect src, void *user)
+static int moverect(VTermRect dest, VTermRect src, void *user UNUSED)
 {
-  (void)user;
   if(!want_moverect)
     return 0;
 
@@ -224,9 +215,8 @@ static int moverect(VTermRect dest, VTermRect src, void *user)
 }
 
 static int want_settermprop = 0;
-static int settermprop(VTermProp prop, VTermValue *val, void *user)
+static int settermprop(VTermProp prop, VTermValue *val, void *user UNUSED)
 {
-  (void)user;
   VTermValueType type;
   if(!want_settermprop)
     return 1;
@@ -256,10 +246,9 @@ static int settermprop(VTermProp prop, VTermValue *val, void *user)
 // These callbacks are for State
 
 static int want_state_putglyph = 0;
-static int state_putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
+static int state_putglyph(VTermGlyphInfo *info, VTermPos pos, void *user UNUSED)
 {
   int i;
-  (void)user;
   if(!want_state_putglyph)
     return 1;
 
@@ -279,9 +268,8 @@ static int state_putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
 }
 
 static int want_state_erase = 0;
-static int state_erase(VTermRect rect, int selective, void *user)
+static int state_erase(VTermRect rect, int selective, void *user UNUSED)
 {
-  (void)user;
   if(!want_state_erase)
     return 1;
 
@@ -303,9 +291,8 @@ static struct {
   VTermColor foreground;
   VTermColor background;
 } state_pen;
-static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user)
+static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user UNUSED)
 {
-  (void)user;
   switch(attr) {
   case VTERM_ATTR_BOLD:
     state_pen.bold = val->boolean;
@@ -342,9 +329,8 @@ static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user)
   return 1;
 }
 
-static int state_setlineinfo(int row, const VTermLineInfo *newinfo, const VTermLineInfo *oldinfo, void *user)
+static int state_setlineinfo(int row UNUSED, const VTermLineInfo *newinfo UNUSED, const VTermLineInfo *oldinfo UNUSED, void *user UNUSED)
 {
-  (void)row, (void)newinfo, (void)oldinfo, (void)user;
   return 1;
 }
 
@@ -364,9 +350,8 @@ VTermStateCallbacks state_cbs = {
 
 static int want_screen_damage = 0;
 static int want_screen_damage_cells = 0;
-static int screen_damage(VTermRect rect, void *user)
+static int screen_damage(VTermRect rect, void *user UNUSED)
 {
-  (void)user;
   if(!want_screen_damage)
     return 1;
 
@@ -417,11 +402,10 @@ static int screen_damage(VTermRect rect, void *user)
 }
 
 static int want_screen_scrollback = 0;
-static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user)
+static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user UNUSED)
 {
   int eol;
   int c;
-  (void)user;
 
   if(!want_screen_scrollback)
     return 1;
@@ -438,10 +422,9 @@ static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user
   return 1;
 }
 
-static int screen_sb_popline(int cols, VTermScreenCell *cells, void *user)
+static int screen_sb_popline(int cols, VTermScreenCell *cells, void *user UNUSED)
 {
   int col;
-  (void)user;
 
   if(!want_screen_scrollback)
     return 0;
@@ -471,11 +454,10 @@ VTermScreenCallbacks screen_cbs = {
   screen_sb_popline // sb_popline
 };
 
-int main(int argc, char **argv)
+int main(int argc UNUSED, char **argv UNUSED)
 {
   char line[1024] = {0};
   int flag;
-  (void)argc, (void)argv;
 
   int err;
 
