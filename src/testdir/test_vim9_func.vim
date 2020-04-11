@@ -131,6 +131,47 @@ def Test_call_def_varargs()
   call CheckDefFailure(['MyDefVarargs("one", 22)'], 'E1013: argument 2: type mismatch, expected string but got number')
 enddef
 
+let s:value = ''
+
+def FuncOneDefArg(opt = 'text')
+  s:value = opt
+enddef
+
+def FuncTwoDefArg(nr = 123, opt = 'text'): string
+  return nr .. opt
+enddef
+
+def FuncVarargs(...arg: list<string>): string
+  return join(arg, ',')
+enddef
+
+def Test_func_type_varargs()
+  let RefDefArg: func(?string)
+  RefDefArg = FuncOneDefArg
+  RefDefArg()
+  assert_equal('text', s:value)
+  RefDefArg('some')
+  assert_equal('some', s:value)
+
+  let RefDef2Arg: func(?number, ?string): string
+  RefDef2Arg = FuncTwoDefArg
+  assert_equal('123text', RefDef2Arg())
+  assert_equal('99text', RefDef2Arg(99))
+  assert_equal('77some', RefDef2Arg(77, 'some'))
+
+  call CheckDefFailure(['let RefWrong: func(string?)'], 'E1010:')
+  call CheckDefFailure(['let RefWrong: func(?string, string)'], 'E1007:')
+
+  let RefVarargs: func(...list<string>): string
+  RefVarargs = FuncVarargs
+  assert_equal('', RefVarargs())
+  assert_equal('one', RefVarargs('one'))
+  assert_equal('one,two', RefVarargs('one', 'two'))
+
+  call CheckDefFailure(['let RefWrong: func(...list<string>, string)'], 'E110:')
+  call CheckDefFailure(['let RefWrong: func(...list<string>, ?string)'], 'E110:')
+enddef
+
 " Only varargs
 def MyVarargsOnly(...args: list<string>): string
   return join(args, ',')

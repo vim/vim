@@ -120,11 +120,13 @@ init_instr_idx(ufunc_T *ufunc, int argcount, ectx_T *ectx)
  * - reserved space for local variables
  */
     static int
-call_dfunc(int cdf_idx, int argcount, ectx_T *ectx)
+call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
 {
+    int	    argcount = argcount_arg;
     dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + cdf_idx;
     ufunc_T *ufunc = dfunc->df_ufunc;
-    int	    optcount = ufunc_argcount(ufunc) - argcount;
+    int	    arg_to_add;
+    int	    vararg_count = 0;
     int	    idx;
 
     if (dfunc->df_deleted)
@@ -133,18 +135,72 @@ call_dfunc(int cdf_idx, int argcount, ectx_T *ectx)
 	return FAIL;
     }
 
-    if (ga_grow(&ectx->ec_stack, optcount + 3 + dfunc->df_varcount) == FAIL)
+    if (ufunc->uf_va_name != NULL)
+    {
+	int	iidx;
+	isn_T	*iptr;
+
+	// Need to make a list out of the vararg arguments.  There is a
+	// ISN_NEWLIST instruction at the start of the function body, we need
+	// to move the arguments below the stack frame and pass the count.
+	// Stack at time of call with 2 varargs:
+	//   normal_arg
+	//   optional_arg
+	//   vararg_1
+	//   vararg_2
+	// When starting execution:
+	//    normal_arg
+	//    optional_arg
+	//    space list of varargs
+	//    STACK_FRAME
+	//    [local variables]
+	//    vararg_1
+	//    vararg_2
+	// TODO: This doesn't work if the same function is used for a default
+	// argument value.  Forbid that somehow?
+	vararg_count = argcount - ufunc->uf_args.ga_len;
+	if (vararg_count < 0)
+	    vararg_count = 0;
+	else
+	    argcount -= vararg_count;
+	if (ufunc->uf_def_arg_idx == NULL)
+	    iidx = 0;
+	else
+	    iidx = ufunc->uf_def_arg_idx[ufunc->uf_def_args.ga_len];
+	iptr = &dfunc->df_instr[iidx];
+	if (iptr->isn_type != ISN_NEWLIST)
+	{
+	    iemsg("Not a ISN_NEWLIST instruction");
+	    return FAIL;
+	}
+	iptr->isn_arg.number = vararg_count;
+    }
+
+    arg_to_add = ufunc_argcount(ufunc) - argcount;
+    if (arg_to_add < 0)
+    {
+	iemsg("Argument count wrong?");
+	return FAIL;
+    }
+    if (ga_grow(&ectx->ec_stack, arg_to_add + 3 + dfunc->df_varcount) == FAIL)
 	return FAIL;
 
-    if (optcount < 0)
+    if (vararg_count > 0)
     {
-	emsg("argument count wrong?");
-	return FAIL;
+	int stack_added = arg_to_add + STACK_FRAME_SIZE + dfunc->df_varcount;
+
+	// Move the varargs to below the stack frame.
+	// TODO: use mch_memmove()
+	for (idx = 1; idx <= vararg_count; ++idx)
+	    *STACK_TV_BOT(stack_added - idx) = *STACK_TV_BOT(-idx);
+	ectx->ec_stack.ga_len -= vararg_count;
     }
 
     // Reserve space for omitted optional arguments, filled in soon.
-    // Also any empty varargs argument.
-    ectx->ec_stack.ga_len += optcount;
+    // Also room for a list of varargs, if there is one.
+    for (idx = 0; idx < arg_to_add; ++idx)
+	STACK_TV_BOT(idx)->v_type = VAR_UNKNOWN;
+    ectx->ec_stack.ga_len += arg_to_add;
 
     // Store current execution state in stack frame for ISN_RETURN.
     // TODO: If the actual number of arguments doesn't match what the called
@@ -157,7 +213,8 @@ call_dfunc(int cdf_idx, int argcount, ectx_T *ectx)
     // Initialize local variables
     for (idx = 0; idx < dfunc->df_varcount; ++idx)
 	STACK_TV_BOT(STACK_FRAME_SIZE + idx)->v_type = VAR_UNKNOWN;
-    ectx->ec_stack.ga_len += STACK_FRAME_SIZE + dfunc->df_varcount;
+    ectx->ec_stack.ga_len += STACK_FRAME_SIZE + dfunc->df_varcount
+								+ vararg_count;
 
     // Set execution state to the start of the called function.
     ectx->ec_dfunc_idx = cdf_idx;
@@ -430,7 +487,7 @@ call_def_function(
 #undef STACK_TV_BOT
 #define STACK_TV_BOT(idx) (((typval_T *)ectx.ec_stack.ga_data) + ectx.ec_stack.ga_len + idx)
 
-// Get pointer to local variable on the stack.
+// Get pointer to a local variable on the stack.  Negative for arguments.
 #define STACK_TV_VAR(idx) (((typval_T *)ectx.ec_stack.ga_data) + ectx.ec_frame + STACK_FRAME_SIZE + idx)
 
     vim_memset(&ectx, 0, sizeof(ectx));

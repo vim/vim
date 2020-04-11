@@ -1346,7 +1346,7 @@ typedef enum
 typedef struct type_S type_T;
 struct type_S {
     vartype_T	    tt_type;
-    int8_T	    tt_argcount;    // for func, -1 for unknown
+    int8_T	    tt_argcount;    // for func, incl. vararg, -1 for unknown
     char	    tt_min_argcount; // number of non-optional arguments
     char	    tt_flags;	    // TTFLAG_ values
     type_T	    *tt_member;	    // for list, dict, func return type

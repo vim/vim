@@ -304,6 +304,23 @@ get_dict_type(type_T *member_type, garray_T *type_gap)
 }
 
 /*
+ * Allocate a new type for a function.
+ */
+    static type_T *
+alloc_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
+{
+    type_T *type = alloc_type(type_gap);
+
+    if (type == NULL)
+	return &t_any;
+    type->tt_type = VAR_FUNC;
+    type->tt_member = ret_type;
+    type->tt_argcount = argcount;
+    type->tt_args = NULL;
+    return type;
+}
+
+/*
  * Get a function type, based on the return type "ret_type".
  * If "argcount" is -1 or 0 a predefined type can be used.
  * If "argcount" > 0 always create a new type, so that arguments can be added.
@@ -311,8 +328,6 @@ get_dict_type(type_T *member_type, garray_T *type_gap)
     static type_T *
 get_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
 {
-    type_T *type;
-
     // recognize commonly used types
     if (argcount <= 0)
     {
@@ -351,15 +366,7 @@ get_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
 	}
     }
 
-    // Not a common type or has arguments, create a new entry.
-    type = alloc_type(type_gap);
-    if (type == NULL)
-	return &t_any;
-    type->tt_type = VAR_FUNC;
-    type->tt_member = ret_type;
-    type->tt_argcount = argcount;
-    type->tt_args = NULL;
-    return type;
+    return alloc_func_type(ret_type, argcount, type_gap);
 }
 
 /*
@@ -370,9 +377,10 @@ get_func_type(type_T *ret_type, int argcount, garray_T *type_gap)
 func_type_add_arg_types(
 	type_T	    *functype,
 	int	    argcount,
-	int	    min_argcount,
 	garray_T    *type_gap)
 {
+    // To make it easy to free the space needed for the argument types, add the
+    // pointer to type_gap.
     if (ga_grow(type_gap, 1) == FAIL)
 	return FAIL;
     functype->tt_args = ALLOC_CLEAR_MULT(type_T *, argcount);
@@ -381,9 +389,6 @@ func_type_add_arg_types(
     ((type_T **)type_gap->ga_data)[type_gap->ga_len] =
 						     (void *)functype->tt_args;
     ++type_gap->ga_len;
-
-    functype->tt_argcount = argcount;
-    functype->tt_min_argcount = min_argcount;
     return OK;
 }
 
@@ -1251,20 +1256,6 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 	}
     }
 
-    // Turn varargs into a list.
-    if (ufunc->uf_va_name != NULL)
-    {
-	int count = argcount - regular_args;
-
-	// If count is negative an empty list will be added after evaluating
-	// default values for missing optional arguments.
-	if (count >= 0)
-	{
-	    generate_NEWLIST(cctx, count);
-	    argcount = regular_args + 1;
-	}
-    }
-
     if ((isn = generate_instr(cctx,
 		    ufunc->uf_dfunc_idx >= 0 ? ISN_DCALL : ISN_UCALL)) == NULL)
 	return FAIL;
@@ -1326,6 +1317,7 @@ generate_PCALL(cctx_T *cctx, int argcount, int at_top)
     garray_T	*stack = &cctx->ctx_type_stack;
 
     RETURN_OK_IF_SKIP(cctx);
+
     if ((isn = generate_instr(cctx, ISN_PCALL)) == NULL)
 	return FAIL;
     isn->isn_arg.pfunc.cpf_top = at_top;
@@ -1612,7 +1604,7 @@ parse_type(char_u **arg, garray_T *type_gap)
 		int	first_optional = -1;
 		type_T	*arg_type[MAX_FUNC_ARGS + 1];
 
-		// func({type}, ...): {type}
+		// func({type}, ...{type}): {type}
 		*arg += len;
 		if (**arg == '(')
 		{
@@ -1624,13 +1616,6 @@ parse_type(char_u **arg, garray_T *type_gap)
 		    argcount = 0;
 		    while (*p != NUL && *p != ')')
 		    {
-			if (STRNCMP(p, "...", 3) == 0)
-			{
-			    flags |= TTFLAG_VARARGS;
-			    break;
-			}
-			arg_type[argcount++] = parse_type(&p, type_gap);
-
 			if (*p == '?')
 			{
 			    if (first_optional == -1)
@@ -1642,6 +1627,17 @@ parse_type(char_u **arg, garray_T *type_gap)
 			    emsg(_("E1007: mandatory argument after optional argument"));
 			    return &t_any;
 			}
+			else if (STRNCMP(p, "...", 3) == 0)
+			{
+			    flags |= TTFLAG_VARARGS;
+			    p += 3;
+			}
+
+			arg_type[argcount++] = parse_type(&p, type_gap);
+
+			// Nothing comes after "...{type}".
+			if (flags & TTFLAG_VARARGS)
+			    break;
 
 			if (*p != ',' && *skipwhite(p) == ',')
 			{
@@ -1679,19 +1675,23 @@ parse_type(char_u **arg, garray_T *type_gap)
 		    *arg = skipwhite(*arg);
 		    ret_type = parse_type(arg, type_gap);
 		}
-		type = get_func_type(ret_type,
-			    flags == 0 && first_optional == -1 ? argcount : 99,
-								    type_gap);
-		if (flags != 0)
-		    type->tt_flags = flags;
-		if (argcount > 0)
+		if (flags == 0 && first_optional == -1)
+		    type = get_func_type(ret_type, argcount, type_gap);
+		else
 		{
-		    if (func_type_add_arg_types(type, argcount,
-			    first_optional == -1 ? argcount : first_optional,
+		    type = alloc_func_type(ret_type, argcount, type_gap);
+		    type->tt_flags = flags;
+		    if (argcount > 0)
+		    {
+			type->tt_argcount = argcount;
+			type->tt_min_argcount = first_optional == -1
+						   ? argcount : first_optional;
+			if (func_type_add_arg_types(type, argcount,
 							     type_gap) == FAIL)
-			return &t_any;
-		    mch_memmove(type->tt_args, arg_type,
+			    return &t_any;
+			mch_memmove(type->tt_args, arg_type,
 						  sizeof(type_T *) * argcount);
+		    }
 		}
 		return type;
 	    }
@@ -1857,6 +1857,7 @@ type_name(type_T *type, char **tofree)
     {
 	garray_T    ga;
 	int	    i;
+	int	    varargs = (type->tt_flags & TTFLAG_VARARGS) ? 1 : 0;
 
 	ga_init2(&ga, 1, 100);
 	if (ga_grow(&ga, 20) == FAIL)
@@ -1865,7 +1866,7 @@ type_name(type_T *type, char **tofree)
 	STRCPY(ga.ga_data, "func(");
 	ga.ga_len += 5;
 
-	for (i = 0; i < type->tt_argcount; ++i)
+	for (i = 0; i < type->tt_argcount + varargs; ++i)
 	{
 	    char *arg_free;
 	    char *arg_type = type_name(type->tt_args[i], &arg_free);
@@ -1877,12 +1878,19 @@ type_name(type_T *type, char **tofree)
 		ga.ga_len += 2;
 	    }
 	    len = (int)STRLEN(arg_type);
-	    if (ga_grow(&ga, len + 6) == FAIL)
+	    if (ga_grow(&ga, len + 8) == FAIL)
 	    {
 		vim_free(arg_free);
 		return "[unknown]";
 	    }
 	    *tofree = ga.ga_data;
+	    if (i == type->tt_argcount)
+	    {
+		STRCPY((char *)ga.ga_data + ga.ga_len, "...");
+		ga.ga_len += 3;
+	    }
+	    else if (i >= type->tt_min_argcount)
+		*((char *)ga.ga_data + ga.ga_len++) = '?';
 	    STRCPY((char *)ga.ga_data + ga.ga_len, arg_type);
 	    ga.ga_len += len;
 	    vim_free(arg_free);
@@ -5573,16 +5581,16 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    if (generate_STORE(&cctx, ISN_STORE, i - count - off, NULL) == FAIL)
 		goto erret;
 	}
-
-	// If a varargs is following, push an empty list.
-	if (ufunc->uf_va_name != NULL)
-	{
-	    if (generate_NEWLIST(&cctx, 0) == FAIL
-		    || generate_STORE(&cctx, ISN_STORE, -off, NULL) == FAIL)
-		goto erret;
-	}
-
 	ufunc->uf_def_arg_idx[count] = instr->ga_len;
+    }
+
+    // If varargs is use, push a list.  Empty if no more arguments.
+    if (ufunc->uf_va_name != NULL)
+    {
+	if (generate_NEWLIST(&cctx, 0) == FAIL
+		|| generate_STORE(&cctx, ISN_STORE,
+					  -STACK_FRAME_SIZE - 1, NULL) == FAIL)
+	    goto erret;
     }
 
     /*
@@ -5894,24 +5902,27 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 
     {
 	int varargs = ufunc->uf_va_name != NULL;
-	int argcount = ufunc->uf_args.ga_len - (varargs ? 1 : 0);
+	int argcount = ufunc->uf_args.ga_len;
 
 	// Create a type for the function, with the return type and any
 	// argument types.
 	// A vararg is included in uf_args.ga_len but not in uf_arg_types.
 	// The type is included in "tt_args".
-	ufunc->uf_func_type = get_func_type(ufunc->uf_ret_type,
-				  ufunc->uf_args.ga_len, &ufunc->uf_type_list);
-	if (ufunc->uf_args.ga_len > 0)
+	if (argcount > 0 || varargs)
 	{
+	    ufunc->uf_func_type = alloc_func_type(ufunc->uf_ret_type,
+					       argcount, &ufunc->uf_type_list);
+	    // Add argument types to the function type.
 	    if (func_type_add_arg_types(ufunc->uf_func_type,
-			ufunc->uf_args.ga_len,
-			argcount - ufunc->uf_def_args.ga_len,
-						 &ufunc->uf_type_list) == FAIL)
+					argcount + varargs,
+					&ufunc->uf_type_list) == FAIL)
 	    {
 		ret = FAIL;
 		goto erret;
 	    }
+	    ufunc->uf_func_type->tt_argcount = argcount + varargs;
+	    ufunc->uf_func_type->tt_min_argcount =
+					  argcount - ufunc->uf_def_args.ga_len;
 	    if (ufunc->uf_arg_types == NULL)
 	    {
 		int i;
@@ -5924,9 +5935,17 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		mch_memmove(ufunc->uf_func_type->tt_args,
 			     ufunc->uf_arg_types, sizeof(type_T *) * argcount);
 	    if (varargs)
+	    {
 		ufunc->uf_func_type->tt_args[argcount] =
 			ufunc->uf_va_type == NULL ? &t_any : ufunc->uf_va_type;
+		ufunc->uf_func_type->tt_flags = TTFLAG_VARARGS;
+	    }
 	}
+	else
+	    // No arguments, can use a predefined type.
+	    ufunc->uf_func_type = get_func_type(ufunc->uf_ret_type,
+					       argcount, &ufunc->uf_type_list);
+
     }
 
     ret = OK;
