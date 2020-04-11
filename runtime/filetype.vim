@@ -1646,9 +1646,9 @@ au BufNewFile,BufRead */etc/sysctl.conf,*/etc/sysctl.d/*.conf	setf sysctl
 " Systemd unit files
 au BufNewFile,BufRead */systemd/*.{automount,mount,path,service,socket,swap,target,timer}	setf systemd
 " Systemd overrides
-au BufNewFile,BufRead /etc/systemd/system/*.d/*.conf	setf systemd
+au BufNewFile,BufRead /etc/systemd/system/*.d/*.conf,*/.config/systemd/user/*.d/*.conf	setf systemd
 " Systemd temp files
-au BufNewFile,BufRead /etc/systemd/system/*.d/.#*	setf systemd
+au BufNewFile,BufRead /etc/systemd/system/*.d/.#*,*/.config/systemd/user/*.d/.#*	setf systemd
 
 " Synopsys Design Constraints
 au BufNewFile,BufRead *.sdc			setf sdc
