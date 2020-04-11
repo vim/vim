@@ -771,7 +771,11 @@ func Test_opt_default_cdpath()
     call writefile(v:errors, 'Xtestout')
     qall
   [CODE]
-  let $CDPATH='/path/to/dir1:/path/to/dir2'
+  if has('unix')
+    let $CDPATH='/path/to/dir1:/path/to/dir2'
+  else
+    let $CDPATH='/path/to/dir1;/path/to/dir2'
+  endif
   if RunVim([], after, '')
     call assert_equal([], readfile('Xtestout'))
     call delete('Xtestout')
