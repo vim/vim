@@ -1648,7 +1648,10 @@ parse_type(char_u **arg, garray_T *type_gap)
 			{
 			    ++p;
 			    if (!VIM_ISWHITE(*p))
+			    {
 				semsg(_(e_white_after), ",");
+				return &t_any;
+			    }
 			}
 			p = skipwhite(p);
 			if (argcount == MAX_FUNC_ARGS)
@@ -1675,7 +1678,7 @@ parse_type(char_u **arg, garray_T *type_gap)
 		    *arg = skipwhite(*arg);
 		    ret_type = parse_type(arg, type_gap);
 		}
-		if (flags == 0 && first_optional == -1)
+		if (flags == 0 && first_optional == -1 && argcount <= 0)
 		    type = get_func_type(ret_type, argcount, type_gap);
 		else
 		{
@@ -1822,8 +1825,9 @@ vartype_name(vartype_T type)
 	case VAR_CHANNEL: return "channel";
 	case VAR_LIST: return "list";
 	case VAR_DICT: return "dict";
-	case VAR_FUNC: return "func";
-	case VAR_PARTIAL: return "partial";
+
+	case VAR_FUNC:
+	case VAR_PARTIAL: return "func";
     }
     return "unknown";
 }
@@ -1853,7 +1857,7 @@ type_name(type_T *type, char **tofree)
 	    return *tofree;
 	}
     }
-    if (type->tt_type == VAR_FUNC || type->tt_type == VAR_PARTIAL)
+    if (type->tt_type == VAR_FUNC)
     {
 	garray_T    ga;
 	int	    i;
@@ -1866,12 +1870,16 @@ type_name(type_T *type, char **tofree)
 	STRCPY(ga.ga_data, "func(");
 	ga.ga_len += 5;
 
-	for (i = 0; i < type->tt_argcount + varargs; ++i)
+	for (i = 0; i < type->tt_argcount; ++i)
 	{
 	    char *arg_free;
-	    char *arg_type = type_name(type->tt_args[i], &arg_free);
+	    char *arg_type;
 	    int  len;
 
+	    if (type->tt_args == NULL)
+		arg_type = "[unknown]";
+	    else
+		arg_type = type_name(type->tt_args[i], &arg_free);
 	    if (i > 0)
 	    {
 		STRCPY((char *)ga.ga_data + ga.ga_len, ", ");
@@ -1884,7 +1892,7 @@ type_name(type_T *type, char **tofree)
 		return "[unknown]";
 	    }
 	    *tofree = ga.ga_data;
-	    if (i == type->tt_argcount)
+	    if (varargs && i == type->tt_argcount - 1)
 	    {
 		STRCPY((char *)ga.ga_data + ga.ga_len, "...");
 		ga.ga_len += 3;
@@ -4007,8 +4015,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	}
 
 	// new local variable
-	if ((type->tt_type == VAR_FUNC || type->tt_type == VAR_PARTIAL)
-					    && var_check_func_name(name, TRUE))
+	if (type->tt_type == VAR_FUNC && var_check_func_name(name, TRUE))
 	    goto theend;
 	idx = reserve_local(cctx, arg, varlen, cmdidx == CMD_const, type);
 	if (idx < 0)
