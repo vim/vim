@@ -1416,6 +1416,7 @@ do_search(
 		// Reserve enough space for the search pattern + offset.
 		len = STRLEN(p) + off_len + 3;
 
+	    vim_free(msgbuf);
 	    msgbuf = alloc(len);
 	    if (msgbuf != NULL)
 	    {
