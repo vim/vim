@@ -99,6 +99,12 @@
 # define rb_ary_detransient rb_ary_detransient_stub
 #endif
 
+// On macOS pre-installed Ruby defines "SIZEOF_TIME_T" as "SIZEOF_LONG" so it
+// conflicts with the definition in config.h then causes macro-redifned warning.
+#ifdef SIZEOF_TIME_T
+# undef SIZEOF_TIME_T
+#endif
+
 #include <ruby.h>
 #if RUBY_VERSION >= 19
 # include <ruby/encoding.h>

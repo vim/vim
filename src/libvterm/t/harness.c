@@ -67,7 +67,8 @@ static VTermEncodingInstance encoding;
 
 static int parser_text(const char bytes[], size_t len, void *user)
 {
-  int i;
+  size_t i;
+  (void)user;
 
   printf("text ");
   for(i = 0; i < len; i++) {
@@ -83,6 +84,7 @@ static int parser_text(const char bytes[], size_t len, void *user)
 
 static int parser_control(unsigned char control, void *user)
 {
+  (void)user;
   printf("control %02x\n", control);
 
   return 1;
@@ -90,7 +92,8 @@ static int parser_control(unsigned char control, void *user)
 
 static int parser_escape(const char bytes[], size_t len, void *user)
 {
-  int i;
+  size_t i;
+  (void)user;
 
   if(bytes[0] >= 0x20 && bytes[0] < 0x30) {
     if(len < 2)
@@ -112,6 +115,7 @@ static int parser_escape(const char bytes[], size_t len, void *user)
 static int parser_csi(const char *leader, const long args[], int argcount, const char *intermed, char command, void *user)
 {
   int i;
+  (void)user;
   printf("csi %02x", command);
 
   if(leader && leader[0]) {
@@ -142,7 +146,9 @@ static int parser_csi(const char *leader, const long args[], int argcount, const
 
 static int parser_osc(const char *command, size_t cmdlen, void *user)
 {
-  int i;
+  size_t i;
+  (void)user;
+
   printf("osc ");
   for(i = 0; i < cmdlen; i++)
     printf("%02x", command[i]);
@@ -153,7 +159,9 @@ static int parser_osc(const char *command, size_t cmdlen, void *user)
 
 static int parser_dcs(const char *command, size_t cmdlen, void *user)
 {
-  int i;
+  size_t i;
+  (void)user;
+
   printf("dcs ");
   for(i = 0; i < cmdlen; i++)
     printf("%02x", command[i]);
@@ -178,6 +186,7 @@ static int want_movecursor = 0;
 static VTermPos state_pos;
 static int movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user)
 {
+  (void)oldpos, (void)visible, (void)user;
   state_pos = pos;
 
   if(want_movecursor)
@@ -189,6 +198,7 @@ static int movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user)
 static int want_scrollrect = 0;
 static int scrollrect(VTermRect rect, int downward, int rightward, void *user)
 {
+  (void)user;
   if(!want_scrollrect)
     return 0;
 
@@ -202,6 +212,7 @@ static int scrollrect(VTermRect rect, int downward, int rightward, void *user)
 static int want_moverect = 0;
 static int moverect(VTermRect dest, VTermRect src, void *user)
 {
+  (void)user;
   if(!want_moverect)
     return 0;
 
@@ -215,6 +226,7 @@ static int moverect(VTermRect dest, VTermRect src, void *user)
 static int want_settermprop = 0;
 static int settermprop(VTermProp prop, VTermValue *val, void *user)
 {
+  (void)user;
   VTermValueType type;
   if(!want_settermprop)
     return 1;
@@ -247,6 +259,7 @@ static int want_state_putglyph = 0;
 static int state_putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
 {
   int i;
+  (void)user;
   if(!want_state_putglyph)
     return 1;
 
@@ -268,6 +281,7 @@ static int state_putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
 static int want_state_erase = 0;
 static int state_erase(VTermRect rect, int selective, void *user)
 {
+  (void)user;
   if(!want_state_erase)
     return 1;
 
@@ -291,6 +305,7 @@ static struct {
 } state_pen;
 static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user)
 {
+  (void)user;
   switch(attr) {
   case VTERM_ATTR_BOLD:
     state_pen.bold = val->boolean;
@@ -329,6 +344,7 @@ static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user)
 
 static int state_setlineinfo(int row, const VTermLineInfo *newinfo, const VTermLineInfo *oldinfo, void *user)
 {
+  (void)row, (void)newinfo, (void)oldinfo, (void)user;
   return 1;
 }
 
@@ -350,6 +366,7 @@ static int want_screen_damage = 0;
 static int want_screen_damage_cells = 0;
 static int screen_damage(VTermRect rect, void *user)
 {
+  (void)user;
   if(!want_screen_damage)
     return 1;
 
@@ -404,6 +421,7 @@ static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user
 {
   int eol;
   int c;
+  (void)user;
 
   if(!want_screen_scrollback)
     return 1;
@@ -423,6 +441,7 @@ static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user
 static int screen_sb_popline(int cols, VTermScreenCell *cells, void *user)
 {
   int col;
+  (void)user;
 
   if(!want_screen_scrollback)
     return 0;
@@ -456,6 +475,7 @@ int main(int argc, char **argv)
 {
   char line[1024] = {0};
   int flag;
+  (void)argc, (void)argv;
 
   int err;
 
@@ -926,7 +946,7 @@ int main(int argc, char **argv)
 
     outlen = vterm_output_get_buffer_current(vt);
     if(outlen > 0) {
-      int i;
+      size_t i;
       char outbuff[1024];
       vterm_output_read(vt, outbuff, outlen);
 
