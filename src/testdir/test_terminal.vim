@@ -42,6 +42,7 @@ func Test_terminal_basic()
   call assert_match('%aR[^\n]*running]', execute('ls R'))
   call assert_notmatch('%[^\n]*running]', execute('ls F'))
   call assert_notmatch('%[^\n]*running]', execute('ls ?'))
+  call assert_fails('set modifiable', 'E946:')
 
   call StopShellInTerminal(buf)
   call TermWait(buf)
