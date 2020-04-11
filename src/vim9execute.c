@@ -108,6 +108,35 @@ init_instr_idx(ufunc_T *ufunc, int argcount, ectx_T *ectx)
 }
 
 /*
+ * Create a new list from "count" items at the bottom of the stack.
+ * When "count" is zero an empty list is added to the stack.
+ */
+    static int
+exe_newlist(int count, ectx_T *ectx)
+{
+    list_T	*list = list_alloc_with_items(count);
+    int		idx;
+    typval_T	*tv;
+
+    if (list == NULL)
+	return FAIL;
+    for (idx = 0; idx < count; ++idx)
+	list_set_item(list, idx, STACK_TV_BOT(idx - count));
+
+    if (count > 0)
+	ectx->ec_stack.ga_len -= count - 1;
+    else if (ga_grow(&ectx->ec_stack, 1) == FAIL)
+	return FAIL;
+    else
+	++ectx->ec_stack.ga_len;
+    tv = STACK_TV_BOT(-1);
+    tv->v_type = VAR_LIST;
+    tv->vval.v_list = list;
+    ++list->lv_refcount;
+    return OK;
+}
+
+/*
  * Call compiled function "cdf_idx" from compiled code.
  *
  * Stack has:
@@ -137,46 +166,34 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
 
     if (ufunc->uf_va_name != NULL)
     {
-	int	iidx;
-	isn_T	*iptr;
-
-	// Need to make a list out of the vararg arguments.  There is a
-	// ISN_NEWLIST instruction at the start of the function body, we need
-	// to move the arguments below the stack frame and pass the count.
+	// Need to make a list out of the vararg arguments.
 	// Stack at time of call with 2 varargs:
 	//   normal_arg
 	//   optional_arg
 	//   vararg_1
 	//   vararg_2
-	// When starting execution:
+	// After creating the list:
+	//   normal_arg
+	//   optional_arg
+	//   vararg-list
+	// With missing optional arguments we get:
 	//    normal_arg
-	//    optional_arg
-	//    space list of varargs
-	//    STACK_FRAME
-	//    [local variables]
-	//    vararg_1
-	//    vararg_2
-	// TODO: This doesn't work if the same function is used for a default
-	// argument value.  Forbid that somehow?
+	// After creating the list
+	//    normal_arg
+	//    (space for optional_arg)
+	//    vararg-list
 	vararg_count = argcount - ufunc->uf_args.ga_len;
 	if (vararg_count < 0)
 	    vararg_count = 0;
 	else
 	    argcount -= vararg_count;
-	if (ufunc->uf_def_arg_idx == NULL)
-	    iidx = 0;
-	else
-	    iidx = ufunc->uf_def_arg_idx[ufunc->uf_def_args.ga_len];
-	iptr = &dfunc->df_instr[iidx];
-	if (iptr->isn_type != ISN_NEWLIST)
-	{
-	    iemsg("Not a ISN_NEWLIST instruction");
+	if (exe_newlist(vararg_count, ectx) == FAIL)
 	    return FAIL;
-	}
-	iptr->isn_arg.number = vararg_count;
+
+	vararg_count = 1;
     }
 
-    arg_to_add = ufunc_argcount(ufunc) - argcount;
+    arg_to_add = ufunc->uf_args.ga_len - argcount;
     if (arg_to_add < 0)
     {
 	iemsg("Argument count wrong?");
@@ -185,21 +202,13 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
     if (ga_grow(&ectx->ec_stack, arg_to_add + 3 + dfunc->df_varcount) == FAIL)
 	return FAIL;
 
-    if (vararg_count > 0)
-    {
-	int stack_added = arg_to_add + STACK_FRAME_SIZE + dfunc->df_varcount;
-
-	// Move the varargs to below the stack frame.
-	// TODO: use mch_memmove()
-	for (idx = 1; idx <= vararg_count; ++idx)
-	    *STACK_TV_BOT(stack_added - idx) = *STACK_TV_BOT(-idx);
-	ectx->ec_stack.ga_len -= vararg_count;
-    }
+    // Move the vararg-list to below the missing optional arguments.
+    if (vararg_count > 0 && arg_to_add > 0)
+	*STACK_TV_BOT(arg_to_add - 1) = *STACK_TV_BOT(-1);
 
     // Reserve space for omitted optional arguments, filled in soon.
-    // Also room for a list of varargs, if there is one.
     for (idx = 0; idx < arg_to_add; ++idx)
-	STACK_TV_BOT(idx)->v_type = VAR_UNKNOWN;
+	STACK_TV_BOT(idx - vararg_count)->v_type = VAR_UNKNOWN;
     ectx->ec_stack.ga_len += arg_to_add;
 
     // Store current execution state in stack frame for ISN_RETURN.
@@ -213,8 +222,7 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
     // Initialize local variables
     for (idx = 0; idx < dfunc->df_varcount; ++idx)
 	STACK_TV_BOT(STACK_FRAME_SIZE + idx)->v_type = VAR_UNKNOWN;
-    ectx->ec_stack.ga_len += STACK_FRAME_SIZE + dfunc->df_varcount
-								+ vararg_count;
+    ectx->ec_stack.ga_len += STACK_FRAME_SIZE + dfunc->df_varcount;
 
     // Set execution state to the start of the called function.
     ectx->ec_dfunc_idx = cdf_idx;
@@ -979,26 +987,8 @@ call_def_function(
 	    // create a list from items on the stack; uses a single allocation
 	    // for the list header and the items
 	    case ISN_NEWLIST:
-		{
-		    int	    count = iptr->isn_arg.number;
-		    list_T  *list = list_alloc_with_items(count);
-
-		    if (list == NULL)
-			goto failed;
-		    for (idx = 0; idx < count; ++idx)
-			list_set_item(list, idx, STACK_TV_BOT(idx - count));
-
-		    if (count > 0)
-			ectx.ec_stack.ga_len -= count - 1;
-		    else if (ga_grow(&ectx.ec_stack, 1) == FAIL)
-			goto failed;
-		    else
-			++ectx.ec_stack.ga_len;
-		    tv = STACK_TV_BOT(-1);
-		    tv->v_type = VAR_LIST;
-		    tv->vval.v_list = list;
-		    ++list->lv_refcount;
-		}
+		if (exe_newlist(iptr->isn_arg.number, &ectx) == FAIL)
+		    goto failed;
 		break;
 
 	    // create a dict from items on the stack

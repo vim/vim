@@ -5584,15 +5584,6 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	ufunc->uf_def_arg_idx[count] = instr->ga_len;
     }
 
-    // If varargs is use, push a list.  Empty if no more arguments.
-    if (ufunc->uf_va_name != NULL)
-    {
-	if (generate_NEWLIST(&cctx, 0) == FAIL
-		|| generate_STORE(&cctx, ISN_STORE,
-					  -STACK_FRAME_SIZE - 1, NULL) == FAIL)
-	    goto erret;
-    }
-
     /*
      * Loop over all the lines of the function and generate instructions.
      */
