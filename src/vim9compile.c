@@ -4207,7 +4207,7 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	// [let] varname =<< [trim] {end}
 	eap->getline = heredoc_getline;
 	eap->cookie = cctx;
-	l = heredoc_get(eap, op + 3);
+	l = heredoc_get(eap, op + 3, FALSE);
 
 	// Push each line and the create the list.
 	FOR_ALL_LIST_ITEMS(l, li)
