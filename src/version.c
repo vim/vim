@@ -54,20 +54,22 @@ init_longVersion(void)
     void
 init_longVersion(void)
 {
-    char *date_time = __DATE__ " " __TIME__;
-    char *msg = _("%s (%s, compiled %s)");
-    size_t len = strlen(msg)
-		+ strlen(VIM_VERSION_LONG_ONLY)
-		+ strlen(VIM_VERSION_DATE_ONLY)
-		+ strlen(date_time);
+    if (longVersion == NULL)
+    {
+	char *date_time = __DATE__ " " __TIME__;
+	char *msg = _("%s (%s, compiled %s)");
+	size_t len = strlen(msg)
+		    + strlen(VIM_VERSION_LONG_ONLY)
+		    + strlen(VIM_VERSION_DATE_ONLY)
+		    + strlen(date_time);
 
-    if (longVersion == NULL)
 	longVersion = alloc(len);
-    if (longVersion == NULL)
-	longVersion = VIM_VERSION_LONG;
-    else
-	vim_snprintf(longVersion, len, msg,
-		      VIM_VERSION_LONG_ONLY, VIM_VERSION_DATE_ONLY, date_time);
+	if (longVersion == NULL)
+	    longVersion = VIM_VERSION_LONG;
+	else
+	    vim_snprintf(longVersion, len, msg,
+			  VIM_VERSION_LONG_ONLY, VIM_VERSION_DATE_ONLY, date_time);
+    }
 }
 # endif
 #else
