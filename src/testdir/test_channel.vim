@@ -18,11 +18,21 @@ endif
 " Add ch_log() calls where you want to see what happens.
 " call ch_logfile('channellog', 'w')
 
-let s:chopt = {}
+func SetUp()
+  if g:testfunc =~ '_ipv6()$' 
+    let s:localhost = '[::1]:'
+    let s:testscript = 'test_channel_6.py'
+  else
+    let s:localhost = 'localhost:'
+    let s:testscript = 'test_channel.py'
+  endif
+  let s:chopt = {}
+  call ch_log(g:testfunc)
+endfunc
 
 " Run "testfunc" after starting the server and stop the server afterwards.
 func s:run_server(testfunc, ...)
-  call RunServer('test_channel.py', a:testfunc, a:000)
+  call RunServer(s:testscript, a:testfunc, a:000)
 
   " communicating with a server can be flaky
   let g:test_is_flaky = 1
@@ -54,9 +64,7 @@ func Ch_communicate(port)
   let s:chopt.drop = 'never'
   " Also add the noblock flag to try it out.
   let s:chopt.noblock = 1
-  let handle = ch_open('localhost:' . a:port, s:chopt)
-  unlet s:chopt.drop
-  unlet s:chopt.noblock
+  let handle = ch_open(s:localhost . a:port, s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -224,13 +232,17 @@ func Ch_communicate(port)
 endfunc
 
 func Test_communicate()
-  call ch_log('Test_communicate()')
   call s:run_server('Ch_communicate')
+endfunc
+
+func Test_communicate_ipv6()
+  CheckIPv6
+  call Test_communicate()
 endfunc
 
 " Test that we can open two channels.
 func Ch_two_channels(port)
-  let handle = ch_open('localhost:' . a:port, s:chopt)
+  let handle = ch_open(s:localhost . a:port, s:chopt)
   call assert_equal(v:t_channel, type(handle))
   if handle->ch_status() == "fail"
     call assert_report("Can't open channel")
@@ -239,7 +251,7 @@ func Ch_two_channels(port)
 
   call assert_equal('got it', ch_evalexpr(handle, 'hello!'))
 
-  let newhandle = ch_open('localhost:' . a:port, s:chopt)
+  let newhandle = ch_open(s:localhost . a:port, s:chopt)
   if ch_status(newhandle) == "fail"
     call assert_report("Can't open second channel")
     return
@@ -259,9 +271,14 @@ func Test_two_channels()
   call s:run_server('Ch_two_channels')
 endfunc
 
+func Test_two_channels_ipv6()
+  CheckIPv6
+  call Test_two_channels()
+endfunc
+
 " Test that a server crash is handled gracefully.
 func Ch_server_crash(port)
-  let handle = ch_open('localhost:' . a:port, s:chopt)
+  let handle = ch_open(s:localhost . a:port, s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -273,8 +290,12 @@ func Ch_server_crash(port)
 endfunc
 
 func Test_server_crash()
-  call ch_log('Test_server_crash()')
   call s:run_server('Ch_server_crash')
+endfunc
+
+func Test_server_crash_ipv6()
+  CheckIPv6
+  call Test_server_crash()
 endfunc
 
 """""""""
@@ -286,7 +307,7 @@ func Ch_handler(chan, msg)
 endfunc
 
 func Ch_channel_handler(port)
-  let handle = ch_open('localhost:' . a:port, s:chopt)
+  let handle = ch_open(s:localhost . a:port, s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -302,14 +323,17 @@ func Ch_channel_handler(port)
 endfunc
 
 func Test_channel_handler()
-  call ch_log('Test_channel_handler()')
   let g:Ch_reply = ""
   let s:chopt.callback = 'Ch_handler'
   call s:run_server('Ch_channel_handler')
   let g:Ch_reply = ""
   let s:chopt.callback = function('Ch_handler')
   call s:run_server('Ch_channel_handler')
-  unlet s:chopt.callback
+endfunc
+
+func Test_channel_handler_ipv6()
+  CheckIPv6
+  call Test_channel_handler()
 endfunc
 
 """""""""
@@ -327,7 +351,7 @@ func Ch_oneHandler(chan, msg)
 endfunc
 
 func Ch_channel_zero(port)
-  let handle = ('localhost:' .. a:port)->ch_open(s:chopt)
+  let handle = (s:localhost .. a:port)->ch_open(s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -359,7 +383,6 @@ func Ch_channel_zero(port)
 endfunc
 
 func Test_zero_reply()
-  call ch_log('Test_zero_reply()')
   " Run with channel handler
   let s:has_handler = 1
   let s:chopt.callback = 'Ch_zeroHandler'
@@ -369,6 +392,11 @@ func Test_zero_reply()
   " Run without channel handler
   let s:has_handler = 0
   call s:run_server('Ch_channel_zero')
+endfunc
+
+func Test_zero_reply_ipv6()
+  CheckIPv6
+  call Test_zero_reply()
 endfunc
 
 """""""""
@@ -392,7 +420,7 @@ func Ch_handleRaw3(chan, msg)
 endfunc
 
 func Ch_raw_one_time_callback(port)
-  let handle = ch_open('localhost:' . a:port, s:chopt)
+  let handle = ch_open(s:localhost . a:port, s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -410,8 +438,12 @@ func Ch_raw_one_time_callback(port)
 endfunc
 
 func Test_raw_one_time_callback()
-  call ch_log('Test_raw_one_time_callback()')
   call s:run_server('Ch_raw_one_time_callback')
+endfunc
+
+func Test_raw_one_time_callback_ipv6()
+  CheckIPv6
+  call Test_raw_one_time_callback()
 endfunc
 
 """""""""
@@ -422,7 +454,6 @@ func Test_connect_waittime()
   " this is timing sensitive
   let g:test_is_flaky = 1
 
-  call ch_log('Test_connect_waittime()')
   let start = reltime()
   let handle = ch_open('localhost:9876', s:chopt)
   if ch_status(handle) != "fail"
@@ -752,7 +783,6 @@ func Test_close_output_buffer()
   enew!
   let test_lines = ['one', 'two']
   call setline(1, test_lines)
-  call ch_log('Test_close_output_buffer()')
   let options = {'out_io': 'buffer'}
   let options['out_name'] = 'buffer-output'
   let options['out_msg'] = 0
@@ -924,17 +954,14 @@ func Run_pipe_through_sort(all, use_buffer)
 endfunc
 
 func Test_pipe_through_sort_all()
-  call ch_log('Test_pipe_through_sort_all()')
   call Run_pipe_through_sort(1, 1)
 endfunc
 
 func Test_pipe_through_sort_some()
-  call ch_log('Test_pipe_through_sort_some()')
   call Run_pipe_through_sort(0, 1)
 endfunc
 
 func Test_pipe_through_sort_feed()
-  call ch_log('Test_pipe_through_sort_feed()')
   call Run_pipe_through_sort(1, 0)
 endfunc
 
@@ -1341,14 +1368,18 @@ endfunc
 
 " Test that "unlet handle" in a handler doesn't crash Vim.
 func Ch_unlet_handle(port)
-  let s:channelfd = ch_open('localhost:' . a:port, s:chopt)
+  let s:channelfd = ch_open(s:localhost . a:port, s:chopt)
   eval s:channelfd->ch_sendexpr("test", {'callback': function('s:UnletHandler')})
   call WaitForAssert({-> assert_equal('what?', g:Ch_unletResponse)})
 endfunc
 
 func Test_unlet_handle()
-  call ch_log('Test_unlet_handle()')
   call s:run_server('Ch_unlet_handle')
+endfunc
+
+func Test_unlet_handle_ipv6()
+  CheckIPv6
+  call Test_unlet_handle()
 endfunc
 
 """"""""""
@@ -1361,13 +1392,30 @@ endfunc
 
 " Test that "unlet handle" in a handler doesn't crash Vim.
 func Ch_close_handle(port)
-  let s:channelfd = ch_open('localhost:' . a:port, s:chopt)
+  let s:channelfd = ch_open(s:localhost . a:port, s:chopt)
   call ch_sendexpr(s:channelfd, "test", {'callback': function('Ch_CloseHandler')})
   call WaitForAssert({-> assert_equal('what?', g:Ch_unletResponse)})
 endfunc
 
 func Test_close_handle()
   call s:run_server('Ch_close_handle')
+endfunc
+
+func Test_close_handle_ipv6()
+  CheckIPv6
+  call Test_close_handle()
+endfunc
+
+""""""""""
+
+func Ch_open_ipv6(port)
+  let handle = ch_open('[::1]:' .. a:port, s:chopt)
+  call assert_notequal('fail', ch_status(handle))
+endfunc
+
+func Test_open_ipv6()
+  CheckIPv6
+  call s:run_server('Ch_open_ipv6')
 endfunc
 
 """"""""""
@@ -1378,6 +1426,7 @@ func Test_open_fail()
   let d = ch
   call assert_fails("let ch = ch_open('noserver', 10)", 'E474:')
   call assert_fails("let ch = ch_open('localhost:-1')", 'E475:')
+  call assert_fails("let ch = ch_open('localhost:65537')", 'E475:')
   call assert_fails("let ch = ch_open('localhost:8765', {'timeout' : -1})",
         \ 'E474:')
   call assert_fails("let ch = ch_open('localhost:8765', {'axby' : 1})",
@@ -1386,6 +1435,9 @@ func Test_open_fail()
         \ 'E475:')
   call assert_fails("let ch = ch_open('localhost:8765', {'part' : 'out'})",
         \ 'E475:')
+  call assert_fails("let ch = ch_open('[::]')", 'E475:')
+  call assert_fails("let ch = ch_open('[::.80')", 'E475:')
+  call assert_fails("let ch = ch_open('[::]8080')", 'E475:')
 endfunc
 
 func Test_ch_info_fail()
@@ -1397,8 +1449,7 @@ endfunc
 func Ch_open_delay(port)
   " Wait up to a second for the port to open.
   let s:chopt.waittime = 1000
-  let channel = ch_open('localhost:' . a:port, s:chopt)
-  unlet s:chopt.waittime
+  let channel = ch_open(s:localhost . a:port, s:chopt)
   if ch_status(channel) == "fail"
     call assert_report("Can't open channel")
     return
@@ -1412,6 +1463,11 @@ func Test_open_delay()
   call s:run_server('Ch_open_delay', 'delay')
 endfunc
 
+func Test_open_delay_ipv6()
+  CheckIPv6
+  call Test_open_delay()
+endfunc
+
 """""""""
 
 function MyFunction(a,b,c)
@@ -1419,7 +1475,7 @@ function MyFunction(a,b,c)
 endfunc
 
 function Ch_test_call(port)
-  let handle = ch_open('localhost:' . a:port, s:chopt)
+  let handle = ch_open(s:localhost . a:port, s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -1436,6 +1492,11 @@ endfunc
 
 func Test_call()
   call s:run_server('Ch_test_call')
+endfunc
+
+func Test_call_ipv6()
+  CheckIPv6
+  call Test_call()
 endfunc
 
 """""""""
@@ -1513,7 +1574,7 @@ function MyCloseCb(ch)
 endfunc
 
 function Ch_test_close_callback(port)
-  let handle = ch_open('localhost:' . a:port, s:chopt)
+  let handle = ch_open(s:localhost . a:port, s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -1528,8 +1589,13 @@ func Test_close_callback()
   call s:run_server('Ch_test_close_callback')
 endfunc
 
+func Test_close_callback_ipv6()
+  CheckIPv6
+  call Test_close_callback()
+endfunc
+
 function Ch_test_close_partial(port)
-  let handle = ch_open('localhost:' . a:port, s:chopt)
+  let handle = ch_open(s:localhost . a:port, s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -1547,6 +1613,11 @@ endfunc
 
 func Test_close_partial()
   call s:run_server('Ch_test_close_partial')
+endfunc
+
+func Test_close_partial_ipv6()
+  CheckIPv6
+  call Test_close_partial()
 endfunc
 
 func Test_job_start_fails()
@@ -1808,7 +1879,7 @@ func Test_cwd()
 endfunc
 
 function Ch_test_close_lambda(port)
-  let handle = ch_open('localhost:' . a:port, s:chopt)
+  let handle = ch_open(s:localhost . a:port, s:chopt)
   if ch_status(handle) == "fail"
     call assert_report("Can't open channel")
     return
@@ -1822,6 +1893,11 @@ endfunc
 
 func Test_close_lambda()
   call s:run_server('Ch_test_close_lambda')
+endfunc
+
+func Test_close_lambda_ipv6()
+  CheckIPv6
+  call Test_close_lambda()
 endfunc
 
 func s:test_list_args(cmd, out, remove_lf)

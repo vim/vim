@@ -62,9 +62,7 @@ _anchors:
           sudo update-alternatives --install /usr/bin/lua lua /usr/bin/lua5.3 10
         fi
     before_script:
-      # On travis bionic-amd64 gethostbyname() resolves "localhost" to 127.0.1.1
-      # so that makes various channel tests fail.
-      - sudo sed -i '/^127\.0\.1\.1\s/s/\blocalhost\b//g' /etc/hosts
+      - sudo sysctl -w net.ipv6.conf.lo.disable_ipv6=0
       - sudo bash ci/load-snd-dummy.sh || true
       - sudo usermod -a -G audio $USER
       - do_test() { sg audio "sg $(id -gn) '$*'"; }

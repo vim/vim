@@ -7723,8 +7723,7 @@ $as_echo "yes" >&6; }
 fi
 
 if test "$enable_channel" = "yes"; then
-
-  if test "x$HAIKU" = "xyes"; then
+    if test "x$HAIKU" = "xyes"; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for socket in -lnetwork" >&5
 $as_echo_n "checking for socket in -lnetwork... " >&6; }
 if ${ac_cv_lib_network_socket+:} false; then :
@@ -7818,7 +7817,63 @@ fi
 
   fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gethostbyname in -lnsl" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiling with IPv6 networking is possible" >&5
+$as_echo_n "checking whether compiling with IPv6 networking is possible... " >&6; }
+if ${vim_cv_ipv6_networking+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+	/* Check bitfields */
+	struct nbbuf {
+	unsigned int  initDone:1;
+	unsigned short signmaplen;
+	};
+
+int
+main ()
+{
+
+		/* Check creating a socket. */
+		struct sockaddr_in server;
+		struct addrinfo *res;
+		(void)socket(AF_INET, SOCK_STREAM, 0);
+		(void)htons(100);
+		(void)getaddrinfo("microsoft.com", NULL, NULL, &res);
+		if (errno == ECONNREFUSED)
+		  (void)connect(1, (struct sockaddr *)&server, sizeof(server));
+		(void)freeaddrinfo(res);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  vim_cv_ipv6_networking="yes"
+else
+  vim_cv_ipv6_networking="no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_ipv6_networking" >&5
+$as_echo "$vim_cv_ipv6_networking" >&6; }
+
+  if test "x$vim_cv_ipv6_networking" = "xyes"; then
+    $as_echo "#define FEAT_IPV6 1" >>confdefs.h
+
+  else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gethostbyname in -lnsl" >&5
 $as_echo_n "checking for gethostbyname in -lnsl... " >&6; }
 if ${ac_cv_lib_nsl_gethostbyname+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -7863,8 +7918,11 @@ _ACEOF
 
 fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiling with process communication is possible" >&5
-$as_echo_n "checking whether compiling with process communication is possible... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiling with IPv4 networking is possible" >&5
+$as_echo_n "checking whether compiling with IPv4 networking is possible... " >&6; }
+if ${vim_cv_ipv4_networking+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -7900,14 +7958,16 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+  vim_cv_ipv4_networking="yes"
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }; enable_netbeans="no"; enable_channel="no"
+  vim_cv_ipv4_networking="no"; enable_netbeans="no"; enable_channel="no"
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_ipv4_networking" >&5
+$as_echo "$vim_cv_ipv4_networking" >&6; }
+  fi
 fi
 if test "$enable_netbeans" = "yes"; then
   $as_echo "#define FEAT_NETBEANS_INTG 1" >>confdefs.h

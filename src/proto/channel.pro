@@ -7,7 +7,7 @@ int channel_unref(channel_T *channel);
 int free_unused_channels_contents(int copyID, int mask);
 void free_unused_channels(int copyID, int mask);
 void channel_gui_register_all(void);
-channel_T *channel_open(char *hostname, int port_in, int waittime, void (*nb_close_cb)(void));
+channel_T *channel_open(const char *hostname, int port, int waittime, void (*nb_close_cb)(void));
 void channel_set_pipes(channel_T *channel, sock_T in, sock_T out, sock_T err);
 void channel_set_job(channel_T *channel, job_T *job, jobopt_T *options);
 void channel_buffer_free(buf_T *buf);
