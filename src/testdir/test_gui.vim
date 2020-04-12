@@ -31,6 +31,8 @@ func Test_balloon_show()
 endfunc
 
 func Test_colorscheme()
+  call assert_equal('16777216', &t_Co)
+
   let colorscheme_saved = exists('g:colors_name') ? g:colors_name : 'default'
   let g:color_count = 0
   augroup TestColors

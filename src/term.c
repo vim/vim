@@ -1552,7 +1552,7 @@ parse_builtin_tcap(char_u *term)
  * Store it as a number in t_colors.
  * Store it as a string in T_CCO (using nr_colors[]).
  */
-    static void
+    void
 set_color_count(int nr)
 {
     char_u	nr_colors[20];		// string for number of colors
