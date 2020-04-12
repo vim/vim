@@ -61,7 +61,8 @@ init_longVersion(void)
 		+ strlen(VIM_VERSION_DATE_ONLY)
 		+ strlen(date_time);
 
-    longVersion = alloc(len);
+    if (longVersion == NULL)
+	longVersion = alloc(len);
     if (longVersion == NULL)
 	longVersion = VIM_VERSION_LONG;
     else
