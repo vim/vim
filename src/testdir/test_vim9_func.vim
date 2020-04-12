@@ -96,6 +96,7 @@ def Test_call_default_args()
   assert_fails('call MyDefaultArgs("one", "two")', 'E118:')
 
   call CheckScriptFailure(['def Func(arg: number = asdf)', 'enddef'], 'E1001:')
+  call CheckScriptFailure(['def Func(arg: number = "text")', 'enddef'], 'E1013: argument 1: type mismatch, expected number but got string')
 enddef
 
 func Test_call_default_args_from_func()
@@ -194,6 +195,26 @@ enddef
 def Test_call_func_defined_later()
   call assert_equal('one', DefinedLater('one'))
   call assert_fails('call NotDefined("one")', 'E117:')
+enddef
+
+def CombineFuncrefTypes()
+  " same arguments, different return type
+  let Ref1: func(bool): string
+  let Ref2: func(bool): number
+  let Ref3: func(bool): any
+  Ref3 = g:cond ? Ref1 : Ref2
+
+  " different number of arguments
+  let Refa1: func(bool): number
+  let Refa2: func(bool, number): number
+  let Refa3: func: number
+  Refa3 = g:cond ? Refa1 : Refa2
+
+  " different argument types
+  let Refb1: func(bool, string): number
+  let Refb2: func(string, number): number
+  let Refb3: func(any, any): number
+  Refb3 = g:cond ? Refb1 : Refb2
 enddef
 
 func DefinedLater(arg)

@@ -1746,6 +1746,8 @@ parse_type(char_u **arg, garray_T *type_gap)
     static int
 equal_type(type_T *type1, type_T *type2)
 {
+    int i;
+
     if (type1->tt_type != type2->tt_type)
 	return FALSE;
     switch (type1->tt_type)
@@ -1767,9 +1769,16 @@ equal_type(type_T *type1, type_T *type2)
 	    return equal_type(type1->tt_member, type2->tt_member);
 	case VAR_FUNC:
 	case VAR_PARTIAL:
-	    // TODO; check argument types.
-	    return equal_type(type1->tt_member, type2->tt_member)
-		&& type1->tt_argcount == type2->tt_argcount;
+	    if (!equal_type(type1->tt_member, type2->tt_member)
+		    || type1->tt_argcount != type2->tt_argcount)
+		return FALSE;
+	    if (type1->tt_argcount < 0
+			   || type1->tt_args == NULL || type2->tt_args == NULL)
+		return TRUE;
+	    for (i = 0; i < type1->tt_argcount; ++i)
+		if (!equal_type(type1->tt_args[i], type2->tt_args[i]))
+		    return FALSE;
+	    return TRUE;
     }
     return TRUE;
 }
@@ -1800,8 +1809,31 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 		*dest = get_dict_type(common, type_gap);
 	    return;
 	}
-	// TODO: VAR_FUNC and VAR_PARTIAL
-	*dest = type1;
+	if (type1->tt_type == VAR_FUNC)
+	{
+	    type_T *common;
+
+	    common_type(type1->tt_member, type2->tt_member, &common, type_gap);
+	    if (type1->tt_argcount == type2->tt_argcount
+						    && type1->tt_argcount >= 0)
+	    {
+		int argcount = type1->tt_argcount;
+		int i;
+
+		*dest = alloc_func_type(common, argcount, type_gap);
+		if (type1->tt_args != NULL && type2->tt_args != NULL)
+		{
+		    (*dest)->tt_args = ALLOC_CLEAR_MULT(type_T *, argcount);
+		    if ((*dest)->tt_args != NULL)
+			for (i = 0; i < argcount; ++i)
+			    common_type(type1->tt_args[i], type2->tt_args[i],
+					       &(*dest)->tt_args[i], type_gap);
+		}
+	    }
+	    else
+		*dest = alloc_func_type(common, -1, type_gap);
+	    return;
+	}
     }
 
     *dest = &t_any;
