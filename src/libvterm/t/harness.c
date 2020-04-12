@@ -65,6 +65,21 @@ static VTermScreen *screen;
 
 static VTermEncodingInstance encoding;
 
+static void term_output(const char *s, size_t len, void *user)
+{
+  size_t i;
+
+  printf("output ");
+  for(i = 0; i < len; i++)
+    printf("%x%s", (unsigned char)s[i], i < len-1 ? "," : "\n");
+}
+
+static void printhex(const char *s, size_t len)
+{
+  while(len--)
+    printf("%02x", (s++)[0]);
+}
+
 static int parser_text(const char bytes[], size_t len, void *user UNUSED)
 {
   size_t i;
@@ -90,8 +105,6 @@ static int parser_control(unsigned char control, void *user UNUSED)
 
 static int parser_escape(const char bytes[], size_t len, void *user UNUSED)
 {
-  size_t i;
-
   if(bytes[0] >= 0x20 && bytes[0] < 0x30) {
     if(len < 2)
       return -1;
@@ -102,8 +115,7 @@ static int parser_escape(const char bytes[], size_t len, void *user UNUSED)
   }
 
   printf("escape ");
-  for(i = 0; i < len; i++)
-    printf("%02x", bytes[i]);
+  printhex(bytes, len);
   printf("\n");
 
   return len;
@@ -142,11 +154,9 @@ static int parser_csi(const char *leader, const long args[], int argcount, const
 
 static int parser_osc(const char *command, size_t cmdlen, void *user UNUSED)
 {
-  size_t i;
 
   printf("osc ");
-  for(i = 0; i < cmdlen; i++)
-    printf("%02x", command[i]);
+  printhex(command, cmdlen);
   printf("\n");
 
   return 1;
@@ -154,11 +164,9 @@ static int parser_osc(const char *command, size_t cmdlen, void *user UNUSED)
 
 static int parser_dcs(const char *command, size_t cmdlen, void *user UNUSED)
 {
-  size_t i;
 
   printf("dcs ");
-  for(i = 0; i < cmdlen; i++)
-    printf("%02x", command[i]);
+  printhex(command, cmdlen);
   printf("\n");
 
   return 1;
@@ -928,13 +936,10 @@ int main(int argc UNUSED, char **argv UNUSED)
 
     outlen = vterm_output_get_buffer_current(vt);
     if(outlen > 0) {
-      size_t i;
       char outbuff[1024];
       vterm_output_read(vt, outbuff, outlen);
 
-      printf("output ");
-      for(i = 0; i < outlen; i++)
-        printf("%x%s", (unsigned char)outbuff[i], i < outlen-1 ? "," : "\n");
+      term_output(outbuff, outlen, NULL);
     }
 
     printf(err ? "?\n" : "DONE\n");
