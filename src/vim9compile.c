@@ -1823,8 +1823,8 @@ common_type(type_T *type1, type_T *type2, type_T **dest, garray_T *type_gap)
 		*dest = alloc_func_type(common, argcount, type_gap);
 		if (type1->tt_args != NULL && type2->tt_args != NULL)
 		{
-		    (*dest)->tt_args = ALLOC_CLEAR_MULT(type_T *, argcount);
-		    if ((*dest)->tt_args != NULL)
+		    if (func_type_add_arg_types(*dest, argcount,
+							     type_gap) == OK)
 			for (i = 0; i < argcount; ++i)
 			    common_type(type1->tt_args[i], type2->tt_args[i],
 					       &(*dest)->tt_args[i], type_gap);
