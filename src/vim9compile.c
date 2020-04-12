@@ -2049,6 +2049,27 @@ free_imported(cctx_T *cctx)
 }
 
 /*
+ * Get the next line of the function from "cctx".
+ * Returns NULL when at the end.
+ */
+    static char_u *
+next_line_from_context(cctx_T *cctx)
+{
+    char_u	*line = NULL;
+
+    do
+    {
+	++cctx->ctx_lnum;
+	if (cctx->ctx_lnum >= cctx->ctx_ufunc->uf_lines.ga_len)
+	    break;
+	line = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum];
+	SOURCING_LNUM = cctx->ctx_ufunc->uf_script_ctx.sc_lnum
+							  + cctx->ctx_lnum + 1;
+    } while (line == NULL);
+    return line;
+}
+
+/*
  * Generate an instruction to load script-local variable "name", without the
  * leading "s:".
  * Also finds imported variables.
@@ -2284,8 +2305,21 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 {
     char_u *p = *arg;
 
-    while (*p != NUL && *p != ')')
+    for (;;)
     {
+	if (*p == NUL)
+	{
+	    p = next_line_from_context(cctx);
+	    if (p == NULL)
+		break;
+	    p = skipwhite(p);
+	}
+	if (*p == ')')
+	{
+	    *arg = p + 1;
+	    return OK;
+	}
+
 	if (compile_expr1(&p, cctx) == FAIL)
 	    return FAIL;
 	++*argcount;
@@ -2298,19 +2332,14 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 	if (*p == ',')
 	{
 	    ++p;
-	    if (!VIM_ISWHITE(*p))
+	    if (*p != NUL && !VIM_ISWHITE(*p))
 		semsg(_(e_white_after), ",");
 	}
 	p = skipwhite(p);
     }
-    p = skipwhite(p);
-    if (*p != ')')
-    {
-	emsg(_(e_missing_close));
-	return FAIL;
-    }
-    *arg = p + 1;
-    return OK;
+
+    emsg(_(e_missing_close));
+    return FAIL;
 }
 
 /*
@@ -2532,27 +2561,6 @@ need_type(type_T *actual, type_T *expected, int offset, cctx_T *cctx)
     }
     generate_TYPECHECK(cctx, expected, offset);
     return OK;
-}
-
-/*
- * Get the next line of the function from "cctx".
- * Returns NULL when at the end.
- */
-    static char_u *
-next_line_from_context(cctx_T *cctx)
-{
-    char_u	*line = NULL;
-
-    do
-    {
-	++cctx->ctx_lnum;
-	if (cctx->ctx_lnum >= cctx->ctx_ufunc->uf_lines.ga_len)
-	    break;
-	line = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum];
-	SOURCING_LNUM = cctx->ctx_ufunc->uf_script_ctx.sc_lnum
-							  + cctx->ctx_lnum + 1;
-    } while (line == NULL);
-    return line;
 }
 
 /*

@@ -636,16 +636,16 @@ enddef
 
 def Test_import_absolute()
   let import_lines = [
-        \ 'vim9script',
-        \ 'import exported from "' .. escape(getcwd(), '\') .. '/Xexport_abs.vim"',
-        \ 'def UseExported()',
-        \ '  g:imported_abs = exported',
-        \ '  exported = 8888',
-        \ '  g:imported_after = exported',
-        \ 'enddef',
-        \ 'UseExported()',
-        \ 'g:import_disassembled = execute("disass UseExported")',
-        \ ]
+        'vim9script',
+        'import exported from "' .. escape(getcwd(), '\') .. '/Xexport_abs.vim"',
+        'def UseExported()',
+        '  g:imported_abs = exported',
+        '  exported = 8888',
+        '  g:imported_after = exported',
+        'enddef',
+        'UseExported()',
+        'g:import_disassembled = execute("disass UseExported")',
+        ]
   writefile(import_lines, 'Ximport_abs.vim')
   writefile(s:export_script_lines, 'Xexport_abs.vim')
 
@@ -661,8 +661,8 @@ def Test_import_absolute()
         \ .. '3 STORESCRIPT exported in .*Xexport_abs.vim.*'
         \ .. 'g:imported_after = exported.*'
         \ .. '4 LOADSCRIPT exported from .*Xexport_abs.vim.*'
-        \ .. '5 STOREG g:imported_after.*'
-        \, g:import_disassembled)
+        \ .. '5 STOREG g:imported_after.*',
+        g:import_disassembled)
   unlet g:imported_abs
   unlet g:import_disassembled
 
@@ -672,10 +672,10 @@ enddef
 
 def Test_import_rtp()
   let import_lines = [
-        \ 'vim9script',
-        \ 'import exported from "Xexport_rtp.vim"',
-        \ 'g:imported_rtp = exported',
-        \ ]
+        'vim9script',
+        'import exported from "Xexport_rtp.vim"',
+        'g:imported_rtp = exported',
+        ]
   writefile(import_lines, 'Ximport_rtp.vim')
   mkdir('import')
   writefile(s:export_script_lines, 'import/Xexport_rtp.vim')
@@ -988,6 +988,11 @@ def Test_automatic_line_continuation()
       three: 3  " comment
       }
   assert_equal(#{one: 1, two: 2, three: 3}, mydict)
+
+  assert_equal(
+        ['one', 'two', 'three'],
+        split('one two three')
+        )
 enddef
 
 " Keep this last, it messes up highlighting.

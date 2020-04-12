@@ -184,6 +184,19 @@ example, when a list spans multiple lines: >
 		'one',
 		'two',
 		]
+And when a dict spans multiple lines: >
+	let mydict = #{
+		one: 1,
+		two: 2,
+		}
+Function call: >
+	let result = Func(
+			arg1,
+			arg2
+			)
+
+Note that "enddef" cannot be used at the start of a continuation line, it ends
+the current function.
 
 
 No curly braces expansion ~
