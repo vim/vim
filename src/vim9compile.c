@@ -2788,11 +2788,6 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	*arg = skipwhite(*arg + 1);
     }
 
-    if (**arg != '}')
-    {
-	semsg(_(e_missing_dict_end), *arg);
-	goto failret;
-    }
     *arg = *arg + 1;
 
     // Allow for following comment, after at least one space.
