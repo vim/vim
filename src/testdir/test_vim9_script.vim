@@ -599,7 +599,8 @@ def Test_vim9script_reload()
       return valtwo
     enddef
   END
-  writefile(lines + morelines, 'Xreload.vim')
+  writefile(lines + morelines,
+            'Xreload.vim')
   source Xreload.vim
   source Xreload.vim
   source Xreload.vim
@@ -653,15 +654,15 @@ def Test_import_absolute()
 
   assert_equal(9876, g:imported_abs)
   assert_equal(8888, g:imported_after)
-  assert_match('<SNR>\d\+_UseExported.*'
-        \ .. 'g:imported_abs = exported.*'
-        \ .. '0 LOADSCRIPT exported from .*Xexport_abs.vim.*'
-        \ .. '1 STOREG g:imported_abs.*'
-        \ .. 'exported = 8888.*'
-        \ .. '3 STORESCRIPT exported in .*Xexport_abs.vim.*'
-        \ .. 'g:imported_after = exported.*'
-        \ .. '4 LOADSCRIPT exported from .*Xexport_abs.vim.*'
-        \ .. '5 STOREG g:imported_after.*',
+  assert_match('<SNR>\d\+_UseExported.*' ..
+          'g:imported_abs = exported.*' ..
+          '0 LOADSCRIPT exported from .*Xexport_abs.vim.*' ..
+          '1 STOREG g:imported_abs.*' ..
+          'exported = 8888.*' ..
+          '3 STORESCRIPT exported in .*Xexport_abs.vim.*' ..
+          'g:imported_after = exported.*' ..
+          '4 LOADSCRIPT exported from .*Xexport_abs.vim.*' ..
+          '5 STOREG g:imported_after.*',
         g:import_disassembled)
   unlet g:imported_abs
   unlet g:import_disassembled
@@ -913,14 +914,14 @@ def Test_for_loop()
 enddef
 
 def Test_for_loop_fails()
-  call CheckDefFailure(['for # in range(5)'], 'E690:')
-  call CheckDefFailure(['for i In range(5)'], 'E690:')
-  call CheckDefFailure(['let x = 5', 'for x in range(5)'], 'E1023:')
-  call CheckScriptFailure(['def Func(arg)', 'for arg in range(5)', 'enddef'], 'E1006:')
-  call CheckDefFailure(['for i in "text"'], 'E1024:')
-  call CheckDefFailure(['for i in xxx'], 'E1001:')
-  call CheckDefFailure(['endfor'], 'E588:')
-  call CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170:')
+  CheckDefFailure(['for # in range(5)'], 'E690:')
+  CheckDefFailure(['for i In range(5)'], 'E690:')
+  CheckDefFailure(['let x = 5', 'for x in range(5)'], 'E1023:')
+  CheckScriptFailure(['def Func(arg)', 'for arg in range(5)', 'enddef'], 'E1006:')
+  CheckDefFailure(['for i in "text"'], 'E1024:')
+  CheckDefFailure(['for i in xxx'], 'E1001:')
+  CheckDefFailure(['endfor'], 'E588:')
+  CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170:')
 enddef
 
 def Test_while_loop()
@@ -940,13 +941,13 @@ def Test_while_loop()
 enddef
 
 def Test_while_loop_fails()
-  call CheckDefFailure(['while xxx'], 'E1001:')
-  call CheckDefFailure(['endwhile'], 'E588:')
-  call CheckDefFailure(['continue'], 'E586:')
-  call CheckDefFailure(['if true', 'continue'], 'E586:')
-  call CheckDefFailure(['break'], 'E587:')
-  call CheckDefFailure(['if true', 'break'], 'E587:')
-  call CheckDefFailure(['while 1', 'echo 3'], 'E170:')
+  CheckDefFailure(['while xxx'], 'E1001:')
+  CheckDefFailure(['endwhile'], 'E588:')
+  CheckDefFailure(['continue'], 'E586:')
+  CheckDefFailure(['if true', 'continue'], 'E586:')
+  CheckDefFailure(['break'], 'E587:')
+  CheckDefFailure(['if true', 'break'], 'E587:')
+  CheckDefFailure(['while 1', 'echo 3'], 'E170:')
 enddef
 
 def Test_interrupt_loop()

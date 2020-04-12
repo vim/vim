@@ -2065,7 +2065,7 @@ next_line_from_context(cctx_T *cctx)
 	line = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum];
 	SOURCING_LNUM = cctx->ctx_ufunc->uf_script_ctx.sc_lnum
 							  + cctx->ctx_lnum + 1;
-    } while (line == NULL);
+    } while (line == NULL || *skipwhite(line) == NUL);
     return line;
 }
 
