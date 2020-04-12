@@ -144,7 +144,9 @@ get_function_args(
     garray_T	*argtypes,	// NULL unless using :def
     int		*varargs,
     garray_T	*default_args,
-    int		skip)
+    int		skip,
+    exarg_T	*eap,
+    char_u	**line_to_free)
 {
     int		mustend = FALSE;
     char_u	*arg = *argp;
@@ -168,6 +170,28 @@ get_function_args(
      */
     while (*p != endchar)
     {
+	if (eap != NULL && *p == NUL && eap->getline != NULL)
+	{
+	    char_u *theline;
+
+	    // End of the line, get the next one.
+	    theline = eap->getline(':', eap->cookie, 0, TRUE);
+	    if (theline == NULL)
+		break;
+	    vim_free(*line_to_free);
+	    *line_to_free = theline;
+	    p = skipwhite(theline);
+	}
+
+	if (mustend && *p != endchar)
+	{
+	    if (!skip)
+		semsg(_(e_invarg2), *argp);
+	    break;
+	}
+	if (*p == endchar)
+	    break;
+
 	if (p[0] == '.' && p[1] == '.' && p[2] == '.')
 	{
 	    if (varargs != NULL)
@@ -241,13 +265,8 @@ get_function_args(
 		mustend = TRUE;
 	}
 	p = skipwhite(p);
-	if (mustend && *p != endchar)
-	{
-	    if (!skip)
-		semsg(_(e_invarg2), *argp);
-	    break;
-	}
     }
+
     if (*p != endchar)
 	goto err_ret;
     ++p;	// skip "endchar"
@@ -323,7 +342,8 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
     ga_init(&newlines);
 
     // First, check if this is a lambda expression. "->" must exist.
-    ret = get_function_args(&start, '-', NULL, NULL, NULL, NULL, TRUE);
+    ret = get_function_args(&start, '-', NULL, NULL, NULL, NULL, TRUE,
+								   NULL, NULL);
     if (ret == FAIL || *start != '>')
 	return NOTDONE;
 
@@ -334,7 +354,8 @@ get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate)
 	pnewargs = NULL;
     *arg = skipwhite(*arg + 1);
     // TODO: argument types
-    ret = get_function_args(arg, '-', pnewargs, NULL, &varargs, NULL, FALSE);
+    ret = get_function_args(arg, '-', pnewargs, NULL, &varargs, NULL, FALSE,
+								   NULL, NULL);
     if (ret == FAIL || **arg != '>')
 	goto errret;
 
@@ -2508,9 +2529,12 @@ ex_function(exarg_T *eap)
 	    emsg(_("E862: Cannot use g: here"));
     }
 
+    // This may get more lines and make the pointers into the first line
+    // invalid.
     if (get_function_args(&p, ')', &newargs,
 			eap->cmdidx == CMD_def ? &argtypes : NULL,
-			 &varargs, &default_args, eap->skip) == FAIL)
+			 &varargs, &default_args, eap->skip,
+			 eap, &line_to_free) == FAIL)
 	goto errret_2;
 
     if (eap->cmdidx == CMD_def)
@@ -2521,9 +2545,15 @@ ex_function(exarg_T *eap)
 	    ret_type = skipwhite(p + 1);
 	    p = skip_type(ret_type);
 	    if (p > ret_type)
+	    {
+		ret_type = vim_strnsave(ret_type, (int)(p - ret_type));
 		p = skipwhite(p);
+	    }
 	    else
+	    {
+		ret_type = NULL;
 		semsg(_("E1056: expected a type: %s"), ret_type);
+	    }
 	}
     }
     else
@@ -3134,6 +3164,7 @@ ret_free:
     vim_free(line_to_free);
     vim_free(fudi.fd_newkey);
     vim_free(name);
+    vim_free(ret_type);
     did_emsg |= saved_did_emsg;
     need_wait_return |= saved_wait_return;
 }

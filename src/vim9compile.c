@@ -3275,8 +3275,9 @@ compile_expr7(char_u **arg, cctx_T *cctx)
 			char_u *start = skipwhite(*arg + 1);
 
 			// Find out what comes after the arguments.
+			// TODO: pass getline function
 			ret = get_function_args(&start, '-', NULL,
-						       NULL, NULL, NULL, TRUE);
+					   NULL, NULL, NULL, TRUE, NULL, NULL);
 			if (ret != FAIL && *start == '>')
 			    ret = compile_lambda(arg, cctx);
 			else

@@ -1,7 +1,7 @@
 /* userfunc.c */
 void func_init(void);
 hashtab_T *func_tbl_get(void);
-int get_function_args(char_u **argp, char_u endchar, garray_T *newargs, garray_T *argtypes, int *varargs, garray_T *default_args, int skip);
+int get_function_args(char_u **argp, char_u endchar, garray_T *newargs, garray_T *argtypes, int *varargs, garray_T *default_args, int skip, exarg_T *eap, char_u **line_to_free);
 int get_lambda_tv(char_u **arg, typval_T *rettv, int evaluate);
 char_u *deref_func_name(char_u *name, int *lenp, partial_T **partialp, int no_autoload);
 void emsg_funcname(char *ermsg, char_u *name);

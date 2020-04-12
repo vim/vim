@@ -210,6 +210,13 @@ possible AFTER the operators.  For example: >
 Note that "enddef" cannot be used at the start of a continuation line, it ends
 the current function.
 
+It is also possible to split a function header over multiple lines, in between
+arguments: >
+	def MyFunc(
+		text: string,
+		separator = '-'
+		): string
+
 
 No curly braces expansion ~
 

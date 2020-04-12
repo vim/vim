@@ -561,6 +561,22 @@ def Test_func_return_type()
   CheckDefFailure(['let str: string', 'str = FuncNoArgRetNumber()'], 'E1013: type mismatch, expected string but got number')
 enddef
 
+def MultiLine(
+    arg1: string,
+    arg2 = 1234,
+    ...rest: list<string>
+      ): string
+  return arg1 .. arg2 .. join(rest, '-')
+enddef
+
+def Test_multiline()
+  assert_equal('text1234', MultiLine('text'))
+  assert_equal('text777', MultiLine('text', 777))
+  assert_equal('text777one', MultiLine('text', 777, 'one'))
+  assert_equal('text777one-two', MultiLine('text', 777, 'one', 'two'))
+enddef
+
+
 " When using CheckScriptFailure() for the below test, E1010 is generated instead
 " of E1056.
 func Test_E1056_1059()
