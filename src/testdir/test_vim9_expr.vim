@@ -767,7 +767,7 @@ def Test_expr7_dict()
 
   call CheckDefFailure("let x = #{8: 8}", 'E1014:')
   call CheckDefFailure("let x = #{xxx}", 'E720:')
-  call CheckDefFailure("let x = #{xxx: 1", 'E722:')
+  call CheckDefFailure("let x = #{xxx: 1", 'E723:')
   call CheckDefFailure("let x = #{xxx: 1,", 'E723:')
   call CheckDefFailure("let x = {'a': xxx}", 'E1001:')
   call CheckDefFailure("let x = {xxx: 8}", 'E1001:')

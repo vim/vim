@@ -175,6 +175,17 @@ When using `function()` the resulting type is "func", a function with any
 number of arguments and any return type.  The function can be defined later.
 
 
+Automatic line continuation ~
+
+In many cases it is obvious that an expression continues on the next line.  In
+those cases there is no need to prefix the line with a backslash.  For
+example, when a list spans multiple lines: >
+	let mylist = [
+		'one',
+		'two',
+		]
+
+
 No curly braces expansion ~
 
 |curly-braces-names| cannot be used.

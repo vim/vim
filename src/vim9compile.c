@@ -2535,6 +2535,27 @@ need_type(type_T *actual, type_T *expected, int offset, cctx_T *cctx)
 }
 
 /*
+ * Get the next line of the function from "cctx".
+ * Returns NULL when at the end.
+ */
+    static char_u *
+next_line_from_context(cctx_T *cctx)
+{
+    char_u	*line = NULL;
+
+    do
+    {
+	++cctx->ctx_lnum;
+	if (cctx->ctx_lnum >= cctx->ctx_ufunc->uf_lines.ga_len)
+	    break;
+	line = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum];
+	SOURCING_LNUM = cctx->ctx_ufunc->uf_script_ctx.sc_lnum
+							  + cctx->ctx_lnum + 1;
+    } while (line == NULL);
+    return line;
+}
+
+/*
  * parse a list: [expr, expr]
  * "*arg" points to the '['.
  */
@@ -2544,12 +2565,25 @@ compile_list(char_u **arg, cctx_T *cctx)
     char_u	*p = skipwhite(*arg + 1);
     int		count = 0;
 
-    while (*p != ']')
+    for (;;)
     {
 	if (*p == NUL)
 	{
-	    semsg(_(e_list_end), *arg);
-	    return FAIL;
+	    p = next_line_from_context(cctx);
+	    if (p == NULL)
+	    {
+		semsg(_(e_list_end), *arg);
+		return FAIL;
+	    }
+	    p = skipwhite(p);
+	}
+	if (*p == ']')
+	{
+	    ++p;
+	    // Allow for following comment, after at least one space.
+	    if (VIM_ISWHITE(*p) && *skipwhite(p) == '"')
+		p += STRLEN(p);
+	    break;
 	}
 	if (compile_expr1(&p, cctx) == FAIL)
 	    break;
@@ -2558,7 +2592,7 @@ compile_list(char_u **arg, cctx_T *cctx)
 	    ++p;
 	p = skipwhite(p);
     }
-    *arg = p + 1;
+    *arg = p;
 
     generate_NEWLIST(cctx, count);
     return OK;
@@ -2657,9 +2691,20 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
     if (d == NULL)
 	return FAIL;
     *arg = skipwhite(*arg + 1);
-    while (**arg != '}' && **arg != NUL)
+    for (;;)
     {
 	char_u *key = NULL;
+
+	if (**arg == NUL || (literal && **arg == '"'))
+	{
+	    *arg = next_line_from_context(cctx);
+	    if (*arg == NULL)
+		goto failret;
+	    *arg = skipwhite(*arg);
+	}
+
+	if (**arg == '}')
+	    break;
 
 	if (literal)
 	{
@@ -2714,10 +2759,25 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	}
 
 	*arg = skipwhite(*arg + 1);
+	if (**arg == NUL)
+	{
+	    *arg = next_line_from_context(cctx);
+	    if (*arg == NULL)
+		goto failret;
+	    *arg = skipwhite(*arg);
+	}
+
 	if (compile_expr1(arg, cctx) == FAIL)
 	    return FAIL;
 	++count;
 
+	if (**arg == NUL || *skipwhite(*arg) == '"')
+	{
+	    *arg = next_line_from_context(cctx);
+	    if (*arg == NULL)
+		goto failret;
+	    *arg = skipwhite(*arg);
+	}
 	if (**arg == '}')
 	    break;
 	if (**arg != ',')
@@ -2735,10 +2795,16 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
     }
     *arg = *arg + 1;
 
+    // Allow for following comment, after at least one space.
+    if (VIM_ISWHITE(**arg) && *skipwhite(*arg) == '"')
+	*arg += STRLEN(*arg);
+
     dict_unref(d);
     return generate_NEWDICT(cctx, count);
 
 failret:
+    if (*arg == NULL)
+	semsg(_(e_missing_dict_end), _("[end of lines]"));
     dict_unref(d);
     return FAIL;
 }
@@ -5645,16 +5711,9 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	}
 	else
 	{
-	    do
-	    {
-		++cctx.ctx_lnum;
-		if (cctx.ctx_lnum == ufunc->uf_lines.ga_len)
-		    break;
-		line = ((char_u **)ufunc->uf_lines.ga_data)[cctx.ctx_lnum];
-	    } while (line == NULL);
-	    if (cctx.ctx_lnum == ufunc->uf_lines.ga_len)
+	    line = next_line_from_context(&cctx);
+	    if (cctx.ctx_lnum >= ufunc->uf_lines.ga_len)
 		break;
-	    SOURCING_LNUM = ufunc->uf_script_ctx.sc_lnum + cctx.ctx_lnum + 1;
 	}
 	emsg_before = called_emsg;
 

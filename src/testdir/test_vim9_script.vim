@@ -966,6 +966,30 @@ def Test_interrupt_loop()
   assert_true(caught, 'should have caught an exception')
 enddef
 
+def Test_automatic_line_continuation()
+  let mylist = [
+      'one',
+      'two',
+      'three',
+      ] " comment
+  assert_equal(['one', 'two', 'three'], mylist)
+
+  let mydict = {
+      'one': 1,
+      'two': 2,
+      'three':
+          3,
+      } " comment
+  assert_equal({'one': 1, 'two': 2, 'three': 3}, mydict)
+  mydict = #{
+      one: 1,  " comment
+      two:
+           2,
+      three: 3  " comment
+      }
+  assert_equal(#{one: 1, two: 2, three: 3}, mydict)
+enddef
+
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()
   new
