@@ -477,11 +477,12 @@ call_eval_func(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
     int
 call_def_function(
     ufunc_T	*ufunc,
-    int		argc,		// nr of arguments
+    int		argc_arg,	// nr of arguments
     typval_T	*argv,		// arguments
     typval_T	*rettv)		// return value
 {
     ectx_T	ectx;		// execution context
+    int		argc = argc_arg;
     int		initial_frame_ptr;
     typval_T	*tv;
     int		idx;
@@ -512,13 +513,34 @@ call_def_function(
 	copy_tv(&argv[idx], STACK_TV_BOT(0));
 	++ectx.ec_stack.ga_len;
     }
+
+    // Turn varargs into a list.  Empty list if no args.
+    if (ufunc->uf_va_name != NULL)
+    {
+	int vararg_count = argc - ufunc->uf_args.ga_len;
+
+	if (vararg_count < 0)
+	    vararg_count = 0;
+	else
+	    argc -= vararg_count;
+	if (exe_newlist(vararg_count, &ectx) == FAIL)
+	    goto failed;
+	if (defcount > 0)
+	    // Move varargs list to below missing default arguments.
+	    *STACK_TV_BOT(defcount- 1) = *STACK_TV_BOT(-1);
+	--ectx.ec_stack.ga_len;
+    }
+
     // Make space for omitted arguments, will store default value below.
+    // Any varargs list goes after them.
     if (defcount > 0)
 	for (idx = 0; idx < defcount; ++idx)
 	{
 	    STACK_TV_BOT(0)->v_type = VAR_UNKNOWN;
 	    ++ectx.ec_stack.ga_len;
 	}
+    if (ufunc->uf_va_name != NULL)
+	    ++ectx.ec_stack.ga_len;
 
     // Frame pointer points to just after arguments.
     ectx.ec_frame = ectx.ec_stack.ga_len;

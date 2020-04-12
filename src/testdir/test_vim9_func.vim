@@ -576,6 +576,13 @@ def Test_multiline()
   assert_equal('text777one-two', MultiLine('text', 777, 'one', 'two'))
 enddef
 
+func Test_multiline_not_vim9()
+  call assert_equal('text1234', MultiLine('text'))
+  call assert_equal('text777', MultiLine('text', 777))
+  call assert_equal('text777one', MultiLine('text', 777, 'one'))
+  call assert_equal('text777one-two', MultiLine('text', 777, 'one', 'two'))
+endfunc
+
 
 " When using CheckScriptFailure() for the below test, E1010 is generated instead
 " of E1056.
