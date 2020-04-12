@@ -234,7 +234,7 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	s = expr->vval.v_string;
 	if (s == NULL || *s == NUL)
 	    return FAIL;
-	vim_memset(&funcexe, 0, sizeof(funcexe));
+	CLEAR_FIELD(funcexe);
 	funcexe.evaluate = TRUE;
 	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
 	    return FAIL;
@@ -253,7 +253,7 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	    s = partial_name(partial);
 	    if (s == NULL || *s == NUL)
 		return FAIL;
-	    vim_memset(&funcexe, 0, sizeof(funcexe));
+	    CLEAR_FIELD(funcexe);
 	    funcexe.evaluate = TRUE;
 	    funcexe.partial = partial;
 	    if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
@@ -475,7 +475,7 @@ call_vim_function(
     funcexe_T	funcexe;
 
     rettv->v_type = VAR_UNKNOWN;		// clear_tv() uses this
-    vim_memset(&funcexe, 0, sizeof(funcexe));
+    CLEAR_FIELD(funcexe);
     funcexe.firstline = curwin->w_cursor.lnum;
     funcexe.lastline = curwin->w_cursor.lnum;
     funcexe.evaluate = TRUE;
@@ -649,7 +649,7 @@ get_lval(
     int		quiet = flags & GLV_QUIET;
 
     // Clear everything in "lp".
-    vim_memset(lp, 0, sizeof(lval_T));
+    CLEAR_POINTER(lp);
 
     if (skip)
     {
@@ -1715,7 +1715,7 @@ eval_func(
 	funcexe_T funcexe;
 
 	// Invoke the function.
-	vim_memset(&funcexe, 0, sizeof(funcexe));
+	CLEAR_FIELD(funcexe);
 	funcexe.firstline = curwin->w_cursor.lnum;
 	funcexe.lastline = curwin->w_cursor.lnum;
 	funcexe.evaluate = evaluate;
@@ -2805,7 +2805,7 @@ call_func_rettv(
     else
 	s = (char_u *)"";
 
-    vim_memset(&funcexe, 0, sizeof(funcexe));
+    CLEAR_FIELD(funcexe);
     funcexe.firstline = curwin->w_cursor.lnum;
     funcexe.lastline = curwin->w_cursor.lnum;
     funcexe.evaluate = evaluate;
@@ -5507,7 +5507,7 @@ clear_tv(typval_T *varp)
 init_tv(typval_T *varp)
 {
     if (varp != NULL)
-	vim_memset(varp, 0, sizeof(typval_T));
+	CLEAR_POINTER(varp);
 }
 
 /*

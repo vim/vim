@@ -470,7 +470,7 @@ set_last_csearch(int c, char_u *s UNUSED, int len UNUSED)
     if (len)
 	memcpy(lastc_bytes, s, len);
     else
-	vim_memset(lastc_bytes, 0, sizeof(lastc_bytes));
+	CLEAR_FIELD(lastc_bytes);
 }
 #endif
 

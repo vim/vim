@@ -358,7 +358,7 @@ call_ufunc(ufunc_T *ufunc, int argcount, ectx_T *ectx, isn_T *iptr)
 
     if (call_prepare(argcount, argvars, ectx) == FAIL)
 	return FAIL;
-    vim_memset(&funcexe, 0, sizeof(funcexe));
+    CLEAR_FIELD(funcexe);
     funcexe.evaluate = TRUE;
 
     // Call the user function.  Result goes in last position on the stack.
@@ -498,7 +498,7 @@ call_def_function(
 // Get pointer to a local variable on the stack.  Negative for arguments.
 #define STACK_TV_VAR(idx) (((typval_T *)ectx.ec_stack.ga_data) + ectx.ec_frame + STACK_FRAME_SIZE + idx)
 
-    vim_memset(&ectx, 0, sizeof(ectx));
+    CLEAR_FIELD(ectx);
     ga_init2(&ectx.ec_stack, sizeof(typval_T), 500);
     if (ga_grow(&ectx.ec_stack, 20) == FAIL)
 	return FAIL;

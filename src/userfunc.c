@@ -1136,7 +1136,7 @@ call_user_func(
 	v->di_tv.v_lock = VAR_FIXED;
 	v->di_tv.vval.v_list = &fc->l_varlist;
     }
-    vim_memset(&fc->l_varlist, 0, sizeof(list_T));
+    CLEAR_FIELD(fc->l_varlist);
     fc->l_varlist.lv_refcount = DO_NOT_FREE_CNT;
     fc->l_varlist.lv_lock = VAR_FIXED;
 
@@ -1659,7 +1659,7 @@ func_call(
     {
 	funcexe_T funcexe;
 
-	vim_memset(&funcexe, 0, sizeof(funcexe));
+	CLEAR_FIELD(funcexe);
 	funcexe.firstline = curwin->w_cursor.lnum;
 	funcexe.lastline = curwin->w_cursor.lnum;
 	funcexe.evaluate = TRUE;
@@ -1698,7 +1698,7 @@ call_callback(
     funcexe_T	funcexe;
     int		ret;
 
-    vim_memset(&funcexe, 0, sizeof(funcexe));
+    CLEAR_FIELD(funcexe);
     funcexe.evaluate = TRUE;
     funcexe.partial = callback->cb_partial;
     ++callback_depth;
@@ -2052,7 +2052,7 @@ trans_function_name(
     int		vim9script;
 
     if (fdp != NULL)
-	vim_memset(fdp, 0, sizeof(funcdict_T));
+	CLEAR_POINTER(fdp);
     start = *pp;
 
     // Check for hard coded <SNR>: already translated function ID (from a user
@@ -3572,7 +3572,7 @@ ex_call(exarg_T *eap)
 	}
 	arg = startarg;
 
-	vim_memset(&funcexe, 0, sizeof(funcexe));
+	CLEAR_FIELD(funcexe);
 	funcexe.firstline = eap->line1;
 	funcexe.lastline = eap->line2;
 	funcexe.doesrange = &doesrange;

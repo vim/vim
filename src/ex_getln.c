@@ -218,7 +218,7 @@ do_incsearch_highlighting(int firstc, int *search_delim, incsearch_state_T *is_s
 	return FALSE;
 
     ++emsg_off;
-    vim_memset(&ea, 0, sizeof(ea));
+    CLEAR_FIELD(ea);
     ea.line1 = 1;
     ea.line2 = 1;
     ea.cmd = ccline.cmdbuff;
@@ -459,7 +459,7 @@ may_do_incsearch_highlighting(
 	    search_flags += SEARCH_START;
 	ccline.cmdbuff[skiplen + patlen] = NUL;
 #ifdef FEAT_RELTIME
-	vim_memset(&sia, 0, sizeof(sia));
+	CLEAR_FIELD(sia);
 	sia.sa_tm = &tm;
 #endif
 	found = do_search(NULL, firstc == ':' ? '/' : firstc, search_delim,
@@ -758,7 +758,7 @@ cmdline_has_arabic(int start, int len)
     void
 cmdline_init(void)
 {
-    vim_memset(&ccline, 0, sizeof(cmdline_info_T));
+    CLEAR_FIELD(ccline);
 }
 
 /*
@@ -834,7 +834,7 @@ getcmdline_int(
 	did_save_ccline = TRUE;
     }
     if (init_ccline)
-	vim_memset(&ccline, 0, sizeof(cmdline_info_T));
+	CLEAR_FIELD(ccline);
 
 #ifdef FEAT_EVAL
     if (firstc == -1)
@@ -2464,7 +2464,7 @@ getcmdline_prompt(
 	did_save_ccline = TRUE;
     }
 
-    vim_memset(&ccline, 0, sizeof(cmdline_info_T));
+    CLEAR_FIELD(ccline);
     ccline.cmdprompt = prompt;
     ccline.cmdattr = attr;
 # ifdef FEAT_EVAL
@@ -3504,7 +3504,7 @@ save_cmdline(cmdline_info_T *ccp)
 {
     if (!prev_ccline_used)
     {
-	vim_memset(&prev_ccline, 0, sizeof(cmdline_info_T));
+	CLEAR_FIELD(prev_ccline);
 	prev_ccline_used = TRUE;
     }
     *ccp = prev_ccline;

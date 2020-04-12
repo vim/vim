@@ -1575,6 +1575,14 @@ typedef UINT32_TYPEDEF UINT32_T;
 #define LALLOC_CLEAR_MULT(type, count)  (type *)lalloc_clear(sizeof(type) * (count), FALSE)
 #define LALLOC_MULT(type, count)  (type *)lalloc(sizeof(type) * (count), FALSE)
 
+#ifdef HAVE_MEMSET
+# define vim_memset(ptr, c, size)   memset((ptr), (c), (size))
+#else
+void *vim_memset(void *, int, size_t);
+#endif
+#define CLEAR_FIELD(field)  vim_memset(&(field), 0, sizeof(field))
+#define CLEAR_POINTER(ptr)  vim_memset((ptr), 0, sizeof(*(ptr)))
+
 /*
  * defines to avoid typecasts from (char_u *) to (char *) and back
  * (vim_strchr() and vim_strrchr() are now in alloc.c)
@@ -1707,12 +1715,6 @@ typedef void	    *vim_acl_T;		// dummy to pass an ACL to a function
  */
 #define fnamecmp(x, y) vim_fnamecmp((char_u *)(x), (char_u *)(y))
 #define fnamencmp(x, y, n) vim_fnamencmp((char_u *)(x), (char_u *)(y), (size_t)(n))
-
-#ifdef HAVE_MEMSET
-# define vim_memset(ptr, c, size)   memset((ptr), (c), (size))
-#else
-void *vim_memset(void *, int, size_t);
-#endif
 
 #if defined(UNIX) || defined(FEAT_GUI) || defined(VMS) \
 	|| defined(FEAT_CLIENTSERVER)

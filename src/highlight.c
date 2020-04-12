@@ -2141,7 +2141,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 	return 0;
 
     taep = &(((attrentry_T *)table->ga_data)[table->ga_len]);
-    vim_memset(taep, 0, sizeof(attrentry_T));
+    CLEAR_POINTER(taep);
     taep->ae_attr = aep->ae_attr;
 #ifdef FEAT_GUI
     if (table == &gui_attr_table)
@@ -2189,7 +2189,7 @@ get_cterm_attr_idx(int attr, int fg, int bg)
 {
     attrentry_T		at_en;
 
-    vim_memset(&at_en, 0, sizeof(attrentry_T));
+    CLEAR_FIELD(at_en);
 #ifdef FEAT_TERMGUICOLORS
     at_en.ae_u.cterm.fg_rgb = INVALCOLOR;
     at_en.ae_u.cterm.bg_rgb = INVALCOLOR;
@@ -2211,7 +2211,7 @@ get_tgc_attr_idx(int attr, guicolor_T fg, guicolor_T bg)
 {
     attrentry_T		at_en;
 
-    vim_memset(&at_en, 0, sizeof(attrentry_T));
+    CLEAR_FIELD(at_en);
     at_en.ae_attr = attr;
     if (fg == INVALCOLOR && bg == INVALCOLOR)
     {
@@ -2239,7 +2239,7 @@ get_gui_attr_idx(int attr, guicolor_T fg, guicolor_T bg)
 {
     attrentry_T		at_en;
 
-    vim_memset(&at_en, 0, sizeof(attrentry_T));
+    CLEAR_FIELD(at_en);
     at_en.ae_attr = attr;
     at_en.ae_u.gui.fg_color = fg;
     at_en.ae_u.gui.bg_color = bg;
@@ -2298,7 +2298,7 @@ hl_combine_attr(int char_attr, int prim_attr)
 	    new_en = *char_aep;
 	else
 	{
-	    vim_memset(&new_en, 0, sizeof(new_en));
+	    CLEAR_FIELD(new_en);
 	    new_en.ae_u.gui.fg_color = INVALCOLOR;
 	    new_en.ae_u.gui.bg_color = INVALCOLOR;
 	    new_en.ae_u.gui.sp_color = INVALCOLOR;
@@ -2341,7 +2341,7 @@ hl_combine_attr(int char_attr, int prim_attr)
 	    new_en = *char_aep;
 	else
 	{
-	    vim_memset(&new_en, 0, sizeof(new_en));
+	    CLEAR_FIELD(new_en);
 #ifdef FEAT_TERMGUICOLORS
 	    new_en.ae_u.cterm.bg_rgb = INVALCOLOR;
 	    new_en.ae_u.cterm.fg_rgb = INVALCOLOR;
@@ -2393,7 +2393,7 @@ hl_combine_attr(int char_attr, int prim_attr)
 	new_en = *char_aep;
     else
     {
-	vim_memset(&new_en, 0, sizeof(new_en));
+	CLEAR_FIELD(new_en);
 	if (char_attr <= HL_ALL)
 	    new_en.ae_attr = char_attr;
     }
@@ -3062,7 +3062,7 @@ syn_add_group(char_u *name)
 	return 0;
     }
 
-    vim_memset(&(HL_TABLE()[highlight_ga.ga_len]), 0, sizeof(hl_group_T));
+    CLEAR_POINTER(&(HL_TABLE()[highlight_ga.ga_len]));
     HL_TABLE()[highlight_ga.ga_len].sg_name = name;
     HL_TABLE()[highlight_ga.ga_len].sg_name_u = name_up;
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
@@ -3262,7 +3262,7 @@ combine_stl_hlt(
 
     if (id_alt == 0)
     {
-	vim_memset(&hlt[hlcnt + i], 0, sizeof(hl_group_T));
+	CLEAR_POINTER(&hlt[hlcnt + i]);
 	hlt[hlcnt + i].sg_term = highlight_attr[hlf];
 	hlt[hlcnt + i].sg_cterm = highlight_attr[hlf];
 #  if defined(FEAT_GUI) || defined(FEAT_EVAL)
@@ -3457,7 +3457,7 @@ highlight_changed(void)
     {
 	// Make sure id_S is always valid to simplify code below. Use the last
 	// entry.
-	vim_memset(&HL_TABLE()[hlcnt + 27], 0, sizeof(hl_group_T));
+	CLEAR_POINTER(&HL_TABLE()[hlcnt + 27]);
 	HL_TABLE()[hlcnt + 18].sg_term = highlight_attr[HLF_S];
 	id_S = hlcnt + 19;
     }

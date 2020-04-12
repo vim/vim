@@ -1753,7 +1753,7 @@ find_tags(
 #ifdef FEAT_TAG_BINS
     // This is only to avoid a compiler warning for using search_info
     // uninitialised.
-    vim_memset(&search_info, 0, (size_t)1);
+    CLEAR_FIELD(search_info);
 #endif
 
 #ifdef FEAT_EVAL
@@ -2260,7 +2260,7 @@ parse_line:
 #endif
 					)
 	    {
-		vim_memset(&tagp, 0, sizeof(tagp));
+		CLEAR_FIELD(tagp);
 		tagp.tagname = lbuf;
 		tagp.tagname_end = vim_strchr(lbuf, TAB);
 		if (tagp.tagname_end == NULL)
@@ -2873,7 +2873,7 @@ get_tagfname(
     int			i;
 
     if (first)
-	vim_memset(tnp, 0, sizeof(tagname_T));
+	CLEAR_POINTER(tnp);
 
     if (curbuf->b_help)
     {

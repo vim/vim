@@ -3504,7 +3504,7 @@ gui_mch_browse(
     // Convert the filter to Windows format.
     filterp = convert_filterW(filter);
 
-    vim_memset(&fileStruct, 0, sizeof(OPENFILENAMEW));
+    CLEAR_FIELD(fileStruct);
 # ifdef OPENFILENAME_SIZE_VERSION_400W
     // be compatible with Windows NT 4.0
     fileStruct.lStructSize = OPENFILENAME_SIZE_VERSION_400W;
@@ -4267,7 +4267,7 @@ _OnMouseWheel(
 	// Mouse hovers over popup window, scroll it if possible.
 	mouse_row = wp->w_winrow;
 	mouse_col = wp->w_wincol;
-	vim_memset(&cap, 0, sizeof(cap));
+	CLEAR_FIELD(cap);
 	cap.arg = zDelta < 0 ? MSCR_UP : MSCR_DOWN;
 	cap.cmdchar = zDelta < 0 ? K_MOUSEUP : K_MOUSEDOWN;
 	clear_oparg(&oa);
@@ -6478,7 +6478,7 @@ gui_mch_add_menu_item(
     {
 	TBBUTTON newtb;
 
-	vim_memset(&newtb, 0, sizeof(newtb));
+	CLEAR_FIELD(newtb);
 	if (menu_is_separator(menu->name))
 	{
 	    newtb.iBitmap = 0;

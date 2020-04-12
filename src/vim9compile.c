@@ -5617,7 +5617,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	    if (ga_grow(&def_functions, 1) == FAIL)
 		return;
 	    dfunc = ((dfunc_T *)def_functions.ga_data) + def_functions.ga_len;
-	    vim_memset(dfunc, 0, sizeof(dfunc_T));
+	    CLEAR_POINTER(dfunc);
 	    dfunc->df_idx = def_functions.ga_len;
 	    ufunc->uf_dfunc_idx = dfunc->df_idx;
 	    dfunc->df_ufunc = ufunc;
@@ -5625,7 +5625,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	}
     }
 
-    vim_memset(&cctx, 0, sizeof(cctx));
+    CLEAR_FIELD(cctx);
     cctx.ctx_ufunc = ufunc;
     cctx.ctx_lnum = -1;
     ga_init2(&cctx.ctx_locals, sizeof(lvar_T), 10);
@@ -5713,7 +5713,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	emsg_before = called_emsg;
 
 	had_return = FALSE;
-	vim_memset(&ea, 0, sizeof(ea));
+	CLEAR_FIELD(ea);
 	ea.cmdlinep = &line;
 	ea.cmd = skipwhite(line);
 

@@ -728,7 +728,7 @@ do_cmdline(
     if (flags & DOCMD_EXCRESET)
 	save_dbg_stuff(&debug_saved);
     else
-	vim_memset(&debug_saved, 0, sizeof(debug_saved));
+	CLEAR_FIELD(debug_saved);
 
     initial_trylevel = trylevel;
 
@@ -1663,7 +1663,7 @@ do_one_cmd(
     int		starts_with_colon;
 #endif
 
-    vim_memset(&ea, 0, sizeof(ea));
+    CLEAR_FIELD(ea);
     ea.line1 = 1;
     ea.line2 = 1;
 #ifdef FEAT_EVAL
@@ -2626,7 +2626,7 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 {
     char_u *p;
 
-    vim_memset(&cmdmod, 0, sizeof(cmdmod));
+    CLEAR_FIELD(cmdmod);
     eap->verbose_save = -1;
     eap->save_msg_silent = -1;
 
@@ -5631,7 +5631,7 @@ handle_drop_internal(void)
      * Move to the first file.
      */
     // Fake up a minimal "next" command for do_argfile()
-    vim_memset(&ea, 0, sizeof(ea));
+    CLEAR_FIELD(ea);
     ea.cmd = (char_u *)"next";
     do_argfile(&ea, 0);
 
@@ -5898,7 +5898,7 @@ tabpage_new(void)
 {
     exarg_T	ea;
 
-    vim_memset(&ea, 0, sizeof(ea));
+    CLEAR_FIELD(ea);
     ea.cmdidx = CMD_tabnew;
     ea.cmd = (char_u *)"tabn";
     ea.arg = (char_u *)"";

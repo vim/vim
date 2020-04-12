@@ -977,7 +977,7 @@ channel_open(
     // Get the server internet address and put into addr structure fill in the
     // socket address structure and connect to server.
 #ifdef FEAT_IPV6
-    vim_memset(&hints, 0, sizeof(hints));
+    CLEAR_FIELD(hints);
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 # ifdef AI_ADDRCONFIG
@@ -1037,7 +1037,7 @@ channel_open(
 
     freeaddrinfo(res);
 #else
-    vim_memset((char *)&server, 0, sizeof(server));
+    CLEAR_FIELD(server);
     server.sin_family = AF_INET;
     server.sin_port = htons(port);
     if ((host = gethostbyname(hostname)) == NULL)
@@ -2514,7 +2514,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 	exarg_T ea;
 
 	ch_log(channel, "Executing normal command '%s'", (char *)arg);
-	vim_memset(&ea, 0, sizeof(ea));
+	CLEAR_FIELD(ea);
 	ea.arg = arg;
 	ea.addr_count = 0;
 	ea.forceit = TRUE; // no mapping
@@ -2525,7 +2525,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 	exarg_T ea;
 
 	ch_log(channel, "redraw");
-	vim_memset(&ea, 0, sizeof(ea));
+	CLEAR_FIELD(ea);
 	ea.forceit = *arg != NUL;
 	ex_redraw(&ea);
 	showruler(FALSE);
@@ -4793,7 +4793,7 @@ handle_io(typval_T *item, ch_part_T part, jobopt_T *opt)
     void
 clear_job_options(jobopt_T *opt)
 {
-    vim_memset(opt, 0, sizeof(jobopt_T));
+    CLEAR_POINTER(opt);
 }
 
 /*

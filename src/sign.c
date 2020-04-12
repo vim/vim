@@ -489,7 +489,7 @@ buf_get_signattrs(win_T *wp, linenr_T lnum, sign_attrs_T *sattr)
     sign_T		*sp;
     buf_T		*buf = wp->w_buffer;
 
-    vim_memset(sattr, 0, sizeof(sign_attrs_T));
+    CLEAR_POINTER(sattr);
 
     FOR_ALL_SIGNS_IN_BUF(buf, sign)
     {

@@ -119,7 +119,7 @@ main
     // Many variables are in "params" so that we can pass them to invoked
     // functions without a lot of arguments.  "argc" and "argv" are also
     // copied, so that they can be changed.
-    vim_memset(&params, 0, sizeof(params));
+    CLEAR_FIELD(params);
     params.argc = argc;
     params.argv = argv;
     params.want_full_screen = TRUE;

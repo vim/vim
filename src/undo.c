@@ -662,7 +662,7 @@ u_savecommon(
     uep = U_ALLOC_LINE(sizeof(u_entry_T));
     if (uep == NULL)
 	goto nomem;
-    vim_memset(uep, 0, sizeof(u_entry_T));
+    CLEAR_POINTER(uep);
 #ifdef U_DEBUG
     uep->ue_magic = UE_MAGIC;
 #endif
@@ -1288,7 +1288,7 @@ unserialize_uhp(bufinfo_T *bi, char_u *file_name)
     uhp = U_ALLOC_LINE(sizeof(u_header_T));
     if (uhp == NULL)
 	return NULL;
-    vim_memset(uhp, 0, sizeof(u_header_T));
+    CLEAR_POINTER(uhp);
 #ifdef U_DEBUG
     uhp->uh_magic = UH_MAGIC;
 #endif
@@ -1405,7 +1405,7 @@ unserialize_uep(bufinfo_T *bi, int *error, char_u *file_name)
     uep = U_ALLOC_LINE(sizeof(u_entry_T));
     if (uep == NULL)
 	return NULL;
-    vim_memset(uep, 0, sizeof(u_entry_T));
+    CLEAR_POINTER(uep);
 #ifdef U_DEBUG
     uep->ue_magic = UE_MAGIC;
 #endif
@@ -1532,7 +1532,7 @@ u_write_undo(
 #endif
     bufinfo_T	bi;
 
-    vim_memset(&bi, 0, sizeof(bi));
+    CLEAR_FIELD(bi);
 
     if (name == NULL)
     {
@@ -1814,7 +1814,7 @@ u_read_undo(char_u *name, char_u *hash, char_u *orig_name UNUSED)
 #endif
     bufinfo_T	bi;
 
-    vim_memset(&bi, 0, sizeof(bi));
+    CLEAR_FIELD(bi);
     line_ptr.ul_len = 0;
     line_ptr.ul_line = NULL;
 

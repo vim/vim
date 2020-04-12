@@ -269,7 +269,7 @@ test_vim_snprintf(void)
     int
 main(int argc, char **argv)
 {
-    vim_memset(&params, 0, sizeof(params));
+    CLEAR_FIELD(params);
     params.argc = argc;
     params.argv = argv;
     common_init(&params);
