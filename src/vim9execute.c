@@ -524,7 +524,7 @@ call_def_function(
 	else
 	    argc -= vararg_count;
 	if (exe_newlist(vararg_count, &ectx) == FAIL)
-	    goto failed;
+	    goto failed_early;
 	if (defcount > 0)
 	    // Move varargs list to below missing default arguments.
 	    *STACK_TV_BOT(defcount- 1) = *STACK_TV_BOT(-1);
@@ -1773,7 +1773,7 @@ failed:
     // When failed need to unwind the call stack.
     while (ectx.ec_frame != initial_frame_ptr)
 	func_return(&ectx);
-
+failed_early:
     for (idx = 0; idx < ectx.ec_stack.ga_len; ++idx)
 	clear_tv(STACK_TV(idx));
     vim_free(ectx.ec_stack.ga_data);
