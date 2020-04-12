@@ -65,7 +65,7 @@ static VTermScreen *screen;
 
 static VTermEncodingInstance encoding;
 
-static void term_output(const char *s, size_t len, void *user)
+static void term_output(const char *s, size_t len, void *user UNUSED)
 {
   size_t i;
 
