@@ -285,6 +285,7 @@ NEW_TESTS = \
 	test_utf8 \
 	test_utf8_comparisons \
 	test_vartabs \
+	test_version \
 	$(TEST_VIM9) \
 	test_viminfo \
 	test_vimscript \

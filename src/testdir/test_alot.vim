@@ -32,4 +32,5 @@ source test_tabline.vim
 source test_tagcase.vim
 source test_tagfunc.vim
 source test_unlet.vim
+source test_version.vim
 source test_wnext.vim
