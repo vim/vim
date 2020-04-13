@@ -15,10 +15,10 @@ endfunc
 
 func Test_pyx()
   redir => var
-  pyx << EOF
-import sys
-print(sys.version)
-EOF
+  pyx << trim EOF
+    import sys
+    print(sys.version)
+  EOF
   redir END
   call assert_match(s:py3pattern, split(var)[0])
 endfunc
@@ -79,3 +79,5 @@ func Test_Catch_Exception_Message()
     call assert_match( '^Vim(.*):RuntimeError: TEST$', v:exception )
   endtry
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

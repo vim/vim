@@ -219,11 +219,11 @@ endfunc
 
 func Test_stdio()
   redir =>l:out
-  perl <<EOF
+  perl << trim EOF
     VIM::Msg("&VIM::Msg");
     print "STDOUT";
     print STDERR "STDERR";
-EOF
+  EOF
   redir END
   call assert_equal(['&VIM::Msg', 'STDOUT', 'STDERR'], split(l:out, "\n"))
 endfunc
@@ -290,3 +290,5 @@ func Test_set_cursor()
   normal j
   call assert_equal([2, 6], [line('.'), col('.')])
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

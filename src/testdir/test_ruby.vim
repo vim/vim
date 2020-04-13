@@ -332,11 +332,11 @@ func Test_ruby_Vim_evaluate_list()
   call setline(line('$'), ['2 line 2'])
   ruby Vim.command("normal /^2\n")
   let l = ["abc", "def"]
-  ruby << EOF
-  curline = $curbuf.line_number
-  l = Vim.evaluate("l");
-  $curbuf.append(curline, l.join("\n"))
-EOF
+  ruby << trim EOF
+    curline = $curbuf.line_number
+    l = Vim.evaluate("l");
+    $curbuf.append(curline, l.join("\n"))
+  EOF
   normal j
   .rubydo $_ = $_.gsub(/\n/, '/')
   call assert_equal('abc/def', getline('$'))
@@ -394,3 +394,5 @@ func Test_ruby_p()
   let messages = split(execute('message'), "\n")
   call assert_equal(0, len(messages))
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
