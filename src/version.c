@@ -296,6 +296,11 @@ static char *(features[]) =
 	"-iconv",
 #endif
 	"+insert_expand",
+#ifdef FEAT_IPV6
+	"+ipv6",
+#else
+	"-ipv6",
+#endif
 #ifdef FEAT_JOB_CHANNEL
 	"+job",
 #else
@@ -741,6 +746,8 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    574,
 /**/
     573,
 /**/

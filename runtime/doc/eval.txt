@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Apr 08
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Apr 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -10870,6 +10870,7 @@ iconv			Can use iconv() for conversion.
 insert_expand		Compiled with support for CTRL-X expansion commands in
 			Insert mode. (always true)
 job			Compiled with support for |channel| and |job|
+ipv6			Compiled with support for IPv6 networking in |channel|.
 jumplist		Compiled with |jumplist| support.
 keymap			Compiled with 'keymap' support.
 lambda			Compiled with |lambda| support.
