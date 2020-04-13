@@ -461,11 +461,13 @@ guard off len
 initDone	Mark the buffer as ready for use.  Implicitly makes the buffer
 		the current buffer.  Fires the BufReadPost autocommand event.
 
-insertDone
+insertDone starteol readonly
 		Sent by Vim Controller to tell Vim an initial file insert is
-		done.  This triggers a read message being printed.  Prior to
-		version 2.3, no read messages were displayed after opening a
-		file.  New in version 2.3.
+		done.  This triggers a read message being printed.  If
+		"starteol" is "F" then the last line doesn't have a EOL. If
+		"readonly" is "T" then the file is marked as readonly. Prior
+		to version 2.3, no read messages were displayed after opening
+		a file.  New in version 2.3.
 
 moveAnnoToFront serNum
 		Not implemented.
