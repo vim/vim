@@ -167,3 +167,22 @@ func Test_Catch_Exception_Message()
     call assert_match( '^Vim(.*):RuntimeError: TEST$', v:exception )
   endtry
 endfunc
+
+" Test for various heredoc syntaxes
+func Test_python_heredoc()
+  python << END
+result='A'
+END
+  python <<
+result+='B'
+.
+  python << trim END
+    result+='C'
+  END
+  python << trim
+    result+='D'
+  .
+  call assert_equal('ABCD', pyxeval('result'))
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

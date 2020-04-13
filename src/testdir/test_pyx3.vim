@@ -80,4 +80,21 @@ func Test_Catch_Exception_Message()
   endtry
 endfunc
 
+" Test for various heredoc syntaxes
+func Test_pyx3_heredoc()
+  pyx << END
+result='A'
+END
+  pyx <<
+result+='B'
+.
+  pyx << trim END
+    result+='C'
+  END
+  pyx << trim
+    result+='D'
+  .
+  call assert_equal('ABCD', pyxeval('result'))
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab
