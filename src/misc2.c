@@ -4356,7 +4356,10 @@ build_argv_from_list(list_T *l, char ***argv, int *argc)
 	    int i;
 
 	    for (i = 0; i < *argc; ++i)
+	    {
 		vim_free((*argv)[i]);
+		(*argv)[i] = NULL;
+	    }
 	    return FAIL;
 	}
 	(*argv)[*argc] = (char *)vim_strsave(s);
