@@ -4764,9 +4764,11 @@ ex_blast(exarg_T *eap)
     int
 ends_excmd(int c)
 {
+#ifdef FEAT_EVAL
     if (c == '#')
 	// TODO: should check for preceding white space
 	return in_vim9script();
+#endif
     return (c == NUL || c == '|' || c == '"' || c == '\n');
 }
 
