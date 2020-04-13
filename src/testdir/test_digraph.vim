@@ -212,6 +212,8 @@ func Test_digraphs()
   call assert_equal(['␀', 'ü', '∞', 'l'], getline(line('.')-3,line('.')))
   call assert_fails('exe "digraph a\<Esc> 100"', 'E104:')
   call assert_fails('exe "digraph \<Esc>a 100"', 'E104:')
+  call assert_fails('digraph xy z', 'E39:')
+  call assert_fails('digraph x', 'E474:')
   bw!
 endfunc
 
