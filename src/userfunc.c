@@ -64,14 +64,16 @@ func_tbl_get(void)
 }
 
 /*
- * Get one function argument and an optional type: "arg: type".
+ * Get one function argument.
+ * If "argtypes" is not NULL also get the type: "arg: type".
  * Return a pointer to after the type.
  * When something is wrong return "arg".
  */
     static char_u *
 one_function_arg(char_u *arg, garray_T *newargs, garray_T *argtypes, int skip)
 {
-    char_u *p = arg;
+    char_u	*p = arg;
+    char_u	*arg_copy = NULL;
 
     while (ASCII_ISALNUM(*p) || *p == '_')
 	++p;
@@ -87,7 +89,6 @@ one_function_arg(char_u *arg, garray_T *newargs, garray_T *argtypes, int skip)
 	return arg;
     if (newargs != NULL)
     {
-	char_u	*arg_copy;
 	int	c;
 	int	i;
 
@@ -119,14 +120,24 @@ one_function_arg(char_u *arg, garray_T *newargs, garray_T *argtypes, int skip)
     {
 	char_u *type = NULL;
 
+	if (VIM_ISWHITE(*p) && *skipwhite(p) == ':')
+	{
+	    semsg(_("E1059: No white space allowed before colon: %s"),
+					    arg_copy == NULL ? arg : arg_copy);
+	    p = skipwhite(p);
+	}
 	if (*p == ':')
 	{
 	    type = skipwhite(p + 1);
 	    p = skip_type(type);
 	    type = vim_strnsave(type, p - type);
 	}
-	else if (*skipwhite(p) == ':')
-	    emsg(_("E1059: No white space allowed before :"));
+	else if (*skipwhite(p) != '=')
+	{
+	    semsg(_("E1077: Missing argument type for %s"),
+					    arg_copy == NULL ? arg : arg_copy);
+	    return arg;
+	}
 	((char_u **)argtypes->ga_data)[argtypes->ga_len++] = type;
     }
 

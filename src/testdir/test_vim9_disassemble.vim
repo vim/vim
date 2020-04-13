@@ -160,7 +160,7 @@ def Test_disassemble_new()
         res)
 enddef
 
-def FuncWithArg(arg)
+def FuncWithArg(arg: any)
   echo arg
 enddef
 
@@ -432,7 +432,7 @@ def Test_disassemble_lambda()
         instr)
 enddef
 
-def AndOr(arg): string
+def AndOr(arg: any): string
   if arg == 1 && arg != 2 || arg == 4
     return 'yes'
   endif

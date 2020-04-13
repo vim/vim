@@ -859,11 +859,11 @@ def Test_expr7_negate()
   assert_equal(88, --nr)
 enddef
 
-def Echo(arg): string
+def Echo(arg: any): string
   return arg
 enddef
 
-def s:EchoArg(arg): string
+def s:EchoArg(arg: any): string
   return arg
 enddef
 
@@ -990,6 +990,7 @@ def Test_expr7_trailing()
   let d = #{key: 123}
   assert_equal(123, d.key)
 enddef
+
 
 func Test_expr7_trailing_fails()
   call CheckDefFailureList(['let l = [2]', 'l->{l -> add(l, 8)}'], 'E107')
