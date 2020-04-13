@@ -1681,6 +1681,7 @@ func Test_job_start_fails()
   call assert_fails('let job = job_start(["   "])', 'E474:')
   call assert_fails('let job = job_start("")', 'E474:')
   call assert_fails('let job = job_start("   ")', 'E474:')
+  call assert_fails('let job = job_start(["ls", []])', 'E730:')
   %bw!
 endfunc
 
