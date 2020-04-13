@@ -983,10 +983,17 @@ def Test_automatic_line_continuation()
       } " comment
   assert_equal({'one': 1, 'two': 2, 'three': 3}, mydict)
   mydict = #{
-      one: 1,  " comment
-      two:
-           2,
-      three: 3  " comment
+      one: 1,  # comment
+      two:     # comment
+           2,  # comment
+      three: 3 # comment
+      }
+  assert_equal(#{one: 1, two: 2, three: 3}, mydict)
+  mydict = #{
+      one: 1, 
+      two: 
+           2, 
+      three: 3 
       }
   assert_equal(#{one: 1, two: 2, three: 3}, mydict)
 

@@ -58,6 +58,15 @@ old scripts, they keep working as before.
 
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
+Comments starting with # ~
+
+In Vim script comments normally start with double quote.  That can also be the
+start of a string, thus in many places it cannot be used.  In Vim9 script a
+comment can also start with #.  Normally this is a command to list text with
+numbers, but you can also use `:number` for that. >
+	let count = 0  # number of occurences of Ni!
+
+
 Vim9 functions ~
 
 `:def` has no extra arguments like `:function` does: "range", "abort", "dict"
@@ -241,6 +250,9 @@ Vim9 script enforces proper use of white space.  This is no longer allowed: >
 	let var =234	" Error!
 There must be white space before and after the "=": >
 	let var = 234	" OK
+White space must also be put before the # that starts a comment: >
+	let var = 234# Error!
+	let var = 234 # OK
 
 White space is required around most operators.
 

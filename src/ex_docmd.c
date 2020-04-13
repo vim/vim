@@ -4764,6 +4764,9 @@ ex_blast(exarg_T *eap)
     int
 ends_excmd(int c)
 {
+    if (c == '#')
+	// TODO: should check for preceding white space
+	return in_vim9script();
     return (c == NUL || c == '|' || c == '"' || c == '\n');
 }
 

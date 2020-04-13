@@ -2070,13 +2070,23 @@ next_line_from_context(cctx_T *cctx)
 }
 
 /*
+ * Return TRUE if "p" points at a "#" but not at "#{".
+ */
+    static int
+comment_start(char_u *p)
+{
+    return p[0] == '#' && p[1] != '{';
+}
+
+/*
  * If "*arg" is at the end of the line, advance to the next line.
+ * Also when "whitep" points to white space and "*arg" is on a "#".
  * Return FAIL if beyond the last line, "*arg" is unmodified then.
  */
     static int
-may_get_next_line(char_u **arg, cctx_T *cctx)
+may_get_next_line(char_u *whitep, char_u **arg, cctx_T *cctx)
 {
-    if (**arg == NUL)
+    if (**arg == NUL || (VIM_ISWHITE(*whitep) && comment_start(*arg)))
     {
 	char_u *next = next_line_from_context(cctx);
 
@@ -2321,15 +2331,17 @@ theend:
     static int
 compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 {
-    char_u *p = *arg;
+    char_u  *p = *arg;
+    char_u  *whitep = *arg;
 
     for (;;)
     {
-	if (*p == NUL)
+	while (*p == NUL || (VIM_ISWHITE(*whitep) && comment_start(p)))
 	{
 	    p = next_line_from_context(cctx);
 	    if (p == NULL)
-		break;
+		goto failret;
+	    whitep = (char_u *)" ";
 	    p = skipwhite(p);
 	}
 	if (*p == ')')
@@ -2353,9 +2365,10 @@ compile_arguments(char_u **arg, cctx_T *cctx, int *argcount)
 	    if (*p != NUL && !VIM_ISWHITE(*p))
 		semsg(_(e_white_after), ",");
 	}
+	whitep = p;
 	p = skipwhite(p);
     }
-
+failret:
     emsg(_(e_missing_close));
     return FAIL;
 }
@@ -2589,11 +2602,12 @@ need_type(type_T *actual, type_T *expected, int offset, cctx_T *cctx)
 compile_list(char_u **arg, cctx_T *cctx)
 {
     char_u	*p = skipwhite(*arg + 1);
+    char_u	*whitep = *arg + 1;
     int		count = 0;
 
     for (;;)
     {
-	if (*p == NUL)
+	while (*p == NUL || (VIM_ISWHITE(*whitep) && comment_start(p)))
 	{
 	    p = next_line_from_context(cctx);
 	    if (p == NULL)
@@ -2601,6 +2615,7 @@ compile_list(char_u **arg, cctx_T *cctx)
 		semsg(_(e_list_end), *arg);
 		return FAIL;
 	    }
+	    whitep = (char_u *)" ";
 	    p = skipwhite(p);
 	}
 	if (*p == ']')
@@ -2616,6 +2631,7 @@ compile_list(char_u **arg, cctx_T *cctx)
 	++count;
 	if (*p == ',')
 	    ++p;
+	whitep = p;
 	p = skipwhite(p);
     }
     *arg = p;
@@ -2713,6 +2729,8 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
     int		count = 0;
     dict_T	*d = dict_alloc();
     dictitem_T	*item;
+    char_u	*whitep = *arg;
+    char_u	*p;
 
     if (d == NULL)
 	return FAIL;
@@ -2721,11 +2739,13 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
     {
 	char_u *key = NULL;
 
-	if (**arg == NUL || (literal && **arg == '"'))
+	while (**arg == NUL || (literal && **arg == '"')
+			      || (VIM_ISWHITE(*whitep) && comment_start(*arg)))
 	{
 	    *arg = next_line_from_context(cctx);
 	    if (*arg == NULL)
 		goto failret;
+	    whitep = (char_u *)" ";
 	    *arg = skipwhite(*arg);
 	}
 
@@ -2734,17 +2754,17 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 
 	if (literal)
 	{
-	    char_u *p = to_name_end(*arg, !literal);
+	    char_u *end = to_name_end(*arg, !literal);
 
-	    if (p == *arg)
+	    if (end == *arg)
 	    {
 		semsg(_("E1014: Invalid key: %s"), *arg);
 		return FAIL;
 	    }
-	    key = vim_strnsave(*arg, p - *arg);
+	    key = vim_strnsave(*arg, end - *arg);
 	    if (generate_PUSHS(cctx, key) == FAIL)
 		return FAIL;
-	    *arg = p;
+	    *arg = end;
 	}
 	else
 	{
@@ -2784,12 +2804,14 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	    return FAIL;
 	}
 
+	whitep = *arg + 1;
 	*arg = skipwhite(*arg + 1);
-	if (**arg == NUL)
+	while (**arg == NUL || (VIM_ISWHITE(*whitep) && comment_start(*arg)))
 	{
 	    *arg = next_line_from_context(cctx);
 	    if (*arg == NULL)
 		goto failret;
+	    whitep = (char_u *)" ";
 	    *arg = skipwhite(*arg);
 	}
 
@@ -2797,12 +2819,16 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	    return FAIL;
 	++count;
 
-	if (**arg == NUL || *skipwhite(*arg) == '"')
+	whitep = *arg;
+	p = skipwhite(*arg);
+	while (*p == NUL || (VIM_ISWHITE(*whitep) && comment_start(p)))
 	{
 	    *arg = next_line_from_context(cctx);
 	    if (*arg == NULL)
 		goto failret;
+	    whitep = (char_u *)" ";
 	    *arg = skipwhite(*arg);
+	    p = *arg;
 	}
 	if (**arg == '}')
 	    break;
@@ -2811,13 +2837,15 @@ compile_dict(char_u **arg, cctx_T *cctx, int literal)
 	    semsg(_(e_missing_dict_comma), *arg);
 	    goto failret;
 	}
+	whitep = *arg + 1;
 	*arg = skipwhite(*arg + 1);
     }
 
     *arg = *arg + 1;
 
     // Allow for following comment, after at least one space.
-    if (VIM_ISWHITE(**arg) && *skipwhite(*arg) == '"')
+    p = skipwhite(*arg);
+    if (VIM_ISWHITE(**arg) && (*p == '"' || comment_start(p)))
 	*arg += STRLEN(*arg);
 
     dict_unref(d);
@@ -3422,7 +3450,7 @@ compile_expr6(char_u **arg, cctx_T *cctx)
 	    return FAIL;
 	}
 	*arg = skipwhite(op + 1);
-	if (may_get_next_line(arg, cctx) == FAIL)
+	if (may_get_next_line(op + 1, arg, cctx) == FAIL)
 	    return FAIL;
 
 	// get the second variable
@@ -3470,7 +3498,7 @@ compile_expr5(char_u **arg, cctx_T *cctx)
 	}
 
 	*arg = skipwhite(op + oplen);
-	if (may_get_next_line(arg, cctx) == FAIL)
+	if (may_get_next_line(op + oplen, arg, cctx) == FAIL)
 	    return FAIL;
 
 	// get the second variable
@@ -3608,7 +3636,7 @@ compile_expr4(char_u **arg, cctx_T *cctx)
 
 	// get the second variable
 	*arg = skipwhite(p + len);
-	if (may_get_next_line(arg, cctx) == FAIL)
+	if (may_get_next_line(p + len, arg, cctx) == FAIL)
 	    return FAIL;
 
 	if (compile_expr5(arg, cctx) == FAIL)
@@ -3658,7 +3686,7 @@ compile_and_or(char_u **arg, cctx_T *cctx, char *op)
 
 	    // eval the next expression
 	    *arg = skipwhite(p + 2);
-	    if (may_get_next_line(arg, cctx) == FAIL)
+	    if (may_get_next_line(p + 2, arg, cctx) == FAIL)
 		return FAIL;
 
 	    if ((opchar == '|' ? compile_expr3(arg, cctx)
@@ -3771,7 +3799,7 @@ compile_expr1(char_u **arg,  cctx_T *cctx)
 
 	// evaluate the second expression; any type is accepted
 	*arg = skipwhite(p + 1);
-	if (may_get_next_line(arg, cctx) == FAIL)
+	if (may_get_next_line(p + 1, arg, cctx) == FAIL)
 	    return FAIL;
 
 	if (compile_expr1(arg, cctx) == FAIL)
@@ -3803,7 +3831,7 @@ compile_expr1(char_u **arg,  cctx_T *cctx)
 
 	// evaluate the third expression
 	*arg = skipwhite(p + 1);
-	if (may_get_next_line(arg, cctx) == FAIL)
+	if (may_get_next_line(p + 1, arg, cctx) == FAIL)
 	    return FAIL;
 
 	if (compile_expr1(arg, cctx) == FAIL)

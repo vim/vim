@@ -154,6 +154,7 @@ get_function_args(
     int		c;
     int		any_default = FALSE;
     char_u	*expr;
+    char_u	*whitep = arg;
 
     if (newargs != NULL)
 	ga_init2(newargs, (int)sizeof(char_u *), 3);
@@ -170,7 +171,8 @@ get_function_args(
      */
     while (*p != endchar)
     {
-	if (eap != NULL && *p == NUL && eap->getline != NULL)
+	while (eap != NULL && eap->getline != NULL
+			 && (*p == NUL || (VIM_ISWHITE(*whitep) && *p == '#')))
 	{
 	    char_u *theline;
 
@@ -180,6 +182,7 @@ get_function_args(
 		break;
 	    vim_free(*line_to_free);
 	    *line_to_free = theline;
+	    whitep = (char_u *)" ";
 	    p = skipwhite(theline);
 	}
 
@@ -228,6 +231,7 @@ get_function_args(
 		// find the end of the expression (doesn't evaluate it)
 		any_default = TRUE;
 		p = skipwhite(p) + 1;
+		whitep = p;
 		p = skipwhite(p);
 		expr = p;
 		if (eval1(&p, &rettv, FALSE) != FAIL)
@@ -264,6 +268,7 @@ get_function_args(
 	    else
 		mustend = TRUE;
 	}
+	whitep = p;
 	p = skipwhite(p);
     }
 
@@ -2595,7 +2600,8 @@ ex_function(exarg_T *eap)
     // Makes 'exe "func Test()\n...\nendfunc"' work.
     if (*p == '\n')
 	line_arg = p + 1;
-    else if (*p != NUL && *p != '"' && !eap->skip && !did_emsg)
+    else if (*p != NUL && *p != '"' && !(eap->cmdidx == CMD_def && *p == '#')
+						    && !eap->skip && !did_emsg)
 	emsg(_(e_trailing));
 
     /*

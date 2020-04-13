@@ -569,6 +569,14 @@ def MultiLine(
   return arg1 .. arg2 .. join(rest, '-')
 enddef
 
+def MultiLineComment(
+    arg1: string, # comment
+    arg2 = 1234, # comment
+    ...rest: list<string> # comment
+      ): string # comment
+  return arg1 .. arg2 .. join(rest, '-')
+enddef
+
 def Test_multiline()
   assert_equal('text1234', MultiLine('text'))
   assert_equal('text777', MultiLine('text', 777))
