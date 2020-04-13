@@ -293,6 +293,11 @@ static char *(features[]) =
 	"-iconv",
 #endif
 	"+insert_expand",
+#ifdef FEAT_IPV6
+	"+ipv6",
+#else
+	"-ipv6",
+#endif
 #ifdef FEAT_JOB_CHANNEL
 	"+job",
 #else
