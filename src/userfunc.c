@@ -2830,10 +2830,19 @@ ex_function(exarg_T *eap)
 	    {
 		// ":python <<" continues until a dot, like ":append"
 		p = skipwhite(arg + 2);
+		if (STRNCMP(p, "trim", 4) == 0)
+		{
+		    // Ignore leading white space.
+		    p = skipwhite(p + 4);
+		    heredoc_trimmed = vim_strnsave(theline,
+			    (int)(skipwhite(theline) - theline));
+		}
 		if (*p == NUL)
 		    skip_until = vim_strsave((char_u *)".");
 		else
-		    skip_until = vim_strsave(p);
+		    skip_until = vim_strnsave(p, (int)(skiptowhite(p) - p));
+		do_concat = FALSE;
+		is_heredoc = TRUE;
 	    }
 
 	    // Check for ":let v =<< [trim] EOF"

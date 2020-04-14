@@ -541,10 +541,15 @@ list_script_vars(int *first)
  * The {marker} is a string. If the optional 'trim' word is supplied before the
  * marker, then the leading indentation before the lines (matching the
  * indentation in the 'cmd' line) is stripped.
+ *
+ * When getting lines for an embedded script (e.g. python, lua, perl, ruby,
+ * tcl, mzscheme), script_get is set to TRUE. In this case, if the marker is
+ * missing, then '.' is accepted as a marker.
+ *
  * Returns a List with {lines} or NULL.
  */
     list_T *
-heredoc_get(exarg_T *eap, char_u *cmd)
+heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 {
     char_u	*theline;
     char_u	*marker;
@@ -553,6 +558,7 @@ heredoc_get(exarg_T *eap, char_u *cmd)
     int		marker_indent_len = 0;
     int		text_indent_len = 0;
     char_u	*text_indent = NULL;
+    char_u	dot[] = ".";
 
     if (eap->getline == NULL)
     {
@@ -598,8 +604,15 @@ heredoc_get(exarg_T *eap, char_u *cmd)
     }
     else
     {
-	emsg(_("E172: Missing marker"));
-	return NULL;
+	// When getting lines for an embedded script, if the marker is missing,
+	// accept '.' as the marker.
+	if (script_get)
+	    marker = dot;
+	else
+	{
+	    emsg(_("E172: Missing marker"));
+	    return NULL;
+	}
     }
 
     l = list_alloc();
@@ -746,7 +759,7 @@ ex_let_const(exarg_T *eap, int is_const)
 	list_T	*l;
 
 	// HERE document
-	l = heredoc_get(eap, expr + 3);
+	l = heredoc_get(eap, expr + 3, FALSE);
 	if (l != NULL)
 	{
 	    rettv_list_set(&rettv, l);
