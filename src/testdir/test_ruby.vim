@@ -395,4 +395,21 @@ func Test_ruby_p()
   call assert_equal(0, len(messages))
 endfunc
 
+" Test for various heredoc syntax
+func Test_ruby_heredoc()
+  ruby << END
+Vim.command('let s = "A"')
+END
+  ruby <<
+Vim.command('let s ..= "B"')
+.
+  ruby << trim END
+    Vim.command('let s ..= "C"')
+  END
+  ruby << trim
+    Vim.command('let s ..= "D"')
+  .
+  call assert_equal('ABCD', s)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

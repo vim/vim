@@ -291,4 +291,21 @@ func Test_set_cursor()
   call assert_equal([2, 6], [line('.'), col('.')])
 endfunc
 
+" Test for various heredoc syntax
+func Test_perl_heredoc()
+  perl << END
+VIM::DoCommand('let s = "A"')
+END
+  perl <<
+VIM::DoCommand('let s ..= "B"')
+.
+  perl << trim END
+    VIM::DoCommand('let s ..= "C"')
+  END
+  perl << trim
+    VIM::DoCommand('let s ..= "D"')
+  .
+  call assert_equal('ABCD', s)
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

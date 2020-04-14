@@ -168,21 +168,21 @@ func Test_Catch_Exception_Message()
   endtry
 endfunc
 
-" Test for various heredoc syntaxes
+" Test for various heredoc syntax
 func Test_python_heredoc()
   python << END
-result='A'
+s='A'
 END
   python <<
-result+='B'
+s+='B'
 .
   python << trim END
-    result+='C'
+    s+='C'
   END
   python << trim
-    result+='D'
+    s+='D'
   .
-  call assert_equal('ABCD', pyxeval('result'))
+  call assert_equal('ABCD', pyxeval('s'))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -335,21 +335,21 @@ func Test_python3_opt_reset_local_to_global()
   close!
 endfunc
 
-" Test for various heredoc syntaxes
+" Test for various heredoc syntax
 func Test_python3_heredoc()
   python3 << END
-result='A'
+s='A'
 END
   python3 <<
-result+='B'
+s+='B'
 .
   python3 << trim END
-    result+='C'
+    s+='C'
   END
   python3 << trim
-    result+='D'
+    s+='D'
   .
-  call assert_equal('ABCD', pyxeval('result'))
+  call assert_equal('ABCD', pyxeval('s'))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
