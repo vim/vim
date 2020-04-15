@@ -2612,12 +2612,8 @@ mch_init_c(void)
 	create_conin();
     g_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    vtp_flag_init();
-
 # ifdef FEAT_RESTORE_ORIG_SCREEN
     // Save the initial console buffer for later restoration
-    if (vtp_working && p_rs)
-	vtp_printf("\033[?1049h");
     SaveConsoleBuffer(&g_cbOrig);
     g_attrCurrent = g_attrDefault = g_cbOrig.Info.wAttributes;
 # else
@@ -2675,6 +2671,7 @@ mch_init_c(void)
     win_clip_init();
 # endif
 
+    vtp_flag_init();
     vtp_init();
 }
 
@@ -5434,6 +5431,9 @@ termcap_mode_start(void)
     if (g_fTermcapMode)
 	return;
 
+    if (!p_rs && USE_VTP)
+	vtp_printf("\033[?1049h");
+
     SaveConsoleBuffer(&g_cbNonTermcap);
 
     if (g_cbTermcap.IsValid)
@@ -5501,11 +5501,10 @@ termcap_mode_end(void)
 
 # ifdef FEAT_RESTORE_ORIG_SCREEN
     cb = exiting ? &g_cbOrig : &g_cbNonTermcap;
-    if (!(vtp_working && exiting))
 # else
     cb = &g_cbNonTermcap;
 # endif
-	RestoreConsoleBuffer(cb, p_rs);
+    RestoreConsoleBuffer(cb, p_rs);
     restore_console_color_rgb();
     SetConsoleCursorInfo(g_hConOut, &g_cci);
 
@@ -5531,16 +5530,11 @@ termcap_mode_end(void)
 	/*
 	 * Position the cursor at the leftmost column of the desired row.
 	 */
-# ifdef FEAT_RESTORE_ORG_SCREEN
-	if (!(vtp_working && exiting))
-# endif
-	    SetConsoleCursorPosition(g_hConOut, coord);
+	SetConsoleCursorPosition(g_hConOut, coord);
     }
 
-# ifdef FEAT_RESTORE_ORIG_SCREEN
-    if (vtp_working && p_rs && exiting)
+    if (!p_rs && USE_VTP)
 	vtp_printf("\033[?1049l");
-# endif
 
     g_fTermcapMode = FALSE;
 }
