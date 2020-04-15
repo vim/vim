@@ -220,6 +220,9 @@ static int default_console_color_fg = 0xc0c0c0; // white
 static void set_console_color_rgb(void);
 static void reset_console_color_rgb(void);
 static void restore_console_color_rgb(void);
+static void store_colortable_dword_rgb(DWORD dw_fg, DWORD dw_bg);
+static void store_colortable_colorref_rgb(COLORREF bgr_fg, COLORREF bgr_bg);
+static void store_colortable_guicolor_rgb(guicolor_T rgb_fg, guicolor_T rgb_bg);
 #endif
 
 // This flag is newly created from Windows 10
@@ -2612,12 +2615,8 @@ mch_init_c(void)
 	create_conin();
     g_hConOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
-    vtp_flag_init();
-
 # ifdef FEAT_RESTORE_ORIG_SCREEN
     // Save the initial console buffer for later restoration
-    if (vtp_working && p_rs)
-	vtp_printf("\033[?1049h");
     SaveConsoleBuffer(&g_cbOrig);
     g_attrCurrent = g_attrDefault = g_cbOrig.Info.wAttributes;
 # else
@@ -2675,6 +2674,7 @@ mch_init_c(void)
     win_clip_init();
 # endif
 
+    vtp_flag_init();
     vtp_init();
 }
 
@@ -4480,6 +4480,7 @@ mch_system_c(char *cmd, int options UNUSED)
 
     ret = _wsystem(wcmd);
     vim_free(wcmd);
+
     return ret;
 }
 
@@ -5434,7 +5435,14 @@ termcap_mode_start(void)
     if (g_fTermcapMode)
 	return;
 
-    SaveConsoleBuffer(&g_cbNonTermcap);
+    if (!g_cbNonTermcap.IsValid && USE_VTP && p_rs)
+    {
+	//do_highlight((char_u *)"Normal guifg=#00c0c0 guibg=#004040", TRUE, FALSE);
+	SaveConsoleBuffer(&g_cbNonTermcap);
+	vtp_printf("\033[?1049h");
+    }
+    else
+	SaveConsoleBuffer(&g_cbNonTermcap);
 
     if (g_cbTermcap.IsValid)
     {
@@ -5445,7 +5453,6 @@ termcap_mode_start(void)
 	 * to restore the actual contents of the buffer.
 	 */
 	RestoreConsoleBuffer(&g_cbTermcap, FALSE);
-	reset_console_color_rgb();
 	SetConsoleWindowInfo(g_hConOut, TRUE, &g_cbTermcap.Info.srWindow);
 	Rows = g_cbTermcap.Info.dwSize.Y;
 	Columns = g_cbTermcap.Info.dwSize.X;
@@ -5458,7 +5465,6 @@ termcap_mode_start(void)
 	 * size.  We will use this as the size of our editing environment.
 	 */
 	ClearConsoleBuffer(g_attrCurrent);
-	set_console_color_rgb();
 	ResizeConBufAndWindow(g_hConOut, Columns, Rows);
     }
 
@@ -5501,11 +5507,10 @@ termcap_mode_end(void)
 
 # ifdef FEAT_RESTORE_ORIG_SCREEN
     cb = exiting ? &g_cbOrig : &g_cbNonTermcap;
-    if (!(vtp_working && exiting))
 # else
     cb = &g_cbNonTermcap;
 # endif
-	RestoreConsoleBuffer(cb, p_rs);
+    RestoreConsoleBuffer(cb, p_rs);
     restore_console_color_rgb();
     SetConsoleCursorInfo(g_hConOut, &g_cci);
 
@@ -5531,15 +5536,16 @@ termcap_mode_end(void)
 	/*
 	 * Position the cursor at the leftmost column of the desired row.
 	 */
-# ifdef FEAT_RESTORE_ORG_SCREEN
-	if (!(vtp_working && exiting))
-# endif
+	if (!(exiting && p_rs && USE_VTP))
 	    SetConsoleCursorPosition(g_hConOut, coord);
     }
 
 # ifdef FEAT_RESTORE_ORIG_SCREEN
-    if (vtp_working && p_rs && exiting)
+    if (p_rs && USE_VTP && cb == &g_cbOrig)
+    {
 	vtp_printf("\033[?1049l");
+	SetConsoleCursorPosition(g_hConOut, cb->Info.dwCursorPosition);
+    }
 # endif
 
     g_fTermcapMode = FALSE;
@@ -7354,6 +7360,13 @@ vtp_init(void)
     store_console_bg_rgb = save_console_bg_rgb;
     store_console_fg_rgb = save_console_fg_rgb;
 
+    csbi.cbSize = sizeof(csbi);
+    csbi.wAttributes = g_attrDefault;
+    csbi.srWindow.Right += 1;
+    csbi.srWindow.Bottom += 1;
+    if (has_csbiex)
+	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+
 # ifdef FEAT_TERMGUICOLORS
     bg = (COLORREF)csbi.ColorTable[g_color_index_bg];
     fg = (COLORREF)csbi.ColorTable[g_color_index_fg];
@@ -7449,22 +7462,13 @@ set_console_color_rgb(void)
 
     get_default_console_color(&ctermfg, &ctermbg, &fg, &bg);
 
-    fg = (GetRValue(fg) << 16) | (GetGValue(fg) << 8) | GetBValue(fg);
-    bg = (GetRValue(bg) << 16) | (GetGValue(bg) << 8) | GetBValue(bg);
+    store_colortable_guicolor_rgb(fg, bg);
 
     csbi.cbSize = sizeof(csbi);
     if (has_csbiex)
 	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
-
-    csbi.cbSize = sizeof(csbi);
-    csbi.srWindow.Right += 1;
-    csbi.srWindow.Bottom += 1;
     store_console_bg_rgb = csbi.ColorTable[g_color_index_bg];
     store_console_fg_rgb = csbi.ColorTable[g_color_index_fg];
-    csbi.ColorTable[g_color_index_bg] = (COLORREF)bg;
-    csbi.ColorTable[g_color_index_fg] = (COLORREF)fg;
-    if (has_csbiex)
-	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
 }
 
@@ -7520,19 +7524,7 @@ get_default_console_color(
 reset_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
-    DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
-
-    csbi.cbSize = sizeof(csbi);
-    if (has_csbiex)
-	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
-
-    csbi.cbSize = sizeof(csbi);
-    csbi.srWindow.Right += 1;
-    csbi.srWindow.Bottom += 1;
-    csbi.ColorTable[g_color_index_bg] = (COLORREF)store_console_bg_rgb;
-    csbi.ColorTable[g_color_index_fg] = (COLORREF)store_console_fg_rgb;
-    if (has_csbiex)
-	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
+    store_colortable_colorref_rgb(store_console_fg_rgb, store_console_bg_rgb);
 # endif
 }
 
@@ -7543,20 +7535,56 @@ reset_console_color_rgb(void)
 restore_console_color_rgb(void)
 {
 # ifdef FEAT_TERMGUICOLORS
+    store_colortable_colorref_rgb(save_console_fg_rgb, save_console_bg_rgb);
+# endif
+}
+
+    static void
+store_colortable_dword_rgb(
+    DWORD dw_fg,
+    DWORD dw_bg)
+{
+# ifdef FEAT_TERMGUICOLORS
     DYN_CONSOLE_SCREEN_BUFFER_INFOEX csbi;
+    int fg, bg;
 
     csbi.cbSize = sizeof(csbi);
     if (has_csbiex)
 	pGetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
-
     csbi.cbSize = sizeof(csbi);
+    fg = csbi.wAttributes & 0x0f;
+    bg = (csbi.wAttributes & 0xf0) >> 4;
     csbi.srWindow.Right += 1;
     csbi.srWindow.Bottom += 1;
-    csbi.ColorTable[g_color_index_bg] = (COLORREF)save_console_bg_rgb;
-    csbi.ColorTable[g_color_index_fg] = (COLORREF)save_console_fg_rgb;
+    csbi.ColorTable[fg] = (COLORREF)dw_fg;
+    csbi.ColorTable[bg] = (COLORREF)dw_bg;
     if (has_csbiex)
 	pSetConsoleScreenBufferInfoEx(g_hConOut, &csbi);
 # endif
+}
+
+
+    static void
+store_colortable_colorref_rgb(
+    COLORREF bgr_fg,
+    COLORREF bgr_bg)
+{
+    store_colortable_dword_rgb((DWORD)bgr_fg, (DWORD)bgr_bg);
+}
+
+    static void
+store_colortable_guicolor_rgb(
+    guicolor_T rgb_fg,
+    guicolor_T rgb_bg)
+{
+    COLORREF bgr_fg, bgr_bg;
+
+    bgr_fg = ((rgb_fg & 0xff0000) >> 16) | (rgb_fg & 0x00ff00)
+						| ((rgb_fg & 0x00000ff) << 16);
+    bgr_bg = ((rgb_bg & 0xff0000) >> 16) | (rgb_bg & 0x00ff00)
+						| ((rgb_bg & 0x00000ff) << 16);
+
+    store_colortable_dword_rgb((DWORD)bgr_fg, (DWORD)bgr_bg);
 }
 
     void
