@@ -4769,7 +4769,7 @@ not_enough:
 			}
 
 			// Detect terminals that set $TERM to something like
-			// "xterm-256colors"  but are not fully xterm
+			// "xterm-256color"  but are not fully xterm
 			// compatible.
 
 			// Gnome terminal sends 1;3801;0, 1;4402;0 or 1;2501;0.
@@ -4783,7 +4783,13 @@ not_enough:
 			// PuTTY sends 0;136;0
 			// vandyke SecureCRT sends 1;136;0
 			else if (version == 136 && arg[2] == 0)
+			{
 			    is_not_xterm = TRUE;
+			    if (arg[0] == 0)
+				// PuTTY supports sgr like mouse reporting
+				set_option_value((char_u *)"ttym", 0L,
+							(char_u *)"sgr", 0);
+			}
 
 			// Konsole sends 0;115;0
 			else if (version == 115 && arg[0] == 0 && arg[2] == 0)
