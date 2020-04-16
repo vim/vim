@@ -63,9 +63,9 @@ def Test_assignment()
   let Funky2: func = function('len')
   let Party2: func = funcref('Test_syntax')
 
-  " type becomes list<any>
+  # type becomes list<any>
   let somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
-  " type becomes dict<any>
+  # type becomes dict<any>
   let somedict = rand() > 0 ? #{a: 1, b: 2} : #{a: 'a', b: 'b'}
 
   g:newvar = 'new'
@@ -104,7 +104,7 @@ def Test_assignment()
   call CheckDefFailure(['&notex += 3'], 'E113:')
   call CheckDefFailure(['&ts ..= "xxx"'], 'E1019:')
   call CheckDefFailure(['&path += 3'], 'E1013:')
-  " test freeing ISN_STOREOPT
+  # test freeing ISN_STOREOPT
   call CheckDefFailure(['&ts = 3', 'let asdf'], 'E1022:')
   &ts = 8
 
@@ -131,7 +131,7 @@ enddef
 
 def Test_assignment_default()
 
-  " Test default values.
+  # Test default values.
   let thebool: bool
   assert_equal(v:false, thebool)
 
