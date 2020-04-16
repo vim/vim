@@ -10,11 +10,17 @@ func CheckDefFailure(lines, error)
   call delete('Xdef')
 endfunc
 
-func CheckScriptFailure(lines, error)
-  call writefile(a:lines, 'Xdef')
-  call assert_fails('so Xdef', a:error, a:lines)
-  call delete('Xdef')
-endfunc
+def CheckScriptFailure(lines: list<string>, error: string)
+  writefile(lines, 'Xdef')
+  assert_fails('so Xdef', error, lines)
+  delete('Xdef')
+enddef
+
+def CheckScriptSuccess(lines: list<string>)
+  writefile(lines, 'Xdef')
+  so Xdef
+  delete('Xdef')
+enddef
 
 def Test_syntax()
   let var = 234
@@ -269,15 +275,15 @@ enddef
 
 def Test_try_catch()
   let l = []
-  try
+  try # comment
     add(l, '1')
     throw 'wrong'
     add(l, '2')
-  catch
+  catch # comment
     add(l, v:exception)
-  finally
+  finally # comment
     add(l, '3')
-  endtry
+  endtry # comment
   assert_equal(['1', 'wrong', '3'], l)
 enddef
 
@@ -1001,6 +1007,58 @@ def Test_automatic_line_continuation()
         ['one', 'two', 'three'],
         split('one two three')
         )
+enddef
+
+def Test_vim9_comment()
+  CheckScriptSuccess([
+      'vim9script',
+      '# something',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      ':# something',
+      ], 'E488:')
+  CheckScriptFailure([
+      '# something',
+      ], 'E488:')
+  CheckScriptFailure([
+      ':# something',
+      ], 'E488:')
+
+  CheckScriptSuccess([
+      'vim9script',
+      'echo "yes" # something',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      'echo "yes"# something',
+      ], 'E121:')
+  CheckScriptFailure([
+      'vim9script',
+      'echo# something',
+      ], 'E121:')
+  CheckScriptFailure([
+      'echo "yes" # something',
+      ], 'E121:')
+
+  CheckDefFailure([
+      'try# comment',
+      'echo "yes"',
+      'catch',
+      'endtry',
+      ], 'E488:')
+  CheckDefFailure([
+      'try',
+      'echo "yes"',
+      'catch# comment',
+      'endtry',
+      ], 'E488:')
+  CheckDefFailure([
+      'try',
+      'echo "yes"',
+      'catch',
+      'endtry# comment',
+      ], 'E488:')
 enddef
 
 " Keep this last, it messes up highlighting.

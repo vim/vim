@@ -19,6 +19,7 @@ void separate_nextcmd(exarg_T *eap);
 char_u *skip_cmd_arg(char_u *p, int rembs);
 int get_bad_opt(char_u *p, exarg_T *eap);
 int ends_excmd(int c);
+int ends_excmd2(char_u *before, char_u *cmd);
 char_u *find_nextcmd(char_u *p);
 char_u *check_nextcmd(char_u *p);
 char_u *get_command_name(expand_T *xp, int idx);

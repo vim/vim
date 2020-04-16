@@ -108,6 +108,7 @@ typedef struct {
 struct cctx_S {
     ufunc_T	*ctx_ufunc;	    // current function
     int		ctx_lnum;	    // line number in current function
+    char_u	*ctx_line_start;    // start of current line or NULL
     garray_T	ctx_instr;	    // generated instructions
 
     garray_T	ctx_locals;	    // currently visible local variables
@@ -2055,14 +2056,18 @@ free_imported(cctx_T *cctx)
     static char_u *
 next_line_from_context(cctx_T *cctx)
 {
-    char_u	*line = NULL;
+    char_u	*line;
 
     do
     {
 	++cctx->ctx_lnum;
 	if (cctx->ctx_lnum >= cctx->ctx_ufunc->uf_lines.ga_len)
+	{
+	    line = NULL;
 	    break;
+	}
 	line = ((char_u **)cctx->ctx_ufunc->uf_lines.ga_data)[cctx->ctx_lnum];
+	cctx->ctx_line_start = line;
 	SOURCING_LNUM = cctx->ctx_ufunc->uf_script_ctx.sc_lnum
 							  + cctx->ctx_lnum + 1;
     } while (line == NULL || *skipwhite(line) == NUL);
@@ -5448,7 +5453,7 @@ compile_catch(char_u *arg, cctx_T *cctx UNUSED)
     }
 
     p = skipwhite(arg);
-    if (ends_excmd(*p))
+    if (ends_excmd2(arg, p))
     {
 	scope->se_u.se_try.ts_caught_all = TRUE;
 	scope->se_u.se_try.ts_catch_label = 0;
@@ -5782,7 +5787,9 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	if (line != NULL && *line == '|')
 	    // the line continues after a '|'
 	    ++line;
-	else if (line != NULL && *line != NUL)
+	else if (line != NULL && *line != NUL
+		&& !(*line == '#' && (line == cctx.ctx_line_start
+						    || VIM_ISWHITE(line[-1]))))
 	{
 	    semsg(_("E488: Trailing characters: %s"), line);
 	    goto erret;
