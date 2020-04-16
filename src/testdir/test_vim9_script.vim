@@ -1025,6 +1025,20 @@ def Test_vim9_comment()
       ':# something',
       ], 'E488:')
 
+  { # block start
+  } # block end
+  CheckDefFailure([
+      '{# comment',
+      ], 'E488:')
+  CheckDefFailure([
+      '{',
+      '}# comment',
+      ], 'E488:')
+
+  echo "yes" # comment
+  CheckDefFailure([
+      'echo "yes"# comment',
+      ], 'E488:')
   CheckScriptSuccess([
       'vim9script',
       'echo "yes" # something',
@@ -1039,6 +1053,29 @@ def Test_vim9_comment()
       ], 'E121:')
   CheckScriptFailure([
       'echo "yes" # something',
+      ], 'E121:')
+
+  exe "echo" # comment
+  CheckDefFailure([
+      'exe "echo"# comment',
+      ], 'E488:')
+  CheckScriptSuccess([
+      'vim9script',
+      'exe "echo" # something',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      'exe "echo"# something',
+      ], 'E121:')
+  CheckDefFailure([
+      'exe # comment',
+      ], 'E1015:')
+  CheckScriptFailure([
+      'vim9script',
+      'exe# something',
+      ], 'E121:')
+  CheckScriptFailure([
+      'exe "echo" # something',
       ], 'E121:')
 
   CheckDefFailure([
