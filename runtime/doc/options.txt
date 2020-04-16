@@ -915,6 +915,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	eol	allow backspacing over line breaks (join lines)
 	start	allow backspacing over the start of insert; CTRL-W and CTRL-U
 		stop once at the start of insert.
+	nostop	like start, except CTRL-W and CTRL-U do not stop at the start of
+		insert.
 
 	When the value is empty, Vi compatible backspacing is used.
 
@@ -923,6 +925,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  0	same as ":set backspace=" (Vi compatible)
 	  1	same as ":set backspace=indent,eol"
 	  2	same as ":set backspace=indent,eol,start"
+	  3	same as ":set backspace=indent,eol,nostop"
 
 	See |:fixdel| if your <BS> or <Del> key does not do what you want.
 	NOTE: This option is set to "" when 'compatible' is set.

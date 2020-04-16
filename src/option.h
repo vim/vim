@@ -344,9 +344,14 @@
 #define WIM_BUFLASTUSED	0x08
 
 // arguments for can_bs()
+// each defined char should be unique over all values
+// except for BS_START, that intentionally also matches BS_NOSTOP
+// because BS_NOSTOP behaves exactly the same except it
+// does not stop at the start of the insert point
 #define BS_INDENT	'i'	// "Indent"
-#define BS_EOL		'o'	// "eOl"
+#define BS_EOL		'l'	// "eoL"
 #define BS_START	's'	// "Start"
+#define BS_NOSTOP	'p'	// "nostoP
 
 // flags for the 'culopt' option
 #define CULOPT_LINE	0x01	// Highlight complete line
