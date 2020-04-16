@@ -1828,7 +1828,7 @@ v:event		Dictionary containing information about the current
 					operation.
 			regtype		Type of register as returned by
 					|getregtype()|.
-			completed_item    Current selected complete item on
+			completed_item  Current selected complete item on
 					|CompleteChanged|, Is `{}` when no complete
 					item selected.
 			height 		Height of popup menu on |CompleteChanged|
