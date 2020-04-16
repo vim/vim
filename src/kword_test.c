@@ -30,7 +30,7 @@ test_isword_funcs_utf8(void)
     buf_T buf;
     int c;
 
-    vim_memset(&buf, 0, sizeof(buf));
+    CLEAR_FIELD(buf);
     p_enc = (char_u *)"utf-8";
     p_isi = (char_u *)"";
     p_isp = (char_u *)"";

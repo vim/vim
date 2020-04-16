@@ -212,6 +212,8 @@ func Test_digraphs()
   call assert_equal(['␀', 'ü', '∞', 'l'], getline(line('.')-3,line('.')))
   call assert_fails('exe "digraph a\<Esc> 100"', 'E104:')
   call assert_fails('exe "digraph \<Esc>a 100"', 'E104:')
+  call assert_fails('digraph xy z', 'E39:')
+  call assert_fails('digraph x', 'E474:')
   bw!
 endfunc
 
@@ -434,6 +436,18 @@ func Test_digraphs_output()
   call assert_equal('Z% Ж  1046',  matchstr(out, '\C\<Z%\D*1046\>'))
   call assert_equal('u- ū  363',   matchstr(out, '\C\<u-\D*363\>'))
   call assert_equal('SH ^A   1',   matchstr(out, '\C\<SH\D*1\>'))
+  call assert_notmatch('Latin supplement', out)
+
+  let out_bang_without_custom = execute(':digraph!')
+  digraph lt 60
+  let out_bang_with_custom = execute(':digraph!')
+  call assert_notmatch('lt', out_bang_without_custom)
+  call assert_match("^\n"
+        \        .. "NU ^@  10 .*\n"
+        \        .. "Latin supplement\n"
+        \        .. "!I ¡  161 .*\n"
+        \        .. ".*\n"
+        \        .. 'Custom\n.*\<lt <   60\>', out_bang_with_custom)
   bw!
 endfunc
 

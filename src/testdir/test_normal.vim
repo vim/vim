@@ -138,16 +138,15 @@ func Test_normal03_join()
   $
   :j 10
   call assert_equal('100', getline('.'))
+  call assert_beeps('normal GVJ')
   " clean up
   bw!
 endfunc
 
+" basic filter test
 func Test_normal04_filter()
-  " basic filter test
   " only test on non windows platform
-  if has('win32')
-    return
-  endif
+  CheckNotMSWindows
   call Setup_NewWindow()
   1
   call feedkeys("!!sed -e 's/^/|    /'\n", 'tx')
@@ -205,12 +204,10 @@ func Test_normal05_formatexpr_setopt()
   set formatexpr=
 endfunc
 
+" basic test for formatprg
 func Test_normal06_formatprg()
-  " basic test for formatprg
   " only test on non windows platform
-  if has('win32')
-    return
-  endif
+  CheckNotMSWindows
 
   " uses sed to number non-empty lines
   call writefile(['#!/bin/sh', 'sed ''/./=''|sed ''/./{', 'N', 's/\n/    /', '}'''], 'Xsed_format.sh')
@@ -223,16 +220,24 @@ func Test_normal06_formatprg()
   set formatprg=./Xsed_format.sh
   norm! gggqG
   call assert_equal(expected, getline(1, '$'))
-  bw!
+  %d
 
-  10new
   call setline(1, text)
   set formatprg=donothing
   setlocal formatprg=./Xsed_format.sh
   norm! gggqG
   call assert_equal(expected, getline(1, '$'))
-  bw!
+  %d
 
+  " Check for the command-line ranges added to 'formatprg'
+  set formatprg=cat
+  call setline(1, ['one', 'two', 'three', 'four', 'five'])
+  call feedkeys('gggqG', 'xt')
+  call assert_equal('.,$!cat', @:)
+  call feedkeys('2Ggq2j', 'xt')
+  call assert_equal('.,.+2!cat', @:)
+
+  bw!
   " clean up
   set formatprg=
   setlocal formatprg=
@@ -246,18 +251,16 @@ func Test_normal07_internalfmt()
   10new
   call setline(1, list)
   set tw=12
-  norm! gggqG
+  norm! ggVGgq
   call assert_equal(['1    2    3', '4    5    6', '7    8    9', '10    11    '], getline(1, '$'))
   " clean up
   set tw=0
   bw!
 endfunc
 
+" basic tests for foldopen/folddelete
 func Test_normal08_fold()
-  " basic tests for foldopen/folddelete
-  if !has("folding")
-    return
-  endif
+  CheckFeature folding
   call Setup_NewWindow()
   50
   setl foldenable fdm=marker
@@ -757,11 +760,9 @@ func Test_scroll_cmds()
   close!
 endfunc
 
+" basic tests for foldopen/folddelete
 func Test_normal18_z_fold()
-  " basic tests for foldopen/folddelete
-  if !has("folding")
-    return
-  endif
+  CheckFeature folding
   call Setup_NewWindow()
   50
   setl foldenable fdm=marker foldlevel=5
@@ -1132,10 +1133,8 @@ func Test_normal18_z_fold()
 endfunc
 
 func Test_normal20_exmode()
-  if !has("unix")
-    " Reading from redirected file doesn't work on MS-Windows
-    return
-  endif
+  " Reading from redirected file doesn't work on MS-Windows
+  CheckNotMSWindows
   call writefile(['1a', 'foo', 'bar', '.', 'w! Xfile2', 'q!'], 'Xscript')
   call writefile(['1', '2'], 'Xfile')
   call system(GetVimCommand() .. ' -e -s < Xscript Xfile')
@@ -1762,6 +1761,12 @@ func Test_normal31_r_cmd()
   " r command should fail in operator pending mode
   call assert_beeps('normal! cr')
 
+  " replace a tab character in visual mode
+  %d
+  call setline(1, ["a\tb", "c\td", "e\tf"])
+  normal gglvjjrx
+  call assert_equal(['axx', 'xxx', 'xxf'], getline(1, '$'))
+
   " clean up
   set noautoindent
   bw!
@@ -1786,9 +1791,7 @@ endfunc
 " Test for g`, g;, g,, g&, gv, gk, gj, gJ, g0, g^, g_, gm, g$, gM, g CTRL-G,
 " gi and gI commands
 func Test_normal33_g_cmd2()
-  if !has("jumplist")
-    return
-  endif
+  CheckFeature jumplist
   call Setup_NewWindow()
   " Test for g`
   clearjumps
@@ -2503,9 +2506,8 @@ func Test_normal49_counts()
 endfunc
 
 func Test_normal50_commandline()
-  if !has("timers") || !has("cmdline_hist")
-    return
-  endif
+  CheckFeature timers
+  CheckFeature cmdline_hist
   func! DoTimerWork(id)
     call assert_equal('[Command Line]', bufname(''))
     " should fail, with E11, but does fail with E23?
@@ -2534,9 +2536,7 @@ func Test_normal50_commandline()
 endfunc
 
 func Test_normal51_FileChangedRO()
-  if !has("autocmd")
-    return
-  endif
+  CheckFeature autocmd
   " Don't sleep after the warning message.
   call test_settime(1)
   call writefile(['foo'], 'Xreadonly.log')
@@ -2554,9 +2554,7 @@ func Test_normal51_FileChangedRO()
 endfunc
 
 func Test_normal52_rl()
-  if !has("rightleft")
-    return
-  endif
+  CheckFeature rightleft
   new
   call setline(1, 'abcde fghij klmnopq')
   norm! 1gg$
@@ -2589,9 +2587,7 @@ func Test_normal52_rl()
 endfunc
 
 func Test_normal53_digraph()
-  if !has('digraphs')
-    return
-  endif
+  CheckFeature digraphs
   new
   call setline(1, 'abcdefgh|')
   exe "norm! 1gg0f\<c-k>!!"
@@ -2819,11 +2815,9 @@ Piece of Java
   close!
 endfunc
 
+" Tests for g cmds
 func Test_normal_gdollar_cmd()
-  if !has("jumplist")
-    return
-  endif
-  " Tests for g cmds
+  CheckFeature jumplist
   call Setup_NewWindow()
   " Make long lines that will wrap
   %s/$/\=repeat(' foobar', 10)/
@@ -3025,6 +3019,49 @@ func Test_normal_colon_op()
   new
   call setline(1, ['one', 'two'])
   call assert_beeps("normal! Gc:d\<CR>")
+  close!
+endfunc
+
+" Test for d and D commands
+func Test_normal_delete_cmd()
+  new
+  " D in an empty line
+  call setline(1, '')
+  normal D
+  call assert_equal('', getline(1))
+  " D in an empty line in virtualedit mode
+  set virtualedit=all
+  normal D
+  call assert_equal('', getline(1))
+  set virtualedit&
+  " delete to a readonly register
+  call setline(1, ['abcd'])
+  call assert_beeps('normal ":d2l')
+  close!
+endfunc
+
+" Test for the 'E' flag in 'cpo' with yank, change, delete, etc. operators
+func Test_empty_region_error()
+  new
+  call setline(1, '')
+  set cpo+=E
+  " yank an empty line
+  call assert_beeps('normal "ayl')
+  " change an empty line
+  call assert_beeps('normal lcTa')
+  " delete an empty line
+  call assert_beeps('normal D')
+  call assert_beeps('normal dl')
+  call assert_equal('', getline(1))
+  " change case of an empty line
+  call assert_beeps('normal gul')
+  call assert_beeps('normal gUl')
+  " replace a character
+  call assert_beeps('normal vrx')
+  " increment and decrement
+  call assert_beeps('exe "normal v\<C-A>"')
+  call assert_beeps('exe "normal v\<C-X>"')
+  set cpo-=E
   close!
 endfunc
 

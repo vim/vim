@@ -375,6 +375,7 @@ m  *+hangul_input*	Hangul input support |hangul|
    *+iconv*		Compiled with the |iconv()| function
    *+iconv/dyn*		Likewise |iconv-dynamic| |/dyn|
 T  *+insert_expand*	|insert_expand| Insert mode completion
+m  *+ipv6*		Support for IPv6 networking |channel|
 m  *+job*		starting and stopping jobs |job|
 S  *+jumplist*		|jumplist|
 B  *+keymap*		|'keymap'|

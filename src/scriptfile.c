@@ -967,9 +967,13 @@ ex_source(exarg_T *eap)
 ex_options(
     exarg_T	*eap UNUSED)
 {
-    vim_setenv((char_u *)"OPTWIN_CMD",
-	    (char_u *)(cmdmod.tab ? "tab"
-		: (cmdmod.split & WSP_VERT) ? "vert" : ""));
+    char_u  buf[500];
+    int	    multi_mods = 0;
+
+    buf[0] = NUL;
+    (void)add_win_cmd_modifers(buf, &multi_mods);
+
+    vim_setenv((char_u *)"OPTWIN_CMD", buf);
     cmd_source((char_u *)SYS_OPTWIN_FILE, NULL);
 }
 #endif

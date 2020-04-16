@@ -760,7 +760,7 @@ spell_find_suggest(
     langp_T	*lp;
 
     // Set the info in "*su".
-    vim_memset(su, 0, sizeof(suginfo_T));
+    CLEAR_POINTER(su);
     ga_init2(&su->su_ga, (int)sizeof(suggest_T), 10);
     ga_init2(&su->su_sga, (int)sizeof(suggest_T), 10);
     if (*badptr == NUL)
@@ -1266,7 +1266,7 @@ suggest_trie_walk(
     // word).
     depth = 0;
     sp = &stack[0];
-    vim_memset(sp, 0, sizeof(trystate_T));
+    CLEAR_POINTER(sp);
     sp->ts_curi = 1;
 
     if (soundfold)

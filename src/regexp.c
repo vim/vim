@@ -2014,7 +2014,7 @@ vim_regsub_both(
 		argv[0].v_type = VAR_LIST;
 		argv[0].vval.v_list = &matchList.sl_list;
 		matchList.sl_list.lv_len = 0;
-		vim_memset(&funcexe, 0, sizeof(funcexe));
+		CLEAR_FIELD(funcexe);
 		funcexe.argv_func = fill_submatch_list;
 		funcexe.evaluate = TRUE;
 		if (expr->v_type == VAR_FUNC)

@@ -320,10 +320,9 @@ vim_findfile_init(
 	search_ctx = search_ctx_arg;
     else
     {
-	search_ctx = ALLOC_ONE(ff_search_ctx_T);
+	search_ctx = ALLOC_CLEAR_ONE(ff_search_ctx_T);
 	if (search_ctx == NULL)
 	    goto error_return;
-	vim_memset(search_ctx, 0, sizeof(ff_search_ctx_T));
     }
     search_ctx->ffsc_find_what = find_what;
     search_ctx->ffsc_tagfile = tagfile;

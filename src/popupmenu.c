@@ -1382,7 +1382,7 @@ pum_execute_menu(vimmenu_T *menu, int mode)
     FOR_ALL_CHILD_MENUS(menu, mp)
 	if ((mp->modes & mp->enabled & mode) && idx++ == pum_selected)
 	{
-	    vim_memset(&ea, 0, sizeof(ea));
+	    CLEAR_FIELD(ea);
 	    execute_menu(&ea, mp, -1);
 	    break;
 	}

@@ -54,19 +54,22 @@ init_longVersion(void)
     void
 init_longVersion(void)
 {
-    char *date_time = __DATE__ " " __TIME__;
-    char *msg = _("%s (%s, compiled %s)");
-    size_t len = strlen(msg)
-		+ strlen(VIM_VERSION_LONG_ONLY)
-		+ strlen(VIM_VERSION_DATE_ONLY)
-		+ strlen(date_time);
-
-    longVersion = alloc(len);
     if (longVersion == NULL)
-	longVersion = VIM_VERSION_LONG;
-    else
-	vim_snprintf(longVersion, len, msg,
-		      VIM_VERSION_LONG_ONLY, VIM_VERSION_DATE_ONLY, date_time);
+    {
+	char *date_time = __DATE__ " " __TIME__;
+	char *msg = _("%s (%s, compiled %s)");
+	size_t len = strlen(msg)
+		    + strlen(VIM_VERSION_LONG_ONLY)
+		    + strlen(VIM_VERSION_DATE_ONLY)
+		    + strlen(date_time);
+
+	longVersion = alloc(len);
+	if (longVersion == NULL)
+	    longVersion = VIM_VERSION_LONG;
+	else
+	    vim_snprintf(longVersion, len, msg,
+			  VIM_VERSION_LONG_ONLY, VIM_VERSION_DATE_ONLY, date_time);
+    }
 }
 # endif
 #else
@@ -293,6 +296,11 @@ static char *(features[]) =
 	"-iconv",
 #endif
 	"+insert_expand",
+#ifdef FEAT_IPV6
+	"+ipv6",
+#else
+	"-ipv6",
+#endif
 #ifdef FEAT_JOB_CHANNEL
 	"+job",
 #else
@@ -738,6 +746,92 @@ static char *(features[]) =
 
 static int included_patches[] =
 {   /* Add new patch number below this line */
+/**/
+    582,
+/**/
+    581,
+/**/
+    580,
+/**/
+    579,
+/**/
+    578,
+/**/
+    577,
+/**/
+    576,
+/**/
+    575,
+/**/
+    574,
+/**/
+    573,
+/**/
+    572,
+/**/
+    571,
+/**/
+    570,
+/**/
+    569,
+/**/
+    568,
+/**/
+    567,
+/**/
+    566,
+/**/
+    565,
+/**/
+    564,
+/**/
+    563,
+/**/
+    562,
+/**/
+    561,
+/**/
+    560,
+/**/
+    559,
+/**/
+    558,
+/**/
+    557,
+/**/
+    556,
+/**/
+    555,
+/**/
+    554,
+/**/
+    553,
+/**/
+    552,
+/**/
+    551,
+/**/
+    550,
+/**/
+    549,
+/**/
+    548,
+/**/
+    547,
+/**/
+    546,
+/**/
+    545,
+/**/
+    544,
+/**/
+    543,
+/**/
+    542,
+/**/
+    541,
+/**/
+    540,
 /**/
     539,
 /**/

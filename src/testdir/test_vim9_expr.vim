@@ -32,7 +32,9 @@ endfunc
 " test cond ? expr : expr
 def Test_expr1()
   assert_equal('one', true ? 'one' : 'two')
-  assert_equal('one', 1 ? 'one' : 'two')
+  assert_equal('one', 1 ?
+			'one' :
+			'two')
   if has('float')
     assert_equal('one', 0.1 ? 'one' : 'two')
   endif
@@ -80,7 +82,9 @@ enddef
 " test ||
 def Test_expr2()
   assert_equal(2, 2 || 0)
-  assert_equal(7, 0 || 0 || 7)
+  assert_equal(7, 0 ||
+		    0 ||
+		    7)
   assert_equal(0, 0 || 0)
   assert_equal('', 0 || '')
 
@@ -113,7 +117,9 @@ endfunc
 " test &&
 def Test_expr3()
   assert_equal(0, 2 && 0)
-  assert_equal(0, 0 && 0 && 7)
+  assert_equal(0, 0 &&
+		0 &&
+		7)
   assert_equal(7, 2 && 3 && 7)
   assert_equal(0, 0 && 0)
   assert_equal(0, 0 && '')
@@ -164,7 +170,8 @@ let adict = #{aaa: 2, bbb: 8}
 " test == comperator
 def Test_expr4_equal()
   assert_equal(true, true == true)
-  assert_equal(false, true == false)
+  assert_equal(false, true ==
+			false)
   assert_equal(true, true == g:atrue)
   assert_equal(false, g:atrue == false)
 
@@ -237,7 +244,8 @@ enddef
 " test != comperator
 def Test_expr4_notequal()
   assert_equal(false, true != true)
-  assert_equal(true, true != false)
+  assert_equal(true, true !=
+			false)
   assert_equal(false, true != g:atrue)
   assert_equal(true, g:atrue != false)
 
@@ -303,7 +311,8 @@ enddef
 " test > comperator
 def Test_expr4_greater()
   assert_true(2 > 0)
-  assert_true(2 > 1)
+  assert_true(2 >
+		1)
   assert_false(2 > 2)
   assert_false(2 > 3)
   if has('float')
@@ -317,7 +326,8 @@ enddef
 " test >= comperator
 def Test_expr4_greaterequal()
   assert_true(2 >= 0)
-  assert_true(2 >= 2)
+  assert_true(2 >=
+			2)
   assert_false(2 >= 3)
   if has('float')
     assert_true(2.0 >= 0.0)
@@ -329,7 +339,8 @@ enddef
 " test < comperator
 def Test_expr4_smaller()
   assert_false(2 < 0)
-  assert_false(2 < 2)
+  assert_false(2 <
+			2)
   assert_true(2 < 3)
   if has('float')
     assert_false(2.0 < 0.0)
@@ -341,7 +352,8 @@ enddef
 " test <= comperator
 def Test_expr4_smallerequal()
   assert_false(2 <= 0)
-  assert_false(2 <= 1)
+  assert_false(2 <=
+			1)
   assert_true(2 <= 2)
   assert_true(2 <= 3)
   if has('float')
@@ -355,13 +367,15 @@ enddef
 " test =~ comperator
 def Test_expr4_match()
   assert_equal(false, '2' =~ '0')
-  assert_equal(true, '2' =~ '[0-9]')
+  assert_equal(true, '2' =~
+			'[0-9]')
 enddef
 
 " test !~ comperator
 def Test_expr4_nomatch()
   assert_equal(true, '2' !~ '0')
-  assert_equal(false, '2' !~ '[0-9]')
+  assert_equal(false, '2' !~
+			'[0-9]')
 enddef
 
 " test is comperator
@@ -369,7 +383,8 @@ def Test_expr4_is()
   let mylist = [2]
   assert_false(mylist is [2])
   let other = mylist
-  assert_true(mylist is other)
+  assert_true(mylist is
+		other)
 
   let myblob = 0z1234
   assert_false(myblob is 0z1234)
@@ -383,7 +398,8 @@ def Test_expr4_isnot()
   assert_true('2' isnot '0')
   assert_true(mylist isnot [2])
   let other = mylist
-  assert_false(mylist isnot other)
+  assert_false(mylist isnot
+			other)
 
   let myblob = 0z1234
   assert_true(myblob isnot 0z1234)
@@ -467,17 +483,20 @@ endfunc
 " test addition, subtraction, concatenation
 def Test_expr5()
   assert_equal(66, 60 + 6)
-  assert_equal(70, 60 + g:anint)
+  assert_equal(70, 60 +
+			g:anint)
   assert_equal(9, g:alsoint + 5)
   assert_equal(14, g:alsoint + g:anint)
 
   assert_equal(54, 60 - 6)
-  assert_equal(50, 60 - g:anint)
+  assert_equal(50, 60 -
+		    g:anint)
   assert_equal(-1, g:alsoint - 5)
   assert_equal(-6, g:alsoint - g:anint)
 
   assert_equal('hello', 'hel' .. 'lo')
-  assert_equal('hello 123', 'hello ' .. 123)
+  assert_equal('hello 123', 'hello ' ..
+					123)
   assert_equal('123 hello', 123 .. ' hello')
   assert_equal('123456', 123 .. 456)
 
@@ -494,7 +513,8 @@ def Test_expr5_float()
   else
     assert_equal(66.0, 60.0 + 6.0)
     assert_equal(66.0, 60.0 + 6)
-    assert_equal(66.0, 60 + 6.0)
+    assert_equal(66.0, 60 +
+			 6.0)
     assert_equal(5.1, g:afloat + 5)
     assert_equal(8.1, 8 + g:afloat)
     assert_equal(10.1, g:anint + g:afloat)
@@ -538,18 +558,21 @@ endfunc
 " test multiply, divide, modulo
 def Test_expr6()
   assert_equal(36, 6 * 6)
-  assert_equal(24, 6 * g:alsoint)
+  assert_equal(24, 6 *
+			g:alsoint)
   assert_equal(24, g:alsoint * 6)
   assert_equal(40, g:anint * g:alsoint)
 
   assert_equal(10, 60 / 6)
-  assert_equal(6, 60 / g:anint)
+  assert_equal(6, 60 /
+			g:anint)
   assert_equal(1, g:anint / 6)
   assert_equal(2, g:anint / g:alsoint)
 
   assert_equal(5, 11 % 6)
   assert_equal(4, g:anint % 6)
-  assert_equal(3, 13 % g:anint)
+  assert_equal(3, 13 %
+			g:anint)
   assert_equal(2, g:anint % g:alsoint)
 
   assert_equal(4, 6 * 4 / 6)
@@ -573,17 +596,21 @@ def Test_expr6_float()
     MissingFeature 'float'
   else
     assert_equal(36.0, 6.0 * 6)
-    assert_equal(36.0, 6 * 6.0)
+    assert_equal(36.0, 6 *
+			   6.0)
     assert_equal(36.0, 6.0 * 6.0)
     assert_equal(1.0, g:afloat * g:anint)
 
     assert_equal(10.0, 60 / 6.0)
-    assert_equal(10.0, 60.0 / 6)
+    assert_equal(10.0, 60.0 /
+			6)
     assert_equal(10.0, 60.0 / 6.0)
     assert_equal(0.01, g:afloat / g:anint)
 
     assert_equal(4.0, 6.0 * 4 / 6)
-    assert_equal(4.0, 6 * 4.0 / 6)
+    assert_equal(4.0, 6 *
+			4.0 /
+			6)
     assert_equal(4.0, 6 * 4 / 6.0)
     assert_equal(4.0, 6.0 * 4.0 / 6)
     assert_equal(4.0, 6 * 4.0 / 6.0)
@@ -767,7 +794,7 @@ def Test_expr7_dict()
 
   call CheckDefFailure("let x = #{8: 8}", 'E1014:')
   call CheckDefFailure("let x = #{xxx}", 'E720:')
-  call CheckDefFailure("let x = #{xxx: 1", 'E722:')
+  call CheckDefFailureMult(["let x = #{xxx: 1", "let y = 2"], 'E722:')
   call CheckDefFailure("let x = #{xxx: 1,", 'E723:')
   call CheckDefFailure("let x = {'a': xxx}", 'E1001:')
   call CheckDefFailure("let x = {xxx: 8}", 'E1001:')
@@ -832,11 +859,11 @@ def Test_expr7_negate()
   assert_equal(88, --nr)
 enddef
 
-def Echo(arg): string
+def Echo(arg: any): string
   return arg
 enddef
 
-def s:EchoArg(arg): string
+def s:EchoArg(arg: any): string
   return arg
 enddef
 
@@ -963,6 +990,7 @@ def Test_expr7_trailing()
   let d = #{key: 123}
   assert_equal(123, d.key)
 enddef
+
 
 func Test_expr7_trailing_fails()
   call CheckDefFailureList(['let l = [2]', 'l->{l -> add(l, 8)}'], 'E107')

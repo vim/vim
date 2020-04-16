@@ -4,7 +4,7 @@ source check.vim
 CheckFeature quickfix
 
 " Create the files used by the tests
-function SetUp()
+func SetUp()
   call writefile(["Line1", "Line2", "Line3"], 'Xtestfile1')
   call writefile(["Line1", "Line2", "Line3"], 'Xtestfile2')
   call writefile(["Line1", "Line2", "Line3"], 'Xtestfile3')

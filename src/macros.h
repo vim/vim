@@ -37,10 +37,11 @@
 #define LTOREQ_POS(a, b) (LT_POS(a, b) || EQUAL_POS(a, b))
 
 /*
- * VIM_ISWHITE() is used for "^" and the like. It differs from isspace()
- * because it doesn't include <CR> and <LF> and the like.
+ * VIM_ISWHITE() differs from isspace() because it doesn't include <CR> and
+ * <LF> and the like.
  */
-#define VIM_ISWHITE(x)	((x) == ' ' || (x) == '\t')
+#define VIM_ISWHITE(x)		((x) == ' ' || (x) == '\t')
+#define IS_WHITE_OR_NUL(x)	((x) == ' ' || (x) == '\t' || (x) == NUL)
 
 /*
  * LINEEMPTY() - return TRUE if the line is empty

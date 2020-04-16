@@ -3412,7 +3412,7 @@ theend:
     void
 clear_oparg(oparg_T *oap)
 {
-    vim_memset(oap, 0, sizeof(oparg_T));
+    CLEAR_POINTER(oap);
 }
 
 /*

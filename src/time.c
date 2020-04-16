@@ -313,7 +313,7 @@ f_strptime(typval_T *argvars, typval_T *rettv)
     vimconv_T   conv;
     char_u	*enc;
 
-    vim_memset(&tmval, NUL, sizeof(tmval));
+    CLEAR_FIELD(tmval);
     fmt = tv_get_string(&argvars[0]);
     str = tv_get_string(&argvars[1]);
 

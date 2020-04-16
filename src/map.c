@@ -65,7 +65,7 @@ validate_maphash(void)
 {
     if (!maphash_valid)
     {
-	vim_memset(maphash, 0, sizeof(maphash));
+	CLEAR_FIELD(maphash);
 	maphash_valid = TRUE;
     }
 }

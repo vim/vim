@@ -2967,9 +2967,22 @@ win_altframe(
     if (frp->fr_next == NULL)
 	return frp->fr_prev;
 
+    // By default the next window will get the space that was abandoned by this
+    // window
     target_fr = frp->fr_next;
     other_fr  = frp->fr_prev;
-    if (p_spr || p_sb)
+
+    // If this is part of a column of windows and 'splitbelow' is true then the
+    // previous window will get the space.
+    if (frp->fr_parent != NULL && frp->fr_parent->fr_layout == FR_COL && p_sb)
+    {
+	target_fr = frp->fr_prev;
+	other_fr  = frp->fr_next;
+    }
+
+    // If this is part of a row of windows, and 'splitright' is true then the
+    // previous window will get the space.
+    if (frp->fr_parent != NULL && frp->fr_parent->fr_layout == FR_ROW && p_spr)
     {
 	target_fr = frp->fr_prev;
 	other_fr  = frp->fr_next;

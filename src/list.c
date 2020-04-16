@@ -1443,7 +1443,7 @@ item_compare2(const void *s1, const void *s2)
     copy_tv(&si2->item->li_tv, &argv[1]);
 
     rettv.v_type = VAR_UNKNOWN;		// clear_tv() uses this
-    vim_memset(&funcexe, 0, sizeof(funcexe));
+    CLEAR_FIELD(funcexe);
     funcexe.evaluate = TRUE;
     funcexe.partial = partial;
     funcexe.selfdict = sortinfo->item_compare_selfdict;

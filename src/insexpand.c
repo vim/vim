@@ -2313,7 +2313,7 @@ ins_compl_add_tv(typval_T *tv, int dir)
     else
     {
 	word = tv_get_string_chk(tv);
-	vim_memset(cptext, 0, sizeof(cptext));
+	CLEAR_FIELD(cptext);
     }
     if (word == NULL || (!empty && *word == NUL))
 	return FAIL;

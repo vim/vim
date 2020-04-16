@@ -5491,13 +5491,14 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 		term = getenv("TERM");
 #endif
 	    // Use 'term' or $TERM if it starts with "xterm", otherwise fall
-	    // back to "xterm".
+	    // back to "xterm" or "xterm-color".
 	    if (term == NULL || *term == NUL || STRNCMP(term, "xterm", 5) != 0)
 	    {
-		if (t_colors > 16)
-		    term = "xterm-color";
 		if (t_colors >= 256)
+		    // TODO: should we check this name is supported?
 		    term = "xterm-256color";
+		else if (t_colors > 16)
+		    term = "xterm-color";
 		else
 		    term = "xterm";
 	    }

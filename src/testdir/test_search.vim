@@ -17,9 +17,9 @@ func Test_search_cmdline()
   set noincsearch
   :1
   call feedkeys("/foobar\<cr>", 'tx')
-  call feedkeys("/the\<cr>",'tx')
+  call feedkeys("/the\<cr>", 'tx')
   call assert_equal('the', @/)
-  call feedkeys("/thes\<C-P>\<C-P>\<cr>",'tx')
+  call feedkeys("/thes\<C-P>\<C-P>\<cr>", 'tx')
   call assert_equal('foobar', @/)
 
   " Test 2
@@ -1351,7 +1351,7 @@ func Test_large_hex_chars2()
 endfunc
 
 func Test_one_error_msg()
-  " This  was also giving an internal error
+  " This was also giving an internal error
   call assert_fails('call search(" \\((\\v[[=P=]]){185}+             ")', 'E871:')
 endfunc
 
@@ -1402,6 +1402,11 @@ func Test_search_errors()
   call assert_fails("call search('pat', 'b', 1, [])", 'E745:')
   call assert_fails("call search('pat', 'ns')", 'E475:')
   call assert_fails("call search('pat', 'mr')", 'E475:')
+
+  new
+  call setline(1, ['foo', 'bar'])
+  call assert_fails('call feedkeys("/foo/;/bar/;\<CR>", "tx")', 'E386:')
+  bwipe!
 endfunc
 
 func Test_search_display_pattern()
@@ -1591,6 +1596,25 @@ func Test_invalid_regexp()
   call assert_fails("call search('\\%9999999999999999999999999999v')", 'E951:')
   set regexpengine&
   call assert_fails("call search('\\%#=3ab')", 'E864:')
+endfunc
+
+" Test for searching a very complex pattern in a string. Should switch the
+" regexp engine from NFA to the old engine.
+func Test_regexp_switch_engine()
+  let l = readfile('samples/re.freeze.txt')
+  let v = substitute(l[4], '..\@<!', '', '')
+  call assert_equal(l[4], v)
+endfunc
+
+" Test for the \%V atom to search within visually selected text
+func Test_search_in_visual_area()
+  new
+  call setline(1, ['foo bar1', 'foo bar2', 'foo bar3', 'foo bar4'])
+  exe "normal 2GVjo/\\%Vbar\<CR>\<Esc>"
+  call assert_equal([2, 5], [line('.'), col('.')])
+  exe "normal 2GVj$?\\%Vbar\<CR>\<Esc>"
+  call assert_equal([3, 5], [line('.'), col('.')])
+  close!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

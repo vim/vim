@@ -168,7 +168,7 @@ dialog_changed(
 
     // Init ea pseudo-structure, this is needed for the check_overwrite()
     // function.
-    vim_memset(&ea, 0, sizeof(ea));
+    CLEAR_FIELD(ea);
 
     if (ret == VIM_YES)
     {
@@ -889,7 +889,7 @@ source_pyx_file(exarg_T *eap, char_u *fname)
      * unobtrusive message.
      */
     if (eap == NULL)
-	vim_memset(&ex, 0, sizeof(ex));
+	CLEAR_FIELD(ex);
     else
 	ex = *eap;
     ex.arg = fname;

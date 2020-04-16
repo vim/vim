@@ -469,7 +469,7 @@ CHANNEL_PRO	= proto/channel.pro
 CHANNEL_OBJ	= $(OBJDIR)/channel.obj
 CHANNEL_DEFS	= -DFEAT_JOB_CHANNEL
 
-NETBEANS_LIB	= WSock32.lib
+NETBEANS_LIB	= WSock32.lib Ws2_32.lib
 !endif
 
 # Set which version of the CRT to use

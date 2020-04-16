@@ -850,7 +850,7 @@ endif
 
 ifeq ($(CHANNEL),yes)
 OBJ += $(OUTDIR)/channel.o
-LIB += -lwsock32
+LIB += -lwsock32 -lws2_32
 endif
 
 ifeq ($(DIRECTX),yes)
