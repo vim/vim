@@ -4783,7 +4783,7 @@ ends_excmd(int c)
  * to "cmd_start" or has a white space character before it.
  */
     int
-ends_excmd2(char_u *cmd_start, char_u *cmd)
+ends_excmd2(char_u *cmd_start UNUSED, char_u *cmd)
 {
     int c = *cmd;
 
