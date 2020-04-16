@@ -4676,6 +4676,11 @@ mch_call_shell(
     signal(SIGTERM, SIG_IGN);
     signal(SIGABRT, SIG_IGN);
 
+#ifdef FEAT_VTP
+    if (USE_VTP && p_rs)
+	vtp_printf("\033[m\033[0K"); // reset default and clear line
+#endif
+
     if (options & SHELL_COOKED)
 	settmode(TMODE_COOK);	// set to normal mode
 
