@@ -36,7 +36,7 @@ Her tür düz metni düzenlemede kullanılabilir.
 Özellikle programları düzenlemede yararlıdır.
 .PP
 Vi üzerine yapılmış birçok geliştirme ve iyileştirmeyi içerir:
-Çok düzeyli geri alma, çoklu pencereler ve arabellekler, sözdizimi vurgulama,
+Çok düzeyli geri alma, çoklu pencereler ve arabellekler, sözdizim vurgulama,
 komut satırı düzenleme, dosya adı tamamlama, çevrimiçi yardım, görsel seçim vb.
 .B Vim
 ve Vi arasındaki değişikliklerin bir özeti için ":help vi_diff.txt"
@@ -324,7 +324,7 @@ Dosyanın üzerine yazmak istemiyorsanız, Ex komutuna bir ünlem imi ekleyin,
 örn. ":w!".
 \-R seçeneği aynı zamanda \-n seçeneğini de uygular (yukarıda bakın).
 \'readonly' seçeneği ":set noro" ile sıfırlanabilir.
-Ek bilgi için: ":help readonly".
+Ek bilgi için: ":help 'readonly'".
 .TP
 \-r
 Takas dosyalarını içerdikleri kurtarma bilgilerini gösterecek biçimde listeler.
@@ -388,10 +388,10 @@ Eğer {betikçık} dosyası varsa karakterler dosyaya eklenir.
 \-w gibi, ancak var olan bir dosyanın üzerine yazar.
 .TP
 \-x
-Dosya yazarken şifreleme kullanır.  Bir şifre girmenizi isteyecektir.
+Dosya yazarken şifreleme kullanır.  Bir şifre girmeniz istenecektir.
 .TP
 \-X
-X sunucusuna bağlanmaz.  Vim'i başlatma süresini uçbirimde azaltır ancak pencere başlığı
+X sunucusuna bağlanmaz.  Vim'in uçbirimde başlama süresini azaltır ancak pencere başlığı
 ve pano kullanılamaz.
 .TP
 \-y
@@ -401,7 +401,7 @@ ve pano kullanılamaz.
 diğer tıkla ve yaz düzenleyicileri gibi çalıştırır.
 .TP
 \-Z
-Kısıtlı kip.  Çalıştırılabilir "r" yazarak başlatılmış gibi davranır.
+Kısıtlı kip.  Program "r" yazarak başlatılmış gibi davranır.
 .TP
 \-\-
 Seçeneklerin bittiğini belirtir.
@@ -416,8 +416,8 @@ Yardım iletisini yazdırır ve çıkar, "\-h" gibi.
 .TP
 \-\-literal
 Dosya adı değişkenlerini gerçek anlamda işlet, joker karakterlerini
-genişletme.  Bunun kabuğun karakterleri kendiliğinden genişleten Unix'te
-bir etkisi olmaz.
+genişletme.  Bunun kabuğun karakterleri kendiliğinden genişlettiği Unix'te
+bir etkisi bulunmamaktadır.
 .TP
 \-\-noplugin
 Eklentileri yükleme.  "\-u NONE" da aynı işlevi görür.
@@ -519,7 +519,7 @@ PostScript yazdırması için kullanılan dosyalar.
 En güncel bilgiler için VİM ana sayfasını ziyaret edin:
 .br
 <URL:http://www.vim.org/>
-.SH EK OKUMA
+.SH AYRICA BAKINIZ
 vimtutor(1)
 .SH YAZAR
 .B Vim'in
@@ -532,14 +532,13 @@ içinde ":help credits" yazın.
 .B Vim
 Stevie tabanlıdır, yazarları: Tim Thompson,
 Tony Andrews ve G.R. (Fred) Walter.
-Orijinal kodun artık pek kalmadığını söylemek de yanlış olmaz.
+Orijinal koddan geriye pek bir şey kalmadığını söylemek yanlış olmaz.
 .SH HATALAR
-Bence de.
 Bilinen hataların bir listesi için ":help todo" yazın.
 .PP
 Unutmayın ki, başkaları tarafından hata olarak değerlendirilebilecek konuların
 bir çoğu Vi'nin davranışlarına sadık kalınması nedeniyle vardır. Yine de
-bazı şeylerin "Vi bunu başka biçimde yapıyor" diye hata olabileceğini
+bazı şeylerin "Vi bunu değişik biçimde yapıyor" diye hata olabileceğini
 düşünüyorsanız, "vi_diff.txt" dosyasını dikkatle okuyun (veya Vim içinde
 :help vi_diff.txt yazın.
-Ek olarak 'compatible' ve 'cpoptions' seçeneklerine de bakın.
+Ek olarak 'compatible' ve 'cpoptions' seçeneklerine de bakabilirsiniz.
