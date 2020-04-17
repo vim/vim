@@ -4762,15 +4762,14 @@ not_enough:
 				    || (is_screen && arg[1] >= 40700))
 				set_option_value((char_u *)"ttym", 0L,
 							  (char_u *)"sgr", 0);
-			    // if xterm version >= 95 use mouse dragging
+			    // For xterm version >= 95 mouse dragging works.
 			    else if (version >= 95)
 				set_option_value((char_u *)"ttym", 0L,
 						       (char_u *)"xterm2", 0);
 			}
 
 			// Detect terminals that set $TERM to something like
-			// "xterm-256colors"  but are not fully xterm
-			// compatible.
+			// "xterm-256color" but are not fully xterm compatible.
 
 			// Gnome terminal sends 1;3801;0, 1;4402;0 or 1;2501;0.
 			// xfce4-terminal sends 1;2802;0.
@@ -4783,7 +4782,17 @@ not_enough:
 			// PuTTY sends 0;136;0
 			// vandyke SecureCRT sends 1;136;0
 			else if (version == 136 && arg[2] == 0)
+			{
 			    is_not_xterm = TRUE;
+
+			    // PuTTY supports sgr-like mouse reporting, but
+			    // only set 'ttymouse' if it was not set by the
+			    // user already.
+			    if (arg[0] == 0
+					  && !option_was_set((char_u *)"ttym"))
+				set_option_value((char_u *)"ttym", 0L,
+							(char_u *)"sgr", 0);
+			}
 
 			// Konsole sends 0;115;0
 			else if (version == 115 && arg[0] == 0 && arg[2] == 0)
