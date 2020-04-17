@@ -898,7 +898,7 @@ makeopens(
 
     // Lastly, execute the x.vim file if it exists.
     if (put_line(fd, "let s:sx = expand(\"<sfile>:p:r\").\"x.vim\"") == FAIL
-	    || put_line(fd, "if file_readable(s:sx)") == FAIL
+	    || put_line(fd, "if filereadable(s:sx)") == FAIL
 	    || put_line(fd, "  exe \"source \" . fnameescape(s:sx)") == FAIL
 	    || put_line(fd, "endif") == FAIL)
 	return FAIL;

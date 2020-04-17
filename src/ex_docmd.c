@@ -1835,7 +1835,10 @@ do_one_cmd(
      * If we find a '|' or '\n' we set ea.nextcmd.
      */
     if (*ea.cmd == NUL || *ea.cmd == '"'
-			      || (ea.nextcmd = check_nextcmd(ea.cmd)) != NULL)
+#ifdef FEAT_EVAL
+		|| (*ea.cmd == '#' && !starts_with_colon && in_vim9script())
+#endif
+		|| (ea.nextcmd = check_nextcmd(ea.cmd)) != NULL)
     {
 	/*
 	 * strange vi behaviour:
@@ -4761,12 +4764,31 @@ ex_blast(exarg_T *eap)
 	do_cmdline_cmd(eap->do_ecmd_cmd);
 }
 
+/*
+ * Check if "c" ends an Ex command.
+ * In Vim9 script does not check for white space before #.
+ */
     int
 ends_excmd(int c)
 {
 #ifdef FEAT_EVAL
     if (c == '#')
-	// TODO: should check for preceding white space
+	return in_vim9script();
+#endif
+    return (c == NUL || c == '|' || c == '"' || c == '\n');
+}
+
+/*
+ * Like ends_excmd() but checks that a # in Vim9 script either has "cmd" equal
+ * to "cmd_start" or has a white space character before it.
+ */
+    int
+ends_excmd2(char_u *cmd_start UNUSED, char_u *cmd)
+{
+    int c = *cmd;
+
+#ifdef FEAT_EVAL
+    if (c == '#' && (cmd == cmd_start || VIM_ISWHITE(cmd[-1])))
 	return in_vim9script();
 #endif
     return (c == NUL || c == '|' || c == '"' || c == '\n');

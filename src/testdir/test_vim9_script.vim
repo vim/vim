@@ -10,11 +10,17 @@ func CheckDefFailure(lines, error)
   call delete('Xdef')
 endfunc
 
-func CheckScriptFailure(lines, error)
-  call writefile(a:lines, 'Xdef')
-  call assert_fails('so Xdef', a:error, a:lines)
-  call delete('Xdef')
-endfunc
+def CheckScriptFailure(lines: list<string>, error: string)
+  writefile(lines, 'Xdef')
+  assert_fails('so Xdef', error, lines)
+  delete('Xdef')
+enddef
+
+def CheckScriptSuccess(lines: list<string>)
+  writefile(lines, 'Xdef')
+  so Xdef
+  delete('Xdef')
+enddef
 
 def Test_syntax()
   let var = 234
@@ -63,9 +69,9 @@ def Test_assignment()
   let Funky2: func = function('len')
   let Party2: func = funcref('Test_syntax')
 
-  " type becomes list<any>
+  # type becomes list<any>
   let somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
-  " type becomes dict<any>
+  # type becomes dict<any>
   let somedict = rand() > 0 ? #{a: 1, b: 2} : #{a: 'a', b: 'b'}
 
   g:newvar = 'new'
@@ -104,7 +110,7 @@ def Test_assignment()
   call CheckDefFailure(['&notex += 3'], 'E113:')
   call CheckDefFailure(['&ts ..= "xxx"'], 'E1019:')
   call CheckDefFailure(['&path += 3'], 'E1013:')
-  " test freeing ISN_STOREOPT
+  # test freeing ISN_STOREOPT
   call CheckDefFailure(['&ts = 3', 'let asdf'], 'E1022:')
   &ts = 8
 
@@ -131,7 +137,7 @@ enddef
 
 def Test_assignment_default()
 
-  " Test default values.
+  # Test default values.
   let thebool: bool
   assert_equal(v:false, thebool)
 
@@ -269,15 +275,15 @@ enddef
 
 def Test_try_catch()
   let l = []
-  try
+  try # comment
     add(l, '1')
     throw 'wrong'
     add(l, '2')
-  catch
+  catch # comment
     add(l, v:exception)
-  finally
+  finally # comment
     add(l, '3')
-  endtry
+  endtry # comment
   assert_equal(['1', 'wrong', '3'], l)
 enddef
 
@@ -1001,6 +1007,95 @@ def Test_automatic_line_continuation()
         ['one', 'two', 'three'],
         split('one two three')
         )
+enddef
+
+def Test_vim9_comment()
+  CheckScriptSuccess([
+      'vim9script',
+      '# something',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      ':# something',
+      ], 'E488:')
+  CheckScriptFailure([
+      '# something',
+      ], 'E488:')
+  CheckScriptFailure([
+      ':# something',
+      ], 'E488:')
+
+  { # block start
+  } # block end
+  CheckDefFailure([
+      '{# comment',
+      ], 'E488:')
+  CheckDefFailure([
+      '{',
+      '}# comment',
+      ], 'E488:')
+
+  echo "yes" # comment
+  CheckDefFailure([
+      'echo "yes"# comment',
+      ], 'E488:')
+  CheckScriptSuccess([
+      'vim9script',
+      'echo "yes" # something',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      'echo "yes"# something',
+      ], 'E121:')
+  CheckScriptFailure([
+      'vim9script',
+      'echo# something',
+      ], 'E121:')
+  CheckScriptFailure([
+      'echo "yes" # something',
+      ], 'E121:')
+
+  exe "echo" # comment
+  CheckDefFailure([
+      'exe "echo"# comment',
+      ], 'E488:')
+  CheckScriptSuccess([
+      'vim9script',
+      'exe "echo" # something',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      'exe "echo"# something',
+      ], 'E121:')
+  CheckDefFailure([
+      'exe # comment',
+      ], 'E1015:')
+  CheckScriptFailure([
+      'vim9script',
+      'exe# something',
+      ], 'E121:')
+  CheckScriptFailure([
+      'exe "echo" # something',
+      ], 'E121:')
+
+  CheckDefFailure([
+      'try# comment',
+      'echo "yes"',
+      'catch',
+      'endtry',
+      ], 'E488:')
+  CheckDefFailure([
+      'try',
+      'echo "yes"',
+      'catch# comment',
+      'endtry',
+      ], 'E488:')
+  CheckDefFailure([
+      'try',
+      'echo "yes"',
+      'catch',
+      'endtry# comment',
+      ], 'E488:')
 enddef
 
 " Keep this last, it messes up highlighting.
