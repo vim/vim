@@ -234,7 +234,7 @@ au BufNewFile,BufRead *.bl			setf blank
 au BufNewFile,BufRead */etc/blkid.tab,*/etc/blkid.tab.old   setf xml
 
 " BSDL
-au BufNewFile,BufRead *.bsdl			setf bsdl
+au BufNewFile,BufRead *.bsd,*.bsdl			setf bsdl
 
 " Bazel (http://bazel.io)
 autocmd BufRead,BufNewFile *.bzl,WORKSPACE,BUILD.bazel 	setf bzl
