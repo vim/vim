@@ -68,7 +68,7 @@ static char *(p_debug_values[]) = {"msg", "throw", "beep", NULL};
 static char *(p_ead_values[]) = {"both", "ver", "hor", NULL};
 static char *(p_buftype_values[]) = {"nofile", "nowrite", "quickfix", "help", "terminal", "acwrite", "prompt", "popup", NULL};
 static char *(p_bufhidden_values[]) = {"hide", "unload", "delete", "wipe", NULL};
-static char *(p_bs_values[]) = {"indent", "eol", "start", NULL};
+static char *(p_bs_values[]) = {"indent", "eol", "start", "nostop", NULL};
 #ifdef FEAT_FOLDING
 static char *(p_fdm_values[]) = {"manual", "expr", "marker", "indent", "syntax",
 # ifdef FEAT_DIFF
@@ -1910,7 +1910,7 @@ did_set_string_option(
     {
 	if (VIM_ISDIGIT(*p_bs))
 	{
-	    if (*p_bs > '2' || p_bs[1] != NUL)
+	    if (*p_bs > '3' || p_bs[1] != NUL)
 		errmsg = e_invarg;
 	}
 	else if (check_opt_strings(p_bs, p_bs_values, TRUE) != OK)

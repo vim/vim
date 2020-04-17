@@ -63,7 +63,7 @@ let test_values = {
       \
       \ 'ambiwidth': [['', 'single'], ['xxx']],
       \ 'background': [['', 'light', 'dark'], ['xxx']],
-      \ 'backspace': [[0, 2, '', 'eol', 'eol,start'], ['xxx']],
+      \ 'backspace': [[0, 2, 3, '', 'eol', 'eol,start', 'indent,eol,nostop'], ['4', 'xxx']],
       \ 'backupcopy': [['yes', 'auto'], ['', 'xxx', 'yes,no']],
       \ 'backupext': [['xxx'], ['']],
       \ 'belloff': [['', 'all', 'copy,error'], ['xxx']],
