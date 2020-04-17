@@ -764,6 +764,7 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
     switch (argvars[0].v_type)
     {
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	case VAR_NUMBER:
 	case VAR_BOOL:

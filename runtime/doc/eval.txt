@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Mar 26
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Apr 13
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -5137,10 +5137,11 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 <
 							*getcurpos()*
 getcurpos()	Get the position of the cursor.  This is like getpos('.'), but
-		includes an extra item in the list:
-		    [bufnum, lnum, col, off, curswant] ~
+		includes an extra "curswant" item in the list:
+		    [0, lnum, col, off, curswant] ~
 		The "curswant" number is the preferred column when moving the
 		cursor vertically.  Also see |getpos()|.
+		The first "bufnum" item is always zero.
 
 		This can be used to save and restore the cursor position: >
 			let save_cursor = getcurpos()
@@ -8917,17 +8918,9 @@ settagstack({nr}, {dict} [, {action}])			*settagstack()*
 
 		Returns zero for success, -1 for failure.
 
-		Examples:
-		    Set current index of the tag stack to 4: >
-			call settagstack(1005, {'curidx' : 4})
-
-<		    Empty the tag stack of window 3: >
+		Examples (for more examples see |tagstack-examples||):
+		    Empty the tag stack of window 3: >
 			call settagstack(3, {'items' : []})
-
-<		    Push a new item onto the tag stack: >
-			let pos = [bufnr('myfile.txt'), 10, 1, 0]
-			let newtag = [{'tagname' : 'mytag', 'from' : pos}]
-			call settagstack(2, {'items' : newtag}, 'a')
 
 <		    Save and restore the tag stack: >
 			let stack = gettagstack(1003)
@@ -9024,6 +9017,8 @@ simplify({filename})					*simplify()*
 		directory.  In order to resolve all the involved symbolic
 		links before simplifying the path name, use |resolve()|.
 
+		Can also be used as a |method|: >
+			GetName()->simplify()
 
 sin({expr})						*sin()*
 		Return the sine of {expr}, measured in radians, as a |Float|.
@@ -10874,6 +10869,8 @@ hpux			HP-UX version of Vim.
 iconv			Can use iconv() for conversion.
 insert_expand		Compiled with support for CTRL-X expansion commands in
 			Insert mode. (always true)
+job			Compiled with support for |channel| and |job|
+ipv6			Compiled with support for IPv6 networking in |channel|.
 jumplist		Compiled with |jumplist| support.
 keymap			Compiled with 'keymap' support.
 lambda			Compiled with |lambda| support.
@@ -11238,8 +11235,8 @@ It is allowed to define another function inside a function body.
 You can provide default values for positional named arguments.  This makes
 them optional for function calls.  When a positional argument is not
 specified at a call, the default expression is used to initialize it.
-This only works for functions declared with `:function`, not for lambda
-expressions |expr-lambda|.
+This only works for functions declared with `:function` or `:def`, not for
+lambda expressions |expr-lambda|.
 
 Example: >
   function Something(key, value = 10)
@@ -11277,9 +11274,10 @@ Example that does NOT work: >
   :function NoGood(first = a:second, second = 10)
   :endfunction
 <
-When not using "...", the number of arguments in a function call must be equal
-to the number of mandatory named arguments.  When using "...", the number of
-arguments may be larger.
+When not using "...", the number of arguments in a function call must be at
+least equal to the number of mandatory named arguments.  When using "...", the
+number of arguments may be larger than the total of mandatory and optional
+arguments.
 
 							*local-variables*
 Inside a function local variables can be used.  These will disappear when the
@@ -11636,7 +11634,7 @@ This does NOT work: >
 			Like above, but append/add/subtract the value for each
 			|List| item.
 
-:let [{name}, ..., ; {lastname}] = {expr1}
+:let [{name}, ..., ; {lastname}] = {expr1}				*E452*
 			Like |:let-unpack| above, but the |List| may have more
 			items than there are names.  A list of the remaining
 			items is assigned to {lastname}.  If there are no

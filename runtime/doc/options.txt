@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2020 Mar 02
+*options.txt*	For Vim version 8.2.  Last change: 2020 Apr 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -7957,7 +7957,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		- VIM		the server name |v:servername| or "VIM"
 	Only works if the terminal supports setting window titles
 	(currently Amiga console, Win32 console, all GUI versions and
-	terminals with a non- empty 't_ts' option - these are Unix xterm and
+	terminals with a non-empty 't_ts' option - these are Unix xterm and
 	iris-ansi by default, where 't_ts' is taken from the builtin termcap).
 								*X11*
 	When Vim was compiled with HAVE_X11 defined, the original title will

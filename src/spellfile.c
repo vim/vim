@@ -4600,7 +4600,7 @@ get_wordnode(spellinfo_T *spin)
     {
 	n = spin->si_first_free;
 	spin->si_first_free = n->wn_child;
-	vim_memset(n, 0, sizeof(wordnode_T));
+	CLEAR_POINTER(n);
 	--spin->si_free_count;
     }
 #ifdef SPELL_PRINTTREE
@@ -5886,7 +5886,7 @@ mkspell(
     int		error = FALSE;
     spellinfo_T spin;
 
-    vim_memset(&spin, 0, sizeof(spin));
+    CLEAR_FIELD(spin);
     spin.si_verbose = !added_word;
     spin.si_ascii = ascii;
     spin.si_followup = TRUE;

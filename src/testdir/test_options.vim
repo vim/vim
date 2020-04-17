@@ -22,6 +22,21 @@ func Test_whichwrap()
   set whichwrap=h,h,h
   call assert_equal('h', &whichwrap)
 
+  " For compatibility with Vim 3.0 and before, number values are also
+  " supported for 'whichwrap'
+  set whichwrap=1
+  call assert_equal('b', &whichwrap)
+  set whichwrap=2
+  call assert_equal('s', &whichwrap)
+  set whichwrap=4
+  call assert_equal('h,l', &whichwrap)
+  set whichwrap=8
+  call assert_equal('<,>', &whichwrap)
+  set whichwrap=16
+  call assert_equal('[,]', &whichwrap)
+  set whichwrap=31
+  call assert_equal('b,s,h,l,<,>,[,]', &whichwrap)
+
   set whichwrap&
 endfunc
 
@@ -72,6 +87,19 @@ func Test_options_command()
   " close option-window
   close
 
+  " Open the option-window at the top.
+  set splitbelow
+  topleft options
+  call assert_equal(1, winnr())
+  close
+
+  " Open the option-window at the bottom.
+  set nosplitbelow
+  botright options
+  call assert_equal(winnr('$'), winnr())
+  close
+  set splitbelow&
+
   " Open the option-window in a new tab.
   tab options
   " Check if the option-window is opened in a tab.
@@ -79,9 +107,15 @@ func Test_options_command()
   call assert_notequal('option-window', bufname(''))
   normal gt
   call assert_equal('option-window', bufname(''))
-
   " close option-window
   close
+
+  " Open the options window browse
+  if has('browse')
+    browse set
+    call assert_equal('option-window', bufname(''))
+    close
+  endif
 endfunc
 
 func Test_path_keep_commas()
@@ -195,6 +229,7 @@ func Test_complete()
   new
   call feedkeys("i\<C-N>\<Esc>", 'xt')
   bwipe!
+  call assert_fails('set complete=ix', 'E535:')
   set complete&
 endfun
 
@@ -246,8 +281,53 @@ func Test_set_completion()
 
   call feedkeys(":set tags=./\\\\ dif\<C-A>\<C-B>\"\<CR>", 'tx')
   call assert_equal('"set tags=./\\ diff diffexpr diffopt', @:)
-
   set tags&
+
+  " Expanding the option names
+  call feedkeys(":set \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set all', @:)
+
+  " Expanding a second set of option names
+  call feedkeys(":set wrapscan \<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set wrapscan all', @:)
+
+  " Expanding a special keycode
+  call feedkeys(":set <Home>\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set <Home>', @:)
+
+  " Expanding an invalid special keycode
+  call feedkeys(":set <abcd>\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"set <abcd>\<Tab>", @:)
+
+  " Expanding a terminal keycode
+  call feedkeys(":set t_AB\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"set t_AB", @:)
+
+  " Expanding an invalid option name
+  call feedkeys(":set abcde=\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"set abcde=\<Tab>", @:)
+
+  " Expanding after a = for a boolean option
+  call feedkeys(":set wrapscan=\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"set wrapscan=\<Tab>", @:)
+
+  " Expanding a numeric option
+  call feedkeys(":set tabstop+=\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"set tabstop+=" .. &tabstop, @:)
+
+  " Expanding a non-boolean option
+  call feedkeys(":set invtabstop=\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"set invtabstop=", @:)
+
+  " Expand options for 'spellsuggest'
+  call feedkeys(":set spellsuggest=best,file:xyz\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal("\"set spellsuggest=best,file:xyz", @:)
+
+  " Expand value for 'key'
+  set key=abcd
+  call feedkeys(":set key=\<Tab>\<C-B>\"\<CR>", 'xt')
+  call assert_equal('"set key=*****', @:)
+  set key=
 endfunc
 
 func Test_set_errors()
@@ -304,9 +384,29 @@ func Test_set_errors()
   endif
   call assert_fails('set backupext=~ patchmode=~', 'E589:')
   call assert_fails('set winminheight=10 winheight=9', 'E591:')
+  set winminheight& winheight&
+  set winheight=10 winminheight=10
+  call assert_fails('set winheight=9', 'E591:')
+  set winminheight& winheight&
   call assert_fails('set winminwidth=10 winwidth=9', 'E592:')
+  set winminwidth& winwidth&
+  call assert_fails('set winwidth=9 winminwidth=10', 'E592:')
+  set winwidth& winminwidth&
   call assert_fails("set showbreak=\x01", 'E595:')
   call assert_fails('set t_foo=', 'E846:')
+  call assert_fails('set tabstop??', 'E488:')
+  call assert_fails('set wrapscan!!', 'E488:')
+  call assert_fails('set tabstop&&', 'E488:')
+  call assert_fails('set wrapscan<<', 'E488:')
+  call assert_fails('set wrapscan=1', 'E474:')
+  call assert_fails('set autoindent@', 'E488:')
+  call assert_fails('set wildchar=<abc>', 'E474:')
+  call assert_fails('set cmdheight=1a', 'E521:')
+  call assert_fails('set invcmdheight', 'E474:')
+  if has('python') && has('python3')
+    call assert_fails('set pyxversion=6', 'E474:')
+  endif
+  call assert_fails("let &tabstop='ab'", 'E521:')
 endfunc
 
 func CheckWasSet(name)
@@ -381,6 +481,10 @@ func Test_set_ttytype()
 
   set ttytype&
   call assert_equal(&ttytype, &term)
+
+  if has('gui') && !has('gui_running')
+    call assert_fails('set term=gui', 'E531:')
+  endif
 endfunc
 
 func Test_set_all()
@@ -672,6 +776,15 @@ func Test_buftype()
   bwipe!
 endfunc
 
+" Test for the 'shell' option
+func Test_shell()
+  CheckUnix
+  let save_shell = &shell
+  set shell=
+  call assert_fails('shell', 'E91:')
+  let &shell = save_shell
+endfunc
+
 " Test for the 'shellquote' option
 func Test_shellquote()
   CheckUnix
@@ -714,6 +827,76 @@ func Test_debug_option()
   exe "normal \<C-c>"
   call assert_equal('Beep!', Screenline(&lines))
   set debug&
+endfunc
+
+" Test for the default CDPATH option
+func Test_opt_default_cdpath()
+  CheckFeature file_in_path
+  let after =<< trim [CODE]
+    call assert_equal(',/path/to/dir1,/path/to/dir2', &cdpath)
+    call writefile(v:errors, 'Xtestout')
+    qall
+  [CODE]
+  if has('unix')
+    let $CDPATH='/path/to/dir1:/path/to/dir2'
+  else
+    let $CDPATH='/path/to/dir1;/path/to/dir2'
+  endif
+  if RunVim([], after, '')
+    call assert_equal([], readfile('Xtestout'))
+    call delete('Xtestout')
+  endif
+endfunc
+
+" Test for setting keycodes using set
+func Test_opt_set_keycode()
+  call assert_fails('set <t_k1=l', 'E474:')
+  call assert_fails('set <Home=l', 'E474:')
+  set <t_k9>=abcd
+  call assert_equal('abcd', &t_k9)
+  set <t_k9>&
+  set <F9>=xyz
+  call assert_equal('xyz', &t_k9)
+  set <t_k9>&
+endfunc
+
+" Test for changing options in a sandbox
+func Test_opt_sandbox()
+  for opt in ['backupdir', 'cdpath', 'exrc']
+    call assert_fails('sandbox set ' .. opt .. '?', 'E48:')
+    call assert_fails('sandbox let &' .. opt .. ' = 1', 'E48:')
+  endfor
+  call assert_fails('sandbox let &modelineexpr = 1', 'E48:')
+endfunc
+
+" Test for setting an option with local value to global value
+func Test_opt_local_to_global()
+  setglobal equalprg=gprg
+  setlocal equalprg=lprg
+  call assert_equal('gprg', &g:equalprg)
+  call assert_equal('lprg', &l:equalprg)
+  call assert_equal('lprg', &equalprg)
+  set equalprg<
+  call assert_equal('', &l:equalprg)
+  call assert_equal('gprg', &equalprg)
+  setglobal equalprg=gnewprg
+  setlocal equalprg=lnewprg
+  setlocal equalprg<
+  call assert_equal('gnewprg', &l:equalprg)
+  call assert_equal('gnewprg', &equalprg)
+  set equalprg&
+endfunc
+
+" Test for incrementing, decrementing and multiplying a number option value
+func Test_opt_num_op()
+  set shiftwidth=4
+  set sw+=2
+  call assert_equal(6, &sw)
+  set sw-=2
+  call assert_equal(4, &sw)
+  set sw^=2
+  call assert_equal(8, &sw)
+  set shiftwidth&
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

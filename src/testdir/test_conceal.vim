@@ -147,7 +147,7 @@ func Test_conceal_resize_term()
   call VerifyScreenDump(buf, 'Test_conceal_resize_01', {})
 
   call win_execute(buf->win_findbuf()[0], 'wincmd +')
-  call term_wait(buf)
+  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_conceal_resize_02', {})
 
   " clean up

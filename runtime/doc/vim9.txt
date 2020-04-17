@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Apr 03
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Apr 09
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -57,6 +57,15 @@ old scripts, they keep working as before.
 2. Differences from legacy Vim script			*vim9-differences*
 
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
+
+Comments starting with # ~
+
+In Vim script comments normally start with double quote.  That can also be the
+start of a string, thus in many places it cannot be used.  In Vim9 script a
+comment can also start with #.  Normally this is a command to list text with
+numbers, but you can also use `:number` for that. >
+	let count = 0  # number of occurences of Ni!
+
 
 Vim9 functions ~
 
@@ -120,6 +129,13 @@ and without `:let`, because there is no rule about where they are declared.
 Variables cannot shadow previously defined variables.
 Variables may shadow Ex commands, rename the variable if needed.
 
+Global variables must be prefixed with "g:", also at the script level.
+However, global user defined functions are used without "g:". >
+	vim9script
+	let script_local = 'text'
+	let g:global = 'value'
+	let Funcref = ThatFunction
+
 Since "&opt = value" is now assigning a value to option "opt", ":&" cannot be
 used to repeat a `:substitute` command.
 
@@ -156,6 +172,61 @@ since the function has to be looked up by name.  And a typo in the function
 name will only be found when the call is executed.
 
 
+Omitting function() ~
+
+A user defined function can be used as a function reference in an expression
+without `function()`. The argument types and return type will then be checked.
+The function must already have been defined. >
+
+	let Funcref = MyFunction
+
+When using `function()` the resulting type is "func", a function with any
+number of arguments and any return type.  The function can be defined later.
+
+
+Automatic line continuation ~
+
+In many cases it is obvious that an expression continues on the next line.  In
+those cases there is no need to prefix the line with a backslash.  For
+example, when a list spans multiple lines: >
+	let mylist = [
+		'one',
+		'two',
+		]
+And when a dict spans multiple lines: >
+	let mydict = #{
+		one: 1,
+		two: 2,
+		}
+Function call: >
+	let result = Func(
+			arg1,
+			arg2
+			)
+
+For binary operators iin expressions not in [], {} or () a line break is
+possible AFTER the operators.  For example: >
+	let text = lead ..
+		   middle ..
+		   end
+	let total = start +
+	            end -
+		    correction
+	let result = positive ?
+			PosFunc(arg) :
+			NegFunc(arg)
+
+Note that "enddef" cannot be used at the start of a continuation line, it ends
+the current function.
+
+It is also possible to split a function header over multiple lines, in between
+arguments: >
+	def MyFunc(
+		text: string,
+		separator = '-'
+		): string
+
+
 No curly braces expansion ~
 
 |curly-braces-names| cannot be used.
@@ -179,6 +250,9 @@ Vim9 script enforces proper use of white space.  This is no longer allowed: >
 	let var =234	" Error!
 There must be white space before and after the "=": >
 	let var = 234	" OK
+White space must also be put before the # that starts a comment: >
+	let var = 234# Error!
+	let var = 234 # OK
 
 White space is required around most operators.
 
@@ -213,8 +287,7 @@ few exceptions.
 	blob		non-empty
 	list		non-empty (different from JavaScript)
 	dictionary	non-empty (different from JavaScript)
-	func		when not NULL
-	partial		when not NULL
+	func		when there is a function name
 	special		v:true
 	job		when not NULL
 	channel		when not NULL
@@ -301,6 +374,7 @@ The following builtin types are supported:
 	job
 	channel
 	func
+	func: {type}
 	func({type}, ...)
 	func({type}, ...): {type}
 
@@ -318,12 +392,22 @@ memory.
 
 A partial and function can be declared in more or less specific ways:
 func				any kind of function reference, no type
-				checking
+				checking for arguments or return value
 func: {type}			any number and type of arguments with specific
 				return type
-func({type} ...)		function with argument types, does not return
+func({type})			function with argument type, does not return
 				a value
-func({type} ...): {type}	function with argument types and return type
+func({type}): {type}		function with argument type and return type
+func(?{type})			function with type of optional argument, does
+				not return a value
+func(...{type})			function with type of variable number of
+				arguments, does not return a value
+func({type}, ?{type}, ...{type}): {type}
+				function with:
+				- type of mandatory argument
+				- type of optional argument
+				- type of variable number of arguments
+				- return type
 
 If the return type is "void" the function does not return a value.
 

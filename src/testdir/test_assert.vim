@@ -36,6 +36,9 @@ func Test_assert_equal()
   call assert_equal(0, assert_equal(4, n))
   let l = [1, 2, 3]
   call assert_equal(0, assert_equal([1, 2, 3], l))
+  call assert_equal(test_null_list(), test_null_list())
+  call assert_equal(test_null_list(), [])
+  call assert_equal([], test_null_list())
 
   let s = 'foo'
   call assert_equal(1, assert_equal('bar', s))

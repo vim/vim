@@ -470,7 +470,7 @@ regcomp_start(
 
     num_complex_braces = 0;
     regnpar = 1;
-    vim_memset(had_endbrace, 0, sizeof(had_endbrace));
+    CLEAR_FIELD(had_endbrace);
 #ifdef FEAT_SYN_HL
     regnzpar = 1;
     re_has_z = 0;

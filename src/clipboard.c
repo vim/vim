@@ -2033,7 +2033,7 @@ clip_get_selection(Clipboard_T *cbd)
 	clear_oparg(&oa);
 	oa.regname = (cbd == &clip_plus ? '+' : '*');
 	oa.op_type = OP_YANK;
-	vim_memset(&ca, 0, sizeof(ca));
+	CLEAR_FIELD(ca);
 	ca.oap = &oa;
 	ca.cmdchar = 'y';
 	ca.count1 = 1;

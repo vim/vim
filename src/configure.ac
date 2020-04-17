@@ -2038,17 +2038,50 @@ else
 fi
 
 if test "$enable_channel" = "yes"; then
-  dnl On Solaris we need the socket and nsl library.
-
+  dnl On Solaris we need the socket library, or on Haiku the network library.
   if test "x$HAIKU" = "xyes"; then
 	AC_CHECK_LIB(network, socket)
   else
 	AC_CHECK_LIB(socket, socket)
   fi
 
-  AC_CHECK_LIB(nsl, gethostbyname)
-  AC_MSG_CHECKING(whether compiling with process communication is possible)
-  AC_TRY_LINK([
+  AC_CACHE_CHECK([whether compiling with IPv6 networking is possible], [vim_cv_ipv6_networking],
+    [AC_TRY_LINK([
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+	/* Check bitfields */
+	struct nbbuf {
+	unsigned int  initDone:1;
+	unsigned short signmaplen;
+	};
+	    ], [
+		/* Check creating a socket. */
+		struct sockaddr_in server;
+		struct addrinfo *res;
+		(void)socket(AF_INET, SOCK_STREAM, 0);
+		(void)htons(100);
+		(void)getaddrinfo("microsoft.com", NULL, NULL, &res);
+		if (errno == ECONNREFUSED)
+		  (void)connect(1, (struct sockaddr *)&server, sizeof(server));
+		(void)freeaddrinfo(res);
+	    ],
+	[vim_cv_ipv6_networking="yes"],
+	[vim_cv_ipv6_networking="no"])])
+
+  if test "x$vim_cv_ipv6_networking" = "xyes"; then
+    AC_DEFINE(FEAT_IPV6)
+  else
+    dnl On Solaris we need the nsl library.
+    AC_CHECK_LIB(nsl, gethostbyname)
+    AC_CACHE_CHECK([whether compiling with IPv4 networking is possible], [vim_cv_ipv4_networking],
+      [AC_TRY_LINK([
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -2072,8 +2105,9 @@ if test "$enable_channel" = "yes"; then
 		if (errno == ECONNREFUSED)
 		  (void)connect(1, (struct sockaddr *)&server, sizeof(server));
 	    ],
-	AC_MSG_RESULT(yes),
-	AC_MSG_RESULT(no); enable_netbeans="no"; enable_channel="no")
+	[vim_cv_ipv4_networking="yes"],
+	[vim_cv_ipv4_networking="no"; enable_netbeans="no"; enable_channel="no"])])
+  fi
 fi
 if test "$enable_netbeans" = "yes"; then
   AC_DEFINE(FEAT_NETBEANS_INTG)

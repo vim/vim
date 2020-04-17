@@ -1,6 +1,5 @@
 /* drawscreen.c */
 int update_screen(int type_arg);
-void win_redr_status(win_T *wp, int ignore_pum);
 void showruler(int always);
 void win_redr_ruler(win_T *wp, int always, int ignore_pum);
 void after_updating_screen(int may_resize_shell);

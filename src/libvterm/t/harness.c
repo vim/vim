@@ -65,9 +65,24 @@ static VTermScreen *screen;
 
 static VTermEncodingInstance encoding;
 
-static int parser_text(const char bytes[], size_t len, void *user)
+static void term_output(const char *s, size_t len, void *user UNUSED)
 {
-  int i;
+  size_t i;
+
+  printf("output ");
+  for(i = 0; i < len; i++)
+    printf("%x%s", (unsigned char)s[i], i < len-1 ? "," : "\n");
+}
+
+static void printhex(const char *s, size_t len)
+{
+  while(len--)
+    printf("%02x", (s++)[0]);
+}
+
+static int parser_text(const char bytes[], size_t len, void *user UNUSED)
+{
+  size_t i;
 
   printf("text ");
   for(i = 0; i < len; i++) {
@@ -81,17 +96,15 @@ static int parser_text(const char bytes[], size_t len, void *user)
   return i;
 }
 
-static int parser_control(unsigned char control, void *user)
+static int parser_control(unsigned char control, void *user UNUSED)
 {
   printf("control %02x\n", control);
 
   return 1;
 }
 
-static int parser_escape(const char bytes[], size_t len, void *user)
+static int parser_escape(const char bytes[], size_t len, void *user UNUSED)
 {
-  int i;
-
   if(bytes[0] >= 0x20 && bytes[0] < 0x30) {
     if(len < 2)
       return -1;
@@ -102,14 +115,13 @@ static int parser_escape(const char bytes[], size_t len, void *user)
   }
 
   printf("escape ");
-  for(i = 0; i < len; i++)
-    printf("%02x", bytes[i]);
+  printhex(bytes, len);
   printf("\n");
 
   return len;
 }
 
-static int parser_csi(const char *leader, const long args[], int argcount, const char *intermed, char command, void *user)
+static int parser_csi(const char *leader, const long args[], int argcount, const char *intermed, char command, void *user UNUSED)
 {
   int i;
   printf("csi %02x", command);
@@ -140,23 +152,21 @@ static int parser_csi(const char *leader, const long args[], int argcount, const
   return 1;
 }
 
-static int parser_osc(const char *command, size_t cmdlen, void *user)
+static int parser_osc(const char *command, size_t cmdlen, void *user UNUSED)
 {
-  int i;
+
   printf("osc ");
-  for(i = 0; i < cmdlen; i++)
-    printf("%02x", command[i]);
+  printhex(command, cmdlen);
   printf("\n");
 
   return 1;
 }
 
-static int parser_dcs(const char *command, size_t cmdlen, void *user)
+static int parser_dcs(const char *command, size_t cmdlen, void *user UNUSED)
 {
-  int i;
+
   printf("dcs ");
-  for(i = 0; i < cmdlen; i++)
-    printf("%02x", command[i]);
+  printhex(command, cmdlen);
   printf("\n");
 
   return 1;
@@ -176,7 +186,7 @@ static VTermParserCallbacks parser_cbs = {
 
 static int want_movecursor = 0;
 static VTermPos state_pos;
-static int movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user)
+static int movecursor(VTermPos pos, VTermPos oldpos UNUSED, int visible UNUSED, void *user UNUSED)
 {
   state_pos = pos;
 
@@ -187,7 +197,7 @@ static int movecursor(VTermPos pos, VTermPos oldpos, int visible, void *user)
 }
 
 static int want_scrollrect = 0;
-static int scrollrect(VTermRect rect, int downward, int rightward, void *user)
+static int scrollrect(VTermRect rect, int downward, int rightward, void *user UNUSED)
 {
   if(!want_scrollrect)
     return 0;
@@ -200,7 +210,7 @@ static int scrollrect(VTermRect rect, int downward, int rightward, void *user)
 }
 
 static int want_moverect = 0;
-static int moverect(VTermRect dest, VTermRect src, void *user)
+static int moverect(VTermRect dest, VTermRect src, void *user UNUSED)
 {
   if(!want_moverect)
     return 0;
@@ -213,7 +223,7 @@ static int moverect(VTermRect dest, VTermRect src, void *user)
 }
 
 static int want_settermprop = 0;
-static int settermprop(VTermProp prop, VTermValue *val, void *user)
+static int settermprop(VTermProp prop, VTermValue *val, void *user UNUSED)
 {
   VTermValueType type;
   if(!want_settermprop)
@@ -244,7 +254,7 @@ static int settermprop(VTermProp prop, VTermValue *val, void *user)
 // These callbacks are for State
 
 static int want_state_putglyph = 0;
-static int state_putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
+static int state_putglyph(VTermGlyphInfo *info, VTermPos pos, void *user UNUSED)
 {
   int i;
   if(!want_state_putglyph)
@@ -266,7 +276,7 @@ static int state_putglyph(VTermGlyphInfo *info, VTermPos pos, void *user)
 }
 
 static int want_state_erase = 0;
-static int state_erase(VTermRect rect, int selective, void *user)
+static int state_erase(VTermRect rect, int selective, void *user UNUSED)
 {
   if(!want_state_erase)
     return 1;
@@ -289,7 +299,7 @@ static struct {
   VTermColor foreground;
   VTermColor background;
 } state_pen;
-static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user)
+static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user UNUSED)
 {
   switch(attr) {
   case VTERM_ATTR_BOLD:
@@ -327,7 +337,7 @@ static int state_setpenattr(VTermAttr attr, VTermValue *val, void *user)
   return 1;
 }
 
-static int state_setlineinfo(int row, const VTermLineInfo *newinfo, const VTermLineInfo *oldinfo, void *user)
+static int state_setlineinfo(int row UNUSED, const VTermLineInfo *newinfo UNUSED, const VTermLineInfo *oldinfo UNUSED, void *user UNUSED)
 {
   return 1;
 }
@@ -348,7 +358,7 @@ VTermStateCallbacks state_cbs = {
 
 static int want_screen_damage = 0;
 static int want_screen_damage_cells = 0;
-static int screen_damage(VTermRect rect, void *user)
+static int screen_damage(VTermRect rect, void *user UNUSED)
 {
   if(!want_screen_damage)
     return 1;
@@ -400,7 +410,7 @@ static int screen_damage(VTermRect rect, void *user)
 }
 
 static int want_screen_scrollback = 0;
-static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user)
+static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user UNUSED)
 {
   int eol;
   int c;
@@ -420,7 +430,7 @@ static int screen_sb_pushline(int cols, const VTermScreenCell *cells, void *user
   return 1;
 }
 
-static int screen_sb_popline(int cols, VTermScreenCell *cells, void *user)
+static int screen_sb_popline(int cols, VTermScreenCell *cells, void *user UNUSED)
 {
   int col;
 
@@ -452,7 +462,7 @@ VTermScreenCallbacks screen_cbs = {
   screen_sb_popline // sb_popline
 };
 
-int main(int argc, char **argv)
+int main(int argc UNUSED, char **argv UNUSED)
 {
   char line[1024] = {0};
   int flag;
@@ -926,13 +936,10 @@ int main(int argc, char **argv)
 
     outlen = vterm_output_get_buffer_current(vt);
     if(outlen > 0) {
-      int i;
       char outbuff[1024];
       vterm_output_read(vt, outbuff, outlen);
 
-      printf("output ");
-      for(i = 0; i < outlen; i++)
-        printf("%x%s", (unsigned char)outbuff[i], i < outlen-1 ? "," : "\n");
+      term_output(outbuff, outlen, NULL);
     }
 
     printf(err ? "?\n" : "DONE\n");

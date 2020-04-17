@@ -3,7 +3,7 @@
 " Maintainer:		Daniel Kho <daniel.kho@logik.haus>
 " Previous Maintainer:	Czo <Olivier.Sirol@lip6.fr>
 " Credits:		Stephan Hegel <stephan.hegel@snc.siemens.com.cn>
-" Last Changed:		2020 Mar 09 by Daniel Kho
+" Last Changed:		2020 Apr 04 by Daniel Kho
 
 " quit when a syntax file was already loaded
 if exists("b:current_syntax")
@@ -264,4 +264,5 @@ let b:current_syntax = "vhdl"
 
 let &cpo = s:cpo_save
 unlet s:cpo_save
+
 " vim: ts=8

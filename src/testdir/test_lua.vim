@@ -597,14 +597,33 @@ func Test_lua_set_cursor()
   new
   call setline(1, ['first line', 'second line'])
   normal gg
-  lua << EOF
-w = vim.window()
-w.line = 1
-w.col = 5
-EOF
+  lua << trim EOF
+    w = vim.window()
+    w.line = 1
+    w.col = 5
+  EOF
   call assert_equal([1, 5], [line('.'), col('.')])
 
   " Check that movement after setting cursor position keeps current column.
   normal j
   call assert_equal([2, 5], [line('.'), col('.')])
 endfunc
+
+" Test for various heredoc syntax
+func Test_lua_heredoc()
+  lua << END
+vim.command('let s = "A"')
+END
+  lua <<
+vim.command('let s ..= "B"')
+.
+  lua << trim END
+    vim.command('let s ..= "C"')
+  END
+  lua << trim
+    vim.command('let s ..= "D"')
+  .
+  call assert_equal('ABCD', s)
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

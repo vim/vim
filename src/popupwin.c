@@ -2133,7 +2133,7 @@ popup_close_and_callback(win_T *wp, typval_T *arg)
 	// - another popup window with a terminal
 	// - the previous window
 	// - the first one.
-	for (owp = first_popupwin; owp != NULL; owp = owp->w_next)
+	FOR_ALL_POPUPWINS(owp)
 	    if (owp != curwin && owp->w_buffer->b_term != NULL)
 		break;
 	if (owp != NULL)

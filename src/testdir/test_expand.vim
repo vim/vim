@@ -131,6 +131,7 @@ func Test_expand_filename_multicmd()
   call assert_equal(4, winnr('$'))
   call assert_equal('foo!', bufname(winbufnr(1)))
   call assert_equal('foo', bufname(winbufnr(2)))
+  call assert_fails('e %:s/.*//', 'E500:')
   %bwipe!
 endfunc
 

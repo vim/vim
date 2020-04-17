@@ -10,23 +10,22 @@ func CheckDefFailure(lines, error)
   call delete('Xdef')
 endfunc
 
-func CheckScriptFailure(lines, error)
-  call writefile(a:lines, 'Xdef')
-  call assert_fails('so Xdef', a:error, a:lines)
-  call delete('Xdef')
-endfunc
+def CheckScriptFailure(lines: list<string>, error: string)
+  writefile(lines, 'Xdef')
+  assert_fails('so Xdef', error, lines)
+  delete('Xdef')
+enddef
+
+def CheckScriptSuccess(lines: list<string>)
+  writefile(lines, 'Xdef')
+  so Xdef
+  delete('Xdef')
+enddef
 
 def Test_syntax()
   let var = 234
   let other: list<string> = ['asdf']
 enddef
-
-func Test_def_basic()
-  def SomeFunc(): string
-    return 'yes'
-  enddef
-  call assert_equal('yes', SomeFunc())
-endfunc
 
 let s:appendToMe = 'xxx'
 let s:addToMe = 111
@@ -66,13 +65,13 @@ def Test_assignment()
   if has('float')
     let float1: float = 3.4
   endif
-  let funky1: func
-  let funky2: func = function('len')
-  let party2: func = funcref('Test_syntax')
+  let Funky1: func
+  let Funky2: func = function('len')
+  let Party2: func = funcref('Test_syntax')
 
-  " type becomes list<any>
+  # type becomes list<any>
   let somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
-  " type becomes dict<any>
+  # type becomes dict<any>
   let somedict = rand() > 0 ? #{a: 1, b: 2} : #{a: 'a', b: 'b'}
 
   g:newvar = 'new'
@@ -111,7 +110,7 @@ def Test_assignment()
   call CheckDefFailure(['&notex += 3'], 'E113:')
   call CheckDefFailure(['&ts ..= "xxx"'], 'E1019:')
   call CheckDefFailure(['&path += 3'], 'E1013:')
-  " test freeing ISN_STOREOPT
+  # test freeing ISN_STOREOPT
   call CheckDefFailure(['&ts = 3', 'let asdf'], 'E1022:')
   &ts = 8
 
@@ -134,8 +133,11 @@ def Test_assignment()
   assert_equal('noneagain', v:errmsg)
   call CheckDefFailure(['v:errmsg += "more"'], 'E1013:')
   call CheckDefFailure(['v:errmsg += 123'], 'E1013:')
+enddef
 
-  " Test default values.
+def Test_assignment_default()
+
+  # Test default values.
   let thebool: bool
   assert_equal(v:false, thebool)
 
@@ -153,8 +155,8 @@ def Test_assignment()
   let theblob: blob
   assert_equal(0z, theblob)
 
-  let thefunc: func
-  assert_equal(test_null_function(), thefunc)
+  let Thefunc: func
+  assert_equal(test_null_function(), Thefunc)
 
   let thelist: list<any>
   assert_equal([], thelist)
@@ -172,6 +174,11 @@ def Test_assignment()
 
   let nr = 1234 | nr = 5678
   assert_equal(5678, nr)
+enddef
+
+def Mess(): string
+  v:foldstart = 123
+  return 'xxx'
 enddef
 
 func Test_assignment_failure()
@@ -210,6 +217,9 @@ func Test_assignment_failure()
   call CheckDefFailure(['let var: number = feedkeys("0")'], 'expected number but got void')
 
   call CheckDefFailure(['let var: dict <number>'], 'E1068:')
+  call CheckDefFailure(['let var: dict<number'], 'E1009:')
+
+  call assert_fails('s/^/\=Mess()/n', 'E794:')
   call CheckDefFailure(['let var: dict<number'], 'E1009:')
 endfunc
 
@@ -263,169 +273,17 @@ def Test_cmd_modifier()
   call CheckDefFailure(['5tab echo 3'], 'E16:')
 enddef
 
-
-def ReturnString(): string
-  return 'string'
-enddef
-
-def ReturnNumber(): number
-  return 123
-enddef
-
-let g:notNumber = 'string'
-
-def ReturnGlobal(): number
-  return g:notNumber
-enddef
-
-def Test_return_something()
-  assert_equal('string', ReturnString())
-  assert_equal(123, ReturnNumber())
-  assert_fails('call ReturnGlobal()', 'E1029: Expected number but got string')
-enddef
-
-let s:nothing = 0
-def ReturnNothing()
-  s:nothing = 1
-  if true
-    return
-  endif
-  s:nothing = 2
-enddef
-
-def Test_return_nothing()
-  ReturnNothing()
-  assert_equal(1, s:nothing)
-enddef
-
-func Increment()
-  let g:counter += 1
-endfunc
-
-def Test_call_ufunc_count()
-  g:counter = 1
-  Increment()
-  Increment()
-  Increment()
-  " works with and without :call
-  assert_equal(4, g:counter)
-  call assert_equal(4, g:counter)
-  unlet g:counter
-enddef
-
-def MyVarargs(arg: string, ...rest: list<string>): string
-  let res = arg
-  for s in rest
-    res ..= ',' .. s
-  endfor
-  return res
-enddef
-
-def Test_call_varargs()
-  assert_equal('one', MyVarargs('one'))
-  assert_equal('one,two', MyVarargs('one', 'two'))
-  assert_equal('one,two,three', MyVarargs('one', 'two', 'three'))
-enddef
-
-def MyDefaultArgs(name = 'string'): string
-  return name
-enddef
-
-def Test_call_default_args()
-  assert_equal('string', MyDefaultArgs())
-  assert_equal('one', MyDefaultArgs('one'))
-  assert_fails('call MyDefaultArgs("one", "two")', 'E118:')
-
-  call CheckScriptFailure(['def Func(arg: number = asdf)', 'enddef'], 'E1001:')
-enddef
-
-func Test_call_default_args_from_func()
-  call assert_equal('string', MyDefaultArgs())
-  call assert_equal('one', MyDefaultArgs('one'))
-  call assert_fails('call MyDefaultArgs("one", "two")', 'E118:')
-endfunc
-
-func TakesOneArg(arg)
-  echo a:arg
-endfunc
-
-def Test_call_wrong_args()
-  call CheckDefFailure(['TakesOneArg()'], 'E119:')
-  call CheckDefFailure(['TakesOneArg(11, 22)'], 'E118:')
-  call CheckDefFailure(['bufnr(xxx)'], 'E1001:')
-enddef
-
-" Default arg and varargs
-def MyDefVarargs(one: string, two = 'foo', ...rest: list<string>): string
-  let res = one .. ',' .. two
-  for s in rest
-    res ..= ',' .. s
-  endfor
-  return res
-enddef
-
-def Test_call_def_varargs()
-  call assert_fails('call MyDefVarargs()', 'E119:')
-  assert_equal('one,foo', MyDefVarargs('one'))
-  assert_equal('one,two', MyDefVarargs('one', 'two'))
-  assert_equal('one,two,three', MyDefVarargs('one', 'two', 'three'))
-enddef
-
-def Test_using_var_as_arg()
-  call writefile(['def Func(x: number)',  'let x = 234', 'enddef'], 'Xdef')
-  call assert_fails('so Xdef', 'E1006:')
-  call delete('Xdef')
-enddef
-
-def Test_call_func_defined_later()
-  call assert_equal('one', DefinedLater('one'))
-  call assert_fails('call NotDefined("one")', 'E117:')
-enddef
-
-func DefinedLater(arg)
-  return a:arg
-endfunc
-
-def FuncWithForwardCall()
-  return DefinedEvenLater("yes")
-enddef
-
-def DefinedEvenLater(arg: string): string
-  return arg
-enddef
-
-def Test_error_in_nested_function()
-  " Error in called function requires unwinding the call stack.
-  assert_fails('call FuncWithForwardCall()', 'E1029')
-enddef
-
-def Test_return_type_wrong()
-  CheckScriptFailure(['def Func(): number', 'return "a"', 'enddef'], 'expected number but got string')
-  CheckScriptFailure(['def Func(): string', 'return 1', 'enddef'], 'expected string but got number')
-  CheckScriptFailure(['def Func(): void', 'return "a"', 'enddef'], 'expected void but got string')
-  CheckScriptFailure(['def Func()', 'return "a"', 'enddef'], 'expected void but got string')
-
-  CheckScriptFailure(['def Func(): number', 'return', 'enddef'], 'E1003:')
-
-  CheckScriptFailure(['def Func(): list', 'return []', 'enddef'], 'E1008:')
-  CheckScriptFailure(['def Func(): dict', 'return {}', 'enddef'], 'E1008:')
-enddef
-
-def Test_arg_type_wrong()
-  CheckScriptFailure(['def Func3(items: list)', 'echo "a"', 'enddef'], 'E1008: Missing <type>')
-enddef
-
 def Test_try_catch()
   let l = []
-  try
+  try # comment
     add(l, '1')
     throw 'wrong'
     add(l, '2')
-  catch
+  catch # comment
     add(l, v:exception)
-  finally
+  finally # comment
     add(l, '3')
-  endtry
+  endtry # comment
   assert_equal(['1', 'wrong', '3'], l)
 enddef
 
@@ -732,82 +590,6 @@ def Test_vim9script_fails()
   assert_fails('export something', 'E1042')
 enddef
 
-def Test_vim9script_call()
-  let lines =<< trim END
-    vim9script
-    let var = ''
-    def MyFunc(arg: string)
-       var = arg
-    enddef
-    MyFunc('foobar')
-    assert_equal('foobar', var)
-
-    let str = 'barfoo'
-    str->MyFunc()
-    assert_equal('barfoo', var)
-
-    let g:value = 'value'
-    g:value->MyFunc()
-    assert_equal('value', var)
-
-    let listvar = []
-    def ListFunc(arg: list<number>)
-       listvar = arg
-    enddef
-    [1, 2, 3]->ListFunc()
-    assert_equal([1, 2, 3], listvar)
-
-    let dictvar = {}
-    def DictFunc(arg: dict<number>)
-       dictvar = arg
-    enddef
-    {'a': 1, 'b': 2}->DictFunc()
-    assert_equal(#{a: 1, b: 2}, dictvar)
-    def CompiledDict()
-      {'a': 3, 'b': 4}->DictFunc()
-    enddef
-    CompiledDict()
-    assert_equal(#{a: 3, b: 4}, dictvar)
-
-    #{a: 3, b: 4}->DictFunc()
-    assert_equal(#{a: 3, b: 4}, dictvar)
-
-    ('text')->MyFunc()
-    assert_equal('text', var)
-    ("some")->MyFunc()
-    assert_equal('some', var)
-  END
-  writefile(lines, 'Xcall.vim')
-  source Xcall.vim
-  delete('Xcall.vim')
-enddef
-
-def Test_vim9script_call_fail_decl()
-  let lines =<< trim END
-    vim9script
-    let var = ''
-    def MyFunc(arg: string)
-       let var = 123
-    enddef
-  END
-  writefile(lines, 'Xcall_decl.vim')
-  assert_fails('source Xcall_decl.vim', 'E1054:')
-  delete('Xcall_decl.vim')
-enddef
-
-def Test_vim9script_call_fail_const()
-  let lines =<< trim END
-    vim9script
-    const var = ''
-    def MyFunc(arg: string)
-       var = 'asdf'
-    enddef
-  END
-  writefile(lines, 'Xcall_const.vim')
-  assert_fails('source Xcall_const.vim', 'E46:')
-  delete('Xcall_const.vim')
-enddef
-
 def Test_vim9script_reload()
   let lines =<< trim END
     vim9script
@@ -823,7 +605,8 @@ def Test_vim9script_reload()
       return valtwo
     enddef
   END
-  writefile(lines + morelines, 'Xreload.vim')
+  writefile(lines + morelines,
+            'Xreload.vim')
   source Xreload.vim
   source Xreload.vim
   source Xreload.vim
@@ -860,16 +643,16 @@ enddef
 
 def Test_import_absolute()
   let import_lines = [
-        \ 'vim9script',
-        \ 'import exported from "' .. escape(getcwd(), '\') .. '/Xexport_abs.vim"',
-        \ 'def UseExported()',
-        \ '  g:imported_abs = exported',
-        \ '  exported = 8888',
-        \ '  g:imported_after = exported',
-        \ 'enddef',
-        \ 'UseExported()',
-        \ 'g:import_disassembled = execute("disass UseExported")',
-        \ ]
+        'vim9script',
+        'import exported from "' .. escape(getcwd(), '\') .. '/Xexport_abs.vim"',
+        'def UseExported()',
+        '  g:imported_abs = exported',
+        '  exported = 8888',
+        '  g:imported_after = exported',
+        'enddef',
+        'UseExported()',
+        'g:import_disassembled = execute("disass UseExported")',
+        ]
   writefile(import_lines, 'Ximport_abs.vim')
   writefile(s:export_script_lines, 'Xexport_abs.vim')
 
@@ -877,16 +660,16 @@ def Test_import_absolute()
 
   assert_equal(9876, g:imported_abs)
   assert_equal(8888, g:imported_after)
-  assert_match('<SNR>\d\+_UseExported.*'
-        \ .. 'g:imported_abs = exported.*'
-        \ .. '0 LOADSCRIPT exported from .*Xexport_abs.vim.*'
-        \ .. '1 STOREG g:imported_abs.*'
-        \ .. 'exported = 8888.*'
-        \ .. '3 STORESCRIPT exported in .*Xexport_abs.vim.*'
-        \ .. 'g:imported_after = exported.*'
-        \ .. '4 LOADSCRIPT exported from .*Xexport_abs.vim.*'
-        \ .. '5 STOREG g:imported_after.*'
-        \, g:import_disassembled)
+  assert_match('<SNR>\d\+_UseExported.*' ..
+          'g:imported_abs = exported.*' ..
+          '0 LOADSCRIPT exported from .*Xexport_abs.vim.*' ..
+          '1 STOREG g:imported_abs.*' ..
+          'exported = 8888.*' ..
+          '3 STORESCRIPT exported in .*Xexport_abs.vim.*' ..
+          'g:imported_after = exported.*' ..
+          '4 LOADSCRIPT exported from .*Xexport_abs.vim.*' ..
+          '5 STOREG g:imported_after.*',
+        g:import_disassembled)
   unlet g:imported_abs
   unlet g:import_disassembled
 
@@ -896,10 +679,10 @@ enddef
 
 def Test_import_rtp()
   let import_lines = [
-        \ 'vim9script',
-        \ 'import exported from "Xexport_rtp.vim"',
-        \ 'g:imported_rtp = exported',
-        \ ]
+        'vim9script',
+        'import exported from "Xexport_rtp.vim"',
+        'g:imported_rtp = exported',
+        ]
   writefile(import_lines, 'Ximport_rtp.vim')
   mkdir('import')
   writefile(s:export_script_lines, 'import/Xexport_rtp.vim')
@@ -925,17 +708,6 @@ def Test_fixed_size_list()
   l->insert(99, 1)
   assert_equal([2, 99, 3, 4, 5], l)
 enddef
-
-" Test that inside :function a Python function can be defined, :def is not
-" recognized.
-func Test_function_python()
-  CheckFeature python3
-  let py = 'python3'
-  execute py "<< EOF"
-def do_something():
-  return 1
-EOF
-endfunc
 
 def IfElse(what: number): string
   let res = ''
@@ -1087,27 +859,6 @@ def Test_if_const_expr_fails()
   call CheckDefFailure(["if has('aaa') ? true false"], 'E109:')
 enddef
 
-def Test_delfunc()
-  let lines =<< trim END
-    vim9script
-    def GoneSoon()
-      echo 'hello'
-    enddef
-
-    def CallGoneSoon()
-      GoneSoon()
-    enddef
-
-    delfunc GoneSoon
-    CallGoneSoon()
-  END
-  writefile(lines, 'XToDelFunc')
-  assert_fails('so XToDelFunc', 'E933')
-  assert_fails('so XToDelFunc', 'E933')
-
-  delete('XToDelFunc')
-enddef
-
 def Test_execute_cmd()
   new
   setline(1, 'default')
@@ -1169,14 +920,14 @@ def Test_for_loop()
 enddef
 
 def Test_for_loop_fails()
-  call CheckDefFailure(['for # in range(5)'], 'E690:')
-  call CheckDefFailure(['for i In range(5)'], 'E690:')
-  call CheckDefFailure(['let x = 5', 'for x in range(5)'], 'E1023:')
-  call CheckScriptFailure(['def Func(arg)', 'for arg in range(5)', 'enddef'], 'E1006:')
-  call CheckDefFailure(['for i in "text"'], 'E1024:')
-  call CheckDefFailure(['for i in xxx'], 'E1001:')
-  call CheckDefFailure(['endfor'], 'E588:')
-  call CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170:')
+  CheckDefFailure(['for # in range(5)'], 'E690:')
+  CheckDefFailure(['for i In range(5)'], 'E690:')
+  CheckDefFailure(['let x = 5', 'for x in range(5)'], 'E1023:')
+  CheckScriptFailure(['def Func(arg: any)', 'for arg in range(5)', 'enddef'], 'E1006:')
+  CheckDefFailure(['for i in "text"'], 'E1024:')
+  CheckDefFailure(['for i in xxx'], 'E1001:')
+  CheckDefFailure(['endfor'], 'E588:')
+  CheckDefFailure(['for i in range(3)', 'echo 3'], 'E170:')
 enddef
 
 def Test_while_loop()
@@ -1196,13 +947,13 @@ def Test_while_loop()
 enddef
 
 def Test_while_loop_fails()
-  call CheckDefFailure(['while xxx'], 'E1001:')
-  call CheckDefFailure(['endwhile'], 'E588:')
-  call CheckDefFailure(['continue'], 'E586:')
-  call CheckDefFailure(['if true', 'continue'], 'E586:')
-  call CheckDefFailure(['break'], 'E587:')
-  call CheckDefFailure(['if true', 'break'], 'E587:')
-  call CheckDefFailure(['while 1', 'echo 3'], 'E170:')
+  CheckDefFailure(['while xxx'], 'E1001:')
+  CheckDefFailure(['endwhile'], 'E588:')
+  CheckDefFailure(['continue'], 'E586:')
+  CheckDefFailure(['if true', 'continue'], 'E586:')
+  CheckDefFailure(['break'], 'E587:')
+  CheckDefFailure(['if true', 'break'], 'E587:')
+  CheckDefFailure(['while 1', 'echo 3'], 'E170:')
 enddef
 
 def Test_interrupt_loop()
@@ -1222,83 +973,130 @@ def Test_interrupt_loop()
   assert_true(caught, 'should have caught an exception')
 enddef
 
-def Test_redef_failure()
-  call writefile(['def Func0(): string',  'return "Func0"', 'enddef'], 'Xdef')
-  so Xdef
-  call writefile(['def Func1(): string',  'return "Func1"', 'enddef'], 'Xdef')
-  so Xdef
-  call writefile(['def! Func0(): string', 'enddef'], 'Xdef')
-  call assert_fails('so Xdef', 'E1027:')
-  call writefile(['def Func2(): string',  'return "Func2"', 'enddef'], 'Xdef')
-  so Xdef
-  call delete('Xdef')
+def Test_automatic_line_continuation()
+  let mylist = [
+      'one',
+      'two',
+      'three',
+      ] " comment
+  assert_equal(['one', 'two', 'three'], mylist)
 
-  call assert_equal(0, Func0())
-  call assert_equal('Func1', Func1())
-  call assert_equal('Func2', Func2())
+  let mydict = {
+      'one': 1,
+      'two': 2,
+      'three':
+          3,
+      } " comment
+  assert_equal({'one': 1, 'two': 2, 'three': 3}, mydict)
+  mydict = #{
+      one: 1,  # comment
+      two:     # comment
+           2,  # comment
+      three: 3 # comment
+      }
+  assert_equal(#{one: 1, two: 2, three: 3}, mydict)
+  mydict = #{
+      one: 1, 
+      two: 
+           2, 
+      three: 3 
+      }
+  assert_equal(#{one: 1, two: 2, three: 3}, mydict)
 
-  delfunc! Func0
-  delfunc! Func1
-  delfunc! Func2
+  assert_equal(
+        ['one', 'two', 'three'],
+        split('one two three')
+        )
 enddef
 
-" Test for internal functions returning different types
-func Test_InternalFuncRetType()
-  let lines =<< trim END
-    def RetFloat(): float
-      return ceil(1.456)
-    enddef
+def Test_vim9_comment()
+  CheckScriptSuccess([
+      'vim9script',
+      '# something',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      ':# something',
+      ], 'E488:')
+  CheckScriptFailure([
+      '# something',
+      ], 'E488:')
+  CheckScriptFailure([
+      ':# something',
+      ], 'E488:')
 
-    def RetListAny(): list<any>
-      return items({'k' : 'v'})
-    enddef
+  { # block start
+  } # block end
+  CheckDefFailure([
+      '{# comment',
+      ], 'E488:')
+  CheckDefFailure([
+      '{',
+      '}# comment',
+      ], 'E488:')
 
-    def RetListString(): list<string>
-      return split('a:b:c', ':')
-    enddef
+  echo "yes" # comment
+  CheckDefFailure([
+      'echo "yes"# comment',
+      ], 'E488:')
+  CheckScriptSuccess([
+      'vim9script',
+      'echo "yes" # something',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      'echo "yes"# something',
+      ], 'E121:')
+  CheckScriptFailure([
+      'vim9script',
+      'echo# something',
+      ], 'E121:')
+  CheckScriptFailure([
+      'echo "yes" # something',
+      ], 'E121:')
 
-    def RetListDictAny(): list<dict<any>>
-      return getbufinfo()
-    enddef
+  exe "echo" # comment
+  CheckDefFailure([
+      'exe "echo"# comment',
+      ], 'E488:')
+  CheckScriptSuccess([
+      'vim9script',
+      'exe "echo" # something',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      'exe "echo"# something',
+      ], 'E121:')
+  CheckDefFailure([
+      'exe # comment',
+      ], 'E1015:')
+  CheckScriptFailure([
+      'vim9script',
+      'exe# something',
+      ], 'E121:')
+  CheckScriptFailure([
+      'exe "echo" # something',
+      ], 'E121:')
 
-    def RetDictNumber(): dict<number>
-      return wordcount()
-    enddef
-
-    def RetDictString(): dict<string>
-      return environ()
-    enddef
-  END
-  call writefile(lines, 'Xscript')
-  source Xscript
-
-  call assert_equal(2.0, RetFloat())
-  call assert_equal([['k', 'v']], RetListAny())
-  call assert_equal(['a', 'b', 'c'], RetListString())
-  call assert_notequal([], RetListDictAny())
-  call assert_notequal({}, RetDictNumber())
-  call assert_notequal({}, RetDictString())
-  call delete('Xscript')
-endfunc
-
-" Test for passing too many or too few arguments to internal functions
-func Test_internalfunc_arg_error()
-  let l =<< trim END
-    def! FArgErr(): float
-      return ceil(1.1, 2)
-    enddef
-  END
-  call writefile(l, 'Xinvalidarg')
-  call assert_fails('so Xinvalidarg', 'E118:')
-  let l =<< trim END
-    def! FArgErr(): float
-      return ceil()
-    enddef
-  END
-  call writefile(l, 'Xinvalidarg')
-  call assert_fails('so Xinvalidarg', 'E119:')
-  call delete('Xinvalidarg')
-endfunc
+  CheckDefFailure([
+      'try# comment',
+      'echo "yes"',
+      'catch',
+      'endtry',
+      ], 'E488:')
+  CheckDefFailure([
+      'try',
+      'echo "yes"',
+      'catch# comment',
+      'endtry',
+      ], 'E488:')
+  CheckDefFailure([
+      'try',
+      'echo "yes"',
+      'catch',
+      'endtry# comment',
+      ], 'E488:')
+enddef
 
 " Keep this last, it messes up highlighting.
 def Test_substitute_cmd()

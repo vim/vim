@@ -647,9 +647,9 @@ do_cmdline(
 # define cmd_cookie cookie
 #endif
     static int	call_depth = 0;		// recursiveness
+#ifdef FEAT_EVAL
     ESTACK_CHECK_DECLARATION
 
-#ifdef FEAT_EVAL
     // For every pair of do_cmdline()/do_one_cmd() calls, use an extra memory
     // location for storing error messages to be converted to an exception.
     // This ensures that the do_errthrow() call in do_one_cmd() does not
@@ -728,7 +728,7 @@ do_cmdline(
     if (flags & DOCMD_EXCRESET)
 	save_dbg_stuff(&debug_saved);
     else
-	vim_memset(&debug_saved, 0, sizeof(debug_saved));
+	CLEAR_FIELD(debug_saved);
 
     initial_trylevel = trylevel;
 
@@ -1295,7 +1295,7 @@ do_cmdline(
 	/*
 	 * On an interrupt or an aborting error not converted to an exception,
 	 * disable the conversion of errors to exceptions.  (Interrupts are not
-	 * converted any more, here.) This enables also the interrupt message
+	 * converted anymore, here.) This enables also the interrupt message
 	 * when force_abort is set and did_emsg unset in case of an interrupt
 	 * from a finally clause after an error.
 	 */
@@ -1663,7 +1663,7 @@ do_one_cmd(
     int		starts_with_colon;
 #endif
 
-    vim_memset(&ea, 0, sizeof(ea));
+    CLEAR_FIELD(ea);
     ea.line1 = 1;
     ea.line2 = 1;
 #ifdef FEAT_EVAL
@@ -1835,7 +1835,10 @@ do_one_cmd(
      * If we find a '|' or '\n' we set ea.nextcmd.
      */
     if (*ea.cmd == NUL || *ea.cmd == '"'
-			      || (ea.nextcmd = check_nextcmd(ea.cmd)) != NULL)
+#ifdef FEAT_EVAL
+		|| (*ea.cmd == '#' && !starts_with_colon && in_vim9script())
+#endif
+		|| (ea.nextcmd = check_nextcmd(ea.cmd)) != NULL)
     {
 	/*
 	 * strange vi behaviour:
@@ -2626,7 +2629,7 @@ parse_command_modifiers(exarg_T *eap, char **errormsg, int skip_only)
 {
     char_u *p;
 
-    vim_memset(&cmdmod, 0, sizeof(cmdmod));
+    CLEAR_FIELD(cmdmod);
     eap->verbose_save = -1;
     eap->save_msg_silent = -1;
 
@@ -4761,9 +4764,33 @@ ex_blast(exarg_T *eap)
 	do_cmdline_cmd(eap->do_ecmd_cmd);
 }
 
+/*
+ * Check if "c" ends an Ex command.
+ * In Vim9 script does not check for white space before #.
+ */
     int
 ends_excmd(int c)
 {
+#ifdef FEAT_EVAL
+    if (c == '#')
+	return in_vim9script();
+#endif
+    return (c == NUL || c == '|' || c == '"' || c == '\n');
+}
+
+/*
+ * Like ends_excmd() but checks that a # in Vim9 script either has "cmd" equal
+ * to "cmd_start" or has a white space character before it.
+ */
+    int
+ends_excmd2(char_u *cmd_start UNUSED, char_u *cmd)
+{
+    int c = *cmd;
+
+#ifdef FEAT_EVAL
+    if (c == '#' && (cmd == cmd_start || VIM_ISWHITE(cmd[-1])))
+	return in_vim9script();
+#endif
     return (c == NUL || c == '|' || c == '"' || c == '\n');
 }
 
@@ -5631,7 +5658,7 @@ handle_drop_internal(void)
      * Move to the first file.
      */
     // Fake up a minimal "next" command for do_argfile()
-    vim_memset(&ea, 0, sizeof(ea));
+    CLEAR_FIELD(ea);
     ea.cmd = (char_u *)"next";
     do_argfile(&ea, 0);
 
@@ -5898,7 +5925,7 @@ tabpage_new(void)
 {
     exarg_T	ea;
 
-    vim_memset(&ea, 0, sizeof(ea));
+    CLEAR_FIELD(ea);
     ea.cmdidx = CMD_tabnew;
     ea.cmd = (char_u *)"tabn";
     ea.arg = (char_u *)"";

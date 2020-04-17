@@ -438,6 +438,9 @@
 /* Define if we have shl_load() */
 #undef HAVE_SHL_LOAD
 
+/* Define if we can use IPv6 networking. */
+#undef FEAT_IPV6
+
 /* Define if you want to include NetBeans integration. */
 #undef FEAT_NETBEANS_INTG
 

@@ -1980,7 +1980,7 @@ show_popupmenu(void)
 
     apply_autocmds(EVENT_MENUPOPUP, (char_u*)mode, NULL, FALSE, curbuf);
 
-    for (menu = root_menu; menu != NULL; menu = menu->next)
+    FOR_ALL_MENUS(menu)
 	if (STRNCMP("PopUp", menu->name, 5) == 0 && STRNCMP(menu->name + 5, mode, mode_len) == 0)
 	    break;
 
@@ -2133,7 +2133,7 @@ gui_is_menu_shortcut(int key)
 
     if (key < 256)
 	key = TOLOWER_LOC(key);
-    for (menu = root_menu; menu != NULL; menu = menu->next)
+    FOR_ALL_MENUS(menu)
 	if (menu->mnemonic == key
 		|| (menu->mnemonic < 256 && TOLOWER_LOC(menu->mnemonic) == key))
 	    return TRUE;

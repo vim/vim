@@ -17,9 +17,9 @@ func Test_search_cmdline()
   set noincsearch
   :1
   call feedkeys("/foobar\<cr>", 'tx')
-  call feedkeys("/the\<cr>",'tx')
+  call feedkeys("/the\<cr>", 'tx')
   call assert_equal('the', @/)
-  call feedkeys("/thes\<C-P>\<C-P>\<cr>",'tx')
+  call feedkeys("/thes\<C-P>\<C-P>\<cr>", 'tx')
   call assert_equal('foobar', @/)
 
   " Test 2
@@ -672,7 +672,7 @@ func Test_search_cmdline8()
   call term_sendkeys(buf, "/vim\<cr>")
   call term_sendkeys(buf, "/b\<esc>")
   call term_sendkeys(buf, "gg0")
-  call term_wait(buf, 500)
+  call TermWait(buf, 250)
   let screen_line = term_scrape(buf, 1)
   let [a0,a1,a2,a3] = [screen_line[3].attr, screen_line[4].attr,
         \ screen_line[18].attr, screen_line[19].attr]
@@ -688,9 +688,7 @@ func Test_search_cmdline8()
 endfunc
 
 " Tests for regexp with various magic settings
-func Test_search_regexp()
-  enew!
-
+func Run_search_regexp_magic_opt()
   put ='1 a aa abb abbccc'
   exe 'normal! /a*b\{2}c\+/e' . "\<CR>"
   call assert_equal([0, 2, 17, 0], getpos('.'))
@@ -725,6 +723,18 @@ func Test_search_regexp()
   exe 'normal! /\V[ab]\(\[xy]\)\1' . "\<CR>"
   call assert_equal([0, 9, 7, 0], getpos('.'))
 
+  %d
+endfunc
+
+func Test_search_regexp()
+  enew!
+
+  set regexpengine=1
+  call Run_search_regexp_magic_opt()
+  set regexpengine=2
+  call Run_search_regexp_magic_opt()
+  set regexpengine&
+
   set undolevels=100
   put ='9 foobar'
   put =''
@@ -732,12 +742,12 @@ func Test_search_regexp()
   normal G
   exe 'normal! dv?bar?' . "\<CR>"
   call assert_equal('9 foo', getline('.'))
-  call assert_equal([0, 10, 5, 0], getpos('.'))
-  call assert_equal(10, line('$'))
+  call assert_equal([0, 2, 5, 0], getpos('.'))
+  call assert_equal(2, line('$'))
   normal u
   call assert_equal('9 foobar', getline('.'))
-  call assert_equal([0, 10, 6, 0], getpos('.'))
-  call assert_equal(11, line('$'))
+  call assert_equal([0, 2, 6, 0], getpos('.'))
+  call assert_equal(3, line('$'))
 
   set undolevels&
   enew!
@@ -792,12 +802,12 @@ func Test_search_cmdline_incsearch_highlight_attr()
 
   call WaitForAssert({-> assert_equal(lines, [term_getline(buf, 1), term_getline(buf, 2)])})
   " wait for vim to complete initialization
-  call term_wait(buf)
+  call TermWait(buf)
 
   " Get attr of normal(a0), incsearch(a1), hlsearch(a2) highlight
   call term_sendkeys(buf, ":set incsearch hlsearch\<cr>")
   call term_sendkeys(buf, '/b')
-  call term_wait(buf, 200)
+  call TermWait(buf, 100)
   let screen_line1 = term_scrape(buf, 1)
   call assert_true(len(screen_line1) > 2)
   " a0: attr_normal
@@ -813,7 +823,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
 
   " Test incremental highlight search
   call term_sendkeys(buf, "/vim")
-  call term_wait(buf, 200)
+  call TermWait(buf, 100)
   " Buffer:
   " abb vim vim vi
   " vimvivim
@@ -825,7 +835,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
 
   " Test <C-g>
   call term_sendkeys(buf, "\<C-g>\<C-g>")
-  call term_wait(buf, 200)
+  call TermWait(buf, 100)
   let attr_line1 = [a0,a0,a0,a0,a2,a2,a2,a0,a2,a2,a2,a0,a0,a0]
   let attr_line2 = [a1,a1,a1,a0,a0,a2,a2,a2]
   call assert_equal(attr_line1, map(term_scrape(buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
@@ -833,7 +843,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
 
   " Test <C-t>
   call term_sendkeys(buf, "\<C-t>")
-  call term_wait(buf, 200)
+  call TermWait(buf, 100)
   let attr_line1 = [a0,a0,a0,a0,a2,a2,a2,a0,a1,a1,a1,a0,a0,a0]
   let attr_line2 = [a2,a2,a2,a0,a0,a2,a2,a2]
   call assert_equal(attr_line1, map(term_scrape(buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
@@ -841,7 +851,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
 
   " Type Enter and a1(incsearch highlight) should become a2(hlsearch highlight)
   call term_sendkeys(buf, "\<cr>")
-  call term_wait(buf, 200)
+  call TermWait(buf, 100)
   let attr_line1 = [a0,a0,a0,a0,a2,a2,a2,a0,a2,a2,a2,a0,a0,a0]
   let attr_line2 = [a2,a2,a2,a0,a0,a2,a2,a2]
   call assert_equal(attr_line1, map(term_scrape(buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
@@ -851,7 +861,7 @@ func Test_search_cmdline_incsearch_highlight_attr()
   call term_sendkeys(buf, ":1\<cr>")
   call term_sendkeys(buf, ":set nohlsearch\<cr>")
   call term_sendkeys(buf, "/vim")
-  call term_wait(buf, 200)
+  call TermWait(buf, 100)
   let attr_line1 = [a0,a0,a0,a0,a1,a1,a1,a0,a0,a0,a0,a0,a0,a0]
   let attr_line2 = [a0,a0,a0,a0,a0,a0,a0,a0]
   call assert_equal(attr_line1, map(term_scrape(buf, 1)[:len(attr_line1)-1], 'v:val.attr'))
@@ -1341,7 +1351,7 @@ func Test_large_hex_chars2()
 endfunc
 
 func Test_one_error_msg()
-  " This  was also giving an internal error
+  " This was also giving an internal error
   call assert_fails('call search(" \\((\\v[[=P=]]){185}+             ")', 'E871:')
 endfunc
 
@@ -1392,6 +1402,11 @@ func Test_search_errors()
   call assert_fails("call search('pat', 'b', 1, [])", 'E745:')
   call assert_fails("call search('pat', 'ns')", 'E475:')
   call assert_fails("call search('pat', 'mr')", 'E475:')
+
+  new
+  call setline(1, ['foo', 'bar'])
+  call assert_fails('call feedkeys("/foo/;/bar/;\<CR>", "tx")', 'E386:')
+  bwipe!
 endfunc
 
 func Test_search_display_pattern()
@@ -1540,6 +1555,65 @@ func Test_searchforward_var()
   let v:searchforward = 1
   normal N
   call assert_equal(1, line('.'))
+  close!
+endfunc
+
+" Test for invalid regular expressions
+func Test_invalid_regexp()
+  set regexpengine=1
+  call assert_fails("call search(repeat('\\(.\\)', 10))", 'E51:')
+  call assert_fails("call search('\\%(')", 'E53:')
+  call assert_fails("call search('\\(')", 'E54:')
+  call assert_fails("call search('\\)')", 'E55:')
+  call assert_fails("call search('x\\@#')", 'E59:')
+  call assert_fails('call search(''\v%(%(%(%(%(%(%(%(%(%(%(a){1}){1}){1}){1}){1}){1}){1}){1}){1}){1}){1}'')', 'E60:')
+  call assert_fails("call search('a\\+*')", 'E61:')
+  call assert_fails("call search('\\_m')", 'E63:')
+  call assert_fails("call search('\\+')", 'E64:')
+  call assert_fails("call search('\\1')", 'E65:')
+  call assert_fails("call search('\\z\\(\\)')", 'E66:')
+  call assert_fails("call search('\\z2')", 'E67:')
+  call assert_fails("call search('\\zx')", 'E68:')
+  call assert_fails("call search('\\%[ab')", 'E69:')
+  call assert_fails("call search('\\%[]')", 'E70:')
+  call assert_fails("call search('\\%a')", 'E71:')
+  call assert_fails("call search('ab\\%[\\(cd\\)]')", 'E369:')
+  call assert_fails("call search('ab\\%[\\%(cd\\)]')", 'E369:')
+  set regexpengine=2
+  call assert_fails("call search('\\_')", 'E865:')
+  call assert_fails("call search('\\+')", 'E866:')
+  call assert_fails("call search('\\zx')", 'E867:')
+  call assert_fails("call search('\\%a')", 'E867:')
+  call assert_fails("call search('x\\@#')", 'E869:')
+  call assert_fails("call search(repeat('\\(.\\)', 10))", 'E872:')
+  call assert_fails("call search('\\_m')", 'E877:')
+  call assert_fails("call search('\\%(')", 'E53:')
+  call assert_fails("call search('\\(')", 'E54:')
+  call assert_fails("call search('\\)')", 'E55:')
+  call assert_fails("call search('\\z\\(\\)')", 'E66:')
+  call assert_fails("call search('\\%[ab')", 'E69:')
+  call assert_fails("call search('\\%[]')", 'E70:')
+  call assert_fails("call search('\\%9999999999999999999999999999v')", 'E951:')
+  set regexpengine&
+  call assert_fails("call search('\\%#=3ab')", 'E864:')
+endfunc
+
+" Test for searching a very complex pattern in a string. Should switch the
+" regexp engine from NFA to the old engine.
+func Test_regexp_switch_engine()
+  let l = readfile('samples/re.freeze.txt')
+  let v = substitute(l[4], '..\@<!', '', '')
+  call assert_equal(l[4], v)
+endfunc
+
+" Test for the \%V atom to search within visually selected text
+func Test_search_in_visual_area()
+  new
+  call setline(1, ['foo bar1', 'foo bar2', 'foo bar3', 'foo bar4'])
+  exe "normal 2GVjo/\\%Vbar\<CR>\<Esc>"
+  call assert_equal([2, 5], [line('.'), col('.')])
+  exe "normal 2GVj$?\\%Vbar\<CR>\<Esc>"
+  call assert_equal([3, 5], [line('.'), col('.')])
   close!
 endfunc
 

@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Mar 27
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Apr 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,9 +39,19 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Vim9 script:
+func and partial types:
+- check using func type with default arguments and varargs.
+	func(type, type?, ...): rettype
+- Type checking arguments when calling :def function and test
+- Calling unknown user function does not give proper error message:
+      assert_equal('123text', RefDef2Arg())  typo for "RetDef2Arg"
 - "func" inside "vim9script" doesn't work?  (Ben Jackson, #5670)
-- "let x = x + 1" should say that "x" is not defined (declare local after
-  evaluating expresion).
+- :func inside vim9script must still use a:arg
+- define function and create funcref in one step:
+	let ref = def(arg: type): rettype
+	    body
+	enddef
+Also:
 - "echo Func()" is an error if Func() does not return anything.
 - better implementation for partial and tests for that.
 - Make "g:imported = Export.exported" work in Vim9 script.
@@ -50,7 +60,6 @@ Vim9 script:
 - Disallow unlet for local/script/imported vars
 - Support type for ":let"/":const" at script level for Vim9 script.
     (Ben Jackson, #5671)
-- :func inside vim9script must still use a:arg
 - Make "++nr" work.
 - Check that import in legacy script works and puts item in s:
 - Error in any command in "vim9script" aborts sourcing.
@@ -60,23 +69,19 @@ Vim9 script:
 - Test try/catch and throw better, also nested.
   Test return inside try/finally jumps to finally and then returns.
 - call autoload function.
-- Type checking arguments when calling :def function
 - Implement more expressions, e.g. [a:b]
 - can use func as reference:
 	def SomeFunc() ...
 	map(list, SomeFunc)
-- define function and create funcref in one step:
-	let ref = def(arg: type): rettype
-  Also extends lambda
 - Test: Function declared inside a :def function is local, disappears at the
   end of the function.  Unless g: is used, just like with variables.
 - Can we omit \ for line continuation inside (), {}, ?
   Requires parsing while reading a function.  Like fgetline in do_one_cmd()?
 - implement :type
+- import type declaration?
 - implement class
 - implement interface
 - predefined class: Promise<T>
-- import statement for type declaration?
 - Make accessing varargs faster: arg[expr]
 	EVAL expr
 	LOADVARARG (varags idx)
@@ -106,6 +111,8 @@ Popup windows:
 - Figure out the size and position better if wrapping inserts indent
 
 Text properties:
+- Patch to fix that split / join does not update properties properly (Axel
+  Forsman, #5839)  Alternative: #5875.
 - "cc" does not call inserted_bytes(). (Axel Forsman, #5763)
 - Get E685 with a sequence of commands. (#5674)
 - Combining text property with 'cursorline' does not always work (Billie
@@ -176,17 +183,22 @@ Terminal emulator window:
   conversions.
 
 Error numbers available:
-E451, E452, E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
+E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
 E654, E856, E857, E861, E900
+
+Buffer autocommands are a bit inconsistent.  Add a separate set of
+autocommands for the buffer lifecycle:
+    BufIsCreated  (after buffer ID exists)
+    BufIsLoaded   (after buffer ID has content)
+    BufIsUnloaded (after buffer ID no longer has)
+    BufIsWiped    (after buffer ID was wiped)
+    BufIsRenamed  (after buffer ID gets another name)
+The buffer list and windows are locked, no changes possible
 
 Patch to fix drawing error with DirectX. (James Grant, #5688)
 Causes flicker on resizing.
 
-Patch to make lambda functions faster (Ken Takata)
-https://github.com/vim/vim/pull/5727
- LGTM remark: size derived from user input (getenv).  Don't see how.
-
-Patch to use more FOR_ALL_ macros and use them. (Yegappan Lakshmanan, #5339)
+In gvim always set t_Co to 16777216 (#5903)
 
 Patch to explain use of "%" in :!.  (David Briscoe, #5591)
 

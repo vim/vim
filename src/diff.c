@@ -939,14 +939,14 @@ ex_diffupdate(exarg_T *eap)	// "eap" can be NULL
 	goto theend;
 
     // Only use the internal method if it did not fail for one of the buffers.
-    vim_memset(&diffio, 0, sizeof(diffio));
+    CLEAR_FIELD(diffio);
     diffio.dio_internal = diff_internal() && !diff_internal_failed();
 
     diff_try_update(&diffio, idx_orig, eap);
     if (diffio.dio_internal && diff_internal_failed())
     {
 	// Internal diff failed, use external diff instead.
-	vim_memset(&diffio, 0, sizeof(diffio));
+	CLEAR_FIELD(diffio);
 	diff_try_update(&diffio, idx_orig, eap);
     }
 
@@ -1075,9 +1075,9 @@ diff_file_internal(diffio_T *diffio)
     xdemitconf_t    emit_cfg;
     xdemitcb_t	    emit_cb;
 
-    vim_memset(&param, 0, sizeof(param));
-    vim_memset(&emit_cfg, 0, sizeof(emit_cfg));
-    vim_memset(&emit_cb, 0, sizeof(emit_cb));
+    CLEAR_FIELD(param);
+    CLEAR_FIELD(emit_cfg);
+    CLEAR_FIELD(emit_cb);
 
     param.flags = diff_algorithm;
 

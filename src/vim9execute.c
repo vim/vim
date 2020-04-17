@@ -108,6 +108,35 @@ init_instr_idx(ufunc_T *ufunc, int argcount, ectx_T *ectx)
 }
 
 /*
+ * Create a new list from "count" items at the bottom of the stack.
+ * When "count" is zero an empty list is added to the stack.
+ */
+    static int
+exe_newlist(int count, ectx_T *ectx)
+{
+    list_T	*list = list_alloc_with_items(count);
+    int		idx;
+    typval_T	*tv;
+
+    if (list == NULL)
+	return FAIL;
+    for (idx = 0; idx < count; ++idx)
+	list_set_item(list, idx, STACK_TV_BOT(idx - count));
+
+    if (count > 0)
+	ectx->ec_stack.ga_len -= count - 1;
+    else if (ga_grow(&ectx->ec_stack, 1) == FAIL)
+	return FAIL;
+    else
+	++ectx->ec_stack.ga_len;
+    tv = STACK_TV_BOT(-1);
+    tv->v_type = VAR_LIST;
+    tv->vval.v_list = list;
+    ++list->lv_refcount;
+    return OK;
+}
+
+/*
  * Call compiled function "cdf_idx" from compiled code.
  *
  * Stack has:
@@ -120,11 +149,13 @@ init_instr_idx(ufunc_T *ufunc, int argcount, ectx_T *ectx)
  * - reserved space for local variables
  */
     static int
-call_dfunc(int cdf_idx, int argcount, ectx_T *ectx)
+call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
 {
+    int	    argcount = argcount_arg;
     dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + cdf_idx;
     ufunc_T *ufunc = dfunc->df_ufunc;
-    int	    optcount = ufunc_argcount(ufunc) - argcount;
+    int	    arg_to_add;
+    int	    vararg_count = 0;
     int	    idx;
 
     if (dfunc->df_deleted)
@@ -133,18 +164,52 @@ call_dfunc(int cdf_idx, int argcount, ectx_T *ectx)
 	return FAIL;
     }
 
-    if (ga_grow(&ectx->ec_stack, optcount + 3 + dfunc->df_varcount) == FAIL)
-	return FAIL;
-
-    if (optcount < 0)
+    if (ufunc->uf_va_name != NULL)
     {
-	emsg("argument count wrong?");
-	return FAIL;
+	// Need to make a list out of the vararg arguments.
+	// Stack at time of call with 2 varargs:
+	//   normal_arg
+	//   optional_arg
+	//   vararg_1
+	//   vararg_2
+	// After creating the list:
+	//   normal_arg
+	//   optional_arg
+	//   vararg-list
+	// With missing optional arguments we get:
+	//    normal_arg
+	// After creating the list
+	//    normal_arg
+	//    (space for optional_arg)
+	//    vararg-list
+	vararg_count = argcount - ufunc->uf_args.ga_len;
+	if (vararg_count < 0)
+	    vararg_count = 0;
+	else
+	    argcount -= vararg_count;
+	if (exe_newlist(vararg_count, ectx) == FAIL)
+	    return FAIL;
+
+	vararg_count = 1;
     }
 
+    arg_to_add = ufunc->uf_args.ga_len - argcount;
+    if (arg_to_add < 0)
+    {
+	iemsg("Argument count wrong?");
+	return FAIL;
+    }
+    if (ga_grow(&ectx->ec_stack, arg_to_add + 3 + dfunc->df_varcount) == FAIL)
+	return FAIL;
+
+    // Move the vararg-list to below the missing optional arguments.
+    if (vararg_count > 0 && arg_to_add > 0)
+	*STACK_TV_BOT(arg_to_add - 1) = *STACK_TV_BOT(-1);
+
     // Reserve space for omitted optional arguments, filled in soon.
-    // Also any empty varargs argument.
-    ectx->ec_stack.ga_len += optcount;
+    for (idx = 0; idx < arg_to_add; ++idx)
+	STACK_TV_BOT(idx - vararg_count)->v_type = VAR_UNKNOWN;
+    ectx->ec_stack.ga_len += arg_to_add;
 
     // Store current execution state in stack frame for ISN_RETURN.
     // TODO: If the actual number of arguments doesn't match what the called
@@ -293,7 +358,7 @@ call_ufunc(ufunc_T *ufunc, int argcount, ectx_T *ectx, isn_T *iptr)
 
     if (call_prepare(argcount, argvars, ectx) == FAIL)
 	return FAIL;
-    vim_memset(&funcexe, 0, sizeof(funcexe));
+    CLEAR_FIELD(funcexe);
     funcexe.evaluate = TRUE;
 
     // Call the user function.  Result goes in last position on the stack.
@@ -377,7 +442,7 @@ store_var(char_u *name, typval_T *tv)
     funccal_entry_T entry;
 
     save_funccal(&entry);
-    set_var_const(name, NULL, tv, FALSE, 0);
+    set_var_const(name, NULL, tv, FALSE, LET_NO_COMMAND);
     restore_funccal();
 }
 
@@ -412,11 +477,12 @@ call_eval_func(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
     int
 call_def_function(
     ufunc_T	*ufunc,
-    int		argc,		// nr of arguments
+    int		argc_arg,	// nr of arguments
     typval_T	*argv,		// arguments
     typval_T	*rettv)		// return value
 {
     ectx_T	ectx;		// execution context
+    int		argc = argc_arg;
     int		initial_frame_ptr;
     typval_T	*tv;
     int		idx;
@@ -430,10 +496,10 @@ call_def_function(
 #undef STACK_TV_BOT
 #define STACK_TV_BOT(idx) (((typval_T *)ectx.ec_stack.ga_data) + ectx.ec_stack.ga_len + idx)
 
-// Get pointer to local variable on the stack.
+// Get pointer to a local variable on the stack.  Negative for arguments.
 #define STACK_TV_VAR(idx) (((typval_T *)ectx.ec_stack.ga_data) + ectx.ec_frame + STACK_FRAME_SIZE + idx)
 
-    vim_memset(&ectx, 0, sizeof(ectx));
+    CLEAR_FIELD(ectx);
     ga_init2(&ectx.ec_stack, sizeof(typval_T), 500);
     if (ga_grow(&ectx.ec_stack, 20) == FAIL)
 	return FAIL;
@@ -447,13 +513,34 @@ call_def_function(
 	copy_tv(&argv[idx], STACK_TV_BOT(0));
 	++ectx.ec_stack.ga_len;
     }
+
+    // Turn varargs into a list.  Empty list if no args.
+    if (ufunc->uf_va_name != NULL)
+    {
+	int vararg_count = argc - ufunc->uf_args.ga_len;
+
+	if (vararg_count < 0)
+	    vararg_count = 0;
+	else
+	    argc -= vararg_count;
+	if (exe_newlist(vararg_count, &ectx) == FAIL)
+	    goto failed_early;
+	if (defcount > 0)
+	    // Move varargs list to below missing default arguments.
+	    *STACK_TV_BOT(defcount- 1) = *STACK_TV_BOT(-1);
+	--ectx.ec_stack.ga_len;
+    }
+
     // Make space for omitted arguments, will store default value below.
+    // Any varargs list goes after them.
     if (defcount > 0)
 	for (idx = 0; idx < defcount; ++idx)
 	{
 	    STACK_TV_BOT(0)->v_type = VAR_UNKNOWN;
 	    ++ectx.ec_stack.ga_len;
 	}
+    if (ufunc->uf_va_name != NULL)
+	    ++ectx.ec_stack.ga_len;
 
     // Frame pointer points to just after arguments.
     ectx.ec_frame = ectx.ec_stack.ga_len;
@@ -739,7 +826,7 @@ call_def_function(
 
 		    --ectx.ec_stack.ga_len;
 		    if (di == NULL)
-			store_var(iptr->isn_arg.string, STACK_TV_BOT(0));
+			store_var(name, STACK_TV_BOT(0));
 		    else
 		    {
 			clear_tv(&di->di_tv);
@@ -858,7 +945,6 @@ call_def_function(
 	    case ISN_PUSHS:
 	    case ISN_PUSHBLOB:
 	    case ISN_PUSHFUNC:
-	    case ISN_PUSHPARTIAL:
 	    case ISN_PUSHCHANNEL:
 	    case ISN_PUSHJOB:
 		if (ga_grow(&ectx.ec_stack, 1) == FAIL)
@@ -896,12 +982,6 @@ call_def_function(
 			    tv->vval.v_string =
 					     vim_strsave(iptr->isn_arg.string);
 			break;
-		    case ISN_PUSHPARTIAL:
-			tv->v_type = VAR_PARTIAL;
-			tv->vval.v_partial = iptr->isn_arg.partial;
-			if (tv->vval.v_partial != NULL)
-			    ++tv->vval.v_partial->pt_refcount;
-			break;
 		    case ISN_PUSHCHANNEL:
 #ifdef FEAT_JOB_CHANNEL
 			tv->v_type = VAR_CHANNEL;
@@ -929,26 +1009,8 @@ call_def_function(
 	    // create a list from items on the stack; uses a single allocation
 	    // for the list header and the items
 	    case ISN_NEWLIST:
-		{
-		    int	    count = iptr->isn_arg.number;
-		    list_T  *list = list_alloc_with_items(count);
-
-		    if (list == NULL)
-			goto failed;
-		    for (idx = 0; idx < count; ++idx)
-			list_set_item(list, idx, STACK_TV_BOT(idx - count));
-
-		    if (count > 0)
-			ectx.ec_stack.ga_len -= count - 1;
-		    else if (ga_grow(&ectx.ec_stack, 1) == FAIL)
-			goto failed;
-		    else
-			++ectx.ec_stack.ga_len;
-		    tv = STACK_TV_BOT(-1);
-		    tv->v_type = VAR_LIST;
-		    tv->vval.v_list = list;
-		    ++list->lv_refcount;
-		}
+		if (exe_newlist(iptr->isn_arg.number, &ectx) == FAIL)
+		    goto failed;
 		break;
 
 	    // create a dict from items on the stack
@@ -1412,7 +1474,6 @@ call_def_function(
 	    case ISN_COMPARESTRING:
 	    case ISN_COMPAREDICT:
 	    case ISN_COMPAREFUNC:
-	    case ISN_COMPAREPARTIAL:
 	    case ISN_COMPAREANY:
 		{
 		    typval_T	*tv1 = STACK_TV_BOT(-2);
@@ -1712,7 +1773,7 @@ failed:
     // When failed need to unwind the call stack.
     while (ectx.ec_frame != initial_frame_ptr)
 	func_return(&ectx);
-
+failed_early:
     for (idx = 0; idx < ectx.ec_stack.ga_len; ++idx)
 	clear_tv(STACK_TV(idx));
     vim_free(ectx.ec_stack.ga_data);
@@ -1828,7 +1889,7 @@ ex_disassemble(exarg_T *eap)
 					       iptr->isn_arg.loadstore.ls_sid);
 
 		    smsg("%4d LOADS s:%s from %s", current,
-					    iptr->isn_arg.string, si->sn_name);
+				 iptr->isn_arg.loadstore.ls_name, si->sn_name);
 		}
 		break;
 	    case ISN_LOADG:
@@ -1865,7 +1926,7 @@ ex_disassemble(exarg_T *eap)
 					       iptr->isn_arg.loadstore.ls_sid);
 
 		    smsg("%4d STORES %s in %s", current,
-					    iptr->isn_arg.string, si->sn_name);
+				 iptr->isn_arg.loadstore.ls_name, si->sn_name);
 		}
 		break;
 	    case ISN_STORESCRIPT:
@@ -1930,14 +1991,6 @@ ex_disassemble(exarg_T *eap)
 
 		    smsg("%4d PUSHFUNC \"%s\"", current,
 					       name == NULL ? "[none]" : name);
-		}
-		break;
-	    case ISN_PUSHPARTIAL:
-		{
-		    partial_T *part = iptr->isn_arg.partial;
-
-		    smsg("%4d PUSHPARTIAL \"%s\"", current,
-			 part == NULL ? "[none]" : (char *)partial_name(part));
 		}
 		break;
 	    case ISN_PUSHCHANNEL:
@@ -2117,7 +2170,6 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_COMPARELIST:
 	    case ISN_COMPAREDICT:
 	    case ISN_COMPAREFUNC:
-	    case ISN_COMPAREPARTIAL:
 	    case ISN_COMPAREANY:
 		   {
 		       char *p;
@@ -2154,8 +2206,6 @@ ex_disassemble(exarg_T *eap)
 			   case ISN_COMPARELIST: type = "COMPARELIST"; break;
 			   case ISN_COMPAREDICT: type = "COMPAREDICT"; break;
 			   case ISN_COMPAREFUNC: type = "COMPAREFUNC"; break;
-			   case ISN_COMPAREPARTIAL:
-						 type = "COMPAREPARTIAL"; break;
 			   case ISN_COMPAREANY: type = "COMPAREANY"; break;
 			   default: type = "???"; break;
 		       }
@@ -2239,6 +2289,7 @@ tv2bool(typval_T *tv)
 	case VAR_BLOB:
 	    return tv->vval.v_blob != NULL && tv->vval.v_blob->bv_ga.ga_len > 0;
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	    break;
     }

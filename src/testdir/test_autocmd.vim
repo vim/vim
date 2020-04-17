@@ -1761,9 +1761,9 @@ function s:Before_test_dirchanged()
   augroup END
   let s:li = []
   let s:dir_this = getcwd()
-  let s:dir_foo = s:dir_this . '/foo'
+  let s:dir_foo = s:dir_this . '/Xfoo'
   call mkdir(s:dir_foo)
-  let s:dir_bar = s:dir_this . '/bar'
+  let s:dir_bar = s:dir_this . '/Xbar'
   call mkdir(s:dir_bar)
 endfunc
 
@@ -2291,9 +2291,9 @@ func Test_autocmd_SafeState()
   call WaitForAssert({-> assert_match('^xxx', term_getline(buf, 6))}, 1000)
 
   call term_sendkeys(buf, ":let g:again = ''\<CR>:call CallTimer()\<CR>")
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, ":\<CR>")
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, ":echo g:again\<CR>")
   call WaitForAssert({-> assert_match('xtx', term_getline(buf, 6))}, 1000)
 
@@ -2317,7 +2317,7 @@ func Test_autocmd_CmdWinEnter()
   let buf = RunVimInTerminal('-S '.filename, #{rows: 6})
 
   call term_sendkeys(buf, "q:")
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, ":echo b:dummy_var\<cr>")
   call WaitForAssert({-> assert_match('^This is a dummy', term_getline(buf, 6))}, 2000)
   call term_sendkeys(buf, ":echo &buftype\<cr>")
@@ -2481,6 +2481,30 @@ func Test_autocmd_FileReadCmd()
     au!
   augroup END
   delfunc ReadFileCmd
+endfunc
+
+" Test for passing invalid arguments to autocmd
+func Test_autocmd_invalid_args()
+  " Additional character after * for event
+  call assert_fails('autocmd *a Xfile set ff=unix', 'E215:')
+  augroup Test
+  augroup END
+  " Invalid autocmd event
+  call assert_fails('autocmd Bufabc Xfile set ft=vim', 'E216:')
+  " Invalid autocmd event in a autocmd group
+  call assert_fails('autocmd Test Bufabc Xfile set ft=vim', 'E216:')
+  augroup! Test
+  " Execute all autocmds
+  call assert_fails('doautocmd * BufEnter', 'E217:')
+  call assert_fails('augroup! x1a2b3', 'E367:')
+  call assert_fails('autocmd BufNew <buffer=999> pwd', 'E680:')
+endfunc
+
+" Test for deep nesting of autocmds
+func Test_autocmd_deep_nesting()
+  autocmd BufEnter Xfile doautocmd BufEnter Xfile
+  call assert_fails('doautocmd BufEnter Xfile', 'E218:')
+  autocmd! BufEnter Xfile
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

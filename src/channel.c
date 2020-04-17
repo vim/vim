@@ -10,6 +10,13 @@
  * Implements communication through a socket or any file handle.
  */
 
+#ifdef WIN32
+// Must include winsock2.h before windows.h since it conflicts with winsock.h
+// (included in windows.h).
+# include <winsock2.h>
+# include <ws2tcpip.h>
+#endif
+
 #include "vim.h"
 
 #if defined(FEAT_JOB_CHANNEL) || defined(PROTO)
@@ -40,7 +47,7 @@
 #else
 # include <netdb.h>
 # include <netinet/in.h>
-
+# include <arpa/inet.h>
 # include <sys/socket.h>
 # ifdef HAVE_LIBGEN_H
 #  include <libgen.h>
@@ -711,90 +718,38 @@ channel_gui_unregister(channel_T *channel)
 static char *e_cannot_connect = N_("E902: Cannot connect to port");
 
 /*
- * Open a socket channel to "hostname":"port".
- * "waittime" is the time in msec to wait for the connection.
- * When negative wait forever.
- * Returns the channel for success.
- * Returns NULL for failure.
+ * For Unix we need to call connect() again after connect() failed.
+ * On Win32 one time is sufficient.
  */
-    channel_T *
-channel_open(
-	char *hostname,
-	int port_in,
-	int waittime,
-	void (*nb_close_cb)(void))
+    static int
+channel_connect(
+	channel_T *channel,
+	const struct sockaddr *server_addr,
+	int server_addrlen,
+	int *waittime)
 {
-    int			sd = -1;
-    struct sockaddr_in	server;
-    struct hostent	*host;
+    int		sd = -1;
 #ifdef MSWIN
-    u_short		port = port_in;
-    u_long		val = 1;
-#else
-    int			port = port_in;
-#endif
-    channel_T		*channel;
-    int			ret;
-
-#ifdef MSWIN
-    channel_init_winsock();
+    u_long	val = 1;
 #endif
 
-    channel = add_channel();
-    if (channel == NULL)
-    {
-	ch_error(NULL, "Cannot allocate channel.");
-	return NULL;
-    }
-
-    // Get the server internet address and put into addr structure
-    // fill in the socket address structure and connect to server
-    vim_memset((char *)&server, 0, sizeof(server));
-    server.sin_family = AF_INET;
-    server.sin_port = htons(port);
-    if ((host = gethostbyname(hostname)) == NULL)
-    {
-	ch_error(channel, "in gethostbyname() in channel_open()");
-	PERROR(_("E901: gethostbyname() in channel_open()"));
-	channel_free(channel);
-	return NULL;
-    }
-    {
-	char		*p;
-
-	// When using host->h_addr_list[0] directly ubsan warns for it to not
-	// be aligned.  First copy the pointer to avoid that.
-	memcpy(&p, &host->h_addr_list[0], sizeof(p));
-	memcpy((char *)&server.sin_addr, p, host->h_length);
-    }
-
-    // On Mac and Solaris a zero timeout almost never works.  At least wait
-    // one millisecond. Let's do it for all systems, because we don't know why
-    // this is needed.
-    if (waittime == 0)
-	waittime = 1;
-
-    /*
-     * For Unix we need to call connect() again after connect() failed.
-     * On Win32 one time is sufficient.
-     */
     while (TRUE)
     {
 	long	elapsed_msec = 0;
 	int	waitnow;
+	int	ret;
 
 	if (sd >= 0)
 	    sock_close(sd);
-	sd = socket(AF_INET, SOCK_STREAM, 0);
+	sd = socket(server_addr->sa_family, SOCK_STREAM, 0);
 	if (sd == -1)
 	{
-	    ch_error(channel, "in socket() in channel_open().");
-	    PERROR(_("E898: socket() in channel_open()"));
-	    channel_free(channel);
-	    return NULL;
+	    ch_error(channel, "in socket() in channel_connect().");
+	    PERROR(_("E898: socket() in channel_connect()"));
+	    return -1;
 	}
 
-	if (waittime >= 0)
+	if (*waittime >= 0)
 	{
 	    // Make connect() non-blocking.
 	    if (
@@ -807,23 +762,22 @@ channel_open(
 	    {
 		SOCK_ERRNO;
 		ch_error(channel,
-			 "channel_open: Connect failed with errno %d", errno);
+		      "channel_connect: Connect failed with errno %d", errno);
 		sock_close(sd);
-		channel_free(channel);
-		return NULL;
+		return -1;
 	    }
 	}
 
 	// Try connecting to the server.
-	ch_log(channel, "Connecting to %s port %d", hostname, port);
-	ret = connect(sd, (struct sockaddr *)&server, sizeof(server));
+	ch_log(channel, "Connecting...");
 
+	ret = connect(sd, server_addr, server_addrlen);
 	if (ret == 0)
 	    // The connection could be established.
 	    break;
 
 	SOCK_ERRNO;
-	if (waittime < 0 || (errno != EWOULDBLOCK
+	if (*waittime < 0 || (errno != EWOULDBLOCK
 		&& errno != ECONNREFUSED
 #ifdef EINPROGRESS
 		&& errno != EINPROGRESS
@@ -831,22 +785,24 @@ channel_open(
 		))
 	{
 	    ch_error(channel,
-			 "channel_open: Connect failed with errno %d", errno);
+		      "channel_connect: Connect failed with errno %d", errno);
 	    PERROR(_(e_cannot_connect));
 	    sock_close(sd);
-	    channel_free(channel);
-	    return NULL;
+	    return -1;
+	}
+	else if (errno == ECONNREFUSED)
+	{
+	    ch_error(channel, "channel_connect: Connection refused");
+	    sock_close(sd);
+	    return -1;
 	}
 
 	// Limit the waittime to 50 msec.  If it doesn't work within this
 	// time we close the socket and try creating it again.
-	waitnow = waittime > 50 ? 50 : waittime;
+	waitnow = *waittime > 50 ? 50 : *waittime;
 
 	// If connect() didn't finish then try using select() to wait for the
 	// connection to be made. For Win32 always use select() to wait.
-#ifndef MSWIN
-	if (errno != ECONNREFUSED)
-#endif
 	{
 	    struct timeval	tv;
 	    fd_set		rfds;
@@ -868,18 +824,17 @@ channel_open(
 	    gettimeofday(&start_tv, NULL);
 #endif
 	    ch_log(channel,
-		    "Waiting for connection (waiting %d msec)...", waitnow);
-	    ret = select((int)sd + 1, &rfds, &wfds, NULL, &tv);
+		      "Waiting for connection (waiting %d msec)...", waitnow);
 
+	    ret = select((int)sd + 1, &rfds, &wfds, NULL, &tv);
 	    if (ret < 0)
 	    {
 		SOCK_ERRNO;
 		ch_error(channel,
-			"channel_open: Connect failed with errno %d", errno);
+		      "channel_connect: Connect failed with errno %d", errno);
 		PERROR(_(e_cannot_connect));
 		sock_close(sd);
-		channel_free(channel);
-		return NULL;
+		return -1;
 	    }
 
 #ifdef MSWIN
@@ -888,9 +843,9 @@ channel_open(
 	    if (FD_ISSET(sd, &wfds))
 		break;
 	    elapsed_msec = waitnow;
-	    if (waittime > 1 && elapsed_msec < waittime)
+	    if (*waittime > 1 && elapsed_msec < *waittime)
 	    {
-		waittime -= elapsed_msec;
+		*waittime -= elapsed_msec;
 		continue;
 	    }
 #else
@@ -914,12 +869,17 @@ channel_open(
 			))
 		{
 		    ch_error(channel,
-			    "channel_open: Connect failed with errno %d",
+			    "channel_connect: Connect failed with errno %d",
 			    so_error);
 		    PERROR(_(e_cannot_connect));
 		    sock_close(sd);
-		    channel_free(channel);
-		    return NULL;
+		    return -1;
+		}
+		else if (errno == ECONNREFUSED)
+		{
+		    ch_error(channel, "channel_connect: Connection refused");
+		    sock_close(sd);
+		    return -1;
 		}
 	    }
 
@@ -929,30 +889,30 @@ channel_open(
 
 	    gettimeofday(&end_tv, NULL);
 	    elapsed_msec = (end_tv.tv_sec - start_tv.tv_sec) * 1000
-			     + (end_tv.tv_usec - start_tv.tv_usec) / 1000;
+				 + (end_tv.tv_usec - start_tv.tv_usec) / 1000;
 #endif
 	}
 
 #ifndef MSWIN
-	if (waittime > 1 && elapsed_msec < waittime)
+	if (*waittime > 1 && elapsed_msec < *waittime)
 	{
 	    // The port isn't ready but we also didn't get an error.
 	    // This happens when the server didn't open the socket
 	    // yet.  Select() may return early, wait until the remaining
 	    // "waitnow"  and try again.
 	    waitnow -= elapsed_msec;
-	    waittime -= elapsed_msec;
+	    *waittime -= elapsed_msec;
 	    if (waitnow > 0)
 	    {
 		mch_delay((long)waitnow, TRUE);
 		ui_breakcheck();
-		waittime -= waitnow;
+		*waittime -= waitnow;
 	    }
 	    if (!got_int)
 	    {
-		if (waittime <= 0)
+		if (*waittime <= 0)
 		    // give it one more try
-		    waittime = 1;
+		    *waittime = 1;
 		continue;
 	    }
 	    // we were interrupted, behave as if timed out
@@ -962,13 +922,10 @@ channel_open(
 	// We timed out.
 	ch_error(channel, "Connection timed out");
 	sock_close(sd);
-	channel_free(channel);
-	return NULL;
+	return -1;
     }
 
-    ch_log(channel, "Connection made");
-
-    if (waittime >= 0)
+    if (*waittime >= 0)
     {
 #ifdef MSWIN
 	val = 0;
@@ -978,10 +935,151 @@ channel_open(
 #endif
     }
 
+    return sd;
+}
+
+/*
+ * Open a socket channel to "hostname":"port".
+ * "waittime" is the time in msec to wait for the connection.
+ * When negative wait forever.
+ * Returns the channel for success.
+ * Returns NULL for failure.
+ */
+    channel_T *
+channel_open(
+	const char *hostname,
+	int port,
+	int waittime,
+	void (*nb_close_cb)(void))
+{
+    int			sd = -1;
+    channel_T		*channel = NULL;
+#ifdef FEAT_IPV6
+    struct addrinfo	hints;
+    struct addrinfo	*res = NULL;
+    struct addrinfo	*addr = NULL;
+#else
+    struct sockaddr_in	server;
+    struct hostent	*host = NULL;
+#endif
+
+#ifdef MSWIN
+    channel_init_winsock();
+#endif
+
+    channel = add_channel();
+    if (channel == NULL)
+    {
+	ch_error(NULL, "Cannot allocate channel.");
+	return NULL;
+    }
+
+    // Get the server internet address and put into addr structure fill in the
+    // socket address structure and connect to server.
+#ifdef FEAT_IPV6
+    CLEAR_FIELD(hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+# ifdef AI_ADDRCONFIG
+    hints.ai_flags = AI_ADDRCONFIG;
+# endif
+    // Set port number manually in order to prevent name resolution services
+    // from being invoked in the environment where AI_NUMERICSERV is not
+    // defined.
+    if (getaddrinfo(hostname, NULL, &hints, &res) != 0)
+    {
+	ch_error(channel, "in getaddrinfo() in channel_open()");
+	PERROR(_("E901: getaddrinfo() in channel_open()"));
+	channel_free(channel);
+	return NULL;
+    }
+
+    for (addr = res; addr != NULL; addr = addr->ai_next)
+    {
+	const char *dst = hostname;
+	const void *src = NULL;
+	char buf[NUMBUFLEN];
+
+	if (addr->ai_family == AF_INET6)
+	{
+	    struct sockaddr_in6 *sai = (struct sockaddr_in6 *)addr->ai_addr;
+
+	    sai->sin6_port = htons(port);
+	    src = &sai->sin6_addr;
+	}
+	else if (addr->ai_family == AF_INET)
+	{
+	    struct sockaddr_in *sai = (struct sockaddr_in *)addr->ai_addr;
+
+	    sai->sin_port = htons(port);
+	    src = &sai->sin_addr;
+	}
+	if (src != NULL)
+	{
+	    dst = inet_ntop(addr->ai_family, src, buf, sizeof(buf));
+	    if (dst != NULL && STRCMP(hostname, dst) != 0)
+		ch_log(channel, "Resolved %s to %s", hostname, dst);
+	}
+
+	ch_log(channel, "Trying to connect to %s port %d", dst, port);
+
+	// On Mac and Solaris a zero timeout almost never works.  At least wait
+	// one millisecond.  Let's do it for all systems, because we don't know
+	// why this is needed.
+	if (waittime == 0)
+	    waittime = 1;
+
+	sd = channel_connect(channel, addr->ai_addr, addr->ai_addrlen,
+								   &waittime);
+	if (sd >= 0)
+	    break;
+    }
+
+    freeaddrinfo(res);
+#else
+    CLEAR_FIELD(server);
+    server.sin_family = AF_INET;
+    server.sin_port = htons(port);
+    if ((host = gethostbyname(hostname)) == NULL)
+    {
+	ch_error(channel, "in gethostbyname() in channel_open()");
+	PERROR(_("E901: gethostbyname() in channel_open()"));
+	channel_free(channel);
+	return NULL;
+    }
+    {
+	char *p;
+
+	// When using host->h_addr_list[0] directly ubsan warns for it to not
+	// be aligned.  First copy the pointer to avoid that.
+	memcpy(&p, &host->h_addr_list[0], sizeof(p));
+	memcpy((char *)&server.sin_addr, p, host->h_length);
+    }
+
+    ch_log(channel, "Trying to connect to %s port %d", hostname, port);
+
+    // On Mac and Solaris a zero timeout almost never works.  At least wait one
+    // millisecond.  Let's do it for all systems, because we don't know why
+    // this is needed.
+    if (waittime == 0)
+	waittime = 1;
+
+    sd = channel_connect(channel, (struct sockaddr *)&server, sizeof(server),
+								   &waittime);
+#endif
+
+    if (sd < 0)
+    {
+	channel_free(channel);
+	return NULL;
+    }
+
+    ch_log(channel, "Connection made");
+
     channel->CH_SOCK_FD = (sock_T)sd;
     channel->ch_nb_close_cb = nb_close_cb;
     channel->ch_hostname = (char *)vim_strsave((char_u *)hostname);
-    channel->ch_port = port_in;
+    channel->ch_port = port;
     channel->ch_to_be_closed |= (1U << PART_SOCK);
 
 #ifdef FEAT_GUI
@@ -1222,6 +1320,7 @@ channel_open_func(typval_T *argvars)
     char_u	*p;
     char	*rest;
     int		port;
+    int		is_ipv6 = FALSE;
     jobopt_T    opt;
     channel_T	*channel = NULL;
 
@@ -1234,20 +1333,40 @@ channel_open_func(typval_T *argvars)
     }
 
     // parse address
-    p = vim_strchr(address, ':');
-    if (p == NULL)
+    if (*address == '[')
+    {
+	// ipv6 address
+	is_ipv6 = TRUE;
+	p = vim_strchr(address + 1, ']');
+	if (p == NULL || *++p != ':')
+	{
+	    semsg(_(e_invarg2), address);
+	    return NULL;
+	}
+    }
+    else
+    {
+	p = vim_strchr(address, ':');
+	if (p == NULL)
+	{
+	    semsg(_(e_invarg2), address);
+	    return NULL;
+	}
+    }
+    port = strtol((char *)(p + 1), &rest, 10);
+    if (*address == NUL || port <= 0 || port >= 65536 || *rest != NUL)
     {
 	semsg(_(e_invarg2), address);
 	return NULL;
     }
-    *p++ = NUL;
-    port = strtol((char *)p, &rest, 10);
-    if (*address == NUL || port <= 0 || *rest != NUL)
+    if (is_ipv6)
     {
-	p[-1] = ':';
-	semsg(_(e_invarg2), address);
-	return NULL;
+	// strip '[' and ']'
+	++address;
+	*(p - 1) = NUL;
     }
+    else
+	*p = NUL;
 
     // parse options
     clear_job_options(&opt);
@@ -2395,7 +2514,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 	exarg_T ea;
 
 	ch_log(channel, "Executing normal command '%s'", (char *)arg);
-	vim_memset(&ea, 0, sizeof(ea));
+	CLEAR_FIELD(ea);
 	ea.arg = arg;
 	ea.addr_count = 0;
 	ea.forceit = TRUE; // no mapping
@@ -2406,7 +2525,7 @@ channel_exe_cmd(channel_T *channel, ch_part_T part, typval_T *argv)
 	exarg_T ea;
 
 	ch_log(channel, "redraw");
-	vim_memset(&ea, 0, sizeof(ea));
+	CLEAR_FIELD(ea);
 	ea.forceit = *arg != NUL;
 	ex_redraw(&ea);
 	showruler(FALSE);
@@ -4674,7 +4793,7 @@ handle_io(typval_T *item, ch_part_T part, jobopt_T *opt)
     void
 clear_job_options(jobopt_T *opt)
 {
-    vim_memset(opt, 0, sizeof(jobopt_T));
+    CLEAR_POINTER(opt);
 }
 
 /*

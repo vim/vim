@@ -1,6 +1,6 @@
 " Tests for 'backspace' settings
 
-:func Exec(expr)
+func Exec(expr)
   let str=''
   try
     exec a:expr
@@ -8,7 +8,7 @@
     let str=v:exception
   endtry
   return str
-:endfunc
+endfunc
 
 func Test_backspace_option()
   set backspace=

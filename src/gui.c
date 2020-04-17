@@ -513,6 +513,9 @@ gui_init(void)
 	 */
 	set_option_value((char_u *)"paste", 0L, NULL, 0);
 
+	// Set t_Co to the number of colors: RGB.
+	set_color_count(256 * 256 * 256);
+
 	/*
 	 * Set up system-wide default menus.
 	 */

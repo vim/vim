@@ -234,7 +234,7 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	s = expr->vval.v_string;
 	if (s == NULL || *s == NUL)
 	    return FAIL;
-	vim_memset(&funcexe, 0, sizeof(funcexe));
+	CLEAR_FIELD(funcexe);
 	funcexe.evaluate = TRUE;
 	if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
 	    return FAIL;
@@ -253,7 +253,7 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
 	    s = partial_name(partial);
 	    if (s == NULL || *s == NUL)
 		return FAIL;
-	    vim_memset(&funcexe, 0, sizeof(funcexe));
+	    CLEAR_FIELD(funcexe);
 	    funcexe.evaluate = TRUE;
 	    funcexe.partial = partial;
 	    if (call_func(s, -1, rettv, argc, argv, &funcexe) == FAIL)
@@ -475,7 +475,7 @@ call_vim_function(
     funcexe_T	funcexe;
 
     rettv->v_type = VAR_UNKNOWN;		// clear_tv() uses this
-    vim_memset(&funcexe, 0, sizeof(funcexe));
+    CLEAR_FIELD(funcexe);
     funcexe.firstline = curwin->w_cursor.lnum;
     funcexe.lastline = curwin->w_cursor.lnum;
     funcexe.evaluate = TRUE;
@@ -649,7 +649,7 @@ get_lval(
     int		quiet = flags & GLV_QUIET;
 
     // Clear everything in "lp".
-    vim_memset(lp, 0, sizeof(lval_T));
+    CLEAR_POINTER(lp);
 
     if (skip)
     {
@@ -1272,6 +1272,7 @@ tv_op(typval_T *tv1, typval_T *tv2, char_u *op)
 	switch (tv1->v_type)
 	{
 	    case VAR_UNKNOWN:
+	    case VAR_ANY:
 	    case VAR_VOID:
 	    case VAR_DICT:
 	    case VAR_FUNC:
@@ -1714,7 +1715,7 @@ eval_func(
 	funcexe_T funcexe;
 
 	// Invoke the function.
-	vim_memset(&funcexe, 0, sizeof(funcexe));
+	CLEAR_FIELD(funcexe);
 	funcexe.firstline = curwin->w_cursor.lnum;
 	funcexe.lastline = curwin->w_cursor.lnum;
 	funcexe.evaluate = evaluate;
@@ -2804,7 +2805,7 @@ call_func_rettv(
     else
 	s = (char_u *)"";
 
-    vim_memset(&funcexe, 0, sizeof(funcexe));
+    CLEAR_FIELD(funcexe);
     funcexe.firstline = curwin->w_cursor.lnum;
     funcexe.lastline = curwin->w_cursor.lnum;
     funcexe.evaluate = evaluate;
@@ -2967,6 +2968,7 @@ eval_index(
 		emsg(_("E909: Cannot index a special variable"));
 	    return FAIL;
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	    if (evaluate)
 		return FAIL;
@@ -3073,6 +3075,7 @@ eval_index(
 	switch (rettv->v_type)
 	{
 	    case VAR_UNKNOWN:
+	    case VAR_ANY:
 	    case VAR_VOID:
 	    case VAR_FUNC:
 	    case VAR_PARTIAL:
@@ -3668,7 +3671,7 @@ get_lit_string_tv(char_u **arg, typval_T *rettv, int evaluate)
 }
 
 /*
- * Return the function name of the partial.
+ * Return the function name of partial "pt".
  */
     char_u *
 partial_name(partial_T *pt)
@@ -3856,6 +3859,7 @@ tv_equal(
 	    return tv1->vval.v_string == tv2->vval.v_string;
 
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	    break;
     }
@@ -4570,6 +4574,7 @@ echo_string_core(
 
 	case VAR_NUMBER:
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	    *tofree = NULL;
 	    r = tv_get_string_buf(tv, numbuf);
@@ -5422,6 +5427,7 @@ free_tv(typval_T *varp)
 #endif
 	    case VAR_NUMBER:
 	    case VAR_FLOAT:
+	    case VAR_ANY:
 	    case VAR_UNKNOWN:
 	    case VAR_VOID:
 	    case VAR_BOOL:
@@ -5486,6 +5492,7 @@ clear_tv(typval_T *varp)
 		varp->vval.v_channel = NULL;
 #endif
 	    case VAR_UNKNOWN:
+	    case VAR_ANY:
 	    case VAR_VOID:
 		break;
 	}
@@ -5500,7 +5507,7 @@ clear_tv(typval_T *varp)
 init_tv(typval_T *varp)
 {
     if (varp != NULL)
-	vim_memset(varp, 0, sizeof(typval_T));
+	CLEAR_POINTER(varp);
 }
 
 /*
@@ -5565,6 +5572,7 @@ tv_get_number_chk(typval_T *varp, int *denote)
 	    emsg(_("E974: Using a Blob as a Number"));
 	    break;
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	    internal_error_no_abort("tv_get_number(UNKNOWN)");
 	    break;
@@ -5619,6 +5627,7 @@ tv_get_float(typval_T *varp)
 	    emsg(_("E975: Using a Blob as a Float"));
 	    break;
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	    internal_error_no_abort("tv_get_float(UNKNOWN)");
 	    break;
@@ -5742,6 +5751,7 @@ tv_get_string_buf_chk(typval_T *varp, char_u *buf)
 #endif
 	    break;
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	    emsg(_(e_inval_string));
 	    break;
@@ -5891,6 +5901,7 @@ copy_tv(typval_T *from, typval_T *to)
 	    }
 	    break;
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	    internal_error_no_abort("copy_tv(UNKNOWN)");
 	    break;
@@ -5970,6 +5981,7 @@ item_copy(
 		ret = FAIL;
 	    break;
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	    internal_error_no_abort("item_copy(UNKNOWN)");
 	    ret = FAIL;
@@ -6049,7 +6061,7 @@ ex_echo(exarg_T *eap)
 
     if (eap->skip)
 	++emsg_skip;
-    while (*arg != NUL && *arg != '|' && *arg != '\n' && !got_int)
+    while ((!ends_excmd2(eap->cmd, arg) || *arg == '"') && !got_int)
     {
 	// If eval1() causes an error message the text from the command may
 	// still need to be cleared. E.g., "echo 22,44".
@@ -6131,7 +6143,7 @@ ex_execute(exarg_T *eap)
 
     if (eap->skip)
 	++emsg_skip;
-    while (*arg != NUL && *arg != '|' && *arg != '\n')
+    while (!ends_excmd2(eap->cmd, arg) || *arg == '"')
     {
 	ret = eval1_emsg(&arg, &rettv, !eap->skip);
 	if (ret == FAIL)

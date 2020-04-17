@@ -541,10 +541,15 @@ list_script_vars(int *first)
  * The {marker} is a string. If the optional 'trim' word is supplied before the
  * marker, then the leading indentation before the lines (matching the
  * indentation in the 'cmd' line) is stripped.
+ *
+ * When getting lines for an embedded script (e.g. python, lua, perl, ruby,
+ * tcl, mzscheme), script_get is set to TRUE. In this case, if the marker is
+ * missing, then '.' is accepted as a marker.
+ *
  * Returns a List with {lines} or NULL.
  */
     list_T *
-heredoc_get(exarg_T *eap, char_u *cmd)
+heredoc_get(exarg_T *eap, char_u *cmd, int script_get)
 {
     char_u	*theline;
     char_u	*marker;
@@ -553,6 +558,7 @@ heredoc_get(exarg_T *eap, char_u *cmd)
     int		marker_indent_len = 0;
     int		text_indent_len = 0;
     char_u	*text_indent = NULL;
+    char_u	dot[] = ".";
 
     if (eap->getline == NULL)
     {
@@ -598,8 +604,15 @@ heredoc_get(exarg_T *eap, char_u *cmd)
     }
     else
     {
-	emsg(_("E172: Missing marker"));
-	return NULL;
+	// When getting lines for an embedded script, if the marker is missing,
+	// accept '.' as the marker.
+	if (script_get)
+	    marker = dot;
+	else
+	{
+	    emsg(_("E172: Missing marker"));
+	    return NULL;
+	}
     }
 
     l = list_alloc();
@@ -746,7 +759,7 @@ ex_let_const(exarg_T *eap, int is_const)
 	list_T	*l;
 
 	// HERE document
-	l = heredoc_get(eap, expr + 3);
+	l = heredoc_get(eap, expr + 3, FALSE);
 	if (l != NULL)
 	{
 	    rettv_list_set(&rettv, l);
@@ -1668,6 +1681,7 @@ item_lock(typval_T *tv, int deep, int lock)
     switch (tv->v_type)
     {
 	case VAR_UNKNOWN:
+	case VAR_ANY:
 	case VAR_VOID:
 	case VAR_NUMBER:
 	case VAR_BOOL:
@@ -1914,15 +1928,17 @@ get_vimvar_dict(void)
 
 /*
  * Returns the index of a v:variable.  Negative if not found.
+ * Returns DI_ flags in "di_flags".
  */
     int
-find_vim_var(char_u *name)
+find_vim_var(char_u *name, int *di_flags)
 {
-    dictitem_T *di = find_var_in_ht(&vimvarht, 0, name, TRUE);
-    struct vimvar *vv;
+    dictitem_T	    *di = find_var_in_ht(&vimvarht, 0, name, TRUE);
+    struct vimvar   *vv;
 
     if (di == NULL)
 	return -1;
+    *di_flags = di->di_flags;
     vv = (struct vimvar *)((char *)di - offsetof(vimvar_T, vv_di));
     return (int)(vv - vimvars);
 }
@@ -1973,6 +1989,17 @@ set_vim_var_tv(int idx, typval_T *tv)
     {
 	emsg(_("E1063: type mismatch for v: variable"));
 	clear_tv(tv);
+	return FAIL;
+    }
+    // VV_RO is also checked when compiling, but let's check here as well.
+    if (vimvars[idx].vv_flags & VV_RO)
+    {
+	semsg(_(e_readonlyvar), vimvars[idx].vv_name);
+	return FAIL;
+    }
+    if (sandbox && (vimvars[idx].vv_flags & VV_RO_SBX))
+    {
+	semsg(_(e_readonlysbx), vimvars[idx].vv_name);
 	return FAIL;
     }
     clear_tv(&vimvars[idx].vv_di.di_tv);
@@ -2435,7 +2462,7 @@ find_var_in_ht(
 /*
  * Get the script-local hashtab.  NULL if not in a script context.
  */
-    hashtab_T *
+    static hashtab_T *
 get_script_local_ht(void)
 {
     scid_T sid = current_sctx.sc_sid;

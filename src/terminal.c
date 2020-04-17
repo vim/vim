@@ -446,7 +446,7 @@ term_start(
     ga_init2(&term->tl_scrollback, sizeof(sb_line_T), 300);
     ga_init2(&term->tl_scrollback_postponed, sizeof(sb_line_T), 300);
 
-    vim_memset(&split_ea, 0, sizeof(split_ea));
+    CLEAR_FIELD(split_ea);
     if (opt->jo_curwin)
     {
 	// Create a new buffer in the current window.
@@ -1756,7 +1756,7 @@ update_snapshot(term_T *term)
 		    if (vterm_screen_get_cell(screen, pos, &cell) == 0)
 		    {
 			width = 1;
-			vim_memset(p + pos.col, 0, sizeof(cellattr_T));
+			CLEAR_POINTER(p + pos.col);
 			if (ga_grow(&ga, 1) == OK)
 			    ga.ga_len += utf_char2bytes(' ',
 					     (char_u *)ga.ga_data + ga.ga_len);
@@ -2243,7 +2243,7 @@ term_get_cursor_shape(guicolor_T *fg, guicolor_T *bg)
     int			 id;
     guicolor_T		term_fg, term_bg;
 
-    vim_memset(&entry, 0, sizeof(entry));
+    CLEAR_FIELD(entry);
     entry.shape = entry.mshape =
 	term->tl_cursor_shape == VTERM_PROP_CURSORSHAPE_UNDERLINE ? SHAPE_HOR :
 	term->tl_cursor_shape == VTERM_PROP_CURSORSHAPE_BAR_LEFT ? SHAPE_VER :
@@ -2781,7 +2781,7 @@ vtermAttr2hl(VTermScreenCellAttrs cellattrs)
     static void
 hl2vtermAttr(int attr, cellattr_T *cell)
 {
-    vim_memset(&cell->attrs, 0, sizeof(VTermScreenCellAttrs));
+    CLEAR_FIELD(cell->attrs);
     if (attr & HL_BOLD)
 	cell->attrs.bold = 1;
     if (attr & HL_UNDERLINE)
@@ -2919,7 +2919,7 @@ term_scroll_up(term_T *term, int start_row, int count)
     VTermScreenCellAttrs attr;
     int			 clear_attr;
 
-    vim_memset(&attr, 0, sizeof(attr));
+    CLEAR_FIELD(attr);
 
     while (for_all_windows_and_curwin(&wp, &did_curwin))
     {
@@ -3332,7 +3332,7 @@ term_after_channel_closed(term_T *term)
 	    {
 		exarg_T ea;
 
-		vim_memset(&ea, 0, sizeof(ea));
+		CLEAR_FIELD(ea);
 		ex_quit(&ea);
 		return TRUE;
 	    }
@@ -3502,7 +3502,7 @@ term_line2screenline(
 	int		c;
 
 	if (vterm_screen_get_cell(screen, *pos, &cell) == 0)
-	    vim_memset(&cell, 0, sizeof(cell));
+	    CLEAR_FIELD(cell);
 
 	c = cell.chars[0];
 	if (c == NUL)
@@ -3828,7 +3828,7 @@ init_default_colors(term_T *term, win_T *wp)
     int		    fgval, bgval;
     int		    id;
 
-    vim_memset(&term->tl_default_color.attrs, 0, sizeof(VTermScreenCellAttrs));
+    CLEAR_FIELD(term->tl_default_color.attrs);
     term->tl_default_color.width = 1;
     fg = &term->tl_default_color.fg;
     bg = &term->tl_default_color.bg;
@@ -4070,7 +4070,7 @@ handle_drop_command(listitem_T *item)
 	}
     }
 
-    vim_memset(&ea, 0, sizeof(ea));
+    CLEAR_FIELD(ea);
 
     if (opt_item != NULL && opt_item->li_tv.v_type == VAR_DICT
 					&& opt_item->li_tv.vval.v_dict != NULL)
@@ -4163,7 +4163,7 @@ handle_call_command(term_T *term, channel_T *channel, listitem_T *item)
     argvars[0].v_type = VAR_NUMBER;
     argvars[0].vval.v_number = term->tl_buffer->b_fnum;
     argvars[1] = item->li_next->li_tv;
-    vim_memset(&funcexe, 0, sizeof(funcexe));
+    CLEAR_FIELD(funcexe);
     funcexe.firstline = 1L;
     funcexe.lastline = 1L;
     funcexe.evaluate = TRUE;
@@ -4582,7 +4582,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
 
-    vim_memset(&prev_cell, 0, sizeof(prev_cell));
+    CLEAR_FIELD(prev_cell);
 
     screen = vterm_obtain_screen(term->tl_vterm);
     state = vterm_obtain_state(term->tl_vterm);
@@ -4604,7 +4604,7 @@ f_term_dumpwrite(typval_T *argvars, typval_T *rettv UNUSED)
 						 && pos.row == cursor_pos.row);
 
 	    if (vterm_screen_get_cell(screen, pos, &cell) == 0)
-		vim_memset(&cell, 0, sizeof(cell));
+		CLEAR_FIELD(cell);
 
 	    for (i = 0; i < VTERM_MAX_CHARS_PER_CELL; ++i)
 	    {
@@ -4742,8 +4742,8 @@ read_dump_file(FILE *fd, VTermPos *cursor_pos)
 
     ga_init2(&ga_text, 1, 90);
     ga_init2(&ga_cell, sizeof(cellattr_T), 90);
-    vim_memset(&cell, 0, sizeof(cell));
-    vim_memset(&empty_cell, 0, sizeof(empty_cell));
+    CLEAR_FIELD(cell);
+    CLEAR_FIELD(empty_cell);
     cursor_pos->row = -1;
     cursor_pos->col = -1;
 

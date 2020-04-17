@@ -2267,7 +2267,7 @@ gui_mch_get_rgb_color(int r, int g, int b)
 	return (guicolor_T)available.pixel;
 #endif
     colormap = DefaultColormap(gui.dpy, DefaultScreen(gui.dpy));
-    vim_memset(&available, 0, sizeof(XColor));
+    CLEAR_FIELD(available);
     available.red = r << 8;
     available.green = g << 8;
     available.blue = b << 8;

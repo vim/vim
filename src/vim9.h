@@ -29,8 +29,8 @@ typedef enum {
     ISN_STORE,	    // pop into local variable isn_arg.number
     ISN_STOREV,	    // pop into v: variable isn_arg.number
     ISN_STOREG,	    // pop into global variable isn_arg.string
-    ISN_STORES,	    // pop into scirpt variable isn_arg.loadstore
-    ISN_STORESCRIPT, // pop into scirpt variable isn_arg.script
+    ISN_STORES,	    // pop into script variable isn_arg.loadstore
+    ISN_STORESCRIPT, // pop into script variable isn_arg.script
     ISN_STOREOPT,   // pop into option isn_arg.string
     ISN_STOREENV,    // pop into environment variable isn_arg.string
     ISN_STOREREG,    // pop into register isn_arg.number
@@ -46,7 +46,6 @@ typedef enum {
     ISN_PUSHS,		// push string isn_arg.string
     ISN_PUSHBLOB,	// push blob isn_arg.blob
     ISN_PUSHFUNC,	// push func isn_arg.string
-    ISN_PUSHPARTIAL,	// push partial ?
     ISN_PUSHCHANNEL,	// push channel isn_arg.channel
     ISN_PUSHJOB,	// push channel isn_arg.job
     ISN_NEWLIST,	// push list from stack items, size is isn_arg.number
@@ -92,7 +91,6 @@ typedef enum {
     ISN_COMPARELIST,
     ISN_COMPAREDICT,
     ISN_COMPAREFUNC,
-    ISN_COMPAREPARTIAL,
     ISN_COMPAREANY,
 
     // expression operations
@@ -191,7 +189,7 @@ typedef struct {
 
 // arguments to ISN_LOADS and ISN_STORES
 typedef struct {
-    char_u	*ls_name;	// variable name
+    char_u	*ls_name;	// variable name (with s: for ISN_STORES)
     int		ls_sid;		// script ID
 } loadstore_T;
 

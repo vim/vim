@@ -73,6 +73,8 @@ static void redraw_custom_statusline(win_T *wp);
 static int  did_update_one_window;
 #endif
 
+static void win_redr_status(win_T *wp, int ignore_pum);
+
 /*
  * Based on the current value of curwin->w_topline, transfer a screenfull
  * of stuff from Filemem to ScreenLines[], and update curwin->w_botline.
@@ -382,7 +384,7 @@ update_screen(int type_arg)
  * If "ignore_pum" is TRUE, also redraw statusline when the popup menu is
  * displayed.
  */
-    void
+    static void
 win_redr_status(win_T *wp, int ignore_pum UNUSED)
 {
     int		row;
@@ -961,7 +963,7 @@ redraw_win_toolbar(win_T *wp)
     int		button_attr = syn_name2attr((char_u *)"ToolbarButton");
 
     vim_free(wp->w_winbar_items);
-    for (menu = wp->w_winbar->children; menu != NULL; menu = menu->next)
+    FOR_ALL_CHILD_MENUS(wp->w_winbar, menu)
 	++item_count;
     wp->w_winbar_items = ALLOC_CLEAR_MULT(winbar_item_T, item_count + 1);
 

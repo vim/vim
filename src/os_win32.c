@@ -950,7 +950,7 @@ win32_kbd_patch_key(
     if (pker->UChar != 0)
 	return 1;
 
-    vim_memset(abKeystate, 0, sizeof (abKeystate));
+    CLEAR_FIELD(abKeystate);
 
     // Clear any pending dead keys
     ToUnicode(VK_SPACE, MapVirtualKey(VK_SPACE, 0), abKeystate, awAnsiCode, 2, 0);

@@ -1,6 +1,7 @@
 /* term.c */
 guicolor_T termgui_get_color(char_u *name);
 guicolor_T termgui_mch_get_rgb(guicolor_T color);
+void set_color_count(int nr);
 int set_termname(char_u *term);
 void getlinecol(long *cp, long *rp);
 int add_termcap_entry(char_u *name, int force);

@@ -4244,6 +4244,7 @@ E447	editing.txt	/*E447*
 E448	various.txt	/*E448*
 E449	eval.txt	/*E449*
 E45	message.txt	/*E45*
+E452	eval.txt	/*E452*
 E455	print.txt	/*E455*
 E456	print.txt	/*E456*
 E457	print.txt	/*E457*
@@ -9348,6 +9349,7 @@ tags-file-format	tagsrch.txt	/*tags-file-format*
 tags-option	tagsrch.txt	/*tags-option*
 tagsrch.txt	tagsrch.txt	/*tagsrch.txt*
 tagstack	tagsrch.txt	/*tagstack*
+tagstack-examples	tagsrch.txt	/*tagstack-examples*
 tan()	eval.txt	/*tan()*
 tanh()	eval.txt	/*tanh()*
 tar	pi_tar.txt	/*tar*
@@ -9503,6 +9505,7 @@ test_ignore_error()	testing.txt	/*test_ignore_error()*
 test_null_blob()	testing.txt	/*test_null_blob()*
 test_null_channel()	testing.txt	/*test_null_channel()*
 test_null_dict()	testing.txt	/*test_null_dict()*
+test_null_function()	testing.txt	/*test_null_function()*
 test_null_job()	testing.txt	/*test_null_job()*
 test_null_list()	testing.txt	/*test_null_list()*
 test_null_partial()	testing.txt	/*test_null_partial()*

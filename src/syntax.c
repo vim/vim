@@ -256,6 +256,9 @@ static reg_extmatch_T *next_match_extmatch = NULL;
 #define INVALID_STATE(ssp)  ((ssp)->ga_itemsize == 0)
 #define VALID_STATE(ssp)    ((ssp)->ga_itemsize != 0)
 
+#define FOR_ALL_SYNSTATES(sb, sst) \
+    for ((sst) = (sb)->b_sst_first; (sst) != NULL; (sst) = (sst)->sst_next)
+
 /*
  * The current state (within the line) of the recognition engine.
  * When current_state.ga_itemsize is 0 the current state is invalid.
@@ -438,7 +441,7 @@ syntax_start(win_T *wp, linenr_T lnum)
     if (INVALID_STATE(&current_state) && syn_block->b_sst_array != NULL)
     {
 	// Find last valid saved state before start_lnum.
-	for (p = syn_block->b_sst_first; p != NULL; p = p->sst_next)
+	FOR_ALL_SYNSTATES(syn_block, p)
 	{
 	    if (p->sst_lnum > lnum)
 		break;
@@ -1044,7 +1047,7 @@ syn_stack_free_block(synblock_T *block)
 
     if (block->b_sst_array != NULL)
     {
-	for (p = block->b_sst_first; p != NULL; p = p->sst_next)
+	FOR_ALL_SYNSTATES(block, p)
 	    clear_syn_state(p);
 	VIM_CLEAR(block->b_sst_array);
 	block->b_sst_first = NULL;
@@ -1353,7 +1356,7 @@ store_current_state(void)
 	    else
 	    {
 		// find the entry just before this one to adjust sst_next
-		for (p = syn_block->b_sst_first; p != NULL; p = p->sst_next)
+		FOR_ALL_SYNSTATES(syn_block, p)
 		    if (p->sst_next == sp)
 			break;
 		if (p != NULL)	// just in case
@@ -2747,7 +2750,7 @@ push_current_state(int idx)
 {
     if (ga_grow(&current_state, 1) == FAIL)
 	return FAIL;
-    vim_memset(&CUR_STATE(current_state.ga_len), 0, sizeof(stateitem_T));
+    CLEAR_POINTER(&CUR_STATE(current_state.ga_len));
     CUR_STATE(current_state.ga_len).si_idx = idx;
     ++current_state.ga_len;
     return OK;
@@ -4905,7 +4908,7 @@ syn_cmd_match(
 
     // get the pattern.
     init_syn_patterns();
-    vim_memset(&item, 0, sizeof(item));
+    CLEAR_FIELD(item);
     rest = get_syn_pattern(rest, &item);
     if (vim_regcomp_had_eol() && !(syn_opt_arg.flags & HL_EXCLUDENL))
 	syn_opt_arg.flags |= HL_HAS_EOL;
@@ -5478,7 +5481,7 @@ syn_add_cluster(char_u *name)
 	return 0;
     }
 
-    vim_memset(&(SYN_CLSTR(curwin->w_s)[len]), 0, sizeof(syn_cluster_T));
+    CLEAR_POINTER(&(SYN_CLSTR(curwin->w_s)[len]));
     SYN_CLSTR(curwin->w_s)[len].scl_name = name;
     SYN_CLSTR(curwin->w_s)[len].scl_name_u = vim_strsave_up(name);
     SYN_CLSTR(curwin->w_s)[len].scl_list = NULL;

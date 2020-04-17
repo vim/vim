@@ -960,7 +960,7 @@ Currently supported commands:
 		directory, thus it's best to use the full path.
 
 		[options] is only used when opening a new window.  If present,
-		it must be a Dict.  Similarly to |++opt|, These entries are
+		it must be a Dict.  Similarly to |++opt|, these entries are
 		recognized:
 		  "ff"		file format: "dos", "mac" or "unix"
 		  "fileformat"	idem

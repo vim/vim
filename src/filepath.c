@@ -64,6 +64,7 @@ get_short_pathname(char_u **fnamep, char_u **bufp, int *fnamelen)
     if (l != 0)
     {
 	char_u *p = utf16_to_enc(newbuf, NULL);
+
 	if (p != NULL)
 	{
 	    vim_free(*bufp);
@@ -1452,20 +1453,18 @@ f_readfile(typval_T *argvars, typval_T *rettv)
 	    maxline = (long)tv_get_number(&argvars[2]);
     }
 
-    if (blob)
-    {
-	if (rettv_blob_alloc(rettv) == FAIL)
-	    return;
-    }
-    else
-    {
-	if (rettv_list_alloc(rettv) == FAIL)
-	    return;
-    }
+    if ((blob ? rettv_blob_alloc(rettv) : rettv_list_alloc(rettv)) == FAIL)
+	return;
 
     // Always open the file in binary mode, library functions have a mind of
     // their own about CR-LF conversion.
     fname = tv_get_string(&argvars[0]);
+
+    if (mch_isdir(fname))
+    {
+	semsg(_(e_isadir2), fname);
+	return;
+    }
     if (*fname == NUL || (fd = mch_fopen((char *)fname, READBIN)) == NULL)
     {
 	semsg(_(e_notopen), *fname == NUL ? (char_u *)_("<empty>") : fname);
@@ -1476,8 +1475,10 @@ f_readfile(typval_T *argvars, typval_T *rettv)
     {
 	if (read_blob(fd, rettv->vval.v_blob) == FAIL)
 	{
-	    emsg("cannot read file");
+	    semsg(_(e_notread), fname);
+	    // An empty blob is returned on error.
 	    blob_free(rettv->vval.v_blob);
+	    rettv->vval.v_blob = NULL;
 	}
 	fclose(fd);
 	return;
@@ -3047,6 +3048,7 @@ dos_expandpath(
     WCHAR		*wn = NULL;	// UCS-2 name, NULL when not used.
     char_u		*matchname;
     int			ok;
+    char_u		*p_alt;
 
     // Expanding "**" may take a long time, check for CTRL-C.
     if (stardepth > 0)
@@ -3161,8 +3163,14 @@ dos_expandpath(
     while (ok)
     {
 	p = utf16_to_enc(wfb.cFileName, NULL);   // p is allocated here
+
 	if (p == NULL)
 	    break;  // out of memory
+
+	if (*wfb.cAlternateFileName == NUL)
+	    p_alt = NULL;
+	else
+	    p_alt = utf16_to_enc(wfb.cAlternateFileName, NULL);
 
 	// Ignore entries starting with a dot, unless when asked for.  Accept
 	// all entries found with "matchname".
@@ -3171,14 +3179,17 @@ dos_expandpath(
 			     && p[1] != NUL && (p[1] != '.' || p[2] != NUL)))
 		&& (matchname == NULL
 		  || (regmatch.regprog != NULL
-				     && vim_regexec(&regmatch, p, (colnr_T)0))
+		      && (vim_regexec(&regmatch, p, (colnr_T)0)
+			 || (p_alt != NULL
+				&& vim_regexec(&regmatch, p_alt, (colnr_T)0))))
 		  || ((flags & EW_NOTWILD)
 		     && fnamencmp(path + (s - buf), p, e - s) == 0)))
 	{
 	    STRCPY(s, p);
 	    len = (int)STRLEN(buf);
 
-	    if (starstar && stardepth < 100)
+	    if (starstar && stardepth < 100
+			  && (wfb.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 	    {
 		// For "**" in the pattern first go deeper in the tree to
 		// find matches.
@@ -3207,24 +3218,9 @@ dos_expandpath(
 	    }
 	}
 
+	vim_free(p_alt);
 	vim_free(p);
 	ok = FindNextFileW(hFind, &wfb);
-
-	// If no more matches and no match was used, try expanding the name
-	// itself.  Finds the long name of a short filename.
-	if (!ok && matchname != NULL && gap->ga_len == start_len)
-	{
-	    STRCPY(s, matchname);
-	    FindClose(hFind);
-	    vim_free(wn);
-	    wn = enc_to_utf16(buf, NULL);
-	    if (wn != NULL)
-		hFind = FindFirstFileW(wn, &wfb);
-	    else
-		hFind =	INVALID_HANDLE_VALUE;
-	    ok = (hFind != INVALID_HANDLE_VALUE);
-	    VIM_CLEAR(matchname);
-	}
     }
 
     FindClose(hFind);

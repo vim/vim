@@ -1290,6 +1290,10 @@ typedef long_u hash_T;		// Type for hi_hash
 # endif
 #endif
 
+// On rare systems "char" is unsigned, sometimes we really want a signed 8-bit
+// value.
+typedef signed char int8_T;
+
 typedef double	float_T;
 
 typedef struct listvar_S list_T;
@@ -1321,8 +1325,9 @@ typedef struct cctx_S cctx_T;
 
 typedef enum
 {
-    VAR_UNKNOWN = 0,	// not set, also used for "any" type
-    VAR_VOID,		// no value
+    VAR_UNKNOWN = 0,	// not set, any type or "void" allowed
+    VAR_ANY,		// used for "any" type
+    VAR_VOID,		// no value (function not returning anything)
     VAR_BOOL,		// "v_number" is used: VVAL_TRUE or VVAL_FALSE
     VAR_SPECIAL,	// "v_number" is used: VVAL_NULL or VVAL_NONE
     VAR_NUMBER,		// "v_number" is used
@@ -1341,10 +1346,11 @@ typedef enum
 typedef struct type_S type_T;
 struct type_S {
     vartype_T	    tt_type;
-    short	    tt_argcount;    // for func, partial, -1 for unknown
-    short	    tt_flags;	    // TTFLAG_ values
+    int8_T	    tt_argcount;    // for func, incl. vararg, -1 for unknown
+    char	    tt_min_argcount; // number of non-optional arguments
+    char	    tt_flags;	    // TTFLAG_ values
     type_T	    *tt_member;	    // for list, dict, func return type
-    type_T	    **tt_args;	    // func arguments, allocated
+    type_T	    **tt_args;	    // func argument types, allocated
 };
 
 #define TTFLAG_VARARGS	1	    // func args ends with "..."
@@ -1520,7 +1526,7 @@ typedef struct
     int		uf_calls;	// nr of active calls
     int		uf_cleared;	// func_clear() was already called
     int		uf_dfunc_idx;	// >= 0 for :def function only
-    garray_T	uf_args;	// arguments
+    garray_T	uf_args;	// arguments, including optional arguments
     garray_T	uf_def_args;	// default argument expressions
 
     // for :def (for :function uf_ret_type is NULL)
@@ -1531,6 +1537,7 @@ typedef struct
 				// uf_def_args; length: uf_def_args.ga_len + 1
     char_u	*uf_va_name;	// name from "...name" or NULL
     type_T	*uf_va_type;	// type from "...name: type" or NULL
+    type_T	*uf_func_type;	// type of the function, &t_func_any if unknown
 
     garray_T	uf_lines;	// function lines
 # ifdef FEAT_PROFILE

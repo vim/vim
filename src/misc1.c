@@ -631,7 +631,7 @@ f_mode(typval_T *argvars, typval_T *rettv)
 {
     char_u	buf[4];
 
-    vim_memset(buf, 0, sizeof(buf));
+    CLEAR_FIELD(buf);
 
     if (time_for_testing == 93784)
     {

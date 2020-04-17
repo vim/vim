@@ -1547,7 +1547,7 @@ nb_do_cmd(
 		    // disappear.
 		    do_bufdel(DOBUF_DEL, (char_u *)"", 1,
 				  buf->bufp->b_fnum, buf->bufp->b_fnum, TRUE);
-		    vim_memset(buf, 0, sizeof(nbbuf_T));
+		    CLEAR_POINTER(buf);
 		}
 	    }
 // =====================================================================
