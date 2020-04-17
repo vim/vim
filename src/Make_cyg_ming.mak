@@ -624,7 +624,7 @@ NBDEBUG_SRC = nbdebug.c
 endif
 
 ifeq ($(CHANNEL),yes)
-DEFINES += -DFEAT_JOB_CHANNEL
+DEFINES += -DFEAT_JOB_CHANNEL -DFEAT_IPV6
 endif
 
 ifeq ($(TERMINAL),yes)
