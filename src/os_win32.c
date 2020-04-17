@@ -5996,6 +5996,10 @@ visual_bell(void)
 cursor_visible(BOOL fVisible)
 {
     s_cursor_visible = fVisible;
+
+    if (USE_VTP)
+	vtp_printf("\033[?25%c", fVisible ? 'h' : 'l');
+
 # ifdef MCH_CURSOR_SHAPE
     mch_update_cursor();
 # endif
