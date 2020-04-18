@@ -258,8 +258,8 @@ func Assert_regput(name, result)
   new
   execute "silent normal! o==\n==\e\"" . a:name . "P"
   call assert_equal(a:result, getline(2, line('$')))
+  bwipe!
 endfunc
-
 
 func Test_setreg_basic()
   call setreg('a', 'abcA', 'c')
@@ -349,9 +349,6 @@ func Test_setreg_basic()
   call setreg('I', 'abcI')
   call Assert_reg('I', "v", "abcI", "['abcI']", "abcI", "['abcI']")
   call Assert_regput('I', ['==', '=abcI='])
-endfunc
-
-func Test_setreg_append_NL()
 endfunc
 
 
