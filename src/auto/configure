@@ -7872,6 +7872,17 @@ $as_echo "$vim_cv_ipv6_networking" >&6; }
   if test "x$vim_cv_ipv6_networking" = "xyes"; then
     $as_echo "#define FEAT_IPV6 1" >>confdefs.h
 
+    for ac_func in inet_ntop
+do :
+  ac_fn_c_check_func "$LINENO" "inet_ntop" "ac_cv_func_inet_ntop"
+if test "x$ac_cv_func_inet_ntop" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_INET_NTOP 1
+_ACEOF
+
+fi
+done
+
   else
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gethostbyname in -lnsl" >&5
 $as_echo_n "checking for gethostbyname in -lnsl... " >&6; }

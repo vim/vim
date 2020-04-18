@@ -998,7 +998,7 @@ channel_open(
     {
 	const char *dst = hostname;
 	const void *src = NULL;
-	char buf[NUMBUFLEN];
+	char buf[NUMBUFLEN] UNUSED;
 
 	if (addr->ai_family == AF_INET6)
 	{
@@ -1014,12 +1014,14 @@ channel_open(
 	    sai->sin_port = htons(port);
 	    src = &sai->sin_addr;
 	}
+# ifdef HAVE_INET_NTOP
 	if (src != NULL)
 	{
 	    dst = inet_ntop(addr->ai_family, src, buf, sizeof(buf));
 	    if (dst != NULL && STRCMP(hostname, dst) != 0)
 		ch_log(channel, "Resolved %s to %s", hostname, dst);
 	}
+# endif
 
 	ch_log(channel, "Trying to connect to %s port %d", dst, port);
 
