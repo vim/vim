@@ -3153,9 +3153,9 @@ append_command(char_u *cmd)
     char_u *
 find_ex_command(
 	exarg_T *eap,
-	int *full UNUSED,
-	int (*lookup)(char_u *, size_t, cctx_T *) UNUSED,
-	cctx_T *cctx UNUSED)
+	int	*full UNUSED,
+	int	(*lookup)(char_u *, size_t, cctx_T *) UNUSED,
+	cctx_T	*cctx UNUSED)
 {
     int		len;
     char_u	*p;
@@ -3285,6 +3285,8 @@ find_ex_command(
 	    if (ASCII_ISLOWER(c2))
 		eap->cmdidx += cmdidxs2[CharOrdLow(c1)][CharOrdLow(c2)];
 	}
+	else if (ASCII_ISUPPER(eap->cmd[0]))
+	    eap->cmdidx = CMD_Next;
 	else
 	    eap->cmdidx = CMD_bang;
 
@@ -4766,7 +4768,7 @@ ex_blast(exarg_T *eap)
 
 /*
  * Check if "c" ends an Ex command.
- * In Vim9 script does not check for white space before #.
+ * In Vim9 script does not check for white space before # or #{.
  */
     int
 ends_excmd(int c)

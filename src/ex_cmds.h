@@ -1775,7 +1775,7 @@ EXCMD(CMD_z,		"z",		ex_z,
 	EX_RANGE|EX_WHOLEFOLD|EX_EXTRA|EX_FLAGS|EX_TRLBAR|EX_CMDWIN,
 	ADDR_LINES),
 
-// commands that don't start with a lowercase letter
+// commands that don't start with a letter
 EXCMD(CMD_bang,		"!",		ex_bang,
 	EX_RANGE|EX_WHOLEFOLD|EX_BANG|EX_FILES|EX_CMDWIN,
 	ADDR_LINES),
@@ -1800,6 +1800,11 @@ EXCMD(CMD_rshift,	">",		ex_operators,
 EXCMD(CMD_at,		"@",		ex_at,
 	EX_RANGE|EX_WHOLEFOLD|EX_EXTRA|EX_TRLBAR|EX_CMDWIN,
 	ADDR_LINES),
+EXCMD(CMD_tilde,	"~",		do_sub,
+	EX_RANGE|EX_WHOLEFOLD|EX_EXTRA|EX_CMDWIN|EX_MODIFY,
+	ADDR_LINES),
+
+// commands that start with an uppercase letter
 EXCMD(CMD_Next,		"Next",		ex_previous,
 	EX_EXTRA|EX_RANGE|EX_COUNT|EX_BANG|EX_CMDARG|EX_ARGOPT|EX_TRLBAR,
 	ADDR_OTHER),
@@ -1809,9 +1814,6 @@ EXCMD(CMD_Print,	"Print",	ex_print,
 EXCMD(CMD_X,		"X",		ex_X,
 	EX_TRLBAR,
 	ADDR_NONE),
-EXCMD(CMD_tilde,	"~",		do_sub,
-	EX_RANGE|EX_WHOLEFOLD|EX_EXTRA|EX_CMDWIN|EX_MODIFY,
-	ADDR_LINES),
 
 #undef EXCMD
 
