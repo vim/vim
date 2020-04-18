@@ -2077,6 +2077,7 @@ if test "$enable_channel" = "yes"; then
 
   if test "x$vim_cv_ipv6_networking" = "xyes"; then
     AC_DEFINE(FEAT_IPV6)
+    AC_CHECK_FUNCS(inet_ntop)
   else
     dnl On Solaris we need the nsl library.
     AC_CHECK_LIB(nsl, gethostbyname)

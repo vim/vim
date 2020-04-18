@@ -996,9 +996,11 @@ channel_open(
 
     for (addr = res; addr != NULL; addr = addr->ai_next)
     {
-	const char *dst = hostname;
-	const void *src = NULL;
-	char buf[NUMBUFLEN];
+	const char  *dst = hostname;
+	const void  *src = NULL;
+# ifdef HAVE_INET_NTOP
+	char	    buf[NUMBUFLEN];
+# endif
 
 	if (addr->ai_family == AF_INET6)
 	{
@@ -1014,12 +1016,16 @@ channel_open(
 	    sai->sin_port = htons(port);
 	    src = &sai->sin_addr;
 	}
+# ifdef HAVE_INET_NTOP
 	if (src != NULL)
 	{
 	    dst = inet_ntop(addr->ai_family, src, buf, sizeof(buf));
-	    if (dst != NULL && STRCMP(hostname, dst) != 0)
+	    if (dst == NULL)
+		dst = hostname;
+	    else if (STRCMP(hostname, dst) != 0)
 		ch_log(channel, "Resolved %s to %s", hostname, dst);
 	}
+# endif
 
 	ch_log(channel, "Trying to connect to %s port %d", dst, port);
 
