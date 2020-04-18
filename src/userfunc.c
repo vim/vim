@@ -2504,7 +2504,7 @@ ex_function(exarg_T *eap)
 
 		// With Vim9 script the name was made script-local, if not
 		// found try again with the original name.
-		if (p != NULL)
+		if (up != NULL)
 		    fp = find_func(up, NULL);
 	    }
 
