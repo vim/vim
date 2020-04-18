@@ -20,6 +20,7 @@ int call_callback(callback_T *callback, int len, typval_T *rettv, int argcount, 
 void user_func_error(int error, char_u *name);
 int call_func(char_u *funcname, int len, typval_T *rettv, int argcount_in, typval_T *argvars_in, funcexe_T *funcexe);
 char_u *trans_function_name(char_u **pp, int skip, int flags, funcdict_T *fdp, partial_T **partial);
+char_u *untrans_function_name(char_u *name);
 void ex_function(exarg_T *eap);
 int eval_fname_script(char_u *p);
 int translated_function_exists(char_u *name);

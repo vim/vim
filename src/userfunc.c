@@ -730,7 +730,8 @@ find_func_even_dead(char_u *name, cctx_T *cctx)
 	}
     }
 
-    hi = hash_find(&func_hashtab, name);
+    hi = hash_find(&func_hashtab,
+				STRNCMP(name, "g:", 2) == 0 ? name + 2 : name);
     if (!HASHITEM_EMPTY(hi))
 	return HI2UF(hi);
 
@@ -1651,7 +1652,7 @@ free_all_functions(void)
 
 /*
  * Return TRUE if "name" looks like a builtin function name: starts with a
- * lower case letter and doesn't contain AUTOLOAD_CHAR.
+ * lower case letter and doesn't contain AUTOLOAD_CHAR or ':'.
  * "len" is the length of "name", or -1 for NUL terminated.
  */
     int
@@ -1659,7 +1660,7 @@ builtin_function(char_u *name, int len)
 {
     char_u *p;
 
-    if (!ASCII_ISLOWER(name[0]))
+    if (!ASCII_ISLOWER(name[0]) || name[1] == ':')
 	return FALSE;
     p = vim_strchr(name, AUTOLOAD_CHAR);
     return p == NULL || (len > 0 && p > name + len);
@@ -1893,6 +1894,15 @@ call_func(
 	    {
 		// loaded a package, search for the function again
 		fp = find_func(rfname, NULL);
+	    }
+	    if (fp == NULL)
+	    {
+		char_u *p = untrans_function_name(rfname);
+
+		// If using Vim9 script try not local to the script.
+		// TODO: should not do this if the name started with "s:".
+		if (p != NULL)
+		    fp = find_func(p, NULL);
 	    }
 
 	    if (fp != NULL && (fp->uf_flags & FC_DELETED))
@@ -2298,6 +2308,27 @@ theend:
 }
 
 /*
+ * Assuming "name" is the result of trans_function_name() and it was prefixed
+ * to use the script-local name, return the unmodified name (points into
+ * "name").  Otherwise return NULL.
+ * This can be used to first search for a script-local function and fall back
+ * to the global function if not found.
+ */
+    char_u *
+untrans_function_name(char_u *name)
+{
+    char_u *p;
+
+    if (*name == K_SPECIAL && current_sctx.sc_version == SCRIPT_VERSION_VIM9)
+    {
+	p = vim_strchr(name, '_');
+	if (p != NULL)
+	    return p + 1;
+    }
+    return NULL;
+}
+
+/*
  * ":function"
  */
     void
@@ -2467,6 +2498,16 @@ ex_function(exarg_T *eap)
 	if (!eap->skip && !got_int)
 	{
 	    fp = find_func(name, NULL);
+	    if (fp == NULL && ASCII_ISUPPER(*eap->arg))
+	    {
+		char_u *up = untrans_function_name(name);
+
+		// With Vim9 script the name was made script-local, if not
+		// found try again with the original name.
+		if (p != NULL)
+		    fp = find_func(up, NULL);
+	    }
+
 	    if (fp != NULL)
 	    {
 		list_func_head(fp, TRUE);
@@ -2494,7 +2535,7 @@ ex_function(exarg_T *eap)
 		}
 	    }
 	    else
-		emsg_funcname(N_("E123: Undefined function: %s"), name);
+		emsg_funcname(N_("E123: Undefined function: %s"), eap->arg);
 	}
 	goto ret_free;
     }

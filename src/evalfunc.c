@@ -2706,6 +2706,17 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	     TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF, NULL, NULL);
 	if (*name != NUL)
 	    s = NULL;
+	else if (trans_name != NULL
+		&& ASCII_ISUPPER(*s)
+		&& current_sctx.sc_version == SCRIPT_VERSION_VIM9
+		&& find_func(trans_name, NULL) == NULL)
+	{
+	    // With Vim9 script "MyFunc" can be script-local to the current
+	    // script or global.  The script-local name is not found, assume
+	    // global.
+	    vim_free(trans_name);
+	    trans_name = vim_strsave(s);
+	}
     }
 
     if (s == NULL || *s == NUL || (use_string && VIM_ISDIGIT(*s))

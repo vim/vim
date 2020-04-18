@@ -1836,7 +1836,8 @@ do_one_cmd(
      */
     if (*ea.cmd == NUL || *ea.cmd == '"'
 #ifdef FEAT_EVAL
-		|| (*ea.cmd == '#' && !starts_with_colon && in_vim9script())
+		|| (*ea.cmd == '#' && ea.cmd[1] != '{'
+				      && !starts_with_colon && in_vim9script())
 #endif
 		|| (ea.nextcmd = check_nextcmd(ea.cmd)) != NULL)
     {
@@ -4436,6 +4437,10 @@ separate_nextcmd(exarg_T *eap)
 			|| p != eap->arg)
 		    && (eap->cmdidx != CMD_redir
 			|| p != eap->arg + 1 || p[-1] != '@'))
+#ifdef FEAT_EVAL
+		|| (*p == '#' && in_vim9script()
+			  && p[1] != '{' && p > eap->cmd && VIM_ISWHITE(p[-1]))
+#endif
 		|| *p == '|' || *p == '\n')
 	{
 	    /*
@@ -4790,7 +4795,7 @@ ends_excmd2(char_u *cmd_start UNUSED, char_u *cmd)
     int c = *cmd;
 
 #ifdef FEAT_EVAL
-    if (c == '#' && (cmd == cmd_start || VIM_ISWHITE(cmd[-1])))
+    if (c == '#' && cmd[1] != '{' && (cmd == cmd_start || VIM_ISWHITE(cmd[-1])))
 	return in_vim9script();
 #endif
     return (c == NUL || c == '|' || c == '"' || c == '\n');

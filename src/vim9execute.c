@@ -488,6 +488,7 @@ call_def_function(
     int		idx;
     int		ret = FAIL;
     int		defcount = ufunc->uf_args.ga_len - argc;
+    int		save_sc_version = current_sctx.sc_version;
 
 // Get pointer to item in the stack.
 #define STACK_TV(idx) (((typval_T *)ectx.ec_stack.ga_data) + idx)
@@ -565,6 +566,9 @@ call_def_function(
 	ectx.ec_instr = dfunc->df_instr;
     }
 
+    // Commands behave like vim9script.
+    current_sctx.sc_version = SCRIPT_VERSION_VIM9;
+
     // Decide where to start execution, handles optional arguments.
     init_instr_idx(ufunc, argc, &ectx);
 
@@ -580,6 +584,16 @@ call_def_function(
 	    if (throw_exception("Vim:Interrupt", ET_INTERRUPT, NULL) == FAIL)
 		goto failed;
 	    did_throw = TRUE;
+	}
+
+	if (did_emsg && msg_list != NULL && *msg_list != NULL)
+	{
+	    // Turn an error message into an exception.
+	    did_emsg = FALSE;
+	    if (throw_exception(*msg_list, ET_ERROR, NULL) == FAIL)
+		goto failed;
+	    did_throw = TRUE;
+	    *msg_list = NULL;
 	}
 
 	if (did_throw && !ectx.ec_in_catch)
@@ -1774,6 +1788,7 @@ failed:
     while (ectx.ec_frame != initial_frame_ptr)
 	func_return(&ectx);
 failed_early:
+    current_sctx.sc_version = save_sc_version;
     for (idx = 0; idx < ectx.ec_stack.ga_len; ++idx)
 	clear_tv(STACK_TV(idx));
     vim_free(ectx.ec_stack.ga_data);
@@ -1807,6 +1822,14 @@ ex_disassemble(exarg_T *eap)
     }
 
     ufunc = find_func(fname, NULL);
+    if (ufunc == NULL)
+    {
+	char_u *p = untrans_function_name(fname);
+
+	if (p != NULL)
+	    // Try again without making it script-local.
+	    ufunc = find_func(p, NULL);
+    }
     vim_free(fname);
     if (ufunc == NULL)
     {

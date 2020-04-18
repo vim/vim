@@ -1663,6 +1663,7 @@ do_ucmd(exarg_T *eap)
 
 #ifdef FEAT_EVAL
     current_sctx.sc_sid = cmd->uc_script_ctx.sc_sid;
+    current_sctx.sc_version = cmd->uc_script_ctx.sc_version;
 #endif
     (void)do_cmdline(buf, eap->getline, eap->cookie,
 				   DOCMD_VERBOSE|DOCMD_NOWAIT|DOCMD_KEYTYPED);

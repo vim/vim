@@ -2434,8 +2434,10 @@ compile_call(char_u **arg, size_t varlen, cctx_T *cctx, int argcount_init)
     }
 
     // If the name is a variable, load it and use PCALL.
+    // Not for g:Func(), we don't know if it is a variable or not.
     p = namebuf;
-    if (compile_load(&p, namebuf + varlen, cctx, FALSE) == OK)
+    if (STRNCMP(namebuf, "g:", 2) != 0
+	    && compile_load(&p, namebuf + varlen, cctx, FALSE) == OK)
     {
 	res = generate_PCALL(cctx, argcount, FALSE);
 	goto theend;

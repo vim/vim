@@ -251,8 +251,8 @@ def Test_disassemble_pcall()
 enddef
 
 
-def FuncWithForwardCall(): string
-  return DefinedLater("yes")
+def s:FuncWithForwardCall(): string
+  return g:DefinedLater("yes")
 enddef
 
 def DefinedLater(arg: string): string
@@ -260,11 +260,11 @@ def DefinedLater(arg: string): string
 enddef
 
 def Test_disassemble_update_instr()
-  let res = execute('disass FuncWithForwardCall')
+  let res = execute('disass s:FuncWithForwardCall')
   assert_match('FuncWithForwardCall.*' ..
-        'return DefinedLater("yes").*' ..
+        'return g:DefinedLater("yes").*' ..
         '\d PUSHS "yes".*' ..
-        '\d UCALL DefinedLater(argc 1).*' ..
+        '\d UCALL g:DefinedLater(argc 1).*' ..
         '\d CHECKTYPE string stack\[-1].*' ..
         '\d RETURN.*',
         res)
@@ -272,9 +272,9 @@ def Test_disassemble_update_instr()
   " Calling the function will change UCALL into the faster DCALL
   assert_equal('yes', FuncWithForwardCall())
 
-  res = execute('disass FuncWithForwardCall')
+  res = execute('disass s:FuncWithForwardCall')
   assert_match('FuncWithForwardCall.*' ..
-        'return DefinedLater("yes").*' ..
+        'return g:DefinedLater("yes").*' ..
         '\d PUSHS "yes".*' ..
         '\d DCALL DefinedLater(argc 1).*' ..
         '\d CHECKTYPE string stack\[-1].*' ..

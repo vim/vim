@@ -587,7 +587,7 @@ def Test_vim9script_fails()
   CheckScriptFailure(['vim9script', 'export echo 134'], 'E1043:')
 
   assert_fails('vim9script', 'E1038')
-  assert_fails('export something', 'E1042')
+  assert_fails('export something', 'E1043')
 enddef
 
 def Test_vim9script_reload()
@@ -1096,6 +1096,27 @@ def Test_vim9_comment()
       'catch',
       'endtry# comment',
       ], 'E488:')
+enddef
+
+def Test_vim9_comment_not_compiled()
+  au TabEnter *.vim let g:entered = 1
+  au TabEnter *.x let g:entered = 2
+
+  edit test.vim
+  doautocmd TabEnter #comment
+  assert_equal(1, g:entered)
+
+  doautocmd TabEnter f.x
+  assert_equal(2, g:entered)
+
+  g:entered = 0
+  doautocmd TabEnter f.x #comment
+  assert_equal(2, g:entered)
+
+  assert_fails('doautocmd Syntax#comment', 'E216:')
+
+  au! TabEnter
+  unlet g:entered
 enddef
 
 " Keep this last, it messes up highlighting.
