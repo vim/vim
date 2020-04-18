@@ -36,44 +36,6 @@ endfun
     endtry
 endfun
 :fun Test()
-$put ='{{{1 let tests'
-let @" = 'abc'
-AR "
-let @" = "abc\n"
-AR "
-let @" = "abc\<C-m>"
-AR "
-let @= = '"abc"'
-AR =
-
-$put ='{{{1 Basic setreg tests'
-call SetReg('a', 'abcA', 'c')
-call SetReg('b', 'abcB', 'v')
-call SetReg('c', 'abcC', 'l')
-call SetReg('d', 'abcD', 'V')
-call SetReg('e', 'abcE', 'b')
-call SetReg('f', 'abcF', "\<C-v>")
-call SetReg('g', 'abcG', 'b10')
-call SetReg('h', 'abcH', "\<C-v>10")
-call SetReg('I', 'abcI')
-
-$put ='{{{1 Appending single lines with setreg()'
-call SetReg('A', 'abcAc', 'c')
-call SetReg('A', 'abcAl', 'l')
-call SetReg('A', 'abcAc2','c')
-call SetReg('b', 'abcBc', 'ca')
-call SetReg('b', 'abcBb', 'ba')
-call SetReg('b', 'abcBc2','ca')
-call SetReg('b', 'abcBb2','b50a')
-
-call SetReg('C', 'abcCl', 'l')
-call SetReg('C', 'abcCc', 'c')
-call SetReg('D', 'abcDb', 'b')
-
-call SetReg('E', 'abcEb', 'b')
-call SetReg('E', 'abcEl', 'l')
-call SetReg('F', 'abcFc', 'c')
-
 $put ='{{{1 Appending NL with setreg()'
 call setreg('a', 'abcA2', 'c')
 call setreg('b', 'abcB2', 'v')
