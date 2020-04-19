@@ -625,7 +625,26 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
 	  LUA_INC=/lua$vi_cv_version_lua
 	else
 	  AC_MSG_RESULT(no)
-	  vi_cv_path_lua_pfx=
+
+	  # Detect moonjit:
+	  # https://groups.google.com/forum/#!topic/vim_use/O0vek60WuTk
+	  lua_suf=/moonjit-2.3
+	  inc_path="$vi_cv_path_lua_pfx/include"
+	  for dir in "$inc_path"/moonjit-[0-9]* ; do
+	    if test -d "$dir" ; then
+	      lua_suf=`basename '$dir'`
+	      lua_suf="/$lua_suf"
+	      break
+	    fi
+	  done
+	  AC_MSG_CHECKING(if lua.h can be found in $inc_path$lua_suf)
+	  if test -f "$inc_path$lua_suf/lua.h"; then
+	    AC_MSG_RESULT(yes)
+	    LUA_INC=$lua_suf
+	  else
+	    AC_MSG_RESULT(no)
+	    vi_cv_path_lua_pfx=
+	  fi
 	fi
       fi
     fi

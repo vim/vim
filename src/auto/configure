@@ -5480,7 +5480,29 @@ $as_echo "yes" >&6; }
 	else
 	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	  vi_cv_path_lua_pfx=
+
+	  # Detect moonjit:
+	  # https://groups.google.com/forum/#!topic/vim_use/O0vek60WuTk
+	  lua_suf=/moonjit-2.3
+	  inc_path="$vi_cv_path_lua_pfx/include"
+	  for dir in "$inc_path"/moonjit-0-9* ; do
+	    if test -d "$dir" ; then
+	      lua_suf=`basename '$dir'`
+	      lua_suf="/$lua_suf"
+	      break
+	    fi
+	  done
+	  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if lua.h can be found in $inc_path$lua_suf" >&5
+$as_echo_n "checking if lua.h can be found in $inc_path$lua_suf... " >&6; }
+	  if test -f "$inc_path$lua_suf/lua.h"; then
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	    LUA_INC=$lua_suf
+	  else
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	    vi_cv_path_lua_pfx=
+	  fi
 	fi
       fi
     fi
