@@ -931,11 +931,6 @@ func Test_expr7_fails()
   call CheckDefFailure("echo l:somevar", 'E1075:')
   call CheckDefFailure("echo x:somevar", 'E1075:')
 
-  " TODO
-  call CheckDefFailure("echo b:somevar", 'not supported yet')
-  call CheckDefFailure("echo w:somevar", 'not supported yet')
-  call CheckDefFailure("echo t:somevar", 'not supported yet')
-
   call CheckDefExecFailure("let x = +g:astring", 'E1030:')
   call CheckDefExecFailure("let x = +g:ablob", 'E974:')
   call CheckDefExecFailure("let x = +g:alist", 'E745:')

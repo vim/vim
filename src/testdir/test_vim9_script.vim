@@ -135,6 +135,38 @@ def Test_assignment()
   call CheckDefFailure(['v:errmsg += 123'], 'E1013:')
 enddef
 
+def Test_assignment_local()
+  " Test in a separated file in order not to the current buffer/window/tab is
+  " changed.
+  let script_lines: list<string> =<< trim END
+    let b:existing = 'yes'
+    let w:existing = 'yes'
+    let t:existing = 'yes'
+
+    def Test_assignment_local_internal()
+      b:newvar = 'new'
+      assert_equal('new', b:newvar)
+      assert_equal('yes', b:existing)
+      b:existing = 'no'
+      assert_equal('no', b:existing)
+
+      w:newvar = 'new'
+      assert_equal('new', w:newvar)
+      assert_equal('yes', w:existing)
+      w:existing = 'no'
+      assert_equal('no', w:existing)
+
+      t:newvar = 'new'
+      assert_equal('new', t:newvar)
+      assert_equal('yes', t:existing)
+      t:existing = 'no'
+      assert_equal('no', t:existing)
+    enddef
+    call Test_assignment_local_internal()
+  END
+  call CheckScriptSuccess(script_lines)
+enddef
+
 def Test_assignment_default()
 
   # Test default values.
@@ -201,11 +233,17 @@ func Test_assignment_failure()
   call CheckDefFailure(['let @a = 5'], 'E1066:')
 
   call CheckDefFailure(['let g:var = 5'], 'E1016:')
+  call CheckDefFailure(['let w:var = 5'], 'E1079:')
+  call CheckDefFailure(['let b:var = 5'], 'E1078:')
+  call CheckDefFailure(['let t:var = 5'], 'E1080:')
 
   call CheckDefFailure(['let anr = 4', 'anr ..= "text"'], 'E1019:')
   call CheckDefFailure(['let xnr += 4'], 'E1020:')
 
   call CheckScriptFailure(['vim9script', 'def Func()', 'let dummy = s:notfound', 'enddef'], 'E1050:')
+  " TODO: implement this error
+  "call CheckScriptFailure(['vim9script', 'let svar = 123', 'unlet svar'], 'E1050:')
+  "call CheckScriptFailure(['vim9script', 'let svar = 123', 'unlet s:svar'], 'E1050:')
 
   call CheckDefFailure(['let var: list<string> = [123]'], 'expected list<string> but got list<number>')
   call CheckDefFailure(['let var: list<number> = ["xx"]'], 'expected list<number> but got list<string>')
