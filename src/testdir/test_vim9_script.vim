@@ -289,6 +289,11 @@ def Test_unlet()
         '  unlet s:svar',
         'enddef',
         ], 'E1081:')
+
+  $ENVVAR = 'foobar'
+  assert_equal('foobar', $ENVVAR)
+  unlet $ENVVAR
+  assert_equal('', $ENVVAR)
 enddef
 
 func Test_wrong_type()

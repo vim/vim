@@ -130,6 +130,7 @@ def s:ScriptFuncUnlet()
   g:somevar = "value"
   unlet g:somevar
   unlet! g:somevar
+  unlet $SOMEVAR
 enddef
 
 def Test_disassemble_unlet()
@@ -141,7 +142,9 @@ def Test_disassemble_unlet()
         'unlet g:somevar.*' ..
         '\d UNLET g:somevar.*' ..
         'unlet! g:somevar.*' ..
-        '\d UNLET! g:somevar.*',
+        '\d UNLET! g:somevar.*' ..
+        'unlet $SOMEVAR.*' ..
+        '\d UNLETENV $SOMEVAR.*',
         res)
 enddef
 

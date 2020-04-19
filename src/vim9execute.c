@@ -1073,6 +1073,9 @@ call_def_function(
 				       iptr->isn_arg.unlet.ul_forceit) == FAIL)
 		    goto failed;
 		break;
+	    case ISN_UNLETENV:
+		vim_unsetenv(iptr->isn_arg.unlet.ul_name);
+		break;
 
 	    // create a list from items on the stack; uses a single allocation
 	    // for the list header and the items
@@ -2116,6 +2119,11 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_UNLET:
 		smsg("%4d UNLET%s %s", current,
+			iptr->isn_arg.unlet.ul_forceit ? "!" : "",
+			iptr->isn_arg.unlet.ul_name);
+		break;
+	    case ISN_UNLETENV:
+		smsg("%4d UNLETENV%s $%s", current,
 			iptr->isn_arg.unlet.ul_forceit ? "!" : "",
 			iptr->isn_arg.unlet.ul_name);
 		break;

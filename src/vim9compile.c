@@ -990,12 +990,12 @@ generate_LOADV(
  * Generate an ISN_UNLET instruction.
  */
     static int
-generate_UNLET(cctx_T *cctx, char_u *name, int forceit)
+generate_UNLET(cctx_T *cctx, isntype_T isn_type, char_u *name, int forceit)
 {
     isn_T	*isn;
 
     RETURN_OK_IF_SKIP(cctx);
-    if ((isn = generate_instr(cctx, ISN_UNLET)) == NULL)
+    if ((isn = generate_instr(cctx, isn_type)) == NULL)
 	return FAIL;
     isn->isn_arg.unlet.ul_name = vim_strsave(name);
     isn->isn_arg.unlet.ul_forceit = forceit;
@@ -4594,10 +4594,12 @@ compile_unlet(
 
 	// Normal name.  Only supports g:, w:, t: and b: namespaces.
 	*name_end = NUL;
-	if (check_vim9_unlet(p) == FAIL)
+	if (*p == '$')
+	    ret = generate_UNLET(cctx, ISN_UNLETENV, p + 1, eap->forceit);
+	else if (check_vim9_unlet(p) == FAIL)
 	    ret = FAIL;
 	else
-	    ret = generate_UNLET(cctx, p, eap->forceit);
+	    ret = generate_UNLET(cctx, ISN_UNLET, p, eap->forceit);
 
 	*name_end = cc;
 	return ret;
@@ -6363,6 +6365,7 @@ delete_instr(isn_T *isn)
 	    break;
 
 	case ISN_UNLET:
+	case ISN_UNLETENV:
 	    vim_free(isn->isn_arg.unlet.ul_name);
 	    break;
 

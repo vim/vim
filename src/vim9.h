@@ -45,6 +45,7 @@ typedef enum {
     ISN_STORENR,    // store number into local variable isn_arg.storenr.stnr_idx
 
     ISN_UNLET,		// unlet variable isn_arg.unlet.ul_name
+    ISN_UNLETENV,	// unlet environment variable isn_arg.unlet.ul_name
 
     // constants
     ISN_PUSHNR,		// push number isn_arg.number
