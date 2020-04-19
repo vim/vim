@@ -213,7 +213,7 @@ def Mess(): string
   return 'xxx'
 enddef
 
-func Test_assignment_failure()
+def Test_assignment_failure()
   call CheckDefFailure(['let var=234'], 'E1004:')
   call CheckDefFailure(['let var =234'], 'E1004:')
   call CheckDefFailure(['let var= 234'], 'E1004:')
@@ -241,9 +241,6 @@ func Test_assignment_failure()
   call CheckDefFailure(['let xnr += 4'], 'E1020:')
 
   call CheckScriptFailure(['vim9script', 'def Func()', 'let dummy = s:notfound', 'enddef'], 'E1050:')
-  " TODO: implement this error
-  "call CheckScriptFailure(['vim9script', 'let svar = 123', 'unlet svar'], 'E1050:')
-  "call CheckScriptFailure(['vim9script', 'let svar = 123', 'unlet s:svar'], 'E1050:')
 
   call CheckDefFailure(['let var: list<string> = [123]'], 'expected list<string> but got list<number>')
   call CheckDefFailure(['let var: list<number> = ["xx"]'], 'expected list<number> but got list<string>')
@@ -259,7 +256,40 @@ func Test_assignment_failure()
 
   call assert_fails('s/^/\=Mess()/n', 'E794:')
   call CheckDefFailure(['let var: dict<number'], 'E1009:')
-endfunc
+enddef
+
+def Test_unlet()
+  g:somevar = 'yes'
+  assert_true(exists('g:somevar'))
+  unlet g:somevar
+  assert_false(exists('g:somevar'))
+  unlet! g:somevar
+
+  call CheckScriptFailure([
+        'vim9script',
+        'let svar = 123',
+        'unlet svar',
+        ], 'E1081:')
+  call CheckScriptFailure([
+        'vim9script',
+        'let svar = 123',
+        'unlet s:svar',
+        ], 'E1081:')
+  call CheckScriptFailure([
+        'vim9script',
+        'let svar = 123',
+        'def Func()',
+        '  unlet svar',
+        'enddef',
+        ], 'E1081:')
+  call CheckScriptFailure([
+        'vim9script',
+        'let svar = 123',
+        'def Func()',
+        '  unlet s:svar',
+        'enddef',
+        ], 'E1081:')
+enddef
 
 func Test_wrong_type()
   call CheckDefFailure(['let var: list<nothing>'], 'E1010:')
@@ -1155,6 +1185,24 @@ def Test_vim9_comment_not_compiled()
 
   au! TabEnter
   unlet g:entered
+
+  CheckScriptSuccess([
+      'vim9script',
+      'let g:var = 123',
+      'let w:var = 777',
+      'unlet g:var w:var # something',
+      ])
+
+  CheckScriptFailure([
+      'vim9script',
+      'let g:var = 123',
+      'unlet g:var# comment',
+      ], 'E108:')
+
+  CheckScriptFailure([
+      'let g:var = 123',
+      'unlet g:var # something',
+      ], 'E488:')
 enddef
 
 " Keep this last, it messes up highlighting.

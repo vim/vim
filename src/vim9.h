@@ -44,6 +44,8 @@ typedef enum {
 
     ISN_STORENR,    // store number into local variable isn_arg.storenr.stnr_idx
 
+    ISN_UNLET,		// unlet variable isn_arg.unlet.ul_name
+
     // constants
     ISN_PUSHNR,		// push number isn_arg.number
     ISN_PUSHBOOL,	// push bool value isn_arg.number
@@ -205,6 +207,12 @@ typedef struct {
     int		script_idx;	// index in sn_var_vals
 } script_T;
 
+// arguments to ISN_UNLET
+typedef struct {
+    char_u	*ul_name;	// variable name with g:, w:, etc.
+    int		ul_forceit;	// forceit flag
+} unlet_T;
+
 /*
  * Instruction
  */
@@ -235,6 +243,7 @@ struct isn_S {
 	storeopt_T	    storeopt;
 	loadstore_T	    loadstore;
 	script_T	    script;
+	unlet_T		    unlet;
     } isn_arg;
 };
 

@@ -5098,6 +5098,7 @@ find_name_end(
     int		br_nest = 0;
     char_u	*p;
     int		len;
+    int		vim9script = current_sctx.sc_version == SCRIPT_VERSION_VIM9;
 
     if (expr_start != NULL)
     {
@@ -5106,12 +5107,13 @@ find_name_end(
     }
 
     // Quick check for valid starting character.
-    if ((flags & FNE_CHECK_START) && !eval_isnamec1(*arg) && *arg != '{')
+    if ((flags & FNE_CHECK_START) && !eval_isnamec1(*arg)
+						&& (*arg != '{' || vim9script))
 	return arg;
 
     for (p = arg; *p != NUL
 		    && (eval_isnamec(*p)
-			|| *p == '{'
+			|| (*p == '{' && !vim9script)
 			|| ((flags & FNE_INCL_BR) && (*p == '[' || *p == '.'))
 			|| mb_nest != 0
 			|| br_nest != 0); MB_PTR_ADV(p))
@@ -5151,7 +5153,7 @@ find_name_end(
 		--br_nest;
 	}
 
-	if (br_nest == 0)
+	if (br_nest == 0 && !vim9script)
 	{
 	    if (*p == '{')
 	    {

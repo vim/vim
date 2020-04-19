@@ -1068,6 +1068,12 @@ call_def_function(
 		}
 		break;
 
+	    case ISN_UNLET:
+		if (do_unlet(iptr->isn_arg.unlet.ul_name,
+				       iptr->isn_arg.unlet.ul_forceit) == FAIL)
+		    goto failed;
+		break;
+
 	    // create a list from items on the stack; uses a single allocation
 	    // for the list header and the items
 	    case ISN_NEWLIST:
@@ -2107,6 +2113,11 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_PUSHEXC:
 		smsg("%4d PUSH v:exception", current);
+		break;
+	    case ISN_UNLET:
+		smsg("%4d UNLET%s %s", current,
+			iptr->isn_arg.unlet.ul_forceit ? "!" : "",
+			iptr->isn_arg.unlet.ul_name);
 		break;
 	    case ISN_NEWLIST:
 		smsg("%4d NEWLIST size %lld", current,

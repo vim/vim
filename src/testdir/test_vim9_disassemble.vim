@@ -126,6 +126,25 @@ def Test_disassemble_store()
         res)
 enddef
 
+def s:ScriptFuncUnlet()
+  g:somevar = "value"
+  unlet g:somevar
+  unlet! g:somevar
+enddef
+
+def Test_disassemble_unlet()
+  let res = execute('disass s:ScriptFuncUnlet')
+  assert_match('<SNR>\d*_ScriptFuncUnlet.*' ..
+        'g:somevar = "value".*' ..
+        '\d PUSHS "value".*' ..
+        '\d STOREG g:somevar.*' ..
+        'unlet g:somevar.*' ..
+        '\d UNLET g:somevar.*' ..
+        'unlet! g:somevar.*' ..
+        '\d UNLET! g:somevar.*',
+        res)
+enddef
+
 def s:ScriptFuncTry()
   try
     echo 'yes'

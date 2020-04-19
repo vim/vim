@@ -987,6 +987,23 @@ generate_LOADV(
 }
 
 /*
+ * Generate an ISN_UNLET instruction.
+ */
+    static int
+generate_UNLET(cctx_T *cctx, char_u *name, int forceit)
+{
+    isn_T	*isn;
+
+    RETURN_OK_IF_SKIP(cctx);
+    if ((isn = generate_instr(cctx, ISN_UNLET)) == NULL)
+	return FAIL;
+    isn->isn_arg.unlet.ul_name = vim_strsave(name);
+    isn->isn_arg.unlet.ul_forceit = forceit;
+
+    return OK;
+}
+
+/*
  * Generate an ISN_LOADS instruction.
  */
     static int
@@ -4543,6 +4560,81 @@ theend:
 }
 
 /*
+ * Check if "name" can be "unlet".
+ */
+    int
+check_vim9_unlet(char_u *name)
+{
+    if (name[1] != ':' || vim_strchr((char_u *)"gwtb", *name) == NULL)
+    {
+	semsg(_("E1081: Cannot unlet %s"), name);
+	return FAIL;
+    }
+    return OK;
+}
+
+/*
+ * Callback passed to ex_unletlock().
+ */
+    static int
+compile_unlet(
+    lval_T  *lvp,
+    char_u  *name_end,
+    exarg_T *eap,
+    int	    deep UNUSED,
+    void    *coookie)
+{
+    cctx_T *cctx = coookie;
+
+    if (lvp->ll_tv == NULL)
+    {
+	char_u	*p = lvp->ll_name;
+	int	cc = *name_end;
+	int	ret = OK;
+
+	// Normal name.  Only supports g:, w:, t: and b: namespaces.
+	*name_end = NUL;
+	if (check_vim9_unlet(p) == FAIL)
+	    ret = FAIL;
+	else
+	    ret = generate_UNLET(cctx, p, eap->forceit);
+
+	*name_end = cc;
+	return ret;
+    }
+
+    // TODO: unlet {list}[idx]
+    // TODO: unlet {dict}[key]
+    emsg("Sorry, :unlet not fully implemented yet");
+    return FAIL;
+}
+
+/*
+ * compile "unlet var", "lock var" and "unlock var"
+ * "arg" points to "var".
+ */
+    static char_u *
+compile_unletlock(char_u *arg, exarg_T *eap, cctx_T *cctx)
+{
+    char_u *p = arg;
+
+    if (eap->cmdidx != CMD_unlet)
+    {
+	emsg("Sorry, :lock and unlock not implemented yet");
+	return NULL;
+    }
+
+    if (*p == '!')
+    {
+	p = skipwhite(p + 1);
+	eap->forceit = TRUE;
+    }
+
+    ex_unletlock(eap, p, 0, GLV_NO_AUTOLOAD, compile_unlet, cctx);
+    return eap->nextcmd == NULL ? (char_u *)"" : eap->nextcmd;
+}
+
+/*
  * Compile an :import command.
  */
     static char_u *
@@ -6031,6 +6123,12 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		    line = compile_assignment(p, &ea, ea.cmdidx, &cctx);
 		    break;
 
+	    case CMD_unlet:
+	    case CMD_unlockvar:
+	    case CMD_lockvar:
+		    line = compile_unletlock(p, &ea, &cctx);
+		    break;
+
 	    case CMD_import:
 		    line = compile_import(p, &cctx);
 		    break;
@@ -6262,6 +6360,10 @@ delete_instr(isn_T *isn)
 	case ISN_LOADS:
 	case ISN_STORES:
 	    vim_free(isn->isn_arg.loadstore.ls_name);
+	    break;
+
+	case ISN_UNLET:
+	    vim_free(isn->isn_arg.unlet.ul_name);
 	    break;
 
 	case ISN_STOREOPT:
