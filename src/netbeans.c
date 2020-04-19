@@ -743,6 +743,7 @@ netbeans_end(void)
 	nbdebug(("EVT: %s", buf));
 	// nb_send(buf, "netbeans_end");    avoid "write failed" messages
 	nb_send(buf, NULL);
+	buf_list[i].bufp = NULL;
     }
 }
 

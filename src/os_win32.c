@@ -2749,6 +2749,10 @@ mch_init(void)
     void
 mch_exit(int r)
 {
+#ifdef FEAT_NETBEANS_INTG
+    netbeans_send_disconnect();
+#endif
+
 #ifdef VIMDLL
     if (gui.in_use || gui.starting)
 	mch_exit_g(r);

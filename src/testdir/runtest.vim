@@ -349,7 +349,6 @@ let s:flaky_tests = [
       \ 'Test_diff_screen()',
       \ 'Test_exit_callback_interval()',
       \ 'Test_map_timeout_with_timer_interrupt()',
-      \ 'Test_nb_basic()',
       \ 'Test_out_cb()',
       \ 'Test_pipe_through_sort_all()',
       \ 'Test_pipe_through_sort_some()',

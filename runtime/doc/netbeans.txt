@@ -40,21 +40,26 @@ or environment providing a socket interface can control Vim using this
 protocol. There are existing implementations in C, C++, Python and Java. The
 name NetBeans is kept today for historical reasons.
 
-Current projects using the NetBeans protocol of Vim are:
-- VimIntegration, description of various projects doing Vim Integration:
+Active project using the NetBeans protocol of Vim:
+- Eclim, http://eclim.org/
+
+VimIntegration, description of various projects doing Vim Integration:
 	http://www.freehackers.org/VimIntegration
-- Agide, an IDE for the AAP project, written in Python:
-	http://www.a-a-p.org
+
+Projects using the NetBeans protocol of Vim are or were:
+- Agide, an IDE for the AAP project, written in Python (now replaced by
+  |:Termdebug|): http://www.a-a-p.org
 - Clewn, a gdb integration into Vim, written in C:
 	http://clewn.sourceforge.net/
 - Pyclewn, a gdb integration into Vim, written in Python:
 	http://pyclewn.sourceforge.net/
+- VimWrapper, library to easy Vim integration into IDE:
+	http://www.freehackers.org/VimWrapper
+Outdated projects (links don't work):
 - VimPlugin, integration of Vim inside Eclipse:
 	http://vimplugin.sourceforge.net/wiki/pmwiki.php
 - PIDA, IDE written in Python integrating Vim:
 	http://pida.co.uk/
-- VimWrapper, library to easy Vim integration into IDE:
-	http://www.freehackers.org/VimWrapper
 
 Check the specific project pages to see how to use Vim with these projects.
 
@@ -461,11 +466,13 @@ guard off len
 initDone	Mark the buffer as ready for use.  Implicitly makes the buffer
 		the current buffer.  Fires the BufReadPost autocommand event.
 
-insertDone
+insertDone starteol readonly
 		Sent by Vim Controller to tell Vim an initial file insert is
-		done.  This triggers a read message being printed.  Prior to
-		version 2.3, no read messages were displayed after opening a
-		file.  New in version 2.3.
+		done.  This triggers a read message being printed.  If
+		"starteol" is "F" then the last line doesn't have a EOL. If
+		"readonly" is "T" then the file is marked as readonly. Prior
+		to version 2.3, no read messages were displayed after opening
+		a file.  New in version 2.3.
 
 moveAnnoToFront serNum
 		Not implemented.
