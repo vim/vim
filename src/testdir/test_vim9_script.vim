@@ -135,6 +135,38 @@ def Test_assignment()
   call CheckDefFailure(['v:errmsg += 123'], 'E1013:')
 enddef
 
+def Test_assignment_local()
+  " Test in a separated file in order not to the current buffer/window/tab is
+  " changed.
+  let script_lines: list<string> =<< trim END
+    let b:existing = 'yes'
+    let w:existing = 'yes'
+    let t:existing = 'yes'
+
+    def Test_assignment_local_internal()
+      b:newvar = 'new'
+      assert_equal('new', b:newvar)
+      assert_equal('yes', b:existing)
+      b:existing = 'no'
+      assert_equal('no', b:existing)
+
+      w:newvar = 'new'
+      assert_equal('new', w:newvar)
+      assert_equal('yes', w:existing)
+      w:existing = 'no'
+      assert_equal('no', w:existing)
+
+      t:newvar = 'new'
+      assert_equal('new', t:newvar)
+      assert_equal('yes', t:existing)
+      t:existing = 'no'
+      assert_equal('no', t:existing)
+    enddef
+    call Test_assignment_local_internal()
+  END
+  call CheckScriptSuccess(script_lines)
+enddef
+
 def Test_assignment_default()
 
   # Test default values.

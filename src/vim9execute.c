@@ -446,6 +446,7 @@ store_var(char_u *name, typval_T *tv)
     restore_funccal();
 }
 
+
 /*
  * Execute a function by "name".
  * This can be a builtin function, user function or a funcref.
@@ -757,16 +758,42 @@ call_def_function(
 		}
 		break;
 
-	    // load g: variable
+	    // load g:/b:/w:/t: variable
 	    case ISN_LOADG:
+	    case ISN_LOADB:
+	    case ISN_LOADW:
+	    case ISN_LOADT:
 		{
-		    dictitem_T *di = find_var_in_ht(get_globvar_ht(), 0,
-						   iptr->isn_arg.string, TRUE);
+		    dictitem_T *di = NULL;
+		    hashtab_T *ht = NULL;
+		    char namespace;
+		    switch (iptr->isn_type)
+		    {
+			case ISN_LOADG:
+			    ht = get_globvar_ht();
+			    namespace = 'g';
+			    break;
+			case ISN_LOADB:
+			    ht = &curbuf->b_vars->dv_hashtab;
+			    namespace = 'b';
+			    break;
+			case ISN_LOADW:
+			    ht = &curwin->w_vars->dv_hashtab;
+			    namespace = 'w';
+			    break;
+			case ISN_LOADT:
+			    ht = &curtab->tp_vars->dv_hashtab;
+			    namespace = 't';
+			    break;
+			default:  // Cannot reach here
+			    goto failed;
+		    }
+		    di = find_var_in_ht(ht, 0, iptr->isn_arg.string, TRUE);
 
 		    if (di == NULL)
 		    {
-			semsg(_("E121: Undefined variable: g:%s"),
-							 iptr->isn_arg.string);
+			semsg(_("E121: Undefined variable: %c:%s"),
+					     namespace, iptr->isn_arg.string);
 			goto failed;
 		    }
 		    else
@@ -925,13 +952,34 @@ call_def_function(
 		    goto failed;
 		break;
 
-	    // store g: variable
+	    // store g:/b:/w:/t: variable
 	    case ISN_STOREG:
+	    case ISN_STOREB:
+	    case ISN_STOREW:
+	    case ISN_STORET:
 		{
 		    dictitem_T *di;
+		    hashtab_T *ht;
+		    switch (iptr->isn_type)
+		    {
+			case ISN_STOREG:
+			    ht = get_globvar_ht();
+			    break;
+			case ISN_STOREB:
+			    ht = &curbuf->b_vars->dv_hashtab;
+			    break;
+			case ISN_STOREW:
+			    ht = &curwin->w_vars->dv_hashtab;
+			    break;
+			case ISN_STORET:
+			    ht = &curtab->tp_vars->dv_hashtab;
+			    break;
+			default:  // Cannot reach here
+			    goto failed;
+		    }
 
 		    --ectx.ec_stack.ga_len;
-		    di = find_var_in_ht(get_globvar_ht(), 0,
+		    di = find_var_in_ht(ht, 0,
 					       iptr->isn_arg.string + 2, TRUE);
 		    if (di == NULL)
 			store_var(iptr->isn_arg.string, STACK_TV_BOT(0));
@@ -1918,6 +1966,15 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_LOADG:
 		smsg("%4d LOADG g:%s", current, iptr->isn_arg.string);
 		break;
+	    case ISN_LOADB:
+		smsg("%4d LOADB b:%s", current, iptr->isn_arg.string);
+		break;
+	    case ISN_LOADW:
+		smsg("%4d LOADW w:%s", current, iptr->isn_arg.string);
+		break;
+	    case ISN_LOADT:
+		smsg("%4d LOADT t:%s", current, iptr->isn_arg.string);
+		break;
 	    case ISN_LOADOPT:
 		smsg("%4d LOADOPT %s", current, iptr->isn_arg.string);
 		break;
@@ -1942,6 +1999,15 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_STOREG:
 		smsg("%4d STOREG %s", current, iptr->isn_arg.string);
+		break;
+	    case ISN_STOREB:
+		smsg("%4d STOREB %s", current, iptr->isn_arg.string);
+		break;
+	    case ISN_STOREW:
+		smsg("%4d STOREW %s", current, iptr->isn_arg.string);
+		break;
+	    case ISN_STORET:
+		smsg("%4d STORET %s", current, iptr->isn_arg.string);
 		break;
 	    case ISN_STORES:
 		{
