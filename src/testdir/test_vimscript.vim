@@ -1711,6 +1711,20 @@ func Test_compound_assignment_operators()
     let @/ = ''
 endfunc
 
+func Test_unlet_env()
+  let $TESTVAR = 'yes'
+  call assert_equal('yes', $TESTVAR)
+  call assert_fails('lockvar $TESTVAR', 'E940')
+  call assert_fails('unlockvar $TESTVAR', 'E940')
+  call assert_equal('yes', $TESTVAR)
+  if 0
+    unlet $TESTVAR
+  endif
+  call assert_equal('yes', $TESTVAR)
+  unlet $TESTVAR
+  call assert_equal('', $TESTVAR)
+endfunc
+
 func Test_refcount()
     " Immediate values
     call assert_equal(-1, test_refcount(1))

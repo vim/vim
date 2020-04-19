@@ -1417,14 +1417,17 @@ ex_unletlock(
     {
 	if (*arg == '$')
 	{
-	    char_u    *name = ++arg;
-
+	    lv.ll_name = arg;
+	    lv.ll_tv = NULL;
+	    ++arg;
 	    if (get_env_len(&arg) == 0)
 	    {
-		semsg(_(e_invarg2), name - 1);
+		semsg(_(e_invarg2), arg - 1);
 		return;
 	    }
-	    vim_unsetenv(name);
+	    if (!error && !eap->skip
+			      && callback(&lv, arg, eap, deep, cookie) == FAIL)
+		error = TRUE;
 	    arg = skipwhite(arg);
 	    continue;
 	}
@@ -1477,8 +1480,10 @@ do_unlet_var(
 	cc = *name_end;
 	*name_end = NUL;
 
-	// Normal name or expanded name.
-	if (do_unlet(lp->ll_name, forceit) == FAIL)
+	// Environment variable, normal name or expanded name.
+	if (*lp->ll_name == '$')
+	    vim_unsetenv(lp->ll_name + 1);
+	else if (do_unlet(lp->ll_name, forceit) == FAIL)
 	    ret = FAIL;
 	*name_end = cc;
     }
@@ -1608,24 +1613,34 @@ do_lock_var(
     {
 	cc = *name_end;
 	*name_end = NUL;
-
-	// Normal name or expanded name.
-	di = find_var(lp->ll_name, NULL, TRUE);
-	if (di == NULL)
+	if (*lp->ll_name == '$')
+	{
+	    semsg(_(e_lock_unlock), lp->ll_name);
 	    ret = FAIL;
-	else if ((di->di_flags & DI_FLAGS_FIX)
-			&& di->di_tv.v_type != VAR_DICT
-			&& di->di_tv.v_type != VAR_LIST)
-	    // For historic reasons this error is not given for a list or dict.
-	    // E.g., the b: dict could be locked/unlocked.
-	    semsg(_("E940: Cannot lock or unlock variable %s"), lp->ll_name);
+	}
 	else
 	{
-	    if (lock)
-		di->di_flags |= DI_FLAGS_LOCK;
+	    // Normal name or expanded name.
+	    di = find_var(lp->ll_name, NULL, TRUE);
+	    if (di == NULL)
+		ret = FAIL;
+	    else if ((di->di_flags & DI_FLAGS_FIX)
+			    && di->di_tv.v_type != VAR_DICT
+			    && di->di_tv.v_type != VAR_LIST)
+	    {
+		// For historic reasons this error is not given for a list or
+		// dict.  E.g., the b: dict could be locked/unlocked.
+		semsg(_(e_lock_unlock), lp->ll_name);
+		ret = FAIL;
+	    }
 	    else
-		di->di_flags &= ~DI_FLAGS_LOCK;
-	    item_lock(&di->di_tv, deep, lock);
+	    {
+		if (lock)
+		    di->di_flags |= DI_FLAGS_LOCK;
+		else
+		    di->di_flags &= ~DI_FLAGS_LOCK;
+		item_lock(&di->di_tv, deep, lock);
+	    }
 	}
 	*name_end = cc;
     }
