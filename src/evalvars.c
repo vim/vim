@@ -1428,34 +1428,35 @@ ex_unletlock(
 	    if (!error && !eap->skip
 			      && callback(&lv, arg, eap, deep, cookie) == FAIL)
 		error = TRUE;
-	    arg = skipwhite(arg);
-	    continue;
+	    name_end = arg;
 	}
-
-	// Parse the name and find the end.
-	name_end = get_lval(arg, NULL, &lv, TRUE, eap->skip || error,
-						   glv_flags, FNE_CHECK_START);
-	if (lv.ll_name == NULL)
-	    error = TRUE;	    // error but continue parsing
-	if (name_end == NULL || (!VIM_ISWHITE(*name_end)
-						   && !ends_excmd(*name_end)))
+	else
 	{
-	    if (name_end != NULL)
+	    // Parse the name and find the end.
+	    name_end = get_lval(arg, NULL, &lv, TRUE, eap->skip || error,
+						   glv_flags, FNE_CHECK_START);
+	    if (lv.ll_name == NULL)
+		error = TRUE;	    // error but continue parsing
+	    if (name_end == NULL || (!VIM_ISWHITE(*name_end)
+						    && !ends_excmd(*name_end)))
 	    {
-		emsg_severe = TRUE;
-		emsg(_(e_trailing));
+		if (name_end != NULL)
+		{
+		    emsg_severe = TRUE;
+		    emsg(_(e_trailing));
+		}
+		if (!(eap->skip || error))
+		    clear_lval(&lv);
+		break;
 	    }
-	    if (!(eap->skip || error))
-		clear_lval(&lv);
-	    break;
-	}
 
-	if (!error && !eap->skip
+	    if (!error && !eap->skip
 			 && callback(&lv, name_end, eap, deep, cookie) == FAIL)
-	    error = TRUE;
+		error = TRUE;
 
-	if (!eap->skip)
-	    clear_lval(&lv);
+	    if (!eap->skip)
+		clear_lval(&lv);
+	}
 
 	arg = skipwhite(name_end);
     } while (!ends_excmd2(name_end, arg));
