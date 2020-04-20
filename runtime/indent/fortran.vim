@@ -39,10 +39,10 @@ if !exists("b:fortran_fixed_source")
   elseif exists("fortran_fixed_source")
     " User guarantees fixed source form
     let b:fortran_fixed_source = 1
-  elseif expand("%:e") ==? "f\<90\|95\|03\|08\>"
+  elseif expand("%:e") =~? '^f\%(90\|95\|03\|08\)$'
     " Free-form file extension defaults as in Intel ifort, gcc(gfortran), NAG, Pathscale, and Cray compilers
     let b:fortran_fixed_source = 0
-  elseif expand("%:e") ==? "f\|f77\|for"
+  elseif expand("%:e") =~? '^\%(f\|f77\|for\)$'
     " Fixed-form file extension defaults
     let b:fortran_fixed_source = 1
   else
