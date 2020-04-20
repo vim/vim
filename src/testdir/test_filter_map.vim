@@ -92,6 +92,8 @@ endfunc
 func Test_map_fails()
   call assert_fails('call map([1], "42 +")', 'E15:')
   call assert_fails('call filter([1], "42 +")', 'E15:')
+  call assert_fails("let l = map('abc', '\"> \" . v:val')", 'E712:')
+  call assert_fails("let l = filter('abc', '\"> \" . v:val')", 'E712:')
 endfunc
 
 func Test_map_and_modify()
@@ -103,3 +105,5 @@ func Test_map_and_modify()
   call assert_fails('call map(d, "remove(d, v:key)[0]")', 'E741:')
   call assert_fails('echo map(d, {k,v -> remove(d, k)})', 'E741:')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

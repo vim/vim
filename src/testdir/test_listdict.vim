@@ -168,6 +168,12 @@ func Test_dict()
   call assert_equal({'c': 'ccc', '1': 99, 'b': [1, 2, function('strlen')], '3': 33, '-1': {'a': 1}}, d)
   call filter(d, 'v:key =~ ''[ac391]''')
   call assert_equal({'c': 'ccc', '1': 99, '3': 33, '-1': {'a': 1}}, d)
+  " duplicate key
+  call assert_fails("let d = {'k' : 10, 'k' : 20}", 'E721:')
+  " missing comma
+  call assert_fails("let d = {'k' : 10 'k' : 20}", 'E722:')
+  " missing curly brace
+  call assert_fails("let d = {'k' : 10,", 'E723:')
 endfunc
 
 " Dictionary identity
@@ -634,6 +640,9 @@ func Test_reverse_sort_uniq()
 
   call assert_fails('call reverse("")', 'E899:')
   call assert_fails('call uniq([1, 2], {x, y -> []})', 'E882:')
+  call assert_fails("call sort([1, 2], function('min'), 1)", "E715:")
+  call assert_fails("call sort([1, 2], function('invalid_func'))", "E700:")
+  call assert_fails("call sort([1, 2], function('min'))", "E702:")
 endfunc
 
 " splitting a string to a List using split()
@@ -871,6 +880,9 @@ func Test_listdict_index()
   call assert_fails("let v = range(5)[2:[]]", 'E730:')
   call assert_fails("let v = range(5)[2:{-> 2}(]", 'E116:')
   call assert_fails("let v = range(5)[2:3", 'E111:')
+  call assert_fails("let l = insert([1,2,3], 4, 10)", 'E684:')
+  call assert_fails("let l = insert([1,2,3], 4, -10)", 'E684:')
+  call assert_fails("let l = insert([1,2,3], 4, [])", 'E745:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

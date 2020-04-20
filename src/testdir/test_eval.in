@@ -27,14 +27,6 @@ endfun
         execute "silent normal! Go==\n==\e\"".a:1."P"
     endif
 endfun
-:fun ErrExe(str)
-    call append('$', 'Executing '.a:str)
-    try
-        execute a:str
-    catch
-        $put =v:exception
-    endtry
-endfun
 :fun Test()
 $put ='{{{1 Appending NL with setreg()'
 call setreg('a', 'abcA2', 'c')
@@ -109,103 +101,19 @@ else
   call AppendRegParts('*', 'V', "clipboard contents\n", "['clipboard contents']", "clipboard contents\n", "['clipboard contents']")
   call AppendRegParts('*', 'V', "something else\n", "['something else']", "something else\n", "['something else']")
 endif
-$put ='{{{1 Errors'
-call ErrExe('call setreg()')
-call ErrExe('call setreg(1)')
-call ErrExe('call setreg(1, 2, 3, 4)')
-call ErrExe('call setreg([], 2)')
-call ErrExe('call setreg(1, {})')
-call ErrExe('call setreg(1, 2, [])')
-call ErrExe('call setreg("/", ["1", "2"])')
-call ErrExe('call setreg("=", ["1", "2"])')
-call ErrExe('call setreg(1, ["", "", [], ""])')
 endfun
 :"
 :call Test()
 :"
 :delfunction SetReg
 :delfunction AppendRegContents
-:delfunction ErrExe
 :delfunction Test
 :delcommand AR
 :call garbagecollect(1)
-:"
-:" function name not starting with capital
-:try
-:func! g:test()
-:echo "test"
-:endfunc
-:catch
-:$put =v:exception
-:endtry
-:"
-:" function name includes a colon
-:try
-:func! b:test()
-:echo "test"
-:endfunc
-:catch
-:$put =v:exception
-:endtry
-:"
-:" function name folowed by #
-:try
-:func! test2() "#
-:echo "test2"
-:endfunc
-:catch
-:$put =v:exception
-:endtry
-:"
-:" function name starting with/without "g:", buffer-local funcref.
-:function! g:Foo(n)
-:  $put ='called Foo(' . a:n . ')'
-:endfunction
-:let b:my_func = function('Foo')
-:call b:my_func(1)
-:echo g:Foo(2)
-:echo Foo(3)
-:"
-:" script-local function used in Funcref must exist.
-:so test_eval_func.vim
-:"
-:" Using $ instead of '$' must give an error
-:try
-: call append($, 'foobar')
-:catch
-:$put =v:exception
-:endtry
-:"
-:$put ='{{{1 getcurpos/setpos'
-/^012345678
-6l:let sp = getcurpos()
-0:call setpos('.', sp)
-jyl:$put
-:"
-:" substring and variable name
-:let str = 'abcdef'
-:let n = 3
-:$put =str[n:]
-:$put =str[:n]
-:$put =str[n:n]
-:unlet n
-:let nn = 3
-:$put =str[nn:]
-:$put =str[:nn]
-:$put =str[nn:nn]
-:unlet nn
-:let b:nn = 4
-:$put =str[b:nn:]
-:$put =str[:b:nn]
-:$put =str[b:nn:b:nn]
-:unlet b:nn
 :"
 :/^start:/+1,$wq! test.out
 :" vim: et ts=4 isk-=\: fmr=???,???
 :call getchar()
 ENDTEST
-
-012345678
-012345678
 
 start:
