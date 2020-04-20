@@ -349,7 +349,17 @@ func Test_setreg_basic()
   call setreg('I', 'abcI')
   call Assert_reg('I', "v", "abcI", "['abcI']", "abcI", "['abcI']")
   call Assert_regput('I', ['==', '=abcI='])
-endfunc
 
+  " Error cases
+  call assert_fails('call setreg()', 'E119:')
+  call assert_fails('call setreg(1)', 'E119:')
+  call assert_fails('call setreg(1, 2, 3, 4)', 'E118:')
+  call assert_fails('call setreg([], 2)', 'E730:')
+  call assert_fails('call setreg(1, {})', 'E731:')
+  call assert_fails('call setreg(1, 2, [])', 'E730:')
+  call assert_fails('call setreg("/", ["1", "2"])', 'E883:')
+  call assert_fails('call setreg("=", ["1", "2"])', 'E883:')
+  call assert_fails('call setreg(1, ["", "", [], ""])', 'E730:')
+endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

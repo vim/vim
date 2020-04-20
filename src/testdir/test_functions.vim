@@ -99,9 +99,11 @@ func Test_len()
   call assert_equal(2, len('ab'))
 
   call assert_equal(0, len([]))
+  call assert_equal(0, len(test_null_list()))
   call assert_equal(2, len([2, 1]))
 
   call assert_equal(0, len({}))
+  call assert_equal(0, len(test_null_dict()))
   call assert_equal(2, len({'a': 1, 'b': 2}))
 
   call assert_fails('call len(v:none)', 'E701:')
@@ -799,6 +801,9 @@ func Test_append()
   split
   only
   undo
+
+  " Using $ instead of '$' must give an error
+  call assert_fails("call append($, 'foobar')", 'E116:')
 endfunc
 
 func Test_getbufvar()
@@ -2043,6 +2048,7 @@ func Test_range()
 
   " list2str()
   call assert_equal('ABC', list2str(range(65, 67)))
+  call assert_fails('let s = list2str(5)', 'E474:')
 
   " lock()
   let thelist = range(5)
@@ -2214,6 +2220,19 @@ func Test_screen_functions()
   call assert_equal(-1, screenattr(-1, -1))
   call assert_equal(-1, screenchar(-1, -1))
   call assert_equal([], screenchars(-1, -1))
+endfunc
+
+" Test for getcurpos() and setpos()
+func Test_getcurpos_setpos()
+  new
+  call setline(1, ['012345678', '012345678'])
+  normal gg6l
+  let sp = getcurpos()
+  normal 0
+  call setpos('.', sp)
+  normal jyl
+  call assert_equal('6', @")
+  close!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

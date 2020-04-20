@@ -115,3 +115,5 @@ func Test_screenpos_number()
   close
   bwipe!
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

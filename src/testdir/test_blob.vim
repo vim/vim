@@ -307,6 +307,9 @@ func Test_blob_insert()
   call assert_fails('call insert(b, -1)', 'E475:')
   call assert_fails('call insert(b, 257)', 'E475:')
   call assert_fails('call insert(b, 0, [9])', 'E745:')
+  call assert_fails('call insert(b, 0, -20)', 'E475:')
+  call assert_fails('call insert(b, 0, 20)', 'E475:')
+  call assert_fails('call insert(b, [])', 'E745:')
 endfunc
 
 func Test_blob_reverse()
