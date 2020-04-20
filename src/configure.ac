@@ -630,7 +630,7 @@ if test "$enable_luainterp" = "yes" -o "$enable_luainterp" = "dynamic"; then
 	  # https://groups.google.com/forum/#!topic/vim_use/O0vek60WuTk
 	  lua_suf=/moonjit-2.3
 	  inc_path="$vi_cv_path_lua_pfx/include"
-	  for dir in "$inc_path"/moonjit-[0-9]* ; do
+	  for dir in "$inc_path"/moonjit-[[0-9]]* ; do
 	    if test -d "$dir" ; then
 	      lua_suf=`basename '$dir'`
 	      lua_suf="/$lua_suf"
