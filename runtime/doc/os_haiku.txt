@@ -46,8 +46,7 @@ features you can enable/disable.
 
 Haiku uses "ncurses6" as its terminal library, therefore you need to have
 "ncurses6_devel" package installed from HaikuDepot in order to configure
-the Haiku build. Just append "--with-tlib=ncurses6" to ./configure command
-below for the initial build.
+the Haiku build.
 
 Now you should use "make" to compile Vim, then "make install" to install it.
 For seamless integration into Haiku, the GUI-less vim binary should be
