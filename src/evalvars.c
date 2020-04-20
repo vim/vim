@@ -737,7 +737,7 @@ ex_let_const(exarg_T *eap, int is_const)
 	    emsg(_(e_invarg));
 	else if (expr[0] == '.')
 	    emsg(_("E985: .= is not supported with script version 2"));
-	else if (!ends_excmd(*arg))
+	else if (!ends_excmd2(eap->cmd, arg))
 	    // ":let var1 var2"
 	    arg = list_arg_vars(eap, arg, &first);
 	else if (!eap->skip)
@@ -1068,7 +1068,7 @@ list_arg_vars(exarg_T *eap, char_u *arg, int *first)
     char_u	*tofree;
     typval_T    tv;
 
-    while (!ends_excmd(*arg) && !got_int)
+    while (!ends_excmd2(eap->cmd, arg) && !got_int)
     {
 	if (error || eap->skip)
 	{

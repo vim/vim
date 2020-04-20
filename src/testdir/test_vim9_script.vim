@@ -1208,6 +1208,69 @@ def Test_vim9_comment_not_compiled()
       'let g:var = 123',
       'unlet g:var # something',
       ], 'E488:')
+
+  CheckScriptSuccess([
+      'vim9script',
+      'if 1 # comment',
+      '  echo "yes"',
+      'elseif 2 #comment',
+      '  echo "no"',
+      'endif',
+      ])
+
+  CheckScriptFailure([
+      'vim9script',
+      'if 1# comment',
+      '  echo "yes"',
+      'endif',
+      ], 'E15:')
+
+  CheckScriptFailure([
+      'vim9script',
+      'if 0 # comment',
+      '  echo "yes"',
+      'elseif 2#comment',
+      '  echo "no"',
+      'endif',
+      ], 'E15:')
+
+  CheckScriptSuccess([
+      'vim9script',
+      'let # comment',
+      ])
+
+  CheckScriptFailure([
+      'vim9script',
+      'let# comment',
+      ], 'E121:')
+
+  CheckScriptSuccess([
+      'vim9script',
+      'let v:version # comment',
+      ])
+
+  CheckScriptFailure([
+      'vim9script',
+      'let v:version# comment',
+      ], 'E121:')
+
+  CheckScriptSuccess([
+      'vim9script',
+      'new'
+      'call setline(1, ["# define pat", "last"])',
+      '$',
+      'dsearch /pat/ #comment',
+      'bwipe!',
+      ])
+
+  CheckScriptFailure([
+      'vim9script',
+      'new'
+      'call setline(1, ["# define pat", "last"])',
+      '$',
+      'dsearch /pat/#comment',
+      'bwipe!',
+      ], 'E488:')
 enddef
 
 " Keep this last, it messes up highlighting.

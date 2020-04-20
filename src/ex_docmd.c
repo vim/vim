@@ -7903,7 +7903,7 @@ ex_findpat(exarg_T *eap)
 	    p = skipwhite(p);
 
 	    // Check for trailing illegal characters
-	    if (!ends_excmd(*p))
+	    if (!ends_excmd2(eap->arg, p))
 		eap->errmsg = e_trailing;
 	    else
 		eap->nextcmd = check_nextcmd(p);

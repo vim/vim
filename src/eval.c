@@ -1773,7 +1773,7 @@ eval0(
 
     p = skipwhite(arg);
     ret = eval1(&p, rettv, evaluate);
-    if (ret == FAIL || !ends_excmd(*p))
+    if (ret == FAIL || !ends_excmd2(arg, p))
     {
 	if (ret != FAIL)
 	    clear_tv(rettv);
