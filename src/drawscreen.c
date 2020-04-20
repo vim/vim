@@ -320,7 +320,7 @@ update_screen(int type_arg)
 # ifdef FEAT_CMDL_INFO
 	if (wp->w_redr_ruler)
 	{
-#  if defined(MSWIN) && !defined(DYNAMIC_IME)
+#  if defined(MSWIN) && !defined(DYNAMIC_IME) && !defined(__GNUC__)
 	    HWND ime = ImmGetDefaultIMEWnd(GetConsoleWindow());
 
 	    // #define IMC_GETOPENSTATUS 5 (undocumented)
