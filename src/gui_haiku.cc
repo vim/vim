@@ -3679,7 +3679,7 @@ gui_mch_create_scrollbar(
 	}
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
+#if defined(FEAT_WINDOWS) || defined(PROTO) || defined(FEAT_GUI_HAIKU)
 void
 gui_mch_destroy_scrollbar(
 		scrollbar_T	*sb)
@@ -3736,7 +3736,7 @@ gui_mch_set_blinking(
  * Stop the cursor blinking.  Show the cursor if it wasn't shown.
  */
 	void
-gui_mch_stop_blink()
+gui_mch_stop_blink(int may_call_gui_update_cursor)
 {
 	// TODO
 	if (blink_timer != 0)
@@ -4488,7 +4488,7 @@ gui_mch_wait_for_chars(
 			if (gui.in_focus)
 				gui_mch_start_blink();
 			else
-				gui_mch_stop_blink();
+				gui_mch_stop_blink(TRUE);
 			focus = gui.in_focus;
 		}
 
