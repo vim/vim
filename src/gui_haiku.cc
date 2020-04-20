@@ -2916,6 +2916,7 @@ VimToolbar::RemoveButton(vimmenu_T *menu)
 			menu->button = NULL;
 		}
 	}
+	return true;
 }
 
 	bool
@@ -2926,6 +2927,7 @@ VimToolbar::GrayButton(vimmenu_T *menu, int grey)
 		if(index >= 0)
 			menu->button->SetEnabled(grey ? false : true);
 	}
+	return true;
 }
 
 	void
