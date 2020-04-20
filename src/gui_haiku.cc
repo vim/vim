@@ -3870,7 +3870,7 @@ gui_mch_get_font(
 		hl_set_font_name((char_u*)font_name);
 
 		//  Set guifont to the name of the selected font.
-		char_u* new_p_guifont = alloc(STRLEN(font_name) + 1);
+		char_u* new_p_guifont = (char_u*)alloc(STRLEN(font_name) + 1);
 		if (new_p_guifont != NULL) {
 			STRCPY(new_p_guifont, font_name);
 			vim_free(p_guifont);
