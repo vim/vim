@@ -3563,7 +3563,7 @@ gui_mch_set_text_area_pos(
 		gui.vimTextArea->MoveTo(x, y);
 		gui.vimTextArea->ResizeTo(w - PEN_WIDTH, h - PEN_WIDTH);
 
-/*#ifdef FEAT_GUI_TABLINE
+#ifdef FEAT_GUI_TABLINE
 		if(gui.vimForm->TabLine() != NULL) {
 			gui.vimForm->TabLine()->ResizeTo(w, gui.vimForm->TablineHeight());
 		}
