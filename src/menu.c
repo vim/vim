@@ -2680,7 +2680,7 @@ ex_menutranslate(exarg_T *eap UNUSED)
     /*
      * ":menutrans clear": clear all translations.
      */
-    if (STRNCMP(arg, "clear", 5) == 0 && ends_excmd(*skipwhite(arg + 5)))
+    if (STRNCMP(arg, "clear", 5) == 0 && ends_excmd2(arg, skipwhite(arg + 5)))
     {
 	tp = (menutrans_T *)menutrans_ga.ga_data;
 	for (i = 0; i < menutrans_ga.ga_len; ++i)
@@ -2703,7 +2703,9 @@ ex_menutranslate(exarg_T *eap UNUSED)
 	to = skipwhite(arg);
 	*arg = NUL;
 	arg = menu_skip_part(to);
-	if (arg == to)
+	if (arg == to || ends_excmd2(eap->arg, from)
+		      || ends_excmd2(eap->arg, to)
+		      || !ends_excmd2(eap->arg, skipwhite(arg)))
 	    emsg(_(e_invarg));
 	else
 	{
