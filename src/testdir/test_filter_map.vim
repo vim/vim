@@ -89,11 +89,15 @@ func Test_filter_map_dict_expr_funcref()
   call assert_equal({"foo": "f", "bar": "b", "baz": "b"}, map(copy(dict), function('s:filter4')))
 endfunc
 
-func Test_map_fails()
+func Test_map_filter_fails()
   call assert_fails('call map([1], "42 +")', 'E15:')
   call assert_fails('call filter([1], "42 +")', 'E15:')
   call assert_fails("let l = map('abc', '\"> \" . v:val')", 'E712:')
   call assert_fails("let l = filter('abc', '\"> \" . v:val')", 'E712:')
+  call assert_fails("let l = filter([1, 2, 3], '{}')", 'E728:')
+  call assert_fails("let l = filter({'k' : 10}, '{}')", 'E728:')
+  call assert_equal(0, map(test_null_list(), '"> " .. v:val'))
+  call assert_equal(0, map(test_null_dict(), '"> " .. v:val'))
 endfunc
 
 func Test_map_and_modify()
