@@ -167,6 +167,8 @@ func Ch_communicate(port)
   call ch_setoptions(handle, {'drop': 'never'})
   call ch_setoptions(handle, {'drop': 'auto'})
   call assert_fails("call ch_setoptions(handle, {'drop': 'bad'})", "E475")
+  call assert_equal(0, ch_setoptions(handle, test_null_dict()))
+  call assert_equal(0, ch_setoptions(test_null_channel(), {'drop' : 'never'}))
 
   " Send an eval request that works.
   call assert_equal('ok', ch_evalexpr(handle, 'eval-works'))
@@ -1682,6 +1684,7 @@ func Test_job_start_fails()
   call assert_fails('let job = job_start("")', 'E474:')
   call assert_fails('let job = job_start("   ")', 'E474:')
   call assert_fails('let job = job_start(["ls", []])', 'E730:')
+  call assert_fails('call job_setoptions(test_null_job(), {})', 'E916:')
   %bw!
 endfunc
 
@@ -2267,6 +2270,7 @@ func Test_invalid_job_chan_options()
   for opt in invalid_opts
     call assert_fails("let x = ch_status(ch, opt)", 'E475:')
   endfor
+  call assert_equal('fail', ch_status(ch, test_null_dict()))
 endfunc
 
 " Test for passing the command and the arguments as List on MS-Windows

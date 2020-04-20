@@ -148,6 +148,7 @@ func Test_prompt_buffer_edit()
   call assert_beeps("normal! \<C-A>")
   call assert_beeps("normal! \<C-X>")
   close!
+  call assert_equal(0, prompt_setprompt([], ''))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
