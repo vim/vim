@@ -1,4 +1,4 @@
-*various.txt*   For Vim version 8.2.  Last change: 2020 Mar 19
+*various.txt*   For Vim version 8.2.  Last change: 2020 Apr 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -543,7 +543,7 @@ N  *+X11*		Unix only: can restore window title |X11|
 			locked or the variable type is changed, then further
 			command output messages will cause errors.
 			To get the output of one command the |execute()|
-			function can be used.
+			function can be used instead of redirection.
 
 :redi[r] =>> {var}	Append messages to an existing variable.  Only string
 			variables can be used.

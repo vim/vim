@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Apr 13
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Apr 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1809,10 +1809,12 @@ v:errors	Errors found by assert functions, such as |assert_true()|.
 v:event		Dictionary containing information about the current
 		|autocommand|.  See the specific event for what it puts in
 		this dictionary.
-		The dictionary is emptied when the |autocommand|
-		finishes, please refer to |dict-identity| for how to get an
-		independent copy of it.
-
+		The dictionary is emptied when the |autocommand| finishes,
+		please refer to |dict-identity| for how to get an independent
+		copy of it.  Use |deepcopy()| if you want to keep the
+		information after the event triggers.  Example: >
+			au TextYankPost * let g:foo = deepcopy(v:event)
+<
 					*v:exception* *exception-variable*
 v:exception	The value of the exception most recently caught and not
 		finished.  See also |v:throwpoint| and |throw-variables|.
@@ -2901,13 +2903,13 @@ win_execute({id}, {command} [, {silent}])
 				String	execute {command} in window {id}
 win_findbuf({bufnr})		List	find windows containing {bufnr}
 win_getid([{win} [, {tab}]])	Number	get window ID for {win} in {tab}
+win_gettype([{nr}])		String	type of window {nr}
 win_gotoid({expr})		Number	go to window with ID {expr}
 win_id2tabwin({expr})		List	get tab and window nr from window ID
 win_id2win({expr})		Number	get window nr from window ID
 win_screenpos({nr})		List	get screen position of window {nr}
 win_splitmove({nr}, {target} [, {options}])
 				Number	move window {nr} to split of {target}
-win_type([{nr}])		String	type of window {nr}
 winbufnr({nr})			Number	buffer number of window {nr}
 wincol()			Number	window column of the cursor
 winheight({nr})			Number	height of window {nr}
@@ -7766,7 +7768,7 @@ range({expr} [, {max} [, {stride}]])				*range()*
 			GetExpr()->range()
 <
 
-rand([{expr}])						*rand()*
+rand([{expr}])						*rand()* *random*
 		Return a pseudo-random Number generated with an xoshiro128**
 		algorithm using seed {expr}.  The returned number is 32 bits,
 		also on 64 bits systems, for consistency.

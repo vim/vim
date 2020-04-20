@@ -1,4 +1,4 @@
-*todo.txt*      For Vim version 8.2.  Last change: 2020 Apr 10
+*todo.txt*      For Vim version 8.2.  Last change: 2020 Apr 20
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -39,10 +39,10 @@ browser use: https://github.com/vim/vim/issues/1234
 -------------------- Known bugs and current work -----------------------
 
 Vim9 script:
+more tests for # comments:
+  check all calls to ends_excmd() and test that space before # is needed.
+  next: ex_findpat()
 func and partial types:
-- check using func type with default arguments and varargs.
-	func(type, type?, ...): rettype
-- Type checking arguments when calling :def function and test
 - Calling unknown user function does not give proper error message:
       assert_equal('123text', RefDef2Arg())  typo for "RetDef2Arg"
 - "func" inside "vim9script" doesn't work?  (Ben Jackson, #5670)
@@ -51,15 +51,25 @@ func and partial types:
 	let ref = def(arg: type): rettype
 	    body
 	enddef
+- Test that a script-local function in Vim9 script cannot be deleted.
+- Test that a function defined inside a :def function is local to that
+  function, g: functions can be defined and script-local functions cannot be
+  defined.
 Also:
+- When wildcards are expanded, find `=expr` and evaluate it before invoking
+  the command. For example:  :edit `=filename`
 - "echo Func()" is an error if Func() does not return anything.
+- Check all Ex commands, give error if they use an expression and should be
+  compiled.
+- For range: make table of first ASCII character with flag to quickly check if
+  it can be a Vim9 command. E.g. "+" can, but "." can't.
 - better implementation for partial and tests for that.
 - Make "g:imported = Export.exported" work in Vim9 script.
 - Make Foo.Bar() work to call the dict function. (#5676)
-- make "let var: string" work in a vim9script.
-- Disallow unlet for local/script/imported vars
 - Support type for ":let"/":const" at script level for Vim9 script.
     (Ben Jackson, #5671)
+    Can we share the code for :let between direct execution and compiling?
+- Disallow unlet for local/script/imported vars
 - Make "++nr" work.
 - Check that import in legacy script works and puts item in s:
 - Error in any command in "vim9script" aborts sourcing.
@@ -75,8 +85,6 @@ Also:
 	map(list, SomeFunc)
 - Test: Function declared inside a :def function is local, disappears at the
   end of the function.  Unless g: is used, just like with variables.
-- Can we omit \ for line continuation inside (), {}, ?
-  Requires parsing while reading a function.  Like fgetline in do_one_cmd()?
 - implement :type
 - import type declaration?
 - implement class
@@ -93,6 +101,7 @@ Popup windows:
     Is buf->nwindows incorrect?
 - popup_clear() and popup_close() should close the terminal popup, and
    make the buffer hidden. #5745
+- Cursor not updated before a redraw, making it jump. (#5943)
 - With terminal in popup, allow for popup_hide() to temporarily hide it.?
 - Fire some autocommand event after a new popup window was created and
   positioned?  PopupNew?  Could be used to set some options or move it out of
@@ -113,6 +122,8 @@ Popup windows:
 Text properties:
 - Patch to fix that split / join does not update properties properly (Axel
   Forsman, #5839)  Alternative: #5875.
+- :goto does not go to the right place when test properties are present.
+  (#5930)
 - "cc" does not call inserted_bytes(). (Axel Forsman, #5763)
 - Get E685 with a sequence of commands. (#5674)
 - Combining text property with 'cursorline' does not always work (Billie
@@ -152,6 +163,10 @@ Terminal debugger:
   with another Vim instance.
 
 Terminal emulator window:
+- When started with ":terminal ++close" and the shell exits but there is a
+  background process, the window remains open, because the channel still
+  exists (and output still shows).  Perhaps close the window when an explicit
+  ++close was used? (#5931)
 - When the job in the terminal doesn't use mouse events, let the scroll wheel
   scroll the scrollback, like a terminal does at the shell prompt. #2490
   And use modeless selection.  #2962
@@ -184,7 +199,7 @@ Terminal emulator window:
 
 Error numbers available:
 E453, E454, E460, E489, E491, E565, E578, E610, E611, E653,
-E654, E856, E857, E861, E900
+E856, E857, E861, E900
 
 Buffer autocommands are a bit inconsistent.  Add a separate set of
 autocommands for the buffer lifecycle:
@@ -198,7 +213,7 @@ The buffer list and windows are locked, no changes possible
 Patch to fix drawing error with DirectX. (James Grant, #5688)
 Causes flicker on resizing.
 
-In gvim always set t_Co to 16777216 (#5903)
+Patch to support ipv6 for channel. (Ozaki Kiichi, #5893)
 
 Patch to explain use of "%" in :!.  (David Briscoe, #5591)
 

@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Apr 09
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Apr 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -66,6 +66,10 @@ comment can also start with #.  Normally this is a command to list text with
 numbers, but you can also use `:number` for that. >
 	let count = 0  # number of occurences of Ni!
 
+To improve readability there must be a space between the command and the #
+that starts a comment.  Note that #{ is the start of a dictionary, therefore
+it cannot start a comment.
+
 
 Vim9 functions ~
 
@@ -80,6 +84,29 @@ In the function body:
   	def MyFunc(...itemlist: list<type>)
 	   for item in itemlist
 	     ...
+
+
+Functions are script-local by default ~
+
+When using `:function` or `:def` to specify a new function at the script level
+in a Vim9 script, the function is local to the script, as if "s:" was
+prefixed.  To define a global function the "g:" prefix must be used.
+
+When using `:function` or `:def` to specify a new function inside a function,
+the function is local to the function.  It is not possible to define a
+script-local function inside a function. To define a global function the "g:"
+prefix must be used.
+
+When referring to a function and no "s:" or "g:" prefix is used, Vim will
+search for the function in this order:
+- Local to the current function scope.
+- Local to the current script file.
+- Imported functions, see `:import`.
+- Global.
+
+Global functions can be defined and deleted at nearly any time.  In Vim9
+script script-local functions are defined once when the script is sourced and
+cannot be deleted.
 
 
 Variable declarations with :let and :const ~
@@ -468,9 +495,12 @@ Then "myvar" will only exist in this file.  While without `vim9script` it would
 be available as `g:myvar` from any other script and function.
 
 The variables at the file level are very much like the script-local "s:"
-variables in legacy Vim script, but the "s:" is omitted.
+variables in legacy Vim script, but the "s:" is omitted.  And they cannot be
+deleted.
 
-In Vim9 script the global "g:" namespace can still be used as before.
+In Vim9 script the global "g:" namespace can still be used as before.  And the
+"w:", "b:" and "t:" namespaces.  These have in common that variables are not
+declared and they can be deleted.
 
 A side effect of `:vim9script` is that the 'cpoptions' option is set to the
 Vim default value, like with: >

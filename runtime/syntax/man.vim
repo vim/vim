@@ -3,7 +3,7 @@
 " Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Previous Maintainer:	Gautam H. Mudunuri <gmudunur@informatica.com>
 " Version Info:
-" Last Change:	2015 Nov 24
+" Last Change:	2020 Apr 15
 
 " Additional highlighting by Johannes Tanzler <johannes.tanzler@aon.at>:
 "	* manSubHeading
@@ -18,8 +18,11 @@ endif
 runtime! syntax/ctrlh.vim
 
 syn case ignore
+
+syn match manHeader '\%1l.*'
+exe 'syn match manFooter ''\%' . line('$') . 'l.*'''
+
 syn match  manReference       "\f\+([1-9][a-z]\=)"
-syn match  manTitle	      "^\f\+([0-9]\+[a-z]\=).*"
 syn match  manSectionHeading  "^[a-z][a-z -]*[a-z]$"
 syn match  manSubHeading      "^\s\{3\}[a-z][a-z -]*[a-z]$"
 syn match  manOptionDesc      "^\s*[+-][a-z0-9]\S*"
@@ -36,7 +39,9 @@ endif
 " Define the default highlighting.
 " Only when an item doesn't have highlighting yet
 
-hi def link manTitle	    Title
+hi def link manHeader Title
+hi def link manFooter PreProc
+
 hi def link manSectionHeading  Statement
 hi def link manOptionDesc	    Constant
 hi def link manLongOptionDesc  Constant

@@ -1,4 +1,4 @@
-*popup.txt*  For Vim version 8.2.  Last change: 2020 Mar 21
+*popup.txt*  For Vim version 8.2.  Last change: 2020 Apr 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -535,6 +535,8 @@ popup_setoptions({id}, {options})			*popup_setoptions()*
 			wrap
 			zindex
 		The options from |popup_move()| can also be used.
+		Generally, setting an option to zero or an empty string resets
+		it to the default value, but there are exceptions.
 		For "hidden" use |popup_hide()| and |popup_show()|.
 		"tabpage" cannot be changed.
 
@@ -579,15 +581,15 @@ The second argument of |popup_create()| is a dictionary with options:
 	line		Screen line where to position the popup.  Can use a
 			number or "cursor", "cursor+1" or "cursor-1" to use
 			the line of the cursor and add or subtract a number of
-			lines.  If omitted the popup is vertically centered.
-			The first line is 1.
+			lines.  If omitted or zero the popup is vertically
+			centered.  The first line is 1.
 			When using "textprop" the number is relative to the
 			text property and can be negative.
 	col		Screen column where to position the popup.  Can use a
 			number or "cursor" to use the column of the cursor,
 			"cursor+9" or "cursor-9" to add or subtract a number
-			of columns.  If omitted the popup is horizontally
-			centered.  The first column is 1.
+			of columns.  If omitted or zero the popup is
+			horizontally centered.  The first column is 1.
 			When using "textprop" the number is relative to the
 			text property and can be negative.
 	pos		"topleft", "topright", "botleft" or "botright":
