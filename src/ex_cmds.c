@@ -451,12 +451,9 @@ ex_sort(exarg_T *eap)
 	}
 	else if (!ASCII_ISALPHA(*p) && regmatch.regprog == NULL)
 	{
-	    s = skip_regexp(p + 1, *p, TRUE);
-	    if (*s != *p)
-	    {
-		emsg(_(e_invalpat));
+	    s = skip_regexp_err(p + 1, *p, TRUE);
+	    if (s == NULL)
 		goto sortend;
-	    }
 	    *s = NUL;
 	    // Use last search pattern if sort pattern is empty.
 	    if (s == p + 1)

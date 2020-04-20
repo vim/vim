@@ -5036,7 +5036,7 @@ ex_gui(exarg_T *eap)
 	// of the argument ending up after the shell prompt.
 	msg_clr_eos_force();
 #ifdef GUI_MAY_SPAWN
-	if (!ends_excmd(*eap->arg))
+	if (!ends_excmd2(eap->cmd, eap->arg))
 	    gui_start(eap->arg);
 	else
 #endif
@@ -5045,7 +5045,7 @@ ex_gui(exarg_T *eap)
 	channel_gui_register_all();
 #endif
     }
-    if (!ends_excmd(*eap->arg))
+    if (!ends_excmd2(eap->cmd, eap->arg))
 	ex_next(eap);
 }
 

@@ -1153,22 +1153,76 @@ def Test_vim9_comment()
 
   CheckDefFailure([
       'try# comment',
-      'echo "yes"',
+      '  echo "yes"',
       'catch',
       'endtry',
       ], 'E488:')
+  CheckScriptFailure([
+      'vim9script',
+      'try# comment',
+      'echo "yes"',
+      ], 'E488:')
   CheckDefFailure([
       'try',
-      'echo "yes"',
+      '  echo "yes"',
       'catch# comment',
       'endtry',
       ], 'E488:')
+  CheckScriptFailure([
+      'vim9script',
+      'try',
+      '  echo "yes"',
+      'catch# comment',
+      'endtry',
+      ], 'E654:')
+  CheckDefFailure([
+      'try',
+      '  echo "yes"',
+      'catch /pat/# comment',
+      'endtry',
+      ], 'E488:')
+  CheckScriptFailure([
+      'vim9script',
+      'try',
+      '  throw "pat"',
+      'catch /pat/# comment',
+      'endtry',
+      ], 'E605:')
   CheckDefFailure([
       'try',
       'echo "yes"',
       'catch',
       'endtry# comment',
       ], 'E488:')
+  CheckScriptFailure([
+      'vim9script',
+      'try',
+      '  echo "yes"',
+      'catch',
+      'endtry# comment',
+      ], 'E600:')
+
+  CheckScriptSuccess([
+      'vim9script',
+      'hi # comment',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      'hi# comment',
+      ], 'E416:')
+enddef
+
+def Test_vim9_comment_gui()
+  CheckCanRunGui
+
+  CheckScriptFailure([
+      'vim9script',
+      'gui#comment'
+      ], 'E499:')
+  CheckScriptFailure([
+      'vim9script',
+      'gui -f#comment'
+      ], 'E499:')
 enddef
 
 def Test_vim9_comment_not_compiled()

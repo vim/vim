@@ -534,17 +534,37 @@ skip_anyof(char_u *p)
 
 /*
  * Skip past regular expression.
- * Stop at end of "startp" or where "dirc" is found ('/', '?', etc).
+ * Stop at end of "startp" or where "delim" is found ('/', '?', etc).
  * Take care of characters with a backslash in front of it.
  * Skip strings inside [ and ].
  */
     char_u *
 skip_regexp(
     char_u	*startp,
-    int		dirc,
+    int		delim,
     int		magic)
 {
-    return skip_regexp_ex(startp, dirc, magic, NULL, NULL);
+    return skip_regexp_ex(startp, delim, magic, NULL, NULL);
+}
+
+/*
+ * Call skip_regexp() and when the delimiter does not match give an error and
+ * return NULL.
+ */
+    char_u *
+skip_regexp_err(
+    char_u	*startp,
+    int		delim,
+    int		magic)
+{
+    char_u *p = skip_regexp(startp, delim, magic);
+
+    if (*p != delim)
+    {
+	semsg(_("E654: missing delimiter after search pattern: %s"), startp);
+	return NULL;
+    }
+    return p;
 }
 
 /*

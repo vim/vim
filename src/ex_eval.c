@@ -1021,12 +1021,12 @@ ex_else(exarg_T *eap)
     if (eap->cmdidx == CMD_elseif)
     {
 	result = eval_to_bool(eap->arg, &error, &eap->nextcmd, skip);
+
 	// When throwing error exceptions, we want to throw always the first
 	// of several errors in a row.  This is what actually happens when
 	// a conditional error was detected above and there is another failure
 	// when parsing the expression.  Since the skip flag is set in this
 	// case, the parsing error will be ignored by emsg().
-
 	if (!skip && !error)
 	{
 	    if (result)
@@ -1518,7 +1518,7 @@ ex_catch(exarg_T *eap)
 						       &cstack->cs_looplevel);
     }
 
-    if (ends_excmd(*eap->arg))	// no argument, catch all errors
+    if (ends_excmd2(eap->cmd, eap->arg))   // no argument, catch all errors
     {
 	pat = (char_u *)".*";
 	end = NULL;
@@ -1527,7 +1527,9 @@ ex_catch(exarg_T *eap)
     else
     {
 	pat = eap->arg + 1;
-	end = skip_regexp(pat, *eap->arg, TRUE);
+	end = skip_regexp_err(pat, *eap->arg, TRUE);
+	if (end == NULL)
+	    give_up = TRUE;
     }
 
     if (!give_up)
@@ -1548,7 +1550,8 @@ ex_catch(exarg_T *eap)
 	if (!skip && (cstack->cs_flags[idx] & CSF_THROWN)
 		&& !(cstack->cs_flags[idx] & CSF_CAUGHT))
 	{
-	    if (end != NULL && *end != NUL && !ends_excmd(*skipwhite(end + 1)))
+	    if (end != NULL && *end != NUL
+				      && !ends_excmd2(end, skipwhite(end + 1)))
 	    {
 		emsg(_(e_trailing));
 		return;
