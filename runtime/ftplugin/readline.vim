@@ -8,12 +8,24 @@ if exists("b:did_ftplugin")
 endif
 let b:did_ftplugin = 1
 
-let s:cpo_save = &cpo
-set cpo&vim
-
+setlocal comments=:# commentstring=#\ %s formatoptions-=t formatoptions+=croql
 let b:undo_ftplugin = "setl com< cms< fo<"
 
-setlocal comments=:# commentstring=#\ %s formatoptions-=t formatoptions+=croql
+if !has('unix')
+  finish
+endif
 
-let &cpo = s:cpo_save
-unlet s:cpo_save
+if !has('gui_running')
+  command! -buffer -nargs=1 Sman
+        \ silent exe '!' . 'LESS= MANPAGER="less --pattern=''^\s+' . <q-args> . '\b'' --hilite-search" man ' . '3 readline' |
+        \ redraw!
+elseif has('terminal')
+  command! -buffer -nargs=1 Sman
+        \ silent exe 'term ' . 'env LESS= MANPAGER="less --pattern=''' . escape('^\s+' . <q-args> . '\b', '\') . ''' --hilite-search" man ' . '3 readline'
+else
+  finish
+endif
+setlocal iskeyword+=-
+setlocal keywordprg=:Sman
+
+let b:undo_ftplugin .= '| setlocal keywordprg< iskeyword<'

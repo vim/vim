@@ -31,8 +31,21 @@ if has("gui_win32")
 		\	"All Files (*.*)\t*.*\n"
 endif
 
+if executable('bash')
+  " linting
+  setlocal makeprg=bash\ -n\ --\ %:S
+  setlocal errorformat=%f:\ line\ %l:\ %m
+  " keyword lookup
+  if executable('less')
+    command! -buffer -nargs=1 Help silent exe '!bash -c "help <args>" 2>/dev/null | less || man "<args>" | LESS= less' | redraw!
+  else
+    command! -buffer -nargs=1 Help echo system('bash -c "help <args>" 2>/dev/null || man "<args>"')
+  endif
+  setlocal keywordprg=:Help
+endif
+
 " Undo the stuff we changed.
-let b:undo_ftplugin = "setlocal cms< | unlet! b:browsefilter b:match_words"
+let b:undo_ftplugin = "setlocal cms< keywordprg< makeprg< errorformat< | unlet! b:browsefilter b:match_words"
 
 " Restore the saved compatibility options.
 let &cpo = s:save_cpo

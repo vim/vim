@@ -24,7 +24,12 @@ if has("gui_win32") && !exists("b:browsefilter")
   let b:browsefilter = "DOS Batch Files (*.bat, *.cmd)\t*.bat;*.cmd\nAll Files (*.*)\t*.*\n"
 endif
 
-let b:undo_ftplugin = "setlocal comments< formatoptions<"
+if executable('help.exe')
+ command! -buffer -nargs=1 Help echo system('help.exe "<args>"')
+ setlocal keywordprg=:Help
+endif
+
+let b:undo_ftplugin = "setlocal comments< formatoptions< keywordprg<"
     \ . "| unlet! b:browsefiler"
 
 let &cpo = s:cpo_save
