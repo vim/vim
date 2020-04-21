@@ -321,13 +321,7 @@ update_screen(int type_arg)
 	if (wp->w_redr_ruler)
 	{
 #  if defined(MSWIN) && !defined(DYNAMIC_IME) && !defined(__GNUC__)
-	    HWND ime = ImmGetDefaultIMEWnd(GetConsoleWindow());
-
-	    // #define IMC_GETOPENSTATUS 5 (undocumented)
-	    // Ruler does not update if IME is on.
-	    if (ime != NULL && SendMessage(ime, WM_IME_CONTROL, 5, 0))
-		wp->w_redr_ruler = FALSE;
-	    else
+	    if (!is_ime_open())
 #  endif
 	    {
 		cursor_off();
@@ -2965,7 +2959,10 @@ redraw_after_callback(int call_update_screen)
 
 	    // Redraw in the same position, so that the user can continue
 	    // editing the command.
-	    redrawcmdline_ex(FALSE);
+#if defined(MSWIN) && !defined(DYNAMIC_IME) && !defined(__GNUC__)
+	    if (!is_ime_open())
+#endif
+		redrawcmdline_ex(FALSE);
 	}
     }
     else if (State & (NORMAL | INSERT | TERMINAL))

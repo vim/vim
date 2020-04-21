@@ -7632,3 +7632,15 @@ resize_console_buf(void)
     }
 }
 #endif
+
+#if defined(MSWIN) && !defined(DYNAMIC_IME) && !defined(__GNUC__)
+    int
+is_ime_open(void)
+{
+    HWND ime = ImmGetDefaultIMEWnd(GetConsoleWindow());
+
+    // #define IMC_GETOPENSTATUS 5 (undocumented)
+    // Ruler does not update if IME is on.
+    return (ime != NULL && SendMessage(ime, WM_IME_CONTROL, 5, 0));
+}
+#endif
