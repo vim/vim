@@ -23,6 +23,12 @@ CTRL-L			Clear and redraw the screen.  The redraw may happen
 			or function.  Also when halfway a mapping and
 			'lazyredraw' is set.
 
+						*:redrawr* *:redrawruler*
+:redrawr[uler][!]	Redraw the ruler of the current window. When ! is
+			included all rulers are redrawn.
+			'rulerformat' includes an item that doesn't cause
+			automatic updating.
+
 						*:redraws* *:redrawstatus*
 :redraws[tatus][!]	Redraw the status line of the current window.  When !
 			is included all status lines are redrawn.
