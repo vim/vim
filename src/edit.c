@@ -175,16 +175,10 @@ edit(
 #endif
     // Don't allow changes in the buffer while editing the cmdline.  The
     // caller of getcmdline() may get confused.
-    if (textlock != 0)
-    {
-	emsg(_(e_secure));
-	return FALSE;
-    }
-
     // Don't allow recursive insert mode when busy with completion.
-    if (ins_compl_active() || compl_busy || pum_visible())
+    if (textlock != 0 || ins_compl_active() || compl_busy || pum_visible())
     {
-	emsg(_(e_secure));
+	emsg(_(e_textlock));
 	return FALSE;
     }
     ins_compl_clear();	    // clear stuff for CTRL-X mode

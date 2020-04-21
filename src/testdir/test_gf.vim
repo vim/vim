@@ -134,13 +134,13 @@ func Test_gf_error()
 
   " gf is not allowed when text is locked
   au InsertCharPre <buffer> normal! gF<CR>
-  let caught_e523 = 0
+  let caught_e565 = 0
   try
     call feedkeys("ix\<esc>", 'xt')
-  catch /^Vim\%((\a\+)\)\=:E523/ " catch E523
-    let caught_e523 = 1
+  catch /^Vim\%((\a\+)\)\=:E565/ " catch E565
+    let caught_e565 = 1
   endtry
-  call assert_equal(1, caught_e523)
+  call assert_equal(1, caught_e565)
   au! InsertCharPre
 
   bwipe!

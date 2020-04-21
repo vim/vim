@@ -2217,6 +2217,8 @@ expand_by_function(
     pos = curwin->w_cursor;
     curwin_save = curwin;
     curbuf_save = curbuf;
+    // Lock the text to avoid weird things from happening.
+    ++textlock;
 
     // Call a function, which returns a list or dict.
     if (call_vim_function(funcname, 2, args, &rettv) == OK)
@@ -2239,6 +2241,7 @@ expand_by_function(
 		break;
 	}
     }
+    --textlock;
 
     if (curwin_save != curwin || curbuf_save != curbuf)
     {
@@ -2431,6 +2434,7 @@ set_completion(colnr_T startcol, list_T *list)
 f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 {
     int	    startcol;
+    int	    save_textlock = textlock;
 
     if ((State & INSERT) == 0)
     {
@@ -2438,22 +2442,24 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
 
+    // "textlock" is set when evaluating 'completefunc' but we can change text
+    // here.
+    textlock = 0;
+
     // Check for undo allowed here, because if something was already inserted
     // the line was already saved for undo and this check isn't done.
     if (!undo_allowed())
 	return;
 
     if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
-    {
 	emsg(_(e_invarg));
-	return;
+    else
+    {
+	startcol = (int)tv_get_number_chk(&argvars[0], NULL);
+	if (startcol > 0)
+	    set_completion(startcol - 1, argvars[1].vval.v_list);
     }
-
-    startcol = (int)tv_get_number_chk(&argvars[0], NULL);
-    if (startcol <= 0)
-	return;
-
-    set_completion(startcol - 1, argvars[1].vval.v_list);
+    textlock = save_textlock;
 }
 
 /*

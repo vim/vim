@@ -1678,9 +1678,10 @@ EXTERN char e_letunexp[]	INIT(= N_("E18: Unexpected characters in :let"));
 EXTERN char e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));
 #endif
 #ifdef HAVE_SANDBOX
-EXTERN char e_sandbox[]	INIT(= N_("E48: Not allowed in sandbox"));
+EXTERN char e_sandbox[]		INIT(= N_("E48: Not allowed in sandbox"));
 #endif
-EXTERN char e_secure[]	INIT(= N_("E523: Not allowed here"));
+EXTERN char e_secure[]		INIT(= N_("E523: Not allowed here"));
+EXTERN char e_textlock[]	INIT(= N_("E565: Not allowed to change text here"));
 #if defined(AMIGA) || defined(MACOS_X) || defined(MSWIN)  \
 	|| defined(UNIX) || defined(VMS)
 EXTERN char e_screenmode[]	INIT(= N_("E359: Screen mode setting not supported"));
