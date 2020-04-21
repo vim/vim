@@ -934,6 +934,9 @@ func Test_verbosefile()
   let log = readfile('Xlog')
   call assert_match("foo\nbar", join(log, "\n"))
   call delete('Xlog')
+  call mkdir('Xdir')
+  call assert_fails('set verbosefile=Xdir', 'E474:')
+  call delete('Xdir', 'd')
 endfunc
 
 func Test_verbose_option()

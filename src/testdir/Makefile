@@ -38,7 +38,7 @@ test49.out: test49.vim
 
 test_options.res test_alot.res: opt_test.vim
 
-SCRIPTS_BENCH = bench_re_freeze.out
+SCRIPTS_BENCH = test_bench_regexp.res
 
 .SUFFIXES: .in .out .res .vim
 
@@ -146,15 +146,6 @@ test1.out: test1.in
 		fi"
 	-rm -rf X* test.ok viminfo
 
-bench_re_freeze.out: bench_re_freeze.vim
-	-rm -rf benchmark.out $(RM_ON_RUN)
-	# Sleep a moment to avoid that the xterm title is messed up.
-	# 200 msec is sufficient, but only modern sleep supports a fraction of
-	# a second, fall back to a second if it fails.
-	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
-	$(RUN_VIM) $*.in $(REDIR_TEST_TO_NULL)
-	@/bin/sh -c "if test -f benchmark.out; then cat benchmark.out; fi"
-
 nolog:
 	-rm -f test.log messages
 
@@ -193,3 +184,12 @@ opt_test.vim: ../optiondefs.h gen_opt_test.vim
 
 test_xxd.res:
 	XXD=$(XXDPROG); export XXD; $(RUN_VIMTEST) $(NO_INITS) -S runtest.vim test_xxd.vim
+
+test_bench_regexp.res: test_bench_regexp.vim
+	-rm -rf benchmark.out $(RM_ON_RUN)
+	# Sleep a moment to avoid that the xterm title is messed up.
+	# 200 msec is sufficient, but only modern sleep supports a fraction of
+	# a second, fall back to a second if it fails.
+	@-/bin/sh -c "sleep .2 > /dev/null 2>&1 || sleep 1"
+	$(RUN_VIMTEST) $(NO_INITS) -S runtest.vim $*.vim $(REDIR_TEST_TO_NULL)
+	@/bin/sh -c "if test -f benchmark.out; then cat benchmark.out; fi"
