@@ -32,7 +32,6 @@ func Test_list_slice()
   call assert_equal([1, 'as''d', [1, 2, function('strlen')], {'a': 1}], l[0:8])
   call assert_equal([], l[8:-1])
   call assert_equal([], l[0:-10])
-  call assert_equal([], test_null_list()[:2])
 endfunc
 
 " List identity
@@ -145,6 +144,20 @@ func Test_list_func_remove()
   call assert_fails("call remove(l, 3, 2)", 'E16:')
   call assert_fails("call remove(1, 0)", 'E896:')
   call assert_fails("call remove(l, l)", 'E745:')
+endfunc
+
+" List add() function
+func Test_list_add()
+  let l = []
+  call add(l, 1)
+  call add(l, [2, 3])
+  call add(l, [])
+  call add(l, test_null_list())
+  call add(l, {'k' : 3})
+  call add(l, {})
+  call add(l, test_null_dict())
+  call assert_equal([1, [2, 3], [], [], {'k' : 3}, {}, {}], l)
+  call assert_equal(1, add(test_null_list(), 4))
 endfunc
 
 " Tests for Dictionary type
@@ -651,8 +664,6 @@ func Test_reverse_sort_uniq()
   call assert_fails("call sort([1, 2], function('min'), 1)", "E715:")
   call assert_fails("call sort([1, 2], function('invalid_func'))", "E700:")
   call assert_fails("call sort([1, 2], function('min'))", "E702:")
-  call assert_equal(0, sort(test_null_list()))
-  call assert_equal(0, uniq(test_null_list()))
 endfunc
 
 " splitting a string to a List using split()
@@ -900,19 +911,32 @@ endfunc
 
 " Test for a null list
 func Test_null_list()
-  call assert_equal(0, join(test_null_list()))
+  let l = test_null_list()
+  call assert_equal(0, join(l))
+  call assert_equal(0, len(l))
+  call assert_equal(1, empty(l))
   call assert_fails('let s = join([1, 2], [])', 'E730:')
   call assert_equal([], split(test_null_string()))
+  call assert_equal([], l[:2])
+  call assert_true([] == l)
+  call assert_equal('[]', string(l))
+  call assert_equal(0, sort(l))
+  call assert_equal(0, uniq(l))
+  call assert_fails("let k = [] + l", 'E15:')
+  call assert_fails("let k = l + []", 'E15:')
 endfunc
 
 " Test for a null dict
 func Test_null_dict()
-  call assert_equal(0, items(test_null_dict()))
-  call assert_equal(0, keys(test_null_dict()))
-  call assert_equal(0, values(test_null_dict()))
-  call assert_false(has_key(test_null_dict(), 'k'))
-  call assert_fails("let l = [] + test_null_list()", 'E15:')
-  call assert_fails("let l = test_null_list() + []", 'E15:')
+  let d = test_null_dict()
+  call assert_true({} == d)
+  call assert_equal(0, len(d))
+  call assert_equal(1, empty(d))
+  call assert_equal(0, items(d))
+  call assert_equal(0, keys(d))
+  call assert_equal(0, values(d))
+  call assert_false(has_key(d, 'k'))
+  call assert_equal('{}', string(d))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
