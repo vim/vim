@@ -4528,8 +4528,9 @@ echo_string_core(
 	case VAR_LIST:
 	    if (tv->vval.v_list == NULL)
 	    {
+		// NULL list is equivalent to empty list.
 		*tofree = NULL;
-		r = NULL;
+		r = (char_u *)"[]";
 	    }
 	    else if (copyID != 0 && tv->vval.v_list->lv_copyID == copyID
 		    && tv->vval.v_list->lv_len > 0)
