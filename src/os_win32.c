@@ -6216,6 +6216,14 @@ mch_write(
 	int prefix = -1;
 	char_u ch;
 
+	// While processing a sequence, on rare occasions it seems that another
+	// sequence may be inserted asynchronously.
+	if (len < 0)
+	{
+	    redraw_all_later(CLEAR);
+	    return;
+	}
+
 	while((ch = s[++prefix]))
 	    if (ch <= 0x1e && !(ch != '\n' && ch != '\r' && ch != '\b'
 						&& ch != '\a' && ch != '\033'))
