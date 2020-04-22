@@ -96,13 +96,6 @@ func Test_loop_over_null_list()
   endfor
 endfunc
 
-func Test_compare_null_dict()
-  call assert_fails('let x = test_null_dict()[10]')
-  call assert_equal({}, {})
-  call assert_equal(test_null_dict(), test_null_dict())
-  call assert_notequal({}, test_null_dict())
-endfunc
-
 func Test_set_reg_null_list()
   call setreg('x', test_null_list())
 endfunc

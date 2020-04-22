@@ -928,8 +928,9 @@ endfunc
 
 " Test for a null dict
 func Test_null_dict()
+  call assert_equal(test_null_dict(), test_null_dict())
   let d = test_null_dict()
-  call assert_true({} == d)
+  call assert_equal({}, d)
   call assert_equal(0, len(d))
   call assert_equal(1, empty(d))
   call assert_equal(0, items(d))
@@ -937,6 +938,8 @@ func Test_null_dict()
   call assert_equal(0, values(d))
   call assert_false(has_key(d, 'k'))
   call assert_equal('{}', string(d))
+  call assert_fails('let x = test_null_dict()[10]')
+  call assert_equal({}, {})
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
