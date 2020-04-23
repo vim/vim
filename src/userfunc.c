@@ -2614,8 +2614,8 @@ ex_function(exarg_T *eap)
 	    }
 	    else
 	    {
-		ret_type = NULL;
 		semsg(_("E1056: expected a type: %s"), ret_type);
+		ret_type = NULL;
 	    }
 	}
     }
