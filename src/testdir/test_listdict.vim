@@ -32,6 +32,11 @@ func Test_list_slice()
   call assert_equal([1, 'as''d', [1, 2, function('strlen')], {'a': 1}], l[0:8])
   call assert_equal([], l[8:-1])
   call assert_equal([], l[0:-10])
+  " perform an operation on a list slice
+  let l = [1, 2, 3]
+  let l[:1] += [1, 2]
+  let l[2:] -= [1]
+  call assert_equal([2, 4, 2], l)
 endfunc
 
 " List identity
@@ -542,6 +547,15 @@ func Test_dict_lock_extend()
   call assert_equal({'a': 99, 'b': 100}, d)
 endfunc
 
+" Cannot use += with a locked dick
+func Test_dict_lock_operator()
+  unlet! d
+  let d = {}
+  lockvar d
+  call assert_fails("let d += {'k' : 10}", 'E741:')
+  unlockvar d
+endfunc
+
 " No remove() of write-protected scope-level variable
 func Tfunc1(this_is_a_long_parameter_name)
   call assert_fails("call remove(a:, 'this_is_a_long_parameter_name')", 'E742')
@@ -907,6 +921,11 @@ func Test_listdict_index()
   call assert_fails("let l = insert([1,2,3], 4, 10)", 'E684:')
   call assert_fails("let l = insert([1,2,3], 4, -10)", 'E684:')
   call assert_fails("let l = insert([1,2,3], 4, [])", 'E745:')
+  let l = [1, 2, 3]
+  call assert_fails("let l[i] = 3", 'E121:')
+  call assert_fails("let l[1.1] = 4", 'E806:')
+  call assert_fails("let l[:i] = [4, 5]", 'E121:')
+  call assert_fails("let l[:3.2] = [4, 5]", 'E806:')
 endfunc
 
 " Test for a null list
