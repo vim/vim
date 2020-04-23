@@ -1617,4 +1617,35 @@ func Test_search_in_visual_area()
   close!
 endfunc
 
+" Test for searching with 'smartcase' and 'ignorecase'
+func Test_search_smartcase()
+  new
+  call setline(1, ['', 'Hello'])
+  set noignorecase nosmartcase
+  call assert_fails('exe "normal /\\a\\_.\\(.*\\)O\<CR>"', 'E486:')
+
+  set ignorecase nosmartcase
+  exe "normal /\\a\\_.\\(.*\\)O\<CR>"
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  call cursor(1, 1)
+  set ignorecase smartcase
+  call assert_fails('exe "normal /\\a\\_.\\(.*\\)O\<CR>"', 'E486:')
+
+  exe "normal /\\a\\_.\\(.*\\)o\<CR>"
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  set ignorecase& smartcase&
+  close!
+endfunc
+
+" Test searching past the end of a file
+func Test_search_past_eof()
+  new
+  call setline(1, ['Line'])
+  exe "normal /\\n\\zs\<CR>"
+  call assert_equal([1, 4], [line('.'), col('.')])
+  close!
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

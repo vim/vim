@@ -871,7 +871,10 @@ get_lval(
 		if (len != -1)
 		    key[len] = prevval;
 		if (wrong)
+		{
+		    clear_tv(&var1);
 		    return NULL;
+		}
 	    }
 
 	    if (lp->ll_di == NULL)
@@ -4553,8 +4556,9 @@ echo_string_core(
 	case VAR_DICT:
 	    if (tv->vval.v_dict == NULL)
 	    {
+		// NULL dict is equivalent to empty dict.
 		*tofree = NULL;
-		r = NULL;
+		r = (char_u *)"{}";
 	    }
 	    else if (copyID != 0 && tv->vval.v_dict->dv_copyID == copyID
 		    && tv->vval.v_dict->dv_hashtab.ht_used != 0)
@@ -4565,6 +4569,7 @@ echo_string_core(
 	    else
 	    {
 		int old_copyID = tv->vval.v_dict->dv_copyID;
+
 		tv->vval.v_dict->dv_copyID = copyID;
 		*tofree = dict2string(tv, copyID, restore_copyID);
 		if (restore_copyID)

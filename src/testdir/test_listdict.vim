@@ -32,7 +32,11 @@ func Test_list_slice()
   call assert_equal([1, 'as''d', [1, 2, function('strlen')], {'a': 1}], l[0:8])
   call assert_equal([], l[8:-1])
   call assert_equal([], l[0:-10])
-  call assert_equal([], test_null_list()[:2])
+  " perform an operation on a list slice
+  let l = [1, 2, 3]
+  let l[:1] += [1, 2]
+  let l[2:] -= [1]
+  call assert_equal([2, 4, 2], l)
 endfunc
 
 " List identity
@@ -145,6 +149,20 @@ func Test_list_func_remove()
   call assert_fails("call remove(l, 3, 2)", 'E16:')
   call assert_fails("call remove(1, 0)", 'E896:')
   call assert_fails("call remove(l, l)", 'E745:')
+endfunc
+
+" List add() function
+func Test_list_add()
+  let l = []
+  call add(l, 1)
+  call add(l, [2, 3])
+  call add(l, [])
+  call add(l, test_null_list())
+  call add(l, {'k' : 3})
+  call add(l, {})
+  call add(l, test_null_dict())
+  call assert_equal([1, [2, 3], [], [], {'k' : 3}, {}, {}], l)
+  call assert_equal(1, add(test_null_list(), 4))
 endfunc
 
 " Tests for Dictionary type
@@ -529,6 +547,15 @@ func Test_dict_lock_extend()
   call assert_equal({'a': 99, 'b': 100}, d)
 endfunc
 
+" Cannot use += with a locked dick
+func Test_dict_lock_operator()
+  unlet! d
+  let d = {}
+  lockvar d
+  call assert_fails("let d += {'k' : 10}", 'E741:')
+  unlockvar d
+endfunc
+
 " No remove() of write-protected scope-level variable
 func Tfunc1(this_is_a_long_parameter_name)
   call assert_fails("call remove(a:, 'this_is_a_long_parameter_name')", 'E742')
@@ -651,8 +678,6 @@ func Test_reverse_sort_uniq()
   call assert_fails("call sort([1, 2], function('min'), 1)", "E715:")
   call assert_fails("call sort([1, 2], function('invalid_func'))", "E700:")
   call assert_fails("call sort([1, 2], function('min'))", "E702:")
-  call assert_equal(0, sort(test_null_list()))
-  call assert_equal(0, uniq(test_null_list()))
 endfunc
 
 " splitting a string to a List using split()
@@ -896,23 +921,44 @@ func Test_listdict_index()
   call assert_fails("let l = insert([1,2,3], 4, 10)", 'E684:')
   call assert_fails("let l = insert([1,2,3], 4, -10)", 'E684:')
   call assert_fails("let l = insert([1,2,3], 4, [])", 'E745:')
+  let l = [1, 2, 3]
+  call assert_fails("let l[i] = 3", 'E121:')
+  call assert_fails("let l[1.1] = 4", 'E806:')
+  call assert_fails("let l[:i] = [4, 5]", 'E121:')
+  call assert_fails("let l[:3.2] = [4, 5]", 'E806:')
 endfunc
 
 " Test for a null list
 func Test_null_list()
-  call assert_equal(0, join(test_null_list()))
+  let l = test_null_list()
+  call assert_equal(0, join(l))
+  call assert_equal(0, len(l))
+  call assert_equal(1, empty(l))
   call assert_fails('let s = join([1, 2], [])', 'E730:')
   call assert_equal([], split(test_null_string()))
+  call assert_equal([], l[:2])
+  call assert_true([] == l)
+  call assert_equal('[]', string(l))
+  call assert_equal(0, sort(l))
+  call assert_equal(0, uniq(l))
+  call assert_fails("let k = [] + l", 'E15:')
+  call assert_fails("let k = l + []", 'E15:')
 endfunc
 
 " Test for a null dict
 func Test_null_dict()
-  call assert_equal(0, items(test_null_dict()))
-  call assert_equal(0, keys(test_null_dict()))
-  call assert_equal(0, values(test_null_dict()))
-  call assert_false(has_key(test_null_dict(), 'k'))
-  call assert_fails("let l = [] + test_null_list()", 'E15:')
-  call assert_fails("let l = test_null_list() + []", 'E15:')
+  call assert_equal(test_null_dict(), test_null_dict())
+  let d = test_null_dict()
+  call assert_equal({}, d)
+  call assert_equal(0, len(d))
+  call assert_equal(1, empty(d))
+  call assert_equal(0, items(d))
+  call assert_equal(0, keys(d))
+  call assert_equal(0, values(d))
+  call assert_false(has_key(d, 'k'))
+  call assert_equal('{}', string(d))
+  call assert_fails('let x = test_null_dict()[10]')
+  call assert_equal({}, {})
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
