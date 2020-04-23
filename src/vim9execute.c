@@ -460,13 +460,20 @@ call_eval_func(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
     if (call_by_name(name, argcount, ectx, iptr) == FAIL
 					  && called_emsg == called_emsg_before)
     {
-	// "name" may be a variable that is a funcref or partial
-	//    if find variable
-	//      call_partial()
-	//    else
-	//      semsg(_(e_unknownfunc), name);
-	emsg("call_eval_func(partial) not implemented yet");
-	return FAIL;
+	dictitem_T	*v;
+
+	v = find_var(name, NULL, FALSE);
+	if (v == NULL)
+	{
+	    semsg(_(e_unknownfunc), name);
+	    return FAIL;
+	}
+	if (v->di_tv.v_type != VAR_PARTIAL && v->di_tv.v_type != VAR_FUNC)
+	{
+	    semsg(_(e_unknownfunc), name);
+	    return FAIL;
+	}
+	return call_partial(&v->di_tv, argcount, ectx);
     }
     return OK;
 }

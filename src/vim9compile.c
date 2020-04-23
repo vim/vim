@@ -2463,8 +2463,12 @@ compile_call(char_u **arg, size_t varlen, cctx_T *cctx, int argcount_init)
 	goto theend;
     }
 
-    // The function may be defined only later.  Need to figure out at runtime.
-    res = generate_UCALL(cctx, name, argcount);
+    // A global function may be defined only later.  Need to figure out at
+    // runtime.
+    if (STRNCMP(namebuf, "g:", 2) == 0)
+	res = generate_UCALL(cctx, name, argcount);
+    else
+	semsg(_(e_unknownfunc), namebuf);
 
 theend:
     vim_free(tofree);

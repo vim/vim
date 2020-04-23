@@ -193,9 +193,22 @@ def Test_using_var_as_arg()
 enddef
 
 def Test_call_func_defined_later()
-  call assert_equal('one', DefinedLater('one'))
+  call assert_equal('one', g:DefinedLater('one'))
   call assert_fails('call NotDefined("one")', 'E117:')
 enddef
+
+func DefinedLater(arg)
+  return a:arg
+endfunc
+
+def Test_call_funcref()
+  assert_equal(3, g:SomeFunc('abc'))
+  assert_fails('NotAFunc()', 'E117:')
+  assert_fails('g:NotAFunc()', 'E117:')
+enddef
+
+let SomeFunc = function('len')
+let NotAFunc = 'text'
 
 def CombineFuncrefTypes()
   " same arguments, different return type
@@ -217,12 +230,8 @@ def CombineFuncrefTypes()
   Refb3 = g:cond ? Refb1 : Refb2
 enddef
 
-func DefinedLater(arg)
-  return a:arg
-endfunc
-
 def FuncWithForwardCall()
-  return DefinedEvenLater("yes")
+  return g:DefinedEvenLater("yes")
 enddef
 
 def DefinedEvenLater(arg: string): string
@@ -372,9 +381,9 @@ def Test_redef_failure()
   so Xdef
   call delete('Xdef')
 
-  call assert_equal(0, Func0())
-  call assert_equal('Func1', Func1())
-  call assert_equal('Func2', Func2())
+  call assert_equal(0, g:Func0())
+  call assert_equal('Func1', g:Func1())
+  call assert_equal('Func2', g:Func2())
 
   delfunc! Func0
   delfunc! Func1
