@@ -696,7 +696,8 @@ LINT_OPTIONS = -beprxzF
 # More at: https://code.google.com/p/address-sanitizer/
 # Useful environment variables:
 # $ export ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
-# $ export LSAN_OPTIONS="suppressions=$cwd/testdir/lsan-suppress.txt"
+# $ export LSAN_OPTIONS="suppressions=`pwd`/testdir/lsan-suppress.txt"
+# When running tests output can be found in testdir/asan.*
 #SANITIZER_CFLAGS = -g -O0 -fsanitize=address -fno-omit-frame-pointer
 #SANITIZER_CFLAGS = -g -O0 -fsanitize=undefined -fno-omit-frame-pointer
 SANITIZER_LIBS = $(SANITIZER_CFLAGS)

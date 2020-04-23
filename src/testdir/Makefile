@@ -100,6 +100,7 @@ clean:
 	-rm -f opt_test.vim test.log test_result.log messages
 	-rm -f $(RM_ON_RUN) $(RM_ON_START)
 	-rm -f valgrind.*
+	-rm -f asan.*
 
 test1.out: test1.in
 	-rm -rf $*.failed $(RM_ON_RUN) $(RM_ON_START) wrongtermsize
