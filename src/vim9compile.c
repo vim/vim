@@ -5752,11 +5752,6 @@ compile_throw(char_u *arg, cctx_T *cctx UNUSED)
 {
     char_u *p = skipwhite(arg);
 
-    if (ends_excmd(*p))
-    {
-	emsg(_(e_argreq));
-	return NULL;
-    }
     if (compile_expr1(&p, cctx) == FAIL)
 	return NULL;
     if (may_generate_2STRING(-1, cctx) == FAIL)

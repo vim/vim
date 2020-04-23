@@ -2373,7 +2373,7 @@ ex_function(exarg_T *eap)
     /*
      * ":function" without argument: list functions.
      */
-    if (ends_excmd(*eap->arg))
+    if (ends_excmd2(eap->cmd, eap->arg))
     {
 	if (!eap->skip)
 	{
@@ -3711,7 +3711,7 @@ ex_call(exarg_T *eap)
     if (!failed || eap->cstack->cs_trylevel > 0)
     {
 	// Check for trailing illegal characters and a following command.
-	if (!ends_excmd(*arg))
+	if (!ends_excmd2(eap->arg, arg))
 	{
 	    if (!failed)
 	    {

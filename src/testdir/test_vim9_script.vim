@@ -361,7 +361,7 @@ def Test_try_catch()
 enddef
 
 def ThrowFromDef()
-  throw 'getout'
+  throw "getout" # comment
 enddef
 
 func CatchInFunc()
@@ -430,7 +430,7 @@ def Test_try_catch_fails()
   call CheckDefFailure(['if 2', 'endtry'], 'E171:')
   call CheckDefFailure(['try', 'echo 1', 'endtry'], 'E1032:')
 
-  call CheckDefFailure(['throw'], 'E471:')
+  call CheckDefFailure(['throw'], 'E1015:')
   call CheckDefFailure(['throw xxx'], 'E1001:')
 enddef
 
@@ -937,12 +937,18 @@ def Test_execute_cmd()
   setline(1, 'default')
   execute 'call setline(1, "execute-string")'
   assert_equal('execute-string', getline(1))
+
+  execute "call setline(1, 'execute-string')"
+  assert_equal('execute-string', getline(1))
+
   let cmd1 = 'call setline(1,'
   let cmd2 = '"execute-var")'
-  execute cmd1 cmd2
+  execute cmd1 cmd2 # comment
   assert_equal('execute-var', getline(1))
+
   execute cmd1 cmd2 '|call setline(1, "execute-var-string")'
   assert_equal('execute-var-string', getline(1))
+
   let cmd_first = 'call '
   let cmd_last = 'setline(1, "execute-var-var")'
   execute cmd_first .. cmd_last
@@ -950,17 +956,24 @@ def Test_execute_cmd()
   bwipe!
 
   call CheckDefFailure(['execute xxx'], 'E1001:')
+  call CheckDefFailure(['execute "cmd"# comment'], 'E488:')
 enddef
 
 def Test_echo_cmd()
-  echo 'some'
+  echo 'some' # comment
   echon 'thing'
+  assert_match('^something$', Screenline(&lines))
+
+  echo "some" # comment
+  echon "thing"
   assert_match('^something$', Screenline(&lines))
 
   let str1 = 'some'
   let str2 = 'more'
   echo str1 str2
   assert_match('^some more$', Screenline(&lines))
+
+  call CheckDefFailure(['echo "xxx"# comment'], 'E488:')
 enddef
 
 def Test_for_outside_of_function()
@@ -1161,6 +1174,18 @@ def Test_vim9_comment()
       'vim9script',
       'try# comment',
       'echo "yes"',
+      ], 'E488:')
+  CheckDefFailure([
+      'try',
+      '  throw#comment',
+      'catch',
+      'endtry',
+      ], 'E1015:')
+  CheckDefFailure([
+      'try',
+      '  throw "yes"#comment',
+      'catch',
+      'endtry',
       ], 'E488:')
   CheckDefFailure([
       'try',
@@ -1380,6 +1405,65 @@ def Test_vim9_comment()
       'vim9script',
       'syntax cluster Some contains=Word# comment',
       ], 'E475:')
+
+  CheckScriptSuccess([
+      'vim9script',
+      'command Echo echo # comment',
+      'command Echo # comment',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      'command Echo echo# comment',
+      'Echo',
+      ], 'E121:')
+  CheckScriptFailure([
+      'vim9script',
+      'command Echo# comment',
+      ], 'E182:')
+  CheckScriptFailure([
+      'vim9script',
+      'command Echo echo',
+      'command Echo# comment',
+      ], 'E182:')
+
+  CheckScriptSuccess([
+      'vim9script',
+      'function # comment',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      'function# comment',
+      ], 'E129:')
+  CheckScriptSuccess([
+      'vim9script',
+      'function CheckScriptSuccess # comment',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      'function CheckScriptSuccess# comment',
+      ], 'E488:')
+
+  CheckScriptSuccess([
+      'vim9script',
+      'func DeleteMe()',
+      'endfunc',
+      'delfunction DeleteMe # comment',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      'func DeleteMe()',
+      'endfunc',
+      'delfunction DeleteMe# comment',
+      ], 'E488:')
+
+  CheckScriptSuccess([
+      'vim9script',
+      'call execute("ls") # comment',
+      ])
+  CheckScriptFailure([
+      'vim9script',
+      'call execute("ls")# comment',
+      ], 'E488:')
 enddef
 
 def Test_vim9_comment_gui()
