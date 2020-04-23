@@ -110,7 +110,7 @@ menutrans Build\ &Tags\ File		&Vytvorit\ soubor\ tagu
 if has("spell")
    menutrans &Spelling			&Kontrola\ pravopisu
    menutrans &Spell\ Check\ On		&Zapnout\ kontrolu\ pravopisu
-   menutrans Spell\ Check\ &Off		&Vypnout \kontrolu\ pravopisu
+   menutrans Spell\ Check\ &Off		&Vypnout\ kontrolu\ pravopisu
    menutrans To\ &Next\ error<Tab>]s	&Dalsi\ chyba<Tab>]s
    menutrans To\ &Previous\ error<Tab>[s	&Predchozi\ chyba<Tab>[s
    menutrans Suggest\ &Corrections<Tab>z=	&Navrhnout\ opravy<Tab>z=

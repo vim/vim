@@ -1,6 +1,6 @@
 " Menu Translations:	Slovak
 " Translated By:	Martin Lacko <lacko@host.sk>
-" Last Change:		2012 May 01
+" Last Change:		2020 Apr 23
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -53,12 +53,12 @@ menutrans &Delete<Tab>x			Vy&maza»<Tab>x
 menutrans &Find\.\.\.			&Nájs»\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\.	N&ahradi»\.\.\.
 menutrans Settings\ &Window		Mo&¾nosti
-menutrans &Global\ Settings		&Globálne mo¾nosti
+menutrans &Global\ Settings		&Globálne\ mo¾nosti
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	Prepnú»\ paletu\ zvýrazòovania<Tab>:set\ hls!
-menutrans Toggle\ &Ignore-case<Tab>:set\ ic!	Prepnú»\ &ignorovanie veµkosti<Tab>:set\ ic!
+menutrans Toggle\ &Ignore-case<Tab>:set\ ic!	Prepnú»\ &ignorovanie\ veµkosti<Tab>:set\ ic!
 menutrans Toggle\ &Showmatch<Tab>:set\ sm!	Prepnú»\ &ukáza»\ zhodu<Tab>:set\ sm!
 menutrans &Context\ lines		&Kontextové\ riadky
-menutrans &Virtual\ Edit		&Virtuálne úpravy
+menutrans &Virtual\ Edit		&Virtuálne\ úpravy
 menutrans Never				Nikdy
 menutrans Block\ Selection		Blokový\ výber
 menutrans Insert\ mode			Re¾im\ vkladania
@@ -67,7 +67,7 @@ menutrans Always			V¾dy
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!	Prepnú»\ re¾i&m\ vkladania<Tab>:set\ im!
 menutrans Toggle\ Vi\ C&ompatible<Tab>:set\ cp!	Prepnú»\ vi\ kompatibilitu<Tab>:set\ cp!
 menutrans Search\ &Path\.\.\.		Cesta\ &hµadania\.\.\.
-menutrans Ta&g\ Files\.\.\.		Ta&gové súbory\.\.\.
+menutrans Ta&g\ Files\.\.\.		Ta&gové\ súbory\.\.\.
 menutrans Toggle\ &Toolbar		Prepnú»\ &panel
 menutrans Toggle\ &Bottom\ Scrollbar	Prepnú»\ spodný\ posuvník
 menutrans Toggle\ &Left\ Scrollbar	Prepnú»\ µavý\ posuvník
@@ -95,7 +95,7 @@ menutrans &Folding			&Vnáranie
 menutrans &Enable/Disable\ folds<Tab>zi	Zapnú»/Vypnú»\ vnárani&e<Tab>zi
 menutrans &View\ Cursor\ Line<Tab>zv	Zobrazi»\ kurzoro&vý\ riadok<Tab>zv
 menutrans Vie&w\ Cursor\ Line\ only<Tab>zMzx	Zobrazi»\ iba\ kurzorový\ riadok<Tab>zMzx
-menutrans C&lose\ more\ folds<Tab>zm	Zatvori»\ viac \vnorení<Tab>zm
+menutrans C&lose\ more\ folds<Tab>zm	Zatvori»\ viac\ vnorení<Tab>zm
 menutrans &Close\ all\ folds<Tab>zM	Zatvor&i»\ v¹etky\ vnorenia<Tab>zM
 menutrans O&pen\ more\ folds<Tab>zr	O&tvori»\ viac\ vnorení<Tab>zr
 menutrans &Open\ all\ folds<Tab>zR	&Otvori»\ v¹etky\ vnorenia<Tab>zR
@@ -139,7 +139,7 @@ menutrans &Delete		Vymaza»
 menutrans &Alternate		Zmeni»
 menutrans &Next			Ï&al¹ia
 menutrans &Previous		&Predchádzajúca
-menutrans [No File]		[®iadny\ súbor]
+menutrans [No\ File]		[®iadny\ súbor]
 
 " Window menu
 menutrans &Window			&Okná
@@ -161,7 +161,7 @@ menutrans &Equal\ Size<Tab>^W=		Rovnaká\ vý¹&ka<Tab>^W=
 menutrans &Max\ Height<Tab>^W_		&Maximálna\ vý¹ka<Tab>^W_
 menutrans M&in\ Height<Tab>^W1_		Minimálna\ vý&¹ka<Tab>^W1_
 menutrans Max\ &Width<Tab>^W\|		Maximálna\ ¹írka<Tab>^W\|
-menutrans Min\ Widt&h<Tab>^W1\|		Minimálna ¹irka<Tab>^W1\|
+menutrans Min\ Widt&h<Tab>^W1\|		Minimálna\ ¹irka<Tab>^W1\|
 menutrans Rotate\ &Up<Tab>^WR		Rotova&»\ nahor<Tab>^WR
 menutrans Rotate\ &Down<Tab>^Wr		Rotova»\ na&dol<Tab>^Wr
 menutrans Select\ Fo&nt\.\.\.		Vy&bra»\ písmo\.\.\.
