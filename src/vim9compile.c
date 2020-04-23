@@ -1401,14 +1401,14 @@ generate_ECHO(cctx_T *cctx, int with_white, int count)
 }
 
 /*
- * Generate an ISN_EXECUTE instruction.
+ * Generate an ISN_EXECUTE/ISN_ECHOMSG/ISN_ECHOERR instruction.
  */
     static int
-generate_EXECUTE(cctx_T *cctx, int count)
+generate_MULT_EXPR(cctx_T *cctx, isntype_T isn_type, int count)
 {
     isn_T	*isn;
 
-    if ((isn = generate_instr_drop(cctx, ISN_EXECUTE, count)) == NULL)
+    if ((isn = generate_instr_drop(cctx, isn_type, count)) == NULL)
 	return FAIL;
     isn->isn_arg.number = count;
 
@@ -1426,11 +1426,6 @@ generate_EXEC(cctx_T *cctx, char_u *line)
     isn->isn_arg.string = vim_strsave(line);
     return OK;
 }
-
-static char e_white_both[] =
-			N_("E1004: white space required before and after '%s'");
-static char e_white_after[] = N_("E1069: white space required after '%s'");
-static char e_no_white_before[] = N_("E1068: No white space allowed before '%s'");
 
 /*
  * Reserve space for a local variable.
@@ -4203,6 +4198,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    goto theend;
 		}
 	    }
+	    else if (name[1] == ':' && name[2] != NUL)
+	    {
+		semsg(_("E1082: Cannot use a namespaced variable: %s"), name);
+		goto theend;
+	    }
 	}
     }
 
@@ -4211,6 +4211,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	if (is_decl && *p == ':')
 	{
 	    // parse optional type: "let var: type = expr"
+	    if (!VIM_ISWHITE(p[1]))
+	    {
+		semsg(_(e_white_after), ":");
+		goto theend;
+	    }
 	    p = skipwhite(p + 1);
 	    type = parse_type(&p, cctx->ctx_type_list);
 	    has_type = TRUE;
@@ -5768,32 +5773,12 @@ compile_throw(char_u *arg, cctx_T *cctx UNUSED)
 
 /*
  * compile "echo expr"
- */
-    static char_u *
-compile_echo(char_u *arg, int with_white, cctx_T *cctx)
-{
-    char_u	*p = arg;
-    int		count = 0;
-
-    for (;;)
-    {
-	if (compile_expr1(&p, cctx) == FAIL)
-	    return NULL;
-	++count;
-	p = skipwhite(p);
-	if (ends_excmd(*p))
-	    break;
-    }
-
-    generate_ECHO(cctx, with_white, count);
-    return p;
-}
-
-/*
+ * compile "echomsg expr"
+ * compile "echoerr expr"
  * compile "execute expr"
  */
     static char_u *
-compile_execute(char_u *arg, cctx_T *cctx)
+compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 {
     char_u	*p = arg;
     int		count = 0;
@@ -5808,8 +5793,14 @@ compile_execute(char_u *arg, cctx_T *cctx)
 	    break;
     }
 
-    generate_EXECUTE(cctx, count);
-
+    if (cmdidx == CMD_echo || cmdidx == CMD_echon)
+	generate_ECHO(cctx, cmdidx == CMD_echo, count);
+    else if (cmdidx == CMD_execute)
+	generate_MULT_EXPR(cctx, ISN_EXECUTE, count);
+    else if (cmdidx == CMD_echomsg)
+	generate_MULT_EXPR(cctx, ISN_ECHOMSG, count);
+    else
+	generate_MULT_EXPR(cctx, ISN_ECHOERR, count);
     return p;
 }
 
@@ -6184,20 +6175,16 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		    break;
 
 	    case CMD_echo:
-		    line = compile_echo(p, TRUE, &cctx);
-		    break;
 	    case CMD_echon:
-		    line = compile_echo(p, FALSE, &cctx);
-		    break;
 	    case CMD_execute:
-		    line = compile_execute(p, &cctx);
+	    case CMD_echomsg:
+	    case CMD_echoerr:
+		    line = compile_mult_expr(p, ea.cmdidx, &cctx);
 		    break;
 
 	    default:
 		    // Not recognized, execute with do_cmdline_cmd().
-		    // TODO:
-		    // CMD_echomsg
-		    // etc.
+		    // TODO: other commands with an expression argument
 		    generate_EXEC(&cctx, line);
 		    line = (char_u *)"";
 		    break;
@@ -6415,6 +6402,8 @@ delete_instr(isn_T *isn)
 	case ISN_DROP:
 	case ISN_ECHO:
 	case ISN_EXECUTE:
+	case ISN_ECHOMSG:
+	case ISN_ECHOERR:
 	case ISN_ENDTRY:
 	case ISN_FOR:
 	case ISN_FUNCREF:

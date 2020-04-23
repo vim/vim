@@ -668,8 +668,12 @@ call_def_function(
 		}
 		break;
 
-	    // execute :execute {string} ...
+	    // :execute {string} ...
+	    // :echomsg {string} ...
+	    // :echoerr {string} ...
 	    case ISN_EXECUTE:
+	    case ISN_ECHOMSG:
+	    case ISN_ECHOERR:
 		{
 		    int		count = iptr->isn_arg.number;
 		    garray_T	ga;
@@ -705,7 +709,30 @@ call_def_function(
 		    ectx.ec_stack.ga_len -= count;
 
 		    if (!failed && ga.ga_data != NULL)
-			do_cmdline_cmd((char_u *)ga.ga_data);
+		    {
+			if (iptr->isn_type == ISN_EXECUTE)
+			    do_cmdline_cmd((char_u *)ga.ga_data);
+			else
+			{
+			    msg_sb_eol();
+			    if (iptr->isn_type == ISN_ECHOMSG)
+			    {
+				msg_attr(ga.ga_data, echo_attr);
+				out_flush();
+			    }
+			    else
+			    {
+				int		save_did_emsg = did_emsg;
+
+				SOURCING_LNUM = iptr->isn_lnum;
+				emsg(ga.ga_data);
+				if (!force_abort)
+				    // We don't want to abort following
+				    // commands, restore did_emsg.
+				    did_emsg = save_did_emsg;
+			    }
+			}
+		    }
 		    ga_clear(&ga);
 		}
 		break;
@@ -1945,6 +1972,14 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_EXECUTE:
 		smsg("%4d EXECUTE %lld", current,
+					    (long long)(iptr->isn_arg.number));
+		break;
+	    case ISN_ECHOMSG:
+		smsg("%4d ECHOMSG %lld", current,
+					    (long long)(iptr->isn_arg.number));
+		break;
+	    case ISN_ECHOERR:
+		smsg("%4d ECHOERR %lld", current,
 					    (long long)(iptr->isn_arg.number));
 		break;
 	    case ISN_LOAD:

@@ -54,6 +54,10 @@ def Test_assignment()
   let dict4: dict<any> = #{one: 1, two: '2'}
   let dict5: dict<blob> = #{one: 0z01, tw: 0z02}
 
+  call CheckDefFailure(['let x:string'], 'E1069:')
+  call CheckDefFailure(['let x:string = "x"'], 'E1069:')
+  call CheckDefFailure(['let a:string = "x"'], 'E1082:')
+
   let a: number = 6
   assert_equal(6, a)
 
@@ -974,6 +978,20 @@ def Test_echo_cmd()
   assert_match('^some more$', Screenline(&lines))
 
   call CheckDefFailure(['echo "xxx"# comment'], 'E488:')
+enddef
+
+def Test_echomsg_cmd()
+  echomsg 'some' 'more' # comment
+  assert_match('^some more$', Screenline(&lines))
+  echo 'clear'
+  1messages
+  assert_match('^some more$', Screenline(&lines))
+
+  call CheckDefFailure(['echomsg "xxx"# comment'], 'E488:')
+enddef
+
+def Test_echoerr_cmd()
+  # TODO: write this test
 enddef
 
 def Test_for_outside_of_function()

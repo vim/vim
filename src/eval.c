@@ -34,8 +34,6 @@ static char *e_float_as_string = N_("E806: using Float as a String");
  */
 static int current_copyID = 0;
 
-static int echo_attr = 0;   // attributes used for ":echo"
-
 /*
  * Info used by a ":for" loop.
  */
@@ -6145,7 +6143,6 @@ ex_execute(exarg_T *eap)
     char_u	*p;
     garray_T	ga;
     int		len;
-    int		save_did_emsg;
 
     ga_init2(&ga, 1, 80);
 
@@ -6213,8 +6210,9 @@ ex_execute(exarg_T *eap)
 	}
 	else if (eap->cmdidx == CMD_echoerr)
 	{
+	    int		save_did_emsg = did_emsg;
+
 	    // We don't want to abort following commands, restore did_emsg.
-	    save_did_emsg = did_emsg;
 	    emsg(ga.ga_data);
 	    if (!force_abort)
 		did_emsg = save_did_emsg;

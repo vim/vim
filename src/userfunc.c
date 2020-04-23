@@ -128,7 +128,13 @@ one_function_arg(char_u *arg, garray_T *newargs, garray_T *argtypes, int skip)
 	}
 	if (*p == ':')
 	{
-	    type = skipwhite(p + 1);
+	    ++p;
+	    if (!VIM_ISWHITE(*p))
+	    {
+		semsg(_(e_white_after), ":");
+		return arg;
+	    }
+	    type = skipwhite(p);
 	    p = skip_type(type);
 	    type = vim_strnsave(type, p - type);
 	}

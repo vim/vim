@@ -15,6 +15,8 @@ typedef enum {
     ISN_EXEC,	    // execute Ex command line isn_arg.string
     ISN_ECHO,	    // echo isn_arg.echo.echo_count items on top of stack
     ISN_EXECUTE,    // execute Ex commands isn_arg.number items on top of stack
+    ISN_ECHOMSG,    // echo Ex commands isn_arg.number items on top of stack
+    ISN_ECHOERR,    // echo Ex commands isn_arg.number items on top of stack
 
     // get and set variables
     ISN_LOAD,	    // push local variable isn_arg.number

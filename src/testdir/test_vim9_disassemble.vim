@@ -919,6 +919,28 @@ def Test_disassemble_execute()
         res)
 enddef
 
+def s:Echomsg()
+  echomsg 'some' 'message'
+  echoerr 'went' .. 'wrong'
+enddef
+
+def Test_disassemble_echomsg()
+  let res = execute('disass s:Echomsg')
+  assert_match('\<SNR>\d*_Echomsg.*' ..
+        "echomsg 'some' 'message'.*" ..
+        '\d PUSHS "some".*' ..
+        '\d PUSHS "message".*' ..
+        '\d ECHOMSG 2.*' ..
+        "echoerr 'went' .. 'wrong'.*" ..
+        '\d PUSHS "went".*' ..
+        '\d PUSHS "wrong".*' ..
+        '\d CONCAT.*' ..
+        '\d ECHOERR 1.*' ..
+        '\d PUSHNR 0.*' ..
+        '\d RETURN',
+        res)
+enddef
+
 def SomeStringArg(arg: string)
   echo arg
 enddef

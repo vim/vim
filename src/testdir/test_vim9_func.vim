@@ -259,6 +259,7 @@ enddef
 def Test_arg_type_wrong()
   CheckScriptFailure(['def Func3(items: list)', 'echo "a"', 'enddef'], 'E1008: Missing <type>')
   CheckScriptFailure(['def Func4(...)', 'echo "a"', 'enddef'], 'E1055: Missing name after ...')
+  CheckScriptFailure(['def Func5(items:string)', 'echo "a"'], 'E1069:')
   CheckScriptFailure(['def Func5(items)', 'echo "a"'], 'E1077:')
 enddef
 
@@ -388,6 +389,20 @@ def Test_redef_failure()
   delfunc! Func0
   delfunc! Func1
   delfunc! Func2
+enddef
+
+def Test_vim9script_func()
+  let lines =<< trim END
+    vim9script
+    func Func(arg)
+      echo a:arg
+    endfunc
+    Func('text')
+  END
+  writefile(lines, 'XVim9Func')
+  so XVim9Func
+
+  delete('XVim9Func')
 enddef
 
 " Test for internal functions returning different types
