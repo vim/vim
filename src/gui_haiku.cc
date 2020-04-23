@@ -2916,6 +2916,7 @@ VimToolbar::RemoveButton(vimmenu_T *menu)
 			menu->button = NULL;
 		}
 	}
+	return true;
 }
 
 	bool
@@ -2926,6 +2927,7 @@ VimToolbar::GrayButton(vimmenu_T *menu, int grey)
 		if(index >= 0)
 			menu->button->SetEnabled(grey ? false : true);
 	}
+	return true;
 }
 
 	void
@@ -3563,7 +3565,7 @@ gui_mch_set_text_area_pos(
 		gui.vimTextArea->MoveTo(x, y);
 		gui.vimTextArea->ResizeTo(w - PEN_WIDTH, h - PEN_WIDTH);
 
-/*#ifdef FEAT_GUI_TABLINE
+#ifdef FEAT_GUI_TABLINE
 		if(gui.vimForm->TabLine() != NULL) {
 			gui.vimForm->TabLine()->ResizeTo(w, gui.vimForm->TablineHeight());
 		}
@@ -3679,7 +3681,7 @@ gui_mch_create_scrollbar(
 	}
 }
 
-#if defined(FEAT_WINDOWS) || defined(PROTO)
+#if defined(FEAT_WINDOWS) || defined(FEAT_GUI_HAIKU) || defined(PROTO)
 void
 gui_mch_destroy_scrollbar(
 		scrollbar_T	*sb)
@@ -3736,7 +3738,7 @@ gui_mch_set_blinking(
  * Stop the cursor blinking.  Show the cursor if it wasn't shown.
  */
 	void
-gui_mch_stop_blink()
+gui_mch_stop_blink(int may_call_gui_update_cursor)
 {
 	// TODO
 	if (blink_timer != 0)
@@ -3870,7 +3872,7 @@ gui_mch_get_font(
 		hl_set_font_name((char_u*)font_name);
 
 		//  Set guifont to the name of the selected font.
-		char_u* new_p_guifont = alloc(STRLEN(font_name) + 1);
+		char_u* new_p_guifont = (char_u*)alloc(STRLEN(font_name) + 1);
 		if (new_p_guifont != NULL) {
 			STRCPY(new_p_guifont, font_name);
 			vim_free(p_guifont);
@@ -4488,7 +4490,7 @@ gui_mch_wait_for_chars(
 			if (gui.in_focus)
 				gui_mch_start_blink();
 			else
-				gui_mch_stop_blink();
+				gui_mch_stop_blink(TRUE);
 			focus = gui.in_focus;
 		}
 
