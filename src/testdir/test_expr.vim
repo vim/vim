@@ -1,5 +1,7 @@
 " Tests for expressions.
 
+source check.vim
+
 func Test_equal()
   let base = {}
   func base.method()
@@ -587,12 +589,22 @@ endfunc
 
 " Test for float value comparison
 func Test_float_compare()
+  CheckFeature float
   call assert_true(1.2 == 1.2)
   call assert_true(1.0 != 1.2)
   call assert_true(1.2 > 1.0)
   call assert_true(1.2 >= 1.2)
   call assert_true(1.0 < 1.2)
   call assert_true(1.2 <= 1.2)
+  call assert_true(+0.0 == -0.0)
+  " two NaNs (not a number) are not equal
+  call assert_true(sqrt(-4.01) != (0.0 / 0.0))
+  " two inf (infinity) are equal
+  call assert_true((1.0 / 0) == (2.0 / 0))
+  " two -inf (infinity) are equal
+  call assert_true(-(1.0 / 0) == -(2.0 / 0))
+  " +infinity != -infinity
+  call assert_true((1.0 / 0) != -(2.0 / 0))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -63,9 +63,9 @@ endfunc
 func Test_partial_dict()
   let dict = {'name': 'hello'}
   let Cb = function('MyDictFunc', ["foo", "bar"], dict)
+  call test_garbagecollect_now()
   call assert_equal("hello/foo/bar", Cb())
   call assert_fails('Cb("xxx")', 'E492:')
-  call test_garbagecollect_now()
 
   let Cb = function('MyDictFunc', ["foo"], dict)
   call assert_equal("hello/foo/xxx", Cb("xxx"))

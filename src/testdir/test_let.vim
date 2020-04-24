@@ -310,8 +310,10 @@ func Test_let_errors()
   call assert_fails('let l += 2', 'E734:')
   call assert_fails('let g:["a;b"] = 10', 'E461:')
   call assert_fails('let g:.min = function("max")', 'E704:')
-  let ch = test_null_channel()
-  call assert_fails('let ch += 1', 'E734:')
+  if has('channel')
+    let ch = test_null_channel()
+    call assert_fails('let ch += 1', 'E734:')
+  endif
 
   " This test works only when the language is English
   if v:lang == "C" || v:lang =~ '^[Ee]n'
