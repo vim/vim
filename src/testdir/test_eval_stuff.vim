@@ -217,7 +217,7 @@ func Test_scriptversion_fail()
   call delete('Xversionscript')
 endfunc
 
-func Test_excute_null()
+func Test_execute_cmd_with_null()
   call assert_fails('execute test_null_list()', 'E730:')
   call assert_fails('execute test_null_dict()', 'E731:')
   call assert_fails('execute test_null_blob()', 'E976:')

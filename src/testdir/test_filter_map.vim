@@ -99,6 +99,10 @@ func Test_map_filter_fails()
   call assert_fails("let l = filter([1, 2], {})", 'E731:')
   call assert_equal(0, map(test_null_list(), '"> " .. v:val'))
   call assert_equal(0, map(test_null_dict(), '"> " .. v:val'))
+  call assert_equal([1, 2, 3], filter([1, 2, 3], test_null_function()))
+  call assert_fails("let l = filter([1, 2], function('min'))", 'E118:')
+  call assert_equal([1, 2, 3], filter([1, 2, 3], test_null_partial()))
+  call assert_fails("let l = filter([1, 2], {a, b, c -> 1})", 'E119:')
 endfunc
 
 func Test_map_and_modify()

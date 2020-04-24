@@ -1203,6 +1203,7 @@ func Test_out_cb()
 	\  'err_cb': dict.errHandler,
 	\  'err_mode': 'json'})
   call assert_equal("run", job_status(job))
+  call test_garbagecollect_now()
   try
     let g:Ch_outmsg = ''
     let g:Ch_errmsg = ''
@@ -1818,6 +1819,7 @@ func Test_read_nonl_in_close_cb()
   let g:out = ''
   let arg = 'import sys;sys.stdout.write("1\n2\n3")'
   call job_start([s:python, '-c', arg], {'close_cb': function('s:close_cb')})
+  call test_garbagecollect_now()
   call WaitForAssert({-> assert_equal('123', g:out)})
   unlet g:out
   delfunc s:close_cb
@@ -1828,6 +1830,7 @@ func Test_read_from_terminated_job()
   let arg = 'import os,sys;os.close(1);sys.stderr.write("test\n")'
   call job_start([s:python, '-c', arg], {'callback': {-> execute('let g:linecount += 1')}})
   call WaitForAssert({-> assert_equal(1, g:linecount)})
+  call test_garbagecollect_now()
   unlet g:linecount
 endfunc
 

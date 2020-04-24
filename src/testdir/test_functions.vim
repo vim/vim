@@ -1239,6 +1239,8 @@ func Test_col()
   call assert_equal(0, col([2, '$']))
   call assert_equal(0, col([1, 100]))
   call assert_equal(0, col([1]))
+  call assert_equal(0, col(test_null_list()))
+  call assert_fails('let c = col({})', 'E731:')
 
   " test for getting the visual start column
   func T()

@@ -241,6 +241,9 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
     {
 	partial_T   *partial = expr->vval.v_partial;
 
+	if (partial == NULL)
+	    return FAIL;
+
 	if (partial->pt_func != NULL && partial->pt_func->uf_dfunc_idx >= 0)
 	{
 	    if (call_def_function(partial->pt_func, argc, argv, rettv) == FAIL)
@@ -6416,8 +6419,9 @@ typval_compare(
 					&& typ1->vval.v_partial == NULL)
 		|| (typ2->v_type == VAR_PARTIAL
 					&& typ2->vval.v_partial == NULL))
-	    // when a partial is NULL assume not equal
-	    n1 = FALSE;
+	    // When both partials are NULL, then they are equal.
+	    // Otherwise they are not equal.
+	    n1 = (typ1->vval.v_partial == typ2->vval.v_partial);
 	else if (type_is)
 	{
 	    if (typ1->v_type == VAR_FUNC && typ2->v_type == VAR_FUNC)

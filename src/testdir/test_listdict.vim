@@ -943,6 +943,7 @@ func Test_null_list()
   call assert_equal(0, uniq(l))
   call assert_fails("let k = [] + l", 'E15:')
   call assert_fails("let k = l + []", 'E15:')
+  call assert_equal(0, len(copy(test_null_list())))
 endfunc
 
 " Test for a null dict
@@ -959,6 +960,7 @@ func Test_null_dict()
   call assert_equal('{}', string(d))
   call assert_fails('let x = test_null_dict()[10]')
   call assert_equal({}, {})
+  call assert_equal(0, len(copy(test_null_dict())))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
