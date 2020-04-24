@@ -1251,13 +1251,15 @@ ex_let_one(
 	    int		opt_type;
 	    long	numval;
 	    char_u	*stringval = NULL;
-	    char_u	*s;
+	    char_u	*s = NULL;
 
 	    c1 = *p;
 	    *p = NUL;
 
 	    n = (long)tv_get_number(tv);
-	    s = tv_get_string_chk(tv);	    // != NULL if number or string
+	    // avoid setting a string option to the text "v:false" or similar.
+	    if (tv->v_type != VAR_BOOL && tv->v_type != VAR_SPECIAL)
+		s = tv_get_string_chk(tv);	// != NULL if number or string
 	    if (s != NULL && op != NULL && *op != '=')
 	    {
 		opt_type = get_option_value(arg, &numval,
@@ -1289,7 +1291,8 @@ ex_let_one(
 		    }
 		}
 	    }
-	    if (s != NULL)
+	    if (s != NULL || tv->v_type == VAR_BOOL
+						  || tv->v_type == VAR_SPECIAL)
 	    {
 		set_option_value(arg, n, s, opt_flags);
 		arg_end = p;
