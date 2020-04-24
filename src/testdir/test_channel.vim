@@ -1224,6 +1224,7 @@ func Test_out_cb()
   finally
     call job_stop(job)
   endtry
+  call test_garbagecollect_now()
 endfunc
 
 func Test_out_close_cb()
@@ -1820,6 +1821,7 @@ func Test_read_nonl_in_close_cb()
   call job_start([s:python, '-c', arg], {'close_cb': function('s:close_cb')})
   call WaitForAssert({-> assert_equal('123', g:out)})
   unlet g:out
+  call test_garbagecollect_now()
   delfunc s:close_cb
 endfunc
 
@@ -1828,6 +1830,7 @@ func Test_read_from_terminated_job()
   let arg = 'import os,sys;os.close(1);sys.stderr.write("test\n")'
   call job_start([s:python, '-c', arg], {'callback': {-> execute('let g:linecount += 1')}})
   call WaitForAssert({-> assert_equal(1, g:linecount)})
+  call test_garbagecollect_now()
   unlet g:linecount
 endfunc
 

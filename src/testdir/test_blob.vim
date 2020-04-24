@@ -142,6 +142,7 @@ func Test_blob_compare()
   let b2 = b1[:]
   call assert_true(b1 == b2)
   call assert_false(b1 is b2)
+  call assert_true(b1 isnot b2)
 
   call assert_fails('let x = b1 > b2')
   call assert_fails('let x = b1 < b2')

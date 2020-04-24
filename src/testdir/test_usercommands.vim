@@ -364,6 +364,10 @@ func Test_CmdCompletion()
   com! -complete=custom, DoCmd
   call assert_beeps("call feedkeys(':DoCmd \t', 'tx')")
 
+  " custom completion failure with the wrong function
+  com! -complete=custom,min DoCmd
+  call assert_fails("call feedkeys(':DoCmd \t', 'tx')", 'E118:')
+
   delcom DoCmd
 endfunc
 
