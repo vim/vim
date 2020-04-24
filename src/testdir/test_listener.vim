@@ -207,6 +207,11 @@ func Test_listener_args()
 
   call listener_remove(id)
   bwipe!
+
+  " Invalid arguments
+  call assert_fails('call listener_add([])', 'E921:')
+  call assert_fails('call listener_add("s:StoreListArgs", [])', 'E158:')
+  call assert_fails('call listener_flush([])', 'E158:')
 endfunc
 
 func s:StoreBufList(buf, start, end, added, list)

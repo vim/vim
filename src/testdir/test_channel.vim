@@ -869,8 +869,10 @@ func Test_pipe_both_to_buffer()
   let job = job_start(s:python . " test_channel_pipe.py",
 	\ {'out_io': 'buffer', 'out_name': 'pipe-err', 'err_io': 'out'})
   call assert_equal("run", job_status(job))
+  let handle = job_getchannel(job)
+  call assert_equal(bufnr('pipe-err'), ch_getbufnr(handle, 'out'))
+  call assert_equal(bufnr('pipe-err'), ch_getbufnr(handle, 'err'))
   try
-    let handle = job_getchannel(job)
     call ch_sendraw(handle, "echo line one\n")
     call ch_sendraw(handle, "echoerr line two\n")
     call ch_sendraw(handle, "double this\n")
@@ -896,6 +898,9 @@ func Run_test_pipe_from_buffer(use_name)
 
   let job = job_start(s:python . " test_channel_pipe.py", options)
   call assert_equal("run", job_status(job))
+  if has('unix') && !a:use_name
+    call assert_equal(bufnr('%'), ch_getbufnr(job, 'in'))
+  endif
   try
     let handle = job_getchannel(job)
     call assert_equal('one', ch_read(handle))

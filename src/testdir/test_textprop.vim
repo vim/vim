@@ -1204,3 +1204,28 @@ func Test_find_zerowidth_prop_sol()
   bwipe!
   call prop_type_delete('test')
 endfunc
+
+" Test for passing invalid arguments to prop_xxx() functions
+func Test_prop_func_invalid_args()
+  call assert_fails('call prop_clear(1, 2, [])', 'E715:')
+  call assert_fails('call prop_clear(-1, 2)', 'E16:')
+  call assert_fails('call prop_find(test_null_dict())', 'E474:')
+  call assert_fails('call prop_find({"bufnr" : []})', 'E158:')
+  call assert_fails('call prop_find({})', 'E968:')
+  call assert_fails('call prop_find({}, "x")', 'E474:')
+  call assert_fails('call prop_find({"lnum" : -2})', 'E16:')
+  call assert_fails('call prop_list(1, [])', 'E715:')
+  call assert_fails('call prop_list(-1 , {})', 'E16:')
+  call assert_fails('call prop_remove([])', 'E474:')
+  call assert_fails('call prop_remove({}, -2)', 'E16:')
+  call assert_fails('call prop_remove({})', 'E968:')
+  call assert_fails('call prop_type_add([], {})', 'E474:')
+  call assert_fails("call prop_type_change('long', {'xyz' : 10})", 'E971:')
+  call assert_fails("call prop_type_delete([])", 'E474:')
+  call assert_fails("call prop_type_delete('xyz', [])", 'E715:')
+  call assert_fails("call prop_type_get([])", 'E474:')
+  call assert_fails("call prop_type_get('', [])", 'E474:')
+  call assert_fails("call prop_type_list([])", 'E715:')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
