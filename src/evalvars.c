@@ -1291,6 +1291,9 @@ ex_let_one(
 	    }
 	    if (s != NULL)
 	    {
+		if (n == 0 && STRCMP(s, "v:false") == 0)
+		    s = NULL;
+
 		set_option_value(arg, n, s, opt_flags);
 		arg_end = p;
 	    }
