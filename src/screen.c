@@ -3881,6 +3881,10 @@ screen_del_lines(
 	clip_scroll_selection(line_count);
 #endif
 
+#ifdef FEAT_GUI_HAIKU
+    vim_lock_screen();
+#endif
+
 #ifdef FEAT_GUI
     // Don't update the GUI cursor here, ScreenLines[] is invalid until the
     // scrolling is actually carried out.
