@@ -1139,6 +1139,8 @@ func Test_pipe_null()
   call assert_equal("run", job_status(job))
   call assert_equal('channel fail', string(job_getchannel(job)))
   call assert_equal('fail', ch_status(job))
+  call assert_equal('no process', string(test_null_job()))
+  call assert_equal('channel fail', string(test_null_channel()))
   call job_stop(job)
 endfunc
 
@@ -1706,6 +1708,7 @@ func Test_partial_in_channel_cycle()
   let d.a = function('string', [d])
   try
     let d.b = ch_open('nowhere:123', {'close_cb': d.a})
+    call test_garbagecollect_now()
   catch
     call assert_exception('E901:')
   endtry
@@ -1893,6 +1896,7 @@ function Ch_test_close_lambda(port)
   endif
   let g:Ch_close_ret = ''
   call ch_setoptions(handle, {'close_cb': {ch -> execute("let g:Ch_close_ret = 'closed'")}})
+  call test_garbagecollect_now()
 
   call assert_equal('', ch_evalexpr(handle, 'close me'))
   call WaitForAssert({-> assert_equal('closed', g:Ch_close_ret)})

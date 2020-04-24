@@ -1164,6 +1164,18 @@ func Test_type()
     call assert_equal(v:t_bool, type(v:true))
     call assert_equal(v:t_none, type(v:none))
     call assert_equal(v:t_none, type(v:null))
+    call assert_equal(v:t_string, type(test_null_string()))
+    call assert_equal(v:t_func, type(test_null_function()))
+    call assert_equal(v:t_func, type(test_null_partial()))
+    call assert_equal(v:t_list, type(test_null_list()))
+    call assert_equal(v:t_dict, type(test_null_dict()))
+    if has('job')
+      call assert_equal(v:t_job, type(test_null_job()))
+    endif
+    if has('channel')
+      call assert_equal(v:t_channel, type(test_null_channel()))
+    endif
+    call assert_equal(v:t_blob, type(test_null_blob()))
 
     call assert_fails("call type(test_void())", 'E685:')
     call assert_fails("call type(test_unknown())", 'E685:')

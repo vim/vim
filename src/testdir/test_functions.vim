@@ -480,6 +480,7 @@ func Test_pathshorten()
   call assert_equal('~.f/bar', pathshorten('~.foo/bar'))
   call assert_equal('.~f/bar', pathshorten('.~foo/bar'))
   call assert_equal('~/f/bar', pathshorten('~/foo/bar'))
+  call assert_fails('call pathshorten([])', 'E730:')
 endfunc
 
 func Test_strpart()
@@ -970,6 +971,7 @@ func Test_matchstrpos()
   call assert_equal(['', -1, -1], matchstrpos('testing', 'ing', 8))
   call assert_equal(['ing', 1, 4, 7], matchstrpos(['vim', 'testing', 'execute'], 'ing'))
   call assert_equal(['', -1, -1, -1], matchstrpos(['vim', 'testing', 'execute'], 'img'))
+  call assert_equal(['', -1, -1], matchstrpos(test_null_list(), '\a'))
 endfunc
 
 func Test_nextnonblank_prevnonblank()
@@ -1222,6 +1224,7 @@ func Test_hlexists()
   syntax off
 endfunc
 
+" Test for the col() function
 func Test_col()
   new
   call setline(1, 'abcdef')
@@ -1332,6 +1335,7 @@ func Test_inputlist()
   call assert_equal(-2, c)
 
   call assert_fails('call inputlist("")', 'E686:')
+  call assert_fails('call inputlist(test_null_list())', 'E686:')
 endfunc
 
 func Test_balloon_show()
@@ -2227,6 +2231,16 @@ func Test_echoraw()
   call delete('XTest_echoraw')
 endfunc
 
+" Test for echo highlighting
+func Test_echohl()
+  echohl Search
+  echo 'Vim'
+  call assert_equal('Vim', Screenline(&lines))
+  " TODO: How to check the highlight group used by echohl?
+  " ScreenAttrs() returns all zeros.
+  echohl None
+endfunc
+
 " Test for the eval() function
 func Test_eval()
   call assert_fails("call eval('5 a')", 'E488:')
@@ -2258,7 +2272,27 @@ func Test_getcurpos_setpos()
   call setpos('.', sp)
   normal jyl
   call assert_equal('6', @")
+  call assert_equal(-1, setpos('.', test_null_list()))
+  call assert_equal(-1, setpos('.', {}))
   close!
+endfunc
+
+" Test for glob()
+func Test_glob()
+  call assert_equal('', glob(test_null_string()))
+  call assert_equal('', globpath(test_null_string(), test_null_string()))
+endfunc
+
+" Test for browse()
+func Test_browse()
+  CheckFeature browse
+  call assert_fails('call browse([], "open", "x", "a.c")', 'E745:')
+endfunc
+
+" Test for browsedir()
+func Test_browsedir()
+  CheckFeature browse
+  call assert_fails('call browsedir("open", [])', 'E730:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

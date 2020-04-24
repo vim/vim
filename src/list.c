@@ -2167,6 +2167,9 @@ f_insert(typval_T *argvars, typval_T *rettv)
 	int	    val, len;
 	char_u	    *p;
 
+	if (argvars[0].vval.v_blob == NULL)
+	    return;
+
 	len = blob_len(argvars[0].vval.v_blob);
 	if (argvars[2].v_type != VAR_UNKNOWN)
 	{

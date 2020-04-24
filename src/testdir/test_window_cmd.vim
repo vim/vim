@@ -890,6 +890,7 @@ func Test_winrestview()
   call assert_equal(view, winsaveview())
 
   bwipe!
+  call assert_fails('call winrestview(test_null_dict())', 'E474:')
 endfunc
 
 func Test_win_splitmove()
@@ -920,6 +921,7 @@ func Test_win_splitmove()
   call assert_equal(bufname(winbufnr(2)), 'b')
   call assert_equal(bufname(winbufnr(3)), 'a')
   call assert_equal(bufname(winbufnr(4)), 'd')
+  call assert_fails('call win_splitmove(winnr(), winnr("k"), test_null_dict())', 'E474:')
   only | bd
 
   call assert_fails('call win_splitmove(winnr(), 123)', 'E957:')

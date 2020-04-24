@@ -2158,6 +2158,18 @@ func Xproperty_tests(cchar)
     call g:Xsetlist([], 'a', {'context':246})
     let d = g:Xgetlist({'context':1})
     call assert_equal(246, d.context)
+    " set other Vim data types as context
+    call g:Xsetlist([], 'a', {'context' : test_null_blob()})
+    if has('channel')
+      call g:Xsetlist([], 'a', {'context' : test_null_channel()})
+    endif
+    if has('job')
+      call g:Xsetlist([], 'a', {'context' : test_null_job()})
+    endif
+    call g:Xsetlist([], 'a', {'context' : test_null_function()})
+    call g:Xsetlist([], 'a', {'context' : test_null_partial()})
+    call g:Xsetlist([], 'a', {'context' : ''})
+    call test_garbagecollect_now()
     if a:cchar == 'l'
 	" Test for copying context across two different location lists
 	new | only

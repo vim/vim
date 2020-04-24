@@ -724,6 +724,7 @@ func Test_listdict_compare_complex()
   call assert_true(dict4 == dict4copy)
 endfunc
 
+" Test for extending lists and dictionaries
 func Test_listdict_extend()
   " Test extend() with lists
 
@@ -926,6 +927,8 @@ func Test_listdict_index()
   call assert_fails("let l[1.1] = 4", 'E806:')
   call assert_fails("let l[:i] = [4, 5]", 'E121:')
   call assert_fails("let l[:3.2] = [4, 5]", 'E806:')
+  let t = test_unknown()
+  call assert_fails("echo t[0]", 'E685:')
 endfunc
 
 " Test for a null list
@@ -943,7 +946,23 @@ func Test_null_list()
   call assert_equal(0, uniq(l))
   call assert_fails("let k = [] + l", 'E15:')
   call assert_fails("let k = l + []", 'E15:')
-  call assert_equal(0, len(copy(test_null_list())))
+  call assert_equal(0, len(copy(l)))
+  call assert_equal(0, count(l, 5))
+  call assert_equal([], deepcopy(l))
+  call assert_equal(5, get(l, 2, 5))
+  call assert_equal(-1, index(l, 2, 5))
+  call assert_equal(0, insert(l, 2, -1))
+  call assert_equal(0, min(l))
+  call assert_equal(0, max(l))
+  call assert_equal(0, remove(l, 0, 2))
+  call assert_equal([], repeat(l, 2))
+  call assert_equal(0, reverse(l))
+  call assert_equal(0, sort(l))
+  call assert_equal('[]', string(l))
+  call assert_equal(0, extend(l, l, 0))
+  lockvar l
+  call assert_equal(1, islocked('l'))
+  unlockvar l
 endfunc
 
 " Test for a null dict
@@ -958,9 +977,20 @@ func Test_null_dict()
   call assert_equal(0, values(d))
   call assert_false(has_key(d, 'k'))
   call assert_equal('{}', string(d))
-  call assert_fails('let x = test_null_dict()[10]')
+  call assert_fails('let x = d[10]')
   call assert_equal({}, {})
-  call assert_equal(0, len(copy(test_null_dict())))
+  call assert_equal(0, len(copy(d)))
+  call assert_equal(0, count(d, 'k'))
+  call assert_equal({}, deepcopy(d))
+  call assert_equal(20, get(d, 'k', 20))
+  call assert_equal(0, min(d))
+  call assert_equal(0, max(d))
+  call assert_equal(0, remove(d, 'k'))
+  call assert_equal('{}', string(d))
+  call assert_equal(0, extend(d, d, 0))
+  lockvar d
+  call assert_equal(1, islocked('d'))
+  unlockvar d
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
