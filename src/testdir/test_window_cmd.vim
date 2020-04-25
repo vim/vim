@@ -870,6 +870,10 @@ func Test_winnr()
   call assert_fails("echo winnr('ll')", 'E15:')
   call assert_fails("echo winnr('5')", 'E15:')
   call assert_equal(4, winnr('0h'))
+  call assert_fails("let w = winnr([])", 'E730:')
+  call assert_equal('unknown', win_gettype(-1))
+  call assert_equal(-1, winheight(-1))
+  call assert_equal(-1, winwidth(-1))
 
   tabnew
   call assert_equal(8, tabpagewinnr(1, 'j'))
