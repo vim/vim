@@ -1035,7 +1035,11 @@ ex_messages(exarg_T *eap)
 
     if (p == first_msg_hist)
     {
+#ifdef FEAT_MULTI_LANG
+	s = get_mess_lang();
+#else
 	s = mch_getenv((char_u *)"LANG");
+#endif
 	if (s != NULL && *s != NUL)
 	    // The next comment is extracted by xgettext and put in po file for
 	    // translators to read.
