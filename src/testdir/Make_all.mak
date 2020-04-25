@@ -45,12 +45,14 @@ SCRIPTS_GUI =
 
 # Tests for Vim9 script.
 TEST_VIM9 = \
+	test_vim9_cmd \
 	test_vim9_disassemble \
 	test_vim9_expr \
 	test_vim9_func \
 	test_vim9_script
 
 TEST_VIM9_RES = \
+	test_vim9_cmd.res \
 	test_vim9_disassemble.res \
 	test_vim9_expr.res \
 	test_vim9_func.res \

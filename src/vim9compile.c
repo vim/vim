@@ -1427,6 +1427,17 @@ generate_EXEC(cctx_T *cctx, char_u *line)
     return OK;
 }
 
+    static int
+generate_EXECCONCAT(cctx_T *cctx, int count)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr_drop(cctx, ISN_EXECCONCAT, count)) == NULL)
+	return FAIL;
+    isn->isn_arg.number = count;
+    return OK;
+}
+
 /*
  * Reserve space for a local variable.
  * Return the index or -1 if it failed.
@@ -5805,6 +5816,71 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 }
 
 /*
+ * A command that is not compiled, execute with legacy code.
+ */
+    static char_u *
+compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
+{
+    char_u *p;
+
+    if (cctx->ctx_skip == TRUE)
+	goto theend;
+
+
+    if ((excmd_get_argt(eap->cmdidx) & EX_XFILE)
+	    && (p = (char_u *)strstr((char *)eap->arg, "`=")) != NULL)
+    {
+	int	count = 0;
+	char_u	*start = skipwhite(line);
+
+	// :cmd xxx`=expr1`yyy`=expr2`zzz
+	// PUSHS ":cmd xxx"
+	// eval expr1
+	// PUSHS "yyy"
+	// eval expr2
+	// PUSHS "zzz"
+	// EXECCONCAT 5
+	for (;;)
+	{
+	    if (p > start)
+	    {
+		generate_PUSHS(cctx, vim_strnsave(start, (int)(p - start)));
+		++count;
+	    }
+	    p += 2;
+	    if (compile_expr1(&p, cctx) == FAIL)
+		return NULL;
+	    may_generate_2STRING(-1, cctx);
+	    ++count;
+	    p = skipwhite(p);
+	    if (*p != '`')
+	    {
+		emsg(_("E1083: missing backtick"));
+		return NULL;
+	    }
+	    start = p + 1;
+
+	    p = (char_u *)strstr((char *)start, "`=");
+	    if (p == NULL)
+	    {
+		if (*skipwhite(start) != NUL)
+		{
+		    generate_PUSHS(cctx, vim_strsave(start));
+		    ++count;
+		}
+		break;
+	    }
+	}
+	generate_EXECCONCAT(cctx, count);
+    }
+    else
+	generate_EXEC(cctx, line);
+
+theend:
+    return (char_u *)"";
+}
+
+/*
  * After ex_function() has collected all the function lines: parse and compile
  * the lines into instructions.
  * Adds the function to "def_functions".
@@ -5818,7 +5894,6 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 {
     char_u	*line = NULL;
     char_u	*p;
-    exarg_T	ea;
     char	*errormsg = NULL;	// error message
     int		had_return = FALSE;
     cctx_T	cctx;
@@ -5917,6 +5992,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
      */
     for (;;)
     {
+	exarg_T	ea;
 	int	is_ex_command = FALSE;
 
 	// Bail out on the first error to avoid a flood of errors and report
@@ -5952,7 +6028,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	switch (*ea.cmd)
 	{
 	    case '#':
-		// "#" starts a comment, but not "#{".
+		// "#" starts a comment, but "#{" does not.
 		if (ea.cmd[1] != '{')
 		{
 		    line = (char_u *)"";
@@ -6093,7 +6169,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		&& ea.cmdidx != CMD_else
 		&& ea.cmdidx != CMD_endif)
 	{
-	    line += STRLEN(line);
+	    line = (char_u *)"";
 	    continue;
 	}
 
@@ -6183,10 +6259,10 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		    break;
 
 	    default:
-		    // Not recognized, execute with do_cmdline_cmd().
 		    // TODO: other commands with an expression argument
-		    generate_EXEC(&cctx, line);
-		    line = (char_u *)"";
+		    // Not recognized, execute with do_cmdline_cmd().
+		    ea.arg = p;
+		    line = compile_exec(line, &ea, &cctx);
 		    break;
 	}
 	if (line == NULL)
@@ -6401,10 +6477,11 @@ delete_instr(isn_T *isn)
 	case ISN_DCALL:
 	case ISN_DROP:
 	case ISN_ECHO:
-	case ISN_EXECUTE:
-	case ISN_ECHOMSG:
 	case ISN_ECHOERR:
+	case ISN_ECHOMSG:
 	case ISN_ENDTRY:
+	case ISN_EXECCONCAT:
+	case ISN_EXECUTE:
 	case ISN_FOR:
 	case ISN_FUNCREF:
 	case ISN_INDEX:

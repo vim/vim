@@ -648,6 +648,45 @@ call_def_function(
 		do_cmdline_cmd(iptr->isn_arg.string);
 		break;
 
+	    // execute Ex command from pieces on the stack
+	    case ISN_EXECCONCAT:
+		{
+		    int	    count = iptr->isn_arg.number;
+		    int	    len = 0;
+		    int	    pass;
+		    int	    i;
+		    char_u  *cmd = NULL;
+		    char_u  *str;
+
+		    for (pass = 1; pass <= 2; ++pass)
+		    {
+			for (i = 0; i < count; ++i)
+			{
+			    tv = STACK_TV_BOT(i - count);
+			    str = tv->vval.v_string;
+			    if (str != NULL && *str != NUL)
+			    {
+				if (pass == 2)
+				    STRCPY(cmd + len, str);
+				len += STRLEN(str);
+			    }
+			    if (pass == 2)
+				clear_tv(tv);
+			}
+			if (pass == 1)
+			{
+			    cmd = alloc(len + 1);
+			    if (cmd == NULL)
+				goto failed;
+			    len = 0;
+			}
+		    }
+
+		    do_cmdline_cmd(cmd);
+		    vim_free(cmd);
+		}
+		break;
+
 	    // execute :echo {string} ...
 	    case ISN_ECHO:
 		{
@@ -1960,6 +1999,10 @@ ex_disassemble(exarg_T *eap)
 	{
 	    case ISN_EXEC:
 		smsg("%4d EXEC %s", current, iptr->isn_arg.string);
+		break;
+	    case ISN_EXECCONCAT:
+		smsg("%4d EXECCONCAT %lld", current,
+					      (long long)iptr->isn_arg.number);
 		break;
 	    case ISN_ECHO:
 		{

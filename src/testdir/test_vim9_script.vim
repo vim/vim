@@ -2,25 +2,7 @@
 
 source check.vim
 source view_util.vim
-
-" Check that "lines" inside ":def" results in an "error" message.
-func CheckDefFailure(lines, error)
-  call writefile(['def Func()'] + a:lines + ['enddef'], 'Xdef')
-  call assert_fails('so Xdef', a:error, a:lines)
-  call delete('Xdef')
-endfunc
-
-def CheckScriptFailure(lines: list<string>, error: string)
-  writefile(lines, 'Xdef')
-  assert_fails('so Xdef', error, lines)
-  delete('Xdef')
-enddef
-
-def CheckScriptSuccess(lines: list<string>)
-  writefile(lines, 'Xdef')
-  so Xdef
-  delete('Xdef')
-enddef
+source vim9.vim
 
 def Test_syntax()
   let var = 234

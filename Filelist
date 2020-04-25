@@ -162,6 +162,7 @@ SRC_ALL =	\
 		src/testdir/setup.vim \
 		src/testdir/setup_gui.vim \
 		src/testdir/shared.vim \
+		src/testdir/vim9.vim \
 		src/testdir/summarize.vim \
 		src/testdir/term_util.vim \
 		src/testdir/view_util.vim \
