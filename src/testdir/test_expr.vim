@@ -24,6 +24,7 @@ func Test_equal()
   call assert_fails('echo base.method > instance.method')
   call assert_equal(0, test_null_function() == function('min'))
   call assert_equal(1, test_null_function() == test_null_function())
+  call assert_fails('eval 10 == test_unknown()', 'E685:')
 endfunc
 
 func Test_version()
@@ -100,7 +101,7 @@ func Test_loop_over_null_list()
   endfor
 endfunc
 
-func Test_set_reg_null_list()
+func Test_setreg_null_list()
   call setreg('x', test_null_list())
 endfunc
 

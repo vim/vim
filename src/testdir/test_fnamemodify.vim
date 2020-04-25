@@ -86,4 +86,8 @@ func Test_fnamemodify_er()
   " :e never includes the whole filename, so "a.b":e:e:e --> "b"
   call assert_equal('b.c', fnamemodify('a.b.c.d.e', ':r:r:e:e:e'))
   call assert_equal('b.c', fnamemodify('a.b.c.d.e', ':r:r:e:e:e:e'))
+
+  call assert_equal('', fnamemodify(test_null_string(), test_null_string()))
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
