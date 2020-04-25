@@ -6300,7 +6300,7 @@ conpty_term_and_job_init(
 
     if (!CreateProcessW(NULL, cmd_wchar_copy, NULL, NULL, FALSE,
 	    EXTENDED_STARTUPINFO_PRESENT | CREATE_UNICODE_ENVIRONMENT
-	    | CREATE_SUSPENDED | CREATE_NEW_PROCESS_GROUP
+	    | CREATE_SUSPENDED
 	    | CREATE_DEFAULT_ERROR_MODE,
 	    env_wchar, cwd_wchar,
 	    &term->tl_siex.StartupInfo, &proc_info))
