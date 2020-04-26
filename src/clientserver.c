@@ -473,6 +473,7 @@ cmdsrv_main(
 # ifdef FEAT_GUI_MSWIN
 		Shell_NotifyIcon(NIM_DELETE, &ni);
 # endif
+		vim_free(done);
 	    }
 	}
 	else if (STRICMP(argv[i], "--remote-expr") == 0)

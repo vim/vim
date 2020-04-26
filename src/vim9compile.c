@@ -5822,12 +5822,13 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
 {
     char_u  *p;
-    int	    has_expr;
+    int	    has_expr = FALSE;
 
     if (cctx->ctx_skip == TRUE)
 	goto theend;
 
-    has_expr = (excmd_get_argt(eap->cmdidx) & (EX_XFILE | EX_EXPAND));
+    if (eap->cmdidx >= 0 && eap->cmdidx < CMD_SIZE)
+	has_expr = (excmd_get_argt(eap->cmdidx) & (EX_XFILE | EX_EXPAND));
     if (eap->cmdidx == CMD_syntax && STRNCMP(eap->arg, "include ", 8) == 0)
     {
 	// expand filename in "syntax include [@group] filename"
