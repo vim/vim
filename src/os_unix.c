@@ -4160,11 +4160,6 @@ set_child_environment(
     static char	envbuf_Servername[60];
 #  endif
 # endif
-    long	colors =
-#  ifdef FEAT_GUI
-	    gui.in_use ? 256*256*256 :
-#  endif
-	    t_colors;
 
 # ifdef HAVE_SETENV
     setenv("TERM", term, 1);
@@ -4174,7 +4169,7 @@ set_child_environment(
     setenv("LINES", (char *)envbuf, 1);
     sprintf((char *)envbuf, "%ld", columns);
     setenv("COLUMNS", (char *)envbuf, 1);
-    sprintf((char *)envbuf, "%ld", colors);
+    sprintf((char *)envbuf, "%d", t_colors);
     setenv("COLORS", (char *)envbuf, 1);
 #  ifdef FEAT_TERMINAL
     if (is_terminal)

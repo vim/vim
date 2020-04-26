@@ -3122,15 +3122,21 @@ ttest(int pairs)
     }
     need_gather = TRUE;
 
-    // Set t_colors to the value of $COLORS or t_Co.
+    // Set t_colors to the value of $COLORS or t_Co.  Ignore $COLORS in the
+    // GUI.
     t_colors = atoi((char *)T_CCO);
-    env_colors = mch_getenv((char_u *)"COLORS");
-    if (env_colors != NULL && isdigit(*env_colors))
+#ifdef FEAT_GUI
+    if (!gui.in_use)
+#endif
     {
-	int colors = atoi((char *)env_colors);
+	env_colors = mch_getenv((char_u *)"COLORS");
+	if (env_colors != NULL && isdigit(*env_colors))
+	{
+	    int colors = atoi((char *)env_colors);
 
-	if (colors != t_colors)
-	    set_color_count(colors);
+	    if (colors != t_colors)
+		set_color_count(colors);
+	}
     }
 }
 
