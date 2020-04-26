@@ -31,7 +31,11 @@ func Test_balloon_show()
 endfunc
 
 func Test_colorscheme()
-  call assert_equal('16777216', &t_Co)
+  if exists('$COLORS')
+    call assert_equal($COLORS, &t_Co)
+  else
+    call assert_equal('16777216', &t_Co)
+  endif
 
   let colorscheme_saved = exists('g:colors_name') ? g:colors_name : 'default'
   let g:color_count = 0
