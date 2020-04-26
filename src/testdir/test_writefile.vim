@@ -207,6 +207,12 @@ func Test_saveas()
   close!
   enew | only
   call delete('Xfile')
+
+  call writefile(test_null_list(), 'Xfile')
+  call assert_false(filereadable('Xfile'))
+  call writefile(test_null_blob(), 'Xfile')
+  call assert_false(filereadable('Xfile'))
+  call assert_fails('call writefile([], "")', 'E482:')
 endfunc
 
 func Test_write_errors()
@@ -245,6 +251,12 @@ func Test_write_errors()
   close
 
   call delete('Xfile')
+
+  call writefile(test_null_list(), 'Xfile')
+  call assert_false(filereadable('Xfile'))
+  call writefile(test_null_blob(), 'Xfile')
+  call assert_false(filereadable('Xfile'))
+  call assert_fails('call writefile([], "")', 'E482:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -163,6 +163,7 @@ func Test_matchadd_error()
   call assert_fails("call matchadd('Search', 'XXX', 1, 123, 1)", 'E715:')
   call assert_fails("call matchadd('Error', 'XXX', 1, 3)", 'E798:')
   call assert_fails("call matchadd('Error', 'XXX', 1, 0)", 'E799:')
+  call assert_fails("call matchadd('Error', 'XXX', [], 0)", 'E745:')
 endfunc
 
 func Test_matchaddpos()
@@ -278,6 +279,8 @@ func Test_matchaddpos_error()
   call assert_fails("call matchaddpos('Error', [1], 1, 5, {'window':12345})", 'E957:')
   " Why doesn't the following error have an error code E...?
   call assert_fails("call matchaddpos('Error', [{}])", 'E290:')
+  call assert_equal(-1, matchaddpos('Error', test_null_list()))
+  call assert_fails("call matchaddpos('Error', [1], [], 1)", 'E745:')
 endfunc
 
 func OtherWindowCommon()
@@ -333,6 +336,5 @@ func Test_matchadd_other_window()
   call StopVimInTerminal(buf)
   call delete('XscriptMatchCommon')
 endfunc
-
 
 " vim: shiftwidth=2 sts=2 expandtab

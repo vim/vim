@@ -1488,6 +1488,7 @@ func SetXlistTests(cchar, bnum)
 	      \ " {'bufnr':999, 'lnum':5}])", 'E92:')
   call g:Xsetlist([[1, 2,3]])
   call assert_equal(0, len(g:Xgetlist()))
+  call assert_fails('call g:Xsetlist([], [])', 'E928:')
 endfunc
 
 func Test_setqflist()
