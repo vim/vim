@@ -1,5 +1,6 @@
 " Test commands that are not compiled in a :def function
 
+source check.vim
 source vim9.vim
 
 def Test_edit_wildcards()
@@ -17,6 +18,30 @@ def Test_edit_wildcards()
 
   edit X`=filename`xx`=filenr`yy
   assert_equal('XXtestxx77yy', bufname())
+enddef
+
+def Test_hardcopy_wildcards()
+  CheckUnix
+  CheckFeature postscript
+
+  let outfile = 'print'
+  hardcopy > X`=outfile`.ps
+  assert_true(filereadable('Xprint.ps'))
+
+  delete('Xprint.ps')
+enddef
+
+def Test_syn_include_wildcards()
+  writefile(['syn keyword Found found'], 'Xthemine.vim')
+  let save_rtp = &rtp
+  &rtp = '.'
+
+  let fname = 'mine'
+  syn include @Group Xthe`=fname`.vim
+  assert_match('Found.* contained found', execute('syn list Found'))
+
+  &rtp = save_rtp
+  delete('Xthemine.vim')
 enddef
 
 

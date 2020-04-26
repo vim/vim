@@ -5821,14 +5821,23 @@ compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
     static char_u *
 compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
 {
-    char_u *p;
+    char_u  *p;
+    int	    has_expr;
 
     if (cctx->ctx_skip == TRUE)
 	goto theend;
 
+    has_expr = (excmd_get_argt(eap->cmdidx) & (EX_XFILE | EX_EXPAND));
+    if (eap->cmdidx == CMD_syntax && STRNCMP(eap->arg, "include ", 8) == 0)
+    {
+	// expand filename in "syntax include [@group] filename"
+	has_expr = TRUE;
+	eap->arg = skipwhite(eap->arg + 7);
+	if (*eap->arg == '@')
+	    eap->arg = skiptowhite(eap->arg);
+    }
 
-    if ((excmd_get_argt(eap->cmdidx) & EX_XFILE)
-	    && (p = (char_u *)strstr((char *)eap->arg, "`=")) != NULL)
+    if (has_expr && (p = (char_u *)strstr((char *)eap->arg, "`=")) != NULL)
     {
 	int	count = 0;
 	char_u	*start = skipwhite(line);

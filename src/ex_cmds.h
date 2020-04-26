@@ -53,6 +53,8 @@
 #define EX_MODIFY    0x100000	// forbidden in non-'modifiable' buffer
 #define EX_FLAGS     0x200000	// allow flags after count in argument
 #define EX_RESTRICT  0x400000	// forbidden in restricted mode
+#define EX_EXPAND    0x800000	// expands wildcards later
+
 #define EX_FILES (EX_XFILE | EX_EXTRA)	// multiple extra files allowed
 #define EX_FILE1 (EX_FILES | EX_NOSPC)	// 1 file, defaults to current file
 #define EX_WORD1 (EX_EXTRA | EX_NOSPC)	// one extra word allowed
@@ -653,7 +655,7 @@ EXCMD(CMD_helptags,	"helptags",	ex_helptags,
 	EX_NEEDARG|EX_FILES|EX_TRLBAR|EX_CMDWIN,
 	ADDR_NONE),
 EXCMD(CMD_hardcopy,	"hardcopy",	ex_hardcopy,
-	EX_RANGE|EX_COUNT|EX_EXTRA|EX_TRLBAR|EX_DFLALL|EX_BANG,
+	EX_RANGE|EX_COUNT|EX_EXTRA|EX_EXPAND|EX_TRLBAR|EX_DFLALL|EX_BANG,
 	ADDR_LINES),
 EXCMD(CMD_highlight,	"highlight",	ex_highlight,
 	EX_BANG|EX_EXTRA|EX_TRLBAR|EX_SBOXOK|EX_CMDWIN,

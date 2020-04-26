@@ -645,6 +645,7 @@ call_def_function(
 	{
 	    // execute Ex command line
 	    case ISN_EXEC:
+		SOURCING_LNUM = iptr->isn_lnum;
 		do_cmdline_cmd(iptr->isn_arg.string);
 		break;
 
@@ -682,6 +683,7 @@ call_def_function(
 			}
 		    }
 
+		    SOURCING_LNUM = iptr->isn_lnum;
 		    do_cmdline_cmd(cmd);
 		    vim_free(cmd);
 		}
