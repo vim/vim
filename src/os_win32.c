@@ -307,6 +307,7 @@ read_console_input(
     int head;
     int tail;
     int i;
+    static INPUT_RECORD s_irPseudo;
 
     if (nLength == -2)
 	return (s_dwMax > 0) ? TRUE : FALSE;
@@ -351,6 +352,19 @@ read_console_input(
 		head++;
 	    }
 	    s_dwMax = tail + 1;
+	}
+    }
+
+    if (s_irCache[s_dwIndex].EventType == KEY_EVENT)
+    {
+	if (s_irCache[s_dwIndex].Event.KeyEvent.wRepeatCount > 1)
+	{
+	    s_irPseudo = s_irCache[s_dwIndex];
+	    s_irPseudo.Event.KeyEvent.wRepeatCount = 1;
+	    s_irCache[s_dwIndex].Event.KeyEvent.wRepeatCount--;
+	    *lpBuffer = s_irPseudo;
+	    *lpEvents = 1;
+	    return TRUE;
 	}
     }
 
