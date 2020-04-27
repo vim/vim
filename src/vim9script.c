@@ -217,7 +217,7 @@ find_exported(
 	funcname[1] = KS_EXTRA;
 	funcname[2] = (int)KE_SNR;
 	sprintf((char *)funcname + 3, "%ld_%s", (long)sid, name);
-	*ufunc = find_func(funcname, NULL);
+	*ufunc = find_func(funcname, FALSE, NULL);
 	if (funcname != buffer)
 	    vim_free(funcname);
 

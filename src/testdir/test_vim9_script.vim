@@ -53,7 +53,7 @@ def Test_assignment()
   endif
   let Funky1: func
   let Funky2: func = function('len')
-  let Party2: func = funcref('Test_syntax')
+  let Party2: func = funcref('g:Test_syntax')
 
   # type becomes list<any>
   let somelist = rand() > 0 ? [1, 2, 3] : ['a', 'b', 'c']
@@ -280,6 +280,49 @@ def Test_unlet()
   assert_equal('foobar', $ENVVAR)
   unlet $ENVVAR
   assert_equal('', $ENVVAR)
+enddef
+
+def Test_delfunction()
+  " Check function is defined in script namespace
+  CheckScriptSuccess([
+      'vim9script',
+      'func CheckMe()',
+      '  return 123',
+      'endfunc',
+      'assert_equal(123, s:CheckMe())',
+      ])
+
+  " Check function in script namespace cannot be deleted
+  CheckScriptFailure([
+      'vim9script',
+      'func DeleteMe1()',
+      'endfunc',
+      'delfunction DeleteMe1',
+      ], 'E1084:')
+  CheckScriptFailure([
+      'vim9script',
+      'func DeleteMe2()',
+      'endfunc',
+      'def DoThat()',
+      '  delfunction DeleteMe2',
+      'enddef',
+      'DoThat()',
+      ], 'E1084:')
+  CheckScriptFailure([
+      'vim9script',
+      'def DeleteMe3()',
+      'enddef',
+      'delfunction DeleteMe3',
+      ], 'E1084:')
+  CheckScriptFailure([
+      'vim9script',
+      'def DeleteMe4()',
+      'enddef',
+      'def DoThat()',
+      '  delfunction DeleteMe4',
+      'enddef',
+      'DoThat()',
+      ], 'E1084:')
 enddef
 
 func Test_wrong_type()
@@ -649,7 +692,7 @@ def Test_vim9script_fails()
   assert_fails('export something', 'E1043')
 enddef
 
-def Test_vim9script_reload()
+def Test_vim9script_reload_import()
   let lines =<< trim END
     vim9script
     const var = ''
@@ -698,6 +741,47 @@ def Test_vim9script_reload()
 
   delete('Xreload.vim')
   delete('Ximport.vim')
+enddef
+
+def Test_vim9script_reload_delfunc()
+  let first_lines =<< trim END
+    vim9script
+    def FuncYes(): string
+      return 'yes'
+    enddef
+  END
+  let middle_lines =<< trim END
+    def FuncNo(): string
+      return 'no'
+    enddef
+  END
+  let final_lines =<< trim END
+    def g:DoCheck(no_exists: bool)
+      assert_equal('yes', FuncYes())
+      if no_exists
+        assert_equal('no', FuncNo())
+      else
+        assert_fails('call FuncNo()', 'E117:')
+      endif
+    enddef
+  END
+
+  # FuncNo() is defined
+  writefile(first_lines + middle_lines + final_lines, 'Xreloaded.vim')
+  source Xreloaded.vim
+  g:DoCheck(true)
+
+  # FuncNo() is not redefined
+  writefile(first_lines + final_lines, 'Xreloaded.vim')
+  source Xreloaded.vim
+  g:DoCheck(false)
+
+  # FuncNo() is back
+  writefile(first_lines + middle_lines + final_lines, 'Xreloaded.vim')
+  source Xreloaded.vim
+  g:DoCheck(true)
+
+  delete('Xreloaded.vim')
 enddef
 
 def Test_import_absolute()
@@ -1445,15 +1529,15 @@ def Test_vim9_comment()
 
   CheckScriptSuccess([
       'vim9script',
-      'func DeleteMe()',
+      'func g:DeleteMeA()',
       'endfunc',
-      'delfunction DeleteMe # comment',
+      'delfunction g:DeleteMeA # comment',
       ])
   CheckScriptFailure([
       'vim9script',
-      'func DeleteMe()',
+      'func g:DeleteMeB()',
       'endfunc',
-      'delfunction DeleteMe# comment',
+      'delfunction g:DeleteMeB# comment',
       ], 'E488:')
 
   CheckScriptSuccess([

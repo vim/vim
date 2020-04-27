@@ -400,7 +400,7 @@ call_by_name(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
 	return call_bfunc(func_idx, argcount, ectx);
     }
 
-    ufunc = find_func(name, NULL);
+    ufunc = find_func(name, FALSE, NULL);
     if (ufunc != NULL)
 	return call_ufunc(ufunc, argcount, ectx, iptr);
 
@@ -1944,8 +1944,9 @@ ex_disassemble(exarg_T *eap)
     int		current;
     int		line_idx = 0;
     int		prev_current = 0;
+    int		is_global = FALSE;
 
-    fname = trans_function_name(&arg, FALSE,
+    fname = trans_function_name(&arg, &is_global, FALSE,
 	     TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF, NULL, NULL);
     if (fname == NULL)
     {
@@ -1953,14 +1954,14 @@ ex_disassemble(exarg_T *eap)
 	return;
     }
 
-    ufunc = find_func(fname, NULL);
+    ufunc = find_func(fname, is_global, NULL);
     if (ufunc == NULL)
     {
 	char_u *p = untrans_function_name(fname);
 
 	if (p != NULL)
 	    // Try again without making it script-local.
-	    ufunc = find_func(p, NULL);
+	    ufunc = find_func(p, FALSE, NULL);
     }
     vim_free(fname);
     if (ufunc == NULL)

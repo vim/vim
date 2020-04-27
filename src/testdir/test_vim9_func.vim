@@ -353,7 +353,7 @@ endfunc
 def Test_delfunc()
   let lines =<< trim END
     vim9script
-    def GoneSoon()
+    def g:GoneSoon()
       echo 'hello'
     enddef
 
@@ -361,7 +361,7 @@ def Test_delfunc()
       GoneSoon()
     enddef
 
-    delfunc GoneSoon
+    delfunc g:GoneSoon
     CallGoneSoon()
   END
   writefile(lines, 'XToDelFunc')

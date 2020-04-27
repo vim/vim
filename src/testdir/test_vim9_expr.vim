@@ -207,12 +207,12 @@ def Test_expr4_equal()
   assert_equal(true, g:adict == #{bbb: 8, aaa: 2})
   assert_equal(false, #{ccc: 9, aaa: 2} == g:adict)
 
-  assert_equal(true, function('Test_expr4_equal') == function('Test_expr4_equal'))
-  assert_equal(false, function('Test_expr4_equal') == function('Test_expr4_is'))
+  assert_equal(true, function('g:Test_expr4_equal') == function('g:Test_expr4_equal'))
+  assert_equal(false, function('g:Test_expr4_equal') == function('g:Test_expr4_is'))
 
-  assert_equal(true, function('Test_expr4_equal', [123]) == function('Test_expr4_equal', [123]))
-  assert_equal(false, function('Test_expr4_equal', [123]) == function('Test_expr4_is', [123]))
-  assert_equal(false, function('Test_expr4_equal', [123]) == function('Test_expr4_equal', [999]))
+  assert_equal(true, function('g:Test_expr4_equal', [123]) == function('g:Test_expr4_equal', [123]))
+  assert_equal(false, function('g:Test_expr4_equal', [123]) == function('g:Test_expr4_is', [123]))
+  assert_equal(false, function('g:Test_expr4_equal', [123]) == function('g:Test_expr4_equal', [999]))
 enddef
 
 " test != comperator
@@ -274,12 +274,12 @@ def Test_expr4_notequal()
   assert_equal(false, g:adict != #{bbb: 8, aaa: 2})
   assert_equal(true, #{ccc: 9, aaa: 2} != g:adict)
 
-  assert_equal(false, function('Test_expr4_equal') != function('Test_expr4_equal'))
-  assert_equal(true, function('Test_expr4_equal') != function('Test_expr4_is'))
+  assert_equal(false, function('g:Test_expr4_equal') != function('g:Test_expr4_equal'))
+  assert_equal(true, function('g:Test_expr4_equal') != function('g:Test_expr4_is'))
 
-  assert_equal(false, function('Test_expr4_equal', [123]) != function('Test_expr4_equal', [123]))
-  assert_equal(true, function('Test_expr4_equal', [123]) != function('Test_expr4_is', [123]))
-  assert_equal(true, function('Test_expr4_equal', [123]) != function('Test_expr4_equal', [999]))
+  assert_equal(false, function('g:Test_expr4_equal', [123]) != function('g:Test_expr4_equal', [123]))
+  assert_equal(true, function('g:Test_expr4_equal', [123]) != function('g:Test_expr4_is', [123]))
+  assert_equal(true, function('g:Test_expr4_equal', [123]) != function('g:Test_expr4_equal', [999]))
 enddef
 
 " test > comperator
@@ -929,15 +929,15 @@ endfunc
 
 def Test_expr7_trailing()
   " user function call
-  assert_equal(123, CallMe(123))
-  assert_equal(123, CallMe(  123))
-  assert_equal(123, CallMe(123  ))
-  assert_equal('yesno', CallMe2('yes', 'no'))
-  assert_equal('yesno', CallMe2( 'yes', 'no' ))
-  assert_equal('nothing', CallMe('nothing'))
+  assert_equal(123, g:CallMe(123))
+  assert_equal(123, g:CallMe(  123))
+  assert_equal(123, g:CallMe(123  ))
+  assert_equal('yesno', g:CallMe2('yes', 'no'))
+  assert_equal('yesno', g:CallMe2( 'yes', 'no' ))
+  assert_equal('nothing', g:CallMe('nothing'))
 
   " partial call
-  let Part = function('CallMe')
+  let Part = function('g:CallMe')
   assert_equal('yes', Part('yes'))
 
   " funcref call, using list index

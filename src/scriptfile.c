@@ -1275,6 +1275,7 @@ do_source(
 	hashitem_T	*hi;
 	dictitem_T	*di;
 	int		todo;
+	int		is_vim9 = si->sn_version == SCRIPT_VERSION_VIM9;
 
 	// loading the same script again
 	si->sn_had_command = FALSE;
@@ -1293,6 +1294,10 @@ do_source(
 
 	// old imports are no longer valid
 	free_imports(sid);
+
+	// in Vim9 script functions are marked deleted
+	if (is_vim9)
+	    delete_script_functions(sid);
     }
     else
     {
