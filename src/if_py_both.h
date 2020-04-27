@@ -2934,7 +2934,7 @@ FunctionNew(PyTypeObject *subtype, char_u *name, int argc, typval_T *argv,
 
     if (isdigit(*name))
     {
-	if (!translated_function_exists(name))
+	if (!translated_function_exists(name, FALSE))
 	{
 	    PyErr_FORMAT(PyExc_ValueError,
 		    N_("unnamed function %s does not exist"), name);
