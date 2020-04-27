@@ -1471,4 +1471,15 @@ func Test_cmdwin_insert_mode_close()
   call assert_equal(1, winnr('$'))
 endfunc
 
+" test that ";" works to find a match at the start of the first line
+func Test_zero_line_search()
+  new
+  call setline(1, ["1, pattern", "2, ", "3, pattern"])
+  call cursor(1,1)
+  0;/pattern/d
+  call assert_equal(["2, ", "3, pattern"], getline(1,'$'))
+  q!
+endfunc
+
+
 " vim: shiftwidth=2 sts=2 expandtab
