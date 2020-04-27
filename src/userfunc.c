@@ -1599,9 +1599,9 @@ delete_script_functions(int sid)
     for (hi = func_hashtab.ht_array; todo > 0; ++hi)
 	if (!HASHITEM_EMPTY(hi))
 	{
+	    fp = HI2UF(hi);
 	    if (STRNCMP(fp->uf_name, buf, len) == 0)
 	    {
-		fp = HI2UF(hi);
 		fp->uf_flags |= FC_DEAD;
 		func_clear(fp, TRUE);
 	    }

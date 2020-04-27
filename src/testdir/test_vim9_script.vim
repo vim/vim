@@ -707,8 +707,7 @@ def Test_vim9script_reload_import()
       return valtwo
     enddef
   END
-  writefile(lines + morelines,
-            'Xreload.vim')
+  writefile(lines + morelines, 'Xreload.vim')
   source Xreload.vim
   source Xreload.vim
   source Xreload.vim
@@ -724,10 +723,9 @@ def Test_vim9script_reload_import()
   writefile(testlines, 'Ximport.vim')
   source Ximport.vim
 
-  " test that when not using "morelines" valtwo is still defined
-  " need to source Xreload.vim again, import doesn't reload a script
+  " Test that when not using "morelines" GetValtwo() and valtwo are still
+  " defined, because import doesn't reload a script.
   writefile(lines, 'Xreload.vim')
-  source Xreload.vim
   source Ximport.vim
 
   " cannot declare a var twice
@@ -750,36 +748,36 @@ def Test_vim9script_reload_delfunc()
       return 'yes'
     enddef
   END
-  let middle_lines =<< trim END
+  let withno_lines =<< trim END
     def FuncNo(): string
       return 'no'
     enddef
-  END
-  let final_lines =<< trim END
     def g:DoCheck(no_exists: bool)
       assert_equal('yes', FuncYes())
-      if no_exists
-        assert_equal('no', FuncNo())
-      else
-        assert_fails('call FuncNo()', 'E117:')
-      endif
+      assert_equal('no', FuncNo())
+    enddef
+  END
+  let nono_lines =<< trim END
+    def g:DoCheck(no_exists: bool)
+      assert_equal('yes', FuncYes())
+      assert_fails('call FuncNo()', 'E117:')
     enddef
   END
 
   # FuncNo() is defined
-  writefile(first_lines + middle_lines + final_lines, 'Xreloaded.vim')
+  writefile(first_lines + withno_lines, 'Xreloaded.vim')
   source Xreloaded.vim
   g:DoCheck(true)
 
   # FuncNo() is not redefined
-  writefile(first_lines + final_lines, 'Xreloaded.vim')
+  writefile(first_lines + nono_lines, 'Xreloaded.vim')
   source Xreloaded.vim
-  g:DoCheck(false)
+  g:DoCheck()
 
   # FuncNo() is back
-  writefile(first_lines + middle_lines + final_lines, 'Xreloaded.vim')
+  writefile(first_lines + withno_lines, 'Xreloaded.vim')
   source Xreloaded.vim
-  g:DoCheck(true)
+  g:DoCheck()
 
   delete('Xreloaded.vim')
 enddef
