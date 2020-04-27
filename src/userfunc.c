@@ -1586,13 +1586,13 @@ delete_script_functions(int sid)
     hashitem_T	*hi;
     ufunc_T	*fp;
     long_u	todo;
-    char	buf[30];
+    char_u	buf[30];
     size_t	len;
 
     buf[0] = K_SPECIAL;
     buf[1] = KS_EXTRA;
     buf[2] = (int)KE_SNR;
-    sprintf(buf + 3, "%d_", sid);
+    sprintf((char *)buf + 3, "%d_", sid);
     len = STRLEN(buf);
 
     todo = func_hashtab.ht_used;
