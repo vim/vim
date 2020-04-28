@@ -787,6 +787,7 @@ OBJ = \
 	$(OUTDIR)/tag.o \
 	$(OUTDIR)/term.o \
 	$(OUTDIR)/testing.o \
+	$(OUTDIR)/textobject.o \
 	$(OUTDIR)/textprop.o \
 	$(OUTDIR)/time.o \
 	$(OUTDIR)/ui.o \

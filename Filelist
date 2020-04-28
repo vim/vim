@@ -128,6 +128,7 @@ SRC_ALL =	\
 		src/term.h \
 		src/termlib.c \
 		src/testing.c \
+		src/textobject.c \
 		src/textprop.c \
 		src/time.c \
 		src/ui.c \
@@ -279,6 +280,7 @@ SRC_ALL =	\
 		src/proto/terminal.pro \
 		src/proto/termlib.pro \
 		src/proto/testing.pro \
+		src/proto/textobject.pro \
 		src/proto/textprop.pro \
 		src/proto/time.pro \
 		src/proto/ui.pro \

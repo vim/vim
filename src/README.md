@@ -80,6 +80,7 @@ syntax.c	| syntax and other highlighting
 tag.c		| tags
 term.c		| terminal handling, termcap codes
 testing.c	| testing: assert and test functions
+textobject.c	| text objects
 textprop.c	| text properties
 time.c		| time and timer functions
 undo.c		| undo and redo
