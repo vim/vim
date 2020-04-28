@@ -30,6 +30,16 @@ def Test_expr1()
   assert_equal('two', {} ? 'one' : 'two')
   var = 0
   assert_equal('two', var ? 'one' : 'two')
+
+  let Some: func = function('len')
+  let Other: func = function('winnr')
+  let Res: func = g:atrue ? Some : Other
+  assert_equal(function('len'), Res)
+
+  let RetOne: func(string): number = function('len')
+  let RetTwo: func(string): number = function('winnr')
+  let RetThat: func = g:atrue ? RetOne : RetTwo
+  assert_equal(function('len'), RetThat)
 enddef
 
 func Test_expr1_fails()

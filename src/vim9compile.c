@@ -724,7 +724,8 @@ generate_TYPECHECK(cctx_T *cctx, type_T *vartype, int offset)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_CHECKTYPE)) == NULL)
 	return FAIL;
-    isn->isn_arg.type.ct_type = vartype->tt_type;  // TODO: whole type
+    // TODO: whole type, e.g. for a function also arg and return types
+    isn->isn_arg.type.ct_type = vartype->tt_type;
     isn->isn_arg.type.ct_off = offset;
 
     // type becomes vartype
@@ -2594,6 +2595,7 @@ arg_type_mismatch(type_T *expected, type_T *actual, int argidx)
 
 /*
  * Check if the expected and actual types match.
+ * Does not allow for assigning "any" to a specific type.
  */
     static int
 check_type(type_T *expected, type_T *actual, int give_msg)
@@ -2603,7 +2605,8 @@ check_type(type_T *expected, type_T *actual, int give_msg)
     // When expected is "unknown" we accept any actual type.
     // When expected is "any" we accept any actual type except "void".
     if (expected->tt_type != VAR_UNKNOWN
-	    && (expected->tt_type != VAR_ANY || actual->tt_type == VAR_VOID))
+	    && !(expected->tt_type == VAR_ANY && actual->tt_type != VAR_VOID))
+
     {
 	if (expected->tt_type != actual->tt_type)
 	{
@@ -2643,7 +2646,10 @@ need_type(type_T *actual, type_T *expected, int offset, cctx_T *cctx)
 {
     if (check_type(expected, actual, FALSE) == OK)
 	return OK;
-    if (actual->tt_type != VAR_ANY && actual->tt_type != VAR_UNKNOWN)
+    if (actual->tt_type != VAR_ANY
+	    && actual->tt_type != VAR_UNKNOWN
+	    && !(actual->tt_type == VAR_FUNC
+		&& (actual->tt_member == &t_any || actual->tt_argcount < 0)))
     {
 	type_mismatch(expected, actual);
 	return FAIL;
