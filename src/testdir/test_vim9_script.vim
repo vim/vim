@@ -345,6 +345,9 @@ func Test_wrong_type()
   call CheckDefFailure(['let var: pam'], 'E1010:')
   call CheckDefFailure(['let var: sam'], 'E1010:')
   call CheckDefFailure(['let var: vim'], 'E1010:')
+
+  call CheckDefFailure(['let Ref: number', 'Ref()'], 'E1085:')
+  call CheckDefFailure(['let Ref: string', 'let res = Ref()'], 'E1085:')
 endfunc
 
 func Test_const()
