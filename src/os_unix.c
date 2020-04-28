@@ -4196,7 +4196,7 @@ set_child_environment(
     vim_snprintf(envbuf_Columns, sizeof(envbuf_Columns),
 						       "COLUMNS=%ld", columns);
     putenv(envbuf_Columns);
-    vim_snprintf(envbuf_Colors, sizeof(envbuf_Colors), "COLORS=%ld", colors);
+    vim_snprintf(envbuf_Colors, sizeof(envbuf_Colors), "COLORS=%ld", t_colors);
     putenv(envbuf_Colors);
 #  ifdef FEAT_TERMINAL
     if (is_terminal)
