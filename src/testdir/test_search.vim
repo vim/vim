@@ -1638,6 +1638,12 @@ func Test_search_smartcase()
   exe "normal /\\a\\_.\\(.*\\)o\<CR>"
   call assert_equal([2, 1], [line('.'), col('.')])
 
+  " Test for using special atoms with 'smartcase'
+  call setline(1, ['', '    Hello\ '])
+  call cursor(1, 1)
+  call feedkeys('/\_.\%(\uello\)\' .. "\<CR>", 'xt')
+  call assert_equal([2, 4], [line('.'), col('.')])
+
   set ignorecase& smartcase&
   close!
 endfunc
@@ -1648,6 +1654,93 @@ func Test_search_past_eof()
   call setline(1, ['Line'])
   exe "normal /\\n\\zs\<CR>"
   call assert_equal([1, 4], [line('.'), col('.')])
+  close!
+endfunc
+
+" Test for various search offsets
+func Test_search_offset()
+  " With /e, for a match in the first column of a line, the cursor should be
+  " placed at the end of the previous line.
+  new
+  call setline(1, ['one two', 'three four'])
+  call search('two\_.', 'e')
+  call assert_equal([1, 7], [line('.'), col('.')])
+
+  " with cursor at the beginning of the file, use /s+1
+  call cursor(1, 1)
+  exe "normal /two/s+1\<CR>"
+  call assert_equal([1, 6], [line('.'), col('.')])
+
+  " with cursor at the end of the file, use /e-1
+  call cursor(2, 10)
+  exe "normal ?three?e-1\<CR>"
+  call assert_equal([2, 4], [line('.'), col('.')])
+
+  " line offset - after the last line
+  call cursor(1, 1)
+  exe "normal /three/+1\<CR>"
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  " line offset - before the first line
+  call cursor(2, 1)
+  exe "normal ?one?-1\<CR>"
+  call assert_equal([1, 1], [line('.'), col('.')])
+
+  " character offset - before the first character in the file
+  call cursor(2, 1)
+  exe "normal ?one?s-1\<CR>"
+  call assert_equal([1, 1], [line('.'), col('.')])
+  call cursor(2, 1)
+  exe "normal ?one?e-3\<CR>"
+  call assert_equal([1, 1], [line('.'), col('.')])
+
+  " character offset - after the last character in the file
+  call cursor(1, 1)
+  exe "normal /four/s+4\<CR>"
+  call assert_equal([2, 10], [line('.'), col('.')])
+  call cursor(1, 1)
+  exe "normal /four/e+1\<CR>"
+  call assert_equal([2, 10], [line('.'), col('.')])
+
+  close!
+endfunc
+
+" Test for searching for matching parenthesis using %
+func Test_search_match_paren()
+  new
+  call setline(1, "abc(def')'ghi'('jk'\\t'lm)no")
+  " searching for a matching parenthesis should skip single quoted characters
+  call cursor(1, 4)
+  normal %
+  call assert_equal([1, 25], [line('.'), col('.')])
+  normal %
+  call assert_equal([1, 4], [line('.'), col('.')])
+  call cursor(1, 5)
+  normal ])
+  call assert_equal([1, 25], [line('.'), col('.')])
+  call cursor(1, 24)
+  normal [(
+  call assert_equal([1, 4], [line('.'), col('.')])
+
+  " matching parenthesis in 'virtualedit' mode with cursor after the eol
+  call setline(1, 'abc(defgh)')
+  set virtualedit=all
+  normal 20|%
+  call assert_equal(4, col('.'))
+  set virtualedit&
+  close!
+endfunc
+
+" Test for searching a pattern and stopping before a specified line
+func Test_search_stopline()
+  new
+  call setline(1, ['', '', '', 'vim'])
+  call assert_equal(0, search('vim', 'n', 3))
+  call assert_equal(4, search('vim', 'n', 4))
+  call setline(1, ['vim', '', '', ''])
+  call cursor(4, 1)
+  call assert_equal(0, search('vim', 'bn', 2))
+  call assert_equal(1, search('vim', 'bn', 1))
   close!
 endfunc
 
