@@ -1364,10 +1364,13 @@ do_highlight(
 		if (!init)
 		    HL_TABLE()[idx].sg_set |= SG_GUI;
 
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
+		// In GUI guisp colors are only used when recognized
 		i = color_name2handle(arg);
 		if (i != INVALCOLOR || STRCMP(arg, "NONE") == 0 || !USE_24BIT)
 		{
 		    HL_TABLE()[idx].sg_gui_sp = i;
+# endif
 		    if (*namep == NULL || STRCMP(*namep, arg) != 0)
 		    {
 			vim_free(*namep);
@@ -1377,7 +1380,9 @@ do_highlight(
 			    *namep = NULL;
 			did_change = TRUE;
 		    }
+# if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
 		}
+# endif
 	    }
 #endif
 	}
