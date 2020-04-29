@@ -1865,6 +1865,19 @@ screen_start_highlight(int attr)
 		    if (aep->ae_u.cterm.bg_color)
 			term_bg_color(aep->ae_u.cterm.bg_color - 1);
 		}
+#ifdef FEAT_TERMGUICOLORS
+		if (p_tgc && aep->ae_u.cterm.ul_rgb != CTERMCOLOR)
+		{
+		    if (aep->ae_u.cterm.ul_rgb != INVALCOLOR)
+			term_ul_rgb_color(aep->ae_u.cterm.ul_rgb);
+		}
+		else
+#endif
+		if (t_colors > 1)
+		{
+		    if (aep->ae_u.cterm.ul_color)
+			term_ul_color(aep->ae_u.cterm.ul_color - 1);
+		}
 
 		if (!IS_CTERM)
 		{
@@ -1991,6 +2004,8 @@ screen_stop_highlight(void)
 		    term_fg_rgb_color(cterm_normal_fg_gui_color);
 		if (cterm_normal_bg_gui_color != INVALCOLOR)
 		    term_bg_rgb_color(cterm_normal_bg_gui_color);
+		if (cterm_normal_ul_gui_color != INVALCOLOR)
+		    term_ul_rgb_color(cterm_normal_ul_gui_color);
 	    }
 	    else
 #endif
@@ -2002,6 +2017,8 @@ screen_stop_highlight(void)
 			term_fg_color(cterm_normal_fg_color - 1);
 		    if (cterm_normal_bg_color != 0)
 			term_bg_color(cterm_normal_bg_color - 1);
+		    if (cterm_normal_ul_color != 0)
+			term_ul_color(cterm_normal_ul_color - 1);
 		    if (cterm_normal_fg_bold)
 			out_str(T_MD);
 		}
