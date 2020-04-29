@@ -2291,7 +2291,6 @@ test_libvterm:
 # Run individual OLD style test.
 # These do not depend on the executable, compile it when needed.
 test1 \
-	test_eval \
 	test42 test44 test49 \
 	test52 test59 \
 	test70 \
