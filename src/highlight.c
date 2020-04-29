@@ -2883,10 +2883,11 @@ set_hl_attr(
      * For the color term mode: If there are other than "normal"
      * highlighting attributes, need to allocate an attr number.
      */
-    if (sgp->sg_cterm_fg == 0 && sgp->sg_cterm_bg == 0
+    if (sgp->sg_cterm_fg == 0 && sgp->sg_cterm_bg == 0 && sgp->sg_cterm_ul == 0
 # ifdef FEAT_TERMGUICOLORS
 	    && sgp->sg_gui_fg == INVALCOLOR
 	    && sgp->sg_gui_bg == INVALCOLOR
+	    && sgp->sg_gui_sp == INVALCOLOR
 # endif
 	    )
 	sgp->sg_cterm_attr = sgp->sg_cterm;
