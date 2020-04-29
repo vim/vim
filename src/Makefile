@@ -3383,6 +3383,8 @@ objects/os_qnx.o: os_qnx.c
 	$(CCC) -o $@ os_qnx.c
 
 objects/os_haiku.rsrc: os_haiku.rdef
+	sed -i "s|@MAJOR@|$(VIMMAJOR)|" os_haiku.rdef
+	sed -i "s|@MINOR@|$(VIMMINOR)|" os_haiku.rdef
 	cat $< | $(CCC) -E - | grep -v '^#' | rc -o "$@" -
 
 objects/os_macosx.o: os_macosx.m

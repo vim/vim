@@ -6,7 +6,6 @@ resource app_signature "application/x-vnd.Haiku-Vim-8";
 
 resource app_version {
 	major  = @MAJOR@,
-	middle = @MIDDLE@,
 	minor  = @MINOR@,
 
 	variety = B_APPV_FINAL,
