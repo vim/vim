@@ -53,6 +53,32 @@ def Test_disassemble_load()
         res)
 enddef
 
+def s:EditExpand()
+  let filename = "file"
+  let filenr = 123
+  edit the`=filename``=filenr`.txt
+enddef
+
+def Test_disassemble_exec_expr()
+  let res = execute('disass s:EditExpand')
+  assert_match('<SNR>\d*_EditExpand.*' ..
+        ' let filename = "file".*' ..
+        '\d PUSHS "file".*' ..
+        '\d STORE $0.*' ..
+        ' let filenr = 123.*' ..
+        '\d STORE 123 in $1.*' ..
+        ' edit the`=filename``=filenr`.txt.*' ..
+        '\d PUSHS "edit the".*' ..
+        '\d LOAD $0.*' ..
+        '\d LOAD $1.*' ..
+        '\d 2STRING stack\[-1\].*' ..
+        '\d PUSHS ".txt".*' ..
+        '\d EXECCONCAT 4.*' ..
+        '\d PUSHNR 0.*' ..
+        '\d RETURN',
+        res)
+enddef
+
 def s:ScriptFuncPush()
   let localbool = true
   let localspec = v:none
@@ -914,6 +940,28 @@ def Test_disassemble_execute()
         '\d LOAD $1.*' ..
         '\d CONCAT.*' ..
         '\d EXECUTE 1.*' ..
+        '\d PUSHNR 0.*' ..
+        '\d RETURN',
+        res)
+enddef
+
+def s:Echomsg()
+  echomsg 'some' 'message'
+  echoerr 'went' .. 'wrong'
+enddef
+
+def Test_disassemble_echomsg()
+  let res = execute('disass s:Echomsg')
+  assert_match('\<SNR>\d*_Echomsg.*' ..
+        "echomsg 'some' 'message'.*" ..
+        '\d PUSHS "some".*' ..
+        '\d PUSHS "message".*' ..
+        '\d ECHOMSG 2.*' ..
+        "echoerr 'went' .. 'wrong'.*" ..
+        '\d PUSHS "went".*' ..
+        '\d PUSHS "wrong".*' ..
+        '\d CONCAT.*' ..
+        '\d ECHOERR 1.*' ..
         '\d PUSHNR 0.*' ..
         '\d RETURN',
         res)

@@ -2634,4 +2634,22 @@ func Test_term_and_startinsert()
   call delete('XTest_startinsert')
 endfunc
 
+" Test for passing invalid arguments to terminal functions
+func Test_term_func_invalid_arg()
+  call assert_fails('let b = term_getaltscreen([])', 'E745:')
+  call assert_fails('let p = term_getansicolors([])', 'E745:')
+  call assert_fails('let a = term_getattr(1, [])', 'E730:')
+  call assert_fails('let c = term_getcursor([])', 'E745:')
+  call assert_fails('let l = term_getline([], 1)', 'E745:')
+  call assert_fails('let l = term_getscrolled([])', 'E745:')
+  call assert_fails('let s = term_getsize([])', 'E745:')
+  call assert_fails('let s = term_getstatus([])', 'E745:')
+  call assert_fails('let s = term_scrape([], 1)', 'E745:')
+  call assert_fails('call term_sendkeys([], "a")', 'E745:')
+  call assert_fails('call term_setansicolors([], [])', 'E745:')
+  call assert_fails('call term_setapi([], "")', 'E745:')
+  call assert_fails('call term_setrestore([], "")', 'E745:')
+  call assert_fails('call term_setkill([], "")', 'E745:')
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

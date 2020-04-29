@@ -34,8 +34,6 @@ static char *e_float_as_string = N_("E806: using Float as a String");
  */
 static int current_copyID = 0;
 
-static int echo_attr = 0;   // attributes used for ":echo"
-
 /*
  * Info used by a ":for" loop.
  */
@@ -242,6 +240,9 @@ eval_expr_typval(typval_T *expr, typval_T *argv, int argc, typval_T *rettv)
     else if (expr->v_type == VAR_PARTIAL)
     {
 	partial_T   *partial = expr->vval.v_partial;
+
+	if (partial == NULL)
+	    return FAIL;
 
 	if (partial->pt_func != NULL && partial->pt_func->uf_dfunc_idx >= 0)
 	{
@@ -871,7 +872,10 @@ get_lval(
 		if (len != -1)
 		    key[len] = prevval;
 		if (wrong)
+		{
+		    clear_tv(&var1);
 		    return NULL;
+		}
 	    }
 
 	    if (lp->ll_di == NULL)
@@ -3678,7 +3682,9 @@ partial_name(partial_T *pt)
 {
     if (pt->pt_name != NULL)
 	return pt->pt_name;
-    return pt->pt_func->uf_name;
+    if (pt->pt_func != NULL)
+	return pt->pt_func->uf_name;
+    return (char_u *)"";
 }
 
     static void
@@ -4528,8 +4534,9 @@ echo_string_core(
 	case VAR_LIST:
 	    if (tv->vval.v_list == NULL)
 	    {
+		// NULL list is equivalent to empty list.
 		*tofree = NULL;
-		r = NULL;
+		r = (char_u *)"[]";
 	    }
 	    else if (copyID != 0 && tv->vval.v_list->lv_copyID == copyID
 		    && tv->vval.v_list->lv_len > 0)
@@ -4552,8 +4559,9 @@ echo_string_core(
 	case VAR_DICT:
 	    if (tv->vval.v_dict == NULL)
 	    {
+		// NULL dict is equivalent to empty dict.
 		*tofree = NULL;
-		r = NULL;
+		r = (char_u *)"{}";
 	    }
 	    else if (copyID != 0 && tv->vval.v_dict->dv_copyID == copyID
 		    && tv->vval.v_dict->dv_hashtab.ht_used != 0)
@@ -4564,6 +4572,7 @@ echo_string_core(
 	    else
 	    {
 		int old_copyID = tv->vval.v_dict->dv_copyID;
+
 		tv->vval.v_dict->dv_copyID = copyID;
 		*tofree = dict2string(tv, copyID, restore_copyID);
 		if (restore_copyID)
@@ -6139,7 +6148,6 @@ ex_execute(exarg_T *eap)
     char_u	*p;
     garray_T	ga;
     int		len;
-    int		save_did_emsg;
 
     ga_init2(&ga, 1, 80);
 
@@ -6207,8 +6215,9 @@ ex_execute(exarg_T *eap)
 	}
 	else if (eap->cmdidx == CMD_echoerr)
 	{
+	    int		save_did_emsg = did_emsg;
+
 	    // We don't want to abort following commands, restore did_emsg.
-	    save_did_emsg = did_emsg;
 	    emsg(ga.ga_data);
 	    if (!force_abort)
 		did_emsg = save_did_emsg;
@@ -6412,8 +6421,9 @@ typval_compare(
 					&& typ1->vval.v_partial == NULL)
 		|| (typ2->v_type == VAR_PARTIAL
 					&& typ2->vval.v_partial == NULL))
-	    // when a partial is NULL assume not equal
-	    n1 = FALSE;
+	    // When both partials are NULL, then they are equal.
+	    // Otherwise they are not equal.
+	    n1 = (typ1->vval.v_partial == typ2->vval.v_partial);
 	else if (type_is)
 	{
 	    if (typ1->v_type == VAR_FUNC && typ2->v_type == VAR_FUNC)

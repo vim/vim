@@ -162,6 +162,7 @@ SRC_ALL =	\
 		src/testdir/setup.vim \
 		src/testdir/setup_gui.vim \
 		src/testdir/shared.vim \
+		src/testdir/vim9.vim \
 		src/testdir/summarize.vim \
 		src/testdir/term_util.vim \
 		src/testdir/view_util.vim \
@@ -182,8 +183,6 @@ SRC_ALL =	\
 		src/testdir/python_after/*.py \
 		src/testdir/python_before/*.py \
 		src/testdir/pyxfile/*.py \
-		src/testdir/bench*.in \
-		src/testdir/bench*.vim \
 		src/testdir/dumps/*.dump \
 		src/testdir/samples/*.txt \
 		src/testdir/samples/test000 \
@@ -607,6 +606,7 @@ SRC_AMI =	\
 
 # source files for Haiku (also in the extra archive)
 SRC_HAIKU =	\
+		README_haiku.txt \
 		src/os_haiku.h \
 		src/os_haiku.rdef \
 		src/gui_haiku.cc \

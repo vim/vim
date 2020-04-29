@@ -2,6 +2,7 @@
 
 func Test_wrong_arguments()
   call assert_fails('call cursor(1. 3)', 'E474:')
+  call assert_fails('call cursor(test_null_list())', 'E474:')
 endfunc
 
 func Test_move_cursor()

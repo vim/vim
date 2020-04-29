@@ -299,6 +299,8 @@ func Test_augroup_warning()
   redir END
   call assert_true(match(res, "W19:") < 0)
   au! VimEnter
+
+  call assert_fails('augroup!', 'E471:')
 endfunc
 
 func Test_BufReadCmdHelp()

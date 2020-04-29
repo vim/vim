@@ -1678,9 +1678,10 @@ EXTERN char e_letunexp[]	INIT(= N_("E18: Unexpected characters in :let"));
 EXTERN char e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));
 #endif
 #ifdef HAVE_SANDBOX
-EXTERN char e_sandbox[]	INIT(= N_("E48: Not allowed in sandbox"));
+EXTERN char e_sandbox[]		INIT(= N_("E48: Not allowed in sandbox"));
 #endif
-EXTERN char e_secure[]	INIT(= N_("E523: Not allowed here"));
+EXTERN char e_secure[]		INIT(= N_("E523: Not allowed here"));
+EXTERN char e_textlock[]	INIT(= N_("E565: Not allowed to change text here"));
 #if defined(AMIGA) || defined(MACOS_X) || defined(MSWIN)  \
 	|| defined(UNIX) || defined(VMS)
 EXTERN char e_screenmode[]	INIT(= N_("E359: Screen mode setting not supported"));
@@ -1749,6 +1750,10 @@ EXTERN char e_endif_without_if[] INIT(= N_("E580: :endif without :if"));
 EXTERN char e_continue[]	INIT(= N_("E586: :continue without :while or :for"));
 EXTERN char e_break[]		INIT(= N_("E587: :break without :while or :for"));
 EXTERN char e_nowhitespace[]	INIT(= N_("E274: No white space allowed before parenthesis"));
+EXTERN char e_white_both[]	INIT(= N_("E1004: white space required before and after '%s'"));
+EXTERN char e_white_after[]	INIT(= N_("E1069: white space required after '%s'"));
+EXTERN char e_no_white_before[] INIT(= N_("E1068: No white space allowed before '%s'"));
+
 EXTERN char e_lock_unlock[]	INIT(= N_("E940: Cannot lock or unlock variable %s"));
 #endif
 
@@ -1817,6 +1822,8 @@ EXTERN proftime_T bevalexpr_due;
 
 #ifdef FEAT_EVAL
 EXTERN time_T time_for_testing INIT(= 0);
+
+EXTERN int echo_attr INIT(= 0);   // attributes used for ":echo"
 
 // Abort conversion to string after a recursion error.
 EXTERN int  did_echo_string_emsg INIT(= FALSE);

@@ -1,6 +1,6 @@
 " Menu Translations:    Swedish
 " Maintainer:		Johan Svedberg <johan@svedberg.com>
-" Last Change:		2012 May 01
+" Last Change:		2020 Apr 22
 
 " Quit when menu translations have already been done.
 if exists("did_menu_trans")
@@ -51,7 +51,7 @@ menutrans &Redo<Tab>^R			&Gör\ om<Tab>^R
 menutrans Rep&eat<Tab>\.		&Repetera<Tab>\.
 menutrans Cu&t<Tab>"+x			Klipp\ &ut<Tab>"+x
 menutrans &Copy<Tab>"+y			&Kopiera<Tab>"+y
-menutrans &Paste<Tab>"+gP		Klistra &in<Tab>"+gP
+menutrans &Paste<Tab>"+gP		Klistra\ &in<Tab>"+gP
 menutrans Put\ &Before<Tab>[p		Sätt\ in\ &före<Tab>[p
 menutrans Put\ &After<Tab>]p		Sätt\ in\ &efter<Tab>]p
 menutrans &Select\ All<Tab>ggVG		&Markera\ allt<Tab>ggVG

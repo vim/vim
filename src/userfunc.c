@@ -25,6 +25,7 @@
 #define FC_DEAD	    0x80	// function kept only for reference to dfunc
 #define FC_EXPORT   0x100	// "export def Func()"
 #define FC_NOARGS   0x200	// no a: variables in lambda
+#define FC_VIM9	    0x400	// defined in vim9 script file
 
 /*
  * All user-defined functions are found in this hashtable.
@@ -128,7 +129,13 @@ one_function_arg(char_u *arg, garray_T *newargs, garray_T *argtypes, int skip)
 	}
 	if (*p == ':')
 	{
-	    type = skipwhite(p + 1);
+	    ++p;
+	    if (!VIM_ISWHITE(*p))
+	    {
+		semsg(_(e_white_after), ":");
+		return arg;
+	    }
+	    type = skipwhite(p);
 	    p = skip_type(type);
 	    type = vim_strnsave(type, p - type);
 	}
@@ -704,16 +711,17 @@ find_func_with_sid(char_u *name, int sid)
 
 /*
  * Find a function by name, return pointer to it in ufuncs.
+ * When "is_global" is true don't find script-local or imported functions.
  * Return NULL for unknown function.
  */
     static ufunc_T *
-find_func_even_dead(char_u *name, cctx_T *cctx)
+find_func_even_dead(char_u *name, int is_global, cctx_T *cctx)
 {
     hashitem_T	*hi;
     ufunc_T	*func;
     imported_T	*imported;
 
-    if (in_vim9script())
+    if (in_vim9script() && !is_global)
     {
 	// Find script-local function before global one.
 	func = find_func_with_sid(name, current_sctx.sc_sid);
@@ -744,9 +752,9 @@ find_func_even_dead(char_u *name, cctx_T *cctx)
  * Return NULL for unknown or dead function.
  */
     ufunc_T *
-find_func(char_u *name, cctx_T *cctx)
+find_func(char_u *name, int is_global, cctx_T *cctx)
 {
-    ufunc_T	*fp = find_func_even_dead(name, cctx);
+    ufunc_T	*fp = find_func_even_dead(name, is_global, cctx);
 
     if (fp != NULL && (fp->uf_flags & FC_DEAD) == 0)
 	return fp;
@@ -1569,6 +1577,38 @@ get_current_funccal(void)
     return current_funccal;
 }
 
+/*
+ * Mark all functions of script "sid" as deleted.
+ */
+    void
+delete_script_functions(int sid)
+{
+    hashitem_T	*hi;
+    ufunc_T	*fp;
+    long_u	todo;
+    char_u	buf[30];
+    size_t	len;
+
+    buf[0] = K_SPECIAL;
+    buf[1] = KS_EXTRA;
+    buf[2] = (int)KE_SNR;
+    sprintf((char *)buf + 3, "%d_", sid);
+    len = STRLEN(buf);
+
+    todo = func_hashtab.ht_used;
+    for (hi = func_hashtab.ht_array; todo > 0; ++hi)
+	if (!HASHITEM_EMPTY(hi))
+	{
+	    fp = HI2UF(hi);
+	    if (STRNCMP(fp->uf_name, buf, len) == 0)
+	    {
+		fp->uf_flags |= FC_DEAD;
+		func_clear(fp, TRUE);
+	    }
+	    --todo;
+	}
+}
+
 #if defined(EXITFREE) || defined(PROTO)
     void
 free_all_functions(void)
@@ -1878,22 +1918,22 @@ call_func(
 	     * User defined function.
 	     */
 	    if (fp == NULL)
-		fp = find_func(rfname, NULL);
+		fp = find_func(rfname, FALSE, NULL);
 
 	    // Trigger FuncUndefined event, may load the function.
 	    if (fp == NULL
 		    && apply_autocmds(EVENT_FUNCUNDEFINED,
-						     rfname, rfname, TRUE, NULL)
+						    rfname, rfname, TRUE, NULL)
 		    && !aborting())
 	    {
 		// executed an autocommand, search for the function again
-		fp = find_func(rfname, NULL);
+		fp = find_func(rfname, FALSE, NULL);
 	    }
 	    // Try loading a package.
 	    if (fp == NULL && script_autoload(rfname, TRUE) && !aborting())
 	    {
 		// loaded a package, search for the function again
-		fp = find_func(rfname, NULL);
+		fp = find_func(rfname, FALSE, NULL);
 	    }
 	    if (fp == NULL)
 	    {
@@ -1902,7 +1942,7 @@ call_func(
 		// If using Vim9 script try not local to the script.
 		// TODO: should not do this if the name started with "s:".
 		if (p != NULL)
-		    fp = find_func(p, NULL);
+		    fp = find_func(p, FALSE, NULL);
 	    }
 
 	    if (fp != NULL && (fp->uf_flags & FC_DELETED))
@@ -2073,6 +2113,8 @@ list_func_head(ufunc_T *fp, int indent)
  * Get a function name, translating "<SID>" and "<SNR>".
  * Also handles a Funcref in a List or Dictionary.
  * Returns the function name in allocated memory, or NULL for failure.
+ * Set "*is_global" to TRUE when the function must be global, unless
+ * "is_global" is NULL.
  * flags:
  * TFN_INT:	    internal function name OK
  * TFN_QUIET:	    be quiet
@@ -2083,6 +2125,7 @@ list_func_head(ufunc_T *fp, int indent)
     char_u *
 trans_function_name(
     char_u	**pp,
+    int		*is_global,
     int		skip,		// only find the end, don't evaluate
     int		flags,
     funcdict_T	*fdp,		// return: info about dictionary used
@@ -2233,7 +2276,11 @@ trans_function_name(
     {
 	// skip over "s:" and "g:"
 	if (lead == 2 || (lv.ll_name[0] == 'g' && lv.ll_name[1] == ':'))
+	{
+	    if (is_global != NULL && lv.ll_name[0] == 'g')
+		*is_global = TRUE;
 	    lv.ll_name += 2;
+	}
 	len = (int)(end - lv.ll_name);
     }
 
@@ -2341,6 +2388,7 @@ ex_function(exarg_T *eap)
     int		saved_did_emsg;
     int		saved_wait_return = need_wait_return;
     char_u	*name = NULL;
+    int		is_global = FALSE;
     char_u	*p;
     char_u	*arg;
     char_u	*line_arg = NULL;
@@ -2373,7 +2421,7 @@ ex_function(exarg_T *eap)
     /*
      * ":function" without argument: list functions.
      */
-    if (ends_excmd(*eap->arg))
+    if (ends_excmd2(eap->cmd, eap->arg))
     {
 	if (!eap->skip)
 	{
@@ -2457,7 +2505,8 @@ ex_function(exarg_T *eap)
      * g:func	    global function name, same as "func"
      */
     p = eap->arg;
-    name = trans_function_name(&p, eap->skip, TFN_NO_AUTOLOAD, &fudi, NULL);
+    name = trans_function_name(&p, &is_global, eap->skip,
+						 TFN_NO_AUTOLOAD, &fudi, NULL);
     paren = (vim_strchr(p, '(') != NULL);
     if (name == NULL && (fudi.fd_dict == NULL || !paren) && !eap->skip)
     {
@@ -2497,7 +2546,7 @@ ex_function(exarg_T *eap)
 	    *p = NUL;
 	if (!eap->skip && !got_int)
 	{
-	    fp = find_func(name, NULL);
+	    fp = find_func(name, is_global, NULL);
 	    if (fp == NULL && ASCII_ISUPPER(*eap->arg))
 	    {
 		char_u *up = untrans_function_name(name);
@@ -2505,7 +2554,7 @@ ex_function(exarg_T *eap)
 		// With Vim9 script the name was made script-local, if not
 		// found try again with the original name.
 		if (up != NULL)
-		    fp = find_func(up, NULL);
+		    fp = find_func(up, FALSE, NULL);
 	    }
 
 	    if (fp != NULL)
@@ -2608,8 +2657,8 @@ ex_function(exarg_T *eap)
 	    }
 	    else
 	    {
-		ret_type = NULL;
 		semsg(_("E1056: expected a type: %s"), ret_type);
+		ret_type = NULL;
 	    }
 	}
     }
@@ -2669,7 +2718,7 @@ ex_function(exarg_T *eap)
 	{
 	    if (fudi.fd_dict != NULL && fudi.fd_newkey == NULL)
 		emsg(_(e_funcdict));
-	    else if (name != NULL && find_func(name, NULL) != NULL)
+	    else if (name != NULL && find_func(name, is_global, NULL) != NULL)
 		emsg_funcname(e_funcexts, name);
 	}
 
@@ -2819,7 +2868,7 @@ ex_function(exarg_T *eap)
 		if (*p == '!')
 		    p = skipwhite(p + 1);
 		p += eval_fname_script(p);
-		vim_free(trans_function_name(&p, TRUE, 0, NULL, NULL));
+		vim_free(trans_function_name(&p, NULL, TRUE, 0, NULL, NULL));
 		if (*skipwhite(p) == '(')
 		{
 		    if (nesting == MAX_FUNC_NESTING - 1)
@@ -2957,7 +3006,7 @@ ex_function(exarg_T *eap)
 	    goto erret;
 	}
 
-	fp = find_func_even_dead(name, NULL);
+	fp = find_func_even_dead(name, is_global, NULL);
 	if (fp != NULL)
 	{
 	    int dead = fp->uf_flags & FC_DEAD;
@@ -3202,6 +3251,8 @@ ex_function(exarg_T *eap)
     fp->uf_varargs = varargs;
     if (sandbox)
 	flags |= FC_SANDBOX;
+    if (in_vim9script() && !ASCII_ISUPPER(*fp->uf_name))
+	flags |= FC_VIM9;
     fp->uf_flags = flags;
     fp->uf_calls = 0;
     fp->uf_cleared = FALSE;
@@ -3255,11 +3306,11 @@ eval_fname_script(char_u *p)
 }
 
     int
-translated_function_exists(char_u *name)
+translated_function_exists(char_u *name, int is_global)
 {
     if (builtin_function(name, -1))
 	return has_internal_func(name);
-    return find_func(name, NULL) != NULL;
+    return find_func(name, is_global, NULL) != NULL;
 }
 
 /*
@@ -3283,17 +3334,18 @@ function_exists(char_u *name, int no_deref)
     char_u  *p;
     int	    n = FALSE;
     int	    flag;
+    int	    is_global = FALSE;
 
     flag = TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD;
     if (no_deref)
 	flag |= TFN_NO_DEREF;
-    p = trans_function_name(&nm, FALSE, flag, NULL, NULL);
+    p = trans_function_name(&nm, &is_global, FALSE, flag, NULL, NULL);
     nm = skipwhite(nm);
 
     // Only accept "funcname", "funcname ", "funcname (..." and
     // "funcname(...", not "funcname!...".
     if (p != NULL && (*nm == NUL || *nm == '('))
-	n = translated_function_exists(p);
+	n = translated_function_exists(p, is_global);
     vim_free(p);
     return n;
 }
@@ -3304,12 +3356,14 @@ get_expanded_name(char_u *name, int check)
 {
     char_u	*nm = name;
     char_u	*p;
+    int		is_global = FALSE;
 
-    p = trans_function_name(&nm, FALSE, TFN_INT|TFN_QUIET, NULL, NULL);
+    p = trans_function_name(&nm, &is_global, FALSE,
+						TFN_INT|TFN_QUIET, NULL, NULL);
 
-    if (p != NULL && *nm == NUL)
-	if (!check || translated_function_exists(p))
-	    return p;
+    if (p != NULL && *nm == NUL
+		       && (!check || translated_function_exists(p, is_global)))
+	return p;
 
     vim_free(p);
     return NULL;
@@ -3370,9 +3424,10 @@ ex_delfunction(exarg_T *eap)
     char_u	*p;
     char_u	*name;
     funcdict_T	fudi;
+    int		is_global = FALSE;
 
     p = eap->arg;
-    name = trans_function_name(&p, eap->skip, 0, &fudi, NULL);
+    name = trans_function_name(&p, &is_global, eap->skip, 0, &fudi, NULL);
     vim_free(fudi.fd_newkey);
     if (name == NULL)
     {
@@ -3391,7 +3446,7 @@ ex_delfunction(exarg_T *eap)
 	*p = NUL;
 
     if (!eap->skip)
-	fp = find_func(name, NULL);
+	fp = find_func(name, is_global, NULL);
     vim_free(name);
 
     if (!eap->skip)
@@ -3405,6 +3460,11 @@ ex_delfunction(exarg_T *eap)
 	if (fp->uf_calls > 0)
 	{
 	    semsg(_("E131: Cannot delete function %s: It is in use"), eap->arg);
+	    return;
+	}
+	if (fp->uf_flags & FC_VIM9)
+	{
+	    semsg(_("E1084: Cannot delete Vim9 script function %s"), eap->arg);
 	    return;
 	}
 
@@ -3446,7 +3506,7 @@ func_unref(char_u *name)
 
     if (name == NULL || !func_name_refcount(name))
 	return;
-    fp = find_func(name, NULL);
+    fp = find_func(name, FALSE, NULL);
     if (fp == NULL && isdigit(*name))
     {
 #ifdef EXITFREE
@@ -3489,7 +3549,7 @@ func_ref(char_u *name)
 
     if (name == NULL || !func_name_refcount(name))
 	return;
-    fp = find_func(name, NULL);
+    fp = find_func(name, FALSE, NULL);
     if (fp != NULL)
 	++fp->uf_refcount;
     else if (isdigit(*name))
@@ -3605,7 +3665,8 @@ ex_call(exarg_T *eap)
 	return;
     }
 
-    tofree = trans_function_name(&arg, eap->skip, TFN_INT, &fudi, &partial);
+    tofree = trans_function_name(&arg, NULL, eap->skip,
+						     TFN_INT, &fudi, &partial);
     if (fudi.fd_newkey != NULL)
     {
 	// Still need to give an error message for missing key.
@@ -3711,7 +3772,7 @@ ex_call(exarg_T *eap)
     if (!failed || eap->cstack->cs_trylevel > 0)
     {
 	// Check for trailing illegal characters and a following command.
-	if (!ends_excmd(*arg))
+	if (!ends_excmd2(eap->arg, arg))
 	{
 	    if (!failed)
 	    {
@@ -3963,7 +4024,7 @@ make_partial(dict_T *selfdict_in, typval_T *rettv)
 					      : rettv->vval.v_partial->pt_name;
 	// Translate "s:func" to the stored function name.
 	fname = fname_trans_sid(fname, fname_buf, &tofree, &error);
-	fp = find_func(fname, NULL);
+	fp = find_func(fname, FALSE, NULL);
 	vim_free(tofree);
     }
 
@@ -4385,7 +4446,7 @@ set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID)
     if (fp_in == NULL)
     {
 	fname = fname_trans_sid(name, fname_buf, &tofree, &error);
-	fp = find_func(fname, NULL);
+	fp = find_func(fname, FALSE, NULL);
     }
     if (fp != NULL)
     {

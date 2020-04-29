@@ -1007,7 +1007,7 @@ ex_command(exarg_T *eap)
     if (ASCII_ISALPHA(*p))
 	while (ASCII_ISALNUM(*p))
 	    ++p;
-    if (!ends_excmd(*p) && !VIM_ISWHITE(*p))
+    if (!ends_excmd2(eap->arg, p) && !VIM_ISWHITE(*p))
     {
 	emsg(_("E182: Invalid command name"));
 	return;
@@ -1018,7 +1018,7 @@ ex_command(exarg_T *eap)
     // If there is nothing after the name, and no attributes were specified,
     // we are listing commands
     p = skipwhite(end);
-    if (!has_attr && ends_excmd(*p))
+    if (!has_attr && ends_excmd2(eap->arg, p))
     {
 	uc_list(name, end - name);
     }

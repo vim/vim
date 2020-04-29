@@ -249,7 +249,9 @@ do_incsearch_highlighting(int firstc, int *search_delim, incsearch_state_T *is_s
     }
     else if (STRNCMP(cmd, "sort", MAX(p - cmd, 3)) == 0)
     {
-	// skip over flags
+	// skip over ! and flags
+	if (*p == '!')
+	    p = skipwhite(p + 1);
 	while (ASCII_ISALPHA(*(p = skipwhite(p))))
 	    ++p;
 	if (*p == NUL)
@@ -2576,7 +2578,7 @@ get_text_locked_msg(void)
     if (cmdwin_type != 0)
 	return e_cmdwin;
 #endif
-    return e_secure;
+    return e_textlock;
 }
 
 /*

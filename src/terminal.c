@@ -847,7 +847,7 @@ ex_terminal(exarg_T *eap)
 
 	// default to close when the shell exits
 	if (opt.jo_term_finish == NUL)
-	    opt.jo_term_finish = 'c';
+	    opt.jo_term_finish = TL_FINISH_CLOSE;
     }
 
     if (eap->addr_count > 0)
@@ -1930,7 +1930,7 @@ set_terminal_mode(term_T *term, int normal_mode)
 }
 
 /*
- * Called after the job if finished and Terminal mode is not active:
+ * Called after the job is finished and Terminal mode is not active:
  * Move the vterm contents into the scrollback buffer and free the vterm.
  */
     static void
@@ -2698,7 +2698,7 @@ color2index(VTermColor *color, int fg, int *boldp)
 	    case  1: return lookup_color( 0, fg, boldp) + 1; // black
 	    case  2: return lookup_color( 4, fg, boldp) + 1; // dark red
 	    case  3: return lookup_color( 2, fg, boldp) + 1; // dark green
-	    case  4: return lookup_color( 6, fg, boldp) + 1; // brown
+	    case  4: return lookup_color( 7, fg, boldp) + 1; // dark yellow
 	    case  5: return lookup_color( 1, fg, boldp) + 1; // dark blue
 	    case  6: return lookup_color( 5, fg, boldp) + 1; // dark magenta
 	    case  7: return lookup_color( 3, fg, boldp) + 1; // dark cyan
@@ -6300,8 +6300,7 @@ conpty_term_and_job_init(
 
     if (!CreateProcessW(NULL, cmd_wchar_copy, NULL, NULL, FALSE,
 	    EXTENDED_STARTUPINFO_PRESENT | CREATE_UNICODE_ENVIRONMENT
-	    | CREATE_SUSPENDED | CREATE_NEW_PROCESS_GROUP
-	    | CREATE_DEFAULT_ERROR_MODE,
+	    | CREATE_SUSPENDED | CREATE_DEFAULT_ERROR_MODE,
 	    env_wchar, cwd_wchar,
 	    &term->tl_siex.StartupInfo, &proc_info))
 	goto failed;

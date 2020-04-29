@@ -853,6 +853,9 @@ func Test_popup_invalid_arguments()
   call popup_clear()
   call assert_fails('call popup_create("text", "none")', 'E715:')
   call popup_clear()
+  call assert_fails('call popup_create(test_null_string(), {})', 'E450:')
+  call assert_fails('call popup_create(test_null_list(), {})', 'E450:')
+  call popup_clear()
 
   call assert_fails('call popup_create("text", #{col: "xxx"})', 'E475:')
   call popup_clear()
@@ -901,6 +904,8 @@ func Test_popup_invalid_arguments()
   call popup_clear()
   call assert_fails('call popup_create("text", #{mask: test_null_list()})', 'E475:')
   call assert_fails('call popup_create("text", #{mapping: []})', 'E745:')
+  call popup_clear()
+  call assert_fails('call popup_create("text", #{tabpage : 4})', 'E997:')
   call popup_clear()
 endfunc
 
@@ -1113,7 +1118,12 @@ func Test_popup_move()
   let line = join(map(range(1, 6), 'screenstring(1, v:val)'), '')
   call assert_equal('hworld', line)
 
+  call assert_fails('call popup_move(winid, [])', 'E715:')
+  call assert_fails('call popup_move(winid, test_null_dict())', 'E715:')
+
   call popup_close(winid)
+
+  call assert_equal(0, popup_move(-1, {}))
 
   bwipe!
 endfunc
@@ -2176,7 +2186,11 @@ func Test_set_get_options()
   call assert_equal(1, options.drag)
   call assert_equal('Another', options.highlight)
 
+  call assert_fails('call popup_setoptions(winid, [])', 'E715:')
+  call assert_fails('call popup_setoptions(winid, test_null_dict())', 'E715:')
+
   call popup_close(winid)
+  call assert_equal(0, popup_setoptions(winid, options.wrap))
 endfunc
 
 func Test_popupwin_garbage_collect()

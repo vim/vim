@@ -3,18 +3,27 @@
 source shared.vim
 source term_util.vim
 
-function Test_messages()
+" Get all messages but drop the maintainer entry.
+func GetMessages()
+  redir => result
+  redraw | messages
+  redir END
+  let msg_list = split(result, "\n")
+  if msg_list->len() > 0 && msg_list[0] =~ 'Messages maintainer:'
+    return msg_list[1:]
+  endif
+  return msg_list
+endfunc
+
+func Test_messages()
   let oldmore = &more
   try
     set nomore
-    " Avoid the "message maintainer" line.
-    let $LANG = ''
 
     let arr = map(range(10), '"hello" . v:val')
     for s in arr
       echomsg s | redraw
     endfor
-    let result = ''
 
     " get last two messages
     redir => result
@@ -25,24 +34,19 @@ function Test_messages()
 
     " clear messages without last one
     1messages clear
-    redir => result
-    redraw | messages
-    redir END
-    let msg_list = split(result, "\n")
+    let msg_list = GetMessages()
     call assert_equal(['hello9'], msg_list)
 
     " clear all messages
     messages clear
-    redir => result
-    redraw | messages
-    redir END
-    call assert_equal('', result)
+    let msg_list = GetMessages()
+    call assert_equal([], msg_list)
   finally
     let &more = oldmore
   endtry
 
   call assert_fails('message 1', 'E474:')
-endfunction
+endfunc
 
 " Patch 7.4.1696 defined the "clearmode()" function for clearing the mode
 " indicator (e.g., "-- INSERT --") when ":stopinsert" is invoked.  Message
@@ -76,6 +80,7 @@ func Test_echomsg()
   call assert_equal("\n12345", execute(':echomsg 12345'))
   call assert_equal("\n[]", execute(':echomsg []'))
   call assert_equal("\n[1, 2, 3]", execute(':echomsg [1, 2, 3]'))
+  call assert_equal("\n[1, 2, []]", execute(':echomsg [1, 2, test_null_list()]'))
   call assert_equal("\n{}", execute(':echomsg {}'))
   call assert_equal("\n{'a': 1, 'b': 2}", execute(':echomsg {"a": 1, "b": 2}'))
   if has('float')
@@ -304,9 +309,12 @@ func Test_null()
   echom test_null_dict()
   echom test_null_blob()
   echom test_null_string()
+  echom test_null_function()
   echom test_null_partial()
   if has('job')
     echom test_null_job()
     echom test_null_channel()
   endif
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

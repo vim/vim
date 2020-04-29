@@ -29,6 +29,8 @@ func Test_has()
     call assert_equal(0, and(has('ttyout'), 0))
     call assert_equal(1, has('multi_byte_encoding'))
   endif
+  call assert_equal(1, has('vcon', 1))
+  call assert_equal(1, has('mouse_gpm_enabled', 1))
 
   call assert_equal(0, has('nonexistent'))
   call assert_equal(0, has('nonexistent', 1))
@@ -480,6 +482,7 @@ func Test_pathshorten()
   call assert_equal('~.f/bar', pathshorten('~.foo/bar'))
   call assert_equal('.~f/bar', pathshorten('.~foo/bar'))
   call assert_equal('~/f/bar', pathshorten('~/foo/bar'))
+  call assert_fails('call pathshorten([])', 'E730:')
 endfunc
 
 func Test_strpart()
@@ -794,16 +797,39 @@ func Test_mode()
   set complete&
 endfunc
 
+" Test for append()
 func Test_append()
   enew!
   split
   call append(0, ["foo"])
+  call append(1, [])
+  call append(1, test_null_list())
+  call assert_equal(['foo', ''], getline(1, '$'))
   split
   only
+  undo
   undo
 
   " Using $ instead of '$' must give an error
   call assert_fails("call append($, 'foobar')", 'E116:')
+endfunc
+
+" Test for setline()
+func Test_setline()
+  new
+  call setline(0, ["foo"])
+  call setline(0, [])
+  call setline(0, test_null_list())
+  call setline(1, ["bar"])
+  call setline(1, [])
+  call setline(1, test_null_list())
+  call setline(2, [])
+  call setline(2, test_null_list())
+  call setline(3, [])
+  call setline(3, test_null_list())
+  call setline(2, ["baz"])
+  call assert_equal(['bar', 'baz'], getline(1, '$'))
+  close!
 endfunc
 
 func Test_getbufvar()
@@ -913,6 +939,7 @@ func Test_match_func()
   call assert_equal(-1, match(['a', 'b', 'c', 'a'], 'a', 5))
   call assert_equal(4,  match('testing', 'ing', -1))
   call assert_fails("let x=match('testing', 'ing', 0, [])", 'E745:')
+  call assert_equal(-1, match(test_null_list(), 2))
 endfunc
 
 func Test_matchend()
@@ -946,6 +973,7 @@ func Test_matchstrpos()
   call assert_equal(['', -1, -1], matchstrpos('testing', 'ing', 8))
   call assert_equal(['ing', 1, 4, 7], matchstrpos(['vim', 'testing', 'execute'], 'ing'))
   call assert_equal(['', -1, -1, -1], matchstrpos(['vim', 'testing', 'execute'], 'img'))
+  call assert_equal(['', -1, -1], matchstrpos(test_null_list(), '\a'))
 endfunc
 
 func Test_nextnonblank_prevnonblank()
@@ -1198,6 +1226,7 @@ func Test_hlexists()
   syntax off
 endfunc
 
+" Test for the col() function
 func Test_col()
   new
   call setline(1, 'abcdef')
@@ -1215,6 +1244,8 @@ func Test_col()
   call assert_equal(0, col([2, '$']))
   call assert_equal(0, col([1, 100]))
   call assert_equal(0, col([1]))
+  call assert_equal(0, col(test_null_list()))
+  call assert_fails('let c = col({})', 'E731:')
 
   " test for getting the visual start column
   func T()
@@ -1275,12 +1306,15 @@ endfunc
 
 " Test for the inputdialog() function
 func Test_inputdialog()
-  CheckNotGui
-
-  call feedkeys(":let v=inputdialog('Q:', 'xx', 'yy')\<CR>\<CR>", 'xt')
-  call assert_equal('xx', v)
-  call feedkeys(":let v=inputdialog('Q:', 'xx', 'yy')\<CR>\<Esc>", 'xt')
-  call assert_equal('yy', v)
+  if has('gui_running')
+    call assert_fails('let v=inputdialog([], "xx")', 'E730:')
+    call assert_fails('let v=inputdialog("Q", [])', 'E730:')
+  else
+    call feedkeys(":let v=inputdialog('Q:', 'xx', 'yy')\<CR>\<CR>", 'xt')
+    call assert_equal('xx', v)
+    call feedkeys(":let v=inputdialog('Q:', 'xx', 'yy')\<CR>\<Esc>", 'xt')
+    call assert_equal('yy', v)
+  endif
 endfunc
 
 " Test for inputlist()
@@ -1306,6 +1340,7 @@ func Test_inputlist()
   call assert_equal(-2, c)
 
   call assert_fails('call inputlist("")', 'E686:')
+  call assert_fails('call inputlist(test_null_list())', 'E686:')
 endfunc
 
 func Test_balloon_show()
@@ -1314,6 +1349,7 @@ func Test_balloon_show()
     call balloon_show('hi!')
     if !has('gui_running')
       call balloon_show(range(3))
+      call balloon_show([])
     endif
   endif
 endfunc
@@ -1796,6 +1832,7 @@ func Test_call()
   call assert_equal(3, 'len'->call([123]))
   call assert_fails("call call('len', 123)", 'E714:')
   call assert_equal(0, call('', []))
+  call assert_equal(0, call('len', test_null_list()))
 
   function Mylen() dict
      return len(self.data)
@@ -1962,7 +1999,6 @@ func Test_range()
   execute "normal! a\<C-r>=[complete(col('.'), range(10)), ''][1]\<CR>"
   " complete_info()
   execute "normal! a\<C-r>=[complete(col('.'), range(10)), ''][1]\<CR>\<C-r>=[complete_info(range(5)), ''][1]\<CR>"
-  call assert_fails('call complete(1, ["a"])', 'E785:')
 
   " copy()
   call assert_equal([1, 2, 3], copy(range(1, 3)))
@@ -2183,6 +2219,9 @@ func Test_range()
   call assert_fails('let x=range(2, 8, 0)', 'E726:')
   call assert_fails('let x=range(3, 1)', 'E727:')
   call assert_fails('let x=range(1, 3, -2)', 'E727:')
+  call assert_fails('let x=range([])', 'E745:')
+  call assert_fails('let x=range(1, [])', 'E745:')
+  call assert_fails('let x=range(1, 4, [])', 'E745:')
 endfunc
 
 func Test_echoraw()
@@ -2199,6 +2238,16 @@ func Test_echoraw()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XTest_echoraw')
+endfunc
+
+" Test for echo highlighting
+func Test_echohl()
+  echohl Search
+  echo 'Vim'
+  call assert_equal('Vim', Screenline(&lines))
+  " TODO: How to check the highlight group used by echohl?
+  " ScreenAttrs() returns all zeros.
+  echohl None
 endfunc
 
 " Test for the eval() function
@@ -2232,7 +2281,27 @@ func Test_getcurpos_setpos()
   call setpos('.', sp)
   normal jyl
   call assert_equal('6', @")
+  call assert_equal(-1, setpos('.', test_null_list()))
+  call assert_equal(-1, setpos('.', {}))
   close!
+endfunc
+
+" Test for glob()
+func Test_glob()
+  call assert_equal('', glob(test_null_string()))
+  call assert_equal('', globpath(test_null_string(), test_null_string()))
+endfunc
+
+" Test for browse()
+func Test_browse()
+  CheckFeature browse
+  call assert_fails('call browse([], "open", "x", "a.c")', 'E745:')
+endfunc
+
+" Test for browsedir()
+func Test_browsedir()
+  CheckFeature browse
+  call assert_fails('call browsedir("open", [])', 'E730:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

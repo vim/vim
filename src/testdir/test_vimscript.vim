@@ -1164,6 +1164,18 @@ func Test_type()
     call assert_equal(v:t_bool, type(v:true))
     call assert_equal(v:t_none, type(v:none))
     call assert_equal(v:t_none, type(v:null))
+    call assert_equal(v:t_string, type(test_null_string()))
+    call assert_equal(v:t_func, type(test_null_function()))
+    call assert_equal(v:t_func, type(test_null_partial()))
+    call assert_equal(v:t_list, type(test_null_list()))
+    call assert_equal(v:t_dict, type(test_null_dict()))
+    if has('job')
+      call assert_equal(v:t_job, type(test_null_job()))
+    endif
+    if has('channel')
+      call assert_equal(v:t_channel, type(test_null_channel()))
+    endif
+    call assert_equal(v:t_blob, type(test_null_blob()))
 
     call assert_fails("call type(test_void())", 'E685:')
     call assert_fails("call type(test_unknown())", 'E685:')
@@ -1671,6 +1683,20 @@ func Test_compound_assignment_operators()
       call assert_fails('let x .= "f"', 'E734')
       let x = !3.14
       call assert_equal(0.0, x)
+
+      " integer and float operations
+      let x = 1
+      let x *= 2.1
+      call assert_equal(2.1, x)
+      let x = 1
+      let x /= 0.25
+      call assert_equal(4.0, x)
+      let x = 1
+      call assert_fails('let x %= 0.25', 'E734:')
+      let x = 1
+      call assert_fails('let x .= 0.25', 'E734:')
+      let x = 1.0
+      call assert_fails('let x += [1.1]', 'E734:')
     endif
 
     " Test for environment variable
@@ -1871,6 +1897,9 @@ func Test_missing_end()
 
   " Missing 'in' in a :for statement
   call assert_fails('for i range(1) | endfor', 'E690:')
+
+  " Incorrect number of variables in for
+  call assert_fails('for [i,] in range(3) | endfor', 'E475:')
 endfunc
 
 " Test for deep nesting of if/for/while/try statements              {{{1

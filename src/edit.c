@@ -175,16 +175,10 @@ edit(
 #endif
     // Don't allow changes in the buffer while editing the cmdline.  The
     // caller of getcmdline() may get confused.
-    if (textlock != 0)
-    {
-	emsg(_(e_secure));
-	return FALSE;
-    }
-
     // Don't allow recursive insert mode when busy with completion.
-    if (ins_compl_active() || compl_busy || pum_visible())
+    if (textlock != 0 || ins_compl_active() || compl_busy || pum_visible())
     {
-	emsg(_(e_secure));
+	emsg(_(e_textlock));
 	return FALSE;
     }
     ins_compl_clear();	    // clear stuff for CTRL-X mode
@@ -6000,7 +5994,8 @@ ins_apply_autocmds(event_T event)
 
     // If u_savesub() was called then we are not prepared to start
     // a new line.  Call u_save() with no contents to fix that.
-    if (tick != CHANGEDTICK(curbuf))
+    // Except when leaving Insert mode.
+    if (event != EVENT_INSERTLEAVE && tick != CHANGEDTICK(curbuf))
 	u_save(curwin->w_cursor.lnum, (linenr_T)(curwin->w_cursor.lnum + 1));
 
     return r;

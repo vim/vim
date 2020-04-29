@@ -899,4 +899,18 @@ func Test_opt_num_op()
   set shiftwidth&
 endfunc
 
+" Test for setting option values using v:false and v:true
+func Test_opt_boolean()
+  set number&
+  set number
+  call assert_equal(1, &nu)
+  set nonu
+  call assert_equal(0, &nu)
+  let &nu = v:true
+  call assert_equal(1, &nu)
+  let &nu = v:false
+  call assert_equal(0, &nu)
+  set number&
+endfunc
+
 " vim: shiftwidth=2 sts=2 expandtab

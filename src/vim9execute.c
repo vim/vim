@@ -400,7 +400,7 @@ call_by_name(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
 	return call_bfunc(func_idx, argcount, ectx);
     }
 
-    ufunc = find_func(name, NULL);
+    ufunc = find_func(name, FALSE, NULL);
     if (ufunc != NULL)
 	return call_ufunc(ufunc, argcount, ectx, iptr);
 
@@ -460,13 +460,20 @@ call_eval_func(char_u *name, int argcount, ectx_T *ectx, isn_T *iptr)
     if (call_by_name(name, argcount, ectx, iptr) == FAIL
 					  && called_emsg == called_emsg_before)
     {
-	// "name" may be a variable that is a funcref or partial
-	//    if find variable
-	//      call_partial()
-	//    else
-	//      semsg(_(e_unknownfunc), name);
-	emsg("call_eval_func(partial) not implemented yet");
-	return FAIL;
+	dictitem_T	*v;
+
+	v = find_var(name, NULL, FALSE);
+	if (v == NULL)
+	{
+	    semsg(_(e_unknownfunc), name);
+	    return FAIL;
+	}
+	if (v->di_tv.v_type != VAR_PARTIAL && v->di_tv.v_type != VAR_FUNC)
+	{
+	    semsg(_(e_unknownfunc), name);
+	    return FAIL;
+	}
+	return call_partial(&v->di_tv, argcount, ectx);
     }
     return OK;
 }
@@ -638,7 +645,48 @@ call_def_function(
 	{
 	    // execute Ex command line
 	    case ISN_EXEC:
+		SOURCING_LNUM = iptr->isn_lnum;
 		do_cmdline_cmd(iptr->isn_arg.string);
+		break;
+
+	    // execute Ex command from pieces on the stack
+	    case ISN_EXECCONCAT:
+		{
+		    int	    count = iptr->isn_arg.number;
+		    int	    len = 0;
+		    int	    pass;
+		    int	    i;
+		    char_u  *cmd = NULL;
+		    char_u  *str;
+
+		    for (pass = 1; pass <= 2; ++pass)
+		    {
+			for (i = 0; i < count; ++i)
+			{
+			    tv = STACK_TV_BOT(i - count);
+			    str = tv->vval.v_string;
+			    if (str != NULL && *str != NUL)
+			    {
+				if (pass == 2)
+				    STRCPY(cmd + len, str);
+				len += STRLEN(str);
+			    }
+			    if (pass == 2)
+				clear_tv(tv);
+			}
+			if (pass == 1)
+			{
+			    cmd = alloc(len + 1);
+			    if (cmd == NULL)
+				goto failed;
+			    len = 0;
+			}
+		    }
+
+		    SOURCING_LNUM = iptr->isn_lnum;
+		    do_cmdline_cmd(cmd);
+		    vim_free(cmd);
+		}
 		break;
 
 	    // execute :echo {string} ...
@@ -661,8 +709,12 @@ call_def_function(
 		}
 		break;
 
-	    // execute :execute {string} ...
+	    // :execute {string} ...
+	    // :echomsg {string} ...
+	    // :echoerr {string} ...
 	    case ISN_EXECUTE:
+	    case ISN_ECHOMSG:
+	    case ISN_ECHOERR:
 		{
 		    int		count = iptr->isn_arg.number;
 		    garray_T	ga;
@@ -698,7 +750,30 @@ call_def_function(
 		    ectx.ec_stack.ga_len -= count;
 
 		    if (!failed && ga.ga_data != NULL)
-			do_cmdline_cmd((char_u *)ga.ga_data);
+		    {
+			if (iptr->isn_type == ISN_EXECUTE)
+			    do_cmdline_cmd((char_u *)ga.ga_data);
+			else
+			{
+			    msg_sb_eol();
+			    if (iptr->isn_type == ISN_ECHOMSG)
+			    {
+				msg_attr(ga.ga_data, echo_attr);
+				out_flush();
+			    }
+			    else
+			    {
+				int		save_did_emsg = did_emsg;
+
+				SOURCING_LNUM = iptr->isn_lnum;
+				emsg(ga.ga_data);
+				if (!force_abort)
+				    // We don't want to abort following
+				    // commands, restore did_emsg.
+				    did_emsg = save_did_emsg;
+			    }
+			}
+		    }
 		    ga_clear(&ga);
 		}
 		break;
@@ -1869,8 +1944,9 @@ ex_disassemble(exarg_T *eap)
     int		current;
     int		line_idx = 0;
     int		prev_current = 0;
+    int		is_global = FALSE;
 
-    fname = trans_function_name(&arg, FALSE,
+    fname = trans_function_name(&arg, &is_global, FALSE,
 	     TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF, NULL, NULL);
     if (fname == NULL)
     {
@@ -1878,14 +1954,14 @@ ex_disassemble(exarg_T *eap)
 	return;
     }
 
-    ufunc = find_func(fname, NULL);
+    ufunc = find_func(fname, is_global, NULL);
     if (ufunc == NULL)
     {
 	char_u *p = untrans_function_name(fname);
 
 	if (p != NULL)
 	    // Try again without making it script-local.
-	    ufunc = find_func(p, NULL);
+	    ufunc = find_func(p, FALSE, NULL);
     }
     vim_free(fname);
     if (ufunc == NULL)
@@ -1927,6 +2003,10 @@ ex_disassemble(exarg_T *eap)
 	    case ISN_EXEC:
 		smsg("%4d EXEC %s", current, iptr->isn_arg.string);
 		break;
+	    case ISN_EXECCONCAT:
+		smsg("%4d EXECCONCAT %lld", current,
+					      (long long)iptr->isn_arg.number);
+		break;
 	    case ISN_ECHO:
 		{
 		    echo_T *echo = &iptr->isn_arg.echo;
@@ -1938,6 +2018,14 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_EXECUTE:
 		smsg("%4d EXECUTE %lld", current,
+					    (long long)(iptr->isn_arg.number));
+		break;
+	    case ISN_ECHOMSG:
+		smsg("%4d ECHOMSG %lld", current,
+					    (long long)(iptr->isn_arg.number));
+		break;
+	    case ISN_ECHOERR:
+		smsg("%4d ECHOERR %lld", current,
 					    (long long)(iptr->isn_arg.number));
 		break;
 	    case ISN_LOAD:

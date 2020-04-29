@@ -2679,6 +2679,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
     int		use_string = FALSE;
     partial_T   *arg_pt = NULL;
     char_u	*trans_name = NULL;
+    int		is_global = FALSE;
 
     if (argvars[0].v_type == VAR_FUNC)
     {
@@ -2702,21 +2703,10 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
     if ((use_string && vim_strchr(s, AUTOLOAD_CHAR) == NULL) || is_funcref)
     {
 	name = s;
-	trans_name = trans_function_name(&name, FALSE,
+	trans_name = trans_function_name(&name, &is_global, FALSE,
 	     TFN_INT | TFN_QUIET | TFN_NO_AUTOLOAD | TFN_NO_DEREF, NULL, NULL);
 	if (*name != NUL)
 	    s = NULL;
-	else if (trans_name != NULL
-		&& ASCII_ISUPPER(*s)
-		&& current_sctx.sc_version == SCRIPT_VERSION_VIM9
-		&& find_func(trans_name, NULL) == NULL)
-	{
-	    // With Vim9 script "MyFunc" can be script-local to the current
-	    // script or global.  The script-local name is not found, assume
-	    // global.
-	    vim_free(trans_name);
-	    trans_name = vim_strsave(s);
-	}
     }
 
     if (s == NULL || *s == NUL || (use_string && VIM_ISDIGIT(*s))
@@ -2724,8 +2714,8 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 	semsg(_(e_invarg2), use_string ? tv_get_string(&argvars[0]) : s);
     // Don't check an autoload name for existence here.
     else if (trans_name != NULL && (is_funcref
-				? find_func(trans_name, NULL) == NULL
-				: !translated_function_exists(trans_name)))
+			 ? find_func(trans_name, is_global, NULL) == NULL
+			 : !translated_function_exists(trans_name, is_global)))
 	semsg(_("E700: Unknown function: %s"), s);
     else
     {
@@ -2862,7 +2852,7 @@ common_function(typval_T *argvars, typval_T *rettv, int is_funcref)
 		}
 		else if (is_funcref)
 		{
-		    pt->pt_func = find_func(trans_name, NULL);
+		    pt->pt_func = find_func(trans_name, is_global, NULL);
 		    func_ptr_ref(pt->pt_func);
 		    vim_free(name);
 		}

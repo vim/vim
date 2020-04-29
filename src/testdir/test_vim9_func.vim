@@ -193,9 +193,22 @@ def Test_using_var_as_arg()
 enddef
 
 def Test_call_func_defined_later()
-  call assert_equal('one', DefinedLater('one'))
+  call assert_equal('one', g:DefinedLater('one'))
   call assert_fails('call NotDefined("one")', 'E117:')
 enddef
+
+func DefinedLater(arg)
+  return a:arg
+endfunc
+
+def Test_call_funcref()
+  assert_equal(3, g:SomeFunc('abc'))
+  assert_fails('NotAFunc()', 'E117:')
+  assert_fails('g:NotAFunc()', 'E117:')
+enddef
+
+let SomeFunc = function('len')
+let NotAFunc = 'text'
 
 def CombineFuncrefTypes()
   " same arguments, different return type
@@ -217,12 +230,8 @@ def CombineFuncrefTypes()
   Refb3 = g:cond ? Refb1 : Refb2
 enddef
 
-func DefinedLater(arg)
-  return a:arg
-endfunc
-
 def FuncWithForwardCall()
-  return DefinedEvenLater("yes")
+  return g:DefinedEvenLater("yes")
 enddef
 
 def DefinedEvenLater(arg: string): string
@@ -250,6 +259,7 @@ enddef
 def Test_arg_type_wrong()
   CheckScriptFailure(['def Func3(items: list)', 'echo "a"', 'enddef'], 'E1008: Missing <type>')
   CheckScriptFailure(['def Func4(...)', 'echo "a"', 'enddef'], 'E1055: Missing name after ...')
+  CheckScriptFailure(['def Func5(items:string)', 'echo "a"'], 'E1069:')
   CheckScriptFailure(['def Func5(items)', 'echo "a"'], 'E1077:')
 enddef
 
@@ -343,7 +353,7 @@ endfunc
 def Test_delfunc()
   let lines =<< trim END
     vim9script
-    def GoneSoon()
+    def g:GoneSoon()
       echo 'hello'
     enddef
 
@@ -351,7 +361,7 @@ def Test_delfunc()
       GoneSoon()
     enddef
 
-    delfunc GoneSoon
+    delfunc g:GoneSoon
     CallGoneSoon()
   END
   writefile(lines, 'XToDelFunc')
@@ -372,13 +382,27 @@ def Test_redef_failure()
   so Xdef
   call delete('Xdef')
 
-  call assert_equal(0, Func0())
-  call assert_equal('Func1', Func1())
-  call assert_equal('Func2', Func2())
+  call assert_equal(0, g:Func0())
+  call assert_equal('Func1', g:Func1())
+  call assert_equal('Func2', g:Func2())
 
   delfunc! Func0
   delfunc! Func1
   delfunc! Func2
+enddef
+
+def Test_vim9script_func()
+  let lines =<< trim END
+    vim9script
+    func Func(arg)
+      echo a:arg
+    endfunc
+    Func('text')
+  END
+  writefile(lines, 'XVim9Func')
+  so XVim9Func
+
+  delete('XVim9Func')
 enddef
 
 " Test for internal functions returning different types

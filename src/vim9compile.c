@@ -724,7 +724,8 @@ generate_TYPECHECK(cctx_T *cctx, type_T *vartype, int offset)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_CHECKTYPE)) == NULL)
 	return FAIL;
-    isn->isn_arg.type.ct_type = vartype->tt_type;  // TODO: whole type
+    // TODO: whole type, e.g. for a function also arg and return types
+    isn->isn_arg.type.ct_type = vartype->tt_type;
     isn->isn_arg.type.ct_off = offset;
 
     // type becomes vartype
@@ -1327,14 +1328,31 @@ generate_UCALL(cctx_T *cctx, char_u *name, int argcount)
 
 /*
  * Generate an ISN_PCALL instruction.
+ * "type" is the type of the FuncRef.
  */
     static int
-generate_PCALL(cctx_T *cctx, int argcount, int at_top)
+generate_PCALL(
+	cctx_T	*cctx,
+	int	argcount,
+	char_u	*name,
+	type_T	*type,
+	int	at_top)
 {
     isn_T	*isn;
     garray_T	*stack = &cctx->ctx_type_stack;
+    type_T	*ret_type;
 
     RETURN_OK_IF_SKIP(cctx);
+
+    if (type->tt_type == VAR_ANY)
+	ret_type = &t_any;
+    else if (type->tt_type == VAR_FUNC || type->tt_type == VAR_PARTIAL)
+	ret_type = type->tt_member;
+    else
+    {
+	semsg(_("E1085: Not a callable type: %s"), name);
+	return FAIL;
+    }
 
     if ((isn = generate_instr(cctx, ISN_PCALL)) == NULL)
 	return FAIL;
@@ -1344,7 +1362,7 @@ generate_PCALL(cctx_T *cctx, int argcount, int at_top)
     stack->ga_len -= argcount; // drop the arguments
 
     // drop the funcref/partial, get back the return value
-    ((type_T **)stack->ga_data)[stack->ga_len - 1] = &t_any;
+    ((type_T **)stack->ga_data)[stack->ga_len - 1] = ret_type;
 
     // If partial is above the arguments it must be cleared and replaced with
     // the return value.
@@ -1401,14 +1419,14 @@ generate_ECHO(cctx_T *cctx, int with_white, int count)
 }
 
 /*
- * Generate an ISN_EXECUTE instruction.
+ * Generate an ISN_EXECUTE/ISN_ECHOMSG/ISN_ECHOERR instruction.
  */
     static int
-generate_EXECUTE(cctx_T *cctx, int count)
+generate_MULT_EXPR(cctx_T *cctx, isntype_T isn_type, int count)
 {
     isn_T	*isn;
 
-    if ((isn = generate_instr_drop(cctx, ISN_EXECUTE, count)) == NULL)
+    if ((isn = generate_instr_drop(cctx, isn_type, count)) == NULL)
 	return FAIL;
     isn->isn_arg.number = count;
 
@@ -1427,10 +1445,16 @@ generate_EXEC(cctx_T *cctx, char_u *line)
     return OK;
 }
 
-static char e_white_both[] =
-			N_("E1004: white space required before and after '%s'");
-static char e_white_after[] = N_("E1069: white space required after '%s'");
-static char e_no_white_before[] = N_("E1068: No white space allowed before '%s'");
+    static int
+generate_EXECCONCAT(cctx_T *cctx, int count)
+{
+    isn_T	*isn;
+
+    if ((isn = generate_instr_drop(cctx, ISN_EXECCONCAT, count)) == NULL)
+	return FAIL;
+    isn->isn_arg.number = count;
+    return OK;
+}
 
 /*
  * Reserve space for a local variable.
@@ -2204,7 +2228,7 @@ compile_load_scriptvar(
     static int
 generate_funcref(cctx_T *cctx, char_u *name)
 {
-    ufunc_T *ufunc = find_func(name, cctx);
+    ufunc_T *ufunc = find_func(name, FALSE, cctx);
 
     if (ufunc == NULL)
 	return FAIL;
@@ -2446,7 +2470,7 @@ compile_call(char_u **arg, size_t varlen, cctx_T *cctx, int argcount_init)
     }
 
     // If we can find the function by name generate the right call.
-    ufunc = find_func(name, cctx);
+    ufunc = find_func(name, FALSE, cctx);
     if (ufunc != NULL)
     {
 	res = generate_CALL(cctx, ufunc, argcount);
@@ -2459,12 +2483,20 @@ compile_call(char_u **arg, size_t varlen, cctx_T *cctx, int argcount_init)
     if (STRNCMP(namebuf, "g:", 2) != 0
 	    && compile_load(&p, namebuf + varlen, cctx, FALSE) == OK)
     {
-	res = generate_PCALL(cctx, argcount, FALSE);
+	garray_T    *stack = &cctx->ctx_type_stack;
+	type_T	    *type;
+
+	type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+	res = generate_PCALL(cctx, argcount, namebuf, type, FALSE);
 	goto theend;
     }
 
-    // The function may be defined only later.  Need to figure out at runtime.
-    res = generate_UCALL(cctx, name, argcount);
+    // A global function may be defined only later.  Need to figure out at
+    // runtime.  Also handles a FuncRef at runtime.
+    if (STRNCMP(namebuf, "g:", 2) == 0)
+	res = generate_UCALL(cctx, name, argcount);
+    else
+	semsg(_(e_unknownfunc), namebuf);
 
 theend:
     vim_free(tofree);
@@ -2563,6 +2595,7 @@ arg_type_mismatch(type_T *expected, type_T *actual, int argidx)
 
 /*
  * Check if the expected and actual types match.
+ * Does not allow for assigning "any" to a specific type.
  */
     static int
 check_type(type_T *expected, type_T *actual, int give_msg)
@@ -2572,7 +2605,8 @@ check_type(type_T *expected, type_T *actual, int give_msg)
     // When expected is "unknown" we accept any actual type.
     // When expected is "any" we accept any actual type except "void".
     if (expected->tt_type != VAR_UNKNOWN
-	    && (expected->tt_type != VAR_ANY || actual->tt_type == VAR_VOID))
+	    && !(expected->tt_type == VAR_ANY && actual->tt_type != VAR_VOID))
+
     {
 	if (expected->tt_type != actual->tt_type)
 	{
@@ -2612,7 +2646,10 @@ need_type(type_T *actual, type_T *expected, int offset, cctx_T *cctx)
 {
     if (check_type(expected, actual, FALSE) == OK)
 	return OK;
-    if (actual->tt_type != VAR_ANY && actual->tt_type != VAR_UNKNOWN)
+    if (actual->tt_type != VAR_ANY
+	    && actual->tt_type != VAR_UNKNOWN
+	    && !(actual->tt_type == VAR_FUNC
+		&& (actual->tt_member == &t_any || actual->tt_argcount < 0)))
     {
 	type_mismatch(expected, actual);
 	return FAIL;
@@ -3110,13 +3147,17 @@ compile_subscript(
     {
 	if (**arg == '(')
 	{
-	    int	    argcount = 0;
+	    garray_T    *stack = &cctx->ctx_type_stack;
+	    type_T	*type;
+	    int		argcount = 0;
 
 	    // funcref(arg)
+	    type = ((type_T **)stack->ga_data)[stack->ga_len - 1];
+
 	    *arg = skipwhite(*arg + 1);
 	    if (compile_arguments(arg, cctx, &argcount) == FAIL)
 		return FAIL;
-	    if (generate_PCALL(cctx, argcount, TRUE) == FAIL)
+	    if (generate_PCALL(cctx, argcount, end_leader, type, TRUE) == FAIL)
 		return FAIL;
 	}
 	else if (**arg == '-' && (*arg)[1] == '>')
@@ -4199,6 +4240,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    goto theend;
 		}
 	    }
+	    else if (name[1] == ':' && name[2] != NUL)
+	    {
+		semsg(_("E1082: Cannot use a namespaced variable: %s"), name);
+		goto theend;
+	    }
 	}
     }
 
@@ -4207,6 +4253,11 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 	if (is_decl && *p == ':')
 	{
 	    // parse optional type: "let var: type = expr"
+	    if (!VIM_ISWHITE(p[1]))
+	    {
+		semsg(_(e_white_after), ":");
+		goto theend;
+	    }
 	    p = skipwhite(p + 1);
 	    type = parse_type(&p, cctx->ctx_type_list);
 	    has_type = TRUE;
@@ -5752,11 +5803,6 @@ compile_throw(char_u *arg, cctx_T *cctx UNUSED)
 {
     char_u *p = skipwhite(arg);
 
-    if (ends_excmd(*p))
-    {
-	emsg(_(e_argreq));
-	return NULL;
-    }
     if (compile_expr1(&p, cctx) == FAIL)
 	return NULL;
     if (may_generate_2STRING(-1, cctx) == FAIL)
@@ -5769,9 +5815,12 @@ compile_throw(char_u *arg, cctx_T *cctx UNUSED)
 
 /*
  * compile "echo expr"
+ * compile "echomsg expr"
+ * compile "echoerr expr"
+ * compile "execute expr"
  */
     static char_u *
-compile_echo(char_u *arg, int with_white, cctx_T *cctx)
+compile_mult_expr(char_u *arg, int cmdidx, cctx_T *cctx)
 {
     char_u	*p = arg;
     int		count = 0;
@@ -5786,32 +5835,90 @@ compile_echo(char_u *arg, int with_white, cctx_T *cctx)
 	    break;
     }
 
-    generate_ECHO(cctx, with_white, count);
+    if (cmdidx == CMD_echo || cmdidx == CMD_echon)
+	generate_ECHO(cctx, cmdidx == CMD_echo, count);
+    else if (cmdidx == CMD_execute)
+	generate_MULT_EXPR(cctx, ISN_EXECUTE, count);
+    else if (cmdidx == CMD_echomsg)
+	generate_MULT_EXPR(cctx, ISN_ECHOMSG, count);
+    else
+	generate_MULT_EXPR(cctx, ISN_ECHOERR, count);
     return p;
 }
 
 /*
- * compile "execute expr"
+ * A command that is not compiled, execute with legacy code.
  */
     static char_u *
-compile_execute(char_u *arg, cctx_T *cctx)
+compile_exec(char_u *line, exarg_T *eap, cctx_T *cctx)
 {
-    char_u	*p = arg;
-    int		count = 0;
+    char_u  *p;
+    int	    has_expr = FALSE;
 
-    for (;;)
+    if (cctx->ctx_skip == TRUE)
+	goto theend;
+
+    if (eap->cmdidx >= 0 && eap->cmdidx < CMD_SIZE)
+	has_expr = (excmd_get_argt(eap->cmdidx) & (EX_XFILE | EX_EXPAND));
+    if (eap->cmdidx == CMD_syntax && STRNCMP(eap->arg, "include ", 8) == 0)
     {
-	if (compile_expr1(&p, cctx) == FAIL)
-	    return NULL;
-	++count;
-	p = skipwhite(p);
-	if (ends_excmd(*p))
-	    break;
+	// expand filename in "syntax include [@group] filename"
+	has_expr = TRUE;
+	eap->arg = skipwhite(eap->arg + 7);
+	if (*eap->arg == '@')
+	    eap->arg = skiptowhite(eap->arg);
     }
 
-    generate_EXECUTE(cctx, count);
+    if (has_expr && (p = (char_u *)strstr((char *)eap->arg, "`=")) != NULL)
+    {
+	int	count = 0;
+	char_u	*start = skipwhite(line);
 
-    return p;
+	// :cmd xxx`=expr1`yyy`=expr2`zzz
+	// PUSHS ":cmd xxx"
+	// eval expr1
+	// PUSHS "yyy"
+	// eval expr2
+	// PUSHS "zzz"
+	// EXECCONCAT 5
+	for (;;)
+	{
+	    if (p > start)
+	    {
+		generate_PUSHS(cctx, vim_strnsave(start, (int)(p - start)));
+		++count;
+	    }
+	    p += 2;
+	    if (compile_expr1(&p, cctx) == FAIL)
+		return NULL;
+	    may_generate_2STRING(-1, cctx);
+	    ++count;
+	    p = skipwhite(p);
+	    if (*p != '`')
+	    {
+		emsg(_("E1083: missing backtick"));
+		return NULL;
+	    }
+	    start = p + 1;
+
+	    p = (char_u *)strstr((char *)start, "`=");
+	    if (p == NULL)
+	    {
+		if (*skipwhite(start) != NUL)
+		{
+		    generate_PUSHS(cctx, vim_strsave(start));
+		    ++count;
+		}
+		break;
+	    }
+	}
+	generate_EXECCONCAT(cctx, count);
+    }
+    else
+	generate_EXEC(cctx, line);
+
+theend:
+    return (char_u *)"";
 }
 
 /*
@@ -5828,7 +5935,6 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 {
     char_u	*line = NULL;
     char_u	*p;
-    exarg_T	ea;
     char	*errormsg = NULL;	// error message
     int		had_return = FALSE;
     cctx_T	cctx;
@@ -5927,6 +6033,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
      */
     for (;;)
     {
+	exarg_T	ea;
 	int	is_ex_command = FALSE;
 
 	// Bail out on the first error to avoid a flood of errors and report
@@ -5962,7 +6069,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	switch (*ea.cmd)
 	{
 	    case '#':
-		// "#" starts a comment, but not "#{".
+		// "#" starts a comment, but "#{" does not.
 		if (ea.cmd[1] != '{')
 		{
 		    line = (char_u *)"";
@@ -6103,7 +6210,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		&& ea.cmdidx != CMD_else
 		&& ea.cmdidx != CMD_endif)
 	{
-	    line += STRLEN(line);
+	    line = (char_u *)"";
 	    continue;
 	}
 
@@ -6185,22 +6292,18 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 		    break;
 
 	    case CMD_echo:
-		    line = compile_echo(p, TRUE, &cctx);
-		    break;
 	    case CMD_echon:
-		    line = compile_echo(p, FALSE, &cctx);
-		    break;
 	    case CMD_execute:
-		    line = compile_execute(p, &cctx);
+	    case CMD_echomsg:
+	    case CMD_echoerr:
+		    line = compile_mult_expr(p, ea.cmdidx, &cctx);
 		    break;
 
 	    default:
+		    // TODO: other commands with an expression argument
 		    // Not recognized, execute with do_cmdline_cmd().
-		    // TODO:
-		    // CMD_echomsg
-		    // etc.
-		    generate_EXEC(&cctx, line);
-		    line = (char_u *)"";
+		    ea.arg = p;
+		    line = compile_exec(line, &ea, &cctx);
 		    break;
 	}
 	if (line == NULL)
@@ -6415,8 +6518,11 @@ delete_instr(isn_T *isn)
 	case ISN_DCALL:
 	case ISN_DROP:
 	case ISN_ECHO:
-	case ISN_EXECUTE:
+	case ISN_ECHOERR:
+	case ISN_ECHOMSG:
 	case ISN_ENDTRY:
+	case ISN_EXECCONCAT:
+	case ISN_EXECUTE:
 	case ISN_FOR:
 	case ISN_FUNCREF:
 	case ISN_INDEX:

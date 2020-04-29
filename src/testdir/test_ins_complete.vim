@@ -469,6 +469,7 @@ endfunc
 " Test for 'completefunc' deleting text
 func Test_completefunc_error()
   new
+  " delete text when called for the first time
   func CompleteFunc(findstart, base)
     if a:findstart == 1
       normal dd
@@ -479,8 +480,58 @@ func Test_completefunc_error()
   set completefunc=CompleteFunc
   call setline(1, ['', 'abcd', ''])
   call assert_fails('exe "normal 2G$a\<C-X>\<C-U>"', 'E840:')
+
+  " delete text when called for the second time
+  func CompleteFunc2(findstart, base)
+    if a:findstart == 1
+      return col('.') - 1
+    endif
+    normal dd
+    return ['a', 'b']
+  endfunc
+  set completefunc=CompleteFunc2
+  call setline(1, ['', 'abcd', ''])
+  call assert_fails('exe "normal 2G$a\<C-X>\<C-U>"', 'E565:')
+
   set completefunc&
   delfunc CompleteFunc
+  delfunc CompleteFunc2
+  close!
+endfunc
+
+" Test for errors in using complete() function
+func Test_complete_func_error()
+  call assert_fails('call complete(1, ["a"])', 'E785:')
+  func ListColors()
+    call complete(col('.'), "blue")
+  endfunc
+  call assert_fails('exe "normal i\<C-R>=ListColors()\<CR>"', 'E474:')
+  func ListMonths()
+    call complete(col('.'), test_null_list())
+  endfunc
+  call assert_fails('exe "normal i\<C-R>=ListMonths()\<CR>"', 'E474:')
+  delfunc ListColors
+  delfunc ListMonths
+  call assert_fails('call complete_info({})', 'E714:')
+endfunc
+
+" Test for completing words following a completed word in a line
+func Test_complete_wrapscan()
+  " complete words from another buffer
+  new
+  call setline(1, ['one two', 'three four'])
+  new
+  setlocal complete=w
+  call feedkeys("itw\<C-N>\<C-X>\<C-N>\<C-X>\<C-N>\<C-X>\<C-N>", 'xt')
+  call assert_equal('two three four', getline(1))
+  close!
+  " complete words from the current buffer
+  setlocal complete=.
+  %d
+  call setline(1, ['one two', ''])
+  call cursor(2, 1)
+  call feedkeys("ion\<C-N>\<C-X>\<C-N>\<C-X>\<C-N>\<C-X>\<C-N>", 'xt')
+  call assert_equal('one two one two', getline(2))
   close!
 endfunc
 

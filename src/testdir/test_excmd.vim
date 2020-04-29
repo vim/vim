@@ -354,15 +354,15 @@ endfunc
 func Test_run_excmd_with_text_locked()
   " :quit
   let cmd = ":\<C-\>eexecute('quit')\<CR>\<C-C>"
-  call assert_fails("call feedkeys(cmd, 'xt')", 'E523:')
+  call assert_fails("call feedkeys(cmd, 'xt')", 'E565:')
 
   " :qall
   let cmd = ":\<C-\>eexecute('qall')\<CR>\<C-C>"
-  call assert_fails("call feedkeys(cmd, 'xt')", 'E523:')
+  call assert_fails("call feedkeys(cmd, 'xt')", 'E565:')
 
   " :exit
   let cmd = ":\<C-\>eexecute('exit')\<CR>\<C-C>"
-  call assert_fails("call feedkeys(cmd, 'xt')", 'E523:')
+  call assert_fails("call feedkeys(cmd, 'xt')", 'E565:')
 
   " :close - should be ignored
   new
@@ -370,7 +370,7 @@ func Test_run_excmd_with_text_locked()
   call assert_equal(2, winnr('$'))
   close
 
-  call assert_fails("call feedkeys(\":\<C-R>=execute('bnext')\<CR>\", 'xt')", 'E523:')
+  call assert_fails("call feedkeys(\":\<C-R>=execute('bnext')\<CR>\", 'xt')", 'E565:')
 endfunc
 
 " Test for the :verbose command

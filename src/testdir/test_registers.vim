@@ -259,6 +259,8 @@ func Test_get_register()
   call feedkeys(":\<C-R>r\<Esc>", 'xt')
   call assert_equal("a\rb\r", histget(':', -1))
 
+  call assert_fails('let r = getreg("=", [])', 'E745:')
+  call assert_fails('let r = getreg("=", 1, [])', 'E745:')
   enew!
 endfunc
 

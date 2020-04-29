@@ -789,7 +789,7 @@ f_test_refcount(typval_T *argvars, typval_T *rettv)
 	    {
 		ufunc_T *fp;
 
-		fp = find_func(argvars[0].vval.v_string, NULL);
+		fp = find_func(argvars[0].vval.v_string, FALSE, NULL);
 		if (fp != NULL)
 		    retval = fp->uf_refcount;
 	    }

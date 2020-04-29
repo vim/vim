@@ -188,6 +188,7 @@ static int win32_set_archive(char_u *name);
 static int conpty_working = 0;
 static int conpty_type = 0;
 static int conpty_stable = 0;
+static int conpty_fix_type = 0;
 static void vtp_flag_init();
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
@@ -307,6 +308,7 @@ read_console_input(
     int head;
     int tail;
     int i;
+    static INPUT_RECORD s_irPseudo;
 
     if (nLength == -2)
 	return (s_dwMax > 0) ? TRUE : FALSE;
@@ -351,6 +353,19 @@ read_console_input(
 		head++;
 	    }
 	    s_dwMax = tail + 1;
+	}
+    }
+
+    if (s_irCache[s_dwIndex].EventType == KEY_EVENT)
+    {
+	if (s_irCache[s_dwIndex].Event.KeyEvent.wRepeatCount > 1)
+	{
+	    s_irPseudo = s_irCache[s_dwIndex];
+	    s_irPseudo.Event.KeyEvent.wRepeatCount = 1;
+	    s_irCache[s_dwIndex].Event.KeyEvent.wRepeatCount--;
+	    *lpBuffer = s_irPseudo;
+	    *lpEvents = 1;
+	    return TRUE;
 	}
     }
 
@@ -7275,6 +7290,12 @@ mch_setenv(char *var, char *value, int x UNUSED)
 #define CONPTY_1909_BUILD	    MAKE_VER(10, 0, 18363)
 
 /*
+ * Stay ahead of the next update, and when it's done, fix this.
+ * version ? (2020 update, temporarily use the build number of insider preview)
+ */
+#define CONPTY_NEXT_UPDATE_BUILD    MAKE_VER(10, 0, 19587)
+
+/*
  * Confirm until this version.  Also the logic changes.
  * insider preview.
  */
@@ -7320,6 +7341,9 @@ vtp_flag_init(void)
 	conpty_type = 2;
     if (ver < CONPTY_FIRST_SUPPORT_BUILD)
 	conpty_type = 1;
+
+    if (ver >= CONPTY_NEXT_UPDATE_BUILD)
+	conpty_fix_type = 1;
 }
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)
@@ -7606,6 +7630,12 @@ get_conpty_type(void)
 is_conpty_stable(void)
 {
     return conpty_stable;
+}
+
+    int
+get_conpty_fix_type(void)
+{
+    return conpty_fix_type;
 }
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)

@@ -1,5 +1,7 @@
 " Tests for expressions.
 
+source check.vim
+
 func Test_equal()
   let base = {}
   func base.method()
@@ -20,6 +22,9 @@ func Test_equal()
   call assert_false([base.method] == [instance.other])
 
   call assert_fails('echo base.method > instance.method')
+  call assert_equal(0, test_null_function() == function('min'))
+  call assert_equal(1, test_null_function() == test_null_function())
+  call assert_fails('eval 10 == test_unknown()', 'E685:')
 endfunc
 
 func Test_version()
@@ -96,14 +101,7 @@ func Test_loop_over_null_list()
   endfor
 endfunc
 
-func Test_compare_null_dict()
-  call assert_fails('let x = test_null_dict()[10]')
-  call assert_equal({}, {})
-  call assert_equal(test_null_dict(), test_null_dict())
-  call assert_notequal({}, test_null_dict())
-endfunc
-
-func Test_set_reg_null_list()
+func Test_setreg_null_list()
   call setreg('x', test_null_list())
 endfunc
 
@@ -473,6 +471,7 @@ func Test_setmatches()
   endif
   eval set->setmatches()
   call assert_equal(exp, getmatches())
+  call assert_fails('let m = setmatches([], [])', 'E957:')
 endfunc
 
 func Test_empty_concatenate()
@@ -588,6 +587,26 @@ func Test_expr_eval_error()
   call assert_fails("let v = 10 + []", 'E745:')
   call assert_fails("let v = 10 / []", 'E745:')
   call assert_fails("let v = -{}", 'E728:')
+endfunc
+
+" Test for float value comparison
+func Test_float_compare()
+  CheckFeature float
+  call assert_true(1.2 == 1.2)
+  call assert_true(1.0 != 1.2)
+  call assert_true(1.2 > 1.0)
+  call assert_true(1.2 >= 1.2)
+  call assert_true(1.0 < 1.2)
+  call assert_true(1.2 <= 1.2)
+  call assert_true(+0.0 == -0.0)
+  " two NaNs (not a number) are not equal
+  call assert_true(sqrt(-4.01) != (0.0 / 0.0))
+  " two inf (infinity) are equal
+  call assert_true((1.0 / 0) == (2.0 / 0))
+  " two -inf (infinity) are equal
+  call assert_true(-(1.0 / 0) == -(2.0 / 0))
+  " +infinity != -infinity
+  call assert_true((1.0 / 0) != -(2.0 / 0))
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

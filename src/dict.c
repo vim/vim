@@ -977,13 +977,14 @@ dict_equal(
     dictitem_T	*item2;
     int		todo;
 
-    if (d1 == NULL && d2 == NULL)
-	return TRUE;
-    if (d1 == NULL || d2 == NULL)
-	return FALSE;
     if (d1 == d2)
 	return TRUE;
     if (dict_len(d1) != dict_len(d2))
+	return FALSE;
+    if (dict_len(d1) == 0)
+	// empty and NULL dicts are considered equal
+	return TRUE;
+    if (d1 == NULL || d2 == NULL)
 	return FALSE;
 
     todo = (int)d1->dv_hashtab.ht_used;

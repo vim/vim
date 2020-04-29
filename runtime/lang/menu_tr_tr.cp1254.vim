@@ -11,19 +11,19 @@ set cpo&vim
 scriptencoding cp1254
 
 " Top
-menutrans &File		&Dosya
-menutrans &Edit		Dü&zen
+menutrans &File	&Dosya
+menutrans &Edit	Dü&zen
 menutrans &Tools	&Araçlar
 menutrans &Syntax	&Sözdizim
 menutrans &Buffers	A&rabellekler
 menutrans &Window	&Pencere
-menutrans &Help		&Yardým
+menutrans &Help	&Yardým
 
 " Help menu
 menutrans &Overview<Tab><F1>	&Genel\ Bakýþ<Tab><F1>
-menutrans &User\ Manual		&Kullaným\ Kýlavuzu
+menutrans &User\ Manual	&Kullaným\ Kýlavuzu
 menutrans &How-To\ Links	&Nasýl\ Yapýlýr?
-menutrans &Find\.\.\.		&Bul\.\.\.
+menutrans &Find\.\.\.	        &Bul\.\.\.
 "--------------------
 menutrans &Credits		&Teþekkürler
 menutrans Co&pying		&Daðýtým
@@ -37,38 +37,38 @@ menutrans &About	&Hakkýnda
 menutrans &Open\.\.\.<Tab>:e		&Aç\.\.\.<Tab>:e
 menutrans Sp&lit-Open\.\.\.<Tab>:sp	&Yeni\ Bölümde\ Aç\.\.\.<Tab>:sp
 menutrans Open\ Tab\.\.\.<Tab>:tabnew	S&ekme\ Aç\.\.\.<Tab>:tabnew
-menutrans &New<Tab>:enew		Yeni\ &Sekme<Tab>:enew
+menutrans &New<Tab>:enew	        Yeni\ &Sekme<Tab>:enew
 menutrans &Close<Tab>:close		Ka&pat<Tab>:close
 "--------------------
 menutrans &Save<Tab>:w			Kayde&t<Tab>:w
-menutrans Save\ &As\.\.\.<Tab>:sav	&Farklý Kaydet\.\.\.<Tab>:sav
+menutrans Save\ &As\.\.\.<Tab>:sav	&Farklý\ Kaydet\.\.\.<Tab>:sav
 "--------------------
 menutrans Split\ &Diff\ With\.\.\.	Ka&rþýlaþtýr\.\.\.
-menutrans Split\ Patched\ &By\.\.\.	Ya&malar\ Dahil\ Karþýlaþtýr\.\.\.
+menutrans Split\ Patched\ &By\.\.\.	Ya&ma\ Ýle\ Karþýlaþtýr\.\.\.
 "--------------------
 menutrans &Print		Ya&zdýr
-menutrans Sa&ve-Exit<Tab>:wqa	Kaydet\ &ve Çýk<Tab>:wqa
+menutrans Sa&ve-Exit<Tab>:wqa	        Kaydet\ &ve\ Çýk<Tab>:wqa
 menutrans E&xit<Tab>:qa		Çý&k<Tab>:qa
 
 " Edit menu
-menutrans &Undo<Tab>u		&Geri\ Al<Tab>u
-menutrans &Redo<Tab>^R		&Yinele<Tab>^R
-menutrans Rep&eat<Tab>\.	Son\ Komutu\ Y&inele<Tab>\.
+menutrans &Undo<Tab>u		        &Geri\ Al<Tab>u
+menutrans &Redo<Tab>^R		        &Yinele<Tab>^R
+menutrans Rep&eat<Tab>\.        	Son\ Komutu\ Y&inele<Tab>\.
 "--------------------
-menutrans Cu&t<Tab>"+x		&Kes<Tab>"+x
-menutrans &Copy<Tab>"+y		K&opyala<Tab>"+y
-menutrans &Paste<Tab>"+gP	Ya&pýþtýr<Tab>"+gP
-menutrans Put\ &Before<Tab>[p	Ö&nüne Koy<Tab>[p
-menutrans Put\ &After<Tab>]p	A&rkasýna Koy<Tab>]p
-menutrans &Delete<Tab>x		Si&l<Tab>x
+menutrans Cu&t<Tab>"+x                 &Kes<Tab>"+x
+menutrans &Copy<Tab>"+y 	        K&opyala<Tab>"+y
+menutrans &Paste<Tab>"+gP              Ya&pýþtýr<Tab>"+gP
+menutrans Put\ &Before<Tab>[p	        Ö&nüne\ Koy<Tab>[p
+menutrans Put\ &After<Tab>]p	        A&rkasýna\ Koy<Tab>]p
+menutrans &Delete<Tab>x 	        Si&l<Tab>x
 menutrans &Select\ All<Tab>ggVG	Tü&münü\ Seç<Tab>ggVG
 "--------------------
 " Athena GUI only
-menutrans &Find<Tab>/			&Bul<Tab>/
-menutrans Find\ and\ Rep&lace<Tab>:%s	Bul\ &ve\ Deðiþtir<Tab>:%s
+menutrans &Find<Tab>/		                &Bul<Tab>/
+menutrans Find\ and\ Rep&lace<Tab>:%s	        Bul\ &ve\ Deðiþtir<Tab>:%s
 " End Athena GUI only
-menutrans &Find\.\.\.<Tab>/		&Bul\.\.\.<Tab>/
-menutrans Find\ and\ Rep&lace\.\.\.	Bul\ ve\ &Deðiþtir\.\.\.
+menutrans &Find\.\.\.<Tab>/		        &Bul\.\.\.<Tab>/
+menutrans Find\ and\ Rep&lace\.\.\.	        Bul\ ve\ &Deðiþtir\.\.\.
 menutrans Find\ and\ Rep&lace\.\.\.<Tab>:%s	Bul\ ve\ &Deðiþtir\.\.\.<Tab>:%s
 menutrans Find\ and\ Rep&lace\.\.\.<Tab>:s	Bul\ ve\ &Deðiþtir\.\.\.<Tab>:s
 "--------------------
@@ -78,11 +78,11 @@ menutrans &Global\ Settings	Ge&nel\ Ayarlar
 menutrans F&ile\ Settings	&Dosya\ Ayarlarý
 menutrans C&olor\ Scheme	&Renk\ Düzeni
 menutrans &Keymap		Düðme\ &Eþlem
-menutrans Select\ Fo&nt\.\.\.	Ya&zýtipi Seç\.\.\.
+menutrans Select\ Fo&nt\.\.\.	Ya&zýtipi\ Seç\.\.\.
 
 ">>>----------------- Edit/Global settings
-menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!		Dizgi\ &Vurgulamasýný\ Aç/Kapat<Tab>:set\ hls!
-menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		 	BÜYÜK/küçük\ Harf\ &Duyarlý\ Aç/Kapat<Tab>:set\ ic!
+menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!    	Dizgi\ &Vurgulamasýný\ Aç/Kapat<Tab>:set\ hls!
+menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		BÜYÜK/küçük\ Harf\ &Duyarlý\ Aç/Kapat<Tab>:set\ ic!
 menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	Eþ&leþen\ Ýkilileri\ Aç/Kapat<Tab>:set\ sm!
 menutrans &Context\ Lines					Ý&mleçle\ Oynayan\ Satýrlar
 menutrans &Virtual\ Edit					&Sanal\ Düzenleme
@@ -97,11 +97,11 @@ menutrans Toggle\ &Left\ Scrollbar	&Sol\ Kaydýrma\ Çubuðunu\ Aç/Kapat
 menutrans Toggle\ &Right\ Scrollbar	S&að\ Kaydýrma\ Çubuðunu\ Aç/Kapat
 
 ">>>->>>------------- Edit/Global settings/Virtual edit
-menutrans Never			Kapalý
+menutrans Never		Kapalý
 menutrans Block\ Selection	Blok\ Seçimi
 menutrans Insert\ Mode		Ekleme\ Kipi
 menutrans Block\ and\ Insert	Blok\ Seçiminde\ ve\ Ekleme\ Kipinde
-menutrans Always				Her\ Zaman\ Açýk
+menutrans Always		Her\ Zaman\ Açýk
 ">>>----------------- Edit/File settings
 menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!		&Satýr\ Numaralandýrmayý\ Aç/Kapat<Tab>:set\ nu!
 menutrans Toggle\ Relati&ve\ Line\ Numbering<Tab>:set\ rnu!	&Göreceli\ Satýr\ Numaralandýrmayý\ Aç/Kapat<Tab>:set\ nru!
@@ -124,10 +124,10 @@ menutrans Build\ &Tags\ File		&Etiket\ Dosyasý\ Oluþtur
 "-------------------
 menutrans &Folding	&Kývýrmalar
 menutrans &Spelling	&Yazým\ Denetimi
-menutrans &Diff		&Ayrýmlar\ (diff)
+menutrans &Diff	K&arþýlaþtýrma\ (diff)
 "-------------------
 menutrans &Make<Tab>:make			&Derle<Tab>:make
-menutrans &List\ Errors<Tab>:cl			&Hatalarý\ Listele<Tab>:cl
+menutrans &List\ Errors<Tab>:cl		&Hatalarý\ Listele<Tab>:cl
 menutrans L&ist\ Messages<Tab>:cl!		Ý&letileri\ Listele<Tab>:cl!
 menutrans &Next\ Error<Tab>:cn			Bir\ &Sonraki\ Hata<Tab>:cn
 menutrans &Previous\ Error<Tab>:cp		Bir\ Ö&nceki\ Hata<Tab>:cp
@@ -137,8 +137,8 @@ menutrans Error\ &Window			Hatalar\ &Penceresi
 menutrans Se&t\ Compiler			De&rleyici\ Seç
 menutrans Show\ Compiler\ Se&ttings\ in\ Menu	Derleyici\ Ayarlarýný\ Menüde\ &Göster 
 "-------------------
-menutrans &Convert\ to\ HEX<Tab>:%!xxd		HEX'e\ Dö&nüþtür<Tab>:%!xxd
-menutrans Conve&rt\ Back<Tab>:%!xxd\ -r		HEX'&ten\ Dönüþtür<Tab>:%!xxd\ -r
+menutrans &Convert\ to\ HEX<Tab>:%!xxd	    	HEX'e\ Dö&nüþtür<Tab>:%!xxd
+menutrans Conve&rt\ Back<Tab>:%!xxd\ -r	HEX'&ten\ Dönüþtür<Tab>:%!xxd\ -r
 ">>>---------------- Tools/Spelling
 menutrans &Spell\ Check\ On			Yazým\ Denetimini\ &Aç
 menutrans Spell\ Check\ &Off			Yazým\ Denetimini\ &Kapat
@@ -191,7 +191,7 @@ menutrans &Open<Tab>:copen	&Aç<Tab>:copen
 " Syntax menu
 menutrans &Show\ File\ Types\ in\ Menu	Dosya\ Türlerini\ Menüde\ &Göster
 menutrans Set\ '&syntax'\ only		Yalnýzca\ 'syntax'\ &Ayarla
-menutrans Set\ '&filetype'\ too		'filetype'\ Ýçin\ &de\ Ayarla
+menutrans Set\ '&filetype'\ too	'filetype'\ Ýçin\ &de\ Ayarla
 menutrans &Off				&Kapat
 menutrans &Manual			&El\ Ýle
 menutrans A&utomatic			&Otomatik
@@ -204,7 +204,7 @@ menutrans &Convert\ to\ HTML		&HTML'ye\ Dönüþtür
 menutrans &Refresh\ menu	&Menüyü\ Güncelle
 menutrans Delete		&Sil
 menutrans &Alternate		Ö&teki
-menutrans &Next			So&nraki
+menutrans &Next		So&nraki
 menutrans &Previous		Ön&ceki
 menutrans [No\ File]		[Dosya\ Yok]
 
@@ -235,16 +235,16 @@ menutrans &Left\ Side<Tab>^WH	So&la<Tab>^WH
 menutrans &Right\ Side<Tab>^WL	&Saða<Tab>^WL
 
 " The popup menu
-menutrans &Undo			&Geri\ Al
+menutrans &Undo		&Geri\ Al
 menutrans Cu&t			&Kes
-menutrans &Copy			K&opyala
+menutrans &Copy		K&opyala
 menutrans &Paste		&Yapýþtýr
 menutrans &Delete		&Sil
 menutrans Select\ Blockwise	&Blok\ Biçiminde\ Seç
-menutrans Select\ &Word		Sö&zcük\ Seç
+menutrans Select\ &Word	Sö&zcük\ Seç
 menutrans Select\ &Sentence	&Tümce\ Seç
 menutrans Select\ Pa&ragraph	&Paragraf\ Seç
-menutrans Select\ &Line		S&atýr\ Seç
+menutrans Select\ &Line	S&atýr\ Seç
 menutrans Select\ &Block	Bl&ok\ Seç
 menutrans Select\ &All		Tümü&nü\ Seç
 
