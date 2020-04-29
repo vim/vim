@@ -1,7 +1,7 @@
 " Vim support file to detect file types
 "
 " Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last Change:	2020 Apr 17
+" Last Change:	2020 Apr 29
 
 " Listen very carefully, I will say this only once
 if exists("did_load_filetypes")
@@ -1650,7 +1650,9 @@ au BufNewFile,BufRead */etc/systemd/system/*.d/*.conf	setf systemd
 au BufNewFile,BufRead */.config/systemd/user/*.d/*.conf	setf systemd
 " Systemd temp files
 au BufNewFile,BufRead */etc/systemd/system/*.d/.#*	setf systemd
+au BufNewFile,BufRead */etc/systemd/system/.#*		setf systemd
 au BufNewFile,BufRead */.config/systemd/user/*.d/.#*	setf systemd
+au BufNewFile,BufRead */.config/systemd/user/.#*	setf systemd
 
 " Synopsys Design Constraints
 au BufNewFile,BufRead *.sdc			setf sdc
