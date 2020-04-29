@@ -268,7 +268,7 @@ func Test_set_completion()
 
   " Expand terminal options.
   call feedkeys(":set t_A\<C-A>\<C-B>\"\<CR>", 'tx')
-  call assert_equal('"set t_AB t_AF t_AL', @:)
+  call assert_equal('"set t_AB t_AF t_AU t_AL', @:)
 
   " Expand directories.
   call feedkeys(":set cdpath=./\<C-A>\<C-B>\"\<CR>", 'tx')
