@@ -1814,6 +1814,9 @@ EXTERN int  in_free_unref_items INIT(= FALSE);
 EXTERN int  did_add_timer INIT(= FALSE);
 EXTERN int  timer_busy INIT(= 0);   // when timer is inside vgetc() then > 0
 #endif
+#ifdef FEAT_EVAL
+EXTERN int  input_busy INIT(= 0);   // when inside get_user_input() then > 0
+#endif
 
 #ifdef FEAT_BEVAL_TERM
 EXTERN int  bevalexpr_due_set INIT(= FALSE);

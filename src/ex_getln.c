@@ -4468,6 +4468,8 @@ get_user_input(
 
     rettv->v_type = VAR_STRING;
     rettv->vval.v_string = NULL;
+    if (input_busy)
+	return;  // this doesn't work recursively.
 
 #ifdef NO_CONSOLE_INPUT
     // While starting up, there is no place to enter text. When running tests
@@ -4528,12 +4530,18 @@ get_user_input(
 	if (defstr != NULL)
 	{
 	    int save_ex_normal_busy = ex_normal_busy;
+	    int save_vgetc_busy = vgetc_busy;
+	    int save_input_busy = input_busy;
 
+	    input_busy |= vgetc_busy;
 	    ex_normal_busy = 0;
+	    vgetc_busy = 0;
 	    rettv->vval.v_string =
 		getcmdline_prompt(secret ? NUL : '@', p, get_echo_attr(),
 							      xp_type, xp_arg);
 	    ex_normal_busy = save_ex_normal_busy;
+	    vgetc_busy = save_vgetc_busy;
+	    input_busy = save_input_busy;
 	}
 	if (inputdialog && rettv->vval.v_string == NULL
 		&& argvars[1].v_type != VAR_UNKNOWN
