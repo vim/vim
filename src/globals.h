@@ -798,9 +798,15 @@ EXTERN int	secure INIT(= FALSE);
 				// allowed, e.g. when sourcing .exrc or .vimrc
 				// in current directory
 
-EXTERN int	textlock INIT(= 0);
+EXTERN int	textwinlock INIT(= 0);
 				// non-zero when changing text and jumping to
-				// another window or buffer is not allowed
+				// another window or editing another buffer is
+				// not allowed
+
+EXTERN int	textlock INIT(= 0);
+				// non-zero when changing text is not allowed,
+				// jumping to another window is allowed,
+				// editing another buffer is not allowed.
 
 EXTERN int	curbuf_lock INIT(= 0);
 				// non-zero when the current buffer can't be
@@ -1681,7 +1687,8 @@ EXTERN char e_readerrf[]	INIT(= N_("E47: Error while reading errorfile"));
 EXTERN char e_sandbox[]		INIT(= N_("E48: Not allowed in sandbox"));
 #endif
 EXTERN char e_secure[]		INIT(= N_("E523: Not allowed here"));
-EXTERN char e_textlock[]	INIT(= N_("E565: Not allowed to change text here"));
+EXTERN char e_textlock[]	INIT(= N_("E578: Not allowed to change text here"));
+EXTERN char e_textwinlock[]	INIT(= N_("E565: Not allowed to change text or change window"));
 #if defined(AMIGA) || defined(MACOS_X) || defined(MSWIN)  \
 	|| defined(UNIX) || defined(VMS)
 EXTERN char e_screenmode[]	INIT(= N_("E359: Screen mode setting not supported"));

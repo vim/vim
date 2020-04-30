@@ -491,7 +491,7 @@ func Test_completefunc_error()
   endfunc
   set completefunc=CompleteFunc2
   call setline(1, ['', 'abcd', ''])
-  call assert_fails('exe "normal 2G$a\<C-X>\<C-U>"', 'E565:')
+  call assert_fails('exe "normal 2G$a\<C-X>\<C-U>"', 'E578:')
 
   set completefunc&
   delfunc CompleteFunc

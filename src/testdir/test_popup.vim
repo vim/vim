@@ -342,7 +342,7 @@ func Test_completefunc_opens_new_window_one()
   setlocal completefunc=DummyCompleteOne
   call setline(1, 'one')
   /^one
-  call assert_fails('call feedkeys("A\<C-X>\<C-U>\<C-N>\<Esc>", "x")', 'E565:')
+  call assert_fails('call feedkeys("A\<C-X>\<C-U>\<C-N>\<Esc>", "x")', 'E578:')
   call assert_equal(winid, win_getid())
   call assert_equal('oneDEF', getline(1))
   q!

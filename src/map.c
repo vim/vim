@@ -1570,14 +1570,14 @@ eval_map_expr(
 
     // Forbid changing text or using ":normal" to avoid most of the bad side
     // effects.  Also restore the cursor position.
-    ++textlock;
+    ++textwinlock;
     ++ex_normal_lock;
     set_vim_var_char(c);  // set v:char to the typed character
     save_cursor = curwin->w_cursor;
     save_msg_col = msg_col;
     save_msg_row = msg_row;
     p = eval_to_string(expr, NULL, FALSE);
-    --textlock;
+    --textwinlock;
     --ex_normal_lock;
     curwin->w_cursor = save_cursor;
     msg_col = save_msg_col;

@@ -393,7 +393,7 @@ eval_to_string(
 
 /*
  * Call eval_to_string() without using current local variables and using
- * textlock.  When "use_sandbox" is TRUE use the sandbox.
+ * textwinlock.  When "use_sandbox" is TRUE use the sandbox.
  */
     char_u *
 eval_to_string_safe(
@@ -407,11 +407,11 @@ eval_to_string_safe(
     save_funccal(&funccal_entry);
     if (use_sandbox)
 	++sandbox;
-    ++textlock;
+    ++textwinlock;
     retval = eval_to_string(arg, nextcmd, FALSE);
     if (use_sandbox)
 	--sandbox;
-    --textlock;
+    --textwinlock;
     restore_funccal();
     return retval;
 }
@@ -576,7 +576,7 @@ eval_foldexpr(char_u *arg, int *cp)
     ++emsg_off;
     if (use_sandbox)
 	++sandbox;
-    ++textlock;
+    ++textwinlock;
     *cp = NUL;
     if (eval0(arg, &tv, NULL, TRUE) == FAIL)
 	retval = 0;
@@ -601,7 +601,7 @@ eval_foldexpr(char_u *arg, int *cp)
     --emsg_off;
     if (use_sandbox)
 	--sandbox;
-    --textlock;
+    --textwinlock;
 
     return (int)retval;
 }

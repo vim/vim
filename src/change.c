@@ -382,7 +382,7 @@ invoke_listeners(buf_T *buf)
 
     argv[4].v_type = VAR_LIST;
     argv[4].vval.v_list = buf->b_recorded_changes;
-    ++textlock;
+    ++textwinlock;
 
     for (lnr = buf->b_listener; lnr != NULL; lnr = lnr->lr_next)
     {
@@ -390,7 +390,7 @@ invoke_listeners(buf_T *buf)
 	clear_tv(&rettv);
     }
 
-    --textlock;
+    --textwinlock;
     list_unref(buf->b_recorded_changes);
     buf->b_recorded_changes = NULL;
 
