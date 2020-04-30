@@ -653,7 +653,7 @@ call_def_function(
 	    case ISN_EXECCONCAT:
 		{
 		    int	    count = iptr->isn_arg.number;
-		    int	    len = 0;
+		    size_t  len = 0;
 		    int	    pass;
 		    int	    i;
 		    char_u  *cmd = NULL;
