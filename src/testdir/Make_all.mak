@@ -16,9 +16,7 @@ SCRIPTS_ALL = \
 	test42.out \
 	test44.out \
 	test70.out \
-	test99.out \
-	test_eval.out
-
+	test99.out
 
 # Tests that run on most systems, but not on Amiga.
 SCRIPTS_MORE1 = \

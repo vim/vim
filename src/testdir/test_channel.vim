@@ -6,6 +6,7 @@ CheckFeature channel
 
 source shared.vim
 source screendump.vim
+source view_util.vim
 
 let s:python = PythonProg()
 if s:python == ''
@@ -2295,6 +2296,22 @@ func Test_job_with_list_args()
   call WaitForAssert({-> assert_equal("dead", job_status(job))})
   call assert_equal('Hello World', getline(1))
   %bw!
+endfunc
+
+func ExitCb_cb_with_input(job, status)
+  call feedkeys(":\<C-u>echo input('', 'default')\<CR>\<CR>", 'nx')
+  call assert_equal('default', Screenline(&lines))
+  let g:wait_exit_cb = 0
+endfunc
+
+func Test_cb_with_input()
+  let g:wait_exit_cb = 1
+
+  call job_start('echo "Vim''s test"',
+        \ {'out_cb': 'ExitCb_cb_with_input'})
+  call WaitForAssert({-> assert_equal(0, g:wait_exit_cb)})
+
+  unlet g:wait_exit_cb
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

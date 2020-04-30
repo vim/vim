@@ -2149,7 +2149,7 @@ f_eval(typval_T *argvars, typval_T *rettv)
     static void
 f_eventhandler(typval_T *argvars UNUSED, typval_T *rettv)
 {
-    rettv->vval.v_number = vgetc_busy;
+    rettv->vval.v_number = vgetc_busy || input_busy;
 }
 
 static garray_T	redir_execute_ga;
@@ -2566,7 +2566,7 @@ f_feedkeys(typval_T *argvars, typval_T *rettv UNUSED)
 #ifdef FEAT_TIMERS
 			|| timer_busy
 #endif
-			)
+			|| input_busy)
 		    typebuf_was_filled = TRUE;
 	    }
 	    vim_free(keys_esc);
@@ -2887,7 +2887,7 @@ f_funcref(typval_T *argvars, typval_T *rettv)
 }
 
     static type_T *
-ret_f_function(int argcount, type_T **argtypes UNUSED)
+ret_f_function(int argcount, type_T **argtypes)
 {
     if (argcount == 1 && argtypes[0]->tt_type == VAR_STRING)
 	return &t_func_any;
