@@ -1,4 +1,4 @@
-*os_haiku.txt*	For Vim version 8.2.  Last change: 2020 Mar 19
+*os_haiku.txt*	For Vim version 8.2.  Last change: 2020 Apr 30
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -46,12 +46,11 @@ features you can enable/disable.
 
 Haiku uses "ncurses6" as its terminal library, therefore you need to have
 "ncurses6_devel" package installed from HaikuDepot in order to configure
-the Haiku build. Just append "--with-tlib=ncurses6" to ./configure command
-below for the initial build.
+the Haiku build.  Just append "--with-tlib=ncurses6" to ./configure command
 
 Now you should use "make" to compile Vim, then "make install" to install it.
 For seamless integration into Haiku, the GUI-less vim binary should be
-additionally installed over the GUI version. Typical build commands are: >
+additionally installed over the GUI version.  Typical build commands are:
 
   ./configure --prefix=`finddir B_SYSTEM_NONPACKAGED_DIRECTORY` \
     --datarootdir=`finddir B_SYSTEM_NONPACKAGED_DATA_DIRECTORY` \
@@ -71,25 +70,28 @@ additionally installed over the GUI version. Typical build commands are: >
 
 Normally Vim starts with the GUI if you start it as gvim or vim -g.  The vim
 version with GUI tries to determine if it was started from the Tracker instead
-of the Terminal, and if so, uses the GUI anyway. However, the current detection
+of the Terminal, and if so, uses the GUI anyway.  However, the current detection
 scheme is fooled if you use the command "vim - </dev/null".
 
 Stuff that does not work yet:
 
-- Mouse up events are not generated when outside the window. This may be a bug in
-  Haiku. You can notice this when selecting text and moving the cursor outside
-  the window, then letting go of the mouse button.  Another way is when you
-  drag the scrollbar and do the same thing.  Because Vim still thinks you are
-  still playing with the scrollbar it won't change it itself. I provided a
-  workaround which kicks in when the window is activated or deactivated (so it
-  works best with focus- follows-mouse turned on).
+- Mouse up events are not generated when outside the window.  You can notice
+  this when selecting text and moving the cursor outside the window, then
+  letting go of the mouse button.  Another way is when you drag the scrollbar
+  and do the same thing.  Because Vim still thinks you are still playing with
+  the scrollbar it won't change it itself.  There is a workaround which kicks
+  in when the window is activated or deactivated (so it works best with focus-
+  follows-mouse turned on).
 - The cursor does not flash.
+- Built-in terminal is not available in GUI, and does not work reliably on
+  console version as well; e.g. it is not possible to exit using the 'exit'
+  command.  If you need to use it, enable at your own risk.
 
 
 4. The $VIM directory					*haiku-vimdir*
 
 $VIM is the symbolic name for the place where Vim's support files are stored.
-The default value for $VIM is set at compile time and can be determined with >
+The default value for $VIM is set at compile time and can be determined with:
 
   :version
 
@@ -117,7 +119,7 @@ The normal value is /boot/home/config/settings.
 You can drop files and directories on either the Vim icon (starts a new Vim
 session, unless you use the File Types application to set Vim to be "Single
 Launch") or on the Vim window (starts editing the files).  Dropping a folder
-sets Vim's current working directory. |:cd| |:pwd| If you drop files or
+sets Vim's current working directory |:cd| |:pwd|.  If you drop files or
 folders with either SHIFT key pressed, Vim changes directory to the folder
 that contains the first item dropped.  When starting Vim, there is no need to
 press shift: Vim behaves as if you do.
@@ -164,7 +166,7 @@ isn't a dotted-y, then for this font the encoding does not work.
 
 If the font you specify is unavailable, you get the system fixed font.
 
-GUI Font Selection Dialog is available at giving the >
+GUI Font Selection Dialog is available at giving the:
 
   :set guifont=*
 

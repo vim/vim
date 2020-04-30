@@ -10,4 +10,4 @@ software repository HaikuPorts. To get Vim:
 - Open a Terminal and type "pkgman install vim", then follow instructions.
 
 If you prefer to install Vim from source, follow the instructions on
-"runtime/doc/os_haiku.txt", "Compiling Haiku" section.
+"runtime/doc/os_haiku.txt", "Compiling Vim" section.

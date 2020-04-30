@@ -1,12 +1,11 @@
 /*
- * os_haiku.rdef
+ * os_haiku.rdef.in: Assets and resources file for Haiku
  */
 
 resource app_signature "application/x-vnd.Haiku-Vim-8";
 
 resource app_version {
 	major  = @MAJOR@,
-	middle = @MIDDLE@,
 	minor  = @MINOR@,
 
 	variety = B_APPV_FINAL,
