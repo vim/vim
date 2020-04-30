@@ -3,18 +3,6 @@
 source shared.vim
 source term_util.vim
 
-" Get all messages but drop the maintainer entry.
-func GetMessages()
-  redir => result
-  redraw | messages
-  redir END
-  let msg_list = split(result, "\n")
-  if msg_list->len() > 0 && msg_list[0] =~ 'Messages maintainer:'
-    return msg_list[1:]
-  endif
-  return msg_list
-endfunc
-
 func Test_messages()
   let oldmore = &more
   try
