@@ -378,7 +378,7 @@ endfunc
 
 func Test_ruby_p()
   ruby p 'Just a test'
-  let messages = split(execute('message'), "\n")
+  let messages = GetMessages()
   call assert_equal('"Just a test"', messages[-1])
 
   " Check return values of p method
@@ -391,7 +391,7 @@ func Test_ruby_p()
   messages clear
   call assert_equal(v:true, rubyeval('p() == nil'))
 
-  let messages = split(execute('message'), "\n")
+  let messages = GetMessages()
   call assert_equal(0, len(messages))
 endfunc
 
