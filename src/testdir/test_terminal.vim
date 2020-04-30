@@ -715,10 +715,12 @@ func Test_terminal_write_stdin()
 endfunc
 
 func Test_terminal_eof_arg()
-  CheckExecutable python
+  if s:python == ''
+    throw 'Skipped: python command not available'
+  endif
 
   call setline(1, ['print("hello")'])
-  1term ++eof=exit(123) python
+  exe '1term ++eof=exit(123) ' .. s:python
   " MS-Windows echoes the input, Unix doesn't.
   if has('win32')
     call WaitFor({-> getline('$') =~ 'exit(123)'})
@@ -733,22 +735,26 @@ endfunc
 
 func Test_terminal_eof_arg_win32_ctrl_z()
   CheckMSWindows
-  CheckExecutable python
+  if s:python == ''
+    throw 'Skipped: python command not available'
+  endif
 
   call setline(1, ['print("hello")'])
-  1term ++eof=<C-Z> python
+  exe '1term ++eof=<C-Z> ' .. s:python
   call WaitForAssert({-> assert_match('\^Z', getline(line('$') - 1))})
   call assert_match('\^Z', getline(line('$') - 1))
   %bwipe!
 endfunc
 
 func Test_terminal_duplicate_eof_arg()
-  CheckExecutable python
+  if s:python == ''
+    throw 'Skipped: python command not available'
+  endif
 
   " Check the last specified ++eof arg is used and should not memory leak.
   new
   call setline(1, ['print("hello")'])
-  1term ++eof=<C-Z> ++eof=exit(123) python
+  exe '1term ++eof=<C-Z> ++eof=exit(123) ' .. s:python
   " MS-Windows echoes the input, Unix doesn't.
   if has('win32')
     call WaitFor({-> getline('$') =~ 'exit(123)'})
@@ -2588,6 +2594,7 @@ func Test_hidden_terminal()
 endfunc
 
 func Test_term_nasty_callback()
+  CheckExecutable sh
   func OpenTerms()
     set hidden
     let g:buf0 = term_start('sh', #{hidden: 1})
