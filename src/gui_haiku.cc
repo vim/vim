@@ -551,7 +551,7 @@ struct VimMsg {
 };
 
 #define RGB(r, g, b)	((char_u)(r) << 16 | (char_u)(g) << 8 | (char_u)(b) << 0)
-#define GUI_TO_RGB(g)	{ (g) >> 16, (g) >> 8, (g) >> 0, 255 }
+#define GUI_TO_RGB(g)	{ (char_u)((g) >> 16), (char_u)((g) >> 8), (char_u)((g) >> 0), 255 }
 
 // ---------------- end of header part ----------------
 
@@ -3989,40 +3989,6 @@ gui_mch_adjust_charheight()
     }
     return OK;
 }
-
-/*
- * Display the saved error message(s).
- */
-#ifdef USE_MCH_ERRMSG
-    void
-display_errors(void)
-{
-    char    *p;
-    char_u  pError[256];
-
-    if (error_ga.ga_data == NULL)
-    return;
-
-    // avoid putting up a message box with blanks only
-    for (p = (char *)error_ga.ga_data; *p; ++p)
-    if (!isspace(*p))
-    {
-	if (STRLEN(p) > 255)
-	pError[0] = 255;
-	else
-	pError[0] = STRLEN(p);
-
-	STRNCPY(&pError[1], p, pError[0]);
-//	ParamText(pError, nil, nil, nil);
-//	Alert(128, nil);
-	break;
-	// TODO: handled message longer than 256 chars
-	//   use auto-sizeable alert
-	//   or dialog with scrollbars (TextEdit zone)
-    }
-    ga_clear(&error_ga);
-}
-#endif
 
     void
 gui_mch_getmouse(int *x, int *y)
