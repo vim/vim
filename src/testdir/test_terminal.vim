@@ -715,10 +715,10 @@ func Test_terminal_write_stdin()
 endfunc
 
 func Test_terminal_eof_arg()
-  CheckExecutable python
+  call CheckPython(s:python)
 
   call setline(1, ['print("hello")'])
-  1term ++eof=exit(123) python
+  exe '1term ++eof=exit(123) ' .. s:python
   " MS-Windows echoes the input, Unix doesn't.
   if has('win32')
     call WaitFor({-> getline('$') =~ 'exit(123)'})
@@ -733,22 +733,22 @@ endfunc
 
 func Test_terminal_eof_arg_win32_ctrl_z()
   CheckMSWindows
-  CheckExecutable python
+  call CheckPython(s:python)
 
   call setline(1, ['print("hello")'])
-  1term ++eof=<C-Z> python
+  exe '1term ++eof=<C-Z> ' .. s:python
   call WaitForAssert({-> assert_match('\^Z', getline(line('$') - 1))})
   call assert_match('\^Z', getline(line('$') - 1))
   %bwipe!
 endfunc
 
 func Test_terminal_duplicate_eof_arg()
-  CheckExecutable python
+  call CheckPython(s:python)
 
   " Check the last specified ++eof arg is used and should not memory leak.
   new
   call setline(1, ['print("hello")'])
-  1term ++eof=<C-Z> ++eof=exit(123) python
+  exe '1term ++eof=<C-Z> ++eof=exit(123) ' .. s:python
   " MS-Windows echoes the input, Unix doesn't.
   if has('win32')
     call WaitFor({-> getline('$') =~ 'exit(123)'})
@@ -1571,9 +1571,8 @@ func Test_terminal_api_call_fail_delete()
 endfunc
 
 func Test_terminal_ansicolors_default()
-  if !exists('*term_getansicolors')
-    throw 'Skipped: term_getansicolors() not supported'
-  endif
+  CheckFunction term_getansicolors
+
   let colors = [
 	\ '#000000', '#e00000',
 	\ '#00e000', '#e0e000',
@@ -1606,9 +1605,8 @@ let s:test_colors = [
 
 func Test_terminal_ansicolors_global()
   CheckFeature termguicolors
-  if !exists('*term_getansicolors')
-    throw 'Skipped: term_getansicolors() not supported'
-  endif
+  CheckFunction term_getansicolors
+
   let g:terminal_ansi_colors = reverse(copy(s:test_colors))
   let buf = Run_shell_in_terminal({})
   call assert_equal(g:terminal_ansi_colors, term_getansicolors(buf))
@@ -1621,9 +1619,8 @@ endfunc
 
 func Test_terminal_ansicolors_func()
   CheckFeature termguicolors
-  if !exists('*term_getansicolors')
-    throw 'Skipped: term_getansicolors() not supported'
-  endif
+  CheckFunction term_getansicolors
+
   let g:terminal_ansi_colors = reverse(copy(s:test_colors))
   let buf = Run_shell_in_terminal({'ansi_colors': s:test_colors})
   call assert_equal(s:test_colors, term_getansicolors(buf))
@@ -2588,6 +2585,7 @@ func Test_hidden_terminal()
 endfunc
 
 func Test_term_nasty_callback()
+  CheckExecutable sh
   func OpenTerms()
     set hidden
     let g:buf0 = term_start('sh', #{hidden: 1})
