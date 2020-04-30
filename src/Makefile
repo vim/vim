@@ -2885,7 +2885,7 @@ uninstall_runtime:
 clean celan: testclean
 	-rm -f *.o core $(VIMTARGET).core $(VIMTARGET) vim xxd/*.o
 	-rm -rf objects
-	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c auto/gui_gtk_gresources.c auto/gui_gtk_gresources.h
+	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c auto/gui_gtk_gresources.c auto/gui_gtk_gresources.h auto/os_haiku.rdef
 	-rm -f conftest* *~ auto/link.sed
 	-rm -f testdir/opt_test.vim
 	-rm -f $(UNITTEST_TARGETS)
@@ -3041,6 +3041,14 @@ auto/if_perl.c: if_perl.xs
 
 auto/osdef.h: auto/config.h osdef.sh osdef1.h.in osdef2.h.in
 	CC="$(CC) $(OSDEF_CFLAGS)" srcdir=$(srcdir) sh $(srcdir)/osdef.sh
+
+auto/os_haiku.rdef: os_haiku.rdef.in
+	@echo creating $@
+	@echo '/* This file is automatically created by Makefile */' >> $@
+	@echo '/* DO NOT EDIT!  Change Makefile only. */' >> $@
+	@cat $(srcdir)/os_haiku.rdef.in >> auto/os_haiku.rdef
+	sed -i "s|@MAJOR@|$(VIMMAJOR)|" auto/os_haiku.rdef
+	sed -i "s|@MINOR@|$(VIMMINOR)|" auto/os_haiku.rdef
 
 auto/pathdef.c: Makefile auto/config.mk
 	-@echo creating $@
@@ -3384,9 +3392,7 @@ objects/os_beos.o: os_beos.c
 objects/os_qnx.o: os_qnx.c
 	$(CCC) -o $@ os_qnx.c
 
-objects/os_haiku.rsrc: os_haiku.rdef
-	sed -i "s|@MAJOR@|$(VIMMAJOR)|" os_haiku.rdef
-	sed -i "s|@MINOR@|$(VIMMINOR)|" os_haiku.rdef
+objects/os_haiku.rsrc: auto/os_haiku.rdef
 	cat $< | $(CCC) -E - | grep -v '^#' | rc -o "$@" -
 
 objects/os_macosx.o: os_macosx.m

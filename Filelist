@@ -610,7 +610,7 @@ SRC_AMI =	\
 SRC_HAIKU =	\
 		README_haiku.txt \
 		src/os_haiku.h \
-		src/os_haiku.rdef \
+		src/os_haiku.rdef.in \
 		src/gui_haiku.cc \
 		src/gui_haiku.h \
 		src/proto/gui_haiku.pro \
