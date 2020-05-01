@@ -55,7 +55,7 @@ int get_var_tv(char_u *name, int len, typval_T *rettv, dictitem_T **dip, int ver
 void check_vars(char_u *name, int len);
 dictitem_T *find_var(char_u *name, hashtab_T **htp, int no_autoload);
 dictitem_T *find_var_in_ht(hashtab_T *ht, int htname, char_u *varname, int no_autoload);
-int lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy);
+void *lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy);
 hashtab_T *find_var_ht(char_u *name, char_u **varname);
 char_u *get_var_value(char_u *name);
 void new_script_vars(scid_T id);

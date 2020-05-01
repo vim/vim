@@ -2495,19 +2495,19 @@ get_script_local_ht(void)
 
 /*
  * Look for "name[len]" in script-local variables.
- * Return -1 when not found.
+ * Return a non-NULL pointer when found, NULL when not found.
  */
-    int
+    void *
 lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy UNUSED)
 {
     hashtab_T	*ht = get_script_local_ht();
     char_u	buffer[30];
     char_u	*p;
-    int		res;
+    void	*res;
     hashitem_T	*hi;
 
     if (ht == NULL)
-	return -1;
+	return NULL;
     if (len < sizeof(buffer) - 1)
     {
 	vim_strncpy(buffer, name, len);
@@ -2517,15 +2517,15 @@ lookup_scriptvar(char_u *name, size_t len, cctx_T *dummy UNUSED)
     {
 	p = vim_strnsave(name, (int)len);
 	if (p == NULL)
-	    return -1;
+	    return NULL;
     }
 
     hi = hash_find(ht, p);
-    res = HASHITEM_EMPTY(hi) ? -1 : 1;
+    res = HASHITEM_EMPTY(hi) ? NULL : hi;
 
     // if not script-local, then perhaps imported
-    if (res == -1 && find_imported(p, 0, NULL) != NULL)
-	res = 1;
+    if (res == NULL && find_imported(p, 0, NULL) != NULL)
+	res = p;
 
     if (p != buffer)
 	vim_free(p);

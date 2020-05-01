@@ -3157,7 +3157,7 @@ append_command(char_u *cmd)
 find_ex_command(
 	exarg_T *eap,
 	int	*full UNUSED,
-	int	(*lookup)(char_u *, size_t, cctx_T *) UNUSED,
+	void	*(*lookup)(char_u *, size_t, cctx_T *) UNUSED,
 	cctx_T	*cctx UNUSED)
 {
     int		len;
@@ -3197,7 +3197,7 @@ find_ex_command(
 	    // "g:var = expr"
 	    // "var = expr"  where "var" is a local var name.
 	    if (((p - eap->cmd) > 2 && eap->cmd[1] == ':')
-		    || lookup(eap->cmd, p - eap->cmd, cctx) >= 0)
+		    || lookup(eap->cmd, p - eap->cmd, cctx) != NULL)
 	    {
 		eap->cmdidx = CMD_let;
 		return eap->cmd;
