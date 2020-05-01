@@ -14,6 +14,8 @@
 
 #include "vim.h"
 
+int ignore_sigtstp = 0;
+
 static int	VIsual_mode_orig = NUL;		// saved Visual mode
 static int	restart_VIsual_select = 0;
 
@@ -5723,10 +5725,11 @@ nv_window(cmdarg_T *cap)
     static void
 nv_suspend(cmdarg_T *cap)
 {
+    if (ignore_sigtstp) return;
     clearop(cap->oap);
     if (VIsual_active)
 	end_visual_mode();		// stop Visual mode
-    do_cmdline_cmd((char_u *)"st");
+    do_cmdline_cmd((char_u *)"stop");
 }
 
 /*
