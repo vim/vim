@@ -2272,6 +2272,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 :command-completion-custom	map.txt	/*:command-completion-custom*
 :command-completion-customlist	map.txt	/*:command-completion-customlist*
 :command-count	map.txt	/*:command-count*
+:command-modifiers	map.txt	/*:command-modifiers*
 :command-nargs	map.txt	/*:command-nargs*
 :command-range	map.txt	/*:command-range*
 :command-register	map.txt	/*:command-register*
@@ -4363,6 +4364,7 @@ E561	if_cscop.txt	/*E561*
 E562	if_cscop.txt	/*E562*
 E563	if_cscop.txt	/*E563*
 E564	if_cscop.txt	/*E564*
+E565	insert.txt	/*E565*
 E566	if_cscop.txt	/*E566*
 E567	if_cscop.txt	/*E567*
 E568	if_cscop.txt	/*E568*
@@ -4374,6 +4376,7 @@ E574	starting.txt	/*E574*
 E575	starting.txt	/*E575*
 E576	starting.txt	/*E576*
 E577	starting.txt	/*E577*
+E578	insert.txt	/*E578*
 E579	eval.txt	/*E579*
 E580	eval.txt	/*E580*
 E581	eval.txt	/*E581*
@@ -9959,6 +9962,7 @@ vim-variable	eval.txt	/*vim-variable*
 vim.vim	syntax.txt	/*vim.vim*
 vim7	version7.txt	/*vim7*
 vim8	version8.txt	/*vim8*
+vim9	vim9.txt	/*vim9*
 vim9-differences	vim9.txt	/*vim9-differences*
 vim9-export	vim9.txt	/*vim9-export*
 vim9-import	vim9.txt	/*vim9-import*

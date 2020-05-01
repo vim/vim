@@ -1,4 +1,4 @@
-*repeat.txt*    For Vim version 8.2.  Last change: 2019 Dec 07
+*repeat.txt*    For Vim version 8.2.  Last change: 2020 Apr 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -166,7 +166,7 @@ q			Stops recording.  (Implementation note: The 'q' that
 			[addr] (default is current line).
 
 :[addr]@							*:@@*
-:[addr]@@		Repeat the previous :@{0-9a-z"}.  First set cursor at
+:[addr]@@		Repeat the previous :@{register}.  First set cursor at
 			line [addr] (default is current line).
 
 ==============================================================================

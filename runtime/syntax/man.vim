@@ -1,9 +1,10 @@
 " Vim syntax file
 " Language:	Man page
-" Maintainer:	SungHyun Nam <goweol@gmail.com>
+" Maintainer:	Jason Franklin <vim@justemail.net>
+" Previous Maintainer:	SungHyun Nam <goweol@gmail.com>
 " Previous Maintainer:	Gautam H. Mudunuri <gmudunur@informatica.com>
 " Version Info:
-" Last Change:	2020 Apr 15
+" Last Change:	2020 Apr 30
 
 " Additional highlighting by Johannes Tanzler <johannes.tanzler@aon.at>:
 "	* manSubHeading
@@ -19,15 +20,15 @@ runtime! syntax/ctrlh.vim
 
 syn case ignore
 
-syn match manHeader '\%1l.*'
-exe 'syn match manFooter ''\%' . line('$') . 'l.*'''
-
 syn match  manReference       "\f\+([1-9][a-z]\=)"
 syn match  manSectionHeading  "^[a-z][a-z -]*[a-z]$"
 syn match  manSubHeading      "^\s\{3\}[a-z][a-z -]*[a-z]$"
 syn match  manOptionDesc      "^\s*[+-][a-z0-9]\S*"
 syn match  manLongOptionDesc  "^\s*--[a-z0-9-]\S*"
 " syn match  manHistory		"^[a-z].*last change.*$"
+
+syn match manHeader '\%1l.*'
+exe 'syn match manFooter ''\%' . line('$') . 'l.*'''
 
 if getline(1) =~ '^[a-zA-Z_]\+([23])'
   syntax include @cCode <sfile>:p:h/c.vim

@@ -230,7 +230,7 @@ A. VisionFS can't handle certain dot (.) three letter extension file names.
    SCO declares this behavior required for backwards compatibility with 16bit
    DOS/Windows environments.  The two commands below demonstrate the behavior:
 >
-	echo Hello > file.bat~ 
+	echo Hello > file.bat~
 	dir > file.bat
 <
    The result is that the "dir" command updates the "file.bat~" file, instead

@@ -1,4 +1,4 @@
-*index.txt*     For Vim version 8.2.  Last change: 2020 Mar 27
+*index.txt*     For Vim version 8.2.  Last change: 2020 Apr 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -246,8 +246,7 @@ tag		char	      note action in Normal mode	~
 				2  filter Nmove text through the {filter}
 				   command
 |!!|		!!{filter}	2  filter N lines through the {filter} command
-|quote|		"{a-zA-Z0-9.%#:-"}  use register {a-zA-Z0-9.%#:-"} for next
-				   delete, yank or put (uppercase to append)
+|quote|		"{register}  	   use {register} for next delete, yank or put
 				   ({.%#:} only work with put)
 |#|		#		1  search backward for the Nth occurrence of
 				   the ident under the cursor
@@ -1115,7 +1114,7 @@ tag		char		action in Terminal-Job mode	~
 |t_CTRL-W_:|	CTRL-W :	enter an Ex command
 |t_CTRL-W_.|	CTRL-W .	type CTRL-W in the terminal
 		CTRL-W CTRL-\	send a CTRL-\ to the job in the terminal
-|t_CTRL-W_quote|  CTRL-W " {0-9a-z"%#*:=}
+|t_CTRL-W_quote|  CTRL-W " {register}
 				paste register in the terminal
 |t_CTRL-W_CTRL-C| CTRL-W CTRL-C	forcefully ends the job
 |t_CTRL-W_CTRL-W| CTRL-W CTRL-W	move focus to the next window

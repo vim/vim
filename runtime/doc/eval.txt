@@ -2646,7 +2646,7 @@ prop_clear({lnum} [, {lnum-end} [, {props}]])
 				none	remove all text properties
 prop_find({props} [, {direction}])
 				Dict	search for a text property
-prop_list({lnum} [, {props})	List	text properties in {lnum}
+prop_list({lnum} [, {props}])	List	text properties in {lnum}
 prop_remove({props} [, {lnum} [, {lnum-end}]])
 				Number	remove a text property
 prop_type_add({name}, {props})	none	define a new property type
@@ -2654,7 +2654,7 @@ prop_type_change({name}, {props})
 				none	change an existing property type
 prop_type_delete({name} [, {props}])
 				none	delete a property type
-prop_type_get([{name} [, {props}])
+prop_type_get([{name} [, {props}]])
 				Dict	get property type values
 prop_type_list([{props}])	List	get list of property types
 pum_getpos()			Dict	position and size of pum if visible
@@ -3050,7 +3050,7 @@ arglistid([{winnr} [, {tabnr}]])
 		{winnr} can be the window number or the |window-ID|.
 
 							*argv()*
-argv([{nr} [, {winid}])
+argv([{nr} [, {winid}]])
 		The result is the {nr}th file in the argument list.  See
 		|arglist|.  "argv(0)" is the first one.  Example: >
 	:let i = 0
@@ -5854,7 +5854,7 @@ has({feature} [, {check}])
 
 		Note that to skip code that has a syntax error when the
 		feature is not available, Vim may skip the rest of the line
-		and miss a following `endif`.  Therfore put the `endif` on a
+		and miss a following `endif`.  Therefore put the `endif` on a
 		separate line: >
 			if has('feature')
 			  let x = this->breaks->without->the->feature

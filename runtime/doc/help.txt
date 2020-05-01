@@ -198,13 +198,13 @@ Remarks about specific systems ~
 |os_amiga.txt|	Amiga
 |os_beos.txt|	BeOS and BeBox
 |os_dos.txt|	MS-DOS and MS-Windows common items
+|os_haiku.txt|	Haiku
 |os_mac.txt|	Macintosh
 |os_mint.txt|	Atari MiNT
 |os_msdos.txt|	MS-DOS (plain DOS and DOS box under Windows)
 |os_os2.txt|	OS/2
 |os_qnx.txt|	QNX
 |os_risc.txt|	RISC-OS
-|os_haiku.txt|	Haiku
 |os_unix.txt|	Unix
 |os_vms.txt|	VMS
 |os_win32.txt|	MS-Windows

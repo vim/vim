@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2020 Mar 26
+*terminal.txt*	For Vim version 8.2.  Last change: 2020 Apr 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -120,7 +120,7 @@ break (cursor keys start with an Esc, so they may break): >
 You can also create menus similar to terminal mode mappings, but you have to
 use |:tlmenu| instead of |:tmenu|.
 
-<							*options-in-terminal*
+							*options-in-terminal*
 After opening the terminal window and setting 'buftype' to "terminal" the
 TerminalOpen autocommand event is triggered.  This makes it possible to set
 options specifically for the window and buffer.  Example: >
@@ -182,6 +182,10 @@ Command syntax ~
 			If [command] is present the default behavior is to
 			keep the terminal open in Terminal-Normal mode.  This
 			can be changed with the ++close argument.
+
+			No Vim command can follow, any | is included in
+			[command].  Use `:execute` if you must have a Vim
+			command following in the same line.
 
 			A new buffer will be created, using [command] or
 			'shell' as the name, prefixed with a "!".  If a buffer

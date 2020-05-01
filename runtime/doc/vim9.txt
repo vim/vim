@@ -1,4 +1,4 @@
-*vim9.txt*	For Vim version 8.2.  Last change: 2020 Apr 19
+*vim9.txt*	For Vim version 8.2.  Last change: 2020 Apr 30
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -6,7 +6,7 @@
 
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
-Vim9 script commands and expressions.
+Vim9 script commands and expressions.			*vim9*
 
 Most expression help is in |eval.txt|.  This file is about the new syntax and
 features in Vim9 script.
@@ -28,29 +28,32 @@ THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
 THIS IS STILL UNDER DEVELOPMENT - ANYTHING CAN BREAK - ANYTHING CAN CHANGE
 
-Vim script has been growing over time, while keeping backwards compatibility.
-That means bad choices from the past often can't be changed.  Execution is
-quite slow, every line is parsed every time it is executed.
+Vim script has been growing over time, while preserving backwards
+compatibility.  That means bad choices from the past often can't be changed
+and compability with Vi restricts possible solutions.  Execution is quite
+slow, each line is parsed every time it is executed.
 
-The main goal of Vim9 script is to drastically improve performance.  An
-increase in execution speed of 10 to 100 times can be expected.  A secondary
-goal is to avoid Vim-specific constructs and get closer to commonly used
-programming languages, such as JavaScript, TypeScript and Java.
+The main goal of Vim9 script is to drastically improve performance.  This is
+accomplished by compiling commands into instructions that can be efficiently
+executed.  An increase in execution speed of 10 to 100 times can be expected.
+
+A secondary goal is to avoid Vim-specific constructs and get closer to
+commonly used programming languages, such as JavaScript, TypeScript and Java.
 
 The performance improvements can only be achieved by not being 100% backwards
 compatible.  For example, in a function the arguments are not available in the
-"a:" dictionary, as creating that dictionary adds quite a lot of overhead.
-Other differences are more subtle, such as how errors are handled.
+"a:" dictionary, because creating that dictionary adds quite a lot of
+overhead.  Other differences are more subtle, such as how errors are handled.
 
 The Vim9 script syntax and semantics are used in:
 - a function defined with the `:def` command
 - a script file where the first command is `vim9script`
 
 When using `:function` in a Vim9 script file the legacy syntax is used.
-However, this is discouraged.
+However, this can be confusing and is therefore discouraged.
 
-Vim9 script and legacy Vim script can be mixed.  There is no need to rewrite
-old scripts, they keep working as before.
+Vim9 script and legacy Vim script can be mixed.  There is no requirement to
+rewrite old scripts, they keep working as before.
 
 ==============================================================================
 
@@ -62,9 +65,9 @@ Comments starting with # ~
 
 In Vim script comments normally start with double quote.  That can also be the
 start of a string, thus in many places it cannot be used.  In Vim9 script a
-comment can also start with #.  Normally this is a command to list text with
+comment can also start with #.  In Vi this is a command to list text with
 numbers, but you can also use `:number` for that. >
-	let count = 0  # number of occurences of Ni!
+	let count = 0  # number of occurences
 
 To improve readability there must be a space between the command and the #
 that starts a comment.  Note that #{ is the start of a dictionary, therefore
@@ -73,40 +76,59 @@ it cannot start a comment.
 
 Vim9 functions ~
 
+A function defined with `:def` is compiled.  Execution is many times faster,
+often 10x to 100x times.
+
+Many errors are already found when compiling, before the function is called.
+The syntax is strict, to enforce code that is easy to read and understand.
+
 `:def` has no extra arguments like `:function` does: "range", "abort", "dict"
 or "closure".  A `:def` function always aborts on an error, does not get a
 range passed and cannot be a "dict" function.
 
-In the function body:
-- Arguments are accessed by name, without "a:".
-- There is no "a:" dictionary or "a:000" list.  Variable arguments are defined
-  with a name and have a list type: >
-  	def MyFunc(...itemlist: list<type>)
+The argument types and return type need to be specified.  The "any" type can
+be used, type checking will then be done at runtime, like with legacy
+functions.
+
+Arguments are accessed by name, without "a:".  There is no "a:" dictionary or
+"a:000" list.
+
+Variable arguments are defined as the last argument, with a name and have a
+list type, similar to Typescript.  For example, a list of numbers: >
+  	def MyFunc(...itemlist: list<number>)
 	   for item in itemlist
 	     ...
 
 
-Functions are script-local by default ~
+Functions and variables are script-local by default ~
 
 When using `:function` or `:def` to specify a new function at the script level
 in a Vim9 script, the function is local to the script, as if "s:" was
-prefixed.  To define a global function the "g:" prefix must be used.
+prefixed.  Using the "s:" prefix is optional.
+
+To define or use a global function or variable the "g:" prefix must be used.
 
 When using `:function` or `:def` to specify a new function inside a function,
 the function is local to the function.  It is not possible to define a
-script-local function inside a function. To define a global function the "g:"
-prefix must be used.
+script-local function inside a function. It is possible to define a global
+function, using the "g:" prefix.
 
 When referring to a function and no "s:" or "g:" prefix is used, Vim will
 search for the function in this order:
-- Local to the current function scope.
+- Local to the current scope and outer scopes up to the function scope.
 - Local to the current script file.
 - Imported functions, see `:import`.
-- Global.
+In all cases the function must be defined before used.  To make a call cycle a
+global function needs to be used. (TODO: can we fix this?)
+
+The result is that functions and variables without a namespace can always be
+found in the script, either defined there or imported.  Global functions and
+variables could be defined anywhere (good luck finding where!).
 
 Global functions can be defined and deleted at nearly any time.  In Vim9
 script script-local functions are defined once when the script is sourced and
-cannot be deleted.
+cannot be deleted.  Except that when the same script is sourced again all
+existing script-local functions and variables are deleted.
 
 
 Variable declarations with :let and :const ~
@@ -156,12 +178,12 @@ and without `:let`, because there is no rule about where they are declared.
 Variables cannot shadow previously defined variables.
 Variables may shadow Ex commands, rename the variable if needed.
 
-Global variables must be prefixed with "g:", also at the script level.
-However, global user defined functions are used without "g:". >
+Global variables and user defined functions must be prefixed with "g:", also
+at the script level. >
 	vim9script
 	let script_local = 'text'
 	let g:global = 'value'
-	let Funcref = ThatFunction
+	let Funcref = g:ThatFunction
 
 Since "&opt = value" is now assigning a value to option "opt", ":&" cannot be
 used to repeat a `:substitute` command.
