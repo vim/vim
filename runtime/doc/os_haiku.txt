@@ -25,8 +25,9 @@ targets personal computing.
  9. The meta key modifier	|haiku-meta|
 10. Mouse key mappings		|haiku-mouse|
 11. Color names			|haiku-colors|
-12. Credits			|haiku-support-credits|
-13. Bugs & to-do		|haiku-bugs|
+12. GUI Toolbar Images		|haiku-toolbar-images|
+13. Credits			|haiku-support-credits|
+14. Bugs & to-do		|haiku-bugs|
 
 
 1. General						*haiku-general*
@@ -223,7 +224,7 @@ All the changes and patches released under vim-license.
 Thank you, all!
 
 
-13. Bugs & to-do					*haiku-bugs*
+14. Bugs & to-do					*haiku-bugs*
  
 The port is under development now and far away from the perfect state. For bug
 reports, patches and wishes, please use the Vim mailing list or Vim Github

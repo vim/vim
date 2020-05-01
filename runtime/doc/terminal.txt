@@ -120,7 +120,7 @@ break (cursor keys start with an Esc, so they may break): >
 You can also create menus similar to terminal mode mappings, but you have to
 use |:tlmenu| instead of |:tmenu|.
 
-<							*options-in-terminal*
+							*options-in-terminal*
 After opening the terminal window and setting 'buftype' to "terminal" the
 TerminalOpen autocommand event is triggered.  This makes it possible to set
 options specifically for the window and buffer.  Example: >

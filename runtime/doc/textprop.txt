@@ -101,7 +101,7 @@ Manipulating text property types:
 prop_type_add({name}, {props})		define a new property type
 prop_type_change({name}, {props})	change an existing property type
 prop_type_delete({name} [, {props}])	delete a property type
-prop_type_get([{name} [, {props}])	get property type values
+prop_type_get([{name} [, {props}]])	get property type values
 prop_type_list([{props}])		get list of property types
 
 
@@ -111,7 +111,7 @@ prop_add({lnum}, {col}, {props})  	add a text property
 prop_clear({lnum} [, {lnum-end} [, {bufnr}]])
 					remove all text properties
 prop_find({props} [, {direction}])	search for a text property
-prop_list({lnum} [, {props})  		text properties in {lnum}
+prop_list({lnum} [, {props}])  		text properties in {lnum}
 prop_remove({props} [, {lnum} [, {lnum-end}]])
 					remove a text property
 
@@ -291,7 +291,7 @@ prop_type_delete({name} [, {props}])			*prop_type_delete()*
 		Can also be used as a |method|: >
 			GetPropName()->prop_type_delete()
 
-prop_type_get([{name} [, {props}])			*prop_type_get()*
+prop_type_get([{name} [, {props}]])			*prop_type_get()*
 		Returns the properties of property type {name}.  This is a
 		dictionary with the same fields as was given to
 		prop_type_add().
