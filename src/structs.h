@@ -1561,13 +1561,30 @@ typedef struct
     sctx_T	uf_script_ctx;	// SCTX where function was defined,
 				// used for s: variables
     int		uf_refcount;	// reference count, see func_name_refcount()
+
     funccall_T	*uf_scoped;	// l: local variables for closure
+    garray_T	*uf_ectx_stack;	// where compiled closure finds local vars
+    int		uf_ectx_frame;	// index of function frame in uf_ectx_stack
+
     char_u	*uf_name_exp;	// if "uf_name[]" starts with SNR the name with
 				// "<SNR>" as a string, otherwise NULL
     char_u	uf_name[1];	// name of function (actually longer); can
 				// start with <SNR>123_ (<SNR> is K_SPECIAL
 				// KS_EXTRA KE_SNR)
 } ufunc_T;
+
+// flags used in uf_flags
+#define FC_ABORT    0x01	// abort function on error
+#define FC_RANGE    0x02	// function accepts range
+#define FC_DICT	    0x04	// Dict function, uses "self"
+#define FC_CLOSURE  0x08	// closure, uses outer scope variables
+#define FC_DELETED  0x10	// :delfunction used while uf_refcount > 0
+#define FC_REMOVED  0x20	// function redefined while uf_refcount > 0
+#define FC_SANDBOX  0x40	// function defined in the sandbox
+#define FC_DEAD	    0x80	// function kept only for reference to dfunc
+#define FC_EXPORT   0x100	// "export def Func()"
+#define FC_NOARGS   0x200	// no a: variables in lambda
+#define FC_VIM9	    0x400	// defined in vim9 script file
 
 #define MAX_FUNC_ARGS	20	// maximum number of function arguments
 #define VAR_SHORT_LEN	20	// short variable name length

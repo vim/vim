@@ -58,6 +58,9 @@ typedef struct {
     garray_T	ec_stack;	// stack of typval_T values
     int		ec_frame;	// index in ec_stack: context of ec_dfunc_idx
 
+    garray_T	*ec_outer_stack;    // stack used for closures
+    int		ec_outer_frame;	    // stack frame in ec_outer_stack
+
     garray_T	ec_trystack;	// stack of trycmd_T values
     int		ec_in_catch;	// when TRUE in catch or finally block
 
@@ -228,6 +231,10 @@ call_dfunc(int cdf_idx, int argcount_arg, ectx_T *ectx)
     ectx->ec_dfunc_idx = cdf_idx;
     ectx->ec_instr = dfunc->df_instr;
     estack_push_ufunc(ETYPE_UFUNC, dfunc->df_ufunc, 1);
+
+    // used for closures
+    ectx->ec_outer_stack = ufunc->uf_ectx_stack;
+    ectx->ec_outer_frame = ufunc->uf_ectx_frame;
 
     // Decide where to start execution, handles optional arguments.
     init_instr_idx(ufunc, argcount, ectx);
@@ -508,6 +515,9 @@ call_def_function(
 // Get pointer to a local variable on the stack.  Negative for arguments.
 #define STACK_TV_VAR(idx) (((typval_T *)ectx.ec_stack.ga_data) + ectx.ec_frame + STACK_FRAME_SIZE + idx)
 
+// Like STACK_TV_VAR but use the outer scope
+#define STACK_OUT_TV_VAR(idx) (((typval_T *)ectx.ec_outer_stack->ga_data) + ectx.ec_outer_frame + STACK_FRAME_SIZE + idx)
+
     CLEAR_FIELD(ectx);
     ga_init2(&ectx.ec_stack, sizeof(typval_T), 500);
     if (ga_grow(&ectx.ec_stack, 20) == FAIL)
@@ -783,6 +793,15 @@ call_def_function(
 		if (ga_grow(&ectx.ec_stack, 1) == FAIL)
 		    goto failed;
 		copy_tv(STACK_TV_VAR(iptr->isn_arg.number), STACK_TV_BOT(0));
+		++ectx.ec_stack.ga_len;
+		break;
+
+	    // load variable or argument from outer scope
+	    case ISN_LOADOUTER:
+		if (ga_grow(&ectx.ec_stack, 1) == FAIL)
+		    goto failed;
+		copy_tv(STACK_OUT_TV_VAR(iptr->isn_arg.number),
+							      STACK_TV_BOT(0));
 		++ectx.ec_stack.ga_len;
 		break;
 
@@ -1303,6 +1322,14 @@ call_def_function(
 		    pt->pt_func = dfunc->df_ufunc;
 		    pt->pt_refcount = 1;
 		    ++dfunc->df_ufunc->uf_refcount;
+
+		    if (dfunc->df_ufunc->uf_flags & FC_CLOSURE)
+		    {
+			// Closure needs to find local variables in the current
+			// stack.
+			dfunc->df_ufunc->uf_ectx_stack = &ectx.ec_stack;
+			dfunc->df_ufunc->uf_ectx_frame = ectx.ec_frame;
+		    }
 
 		    if (ga_grow(&ectx.ec_stack, 1) == FAIL)
 			goto failed;
@@ -1862,7 +1889,12 @@ call_def_function(
 		    checktype_T *ct = &iptr->isn_arg.type;
 
 		    tv = STACK_TV_BOT(ct->ct_off);
-		    if (tv->v_type != ct->ct_type)
+		    // TODO: better type comparison
+		    if (tv->v_type != ct->ct_type
+			    && !((tv->v_type == VAR_PARTIAL
+						   && ct->ct_type == VAR_FUNC)
+				|| (tv->v_type == VAR_FUNC
+					       && ct->ct_type == VAR_PARTIAL)))
 		    {
 			semsg(_("E1029: Expected %s but got %s"),
 				    vartype_name(ct->ct_type),
@@ -2029,12 +2061,18 @@ ex_disassemble(exarg_T *eap)
 					    (long long)(iptr->isn_arg.number));
 		break;
 	    case ISN_LOAD:
-		if (iptr->isn_arg.number < 0)
-		    smsg("%4d LOAD arg[%lld]", current,
-			 (long long)(iptr->isn_arg.number + STACK_FRAME_SIZE));
-		else
-		    smsg("%4d LOAD $%lld", current,
+	    case ISN_LOADOUTER:
+		{
+		    char *add = iptr->isn_type == ISN_LOAD ? "" : "OUTER";
+
+		    if (iptr->isn_arg.number < 0)
+			smsg("%4d LOAD%s arg[%lld]", current, add,
+				(long long)(iptr->isn_arg.number
+							  + STACK_FRAME_SIZE));
+		    else
+			smsg("%4d LOAD%s $%lld", current, add,
 					    (long long)(iptr->isn_arg.number));
+		}
 		break;
 	    case ISN_LOADV:
 		smsg("%4d LOADV v:%s", current,

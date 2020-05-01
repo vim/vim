@@ -641,4 +641,13 @@ func Test_E1056_1059()
   call assert_equal(1, caught_1059)
 endfunc
 
+def RefFunc(Ref: func(string): string): string
+  return Ref('more')
+enddef
+
+def Test_closure_simple()
+  let local = 'some '
+  assert_equal('some more', RefFunc({s -> local .. s}))
+enddef
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

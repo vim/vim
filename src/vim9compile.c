@@ -97,9 +97,10 @@ struct scope_S {
 typedef struct {
     char_u	*lv_name;
     type_T	*lv_type;
-    int		lv_idx;	    // index of the variable on the stack
-    int		lv_const;   // when TRUE cannot be assigned to
-    int		lv_arg;	    // when TRUE this is an argument
+    int		lv_idx;		// index of the variable on the stack
+    int		lv_from_outer;	// when TRUE using ctx_outer scope
+    int		lv_const;	// when TRUE cannot be assigned to
+    int		lv_arg;		// when TRUE this is an argument
 } lvar_T;
 
 /*
@@ -123,6 +124,7 @@ struct cctx_S {
 
     cctx_T	*ctx_outer;	    // outer scope for lambda or nested
 				    // function
+    int		ctx_outer_used;	    // var in ctx_outer was used
 
     garray_T	ctx_type_stack;	    // type of each item on the stack
     garray_T	*ctx_type_list;	    // list of pointers to allocated types
@@ -146,17 +148,37 @@ static int check_type(type_T *expected, type_T *actual, int give_msg);
 lookup_local(char_u *name, size_t len, cctx_T *cctx)
 {
     int	    idx;
+    lvar_T  *lvar;
 
     if (len == 0)
 	return NULL;
+
+    // Find local in current function scope.
     for (idx = 0; idx < cctx->ctx_locals.ga_len; ++idx)
     {
-	lvar_T *lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
-
+	lvar = ((lvar_T *)cctx->ctx_locals.ga_data) + idx;
 	if (STRNCMP(name, lvar->lv_name, len) == 0
 					       && STRLEN(lvar->lv_name) == len)
+	{
+	    lvar->lv_from_outer = FALSE;
 	    return lvar;
+	}
     }
+
+    // Find local in outer function scope.
+    if (cctx->ctx_outer != NULL)
+    {
+	lvar = lookup_local(name, len, cctx->ctx_outer);
+	if (lvar != NULL)
+	{
+	    // TODO: are there situations we should not mark the outer scope as
+	    // used?
+	    cctx->ctx_outer_used = TRUE;
+	    lvar->lv_from_outer = TRUE;
+	    return lvar;
+	}
+    }
+
     return NULL;
 }
 
@@ -415,6 +437,71 @@ typval2type(typval_T *tv)
     if (tv->v_type == VAR_DICT)  // e.g. for v:completed_item
 	return &t_dict_any;
     return &t_any;  // not used
+}
+
+    static void
+type_mismatch(type_T *expected, type_T *actual)
+{
+    char *tofree1, *tofree2;
+
+    semsg(_("E1013: type mismatch, expected %s but got %s"),
+		   type_name(expected, &tofree1), type_name(actual, &tofree2));
+    vim_free(tofree1);
+    vim_free(tofree2);
+}
+
+    static void
+arg_type_mismatch(type_T *expected, type_T *actual, int argidx)
+{
+    char *tofree1, *tofree2;
+
+    semsg(_("E1013: argument %d: type mismatch, expected %s but got %s"),
+	    argidx,
+	    type_name(expected, &tofree1), type_name(actual, &tofree2));
+    vim_free(tofree1);
+    vim_free(tofree2);
+}
+
+/*
+ * Check if the expected and actual types match.
+ * Does not allow for assigning "any" to a specific type.
+ */
+    static int
+check_type(type_T *expected, type_T *actual, int give_msg)
+{
+    int ret = OK;
+
+    // When expected is "unknown" we accept any actual type.
+    // When expected is "any" we accept any actual type except "void".
+    if (expected->tt_type != VAR_UNKNOWN
+	    && !(expected->tt_type == VAR_ANY && actual->tt_type != VAR_VOID))
+
+    {
+	if (expected->tt_type != actual->tt_type)
+	{
+	    if (give_msg)
+		type_mismatch(expected, actual);
+	    return FAIL;
+	}
+	if (expected->tt_type == VAR_DICT || expected->tt_type == VAR_LIST)
+	{
+	    // "unknown" is used for an empty list or dict
+	    if (actual->tt_member != &t_unknown)
+		ret = check_type(expected->tt_member, actual->tt_member, FALSE);
+	}
+	else if (expected->tt_type == VAR_FUNC)
+	{
+	    if (expected->tt_member != &t_unknown)
+		ret = check_type(expected->tt_member, actual->tt_member, FALSE);
+	    if (ret == OK && expected->tt_argcount != -1
+		    && (actual->tt_argcount < expected->tt_min_argcount
+			|| actual->tt_argcount > expected->tt_argcount))
+		    ret = FAIL;
+	}
+	if (ret == FAIL && give_msg)
+	    type_mismatch(expected, actual);
+    }
+    return ret;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -736,6 +823,29 @@ generate_TYPECHECK(cctx_T *cctx, type_T *vartype, int offset)
     // type becomes vartype
     ((type_T **)stack->ga_data)[stack->ga_len - 1] = vartype;
 
+    return OK;
+}
+
+/*
+ * Check that
+ * - "actual" is "expected" type or
+ * - "actual" is a type that can be "expected" type: add a runtime check; or
+ * - return FAIL.
+ */
+    static int
+need_type(type_T *actual, type_T *expected, int offset, cctx_T *cctx)
+{
+    if (check_type(expected, actual, FALSE) == OK)
+	return OK;
+    if (actual->tt_type != VAR_ANY
+	    && actual->tt_type != VAR_UNKNOWN
+	    && !(actual->tt_type == VAR_FUNC
+		&& (actual->tt_member == &t_any || actual->tt_argcount < 0)))
+    {
+	type_mismatch(expected, actual);
+	return FAIL;
+    }
+    generate_TYPECHECK(cctx, expected, offset);
     return OK;
 }
 
@@ -1272,7 +1382,7 @@ generate_CALL(cctx_T *cctx, ufunc_T *ufunc, int pushed_argcount)
 	    else
 		expected = ufunc->uf_va_type->tt_member;
 	    actual = ((type_T **)stack->ga_data)[stack->ga_len - argcount + i];
-	    if (check_type(expected, actual, FALSE) == FAIL)
+	    if (need_type(actual, expected, -argcount + i, cctx) == FAIL)
 	    {
 		arg_type_mismatch(expected, actual, i + 1);
 		return FAIL;
@@ -1543,6 +1653,20 @@ skip_type(char_u *start)
 	if (*p == '>')
 	    ++p;
     }
+    else if (*p == '(' && STRNCMP("func", start, 4) == 0)
+    {
+	// handle func(args): type
+	++p;
+	while (*p != ')' && *p != NUL)
+	{
+	    p = skip_type(p);
+	    if (*p == ',')
+		p = skipwhite(p + 1);
+	}
+	if (*p == ')' && p[1] == ':')
+	    p = skip_type(skipwhite(p + 2));
+    }
+
     return p;
 }
 
@@ -2309,6 +2433,7 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 	size_t	    len = end - *arg;
 	int	    idx;
 	int	    gen_load = FALSE;
+	int	    gen_load_outer = FALSE;
 
 	name = vim_strnsave(*arg, end - *arg);
 	if (name == NULL)
@@ -2343,7 +2468,10 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 	    {
 		type = lvar->lv_type;
 		idx = lvar->lv_idx;
-		gen_load = TRUE;
+		if (lvar->lv_from_outer)
+		    gen_load_outer = TRUE;
+		else
+		    gen_load = TRUE;
 	    }
 	    else
 	    {
@@ -2370,6 +2498,8 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 	}
 	if (gen_load)
 	    res = generate_LOAD(cctx, ISN_LOAD, idx, NULL, type);
+	if (gen_load_outer)
+	    res = generate_LOAD(cctx, ISN_LOADOUTER, idx, NULL, type);
     }
 
     *arg = end;
@@ -2578,94 +2708,6 @@ to_name_const_end(char_u *arg)
     return p;
 }
 
-    static void
-type_mismatch(type_T *expected, type_T *actual)
-{
-    char *tofree1, *tofree2;
-
-    semsg(_("E1013: type mismatch, expected %s but got %s"),
-		   type_name(expected, &tofree1), type_name(actual, &tofree2));
-    vim_free(tofree1);
-    vim_free(tofree2);
-}
-
-    static void
-arg_type_mismatch(type_T *expected, type_T *actual, int argidx)
-{
-    char *tofree1, *tofree2;
-
-    semsg(_("E1013: argument %d: type mismatch, expected %s but got %s"),
-	    argidx,
-	    type_name(expected, &tofree1), type_name(actual, &tofree2));
-    vim_free(tofree1);
-    vim_free(tofree2);
-}
-
-/*
- * Check if the expected and actual types match.
- * Does not allow for assigning "any" to a specific type.
- */
-    static int
-check_type(type_T *expected, type_T *actual, int give_msg)
-{
-    int ret = OK;
-
-    // When expected is "unknown" we accept any actual type.
-    // When expected is "any" we accept any actual type except "void".
-    if (expected->tt_type != VAR_UNKNOWN
-	    && !(expected->tt_type == VAR_ANY && actual->tt_type != VAR_VOID))
-
-    {
-	if (expected->tt_type != actual->tt_type)
-	{
-	    if (give_msg)
-		type_mismatch(expected, actual);
-	    return FAIL;
-	}
-	if (expected->tt_type == VAR_DICT || expected->tt_type == VAR_LIST)
-	{
-	    // "unknown" is used for an empty list or dict
-	    if (actual->tt_member != &t_unknown)
-		ret = check_type(expected->tt_member, actual->tt_member, FALSE);
-	}
-	else if (expected->tt_type == VAR_FUNC)
-	{
-	    if (expected->tt_member != &t_unknown)
-		ret = check_type(expected->tt_member, actual->tt_member, FALSE);
-	    if (ret == OK && expected->tt_argcount != -1
-		    && (actual->tt_argcount < expected->tt_min_argcount
-			|| actual->tt_argcount > expected->tt_argcount))
-		    ret = FAIL;
-	}
-	if (ret == FAIL && give_msg)
-	    type_mismatch(expected, actual);
-    }
-    return ret;
-}
-
-/*
- * Check that
- * - "actual" is "expected" type or
- * - "actual" is a type that can be "expected" type: add a runtime check; or
- * - return FAIL.
- */
-    static int
-need_type(type_T *actual, type_T *expected, int offset, cctx_T *cctx)
-{
-    if (check_type(expected, actual, FALSE) == OK)
-	return OK;
-    if (actual->tt_type != VAR_ANY
-	    && actual->tt_type != VAR_UNKNOWN
-	    && !(actual->tt_type == VAR_FUNC
-		&& (actual->tt_member == &t_any || actual->tt_argcount < 0)))
-    {
-	type_mismatch(expected, actual);
-	return FAIL;
-    }
-    generate_TYPECHECK(cctx, expected, offset);
-    return OK;
-}
-
 /*
  * parse a list: [expr, expr]
  * "*arg" points to the '['.
@@ -2734,7 +2776,7 @@ compile_lambda(char_u **arg, cctx_T *cctx)
 
     // The function will have one line: "return {expr}".
     // Compile it into instructions.
-    compile_def_function(ufunc, TRUE);
+    compile_def_function(ufunc, TRUE, cctx);
 
     if (ufunc->uf_dfunc_idx >= 0)
     {
@@ -2779,7 +2821,7 @@ compile_lambda_call(char_u **arg, cctx_T *cctx)
 
     // The function will have one line: "return {expr}".
     // Compile it into instructions.
-    compile_def_function(ufunc, TRUE);
+    compile_def_function(ufunc, TRUE, cctx);
 
     // compile the arguments
     *arg = skipwhite(*arg + 1);
@@ -4227,14 +4269,10 @@ compile_assignment(char_u *arg, exarg_T *eap, cmdidx_T cmdidx, cctx_T *cctx)
 		    semsg(_("E1017: Variable already declared: %s"), name);
 		    goto theend;
 		}
-		else
+		else if (lvar->lv_const)
 		{
-		    if (lvar->lv_const)
-		    {
-			semsg(_("E1018: Cannot assign to a constant: %s"),
-									 name);
-			goto theend;
-		    }
+		    semsg(_("E1018: Cannot assign to a constant: %s"), name);
+		    goto theend;
 		}
 	    }
 	    else if (STRNCMP(arg, "s:", 2) == 0
@@ -5931,11 +5969,12 @@ theend:
  * Adds the function to "def_functions".
  * When "set_return_type" is set then set ufunc->uf_ret_type to the type of the
  * return statement (used for lambda).
+ * "outer_cctx" is set for a nested function.
  * This can be used recursively through compile_lambda(), which may reallocate
  * "def_functions".
  */
     void
-compile_def_function(ufunc_T *ufunc, int set_return_type)
+compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 {
     char_u	*line = NULL;
     char_u	*p;
@@ -5976,6 +6015,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
     CLEAR_FIELD(cctx);
     cctx.ctx_ufunc = ufunc;
     cctx.ctx_lnum = -1;
+    cctx.ctx_outer = outer_cctx;
     ga_init2(&cctx.ctx_locals, sizeof(lvar_T), 10);
     ga_init2(&cctx.ctx_type_stack, sizeof(type_T *), 50);
     ga_init2(&cctx.ctx_imports, sizeof(imported_T), 10);
@@ -6355,6 +6395,8 @@ compile_def_function(ufunc_T *ufunc, int set_return_type)
 	dfunc->df_instr = instr->ga_data;
 	dfunc->df_instr_count = instr->ga_len;
 	dfunc->df_varcount = cctx.ctx_locals_count;
+	if (cctx.ctx_outer_used)
+	    ufunc->uf_flags |= FC_CLOSURE;
     }
 
     {
@@ -6533,6 +6575,7 @@ delete_instr(isn_T *isn)
 	case ISN_INDEX:
 	case ISN_JUMP:
 	case ISN_LOAD:
+	case ISN_LOADOUTER:
 	case ISN_LOADSCRIPT:
 	case ISN_LOADREG:
 	case ISN_LOADV:
