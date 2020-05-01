@@ -2918,7 +2918,7 @@ clean celan: testclean
 #  % make
 SHADOWDIR = shadow
 
-LINKEDFILES = ../*.[chm] ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../libvterm ../vimtutor ../gvimtutor ../install-sh ../Make_all.mak
+LINKEDFILES = ../*.[chm] ../*.cc ../*.in ../*.sh ../*.xs ../*.xbm ../gui_gtk_res.xml ../toolcheck ../proto ../libvterm ../vimtutor ../gvimtutor ../install-sh ../Make_all.mak
 
 shadow:	runtime pixmaps
 	$(MKDIR_P) $(SHADOWDIR)
