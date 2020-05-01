@@ -129,6 +129,9 @@ Window	    x11_window = 0;
 Display	    *x11_display = NULL;
 #endif
 
+static int ignore_sigtstp = 0;
+typedef void (*sighandler_t)(int);
+
 #ifdef FEAT_TITLE
 static int get_x11_title(int);
 
@@ -1237,6 +1240,8 @@ restore_clipboard(void)
     void
 mch_suspend(void)
 {
+    if (ignore_sigtstp) return;
+
     // BeOS does have SIGTSTP, but it doesn't work.
 #if defined(SIGTSTP) && !defined(__BEOS__)
     in_mch_suspend = TRUE;
@@ -1306,12 +1311,20 @@ set_signals(void)
     signal(SIGWINCH, (RETSIGTYPE (*)())sig_winch);
 #endif
 
+#ifdef SIGTSTP
     /*
      * We want the STOP signal to work, to make mch_suspend() work.
      * For "rvim" the STOP signal is ignored.
+     *
+     * If we're started with SIGTSTP ignored keep it that setting as that is
+     * the standard way for our parent process/shell to indicate they do not
+     * handle tty job control. Thus we can't really safely suspend.
      */
-#ifdef SIGTSTP
-    signal(SIGTSTP, restricted ? SIG_IGN : SIG_DFL);
+    sighandler_t osig = signal(SIGTSTP, restricted ? SIG_IGN : SIG_DFL);
+    if (osig == SIG_IGN) {
+	signal(SIGTSTP, SIG_IGN);
+	ignore_sigtstp = 1;
+    }
 #endif
 #if defined(SIGCONT)
     signal(SIGCONT, sigcont_handler);
@@ -1385,11 +1398,11 @@ catch_signals(
 {
     int	    i;
 
-    for (i = 0; signal_info[i].sig != -1; i++)
+    for (i = 0; signal_info[i].sig != -1; i++) {
 	if (signal_info[i].deadly)
 	{
 #if defined(HAVE_SIGALTSTACK) && defined(HAVE_SIGACTION)
-	    struct sigaction sa;
+	    struct sigaction sa, oact;
 
 	    // Setup to use the alternate stack for the signal function.
 	    sa.sa_handler = func_deadly;
@@ -1404,23 +1417,50 @@ catch_signals(
 # else
 	    sa.sa_flags = SA_ONSTACK;
 # endif
-	    sigaction(signal_info[i].sig, &sa, NULL);
+	    sigaction(signal_info[i].sig, &sa, &oact);
+	    if (oact.sa_handler == SIG_IGN) {
+		sigaction(signal_info[i].sig, &oact, NULL);
+#ifdef SIGTSTP
+		if (signal_info[i].sig == SIGTSTP) ignore_sigtstp = 1;
+#endif
+	    }
 #else
 # if defined(HAVE_SIGALTSTACK) && defined(HAVE_SIGVEC)
-	    struct sigvec sv;
+	    struct sigvec sv, ovec;
 
 	    // Setup to use the alternate stack for the signal function.
 	    sv.sv_handler = func_deadly;
 	    sv.sv_mask = 0;
 	    sv.sv_flags = SV_ONSTACK;
-	    sigvec(signal_info[i].sig, &sv, NULL);
+	    sigvec(signal_info[i].sig, &sv, &ovec);
+	    if (ovec.sv_handler == SIG_IGN) {
+		sigvec(signal_info[i].sig, &ovec, NULL);
+#ifdef SIGTSTP
+		if (signal_info[i].sig == SIGTSTP) ignore_sigtstp = 1;
+#endif
+	    }
 # else
-	    signal(signal_info[i].sig, func_deadly);
+	    sighandler_t osig = signal(signal_info[i].sig, func_deadly);
+	    if (osig == SIG_IGN) {
+		signal(signal_info[i].sig, SIG_IGN);
+#ifdef SIGTSTP
+		if (signal_info[i].sig == SIGTSTP) ignore_sigtstp = 1;
+#endif
+	    }
 # endif
 #endif
 	}
 	else if (func_other != SIG_ERR)
-	    signal(signal_info[i].sig, func_other);
+	{
+	    sighandler_t osig = signal(signal_info[i].sig, func_other);
+	    if (osig == SIG_IGN) {
+		signal(signal_info[i].sig, SIG_IGN);
+#ifdef SIGTSTP
+		if (signal_info[i].sig == SIGTSTP) ignore_sigtstp = 1;
+#endif
+	    }
+	}
+    }
 }
 
 #ifdef HAVE_SIGPROCMASK
@@ -4196,7 +4236,7 @@ set_child_environment(
     vim_snprintf(envbuf_Columns, sizeof(envbuf_Columns),
 						       "COLUMNS=%ld", columns);
     putenv(envbuf_Columns);
-    vim_snprintf(envbuf_Colors, sizeof(envbuf_Colors), "COLORS=%ld", t_colors);
+    vim_snprintf(envbuf_Colors, sizeof(envbuf_Colors), "COLORS=%ld", colors);
     putenv(envbuf_Colors);
 #  ifdef FEAT_TERMINAL
     if (is_terminal)
