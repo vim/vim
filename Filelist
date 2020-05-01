@@ -13,6 +13,7 @@ SRC_ALL =	\
 		ci/appveyor.bat \
 		ci/if_ver*.vim \
 		ci/load-snd-dummy.sh \
+		ci/config.mk*.sed \
 		src/Make_all.mak \
 		src/README.md \
 		src/alloc.h \
@@ -170,7 +171,6 @@ SRC_ALL =	\
 		src/testdir/view_util.vim \
 		src/testdir/test[0-9]*.ok \
 		src/testdir/test[0-9]*a.ok \
-		src/testdir/test_[a-z]*.ok \
 		src/testdir/test49.vim \
 		src/testdir/test83-tags? \
 		src/testdir/test77a.com \
