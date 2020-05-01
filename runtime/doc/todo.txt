@@ -259,9 +259,6 @@ Patch to add getmarklist() (Yegappan, #6032)
 Patch to support different color for undercurl in cterm.
 (Timur Celik, #6011)
 
-When SIGTSTP is ignored, don't let CTRL-Z suspend Vim? (Kurtis Rader, #5990)
-Fixed by patch #6026.  Makes tests fail...
-
 Patch to support cindent option to handle pragmas differently.
 (Max Rumpf, #5468)
 
