@@ -579,6 +579,7 @@ static funcentry_T global_functions[] =
     {"getjumplist",	0, 2, FEARG_1,	  ret_list_any,	f_getjumplist},
     {"getline",		1, 2, FEARG_1,	  ret_f_getline, f_getline},
     {"getloclist",	1, 2, 0,	  ret_list_dict_any, f_getloclist},
+    {"getmarklist",	0, 1, 0,	  ret_list_dict_any,  f_getmarklist},
     {"getmatches",	0, 1, 0,	  ret_list_dict_any, f_getmatches},
     {"getmousepos",	0, 0, 0,	  ret_dict_number, f_getmousepos},
     {"getpid",		0, 0, 0,	  ret_number,	f_getpid},

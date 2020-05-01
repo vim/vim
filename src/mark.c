@@ -1412,3 +1412,124 @@ get_namedfm(void)
 {
     return namedfm;
 }
+
+#if defined(FEAT_EVAL) || defined(PROTO)
+/*
+ * Add information about mark 'mname' to list 'l'
+ */
+    static int
+add_mark(list_T *l, char_u *mname, pos_T *pos, int bufnr, char_u *fname)
+{
+    dict_T	*d;
+    list_T	*lpos;
+
+    if (pos->lnum <= 0)
+	return OK;
+
+    d = dict_alloc();
+    if (d == NULL)
+	return FAIL;
+
+    if (list_append_dict(l, d) == FAIL)
+    {
+	dict_unref(d);
+	return FAIL;
+    }
+
+    lpos = list_alloc();
+    if (lpos == NULL)
+	return FAIL;
+
+    list_append_number(lpos, bufnr);
+    list_append_number(lpos, pos->lnum);
+    list_append_number(lpos, pos->col);
+    list_append_number(lpos, pos->coladd);
+
+    if (dict_add_string(d, "mark", mname) == FAIL
+	    || dict_add_list(d, "pos", lpos) == FAIL
+	    || (fname != NULL && dict_add_string(d, "file", fname) == FAIL))
+	return FAIL;
+
+    return OK;
+}
+
+/*
+ * Get information about marks local to a buffer.
+ */
+    static void
+get_buf_local_marks(buf_T *buf, list_T *l)
+{
+    char_u	mname[3] = "' ";
+    int		i;
+
+    // Marks 'a' to 'z'
+    for (i = 0; i < NMARKS; ++i)
+    {
+	mname[1] = 'a' + i;
+	add_mark(l, mname, &buf->b_namedm[i], buf->b_fnum, NULL);
+    }
+
+    // Mark '' is a window local mark and not a buffer local mark
+    add_mark(l, (char_u *)"''", &curwin->w_pcmark, curbuf->b_fnum, NULL);
+
+    add_mark(l, (char_u *)"'\"", &buf->b_last_cursor, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'[", &buf->b_op_start, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"']", &buf->b_op_end, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'^", &buf->b_last_insert, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'.", &buf->b_last_change, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'<", &buf->b_visual.vi_start, buf->b_fnum, NULL);
+    add_mark(l, (char_u *)"'>", &buf->b_visual.vi_end, buf->b_fnum, NULL);
+}
+
+/*
+ * Get information about global marks ('A' to 'Z' and '0' to '9')
+ */
+    static void
+get_global_marks(list_T *l)
+{
+    char_u	mname[3] = "' ";
+    int		i;
+    char_u	*name;
+
+    // Marks 'A' to 'Z' and '0' to '9'
+    for (i = 0; i < NMARKS + EXTRA_MARKS; ++i)
+    {
+	if (namedfm[i].fmark.fnum != 0)
+	    name = buflist_nr2name(namedfm[i].fmark.fnum, TRUE, TRUE);
+	else
+	    name = namedfm[i].fname;
+	if (name != NULL)
+	{
+	    mname[1] = i >= NMARKS ? i - NMARKS + '0' : i + 'A';
+	    add_mark(l, mname, &namedfm[i].fmark.mark,
+		    namedfm[i].fmark.fnum, name);
+	    if (namedfm[i].fmark.fnum != 0)
+		vim_free(name);
+	}
+    }
+}
+
+/*
+ * getmarklist() function
+ */
+    void
+f_getmarklist(typval_T *argvars, typval_T *rettv)
+{
+    buf_T	*buf = NULL;
+
+    if (rettv_list_alloc(rettv) != OK)
+	return;
+
+    if (argvars[0].v_type == VAR_UNKNOWN)
+    {
+	get_global_marks(rettv->vval.v_list);
+	return;
+    }
+
+    buf = tv_get_buf(&argvars[0], FALSE);
+    if (buf == NULL)
+	return;
+
+    get_buf_local_marks(buf, rettv->vval.v_list);
+}
+#endif
