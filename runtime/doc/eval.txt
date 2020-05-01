@@ -1,4 +1,4 @@
-*eval.txt*	For Vim version 8.2.  Last change: 2020 Feb 22
+*eval.txt*	For Vim version 8.2.  Last change: 2020 Apr 19
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -1809,10 +1809,12 @@ v:errors	Errors found by assert functions, such as |assert_true()|.
 v:event		Dictionary containing information about the current
 		|autocommand|.  See the specific event for what it puts in
 		this dictionary.
-		The dictionary is emptied when the |autocommand|
-		finishes, please refer to |dict-identity| for how to get an
-		independent copy of it.
-
+		The dictionary is emptied when the |autocommand| finishes,
+		please refer to |dict-identity| for how to get an independent
+		copy of it.  Use |deepcopy()| if you want to keep the
+		information after the event triggers.  Example: >
+			au TextYankPost * let g:foo = deepcopy(v:event)
+<
 					*v:exception* *exception-variable*
 v:exception	The value of the exception most recently caught and not
 		finished.  See also |v:throwpoint| and |throw-variables|.
@@ -2515,7 +2517,7 @@ glob({expr} [, {nosuf} [, {list} [, {alllinks}]]])
 glob2regpat({expr})		String	convert a glob pat into a search pat
 globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
 				String	do glob({expr}) for all dirs in {path}
-has({feature})			Number	|TRUE| if feature {feature} supported
+has({feature} [, {check}])	Number	|TRUE| if feature {feature} supported
 has_key({dict}, {key})		Number	|TRUE| if {dict} has entry {key}
 haslocaldir([{winnr} [, {tabnr}]])
 				Number	|TRUE| if the window executed |:lcd|
@@ -2601,6 +2603,7 @@ matchstr({expr}, {pat} [, {start} [, {count}]])
 matchstrpos({expr}, {pat} [, {start} [, {count}]])
 				List	{count}'th match of {pat} in {expr}
 max({expr})			Number	maximum value of items in {expr}
+menu_info({name} [, {mode}])	Dict	get menu item information
 min({expr})			Number	minimum value of items in {expr}
 mkdir({name} [, {path} [, {prot}]])
 				Number	create directory {name}
@@ -2860,6 +2863,7 @@ test_ignore_error({expr})	none	ignore a specific error
 test_null_blob()		Blob	null value for testing
 test_null_channel()		Channel	null value for testing
 test_null_dict()		Dict	null value for testing
+test_null_function()		Funcref	null value for testing
 test_null_job()			Job	null value for testing
 test_null_list()		List	null value for testing
 test_null_partial()		Funcref	null value for testing
@@ -2899,13 +2903,13 @@ win_execute({id}, {command} [, {silent}])
 				String	execute {command} in window {id}
 win_findbuf({bufnr})		List	find windows containing {bufnr}
 win_getid([{win} [, {tab}]])	Number	get window ID for {win} in {tab}
+win_gettype([{nr}])		String	type of window {nr}
 win_gotoid({expr})		Number	go to window with ID {expr}
 win_id2tabwin({expr})		List	get tab and window nr from window ID
 win_id2win({expr})		Number	get window nr from window ID
 win_screenpos({nr})		List	get screen position of window {nr}
 win_splitmove({nr}, {target} [, {options}])
 				Number	move window {nr} to split of {target}
-win_type([{nr}])		String	type of window {nr}
 winbufnr({nr})			Number	buffer number of window {nr}
 wincol()			Number	window column of the cursor
 winheight({nr})			Number	height of window {nr}
@@ -4101,8 +4105,12 @@ exists({expr})	The result is a Number, which is |TRUE| if {expr} is defined,
 					string)
 			*funcname	built-in function (see |functions|)
 					or user defined function (see
-					|user-functions|). Also works for a
-					variable that is a Funcref.
+					|user-functions|) that is implemented.
+					Also works for a variable that is a
+					Funcref.
+			?funcname	built-in function that could be
+					implemented; to be used to check if
+					"funcname" is valid
 			varname		internal variable (see
 					|internal-variables|).  Also works
 					for |curly-braces-names|, |Dictionary|
@@ -4357,6 +4365,8 @@ feedkeys({string} [, {mode}])				*feedkeys()*
 		'L'	Lowlevel input.  Only works for Unix or when using the
 			GUI. Keys are used as if they were coming from the
 			terminal.  Other flags are not used.  *E980*
+			When a CTRL-C interrupts and 't' is included it sets
+			the internal "got_int" flag.
 		'i'	Insert the string instead of appending (see above).
 		'x'	Execute commands until typeahead is empty.  This is
 			similar to using ":normal!".  You can call feedkeys()
@@ -5129,10 +5139,11 @@ getcompletion({pat}, {type} [, {filtered}])		*getcompletion()*
 <
 							*getcurpos()*
 getcurpos()	Get the position of the cursor.  This is like getpos('.'), but
-		includes an extra item in the list:
-		    [bufnum, lnum, col, off, curswant] ~
+		includes an extra "curswant" item in the list:
+		    [0, lnum, col, off, curswant] ~
 		The "curswant" number is the preferred column when moving the
 		cursor vertically.  Also see |getpos()|.
+		The first "bufnum" item is always zero.
 
 		This can be used to save and restore the cursor position: >
 			let save_cursor = getcurpos()
@@ -5825,10 +5836,31 @@ globpath({path}, {expr} [, {nosuf} [, {list} [, {alllinks}]]])
 			GetExpr()->globpath(&rtp)
 <
 							*has()*
-has({feature})	The result is a Number, which is 1 if the feature {feature} is
-		supported, zero otherwise.  The {feature} argument is a
-		string.  See |feature-list| below.
+has({feature} [, {check}])
+		When {check} is omitted or is zero: The result is a Number,
+		which is 1 if the feature {feature} is supported, zero
+		otherwise.  The {feature} argument is a string, case is
+		ignored.  See |feature-list| below.
+
+		When {check} is present and not zero: The result is a Number,
+		which is 1 if the feature {feature} could ever be supported,
+		zero otherwise.  This is useful to check for a typo in
+		{feature} and to detect dead code.  Keep in mind that an older
+		Vim version will not know about a feature added later and
+		features that have been abandoned will not be know by the
+		current Vim version.
+
 		Also see |exists()|.
+
+		Note that to skip code that has a syntax error when the
+		feature is not available, Vim may skip the rest of the line
+		and miss a following `endif`.  Therfore put the `endif` on a
+		separate line: >
+			if has('feature')
+			  let x = this->breaks->without->the->feature
+			endif
+<		If the `endif` would be moved to the second line as "| endif" it
+		would not be found.
 
 
 has_key({dict}, {key})					*has_key()*
@@ -6796,6 +6828,7 @@ maparg({name} [, {mode} [, {abbr} [, {dict}]]])			*maparg()*
 		  "rhs"	     The {rhs} of the mapping as typed.
 		  "silent"   1 for a |:map-silent| mapping, else 0.
 		  "noremap"  1 if the {rhs} of the mapping is not remappable.
+		  "script"   1 if mapping was defined with <script>.
 		  "expr"     1 for an expression mapping (|:map-<expr>|).
 		  "buffer"   1 for a buffer local mapping (|:map-local|).
 		  "mode"     Modes for which the mapping is defined. In
@@ -7113,6 +7146,7 @@ matchstrpos({expr}, {pat} [, {start} [, {count}]])		*matchstrpos()*
 		Can also be used as a |method|: >
 			GetText()->matchstrpos('word')
 <
+
 							*max()*
 max({expr})	Return the maximum value of all items in {expr}.
 		{expr} can be a List or a Dictionary.  For a Dictionary,
@@ -7123,6 +7157,66 @@ max({expr})	Return the maximum value of all items in {expr}.
 
 		Can also be used as a |method|: >
 			mylist->max()
+
+
+menu_info({name} [, {mode}])				*menu_info()*
+		Return information about the specified menu {name} in
+		mode {mode}. The menu name should be specified without the
+		shortcut character ('&').
+
+		{mode} can be one of these strings:
+			"n"	Normal
+			"v"	Visual (including Select)
+			"o"	Operator-pending
+			"i"	Insert
+			"c"	Cmd-line
+			"s"	Select
+			"x"	Visual
+			"t"	Terminal-Job
+			""	Normal, Visual and Operator-pending
+			"!"	Insert and Cmd-line
+		When {mode} is omitted, the modes for "" are used.
+
+		Returns a |Dictionary| containing the following items:
+		  accel		menu item accelerator text |menu-text|
+		  display	display name (name without '&')
+		  enabled	v:true if this menu item is enabled
+				Refer to |:menu-enable|
+		  icon		name of the icon file (for toolbar)
+				|toolbar-icon|
+		  iconidx	index of a built-in icon
+		  modes		modes for which the menu is defined. In
+				addition to the modes mentioned above, these
+				characters will be used:
+				" "	Normal, Visual and Operator-pending
+		  name		menu item name.
+		  noremenu	v:true if the {rhs} of the menu item is not
+				remappable else v:false.
+		  priority	menu order priority |menu-priority|
+		  rhs		right-hand-side of the menu item. The returned
+				string has special characters translated like
+				in the output of the ":menu" command listing.
+				When the {rhs} of a menu item is empty, then
+				"<Nop>" is returned.
+		  script	v:true if script-local remapping of {rhs} is
+				allowed else v:false.  See |:menu-script|.
+		  shortcut	shortcut key (character after '&' in
+				the menu name) |menu-shortcut|
+		  silent	v:true if the menu item is created
+				with <silent> argument |:menu-silent|
+		  submenus	|List| containing the names of
+				all the submenus.  Present only if the menu
+				item has submenus.
+
+		Returns an empty dictionary if the menu item is not found.
+
+		Examples: >
+			:echo menu_info('Edit.Cut')
+			:echo menu_info('File.Save', 'n')
+<
+		Can also be used as a |method|: >
+			GetMenuName()->menu_info('v')
+
 
 <							*min()*
 min({expr})	Return the minimum value of all items in {expr}.
@@ -7674,7 +7768,7 @@ range({expr} [, {max} [, {stride}]])				*range()*
 			GetExpr()->range()
 <
 
-rand([{expr}])						*rand()*
+rand([{expr}])						*rand()* *random*
 		Return a pseudo-random Number generated with an xoshiro128**
 		algorithm using seed {expr}.  The returned number is 32 bits,
 		also on 64 bits systems, for consistency.
@@ -8547,8 +8641,8 @@ setloclist({nr}, {list} [, {action} [, {what}]])		*setloclist()*
 			GetLoclist()->setloclist(winnr)
 
 setmatches({list} [, {win}])				*setmatches()*
-		Restores a list of matches saved by |getmatches() for the
-		current window|.  Returns 0 if successful, otherwise -1.  All
+		Restores a list of matches saved by |getmatches()| for the
+		current window.  Returns 0 if successful, otherwise -1.  All
 		current matches are cleared before the list is restored.  See
 		example for |getmatches()|.
 		If {win} is specified, use the window with this number or
@@ -8612,7 +8706,12 @@ setpos({expr}, {list})
 setqflist({list} [, {action} [, {what}]])		*setqflist()*
 		Create or replace or add to the quickfix list.
 
-		When {what} is not present, use the items in {list}.  Each
+		If the optional {what} dictionary argument is supplied, then
+		only the items listed in {what} are set. The first {list}
+		argument is ignored.  See below for the supported items in
+		{what}.
+
+		When {what} is not present, the items in {list} or used.  Each
 		item must be a dictionary.  Non-dictionary items in {list} are
 		ignored.  Each dictionary item can contain the following
 		entries:
@@ -8667,10 +8766,7 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 		freed. To add a new quickfix list at the end of the stack,
 		set "nr" in {what} to "$".
 
-		If the optional {what} dictionary argument is supplied, then
-		only the items listed in {what} are set. The first {list}
-		argument is ignored.  The following items can be specified in
-		{what}:
+		The following items can be specified in dictionary {what}:
 		    context	quickfix list context. See |quickfix-context|
 		    efm		errorformat to use when parsing text from
 				"lines". If this is not present, then the
@@ -8717,6 +8813,7 @@ setqflist({list} [, {action} [, {what}]])		*setqflist()*
 							*setreg()*
 setreg({regname}, {value} [, {options}])
 		Set the register {regname} to {value}.
+		If {regname} is "" or "@", the unnamed register '"' is used.
 		{value} may be any value returned by |getreg()|, including
 		a |List|.
 		If {options} contains "a" or {regname} is upper case,
@@ -8823,17 +8920,9 @@ settagstack({nr}, {dict} [, {action}])			*settagstack()*
 
 		Returns zero for success, -1 for failure.
 
-		Examples:
-		    Set current index of the tag stack to 4: >
-			call settagstack(1005, {'curidx' : 4})
-
-<		    Empty the tag stack of window 3: >
+		Examples (for more examples see |tagstack-examples||):
+		    Empty the tag stack of window 3: >
 			call settagstack(3, {'items' : []})
-
-<		    Push a new item onto the tag stack: >
-			let pos = [bufnr('myfile.txt'), 10, 1, 0]
-			let newtag = [{'tagname' : 'mytag', 'from' : pos}]
-			call settagstack(2, {'items' : newtag}, 'a')
 
 <		    Save and restore the tag stack: >
 			let stack = gettagstack(1003)
@@ -8930,6 +9019,8 @@ simplify({filename})					*simplify()*
 		directory.  In order to resolve all the involved symbolic
 		links before simplifying the path name, use |resolve()|.
 
+		Can also be used as a |method|: >
+			GetName()->simplify()
 
 sin({expr})						*sin()*
 		Return the sine of {expr}, measured in radians, as a |Float|.
@@ -10486,11 +10577,12 @@ winlayout([{tabnr}])					*winlayout()*
 			" Two horizontally split windows
 			:echo winlayout()
 			['col', [['leaf', 1000], ['leaf', 1001]]]
-			" Three horizontally split windows, with two
-			" vertically split windows in the middle window
+			" The second tab page, with three horizontally split
+			" windows, with two vertically split windows in the
+			" middle window
 			:echo winlayout(2)
-			['col', [['leaf', 1002], ['row', ['leaf', 1003],
-					     ['leaf', 1001]]], ['leaf', 1000]]
+			['col', [['leaf', 1002], ['row', [['leaf', 1003],
+					    ['leaf', 1001]]], ['leaf', 1000]]]
 <
 		Can also be used as a |method|: >
 			GetTabnr()->winlayout()
@@ -10779,6 +10871,8 @@ hpux			HP-UX version of Vim.
 iconv			Can use iconv() for conversion.
 insert_expand		Compiled with support for CTRL-X expansion commands in
 			Insert mode. (always true)
+job			Compiled with support for |channel| and |job|
+ipv6			Compiled with support for IPv6 networking in |channel|.
 jumplist		Compiled with |jumplist| support.
 keymap			Compiled with 'keymap' support.
 lambda			Compiled with |lambda| support.
@@ -11143,8 +11237,8 @@ It is allowed to define another function inside a function body.
 You can provide default values for positional named arguments.  This makes
 them optional for function calls.  When a positional argument is not
 specified at a call, the default expression is used to initialize it.
-This only works for functions declared with `:function`, not for lambda
-expressions |expr-lambda|.
+This only works for functions declared with `:function` or `:def`, not for
+lambda expressions |expr-lambda|.
 
 Example: >
   function Something(key, value = 10)
@@ -11182,9 +11276,10 @@ Example that does NOT work: >
   :function NoGood(first = a:second, second = 10)
   :endfunction
 <
-When not using "...", the number of arguments in a function call must be equal
-to the number of mandatory named arguments.  When using "...", the number of
-arguments may be larger.
+When not using "...", the number of arguments in a function call must be at
+least equal to the number of mandatory named arguments.  When using "...", the
+number of arguments may be larger than the total of mandatory and optional
+arguments.
 
 							*local-variables*
 Inside a function local variables can be used.  These will disappear when the
@@ -11541,7 +11636,7 @@ This does NOT work: >
 			Like above, but append/add/subtract the value for each
 			|List| item.
 
-:let [{name}, ..., ; {lastname}] = {expr1}
+:let [{name}, ..., ; {lastname}] = {expr1}				*E452*
 			Like |:let-unpack| above, but the |List| may have more
 			items than there are names.  A list of the remaining
 			items is assigned to {lastname}.  If there are no

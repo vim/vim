@@ -1760,7 +1760,7 @@ get_expr_indent(void)
     set_vim_var_nr(VV_LNUM, curwin->w_cursor.lnum);
     if (use_sandbox)
 	++sandbox;
-    ++textlock;
+    ++textwinlock;
 
     // Need to make a copy, the 'indentexpr' option could be changed while
     // evaluating it.
@@ -1773,7 +1773,7 @@ get_expr_indent(void)
 
     if (use_sandbox)
 	--sandbox;
-    --textlock;
+    --textwinlock;
 
     // Restore the cursor position so that 'indentexpr' doesn't need to.
     // Pretend to be in Insert mode, allow cursor past end of line for "o"

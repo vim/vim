@@ -59,7 +59,7 @@ menutrans Startup\ &Settings				        Ræsistillingar
 
 menutrans Toggle\ Pattern\ &Highlight<Tab>:set\ hls!	    Munsturauðkenning\ á\/af<Tab>:set\ hls!
 menutrans Toggle\ &Ignoring\ Case<Tab>:set\ ic!		        Hunsa\ há-lágstafi\ á\/af<Tab>:set\ ic!
-menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	Sýna\ Pörun á\/af<Tab>:set\ sm!
+menutrans Toggle\ &Showing\ Matched\ Pairs<Tab>:set\ sm!	Sýna\ Pörun\ á\/af<Tab>:set\ sm!
 
 menutrans &Context\ lines				            Samhengislínur
 
@@ -70,7 +70,7 @@ menutrans Insert\ mode					            Innskotshamur
 menutrans Block\ and\ Insert				        Bálkval\ og\ Innskotshamur
 menutrans Always					                Alltaf
 menutrans Toggle\ Insert\ &Mode<Tab>:set\ im!		Innskotshamur\ á\/af<Tab>:set\ im!
-menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	Vi\ Samhæfanleiki á\/af<Tab>:set\ cp!
+menutrans Toggle\ Vi\ C&ompatibility<Tab>:set\ cp!	Vi\ Samhæfanleiki\ á\/af<Tab>:set\ cp!
 
 menutrans Search\ &Path\.\.\.				        Leita\ í\ Slóð\.\.\.
 menutrans Ta&g\ Files\.\.\.				            Merkja\ Skrár\.\.\.
@@ -90,7 +90,7 @@ menutrans Toggle\ &List\ Mode<Tab>:set\ list!			Listahamur\ á\/af<Tab>:set\ list
 menutrans Toggle\ Line\ &Wrapping<Tab>:set\ wrap!		Línuhlaup\ á\/af<Tab>:set\ wrap!
 menutrans Toggle\ W&rapping\ at\ word<Tab>:set\ lbr!	Línuhlaup\ á\ orði\ á\/af<Tab>:set\ lbr!
 menutrans Toggle\ Tab\ &Expanding<Tab>:set\ et!			Tab-víkkun\ á\/af<Tab>:set\ et!
-menutrans Toggle\ &Auto Indenting<Tab>:set\ ai!			Sjálfvirkur\ Inndráttur\ á\/af<Tab>:set\ ai!
+menutrans Toggle\ &Auto\ Indenting<Tab>:set\ ai!			Sjálfvirkur\ Inndráttur\ á\/af<Tab>:set\ ai!
 menutrans Toggle\ &C-Style\ Indenting<Tab>:set\ cin!	C-Inndráttur\ á\/af<Tab>:set\ cin!
 
 " other options

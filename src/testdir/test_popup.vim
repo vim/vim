@@ -334,19 +334,17 @@ func DummyCompleteOne(findstart, base)
   endif
 endfunc
 
-" Test that nothing happens if the 'completefunc' opens
-" a new window (no completion, no crash)
+" Test that nothing happens if the 'completefunc' tries to open
+" a new window (fails to open window, continues)
 func Test_completefunc_opens_new_window_one()
   new
   let winid = win_getid()
   setlocal completefunc=DummyCompleteOne
   call setline(1, 'one')
   /^one
-  call assert_fails('call feedkeys("A\<C-X>\<C-U>\<C-N>\<Esc>", "x")', 'E839:')
-  call assert_notequal(winid, win_getid())
-  q!
+  call assert_fails('call feedkeys("A\<C-X>\<C-U>\<C-N>\<Esc>", "x")', 'E578:')
   call assert_equal(winid, win_getid())
-  call assert_equal('', getline(1))
+  call assert_equal('oneDEF', getline(1))
   q!
 endfunc
 
@@ -683,11 +681,11 @@ func Test_popup_and_window_resize()
 
   call term_sendkeys(buf, "Gi\<c-x>")
   call term_sendkeys(buf, "\<c-v>")
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   " popup first entry "!" must be at the top
   call WaitForAssert({-> assert_match('^!\s*$', term_getline(buf, 1))})
   exe 'resize +' . (h - 1)
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   redraw!
   " popup shifted down, first line is now empty
   call WaitForAssert({-> assert_equal('', term_getline(buf, 1))})
@@ -743,15 +741,19 @@ func Test_popup_and_previewwindow_dump()
   let lines =<< trim END
     set previewheight=9
     silent! pedit
-    call setline(1, map(repeat(["ab"], 10), "v:val. v:key"))
+    call setline(1, map(repeat(["ab"], 10), "v:val .. v:key"))
     exec "norm! G\<C-E>\<C-E>"
   END
   call writefile(lines, 'Xscript')
   let buf = RunVimInTerminal('-S Xscript', {})
 
+  " wait for the script to finish
+  call TermWait(buf)
+
   " Test that popup and previewwindow do not overlap.
-  call term_sendkeys(buf, "o\<C-X>\<C-N>")
-  sleep 100m
+  call term_sendkeys(buf, "o")
+  call TermWait(buf, 50)
+  call term_sendkeys(buf, "\<C-X>\<C-N>")
   call VerifyScreenDump(buf, 'Test_popup_and_previewwindow_01', {})
 
   call term_sendkeys(buf, "\<Esc>u")
@@ -850,6 +852,12 @@ endfunc
 func Test_popup_command()
   CheckScreendump
   CheckFeature menu
+
+  menu Test.Foo Foo
+  call assert_fails('popup Test.Foo', 'E336:')
+  call assert_fails('popup Test.Foo.X', 'E327:')
+  call assert_fails('popup Foo', 'E337:')
+  unmenu Test.Foo
 
   let lines =<< trim END
 	one two three four five

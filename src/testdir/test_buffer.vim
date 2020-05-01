@@ -144,6 +144,7 @@ endfunc
 func Test_bdelete_cmd()
   %bwipe!
   call assert_fails('bdelete 5', 'E516:')
+  call assert_fails('1,1bdelete 1 2', 'E488:')
 
   " Deleting a unlisted and unloaded buffer
   edit Xfile1
@@ -152,6 +153,17 @@ func Test_bdelete_cmd()
   enew
   call assert_fails('bdelete ' .. bnr, 'E516:')
   %bwipe!
+endfunc
+
+func Test_buffer_error()
+  new foo1
+  new foo2
+
+  call assert_fails('buffer foo', 'E93:')
+  call assert_fails('buffer bar', 'E94:')
+  call assert_fails('buffer 0', 'E939:')
+
+  %bwipe
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

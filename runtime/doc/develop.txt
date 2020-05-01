@@ -1,4 +1,4 @@
-*develop.txt*   For Vim version 8.2.  Last change: 2019 Nov 22
+*develop.txt*   For Vim version 8.2.  Last change: 2020 Apr 13
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -151,7 +151,8 @@ VIM IS... NOT						*design-not*
   A satirical way to say this: "Unlike Emacs, Vim does not attempt to include
   everything but the kitchen sink, but some people say that you can clean one
   with it.  ;-)"
-  To use Vim with gdb see: http://www.agide.org and http://clewn.sf.net.
+  To use Vim with gdb see |terminal-debugger|.  Other (older) tools can be
+  found at http://www.agide.org and http://clewn.sf.net.
 - Vim is not a fancy GUI editor that tries to look nice at the cost of
   being less consistent over all platforms.  But functional GUI features are
   welcomed.

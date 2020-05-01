@@ -160,6 +160,9 @@ func Test_spellsuggest()
   call assert_equal(['Third'], spellsuggest('THird', 1))
   call assert_equal(['All'],      spellsuggest('ALl', 1))
 
+  call assert_fails("call spellsuggest('maxch', [])", 'E745:')
+  call assert_fails("call spellsuggest('maxch', 2, [])", 'E745:')
+
   set spell&
 endfunc
 
@@ -296,6 +299,35 @@ func Test_spellsuggest_option_expr()
 
   set spell& spellsuggest& verbose&
   bwipe!
+endfunc
+
+" Test for 'spellsuggest' expr errrors
+func Test_spellsuggest_expr_errors()
+  " 'spellsuggest'
+  func MySuggest()
+    return range(3)
+  endfunc
+  set spell spellsuggest=expr:MySuggest()
+  call assert_equal([], spellsuggest('baord', 3))
+
+  " Test for 'spellsuggest' expression returning a non-list value
+  func! MySuggest2()
+    return 'good'
+  endfunc
+  set spellsuggest=expr:MySuggest2()
+  call assert_equal([], spellsuggest('baord'))
+
+  " Test for 'spellsuggest' expression returning a list with dict values
+  func! MySuggest3()
+    return [[{}, {}]]
+  endfunc
+  set spellsuggest=expr:MySuggest3()
+  call assert_fails("call spellsuggest('baord')", 'E728:')
+
+  set nospell spellsuggest&
+  delfunc MySuggest
+  delfunc MySuggest2
+  delfunc MySuggest3
 endfunc
 
 func Test_spellinfo()
@@ -1135,3 +1167,5 @@ let g:test_data_aff_sal = [
       \"SAL ZZ-                  _",
       \"SAL Z                    S",
       \ ]
+
+" vim: shiftwidth=2 sts=2 expandtab

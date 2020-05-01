@@ -882,7 +882,7 @@ func Test_tw_2_fo_tm_replace()
 endfunc
 
 " Test for 'matchpairs' with multibyte chars
-func Test_mps()
+func Test_mps_multibyte()
   new
   let t =<< trim END
     {
@@ -904,6 +904,30 @@ func Test_mps()
 
   set mps&
   bwipe!
+endfunc
+
+" Test for 'matchpairs' in latin1 encoding
+func Test_mps_latin1()
+  new
+  let save_enc = &encoding
+  set encoding=latin1
+  call setline(1, 'abc(def)ghi')
+  normal %
+  call assert_equal(8, col('.'))
+  normal %
+  call assert_equal(4, col('.'))
+  call cursor(1, 6)
+  normal [(
+  call assert_equal(4, col('.'))
+  normal %
+  call assert_equal(8, col('.'))
+  call cursor(1, 6)
+  normal ])
+  call assert_equal(8, col('.'))
+  normal %
+  call assert_equal(4, col('.'))
+  let &encoding = save_enc
+  close!
 endfunc
 
 " Test for ra on multi-byte characters
@@ -951,8 +975,142 @@ func Test_whichwrap_multi_byte()
   bwipe!
 endfunc
 
-func Test_substitute()
-  call assert_equal('a１a２a３a', substitute('１２３', '\zs', 'a', 'g'))
+" Test for the 'f' flag in 'comments' (only the first line has the comment
+" string)
+func Test_firstline_comment()
+  new
+  setlocal comments=f:- fo+=ro
+  exe "normal i- B\nD\<C-C>ggoC\<C-C>ggOA\<C-C>"
+  call assert_equal(['A', '- B', '  C', '  D'], getline(1, '$'))
+  %d
+  setlocal comments=:-
+  exe "normal i- B\nD\<C-C>ggoC\<C-C>ggOA\<C-C>"
+  call assert_equal(['- A', '- B', '- C', '- D'], getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for the 'r' flag in 'comments' (right align comment)
+func Test_comment_rightalign()
+  new
+  setlocal comments=sr:/***,m:**,ex-2:******/ fo+=ro
+  exe "normal i=\<C-C>o\t  /***\nD\n/"
+  exe "normal 2GOA\<C-C>joB\<C-C>jOC\<C-C>joE\<C-C>GOF\<C-C>joG"
+  let expected =<< trim END
+    =
+    A
+    	  /***
+    	    ** B
+    	    ** C
+    	    ** D
+    	    ** E
+    	    **     F
+    	    ******/
+    G
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for the 'b' flag in 'comments'
+func Test_comment_blank()
+  new
+  setlocal comments=b:* fo+=ro
+  exe "normal i* E\nF\n\<BS>G\nH\<C-C>ggOC\<C-C>O\<BS>B\<C-C>OA\<C-C>2joD"
+  let expected =<< trim END
+    A
+    *B
+    * C
+    * D
+    * E
+    * F
+    *G
+    H
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for the 'n' flag in comments
+func Test_comment_nested()
+  new
+  setlocal comments=n:> fo+=ro
+  exe "normal i> B\nD\<C-C>ggOA\<C-C>joC\<C-C>Go\<BS>>>> F\nH"
+  exe "normal 5GOE\<C-C>6GoG"
+  let expected =<< trim END
+    > A
+    > B
+    > C
+    > D
+    >>>> E
+    >>>> F
+    >>>> G
+    >>>> H
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for a space character in 'comments' setting
+func Test_comment_space()
+  new
+  setlocal comments=b:\ > fo+=ro
+  exe "normal i> B\nD\<C-C>ggOA\<C-C>joC"
+  exe "normal Go > F\nH\<C-C>kOE\<C-C>joG"
+  let expected =<< trim END
+    A
+    > B
+    C
+    D
+     > E
+     > F
+     > G
+     > H
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for the 'O' flag in 'comments'
+func Test_comment_O()
+  new
+  setlocal comments=Ob:* fo+=ro
+  exe "normal i* B\nD\<C-C>kOA\<C-C>joC"
+  let expected =<< trim END
+    A
+    * B
+    * C
+    * D
+  END
+  call assert_equal(expected, getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for 'a' and 'w' flags in 'formatoptions'
+func Test_fo_a_w()
+  new
+  setlocal fo+=aw tw=10
+  call feedkeys("iabc abc a abc\<Esc>k0weade", 'xt')
+  call assert_equal(['abc abcde ', 'a abc'], getline(1, '$'))
+  %bw!
+endfunc
+
+" Test for 'j' flag in 'formatoptions'
+func Test_fo_j()
+  new
+  setlocal fo+=j comments=://
+  call setline(1, ['i++; // comment1', '           // comment2'])
+  normal J
+  call assert_equal('i++; // comment1 comment2', getline(1))
+  setlocal fo-=j
+  call setline(1, ['i++; // comment1', '           // comment2'])
+  normal J
+  call assert_equal('i++; // comment1 // comment2', getline(1))
+  " Test with nested comments
+  setlocal fo+=j comments=n:>,n:)
+  call setline(1, ['i++; > ) > ) comment1', '           > ) comment2'])
+  normal J
+  call assert_equal('i++; > ) > ) comment1 comment2', getline(1))
+  %bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

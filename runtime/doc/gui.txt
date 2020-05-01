@@ -1,4 +1,4 @@
-*gui.txt*       For Vim version 8.2.  Last change: 2019 Nov 16
+*gui.txt*       For Vim version 8.2.  Last change: 2020 Mar 16
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -578,9 +578,11 @@ tooltips for menus. See |terminal-typing|.
 
 Special characters in a menu name:
 
+							*menu-shortcut*
 	&	The next character is the shortcut key.  Make sure each
 		shortcut key is only used once in a (sub)menu.  If you want to
 		insert a literal "&" in the menu name use "&&".
+							*menu-text*
 	<Tab>	Separates the menu name from right-aligned text.  This can be
 		used to show the equivalent typed command.  The text "<Tab>"
 		can be used here for convenience.  If you are using a real
@@ -853,6 +855,8 @@ Special characters in the list, just before the rhs:
 *	The menu was defined with "nore" to disallow remapping.
 &	The menu was defined with "<script>" to allow remapping script-local
 	mappings only.
+s	The menu was defined with "<silent>" to avoid showing what it is
+	mapped to when triggered.
 -	The menu was disabled.
 
 Note that hitting <Tab> while entering a menu name after a menu command may
@@ -954,7 +958,7 @@ item for the keyword under the cursor.  The register "z" is used. >
 mappings, or put these lines in your gvimrc; "<C-R>" is CTRL-R, "<CR>" is
 the <CR> key.  |<>|)
 
-
+							*tooltips* *menu-tips*
 5.8 Tooltips & Menu tips
 
 See section |42.4| in the user manual.

@@ -631,7 +631,7 @@ f_mode(typval_T *argvars, typval_T *rettv)
 {
     char_u	buf[4];
 
-    vim_memset(buf, 0, sizeof(buf));
+    CLEAR_FIELD(buf);
 
     if (time_for_testing == 93784)
     {
@@ -2217,6 +2217,19 @@ line_breakcheck(void)
 fast_breakcheck(void)
 {
     if (++breakcheck_count >= BREAKCHECK_SKIP * 10)
+    {
+	breakcheck_count = 0;
+	ui_breakcheck();
+    }
+}
+
+/*
+ * Like line_breakcheck() but check 100 times less often.
+ */
+    void
+veryfast_breakcheck(void)
+{
+    if (++breakcheck_count >= BREAKCHECK_SKIP * 100)
     {
 	breakcheck_count = 0;
 	ui_breakcheck();

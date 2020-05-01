@@ -79,6 +79,10 @@ typedef struct BalloonEvalStruct
 #ifdef FEAT_GUI_MSWIN
     void		*tofree;
 #endif
+#ifdef FEAT_GUI_HAIKU
+    int			x;
+    int			y;
+#endif
 } BalloonEval;
 
 #define EVAL_OFFSET_X 15 // displacement of beval topleft corner from pointer

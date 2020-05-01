@@ -33,6 +33,8 @@ SRC =	arabic.c						\
 	change.c						\
 	charset.c						\
 	cindent.c						\
+	clientserver.c						\
+	clipboard.c						\
 	cmdexpand.c						\
 	cmdhist.c						\
 	crypt.c							\
@@ -101,6 +103,7 @@ SRC =	arabic.c						\
 	tag.c							\
 	term.c							\
 	testing.c						\
+	textobject.c						\
 	textprop.c						\
 	time.c							\
 	ui.c							\

@@ -826,7 +826,8 @@ eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
 
 	if (**arg != ':')
 	{
-	    semsg(_(e_missing_dict_colon), *arg);
+	    if (evaluate)
+		semsg(_(e_missing_dict_colon), *arg);
 	    clear_tv(&tvkey);
 	    goto failret;
 	}
@@ -853,7 +854,8 @@ eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
 	    item = dict_find(d, key, -1);
 	    if (item != NULL)
 	    {
-		semsg(_(e_duplicate_key), key);
+		if (evaluate)
+		    semsg(_(e_duplicate_key), key);
 		clear_tv(&tvkey);
 		clear_tv(&tv);
 		goto failret;
@@ -873,7 +875,8 @@ eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
 	    break;
 	if (**arg != ',')
 	{
-	    semsg(_(e_missing_dict_comma), *arg);
+	    if (evaluate)
+		semsg(_(e_missing_dict_comma), *arg);
 	    goto failret;
 	}
 	*arg = skipwhite(*arg + 1);
@@ -881,7 +884,8 @@ eval_dict(char_u **arg, typval_T *rettv, int evaluate, int literal)
 
     if (**arg != '}')
     {
-	semsg(_(e_missing_dict_end), *arg);
+	if (evaluate)
+	    semsg(_(e_missing_dict_end), *arg);
 failret:
 	if (d != NULL)
 	    dict_free(d);
@@ -973,13 +977,14 @@ dict_equal(
     dictitem_T	*item2;
     int		todo;
 
-    if (d1 == NULL && d2 == NULL)
-	return TRUE;
-    if (d1 == NULL || d2 == NULL)
-	return FALSE;
     if (d1 == d2)
 	return TRUE;
     if (dict_len(d1) != dict_len(d2))
+	return FALSE;
+    if (dict_len(d1) == 0)
+	// empty and NULL dicts are considered equal
+	return TRUE;
+    if (d1 == NULL || d2 == NULL)
 	return FALSE;
 
     todo = (int)d1->dv_hashtab.ht_used;

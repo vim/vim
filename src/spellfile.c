@@ -296,6 +296,12 @@
 #define CF_WORD		0x01
 #define CF_UPPER	0x02
 
+/*
+ * Loop through all the siblings of a node (including the node)
+ */
+#define FOR_ALL_NODE_SIBLINGS(node, np) \
+    for ((np) = (node); (np) != NULL; (np) = (np)->wn_sibling)
+
 static int set_spell_finish(spelltab_T	*new_st);
 static int write_spell_prefcond(FILE *fd, garray_T *gap);
 static int read_region_section(FILE *fd, slang_T *slang, int len);
@@ -1737,7 +1743,7 @@ spell_reload_one(
     slang_T	*slang;
     int		didit = FALSE;
 
-    for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+    FOR_ALL_SPELL_LANGS(slang)
     {
 	if (fullpathcmp(fname, slang->sl_fname, FALSE, TRUE) == FPC_SAME)
 	{
@@ -2081,7 +2087,7 @@ spell_clear_flags(wordnode_T *node)
 {
     wordnode_T	*np;
 
-    for (np = node; np != NULL; np = np->wn_sibling)
+    FOR_ALL_NODE_SIBLINGS(node, np)
     {
 	np->wn_u1.index = FALSE;
 	spell_clear_flags(np->wn_child);
@@ -4115,7 +4121,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 	    pc = string_convert(&spin->si_conv, rline, NULL);
 	    if (pc == NULL)
 	    {
-		smsg(_("Conversion failure for word in %s line %d: %s"),
+		smsg(_("Conversion failure for word in %s line %ld: %s"),
 							   fname, lnum, rline);
 		continue;
 	    }
@@ -4133,10 +4139,10 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 	    if (STRNCMP(line, "encoding=", 9) == 0)
 	    {
 		if (spin->si_conv.vc_type != CONV_NONE)
-		    smsg(_("Duplicate /encoding= line ignored in %s line %d: %s"),
+		    smsg(_("Duplicate /encoding= line ignored in %s line %ld: %s"),
 						       fname, lnum, line - 1);
 		else if (did_word)
-		    smsg(_("/encoding= line after word ignored in %s line %d: %s"),
+		    smsg(_("/encoding= line after word ignored in %s line %ld: %s"),
 						       fname, lnum, line - 1);
 		else
 		{
@@ -4159,13 +4165,13 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 	    if (STRNCMP(line, "regions=", 8) == 0)
 	    {
 		if (spin->si_region_count > 1)
-		    smsg(_("Duplicate /regions= line ignored in %s line %d: %s"),
+		    smsg(_("Duplicate /regions= line ignored in %s line %ld: %s"),
 						       fname, lnum, line);
 		else
 		{
 		    line += 8;
 		    if (STRLEN(line) > MAXREGIONS * 2)
-			smsg(_("Too many regions in %s line %d: %s"),
+			smsg(_("Too many regions in %s line %ld: %s"),
 						       fname, lnum, line);
 		    else
 		    {
@@ -4179,7 +4185,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 		continue;
 	    }
 
-	    smsg(_("/ line ignored in %s line %d: %s"),
+	    smsg(_("/ line ignored in %s line %ld: %s"),
 						       fname, lnum, line - 1);
 	    continue;
 	}
@@ -4209,7 +4215,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 		    l = *p - '0';
 		    if (l == 0 || l > spin->si_region_count)
 		    {
-			smsg(_("Invalid region nr in %s line %d: %s"),
+			smsg(_("Invalid region nr in %s line %ld: %s"),
 							  fname, lnum, p);
 			break;
 		    }
@@ -4217,7 +4223,7 @@ spell_read_wordfile(spellinfo_T *spin, char_u *fname)
 		}
 		else
 		{
-		    smsg(_("Unrecognized flags in %s line %d: %s"),
+		    smsg(_("Unrecognized flags in %s line %ld: %s"),
 							      fname, lnum, p);
 		    break;
 		}
@@ -4427,7 +4433,7 @@ tree_add_word(
 	{
 	    --node->wn_refs;
 	    copyprev = prev;
-	    for (copyp = node; copyp != NULL; copyp = copyp->wn_sibling)
+	    FOR_ALL_NODE_SIBLINGS(node, copyp)
 	    {
 		// Allocate a new node and copy the info.
 		np = get_wordnode(spin);
@@ -4594,7 +4600,7 @@ get_wordnode(spellinfo_T *spin)
     {
 	n = spin->si_first_free;
 	spin->si_first_free = n->wn_child;
-	vim_memset(n, 0, sizeof(wordnode_T));
+	CLEAR_POINTER(n);
 	--spin->si_free_count;
     }
 #ifdef SPELL_PRINTTREE
@@ -4618,7 +4624,7 @@ deref_wordnode(spellinfo_T *spin, wordnode_T *node)
 
     if (--node->wn_refs == 0)
     {
-	for (np = node; np != NULL; np = np->wn_sibling)
+	FOR_ALL_NODE_SIBLINGS(node, np)
 	{
 	    if (np->wn_child != NULL)
 		cnt += deref_wordnode(spin, np->wn_child);
@@ -4761,7 +4767,7 @@ node_compress(
      */
     node->wn_u1.hashkey[0] = len;
     nr = 0;
-    for (np = node; np != NULL; np = np->wn_sibling)
+    FOR_ALL_NODE_SIBLINGS(node, np)
     {
 	if (np->wn_byte == NUL)
 	    // end node: use wn_flags, wn_region and wn_affixID
@@ -5252,7 +5258,7 @@ clear_node(wordnode_T *node)
     wordnode_T	*np;
 
     if (node != NULL)
-	for (np = node; np != NULL; np = np->wn_sibling)
+	FOR_ALL_NODE_SIBLINGS(node, np)
 	{
 	    np->wn_u1.index = 0;
 	    np->wn_u2.wnode = NULL;
@@ -5296,7 +5302,7 @@ put_node(
     node->wn_u1.index = idx;
 
     // Count the number of siblings.
-    for (np = node; np != NULL; np = np->wn_sibling)
+    FOR_ALL_NODE_SIBLINGS(node, np)
 	++siblingcount;
 
     // Write the sibling count.
@@ -5304,7 +5310,7 @@ put_node(
 	putc(siblingcount, fd);				// <siblingcount>
 
     // Write each sibling byte and optionally extra info.
-    for (np = node; np != NULL; np = np->wn_sibling)
+    FOR_ALL_NODE_SIBLINGS(node, np)
     {
 	if (np->wn_byte == 0)
 	{
@@ -5392,7 +5398,7 @@ put_node(
     newindex += siblingcount + 1;
 
     // Recursively dump the children of each sibling.
-    for (np = node; np != NULL; np = np->wn_sibling)
+    FOR_ALL_NODE_SIBLINGS(node, np)
 	if (np->wn_byte != 0 && np->wn_child->wn_u2.wnode == node)
 	    newindex = put_node(fd, np->wn_child, newindex, regionmask,
 								  prefixtree);
@@ -5447,7 +5453,7 @@ spell_make_sugfile(spellinfo_T *spin, char_u *wfname)
      * of the code for the soundfolding stuff.
      * It might have been done already by spell_reload_one().
      */
-    for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+    FOR_ALL_SPELL_LANGS(slang)
 	if (fullpathcmp(wfname, slang->sl_fname, FALSE, TRUE) == FPC_SAME)
 	    break;
     if (slang == NULL)
@@ -5666,7 +5672,7 @@ sug_filltable(
     int		nr;
     int		prev_nr;
 
-    for (p = node; p != NULL; p = p->wn_sibling)
+    FOR_ALL_NODE_SIBLINGS(node, p)
     {
 	if (p->wn_byte == NUL)
 	{
@@ -5880,7 +5886,7 @@ mkspell(
     int		error = FALSE;
     spellinfo_T spin;
 
-    vim_memset(&spin, 0, sizeof(spin));
+    CLEAR_FIELD(spin);
     spin.si_verbose = !added_word;
     spin.si_ascii = ascii;
     spin.si_followup = TRUE;

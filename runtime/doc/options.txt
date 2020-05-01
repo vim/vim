@@ -1,4 +1,4 @@
-*options.txt*	For Vim version 8.2.  Last change: 2020 Feb 14
+*options.txt*	For Vim version 8.2.  Last change: 2020 Apr 10
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -915,6 +915,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	eol	allow backspacing over line breaks (join lines)
 	start	allow backspacing over the start of insert; CTRL-W and CTRL-U
 		stop once at the start of insert.
+	nostop	like start, except CTRL-W and CTRL-U do not stop at the start of
+		insert.
 
 	When the value is empty, Vi compatible backspacing is used.
 
@@ -923,6 +925,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	  0	same as ":set backspace=" (Vi compatible)
 	  1	same as ":set backspace=indent,eol"
 	  2	same as ":set backspace=indent,eol,start"
+	  3	same as ":set backspace=indent,eol,nostop"
 
 	See |:fixdel| if your <BS> or <Del> key does not do what you want.
 	NOTE: This option is set to "" when 'compatible' is set.
@@ -4646,8 +4649,8 @@ A jump table for the options with a short description can be found at |Q_op|.
 	be able to execute Normal mode commands.
 	This is the opposite of the 'keymap' option, where characters are
 	mapped in Insert mode.
-	Also consider resetting 'langremap' to avoid 'langmap' applies to
-	characters resulting from a mapping.
+	Also consider setting 'langremap' to off, to prevent 'langmap' from
+	applying to characters resulting from a mapping.
 	This option cannot be set from a |modeline| or in the |sandbox|, for
 	security reasons.
 
@@ -4712,7 +4715,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 	'langnoremap' is set to the inverted value, and the other way around.
 
 			*'langremap'* *'lrm'* *'nolangremap'* *'nolrm'*
-'langremap' 'lrm'	boolean (default on, reset in |defaults.vim|)
+'langremap' 'lrm'	boolean (default on, set to off in |defaults.vim|)
 			global
 			{only available when compiled with the |+langmap|
 			feature}
@@ -7957,7 +7960,7 @@ A jump table for the options with a short description can be found at |Q_op|.
 		- VIM		the server name |v:servername| or "VIM"
 	Only works if the terminal supports setting window titles
 	(currently Amiga console, Win32 console, all GUI versions and
-	terminals with a non- empty 't_ts' option - these are Unix xterm and
+	terminals with a non-empty 't_ts' option - these are Unix xterm and
 	iris-ansi by default, where 't_ts' is taken from the builtin termcap).
 								*X11*
 	When Vim was compiled with HAVE_X11 defined, the original title will

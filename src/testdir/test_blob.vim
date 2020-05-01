@@ -33,6 +33,7 @@ func Test_blob_create()
   call assert_fails('let b = 0z.')
   call assert_fails('let b = 0z001122.')
   call assert_fails('call get("", 1)', 'E896:')
+  call assert_equal(0, len(test_null_blob()))
 endfunc
 
 " assignment to a blob
@@ -87,6 +88,7 @@ func Test_blob_get_range()
   call assert_equal(0z0011223344, b[:])
   call assert_equal(0z0011223344, b[:-1])
   call assert_equal(0z, b[5:6])
+  call assert_equal(0z0011, b[-10:1])
 endfunc
 
 func Test_blob_get()
@@ -99,6 +101,7 @@ func Test_blob_get()
   call assert_equal(999, get(b, 5, 999))
   call assert_equal(-1, get(b, -8))
   call assert_equal(999, get(b, -8, 999))
+  call assert_equal(10, get(test_null_blob(), 2, 10))
 
   call assert_equal(0x00, b[0])
   call assert_equal(0x22, b[2])
@@ -116,6 +119,7 @@ func Test_blob_to_string()
   call assert_equal('0z00112233', string(b))
   call remove(b, 0, 3)
   call assert_equal('0z', string(b))
+  call assert_equal('0z', string(test_null_blob()))
 endfunc
 
 func Test_blob_compare()
@@ -141,6 +145,7 @@ func Test_blob_compare()
   let b2 = b1[:]
   call assert_true(b1 == b2)
   call assert_false(b1 is b2)
+  call assert_true(b1 isnot b2)
 
   call assert_fails('let x = b1 > b2')
   call assert_fails('let x = b1 < b2')
@@ -206,6 +211,7 @@ func Test_blob_add()
   call assert_equal(0z001122, b)
   call add(b, '51')
   call assert_equal(0z00112233, b)
+  call assert_equal(1, add(test_null_blob(), 0x22))
 
   call assert_fails('call add(b, [9])', 'E745:')
   call assert_fails('call add("", 0x01)', 'E897:')
@@ -248,6 +254,7 @@ func Test_blob_func_remove()
   call assert_fails("call remove(b, 3, 2)", 'E979:')
   call assert_fails("call remove(1, 0)", 'E896:')
   call assert_fails("call remove(b, b)", 'E974:')
+  call assert_fails("call remove(test_null_blob(), 1, 2)", 'E979:')
 endfunc
 
 func Test_blob_read_write()
@@ -256,6 +263,9 @@ func Test_blob_read_write()
   let br = readfile('Xblob', 'B')
   call assert_equal(b, br)
   call delete('Xblob')
+
+  " This was crashing when calling readfile() with a directory.
+  call assert_fails("call readfile('.', 'B')", 'E17: "." is a directory')
 endfunc
 
 " filter() item in blob
@@ -285,6 +295,9 @@ func Test_blob_index()
   call assert_equal(3, 0z11110111->index(0x11, 2))
   call assert_equal(2, index(0z11111111, 0x11, -2))
   call assert_equal(3, index(0z11110111, 0x11, -2))
+  call assert_equal(0, index(0z11110111, 0x11, -10))
+  call assert_fails("echo index(0z11110111, 0x11, [])", 'E745:')
+  call assert_equal(-1, index(test_null_blob(), 1))
 
   call assert_fails('call index("asdf", 0)', 'E897:')
 endfunc
@@ -301,6 +314,10 @@ func Test_blob_insert()
   call assert_fails('call insert(b, -1)', 'E475:')
   call assert_fails('call insert(b, 257)', 'E475:')
   call assert_fails('call insert(b, 0, [9])', 'E745:')
+  call assert_fails('call insert(b, 0, -20)', 'E475:')
+  call assert_fails('call insert(b, 0, 20)', 'E475:')
+  call assert_fails('call insert(b, [])', 'E745:')
+  call assert_equal(0, insert(test_null_blob(), 0x33))
 endfunc
 
 func Test_blob_reverse()
@@ -308,6 +325,7 @@ func Test_blob_reverse()
   call assert_equal(0zBEADDE, reverse(0zDEADBE))
   call assert_equal(0zADDE, reverse(0zDEAD))
   call assert_equal(0zDE, reverse(0zDE))
+  call assert_equal(0z, reverse(test_null_blob()))
 endfunc
 
 func Test_blob_json_encode()
@@ -330,3 +348,5 @@ func Test_blob_sort()
     call assert_fails('call sort(["abc", 0z11], "f")', 'E702:')
   endif
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

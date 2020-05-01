@@ -332,11 +332,11 @@ func Test_ruby_Vim_evaluate_list()
   call setline(line('$'), ['2 line 2'])
   ruby Vim.command("normal /^2\n")
   let l = ["abc", "def"]
-  ruby << EOF
-  curline = $curbuf.line_number
-  l = Vim.evaluate("l");
-  $curbuf.append(curline, l.join("\n"))
-EOF
+  ruby << trim EOF
+    curline = $curbuf.line_number
+    l = Vim.evaluate("l");
+    $curbuf.append(curline, l.join("\n"))
+  EOF
   normal j
   .rubydo $_ = $_.gsub(/\n/, '/')
   call assert_equal('abc/def', getline('$'))
@@ -378,7 +378,7 @@ endfunc
 
 func Test_ruby_p()
   ruby p 'Just a test'
-  let messages = split(execute('message'), "\n")
+  let messages = GetMessages()
   call assert_equal('"Just a test"', messages[-1])
 
   " Check return values of p method
@@ -391,6 +391,25 @@ func Test_ruby_p()
   messages clear
   call assert_equal(v:true, rubyeval('p() == nil'))
 
-  let messages = split(execute('message'), "\n")
+  let messages = GetMessages()
   call assert_equal(0, len(messages))
 endfunc
+
+" Test for various heredoc syntax
+func Test_ruby_heredoc()
+  ruby << END
+Vim.command('let s = "A"')
+END
+  ruby <<
+Vim.command('let s ..= "B"')
+.
+  ruby << trim END
+    Vim.command('let s ..= "C"')
+  END
+  ruby << trim
+    Vim.command('let s ..= "D"')
+  .
+  call assert_equal('ABCD', s)
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

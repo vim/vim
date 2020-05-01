@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.2.  Last change: 2020 Feb 09
+*change.txt*    For Vim version 8.2.  Last change: 2020 Apr 11
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -209,7 +209,7 @@ gR			Enter Virtual Replace mode: Each character you type
 			start insert (for {Visual} see |Visual-mode|).
 
 							*v_r*
-{Visual}["x]r{char}	Replace all selected characters by {char}.
+{Visual}r{char}		Replace all selected characters by {char}.
 
 							*v_C*
 {Visual}["x]C		Delete the highlighted lines [into register x] and
@@ -1458,7 +1458,7 @@ text.  Put it in your autoload directory, e.g. ~/.vim/autoload/format.vim: >
   func! format#Format()
     " only reformat on explicit gq command
     if mode() != 'n'
-      " fall back to Vims internal reformatting
+      " fall back to Vim's internal reformatting
       return 1
     endif
     let lines = getline(v:lnum, v:lnum + v:count - 1)

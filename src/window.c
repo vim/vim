@@ -1428,10 +1428,10 @@ win_valid_popup(win_T *win UNUSED)
 #ifdef FEAT_PROP_POPUP
     win_T	*wp;
 
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS(wp)
 	if (wp == win)
 	    return TRUE;
-    for (wp = curtab->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS_IN_TAB(curtab, wp)
 	if (wp == win)
 	    return TRUE;
 #endif
@@ -1473,7 +1473,7 @@ win_valid_any_tab(win_T *win)
 		return TRUE;
 	}
 #ifdef FEAT_PROP_POPUP
-	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
 	    if (wp == win)
 		return TRUE;
 #endif
@@ -2276,7 +2276,7 @@ close_windows(
     {
 	nexttp = tp->tp_next;
 	if (tp != curtab)
-	    for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
+	    FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 		if (wp->w_buffer == buf
 		    && !(wp->w_closing || wp->w_buffer->b_locked > 0))
 		{
@@ -2967,9 +2967,22 @@ win_altframe(
     if (frp->fr_next == NULL)
 	return frp->fr_prev;
 
+    // By default the next window will get the space that was abandoned by this
+    // window
     target_fr = frp->fr_next;
     other_fr  = frp->fr_prev;
-    if (p_spr || p_sb)
+
+    // If this is part of a column of windows and 'splitbelow' is true then the
+    // previous window will get the space.
+    if (frp->fr_parent != NULL && frp->fr_parent->fr_layout == FR_COL && p_sb)
+    {
+	target_fr = frp->fr_prev;
+	other_fr  = frp->fr_next;
+    }
+
+    // If this is part of a row of windows, and 'splitright' is true then the
+    // previous window will get the space.
+    if (frp->fr_parent != NULL && frp->fr_parent->fr_layout == FR_ROW && p_spr)
     {
 	target_fr = frp->fr_prev;
 	other_fr  = frp->fr_next;
@@ -4357,7 +4370,7 @@ win_goto(win_T *wp)
 	return;
     }
 #endif
-    if (text_locked())
+    if (text_and_win_locked())
     {
 	beep_flush();
 	text_locked_msg();
@@ -4785,7 +4798,7 @@ buf_jump_open_tab(buf_T *buf)
     FOR_ALL_TABPAGES(tp)
 	if (tp != curtab)
 	{
-	    for (wp = tp->tp_firstwin; wp != NULL; wp = wp->w_next)
+	    FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 		if (wp->w_buffer == buf)
 		    break;
 	    if (wp != NULL)
@@ -4968,7 +4981,7 @@ win_free(
     // Remove the window from the b_wininfo lists, it may happen that the
     // freed memory is re-used for another window.
     FOR_ALL_BUFFERS(buf)
-	for (wip = buf->b_wininfo; wip != NULL; wip = wip->wi_next)
+	FOR_ALL_BUF_WININFO(buf, wip)
 	    if (wip->wi_win == wp)
 		wip->wi_win = NULL;
 

@@ -127,7 +127,7 @@ test_vim_snprintf(void)
     int		n;
     size_t	bsize;
     int		bsize_int;
-    char	*ptr = (char *)0x87654321;
+    void	*ptr = (void *)0x87654321;
 
     // Loop on various buffer sizes to make sure that truncation of
     // vim_snprintf() is correct.
@@ -269,7 +269,7 @@ test_vim_snprintf(void)
     int
 main(int argc, char **argv)
 {
-    vim_memset(&params, 0, sizeof(params));
+    CLEAR_FIELD(params);
     params.argc = argc;
     params.argv = argv;
     common_init(&params);

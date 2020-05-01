@@ -38,7 +38,8 @@
 #	  is yes)
 #	Global IME support: GIME=yes (requires GUI=yes)
 #
-#	Terminal support: TERMINAL=yes (default is yes)
+#	Terminal support: TERMINAL=yes (default is yes if FEATURES is HUGE)
+#	  Will also enable CHANNEL
 #
 #	Sound support: SOUND=yes (default is yes)
 #
@@ -109,13 +110,13 @@
 #	PostScript printing: POSTSCRIPT=yes (default is no)
 #
 #	Netbeans Support: NETBEANS=[yes or no] (default is yes if GUI is yes)
-#	Requires CHANNEL.
+#	  Requires CHANNEL.
 #
 #	Netbeans Debugging Support: NBDEBUG=[yes or no] (should be no, yes
 #	doesn't work)
 #
 #	Inter process communication: CHANNEL=[yes or no] (default is yes if GUI
-#	is yes)
+#	is yes or TERMINAL is yes)
 #
 #	XPM Image Support: XPM=[path to XPM directory]
 #	Default is "xpm", using the files included in the distribution.
@@ -316,6 +317,10 @@ MSVCRT_NAME = vcruntime$(MSVCRT_VER)
 CPU = ix86
 !endif
 
+### Set the default $(WINVER) to make it work with VC++7.0 (VS.NET)
+!ifndef WINVER
+WINVER = 0x0501
+!endif
 
 # Flag to turn on Win64 compatibility warnings for VC7.x and VC8.
 WP64CHECK = /Wp64
@@ -388,7 +393,7 @@ NETBEANS = $(GUI)
 !endif
 
 !ifndef CHANNEL
-! if "$(FEATURES)"=="HUGE"
+! if "$(FEATURES)"=="HUGE" || "$(TERMINAL)"=="yes"
 CHANNEL = yes
 ! else
 CHANNEL = $(GUI)
@@ -466,9 +471,12 @@ SOUND_LIB	= winmm.lib
 !if "$(CHANNEL)" == "yes"
 CHANNEL_PRO	= proto/channel.pro
 CHANNEL_OBJ	= $(OBJDIR)/channel.obj
-CHANNEL_DEFS	= -DFEAT_JOB_CHANNEL
+CHANNEL_DEFS	= -DFEAT_JOB_CHANNEL -DFEAT_IPV6
+! if $(WINVER) >= 0x600
+CHANNEL_DEFS	= $(CHANNEL_DEFS) -DHAVE_INET_NTOP
+! endif
 
-NETBEANS_LIB	= WSock32.lib
+NETBEANS_LIB	= WSock32.lib Ws2_32.lib
 !endif
 
 # Set which version of the CRT to use
@@ -490,11 +498,6 @@ CON_LIB = oldnames.lib kernel32.lib advapi32.lib shell32.lib gdi32.lib \
           comdlg32.lib ole32.lib netapi32.lib uuid.lib /machine:$(CPU)
 !if "$(DELAYLOAD)" == "yes"
 CON_LIB = $(CON_LIB) /DELAYLOAD:comdlg32.dll /DELAYLOAD:ole32.dll DelayImp.lib
-!endif
-
-### Set the default $(WINVER) to make it work with VC++7.0 (VS.NET)
-!ifndef WINVER
-WINVER = 0x0501
 !endif
 
 # If you have a fixed directory for $VIM or $VIMRUNTIME, other than the normal
@@ -729,6 +732,8 @@ OBJ = \
 	$(OUTDIR)\change.obj \
 	$(OUTDIR)\charset.obj \
 	$(OUTDIR)\cindent.obj \
+	$(OUTDIR)\clientserver.obj \
+	$(OUTDIR)\clipboard.obj \
 	$(OUTDIR)\cmdexpand.obj \
 	$(OUTDIR)\cmdhist.obj \
 	$(OUTDIR)\crypt.obj \
@@ -801,6 +806,7 @@ OBJ = \
 	$(OUTDIR)\tag.obj \
 	$(OUTDIR)\term.obj \
 	$(OUTDIR)\testing.obj \
+	$(OUTDIR)\textobject.obj \
 	$(OUTDIR)\textprop.obj \
 	$(OUTDIR)\time.obj \
 	$(OUTDIR)\ui.obj \
@@ -1514,6 +1520,10 @@ $(OUTDIR)/charset.obj:	$(OUTDIR) charset.c  $(INCL)
 
 $(OUTDIR)/cindent.obj:	$(OUTDIR) cindent.c  $(INCL)
 
+$(OUTDIR)/clientserver.obj:	$(OUTDIR) clientserver.c  $(INCL)
+
+$(OUTDIR)/clipboard.obj:	$(OUTDIR) clipboard.c  $(INCL)
+
 $(OUTDIR)/cmdexpand.obj:	$(OUTDIR) cmdexpand.c  $(INCL)
 
 $(OUTDIR)/cmdhist.obj:	$(OUTDIR) cmdhist.c  $(INCL)
@@ -1735,6 +1745,8 @@ $(OUTDIR)/term.obj:	$(OUTDIR) term.c  $(INCL)
 
 $(OUTDIR)/term.obj:	$(OUTDIR) testing.c  $(INCL)
 
+$(OUTDIR)/textobject.obj:	$(OUTDIR) textobject.c  $(INCL)
+
 $(OUTDIR)/textprop.obj:	$(OUTDIR) textprop.c  $(INCL)
 
 $(OUTDIR)/time.obj:	$(OUTDIR) time.c  $(INCL)
@@ -1861,6 +1873,8 @@ proto.h: \
 	proto/change.pro \
 	proto/charset.pro \
 	proto/cindent.pro \
+	proto/clientserver.pro \
+	proto/clipboard.pro \
 	proto/cmdexpand.pro \
 	proto/cmdhist.pro \
 	proto/crypt.pro \
@@ -1931,6 +1945,7 @@ proto.h: \
 	proto/tag.pro \
 	proto/term.pro \
 	proto/testing.pro \
+	proto/textobject.pro \
 	proto/textprop.pro \
 	proto/time.pro \
 	proto/ui.pro \

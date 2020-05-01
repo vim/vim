@@ -635,19 +635,6 @@ py3__Py_XDECREF(PyObject *op)
 # endif
 
 /*
- * Free python.dll
- */
-    static void
-end_dynamic_python3(void)
-{
-    if (hinstPy3 != 0)
-    {
-	close_dll(hinstPy3);
-	hinstPy3 = 0;
-    }
-}
-
-/*
  * Load library and get all pointers.
  * Parameter 'libname' provides name of DLL.
  * Return OK or FAIL.
@@ -872,10 +859,6 @@ python3_end(void)
 
 	Py_Finalize();
     }
-
-#ifdef DYNAMIC_PYTHON3
-    end_dynamic_python3();
-#endif
 
     --recurse;
 }

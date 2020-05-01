@@ -55,7 +55,7 @@ The ActiveState one should work, Strawberry Perl is a good alternative.
 			working: >
 				:perl VIM::Msg("Hello")
 
-:pe[rl] << [endmarker]
+:pe[rl] << [trim] [{endmarker}]
 {script}
 {endmarker}
 			Execute Perl script {script}.

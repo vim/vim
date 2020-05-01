@@ -1369,7 +1369,7 @@ do_set(
 	    }
 
 	    /*
-	     * allow '=' and ':' for hystorical reasons (MSDOS command.com
+	     * allow '=' and ':' for historical reasons (MSDOS command.com
 	     * allows only one '=' character per "set" command line. grrr. (jw)
 	     */
 	    if (nextchar == '?'
@@ -1684,6 +1684,10 @@ do_set(
 				    case 2:
 					*(char_u **)varp = vim_strsave(
 						(char_u *)"indent,eol,start");
+					break;
+				    case 3:
+					*(char_u **)varp = vim_strsave(
+						(char_u *)"indent,eol,nostop");
 					break;
 				}
 				vim_free(oldval);
@@ -5666,7 +5670,7 @@ buf_copy_options(buf_T *buf, int flags)
 	if (should_copy || (flags & BCO_ALWAYS))
 	{
 #ifdef FEAT_EVAL
-	    vim_memset(buf->b_p_script_ctx, 0, sizeof(buf->b_p_script_ctx));
+	    CLEAR_FIELD(buf->b_p_script_ctx);
 	    init_buf_opt_idx();
 #endif
 	    // Don't copy the options specific to a help buffer when
@@ -6818,7 +6822,7 @@ fill_breakat_flags(void)
  */
     int
 can_bs(
-    int		what)	    // BS_INDENT, BS_EOL or BS_START
+    int		what)	    // BS_INDENT, BS_EOL, BS_START or BS_NOSTOP
 {
 #ifdef FEAT_JOB_CHANNEL
     if (what == BS_START && bt_prompt(curbuf))
@@ -6826,7 +6830,8 @@ can_bs(
 #endif
     switch (*p_bs)
     {
-	case '2':	return TRUE;
+	case '3':       return TRUE;
+	case '2':	return (what != BS_NOSTOP);
 	case '1':	return (what != BS_START);
 	case '0':	return FALSE;
     }

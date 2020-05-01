@@ -451,12 +451,9 @@ ex_sort(exarg_T *eap)
 	}
 	else if (!ASCII_ISALPHA(*p) && regmatch.regprog == NULL)
 	{
-	    s = skip_regexp(p + 1, *p, TRUE, NULL);
-	    if (*s != *p)
-	    {
-		emsg(_(e_invalpat));
+	    s = skip_regexp_err(p + 1, *p, TRUE);
+	    if (s == NULL)
 		goto sortend;
-	    }
 	    *s = NUL;
 	    // Use last search pattern if sort pattern is empty.
 	    if (s == p + 1)
@@ -2074,8 +2071,8 @@ check_overwrite(
     int		other)	    // writing under other name
 {
     /*
-     * write to other file or b_flags set or not writing the whole file:
-     * overwriting only allowed with '!'
+     * Write to another file or b_flags set or not writing the whole file:
+     * overwriting only allowed with '!'.
      */
     if (       (other
 		|| (buf->b_flags & BF_NOTEDITED)
@@ -2083,9 +2080,6 @@ check_overwrite(
 		    && vim_strchr(p_cpo, CPO_OVERNEW) == NULL)
 		|| (buf->b_flags & BF_READERR))
 	    && !p_wa
-#ifdef FEAT_QUICKFIX
-	    && !bt_nofilename(buf)
-#endif
 	    && vim_fexists(ffname))
     {
 	if (!eap->forceit && !eap->append)
@@ -3629,7 +3623,7 @@ do_sub(exarg_T *eap)
 	    which_pat = RE_LAST;	    // use last used regexp
 	    delimiter = *cmd++;		    // remember delimiter character
 	    pat = cmd;			    // remember start of search pat
-	    cmd = skip_regexp(cmd, delimiter, p_magic, &eap->arg);
+	    cmd = skip_regexp_ex(cmd, delimiter, p_magic, &eap->arg, NULL);
 	    if (cmd[0] == delimiter)	    // end delimiter found
 		*cmd++ = NUL;		    // replace it with a NUL
 	}
@@ -4804,7 +4798,7 @@ ex_global(exarg_T *eap)
 	if (delim)
 	    ++cmd;		// skip delimiter if there is one
 	pat = cmd;		// remember start of pattern
-	cmd = skip_regexp(cmd, delim, p_magic, &eap->arg);
+	cmd = skip_regexp_ex(cmd, delim, p_magic, &eap->arg, NULL);
 	if (cmd[0] == delim)		    // end delimiter found
 	    *cmd++ = NUL;		    // replace it with a NUL
     }
@@ -6444,7 +6438,7 @@ skip_vimgrep_pat(char_u *p, char_u **s, int *flags)
 	if (s != NULL)
 	    *s = p + 1;
 	c = *p;
-	p = skip_regexp(p + 1, c, TRUE, NULL);
+	p = skip_regexp(p + 1, c, TRUE);
 	if (*p != c)
 	    return NULL;
 

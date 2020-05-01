@@ -99,7 +99,7 @@ static int	inchar(char_u *buf, int maxlen, long wait_time);
 /*
  * Free and clear a buffer.
  */
-    void
+    static void
 free_buff(buffheader_T *buf)
 {
     buffblock_T	*p, *np;
@@ -421,6 +421,10 @@ flush_buffers(flush_buffers_T flush_typeahead)
 	// remove mapped characters at the start only
 	typebuf.tb_off += typebuf.tb_maplen;
 	typebuf.tb_len -= typebuf.tb_maplen;
+#if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
+	if (typebuf.tb_len == 0)
+	    typebuf_was_filled = FALSE;
+#endif
     }
     else
     {
@@ -1283,6 +1287,9 @@ alloc_typebuf(void)
     typebuf.tb_no_abbr_cnt = 0;
     if (++typebuf.tb_change_cnt == 0)
 	typebuf.tb_change_cnt = 1;
+#if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
+    typebuf_was_filled = FALSE;
+#endif
     return OK;
 }
 

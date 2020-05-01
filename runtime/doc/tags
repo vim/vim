@@ -1267,6 +1267,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +X11	various.txt	/*+X11*
 +acl	various.txt	/*+acl*
 +arabic	various.txt	/*+arabic*
++autochdir	various.txt	/*+autochdir*
 +autocmd	various.txt	/*+autocmd*
 +autoservername	various.txt	/*+autoservername*
 +balloon_eval	various.txt	/*+balloon_eval*
@@ -1314,6 +1315,7 @@ $VIM_POSIX	vi_diff.txt	/*$VIM_POSIX*
 +iconv	various.txt	/*+iconv*
 +iconv/dyn	various.txt	/*+iconv\/dyn*
 +insert_expand	various.txt	/*+insert_expand*
++ipv6	various.txt	/*+ipv6*
 +job	various.txt	/*+job*
 +jumplist	various.txt	/*+jumplist*
 +keymap	various.txt	/*+keymap*
@@ -4243,6 +4245,7 @@ E447	editing.txt	/*E447*
 E448	various.txt	/*E448*
 E449	eval.txt	/*E449*
 E45	message.txt	/*E45*
+E452	eval.txt	/*E452*
 E455	print.txt	/*E455*
 E456	print.txt	/*E456*
 E457	print.txt	/*E457*
@@ -7734,7 +7737,11 @@ menu-changes-5.4	version5.txt	/*menu-changes-5.4*
 menu-examples	gui.txt	/*menu-examples*
 menu-priority	gui.txt	/*menu-priority*
 menu-separator	gui.txt	/*menu-separator*
+menu-shortcut	gui.txt	/*menu-shortcut*
+menu-text	gui.txt	/*menu-text*
+menu-tips	gui.txt	/*menu-tips*
 menu.vim	gui.txt	/*menu.vim*
+menu_info()	eval.txt	/*menu_info()*
 menus	gui.txt	/*menus*
 merge	diff.txt	/*merge*
 message-history	message.txt	/*message-history*
@@ -8573,6 +8580,7 @@ quote~	change.txt	/*quote~*
 r	change.txt	/*r*
 r.vim	syntax.txt	/*r.vim*
 rand()	eval.txt	/*rand()*
+random	eval.txt	/*random*
 range()	eval.txt	/*range()*
 raw-terminal-mode	term.txt	/*raw-terminal-mode*
 rcp	pi_netrw.txt	/*rcp*
@@ -9343,6 +9351,7 @@ tags-file-format	tagsrch.txt	/*tags-file-format*
 tags-option	tagsrch.txt	/*tags-option*
 tagsrch.txt	tagsrch.txt	/*tagsrch.txt*
 tagstack	tagsrch.txt	/*tagstack*
+tagstack-examples	tagsrch.txt	/*tagstack-examples*
 tan()	eval.txt	/*tan()*
 tanh()	eval.txt	/*tanh()*
 tar	pi_tar.txt	/*tar*
@@ -9498,6 +9507,7 @@ test_ignore_error()	testing.txt	/*test_ignore_error()*
 test_null_blob()	testing.txt	/*test_null_blob()*
 test_null_channel()	testing.txt	/*test_null_channel()*
 test_null_dict()	testing.txt	/*test_null_dict()*
+test_null_function()	testing.txt	/*test_null_function()*
 test_null_job()	testing.txt	/*test_null_job()*
 test_null_list()	testing.txt	/*test_null_list()*
 test_null_partial()	testing.txt	/*test_null_partial()*
@@ -9568,6 +9578,7 @@ toggle	options.txt	/*toggle*
 toggle-revins	version4.txt	/*toggle-revins*
 tolower()	eval.txt	/*tolower()*
 toolbar-icon	gui.txt	/*toolbar-icon*
+tooltips	gui.txt	/*tooltips*
 toupper()	eval.txt	/*toupper()*
 tr()	eval.txt	/*tr()*
 trim()	eval.txt	/*trim()*

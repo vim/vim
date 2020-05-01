@@ -81,6 +81,17 @@ func Test_setpos()
   call assert_equal([0, 1, 21341234, 0], getpos("'a"))
   call assert_equal(4, virtcol("'a"))
 
+  " Test with invalid buffer number, line number and column number
+  call cursor(2, 2)
+  call setpos('.', [-1, 1, 1, 0])
+  call assert_equal([2, 2], [line('.'), col('.')])
+  call setpos('.', [0, -1, 1, 0])
+  call assert_equal([2, 2], [line('.'), col('.')])
+  call setpos('.', [0, 1, -1, 0])
+  call assert_equal([2, 2], [line('.'), col('.')])
+
+  call assert_fails("call setpos('ab', [0, 1, 1, 0])", 'E474:')
+
   bwipe!
   call win_gotoid(twowin)
   bwipe!
@@ -195,6 +206,10 @@ func Test_mark_error()
   call assert_fails('mark', 'E471:')
   call assert_fails('mark xx', 'E488:')
   call assert_fails('mark _', 'E191:')
+  call assert_beeps('normal! m~')
+
+  call setpos("'k", [0, 100, 1, 0])
+  call assert_fails("normal 'k", 'E19:')
 endfunc
 
 " Test for :lockmarks when pasting content
@@ -219,6 +234,29 @@ func Test_marks_k_cmd()
   1,3kr
   call assert_equal([0, 3, 1, 0], getpos("'r"))
   close!
+endfunc
+
+" Test for file marks (A-Z)
+func Test_file_mark()
+  new Xone
+  call setline(1, ['aaa', 'bbb'])
+  norm! G$mB
+  w!
+  new Xtwo
+  call setline(1, ['ccc', 'ddd'])
+  norm! GmD
+  w!
+
+  enew
+  normal! `B
+  call assert_equal('Xone', bufname())
+  call assert_equal([2, 3], [line('.'), col('.')])
+  normal! 'D
+  call assert_equal('Xtwo', bufname())
+  call assert_equal([2, 1], [line('.'), col('.')])
+
+  call delete('Xone')
+  call delete('Xtwo')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

@@ -175,16 +175,11 @@ edit(
 #endif
     // Don't allow changes in the buffer while editing the cmdline.  The
     // caller of getcmdline() may get confused.
-    if (textlock != 0)
-    {
-	emsg(_(e_secure));
-	return FALSE;
-    }
-
     // Don't allow recursive insert mode when busy with completion.
-    if (ins_compl_active() || compl_busy || pum_visible())
+    if (textwinlock != 0 || textlock != 0
+			  || ins_compl_active() || compl_busy || pum_visible())
     {
-	emsg(_(e_secure));
+	emsg(_(e_textwinlock));
 	return FALSE;
     }
     ins_compl_clear();	    // clear stuff for CTRL-X mode
@@ -1612,6 +1607,10 @@ decodeModifyOtherKeys(int c)
 	    // Match, consume the code.
 	    typebuf.tb_off += idx + 1;
 	    typebuf.tb_len -= idx + 1;
+#if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
+	    if (typebuf.tb_len == 0)
+		typebuf_was_filled = FALSE;
+#endif
 
 	    mod_mask = decode_modifiers(arg[!form]);
 	    c = merge_modifyOtherKeys(arg[form]);
@@ -4880,8 +4879,10 @@ ins_bs(
 		    revins_on ||
 #endif
 		    (curwin->w_cursor.col > mincol
-		    && (curwin->w_cursor.lnum != Insstart_orig.lnum
-			|| curwin->w_cursor.col != Insstart_orig.col)));
+		    &&  (can_bs(BS_NOSTOP)
+			|| (curwin->w_cursor.lnum != Insstart_orig.lnum
+			|| curwin->w_cursor.col != Insstart_orig.col)
+		    )));
 	}
 	did_backspace = TRUE;
     }
@@ -5944,7 +5945,7 @@ do_insert_char_pre(int c)
     }
 
     // Lock the text to avoid weird things from happening.
-    ++textlock;
+    ++textwinlock;
     set_vim_var_string(VV_CHAR, buf, -1);  // set v:char
 
     res = NULL;
@@ -5958,7 +5959,7 @@ do_insert_char_pre(int c)
     }
 
     set_vim_var_string(VV_CHAR, NULL, -1);  // clear v:char
-    --textlock;
+    --textwinlock;
 
     // Restore the State, it may have been changed.
     State = save_State;
@@ -5994,7 +5995,8 @@ ins_apply_autocmds(event_T event)
 
     // If u_savesub() was called then we are not prepared to start
     // a new line.  Call u_save() with no contents to fix that.
-    if (tick != CHANGEDTICK(curbuf))
+    // Except when leaving Insert mode.
+    if (event != EVENT_INSERTLEAVE && tick != CHANGEDTICK(curbuf))
 	u_save(curwin->w_cursor.lnum, (linenr_T)(curwin->w_cursor.lnum + 1));
 
     return r;

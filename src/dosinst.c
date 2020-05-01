@@ -847,8 +847,7 @@ install_bat_choice(int idx)
 
 	    /*
 	     * Don't use double quotes for the "set" argument, also when it
-	     * contains a space.  The quotes would be included in the value
-	     * for MSDOS and NT.
+	     * contains a space.  The quotes would be included in the value.
 	     * The order of preference is:
 	     * 1. $VIMRUNTIME/vim.exe	    (user preference)
 	     * 2. $VIM/vim81/vim.exe	    (hard coded version)
@@ -861,91 +860,51 @@ install_bat_choice(int idx)
 	    fprintf(fd, "\n");
 
 	    // Give an error message when the executable could not be found.
-	    fprintf(fd, "if exist \"%%VIM_EXE_DIR%%\\%s\" goto havevim\n",
-								     exename);
-	    fprintf(fd, "echo \"%%VIM_EXE_DIR%%\\%s\" not found\n", exename);
-	    fprintf(fd, "goto eof\n");
+	    fprintf(fd, "if not exist \"%%VIM_EXE_DIR%%\\%s\" (\n", exename);
+	    fprintf(fd, "    echo \"%%VIM_EXE_DIR%%\\%s\" not found\n", exename);
+	    fprintf(fd, "    goto :eof\n");
+	    fprintf(fd, ")\n");
 	    fprintf(fd, "\n");
-	    fprintf(fd, ":havevim\n");
 
-	    fprintf(fd, "rem collect the arguments in VIMARGS for Win95\n");
-	    fprintf(fd, "set VIMARGS=\n");
 	    if (*exename == 'g')
+	    {
+		fprintf(fd, "rem check --nofork argument\n");
 		fprintf(fd, "set VIMNOFORK=\n");
-	    fprintf(fd, ":loopstart\n");
-	    fprintf(fd, "if .%%1==. goto loopend\n");
-	    if (*exename == 'g')
-	    {
-		fprintf(fd, "if NOT .%%1==.--nofork goto noforklongarg\n");
-		fprintf(fd, "set VIMNOFORK=1\n");
-		fprintf(fd, ":noforklongarg\n");
-		fprintf(fd, "if NOT .%%1==.-f goto noforkarg\n");
-		fprintf(fd, "set VIMNOFORK=1\n");
-		fprintf(fd, ":noforkarg\n");
-	    }
-	    fprintf(fd, "set VIMARGS=%%VIMARGS%% %%1\n");
-	    fprintf(fd, "shift\n");
-	    fprintf(fd, "goto loopstart\n");
-	    fprintf(fd, ":loopend\n");
-	    fprintf(fd, "\n");
-
-	    fprintf(fd, "if .%%OS%%==.Windows_NT goto ntaction\n");
-	    fprintf(fd, "\n");
-
-	    // For gvim.exe use "start" to avoid that the console window stays
-	    // open.
-	    if (*exename == 'g')
-	    {
-		fprintf(fd, "if .%%VIMNOFORK%%==.1 goto nofork\n");
-		fprintf(fd, "start ");
-	    }
-
-	    // Always use quotes, $VIM or $VIMRUNTIME might have a space.
-	    fprintf(fd, "\"%%VIM_EXE_DIR%%\\%s\" %s %%VIMARGS%%\n",
-							     exename, vimarg);
-	    fprintf(fd, "goto eof\n");
-	    fprintf(fd, "\n");
-
-	    if (*exename == 'g')
-	    {
-		fprintf(fd, ":nofork\n");
-		fprintf(fd, "start /w ");
-		// Always use quotes, $VIM or $VIMRUNTIME might have a space.
-		fprintf(fd, "\"%%VIM_EXE_DIR%%\\%s\" %s %%VIMARGS%%\n",
-							     exename, vimarg);
-		fprintf(fd, "goto eof\n");
+		fprintf(fd, ":loopstart\n");
+		fprintf(fd, "if .%%1==. goto loopend\n");
+		fprintf(fd, "if .%%1==.--nofork (\n");
+		fprintf(fd, "    set VIMNOFORK=1\n");
+		fprintf(fd, ") else if .%%1==.-f (\n");
+		fprintf(fd, "    set VIMNOFORK=1\n");
+		fprintf(fd, ")\n");
+		fprintf(fd, "shift\n");
+		fprintf(fd, "goto loopstart\n");
+		fprintf(fd, ":loopend\n");
 		fprintf(fd, "\n");
 	    }
 
-	    fprintf(fd, ":ntaction\n");
-	    fprintf(fd, "rem for WinNT we can use %%*\n");
-
-	    // For gvim.exe use "start /b" to avoid that the console window
-	    // stays open.
 	    if (*exename == 'g')
 	    {
-		fprintf(fd, "if .%%VIMNOFORK%%==.1 goto noforknt\n");
-		fprintf(fd, "start \"dummy\" /b ");
+		// For gvim.exe use "start /b" to avoid that the console window
+		// stays open.
+		fprintf(fd, "if .%%VIMNOFORK%%==.1 (\n");
+		fprintf(fd, "    start \"dummy\" /b /wait ");
+		// Always use quotes, $VIM or $VIMRUNTIME might have a space.
+		fprintf(fd, "\"%%VIM_EXE_DIR%%\\%s\" %s %%*\n",
+							     exename, vimarg);
+		fprintf(fd, ") else (\n");
+		fprintf(fd, "    start \"dummy\" /b ");
+		// Always use quotes, $VIM or $VIMRUNTIME might have a space.
+		fprintf(fd, "\"%%VIM_EXE_DIR%%\\%s\" %s %%*\n",
+							     exename, vimarg);
+		fprintf(fd, ")\n");
 	    }
-
-	    // Always use quotes, $VIM or $VIMRUNTIME might have a space.
-	    fprintf(fd, "\"%%VIM_EXE_DIR%%\\%s\" %s %%*\n", exename, vimarg);
-	    fprintf(fd, "goto eof\n");
-	    fprintf(fd, "\n");
-
-	    if (*exename == 'g')
+	    else
 	    {
-		fprintf(fd, ":noforknt\n");
-		fprintf(fd, "start \"dummy\" /b /wait ");
 		// Always use quotes, $VIM or $VIMRUNTIME might have a space.
 		fprintf(fd, "\"%%VIM_EXE_DIR%%\\%s\" %s %%*\n",
 							     exename, vimarg);
 	    }
-
-	    fprintf(fd, "\n:eof\n");
-	    fprintf(fd, "set VIMARGS=\n");
-	    if (*exename == 'g')
-		fprintf(fd, "set VIMNOFORK=\n");
 
 	    fclose(fd);
 	    printf("%s has been %s\n", batpath,

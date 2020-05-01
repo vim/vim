@@ -618,7 +618,7 @@ CClink = $(CC)
 # Add -Wpedantic to find // comments and other C99 constructs.
 # Better disable Perl and Python to avoid a lot of warnings.
 #CFLAGS = -g -Wall -Wextra -Wshadow -Wmissing-prototypes -Wpedantic -Wunreachable-code -Wunused-result -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
-#CFLAGS = -g -O2 -Wall -Wextra -Wshadow -Wmissing-prototypes -Wpedantic -Wunreachable-code -Wunused-result -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
+#CFLAGS = -g -O2 -Wall -Wextra -Wshadow -Wmissing-prototypes -Wpedantic -Wunreachable-code -Wno-cast-function-type -Wunused-result -Wno-deprecated-declarations -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=1
 #PYTHON_CFLAGS_EXTRA = -Wno-missing-field-initializers
 #MZSCHEME_CFLAGS_EXTRA = -Wno-unreachable-code -Wno-unused-parameter
 
@@ -691,9 +691,13 @@ LINT_OPTIONS = -beprxzF
 
 
 # Uncomment one of the next two lines to compile Vim with the
-# address sanitizer or with the undefined sanitizer.  Works with gcc and
+# address sanitizer (asan) or with the undefined sanitizer.  Works with gcc and
 # clang.  May make Vim twice as slow.  Errors reported on stderr.
 # More at: https://code.google.com/p/address-sanitizer/
+# Useful environment variables:
+# $ export ASAN_OPTIONS="print_stacktrace=1 log_path=asan"
+# $ export LSAN_OPTIONS="suppressions=`pwd`/testdir/lsan-suppress.txt"
+# When running tests output can be found in testdir/asan.*
 #SANITIZER_CFLAGS = -g -O0 -fsanitize=address -fno-omit-frame-pointer
 #SANITIZER_CFLAGS = -g -O0 -fsanitize=undefined -fno-omit-frame-pointer
 SANITIZER_LIBS = $(SANITIZER_CFLAGS)
@@ -1400,8 +1404,8 @@ HAIKUGUI_TESTTARGET = gui
 HAIKUGUI_BUNDLE =
 
 # All GUI files
-ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c
-ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w32.pro gui_photon.pro
+ALL_GUI_SRC  = gui.c gui_gtk.c gui_gtk_f.c gui_motif.c gui_xmdlg.c gui_xmebw.c gui_athena.c gui_gtk_x11.c gui_x11.c gui_at_sb.c gui_at_fs.c gui_haiku.cc
+ALL_GUI_PRO  = gui.pro gui_gtk.pro gui_motif.pro gui_xmdlg.pro gui_athena.pro gui_gtk_x11.pro gui_x11.pro gui_w32.pro gui_photon.pro gui_haiku.pro
 
 # }}}
 
@@ -1599,6 +1603,8 @@ BASIC_SRC = \
 	change.c \
 	charset.c \
 	cindent.c \
+	clientserver.c \
+	clipboard.c \
 	cmdexpand.c \
 	cmdhist.c \
 	crypt.c \
@@ -1674,6 +1680,7 @@ BASIC_SRC = \
 	term.c \
 	terminal.c \
 	testing.c \
+	textobject.c \
 	textprop.c \
 	time.c \
 	ui.c \
@@ -1743,6 +1750,8 @@ OBJ_COMMON = \
 	objects/blob.o \
 	objects/blowfish.o \
 	objects/cindent.o \
+	objects/clientserver.o \
+	objects/clipboard.o \
 	objects/cmdexpand.o \
 	objects/cmdhist.o \
 	objects/crypt.o \
@@ -1814,6 +1823,7 @@ OBJ_COMMON = \
 	objects/term.o \
 	objects/terminal.o \
 	objects/testing.o \
+	objects/textobject.o \
 	objects/textprop.o \
 	objects/time.o \
 	objects/ui.o \
@@ -1903,6 +1913,8 @@ PRO_AUTO = \
 	channel.pro \
 	charset.pro \
 	cindent.pro \
+	clientserver.pro \
+	clipboard.pro \
 	cmdexpand.pro \
 	cmdhist.pro \
 	crypt.pro \
@@ -1986,6 +1998,7 @@ PRO_AUTO = \
 	terminal.pro \
 	termlib.pro \
 	testing.pro \
+	textobject.pro \
 	textprop.pro \
 	time.pro \
 	ui.pro \
@@ -2278,7 +2291,6 @@ test_libvterm:
 # Run individual OLD style test.
 # These do not depend on the executable, compile it when needed.
 test1 \
-	test_eval \
 	test42 test44 test49 \
 	test52 test59 \
 	test70 \
@@ -2292,7 +2304,7 @@ test1 \
 #	export TEST_FILTER=Test_terminal_wipe_buffer
 # A partial match also works:
 #	export TEST_FILTER=wipe_buffer
-$(NEW_TESTS):
+$(NEW_TESTS) test_vim9:
 	cd testdir; $(MAKE) $@ VIMPROG=../$(VIMTESTTARGET) $(GUI_TESTARG) SCRIPTSOURCE=../$(SCRIPTSOURCE)
 
 newtests:
@@ -2873,7 +2885,7 @@ uninstall_runtime:
 clean celan: testclean
 	-rm -f *.o core $(VIMTARGET).core $(VIMTARGET) vim xxd/*.o
 	-rm -rf objects
-	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c auto/gui_gtk_gresources.c auto/gui_gtk_gresources.h
+	-rm -f $(TOOLS) auto/osdef.h auto/pathdef.c auto/if_perl.c auto/gui_gtk_gresources.c auto/gui_gtk_gresources.h auto/os_haiku.rdef
 	-rm -f conftest* *~ auto/link.sed
 	-rm -f testdir/opt_test.vim
 	-rm -f $(UNITTEST_TARGETS)
@@ -3030,6 +3042,14 @@ auto/if_perl.c: if_perl.xs
 auto/osdef.h: auto/config.h osdef.sh osdef1.h.in osdef2.h.in
 	CC="$(CC) $(OSDEF_CFLAGS)" srcdir=$(srcdir) sh $(srcdir)/osdef.sh
 
+auto/os_haiku.rdef: os_haiku.rdef.in
+	@echo creating $@
+	@echo '/* This file is automatically created by Makefile */' >> $@
+	@echo '/* DO NOT EDIT!  Change Makefile only. */' >> $@
+	@cat $(srcdir)/os_haiku.rdef.in >> auto/os_haiku.rdef
+	sed -i "s|@MAJOR@|$(VIMMAJOR)|" auto/os_haiku.rdef
+	sed -i "s|@MINOR@|$(VIMMINOR)|" auto/os_haiku.rdef
+
 auto/pathdef.c: Makefile auto/config.mk
 	-@echo creating $@
 	-@echo '/* pathdef.c */' > $@
@@ -3116,6 +3136,12 @@ objects/charset.o: charset.c
 
 objects/cindent.o: cindent.c
 	$(CCC) -o $@ cindent.c
+
+objects/clientserver.o: clientserver.c
+	$(CCC) -o $@ clientserver.c
+
+objects/clipboard.o: clipboard.c
+	$(CCC) -o $@ clipboard.c
 
 objects/cmdexpand.o: cmdexpand.c
 	$(CCC) -o $@ cmdexpand.c
@@ -3366,7 +3392,7 @@ objects/os_beos.o: os_beos.c
 objects/os_qnx.o: os_qnx.c
 	$(CCC) -o $@ os_qnx.c
 
-objects/os_haiku.rsrc: os_haiku.rdef
+objects/os_haiku.rsrc: auto/os_haiku.rdef
 	cat $< | $(CCC) -E - | grep -v '^#' | rc -o "$@" -
 
 objects/os_macosx.o: os_macosx.m
@@ -3452,6 +3478,9 @@ objects/terminal.o: terminal.c $(TERM_DEPS)
 
 objects/testing.o: testing.c
 	$(CCC) -o $@ testing.c
+
+objects/textobject.o: textobject.c
+	$(CCC) -o $@ textobject.c
 
 objects/textprop.o: textprop.c
 	$(CCC) -o $@ textprop.c
@@ -3731,6 +3760,14 @@ objects/charset.o: charset.c vim.h protodef.h auto/config.h feature.h os_unix.h 
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
 objects/cindent.o: cindent.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/clientserver.o: clientserver.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/clipboard.o: clipboard.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h
@@ -4033,6 +4070,10 @@ objects/terminal.o: terminal.c vim.h protodef.h auto/config.h feature.h os_unix.
  proto.h globals.h libvterm/include/vterm.h \
  libvterm/include/vterm_keycodes.h
 objects/testing.o: testing.c vim.h protodef.h auto/config.h feature.h os_unix.h \
+ auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
+ proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
+ proto.h globals.h
+objects/textobject.o: textobject.c vim.h protodef.h auto/config.h feature.h os_unix.h \
  auto/osdef.h ascii.h keymap.h term.h macros.h option.h beval.h \
  proto/gui_beval.pro structs.h regexp.h gui.h alloc.h ex_cmds.h spell.h \
  proto.h globals.h

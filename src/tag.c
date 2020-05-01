@@ -1358,7 +1358,7 @@ find_tagfunc_tags(
     }
     taglist = rettv.vval.v_list;
 
-    for (item = taglist->lv_first; item != NULL; item = item->li_next)
+    FOR_ALL_LIST_ITEMS(taglist, item)
     {
 	char_u		*mfp;
 	char_u		*res_name, *res_fname, *res_cmd, *res_kind;
@@ -1753,7 +1753,7 @@ find_tags(
 #ifdef FEAT_TAG_BINS
     // This is only to avoid a compiler warning for using search_info
     // uninitialised.
-    vim_memset(&search_info, 0, (size_t)1);
+    CLEAR_FIELD(search_info);
 #endif
 
 #ifdef FEAT_EVAL
@@ -2260,7 +2260,7 @@ parse_line:
 #endif
 					)
 	    {
-		vim_memset(&tagp, 0, sizeof(tagp));
+		CLEAR_FIELD(tagp);
 		tagp.tagname = lbuf;
 		tagp.tagname_end = vim_strchr(lbuf, TAB);
 		if (tagp.tagname_end == NULL)
@@ -2873,7 +2873,7 @@ get_tagfname(
     int			i;
 
     if (first)
-	vim_memset(tnp, 0, sizeof(tagname_T));
+	CLEAR_POINTER(tnp);
 
     if (curbuf->b_help)
     {
@@ -3530,7 +3530,7 @@ jumpto_tag(
 	 */
 	str = pbuf;
 	if (pbuf[0] == '/' || pbuf[0] == '?')
-	    str = skip_regexp(pbuf + 1, pbuf[0], FALSE, NULL) + 1;
+	    str = skip_regexp(pbuf + 1, pbuf[0], FALSE) + 1;
 	if (str > pbuf_end - 1)	// search command with nothing following
 	{
 	    save_p_ws = p_ws;
@@ -3820,7 +3820,7 @@ find_extra(char_u **pp)
 	    str = skipdigits(str);
 	else if (*str == '/' || *str == '?')
 	{
-	    str = skip_regexp(str + 1, *str, FALSE, NULL);
+	    str = skip_regexp(str + 1, *str, FALSE);
 	    if (*str != first_char)
 		str = NULL;
 	    else
@@ -4191,7 +4191,7 @@ tagstack_push_items(win_T *wp, list_T *l)
     int		fnum;
 
     // Add one entry at a time to the tag stack
-    for (li = l->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(l, li)
     {
 	if (li->li_tv.v_type != VAR_DICT || li->li_tv.vval.v_dict == NULL)
 	    continue;				// Skip non-dict items

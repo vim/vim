@@ -967,9 +967,13 @@ ex_source(exarg_T *eap)
 ex_options(
     exarg_T	*eap UNUSED)
 {
-    vim_setenv((char_u *)"OPTWIN_CMD",
-	    (char_u *)(cmdmod.tab ? "tab"
-		: (cmdmod.split & WSP_VERT) ? "vert" : ""));
+    char_u  buf[500];
+    int	    multi_mods = 0;
+
+    buf[0] = NUL;
+    (void)add_win_cmd_modifers(buf, &multi_mods);
+
+    vim_setenv((char_u *)"OPTWIN_CMD", buf);
     cmd_source((char_u *)SYS_OPTWIN_FILE, NULL);
 }
 #endif
@@ -1133,7 +1137,8 @@ do_source(
     {
 	// Already loaded and no need to load again, return here.
 	*ret_sid = sid;
-	return OK;
+	retval = OK;
+	goto theend;
     }
 #endif
 
@@ -1270,9 +1275,11 @@ do_source(
 	hashitem_T	*hi;
 	dictitem_T	*di;
 	int		todo;
+	int		is_vim9 = si->sn_version == SCRIPT_VERSION_VIM9;
 
 	// loading the same script again
 	si->sn_had_command = FALSE;
+	si->sn_version = 1;
 	current_sctx.sc_sid = sid;
 
 	ht = &SCRIPT_VARS(sid);
@@ -1287,6 +1294,10 @@ do_source(
 
 	// old imports are no longer valid
 	free_imports(sid);
+
+	// in Vim9 script functions are marked deleted
+	if (is_vim9)
+	    delete_script_functions(sid);
     }
     else
     {
@@ -1525,6 +1536,7 @@ free_scriptnames(void)
 	vim_free(si->sn_vars);
 
 	vim_free(si->sn_name);
+	free_imports(i);
 	free_string_option(si->sn_save_cpo);
 #  ifdef FEAT_PROFILE
 	ga_clear(&si->sn_prl_ga);

@@ -53,6 +53,8 @@
 #define EX_MODIFY    0x100000	// forbidden in non-'modifiable' buffer
 #define EX_FLAGS     0x200000	// allow flags after count in argument
 #define EX_RESTRICT  0x400000	// forbidden in restricted mode
+#define EX_EXPAND    0x800000	// expands wildcards later
+
 #define EX_FILES (EX_XFILE | EX_EXTRA)	// multiple extra files allowed
 #define EX_FILE1 (EX_FILES | EX_NOSPC)	// 1 file, defaults to current file
 #define EX_WORD1 (EX_EXTRA | EX_NOSPC)	// one extra word allowed
@@ -584,7 +586,7 @@ EXCMD(CMD_filter,	"filter",	ex_wrongmodifier,
 	EX_BANG|EX_NEEDARG|EX_EXTRA|EX_NOTRLCOM,
 	ADDR_NONE),
 EXCMD(CMD_find,		"find",		ex_find,
-	EX_RANGE|EX_BANG|EX_FILE1|EX_CMDARG|EX_ARGOPT|EX_TRLBAR,
+	EX_RANGE|EX_BANG|EX_FILE1|EX_CMDARG|EX_ARGOPT|EX_TRLBAR|EX_NEEDARG,
 	ADDR_OTHER),
 EXCMD(CMD_finally,	"finally",	ex_finally,
 	EX_TRLBAR|EX_SBOXOK|EX_CMDWIN,
@@ -653,7 +655,7 @@ EXCMD(CMD_helptags,	"helptags",	ex_helptags,
 	EX_NEEDARG|EX_FILES|EX_TRLBAR|EX_CMDWIN,
 	ADDR_NONE),
 EXCMD(CMD_hardcopy,	"hardcopy",	ex_hardcopy,
-	EX_RANGE|EX_COUNT|EX_EXTRA|EX_TRLBAR|EX_DFLALL|EX_BANG,
+	EX_RANGE|EX_COUNT|EX_EXTRA|EX_EXPAND|EX_TRLBAR|EX_DFLALL|EX_BANG,
 	ADDR_LINES),
 EXCMD(CMD_highlight,	"highlight",	ex_highlight,
 	EX_BANG|EX_EXTRA|EX_TRLBAR|EX_SBOXOK|EX_CMDWIN,
@@ -1334,7 +1336,7 @@ EXCMD(CMD_setlocal,	"setlocal",	ex_set,
 	EX_BANG|EX_TRLBAR|EX_EXTRA|EX_CMDWIN|EX_SBOXOK,
 	ADDR_NONE),
 EXCMD(CMD_sfind,	"sfind",	ex_splitview,
-	EX_BANG|EX_FILE1|EX_RANGE|EX_CMDARG|EX_ARGOPT|EX_TRLBAR,
+	EX_BANG|EX_FILE1|EX_RANGE|EX_CMDARG|EX_ARGOPT|EX_TRLBAR|EX_NEEDARG,
 	ADDR_OTHER),
 EXCMD(CMD_sfirst,	"sfirst",	ex_rewind,
 	EX_EXTRA|EX_BANG|EX_CMDARG|EX_ARGOPT|EX_TRLBAR,
@@ -1775,7 +1777,7 @@ EXCMD(CMD_z,		"z",		ex_z,
 	EX_RANGE|EX_WHOLEFOLD|EX_EXTRA|EX_FLAGS|EX_TRLBAR|EX_CMDWIN,
 	ADDR_LINES),
 
-// commands that don't start with a lowercase letter
+// commands that don't start with a letter
 EXCMD(CMD_bang,		"!",		ex_bang,
 	EX_RANGE|EX_WHOLEFOLD|EX_BANG|EX_FILES|EX_CMDWIN,
 	ADDR_LINES),
@@ -1800,6 +1802,11 @@ EXCMD(CMD_rshift,	">",		ex_operators,
 EXCMD(CMD_at,		"@",		ex_at,
 	EX_RANGE|EX_WHOLEFOLD|EX_EXTRA|EX_TRLBAR|EX_CMDWIN,
 	ADDR_LINES),
+EXCMD(CMD_tilde,	"~",		do_sub,
+	EX_RANGE|EX_WHOLEFOLD|EX_EXTRA|EX_CMDWIN|EX_MODIFY,
+	ADDR_LINES),
+
+// commands that start with an uppercase letter
 EXCMD(CMD_Next,		"Next",		ex_previous,
 	EX_EXTRA|EX_RANGE|EX_COUNT|EX_BANG|EX_CMDARG|EX_ARGOPT|EX_TRLBAR,
 	ADDR_OTHER),
@@ -1809,9 +1816,6 @@ EXCMD(CMD_Print,	"Print",	ex_print,
 EXCMD(CMD_X,		"X",		ex_X,
 	EX_TRLBAR,
 	ADDR_NONE),
-EXCMD(CMD_tilde,	"~",		do_sub,
-	EX_RANGE|EX_WHOLEFOLD|EX_EXTRA|EX_CMDWIN|EX_MODIFY,
-	ADDR_LINES),
 
 #undef EXCMD
 

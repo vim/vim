@@ -1071,12 +1071,13 @@ pum_set_event_info(dict_T *dict)
 {
     if (!pum_visible())
 	return;
-    dict_add_number(dict, "height", pum_height);
-    dict_add_number(dict, "width", pum_width);
-    dict_add_number(dict, "row", pum_row);
-    dict_add_number(dict, "col", pum_col);
-    dict_add_number(dict, "size", pum_size);
-    dict_add_bool(dict, "scrollbar", pum_scrollbar ? VVAL_TRUE : VVAL_FALSE);
+    (void)dict_add_number(dict, "height", pum_height);
+    (void)dict_add_number(dict, "width", pum_width);
+    (void)dict_add_number(dict, "row", pum_row);
+    (void)dict_add_number(dict, "col", pum_col);
+    (void)dict_add_number(dict, "size", pum_size);
+    (void)dict_add_bool(dict, "scrollbar",
+				       pum_scrollbar ? VVAL_TRUE : VVAL_FALSE);
 }
 #endif
 
@@ -1378,10 +1379,10 @@ pum_execute_menu(vimmenu_T *menu, int mode)
     int		idx = 0;
     exarg_T	ea;
 
-    for (mp = menu->children; mp != NULL; mp = mp->next)
+    FOR_ALL_CHILD_MENUS(menu, mp)
 	if ((mp->modes & mp->enabled & mode) && idx++ == pum_selected)
 	{
-	    vim_memset(&ea, 0, sizeof(ea));
+	    CLEAR_FIELD(ea);
 	    execute_menu(&ea, mp, -1);
 	    break;
 	}
@@ -1406,7 +1407,7 @@ pum_show_popupmenu(vimmenu_T *menu)
     pum_size = 0;
     mode = get_menu_mode_flag();
 
-    for (mp = menu->children; mp != NULL; mp = mp->next)
+    FOR_ALL_CHILD_MENUS(menu, mp)
 	if (menu_is_separator(mp->dname)
 		|| (mp->modes & mp->enabled & mode))
 	    ++pum_size;
@@ -1423,7 +1424,7 @@ pum_show_popupmenu(vimmenu_T *menu)
     if (array == NULL)
 	return;
 
-    for (mp = menu->children; mp != NULL; mp = mp->next)
+    FOR_ALL_CHILD_MENUS(menu, mp)
 	if (menu_is_separator(mp->dname))
 	    array[idx++].pum_text = (char_u *)"";
 	else if (mp->modes & mp->enabled & mode)

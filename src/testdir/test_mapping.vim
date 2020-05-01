@@ -430,9 +430,9 @@ func Test_error_in_map_expr()
 
   " GC must not run during map-expr processing, which can make Vim crash.
   call term_sendkeys(buf, '!')
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, "\<CR>")
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call assert_equal('run', job_status(job))
 
   call term_sendkeys(buf, ":qall!\<CR>")
@@ -510,7 +510,7 @@ func Test_expr_map_restore_cursor()
   END
   call writefile(lines, 'XtestExprMap')
   let buf = RunVimInTerminal('-S XtestExprMap', #{rows: 10})
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "\<C-B>")
   call VerifyScreenDump(buf, 'Test_map_expr_1', {})
 

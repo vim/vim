@@ -19,7 +19,6 @@ void format_lines(linenr_T line_count, int avoid_fex);
 int paragraph_start(linenr_T lnum);
 void block_prep(oparg_T *oap, struct block_def *bdp, linenr_T lnum, int is_del);
 void op_addsub(oparg_T *oap, linenr_T Prenum1, int g_cmd);
-void x11_export_final_selection(void);
 void clear_oparg(oparg_T *oap);
 void cursor_pos_info(dict_T *dict);
 void do_pending_operator(cmdarg_T *cap, int old_col, int gui_yank);

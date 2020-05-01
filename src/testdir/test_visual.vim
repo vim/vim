@@ -157,11 +157,16 @@ func Test_blockwise_visual_o_O()
   exe "norm! gvO\<Esc>rb"
   exe "norm! gvo\<C-c>rc"
   exe "norm! gvO\<C-c>rd"
+  set selection=exclusive
+  exe "norm! gvOo\<C-c>re"
+  call assert_equal('...a   be.', getline(4))
+  exe "norm! gvOO\<C-c>rf"
+  set selection&
 
   call assert_equal(['..........',
         \            '...c   d..',
         \            '...     ..',
-        \            '...a   b..',
+        \            '...a   bf.',
         \            '..........'], getline(1, '$'))
 
   enew!
@@ -262,6 +267,15 @@ func Test_virtual_replace2()
   call assert_equal(['abcd',
         \ 'efgh',
         \ 'ijkl'], getline(1, '$'))
+
+  " Test for truncating spaces in a newly added line using 'autoindent' if
+  " characters are not added to that line.
+  %d_
+  call setline(1, ['    app', '    bee', '    cat'])
+  setlocal autoindent
+  exe "normal gg$gRt\n\nr"
+  call assert_equal(['    apt', '', '    rat'], getline(1, '$'))
+
   " clean up
   %d_
   set bs&vim
@@ -613,82 +627,6 @@ func Test_characterwise_visual_mode()
   bwipe!
 endfunc
 
-func Test_characterwise_select_mode()
-  new
-
-  " Select mode maps
-  snoremap <lt>End> <End>
-  snoremap <lt>Down> <Down>
-  snoremap <lt>Del> <Del>
-
-  " characterwise select mode: delete middle line
-  call deletebufline('', 1, '$')
-  call append('$', ['a', 'b', 'c'])
-  exe "normal Gkkgh\<End>\<Del>"
-  call assert_equal(['', 'b', 'c'], getline(1, '$'))
-
-  " characterwise select mode: delete middle two lines
-  call deletebufline('', 1, '$')
-  call append('$', ['a', 'b', 'c'])
-  exe "normal Gkkgh\<Down>\<End>\<Del>"
-  call assert_equal(['', 'c'], getline(1, '$'))
-
-  " characterwise select mode: delete last line
-  call deletebufline('', 1, '$')
-  call append('$', ['a', 'b', 'c'])
-  exe "normal Ggh\<End>\<Del>"
-  call assert_equal(['', 'a', 'b', ''], getline(1, '$'))
-
-  " characterwise select mode: delete last two lines
-  call deletebufline('', 1, '$')
-  call append('$', ['a', 'b', 'c'])
-  exe "normal Gkgh\<Down>\<End>\<Del>"
-  call assert_equal(['', 'a', ''], getline(1, '$'))
-
-  sunmap <lt>End>
-  sunmap <lt>Down>
-  sunmap <lt>Del>
-  bwipe!
-endfunc
-
-func Test_linewise_select_mode()
-  new
-
-  " linewise select mode: delete middle line
-  call append('$', ['a', 'b', 'c'])
-  exe "normal GkkgH\<Del>"
-  call assert_equal(['', 'b', 'c'], getline(1, '$'))
-
-  " linewise select mode: delete middle two lines
-  call deletebufline('', 1, '$')
-  call append('$', ['a', 'b', 'c'])
-  exe "normal GkkgH\<Down>\<Del>"
-  call assert_equal(['', 'c'], getline(1, '$'))
-
-  " linewise select mode: delete last line
-  call deletebufline('', 1, '$')
-  call append('$', ['a', 'b', 'c'])
-  exe "normal GgH\<Del>"
-  call assert_equal(['', 'a', 'b'], getline(1, '$'))
-
-  " linewise select mode: delete last two lines
-  call deletebufline('', 1, '$')
-  call append('$', ['a', 'b', 'c'])
-  exe "normal GkgH\<Down>\<Del>"
-  call assert_equal(['', 'a'], getline(1, '$'))
-
-  bwipe!
-endfunc
-
-" Test for blockwise select mode (g CTRL-H)
-func Test_blockwise_select_mode()
-  new
-  call setline(1, ['foo', 'bar'])
-  call feedkeys("g\<BS>\<Right>\<Down>mm", 'xt')
-  call assert_equal(['mmo', 'mmr'], getline(1, '$'))
-  close!
-endfunc
-
 func Test_visual_mode_put()
   new
 
@@ -728,16 +666,16 @@ func Test_visual_mode_put()
   bwipe!
 endfunc
 
-func Test_select_mode_gv()
+func Test_gv_with_exclusive_selection()
   new
 
-  " gv in exclusive select mode after operation
+  " gv with exclusive selection after an operation
   call append('$', ['zzz ', 'Ã¤Ã '])
   set selection=exclusive
   normal Gkv3lyjv3lpgvcxxx
   call assert_equal(['', 'zzz ', 'xxx '], getline(1, '$'))
 
-  " gv in exclusive select mode without operation
+  " gv with exclusive selection without an operation
   call deletebufline('', 1, '$')
   call append('$', 'zzz ')
   set selection=exclusive
@@ -752,8 +690,7 @@ endfunc
 func Test_visual_block_mode()
   new
   call append(0, '')
-  call setline(1, ['abcdefghijklm', 'abcdefghijklm', 'abcdefghijklm',
-        \ 'abcdefghijklm', 'abcdefghijklm'])
+  call setline(1, repeat(['abcdefghijklm'], 5))
   call cursor(1, 1)
 
   " Test shift-right of a block
@@ -771,6 +708,16 @@ func Test_visual_block_mode()
         \ 'axyzqqqqef mno        ghijklm',
         \ 'axyzqqqqefgmnoklm',
         \ 'abcdqqqqijklm'], getline(1, 5))
+
+  " Test 'C' to change till the end of the line
+  call cursor(3, 4)
+  exe "normal! \<C-V>j3lCooo"
+  call assert_equal(['axyooo', 'axyooo'], getline(3, 4))
+
+  " Test 'D' to delete till the end of the line
+  call cursor(3, 3)
+  exe "normal! \<C-V>j2lD"
+  call assert_equal(['ax', 'ax'], getline(3, 4))
 
   bwipe!
 endfunc
@@ -916,32 +863,6 @@ func Test_star_register()
   close!
 endfunc
 
-" Test for using visual mode maps in select mode
-func Test_select_mode_map()
-  new
-  vmap <buffer> <F2> 3l
-  call setline(1, 'Test line')
-  call feedkeys("gh\<F2>map", 'xt')
-  call assert_equal('map line', getline(1))
-
-  vmap <buffer> <F2> ygV
-  call feedkeys("0gh\<Right>\<Right>\<F2>cwabc", 'xt')
-  call assert_equal('abc line', getline(1))
-
-  vmap <buffer> <F2> :<C-U>let v=100<CR>
-  call feedkeys("gggh\<Right>\<Right>\<F2>foo", 'xt')
-  call assert_equal('foo line', getline(1))
-
-  " reselect the select mode using gv from a visual mode map
-  vmap <buffer> <F2> gv
-  set selectmode=cmd
-  call feedkeys("0gh\<F2>map", 'xt')
-  call assert_equal('map line', getline(1))
-  set selectmode&
-
-  close!
-endfunc
-
 " Test for changing text in visual mode with 'exclusive' selection
 func Test_exclusive_selection()
   new
@@ -958,14 +879,37 @@ func Test_exclusive_selection()
   close!
 endfunc
 
-" Test for starting visual mode with a count
-" This test should be run withou any previous visual modes. So this should be
+" Test for starting visual mode with a count.
+" This test should be run without any previous visual modes. So this should be
 " run as a first test.
 func Test_AAA_start_visual_mode_with_count()
   new
   call setline(1, ['aaaaaaa', 'aaaaaaa', 'aaaaaaa', 'aaaaaaa'])
   normal! gg2Vy
   call assert_equal("aaaaaaa\naaaaaaa\n", @")
+  close!
+endfunc
+
+" Test for visually selecting an inner block (iB)
+func Test_visual_inner_block()
+  new
+  call setline(1, ['one', '{', 'two', '{', 'three', '}', 'four', '}', 'five'])
+  call cursor(5, 1)
+  " visually select all the lines in the block and then execute iB
+  call feedkeys("ViB\<C-C>", 'xt')
+  call assert_equal([0, 5, 1, 0], getpos("'<"))
+  call assert_equal([0, 5, 6, 0], getpos("'>"))
+  " visually select two inner blocks
+  call feedkeys("ViBiB\<C-C>", 'xt')
+  call assert_equal([0, 3, 1, 0], getpos("'<"))
+  call assert_equal([0, 7, 5, 0], getpos("'>"))
+  " try to select non-existing inner block
+  call cursor(5, 1)
+  call assert_beeps('normal ViBiBiB')
+  " try to select a unclosed inner block
+  8,9d
+  call cursor(5, 1)
+  call assert_beeps('normal ViBiB')
   close!
 endfunc
 

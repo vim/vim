@@ -183,7 +183,7 @@ spell_check(
     if (wp->w_s->b_langp.ga_len == 0)
 	return 1;
 
-    vim_memset(&mi, 0, sizeof(matchinf_T));
+    CLEAR_FIELD(mi);
 
     // A number is always OK.  Also skip hexadecimal numbers 0xFF99 and
     // 0X99FF.  But always do check spelling to find "3GPP" and "11
@@ -2031,7 +2031,7 @@ did_set_spelllang(win_T *wp)
 		dont_use_region = TRUE;
 
 	    // Check if we loaded this language before.
-	    for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+	    FOR_ALL_SPELL_LANGS(slang)
 		if (fullpathcmp(lang, slang->sl_fname, FALSE, TRUE) == FPC_SAME)
 		    break;
 	}
@@ -2048,7 +2048,7 @@ did_set_spelllang(win_T *wp)
 		dont_use_region = TRUE;
 
 	    // Check if we loaded this language before.
-	    for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+	    FOR_ALL_SPELL_LANGS(slang)
 		if (STRICMP(lang, slang->sl_name) == 0)
 		    break;
 	}
@@ -2083,7 +2083,7 @@ did_set_spelllang(win_T *wp)
 	/*
 	 * Loop over the languages, there can be several files for "lang".
 	 */
-	for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+	FOR_ALL_SPELL_LANGS(slang)
 	    if (filename ? fullpathcmp(lang, slang->sl_fname, FALSE, TRUE)
 								    == FPC_SAME
 			 : STRICMP(lang, slang->sl_name) == 0)
@@ -2162,7 +2162,7 @@ did_set_spelllang(win_T *wp)
 	}
 
 	// Check if it was loaded already.
-	for (slang = first_lang; slang != NULL; slang = slang->sl_next)
+	FOR_ALL_SPELL_LANGS(slang)
 	    if (fullpathcmp(spf_name, slang->sl_fname, FALSE, TRUE)
 								== FPC_SAME)
 		break;
@@ -2274,7 +2274,7 @@ theend:
     static void
 clear_midword(win_T *wp)
 {
-    vim_memset(wp->w_s->b_spell_ismw, 0, 256);
+    CLEAR_FIELD(wp->w_s->b_spell_ismw);
     VIM_CLEAR(wp->w_s->b_spell_ismw_mb);
 }
 
@@ -2520,9 +2520,9 @@ clear_spell_chartab(spelltab_T *sp)
 {
     int		i;
 
-    // Init everything to FALSE.
-    vim_memset(sp->st_isw, FALSE, sizeof(sp->st_isw));
-    vim_memset(sp->st_isu, FALSE, sizeof(sp->st_isu));
+    // Init everything to FALSE (zero).
+    CLEAR_FIELD(sp->st_isw);
+    CLEAR_FIELD(sp->st_isu);
     for (i = 0; i < 256; ++i)
     {
 	sp->st_fold[i] = i;

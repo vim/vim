@@ -989,9 +989,9 @@ trigger_complete_changed_event(int cur)
     dict_set_items_ro(v_event);
 
     recursive = TRUE;
-    textlock++;
+    textwinlock++;
     apply_autocmds(EVENT_COMPLETECHANGED, NULL, NULL, FALSE, curbuf);
-    textlock--;
+    textwinlock--;
     recursive = FALSE;
 
     dict_free_contents(v_event);
@@ -2217,6 +2217,9 @@ expand_by_function(
     pos = curwin->w_cursor;
     curwin_save = curwin;
     curbuf_save = curbuf;
+    // Lock the text to avoid weird things from happening.  Do allow switching
+    // to another window temporarily.
+    ++textlock;
 
     // Call a function, which returns a list or dict.
     if (call_vim_function(funcname, 2, args, &rettv) == OK)
@@ -2239,6 +2242,7 @@ expand_by_function(
 		break;
 	}
     }
+    --textlock;
 
     if (curwin_save != curwin || curbuf_save != curbuf)
     {
@@ -2313,7 +2317,7 @@ ins_compl_add_tv(typval_T *tv, int dir)
     else
     {
 	word = tv_get_string_chk(tv);
-	vim_memset(cptext, 0, sizeof(cptext));
+	CLEAR_FIELD(cptext);
     }
     if (word == NULL || (!empty && *word == NUL))
 	return FAIL;
@@ -2331,7 +2335,7 @@ ins_compl_add_list(list_T *list)
 
     // Go through the List with matches and add each of them.
     range_list_materialize(list);
-    for (li = list->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(list, li)
     {
 	if (ins_compl_add_tv(&li->li_tv, dir) == OK)
 	    // if dir was BACKWARD then honor it just once
@@ -2431,6 +2435,7 @@ set_completion(colnr_T startcol, list_T *list)
 f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 {
     int	    startcol;
+    int	    save_textlock = textlock;
 
     if ((State & INSERT) == 0)
     {
@@ -2438,22 +2443,24 @@ f_complete(typval_T *argvars, typval_T *rettv UNUSED)
 	return;
     }
 
+    // "textlock" is set when evaluating 'completefunc' but we can change
+    // text here.
+    textlock = 0;
+
     // Check for undo allowed here, because if something was already inserted
     // the line was already saved for undo and this check isn't done.
     if (!undo_allowed())
 	return;
 
     if (argvars[1].v_type != VAR_LIST || argvars[1].vval.v_list == NULL)
-    {
 	emsg(_(e_invarg));
-	return;
+    else
+    {
+	startcol = (int)tv_get_number_chk(&argvars[0], NULL);
+	if (startcol > 0)
+	    set_completion(startcol - 1, argvars[1].vval.v_list);
     }
-
-    startcol = (int)tv_get_number_chk(&argvars[0], NULL);
-    if (startcol <= 0)
-	return;
-
-    set_completion(startcol - 1, argvars[1].vval.v_list);
+    textlock = save_textlock;
 }
 
 /*
@@ -2513,7 +2520,7 @@ get_complete_info(list_T *what_list, dict_T *retdict)
     {
 	what_flag = 0;
 	range_list_materialize(what_list);
-	for (item = what_list->lv_first; item != NULL; item = item->li_next)
+	FOR_ALL_LIST_ITEMS(what_list, item)
 	{
 	    char_u *what = tv_get_string(&item->li_tv);
 

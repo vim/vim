@@ -120,6 +120,9 @@ Use |ch_status()| to see if the channel could be opened.
 
 {address} has the form "hostname:port".  E.g., "localhost:8765".
 
+When using an IPv6 address, enclose it within square brackets.  E.g.,
+"[2001:db8::1]:8765".
+
 {options} is a dictionary with optional entries:	*channel-open-options*
 
 "mode" can be:						*channel-mode*
@@ -620,6 +623,9 @@ ch_open({address} [, {options}])				*ch_open()*
 
 		{address} has the form "hostname:port", e.g.,
 		"localhost:8765".
+
+		When using an IPv6 address, enclose it within square brackets.
+		E.g., "[2001:db8::1]:8765".
 
 		If {options} is given it must be a |Dictionary|.
 		See |channel-open-options|.

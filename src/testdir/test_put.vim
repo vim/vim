@@ -113,3 +113,15 @@ func Test_put_p_indent_visual()
   call assert_equal('select that text', getline(2))
   bwipe!
 endfunc
+
+" Test for deleting all the contents of a buffer with a put
+func Test_put_visual_delete_all_lines()
+  new
+  call setline(1, ['one', 'two', 'three'])
+  let @r = ''
+  normal! VG"rgp
+  call assert_equal(1, line('$'))
+  close!
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

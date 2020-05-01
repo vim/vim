@@ -119,11 +119,13 @@ free_imports(int sid)
 
     for (idx = 0; idx < si->sn_imports.ga_len; ++idx)
     {
-	imported_T *imp = ((imported_T *)si->sn_imports.ga_data + idx);
+	imported_T *imp = ((imported_T *)si->sn_imports.ga_data) + idx;
 
 	vim_free(imp->imp_name);
     }
     ga_clear(&si->sn_imports);
+    ga_clear(&si->sn_var_vals);
+    ga_clear(&si->sn_type_list);
 }
 
 /*
@@ -215,7 +217,7 @@ find_exported(
 	funcname[1] = KS_EXTRA;
 	funcname[2] = (int)KE_SNR;
 	sprintf((char *)funcname + 3, "%ld_%s", (long)sid, name);
-	*ufunc = find_func(funcname, NULL);
+	*ufunc = find_func(funcname, FALSE, NULL);
 	if (funcname != buffer)
 	    vim_free(funcname);
 

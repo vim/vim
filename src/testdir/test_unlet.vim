@@ -20,6 +20,14 @@ endfunc
 
 func Test_unlet_fails()
   call assert_fails('unlet v:["count"]', 'E46:')
+  call assert_fails('unlet $', 'E475:')
+  let v = {}
+  call assert_fails('unlet v[:]', 'E719:')
+  let l = []
+  call assert_fails("unlet l['k'", 'E111:')
+  let d = {'k' : 1}
+  call assert_fails("unlet d.k2", 'E716:')
+  call assert_fails("unlet {a};", 'E488:')
 endfunc
 
 func Test_unlet_env()
@@ -55,3 +63,5 @@ func Test_unlet_complete()
   call feedkeys(":unlet $FOO\t\n", 'tx')
   call assert_true(!exists('$FOOBAR') || empty($FOOBAR))
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab
