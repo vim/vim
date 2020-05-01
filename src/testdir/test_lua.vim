@@ -623,7 +623,10 @@ vim.command('let s ..= "B"')
   lua << trim
     vim.command('let s ..= "D"')
   .
-  call assert_equal('ABCD', s)
+  lua << trim eof
+    vim.command('let s ..= "E"')
+  eof
+  call assert_equal('ABCDE', s)
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab
