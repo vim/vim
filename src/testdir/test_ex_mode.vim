@@ -49,6 +49,13 @@ func Test_ex_mode()
     call assert_equal(['  foo', '    foo'],       Ex("    foo\<C-d>"), e)
     call assert_equal(['foo', '    foo0'],        Ex("    foo0\<C-d>"), e)
     call assert_equal(['foo', '    foo^'],        Ex("    foo^\<C-d>"), e)
+    call assert_equal(['foo', 'foo'],
+          \ Ex("\<BS>\<C-H>\<Del>\<kDel>foo"), e)
+    " default wildchar <Tab> interferes with this test
+    set wildchar=<c-e>
+    call assert_equal(["a\tb", "a\tb"],           Ex("a\t\t\<C-H>b"), e)
+    call assert_equal(["\t  mn", "\tm\<C-T>n"],        Ex("\tm\<C-T>n"), e)
+    set wildchar&
   endfor
 
   set sw&
@@ -85,7 +92,6 @@ func Test_Ex_substitute()
   call term_sendkeys(buf, ":vi\<CR>")
   call WaitForAssert({-> assert_match('foo bar', term_getline(buf, 1))}, 1000)
 
-  call term_sendkeys(buf, ":q!\n")
   call StopVimInTerminal(buf)
 endfunc
 
@@ -126,6 +132,40 @@ endfunc
 func Test_Ex_escape_enter()
   call feedkeys("gQlet l = \"a\\\<kEnter>b\"\<cr>vi\<cr>", 'xt')
   call assert_equal("a\rb", l)
+endfunc
+
+" Test for :append! command in Ex mode
+func Test_Ex_append()
+  new
+  call setline(1, "\t   abc")
+  call feedkeys("Qappend!\npqr\nxyz\n.\nvisual\n", 'xt')
+  call assert_equal(["\t   abc", "\t   pqr", "\t   xyz"], getline(1, '$'))
+  close!
+endfunc
+
+" In Ex-mode, backslashes at the end of a command should be halved.
+func Test_Ex_echo_backslash()
+  " This test works only when the language is English
+  CheckEnglish
+  let bsl = '\\\\'
+  let bsl2 = '\\\'
+  call assert_fails('call feedkeys("Qecho " .. bsl .. "\nvisual\n", "xt")',
+        \ "E15: Invalid expression: \\\\")
+  call assert_fails('call feedkeys("Qecho " .. bsl2 .. "\nm\nvisual\n", "xt")',
+        \ "E15: Invalid expression: \\\nm")
+endfunc
+
+func Test_ex_mode_errors()
+  " Not allowed to enter ex mode when text is locked
+  au InsertCharPre <buffer> normal! gQ<CR>
+  let caught_e565 = 0
+  try
+    call feedkeys("ix\<esc>", 'xt')
+  catch /^Vim\%((\a\+)\)\=:E565/ " catch E565
+    let caught_e565 = 1
+  endtry
+  call assert_equal(1, caught_e565)
+  au! InsertCharPre
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

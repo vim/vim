@@ -5480,7 +5480,29 @@ $as_echo "yes" >&6; }
 	else
 	  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	  vi_cv_path_lua_pfx=
+
+	  # Detect moonjit:
+	  # https://groups.google.com/forum/#!topic/vim_use/O0vek60WuTk
+	  lua_suf=/moonjit-2.3
+	  inc_path="$vi_cv_path_lua_pfx/include"
+	  for dir in "$inc_path"/moonjit-[0-9]* ; do
+	    if test -d "$dir" ; then
+	      lua_suf=`basename '$dir'`
+	      lua_suf="/$lua_suf"
+	      break
+	    fi
+	  done
+	  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if lua.h can be found in $inc_path$lua_suf" >&5
+$as_echo_n "checking if lua.h can be found in $inc_path$lua_suf... " >&6; }
+	  if test -f "$inc_path$lua_suf/lua.h"; then
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+	    LUA_INC=$lua_suf
+	  else
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	    vi_cv_path_lua_pfx=
+	  fi
 	fi
       fi
     fi
@@ -7723,8 +7745,7 @@ $as_echo "yes" >&6; }
 fi
 
 if test "$enable_channel" = "yes"; then
-
-  if test "x$HAIKU" = "xyes"; then
+    if test "x$HAIKU" = "xyes"; then
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for socket in -lnetwork" >&5
 $as_echo_n "checking for socket in -lnetwork... " >&6; }
 if ${ac_cv_lib_network_socket+:} false; then :
@@ -7818,7 +7839,74 @@ fi
 
   fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gethostbyname in -lnsl" >&5
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiling with IPv6 networking is possible" >&5
+$as_echo_n "checking whether compiling with IPv6 networking is possible... " >&6; }
+if ${vim_cv_ipv6_networking+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <fcntl.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+	/* Check bitfields */
+	struct nbbuf {
+	unsigned int  initDone:1;
+	unsigned short signmaplen;
+	};
+
+int
+main ()
+{
+
+		/* Check creating a socket. */
+		struct sockaddr_in server;
+		struct addrinfo *res;
+		(void)socket(AF_INET, SOCK_STREAM, 0);
+		(void)htons(100);
+		(void)getaddrinfo("microsoft.com", NULL, NULL, &res);
+		if (errno == ECONNREFUSED)
+		  (void)connect(1, (struct sockaddr *)&server, sizeof(server));
+		(void)freeaddrinfo(res);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  vim_cv_ipv6_networking="yes"
+else
+  vim_cv_ipv6_networking="no"
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_ipv6_networking" >&5
+$as_echo "$vim_cv_ipv6_networking" >&6; }
+
+  if test "x$vim_cv_ipv6_networking" = "xyes"; then
+    $as_echo "#define FEAT_IPV6 1" >>confdefs.h
+
+    for ac_func in inet_ntop
+do :
+  ac_fn_c_check_func "$LINENO" "inet_ntop" "ac_cv_func_inet_ntop"
+if test "x$ac_cv_func_inet_ntop" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_INET_NTOP 1
+_ACEOF
+
+fi
+done
+
+  else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gethostbyname in -lnsl" >&5
 $as_echo_n "checking for gethostbyname in -lnsl... " >&6; }
 if ${ac_cv_lib_nsl_gethostbyname+:} false; then :
   $as_echo_n "(cached) " >&6
@@ -7863,8 +7951,11 @@ _ACEOF
 
 fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiling with process communication is possible" >&5
-$as_echo_n "checking whether compiling with process communication is possible... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiling with IPv4 networking is possible" >&5
+$as_echo_n "checking whether compiling with IPv4 networking is possible... " >&6; }
+if ${vim_cv_ipv4_networking+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -7900,14 +7991,16 @@ main ()
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
+  vim_cv_ipv4_networking="yes"
 else
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }; enable_netbeans="no"; enable_channel="no"
+  vim_cv_ipv4_networking="no"; enable_netbeans="no"; enable_channel="no"
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_ipv4_networking" >&5
+$as_echo "$vim_cv_ipv4_networking" >&6; }
+  fi
 fi
 if test "$enable_netbeans" = "yes"; then
   $as_echo "#define FEAT_NETBEANS_INTG 1" >>confdefs.h
@@ -12381,103 +12474,6 @@ $as_echo "$p0 / $p1" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: don't know" >&5
 $as_echo "don't know" >&6; }
-fi
-
-rm -f conftest_grp
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking default tty permissions/group" >&5
-$as_echo_n "checking default tty permissions/group... " >&6; }
-if ${vim_cv_tty_group+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-    if test "$cross_compiling" = yes; then :
-
-      as_fn_error $? "cross-compiling: please set 'vim_cv_tty_group' and 'vim_cv_tty_mode'" "$LINENO" 5
-
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include "confdefs.h"
-#include <sys/types.h>
-#if STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#include <sys/stat.h>
-#include <stdio.h>
-main()
-{
-  struct stat sb;
-  char *x,*ttyname();
-  int om, m;
-  FILE *fp;
-
-  if (!(x = ttyname(0))) exit(1);
-  if (stat(x, &sb)) exit(1);
-  om = sb.st_mode;
-  if (om & 002) exit(0);
-  m = system("mesg y");
-  if (m == -1 || m == 127) exit(1);
-  if (stat(x, &sb)) exit(1);
-  m = sb.st_mode;
-  if (chmod(x, om)) exit(1);
-  if (m & 002) exit(0);
-  if (sb.st_gid == getgid()) exit(1);
-  if (!(fp=fopen("conftest_grp", "w")))
-    exit(1);
-  fprintf(fp, "%d\n", sb.st_gid);
-  fclose(fp);
-  exit(0);
-}
-
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-
-      if test -f conftest_grp; then
-	vim_cv_tty_group=`cat conftest_grp`
-	if test "x$vim_cv_tty_mode" = "x" ; then
-	  vim_cv_tty_mode=0620
-	fi
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: pty mode: $vim_cv_tty_mode, group: $vim_cv_tty_group" >&5
-$as_echo "pty mode: $vim_cv_tty_mode, group: $vim_cv_tty_group" >&6; }
-      else
-	vim_cv_tty_group=world
-	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ptys are world accessible" >&5
-$as_echo "ptys are world accessible" >&6; }
-      fi
-
-else
-
-      vim_cv_tty_group=world
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: can't determine - assume ptys are world accessible" >&5
-$as_echo "can't determine - assume ptys are world accessible" >&6; }
-
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $vim_cv_tty_group" >&5
-$as_echo "$vim_cv_tty_group" >&6; }
-rm -f conftest_grp
-
-if test "x$vim_cv_tty_group" != "xworld" ; then
-  cat >>confdefs.h <<_ACEOF
-#define PTYGROUP $vim_cv_tty_group
-_ACEOF
-
-  if test "x$vim_cv_tty_mode" = "x" ; then
-    as_fn_error $? "It seems you're cross compiling and have 'vim_cv_tty_group' set, please also set the environment variable 'vim_cv_tty_mode' to the correct mode (probably 0620)" "$LINENO" 5
-  else
-    $as_echo "#define PTYMODE 0620" >>confdefs.h
-
-  fi
 fi
 
 

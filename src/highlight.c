@@ -524,7 +524,7 @@ static int color_numbers_88[28] = {0, 4, 2, 6,
 				 75, 11, 78, 15, -1};
 // for xterm with 256 colors...
 static int color_numbers_256[28] = {0, 4, 2, 6,
-				 1, 5, 130, 130,
+				 1, 5, 130, 3,
 				 248, 248, 7, 7,
 				 242, 242,
 				 12, 81, 10, 121,
@@ -658,7 +658,7 @@ do_highlight(
     /*
      * If no argument, list current highlighting.
      */
-    if (ends_excmd(*line))
+    if (!init && ends_excmd2(line - 1, line))
     {
 	for (i = 1; i <= highlight_ga.ga_len && !got_int; ++i)
 	    // TODO: only call when the group has attributes set
@@ -694,7 +694,7 @@ do_highlight(
     /*
      * ":highlight {group-name}": list highlighting for one group.
      */
-    if (!doclear && !dolink && ends_excmd(*linep))
+    if (!doclear && !dolink && ends_excmd2(line, linep))
     {
 	id = syn_namen2id(line, (int)(name_end - line));
 	if (id == 0)
@@ -720,14 +720,14 @@ do_highlight(
 	to_start = skipwhite(from_end);
 	to_end	 = skiptowhite(to_start);
 
-	if (ends_excmd(*from_start) || ends_excmd(*to_start))
+	if (ends_excmd2(line, from_start) || ends_excmd2(line, to_start))
 	{
 	    semsg(_("E412: Not enough arguments: \":highlight link %s\""),
 								  from_start);
 	    return;
 	}
 
-	if (!ends_excmd(*skipwhite(to_end)))
+	if (!ends_excmd2(line, skipwhite(to_end)))
 	{
 	    semsg(_("E413: Too many arguments: \":highlight link %s\""), from_start);
 	    return;
@@ -781,8 +781,7 @@ do_highlight(
 	/*
 	 * ":highlight clear [group]" command.
 	 */
-	line = linep;
-	if (ends_excmd(*line))
+	if (ends_excmd2(line, linep))
 	{
 #ifdef FEAT_GUI
 	    // First, we do not destroy the old values, but allocate the new
@@ -826,7 +825,7 @@ do_highlight(
 	    // It is now Ok to clear out the old data.
 #endif
 #ifdef FEAT_EVAL
-	    do_unlet((char_u *)"colors_name", TRUE);
+	    do_unlet((char_u *)"g:colors_name", TRUE);
 #endif
 	    restore_cterm_colors();
 
@@ -845,6 +844,7 @@ do_highlight(
 	    redraw_later_clear();
 	    return;
 	}
+	line = linep;
 	name_end = skiptowhite(line);
 	linep = skipwhite(name_end);
     }
@@ -888,7 +888,7 @@ do_highlight(
     }
 
     if (!doclear)
-      while (!ends_excmd(*linep))
+      while (!ends_excmd2(line, linep))
       {
 	key_start = linep;
 	if (*linep == '=')
@@ -1484,6 +1484,9 @@ do_highlight(
 		did_highlight_changed = TRUE;
 		redraw_all_later(NOT_VALID);
 	    }
+#endif
+#ifdef FEAT_VTP
+	    control_console_color_rgb();
 #endif
 	}
 #ifdef FEAT_TERMINAL
@@ -2138,7 +2141,7 @@ get_attr_entry(garray_T *table, attrentry_T *aep)
 	return 0;
 
     taep = &(((attrentry_T *)table->ga_data)[table->ga_len]);
-    vim_memset(taep, 0, sizeof(attrentry_T));
+    CLEAR_POINTER(taep);
     taep->ae_attr = aep->ae_attr;
 #ifdef FEAT_GUI
     if (table == &gui_attr_table)
@@ -2186,7 +2189,7 @@ get_cterm_attr_idx(int attr, int fg, int bg)
 {
     attrentry_T		at_en;
 
-    vim_memset(&at_en, 0, sizeof(attrentry_T));
+    CLEAR_FIELD(at_en);
 #ifdef FEAT_TERMGUICOLORS
     at_en.ae_u.cterm.fg_rgb = INVALCOLOR;
     at_en.ae_u.cterm.bg_rgb = INVALCOLOR;
@@ -2208,7 +2211,7 @@ get_tgc_attr_idx(int attr, guicolor_T fg, guicolor_T bg)
 {
     attrentry_T		at_en;
 
-    vim_memset(&at_en, 0, sizeof(attrentry_T));
+    CLEAR_FIELD(at_en);
     at_en.ae_attr = attr;
     if (fg == INVALCOLOR && bg == INVALCOLOR)
     {
@@ -2236,7 +2239,7 @@ get_gui_attr_idx(int attr, guicolor_T fg, guicolor_T bg)
 {
     attrentry_T		at_en;
 
-    vim_memset(&at_en, 0, sizeof(attrentry_T));
+    CLEAR_FIELD(at_en);
     at_en.ae_attr = attr;
     at_en.ae_u.gui.fg_color = fg;
     at_en.ae_u.gui.bg_color = bg;
@@ -2295,7 +2298,7 @@ hl_combine_attr(int char_attr, int prim_attr)
 	    new_en = *char_aep;
 	else
 	{
-	    vim_memset(&new_en, 0, sizeof(new_en));
+	    CLEAR_FIELD(new_en);
 	    new_en.ae_u.gui.fg_color = INVALCOLOR;
 	    new_en.ae_u.gui.bg_color = INVALCOLOR;
 	    new_en.ae_u.gui.sp_color = INVALCOLOR;
@@ -2338,7 +2341,7 @@ hl_combine_attr(int char_attr, int prim_attr)
 	    new_en = *char_aep;
 	else
 	{
-	    vim_memset(&new_en, 0, sizeof(new_en));
+	    CLEAR_FIELD(new_en);
 #ifdef FEAT_TERMGUICOLORS
 	    new_en.ae_u.cterm.bg_rgb = INVALCOLOR;
 	    new_en.ae_u.cterm.fg_rgb = INVALCOLOR;
@@ -2390,7 +2393,7 @@ hl_combine_attr(int char_attr, int prim_attr)
 	new_en = *char_aep;
     else
     {
-	vim_memset(&new_en, 0, sizeof(new_en));
+	CLEAR_FIELD(new_en);
 	if (char_attr <= HL_ALL)
 	    new_en.ae_attr = char_attr;
     }
@@ -3059,7 +3062,7 @@ syn_add_group(char_u *name)
 	return 0;
     }
 
-    vim_memset(&(HL_TABLE()[highlight_ga.ga_len]), 0, sizeof(hl_group_T));
+    CLEAR_POINTER(&(HL_TABLE()[highlight_ga.ga_len]));
     HL_TABLE()[highlight_ga.ga_len].sg_name = name;
     HL_TABLE()[highlight_ga.ga_len].sg_name_u = name_up;
 #if defined(FEAT_GUI) || defined(FEAT_TERMGUICOLORS)
@@ -3259,7 +3262,7 @@ combine_stl_hlt(
 
     if (id_alt == 0)
     {
-	vim_memset(&hlt[hlcnt + i], 0, sizeof(hl_group_T));
+	CLEAR_POINTER(&hlt[hlcnt + i]);
 	hlt[hlcnt + i].sg_term = highlight_attr[hlf];
 	hlt[hlcnt + i].sg_cterm = highlight_attr[hlf];
 #  if defined(FEAT_GUI) || defined(FEAT_EVAL)
@@ -3454,7 +3457,7 @@ highlight_changed(void)
     {
 	// Make sure id_S is always valid to simplify code below. Use the last
 	// entry.
-	vim_memset(&HL_TABLE()[hlcnt + 27], 0, sizeof(hl_group_T));
+	CLEAR_POINTER(&HL_TABLE()[hlcnt + 27]);
 	HL_TABLE()[hlcnt + 18].sg_term = highlight_attr[HLF_S];
 	id_S = hlcnt + 19;
     }
@@ -4943,10 +4946,11 @@ ex_match(exarg_T *eap)
     if (!eap->skip)
 	match_delete(curwin, id, FALSE);
 
-    if (ends_excmd(*eap->arg))
+    if (ends_excmd2(eap->cmd, eap->arg))
 	end = eap->arg;
     else if ((STRNICMP(eap->arg, "none", 4) == 0
-		&& (VIM_ISWHITE(eap->arg[4]) || ends_excmd(eap->arg[4]))))
+		&& (VIM_ISWHITE(eap->arg[4])
+				      || ends_excmd2(eap->arg, eap->arg + 4))))
 	end = eap->arg + 4;
     else
     {
@@ -4961,10 +4965,10 @@ ex_match(exarg_T *eap)
 	    semsg(_(e_invarg2), eap->arg);
 	    return;
 	}
-	end = skip_regexp(p + 1, *p, TRUE, NULL);
+	end = skip_regexp(p + 1, *p, TRUE);
 	if (!eap->skip)
 	{
-	    if (*end != NUL && !ends_excmd(*skipwhite(end + 1)))
+	    if (*end != NUL && !ends_excmd2(end, skipwhite(end + 1)))
 	    {
 		vim_free(g);
 		eap->errmsg = e_trailing;

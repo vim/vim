@@ -31,6 +31,8 @@ func Test_balloon_show()
 endfunc
 
 func Test_colorscheme()
+  call assert_equal('16777216', &t_Co)
+
   let colorscheme_saved = exists('g:colors_name') ? g:colors_name : 'default'
   let g:color_count = 0
   augroup TestColors
@@ -75,6 +77,7 @@ func Test_getfontname_with_arg()
   elseif has('gui_gtk2') || has('gui_gnome') || has('gui_gtk3')
     " Invalid font name. The result should be the name plus the default size.
     call assert_equal('notexist 10', getfontname('notexist'))
+    call assert_equal('', getfontname('*'))
 
     " Valid font name. This is usually the real name of Monospace by default.
     let fname = 'Bitstream Vera Sans Mono 12'
@@ -387,6 +390,11 @@ func Test_set_guifont()
     call assert_equal('Monospace 10', getfontname())
   endif
 
+  if has('win32')
+    " Invalid font names are accepted in GTK GUI
+    call assert_fails('set guifont=xa1bc23d7f', 'E596:')
+  endif
+
   if has('xfontset')
     let &guifontset = guifontset_saved
   endif
@@ -400,6 +408,8 @@ endfunc
 func Test_set_guifontset()
   CheckFeature xfontset
   let skipped = ''
+
+  call assert_fails('set guifontset=*', 'E597:')
 
   let ctype_saved = v:ctype
 
@@ -467,6 +477,7 @@ func Test_set_guifontset()
 endfunc
 
 func Test_set_guifontwide()
+  call assert_fails('set guifontwide=*', 'E533:')
   let skipped = ''
 
   if !g:x11_based_gui
@@ -784,6 +795,7 @@ func Test_set_term()
   " It's enough to check the current value since setting 'term' to anything
   " other than builtin_gui makes no sense at all.
   call assert_equal('builtin_gui', &term)
+  call assert_fails('set term=xterm', 'E530:')
 endfunc
 
 func Test_windowid_variable()
@@ -825,3 +837,5 @@ func Test_gui_dash_y()
   call delete('Xscriptgui')
   call delete('Xtestgui')
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

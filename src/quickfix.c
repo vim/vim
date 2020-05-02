@@ -1667,8 +1667,8 @@ qf_init_ext(
     // Do not used the cached buffer, it may have been wiped out.
     VIM_CLEAR(qf_last_bufname);
 
-    vim_memset(&state, 0, sizeof(state));
-    vim_memset(&fields, 0, sizeof(fields));
+    CLEAR_FIELD(state);
+    CLEAR_FIELD(fields);
     if ((qf_alloc_fields(&fields) == FAIL) ||
 		(qf_setup_state(&state, enc, efile, tv, buf,
 					lnumfirst, lnumlast) == FAIL))
@@ -1867,7 +1867,7 @@ qf_new_list(qf_info_T *qi, char_u *qf_title)
     else
 	qi->qf_curlist = qi->qf_listcount++;
     qfl = qf_get_curlist(qi);
-    vim_memset(qfl, 0, (size_t)(sizeof(qf_list_T)));
+    CLEAR_POINTER(qfl);
     qf_store_title(qfl, qf_title);
     qfl->qfl_type = qi->qfl_type;
     qfl->qf_id = ++last_qf_id;
@@ -5794,7 +5794,7 @@ vgr_jump_to_match(
     {
 	exarg_T ea;
 
-	vim_memset(&ea, 0, sizeof(ea));
+	CLEAR_FIELD(ea);
 	ea.arg = target_dir;
 	ea.cmdidx = CMD_lcd;
 	ex_cd(&ea);
@@ -6151,7 +6151,7 @@ restore_start_dir(char_u *dirname_start)
 	    // appropriate ex command and executing it.
 	    exarg_T ea;
 
-	    vim_memset(&ea, 0, sizeof(ea));
+	    CLEAR_FIELD(ea);
 	    ea.arg = dirname_start;
 	    ea.cmdidx = (curwin->w_localdir == NULL) ? CMD_cd : CMD_lcd;
 	    ex_cd(&ea);
@@ -6268,7 +6268,26 @@ load_dummy_buffer(
     static void
 wipe_dummy_buffer(buf_T *buf, char_u *dirname_start)
 {
-    if (curbuf != buf)		// safety check
+    // If any autocommand opened a window on the dummy buffer, close that
+    // window.  If we can't close them all then give up.
+    while (buf->b_nwindows > 0)
+    {
+	int	    did_one = FALSE;
+	win_T	    *wp;
+
+	if (firstwin->w_next != NULL)
+	    FOR_ALL_WINDOWS(wp)
+		if (wp->w_buffer == buf)
+		{
+		    if (win_close(wp, FALSE) == OK)
+			did_one = TRUE;
+		    break;
+		}
+	if (!did_one)
+	    return;
+    }
+
+    if (curbuf != buf && buf->b_nwindows == 0)	// safety check
     {
 #if defined(FEAT_EVAL)
 	cleanup_T   cs;
@@ -6892,7 +6911,7 @@ qf_add_entries(
 	qf_store_title(qfl, title);
     }
 
-    for (li = list->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(list, li)
     {
 	if (li->li_tv.v_type != VAR_DICT)
 	    continue; // Skip non-dict items

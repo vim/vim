@@ -1,6 +1,6 @@
 " Menu Translations: Português do Brasil
 " Maintainer: José de Paula <jose@infoviaweb.com>
-" Last Change: 2012 May 01
+" Last Change: 2020 Apr 23
 "
 
 " Quit when menu translations have already been done.
@@ -101,9 +101,9 @@ menutrans Toggle\ Line\ &Numbering<Tab>:set\ nu!	Ativar/Desativar\ &numeração\ d
 menutrans Toggle\ &List\ Mode<Tab>:set\ list!		Ativar/Desativar\ modo\ &list<Tab>:set\ list!
 menutrans Toggle\ Line\ &Wrap<Tab>:set\ wrap!		Ativar/Desativar\ &quebra\ de\ linhas<Tab>:set\ wrap!
 menutrans Toggle\ W&rap\ at\ word<Tab>:set\ lbr!	Ativar/Desativar\ quebra\ na\ &palavra<Tab>:set\ lbr!
-menutrans Toggle\ &expand-tab<Tab>:set\ et!		Ativar/Desativar\ expansão de tabs<Tab>:set\ et!
+menutrans Toggle\ &expand-tab<Tab>:set\ et!		Ativar/Desativar\ expansão\ de\ tabs<Tab>:set\ et!
 menutrans Toggle\ &auto-indent<Tab>:set\ ai!		Ativar/Desativar\ &auto-indentação<Tab>:set\ ai!
-menutrans Toggle\ &C-indenting<Tab>:set\ cin!		Ativar/Desativar\ indentação estilo &C<Tab>:set\ cin!
+menutrans Toggle\ &C-indenting<Tab>:set\ cin!		Ativar/Desativar\ indentação\ estilo\ &C<Tab>:set\ cin!
 
 " other options
 menutrans &Shiftwidth			Largura\ da\ &indentação
@@ -144,12 +144,12 @@ menutrans &Convert\ to\ HEX<Tab>:%!xxd	Converter\ para\ hexadecimal<Tab>:%!xxd
 menutrans Conve&rt\ back<Tab>:%!xxd\ -r	Conver&ter\ de\ volta<Tab>:%!xxd\ -r
 
 " Tools.Spelling menu
-menutrans &Spell Check On		&Ativar Correção Ortográfica
-menutrans &Spell Check Off		&Desativar Correção Ortográfica
-menutrans To &Next error<Tab>]s		&Próximo Erro<Tab>]s
-menutrans To &Previous Error<Tab>[s	Erro A&nterior<Tab>[s
-menutrans Suggest &Corrections<Tab>z=	&Sugerir Correções<Tab>z=
-menutrans &Repeat correction<Tab>:spellrepall	&Repetir Correção<Tab>:spellrepall
+menutrans &Spell\ Check\ On		&Ativar\ Correção\ Ortográfica
+menutrans &Spell\ Check\ Off		&Desativar\ Correção\ Ortográfica
+menutrans To\ &Next\ error<Tab>]s	&Próximo\ Erro<Tab>]s
+menutrans To\ &Previous\ Error<Tab>[s	Erro\ A&nterior<Tab>[s
+menutrans Suggest\ &Corrections<Tab>z=	&Sugerir\ Correções<Tab>z=
+menutrans &Repeat\ correction<Tab>:spellrepall	&Repetir\ Correção<Tab>:spellrepall
 
 menutrans Set\ language\ to\ "en"               Inglês
 menutrans Set\ language\ to\ "en_au"            Inglês\ (en_au)
@@ -158,7 +158,7 @@ menutrans Set\ language\ to\ "en_gb"            Inglês\ (en_gb)
 menutrans Set\ language\ to\ "en_nz"            Inglês\ (en_nz)
 menutrans Set\ language\ to\ "en_us"            Inglês\ (en_us)
 
-menutrans &Find\ More\ Languages                &Buscar mais idiomas
+menutrans &Find\ More\ Languages                &Buscar\ mais\ idiomas
 
 " Tools.Fold Menu
 menutrans &Enable/Disable\ folds<Tab>zi		&Ativar/Desativar\ dobras<Tab>zi

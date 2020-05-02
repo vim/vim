@@ -760,6 +760,11 @@ func Test_viminfo_perm()
   call setfperm('Xviminfo', '--x------')
   call assert_fails('rviminfo Xviminfo', 'E195:')
   call delete('Xviminfo')
+
+  " Try to write the viminfo to a directory
+  call mkdir('Xdir')
+  call assert_fails('wviminfo Xdir', 'E886:')
+  call delete('Xdir', 'rf')
 endfunc
 
 " Test for writing to an existing viminfo file merges the file marks
@@ -810,3 +815,24 @@ func XTest_viminfo_marks_merge()
   call test_settime(0)
   let &viminfo=save_viminfo
 endfunc
+
+" Test for errors in setting 'viminfo'
+func Test_viminfo_option_error()
+  " Missing number
+  call assert_fails('set viminfo=\"', 'E526:')
+  for c in split("'/:<@s", '\zs')
+    call assert_fails('set viminfo=' .. c, 'E526:')
+  endfor
+
+  " Missing comma
+  call assert_fails('set viminfo=%10!', 'E527:')
+  call assert_fails('set viminfo=!%10', 'E527:')
+  call assert_fails('set viminfo=h%10', 'E527:')
+  call assert_fails('set viminfo=c%10', 'E527:')
+  call assert_fails('set viminfo=:10%10', 'E527:')
+
+  " Missing ' setting
+  call assert_fails('set viminfo=%10', 'E528:')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

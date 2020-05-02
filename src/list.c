@@ -20,6 +20,11 @@ static char *e_listblobarg = N_("E899: Argument of %s must be a List or Blob");
 // List heads for garbage collection.
 static list_T		*first_list = NULL;	// list of all lists
 
+#define FOR_ALL_WATCHERS(l, lw) \
+    for ((lw) = (l)->lv_watch; (lw) != NULL; (lw) = (lw)->lw_next)
+
+static void list_free_item(list_T *l, listitem_T *item);
+
 /*
  * Add a watcher to a list.
  */
@@ -40,7 +45,7 @@ list_rem_watch(list_T *l, listwatch_T *lwrem)
     listwatch_T	*lw, **lwp;
 
     lwp = &l->lv_watch;
-    for (lw = l->lv_watch; lw != NULL; lw = lw->lw_next)
+    FOR_ALL_WATCHERS(l, lw)
     {
 	if (lw == lwrem)
 	{
@@ -60,7 +65,7 @@ list_fix_watch(list_T *l, listitem_T *item)
 {
     listwatch_T	*lw;
 
-    for (lw = l->lv_watch; lw != NULL; lw = lw->lw_next)
+    FOR_ALL_WATCHERS(l, lw)
 	if (lw->lw_item == item)
 	    lw->lw_item = item->li_next;
 }
@@ -311,7 +316,7 @@ listitem_alloc(void)
  * Free a list item, unless it was allocated together with the list itself.
  * Does not clear the value.  Does not notify watchers.
  */
-    void
+    static void
 list_free_item(list_T *l, listitem_T *item)
 {
     if (l->lv_with_items == 0 || item < (listitem_T *)l
@@ -363,11 +368,14 @@ list_equal(
 {
     listitem_T	*item1, *item2;
 
-    if (l1 == NULL || l2 == NULL)
-	return FALSE;
     if (l1 == l2)
 	return TRUE;
     if (list_len(l1) != list_len(l2))
+	return FALSE;
+    if (list_len(l1) == 0)
+	// empty and NULL list are considered equal
+	return TRUE;
+    if (l1 == NULL || l2 == NULL)
 	return FALSE;
 
     range_list_materialize(l1);
@@ -1083,7 +1091,7 @@ get_list_tv(char_u **arg, typval_T *rettv, int evaluate, int do_error)
     if (**arg != ']')
     {
 	if (do_error)
-	    semsg(_("E697: Missing end of List ']': %s"), *arg);
+	    semsg(_(e_list_end), *arg);
 failret:
 	if (evaluate)
 	    list_free(l);
@@ -1109,7 +1117,7 @@ write_list(FILE *fd, list_T *list, int binary)
     char_u	*s;
 
     range_list_materialize(list);
-    for (li = list->lv_first; li != NULL; li = li->li_next)
+    FOR_ALL_LIST_ITEMS(list, li)
     {
 	for (s = tv_get_string(&li->li_tv); *s != NUL; ++s)
 	{
@@ -1207,7 +1215,7 @@ f_list2str(typval_T *argvars, typval_T *rettv)
 	else
 	    char2bytes = mb_char2bytes;
 
-	for (li = l->lv_first; li != NULL; li = li->li_next)
+	FOR_ALL_LIST_ITEMS(l, li)
 	{
 	    buf[(*char2bytes)(tv_get_number(&li->li_tv), buf)] = NUL;
 	    ga_concat(&ga, buf);
@@ -1216,7 +1224,7 @@ f_list2str(typval_T *argvars, typval_T *rettv)
     }
     else if (ga_grow(&ga, list_len(l) + 1) == OK)
     {
-	for (li = l->lv_first; li != NULL; li = li->li_next)
+	FOR_ALL_LIST_ITEMS(l, li)
 	    ga_append(&ga, tv_get_number(&li->li_tv));
 	ga_append(&ga, NUL);
     }
@@ -1225,7 +1233,7 @@ f_list2str(typval_T *argvars, typval_T *rettv)
     rettv->vval.v_string = ga.ga_data;
 }
 
-    void
+    static void
 list_remove(typval_T *argvars, typval_T *rettv, char_u *arg_errmsg)
 {
     list_T	*l;
@@ -1435,7 +1443,7 @@ item_compare2(const void *s1, const void *s2)
     copy_tv(&si2->item->li_tv, &argv[1]);
 
     rettv.v_type = VAR_UNKNOWN;		// clear_tv() uses this
-    vim_memset(&funcexe, 0, sizeof(funcexe));
+    CLEAR_FIELD(funcexe);
     funcexe.evaluate = TRUE;
     funcexe.partial = partial;
     funcexe.selfdict = sortinfo->item_compare_selfdict;
@@ -1579,7 +1587,7 @@ do_sort_uniq(typval_T *argvars, typval_T *rettv, int sort)
 	if (sort)
 	{
 	    // sort(): ptrs will be the list to sort
-	    for (li = l->lv_first; li != NULL; li = li->li_next)
+	    FOR_ALL_LIST_ITEMS(l, li)
 	    {
 		ptrs[i].item = li;
 		ptrs[i].idx = i;
@@ -2158,6 +2166,9 @@ f_insert(typval_T *argvars, typval_T *rettv)
     {
 	int	    val, len;
 	char_u	    *p;
+
+	if (argvars[0].vval.v_blob == NULL)
+	    return;
 
 	len = blob_len(argvars[0].vval.v_blob);
 	if (argvars[2].v_type != VAR_UNKNOWN)

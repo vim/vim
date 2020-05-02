@@ -42,6 +42,7 @@ func Test_getbufwintabinfo()
     sign undefine Mark
     enew!
   endif
+  call assert_notequal([], getbufinfo(test_null_dict()))
 
   only
   let w1_id = win_getid()

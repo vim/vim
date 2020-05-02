@@ -79,5 +79,6 @@ int has_vtp_working(void);
 int has_conpty_working(void);
 int get_conpty_type(void);
 int is_conpty_stable(void);
+int get_conpty_fix_type(void);
 void resize_console_buf(void);
 /* vim: set ft=c : */

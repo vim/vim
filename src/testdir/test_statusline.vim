@@ -406,7 +406,7 @@ func Test_statusline_removed_group()
   call writefile(lines, 'XTest_statusline')
 
   let buf = RunVimInTerminal('-S XTest_statusline', {'rows': 10, 'cols': 50})
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call VerifyScreenDump(buf, 'Test_statusline_1', {})
 
   " clean up

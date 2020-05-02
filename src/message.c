@@ -865,6 +865,7 @@ emsg_namelen(char *msg, char_u *name, int len)
     char_u *copy = vim_strnsave((char_u *)name, len);
 
     semsg(msg, copy == NULL ? "NULL" : (char *)copy);
+    vim_free(copy);
 }
 
 /*
@@ -1034,7 +1035,11 @@ ex_messages(exarg_T *eap)
 
     if (p == first_msg_hist)
     {
+#ifdef FEAT_MULTI_LANG
+	s = get_mess_lang();
+#else
 	s = mch_getenv((char_u *)"LANG");
+#endif
 	if (s != NULL && *s != NUL)
 	    // The next comment is extracted by xgettext and put in po file for
 	    // translators to read.
@@ -4722,9 +4727,13 @@ vim_vsnprintf_typval(
 			    // signed
 			    switch (length_modifier)
 			    {
-			    case '\0':
+			    case '\0': str_arg_l += sprintf(
+						 tmp + str_arg_l, f,
+						 int_arg);
+				       break;
 			    case 'h': str_arg_l += sprintf(
-						 tmp + str_arg_l, f, int_arg);
+						 tmp + str_arg_l, f,
+						 (short)int_arg);
 				      break;
 			    case 'l': str_arg_l += sprintf(
 						tmp + str_arg_l, f, long_arg);
@@ -4739,9 +4748,13 @@ vim_vsnprintf_typval(
 			    // unsigned
 			    switch (length_modifier)
 			    {
-			    case '\0':
+			    case '\0': str_arg_l += sprintf(
+						tmp + str_arg_l, f,
+						uint_arg);
+				       break;
 			    case 'h': str_arg_l += sprintf(
-						tmp + str_arg_l, f, uint_arg);
+						tmp + str_arg_l, f,
+						(unsigned short)uint_arg);
 				      break;
 			    case 'l': str_arg_l += sprintf(
 					       tmp + str_arg_l, f, ulong_arg);

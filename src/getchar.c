@@ -99,7 +99,7 @@ static int	inchar(char_u *buf, int maxlen, long wait_time);
 /*
  * Free and clear a buffer.
  */
-    void
+    static void
 free_buff(buffheader_T *buf)
 {
     buffblock_T	*p, *np;
@@ -421,6 +421,10 @@ flush_buffers(flush_buffers_T flush_typeahead)
 	// remove mapped characters at the start only
 	typebuf.tb_off += typebuf.tb_maplen;
 	typebuf.tb_len -= typebuf.tb_maplen;
+#if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
+	if (typebuf.tb_len == 0)
+	    typebuf_was_filled = FALSE;
+#endif
     }
     else
     {
@@ -678,6 +682,46 @@ stuffcharReadbuff(int c)
 stuffnumReadbuff(long n)
 {
     add_num_buff(&readbuf1, n);
+}
+
+/*
+ * Stuff a string into the typeahead buffer, such that edit() will insert it
+ * literally ("literally" TRUE) or interpret is as typed characters.
+ */
+    void
+stuffescaped(char_u *arg, int literally)
+{
+    int		c;
+    char_u	*start;
+
+    while (*arg != NUL)
+    {
+	// Stuff a sequence of normal ASCII characters, that's fast.  Also
+	// stuff K_SPECIAL to get the effect of a special key when "literally"
+	// is TRUE.
+	start = arg;
+	while ((*arg >= ' '
+#ifndef EBCDIC
+		    && *arg < DEL // EBCDIC: chars above space are normal
+#endif
+		    )
+		|| (*arg == K_SPECIAL && !literally))
+	    ++arg;
+	if (arg > start)
+	    stuffReadbuffLen(start, (long)(arg - start));
+
+	// stuff a single special character
+	if (*arg != NUL)
+	{
+	    if (has_mbyte)
+		c = mb_cptr2char_adv(&arg);
+	    else
+		c = *arg++;
+	    if (literally && ((c < ' ' && c != TAB) || c == DEL))
+		stuffcharReadbuff(Ctrl_V);
+	    stuffcharReadbuff(c);
+	}
+    }
 }
 
 /*
@@ -1283,6 +1327,9 @@ alloc_typebuf(void)
     typebuf.tb_no_abbr_cnt = 0;
     if (++typebuf.tb_change_cnt == 0)
 	typebuf.tb_change_cnt = 1;
+#if defined(FEAT_CLIENTSERVER) || defined(FEAT_EVAL)
+    typebuf_was_filled = FALSE;
+#endif
     return OK;
 }
 
@@ -1623,7 +1670,7 @@ vgetc(void)
 	    // Get two extra bytes for special keys
 	    if (c == K_SPECIAL
 #ifdef FEAT_GUI
-		    || (gui.in_use && c == CSI)
+		    || (c == CSI)
 #endif
 	       )
 	    {
@@ -1678,23 +1725,19 @@ vgetc(void)
 		}
 #endif
 #ifdef FEAT_GUI
-		if (gui.in_use)
+		// Handle focus event here, so that the caller doesn't need to
+		// know about it.  Return K_IGNORE so that we loop once (needed
+		// if 'lazyredraw' is set).
+		if (c == K_FOCUSGAINED || c == K_FOCUSLOST)
 		{
-		    // Handle focus event here, so that the caller doesn't
-		    // need to know about it.  Return K_IGNORE so that we loop
-		    // once (needed if 'lazyredraw' is set).
-		    if (c == K_FOCUSGAINED || c == K_FOCUSLOST)
-		    {
-			ui_focus_change(c == K_FOCUSGAINED);
-			c = K_IGNORE;
-		    }
-
-		    // Translate K_CSI to CSI.  The special key is only used
-		    // to avoid it being recognized as the start of a special
-		    // key.
-		    if (c == K_CSI)
-			c = CSI;
+		    ui_focus_change(c == K_FOCUSGAINED);
+		    c = K_IGNORE;
 		}
+
+		// Translate K_CSI to CSI.  The special key is only used to
+		// avoid it being recognized as the start of a special key.
+		if (c == K_CSI)
+		    c = CSI;
 #endif
 	    }
 	    // a keypad or special function key was not mapped, use it like
@@ -1772,11 +1815,7 @@ vgetc(void)
 		    buf[i] = vgetorpeek(TRUE);
 		    if (buf[i] == K_SPECIAL
 #ifdef FEAT_GUI
-			    || (
-# ifdef VIMDLL
-				gui.in_use &&
-# endif
-				buf[i] == CSI)
+			    || (buf[i] == CSI)
 #endif
 			    )
 		    {

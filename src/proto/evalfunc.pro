@@ -4,7 +4,7 @@ char_u *get_expr_name(expand_T *xp, int idx);
 int find_internal_func(char_u *name);
 int has_internal_func(char_u *name);
 char *internal_func_name(int idx);
-type_T *internal_func_ret_type(int idx, int argcount);
+type_T *internal_func_ret_type(int idx, int argcount, type_T **argtypes);
 int check_internal_func(int idx, int argcount);
 int call_internal_func(char_u *name, int argcount, typval_T *argvars, typval_T *rettv);
 void call_internal_func_by_idx(int idx, typval_T *argvars, typval_T *rettv);

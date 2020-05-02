@@ -188,6 +188,7 @@ static int win32_set_archive(char_u *name);
 static int conpty_working = 0;
 static int conpty_type = 0;
 static int conpty_stable = 0;
+static int conpty_fix_type = 0;
 static void vtp_flag_init();
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL)
@@ -307,6 +308,7 @@ read_console_input(
     int head;
     int tail;
     int i;
+    static INPUT_RECORD s_irPseudo;
 
     if (nLength == -2)
 	return (s_dwMax > 0) ? TRUE : FALSE;
@@ -351,6 +353,19 @@ read_console_input(
 		head++;
 	    }
 	    s_dwMax = tail + 1;
+	}
+    }
+
+    if (s_irCache[s_dwIndex].EventType == KEY_EVENT)
+    {
+	if (s_irCache[s_dwIndex].Event.KeyEvent.wRepeatCount > 1)
+	{
+	    s_irPseudo = s_irCache[s_dwIndex];
+	    s_irPseudo.Event.KeyEvent.wRepeatCount = 1;
+	    s_irCache[s_dwIndex].Event.KeyEvent.wRepeatCount--;
+	    *lpBuffer = s_irPseudo;
+	    *lpEvents = 1;
+	    return TRUE;
 	}
     }
 
@@ -950,7 +965,7 @@ win32_kbd_patch_key(
     if (pker->UChar != 0)
 	return 1;
 
-    vim_memset(abKeystate, 0, sizeof (abKeystate));
+    CLEAR_FIELD(abKeystate);
 
     // Clear any pending dead keys
     ToUnicode(VK_SPACE, MapVirtualKey(VK_SPACE, 0), abKeystate, awAnsiCode, 2, 0);
@@ -1782,7 +1797,13 @@ mch_inchar(
 
     int		len;
     int		c;
-# define TYPEAHEADLEN 20
+# ifdef VIMDLL
+// Extra space for maximum three CSIs. E.g. U+1B6DB -> 0xF0 0x9B 0x9B 0x9B.
+#  define TYPEAHEADSPACE    6
+# else
+#  define TYPEAHEADSPACE    0
+# endif
+# define TYPEAHEADLEN	    (20 + TYPEAHEADSPACE)
     static char_u   typeahead[TYPEAHEADLEN];	// previously typed bytes.
     static int	    typeaheadlen = 0;
 
@@ -1838,7 +1859,7 @@ mch_inchar(
     // to get and still room in the buffer (up to two bytes for a char and
     // three bytes for a modifier).
     while ((typeaheadlen == 0 || WaitForChar(0L, FALSE))
-					  && typeaheadlen + 5 <= TYPEAHEADLEN)
+		         && typeaheadlen + 5 + TYPEAHEADSPACE <= TYPEAHEADLEN)
     {
 	if (typebuf_changed(tb_change_cnt))
 	{
@@ -1890,7 +1911,7 @@ mch_inchar(
 
 		if (ch2 == NUL)
 		{
-		    int	    i;
+		    int	    i, j;
 		    char_u  *p;
 		    WCHAR   ch[2];
 
@@ -1903,13 +1924,33 @@ mch_inchar(
 		    p = utf16_to_enc(ch, &n);
 		    if (p != NULL)
 		    {
-			for (i = 0; i < n; i++)
-			    typeahead[typeaheadlen + i] = p[i];
+			for (i = 0, j = 0; i < n; i++)
+			{
+			    typeahead[typeaheadlen + j++] = p[i];
+# ifdef VIMDLL
+			    if (p[i] == CSI)
+			    {
+				typeahead[typeaheadlen + j++] = KS_EXTRA;
+				typeahead[typeaheadlen + j++] = KE_CSI;
+			    }
+# endif
+			}
+			n = j;
 			vim_free(p);
 		    }
 		}
 		else
+		{
 		    typeahead[typeaheadlen] = c;
+# ifdef VIMDLL
+		    if (c == CSI)
+		    {
+			typeahead[typeaheadlen + 1] = KS_EXTRA;
+			typeahead[typeaheadlen + 2] = KE_CSI;
+			n = 3;
+		    }
+# endif
+		}
 		if (ch2 != NUL)
 		{
 		    if (c == K_NUL)
@@ -2723,6 +2764,10 @@ mch_init(void)
     void
 mch_exit(int r)
 {
+#ifdef FEAT_NETBEANS_INTG
+    netbeans_send_disconnect();
+#endif
+
 #ifdef VIMDLL
     if (gui.in_use || gui.starting)
 	mch_exit_g(r);
@@ -5405,6 +5450,9 @@ termcap_mode_start(void)
     if (g_fTermcapMode)
 	return;
 
+    if (!p_rs && USE_VTP)
+	vtp_printf("\033[?1049h");
+
     SaveConsoleBuffer(&g_cbNonTermcap);
 
     if (g_cbTermcap.IsValid)
@@ -5504,6 +5552,9 @@ termcap_mode_end(void)
 	SetConsoleCursorPosition(g_hConOut, coord);
     }
 
+    if (!p_rs && USE_VTP)
+	vtp_printf("\033[?1049l");
+
     g_fTermcapMode = FALSE;
 }
 #endif // FEAT_GUI_MSWIN
@@ -5528,12 +5579,14 @@ clear_chars(
     COORD coord,
     DWORD n)
 {
-    DWORD dwDummy;
-
-    FillConsoleOutputCharacter(g_hConOut, ' ', n, coord, &dwDummy);
-
     if (!USE_VTP)
-	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, n, coord, &dwDummy);
+    {
+	DWORD dwDummy;
+
+	FillConsoleOutputCharacter(g_hConOut, ' ', n, coord, &dwDummy);
+	FillConsoleOutputAttribute(g_hConOut, g_attrCurrent, n, coord,
+								     &dwDummy);
+    }
     else
     {
 	set_console_color_rgb();
@@ -5795,6 +5848,12 @@ gotoxy(
 
     if (!USE_VTP)
     {
+	// There are reports of double-width characters not displayed
+	// correctly.  This workaround should fix it, similar to how it's done
+	// for VTP.
+	g_coord.X = 0;
+	SetConsoleCursorPosition(g_hConOut, g_coord);
+
 	// external cursor coords are 1-based; internal are 0-based
 	g_coord.X = x - 1;
 	g_coord.Y = y - 1;
@@ -5958,6 +6017,10 @@ visual_bell(void)
 cursor_visible(BOOL fVisible)
 {
     s_cursor_visible = fVisible;
+
+    if (USE_VTP)
+	vtp_printf("\033[?25%c", fVisible ? 'h' : 'l');
+
 # ifdef MCH_CURSOR_SHAPE
     mch_update_cursor();
 # endif
@@ -5975,23 +6038,57 @@ write_chars(
 {
     COORD	    coord = g_coord;
     DWORD	    written;
-    DWORD	    n, cchwritten, cells;
+    DWORD	    n, cchwritten;
+    static DWORD    cells;
     static WCHAR    *unicodebuf = NULL;
     static int	    unibuflen = 0;
-    int		    length;
+    static int	    length;
     int		    cp = enc_utf8 ? CP_UTF8 : enc_codepage;
+    static WCHAR    *utf8spbuf = NULL;
+    static int	    utf8splength;
+    static DWORD    utf8spcells;
+    static WCHAR    **utf8usingbuf = &unicodebuf;
 
-    length = MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite, 0, 0);
-    if (unicodebuf == NULL || length > unibuflen)
+    if (cbToWrite != 1 || *pchBuf != ' ' || !enc_utf8)
     {
-	vim_free(unicodebuf);
-	unicodebuf = LALLOC_MULT(WCHAR, length);
-	unibuflen = length;
+	utf8usingbuf = &unicodebuf;
+	do
+	{
+	    length = MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite,
+							unicodebuf, unibuflen);
+	    if (length && length <= unibuflen)
+		break;
+	    vim_free(unicodebuf);
+	    unicodebuf = length ? LALLOC_MULT(WCHAR, length) : NULL;
+	    unibuflen = unibuflen ? 0 : length;
+	} while(1);
+	cells = mb_string2cells(pchBuf, cbToWrite);
     }
-    MultiByteToWideChar(cp, 0, (LPCSTR)pchBuf, cbToWrite,
-			unicodebuf, unibuflen);
-
-    cells = mb_string2cells(pchBuf, cbToWrite);
+    else // cbToWrite == 1 && *pchBuf == ' ' && enc_utf8
+    {
+	if (utf8usingbuf != &utf8spbuf)
+	{
+	    if (utf8spbuf == NULL)
+	    {
+		cells = mb_string2cells((char_u *)" ", 1);
+		length = MultiByteToWideChar(CP_UTF8, 0, " ", 1, NULL, 0);
+		utf8spbuf = LALLOC_MULT(WCHAR, length);
+		if (utf8spbuf != NULL)
+		{
+		    MultiByteToWideChar(CP_UTF8, 0, " ", 1, utf8spbuf, length);
+		    utf8usingbuf = &utf8spbuf;
+		    utf8splength = length;
+		    utf8spcells = cells;
+		}
+	    }
+	    else
+	    {
+		utf8usingbuf = &utf8spbuf;
+		length = utf8splength;
+		cells = utf8spcells;
+	    }
+	}
+    }
 
     if (!USE_VTP)
     {
@@ -5999,14 +6096,14 @@ write_chars(
 				    coord, &written);
 	// When writing fails or didn't write a single character, pretend one
 	// character was written, otherwise we get stuck.
-	if (WriteConsoleOutputCharacterW(g_hConOut, unicodebuf, length,
+	if (WriteConsoleOutputCharacterW(g_hConOut, *utf8usingbuf, length,
 		    coord, &cchwritten) == 0
 		|| cchwritten == 0 || cchwritten == (DWORD)-1)
 	    cchwritten = 1;
     }
     else
     {
-	if (WriteConsoleW(g_hConOut, unicodebuf, length, &cchwritten,
+	if (WriteConsoleW(g_hConOut, *utf8usingbuf, length, &cchwritten,
 		    NULL) == 0 || cchwritten == 0)
 	    cchwritten = 1;
     }
@@ -6032,11 +6129,119 @@ write_chars(
 	    g_coord.Y++;
     }
 
-    gotoxy(g_coord.X + 1, g_coord.Y + 1);
+    // Cursor under VTP is always in the correct position, no need to reset.
+    if (!USE_VTP)
+	gotoxy(g_coord.X + 1, g_coord.Y + 1);
 
     return written;
 }
 
+    static char_u *
+get_seq(
+    int *args,
+    int *count,
+    char_u *head)
+{
+    int argc;
+    char_u *p;
+
+    if (head == NULL || *head != '\033')
+	return NULL;
+
+    argc = 0;
+    p = head;
+    ++p;
+    do
+    {
+	++p;
+	args[argc] = getdigits(&p);
+	argc += (argc < 15) ? 1 : 0;
+    } while (*p == ';');
+    *count = argc;
+
+    return p;
+}
+
+    static char_u *
+get_sgr(
+    int *args,
+    int *count,
+    char_u *head)
+{
+    char_u *p = get_seq(args, count, head);
+
+    return (p && *p == 'm') ? ++p : NULL;
+}
+
+/*
+ * Pointer to next if SGR (^[[n;2;*;*;*m), NULL otherwise.
+ */
+    static char_u *
+sgrn2(
+    char_u *head,
+    int	   n)
+{
+    int argc;
+    int args[16];
+    char_u *p = get_sgr(args, &argc, head);
+
+    return p && argc == 5 && args[0] == n && args[1] == 2 ? p : NULL;
+}
+
+/*
+ * Pointer to next if SGR(^[[nm)<space>ESC, NULL otherwise.
+ */
+    static char_u *
+sgrnc(
+    char_u *head,
+    int	   n)
+{
+    int argc;
+    int args[16];
+    char_u *p = get_sgr(args, &argc, head);
+
+    return p && argc == 1 && args[0] == n && (p = skipwhite(p)) && *p == '\033'
+								    ? p : NULL;
+}
+
+    static char_u *
+skipblank(char_u *q)
+{
+    char_u *p = q;
+
+    while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r')
+	++p;
+    return p;
+}
+
+/*
+ * Pointer to the next if any whitespace that may follow SGR is ESC, otherwise
+ * NULL.
+ */
+    static char_u *
+sgrn2c(
+    char_u *head,
+    int	   n)
+{
+    char_u *p = sgrn2(head, n);
+
+    return p && *p != NUL && (p = skipblank(p)) && *p == '\033' ? p : NULL;
+}
+
+/*
+ * If there is only a newline between the sequence immediately following it,
+ * a pointer to the character following the newline is returned.
+ * Otherwise NULL.
+ */
+    static char_u *
+sgrn2cn(
+    char_u *head,
+    int n)
+{
+    char_u *p = sgrn2(head, n);
+
+    return p && p[0] == 0x0a && p[1] == '\033' ? ++p : NULL;
+}
 
 /*
  * mch_write(): write the output buffer to the screen, translating ESC
@@ -6063,9 +6268,21 @@ mch_write(
     // translate ESC | sequences into faked bios calls
     while (len--)
     {
-	// optimization: use one single write_chars for runs of text,
-	// rather than once per character  It ain't curses, but it helps.
-	DWORD  prefix = (DWORD)strcspn((char *)s, "\n\r\b\a\033");
+	int prefix = -1;
+	char_u ch;
+
+	// While processing a sequence, on rare occasions it seems that another
+	// sequence may be inserted asynchronously.
+	if (len < 0)
+	{
+	    redraw_all_later(CLEAR);
+	    return;
+	}
+
+	while((ch = s[++prefix]))
+	    if (ch <= 0x1e && !(ch != '\n' && ch != '\r' && ch != '\b'
+						&& ch != '\a' && ch != '\033'))
+		break;
 
 	if (p_wd)
 	{
@@ -6152,24 +6369,52 @@ mch_write(
 # endif
 	    char_u  *p;
 	    int	    arg1 = 0, arg2 = 0, argc = 0, args[16];
+	    char_u  *sp;
 
 	    switch (s[2])
 	    {
 	    case '0': case '1': case '2': case '3': case '4':
 	    case '5': case '6': case '7': case '8': case '9':
-		p = s + 1;
-		do
+		if (*(p = get_seq(args, &argc, s)) != 'm')
+		    goto notsgr;
+
+		p = s;
+
+		// Handling frequent optional sequences.  Output to the screen
+		// takes too long, so do not output as much as possible.
+
+		// If resetFG,FG,BG,<cr>,BG,FG are connected, the preceding
+		// resetFG,FG,BG are omitted.
+		if (sgrn2(sgrn2(sgrn2cn(sgrn2(sgrnc(p, 39), 38), 48), 48), 38))
 		{
-		    ++p;
-		    args[argc] = getdigits(&p);
-		    argc += (argc < 15) ? 1 : 0;
-		    if (p > s + len)
-			break;
-		} while (*p == ';');
-
-		if (p > s + len)
+		    p = sgrn2(sgrn2(sgrnc(p, 39), 38), 48);
+		    len = len + 1 - (int)(p - s);
+		    s = p;
 		    break;
+		}
 
+		// If FG,BG,BG,FG of SGR are connected, the first FG can be
+		// omitted.
+		if (sgrn2(sgrn2(sgrn2c((sp = sgrn2(p, 38)), 48), 48), 38))
+		    p = sp;
+
+		// If FG,BG,FG,BG of SGR are connected, the first FG can be
+		// omitted.
+		if (sgrn2(sgrn2(sgrn2c((sp = sgrn2(p, 38)), 48), 38), 48))
+		    p = sp;
+
+		// If BG,BG of SGR are connected, the first BG can be omitted.
+		if (sgrn2((sp = sgrn2(p, 48)), 48))
+		    p = sp;
+
+		// If restoreFG and FG are connected, the restoreFG can be
+	        // omitted.
+		if (sgrn2((sp = sgrnc(p, 39)), 38))
+		    p = sp;
+
+		p = get_seq(args, &argc, p);
+
+notsgr:
 		arg1 = args[0];
 		arg2 = args[1];
 		if (*p == 'm')
@@ -7229,6 +7474,12 @@ mch_setenv(char *var, char *value, int x UNUSED)
 #define CONPTY_1909_BUILD	    MAKE_VER(10, 0, 18363)
 
 /*
+ * Stay ahead of the next update, and when it's done, fix this.
+ * version ? (2020 update, temporarily use the build number of insider preview)
+ */
+#define CONPTY_NEXT_UPDATE_BUILD    MAKE_VER(10, 0, 19587)
+
+/*
  * Confirm until this version.  Also the logic changes.
  * insider preview.
  */
@@ -7274,6 +7525,9 @@ vtp_flag_init(void)
 	conpty_type = 2;
     if (ver < CONPTY_FIRST_SUPPORT_BUILD)
 	conpty_type = 1;
+
+    if (ver >= CONPTY_NEXT_UPDATE_BUILD)
+	conpty_fix_type = 1;
 }
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)
@@ -7336,11 +7590,12 @@ vtp_printf(
     char_u  buf[100];
     va_list list;
     DWORD   result;
+    int	    len;
 
     va_start(list, format);
-    vim_vsnprintf((char *)buf, 100, (char *)format, list);
+    len = vim_vsnprintf((char *)buf, 100, (char *)format, list);
     va_end(list);
-    WriteConsoleA(g_hConOut, buf, (DWORD)STRLEN(buf), &result, NULL);
+    WriteConsoleA(g_hConOut, buf, (DWORD)len, &result, NULL);
     return (int)result;
 }
 
@@ -7354,30 +7609,150 @@ vtp_sgr_bulk(
     vtp_sgr_bulks(1, args);
 }
 
+#define FAST256(x) \
+    if ((*p-- = "0123456789"[(n = x % 10)]) \
+	    && x >= 10 && (*p-- = "0123456789"[((m = x % 100) - n) / 10]) \
+	    && x >= 100 && (*p-- = "012"[((x & 0xff) - m) / 100]));
+
+#define FAST256CASE(x) \
+    case x: \
+	FAST256(newargs[x - 1]);
+
     static void
 vtp_sgr_bulks(
     int argc,
-    int *args
-)
+    int *args)
 {
-    // 2('\033[') + 4('255.') * 16 + NUL
-    char_u buf[2 + (4 * 16) + 1];
-    char_u *p;
-    int    i;
+#define MAXSGR 16
+#define SGRBUFSIZE 2 + 4 * MAXSGR + 1 // '\033[' + SGR + 'm'
+    char_u  buf[SGRBUFSIZE];
+    char_u  *p;
+    int	    in, out;
+    int	    newargs[16];
+    static int sgrfgr = -1, sgrfgg, sgrfgb;
+    static int sgrbgr = -1, sgrbgg, sgrbgb;
 
-    p = buf;
-    *p++ = '\033';
-    *p++ = '[';
-
-    for (i = 0; i < argc; ++i)
+    if (argc == 0)
     {
-	p += vim_snprintf((char *)p, 4, "%d", args[i] & 0xff);
-	*p++ = ';';
+	sgrfgr = sgrbgr = -1;
+	vtp_printf("033[m");
+	return;
     }
-    p--;
-    *p++ = 'm';
-    *p = NUL;
-    vtp_printf((char *)buf);
+
+    in = out = 0;
+    while (in < argc)
+    {
+	int s = args[in];
+	int copylen = 1;
+
+	if (s == 38)
+	{
+	    if (argc - in >= 5 && args[in + 1] == 2)
+	    {
+		if (sgrfgr == args[in + 2] && sgrfgg == args[in + 3]
+						     && sgrfgb == args[in + 4])
+		{
+		    in += 5;
+		    copylen = 0;
+		}
+		else
+		{
+		    sgrfgr = args[in + 2];
+		    sgrfgg = args[in + 3];
+		    sgrfgb = args[in + 4];
+		    copylen = 5;
+		}
+	    }
+	    else if (argc - in >= 3 && args[in + 1] == 5)
+	    {
+		sgrfgr = -1;
+		copylen = 3;
+	    }
+	}
+	else if (s == 48)
+	{
+	    if (argc - in >= 5 && args[in + 1] == 2)
+	    {
+		if (sgrbgr == args[in + 2] && sgrbgg == args[in + 3]
+						     && sgrbgb == args[in + 4])
+		{
+		    in += 5;
+		    copylen = 0;
+		}
+		else
+		{
+		    sgrbgr = args[in + 2];
+		    sgrbgg = args[in + 3];
+		    sgrbgb = args[in + 4];
+		    copylen = 5;
+		}
+	    }
+	    else if (argc - in >= 3 && args[in + 1] == 5)
+	    {
+		sgrbgr = -1;
+		copylen = 3;
+	    }
+	}
+	else if (30 <= s && s <= 39)
+	    sgrfgr = -1;
+	else if (90 <= s && s <= 97)
+	    sgrfgr = -1;
+	else if (40 <= s && s <= 49)
+	    sgrbgr = -1;
+	else if (100 <= s && s <= 107)
+	    sgrbgr = -1;
+	else if (s == 0)
+	    sgrfgr = sgrbgr = -1;
+
+	while (copylen--)
+	    newargs[out++] = args[in++];
+    }
+
+    p = &buf[sizeof(buf) - 1];
+    *p-- = 'm';
+
+    switch (out)
+    {
+	int	n, m;
+	DWORD	r;
+
+	FAST256CASE(16);
+	*p-- = ';';
+	FAST256CASE(15);
+	*p-- = ';';
+	FAST256CASE(14);
+	*p-- = ';';
+	FAST256CASE(13);
+	*p-- = ';';
+	FAST256CASE(12);
+	*p-- = ';';
+	FAST256CASE(11);
+	*p-- = ';';
+	FAST256CASE(10);
+	*p-- = ';';
+	FAST256CASE(9);
+	*p-- = ';';
+	FAST256CASE(8);
+	*p-- = ';';
+	FAST256CASE(7);
+	*p-- = ';';
+	FAST256CASE(6);
+	*p-- = ';';
+	FAST256CASE(5);
+	*p-- = ';';
+	FAST256CASE(4);
+	*p-- = ';';
+	FAST256CASE(3);
+	*p-- = ';';
+	FAST256CASE(2);
+	*p-- = ';';
+	FAST256CASE(1);
+	*p-- = '[';
+	*p = '\033';
+	WriteConsoleA(g_hConOut, p, (DWORD)(&buf[SGRBUFSIZE] - p), &r, NULL);
+    default:
+	break;
+    }
 }
 
 # ifdef FEAT_TERMGUICOLORS
@@ -7560,6 +7935,12 @@ get_conpty_type(void)
 is_conpty_stable(void)
 {
     return conpty_stable;
+}
+
+    int
+get_conpty_fix_type(void)
+{
+    return conpty_fix_type;
 }
 
 #if !defined(FEAT_GUI_MSWIN) || defined(VIMDLL) || defined(PROTO)

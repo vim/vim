@@ -285,6 +285,7 @@ func Test_getsettagstack()
   call assert_fails("call settagstack(1, {'items' : 10})", 'E714')
   call assert_fails("call settagstack(1, {'items' : []}, 10)", 'E928')
   call assert_fails("call settagstack(1, {'items' : []}, 'b')", 'E962')
+  call assert_equal(-1, settagstack(0, test_null_dict()))
 
   set tags=Xtags
   call writefile(["!_TAG_FILE_ENCODING\tutf-8\t//",
@@ -544,7 +545,7 @@ func Test_tselect()
   call writefile(lines, 'XTest_tselect')
   let buf = RunVimInTerminal('-S XTest_tselect', {'rows': 10, 'cols': 50})
 
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, ":tselect main\<CR>2\<CR>")
   call VerifyScreenDump(buf, 'Test_tselect_1', {})
 
@@ -1140,7 +1141,7 @@ endfunc
 
 " Test for :dsearch, :dlist, :djump and :dsplit commands
 " Test for [d, ]d, [D, ]D, [ CTRL-D, ] CTRL-D and CTRL-W d commands
-func Test_def_search()
+func Test_macro_search()
   new
   call setline(1, ['#define FOO 1', '#define FOO 2', '#define FOO 3',
         \ '#define FOO 4', '#define FOO 5'])
@@ -1233,6 +1234,37 @@ func Test_def_search()
   call assert_fails('dsplit 6 FOO', 'E388:')
   call assert_fails('dsplit BAR', 'E388:')
 
+  close!
+endfunc
+
+" Test for [*, [/, ]* and ]/
+func Test_comment_search()
+  new
+  call setline(1, ['', '/*', ' *', ' *', ' */'])
+  normal! 4gg[/
+  call assert_equal([2, 1], [line('.'), col('.')])
+  normal! 3gg[*
+  call assert_equal([2, 1], [line('.'), col('.')])
+  normal! 3gg]/
+  call assert_equal([5, 3], [line('.'), col('.')])
+  normal! 3gg]*
+  call assert_equal([5, 3], [line('.'), col('.')])
+  %d
+  call setline(1, ['', '/*', ' *', ' *'])
+  call assert_beeps('normal! 3gg]/')
+  %d
+  call setline(1, ['', ' *', ' *', ' */'])
+  call assert_beeps('normal! 4gg[/')
+  %d
+  call setline(1, '        /* comment */')
+  normal! 15|[/
+  call assert_equal(9, col('.'))
+  normal! 15|]/
+  call assert_equal(21, col('.'))
+  call setline(1, '         comment */')
+  call assert_beeps('normal! 15|[/')
+  call setline(1, '        /* comment')
+  call assert_beeps('normal! 15|]/')
   close!
 endfunc
 

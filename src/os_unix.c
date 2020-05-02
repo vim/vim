@@ -4160,11 +4160,6 @@ set_child_environment(
     static char	envbuf_Servername[60];
 #  endif
 # endif
-    long	colors =
-#  ifdef FEAT_GUI
-	    gui.in_use ? 256*256*256 :
-#  endif
-	    t_colors;
 
 # ifdef HAVE_SETENV
     setenv("TERM", term, 1);
@@ -4174,7 +4169,7 @@ set_child_environment(
     setenv("LINES", (char *)envbuf, 1);
     sprintf((char *)envbuf, "%ld", columns);
     setenv("COLUMNS", (char *)envbuf, 1);
-    sprintf((char *)envbuf, "%ld", colors);
+    sprintf((char *)envbuf, "%d", t_colors);
     setenv("COLORS", (char *)envbuf, 1);
 #  ifdef FEAT_TERMINAL
     if (is_terminal)
@@ -4201,7 +4196,7 @@ set_child_environment(
     vim_snprintf(envbuf_Columns, sizeof(envbuf_Columns),
 						       "COLUMNS=%ld", columns);
     putenv(envbuf_Columns);
-    vim_snprintf(envbuf_Colors, sizeof(envbuf_Colors), "COLORS=%ld", colors);
+    vim_snprintf(envbuf_Colors, sizeof(envbuf_Colors), "COLORS=%ld", t_colors);
     putenv(envbuf_Colors);
 #  ifdef FEAT_TERMINAL
     if (is_terminal)
@@ -5491,9 +5486,17 @@ mch_job_start(char **argv, job_T *job, jobopt_T *options, int is_terminal)
 		term = getenv("TERM");
 #endif
 	    // Use 'term' or $TERM if it starts with "xterm", otherwise fall
-	    // back to "xterm".
+	    // back to "xterm" or "xterm-color".
 	    if (term == NULL || *term == NUL || STRNCMP(term, "xterm", 5) != 0)
-		term = "xterm";
+	    {
+		if (t_colors >= 256)
+		    // TODO: should we check this name is supported?
+		    term = "xterm-256color";
+		else if (t_colors > 16)
+		    term = "xterm-color";
+		else
+		    term = "xterm";
+	    }
 	    set_child_environment(
 		    (long)options->jo_term_rows,
 		    (long)options->jo_term_cols,

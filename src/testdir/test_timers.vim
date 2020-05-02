@@ -398,9 +398,9 @@ func Test_timer_error_in_timer_callback()
   call WaitForAssert({-> assert_notequal('', term_getline(buf, 8))})
 
   " GC must not run during timer callback, which can make Vim crash.
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call term_sendkeys(buf, "\<CR>")
-  call term_wait(buf, 100)
+  call TermWait(buf, 50)
   call assert_equal('run', job_status(job))
 
   call term_sendkeys(buf, ":qall!\<CR>")
@@ -420,6 +420,10 @@ func Test_timer_garbage_collect()
   let l = timer_info(timer)
   call assert_equal(function('MyHandler'), l[0].callback)
   call timer_stop(timer)
+endfunc
+
+func Test_timer_invalid_callback()
+  call assert_fails('call timer_start(0, "0")', 'E921')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

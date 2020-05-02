@@ -3,18 +3,15 @@
 source shared.vim
 source term_util.vim
 
-function Test_messages()
+func Test_messages()
   let oldmore = &more
   try
     set nomore
-    " Avoid the "message maintainer" line.
-    let $LANG = ''
 
     let arr = map(range(10), '"hello" . v:val')
     for s in arr
       echomsg s | redraw
     endfor
-    let result = ''
 
     " get last two messages
     redir => result
@@ -25,22 +22,19 @@ function Test_messages()
 
     " clear messages without last one
     1messages clear
-    redir => result
-    redraw | messages
-    redir END
-    let msg_list = split(result, "\n")
+    let msg_list = GetMessages()
     call assert_equal(['hello9'], msg_list)
 
     " clear all messages
     messages clear
-    redir => result
-    redraw | messages
-    redir END
-    call assert_equal('', result)
+    let msg_list = GetMessages()
+    call assert_equal([], msg_list)
   finally
     let &more = oldmore
   endtry
-endfunction
+
+  call assert_fails('message 1', 'E474:')
+endfunc
 
 " Patch 7.4.1696 defined the "clearmode()" function for clearing the mode
 " indicator (e.g., "-- INSERT --") when ":stopinsert" is invoked.  Message
@@ -74,6 +68,7 @@ func Test_echomsg()
   call assert_equal("\n12345", execute(':echomsg 12345'))
   call assert_equal("\n[]", execute(':echomsg []'))
   call assert_equal("\n[1, 2, 3]", execute(':echomsg [1, 2, 3]'))
+  call assert_equal("\n[1, 2, []]", execute(':echomsg [1, 2, test_null_list()]'))
   call assert_equal("\n{}", execute(':echomsg {}'))
   call assert_equal("\n{'a': 1, 'b': 2}", execute(':echomsg {"a": 1, "b": 2}'))
   if has('float')
@@ -114,7 +109,7 @@ func Test_mode_message_at_leaving_insert_by_ctrl_c()
 
   let rows = 10
   let buf = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
-  call term_wait(buf, 200)
+  call TermWait(buf, 100)
   call assert_equal('run', job_status(term_getjob(buf)))
 
   call term_sendkeys(buf, "i")
@@ -143,7 +138,7 @@ func Test_mode_message_at_leaving_insert_with_esc_mapped()
 
   let rows = 10
   let buf = term_start([GetVimProg(), '--clean', '-S', testfile], {'term_rows': rows})
-  call term_wait(buf, 200)
+  call WaitForAssert({-> assert_match('0,0-1\s*All$', term_getline(buf, rows - 1))})
   call assert_equal('run', job_status(term_getjob(buf)))
 
   call term_sendkeys(buf, "i")
@@ -265,7 +260,6 @@ func Test_message_more()
   call term_sendkeys(buf, 'q')
   call WaitForAssert({-> assert_equal('100', term_getline(buf, 5))})
 
-  call term_sendkeys(buf, ":q!\n")
   call StopVimInTerminal(buf)
 endfunc
 
@@ -295,7 +289,6 @@ func Test_ask_yesno()
   call WaitForAssert({-> assert_equal('y1', term_getline(buf, 1))})
   call WaitForAssert({-> assert_equal('y2', term_getline(buf, 2))})
 
-  call term_sendkeys(buf, ":q!\n")
   call StopVimInTerminal(buf)
 endfunc
 
@@ -304,9 +297,12 @@ func Test_null()
   echom test_null_dict()
   echom test_null_blob()
   echom test_null_string()
+  echom test_null_function()
   echom test_null_partial()
   if has('job')
     echom test_null_job()
     echom test_null_channel()
   endif
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

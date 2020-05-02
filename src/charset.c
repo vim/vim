@@ -127,7 +127,7 @@ buf_init_chartab(
     /*
      * Init word char flags all to FALSE
      */
-    vim_memset(buf->b_chartab, 0, (size_t)32);
+    CLEAR_FIELD(buf->b_chartab);
     if (enc_dbcs != 0)
 	for (c = 0; c < 256; ++c)
 	{

@@ -1046,7 +1046,7 @@ do_arg_all(
 	    // Move the already present window to below the current window
 	    if (curwin->w_arg_idx != i)
 	    {
-		for (wpnext = firstwin; wpnext != NULL; wpnext = wpnext->w_next)
+		FOR_ALL_WINDOWS(wpnext)
 		{
 		    if (wpnext->w_arg_idx == i)
 		    {

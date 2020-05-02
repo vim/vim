@@ -73,3 +73,18 @@ func Test_expand()
   " Don't add any line above this, otherwise <slnum> will change.
   quit
 endfunc
+
+" Test for 'wildignore' with expand()
+func Test_expand_wildignore()
+  set wildignore=*.vim
+  call assert_equal('', expand('test_expand_func.vim'))
+  call assert_equal('', expand('test_expand_func.vim', 0))
+  call assert_equal([], expand('test_expand_func.vim', 0, 1))
+  call assert_equal('test_expand_func.vim', expand('test_expand_func.vim', 1))
+  call assert_equal(['test_expand_func.vim'],
+        \ expand('test_expand_func.vim', 1, 1))
+  call assert_fails("call expand('*', [])", 'E745:')
+  set wildignore&
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -257,18 +257,6 @@ func Test_edit_09()
   bw!
 endfunc
 
-func Test_edit_10()
-  " Test for starting selectmode
-  new
-  set selectmode=key keymodel=startsel
-  call setline(1, ['abc', 'def', 'ghi'])
-  call cursor(1, 4)
-  call feedkeys("A\<s-home>start\<esc>", 'txin')
-  call assert_equal(['startdef', 'ghi'], getline(1, '$'))
-  set selectmode= keymodel=
-  bw!
-endfunc
-
 func Test_edit_11()
   " Test that indenting kicks in
   new
@@ -277,7 +265,7 @@ func Test_edit_11()
   call cursor(2, 1)
   call feedkeys("i\<c-f>int c;\<esc>", 'tnix')
   call cursor(3, 1)
-  call feedkeys("i/* comment */", 'tnix')
+  call feedkeys("\<Insert>/* comment */", 'tnix')
   call assert_equal(['{', "\<tab>int c;", "/* comment */"], getline(1, '$'))
   " added changed cindentkeys slightly
   set cindent cinkeys+=*/
@@ -927,6 +915,23 @@ func Test_edit_CTRL_U()
   bw!
 endfunc
 
+func Test_edit_completefunc_delete()
+  func CompleteFunc(findstart, base)
+    if a:findstart == 1
+      return col('.') - 1
+    endif
+    normal dd
+    return ['a', 'b']
+  endfunc
+  new
+  set completefunc=CompleteFunc
+  call setline(1, ['', 'abcd', ''])
+  2d
+  call assert_fails("normal 2G$a\<C-X>\<C-U>", 'E578:')
+  bwipe!
+endfunc
+
+
 func Test_edit_CTRL_Z()
   " Ctrl-Z when insertmode is not set inserts it literally
   new
@@ -1252,7 +1257,7 @@ func Test_edit_forbidden()
   try
     call feedkeys("ix\<esc>", 'tnix')
     call assert_fails(1, 'textlock')
-  catch /^Vim\%((\a\+)\)\=:E523/ " catch E523: not allowed here
+  catch /^Vim\%((\a\+)\)\=:E565/ " catch E565: not allowed here
   endtry
   " TODO: Might be a bug: should x really be inserted here
   call assert_equal(['xa'], getline(1, '$'))
@@ -1276,7 +1281,7 @@ func Test_edit_forbidden()
   try
     call feedkeys("i\<c-x>\<c-u>\<esc>", 'tnix')
     call assert_fails(1, 'change in complete function')
-  catch /^Vim\%((\a\+)\)\=:E523/ " catch E523
+  catch /^Vim\%((\a\+)\)\=:E565/ " catch E565
   endtry
   delfu Complete
   set completefunc=
@@ -1439,7 +1444,7 @@ func Test_edit_alt()
   call delete('XAltFile')
 endfunc
 
-func Test_leave_insert_autocmd()
+func Test_edit_InsertLeave()
   new
   au InsertLeave * let g:did_au = 1
   let g:did_au = 0
@@ -1467,6 +1472,21 @@ func Test_leave_insert_autocmd()
   bwipe!
   au! InsertLeave
   iunmap x
+endfunc
+
+func Test_edit_InsertLeave_undo()
+  new XtestUndo
+  set undofile
+  au InsertLeave * wall
+  exe "normal ofoo\<Esc>"
+  call assert_equal(2, line('$'))
+  normal u
+  call assert_equal(1, line('$'))
+
+  bwipe!
+  au! InsertLeave
+  call delete('XtestUndo')
+  set undofile&
 endfunc
 
 " Test for inserting characters using CTRL-V followed by a number.
@@ -1534,6 +1554,57 @@ func Test_edit_noesckeys()
 
   bwipe!
   set esckeys
+endfunc
+
+" Test for running an invalid ex command in insert mode using CTRL-O
+" Note that vim has a hard-coded sleep of 3 seconds. So this test will take
+" more than 3 seconds to complete.
+func Test_edit_ctrl_o_invalid_cmd()
+  new
+  set showmode showcmd
+  let caught_e492 = 0
+  try
+    call feedkeys("i\<C-O>:invalid\<CR>abc\<Esc>", "xt")
+  catch /E492:/
+    let caught_e492 = 1
+  endtry
+  call assert_equal(1, caught_e492)
+  call assert_equal('abc', getline(1))
+  set showmode& showcmd&
+  close!
+endfunc
+
+" Test for inserting text in a line with only spaces ('H' flag in 'cpoptions')
+func Test_edit_cpo_H()
+  new
+  call setline(1, '    ')
+  normal! Ia
+  call assert_equal('    a', getline(1))
+  set cpo+=H
+  call setline(1, '    ')
+  normal! Ia
+  call assert_equal('   a ', getline(1))
+  set cpo-=H
+  close!
+endfunc
+
+" Test for inserting tab in virtual replace mode ('L' flag in 'cpoptions')
+func Test_edit_cpo_L()
+  new
+  call setline(1, 'abcdefghijklmnopqr')
+  exe "normal 0gR\<Tab>"
+  call assert_equal("\<Tab>ijklmnopqr", getline(1))
+  set cpo+=L
+  set list
+  call setline(1, 'abcdefghijklmnopqr')
+  exe "normal 0gR\<Tab>"
+  call assert_equal("\<Tab>cdefghijklmnopqr", getline(1))
+  set nolist
+  call setline(1, 'abcdefghijklmnopqr')
+  exe "normal 0gR\<Tab>"
+  call assert_equal("\<Tab>ijklmnopqr", getline(1))
+  set cpo-=L
+  %bw!
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

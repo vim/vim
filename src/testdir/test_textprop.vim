@@ -213,6 +213,17 @@ func Test_prop_find()
   call prop_type_delete('prop_name')
 endfunc
 
+func Test_prop_find_smaller_len_than_match_col()
+  new
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call setline(1, ['xxxx', 'x'])
+  call prop_add(1, 4, {'type': 'test'})
+  call assert_equal({'id': 0, 'lnum': 1, 'col': 4, 'type': 'test', 'length': 0, 'start': 1, 'end': 1},
+        \ prop_find({'type': 'test', 'lnum': 2, 'col': 1}, 'b'))
+  bwipe!
+  call prop_type_delete('test')
+endfunc
+
 func Test_prop_add()
   new
   call AddPropTypes()
@@ -267,6 +278,23 @@ func Test_prop_remove()
 
   " remove from unknown buffer
   call assert_fails("call prop_remove({'type': 'one', 'bufnr': 123456}, 1)", 'E158:')
+
+  call DeletePropTypes()
+  bwipe!
+
+  new
+  call AddPropTypes()
+  call SetupPropsInFirstLine()
+  call prop_add(1, 6, {'length': 2, 'id': 11, 'type': 'three'})
+  let props = Get_expected_props()
+  call insert(props, {'col': 6, 'length': 2, 'id': 11, 'type': 'three', 'start': 1, 'end': 1}, 3)
+  call assert_equal(props, prop_list(1))
+  call assert_equal(1, prop_remove({'type': 'three', 'id': 11, 'both': 1, 'all': 1}, 1))
+  unlet props[3]
+  call assert_equal(props, prop_list(1))
+
+  call assert_fails("call prop_remove({'id': 11, 'both': 1})", 'E860')
+  call assert_fails("call prop_remove({'type': 'three', 'both': 1})", 'E860')
 
   call DeletePropTypes()
   bwipe!
@@ -1149,3 +1177,55 @@ func Test_textprop_ins_str()
   call prop_remove({'type': 'test'})
   call prop_type_delete('test')
 endfunc
+
+func Test_find_prop_later_in_line()
+  new
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call setline(1, 'just some text')
+  call prop_add(1, 1, {'length': 4, 'type': 'test'})
+  call prop_add(1, 10, {'length': 3, 'type': 'test'})
+
+  call assert_equal({'id': 0, 'lnum': 1, 'col': 10, 'end': 1, 'type': 'test', 'length': 3, 'start': 1},
+			  \ prop_find(#{type: 'test', lnum: 1, col: 6}))
+
+  bwipe!
+  call prop_type_delete('test')
+endfunc
+
+func Test_find_zerowidth_prop_sol()
+  new
+  call prop_type_add('test', {'highlight': 'ErrorMsg'})
+  call setline(1, 'just some text')
+  call prop_add(1, 1, {'length': 0, 'type': 'test'})
+
+  call assert_equal({'id': 0, 'lnum': 1, 'col': 1, 'end': 1, 'type': 'test', 'length': 0, 'start': 1},
+			  \ prop_find(#{type: 'test', lnum: 1}))
+
+  bwipe!
+  call prop_type_delete('test')
+endfunc
+
+" Test for passing invalid arguments to prop_xxx() functions
+func Test_prop_func_invalid_args()
+  call assert_fails('call prop_clear(1, 2, [])', 'E715:')
+  call assert_fails('call prop_clear(-1, 2)', 'E16:')
+  call assert_fails('call prop_find(test_null_dict())', 'E474:')
+  call assert_fails('call prop_find({"bufnr" : []})', 'E158:')
+  call assert_fails('call prop_find({})', 'E968:')
+  call assert_fails('call prop_find({}, "x")', 'E474:')
+  call assert_fails('call prop_find({"lnum" : -2})', 'E16:')
+  call assert_fails('call prop_list(1, [])', 'E715:')
+  call assert_fails('call prop_list(-1 , {})', 'E16:')
+  call assert_fails('call prop_remove([])', 'E474:')
+  call assert_fails('call prop_remove({}, -2)', 'E16:')
+  call assert_fails('call prop_remove({})', 'E968:')
+  call assert_fails('call prop_type_add([], {})', 'E474:')
+  call assert_fails("call prop_type_change('long', {'xyz' : 10})", 'E971:')
+  call assert_fails("call prop_type_delete([])", 'E474:')
+  call assert_fails("call prop_type_delete('xyz', [])", 'E715:')
+  call assert_fails("call prop_type_get([])", 'E474:')
+  call assert_fails("call prop_type_get('', [])", 'E474:')
+  call assert_fails("call prop_type_list([])", 'E715:')
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

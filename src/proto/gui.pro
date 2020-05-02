@@ -27,7 +27,7 @@ void gui_enable_flush(void);
 void gui_may_flush(void);
 void gui_undraw_cursor(void);
 void gui_redraw(int x, int y, int w, int h);
-int gui_redraw_block(int row1, int col1, int row2, int col2, int flags);
+void gui_redraw_block(int row1, int col1, int row2, int col2, int flags);
 int gui_wait_for_chars(long wtime, int tb_change_cnt);
 int gui_inchar(char_u *buf, int maxlen, long wtime, int tb_change_cnt);
 void gui_send_mouse_event(int button, int x, int y, int repeated_click, int_u modifiers);

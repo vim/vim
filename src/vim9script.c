@@ -119,11 +119,13 @@ free_imports(int sid)
 
     for (idx = 0; idx < si->sn_imports.ga_len; ++idx)
     {
-	imported_T *imp = ((imported_T *)si->sn_imports.ga_data + idx);
+	imported_T *imp = ((imported_T *)si->sn_imports.ga_data) + idx;
 
 	vim_free(imp->imp_name);
     }
     ga_clear(&si->sn_imports);
+    ga_clear(&si->sn_var_vals);
+    ga_clear(&si->sn_type_list);
 }
 
 /*
@@ -143,7 +145,8 @@ ex_import(exarg_T *eap)
 	emsg(_(e_needs_vim9));
     else
     {
-	char_u *cmd_end = handle_import(eap->arg, NULL, current_sctx.sc_sid);
+	char_u *cmd_end = handle_import(eap->arg, NULL,
+						    current_sctx.sc_sid, NULL);
 
 	if (cmd_end != NULL)
 	    eap->nextcmd = check_nextcmd(cmd_end);
@@ -214,7 +217,7 @@ find_exported(
 	funcname[1] = KS_EXTRA;
 	funcname[2] = (int)KE_SNR;
 	sprintf((char *)funcname + 3, "%ld_%s", (long)sid, name);
-	*ufunc = find_func(funcname, NULL);
+	*ufunc = find_func(funcname, FALSE, NULL);
 	if (funcname != buffer)
 	    vim_free(funcname);
 
@@ -238,7 +241,7 @@ find_exported(
  * Returns a pointer to after the command or NULL in case of failure
  */
     char_u *
-handle_import(char_u *arg_start, garray_T *gap, int import_sid)
+handle_import(char_u *arg_start, garray_T *gap, int import_sid, void *cctx)
 {
     char_u	*arg = arg_start;
     char_u	*cmd_end;
@@ -278,6 +281,8 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid)
 		    ++arg;
 	    as_len = (int)(arg - as_ptr);
 	    arg = skipwhite(arg);
+	    if (check_defined(as_ptr, as_len, cctx) == FAIL)
+		return NULL;
 	}
 	else if (*arg_start == '*')
 	{
@@ -387,6 +392,9 @@ handle_import(char_u *arg_start, garray_T *gap, int import_sid)
 	    idx = find_exported(sid, &arg, &name_len, &ufunc, &type);
 
 	    if (idx < 0 && ufunc == NULL)
+		return NULL;
+
+	    if (check_defined(name, name_len, cctx) == FAIL)
 		return NULL;
 
 	    imported = new_imported(gap != NULL ? gap

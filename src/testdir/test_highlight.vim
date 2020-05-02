@@ -542,9 +542,9 @@ func Test_cursorline_after_yank()
 	\ 'call setline(1, ["","1","2","3",""])',
 	\ ], 'Xtest_cursorline_yank')
   let buf = RunVimInTerminal('-S Xtest_cursorline_yank', {'rows': 8})
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "Gy3k")
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "jj")
 
   call VerifyScreenDump(buf, 'Test_cursorline_yank_01', {})
@@ -582,7 +582,7 @@ func Test_cursorline_with_visualmode()
 	\ 'call setline(1, repeat(["abc"], 50))',
 	\ ], 'Xtest_cursorline_with_visualmode')
   let buf = RunVimInTerminal('-S Xtest_cursorline_with_visualmode', {'rows': 12})
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "V\<C-f>kkkjk")
 
   call VerifyScreenDump(buf, 'Test_cursorline_with_visualmode_01', {})
@@ -610,9 +610,9 @@ func Test_wincolor()
   END
   call writefile(lines, 'Xtest_wincolor')
   let buf = RunVimInTerminal('-S Xtest_wincolor', {'rows': 8})
-  call term_wait(buf)
+  call TermWait(buf)
   call term_sendkeys(buf, "2G5lvj")
-  call term_wait(buf)
+  call TermWait(buf)
 
   call VerifyScreenDump(buf, 'Test_wincolor_01', {})
 
@@ -662,7 +662,7 @@ func Test_colorcolumn()
   call writefile(lines, 'Xtest_colorcolumn')
   let buf = RunVimInTerminal('-S Xtest_colorcolumn', {'rows': 10})
   call term_sendkeys(buf, ":\<CR>")
-  call term_wait(buf)
+  call TermWait(buf)
   call VerifyScreenDump(buf, 'Test_colorcolumn_1', {})
 
   " clean up
@@ -689,10 +689,28 @@ func Test_1_highlight_Normalgroup_exists()
 endfunc
 
 " Do this test last, sometimes restoring the columns doesn't work
-function Test_z_no_space_before_xxx()
+func Test_z_no_space_before_xxx()
   let l:org_columns = &columns
   set columns=17
   let l:hi_StatusLineTermNC = join(split(execute('hi StatusLineTermNC')))
   call assert_match('StatusLineTermNC xxx', l:hi_StatusLineTermNC)
   let &columns = l:org_columns
-endfunction
+endfunc
+
+" Test for :highlight command errors
+func Test_highlight_cmd_errors()
+  if has('gui_running')
+    " This test doesn't fail in the MS-Windows console version.
+    call assert_fails('hi Xcomment ctermfg=fg', 'E419:')
+    call assert_fails('hi Xcomment ctermfg=bg', 'E420:')
+  endif
+
+  " Try using a very long terminal code. Define a dummy terminal code for this
+  " test.
+  let &t_fo = "\<Esc>1;"
+  let c = repeat("t_fo,", 100) . "t_fo"
+  call assert_fails('exe "hi Xgroup1 start=" . c', 'E422:')
+  let &t_fo = ""
+endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

@@ -1,4 +1,4 @@
-*change.txt*    For Vim version 8.2.  Last change: 2020 Feb 09
+*change.txt*    For Vim version 8.2.  Last change: 2020 Apr 26
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -209,7 +209,7 @@ gR			Enter Virtual Replace mode: Each character you type
 			start insert (for {Visual} see |Visual-mode|).
 
 							*v_r*
-{Visual}["x]r{char}	Replace all selected characters by {char}.
+{Visual}r{char}		Replace all selected characters by {char}.
 
 							*v_C*
 {Visual}["x]C		Delete the highlighted lines [into register x] and
@@ -996,9 +996,9 @@ inside of strings can change!  Also see 'softtabstop' option. >
 5. Copying and moving text				*copy-move*
 
 							*quote*
-"{a-zA-Z0-9.%#:-"}	Use register {a-zA-Z0-9.%#:-"} for next delete, yank
-			or put (use uppercase character to append with
-			delete and yank) ({.%#:} only work with put).
+"{register}		Use {register} for next delete, yank or put.  Use
+			an uppercase character to append with delete and yank.
+			Registers ".", "%", "#" and ":" only work with put.
 
 							*:reg* *:registers*
 :reg[isters]		Display the type and contents of all numbered and
@@ -1458,7 +1458,7 @@ text.  Put it in your autoload directory, e.g. ~/.vim/autoload/format.vim: >
   func! format#Format()
     " only reformat on explicit gq command
     if mode() != 'n'
-      " fall back to Vims internal reformatting
+      " fall back to Vim's internal reformatting
       return 1
     endif
     let lines = getline(v:lnum, v:lnum + v:count - 1)

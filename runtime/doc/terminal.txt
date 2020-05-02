@@ -1,4 +1,4 @@
-*terminal.txt*	For Vim version 8.2.  Last change: 2020 Jan 30
+*terminal.txt*	For Vim version 8.2.  Last change: 2020 Apr 23
 
 
 		  VIM REFERENCE MANUAL	  by Bram Moolenaar
@@ -120,7 +120,7 @@ break (cursor keys start with an Esc, so they may break): >
 You can also create menus similar to terminal mode mappings, but you have to
 use |:tlmenu| instead of |:tmenu|.
 
-<							*options-in-terminal*
+							*options-in-terminal*
 After opening the terminal window and setting 'buftype' to "terminal" the
 TerminalOpen autocommand event is triggered.  This makes it possible to set
 options specifically for the window and buffer.  Example: >
@@ -148,7 +148,12 @@ terminal window will start with a white or black background.
 To use a different color the Terminal highlight group can be used, for
 example: >
     hi Terminal ctermbg=lightgrey ctermfg=blue guibg=lightgrey guifg=blue
-<
+The highlight needs to be defined before the terminal is created.  Doing it
+later, or setting 'wincolor', will only have effect when the program running
+in the terminal displays text or clears the terminal.
+Instead of Terminal another group can be specified with the "term_highlight"
+option for `term_start()`.
+
 							*g:terminal_ansi_colors*
 In GUI mode or with 'termguicolors', the 16 ANSI colors used by default in new
 terminal windows may be configured using the variable
@@ -177,6 +182,10 @@ Command syntax ~
 			If [command] is present the default behavior is to
 			keep the terminal open in Terminal-Normal mode.  This
 			can be changed with the ++close argument.
+
+			No Vim command can follow, any | is included in
+			[command].  Use `:execute` if you must have a Vim
+			command following in the same line.
 
 			A new buffer will be created, using [command] or
 			'shell' as the name, prefixed with a "!".  If a buffer
@@ -857,6 +866,8 @@ term_start({cmd} [, {options}])			*term_start()*
 				     have "%d" where the buffer number goes,
 				     e.g. "10split|buffer %d"; when not
 				     specified "botright sbuf %d" is used
+		   "term_highlight"  highlight group to use instead of
+				     "Terminal"
 		   "eof_chars"	     Text to send after all buffer lines were
 				     written to the terminal.  When not set
 				     CTRL-D is used on MS-Windows. For Python
@@ -953,7 +964,7 @@ Currently supported commands:
 		directory, thus it's best to use the full path.
 
 		[options] is only used when opening a new window.  If present,
-		it must be a Dict.  Similarly to |++opt|, These entries are
+		it must be a Dict.  Similarly to |++opt|, these entries are
 		recognized:
 		  "ff"		file format: "dos", "mac" or "unix"
 		  "fileformat"	idem

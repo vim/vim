@@ -6,7 +6,7 @@ int gui_mch_open(void);
 void gui_mch_exit(int vim_exitcode);
 int gui_mch_init_check(void);
 void gui_mch_flush(void);
-
+int gui_mch_is_blink_off(void);
 void gui_mch_new_colors(void);
 void gui_mch_set_bg_color(guicolor_T color);
 void gui_mch_set_fg_color(guicolor_T color);

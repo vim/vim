@@ -132,7 +132,7 @@ func Test_win_execute_other_tab()
   unlet xyz
 endfunc
 
-func Test_execute_null()
+func Test_execute_func_with_null()
   call assert_equal("", execute(test_null_string()))
   call assert_equal("", execute(test_null_list()))
   call assert_fails('call execute(test_null_dict())', 'E731:')
@@ -143,3 +143,5 @@ func Test_execute_null()
     call assert_fails('call execute(test_null_channel())', 'E908:')
   endif
 endfunc
+
+" vim: shiftwidth=2 sts=2 expandtab

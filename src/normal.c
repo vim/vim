@@ -500,7 +500,7 @@ normal_cmd(
     int		set_prevcount = FALSE;
 #endif
 
-    vim_memset(&ca, 0, sizeof(ca));	// also resets ca.retval
+    CLEAR_FIELD(ca);	// also resets ca.retval
     ca.oap = oap;
 
     // Use a count remembered from before entering an operator.  After typing
@@ -1154,7 +1154,9 @@ getcount:
 
 	    kmsg = keep_msg;
 	    keep_msg = NULL;
-	    // showmode() will clear keep_msg, but we want to use it anyway
+	    // Showmode() will clear keep_msg, but we want to use it anyway.
+	    // First update w_topline.
+	    setcursor();
 	    update_screen(0);
 	    // now reset it, otherwise it's put in the history again
 	    keep_msg = kmsg;
@@ -1167,6 +1169,9 @@ getcount:
 	    }
 	}
 	setcursor();
+#ifdef CURSOR_SHAPE
+	ui_cursor_shape();		// may show different cursor shape
+#endif
 	cursor_on();
 	out_flush();
 	if (msg_scroll || emsg_on_display)
@@ -1280,7 +1285,7 @@ set_vcount_ca(cmdarg_T *cap, int *set_prevcount)
 #endif
 
 /*
- * Check if  highlighting for visual mode is possible, give a warning message
+ * Check if highlighting for Visual mode is possible, give a warning message
  * if not.
  */
     void
@@ -3475,7 +3480,7 @@ do_nv_ident(int c1, int c2)
     cmdarg_T	ca;
 
     clear_oparg(&oa);
-    vim_memset(&ca, 0, sizeof(ca));
+    CLEAR_FIELD(ca);
     ca.oap = &oa;
     ca.cmdchar = c1;
     ca.nchar = c2;
@@ -4303,7 +4308,7 @@ normal_search(
     cap->oap->use_reg_one = TRUE;
     curwin->w_set_curswant = TRUE;
 
-    vim_memset(&sia, 0, sizeof(sia));
+    CLEAR_FIELD(sia);
     i = do_search(cap->oap, dir, dir, pat, cap->count1,
 			    opt | SEARCH_OPT | SEARCH_ECHO | SEARCH_MSG, &sia);
     if (wrapped != NULL)

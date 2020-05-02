@@ -106,14 +106,14 @@ win_id2wp_tp(int id, tabpage_T **tpp)
 #ifdef FEAT_PROP_POPUP
     // popup windows are in separate lists
      FOR_ALL_TABPAGES(tp)
-	 for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	 FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
 	     if (wp->w_id == id)
 	     {
 		 if (tpp != NULL)
 		     *tpp = tp;
 		 return wp;
 	     }
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS(wp)
 	if (wp->w_id == id)
 	{
 	    if (tpp != NULL)
@@ -188,7 +188,7 @@ find_win_by_nr(
 	    if (wp->w_id == nr)
 		return wp;
 	// check global popup windows
-	for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_POPUPWINS(wp)
 	    if (wp->w_id == nr)
 		return wp;
 #endif
@@ -444,8 +444,7 @@ get_tabpage_info(tabpage_T *tp, int tp_idx)
     l = list_alloc();
     if (l != NULL)
     {
-	for (wp = (tp == curtab) ? firstwin : tp->tp_firstwin;
-						   wp != NULL; wp = wp->w_next)
+	FOR_ALL_WINDOWS_IN_TAB(tp, wp)
 	    list_append_number(l, (varnumber_T)wp->w_id);
 	dict_add_list(dict, "windows", l);
     }
@@ -810,7 +809,8 @@ f_win_splitmove(typval_T *argvars, typval_T *rettv)
     targetwin = find_win_by_nr_or_id(&argvars[1]);
 
     if (wp == NULL || targetwin == NULL || wp == targetwin
-	    || !win_valid(wp) || !win_valid(targetwin))
+	    || !win_valid(wp) || !win_valid(targetwin)
+	    || win_valid_popup(wp) || win_valid_popup(targetwin))
     {
         emsg(_(e_invalwindow));
 	rettv->vval.v_number = -1;

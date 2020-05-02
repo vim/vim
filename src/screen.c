@@ -1718,6 +1718,7 @@ start_search_hl(void)
 {
     if (p_hls && !no_hlsearch)
     {
+	end_search_hl();  // just in case it wasn't called before
 	last_pat_prog(&screen_search_hl.rm);
 	screen_search_hl.attr = HL_ATTR(HLF_L);
 # ifdef FEAT_RELTIME
@@ -1880,6 +1881,9 @@ screen_start_highlight(int attr)
 screen_stop_highlight(void)
 {
     int	    do_ME = FALSE;	    // output T_ME code
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+    int	    do_ME_fg, do_ME_bg;
+#endif
 
     if (screen_attr != 0
 #ifdef MSWIN
@@ -1913,16 +1917,42 @@ screen_stop_highlight(void)
 #ifdef FEAT_TERMGUICOLORS
 			    p_tgc && aep->ae_u.cterm.fg_rgb != CTERMCOLOR
 				? aep->ae_u.cterm.fg_rgb != INVALCOLOR
+# ifdef FEAT_VTP
+				    ? !(do_ME_fg = TRUE) : (do_ME_fg = FALSE)
+# endif
 				:
 #endif
 				aep->ae_u.cterm.fg_color) || (
 #ifdef FEAT_TERMGUICOLORS
 			    p_tgc && aep->ae_u.cterm.bg_rgb != CTERMCOLOR
 				? aep->ae_u.cterm.bg_rgb != INVALCOLOR
+# ifdef FEAT_VTP
+				    ? !(do_ME_bg = TRUE) : (do_ME_bg = FALSE)
+# endif
 				:
 #endif
 				aep->ae_u.cterm.bg_color)))
 			do_ME = TRUE;
+#if defined(FEAT_VTP) && defined(FEAT_TERMGUICOLORS)
+		    if (use_vtp())
+		    {
+			if (do_ME_fg && do_ME_bg)
+			    do_ME = TRUE;
+
+			// FG and BG cannot be separated in T_ME, which is not
+			// efficient.
+			if (!do_ME && do_ME_fg)
+			    out_str((char_u *)"\033|39m"); // restore FG
+			if (!do_ME && do_ME_bg)
+			    out_str((char_u *)"\033|49m"); // restore BG
+		    }
+		    else
+		    {
+			// Process FG and BG at once.
+			if (!do_ME)
+			    do_ME = do_ME_fg | do_ME_bg;
+		    }
+#endif
 		}
 		else
 		{
@@ -2572,11 +2602,11 @@ retry:
 	win_free_lsize(aucmd_win);
 #ifdef FEAT_PROP_POPUP
     // global popup windows
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS(wp)
 	win_free_lsize(wp);
     // tab-local popup windows
     FOR_ALL_TABPAGES(tp)
-	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
 	    win_free_lsize(wp);
 #endif
 
@@ -2614,7 +2644,7 @@ retry:
 	outofmem = TRUE;
 #ifdef FEAT_PROP_POPUP
     // global popup windows
-    for (wp = first_popupwin; wp != NULL; wp = wp->w_next)
+    FOR_ALL_POPUPWINS(wp)
 	if (win_alloc_lines(wp) == FAIL)
 	{
 	    outofmem = TRUE;
@@ -2622,7 +2652,7 @@ retry:
 	}
     // tab-local popup windows
     FOR_ALL_TABPAGES(tp)
-	for (wp = tp->tp_first_popupwin; wp != NULL; wp = wp->w_next)
+	FOR_ALL_POPUPWINS_IN_TAB(tp, wp)
 	    if (win_alloc_lines(wp) == FAIL)
 	    {
 		outofmem = TRUE;
@@ -2788,11 +2818,10 @@ give_up:
 	    && ScreenLines != NULL
 	    && old_Rows != Rows)
     {
-	(void)gui_redraw_block(0, 0, (int)Rows - 1, (int)Columns - 1, 0);
-	/*
-	 * Adjust the position of the cursor, for when executing an external
-	 * command.
-	 */
+	gui_redraw_block(0, 0, (int)Rows - 1, (int)Columns - 1, 0);
+
+	// Adjust the position of the cursor, for when executing an external
+	// command.
 	if (msg_row >= Rows)		// Rows got smaller
 	    msg_row = Rows - 1;		// put cursor at last row
 	else if (Rows > old_Rows)	// Rows got bigger
@@ -3880,6 +3909,10 @@ screen_del_lines(
 	clip_clear_selection(&clip_star);
     else
 	clip_scroll_selection(line_count);
+#endif
+
+#ifdef FEAT_GUI_HAIKU
+    vim_lock_screen();
 #endif
 
 #ifdef FEAT_GUI

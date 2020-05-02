@@ -20,6 +20,26 @@ func Test_00_bufexists()
   call assert_equal(0, bufexists('Xfoo'))
 endfunc
 
+func Test_has()
+  call assert_equal(1, has('eval'))
+  call assert_equal(1, has('eval', 1))
+
+  if has('unix')
+    call assert_equal(1, or(has('ttyin'), 1))
+    call assert_equal(0, and(has('ttyout'), 0))
+    call assert_equal(1, has('multi_byte_encoding'))
+  endif
+  call assert_equal(1, has('vcon', 1))
+  call assert_equal(1, has('mouse_gpm_enabled', 1))
+
+  call assert_equal(0, has('nonexistent'))
+  call assert_equal(0, has('nonexistent', 1))
+
+  " Will we ever have patch 9999?
+  let ver = 'patch-' .. v:version / 100 .. '.' .. v:version % 100 .. '.9999'
+  call assert_equal(0, has(ver))
+endfunc
+
 func Test_empty()
   call assert_equal(1, empty(''))
   call assert_equal(0, empty('a'))
@@ -81,9 +101,11 @@ func Test_len()
   call assert_equal(2, len('ab'))
 
   call assert_equal(0, len([]))
+  call assert_equal(0, len(test_null_list()))
   call assert_equal(2, len([2, 1]))
 
   call assert_equal(0, len({}))
+  call assert_equal(0, len(test_null_dict()))
   call assert_equal(2, len({'a': 1, 'b': 2}))
 
   call assert_fails('call len(v:none)', 'E701:')
@@ -432,7 +454,7 @@ func Test_simplify()
   call assert_equal('/',           simplify('/.'))
   call assert_equal('/',           simplify('/..'))
   call assert_equal('/...',        simplify('/...'))
-  call assert_equal('./dir/file',  simplify('./dir/file'))
+  call assert_equal('./dir/file',  './dir/file'->simplify())
   call assert_equal('./dir/file',  simplify('.///dir//file'))
   call assert_equal('./dir/file',  simplify('./dir/./file'))
   call assert_equal('./file',      simplify('./dir/../file'))
@@ -460,6 +482,7 @@ func Test_pathshorten()
   call assert_equal('~.f/bar', pathshorten('~.foo/bar'))
   call assert_equal('.~f/bar', pathshorten('.~foo/bar'))
   call assert_equal('~/f/bar', pathshorten('~/foo/bar'))
+  call assert_fails('call pathshorten([])', 'E730:')
 endfunc
 
 func Test_strpart()
@@ -468,6 +491,8 @@ func Test_strpart()
   call assert_equal('abcdefg', 'abcdefg'->strpart(-2))
   call assert_equal('fg', strpart('abcdefg', 5, 4))
   call assert_equal('defg', strpart('abcdefg', 3))
+  call assert_equal('', strpart('abcdefg', 10))
+  call assert_fails("let s=strpart('abcdef', [])", 'E745:')
 
   call assert_equal('lép', strpart('éléphant', 2, 4))
   call assert_equal('léphant', strpart('éléphant', 2))
@@ -621,6 +646,15 @@ endfunc
 func Test_tr()
   call assert_equal('foo', tr('bar', 'bar', 'foo'))
   call assert_equal('zxy', 'cab'->tr('abc', 'xyz'))
+  call assert_fails("let s=tr([], 'abc', 'def')", 'E730:')
+  call assert_fails("let s=tr('abc', [], 'def')", 'E730:')
+  call assert_fails("let s=tr('abc', 'abc', [])", 'E730:')
+  call assert_fails("let s=tr('abcd', 'abcd', 'def')", 'E475:')
+  set encoding=latin1
+  call assert_fails("let s=tr('abcd', 'abcd', 'def')", 'E475:')
+  call assert_equal('hEllO', tr('hello', 'eo', 'EO'))
+  call assert_equal('hello', tr('hello', 'xy', 'ab'))
+  set encoding=utf8
 endfunc
 
 " Tests for the mode() function
@@ -630,6 +664,7 @@ func Save_mode()
   return ''
 endfunc
 
+" Test for the mode() function
 func Test_mode()
   new
   call append(0, ["Blue Ball Black", "Brown Band Bowl", ""])
@@ -753,6 +788,8 @@ func Test_mode()
   call assert_equal('c-c', g:current_modes)
   call feedkeys("gQecho \<C-R>=Save_mode()\<CR>\<CR>vi\<CR>", 'xt')
   call assert_equal('c-cv', g:current_modes)
+  call feedkeys("Qcall Save_mode()\<CR>vi\<CR>", 'xt')
+  call assert_equal('c-ce', g:current_modes)
   " How to test Ex mode?
 
   bwipe!
@@ -760,13 +797,39 @@ func Test_mode()
   set complete&
 endfunc
 
+" Test for append()
 func Test_append()
   enew!
   split
   call append(0, ["foo"])
+  call append(1, [])
+  call append(1, test_null_list())
+  call assert_equal(['foo', ''], getline(1, '$'))
   split
   only
   undo
+  undo
+
+  " Using $ instead of '$' must give an error
+  call assert_fails("call append($, 'foobar')", 'E116:')
+endfunc
+
+" Test for setline()
+func Test_setline()
+  new
+  call setline(0, ["foo"])
+  call setline(0, [])
+  call setline(0, test_null_list())
+  call setline(1, ["bar"])
+  call setline(1, [])
+  call setline(1, test_null_list())
+  call setline(2, [])
+  call setline(2, test_null_list())
+  call setline(3, [])
+  call setline(3, test_null_list())
+  call setline(2, ["baz"])
+  call assert_equal(['bar', 'baz'], getline(1, '$'))
+  close!
 endfunc
 
 func Test_getbufvar()
@@ -800,6 +863,10 @@ func Test_getbufvar()
   call assert_equal(0, getbufvar(bnr, '&autoindent'))
   call assert_equal(0, getbufvar(bnr, '&autoindent', 1))
 
+  " Set and get a buffer-local variable
+  call setbufvar(bnr, 'bufvar_test', ['one', 'two'])
+  call assert_equal(['one', 'two'], getbufvar(bnr, 'bufvar_test'))
+
   " Open new window with forced option values
   set fileformats=unix,dos
   new ++ff=dos ++bin ++enc=iso-8859-2
@@ -807,6 +874,16 @@ func Test_getbufvar()
   call assert_equal(1, getbufvar(bufnr('%'), '&bin'))
   call assert_equal('iso-8859-2', getbufvar(bufnr('%'), '&fenc'))
   close
+
+  " Get the b: dict.
+  let b:testvar = 'one'
+  new
+  let b:testvar = 'two'
+  let thebuf = bufnr()
+  wincmd w
+  call assert_equal('two', getbufvar(thebuf, 'testvar'))
+  call assert_equal('two', getbufvar(thebuf, '').testvar)
+  bwipe!
 
   set fileformats&
 endfunc
@@ -828,6 +905,8 @@ func Test_stridx()
   call assert_equal(-1, stridx('hello', 'l', 10))
   call assert_equal(2,  stridx('hello', 'll'))
   call assert_equal(-1, stridx('hello', 'hello world'))
+  call assert_fails("let n=stridx('hello', [])", 'E730:')
+  call assert_fails("let n=stridx([], 'l')", 'E730:')
 endfunc
 
 func Test_strridx()
@@ -844,6 +923,8 @@ func Test_strridx()
   call assert_equal(-1, strridx('hello', 'l', -1))
   call assert_equal(2,  strridx('hello', 'll'))
   call assert_equal(-1, strridx('hello', 'hello world'))
+  call assert_fails("let n=strridx('hello', [])", 'E730:')
+  call assert_fails("let n=strridx([], 'l')", 'E730:')
 endfunc
 
 func Test_match_func()
@@ -853,6 +934,12 @@ func Test_match_func()
   call assert_equal(-1, match('testing', 'ing', 8))
   call assert_equal(1, match(['vim', 'testing', 'execute'], 'ing'))
   call assert_equal(-1, match(['vim', 'testing', 'execute'], 'img'))
+  call assert_fails("let x=match('vim', [])", 'E730:')
+  call assert_equal(3, match(['a', 'b', 'c', 'a'], 'a', 1))
+  call assert_equal(-1, match(['a', 'b', 'c', 'a'], 'a', 5))
+  call assert_equal(4,  match('testing', 'ing', -1))
+  call assert_fails("let x=match('testing', 'ing', 0, [])", 'E745:')
+  call assert_equal(-1, match(test_null_list(), 2))
 endfunc
 
 func Test_matchend()
@@ -886,6 +973,7 @@ func Test_matchstrpos()
   call assert_equal(['', -1, -1], matchstrpos('testing', 'ing', 8))
   call assert_equal(['ing', 1, 4, 7], matchstrpos(['vim', 'testing', 'execute'], 'ing'))
   call assert_equal(['', -1, -1, -1], matchstrpos(['vim', 'testing', 'execute'], 'img'))
+  call assert_equal(['', -1, -1], matchstrpos(test_null_list(), '\a'))
 endfunc
 
 func Test_nextnonblank_prevnonblank()
@@ -959,6 +1047,7 @@ func Test_byte2line_line2byte()
   bw!
 endfunc
 
+" Test for byteidx() and byteidxcomp() functions
 func Test_byteidx()
   let a = '.é.' " one char of two bytes
   call assert_equal(0, byteidx(a, 0))
@@ -978,6 +1067,7 @@ func Test_byteidx()
   call assert_equal(4, b->byteidx(2))
   call assert_equal(5, b->byteidx(3))
   call assert_equal(-1, b->byteidx(4))
+  call assert_fails("call byteidx([], 0)", 'E730:')
 
   call assert_equal(0, b->byteidxcomp(0))
   call assert_equal(1, b->byteidxcomp(1))
@@ -985,6 +1075,7 @@ func Test_byteidx()
   call assert_equal(4, b->byteidxcomp(3))
   call assert_equal(5, b->byteidxcomp(4))
   call assert_equal(-1, b->byteidxcomp(5))
+  call assert_fails("call byteidxcomp([], 0)", 'E730:')
 endfunc
 
 func Test_count()
@@ -1135,12 +1226,14 @@ func Test_hlexists()
   syntax off
 endfunc
 
+" Test for the col() function
 func Test_col()
   new
   call setline(1, 'abcdef')
   norm gg4|mx6|mY2|
   call assert_equal(2, col('.'))
   call assert_equal(7, col('$'))
+  call assert_equal(2, col('v'))
   call assert_equal(4, col("'x"))
   call assert_equal(6, col("'Y"))
   call assert_equal(2, [1, 2]->col())
@@ -1151,6 +1244,37 @@ func Test_col()
   call assert_equal(0, col([2, '$']))
   call assert_equal(0, col([1, 100]))
   call assert_equal(0, col([1]))
+  call assert_equal(0, col(test_null_list()))
+  call assert_fails('let c = col({})', 'E731:')
+
+  " test for getting the visual start column
+  func T()
+    let g:Vcol = col('v')
+    return ''
+  endfunc
+  let g:Vcol = 0
+  xmap <expr> <F2> T()
+  exe "normal gg3|ve\<F2>"
+  call assert_equal(3, g:Vcol)
+  xunmap <F2>
+  delfunc T
+
+  " Test for the visual line start and end marks '< and '>
+  call setline(1, ['one', 'one two', 'one two three'])
+  "normal! ggVG
+  call feedkeys("ggVG\<Esc>", 'xt')
+  call assert_equal(1, col("'<"))
+  call assert_equal(14, col("'>"))
+  " Delete the last line of the visually selected region
+  $d
+  call assert_notequal(14, col("'>"))
+
+  " Test with 'virtualedit'
+  set virtualedit=all
+  call cursor(1, 10)
+  call assert_equal(4, col('.'))
+  set virtualedit&
+
   bw!
 endfunc
 
@@ -1182,12 +1306,15 @@ endfunc
 
 " Test for the inputdialog() function
 func Test_inputdialog()
-  CheckNotGui
-
-  call feedkeys(":let v=inputdialog('Q:', 'xx', 'yy')\<CR>\<CR>", 'xt')
-  call assert_equal('xx', v)
-  call feedkeys(":let v=inputdialog('Q:', 'xx', 'yy')\<CR>\<Esc>", 'xt')
-  call assert_equal('yy', v)
+  if has('gui_running')
+    call assert_fails('let v=inputdialog([], "xx")', 'E730:')
+    call assert_fails('let v=inputdialog("Q", [])', 'E730:')
+  else
+    call feedkeys(":let v=inputdialog('Q:', 'xx', 'yy')\<CR>\<CR>", 'xt')
+    call assert_equal('xx', v)
+    call feedkeys(":let v=inputdialog('Q:', 'xx', 'yy')\<CR>\<Esc>", 'xt')
+    call assert_equal('yy', v)
+  endif
 endfunc
 
 " Test for inputlist()
@@ -1199,7 +1326,21 @@ func Test_inputlist()
   call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>3\<cr>", 'tx')
   call assert_equal(3, c)
 
+  " Use backspace to delete characters in the prompt
+  call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>1\<BS>3\<BS>2\<cr>", 'tx')
+  call assert_equal(2, c)
+
+  " Use mouse to make a selection
+  call test_setmouse(&lines - 3, 2)
+  call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>\<LeftMouse>", 'tx')
+  call assert_equal(1, c)
+  " Mouse click outside of the list
+  call test_setmouse(&lines - 6, 2)
+  call feedkeys(":let c = inputlist(['Select color:', '1. red', '2. green', '3. blue'])\<cr>\<LeftMouse>", 'tx')
+  call assert_equal(-2, c)
+
   call assert_fails('call inputlist("")', 'E686:')
+  call assert_fails('call inputlist(test_null_list())', 'E686:')
 endfunc
 
 func Test_balloon_show()
@@ -1208,6 +1349,7 @@ func Test_balloon_show()
     call balloon_show('hi!')
     if !has('gui_running')
       call balloon_show(range(3))
+      call balloon_show([])
     endif
   endif
 endfunc
@@ -1317,6 +1459,8 @@ func Test_trim()
 
   let chars = join(map(range(1, 0x20) + [0xa0], {n -> n->nr2char()}), '')
   call assert_equal("x", trim(chars . "x" . chars))
+
+  call assert_fails('let c=trim([])', 'E730:')
 endfunc
 
 " Test for reg_recording() and reg_executing()
@@ -1498,6 +1642,10 @@ func Test_func_sandbox()
 
   call assert_fails('call Fsandbox()', 'E48:')
   delfunc Fsandbox
+
+  " From a sandbox try to set a predefined variable (which cannot be modified
+  " from a sandbox)
+  call assert_fails('sandbox let v:lnum = 10', 'E794:')
 endfunc
 
 func EditAnotherFile()
@@ -1564,7 +1712,7 @@ func Test_confirm()
   call assert_equal(2, a)
 
   " confirm() should return 0 when pressing CTRL-C.
-  call feedkeys("\<C-c>", 'L')
+  call feedkeys("\<C-C>", 'L')
   let a = confirm('Are you sure?', "&Yes\n&No")
   call assert_equal(0, a)
 
@@ -1684,6 +1832,7 @@ func Test_call()
   call assert_equal(3, 'len'->call([123]))
   call assert_fails("call call('len', 123)", 'E714:')
   call assert_equal(0, call('', []))
+  call assert_equal(0, call('len', test_null_list()))
 
   function Mylen() dict
      return len(self.data)
@@ -1696,6 +1845,9 @@ endfunc
 func Test_char2nr()
   call assert_equal(12354, char2nr('あ', 1))
   call assert_equal(120, 'x'->char2nr())
+  set encoding=latin1
+  call assert_equal(120, 'x'->char2nr())
+  set encoding=utf-8
 endfunc
 
 func Test_eventhandler()
@@ -1748,6 +1900,8 @@ endfunc
 func Test_state()
   CheckRunVimInTerminal
 
+  let getstate = ":echo 'state: ' .. g:state .. '; mode: ' .. g:mode\<CR>"
+
   let lines =<< trim END
 	call setline(1, ['one', 'two', 'three'])
 	map ;; gg
@@ -1767,28 +1921,27 @@ func Test_state()
 
   " Using a timer callback
   call term_sendkeys(buf, ":call RunTimer()\<CR>")
-  call term_wait(buf, 50)
-  let getstate = ":echo 'state: ' .. g:state .. '; mode: ' .. g:mode\<CR>"
+  call TermWait(buf, 25)
   call term_sendkeys(buf, getstate)
   call WaitForAssert({-> assert_match('state: c; mode: n', term_getline(buf, 6))}, 1000)
 
   " Halfway a mapping
   call term_sendkeys(buf, ":call RunTimer()\<CR>;")
-  call term_wait(buf, 50)
+  call TermWait(buf, 25)
   call term_sendkeys(buf, ";")
   call term_sendkeys(buf, getstate)
   call WaitForAssert({-> assert_match('state: mSc; mode: n', term_getline(buf, 6))}, 1000)
 
   " Insert mode completion (bit slower on Mac)
   call term_sendkeys(buf, ":call RunTimer()\<CR>Got\<C-N>")
-  call term_wait(buf, 200)
+  call TermWait(buf, 25)
   call term_sendkeys(buf, "\<Esc>")
   call term_sendkeys(buf, getstate)
   call WaitForAssert({-> assert_match('state: aSc; mode: i', term_getline(buf, 6))}, 1000)
 
   " Autocommand executing
   call term_sendkeys(buf, ":set filetype=foobar\<CR>")
-  call term_wait(buf, 50)
+  call TermWait(buf, 25)
   call term_sendkeys(buf, getstate)
   call WaitForAssert({-> assert_match('state: xS; mode: n', term_getline(buf, 6))}, 1000)
 
@@ -1796,7 +1949,7 @@ func Test_state()
 
   " messages scrolled
   call term_sendkeys(buf, ":call RunTimer()\<CR>:echo \"one\\ntwo\\nthree\"\<CR>")
-  call term_wait(buf, 50)
+  call TermWait(buf, 25)
   call term_sendkeys(buf, "\<CR>")
   call term_sendkeys(buf, getstate)
   call WaitForAssert({-> assert_match('state: Scs; mode: r', term_getline(buf, 6))}, 1000)
@@ -1901,6 +2054,7 @@ func Test_range()
 
   " index()
   call assert_equal(1, index(range(1, 5), 2))
+  call assert_fails("echo index([1, 2], 1, [])", 'E745:')
 
   " inputlist()
   call feedkeys(":let result = inputlist(range(10))\<CR>1\<CR>", 'x')
@@ -1930,6 +2084,7 @@ func Test_range()
 
   " list2str()
   call assert_equal('ABC', list2str(range(65, 67)))
+  call assert_fails('let s = list2str(5)', 'E474:')
 
   " lock()
   let thelist = range(5)
@@ -2030,14 +2185,6 @@ func Test_range()
   " sort()
   call assert_equal([0, 1, 2, 3, 4, 5], sort(range(5, 0, -1)))
 
-  " 'spellsuggest'
-  func MySuggest()
-    return range(3)
-  endfunc
-  set spell spellsuggest=expr:MySuggest()
-  call assert_equal([], spellsuggest('baord', 3))
-  set nospell spellsuggest&
-
   " string()
   call assert_equal('[0, 1, 2, 3, 4]', string(range(5)))
 
@@ -2067,6 +2214,14 @@ func Test_range()
 
   " uniq()
   call assert_equal([0, 1, 2, 3, 4], uniq(range(5)))
+
+  " errors
+  call assert_fails('let x=range(2, 8, 0)', 'E726:')
+  call assert_fails('let x=range(3, 1)', 'E727:')
+  call assert_fails('let x=range(1, 3, -2)', 'E727:')
+  call assert_fails('let x=range([])', 'E745:')
+  call assert_fails('let x=range(1, [])', 'E745:')
+  call assert_fails('let x=range(1, 4, [])', 'E745:')
 endfunc
 
 func Test_echoraw()
@@ -2083,6 +2238,70 @@ func Test_echoraw()
   " clean up
   call StopVimInTerminal(buf)
   call delete('XTest_echoraw')
+endfunc
+
+" Test for echo highlighting
+func Test_echohl()
+  echohl Search
+  echo 'Vim'
+  call assert_equal('Vim', Screenline(&lines))
+  " TODO: How to check the highlight group used by echohl?
+  " ScreenAttrs() returns all zeros.
+  echohl None
+endfunc
+
+" Test for the eval() function
+func Test_eval()
+  call assert_fails("call eval('5 a')", 'E488:')
+endfunc
+
+" Test for the nr2char() function
+func Test_nr2char()
+  set encoding=latin1
+  call assert_equal('@', nr2char(64))
+  set encoding=utf8
+  call assert_equal('a', nr2char(97, 1))
+  call assert_equal('a', nr2char(97, 0))
+endfunc
+
+" Test for screenattr(), screenchar() and screenchars() functions
+func Test_screen_functions()
+  call assert_equal(-1, screenattr(-1, -1))
+  call assert_equal(-1, screenchar(-1, -1))
+  call assert_equal([], screenchars(-1, -1))
+endfunc
+
+" Test for getcurpos() and setpos()
+func Test_getcurpos_setpos()
+  new
+  call setline(1, ['012345678', '012345678'])
+  normal gg6l
+  let sp = getcurpos()
+  normal 0
+  call setpos('.', sp)
+  normal jyl
+  call assert_equal('6', @")
+  call assert_equal(-1, setpos('.', test_null_list()))
+  call assert_equal(-1, setpos('.', {}))
+  close!
+endfunc
+
+" Test for glob()
+func Test_glob()
+  call assert_equal('', glob(test_null_string()))
+  call assert_equal('', globpath(test_null_string(), test_null_string()))
+endfunc
+
+" Test for browse()
+func Test_browse()
+  CheckFeature browse
+  call assert_fails('call browse([], "open", "x", "a.c")', 'E745:')
+endfunc
+
+" Test for browsedir()
+func Test_browsedir()
+  CheckFeature browse
+  call assert_fails('call browsedir("open", [])', 'E730:')
 endfunc
 
 " vim: shiftwidth=2 sts=2 expandtab

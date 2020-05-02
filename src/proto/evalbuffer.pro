@@ -16,6 +16,7 @@ void f_bufwinnr(typval_T *argvars, typval_T *rettv);
 void f_deletebufline(typval_T *argvars, typval_T *rettv);
 void f_getbufinfo(typval_T *argvars, typval_T *rettv);
 void f_getbufline(typval_T *argvars, typval_T *rettv);
+type_T *ret_f_getline(int argcount, type_T **argtypes);
 void f_getline(typval_T *argvars, typval_T *rettv);
 void f_setbufline(typval_T *argvars, typval_T *rettv);
 void f_setline(typval_T *argvars, typval_T *rettv);

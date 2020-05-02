@@ -663,24 +663,24 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 	    mch_memmove(&prop, text + textlen + i * sizeof(textprop_T),
 			    sizeof(textprop_T));
 
+	    if (lnum == lnum_start)
+	    {
+		if (dir < 0)
+		{
+		    if (col < prop.tp_col)
+			break;
+		}
+		else if (prop.tp_col + prop.tp_len - (prop.tp_len != 0) < col)
+		    continue;
+	    }
 	    if (prop.tp_id == id || prop.tp_type == type_id)
 	    {
 		// Check if the starting position has text props.
-		if (lnum_start == lnum)
-		{
-		    if (col >= prop.tp_col
-				       && (col <= prop.tp_col + prop.tp_len-1))
-			start_pos_has_prop = 1;
-		}
-		else
-		{
-		    // Not at the first line of the search so adjust col to
-		    // indicate that we're continuing from prev/next line.
-		    if (dir < 0)
-			col = buf->b_ml.ml_line_len;
-		    else
-			col = 1;
-		}
+		if (lnum_start == lnum
+			&& col >= prop.tp_col
+			&& (col <= prop.tp_col + prop.tp_len
+							 - (prop.tp_len != 0)))
+		    start_pos_has_prop = 1;
 
 		prop_start = !(prop.tp_flags & TP_FLAG_CONT_PREV);
 		prop_end = !(prop.tp_flags & TP_FLAG_CONT_NEXT);
@@ -705,17 +705,6 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 		    break;
 		}
 
-		if (dir < 0)
-		{
-		    if (col < prop.tp_col)
-			break;
-		}
-		else
-		{
-		    if (col > prop.tp_col + prop.tp_len-1)
-			break;
-		}
-
 		prop_fill_dict(rettv->vval.v_dict, &prop, buf);
 		dict_add_number(rettv->vval.v_dict, "lnum", lnum);
 
@@ -735,6 +724,8 @@ f_prop_find(typval_T *argvars, typval_T *rettv)
 		break;
 	    lnum--;
 	}
+	// Adjust col to indicate that we're continuing from prev/next line.
+	col = dir < 0 ? buf->b_ml.ml_line_len : 1;
     }
 }
 
@@ -796,6 +787,7 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
     int		do_all = FALSE;
     int		id = -1;
     int		type_id = -1;
+    int		both = FALSE;
 
     rettv->vval.v_number = 0;
     if (argvars[0].v_type != VAR_DICT || argvars[0].vval.v_dict == NULL)
@@ -838,9 +830,16 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 	    return;
 	type_id = type->pt_id;
     }
+    if (dict_find(dict, (char_u *)"both", -1) != NULL)
+	both = dict_get_number(dict, (char_u *)"both");
     if (id == -1 && type_id == -1)
     {
 	emsg(_("E968: Need at least one of 'id' or 'type'"));
+	return;
+    }
+    if (both && (id == -1 || type_id == -1))
+    {
+	emsg(_("E860: Need 'id' and 'type' with 'both'"));
 	return;
     }
 
@@ -868,7 +867,8 @@ f_prop_remove(typval_T *argvars, typval_T *rettv)
 		size_t	taillen;
 
 		mch_memmove(&textprop, cur_prop, sizeof(textprop_T));
-		if (textprop.tp_id == id || textprop.tp_type == type_id)
+		if (both ? textprop.tp_id == id && textprop.tp_type == type_id
+			 : textprop.tp_id == id || textprop.tp_type == type_id)
 		{
 		    if (!(buf->b_ml.ml_flags & ML_LINE_DIRTY))
 		    {

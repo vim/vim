@@ -37,10 +37,11 @@
 #define LTOREQ_POS(a, b) (LT_POS(a, b) || EQUAL_POS(a, b))
 
 /*
- * VIM_ISWHITE() is used for "^" and the like. It differs from isspace()
- * because it doesn't include <CR> and <LF> and the like.
+ * VIM_ISWHITE() differs from isspace() because it doesn't include <CR> and
+ * <LF> and the like.
  */
-#define VIM_ISWHITE(x)	((x) == ' ' || (x) == '\t')
+#define VIM_ISWHITE(x)		((x) == ' ' || (x) == '\t')
+#define IS_WHITE_OR_NUL(x)	((x) == ' ' || (x) == '\t' || (x) == NUL)
 
 /*
  * LINEEMPTY() - return TRUE if the line is empty
@@ -364,8 +365,11 @@
 # define ESTACK_CHECK_SETUP estack_len_before = exestack.ga_len;
 # define ESTACK_CHECK_NOW if (estack_len_before != exestack.ga_len) \
 	siemsg("Exestack length expected: %d, actual: %d", estack_len_before, exestack.ga_len);
+# define CHECK_CURBUF if (curwin != NULL && curwin->w_buffer != curbuf) \
+		iemsg("curbuf != curwin->w_buffer")
 #else
 # define ESTACK_CHECK_DECLARATION
 # define ESTACK_CHECK_SETUP
 # define ESTACK_CHECK_NOW
+# define CHECK_CURBUF
 #endif

@@ -603,7 +603,6 @@ static struct
     static inline void
 py3__Py_DECREF(const char *filename UNUSED, int lineno UNUSED, PyObject *op)
 {
-    _Py_DEC_REFTOTAL;
     if (--op->ob_refcnt != 0)
     {
 #  ifdef Py_REF_DEBUG
@@ -634,19 +633,6 @@ py3__Py_XDECREF(PyObject *op)
 #  undef Py_XDECREF
 #  define Py_XDECREF(op) py3__Py_XDECREF(_PyObject_CAST(op))
 # endif
-
-/*
- * Free python.dll
- */
-    static void
-end_dynamic_python3(void)
-{
-    if (hinstPy3 != 0)
-    {
-	close_dll(hinstPy3);
-	hinstPy3 = 0;
-    }
-}
 
 /*
  * Load library and get all pointers.
@@ -873,10 +859,6 @@ python3_end(void)
 
 	Py_Finalize();
     }
-
-#ifdef DYNAMIC_PYTHON3
-    end_dynamic_python3();
-#endif
 
     --recurse;
 }

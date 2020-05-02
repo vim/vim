@@ -1,4 +1,4 @@
-*recover.txt*   For Vim version 8.2.  Last change: 2019 May 07
+*recover.txt*   For Vim version 8.2.  Last change: 2020 Mar 24
 
 
 		  VIM REFERENCE MANUAL    by Bram Moolenaar
@@ -125,7 +125,7 @@ If you want to make sure that your changes are in the swap file use this
 command:
 
 					*:pre* *:preserve* *E313* *E314*
-:pre[serve]		Write all text for all buffers into swap file.  The
+:pre[serve]		Write all text for all buffers into swap files.  The
 			original file is no longer needed for recovery.
 			This sets a flag in the current buffer.  When the '&'
 			flag is present in 'cpoptions' the swap file will not

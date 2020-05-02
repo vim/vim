@@ -1552,7 +1552,7 @@ parse_builtin_tcap(char_u *term)
  * Store it as a number in t_colors.
  * Store it as a string in T_CCO (using nr_colors[]).
  */
-    static void
+    void
 set_color_count(int nr)
 {
     char_u	nr_colors[20];		// string for number of colors
@@ -3122,15 +3122,21 @@ ttest(int pairs)
     }
     need_gather = TRUE;
 
-    // Set t_colors to the value of $COLORS or t_Co.
+    // Set t_colors to the value of $COLORS or t_Co.  Ignore $COLORS in the
+    // GUI.
     t_colors = atoi((char *)T_CCO);
-    env_colors = mch_getenv((char_u *)"COLORS");
-    if (env_colors != NULL && isdigit(*env_colors))
+#ifdef FEAT_GUI
+    if (!gui.in_use)
+#endif
     {
-	int colors = atoi((char *)env_colors);
+	env_colors = mch_getenv((char_u *)"COLORS");
+	if (env_colors != NULL && isdigit(*env_colors))
+	{
+	    int colors = atoi((char *)env_colors);
 
-	if (colors != t_colors)
-	    set_color_count(colors);
+	    if (colors != t_colors)
+		set_color_count(colors);
+	}
     }
 }
 
@@ -4762,15 +4768,14 @@ not_enough:
 				    || (is_screen && arg[1] >= 40700))
 				set_option_value((char_u *)"ttym", 0L,
 							  (char_u *)"sgr", 0);
-			    // if xterm version >= 95 use mouse dragging
+			    // For xterm version >= 95 mouse dragging works.
 			    else if (version >= 95)
 				set_option_value((char_u *)"ttym", 0L,
 						       (char_u *)"xterm2", 0);
 			}
 
 			// Detect terminals that set $TERM to something like
-			// "xterm-256colors"  but are not fully xterm
-			// compatible.
+			// "xterm-256color" but are not fully xterm compatible.
 
 			// Gnome terminal sends 1;3801;0, 1;4402;0 or 1;2501;0.
 			// xfce4-terminal sends 1;2802;0.
@@ -4783,7 +4788,17 @@ not_enough:
 			// PuTTY sends 0;136;0
 			// vandyke SecureCRT sends 1;136;0
 			else if (version == 136 && arg[2] == 0)
+			{
 			    is_not_xterm = TRUE;
+
+			    // PuTTY supports sgr-like mouse reporting, but
+			    // only set 'ttymouse' if it was not set by the
+			    // user already.
+			    if (arg[0] == 0
+					  && !option_was_set((char_u *)"ttym"))
+				set_option_value((char_u *)"ttym", 0L,
+							(char_u *)"sgr", 0);
+			}
 
 			// Konsole sends 0;115;0
 			else if (version == 115 && arg[0] == 0 && arg[2] == 0)
