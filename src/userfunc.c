@@ -4392,6 +4392,8 @@ set_ref_in_functions(int copyID)
 	    fp = HI2UF(hi);
 	    if (!func_name_refcount(fp->uf_name))
 		abort = abort || set_ref_in_func(NULL, fp, copyID);
+	    else if (fp->uf_dfunc_idx >= 0)
+		abort = abort || set_ref_in_dfunc(fp, copyID);
 	}
     }
     return abort;
@@ -4439,7 +4441,10 @@ set_ref_in_func(char_u *name, ufunc_T *fp_in, int copyID)
     {
 	for (fc = fp->uf_scoped; fc != NULL; fc = fc->func->uf_scoped)
 	    abort = abort || set_ref_in_funccal(fc, copyID);
+	if (fp->uf_dfunc_idx >= 0)
+	    abort = abort || set_ref_in_dfunc(fp, copyID);
     }
+
     vim_free(tofree);
     return abort;
 }

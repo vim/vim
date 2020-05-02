@@ -662,5 +662,49 @@ def Test_closure_ref_after_return()
   unlet g:Ref
 enddef
 
+def MakeTwoRefs()
+  let local = ['some']
+  g:Extend = {s -> local->add(s)}
+  g:Read = {-> local}
+enddef
+
+def Test_closure_two_refs()
+  MakeTwoRefs()
+  assert_equal('some', join(g:Read(), ' '))
+  g:Extend('more')
+  assert_equal('some more', join(g:Read(), ' '))
+  g:Extend('even')
+  assert_equal('some more even', join(g:Read(), ' '))
+
+  unlet g:Extend
+  unlet g:Read
+enddef
+
+" TODO: fix memory leak when using same function again.
+def MakeTwoRefs_2()
+  let local = ['some']
+  g:Extend = {s -> local->add(s)}
+  g:Read = {-> local}
+enddef
+
+def ReadRef(Ref: func(): list<string>): string
+  return join(Ref(), ' ')
+enddef
+
+def ExtendRef(Ref: func(string), add: string)
+  Ref(add)
+enddef
+
+def Test_closure_two_indirect_refs()
+  MakeTwoRefs_2()
+  assert_equal('some', ReadRef(g:Read))
+  ExtendRef(g:Extend, 'more')
+  assert_equal('some more', ReadRef(g:Read))
+  ExtendRef(g:Extend, 'even')
+  assert_equal('some more even', ReadRef(g:Read))
+
+  unlet g:Extend
+  unlet g:Read
+enddef
 
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

@@ -2437,11 +2437,12 @@ ex_disassemble(exarg_T *eap)
 		break;
 	    case ISN_FUNCREF:
 		{
+		    funcref_T	*funcref = &iptr->isn_arg.funcref;
 		    dfunc_T	*df = ((dfunc_T *)def_functions.ga_data)
-					       + iptr->isn_arg.funcref.fr_func;
+							    + funcref->fr_func;
 
 		    smsg("%4d FUNCREF %s $%d", current, df->df_ufunc->uf_name,
-			   iptr->isn_arg.funcref.fr_var_idx + df->df_varcount);
+				     funcref->fr_var_idx + dfunc->df_varcount);
 		}
 		break;
 
@@ -2673,6 +2674,26 @@ check_not_string(typval_T *tv)
 	return FAIL;
     }
     return OK;
+}
+
+/*
+ * Mark items in a def function as used.
+ */
+    int
+set_ref_in_dfunc(ufunc_T *ufunc, int copyID)
+{
+    dfunc_T *dfunc = ((dfunc_T *)def_functions.ga_data) + ufunc->uf_dfunc_idx;
+    int	    abort = FALSE;
+
+    if (dfunc->df_funcstack != NULL)
+    {
+	typval_T    *stack = dfunc->df_funcstack->fs_ga.ga_data;
+	int	    idx;
+
+	for (idx = 0; idx < dfunc->df_funcstack->fs_ga.ga_len; ++idx)
+	    abort = abort || set_ref_in_item(stack + idx, copyID, NULL, NULL);
+    }
+    return abort;
 }
 
 

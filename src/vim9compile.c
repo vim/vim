@@ -824,7 +824,7 @@ generate_TYPECHECK(cctx_T *cctx, type_T *vartype, int offset)
     isn->isn_arg.type.ct_off = offset;
 
     // type becomes vartype
-    ((type_T **)stack->ga_data)[stack->ga_len - 1] = vartype;
+    ((type_T **)stack->ga_data)[stack->ga_len + offset] = vartype;
 
     return OK;
 }
@@ -1671,8 +1671,13 @@ skip_type(char_u *start)
 	    if (*p == ',')
 		p = skipwhite(p + 1);
 	}
-	if (*p == ')' && p[1] == ':')
-	    p = skip_type(skipwhite(p + 2));
+	if (*p == ')')
+	{
+	    if (p[1] == ':')
+		p = skip_type(skipwhite(p + 2));
+	    else
+		p = skipwhite(p + 1);
+	}
     }
 
     return p;
