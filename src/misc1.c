@@ -1666,23 +1666,25 @@ vim_getenv(char_u *name, int *mustfree)
 
     if (p != NULL)
 	return p;
+
+# ifdef __HAIKU__
+    // special handling for user settings directory...
+    if (STRCMP(name, "BE_USER_SETTINGS") == 0)
+    {
+	static char userSettingsPath[MAXPATHL];
+
+	if (find_directory(B_USER_SETTINGS_DIRECTORY, 0, false,
+					   userSettingsPath, MAXPATHL) == B_OK)
+	    return (char_u *)userSettingsPath;
+	else
+	    return NULL;
+    }
+# endif
 #endif
 
     // handling $VIMRUNTIME and $VIM is below, bail out if it's another name.
     vimruntime = (STRCMP(name, "VIMRUNTIME") == 0);
     if (!vimruntime && STRCMP(name, "VIM") != 0)
-#if defined(__HAIKU__)
-	// special handling for user settings directory...
-	if (STRCMP(name, "BE_USER_SETTINGS") == 0)
-	{
-	    static char userSettingsPath[MAXPATHL] = {0};
-
-	    if (B_OK == find_directory(B_USER_SETTINGS_DIRECTORY, 0,
-					    false, userSettingsPath, MAXPATHL))
-		return userSettingsPath;
-	}
-	else
-#endif
 	return NULL;
 
     /*
