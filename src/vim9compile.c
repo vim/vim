@@ -1663,7 +1663,11 @@ skip_type(char_u *start)
 	++p;
 	while (*p != ')' && *p != NUL)
 	{
+	    char_u *sp = p;
+
 	    p = skip_type(p);
+	    if (p == sp)
+		return p;  // syntax error
 	    if (*p == ',')
 		p = skipwhite(p + 1);
 	}

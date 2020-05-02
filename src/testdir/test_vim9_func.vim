@@ -113,6 +113,7 @@ def Test_call_wrong_args()
   call CheckDefFailure(['TakesOneArg()'], 'E119:')
   call CheckDefFailure(['TakesOneArg(11, 22)'], 'E118:')
   call CheckDefFailure(['bufnr(xxx)'], 'E1001:')
+  call CheckScriptFailure(['def Func(Ref: func(s: string))'], 'E475:')
 enddef
 
 " Default arg and varargs
