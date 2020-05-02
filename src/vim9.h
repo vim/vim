@@ -71,7 +71,7 @@ typedef enum {
     ISN_PCALL,	    // call partial, use isn_arg.pfunc
     ISN_PCALL_END,  // cleanup after ISN_PCALL with cpf_top set
     ISN_RETURN,	    // return, result is on top of stack
-    ISN_FUNCREF,    // push a function ref to dfunc isn_arg.number
+    ISN_FUNCREF,    // push a function ref to dfunc isn_arg.funcref
 
     // expression operations
     ISN_JUMP,	    // jump if condition is matched isn_arg.jump
@@ -218,6 +218,12 @@ typedef struct {
     int		ul_forceit;	// forceit flag
 } unlet_T;
 
+// arguments to ISN_FUNCREF
+typedef struct {
+    int		fr_func;	// function index
+    int		fr_var_idx;	// variable to store partial
+} funcref_T;
+
 /*
  * Instruction
  */
@@ -249,8 +255,24 @@ struct isn_S {
 	loadstore_T	    loadstore;
 	script_T	    script;
 	unlet_T		    unlet;
+	funcref_T	    funcref;
     } isn_arg;
 };
+
+/*
+ * Structure to hold the context of a compiled function, used by closures
+ * defined in that function.
+ */
+typedef struct funcstack_S
+{
+    garray_T	fs_ga;		// contains the stack, with:
+				// - arguments
+				// - frame
+				// - local variables
+
+    int		fs_refcount;	// nr of closures referencing this funcstack
+    int		fs_copyID;	// for garray_T collection
+} funcstack_T;
 
 /*
  * Info about a function defined with :def.  Used in "def_functions".
@@ -264,10 +286,19 @@ struct dfunc_S {
     isn_T	*df_instr;	    // function body to be executed
     int		df_instr_count;
 
+    garray_T	*df_ectx_stack;	    // where compiled closure finds local vars
+    int		df_ectx_frame;	    // index of function frame in uf_ectx_stack
+    funcstack_T	*df_funcstack;	    // copy of stack for closure, used after
+				    // closure context function returns
+
     int		df_varcount;	    // number of local variables
+    int		df_closure_count;   // number of closures created
 };
 
 // Number of entries used by stack frame for a function call.
+// - function index
+// - instruction index
+// - previous frame index
 #define STACK_FRAME_SIZE 3
 
 

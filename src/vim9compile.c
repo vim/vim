@@ -116,6 +116,9 @@ struct cctx_S {
     garray_T	ctx_locals;	    // currently visible local variables
     int		ctx_locals_count;   // total number of local variables
 
+    int		ctx_closure_count;  // number of closures created in the
+				    // function
+
     garray_T	ctx_imports;	    // imported items
 
     int		ctx_skip;	    // when TRUE skip commands, when FALSE skip
@@ -1254,7 +1257,8 @@ generate_FUNCREF(cctx_T *cctx, int dfunc_idx)
     RETURN_OK_IF_SKIP(cctx);
     if ((isn = generate_instr(cctx, ISN_FUNCREF)) == NULL)
 	return FAIL;
-    isn->isn_arg.number = dfunc_idx;
+    isn->isn_arg.funcref.fr_func = dfunc_idx;
+    isn->isn_arg.funcref.fr_var_idx = cctx->ctx_closure_count++;
 
     if (ga_grow(stack, 1) == FAIL)
 	return FAIL;
@@ -6395,6 +6399,7 @@ compile_def_function(ufunc_T *ufunc, int set_return_type, cctx_T *outer_cctx)
 	dfunc->df_instr = instr->ga_data;
 	dfunc->df_instr_count = instr->ga_len;
 	dfunc->df_varcount = cctx.ctx_locals_count;
+	dfunc->df_closure_count = cctx.ctx_closure_count;
 	if (cctx.ctx_outer_used)
 	    ufunc->uf_flags |= FC_CLOSURE;
     }
@@ -6619,6 +6624,23 @@ delete_def_function_contents(dfunc_T *dfunc)
 	for (idx = 0; idx < dfunc->df_instr_count; ++idx)
 	    delete_instr(dfunc->df_instr + idx);
 	VIM_CLEAR(dfunc->df_instr);
+    }
+    if (dfunc->df_funcstack != NULL)
+    {
+	// Decrease the reference count for the context of a closure.  If down
+	// to zero free it and clear the variables on the stack.
+	if (--dfunc->df_funcstack->fs_refcount == 0)
+	{
+	    garray_T	*gap = &dfunc->df_funcstack->fs_ga;
+	    typval_T	*stack = gap->ga_data;
+	    int		i;
+
+	    for (i = 0; i < gap->ga_len; ++i)
+		clear_tv(stack + i);
+	    ga_clear(gap);
+	    vim_free(dfunc->df_funcstack);
+	}
+	dfunc->df_funcstack = NULL;
     }
 
     dfunc->df_deleted = TRUE;

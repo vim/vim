@@ -650,4 +650,16 @@ def Test_closure_simple()
   assert_equal('some more', RefFunc({s -> local .. s}))
 enddef
 
+def MakeRef()
+  let local = 'some '
+  g:Ref = {s -> local .. s}
+enddef
+
+def Test_closure_ref_after_return()
+  MakeRef()
+  assert_equal('some thing', g:Ref('thing'))
+  unlet g:Ref
+enddef
+
+
 " vim: ts=8 sw=2 sts=2 expandtab tw=80 fdm=marker

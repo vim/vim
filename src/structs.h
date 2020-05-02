@@ -1563,8 +1563,6 @@ typedef struct
     int		uf_refcount;	// reference count, see func_name_refcount()
 
     funccall_T	*uf_scoped;	// l: local variables for closure
-    garray_T	*uf_ectx_stack;	// where compiled closure finds local vars
-    int		uf_ectx_frame;	// index of function frame in uf_ectx_stack
 
     char_u	*uf_name_exp;	// if "uf_name[]" starts with SNR the name with
 				// "<SNR>" as a string, otherwise NULL
@@ -1591,7 +1589,7 @@ typedef struct
 #define FIXVAR_CNT	12	// number of fixed variables
 
 /*
- * structure to hold info for a function that is currently being executed.
+ * Structure to hold info for a function that is currently being executed.
  */
 struct funccall_S
 {
