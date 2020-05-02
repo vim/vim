@@ -60,9 +60,12 @@ pum_compute_size(void)
     pum_extra_width = 0;
     for (i = 0; i < pum_size; ++i)
     {
-	w = vim_strsize(pum_array[i].pum_text);
-	if (pum_base_width < w)
-	    pum_base_width = w;
+	if (pum_array[i].pum_text != NULL)
+	{
+	    w = vim_strsize(pum_array[i].pum_text);
+	    if (pum_base_width < w)
+		pum_base_width = w;
+	}
 	if (pum_array[i].pum_kind != NULL)
 	{
 	    w = vim_strsize(pum_array[i].pum_kind) + 1;
