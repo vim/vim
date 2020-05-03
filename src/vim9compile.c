@@ -186,37 +186,74 @@ lookup_local(char_u *name, size_t len, cctx_T *cctx)
 }
 
 /*
- * Lookup an argument in the current function.
- * Returns the argument index or -1 if not found.
+ * Lookup an argument in the current function and an enclosing function.
+ * Returns the argument index in "idxp"
+ * Returns the argument type in "type"
+ * Sets "gen_load_outer" to TRUE if found in outer scope.
+ * Returns OK when found, FAIL otherwise.
  */
     static int
-lookup_arg(char_u *name, size_t len, cctx_T *cctx)
+lookup_arg(
+	char_u	*name,
+	size_t	len,
+	int	*idxp,
+	type_T	**type,
+	int	*gen_load_outer,
+	cctx_T	*cctx)
 {
     int	    idx;
+    char_u  *va_name;
 
     if (len == 0)
-	return -1;
+	return FAIL;
     for (idx = 0; idx < cctx->ctx_ufunc->uf_args.ga_len; ++idx)
     {
 	char_u *arg = FUNCARG(cctx->ctx_ufunc, idx);
 
-	if (STRNCMP(name, arg, len) == 0 && STRLEN(arg) == len)
-	    return idx;
+	if (STRNCMP(name, arg, len) == 0 && arg[len] == NUL)
+	{
+	    if (idxp != NULL)
+	    {
+		// Arguments are located above the frame pointer.  One further
+		// if there is a vararg argument
+		*idxp = idx - (cctx->ctx_ufunc->uf_args.ga_len
+							    + STACK_FRAME_SIZE)
+			      + (cctx->ctx_ufunc->uf_va_name != NULL ? -1 : 0);
+
+		if (cctx->ctx_ufunc->uf_arg_types != NULL)
+		    *type = cctx->ctx_ufunc->uf_arg_types[idx];
+		else
+		    *type = &t_any;
+	    }
+	    return OK;
+	}
     }
-    return -1;
-}
 
-/*
- * Lookup a vararg argument in the current function.
- * Returns TRUE if there is a match.
- */
-    static int
-lookup_vararg(char_u *name, size_t len, cctx_T *cctx)
-{
-    char_u  *va_name = cctx->ctx_ufunc->uf_va_name;
+    va_name = cctx->ctx_ufunc->uf_va_name;
+    if (va_name != NULL
+		    && STRNCMP(name, va_name, len) == 0 && va_name[len] == NUL)
+    {
+	if (idxp != NULL)
+	{
+	    // varargs is always the last argument
+	    *idxp = -STACK_FRAME_SIZE - 1;
+	    *type = cctx->ctx_ufunc->uf_va_type;
+	}
+	return OK;
+    }
 
-    return len > 0 && va_name != NULL
-		 && STRNCMP(name, va_name, len) == 0 && STRLEN(va_name) == len;
+    if (cctx->ctx_outer != NULL)
+    {
+	// Lookup the name for an argument of the outer function.
+	if (lookup_arg(name, len, idxp, type, gen_load_outer, cctx->ctx_outer)
+									 == OK)
+	{
+	    *gen_load_outer = TRUE;
+	    return OK;
+	}
+    }
+
+    return FAIL;
 }
 
 /*
@@ -1584,7 +1621,7 @@ reserve_local(cctx_T *cctx, char_u *name, size_t len, int isConst, type_T *type)
 {
     lvar_T  *lvar;
 
-    if (lookup_arg(name, len, cctx) >= 0 || lookup_vararg(name, len, cctx))
+    if (lookup_arg(name, len, NULL, NULL, NULL, cctx) == OK)
     {
 	emsg_namelen(_("E1006: %s is used as an argument"), name, (int)len);
 	return NULL;
@@ -2452,26 +2489,10 @@ compile_load(char_u **arg, char_u *end_arg, cctx_T *cctx, int error)
 	if (name == NULL)
 	    return FAIL;
 
-	idx = lookup_arg(*arg, len, cctx);
-	if (idx >= 0)
+	if (lookup_arg(*arg, len, &idx, &type, &gen_load_outer, cctx) == OK)
 	{
-	    if (cctx->ctx_ufunc->uf_arg_types != NULL)
-		type = cctx->ctx_ufunc->uf_arg_types[idx];
-	    else
-		type = &t_any;
-
-	    // Arguments are located above the frame pointer.
-	    idx -= cctx->ctx_ufunc->uf_args.ga_len + STACK_FRAME_SIZE;
-	    if (cctx->ctx_ufunc->uf_va_name != NULL)
-		--idx;
-	    gen_load = TRUE;
-	}
-	else if (lookup_vararg(*arg, len, cctx))
-	{
-	    // varargs is always the last argument
-	    idx = -STACK_FRAME_SIZE - 1;
-	    type = cctx->ctx_ufunc->uf_va_type;
-	    gen_load = TRUE;
+	    if (!gen_load_outer)
+		gen_load = TRUE;
 	}
 	else
 	{
