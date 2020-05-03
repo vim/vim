@@ -955,6 +955,7 @@ channel_open(
     int			sd = -1;
     channel_T		*channel = NULL;
 #ifdef FEAT_IPV6
+    int			err;
     struct addrinfo	hints;
     struct addrinfo	*res = NULL;
     struct addrinfo	*addr = NULL;
@@ -986,10 +987,11 @@ channel_open(
     // Set port number manually in order to prevent name resolution services
     // from being invoked in the environment where AI_NUMERICSERV is not
     // defined.
-    if (getaddrinfo(hostname, NULL, &hints, &res) != 0)
+    if ((err = getaddrinfo(hostname, NULL, &hints, &res)) != 0)
     {
 	ch_error(channel, "in getaddrinfo() in channel_open()");
-	PERROR(_("E901: getaddrinfo() in channel_open()"));
+	semsg(_("E901: getaddrinfo() in channel_open(): %s"),
+							   gai_strerror(err));
 	channel_free(channel);
 	return NULL;
     }
