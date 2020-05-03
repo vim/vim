@@ -1145,10 +1145,11 @@ VimFormView::FrameResized(float new_width, float new_height)
 VimTextAreaView::VimTextAreaView(BRect frame):
     BView(frame, "VimTextAreaView", B_FOLLOW_ALL_SIDES,
 #ifdef FEAT_MBYTE_IME
-	B_WILL_DRAW | B_FULL_UPDATE_ON_RESIZE | B_INPUT_METHOD_AWARE),
+	B_WILL_DRAW | B_FULL_UPDATE_ON_RESIZE | B_INPUT_METHOD_AWARE
 #else
-	B_WILL_DRAW | B_FULL_UPDATE_ON_RESIZE),
+	B_WILL_DRAW | B_FULL_UPDATE_ON_RESIZE
 #endif
+	),
     mouseDragEventCount(0)
 {
 #ifdef FEAT_MBYTE_IME
@@ -3093,7 +3094,7 @@ gui_haiku_process_event(bigtime_t timeout)
 			}
 		    }
 #else
-		    add_to_input_buf_csi(string, len);
+			add_to_input_buf_csi(string, len);
 #endif
 		    else
 			add_to_input_buf(string, len);
